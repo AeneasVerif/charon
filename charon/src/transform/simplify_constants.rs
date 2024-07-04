@@ -14,8 +14,9 @@ use crate::expressions::*;
 use crate::meta::Span;
 use crate::transform::TransformCtx;
 use crate::types::*;
-use crate::ullbc_ast::{make_locals_generator, ExprBody, RawStatement, Statement};
-use crate::ullbc_ast_utils::body_transform_operands;
+use crate::ullbc_ast::{
+    body_transform_operands, make_locals_generator, ExprBody, RawStatement, Statement,
+};
 use crate::values::VarId;
 
 use super::ctx::UllbcPass;

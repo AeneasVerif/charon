@@ -1,5 +1,6 @@
 //! This file groups everything which is linked to implementations about [crate::expressions]
 use crate::expressions::*;
+use crate::values::*;
 use std::vec::Vec;
 
 impl Place {

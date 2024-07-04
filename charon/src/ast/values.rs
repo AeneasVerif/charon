@@ -1,6 +1,5 @@
 //! Contains definitions for variables and constant values.
 
-pub use crate::values_utils::*;
 use core::hash::Hash;
 use derive_visitor::{Drive, DriveMut};
 use macros::{EnumAsGetters, EnumIsA, VariantIndexArity, VariantName};

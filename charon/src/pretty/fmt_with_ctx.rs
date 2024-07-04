@@ -1,20 +1,13 @@
 //! Utilities for pretty-printing (u)llbc.
 use crate::{
-    assumed::get_name_from_type_id,
     common::TAB_INCR,
     formatter::*,
     gast,
     ids::Vector,
     llbc_ast::{self as llbc, *},
-    meta::*,
-    names::*,
     reorder_decls::*,
-    translate_predicates::NonLocalTraitClause,
-    types::*,
     ullbc_ast::{self as ullbc, *},
-    values::*,
 };
-use hax_frontend_exporter as hax;
 use itertools::Itertools;
 
 /// Format the AST type as a string.
@@ -647,15 +640,6 @@ impl<C: AstFormatter> FmtWithCtx<C> for Name {
             .map(|x| x.fmt_with_ctx(ctx))
             .collect::<Vec<String>>();
         name.join("::")
-    }
-}
-
-impl<C: AstFormatter> FmtWithCtx<C> for NonLocalTraitClause {
-    fn fmt_with_ctx(&self, ctx: &C) -> String {
-        let clause_id = self.clause_id.fmt_with_ctx(ctx);
-        let trait_id = ctx.format_object(self.trait_id);
-        let generics = self.generics.fmt_with_ctx(ctx);
-        format!("[{clause_id}]: {trait_id}{generics}")
     }
 }
 
@@ -1680,31 +1664,5 @@ pub fn fmt_where_clauses(tab: &str, num_parent_clauses: usize, clauses: Vec<Stri
             let clauses = clauses.join("");
             format!("\n{tab}where{clauses}")
         }
-    }
-}
-
-// IntTy is not defined in the current crate
-pub fn intty_to_string(ty: hax::IntTy) -> String {
-    use hax::IntTy::*;
-    match ty {
-        Isize => "isize".to_string(),
-        I8 => "i8".to_string(),
-        I16 => "i16".to_string(),
-        I32 => "i32".to_string(),
-        I64 => "i64".to_string(),
-        I128 => "i128".to_string(),
-    }
-}
-
-// UintTy is not defined in the current crate
-pub fn uintty_to_string(ty: hax::UintTy) -> String {
-    use hax::UintTy::*;
-    match ty {
-        Usize => "usize".to_string(),
-        U8 => "u8".to_string(),
-        U16 => "u16".to_string(),
-        U32 => "u32".to_string(),
-        U64 => "u64".to_string(),
-        U128 => "u128".to_string(),
     }
 }

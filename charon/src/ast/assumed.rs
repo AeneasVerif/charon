@@ -54,7 +54,7 @@ pub static PTR_NON_NULL_NAME: [&str; 3] = ["core", "ptr", "NonNull"];
 /// - some of the ids here are actually traits, that we disambiguate later
 /// TODO: merge with the other enum?
 #[derive(Copy, Clone, EnumIsA)]
-pub(crate) enum BuiltinFun {
+pub enum BuiltinFun {
     Panic,
     BoxNew,
     BoxFree,
@@ -69,7 +69,7 @@ pub struct FunInfo {
 impl BuiltinFun {
     /// Converts to the ullbc equivalent. Panics if `self` is `Panic` as this should be handled
     /// separately.
-    pub(crate) fn to_ullbc_builtin_fun(self) -> ullbc_ast::AssumedFunId {
+    pub fn to_ullbc_builtin_fun(self) -> ullbc_ast::AssumedFunId {
         match self {
             BuiltinFun::BoxNew => ullbc_ast::AssumedFunId::BoxNew,
             BuiltinFun::BoxFree => ullbc_ast::AssumedFunId::BoxFree,
@@ -78,7 +78,7 @@ impl BuiltinFun {
     }
 
     /// Parse a name to recognize built-in functions.
-    pub(crate) fn parse_name(name: &Name) -> Option<Self> {
+    pub fn parse_name(name: &Name) -> Option<Self> {
         if PANIC_NAMES.iter().any(|panic| name.equals_ref_name(panic)) {
             Some(BuiltinFun::Panic)
         } else if name.equals_ref_name(&["alloc", "alloc", "box_free"]) {
@@ -125,7 +125,7 @@ impl BuiltinFun {
     }
 
     /// See the comments for [type_to_used_params]
-    pub(crate) fn to_fun_info(self) -> Option<FunInfo> {
+    pub fn to_fun_info(self) -> Option<FunInfo> {
         match self {
             BuiltinFun::Panic => None,
             BuiltinFun::BoxNew => None,

@@ -1,8 +1,9 @@
-use crate::cli_options::CliOpts;
-use crate::common::*;
-use crate::get_mir::{extract_constants_at_top_level, MirLevel};
-use crate::transform::TransformCtx;
-use crate::translate_ctx::*;
+use super::get_mir::extract_constants_at_top_level;
+use super::translate_ctx::*;
+use charon_lib::ast::krate::*;
+use charon_lib::common::*;
+use charon_lib::options::{CliOpts, MirLevel, TransOptions};
+use charon_lib::transform::TransformCtx;
 
 use hax_frontend_exporter as hax;
 use hax_frontend_exporter::SInto;
@@ -345,6 +346,7 @@ pub fn translate<'tcx, 'ctx>(
         tcx,
         hax::options::Options {
             inline_macro_calls: Vec::new(),
+            // downgrade_errors: options.errors_as_warnings,
         },
     );
     let mut ctx = TranslateCtx {
@@ -392,11 +394,17 @@ pub fn translate<'tcx, 'ctx>(
     let hir = tcx.hir();
     for item_id in hir.root_module().item_ids {
         let item_id = item_id.hir_id();
-        let rustc_hir::Node::Item(item) = tcx.hir_node(item_id) else {
-            unreachable!()
-        };
-        // If registration fails we simply skip the item.
-        let _ = ctx.register_local_hir_item(true, item);
+        {
+            let mut ctx = std::panic::AssertUnwindSafe(&mut ctx);
+            // Stopgap measure because there are still many panics in charon and hax.
+            // If registration fails we simply skip the item.
+            let _ = std::panic::catch_unwind(move || {
+                let rustc_hir::Node::Item(item) = ctx.tcx.hir_node(item_id) else {
+                    unreachable!()
+                };
+                ctx.register_local_hir_item(true, item)
+            });
+        }
     }
 
     trace!(

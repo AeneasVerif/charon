@@ -5,23 +5,19 @@
 
 use std::mem;
 use std::panic;
+use std::rc::Rc;
 
-use crate::assumed::BuiltinFun;
-use crate::common::*;
-use crate::expressions::*;
-use crate::formatter::{Formatter, IntoFormatter};
-use crate::get_mir::{boxes_are_desugared, get_mir_for_def_id_and_level};
-use crate::ids::Vector;
-use crate::meta::ItemMeta;
-use crate::names::Name;
-use crate::pretty::FmtWithCtx;
-use crate::translate_ctx::*;
-use crate::translate_types;
-use crate::types::*;
-use crate::ullbc_ast::*;
-use crate::values::*;
+use super::get_mir::{boxes_are_desugared, get_mir_for_def_id_and_level};
+use super::translate_ctx::*;
+use super::translate_types;
+use charon_lib::ast::*;
+use charon_lib::common::*;
+use charon_lib::formatter::{Formatter, IntoFormatter};
+use charon_lib::ids::Vector;
+use charon_lib::pretty::FmtWithCtx;
+use charon_lib::ullbc_ast::*;
 use hax_frontend_exporter as hax;
-use hax_frontend_exporter::SInto;
+use hax_frontend_exporter::{HasMirSetter, HasOwnerIdSetter, SInto};
 use rustc_hir::def_id::DefId;
 use rustc_middle::mir::START_BLOCK;
 use rustc_middle::ty;
@@ -1448,16 +1444,12 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         };
 
         // Here, we have to create a MIR state, which contains the body
-        let state = hax::state::State::new_from_mir(
-            tcx,
-            hax::options::Options {
-                inline_macro_calls: Vec::new(),
-            },
-            // Yes, we have to clone, this is annoying: we end up cloning the body twice
-            body.clone(),
-            // Owner id
-            rust_id,
-        );
+        // Yes, we have to clone, this is annoying: we end up cloning the body twice
+        let state = self
+            .hax_state
+            .clone()
+            .with_owner_id(rust_id)
+            .with_mir(Rc::new(body.clone()));
         // Translate
         let body: hax::MirBody<()> = body.sinto(&state);
 

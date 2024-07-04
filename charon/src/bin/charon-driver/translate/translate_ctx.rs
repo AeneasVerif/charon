@@ -1,172 +1,31 @@
 //! The translation contexts.
-use crate::common::*;
-use crate::formatter::{FmtCtx, Formatter, IntoFormatter};
-use crate::gast::*;
-use crate::get_mir::MirLevel;
-use crate::ids::{Generator, MapGenerator, Vector};
-use crate::meta::{self, AttrInfo, Attribute, ItemMeta, ItemOpacity, RawSpan};
-use crate::meta::{FileId, FileName, InlineAttr, LocalFileId, Span, VirtualFileId};
-use crate::names::Name;
-use crate::reorder_decls::DeclarationsGroups;
-use crate::translate_predicates::NonLocalTraitClause;
-use crate::translate_traits::ClauseTransCtx;
-use crate::types::*;
-use crate::ullbc_ast as ast;
-use crate::values::*;
-use derive_visitor::{Drive, DriveMut};
+use super::translate_predicates::NonLocalTraitClause;
+use super::translate_traits::ClauseTransCtx;
+use charon_lib::ast::*;
+use charon_lib::common::*;
+use charon_lib::formatter::{FmtCtx, IntoFormatter};
+use charon_lib::ids::{MapGenerator, Vector};
+use charon_lib::options::TransOptions;
+use charon_lib::ullbc_ast as ast;
 use hax_frontend_exporter as hax;
 use hax_frontend_exporter::SInto;
-use linked_hash_set::LinkedHashSet;
-use macros::{EnumAsGetters, EnumIsA, VariantIndexArity, VariantName};
+use macros::VariantIndexArity;
+use rustc_ast::AttrArgs;
+use rustc_ast_pretty::pprust;
 use rustc_error_messages::MultiSpan;
-use rustc_errors::DiagCtxtHandle;
 use rustc_hir::def_id::DefId;
 use rustc_hir::Node as HirNode;
+use rustc_hir::{Item, ItemKind};
 use rustc_middle::ty::TyCtxt;
-use serde::{Deserialize, Serialize};
 use std::cmp::{Ord, PartialOrd};
-use std::collections::{BTreeMap, HashMap, HashSet, VecDeque};
+use std::collections::{BTreeMap, VecDeque};
 use std::fmt;
+use std::path::Component;
 
-macro_rules! register_error_or_panic {
-    ($ctx:expr, $span: expr, $msg: expr) => {{
-        $ctx.span_err($span, &$msg);
-        if !$ctx.continue_on_failure() {
-            panic!("{}", $msg);
-        }
-    }};
-}
-pub(crate) use register_error_or_panic;
-
-/// Macro to either panic or return on error, depending on the CLI options
-macro_rules! error_or_panic {
-    ($ctx:expr, $span:expr, $msg:expr) => {{
-        $crate::translate_ctx::register_error_or_panic!($ctx, $span, $msg);
-        let e = crate::common::Error {
-            span: $span,
-            msg: $msg.to_string(),
-        };
-        return Err(e);
-    }};
-}
-pub(crate) use error_or_panic;
-
-/// Custom assert to either panic or return an error
-macro_rules! error_assert {
-    ($ctx:expr, $span: expr, $b: expr) => {
-        if !$b {
-            let msg = format!("assertion failure: {:?}", stringify!($b));
-            $crate::translate_ctx::error_or_panic!($ctx, $span, msg);
-        }
-    };
-    ($ctx:expr, $span: expr, $b: expr, $msg: expr) => {
-        if !$b {
-            $crate::translate_ctx::error_or_panic!($ctx, $span, $msg);
-        }
-    };
-}
-pub(crate) use error_assert;
-
-/// We use this to save the origin of an id. This is useful for the external
-/// dependencies, especially if some external dependencies don't extract:
-/// we use this information to tell the user what is the code which
-/// (transitively) lead to the extraction of those problematic dependencies.
-#[derive(Debug, Clone, Copy, Hash, PartialEq, Eq)]
-pub struct DepSource {
-    pub src_id: DefId,
-    pub span: rustc_span::Span,
-}
-
-impl DepSource {
-    /// Value with which we order `DepSource`s.
-    fn sort_key(&self) -> impl Ord {
-        (self.src_id.index, self.src_id.krate)
-    }
-}
-
-/// Manual impls because `DefId` is not orderable.
-impl PartialOrd for DepSource {
-    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
-        Some(self.cmp(other))
-    }
-}
-impl Ord for DepSource {
-    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
-        self.sort_key().cmp(&other.sort_key())
-    }
-}
-
-impl DepSource {
-    pub(crate) fn make(src_id: DefId, span: rustc_span::Span) -> Option<Self> {
-        Some(DepSource { src_id, span })
-    }
-}
-
-/// The id of a translated item.
-#[derive(
-    Copy,
-    Clone,
-    Debug,
-    PartialOrd,
-    Ord,
-    PartialEq,
-    Eq,
-    Hash,
-    EnumIsA,
-    EnumAsGetters,
-    VariantName,
-    VariantIndexArity,
-    Serialize,
-    Deserialize,
-    Drive,
-    DriveMut,
-)]
-#[charon::rename("AnyDeclId")]
-#[charon::variants_prefix("Id")]
-pub enum AnyTransId {
-    Type(TypeDeclId),
-    Fun(FunDeclId),
-    Global(GlobalDeclId),
-    TraitDecl(TraitDeclId),
-    TraitImpl(TraitImplId),
-}
-
-/// Implement `TryFrom`  and `From` to convert between an enum and its variants.
-macro_rules! wrap_unwrap_enum {
-    ($enum:ident::$variant:ident($variant_ty:ident)) => {
-        impl TryFrom<$enum> for $variant_ty {
-            type Error = ();
-            fn try_from(x: $enum) -> Result<Self, Self::Error> {
-                match x {
-                    $enum::$variant(x) => Ok(x),
-                    _ => Err(()),
-                }
-            }
-        }
-
-        impl From<$variant_ty> for $enum {
-            fn from(x: $variant_ty) -> Self {
-                $enum::$variant(x)
-            }
-        }
-    };
-}
-
-wrap_unwrap_enum!(AnyTransId::Fun(FunDeclId));
-wrap_unwrap_enum!(AnyTransId::Global(GlobalDeclId));
-wrap_unwrap_enum!(AnyTransId::Type(TypeDeclId));
-wrap_unwrap_enum!(AnyTransId::TraitDecl(TraitDeclId));
-wrap_unwrap_enum!(AnyTransId::TraitImpl(TraitImplId));
-
-/// A translated item.
-#[derive(Debug, Clone, Copy, EnumIsA, EnumAsGetters, VariantName, VariantIndexArity)]
-pub enum AnyTransItem<'ctx> {
-    Type(&'ctx TypeDecl),
-    Fun(&'ctx FunDecl),
-    Global(&'ctx GlobalDecl),
-    TraitDecl(&'ctx TraitDecl),
-    TraitImpl(&'ctx TraitImpl),
-}
+// Re-export to avoid having to fix imports.
+pub(crate) use charon_lib::errors::{
+    error_assert, error_or_panic, register_error_or_panic, DepSource, ErrorCtx,
+};
 
 /// We use a special type to store the Rust identifiers in the stack, to
 /// make sure we translate them in a specific order (top-level constants
@@ -214,76 +73,6 @@ impl Ord for OrdRustId {
     fn cmp(&self, other: &Self) -> std::cmp::Ordering {
         self.sort_key().cmp(&other.sort_key())
     }
-}
-
-/// The options that control translation.
-pub struct TransOptions {
-    /// The level at which to extract the MIR
-    pub mir_level: MirLevel,
-    /// Error out if some code ends up being duplicated by the control-flow
-    /// reconstruction (note that because several patterns in a match may lead
-    /// to the same branch, it is node always possible not to duplicate code).
-    pub no_code_duplication: bool,
-    /// Whether to extract the bodies of foreign methods and structs with private fields.
-    pub extract_opaque_bodies: bool,
-    /// Modules to consider opaque.
-    pub opaque_mods: HashSet<String>,
-}
-
-/// The data of a translated crate.
-#[derive(Default)]
-pub struct TranslatedCrate {
-    /// The name of the crate.
-    pub crate_name: String,
-
-    /// File names to ids and vice-versa
-    pub file_to_id: HashMap<FileName, FileId>,
-    pub id_to_file: HashMap<FileId, FileName>,
-    pub real_file_counter: Generator<LocalFileId>,
-    pub virtual_file_counter: Generator<VirtualFileId>,
-
-    /// All the ids, in the order in which we encountered them
-    pub all_ids: LinkedHashSet<AnyTransId>,
-    /// The map from rustc id to translated id.
-    pub id_map: HashMap<DefId, AnyTransId>,
-    /// The reverse map of ids.
-    pub reverse_id_map: HashMap<AnyTransId, DefId>,
-
-    /// The translated type definitions
-    pub type_decls: Vector<TypeDeclId, TypeDecl>,
-    /// The translated function definitions
-    pub fun_decls: Vector<FunDeclId, FunDecl>,
-    /// The translated global definitions
-    pub global_decls: Vector<GlobalDeclId, GlobalDecl>,
-    /// The bodies of functions and constants
-    pub bodies: Vector<BodyId, Body>,
-    /// The translated trait declarations
-    pub trait_decls: Vector<TraitDeclId, TraitDecl>,
-    /// The translated trait declarations
-    pub trait_impls: Vector<TraitImplId, TraitImpl>,
-    /// The re-ordered groups of declarations, initialized as empty.
-    pub ordered_decls: Option<DeclarationsGroups>,
-}
-
-/// The context for tracking and reporting errors.
-pub struct ErrorCtx<'ctx> {
-    /// If true, do not abort on the first error and attempt to extract as much as possible.
-    pub continue_on_failure: bool,
-    /// If true, print the errors as warnings, and do not abort.
-    pub errors_as_warnings: bool,
-
-    /// The compiler session, used for displaying errors.
-    pub dcx: DiagCtxtHandle<'ctx>,
-    /// The ids of the declarations for which extraction we encountered errors.
-    pub decls_with_errors: HashSet<DefId>,
-    /// The ids of the declarations we completely failed to extract and had to ignore.
-    pub ignored_failed_decls: HashSet<DefId>,
-    /// Dependency graph with sources. See [DepSource].
-    pub dep_sources: HashMap<DefId, HashSet<DepSource>>,
-    /// The id of the definition we are exploring, used to track the source of errors.
-    pub def_id: Option<DefId>,
-    /// The number of errors encountered so far.
-    pub error_count: usize,
 }
 
 /// Translation context used while translating the crate data into our representation.
@@ -396,66 +185,6 @@ pub(crate) struct BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     pub blocks_stack: VecDeque<hax::BasicBlock>,
 }
 
-impl ErrorCtx<'_> {
-    pub(crate) fn continue_on_failure(&self) -> bool {
-        self.continue_on_failure
-    }
-    pub(crate) fn has_errors(&self) -> bool {
-        self.error_count > 0
-    }
-
-    /// Report an error without registering anything.
-    pub(crate) fn span_err_no_register<S: Into<MultiSpan>>(&self, span: S, msg: &str) {
-        let msg = msg.to_string();
-        if self.errors_as_warnings {
-            self.dcx.span_warn(span, msg);
-        } else {
-            self.dcx.span_err(span, msg);
-        }
-    }
-
-    /// Report and register an error.
-    pub fn span_err<S: Into<MultiSpan>>(&mut self, span: S, msg: &str) {
-        self.span_err_no_register(span, msg);
-        self.error_count += 1;
-        if let Some(id) = self.def_id {
-            let _ = self.decls_with_errors.insert(id);
-        }
-    }
-
-    /// Register the fact that `id` is a dependency of `src` (if `src` is not `None`).
-    pub(crate) fn register_dep_source(&mut self, src: &Option<DepSource>, id: DefId) {
-        if let Some(src) = src {
-            if src.src_id != id {
-                match self.dep_sources.get_mut(&id) {
-                    None => {
-                        let _ = self.dep_sources.insert(id, HashSet::from([*src]));
-                    }
-                    Some(srcs) => {
-                        let _ = srcs.insert(*src);
-                    }
-                }
-            }
-        }
-    }
-
-    pub(crate) fn ignore_failed_decl(&mut self, id: DefId) {
-        self.ignored_failed_decls.insert(id);
-    }
-}
-
-impl TranslatedCrate {
-    pub fn get_item(&self, trans_id: AnyTransId) -> Option<AnyTransItem<'_>> {
-        match trans_id {
-            AnyTransId::Type(id) => self.type_decls.get(id).map(AnyTransItem::Type),
-            AnyTransId::Fun(id) => self.fun_decls.get(id).map(AnyTransItem::Fun),
-            AnyTransId::Global(id) => self.global_decls.get(id).map(AnyTransItem::Global),
-            AnyTransId::TraitDecl(id) => self.trait_decls.get(id).map(AnyTransItem::TraitDecl),
-            AnyTransId::TraitImpl(id) => self.trait_impls.get(id).map(AnyTransItem::TraitImpl),
-        }
-    }
-}
-
 impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
     pub fn continue_on_failure(&self) -> bool {
         self.errors.continue_on_failure()
@@ -489,10 +218,248 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         }
     }
 
+    /// Retrieve an item name from a [DefId].
+    pub fn def_id_to_name(&mut self, def_id: DefId) -> Result<Name, Error> {
+        trace!("{:?}", def_id);
+        let tcx = self.tcx;
+        let span = tcx.def_span(def_id);
+
+        // We have to be a bit careful when retrieving names from def ids. For instance,
+        // due to reexports, [`TyCtxt::def_path_str`](TyCtxt::def_path_str) might give
+        // different names depending on the def id on which it is called, even though
+        // those def ids might actually identify the same definition.
+        // For instance: `std::boxed::Box` and `alloc::boxed::Box` are actually
+        // the same (the first one is a reexport).
+        // This is why we implement a custom function to retrieve the original name
+        // (though this makes us loose aliases - we may want to investigate this
+        // issue in the future).
+
+        // We lookup the path associated to an id, and convert it to a name.
+        // Paths very precisely identify where an item is. There are important
+        // subcases, like the items in an `Impl` block:
+        // ```
+        // impl<T> List<T> {
+        //   fn new() ...
+        // }
+        // ```
+        //
+        // One issue here is that "List" *doesn't appear* in the path, which would
+        // look like the following:
+        //
+        //   `TypeNS("Crate") :: Impl :: ValueNs("new")`
+        //                       ^^^
+        //           This is where "List" should be
+        //
+        // For this reason, whenever we find an `Impl` path element, we actually
+        // lookup the type of the sub-path, from which we can derive a name.
+        //
+        // Besides, as there may be several "impl" blocks for one type, each impl
+        // block is identified by a unique number (rustc calls this a
+        // "disambiguator"), which we grab.
+        //
+        // Example:
+        // ========
+        // For instance, if we write the following code in crate `test` and module
+        // `bla`:
+        // ```
+        // impl<T> Foo<T> {
+        //   fn foo() { ... }
+        // }
+        //
+        // impl<T> Foo<T> {
+        //   fn bar() { ... }
+        // }
+        // ```
+        //
+        // The names we will generate for `foo` and `bar` are:
+        // `[Ident("test"), Ident("bla"), Ident("Foo"), Disambiguator(0), Ident("foo")]`
+        // `[Ident("test"), Ident("bla"), Ident("Foo"), Disambiguator(1), Ident("bar")]`
+        let mut found_crate_name = false;
+        let mut name: Vec<PathElem> = Vec::new();
+
+        let def_path = tcx.def_path(def_id);
+        let crate_name = tcx.crate_name(def_path.krate).to_string();
+
+        let parents: Vec<DefId> = {
+            let mut parents = vec![def_id];
+            let mut cur_id = def_id;
+            while let Some(parent) = tcx.opt_parent(cur_id) {
+                parents.push(parent);
+                cur_id = parent;
+            }
+            parents.into_iter().rev().collect()
+        };
+
+        // Rk.: below we try to be as tight as possible with regards to sanity
+        // checks, to make sure we understand what happens with def paths, and
+        // fail whenever we get something which is even slightly outside what
+        // we expect.
+        for cur_id in parents {
+            let data = tcx.def_key(cur_id).disambiguated_data;
+            // Match over the key data
+            let disambiguator = Disambiguator::new(data.disambiguator as usize);
+            use rustc_hir::definitions::DefPathData;
+            match &data.data {
+                DefPathData::TypeNs(symbol) => {
+                    error_assert!(self, span, data.disambiguator == 0); // Sanity check
+                    name.push(PathElem::Ident(symbol.to_string(), disambiguator));
+                }
+                DefPathData::ValueNs(symbol) => {
+                    // I think `disambiguator != 0` only with names introduced by macros (though
+                    // not sure).
+                    name.push(PathElem::Ident(symbol.to_string(), disambiguator));
+                }
+                DefPathData::CrateRoot => {
+                    // Sanity check
+                    error_assert!(self, span, data.disambiguator == 0);
+
+                    // This should be the beginning of the path
+                    error_assert!(self, span, name.is_empty());
+                    found_crate_name = true;
+                    name.push(PathElem::Ident(crate_name.clone(), disambiguator));
+                }
+                DefPathData::Impl => {
+                    // We need to convert the type, which may contain quantified
+                    // substs and bounds. In order to properly do so, we introduce
+                    // a body translation context.
+                    let id = cur_id;
+
+                    // Translate from hax to LLBC
+                    let mut bt_ctx = BodyTransCtx::new(id, self);
+
+                    // Translate to hax types
+                    // TODO: use the bounds
+                    let _bounds: Vec<hax::Clause> = bt_ctx
+                        .t_ctx
+                        .tcx
+                        .predicates_of(id)
+                        .predicates
+                        .iter()
+                        .map(|(x, _)| x.sinto(&bt_ctx.hax_state))
+                        .collect();
+                    let ty = tcx
+                        .type_of(id)
+                        .instantiate_identity()
+                        .sinto(&bt_ctx.hax_state);
+
+                    bt_ctx.translate_generic_params(id)?;
+                    bt_ctx.translate_predicates_of(None, id, PredicateOrigin::WhereClauseOnImpl)?;
+                    let erase_regions = false;
+                    // Two cases, depending on whether the impl block is
+                    // a "regular" impl block (`impl Foo { ... }`) or a trait
+                    // implementation (`impl Bar for Foo { ... }`).
+                    let kind = match bt_ctx.t_ctx.tcx.impl_trait_ref(id) {
+                        None => {
+                            // Inherent impl ("regular" impl)
+                            let ty = bt_ctx.translate_ty(span, erase_regions, &ty)?;
+                            ImplElemKind::Ty(ty)
+                        }
+                        Some(trait_ref) => {
+                            // Trait implementation
+                            let trait_ref = trait_ref.sinto(&bt_ctx.hax_state);
+                            let erase_regions = false;
+                            let trait_ref =
+                                bt_ctx.translate_trait_decl_ref(span, erase_regions, &trait_ref)?;
+                            match trait_ref {
+                                None => error_or_panic!(self, span, "The trait reference was ignored while we need it to compute the name"),
+                                Some(trait_ref) => {
+                                    ImplElemKind::Trait(trait_ref)
+                                }
+                            }
+                        }
+                    };
+
+                    name.push(PathElem::Impl(ImplElem {
+                        disambiguator,
+                        generics: bt_ctx.get_generics(),
+                        kind,
+                    }));
+                }
+                DefPathData::OpaqueTy => {
+                    // TODO: do nothing for now
+                }
+                DefPathData::MacroNs(symbol) => {
+                    error_assert!(self, span, data.disambiguator == 0); // Sanity check
+
+                    // There may be namespace collisions between, say, function
+                    // names and macros (not sure). However, this isn't much
+                    // of an issue here, because for now we don't expose macros
+                    // in the AST, and only use macro names in [register], for
+                    // instance to filter opaque modules.
+                    name.push(PathElem::Ident(symbol.to_string(), disambiguator));
+                }
+                DefPathData::Closure => {
+                    // TODO: this is not very satisfactory, but on the other hand
+                    // we should be able to extract closures in local let-bindings
+                    // (i.e., we shouldn't have to introduce top-level let-bindings).
+                    name.push(PathElem::Ident("closure".to_string(), disambiguator))
+                }
+                DefPathData::ForeignMod => {
+                    // Do nothing, functions in `extern` blocks are in the same namespace as the
+                    // block.
+                }
+                _ => {
+                    error_or_panic!(self, span, format!("Unexpected DefPathData: {:?}", data));
+                }
+            }
+        }
+
+        // We always add the crate name
+        if !found_crate_name {
+            name.push(PathElem::Ident(crate_name, Disambiguator::new(0)));
+        }
+
+        trace!("{:?}", name);
+        Ok(Name { name })
+    }
+
+    /// Returns an optional name for an HIR item.
+    ///
+    /// If the option is `None`, it means the item is to be ignored (example: it
+    /// is a `use` item).
+    ///
+    /// Rk.: this function is only used by [crate::register], and implemented with this
+    /// context in mind.
+    pub fn hir_item_to_name(&mut self, item: &Item) -> Result<Option<Name>, Error> {
+        let def_id = item.owner_id.to_def_id();
+
+        let name = match &item.kind {
+            ItemKind::OpaqueTy(..) => unimplemented!(),
+            ItemKind::Union(..) => unimplemented!(),
+            ItemKind::ExternCrate(..) => {
+                // We ignore this -
+                // TODO: investigate when extern crates appear, and why
+                None
+            }
+            ItemKind::Use(..) => None,
+            ItemKind::TyAlias(..)
+            | ItemKind::Enum(..)
+            | ItemKind::Struct(..)
+            | ItemKind::Fn(..)
+            | ItemKind::Impl(..)
+            | ItemKind::Mod(..)
+            | ItemKind::ForeignMod { .. }
+            | ItemKind::Const(..)
+            | ItemKind::Static(..)
+            | ItemKind::Macro(..)
+            | ItemKind::Trait(..) => Some(self.def_id_to_name(def_id)?),
+            _ => {
+                unimplemented!("{:?}", item.kind);
+            }
+        };
+        Ok(name)
+    }
+
+    pub fn hax_def_id_to_name(&mut self, def_id: &hax::DefId) -> Result<Name, Error> {
+        // We have to create a hax state, which is annoying...
+        self.def_id_to_name(DefId::from(def_id))
+    }
+
     /// Compute the span information for a Rust definition identified by its id.
     pub(crate) fn translate_span_from_rid(&mut self, def_id: DefId) -> Span {
-        // Retrieve the span from the def id
-        let rspan = meta::get_rspan_from_def_id(self.tcx, def_id);
+        // Retrieve the span from the def id.
+        // Rem.: we use [TyCtxt::def_span], not [TyCtxt::def_ident_span] to retrieve the span.
+        let rspan = self.tcx.def_span(def_id);
         let rspan = rspan.sinto(&self.hax_state);
         self.translate_span_from_rspan(rspan)
     }
@@ -561,8 +528,51 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         })
     }
 
+    pub fn translate_filename(&mut self, name: &hax::FileName) -> meta::FileName {
+        match name {
+            hax::FileName::Real(name) => {
+                use hax::RealFileName;
+                match name {
+                    RealFileName::LocalPath(path) => FileName::Local(path.clone()),
+                    RealFileName::Remapped { virtual_name, .. } => {
+                        // We use the virtual name because it is always available.
+                        // That name normally starts with `/rustc/<hash>/`. For our purposes we hide
+                        // the hash.
+                        let mut components_iter = virtual_name.components();
+                        if let Some(
+                            [Component::RootDir, Component::Normal(rustc), Component::Normal(hash)],
+                        ) = components_iter.by_ref().array_chunks().next()
+                            && rustc.to_str() == Some("rustc")
+                            && hash.len() == 40
+                        {
+                            let path_without_hash = [Component::RootDir, Component::Normal(rustc)]
+                                .into_iter()
+                                .chain(components_iter)
+                                .collect();
+                            FileName::Virtual(path_without_hash)
+                        } else {
+                            FileName::Virtual(virtual_name.clone())
+                        }
+                    }
+                }
+            }
+            hax::FileName::QuoteExpansion(_)
+            | hax::FileName::Anon(_)
+            | hax::FileName::MacroExpansion(_)
+            | hax::FileName::ProcMacroSourceCode(_)
+            | hax::FileName::CliCrateAttr(_)
+            | hax::FileName::Custom(_)
+            | hax::FileName::DocTest(..)
+            | hax::FileName::InlineAsm(_) => {
+                // We use the debug formatter to generate a filename.
+                // This is not ideal, but filenames are for debugging anyway.
+                FileName::NotReal(format!("{name:?}"))
+            }
+        }
+    }
+
     pub fn translate_span(&mut self, rspan: hax::Span) -> meta::RawSpan {
-        let filename = meta::convert_filename(&rspan.filename);
+        let filename = self.translate_filename(&rspan.filename);
         let file_id = match &filename {
             FileName::NotReal(_) => {
                 // For now we forbid not real filenames
@@ -571,8 +581,14 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
             FileName::Virtual(_) | FileName::Local(_) => self.register_file(filename),
         };
 
-        let beg = meta::convert_loc(rspan.lo);
-        let end = meta::convert_loc(rspan.hi);
+        fn convert_loc(loc: hax::Loc) -> Loc {
+            Loc {
+                line: loc.line,
+                col: loc.col,
+            }
+        }
+        let beg = convert_loc(rspan.lo);
+        let end = convert_loc(rspan.hi);
 
         // Put together
         meta::RawSpan {
@@ -636,12 +652,54 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
             .unwrap_or_default()
     }
 
+    /// Parse an attribute to recognize our special `charon::*` and `aeneas::*` attributes.
+    pub(crate) fn parse_attribute(
+        &mut self,
+        normal_attr: &rustc_ast::NormalAttr,
+        span: rustc_span::Span,
+    ) -> Result<Attribute, String> {
+        // We use `pprust` to render the attribute somewhat like it is written in the source.
+        // WARNING: this can change whitespace, and sometimes even adds newlines. Maybe we
+        // should use spans and SourceMap info instead.
+        use pprust::PrintState;
+
+        // If the attribute path has two components, the first of which is `charon` or `aeneas`, we
+        // try to parse it. Otherwise we return `Unknown`.
+        let attr_name = if let [path_start, attr_name] = normal_attr.item.path.segments.as_slice()
+            && let path_start = path_start.ident.as_str()
+            && (path_start == "charon" || path_start == "aeneas")
+        {
+            attr_name.ident.as_str()
+        } else {
+            let full_attr =
+                pprust::State::to_string(|s| s.print_attr_item(&normal_attr.item, span));
+            return Ok(Attribute::Unknown(full_attr));
+        };
+
+        let args = match &normal_attr.item.args {
+            AttrArgs::Empty => None,
+            AttrArgs::Delimited(args) => Some(rustc_ast_pretty::pprust::State::to_string(|s| {
+                s.print_tts(&args.tokens, false)
+            })),
+            AttrArgs::Eq(..) => unimplemented!("`#[charon::foo = val]` syntax is unsupported"),
+        };
+        match Attribute::parse_special_attr(attr_name, args)? {
+            Some(parsed) => Ok(parsed),
+            None => {
+                let full_attr = rustc_ast_pretty::pprust::State::to_string(|s| {
+                    s.print_attr_item(&normal_attr.item, span)
+                });
+                Err(format!("Unrecognized attribute: `{full_attr}`"))
+            }
+        }
+    }
+
     /// Translates a rust attribute. Returns `None` if the attribute is a doc comment (rustc
     /// encodes them as attributes). For now we use `String`s for `Attributes`.
     pub(crate) fn translate_attribute(&mut self, attr: &rustc_ast::Attribute) -> Option<Attribute> {
         use rustc_ast::ast::AttrKind;
         match &attr.kind {
-            AttrKind::Normal(normal_attr) => match Attribute::parse(&normal_attr, attr.span) {
+            AttrKind::Normal(normal_attr) => match self.parse_attribute(&normal_attr, attr.span) {
                 Ok(a) => Some(a),
                 Err(msg) => {
                     self.span_err(attr.span, &format!("Error parsing attribute: {msg}"));
@@ -803,8 +861,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         src: &Option<DepSource>,
         id: DefId,
     ) -> Result<Option<ast::TraitDeclId>, Error> {
-        use crate::assumed;
-        if assumed::IGNORE_BUILTIN_MARKER_TRAITS {
+        if IGNORE_BUILTIN_MARKER_TRAITS {
             let name = self.def_id_to_name(id)?;
             if assumed::is_marker_trait(&name) {
                 return Ok(None);
@@ -1116,17 +1173,6 @@ impl<'tcx, 'ctx, 'a> IntoFormatter for &'a TranslateCtx<'tcx, 'ctx> {
     }
 }
 
-impl<'tcx, 'ctx, 'a> IntoFormatter for &'a TranslatedCrate {
-    type C = FmtCtx<'a>;
-
-    fn into_fmt(self) -> Self::C {
-        FmtCtx {
-            translated: Some(self),
-            ..Default::default()
-        }
-    }
-}
-
 impl<'tcx, 'ctx, 'ctx1, 'a> IntoFormatter for &'a BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     type C = FmtCtx<'a>;
 
@@ -1144,39 +1190,5 @@ impl<'tcx, 'ctx, 'ctx1, 'a> IntoFormatter for &'a BodyTransCtx<'tcx, 'ctx, 'ctx1
 impl<'tcx, 'ctx> fmt::Display for TranslateCtx<'tcx, 'ctx> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         self.translated.fmt(f)
-    }
-}
-
-impl fmt::Display for TranslatedCrate {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        let fmt: FmtCtx = self.into_fmt();
-        match &self.ordered_decls {
-            None => {
-                // We do simple: types, globals, traits, functions
-                for d in &self.type_decls {
-                    writeln!(f, "{}\n", fmt.format_object(d))?
-                }
-                for d in &self.global_decls {
-                    writeln!(f, "{}\n", fmt.format_object(d))?
-                }
-                for d in &self.trait_decls {
-                    writeln!(f, "{}\n", fmt.format_object(d))?
-                }
-                for d in &self.trait_impls {
-                    writeln!(f, "{}\n", fmt.format_object(d))?
-                }
-                for d in &self.fun_decls {
-                    writeln!(f, "{}\n", fmt.format_object(d))?
-                }
-            }
-            Some(ordered_decls) => {
-                for gr in ordered_decls {
-                    for id in gr.get_ids() {
-                        writeln!(f, "{}\n", fmt.format_decl_id(id))?
-                    }
-                }
-            }
-        }
-        fmt::Result::Ok(())
     }
 }

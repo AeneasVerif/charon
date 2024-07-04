@@ -2,14 +2,10 @@
 
 use derive_visitor::{DriveMut, VisitorMut};
 
-use crate::expressions::{BorrowKind, Operand, Place, ProjectionElem, Rvalue};
-use crate::gast::{Call, GenericArgs, Var};
+use crate::ast::*;
 use crate::ids::Vector;
 use crate::llbc_ast::*;
-use crate::meta::Span;
 use crate::transform::TransformCtx;
-use crate::types::*;
-use crate::values::VarId;
 
 use super::ctx::LlbcPass;
 

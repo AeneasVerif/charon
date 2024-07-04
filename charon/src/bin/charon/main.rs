@@ -32,15 +32,15 @@
 
 // Don't link with the `charon_lib` crate so that the `charon` binary doesn't have to dynamically
 // link to `librustc_driver.so` etc.
-#[path = "../../cli_options.rs"]
-mod cli_options;
 #[path = "../../logger.rs"]
 mod logger;
+#[path = "../../options.rs"]
+mod options;
 mod toml_config;
 
 use anyhow::bail;
 use clap::Parser;
-use cli_options::{CliOpts, CHARON_ARGS};
+use options::{CliOpts, CHARON_ARGS};
 use serde::Deserialize;
 use std::env;
 use std::ffi::OsStr;

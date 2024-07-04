@@ -1,16 +1,13 @@
 use std::collections::VecDeque;
 
+use crate::ast::*;
 use crate::common::TAB_INCR;
 use crate::gast;
 use crate::ids::Vector;
 use crate::llbc_ast;
-use crate::llbc_ast::*;
 use crate::pretty::{fmt_with_ctx, FmtWithCtx};
-use crate::translate_ctx::{AnyTransId, TranslatedCrate};
-use crate::types::*;
 use crate::ullbc_ast;
 use crate::ullbc_ast as ast;
-use crate::values::*;
 
 /// [`Formatter`](Formatter) is a trait for converting objects to string.
 ///

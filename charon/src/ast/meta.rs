@@ -1,11 +1,11 @@
 //! Meta-information about programs (spans, etc.).
 
-pub use crate::meta_utils::*;
+pub use super::meta_utils::*;
 use crate::names::Name;
 use derive_visitor::{Drive, DriveMut};
-use hax_frontend_exporter::PathBuf;
 use macros::{EnumAsGetters, EnumIsA, EnumToGetters};
 use serde::{Deserialize, Serialize};
+use std::path::PathBuf;
 
 generate_index_type!(LocalFileId);
 generate_index_type!(VirtualFileId);

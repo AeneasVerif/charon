@@ -1,8 +1,6 @@
-pub use crate::gast::{FunDeclId, TraitItemName};
+pub use super::types_utils::*;
+use crate::ast::{AttrInfo, ItemMeta, Literal, ScalarValue, Span, TraitItemName};
 use crate::ids::Vector;
-use crate::meta::{AttrInfo, ItemMeta, Span};
-pub use crate::types_utils::*;
-use crate::values::{Literal, ScalarValue};
 use derivative::Derivative;
 use derive_visitor::{Drive, DriveMut, Event, Visitor, VisitorMut};
 use macros::{EnumAsGetters, EnumIsA, EnumToGetters, VariantIndexArity, VariantName};

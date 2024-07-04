@@ -1,11 +1,10 @@
-use crate::common::*;
-use crate::formatter::Formatter;
-use crate::formatter::IntoFormatter;
-use crate::gast::*;
-use crate::meta::Span;
-use crate::pretty::FmtWithCtx;
-use crate::translate_ctx::*;
-use crate::types::*;
+use super::translate_ctx::*;
+use charon_lib::common::*;
+use charon_lib::formatter::{AstFormatter, IntoFormatter};
+use charon_lib::gast::*;
+use charon_lib::meta::Span;
+use charon_lib::pretty::FmtWithCtx;
+use charon_lib::types::*;
 use hax_frontend_exporter as hax;
 use hax_frontend_exporter::SInto;
 use macros::{EnumAsGetters, EnumIsA, EnumToGetters};
@@ -53,6 +52,15 @@ impl NonLocalTraitClause {
             trait_id: self.trait_id,
             generics: self.generics.clone(),
         }
+    }
+}
+
+impl<C: AstFormatter> FmtWithCtx<C> for NonLocalTraitClause {
+    fn fmt_with_ctx(&self, ctx: &C) -> String {
+        let clause_id = self.clause_id.fmt_with_ctx(ctx);
+        let trait_id = ctx.format_object(self.trait_id);
+        let generics = self.generics.fmt_with_ctx(ctx);
+        format!("[{clause_id}]: {trait_id}{generics}")
     }
 }
 

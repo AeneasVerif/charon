@@ -1,24 +1,39 @@
 //! The Charon driver, which calls Rustc with callbacks to compile some Rust
 //! crate to LLBC.
 #![feature(rustc_private)]
+#![expect(incomplete_features)]
+#![feature(box_patterns)]
+#![feature(deref_patterns)]
+#![feature(iter_array_chunks)]
+#![feature(iterator_try_collect)]
+#![feature(let_chains)]
+#![feature(lint_reasons)]
 
+extern crate rustc_ast;
+extern crate rustc_ast_pretty;
+extern crate rustc_attr;
 extern crate rustc_driver;
+extern crate rustc_error_messages;
+extern crate rustc_errors;
 extern crate rustc_hir;
+extern crate rustc_index;
 extern crate rustc_interface;
 extern crate rustc_middle;
 extern crate rustc_span;
+extern crate rustc_target;
 
 #[macro_use]
 extern crate charon_lib;
 
 mod driver;
+mod translate;
 
 use crate::driver::{
     arg_values, get_args_crate_index, get_args_source_index, CharonCallbacks, CharonFailure,
     RunCompilerNormallyCallbacks,
 };
-use charon_lib::cli_options;
 use charon_lib::logger;
+use charon_lib::options;
 use charon_lib::trace;
 
 fn main() {
@@ -61,7 +76,7 @@ fn main() {
     // Retrieve the Charon options by deserializing them from the environment variable
     // (cargo-charon serialized the arguments and stored them in a specific environment
     // variable before calling cargo with RUSTC_WORKSPACE_WRAPPER=charon-driver).
-    let options: cli_options::CliOpts = match std::env::var(cli_options::CHARON_ARGS) {
+    let options: options::CliOpts = match std::env::var(options::CHARON_ARGS) {
         Ok(opts) => serde_json::from_str(opts.as_str()).unwrap(),
         Err(_) => {
             // Parse any arguments after `--` as charon arguments.
@@ -69,7 +84,7 @@ fn main() {
                 use clap::Parser;
                 let mut charon_args = compiler_args.split_off(i);
                 charon_args[0] = origin_args[0].clone(); // Replace `--` with the name of the binary
-                cli_options::CliOpts::parse_from(charon_args)
+                options::CliOpts::parse_from(charon_args)
             } else {
                 Default::default()
             }
@@ -192,24 +207,27 @@ fn main() {
 
     if !options.no_serialize {
         // # Final step: generate the files.
-        res = res.and_then(|()| {
+        if res.is_ok() || options.errors_as_warnings {
             // `crate_data` is set by our callbacks when there is no fatal error.
-            let crate_data = crate_data.unwrap();
-            let dest_file = match options.dest_file.clone() {
-                Some(f) => f,
-                None => {
-                    let mut target_filename = options.dest_dir.clone().unwrap_or_default();
-                    let crate_name = &crate_data.name;
-                    let extension = if options.ullbc { "ullbc" } else { "llbc" };
-                    target_filename.push(format!("{crate_name}.{extension}"));
-                    target_filename
-                }
-            };
-            trace!("Target file: {:?}", dest_file);
-            crate_data
-                .serialize_to_file(&dest_file)
-                .map_err(|()| CharonFailure::Serialize)
-        });
+            if let Some(crate_data) = crate_data {
+                let dest_file = match options.dest_file.clone() {
+                    Some(f) => f,
+                    None => {
+                        let mut target_filename = options.dest_dir.clone().unwrap_or_default();
+                        let crate_name = &crate_data.name;
+                        let extension = if options.ullbc { "ullbc" } else { "llbc" };
+                        target_filename.push(format!("{crate_name}.{extension}"));
+                        target_filename
+                    }
+                };
+                trace!("Target file: {:?}", dest_file);
+                res = res.and(
+                    crate_data
+                        .serialize_to_file(&dest_file)
+                        .map_err(|()| CharonFailure::Serialize),
+                );
+            }
+        }
     }
 
     match res {
@@ -219,6 +237,9 @@ fn main() {
                 let msg = format!("The extraction generated {} warnings", error_count);
                 log::warn!("{}", msg);
             }
+        }
+        Err(err) if errors_as_warnings => {
+            log::error!("{err}");
         }
         Err(CharonFailure::Panic) => {
             // Standard rust panic error code.

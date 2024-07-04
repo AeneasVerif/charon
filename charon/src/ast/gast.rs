@@ -1,29 +1,25 @@
 //! Definitions common to [crate::ullbc_ast] and [crate::llbc_ast]
-pub use crate::expressions::*;
-pub use crate::gast_utils::*;
+pub use super::gast_utils::*;
+use crate::expressions::*;
 use crate::generate_index_type;
 use crate::ids::Vector;
 use crate::llbc_ast;
 use crate::meta::{ItemMeta, Span};
 use crate::names::Name;
-pub use crate::types::GlobalDeclId;
-pub use crate::types::TraitClauseId;
 use crate::types::*;
-pub use crate::types::{
-    GenericArgs, GenericParams, TraitDeclId, TraitImplId, TraitInstanceId, TraitRef,
-};
 use crate::ullbc_ast;
+use crate::values::*;
 use derive_visitor::{Drive, DriveMut, Event, Visitor, VisitorMut};
 use macros::EnumIsA;
 use macros::EnumToGetters;
+use rustc_span::def_id::{CrateNum, DefId, DefIndex};
 use serde::{Deserialize, Serialize};
 
 generate_index_type!(FunDeclId, "Fun");
 generate_index_type!(BodyId, "Body");
 
 /// For use when deserializing.
-fn dummy_def_id() -> rustc_hir::def_id::DefId {
-    use rustc_hir::def_id::*;
+fn dummy_def_id() -> DefId {
     DefId {
         krate: CrateNum::MAX,
         index: DefIndex::MAX,
@@ -149,7 +145,7 @@ pub struct FunDecl {
     #[serde(skip)]
     #[drive(skip)]
     #[serde(default = "dummy_def_id")]
-    pub rust_id: rustc_hir::def_id::DefId,
+    pub rust_id: DefId,
     /// The meta data associated with the declaration.
     pub item_meta: ItemMeta,
     /// The signature contains the inputs/output types *with* non-erased regions.
@@ -171,7 +167,7 @@ pub struct GlobalDecl {
     #[serde(skip)]
     #[drive(skip)]
     #[serde(default = "dummy_def_id")]
-    pub rust_id: rustc_hir::def_id::DefId,
+    pub rust_id: DefId,
     /// The meta data associated with the declaration.
     pub item_meta: ItemMeta,
     pub generics: GenericParams,
