@@ -5,7 +5,6 @@ use crate::ids::Vector;
 use crate::llbc_ast;
 use crate::types::*;
 use crate::ullbc_ast;
-use crate::values::*;
 
 /// Makes a lambda that generates a new variable id, pushes a new variable in
 /// the body locals with the given type and returns its id.

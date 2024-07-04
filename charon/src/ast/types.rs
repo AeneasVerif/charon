@@ -91,6 +91,7 @@ pub struct DeBruijnId {
     Drive,
     DriveMut,
 )]
+#[charon::variants_prefix("R")]
 pub enum Region {
     /// Static region
     Static,
@@ -120,6 +121,7 @@ pub enum Region {
     /// Erased region
     Erased,
     /// For error reporting.
+    #[charon::opaque]
     Unknown,
 }
 
@@ -215,6 +217,7 @@ pub enum TraitInstanceId {
     /// we start with the other clauses (in particular, the local clauses). It
     /// is useful to give priority to the local clauses when solving the trait
     /// obligations which are fullfilled by the trait parameters.
+    #[charon::rename("Self")]
     SelfId,
 
     /// A specific builtin trait implementation like [core::marker::Sized] or
@@ -225,6 +228,7 @@ pub enum TraitInstanceId {
     Dyn(TraitDeclId),
 
     /// For error reporting.
+    #[charon::rename("UnknownTrait")]
     Unknown(String),
 }
 
@@ -248,7 +252,9 @@ pub struct TraitRef {
 /// The substitution is: `[String, bool]`.
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Hash, Drive, DriveMut)]
 pub struct TraitDeclRef {
+    #[charon::rename("trait_decl_id")]
     pub trait_id: TraitDeclId,
+    #[charon::rename("decl_generics")]
     pub generics: GenericArgs,
 }
 
@@ -344,11 +350,13 @@ pub struct TraitClause {
     pub span: Option<Span>,
     /// Where the predicate was written, relative to the item that requires it.
     #[derivative(PartialEq = "ignore")]
+    #[charon::opaque]
     pub origin: PredicateOrigin,
     /// The trait that is implemented.
     pub trait_id: TraitDeclId,
     /// The generics applied to the trait. Note: this includes the `Self` type.
     /// Remark: the trait refs list in the [generics] field should be empty.
+    #[charon::rename("clause_generics")]
     pub generics: GenericArgs,
 }
 
@@ -435,6 +443,7 @@ pub enum TypeDeclKind {
     Alias(Ty),
     /// Used if an error happened during the extraction, and we don't panic
     /// on error.
+    #[charon::opaque]
     Error(String),
 }
 
@@ -442,6 +451,7 @@ pub enum TypeDeclKind {
 pub struct Variant {
     pub span: Span,
     pub attr_info: AttrInfo,
+    #[charon::rename("variant_name")]
     pub name: String,
     pub fields: Vector<FieldId, Field>,
     /// The discriminant used at runtime. This is used in `remove_read_discriminant` to match up
@@ -453,7 +463,9 @@ pub struct Variant {
 pub struct Field {
     pub span: Span,
     pub attr_info: AttrInfo,
+    #[charon::rename("field_name")]
     pub name: Option<String>,
+    #[charon::rename("field_ty")]
     pub ty: Ty,
 }
 
@@ -473,6 +485,7 @@ pub struct Field {
     Ord,
     PartialOrd,
 )]
+#[charon::rename("IntegerType")]
 pub enum IntegerTy {
     Isize,
     I8,
@@ -504,6 +517,7 @@ pub enum IntegerTy {
     Ord,
     PartialOrd,
 )]
+#[charon::variants_prefix("R")]
 pub enum RefKind {
     Mut,
     Shared,
@@ -529,11 +543,13 @@ pub enum RefKind {
     Ord,
     PartialOrd,
 )]
+#[charon::variants_prefix("T")]
 pub enum TypeId {
     /// A "regular" ADT type.
     ///
     /// Includes transparent ADTs and opaque ADTs (local ADTs marked as opaque,
     /// and external ADTs).
+    #[charon::rename("TAdtId")]
     Adt(TypeDeclId),
     Tuple,
     /// Assumed type. Either a primitive type like array or slice, or a
@@ -565,6 +581,8 @@ pub enum TypeId {
     Ord,
     PartialOrd,
 )]
+#[charon::rename("LiteralType")]
+#[charon::variants_prefix("T")]
 pub enum LiteralTy {
     Integer(IntegerTy),
     Bool,
@@ -589,6 +607,7 @@ pub enum LiteralTy {
     Ord,
     PartialOrd,
 )]
+#[charon::variants_prefix("Cg")]
 pub enum ConstGeneric {
     /// A global constant
     Global(GlobalDeclId),
@@ -615,6 +634,7 @@ pub enum ConstGeneric {
     Drive,
     DriveMut,
 )]
+#[charon::variants_prefix("T")]
 pub enum Ty {
     /// An ADT.
     /// Note that here ADTs are very general. They can be:
@@ -624,6 +644,7 @@ pub enum Ty {
     /// The information on the nature of the ADT is stored in (`TypeId`)[TypeId].
     /// The last list is used encode const generics, e.g., the size of an array
     Adt(TypeId, GenericArgs),
+    #[charon::rename("TVar")]
     TypeVar(TypeVarId),
     Literal(LiteralTy),
     /// The never type, for computations which don't return. It is sometimes
@@ -697,13 +718,16 @@ pub enum Ty {
     Ord,
     PartialOrd,
 )]
+#[charon::variants_prefix("T")]
 pub enum AssumedTy {
     /// Boxes have a special treatment: we translate them as identity.
     Box,
     /// Comes from the standard library. See the comments for [Ty::RawPtr]
     /// as to why we have this here.
+    #[charon::opaque]
     PtrUnique,
     /// Same comments as for [AssumedTy::PtrUnique]
+    #[charon::opaque]
     PtrNonNull,
     /// Primitive type
     Array,

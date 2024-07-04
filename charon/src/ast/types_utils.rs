@@ -441,3 +441,37 @@ impl TySubst {
         Ok(s)
     }
 }
+
+impl Field {
+    /// The new name for this field, as suggested by the `#[charon::rename]` attribute.
+    pub fn renamed_name(&self) -> Option<&str> {
+        self.attr_info.rename.as_deref().or(self.name.as_deref())
+    }
+
+    /// Whether this field has a `#[charon::opaque]` annotation.
+    pub fn is_opaque(&self) -> bool {
+        self.attr_info
+            .attributes
+            .iter()
+            .any(|attr| attr.is_opaque())
+    }
+}
+
+impl Variant {
+    /// The new name for this variant, as suggested by the `#[charon::rename]` and
+    /// `#[charon::variants_prefix]` attributes.
+    pub fn renamed_name(&self) -> &str {
+        self.attr_info
+            .rename
+            .as_deref()
+            .unwrap_or(self.name.as_ref())
+    }
+
+    /// Whether this variant has a `#[charon::opaque]` annotation.
+    pub fn is_opaque(&self) -> bool {
+        self.attr_info
+            .attributes
+            .iter()
+            .any(|attr| attr.is_opaque())
+    }
+}

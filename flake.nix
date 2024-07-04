@@ -122,6 +122,27 @@
           '';
           installPhase = "touch $out";
         };
+
+        # Check that the generated ocaml files match what is committed to the repo.
+        check-generated-ml = pkgs.runCommand "check-generated-ml" { } ''
+          mkdir generated
+          cp ${charon}/generated-ml/* generated
+          chmod u+w generated/*
+          rm generated/*.template.ml
+          ${pkgs.ocamlPackages.ocamlformat}/bin/ocamlformat --inplace --enable-outside-detected-project generated/*.ml
+
+          mkdir committed
+          cp ${./charon-ml/src}/GAstOfJson.ml committed
+
+          if diff -rq committed generated; then
+            echo "Ok: the regenerated ocaml files are the same as the checked out files"
+          else
+            echo "Error: the regenerated ocaml files differ from the checked out files"
+            diff -ru committed generated
+            exit 1
+          fi
+          touch $out
+        '';
       in
       {
         packages = {
@@ -159,7 +180,7 @@
             self.packages.${system}.charon-ml
           ];
         };
-        checks = { inherit charon-ml-tests charon-check-fmt charon-ml-check-fmt; };
+        checks = { inherit charon-ml-tests charon-check-fmt charon-ml-check-fmt check-generated-ml; };
 
         # Export this function so that users of charon can use it in nix. This
         # fits in none of the standard flake output categories hace why it is

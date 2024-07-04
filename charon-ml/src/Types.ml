@@ -17,6 +17,8 @@ module Disambiguator = IdGen ()
 module FunDeclId = IdGen ()
 module BodyId = IdGen ()
 
+type ('a, 'b) outlives_pred = 'a * 'b
+
 (** We define this type to control the name of the visitor functions
     (see e.g., {!class:Types.iter_ty_base} and {!Types.TVar}).
   *)
@@ -199,6 +201,7 @@ type const_generic =
       }]
 
 type trait_item_name = string [@@deriving show, ord]
+type existential_predicate = unit [@@deriving show, ord]
 
 (** Ancestor for iter visitor for {!type: Types.ty} *)
 class ['self] iter_ty_base =

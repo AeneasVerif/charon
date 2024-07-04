@@ -21,6 +21,7 @@ use std::vec::Vec;
 #[derive(
     Debug, Clone, VariantIndexArity, VariantName, EnumAsGetters, EnumIsA, Serialize, Deserialize,
 )]
+#[charon::variants_suffix("Group")]
 pub enum GDeclarationGroup<Id> {
     /// A non-recursive declaration
     NonRec(Id),
@@ -32,6 +33,7 @@ pub enum GDeclarationGroup<Id> {
 #[derive(
     Debug, Clone, VariantIndexArity, VariantName, EnumAsGetters, EnumIsA, Serialize, Deserialize,
 )]
+#[charon::variants_suffix("Group")]
 pub enum DeclarationGroup {
     /// A type declaration group
     Type(GDeclarationGroup<TypeDeclId>),

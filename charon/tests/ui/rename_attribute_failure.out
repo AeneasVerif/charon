@@ -28,7 +28,7 @@ error: There should be at most one `charon::rename("...")` or `aeneas::rename(".
 20 | type TestMultiple = ();
    | ^^^^^^^^^^^^^^^^^
 
-error: Error parsing attribute: Unrecognized attribute: `something_else("_Type36")`
+error: Error parsing attribute: Unrecognized attribute: `charon::something_else("_Type36")`
   --> tests/ui/rename_attribute_failure.rs:22:1
    |
 22 | #[charon::something_else("_Type36")]
@@ -36,5 +36,5 @@ error: Error parsing attribute: Unrecognized attribute: `something_else("_Type36
 
 error: aborting due to 6 previous errors
 
-[ERROR charon_driver:230] The extraction encountered 6 errors
+[ERROR charon_driver:228] Compilation encountered 6 errors
 Error: Charon driver exited with code 1

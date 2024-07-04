@@ -1,6 +1,8 @@
 //! This file groups everything which is linked to implementations about [crate::meta]
 use crate::meta::*;
+use crate::names::{Disambiguator, Name, PathElem};
 use hax_frontend_exporter as hax;
+use rustc_ast::{AttrArgs, NormalAttr};
 use rustc_hir::def_id::DefId;
 use rustc_middle::ty::TyCtxt;
 use rustc_span::source_map::SourceMap;
@@ -181,47 +183,94 @@ pub fn span_to_string(source_map: &SourceMap, span: rustc_span::Span) -> String 
 }
 
 impl Attribute {
-    pub(crate) fn parse(full_attr: String) -> Result<Self, String> {
-        // Parse our custom attributes
-        let Some(charon_attr) = full_attr
-            .strip_prefix("charon::")
-            .or(full_attr.strip_prefix("aeneas::"))
-        else {
+    pub(crate) fn parse(normal_attr: &NormalAttr, span: rustc_span::Span) -> Result<Self, String> {
+        // We use `pprust` to render the attribute somewhat like it is written in the source.
+        // WARNING: this can change whitespace, and sometimes even adds newlines. Maybe we
+        // should use spans and SourceMap info instead.
+        use rustc_ast_pretty::pprust::PrintState;
+
+        // If the attribute path has two components, the first of which is `charon` or `aeneas`, we
+        // try to parse it. Otherwise we return `Unknown`.
+        let attr_name = if let [path_start, attr_name] = normal_attr.item.path.segments.as_slice()
+            && let path_start = path_start.ident.as_str()
+            && (path_start == "charon" || path_start == "aeneas")
+        {
+            attr_name.ident.as_str()
+        } else {
+            let full_attr = rustc_ast_pretty::pprust::State::to_string(|s| {
+                s.print_attr_item(&normal_attr.item, span)
+            });
             return Ok(Self::Unknown(full_attr));
         };
 
-        if charon_attr == "opaque" {
-            Ok(Self::Opaque)
-        } else if let Some(attr) = charon_attr
-            .strip_prefix("rename(")
-            .and_then(|str| str.strip_suffix(")"))
-        {
-            // Rename attribute looks like: `#[charon::rename("new_name")]`.
-            let Some(attr) = attr
-                .strip_prefix("\"")
-                .and_then(|attr| attr.strip_suffix("\""))
-            else {
-                return Err(format!(
-                    "the new name should be between quotes: `rename(\"{attr}\")`."
-                ));
-            };
+        let args = match &normal_attr.item.args {
+            AttrArgs::Empty => None,
+            AttrArgs::Delimited(args) => Some(rustc_ast_pretty::pprust::State::to_string(|s| {
+                s.print_tts(&args.tokens, false)
+            })),
+            AttrArgs::Eq(..) => unimplemented!("`#[charon::foo = val]` syntax is unsupported"),
+        };
+        match attr_name {
+            // `#[charon::opaque]`
+            "opaque" if args.is_none() => Ok(Self::Opaque),
+            // `#[charon::rename("new_name")]`
+            "rename" if let Some(attr) = args => {
+                let Some(attr) = attr
+                    .strip_prefix("\"")
+                    .and_then(|attr| attr.strip_suffix("\""))
+                else {
+                    return Err(format!(
+                        "the new name should be between quotes: `rename(\"{attr}\")`."
+                    ));
+                };
 
-            if attr.is_empty() {
-                return Err(format!("attribute `rename` should not be empty"));
+                if attr.is_empty() {
+                    return Err(format!("attribute `rename` should not be empty"));
+                }
+
+                let first_char = attr.chars().nth(0).unwrap();
+                let is_identifier = (first_char.is_alphabetic() || first_char == '_')
+                    && attr.chars().all(|c| c.is_alphanumeric() || c == '_');
+                if !is_identifier {
+                    return Err(format!(
+                        "attribute `rename` should contain a valid identifier"
+                    ));
+                }
+
+                Ok(Self::Rename(attr.to_string()))
             }
+            // `#[charon::variants_prefix("T")]`
+            "variants_prefix" if let Some(attr) = args => {
+                let Some(attr) = attr
+                    .strip_prefix("\"")
+                    .and_then(|attr| attr.strip_suffix("\""))
+                else {
+                    return Err(format!(
+                        "the name should be between quotes: `variants_prefix(\"{attr}\")`."
+                    ));
+                };
 
-            let first_char = attr.chars().nth(0).unwrap();
-            let is_identifier = (first_char.is_alphabetic() || first_char == '_')
-                && attr.chars().all(|c| c.is_alphanumeric() || c == '_');
-            if !is_identifier {
-                return Err(format!(
-                    "attribute `rename` should contain a valid identifier"
-                ));
+                Ok(Self::VariantsPrefix(attr.to_string()))
             }
+            // `#[charon::variants_suffix("T")]`
+            "variants_suffix" if let Some(attr) = args => {
+                let Some(attr) = attr
+                    .strip_prefix("\"")
+                    .and_then(|attr| attr.strip_suffix("\""))
+                else {
+                    return Err(format!(
+                        "the name should be between quotes: `variants_suffix(\"{attr}\")`."
+                    ));
+                };
 
-            Ok(Self::Rename(attr.to_string()))
-        } else {
-            Err(format!("Unrecognized attribute: `{charon_attr}`"))
+                Ok(Self::VariantsSuffix(attr.to_string()))
+            }
+            _ => {
+                let full_attr = rustc_ast_pretty::pprust::State::to_string(|s| {
+                    s.print_attr_item(&normal_attr.item, span)
+                });
+                Err(format!("Unrecognized attribute: `{full_attr}`"))
+            }
         }
     }
 }
@@ -239,5 +288,15 @@ impl ItemOpacity {
 
     pub(crate) fn with_private_contents(self) -> Self {
         self.with_content_visibility(false)
+    }
+}
+
+impl ItemMeta {
+    pub fn renamed_name(&self) -> Name {
+        let mut name = self.name.clone();
+        if let Some(rename) = self.attr_info.rename.clone() {
+            *name.name.last_mut().unwrap() = PathElem::Ident(rename, Disambiguator::new(0));
+        }
+        name
     }
 }

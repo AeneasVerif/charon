@@ -51,7 +51,12 @@ type inline_attr =
 [@@deriving show, ord]
 
 (** Attribute (`#[...]`). **)
-type attribute = AttrOpaque | AttrRename of string | AttrUnknown of string
+type attribute =
+  | AttrOpaque
+  | AttrRename of string
+  | AttrUnknown of string
+  | AttrVariantsPrefix of string
+  | AttrVariantsSuffix of string
 [@@deriving show, ord]
 
 type attr_info = {

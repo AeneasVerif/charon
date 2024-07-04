@@ -87,7 +87,7 @@ where
     }
 
     /// Iter over the nonempty slots.
-    pub fn iter(&self) -> impl Iterator<Item = &T> {
+    pub fn iter(&self) -> impl Iterator<Item = &T> + Clone {
         self.vector.iter().flat_map(|opt| opt.as_ref())
     }
 

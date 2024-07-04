@@ -121,6 +121,8 @@ impl DepSource {
     Drive,
     DriveMut,
 )]
+#[charon::rename("AnyDeclId")]
+#[charon::variants_prefix("Id")]
 pub enum AnyTransId {
     Type(TypeDeclId),
     Fun(FunDeclId),
@@ -638,23 +640,14 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
     /// encodes them as attributes). For now we use `String`s for `Attributes`.
     pub(crate) fn translate_attribute(&mut self, attr: &rustc_ast::Attribute) -> Option<Attribute> {
         use rustc_ast::ast::AttrKind;
-        use rustc_ast_pretty::pprust;
         match &attr.kind {
-            AttrKind::Normal(normal_attr) => {
-                // Use `pprust` to render the attribute somewhat like it is written in the source.
-                // WARNING: this can change whitespace, and soetimes even adds newlines. Maybe we
-                // should use spans and SourceMap info instead.
-                use pprust::PrintState;
-                let s =
-                    pprust::State::to_string(|s| s.print_attr_item(&normal_attr.item, attr.span));
-                match Attribute::parse(s) {
-                    Ok(a) => Some(a),
-                    Err(msg) => {
-                        self.span_err(attr.span, &format!("Error parsing attribute: {msg}"));
-                        None
-                    }
+            AttrKind::Normal(normal_attr) => match Attribute::parse(&normal_attr, attr.span) {
+                Ok(a) => Some(a),
+                Err(msg) => {
+                    self.span_err(attr.span, &format!("Error parsing attribute: {msg}"));
+                    None
                 }
-            }
+            },
             AttrKind::DocComment(..) => None,
         }
     }

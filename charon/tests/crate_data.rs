@@ -501,6 +501,8 @@ fn rename_attribute() -> Result<(), Box<dyn Error>> {
         type Test = i32;
 
         #[charon::rename("VariantsTest")]
+        #[charon::variants_prefix("Simple")]
+        #[charon::variants_suffix("_")]
         enum SimpleEnum {
             #[charon::rename("Variant1")]
             FirstVariant,
@@ -578,11 +580,12 @@ fn rename_attribute() -> Result<(), Box<dyn Error>> {
     );
 
     assert_eq!(
-        crate_data.types[1].kind.as_enum()[0]
-            .attr_info
-            .rename
-            .as_deref(),
-        Some("Variant1")
+        crate_data.types[1].kind.as_enum()[0].renamed_name(),
+        "Variant1"
+    );
+    assert_eq!(
+        crate_data.types[1].kind.as_enum()[1].renamed_name(),
+        "SimpleSecondVariant_"
     );
 
     assert_eq!(

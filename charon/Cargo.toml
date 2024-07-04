@@ -1,6 +1,6 @@
 [package]
 name = "charon"
-version = "0.1.18"
+version = "0.1.19"
 authors = ["Son Ho <hosonmarc@gmail.com>"]
 edition = "2021"
 
@@ -55,6 +55,7 @@ macros = { path = "./macros" }
 
 [dev-dependencies]
 assert_cmd = "2.0"
+convert_case = "0.6.0"
 ignore = "0.4"
 indoc = "2"
 libtest-mimic = "0.7"
