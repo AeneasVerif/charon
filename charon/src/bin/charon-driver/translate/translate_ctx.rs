@@ -10,6 +10,8 @@ use charon_lib::ullbc_ast as ast;
 use hax_frontend_exporter as hax;
 use hax_frontend_exporter::SInto;
 use macros::VariantIndexArity;
+use rustc_ast::AttrArgs;
+use rustc_ast_pretty::pprust;
 use rustc_error_messages::MultiSpan;
 use rustc_hir::def_id::DefId;
 use rustc_hir::Node as HirNode;
@@ -456,8 +458,9 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
 
     /// Compute the span information for a Rust definition identified by its id.
     pub(crate) fn translate_span_from_rid(&mut self, def_id: DefId) -> Span {
-        // Retrieve the span from the def id
-        let rspan = meta::get_rspan_from_def_id(self.tcx, def_id);
+        // Retrieve the span from the def id.
+        // Rem.: we use [TyCtxt::def_span], not [TyCtxt::def_ident_span] to retrieve the span.
+        let rspan = self.tcx.def_span(def_id);
         let rspan = rspan.sinto(&self.hax_state);
         self.translate_span_from_rspan(rspan)
     }
@@ -650,12 +653,54 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
             .unwrap_or_default()
     }
 
+    /// Parse an attribute to recognize our special `charon::*` and `aeneas::*` attributes.
+    pub(crate) fn parse_attribute(
+        &mut self,
+        normal_attr: &rustc_ast::NormalAttr,
+        span: rustc_span::Span,
+    ) -> Result<Attribute, String> {
+        // We use `pprust` to render the attribute somewhat like it is written in the source.
+        // WARNING: this can change whitespace, and sometimes even adds newlines. Maybe we
+        // should use spans and SourceMap info instead.
+        use pprust::PrintState;
+
+        // If the attribute path has two components, the first of which is `charon` or `aeneas`, we
+        // try to parse it. Otherwise we return `Unknown`.
+        let attr_name = if let [path_start, attr_name] = normal_attr.item.path.segments.as_slice()
+            && let path_start = path_start.ident.as_str()
+            && (path_start == "charon" || path_start == "aeneas")
+        {
+            attr_name.ident.as_str()
+        } else {
+            let full_attr =
+                pprust::State::to_string(|s| s.print_attr_item(&normal_attr.item, span));
+            return Ok(Attribute::Unknown(full_attr));
+        };
+
+        let args = match &normal_attr.item.args {
+            AttrArgs::Empty => None,
+            AttrArgs::Delimited(args) => Some(rustc_ast_pretty::pprust::State::to_string(|s| {
+                s.print_tts(&args.tokens, false)
+            })),
+            AttrArgs::Eq(..) => unimplemented!("`#[charon::foo = val]` syntax is unsupported"),
+        };
+        match Attribute::parse_special_attr(attr_name, args)? {
+            Some(parsed) => Ok(parsed),
+            None => {
+                let full_attr = rustc_ast_pretty::pprust::State::to_string(|s| {
+                    s.print_attr_item(&normal_attr.item, span)
+                });
+                Err(format!("Unrecognized attribute: `{full_attr}`"))
+            }
+        }
+    }
+
     /// Translates a rust attribute. Returns `None` if the attribute is a doc comment (rustc
     /// encodes them as attributes). For now we use `String`s for `Attributes`.
     pub(crate) fn translate_attribute(&mut self, attr: &rustc_ast::Attribute) -> Option<Attribute> {
         use rustc_ast::ast::AttrKind;
         match &attr.kind {
-            AttrKind::Normal(normal_attr) => match Attribute::parse(&normal_attr, attr.span) {
+            AttrKind::Normal(normal_attr) => match self.parse_attribute(&normal_attr, attr.span) {
                 Ok(a) => Some(a),
                 Err(msg) => {
                     self.span_err(attr.span, &format!("Error parsing attribute: {msg}"));

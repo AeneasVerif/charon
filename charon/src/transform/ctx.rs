@@ -7,7 +7,7 @@ use crate::llbc_ast;
 use crate::pretty::FmtWithCtx;
 use crate::ullbc_ast;
 use rustc_error_messages::MultiSpan;
-use rustc_hir::def_id::DefId;
+use rustc_span::def_id::DefId;
 use std::fmt;
 
 /// Simpler context used for rustc-independent code transformation. This only depends on rustc for

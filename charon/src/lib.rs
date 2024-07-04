@@ -25,13 +25,9 @@
 // For when we use charon on itself :3
 #![register_tool(charon)]
 
-extern crate rustc_ast;
-extern crate rustc_ast_pretty;
 extern crate rustc_driver;
 extern crate rustc_error_messages;
 extern crate rustc_errors;
-extern crate rustc_hir;
-extern crate rustc_middle;
 extern crate rustc_span;
 
 #[macro_use]

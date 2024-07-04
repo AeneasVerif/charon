@@ -4,7 +4,7 @@ use petgraph::algo::dijkstra::dijkstra;
 use petgraph::graphmap::DiGraphMap;
 use rustc_error_messages::MultiSpan;
 use rustc_errors::DiagCtxtHandle;
-use rustc_hir::def_id::DefId;
+use rustc_span::def_id::DefId;
 use std::cmp::{Ord, PartialOrd};
 use std::collections::{HashMap, HashSet};
 

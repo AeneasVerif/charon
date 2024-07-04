@@ -7,7 +7,7 @@ use crate::types::*;
 use derive_visitor::{Drive, DriveMut};
 use linked_hash_set::LinkedHashSet;
 use macros::{EnumAsGetters, EnumIsA, VariantIndexArity, VariantName};
-use rustc_hir::def_id::DefId;
+use rustc_span::def_id::DefId;
 use serde::{Deserialize, Serialize};
 use std::cmp::{Ord, PartialOrd};
 use std::collections::HashMap;
