@@ -207,24 +207,27 @@ fn main() {
 
     if !options.no_serialize {
         // # Final step: generate the files.
-        res = res.and_then(|()| {
+        if res.is_ok() || options.errors_as_warnings {
             // `crate_data` is set by our callbacks when there is no fatal error.
-            let crate_data = crate_data.unwrap();
-            let dest_file = match options.dest_file.clone() {
-                Some(f) => f,
-                None => {
-                    let mut target_filename = options.dest_dir.clone().unwrap_or_default();
-                    let crate_name = &crate_data.name;
-                    let extension = if options.ullbc { "ullbc" } else { "llbc" };
-                    target_filename.push(format!("{crate_name}.{extension}"));
-                    target_filename
-                }
-            };
-            trace!("Target file: {:?}", dest_file);
-            crate_data
-                .serialize_to_file(&dest_file)
-                .map_err(|()| CharonFailure::Serialize)
-        });
+            if let Some(crate_data) = crate_data {
+                let dest_file = match options.dest_file.clone() {
+                    Some(f) => f,
+                    None => {
+                        let mut target_filename = options.dest_dir.clone().unwrap_or_default();
+                        let crate_name = &crate_data.name;
+                        let extension = if options.ullbc { "ullbc" } else { "llbc" };
+                        target_filename.push(format!("{crate_name}.{extension}"));
+                        target_filename
+                    }
+                };
+                trace!("Target file: {:?}", dest_file);
+                res = res.and(
+                    crate_data
+                        .serialize_to_file(&dest_file)
+                        .map_err(|()| CharonFailure::Serialize),
+                );
+            }
+        }
     }
 
     match res {
@@ -234,6 +237,9 @@ fn main() {
                 let msg = format!("The extraction generated {} warnings", error_count);
                 log::warn!("{}", msg);
             }
+        }
+        Err(err) if errors_as_warnings => {
+            log::error!("{err}");
         }
         Err(CharonFailure::Panic) => {
             // Standard rust panic error code.

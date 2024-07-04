@@ -14,5 +14,5 @@ error: Ignoring the following item due to an error: test_crate::get
 
 error: aborting due to 2 previous errors
 
-[ERROR charon_driver:243] Compilation encountered 2 errors
+[ERROR charon_driver:249] Compilation encountered 2 errors
 Error: Charon driver exited with code 1

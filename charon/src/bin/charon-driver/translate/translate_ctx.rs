@@ -301,7 +301,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
             use rustc_hir::definitions::DefPathData;
             match &data.data {
                 DefPathData::TypeNs(symbol) => {
-                    assert!(data.disambiguator == 0); // Sanity check
+                    error_assert!(self, span, data.disambiguator == 0); // Sanity check
                     name.push(PathElem::Ident(symbol.to_string(), disambiguator));
                 }
                 DefPathData::ValueNs(symbol) => {
@@ -311,10 +311,10 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
                 }
                 DefPathData::CrateRoot => {
                     // Sanity check
-                    assert!(data.disambiguator == 0);
+                    error_assert!(self, span, data.disambiguator == 0);
 
                     // This should be the beginning of the path
-                    assert!(name.is_empty());
+                    error_assert!(self, span, name.is_empty());
                     found_crate_name = true;
                     name.push(PathElem::Ident(crate_name.clone(), disambiguator));
                 }
@@ -379,7 +379,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
                     // TODO: do nothing for now
                 }
                 DefPathData::MacroNs(symbol) => {
-                    assert!(data.disambiguator == 0); // Sanity check
+                    error_assert!(self, span, data.disambiguator == 0); // Sanity check
 
                     // There may be namespace collisions between, say, function
                     // names and macros (not sure). However, this isn't much
@@ -399,8 +399,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
                     // block.
                 }
                 _ => {
-                    error!("Unexpected DefPathData: {:?}", data);
-                    unreachable!("Unexpected DefPathData: {:?}", data);
+                    error_or_panic!(self, span, format!("Unexpected DefPathData: {:?}", data));
                 }
             }
         }
