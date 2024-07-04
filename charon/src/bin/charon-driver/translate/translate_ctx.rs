@@ -1,12 +1,12 @@
 //! The translation contexts.
 use super::translate_predicates::NonLocalTraitClause;
 use super::translate_traits::ClauseTransCtx;
-use crate::ast::*;
-use crate::cli_options::TransOptions;
-use crate::common::*;
-use crate::formatter::{FmtCtx, IntoFormatter};
-use crate::ids::{MapGenerator, Vector};
-use crate::ullbc_ast as ast;
+use charon_lib::ast::*;
+use charon_lib::cli_options::TransOptions;
+use charon_lib::common::*;
+use charon_lib::formatter::{FmtCtx, IntoFormatter};
+use charon_lib::ids::{MapGenerator, Vector};
+use charon_lib::ullbc_ast as ast;
 use hax_frontend_exporter as hax;
 use hax_frontend_exporter::SInto;
 use macros::VariantIndexArity;
@@ -20,7 +20,7 @@ use std::collections::{BTreeMap, VecDeque};
 use std::fmt;
 
 // Re-export to avoid having to fix imports.
-pub(crate) use crate::deps_errors::{
+pub(crate) use charon_lib::deps_errors::{
     error_assert, error_or_panic, register_error_or_panic, DepSource, ErrorCtx,
 };
 
@@ -767,8 +767,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         src: &Option<DepSource>,
         id: DefId,
     ) -> Result<Option<ast::TraitDeclId>, Error> {
-        use crate::assumed;
-        if assumed::IGNORE_BUILTIN_MARKER_TRAITS {
+        if IGNORE_BUILTIN_MARKER_TRAITS {
             let name = self.def_id_to_name(id)?;
             if assumed::is_marker_trait(&name) {
                 return Ok(None);

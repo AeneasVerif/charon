@@ -36,5 +36,5 @@ error: Error parsing attribute: Unrecognized attribute: `charon::something_else(
 
 error: aborting due to 6 previous errors
 
-[ERROR charon_driver:228] Compilation encountered 6 errors
+[ERROR charon_driver:242] Compilation encountered 6 errors
 Error: Charon driver exited with code 1

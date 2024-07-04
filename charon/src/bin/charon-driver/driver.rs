@@ -1,9 +1,9 @@
 use crate::cli_options;
+use crate::translate::translate_crate_to_ullbc;
 use charon_lib::cli_options::MirLevel;
 use charon_lib::export;
 use charon_lib::reorder_decls::compute_reordered_decls;
 use charon_lib::transform::{LLBC_PASSES, ULLBC_PASSES};
-use charon_lib::translate::translate_crate_to_ullbc;
 use charon_lib::ullbc_to_llbc;
 use regex::Regex;
 use rustc_driver::{Callbacks, Compilation};

@@ -11,12 +11,10 @@
 //! we reconstructed the control-flow to have `if ... then ... else ...`,
 //! loops, etc. instead of `GOTO`s).
 
-#![expect(incomplete_features)]
 #![feature(rustc_private)]
 // For rustdoc: prevents overflows
 #![recursion_limit = "256"]
 #![feature(box_patterns)]
-#![feature(deref_patterns)]
 #![feature(if_let_guard)]
 #![feature(impl_trait_in_assoc_type)]
 #![feature(iter_array_chunks)]
@@ -30,14 +28,11 @@
 
 extern crate rustc_ast;
 extern crate rustc_ast_pretty;
-extern crate rustc_attr;
 extern crate rustc_error_messages;
 extern crate rustc_errors;
 extern crate rustc_hir;
-extern crate rustc_index;
 extern crate rustc_middle;
 extern crate rustc_span;
-extern crate rustc_target;
 
 #[macro_use]
 pub mod ids;
@@ -50,13 +45,11 @@ pub mod deps_errors;
 pub mod export;
 pub mod pretty;
 pub mod transform;
-pub mod translate;
 
 // Re-export all the ast modules so we can keep the old import structure.
 pub use ast::{assumed, expressions, gast, llbc_ast, meta, names, types, ullbc_ast, values};
 pub use pretty::formatter;
 pub use transform::{graphs, reorder_decls, ullbc_to_llbc};
-pub use translate::translate_ctx;
 
 /// The version of the crate, as defined in `Cargo.toml`.
 const VERSION: &str = env!("CARGO_PKG_VERSION");

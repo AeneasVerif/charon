@@ -1,9 +1,9 @@
 use super::get_mir::extract_constants_at_top_level;
-use crate::ast::krate::*;
-use crate::cli_options::{CliOpts, MirLevel, TransOptions};
-use crate::common::*;
-use crate::transform::TransformCtx;
-use crate::translate_ctx::*;
+use super::translate_ctx::*;
+use charon_lib::ast::krate::*;
+use charon_lib::cli_options::{CliOpts, MirLevel, TransOptions};
+use charon_lib::common::*;
+use charon_lib::transform::TransformCtx;
 
 use hax_frontend_exporter as hax;
 use hax_frontend_exporter::SInto;

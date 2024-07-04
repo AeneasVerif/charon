@@ -183,7 +183,7 @@ pub fn span_to_string(source_map: &SourceMap, span: rustc_span::Span) -> String 
 }
 
 impl Attribute {
-    pub(crate) fn parse(normal_attr: &NormalAttr, span: rustc_span::Span) -> Result<Self, String> {
+    pub fn parse(normal_attr: &NormalAttr, span: rustc_span::Span) -> Result<Self, String> {
         // We use `pprust` to render the attribute somewhat like it is written in the source.
         // WARNING: this can change whitespace, and sometimes even adds newlines. Maybe we
         // should use spans and SourceMap info instead.
@@ -276,7 +276,7 @@ impl Attribute {
 }
 
 impl ItemOpacity {
-    pub(crate) fn with_content_visibility(self, contents_are_public: bool) -> Self {
+    pub fn with_content_visibility(self, contents_are_public: bool) -> Self {
         use ItemOpacity::*;
         match self {
             Transparent => Transparent,
@@ -286,7 +286,7 @@ impl ItemOpacity {
         }
     }
 
-    pub(crate) fn with_private_contents(self) -> Self {
+    pub fn with_private_contents(self) -> Self {
         self.with_content_visibility(false)
     }
 }

@@ -1,7 +1,7 @@
 //! Functions to translate constants to LLBC.
-use crate::ast::*;
-use crate::common::*;
-use crate::translate_ctx::*;
+use super::translate_ctx::*;
+use charon_lib::ast::*;
+use charon_lib::common::*;
 use hax_frontend_exporter as hax;
 use rustc_hir::def_id::DefId;
 

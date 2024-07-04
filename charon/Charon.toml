@@ -6,5 +6,4 @@ opaque_modules = [
     "ids",
     "logger",
     "pretty",
-    "translate",
 ]

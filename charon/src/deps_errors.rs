@@ -8,6 +8,7 @@ use rustc_hir::def_id::DefId;
 use std::cmp::{Ord, PartialOrd};
 use std::collections::{HashMap, HashSet};
 
+#[macro_export]
 macro_rules! register_error_or_panic {
     ($ctx:expr, $span: expr, $msg: expr) => {{
         $ctx.span_err($span, &$msg);
@@ -16,22 +17,24 @@ macro_rules! register_error_or_panic {
         }
     }};
 }
-pub(crate) use register_error_or_panic;
+pub use register_error_or_panic;
 
 /// Macro to either panic or return on error, depending on the CLI options
+#[macro_export]
 macro_rules! error_or_panic {
     ($ctx:expr, $span:expr, $msg:expr) => {{
         $crate::deps_errors::register_error_or_panic!($ctx, $span, $msg);
-        let e = crate::common::Error {
+        let e = $crate::common::Error {
             span: $span,
             msg: $msg.to_string(),
         };
         return Err(e);
     }};
 }
-pub(crate) use error_or_panic;
+pub use error_or_panic;
 
 /// Custom assert to either panic or return an error
+#[macro_export]
 macro_rules! error_assert {
     ($ctx:expr, $span: expr, $b: expr) => {
         if !$b {
@@ -45,7 +48,7 @@ macro_rules! error_assert {
         }
     };
 }
-pub(crate) use error_assert;
+pub use error_assert;
 
 /// We use this to save the origin of an id. This is useful for the external
 /// dependencies, especially if some external dependencies don't extract:
@@ -77,7 +80,7 @@ impl Ord for DepSource {
 }
 
 impl DepSource {
-    pub(crate) fn make(src_id: DefId, span: rustc_span::Span) -> Option<Self> {
+    pub fn make(src_id: DefId, span: rustc_span::Span) -> Option<Self> {
         Some(DepSource { src_id, span })
     }
 }
@@ -104,7 +107,7 @@ pub struct ErrorCtx<'ctx> {
 }
 
 impl ErrorCtx<'_> {
-    pub(crate) fn continue_on_failure(&self) -> bool {
+    pub fn continue_on_failure(&self) -> bool {
         self.continue_on_failure
     }
     pub(crate) fn has_errors(&self) -> bool {
@@ -131,7 +134,7 @@ impl ErrorCtx<'_> {
     }
 
     /// Register the fact that `id` is a dependency of `src` (if `src` is not `None`).
-    pub(crate) fn register_dep_source(&mut self, src: &Option<DepSource>, id: DefId) {
+    pub fn register_dep_source(&mut self, src: &Option<DepSource>, id: DefId) {
         if let Some(src) = src {
             if src.src_id != id {
                 match self.dep_sources.get_mut(&id) {
@@ -146,7 +149,7 @@ impl ErrorCtx<'_> {
         }
     }
 
-    pub(crate) fn ignore_failed_decl(&mut self, id: DefId) {
+    pub fn ignore_failed_decl(&mut self, id: DefId) {
         self.ignored_failed_decls.insert(id);
     }
 }

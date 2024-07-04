@@ -1,10 +1,10 @@
-use crate::common::*;
-use crate::formatter::{AstFormatter, IntoFormatter};
-use crate::gast::*;
-use crate::meta::Span;
-use crate::pretty::FmtWithCtx;
-use crate::translate_ctx::*;
-use crate::types::*;
+use super::translate_ctx::*;
+use charon_lib::common::*;
+use charon_lib::formatter::{AstFormatter, IntoFormatter};
+use charon_lib::gast::*;
+use charon_lib::meta::Span;
+use charon_lib::pretty::FmtWithCtx;
+use charon_lib::types::*;
 use hax_frontend_exporter as hax;
 use hax_frontend_exporter::SInto;
 use macros::{EnumAsGetters, EnumIsA, EnumToGetters};
