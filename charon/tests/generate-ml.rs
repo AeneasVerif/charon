@@ -350,9 +350,15 @@ fn generate_ml() -> Result<()> {
     }
 
     let crate_data: CrateData = {
+        use serde::Deserialize;
         let file = File::open(charon_llbc)?;
         let reader = BufReader::new(file);
-        serde_json::from_reader(reader)?
+        let mut deserializer = serde_json::Deserializer::from_reader(reader);
+        // Deserialize without recursion limit.
+        deserializer.disable_recursion_limit();
+        // Grow stack space as needed.
+        let deserializer = serde_stacker::Deserializer::new(&mut deserializer);
+        CrateData::deserialize(deserializer)?
     };
 
     let mut ctx = GenerateCtx {
