@@ -1,6 +1,5 @@
 use crate::common::*;
-use crate::formatter::Formatter;
-use crate::formatter::IntoFormatter;
+use crate::formatter::{AstFormatter, IntoFormatter};
 use crate::gast::*;
 use crate::meta::Span;
 use crate::pretty::FmtWithCtx;
@@ -53,6 +52,15 @@ impl NonLocalTraitClause {
             trait_id: self.trait_id,
             generics: self.generics.clone(),
         }
+    }
+}
+
+impl<C: AstFormatter> FmtWithCtx<C> for NonLocalTraitClause {
+    fn fmt_with_ctx(&self, ctx: &C) -> String {
+        let clause_id = self.clause_id.fmt_with_ctx(ctx);
+        let trait_id = ctx.format_object(self.trait_id);
+        let generics = self.generics.fmt_with_ctx(ctx);
+        format!("[{clause_id}]: {trait_id}{generics}")
     }
 }
 

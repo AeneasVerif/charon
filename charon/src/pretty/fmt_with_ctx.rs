@@ -6,7 +6,6 @@ use crate::{
     ids::Vector,
     llbc_ast::{self as llbc, *},
     reorder_decls::*,
-    translate::translate_predicates::NonLocalTraitClause,
     ullbc_ast::{self as ullbc, *},
 };
 use hax_frontend_exporter as hax;
@@ -642,15 +641,6 @@ impl<C: AstFormatter> FmtWithCtx<C> for Name {
             .map(|x| x.fmt_with_ctx(ctx))
             .collect::<Vec<String>>();
         name.join("::")
-    }
-}
-
-impl<C: AstFormatter> FmtWithCtx<C> for NonLocalTraitClause {
-    fn fmt_with_ctx(&self, ctx: &C) -> String {
-        let clause_id = self.clause_id.fmt_with_ctx(ctx);
-        let trait_id = ctx.format_object(self.trait_id);
-        let generics = self.generics.fmt_with_ctx(ctx);
-        format!("[{clause_id}]: {trait_id}{generics}")
     }
 }
 
