@@ -309,7 +309,7 @@ fn predicate_origins() -> Result<(), Box<dyn Error>> {
         let clauses = &item.generics.trait_clauses;
         assert_eq!(origins.len(), clauses.len(), "failed for {item_name}");
         for (clause, (expected_origin, expected_trait_name)) in clauses.iter().zip(origins) {
-            let trait_name = trait_name(&crate_data, clause.trait_id);
+            let trait_name = trait_name(&crate_data, clause.trait_.trait_id);
             assert_eq!(trait_name, *expected_trait_name, "failed for {item_name}");
             assert_eq!(&clause.origin, expected_origin, "failed for {item_name}");
         }

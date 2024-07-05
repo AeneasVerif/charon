@@ -217,10 +217,10 @@ pub enum TraitRefKind {
 
     /// A specific builtin trait implementation like [core::marker::Sized] or
     /// auto trait implementation like [core::marker::Syn].
-    BuiltinOrAuto(TraitDeclId, GenericArgs),
+    BuiltinOrAuto(TraitDeclRef),
 
     /// The automatically-generated implementation for `dyn Trait`.
-    Dyn(TraitDeclId, GenericArgs),
+    Dyn(TraitDeclRef),
 
     /// For error reporting.
     #[charon::rename("UnknownTrait")]
@@ -347,11 +347,8 @@ pub struct TraitClause {
     #[charon::opaque]
     pub origin: PredicateOrigin,
     /// The trait that is implemented.
-    pub trait_id: TraitDeclId,
-    /// The generics applied to the trait. Note: this includes the `Self` type.
-    /// Remark: the trait refs list in the [generics] field should be empty.
-    #[charon::rename("clause_generics")]
-    pub generics: GenericArgs,
+    #[charon::rename("trait")]
+    pub trait_: TraitDeclRef,
 }
 
 impl Eq for TraitClause {}

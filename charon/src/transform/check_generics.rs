@@ -15,7 +15,6 @@ use super::{ctx::LlbcPass, TransformCtx};
     FnPtr(enter),
     RawConstantExpr(enter),
     Rvalue(enter),
-    TraitClause(enter),
     TraitDeclRef(enter),
     TraitRefKind(enter),
     Ty(enter)
@@ -105,19 +104,15 @@ impl CheckGenericsVisitor<'_, '_> {
             self.generics_should_match_item(args, *id);
         }
     }
-    fn enter_trait_clause(&mut self, clause: &TraitClause) {
-        self.generics_should_match_item(&clause.generics, clause.trait_id);
-    }
     fn enter_trait_decl_ref(&mut self, tref: &TraitDeclRef) {
         self.generics_should_match_item(&tref.generics, tref.trait_id);
     }
     fn enter_trait_ref_kind(&mut self, kind: &TraitRefKind) {
         match kind {
             TraitRefKind::TraitImpl(id, args) => self.generics_should_match_item(args, *id),
-            TraitRefKind::BuiltinOrAuto(id, args) | TraitRefKind::Dyn(id, args) => {
-                self.generics_should_match_item(args, *id)
-            }
-            TraitRefKind::Clause(..)
+            TraitRefKind::BuiltinOrAuto(..)
+            | TraitRefKind::Dyn(..)
+            | TraitRefKind::Clause(..)
             | TraitRefKind::ParentClause(..)
             | TraitRefKind::ItemClause(..)
             | TraitRefKind::SelfId

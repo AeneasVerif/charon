@@ -315,7 +315,7 @@ and trait_instance_id =
   | Self
       (** Reference to *self*, in case of trait declarations/implementations *)
   | TraitImpl of trait_impl_id * generic_args  (** A specific implementation *)
-  | BuiltinOrAuto of trait_decl_id * generic_args
+  | BuiltinOrAuto of trait_decl_ref
   | Clause of trait_clause_id
   | ParentClause of trait_instance_id * trait_decl_id * trait_clause_id
   | ItemClause of
@@ -334,7 +334,7 @@ and trait_instance_id =
        *)
   | FnPointer of ty
   | Closure of fun_decl_id * generic_args
-  | Dyn of trait_decl_id * generic_args
+  | Dyn of trait_decl_ref
   | Unsolved of trait_decl_id * generic_args
   | UnknownTrait of string
       (** Not present in the Rust version of Charon.
@@ -430,8 +430,7 @@ and rty = ty
 and trait_clause = {
   clause_id : trait_clause_id;
   span : span option;
-  trait_id : trait_decl_id;
-  clause_generics : generic_args;
+  trait : trait_decl_ref;
 }
 
 and generic_params = {

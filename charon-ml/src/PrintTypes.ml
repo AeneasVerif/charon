@@ -224,10 +224,7 @@ and trait_instance_id_to_string (env : ('a, 'b) fmt_env)
       let impl = trait_impl_id_to_string env id in
       let generics = generic_args_to_string env generics in
       impl ^ generics
-  | BuiltinOrAuto (id, generics) ->
-      let decl = trait_decl_id_to_string env id in
-      let generics = generic_args_to_string env generics in
-      decl ^ generics
+  | BuiltinOrAuto trait -> trait_decl_ref_to_string env trait
   | Clause id -> trait_clause_id_to_string env id
   | ParentClause (inst_id, _decl_id, clause_id) ->
       let inst_id = trait_instance_id_to_string env inst_id in
@@ -244,10 +241,9 @@ and trait_instance_id_to_string (env : ('a, 'b) fmt_env)
       ^ fun_decl_id_to_string env fid
       ^ generic_args_to_string env generics
       ^ ")"
-  | Dyn (id, generics) ->
-      let decl = trait_decl_id_to_string env id in
-      let generics = generic_args_to_string env generics in
-      "dyn(" ^ decl ^ generics ^ ")"
+  | Dyn trait ->
+      let trait = trait_decl_ref_to_string env trait in
+      "dyn(" ^ trait ^ ")"
   | Unsolved (decl_id, generics) ->
       "unsolved("
       ^ trait_decl_id_to_string env decl_id
@@ -296,9 +292,8 @@ and name_to_string (env : ('a, 'b) fmt_env) (n : name) : string =
 let trait_clause_to_string (env : ('a, 'b) fmt_env) (clause : trait_clause) :
     string =
   let clause_id = trait_clause_id_to_string env clause.clause_id in
-  let trait_id = trait_decl_id_to_string env clause.trait_id in
-  let generics = generic_args_to_string env clause.clause_generics in
-  "[" ^ clause_id ^ "]: " ^ trait_id ^ generics
+  let trait = trait_decl_ref_to_string env clause.trait in
+  "[" ^ clause_id ^ "]: " ^ trait
 
 let generic_params_to_strings (env : ('a, 'b) fmt_env)
     (generics : generic_params) : string list * string list =

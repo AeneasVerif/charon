@@ -465,14 +465,12 @@ and trait_instance_id_of_json (js : json) : (trait_instance_id, string) result =
         let* x3 = trait_clause_id_of_json x3 in
         Ok (ItemClause (x0, x1, x2, x3))
     | `String "SelfId" -> Ok Self
-    | `Assoc [ ("BuiltinOrAuto", `List [ x0; x1 ]) ] ->
-        let* x0 = trait_decl_id_of_json x0 in
-        let* x1 = generic_args_of_json x1 in
-        Ok (BuiltinOrAuto (x0, x1))
-    | `Assoc [ ("Dyn", `List [ x0; x1 ]) ] ->
-        let* x0 = trait_decl_id_of_json x0 in
-        let* x1 = generic_args_of_json x1 in
-        Ok (Dyn (x0, x1))
+    | `Assoc [ ("BuiltinOrAuto", builtin_or_auto) ] ->
+        let* builtin_or_auto = trait_decl_ref_of_json builtin_or_auto in
+        Ok (BuiltinOrAuto builtin_or_auto)
+    | `Assoc [ ("Dyn", dyn) ] ->
+        let* dyn = trait_decl_ref_of_json dyn in
+        Ok (Dyn dyn)
     | `Assoc [ ("Unknown", unknown) ] ->
         let* unknown = string_of_json unknown in
         Ok (UnknownTrait unknown)
@@ -557,14 +555,12 @@ and trait_clause_of_json (id_to_file : id_to_file_map) (js : json) :
           ("clause_id", clause_id);
           ("span", span);
           ("origin", _);
-          ("trait_id", trait_id);
-          ("generics", generics);
+          ("trait_", trait_);
         ] ->
         let* clause_id = trait_clause_id_of_json clause_id in
         let* span = option_of_json (span_of_json id_to_file) span in
-        let* trait_id = trait_decl_id_of_json trait_id in
-        let* clause_generics = generic_args_of_json generics in
-        Ok { clause_id; span; trait_id; clause_generics }
+        let* trait = trait_decl_ref_of_json trait_ in
+        Ok { clause_id; span; trait }
     | _ -> Error "")
 
 and outlives_pred_of_json :

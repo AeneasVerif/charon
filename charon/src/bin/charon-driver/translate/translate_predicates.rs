@@ -39,8 +39,7 @@ pub(crate) struct NonLocalTraitClause {
     /// associated type clause.
     pub span: Option<Span>,
     pub origin: PredicateOrigin,
-    pub trait_id: TraitDeclId,
-    pub generics: GenericArgs,
+    pub trait_: TraitDeclRef,
 }
 
 impl NonLocalTraitClause {
@@ -49,8 +48,7 @@ impl NonLocalTraitClause {
             clause_id,
             origin: self.origin.clone(),
             span: self.span,
-            trait_id: self.trait_id,
-            generics: self.generics.clone(),
+            trait_: self.trait_.clone(),
         }
     }
 }
@@ -58,9 +56,8 @@ impl NonLocalTraitClause {
 impl<C: AstFormatter> FmtWithCtx<C> for NonLocalTraitClause {
     fn fmt_with_ctx(&self, ctx: &C) -> String {
         let clause_id = self.clause_id.fmt_with_ctx(ctx);
-        let trait_id = ctx.format_object(self.trait_id);
-        let generics = self.generics.fmt_with_ctx(ctx);
-        format!("[{clause_id}]: {trait_id}{generics}")
+        let trait_ = self.trait_.fmt_with_ctx(ctx);
+        format!("[{clause_id}]: {trait_}")
     }
 }
 
@@ -402,7 +399,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 .as_mut_clauses()
                 .push(local_clause);
             self.trait_clauses
-                .entry(clause.trait_id)
+                .entry(clause.trait_.trait_id)
                 .or_default()
                 .push(clause);
             Ok(Some(clause_id))
@@ -427,7 +424,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         )?;
         if let Some(clause) = clause {
             self.trait_clauses
-                .entry(clause.trait_id)
+                .entry(clause.trait_.trait_id)
                 .or_default()
                 .push(clause);
         }
@@ -468,8 +465,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             clause_id,
             span: Some(span),
             origin,
-            trait_id,
-            generics,
+            trait_: TraitDeclRef { trait_id, generics },
         }))
     }
 
@@ -738,28 +734,13 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 }
             }
             ImplExprAtom::Dyn => TraitRef {
-                // FIXME: where to find the trait arguments?
-                kind: TraitRefKind::Dyn(trait_decl_ref.trait_id, GenericArgs::empty()),
+                kind: TraitRefKind::Dyn(trait_decl_ref.clone()),
                 trait_decl_ref,
             },
-            ImplExprAtom::Builtin { r#trait: trait_ref } => {
-                let def_id = DefId::from(&trait_ref.def_id);
-                // Remark: we already filtered the marker traits when translating
-                // the trait decl ref: the trait id should be Some(...).
-                let trait_id = self.register_trait_decl_id(span, def_id)?.unwrap();
-
-                let generics = self.translate_substs_and_trait_refs(
-                    span,
-                    erase_regions,
-                    None,
-                    &trait_ref.generic_args,
-                    nested,
-                )?;
-                TraitRef {
-                    kind: TraitRefKind::BuiltinOrAuto(trait_id, generics),
-                    trait_decl_ref,
-                }
-            }
+            ImplExprAtom::Builtin { .. } => TraitRef {
+                kind: TraitRefKind::BuiltinOrAuto(trait_decl_ref.clone()),
+                trait_decl_ref,
+            },
             ImplExprAtom::Todo(msg) => {
                 let error = format!("Error during trait resolution: {}", msg);
                 self.span_err(span, &error);
@@ -783,17 +764,19 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         clause: &NonLocalTraitClause,
     ) -> bool {
         let fmt_ctx = self.into_fmt();
-        trace!("Matching trait clauses:\n- trait_id: {:?}\n- generics: {:?}\n- clause.trait_id: {:?}\n- clause.generics: {:?}",
-               fmt_ctx.format_object(trait_id), generics.fmt_with_ctx(&fmt_ctx),
-               fmt_ctx.format_object(clause.trait_id), clause.generics.fmt_with_ctx(&fmt_ctx)
+        trace!(
+            "Matching trait clauses:\n- trait_id: {:?}\n- generics: {:?}\n- clause.trait_: {:?}",
+            fmt_ctx.format_object(trait_id),
+            generics.fmt_with_ctx(&fmt_ctx),
+            clause.trait_.fmt_with_ctx(&fmt_ctx)
         );
-        assert_eq!(clause.trait_id, trait_id);
+        assert_eq!(clause.trait_.trait_id, trait_id);
         // Ignoring the regions for now
         let tgt_types = &generics.types;
         let tgt_const_generics = &generics.const_generics;
 
-        let src_types = &clause.generics.types;
-        let src_const_generics = &clause.generics.const_generics;
+        let src_types = &clause.trait_.generics.types;
+        let src_const_generics = &clause.trait_.generics.const_generics;
 
         // We simply check the equality between the arguments:
         // there are no universally quantified variables to unify.

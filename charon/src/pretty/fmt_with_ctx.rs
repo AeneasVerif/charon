@@ -1059,9 +1059,8 @@ impl<C: AstFormatter> FmtWithCtx<C> for Terminator {
 impl<C: AstFormatter> FmtWithCtx<C> for TraitClause {
     fn fmt_with_ctx(&self, ctx: &C) -> String {
         let clause_id = ctx.format_object(self.clause_id);
-        let trait_id = ctx.format_object(self.trait_id);
-        let generics = self.generics.fmt_with_ctx(ctx);
-        format!("[{clause_id}]: {trait_id}{generics}")
+        let trait_ = self.trait_.fmt_with_ctx(ctx);
+        format!("[{clause_id}]: {trait_}")
     }
 }
 
@@ -1235,11 +1234,7 @@ impl<C: AstFormatter> FmtWithCtx<C> for TraitRefKind {
                 format!("{impl_}{args}")
             }
             TraitRefKind::Clause(id) => ctx.format_object(*id),
-            TraitRefKind::BuiltinOrAuto(id, args) | TraitRefKind::Dyn(id, args) => {
-                let trait_ = ctx.format_object(*id);
-                let args = args.fmt_with_ctx_split_trait_refs(ctx);
-                format!("{trait_}{args}")
-            }
+            TraitRefKind::BuiltinOrAuto(tr) | TraitRefKind::Dyn(tr) => tr.fmt_with_ctx(ctx),
             TraitRefKind::Unknown(msg) => format!("UNKNOWN({msg})"),
         }
     }
