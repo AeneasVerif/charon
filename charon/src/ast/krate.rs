@@ -1,9 +1,7 @@
+use crate::ast::*;
 use crate::formatter::{FmtCtx, Formatter, IntoFormatter};
-use crate::gast::*;
 use crate::ids::{Generator, Vector};
-use crate::meta::{FileId, FileName, LocalFileId, VirtualFileId};
 use crate::reorder_decls::DeclarationsGroups;
-use crate::types::*;
 use derive_visitor::{Drive, DriveMut};
 use linked_hash_set::LinkedHashSet;
 use macros::{EnumAsGetters, EnumIsA, VariantIndexArity, VariantName};
@@ -122,6 +120,61 @@ impl TranslatedCrate {
             AnyTransId::Global(id) => self.global_decls.get(id).map(AnyTransItem::Global),
             AnyTransId::TraitDecl(id) => self.trait_decls.get(id).map(AnyTransItem::TraitDecl),
             AnyTransId::TraitImpl(id) => self.trait_impls.get(id).map(AnyTransItem::TraitImpl),
+        }
+    }
+
+    pub fn all_items(&self) -> impl Iterator<Item = AnyTransItem<'_>> {
+        self.all_items_with_ids().map(|(_, item)| item)
+    }
+
+    pub fn all_items_with_ids(&self) -> impl Iterator<Item = (AnyTransId, AnyTransItem<'_>)> {
+        self.all_ids
+            .iter()
+            .flat_map(|id| Some((*id, self.get_item(*id)?)))
+    }
+}
+
+impl<'ctx> AnyTransItem<'ctx> {
+    pub fn id(&self) -> AnyTransId {
+        match self {
+            AnyTransItem::Type(d) => d.def_id.into(),
+            AnyTransItem::Fun(d) => d.def_id.into(),
+            AnyTransItem::Global(d) => d.def_id.into(),
+            AnyTransItem::TraitDecl(d) => d.def_id.into(),
+            AnyTransItem::TraitImpl(d) => d.def_id.into(),
+        }
+    }
+
+    pub fn item_meta(&self) -> &'ctx ItemMeta {
+        match self {
+            AnyTransItem::Type(d) => &d.item_meta,
+            AnyTransItem::Fun(d) => &d.item_meta,
+            AnyTransItem::Global(d) => &d.item_meta,
+            AnyTransItem::TraitDecl(d) => &d.item_meta,
+            AnyTransItem::TraitImpl(d) => &d.item_meta,
+        }
+    }
+
+    /// The generic parameters of this item.
+    pub fn generic_params(&self) -> &'ctx GenericParams {
+        match self {
+            AnyTransItem::Type(d) => &d.generics,
+            AnyTransItem::Fun(d) => &d.signature.generics,
+            AnyTransItem::Global(d) => &d.generics,
+            AnyTransItem::TraitDecl(d) => &d.generics,
+            AnyTransItem::TraitImpl(d) => &d.generics,
+        }
+    }
+
+    /// We can't implement the `Drive` type because of the `'static` constraint, but it's ok
+    /// because `AnyTransItem` isn't contained in any of our types.
+    pub fn drive<V: derive_visitor::Visitor>(&self, visitor: &mut V) {
+        match self {
+            AnyTransItem::Type(d) => d.drive(visitor),
+            AnyTransItem::Fun(d) => d.drive(visitor),
+            AnyTransItem::Global(d) => d.drive(visitor),
+            AnyTransItem::TraitDecl(d) => d.drive(visitor),
+            AnyTransItem::TraitImpl(d) => d.drive(visitor),
         }
     }
 }
