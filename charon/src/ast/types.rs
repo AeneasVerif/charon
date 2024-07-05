@@ -236,7 +236,6 @@ pub struct TraitRef {
     pub trait_id: TraitInstanceId,
     pub generics: GenericArgs,
     /// Not necessary, but useful
-    #[drive(skip)]
     pub trait_decl_ref: TraitDeclRef,
 }
 
