@@ -411,11 +411,11 @@ and trait_ref_of_json (js : json) : (trait_ref, string) result =
     (match js with
     | `Assoc
         [
-          ("trait_id", trait_id);
+          ("kind", kind);
           ("generics", generics);
           ("trait_decl_ref", trait_decl_ref);
         ] ->
-        let* trait_id = trait_instance_id_of_json trait_id in
+        let* trait_id = trait_instance_id_of_json kind in
         let* generics = generic_args_of_json generics in
         let* trait_decl_ref = trait_decl_ref_of_json trait_decl_ref in
         Ok { trait_id; generics; trait_decl_ref }

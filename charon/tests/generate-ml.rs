@@ -401,7 +401,7 @@ fn generate_ml() -> Result<()> {
             "TraitRef",
             "TraitDeclRef",
             "GenericArgs",
-            "TraitInstanceId",
+            "TraitRefKind",
             "Field",
             "Variant",
             "TypeDeclKind",

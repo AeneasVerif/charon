@@ -133,7 +133,8 @@ pub enum Region {
 #[derive(
     Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Hash, Ord, PartialOrd, Drive, DriveMut,
 )]
-pub enum TraitInstanceId {
+#[charon::rename("TraitInstanceId")]
+pub enum TraitRefKind {
     /// A specific top-level implementation item.
     TraitImpl(TraitImplId),
 
@@ -173,7 +174,7 @@ pub enum TraitInstanceId {
     ///              clause 0 implements Bar
     /// }
     /// ```
-    ParentClause(Box<TraitInstanceId>, TraitDeclId, TraitClauseId),
+    ParentClause(Box<TraitRefKind>, TraitDeclId, TraitClauseId),
 
     /// A clause bound in a trait item (typically a trait clause in an
     /// associated type).
@@ -202,12 +203,7 @@ pub enum TraitInstanceId {
     /// ```
     ///
     ///
-    ItemClause(
-        Box<TraitInstanceId>,
-        TraitDeclId,
-        TraitItemName,
-        TraitClauseId,
-    ),
+    ItemClause(Box<TraitRefKind>, TraitDeclId, TraitItemName, TraitClauseId),
 
     /// Self, in case of trait declarations/implementations.
     ///
@@ -233,7 +229,8 @@ pub enum TraitInstanceId {
 /// A reference to a trait
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Hash, Drive, DriveMut)]
 pub struct TraitRef {
-    pub trait_id: TraitInstanceId,
+    #[charon::rename("trait_id")]
+    pub kind: TraitRefKind,
     pub generics: GenericArgs,
     /// Not necessary, but useful
     pub trait_decl_ref: TraitDeclRef,

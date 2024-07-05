@@ -126,15 +126,15 @@ impl CheckGenericsVisitor<'_, '_> {
     }
     fn enter_trait_ref(&mut self, tref: &TraitRef) {
         let args = &tref.generics;
-        match tref.trait_id {
-            TraitInstanceId::TraitImpl(id) => self.generics_should_match_item(args, id),
-            TraitInstanceId::Clause(..)
-            | TraitInstanceId::ParentClause(..)
-            | TraitInstanceId::ItemClause(..)
-            | TraitInstanceId::SelfId
-            | TraitInstanceId::BuiltinOrAuto(_)
-            | TraitInstanceId::Dyn(_)
-            | TraitInstanceId::Unknown(_) => self.generics_should_be_empty(args),
+        match tref.kind {
+            TraitRefKind::TraitImpl(id) => self.generics_should_match_item(args, id),
+            TraitRefKind::Clause(..)
+            | TraitRefKind::ParentClause(..)
+            | TraitRefKind::ItemClause(..)
+            | TraitRefKind::SelfId
+            | TraitRefKind::BuiltinOrAuto(_)
+            | TraitRefKind::Dyn(_)
+            | TraitRefKind::Unknown(_) => self.generics_should_be_empty(args),
         }
     }
     fn enter_ty(&mut self, ty: &Ty) {
