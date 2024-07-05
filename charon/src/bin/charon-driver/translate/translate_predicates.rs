@@ -597,10 +597,8 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 } else {
                     let msg = format!("Error during trait resolution: {}", &err.msg);
                     self.span_err(span, &msg);
-                    let trait_id = TraitRefKind::Unknown(err.msg);
                     Ok(Some(TraitRef {
-                        kind: trait_id,
-                        generics: GenericArgs::empty(),
+                        kind: TraitRefKind::Unknown(err.msg),
                         trait_decl_ref,
                     }))
                 }
@@ -629,7 +627,6 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 let trait_id = self.register_trait_impl_id(span, def_id)?;
                 // We already tested above whether the trait should be filtered
                 let trait_id = trait_id.unwrap();
-                let trait_id = TraitRefKind::TraitImpl(trait_id);
 
                 let generics = self.translate_substs_and_trait_refs(
                     span,
@@ -639,8 +636,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                     nested,
                 )?;
                 TraitRef {
-                    kind: trait_id,
-                    generics,
+                    kind: TraitRefKind::TraitImpl(trait_id, generics),
                     trait_decl_ref,
                 }
             }
@@ -738,13 +734,12 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 // on the trait clauses for now.
                 TraitRef {
                     kind: trait_id,
-                    generics: GenericArgs::empty(),
                     trait_decl_ref,
                 }
             }
             ImplExprAtom::Dyn => TraitRef {
-                kind: TraitRefKind::Dyn(trait_decl_ref.trait_id),
-                generics: GenericArgs::empty(),
+                // FIXME: where to find the trait arguments?
+                kind: TraitRefKind::Dyn(trait_decl_ref.trait_id, GenericArgs::empty()),
                 trait_decl_ref,
             },
             ImplExprAtom::Builtin { r#trait: trait_ref } => {
@@ -753,7 +748,6 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 // the trait decl ref: the trait id should be Some(...).
                 let trait_id = self.register_trait_decl_id(span, def_id)?.unwrap();
 
-                let trait_id = TraitRefKind::BuiltinOrAuto(trait_id);
                 let generics = self.translate_substs_and_trait_refs(
                     span,
                     erase_regions,
@@ -762,8 +756,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                     nested,
                 )?;
                 TraitRef {
-                    kind: trait_id,
-                    generics,
+                    kind: TraitRefKind::BuiltinOrAuto(trait_id, generics),
                     trait_decl_ref,
                 }
             }
@@ -773,10 +766,8 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 if !self.t_ctx.continue_on_failure() {
                     panic!("{}", error)
                 } else {
-                    let trait_id = TraitRefKind::Unknown(msg.clone());
                     TraitRef {
-                        kind: trait_id,
-                        generics: GenericArgs::empty(),
+                        kind: TraitRefKind::Unknown(msg.clone()),
                         trait_decl_ref,
                     }
                 }

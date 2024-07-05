@@ -17,7 +17,7 @@ use super::{ctx::LlbcPass, TransformCtx};
     Rvalue(enter),
     TraitClause(enter),
     TraitDeclRef(enter),
-    TraitRef(enter),
+    TraitRefKind(enter),
     Ty(enter)
 )]
 struct CheckGenericsVisitor<'a, 'ctx> {
@@ -41,25 +41,12 @@ impl CheckGenericsVisitor<'_, '_> {
         self.discharged_args += 1;
     }
 
-    fn generics_should_be_empty(&mut self, args: &GenericArgs) {
-        self.discharged_one_generics();
-        if !args.is_empty() {
-            self.error("Mismatched generics: should be empty!")
-        }
-    }
-    fn check_generics(&mut self, args: &GenericArgs, params: &GenericParams) {
-        self.discharged_one_generics();
-        if !args.matches(params) {
-            self.error("Mismatched generics!")
-        }
-    }
-
     fn generics_should_match_item(&mut self, args: &GenericArgs, item_id: impl Into<AnyTransId>) {
+        self.discharged_one_generics();
         if let Some(item) = self.translated.get_item(item_id.into()) {
-            self.check_generics(args, item.generic_params())
-        } else {
-            // If the item is missing, we can't check anything but we must still count this.
-            self.discharged_one_generics();
+            if !args.matches(item.generic_params()) {
+                self.error("Mismatched generics!")
+            }
         }
     }
     fn check_typeid_generics(&mut self, args: &GenericArgs, ty_kind: &TypeId) {
@@ -124,17 +111,17 @@ impl CheckGenericsVisitor<'_, '_> {
     fn enter_trait_decl_ref(&mut self, tref: &TraitDeclRef) {
         self.generics_should_match_item(&tref.generics, tref.trait_id);
     }
-    fn enter_trait_ref(&mut self, tref: &TraitRef) {
-        let args = &tref.generics;
-        match tref.kind {
-            TraitRefKind::TraitImpl(id) => self.generics_should_match_item(args, id),
+    fn enter_trait_ref_kind(&mut self, kind: &TraitRefKind) {
+        match kind {
+            TraitRefKind::TraitImpl(id, args) => self.generics_should_match_item(args, *id),
+            TraitRefKind::BuiltinOrAuto(id, args) | TraitRefKind::Dyn(id, args) => {
+                self.generics_should_match_item(args, *id)
+            }
             TraitRefKind::Clause(..)
             | TraitRefKind::ParentClause(..)
             | TraitRefKind::ItemClause(..)
             | TraitRefKind::SelfId
-            | TraitRefKind::BuiltinOrAuto(_)
-            | TraitRefKind::Dyn(_)
-            | TraitRefKind::Unknown(_) => self.generics_should_be_empty(args),
+            | TraitRefKind::Unknown(_) => {}
         }
     }
     fn enter_ty(&mut self, ty: &Ty) {

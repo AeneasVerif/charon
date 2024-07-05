@@ -208,9 +208,7 @@ and generic_args_to_string (env : ('a, 'b) fmt_env) (generics : generic_args) :
   params ^ trait_refs
 
 and trait_ref_to_string (env : ('a, 'b) fmt_env) (tr : trait_ref) : string =
-  let trait_id = trait_instance_id_to_string env tr.trait_id in
-  let generics = generic_args_to_string env tr.generics in
-  trait_id ^ generics
+  trait_instance_id_to_string env tr.trait_id
 
 and trait_decl_ref_to_string (env : ('a, 'b) fmt_env) (tr : trait_decl_ref) :
     string =
@@ -222,8 +220,14 @@ and trait_instance_id_to_string (env : ('a, 'b) fmt_env)
     (id : trait_instance_id) : string =
   match id with
   | Self -> "Self"
-  | TraitImpl id -> trait_impl_id_to_string env id
-  | BuiltinOrAuto id -> trait_decl_id_to_string env id
+  | TraitImpl (id, generics) ->
+      let impl = trait_impl_id_to_string env id in
+      let generics = generic_args_to_string env generics in
+      impl ^ generics
+  | BuiltinOrAuto (id, generics) ->
+      let decl = trait_decl_id_to_string env id in
+      let generics = generic_args_to_string env generics in
+      decl ^ generics
   | Clause id -> trait_clause_id_to_string env id
   | ParentClause (inst_id, _decl_id, clause_id) ->
       let inst_id = trait_instance_id_to_string env inst_id in
@@ -240,7 +244,10 @@ and trait_instance_id_to_string (env : ('a, 'b) fmt_env)
       ^ fun_decl_id_to_string env fid
       ^ generic_args_to_string env generics
       ^ ")"
-  | Dyn id -> "dyn(" ^ trait_decl_id_to_string env id ^ ")"
+  | Dyn (id, generics) ->
+      let decl = trait_decl_id_to_string env id in
+      let generics = generic_args_to_string env generics in
+      "dyn(" ^ decl ^ generics ^ ")"
   | Unsolved (decl_id, generics) ->
       "unsolved("
       ^ trait_decl_id_to_string env decl_id

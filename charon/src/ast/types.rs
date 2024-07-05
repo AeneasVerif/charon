@@ -130,13 +130,11 @@ pub enum Region {
 /// definition. Note that every path designated by [TraitInstanceId] refers
 /// to a *trait instance*, which is why the [Clause] variant may seem redundant
 /// with some of the other variants.
-#[derive(
-    Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Hash, Ord, PartialOrd, Drive, DriveMut,
-)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Hash, Drive, DriveMut)]
 #[charon::rename("TraitInstanceId")]
 pub enum TraitRefKind {
     /// A specific top-level implementation item.
-    TraitImpl(TraitImplId),
+    TraitImpl(TraitImplId, GenericArgs),
 
     /// One of the local clauses.
     ///
@@ -153,6 +151,9 @@ pub enum TraitRefKind {
     /// Remark: the [TraitDeclId] gives the trait declaration which is
     /// implemented by the instance id from which we take the parent clause
     /// (see example below). It is not necessary and included for convenience.
+    ///
+    /// Remark: Ideally we should store a full `TraitRef` instead, but hax does not give us enough
+    /// information to get the right generic args.
     ///
     /// Example:
     /// ```text
@@ -216,10 +217,10 @@ pub enum TraitRefKind {
 
     /// A specific builtin trait implementation like [core::marker::Sized] or
     /// auto trait implementation like [core::marker::Syn].
-    BuiltinOrAuto(TraitDeclId),
+    BuiltinOrAuto(TraitDeclId, GenericArgs),
 
     /// The automatically-generated implementation for `dyn Trait`.
-    Dyn(TraitDeclId),
+    Dyn(TraitDeclId, GenericArgs),
 
     /// For error reporting.
     #[charon::rename("UnknownTrait")]
@@ -231,7 +232,6 @@ pub enum TraitRefKind {
 pub struct TraitRef {
     #[charon::rename("trait_id")]
     pub kind: TraitRefKind,
-    pub generics: GenericArgs,
     /// Not necessary, but useful
     pub trait_decl_ref: TraitDeclRef,
 }
