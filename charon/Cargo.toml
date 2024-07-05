@@ -21,6 +21,16 @@ path = "src/bin/charon/main.rs"
 name = "charon-driver"
 path = "src/bin/charon-driver/main.rs"
 
+[[test]]
+name = "ui"
+path = "tests/ui.rs"
+harness = false
+
+[[test]]
+name = "cargo"
+path = "tests/cargo.rs"
+harness = false
+
 [dependencies]
 anyhow = "1.0.81"
 clap = { version = "4.0", features = ["derive", "env"] }
