@@ -320,18 +320,6 @@ and trait_instance_id =
   | ParentClause of trait_instance_id * trait_decl_id * trait_clause_id
   | ItemClause of
       trait_instance_id * trait_decl_id * trait_item_name * trait_clause_id
-  | TraitRef of trait_ref
-      (** Not present in the Rust version of Charon.
-
-          We need this case for instantiations: when calling a function which has
-          trait clauses, for instance, we substitute the clauses refernced in the
-          [Clause] and [Self] case with trait references.
-
-          Remark: something potentially confusing is that [trait_clause_id] is used for
-          different purposes. In the [Clause] case, a trait clause id identifies a local
-          trait clause (which can thus be substituted). In the other cases, it references
-          a sub-clause relative to a trait instance id.
-       *)
   | FnPointer of ty
   | Closure of fun_decl_id * generic_args
   | Dyn of trait_decl_ref

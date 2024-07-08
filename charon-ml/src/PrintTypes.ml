@@ -234,7 +234,6 @@ and trait_instance_id_to_string (env : ('a, 'b) fmt_env)
       let inst_id = trait_instance_id_to_string env inst_id in
       let clause_id = trait_clause_id_to_string env clause_id in
       "(" ^ inst_id ^ ")::" ^ item_name ^ "::[" ^ clause_id ^ "]"
-  | TraitRef tr -> trait_ref_to_string env tr
   | FnPointer ty -> "fn_ptr(" ^ ty_to_string env ty ^ ")"
   | Closure (fid, generics) ->
       "closure("

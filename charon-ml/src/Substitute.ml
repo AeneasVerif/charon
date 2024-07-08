@@ -213,7 +213,7 @@ let make_trait_subst (clause_ids : TraitClauseId.id list) (trs : trait_ref list)
   let ls = List.combine clause_ids trs in
   let mp =
     List.fold_left
-      (fun mp (k, v) -> TraitClauseId.Map.add k (TraitRef v) mp)
+      (fun mp (k, v) -> TraitClauseId.Map.add k v.trait_id mp)
       TraitClauseId.Map.empty ls
   in
   fun id -> TraitClauseId.Map.find id mp
