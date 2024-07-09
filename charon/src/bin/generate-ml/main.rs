@@ -1,14 +1,12 @@
-#![cfg(test)]
 //! Generate ocaml deserialization code for our types.
 //!
-//! This test runs charon on itself and generates the appropriate `<type>_of_json` functions for
-//! our types. The generated functions are inserted into `./generated-ml/GAstOfJson.template.ml` to
+//! This binary runs charon on itself and generates the appropriate `<type>_of_json` functions for
+//! our types. The generated functions are inserted into `./generate-ml/GAstOfJson.template.ml` to
 //! construct the final `GAstOfJson.ml`.
 //!
-//! Note: this test is ignored by default because running charon on itself is slow. To run it, call
-//! `cargo test --test generate-ml -- --ignored`. It is also run by `make generate-ml` in the crate
-//! root. Don't forget to format the output code after regenerating.
-use anyhow::{bail, Result};
+//! To run it, call `cargo run --bin generate-ml`. It is also run by `make generate-ml` in the
+//! crate root. Don't forget to format the output code after regenerating.
+use anyhow::{bail, Context, Result};
 use assert_cmd::cargo::CommandCargoExt;
 use charon_lib::export::CrateData;
 use charon_lib::meta::ItemMeta;
@@ -23,6 +21,7 @@ use std::collections::HashMap;
 use std::fs;
 use std::fs::File;
 use std::io::BufReader;
+use std::path::PathBuf;
 use std::process::Command;
 
 /// `Name` is a complex datastructure; to inspect it we serialize it a little bit.
@@ -328,11 +327,9 @@ fn type_decl_to_json_deserializer(ctx: &GenerateCtx, decl: &TypeDecl) -> String 
     build_function(ctx, decl, &branches)
 }
 
-#[test]
-// Test is ignored by default. See the top for how to run it.
-#[ignore]
-fn generate_ml() -> Result<()> {
-    let charon_llbc = "tests/generated-ml/charon-itself.llbc";
+fn main() -> Result<()> {
+    let dir = PathBuf::from("src/bin/generate-ml");
+    let charon_llbc = dir.join("charon-itself.llbc");
     const RUN_CHARON: bool = true;
     if RUN_CHARON {
         // Call charon on itself
@@ -340,7 +337,7 @@ fn generate_ml() -> Result<()> {
         cmd.arg("--cargo-arg=--lib");
         cmd.arg("--errors-as-warnings");
         cmd.arg("--dest-file");
-        cmd.arg(charon_llbc);
+        cmd.arg(&charon_llbc);
         let output = cmd.output()?;
 
         if !output.status.success() {
@@ -351,7 +348,8 @@ fn generate_ml() -> Result<()> {
 
     let crate_data: CrateData = {
         use serde::Deserialize;
-        let file = File::open(charon_llbc)?;
+        let file = File::open(&charon_llbc)
+            .with_context(|| format!("Failed to read llbc file {}", charon_llbc.display()))?;
         let reader = BufReader::new(file);
         let mut deserializer = serde_json::Deserializer::from_reader(reader);
         // Deserialize without recursion limit.
@@ -378,6 +376,10 @@ fn generate_ml() -> Result<()> {
     let raw_span = name_to_type.get("RawSpan").unwrap();
     ctx.contains_raw_span = contains_id(&ctx.crate_data, raw_span.def_id);
 
+    // This lists items in the order we want to generate code for them. The ith list of this slice
+    // will be used to generate code into the `__REPLACE{i}__` comment in `GAstOfJson.template.ml`.
+    // Eventually we should reorder definitions so the generated ones are all in one block. eping
+    // the order is important while we migrate from hand-written code.
     let names: &[&[&str]] = &[
         &[
             "Span",
@@ -451,7 +453,9 @@ fn generate_ml() -> Result<()> {
         ],
         &["TraitDecl", "TraitImpl", "GDeclarationGroup"],
     ];
-    let mut template = fs::read_to_string("./tests/generated-ml/GAstOfJson.template.ml")?;
+    let template_path = dir.join("GAstOfJson.template.ml");
+    let mut template = fs::read_to_string(&template_path)
+        .with_context(|| format!("Failed to read template file {}", template_path.display()))?;
     for (i, names) in names.iter().enumerate() {
         let generated = names
             .iter()
@@ -468,6 +472,12 @@ fn generate_ml() -> Result<()> {
         template = template.replace(&placeholder, &generated);
     }
 
-    fs::write("./tests/generated-ml/GAstOfJson.ml", template)?;
+    let generated_path = dir.join("GAstOfJson.ml");
+    fs::write(&generated_path, template).with_context(|| {
+        format!(
+            "Failed to write generated file {}",
+            generated_path.display()
+        )
+    })?;
     Ok(())
 }

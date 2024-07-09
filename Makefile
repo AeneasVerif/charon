@@ -70,7 +70,7 @@ charon-ml-tests: build-charon-ml charon-tests
 # Generate some of the ml code automatically from the rust definitions.
 .PHONY: generate-ml
 generate-ml:
-	cd charon && cargo test --test generate-ml -- --ignored
+	cd charon && cargo run --bin generate-ml
 	cd charon-ml && make format 2> /dev/null
 
 # Run Charon on rustc's ui test suite
