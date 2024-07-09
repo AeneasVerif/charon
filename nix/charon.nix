@@ -17,7 +17,8 @@ let
     filter =
       path: type:
       (craneLib.filterCargoSources path type)
-      || (lib.hasPrefix (toString ../charon/tests) path && !lib.hasSuffix ".llbc" path);
+      || (lib.hasPrefix (toString ../charon/tests) path && !lib.hasSuffix ".llbc" path)
+      || (lib.hasPrefix (toString ../charon/src/bin/generate-ml) path && !lib.hasSuffix ".llbc" path);
   };
 
   craneArgs = {
@@ -47,7 +48,7 @@ craneLib.buildPackage (
     postPatch = ''
       # This file is a symlink outside of the charon directory. We remove it so
       # that we regenerate a fresh file in its place.
-      rm -f tests/generated-ml/GAstOfJson.ml
+      rm -f src/bin/generate-ml/GAstOfJson.ml
     '';
     # Make sure the toolchain is in $PATH so that `cargo` can work
     # properly. On mac we also have to tell `charon-driver` where to find
@@ -65,13 +66,17 @@ craneLib.buildPackage (
       '');
     checkPhaseCargoCommand = ''
       CHARON_TOOLCHAIN_IS_IN_PATH=1 IN_CI=1 cargo test --profile release --locked
-      CHARON_TOOLCHAIN_IS_IN_PATH=1 IN_CI=1 cargo test --profile release --locked --test generate-ml -- --include-ignored
+      # We also re-generate the ocaml files.
+      CHARON_TOOLCHAIN_IS_IN_PATH=1 IN_CI=1 cargo run --release --locked --bin generate-ml
+
       # While running tests we also outputted llbc files. We export them for charon-ml tests.
       mkdir -p $out/tests-llbc
       cp tests/**/*.llbc $out/tests-llbc
-      # While running tests we also generated ocaml files. We export them to later check if they match.
+      cp src/bin/generate-ml/charon-itself.llbc $out/tests-llbc
+
+      # Export the generated files to later check if they match the committed files.
       mkdir -p $out/generated-ml
-      cp tests/generated-ml/*.ml $out/generated-ml
+      cp src/bin/generate-ml/*.ml $out/generated-ml
     '';
 
     passthru.check-fmt = craneLib.cargoFmt craneArgs;

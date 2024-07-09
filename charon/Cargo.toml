@@ -21,6 +21,13 @@ path = "src/bin/charon/main.rs"
 name = "charon-driver"
 path = "src/bin/charon-driver/main.rs"
 
+[[bin]]
+# The rustc driver. The resulting binary dynamically links to rust dylibs
+# including `librustc_driver.so`. Do not call directly, call charon instead to
+# let it set up the right paths.
+name = "generate-ml"
+path = "src/bin/generate-ml/main.rs"
+
 [[test]]
 name = "ui"
 path = "tests/ui.rs"
@@ -33,8 +40,10 @@ harness = false
 
 [dependencies]
 anyhow = "1.0.81"
+assert_cmd = "2.0"
 clap = { version = "4.0", features = ["derive", "env"] }
 colored = "2.0.4"
+convert_case = "0.6.0"
 derivative = "2.2.0"
 derive-visitor = { version = "0.4.0", features = ["std-types-drive"] }
 env_logger = { version = "0.11", features = ["color"] }
@@ -65,8 +74,6 @@ hax-frontend-exporter = { git = "https://github.com/hacspec/hax", branch = "main
 macros = { path = "./macros" }
 
 [dev-dependencies]
-assert_cmd = "2.0"
-convert_case = "0.6.0"
 ignore = "0.4"
 indoc = "2"
 libtest-mimic = "0.7"

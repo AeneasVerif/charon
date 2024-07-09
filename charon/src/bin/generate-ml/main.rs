@@ -1,13 +1,11 @@
-#![cfg(test)]
 //! Generate ocaml deserialization code for our types.
 //!
-//! This test runs charon on itself and generates the appropriate `<type>_of_json` functions for
-//! our types. The generated functions are inserted into `./generated-ml/GAstOfJson.template.ml` to
+//! This binary runs charon on itself and generates the appropriate `<type>_of_json` functions for
+//! our types. The generated functions are inserted into `./generate-ml/GAstOfJson.template.ml` to
 //! construct the final `GAstOfJson.ml`.
 //!
-//! Note: this test is ignored by default because running charon on itself is slow. To run it, call
-//! `cargo test --test generate-ml -- --ignored`. It is also run by `make generate-ml` in the crate
-//! root. Don't forget to format the output code after regenerating.
+//! To run it, call `cargo run --bin generate-ml`. It is also run by `make generate-ml` in the
+//! crate root. Don't forget to format the output code after regenerating.
 use anyhow::{bail, Result};
 use assert_cmd::cargo::CommandCargoExt;
 use charon_lib::export::CrateData;
@@ -23,6 +21,7 @@ use std::collections::HashMap;
 use std::fs;
 use std::fs::File;
 use std::io::BufReader;
+use std::path::PathBuf;
 use std::process::Command;
 
 /// `Name` is a complex datastructure; to inspect it we serialize it a little bit.
@@ -328,11 +327,9 @@ fn type_decl_to_json_deserializer(ctx: &GenerateCtx, decl: &TypeDecl) -> String 
     build_function(ctx, decl, &branches)
 }
 
-#[test]
-// Test is ignored by default. See the top for how to run it.
-#[ignore]
-fn generate_ml() -> Result<()> {
-    let charon_llbc = "tests/generated-ml/charon-itself.llbc";
+fn main() -> Result<()> {
+    let dir = PathBuf::from("src/bin/generate-ml");
+    let charon_llbc = dir.join("charon-itself.llbc");
     const RUN_CHARON: bool = true;
     if RUN_CHARON {
         // Call charon on itself
@@ -340,7 +337,7 @@ fn generate_ml() -> Result<()> {
         cmd.arg("--cargo-arg=--lib");
         cmd.arg("--errors-as-warnings");
         cmd.arg("--dest-file");
-        cmd.arg(charon_llbc);
+        cmd.arg(&charon_llbc);
         let output = cmd.output()?;
 
         if !output.status.success() {
@@ -451,7 +448,7 @@ fn generate_ml() -> Result<()> {
         ],
         &["TraitDecl", "TraitImpl", "GDeclarationGroup"],
     ];
-    let mut template = fs::read_to_string("./tests/generated-ml/GAstOfJson.template.ml")?;
+    let mut template = fs::read_to_string(dir.join("GAstOfJson.template.ml"))?;
     for (i, names) in names.iter().enumerate() {
         let generated = names
             .iter()
@@ -468,6 +465,6 @@ fn generate_ml() -> Result<()> {
         template = template.replace(&placeholder, &generated);
     }
 
-    fs::write("./tests/generated-ml/GAstOfJson.ml", template)?;
+    fs::write(dir.join("GAstOfJson.ml"), template)?;
     Ok(())
 }
