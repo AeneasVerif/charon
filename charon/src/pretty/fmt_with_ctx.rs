@@ -1059,9 +1059,8 @@ impl<C: AstFormatter> FmtWithCtx<C> for Terminator {
 impl<C: AstFormatter> FmtWithCtx<C> for TraitClause {
     fn fmt_with_ctx(&self, ctx: &C) -> String {
         let clause_id = ctx.format_object(self.clause_id);
-        let trait_id = ctx.format_object(self.trait_id);
-        let generics = self.generics.fmt_with_ctx(ctx);
-        format!("[{clause_id}]: {trait_id}{generics}")
+        let trait_ = self.trait_.fmt_with_ctx(ctx);
+        format!("[{clause_id}]: {trait_}")
     }
 }
 
@@ -1209,11 +1208,11 @@ impl<C: AstFormatter> FmtWithCtx<C> for TraitImpl {
     }
 }
 
-impl<C: AstFormatter> FmtWithCtx<C> for TraitInstanceId {
+impl<C: AstFormatter> FmtWithCtx<C> for TraitRefKind {
     fn fmt_with_ctx(&self, ctx: &C) -> String {
         match self {
-            TraitInstanceId::SelfId => "Self".to_string(),
-            TraitInstanceId::ParentClause(id, _decl_id, clause_id) => {
+            TraitRefKind::SelfId => "Self".to_string(),
+            TraitRefKind::ParentClause(id, _decl_id, clause_id) => {
                 let id = id.fmt_with_ctx(ctx);
                 // Using on purpose [to_pretty_string] instead of [format_object]:
                 // the clause is local to the associated type, so it should not
@@ -1221,7 +1220,7 @@ impl<C: AstFormatter> FmtWithCtx<C> for TraitInstanceId {
                 let clause = clause_id.to_pretty_string();
                 format!("(parents({id})::[{clause}])")
             }
-            TraitInstanceId::ItemClause(id, _decl_id, type_name, clause_id) => {
+            TraitRefKind::ItemClause(id, _decl_id, type_name, clause_id) => {
                 let id = id.fmt_with_ctx(ctx);
                 // Using on purpose [to_pretty_string] instead of [format_object]:
                 // the clause is local to the associated type, so it should not
@@ -1229,19 +1228,21 @@ impl<C: AstFormatter> FmtWithCtx<C> for TraitInstanceId {
                 let clause = clause_id.to_pretty_string();
                 format!("({id}::{type_name}::[{clause}])")
             }
-            TraitInstanceId::TraitImpl(id) => ctx.format_object(*id),
-            TraitInstanceId::Clause(id) => ctx.format_object(*id),
-            TraitInstanceId::BuiltinOrAuto(id) | TraitInstanceId::Dyn(id) => ctx.format_object(*id),
-            TraitInstanceId::Unknown(msg) => format!("UNKNOWN({msg})"),
+            TraitRefKind::TraitImpl(id, args) => {
+                let impl_ = ctx.format_object(*id);
+                let args = args.fmt_with_ctx_split_trait_refs(ctx);
+                format!("{impl_}{args}")
+            }
+            TraitRefKind::Clause(id) => ctx.format_object(*id),
+            TraitRefKind::BuiltinOrAuto(tr) | TraitRefKind::Dyn(tr) => tr.fmt_with_ctx(ctx),
+            TraitRefKind::Unknown(msg) => format!("UNKNOWN({msg})"),
         }
     }
 }
 
 impl<C: AstFormatter> FmtWithCtx<C> for TraitRef {
     fn fmt_with_ctx(&self, ctx: &C) -> String {
-        let trait_id = self.trait_id.fmt_with_ctx(ctx);
-        let generics = self.generics.fmt_with_ctx_split_trait_refs(ctx);
-        format!("{trait_id}{generics}")
+        self.kind.fmt_with_ctx(ctx)
     }
 }
 

@@ -330,64 +330,62 @@ impl Deps<'_, '_> {
 
 fn compute_declarations_graph<'tcx, 'ctx>(ctx: &'tcx TransformCtx<'ctx>) -> Deps<'tcx, 'ctx> {
     let mut graph = Deps::new(ctx);
-    for id in &ctx.translated.all_ids {
-        if let Some(item) = ctx.translated.get_item(*id) {
-            graph.set_current_id(ctx, *id);
-            match item {
-                AnyTransItem::Type(d) => {
-                    d.drive(&mut graph);
-                }
-                AnyTransItem::Fun(d) => {
-                    // Explore the signature
-                    d.signature.drive(&mut graph);
-                    // Skip `d.kind`: we don't want to record a dependency to the impl block this
-                    // belongs to.
-                    d.body.drive(&mut graph);
-                }
-                AnyTransItem::Global(d) => {
-                    // FIXME: shouldn't we visit the generics etc?
-                    d.body.drive(&mut graph);
-                }
-                AnyTransItem::TraitDecl(d) => {
-                    // Visit the traits referenced in the generics
-                    d.generics.drive(&mut graph);
+    for (id, item) in ctx.translated.all_items_with_ids() {
+        graph.set_current_id(ctx, id);
+        match item {
+            AnyTransItem::Type(d) => {
+                d.drive(&mut graph);
+            }
+            AnyTransItem::Fun(d) => {
+                // Explore the signature
+                d.signature.drive(&mut graph);
+                // Skip `d.kind`: we don't want to record a dependency to the impl block this
+                // belongs to.
+                d.body.drive(&mut graph);
+            }
+            AnyTransItem::Global(d) => {
+                // FIXME: shouldn't we visit the generics etc?
+                d.body.drive(&mut graph);
+            }
+            AnyTransItem::TraitDecl(d) => {
+                // Visit the traits referenced in the generics
+                d.generics.drive(&mut graph);
 
-                    // Visit the parent clauses
-                    d.parent_clauses.drive(&mut graph);
+                // Visit the parent clauses
+                d.parent_clauses.drive(&mut graph);
 
-                    // Visit the items
-                    d.consts.drive(&mut graph);
-                    d.types.drive(&mut graph);
+                // Visit the items
+                d.consts.drive(&mut graph);
+                d.types.drive(&mut graph);
 
-                    let method_ids = d
-                        .required_methods
-                        .iter()
-                        .map(|(_, id)| id)
-                        .chain(d.provided_methods.iter().filter_map(|(_, id)| id.as_ref()))
-                        .copied();
-                    for id in method_ids {
-                        // Important: we must ignore the function id, because
-                        // otherwise in the presence of associated types we may
-                        // get a mutual recursion between the function and the
-                        // trait.
-                        // Ex:
-                        // ```
-                        // trait Trait {
-                        //   type X;
-                        //   fn f(x : Trait::X);
-                        // }
-                        // ```
-                        if let Some(decl) = ctx.translated.fun_decls.get(id) {
-                            decl.signature.drive(&mut graph);
-                        }
+                let method_ids = d
+                    .required_methods
+                    .iter()
+                    .map(|(_, id)| id)
+                    .chain(d.provided_methods.iter().filter_map(|(_, id)| id.as_ref()))
+                    .copied();
+                for id in method_ids {
+                    // Important: we must ignore the function id, because
+                    // otherwise in the presence of associated types we may
+                    // get a mutual recursion between the function and the
+                    // trait.
+                    // Ex:
+                    // ```
+                    // trait Trait {
+                    //   type X;
+                    //   fn f(x : Trait::X);
+                    // }
+                    // ```
+                    if let Some(decl) = ctx.translated.fun_decls.get(id) {
+                        decl.signature.drive(&mut graph);
                     }
                 }
-                AnyTransItem::TraitImpl(d) => {
-                    d.drive(&mut graph);
-                }
             }
-            graph.unset_current_id();
+            AnyTransItem::TraitImpl(d) => {
+                d.drive(&mut graph);
+            }
         }
+        graph.unset_current_id();
     }
     graph
 }

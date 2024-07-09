@@ -295,7 +295,6 @@ and ty =
 
 and trait_ref = {
   trait_id : trait_instance_id;
-  generics : generic_args;
   trait_decl_ref : trait_decl_ref;
 }
 
@@ -315,27 +314,15 @@ and generic_args = {
 and trait_instance_id =
   | Self
       (** Reference to *self*, in case of trait declarations/implementations *)
-  | TraitImpl of trait_impl_id  (** A specific implementation *)
-  | BuiltinOrAuto of trait_decl_id
+  | TraitImpl of trait_impl_id * generic_args  (** A specific implementation *)
+  | BuiltinOrAuto of trait_decl_ref
   | Clause of trait_clause_id
   | ParentClause of trait_instance_id * trait_decl_id * trait_clause_id
   | ItemClause of
       trait_instance_id * trait_decl_id * trait_item_name * trait_clause_id
-  | TraitRef of trait_ref
-      (** Not present in the Rust version of Charon.
-
-          We need this case for instantiations: when calling a function which has
-          trait clauses, for instance, we substitute the clauses refernced in the
-          [Clause] and [Self] case with trait references.
-
-          Remark: something potentially confusing is that [trait_clause_id] is used for
-          different purposes. In the [Clause] case, a trait clause id identifies a local
-          trait clause (which can thus be substituted). In the other cases, it references
-          a sub-clause relative to a trait instance id.
-       *)
   | FnPointer of ty
   | Closure of fun_decl_id * generic_args
-  | Dyn of trait_decl_id
+  | Dyn of trait_decl_ref
   | Unsolved of trait_decl_id * generic_args
   | UnknownTrait of string
       (** Not present in the Rust version of Charon.
@@ -431,8 +418,7 @@ and rty = ty
 and trait_clause = {
   clause_id : trait_clause_id;
   span : span option;
-  trait_id : trait_decl_id;
-  clause_generics : generic_args;
+  trait : trait_decl_ref;
 }
 
 and generic_params = {

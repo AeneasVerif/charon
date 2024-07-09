@@ -34,13 +34,12 @@ use rustc_hir::def_id::DefId;
 /// ```
 #[derive(Debug, Clone)]
 pub(crate) struct NonLocalTraitClause {
-    pub clause_id: TraitInstanceId,
+    pub clause_id: TraitRefKind,
     /// [Some] if this is the top clause, [None] if this is about a parent/
     /// associated type clause.
     pub span: Option<Span>,
     pub origin: PredicateOrigin,
-    pub trait_id: TraitDeclId,
-    pub generics: GenericArgs,
+    pub trait_: TraitDeclRef,
 }
 
 impl NonLocalTraitClause {
@@ -49,8 +48,7 @@ impl NonLocalTraitClause {
             clause_id,
             origin: self.origin.clone(),
             span: self.span,
-            trait_id: self.trait_id,
-            generics: self.generics.clone(),
+            trait_: self.trait_.clone(),
         }
     }
 }
@@ -58,9 +56,8 @@ impl NonLocalTraitClause {
 impl<C: AstFormatter> FmtWithCtx<C> for NonLocalTraitClause {
     fn fmt_with_ctx(&self, ctx: &C) -> String {
         let clause_id = self.clause_id.fmt_with_ctx(ctx);
-        let trait_id = ctx.format_object(self.trait_id);
-        let generics = self.generics.fmt_with_ctx(ctx);
-        format!("[{clause_id}]: {trait_id}{generics}")
+        let trait_ = self.trait_.fmt_with_ctx(ctx);
+        format!("[{clause_id}]: {trait_}")
     }
 }
 
@@ -402,7 +399,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 .as_mut_clauses()
                 .push(local_clause);
             self.trait_clauses
-                .entry(clause.trait_id)
+                .entry(clause.trait_.trait_id)
                 .or_default()
                 .push(clause);
             Ok(Some(clause_id))
@@ -422,12 +419,12 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         let clause = self.translate_trait_clause_aux(
             span,
             &trait_pred,
-            TraitInstanceId::SelfId,
+            TraitRefKind::SelfId,
             PredicateOrigin::TraitSelf,
         )?;
         if let Some(clause) = clause {
             self.trait_clauses
-                .entry(clause.trait_id)
+                .entry(clause.trait_.trait_id)
                 .or_default()
                 .push(clause);
         }
@@ -438,7 +435,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         &mut self,
         hspan: &hax::Span,
         trait_pred: &hax::TraitPredicate,
-        clause_id: TraitInstanceId,
+        clause_id: TraitRefKind,
         origin: PredicateOrigin,
     ) -> Result<Option<NonLocalTraitClause>, Error> {
         // Note sure what this is about
@@ -468,8 +465,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             clause_id,
             span: Some(span),
             origin,
-            trait_id,
-            generics,
+            trait_: TraitDeclRef { trait_id, generics },
         }))
     }
 
@@ -597,10 +593,8 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 } else {
                     let msg = format!("Error during trait resolution: {}", &err.msg);
                     self.span_err(span, &msg);
-                    let trait_id = TraitInstanceId::Unknown(err.msg);
                     Ok(Some(TraitRef {
-                        trait_id,
-                        generics: GenericArgs::empty(),
+                        kind: TraitRefKind::Unknown(err.msg),
                         trait_decl_ref,
                     }))
                 }
@@ -629,7 +623,6 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 let trait_id = self.register_trait_impl_id(span, def_id)?;
                 // We already tested above whether the trait should be filtered
                 let trait_id = trait_id.unwrap();
-                let trait_id = TraitInstanceId::TraitImpl(trait_id);
 
                 let generics = self.translate_substs_and_trait_refs(
                     span,
@@ -639,8 +632,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                     nested,
                 )?;
                 TraitRef {
-                    trait_id,
-                    generics,
+                    kind: TraitRefKind::TraitImpl(trait_id, generics),
                     trait_decl_ref,
                 }
             }
@@ -683,7 +675,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 // If we are refering to a trait clause, we need to find the
                 // relevant one.
                 let mut trait_id = match &impl_source.r#impl {
-                    ImplExprAtom::SelfImpl { .. } => TraitInstanceId::SelfId,
+                    ImplExprAtom::SelfImpl { .. } => TraitRefKind::SelfId,
                     ImplExprAtom::LocalBound { .. } => {
                         self.find_trait_clause_for_param(trait_decl_id, &generics)
                     }
@@ -701,7 +693,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                             index,
                             predicate_id: _,
                         } => {
-                            trait_id = TraitInstanceId::ItemClause(
+                            trait_id = TraitRefKind::ItemClause(
                                 Box::new(trait_id),
                                 current_trait_decl_id,
                                 TraitItemName(item.name.clone()),
@@ -719,7 +711,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                             index,
                             predicate_id: _,
                         } => {
-                            trait_id = TraitInstanceId::ParentClause(
+                            trait_id = TraitRefKind::ParentClause(
                                 Box::new(trait_id),
                                 current_trait_decl_id,
                                 TraitClauseId::new(*index),
@@ -737,46 +729,26 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 // Ignore the arguments: we forbid using universal quantifiers
                 // on the trait clauses for now.
                 TraitRef {
-                    trait_id,
-                    generics: GenericArgs::empty(),
+                    kind: trait_id,
                     trait_decl_ref,
                 }
             }
             ImplExprAtom::Dyn => TraitRef {
-                trait_id: TraitInstanceId::Dyn(trait_decl_ref.trait_id),
-                generics: GenericArgs::empty(),
+                kind: TraitRefKind::Dyn(trait_decl_ref.clone()),
                 trait_decl_ref,
             },
-            ImplExprAtom::Builtin { r#trait: trait_ref } => {
-                let def_id = DefId::from(&trait_ref.def_id);
-                // Remark: we already filtered the marker traits when translating
-                // the trait decl ref: the trait id should be Some(...).
-                let trait_id = self.register_trait_decl_id(span, def_id)?.unwrap();
-
-                let trait_id = TraitInstanceId::BuiltinOrAuto(trait_id);
-                let generics = self.translate_substs_and_trait_refs(
-                    span,
-                    erase_regions,
-                    None,
-                    &trait_ref.generic_args,
-                    nested,
-                )?;
-                TraitRef {
-                    trait_id,
-                    generics,
-                    trait_decl_ref,
-                }
-            }
+            ImplExprAtom::Builtin { .. } => TraitRef {
+                kind: TraitRefKind::BuiltinOrAuto(trait_decl_ref.clone()),
+                trait_decl_ref,
+            },
             ImplExprAtom::Todo(msg) => {
                 let error = format!("Error during trait resolution: {}", msg);
                 self.span_err(span, &error);
                 if !self.t_ctx.continue_on_failure() {
                     panic!("{}", error)
                 } else {
-                    let trait_id = TraitInstanceId::Unknown(msg.clone());
                     TraitRef {
-                        trait_id,
-                        generics: GenericArgs::empty(),
+                        kind: TraitRefKind::Unknown(msg.clone()),
                         trait_decl_ref,
                     }
                 }
@@ -792,17 +764,19 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         clause: &NonLocalTraitClause,
     ) -> bool {
         let fmt_ctx = self.into_fmt();
-        trace!("Matching trait clauses:\n- trait_id: {:?}\n- generics: {:?}\n- clause.trait_id: {:?}\n- clause.generics: {:?}",
-               fmt_ctx.format_object(trait_id), generics.fmt_with_ctx(&fmt_ctx),
-               fmt_ctx.format_object(clause.trait_id), clause.generics.fmt_with_ctx(&fmt_ctx)
+        trace!(
+            "Matching trait clauses:\n- trait_id: {:?}\n- generics: {:?}\n- clause.trait_: {:?}",
+            fmt_ctx.format_object(trait_id),
+            generics.fmt_with_ctx(&fmt_ctx),
+            clause.trait_.fmt_with_ctx(&fmt_ctx)
         );
-        assert_eq!(clause.trait_id, trait_id);
+        assert_eq!(clause.trait_.trait_id, trait_id);
         // Ignoring the regions for now
         let tgt_types = &generics.types;
         let tgt_const_generics = &generics.const_generics;
 
-        let src_types = &clause.generics.types;
-        let src_const_generics = &clause.generics.const_generics;
+        let src_types = &clause.trait_.generics.types;
+        let src_const_generics = &clause.trait_.generics.const_generics;
 
         // We simply check the equality between the arguments:
         // there are no universally quantified variables to unify.
@@ -821,7 +795,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         &self,
         trait_id: TraitDeclId,
         generics: &GenericArgs,
-    ) -> TraitInstanceId {
+    ) -> TraitRefKind {
         trace!(
             "Inside context of: {:?}\nSpan: {:?}",
             self.def_id,
@@ -865,7 +839,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 "Could not find a clause for parameter:\n- target param: {}\n- available clauses:\n{}\n- context: {:?}",
                 trait_ref, clauses.join("\n"), self.def_id
             );
-            TraitInstanceId::Unknown(format!(
+            TraitRefKind::Unknown(format!(
                 "Could not find a clause for parameter: {} (available clauses: {}) (context: {:?})",
                 trait_ref,
                 clauses.join("; "),

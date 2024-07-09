@@ -48,8 +48,7 @@ fn perform_test(test_case: &Case, action: Action) -> anyhow::Result<()> {
     Ok(())
 }
 
-#[test]
-fn cargo() -> Result<(), Box<dyn Error>> {
+fn main() -> Result<(), Box<dyn Error>> {
     let action = if std::env::var("IN_CI").as_deref() == Ok("1") {
         Action::Verify
     } else {

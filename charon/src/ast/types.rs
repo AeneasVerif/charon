@@ -130,12 +130,11 @@ pub enum Region {
 /// definition. Note that every path designated by [TraitInstanceId] refers
 /// to a *trait instance*, which is why the [Clause] variant may seem redundant
 /// with some of the other variants.
-#[derive(
-    Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Hash, Ord, PartialOrd, Drive, DriveMut,
-)]
-pub enum TraitInstanceId {
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Hash, Drive, DriveMut)]
+#[charon::rename("TraitInstanceId")]
+pub enum TraitRefKind {
     /// A specific top-level implementation item.
-    TraitImpl(TraitImplId),
+    TraitImpl(TraitImplId, GenericArgs),
 
     /// One of the local clauses.
     ///
@@ -152,6 +151,9 @@ pub enum TraitInstanceId {
     /// Remark: the [TraitDeclId] gives the trait declaration which is
     /// implemented by the instance id from which we take the parent clause
     /// (see example below). It is not necessary and included for convenience.
+    ///
+    /// Remark: Ideally we should store a full `TraitRef` instead, but hax does not give us enough
+    /// information to get the right generic args.
     ///
     /// Example:
     /// ```text
@@ -173,7 +175,7 @@ pub enum TraitInstanceId {
     ///              clause 0 implements Bar
     /// }
     /// ```
-    ParentClause(Box<TraitInstanceId>, TraitDeclId, TraitClauseId),
+    ParentClause(Box<TraitRefKind>, TraitDeclId, TraitClauseId),
 
     /// A clause bound in a trait item (typically a trait clause in an
     /// associated type).
@@ -202,12 +204,7 @@ pub enum TraitInstanceId {
     /// ```
     ///
     ///
-    ItemClause(
-        Box<TraitInstanceId>,
-        TraitDeclId,
-        TraitItemName,
-        TraitClauseId,
-    ),
+    ItemClause(Box<TraitRefKind>, TraitDeclId, TraitItemName, TraitClauseId),
 
     /// Self, in case of trait declarations/implementations.
     ///
@@ -220,10 +217,10 @@ pub enum TraitInstanceId {
 
     /// A specific builtin trait implementation like [core::marker::Sized] or
     /// auto trait implementation like [core::marker::Syn].
-    BuiltinOrAuto(TraitDeclId),
+    BuiltinOrAuto(TraitDeclRef),
 
     /// The automatically-generated implementation for `dyn Trait`.
-    Dyn(TraitDeclId),
+    Dyn(TraitDeclRef),
 
     /// For error reporting.
     #[charon::rename("UnknownTrait")]
@@ -233,10 +230,9 @@ pub enum TraitInstanceId {
 /// A reference to a trait
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Hash, Drive, DriveMut)]
 pub struct TraitRef {
-    pub trait_id: TraitInstanceId,
-    pub generics: GenericArgs,
+    #[charon::rename("trait_id")]
+    pub kind: TraitRefKind,
     /// Not necessary, but useful
-    #[drive(skip)]
     pub trait_decl_ref: TraitDeclRef,
 }
 
@@ -351,11 +347,8 @@ pub struct TraitClause {
     #[charon::opaque]
     pub origin: PredicateOrigin,
     /// The trait that is implemented.
-    pub trait_id: TraitDeclId,
-    /// The generics applied to the trait. Note: this includes the `Self` type.
-    /// Remark: the trait refs list in the [generics] field should be empty.
-    #[charon::rename("clause_generics")]
-    pub generics: GenericArgs,
+    #[charon::rename("trait")]
+    pub trait_: TraitDeclRef,
 }
 
 impl Eq for TraitClause {}

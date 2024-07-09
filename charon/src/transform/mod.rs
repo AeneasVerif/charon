@@ -1,4 +1,6 @@
 #[charon::opaque]
+pub mod check_generics;
+#[charon::opaque]
 pub mod ctx;
 #[charon::opaque]
 pub mod graphs;
@@ -90,4 +92,6 @@ pub static LLBC_PASSES: &[&dyn ctx::LlbcPass] = &[
     // # Micro-pass (not necessary, but good for cleaning): remove the
     // useless no-ops.
     &remove_nops::Transform,
+    // Check that all supplied generic types match the corresponding generic parameters.
+    &check_generics::Check,
 ];

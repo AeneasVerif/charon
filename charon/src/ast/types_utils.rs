@@ -102,6 +102,14 @@ impl GenericArgs {
         }
     }
 
+    /// Check whether this matches the given `GenericParams`.
+    pub fn matches(&self, params: &GenericParams) -> bool {
+        params.regions.len() == self.regions.len()
+            && params.types.len() == self.types.len()
+            && params.const_generics.len() == self.const_generics.len()
+            && params.trait_clauses.len() == self.trait_refs.len()
+    }
+
     /// Return the same generics, but where we pop the first type arguments.
     /// This is useful for trait references (for pretty printing for instance),
     /// because the first type argument is the type for which the trait is

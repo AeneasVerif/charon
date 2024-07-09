@@ -43,17 +43,15 @@ impl ClauseTransCtx {
             | ClauseTransCtx::Item(clauses, ..) => clauses,
         }
     }
-    pub(crate) fn generate_instance_id(&mut self) -> (TraitClauseId, TraitInstanceId) {
+    pub(crate) fn generate_instance_id(&mut self) -> (TraitClauseId, TraitRefKind) {
         let fresh_id = self.as_mut_clauses().next_id();
         let instance_id = match self {
-            ClauseTransCtx::Base { .. } => TraitInstanceId::Clause(fresh_id),
-            ClauseTransCtx::Parent(_, trait_decl_id) => TraitInstanceId::ParentClause(
-                Box::new(TraitInstanceId::SelfId),
-                *trait_decl_id,
-                fresh_id,
-            ),
-            ClauseTransCtx::Item(_, trait_decl_id, item_name) => TraitInstanceId::ItemClause(
-                Box::new(TraitInstanceId::SelfId),
+            ClauseTransCtx::Base { .. } => TraitRefKind::Clause(fresh_id),
+            ClauseTransCtx::Parent(_, trait_decl_id) => {
+                TraitRefKind::ParentClause(Box::new(TraitRefKind::SelfId), *trait_decl_id, fresh_id)
+            }
+            ClauseTransCtx::Item(_, trait_decl_id, item_name) => TraitRefKind::ItemClause(
+                Box::new(TraitRefKind::SelfId),
                 *trait_decl_id,
                 item_name.clone(),
                 fresh_id,

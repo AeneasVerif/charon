@@ -1,6 +1,6 @@
 [package]
 name = "charon"
-version = "0.1.19"
+version = "0.1.20"
 authors = ["Son Ho <hosonmarc@gmail.com>"]
 edition = "2021"
 
@@ -20,6 +20,16 @@ path = "src/bin/charon/main.rs"
 # let it set up the right paths.
 name = "charon-driver"
 path = "src/bin/charon-driver/main.rs"
+
+[[test]]
+name = "ui"
+path = "tests/ui.rs"
+harness = false
+
+[[test]]
+name = "cargo"
+path = "tests/cargo.rs"
+harness = false
 
 [dependencies]
 anyhow = "1.0.81"

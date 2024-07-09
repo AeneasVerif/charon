@@ -409,16 +409,10 @@ and existential_predicate_of_json (js : json) :
 and trait_ref_of_json (js : json) : (trait_ref, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
-    | `Assoc
-        [
-          ("trait_id", trait_id);
-          ("generics", generics);
-          ("trait_decl_ref", trait_decl_ref);
-        ] ->
-        let* trait_id = trait_instance_id_of_json trait_id in
-        let* generics = generic_args_of_json generics in
+    | `Assoc [ ("kind", kind); ("trait_decl_ref", trait_decl_ref) ] ->
+        let* trait_id = trait_instance_id_of_json kind in
         let* trait_decl_ref = trait_decl_ref_of_json trait_decl_ref in
-        Ok { trait_id; generics; trait_decl_ref }
+        Ok { trait_id; trait_decl_ref }
     | _ -> Error "")
 
 and trait_decl_ref_of_json (js : json) : (trait_decl_ref, string) result =
@@ -452,9 +446,10 @@ and generic_args_of_json (js : json) : (generic_args, string) result =
 and trait_instance_id_of_json (js : json) : (trait_instance_id, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
-    | `Assoc [ ("TraitImpl", trait_impl) ] ->
-        let* trait_impl = trait_impl_id_of_json trait_impl in
-        Ok (TraitImpl trait_impl)
+    | `Assoc [ ("TraitImpl", `List [ x0; x1 ]) ] ->
+        let* x0 = trait_impl_id_of_json x0 in
+        let* x1 = generic_args_of_json x1 in
+        Ok (TraitImpl (x0, x1))
     | `Assoc [ ("Clause", clause) ] ->
         let* clause = trait_clause_id_of_json clause in
         Ok (Clause clause)
@@ -471,10 +466,10 @@ and trait_instance_id_of_json (js : json) : (trait_instance_id, string) result =
         Ok (ItemClause (x0, x1, x2, x3))
     | `String "SelfId" -> Ok Self
     | `Assoc [ ("BuiltinOrAuto", builtin_or_auto) ] ->
-        let* builtin_or_auto = trait_decl_id_of_json builtin_or_auto in
+        let* builtin_or_auto = trait_decl_ref_of_json builtin_or_auto in
         Ok (BuiltinOrAuto builtin_or_auto)
     | `Assoc [ ("Dyn", dyn) ] ->
-        let* dyn = trait_decl_id_of_json dyn in
+        let* dyn = trait_decl_ref_of_json dyn in
         Ok (Dyn dyn)
     | `Assoc [ ("Unknown", unknown) ] ->
         let* unknown = string_of_json unknown in
@@ -560,14 +555,12 @@ and trait_clause_of_json (id_to_file : id_to_file_map) (js : json) :
           ("clause_id", clause_id);
           ("span", span);
           ("origin", _);
-          ("trait_id", trait_id);
-          ("generics", generics);
+          ("trait_", trait_);
         ] ->
         let* clause_id = trait_clause_id_of_json clause_id in
         let* span = option_of_json (span_of_json id_to_file) span in
-        let* trait_id = trait_decl_id_of_json trait_id in
-        let* clause_generics = generic_args_of_json generics in
-        Ok { clause_id; span; trait_id; clause_generics }
+        let* trait = trait_decl_ref_of_json trait_ in
+        Ok { clause_id; span; trait }
     | _ -> Error "")
 
 and outlives_pred_of_json :
