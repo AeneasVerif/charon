@@ -1,9 +1,12 @@
-(** WARNING: this file is partially auto-generated. `GAstOfJson.template.ml`
-    contains the manual definitions and some `(* __REPLACEn__ *)` comments.
-    These comments are replaced by auto-generated definitions by the
-    `generate-ml` rust test. That test is ignored by default. To re-generate
-    the files, call `make generate-ml` in the crate root. Do not edit
-    `GAstOfJson` by hand. *)
+(** WARNING: this file is partially auto-generated. Do not edit `GAstOfJson.ml`
+    by hand. Edit `GAstOfJson.template.ml` instead, or improve the code
+    generation tool so avoid the need for hand-writing things.
+
+    `GAstOfJson.template.ml` contains the manual definitions and some `(*
+    __REPLACEn__ *)` comments. These comments are replaced by auto-generated
+    definitions by running `make generate-ml` in the crate root. The
+    code-generation code is in `charon/src/bin/generate-ml`.
+ *)
 
 (** Functions to load (U)LLBC ASTs from json.
 
@@ -11,8 +14,6 @@
     However, [ppx_derive_yojson] expects formatting to be slightly
     different from what [serde_rs] generates (because it uses [Yojson.Safe.t]
     and not [Yojson.Basic.t]).
-
-    TODO: we should check all that the integer values are in the proper range
  *)
 
 open Yojson.Basic

@@ -375,6 +375,10 @@ fn main() -> Result<()> {
     let raw_span = name_to_type.get("RawSpan").unwrap();
     ctx.contains_raw_span = contains_id(&ctx.crate_data, raw_span.def_id);
 
+    // This lists items in the order we want to generate code for them. The ith list of this slice
+    // will be used to generate code into the `__REPLACE{i}__` comment in `GAstOfJson.template.ml`.
+    // Eventually we should reorder definitions so the generated ones are all in one block. eping
+    // the order is important while we migrate from hand-written code.
     let names: &[&[&str]] = &[
         &[
             "Span",
