@@ -6,7 +6,7 @@
 //!
 //! To run it, call `cargo run --bin generate-ml`. It is also run by `make generate-ml` in the
 //! crate root. Don't forget to format the output code after regenerating.
-use anyhow::{bail, Result};
+use anyhow::{bail, Context, Result};
 use assert_cmd::cargo::CommandCargoExt;
 use charon_lib::export::CrateData;
 use charon_lib::meta::ItemMeta;
@@ -348,7 +348,8 @@ fn main() -> Result<()> {
 
     let crate_data: CrateData = {
         use serde::Deserialize;
-        let file = File::open(charon_llbc)?;
+        let file = File::open(&charon_llbc)
+            .with_context(|| format!("Failed to read llbc file {}", charon_llbc.display()))?;
         let reader = BufReader::new(file);
         let mut deserializer = serde_json::Deserializer::from_reader(reader);
         // Deserialize without recursion limit.
@@ -452,7 +453,9 @@ fn main() -> Result<()> {
         ],
         &["TraitDecl", "TraitImpl", "GDeclarationGroup"],
     ];
-    let mut template = fs::read_to_string(dir.join("GAstOfJson.template.ml"))?;
+    let template_path = dir.join("GAstOfJson.template.ml");
+    let mut template = fs::read_to_string(&template_path)
+        .with_context(|| format!("Failed to read template file {}", template_path.display()))?;
     for (i, names) in names.iter().enumerate() {
         let generated = names
             .iter()
@@ -469,6 +472,12 @@ fn main() -> Result<()> {
         template = template.replace(&placeholder, &generated);
     }
 
-    fs::write(dir.join("GAstOfJson.ml"), template)?;
+    let generated_path = dir.join("GAstOfJson.ml");
+    fs::write(&generated_path, template).with_context(|| {
+        format!(
+            "Failed to write generated file {}",
+            generated_path.display()
+        )
+    })?;
     Ok(())
 }
