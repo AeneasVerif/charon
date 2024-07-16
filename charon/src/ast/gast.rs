@@ -56,7 +56,7 @@ pub struct GExprBody<T> {
     /// We always have, in the following order:
     /// - the local used for the return value (index 0)
     /// - the input arguments
-    /// - the remaining locals, used for the intermediate computations 
+    /// - the remaining locals, used for the intermediate computations
     pub locals: Vector<VarId, Var>,
     pub body: T,
 }
