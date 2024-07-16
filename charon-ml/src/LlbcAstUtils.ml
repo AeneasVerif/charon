@@ -1,6 +1,23 @@
 include GAstUtils
 open LlbcAst
 open Utils
+open Collections
+
+(** Returns a list of all functions in a crate *)
+let fun_decl_list_from_crate (crate : crate) : fun_decl list =
+  snd (List.split (FunDeclId.Map.bindings crate.fun_decls))
+
+(** Returns a list option of all arguments of a functions
+    If a function does not have a body, it cannot access
+    the locals field where the arguments are so it returns None
+*)
+let get_fun_args (fun_decl : fun_decl) : var list option =
+  match fun_decl.body with
+  | Some body ->
+      let input_number = body.arg_count in
+      let input_list = List.tl body.locals in
+      Some (fst (List.split_at input_list input_number))
+  | None -> None
 
 (** Check if a {!type:Charon.LlbcAst.statement} contains loops *)
 let statement_has_loops (st : statement) : bool =

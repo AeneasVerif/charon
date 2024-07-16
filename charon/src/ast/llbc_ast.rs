@@ -27,8 +27,12 @@ pub struct Assert {
     Debug, Clone, EnumIsA, EnumToGetters, EnumAsGetters, Serialize, Deserialize, Drive, DriveMut,
 )]
 pub enum RawStatement {
+    /// Assigns an `Rvalue` to a `Place`. e.g. `let y = x;` could become
+    /// `y := move x` which is represented as `Assign(y, Rvalue::Use(Operand::Move(x)))`.
     Assign(Place, Rvalue),
+    /// Only used for borrow-checking
     FakeRead(Place),
+    /// Not used today because we take MIR built.
     SetDiscriminant(Place, VariantId),
     Drop(Place),
     Assert(Assert),
@@ -53,6 +57,10 @@ pub enum RawStatement {
     Nop,
     /// The contained statements must NOT be sequences. To ensure that, use [Sequence::then] to
     /// build sequences.
+    /// Note that on the ml side, sequences will be in the shape of
+    /// `Sequence of statement * statement` where the second `statement` might
+    ///  be a sequence if needed, but not the first one, e.g. `Sequence [a, b,
+    ///  c]` becomes `Sequence (a, Sequence (b, c))`
     Sequence(Vec<Statement>),
     Switch(Switch),
     Loop(Box<Statement>),
@@ -79,7 +87,12 @@ pub struct Statement {
     VariantIndexArity,
 )]
 pub enum Switch {
-    /// Gives the `if` block and the `else` block
+    /// Gives the `if` block and the `else` block. The `Operand` is the condition of the `if`, e.g. `if (y == 0)` could become
+    /// ```rust,ignore
+    /// v@3 := copy y; // Represented as `Assign(v@3, Use(Copy(y))`
+    /// v@2 := move v@3 == 0; // Represented as `Assign(v@2, BinOp(BinOp::Eq, Move(y), Const(0)))`
+    /// if (move v@2) { // Represented as `If(Move(v@2), <then branch>, <else branch>)`
+    /// ```
     If(Operand, Box<Statement>, Box<Statement>),
     /// Gives the integer type, a map linking values to switch branches, and the
     /// otherwise block. Note that matches over enumerations are performed by

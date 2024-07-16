@@ -53,8 +53,8 @@ pub struct GExprBody<T> {
     /// The number of local variables used for the input arguments.
     pub arg_count: usize,
     /// The local variables.
-    /// We always have:
-    /// - the local used for the return value
+    /// We always have, in the following order:
+    /// - the local used for the return value (index 0)
     /// - the input arguments
     /// - the remaining locals, used for the intermediate computations
     pub locals: Vector<VarId, Var>,
