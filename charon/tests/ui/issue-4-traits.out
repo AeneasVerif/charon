@@ -28,7 +28,7 @@ impl<T, U> core::convert::{impl core::convert::TryInto<U> for T#6}<T, U> : core:
 where
     [@TraitClause0]: core::convert::TryFrom<U, T>,
 {
-    type Error = @TraitClause0::Error with []
+    type Error = @TraitClause0::Error
     fn try_into = core::convert::{impl core::convert::TryInto<U> for T#6}::try_into
 }
 
@@ -52,7 +52,7 @@ impl<'_0, T, const N : usize> core::array::{impl core::convert::TryFrom<&'_0 (Sl
 where
     [@TraitClause0]: core::marker::Copy<T>,
 {
-    type Error = core::array::TryFromSliceError with []
+    type Error = core::array::TryFromSliceError
     fn try_from = core::array::{impl core::convert::TryFrom<&'_0 (Slice<T>)> for Array<T, const N : usize>#7}::try_from
 }
 

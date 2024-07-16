@@ -76,10 +76,9 @@ where
 
 trait test_crate::Trait<Self>
 {
+    parent_clause_0 : [@TraitClause0]: core::marker::Copy<Self::Ty>
+    parent_clause_1 : [@TraitClause1]: core::clone::Clone<Self::Ty>
     type Ty
-        where
-            [@TraitClause0]: core::marker::Copy<Self::Ty>,
-            [@TraitClause1]: core::clone::Clone<Self::Ty>,
 }
 
 fn test_crate::copy_assoc_ty<T>(@1: @TraitClause0::Ty)

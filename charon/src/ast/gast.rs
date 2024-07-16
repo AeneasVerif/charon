@@ -238,7 +238,10 @@ pub struct TraitDecl {
     ///
     /// The optional id is for the default value.
     pub consts: Vec<(TraitItemName, (Ty, Option<GlobalDeclId>))>,
-    /// The associated types declared in the trait.
+    /// The associated types declared in the trait. The `Vector` is a list of trait clauses that
+    /// apply to this item. This is used during translation, but the `lift_associated_item_clauses`
+    /// pass moves them to be parent clauses later. Hence this is empty after that pass.
+    /// TODO: Do this as we translate to avoid the need to store this vector.
     pub types: Vec<(
         TraitItemName,
         (Vector<TraitClauseId, TraitClause>, Option<Ty>),
@@ -287,7 +290,9 @@ pub struct TraitImpl {
     pub parent_trait_refs: Vector<TraitClauseId, TraitRef>,
     /// The associated constants declared in the trait.
     pub consts: Vec<(TraitItemName, (Ty, GlobalDeclId))>,
-    /// The associated types declared in the trait.
+    /// The associated types declared in the trait. The `Vec` corresponds to the same `Vector` in
+    /// `TraitDecl.types`. In the same way, this is empty after the `lift_associated_item_clauses`
+    /// pass.
     pub types: Vec<(TraitItemName, (Vec<TraitRef>, Ty))>,
     /// The implemented required methods
     pub required_methods: Vec<(TraitItemName, FunDeclId)>,

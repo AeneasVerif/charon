@@ -268,7 +268,7 @@ fn alloc::boxed::{impl core::ops::deref::Deref for alloc::boxed::Box<T>#38}::der
 
 impl<T, A> alloc::boxed::{impl core::ops::deref::Deref for alloc::boxed::Box<T>#38}<T, A> : core::ops::deref::Deref<alloc::boxed::Box<T>>
 {
-    type Target = T with []
+    type Target = T
     fn deref = alloc::boxed::{impl core::ops::deref::Deref for alloc::boxed::Box<T>#38}::deref
 }
 

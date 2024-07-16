@@ -249,7 +249,7 @@ impl<T, I> core::slice::index::{impl core::ops::index::Index<I> for Slice<T>}<T,
 where
     [@TraitClause0]: core::slice::index::SliceIndex<I, Slice<T>>,
 {
-    type Output = @TraitClause0::Output with []
+    type Output = @TraitClause0::Output
     fn index = core::slice::index::{impl core::ops::index::Index<I> for Slice<T>}::index
 }
 
@@ -270,7 +270,7 @@ fn core::slice::index::{impl core::slice::index::SliceIndex<Slice<T>> for core::
 impl<T> core::slice::index::{impl core::slice::index::SliceIndex<Slice<T>> for core::ops::range::Range<usize>#4}<T> : core::slice::index::SliceIndex<core::ops::range::Range<usize>, Slice<T>>
 {
     parent_clause0 = core::slice::index::private_slice_index::{impl core::slice::index::private_slice_index::Sealed for core::ops::range::Range<usize>#1}
-    type Output = Slice<T> with []
+    type Output = Slice<T>
     fn get = core::slice::index::{impl core::slice::index::SliceIndex<Slice<T>> for core::ops::range::Range<usize>#4}::get
     fn get_mut = core::slice::index::{impl core::slice::index::SliceIndex<Slice<T>> for core::ops::range::Range<usize>#4}::get_mut
     fn get_unchecked = core::slice::index::{impl core::slice::index::SliceIndex<Slice<T>> for core::ops::range::Range<usize>#4}::get_unchecked
@@ -399,7 +399,7 @@ impl<T, I, const N : usize> core::array::{impl core::ops::index::Index<I> for Ar
 where
     [@TraitClause0]: core::ops::index::Index<Slice<T>, I>,
 {
-    type Output = @TraitClause0::Output with []
+    type Output = @TraitClause0::Output
     fn index = core::array::{impl core::ops::index::Index<I> for Array<T, const N : usize>#15}::index
 }
 

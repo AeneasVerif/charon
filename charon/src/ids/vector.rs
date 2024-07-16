@@ -17,12 +17,21 @@ use std::{
 
 /// Indexed vector.
 /// To prevent accidental id reuse, the vector supports reserving a slot to be filled later.
-#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[derive(Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct Vector<I, T>
 where
     I: Idx,
 {
     vector: IndexVec<I, Option<T>>,
+}
+
+impl<I: std::fmt::Debug, T: std::fmt::Debug> std::fmt::Debug for Vector<I, T>
+where
+    I: Idx,
+{
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        <IndexVec<_, _> as std::fmt::Debug>::fmt(&self.vector, f)
+    }
 }
 
 pub struct ReservedSlot<I: Idx>(I);
@@ -84,6 +93,39 @@ where
         let x = f(id);
         self.set_slot(id, x);
         id
+    }
+
+    /// Map each entry to a new one, keeping the same ids.
+    pub fn map<U>(self, mut f: impl FnMut(T) -> U) -> Vector<I, U> {
+        Vector {
+            vector: self
+                .vector
+                .into_iter()
+                .map(|x_opt| x_opt.map(&mut f))
+                .collect(),
+        }
+    }
+
+    /// Map each entry to a new one, keeping the same ids.
+    pub fn map_ref<'a, U>(&'a self, mut f: impl FnMut(&'a T) -> U) -> Vector<I, U> {
+        Vector {
+            vector: self
+                .vector
+                .iter()
+                .map(|x_opt| x_opt.as_ref().map(&mut f))
+                .collect(),
+        }
+    }
+
+    /// Map each entry to a new one, keeping the same ids.
+    pub fn map_ref_mut<'a, U>(&'a mut self, mut f: impl FnMut(&'a mut T) -> U) -> Vector<I, U> {
+        Vector {
+            vector: self
+                .vector
+                .iter_mut()
+                .map(|x_opt| x_opt.as_mut().map(&mut f))
+                .collect(),
+        }
     }
 
     /// Iter over the nonempty slots.

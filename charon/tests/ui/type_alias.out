@@ -17,9 +17,8 @@ trait core::borrow::Borrow<Self, Borrowed>
 
 trait alloc::borrow::ToOwned<Self>
 {
+    parent_clause_0 : [@TraitClause0]: core::borrow::Borrow<Self::Owned, Self>
     type Owned
-        where
-            [@TraitClause0]: core::borrow::Borrow<Self::Owned, Self>,
     fn to_owned : alloc::borrow::ToOwned::to_owned
     fn clone_into
 }
@@ -59,7 +58,8 @@ impl<T> alloc::slice::{impl alloc::borrow::ToOwned for Slice<T>#9}<T> : alloc::b
 where
     [@TraitClause0]: core::clone::Clone<T>,
 {
-    type Owned = alloc::vec::Vec<T, alloc::alloc::Global> with [alloc::slice::{impl core::borrow::Borrow<Slice<T>> for alloc::vec::Vec<T, A>#5}<T, alloc::alloc::Global>]
+    parent_clause0 = alloc::slice::{impl core::borrow::Borrow<Slice<T>> for alloc::vec::Vec<T, A>#5}<T, alloc::alloc::Global>
+    type Owned = alloc::vec::Vec<T, alloc::alloc::Global>
     fn to_owned = alloc::slice::{impl alloc::borrow::ToOwned for Slice<T>#9}::to_owned
     fn clone_into = alloc::slice::{impl alloc::borrow::ToOwned for Slice<T>#9}::clone_into
 }

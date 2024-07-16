@@ -177,8 +177,8 @@ pub enum TraitRefKind {
     /// ```
     ParentClause(Box<TraitRefKind>, TraitDeclId, TraitClauseId),
 
-    /// A clause bound in a trait item (typically a trait clause in an
-    /// associated type).
+    /// A clause defined on an associated type. This variant is only used during translation; after
+    /// the `lift_associated_item_clauses` pass, clauses on items become `ParentClause`s.
     ///
     /// Remark: the [TraitDeclId] gives the trait declaration which is
     /// implemented by the trait implementation from which we take the item
@@ -202,8 +202,7 @@ pub enum TraitRefKind {
     ///                local clause 0 implements Foo
     /// }
     /// ```
-    ///
-    ///
+    #[charon::opaque]
     ItemClause(Box<TraitRefKind>, TraitDeclId, TraitItemName, TraitClauseId),
 
     /// Self, in case of trait declarations/implementations.

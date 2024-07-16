@@ -11,6 +11,8 @@ pub mod inline_local_panic_functions;
 #[charon::opaque]
 pub mod insert_assign_return_unit;
 #[charon::opaque]
+pub mod lift_associated_item_clauses;
+#[charon::opaque]
 pub mod ops_to_function_calls;
 #[charon::opaque]
 pub mod reconstruct_asserts;
@@ -37,6 +39,8 @@ pub mod update_closure_signatures;
 pub use ctx::TransformCtx;
 
 pub static ULLBC_PASSES: &[&dyn ctx::UllbcPass] = &[
+    // Move clauses on associated types to be parent clauses
+    &lift_associated_item_clauses::Transform,
     // # Micro-pass: Remove overflow/div-by-zero/bounds checks since they are already part of the
     // arithmetic/array operation in the semantics of (U)LLBC.
     // **WARNING**: this pass uses the fact that the dynamic checks introduced by Rustc use a

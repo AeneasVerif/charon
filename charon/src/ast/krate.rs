@@ -78,22 +78,29 @@ pub enum AnyTransItem<'ctx> {
 }
 
 /// The data of a translated crate.
-#[derive(Default)]
+#[derive(Default, Drive, DriveMut)]
 pub struct TranslatedCrate {
     /// The name of the crate.
     pub crate_name: String,
 
     /// File names to ids and vice-versa
+    #[drive(skip)]
     pub file_to_id: HashMap<FileName, FileId>,
+    #[drive(skip)]
     pub id_to_file: HashMap<FileId, FileName>,
+    #[drive(skip)]
     pub real_file_counter: Generator<LocalFileId>,
+    #[drive(skip)]
     pub virtual_file_counter: Generator<VirtualFileId>,
 
     /// All the ids, in the order in which we encountered them
+    #[drive(skip)]
     pub all_ids: LinkedHashSet<AnyTransId>,
     /// The map from rustc id to translated id.
+    #[drive(skip)]
     pub id_map: HashMap<DefId, AnyTransId>,
     /// The reverse map of ids.
+    #[drive(skip)]
     pub reverse_id_map: HashMap<AnyTransId, DefId>,
 
     /// The translated type definitions
@@ -109,6 +116,7 @@ pub struct TranslatedCrate {
     /// The translated trait declarations
     pub trait_impls: Vector<TraitImplId, TraitImpl>,
     /// The re-ordered groups of declarations, initialized as empty.
+    #[drive(skip)]
     pub ordered_decls: Option<DeclarationsGroups>,
 }
 
@@ -126,7 +134,6 @@ impl TranslatedCrate {
     pub fn all_items(&self) -> impl Iterator<Item = AnyTransItem<'_>> {
         self.all_items_with_ids().map(|(_, item)| item)
     }
-
     pub fn all_items_with_ids(&self) -> impl Iterator<Item = (AnyTransId, AnyTransItem<'_>)> {
         self.all_ids
             .iter()

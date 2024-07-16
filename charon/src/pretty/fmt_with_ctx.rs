@@ -1176,15 +1176,19 @@ impl<C: AstFormatter> FmtWithCtx<C> for TraitImpl {
                     )
                 }))
                 .chain(self.types.iter().map(|(name, (trait_refs, ty))| {
-                    let trait_refs = trait_refs
-                        .iter()
-                        .map(|x| x.fmt_with_ctx(ctx))
-                        .collect::<Vec<_>>()
-                        .join(", ");
+                    let trait_refs = if trait_refs.is_empty() {
+                        ""
+                    } else {
+                        let trait_refs = trait_refs
+                            .iter()
+                            .map(|x| x.fmt_with_ctx(ctx))
+                            .collect::<Vec<_>>()
+                            .join(", ");
+                        &format!(" with [{trait_refs}]")
+                    };
                     format!(
-                        "{TAB_INCR}type {name} = {} with [{}]\n",
+                        "{TAB_INCR}type {name} = {}{trait_refs}\n",
                         ty.fmt_with_ctx(ctx),
-                        trait_refs
                     )
                 }))
                 .chain(

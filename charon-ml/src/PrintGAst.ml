@@ -176,14 +176,10 @@ let trait_decl_to_string (env : ('a, 'b) fmt_env) (indent : string)
     in
     let types =
       List.map
-        (fun (name, (clauses, opt_ty)) ->
-          let clauses = List.map (trait_clause_to_string env) clauses in
-          let clauses = clauses_to_string indent1 indent_incr 0 clauses in
+        (fun (name, opt_ty) ->
           match opt_ty with
-          | None -> indent1 ^ "type " ^ name ^ clauses ^ "\n"
-          | Some ty ->
-              indent1 ^ "type " ^ name ^ " = " ^ ty_to_string ty ^ clauses
-              ^ "\n")
+          | None -> indent1 ^ "type " ^ name ^ "\n"
+          | Some ty -> indent1 ^ "type " ^ name ^ " = " ^ ty_to_string ty ^ "\n")
         def.types
     in
     let required_methods =
@@ -261,16 +257,8 @@ let trait_impl_to_string (env : ('a, 'b) fmt_env) (indent : string)
     in
     let types =
       List.map
-        (fun (name, (trait_refs, ty)) ->
-          let trait_refs =
-            if trait_refs <> [] then
-              " where ["
-              ^ String.concat ", "
-                  (List.map (trait_ref_to_string env) trait_refs)
-              ^ "]"
-            else ""
-          in
-          indent1 ^ "type " ^ name ^ " = " ^ ty_to_string ty ^ trait_refs ^ "\n")
+        (fun (name, ty) ->
+          indent1 ^ "type " ^ name ^ " = " ^ ty_to_string ty ^ "\n")
         def.types
     in
     let env_method (name, f) =
