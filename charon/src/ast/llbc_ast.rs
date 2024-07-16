@@ -27,11 +27,14 @@ pub struct Assert {
     Debug, Clone, EnumIsA, EnumToGetters, EnumAsGetters, Serialize, Deserialize, Drive, DriveMut,
 )]
 pub enum RawStatement {
-    /// Assigns an `Rvalue` to a `Place`. e.g. `let y = x` becomes `y := copy x` which looks like `"Assign":(("var_id":2,"projection":[]),("Use":("Copy":("var_id":1,"projection":[]))))` in llbc
+    /// Assigns an `Rvalue` to a `Place`. e.g. `let y = x` becomes 
+    /// `y := copy x` which looks like 
+    /// `"Assign":(("var_id":2,"projection":[]),("Use":("Copy":("var_id":1,
+    /// "projection":[]))))` in llbc
     Assign(Place, Rvalue),
     /// Only used for borrow-checking
     FakeRead(Place),
-    /// Not used today because we take MIR built. 
+    /// Not used today because we take MIR built.
     SetDiscriminant(Place, VariantId),
     Drop(Place),
     Assert(Assert),
@@ -56,8 +59,10 @@ pub enum RawStatement {
     Nop,
     /// The contained statements must NOT be sequences. To ensure that, use [Sequence::then] to
     /// build sequences.
-    /// Note that on the ml side, sequences will be in the shape of 
-    /// `Sequence of statement * statement` where the second `statement` might be a sequence if needed, but not the first one, e.g. `Sequence [a, b, c]` becomes `Sequence (a, Sequence (b, c))`
+    /// Note that on the ml side, sequences will be in the shape of
+    /// `Sequence of statement * statement` where the second `statement` might
+    ///  be a sequence if needed, but not the first one, e.g. `Sequence [a, b,
+    ///  c]` becomes `Sequence (a, Sequence (b, c))`
     Sequence(Vec<Statement>),
     Switch(Switch),
     Loop(Box<Statement>),
@@ -84,7 +89,7 @@ pub struct Statement {
     VariantIndexArity,
 )]
 pub enum Switch {
-    /// Gives the `if` block and the `else` block. The `Operand` is the "body" of the `if`, e.g. `if (y == 0)` becomes 
+    /// Gives the `if` block and the `else` block. The `Operand` is the "body" of the `if`, e.g. `if (y == 0)` becomes
     /// `v@3 := copy y^1;
     ///  v@2 := move v@3 == (0: u32 : u32);
     ///  if (move v@2) {`

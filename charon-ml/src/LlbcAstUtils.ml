@@ -4,19 +4,6 @@ open Utils
 open Collections
 
 let fun_decl_list_from_crate (crate : crate) : fun_decl list =
-(*   let id_list =
-    List.flatten
-      (List.filter_map
-         (fun i ->
-           match i with
-           | FunGroup id -> (
-               match id with
-               | NonRecGroup id -> Some [ id ]
-               | RecGroup idl -> Some idl)
-           | _ -> None)
-         crate.declarations)
-  in
-  List.map (fun id -> FunDeclId.Map.find id crate.fun_decls) id_list *)
   snd (List.split (FunDeclId.Map.bindings crate.fun_decls))
 
 let get_fun_args (fun_decl : fun_decl) : var list =
