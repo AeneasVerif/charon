@@ -27,8 +27,8 @@ pub struct Assert {
     Debug, Clone, EnumIsA, EnumToGetters, EnumAsGetters, Serialize, Deserialize, Drive, DriveMut,
 )]
 pub enum RawStatement {
-    /// Assigns an `Rvalue` to a `Place`. e.g. `let y = x` becomes 
-    /// `y := copy x` which looks like 
+    /// Assigns an `Rvalue` to a `Place`. e.g. `let y = x` becomes
+    /// `y := copy x` which looks like
     /// `"Assign":(("var_id":2,"projection":[]),("Use":("Copy":("var_id":1,
     /// "projection":[]))))` in llbc
     Assign(Place, Rvalue),
