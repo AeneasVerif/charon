@@ -459,12 +459,6 @@ and trait_instance_id_of_json (js : json) : (trait_instance_id, string) result =
         let* x1 = trait_decl_id_of_json x1 in
         let* x2 = trait_clause_id_of_json x2 in
         Ok (ParentClause (x0, x1, x2))
-    | `Assoc [ ("ItemClause", `List [ x0; x1; x2; x3 ]) ] ->
-        let* x0 = trait_instance_id_of_json x0 in
-        let* x1 = trait_decl_id_of_json x1 in
-        let* x2 = trait_item_name_of_json x2 in
-        let* x3 = trait_clause_id_of_json x3 in
-        Ok (ItemClause (x0, x1, x2, x3))
     | `String "SelfId" -> Ok Self
     | `Assoc [ ("BuiltinOrAuto", builtin_or_auto) ] ->
         let* builtin_or_auto = trait_decl_ref_of_json builtin_or_auto in
@@ -1241,6 +1235,7 @@ let gglobal_decl_of_json (bodies : 'body gexpr_body option list)
         Ok global
     | _ -> Error "")
 
+(* Defined by hand because we discard the empty list of item clauses *)
 and trait_decl_of_json (id_to_file : id_to_file_map) (js : json) :
     (trait_decl, string) result =
   combine_error_msgs js __FUNCTION__
@@ -1279,6 +1274,7 @@ and trait_decl_of_json (id_to_file : id_to_file_map) (js : json) :
                   (option_of_json ty_of_json)))
             types
         in
+        let types = List.map (fun (name, (_, ty)) -> (name, ty)) types in
         let* required_methods =
           list_of_json
             (pair_of_json trait_item_name_of_json fun_decl_id_of_json)
@@ -1303,6 +1299,7 @@ and trait_decl_of_json (id_to_file : id_to_file_map) (js : json) :
           }
     | _ -> Error "")
 
+(* Defined by hand because we discard the empty list of item clauses *)
 and trait_impl_of_json (id_to_file : id_to_file_map) (js : json) :
     (trait_impl, string) result =
   combine_error_msgs js __FUNCTION__
@@ -1339,6 +1336,7 @@ and trait_impl_of_json (id_to_file : id_to_file_map) (js : json) :
                (pair_of_json (list_of_json trait_ref_of_json) ty_of_json))
             types
         in
+        let types = List.map (fun (name, (_, ty)) -> (name, ty)) types in
         let* required_methods =
           list_of_json
             (pair_of_json trait_item_name_of_json fun_decl_id_of_json)

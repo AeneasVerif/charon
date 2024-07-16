@@ -43,8 +43,11 @@ impl CheckGenericsVisitor<'_, '_> {
     fn generics_should_match_item(&mut self, args: &GenericArgs, item_id: impl Into<AnyTransId>) {
         self.discharged_one_generics();
         if let Some(item) = self.translated.get_item(item_id.into()) {
-            if !args.matches(item.generic_params()) {
-                self.error("Mismatched generics!")
+            let params = item.generic_params();
+            if !args.matches(params) {
+                self.error(format!(
+                    "Mismatched generics:\nexpected: {params:?}\n     got: {args:?}"
+                ))
             }
         }
     }
@@ -141,6 +144,12 @@ impl CheckGenericsVisitor<'_, '_> {
         let args_match = timpl.parent_trait_refs.len() == tdecl.parent_clauses.len()
             && timpl.types.len() == tdecl.types.len()
             && timpl.consts.len() == tdecl.consts.len();
+        let args_match = args_match
+            && tdecl.types.iter().zip(timpl.types.iter()).all(
+                |((dname, (dclauses, _)), (iname, (irefs, _)))| {
+                    dname == iname && dclauses.len() == irefs.len()
+                },
+            );
         if !args_match {
             self.error("The generics supplied by the trait impl don't match the trait decl.")
         }

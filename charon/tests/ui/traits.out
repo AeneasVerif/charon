@@ -454,12 +454,11 @@ global test_crate::WithConstTy::LEN2<Self, const LEN : usize>  {
 
 trait test_crate::WithConstTy<Self, const LEN : usize>
 {
+    parent_clause_0 : [@TraitClause0]: test_crate::ToU64<Self::W>
     const LEN1 : usize
     const LEN2 : usize = test_crate::WithConstTy::LEN2
     type V
     type W
-        where
-            [@TraitClause0]: test_crate::ToU64<Self::W>,
     fn f : test_crate::WithConstTy::f
 }
 
@@ -485,10 +484,11 @@ fn test_crate::{impl test_crate::WithConstTy<32 : usize> for bool#8}::f<'_0, '_1
 
 impl test_crate::{impl test_crate::WithConstTy<32 : usize> for bool#8} : test_crate::WithConstTy<bool, 32 : usize>
 {
+    parent_clause0 = test_crate::{impl test_crate::ToU64 for u64#2}
     const LEN1 : usize = test_crate::{impl test_crate::WithConstTy<32 : usize> for bool#8}::LEN1
     const LEN2 : usize = test_crate::WithConstTy::LEN2
-    type V = u8 with []
-    type W = u64 with [test_crate::{impl test_crate::ToU64 for u64#2}]
+    type V = u8
+    type W = u64
     fn f = test_crate::{impl test_crate::WithConstTy<32 : usize> for bool#8}::f
 }
 
@@ -526,7 +526,7 @@ where
     let @2: @TraitClause0::W; // anonymous local
 
     @2 := move (x@1)
-    @0 := (@TraitClause0::W::[@TraitClause0])::to_u64(move (@2))
+    @0 := (parents(@TraitClause0)::[@TraitClause0])::to_u64(move (@2))
     drop @2
     drop x@1
     return
@@ -644,12 +644,11 @@ trait test_crate::Iterator<Self>
 
 trait test_crate::IntoIterator<Self>
 where
-    (Self::IntoIter::[@TraitClause0])::Item = Self::Item,
+    (parents(Self)::[@TraitClause0])::Item = Self::Item,
 {
+    parent_clause_0 : [@TraitClause0]: test_crate::Iterator<Self::IntoIter>
     type Item
     type IntoIter
-        where
-            [@TraitClause0]: test_crate::Iterator<Self::IntoIter>,
     fn into_iter : test_crate::IntoIterator::into_iter
 }
 
@@ -668,9 +667,8 @@ trait test_crate::WithTarget<Self>
 
 trait test_crate::ParentTrait2<Self>
 {
+    parent_clause_0 : [@TraitClause0]: test_crate::WithTarget<Self::U>
     type U
-        where
-            [@TraitClause0]: test_crate::WithTarget<Self::U>,
 }
 
 trait test_crate::ChildTrait2<Self>
@@ -681,12 +679,13 @@ trait test_crate::ChildTrait2<Self>
 
 impl test_crate::{impl test_crate::WithTarget for u32#11} : test_crate::WithTarget<u32>
 {
-    type Target = u32 with []
+    type Target = u32
 }
 
 impl test_crate::{impl test_crate::ParentTrait2 for u32#12} : test_crate::ParentTrait2<u32>
 {
-    type U = u32 with [test_crate::{impl test_crate::WithTarget for u32#11}]
+    parent_clause0 = test_crate::{impl test_crate::WithTarget for u32#11}
+    type U = u32
 }
 
 fn test_crate::{impl test_crate::ChildTrait2 for u32#13}::convert(@1: u32) -> u32
@@ -837,7 +836,7 @@ fn test_crate::WithConstTy::f<'_0, '_1, Self, const LEN : usize>(@1: &'_0 mut (S
 
 fn test_crate::IntoIterator::into_iter<Self>(@1: Self) -> Self::IntoIter
 
-fn test_crate::ChildTrait2::convert<Self>(@1: (parents(Self)::[@TraitClause0])::U) -> ((parents(Self)::[@TraitClause0])::U::[@TraitClause0])::Target
+fn test_crate::ChildTrait2::convert<Self>(@1: (parents(Self)::[@TraitClause0])::U) -> (parents((parents(Self)::[@TraitClause0]))::[@TraitClause0])::Target
 
 fn test_crate::CFnOnce::call_once<Self, Args>(@1: Self, @2: Args) -> Self::Output
 

@@ -116,12 +116,11 @@ trait core::iter::traits::iterator::Iterator<Self>
 
 trait core::iter::traits::collect::IntoIterator<Self>
 where
-    (Self::IntoIter::[@TraitClause0])::Item = Self::Item,
+    (parents(Self)::[@TraitClause0])::Item = Self::Item,
 {
+    parent_clause_0 : [@TraitClause0]: core::iter::traits::iterator::Iterator<Self::IntoIter>
     type Item
     type IntoIter
-        where
-            [@TraitClause0]: core::iter::traits::iterator::Iterator<Self::IntoIter>,
     fn into_iter : core::iter::traits::collect::IntoIterator::into_iter
 }
 
@@ -172,10 +171,9 @@ trait core::num::nonzero::ZeroablePrimitive<Self>
 {
     parent_clause_0 : [@TraitClause0]: core::marker::Copy<Self>
     parent_clause_1 : [@TraitClause1]: core::num::nonzero::private::Sealed<Self>
+    parent_clause_2 : [@TraitClause2]: core::marker::Copy<Self::NonZeroInner>
+    parent_clause_3 : [@TraitClause3]: core::clone::Clone<Self::NonZeroInner>
     type NonZeroInner
-        where
-            [@TraitClause0]: core::marker::Copy<Self::NonZeroInner>,
-            [@TraitClause1]: core::clone::Clone<Self::NonZeroInner>,
 }
 
 opaque type core::num::nonzero::NonZero<T>
@@ -214,7 +212,9 @@ impl core::num::nonzero::{impl core::num::nonzero::ZeroablePrimitive for usize#2
 {
     parent_clause0 = core::marker::{impl core::marker::Copy for usize#38}
     parent_clause1 = core::num::nonzero::{impl core::num::nonzero::private::Sealed for usize#25}
-    type NonZeroInner = core::num::nonzero::private::NonZeroUsizeInner with [core::num::nonzero::private::{impl core::marker::Copy for core::num::nonzero::private::NonZeroUsizeInner#27}, core::num::nonzero::private::{impl core::clone::Clone for core::num::nonzero::private::NonZeroUsizeInner#26}]
+    parent_clause2 = core::num::nonzero::private::{impl core::marker::Copy for core::num::nonzero::private::NonZeroUsizeInner#27}
+    parent_clause3 = core::num::nonzero::private::{impl core::clone::Clone for core::num::nonzero::private::NonZeroUsizeInner#26}
+    type NonZeroInner = core::num::nonzero::private::NonZeroUsizeInner
 }
 
 fn core::array::iter::{impl core::iter::traits::iterator::Iterator for core::array::iter::IntoIter<T, const N : usize>#2}::advance_by<'_0, T, const N : usize>(@1: &'_0 mut (core::array::iter::IntoIter<T, const N : usize>), @2: usize) -> core::result::Result<(), core::num::nonzero::NonZero<usize, core::num::nonzero::{impl core::num::nonzero::ZeroablePrimitive for usize#26}>>
@@ -223,7 +223,7 @@ unsafe fn core::array::iter::{impl core::iter::traits::iterator::Iterator for co
 
 impl<T, const N : usize> core::array::iter::{impl core::iter::traits::iterator::Iterator for core::array::iter::IntoIter<T, const N : usize>#2}<T, const N : usize> : core::iter::traits::iterator::Iterator<core::array::iter::IntoIter<T, const N : usize>>
 {
-    type Item = T with []
+    type Item = T
     fn next = core::array::iter::{impl core::iter::traits::iterator::Iterator for core::array::iter::IntoIter<T, const N : usize>#2}::next
     fn size_hint = core::array::iter::{impl core::iter::traits::iterator::Iterator for core::array::iter::IntoIter<T, const N : usize>#2}::size_hint
     fn fold = core::array::iter::{impl core::iter::traits::iterator::Iterator for core::array::iter::IntoIter<T, const N : usize>#2}::fold
@@ -237,8 +237,9 @@ fn core::array::iter::{impl core::iter::traits::collect::IntoIterator for Array<
 
 impl<T, const N : usize> core::array::iter::{impl core::iter::traits::collect::IntoIterator for Array<T, const N : usize>}<T, const N : usize> : core::iter::traits::collect::IntoIterator<Array<T, const N : usize>>
 {
-    type Item = T with []
-    type IntoIter = core::array::iter::IntoIter<T, const N : usize> with [core::array::iter::{impl core::iter::traits::iterator::Iterator for core::array::iter::IntoIter<T, const N : usize>#2}<T, const N : usize>]
+    parent_clause0 = core::array::iter::{impl core::iter::traits::iterator::Iterator for core::array::iter::IntoIter<T, const N : usize>#2}<T, const N : usize>
+    type Item = T
+    type IntoIter = core::array::iter::IntoIter<T, const N : usize>
     fn into_iter = core::array::iter::{impl core::iter::traits::collect::IntoIterator for Array<T, const N : usize>}::into_iter
 }
 
@@ -253,8 +254,9 @@ impl<I> core::iter::traits::collect::{impl core::iter::traits::collect::IntoIter
 where
     [@TraitClause0]: core::iter::traits::iterator::Iterator<I>,
 {
-    type Item = @TraitClause0::Item with []
-    type IntoIter = I with [@TraitClause0]
+    parent_clause0 = @TraitClause0
+    type Item = @TraitClause0::Item
+    type IntoIter = I
     fn into_iter = core::iter::traits::collect::{impl core::iter::traits::collect::IntoIterator for I#1}::into_iter
 }
 
@@ -337,7 +339,7 @@ Unknown decl: 44
 
 impl<'a, T> core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::Iter<'a, T>#182}<'a, T> : core::iter::traits::iterator::Iterator<core::slice::iter::Iter<'a, T>>
 {
-    type Item = &'a (T) with []
+    type Item = &'a (T)
     fn next = core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::Iter<'a, T>#182}::next
     fn size_hint = core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::Iter<'a, T>#182}::size_hint
     fn count = core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::Iter<'a, T>#182}::count
@@ -386,7 +388,7 @@ unsafe fn core::slice::iter::{impl core::iter::traits::iterator::Iterator for co
 
 impl<'a, T> core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::Chunks<'a, T>#71}<'a, T> : core::iter::traits::iterator::Iterator<core::slice::iter::Chunks<'a, T>>
 {
-    type Item = &'a (Slice<T>) with []
+    type Item = &'a (Slice<T>)
     fn next = core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::Chunks<'a, T>#71}::next
     fn size_hint = core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::Chunks<'a, T>#71}::size_hint
     fn count = core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::Chunks<'a, T>#71}::count
@@ -411,7 +413,7 @@ unsafe fn core::slice::iter::{impl core::iter::traits::iterator::Iterator for co
 
 impl<'a, T> core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::ChunksExact<'a, T>#90}<'a, T> : core::iter::traits::iterator::Iterator<core::slice::iter::ChunksExact<'a, T>>
 {
-    type Item = &'a (Slice<T>) with []
+    type Item = &'a (Slice<T>)
     fn next = core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::ChunksExact<'a, T>#90}::next
     fn size_hint = core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::ChunksExact<'a, T>#90}::size_hint
     fn count = core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::ChunksExact<'a, T>#90}::count

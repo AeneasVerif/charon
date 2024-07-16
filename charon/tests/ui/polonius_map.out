@@ -49,9 +49,8 @@ trait core::hash::Hash<Self>
 
 trait core::hash::BuildHasher<Self>
 {
+    parent_clause_0 : [@TraitClause0]: core::hash::Hasher<Self::Hasher>
     type Hasher
-        where
-            [@TraitClause0]: core::hash::Hasher<Self::Hasher>,
     fn build_hasher : core::hash::BuildHasher::build_hasher
     fn hash_one
 }
@@ -125,7 +124,8 @@ fn std::hash::random::{impl core::hash::BuildHasher for std::hash::random::Rando
 
 impl std::hash::random::{impl core::hash::BuildHasher for std::hash::random::RandomState#1} : core::hash::BuildHasher<std::hash::random::RandomState>
 {
-    type Hasher = std::hash::random::DefaultHasher with [std::hash::random::{impl core::hash::Hasher for std::hash::random::DefaultHasher#4}]
+    parent_clause0 = std::hash::random::{impl core::hash::Hasher for std::hash::random::DefaultHasher#4}
+    type Hasher = std::hash::random::DefaultHasher
     fn build_hasher = std::hash::random::{impl core::hash::BuildHasher for std::hash::random::RandomState#1}::build_hasher
 }
 
@@ -160,7 +160,7 @@ where
     [@TraitClause4]: core::hash::Hash<Q>,
     [@TraitClause5]: core::hash::BuildHasher<S>,
 {
-    type Output = V with []
+    type Output = V
     fn index = std::collections::hash::map::{impl core::ops::index::Index<&'_0 (Q)> for std::collections::hash::map::HashMap<K, V, S>#9}::index
 }
 

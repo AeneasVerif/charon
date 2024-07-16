@@ -318,8 +318,6 @@ and trait_instance_id =
   | BuiltinOrAuto of trait_decl_ref
   | Clause of trait_clause_id
   | ParentClause of trait_instance_id * trait_decl_id * trait_clause_id
-  | ItemClause of
-      trait_instance_id * trait_decl_id * trait_item_name * trait_clause_id
   | FnPointer of ty
   | Closure of fun_decl_id * generic_args
   | Dyn of trait_decl_ref

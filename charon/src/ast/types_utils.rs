@@ -103,6 +103,7 @@ impl GenericArgs {
     }
 
     /// Check whether this matches the given `GenericParams`.
+    /// TODO: check more things, e.g. that the trait refs use the correct trait and generics.
     pub fn matches(&self, params: &GenericParams) -> bool {
         params.regions.len() == self.regions.len()
             && params.types.len() == self.types.len()

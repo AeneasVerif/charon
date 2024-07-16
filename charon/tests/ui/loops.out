@@ -874,12 +874,11 @@ trait core::iter::traits::iterator::Iterator<Self>
 
 trait core::iter::traits::collect::IntoIterator<Self>
 where
-    (Self::IntoIter::[@TraitClause0])::Item = Self::Item,
+    (parents(Self)::[@TraitClause0])::Item = Self::Item,
 {
+    parent_clause_0 : [@TraitClause0]: core::iter::traits::iterator::Iterator<Self::IntoIter>
     type Item
     type IntoIter
-        where
-            [@TraitClause0]: core::iter::traits::iterator::Iterator<Self::IntoIter>,
     fn into_iter : core::iter::traits::collect::IntoIterator::into_iter
 }
 
@@ -892,8 +891,9 @@ impl<I> core::iter::traits::collect::{impl core::iter::traits::collect::IntoIter
 where
     [@TraitClause0]: core::iter::traits::iterator::Iterator<I>,
 {
-    type Item = @TraitClause0::Item with []
-    type IntoIter = I with [@TraitClause0]
+    parent_clause0 = @TraitClause0
+    type Item = @TraitClause0::Item
+    type IntoIter = I
     fn into_iter = core::iter::traits::collect::{impl core::iter::traits::collect::IntoIterator for I#1}::into_iter
 }
 
@@ -1014,10 +1014,9 @@ trait core::num::nonzero::ZeroablePrimitive<Self>
 {
     parent_clause_0 : [@TraitClause0]: core::marker::Copy<Self>
     parent_clause_1 : [@TraitClause1]: core::num::nonzero::private::Sealed<Self>
+    parent_clause_2 : [@TraitClause2]: core::marker::Copy<Self::NonZeroInner>
+    parent_clause_3 : [@TraitClause3]: core::clone::Clone<Self::NonZeroInner>
     type NonZeroInner
-        where
-            [@TraitClause0]: core::marker::Copy<Self::NonZeroInner>,
-            [@TraitClause1]: core::clone::Clone<Self::NonZeroInner>,
 }
 
 opaque type core::num::nonzero::NonZero<T>
@@ -1056,7 +1055,9 @@ impl core::num::nonzero::{impl core::num::nonzero::ZeroablePrimitive for usize#2
 {
     parent_clause0 = core::marker::{impl core::marker::Copy for usize#38}
     parent_clause1 = core::num::nonzero::{impl core::num::nonzero::private::Sealed for usize#25}
-    type NonZeroInner = core::num::nonzero::private::NonZeroUsizeInner with [core::num::nonzero::private::{impl core::marker::Copy for core::num::nonzero::private::NonZeroUsizeInner#27}, core::num::nonzero::private::{impl core::clone::Clone for core::num::nonzero::private::NonZeroUsizeInner#26}]
+    parent_clause2 = core::num::nonzero::private::{impl core::marker::Copy for core::num::nonzero::private::NonZeroUsizeInner#27}
+    parent_clause3 = core::num::nonzero::private::{impl core::clone::Clone for core::num::nonzero::private::NonZeroUsizeInner#26}
+    type NonZeroInner = core::num::nonzero::private::NonZeroUsizeInner
 }
 
 fn core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>#6}::advance_by<'_0, A>(@1: &'_0 mut (core::ops::range::Range<A>), @2: usize) -> core::result::Result<(), core::num::nonzero::NonZero<usize, core::num::nonzero::{impl core::num::nonzero::ZeroablePrimitive for usize#26}>>
@@ -1081,7 +1082,7 @@ impl<A> core::iter::range::{impl core::iter::traits::iterator::Iterator for core
 where
     [@TraitClause0]: core::iter::range::Step<A>,
 {
-    type Item = A with []
+    type Item = A
     fn next = core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>#6}::next
     fn size_hint = core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>#6}::size_hint
     fn count = core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>#6}::count
@@ -1671,7 +1672,7 @@ impl<T, I, A> alloc::vec::{impl core::ops::index::Index<I> for alloc::vec::Vec<T
 where
     [@TraitClause0]: core::slice::index::SliceIndex<I, Slice<T>>,
 {
-    type Output = @TraitClause0::Output with []
+    type Output = @TraitClause0::Output
     fn index = alloc::vec::{impl core::ops::index::Index<I> for alloc::vec::Vec<T, A>#13}::index
 }
 
@@ -1705,7 +1706,7 @@ fn core::slice::index::{impl core::slice::index::SliceIndex<Slice<T>> for usize#
 impl<T> core::slice::index::{impl core::slice::index::SliceIndex<Slice<T>> for usize#2}<T> : core::slice::index::SliceIndex<usize, Slice<T>>
 {
     parent_clause0 = core::slice::index::private_slice_index::{impl core::slice::index::private_slice_index::Sealed for usize}
-    type Output = T with []
+    type Output = T
     fn get = core::slice::index::{impl core::slice::index::SliceIndex<Slice<T>> for usize#2}::get
     fn get_mut = core::slice::index::{impl core::slice::index::SliceIndex<Slice<T>> for usize#2}::get_mut
     fn get_unchecked = core::slice::index::{impl core::slice::index::SliceIndex<Slice<T>> for usize#2}::get_unchecked

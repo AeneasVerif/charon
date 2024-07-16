@@ -247,22 +247,22 @@ fn predicate_origins() -> Result<(), Box<dyn Error>> {
         }
         ",
     )?;
-    let expected_function_clause_origins: Vec<(&str, &[_])> = vec![
+    let expected_function_clause_origins: Vec<(&str, Vec<_>)> = vec![
         (
             "test_crate::top_level_function",
-            &[(WhereClauseOnFn, "Clone"), (WhereClauseOnFn, "Default")],
+            vec![(WhereClauseOnFn, "Clone"), (WhereClauseOnFn, "Default")],
         ),
         (
             "test_crate::Struct",
-            &[(WhereClauseOnType, "Clone"), (WhereClauseOnType, "Default")],
+            vec![(WhereClauseOnType, "Clone"), (WhereClauseOnType, "Default")],
         ),
         (
             "test_crate::TypeAlias",
-            &[(WhereClauseOnType, "Clone"), (WhereClauseOnType, "Default")],
+            vec![(WhereClauseOnType, "Clone"), (WhereClauseOnType, "Default")],
         ),
         (
             "test_crate::<impl>::inherent_method",
-            &[
+            vec![
                 (WhereClauseOnImpl, "Clone"),
                 (WhereClauseOnImpl, "Default"),
                 (WhereClauseOnFn, "From"),
@@ -271,24 +271,25 @@ fn predicate_origins() -> Result<(), Box<dyn Error>> {
         ),
         (
             "test_crate::Trait",
-            &[
+            vec![
                 (WhereClauseOnTrait, "Clone"),
                 (WhereClauseOnTrait, "Copy"),
                 (WhereClauseOnTrait, "Default"),
+                (TraitItem(TraitItemName("AssocType".to_owned())), "Default"),
             ],
         ),
         // Interesting note: the method definition does not mention the clauses on the trait.
         (
             "test_crate::Trait::trait_method",
-            &[(WhereClauseOnFn, "From"), (WhereClauseOnFn, "From")],
+            vec![(WhereClauseOnFn, "From"), (WhereClauseOnFn, "From")],
         ),
         (
             "test_crate::<impl for Trait>",
-            &[(WhereClauseOnImpl, "Copy"), (WhereClauseOnImpl, "Default")],
+            vec![(WhereClauseOnImpl, "Copy"), (WhereClauseOnImpl, "Default")],
         ),
         (
             "test_crate::<impl for Trait>::trait_method",
-            &[
+            vec![
                 (WhereClauseOnImpl, "Copy"),
                 (WhereClauseOnImpl, "Default"),
                 (WhereClauseOnFn, "From"),
@@ -310,21 +311,11 @@ fn predicate_origins() -> Result<(), Box<dyn Error>> {
         assert_eq!(origins.len(), clauses.len(), "failed for {item_name}");
         for (clause, (expected_origin, expected_trait_name)) in clauses.iter().zip(origins) {
             let trait_name = trait_name(&crate_data, clause.trait_.trait_id);
-            assert_eq!(trait_name, *expected_trait_name, "failed for {item_name}");
-            assert_eq!(&clause.origin, expected_origin, "failed for {item_name}");
+            assert_eq!(trait_name, expected_trait_name, "failed for {item_name}");
+            assert_eq!(&clause.origin, &expected_origin, "failed for {item_name}");
         }
     }
 
-    let my_trait = items_by_name
-        .get("test_crate::Trait")
-        .unwrap()
-        .kind
-        .as_trait_decl();
-    let item_clauses = &(my_trait.types[0].1).0;
-    assert_eq!(
-        item_clauses[0].origin,
-        TraitItem(TraitItemName("AssocType".into()))
-    );
     Ok(())
 }
 
