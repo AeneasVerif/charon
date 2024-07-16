@@ -87,10 +87,12 @@ pub struct Statement {
     VariantIndexArity,
 )]
 pub enum Switch {
-    /// Gives the `if` block and the `else` block. The `Operand` is the "body" of the `if`, e.g. `if (y == 0)` becomes
-    /// `v@3 := copy y^1;
-    ///  v@2 := move v@3 == (0: u32 : u32);
-    ///  if (move v@2) {`
+    /// Gives the `if` block and the `else` block. The `Operand` is the condition of the `if`, e.g. `if (y == 0)` could become
+    /// ```
+    /// v@3 := copy y; // Represented as `Assign(v@3, Use(Copy(y))`
+    /// v@2 := move v@3 == 0; // Represented as `Assign(v@2, BinOp(BinOp::Eq, Move(y), Const(0)))`
+    /// if (move v@2) { // Represented as `If(Move(v@2), <then branch>, <else branch>)`
+    /// ```
     If(Operand, Box<Statement>, Box<Statement>),
     /// Gives the integer type, a map linking values to switch branches, and the
     /// otherwise block. Note that matches over enumerations are performed by
