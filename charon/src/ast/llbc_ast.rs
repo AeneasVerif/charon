@@ -88,7 +88,7 @@ pub struct Statement {
 )]
 pub enum Switch {
     /// Gives the `if` block and the `else` block. The `Operand` is the condition of the `if`, e.g. `if (y == 0)` could become
-    /// ```
+    /// ```rust,ignore
     /// v@3 := copy y; // Represented as `Assign(v@3, Use(Copy(y))`
     /// v@2 := move v@3 == 0; // Represented as `Assign(v@2, BinOp(BinOp::Eq, Move(y), Const(0)))`
     /// if (move v@2) { // Represented as `If(Move(v@2), <then branch>, <else branch>)`
