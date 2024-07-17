@@ -141,15 +141,20 @@ impl CheckGenericsVisitor<'_, '_> {
         let Some(tdecl) = self.translated.trait_decls.get(timpl.impl_trait.trait_id) else {
             return;
         };
+        // See `lift_associated_item_clauses`
+        assert!(timpl.type_clauses.is_empty());
+        assert!(tdecl.type_clauses.is_empty());
+
         let args_match = timpl.parent_trait_refs.len() == tdecl.parent_clauses.len()
             && timpl.types.len() == tdecl.types.len()
             && timpl.consts.len() == tdecl.consts.len();
+        // Check that type names match.
         let args_match = args_match
-            && tdecl.types.iter().zip(timpl.types.iter()).all(
-                |((dname, (dclauses, _)), (iname, (irefs, _)))| {
-                    dname == iname && dclauses.len() == irefs.len()
-                },
-            );
+            && tdecl
+                .types
+                .iter()
+                .zip(timpl.types.iter())
+                .all(|((dname, _), (iname, _))| dname == iname);
         if !args_match {
             self.error("The generics supplied by the trait impl don't match the trait decl.")
         }

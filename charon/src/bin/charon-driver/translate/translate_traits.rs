@@ -288,6 +288,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         let tcx = bt_ctx.t_ctx.tcx;
         let mut consts = Vec::new();
         let mut types = Vec::new();
+        let mut type_clauses = Vec::new();
         let mut required_methods = Vec::new();
         let mut provided_methods = Vec::new();
         for item in tcx.associated_items(rust_id).in_definition_order() {
@@ -357,7 +358,8 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
                         None
                     };
 
-                    types.push((item_name, (item_trait_clauses, ty)));
+                    types.push((item_name.clone(), ty));
+                    type_clauses.push((item_name, item_trait_clauses));
                 }
             }
         }
@@ -408,6 +410,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
             item_meta,
             generics,
             parent_clauses,
+            type_clauses,
             consts,
             types,
             required_methods,
@@ -551,7 +554,8 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         let partial_consts = consts;
         let partial_types = types;
         let mut consts = Vec::new();
-        let mut types: Vec<(TraitItemName, (Vec<TraitRef>, Ty))> = Vec::new();
+        let mut type_clauses = Vec::new();
+        let mut types: Vec<(TraitItemName, Ty)> = Vec::new();
         for item in tcx
             .associated_items(implemented_trait_rust_id)
             .in_definition_order()
@@ -591,7 +595,8 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
                         item,
                     )?;
 
-                    types.push((name, (trait_refs, ty)));
+                    types.push((name.clone(), ty));
+                    type_clauses.push((name, trait_refs));
                 }
             }
         }
@@ -612,6 +617,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
             impl_trait: implemented_trait,
             generics: bt_ctx.get_generics(),
             parent_trait_refs,
+            type_clauses,
             consts,
             types,
             required_methods,

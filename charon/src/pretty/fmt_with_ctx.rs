@@ -1075,58 +1075,54 @@ impl<C: AstFormatter> FmtWithCtx<C> for TraitDecl {
             .fmt_with_ctx_with_trait_clauses(ctx, "", &None);
 
         let items = {
-            let items = self
-                .parent_clauses
-                .iter()
-                .map(|c| {
-                    format!(
-                        "{TAB_INCR}parent_clause_{} : {}\n",
-                        c.clause_id.to_string(),
-                        c.fmt_with_ctx(ctx)
-                    )
-                })
-                .chain(
-                    self.consts
-                        .iter()
-                        .map(|(name, (ty, opt_id))| {
-                            let ty = ty.fmt_with_ctx(ctx);
-                            match opt_id {
-                                None => format!("{TAB_INCR}const {name} : {ty}\n"),
-                                Some(id) => {
-                                    format!(
-                                        "{TAB_INCR}const {name} : {ty} = {}\n",
-                                        ctx.format_object(*id)
-                                    )
-                                }
+            let items =
+                self.parent_clauses
+                    .iter()
+                    .map(|c| {
+                        format!(
+                            "{TAB_INCR}parent_clause_{} : {}\n",
+                            c.clause_id.to_string(),
+                            c.fmt_with_ctx(ctx)
+                        )
+                    })
+                    .chain(self.type_clauses.iter().map(|(name, clauses)| {
+                        clauses
+                            .iter()
+                            .map(|c| {
+                                format!(
+                                    "{TAB_INCR}item_clause_{name}_{} : {}\n",
+                                    c.clause_id.to_string(),
+                                    c.fmt_with_ctx(ctx)
+                                )
+                            })
+                            .collect()
+                    }))
+                    .chain(self.consts.iter().map(|(name, (ty, opt_id))| {
+                        let ty = ty.fmt_with_ctx(ctx);
+                        match opt_id {
+                            None => format!("{TAB_INCR}const {name} : {ty}\n"),
+                            Some(id) => {
+                                format!(
+                                    "{TAB_INCR}const {name} : {ty} = {}\n",
+                                    ctx.format_object(*id)
+                                )
                             }
-                        })
-                        .chain(self.types.iter().map(|(name, (trait_clauses, opt_ty))| {
-                            let trait_clauses: Vec<_> =
-                                trait_clauses.iter().map(|x| x.fmt_with_ctx(ctx)).collect();
-                            let clauses = fmt_where_clauses(
-                                &format!("{TAB_INCR}{TAB_INCR}"),
-                                0,
-                                trait_clauses,
-                            );
-                            match opt_ty {
-                                None => format!("{TAB_INCR}type {name}{clauses}\n"),
-                                Some(ty) => {
-                                    format!(
-                                        "{TAB_INCR}type {name} = {}{clauses}\n",
-                                        ty.fmt_with_ctx(ctx)
-                                    )
-                                }
-                            }
-                        }))
-                        .chain(self.required_methods.iter().map(|(name, f)| {
-                            format!("{TAB_INCR}fn {name} : {}\n", ctx.format_object(*f))
-                        }))
-                        .chain(self.provided_methods.iter().map(|(name, f)| match f {
-                            None => format!("{TAB_INCR}fn {name}\n"),
-                            Some(f) => format!("{TAB_INCR}fn {name} : {}\n", ctx.format_object(*f)),
-                        })),
-                )
-                .collect::<Vec<String>>();
+                        }
+                    }))
+                    .chain(self.types.iter().map(|(name, opt_ty)| match opt_ty {
+                        None => format!("{TAB_INCR}type {name}\n"),
+                        Some(ty) => {
+                            format!("{TAB_INCR}type {name} = {}\n", ty.fmt_with_ctx(ctx))
+                        }
+                    }))
+                    .chain(self.required_methods.iter().map(|(name, f)| {
+                        format!("{TAB_INCR}fn {name} : {}\n", ctx.format_object(*f))
+                    }))
+                    .chain(self.provided_methods.iter().map(|(name, f)| match f {
+                        None => format!("{TAB_INCR}fn {name}\n"),
+                        Some(f) => format!("{TAB_INCR}fn {name} : {}\n", ctx.format_object(*f)),
+                    }))
+                    .collect::<Vec<String>>();
             if items.is_empty() {
                 "".to_string()
             } else {
@@ -1168,6 +1164,19 @@ impl<C: AstFormatter> FmtWithCtx<C> for TraitImpl {
                         clause.fmt_with_ctx(ctx)
                     )
                 })
+                .chain(self.type_clauses.iter().map(|(name, clauses)| {
+                    clauses
+                        .iter()
+                        .enumerate()
+                        .map(|(i, c)| {
+                            let i = TraitClauseId::new(i);
+                            format!(
+                                "{TAB_INCR}item_clause_{name}_{i} = {}\n",
+                                c.fmt_with_ctx(ctx)
+                            )
+                        })
+                        .collect()
+                }))
                 .chain(self.consts.iter().map(|(name, (ty, id))| {
                     format!(
                         "{TAB_INCR}const {name} : {} = {}\n",
@@ -1175,21 +1184,8 @@ impl<C: AstFormatter> FmtWithCtx<C> for TraitImpl {
                         ctx.format_object(*id)
                     )
                 }))
-                .chain(self.types.iter().map(|(name, (trait_refs, ty))| {
-                    let trait_refs = if trait_refs.is_empty() {
-                        ""
-                    } else {
-                        let trait_refs = trait_refs
-                            .iter()
-                            .map(|x| x.fmt_with_ctx(ctx))
-                            .collect::<Vec<_>>()
-                            .join(", ");
-                        &format!(" with [{trait_refs}]")
-                    };
-                    format!(
-                        "{TAB_INCR}type {name} = {}{trait_refs}\n",
-                        ty.fmt_with_ctx(ctx),
-                    )
+                .chain(self.types.iter().map(|(name, ty)| {
+                    format!("{TAB_INCR}type {name} = {}\n", ty.fmt_with_ctx(ctx),)
                 }))
                 .chain(
                     self.required_methods

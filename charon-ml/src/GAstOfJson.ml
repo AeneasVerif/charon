@@ -1235,7 +1235,6 @@ let rec gglobal_decl_of_json (bodies : 'body gexpr_body option list)
         Ok global
     | _ -> Error "")
 
-(* Defined by hand because we discard the empty list of item clauses *)
 and trait_decl_of_json (id_to_file : id_to_file_map) (js : json) :
     (trait_decl, string) result =
   combine_error_msgs js __FUNCTION__
@@ -1248,6 +1247,7 @@ and trait_decl_of_json (id_to_file : id_to_file_map) (js : json) :
           ("parent_clauses", parent_clauses);
           ("consts", consts);
           ("types", types);
+          ("type_clauses", _);
           ("required_methods", required_methods);
           ("provided_methods", provided_methods);
         ] ->
@@ -1267,14 +1267,9 @@ and trait_decl_of_json (id_to_file : id_to_file_map) (js : json) :
         in
         let* types =
           list_of_json
-            (pair_of_json trait_item_name_of_json
-               (pair_of_json
-                  (vector_of_json trait_clause_id_of_json
-                     (trait_clause_of_json id_to_file))
-                  (option_of_json ty_of_json)))
+            (pair_of_json trait_item_name_of_json (option_of_json ty_of_json))
             types
         in
-        let types = List.map (fun (name, (_, ty)) -> (name, ty)) types in
         let* required_methods =
           list_of_json
             (pair_of_json trait_item_name_of_json fun_decl_id_of_json)
@@ -1299,7 +1294,6 @@ and trait_decl_of_json (id_to_file : id_to_file_map) (js : json) :
           }
     | _ -> Error "")
 
-(* Defined by hand because we discard the empty list of item clauses *)
 and trait_impl_of_json (id_to_file : id_to_file_map) (js : json) :
     (trait_impl, string) result =
   combine_error_msgs js __FUNCTION__
@@ -1313,6 +1307,7 @@ and trait_impl_of_json (id_to_file : id_to_file_map) (js : json) :
           ("parent_trait_refs", parent_trait_refs);
           ("consts", consts);
           ("types", types);
+          ("type_clauses", _);
           ("required_methods", required_methods);
           ("provided_methods", provided_methods);
         ] ->
@@ -1331,12 +1326,8 @@ and trait_impl_of_json (id_to_file : id_to_file_map) (js : json) :
             consts
         in
         let* types =
-          list_of_json
-            (pair_of_json trait_item_name_of_json
-               (pair_of_json (list_of_json trait_ref_of_json) ty_of_json))
-            types
+          list_of_json (pair_of_json trait_item_name_of_json ty_of_json) types
         in
-        let types = List.map (fun (name, (_, ty)) -> (name, ty)) types in
         let* required_methods =
           list_of_json
             (pair_of_json trait_item_name_of_json fun_decl_id_of_json)
