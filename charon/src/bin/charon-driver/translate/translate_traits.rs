@@ -570,11 +570,11 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
                     let name = TraitItemName(item.name.to_string());
                     // Does the trait impl provide an implementation for this const?
                     let c = match partial_consts.get(&name) {
-                        Some(c) => c.clone(),
+                        Some(c) => c.1.clone(),
                         None => {
                             // The item is not defined in the trait impl:
                             // the trait decl *must* define a default value.
-                            bt_ctx.translate_const_from_trait_item(item)?.1
+                            bt_ctx.translate_const_from_trait_item(item)?.1 .1
                         }
                     };
                     consts.push((name, c));

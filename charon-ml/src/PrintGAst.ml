@@ -241,10 +241,9 @@ let trait_impl_to_string (env : ('a, 'b) fmt_env) (indent : string)
     in
     let consts =
       List.map
-        (fun (name, (ty, id)) ->
-          let ty = ty_to_string ty in
+        (fun (name, id) ->
           let id = global_decl_id_to_string env id in
-          indent1 ^ "const " ^ name ^ " : " ^ ty ^ " = " ^ id ^ "\n")
+          indent1 ^ "const " ^ name ^ " = " ^ id ^ "\n")
         def.consts
     in
     let types =

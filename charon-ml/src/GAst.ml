@@ -171,7 +171,7 @@ type trait_impl = {
   impl_trait : trait_decl_ref;
   generics : generic_params;
   parent_trait_refs : trait_ref list;
-  consts : (trait_item_name * (ty * global_decl_id)) list;
+  consts : (trait_item_name * global_decl_id) list;
   types : (trait_item_name * ty) list;
   required_methods : (trait_item_name * fun_decl_id) list;
   provided_methods : (trait_item_name * fun_decl_id) list;

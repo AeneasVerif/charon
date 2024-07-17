@@ -294,7 +294,7 @@ pub struct TraitImpl {
     /// The trait references for the parent clauses (see [TraitDecl]).
     pub parent_trait_refs: Vector<TraitClauseId, TraitRef>,
     /// The associated constants declared in the trait.
-    pub consts: Vec<(TraitItemName, (Ty, GlobalDeclId))>,
+    pub consts: Vec<(TraitItemName, GlobalDeclId)>,
     /// The associated types declared in the trait.
     pub types: Vec<(TraitItemName, Ty)>,
     /// The `Vec` corresponds to the same `Vector` in `TraitDecl`. In the same way, this is
