@@ -112,6 +112,67 @@ where
     return
 }
 
+trait test_crate::loopy::Bar<Self>
+{
+    type BarTy
+}
+
+impl test_crate::loopy::{impl test_crate::loopy::Bar for ()} : test_crate::loopy::Bar<()>
+{
+    type BarTy = bool
+}
+
+trait test_crate::loopy::Foo<Self>
+{
+    parent_clause_0 : [@TraitClause0]: test_crate::loopy::Bar<Self::FooTy>
+    parent_clause_1 : [@TraitClause1]: test_crate::loopy::Foo<Self::FooTy>
+    type FooTy
+}
+
+impl test_crate::loopy::{impl test_crate::loopy::Foo for ()#1} : test_crate::loopy::Foo<()>
+{
+    parent_clause0 = test_crate::loopy::{impl test_crate::loopy::Bar for ()}
+    parent_clause1 = test_crate::loopy::{impl test_crate::loopy::Foo for ()#1}
+    type FooTy = ()
+}
+
+trait test_crate::loopy::Baz<Self, T>
+{
+    parent_clause_0 : [@TraitClause0]: test_crate::loopy::Baz<T, T>
+    parent_clause_1 : [@TraitClause1]: test_crate::loopy::Bar<T>
+    type BazTy
+}
+
+impl test_crate::loopy::{impl test_crate::loopy::Baz<()> for ()#2} : test_crate::loopy::Baz<(), ()>
+{
+    parent_clause0 = test_crate::loopy::{impl test_crate::loopy::Baz<()> for ()#2}
+    parent_clause1 = test_crate::loopy::{impl test_crate::loopy::Bar for ()}
+    type BazTy = usize
+}
+
+trait core::borrow::Borrow<Self, Borrowed>
+{
+    fn borrow : core::borrow::Borrow::borrow
+}
+
+trait alloc::borrow::ToOwned<Self>
+{
+    parent_clause_0 : [@TraitClause0]: core::borrow::Borrow<Self::Owned, Self>
+    type Owned
+    fn to_owned : alloc::borrow::ToOwned::to_owned
+    fn clone_into
+}
+
+enum test_crate::cow::Cow<'a, B>
+  where
+      [@TraitClause0]: alloc::borrow::ToOwned<B>,
+      B : 'a,
+      B : 'a,
+ =
+|  Borrowed(&'a (B))
+|  Owned(@TraitClause0::Owned)
+
+
 fn test_crate::Foo::use_item<'a, '_1, Self>(@1: &'_1 (Self::Item)) -> &'_1 (Self::Item)
 {
     let @0: &'_ (Self::Item); // return
@@ -120,6 +181,10 @@ fn test_crate::Foo::use_item<'a, '_1, Self>(@1: &'_1 (Self::Item)) -> &'_1 (Self
     @0 := copy (x@1)
     return
 }
+
+fn alloc::borrow::ToOwned::to_owned<'_0, Self>(@1: &'_0 (Self)) -> Self::Owned
+
+fn core::borrow::Borrow::borrow<'_0, Self, Borrowed>(@1: &'_0 (Self)) -> &'_0 (Borrowed)
 
 
 

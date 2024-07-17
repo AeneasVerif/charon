@@ -12,5 +12,71 @@ global test_crate::{test_crate::V<T, const N : usize>}::LEN<T, const N : usize> 
     return
 }
 
+trait test_crate::HasLen<Self>
+{
+    const LEN : usize
+}
+
+global test_crate::{impl test_crate::HasLen for Array<(), const N : usize>#1}::LEN<const N : usize>  {
+    let @0: usize; // return
+
+    @0 := const (const N : usize)
+    return
+}
+
+impl<const N : usize> test_crate::{impl test_crate::HasLen for Array<(), const N : usize>#1}<const N : usize> : test_crate::HasLen<Array<(), const N : usize>>
+{
+    const LEN : usize = test_crate::{impl test_crate::HasLen for Array<(), const N : usize>#1}::LEN
+}
+
+global test_crate::{impl test_crate::HasLen for Array<bool, const N : usize>#2}::LEN<const N : usize>  {
+    let @0: usize; // return
+
+    @0 := const (const N : usize) + const (1 : usize)
+    return
+}
+
+impl<const N : usize> test_crate::{impl test_crate::HasLen for Array<bool, const N : usize>#2}<const N : usize> : test_crate::HasLen<Array<bool, const N : usize>>
+{
+    const LEN : usize = test_crate::{impl test_crate::HasLen for Array<bool, const N : usize>#2}::LEN
+}
+
+global test_crate::HasDefaultLen::LEN<Self, const M : usize>  {
+    let @0: usize; // return
+
+    @0 := const (const M : usize)
+    return
+}
+
+trait test_crate::HasDefaultLen<Self, const M : usize>
+{
+    const LEN : usize = test_crate::HasDefaultLen::LEN
+}
+
+impl<const N : usize> test_crate::{impl test_crate::HasDefaultLen<const N : usize> for Array<(), const N : usize>#3}<const N : usize> : test_crate::HasDefaultLen<Array<(), const N : usize>, const N : usize>
+{
+    const LEN : usize = test_crate::HasDefaultLen::LEN
+}
+
+impl<const N : usize> test_crate::{impl test_crate::HasDefaultLen<const N : usize> for Array<bool, const N : usize>#4}<const N : usize> : test_crate::HasDefaultLen<Array<bool, const N : usize>, const N : usize>
+{
+    const LEN : usize = test_crate::{impl test_crate::HasDefaultLen<const N : usize> for Array<bool, const N : usize>#4}::LEN
+}
+
+global test_crate::{impl test_crate::HasDefaultLen<const N : usize> for Array<bool, const N : usize>#4}::LEN<const N : usize>  {
+    let @0: usize; // return
+    let @1: bool; // anonymous local
+
+    @1 := const (true)
+    if move (@1) {
+        @0 := const (const N : usize)
+    }
+    else {
+        @0 := const (test_crate::{impl test_crate::HasDefaultLen<const N : usize> for Array<bool, const N : usize>#4}<const N : usize>::LEN)
+    }
+    drop @1
+    return
+}
+
 
 

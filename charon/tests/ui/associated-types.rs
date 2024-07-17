@@ -26,3 +26,38 @@ where
 {
     x
 }
+
+mod loopy {
+    trait Bar {
+        type BarTy;
+    }
+    impl Bar for () {
+        type BarTy = bool;
+    }
+
+    // One way of being recursive.
+    trait Foo {
+        type FooTy: Foo + Bar;
+    }
+    impl Foo for () {
+        type FooTy = ();
+    }
+
+    // Another way of being recursive.
+    trait Baz<T: Baz<T> + Bar> {
+        type BazTy;
+    }
+    impl Baz<()> for () {
+        type BazTy = usize;
+    }
+}
+
+mod cow {
+    enum Cow<'a, B>
+    where
+        B: 'a + ToOwned + ?Sized,
+    {
+        Borrowed(&'a B),
+        Owned(<B as ToOwned>::Owned),
+    }
+}
