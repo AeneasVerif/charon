@@ -357,6 +357,8 @@ fn compute_declarations_graph<'tcx, 'ctx>(ctx: &'tcx TransformCtx<'ctx>) -> Deps
                 // Visit the items
                 d.consts.drive(&mut graph);
                 d.types.drive(&mut graph);
+                d.const_defaults.drive(&mut graph);
+                d.type_defaults.drive(&mut graph);
 
                 let method_ids = d
                     .required_methods

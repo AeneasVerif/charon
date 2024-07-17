@@ -50,7 +50,7 @@ global test_crate::HasDefaultLen::LEN<Self, const M : usize>  {
 
 trait test_crate::HasDefaultLen<Self, const M : usize>
 {
-    const LEN : usize = test_crate::HasDefaultLen::LEN
+    const LEN : usize
 }
 
 impl<const N : usize> test_crate::{impl test_crate::HasDefaultLen<const N : usize> for Array<(), const N : usize>#3}<const N : usize> : test_crate::HasDefaultLen<Array<(), const N : usize>, const N : usize>

@@ -14,6 +14,7 @@ use macros::EnumIsA;
 use macros::EnumToGetters;
 use rustc_span::def_id::{CrateNum, DefId, DefIndex};
 use serde::{Deserialize, Serialize};
+use std::collections::HashMap;
 
 generate_index_type!(FunDeclId, "Fun");
 generate_index_type!(BodyId, "Body");
@@ -234,12 +235,16 @@ pub struct TraitDecl {
     /// TODO: actually, as of today, we consider that all trait clauses of
     /// trait declarations are parent clauses.
     pub parent_clauses: Vector<TraitClauseId, TraitClause>,
-    /// The associated constants declared in the trait.
-    ///
-    /// The optional id is for the default value.
-    pub consts: Vec<(TraitItemName, (Ty, Option<GlobalDeclId>))>,
-    /// The associated types declared in the trait, with an optional default.
-    pub types: Vec<(TraitItemName, Option<Ty>)>,
+    /// The associated constants declared in the trait, along with their type.
+    pub consts: Vec<(TraitItemName, Ty)>,
+    /// Records associated constants that have a default value.
+    #[charon::opaque]
+    pub const_defaults: HashMap<TraitItemName, GlobalDeclId>,
+    /// The associated types declared in the trait.
+    pub types: Vec<TraitItemName>,
+    /// Records associated types that have a default value.
+    #[charon::opaque]
+    pub type_defaults: HashMap<TraitItemName, Ty>,
     /// List of trait clauses that apply to each associated type. This is used during translation,
     /// but the `lift_associated_item_clauses` pass moves them to be parent clauses later. Hence
     /// this is empty after that pass.

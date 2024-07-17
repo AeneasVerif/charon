@@ -154,7 +154,7 @@ impl CheckGenericsVisitor<'_, '_> {
                 .types
                 .iter()
                 .zip(timpl.types.iter())
-                .all(|((dname, _), (iname, _))| dname == iname);
+                .all(|(dname, (iname, _))| dname == iname);
         if !args_match {
             self.error("The generics supplied by the trait impl don't match the trait decl.")
         }

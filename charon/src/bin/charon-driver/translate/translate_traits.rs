@@ -287,7 +287,9 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         // We do something subtle here: TODO: explain
         let tcx = bt_ctx.t_ctx.tcx;
         let mut consts = Vec::new();
+        let mut const_defaults = HashMap::new();
         let mut types = Vec::new();
+        let mut type_defaults = HashMap::new();
         let mut type_clauses = Vec::new();
         let mut required_methods = Vec::new();
         let mut provided_methods = Vec::new();
@@ -322,11 +324,12 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
                     trace!("id: {:?}\n- item: {:?}", rust_id, item);
                     let c = if has_default_value {
                         let (name, (ty, id)) = bt_ctx.translate_const_from_trait_item(item)?;
-                        (name, (ty, Some(id)))
+                        const_defaults.insert(name.clone(), id);
+                        (name, ty)
                     } else {
                         let ty = bt_ctx.translate_ty_from_trait_item(item)?;
                         let name = TraitItemName(item.name.to_string());
-                        (name, (ty, None))
+                        (name, ty)
                     };
                     consts.push(c);
                 }
@@ -352,13 +355,12 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
                         })?
                     };
 
-                    let ty = if has_default_value {
-                        Some(bt_ctx.translate_ty_from_trait_item(item)?)
-                    } else {
-                        None
+                    if has_default_value {
+                        let ty = bt_ctx.translate_ty_from_trait_item(item)?;
+                        type_defaults.insert(item_name.clone(), ty);
                     };
 
-                    types.push((item_name.clone(), ty));
+                    types.push(item_name.clone());
                     type_clauses.push((item_name, item_trait_clauses));
                 }
             }
@@ -412,7 +414,9 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
             parent_clauses,
             type_clauses,
             consts,
+            const_defaults,
             types,
+            type_defaults,
             required_methods,
             provided_methods,
         })

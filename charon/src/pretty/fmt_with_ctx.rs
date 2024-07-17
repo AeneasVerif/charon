@@ -1097,24 +1097,15 @@ impl<C: AstFormatter> FmtWithCtx<C> for TraitDecl {
                             })
                             .collect()
                     }))
-                    .chain(self.consts.iter().map(|(name, (ty, opt_id))| {
+                    .chain(self.consts.iter().map(|(name, ty)| {
                         let ty = ty.fmt_with_ctx(ctx);
-                        match opt_id {
-                            None => format!("{TAB_INCR}const {name} : {ty}\n"),
-                            Some(id) => {
-                                format!(
-                                    "{TAB_INCR}const {name} : {ty} = {}\n",
-                                    ctx.format_object(*id)
-                                )
-                            }
-                        }
+                        format!("{TAB_INCR}const {name} : {ty}\n")
                     }))
-                    .chain(self.types.iter().map(|(name, opt_ty)| match opt_ty {
-                        None => format!("{TAB_INCR}type {name}\n"),
-                        Some(ty) => {
-                            format!("{TAB_INCR}type {name} = {}\n", ty.fmt_with_ctx(ctx))
-                        }
-                    }))
+                    .chain(
+                        self.types
+                            .iter()
+                            .map(|name| format!("{TAB_INCR}type {name}\n")),
+                    )
                     .chain(self.required_methods.iter().map(|(name, f)| {
                         format!("{TAB_INCR}fn {name} : {}\n", ctx.format_object(*f))
                     }))

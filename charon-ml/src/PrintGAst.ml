@@ -166,21 +166,13 @@ let trait_decl_to_string (env : ('a, 'b) fmt_env) (indent : string)
     in
     let consts =
       List.map
-        (fun (name, (ty, opt_id)) ->
+        (fun (name, ty) ->
           let ty = ty_to_string ty in
-          let lhs = indent1 ^ "const " ^ name ^ " : " ^ ty in
-          match opt_id with
-          | None -> lhs ^ "\n"
-          | Some id -> lhs ^ " = " ^ global_decl_id_to_string env id ^ "\n")
+          indent1 ^ "const " ^ name ^ " : " ^ ty ^ "\n")
         def.consts
     in
     let types =
-      List.map
-        (fun (name, opt_ty) ->
-          match opt_ty with
-          | None -> indent1 ^ "type " ^ name ^ "\n"
-          | Some ty -> indent1 ^ "type " ^ name ^ " = " ^ ty_to_string ty ^ "\n")
-        def.types
+      List.map (fun name -> indent1 ^ "type " ^ name ^ "\n") def.types
     in
     let required_methods =
       List.map

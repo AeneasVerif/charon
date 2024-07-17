@@ -158,8 +158,8 @@ type trait_decl = {
   item_meta : item_meta;
   generics : generic_params;
   parent_clauses : trait_clause list;
-  consts : (trait_item_name * (ty * global_decl_id option)) list;
-  types : (trait_item_name * ty option) list;
+  consts : (trait_item_name * ty) list;
+  types : trait_item_name list;
   required_methods : (trait_item_name * fun_decl_id) list;
   provided_methods : (trait_item_name * fun_decl_id option) list;
 }

@@ -456,7 +456,7 @@ trait test_crate::WithConstTy<Self, const LEN : usize>
 {
     parent_clause_0 : [@TraitClause0]: test_crate::ToU64<Self::W>
     const LEN1 : usize
-    const LEN2 : usize = test_crate::WithConstTy::LEN2
+    const LEN2 : usize
     type V
     type W
     fn f : test_crate::WithConstTy::f

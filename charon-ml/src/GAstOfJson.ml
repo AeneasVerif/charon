@@ -1246,7 +1246,9 @@ and trait_decl_of_json (id_to_file : id_to_file_map) (js : json) :
           ("generics", generics);
           ("parent_clauses", parent_clauses);
           ("consts", consts);
+          ("const_defaults", _);
           ("types", types);
+          ("type_defaults", _);
           ("type_clauses", _);
           ("required_methods", required_methods);
           ("provided_methods", provided_methods);
@@ -1260,16 +1262,9 @@ and trait_decl_of_json (id_to_file : id_to_file_map) (js : json) :
             parent_clauses
         in
         let* consts =
-          list_of_json
-            (pair_of_json trait_item_name_of_json
-               (pair_of_json ty_of_json (option_of_json global_decl_id_of_json)))
-            consts
+          list_of_json (pair_of_json trait_item_name_of_json ty_of_json) consts
         in
-        let* types =
-          list_of_json
-            (pair_of_json trait_item_name_of_json (option_of_json ty_of_json))
-            types
-        in
+        let* types = list_of_json trait_item_name_of_json types in
         let* required_methods =
           list_of_json
             (pair_of_json trait_item_name_of_json fun_decl_id_of_json)
