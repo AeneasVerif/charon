@@ -338,3 +338,11 @@ pub fn use_foo1<T: Trait, U>() -> Result<T, i32> {
 pub fn use_foo2<T, U: Trait>() -> Result<U, i32> {
     Foo::<U, T>::FOO
 }
+
+// Recursive trait impl
+trait RecursiveImpl {
+    type Item: RecursiveImpl;
+}
+impl RecursiveImpl for () {
+    type Item = ();
+}

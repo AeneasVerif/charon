@@ -832,6 +832,18 @@ where
     return
 }
 
+trait test_crate::RecursiveImpl<Self>
+{
+    parent_clause_0 : [@TraitClause0]: test_crate::RecursiveImpl<Self::Item>
+    type Item
+}
+
+impl test_crate::{impl test_crate::RecursiveImpl for ()#17} : test_crate::RecursiveImpl<()>
+{
+    parent_clause0 = test_crate::{impl test_crate::RecursiveImpl for ()#17}
+    type Item = ()
+}
+
 fn test_crate::WithConstTy::f<'_0, '_1, Self, const LEN : usize>(@1: &'_0 mut (Self::W), @2: &'_1 (Array<u8, const LEN : usize>))
 
 fn test_crate::IntoIterator::into_iter<Self>(@1: Self) -> Self::IntoIter

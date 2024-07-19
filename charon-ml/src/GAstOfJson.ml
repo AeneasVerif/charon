@@ -1209,7 +1209,7 @@ let gfun_decl_of_json (bodies : 'body gexpr_body option list)
           }
     | _ -> Error "")
 
-let gglobal_decl_of_json (bodies : 'body gexpr_body option list)
+let rec gglobal_decl_of_json (bodies : 'body gexpr_body option list)
     (id_to_file : id_to_file_map) (js : json) :
     ('body gexpr_body option gglobal_decl, string) result =
   combine_error_msgs js __FUNCTION__
@@ -1377,39 +1377,36 @@ and g_declaration_group_of_json :
         Ok (RecGroup rec_)
     | _ -> Error "")
 
-let type_declaration_group_of_json (js : json) :
-    (type_declaration_group, string) result =
+and declaration_group_of_json (js : json) : (declaration_group, string) result =
   combine_error_msgs js __FUNCTION__
-    (g_declaration_group_of_json TypeDeclId.id_of_json js)
+    (match js with
+    | `Assoc [ ("Type", type_) ] ->
+        let* type_ = g_declaration_group_of_json type_decl_id_of_json type_ in
+        Ok (TypeGroup type_)
+    | `Assoc [ ("Fun", fun_) ] ->
+        let* fun_ = g_declaration_group_of_json fun_decl_id_of_json fun_ in
+        Ok (FunGroup fun_)
+    | `Assoc [ ("Global", global) ] ->
+        let* global =
+          g_declaration_group_of_json global_decl_id_of_json global
+        in
+        Ok (GlobalGroup global)
+    | `Assoc [ ("TraitDecl", trait_decl) ] ->
+        let* trait_decl =
+          g_declaration_group_of_json trait_decl_id_of_json trait_decl
+        in
+        Ok (TraitDeclGroup trait_decl)
+    | `Assoc [ ("TraitImpl", trait_impl) ] ->
+        let* trait_impl =
+          g_declaration_group_of_json trait_impl_id_of_json trait_impl
+        in
+        Ok (TraitImplGroup trait_impl)
+    | `Assoc [ ("Mixed", mixed) ] ->
+        let* mixed = g_declaration_group_of_json any_decl_id_of_json mixed in
+        Ok (MixedGroup mixed)
+    | _ -> Error "")
 
-let fun_declaration_group_of_json (js : json) :
-    (fun_declaration_group, string) result =
-  combine_error_msgs js __FUNCTION__
-    (g_declaration_group_of_json FunDeclId.id_of_json js)
-
-(* This is written by hand because we assert non-recursivity. *)
-let global_declaration_group_of_json (js : json) :
-    (GlobalDeclId.id, string) result =
-  combine_error_msgs js __FUNCTION__
-    (let* decl = g_declaration_group_of_json GlobalDeclId.id_of_json js in
-     match decl with
-     | NonRecGroup id -> Ok id
-     | RecGroup _ -> Error "got mutually dependent globals")
-
-let trait_declaration_group_of_json (js : json) :
-    (trait_declaration_group, string) result =
-  combine_error_msgs js __FUNCTION__
-    (g_declaration_group_of_json TraitDeclId.id_of_json js)
-
-let trait_implementation_group_of_json (js : json) :
-    (TraitImplId.id, string) result =
-  combine_error_msgs js __FUNCTION__
-    (let* decl = g_declaration_group_of_json TraitImplId.id_of_json js in
-     match decl with
-     | NonRecGroup id -> Ok id
-     | RecGroup _ -> Error "got mutually dependent trait impls")
-
-let any_decl_id_of_json (js : json) : (any_decl_id, string) result =
+and any_decl_id_of_json (js : json) : (any_decl_id, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
     | `Assoc [ ("Fun", id) ] ->
@@ -1427,32 +1424,4 @@ let any_decl_id_of_json (js : json) : (any_decl_id, string) result =
     | `Assoc [ ("TraitImpl", id) ] ->
         let* id = TraitImplId.id_of_json id in
         Ok (IdTraitImpl id)
-    | _ -> Error "")
-
-let mixed_group_of_json (js : json) :
-    (any_decl_id g_declaration_group, string) result =
-  combine_error_msgs js __FUNCTION__
-    (g_declaration_group_of_json any_decl_id_of_json js)
-
-let declaration_group_of_json (js : json) : (declaration_group, string) result =
-  combine_error_msgs js __FUNCTION__
-    (match js with
-    | `Assoc [ ("Type", decl) ] ->
-        let* decl = type_declaration_group_of_json decl in
-        Ok (TypeGroup decl)
-    | `Assoc [ ("Fun", decl) ] ->
-        let* decl = fun_declaration_group_of_json decl in
-        Ok (FunGroup decl)
-    | `Assoc [ ("Global", decl) ] ->
-        let* id = global_declaration_group_of_json decl in
-        Ok (GlobalGroup id)
-    | `Assoc [ ("TraitDecl", decl) ] ->
-        let* id = trait_declaration_group_of_json decl in
-        Ok (TraitDeclGroup id)
-    | `Assoc [ ("TraitImpl", decl) ] ->
-        let* id = trait_implementation_group_of_json decl in
-        Ok (TraitImplGroup id)
-    | `Assoc [ ("Mixed", decl) ] ->
-        let* id = mixed_group_of_json decl in
-        Ok (MixedGroup id)
     | _ -> Error "")

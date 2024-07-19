@@ -407,13 +407,6 @@ fn group_declarations_from_scc(
         let id0 = *it.next().unwrap();
         let decl = graph.graph.get(&id0).unwrap();
 
-        if let AnyTransId::Global(_) = id0 {
-            assert!(
-                scc.len() == 1,
-                "Error: this constant recursively depends on itself, what is happening"
-            );
-        }
-
         // If an SCC has length one, the declaration may be simply recursive:
         // we determine whether it is the case by checking if the def id is in
         // its own set of dependencies.
