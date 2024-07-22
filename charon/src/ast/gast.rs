@@ -178,6 +178,15 @@ pub struct GlobalDecl {
     pub body: Result<BodyId, Opaque>,
 }
 
+/// Reference to a global declaration.
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Hash, Drive, DriveMut)]
+pub struct GlobalDeclRef {
+    #[charon::rename("global_id")]
+    pub id: GlobalDeclId,
+    #[charon::rename("global_generics")]
+    pub generics: GenericArgs,
+}
+
 #[derive(
     Debug, Clone, Serialize, Deserialize, Drive, DriveMut, PartialEq, Eq, Hash, PartialOrd, Ord,
 )]

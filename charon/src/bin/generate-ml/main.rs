@@ -402,6 +402,7 @@ fn main() -> Result<()> {
             "ExistentialPredicate",
             "TraitRef",
             "TraitDeclRef",
+            "GlobalDeclRef",
             "GenericArgs",
             "TraitRefKind",
             "Field",

@@ -598,6 +598,14 @@ where
     }
 }
 
+impl<C: AstFormatter> FmtWithCtx<C> for GlobalDeclRef {
+    fn fmt_with_ctx(&self, ctx: &C) -> String {
+        let global_id = ctx.format_object(self.id);
+        let generics = self.generics.fmt_with_ctx_split_trait_refs(ctx);
+        format!("{global_id}{generics}")
+    }
+}
+
 impl<C: AstFormatter> FmtWithCtx<C> for ImplElem {
     fn fmt_with_ctx(&self, ctx: &C) -> String {
         let d = if self.disambiguator.is_zero() {
@@ -723,13 +731,7 @@ impl<C: AstFormatter> FmtWithCtx<C> for RawConstantExpr {
                 let values: Vec<String> = values.iter().map(|v| v.fmt_with_ctx(ctx)).collect();
                 format!("ConstAdt {} [{}]", variant_id, values.join(", "))
             }
-            RawConstantExpr::Global(id, generics) => {
-                format!(
-                    "{}{}",
-                    ctx.format_object(*id),
-                    generics.fmt_with_ctx_split_trait_refs(ctx)
-                )
-            }
+            RawConstantExpr::Global(global_ref) => global_ref.fmt_with_ctx(ctx),
             RawConstantExpr::TraitConst(trait_ref, name) => {
                 format!("{}::{name}", trait_ref.fmt_with_ctx(ctx),)
             }
@@ -818,13 +820,7 @@ impl<C: AstFormatter> FmtWithCtx<C> for Rvalue {
                     }
                 }
             }
-            Rvalue::Global(gid, generics) => {
-                format!(
-                    "{}{}",
-                    ctx.format_object(*gid),
-                    generics.fmt_with_ctx_split_trait_refs(ctx)
-                )
-            }
+            Rvalue::Global(global_ref) => global_ref.fmt_with_ctx(ctx),
             Rvalue::Len(place, ..) => format!("len({})", place.fmt_with_ctx(ctx)),
             Rvalue::Repeat(op, _ty, cg) => {
                 format!("[{}; {}]", op.fmt_with_ctx(ctx), cg.fmt_with_ctx(ctx))

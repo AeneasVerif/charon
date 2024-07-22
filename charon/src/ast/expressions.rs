@@ -1,6 +1,6 @@
 //! Implements expressions: paths, operands, rvalues, lvalues
 
-use crate::gast::{FunDeclId, TraitItemName};
+use crate::gast::*;
 use crate::types::*;
 use crate::values::*;
 use derive_visitor::{Drive, DriveMut};
@@ -411,7 +411,7 @@ pub enum RawConstantExpr {
     /// }
     /// ```
     #[charon::opaque]
-    Global(GlobalDeclId, GenericArgs),
+    Global(GlobalDeclRef),
     ///
     /// A trait constant.
     ///
@@ -483,9 +483,7 @@ pub enum Rvalue {
     Aggregate(AggregateKind, Vec<Operand>),
     /// Not present in MIR: we introduce it when replacing constant variables
     /// in operands in [extract_global_assignments.rs].
-    ///
-    /// Note that globals *can* have generic parameters.
-    Global(GlobalDeclId, GenericArgs),
+    Global(GlobalDeclRef),
     /// Length of a memory location. The run-time length of e.g. a vector or a slice is
     /// represented differently (but pretty-prints the same, FIXME).
     /// Should be seen as a function of signature:

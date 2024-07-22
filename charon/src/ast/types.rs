@@ -1,5 +1,5 @@
 pub use super::types_utils::*;
-use crate::ast::{AttrInfo, ItemMeta, Literal, ScalarValue, Span, TraitItemName};
+use crate::ast::*;
 use crate::ids::Vector;
 use derivative::Derivative;
 use derive_visitor::{Drive, DriveMut, Event, Visitor, VisitorMut};
@@ -594,8 +594,6 @@ pub enum LiteralTy {
     Drive,
     DriveMut,
     Hash,
-    Ord,
-    PartialOrd,
 )]
 #[charon::variants_prefix("Cg")]
 pub enum ConstGeneric {

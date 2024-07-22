@@ -303,6 +303,11 @@ and trait_decl_ref = {
   decl_generics : generic_args; (* The name: annoying field collisions... *)
 }
 
+and global_decl_ref = {
+  global_id : global_decl_id;
+  global_generics : generic_args; (* The name: annoying field collisions... *)
+}
+
 and generic_args = {
   regions : region list;
   types : ty list;

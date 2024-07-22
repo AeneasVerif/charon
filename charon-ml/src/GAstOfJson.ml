@@ -425,6 +425,15 @@ and trait_decl_ref_of_json (js : json) : (trait_decl_ref, string) result =
         Ok { trait_decl_id; decl_generics }
     | _ -> Error "")
 
+and global_decl_ref_of_json (js : json) : (global_decl_ref, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with
+    | `Assoc [ ("id", id); ("generics", generics) ] ->
+        let* global_id = global_decl_id_of_json id in
+        let* global_generics = generic_args_of_json generics in
+        Ok { global_id; global_generics }
+    | _ -> Error "")
+
 and generic_args_of_json (js : json) : (generic_args, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
@@ -1008,10 +1017,9 @@ and rvalue_of_json (js : json) : (rvalue, string) result =
         let* x0 = aggregate_kind_of_json x0 in
         let* x1 = list_of_json operand_of_json x1 in
         Ok (Aggregate (x0, x1))
-    | `Assoc [ ("Global", `List [ x0; x1 ]) ] ->
-        let* x0 = global_decl_id_of_json x0 in
-        let* x1 = generic_args_of_json x1 in
-        Ok (Global (x0, x1))
+    | `Assoc [ ("Global", global) ] ->
+        let* global = global_decl_ref_of_json global in
+        Ok (Global global)
     | `Assoc [ ("Len", `List [ x0; x1; x2 ]) ] ->
         let* x0 = place_of_json x0 in
         let* x1 = ty_of_json x1 in

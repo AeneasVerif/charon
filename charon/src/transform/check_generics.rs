@@ -13,8 +13,7 @@ use super::{ctx::LlbcPass, TransformCtx};
     GenericArgs(enter),
     AggregateKind(enter),
     FnPtr(enter),
-    RawConstantExpr(enter),
-    Rvalue(enter),
+    GlobalDeclRef(enter),
     TraitDeclRef(enter),
     TraitRefKind(enter),
     Ty(enter)
@@ -97,15 +96,8 @@ impl CheckGenericsVisitor<'_, '_> {
             }
         }
     }
-    fn enter_raw_constant_expr(&mut self, cexpr: &RawConstantExpr) {
-        if let RawConstantExpr::Global(id, args) = cexpr {
-            self.generics_should_match_item(args, *id);
-        }
-    }
-    fn enter_rvalue(&mut self, rvalue: &Rvalue) {
-        if let Rvalue::Global(id, args) = rvalue {
-            self.generics_should_match_item(args, *id);
-        }
+    fn enter_global_decl_ref(&mut self, global_ref: &GlobalDeclRef) {
+        self.generics_should_match_item(&global_ref.generics, global_ref.id);
     }
     fn enter_trait_decl_ref(&mut self, tref: &TraitDeclRef) {
         self.generics_should_match_item(&tref.generics, tref.trait_id);

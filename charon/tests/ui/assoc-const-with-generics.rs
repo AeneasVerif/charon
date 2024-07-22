@@ -20,6 +20,7 @@ impl<const N: usize> HasLen for [bool; N] {
 
 pub trait HasDefaultLen<const M: usize> {
     const LEN: usize = M;
+    // fn use_array(_a: [(); Self::LEN]) {}
 }
 
 impl<const N: usize> HasDefaultLen<N> for [(); N] {}

@@ -116,8 +116,11 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                     trait_refs,
                 )?;
 
-                let global_decl_id = self.register_global_decl_id(span, DefId::from(id));
-                RawConstantExpr::Global(global_decl_id, generics)
+                let global_id = self.register_global_decl_id(span, DefId::from(id));
+                RawConstantExpr::Global(GlobalDeclRef {
+                    id: global_id,
+                    generics,
+                })
             }
             ConstantExprKind::Borrow(be) => {
                 let be = self.translate_constant_expr_to_constant_expr(span, be)?;
@@ -184,9 +187,11 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             .value;
         match value {
             RawConstantExpr::Literal(v) => Ok(ConstGeneric::Value(v)),
-            RawConstantExpr::Global(id, substs) => {
-                error_assert!(self, span, substs.is_empty());
-                Ok(ConstGeneric::Global(id))
+            RawConstantExpr::Global(global_ref) => {
+                // TODO: handle constant arguments with generics (this can likely only happen with
+                // a feature gate).
+                error_assert!(self, span, global_ref.generics.is_empty());
+                Ok(ConstGeneric::Global(global_ref.id))
             }
             RawConstantExpr::Adt(..)
             | RawConstantExpr::TraitConst { .. }
