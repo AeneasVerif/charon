@@ -483,19 +483,15 @@ and trait_type_constraint = {
 
 (** In implementation path elements we distinguish inherent impls (impl blocks
     for types) from trait impls *)
-type impl_elem_kind = ImplElemTy of ty | ImplElemTrait of trait_decl_ref
-[@@deriving show, ord]
-
-(** An impl path element for [name] *)
-type impl_elem = {
-  disambiguator : Disambiguator.id;
-  generics : generic_params;
-  kind : impl_elem_kind;
-}
+type impl_elem =
+  | ImplElemTy of generic_params * ty
+  | ImplElemTrait of trait_impl_id
 [@@deriving show, ord]
 
 (** A path element for [name] *)
-type path_elem = PeIdent of string * Disambiguator.id | PeImpl of impl_elem
+type path_elem =
+  | PeIdent of string * Disambiguator.id
+  | PeImpl of impl_elem * Disambiguator.id
 [@@deriving show, ord]
 
 (** A name *)

@@ -660,31 +660,17 @@ and generic_params_of_json (id_to_file : id_to_file_map) (js : json) :
           }
     | _ -> Error "")
 
-and impl_elem_kind_of_json (js : json) : (impl_elem_kind, string) result =
-  combine_error_msgs js __FUNCTION__
-    (match js with
-    | `Assoc [ ("Ty", ty) ] ->
-        let* ty = ty_of_json ty in
-        Ok (ImplElemTy ty)
-    | `Assoc [ ("Trait", trait) ] ->
-        let* trait = trait_decl_ref_of_json trait in
-        Ok (ImplElemTrait trait)
-    | _ -> Error "")
-
 and impl_elem_of_json (id_to_file : id_to_file_map) (js : json) :
     (impl_elem, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
-    | `Assoc
-        [
-          ("disambiguator", disambiguator);
-          ("generics", generics);
-          ("kind", kind);
-        ] ->
-        let* disambiguator = disambiguator_of_json disambiguator in
-        let* generics = generic_params_of_json id_to_file generics in
-        let* kind = impl_elem_kind_of_json kind in
-        Ok { disambiguator; generics; kind }
+    | `Assoc [ ("Ty", `List [ x0; x1 ]) ] ->
+        let* x0 = generic_params_of_json id_to_file x0 in
+        let* x1 = ty_of_json x1 in
+        Ok (ImplElemTy (x0, x1))
+    | `Assoc [ ("Trait", trait) ] ->
+        let* trait = trait_impl_id_of_json trait in
+        Ok (ImplElemTrait trait)
     | _ -> Error "")
 
 and path_elem_of_json (id_to_file : id_to_file_map) (js : json) :
@@ -695,9 +681,10 @@ and path_elem_of_json (id_to_file : id_to_file_map) (js : json) :
         let* x0 = string_of_json x0 in
         let* x1 = disambiguator_of_json x1 in
         Ok (PeIdent (x0, x1))
-    | `Assoc [ ("Impl", impl) ] ->
-        let* impl = impl_elem_of_json id_to_file impl in
-        Ok (PeImpl impl)
+    | `Assoc [ ("Impl", `List [ x0; x1 ]) ] ->
+        let* x0 = impl_elem_of_json id_to_file x0 in
+        let* x1 = disambiguator_of_json x1 in
+        Ok (PeImpl (x0, x1))
     | _ -> Error "")
 
 and name_of_json (id_to_file : id_to_file_map) (js : json) :

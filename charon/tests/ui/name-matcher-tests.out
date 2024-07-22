@@ -37,7 +37,7 @@ impl<T> test_crate::{impl test_crate::Trait<core::option::Option<T>> for alloc::
     fn method = test_crate::{impl test_crate::Trait<core::option::Option<T>> for alloc::boxed::Box<T>}::method
 }
 
-fn test_crate::{impl test_crate::Trait<alloc::boxed::Box<T>> for core::option::Option<U>#1}::method<T, U, V>()
+fn test_crate::{impl test_crate::Trait<alloc::boxed::Box<T>> for core::option::Option<U>}#1::method<T, U, V>()
 {
     let @0: (); // return
     let @1: (); // anonymous local
@@ -48,9 +48,9 @@ fn test_crate::{impl test_crate::Trait<alloc::boxed::Box<T>> for core::option::O
     return
 }
 
-impl<T, U> test_crate::{impl test_crate::Trait<alloc::boxed::Box<T>> for core::option::Option<U>#1}<T, U> : test_crate::Trait<core::option::Option<U>, alloc::boxed::Box<T>>
+impl<T, U> test_crate::{impl test_crate::Trait<alloc::boxed::Box<T>> for core::option::Option<U>}#1<T, U> : test_crate::Trait<core::option::Option<U>, alloc::boxed::Box<T>>
 {
-    fn method = test_crate::{impl test_crate::Trait<alloc::boxed::Box<T>> for core::option::Option<U>#1}::method
+    fn method = test_crate::{impl test_crate::Trait<alloc::boxed::Box<T>> for core::option::Option<U>}#1::method
 }
 
 struct core::ops::range::RangeFrom<Idx> =
@@ -59,6 +59,12 @@ struct core::ops::range::RangeFrom<Idx> =
 }
 
 fn core::option::{core::option::Option<T>}::is_some<'_0, T>(@1: &'_0 (core::option::Option<T>)) -> bool
+
+trait core::ops::index::Index<Self, Idx>
+{
+    type Output
+    fn index : core::ops::index::Index::index
+}
 
 trait core::slice::index::private_slice_index::Sealed<Self>
 
@@ -74,12 +80,6 @@ trait core::slice::index::SliceIndex<Self, T>
     fn index_mut : core::slice::index::SliceIndex::index_mut
 }
 
-trait core::ops::index::Index<Self, Idx>
-{
-    type Output
-    fn index : core::ops::index::Index::index
-}
-
 fn core::slice::index::{impl core::ops::index::Index<I> for Slice<T>}::index<'_0, T, I>(@1: &'_0 (Slice<T>), @2: I) -> &'_0 (@TraitClause0::Output)
 where
     // Inherited clauses:
@@ -93,30 +93,30 @@ where
     fn index = core::slice::index::{impl core::ops::index::Index<I> for Slice<T>}::index
 }
 
-impl core::slice::index::private_slice_index::{impl core::slice::index::private_slice_index::Sealed for core::ops::range::RangeFrom<usize>#3} : core::slice::index::private_slice_index::Sealed<core::ops::range::RangeFrom<usize>>
+impl core::slice::index::private_slice_index::{impl core::slice::index::private_slice_index::Sealed for core::ops::range::RangeFrom<usize>}#3 : core::slice::index::private_slice_index::Sealed<core::ops::range::RangeFrom<usize>>
 
-fn core::slice::index::{impl core::slice::index::SliceIndex<Slice<T>> for core::ops::range::RangeFrom<usize>#6}::get<'_0, T>(@1: core::ops::range::RangeFrom<usize>, @2: &'_0 (Slice<T>)) -> core::option::Option<&'_0 (Slice<T>)>
+fn core::slice::index::{impl core::slice::index::SliceIndex<Slice<T>> for core::ops::range::RangeFrom<usize>}#6::get<'_0, T>(@1: core::ops::range::RangeFrom<usize>, @2: &'_0 (Slice<T>)) -> core::option::Option<&'_0 (Slice<T>)>
 
-fn core::slice::index::{impl core::slice::index::SliceIndex<Slice<T>> for core::ops::range::RangeFrom<usize>#6}::get_mut<'_0, T>(@1: core::ops::range::RangeFrom<usize>, @2: &'_0 mut (Slice<T>)) -> core::option::Option<&'_0 mut (Slice<T>)>
+fn core::slice::index::{impl core::slice::index::SliceIndex<Slice<T>> for core::ops::range::RangeFrom<usize>}#6::get_mut<'_0, T>(@1: core::ops::range::RangeFrom<usize>, @2: &'_0 mut (Slice<T>)) -> core::option::Option<&'_0 mut (Slice<T>)>
 
-unsafe fn core::slice::index::{impl core::slice::index::SliceIndex<Slice<T>> for core::ops::range::RangeFrom<usize>#6}::get_unchecked<T>(@1: core::ops::range::RangeFrom<usize>, @2: *mut Slice<T>) -> *mut Slice<T>
+unsafe fn core::slice::index::{impl core::slice::index::SliceIndex<Slice<T>> for core::ops::range::RangeFrom<usize>}#6::get_unchecked<T>(@1: core::ops::range::RangeFrom<usize>, @2: *mut Slice<T>) -> *mut Slice<T>
 
-unsafe fn core::slice::index::{impl core::slice::index::SliceIndex<Slice<T>> for core::ops::range::RangeFrom<usize>#6}::get_unchecked_mut<T>(@1: core::ops::range::RangeFrom<usize>, @2: *const Slice<T>) -> *const Slice<T>
+unsafe fn core::slice::index::{impl core::slice::index::SliceIndex<Slice<T>> for core::ops::range::RangeFrom<usize>}#6::get_unchecked_mut<T>(@1: core::ops::range::RangeFrom<usize>, @2: *const Slice<T>) -> *const Slice<T>
 
-fn core::slice::index::{impl core::slice::index::SliceIndex<Slice<T>> for core::ops::range::RangeFrom<usize>#6}::index<'_0, T>(@1: core::ops::range::RangeFrom<usize>, @2: &'_0 (Slice<T>)) -> &'_0 (Slice<T>)
+fn core::slice::index::{impl core::slice::index::SliceIndex<Slice<T>> for core::ops::range::RangeFrom<usize>}#6::index<'_0, T>(@1: core::ops::range::RangeFrom<usize>, @2: &'_0 (Slice<T>)) -> &'_0 (Slice<T>)
 
-fn core::slice::index::{impl core::slice::index::SliceIndex<Slice<T>> for core::ops::range::RangeFrom<usize>#6}::index_mut<'_0, T>(@1: core::ops::range::RangeFrom<usize>, @2: &'_0 mut (Slice<T>)) -> &'_0 mut (Slice<T>)
+fn core::slice::index::{impl core::slice::index::SliceIndex<Slice<T>> for core::ops::range::RangeFrom<usize>}#6::index_mut<'_0, T>(@1: core::ops::range::RangeFrom<usize>, @2: &'_0 mut (Slice<T>)) -> &'_0 mut (Slice<T>)
 
-impl<T> core::slice::index::{impl core::slice::index::SliceIndex<Slice<T>> for core::ops::range::RangeFrom<usize>#6}<T> : core::slice::index::SliceIndex<core::ops::range::RangeFrom<usize>, Slice<T>>
+impl<T> core::slice::index::{impl core::slice::index::SliceIndex<Slice<T>> for core::ops::range::RangeFrom<usize>}#6<T> : core::slice::index::SliceIndex<core::ops::range::RangeFrom<usize>, Slice<T>>
 {
-    parent_clause0 = core::slice::index::private_slice_index::{impl core::slice::index::private_slice_index::Sealed for core::ops::range::RangeFrom<usize>#3}
+    parent_clause0 = core::slice::index::private_slice_index::{impl core::slice::index::private_slice_index::Sealed for core::ops::range::RangeFrom<usize>}#3
     type Output = Slice<T>
-    fn get = core::slice::index::{impl core::slice::index::SliceIndex<Slice<T>> for core::ops::range::RangeFrom<usize>#6}::get
-    fn get_mut = core::slice::index::{impl core::slice::index::SliceIndex<Slice<T>> for core::ops::range::RangeFrom<usize>#6}::get_mut
-    fn get_unchecked = core::slice::index::{impl core::slice::index::SliceIndex<Slice<T>> for core::ops::range::RangeFrom<usize>#6}::get_unchecked
-    fn get_unchecked_mut = core::slice::index::{impl core::slice::index::SliceIndex<Slice<T>> for core::ops::range::RangeFrom<usize>#6}::get_unchecked_mut
-    fn index = core::slice::index::{impl core::slice::index::SliceIndex<Slice<T>> for core::ops::range::RangeFrom<usize>#6}::index
-    fn index_mut = core::slice::index::{impl core::slice::index::SliceIndex<Slice<T>> for core::ops::range::RangeFrom<usize>#6}::index_mut
+    fn get = core::slice::index::{impl core::slice::index::SliceIndex<Slice<T>> for core::ops::range::RangeFrom<usize>}#6::get
+    fn get_mut = core::slice::index::{impl core::slice::index::SliceIndex<Slice<T>> for core::ops::range::RangeFrom<usize>}#6::get_mut
+    fn get_unchecked = core::slice::index::{impl core::slice::index::SliceIndex<Slice<T>> for core::ops::range::RangeFrom<usize>}#6::get_unchecked
+    fn get_unchecked_mut = core::slice::index::{impl core::slice::index::SliceIndex<Slice<T>> for core::ops::range::RangeFrom<usize>}#6::get_unchecked_mut
+    fn index = core::slice::index::{impl core::slice::index::SliceIndex<Slice<T>> for core::ops::range::RangeFrom<usize>}#6::index
+    fn index_mut = core::slice::index::{impl core::slice::index::SliceIndex<Slice<T>> for core::ops::range::RangeFrom<usize>}#6::index_mut
 }
 
 fn core::ops::index::Index::index<'_0, Self, Idx>(@1: &'_0 (Self), @2: Idx) -> &'_0 (Self::Output)
@@ -153,7 +153,7 @@ fn test_crate::foo()
     drop @6
     @10 := &*(slice@4)
     @11 := core::ops::range::RangeFrom { start: const (1 : usize) }
-    @9 := core::slice::index::{impl core::ops::index::Index<I> for Slice<T>}<bool, core::ops::range::RangeFrom<usize>>[core::slice::index::{impl core::slice::index::SliceIndex<Slice<T>> for core::ops::range::RangeFrom<usize>#6}<bool>]::index(move (@10), move (@11))
+    @9 := core::slice::index::{impl core::ops::index::Index<I> for Slice<T>}<bool, core::ops::range::RangeFrom<usize>>[core::slice::index::{impl core::slice::index::SliceIndex<Slice<T>> for core::ops::range::RangeFrom<usize>}#6<bool>]::index(move (@10), move (@11))
     drop @11
     drop @10
     @8 := &*(@9)

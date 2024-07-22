@@ -27,16 +27,16 @@ trait alloc::string::ToString<Self>
     fn to_string : alloc::string::ToString::to_string
 }
 
-fn alloc::string::{impl alloc::string::ToString for T#32}::to_string<'_0, T>(@1: &'_0 (T)) -> alloc::string::String
+fn alloc::string::{impl alloc::string::ToString for T}#32::to_string<'_0, T>(@1: &'_0 (T)) -> alloc::string::String
 where
     // Inherited clauses:
     [@TraitClause0]: core::fmt::Display<T>,
 
-impl<T> alloc::string::{impl alloc::string::ToString for T#32}<T> : alloc::string::ToString<T>
+impl<T> alloc::string::{impl alloc::string::ToString for T}#32<T> : alloc::string::ToString<T>
 where
     [@TraitClause0]: core::fmt::Display<T>,
 {
-    fn to_string = alloc::string::{impl alloc::string::ToString for T#32}::to_string
+    fn to_string = alloc::string::{impl alloc::string::ToString for T}#32::to_string
 }
 
 fn alloc::string::ToString::to_string<'_0, Self>(@1: &'_0 (Self)) -> alloc::string::String
@@ -48,7 +48,7 @@ fn test_crate::destruct<'_0>(@1: &'_0 (dyn (exists(TODO)))) -> alloc::string::St
     let @2: &'_ (dyn (exists(TODO))); // anonymous local
 
     @2 := &*(x@1)
-    @0 := alloc::string::{impl alloc::string::ToString for T#32}<dyn (exists(TODO))>[core::fmt::Display<dyn (exists(TODO))>]::to_string(move (@2))
+    @0 := alloc::string::{impl alloc::string::ToString for T}#32<dyn (exists(TODO))>[core::fmt::Display<dyn (exists(TODO))>]::to_string(move (@2))
     drop @2
     return
 }

@@ -30,7 +30,7 @@ fn repr_name(_crate_data: &CrateData, n: &Name) -> String {
         .iter()
         .map(|path_elem| match path_elem {
             PathElem::Ident(i, _) => i.clone(),
-            PathElem::Impl(_) => "<impl>".to_string(),
+            PathElem::Impl(..) => "<impl>".to_string(),
         })
         .join("::")
 }
@@ -418,7 +418,6 @@ fn main() -> Result<()> {
             "TypeOutlives",
             "TraitTypeConstraint",
             "GenericParams",
-            "ImplElemKind",
             "ImplElem",
             "PathElem",
             "Name",

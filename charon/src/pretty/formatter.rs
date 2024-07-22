@@ -179,6 +179,7 @@ pub trait AstFormatter = Formatter<TypeVarId>
     + Formatter<VarId>
     + Formatter<(TypeDeclId, VariantId)>
     + Formatter<(TypeDeclId, Option<VariantId>, FieldId)>
+    + for<'a> Formatter<&'a ImplElem>
     + for<'a> Formatter<&'a RegionVar>
     + for<'a> Formatter<&'a Vector<ullbc_ast::BlockId, ullbc_ast::BlockData>>
     + for<'a> Formatter<&'a llbc_ast::Statement>
@@ -368,6 +369,41 @@ impl<'a> Formatter<ConstGenericVarId> for FmtCtx<'a> {
 impl<'a> Formatter<ast::TraitClauseId> for FmtCtx<'a> {
     fn format_object(&self, id: ast::TraitClauseId) -> String {
         id.to_pretty_string()
+    }
+}
+
+impl<'a> Formatter<&ImplElem> for FmtCtx<'a> {
+    fn format_object(&self, elem: &ImplElem) -> String {
+        let inner = match elem {
+            ImplElem::Ty(generics, ty) => {
+                // Just printing the generics (not the predicates)
+                ty.fmt_with_ctx(&self.set_generics(generics))
+            }
+            ImplElem::Trait(impl_id) => {
+                match &self.translated {
+                    None => format!("impl#{impl_id}"),
+                    Some(translated) => match translated.trait_impls.get(*impl_id) {
+                        None => format!("impl#{impl_id}"),
+                        Some(timpl) => {
+                            // We need to put the first type parameter aside: it is
+                            // the type for which we implement the trait.
+                            // This is not very clean because it's hard to move the
+                            // first element out of a vector...
+                            let ctx = &self.set_generics(&timpl.generics);
+                            let TraitDeclRef { trait_id, generics } = &timpl.impl_trait;
+                            let (ty, generics) = generics.pop_first_type_arg();
+                            let tr = TraitDeclRef {
+                                trait_id: *trait_id,
+                                generics,
+                            };
+                            format!("impl {} for {}", tr.fmt_with_ctx(ctx), ty.fmt_with_ctx(ctx))
+                        }
+                    },
+                }
+            }
+        };
+
+        format!("{{{inner}}}")
     }
 }
 

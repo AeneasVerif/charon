@@ -31,11 +31,11 @@ trait alloc::string::ToString<Self>
     fn to_string : alloc::string::ToString::to_string
 }
 
-fn alloc::string::{impl alloc::string::ToString for Str#38}::to_string<'_0>(@1: &'_0 (Str)) -> alloc::string::String
+fn alloc::string::{impl alloc::string::ToString for Str}#38::to_string<'_0>(@1: &'_0 (Str)) -> alloc::string::String
 
-impl alloc::string::{impl alloc::string::ToString for Str#38} : alloc::string::ToString<Str>
+impl alloc::string::{impl alloc::string::ToString for Str}#38 : alloc::string::ToString<Str>
 {
-    fn to_string = alloc::string::{impl alloc::string::ToString for Str#38}::to_string
+    fn to_string = alloc::string::{impl alloc::string::ToString for Str}#38::to_string
 }
 
 fn alloc::string::ToString::to_string<'_0, Self>(@1: &'_0 (Self)) -> alloc::string::String
@@ -50,7 +50,7 @@ fn test_crate::main()
 
     @3 := const ("Hello")
     @2 := &*(@3)
-    _s@1 := alloc::string::{impl alloc::string::ToString for Str#38}::to_string(move (@2))
+    _s@1 := alloc::string::{impl alloc::string::ToString for Str}#38::to_string(move (@2))
     drop @2
     @fake_read(_s@1)
     drop @3

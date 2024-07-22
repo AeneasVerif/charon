@@ -17,7 +17,7 @@ where
     panic(core::panicking::panic)
 }
 
-impl test_crate::{impl test_crate::Ord for u32#1} : test_crate::Ord<u32>
+impl test_crate::{impl test_crate::Ord for u32}#1 : test_crate::Ord<u32>
 
 fn test_crate::test(@1: test_crate::AVLTree<u32>)
 {
@@ -28,7 +28,7 @@ fn test_crate::test(@1: test_crate::AVLTree<u32>)
     let @4: (); // anonymous local
 
     @3 := &two-phase-mut tree@1
-    @2 := test_crate::{test_crate::AVLTree<T>}::insert<u32>[test_crate::{impl test_crate::Ord for u32#1}](move (@3))
+    @2 := test_crate::{test_crate::AVLTree<T>}::insert<u32>[test_crate::{impl test_crate::Ord for u32}#1](move (@3))
     drop @3
     drop @2
     @4 := ()

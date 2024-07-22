@@ -348,23 +348,36 @@ fn compute_declarations_graph<'tcx, 'ctx>(ctx: &'tcx TransformCtx<'ctx>) -> Deps
                 d.body.drive(&mut graph);
             }
             AnyTransItem::TraitDecl(d) => {
+                let TraitDecl {
+                    def_id: _,
+                    item_meta: _,
+                    generics,
+                    parent_clauses,
+                    consts,
+                    const_defaults,
+                    types,
+                    type_defaults,
+                    type_clauses,
+                    required_methods,
+                    provided_methods,
+                } = d;
                 // Visit the traits referenced in the generics
-                d.generics.drive(&mut graph);
+                generics.drive(&mut graph);
 
                 // Visit the parent clauses
-                d.parent_clauses.drive(&mut graph);
+                parent_clauses.drive(&mut graph);
+                assert!(type_clauses.is_empty());
 
                 // Visit the items
-                d.consts.drive(&mut graph);
-                d.types.drive(&mut graph);
-                d.const_defaults.drive(&mut graph);
-                d.type_defaults.drive(&mut graph);
+                consts.drive(&mut graph);
+                types.drive(&mut graph);
+                const_defaults.drive(&mut graph);
+                type_defaults.drive(&mut graph);
 
-                let method_ids = d
-                    .required_methods
+                let method_ids = required_methods
                     .iter()
                     .map(|(_, id)| id)
-                    .chain(d.provided_methods.iter().filter_map(|(_, id)| id.as_ref()))
+                    .chain(provided_methods.iter().filter_map(|(_, id)| id.as_ref()))
                     .copied();
                 for id in method_ids {
                     // Important: we must ignore the function id, because
@@ -384,7 +397,27 @@ fn compute_declarations_graph<'tcx, 'ctx>(ctx: &'tcx TransformCtx<'ctx>) -> Deps
                 }
             }
             AnyTransItem::TraitImpl(d) => {
-                d.drive(&mut graph);
+                let TraitImpl {
+                    def_id: _,
+                    // Don't eplore because the `Name` contains this impl's own id.
+                    item_meta: _,
+                    impl_trait,
+                    generics,
+                    parent_trait_refs,
+                    consts,
+                    types,
+                    type_clauses,
+                    required_methods,
+                    provided_methods,
+                } = d;
+                impl_trait.drive(&mut graph);
+                generics.drive(&mut graph);
+                parent_trait_refs.drive(&mut graph);
+                consts.drive(&mut graph);
+                types.drive(&mut graph);
+                type_clauses.drive(&mut graph);
+                required_methods.drive(&mut graph);
+                provided_methods.drive(&mut graph);
             }
         }
         graph.unset_current_id();

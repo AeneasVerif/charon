@@ -6,7 +6,7 @@ struct alloc::alloc::Global = {}
 
 opaque type alloc::string::String
 
-fn alloc::rc::{alloc::rc::Rc<T, alloc::alloc::Global>#8}::new<T>(@1: T) -> alloc::rc::Rc<T, alloc::alloc::Global>
+fn alloc::rc::{alloc::rc::Rc<T, alloc::alloc::Global>}#8::new<T>(@1: T) -> alloc::rc::Rc<T, alloc::alloc::Global>
 
 fn alloc::string::{alloc::string::String}::new() -> alloc::string::String
 
@@ -16,14 +16,14 @@ trait core::clone::Clone<Self>
     fn clone_from
 }
 
-fn alloc::string::{impl core::clone::Clone for alloc::string::String#6}::clone<'_0>(@1: &'_0 (alloc::string::String)) -> alloc::string::String
+fn alloc::string::{impl core::clone::Clone for alloc::string::String}#6::clone<'_0>(@1: &'_0 (alloc::string::String)) -> alloc::string::String
 
-fn alloc::string::{impl core::clone::Clone for alloc::string::String#6}::clone_from<'_0, '_1>(@1: &'_0 mut (alloc::string::String), @2: &'_1 (alloc::string::String))
+fn alloc::string::{impl core::clone::Clone for alloc::string::String}#6::clone_from<'_0, '_1>(@1: &'_0 mut (alloc::string::String), @2: &'_1 (alloc::string::String))
 
-impl alloc::string::{impl core::clone::Clone for alloc::string::String#6} : core::clone::Clone<alloc::string::String>
+impl alloc::string::{impl core::clone::Clone for alloc::string::String}#6 : core::clone::Clone<alloc::string::String>
 {
-    fn clone = alloc::string::{impl core::clone::Clone for alloc::string::String#6}::clone
-    fn clone_from = alloc::string::{impl core::clone::Clone for alloc::string::String#6}::clone_from
+    fn clone = alloc::string::{impl core::clone::Clone for alloc::string::String}#6::clone
+    fn clone_from = alloc::string::{impl core::clone::Clone for alloc::string::String}#6::clone_from
 }
 
 fn core::clone::Clone::clone<'_0, Self>(@1: &'_0 (Self)) -> Self
@@ -74,7 +74,7 @@ fn test_crate::foo()
     drop @5
     drop @5
     @10 := copy (array@1)
-    @9 := alloc::rc::{alloc::rc::Rc<T, alloc::alloc::Global>#8}::new<Array<i32, 2 : usize>>(move (@10))
+    @9 := alloc::rc::{alloc::rc::Rc<T, alloc::alloc::Global>}#8::new<Array<i32, 2 : usize>>(move (@10))
     @8 := unsize_cast<alloc::rc::Rc<Array<i32, 2 : usize>, alloc::alloc::Global>, alloc::rc::Rc<Slice<i32>, alloc::alloc::Global>>(move (@9))
     drop @9
     drop @10
@@ -92,7 +92,7 @@ fn test_crate::foo()
     drop @14
     drop @12
     @18 := &string@11
-    @17 := alloc::string::{impl core::clone::Clone for alloc::string::String#6}::clone(move (@18))
+    @17 := alloc::string::{impl core::clone::Clone for alloc::string::String}#6::clone(move (@18))
     drop @18
     @16 := @BoxNew<alloc::string::String>(move (@17))
     @15 := unsize_cast<alloc::boxed::Box<alloc::string::String>, alloc::boxed::Box<dyn (exists(TODO))>>(move (@16))
@@ -103,9 +103,9 @@ fn test_crate::foo()
     drop @15
     drop @15
     @22 := &string@11
-    @21 := alloc::string::{impl core::clone::Clone for alloc::string::String#6}::clone(move (@22))
+    @21 := alloc::string::{impl core::clone::Clone for alloc::string::String}#6::clone(move (@22))
     drop @22
-    @20 := alloc::rc::{alloc::rc::Rc<T, alloc::alloc::Global>#8}::new<alloc::string::String>(move (@21))
+    @20 := alloc::rc::{alloc::rc::Rc<T, alloc::alloc::Global>}#8::new<alloc::string::String>(move (@21))
     @19 := unsize_cast<alloc::rc::Rc<alloc::string::String, alloc::alloc::Global>, alloc::rc::Rc<dyn (exists(TODO)), alloc::alloc::Global>>(move (@20))
     drop @20
     drop @21

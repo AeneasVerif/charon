@@ -608,35 +608,7 @@ impl<C: AstFormatter> FmtWithCtx<C> for GlobalDeclRef {
 
 impl<C: AstFormatter> FmtWithCtx<C> for ImplElem {
     fn fmt_with_ctx(&self, ctx: &C) -> String {
-        let d = if self.disambiguator.is_zero() {
-            "".to_string()
-        } else {
-            format!("#{}", self.disambiguator)
-        };
-        let ctx = ctx.set_generics(&self.generics);
-        // Just printing the generics (not the predicates)
-        format!("{{{}{d}}}", self.kind.fmt_with_ctx(&ctx),)
-    }
-}
-
-impl<C: AstFormatter> FmtWithCtx<C> for ImplElemKind {
-    fn fmt_with_ctx(&self, ctx: &C) -> String {
-        match self {
-            ImplElemKind::Ty(ty) => ty.fmt_with_ctx(ctx),
-            ImplElemKind::Trait(tr) => {
-                // We need to put the first type parameter aside: it is
-                // the type for which we implement the trait.
-                // This is not very clean because it's hard to move the
-                // first element out of a vector...
-                let TraitDeclRef { trait_id, generics } = tr;
-                let (ty, generics) = generics.pop_first_type_arg();
-                let tr = TraitDeclRef {
-                    trait_id: *trait_id,
-                    generics,
-                };
-                format!("impl {} for {}", tr.fmt_with_ctx(ctx), ty.fmt_with_ctx(ctx))
-            }
-        }
+        ctx.format_object(self)
     }
 }
 
@@ -672,7 +644,15 @@ impl<C: AstFormatter> FmtWithCtx<C> for PathElem {
                 };
                 format!("{s}{d}")
             }
-            PathElem::Impl(impl_elem) => impl_elem.fmt_with_ctx(ctx),
+            PathElem::Impl(impl_elem, d) => {
+                let impl_elem = impl_elem.fmt_with_ctx(ctx);
+                let d = if d.is_zero() {
+                    "".to_string()
+                } else {
+                    format!("#{}", d)
+                };
+                format!("{impl_elem}{d}")
+            }
         }
     }
 }
