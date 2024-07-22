@@ -215,6 +215,12 @@ struct core::ops::range::Range<Idx> =
   end: Idx
 }
 
+trait core::ops::index::Index<Self, Idx>
+{
+    type Output
+    fn index : core::ops::index::Index::index
+}
+
 trait core::slice::index::private_slice_index::Sealed<Self>
 
 enum core::option::Option<T> =
@@ -232,12 +238,6 @@ trait core::slice::index::SliceIndex<Self, T>
     fn get_unchecked_mut : core::slice::index::SliceIndex::get_unchecked_mut
     fn index : core::slice::index::SliceIndex::index
     fn index_mut : core::slice::index::SliceIndex::index_mut
-}
-
-trait core::ops::index::Index<Self, Idx>
-{
-    type Output
-    fn index : core::ops::index::Index::index
 }
 
 fn core::slice::index::{impl core::ops::index::Index<I> for Slice<T>}::index<'_0, T, I>(@1: &'_0 (Slice<T>), @2: I) -> &'_0 (@TraitClause0::Output)

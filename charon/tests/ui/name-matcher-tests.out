@@ -60,6 +60,12 @@ struct core::ops::range::RangeFrom<Idx> =
 
 fn core::option::{core::option::Option<T>}::is_some<'_0, T>(@1: &'_0 (core::option::Option<T>)) -> bool
 
+trait core::ops::index::Index<Self, Idx>
+{
+    type Output
+    fn index : core::ops::index::Index::index
+}
+
 trait core::slice::index::private_slice_index::Sealed<Self>
 
 trait core::slice::index::SliceIndex<Self, T>
@@ -72,12 +78,6 @@ trait core::slice::index::SliceIndex<Self, T>
     fn get_unchecked_mut : core::slice::index::SliceIndex::get_unchecked_mut
     fn index : core::slice::index::SliceIndex::index
     fn index_mut : core::slice::index::SliceIndex::index_mut
-}
-
-trait core::ops::index::Index<Self, Idx>
-{
-    type Output
-    fn index : core::ops::index::Index::index
 }
 
 fn core::slice::index::{impl core::ops::index::Index<I> for Slice<T>}::index<'_0, T, I>(@1: &'_0 (Slice<T>), @2: I) -> &'_0 (@TraitClause0::Output)

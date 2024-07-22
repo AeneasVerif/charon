@@ -7,16 +7,16 @@ enum core::result::Result<T, E> =
 
 opaque type core::array::TryFromSliceError
 
-trait core::convert::TryFrom<Self, T>
-{
-    type Error
-    fn try_from : core::convert::TryFrom::try_from
-}
-
 trait core::convert::TryInto<Self, T>
 {
     type Error
     fn try_into : core::convert::TryInto::try_into
+}
+
+trait core::convert::TryFrom<Self, T>
+{
+    type Error
+    fn try_from : core::convert::TryFrom::try_from
 }
 
 fn core::convert::{impl core::convert::TryInto<U> for T}#6::try_into<T, U>(@1: T) -> core::result::Result<U, @TraitClause0::Error>

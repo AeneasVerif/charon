@@ -87,34 +87,21 @@ impl BuiltinFun {
             // Box::new is peculiar because there is an impl block
             use PathElem::*;
             match name.name.as_slice() {
-                [Ident(alloc, _), Ident(boxed, _), Impl(impl_elem), Ident(new, _)] => {
-                    if alloc == "alloc" && boxed == "boxed" && new == "new" {
-                        match &impl_elem.kind {
-                            ImplElemKind::Ty(Ty::Adt(
-                                TypeId::Assumed(AssumedTy::Box),
-                                generics,
-                            )) => {
-                                let GenericArgs {
-                                    regions,
-                                    types,
-                                    const_generics,
-                                    trait_refs,
-                                } = generics;
-                                if regions.is_empty()
-                                    && types.len() == 1
-                                    && const_generics.is_empty()
-                                    && trait_refs.is_empty()
-                                {
-                                    match types.as_slice() {
-                                        [Ty::TypeVar(_)] => Some(BuiltinFun::BoxNew),
-                                        _ => None,
-                                    }
-                                } else {
-                                    None
-                                }
-                            }
-                            _ => None,
-                        }
+                [Ident(alloc, _), Ident(boxed, _), Impl(ImplElem::Ty(_, Ty::Adt(TypeId::Assumed(AssumedTy::Box), generics)), _), Ident(new, _)]
+                    if alloc == "alloc" && boxed == "boxed" && new == "new" =>
+                {
+                    let GenericArgs {
+                        regions,
+                        types,
+                        const_generics,
+                        trait_refs,
+                    } = generics;
+                    if regions.is_empty()
+                        && matches!(types.as_slice(), [Ty::TypeVar(_)])
+                        && const_generics.is_empty()
+                        && trait_refs.is_empty()
+                    {
+                        Some(BuiltinFun::BoxNew)
                     } else {
                         None
                     }

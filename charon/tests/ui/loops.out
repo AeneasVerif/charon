@@ -1637,6 +1637,18 @@ struct alloc::alloc::Global = {}
 
 fn alloc::vec::{alloc::vec::Vec<T, A>}#1::len<'_0, T, A>(@1: &'_0 (alloc::vec::Vec<T, A>)) -> usize
 
+trait core::ops::index::Index<Self, Idx>
+{
+    type Output
+    fn index : core::ops::index::Index::index
+}
+
+trait core::ops::index::IndexMut<Self, Idx>
+{
+    parent_clause_0 : [@TraitClause0]: core::ops::index::Index<Self, Idx>
+    fn index_mut : core::ops::index::IndexMut::index_mut
+}
+
 trait core::slice::index::private_slice_index::Sealed<Self>
 
 trait core::slice::index::SliceIndex<Self, T>
@@ -1649,18 +1661,6 @@ trait core::slice::index::SliceIndex<Self, T>
     fn get_unchecked_mut : core::slice::index::SliceIndex::get_unchecked_mut
     fn index : core::slice::index::SliceIndex::index
     fn index_mut : core::slice::index::SliceIndex::index_mut
-}
-
-trait core::ops::index::Index<Self, Idx>
-{
-    type Output
-    fn index : core::ops::index::Index::index
-}
-
-trait core::ops::index::IndexMut<Self, Idx>
-{
-    parent_clause_0 : [@TraitClause0]: core::ops::index::Index<Self, Idx>
-    fn index_mut : core::ops::index::IndexMut::index_mut
 }
 
 fn alloc::vec::{impl core::ops::index::Index<I> for alloc::vec::Vec<T, A>}#13::index<'_0, T, I, A>(@1: &'_0 (alloc::vec::Vec<T, A>), @2: I) -> &'_0 (alloc::vec::{impl core::ops::index::Index<I> for alloc::vec::Vec<T, A>}#13<T, I, A>[@TraitClause0]::Output)

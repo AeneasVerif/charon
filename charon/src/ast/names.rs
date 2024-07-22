@@ -13,14 +13,7 @@ generate_index_type!(Disambiguator);
 #[charon::variants_prefix("Pe")]
 pub enum PathElem {
     Ident(String, Disambiguator),
-    Impl(ImplElem),
-}
-
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Drive, DriveMut)]
-pub struct ImplElem {
-    pub disambiguator: Disambiguator,
-    pub generics: GenericParams,
-    pub kind: ImplElemKind,
+    Impl(ImplElem, Disambiguator),
 }
 
 /// There are two kinds of `impl` blocks:
@@ -35,13 +28,9 @@ pub struct ImplElem {
 /// We distinguish the two.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Drive, DriveMut)]
 #[charon::variants_prefix("ImplElem")]
-pub enum ImplElemKind {
-    Ty(Ty),
-    /// Remark: the first type argument in the trait ref gives the type for
-    /// which we implement the trait.
-    /// For instance: `PartialEq<List<T>>` means: the `PartialEq` instance
-    /// for `List<T>`.
-    Trait(TraitDeclRef),
+pub enum ImplElem {
+    Ty(GenericParams, Ty),
+    Trait(TraitImplId),
 }
 
 /// An item name/path

@@ -53,12 +53,15 @@ fn repr_name(crate_data: &CrateData, n: &Name) -> String {
         .iter()
         .map(|path_elem| match path_elem {
             PathElem::Ident(i, _) => i.clone(),
-            PathElem::Impl(elem) => match &elem.kind {
-                ImplElemKind::Trait(trait_ref) => {
-                    let trait_name = trait_name(crate_data, trait_ref.trait_id);
-                    format!("<impl for {trait_name}>")
-                }
-                ImplElemKind::Ty(..) => "<impl>".to_string(),
+            PathElem::Impl(elem, _) => match elem {
+                ImplElem::Trait(impl_id) => match crate_data.trait_impls.get(impl_id.index()) {
+                    None => format!("<trait impl#{impl_id}>"),
+                    Some(timpl) => {
+                        let trait_name = trait_name(crate_data, timpl.impl_trait.trait_id);
+                        format!("<impl for {trait_name}>")
+                    }
+                },
+                ImplElem::Ty(..) => "<inherent impl>".to_string(),
             },
         })
         .join("::")
@@ -261,7 +264,7 @@ fn predicate_origins() -> Result<(), Box<dyn Error>> {
             vec![(WhereClauseOnType, "Clone"), (WhereClauseOnType, "Default")],
         ),
         (
-            "test_crate::<impl>::inherent_method",
+            "test_crate::<inherent impl>::inherent_method",
             vec![
                 (WhereClauseOnImpl, "Clone"),
                 (WhereClauseOnImpl, "Default"),
@@ -611,12 +614,16 @@ fn declaration_groups() -> Result<(), Box<dyn Error>> {
         fn foo() {
             panic!()
         }
+        trait Foo {}
+        impl Foo for () {}
         "#,
     )?;
 
     assert_eq!(crate_data.functions.len(), 1);
-    assert_eq!(crate_data.declarations.len(), 1);
+    assert_eq!(crate_data.declarations.len(), 3);
     assert!(crate_data.declarations[0].as_fun().is_non_rec());
+    assert!(crate_data.declarations[1].as_trait_decl().is_non_rec());
+    assert!(crate_data.declarations[2].as_trait_impl().is_non_rec());
 
     Ok(())
 }
