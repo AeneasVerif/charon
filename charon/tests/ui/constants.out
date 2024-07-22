@@ -300,5 +300,39 @@ fn test_crate::use_v<T, const N : usize>() -> usize
     return
 }
 
+global test_crate::REC1  {
+    let @0: usize; // return
+    let @1: bool; // anonymous local
+    let @2: usize; // anonymous local
+
+    @1 := const (true)
+    if move (@1) {
+        @0 := const (0 : usize)
+    }
+    else {
+        @2 := test_crate::REC2
+        @0 := move (@2)
+    }
+    drop @1
+    return
+}
+
+global test_crate::REC2  {
+    let @0: usize; // return
+    let @1: bool; // anonymous local
+    let @2: usize; // anonymous local
+
+    @1 := const (true)
+    if move (@1) {
+        @0 := const (0 : usize)
+    }
+    else {
+        @2 := test_crate::REC1
+        @0 := move (@2)
+    }
+    drop @1
+    return
+}
+
 
 

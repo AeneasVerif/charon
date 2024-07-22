@@ -265,10 +265,12 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         rust_id: DefId,
         item_meta: ItemMeta,
     ) -> Result<TraitDecl, Error> {
+        use rustc_middle::ty::AssocKind;
         trace!("About to translate trait decl:\n{:?}", rust_id);
         trace!("Trait decl id:\n{:?}", def_id);
 
         let mut bt_ctx = BodyTransCtx::new(rust_id, self);
+        let tcx = bt_ctx.t_ctx.tcx;
         let name = bt_ctx.t_ctx.def_id_to_name(rust_id)?;
 
         // Translate the generic
@@ -283,16 +285,50 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
             s.translate_predicates_of(None, rust_id, PredicateOrigin::WhereClauseOnTrait)
         })?;
 
-        // Explore the associated items
+        // Gather the associated type clauses
+        let mut type_clauses = Vec::new();
+        for item in tcx.associated_items(rust_id).in_definition_order() {
+            match &item.kind {
+                AssocKind::Type => {
+                    let item_name = TraitItemName(item.name.to_string());
+                    let item_trait_clauses = {
+                        // TODO: this is an ugly manip
+                        let bounds = tcx.item_bounds(item.def_id).instantiate_identity();
+                        use crate::rustc_middle::query::Key;
+                        let span = bounds.default_span(tcx);
+                        let bounds: Vec<_> = bounds
+                            .into_iter()
+                            .map(|x| (x.as_predicate(), span))
+                            .collect();
+                        let bounds = bounds.sinto(&bt_ctx.hax_state);
+                        let origin = PredicateOrigin::TraitItem(item_name.clone());
+
+                        // Register the trait clauses as item trait clauses
+                        bt_ctx.with_item_trait_clauses(def_id, item_name.clone(), |s| {
+                            s.translate_predicates_vec(&bounds, origin)
+                        })?
+                    };
+                    type_clauses.push((item_name, item_trait_clauses));
+                }
+                AssocKind::Fn => {}
+                AssocKind::Const => {}
+            }
+        }
+
+        // Note that in the generics returned by [get_generics], the trait refs
+        // only contain the local trait clauses.
+        let generics = bt_ctx.get_generics();
+        // TODO: maybe we should do something about the predicates?
+
+        // Translate the associated items
         // We do something subtle here: TODO: explain
-        let tcx = bt_ctx.t_ctx.tcx;
         let mut consts = Vec::new();
+        let mut const_defaults = HashMap::new();
         let mut types = Vec::new();
+        let mut type_defaults = HashMap::new();
         let mut required_methods = Vec::new();
         let mut provided_methods = Vec::new();
         for item in tcx.associated_items(rust_id).in_definition_order() {
-            use rustc_middle::ty::AssocKind;
-
             let has_default_value = item.defaultness(tcx).has_value();
             match &item.kind {
                 AssocKind::Fn => {
@@ -321,51 +357,31 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
                     trace!("id: {:?}\n- item: {:?}", rust_id, item);
                     let c = if has_default_value {
                         let (name, (ty, id)) = bt_ctx.translate_const_from_trait_item(item)?;
-                        (name, (ty, Some(id)))
+                        // The parameters of the constant are the same as those of the item that
+                        // declares them.
+                        let gref = GlobalDeclRef {
+                            id,
+                            generics: generics.identity_args(),
+                        };
+                        const_defaults.insert(name.clone(), gref);
+                        (name, ty)
                     } else {
                         let ty = bt_ctx.translate_ty_from_trait_item(item)?;
                         let name = TraitItemName(item.name.to_string());
-                        (name, (ty, None))
+                        (name, ty)
                     };
                     consts.push(c);
                 }
                 AssocKind::Type => {
                     let item_name = TraitItemName(item.name.to_string());
-
-                    // Translating the predicates
-                    let item_trait_clauses = {
-                        // TODO: this is an ugly manip
-                        let bounds = tcx.item_bounds(item.def_id).instantiate_identity();
-                        use crate::rustc_middle::query::Key;
-                        let span = bounds.default_span(tcx);
-                        let bounds: Vec<_> = bounds
-                            .into_iter()
-                            .map(|x| (x.as_predicate(), span))
-                            .collect();
-                        let bounds = bounds.sinto(&bt_ctx.hax_state);
-                        let origin = PredicateOrigin::TraitItem(item_name.clone());
-
-                        // Register the trait clauses as item trait clauses
-                        bt_ctx.with_item_trait_clauses(def_id, item_name.clone(), |s| {
-                            s.translate_predicates_vec(&bounds, origin)
-                        })?
+                    if has_default_value {
+                        let ty = bt_ctx.translate_ty_from_trait_item(item)?;
+                        type_defaults.insert(item_name.clone(), ty);
                     };
-
-                    let ty = if has_default_value {
-                        Some(bt_ctx.translate_ty_from_trait_item(item)?)
-                    } else {
-                        None
-                    };
-
-                    types.push((item_name, (item_trait_clauses, ty)));
+                    types.push(item_name.clone());
                 }
             }
         }
-
-        // Note that in the generics returned by [get_generics], the trait refs
-        // only contain the local trait clauses.
-        let generics = bt_ctx.get_generics();
-        // TODO: maybe we should do something about the predicates?
 
         // Debugging:
         {
@@ -408,8 +424,11 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
             item_meta,
             generics,
             parent_clauses,
+            type_clauses,
             consts,
+            const_defaults,
             types,
+            type_defaults,
             required_methods,
             provided_methods,
         })
@@ -484,6 +503,8 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
             (trait_rust_id, trait_ref, rust_trait_ref, parent_trait_refs)
         };
 
+        let generics = bt_ctx.get_generics();
+
         {
             // Debugging
             let ctx = bt_ctx.into_fmt();
@@ -534,8 +555,15 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
                     }
                 }
                 AssocKind::Const => {
-                    let (name, c) = bt_ctx.translate_const_from_trait_item(item)?;
-                    consts.insert(name, c);
+                    let (name, (_ty, id)) = bt_ctx.translate_const_from_trait_item(item)?;
+
+                    // The parameters of the constant are the same as those of the item that
+                    // declares them.
+                    let gref = GlobalDeclRef {
+                        id,
+                        generics: generics.identity_args(),
+                    };
+                    consts.insert(name, gref);
                 }
                 AssocKind::Type => {
                     let name = TraitItemName(item.name.to_string());
@@ -551,7 +579,8 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         let partial_consts = consts;
         let partial_types = types;
         let mut consts = Vec::new();
-        let mut types: Vec<(TraitItemName, (Vec<TraitRef>, Ty))> = Vec::new();
+        let mut type_clauses = Vec::new();
+        let mut types: Vec<(TraitItemName, Ty)> = Vec::new();
         for item in tcx
             .associated_items(implemented_trait_rust_id)
             .in_definition_order()
@@ -564,9 +593,15 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
                     let c = match partial_consts.get(&name) {
                         Some(c) => c.clone(),
                         None => {
-                            // The item is not defined in the trait impl:
-                            // the trait decl *must* define a default value.
-                            bt_ctx.translate_const_from_trait_item(item)?.1
+                            // The item is not defined in the trait impl: the trait decl *must*
+                            // define a default value.
+                            let id = bt_ctx.translate_const_from_trait_item(item)?.1 .1;
+                            // The parameters of the constant are the same as those of the item
+                            // that declares them.
+                            GlobalDeclRef {
+                                id,
+                                generics: implemented_trait.generics.clone(),
+                            }
                         }
                     };
                     consts.push((name, c));
@@ -591,7 +626,8 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
                         item,
                     )?;
 
-                    types.push((name, (trait_refs, ty)));
+                    types.push((name.clone(), ty));
+                    type_clauses.push((name, trait_refs));
                 }
             }
         }
@@ -610,8 +646,9 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
             def_id,
             item_meta,
             impl_trait: implemented_trait,
-            generics: bt_ctx.get_generics(),
+            generics,
             parent_trait_refs,
+            type_clauses,
             consts,
             types,
             required_methods,

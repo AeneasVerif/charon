@@ -19,24 +19,24 @@ impl UllbcPass for Transform {
             TraitDeclId,
             HashMap<TraitItemName, Vector<TraitClauseId, TraitClauseId>>,
         > = ctx.translated.trait_decls.map_ref_mut(|decl| {
-            decl.types
-                .iter_mut()
-                .map(|(name, (clauses, _))| {
-                    let id_map = mem::take(clauses).map(|mut clause| {
+            mem::take(&mut decl.type_clauses)
+                .into_iter()
+                .map(|(name, clauses)| {
+                    let id_map = clauses.map(|mut clause| {
                         decl.parent_clauses.push_with(|id| {
                             clause.clause_id = id;
                             clause
                         })
                     });
-                    (name.clone(), id_map)
+                    (name, id_map)
                 })
                 .collect()
         });
 
         // Move the item-local trait refs to match what we did in the trait declarations.
         for timpl in ctx.translated.trait_impls.iter_mut() {
-            for (_, (refs, _)) in timpl.types.iter_mut() {
-                for trait_ref in mem::take(refs) {
+            for (_, refs) in mem::take(&mut timpl.type_clauses) {
+                for trait_ref in refs {
                     // Note: this assumes that we listed the types in the same order as in the trait
                     // decl, which we do.
                     timpl.parent_trait_refs.push(trait_ref);

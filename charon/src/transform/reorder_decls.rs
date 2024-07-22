@@ -357,6 +357,8 @@ fn compute_declarations_graph<'tcx, 'ctx>(ctx: &'tcx TransformCtx<'ctx>) -> Deps
                 // Visit the items
                 d.consts.drive(&mut graph);
                 d.types.drive(&mut graph);
+                d.const_defaults.drive(&mut graph);
+                d.type_defaults.drive(&mut graph);
 
                 let method_ids = d
                     .required_methods
@@ -406,13 +408,6 @@ fn group_declarations_from_scc(
         let mut it = scc.iter();
         let id0 = *it.next().unwrap();
         let decl = graph.graph.get(&id0).unwrap();
-
-        if let AnyTransId::Global(_) = id0 {
-            assert!(
-                scc.len() == 1,
-                "Error: this constant recursively depends on itself, what is happening"
-            );
-        }
 
         // If an SCC has length one, the declaration may be simply recursive:
         // we determine whether it is the case by checking if the def id is in

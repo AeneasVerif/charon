@@ -402,6 +402,7 @@ fn main() -> Result<()> {
             "ExistentialPredicate",
             "TraitRef",
             "TraitDeclRef",
+            "GlobalDeclRef",
             "GenericArgs",
             "TraitRefKind",
             "Field",
@@ -451,7 +452,12 @@ fn main() -> Result<()> {
             "GExprBody",
             "ItemKind",
         ],
-        &["GDeclarationGroup"],
+        &[
+            "TraitDecl",
+            "TraitImpl",
+            "GDeclarationGroup",
+            "DeclarationGroup",
+        ],
     ];
     let template_path = dir.join("GAstOfJson.template.ml");
     let mut template = fs::read_to_string(&template_path)

@@ -456,7 +456,7 @@ trait test_crate::WithConstTy<Self, const LEN : usize>
 {
     parent_clause_0 : [@TraitClause0]: test_crate::ToU64<Self::W>
     const LEN1 : usize
-    const LEN2 : usize = test_crate::WithConstTy::LEN2
+    const LEN2 : usize
     type V
     type W
     fn f : test_crate::WithConstTy::f
@@ -485,8 +485,8 @@ fn test_crate::{impl test_crate::WithConstTy<32 : usize> for bool#8}::f<'_0, '_1
 impl test_crate::{impl test_crate::WithConstTy<32 : usize> for bool#8} : test_crate::WithConstTy<bool, 32 : usize>
 {
     parent_clause0 = test_crate::{impl test_crate::ToU64 for u64#2}
-    const LEN1 : usize = test_crate::{impl test_crate::WithConstTy<32 : usize> for bool#8}::LEN1
-    const LEN2 : usize = test_crate::WithConstTy::LEN2
+    const LEN1 = test_crate::{impl test_crate::WithConstTy<32 : usize> for bool#8}::LEN1
+    const LEN2 = test_crate::WithConstTy::LEN2<bool, 32 : usize>
     type V = u8
     type W = u64
     fn f = test_crate::{impl test_crate::WithConstTy<32 : usize> for bool#8}::f
@@ -757,7 +757,7 @@ global test_crate::{impl test_crate::Trait for Array<T, const N : usize>#14}::LE
 
 impl<T, const N : usize> test_crate::{impl test_crate::Trait for Array<T, const N : usize>#14}<T, const N : usize> : test_crate::Trait<Array<T, const N : usize>>
 {
-    const LEN : usize = test_crate::{impl test_crate::Trait for Array<T, const N : usize>#14}::LEN
+    const LEN = test_crate::{impl test_crate::Trait for Array<T, const N : usize>#14}::LEN<T, const N : usize>
 }
 
 global test_crate::{impl test_crate::Trait for test_crate::Wrapper<T>#15}::LEN<T>
@@ -774,7 +774,7 @@ impl<T> test_crate::{impl test_crate::Trait for test_crate::Wrapper<T>#15}<T> : 
 where
     [@TraitClause0]: test_crate::Trait<T>,
 {
-    const LEN : usize = test_crate::{impl test_crate::Trait for test_crate::Wrapper<T>#15}::LEN
+    const LEN = test_crate::{impl test_crate::Trait for test_crate::Wrapper<T>#15}::LEN<T>[@TraitClause0]
 }
 
 fn test_crate::use_wrapper_len<T>() -> usize
@@ -830,6 +830,18 @@ where
     @1 := test_crate::{test_crate::Foo<T, U>#16}::FOO<U, T>[@TraitClause0]
     @0 := move (@1)
     return
+}
+
+trait test_crate::RecursiveImpl<Self>
+{
+    parent_clause_0 : [@TraitClause0]: test_crate::RecursiveImpl<Self::Item>
+    type Item
+}
+
+impl test_crate::{impl test_crate::RecursiveImpl for ()#17} : test_crate::RecursiveImpl<()>
+{
+    parent_clause0 = test_crate::{impl test_crate::RecursiveImpl for ()#17}
+    type Item = ()
 }
 
 fn test_crate::WithConstTy::f<'_0, '_1, Self, const LEN : usize>(@1: &'_0 mut (Self::W), @2: &'_1 (Array<u8, const LEN : usize>))

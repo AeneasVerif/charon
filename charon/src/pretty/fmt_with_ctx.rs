@@ -598,6 +598,14 @@ where
     }
 }
 
+impl<C: AstFormatter> FmtWithCtx<C> for GlobalDeclRef {
+    fn fmt_with_ctx(&self, ctx: &C) -> String {
+        let global_id = ctx.format_object(self.id);
+        let generics = self.generics.fmt_with_ctx_split_trait_refs(ctx);
+        format!("{global_id}{generics}")
+    }
+}
+
 impl<C: AstFormatter> FmtWithCtx<C> for ImplElem {
     fn fmt_with_ctx(&self, ctx: &C) -> String {
         let d = if self.disambiguator.is_zero() {
@@ -723,13 +731,7 @@ impl<C: AstFormatter> FmtWithCtx<C> for RawConstantExpr {
                 let values: Vec<String> = values.iter().map(|v| v.fmt_with_ctx(ctx)).collect();
                 format!("ConstAdt {} [{}]", variant_id, values.join(", "))
             }
-            RawConstantExpr::Global(id, generics) => {
-                format!(
-                    "{}{}",
-                    ctx.format_object(*id),
-                    generics.fmt_with_ctx_split_trait_refs(ctx)
-                )
-            }
+            RawConstantExpr::Global(global_ref) => global_ref.fmt_with_ctx(ctx),
             RawConstantExpr::TraitConst(trait_ref, name) => {
                 format!("{}::{name}", trait_ref.fmt_with_ctx(ctx),)
             }
@@ -818,13 +820,7 @@ impl<C: AstFormatter> FmtWithCtx<C> for Rvalue {
                     }
                 }
             }
-            Rvalue::Global(gid, generics) => {
-                format!(
-                    "{}{}",
-                    ctx.format_object(*gid),
-                    generics.fmt_with_ctx_split_trait_refs(ctx)
-                )
-            }
+            Rvalue::Global(global_ref) => global_ref.fmt_with_ctx(ctx),
             Rvalue::Len(place, ..) => format!("len({})", place.fmt_with_ctx(ctx)),
             Rvalue::Repeat(op, _ty, cg) => {
                 format!("[{}; {}]", op.fmt_with_ctx(ctx), cg.fmt_with_ctx(ctx))
@@ -1075,58 +1071,45 @@ impl<C: AstFormatter> FmtWithCtx<C> for TraitDecl {
             .fmt_with_ctx_with_trait_clauses(ctx, "", &None);
 
         let items = {
-            let items = self
-                .parent_clauses
-                .iter()
-                .map(|c| {
-                    format!(
-                        "{TAB_INCR}parent_clause_{} : {}\n",
-                        c.clause_id.to_string(),
-                        c.fmt_with_ctx(ctx)
+            let items =
+                self.parent_clauses
+                    .iter()
+                    .map(|c| {
+                        format!(
+                            "{TAB_INCR}parent_clause_{} : {}\n",
+                            c.clause_id.to_string(),
+                            c.fmt_with_ctx(ctx)
+                        )
+                    })
+                    .chain(self.type_clauses.iter().map(|(name, clauses)| {
+                        clauses
+                            .iter()
+                            .map(|c| {
+                                format!(
+                                    "{TAB_INCR}item_clause_{name}_{} : {}\n",
+                                    c.clause_id.to_string(),
+                                    c.fmt_with_ctx(ctx)
+                                )
+                            })
+                            .collect()
+                    }))
+                    .chain(self.consts.iter().map(|(name, ty)| {
+                        let ty = ty.fmt_with_ctx(ctx);
+                        format!("{TAB_INCR}const {name} : {ty}\n")
+                    }))
+                    .chain(
+                        self.types
+                            .iter()
+                            .map(|name| format!("{TAB_INCR}type {name}\n")),
                     )
-                })
-                .chain(
-                    self.consts
-                        .iter()
-                        .map(|(name, (ty, opt_id))| {
-                            let ty = ty.fmt_with_ctx(ctx);
-                            match opt_id {
-                                None => format!("{TAB_INCR}const {name} : {ty}\n"),
-                                Some(id) => {
-                                    format!(
-                                        "{TAB_INCR}const {name} : {ty} = {}\n",
-                                        ctx.format_object(*id)
-                                    )
-                                }
-                            }
-                        })
-                        .chain(self.types.iter().map(|(name, (trait_clauses, opt_ty))| {
-                            let trait_clauses: Vec<_> =
-                                trait_clauses.iter().map(|x| x.fmt_with_ctx(ctx)).collect();
-                            let clauses = fmt_where_clauses(
-                                &format!("{TAB_INCR}{TAB_INCR}"),
-                                0,
-                                trait_clauses,
-                            );
-                            match opt_ty {
-                                None => format!("{TAB_INCR}type {name}{clauses}\n"),
-                                Some(ty) => {
-                                    format!(
-                                        "{TAB_INCR}type {name} = {}{clauses}\n",
-                                        ty.fmt_with_ctx(ctx)
-                                    )
-                                }
-                            }
-                        }))
-                        .chain(self.required_methods.iter().map(|(name, f)| {
-                            format!("{TAB_INCR}fn {name} : {}\n", ctx.format_object(*f))
-                        }))
-                        .chain(self.provided_methods.iter().map(|(name, f)| match f {
-                            None => format!("{TAB_INCR}fn {name}\n"),
-                            Some(f) => format!("{TAB_INCR}fn {name} : {}\n", ctx.format_object(*f)),
-                        })),
-                )
-                .collect::<Vec<String>>();
+                    .chain(self.required_methods.iter().map(|(name, f)| {
+                        format!("{TAB_INCR}fn {name} : {}\n", ctx.format_object(*f))
+                    }))
+                    .chain(self.provided_methods.iter().map(|(name, f)| match f {
+                        None => format!("{TAB_INCR}fn {name}\n"),
+                        Some(f) => format!("{TAB_INCR}fn {name} : {}\n", ctx.format_object(*f)),
+                    }))
+                    .collect::<Vec<String>>();
             if items.is_empty() {
                 "".to_string()
             } else {
@@ -1168,28 +1151,24 @@ impl<C: AstFormatter> FmtWithCtx<C> for TraitImpl {
                         clause.fmt_with_ctx(ctx)
                     )
                 })
-                .chain(self.consts.iter().map(|(name, (ty, id))| {
-                    format!(
-                        "{TAB_INCR}const {name} : {} = {}\n",
-                        ty.fmt_with_ctx(ctx),
-                        ctx.format_object(*id)
-                    )
+                .chain(self.type_clauses.iter().map(|(name, clauses)| {
+                    clauses
+                        .iter()
+                        .enumerate()
+                        .map(|(i, c)| {
+                            let i = TraitClauseId::new(i);
+                            format!(
+                                "{TAB_INCR}item_clause_{name}_{i} = {}\n",
+                                c.fmt_with_ctx(ctx)
+                            )
+                        })
+                        .collect()
                 }))
-                .chain(self.types.iter().map(|(name, (trait_refs, ty))| {
-                    let trait_refs = if trait_refs.is_empty() {
-                        ""
-                    } else {
-                        let trait_refs = trait_refs
-                            .iter()
-                            .map(|x| x.fmt_with_ctx(ctx))
-                            .collect::<Vec<_>>()
-                            .join(", ");
-                        &format!(" with [{trait_refs}]")
-                    };
-                    format!(
-                        "{TAB_INCR}type {name} = {}{trait_refs}\n",
-                        ty.fmt_with_ctx(ctx),
-                    )
+                .chain(self.consts.iter().map(|(name, global)| {
+                    format!("{TAB_INCR}const {name} = {}\n", global.fmt_with_ctx(ctx))
+                }))
+                .chain(self.types.iter().map(|(name, ty)| {
+                    format!("{TAB_INCR}type {name} = {}\n", ty.fmt_with_ctx(ctx),)
                 }))
                 .chain(
                     self.required_methods

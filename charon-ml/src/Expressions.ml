@@ -248,7 +248,7 @@ and rvalue =
   | Discriminant of place * type_decl_id
   | Aggregate of aggregate_kind * operand list
   | Len of place * ty * const_generic option
-  | Global of global_decl_id * generic_args
+  | Global of global_decl_ref
 [@@deriving
   show,
     visitors

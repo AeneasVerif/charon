@@ -158,8 +158,8 @@ type trait_decl = {
   item_meta : item_meta;
   generics : generic_params;
   parent_clauses : trait_clause list;
-  consts : (trait_item_name * (ty * global_decl_id option)) list;
-  types : (trait_item_name * ty option) list;
+  consts : (trait_item_name * ty) list;
+  types : trait_item_name list;
   required_methods : (trait_item_name * fun_decl_id) list;
   provided_methods : (trait_item_name * fun_decl_id option) list;
 }
@@ -171,7 +171,7 @@ type trait_impl = {
   impl_trait : trait_decl_ref;
   generics : generic_params;
   parent_trait_refs : trait_ref list;
-  consts : (trait_item_name * (ty * global_decl_id)) list;
+  consts : (trait_item_name * global_decl_ref) list;
   types : (trait_item_name * ty) list;
   required_methods : (trait_item_name * fun_decl_id) list;
   provided_methods : (trait_item_name * fun_decl_id) list;
@@ -186,18 +186,22 @@ type type_declaration_group = TypeDeclId.id g_declaration_group
 
 type fun_declaration_group = FunDeclId.id g_declaration_group [@@deriving show]
 
+type global_declaration_group = GlobalDeclId.id g_declaration_group
+[@@deriving show]
+
 type trait_declaration_group = TraitDeclId.id g_declaration_group
 [@@deriving show]
 
+type trait_impl_group = TraitImplId.id g_declaration_group [@@deriving show]
 type mixed_declaration_group = any_decl_id g_declaration_group [@@deriving show]
 
 (** Module declaration. Globals cannot be mutually recursive. *)
 type declaration_group =
   | TypeGroup of type_declaration_group
   | FunGroup of fun_declaration_group
-  | GlobalGroup of GlobalDeclId.id
+  | GlobalGroup of global_declaration_group
   | TraitDeclGroup of trait_declaration_group
-  | TraitImplGroup of TraitImplId.id
+  | TraitImplGroup of trait_impl_group
   | MixedGroup of mixed_declaration_group
 [@@deriving show]
 
