@@ -45,40 +45,40 @@ opaque type core::num::nonzero::NonZero<T>
   where
       [@TraitClause0]: core::num::nonzero::ZeroablePrimitive<T>,
 
-fn core::clone::impls::{impl core::clone::Clone for u32#8}::clone<'_0>(@1: &'_0 (u32)) -> u32
+fn core::clone::impls::{impl core::clone::Clone for u32}#8::clone<'_0>(@1: &'_0 (u32)) -> u32
 
-impl core::clone::impls::{impl core::clone::Clone for u32#8} : core::clone::Clone<u32>
+impl core::clone::impls::{impl core::clone::Clone for u32}#8 : core::clone::Clone<u32>
 {
-    fn clone = core::clone::impls::{impl core::clone::Clone for u32#8}::clone
+    fn clone = core::clone::impls::{impl core::clone::Clone for u32}#8::clone
 }
 
-impl core::marker::{impl core::marker::Copy for u32#41} : core::marker::Copy<u32>
+impl core::marker::{impl core::marker::Copy for u32}#41 : core::marker::Copy<u32>
 {
-    parent_clause0 = core::clone::impls::{impl core::clone::Clone for u32#8}
+    parent_clause0 = core::clone::impls::{impl core::clone::Clone for u32}#8
 }
 
-impl core::num::nonzero::{impl core::num::nonzero::private::Sealed for u32#19} : core::num::nonzero::private::Sealed<u32>
+impl core::num::nonzero::{impl core::num::nonzero::private::Sealed for u32}#19 : core::num::nonzero::private::Sealed<u32>
 
 opaque type core::num::nonzero::private::NonZeroU32Inner
 
-fn core::num::nonzero::private::{impl core::clone::Clone for core::num::nonzero::private::NonZeroU32Inner#11}::clone<'_0>(@1: &'_0 (core::num::nonzero::private::NonZeroU32Inner)) -> core::num::nonzero::private::NonZeroU32Inner
+fn core::num::nonzero::private::{impl core::clone::Clone for core::num::nonzero::private::NonZeroU32Inner}#11::clone<'_0>(@1: &'_0 (core::num::nonzero::private::NonZeroU32Inner)) -> core::num::nonzero::private::NonZeroU32Inner
 
-impl core::num::nonzero::private::{impl core::clone::Clone for core::num::nonzero::private::NonZeroU32Inner#11} : core::clone::Clone<core::num::nonzero::private::NonZeroU32Inner>
+impl core::num::nonzero::private::{impl core::clone::Clone for core::num::nonzero::private::NonZeroU32Inner}#11 : core::clone::Clone<core::num::nonzero::private::NonZeroU32Inner>
 {
-    fn clone = core::num::nonzero::private::{impl core::clone::Clone for core::num::nonzero::private::NonZeroU32Inner#11}::clone
+    fn clone = core::num::nonzero::private::{impl core::clone::Clone for core::num::nonzero::private::NonZeroU32Inner}#11::clone
 }
 
-impl core::num::nonzero::private::{impl core::marker::Copy for core::num::nonzero::private::NonZeroU32Inner#12} : core::marker::Copy<core::num::nonzero::private::NonZeroU32Inner>
+impl core::num::nonzero::private::{impl core::marker::Copy for core::num::nonzero::private::NonZeroU32Inner}#12 : core::marker::Copy<core::num::nonzero::private::NonZeroU32Inner>
 {
-    parent_clause0 = core::num::nonzero::private::{impl core::clone::Clone for core::num::nonzero::private::NonZeroU32Inner#11}
+    parent_clause0 = core::num::nonzero::private::{impl core::clone::Clone for core::num::nonzero::private::NonZeroU32Inner}#11
 }
 
-impl core::num::nonzero::{impl core::num::nonzero::ZeroablePrimitive for u32#20} : core::num::nonzero::ZeroablePrimitive<u32>
+impl core::num::nonzero::{impl core::num::nonzero::ZeroablePrimitive for u32}#20 : core::num::nonzero::ZeroablePrimitive<u32>
 {
-    parent_clause0 = core::marker::{impl core::marker::Copy for u32#41}
-    parent_clause1 = core::num::nonzero::{impl core::num::nonzero::private::Sealed for u32#19}
-    parent_clause2 = core::num::nonzero::private::{impl core::marker::Copy for core::num::nonzero::private::NonZeroU32Inner#12}
-    parent_clause3 = core::num::nonzero::private::{impl core::clone::Clone for core::num::nonzero::private::NonZeroU32Inner#11}
+    parent_clause0 = core::marker::{impl core::marker::Copy for u32}#41
+    parent_clause1 = core::num::nonzero::{impl core::num::nonzero::private::Sealed for u32}#19
+    parent_clause2 = core::num::nonzero::private::{impl core::marker::Copy for core::num::nonzero::private::NonZeroU32Inner}#12
+    parent_clause3 = core::num::nonzero::private::{impl core::clone::Clone for core::num::nonzero::private::NonZeroU32Inner}#11
     type NonZeroInner = core::num::nonzero::private::NonZeroU32Inner
 }
 
@@ -87,23 +87,23 @@ enum core::option::Option<T> =
 |  Some(T)
 
 
-fn core::num::nonzero::{core::num::nonzero::NonZero<T, @TraitClause0>#14}::new<T>(@1: T) -> core::option::Option<core::num::nonzero::NonZero<T, @TraitClause0>>
+fn core::num::nonzero::{core::num::nonzero::NonZero<T, @TraitClause0>}#14::new<T>(@1: T) -> core::option::Option<core::num::nonzero::NonZero<T, @TraitClause0>>
 where
     [@TraitClause0]: core::num::nonzero::ZeroablePrimitive<T>,
 
 fn core::option::{core::option::Option<T>}::unwrap<T>(@1: core::option::Option<T>) -> T
 
-fn test_crate::test_new_non_zero_u32(@1: u32) -> core::num::nonzero::NonZero<u32, core::num::nonzero::{impl core::num::nonzero::ZeroablePrimitive for u32#20}>
+fn test_crate::test_new_non_zero_u32(@1: u32) -> core::num::nonzero::NonZero<u32, core::num::nonzero::{impl core::num::nonzero::ZeroablePrimitive for u32}#20>
 {
-    let @0: core::num::nonzero::NonZero<u32, core::num::nonzero::{impl core::num::nonzero::ZeroablePrimitive for u32#20}>; // return
+    let @0: core::num::nonzero::NonZero<u32, core::num::nonzero::{impl core::num::nonzero::ZeroablePrimitive for u32}#20>; // return
     let x@1: u32; // arg #1
-    let @2: core::option::Option<core::num::nonzero::NonZero<u32, core::num::nonzero::{impl core::num::nonzero::ZeroablePrimitive for u32#20}>>; // anonymous local
+    let @2: core::option::Option<core::num::nonzero::NonZero<u32, core::num::nonzero::{impl core::num::nonzero::ZeroablePrimitive for u32}#20>>; // anonymous local
     let @3: u32; // anonymous local
 
     @3 := copy (x@1)
-    @2 := core::num::nonzero::{core::num::nonzero::NonZero<T, @TraitClause0>#14}::new<u32>[core::num::nonzero::{impl core::num::nonzero::ZeroablePrimitive for u32#20}](move (@3))
+    @2 := core::num::nonzero::{core::num::nonzero::NonZero<T, @TraitClause0>}#14::new<u32>[core::num::nonzero::{impl core::num::nonzero::ZeroablePrimitive for u32}#20](move (@3))
     drop @3
-    @0 := core::option::{core::option::Option<T>}::unwrap<core::num::nonzero::NonZero<u32, core::num::nonzero::{impl core::num::nonzero::ZeroablePrimitive for u32#20}>>(move (@2))
+    @0 := core::option::{core::option::Option<T>}::unwrap<core::num::nonzero::NonZero<u32, core::num::nonzero::{impl core::num::nonzero::ZeroablePrimitive for u32}#20>>(move (@2))
     drop @2
     return
 }
@@ -114,7 +114,7 @@ struct alloc::alloc::Global = {}
 
 fn alloc::vec::{alloc::vec::Vec<T, alloc::alloc::Global>}::new<T>() -> alloc::vec::Vec<T, alloc::alloc::Global>
 
-fn alloc::vec::{alloc::vec::Vec<T, A>#1}::push<'_0, T, A>(@1: &'_0 mut (alloc::vec::Vec<T, A>), @2: T)
+fn alloc::vec::{alloc::vec::Vec<T, A>}#1::push<'_0, T, A>(@1: &'_0 mut (alloc::vec::Vec<T, A>), @2: T)
 
 fn test_crate::test_vec_push()
 {
@@ -127,7 +127,7 @@ fn test_crate::test_vec_push()
     v@1 := alloc::vec::{alloc::vec::Vec<T, alloc::alloc::Global>}::new<u32>()
     @fake_read(v@1)
     @3 := &two-phase-mut v@1
-    @2 := alloc::vec::{alloc::vec::Vec<T, A>#1}::push<u32, alloc::alloc::Global>(move (@3), const (0 : u32))
+    @2 := alloc::vec::{alloc::vec::Vec<T, A>}#1::push<u32, alloc::alloc::Global>(move (@3), const (0 : u32))
     drop @3
     drop @2
     @4 := ()
@@ -140,7 +140,7 @@ fn test_crate::test_vec_push()
 
 opaque type core::cell::Cell<T>
 
-fn core::cell::{core::cell::Cell<T>#10}::get<'_0, T>(@1: &'_0 (core::cell::Cell<T>)) -> T
+fn core::cell::{core::cell::Cell<T>}#10::get<'_0, T>(@1: &'_0 (core::cell::Cell<T>)) -> T
 where
     [@TraitClause0]: core::marker::Copy<T>,
 
@@ -151,12 +151,12 @@ fn test_crate::use_get<'_0>(@1: &'_0 (core::cell::Cell<u32>)) -> u32
     let @2: &'_ (core::cell::Cell<u32>); // anonymous local
 
     @2 := &*(rc@1)
-    @0 := core::cell::{core::cell::Cell<T>#10}::get<u32>[core::marker::{impl core::marker::Copy for u32#41}](move (@2))
+    @0 := core::cell::{core::cell::Cell<T>}#10::get<u32>[core::marker::{impl core::marker::Copy for u32}#41](move (@2))
     drop @2
     return
 }
 
-fn core::cell::{core::cell::Cell<T>#11}::get_mut<'_0, T>(@1: &'_0 mut (core::cell::Cell<T>)) -> &'_0 mut (T)
+fn core::cell::{core::cell::Cell<T>}#11::get_mut<'_0, T>(@1: &'_0 mut (core::cell::Cell<T>)) -> &'_0 mut (T)
 
 fn test_crate::incr<'_0>(@1: &'_0 mut (core::cell::Cell<u32>))
 {
@@ -167,7 +167,7 @@ fn test_crate::incr<'_0>(@1: &'_0 mut (core::cell::Cell<u32>))
     let @4: (); // anonymous local
 
     @3 := &two-phase-mut *(rc@1)
-    @2 := core::cell::{core::cell::Cell<T>#11}::get_mut<u32>(move (@3))
+    @2 := core::cell::{core::cell::Cell<T>}#11::get_mut<u32>(move (@3))
     drop @3
     *(@2) := copy (*(@2)) + const (1 : u32)
     drop @2

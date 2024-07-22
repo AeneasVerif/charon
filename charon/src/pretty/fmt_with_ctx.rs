@@ -615,7 +615,7 @@ impl<C: AstFormatter> FmtWithCtx<C> for ImplElem {
         };
         let ctx = ctx.set_generics(&self.generics);
         // Just printing the generics (not the predicates)
-        format!("{{{}{d}}}", self.kind.fmt_with_ctx(&ctx),)
+        format!("{{{}}}{d}", self.kind.fmt_with_ctx(&ctx),)
     }
 }
 

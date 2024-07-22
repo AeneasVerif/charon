@@ -96,7 +96,7 @@ trait core::convert::From<Self, T>
     fn from : core::convert::From::from
 }
 
-fn core::convert::num::{impl core::convert::From<i32> for i64#83}::from(@1: i32) -> i64
+fn core::convert::num::{impl core::convert::From<i32> for i64}#83::from(@1: i32) -> i64
 {
     let @0: i64; // return
     let small@1: i32; // arg #1
@@ -105,9 +105,9 @@ fn core::convert::num::{impl core::convert::From<i32> for i64#83}::from(@1: i32)
     return
 }
 
-impl core::convert::num::{impl core::convert::From<i32> for i64#83} : core::convert::From<i64, i32>
+impl core::convert::num::{impl core::convert::From<i32> for i64}#83 : core::convert::From<i64, i32>
 {
-    fn from = core::convert::num::{impl core::convert::From<i32> for i64#83}::from
+    fn from = core::convert::num::{impl core::convert::From<i32> for i64}#83::from
 }
 
 fn core::convert::From::from<Self, T>(@1: T) -> Self
@@ -119,7 +119,7 @@ fn test_crate::convert(@1: i32) -> i64
     let @2: i32; // anonymous local
 
     @2 := copy (x@1)
-    @0 := core::convert::num::{impl core::convert::From<i32> for i64#83}::from(move (@2))
+    @0 := core::convert::num::{impl core::convert::From<i32> for i64}#83::from(move (@2))
     drop @2
     return
 }
@@ -170,7 +170,7 @@ fn test_crate::vec(@1: alloc::vec::Vec<u32, alloc::alloc::Global>)
     return
 }
 
-global core::num::{usize#11}::MAX  {
+global core::num::{usize}#11::MAX  {
     let @0: usize; // return
 
     @0 := ~(const (0 : usize))
@@ -182,7 +182,7 @@ fn test_crate::max() -> usize
     let @0: usize; // return
     let @1: usize; // anonymous local
 
-    @1 := core::num::{usize#11}::MAX
+    @1 := core::num::{usize}#11::MAX
     @0 := move (@1)
     return
 }

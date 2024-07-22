@@ -21,16 +21,16 @@ where
     fn use_item : test_crate::Foo::use_item
 }
 
-fn core::clone::impls::{impl core::clone::Clone for &'_0 (T)#3}::clone<'_0, '_1, T>(@1: &'_1 (&'_0 (T))) -> &'_0 (T)
+fn core::clone::impls::{impl core::clone::Clone for &'_0 (T)}#3::clone<'_0, '_1, T>(@1: &'_1 (&'_0 (T))) -> &'_0 (T)
 
-impl<'_0, T> core::clone::impls::{impl core::clone::Clone for &'_0 (T)#3}<'_0, T> : core::clone::Clone<&'_0 (T)>
+impl<'_0, T> core::clone::impls::{impl core::clone::Clone for &'_0 (T)}#3<'_0, T> : core::clone::Clone<&'_0 (T)>
 {
-    fn clone = core::clone::impls::{impl core::clone::Clone for &'_0 (T)#3}::clone
+    fn clone = core::clone::impls::{impl core::clone::Clone for &'_0 (T)}#3::clone
 }
 
-impl<'_0, T> core::marker::{impl core::marker::Copy for &'_0 (T)#4}<'_0, T> : core::marker::Copy<&'_0 (T)>
+impl<'_0, T> core::marker::{impl core::marker::Copy for &'_0 (T)}#4<'_0, T> : core::marker::Copy<&'_0 (T)>
 {
-    parent_clause0 = core::clone::impls::{impl core::clone::Clone for &'_0 (T)#3}<'_, T>
+    parent_clause0 = core::clone::impls::{impl core::clone::Clone for &'_0 (T)}#3<'_, T>
 }
 
 enum core::option::Option<T> =
@@ -38,28 +38,28 @@ enum core::option::Option<T> =
 |  Some(T)
 
 
-fn core::option::{impl core::clone::Clone for core::option::Option<T>#5}::clone<'_0, T>(@1: &'_0 (core::option::Option<T>)) -> core::option::Option<T>
+fn core::option::{impl core::clone::Clone for core::option::Option<T>}#5::clone<'_0, T>(@1: &'_0 (core::option::Option<T>)) -> core::option::Option<T>
 where
     // Inherited clauses:
     [@TraitClause0]: core::clone::Clone<T>,
 
-fn core::option::{impl core::clone::Clone for core::option::Option<T>#5}::clone_from<'_0, '_1, T>(@1: &'_0 mut (core::option::Option<T>), @2: &'_1 (core::option::Option<T>))
+fn core::option::{impl core::clone::Clone for core::option::Option<T>}#5::clone_from<'_0, '_1, T>(@1: &'_0 mut (core::option::Option<T>), @2: &'_1 (core::option::Option<T>))
 where
     // Inherited clauses:
     [@TraitClause0]: core::clone::Clone<T>,
 
-impl<T> core::option::{impl core::clone::Clone for core::option::Option<T>#5}<T> : core::clone::Clone<core::option::Option<T>>
+impl<T> core::option::{impl core::clone::Clone for core::option::Option<T>}#5<T> : core::clone::Clone<core::option::Option<T>>
 where
     [@TraitClause0]: core::clone::Clone<T>,
 {
-    fn clone = core::option::{impl core::clone::Clone for core::option::Option<T>#5}::clone
-    fn clone_from = core::option::{impl core::clone::Clone for core::option::Option<T>#5}::clone_from
+    fn clone = core::option::{impl core::clone::Clone for core::option::Option<T>}#5::clone
+    fn clone_from = core::option::{impl core::clone::Clone for core::option::Option<T>}#5::clone_from
 }
 
 impl<'a, T> test_crate::{impl test_crate::Foo<'a> for &'a (T)}<'a, T> : test_crate::Foo<'a, &'a (T)>
 {
-    parent_clause0 = core::marker::{impl core::marker::Copy for &'_0 (T)#4}<'_, T>
-    parent_clause1 = core::option::{impl core::clone::Clone for core::option::Option<T>#5}<&'_ (T)>[core::clone::impls::{impl core::clone::Clone for &'_0 (T)#3}<'_, T>]
+    parent_clause0 = core::marker::{impl core::marker::Copy for &'_0 (T)}#4<'_, T>
+    parent_clause1 = core::option::{impl core::clone::Clone for core::option::Option<T>}#5<&'_ (T)>[core::clone::impls::{impl core::clone::Clone for &'_0 (T)}#3<'_, T>]
     type Item = core::option::Option<&'a (T)>
 }
 
@@ -129,10 +129,10 @@ trait test_crate::loopy::Foo<Self>
     type FooTy
 }
 
-impl test_crate::loopy::{impl test_crate::loopy::Foo for ()#1} : test_crate::loopy::Foo<()>
+impl test_crate::loopy::{impl test_crate::loopy::Foo for ()}#1 : test_crate::loopy::Foo<()>
 {
     parent_clause0 = test_crate::loopy::{impl test_crate::loopy::Bar for ()}
-    parent_clause1 = test_crate::loopy::{impl test_crate::loopy::Foo for ()#1}
+    parent_clause1 = test_crate::loopy::{impl test_crate::loopy::Foo for ()}#1
     type FooTy = ()
 }
 
@@ -143,9 +143,9 @@ trait test_crate::loopy::Baz<Self, T>
     type BazTy
 }
 
-impl test_crate::loopy::{impl test_crate::loopy::Baz<()> for ()#2} : test_crate::loopy::Baz<(), ()>
+impl test_crate::loopy::{impl test_crate::loopy::Baz<()> for ()}#2 : test_crate::loopy::Baz<(), ()>
 {
-    parent_clause0 = test_crate::loopy::{impl test_crate::loopy::Baz<()> for ()#2}
+    parent_clause0 = test_crate::loopy::{impl test_crate::loopy::Baz<()> for ()}#2
     parent_clause1 = test_crate::loopy::{impl test_crate::loopy::Bar for ()}
     type BazTy = usize
 }

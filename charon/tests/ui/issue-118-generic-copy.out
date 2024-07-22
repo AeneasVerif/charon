@@ -27,7 +27,7 @@ trait core::marker::Copy<Self>
     parent_clause_0 : [@TraitClause0]: core::clone::Clone<Self>
 }
 
-impl test_crate::{impl core::marker::Copy for test_crate::Foo#1} : core::marker::Copy<test_crate::Foo>
+impl test_crate::{impl core::marker::Copy for test_crate::Foo}#1 : core::marker::Copy<test_crate::Foo>
 {
     parent_clause0 = test_crate::{impl core::clone::Clone for test_crate::Foo}
 }

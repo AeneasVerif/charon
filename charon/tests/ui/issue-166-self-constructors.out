@@ -18,7 +18,7 @@ struct test_crate::Bar<'a> =
   r: &'a (i32)
 }
 
-fn test_crate::{test_crate::Bar<'a>#1}::new<'a>(@1: &'a (i32)) -> test_crate::Bar<'a>
+fn test_crate::{test_crate::Bar<'a>}#1::new<'a>(@1: &'a (i32)) -> test_crate::Bar<'a>
 {
     let @0: test_crate::Bar<'_>; // return
     let r@1: &'_ (i32); // arg #1

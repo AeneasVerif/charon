@@ -11,7 +11,7 @@ trait test_crate::Hash<Self>
     fn hash : test_crate::Hash::hash
 }
 
-fn test_crate::{impl test_crate::Hash for u32#1}::hash<'_0, '_1, H>(@1: &'_0 (u32), @2: &'_1 mut (H))
+fn test_crate::{impl test_crate::Hash for u32}#1::hash<'_0, '_1, H>(@1: &'_0 (u32), @2: &'_1 mut (H))
 where
     [@TraitClause0]: test_crate::Hasher<H>,
 {
@@ -26,9 +26,9 @@ where
     return
 }
 
-impl test_crate::{impl test_crate::Hash for u32#1} : test_crate::Hash<u32>
+impl test_crate::{impl test_crate::Hash for u32}#1 : test_crate::Hash<u32>
 {
-    fn hash = test_crate::{impl test_crate::Hash for u32#1}::hash
+    fn hash = test_crate::{impl test_crate::Hash for u32}#1::hash
 }
 
 fn test_crate::Hash::hash<'_0, '_1, Self, H>(@1: &'_0 (Self), @2: &'_1 mut (H))
@@ -52,7 +52,7 @@ fn test_crate::main()
     @3 := &@4
     @6 := &mut hasher@1
     @5 := &two-phase-mut *(@6)
-    @2 := test_crate::{impl test_crate::Hash for u32#1}::hash<test_crate::DefaultHasher>[test_crate::{impl test_crate::Hasher for test_crate::DefaultHasher}](move (@3), move (@5))
+    @2 := test_crate::{impl test_crate::Hash for u32}#1::hash<test_crate::DefaultHasher>[test_crate::{impl test_crate::Hasher for test_crate::DefaultHasher}](move (@3), move (@5))
     drop @5
     drop @3
     drop @6
