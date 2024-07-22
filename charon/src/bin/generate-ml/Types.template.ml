@@ -283,42 +283,7 @@ class virtual ['self] map_ty_base =
   end
 
 type __types_0 = unit (* to start the recursive group *)
-and assumed_ty = TBox | TArray | TSlice | TStr
-and type_id = TAdtId of type_decl_id | TTuple | TAssumed of assumed_ty
-and existential_predicate = unit
-
-and ty =
-  | TAdt of type_id * generic_args
-  | TVar of type_var_id
-  | TLiteral of literal_type
-  | TNever
-  | TRef of region * ty * ref_kind
-  | TRawPtr of ty * ref_kind
-  | TTraitType of trait_ref * trait_item_name
-  | TDynTrait of existential_predicate
-  | TArrow of region_var list * ty list * ty
-
-and trait_ref = {
-  trait_id : trait_instance_id;
-  trait_decl_ref : trait_decl_ref;
-}
-
-and trait_decl_ref = {
-  trait_decl_id : trait_decl_id;
-  decl_generics : generic_args;
-}
-
-and global_decl_ref = {
-  global_id : global_decl_id;
-  global_generics : generic_args;
-}
-
-and generic_args = {
-  regions : region list;
-  types : ty list;
-  const_generics : const_generic list;
-  trait_refs : trait_ref list;
-}
+(* __REPLACE0__ *)
 
 (* Hand-written because we add an extra variant not present on the rust side *)
 and trait_instance_id =
@@ -339,13 +304,13 @@ and trait_instance_id =
           appear: this allows us to track errors by making sure [Self] indeed did not
           appear.
        *)
-(* Hand-written because we add an extra variant not present on the rust side *)
 
 (** A region.
 
     This definition doesn't need to be mutually recursive with the others, but
     this allows us to factor out the visitors.
  *)
+(* Hand-written because we add an extra variant not present on the rust side *)
 and region =
   | RStatic  (** Static region *)
   | RBVar of region_db_id * region_var_id
@@ -424,11 +389,7 @@ type ety = ty
 (** Type with non-erased regions (this only has an informative purpose) *)
 and rty = ty
 
-and trait_clause = {
-  clause_id : trait_clause_id;
-  span : span option;
-  trait : trait_decl_ref;
-}
+(* __REPLACE1__ *)
 
 (* Hand-written because visitors can't handle `outlives_pred` *)
 and generic_params = {
@@ -461,11 +422,7 @@ and region_outlives = region * region
 (** (T, 'a) means that T outlives 'a *)
 and type_outlives = ty * region
 
-and trait_type_constraint = {
-  trait_ref : trait_ref;
-  type_name : trait_item_name;
-  ty : ty;
-}
+(* __REPLACE2__ *)
 [@@deriving
   show,
     ord,
@@ -489,26 +446,8 @@ and trait_type_constraint = {
       }]
 
 type __types_3 = unit (* to start the recursive group *)
-
-and impl_elem =
-  | ImplElemTy of generic_params * ty
-  | ImplElemTrait of trait_impl_id
-
-and path_elem =
-  | PeIdent of string * disambiguator
-  | PeImpl of impl_elem * disambiguator
-
-and name = path_elem list
-
-and item_meta = {
-  span : span;
-  name : name;
-  attr_info : attr_info;
-  is_local : bool;
-}
+(* __REPLACE3__ *)
 [@@deriving show, ord]
-
-(* Hand-written because these don't exist on the rust side *)
 
 (** A group of regions.
 
@@ -517,6 +456,7 @@ and item_meta = {
     This is necessary to introduce the proper abstraction with the
     proper constraints, when evaluating a function call in symbolic mode.
 *)
+(* Hand-written because these don't exist on the rust side *)
 type ('rid, 'id) g_region_group = {
   id : 'id;
   regions : 'rid list;
@@ -530,32 +470,5 @@ type region_var_group = (RegionVarId.id, RegionGroupId.id) g_region_group
 type region_var_groups = region_var_group list [@@deriving show]
 
 type __types_4 = unit (* to start the recursive group *)
-
-and field = {
-  span : span;
-  attr_info : attr_info;
-  field_name : string option;
-  field_ty : ty;
-}
-
-and variant = {
-  span : span;
-  attr_info : attr_info;
-  variant_name : string;
-  fields : field list;
-  discriminant : scalar_value;
-}
-
-and type_decl_kind =
-  | Struct of field list
-  | Enum of variant list
-  | Opaque
-  | Alias of ty
-
-and type_decl = {
-  def_id : type_decl_id;
-  item_meta : item_meta;
-  generics : generic_params;
-  kind : type_decl_kind;
-}
+(* __REPLACE4__ *)
 [@@deriving show]

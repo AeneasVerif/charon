@@ -133,6 +133,7 @@
 
           mkdir committed
           cp ${./charon-ml/src}/GAst.ml committed
+          cp ${./charon-ml/src}/Types.ml committed
           cp ${./charon-ml/src}/GAstOfJson.ml committed
 
           if diff -rq committed generated; then

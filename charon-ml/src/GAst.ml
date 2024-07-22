@@ -128,7 +128,7 @@ and item_kind =
 and 'a0 gexpr_body = {
   span : span;
   arg_count : int;
-  locals : (var_id, var) vector;
+  locals : var list;
   body : 'a0;
 }
 [@@deriving show]
@@ -150,7 +150,7 @@ and trait_decl = {
   def_id : trait_decl_id;
   item_meta : item_meta;
   generics : generic_params;
-  parent_clauses : (trait_clause_id, trait_clause) vector;
+  parent_clauses : trait_clause list;
   consts : (trait_item_name * ty) list;
   types : trait_item_name list;
   required_methods : (trait_item_name * fun_decl_id) list;
@@ -162,7 +162,7 @@ and trait_impl = {
   item_meta : item_meta;
   impl_trait : trait_decl_ref;
   generics : generic_params;
-  parent_trait_refs : (trait_clause_id, trait_ref) vector;
+  parent_trait_refs : trait_ref list;
   consts : (trait_item_name * global_decl_ref) list;
   types : (trait_item_name * ty) list;
   required_methods : (trait_item_name * fun_decl_id) list;

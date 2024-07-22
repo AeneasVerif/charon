@@ -49,6 +49,7 @@ craneLib.buildPackage (
       # These files are symlinks outside of the charon directory. We remove
       # them so that we regenerate fresh files in their place.
       rm -f src/bin/generate-ml/GAst.ml
+      rm -f src/bin/generate-ml/Types.ml
       rm -f src/bin/generate-ml/GAstOfJson.ml
     '';
     # Make sure the toolchain is in $PATH so that `cargo` can work

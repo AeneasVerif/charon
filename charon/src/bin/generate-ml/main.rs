@@ -177,6 +177,10 @@ fn type_to_ocaml_name(ctx: &GenerateCtx, ty: &Ty) -> String {
                         base_ty = "list".to_string();
                         args.pop(); // Remove the allocator generic param
                     }
+                    if base_ty == "vector" {
+                        base_ty = "list".to_string();
+                        args.remove(0); // Remove the index generic param
+                    }
                     let args = match args.as_slice() {
                         [] => String::new(),
                         [arg] => arg.clone(),
@@ -392,9 +396,7 @@ fn build_type(_ctx: &GenerateCtx, decl: &TypeDecl, body: &str) -> String {
 
 fn type_decl_to_ocaml_decl(ctx: &GenerateCtx, decl: &TypeDecl) -> String {
     let body = match &decl.kind {
-        TypeDeclKind::Struct(fields) if fields.is_empty() => {
-            todo!()
-        }
+        TypeDeclKind::Struct(fields) if fields.is_empty() => "unit".to_string(),
         TypeDeclKind::Struct(fields)
             if fields.len() == 1
                 && decl
@@ -404,7 +406,7 @@ fn type_decl_to_ocaml_decl(ctx: &GenerateCtx, decl: &TypeDecl) -> String {
                     .iter()
                     .any(|a| a.is_unknown() && a.as_unknown() == "serde(transparent)") =>
         {
-            todo!()
+            type_to_ocaml_name(ctx, &fields[0].ty)
         }
         TypeDeclKind::Alias(_ty) => {
             todo!()
@@ -569,6 +571,27 @@ fn main() -> Result<()> {
                 &["DeclarationGroup"],
                 &["Var"],
                 &["AnyTransId"],
+            ],
+        },
+        GenerateCodeFor {
+            kind: GenerationKind::TypeDecl,
+            template: dir.join("Types.template.ml"),
+            target: dir.join("Types.ml"),
+            markers: &[
+                &[
+                    "AssumedTy",
+                    "TypeId",
+                    "ExistentialPredicate",
+                    "Ty",
+                    "TraitRef",
+                    "TraitDeclRef",
+                    "GlobalDeclRef",
+                    "GenericArgs",
+                ],
+                &["TraitClause"],
+                &["TraitTypeConstraint"],
+                &["ImplElem", "PathElem", "Name", "ItemMeta"],
+                &["Field", "Variant", "TypeDeclKind", "TypeDecl"],
             ],
         },
         GenerateCodeFor {
