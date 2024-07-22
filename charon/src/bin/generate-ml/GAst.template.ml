@@ -20,13 +20,7 @@ module TraitImplId = Types.TraitImplId
 module TraitClauseId = Types.TraitClauseId
 
 type __5 = unit (* to start the recursive group *)
-
-and any_decl_id =
-  | IdType of type_decl_id
-  | IdFun of fun_decl_id
-  | IdGlobal of global_decl_id
-  | IdTraitDecl of trait_decl_id
-  | IdTraitImpl of trait_impl_id
+(* __REPLACE5__ *)
 [@@deriving show, ord]
 
 type assumed_fun_id = Expressions.assumed_fun_id [@@deriving show, ord]
@@ -36,8 +30,7 @@ type fun_id_or_trait_method_ref = Expressions.fun_id_or_trait_method_ref
 [@@deriving show, ord]
 
 type __4 = unit (* to start the recursive group *)
-
-and var = { index : var_id; name : string option; var_ty : ty }
+(* __REPLACE4__ *)
 [@@deriving show]
 
 (** Ancestor the AST iter visitors *)
@@ -57,12 +50,9 @@ class ['self] map_ast_base =
 (* Below: the types need not be mutually recursive, but it makes it easier
    to derive the visitors *)
 type __0 = unit (* to start the recursive group *)
-and assertion = { cond : operand; expected : bool }
+and assertion = { cond : operand; expected : bool } (* not present in rust *)
 
-(* not present in rust *)
-and fn_operand = FnOpRegular of fn_ptr | FnOpMove of place
-
-and call = { func : fn_operand; args : operand list; dest : place }
+(* __REPLACE0__ *)
 [@@deriving
   show,
     visitors
@@ -95,42 +85,7 @@ class ['self] map_statement_base =
   end
 
 type __1 = unit (* to start the recursive group *)
-
-and params_info = {
-  num_region_params : int;
-  num_type_params : int;
-  num_const_generic_params : int;
-  num_trait_clauses : int;
-  num_regions_outlive : int;
-  num_types_outlive : int;
-  num_trait_type_constraints : int;
-}
-
-and closure_kind = Fn | FnMut | FnOnce
-and closure_info = { kind : closure_kind; state : ty list }
-
-and fun_sig = {
-  is_unsafe : bool;
-  is_closure : bool;
-  closure_info : closure_info option;
-  generics : generic_params;
-  parent_params_info : params_info option;
-  inputs : ty list;
-  output : ty;
-}
-
-and item_kind =
-  | RegularKind
-  | TraitItemImpl of trait_impl_id * trait_decl_id * trait_item_name * bool
-  | TraitItemDecl of trait_decl_id * trait_item_name
-  | TraitItemProvided of trait_decl_id * trait_item_name
-
-and 'a0 gexpr_body = {
-  span : span;
-  arg_count : int;
-  locals : (var_id, var) vector;
-  body : 'a0;
-}
+(* __REPLACE1__ *)
 [@@deriving show]
 
 (* Hand-written because the rust equivalent isn't generic *)
@@ -145,31 +100,7 @@ type 'body gfun_decl = {
 [@@deriving show]
 
 type __2 = unit (* to start the recursive group *)
-
-and trait_decl = {
-  def_id : trait_decl_id;
-  item_meta : item_meta;
-  generics : generic_params;
-  parent_clauses : (trait_clause_id, trait_clause) vector;
-  consts : (trait_item_name * ty) list;
-  types : trait_item_name list;
-  required_methods : (trait_item_name * fun_decl_id) list;
-  provided_methods : (trait_item_name * fun_decl_id option) list;
-}
-
-and trait_impl = {
-  def_id : trait_impl_id;
-  item_meta : item_meta;
-  impl_trait : trait_decl_ref;
-  generics : generic_params;
-  parent_trait_refs : (trait_clause_id, trait_ref) vector;
-  consts : (trait_item_name * global_decl_ref) list;
-  types : (trait_item_name * ty) list;
-  required_methods : (trait_item_name * fun_decl_id) list;
-  provided_methods : (trait_item_name * fun_decl_id) list;
-}
-
-and 'a0 g_declaration_group = NonRecGroup of 'a0 | RecGroup of 'a0 list
+(* __REPLACE2__ *)
 [@@deriving show]
 
 (* Hand-written because they don't exist in rust *)
@@ -188,14 +119,7 @@ type trait_impl_group = TraitImplId.id g_declaration_group [@@deriving show]
 type mixed_declaration_group = any_decl_id g_declaration_group [@@deriving show]
 
 type __3 = unit (* to start the recursive group *)
-
-and declaration_group =
-  | TypeGroup of type_decl_id g_declaration_group
-  | FunGroup of fun_decl_id g_declaration_group
-  | GlobalGroup of global_decl_id g_declaration_group
-  | TraitDeclGroup of trait_decl_id g_declaration_group
-  | TraitImplGroup of trait_impl_id g_declaration_group
-  | MixedGroup of any_decl_id g_declaration_group
+(* __REPLACE3__ *)
 [@@deriving show]
 
 (* Hand-written because the rust equivalent isn't generic *)
@@ -210,7 +134,6 @@ type 'body gglobal_decl = {
 [@@deriving show]
 
 (* Hand-written because the rust equivalent isn't generic *)
-
 (** A crate *)
 type ('fun_body, 'global_body) gcrate = {
   name : string;

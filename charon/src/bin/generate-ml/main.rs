@@ -149,6 +149,51 @@ fn type_to_ocaml_call(ctx: &GenerateCtx, ty: &Ty) -> String {
     }
 }
 
+/// Converts a type to the appropriate ocaml name. In case of generics, this provides appropriate
+/// parameters.
+fn type_to_ocaml_name(ctx: &GenerateCtx, ty: &Ty) -> String {
+    match ty {
+        Ty::Literal(LiteralTy::Bool) => "bool".to_string(),
+        Ty::Literal(LiteralTy::Char) => "char".to_string(),
+        Ty::Literal(LiteralTy::Integer(_)) => "int".to_string(),
+        Ty::Adt(adt_kind, generics) => {
+            let mut args = generics
+                .types
+                .iter()
+                .map(|ty| type_to_ocaml_name(ctx, ty))
+                .map(|name| {
+                    if !name.chars().all(|c| c.is_alphanumeric()) {
+                        format!("({name})")
+                    } else {
+                        name
+                    }
+                })
+                .collect_vec();
+            match adt_kind {
+                TypeId::Adt(id) => {
+                    let adt: &TypeDecl = &ctx.crate_data.types[id.index()];
+                    let mut base_ty = type_name_to_ocaml_ident(&adt.item_meta);
+                    if base_ty == "vec" {
+                        base_ty = "list".to_string();
+                        args.pop(); // Remove the allocator generic param
+                    }
+                    let args = match args.as_slice() {
+                        [] => String::new(),
+                        [arg] => arg.clone(),
+                        args => format!("({})", args.iter().join(",")),
+                    };
+                    format!("{args} {base_ty}")
+                }
+                TypeId::Assumed(AssumedTy::Box) => args[0].clone(),
+                TypeId::Tuple => args.iter().join("*"),
+                _ => unimplemented!("{ty:?}"),
+            }
+        }
+        Ty::TypeVar(var_id) => format!("'a{}", var_id.index()),
+        _ => unimplemented!("{ty:?}"),
+    }
+}
+
 fn convert_vars<'a>(ctx: &GenerateCtx, fields: impl IntoIterator<Item = &'a Field>) -> String {
     fields
         .into_iter()
@@ -328,9 +373,89 @@ fn type_decl_to_json_deserializer(ctx: &GenerateCtx, decl: &TypeDecl) -> String 
     build_function(ctx, decl, &branches)
 }
 
+fn build_type(_ctx: &GenerateCtx, decl: &TypeDecl, body: &str) -> String {
+    let ty_name = type_name_to_ocaml_ident(&decl.item_meta);
+    let generics = decl
+        .generics
+        .types
+        .iter()
+        .enumerate()
+        .map(|(i, _)| format!("'a{i}"))
+        .collect_vec();
+    let generics = match generics.as_slice() {
+        [] => String::new(),
+        [ty] => ty.clone(),
+        generics => format!("({})", generics.iter().join(",")),
+    };
+    format!("and {generics} {ty_name} = {body}")
+}
+
+fn type_decl_to_ocaml_decl(ctx: &GenerateCtx, decl: &TypeDecl) -> String {
+    let body = match &decl.kind {
+        TypeDeclKind::Struct(fields) if fields.is_empty() => {
+            todo!()
+        }
+        TypeDeclKind::Struct(fields)
+            if fields.len() == 1
+                && decl
+                    .item_meta
+                    .attr_info
+                    .attributes
+                    .iter()
+                    .any(|a| a.is_unknown() && a.as_unknown() == "serde(transparent)") =>
+        {
+            todo!()
+        }
+        TypeDeclKind::Alias(_ty) => {
+            todo!()
+        }
+        TypeDeclKind::Struct(fields) if fields.iter().all(|f| f.name.is_none()) => {
+            todo!()
+        }
+        TypeDeclKind::Struct(fields) => {
+            let fields = fields
+                .iter()
+                .filter(|f| !f.is_opaque())
+                .map(|f| {
+                    let name = f.renamed_name().unwrap();
+                    let ty = type_to_ocaml_name(ctx, &f.ty);
+                    format!("{name} : {ty}")
+                })
+                .join(";");
+            format!("{{ {fields} }}")
+        }
+        TypeDeclKind::Enum(variants) => {
+            variants
+                .iter()
+                .filter(|v| !v.is_opaque())
+                .map(|variant| {
+                    let rename = variant.renamed_name();
+                    let ty = if variant.fields.is_empty() {
+                        // Unit variant
+                        String::new()
+                    } else {
+                        let fields = variant
+                            .fields
+                            .clone()
+                            .iter()
+                            .map(|f| type_to_ocaml_name(ctx, &f.ty))
+                            .join("*");
+                        format!(" of {fields}")
+                    };
+                    format!("{rename}{ty}")
+                })
+                .join("|")
+        }
+        TypeDeclKind::Opaque => todo!(),
+        TypeDeclKind::Error(_) => todo!(),
+    };
+    build_type(ctx, decl, &body)
+}
+
 /// The kind of code generation to perform.
 enum GenerationKind {
     OfJson,
+    TypeDecl,
 }
 
 /// Replace markers in `template` with auto-generated code.
@@ -360,6 +485,7 @@ impl GenerateCodeFor<'_> {
                 })
                 .map(|ty| match self.kind {
                     GenerationKind::OfJson => type_decl_to_json_deserializer(&ctx, ty),
+                    GenerationKind::TypeDecl => type_decl_to_ocaml_decl(&ctx, ty),
                 })
                 .join("\n");
             let placeholder = format!("(* __REPLACE{i}__ *)");
@@ -424,89 +550,111 @@ fn main() -> Result<()> {
         name_to_type,
     };
 
-    let generate_code_for = vec![GenerateCodeFor {
-        kind: GenerationKind::OfJson,
-        template: dir.join("GAstOfJson.template.ml"),
-        target: dir.join("GAstOfJson.ml"),
-        markers: &[
-            &[
-                "Span",
-                "InlineAttr",
-                "Attribute",
-                "AttrInfo",
-                "TypeVar",
-                "RegionVar",
-                "Region",
-                "IntegerTy",
-                "LiteralTy",
-                "ConstGenericVar",
-                "RefKind",
-                "AssumedTy",
-                "TypeId",
+    let generate_code_for = vec![
+        GenerateCodeFor {
+            kind: GenerationKind::TypeDecl,
+            template: dir.join("GAst.template.ml"),
+            target: dir.join("GAst.ml"),
+            markers: &[
+                &["FnOperand", "Call"],
+                &[
+                    "ParamsInfo",
+                    "ClosureKind",
+                    "ClosureInfo",
+                    "FunSig",
+                    "ItemKind",
+                    "GExprBody",
+                ],
+                &["TraitDecl", "TraitImpl", "GDeclarationGroup"],
+                &["DeclarationGroup"],
+                &["Var"],
+                &["AnyTransId"],
             ],
-            &[
-                "ConstGeneric",
-                "Ty",
-                "ExistentialPredicate",
-                "TraitRef",
-                "TraitDeclRef",
-                "GlobalDeclRef",
-                "GenericArgs",
-                "TraitRefKind",
-                "Field",
-                "Variant",
-                "TypeDeclKind",
+        },
+        GenerateCodeFor {
+            kind: GenerationKind::OfJson,
+            template: dir.join("GAstOfJson.template.ml"),
+            target: dir.join("GAstOfJson.ml"),
+            markers: &[
+                &[
+                    "Span",
+                    "InlineAttr",
+                    "Attribute",
+                    "AttrInfo",
+                    "TypeVar",
+                    "RegionVar",
+                    "Region",
+                    "IntegerTy",
+                    "LiteralTy",
+                    "ConstGenericVar",
+                    "RefKind",
+                    "AssumedTy",
+                    "TypeId",
+                ],
+                &[
+                    "ConstGeneric",
+                    "Ty",
+                    "ExistentialPredicate",
+                    "TraitRef",
+                    "TraitDeclRef",
+                    "GlobalDeclRef",
+                    "GenericArgs",
+                    "TraitRefKind",
+                    "Field",
+                    "Variant",
+                    "TypeDeclKind",
+                ],
+                &["Loc"],
+                &["FileId", "FileName"],
+                &[
+                    "TraitClause",
+                    "OutlivesPred",
+                    "RegionOutlives",
+                    "TypeOutlives",
+                    "TraitTypeConstraint",
+                    "GenericParams",
+                    "ImplElem",
+                    "PathElem",
+                    "Name",
+                    "ItemMeta",
+                    "TypeDecl",
+                    "Var",
+                    "FieldProjKind",
+                    "ProjectionElem",
+                    "Projection",
+                    "Place",
+                    "BorrowKind",
+                    "CastKind",
+                    "UnOp",
+                    "BinOp",
+                    "Literal",
+                    "AssumedFunId",
+                    "FunId",
+                    "FunIdOrTraitMethodRef",
+                    "FnPtr",
+                    "FnOperand",
+                    "ConstantExpr",
+                    "RawConstantExpr",
+                    "Operand",
+                    "AggregateKind",
+                    "Rvalue",
+                    "ParamsInfo",
+                    "ClosureKind",
+                    "ClosureInfo",
+                    "FunSig",
+                    "Call",
+                    "GExprBody",
+                    "ItemKind",
+                ],
+                &[
+                    "TraitDecl",
+                    "TraitImpl",
+                    "GDeclarationGroup",
+                    "DeclarationGroup",
+                ],
             ],
-            &["Loc"],
-            &["FileId", "FileName"],
-            &[
-                "TraitClause",
-                "OutlivesPred",
-                "RegionOutlives",
-                "TypeOutlives",
-                "TraitTypeConstraint",
-                "GenericParams",
-                "ImplElem",
-                "PathElem",
-                "Name",
-                "ItemMeta",
-                "TypeDecl",
-                "Var",
-                "FieldProjKind",
-                "ProjectionElem",
-                "Projection",
-                "Place",
-                "BorrowKind",
-                "CastKind",
-                "UnOp",
-                "BinOp",
-                "Literal",
-                "AssumedFunId",
-                "FunId",
-                "FunIdOrTraitMethodRef",
-                "FnPtr",
-                "FnOperand",
-                "ConstantExpr",
-                "RawConstantExpr",
-                "Operand",
-                "AggregateKind",
-                "Rvalue",
-                "ParamsInfo",
-                "ClosureKind",
-                "ClosureInfo",
-                "FunSig",
-                "Call",
-                "GExprBody",
-                "ItemKind",
-            ],
-            &[
-                "TraitDecl",
-                "TraitImpl",
-                "GDeclarationGroup",
-                "DeclarationGroup",
-            ],
-        ],
-    }];
+        },
+    ];
     for file in generate_code_for {
         file.generate(&ctx)?;
     }

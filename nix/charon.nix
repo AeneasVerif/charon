@@ -46,8 +46,9 @@ craneLib.buildPackage (
     # It's important to pass the same `RUSTFLAGS` to dependencies otherwise we'll have to rebuild them.
     cargoArtifacts = craneLib.buildDepsOnly craneArgs;
     postPatch = ''
-      # This file is a symlink outside of the charon directory. We remove it so
-      # that we regenerate a fresh file in its place.
+      # These files are symlinks outside of the charon directory. We remove
+      # them so that we regenerate fresh files in their place.
+      rm -f src/bin/generate-ml/GAst.ml
       rm -f src/bin/generate-ml/GAstOfJson.ml
     '';
     # Make sure the toolchain is in $PATH so that `cargo` can work

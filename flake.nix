@@ -132,6 +132,7 @@
           ${pkgs.ocamlPackages.ocamlformat}/bin/ocamlformat --inplace --enable-outside-detected-project generated/*.ml
 
           mkdir committed
+          cp ${./charon-ml/src}/GAst.ml committed
           cp ${./charon-ml/src}/GAstOfJson.ml committed
 
           if diff -rq committed generated; then

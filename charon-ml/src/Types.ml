@@ -18,6 +18,7 @@ module FunDeclId = IdGen ()
 module BodyId = IdGen ()
 
 type ('a, 'b) outlives_pred = 'a * 'b
+type ('id, 'x) vector = 'x list [@@deriving show]
 
 (** We define this type to control the name of the visitor functions
     (see e.g., {!class:Types.iter_ty_base} and {!Types.TVar}).
