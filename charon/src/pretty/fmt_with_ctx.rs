@@ -1164,8 +1164,8 @@ impl<C: AstFormatter> FmtWithCtx<C> for TraitImpl {
                         })
                         .collect()
                 }))
-                .chain(self.consts.iter().map(|(name, id)| {
-                    format!("{TAB_INCR}const {name} = {}\n", ctx.format_object(*id))
+                .chain(self.consts.iter().map(|(name, global)| {
+                    format!("{TAB_INCR}const {name} = {}\n", global.fmt_with_ctx(ctx))
                 }))
                 .chain(self.types.iter().map(|(name, ty)| {
                     format!("{TAB_INCR}type {name} = {}\n", ty.fmt_with_ctx(ctx),)

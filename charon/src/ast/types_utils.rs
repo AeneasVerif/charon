@@ -53,6 +53,37 @@ impl GenericParams {
     pub fn empty() -> Self {
         Self::default()
     }
+
+    /// Construct a set of generic arguments in the scope of `self` that matches `self` and feeds
+    /// each required parameter with itself. E.g. given parameters for `<T, U> wiere U:
+    /// PartialEq<T>`, the arguments would be `<T, U>[@TraitClause0]`.
+    pub fn identity_args(&self) -> GenericArgs {
+        GenericArgs {
+            regions: self
+                .regions
+                .iter_indexed()
+                .map(|(id, _)| Region::BVar(DeBruijnId::new(0), id))
+                .collect(),
+            types: self
+                .types
+                .iter_indexed()
+                .map(|(id, _)| Ty::TypeVar(id))
+                .collect(),
+            const_generics: self
+                .const_generics
+                .iter_indexed()
+                .map(|(id, _)| ConstGeneric::Var(id))
+                .collect(),
+            trait_refs: self
+                .trait_clauses
+                .iter_indexed()
+                .map(|(id, clause)| TraitRef {
+                    kind: TraitRefKind::Clause(id),
+                    trait_decl_ref: clause.trait_.clone(),
+                })
+                .collect(),
+        }
+    }
 }
 
 impl GenericArgs {

@@ -1324,7 +1324,7 @@ and trait_impl_of_json (id_to_file : id_to_file_map) (js : json) :
         in
         let* consts =
           list_of_json
-            (pair_of_json trait_item_name_of_json global_decl_id_of_json)
+            (pair_of_json trait_item_name_of_json global_decl_ref_of_json)
             consts
         in
         let* types =

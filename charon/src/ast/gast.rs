@@ -248,7 +248,7 @@ pub struct TraitDecl {
     pub consts: Vec<(TraitItemName, Ty)>,
     /// Records associated constants that have a default value.
     #[charon::opaque]
-    pub const_defaults: HashMap<TraitItemName, GlobalDeclId>,
+    pub const_defaults: HashMap<TraitItemName, GlobalDeclRef>,
     /// The associated types declared in the trait.
     pub types: Vec<TraitItemName>,
     /// Records associated types that have a default value.
@@ -303,7 +303,7 @@ pub struct TraitImpl {
     /// The trait references for the parent clauses (see [TraitDecl]).
     pub parent_trait_refs: Vector<TraitClauseId, TraitRef>,
     /// The associated constants declared in the trait.
-    pub consts: Vec<(TraitItemName, GlobalDeclId)>,
+    pub consts: Vec<(TraitItemName, GlobalDeclRef)>,
     /// The associated types declared in the trait.
     pub types: Vec<(TraitItemName, Ty)>,
     /// The `Vec` corresponds to the same `Vector` in `TraitDecl`. In the same way, this is
