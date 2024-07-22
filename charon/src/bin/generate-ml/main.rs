@@ -94,9 +94,10 @@ fn contains_id(crate_data: &CrateData, haystack: TypeDeclId) -> HashMap<TypeDecl
         .collect()
 }
 
-struct GenerateCtx {
-    crate_data: CrateData,
+struct GenerateCtx<'a> {
+    crate_data: &'a CrateData,
     contains_raw_span: HashMap<TypeDeclId, bool>,
+    name_to_type: HashMap<String, &'a TypeDecl>,
 }
 
 /// Converts a type to the appropriate `*_of_json` call. In case of generics, this combines several
@@ -327,6 +328,50 @@ fn type_decl_to_json_deserializer(ctx: &GenerateCtx, decl: &TypeDecl) -> String 
     build_function(ctx, decl, &branches)
 }
 
+/// The kind of code generation to perform.
+enum GenerationKind {
+    OfJson,
+}
+
+/// Replace markers in `template` with auto-generated code.
+struct GenerateCodeFor<'a> {
+    kind: GenerationKind,
+    template: PathBuf,
+    target: PathBuf,
+    /// Each list corresponds to a marker. We replace the ith `__REPLACE{i}__` marker with
+    /// generated code for each definition in the ith list.
+    ///
+    /// Eventually we should reorder definitions so the generated ones are all in one block.
+    /// Keeping the order is important while we migrate away from hand-written code.
+    markers: &'a [&'a [&'a str]],
+}
+
+impl GenerateCodeFor<'_> {
+    fn generate(&self, ctx: &GenerateCtx) -> Result<()> {
+        let mut template = fs::read_to_string(&self.template)
+            .with_context(|| format!("Failed to read template file {}", self.template.display()))?;
+        for (i, names) in self.markers.iter().enumerate() {
+            let generated = names
+                .iter()
+                .map(|name| {
+                    ctx.name_to_type
+                        .get(*name)
+                        .expect(&format!("Name not found: `{name}`"))
+                })
+                .map(|ty| match self.kind {
+                    GenerationKind::OfJson => type_decl_to_json_deserializer(&ctx, ty),
+                })
+                .join("\n");
+            let placeholder = format!("(* __REPLACE{i}__ *)");
+            template = template.replace(&placeholder, &generated);
+        }
+
+        fs::write(&self.target, template)
+            .with_context(|| format!("Failed to write generated file {}", self.target.display()))?;
+        Ok(())
+    }
+}
+
 fn main() -> Result<()> {
     let dir = PathBuf::from("src/bin/generate-ml");
     let charon_llbc = dir.join("charon-itself.llbc");
@@ -359,130 +404,111 @@ fn main() -> Result<()> {
         CrateData::deserialize(deserializer)?
     };
 
-    let mut ctx = GenerateCtx {
-        crate_data,
-        contains_raw_span: Default::default(),
-    };
-
     let mut name_to_type: HashMap<String, &TypeDecl> = Default::default();
-    for ty in &ctx.crate_data.types {
-        let long_name = repr_name(&ctx.crate_data, &ty.item_meta.name);
+    for ty in &crate_data.types {
+        let long_name = repr_name(&crate_data, &ty.item_meta.name);
         if long_name.starts_with("charon_lib") {
             let short_name = ty.item_meta.name.name.last().unwrap().as_ident().0.clone();
             name_to_type.insert(short_name, ty);
         }
         name_to_type.insert(long_name, ty);
     }
-    let raw_span = name_to_type.get("RawSpan").unwrap();
-    ctx.contains_raw_span = contains_id(&ctx.crate_data, raw_span.def_id);
+    let contains_raw_span = {
+        let raw_span = name_to_type.get("RawSpan").unwrap();
+        contains_id(&crate_data, raw_span.def_id)
+    };
 
-    // This lists items in the order we want to generate code for them. The ith list of this slice
-    // will be used to generate code into the `__REPLACE{i}__` comment in `GAstOfJson.template.ml`.
-    // Eventually we should reorder definitions so the generated ones are all in one block. eping
-    // the order is important while we migrate from hand-written code.
-    let names: &[&[&str]] = &[
-        &[
-            "Span",
-            "InlineAttr",
-            "Attribute",
-            "AttrInfo",
-            "TypeVar",
-            "RegionVar",
-            "Region",
-            "IntegerTy",
-            "LiteralTy",
-            "ConstGenericVar",
-            "RefKind",
-            "AssumedTy",
-            "TypeId",
+    let ctx = GenerateCtx {
+        crate_data: &crate_data,
+        contains_raw_span,
+        name_to_type,
+    };
+
+    let generate_code_for = vec![GenerateCodeFor {
+        kind: GenerationKind::OfJson,
+        template: dir.join("GAstOfJson.template.ml"),
+        target: dir.join("GAstOfJson.ml"),
+        markers: &[
+            &[
+                "Span",
+                "InlineAttr",
+                "Attribute",
+                "AttrInfo",
+                "TypeVar",
+                "RegionVar",
+                "Region",
+                "IntegerTy",
+                "LiteralTy",
+                "ConstGenericVar",
+                "RefKind",
+                "AssumedTy",
+                "TypeId",
+            ],
+            &[
+                "ConstGeneric",
+                "Ty",
+                "ExistentialPredicate",
+                "TraitRef",
+                "TraitDeclRef",
+                "GlobalDeclRef",
+                "GenericArgs",
+                "TraitRefKind",
+                "Field",
+                "Variant",
+                "TypeDeclKind",
+            ],
+            &["Loc"],
+            &["FileId", "FileName"],
+            &[
+                "TraitClause",
+                "OutlivesPred",
+                "RegionOutlives",
+                "TypeOutlives",
+                "TraitTypeConstraint",
+                "GenericParams",
+                "ImplElem",
+                "PathElem",
+                "Name",
+                "ItemMeta",
+                "TypeDecl",
+                "Var",
+                "FieldProjKind",
+                "ProjectionElem",
+                "Projection",
+                "Place",
+                "BorrowKind",
+                "CastKind",
+                "UnOp",
+                "BinOp",
+                "Literal",
+                "AssumedFunId",
+                "FunId",
+                "FunIdOrTraitMethodRef",
+                "FnPtr",
+                "FnOperand",
+                "ConstantExpr",
+                "RawConstantExpr",
+                "Operand",
+                "AggregateKind",
+                "Rvalue",
+                "ParamsInfo",
+                "ClosureKind",
+                "ClosureInfo",
+                "FunSig",
+                "Call",
+                "GExprBody",
+                "ItemKind",
+            ],
+            &[
+                "TraitDecl",
+                "TraitImpl",
+                "GDeclarationGroup",
+                "DeclarationGroup",
+            ],
         ],
-        &[
-            "ConstGeneric",
-            "Ty",
-            "ExistentialPredicate",
-            "TraitRef",
-            "TraitDeclRef",
-            "GlobalDeclRef",
-            "GenericArgs",
-            "TraitRefKind",
-            "Field",
-            "Variant",
-            "TypeDeclKind",
-        ],
-        &["Loc"],
-        &["FileId", "FileName"],
-        &[
-            "TraitClause",
-            "OutlivesPred",
-            "RegionOutlives",
-            "TypeOutlives",
-            "TraitTypeConstraint",
-            "GenericParams",
-            "ImplElem",
-            "PathElem",
-            "Name",
-            "ItemMeta",
-            "TypeDecl",
-            "Var",
-            "FieldProjKind",
-            "ProjectionElem",
-            "Projection",
-            "Place",
-            "BorrowKind",
-            "CastKind",
-            "UnOp",
-            "BinOp",
-            "Literal",
-            "AssumedFunId",
-            "FunId",
-            "FunIdOrTraitMethodRef",
-            "FnPtr",
-            "FnOperand",
-            "ConstantExpr",
-            "RawConstantExpr",
-            "Operand",
-            "AggregateKind",
-            "Rvalue",
-            "ParamsInfo",
-            "ClosureKind",
-            "ClosureInfo",
-            "FunSig",
-            "Call",
-            "GExprBody",
-            "ItemKind",
-        ],
-        &[
-            "TraitDecl",
-            "TraitImpl",
-            "GDeclarationGroup",
-            "DeclarationGroup",
-        ],
-    ];
-    let template_path = dir.join("GAstOfJson.template.ml");
-    let mut template = fs::read_to_string(&template_path)
-        .with_context(|| format!("Failed to read template file {}", template_path.display()))?;
-    for (i, names) in names.iter().enumerate() {
-        let generated = names
-            .iter()
-            .map(|name| {
-                type_decl_to_json_deserializer(
-                    &ctx,
-                    name_to_type
-                        .get(*name)
-                        .expect(&format!("Name not found: `{name}`")),
-                )
-            })
-            .join("\n");
-        let placeholder = format!("(* __REPLACE{i}__ *)");
-        template = template.replace(&placeholder, &generated);
+    }];
+    for file in generate_code_for {
+        file.generate(&ctx)?;
     }
-
-    let generated_path = dir.join("GAstOfJson.ml");
-    fs::write(&generated_path, template).with_context(|| {
-        format!(
-            "Failed to write generated file {}",
-            generated_path.display()
-        )
-    })?;
     Ok(())
 }
