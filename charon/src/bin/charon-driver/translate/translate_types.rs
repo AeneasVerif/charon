@@ -1,3 +1,5 @@
+use crate::translate::translate_traits::PredicateLocation;
+
 use super::translate_ctx::*;
 use charon_lib::assumed;
 use charon_lib::ast::*;
@@ -787,7 +789,12 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         bt_ctx.translate_generic_params(rust_id)?;
 
         // Translate the predicates
-        bt_ctx.translate_predicates_of(None, rust_id, PredicateOrigin::WhereClauseOnType)?;
+        bt_ctx.translate_predicates_of(
+            None,
+            rust_id,
+            PredicateOrigin::WhereClauseOnType,
+            &PredicateLocation::Base,
+        )?;
 
         let kind = match bt_ctx.translate_type_body(trans_id, rust_id, &item_meta) {
             Ok(kind) => kind,

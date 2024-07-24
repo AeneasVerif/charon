@@ -1,4 +1,5 @@
 use super::translate_ctx::*;
+use super::translate_traits::PredicateLocation;
 use charon_lib::common::*;
 use charon_lib::formatter::{AstFormatter, IntoFormatter};
 use charon_lib::gast::*;
@@ -126,27 +127,10 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         &mut self,
         def_id: DefId,
     ) -> Result<hax::GenericPredicates, Error> {
-        // **IMPORTANT**:
-        // There are two functions which allow to retrieve the predicates of
-        // a definition:
-        // - [TyCtxt::predicates_defined_on]: returns exactly the list of predicates
-        //   that the user has written on the definition:
-        //   FIXME: today's docs say that these includes `outlives` predicates as well
-        // - [TyCtxt::predicates_of]: returns the user defined predicates and also:
-        //   - if called on a trait `Foo`, we get an additional trait clause
-        //     `Self : Foo` (i.e., the trait requires itself), which is not what we want.
-        //   - for the type definitions, it also returns additional type/region outlives
-        //     information, which the user doesn't have to write by hand (but it doesn't
-        //     add those for functions). For instance, below:
-        //     ```
-        //     struct MutMut<'a, 'b, T> {
-        //         x: &'a mut &'b mut T,
-        //     }
-        //     ```
-        //     The rust compiler adds the predicates: `'b: 'a` ('b outlives 'a) and `T: 'b`.
-        // For this reason we:
-        // - retrieve the trait predicates with [TyCtxt::predicates_defined_on]
-        // - retrieve the other predicates with [TyCtxt::predicates_of]
+        // Note: there are two functions which allow to retrieve the predicates of a definition:
+        // - [TyCtxt::predicates_defined_on];
+        // - [TyCtxt::predicates_of]: same as `defined_on`, except on traits where it contains an
+        //      additional `Self: Trait` clause. We don't want that.
         //
         // Also, we reorder the predicates to make sure that the trait clauses come
         // *before* the other clauses. This helps, when translating, with having the trait clauses
@@ -158,94 +142,58 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         //                 ^^^^ must make sure we have U: Foo in the context
         //                      before translating this
         // ```
-        // There's no perfect ordering though, as this shows:
-        // ```
-        // fn f<T: Foo<U::S>, U: Foo<T::S>>(...)
-        //                           ^^^^ we'd need to have T: Foo in the context
-        //                                before translating this
-        //             ^^^^ we'd need to have U: Foo in the context
-        //                  before translating this
-        // ```
         let tcx = self.t_ctx.tcx;
         let param_env = tcx.param_env(def_id);
-        let parent: Option<hax::DefId>;
 
-        let trait_preds = {
-            // Remark: we don't convert the predicates yet because we need to
-            // normalize them before.
-            let predicates = tcx.predicates_defined_on(def_id);
-            parent = predicates.parent.sinto(&self.hax_state);
-            let clauses: Vec<&(rustc_middle::ty::Clause<'_>, rustc_span::Span)> =
-                predicates.predicates.iter().collect();
-            trace!(
-                "TyCtxt::predicates_defined_on({:?}):\n{:?}",
-                def_id,
-                clauses
-            );
-
-            let trait_clauses: Vec<&(rustc_middle::ty::Clause<'_>, rustc_span::Span)> = clauses
-                .into_iter()
-                .filter(|x| {
-                    matches!(
-                        &x.0.kind().skip_binder(),
-                        rustc_middle::ty::ClauseKind::Trait(_)
+        let predicates = tcx.predicates_defined_on(def_id);
+        let parent: Option<hax::DefId> = predicates.parent.sinto(&self.hax_state);
+        let predicates: Vec<(rustc_middle::ty::Predicate<'_>, rustc_span::Span)> = predicates
+            .predicates
+            .iter()
+            .map(|(clause, span)| {
+                if clause.kind().no_bound_vars().is_none() {
+                    // Report an error
+                    error_or_panic!(
+                        self,
+                        *span,
+                        "Predicates with bound regions (i.e., `for<'a> ...`) are not supported yet"
                     )
-                })
-                .collect();
+                }
+                let pred = clause.as_predicate();
+                Ok((pred, *span))
+            })
+            .try_collect()?;
 
-            let trait_preds: Vec<(hax::Predicate, hax::Span)> = trait_clauses
-                .into_iter()
-                .map(|(clause, span)| {
-                    if clause.kind().no_bound_vars().is_none() {
-                        // Report an error
-                        error_or_panic!(self, *span, "Predicates with bound regions (i.e., `for<'a> ...`) are not supported yet")
-                    }
-                    // Normalize the trait clause
-                    let pred = tcx.normalize_erasing_regions(param_env, clause.as_predicate());
-                    Ok((pred.sinto(&self.hax_state), span.sinto(&self.hax_state)))
-                })
-                .try_collect()?;
+        trace!(
+            "TyCtxt::predicates_defined_on({:?}):\n{:?}",
+            def_id,
+            predicates
+        );
 
-            trait_preds
-        };
-
-        let non_trait_preds = {
-            let predicates = tcx.predicates_of(def_id);
-            let predicates: Vec<&(rustc_middle::ty::Clause<'_>, rustc_span::Span)> =
-                predicates.predicates.iter().collect();
-            trace!("TyCtxt::predicates_of({:?}):\n{:?}", def_id, predicates);
-
-            let non_trait_preds: Vec<&(rustc_middle::ty::Clause<'_>, rustc_span::Span)> =
-                predicates
-                    .into_iter()
-                    .filter(|x| {
-                        !(matches!(
-                            &x.0.kind().skip_binder(),
-                            rustc_middle::ty::ClauseKind::Trait(_)
-                        ))
-                    })
-                    .collect();
-            trace!(
-                "TyCtxt::predicates_of({:?}) after filtering trait clauses:\n{:?}",
-                def_id,
-                non_trait_preds
-            );
-            let non_trait_preds: Vec<_> = non_trait_preds
-                .iter()
-                .map(|(pred, span)| {
-                    (
-                        pred.as_predicate().sinto(&self.hax_state),
-                        span.sinto(&self.hax_state),
-                    )
-                })
-                .collect();
-            non_trait_preds
-        };
-
+        // Separate trait clauses from the other predicates.
+        let (trait_preds, non_trait_preds): (Vec<_>, Vec<_>) =
+            predicates.into_iter().partition(|x| {
+                matches!(
+                    &x.0.kind().skip_binder(),
+                    rustc_middle::ty::PredicateKind::Clause(rustc_middle::ty::ClauseKind::Trait(_))
+                )
+            });
         let predicates: Vec<(hax::Predicate, hax::Span)> = trait_preds
             .into_iter()
+            .map(|(pred, span)| {
+                // Would be nice to normalize everything, but we don't want to erase regions so we
+                // only normalize trait clauses.
+                // TODO: this erasing of regions is suspicious.
+                // TODO: do we even need to normalize?
+                // With #127 we'll be able to normalize projections ourselves, maybe then we can
+                // stop normalizing here.
+                let pred = tcx.normalize_erasing_regions(param_env, pred);
+                (pred, span)
+            })
             .chain(non_trait_preds.into_iter())
+            .map(|(pred, span)| (pred.sinto(&self.hax_state), span.sinto(&self.hax_state)))
             .collect();
+
         trace!("Predicates of {:?}\n{:?}", def_id, predicates);
         Ok(hax::GenericPredicates { parent, predicates })
     }
@@ -260,6 +208,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         parent_trait_id: Option<TraitDeclId>,
         def_id: DefId,
         origin: PredicateOrigin,
+        location: &PredicateLocation,
     ) -> Result<(), Error> {
         trace!("def_id: {:?}", def_id);
         let tcx = self.t_ctx.tcx;
@@ -274,15 +223,17 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             Some(parent_id) => {
                 let preds = self.get_predicates_of(parent_id)?;
                 trace!("Predicates of parent ({:?}): {:?}", parent_id, preds);
-
-                if let Some(trait_id) = parent_trait_id {
-                    self.with_parent_trait_clauses(trait_id, |ctx: &mut Self| {
-                        // TODO: distinguish where clauses from supertraits.
-                        ctx.translate_predicates(&preds, PredicateOrigin::WhereClauseOnTrait)
-                    })?;
+                let (origin, location) = if let Some(trait_id) = parent_trait_id {
+                    // TODO: distinguish trait where clauses from trait supertraits. Currently we
+                    // consider them all as parent clauses.
+                    (
+                        PredicateOrigin::WhereClauseOnTrait,
+                        PredicateLocation::Parent(trait_id),
+                    )
                 } else {
-                    self.translate_predicates(&preds, PredicateOrigin::WhereClauseOnImpl)?;
-                }
+                    (PredicateOrigin::WhereClauseOnImpl, PredicateLocation::Base)
+                };
+                self.translate_predicates(&preds, origin, &location)?;
             }
         }
 
@@ -303,7 +254,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         // The predicates of the current definition
         let preds = self.get_predicates_of(def_id)?;
         trace!("Local predicates of {:?}:\n{:?}", def_id, preds);
-        self.translate_predicates(&preds, origin)?;
+        self.translate_predicates(&preds, origin, location)?;
 
         let fmt_ctx = self.into_fmt();
         let clauses = self
@@ -325,18 +276,20 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         &mut self,
         preds: &hax::GenericPredicates,
         origin: PredicateOrigin,
+        location: &PredicateLocation,
     ) -> Result<(), Error> {
-        self.translate_predicates_vec(&preds.predicates, origin)
+        self.translate_predicates_vec(&preds.predicates, origin, location)
     }
 
     pub(crate) fn translate_predicates_vec(
         &mut self,
         preds: &Vec<(hax::Predicate, hax::Span)>,
         origin: PredicateOrigin,
+        location: &PredicateLocation,
     ) -> Result<(), Error> {
         trace!("Predicates:\n{:?}", preds);
         for (pred, span) in preds {
-            match self.translate_predicate(pred, span, origin.clone())? {
+            match self.translate_predicate(pred, span, origin.clone(), location)? {
                 None => (),
                 Some(pred) => match pred {
                     Predicate::Trait(_) => {
@@ -388,16 +341,50 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         hspan: &hax::Span,
         trait_pred: &hax::TraitPredicate,
         origin: PredicateOrigin,
+        location: &PredicateLocation,
     ) -> Result<Option<TraitClauseId>, Error> {
         // FIXME: once `clause` can't be `None`, use `Vector::reserve_slot` to be sure we don't use
         // the same id twice.
-        let (clause_id, instance_id) = self.clause_translation_context.generate_instance_id();
+        let clause_id = match location {
+            PredicateLocation::Base => self.param_trait_clauses.next_id(),
+            PredicateLocation::Parent(..) => self.parent_trait_clauses.next_id(),
+            PredicateLocation::Item(.., item_name) => self
+                .item_trait_clauses
+                .entry(item_name.clone())
+                .or_default()
+                .next_id(),
+        };
+        let instance_id = match location {
+            PredicateLocation::Base => TraitRefKind::Clause(clause_id),
+            PredicateLocation::Parent(trait_decl_id) => TraitRefKind::ParentClause(
+                Box::new(TraitRefKind::SelfId),
+                *trait_decl_id,
+                clause_id,
+            ),
+            PredicateLocation::Item(trait_decl_id, item_name) => TraitRefKind::ItemClause(
+                Box::new(TraitRefKind::SelfId),
+                *trait_decl_id,
+                item_name.clone(),
+                clause_id,
+            ),
+        };
         let clause = self.translate_trait_clause_aux(hspan, trait_pred, instance_id, origin)?;
         if let Some(clause) = clause {
             let local_clause = clause.to_trait_clause_with_id(clause_id);
-            self.clause_translation_context
-                .as_mut_clauses()
-                .push(local_clause);
+            match location {
+                PredicateLocation::Base => {
+                    self.param_trait_clauses.push(local_clause);
+                }
+                PredicateLocation::Parent(..) => {
+                    self.parent_trait_clauses.push(local_clause);
+                }
+                PredicateLocation::Item(.., item_name) => {
+                    self.item_trait_clauses
+                        .get_mut(item_name)
+                        .unwrap()
+                        .push(local_clause);
+                }
+            }
             self.trait_clauses
                 .entry(clause.trait_.trait_id)
                 .or_default()
@@ -474,6 +461,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         pred: &hax::Predicate,
         hspan: &hax::Span,
         origin: PredicateOrigin,
+        location: &PredicateLocation,
     ) -> Result<Option<Predicate>, Error> {
         trace!("{:?}", pred);
         // Predicates are always used in signatures/type definitions, etc.
@@ -490,7 +478,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             PredicateKind::Clause(kind) => {
                 match kind {
                     ClauseKind::Trait(trait_pred) => Ok(self
-                        .translate_trait_clause(hspan, trait_pred, origin)?
+                        .translate_trait_clause(hspan, trait_pred, origin, location)?
                         .map(Predicate::Trait)),
                     ClauseKind::RegionOutlives(p) => {
                         let r0 = self.translate_region(span, erase_regions, &p.lhs)?;
