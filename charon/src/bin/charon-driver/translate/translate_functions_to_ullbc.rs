@@ -1589,7 +1589,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                tcx.generics_of(def_id), signature.bound_vars, signature);
 
         // Add the *early-bound* parameters.
-        self.translate_generic_params_from_hax(span, &substs)?;
+        self.translate_generic_args_as_params(span, &substs)?;
 
         //
         // Add the *late-bound* parameters (bound in the signature, can only be lifetimes)

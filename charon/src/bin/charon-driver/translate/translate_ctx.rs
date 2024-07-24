@@ -1028,7 +1028,8 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     ///
     /// Important: we must push *all* the free regions (which are early-bound
     /// regions) before pushing any (late-)bound region.
-    pub(crate) fn push_free_region(&mut self, r: hax::Region, name: Option<String>) -> RegionId {
+    pub(crate) fn push_free_region(&mut self, r: hax::Region) -> RegionId {
+        let name = super::translate_types::translate_region_name(&r);
         // Check that there are no late-bound regions
         assert!(self.bound_region_vars.is_empty());
         let rid = self.region_vars[0].push_with(|index| RegionVar { index, name });
@@ -1116,6 +1117,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
 
     pub(crate) fn get_generics(&self) -> GenericParams {
         // Sanity checks
+        self.check_generics();
         assert!(self.region_vars.len() == 1);
         assert!(self
             .param_trait_clauses

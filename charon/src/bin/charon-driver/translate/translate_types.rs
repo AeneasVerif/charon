@@ -719,53 +719,94 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     pub(crate) fn translate_generic_params(&mut self, def_id: DefId) -> Result<(), Error> {
         let tcx = self.t_ctx.tcx;
         let span = tcx.def_span(def_id);
-
-        // We could use: TyCtxt::generics_of(DefId)
-        // But using the identity substitution is simpler. For instance, we can
-        // easily retrieve the type for the const parameters.
-        let substs =
-            rustc_middle::ty::GenericArgs::identity_for_item(tcx, def_id).sinto(&self.hax_state);
-
-        self.translate_generic_params_from_hax(span, &substs)
+        let defs = tcx.generics_of(def_id);
+        if let Some(def_id) = defs.parent {
+            let parent_defs = tcx.generics_of(def_id);
+            assert!(parent_defs.parent.is_none());
+            for param in parent_defs.sinto(&self.hax_state).params {
+                self.push_generic_param(span, param)?;
+            }
+        }
+        for param in defs.sinto(&self.hax_state).params {
+            self.push_generic_param(span, param)?;
+        }
+        Ok(())
     }
 
-    pub(crate) fn translate_generic_params_from_hax(
+    pub(crate) fn push_generic_param(
+        &mut self,
+        span: rustc_span::Span,
+        param: hax::GenericParamDef,
+    ) -> Result<(), Error> {
+        match param.kind {
+            hax::GenericParamDefKind::Lifetime => {
+                let region = hax::Region {
+                    kind: hax::RegionKind::ReEarlyParam(hax::EarlyParamRegion {
+                        index: param.index,
+                        name: param.name,
+                    }),
+                };
+                let _ = self.push_free_region(region);
+            }
+            hax::GenericParamDefKind::Type { .. } => {
+                let _ = self.push_type_var(param.index, param.name);
+            }
+            hax::GenericParamDefKind::Const { ty, .. } => {
+                // The type should be primitive, meaning it shouldn't contain variables,
+                // non-primitive adts, etc. As a result, we can use an empty context.
+                let ty = self.translate_ty(span, false, &ty)?;
+                let ty = ty.to_literal();
+                self.push_const_generic_var(param.index, ty, param.name);
+            }
+        }
+
+        Ok(())
+    }
+
+    pub(crate) fn translate_generic_args_as_params(
         &mut self,
         span: rustc_span::Span,
         substs: &Vec<hax::GenericArg>,
     ) -> Result<(), Error> {
-        let erase_regions = false;
         for p in substs {
-            use hax::GenericArg::*;
-            match p {
-                Type(p) => {
-                    // The type should be a Param
-                    if let hax::Ty::Param(p) = p {
-                        let _ = self.push_type_var(p.index, p.name.clone());
-                    } else {
-                        unreachable!("unexpected");
-                    }
+            self.translate_generic_arg_as_param(span, p)?;
+        }
+        Ok(())
+    }
+
+    /// This takes a `GenericArg` in lieu of a `GenericParam` because it's simpler.
+    /// TODO: don't do that.
+    pub(crate) fn translate_generic_arg_as_param(
+        &mut self,
+        span: rustc_span::Span,
+        subst: &hax::GenericArg,
+    ) -> Result<(), Error> {
+        let erase_regions = false;
+        use hax::GenericArg::*;
+        match subst {
+            Type(p) => {
+                // The type should be a Param
+                if let hax::Ty::Param(p) = p {
+                    let _ = self.push_type_var(p.index, p.name.clone());
+                } else {
+                    unreachable!("unexpected");
                 }
-                Lifetime(region) => {
-                    let name = translate_region_name(region);
-                    let _ = self.push_free_region(region.clone(), name);
-                }
-                Const(c) => {
-                    // The type should be primitive, meaning it shouldn't contain variables,
-                    // non-primitive adts, etc. As a result, we can use an empty context.
-                    let ty = self.translate_ty(span, erase_regions, &c.ty)?;
-                    let ty = ty.to_literal();
-                    if let hax::ConstantExprKind::ConstRef { id: cp } = &*c.contents {
-                        self.push_const_generic_var(cp.index, ty, cp.name.clone());
-                    } else {
-                        unreachable!();
-                    }
+            }
+            Lifetime(region) => {
+                let _ = self.push_free_region(region.clone());
+            }
+            Const(c) => {
+                // The type should be primitive, meaning it shouldn't contain variables,
+                // non-primitive adts, etc. As a result, we can use an empty context.
+                let ty = self.translate_ty(span, erase_regions, &c.ty)?;
+                let ty = ty.to_literal();
+                if let hax::ConstantExprKind::ConstRef { id: cp } = &*c.contents {
+                    self.push_const_generic_var(cp.index, ty, cp.name.clone());
+                } else {
+                    unreachable!();
                 }
             }
         }
-
-        // Sanity check
-        self.check_generics();
 
         Ok(())
     }
