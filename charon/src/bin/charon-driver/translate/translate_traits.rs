@@ -1,5 +1,4 @@
 use super::translate_ctx::*;
-use charon_lib::ast::krate::*;
 use charon_lib::common::*;
 use charon_lib::formatter::IntoFormatter;
 use charon_lib::gast::*;
@@ -142,14 +141,8 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     /// We call this when translating trait impls and trait impl items.
     pub(crate) fn translate_trait_impl_self_trait_clause(
         &mut self,
-        impl_id: TraitImplId,
+        def_id: DefId,
     ) -> Result<(), Error> {
-        let def_id = *self
-            .t_ctx
-            .translated
-            .reverse_id_map
-            .get(&AnyTransId::TraitImpl(impl_id))
-            .unwrap();
         trace!("id: {:?}", def_id);
 
         // Retrieve the trait ref representing "self"
@@ -407,7 +400,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         )?;
 
         // Add the self trait clause
-        bt_ctx.translate_trait_impl_self_trait_clause(def_id)?;
+        bt_ctx.translate_trait_impl_self_trait_clause(rust_id)?;
 
         // Retrieve the information about the implemented trait.
         let (

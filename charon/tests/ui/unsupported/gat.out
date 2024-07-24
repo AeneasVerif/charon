@@ -4,7 +4,7 @@ error[E9999]: Cannot handle error `FulfillmentError` selecting `Binder { value: 
   = note: ⚠️ This is a bug in Hax's frontend.
           Please report this error to https://github.com/hacspec/hax/issues with some context (e.g. the current crate)!
 
-error: Thread panicked when extracting item {rust_id}.
+error: Thread panicked when extracting item `test_crate::ArraySize`.
  --> tests/ui/unsupported/gat.rs:5:1
   |
 5 | trait ArraySize {

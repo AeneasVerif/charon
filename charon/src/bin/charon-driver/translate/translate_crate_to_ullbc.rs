@@ -267,7 +267,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
                         register_error_or_panic!(
                             ctx,
                             span,
-                            "Thread panicked when extracting item {rust_id}."
+                            format!("Thread panicked when extracting item `{rust_id:?}`.")
                         );
                         Err(())
                     }

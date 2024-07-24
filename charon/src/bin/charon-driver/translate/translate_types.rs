@@ -708,12 +708,19 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         if let Some(def_id) = defs.parent {
             let parent_defs = tcx.generics_of(def_id);
             assert!(parent_defs.parent.is_none());
-            for param in parent_defs.sinto(&self.hax_state).params {
-                self.push_generic_param(span, &param)?;
-            }
+            self.push_generic_params(span, &parent_defs.sinto(&self.hax_state))?;
         }
-        for param in defs.sinto(&self.hax_state).params {
-            self.push_generic_param(span, &param)?;
+        self.push_generic_params(span, &defs.sinto(&self.hax_state))?;
+        Ok(())
+    }
+
+    pub(crate) fn push_generic_params(
+        &mut self,
+        span: rustc_span::Span,
+        generics: &hax::TyGenerics,
+    ) -> Result<(), Error> {
+        for param in &generics.params {
+            self.push_generic_param(span, param)?;
         }
         Ok(())
     }
@@ -748,7 +755,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         Ok(())
     }
 
-    pub(crate) fn translate_generic_args_as_params(
+    pub(crate) fn push_generic_args_as_params(
         &mut self,
         span: rustc_span::Span,
         substs: &Vec<hax::GenericArg>,
@@ -838,9 +845,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
                 predicates,
                 ..
             } => {
-                for param in &generics.params {
-                    bt_ctx.push_generic_param(span, param)?;
-                }
+                bt_ctx.push_generic_params(span, generics)?;
                 bt_ctx.translate_predicates(
                     &predicates,
                     PredicateOrigin::WhereClauseOnType,
