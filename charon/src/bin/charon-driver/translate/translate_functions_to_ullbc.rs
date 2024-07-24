@@ -109,113 +109,71 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
     ) -> Result<ItemKind, Error> {
         trace!("rust_id: {:?}", rust_id);
         let tcx = self.tcx;
-        if let Some(assoc) = tcx.opt_associated_item(rust_id) {
-            let kind = match assoc.container {
-                ty::AssocItemContainer::ImplContainer => {
-                    // This item is defined in an impl block.
-                    // It can be a regular item in an impl block or a trait
-                    // item implementation.
-                    //
-                    // Ex.: (with methods)
-                    // ====
+        let assoc_item = tcx.opt_associated_item(rust_id).sinto(&self.hax_state);
+        Ok(match assoc_item {
+            None => ItemKind::Regular,
+            Some(assoc) => {
+                match &assoc.container {
+                    // E.g.:
                     // ```
                     // impl<T> List<T> {
-                    //   fn new() -> Self { ... } <- implementation
+                    //   fn new() -> Self { ... } <- inherent method
                     // }
-                    //
+                    // ```
+                    hax::AssocItemContainer::InherentImplContainer { .. } => ItemKind::Regular,
+                    // E.g.:
+                    // ```
                     // impl Foo for Bar {
                     //   fn baz(...) { ... } // <- implementation of a trait method
                     // }
                     // ```
+                    hax::AssocItemContainer::TraitImplContainer {
+                        impl_id,
+                        implemented_trait,
+                        implemented_trait_item,
+                        overrides_default,
+                    } => {
+                        // The trait id should be Some(...): trait markers (that we may eliminate)
+                        // don't have methods.
+                        let trait_id = self
+                            .register_trait_decl_id(src, implemented_trait.into())?
+                            .unwrap();
 
-                    // Check if there is a trait item (if yes, it is a trait item
-                    // implementation, if no it is a regular item).
-                    // Remark: this trait item is the id of the item associated
-                    // in the trait. For instance:
-                    // ```
-                    // trait Foo {
-                    //   fn bar(); // Id: Foo_bar
-                    // }
-                    // ```
-                    //
-                    // impl Foo for List {
-                    //   fn bar() { ... } // trait_item_def_id: Some(Foo_bar)
-                    // }
-                    match assoc.trait_item_def_id {
-                        None => ItemKind::Regular,
-                        Some(trait_item_id) => {
-                            let trait_id = tcx.trait_of_item(trait_item_id).unwrap();
-                            let trait_id = self.register_trait_decl_id(src, trait_id)?;
-                            // The trait id should be Some(...): trait markers (that we
-                            // may eliminate) don't have methods.
-                            let trait_id = trait_id.unwrap();
+                        let impl_id = self.register_trait_impl_id(src, impl_id.into())?.unwrap();
 
-                            // Retrieve the id of the impl block
-                            let impl_id = self
-                                .register_trait_impl_id(
-                                    src,
-                                    tcx.predicates_of(rust_id).parent.unwrap(),
-                                )?
-                                .unwrap();
+                        let item_name =
+                            self.translate_trait_item_name(implemented_trait_item.into())?;
 
-                            let item_name = self.translate_trait_item_name(trait_item_id)?;
-
-                            // Check if the current function implements a provided method.
-                            // We do so by retrieving the def id of the method which is
-                            // implemented, and checking its kind.
-                            let provided = match self.get_item_kind(src, trait_item_id)? {
-                                ItemKind::TraitItemDecl(..) => false,
-                                ItemKind::TraitItemProvided(..) => true,
-                                ItemKind::Regular | ItemKind::TraitItemImpl { .. } => {
-                                    unreachable!()
-                                }
-                            };
-
-                            ItemKind::TraitItemImpl {
-                                impl_id,
-                                trait_id,
-                                item_name,
-                                provided,
-                            }
+                        ItemKind::TraitItemImpl {
+                            impl_id,
+                            trait_id,
+                            item_name,
+                            provided: *overrides_default,
                         }
                     }
-                }
-                ty::AssocItemContainer::TraitContainer => {
                     // This method is the *declaration* of a trait item
-                    // Ex.:
-                    // ====
+                    // E.g.:
                     // ```
                     // trait Foo {
                     //   fn baz(...); // <- declaration of a trait method
                     // }
                     // ```
+                    hax::AssocItemContainer::TraitContainer { trait_id } => {
+                        // The trait id should be Some(...): trait markers (that we may eliminate)
+                        // don't have associated items.
+                        let trait_id = self.register_trait_decl_id(src, trait_id.into())?.unwrap();
+                        let item_name = self.translate_trait_item_name(rust_id)?;
 
-                    // Yet, this could be a default item implementation, in which
-                    // case there is a body: we need to check that.
-
-                    // In order to check if this is a provided item, we check
-                    // the defaultness (i.e., whether the item has a default value):
-                    let is_provided = tcx.defaultness(rust_id).has_value();
-
-                    // Compute additional information
-                    let item_name = self.translate_trait_item_name(rust_id)?;
-                    let trait_id = tcx.trait_of_item(rust_id).unwrap();
-                    let trait_id = self.register_trait_decl_id(src, trait_id)?;
-                    // The trait id should be Some(...): trait markers (that we
-                    // may eliminate) don't have associated items.
-                    let trait_id = trait_id.unwrap();
-
-                    if is_provided {
-                        ItemKind::TraitItemProvided(trait_id, item_name)
-                    } else {
-                        ItemKind::TraitItemDecl(trait_id, item_name)
+                        // Check whether this item has a provided value.
+                        if assoc.has_value {
+                            ItemKind::TraitItemProvided(trait_id, item_name)
+                        } else {
+                            ItemKind::TraitItemDecl(trait_id, item_name)
+                        }
                     }
                 }
-            };
-            Ok(kind)
-        } else {
-            Ok(ItemKind::Regular)
-        }
+            }
+        })
     }
 }
 
