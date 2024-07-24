@@ -126,27 +126,10 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         &mut self,
         def_id: DefId,
     ) -> Result<hax::GenericPredicates, Error> {
-        // **IMPORTANT**:
-        // There are two functions which allow to retrieve the predicates of
-        // a definition:
-        // - [TyCtxt::predicates_defined_on]: returns exactly the list of predicates
-        //   that the user has written on the definition:
-        //   FIXME: today's docs say that these includes `outlives` predicates as well
-        // - [TyCtxt::predicates_of]: returns the user defined predicates and also:
-        //   - if called on a trait `Foo`, we get an additional trait clause
-        //     `Self : Foo` (i.e., the trait requires itself), which is not what we want.
-        //   - for the type definitions, it also returns additional type/region outlives
-        //     information, which the user doesn't have to write by hand (but it doesn't
-        //     add those for functions). For instance, below:
-        //     ```
-        //     struct MutMut<'a, 'b, T> {
-        //         x: &'a mut &'b mut T,
-        //     }
-        //     ```
-        //     The rust compiler adds the predicates: `'b: 'a` ('b outlives 'a) and `T: 'b`.
-        // For this reason we:
-        // - retrieve the trait predicates with [TyCtxt::predicates_defined_on]
-        // - retrieve the other predicates with [TyCtxt::predicates_of]
+        // Note: there are two functions which allow to retrieve the predicates of a definition:
+        // - [TyCtxt::predicates_defined_on];
+        // - [TyCtxt::predicates_of]: same as `defined_on`, except on traits where it contains an
+        //      additional `Self: Trait` clause. We don't want that.
         //
         // Also, we reorder the predicates to make sure that the trait clauses come
         // *before* the other clauses. This helps, when translating, with having the trait clauses
@@ -158,94 +141,58 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         //                 ^^^^ must make sure we have U: Foo in the context
         //                      before translating this
         // ```
-        // There's no perfect ordering though, as this shows:
-        // ```
-        // fn f<T: Foo<U::S>, U: Foo<T::S>>(...)
-        //                           ^^^^ we'd need to have T: Foo in the context
-        //                                before translating this
-        //             ^^^^ we'd need to have U: Foo in the context
-        //                  before translating this
-        // ```
         let tcx = self.t_ctx.tcx;
         let param_env = tcx.param_env(def_id);
-        let parent: Option<hax::DefId>;
 
-        let trait_preds = {
-            // Remark: we don't convert the predicates yet because we need to
-            // normalize them before.
-            let predicates = tcx.predicates_defined_on(def_id);
-            parent = predicates.parent.sinto(&self.hax_state);
-            let clauses: Vec<&(rustc_middle::ty::Clause<'_>, rustc_span::Span)> =
-                predicates.predicates.iter().collect();
-            trace!(
-                "TyCtxt::predicates_defined_on({:?}):\n{:?}",
-                def_id,
-                clauses
-            );
-
-            let trait_clauses: Vec<&(rustc_middle::ty::Clause<'_>, rustc_span::Span)> = clauses
-                .into_iter()
-                .filter(|x| {
-                    matches!(
-                        &x.0.kind().skip_binder(),
-                        rustc_middle::ty::ClauseKind::Trait(_)
+        let predicates = tcx.predicates_defined_on(def_id);
+        let parent: Option<hax::DefId> = predicates.parent.sinto(&self.hax_state);
+        let predicates: Vec<(rustc_middle::ty::Predicate<'_>, rustc_span::Span)> = predicates
+            .predicates
+            .iter()
+            .map(|(clause, span)| {
+                if clause.kind().no_bound_vars().is_none() {
+                    // Report an error
+                    error_or_panic!(
+                        self,
+                        *span,
+                        "Predicates with bound regions (i.e., `for<'a> ...`) are not supported yet"
                     )
-                })
-                .collect();
+                }
+                let pred = clause.as_predicate();
+                Ok((pred, *span))
+            })
+            .try_collect()?;
 
-            let trait_preds: Vec<(hax::Predicate, hax::Span)> = trait_clauses
-                .into_iter()
-                .map(|(clause, span)| {
-                    if clause.kind().no_bound_vars().is_none() {
-                        // Report an error
-                        error_or_panic!(self, *span, "Predicates with bound regions (i.e., `for<'a> ...`) are not supported yet")
-                    }
-                    // Normalize the trait clause
-                    let pred = tcx.normalize_erasing_regions(param_env, clause.as_predicate());
-                    Ok((pred.sinto(&self.hax_state), span.sinto(&self.hax_state)))
-                })
-                .try_collect()?;
+        trace!(
+            "TyCtxt::predicates_defined_on({:?}):\n{:?}",
+            def_id,
+            predicates
+        );
 
-            trait_preds
-        };
-
-        let non_trait_preds = {
-            let predicates = tcx.predicates_of(def_id);
-            let predicates: Vec<&(rustc_middle::ty::Clause<'_>, rustc_span::Span)> =
-                predicates.predicates.iter().collect();
-            trace!("TyCtxt::predicates_of({:?}):\n{:?}", def_id, predicates);
-
-            let non_trait_preds: Vec<&(rustc_middle::ty::Clause<'_>, rustc_span::Span)> =
-                predicates
-                    .into_iter()
-                    .filter(|x| {
-                        !(matches!(
-                            &x.0.kind().skip_binder(),
-                            rustc_middle::ty::ClauseKind::Trait(_)
-                        ))
-                    })
-                    .collect();
-            trace!(
-                "TyCtxt::predicates_of({:?}) after filtering trait clauses:\n{:?}",
-                def_id,
-                non_trait_preds
-            );
-            let non_trait_preds: Vec<_> = non_trait_preds
-                .iter()
-                .map(|(pred, span)| {
-                    (
-                        pred.as_predicate().sinto(&self.hax_state),
-                        span.sinto(&self.hax_state),
-                    )
-                })
-                .collect();
-            non_trait_preds
-        };
-
+        // Separate trait clauses from the other predicates.
+        let (trait_preds, non_trait_preds): (Vec<_>, Vec<_>) =
+            predicates.into_iter().partition(|x| {
+                matches!(
+                    &x.0.kind().skip_binder(),
+                    rustc_middle::ty::PredicateKind::Clause(rustc_middle::ty::ClauseKind::Trait(_))
+                )
+            });
         let predicates: Vec<(hax::Predicate, hax::Span)> = trait_preds
             .into_iter()
+            .map(|(pred, span)| {
+                // Would be nice to normalize everything, but we don't want to erase regions so we
+                // only normalize trait clauses.
+                // TODO: this erasing of regions is suspicious.
+                // TODO: do we even need to normalize?
+                // With #127 we'll be able to normalize projections ourselves, maybe then we can
+                // stop normalizing here.
+                let pred = tcx.normalize_erasing_regions(param_env, pred);
+                (pred, span)
+            })
             .chain(non_trait_preds.into_iter())
+            .map(|(pred, span)| (pred.sinto(&self.hax_state), span.sinto(&self.hax_state)))
             .collect();
+
         trace!("Predicates of {:?}\n{:?}", def_id, predicates);
         Ok(hax::GenericPredicates { parent, predicates })
     }
