@@ -159,9 +159,6 @@ pub(crate) struct BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     /// The map from rust const generic variables to translate const generic
     /// variable indices.
     pub const_generic_vars_map: MapGenerator<u32, ConstGenericVarId>,
-    /// A context for clause translation. It remembers what kind of clauses we're currently
-    /// translating.
-    pub clause_translation_context: PredicateLocation,
     /// Accumulated clauses to be put into the item's `GenericParams`.
     pub param_trait_clauses: Vector<TraitClauseId, TraitClause>,
     /// (For traits only) accumulated implied trait clauses.
@@ -357,6 +354,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
                                 None,
                                 cur_id,
                                 PredicateOrigin::WhereClauseOnImpl,
+                                &PredicateLocation::Base,
                             )?;
                             let erase_regions = false;
                             // Inherent impl ("regular" impl)
@@ -936,7 +934,6 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             vars_map: MapGenerator::new(),
             const_generic_vars: Vector::new(),
             const_generic_vars_map: MapGenerator::new(),
-            clause_translation_context: PredicateLocation::Base,
             param_trait_clauses: Default::default(),
             parent_trait_clauses: Default::default(),
             item_trait_clauses: Default::default(),
@@ -1132,33 +1129,6 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             types_outlive: self.types_outlive.clone(),
             trait_type_constraints: self.trait_type_constraints.clone(),
         }
-    }
-
-    /// We use this when exploring the clauses of a predicate, to introduce
-    /// its parent clauses, etc. in the context. We temporarily replace the
-    /// trait instance id generator so that the continuation registers the
-    ///
-    pub(crate) fn with_clause_translation_context<F, T>(
-        &mut self,
-        new_ctx: PredicateLocation,
-        f: F,
-    ) -> T
-    where
-        F: FnOnce(&mut Self) -> T,
-    {
-        use std::mem::replace;
-
-        // Save the trait instance id generator
-        let old_ctx = replace(&mut self.clause_translation_context, new_ctx);
-
-        // Apply the continuation
-        let out = f(self);
-
-        // Restore
-        let _ = replace(&mut self.clause_translation_context, old_ctx);
-
-        // Return
-        out
     }
 
     pub(crate) fn make_dep_source(&self, span: rustc_span::Span) -> Option<DepSource> {

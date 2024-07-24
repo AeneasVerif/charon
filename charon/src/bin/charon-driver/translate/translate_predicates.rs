@@ -208,6 +208,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         parent_trait_id: Option<TraitDeclId>,
         def_id: DefId,
         origin: PredicateOrigin,
+        location: &PredicateLocation,
     ) -> Result<(), Error> {
         trace!("def_id: {:?}", def_id);
         let tcx = self.t_ctx.tcx;
@@ -222,15 +223,17 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             Some(parent_id) => {
                 let preds = self.get_predicates_of(parent_id)?;
                 trace!("Predicates of parent ({:?}): {:?}", parent_id, preds);
-
-                if let Some(trait_id) = parent_trait_id {
-                    self.with_parent_trait_clauses(trait_id, |ctx: &mut Self| {
-                        // TODO: distinguish where clauses from supertraits.
-                        ctx.translate_predicates(&preds, PredicateOrigin::WhereClauseOnTrait)
-                    })?;
+                let (origin, location) = if let Some(trait_id) = parent_trait_id {
+                    // TODO: distinguish trait where clauses from trait supertraits. Currently we
+                    // consider them all as parent clauses.
+                    (
+                        PredicateOrigin::WhereClauseOnTrait,
+                        PredicateLocation::Parent(trait_id),
+                    )
                 } else {
-                    self.translate_predicates(&preds, PredicateOrigin::WhereClauseOnImpl)?;
-                }
+                    (PredicateOrigin::WhereClauseOnImpl, PredicateLocation::Base)
+                };
+                self.translate_predicates(&preds, origin, &location)?;
             }
         }
 
@@ -251,7 +254,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         // The predicates of the current definition
         let preds = self.get_predicates_of(def_id)?;
         trace!("Local predicates of {:?}:\n{:?}", def_id, preds);
-        self.translate_predicates(&preds, origin)?;
+        self.translate_predicates(&preds, origin, location)?;
 
         let fmt_ctx = self.into_fmt();
         let clauses = self
@@ -273,18 +276,20 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         &mut self,
         preds: &hax::GenericPredicates,
         origin: PredicateOrigin,
+        location: &PredicateLocation,
     ) -> Result<(), Error> {
-        self.translate_predicates_vec(&preds.predicates, origin)
+        self.translate_predicates_vec(&preds.predicates, origin, location)
     }
 
     pub(crate) fn translate_predicates_vec(
         &mut self,
         preds: &Vec<(hax::Predicate, hax::Span)>,
         origin: PredicateOrigin,
+        location: &PredicateLocation,
     ) -> Result<(), Error> {
         trace!("Predicates:\n{:?}", preds);
         for (pred, span) in preds {
-            match self.translate_predicate(pred, span, origin.clone())? {
+            match self.translate_predicate(pred, span, origin.clone(), location)? {
                 None => (),
                 Some(pred) => match pred {
                     Predicate::Trait(_) => {
@@ -336,10 +341,11 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         hspan: &hax::Span,
         trait_pred: &hax::TraitPredicate,
         origin: PredicateOrigin,
+        location: &PredicateLocation,
     ) -> Result<Option<TraitClauseId>, Error> {
         // FIXME: once `clause` can't be `None`, use `Vector::reserve_slot` to be sure we don't use
         // the same id twice.
-        let clause_id = match &self.clause_translation_context {
+        let clause_id = match location {
             PredicateLocation::Base => self.param_trait_clauses.next_id(),
             PredicateLocation::Parent(..) => self.parent_trait_clauses.next_id(),
             PredicateLocation::Item(.., item_name) => self
@@ -348,7 +354,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 .or_default()
                 .next_id(),
         };
-        let instance_id = match &self.clause_translation_context {
+        let instance_id = match location {
             PredicateLocation::Base => TraitRefKind::Clause(clause_id),
             PredicateLocation::Parent(trait_decl_id) => TraitRefKind::ParentClause(
                 Box::new(TraitRefKind::SelfId),
@@ -365,7 +371,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         let clause = self.translate_trait_clause_aux(hspan, trait_pred, instance_id, origin)?;
         if let Some(clause) = clause {
             let local_clause = clause.to_trait_clause_with_id(clause_id);
-            match &self.clause_translation_context {
+            match location {
                 PredicateLocation::Base => {
                     self.param_trait_clauses.push(local_clause);
                 }
@@ -455,6 +461,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         pred: &hax::Predicate,
         hspan: &hax::Span,
         origin: PredicateOrigin,
+        location: &PredicateLocation,
     ) -> Result<Option<Predicate>, Error> {
         trace!("{:?}", pred);
         // Predicates are always used in signatures/type definitions, etc.
@@ -471,7 +478,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             PredicateKind::Clause(kind) => {
                 match kind {
                     ClauseKind::Trait(trait_pred) => Ok(self
-                        .translate_trait_clause(hspan, trait_pred, origin)?
+                        .translate_trait_clause(hspan, trait_pred, origin, location)?
                         .map(Predicate::Trait)),
                     ClauseKind::RegionOutlives(p) => {
                         let r0 = self.translate_region(span, erase_regions, &p.lhs)?;
