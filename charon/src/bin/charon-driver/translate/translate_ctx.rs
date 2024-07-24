@@ -1,6 +1,6 @@
 //! The translation contexts.
 use super::translate_predicates::NonLocalTraitClause;
-use super::translate_traits::ClauseTransCtx;
+use super::translate_traits::PredicateLocation;
 use charon_lib::ast::*;
 use charon_lib::common::*;
 use charon_lib::formatter::{FmtCtx, IntoFormatter};
@@ -18,6 +18,7 @@ use rustc_hir::Node as HirNode;
 use rustc_hir::{Item, ItemKind};
 use rustc_middle::ty::TyCtxt;
 use std::cmp::{Ord, PartialOrd};
+use std::collections::HashMap;
 use std::collections::{BTreeMap, VecDeque};
 use std::fmt;
 use std::path::Component;
@@ -158,8 +159,15 @@ pub(crate) struct BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     /// The map from rust const generic variables to translate const generic
     /// variable indices.
     pub const_generic_vars_map: MapGenerator<u32, ConstGenericVarId>,
-    /// A context for clause translation. It accumulates translated clauses.
-    pub clause_translation_context: ClauseTransCtx,
+    /// A context for clause translation. It remembers what kind of clauses we're currently
+    /// translating.
+    pub clause_translation_context: PredicateLocation,
+    /// Accumulated clauses to be put into the item's `GenericParams`.
+    pub param_trait_clauses: Vector<TraitClauseId, TraitClause>,
+    /// (For traits only) accumulated implied trait clauses.
+    pub parent_trait_clauses: Vector<TraitClauseId, TraitClause>,
+    /// (For traits only) accumulated trait clauses on associated types.
+    pub item_trait_clauses: HashMap<TraitItemName, Vector<TraitClauseId, TraitClause>>,
     /// All the trait clauses accessible from the current environment. When `hax` gives us a
     /// `ImplExprAtom::LocalBound`, we use this to recover the specific trait reference it
     /// corresponds to.
@@ -928,7 +936,10 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             vars_map: MapGenerator::new(),
             const_generic_vars: Vector::new(),
             const_generic_vars_map: MapGenerator::new(),
-            clause_translation_context: Default::default(),
+            clause_translation_context: PredicateLocation::Base,
+            param_trait_clauses: Default::default(),
+            parent_trait_clauses: Default::default(),
+            item_trait_clauses: Default::default(),
             trait_clauses: Default::default(),
             regions_outlive: Vec::new(),
             types_outlive: Vec::new(),
@@ -1105,31 +1116,22 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     }
 
     pub(crate) fn get_generics(&self) -> GenericParams {
+        // Sanity checks
         assert!(self.region_vars.len() == 1);
+        assert!(self
+            .param_trait_clauses
+            .iter()
+            .enumerate()
+            .all(|(i, c)| c.clause_id.index() == i));
         GenericParams {
             regions: self.region_vars[0].clone(),
             types: self.type_vars.clone(),
             const_generics: self.const_generic_vars.clone(),
-            trait_clauses: self.get_local_trait_clauses(),
+            trait_clauses: self.param_trait_clauses.clone(),
             regions_outlive: self.regions_outlive.clone(),
             types_outlive: self.types_outlive.clone(),
             trait_type_constraints: self.trait_type_constraints.clone(),
         }
-    }
-
-    /// Retrieve the *local* trait clauses available in the current environment
-    /// (we filter the parent of those clauses, etc.).
-    pub(crate) fn get_local_trait_clauses(&self) -> Vector<TraitClauseId, TraitClause> {
-        let ClauseTransCtx::Base(clauses) = &self.clause_translation_context else {
-            panic!()
-        };
-        // Sanity check
-        assert!(clauses
-            .iter()
-            .enumerate()
-            .all(|(i, c)| c.clause_id.index() == i));
-        // Return
-        clauses.clone()
     }
 
     /// We use this when exploring the clauses of a predicate, to introduce
@@ -1138,9 +1140,9 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     ///
     pub(crate) fn with_clause_translation_context<F, T>(
         &mut self,
-        new_ctx: ClauseTransCtx,
+        new_ctx: PredicateLocation,
         f: F,
-    ) -> (T, ClauseTransCtx)
+    ) -> T
     where
         F: FnOnce(&mut Self) -> T,
     {
@@ -1153,10 +1155,10 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         let out = f(self);
 
         // Restore
-        let new_ctx = replace(&mut self.clause_translation_context, old_ctx);
+        let _ = replace(&mut self.clause_translation_context, old_ctx);
 
         // Return
-        (out, new_ctx)
+        out
     }
 
     pub(crate) fn make_dep_source(&self, span: rustc_span::Span) -> Option<DepSource> {

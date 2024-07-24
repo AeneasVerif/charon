@@ -15,56 +15,13 @@ use std::collections::HashMap;
 
 /// The context in which we are translating a clause, used to generate the appropriate ids and
 /// trait references.
-pub(crate) enum ClauseTransCtx {
+pub(crate) enum PredicateLocation {
     /// We're translating the parent clauses of a trait.
-    Parent(Vector<TraitClauseId, TraitClause>, TraitDeclId),
+    Parent(TraitDeclId),
     /// We're translating the item clauses of a trait.
-    Item(
-        Vector<TraitClauseId, TraitClause>,
-        TraitDeclId,
-        TraitItemName,
-    ),
+    Item(TraitDeclId, TraitItemName),
     /// We're translating anything else.
-    Base(Vector<TraitClauseId, TraitClause>),
-}
-
-impl ClauseTransCtx {
-    pub(crate) fn as_mut_clauses(&mut self) -> &mut Vector<TraitClauseId, TraitClause> {
-        match self {
-            ClauseTransCtx::Base(clauses, ..)
-            | ClauseTransCtx::Parent(clauses, ..)
-            | ClauseTransCtx::Item(clauses, ..) => clauses,
-        }
-    }
-    pub(crate) fn into_clauses(self) -> Vector<TraitClauseId, TraitClause> {
-        match self {
-            ClauseTransCtx::Base(clauses, ..)
-            | ClauseTransCtx::Parent(clauses, ..)
-            | ClauseTransCtx::Item(clauses, ..) => clauses,
-        }
-    }
-    pub(crate) fn generate_instance_id(&mut self) -> (TraitClauseId, TraitRefKind) {
-        let fresh_id = self.as_mut_clauses().next_id();
-        let instance_id = match self {
-            ClauseTransCtx::Base { .. } => TraitRefKind::Clause(fresh_id),
-            ClauseTransCtx::Parent(_, trait_decl_id) => {
-                TraitRefKind::ParentClause(Box::new(TraitRefKind::SelfId), *trait_decl_id, fresh_id)
-            }
-            ClauseTransCtx::Item(_, trait_decl_id, item_name) => TraitRefKind::ItemClause(
-                Box::new(TraitRefKind::SelfId),
-                *trait_decl_id,
-                item_name.clone(),
-                fresh_id,
-            ),
-        };
-        (fresh_id, instance_id)
-    }
-}
-
-impl Default for ClauseTransCtx {
-    fn default() -> Self {
-        ClauseTransCtx::Base(Default::default())
-    }
+    Base,
 }
 
 impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
@@ -222,13 +179,10 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         &mut self,
         trait_decl_id: TraitDeclId,
         f: impl FnOnce(&mut Self) -> Result<(), Error>,
-    ) -> Result<Vector<TraitClauseId, TraitClause>, Error> {
-        let (out, ctx) = self.with_clause_translation_context(
-            ClauseTransCtx::Parent(Default::default(), trait_decl_id),
-            f,
-        );
+    ) -> Result<(), Error> {
+        let out = self.with_clause_translation_context(PredicateLocation::Parent(trait_decl_id), f);
         out?;
-        Ok(ctx.into_clauses())
+        Ok(())
     }
 
     pub(crate) fn with_item_trait_clauses(
@@ -236,13 +190,11 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         trait_decl_id: TraitDeclId,
         item_name: TraitItemName,
         f: impl FnOnce(&mut Self) -> Result<(), Error>,
-    ) -> Result<Vector<TraitClauseId, TraitClause>, Error> {
-        let (out, ctx) = self.with_clause_translation_context(
-            ClauseTransCtx::Item(Default::default(), trait_decl_id, item_name),
-            f,
-        );
+    ) -> Result<(), Error> {
+        let out = self
+            .with_clause_translation_context(PredicateLocation::Item(trait_decl_id, item_name), f);
         out?;
-        Ok(ctx.into_clauses())
+        Ok(())
     }
 }
 
@@ -281,7 +233,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         bt_ctx.translate_trait_decl_self_trait_clause(rust_id)?;
 
         // Translate the predicates.
-        let parent_clauses = bt_ctx.with_parent_trait_clauses(def_id, |s| {
+        bt_ctx.with_parent_trait_clauses(def_id, |s| {
             s.translate_predicates_of(None, rust_id, PredicateOrigin::WhereClauseOnTrait)
         })?;
 
@@ -291,24 +243,35 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
             match &item.kind {
                 AssocKind::Type => {
                     let item_name = TraitItemName(item.name.to_string());
-                    let item_trait_clauses = {
-                        // TODO: this is an ugly manip
-                        let bounds = tcx.item_bounds(item.def_id).instantiate_identity();
-                        use crate::rustc_middle::query::Key;
-                        let span = bounds.default_span(tcx);
-                        let bounds: Vec<_> = bounds
-                            .into_iter()
-                            .map(|x| (x.as_predicate(), span))
-                            .collect();
-                        let bounds = bounds.sinto(&bt_ctx.hax_state);
-                        let origin = PredicateOrigin::TraitItem(item_name.clone());
+                    // TODO: this is an ugly manip
+                    let bounds = tcx.item_bounds(item.def_id).instantiate_identity();
+                    use crate::rustc_middle::query::Key;
+                    let span = bounds.default_span(tcx);
+                    let bounds: Vec<_> = bounds
+                        .into_iter()
+                        .map(|x| (x.as_predicate(), span))
+                        .collect();
+                    let bounds = bounds.sinto(&bt_ctx.hax_state);
+                    let origin = PredicateOrigin::TraitItem(item_name.clone());
 
-                        // Register the trait clauses as item trait clauses
-                        bt_ctx.with_item_trait_clauses(def_id, item_name.clone(), |s| {
-                            s.translate_predicates_vec(&bounds, origin)
-                        })?
-                    };
-                    type_clauses.push((item_name, item_trait_clauses));
+                    // Register the trait clauses as item trait clauses
+                    bt_ctx.with_item_trait_clauses(def_id, item_name.clone(), |s| {
+                        s.translate_predicates_vec(&bounds, origin)
+                    })?
+                }
+                AssocKind::Fn => {}
+                AssocKind::Const => {}
+            }
+        }
+
+        // Push the collected clauses in definition order.
+        for item in tcx.associated_items(rust_id).in_definition_order() {
+            match &item.kind {
+                AssocKind::Type => {
+                    let item_name = TraitItemName(item.name.to_string());
+                    if let Some(clauses) = bt_ctx.item_trait_clauses.get(&item_name) {
+                        type_clauses.push((item_name, clauses.clone()));
+                    }
                 }
                 AssocKind::Fn => {}
                 AssocKind::Const => {}
@@ -423,7 +386,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
             def_id,
             item_meta,
             generics,
-            parent_clauses,
+            parent_clauses: bt_ctx.parent_trait_clauses,
             type_clauses,
             consts,
             const_defaults,

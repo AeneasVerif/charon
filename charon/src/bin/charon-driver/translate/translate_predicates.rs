@@ -1,4 +1,5 @@
 use super::translate_ctx::*;
+use super::translate_traits::PredicateLocation;
 use charon_lib::common::*;
 use charon_lib::formatter::{AstFormatter, IntoFormatter};
 use charon_lib::gast::*;
@@ -338,13 +339,46 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     ) -> Result<Option<TraitClauseId>, Error> {
         // FIXME: once `clause` can't be `None`, use `Vector::reserve_slot` to be sure we don't use
         // the same id twice.
-        let (clause_id, instance_id) = self.clause_translation_context.generate_instance_id();
+        let clause_id = match &self.clause_translation_context {
+            PredicateLocation::Base => self.param_trait_clauses.next_id(),
+            PredicateLocation::Parent(..) => self.parent_trait_clauses.next_id(),
+            PredicateLocation::Item(.., item_name) => self
+                .item_trait_clauses
+                .entry(item_name.clone())
+                .or_default()
+                .next_id(),
+        };
+        let instance_id = match &self.clause_translation_context {
+            PredicateLocation::Base => TraitRefKind::Clause(clause_id),
+            PredicateLocation::Parent(trait_decl_id) => TraitRefKind::ParentClause(
+                Box::new(TraitRefKind::SelfId),
+                *trait_decl_id,
+                clause_id,
+            ),
+            PredicateLocation::Item(trait_decl_id, item_name) => TraitRefKind::ItemClause(
+                Box::new(TraitRefKind::SelfId),
+                *trait_decl_id,
+                item_name.clone(),
+                clause_id,
+            ),
+        };
         let clause = self.translate_trait_clause_aux(hspan, trait_pred, instance_id, origin)?;
         if let Some(clause) = clause {
             let local_clause = clause.to_trait_clause_with_id(clause_id);
-            self.clause_translation_context
-                .as_mut_clauses()
-                .push(local_clause);
+            match &self.clause_translation_context {
+                PredicateLocation::Base => {
+                    self.param_trait_clauses.push(local_clause);
+                }
+                PredicateLocation::Parent(..) => {
+                    self.parent_trait_clauses.push(local_clause);
+                }
+                PredicateLocation::Item(.., item_name) => {
+                    self.item_trait_clauses
+                        .get_mut(item_name)
+                        .unwrap()
+                        .push(local_clause);
+                }
+            }
             self.trait_clauses
                 .entry(clause.trait_.trait_id)
                 .or_default()
