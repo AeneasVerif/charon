@@ -157,9 +157,9 @@ fn test_crate::test_closure_ref_u32::closure<'_0, '_1>(@1: &'_1 (()), @2: (&'_0 
 {
     let @0: &'_ (u32); // return
     let state@1: &'_1 (()); // arg #1
-    let x@2: &'_ (u32); // arg #2
+    let y@2: &'_ (u32); // arg #2
 
-    @0 := copy (x@2)
+    @0 := copy (y@2)
     return
 }
 
@@ -209,6 +209,47 @@ fn test_crate::test_closure_ref_param<'_0, T>(@1: &'_0 (T)) -> &'_0 (T)
     let @6: &'_ (T); // anonymous local
 
     @3 := {test_crate::test_closure_ref_param::closure<T>} {}
+    f@2 := cast<fn<'_1_0>(&'_1_0 (T)) -> &'_1_0 (T), fn<'_1_0>(&'_1_0 (T)) -> &'_1_0 (T)>(move (@3))
+    drop @3
+    @fake_read(f@2)
+    @5 := copy (f@2)
+    @6 := &*(x@1)
+    @4 := (move @5)(move (@6))
+    @0 := &*(@4)
+    drop @6
+    drop @5
+    drop f@2
+    drop @4
+    return
+}
+
+trait test_crate::Trait<'a, Self>
+
+fn test_crate::test_closure_ref_early_bound::closure<'a, '_1, '_2, T>(@1: &'_2 (()), @2: (&'_1 (T))) -> &'_1 (T)
+where
+    [@TraitClause0]: test_crate::Trait<'_, T>,
+{
+    let @0: &'_ (T); // return
+    let state@1: &'_2 (()); // arg #1
+    let y@2: &'_ (T); // arg #2
+
+    @0 := copy (y@2)
+    return
+}
+
+fn test_crate::test_closure_ref_early_bound<'a, T>(@1: &'a (T)) -> &'a (T)
+where
+    [@TraitClause0]: test_crate::Trait<'_, T>,
+{
+    let @0: &'_ (T); // return
+    let x@1: &'_ (T); // arg #1
+    let f@2: fn<'_1_0>(&'_1_0 (T)) -> &'_1_0 (T); // local
+    let @3: fn<'_1_0>(&'_1_0 (T)) -> &'_1_0 (T); // anonymous local
+    let @4: &'_ (T); // anonymous local
+    let @5: fn<'_1_0>(&'_1_0 (T)) -> &'_1_0 (T); // anonymous local
+    let @6: &'_ (T); // anonymous local
+
+    @3 := {test_crate::test_closure_ref_early_bound::closure<'_, T>[@TraitClause0]} {}
     f@2 := cast<fn<'_1_0>(&'_1_0 (T)) -> &'_1_0 (T), fn<'_1_0>(&'_1_0 (T)) -> &'_1_0 (T)>(move (@3))
     drop @3
     @fake_read(f@2)

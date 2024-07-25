@@ -43,9 +43,11 @@ pub fn translate_region_name(region: &hax::Region) -> Option<String> {
             BrNamed(_, symbol) => Some(symbol.clone()),
             BrEnv => Some("@env".to_owned()),
         },
-        _ => {
-            unreachable!();
-        }
+        ReErased => None,
+        ReStatic => todo!(),
+        ReVar(_) => todo!(),
+        RePlaceholder(_) => todo!(),
+        ReError(_) => todo!(),
     };
 
     // We check twice in the case of late bound regions, but it is ok...
@@ -749,54 +751,6 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 let ty = self.translate_ty(span, false, ty)?;
                 let ty = ty.to_literal();
                 self.push_const_generic_var(param.index, ty, param.name.clone());
-            }
-        }
-
-        Ok(())
-    }
-
-    pub(crate) fn push_generic_args_as_params(
-        &mut self,
-        span: rustc_span::Span,
-        substs: &Vec<hax::GenericArg>,
-    ) -> Result<(), Error> {
-        for p in substs {
-            self.translate_generic_arg_as_param(span, p)?;
-        }
-        Ok(())
-    }
-
-    /// This takes a `GenericArg` in lieu of a `GenericParam` because it's simpler.
-    /// TODO: don't do that.
-    pub(crate) fn translate_generic_arg_as_param(
-        &mut self,
-        span: rustc_span::Span,
-        subst: &hax::GenericArg,
-    ) -> Result<(), Error> {
-        let erase_regions = false;
-        use hax::GenericArg::*;
-        match subst {
-            Type(p) => {
-                // The type should be a Param
-                if let hax::Ty::Param(p) = p {
-                    let _ = self.push_type_var(p.index, p.name.clone());
-                } else {
-                    unreachable!("unexpected");
-                }
-            }
-            Lifetime(region) => {
-                let _ = self.push_free_region(region.clone());
-            }
-            Const(c) => {
-                // The type should be primitive, meaning it shouldn't contain variables,
-                // non-primitive adts, etc. As a result, we can use an empty context.
-                let ty = self.translate_ty(span, erase_regions, &c.ty)?;
-                let ty = ty.to_literal();
-                if let hax::ConstantExprKind::ConstRef { id: cp } = &*c.contents {
-                    self.push_const_generic_var(cp.index, ty, cp.name.clone());
-                } else {
-                    unreachable!();
-                }
             }
         }
 

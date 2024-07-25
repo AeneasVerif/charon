@@ -1477,28 +1477,18 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
 
         // Add the early bound parameters.
         match &def {
-            hax::Def::Closure { args: closure, .. } => {
-                // Retrieve the early bound parameters from the *parent* (i.e., the function in
-                // which the closure is actually defined). Importantly, the type parameters
-                // necessarily come from the parents: the closure can't itself be polymorphic, and
-                // the signature of the closure only quantifies lifetimes.
-                trace!("closure.parent_substs: {:?}", closure.parent_args);
-                trace!("closure.sig: {:?}", closure.sig);
-
-                // Retrieve the type of the captured state
-                // Sanity check: the parent subst only contains types and generics
-                error_assert!(
-                    self,
-                    span,
-                    closure
-                        .parent_args
-                        .iter()
-                        .all(|bv| !matches!(bv, hax::GenericArg::Lifetime(_))),
-                    "The closure parent parameters contain regions"
-                );
-
-                // Add the *early-bound* parameters.
-                self.push_generic_args_as_params(span, &closure.parent_args)?;
+            hax::Def::Closure {
+                parent_generics,
+                generics,
+                ..
+            } => {
+                // The early bound parameters for a closure are the same as those of the function
+                // in which it is defined: the closure itself has a monomorphic (though
+                // higher-ranked) type inside its defining function.
+                if let Some(g) = parent_generics {
+                    self.push_generic_params(span, g)?;
+                }
+                self.push_generic_params(span, generics)?;
             }
             hax::Def::Fn { generics, .. } => {
                 self.push_generic_params(span, generics)?;
