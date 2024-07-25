@@ -139,3 +139,8 @@ pub fn test_map_option3(x: Option<u32>) -> Option<u32> {
 pub fn test_array_map(x: [i32; 256]) -> [i32; 256] {
     x.map(|v| v)
 }
+
+pub fn test_nested_closures<'a, 'b, T>(x: &'a &'b T) -> &'a T {
+    let clo = || || x;
+    (clo())()
+}

@@ -571,6 +571,61 @@ fn test_crate::test_array_map(@1: Array<i32, 256 : usize>) -> Array<i32, 256 : u
     return
 }
 
+fn test_crate::test_nested_closures::closure::closure<'_0, '_1, '_2, '_3, T>(@1: &'_0 ((&'_1 (&'_2 (&'_3 (T))))), @2: ()) -> &'_ (&'_ (T))
+{
+    let @0: &'_ (&'_ (T)); // return
+    let state@1: &'_0 ((&'_1 (&'_2 (&'_3 (T))))); // arg #1
+
+    @0 := copy (*((*(state@1)).0))
+    return
+}
+
+fn test_crate::test_nested_closures::closure<'_0, '_1, '_2, '_3, T>(@1: &'_0 ((&'_1 (&'_2 (&'_3 (T))))), @2: ()) -> fn() -> &'_ (&'_ (T))
+{
+    let @0: fn() -> &'_ (&'_ (T)); // return
+    let state@1: &'_0 ((&'_1 (&'_2 (&'_3 (T))))); // arg #1
+    let @2: &'_ (&'_ (&'_ (T))); // arg #2
+
+    @2 := &*((*(state@1)).0)
+    @0 := {test_crate::test_nested_closures::closure::closure<T>} {move (@2)}
+    drop @2
+    return
+}
+
+fn test_crate::test_nested_closures<'a, 'b, T>(@1: &'a (&'b (T))) -> &'a (T)
+{
+    let @0: &'_ (T); // return
+    let x@1: &'_ (&'_ (T)); // arg #1
+    let clo@2: fn() -> fn() -> &'_ (&'_ (T)); // local
+    let @3: &'_ (&'_ (&'_ (T))); // anonymous local
+    let @4: &'_ (&'_ (T)); // anonymous local
+    let @5: &'_ (fn() -> &'_ (&'_ (T))); // anonymous local
+    let @6: fn() -> &'_ (&'_ (T)); // anonymous local
+    let @7: &'_ (fn() -> fn() -> &'_ (&'_ (T))); // anonymous local
+    let @8: (); // anonymous local
+    let @9: (); // anonymous local
+
+    @3 := &x@1
+    clo@2 := {test_crate::test_nested_closures::closure<T>} {move (@3)}
+    drop @3
+    @fake_read(clo@2)
+    @7 := &clo@2
+    @8 := ()
+    @6 := core::ops::function::Fn<fn() -> fn() -> &'_ (&'_ (T)), ()>::call(move (@7), move (@8))
+    @5 := &@6
+    drop @8
+    drop @7
+    @9 := ()
+    @4 := core::ops::function::Fn<fn() -> &'_ (&'_ (T)), ()>::call(move (@5), move (@9))
+    @0 := &*(*(@4))
+    drop @9
+    drop @5
+    drop clo@2
+    drop @6
+    drop @4
+    return
+}
+
 fn core::ops::function::FnMut::call_mut<'_0, Self, Args>(@1: &'_0 mut (Self), @2: Args) -> (parents(Self)::[@TraitClause0])::Output
 
 fn core::ops::function::FnOnce::call_once<Self, Args>(@1: Self, @2: Args) -> Self::Output
