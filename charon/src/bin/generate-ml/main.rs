@@ -555,8 +555,8 @@ fn main() -> Result<()> {
     let generate_code_for = vec![
         GenerateCodeFor {
             kind: GenerationKind::TypeDecl,
-            template: dir.join("GAst.template.ml"),
-            target: dir.join("GAst.ml"),
+            template: dir.join("templates/GAst.ml"),
+            target: dir.join("generated/GAst.ml"),
             markers: &[
                 &["FnOperand", "Call"],
                 &[
@@ -575,8 +575,8 @@ fn main() -> Result<()> {
         },
         GenerateCodeFor {
             kind: GenerationKind::TypeDecl,
-            template: dir.join("Types.template.ml"),
-            target: dir.join("Types.ml"),
+            template: dir.join("templates/Types.ml"),
+            target: dir.join("generated/Types.ml"),
             markers: &[
                 &[
                     "AssumedTy",
@@ -596,8 +596,8 @@ fn main() -> Result<()> {
         },
         GenerateCodeFor {
             kind: GenerationKind::OfJson,
-            template: dir.join("GAstOfJson.template.ml"),
-            target: dir.join("GAstOfJson.ml"),
+            template: dir.join("templates/GAstOfJson.ml"),
+            target: dir.join("generated/GAstOfJson.ml"),
             markers: &[
                 &[
                     "Span",

@@ -48,9 +48,7 @@ craneLib.buildPackage (
     postPatch = ''
       # These files are symlinks outside of the charon directory. We remove
       # them so that we regenerate fresh files in their place.
-      rm -f src/bin/generate-ml/GAst.ml
-      rm -f src/bin/generate-ml/Types.ml
-      rm -f src/bin/generate-ml/GAstOfJson.ml
+      rm -f src/bin/generate-ml/generated/*.ml
     '';
     # Make sure the toolchain is in $PATH so that `cargo` can work
     # properly. On mac we also have to tell `charon-driver` where to find
@@ -78,7 +76,7 @@ craneLib.buildPackage (
 
       # Export the generated files to later check if they match the committed files.
       mkdir -p $out/generated-ml
-      cp src/bin/generate-ml/*.ml $out/generated-ml
+      cp src/bin/generate-ml/generated/*.ml $out/generated-ml
     '';
 
     passthru.check-fmt = craneLib.cargoFmt craneArgs;
