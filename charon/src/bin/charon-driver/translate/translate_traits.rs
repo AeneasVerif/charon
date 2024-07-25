@@ -200,13 +200,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         let tcx = bt_ctx.t_ctx.tcx;
         let name = bt_ctx.t_ctx.def_id_to_name(rust_id)?;
 
-        let hax::Def::Trait {
-            generics,
-            predicates,
-            items,
-            ..
-        } = def
-        else {
+        let hax::Def::Trait { items, .. } = def else {
             panic!("Unexpected definition: {def:?}")
         };
         let items: Vec<(TraitItemName, &hax::AssocItem, Option<hax::Def>)> = items
@@ -227,17 +221,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
             .collect_vec();
 
         // Translate the generics
-        bt_ctx.push_generic_params(span, generics)?;
-
-        // Add the self trait clause
-        bt_ctx.translate_trait_decl_self_trait_clause(rust_id)?;
-
-        // Translate the rest of the trait predicates.
-        bt_ctx.translate_predicates(
-            &predicates,
-            PredicateOrigin::WhereClauseOnTrait,
-            &PredicateLocation::Parent(def_id),
-        )?;
+        bt_ctx.push_generics_for_def(span, rust_id, def)?;
 
         // Gather the associated type clauses
         let mut type_clauses = Vec::new();
@@ -396,24 +380,8 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         let erase_regions = false;
         let mut bt_ctx = BodyTransCtx::new(rust_id, self);
 
-        let hax::Def::Impl {
-            of_trait: true,
-            generics,
-            predicates,
-        } = def
-        else {
-            panic!("Unexpected definition: {def:?}")
-        };
-
-        bt_ctx.push_generic_params(span, generics)?;
-        bt_ctx.translate_predicates(
-            &predicates,
-            PredicateOrigin::WhereClauseOnImpl,
-            &PredicateLocation::Base,
-        )?;
-
-        // Add the self trait clause
-        bt_ctx.translate_trait_impl_self_trait_clause(rust_id)?;
+        bt_ctx.push_generics_for_def(span, rust_id, def)?;
+        let generics = bt_ctx.get_generics();
 
         // Retrieve the information about the implemented trait.
         let (
@@ -459,8 +427,6 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
             let trait_ref = TraitDeclRef { trait_id, generics };
             (trait_rust_id, trait_ref, rust_trait_ref, parent_trait_refs)
         };
-
-        let generics = bt_ctx.get_generics();
 
         {
             // Debugging

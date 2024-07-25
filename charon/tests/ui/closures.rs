@@ -147,7 +147,19 @@ pub fn test_array_map(x: [i32; 256]) -> [i32; 256] {
     x.map(|v| v)
 }
 
-pub fn test_nested_closures<'a, 'b, T>(x: &'a &'b T) -> &'a T {
-    let clo = || || x;
-    (clo())()
+struct Foo<'a, T>(&'a T);
+
+impl<'a, T> Foo<'a, T>
+where
+    T: Clone,
+{
+    pub fn test_nested_closures<'b>(x: &'a &'b T) -> T {
+        let clo = || || || (*x).clone();
+        clo()()()
+    }
 }
+
+const BLAH: u32 = {
+    let clo = || 42;
+    clo()
+};

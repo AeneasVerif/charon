@@ -693,6 +693,68 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         }
     }
 
+    /// Add the generics and predicates of this item and its parents to the current context.
+    pub(crate) fn push_generics_for_def(
+        &mut self,
+        span: rustc_span::Span,
+        rust_id: DefId,
+        def: &hax::Def,
+    ) -> Result<(), Error> {
+        // Add generics from the parent item, recursively (this is useful for closures, as they
+        // could be nested).
+        if let Some(parent) = def.parent() {
+            let parent_id = parent.into();
+            let parent_def = self.t_ctx.hax_def(parent_id);
+            self.push_generics_for_def(span, parent_id, &parent_def)?;
+        }
+        if let Some((generics, predicates)) = def.generics() {
+            // Add the generic params.
+            self.push_generic_params(span, generics)?;
+            // Add the self trait clause.
+            match def {
+                hax::Def::Impl { of_trait: true, .. } => {
+                    self.translate_trait_impl_self_trait_clause(rust_id)?;
+                }
+                hax::Def::Trait { .. } => {
+                    self.translate_trait_decl_self_trait_clause(rust_id)?;
+                }
+                _ => {}
+            }
+            // Add the predicates.
+            let (origin, location) = match def {
+                hax::Def::Struct { .. }
+                | hax::Def::Union { .. }
+                | hax::Def::Enum { .. }
+                | hax::Def::TyAlias { .. }
+                | hax::Def::AssocTy { .. } => {
+                    (PredicateOrigin::WhereClauseOnType, PredicateLocation::Base)
+                }
+                hax::Def::Fn { .. }
+                | hax::Def::AssocFn { .. }
+                | hax::Def::Const { .. }
+                | hax::Def::AssocConst { .. }
+                | hax::Def::Static { .. } => {
+                    (PredicateOrigin::WhereClauseOnFn, PredicateLocation::Base)
+                }
+                hax::Def::Impl { .. } => {
+                    (PredicateOrigin::WhereClauseOnImpl, PredicateLocation::Base)
+                }
+                // TODO: distinguish trait where clauses from trait supertraits. Currently we
+                // consider them all as parent clauses.
+                hax::Def::Trait { .. } => {
+                    let trait_id = self.register_trait_decl_id(span, rust_id)?.unwrap();
+                    (
+                        PredicateOrigin::WhereClauseOnTrait,
+                        PredicateLocation::Parent(trait_id),
+                    )
+                }
+                _ => panic!("Unexpected def: {def:?}"),
+            };
+            self.translate_predicates(predicates, origin, &location)?;
+        }
+        Ok(())
+    }
+
     pub(crate) fn push_generic_params(
         &mut self,
         span: rustc_span::Span,
@@ -754,36 +816,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         let span = item_meta.span.rust_span();
 
         // Translate generics and predicates
-        match def {
-            hax::Def::TyAlias {
-                generics,
-                predicates,
-                ..
-            }
-            | hax::Def::Struct {
-                generics,
-                predicates,
-                ..
-            }
-            | hax::Def::Enum {
-                generics,
-                predicates,
-                ..
-            }
-            | hax::Def::Union {
-                generics,
-                predicates,
-                ..
-            } => {
-                bt_ctx.push_generic_params(span, generics)?;
-                bt_ctx.translate_predicates(
-                    &predicates,
-                    PredicateOrigin::WhereClauseOnType,
-                    &PredicateLocation::Base,
-                )?;
-            }
-            _ => {}
-        };
+        bt_ctx.push_generics_for_def(span, rust_id, def)?;
         let generics = bt_ctx.get_generics();
 
         // Translate type body

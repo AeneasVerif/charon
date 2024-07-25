@@ -1,6 +1,5 @@
 //! The translation contexts.
 use super::translate_predicates::NonLocalTraitClause;
-use super::translate_traits::PredicateLocation;
 use charon_lib::ast::*;
 use charon_lib::common::*;
 use charon_lib::formatter::{FmtCtx, IntoFormatter};
@@ -97,6 +96,8 @@ pub struct TranslateCtx<'tcx, 'ctx> {
     /// Stack of the translations currently happening. Used to avoid cycles where items need to
     /// translate themselves transitively.
     pub translate_stack: Vec<AnyTransId>,
+    /// Cache the `hax::Def`s to compute them only once each.
+    pub cached_defs: HashMap<DefId, hax::Def>,
 }
 
 /// A translation context for type/global/function bodies.
@@ -337,21 +338,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
                             // a body translation context.
                             let mut bt_ctx = BodyTransCtx::new(cur_id, self);
 
-                            let hax::Def::Impl {
-                                generics,
-                                predicates,
-                                ..
-                            } = &def
-                            else {
-                                unreachable!()
-                            };
-
-                            bt_ctx.push_generic_params(span, generics)?;
-                            bt_ctx.translate_predicates(
-                                predicates,
-                                PredicateOrigin::WhereClauseOnImpl,
-                                &PredicateLocation::Base,
-                            )?;
+                            bt_ctx.push_generics_for_def(span, cur_id, &def)?;
                             let generics = bt_ctx.get_generics();
 
                             let erase_regions = false;
@@ -455,11 +442,17 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         self.def_id_to_name(DefId::from(def_id))
     }
 
-    pub fn hax_def(&self, def_id: DefId) -> hax::Def {
-        // Warning: must be careful to use the same `def_id` in the hax state and the query. Hence
-        // this method.
-        let hax_state_with_id = hax::State::new_from_state_and_id(&self.hax_state, def_id);
-        self.tcx.def_kind(def_id).sinto(&hax_state_with_id)
+    pub fn hax_def(&mut self, def_id: DefId) -> hax::Def {
+        // We return a clone because keeping a borrow would prevent us from doing anything useful
+        // with `self`.
+        self.cached_defs
+            .entry(def_id)
+            .or_insert_with(|| {
+                // Warning: must be careful to use the same `def_id` in the hax state and the query.
+                let hax_state_with_id = hax::State::new_from_state_and_id(&self.hax_state, def_id);
+                self.tcx.def_kind(def_id).sinto(&hax_state_with_id)
+            })
+            .clone()
     }
 
     /// Compute the span information for a Rust definition identified by its id.

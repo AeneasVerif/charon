@@ -375,6 +375,7 @@ pub fn translate<'tcx, 'ctx>(
         },
         priority_queue: Default::default(),
         translate_stack: Default::default(),
+        cached_defs: Default::default(),
     };
 
     // First push all the items in the stack of items to translate.
