@@ -462,7 +462,6 @@ enum GenerationKind {
 
 /// Replace markers in `template` with auto-generated code.
 struct GenerateCodeFor<'a> {
-    kind: GenerationKind,
     template: PathBuf,
     target: PathBuf,
     /// Each list corresponds to a marker. We replace the ith `__REPLACE{i}__` marker with
@@ -470,14 +469,14 @@ struct GenerateCodeFor<'a> {
     ///
     /// Eventually we should reorder definitions so the generated ones are all in one block.
     /// Keeping the order is important while we migrate away from hand-written code.
-    markers: &'a [&'a [&'a str]],
+    markers: &'a [(GenerationKind, &'a [&'a str])],
 }
 
 impl GenerateCodeFor<'_> {
     fn generate(&self, ctx: &GenerateCtx) -> Result<()> {
         let mut template = fs::read_to_string(&self.template)
             .with_context(|| format!("Failed to read template file {}", self.template.display()))?;
-        for (i, names) in self.markers.iter().enumerate() {
+        for (i, (kind, names)) in self.markers.iter().enumerate() {
             let generated = names
                 .iter()
                 .map(|name| {
@@ -485,7 +484,7 @@ impl GenerateCodeFor<'_> {
                         .get(*name)
                         .expect(&format!("Name not found: `{name}`"))
                 })
-                .map(|ty| match self.kind {
+                .map(|ty| match kind {
                     GenerationKind::OfJson => type_decl_to_json_deserializer(&ctx, ty),
                     GenerationKind::TypeDecl => type_decl_to_ocaml_decl(&ctx, ty),
                 })
@@ -552,33 +551,32 @@ fn main() -> Result<()> {
         name_to_type,
     };
 
+    #[rustfmt::skip]
     let generate_code_for = vec![
         GenerateCodeFor {
-            kind: GenerationKind::TypeDecl,
             template: dir.join("templates/GAst.ml"),
             target: dir.join("generated/GAst.ml"),
             markers: &[
-                &["FnOperand", "Call"],
-                &[
+                (GenerationKind::TypeDecl, &["FnOperand", "Call"]),
+                (GenerationKind::TypeDecl, &[
                     "ParamsInfo",
                     "ClosureKind",
                     "ClosureInfo",
                     "FunSig",
                     "ItemKind",
                     "GExprBody",
-                ],
-                &["TraitDecl", "TraitImpl", "GDeclarationGroup"],
-                &["DeclarationGroup"],
-                &["Var"],
-                &["AnyTransId"],
+                ]),
+                (GenerationKind::TypeDecl, &["TraitDecl", "TraitImpl", "GDeclarationGroup"]),
+                (GenerationKind::TypeDecl, &["DeclarationGroup"]),
+                (GenerationKind::TypeDecl, &["Var"]),
+                (GenerationKind::TypeDecl, &["AnyTransId"]),
             ],
         },
         GenerateCodeFor {
-            kind: GenerationKind::TypeDecl,
             template: dir.join("templates/Types.ml"),
             target: dir.join("generated/Types.ml"),
             markers: &[
-                &[
+                (GenerationKind::TypeDecl, &[
                     "AssumedTy",
                     "TypeId",
                     "ExistentialPredicate",
@@ -587,19 +585,18 @@ fn main() -> Result<()> {
                     "TraitDeclRef",
                     "GlobalDeclRef",
                     "GenericArgs",
-                ],
-                &["TraitClause"],
-                &["TraitTypeConstraint"],
-                &["ImplElem", "PathElem", "Name", "ItemMeta"],
-                &["Field", "Variant", "TypeDeclKind", "TypeDecl"],
+                ]),
+                (GenerationKind::TypeDecl, &["TraitClause"]),
+                (GenerationKind::TypeDecl, &["TraitTypeConstraint"]),
+                (GenerationKind::TypeDecl, &["ImplElem", "PathElem", "Name", "ItemMeta"]),
+                (GenerationKind::TypeDecl, &["Field", "Variant", "TypeDeclKind", "TypeDecl"]),
             ],
         },
         GenerateCodeFor {
-            kind: GenerationKind::OfJson,
             template: dir.join("templates/GAstOfJson.ml"),
             target: dir.join("generated/GAstOfJson.ml"),
             markers: &[
-                &[
+                (GenerationKind::OfJson, &[
                     "Span",
                     "InlineAttr",
                     "Attribute",
@@ -613,8 +610,8 @@ fn main() -> Result<()> {
                     "RefKind",
                     "AssumedTy",
                     "TypeId",
-                ],
-                &[
+                ]),
+                (GenerationKind::OfJson, &[
                     "ConstGeneric",
                     "Ty",
                     "ExistentialPredicate",
@@ -626,10 +623,10 @@ fn main() -> Result<()> {
                     "Field",
                     "Variant",
                     "TypeDeclKind",
-                ],
-                &["Loc"],
-                &["FileId", "FileName"],
-                &[
+                ]),
+                (GenerationKind::OfJson, &["Loc"]),
+                (GenerationKind::OfJson, &["FileId", "FileName"]),
+                (GenerationKind::OfJson, &[
                     "TraitClause",
                     "OutlivesPred",
                     "RegionOutlives",
@@ -668,13 +665,13 @@ fn main() -> Result<()> {
                     "Call",
                     "GExprBody",
                     "ItemKind",
-                ],
-                &[
+                ]),
+                (GenerationKind::OfJson, &[
                     "TraitDecl",
                     "TraitImpl",
                     "GDeclarationGroup",
                     "DeclarationGroup",
-                ],
+                ]),
             ],
         },
     ];
