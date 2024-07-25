@@ -193,9 +193,9 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         trace!("About to translate trait decl:\n{:?}", rust_id);
         trace!("Trait decl id:\n{:?}", def_id);
 
+        let span = item_meta.span.rust_span();
         let mut bt_ctx = BodyTransCtx::new(rust_id, self);
         let tcx = bt_ctx.t_ctx.tcx;
-        let span = tcx.def_span(rust_id);
         let name = bt_ctx.t_ctx.def_id_to_name(rust_id)?;
 
         let hax::Def::Trait {
@@ -280,7 +280,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
             let has_default_value = item.defaultness(tcx).has_value();
             match &item.kind {
                 AssocKind::Fn => {
-                    let span = tcx.def_span(rust_id);
+                    let span = tcx.def_span(item.def_id);
                     let method_name = bt_ctx.t_ctx.translate_trait_item_name(item.def_id)?;
                     // Skip the provided methods for the *external* trait declarations,
                     // but still remember their name (unless `extract_opaque_bodies` is set).
@@ -393,7 +393,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         trace!("Trait impl id:\n{:?}", def_id);
 
         let tcx = self.tcx;
-        let span = tcx.def_span(rust_id);
+        let span = item_meta.span.rust_span();
         let erase_regions = false;
         let mut bt_ctx = BodyTransCtx::new(rust_id, self);
 

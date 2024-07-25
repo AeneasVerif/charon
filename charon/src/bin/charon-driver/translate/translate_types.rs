@@ -751,8 +751,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         let mut bt_ctx = BodyTransCtx::new(rust_id, self);
 
         let erase_regions = false;
-        let tcx = bt_ctx.t_ctx.tcx;
-        let span = tcx.def_span(rust_id);
+        let span = item_meta.span.rust_span();
 
         // Translate generics and predicates
         match def {

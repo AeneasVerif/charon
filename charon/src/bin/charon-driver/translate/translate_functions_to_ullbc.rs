@@ -1386,7 +1386,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             // Translation error
             Ok(Err(e)) => Err(e),
             Err(_) => {
-                let span = self.t_ctx.tcx.def_span(rust_id);
+                let span = item_meta.span.rust_span();
                 error_or_panic!(self, span, "Thread panicked when extracting body.");
             }
         }
@@ -1456,12 +1456,13 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     fn translate_function_signature(
         &mut self,
         def_id: DefId,
+        item_meta: &ItemMeta,
         fun_kind: &ItemKind,
         def: &hax::Def,
     ) -> Result<FunSig, Error> {
         let tcx = self.t_ctx.tcx;
         let erase_regions = false;
-        let span = tcx.def_span(def_id);
+        let span = item_meta.span.rust_span();
 
         let signature = match def {
             hax::Def::Closure { args, .. } => &args.sig,
@@ -1673,7 +1674,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         def: &hax::Def,
     ) -> Result<FunDecl, Error> {
         trace!("About to translate function:\n{:?}", rust_id);
-        let def_span = self.tcx.def_span(rust_id);
+        let def_span = item_meta.span.rust_span();
 
         // Initialize the body translation context
         let mut bt_ctx = BodyTransCtx::new(rust_id, self);
@@ -1692,7 +1693,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
 
         // Translate the function signature
         trace!("Translating function signature");
-        let signature = bt_ctx.translate_function_signature(rust_id, &kind, def)?;
+        let signature = bt_ctx.translate_function_signature(rust_id, &item_meta, &kind, def)?;
 
         let body_id = if !is_trait_method_decl {
             // Translate the body. This doesn't store anything if we can't/decide not to translate
@@ -1728,7 +1729,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         def: &hax::Def,
     ) -> Result<GlobalDecl, Error> {
         trace!("About to translate global:\n{:?}", rust_id);
-        let span = self.tcx.def_span(rust_id);
+        let span = item_meta.span.rust_span();
 
         // Initialize the body translation context
         let mut bt_ctx = BodyTransCtx::new(rust_id, self);

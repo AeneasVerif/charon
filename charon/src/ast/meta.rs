@@ -100,6 +100,12 @@ impl From<Span> for rustc_error_messages::MultiSpan {
     }
 }
 
+impl Span {
+    pub fn rust_span(self) -> rustc_span::Span {
+        self.span.rust_span_data.span()
+    }
+}
+
 /// `#[inline]` built-in attribute.
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Serialize, Deserialize, Drive, DriveMut)]
 pub enum InlineAttr {
