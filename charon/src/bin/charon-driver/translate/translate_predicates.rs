@@ -132,17 +132,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         origin: PredicateOrigin,
         location: &PredicateLocation,
     ) -> Result<(), Error> {
-        self.translate_predicates_vec(&preds.predicates, origin, location)
-    }
-
-    pub(crate) fn translate_predicates_vec(
-        &mut self,
-        preds: &Vec<(hax::Predicate, hax::Span)>,
-        origin: PredicateOrigin,
-        location: &PredicateLocation,
-    ) -> Result<(), Error> {
-        trace!("Predicates:\n{:?}", preds);
-        for (pred, span) in preds {
+        for (pred, span) in &preds.predicates {
             match self.translate_predicate(pred, span, origin.clone(), location)? {
                 None => (),
                 Some(pred) => match pred {

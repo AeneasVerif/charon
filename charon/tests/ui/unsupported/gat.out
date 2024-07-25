@@ -1,9 +1,6 @@
-disabled backtrace
-error[E9999]: Cannot handle error `FulfillmentError` selecting `Binder { value: <<Self as ArraySize>::ArrayType<T> as Foo>, bound_vars: [] }`
-  |
-  = note: ⚠️ This is a bug in Hax's frontend.
-          Please report this error to https://github.com/hacspec/hax/issues with some context (e.g. the current crate)!
-
+thread 'rustc' panicked at /rustc/6b0f4b5ec3aa707ecaa78230722117324a4ce23c/compiler/rustc_type_ir/src/binder.rs:713:9:
+type parameter `T/#1` (T/#1/1) out of range when instantiating, args=[Self/#0]
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 error: Thread panicked when extracting item `test_crate::ArraySize`.
  --> tests/ui/unsupported/gat.rs:5:1
   |
@@ -16,7 +13,7 @@ error: Ignoring the following item due to an error: test_crate::ArraySize
 5 | trait ArraySize {
   | ^^^^^^^^^^^^^^^
 
-error: aborting due to 3 previous errors
+error: aborting due to 2 previous errors
 
 [ERROR charon_driver:249] Compilation encountered 2 errors
 Error: Charon driver exited with code 1
