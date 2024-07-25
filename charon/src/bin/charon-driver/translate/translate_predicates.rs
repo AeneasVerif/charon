@@ -71,56 +71,58 @@ pub(crate) enum Predicate {
 }
 
 impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
-    fn convert_params_info(info: hax::ParamsInfo) -> ParamsInfo {
-        ParamsInfo {
-            num_region_params: info.num_region_params,
-            num_type_params: info.num_type_params,
-            num_const_generic_params: info.num_const_generic_params,
-            num_trait_clauses: info.num_trait_clauses,
-            num_regions_outlive: info.num_regions_outlive,
-            num_types_outlive: info.num_types_outlive,
-            num_trait_type_constraints: info.num_trait_type_constraints,
-        }
-    }
-
-    pub(crate) fn get_parent_params_info(
+    pub fn count_generics(
         &mut self,
-        def_id: DefId,
-    ) -> Result<Option<ParamsInfo>, Error> {
-        let params_info =
-            hax::get_parent_params_info(&self.hax_state, def_id).map(Self::convert_params_info);
+        generics: &hax::TyGenerics,
+        predicates: &hax::GenericPredicates,
+    ) -> Result<ParamsInfo, Error> {
+        use hax::ClauseKind;
+        use hax::GenericParamDefKind;
+        use hax::PredicateKind;
+        let mut num_region_params = 0;
+        let mut num_type_params = 0;
+        let mut num_const_generic_params = 0;
+        let mut num_trait_clauses = 0;
+        let mut num_regions_outlive = 0;
+        let mut num_types_outlive = 0;
+        let mut num_trait_type_constraints = 0;
 
-        // Very annoying: because we may filter some marker traits (like [core::marker::Sized])
-        // we have to recompute the number of trait clauses!
-        let info = match params_info {
-            None => None,
-            Some(mut params_info) => {
-                let tcx = self.t_ctx.tcx;
-                let parent_id = tcx.generics_of(def_id).parent.unwrap();
-
-                let mut num_trait_clauses = 0;
-                // **IMPORTANT**: we do NOT want to use [TyCtxt::predicates_of].
-                let preds = tcx.predicates_defined_on(parent_id).sinto(&self.hax_state);
-                for (pred, span) in preds.predicates {
-                    if let hax::PredicateKind::Clause(hax::ClauseKind::Trait(clause)) =
-                        &pred.kind.value
+        for param in &generics.params {
+            match param.kind {
+                GenericParamDefKind::Lifetime => num_region_params += 1,
+                GenericParamDefKind::Type { .. } => num_type_params += 1,
+                GenericParamDefKind::Const { .. } => num_const_generic_params += 1,
+            }
+        }
+        for (pred, span) in &predicates.predicates {
+            match &pred.kind.value {
+                PredicateKind::Clause(ClauseKind::Trait(clause)) => {
+                    if self
+                        .register_trait_decl_id(
+                            span.rust_span_data.unwrap().span(),
+                            DefId::from(&clause.trait_ref.def_id),
+                        )?
+                        .is_some()
                     {
-                        if self
-                            .register_trait_decl_id(
-                                span.rust_span_data.unwrap().span(),
-                                DefId::from(&clause.trait_ref.def_id),
-                            )?
-                            .is_some()
-                        {
-                            num_trait_clauses += 1;
-                        }
+                        num_trait_clauses += 1;
                     }
                 }
-                params_info.num_trait_clauses = num_trait_clauses;
-                Some(params_info)
+                PredicateKind::Clause(ClauseKind::RegionOutlives(_)) => num_regions_outlive += 1,
+                PredicateKind::Clause(ClauseKind::TypeOutlives(_)) => num_types_outlive += 1,
+                PredicateKind::Clause(ClauseKind::Projection(_)) => num_trait_type_constraints += 1,
+                _ => (),
             }
-        };
-        Ok(info)
+        }
+
+        Ok(ParamsInfo {
+            num_region_params,
+            num_type_params,
+            num_const_generic_params,
+            num_trait_clauses,
+            num_regions_outlive,
+            num_types_outlive,
+            num_trait_type_constraints,
+        })
     }
 
     pub(crate) fn get_predicates_of(

@@ -1453,11 +1453,9 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         let erase_regions = false;
         let span = tcx.def_span(def_id);
         let def: hax::Def = tcx.def_kind(def_id).sinto(&self.hax_state);
-        let is_closure = tcx.is_closure_like(def_id);
-        let dep_src = DepSource::make(def_id, span);
 
         let signature = match &def {
-            hax::Def::Closure { args } => &args.sig,
+            hax::Def::Closure { args, .. } => &args.sig,
             hax::Def::Fn { sig, .. } => sig,
             hax::Def::AssocFn { sig, .. } => sig,
             _ => panic!("Unexpected definition for function: {def:?}"),
@@ -1479,7 +1477,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
 
         // Add the early bound parameters.
         match &def {
-            hax::Def::Closure { args: closure } => {
+            hax::Def::Closure { args: closure, .. } => {
                 // Retrieve the early bound parameters from the *parent* (i.e., the function in
                 // which the closure is actually defined). Importantly, the type parameters
                 // necessarily come from the parents: the closure can't itself be polymorphic, and
@@ -1531,6 +1529,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         self.set_first_bound_regions_group(bvar_names);
 
         // Add the `Self` trait clause if needed.
+        // TODO: can a closure need a `Self` clause?
         if let hax::Def::AssocFn {
             associated_item, ..
         } = &def
@@ -1548,16 +1547,41 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             }
         }
 
-        let implemented_trait = match fun_kind {
-            ItemKind::Regular => None,
-            ItemKind::TraitItemImpl { .. } => None,
-            ItemKind::TraitItemProvided(trait_decl_id, ..)
-            | ItemKind::TraitItemDecl(trait_decl_id, ..) => Some(*trait_decl_id),
+        // The predicates of the parent definition.
+        let parent_preds = match &def {
+            hax::Def::Closure {
+                parent_predicates, ..
+            } => parent_predicates.as_ref(),
+            hax::Def::Fn { .. } => None,
+            hax::Def::AssocFn {
+                parent_predicates, ..
+            } => Some(parent_predicates),
+            _ => unreachable!(),
         };
-        // Translate the predicates (in particular, the trait clauses).
-        self.translate_predicates_of(
-            implemented_trait,
-            def_id,
+        if let Some(preds) = parent_preds {
+            let (origin, location) = match fun_kind {
+                ItemKind::Regular | ItemKind::TraitItemImpl { .. } => {
+                    (PredicateOrigin::WhereClauseOnImpl, PredicateLocation::Base)
+                }
+                // TODO: distinguish trait where clauses from trait supertraits. Currently we
+                // consider them all as parent clauses.
+                ItemKind::TraitItemProvided(trait_decl_id, ..)
+                | ItemKind::TraitItemDecl(trait_decl_id, ..) => (
+                    PredicateOrigin::WhereClauseOnTrait,
+                    PredicateLocation::Parent(*trait_decl_id),
+                ),
+            };
+            self.translate_predicates(&preds, origin, &location)?;
+        }
+        // The predicates of the current definition.
+        let preds = match &def {
+            hax::Def::Closure { predicates, .. }
+            | hax::Def::Fn { predicates, .. }
+            | hax::Def::AssocFn { predicates, .. } => predicates,
+            _ => unreachable!(),
+        };
+        self.translate_predicates(
+            &preds,
             PredicateOrigin::WhereClauseOnFn,
             &PredicateLocation::Base,
         )?;
@@ -1588,7 +1612,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         };
 
         let closure_info = match &def {
-            hax::Def::Closure { args } => {
+            hax::Def::Closure { args, .. } => {
                 let kind = match args.kind {
                     hax::ClosureKind::Fn => ClosureKind::Fn,
                     hax::ClosureKind::FnMut => ClosureKind::FnMut,
@@ -1606,45 +1630,37 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             _ => panic!("Unexpected definition for function: {def:?}"),
         };
 
-        let mut parent_params_info = self.get_function_parent_params_info(&dep_src, def_id)?;
-        // If this is a trait decl method, we need to adjust the number of parent clauses
-        if matches!(
-            fun_kind,
-            ItemKind::TraitItemProvided(..) | ItemKind::TraitItemDecl(..)
-        ) {
-            if let Some(info) = &mut parent_params_info {
-                // All the trait clauses are registered as parent (of Self)
-                // trait clauses, not as local trait clauses.
-                info.num_trait_clauses = 0;
+        let parent_params_info = match &def {
+            hax::Def::AssocFn {
+                associated_item,
+                parent_generics,
+                parent_predicates,
+                ..
+            } => {
+                let mut params_info = self.count_generics(parent_generics, parent_predicates)?;
+                // If this is a trait decl method, we need to adjust the number of parent clauses
+                if matches!(
+                    associated_item.container,
+                    hax::AssocItemContainer::TraitContainer { .. }
+                ) {
+                    // All the trait clauses are registered as parent (of Self) trait clauses, not
+                    // as local trait clauses.
+                    params_info.num_trait_clauses = 0;
+                }
+                Some(params_info)
             }
-        }
+            _ => None,
+        };
 
         Ok(FunSig {
             generics: self.get_generics(),
             is_unsafe,
-            is_closure,
+            is_closure: matches!(def, hax::Def::Closure { .. }),
             closure_info,
             parent_params_info,
             inputs,
             output,
         })
-    }
-
-    fn get_function_parent_params_info(
-        &mut self,
-        src: &Option<DepSource>,
-        def_id: DefId,
-    ) -> Result<Option<ParamsInfo>, Error> {
-        let kind = self.t_ctx.get_item_kind(src, def_id)?;
-        let info = match kind {
-            ItemKind::Regular => None,
-            ItemKind::TraitItemImpl { .. }
-            | ItemKind::TraitItemDecl { .. }
-            | ItemKind::TraitItemProvided { .. } => {
-                Some(self.get_parent_params_info(def_id)?.unwrap())
-            }
-        };
-        Ok(info)
     }
 }
 

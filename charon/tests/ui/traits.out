@@ -379,6 +379,7 @@ fn test_crate::{test_crate::TestType<T>}#6::test::TestTrait::test<'_0, Self>(@1:
 
 fn test_crate::{test_crate::TestType<T>}#6::test<'_0, T>(@1: &'_0 (test_crate::TestType<T>), @2: T) -> bool
 where
+    // Inherited clauses:
     [@TraitClause0]: test_crate::ToU64<T>,
 {
     let @0: bool; // return
