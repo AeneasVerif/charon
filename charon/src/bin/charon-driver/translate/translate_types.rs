@@ -10,7 +10,6 @@ use charon_lib::pretty::FmtWithCtx;
 use core::convert::*;
 use hax::Visibility;
 use hax_frontend_exporter as hax;
-use hax_frontend_exporter::SInto;
 use rustc_hir::def_id::DefId;
 
 /// Small helper: we ignore some region names (when they are equal to "'_")
@@ -531,7 +530,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         trans_id: TypeDeclId,
         def_span: rustc_span::Span,
         item_meta: &ItemMeta,
-        adt: hax::AdtDef,
+        adt: &hax::AdtDef,
     ) -> Result<TypeDeclKind, Error> {
         use hax::AdtKind;
         let erase_regions = false;
@@ -571,16 +570,16 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
 
         // The type is transparent: explore the variants
         let mut variants: Vector<VariantId, Variant> = Default::default();
-        for (i, var_def) in adt.variants.into_iter().enumerate() {
+        for (i, var_def) in adt.variants.iter().enumerate() {
             trace!("variant {i}: {var_def:?}");
 
             let mut fields: Vector<FieldId, Field> = Default::default();
             /* This is for sanity: check that either all the fields have names, or
              * none of them has */
             let mut have_names: Option<bool> = None;
-            for (j, field_def) in var_def.fields.into_iter().enumerate() {
+            for (j, field_def) in var_def.fields.iter().enumerate() {
                 trace!("variant {i}: field {j}: {field_def:?}");
-                let field_span = self.t_ctx.translate_span_from_rspan(field_def.span);
+                let field_span = self.t_ctx.translate_span_from_rspan(field_def.span.clone());
                 let field_rspan = field_span.span.rust_span_data.span();
                 // Translate the field type
                 let ty = self.translate_ty(field_rspan, erase_regions, &field_def.ty)?;
@@ -589,7 +588,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                     .translate_attr_info_from_rid(DefId::from(&field_def.did), field_span);
 
                 // Retrieve the field name.
-                let field_name = field_def.name;
+                let field_name = field_def.name.clone();
                 // Sanity check
                 match &have_names {
                     None => {
@@ -614,8 +613,8 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             }
 
             let discriminant = self.translate_discriminant(def_span, &var_def.discr_val)?;
-            let variant_span = self.t_ctx.translate_span_from_rspan(var_def.span);
-            let variant_name = var_def.name;
+            let variant_span = self.t_ctx.translate_span_from_rspan(var_def.span.clone());
+            let variant_name = var_def.name.clone();
             let variant_attrs = self
                 .t_ctx
                 .translate_attr_info_from_rid(DefId::from(&var_def.def_id), variant_span);
@@ -694,28 +693,6 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         }
     }
 
-    /// Auxiliary helper.
-    ///
-    /// Translate the generics of a type definition.
-    /// Returns the translation, together with an instantiated MIR substitution,
-    /// which represents the generics on the MIR side (and is useful to translate
-    /// the body of the type...).
-    ///
-    /// Rem.: this seems simpler in [crate::translate_functions_to_ullbc].
-    /// TODO: compare and simplify/factorize?
-    pub(crate) fn translate_generic_params(&mut self, def_id: DefId) -> Result<(), Error> {
-        let tcx = self.t_ctx.tcx;
-        let span = tcx.def_span(def_id);
-        let defs = tcx.generics_of(def_id);
-        if let Some(def_id) = defs.parent {
-            let parent_defs = tcx.generics_of(def_id);
-            assert!(parent_defs.parent.is_none());
-            self.push_generic_params(span, &parent_defs.sinto(&self.hax_state))?;
-        }
-        self.push_generic_params(span, &defs.sinto(&self.hax_state))?;
-        Ok(())
-    }
-
     pub(crate) fn push_generic_params(
         &mut self,
         span: rustc_span::Span,
@@ -769,16 +746,16 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         trans_id: TypeDeclId,
         rust_id: DefId,
         item_meta: ItemMeta,
+        def: &hax::Def,
     ) -> Result<TypeDecl, Error> {
         let mut bt_ctx = BodyTransCtx::new(rust_id, self);
 
         let erase_regions = false;
         let tcx = bt_ctx.t_ctx.tcx;
         let span = tcx.def_span(rust_id);
-        let def: hax::Def = tcx.def_kind(rust_id).sinto(&bt_ctx.hax_state);
 
         // Translate generics and predicates
-        match &def {
+        match def {
             hax::Def::TyAlias {
                 generics,
                 predicates,
@@ -816,9 +793,9 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
             hax::Def::OpaqueTy | hax::Def::ForeignTy => Ok(TypeDeclKind::Opaque),
             hax::Def::TyAlias { ty, .. } => {
                 // We only translate crate-local type aliases so the `unwrap` is ok.
-                let ty = ty.unwrap();
+                let ty = ty.as_ref().unwrap();
                 bt_ctx
-                    .translate_ty(span, erase_regions, &ty)
+                    .translate_ty(span, erase_regions, ty)
                     .map(TypeDeclKind::Alias)
             }
             hax::Def::Struct { def, .. }

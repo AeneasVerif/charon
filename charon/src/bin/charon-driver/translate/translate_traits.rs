@@ -187,6 +187,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         def_id: TraitDeclId,
         rust_id: DefId,
         item_meta: ItemMeta,
+        def: &hax::Def,
     ) -> Result<TraitDecl, Error> {
         use rustc_middle::ty::AssocKind;
         trace!("About to translate trait decl:\n{:?}", rust_id);
@@ -194,19 +195,27 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
 
         let mut bt_ctx = BodyTransCtx::new(rust_id, self);
         let tcx = bt_ctx.t_ctx.tcx;
+        let span = tcx.def_span(rust_id);
         let name = bt_ctx.t_ctx.def_id_to_name(rust_id)?;
 
-        // Translate the generic
-        bt_ctx.translate_generic_params(rust_id)?;
+        let hax::Def::Trait {
+            generics,
+            predicates,
+            ..
+        } = def
+        else {
+            panic!("Unexpected definition: {def:?}")
+        };
 
-        // Add the trait clauses
+        // Translate the generics
+        bt_ctx.push_generic_params(span, generics)?;
+
         // Add the self trait clause
         bt_ctx.translate_trait_decl_self_trait_clause(rust_id)?;
 
-        // Translate the predicates.
-        bt_ctx.translate_predicates_of(
-            None,
-            rust_id,
+        // Translate the rest of the predicates.
+        bt_ctx.translate_predicates(
+            &predicates,
             PredicateOrigin::WhereClauseOnTrait,
             &PredicateLocation::Parent(def_id),
         )?;
@@ -378,23 +387,28 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         def_id: TraitImplId,
         rust_id: DefId,
         item_meta: ItemMeta,
+        def: &hax::Def,
     ) -> Result<TraitImpl, Error> {
         trace!("About to translate trait impl:\n{:?}", rust_id);
         trace!("Trait impl id:\n{:?}", def_id);
 
         let tcx = self.tcx;
         let span = tcx.def_span(rust_id);
+        let erase_regions = false;
         let mut bt_ctx = BodyTransCtx::new(rust_id, self);
 
-        let erase_regions = false;
+        let hax::Def::Impl {
+            of_trait: true,
+            generics,
+            predicates,
+        } = def
+        else {
+            panic!("Unexpected definition: {def:?}")
+        };
 
-        // Translate the generics
-        bt_ctx.translate_generic_params(rust_id)?;
-
-        // Translate the predicates
-        bt_ctx.translate_predicates_of(
-            None,
-            rust_id,
+        bt_ctx.push_generic_params(span, generics)?;
+        bt_ctx.translate_predicates(
+            &predicates,
             PredicateOrigin::WhereClauseOnImpl,
             &PredicateLocation::Base,
         )?;

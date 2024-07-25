@@ -104,11 +104,20 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
     pub(crate) fn get_item_kind(
         &mut self,
         src: &Option<DepSource>,
-        rust_id: DefId,
+        def: &hax::Def,
     ) -> Result<ItemKind, Error> {
-        trace!("rust_id: {:?}", rust_id);
-        let tcx = self.tcx;
-        let assoc_item = tcx.opt_associated_item(rust_id).sinto(&self.hax_state);
+        let assoc_item = match def {
+            hax::Def::AssocTy {
+                associated_item, ..
+            }
+            | hax::Def::AssocConst {
+                associated_item, ..
+            }
+            | hax::Def::AssocFn {
+                associated_item, ..
+            } => Some(associated_item),
+            _ => None,
+        };
         Ok(match assoc_item {
             None => ItemKind::Regular,
             Some(assoc) => {
@@ -161,7 +170,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
                         // The trait id should be Some(...): trait markers (that we may eliminate)
                         // don't have associated items.
                         let trait_id = self.register_trait_decl_id(src, trait_id.into())?.unwrap();
-                        let item_name = self.translate_trait_item_name(rust_id)?;
+                        let item_name = TraitItemName(assoc.name.clone());
 
                         // Check whether this item has a provided value.
                         if assoc.has_value {
@@ -1448,13 +1457,13 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         &mut self,
         def_id: DefId,
         fun_kind: &ItemKind,
+        def: &hax::Def,
     ) -> Result<FunSig, Error> {
         let tcx = self.t_ctx.tcx;
         let erase_regions = false;
         let span = tcx.def_span(def_id);
-        let def: hax::Def = tcx.def_kind(def_id).sinto(&self.hax_state);
 
-        let signature = match &def {
+        let signature = match def {
             hax::Def::Closure { args, .. } => &args.sig,
             hax::Def::Fn { sig, .. } => sig,
             hax::Def::AssocFn { sig, .. } => sig,
@@ -1476,7 +1485,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         // [TyCtxt.type_of].
 
         // Add the early bound parameters.
-        match &def {
+        match def {
             hax::Def::Closure {
                 parent_generics,
                 generics,
@@ -1522,7 +1531,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         // TODO: can a closure need a `Self` clause?
         if let hax::Def::AssocFn {
             associated_item, ..
-        } = &def
+        } = def
         {
             // TODO: reuse code for translating the parent. Maybe cache `hax::Def`s? Maybe keep the
             // partial `BodyTransCtx` around?
@@ -1538,7 +1547,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         }
 
         // The predicates of the parent definition.
-        let parent_preds = match &def {
+        let parent_preds = match def {
             hax::Def::Closure {
                 parent_predicates, ..
             } => parent_predicates.as_ref(),
@@ -1564,7 +1573,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             self.translate_predicates(&preds, origin, &location)?;
         }
         // The predicates of the current definition.
-        let preds = match &def {
+        let preds = match def {
             hax::Def::Closure { predicates, .. }
             | hax::Def::Fn { predicates, .. }
             | hax::Def::AssocFn { predicates, .. } => predicates,
@@ -1601,7 +1610,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             hax::Safety::Safe => false,
         };
 
-        let closure_info = match &def {
+        let closure_info = match def {
             hax::Def::Closure { args, .. } => {
                 let kind = match args.kind {
                     hax::ClosureKind::Fn => ClosureKind::Fn,
@@ -1620,7 +1629,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             _ => panic!("Unexpected definition for function: {def:?}"),
         };
 
-        let parent_params_info = match &def {
+        let parent_params_info = match def {
             hax::Def::AssocFn {
                 associated_item,
                 parent_generics,
@@ -1661,6 +1670,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         def_id: FunDeclId,
         rust_id: DefId,
         item_meta: ItemMeta,
+        def: &hax::Def,
     ) -> Result<FunDecl, Error> {
         trace!("About to translate function:\n{:?}", rust_id);
         let def_span = self.tcx.def_span(rust_id);
@@ -1672,7 +1682,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         // If this is the case, it shouldn't contain a body.
         let kind = bt_ctx
             .t_ctx
-            .get_item_kind(&DepSource::make(rust_id, def_span), rust_id)?;
+            .get_item_kind(&DepSource::make(rust_id, def_span), def)?;
         let is_trait_method_decl = match &kind {
             ItemKind::Regular
             | ItemKind::TraitItemImpl { .. }
@@ -1682,7 +1692,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
 
         // Translate the function signature
         trace!("Translating function signature");
-        let signature = bt_ctx.translate_function_signature(rust_id, &kind)?;
+        let signature = bt_ctx.translate_function_signature(rust_id, &kind, def)?;
 
         let body_id = if !is_trait_method_decl {
             // Translate the body. This doesn't store anything if we can't/decide not to translate
@@ -1715,6 +1725,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         def_id: GlobalDeclId,
         rust_id: DefId,
         item_meta: ItemMeta,
+        def: &hax::Def,
     ) -> Result<GlobalDecl, Error> {
         trace!("About to translate global:\n{:?}", rust_id);
         let span = self.tcx.def_span(rust_id);
@@ -1722,20 +1733,66 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         // Initialize the body translation context
         let mut bt_ctx = BodyTransCtx::new(rust_id, self);
 
-        // Check and translate the generics - globals *can* have generics
+        // Retrieve the kind
+        let global_kind = bt_ctx
+            .t_ctx
+            .get_item_kind(&DepSource::make(rust_id, span), &def)?;
+
+        // Translate the generics and predicates - globals *can* have generics
         // Ex.:
         // ```
         // impl<const N : usize> Foo<N> {
         //   const LEN : usize = N;
         // }
         // ```
-        bt_ctx.translate_generic_params(rust_id)?;
-        bt_ctx.translate_predicates_of(
-            None,
-            rust_id,
-            PredicateOrigin::WhereClauseOnFn,
-            &PredicateLocation::Base,
-        )?;
+        // Parent generics
+        match def {
+            hax::Def::AssocConst {
+                parent_generics,
+                parent_predicates,
+                ..
+            } => {
+                bt_ctx.push_generic_params(span, parent_generics)?;
+                let (origin, location) = match &global_kind {
+                    ItemKind::Regular | ItemKind::TraitItemImpl { .. } => {
+                        (PredicateOrigin::WhereClauseOnImpl, PredicateLocation::Base)
+                    }
+                    ItemKind::TraitItemProvided(trait_decl_id, ..)
+                    | ItemKind::TraitItemDecl(trait_decl_id, ..) => (
+                        PredicateOrigin::WhereClauseOnTrait,
+                        PredicateLocation::Parent(*trait_decl_id),
+                    ),
+                };
+                bt_ctx.translate_predicates(parent_predicates, origin, &location)?;
+            }
+            _ => {}
+        };
+        // Item generics
+        match def {
+            hax::Def::Const {
+                generics,
+                predicates,
+                ..
+            }
+            | hax::Def::Static {
+                generics,
+                predicates,
+                ..
+            }
+            | hax::Def::AssocConst {
+                generics,
+                predicates,
+                ..
+            } => {
+                bt_ctx.push_generic_params(span, generics)?;
+                bt_ctx.translate_predicates(
+                    predicates,
+                    PredicateOrigin::WhereClauseOnFn,
+                    &PredicateLocation::Base,
+                )?;
+            }
+            _ => panic!("Unexpected definition for constant: {def:?}"),
+        };
 
         let hax_state = &bt_ctx.hax_state;
 
@@ -1743,11 +1800,6 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         let mir_ty = bt_ctx.t_ctx.tcx.type_of(rust_id).instantiate_identity();
         let erase_regions = false; // This doesn't matter: there shouldn't be any regions
         let ty = bt_ctx.translate_ty(span, erase_regions, &mir_ty.sinto(hax_state))?;
-
-        // Retrieve the kind
-        let kind = bt_ctx
-            .t_ctx
-            .get_item_kind(&DepSource::make(rust_id, span), rust_id)?;
 
         let generics = bt_ctx.get_generics();
 
@@ -1768,7 +1820,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
             item_meta,
             generics,
             ty,
-            kind,
+            kind: global_kind,
             body: body_id,
         })
     }

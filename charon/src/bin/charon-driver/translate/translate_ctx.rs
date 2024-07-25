@@ -328,52 +328,47 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
                     // a "regular" impl block (`impl Foo { ... }`) or a trait
                     // implementation (`impl Bar for Foo { ... }`).
                     let impl_elem = match self.tcx.impl_trait_ref(cur_id) {
+                        // Inherent impl ("regular" impl)
                         None => {
+                            let def: hax::Def = self.hax_def(cur_id);
+
                             // We need to convert the type, which may contain quantified
                             // substs and bounds. In order to properly do so, we introduce
                             // a body translation context.
                             let mut bt_ctx = BodyTransCtx::new(cur_id, self);
 
-                            // Translate to hax types
-                            // TODO: use the bounds
-                            let _bounds: Vec<hax::Clause> = bt_ctx
-                                .t_ctx
-                                .tcx
-                                .predicates_of(cur_id)
-                                .predicates
-                                .iter()
-                                .map(|(x, _)| x.sinto(&bt_ctx.hax_state))
-                                .collect();
+                            let hax::Def::Impl {
+                                generics,
+                                predicates,
+                                ..
+                            } = &def
+                            else {
+                                unreachable!()
+                            };
+
+                            bt_ctx.push_generic_params(span, generics)?;
+                            bt_ctx.translate_predicates(
+                                predicates,
+                                PredicateOrigin::WhereClauseOnImpl,
+                                &PredicateLocation::Base,
+                            )?;
+                            let generics = bt_ctx.get_generics();
+
+                            let erase_regions = false;
                             let ty = tcx
                                 .type_of(cur_id)
                                 .instantiate_identity()
                                 .sinto(&bt_ctx.hax_state);
-
-                            bt_ctx.translate_generic_params(cur_id)?;
-                            bt_ctx.translate_predicates_of(
-                                None,
-                                cur_id,
-                                PredicateOrigin::WhereClauseOnImpl,
-                                &PredicateLocation::Base,
-                            )?;
-                            let erase_regions = false;
-                            // Inherent impl ("regular" impl)
                             let ty = bt_ctx.translate_ty(span, erase_regions, &ty)?;
-                            let generics = bt_ctx.get_generics();
                             ImplElem::Ty(generics, ty)
                         }
+                        // Trait implementation
                         Some(_) => {
                             let impl_id = self.register_trait_impl_id(&None, cur_id)?;
-                            // // Trait implementation
-                            // let trait_ref = trait_ref.sinto(&bt_ctx.hax_state);
-                            // let erase_regions = false;
-                            // let trait_ref =
-                            //     bt_ctx.translate_trait_decl_ref(span, erase_regions, &trait_ref)?;
-                            match impl_id {
-                                None => error_or_panic!(self, span, "The trait reference was ignored while we need it to compute the name"),
-                                Some(impl_id) => {
-                                    ImplElem::Trait(impl_id)
-                                }
+                            if let Some(impl_id) = impl_id {
+                                ImplElem::Trait(impl_id)
+                            } else {
+                                error_or_panic!(self, span, "The trait reference was ignored while we need it to compute the name")
                             }
                         }
                     };
@@ -458,6 +453,13 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
     pub fn hax_def_id_to_name(&mut self, def_id: &hax::DefId) -> Result<Name, Error> {
         // We have to create a hax state, which is annoying...
         self.def_id_to_name(DefId::from(def_id))
+    }
+
+    pub fn hax_def(&self, def_id: DefId) -> hax::Def {
+        // Warning: must be careful to use the same `def_id` in the hax state and the query. Hence
+        // this method.
+        let hax_state_with_id = hax::State::new_from_state_and_id(&self.hax_state, def_id);
+        self.tcx.def_kind(def_id).sinto(&hax_state_with_id)
     }
 
     /// Compute the span information for a Rust definition identified by its id.
