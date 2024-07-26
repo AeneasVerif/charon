@@ -11,6 +11,7 @@ use rustc_hir::def_id::DefId;
 use rustc_hir::{ForeignItemKind, ImplItemKind, Item, ItemKind};
 use rustc_middle::ty::TyCtxt;
 use std::collections::{HashMap, HashSet};
+use std::sync::Arc;
 
 impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
     /// General function to register a MIR item. It is called on all the top-level
@@ -294,7 +295,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
     ) -> Result<(), Error> {
         // Translate the meta information
         let item_meta = self.translate_item_meta_from_rid(rust_id)?;
-        let def: hax::Def = self.hax_def(rust_id);
+        let def: Arc<hax::Def> = self.hax_def(rust_id);
         match trans_id {
             AnyTransId::Type(id) => {
                 let ty = self.translate_type(id, rust_id, item_meta, &def)?;

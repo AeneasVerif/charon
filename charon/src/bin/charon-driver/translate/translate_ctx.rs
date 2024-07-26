@@ -21,6 +21,7 @@ use std::collections::HashMap;
 use std::collections::{BTreeMap, VecDeque};
 use std::fmt;
 use std::path::Component;
+use std::sync::Arc;
 
 // Re-export to avoid having to fix imports.
 pub(crate) use charon_lib::errors::{
@@ -97,7 +98,7 @@ pub struct TranslateCtx<'tcx, 'ctx> {
     /// translate themselves transitively.
     pub translate_stack: Vec<AnyTransId>,
     /// Cache the `hax::Def`s to compute them only once each.
-    pub cached_defs: HashMap<DefId, hax::Def>,
+    pub cached_defs: HashMap<DefId, Arc<hax::Def>>,
 }
 
 /// A translation context for type/global/function bodies.
@@ -331,13 +332,12 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
                     let impl_elem = match self.tcx.impl_trait_ref(cur_id) {
                         // Inherent impl ("regular" impl)
                         None => {
-                            let def: hax::Def = self.hax_def(cur_id);
-
                             // We need to convert the type, which may contain quantified
                             // substs and bounds. In order to properly do so, we introduce
                             // a body translation context.
                             let mut bt_ctx = BodyTransCtx::new(cur_id, self);
 
+                            let def = bt_ctx.t_ctx.hax_def(cur_id);
                             bt_ctx.push_generics_for_def(span, cur_id, &def)?;
                             let generics = bt_ctx.get_generics();
 
@@ -442,15 +442,16 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         self.def_id_to_name(DefId::from(def_id))
     }
 
-    pub fn hax_def(&mut self, def_id: DefId) -> hax::Def {
-        // We return a clone because keeping a borrow would prevent us from doing anything useful
+    pub fn hax_def(&mut self, def_id: DefId) -> Arc<hax::Def> {
+        // We return an `Arc` because keeping a borrow would prevent us from doing anything useful
         // with `self`.
         self.cached_defs
             .entry(def_id)
             .or_insert_with(|| {
                 // Warning: must be careful to use the same `def_id` in the hax state and the query.
                 let hax_state_with_id = hax::State::new_from_state_and_id(&self.hax_state, def_id);
-                self.tcx.def_kind(def_id).sinto(&hax_state_with_id)
+                let def = self.tcx.def_kind(def_id).sinto(&hax_state_with_id);
+                Arc::new(def)
             })
             .clone()
     }

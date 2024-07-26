@@ -12,6 +12,7 @@ use hax_frontend_exporter::SInto;
 use itertools::Itertools;
 use rustc_hir::def_id::DefId;
 use std::collections::HashMap;
+use std::sync::Arc;
 
 /// The context in which we are translating a clause, used to generate the appropriate ids and
 /// trait references.
@@ -203,7 +204,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         let hax::Def::Trait { items, .. } = def else {
             panic!("Unexpected definition: {def:?}")
         };
-        let items: Vec<(TraitItemName, &hax::AssocItem, Option<hax::Def>)> = items
+        let items: Vec<(TraitItemName, &hax::AssocItem, Option<Arc<hax::Def>>)> = items
             .iter()
             .map(|item| {
                 let name = TraitItemName(item.name.clone());
@@ -228,7 +229,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         for (name, item, def) in &items {
             match &item.kind {
                 AssocKind::Type => {
-                    let hax::Def::AssocTy { predicates, .. } = def.as_ref().unwrap() else {
+                    let hax::Def::AssocTy { predicates, .. } = def.as_deref().unwrap() else {
                         unreachable!()
                     };
                     // TODO: handle generics (i.e. GATs).
@@ -286,7 +287,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
                     // Check if the constant has a value (i.e., a body).
                     // We are handling a trait *declaration* so we need to
                     // check whether the constant has a default value.
-                    let Some(hax::Def::AssocConst { ty, .. }) = opt_hax_def else {
+                    let Some(hax::Def::AssocConst { ty, .. }) = opt_hax_def.as_deref() else {
                         unreachable!()
                     };
                     if hax_item.has_value {
@@ -302,7 +303,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
                     consts.push((item_name.clone(), ty));
                 }
                 AssocKind::Type => {
-                    let Some(hax::Def::AssocTy { value, .. }) = opt_hax_def else {
+                    let Some(hax::Def::AssocTy { value, .. }) = opt_hax_def.as_deref() else {
                         unreachable!()
                     };
                     if let Some(ty) = value {
