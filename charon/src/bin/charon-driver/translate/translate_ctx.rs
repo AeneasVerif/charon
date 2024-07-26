@@ -97,8 +97,8 @@ pub struct TranslateCtx<'tcx, 'ctx> {
     /// Stack of the translations currently happening. Used to avoid cycles where items need to
     /// translate themselves transitively.
     pub translate_stack: Vec<AnyTransId>,
-    /// Cache the `hax::Def`s to compute them only once each.
-    pub cached_defs: HashMap<DefId, Arc<hax::Def>>,
+    /// Cache the `hax::FullDef`s to compute them only once each.
+    pub cached_defs: HashMap<DefId, Arc<hax::FullDef>>,
 }
 
 /// A translation context for type/global/function bodies.
@@ -319,7 +319,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
                 }
                 DefPathData::Impl => {
                     let def = self.hax_def(cur_id);
-                    let hax::Def::Impl { impl_subject, .. } = &*def else {
+                    let hax::FullDefKind::Impl { impl_subject, .. } = &def.kind else {
                         unreachable!()
                     };
                     // Two cases, depending on whether the impl block is
@@ -434,18 +434,13 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         self.def_id_to_name(DefId::from(def_id))
     }
 
-    pub fn hax_def(&mut self, def_id: impl Into<DefId>) -> Arc<hax::Def> {
-        let def_id = def_id.into();
+    pub fn hax_def(&mut self, def_id: impl Into<DefId>) -> Arc<hax::FullDef> {
+        let def_id: DefId = def_id.into();
         // We return an `Arc` because keeping a borrow would prevent us from doing anything useful
         // with `self`.
         self.cached_defs
             .entry(def_id)
-            .or_insert_with(|| {
-                // Warning: must be careful to use the same `def_id` in the hax state and the query.
-                let hax_state_with_id = hax::State::new_from_state_and_id(&self.hax_state, def_id);
-                let def = self.tcx.def_kind(def_id).sinto(&hax_state_with_id);
-                Arc::new(def)
-            })
+            .or_insert_with(|| Arc::new(def_id.sinto(&self.hax_state)))
             .clone()
     }
 

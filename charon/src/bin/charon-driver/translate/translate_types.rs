@@ -699,25 +699,32 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         &mut self,
         span: rustc_span::Span,
         rust_id: DefId,
-        def: &hax::Def,
+        def: &hax::FullDef,
     ) -> Result<(), Error> {
-        // Add generics from the parent item, recursively (this is useful for closures, as they
-        // could be nested).
-        if let Some(parent) = def.parent() {
-            let parent_id = parent.into();
-            let parent_def = self.t_ctx.hax_def(parent_id);
-            self.push_generics_for_def(span, parent_id, &parent_def)?;
+        use hax::FullDefKind;
+        // Add generics from the parent item, recursively (recursivity is useful for closures, as
+        // they could be nested).
+        match &def.kind {
+            FullDefKind::AssocTy { parent, .. }
+            | FullDefKind::AssocFn { parent, .. }
+            | FullDefKind::AssocConst { parent, .. }
+            | FullDefKind::Closure { parent, .. } => {
+                let parent_id = parent.into();
+                let parent_def = self.t_ctx.hax_def(parent_id);
+                self.push_generics_for_def(span, parent_id, &parent_def)?;
+            }
+            _ => {}
         }
         if let Some((generics, predicates)) = def.generics() {
             // Add the generic params.
             self.push_generic_params(span, generics)?;
             // Add the self trait clause.
-            match def {
-                hax::Def::Impl {
+            match &def.kind {
+                FullDefKind::Impl {
                     impl_subject: hax::ImplSubject::Trait(self_predicate),
                     ..
                 }
-                | hax::Def::Trait { self_predicate, .. } => {
+                | FullDefKind::Trait { self_predicate, .. } => {
                     let trait_rust_id = DefId::from(&self_predicate.trait_ref.def_id);
                     self.register_trait_decl_id(span, trait_rust_id)?;
                     let hax_span = span.sinto(&self.t_ctx.hax_state);
@@ -726,27 +733,27 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 _ => {}
             }
             // Add the predicates.
-            let (origin, location) = match def {
-                hax::Def::Struct { .. }
-                | hax::Def::Union { .. }
-                | hax::Def::Enum { .. }
-                | hax::Def::TyAlias { .. }
-                | hax::Def::AssocTy { .. } => {
+            let (origin, location) = match &def.kind {
+                FullDefKind::Struct { .. }
+                | FullDefKind::Union { .. }
+                | FullDefKind::Enum { .. }
+                | FullDefKind::TyAlias { .. }
+                | FullDefKind::AssocTy { .. } => {
                     (PredicateOrigin::WhereClauseOnType, PredicateLocation::Base)
                 }
-                hax::Def::Fn { .. }
-                | hax::Def::AssocFn { .. }
-                | hax::Def::Const { .. }
-                | hax::Def::AssocConst { .. }
-                | hax::Def::Static { .. } => {
+                FullDefKind::Fn { .. }
+                | FullDefKind::AssocFn { .. }
+                | FullDefKind::Const { .. }
+                | FullDefKind::AssocConst { .. }
+                | FullDefKind::Static { .. } => {
                     (PredicateOrigin::WhereClauseOnFn, PredicateLocation::Base)
                 }
-                hax::Def::Impl { .. } => {
+                FullDefKind::Impl { .. } => {
                     (PredicateOrigin::WhereClauseOnImpl, PredicateLocation::Base)
                 }
                 // TODO: distinguish trait where clauses from trait supertraits. Currently we
                 // consider them all as parent clauses.
-                hax::Def::Trait { .. } => {
+                FullDefKind::Trait { .. } => {
                     let trait_id = self.register_trait_decl_id(span, rust_id)?.unwrap();
                     (
                         PredicateOrigin::WhereClauseOnTrait,
@@ -813,7 +820,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         trans_id: TypeDeclId,
         rust_id: DefId,
         item_meta: ItemMeta,
-        def: &hax::Def,
+        def: &hax::FullDef,
     ) -> Result<TypeDecl, Error> {
         let mut bt_ctx = BodyTransCtx::new(rust_id, self);
 
@@ -825,19 +832,19 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         let generics = bt_ctx.get_generics();
 
         // Translate type body
-        let kind = match def {
+        let kind = match &def.kind {
             _ if item_meta.opacity.is_opaque() => Ok(TypeDeclKind::Opaque),
-            hax::Def::OpaqueTy | hax::Def::ForeignTy => Ok(TypeDeclKind::Opaque),
-            hax::Def::TyAlias { ty, .. } => {
+            hax::FullDefKind::OpaqueTy | hax::FullDefKind::ForeignTy => Ok(TypeDeclKind::Opaque),
+            hax::FullDefKind::TyAlias { ty, .. } => {
                 // We only translate crate-local type aliases so the `unwrap` is ok.
                 let ty = ty.as_ref().unwrap();
                 bt_ctx
                     .translate_ty(span, erase_regions, ty)
                     .map(TypeDeclKind::Alias)
             }
-            hax::Def::Struct { def, .. }
-            | hax::Def::Enum { def, .. }
-            | hax::Def::Union { def, .. } => {
+            hax::FullDefKind::Struct { def, .. }
+            | hax::FullDefKind::Enum { def, .. }
+            | hax::FullDefKind::Union { def, .. } => {
                 bt_ctx.translate_adt_def(trans_id, span, &item_meta, def)
             }
             _ => panic!("Unexpected item when translating types: {def:?}"),

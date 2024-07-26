@@ -89,7 +89,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         def_id: TraitDeclId,
         rust_id: DefId,
         item_meta: ItemMeta,
-        def: &hax::Def,
+        def: &hax::FullDef,
     ) -> Result<TraitDecl, Error> {
         use hax::AssocKind;
         trace!("About to translate trait decl:\n{:?}", rust_id);
@@ -101,10 +101,10 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         let tcx = bt_ctx.t_ctx.tcx;
         let name = bt_ctx.t_ctx.def_id_to_name(rust_id)?;
 
-        let hax::Def::Trait { items, .. } = def else {
+        let hax::FullDefKind::Trait { items, .. } = &def.kind else {
             panic!("Unexpected definition: {def:?}")
         };
-        let items: Vec<(TraitItemName, &hax::AssocItem, Option<Arc<hax::Def>>)> = items
+        let items: Vec<(TraitItemName, &hax::AssocItem, Option<Arc<hax::FullDef>>)> = items
             .iter()
             .map(|item| {
                 let name = TraitItemName(item.name.clone());
@@ -129,7 +129,9 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         for (name, item, def) in &items {
             match &item.kind {
                 AssocKind::Type => {
-                    let hax::Def::AssocTy { predicates, .. } = def.as_deref().unwrap() else {
+                    let hax::FullDefKind::AssocTy { predicates, .. } =
+                        &def.as_deref().unwrap().kind
+                    else {
                         unreachable!()
                     };
                     // TODO: handle generics (i.e. GATs).
@@ -187,7 +189,9 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
                     // Check if the constant has a value (i.e., a body).
                     // We are handling a trait *declaration* so we need to
                     // check whether the constant has a default value.
-                    let Some(hax::Def::AssocConst { ty, .. }) = opt_hax_def.as_deref() else {
+                    let hax::FullDefKind::AssocConst { ty, .. } =
+                        &opt_hax_def.as_deref().unwrap().kind
+                    else {
                         unreachable!()
                     };
                     if hax_item.has_value {
@@ -203,7 +207,9 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
                     consts.push((item_name.clone(), ty));
                 }
                 AssocKind::Type => {
-                    let Some(hax::Def::AssocTy { value, .. }) = opt_hax_def.as_deref() else {
+                    let hax::FullDefKind::AssocTy { value, .. } =
+                        &opt_hax_def.as_deref().unwrap().kind
+                    else {
                         unreachable!()
                     };
                     if let Some(ty) = value {
@@ -271,7 +277,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         def_id: TraitImplId,
         rust_id: DefId,
         item_meta: ItemMeta,
-        def: &hax::Def,
+        def: &hax::FullDef,
     ) -> Result<TraitImpl, Error> {
         trace!("About to translate trait impl:\n{:?}", rust_id);
         trace!("Trait impl id:\n{:?}", def_id);
@@ -284,17 +290,17 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         bt_ctx.push_generics_for_def(span, rust_id, def)?;
         let generics = bt_ctx.get_generics();
 
-        let hax::Def::Impl {
+        let hax::FullDefKind::Impl {
             impl_subject: hax::ImplSubject::Trait(trait_pred),
             items,
             ..
-        } = def
+        } = &def.kind
         else {
             unreachable!()
         };
         let implemented_trait_id = &trait_pred.trait_ref.def_id;
         let implemented_trait_rust_id = implemented_trait_id.into();
-        let items: Vec<(TraitItemName, &hax::AssocItem, Option<Arc<hax::Def>>)> = items
+        let items: Vec<(TraitItemName, &hax::AssocItem, Option<Arc<hax::FullDef>>)> = items
             .iter()
             .map(|item| {
                 let name = TraitItemName(item.name.clone());
@@ -408,9 +414,9 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
                     consts.insert(name, gref);
                 }
                 hax::AssocKind::Type => {
-                    let hax::Def::AssocTy {
+                    let hax::FullDefKind::AssocTy {
                         value: Some(ty), ..
-                    } = item_def.as_deref().unwrap()
+                    } = &item_def.as_deref().unwrap().kind
                     else {
                         unreachable!()
                     };

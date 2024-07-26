@@ -295,7 +295,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
     ) -> Result<(), Error> {
         // Translate the meta information
         let item_meta = self.translate_item_meta_from_rid(rust_id)?;
-        let def: Arc<hax::Def> = self.hax_def(rust_id);
+        let def: Arc<hax::FullDef> = self.hax_def(rust_id);
         match trans_id {
             AnyTransId::Type(id) => {
                 let ty = self.translate_type(id, rust_id, item_meta, &def)?;

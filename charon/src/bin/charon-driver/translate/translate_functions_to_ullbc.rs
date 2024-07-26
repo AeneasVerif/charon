@@ -102,16 +102,16 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
     pub(crate) fn get_item_kind(
         &mut self,
         src: &Option<DepSource>,
-        def: &hax::Def,
+        def: &hax::FullDef,
     ) -> Result<ItemKind, Error> {
-        let assoc_item = match def {
-            hax::Def::AssocTy {
+        let assoc_item = match &def.kind {
+            hax::FullDefKind::AssocTy {
                 associated_item, ..
             }
-            | hax::Def::AssocConst {
+            | hax::FullDefKind::AssocConst {
                 associated_item, ..
             }
-            | hax::Def::AssocFn {
+            | hax::FullDefKind::AssocFn {
                 associated_item, ..
             } => Some(associated_item),
             _ => None,
@@ -1451,15 +1451,15 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         &mut self,
         def_id: DefId,
         item_meta: &ItemMeta,
-        def: &hax::Def,
+        def: &hax::FullDef,
     ) -> Result<FunSig, Error> {
         let erase_regions = false;
         let span = item_meta.span.rust_span();
 
-        let signature = match def {
-            hax::Def::Closure { args, .. } => &args.sig,
-            hax::Def::Fn { sig, .. } => sig,
-            hax::Def::AssocFn { sig, .. } => sig,
+        let signature = match &def.kind {
+            hax::FullDefKind::Closure { args, .. } => &args.sig,
+            hax::FullDefKind::Fn { sig, .. } => sig,
+            hax::FullDefKind::AssocFn { sig, .. } => sig,
             _ => panic!("Unexpected definition for function: {def:?}"),
         };
 
@@ -1517,8 +1517,8 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             hax::Safety::Safe => false,
         };
 
-        let closure_info = match def {
-            hax::Def::Closure { args, .. } => {
+        let closure_info = match &def.kind {
+            hax::FullDefKind::Closure { args, .. } => {
                 let kind = match args.kind {
                     hax::ClosureKind::Fn => ClosureKind::Fn,
                     hax::ClosureKind::FnMut => ClosureKind::FnMut,
@@ -1531,13 +1531,13 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                     .try_collect::<Vec<Ty>>()?;
                 Some(ClosureInfo { kind, state })
             }
-            hax::Def::Fn { .. } => None,
-            hax::Def::AssocFn { .. } => None,
+            hax::FullDefKind::Fn { .. } => None,
+            hax::FullDefKind::AssocFn { .. } => None,
             _ => panic!("Unexpected definition for function: {def:?}"),
         };
 
-        let parent_params_info = match def {
-            hax::Def::AssocFn {
+        let parent_params_info = match &def.kind {
+            hax::FullDefKind::AssocFn {
                 parent,
                 associated_item,
                 ..
@@ -1562,7 +1562,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         Ok(FunSig {
             generics,
             is_unsafe,
-            is_closure: matches!(def, hax::Def::Closure { .. }),
+            is_closure: matches!(&def.kind, hax::FullDefKind::Closure { .. }),
             closure_info,
             parent_params_info,
             inputs,
@@ -1578,7 +1578,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         def_id: FunDeclId,
         rust_id: DefId,
         item_meta: ItemMeta,
-        def: &hax::Def,
+        def: &hax::FullDef,
     ) -> Result<FunDecl, Error> {
         trace!("About to translate function:\n{:?}", rust_id);
         let def_span = item_meta.span.rust_span();
@@ -1633,7 +1633,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         def_id: GlobalDeclId,
         rust_id: DefId,
         item_meta: ItemMeta,
-        def: &hax::Def,
+        def: &hax::FullDef,
     ) -> Result<GlobalDecl, Error> {
         trace!("About to translate global:\n{:?}", rust_id);
         let span = item_meta.span.rust_span();
@@ -1657,10 +1657,10 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         let generics = bt_ctx.get_generics();
 
         trace!("Translating global type");
-        let ty = match def {
-            hax::Def::Const { ty, .. }
-            | hax::Def::AssocConst { ty, .. }
-            | hax::Def::Static { ty, .. } => ty,
+        let ty = match &def.kind {
+            hax::FullDefKind::Const { ty, .. }
+            | hax::FullDefKind::AssocConst { ty, .. }
+            | hax::FullDefKind::Static { ty, .. } => ty,
             _ => panic!("Unexpected def for constant: {def:?}"),
         };
         let erase_regions = false; // This doesn't matter: there shouldn't be any regions
