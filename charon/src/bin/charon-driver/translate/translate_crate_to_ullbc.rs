@@ -200,7 +200,8 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
                 // to check that all the opaque modules given as arguments actually
                 // exist
                 trace!("{:?}", def_id);
-                let item_meta = self.translate_item_meta_from_rid(def_id)?;
+                let def = self.hax_def(def_id);
+                let item_meta = self.translate_item_meta(&def)?;
                 if item_meta.opacity.is_opaque() {
                     // Ignore
                     trace!("Ignoring module [{:?}] because marked as opaque", def_id);
@@ -277,7 +278,6 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
                     Ok(Err(_)) => Err(()),
                     // Panic
                     Err(_) => {
-                        let span = ctx.tcx.def_span(rust_id);
                         register_error_or_panic!(
                             ctx,
                             span,
@@ -307,8 +307,8 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         trans_id: AnyTransId,
     ) -> Result<(), Error> {
         // Translate the meta information
-        let item_meta = self.translate_item_meta_from_rid(rust_id)?;
         let def: Arc<hax::FullDef> = self.hax_def(rust_id);
+        let item_meta = self.translate_item_meta(&def)?;
         match trans_id {
             AnyTransId::Type(id) => {
                 let ty = self.translate_type(id, rust_id, item_meta, &def)?;

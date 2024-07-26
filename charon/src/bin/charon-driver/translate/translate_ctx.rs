@@ -431,15 +431,6 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
             .clone()
     }
 
-    /// Compute the span information for a Rust definition identified by its id.
-    pub(crate) fn translate_span_from_rid(&mut self, def_id: DefId) -> Span {
-        // Retrieve the span from the def id.
-        // Rem.: we use [TyCtxt::def_span], not [TyCtxt::def_ident_span] to retrieve the span.
-        let rspan = self.tcx.def_span(def_id);
-        let rspan = rspan.sinto(&self.hax_state);
-        self.translate_span_from_rspan(rspan)
-    }
-
     pub(crate) fn translate_attr_info_from_rid(&mut self, def_id: DefId, span: Span) -> AttrInfo {
         // Default to `false` for impl blocks and closures.
         let public = self
@@ -472,12 +463,10 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         }
     }
 
-    /// Compute the meta information for a Rust item identified by its id.
-    pub(crate) fn translate_item_meta_from_rid(
-        &mut self,
-        def_id: DefId,
-    ) -> Result<ItemMeta, Error> {
-        let span = self.translate_span_from_rid(def_id);
+    /// Compute the meta information for a Rust item.
+    pub(crate) fn translate_item_meta(&mut self, def: &hax::FullDef) -> Result<ItemMeta, Error> {
+        let def_id = (&def.def_id).into();
+        let span = self.translate_span_from_rspan(def.span.clone());
         let name = self.def_id_to_name(def_id)?;
         let attr_info = self.translate_attr_info_from_rid(def_id, span);
         let is_local = def_id.is_local();
@@ -861,8 +850,16 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         // Check if we need to filter
         {
             // Retrieve the id of the implemented trait decl
-            let id = self.tcx.trait_id_of_impl(rust_id).unwrap();
-            let _ = self.register_trait_decl_id(src, id)?;
+            let def = self.hax_def(rust_id);
+            let hax::FullDefKind::Impl {
+                impl_subject: hax::ImplSubject::Trait(trait_pred),
+                ..
+            } = def.kind()
+            else {
+                unreachable!()
+            };
+            let trait_rust_id = (&trait_pred.trait_ref.def_id).into();
+            let _ = self.register_trait_decl_id(src, trait_rust_id)?;
         }
 
         let id = OrdRustId::TraitImpl(rust_id);
