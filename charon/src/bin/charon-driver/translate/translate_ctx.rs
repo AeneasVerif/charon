@@ -14,7 +14,6 @@ use rustc_ast_pretty::pprust;
 use rustc_error_messages::MultiSpan;
 use rustc_hir::def_id::DefId;
 use rustc_hir::Node as HirNode;
-use rustc_hir::{Item, ItemKind};
 use rustc_middle::ty::TyCtxt;
 use std::cmp::{Ord, PartialOrd};
 use std::collections::HashMap;
@@ -415,43 +414,6 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
 
         trace!("{:?}", name);
         Ok(Name { name })
-    }
-
-    /// Returns an optional name for an HIR item.
-    ///
-    /// If the option is `None`, it means the item is to be ignored (example: it
-    /// is a `use` item).
-    ///
-    /// Rk.: this function is only used by [crate::register], and implemented with this
-    /// context in mind.
-    pub fn hir_item_to_name(&mut self, item: &Item) -> Result<Option<Name>, Error> {
-        let def_id = item.owner_id.to_def_id();
-
-        let name = match &item.kind {
-            ItemKind::OpaqueTy(..) => unimplemented!(),
-            ItemKind::Union(..) => unimplemented!(),
-            ItemKind::ExternCrate(..) => {
-                // We ignore this -
-                // TODO: investigate when extern crates appear, and why
-                None
-            }
-            ItemKind::Use(..) => None,
-            ItemKind::TyAlias(..)
-            | ItemKind::Enum(..)
-            | ItemKind::Struct(..)
-            | ItemKind::Fn(..)
-            | ItemKind::Impl(..)
-            | ItemKind::Mod(..)
-            | ItemKind::ForeignMod { .. }
-            | ItemKind::Const(..)
-            | ItemKind::Static(..)
-            | ItemKind::Macro(..)
-            | ItemKind::Trait(..) => Some(self.def_id_to_name(def_id)?),
-            _ => {
-                unimplemented!("{:?}", item.kind);
-            }
-        };
-        Ok(name)
     }
 
     pub fn hax_def_id_to_name(&mut self, def_id: &hax::DefId) -> Result<Name, Error> {

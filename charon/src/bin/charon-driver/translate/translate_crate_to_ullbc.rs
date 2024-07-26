@@ -8,7 +8,7 @@ use charon_lib::transform::TransformCtx;
 use hax_frontend_exporter as hax;
 use hax_frontend_exporter::SInto;
 use rustc_hir::def_id::DefId;
-use rustc_hir::{ForeignItemKind, ImplItemKind, Item, ItemKind};
+use rustc_hir::{ForeignItemKind, ItemId, ItemKind};
 use rustc_middle::ty::TyCtxt;
 use std::collections::{HashMap, HashSet};
 use std::sync::Arc;
@@ -24,7 +24,9 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
     /// This is useful for debugging purposes, to check how we reached a point
     /// (in particular if we want to figure out where we failed to consider a
     /// definition as opaque).
-    fn register_local_hir_item(&mut self, top_item: bool, item: &Item) -> Result<(), Error> {
+    fn register_local_hir_item(&mut self, top_item: bool, item_id: ItemId) -> Result<(), Error> {
+        let hir_map = self.tcx.hir();
+        let item = hir_map.item(item_id);
         trace!("{:?}", item);
 
         // The annoying thing is that when iterating over the items in a crate, we
@@ -35,18 +37,35 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         // item (not an item transitively reachable from an item which is not
         // opaque) and inside an opaque module (or sub-module), we ignore it.
         if top_item {
-            match self.hir_item_to_name(item)? {
-                None => {
+            let def_id = item.owner_id.to_def_id();
+            match &item.kind {
+                ItemKind::ExternCrate(..) | ItemKind::Use(..) => {
                     // This kind of item is to be ignored
                     trace!("Ignoring {:?} (ignoring item kind)", item.item_id());
                     return Ok(());
                 }
-                Some(item_name) => {
-                    if self.is_opaque_name(&item_name) {
+                ItemKind::OpaqueTy(..)
+                | ItemKind::Union(..)
+                | ItemKind::TyAlias(..)
+                | ItemKind::Enum(..)
+                | ItemKind::Struct(..)
+                | ItemKind::Fn(..)
+                | ItemKind::Impl(..)
+                | ItemKind::Mod(..)
+                | ItemKind::ForeignMod { .. }
+                | ItemKind::Const(..)
+                | ItemKind::Static(..)
+                | ItemKind::Macro(..)
+                | ItemKind::Trait(..) => {
+                    let name = self.def_id_to_name(def_id)?;
+                    if self.is_opaque_name(&name) {
                         trace!("Ignoring {:?} (marked as opaque)", item.item_id());
                         return Ok(());
                     }
                     // Continue
+                }
+                _ => {
+                    unimplemented!("{:?}", item.kind);
                 }
             }
         }
@@ -60,8 +79,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
                 Ok(())
             }
             ItemKind::OpaqueTy(_) => unimplemented!(),
-            ItemKind::Union(..) => unimplemented!(),
-            ItemKind::Enum(..) | ItemKind::Struct(_, _) => {
+            ItemKind::Enum(..) | ItemKind::Struct(_, _) | ItemKind::Union(..) => {
                 let _ = self.register_type_decl_id(&None, def_id);
                 Ok(())
             }
@@ -99,69 +117,67 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
                 Ok(())
             }
 
-            ItemKind::Impl(impl_block) => {
+            ItemKind::Impl(..) => {
                 trace!("impl");
-                // Sanity checks
-                // TODO: make proper error messages
-                use rustc_hir::{Defaultness, ImplPolarity};
-                // About polarity:
-                // [https://doc.rust-lang.org/beta/unstable-book/language-features/negative-impls.html]
-                // Not sure about what I should do about it. Should I do anything, actually?
-                // This seems useful to enforce some discipline on the user-side, but not
-                // necessary for analysis purposes.
-                assert!(impl_block.polarity == ImplPolarity::Positive);
+                let def = self.hax_def(def_id);
+                let hax::FullDefKind::Impl {
+                    items,
+                    impl_subject,
+                    ..
+                } = &def.kind
+                else {
+                    unreachable!()
+                };
 
                 // If this is a trait implementation, register it
-                if self.tcx.trait_id_of_impl(def_id).is_some() {
+                if let hax::ImplSubject::Trait(..) = impl_subject {
                     let _ = self.register_trait_impl_id(&None, def_id);
                 }
 
                 // Explore the items
-                let hir_map = self.tcx.hir();
-                for impl_item_ref in impl_block.items {
-                    // impl_item_ref only gives the reference of the impl item:
-                    // we need to look it up
-                    let impl_item = hir_map.impl_item(impl_item_ref.id);
-
-                    // TODO: make a proper error message
-                    assert!(impl_item.defaultness == Defaultness::Final);
-
-                    let def_id = impl_item.owner_id.to_def_id();
-
+                for item in items {
+                    let def_id = (&item.def_id).into();
                     // Match on the impl item kind
-                    match &impl_item.kind {
-                        ImplItemKind::Const(_, _) => {
-                            // Can happen in traits:
+                    match &item.kind {
+                        hax::AssocKind::Const => {
+                            // Associated constant:
                             // ```
                             // trait Foo {
                             //   const C : usize;
                             // }
-                            //
                             // impl Foo for Bar {
+                            //   const C = 32; // HERE
+                            // }
+                            // // or
+                            // impl Bar {
                             //   const C = 32; // HERE
                             // }
                             // ```
                             let _ = self.register_global_decl_id(&None, def_id);
                         }
-                        ImplItemKind::Type(_) => {
-                            // Trait type:
+                        hax::AssocKind::Type => {
+                            // Associated type:
                             // ```
                             // trait Foo {
                             //   type T;
                             // }
-                            //
                             // impl Foo for Bar {
+                            //   type T = bool; // HERE
+                            // }
+                            // // or
+                            // impl Bar {
                             //   type T = bool; // HERE
                             // }
                             // ```
                             //
-                            // Do nothing for now: we won't generate a top-level definition
-                            // for this, and handle it when translating the trait implementation
-                            // this item belongs to.
-                            let tcx = self.tcx;
-                            assert!(tcx.associated_item(def_id).trait_item_def_id.is_some());
+                            // Only handle inherent associated types. Associated types in trait
+                            // impls will be processed when translating the impl.
+                            if let hax::ImplSubject::Inherent(_) = impl_subject {
+                                let _ = self.register_type_decl_id(&None, def_id);
+                            }
                         }
-                        ImplItemKind::Fn(_, _) => {
+                        hax::AssocKind::Fn => {
+                            // Trait method implementation or inherent method.
                             let _ = self.register_fun_decl_id(&None, def_id);
                         }
                     }
@@ -190,18 +206,15 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
                     trace!("Ignoring module [{:?}] because marked as opaque", def_id);
                 } else {
                     trace!("Diving into module [{:?}]", def_id);
-                    let hir_map = self.tcx.hir();
                     for item_id in module.item_ids {
                         // Lookup and register the item
-                        let item = hir_map.item(*item_id);
-                        self.register_local_hir_item(false, item)?;
+                        self.register_local_hir_item(false, *item_id)?;
                     }
                 }
                 Ok(())
             }
             ItemKind::ForeignMod { items, .. } => {
                 trace!("Diving into `extern` block [{:?}]", def_id);
-                let hir_map = self.tcx.hir();
                 for item in *items {
                     // Lookup and register the item
                     let item = hir_map.foreign_item(item.id);
@@ -397,18 +410,10 @@ pub fn translate<'tcx, 'ctx>(
     // explore all the items in the crate.
     let hir = tcx.hir();
     for item_id in hir.root_module().item_ids {
-        let item_id = item_id.hir_id();
-        {
-            let mut ctx = std::panic::AssertUnwindSafe(&mut ctx);
-            // Stopgap measure because there are still many panics in charon and hax.
-            // If registration fails we simply skip the item.
-            let _ = std::panic::catch_unwind(move || {
-                let rustc_hir::Node::Item(item) = ctx.tcx.hir_node(item_id) else {
-                    unreachable!()
-                };
-                ctx.register_local_hir_item(true, item)
-            });
-        }
+        let mut ctx = std::panic::AssertUnwindSafe(&mut ctx);
+        // Stopgap measure because there are still many panics in charon and hax.
+        // If registration fails we simply skip the item.
+        let _ = std::panic::catch_unwind(move || ctx.register_local_hir_item(true, *item_id));
     }
 
     trace!(
