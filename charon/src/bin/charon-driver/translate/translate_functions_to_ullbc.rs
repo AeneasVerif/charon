@@ -136,8 +136,8 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
                     hax::AssocItemContainer::TraitImplContainer {
                         impl_id,
                         implemented_trait,
-                        implemented_trait_item,
                         overrides_default,
+                        ..
                     } => {
                         // The trait id should be Some(...): trait markers (that we may eliminate)
                         // don't have methods.
@@ -147,13 +147,10 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
 
                         let impl_id = self.register_trait_impl_id(src, impl_id.into())?.unwrap();
 
-                        let item_name =
-                            self.translate_trait_item_name(implemented_trait_item.into())?;
-
                         ItemKind::TraitItemImpl {
                             impl_id,
                             trait_id,
-                            item_name,
+                            item_name: TraitItemName(assoc.name.clone()),
                             provided: *overrides_default,
                         }
                     }
@@ -1396,15 +1393,14 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         arg_count: usize,
         item_meta: &ItemMeta,
     ) -> Result<Result<Body, Opaque>, Error> {
-        let tcx = self.t_ctx.tcx;
-
         if item_meta.opacity.with_private_contents().is_opaque() {
             // The bodies of foreign functions are opaque by default.
             return Ok(Err(Opaque));
         }
 
         // Retrieve the body
-        let Some(body) = get_mir_for_def_id_and_level(tcx, rust_id, self.t_ctx.options.mir_level)
+        let Some(body) =
+            get_mir_for_def_id_and_level(self.t_ctx.tcx, rust_id, self.t_ctx.options.mir_level)
         else {
             return Ok(Err(Opaque));
         };
@@ -1457,7 +1453,6 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         item_meta: &ItemMeta,
         def: &hax::Def,
     ) -> Result<FunSig, Error> {
-        let tcx = self.t_ctx.tcx;
         let erase_regions = false;
         let span = item_meta.span.rust_span();
 
@@ -1467,10 +1462,6 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             hax::Def::AssocFn { sig, .. } => sig,
             _ => panic!("Unexpected definition for function: {def:?}"),
         };
-
-        // Some debugging information:
-        trace!("Def id: {def_id:?}:\n\n- generics:\n{:?}\n\n- signature bound vars:\n{:?}\n\n- signature:\n{:?}\n",
-               tcx.generics_of(def_id), signature.bound_vars, signature);
 
         // The parameters (and in particular the lifetimes) are split between
         // early bound and late bound parameters. See those blog posts for explanations:
@@ -1551,7 +1542,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 associated_item,
                 ..
             } => {
-                let parent_def = self.t_ctx.hax_def(parent.into());
+                let parent_def = self.t_ctx.hax_def(parent);
                 let (parent_generics, parent_predicates) = parent_def.generics().unwrap();
                 let mut params_info = self.count_generics(parent_generics, parent_predicates)?;
                 // If this is a trait decl method, we need to adjust the number of parent clauses
@@ -1665,12 +1656,15 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         bt_ctx.push_generics_for_def(span, rust_id, def)?;
         let generics = bt_ctx.get_generics();
 
-        let hax_state = &bt_ctx.hax_state;
-
         trace!("Translating global type");
-        let mir_ty = bt_ctx.t_ctx.tcx.type_of(rust_id).instantiate_identity();
+        let ty = match def {
+            hax::Def::Const { ty, .. }
+            | hax::Def::AssocConst { ty, .. }
+            | hax::Def::Static { ty, .. } => ty,
+            _ => panic!("Unexpected def for constant: {def:?}"),
+        };
         let erase_regions = false; // This doesn't matter: there shouldn't be any regions
-        let ty = bt_ctx.translate_ty(span, erase_regions, &mir_ty.sinto(hax_state))?;
+        let ty = bt_ctx.translate_ty(span, erase_regions, ty)?;
 
         // Translate its body like the body of a function. This returns `Opaque if we can't/decide
         // not to translate this body.

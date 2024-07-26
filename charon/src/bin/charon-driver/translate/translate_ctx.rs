@@ -287,21 +287,13 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         let def_path = tcx.def_path(def_id);
         let crate_name = tcx.crate_name(def_path.krate).to_string();
 
-        let parents: Vec<DefId> = {
-            let mut parents = vec![def_id];
-            let mut cur_id = def_id;
-            while let Some(parent) = tcx.opt_parent(cur_id) {
-                parents.push(parent);
-                cur_id = parent;
-            }
-            parents.into_iter().rev().collect()
-        };
-
         // Rk.: below we try to be as tight as possible with regards to sanity
         // checks, to make sure we understand what happens with def paths, and
         // fail whenever we get something which is even slightly outside what
         // we expect.
-        for cur_id in parents {
+        let parents: Vec<DefId> =
+            std::iter::successors(Some(def_id), |cur_id| tcx.opt_parent(*cur_id)).collect();
+        for cur_id in parents.into_iter().rev() {
             let data = tcx.def_key(cur_id).disambiguated_data;
             // Match over the key data
             let disambiguator = Disambiguator::new(data.disambiguator as usize);
@@ -326,31 +318,31 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
                     name.push(PathElem::Ident(crate_name.clone(), disambiguator));
                 }
                 DefPathData::Impl => {
+                    let def = self.hax_def(cur_id);
+                    let hax::Def::Impl { impl_subject, .. } = &*def else {
+                        unreachable!()
+                    };
                     // Two cases, depending on whether the impl block is
                     // a "regular" impl block (`impl Foo { ... }`) or a trait
                     // implementation (`impl Bar for Foo { ... }`).
-                    let impl_elem = match self.tcx.impl_trait_ref(cur_id) {
+                    let impl_elem = match impl_subject {
                         // Inherent impl ("regular" impl)
-                        None => {
+                        hax::ImplSubject::Inherent(ty) => {
+                            let erase_regions = false;
+
                             // We need to convert the type, which may contain quantified
                             // substs and bounds. In order to properly do so, we introduce
                             // a body translation context.
                             let mut bt_ctx = BodyTransCtx::new(cur_id, self);
 
-                            let def = bt_ctx.t_ctx.hax_def(cur_id);
                             bt_ctx.push_generics_for_def(span, cur_id, &def)?;
                             let generics = bt_ctx.get_generics();
 
-                            let erase_regions = false;
-                            let ty = tcx
-                                .type_of(cur_id)
-                                .instantiate_identity()
-                                .sinto(&bt_ctx.hax_state);
                             let ty = bt_ctx.translate_ty(span, erase_regions, &ty)?;
                             ImplElem::Ty(generics, ty)
                         }
                         // Trait implementation
-                        Some(_) => {
+                        hax::ImplSubject::Trait(..) => {
                             let impl_id = self.register_trait_impl_id(&None, cur_id)?;
                             if let Some(impl_id) = impl_id {
                                 ImplElem::Trait(impl_id)
@@ -442,7 +434,8 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         self.def_id_to_name(DefId::from(def_id))
     }
 
-    pub fn hax_def(&mut self, def_id: DefId) -> Arc<hax::Def> {
+    pub fn hax_def(&mut self, def_id: impl Into<DefId>) -> Arc<hax::Def> {
+        let def_id = def_id.into();
         // We return an `Arc` because keeping a borrow would prevent us from doing anything useful
         // with `self`.
         self.cached_defs

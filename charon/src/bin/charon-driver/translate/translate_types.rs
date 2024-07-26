@@ -10,6 +10,7 @@ use charon_lib::pretty::FmtWithCtx;
 use core::convert::*;
 use hax::Visibility;
 use hax_frontend_exporter as hax;
+use hax_frontend_exporter::SInto;
 use rustc_hir::def_id::DefId;
 
 /// Small helper: we ignore some region names (when they are equal to "'_")
@@ -712,11 +713,15 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             self.push_generic_params(span, generics)?;
             // Add the self trait clause.
             match def {
-                hax::Def::Impl { of_trait: true, .. } => {
-                    self.translate_trait_impl_self_trait_clause(rust_id)?;
+                hax::Def::Impl {
+                    impl_subject: hax::ImplSubject::Trait(self_predicate),
+                    ..
                 }
-                hax::Def::Trait { .. } => {
-                    self.translate_trait_decl_self_trait_clause(rust_id)?;
+                | hax::Def::Trait { self_predicate, .. } => {
+                    let trait_rust_id = DefId::from(&self_predicate.trait_ref.def_id);
+                    self.register_trait_decl_id(span, trait_rust_id)?;
+                    let hax_span = span.sinto(&self.t_ctx.hax_state);
+                    self.translate_self_trait_clause(&hax_span, &self_predicate)?;
                 }
                 _ => {}
             }
