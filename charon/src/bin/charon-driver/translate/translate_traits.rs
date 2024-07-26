@@ -465,12 +465,11 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
                     let ty = match partial_types.get(&name) {
                         Some(ty) => ty.clone(),
                         None => {
-                            // The item is not defined in the trait impl:
-                            // the trait decl *must* define a default value.
-                            // TODO: should we normalize the type?
+                            // The item is not defined in the trait impl: the trait decl *must*
+                            // define a default value.
                             let ty = tcx
                                 .type_of(item.def_id)
-                                .instantiate_identity()
+                                .instantiate(tcx, rust_implemented_trait_ref.args)
                                 .sinto(&bt_ctx.hax_state);
                             bt_ctx.translate_ty(item_span, erase_regions, &ty)?
                         }

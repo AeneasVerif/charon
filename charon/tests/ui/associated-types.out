@@ -173,6 +173,18 @@ enum test_crate::cow::Cow<'a, B>
 |  Owned(@TraitClause0::Owned)
 
 
+trait test_crate::params::Foo<'a, Self, T>
+{
+    type X
+    type Item
+}
+
+impl<'a, T> test_crate::params::{impl test_crate::params::Foo<'a, core::option::Option<T>> for ()}<'a, T> : test_crate::params::Foo<'a, (), core::option::Option<T>>
+{
+    type X = &'a (())
+    type Item = &'a ((core::option::Option<T>, test_crate::params::{impl test_crate::params::Foo<'a, core::option::Option<T>> for ()}<'_, T>::X))
+}
+
 fn test_crate::Foo::use_item<'a, '_1, Self>(@1: &'_1 (Self::Item)) -> &'_1 (Self::Item)
 {
     let @0: &'_ (Self::Item); // return
