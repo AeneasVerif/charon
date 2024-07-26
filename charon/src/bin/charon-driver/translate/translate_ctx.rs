@@ -99,6 +99,9 @@ pub struct TranslateCtx<'tcx, 'ctx> {
     pub translate_stack: Vec<AnyTransId>,
     /// Cache the `hax::FullDef`s to compute them only once each.
     pub cached_defs: HashMap<DefId, Arc<hax::FullDef>>,
+    /// Cache the `PathElem`s to compute them only once each. It's an `Option` because some
+    /// `DefId`s (e.g. `extern {}` blocks) don't appear in the `Name`.
+    pub cached_path_elems: HashMap<DefId, Option<PathElem>>,
 }
 
 /// A translation context for type/global/function bodies.
@@ -225,6 +228,119 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         }
     }
 
+    pub fn def_id_to_path_elem(
+        &mut self,
+        span: rustc_span::Span,
+        def_id: DefId,
+    ) -> Result<Option<PathElem>, Error> {
+        if let Some(path_elem) = self.cached_path_elems.get(&def_id) {
+            return Ok(path_elem.clone());
+        }
+        // Warning: we can't call `hax_def` unconditionally, because this may cause MIR
+        // stealing issues. E.g.:
+        // ```rust
+        // pub const SIZE: usize = 32;
+        // // Causes the MIR of `SIZE` to get optimized, stealing its `mir_built`.
+        // pub fn f(_x: &[u32; SIZE]) {}
+        // ```
+        // Rk.: below we try to be as tight as possible with regards to sanity
+        // checks, to make sure we understand what happens with def paths, and
+        // fail whenever we get something which is even slightly outside what
+        // we expect.
+        let data = self.tcx.def_key(def_id).disambiguated_data;
+        // Match over the key data
+        let disambiguator = Disambiguator::new(data.disambiguator as usize);
+        use rustc_hir::definitions::DefPathData;
+        let path_elem = match &data.data {
+            DefPathData::TypeNs(symbol) => {
+                error_assert!(self, span, data.disambiguator == 0); // Sanity check
+                Some(PathElem::Ident(symbol.to_string(), disambiguator))
+            }
+            DefPathData::ValueNs(symbol) => {
+                // I think `disambiguator != 0` only with names introduced by macros (though
+                // not sure).
+                Some(PathElem::Ident(symbol.to_string(), disambiguator))
+            }
+            DefPathData::CrateRoot => {
+                // Sanity check
+                error_assert!(self, span, data.disambiguator == 0);
+                // We add the crate name unconditionally elsewhere
+                None
+            }
+            DefPathData::Impl => {
+                let def = self.hax_def(def_id);
+                let hax::FullDefKind::Impl { impl_subject, .. } = &def.kind else {
+                    unreachable!()
+                };
+                // Two cases, depending on whether the impl block is
+                // a "regular" impl block (`impl Foo { ... }`) or a trait
+                // implementation (`impl Bar for Foo { ... }`).
+                let impl_elem = match impl_subject {
+                    // Inherent impl ("regular" impl)
+                    hax::ImplSubject::Inherent(ty) => {
+                        let erase_regions = false;
+
+                        // We need to convert the type, which may contain quantified
+                        // substs and bounds. In order to properly do so, we introduce
+                        // a body translation context.
+                        let mut bt_ctx = BodyTransCtx::new(def_id, self);
+
+                        bt_ctx.push_generics_for_def(span, def_id, &def)?;
+                        let generics = bt_ctx.get_generics();
+
+                        let ty = bt_ctx.translate_ty(span, erase_regions, &ty)?;
+                        ImplElem::Ty(generics, ty)
+                    }
+                    // Trait implementation
+                    hax::ImplSubject::Trait(..) => {
+                        let impl_id = self.register_trait_impl_id(&None, def_id)?;
+                        if let Some(impl_id) = impl_id {
+                            ImplElem::Trait(impl_id)
+                        } else {
+                            error_or_panic!(self, span, "The trait reference was ignored while we need it to compute the name")
+                        }
+                    }
+                };
+
+                Some(PathElem::Impl(impl_elem, disambiguator))
+            }
+            DefPathData::OpaqueTy => {
+                // TODO: do nothing for now
+                None
+            }
+            DefPathData::MacroNs(symbol) => {
+                error_assert!(self, span, data.disambiguator == 0); // Sanity check
+
+                // There may be namespace collisions between, say, function
+                // names and macros (not sure). However, this isn't much
+                // of an issue here, because for now we don't expose macros
+                // in the AST, and only use macro names in [register], for
+                // instance to filter opaque modules.
+                Some(PathElem::Ident(symbol.to_string(), disambiguator))
+            }
+            DefPathData::Closure => {
+                // TODO: this is not very satisfactory, but on the other hand
+                // we should be able to extract closures in local let-bindings
+                // (i.e., we shouldn't have to introduce top-level let-bindings).
+                Some(PathElem::Ident("closure".to_string(), disambiguator))
+            }
+            DefPathData::ForeignMod => {
+                // Do nothing, functions in `extern` blocks are in the same namespace as the
+                // block.
+                None
+            }
+            _ => {
+                error_or_panic!(
+                    self,
+                    span,
+                    format!("Unexpected DefPathData for `{def_id:?}`: {data:?}")
+                );
+            }
+        };
+        self.cached_path_elems.insert(def_id, path_elem.clone());
+        Ok(path_elem)
+    }
+
     /// Retrieve an item name from a [DefId].
     pub fn def_id_to_name(&mut self, def_id: DefId) -> Result<Name, Error> {
         trace!("{:?}", def_id);
@@ -279,114 +395,23 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         // ```
         //
         // The names we will generate for `foo` and `bar` are:
-        // `[Ident("test"), Ident("bla"), Ident("Foo"), Disambiguator(0), Ident("foo")]`
-        // `[Ident("test"), Ident("bla"), Ident("Foo"), Disambiguator(1), Ident("bar")]`
-        let mut found_crate_name = false;
+        // `[Ident("test"), Ident("bla"), Ident("Foo"), Impl(impl<T> Ty<T>, Disambiguator(0)), Ident("foo")]`
+        // `[Ident("test"), Ident("bla"), Ident("Foo"), Impl(impl<T> Ty<T>, Disambiguator(1)), Ident("bar")]`
         let mut name: Vec<PathElem> = Vec::new();
 
-        let def_path = tcx.def_path(def_id);
-        let crate_name = tcx.crate_name(def_path.krate).to_string();
-
-        // Rk.: below we try to be as tight as possible with regards to sanity
-        // checks, to make sure we understand what happens with def paths, and
-        // fail whenever we get something which is even slightly outside what
-        // we expect.
-        let parents: Vec<DefId> =
-            std::iter::successors(Some(def_id), |cur_id| tcx.opt_parent(*cur_id)).collect();
-        for cur_id in parents.into_iter().rev() {
-            let data = tcx.def_key(cur_id).disambiguated_data;
-            // Match over the key data
-            let disambiguator = Disambiguator::new(data.disambiguator as usize);
-            use rustc_hir::definitions::DefPathData;
-            match &data.data {
-                DefPathData::TypeNs(symbol) => {
-                    error_assert!(self, span, data.disambiguator == 0); // Sanity check
-                    name.push(PathElem::Ident(symbol.to_string(), disambiguator));
-                }
-                DefPathData::ValueNs(symbol) => {
-                    // I think `disambiguator != 0` only with names introduced by macros (though
-                    // not sure).
-                    name.push(PathElem::Ident(symbol.to_string(), disambiguator));
-                }
-                DefPathData::CrateRoot => {
-                    // Sanity check
-                    error_assert!(self, span, data.disambiguator == 0);
-
-                    // This should be the beginning of the path
-                    error_assert!(self, span, name.is_empty());
-                    found_crate_name = true;
-                    name.push(PathElem::Ident(crate_name.clone(), disambiguator));
-                }
-                DefPathData::Impl => {
-                    let def = self.hax_def(cur_id);
-                    let hax::FullDefKind::Impl { impl_subject, .. } = &def.kind else {
-                        unreachable!()
-                    };
-                    // Two cases, depending on whether the impl block is
-                    // a "regular" impl block (`impl Foo { ... }`) or a trait
-                    // implementation (`impl Bar for Foo { ... }`).
-                    let impl_elem = match impl_subject {
-                        // Inherent impl ("regular" impl)
-                        hax::ImplSubject::Inherent(ty) => {
-                            let erase_regions = false;
-
-                            // We need to convert the type, which may contain quantified
-                            // substs and bounds. In order to properly do so, we introduce
-                            // a body translation context.
-                            let mut bt_ctx = BodyTransCtx::new(cur_id, self);
-
-                            bt_ctx.push_generics_for_def(span, cur_id, &def)?;
-                            let generics = bt_ctx.get_generics();
-
-                            let ty = bt_ctx.translate_ty(span, erase_regions, &ty)?;
-                            ImplElem::Ty(generics, ty)
-                        }
-                        // Trait implementation
-                        hax::ImplSubject::Trait(..) => {
-                            let impl_id = self.register_trait_impl_id(&None, cur_id)?;
-                            if let Some(impl_id) = impl_id {
-                                ImplElem::Trait(impl_id)
-                            } else {
-                                error_or_panic!(self, span, "The trait reference was ignored while we need it to compute the name")
-                            }
-                        }
-                    };
-
-                    name.push(PathElem::Impl(impl_elem, disambiguator));
-                }
-                DefPathData::OpaqueTy => {
-                    // TODO: do nothing for now
-                }
-                DefPathData::MacroNs(symbol) => {
-                    error_assert!(self, span, data.disambiguator == 0); // Sanity check
-
-                    // There may be namespace collisions between, say, function
-                    // names and macros (not sure). However, this isn't much
-                    // of an issue here, because for now we don't expose macros
-                    // in the AST, and only use macro names in [register], for
-                    // instance to filter opaque modules.
-                    name.push(PathElem::Ident(symbol.to_string(), disambiguator));
-                }
-                DefPathData::Closure => {
-                    // TODO: this is not very satisfactory, but on the other hand
-                    // we should be able to extract closures in local let-bindings
-                    // (i.e., we shouldn't have to introduce top-level let-bindings).
-                    name.push(PathElem::Ident("closure".to_string(), disambiguator))
-                }
-                DefPathData::ForeignMod => {
-                    // Do nothing, functions in `extern` blocks are in the same namespace as the
-                    // block.
-                }
-                _ => {
-                    error_or_panic!(self, span, format!("Unexpected DefPathData: {:?}", data));
-                }
+        // Note: we can't use `hax_def`, because this may cause MIR stealing issues.
+        for cur_id in std::iter::successors(Some(def_id), |cur_id| tcx.opt_parent(*cur_id)) {
+            if let Some(path_elem) = self.def_id_to_path_elem(span, cur_id)? {
+                name.push(path_elem);
             }
         }
 
-        // We always add the crate name
-        if !found_crate_name {
-            name.push(PathElem::Ident(crate_name, Disambiguator::new(0)));
-        }
+        // We always add the crate name at the beginning.
+        let def_path = tcx.def_path(def_id);
+        let crate_name = tcx.crate_name(def_path.krate).to_string();
+        name.push(PathElem::Ident(crate_name, Disambiguator::new(0)));
+
+        name.reverse();
 
         trace!("{:?}", name);
         Ok(Name { name })
