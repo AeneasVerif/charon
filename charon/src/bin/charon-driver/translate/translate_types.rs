@@ -43,9 +43,11 @@ pub fn translate_region_name(region: &hax::Region) -> Option<String> {
             BrNamed(_, symbol) => Some(symbol.clone()),
             BrEnv => Some("@env".to_owned()),
         },
-        _ => {
-            unreachable!();
-        }
+        ReErased => None,
+        ReStatic => todo!(),
+        ReVar(_) => todo!(),
+        RePlaceholder(_) => todo!(),
+        ReError(_) => todo!(),
     };
 
     // We check twice in the case of late bound regions, but it is ok...
@@ -524,35 +526,20 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     /// Note that the type may be external, in which case we translate the body
     /// only if it is public (i.e., it is a public enumeration, or it is a
     /// struct with only public fields).
-    fn translate_type_body(
+    fn translate_adt_def(
         &mut self,
         trans_id: TypeDeclId,
-        rust_id: DefId,
+        def_span: rustc_span::Span,
         item_meta: &ItemMeta,
+        adt: &hax::AdtDef,
     ) -> Result<TypeDeclKind, Error> {
         use hax::AdtKind;
-        let tcx = self.t_ctx.tcx;
         let erase_regions = false;
-        let def_span = tcx.def_span(rust_id);
 
         if item_meta.opacity.is_opaque() {
             return Ok(TypeDeclKind::Opaque);
         }
 
-        // Separate path for type aliases because they're not an `AdtDef`.
-        if let Some(node) = tcx.hir().get_if_local(rust_id) {
-            let rustc_hir::Node::Item(item) = node else {
-                error_or_panic!(self, def_span, "Type is not an item?")
-            };
-            if let rustc_hir::ItemKind::TyAlias(ty, _generics) = &item.kind {
-                // The generics are handled by `translate_generic_params` already.
-                let ty = ty.sinto(&self.hax_state);
-                let ty = self.translate_ty(def_span, erase_regions, &ty)?;
-                return Ok(TypeDeclKind::Alias(ty));
-            }
-        }
-
-        let adt: hax::AdtDef = self.t_ctx.tcx.adt_def(rust_id).sinto(&self.hax_state);
         trace!("{}", trans_id);
 
         // In case the type is external, check if we should consider the type as
@@ -584,16 +571,16 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
 
         // The type is transparent: explore the variants
         let mut variants: Vector<VariantId, Variant> = Default::default();
-        for (i, var_def) in adt.variants.into_iter().enumerate() {
+        for (i, var_def) in adt.variants.iter().enumerate() {
             trace!("variant {i}: {var_def:?}");
 
             let mut fields: Vector<FieldId, Field> = Default::default();
             /* This is for sanity: check that either all the fields have names, or
              * none of them has */
             let mut have_names: Option<bool> = None;
-            for (j, field_def) in var_def.fields.into_iter().enumerate() {
+            for (j, field_def) in var_def.fields.iter().enumerate() {
                 trace!("variant {i}: field {j}: {field_def:?}");
-                let field_span = self.t_ctx.translate_span_from_rspan(field_def.span);
+                let field_span = self.t_ctx.translate_span_from_rspan(field_def.span.clone());
                 let field_rspan = field_span.span.rust_span_data.span();
                 // Translate the field type
                 let ty = self.translate_ty(field_rspan, erase_regions, &field_def.ty)?;
@@ -602,7 +589,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                     .translate_attr_info_from_rid(DefId::from(&field_def.did), field_span);
 
                 // Retrieve the field name.
-                let field_name = field_def.name;
+                let field_name = field_def.name.clone();
                 // Sanity check
                 match &have_names {
                     None => {
@@ -627,8 +614,8 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             }
 
             let discriminant = self.translate_discriminant(def_span, &var_def.discr_val)?;
-            let variant_span = self.t_ctx.translate_span_from_rspan(var_def.span);
-            let variant_name = var_def.name;
+            let variant_span = self.t_ctx.translate_span_from_rspan(var_def.span.clone());
+            let variant_name = var_def.name.clone();
             let variant_attrs = self
                 .t_ctx
                 .translate_attr_info_from_rid(DefId::from(&var_def.def_id), variant_span);
@@ -707,65 +694,116 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         }
     }
 
-    /// Auxiliary helper.
-    ///
-    /// Translate the generics of a type definition.
-    /// Returns the translation, together with an instantiated MIR substitution,
-    /// which represents the generics on the MIR side (and is useful to translate
-    /// the body of the type...).
-    ///
-    /// Rem.: this seems simpler in [crate::translate_functions_to_ullbc].
-    /// TODO: compare and simplify/factorize?
-    pub(crate) fn translate_generic_params(&mut self, def_id: DefId) -> Result<(), Error> {
-        let tcx = self.t_ctx.tcx;
-        let span = tcx.def_span(def_id);
-
-        // We could use: TyCtxt::generics_of(DefId)
-        // But using the identity substitution is simpler. For instance, we can
-        // easily retrieve the type for the const parameters.
-        let substs =
-            rustc_middle::ty::GenericArgs::identity_for_item(tcx, def_id).sinto(&self.hax_state);
-
-        self.translate_generic_params_from_hax(span, &substs)
-    }
-
-    pub(crate) fn translate_generic_params_from_hax(
+    /// Add the generics and predicates of this item and its parents to the current context.
+    pub(crate) fn push_generics_for_def(
         &mut self,
         span: rustc_span::Span,
-        substs: &Vec<hax::GenericArg>,
+        rust_id: DefId,
+        def: &hax::FullDef,
     ) -> Result<(), Error> {
-        let erase_regions = false;
-        for p in substs {
-            use hax::GenericArg::*;
-            match p {
-                Type(p) => {
-                    // The type should be a Param
-                    if let hax::Ty::Param(p) = p {
-                        let _ = self.push_type_var(p.index, p.name.clone());
-                    } else {
-                        unreachable!("unexpected");
-                    }
+        use hax::FullDefKind;
+        // Add generics from the parent item, recursively (recursivity is useful for closures, as
+        // they could be nested).
+        match &def.kind {
+            FullDefKind::AssocTy { parent, .. }
+            | FullDefKind::AssocFn { parent, .. }
+            | FullDefKind::AssocConst { parent, .. }
+            | FullDefKind::Closure { parent, .. } => {
+                let parent_id = parent.into();
+                let parent_def = self.t_ctx.hax_def(parent_id);
+                self.push_generics_for_def(span, parent_id, &parent_def)?;
+            }
+            _ => {}
+        }
+        if let Some((generics, predicates)) = def.generics() {
+            // Add the generic params.
+            self.push_generic_params(span, generics)?;
+            // Add the self trait clause.
+            match &def.kind {
+                FullDefKind::Impl {
+                    impl_subject: hax::ImplSubject::Trait(self_predicate),
+                    ..
                 }
-                Lifetime(region) => {
-                    let name = translate_region_name(region);
-                    let _ = self.push_free_region(region.clone(), name);
+                | FullDefKind::Trait { self_predicate, .. } => {
+                    let trait_rust_id = DefId::from(&self_predicate.trait_ref.def_id);
+                    self.register_trait_decl_id(span, trait_rust_id)?;
+                    let hax_span = span.sinto(&self.t_ctx.hax_state);
+                    self.translate_self_trait_clause(&hax_span, &self_predicate)?;
                 }
-                Const(c) => {
-                    // The type should be primitive, meaning it shouldn't contain variables,
-                    // non-primitive adts, etc. As a result, we can use an empty context.
-                    let ty = self.translate_ty(span, erase_regions, &c.ty)?;
-                    let ty = ty.to_literal();
-                    if let hax::ConstantExprKind::ConstRef { id: cp } = &*c.contents {
-                        self.push_const_generic_var(cp.index, ty, cp.name.clone());
-                    } else {
-                        unreachable!();
-                    }
+                _ => {}
+            }
+            // Add the predicates.
+            let (origin, location) = match &def.kind {
+                FullDefKind::Struct { .. }
+                | FullDefKind::Union { .. }
+                | FullDefKind::Enum { .. }
+                | FullDefKind::TyAlias { .. }
+                | FullDefKind::AssocTy { .. } => {
+                    (PredicateOrigin::WhereClauseOnType, PredicateLocation::Base)
                 }
+                FullDefKind::Fn { .. }
+                | FullDefKind::AssocFn { .. }
+                | FullDefKind::Const { .. }
+                | FullDefKind::AssocConst { .. }
+                | FullDefKind::Static { .. } => {
+                    (PredicateOrigin::WhereClauseOnFn, PredicateLocation::Base)
+                }
+                FullDefKind::Impl { .. } => {
+                    (PredicateOrigin::WhereClauseOnImpl, PredicateLocation::Base)
+                }
+                // TODO: distinguish trait where clauses from trait supertraits. Currently we
+                // consider them all as parent clauses.
+                FullDefKind::Trait { .. } => {
+                    let trait_id = self.register_trait_decl_id(span, rust_id)?.unwrap();
+                    (
+                        PredicateOrigin::WhereClauseOnTrait,
+                        PredicateLocation::Parent(trait_id),
+                    )
+                }
+                _ => panic!("Unexpected def: {def:?}"),
+            };
+            self.translate_predicates(predicates, origin, &location)?;
+        }
+        Ok(())
+    }
+
+    pub(crate) fn push_generic_params(
+        &mut self,
+        span: rustc_span::Span,
+        generics: &hax::TyGenerics,
+    ) -> Result<(), Error> {
+        for param in &generics.params {
+            self.push_generic_param(span, param)?;
+        }
+        Ok(())
+    }
+
+    pub(crate) fn push_generic_param(
+        &mut self,
+        span: rustc_span::Span,
+        param: &hax::GenericParamDef,
+    ) -> Result<(), Error> {
+        match &param.kind {
+            hax::GenericParamDefKind::Lifetime => {
+                let region = hax::Region {
+                    kind: hax::RegionKind::ReEarlyParam(hax::EarlyParamRegion {
+                        index: param.index,
+                        name: param.name.clone(),
+                    }),
+                };
+                let _ = self.push_free_region(region);
+            }
+            hax::GenericParamDefKind::Type { .. } => {
+                let _ = self.push_type_var(param.index, param.name.clone());
+            }
+            hax::GenericParamDefKind::Const { ty, .. } => {
+                // The type should be primitive, meaning it shouldn't contain variables,
+                // non-primitive adts, etc. As a result, we can use an empty context.
+                let ty = self.translate_ty(span, false, ty)?;
+                let ty = ty.to_literal();
+                self.push_const_generic_var(param.index, ty, param.name.clone());
             }
         }
-
-        // Sanity check
-        self.check_generics();
 
         Ok(())
     }
@@ -782,28 +820,40 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         trans_id: TypeDeclId,
         rust_id: DefId,
         item_meta: ItemMeta,
+        def: &hax::FullDef,
     ) -> Result<TypeDecl, Error> {
         let mut bt_ctx = BodyTransCtx::new(rust_id, self);
 
-        // Check and translate the generics
-        bt_ctx.translate_generic_params(rust_id)?;
+        let erase_regions = false;
+        let span = item_meta.span.rust_span();
 
-        // Translate the predicates
-        bt_ctx.translate_predicates_of(
-            None,
-            rust_id,
-            PredicateOrigin::WhereClauseOnType,
-            &PredicateLocation::Base,
-        )?;
+        // Translate generics and predicates
+        bt_ctx.push_generics_for_def(span, rust_id, def)?;
+        let generics = bt_ctx.get_generics();
 
-        let kind = match bt_ctx.translate_type_body(trans_id, rust_id, &item_meta) {
+        // Translate type body
+        let kind = match &def.kind {
+            _ if item_meta.opacity.is_opaque() => Ok(TypeDeclKind::Opaque),
+            hax::FullDefKind::OpaqueTy | hax::FullDefKind::ForeignTy => Ok(TypeDeclKind::Opaque),
+            hax::FullDefKind::TyAlias { ty, .. } => {
+                // We only translate crate-local type aliases so the `unwrap` is ok.
+                let ty = ty.as_ref().unwrap();
+                bt_ctx
+                    .translate_ty(span, erase_regions, ty)
+                    .map(TypeDeclKind::Alias)
+            }
+            hax::FullDefKind::Struct { def, .. }
+            | hax::FullDefKind::Enum { def, .. }
+            | hax::FullDefKind::Union { def, .. } => {
+                bt_ctx.translate_adt_def(trans_id, span, &item_meta, def)
+            }
+            _ => panic!("Unexpected item when translating types: {def:?}"),
+        };
+
+        let kind = match kind {
             Ok(kind) => kind,
             Err(err) => TypeDeclKind::Error(err.msg),
         };
-
-        // Register the type
-        let generics = bt_ctx.get_generics();
-
         let type_def = TypeDecl {
             def_id: trans_id,
             item_meta,

@@ -89,6 +89,7 @@ enum core::option::Option<T> =
 
 fn core::num::nonzero::{core::num::nonzero::NonZero<T, @TraitClause0>}#14::new<T>(@1: T) -> core::option::Option<core::num::nonzero::NonZero<T, @TraitClause0>>
 where
+    // Inherited clauses:
     [@TraitClause0]: core::num::nonzero::ZeroablePrimitive<T>,
 
 fn core::option::{core::option::Option<T>}::unwrap<T>(@1: core::option::Option<T>) -> T
@@ -142,6 +143,7 @@ opaque type core::cell::Cell<T>
 
 fn core::cell::{core::cell::Cell<T>}#10::get<'_0, T>(@1: &'_0 (core::cell::Cell<T>)) -> T
 where
+    // Inherited clauses:
     [@TraitClause0]: core::marker::Copy<T>,
 
 fn test_crate::use_get<'_0>(@1: &'_0 (core::cell::Cell<u32>)) -> u32

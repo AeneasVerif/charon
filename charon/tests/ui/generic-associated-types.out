@@ -19,7 +19,7 @@ error: Ignoring the following item due to an error: test_crate::{impl#0}
 thread 'rustc' panicked at /rustc/6b0f4b5ec3aa707ecaa78230722117324a4ce23c/compiler/rustc_type_ir/src/binder.rs:785:9:
 const parameter `'a/#1` ('a/#1/1) out of range when instantiating args=[Self/#0]
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
-error: Thread panicked when extracting item {rust_id}.
+error: Thread panicked when extracting item `test_crate::LendingIterator::next`.
  --> tests/ui/generic-associated-types.rs:7:5
   |
 7 |     fn next<'a>(&'a mut self) -> Option<Self::Item<'a>>;
@@ -31,11 +31,55 @@ error: Ignoring the following item due to an error: test_crate::LendingIterator:
 7 |     fn next<'a>(&'a mut self) -> Option<Self::Item<'a>>;
   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-error: Predicates with bound regions (i.e., `for<'a> ...`) are not supported yet
-  --> tests/ui/generic-associated-types.rs:24:54
+disabled backtrace
+warning[E9999]: Hax frontend found a projected type with escaping bound vars. Please report https://github.com/hacspec/hax/issues/495
+                
+                Context:
+                 - alias_ty: AliasTy {
+                    args: [
+                        impl for<'a> FnMut(I::Item<'a>)/#1,
+                        (Alias(Projection, AliasTy { args: [I/#0, '^0.Named(test_crate::for_each::'a, "'a")], def_id: test_crate::LendingIterator::Item }),),
+                    ],
+                    def_id: core::ops::function::FnOnce::Output,
+                }
+                 - alias_kind: Projection
+                 - trait_ref: <impl for<'a> FnMut(I::Item<'a>) as std::ops::FnOnce<(<I as LendingIterator>::Item<'a>,)>>
+                 - trait_ref_and_generics: (
+                    <impl for<'a> FnMut(I::Item<'a>) as std::ops::FnOnce<(<I as LendingIterator>::Item<'a>,)>>,
+                    [],
+                )
+                 - rebased_generics: [
+                    impl for<'a> FnMut(I::Item<'a>)/#1,
+                    (Alias(Projection, AliasTy { args: [I/#0, '^0.Named(test_crate::for_each::'a, "'a")], def_id: test_crate::LendingIterator::Item }),),
+                    (Alias(Projection, AliasTy { args: [I/#0, '^0.Named(test_crate::for_each::'a, "'a")], def_id: test_crate::LendingIterator::Item }),),
+                ]
+                 - norm_rebased_generics: Err(
+                    Type(
+                        (Alias(Projection, AliasTy { args: [impl for<'a> FnMut(I::Item<'a>)/#1, '^0.Named(test_crate::for_each::'a, "'a")], def_id: test_crate::LendingIterator::Item }),),
+                    ),
+                )
+                 - norm_generics: Err(
+                    Type(
+                        (Alias(Projection, AliasTy { args: [impl for<'a> FnMut(I::Item<'a>)/#1, '^0.Named(test_crate::for_each::'a, "'a")], def_id: test_crate::LendingIterator::Item }),),
+                    ),
+                )
+                 - early_binder_generics: Ok(
+                    <(<I as LendingIterator>::Item<'a>,) as std::ops::FnOnce<(<impl for<'a> FnMut(I::Item<'a>) as LendingIterator>::Item<'a>,)>>,
+                )
+                 - early_binder_rebased_generics: Ok(
+                    <(<I as LendingIterator>::Item<'a>,) as std::ops::FnOnce<(<impl for<'a> FnMut(I::Item<'a>) as LendingIterator>::Item<'a>,)>>,
+                )
+  |
+  = note: ⚠️ This is a bug in Hax's frontend.
+          Please report this error to https://github.com/hacspec/hax/issues with some context (e.g. the current crate)!
+
+thread 'rustc' panicked at /rustc/6b0f4b5ec3aa707ecaa78230722117324a4ce23c/compiler/rustc_type_ir/src/binder.rs:785:9:
+const parameter `'a/#1` ('a/#1/1) out of range when instantiating args=[I/#0]
+error: Thread panicked when extracting item `test_crate::for_each`.
+  --> tests/ui/generic-associated-types.rs:24:1
    |
 24 | fn for_each<I: LendingIterator>(mut iter: I, f: impl for<'a> FnMut(I::Item<'a>)) {
-   |                                                      ^^^^^^^^^^^^^^^^^^^^^^^^^^
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 error: Ignoring the following item due to an error: test_crate::for_each
   --> tests/ui/generic-associated-types.rs:24:1
@@ -51,7 +95,7 @@ warning: unused variable: `x`
    |
    = note: `#[warn(unused_variables)]` on by default
 
-error: aborting due to 6 previous errors; 1 warning emitted
+error: aborting due to 6 previous errors; 2 warnings emitted
 
 [ERROR charon_driver:249] Compilation encountered 6 errors
 Error: Charon driver exited with code 1

@@ -62,9 +62,11 @@ trait core::borrow::Borrow<Self, Borrowed>
 
 fn std::collections::hash::map::{std::collections::hash::map::HashMap<K, V, S>}#2::get<'_0, '_1, K, V, S, Q>(@1: &'_0 (std::collections::hash::map::HashMap<K, V, S>), @2: &'_1 (Q)) -> core::option::Option<&'_0 (V)>
 where
+    // Inherited clauses:
     [@TraitClause0]: core::cmp::Eq<K>,
     [@TraitClause1]: core::hash::Hash<K>,
     [@TraitClause2]: core::hash::BuildHasher<S>,
+    // Local clauses:
     [@TraitClause3]: core::borrow::Borrow<K, Q>,
     [@TraitClause4]: core::hash::Hash<Q>,
     [@TraitClause5]: core::cmp::Eq<Q>,
@@ -131,6 +133,7 @@ impl std::hash::random::{impl core::hash::BuildHasher for std::hash::random::Ran
 
 fn std::collections::hash::map::{std::collections::hash::map::HashMap<K, V, S>}#2::insert<'_0, K, V, S>(@1: &'_0 mut (std::collections::hash::map::HashMap<K, V, S>), @2: K, @3: V) -> core::option::Option<V>
 where
+    // Inherited clauses:
     [@TraitClause0]: core::cmp::Eq<K>,
     [@TraitClause1]: core::hash::Hash<K>,
     [@TraitClause2]: core::hash::BuildHasher<S>,

@@ -7,8 +7,6 @@ use std::mem;
 use std::panic;
 use std::rc::Rc;
 
-use crate::translate::translate_traits::PredicateLocation;
-
 use super::get_mir::{boxes_are_desugared, get_mir_for_def_id_and_level};
 use super::translate_ctx::*;
 use super::translate_types;
@@ -22,7 +20,6 @@ use hax_frontend_exporter as hax;
 use hax_frontend_exporter::{HasMirSetter, HasOwnerIdSetter, SInto};
 use rustc_hir::def_id::DefId;
 use rustc_middle::mir::START_BLOCK;
-use rustc_middle::ty;
 use translate_types::translate_bound_region_kind_name;
 
 pub(crate) struct SubstFunId {
@@ -105,117 +102,81 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
     pub(crate) fn get_item_kind(
         &mut self,
         src: &Option<DepSource>,
-        rust_id: DefId,
+        def: &hax::FullDef,
     ) -> Result<ItemKind, Error> {
-        trace!("rust_id: {:?}", rust_id);
-        let tcx = self.tcx;
-        if let Some(assoc) = tcx.opt_associated_item(rust_id) {
-            let kind = match assoc.container {
-                ty::AssocItemContainer::ImplContainer => {
-                    // This item is defined in an impl block.
-                    // It can be a regular item in an impl block or a trait
-                    // item implementation.
-                    //
-                    // Ex.: (with methods)
-                    // ====
+        let assoc_item = match &def.kind {
+            hax::FullDefKind::AssocTy {
+                associated_item, ..
+            }
+            | hax::FullDefKind::AssocConst {
+                associated_item, ..
+            }
+            | hax::FullDefKind::AssocFn {
+                associated_item, ..
+            } => Some(associated_item),
+            _ => None,
+        };
+        Ok(match assoc_item {
+            None => ItemKind::Regular,
+            Some(assoc) => {
+                match &assoc.container {
+                    // E.g.:
                     // ```
                     // impl<T> List<T> {
-                    //   fn new() -> Self { ... } <- implementation
+                    //   fn new() -> Self { ... } <- inherent method
                     // }
-                    //
+                    // ```
+                    hax::AssocItemContainer::InherentImplContainer { .. } => ItemKind::Regular,
+                    // E.g.:
+                    // ```
                     // impl Foo for Bar {
                     //   fn baz(...) { ... } // <- implementation of a trait method
                     // }
                     // ```
+                    hax::AssocItemContainer::TraitImplContainer {
+                        impl_id,
+                        implemented_trait,
+                        overrides_default,
+                        ..
+                    } => {
+                        // The trait id should be Some(...): trait markers (that we may eliminate)
+                        // don't have methods.
+                        let trait_id = self
+                            .register_trait_decl_id(src, implemented_trait.into())?
+                            .unwrap();
 
-                    // Check if there is a trait item (if yes, it is a trait item
-                    // implementation, if no it is a regular item).
-                    // Remark: this trait item is the id of the item associated
-                    // in the trait. For instance:
-                    // ```
-                    // trait Foo {
-                    //   fn bar(); // Id: Foo_bar
-                    // }
-                    // ```
-                    //
-                    // impl Foo for List {
-                    //   fn bar() { ... } // trait_item_def_id: Some(Foo_bar)
-                    // }
-                    match assoc.trait_item_def_id {
-                        None => ItemKind::Regular,
-                        Some(trait_item_id) => {
-                            let trait_id = tcx.trait_of_item(trait_item_id).unwrap();
-                            let trait_id = self.register_trait_decl_id(src, trait_id)?;
-                            // The trait id should be Some(...): trait markers (that we
-                            // may eliminate) don't have methods.
-                            let trait_id = trait_id.unwrap();
+                        let impl_id = self.register_trait_impl_id(src, impl_id.into())?.unwrap();
 
-                            // Retrieve the id of the impl block
-                            let impl_id = self
-                                .register_trait_impl_id(
-                                    src,
-                                    tcx.predicates_of(rust_id).parent.unwrap(),
-                                )?
-                                .unwrap();
-
-                            let item_name = self.translate_trait_item_name(trait_item_id)?;
-
-                            // Check if the current function implements a provided method.
-                            // We do so by retrieving the def id of the method which is
-                            // implemented, and checking its kind.
-                            let provided = match self.get_item_kind(src, trait_item_id)? {
-                                ItemKind::TraitItemDecl(..) => false,
-                                ItemKind::TraitItemProvided(..) => true,
-                                ItemKind::Regular | ItemKind::TraitItemImpl { .. } => {
-                                    unreachable!()
-                                }
-                            };
-
-                            ItemKind::TraitItemImpl {
-                                impl_id,
-                                trait_id,
-                                item_name,
-                                provided,
-                            }
+                        ItemKind::TraitItemImpl {
+                            impl_id,
+                            trait_id,
+                            item_name: TraitItemName(assoc.name.clone()),
+                            provided: *overrides_default,
                         }
                     }
-                }
-                ty::AssocItemContainer::TraitContainer => {
                     // This method is the *declaration* of a trait item
-                    // Ex.:
-                    // ====
+                    // E.g.:
                     // ```
                     // trait Foo {
                     //   fn baz(...); // <- declaration of a trait method
                     // }
                     // ```
+                    hax::AssocItemContainer::TraitContainer { trait_id } => {
+                        // The trait id should be Some(...): trait markers (that we may eliminate)
+                        // don't have associated items.
+                        let trait_id = self.register_trait_decl_id(src, trait_id.into())?.unwrap();
+                        let item_name = TraitItemName(assoc.name.clone());
 
-                    // Yet, this could be a default item implementation, in which
-                    // case there is a body: we need to check that.
-
-                    // In order to check if this is a provided item, we check
-                    // the defaultness (i.e., whether the item has a default value):
-                    let is_provided = tcx.defaultness(rust_id).has_value();
-
-                    // Compute additional information
-                    let item_name = self.translate_trait_item_name(rust_id)?;
-                    let trait_id = tcx.trait_of_item(rust_id).unwrap();
-                    let trait_id = self.register_trait_decl_id(src, trait_id)?;
-                    // The trait id should be Some(...): trait markers (that we
-                    // may eliminate) don't have associated items.
-                    let trait_id = trait_id.unwrap();
-
-                    if is_provided {
-                        ItemKind::TraitItemProvided(trait_id, item_name)
-                    } else {
-                        ItemKind::TraitItemDecl(trait_id, item_name)
+                        // Check whether this item has a provided value.
+                        if assoc.has_value {
+                            ItemKind::TraitItemProvided(trait_id, item_name)
+                        } else {
+                            ItemKind::TraitItemDecl(trait_id, item_name)
+                        }
                     }
                 }
-            };
-            Ok(kind)
-        } else {
-            Ok(ItemKind::Regular)
-        }
+            }
+        })
     }
 }
 
@@ -1420,7 +1381,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             // Translation error
             Ok(Err(e)) => Err(e),
             Err(_) => {
-                let span = self.t_ctx.tcx.def_span(rust_id);
+                let span = item_meta.span.rust_span();
                 error_or_panic!(self, span, "Thread panicked when extracting body.");
             }
         }
@@ -1432,15 +1393,14 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         arg_count: usize,
         item_meta: &ItemMeta,
     ) -> Result<Result<Body, Opaque>, Error> {
-        let tcx = self.t_ctx.tcx;
-
         if item_meta.opacity.with_private_contents().is_opaque() {
             // The bodies of foreign functions are opaque by default.
             return Ok(Err(Opaque));
         }
 
         // Retrieve the body
-        let Some(body) = get_mir_for_def_id_and_level(tcx, rust_id, self.t_ctx.options.mir_level)
+        let Some(body) =
+            get_mir_for_def_id_and_level(self.t_ctx.tcx, rust_id, self.t_ctx.options.mir_level)
         else {
             return Ok(Err(Opaque));
         };
@@ -1487,12 +1447,21 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     /// Translate a function's signature, and initialize a body translation context
     /// at the same time - the function signature gives us the list of region and
     /// type parameters, that we put in the translation context.
-    fn translate_function_signature(&mut self, def_id: DefId) -> Result<FunSig, Error> {
-        let tcx = self.t_ctx.tcx;
+    fn translate_function_signature(
+        &mut self,
+        def_id: DefId,
+        item_meta: &ItemMeta,
+        def: &hax::FullDef,
+    ) -> Result<FunSig, Error> {
         let erase_regions = false;
-        let span = self.t_ctx.tcx.def_span(def_id);
-        let is_closure = tcx.is_closure_like(def_id);
-        let dep_src = DepSource::make(def_id, span);
+        let span = item_meta.span.rust_span();
+
+        let signature = match &def.kind {
+            hax::FullDefKind::Closure { args, .. } => &args.sig,
+            hax::FullDefKind::Fn { sig, .. } => sig,
+            hax::FullDefKind::AssocFn { sig, .. } => sig,
+            _ => panic!("Unexpected definition for function: {def:?}"),
+        };
 
         // The parameters (and in particular the lifetimes) are split between
         // early bound and late bound parameters. See those blog posts for explanations:
@@ -1504,165 +1473,34 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         // The late-bounds parameters are bound in the [Binder] returned by
         // [TyCtxt.type_of].
 
-        // Retrieve the early bound parameters, and the late-bound parameters
-        // through the function signature.
-        let (substs, signature, closure_info): (
-            Vec<hax::GenericArg>,
-            rustc_middle::ty::Binder<'tcx, rustc_middle::ty::FnSig<'tcx>>,
-            Option<(ClosureKind, &ty::List<rustc_middle::ty::Ty<'tcx>>)>,
-        ) = if is_closure {
-            // Closures have a peculiar handling in Rust: we can't call
-            // `TyCtxt::fn_sig`.
-            let fun_type = tcx.type_of(def_id).instantiate_identity();
-            let rsubsts = match fun_type.kind() {
-                ty::TyKind::Closure(_def_id, substs_ref) => substs_ref,
-                _ => {
-                    unreachable!()
-                }
-            };
-            trace!("closure: rsubsts: {:?}", rsubsts);
-            let closure = rsubsts.as_closure();
-            // Retrieve the early bound parameters from the *parent* (i.e.,
-            // the function in which the closure is actually defined).
-            // Importantly, the type parameters necessarily come from the parents:
-            // the closure can't itself be polymorphic, and the signature of
-            // the closure only quantifies lifetimes.
-            let substs = closure.parent_args();
-            trace!("closure.parent_substs: {:?}", substs);
-            let sig = closure.sig();
-            trace!("closure.sig: {:?}", sig);
+        // Add the early bound parameters and predicates.
+        self.push_generics_for_def(span, def_id, &def)?;
 
-            // Retrieve the kind of the closure
-            let kind = match closure.kind() {
-                rustc_middle::ty::ClosureKind::Fn => ClosureKind::Fn,
-                rustc_middle::ty::ClosureKind::FnMut => ClosureKind::FnMut,
-                rustc_middle::ty::ClosureKind::FnOnce => ClosureKind::FnOnce,
-            };
-
-            // Retrieve the type of the captured state
-            let state: &ty::List<rustc_middle::ty::Ty<'tcx>> = closure.upvar_tys();
-
-            let substs = substs.sinto(&self.hax_state);
-
-            trace!("closure.sig_as_fn_ptr_ty: {:?}", closure.sig_as_fn_ptr_ty());
-            trace!("closure.kind_ty: {:?}", closure.kind_ty());
-
-            // Sanity check: the parent subst only contains types and generics
-            error_assert!(
-                self,
-                span,
-                substs
-                    .iter()
-                    .all(|bv| !matches!(bv, hax::GenericArg::Lifetime(_))),
-                "The closure parent parameters contain regions"
-            );
-
-            (substs, sig, Some((kind, state)))
-        } else {
-            // Retrieve the signature
-            let fn_sig = tcx.fn_sig(def_id);
-            trace!("Fun sig: {:?}", fn_sig);
-            // There is an early binder for the early-bound regions, that
-            // we ignore, and a binder for the late-bound regions, that we
-            // keep.
-            let fn_sig = fn_sig.instantiate_identity();
-
-            // Retrieve the early-bound parameters
-            let fun_type = tcx.type_of(def_id).instantiate_identity();
-            let substs: Vec<hax::GenericArg> = match fun_type.kind() {
-                ty::TyKind::FnDef(_def_id, substs_ref) => substs_ref.sinto(&self.hax_state),
-                ty::TyKind::Closure(_, _) => {
-                    unreachable!()
-                }
-                _ => {
-                    unreachable!()
-                }
-            };
-
-            (substs, fn_sig, None)
-        };
-        let signature: hax::MirPolyFnSig = signature.sinto(&self.hax_state);
-
-        // Start by translating the early-bound parameters (those are contained by `substs`).
-        // Some debugging information:
-        trace!("Def id: {def_id:?}:\n\n- substs:\n{substs:?}\n\n- generics:\n{:?}\n\n- signature bound vars:\n{:?}\n\n- signature:\n{:?}\n",
-               tcx.generics_of(def_id), signature.bound_vars, signature);
-
-        // Add the *early-bound* parameters.
-        self.translate_generic_params_from_hax(span, &substs)?;
-
-        //
-        // Add the *late-bound* parameters (bound in the signature, can only be lifetimes)
-        //
-        let is_unsafe = match signature.value.safety {
-            hax::Safety::Unsafe => true,
-            hax::Safety::Safe => false,
-        };
+        // Add the *late-bound* parameters (bound in the signature, can only be lifetimes).
         let bvar_names = signature
             .bound_vars
-            .into_iter()
-            .map(|bvar| {
-                // There should only be regions in the late-bound parameters
-                use hax::BoundVariableKind;
-                match bvar {
-                    BoundVariableKind::Region(br) => Ok(translate_bound_region_kind_name(&br)),
-                    BoundVariableKind::Ty(_) | BoundVariableKind::Const => {
-                        error_or_panic!(
-                            self,
-                            span,
-                            format!("Unexpected bound variable: {:?}", bvar)
-                        )
-                    }
+            .iter()
+            // There should only be regions in the late-bound parameters
+            .map(|bvar| match bvar {
+                hax::BoundVariableKind::Region(br) => Ok(translate_bound_region_kind_name(&br)),
+                hax::BoundVariableKind::Ty(_) | hax::BoundVariableKind::Const => {
+                    error_or_panic!(self, span, format!("Unexpected bound variable: {:?}", bvar))
                 }
             })
             .try_collect()?;
-        let signature = signature.value;
-
         self.set_first_bound_regions_group(bvar_names);
-        let fun_kind = &self.t_ctx.get_item_kind(&dep_src, def_id)?;
 
-        // Add the ctx trait clause if it is a trait decl item
-        match fun_kind {
-            ItemKind::Regular => {}
-            ItemKind::TraitItemImpl { impl_id, .. } => {
-                self.translate_trait_impl_self_trait_clause(*impl_id)?
-            }
-            ItemKind::TraitItemProvided(..) | ItemKind::TraitItemDecl(..) => {
-                // This is a trait decl item
-                let trait_id = tcx.trait_of_item(def_id).unwrap();
-                self.translate_trait_decl_self_trait_clause(trait_id)?;
-            }
-        }
-
-        // Translate the predicates (in particular, the trait clauses)
-        match &fun_kind {
-            ItemKind::Regular | ItemKind::TraitItemImpl { .. } => {
-                self.translate_predicates_of(
-                    None,
-                    def_id,
-                    PredicateOrigin::WhereClauseOnFn,
-                    &PredicateLocation::Base,
-                )?;
-            }
-            ItemKind::TraitItemProvided(trait_decl_id, ..)
-            | ItemKind::TraitItemDecl(trait_decl_id, ..) => {
-                self.translate_predicates_of(
-                    Some(*trait_decl_id),
-                    def_id,
-                    PredicateOrigin::WhereClauseOnFn,
-                    &PredicateLocation::Base,
-                )?;
-            }
-        }
+        let generics = self.get_generics();
 
         // Translate the signature
-        trace!("signature of {def_id:?}:\n{:?}", signature);
+        trace!("signature of {def_id:?}:\n{:?}", signature.value);
         let inputs: Vec<Ty> = signature
+            .value
             .inputs
             .iter()
             .map(|ty| self.translate_ty(span, erase_regions, ty))
             .try_collect()?;
-        let output = self.translate_ty(span, erase_regions, &signature.output)?;
+        let output = self.translate_ty(span, erase_regions, &signature.value.output)?;
 
         let fmt_ctx = self.into_fmt();
         trace!(
@@ -1674,58 +1512,62 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             fmt_ctx.format_object(&output)
         );
 
-        // Compute the additional information for closures
-        let closure_info = if let Some((kind, state_tys)) = closure_info {
-            let erase_regions = false;
-            let state = state_tys
-                .into_iter()
-                .map(|ty| self.translate_ty(span, erase_regions, &ty.sinto(&self.hax_state)))
-                .try_collect::<Vec<Ty>>()?;
-
-            Some(ClosureInfo { kind, state })
-        } else {
-            None
+        let is_unsafe = match signature.value.safety {
+            hax::Safety::Unsafe => true,
+            hax::Safety::Safe => false,
         };
 
-        let mut parent_params_info = self.get_function_parent_params_info(&dep_src, def_id)?;
-        // If this is a trait decl method, we need to adjust the number of parent clauses
-        if matches!(
-            fun_kind,
-            ItemKind::TraitItemProvided(..) | ItemKind::TraitItemDecl(..)
-        ) {
-            if let Some(info) = &mut parent_params_info {
-                // All the trait clauses are registered as parent (of Self)
-                // trait clauses, not as local trait clauses.
-                info.num_trait_clauses = 0;
+        let closure_info = match &def.kind {
+            hax::FullDefKind::Closure { args, .. } => {
+                let kind = match args.kind {
+                    hax::ClosureKind::Fn => ClosureKind::Fn,
+                    hax::ClosureKind::FnMut => ClosureKind::FnMut,
+                    hax::ClosureKind::FnOnce => ClosureKind::FnOnce,
+                };
+                let state = args
+                    .upvar_tys
+                    .iter()
+                    .map(|ty| self.translate_ty(span, erase_regions, &ty))
+                    .try_collect::<Vec<Ty>>()?;
+                Some(ClosureInfo { kind, state })
             }
-        }
+            hax::FullDefKind::Fn { .. } => None,
+            hax::FullDefKind::AssocFn { .. } => None,
+            _ => panic!("Unexpected definition for function: {def:?}"),
+        };
+
+        let parent_params_info = match &def.kind {
+            hax::FullDefKind::AssocFn {
+                parent,
+                associated_item,
+                ..
+            } => {
+                let parent_def = self.t_ctx.hax_def(parent);
+                let (parent_generics, parent_predicates) = parent_def.generics().unwrap();
+                let mut params_info = self.count_generics(parent_generics, parent_predicates)?;
+                // If this is a trait decl method, we need to adjust the number of parent clauses
+                if matches!(
+                    associated_item.container,
+                    hax::AssocItemContainer::TraitContainer { .. }
+                ) {
+                    // All the trait clauses are registered as parent (of Self) trait clauses, not
+                    // as local trait clauses.
+                    params_info.num_trait_clauses = 0;
+                }
+                Some(params_info)
+            }
+            _ => None,
+        };
 
         Ok(FunSig {
-            generics: self.get_generics(),
+            generics,
             is_unsafe,
-            is_closure,
+            is_closure: matches!(&def.kind, hax::FullDefKind::Closure { .. }),
             closure_info,
             parent_params_info,
             inputs,
             output,
         })
-    }
-
-    fn get_function_parent_params_info(
-        &mut self,
-        src: &Option<DepSource>,
-        def_id: DefId,
-    ) -> Result<Option<ParamsInfo>, Error> {
-        let kind = self.t_ctx.get_item_kind(src, def_id)?;
-        let info = match kind {
-            ItemKind::Regular => None,
-            ItemKind::TraitItemImpl { .. }
-            | ItemKind::TraitItemDecl { .. }
-            | ItemKind::TraitItemProvided { .. } => {
-                Some(self.get_parent_params_info(def_id)?.unwrap())
-            }
-        };
-        Ok(info)
     }
 }
 
@@ -1736,9 +1578,10 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         def_id: FunDeclId,
         rust_id: DefId,
         item_meta: ItemMeta,
+        def: &hax::FullDef,
     ) -> Result<FunDecl, Error> {
         trace!("About to translate function:\n{:?}", rust_id);
-        let def_span = self.tcx.def_span(rust_id);
+        let def_span = item_meta.span.rust_span();
 
         // Initialize the body translation context
         let mut bt_ctx = BodyTransCtx::new(rust_id, self);
@@ -1747,7 +1590,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         // If this is the case, it shouldn't contain a body.
         let kind = bt_ctx
             .t_ctx
-            .get_item_kind(&DepSource::make(rust_id, def_span), rust_id)?;
+            .get_item_kind(&DepSource::make(rust_id, def_span), def)?;
         let is_trait_method_decl = match &kind {
             ItemKind::Regular
             | ItemKind::TraitItemImpl { .. }
@@ -1757,7 +1600,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
 
         // Translate the function signature
         trace!("Translating function signature");
-        let signature = bt_ctx.translate_function_signature(rust_id)?;
+        let signature = bt_ctx.translate_function_signature(rust_id, &item_meta, def)?;
 
         let body_id = if !is_trait_method_decl {
             // Translate the body. This doesn't store anything if we can't/decide not to translate
@@ -1790,41 +1633,38 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         def_id: GlobalDeclId,
         rust_id: DefId,
         item_meta: ItemMeta,
+        def: &hax::FullDef,
     ) -> Result<GlobalDecl, Error> {
         trace!("About to translate global:\n{:?}", rust_id);
-        let span = self.tcx.def_span(rust_id);
+        let span = item_meta.span.rust_span();
 
         // Initialize the body translation context
         let mut bt_ctx = BodyTransCtx::new(rust_id, self);
 
-        // Check and translate the generics - globals *can* have generics
+        // Retrieve the kind
+        let global_kind = bt_ctx
+            .t_ctx
+            .get_item_kind(&DepSource::make(rust_id, span), &def)?;
+
+        // Translate the generics and predicates - globals *can* have generics
         // Ex.:
         // ```
         // impl<const N : usize> Foo<N> {
         //   const LEN : usize = N;
         // }
         // ```
-        bt_ctx.translate_generic_params(rust_id)?;
-        bt_ctx.translate_predicates_of(
-            None,
-            rust_id,
-            PredicateOrigin::WhereClauseOnFn,
-            &PredicateLocation::Base,
-        )?;
-
-        let hax_state = &bt_ctx.hax_state;
+        bt_ctx.push_generics_for_def(span, rust_id, def)?;
+        let generics = bt_ctx.get_generics();
 
         trace!("Translating global type");
-        let mir_ty = bt_ctx.t_ctx.tcx.type_of(rust_id).instantiate_identity();
+        let ty = match &def.kind {
+            hax::FullDefKind::Const { ty, .. }
+            | hax::FullDefKind::AssocConst { ty, .. }
+            | hax::FullDefKind::Static { ty, .. } => ty,
+            _ => panic!("Unexpected def for constant: {def:?}"),
+        };
         let erase_regions = false; // This doesn't matter: there shouldn't be any regions
-        let ty = bt_ctx.translate_ty(span, erase_regions, &mir_ty.sinto(hax_state))?;
-
-        // Retrieve the kind
-        let kind = bt_ctx
-            .t_ctx
-            .get_item_kind(&DepSource::make(rust_id, span), rust_id)?;
-
-        let generics = bt_ctx.get_generics();
+        let ty = bt_ctx.translate_ty(span, erase_regions, ty)?;
 
         // Translate its body like the body of a function. This returns `Opaque if we can't/decide
         // not to translate this body.
@@ -1843,7 +1683,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
             item_meta,
             generics,
             ty,
-            kind,
+            kind: global_kind,
             body: body_id,
         })
     }

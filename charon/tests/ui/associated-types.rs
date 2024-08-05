@@ -1,3 +1,4 @@
+#![feature(associated_type_defaults)]
 trait Foo<'a>: Copy {
     // FIXME: the `+ 'a` appears to be completely ignored.
     type Item: Clone + 'a;
@@ -59,5 +60,15 @@ mod cow {
     {
         Borrowed(&'a B),
         Owned(<B as ToOwned>::Owned),
+    }
+}
+
+mod params {
+    trait Foo<'a, T> {
+        type X;
+        type Item = &'a (T, Self::X);
+    }
+    impl<'a, T> Foo<'a, Option<T>> for () {
+        type X = &'a ();
     }
 }

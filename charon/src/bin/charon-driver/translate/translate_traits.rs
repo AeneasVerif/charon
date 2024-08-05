@@ -1,5 +1,4 @@
 use super::translate_ctx::*;
-use charon_lib::ast::krate::*;
 use charon_lib::common::*;
 use charon_lib::formatter::IntoFormatter;
 use charon_lib::gast::*;
@@ -9,9 +8,12 @@ use charon_lib::pretty::FmtWithCtx;
 use charon_lib::types::*;
 use charon_lib::ullbc_ast as ast;
 use hax_frontend_exporter as hax;
+use hax_frontend_exporter::AssocItemContainer;
 use hax_frontend_exporter::SInto;
+use itertools::Itertools;
 use rustc_hir::def_id::DefId;
 use std::collections::HashMap;
+use std::sync::Arc;
 
 /// The context in which we are translating a clause, used to generate the appropriate ids and
 /// trait references.
@@ -25,21 +27,6 @@ pub(crate) enum PredicateLocation {
 }
 
 impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
-    fn translate_ty_from_trait_item(
-        &mut self,
-        item: &rustc_middle::ty::AssocItem,
-    ) -> Result<Ty, Error> {
-        let erase_regions = false;
-        let tcx = self.t_ctx.tcx;
-        self.translate_ty(
-            tcx.def_span(item.def_id),
-            erase_regions,
-            &tcx.type_of(item.def_id)
-                .instantiate_identity()
-                .sinto(&self.hax_state),
-        )
-    }
-
     /// Helper for [translate_trait_impl].
     ///
     /// Remark: the [decl_item] is the item from the trait declaration.
@@ -47,13 +34,13 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         &mut self,
         trait_impl_def_id: DefId,
         rust_impl_trait_ref: &rustc_middle::ty::TraitRef<'tcx>,
-        decl_item: &rustc_middle::ty::AssocItem,
+        item_id: DefId,
     ) -> Result<Vec<TraitRef>, Error> {
         trace!(
             "- trait_impl_def_id: {:?}\n- rust_impl_trait_ref: {:?}\n- decl_item: {:?}",
             trait_impl_def_id,
             rust_impl_trait_ref,
-            decl_item
+            item_id
         );
 
         let tcx = self.t_ctx.tcx;
@@ -61,7 +48,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
 
         // Lookup the trait clauses and substitute - TODO: not sure about the substitution
         let subst = rust_impl_trait_ref.args;
-        let bounds = tcx.item_bounds(decl_item.def_id);
+        let bounds = tcx.item_bounds(item_id);
         let param_env = tcx.param_env(trait_impl_def_id);
         let bounds = tcx.instantiate_and_normalize_erasing_regions(subst, param_env, bounds);
         let erase_regions = false;
@@ -81,98 +68,6 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
 
         // Return
         Ok(trait_refs)
-    }
-
-    fn translate_const_from_trait_item(
-        &mut self,
-        item: &rustc_middle::ty::AssocItem,
-    ) -> Result<(TraitItemName, (Ty, GlobalDeclId)), Error> {
-        let ty = self.translate_ty_from_trait_item(item)?;
-        let name = TraitItemName(item.name.to_string());
-        let span = self.t_ctx.tcx.def_span(self.def_id);
-        let id = self.register_global_decl_id(span, item.def_id);
-        Ok((name, (ty, id)))
-    }
-
-    /// Add the self trait clause, for itself (if it is a trait declaration) or
-    /// for its parent (if it is a trait item).
-    ///
-    /// We take a def id parameter because the clause may be retrieved from
-    /// an id which is not the id of the item under scrutinee (if the current
-    /// id is for an item trait, we need to lookup the trait itself and give
-    /// its id).
-    pub(crate) fn translate_trait_decl_self_trait_clause(
-        &mut self,
-        def_id: DefId,
-    ) -> Result<(), Error> {
-        trace!("id: {:?}", def_id);
-        // The self trait clause is actually the *last* trait predicate given by
-        // [TyCtxt::predicates_of].
-        // **ATTENTION**: this doesn't return the same thing as [TyCtxt::predicates_defined_on],
-        // which we use elsewhere.
-
-        // Sanity check: we should add the self trait clause before we start
-        // translating the clauses.
-        assert!(self.trait_clauses.is_empty());
-
-        let predicates = self.t_ctx.tcx.predicates_of(def_id);
-        trace!("predicates: {:?}", predicates);
-
-        // Get the last predicate
-        let (clause, rspan) = predicates.predicates.iter().next_back().unwrap();
-        let clause: hax::Clause = clause.sinto(&self.hax_state);
-        let span = rspan.sinto(&self.hax_state);
-
-        // Convert to a clause
-        assert!(clause.kind.bound_vars.is_empty());
-        let hax::ClauseKind::Trait(self_pred) = clause.kind.value else {
-            panic!()
-        };
-        assert!(self
-            .register_trait_decl_id(*rspan, DefId::from(&self_pred.trait_ref.def_id))?
-            .is_some());
-
-        // Convert
-        self.translate_self_trait_clause(&span, &self_pred)?;
-        Ok(())
-    }
-
-    /// Similar to [add_self_trait_clause] but for trait implementations.
-    ///
-    /// We call this when translating trait impls and trait impl items.
-    pub(crate) fn translate_trait_impl_self_trait_clause(
-        &mut self,
-        impl_id: TraitImplId,
-    ) -> Result<(), Error> {
-        let def_id = *self
-            .t_ctx
-            .translated
-            .reverse_id_map
-            .get(&AnyTransId::TraitImpl(impl_id))
-            .unwrap();
-        trace!("id: {:?}", def_id);
-
-        // Retrieve the trait ref representing "self"
-        let tcx = self.t_ctx.tcx;
-        let rustc_middle::ty::ImplSubject::Trait(trait_ref) =
-            tcx.impl_subject(def_id).instantiate_identity()
-        else {
-            unreachable!()
-        };
-
-        // Wrap it in a [TraitPredicate] so that when calling [sinto] we retrieve
-        // the parent and item predicates.
-        let trait_pred = rustc_middle::ty::TraitPredicate {
-            trait_ref,
-            // Not really necessary
-            polarity: rustc_middle::ty::PredicatePolarity::Positive,
-        };
-        let trait_pred = trait_pred.sinto(&self.hax_state);
-
-        let span = tcx.def_span(def_id).sinto(&self.t_ctx.hax_state);
-        // Save the self clause (and its parent/item clauses)
-        self.translate_self_trait_clause(&span, &trait_pred)?;
-        Ok(())
     }
 }
 
@@ -194,66 +89,59 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         def_id: TraitDeclId,
         rust_id: DefId,
         item_meta: ItemMeta,
+        def: &hax::FullDef,
     ) -> Result<TraitDecl, Error> {
-        use rustc_middle::ty::AssocKind;
+        use hax::AssocKind;
         trace!("About to translate trait decl:\n{:?}", rust_id);
         trace!("Trait decl id:\n{:?}", def_id);
 
+        let span = item_meta.span.rust_span();
+        let erase_regions = false;
         let mut bt_ctx = BodyTransCtx::new(rust_id, self);
-        let tcx = bt_ctx.t_ctx.tcx;
         let name = bt_ctx.t_ctx.def_id_to_name(rust_id)?;
 
-        // Translate the generic
-        bt_ctx.translate_generic_params(rust_id)?;
+        let hax::FullDefKind::Trait { items, .. } = &def.kind else {
+            panic!("Unexpected definition: {def:?}")
+        };
+        let items: Vec<(TraitItemName, &hax::AssocItem, Option<Arc<hax::FullDef>>)> = items
+            .iter()
+            .map(|item| {
+                let name = TraitItemName(item.name.clone());
+                // Warning: don't call `hax_def` on associated functions because this triggers
+                // hax crashes on functions with higher-kinded predicates like
+                // `Iterator::scan`.
+                let def = if matches!(item.kind, AssocKind::Type | AssocKind::Const) {
+                    let def = bt_ctx.t_ctx.hax_def(&item.def_id);
+                    Some(def)
+                } else {
+                    None
+                };
+                (name, item, def)
+            })
+            .collect_vec();
 
-        // Add the trait clauses
-        // Add the self trait clause
-        bt_ctx.translate_trait_decl_self_trait_clause(rust_id)?;
-
-        // Translate the predicates.
-        bt_ctx.translate_predicates_of(
-            None,
-            rust_id,
-            PredicateOrigin::WhereClauseOnTrait,
-            &PredicateLocation::Parent(def_id),
-        )?;
+        // Translate the generics
+        bt_ctx.push_generics_for_def(span, rust_id, def)?;
 
         // Gather the associated type clauses
         let mut type_clauses = Vec::new();
-        for item in tcx.associated_items(rust_id).in_definition_order() {
+        for (name, item, def) in &items {
             match &item.kind {
                 AssocKind::Type => {
-                    let item_name = TraitItemName(item.name.to_string());
-                    // TODO: this is an ugly manip
-                    let bounds = tcx.item_bounds(item.def_id).instantiate_identity();
-                    use crate::rustc_middle::query::Key;
-                    let span = bounds.default_span(tcx);
-                    let bounds: Vec<_> = bounds
-                        .into_iter()
-                        .map(|x| (x.as_predicate(), span))
-                        .collect();
-                    let bounds = bounds.sinto(&bt_ctx.hax_state);
-                    let origin = PredicateOrigin::TraitItem(item_name.clone());
-
+                    let hax::FullDefKind::AssocTy { predicates, .. } =
+                        &def.as_deref().unwrap().kind
+                    else {
+                        unreachable!()
+                    };
+                    // TODO: handle generics (i.e. GATs).
                     // Register the trait clauses as item trait clauses
-                    bt_ctx.translate_predicates_vec(
-                        &bounds,
-                        origin,
-                        &PredicateLocation::Item(def_id, item_name.clone()),
+                    bt_ctx.translate_predicates(
+                        &predicates,
+                        PredicateOrigin::TraitItem(name.clone()),
+                        &PredicateLocation::Item(def_id, name.clone()),
                     )?;
-                }
-                AssocKind::Fn => {}
-                AssocKind::Const => {}
-            }
-        }
-
-        // Push the collected clauses in definition order.
-        for item in tcx.associated_items(rust_id).in_definition_order() {
-            match &item.kind {
-                AssocKind::Type => {
-                    let item_name = TraitItemName(item.name.to_string());
-                    if let Some(clauses) = bt_ctx.item_trait_clauses.get(&item_name) {
-                        type_clauses.push((item_name, clauses.clone()));
+                    if let Some(clauses) = bt_ctx.item_trait_clauses.get(name) {
+                        type_clauses.push((name.clone(), clauses.clone()));
                     }
                 }
                 AssocKind::Fn => {}
@@ -261,10 +149,10 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
             }
         }
 
-        // Note that in the generics returned by [get_generics], the trait refs
-        // only contain the local trait clauses.
+        // Note that in the generics returned by [get_generics], the trait refs only contain the
+        // local trait clauses. The parent clauses are stored in `bt_ctx.parent_trait_clauses`.
+        // TODO: Distinguish between required and implied trait clauses?
         let generics = bt_ctx.get_generics();
-        // TODO: maybe we should do something about the predicates?
 
         // Translate the associated items
         // We do something subtle here: TODO: explain
@@ -274,54 +162,57 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         let mut type_defaults = HashMap::new();
         let mut required_methods = Vec::new();
         let mut provided_methods = Vec::new();
-        for item in tcx.associated_items(rust_id).in_definition_order() {
-            let has_default_value = item.defaultness(tcx).has_value();
-            match &item.kind {
+        for (item_name, hax_item, opt_hax_def) in &items {
+            let rust_item_id = (&hax_item.def_id).into();
+            let item_span = bt_ctx.t_ctx.tcx.def_span(rust_item_id);
+            match &hax_item.kind {
                 AssocKind::Fn => {
-                    let span = tcx.def_span(rust_id);
-                    let method_name = bt_ctx.t_ctx.translate_trait_item_name(item.def_id)?;
                     // Skip the provided methods for the *external* trait declarations,
                     // but still remember their name (unless `extract_opaque_bodies` is set).
-                    if has_default_value {
+                    // TODO: translate function signatures unconditionally.
+                    if hax_item.has_value {
                         // This is a *provided* method
                         if rust_id.is_local() || bt_ctx.t_ctx.options.extract_opaque_bodies {
-                            let fun_id = bt_ctx.register_fun_decl_id(span, item.def_id);
-                            provided_methods.push((method_name, Some(fun_id)));
+                            let fun_id = bt_ctx.register_fun_decl_id(item_span, rust_item_id);
+                            provided_methods.push((item_name.clone(), Some(fun_id)));
                         } else {
-                            provided_methods.push((method_name, None));
+                            provided_methods.push((item_name.clone(), None));
                         }
                     } else {
                         // This is a required method (no default implementation)
-                        let fun_id = bt_ctx.register_fun_decl_id(span, item.def_id);
-                        required_methods.push((method_name, fun_id));
+                        let fun_id = bt_ctx.register_fun_decl_id(item_span, rust_item_id);
+                        required_methods.push((item_name.clone(), fun_id));
                     }
                 }
                 AssocKind::Const => {
                     // Check if the constant has a value (i.e., a body).
                     // We are handling a trait *declaration* so we need to
                     // check whether the constant has a default value.
-                    trace!("id: {:?}\n- item: {:?}", rust_id, item);
-                    let c = if has_default_value {
-                        let (name, (ty, id)) = bt_ctx.translate_const_from_trait_item(item)?;
+                    let hax::FullDefKind::AssocConst { ty, .. } =
+                        &opt_hax_def.as_deref().unwrap().kind
+                    else {
+                        unreachable!()
+                    };
+                    if hax_item.has_value {
                         // The parameters of the constant are the same as those of the item that
                         // declares them.
                         let gref = GlobalDeclRef {
-                            id,
+                            id: bt_ctx.register_global_decl_id(item_span, rust_item_id),
                             generics: generics.identity_args(),
                         };
-                        const_defaults.insert(name.clone(), gref);
-                        (name, ty)
-                    } else {
-                        let ty = bt_ctx.translate_ty_from_trait_item(item)?;
-                        let name = TraitItemName(item.name.to_string());
-                        (name, ty)
+                        const_defaults.insert(item_name.clone(), gref);
                     };
-                    consts.push(c);
+                    let ty = bt_ctx.translate_ty(item_span, erase_regions, ty)?;
+                    consts.push((item_name.clone(), ty));
                 }
                 AssocKind::Type => {
-                    let item_name = TraitItemName(item.name.to_string());
-                    if has_default_value {
-                        let ty = bt_ctx.translate_ty_from_trait_item(item)?;
+                    let hax::FullDefKind::AssocTy { value, .. } =
+                        &opt_hax_def.as_deref().unwrap().kind
+                    else {
+                        unreachable!()
+                    };
+                    if let Some(ty) = value {
+                        let ty = bt_ctx.translate_ty(item_span, erase_regions, &ty)?;
                         type_defaults.insert(item_name.clone(), ty);
                     };
                     types.push(item_name.clone());
@@ -385,54 +276,71 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         def_id: TraitImplId,
         rust_id: DefId,
         item_meta: ItemMeta,
+        def: &hax::FullDef,
     ) -> Result<TraitImpl, Error> {
         trace!("About to translate trait impl:\n{:?}", rust_id);
         trace!("Trait impl id:\n{:?}", def_id);
 
         let tcx = self.tcx;
-        let span = tcx.def_span(rust_id);
+        let span = item_meta.span.rust_span();
+        let erase_regions = false;
         let mut bt_ctx = BodyTransCtx::new(rust_id, self);
 
-        let erase_regions = false;
+        bt_ctx.push_generics_for_def(span, rust_id, def)?;
+        let generics = bt_ctx.get_generics();
 
-        // Translate the generics
-        bt_ctx.translate_generic_params(rust_id)?;
-
-        // Translate the predicates
-        bt_ctx.translate_predicates_of(
-            None,
-            rust_id,
-            PredicateOrigin::WhereClauseOnImpl,
-            &PredicateLocation::Base,
-        )?;
-
-        // Add the self trait clause
-        bt_ctx.translate_trait_impl_self_trait_clause(def_id)?;
+        let hax::FullDefKind::Impl {
+            impl_subject: hax::ImplSubject::Trait(trait_pred),
+            items: impl_items,
+            ..
+        } = &def.kind
+        else {
+            unreachable!()
+        };
+        let implemented_trait_id = &trait_pred.trait_ref.def_id;
+        let implemented_trait_rust_id = implemented_trait_id.into();
+        let trait_def = bt_ctx.t_ctx.hax_def(implemented_trait_rust_id);
+        let hax::FullDefKind::Trait {
+            items: decl_items, ..
+        } = trait_def.kind()
+        else {
+            unreachable!()
+        };
 
         // Retrieve the information about the implemented trait.
+        let trait_id = bt_ctx.register_trait_decl_id(span, implemented_trait_rust_id)?;
+        // We already tested above whether the trait should be filtered
+        let trait_id = trait_id.unwrap();
+        let implemented_trait = {
+            let implemented_trait = &trait_pred.trait_ref;
+            let (regions, types, const_generics) = bt_ctx.translate_substs(
+                span,
+                erase_regions,
+                None,
+                &implemented_trait.generic_args,
+            )?;
+            let generics = GenericArgs {
+                regions,
+                types,
+                const_generics,
+                trait_refs: Vec::new(),
+            };
+            TraitDeclRef { trait_id, generics }
+        };
+
+        // Compute the parent trait references.
         let (
-            implemented_trait_rust_id,
-            implemented_trait,
             rust_implemented_trait_ref,
             // [parent_trait_refs]: the trait refs which implement the parent
             // clauses of the implemented trait decl.
             parent_trait_refs,
         ) = {
             // TODO: what is below duplicates a bit [add_trait_impl_self_trait_clause]
-            let trait_rust_id = tcx.trait_id_of_impl(rust_id).unwrap();
-            let trait_id = bt_ctx.register_trait_decl_id(span, trait_rust_id)?;
-            // We already tested above whether the trait should be filtered
-            let trait_id = trait_id.unwrap();
-
             let rustc_middle::ty::ImplSubject::Trait(rust_trait_ref) =
                 tcx.impl_subject(rust_id).instantiate_identity()
             else {
                 unreachable!()
             };
-            let trait_ref = rust_trait_ref.sinto(&bt_ctx.hax_state);
-            let (regions, types, const_generics) =
-                bt_ctx.translate_substs(span, erase_regions, None, &trait_ref.generic_args)?;
-
             let parent_trait_refs = hax::solve_item_traits(
                 &bt_ctx.hax_state,
                 tcx.param_env(rust_id),
@@ -444,17 +352,8 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
                 bt_ctx.translate_trait_impl_exprs(span, erase_regions, &parent_trait_refs)?;
             let parent_trait_refs: Vector<TraitClauseId, TraitRef> = parent_trait_refs.into();
 
-            let generics = GenericArgs {
-                regions,
-                types,
-                const_generics,
-                trait_refs: Vec::new(),
-            };
-            let trait_ref = TraitDeclRef { trait_id, generics };
-            (trait_rust_id, trait_ref, rust_trait_ref, parent_trait_refs)
+            (rust_trait_ref, parent_trait_refs)
         };
-
-        let generics = bt_ctx.get_generics();
 
         {
             // Debugging
@@ -467,20 +366,6 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
             trace!("Trait impl: {:?}\n- parent_trait_refs:\n{}", rust_id, refs);
         }
 
-        // Explore the trait decl method items to retrieve the list of required methods
-        use std::collections::HashSet;
-        let mut decl_required_methods: HashSet<String> = HashSet::new();
-        for item in tcx
-            .associated_items(implemented_trait_rust_id)
-            .in_definition_order()
-        {
-            if let AssocKind::Fn = &item.kind
-                && !item.defaultness(tcx).has_value()
-            {
-                decl_required_methods.insert(item.name.to_string());
-            }
-        }
-
         // Explore the associated items
         // We do something subtle here: TODO
         let tcx = bt_ctx.t_ctx.tcx;
@@ -489,36 +374,46 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         let mut required_methods = Vec::new();
         let mut provided_methods = Vec::new();
 
-        use rustc_middle::ty::AssocKind;
-        for item in tcx.associated_items(rust_id).in_definition_order() {
+        for item in impl_items {
+            let name = TraitItemName(item.name.clone());
+            let rust_item_id = (&item.def_id).into();
+            let item_span = tcx.def_span(rust_item_id);
             match &item.kind {
-                AssocKind::Fn => {
-                    let method_name = bt_ctx.t_ctx.translate_trait_item_name(item.def_id)?;
-                    let fun_id = bt_ctx.register_fun_decl_id(span, item.def_id);
-
-                    // Check if we implement a required method or reimplement
-                    // a provided method
-                    let is_required = decl_required_methods.contains(&method_name.0);
-                    if is_required {
-                        required_methods.push((method_name, fun_id));
+                hax::AssocKind::Fn => {
+                    let fun_id = bt_ctx.register_fun_decl_id(item_span, rust_item_id);
+                    let AssocItemContainer::TraitImplContainer {
+                        overrides_default, ..
+                    } = item.container
+                    else {
+                        unreachable!()
+                    };
+                    if overrides_default {
+                        provided_methods.push((name, fun_id));
                     } else {
-                        provided_methods.push((method_name, fun_id));
+                        required_methods.push((name, fun_id));
                     }
                 }
-                AssocKind::Const => {
-                    let (name, (_ty, id)) = bt_ctx.translate_const_from_trait_item(item)?;
-
+                hax::AssocKind::Const => {
                     // The parameters of the constant are the same as those of the item that
                     // declares them.
                     let gref = GlobalDeclRef {
-                        id,
+                        id: bt_ctx.register_global_decl_id(item_span, rust_item_id),
                         generics: generics.identity_args(),
                     };
                     consts.insert(name, gref);
                 }
-                AssocKind::Type => {
-                    let name = TraitItemName(item.name.to_string());
-                    let ty = bt_ctx.translate_ty_from_trait_item(item)?;
+                hax::AssocKind::Type => {
+                    // Warning: don't call `hax_def` on associated functions because this triggers
+                    // hax crashes on functions with higher-kinded predicates like
+                    // `Iterator::scan`.
+                    let item_def = bt_ctx.t_ctx.hax_def(&item.def_id);
+                    let hax::FullDefKind::AssocTy {
+                        value: Some(ty), ..
+                    } = item_def.kind()
+                    else {
+                        unreachable!()
+                    };
+                    let ty = bt_ctx.translate_ty(item_span, erase_regions, ty)?;
                     types.insert(name, ty);
                 }
             }
@@ -532,13 +427,12 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         let mut consts = Vec::new();
         let mut type_clauses = Vec::new();
         let mut types: Vec<(TraitItemName, Ty)> = Vec::new();
-        for item in tcx
-            .associated_items(implemented_trait_rust_id)
-            .in_definition_order()
-        {
+        for item in decl_items {
+            let item_def_id = (&item.def_id).into();
+            let item_span = tcx.def_span(item_def_id);
             match &item.kind {
-                AssocKind::Fn => (),
-                AssocKind::Const => {
+                hax::AssocKind::Fn => (),
+                hax::AssocKind::Const => {
                     let name = TraitItemName(item.name.to_string());
                     // Does the trait impl provide an implementation for this const?
                     let c = match partial_consts.get(&name) {
@@ -546,38 +440,39 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
                         None => {
                             // The item is not defined in the trait impl: the trait decl *must*
                             // define a default value.
-                            let id = bt_ctx.translate_const_from_trait_item(item)?.1 .1;
                             // The parameters of the constant are the same as those of the item
                             // that declares them.
                             GlobalDeclRef {
-                                id,
+                                id: bt_ctx.register_global_decl_id(item_span, item_def_id),
                                 generics: implemented_trait.generics.clone(),
                             }
                         }
                     };
                     consts.push((name, c));
                 }
-                AssocKind::Type => {
+                hax::AssocKind::Type => {
                     let name = TraitItemName(item.name.to_string());
                     // Does the trait impl provide an implementation for this type?
                     let ty = match partial_types.get(&name) {
                         Some(ty) => ty.clone(),
                         None => {
-                            // The item is not defined in the trait impl:
-                            // the trait decl *must* define a default value.
-                            // TODO: should we normalize the type?
-                            bt_ctx.translate_ty_from_trait_item(item)?
+                            // The item is not defined in the trait impl: the trait decl *must*
+                            // define a default value.
+                            let ty = tcx
+                                .type_of(item_def_id)
+                                .instantiate(tcx, rust_implemented_trait_ref.args)
+                                .sinto(&bt_ctx.hax_state);
+                            bt_ctx.translate_ty(item_span, erase_regions, &ty)?
                         }
                     };
+                    types.push((name.clone(), ty));
 
                     // Retrieve the trait refs
                     let trait_refs = bt_ctx.translate_trait_refs_from_impl_trait_item(
                         rust_id,
                         &rust_implemented_trait_ref,
-                        item,
+                        item_def_id,
                     )?;
-
-                    types.push((name.clone(), ty));
                     type_clauses.push((name, trait_refs));
                 }
             }

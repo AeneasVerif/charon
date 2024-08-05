@@ -46,13 +46,20 @@ pub fn test_closure_u32(x: u32) -> u32 {
 // function).
 #[allow(clippy::needless_lifetimes)]
 pub fn test_closure_ref_u32<'a>(x: &'a u32) -> &'a u32 {
-    let f: fn(&u32) -> &u32 = |x| x;
+    let f: fn(&u32) -> &u32 = |y| y;
     (f)(x)
 }
 
 // Local function which uses local type variables
 pub fn test_closure_ref_param<T>(x: &T) -> &T {
     let f: fn(&T) -> &T = |x| x;
+    (f)(x)
+}
+
+trait Trait<'a> {}
+
+pub fn test_closure_ref_early_bound<'a, T: Trait<'a>>(x: &'a T) -> &'a T {
+    let f: fn(&T) -> &T = |y| y;
     (f)(x)
 }
 
@@ -139,3 +146,20 @@ pub fn test_map_option3(x: Option<u32>) -> Option<u32> {
 pub fn test_array_map(x: [i32; 256]) -> [i32; 256] {
     x.map(|v| v)
 }
+
+struct Foo<'a, T>(&'a T);
+
+impl<'a, T> Foo<'a, T>
+where
+    T: Clone,
+{
+    pub fn test_nested_closures<'b>(x: &'a &'b T) -> T {
+        let clo = || || || (*x).clone();
+        clo()()()
+    }
+}
+
+const BLAH: u32 = {
+    let clo = || 42;
+    clo()
+};
