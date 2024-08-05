@@ -711,7 +711,9 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
                     None
                 }
             },
-            AttrKind::DocComment(..) => None,
+            AttrKind::DocComment(_kind, comment) => {
+                Some(Attribute::DocComment(comment.to_string()))
+            }
         }
     }
 
