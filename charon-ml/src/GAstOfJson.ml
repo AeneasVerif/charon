@@ -170,6 +170,9 @@ and attribute_of_json (js : json) : (attribute, string) result =
     | `Assoc [ ("VariantsSuffix", variants_suffix) ] ->
         let* variants_suffix = string_of_json variants_suffix in
         Ok (AttrVariantsSuffix variants_suffix)
+    | `Assoc [ ("DocComment", doc_comment) ] ->
+        let* doc_comment = string_of_json doc_comment in
+        Ok (AttrDocComment doc_comment)
     | `Assoc [ ("Unknown", unknown) ] ->
         let* unknown = string_of_json unknown in
         Ok (AttrUnknown unknown)

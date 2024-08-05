@@ -358,6 +358,7 @@ fn attributes() -> Result<(), Box<dyn Error>> {
         static BAR: () = ();
 
         #[inline(never)]
+        /// This is a doc comment.
         fn main() {}
         "#,
     )?;
@@ -393,6 +394,15 @@ fn attributes() -> Result<(), Box<dyn Error>> {
     assert_eq!(
         crate_data.functions[0].item_meta.attr_info.inline,
         Some(InlineAttr::Never)
+    );
+    assert_eq!(
+        crate_data.functions[0]
+            .item_meta
+            .attr_info
+            .attributes
+            .last()
+            .unwrap(),
+        &Attribute::DocComment(" This is a doc comment.".to_owned())
     );
     Ok(())
 }

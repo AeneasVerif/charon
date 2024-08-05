@@ -138,6 +138,8 @@ pub enum Attribute {
     VariantsPrefix(String),
     /// Same as `VariantsPrefix`, but appends to the name instead of pre-pending.
     VariantsSuffix(String),
+    /// A doc-comment such as `/// ...`.
+    DocComment(String),
     /// A non-charon-specific attribute.
     Unknown(String),
 }
