@@ -132,18 +132,33 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         origin: PredicateOrigin,
         location: &PredicateLocation,
     ) -> Result<(), Error> {
+        // Translate the trait predicates first, because associated type constraints may refer to
+        // them. E.g. in `fn foo<I: Iterator<Item=usize>>()`, the `I: Iterator` clause must be
+        // translated before the `<I as Iterator>::Item = usize` predicate.
         for (pred, span) in &preds.predicates {
-            match self.translate_predicate(pred, span, origin.clone(), location)? {
-                None => (),
-                Some(pred) => match pred {
-                    Predicate::Trait(_) => {
-                        // Don't need to do anything because the clause is already
-                        // registered in [self.trait_clauses]
-                    }
-                    Predicate::TypeOutlives(p) => self.types_outlive.push(p),
-                    Predicate::RegionOutlives(p) => self.regions_outlive.push(p),
-                    Predicate::TraitType(p) => self.trait_type_constraints.push(p),
-                },
+            if matches!(
+                pred.kind.value,
+                hax::PredicateKind::Clause(hax::ClauseKind::Trait(_))
+            ) {
+                // Don't need to do anything with the translated clause, it is already registered
+                // in `self.trait_clauses`.
+                let _ = self.translate_predicate(pred, span, origin.clone(), location)?;
+            }
+        }
+        for (pred, span) in &preds.predicates {
+            if !matches!(
+                pred.kind.value,
+                hax::PredicateKind::Clause(hax::ClauseKind::Trait(_))
+            ) {
+                match self.translate_predicate(pred, span, origin.clone(), location)? {
+                    None => (),
+                    Some(pred) => match pred {
+                        Predicate::TypeOutlives(p) => self.types_outlive.push(p),
+                        Predicate::RegionOutlives(p) => self.regions_outlive.push(p),
+                        Predicate::TraitType(p) => self.trait_type_constraints.push(p),
+                        Predicate::Trait(_) => unreachable!(),
+                    },
+                }
             }
         }
         Ok(())
