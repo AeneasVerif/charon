@@ -8,7 +8,7 @@
 //! crate root. Don't forget to format the output code after regenerating.
 use anyhow::{bail, Context, Result};
 use assert_cmd::cargo::CommandCargoExt;
-use charon_lib::ast::AttrInfo;
+use charon_lib::ast::{AttrInfo, Attribute};
 use charon_lib::export::CrateData;
 use charon_lib::meta::ItemMeta;
 use charon_lib::names::{Name, PathElem};
@@ -24,6 +24,8 @@ use std::fs::File;
 use std::io::BufReader;
 use std::path::PathBuf;
 use std::process::Command;
+
+const RUN_CHARON: bool = true;
 
 /// `Name` is a complex datastructure; to inspect it we serialize it a little bit.
 fn repr_name(_crate_data: &CrateData, n: &Name) -> String {
@@ -378,7 +380,7 @@ fn type_decl_to_json_deserializer(ctx: &GenerateCtx, decl: &TypeDecl) -> String 
     build_function(ctx, decl, &branches)
 }
 
-fn extract_doc_comments(attr_info: &AttrInfo) -> String {
+fn extract_doc_comments(attr_info: &AttrInfo, wrap_in_doc_comment: bool) -> String {
     let comments = attr_info
         .attributes
         .iter()
@@ -389,7 +391,11 @@ fn extract_doc_comments(attr_info: &AttrInfo) -> String {
         String::new()
     } else {
         let comment = comments.into_iter().join("\n");
-        format!("(**{comment} *)")
+        if wrap_in_doc_comment {
+            format!("(**{comment} *)")
+        } else {
+            comment
+        }
     }
 }
 
@@ -407,7 +413,7 @@ fn build_type(_ctx: &GenerateCtx, decl: &TypeDecl, co_rec: bool, body: &str) -> 
         [ty] => ty.clone(),
         generics => format!("({})", generics.iter().join(",")),
     };
-    let comment = extract_doc_comments(&decl.item_meta.attr_info);
+    let comment = extract_doc_comments(&decl.item_meta.attr_info, true);
     let keyword = if co_rec { "and" } else { "type" };
     format!("\n{comment} {keyword} {generics} {ty_name} = {body}")
 }
@@ -441,7 +447,7 @@ fn type_decl_to_ocaml_decl(ctx: &GenerateCtx, decl: &TypeDecl, co_rec: bool) -> 
                 .map(|f| {
                     let name = f.renamed_name().unwrap();
                     let ty = type_to_ocaml_name(ctx, &f.ty);
-                    let comment = extract_doc_comments(&f.attr_info);
+                    let comment = extract_doc_comments(&f.attr_info, true);
                     format!("{name} : {ty} {comment}")
                 })
                 .join(";");
@@ -452,23 +458,43 @@ fn type_decl_to_ocaml_decl(ctx: &GenerateCtx, decl: &TypeDecl, co_rec: bool) -> 
                 .iter()
                 .filter(|v| !v.is_opaque())
                 .map(|variant| {
+                    let mut attr_info = variant.attr_info.clone();
                     let rename = variant.renamed_name();
                     let ty = if variant.fields.is_empty() {
                         // Unit variant
                         String::new()
                     } else {
+                        if variant.fields.iter().all(|f| f.name.is_some()) {
+                            let fields = variant
+                                .fields
+                                .iter()
+                                .map(|f| {
+                                    let comment = extract_doc_comments(&f.attr_info, false);
+                                    let description = if comment.is_empty() {
+                                        comment
+                                    } else {
+                                        format!(": {comment}")
+                                    };
+                                    format!("\n - [{}]{description}", f.name.as_ref().unwrap())
+                                })
+                                .join("");
+                            let field_descriptions = format!("\n Fields:{fields}");
+                            // Add a constructed doc-comment
+                            attr_info
+                                .attributes
+                                .push(Attribute::DocComment(field_descriptions));
+                        }
                         let fields = variant
                             .fields
-                            .clone()
                             .iter()
                             .map(|f| type_to_ocaml_name(ctx, &f.ty))
                             .join("*");
                         format!(" of {fields}")
                     };
-                    let comment = extract_doc_comments(&variant.attr_info);
-                    format!("{rename}{ty} {comment}")
+                    let comment = extract_doc_comments(&attr_info, true);
+                    format!("\n\n | {rename}{ty} {comment}")
                 })
-                .join("|")
+                .join("")
         }
         TypeDeclKind::Opaque => todo!(),
         TypeDeclKind::Error(_) => todo!(),
@@ -531,7 +557,6 @@ impl GenerateCodeFor<'_> {
 fn main() -> Result<()> {
     let dir = PathBuf::from("src/bin/generate-ml");
     let charon_llbc = dir.join("charon-itself.llbc");
-    const RUN_CHARON: bool = true;
     if RUN_CHARON {
         // Call charon on itself
         let mut cmd = Command::cargo_bin("charon")?;

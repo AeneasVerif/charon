@@ -127,7 +127,7 @@ pub enum ItemKind {
         trait_id: TraitDeclId,
         /// The name of the item.
         item_name: TraitItemName,
-        /// Whether the trait declaration provides a defautl implementation.
+        /// Whether the trait declaration provides a default implementation.
         has_default: bool,
     },
     /// Function/const that is part of a trait declaration.

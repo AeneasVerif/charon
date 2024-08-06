@@ -225,9 +225,21 @@ and item_kind =
       (** A function/const at the top level or in an inherent impl block. *)
   | TraitDeclItem of trait_decl_id * trait_item_name * bool
       (** Function/const that is part of a trait declaration. It has a body if and only if the trait
- provided a default implementation. *)
+ provided a default implementation.
+
+ Fields:
+ - [trait_id]:  The trait declaration this item belongs to.
+ - [item_name]:  The name of the item.
+ - [has_default]:  Whether the trait declaration provides a default implementation. *)
   | TraitImplItem of trait_impl_id * trait_decl_id * trait_item_name * bool
-      (** Function/const that is part of a trait declaration. *)
+      (** Function/const that is part of a trait declaration.
+
+ Fields:
+ - [impl_id]:  The trait implementation the method belongs to
+ - [trait_id]:  The trait declaration this item belongs to.
+ - [item_name]:  The name of the item
+ - [reuses_default]:  True if the trait decl had a default implementation for this function/const and this
+ item is a copy of the default item. *)
 
 (** An expression body.
  TODO: arg_count should be stored in GFunDecl below. But then,
