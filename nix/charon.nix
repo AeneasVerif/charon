@@ -46,9 +46,10 @@ craneLib.buildPackage (
     # It's important to pass the same `RUSTFLAGS` to dependencies otherwise we'll have to rebuild them.
     cargoArtifacts = craneLib.buildDepsOnly craneArgs;
     postPatch = ''
-      # This file is a symlink outside of the charon directory. We remove it so
-      # that we regenerate a fresh file in its place.
-      rm -f src/bin/generate-ml/GAstOfJson.ml
+      # This directory is a symlink outside of the charon directory. We remove
+      # it so that we regenerate fresh files in its place.
+      rm -f src/bin/generate-ml/generated
+      mkdir src/bin/generate-ml/generated
     '';
     # Make sure the toolchain is in $PATH so that `cargo` can work
     # properly. On mac we also have to tell `charon-driver` where to find
@@ -76,7 +77,7 @@ craneLib.buildPackage (
 
       # Export the generated files to later check if they match the committed files.
       mkdir -p $out/generated-ml
-      cp src/bin/generate-ml/*.ml $out/generated-ml
+      cp src/bin/generate-ml/generated/*.ml $out/generated-ml
     '';
 
     passthru.check-fmt = craneLib.cargoFmt craneArgs;

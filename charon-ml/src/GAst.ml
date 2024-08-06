@@ -1,3 +1,13 @@
+(** WARNING: this file is partially auto-generated. Do not edit `GAst.ml`
+    by hand. Edit `GAst.template.ml` instead, or improve the code
+    generation tool so avoid the need for hand-writing things.
+
+    `GAst.template.ml` contains the manual definitions and some `(*
+    __REPLACEn__ *)` comments. These comments are replaced by auto-generated
+    definitions by running `make generate-ml` in the crate root. The
+    code-generation code is in `charon/src/bin/generate-ml`.
+ *)
+
 (** Definitions shared between the ULLBC and the LLBC ASTs. *)
 open Types
 
@@ -9,29 +19,31 @@ module TraitDeclId = Types.TraitDeclId
 module TraitImplId = Types.TraitImplId
 module TraitClauseId = Types.TraitClauseId
 
+(* Note: this is duplicated in `Types.ml` but re-exported here to not break dependent projects. *)
+type fun_decl_id = FunDeclId.id [@@deriving show, ord]
+
+(** The id of a translated item. *)
 type any_decl_id =
-  | IdFun of FunDeclId.id
-  | IdGlobal of GlobalDeclId.id
-  | IdType of TypeDeclId.id
-  | IdTraitDecl of TraitDeclId.id
-  | IdTraitImpl of TraitImplId.id
+  | IdType of type_decl_id
+  | IdFun of fun_decl_id
+  | IdGlobal of global_decl_id
+  | IdTraitDecl of trait_decl_id
+  | IdTraitImpl of trait_impl_id
 [@@deriving show, ord]
 
-type fun_decl_id = FunDeclId.id [@@deriving show, ord]
 type assumed_fun_id = Expressions.assumed_fun_id [@@deriving show, ord]
 type fun_id = Expressions.fun_id [@@deriving show, ord]
 
 type fun_id_or_trait_method_ref = Expressions.fun_id_or_trait_method_ref
 [@@deriving show, ord]
 
-(** A variable, as used in a function definition *)
+(** A variable *)
 type var = {
-  index : VarId.id;  (** Unique variable identifier *)
+  index : var_id;  (** Unique index identifying the variable *)
   name : string option;
-  var_ty : ty;
-      (** The variable type - erased type, because variables are not used
-       ** in function signatures: they are only used to declare the list of
-       ** variables manipulated by a function body *)
+      (** Variable name - may be `None` if the variable was introduced by Rust
+ through desugaring. *)
+  var_ty : ty;  (** The variable type *)
 }
 [@@deriving show]
 
@@ -51,8 +63,18 @@ class ['self] map_ast_base =
 
 (* Below: the types need not be mutually recursive, but it makes it easier
    to derive the visitors *)
+
+(** not present in rust *)
 type assertion = { cond : operand; expected : bool }
-and fn_operand = FnOpRegular of fn_ptr | FnOpMove of place
+
+(** A function operand is used in function calls.
+ It either designates a top-level function, or a place in case
+ we are using function pointers stored in local variables. *)
+and fn_operand =
+  | FnOpRegular of fn_ptr
+      (** Regular case: call to a top-level function, trait method, etc. *)
+  | FnOpMove of place
+      (** Use of a function pointer stored in a local variable *)
 
 and call = { func : fn_operand; args : operand list; dest : place }
 [@@deriving
@@ -86,6 +108,48 @@ class ['self] map_statement_base =
     inherit [_] map_call
   end
 
+(** We use this to store information about the parameters in parent blocks.
+ This is necessary because in the definitions we store *all* the generics,
+ including those coming from the outer impl block.
+
+ For instance:
+ ```text
+ impl Foo<T> {
+         ^^^
+       outer block generics
+   fn bar<U>(...)  { ... }
+         ^^^
+       generics local to the function bar
+ }
+ ```
+
+ In `bar` we store the generics: `[T, U]`.
+
+ We however sometimes need to make a distinction between those two kinds
+ of generics, in particular when manipulating traits. For instance:
+
+ ```text
+ impl<T> Foo for Bar<T> {
+   fn baz<U>(...)  { ... }
+ }
+
+ fn test(...) {
+    x.baz(...); // Here, we refer to the call as:
+                // > Foo<T>::baz<U>(...)
+                // If baz hadn't been a method implementation of a trait,
+                // we would have refered to it as:
+                // > baz<T, U>(...)
+                // The reason is that with traits, we refer to the whole
+                // trait implementation (as if it were a structure), then
+                // pick a specific method inside (as if projecting a field
+                // from a structure).
+ }
+ ```
+
+ **Remark**: Rust only allows refering to the generics of the immediately
+ outer block. For this reason, when we need to store the information about
+ the generics of the outer block(s), we need to do it only for one level
+ (this definitely makes things simpler). *)
 type params_info = {
   num_region_params : int;
   num_type_params : int;
@@ -95,54 +159,95 @@ type params_info = {
   num_types_outlive : int;
   num_trait_type_constraints : int;
 }
-[@@deriving show]
 
-type closure_kind = Fn | FnMut | FnOnce [@@deriving show]
-type closure_info = { kind : closure_kind; state : ty list } [@@deriving show]
+and closure_kind = Fn | FnMut | FnOnce
 
-(** A function signature for function declarations *)
-type fun_sig = {
-  is_unsafe : bool;
+(** Additional information for closures.
+ We mostly use it in micro-passes like [crate::update_closure_signature]. *)
+and closure_info = {
+  kind : closure_kind;
+  state : ty list;
+      (** Contains the types of the fields in the closure state.
+ More precisely, for every place captured by the
+ closure, the state has one field (typically a ref).
+
+ For instance, below the closure has a state with two fields of type `&u32`:
+ ```text
+ pub fn test_closure_capture(x: u32, y: u32) -> u32 {
+   let f = &|z| x + y + z;
+   (f)(0)
+ }
+ ``` *)
+}
+
+(** A function signature. *)
+and fun_sig = {
+  is_unsafe : bool;  (** Is the function unsafe or not *)
   is_closure : bool;
+      (** `true` if the signature is for a closure.
+
+ Importantly: if the signature is for a closure, then:
+ - the type and const generic params actually come from the parent function
+   (the function in which the closure is defined)
+ - the region variables are local to the closure *)
   closure_info : closure_info option;
+      (** Additional information if this is the signature of a closure. *)
   generics : generic_params;
   parent_params_info : params_info option;
+      (** Optional fields, for trait methods only (see the comments in [ParamsInfo]). *)
   inputs : ty list;
   output : ty;
 }
-[@@deriving show]
 
-type item_kind =
-  | RegularKind
-      (** A "normal" item (either defined at the top-level, or inside
-          a type impl block). *)
-  | TraitItemImpl of trait_impl_id * trait_decl_id * string * bool
-      (** Trait item implementation.
+(** Item kind kind: "regular" item (not linked to a trait), trait item declaration, etc.
 
-          Fields:
-          - [trait impl id]
-          - [trait_id]
-          - [item_name]
-          - [provided]: true if this item *re-implements* a provided item
-        *)
-  | TraitItemDecl of trait_decl_id * string  (** A trait item declaration *)
-  | TraitItemProvided of trait_decl_id * string
-      (** Provided trait item (trait item declaration which defines a
-          default implementation at the same time *)
-[@@deriving show]
+ Example:
+ ========
+ ```text
+ trait Foo {
+   fn bar(x : u32) -> u32; // trait item: declaration (required)
 
-type 'body gexpr_body = {
+   fn baz(x : bool) -> bool { x } // trait item: provided
+ }
+
+ impl Foo for ... {
+   fn bar(x : u32) -> u32 { x } // trait item: implementation
+ }
+
+ fn test(...) { ... } // regular
+
+ impl Type {
+   fn test(...) { ... } // regular
+ }
+ ``` *)
+and item_kind =
+  | RegularKind  (** A "normal" function *)
+  | TraitItemImpl of trait_impl_id * trait_decl_id * trait_item_name * bool
+      (** Trait item implementation *)
+  | TraitItemDecl of trait_decl_id * trait_item_name
+      (** Trait item declaration *)
+  | TraitItemProvided of trait_decl_id * trait_item_name
+      (** Provided trait item (trait item declaration which defines
+ a default implementation at the same time) *)
+
+(** An expression body.
+ TODO: arg_count should be stored in GFunDecl below. But then,
+       the print is obfuscated and Aeneas may need some refactoring. *)
+and 'a0 gexpr_body = {
   span : span;
   arg_count : int;
+      (** The number of local variables used for the input arguments. *)
   locals : var list;
-      (** The locals can be indexed with {!Expressions.VarId.id}.
-
-          See {!Identifiers.Id.mapi} for instance.
-       *)
-  body : 'body;
+      (** The local variables.
+ We always have, in the following order:
+ - the local used for the return value (index 0)
+ - the input arguments
+ - the remaining locals, used for the intermediate computations *)
+  body : 'a0;
 }
 [@@deriving show]
 
+(* Hand-written because the rust equivalent isn't generic *)
 type 'body gfun_decl = {
   def_id : FunDeclId.id;
   item_meta : item_meta;
@@ -153,34 +258,117 @@ type 'body gfun_decl = {
 }
 [@@deriving show]
 
+(** A trait **declaration**.
+
+ For instance:
+ ```text
+ trait Foo {
+   type Bar;
+
+   fn baz(...); // required method (see below)
+
+   fn test() -> bool { true } // provided method (see below)
+ }
+ ```
+
+ In case of a trait declaration, we don't include the provided methods (the methods
+ with a default implementation): they will be translated on a per-need basis. This is
+ important for two reasons:
+ - this makes the trait definitions a lot smaller (the Iterator trait
+   has *one* declared function and more than 70 provided functions)
+ - this is important for the external traits, whose provided methods
+   often use features we don't support yet
+
+ Remark:
+ In Aeneas, we still translate the provided methods on an individual basis,
+ and in such a way thay they take as input a trait instance. This means that
+ we can use default methods *but*:
+ - implementations of required methods shoudln't call default methods
+ - trait implementations shouldn't redefine required methods
+ The use case we have in mind is [std::iter::Iterator]: it declares one required
+ method (`next`) that should be implemented for every iterator, and defines many
+ helpers like `all`, `map`, etc. that shouldn't be re-implemented.
+ Of course, this forbids other useful use cases such as visitors implemented
+ by means of traits. *)
 type trait_decl = {
   def_id : trait_decl_id;
   item_meta : item_meta;
   generics : generic_params;
   parent_clauses : trait_clause list;
-  consts : (trait_item_name * ty) list;
-  types : trait_item_name list;
-  required_methods : (trait_item_name * fun_decl_id) list;
-  provided_methods : (trait_item_name * fun_decl_id option) list;
-}
-[@@deriving show]
+      (** The "parent" clauses: the supertraits.
 
-type trait_impl = {
+ Supertraits are actually regular where clauses, but we decided to have
+ a custom treatment.
+ ```text
+ trait Foo : Bar {
+             ^^^
+         supertrait, that we treat as a parent predicate
+ }
+ ```
+ TODO: actually, as of today, we consider that all trait clauses of
+ trait declarations are parent clauses. *)
+  consts : (trait_item_name * ty) list;
+      (** The associated constants declared in the trait, along with their type. *)
+  types : trait_item_name list;
+      (** The associated types declared in the trait. *)
+  required_methods : (trait_item_name * fun_decl_id) list;
+      (** The *required* methods.
+
+ The required methods are the methods declared by the trait but with
+ no default implementation. *)
+  provided_methods : (trait_item_name * fun_decl_id option) list;
+      (** The *provided* methods.
+
+ The provided methods are the methods with a default implementation.
+
+ We include the [FunDeclId] identifiers *only* for the local
+ trait declarations. Otherwise, it would mean we extract *all* the
+ provided methods, which is not something we want to do *yet* for
+ the external traits.
+
+ TODO: allow to optionnaly extract information. For instance: attempt
+ to extract, and fail nicely if we don't succeed (definition not in
+ the supported subset, etc.). *)
+}
+
+(** A trait **implementation**.
+
+ For instance:
+ ```text
+ impl Foo for List {
+   type Bar = ...
+
+   fn baz(...) { ... }
+ }
+ ``` *)
+and trait_impl = {
   def_id : trait_impl_id;
   item_meta : item_meta;
   impl_trait : trait_decl_ref;
+      (** The information about the implemented trait.
+ Note that this contains the instantiation of the "parent"
+ clauses. *)
   generics : generic_params;
   parent_trait_refs : trait_ref list;
+      (** The trait references for the parent clauses (see [TraitDecl]). *)
   consts : (trait_item_name * global_decl_ref) list;
+      (** The associated constants declared in the trait. *)
   types : (trait_item_name * ty) list;
+      (** The associated types declared in the trait. *)
   required_methods : (trait_item_name * fun_decl_id) list;
+      (** The implemented required methods *)
   provided_methods : (trait_item_name * fun_decl_id) list;
+      (** The re-implemented provided methods *)
 }
+
+(** A (group of) top-level declaration(s), properly reordered.
+ "G" stands for "generic" *)
+and 'a0 g_declaration_group =
+  | NonRecGroup of 'a0  (** A non-recursive declaration *)
+  | RecGroup of 'a0 list  (** A (group of mutually) recursive declaration(s) *)
 [@@deriving show]
 
-type 'id g_declaration_group = NonRecGroup of 'id | RecGroup of 'id list
-[@@deriving show]
-
+(* Hand-written because they don't exist in rust *)
 type type_declaration_group = TypeDeclId.id g_declaration_group
 [@@deriving show]
 
@@ -195,16 +383,21 @@ type trait_declaration_group = TraitDeclId.id g_declaration_group
 type trait_impl_group = TraitImplId.id g_declaration_group [@@deriving show]
 type mixed_declaration_group = any_decl_id g_declaration_group [@@deriving show]
 
-(** Module declaration. Globals cannot be mutually recursive. *)
+(** A (group of) top-level declaration(s), properly reordered. *)
 type declaration_group =
-  | TypeGroup of type_declaration_group
-  | FunGroup of fun_declaration_group
-  | GlobalGroup of global_declaration_group
-  | TraitDeclGroup of trait_declaration_group
-  | TraitImplGroup of trait_impl_group
-  | MixedGroup of mixed_declaration_group
+  | TypeGroup of type_decl_id g_declaration_group
+      (** A type declaration group *)
+  | FunGroup of fun_decl_id g_declaration_group
+      (** A function declaration group *)
+  | GlobalGroup of global_decl_id g_declaration_group
+      (** A global declaration group *)
+  | TraitDeclGroup of trait_decl_id g_declaration_group  (** *)
+  | TraitImplGroup of trait_impl_id g_declaration_group  (** *)
+  | MixedGroup of any_decl_id g_declaration_group
+      (** Anything that doesn't fit into these categories. *)
 [@@deriving show]
 
+(* Hand-written because the rust equivalent isn't generic *)
 type 'body gglobal_decl = {
   def_id : GlobalDeclId.id;
   item_meta : item_meta;
@@ -214,6 +407,8 @@ type 'body gglobal_decl = {
   body : 'body;
 }
 [@@deriving show]
+
+(* Hand-written because the rust equivalent isn't generic *)
 
 (** A crate *)
 type ('fun_body, 'global_body) gcrate = {

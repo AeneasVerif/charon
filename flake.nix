@@ -128,10 +128,13 @@
           mkdir generated
           cp ${charon}/generated-ml/* generated
           chmod u+w generated/*
-          rm generated/*.template.ml
-          ${pkgs.ocamlPackages.ocamlformat}/bin/ocamlformat --inplace --enable-outside-detected-project generated/*.ml
+          ${pkgs.ocamlPackages.ocamlformat}/bin/ocamlformat --doc-comments=before --inplace --enable-outside-detected-project generated/*.ml
 
           mkdir committed
+          cp ${./charon-ml/src}/GAst.ml committed
+          cp ${./charon-ml/src}/Expressions.ml committed
+          cp ${./charon-ml/src}/Meta.ml committed
+          cp ${./charon-ml/src}/Types.ml committed
           cp ${./charon-ml/src}/GAstOfJson.ml committed
 
           if diff -rq committed generated; then

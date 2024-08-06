@@ -58,6 +58,7 @@ pub struct RawSpan {
     #[serde(skip)]
     #[drive(skip)]
     #[serde(default = "dummy_span_data")]
+    #[charon::opaque]
     pub rust_span_data: rustc_span::SpanData,
 }
 
