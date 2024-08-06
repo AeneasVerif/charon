@@ -19,6 +19,9 @@ module TraitDeclId = Types.TraitDeclId
 module TraitImplId = Types.TraitImplId
 module TraitClauseId = Types.TraitClauseId
 
+(* Note: this is duplicated in `Types.ml` but re-exported here to not break dependent projects. *)
+type fun_decl_id = FunDeclId.id [@@deriving show, ord]
+
 (* __REPLACE5__ *)
 [@@deriving show, ord]
 
