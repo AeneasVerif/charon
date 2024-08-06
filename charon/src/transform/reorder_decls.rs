@@ -213,13 +213,7 @@ impl<'tcx, 'ctx> Deps<'tcx, 'ctx> {
                 //
                 // The declaration may not be present if we encountered errors.
                 if let Some(decl) = ctx.translated.fun_decls.get(id) {
-                    if let ItemKind::TraitItemImpl {
-                        impl_id,
-                        trait_id: _,
-                        item_name: _,
-                        provided: _,
-                    } = &decl.kind
-                    {
+                    if let ItemKind::TraitImpl { impl_id, .. } = &decl.kind {
                         // Register the trait decl id
                         self.impl_trait_id = Some(*impl_id)
                     }

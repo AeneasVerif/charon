@@ -199,36 +199,35 @@ and fun_sig = {
   output : ty;
 }
 
-(** Item kind kind: "regular" item (not linked to a trait), trait item declaration, etc.
+(** Item kind: whether this function/const is part of a trait declaration, trait implementation, or
+ neither.
 
  Example:
- ========
  ```text
  trait Foo {
-   fn bar(x : u32) -> u32; // trait item: declaration (required)
+     fn bar(x : u32) -> u32; // trait item decl without default
 
-   fn baz(x : bool) -> bool { x } // trait item: provided
+     fn baz(x : bool) -> bool { x } // trait item decl with default
  }
 
  impl Foo for ... {
-   fn bar(x : u32) -> u32 { x } // trait item: implementation
+     fn bar(x : u32) -> u32 { x } // trait item implementation
  }
 
  fn test(...) { ... } // regular
 
  impl Type {
-   fn test(...) { ... } // regular
+     fn test(...) { ... } // regular
  }
  ``` *)
 and item_kind =
-  | RegularKind  (** A "normal" function *)
-  | TraitItemImpl of trait_impl_id * trait_decl_id * trait_item_name * bool
-      (** Trait item implementation *)
-  | TraitItemDecl of trait_decl_id * trait_item_name
-      (** Trait item declaration *)
-  | TraitItemProvided of trait_decl_id * trait_item_name
-      (** Provided trait item (trait item declaration which defines
- a default implementation at the same time) *)
+  | RegularItem
+      (** A function/const at the top level or in an inherent impl block. *)
+  | TraitDeclItem of trait_decl_id * trait_item_name * bool
+      (** Function/const that is part of a trait declaration. It has a body if and only if the trait
+ provided a default implementation. *)
+  | TraitImplItem of trait_impl_id * trait_decl_id * trait_item_name * bool
+      (** Function/const that is part of a trait declaration. *)
 
 (** An expression body.
  TODO: arg_count should be stored in GFunDecl below. But then,

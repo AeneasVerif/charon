@@ -176,7 +176,7 @@ let global_decl_of_json (bodies : expr_body option list)
          def_id = fun_id;
          item_meta;
          signature;
-         kind = RegularKind;
+         kind = RegularItem;
          body;
          is_global_decl_body = true;
        }

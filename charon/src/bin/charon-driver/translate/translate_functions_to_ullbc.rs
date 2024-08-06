@@ -147,11 +147,11 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
 
                         let impl_id = self.register_trait_impl_id(src, impl_id.into())?.unwrap();
 
-                        ItemKind::TraitItemImpl {
+                        ItemKind::TraitImpl {
                             impl_id,
                             trait_id,
                             item_name: TraitItemName(assoc.name.clone()),
-                            provided: *overrides_default,
+                            reuses_default: !overrides_default,
                         }
                     }
                     // This method is the *declaration* of a trait item
@@ -167,11 +167,10 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
                         let trait_id = self.register_trait_decl_id(src, trait_id.into())?.unwrap();
                         let item_name = TraitItemName(assoc.name.clone());
 
-                        // Check whether this item has a provided value.
-                        if assoc.has_value {
-                            ItemKind::TraitItemProvided(trait_id, item_name)
-                        } else {
-                            ItemKind::TraitItemDecl(trait_id, item_name)
+                        ItemKind::TraitDecl {
+                            trait_id,
+                            item_name,
+                            has_default: assoc.has_value,
                         }
                     }
                 }
@@ -1591,18 +1590,16 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         let kind = bt_ctx
             .t_ctx
             .get_item_kind(&DepSource::make(rust_id, def_span), def)?;
-        let is_trait_method_decl = match &kind {
-            ItemKind::Regular
-            | ItemKind::TraitItemImpl { .. }
-            | ItemKind::TraitItemProvided(..) => false,
-            ItemKind::TraitItemDecl(..) => true,
+        let is_trait_method_decl_without_default = match &kind {
+            ItemKind::Regular | ItemKind::TraitImpl { .. } => false,
+            ItemKind::TraitDecl { has_default, .. } => !has_default,
         };
 
         // Translate the function signature
         trace!("Translating function signature");
         let signature = bt_ctx.translate_function_signature(rust_id, &item_meta, def)?;
 
-        let body_id = if !is_trait_method_decl {
+        let body_id = if !is_trait_method_decl_without_default {
             // Translate the body. This doesn't store anything if we can't/decide not to translate
             // this body.
             match bt_ctx.translate_body(rust_id, signature.inputs.len(), &item_meta) {
