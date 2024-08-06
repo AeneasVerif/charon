@@ -425,9 +425,7 @@ fn type_decl_to_ocaml_decl(ctx: &GenerateCtx, decl: &TypeDecl) -> String {
         {
             type_to_ocaml_name(ctx, &fields[0].ty)
         }
-        TypeDeclKind::Alias(_ty) => {
-            todo!()
-        }
+        TypeDeclKind::Alias(ty) => type_to_ocaml_name(ctx, ty),
         TypeDeclKind::Struct(fields) if fields.iter().all(|f| f.name.is_none()) => {
             todo!()
         }
@@ -589,6 +587,25 @@ fn main() -> Result<()> {
                 (GenerationKind::TypeDecl, &["DeclarationGroup"]),
                 (GenerationKind::TypeDecl, &["Var"]),
                 (GenerationKind::TypeDecl, &["AnyTransId"]),
+            ],
+        },
+        GenerateCodeFor {
+            template: dir.join("templates/Expressions.ml"),
+            target: dir.join("generated/Expressions.ml"),
+            markers: &[
+                (GenerationKind::TypeDecl, &["AssumedFunId"]),
+                (GenerationKind::TypeDecl, &["FieldProjKind", "ProjectionElem", "Projection", "Place"]),
+                (GenerationKind::TypeDecl, &["BorrowKind", "BinOp"]),
+                (GenerationKind::TypeDecl, &[
+                    "CastKind",
+                    "UnOp",
+                    "RawConstantExpr",
+                    "ConstantExpr",
+                    "FnPtr",
+                    "FunIdOrTraitMethodRef",
+                    "FunId",
+                ]),
+                (GenerationKind::TypeDecl, &["Operand", "AggregateKind", "Rvalue"]),
             ],
         },
         GenerateCodeFor {
