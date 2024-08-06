@@ -393,7 +393,7 @@ fn extract_doc_comments(attr_info: &AttrInfo) -> String {
     }
 }
 
-fn build_type(_ctx: &GenerateCtx, decl: &TypeDecl, body: &str) -> String {
+fn build_type(_ctx: &GenerateCtx, decl: &TypeDecl, co_rec: bool, body: &str) -> String {
     let ty_name = type_name_to_ocaml_ident(&decl.item_meta);
     let generics = decl
         .generics
@@ -408,10 +408,15 @@ fn build_type(_ctx: &GenerateCtx, decl: &TypeDecl, body: &str) -> String {
         generics => format!("({})", generics.iter().join(",")),
     };
     let comment = extract_doc_comments(&decl.item_meta.attr_info);
-    format!("\n{comment} and {generics} {ty_name} = {body}")
+    let keyword = if co_rec { "and" } else { "type" };
+    format!("\n{comment} {keyword} {generics} {ty_name} = {body}")
 }
 
-fn type_decl_to_ocaml_decl(ctx: &GenerateCtx, decl: &TypeDecl) -> String {
+/// Generate an ocaml type declaration that mirrors `decl`.
+///
+/// `co_rec` indicates whether this definition is co-recursive with the ones that come before (i.e.
+/// should be declared with `and` instead of `type`).
+fn type_decl_to_ocaml_decl(ctx: &GenerateCtx, decl: &TypeDecl, co_rec: bool) -> String {
     let body = match &decl.kind {
         TypeDeclKind::Struct(fields) if fields.is_empty() => "unit".to_string(),
         TypeDeclKind::Struct(fields)
@@ -468,13 +473,16 @@ fn type_decl_to_ocaml_decl(ctx: &GenerateCtx, decl: &TypeDecl) -> String {
         TypeDeclKind::Opaque => todo!(),
         TypeDeclKind::Error(_) => todo!(),
     };
-    build_type(ctx, decl, &body)
+    build_type(ctx, decl, co_rec, &body)
 }
 
 /// The kind of code generation to perform.
 enum GenerationKind {
     OfJson,
-    TypeDecl,
+    /// The boolean indicates whether this is an open recursion group (i.e. shuold start with `and
+    /// ty = ...`). If `false`, the first element of the group will be `type ty = ...` instead of
+    /// `and ty = ...`;
+    TypeDecl(bool),
 }
 
 /// Replace markers in `template` with auto-generated code.
@@ -501,9 +509,13 @@ impl GenerateCodeFor<'_> {
                         .get(*name)
                         .expect(&format!("Name not found: `{name}`"))
                 })
-                .map(|ty| match kind {
+                .enumerate()
+                .map(|(i, ty)| match kind {
                     GenerationKind::OfJson => type_decl_to_json_deserializer(&ctx, ty),
-                    GenerationKind::TypeDecl => type_decl_to_ocaml_decl(&ctx, ty),
+                    GenerationKind::TypeDecl(open_rec) => {
+                        let co_recursive = *open_rec || i != 0;
+                        type_decl_to_ocaml_decl(&ctx, ty, co_recursive)
+                    }
                 })
                 .join("\n");
             let placeholder = format!("(* __REPLACE{i}__ *)");
@@ -574,8 +586,8 @@ fn main() -> Result<()> {
             template: dir.join("templates/GAst.ml"),
             target: dir.join("generated/GAst.ml"),
             markers: &[
-                (GenerationKind::TypeDecl, &["FnOperand", "Call"]),
-                (GenerationKind::TypeDecl, &[
+                (GenerationKind::TypeDecl(true), &["FnOperand", "Call"]),
+                (GenerationKind::TypeDecl(false), &[
                     "ParamsInfo",
                     "ClosureKind",
                     "ClosureInfo",
@@ -583,20 +595,20 @@ fn main() -> Result<()> {
                     "ItemKind",
                     "GExprBody",
                 ]),
-                (GenerationKind::TypeDecl, &["TraitDecl", "TraitImpl", "GDeclarationGroup"]),
-                (GenerationKind::TypeDecl, &["DeclarationGroup"]),
-                (GenerationKind::TypeDecl, &["Var"]),
-                (GenerationKind::TypeDecl, &["AnyTransId"]),
+                (GenerationKind::TypeDecl(false), &["TraitDecl", "TraitImpl", "GDeclarationGroup"]),
+                (GenerationKind::TypeDecl(false), &["DeclarationGroup"]),
+                (GenerationKind::TypeDecl(false), &["Var"]),
+                (GenerationKind::TypeDecl(false), &["AnyTransId"]),
             ],
         },
         GenerateCodeFor {
             template: dir.join("templates/Expressions.ml"),
             target: dir.join("generated/Expressions.ml"),
             markers: &[
-                (GenerationKind::TypeDecl, &["AssumedFunId"]),
-                (GenerationKind::TypeDecl, &["FieldProjKind", "ProjectionElem", "Projection", "Place"]),
-                (GenerationKind::TypeDecl, &["BorrowKind", "BinOp"]),
-                (GenerationKind::TypeDecl, &[
+                (GenerationKind::TypeDecl(false), &["AssumedFunId"]),
+                (GenerationKind::TypeDecl(false), &["FieldProjKind", "ProjectionElem", "Projection", "Place"]),
+                (GenerationKind::TypeDecl(false), &["BorrowKind", "BinOp"]),
+                (GenerationKind::TypeDecl(false), &[
                     "CastKind",
                     "UnOp",
                     "RawConstantExpr",
@@ -605,22 +617,22 @@ fn main() -> Result<()> {
                     "FunIdOrTraitMethodRef",
                     "FunId",
                 ]),
-                (GenerationKind::TypeDecl, &["Operand", "AggregateKind", "Rvalue"]),
+                (GenerationKind::TypeDecl(false), &["Operand", "AggregateKind", "Rvalue"]),
             ],
         },
         GenerateCodeFor {
             template: dir.join("templates/Meta.ml"),
             target: dir.join("generated/Meta.ml"),
             markers: &[
-                (GenerationKind::TypeDecl, &["Loc", "FileName"]),
-                (GenerationKind::TypeDecl, &["Span", "InlineAttr", "Attribute", "AttrInfo"]),
+                (GenerationKind::TypeDecl(false), &["Loc", "FileName"]),
+                (GenerationKind::TypeDecl(false), &["Span", "InlineAttr", "Attribute", "AttrInfo"]),
             ],
         },
         GenerateCodeFor {
             template: dir.join("templates/Types.ml"),
             target: dir.join("generated/Types.ml"),
             markers: &[
-                (GenerationKind::TypeDecl, &[
+                (GenerationKind::TypeDecl(false), &[
                     "AssumedTy",
                     "TypeId",
                     "ExistentialPredicate",
@@ -630,10 +642,10 @@ fn main() -> Result<()> {
                     "GlobalDeclRef",
                     "GenericArgs",
                 ]),
-                (GenerationKind::TypeDecl, &["TraitClause"]),
-                (GenerationKind::TypeDecl, &["TraitTypeConstraint"]),
-                (GenerationKind::TypeDecl, &["ImplElem", "PathElem", "Name", "ItemMeta"]),
-                (GenerationKind::TypeDecl, &["Field", "Variant", "TypeDeclKind", "TypeDecl"]),
+                (GenerationKind::TypeDecl(true), &["TraitClause"]),
+                (GenerationKind::TypeDecl(true), &["TraitTypeConstraint"]),
+                (GenerationKind::TypeDecl(false), &["ImplElem", "PathElem", "Name", "ItemMeta"]),
+                (GenerationKind::TypeDecl(false), &["Field", "Variant", "TypeDeclKind", "TypeDecl"]),
             ],
         },
         GenerateCodeFor {

@@ -282,8 +282,6 @@ class virtual ['self] map_ty_base =
         { index; name }
   end
 
-type __types_0 = unit (* to start the recursive group *)
-
 (** Assumed types identifiers.
 
  WARNING: for now, all the assumed types are covariant in the generic
@@ -294,7 +292,7 @@ type __types_0 = unit (* to start the recursive group *)
  TODO: update to not hardcode the types (except `Box` maybe) and be more
  modular.
  TODO: move to assumed.rs? *)
-and assumed_ty =
+type assumed_ty =
   | TBox  (** Boxes have a special treatment: we translate them as identity. *)
   | TArray  (** Primitive type *)
   | TSlice  (** Primitive type *)
@@ -587,8 +585,6 @@ and trait_type_constraint = {
         polymorphic = false;
       }]
 
-type __types_3 = unit (* to start the recursive group *)
-
 (** There are two kinds of `impl` blocks:
  - impl blocks linked to a type ("inherent" impl blocks following Rust terminology):
    ```text
@@ -599,7 +595,7 @@ type __types_3 = unit (* to start the recursive group *)
    impl<T> PartialEq for List<T> { ...}
    ```
  We distinguish the two. *)
-and impl_elem =
+type impl_elem =
   | ImplElemTy of generic_params * ty
   | ImplElemTrait of trait_impl_id
 
@@ -676,9 +672,7 @@ type region_var_group = (RegionVarId.id, RegionGroupId.id) g_region_group
 
 type region_var_groups = region_var_group list [@@deriving show]
 
-type __types_4 = unit (* to start the recursive group *)
-
-and field = {
+type field = {
   span : span;
   attr_info : attr_info;
   field_name : string option;

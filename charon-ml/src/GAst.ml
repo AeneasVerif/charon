@@ -19,10 +19,8 @@ module TraitDeclId = Types.TraitDeclId
 module TraitImplId = Types.TraitImplId
 module TraitClauseId = Types.TraitClauseId
 
-type __5 = unit (* to start the recursive group *)
-
 (** The id of a translated item. *)
-and any_decl_id =
+type any_decl_id =
   | IdType of type_decl_id
   | IdFun of fun_decl_id
   | IdGlobal of global_decl_id
@@ -36,10 +34,8 @@ type fun_id = Expressions.fun_id [@@deriving show, ord]
 type fun_id_or_trait_method_ref = Expressions.fun_id_or_trait_method_ref
 [@@deriving show, ord]
 
-type __4 = unit (* to start the recursive group *)
-
 (** A variable *)
-and var = {
+type var = {
   index : var_id;  (** Unique index identifying the variable *)
   name : string option;
       (** Variable name - may be `None` if the variable was introduced by Rust
@@ -64,10 +60,9 @@ class ['self] map_ast_base =
 
 (* Below: the types need not be mutually recursive, but it makes it easier
    to derive the visitors *)
-type __0 = unit (* to start the recursive group *)
 
 (** not present in rust *)
-and assertion = { cond : operand; expected : bool }
+type assertion = { cond : operand; expected : bool }
 
 (** A function operand is used in function calls.
  It either designates a top-level function, or a place in case
@@ -109,8 +104,6 @@ class ['self] map_statement_base =
   object (_self : 'self)
     inherit [_] map_call
   end
-
-type __1 = unit (* to start the recursive group *)
 
 (** We use this to store information about the parameters in parent blocks.
  This is necessary because in the definitions we store *all* the generics,
@@ -154,7 +147,7 @@ type __1 = unit (* to start the recursive group *)
  outer block. For this reason, when we need to store the information about
  the generics of the outer block(s), we need to do it only for one level
  (this definitely makes things simpler). *)
-and params_info = {
+type params_info = {
   num_region_params : int;
   num_type_params : int;
   num_const_generic_params : int;
@@ -262,8 +255,6 @@ type 'body gfun_decl = {
 }
 [@@deriving show]
 
-type __2 = unit (* to start the recursive group *)
-
 (** A trait **declaration**.
 
  For instance:
@@ -296,7 +287,7 @@ type __2 = unit (* to start the recursive group *)
  helpers like `all`, `map`, etc. that shouldn't be re-implemented.
  Of course, this forbids other useful use cases such as visitors implemented
  by means of traits. *)
-and trait_decl = {
+type trait_decl = {
   def_id : trait_decl_id;
   item_meta : item_meta;
   generics : generic_params;
@@ -389,10 +380,8 @@ type trait_declaration_group = TraitDeclId.id g_declaration_group
 type trait_impl_group = TraitImplId.id g_declaration_group [@@deriving show]
 type mixed_declaration_group = any_decl_id g_declaration_group [@@deriving show]
 
-type __3 = unit (* to start the recursive group *)
-
 (** A (group of) top-level declaration(s), properly reordered. *)
-and declaration_group =
+type declaration_group =
   | TypeGroup of type_decl_id g_declaration_group
       (** A type declaration group *)
   | FunGroup of fun_decl_id g_declaration_group

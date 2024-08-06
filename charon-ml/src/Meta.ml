@@ -10,9 +10,9 @@
 
 (** Meta data like code spans *)
 
-type path_buf = string
+type path_buf = string [@@deriving show, ord]
 
-and loc = {
+type loc = {
   line : int;  (** The (1-based) line number. *)
   col : int;  (** The (0-based) column offset. *)
 }
@@ -24,14 +24,14 @@ and file_name =
       (** A local path (a file coming from the current crate for instance) *)
 [@@deriving show, ord]
 
+(* Hand-written because doesn't match the rust type *)
+
 (** Span data *)
 type raw_span = { file : file_name; beg_loc : loc; end_loc : loc }
 [@@deriving show, ord]
 
-type __meta_1 = unit (* to start the recursive group *)
-
 (** Meta information about a piece of code (block, statement, etc.) *)
-and span = {
+type span = {
   span : raw_span;
       (** The source code span.
 

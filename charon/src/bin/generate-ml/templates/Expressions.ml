@@ -19,7 +19,6 @@ module FunDeclId = Types.FunDeclId
   *)
 type var_id = VarId.id [@@deriving show, ord]
 
-type __expressions_0 = unit (* to start the recursive group *)
 (* __REPLACE0__ *)
 [@@deriving show, ord]
 
@@ -46,7 +45,6 @@ class ['self] map_place_base =
     method visit_field_id : 'env -> field_id -> field_id = fun _ x -> x
   end
 
-type __expressions_1 = unit (* to start the recursive group *)
 (* __REPLACE1__ *)
 [@@deriving
   show,
@@ -68,7 +66,6 @@ type __expressions_1 = unit (* to start the recursive group *)
         concrete = true;
       }]
 
-type __expressions_2 = unit (* to start the recursive group *)
 (* __REPLACE2__ *)
 [@@deriving show, ord]
 
@@ -110,7 +107,6 @@ class ['self] map_constant_expr_base =
       fun _ x -> x
   end
 
-type __expressions_3 = unit (* to start the recursive group *)
 (* __REPLACE3__ *)
 [@@deriving
   show,
@@ -148,7 +144,6 @@ class ['self] map_rvalue_base =
     method visit_borrow_kind : 'env -> borrow_kind -> borrow_kind = fun _ x -> x
   end
 
-type __expressions_4 = unit (* to start the recursive group *)
 (* __REPLACE4__ *)
 [@@deriving
   show,

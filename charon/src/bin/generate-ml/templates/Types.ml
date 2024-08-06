@@ -282,7 +282,6 @@ class virtual ['self] map_ty_base =
         { index; name }
   end
 
-type __types_0 = unit (* to start the recursive group *)
 (* __REPLACE0__ *)
 
 (* Hand-written because we add an extra variant not present on the rust side *)
@@ -445,7 +444,6 @@ and type_outlives = ty * region
         polymorphic = false;
       }]
 
-type __types_3 = unit (* to start the recursive group *)
 (* __REPLACE3__ *)
 [@@deriving show, ord]
 
@@ -469,6 +467,5 @@ type region_var_group = (RegionVarId.id, RegionGroupId.id) g_region_group
 
 type region_var_groups = region_var_group list [@@deriving show]
 
-type __types_4 = unit (* to start the recursive group *)
 (* __REPLACE4__ *)
 [@@deriving show]

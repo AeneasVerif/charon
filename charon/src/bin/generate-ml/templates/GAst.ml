@@ -19,7 +19,6 @@ module TraitDeclId = Types.TraitDeclId
 module TraitImplId = Types.TraitImplId
 module TraitClauseId = Types.TraitClauseId
 
-type __5 = unit (* to start the recursive group *)
 (* __REPLACE5__ *)
 [@@deriving show, ord]
 
@@ -29,7 +28,6 @@ type fun_id = Expressions.fun_id [@@deriving show, ord]
 type fun_id_or_trait_method_ref = Expressions.fun_id_or_trait_method_ref
 [@@deriving show, ord]
 
-type __4 = unit (* to start the recursive group *)
 (* __REPLACE4__ *)
 [@@deriving show]
 
@@ -49,10 +47,9 @@ class ['self] map_ast_base =
 
 (* Below: the types need not be mutually recursive, but it makes it easier
    to derive the visitors *)
-type __0 = unit (* to start the recursive group *)
 
 (** not present in rust *)
-and assertion = { cond : operand; expected : bool }
+type assertion = { cond : operand; expected : bool }
 
 (* __REPLACE0__ *)
 [@@deriving
@@ -86,7 +83,6 @@ class ['self] map_statement_base =
     inherit [_] map_call
   end
 
-type __1 = unit (* to start the recursive group *)
 (* __REPLACE1__ *)
 [@@deriving show]
 
@@ -101,7 +97,6 @@ type 'body gfun_decl = {
 }
 [@@deriving show]
 
-type __2 = unit (* to start the recursive group *)
 (* __REPLACE2__ *)
 [@@deriving show]
 
@@ -120,7 +115,6 @@ type trait_declaration_group = TraitDeclId.id g_declaration_group
 type trait_impl_group = TraitImplId.id g_declaration_group [@@deriving show]
 type mixed_declaration_group = any_decl_id g_declaration_group [@@deriving show]
 
-type __3 = unit (* to start the recursive group *)
 (* __REPLACE3__ *)
 [@@deriving show]
 

@@ -20,11 +20,9 @@ module FunDeclId = Types.FunDeclId
   *)
 type var_id = VarId.id [@@deriving show, ord]
 
-type __expressions_0 = unit (* to start the recursive group *)
-
 (** An assumed function identifier, identifying a function coming from a
  standard library. *)
-and assumed_fun_id =
+type assumed_fun_id =
   | BoxNew  (** `alloc::boxed::Box::new` *)
   | BoxFree
       (** `alloc::alloc::box_free`
@@ -97,9 +95,7 @@ class ['self] map_place_base =
     method visit_field_id : 'env -> field_id -> field_id = fun _ x -> x
   end
 
-type __expressions_1 = unit (* to start the recursive group *)
-
-and field_proj_kind =
+type field_proj_kind =
   | ProjAdt of type_decl_id * variant_id option
   | ProjTuple of int
       (** If we project from a tuple, the projection kind gives the arity of the tuple. *)
@@ -154,9 +150,7 @@ and place = { var_id : var_id; projection : projection_elem list }
         concrete = true;
       }]
 
-type __expressions_2 = unit (* to start the recursive group *)
-
-and borrow_kind =
+type borrow_kind =
   | BShared
   | BMut
   | BTwoPhaseMut
@@ -235,11 +229,9 @@ class ['self] map_constant_expr_base =
       fun _ x -> x
   end
 
-type __expressions_3 = unit (* to start the recursive group *)
-
 (** For all the variants: the first type gives the source type, the second one gives
  the destination type. *)
-and cast_kind =
+type cast_kind =
   | CastScalar of literal_type * literal_type
       (** Conversion between types in {Integer, Bool}
  Remark: for now we don't support conversions with Char. *)
@@ -360,9 +352,7 @@ class ['self] map_rvalue_base =
     method visit_borrow_kind : 'env -> borrow_kind -> borrow_kind = fun _ x -> x
   end
 
-type __expressions_4 = unit (* to start the recursive group *)
-
-and operand =
+type operand =
   | Copy of place
   | Move of place
   | Constant of constant_expr
