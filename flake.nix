@@ -132,6 +132,7 @@
 
           mkdir committed
           cp ${./charon-ml/src}/GAst.ml committed
+          cp ${./charon-ml/src}/Meta.ml committed
           cp ${./charon-ml/src}/Types.ml committed
           cp ${./charon-ml/src}/GAstOfJson.ml committed
 

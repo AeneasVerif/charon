@@ -573,6 +573,14 @@ fn main() -> Result<()> {
             ],
         },
         GenerateCodeFor {
+            template: dir.join("templates/Meta.ml"),
+            target: dir.join("generated/Meta.ml"),
+            markers: &[
+                (GenerationKind::TypeDecl, &["Loc", "FileName"]),
+                (GenerationKind::TypeDecl, &["Span", "InlineAttr", "Attribute", "AttrInfo"]),
+            ],
+        },
+        GenerateCodeFor {
             template: dir.join("templates/Types.ml"),
             target: dir.join("generated/Types.ml"),
             markers: &[
