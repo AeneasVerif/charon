@@ -283,31 +283,119 @@ class virtual ['self] map_ty_base =
   end
 
 type __types_0 = unit (* to start the recursive group *)
-and assumed_ty = TBox | TArray | TSlice | TStr
-and type_id = TAdtId of type_decl_id | TTuple | TAssumed of assumed_ty
+
+(** Assumed types identifiers.
+
+ WARNING: for now, all the assumed types are covariant in the generic
+ parameters (if there are). Adding types which don't satisfy this
+ will require to update the code abstracting the signatures (to properly
+ take into account the lifetime constraints).
+
+ TODO: update to not hardcode the types (except `Box` maybe) and be more
+ modular.
+ TODO: move to assumed.rs? *)
+and assumed_ty =
+  | TBox  (** Boxes have a special treatment: we translate them as identity. *)
+  | TArray  (** Primitive type *)
+  | TSlice  (** Primitive type *)
+  | TStr  (** Primitive type *)
+
+(** Type identifier.
+
+ Allows us to factorize the code for assumed types, adts and tuples *)
+and type_id =
+  | TAdtId of type_decl_id
+      (** A "regular" ADT type.
+
+ Includes transparent ADTs and opaque ADTs (local ADTs marked as opaque,
+ and external ADTs). *)
+  | TTuple
+  | TAssumed of assumed_ty
+      (** Assumed type. Either a primitive type like array or slice, or a
+ non-primitive type coming from a standard library
+ and that we handle like a primitive type. Types falling into this
+ category include: Box, Vec, Cell...
+ The Array and Slice types were initially modelled as primitive in
+ the [Ty] type. We decided to move them to assumed types as it allows
+ for more uniform treatment throughout the codebase. *)
+
+(** A predicate of the form `exists<T> where T: Trait`.
+
+ TODO: store something useful here *)
 and existential_predicate = unit
 
+(** A type. *)
 and ty =
   | TAdt of type_id * generic_args
+      (** An ADT.
+ Note that here ADTs are very general. They can be:
+ - user-defined ADTs
+ - tuples (including `unit`, which is a 0-tuple)
+ - assumed types (includes some primitive types, e.g., arrays or slices)
+ The information on the nature of the ADT is stored in (`TypeId`)[TypeId].
+ The last list is used encode const generics, e.g., the size of an array *)
   | TVar of type_var_id
   | TLiteral of literal_type
   | TNever
-  | TRef of region * ty * ref_kind
-  | TRawPtr of ty * ref_kind
-  | TTraitType of trait_ref * trait_item_name
-  | TDynTrait of existential_predicate
-  | TArrow of region_var list * ty list * ty
+      (** The never type, for computations which don't return. It is sometimes
+ necessary for intermediate variables. For instance, if we do (coming
+ from the rust documentation):
+ ```text
+ let num: u32 = match get_a_number() {
+     Some(num) => num,
+     None => break,
+ };
+ ```
+ the second branch will have type `Never`. Also note that `Never`
+ can be coerced to any type.
 
+ Note that we eliminate the variables which have this type in a micro-pass.
+ As statements don't have types, this type disappears eventually disappears
+ from the AST. *)
+  | TRef of region * ty * ref_kind  (** A borrow *)
+  | TRawPtr of ty * ref_kind  (** A raw pointer. *)
+  | TTraitType of trait_ref * trait_item_name
+      (** A trait associated type
+
+ Ex.:
+ ```text
+ trait Foo {
+   type Bar; // type associated to the trait Foo
+ }
+ ``` *)
+  | TDynTrait of existential_predicate
+      (** `dyn Trait`
+
+ This carries an existentially quantified list of predicates, e.g. `exists<T> where T:
+ Into<u64>`. The predicate must quantify over a single type and no any regions or constants.
+
+ TODO: we don't translate this properly yet. *)
+  | TArrow of region_var list * ty list * ty
+      (** Arrow type, used in particular for the local function pointers.
+ This is essentially a "constrained" function signature:
+ arrow types can only contain generic lifetime parameters
+ (no generic types), no predicates, etc. *)
+
+(** A reference to a trait *)
 and trait_ref = {
   trait_id : trait_instance_id;
-  trait_decl_ref : trait_decl_ref;
+  trait_decl_ref : trait_decl_ref;  (** Not necessary, but useful *)
 }
 
+(** Reference to a trait declaration.
+
+ About the generics, if we write:
+ ```text
+ impl Foo<bool> for String { ... }
+ ```
+
+ The substitution is: `[String, bool]`. *)
 and trait_decl_ref = {
   trait_decl_id : trait_decl_id;
   decl_generics : generic_args;
 }
 
+(** Reference to a global declaration. *)
 and global_decl_ref = {
   global_id : global_decl_id;
   global_generics : generic_args;
@@ -424,10 +512,14 @@ type ety = ty
 (** Type with non-erased regions (this only has an informative purpose) *)
 and rty = ty
 
+(** A predicate of the form `Type: Trait<Args>`. *)
 and trait_clause = {
   clause_id : trait_clause_id;
+      (** We use this id when solving trait constraints, to be able to refer
+ to specific where clauses when the selected trait actually is linked
+ to a parameter. *)
   span : span option;
-  trait : trait_decl_ref;
+  trait : trait_decl_ref;  (** The trait that is implemented. *)
 }
 
 (* Hand-written because visitors can't handle `outlives_pred` *)
@@ -461,6 +553,13 @@ and region_outlives = region * region
 (** (T, 'a) means that T outlives 'a *)
 and type_outlives = ty * region
 
+(** A constraint over a trait associated type.
+
+ Example:
+ ```text
+ T : Foo<S = String>
+         ^^^^^^^^^^
+ ``` *)
 and trait_type_constraint = {
   trait_ref : trait_ref;
   type_name : trait_item_name;
@@ -490,21 +589,69 @@ and trait_type_constraint = {
 
 type __types_3 = unit (* to start the recursive group *)
 
+(** There are two kinds of `impl` blocks:
+ - impl blocks linked to a type ("inherent" impl blocks following Rust terminology):
+   ```text
+   impl<T> List<T> { ...}
+   ```
+ - trait impl blocks:
+   ```text
+   impl<T> PartialEq for List<T> { ...}
+   ```
+ We distinguish the two. *)
 and impl_elem =
   | ImplElemTy of generic_params * ty
   | ImplElemTrait of trait_impl_id
 
+(** See the comments for [Name] *)
 and path_elem =
   | PeIdent of string * disambiguator
   | PeImpl of impl_elem * disambiguator
 
+(** An item name/path
+
+ A name really is a list of strings. However, we sometimes need to
+ introduce unique indices to disambiguate. This mostly happens because
+ of "impl" blocks:
+   ```text
+   impl<T> List<T> {
+     ...
+   }
+   ```
+
+ A type in Rust can have several "impl" blocks, and  those blocks can
+ contain items with similar names. For this reason, we need to disambiguate
+ them with unique indices. Rustc calls those "disambiguators". In rustc, this
+ gives names like this:
+ - `betree_main::betree::NodeIdCounter{impl#0}::new`
+ - note that impl blocks can be nested, and macros sometimes generate
+   weird names (which require disambiguation):
+   `betree_main::betree_utils::_#1::{impl#0}::deserialize::{impl#0}`
+
+ Finally, the paths used by rustc are a lot more precise and explicit than
+ those we expose in LLBC: for instance, every identifier belongs to a specific
+ namespace (value namespace, type namespace, etc.), and is coupled with a
+ disambiguator.
+
+ On our side, we want to stay high-level and simple: we use string identifiers
+ as much as possible, insert disambiguators only when necessary (whenever
+ we find an "impl" block, typically) and check that the disambiguator is useless
+ in the other situations (i.e., the disambiguator is always equal to 0).
+
+ Moreover, the items are uniquely disambiguated by their (integer) ids
+ (`TypeDeclId`, etc.), and when extracting the code we have to deal with
+ name clashes anyway. Still, we might want to be more precise in the future.
+
+ Also note that the first path element in the name is always the crate name. *)
 and name = path_elem list
 
+(** Meta information about an item (function, trait decl, trait impl, type decl, global). *)
 and item_meta = {
   span : span;
   name : name;
-  attr_info : attr_info;
+  attr_info : attr_info;  (** Attributes and visibility. *)
   is_local : bool;
+      (** `true` if the type decl is a local type decl, `false` if it comes from an external crate. *)
 }
 [@@deriving show, ord]
 
@@ -544,18 +691,38 @@ and variant = {
   variant_name : string;
   fields : field list;
   discriminant : scalar_value;
+      (** The discriminant used at runtime. This is used in `remove_read_discriminant` to match up
+ `SwitchInt` targets with the corresponding `Variant`. *)
 }
 
 and type_decl_kind =
   | Struct of field list
   | Enum of variant list
   | Opaque
-  | Alias of ty
+      (** An opaque type.
 
+ Either a local type marked as opaque, or an external type. *)
+  | Alias of ty
+      (** An alias to another type. This only shows up in the top-level list of items, as rustc
+ inlines uses of type aliases everywhere else. *)
+
+(** A type declaration.
+
+ Types can be opaque or transparent.
+
+ Transparent types are local types not marked as opaque.
+ Opaque types are the others: local types marked as opaque, and non-local
+ types (coming from external dependencies).
+
+ In case the type is transparent, the declaration also contains the
+ type definition (see [TypeDeclKind]).
+
+ A type can only be an ADT (structure or enumeration), as type aliases are
+ inlined in MIR. *)
 and type_decl = {
   def_id : type_decl_id;
-  item_meta : item_meta;
+  item_meta : item_meta;  (** Meta information associated with the item. *)
   generics : generic_params;
-  kind : type_decl_kind;
+  kind : type_decl_kind;  (** The type kind: enum, struct, or opaque. *)
 }
 [@@deriving show]

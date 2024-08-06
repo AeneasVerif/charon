@@ -8,6 +8,7 @@
 //! crate root. Don't forget to format the output code after regenerating.
 use anyhow::{bail, Context, Result};
 use assert_cmd::cargo::CommandCargoExt;
+use charon_lib::ast::AttrInfo;
 use charon_lib::export::CrateData;
 use charon_lib::meta::ItemMeta;
 use charon_lib::names::{Name, PathElem};
@@ -377,6 +378,21 @@ fn type_decl_to_json_deserializer(ctx: &GenerateCtx, decl: &TypeDecl) -> String 
     build_function(ctx, decl, &branches)
 }
 
+fn extract_doc_comments(attr_info: &AttrInfo) -> String {
+    let comments = attr_info
+        .attributes
+        .iter()
+        .filter(|a| a.is_doc_comment())
+        .map(|a| a.as_doc_comment())
+        .collect_vec();
+    if comments.is_empty() {
+        String::new()
+    } else {
+        let comment = comments.into_iter().join("\n");
+        format!("(**{comment} *)")
+    }
+}
+
 fn build_type(_ctx: &GenerateCtx, decl: &TypeDecl, body: &str) -> String {
     let ty_name = type_name_to_ocaml_ident(&decl.item_meta);
     let generics = decl
@@ -391,7 +407,8 @@ fn build_type(_ctx: &GenerateCtx, decl: &TypeDecl, body: &str) -> String {
         [ty] => ty.clone(),
         generics => format!("({})", generics.iter().join(",")),
     };
-    format!("and {generics} {ty_name} = {body}")
+    let comment = extract_doc_comments(&decl.item_meta.attr_info);
+    format!("\n{comment} and {generics} {ty_name} = {body}")
 }
 
 fn type_decl_to_ocaml_decl(ctx: &GenerateCtx, decl: &TypeDecl) -> String {
@@ -421,7 +438,8 @@ fn type_decl_to_ocaml_decl(ctx: &GenerateCtx, decl: &TypeDecl) -> String {
                 .map(|f| {
                     let name = f.renamed_name().unwrap();
                     let ty = type_to_ocaml_name(ctx, &f.ty);
-                    format!("{name} : {ty}")
+                    let comment = extract_doc_comments(&f.attr_info);
+                    format!("{name} : {ty} {comment}")
                 })
                 .join(";");
             format!("{{ {fields} }}")
@@ -444,7 +462,8 @@ fn type_decl_to_ocaml_decl(ctx: &GenerateCtx, decl: &TypeDecl) -> String {
                             .join("*");
                         format!(" of {fields}")
                     };
-                    format!("{rename}{ty}")
+                    let comment = extract_doc_comments(&variant.attr_info);
+                    format!("{rename}{ty} {comment}")
                 })
                 .join("|")
         }
