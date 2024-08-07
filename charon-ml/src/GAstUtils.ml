@@ -44,6 +44,20 @@ let fun_body_get_input_vars (fbody : 'body gexpr_body) : var list =
 let g_declaration_group_to_list (g : 'a g_declaration_group) : 'a list =
   match g with RecGroup ids -> ids | NonRecGroup id -> [ id ]
 
+(** List all the ids in this declaration group. *)
+let declaration_group_to_list (g : declaration_group) : any_decl_id list =
+  match g with
+  | FunGroup g -> List.map (fun id -> IdFun id) (g_declaration_group_to_list g)
+  | TypeGroup g ->
+      List.map (fun id -> IdType id) (g_declaration_group_to_list g)
+  | TraitDeclGroup g ->
+      List.map (fun id -> IdTraitDecl id) (g_declaration_group_to_list g)
+  | GlobalGroup g ->
+      List.map (fun id -> IdGlobal id) (g_declaration_group_to_list g)
+  | TraitImplGroup g ->
+      List.map (fun id -> IdTraitImpl id) (g_declaration_group_to_list g)
+  | MixedGroup g -> g_declaration_group_to_list g
+
 (** Split a module's declarations between types, functions and globals *)
 let split_declarations (decls : declaration_group list) :
     type_declaration_group list

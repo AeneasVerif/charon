@@ -1139,31 +1139,37 @@ and gexpr_body_of_json :
 and item_kind_of_json (js : json) : (item_kind, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
-    | `String "Regular" -> Ok RegularKind
+    | `String "Regular" -> Ok RegularItem
     | `Assoc
         [
-          ( "TraitItemImpl",
+          ( "TraitDecl",
+            `Assoc
+              [
+                ("trait_id", trait_id);
+                ("item_name", item_name);
+                ("has_default", has_default);
+              ] );
+        ] ->
+        let* trait_id = trait_decl_id_of_json trait_id in
+        let* item_name = trait_item_name_of_json item_name in
+        let* has_default = bool_of_json has_default in
+        Ok (TraitDeclItem (trait_id, item_name, has_default))
+    | `Assoc
+        [
+          ( "TraitImpl",
             `Assoc
               [
                 ("impl_id", impl_id);
                 ("trait_id", trait_id);
                 ("item_name", item_name);
-                ("provided", provided);
+                ("reuses_default", reuses_default);
               ] );
         ] ->
         let* impl_id = trait_impl_id_of_json impl_id in
         let* trait_id = trait_decl_id_of_json trait_id in
         let* item_name = trait_item_name_of_json item_name in
-        let* provided = bool_of_json provided in
-        Ok (TraitItemImpl (impl_id, trait_id, item_name, provided))
-    | `Assoc [ ("TraitItemDecl", `List [ x0; x1 ]) ] ->
-        let* x0 = trait_decl_id_of_json x0 in
-        let* x1 = trait_item_name_of_json x1 in
-        Ok (TraitItemDecl (x0, x1))
-    | `Assoc [ ("TraitItemProvided", `List [ x0; x1 ]) ] ->
-        let* x0 = trait_decl_id_of_json x0 in
-        let* x1 = trait_item_name_of_json x1 in
-        Ok (TraitItemProvided (x0, x1))
+        let* reuses_default = bool_of_json reuses_default in
+        Ok (TraitImplItem (impl_id, trait_id, item_name, reuses_default))
     | _ -> Error "")
 
 let maybe_opaque_body_of_json (bodies : 'body gexpr_body option list)

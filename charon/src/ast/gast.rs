@@ -94,48 +94,54 @@ pub enum Body {
     Structured(llbc_ast::ExprBody),
 }
 
-/// Item kind kind: "regular" item (not linked to a trait), trait item declaration, etc.
+/// Item kind: whether this function/const is part of a trait declaration, trait implementation, or
+/// neither.
 ///
 /// Example:
-/// ========
 /// ```text
 /// trait Foo {
-///   fn bar(x : u32) -> u32; // trait item: declaration (required)
+///     fn bar(x : u32) -> u32; // trait item decl without default
 ///
-///   fn baz(x : bool) -> bool { x } // trait item: provided
+///     fn baz(x : bool) -> bool { x } // trait item decl with default
 /// }
 ///
 /// impl Foo for ... {
-///   fn bar(x : u32) -> u32 { x } // trait item: implementation
+///     fn bar(x : u32) -> u32 { x } // trait item implementation
 /// }
 ///
 /// fn test(...) { ... } // regular
 ///
 /// impl Type {
-///   fn test(...) { ... } // regular
+///     fn test(...) { ... } // regular
 /// }
 /// ```
 #[derive(Debug, Clone, Serialize, Deserialize, Drive, DriveMut, PartialEq, Eq)]
+#[charon::variants_suffix("Item")]
 pub enum ItemKind {
-    /// A "normal" function
-    #[charon::rename("RegularKind")]
+    /// A function/const at the top level or in an inherent impl block.
     Regular,
-    /// Trait item implementation
-    TraitItemImpl {
-        /// The trait implementation block the method belongs to
+    /// Function/const that is part of a trait declaration. It has a body if and only if the trait
+    /// provided a default implementation.
+    TraitDecl {
+        /// The trait declaration this item belongs to.
+        trait_id: TraitDeclId,
+        /// The name of the item.
+        item_name: TraitItemName,
+        /// Whether the trait declaration provides a default implementation.
+        has_default: bool,
+    },
+    /// Function/const that is part of a trait declaration.
+    TraitImpl {
+        /// The trait implementation the method belongs to
         impl_id: TraitImplId,
-        /// The id of the trait decl the method belongs to
+        /// The trait declaration this item belongs to.
         trait_id: TraitDeclId,
         /// The name of the item
         item_name: TraitItemName,
-        /// True if this item *re-implements* a provided item
-        provided: bool,
+        /// True if the trait decl had a default implementation for this function/const and this
+        /// item is a copy of the default item.
+        reuses_default: bool,
     },
-    /// Trait item declaration
-    TraitItemDecl(TraitDeclId, TraitItemName),
-    /// Provided trait item (trait item declaration which defines
-    /// a default implementation at the same time)
-    TraitItemProvided(TraitDeclId, TraitItemName),
 }
 
 /// A function definition
