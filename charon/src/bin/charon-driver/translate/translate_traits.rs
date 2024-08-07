@@ -226,7 +226,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         {
             let ctx = bt_ctx.into_fmt();
             let clauses = bt_ctx
-                .trait_clauses
+                .trait_clauses_map
                 .values()
                 .flat_map(|x| x)
                 .map(|c| c.fmt_with_ctx(&ctx))
