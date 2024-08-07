@@ -336,7 +336,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                             param.name, param.index
                         )
                     ),
-                    Some(var_id) => Ok(Ty::TypeVar(var_id)),
+                    Some(var_id) => Ok(Ty::TypeVar(*var_id)),
                 }
             }
 

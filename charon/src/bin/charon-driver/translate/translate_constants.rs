@@ -129,7 +129,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             ConstantExprKind::ConstRef { id } => {
                 let var_id = self.const_generic_vars_map.get(&id.index);
                 if let Some(var_id) = var_id {
-                    RawConstantExpr::Var(var_id)
+                    RawConstantExpr::Var(*var_id)
                 } else {
                     error_or_panic!(
                         self,
