@@ -165,6 +165,9 @@
             pkgs.ocamlPackages.ocamlformat
             pkgs.ocamlPackages.menhir
             pkgs.ocamlPackages.odoc
+            # ocamllsp's version must match the ocaml version used, hence we
+            # can't an use externally-provided ocamllsp.
+            pkgs.ocamlPackages.ocaml-lsp
           ];
 
           nativeBuildInputs = [
