@@ -69,9 +69,16 @@ tracing-tree = "0.3"
 tracing = { version = "0.1", features = [ "max_level_trace", "release_max_level_warn" ] }
 which = "6.0.1"
 
-hax-frontend-exporter = { git = "https://github.com/hacspec/hax", branch = "main" }
-# hax-frontend-exporter = { path = "../../hax/frontend/exporter" }
+hax-frontend-exporter = { git = "https://github.com/hacspec/hax", branch = "main", optional = true }
+# hax-frontend-exporter = { path = "../../hax/frontend/exporter", optional = true }
 macros = { path = "./macros" }
+
+[features]
+default = ["rustc"]
+# This feature enables the translation of rust code into charon's format. When
+# disabled, the binaries won't build but the main crate (with the ast
+# definitions) still does. It is enabled by default.
+rustc = ["dep:hax-frontend-exporter"]
 
 [dev-dependencies]
 ignore = "0.4"
@@ -82,4 +89,4 @@ tempfile = "3"
 walkdir = "2.3.2"
 
 [package.metadata.rust-analyzer]
-rustc_private=true
+rustc_private = true
