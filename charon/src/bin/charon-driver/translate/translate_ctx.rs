@@ -18,6 +18,7 @@ use rustc_error_messages::MultiSpan;
 use rustc_hir::def_id::DefId;
 use rustc_hir::Node as HirNode;
 use rustc_middle::ty::TyCtxt;
+use std::borrow::Cow;
 use std::cmp::{Ord, PartialOrd};
 use std::collections::HashMap;
 use std::collections::{BTreeMap, VecDeque};
@@ -1179,11 +1180,25 @@ impl<'tcx, 'ctx, 'ctx1, 'a> IntoFormatter for &'a BodyTransCtx<'tcx, 'ctx, 'ctx1
     type C = FmtCtx<'a>;
 
     fn into_fmt(self) -> Self::C {
+        // Translate our generics into a stack of generics. Only the outermost binder has
+        // non-region parameters.
+        let mut generics: VecDeque<Cow<'_, GenericParams>> = self
+            .region_vars
+            .iter()
+            .cloned()
+            .map(|regions| {
+                Cow::Owned(GenericParams {
+                    regions,
+                    ..Default::default()
+                })
+            })
+            .collect();
+        let outermost_generics = generics.back_mut().unwrap().to_mut();
+        outermost_generics.types = self.generic_params.types.clone();
+        outermost_generics.const_generics = self.generic_params.const_generics.clone();
         FmtCtx {
             translated: Some(&self.t_ctx.translated),
-            region_vars: self.region_vars.iter().collect(),
-            type_vars: Some(&self.generic_params.types),
-            const_generic_vars: Some(&self.generic_params.const_generics),
+            generics,
             locals: Some(&self.vars),
         }
     }

@@ -1,3 +1,4 @@
+use std::borrow::Cow;
 use std::collections::VecDeque;
 
 use crate::ast::*;
@@ -79,9 +80,7 @@ impl<'a, 'b> SetGenerics<'a> for FmtCtx<'b> {
     fn set_generics(&'a self, generics: &'a GenericParams) -> Self::C {
         FmtCtx {
             translated: self.translated.as_deref(),
-            region_vars: [&generics.regions].into(),
-            type_vars: Some(&generics.types),
-            const_generic_vars: Some(&generics.const_generics),
+            generics: [Cow::Borrowed(generics)].into(),
             locals: self.locals.as_deref(),
         }
     }
@@ -101,9 +100,7 @@ impl<'a, 'b> SetLocals<'a> for FmtCtx<'b> {
     fn set_locals(&'a self, locals: &'a Vector<VarId, ast::Var>) -> Self::C {
         FmtCtx {
             translated: self.translated.as_deref(),
-            region_vars: self.region_vars.clone(),
-            type_vars: self.type_vars.as_deref(),
-            const_generic_vars: self.const_generic_vars.as_deref(),
+            generics: self.generics.clone(),
             locals: Some(locals),
         }
     }
@@ -120,13 +117,14 @@ impl<'a, 'b> PushBoundRegions<'a> for FmtCtx<'b> {
     type C = FmtCtx<'a>;
 
     fn push_bound_regions(&'a self, regions: &'a Vector<RegionId, RegionVar>) -> Self::C {
-        let mut region_vars = self.region_vars.clone();
-        region_vars.push_front(regions);
+        let mut generics = self.generics.clone();
+        generics.push_front(Cow::Owned(GenericParams {
+            regions: regions.clone(),
+            ..Default::default()
+        }));
         FmtCtx {
             translated: self.translated.as_deref(),
-            region_vars,
-            type_vars: self.type_vars.as_deref(),
-            const_generic_vars: self.const_generic_vars.as_deref(),
+            generics,
             locals: self.locals.as_deref(),
         }
     }
@@ -167,10 +165,9 @@ pub trait AstFormatter = Formatter<TypeVarId>
 #[derive(Default)]
 pub struct FmtCtx<'a> {
     pub translated: Option<&'a TranslatedCrate>,
-    /// The region variables are not an option, because we need to be able to push/pop
-    pub region_vars: VecDeque<&'a Vector<RegionId, RegionVar>>,
-    pub type_vars: Option<&'a Vector<TypeVarId, TypeVar>>,
-    pub const_generic_vars: Option<&'a Vector<ConstGenericVarId, ConstGenericVar>>,
+    /// Generics form a stack, where each binder introduces a new level. For DeBruijn indices to
+    /// work, we keep the innermost parameters at the start of the vector.
+    pub generics: VecDeque<Cow<'a, GenericParams>>,
     pub locals: Option<&'a Vector<VarId, ast::Var>>,
 }
 
@@ -298,9 +295,9 @@ impl<'a> Formatter<AnyTransId> for FmtCtx<'a> {
 
 impl<'a> Formatter<(DeBruijnId, RegionId)> for FmtCtx<'a> {
     fn format_object(&self, (grid, id): (DeBruijnId, RegionId)) -> String {
-        match self.region_vars.get(grid.index) {
+        match self.generics.get(grid.index) {
             None => Region::BVar(grid, id).to_string(),
-            Some(gr) => match gr.get(id) {
+            Some(generics) => match generics.regions.get(id) {
                 None => {
                     let region = Region::BVar(grid, id);
                     tracing::warn!(
@@ -320,7 +317,7 @@ impl<'a> Formatter<&RegionVar> for FmtCtx<'a> {
         match &var.name {
             Some(name) => name.to_string(),
             None => {
-                let depth = self.region_vars.len() - 1;
+                let depth = self.generics.len() - 1;
                 if depth == 0 {
                     format!("'_{}", var.index)
                 } else {
@@ -333,9 +330,9 @@ impl<'a> Formatter<&RegionVar> for FmtCtx<'a> {
 
 impl<'a> Formatter<TypeVarId> for FmtCtx<'a> {
     fn format_object(&self, id: TypeVarId) -> String {
-        match &self.type_vars {
+        match &self.generics.back() {
             None => id.to_pretty_string(),
-            Some(vars) => match vars.get(id) {
+            Some(generics) => match generics.types.get(id) {
                 None => id.to_pretty_string(),
                 Some(v) => v.to_string(),
             },
@@ -345,9 +342,9 @@ impl<'a> Formatter<TypeVarId> for FmtCtx<'a> {
 
 impl<'a> Formatter<ConstGenericVarId> for FmtCtx<'a> {
     fn format_object(&self, id: ConstGenericVarId) -> String {
-        match &self.const_generic_vars {
+        match &self.generics.back() {
             None => id.to_pretty_string(),
-            Some(vars) => match vars.get(id) {
+            Some(generics) => match generics.const_generics.get(id) {
                 None => id.to_pretty_string(),
                 Some(v) => v.to_string(),
             },
