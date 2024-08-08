@@ -1181,7 +1181,7 @@ impl<'tcx, 'ctx, 'ctx1, 'a> IntoFormatter for &'a BodyTransCtx<'tcx, 'ctx, 'ctx1
     fn into_fmt(self) -> Self::C {
         FmtCtx {
             translated: Some(&self.t_ctx.translated),
-            region_vars: self.region_vars.clone(),
+            region_vars: self.region_vars.iter().collect(),
             type_vars: Some(&self.generic_params.types),
             const_generic_vars: Some(&self.generic_params.const_generics),
             locals: Some(&self.vars),

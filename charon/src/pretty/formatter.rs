@@ -89,7 +89,7 @@ impl<'a, 'b> SetGenerics<'a> for FmtCtx<'b> {
         let locals = locals.as_deref();
         FmtCtx {
             translated,
-            region_vars: [generics.regions.clone()].into(),
+            region_vars: [&generics.regions].into(),
             type_vars: Some(&generics.types),
             const_generic_vars: Some(&generics.const_generics),
             locals,
@@ -134,13 +134,13 @@ impl<'a, 'b> SetLocals<'a> for FmtCtx<'b> {
 pub trait PushBoundRegions<'a> {
     type C: 'a + AstFormatter;
 
-    fn push_bound_regions(&'a self, regions: &Vector<RegionId, RegionVar>) -> Self::C;
+    fn push_bound_regions(&'a self, regions: &'a Vector<RegionId, RegionVar>) -> Self::C;
 }
 
 impl<'a, 'b> PushBoundRegions<'a> for FmtCtx<'b> {
     type C = FmtCtx<'a>;
 
-    fn push_bound_regions(&'a self, regions: &Vector<RegionId, RegionVar>) -> Self::C {
+    fn push_bound_regions(&'a self, regions: &'a Vector<RegionId, RegionVar>) -> Self::C {
         let FmtCtx {
             translated,
             region_vars,
@@ -154,7 +154,7 @@ impl<'a, 'b> PushBoundRegions<'a> for FmtCtx<'b> {
         let const_generic_vars = const_generic_vars.as_deref();
         let locals = locals.as_deref();
         let mut region_vars = region_vars.clone();
-        region_vars.push_front(regions.clone());
+        region_vars.push_front(regions);
         FmtCtx {
             translated,
             region_vars,
@@ -201,7 +201,7 @@ pub trait AstFormatter = Formatter<TypeVarId>
 pub struct FmtCtx<'a> {
     pub translated: Option<&'a TranslatedCrate>,
     /// The region variables are not an option, because we need to be able to push/pop
-    pub region_vars: VecDeque<Vector<RegionId, RegionVar>>,
+    pub region_vars: VecDeque<&'a Vector<RegionId, RegionVar>>,
     pub type_vars: Option<&'a Vector<TypeVarId, TypeVar>>,
     pub const_generic_vars: Option<&'a Vector<ConstGenericVarId, ConstGenericVar>>,
     pub locals: Option<&'a Vector<VarId, ast::Var>>,
