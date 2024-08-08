@@ -77,22 +77,12 @@ impl<'a, 'b> SetGenerics<'a> for FmtCtx<'b> {
     type C = FmtCtx<'a>;
 
     fn set_generics(&'a self, generics: &'a GenericParams) -> Self::C {
-        let FmtCtx {
-            translated,
-            region_vars: _,
-            type_vars: _,
-            const_generic_vars: _,
-            locals,
-        } = self;
-
-        let translated = translated.as_deref();
-        let locals = locals.as_deref();
         FmtCtx {
-            translated,
+            translated: self.translated.as_deref(),
             region_vars: [&generics.regions].into(),
             type_vars: Some(&generics.types),
             const_generic_vars: Some(&generics.const_generics),
-            locals,
+            locals: self.locals.as_deref(),
         }
     }
 }
@@ -109,22 +99,11 @@ impl<'a, 'b> SetLocals<'a> for FmtCtx<'b> {
     type C = FmtCtx<'a>;
 
     fn set_locals(&'a self, locals: &'a Vector<VarId, ast::Var>) -> Self::C {
-        let FmtCtx {
-            translated,
-            region_vars,
-            type_vars,
-            const_generic_vars,
-            locals: _,
-        } = self;
-
-        let translated = translated.as_deref();
-        let type_vars = type_vars.as_deref();
-        let const_generic_vars = const_generic_vars.as_deref();
         FmtCtx {
-            translated,
-            region_vars: region_vars.clone(),
-            type_vars,
-            const_generic_vars,
+            translated: self.translated.as_deref(),
+            region_vars: self.region_vars.clone(),
+            type_vars: self.type_vars.as_deref(),
+            const_generic_vars: self.const_generic_vars.as_deref(),
             locals: Some(locals),
         }
     }
@@ -141,26 +120,14 @@ impl<'a, 'b> PushBoundRegions<'a> for FmtCtx<'b> {
     type C = FmtCtx<'a>;
 
     fn push_bound_regions(&'a self, regions: &'a Vector<RegionId, RegionVar>) -> Self::C {
-        let FmtCtx {
-            translated,
-            region_vars,
-            type_vars,
-            const_generic_vars,
-            locals,
-        } = self;
-
-        let translated = translated.as_deref();
-        let type_vars = type_vars.as_deref();
-        let const_generic_vars = const_generic_vars.as_deref();
-        let locals = locals.as_deref();
-        let mut region_vars = region_vars.clone();
+        let mut region_vars = self.region_vars.clone();
         region_vars.push_front(regions);
         FmtCtx {
-            translated,
+            translated: self.translated.as_deref(),
             region_vars,
-            type_vars,
-            const_generic_vars,
-            locals,
+            type_vars: self.type_vars.as_deref(),
+            const_generic_vars: self.const_generic_vars.as_deref(),
+            locals: self.locals.as_deref(),
         }
     }
 }
