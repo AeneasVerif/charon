@@ -232,7 +232,7 @@ and item_kind =
  - [item_name]:  The name of the item.
  - [has_default]:  Whether the trait declaration provides a default implementation. *)
   | TraitImplItem of trait_impl_id * trait_decl_id * trait_item_name * bool
-      (** Function/const that is part of a trait declaration.
+      (** Function/const that is part of a trait implementation.
 
  Fields:
  - [impl_id]:  The trait implementation the method belongs to
