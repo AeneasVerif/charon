@@ -25,8 +25,6 @@ use std::io::BufReader;
 use std::path::PathBuf;
 use std::process::Command;
 
-const RUN_CHARON: bool = true;
-
 /// `Name` is a complex datastructure; to inspect it we serialize it a little bit.
 fn repr_name(_crate_data: &CrateData, n: &Name) -> String {
     n.name
@@ -557,7 +555,8 @@ impl GenerateCodeFor<'_> {
 fn main() -> Result<()> {
     let dir = PathBuf::from("src/bin/generate-ml");
     let charon_llbc = dir.join("charon-itself.llbc");
-    if RUN_CHARON {
+    let reuse_llbc = std::env::var("CHARON_ML_REUSE_LLBC").is_ok(); // Useful when developping
+    if !reuse_llbc {
         // Call charon on itself
         let mut cmd = Command::cargo_bin("charon")?;
         cmd.arg("--cargo-arg=--lib");
