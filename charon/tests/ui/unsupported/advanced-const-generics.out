@@ -47,5 +47,4 @@ error: Ignoring the following item due to an error: test_crate::bar
 
 error: aborting due to 5 previous errors
 
-[ERROR charon_driver:249] Compilation encountered 4 errors
-Error: Charon driver exited with code 1
+Error: Charon driver exited with code 101
