@@ -73,6 +73,11 @@ generate-ml:
 	cd charon && cargo run --bin generate-ml
 	cd charon-ml && make format 2> /dev/null
 
+# Same as `generate-ml` but don't re-run charon on itself. Useful when developping.
+.PHONY: generate-ml-keep-llbc
+generate-ml-keep-llbc:
+	CHARON_ML_REUSE_LLBC=1 $(MAKE) generate-ml
+
 # Run Charon on rustc's ui test suite
 .PHONY: rustc-tests
 rustc-tests:

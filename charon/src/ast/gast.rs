@@ -130,7 +130,7 @@ pub enum ItemKind {
         /// Whether the trait declaration provides a default implementation.
         has_default: bool,
     },
-    /// Function/const that is part of a trait declaration.
+    /// Function/const that is part of a trait implementation.
     TraitImpl {
         /// The trait implementation the method belongs to
         impl_id: TraitImplId,

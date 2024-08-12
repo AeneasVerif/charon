@@ -78,4 +78,5 @@ jobs:
           nix build --refresh -L github:cryspen/libcrux#ml-kem \
               --override-input charon github:aeneasverif/charon/${{ github.sha }} \
               --update-input charon/rust-overlay \
-              --update-input eurydice
+              --update-input eurydice \
+              --update-input crane
