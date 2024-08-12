@@ -378,22 +378,43 @@ fn type_decl_to_json_deserializer(ctx: &GenerateCtx, decl: &TypeDecl) -> String 
     build_function(ctx, decl, &branches)
 }
 
-fn extract_doc_comments(attr_info: &AttrInfo, wrap_in_doc_comment: bool) -> String {
+fn extract_doc_comments(attr_info: &AttrInfo) -> String {
     let comments = attr_info
         .attributes
         .iter()
         .filter(|a| a.is_doc_comment())
         .map(|a| a.as_doc_comment())
         .collect_vec();
-    if comments.is_empty() {
-        String::new()
+    comments.into_iter().join("\n")
+}
+
+/// Make a doc comment that contains the given string, indenting it if necessary.
+fn build_doc_comment(comment: String, indent_level: usize) -> String {
+    if comment == "" {
+        return comment;
+    }
+    let is_multiline = comment.contains("\n");
+    if !is_multiline {
+        format!("(**{comment} *)")
     } else {
-        let comment = comments.into_iter().join("\n");
-        if wrap_in_doc_comment {
-            format!("(**{comment} *)")
-        } else {
-            comment
-        }
+        let indent = "  ".repeat(indent_level);
+        let comment = comment
+            .lines()
+            .enumerate()
+            .map(|(i, line)| {
+                // Remove one leading space if there is one (there usually is because we write `///
+                // comment` and not `///comment`).
+                let line = line.strip_prefix(" ").unwrap_or(line);
+                // The first line follows the `(**` marker, it does not need to be indented.
+                // Neither do empty lines.
+                if i == 0 || line.is_empty() {
+                    line.to_string()
+                } else {
+                    format!("{indent}    {line}")
+                }
+            })
+            .join("\n");
+        format!("(** {comment}\n{indent} *)")
     }
 }
 
@@ -411,7 +432,8 @@ fn build_type(_ctx: &GenerateCtx, decl: &TypeDecl, co_rec: bool, body: &str) -> 
         [ty] => ty.clone(),
         generics => format!("({})", generics.iter().join(",")),
     };
-    let comment = extract_doc_comments(&decl.item_meta.attr_info, true);
+    let comment = extract_doc_comments(&decl.item_meta.attr_info);
+    let comment = build_doc_comment(comment, 0);
     let keyword = if co_rec { "and" } else { "type" };
     format!("\n{comment} {keyword} {generics} {ty_name} = {body}")
 }
@@ -445,7 +467,8 @@ fn type_decl_to_ocaml_decl(ctx: &GenerateCtx, decl: &TypeDecl, co_rec: bool) -> 
                 .map(|f| {
                     let name = f.renamed_name().unwrap();
                     let ty = type_to_ocaml_name(ctx, &f.ty);
-                    let comment = extract_doc_comments(&f.attr_info, true);
+                    let comment = extract_doc_comments(&f.attr_info);
+                    let comment = build_doc_comment(comment, 2);
                     format!("{name} : {ty} {comment}")
                 })
                 .join(";");
@@ -467,7 +490,7 @@ fn type_decl_to_ocaml_decl(ctx: &GenerateCtx, decl: &TypeDecl, co_rec: bool) -> 
                                 .fields
                                 .iter()
                                 .map(|f| {
-                                    let comment = extract_doc_comments(&f.attr_info, false);
+                                    let comment = extract_doc_comments(&f.attr_info);
                                     let description = if comment.is_empty() {
                                         comment
                                     } else {
@@ -489,7 +512,8 @@ fn type_decl_to_ocaml_decl(ctx: &GenerateCtx, decl: &TypeDecl, co_rec: bool) -> 
                             .join("*");
                         format!(" of {fields}")
                     };
-                    let comment = extract_doc_comments(&attr_info, true);
+                    let comment = extract_doc_comments(&attr_info);
+                    let comment = build_doc_comment(comment, 3);
                     format!("\n\n | {rename}{ty} {comment}")
                 })
                 .join("")
