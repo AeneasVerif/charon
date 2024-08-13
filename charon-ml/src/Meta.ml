@@ -80,7 +80,16 @@ and attribute =
   | AttrVariantsSuffix of string
       (** Same as `VariantsPrefix`, but appends to the name instead of pre-pending. *)
   | AttrDocComment of string  (** A doc-comment such as `/// ...`. *)
-  | AttrUnknown of string  (** A non-charon-specific attribute. *)
+  | AttrUnknown of raw_attribute  (** A non-charon-specific attribute. *)
+
+(** A general attribute. *)
+and raw_attribute = {
+  path : string;
+  args : string option;
+      (** The arguments passed to the attribute, if any. We don't distinguish different delimiters or
+        the `path = lit` case.
+     *)
+}
 
 (** Information about the attributes and visibility of an item, field or variant.. *)
 and attr_info = {

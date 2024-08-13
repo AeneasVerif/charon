@@ -1,6 +1,7 @@
 (** Pretty-printing for types *)
 
 include PrintValues
+open Meta
 open Types
 open TypesUtils
 open GAst
@@ -291,6 +292,12 @@ and path_elem_to_string (env : ('a, 'b) fmt_env) (e : path_elem) : string =
 and name_to_string (env : ('a, 'b) fmt_env) (n : name) : string =
   let name = List.map (path_elem_to_string env) n in
   String.concat "::" name
+
+and raw_attribute_to_string (attr : raw_attribute) : string =
+  let args =
+    match attr.args with None -> "" | Some args -> "(" ^ args ^ ")"
+  in
+  attr.path ^ args
 
 let trait_clause_to_string (env : ('a, 'b) fmt_env) (clause : trait_clause) :
     string =

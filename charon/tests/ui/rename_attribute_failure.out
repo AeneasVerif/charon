@@ -26,7 +26,7 @@ error: There should be at most one `charon::rename("...")` or `aeneas::rename(".
   --> tests/ui/rename_attribute_failure.rs:20:1
    |
 20 | type TestMultiple = ();
-   | ^^^^^^^^^^^^^^^^^^^^^^^
+   | ^^^^^^^^^^^^^^^^^
 
 error: Error parsing attribute: Unrecognized attribute: `charon::something_else("_Type36")`
   --> tests/ui/rename_attribute_failure.rs:22:1

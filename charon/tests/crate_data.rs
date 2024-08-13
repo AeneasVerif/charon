@@ -249,8 +249,7 @@ fn attributes() -> anyhow::Result<()> {
             .attributes
             .iter()
             .filter(|a| a.is_unknown())
-            .map(|a| a.as_unknown())
-            .cloned()
+            .map(|a| a.as_unknown().to_string())
             .collect_vec()
     };
     let crate_data = translate(
@@ -282,7 +281,7 @@ fn attributes() -> anyhow::Result<()> {
     )?;
     assert_eq!(
         unknown_attrs(&crate_data.type_decls[0].item_meta),
-        vec!["clippy::foo", "clippy::foo(arg)", "clippy::foo = \"arg\""]
+        vec!["clippy::foo", "clippy::foo(arg)", "clippy::foo(\"arg\")"]
     );
     assert_eq!(
         unknown_attrs(&crate_data.type_decls[1].item_meta),

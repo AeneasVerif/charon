@@ -9,9 +9,8 @@ use charon_lib::options::CliOpts;
 use charon_lib::ullbc_ast as ast;
 use hax_frontend_exporter as hax;
 use hax_frontend_exporter::SInto;
+use itertools::Itertools;
 use macros::VariantIndexArity;
-use rustc_ast::AttrArgs;
-use rustc_ast_pretty::pprust;
 use rustc_error_messages::MultiSpan;
 use rustc_hir::def_id::DefId;
 use rustc_hir::Node as HirNode;
@@ -536,12 +535,15 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
             .clone()
     }
 
-    pub(crate) fn translate_attr_info_from_rid(&mut self, def_id: DefId, span: Span) -> AttrInfo {
+    pub(crate) fn translate_attr_info(&mut self, def: &hax::FullDef) -> AttrInfo {
         // Default to `false` for impl blocks and closures.
-        let public = self
-            .translate_visibility_from_rid(def_id, span.span)
-            .unwrap_or(false);
-        let attributes = self.translate_attributes_from_rid(def_id);
+        let public = def.visibility.unwrap_or(false);
+        let inline = self.translate_inline(def);
+        let attributes = def
+            .attributes
+            .iter()
+            .filter_map(|attr| self.translate_attribute(&attr))
+            .collect_vec();
 
         let rename = {
             let mut renames = attributes
@@ -552,7 +554,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
             let rename = renames.next();
             if renames.next().is_some() {
                 self.span_err(
-                    span,
+                    def.span.rust_span_data.unwrap().span(),
                     "There should be at most one `charon::rename(\"...\")` \
                     or `aeneas::rename(\"...\")` attribute per declaration",
                 );
@@ -562,7 +564,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
 
         AttrInfo {
             attributes,
-            inline: self.translate_inline_from_rid(def_id),
+            inline,
             public,
             rename,
         }
@@ -581,10 +583,10 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
             .as_local()
             .map(|local_def_id| self.tcx.source_span(local_def_id))
             .unwrap_or(def.span.rust_span_data.unwrap().span());
-        let span = self.translate_span_from_rspan(span.sinto(&self.hax_state));
-        let attr_info = self.translate_attr_info_from_rid(def_id, span);
-        let is_local = def_id.is_local();
         let source_text = self.tcx.sess.source_map().span_to_snippet(span.into()).ok();
+        let span = self.translate_span_from_hax(span.sinto(&self.hax_state));
+        let attr_info = self.translate_attr_info(def);
+        let is_local = def.def_id.is_local;
 
         let opacity = if self.id_is_extern_item(def_id)
             || attr_info.attributes.iter().any(|attr| attr.is_opaque())
@@ -648,7 +650,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         }
     }
 
-    pub fn translate_span(&mut self, rspan: hax::Span) -> meta::RawSpan {
+    pub fn translate_raw_span(&mut self, rspan: hax::Span) -> meta::RawSpan {
         let filename = self.translate_filename(&rspan.filename);
         let file_id = match &filename {
             FileName::NotReal(_) => {
@@ -684,7 +686,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
     ) -> Span {
         // Translate the span
         let mut scope_data = source_scopes.get(source_info.scope).unwrap();
-        let span = self.translate_span(scope_data.span.clone());
+        let span = self.translate_raw_span(scope_data.span.clone());
 
         // Lookup the top-most inlined parent scope.
         if scope_data.inlined_parent_scope.is_some() {
@@ -693,7 +695,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
                 scope_data = source_scopes.get(parent_scope).unwrap();
             }
 
-            let parent_span = self.translate_span(scope_data.span.clone());
+            let parent_span = self.translate_raw_span(scope_data.span.clone());
 
             Span {
                 span: parent_span,
@@ -707,157 +709,60 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         }
     }
 
-    // TODO: rename
-    pub(crate) fn translate_span_from_rspan(&mut self, rspan: hax::Span) -> Span {
-        // Translate the span
-        let span = self.translate_span(rspan);
-
+    pub(crate) fn translate_span_from_hax(&mut self, span: hax::Span) -> Span {
         Span {
-            span,
+            span: self.translate_raw_span(span),
             generated_from_span: None,
-        }
-    }
-
-    /// Returns the attributes (`#[...]`) of this node.
-    pub(crate) fn node_attributes(&self, id: DefId) -> &[rustc_ast::Attribute] {
-        id.as_local()
-            .map(|local_def_id| {
-                self.tcx
-                    .hir()
-                    .attrs(self.tcx.local_def_id_to_hir_id(local_def_id))
-            })
-            .unwrap_or_default()
-    }
-
-    /// Parse an attribute to recognize our special `charon::*` and `aeneas::*` attributes.
-    pub(crate) fn parse_attribute(
-        &mut self,
-        normal_attr: &rustc_ast::NormalAttr,
-        span: rustc_span::Span,
-    ) -> Result<Attribute, String> {
-        // We use `pprust` to render the attribute somewhat like it is written in the source.
-        // WARNING: this can change whitespace, and sometimes even adds newlines. Maybe we
-        // should use spans and SourceMap info instead.
-        use pprust::PrintState;
-
-        // If the attribute path has two components, the first of which is `charon` or `aeneas`, we
-        // try to parse it. Otherwise we return `Unknown`.
-        let attr_name = if let [path_start, attr_name] = normal_attr.item.path.segments.as_slice()
-            && let path_start = path_start.ident.as_str()
-            && (path_start == "charon" || path_start == "aeneas")
-        {
-            attr_name.ident.as_str()
-        } else {
-            let full_attr =
-                pprust::State::to_string(|s| s.print_attr_item(&normal_attr.item, span));
-            return Ok(Attribute::Unknown(full_attr));
-        };
-
-        let args = match &normal_attr.item.args {
-            AttrArgs::Empty => None,
-            AttrArgs::Delimited(args) => Some(rustc_ast_pretty::pprust::State::to_string(|s| {
-                s.print_tts(&args.tokens, false)
-            })),
-            AttrArgs::Eq(..) => unimplemented!("`#[charon::foo = val]` syntax is unsupported"),
-        };
-        match Attribute::parse_special_attr(attr_name, args)? {
-            Some(parsed) => Ok(parsed),
-            None => {
-                let full_attr = rustc_ast_pretty::pprust::State::to_string(|s| {
-                    s.print_attr_item(&normal_attr.item, span)
-                });
-                Err(format!("Unrecognized attribute: `{full_attr}`"))
-            }
         }
     }
 
     /// Translates a rust attribute. Returns `None` if the attribute is a doc comment (rustc
     /// encodes them as attributes). For now we use `String`s for `Attributes`.
-    pub(crate) fn translate_attribute(&mut self, attr: &rustc_ast::Attribute) -> Option<Attribute> {
-        use rustc_ast::ast::AttrKind;
+    pub(crate) fn translate_attribute(&mut self, attr: &hax::Attribute) -> Option<Attribute> {
         match &attr.kind {
-            AttrKind::Normal(normal_attr) => match self.parse_attribute(&normal_attr, attr.span) {
-                Ok(a) => Some(a),
-                Err(msg) => {
-                    self.span_err(attr.span, &format!("Error parsing attribute: {msg}"));
-                    None
+            hax::AttrKind::Normal(normal_attr) => {
+                let raw_attr = RawAttribute {
+                    path: normal_attr.item.path.clone(),
+                    args: match &normal_attr.item.args {
+                        hax::AttrArgs::Empty => None,
+                        hax::AttrArgs::Delimited(args) => Some(args.tokens.clone()),
+                        hax::AttrArgs::Eq(_, hax::AttrArgsEq::Hir(lit)) => self
+                            .tcx
+                            .sess
+                            .source_map()
+                            .span_to_snippet(lit.span.rust_span_data.unwrap().span())
+                            .ok(),
+                        hax::AttrArgs::Eq(..) => None,
+                    },
+                };
+                match Attribute::parse_from_raw(raw_attr) {
+                    Ok(a) => Some(a),
+                    Err(msg) => {
+                        self.span_err(
+                            attr.span.rust_span_data.unwrap().span(),
+                            &format!("Error parsing attribute: {msg}"),
+                        );
+                        None
+                    }
                 }
-            },
-            AttrKind::DocComment(_kind, comment) => {
+            }
+            hax::AttrKind::DocComment(_kind, comment) => {
                 Some(Attribute::DocComment(comment.to_string()))
             }
         }
     }
 
-    pub(crate) fn translate_attributes_from_rid(&mut self, id: DefId) -> Vec<Attribute> {
-        // Collect to drop the borrow on `self`.
-        let vec = self.node_attributes(id).to_vec();
-        vec.iter()
-            .filter_map(|attr| self.translate_attribute(attr))
-            .collect()
-    }
-
-    pub(crate) fn translate_inline_from_rid(&self, id: DefId) -> Option<InlineAttr> {
-        use rustc_attr as rustc;
-        if !self.tcx.def_kind(id).has_codegen_attrs() {
-            return None;
-        }
-        match self.tcx.codegen_fn_attrs(id).inline {
-            rustc::InlineAttr::None => None,
-            rustc::InlineAttr::Hint => Some(InlineAttr::Hint),
-            rustc::InlineAttr::Never => Some(InlineAttr::Never),
-            rustc::InlineAttr::Always => Some(InlineAttr::Always),
-        }
-    }
-
-    /// Returns the visibility of the item/field/etc. Returns `None` for items that don't have a
-    /// visibility, like impl blocks.
-    pub(crate) fn translate_visibility_from_rid(
-        &mut self,
-        id: DefId,
-        span: RawSpan,
-    ) -> Option<bool> {
-        use rustc_hir::def::DefKind::*;
-        let def_kind = self.tcx.def_kind(id);
-        match def_kind {
-            AssocConst
-            | AssocFn
-            | Const
-            | Enum
-            | Field
-            | Fn
-            | ForeignTy
-            | Macro { .. }
-            | Mod
-            | Static { .. }
-            | Struct
-            | Trait
-            | TraitAlias
-            | TyAlias { .. }
-            | Union
-            | Use
-            | Variant => Some(self.tcx.visibility(id).is_public()),
-            // These kinds don't have visibility modifiers (which would cause `visibility` to panic).
-            Closure | Impl { .. } => None,
-            // Kinds we shouldn't be calling this function on.
-            AnonConst
-            | AssocTy
-            | ConstParam
-            | Ctor { .. }
-            | ExternCrate
-            | ForeignMod
-            | GlobalAsm
-            | InlineConst
-            | LifetimeParam
-            | OpaqueTy
-            | TyParam => {
-                register_error_or_panic!(
-                    self,
-                    span,
-                    "Called `translate_visibility_from_rid` on `{def_kind:?}`"
-                );
-                None
+    pub(crate) fn translate_inline(&self, def: &hax::FullDef) -> Option<InlineAttr> {
+        match def.kind() {
+            hax::FullDefKind::Fn { inline, .. } | hax::FullDefKind::AssocFn { inline, .. } => {
+                match inline {
+                    hax::InlineAttr::None => None,
+                    hax::InlineAttr::Hint => Some(InlineAttr::Hint),
+                    hax::InlineAttr::Never => Some(InlineAttr::Never),
+                    hax::InlineAttr::Always => Some(InlineAttr::Always),
+                }
             }
+            _ => None,
         }
     }
 
@@ -1067,8 +972,8 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         self.t_ctx.span_err(span, msg)
     }
 
-    pub(crate) fn translate_span_from_rspan(&mut self, rspan: hax::Span) -> Span {
-        self.t_ctx.translate_span_from_rspan(rspan)
+    pub(crate) fn translate_span_from_hax(&mut self, rspan: hax::Span) -> Span {
+        self.t_ctx.translate_span_from_hax(rspan)
     }
 
     pub(crate) fn get_local(&self, local: &hax::Local) -> Option<VarId> {

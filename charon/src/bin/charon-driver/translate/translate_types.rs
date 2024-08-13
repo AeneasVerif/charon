@@ -183,8 +183,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 trait_refs,
                 def_id,
             } => {
-                let adt_did: DefId = def_id.into();
-                trace!("Adt: {:?}", adt_did);
+                trace!("Adt: {:?}", def_id);
 
                 // Retrieve the type identifier
                 let type_id = self.translate_type_id(span, def_id)?;
@@ -533,13 +532,12 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             let mut have_names: Option<bool> = None;
             for (j, field_def) in var_def.fields.iter().enumerate() {
                 trace!("variant {i}: field {j}: {field_def:?}");
-                let field_span = self.t_ctx.translate_span_from_rspan(field_def.span.clone());
+                let field_span = self.t_ctx.translate_span_from_hax(field_def.span.clone());
                 let field_rspan = field_span.span.rust_span_data.span();
                 // Translate the field type
                 let ty = self.translate_ty(field_rspan, erase_regions, &field_def.ty)?;
-                let field_attrs = self
-                    .t_ctx
-                    .translate_attr_info_from_rid(DefId::from(&field_def.did), field_span);
+                let field_full_def = self.t_ctx.hax_def(&field_def.did);
+                let field_attrs = self.t_ctx.translate_attr_info(&field_full_def);
 
                 // Retrieve the field name.
                 let field_name = field_def.name.clone();
@@ -567,11 +565,10 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             }
 
             let discriminant = self.translate_discriminant(def_span, &var_def.discr_val)?;
-            let variant_span = self.t_ctx.translate_span_from_rspan(var_def.span.clone());
+            let variant_span = self.t_ctx.translate_span_from_hax(var_def.span.clone());
             let variant_name = var_def.name.clone();
-            let variant_attrs = self
-                .t_ctx
-                .translate_attr_info_from_rid(DefId::from(&var_def.def_id), variant_span);
+            let variant_full_def = self.t_ctx.hax_def(&var_def.def_id);
+            let variant_attrs = self.t_ctx.translate_attr_info(&variant_full_def);
 
             let mut variant = Variant {
                 span: variant_span,
