@@ -469,10 +469,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         trace!("{:?}", def_id);
         let type_id = match self.recognize_builtin_type(def_id)? {
             Some(id) => TypeId::Builtin(id),
-            None => {
-                let rust_id: DefId = def_id.into();
-                TypeId::Adt(self.register_type_decl_id(span, rust_id))
-            }
+            None => TypeId::Adt(self.register_type_decl_id(span, def_id)),
         };
         Ok(type_id)
     }
@@ -647,7 +644,6 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     pub(crate) fn push_generics_for_def(
         &mut self,
         span: rustc_span::Span,
-        rust_id: DefId,
         def: &hax::FullDef,
     ) -> Result<(), Error> {
         use hax::FullDefKind;
@@ -658,9 +654,8 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             | FullDefKind::AssocFn { parent, .. }
             | FullDefKind::AssocConst { parent, .. }
             | FullDefKind::Closure { parent, .. } => {
-                let parent_id = parent.into();
-                let parent_def = self.t_ctx.hax_def(parent_id);
-                self.push_generics_for_def(span, parent_id, &parent_def)?;
+                let parent_def = self.t_ctx.hax_def(parent);
+                self.push_generics_for_def(span, &parent_def)?;
             }
             _ => {}
         }
@@ -674,8 +669,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                     ..
                 }
                 | FullDefKind::Trait { self_predicate, .. } => {
-                    let trait_rust_id = DefId::from(&self_predicate.trait_ref.def_id);
-                    self.register_trait_decl_id(span, trait_rust_id);
+                    self.register_trait_decl_id(span, &self_predicate.trait_ref.def_id);
                     let hax_span = span.sinto(&self.t_ctx.hax_state);
                     self.translate_self_trait_clause(&hax_span, &self_predicate)?;
                 }
@@ -703,7 +697,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 // TODO: distinguish trait where clauses from trait supertraits. Currently we
                 // consider them all as parent clauses.
                 FullDefKind::Trait { .. } => {
-                    let trait_id = self.register_trait_decl_id(span, rust_id);
+                    let trait_id = self.register_trait_decl_id(span, &def.def_id);
                     (
                         PredicateOrigin::WhereClauseOnTrait,
                         PredicateLocation::Parent(trait_id),
@@ -778,7 +772,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         let span = item_meta.span.rust_span();
 
         // Translate generics and predicates
-        bt_ctx.push_generics_for_def(span, rust_id, def)?;
+        bt_ctx.push_generics_for_def(span, def)?;
         let generics = bt_ctx.get_generics();
 
         // Translate type body

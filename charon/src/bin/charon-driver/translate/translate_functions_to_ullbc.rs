@@ -726,7 +726,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                             trait_refs,
                         )?;
 
-                        let def_id = self.register_fun_decl_id(span, DefId::from(def_id));
+                        let def_id = self.register_fun_decl_id(span, def_id);
                         let akind = AggregateKind::Closure(def_id, generics);
 
                         Ok(Rvalue::Aggregate(akind, operands_t))
@@ -863,8 +863,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
 
             FunIdOrTraitMethodRef::Fun(FunId::Builtin(aid))
         } else {
-            let rust_id = DefId::from(def_id);
-            let fun_id = self.register_fun_decl_id(span, rust_id);
+            let fun_id = self.register_fun_decl_id(span, def_id);
             // Two cases depending on whether we call a trait method or not
             match trait_info {
                 None => {
@@ -879,7 +878,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                     // eliminate) don't have methods.
                     let impl_expr = impl_expr.unwrap();
 
-                    let method_name = self.t_ctx.translate_trait_item_name(rust_id)?;
+                    let method_name = self.t_ctx.translate_trait_item_name(def_id)?;
                     FunIdOrTraitMethodRef::Trait(impl_expr, method_name, fun_id)
                 }
             }
@@ -1179,12 +1178,9 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         let next_block = target.map(|target| self.translate_basic_block_id(target));
         let (fn_operand, args) = match fun {
             hax::FunOperand::Id(def_id) => {
-                // Regular function call
-                let rust_id = DefId::from(def_id);
-
                 // Translate the function operand - should be a constant: we don't
                 // support closures for now
-                trace!("func: {:?}", rust_id);
+                trace!("func: {:?}", def_id);
 
                 // Translate the function id, with its parameters
                 let erase_regions = true;
@@ -1370,7 +1366,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         // [TyCtxt.type_of].
 
         // Add the early bound parameters and predicates.
-        self.push_generics_for_def(span, def_id, &def)?;
+        self.push_generics_for_def(span, &def)?;
 
         // Add the *late-bound* parameters (bound in the signature, can only be lifetimes).
         let bvar_names = signature
@@ -1549,7 +1545,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         //   const LEN : usize = N;
         // }
         // ```
-        bt_ctx.push_generics_for_def(span, rust_id, def)?;
+        bt_ctx.push_generics_for_def(span, def)?;
         let generics = bt_ctx.get_generics();
 
         trace!("Translating global type");

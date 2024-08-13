@@ -3,7 +3,6 @@ use super::translate_ctx::*;
 use charon_lib::ast::*;
 use charon_lib::common::*;
 use hax_frontend_exporter as hax;
-use rustc_hir::def_id::DefId;
 
 impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     fn translate_constant_literal_to_raw_constant_expr(
@@ -116,7 +115,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                     trait_refs,
                 )?;
 
-                let global_id = self.register_global_decl_id(span, DefId::from(id));
+                let global_id = self.register_global_decl_id(span, id);
                 RawConstantExpr::Global(GlobalDeclRef {
                     id: global_id,
                     generics,

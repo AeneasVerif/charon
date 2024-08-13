@@ -8,7 +8,7 @@ use charon_lib::pretty::FmtWithCtx;
 use charon_lib::types::*;
 use hax_frontend_exporter as hax;
 use macros::{EnumAsGetters, EnumIsA, EnumToGetters};
-use rustc_hir::def_id::DefId;
+use rustc_span::def_id::DefId;
 
 /// Same as [TraitClause], but where the clause id is a [TraitInstanceId].
 /// We need this information to solve the provenance of traits coming from
@@ -166,7 +166,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         erase_regions: bool,
         trait_ref: &hax::TraitRef,
     ) -> Result<Option<TraitDeclRef>, Error> {
-        let trait_id = self.register_trait_decl_id(span, DefId::from(&trait_ref.def_id));
+        let trait_id = self.register_trait_decl_id(span, &trait_ref.def_id);
         let parent_trait_refs = Vec::new();
         let generics = self.translate_substs_and_trait_refs(
             span,
@@ -267,7 +267,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         let erase_regions = false;
 
         let trait_ref = &trait_pred.trait_ref;
-        let trait_id = self.register_trait_decl_id(span, DefId::from(&trait_ref.def_id));
+        let trait_id = self.register_trait_decl_id(span, &trait_ref.def_id);
 
         let (regions, types, const_generics) =
             self.translate_substs(span, erase_regions, None, &trait_ref.generic_args)?;
@@ -429,8 +429,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 id: impl_def_id,
                 generics,
             } => {
-                let def_id = DefId::from(impl_def_id);
-                let impl_id = self.register_trait_impl_id(span, def_id);
+                let impl_id = self.register_trait_impl_id(span, impl_def_id);
                 let generics = self.translate_substs_and_trait_refs(
                     span,
                     erase_regions,
@@ -470,8 +469,8 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                     _ => unreachable!(),
                 };
 
-                let def_id = DefId::from(&trait_ref.def_id);
-                let mut current_trait_decl_id = self.register_trait_decl_id(span, def_id);
+                let mut current_trait_decl_id =
+                    self.register_trait_decl_id(span, &trait_ref.def_id);
 
                 // Apply the path
                 for path_elem in path {
@@ -489,10 +488,8 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                                 TraitItemName(item.name.clone()),
                                 TraitClauseId::new(*index),
                             );
-                            current_trait_decl_id = self.register_trait_decl_id(
-                                span,
-                                DefId::from(&predicate.value.trait_ref.def_id),
-                            );
+                            current_trait_decl_id = self
+                                .register_trait_decl_id(span, &predicate.value.trait_ref.def_id);
                         }
                         Parent {
                             predicate,
@@ -504,10 +501,8 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                                 current_trait_decl_id,
                                 TraitClauseId::new(*index),
                             );
-                            current_trait_decl_id = self.register_trait_decl_id(
-                                span,
-                                DefId::from(&predicate.value.trait_ref.def_id),
-                            );
+                            current_trait_decl_id = self
+                                .register_trait_decl_id(span, &predicate.value.trait_ref.def_id);
                         }
                     }
                 }
