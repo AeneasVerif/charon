@@ -8,8 +8,9 @@
 use assert_cmd::prelude::{CommandCargoExt, OutputAssertExt};
 use snapbox;
 use snapbox::filter::Filter;
+use std::fmt::Display;
 use std::path::Path;
-use std::{error::Error, fs::File, io::BufReader, process::Command};
+use std::{fs::File, io::BufReader, process::Command};
 
 use charon_lib::ast::TranslatedCrate;
 use charon_lib::{export::CrateData, logger};
@@ -59,7 +60,7 @@ fn expect_file_contents(path: &Path, actual: snapbox::Data) -> snapbox::assert::
 }
 
 /// Given a string that contains rust code, this calls charon on it and returns the result.
-pub fn translate_rust_text(code: String) -> anyhow::Result<TranslatedCrate> {
+pub fn translate_rust_text(code: impl Display) -> anyhow::Result<TranslatedCrate> {
     // Initialize the logger
     logger::initialize_logger();
 

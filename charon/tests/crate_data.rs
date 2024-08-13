@@ -7,7 +7,7 @@ use charon_lib::ast::*;
 mod util;
 
 fn translate(code: impl std::fmt::Display) -> anyhow::Result<TranslatedCrate> {
-    util::translate_rust_text(code.to_string())
+    util::translate_rust_text(code)
 }
 
 /// `Name` is a complex datastructure; to inspect it we serialize it a little bit.

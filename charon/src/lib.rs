@@ -37,6 +37,7 @@ pub mod ast;
 pub mod common;
 pub mod errors;
 pub mod export;
+pub mod name_matcher;
 pub mod options;
 pub mod pretty;
 pub mod transform;

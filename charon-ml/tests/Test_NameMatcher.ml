@@ -159,7 +159,7 @@ module PatternTest = struct
     else true
 end
 
-(* This reads the output generated from the `ui/name-matcher-tests.rs` test
+(* This reads the output generated from the `ui/ml-name-matcher-tests.rs` test
    file, and verifies that for each `#[pattern::...]` annotation, the item
    matches the pattern. See the `PatternTest` module for details of what
    annotations are available. *)

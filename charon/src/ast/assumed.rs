@@ -5,8 +5,9 @@
 //! we ignore the disambiguators (see [crate::names] and [crate::names_utils]).
 // TODO: rename to "primitive"
 
+use crate::ast;
+use crate::names::*;
 use crate::types::*;
-use crate::ullbc_ast;
 use macros::EnumIsA;
 
 // Built-in functions
@@ -35,10 +36,10 @@ pub struct FunInfo {
 impl BuiltinFun {
     /// Converts to the ullbc equivalent. Panics if `self` is `Panic` as this should be handled
     /// separately.
-    pub fn to_ullbc_builtin_fun(self) -> ullbc_ast::AssumedFunId {
+    pub fn to_ullbc_builtin_fun(self) -> ast::AssumedFunId {
         match self {
-            BuiltinFun::BoxNew => ullbc_ast::AssumedFunId::BoxNew,
-            BuiltinFun::BoxFree => ullbc_ast::AssumedFunId::BoxFree,
+            BuiltinFun::BoxNew => ast::AssumedFunId::BoxNew,
+            BuiltinFun::BoxFree => ast::AssumedFunId::BoxFree,
             BuiltinFun::Panic => panic!(),
         }
     }
@@ -56,14 +57,16 @@ impl BuiltinFun {
     }
 }
 
-pub fn get_name_from_type_id(id: AssumedTy) -> Vec<String> {
-    let name: &[_] = match id {
-        AssumedTy::Box => &["alloc", "boxed", "Box"],
-        AssumedTy::Str => &["Str"],
-        AssumedTy::Array => &["Array"],
-        AssumedTy::Slice => &["Slice"],
-    };
-    name.iter().map(|s| s.to_string()).collect()
+impl AssumedTy {
+    pub fn get_name(self) -> Name {
+        let name: &[_] = match self {
+            AssumedTy::Box => &["alloc", "boxed", "Box"],
+            AssumedTy::Str => &["Str"],
+            AssumedTy::Array => &["Array"],
+            AssumedTy::Slice => &["Slice"],
+        };
+        Name::from_path(name)
+    }
 }
 
 /// When translating from MIR to ULLBC, we ignore some type parameters for some
