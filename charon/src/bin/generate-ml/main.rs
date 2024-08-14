@@ -307,6 +307,16 @@ fn type_decl_to_json_deserializer(ctx: &GenerateCtx, decl: &TypeDecl) -> String 
             build_branch(ctx, &pat, &fields, &construct)
         }
         TypeDeclKind::Struct(fields) => {
+            let fields = fields
+                .iter()
+                .filter(|field| {
+                    !field
+                        .attr_info
+                        .attributes
+                        .iter()
+                        .any(|a| a.is_unknown() && a.as_unknown() == "serde(skip)")
+                })
+                .collect_vec();
             let pat: String = fields
                 .iter()
                 .map(|f| {
@@ -775,6 +785,7 @@ fn main() -> Result<()> {
                     "TraitImpl",
                     "GDeclarationGroup",
                     "DeclarationGroup",
+                    "AnyTransId",
                 ]),
             ],
         },

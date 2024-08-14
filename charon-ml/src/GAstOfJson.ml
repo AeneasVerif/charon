@@ -1375,23 +1375,24 @@ and declaration_group_of_json (js : json) : (declaration_group, string) result =
 and any_decl_id_of_json (js : json) : (any_decl_id, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
-    | `Assoc [ ("Fun", id) ] ->
-        let* id = FunDeclId.id_of_json id in
-        Ok (IdFun id)
-    | `Assoc [ ("Global", id) ] ->
-        let* id = GlobalDeclId.id_of_json id in
-        Ok (IdGlobal id)
-    | `Assoc [ ("Type", id) ] ->
-        let* id = TypeDeclId.id_of_json id in
-        Ok (IdType id)
-    | `Assoc [ ("TraitDecl", id) ] ->
-        let* id = TraitDeclId.id_of_json id in
-        Ok (IdTraitDecl id)
-    | `Assoc [ ("TraitImpl", id) ] ->
-        let* id = TraitImplId.id_of_json id in
-        Ok (IdTraitImpl id)
+    | `Assoc [ ("Type", type_) ] ->
+        let* type_ = type_decl_id_of_json type_ in
+        Ok (IdType type_)
+    | `Assoc [ ("Fun", fun_) ] ->
+        let* fun_ = fun_decl_id_of_json fun_ in
+        Ok (IdFun fun_)
+    | `Assoc [ ("Global", global) ] ->
+        let* global = global_decl_id_of_json global in
+        Ok (IdGlobal global)
+    | `Assoc [ ("TraitDecl", trait_decl) ] ->
+        let* trait_decl = trait_decl_id_of_json trait_decl in
+        Ok (IdTraitDecl trait_decl)
+    | `Assoc [ ("TraitImpl", trait_impl) ] ->
+        let* trait_impl = trait_impl_id_of_json trait_impl in
+        Ok (IdTraitImpl trait_impl)
     | _ -> Error "")
 
+(* This is written by hand because the corresponding rust type is not type-generic. *)
 and gtranslated_crate_of_json
     (body_of_json : id_to_file_map -> json -> ('body gexpr_body, string) result)
     (js : json) : (('body, 'body gexpr_body option) gcrate, string) result =

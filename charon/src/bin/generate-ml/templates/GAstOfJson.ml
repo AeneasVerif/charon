@@ -249,26 +249,7 @@ let rec gglobal_decl_of_json (bodies : 'body gexpr_body option list)
 
 (* __REPLACE5__ *)
 
-and any_decl_id_of_json (js : json) : (any_decl_id, string) result =
-  combine_error_msgs js __FUNCTION__
-    (match js with
-    | `Assoc [ ("Fun", id) ] ->
-        let* id = FunDeclId.id_of_json id in
-        Ok (IdFun id)
-    | `Assoc [ ("Global", id) ] ->
-        let* id = GlobalDeclId.id_of_json id in
-        Ok (IdGlobal id)
-    | `Assoc [ ("Type", id) ] ->
-        let* id = TypeDeclId.id_of_json id in
-        Ok (IdType id)
-    | `Assoc [ ("TraitDecl", id) ] ->
-        let* id = TraitDeclId.id_of_json id in
-        Ok (IdTraitDecl id)
-    | `Assoc [ ("TraitImpl", id) ] ->
-        let* id = TraitImplId.id_of_json id in
-        Ok (IdTraitImpl id)
-    | _ -> Error "")
-
+(* This is written by hand because the corresponding rust type is not type-generic. *)
 and gtranslated_crate_of_json
     (body_of_json : id_to_file_map -> json -> ('body gexpr_body, string) result)
     (js : json) : (('body, 'body gexpr_body option) gcrate, string) result =
