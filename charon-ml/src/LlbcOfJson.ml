@@ -147,133 +147,77 @@ let global_to_fun_id (conv : global_id_converter) (gid : GlobalDeclId.id) :
 (** Deserialize a global declaration, and decompose it into a global declaration
     and a function declaration.
  *)
-let global_decl_of_json (bodies : expr_body option list)
-    (id_to_file : id_to_file_map) (js : json) (gid_conv : global_id_converter) :
-    (global_decl * fun_decl, string) result =
-  combine_error_msgs js __FUNCTION__
-    ((* Deserialize the global declaration *)
-     let* global = gglobal_decl_of_json bodies id_to_file js in
-     let { def_id = global_id; item_meta; body; generics; ty; kind } = global in
-     (* Decompose into a global and a function *)
-     let fun_id = global_to_fun_id gid_conv global.def_id in
-     let signature : fun_sig =
-       {
-         (* Not sure about `is_unsafe` actually *)
-         is_unsafe = false;
-         is_closure = false;
-         closure_info = None;
-         generics;
-         parent_params_info = None;
-         inputs = [];
-         output = ty;
-       }
-     in
-     let global_decl : global_decl =
-       { def_id = global_id; item_meta; body = fun_id; generics; ty; kind }
-     in
-     let fun_decl : fun_decl =
-       {
-         def_id = fun_id;
-         item_meta;
-         signature;
-         kind = RegularItem;
-         body;
-         is_global_decl_body = true;
-       }
-     in
-     Ok (global_decl, fun_decl))
+let split_global (gid_conv : global_id_converter) global :
+    global_decl * fun_decl =
+  (* Deserialize the global declaration *)
+  let { def_id = global_id; item_meta; body; generics; ty; kind } = global in
+  (* Decompose into a global and a function *)
+  let fun_id = global_to_fun_id gid_conv global.def_id in
+  let signature : fun_sig =
+    {
+      (* Not sure about `is_unsafe` actually *)
+      is_unsafe = false;
+      is_closure = false;
+      closure_info = None;
+      generics;
+      parent_params_info = None;
+      inputs = [];
+      output = ty;
+    }
+  in
+  let global_decl : global_decl =
+    { def_id = global_id; item_meta; body = fun_id; generics; ty; kind }
+  in
+  let fun_decl : fun_decl =
+    {
+      def_id = fun_id;
+      item_meta;
+      signature;
+      kind = RegularItem;
+      body;
+      is_global_decl_body = true;
+    }
+  in
+  (global_decl, fun_decl)
 
 let crate_of_json (js : json) : (crate, string) result =
-  match js with
-  | `Assoc
-      [
-        ("charon_version", charon_version);
-        ("name", name);
-        ("id_to_file", id_to_file);
-        ("declarations", declarations);
-        ("types", types);
-        ("functions", functions);
-        ("globals", globals);
-        ("bodies", bodies);
-        ("trait_decls", trait_decls);
-        ("trait_impls", trait_impls);
-      ] ->
-      (* Ensure the version is the one we support. *)
-      let* charon_version = string_of_json charon_version in
-      if
-        not (String.equal charon_version CharonVersion.supported_charon_version)
-      then
-        Error
-          ("Incompatible version of charon: this program supports llbc emitted \
-            by charon v" ^ CharonVersion.supported_charon_version
-         ^ " but attempted to read a file emitted by charon v" ^ charon_version
-         ^ ".")
-      else
-        combine_error_msgs js __FUNCTION__
-          ((* We first deserialize the declaration groups (which simply contain ids)
-            * and all the declarations *but* the globals *)
-           let* name = string_of_json name in
-           let* id_to_file = id_to_file_of_json id_to_file in
-           let* declarations =
-             list_of_json declaration_group_of_json declarations
-           in
-           let* types = list_of_json (type_decl_of_json id_to_file) types in
-           let* bodies =
-             list_of_json (option_of_json (expr_body_of_json id_to_file)) bodies
-           in
-           let* functions =
-             list_of_json (gfun_decl_of_json bodies id_to_file) functions
-           in
-           (* When deserializing the globals, we split the global declarations
-            * between the globals themselves and their bodies, which are simply
-            * functions with no arguments. We add the global bodies to the list
-            * of function declarations: the (fresh) ids we use for those bodies
-            * are simply given by: [num_functions + global_id] *)
-           let gid_conv = { fun_count = List.length functions } in
-           let* globals =
-             list_of_json
-               (fun js -> global_decl_of_json bodies id_to_file js gid_conv)
-               globals
-           in
-           let globals, global_bodies = List.split globals in
-           let type_decls =
-             TypeDeclId.Map.of_list
-               (List.map (fun (d : type_decl) -> (d.def_id, d)) types)
-           in
-           (* Concatenate the functions and the global bodies *)
-           let fun_decls =
-             FunDeclId.Map.of_list
-               (List.map
-                  (fun (d : fun_decl) -> (d.def_id, d))
-                  (functions @ global_bodies))
-           in
-           let global_decls =
-             GlobalDeclId.Map.of_list
-               (List.map (fun (d : global_decl) -> (d.def_id, d)) globals)
-           in
-           (* Traits *)
-           let* trait_decls =
-             list_of_json (trait_decl_of_json id_to_file) trait_decls
-           in
-           let* trait_impls =
-             list_of_json (trait_impl_of_json id_to_file) trait_impls
-           in
-           let trait_decls =
-             TraitDeclId.Map.of_list
-               (List.map (fun (d : trait_decl) -> (d.def_id, d)) trait_decls)
-           in
-           let trait_impls =
-             TraitImplId.Map.of_list
-               (List.map (fun (d : trait_impl) -> (d.def_id, d)) trait_impls)
-           in
-           Ok
-             {
-               name;
-               declarations;
-               type_decls;
-               fun_decls;
-               global_decls;
-               trait_decls;
-               trait_impls;
-             })
-  | _ -> combine_error_msgs js __FUNCTION__ (Error "")
+  combine_error_msgs js __FUNCTION__
+    begin
+      let* crate = gcrate_of_json expr_body_of_json js in
+      (* When deserializing the globals, we split the global declarations
+       * between the globals themselves and their bodies, which are simply
+       * functions with no arguments. We add the global bodies to the list
+       * of function declarations: the (fresh) ids we use for those bodies
+       * are simply given by: [num_functions + global_id] *)
+      let gid_conv =
+        { fun_count = List.length (FunDeclId.Map.bindings crate.fun_decls) }
+      in
+      let globals, global_bodies =
+        List.split
+          (List.map
+             (fun (_, g) -> split_global gid_conv g)
+             (GlobalDeclId.Map.bindings crate.global_decls))
+      in
+
+      (* Add the global bodies to the list of functions *)
+      let fun_decls =
+        List.fold_left
+          (fun m (d : fun_decl) -> FunDeclId.Map.add d.def_id d m)
+          crate.fun_decls global_bodies
+      in
+      let global_decls =
+        GlobalDeclId.Map.of_list
+          (List.map (fun (d : global_decl) -> (d.def_id, d)) globals)
+      in
+
+      Ok
+        {
+          name = crate.name;
+          declarations = crate.declarations;
+          type_decls = crate.type_decls;
+          fun_decls;
+          global_decls;
+          trait_decls = crate.trait_decls;
+          trait_impls = crate.trait_impls;
+        }
+    end

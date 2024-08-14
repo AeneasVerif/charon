@@ -215,18 +215,8 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         match self.translated.file_to_id.get(&filename) {
             Some(id) => *id,
             None => {
-                // Generate the fresh id
-                let id = match &filename {
-                    FileName::Local(_) => {
-                        FileId::LocalId(self.translated.real_file_counter.fresh_id())
-                    }
-                    FileName::Virtual(_) => {
-                        FileId::VirtualId(self.translated.virtual_file_counter.fresh_id())
-                    }
-                    FileName::NotReal(_) => unimplemented!(),
-                };
+                let id = self.translated.id_to_file.push(filename.clone());
                 self.translated.file_to_id.insert(filename.clone(), id);
-                self.translated.id_to_file.insert(id, filename);
                 id
             }
         }

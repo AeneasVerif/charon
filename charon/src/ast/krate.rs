@@ -1,15 +1,16 @@
 use crate::ast::*;
 use crate::formatter::{FmtCtx, Formatter, IntoFormatter};
-use crate::ids::{Generator, Vector};
+use crate::ids::Vector;
 use crate::reorder_decls::DeclarationsGroups;
 use derive_visitor::{Drive, DriveMut};
-use linked_hash_set::LinkedHashSet;
+use hashlink::LinkedHashSet;
 use macros::{EnumAsGetters, EnumIsA, VariantIndexArity, VariantName};
 use rustc_span::def_id::DefId;
 use serde::{Deserialize, Serialize};
 use std::cmp::{Ord, PartialOrd};
 use std::collections::HashMap;
 use std::fmt;
+use std::ops::{Index, IndexMut};
 
 /// The id of a translated item.
 #[derive(
@@ -78,29 +79,31 @@ pub enum AnyTransItem<'ctx> {
 }
 
 /// The data of a translated crate.
-#[derive(Default, Drive, DriveMut)]
+#[derive(Default, Clone, Drive, DriveMut, Serialize, Deserialize)]
 pub struct TranslatedCrate {
     /// The name of the crate.
     pub crate_name: String,
 
     /// File names to ids and vice-versa
     #[drive(skip)]
+    pub id_to_file: Vector<FileId, FileName>,
+    #[drive(skip)]
+    #[serde(skip)]
+    #[charon::opaque]
     pub file_to_id: HashMap<FileName, FileId>,
-    #[drive(skip)]
-    pub id_to_file: HashMap<FileId, FileName>,
-    #[drive(skip)]
-    pub real_file_counter: Generator<LocalFileId>,
-    #[drive(skip)]
-    pub virtual_file_counter: Generator<VirtualFileId>,
 
     /// All the ids, in the order in which we encountered them
     #[drive(skip)]
     pub all_ids: LinkedHashSet<AnyTransId>,
     /// The map from rustc id to translated id.
     #[drive(skip)]
+    #[serde(skip)]
+    #[charon::opaque]
     pub id_map: HashMap<DefId, AnyTransId>,
     /// The reverse map of ids.
     #[drive(skip)]
+    #[serde(skip)]
+    #[charon::opaque]
     pub reverse_id_map: HashMap<AnyTransId, DefId>,
 
     /// The translated type definitions
@@ -230,3 +233,26 @@ impl<'tcx, 'ctx, 'a> IntoFormatter for &'a TranslatedCrate {
         }
     }
 }
+
+/// Delegate `Index` implementations to subfields.
+macro_rules! mk_index_impls {
+    ($ty:ident.$field:ident[$idx:ty]: $output:ty) => {
+        impl Index<$idx> for $ty {
+            type Output = $output;
+            fn index(&self, index: $idx) -> &Self::Output {
+                &self.$field[index]
+            }
+        }
+        impl IndexMut<$idx> for $ty {
+            fn index_mut(&mut self, index: $idx) -> &mut Self::Output {
+                &mut self.$field[index]
+            }
+        }
+    };
+}
+mk_index_impls!(TranslatedCrate.type_decls[TypeDeclId]: TypeDecl);
+mk_index_impls!(TranslatedCrate.fun_decls[FunDeclId]: FunDecl);
+mk_index_impls!(TranslatedCrate.global_decls[GlobalDeclId]: GlobalDecl);
+mk_index_impls!(TranslatedCrate.bodies[BodyId]: Body);
+mk_index_impls!(TranslatedCrate.trait_decls[TraitDeclId]: TraitDecl);
+mk_index_impls!(TranslatedCrate.trait_impls[TraitImplId]: TraitImpl);

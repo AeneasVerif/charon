@@ -1,8 +1,8 @@
 #![feature(rustc_private)]
 
 use assert_cmd::prelude::{CommandCargoExt, OutputAssertExt};
+use charon_lib::ast::{AnyTransItem, TranslatedCrate};
 use itertools::Itertools;
-use macros::EnumAsGetters;
 use std::collections::HashMap;
 use std::{error::Error, fs::File, io::BufReader, process::Command};
 
@@ -10,7 +10,7 @@ use charon_lib::{
     export::CrateData, gast::*, logger, meta::*, names::*, types::*, values::ScalarValue,
 };
 
-fn translate(code: impl std::fmt::Display) -> Result<CrateData, Box<dyn Error>> {
+fn translate(code: impl std::fmt::Display) -> Result<TranslatedCrate, Box<dyn Error>> {
     // Initialize the logger
     logger::initialize_logger();
 
@@ -43,17 +43,17 @@ fn translate(code: impl std::fmt::Display) -> Result<CrateData, Box<dyn Error>> 
         serde_json::from_reader(reader)?
     };
 
-    Ok(crate_data)
+    Ok(crate_data.translated)
 }
 
 /// `Name` is a complex datastructure; to inspect it we serialize it a little bit.
-fn repr_name(crate_data: &CrateData, n: &Name) -> String {
+fn repr_name(crate_data: &TranslatedCrate, n: &Name) -> String {
     n.name
         .iter()
         .map(|path_elem| match path_elem {
             PathElem::Ident(i, _) => i.clone(),
             PathElem::Impl(elem, _) => match elem {
-                ImplElem::Trait(impl_id) => match crate_data.trait_impls.get(impl_id.index()) {
+                ImplElem::Trait(impl_id) => match crate_data.trait_impls.get(*impl_id) {
                     None => format!("<trait impl#{impl_id}>"),
                     Some(timpl) => {
                         let trait_name = trait_name(crate_data, timpl.impl_trait.trait_id);
@@ -71,81 +71,40 @@ fn repr_span(span: Span) -> String {
     format!("{}-{}", raw_span.beg, raw_span.end)
 }
 
-fn trait_name(crate_data: &CrateData, trait_id: TraitDeclId) -> &str {
-    let tr = &crate_data.trait_decls[trait_id.index()];
+fn trait_name(crate_data: &TranslatedCrate, trait_id: TraitDeclId) -> &str {
+    let tr = &crate_data.trait_decls[trait_id];
     let PathElem::Ident(trait_name, _) = tr.item_meta.name.name.last().unwrap() else {
         panic!()
     };
     trait_name
 }
 
-#[derive(EnumAsGetters)]
-#[expect(dead_code)]
-enum ItemKind<'c> {
-    Fun(&'c FunDecl),
-    Global(&'c GlobalDecl),
-    Type(&'c TypeDecl),
-    TraitDecl(&'c TraitDecl),
-    TraitImpl(&'c TraitImpl),
-}
-
 /// A general item, with information shared by all items.
-#[expect(dead_code)]
 struct Item<'c> {
-    name: &'c Name,
     name_str: String,
-    item_meta: &'c ItemMeta,
     // Not a ref because we do a little hack.
     generics: GenericParams,
-    kind: ItemKind<'c>,
+    #[expect(dead_code)]
+    kind: AnyTransItem<'c>,
 }
 
 /// Get all the items for this crate.
-fn items_by_name<'c>(crate_data: &'c CrateData) -> HashMap<String, Item<'c>> {
+fn items_by_name<'c>(crate_data: &'c TranslatedCrate) -> HashMap<String, Item<'c>> {
     crate_data
-        .functions
-        .iter()
-        .map(|x| Item {
-            name: &x.item_meta.name,
-            name_str: repr_name(crate_data, &x.item_meta.name),
-            item_meta: &x.item_meta,
-            generics: x.signature.generics.clone(),
-            kind: ItemKind::Fun(x),
-        })
-        .chain(crate_data.globals.iter().map(|x| Item {
-            name: &x.item_meta.name,
-            name_str: repr_name(crate_data, &x.item_meta.name),
-            item_meta: &x.item_meta,
-            generics: x.generics.clone(),
-            kind: ItemKind::Global(x),
-        }))
-        .chain(crate_data.types.iter().map(|x| Item {
-            name: &x.item_meta.name,
-            name_str: repr_name(crate_data, &x.item_meta.name),
-            item_meta: &x.item_meta,
-            generics: x.generics.clone(),
-            kind: ItemKind::Type(x),
-        }))
-        .chain(crate_data.trait_impls.iter().map(|x| Item {
-            name: &x.item_meta.name,
-            name_str: repr_name(crate_data, &x.item_meta.name),
-            item_meta: &x.item_meta,
-            generics: x.generics.clone(),
-            kind: ItemKind::TraitImpl(x),
-        }))
-        .chain(crate_data.trait_decls.iter().map(|x| {
-            let mut generics = x.generics.clone();
-            // We do a little hack.
-            assert!(generics.trait_clauses.is_empty());
-            generics.trait_clauses = x.parent_clauses.clone();
-            Item {
-                name: &x.item_meta.name,
-                name_str: repr_name(crate_data, &x.item_meta.name),
-                item_meta: &x.item_meta,
-                generics,
-                kind: ItemKind::TraitDecl(x),
+        .all_items()
+        .map(|item| {
+            let mut generics = item.generic_params().clone();
+            if let AnyTransItem::TraitDecl(tdecl) = &item {
+                // We do a little hack.
+                assert!(generics.trait_clauses.is_empty());
+                generics.trait_clauses = tdecl.parent_clauses.clone();
             }
-        }))
+            Item {
+                name_str: repr_name(crate_data, &item.item_meta().name),
+                generics,
+                kind: item,
+            }
+        })
         .map(|item| (item.name_str.clone(), item))
         .collect()
 }
@@ -159,7 +118,7 @@ fn type_decl() -> Result<(), Box<dyn Error>> {
         ",
     )?;
     assert_eq!(
-        repr_name(&crate_data, &crate_data.types[0].item_meta.name),
+        repr_name(&crate_data, &crate_data.type_decls[0].item_meta.name),
         "test_crate::Struct"
     );
     Ok(())
@@ -173,19 +132,15 @@ fn file_name() -> Result<(), Box<dyn Error>> {
         ",
     )?;
     assert_eq!(
-        repr_name(&crate_data, &crate_data.types[0].item_meta.name),
+        repr_name(&crate_data, &crate_data.type_decls[0].item_meta.name),
         "test_crate::Foo"
     );
     assert_eq!(
-        repr_name(&crate_data, &crate_data.types[1].item_meta.name),
+        repr_name(&crate_data, &crate_data.type_decls[1].item_meta.name),
         "core::option::Option"
     );
-    let file_id = crate_data.types[1].item_meta.span.span.file_id;
-    let (_, file) = crate_data
-        .id_to_file
-        .iter()
-        .find(|(i, _)| *i == file_id)
-        .unwrap();
+    let file_id = crate_data.type_decls[1].item_meta.span.span.file_id;
+    let file = &crate_data.id_to_file[file_id];
     let FileName::Virtual(file) = file else {
         panic!()
     };
@@ -208,7 +163,7 @@ fn spans() -> Result<(), Box<dyn Error>> {
         }
         ",
     )?;
-    let function = &crate_data.functions[0];
+    let function = &crate_data.fun_decls[0];
     // Span of the function signature.
     assert_eq!(repr_span(function.item_meta.span), "2:8-2:36");
     let body_id = function.body.unwrap();
@@ -362,11 +317,11 @@ fn attributes() -> Result<(), Box<dyn Error>> {
         "#,
     )?;
     assert_eq!(
-        unknown_attrs(&crate_data.types[0].item_meta),
+        unknown_attrs(&crate_data.type_decls[0].item_meta),
         vec!["clippy::foo", "clippy::foo(arg)", "clippy::foo = \"arg\""]
     );
     assert_eq!(
-        unknown_attrs(&crate_data.types[1].item_meta),
+        unknown_attrs(&crate_data.type_decls[1].item_meta),
         vec!["non_exhaustive"]
     );
     assert_eq!(
@@ -378,24 +333,24 @@ fn attributes() -> Result<(), Box<dyn Error>> {
         vec!["clippy::foo"]
     );
     assert_eq!(
-        unknown_attrs(&crate_data.globals[0].item_meta),
+        unknown_attrs(&crate_data.global_decls[0].item_meta),
         vec!["clippy::foo"]
     );
     assert_eq!(
-        unknown_attrs(&crate_data.globals[1].item_meta),
+        unknown_attrs(&crate_data.global_decls[1].item_meta),
         vec!["clippy::foo"]
     );
     // We don't parse that attribute ourselves, we let rustc do it.
     assert_eq!(
-        unknown_attrs(&crate_data.functions[0].item_meta),
+        unknown_attrs(&crate_data.fun_decls[0].item_meta),
         vec!["inline(never)"]
     );
     assert_eq!(
-        crate_data.functions[0].item_meta.attr_info.inline,
+        crate_data.fun_decls[0].item_meta.attr_info.inline,
         Some(InlineAttr::Never)
     );
     assert_eq!(
-        crate_data.functions[0]
+        crate_data.fun_decls[0]
             .item_meta
             .attr_info
             .attributes
@@ -419,22 +374,22 @@ fn visibility() -> Result<(), Box<dyn Error>> {
         "#,
     )?;
     assert_eq!(
-        repr_name(&crate_data, &crate_data.types[0].item_meta.name),
+        repr_name(&crate_data, &crate_data.type_decls[0].item_meta.name),
         "test_crate::Pub"
     );
-    assert!(crate_data.types[0].item_meta.attr_info.public);
+    assert!(crate_data.type_decls[0].item_meta.attr_info.public);
     assert_eq!(
-        repr_name(&crate_data, &crate_data.types[1].item_meta.name),
+        repr_name(&crate_data, &crate_data.type_decls[1].item_meta.name),
         "test_crate::Priv"
     );
-    assert!(!crate_data.types[1].item_meta.attr_info.public);
+    assert!(!crate_data.type_decls[1].item_meta.attr_info.public);
     // Note how we think `PubInPriv` is public. It kind of is but there is no path to it. This is
     // probably fine.
     assert_eq!(
-        repr_name(&crate_data, &crate_data.types[2].item_meta.name),
+        repr_name(&crate_data, &crate_data.type_decls[2].item_meta.name),
         "test_crate::private::PubInPriv"
     );
-    assert!(crate_data.types[2].item_meta.attr_info.public);
+    assert!(crate_data.type_decls[2].item_meta.attr_info.public);
     Ok(())
 }
 
@@ -457,11 +412,11 @@ fn discriminants() -> Result<(), Box<dyn Error>> {
         ty.kind.as_enum().iter().map(|v| v.discriminant).collect()
     }
     assert_eq!(
-        get_enum_discriminants(&crate_data.types[0]),
+        get_enum_discriminants(&crate_data.type_decls[0]),
         vec![ScalarValue::Isize(0), ScalarValue::Isize(1)]
     );
     assert_eq!(
-        get_enum_discriminants(&crate_data.types[1]),
+        get_enum_discriminants(&crate_data.type_decls[1]),
         vec![ScalarValue::U32(3), ScalarValue::U32(42)]
     );
     Ok(())
@@ -537,7 +492,7 @@ fn rename_attribute() -> Result<(), Box<dyn Error>> {
     );
 
     assert_eq!(
-        crate_data.functions[2]
+        crate_data.fun_decls[2]
             .item_meta
             .attr_info
             .rename
@@ -546,7 +501,7 @@ fn rename_attribute() -> Result<(), Box<dyn Error>> {
     );
 
     assert_eq!(
-        crate_data.functions[3]
+        crate_data.fun_decls[3]
             .item_meta
             .attr_info
             .rename
@@ -564,7 +519,7 @@ fn rename_attribute() -> Result<(), Box<dyn Error>> {
     );
 
     assert_eq!(
-        crate_data.functions[1]
+        crate_data.fun_decls[1]
             .item_meta
             .attr_info
             .rename
@@ -573,41 +528,61 @@ fn rename_attribute() -> Result<(), Box<dyn Error>> {
     );
 
     assert_eq!(
-        crate_data.types[0].item_meta.attr_info.rename.as_deref(),
+        crate_data.type_decls[0]
+            .item_meta
+            .attr_info
+            .rename
+            .as_deref(),
         Some("TypeTest")
     );
 
     assert_eq!(
-        crate_data.types[1].item_meta.attr_info.rename.as_deref(),
+        crate_data.type_decls[1]
+            .item_meta
+            .attr_info
+            .rename
+            .as_deref(),
         Some("VariantsTest")
     );
 
     assert_eq!(
-        crate_data.types[1].kind.as_enum()[0].renamed_name(),
+        crate_data.type_decls[1].kind.as_enum()[0].renamed_name(),
         "Variant1"
     );
     assert_eq!(
-        crate_data.types[1].kind.as_enum()[1].renamed_name(),
+        crate_data.type_decls[1].kind.as_enum()[1].renamed_name(),
         "SimpleSecondVariant_"
     );
 
     assert_eq!(
-        crate_data.types[2].item_meta.attr_info.rename.as_deref(),
+        crate_data.type_decls[2]
+            .item_meta
+            .attr_info
+            .rename
+            .as_deref(),
         Some("StructTest")
     );
 
     assert_eq!(
-        crate_data.globals[0].item_meta.attr_info.rename.as_deref(),
+        crate_data.global_decls[0]
+            .item_meta
+            .attr_info
+            .rename
+            .as_deref(),
         Some("Const_Test")
     );
 
     assert_eq!(
-        crate_data.types[3].item_meta.attr_info.rename.as_deref(),
+        crate_data.type_decls[3]
+            .item_meta
+            .attr_info
+            .rename
+            .as_deref(),
         Some("_TypeAeneas36")
     );
 
     assert_eq!(
-        crate_data.types[2].kind.as_struct()[0]
+        crate_data.type_decls[2].kind.as_struct()[0]
             .attr_info
             .rename
             .as_deref(),
@@ -628,11 +603,14 @@ fn declaration_groups() -> Result<(), Box<dyn Error>> {
         "#,
     )?;
 
-    assert_eq!(crate_data.functions.len(), 1);
-    assert_eq!(crate_data.declarations.len(), 3);
-    assert!(crate_data.declarations[0].as_fun().is_non_rec());
-    assert!(crate_data.declarations[1].as_trait_decl().is_non_rec());
-    assert!(crate_data.declarations[2].as_trait_impl().is_non_rec());
+    // There are two function ids registered, but only one is nonempty. `functions.len() == 2` as
+    // `len()` counts the empty slots too.
+    let decl_groups = crate_data.ordered_decls.unwrap();
+    assert_eq!(crate_data.fun_decls.iter().count(), 1);
+    assert_eq!(decl_groups.len(), 3);
+    assert!(decl_groups[0].as_fun().is_non_rec());
+    assert!(decl_groups[1].as_trait_decl().is_non_rec());
+    assert!(decl_groups[2].as_trait_impl().is_non_rec());
 
     Ok(())
 }

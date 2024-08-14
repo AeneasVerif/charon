@@ -1,4 +1,4 @@
-use linked_hash_set::LinkedHashSet;
+use hashlink::LinkedHashSet;
 use std::collections::BTreeSet as OrdSet;
 use std::collections::HashMap;
 use std::iter::FromIterator;
