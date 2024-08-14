@@ -4,3 +4,5 @@ extern "C" {
     static CONST: u8;
     type Type;
 }
+
+fn use_type(_x: &Type) {}

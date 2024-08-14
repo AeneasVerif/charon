@@ -337,6 +337,9 @@ and ty =
           - assumed types (includes some primitive types, e.g., arrays or slices)
           The information on the nature of the ADT is stored in (`TypeId`)[TypeId].
           The last list is used encode const generics, e.g., the size of an array
+
+          Note: this is incorrectly named: this can refer to any valid `TypeDecl` including extern
+          types.
        *)
   | TVar of type_var_id
   | TLiteral of literal_type
