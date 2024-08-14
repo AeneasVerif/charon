@@ -1,9 +1,8 @@
 #![feature(rustc_private)]
 
 use assert_cmd::prelude::{CommandCargoExt, OutputAssertExt};
-use charon_lib::ast::TranslatedCrate;
+use charon_lib::ast::{AnyTransItem, TranslatedCrate};
 use itertools::Itertools;
-use macros::EnumAsGetters;
 use std::collections::HashMap;
 use std::{error::Error, fs::File, io::BufReader, process::Command};
 
@@ -80,73 +79,32 @@ fn trait_name(crate_data: &TranslatedCrate, trait_id: TraitDeclId) -> &str {
     trait_name
 }
 
-#[derive(EnumAsGetters)]
-#[expect(dead_code)]
-enum ItemKind<'c> {
-    Fun(&'c FunDecl),
-    Global(&'c GlobalDecl),
-    Type(&'c TypeDecl),
-    TraitDecl(&'c TraitDecl),
-    TraitImpl(&'c TraitImpl),
-}
-
 /// A general item, with information shared by all items.
-#[expect(dead_code)]
 struct Item<'c> {
-    name: &'c Name,
     name_str: String,
-    item_meta: &'c ItemMeta,
     // Not a ref because we do a little hack.
     generics: GenericParams,
-    kind: ItemKind<'c>,
+    #[expect(dead_code)]
+    kind: AnyTransItem<'c>,
 }
 
 /// Get all the items for this crate.
 fn items_by_name<'c>(crate_data: &'c TranslatedCrate) -> HashMap<String, Item<'c>> {
     crate_data
-        .fun_decls
-        .iter()
-        .map(|x| Item {
-            name: &x.item_meta.name,
-            name_str: repr_name(crate_data, &x.item_meta.name),
-            item_meta: &x.item_meta,
-            generics: x.signature.generics.clone(),
-            kind: ItemKind::Fun(x),
-        })
-        .chain(crate_data.global_decls.iter().map(|x| Item {
-            name: &x.item_meta.name,
-            name_str: repr_name(crate_data, &x.item_meta.name),
-            item_meta: &x.item_meta,
-            generics: x.generics.clone(),
-            kind: ItemKind::Global(x),
-        }))
-        .chain(crate_data.type_decls.iter().map(|x| Item {
-            name: &x.item_meta.name,
-            name_str: repr_name(crate_data, &x.item_meta.name),
-            item_meta: &x.item_meta,
-            generics: x.generics.clone(),
-            kind: ItemKind::Type(x),
-        }))
-        .chain(crate_data.trait_impls.iter().map(|x| Item {
-            name: &x.item_meta.name,
-            name_str: repr_name(crate_data, &x.item_meta.name),
-            item_meta: &x.item_meta,
-            generics: x.generics.clone(),
-            kind: ItemKind::TraitImpl(x),
-        }))
-        .chain(crate_data.trait_decls.iter().map(|x| {
-            let mut generics = x.generics.clone();
-            // We do a little hack.
-            assert!(generics.trait_clauses.is_empty());
-            generics.trait_clauses = x.parent_clauses.clone();
-            Item {
-                name: &x.item_meta.name,
-                name_str: repr_name(crate_data, &x.item_meta.name),
-                item_meta: &x.item_meta,
-                generics,
-                kind: ItemKind::TraitDecl(x),
+        .all_items()
+        .map(|item| {
+            let mut generics = item.generic_params().clone();
+            if let AnyTransItem::TraitDecl(tdecl) = &item {
+                // We do a little hack.
+                assert!(generics.trait_clauses.is_empty());
+                generics.trait_clauses = tdecl.parent_clauses.clone();
             }
-        }))
+            Item {
+                name_str: repr_name(crate_data, &item.item_meta().name),
+                generics,
+                kind: item,
+            }
+        })
         .map(|item| (item.name_str.clone(), item))
         .collect()
 }
