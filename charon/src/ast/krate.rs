@@ -78,7 +78,7 @@ pub enum AnyTransItem<'ctx> {
 }
 
 /// The data of a translated crate.
-#[derive(Default, Clone, Drive, DriveMut)]
+#[derive(Default, Clone, Drive, DriveMut, Serialize, Deserialize)]
 pub struct TranslatedCrate {
     /// The name of the crate.
     pub crate_name: String,
@@ -87,6 +87,7 @@ pub struct TranslatedCrate {
     #[drive(skip)]
     pub id_to_file: Vector<FileId, FileName>,
     #[drive(skip)]
+    #[serde(skip)]
     pub file_to_id: HashMap<FileName, FileId>,
 
     /// All the ids, in the order in which we encountered them
@@ -94,9 +95,11 @@ pub struct TranslatedCrate {
     pub all_ids: LinkedHashSet<AnyTransId>,
     /// The map from rustc id to translated id.
     #[drive(skip)]
+    #[serde(skip)]
     pub id_map: HashMap<DefId, AnyTransId>,
     /// The reverse map of ids.
     #[drive(skip)]
+    #[serde(skip)]
     pub reverse_id_map: HashMap<AnyTransId, DefId>,
 
     /// The translated type definitions

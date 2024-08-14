@@ -8,7 +8,7 @@
 //! crate root. Don't forget to format the output code after regenerating.
 use anyhow::{bail, Context, Result};
 use assert_cmd::cargo::CommandCargoExt;
-use charon_lib::ast::{AttrInfo, Attribute};
+use charon_lib::ast::{AttrInfo, Attribute, TranslatedCrate};
 use charon_lib::export::CrateData;
 use charon_lib::meta::ItemMeta;
 use charon_lib::names::{Name, PathElem};
@@ -26,7 +26,7 @@ use std::path::PathBuf;
 use std::process::Command;
 
 /// `Name` is a complex datastructure; to inspect it we serialize it a little bit.
-fn repr_name(_crate_data: &CrateData, n: &Name) -> String {
+fn repr_name(_crate_data: &TranslatedCrate, n: &Name) -> String {
     n.name
         .iter()
         .map(|path_elem| match path_elem {
@@ -56,7 +56,7 @@ fn type_name_to_ocaml_ident(item_meta: &ItemMeta) -> String {
 }
 
 /// Traverse all types to figure out which ones transitively contain the given id.
-fn contains_id(crate_data: &CrateData, haystack: TypeDeclId) -> HashMap<TypeDeclId, bool> {
+fn contains_id(crate_data: &TranslatedCrate, haystack: TypeDeclId) -> HashMap<TypeDeclId, bool> {
     enum ContainsRawSpan {
         Yes,
         No,
@@ -64,7 +64,7 @@ fn contains_id(crate_data: &CrateData, haystack: TypeDeclId) -> HashMap<TypeDecl
     }
     use ContainsRawSpan::*;
     fn traverse_ty(
-        crate_data: &CrateData,
+        crate_data: &TranslatedCrate,
         ty: &TypeDecl,
         map: &mut HashMap<TypeDeclId, ContainsRawSpan>,
     ) -> bool {
@@ -76,7 +76,7 @@ fn contains_id(crate_data: &CrateData, haystack: TypeDeclId) -> HashMap<TypeDecl
         map.insert(ty.def_id, Processing);
         let mut contains = false;
         ty.drive(&mut derive_visitor::visitor_enter_fn(|id: &TypeDeclId| {
-            if let Some(ty) = crate_data.types.iter().find(|ty| ty.def_id == *id) {
+            if let Some(ty) = crate_data.type_decls.get(*id) {
                 if traverse_ty(crate_data, ty, map) {
                     contains = true;
                 }
@@ -87,7 +87,7 @@ fn contains_id(crate_data: &CrateData, haystack: TypeDeclId) -> HashMap<TypeDecl
     }
     let mut map = HashMap::new();
     map.insert(haystack, Yes);
-    for ty in &crate_data.types {
+    for ty in &crate_data.type_decls {
         traverse_ty(crate_data, ty, &mut map);
     }
     map.into_iter()
@@ -96,7 +96,7 @@ fn contains_id(crate_data: &CrateData, haystack: TypeDeclId) -> HashMap<TypeDecl
 }
 
 struct GenerateCtx<'a> {
-    crate_data: &'a CrateData,
+    crate_data: &'a TranslatedCrate,
     contains_raw_span: HashMap<TypeDeclId, bool>,
     name_to_type: HashMap<String, &'a TypeDecl>,
 }
@@ -113,7 +113,7 @@ fn type_to_ocaml_call(ctx: &GenerateCtx, ty: &Ty) -> String {
             let mut types = generics.types.as_slice();
             match adt_kind {
                 TypeId::Adt(id) => {
-                    let adt: &TypeDecl = &ctx.crate_data.types[id.index()];
+                    let adt: &TypeDecl = &ctx.crate_data.type_decls[*id];
                     let mut first = type_name_to_ocaml_ident(&adt.item_meta);
                     if first == "vec" {
                         first = "list".to_string();
@@ -172,7 +172,7 @@ fn type_to_ocaml_name(ctx: &GenerateCtx, ty: &Ty) -> String {
                 .collect_vec();
             match adt_kind {
                 TypeId::Adt(id) => {
-                    let adt: &TypeDecl = &ctx.crate_data.types[id.index()];
+                    let adt: &TypeDecl = &ctx.crate_data.type_decls[*id];
                     let mut base_ty = type_name_to_ocaml_ident(&adt.item_meta);
                     if base_ty == "vec" {
                         base_ty = "list".to_string();
@@ -595,7 +595,7 @@ fn main() -> Result<()> {
         }
     }
 
-    let crate_data: CrateData = {
+    let crate_data: TranslatedCrate = {
         use serde::Deserialize;
         let file = File::open(&charon_llbc)
             .with_context(|| format!("Failed to read llbc file {}", charon_llbc.display()))?;
@@ -605,11 +605,11 @@ fn main() -> Result<()> {
         deserializer.disable_recursion_limit();
         // Grow stack space as needed.
         let deserializer = serde_stacker::Deserializer::new(&mut deserializer);
-        CrateData::deserialize(deserializer)?
+        CrateData::deserialize(deserializer)?.translated
     };
 
     let mut name_to_type: HashMap<String, &TypeDecl> = Default::default();
-    for ty in &crate_data.types {
+    for ty in &crate_data.type_decls {
         let long_name = repr_name(&crate_data, &ty.item_meta.name);
         if long_name.starts_with("charon_lib") {
             let short_name = ty.item_meta.name.name.last().unwrap().as_ident().0.clone();

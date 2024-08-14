@@ -269,23 +269,104 @@ and any_decl_id_of_json (js : json) : (any_decl_id, string) result =
         Ok (IdTraitImpl id)
     | _ -> Error "")
 
+and gtranslated_crate_of_json
+    (body_of_json : id_to_file_map -> json -> ('body gexpr_body, string) result)
+    (js : json) : (('body, 'body gexpr_body option) gcrate, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with
+    | `Assoc
+        [
+          ("crate_name", name);
+          ("id_to_file", id_to_file);
+          ("all_ids", _);
+          ("type_decls", types);
+          ("fun_decls", functions);
+          ("global_decls", globals);
+          ("bodies", bodies);
+          ("trait_decls", trait_decls);
+          ("trait_impls", trait_impls);
+          ("ordered_decls", declarations);
+        ] ->
+        let flatten_options l = List.filter_map (fun x -> x) l in
+        let* name = string_of_json name in
+        let* id_to_file = id_to_file_of_json id_to_file in
+
+        let* declarations =
+          list_of_json declaration_group_of_json declarations
+        in
+
+        let* types =
+          list_of_json (option_of_json (type_decl_of_json id_to_file)) types
+        in
+        let types = flatten_options types in
+        let* bodies =
+          list_of_json (option_of_json (body_of_json id_to_file)) bodies
+        in
+        let* functions =
+          list_of_json
+            (option_of_json (gfun_decl_of_json bodies id_to_file))
+            functions
+        in
+        let functions = flatten_options functions in
+        let* globals =
+          list_of_json
+            (option_of_json (gglobal_decl_of_json bodies id_to_file))
+            globals
+        in
+        let globals = flatten_options globals in
+        let* trait_decls =
+          list_of_json
+            (option_of_json (trait_decl_of_json id_to_file))
+            trait_decls
+        in
+        let trait_decls = flatten_options trait_decls in
+        let* trait_impls =
+          list_of_json
+            (option_of_json (trait_impl_of_json id_to_file))
+            trait_impls
+        in
+        let trait_impls = flatten_options trait_impls in
+
+        let type_decls =
+          TypeDeclId.Map.of_list
+            (List.map (fun (d : type_decl) -> (d.def_id, d)) types)
+        in
+        let fun_decls =
+          FunDeclId.Map.of_list
+            (List.map (fun (d : 'body gfun_decl) -> (d.def_id, d)) functions)
+        in
+        let global_decls =
+          GlobalDeclId.Map.of_list
+            (List.map
+               (fun (d : 'body gexpr_body option gglobal_decl) -> (d.def_id, d))
+               globals)
+        in
+        let trait_decls =
+          TraitDeclId.Map.of_list
+            (List.map (fun (d : trait_decl) -> (d.def_id, d)) trait_decls)
+        in
+        let trait_impls =
+          TraitImplId.Map.of_list
+            (List.map (fun (d : trait_impl) -> (d.def_id, d)) trait_impls)
+        in
+
+        Ok
+          {
+            name;
+            declarations;
+            type_decls;
+            fun_decls;
+            global_decls;
+            trait_decls;
+            trait_impls;
+          }
+    | _ -> Error "")
+
 and gcrate_of_json
     (body_of_json : id_to_file_map -> json -> ('body gexpr_body, string) result)
     (js : json) : (('body, 'body gexpr_body option) gcrate, string) result =
   match js with
-  | `Assoc
-      [
-        ("charon_version", charon_version);
-        ("name", name);
-        ("id_to_file", id_to_file);
-        ("declarations", declarations);
-        ("types", types);
-        ("functions", functions);
-        ("globals", globals);
-        ("bodies", bodies);
-        ("trait_decls", trait_decls);
-        ("trait_impls", trait_impls);
-      ] ->
+  | `Assoc [ ("charon_version", charon_version); ("translated", translated) ] ->
       (* Ensure the version is the one we support. *)
       let* charon_version = string_of_json charon_version in
       if
@@ -296,80 +377,5 @@ and gcrate_of_json
             by charon v" ^ CharonVersion.supported_charon_version
          ^ " but attempted to read a file emitted by charon v" ^ charon_version
          ^ ".")
-      else
-        combine_error_msgs js __FUNCTION__
-          (let flatten_options l = List.filter_map (fun x -> x) l in
-           let* name = string_of_json name in
-           let* id_to_file = id_to_file_of_json id_to_file in
-
-           let* declarations =
-             list_of_json declaration_group_of_json declarations
-           in
-
-           let* types =
-             list_of_json (option_of_json (type_decl_of_json id_to_file)) types
-           in
-           let types = flatten_options types in
-           let* bodies =
-             list_of_json (option_of_json (body_of_json id_to_file)) bodies
-           in
-           let* functions =
-             list_of_json
-               (option_of_json (gfun_decl_of_json bodies id_to_file))
-               functions
-           in
-           let functions = flatten_options functions in
-           let* globals =
-             list_of_json
-               (option_of_json (gglobal_decl_of_json bodies id_to_file))
-               globals
-           in
-           let globals = flatten_options globals in
-           let* trait_decls =
-             list_of_json
-               (option_of_json (trait_decl_of_json id_to_file))
-               trait_decls
-           in
-           let trait_decls = flatten_options trait_decls in
-           let* trait_impls =
-             list_of_json
-               (option_of_json (trait_impl_of_json id_to_file))
-               trait_impls
-           in
-           let trait_impls = flatten_options trait_impls in
-
-           let type_decls =
-             TypeDeclId.Map.of_list
-               (List.map (fun (d : type_decl) -> (d.def_id, d)) types)
-           in
-           let fun_decls =
-             FunDeclId.Map.of_list
-               (List.map (fun (d : 'body gfun_decl) -> (d.def_id, d)) functions)
-           in
-           let global_decls =
-             GlobalDeclId.Map.of_list
-               (List.map
-                  (fun (d : 'body gexpr_body option gglobal_decl) ->
-                    (d.def_id, d))
-                  globals)
-           in
-           let trait_decls =
-             TraitDeclId.Map.of_list
-               (List.map (fun (d : trait_decl) -> (d.def_id, d)) trait_decls)
-           in
-           let trait_impls =
-             TraitImplId.Map.of_list
-               (List.map (fun (d : trait_impl) -> (d.def_id, d)) trait_impls)
-           in
-
-           Ok
-             {
-               name;
-               declarations;
-               type_decls;
-               fun_decls;
-               global_decls;
-               trait_decls;
-               trait_impls;
-             })
+      else gtranslated_crate_of_json body_of_json translated
   | _ -> combine_error_msgs js __FUNCTION__ (Error "")
