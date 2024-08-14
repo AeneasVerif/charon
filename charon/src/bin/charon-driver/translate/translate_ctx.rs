@@ -101,6 +101,8 @@ pub struct TranslateCtx<'tcx, 'ctx> {
     /// Cache the `PathElem`s to compute them only once each. It's an `Option` because some
     /// `DefId`s (e.g. `extern {}` blocks) don't appear in the `Name`.
     pub cached_path_elems: HashMap<DefId, Option<PathElem>>,
+    /// Cache the names to compute them only once each.
+    pub cached_names: HashMap<DefId, Name>,
 }
 
 /// A translation context for type/global/function bodies.
@@ -342,6 +344,9 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
 
     /// Retrieve an item name from a [DefId].
     pub fn def_id_to_name(&mut self, def_id: DefId) -> Result<Name, Error> {
+        if let Some(name) = self.cached_names.get(&def_id) {
+            return Ok(name.clone());
+        }
         trace!("{:?}", def_id);
         let tcx = self.tcx;
         let span = tcx.def_span(def_id);
@@ -411,9 +416,11 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         name.push(PathElem::Ident(crate_name, Disambiguator::new(0)));
 
         name.reverse();
+        let name = Name { name };
 
         trace!("{:?}", name);
-        Ok(Name { name })
+        self.cached_names.insert(def_id, name.clone());
+        Ok(name)
     }
 
     pub fn hax_def_id_to_name(&mut self, def_id: &hax::DefId) -> Result<Name, Error> {
