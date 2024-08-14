@@ -337,6 +337,9 @@ and ty =
           - assumed types (includes some primitive types, e.g., arrays or slices)
           The information on the nature of the ADT is stored in (`TypeId`)[TypeId].
           The last list is used encode const generics, e.g., the size of an array
+
+          Note: this is incorrectly named: this can refer to any valid `TypeDecl` including extern
+          types.
        *)
   | TVar of type_var_id
   | TLiteral of literal_type
@@ -716,6 +719,10 @@ and type_decl_kind =
   | Alias of ty
       (** An alias to another type. This only shows up in the top-level list of items, as rustc
           inlines uses of type aliases everywhere else.
+       *)
+  | Error of string
+      (** Used if an error happened during the extraction, and we don't panic
+          on error.
        *)
 
 (** A type declaration.

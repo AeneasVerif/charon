@@ -1162,17 +1162,6 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                     target,
                 }
             }
-            TerminatorKind::Yield {
-                value: _,
-                resume: _,
-                resume_arg: _,
-                drop: _,
-            } => {
-                error_or_panic!(self, rustc_span, "Unsupported terminator: yield");
-            }
-            TerminatorKind::CoroutineDrop => {
-                error_or_panic!(self, rustc_span, "Unsupported terminator: coroutine drop");
-            }
             TerminatorKind::FalseEdge {
                 real_target,
                 imaginary_target,
@@ -1202,6 +1191,15 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             }
             TerminatorKind::InlineAsm { .. } => {
                 error_or_panic!(self, rustc_span, "Inline assembly is not supported");
+            }
+            TerminatorKind::CoroutineDrop
+            | TerminatorKind::TailCall { .. }
+            | TerminatorKind::Yield { .. } => {
+                error_or_panic!(
+                    self,
+                    rustc_span,
+                    format!("Unsupported terminator: {:?}", terminator.kind)
+                );
             }
         };
 

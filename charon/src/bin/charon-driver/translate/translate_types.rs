@@ -341,13 +341,10 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 }
             }
 
-            hax::Ty::Foreign(id) => {
+            hax::Ty::Foreign(def_id) => {
                 trace!("Foreign");
-                error_or_panic!(
-                    self,
-                    span,
-                    format!("Unsupported type: foreign type: {:?}", DefId::from(id))
-                )
+                let def_id = self.translate_type_id(span, def_id)?;
+                Ok(Ty::Adt(def_id, GenericArgs::empty()))
             }
             hax::Ty::Infer(_) => {
                 trace!("Infer");

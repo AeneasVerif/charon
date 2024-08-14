@@ -57,8 +57,7 @@ where
         1 => {
             e@2 := move ((self@1 as variant @1).0)
             @5 := &e@2
-            @4 := unsize_cast<&'_ (E), &'_ (dyn (exists(TODO)))>(move (@5))
-            drop @5
+            @4 := unsize_cast<&'_ (E), &'_ (dyn (exists(TODO)))>(copy (@5))
             @3 := core::result::unwrap_failed(const ("called `Result::unwrap()` on an `Err` value"), move (@4))
         }
     }

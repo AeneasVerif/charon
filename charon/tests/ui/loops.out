@@ -1030,7 +1030,7 @@ impl core::clone::impls::{impl core::clone::Clone for usize}#5 : core::clone::Cl
     fn clone = core::clone::impls::{impl core::clone::Clone for usize}#5::clone
 }
 
-impl core::marker::{impl core::marker::Copy for usize}#38 : core::marker::Copy<usize>
+impl core::marker::{impl core::marker::Copy for usize}#37 : core::marker::Copy<usize>
 {
     parent_clause0 = core::clone::impls::{impl core::clone::Clone for usize}#5
 }
@@ -1053,7 +1053,7 @@ impl core::num::nonzero::private::{impl core::marker::Copy for core::num::nonzer
 
 impl core::num::nonzero::{impl core::num::nonzero::ZeroablePrimitive for usize}#26 : core::num::nonzero::ZeroablePrimitive<usize>
 {
-    parent_clause0 = core::marker::{impl core::marker::Copy for usize}#38
+    parent_clause0 = core::marker::{impl core::marker::Copy for usize}#37
     parent_clause1 = core::num::nonzero::{impl core::num::nonzero::private::Sealed for usize}#25
     parent_clause2 = core::num::nonzero::private::{impl core::marker::Copy for core::num::nonzero::private::NonZeroUsizeInner}#27
     parent_clause3 = core::num::nonzero::private::{impl core::clone::Clone for core::num::nonzero::private::NonZeroUsizeInner}#26

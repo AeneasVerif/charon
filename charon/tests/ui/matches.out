@@ -16,16 +16,8 @@ fn test_crate::test1(@1: test_crate::E1) -> bool
         0 | 1 => {
             @0 := const (true)
         },
-        _ => {
-            match x@1 {
-                2 => {
-                    @0 := const (false)
-                },
-                _ => {
-                    @fake_read(x@1)
-                    undefined_behavior
-                }
-            }
+        2 => {
+            @0 := const (false)
         }
     }
     return
@@ -65,16 +57,8 @@ fn test_crate::test2(@1: test_crate::E2) -> u32
             @0 := copy (n@2)
             drop n@2
         },
-        _ => {
-            match x@1 {
-                2 => {
-                    @0 := const (0 : u32)
-                },
-                _ => {
-                    @fake_read(x@1)
-                    undefined_behavior
-                }
-            }
+        2 => {
+            @0 := const (0 : u32)
         }
     }
     return
@@ -106,16 +90,8 @@ fn test_crate::test3(@1: test_crate::E2) -> u32
             y@3 := copy (n@4)
             drop n@4
         },
-        _ => {
-            match x@1 {
-                2 => {
-                    y@3 := const (0 : u32)
-                },
-                _ => {
-                    @fake_read(x@1)
-                    undefined_behavior
-                }
-            }
+        2 => {
+            y@3 := const (0 : u32)
         }
     }
     @fake_read(y@3)

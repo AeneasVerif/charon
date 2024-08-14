@@ -433,7 +433,6 @@ pub enum TypeDeclKind {
     Alias(Ty),
     /// Used if an error happened during the extraction, and we don't panic
     /// on error.
-    #[charon::opaque]
     Error(String),
 }
 
@@ -631,6 +630,9 @@ pub enum Ty {
     /// - assumed types (includes some primitive types, e.g., arrays or slices)
     /// The information on the nature of the ADT is stored in (`TypeId`)[TypeId].
     /// The last list is used encode const generics, e.g., the size of an array
+    ///
+    /// Note: this is incorrectly named: this can refer to any valid `TypeDecl` including extern
+    /// types.
     Adt(TypeId, GenericArgs),
     #[charon::rename("TVar")]
     TypeVar(TypeVarId),

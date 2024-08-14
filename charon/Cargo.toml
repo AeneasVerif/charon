@@ -1,6 +1,6 @@
 [package]
 name = "charon"
-version = "0.1.24"
+version = "0.1.25"
 authors = ["Son Ho <hosonmarc@gmail.com>"]
 edition = "2021"
 
@@ -70,6 +70,7 @@ tracing = { version = "0.1", features = [ "max_level_trace", "release_max_level_
 which = "6.0.1"
 
 hax-frontend-exporter = { git = "https://github.com/hacspec/hax", branch = "main", optional = true }
+# hax-frontend-exporter = { git = "https://github.com/Nadrieril/hax", branch = "update-rustc", optional = true }
 # hax-frontend-exporter = { path = "../../hax/frontend/exporter", optional = true }
 macros = { path = "./macros" }
 

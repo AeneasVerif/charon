@@ -7,7 +7,6 @@
 #![feature(iter_array_chunks)]
 #![feature(iterator_try_collect)]
 #![feature(let_chains)]
-#![feature(lint_reasons)]
 
 extern crate rustc_ast;
 extern crate rustc_ast_pretty;

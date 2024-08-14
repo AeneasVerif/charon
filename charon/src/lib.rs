@@ -19,7 +19,6 @@
 #![feature(impl_trait_in_assoc_type)]
 #![feature(iterator_try_collect)]
 #![feature(let_chains)]
-#![feature(lint_reasons)]
 #![feature(trait_alias)]
 #![feature(register_tool)]
 // For when we use charon on itself :3

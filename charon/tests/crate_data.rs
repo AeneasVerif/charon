@@ -1,5 +1,4 @@
 #![feature(rustc_private)]
-#![feature(lint_reasons)]
 
 use assert_cmd::prelude::{CommandCargoExt, OutputAssertExt};
 use itertools::Itertools;
