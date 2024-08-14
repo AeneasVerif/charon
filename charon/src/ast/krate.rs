@@ -78,7 +78,7 @@ pub enum AnyTransItem<'ctx> {
 }
 
 /// The data of a translated crate.
-#[derive(Default, Drive, DriveMut)]
+#[derive(Default, Clone, Drive, DriveMut)]
 pub struct TranslatedCrate {
     /// The name of the crate.
     pub crate_name: String,

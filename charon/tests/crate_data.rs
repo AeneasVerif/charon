@@ -53,7 +53,7 @@ fn repr_name(crate_data: &CrateData, n: &Name) -> String {
         .map(|path_elem| match path_elem {
             PathElem::Ident(i, _) => i.clone(),
             PathElem::Impl(elem, _) => match elem {
-                ImplElem::Trait(impl_id) => match crate_data.trait_impls.get(impl_id.index()) {
+                ImplElem::Trait(impl_id) => match crate_data.trait_impls.get(*impl_id) {
                     None => format!("<trait impl#{impl_id}>"),
                     Some(timpl) => {
                         let trait_name = trait_name(crate_data, timpl.impl_trait.trait_id);
@@ -628,7 +628,9 @@ fn declaration_groups() -> Result<(), Box<dyn Error>> {
         "#,
     )?;
 
-    assert_eq!(crate_data.functions.len(), 1);
+    // There are two function ids registered, but only one is nonempty. `functions.len() == 2` as
+    // `len()` counts the empty slots too.
+    assert_eq!(crate_data.functions.iter().count(), 1);
     assert_eq!(crate_data.declarations.len(), 3);
     assert!(crate_data.declarations[0].as_fun().is_non_rec());
     assert!(crate_data.declarations[1].as_trait_decl().is_non_rec());

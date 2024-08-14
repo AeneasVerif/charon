@@ -1,9 +1,7 @@
-use crate::gast::{Body, BodyId, FunDecl, GlobalDecl, TraitDecl, TraitImpl};
+use crate::ast::*;
 use crate::ids::Vector;
-use crate::meta::{FileId, FileName};
 use crate::reorder_decls::DeclarationGroup;
 use crate::transform::TransformCtx;
-use crate::types::*;
 use serde::{Deserialize, Serialize};
 use std::fs::File;
 use std::path::Path;
@@ -23,13 +21,13 @@ pub struct CrateData {
     /// the file names, in order to save space.
     pub id_to_file: Vec<(FileId, FileName)>,
     pub declarations: Vec<DeclarationGroup>,
-    pub types: Vec<TypeDecl>,
-    pub functions: Vec<FunDecl>,
-    pub globals: Vec<GlobalDecl>,
+    pub types: Vector<TypeDeclId, TypeDecl>,
+    pub functions: Vector<FunDeclId, FunDecl>,
+    pub globals: Vector<GlobalDeclId, GlobalDecl>,
     /// This list is indexable by body ids. Some ids may correspond to a `None` entry.
     pub bodies: Vector<BodyId, Body>,
-    pub trait_decls: Vec<TraitDecl>,
-    pub trait_impls: Vec<TraitImpl>,
+    pub trait_decls: Vector<TraitDeclId, TraitDecl>,
+    pub trait_impls: Vector<TraitImplId, TraitImpl>,
     #[serde(skip)]
     /// If there were errors, this contains only a partial description of the input crate.
     pub has_errors: bool,
@@ -38,34 +36,23 @@ pub struct CrateData {
 impl CrateData {
     #[charon::opaque]
     pub fn new(ctx: &TransformCtx) -> Self {
+        let translated = ctx.translated.clone();
         // Transform the map file id -> file into a vector.
         // Sort the vector to make the serialized file as stable as possible.
-        let id_to_file = &ctx.translated.id_to_file;
-        let mut file_ids: Vec<FileId> = id_to_file.keys().copied().collect();
-        file_ids.sort();
-        let id_to_file: Vec<(FileId, FileName)> = file_ids
-            .into_iter()
-            .map(|id| (id, id_to_file.get(&id).unwrap().clone()))
-            .collect();
+        let mut id_to_file: Vec<(FileId, FileName)> = translated.id_to_file.into_iter().collect();
+        id_to_file.sort();
 
-        let declarations = ctx.translated.ordered_decls.clone().unwrap();
-        let types = ctx.translated.type_decls.iter().cloned().collect();
-        let functions = ctx.translated.fun_decls.iter().cloned().collect();
-        let globals = ctx.translated.global_decls.iter().cloned().collect();
-        let bodies = ctx.translated.bodies.clone();
-        let trait_decls = ctx.translated.trait_decls.iter().cloned().collect();
-        let trait_impls = ctx.translated.trait_impls.iter().cloned().collect();
         CrateData {
             charon_version: crate::VERSION.to_owned(),
-            name: ctx.translated.crate_name.clone(),
+            name: translated.crate_name,
             id_to_file,
-            declarations,
-            types,
-            functions,
-            globals,
-            bodies,
-            trait_decls,
-            trait_impls,
+            declarations: translated.ordered_decls.unwrap(),
+            types: translated.type_decls,
+            functions: translated.fun_decls,
+            globals: translated.global_decls,
+            bodies: translated.bodies,
+            trait_decls: translated.trait_decls,
+            trait_impls: translated.trait_impls,
             has_errors: ctx.has_errors(),
         }
     }
