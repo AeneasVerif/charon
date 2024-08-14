@@ -3,7 +3,7 @@ use crate::formatter::{FmtCtx, Formatter, IntoFormatter};
 use crate::ids::Vector;
 use crate::reorder_decls::DeclarationsGroups;
 use derive_visitor::{Drive, DriveMut};
-use linked_hash_set::LinkedHashSet;
+use hashlink::LinkedHashSet;
 use macros::{EnumAsGetters, EnumIsA, VariantIndexArity, VariantName};
 use rustc_span::def_id::DefId;
 use serde::{Deserialize, Serialize};

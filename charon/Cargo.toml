@@ -52,7 +52,6 @@ im = "15.1.0"
 index_vec = { version = "0.1.3", features = ["serde"] }
 itertools = "0.13"
 lazy_static = "1.4.0"
-linked_hash_set = "0.1.4"
 log = "0.4.17"
 petgraph = "0.6.2"
 pretty = "0.12"
