@@ -537,6 +537,9 @@ and type_decl_kind_of_json (id_to_file : id_to_file_map) (js : json) :
     | `Assoc [ ("Alias", alias) ] ->
         let* alias = ty_of_json alias in
         Ok (Alias alias)
+    | `Assoc [ ("Error", error) ] ->
+        let* error = string_of_json error in
+        Ok (Error error)
     | _ -> Error "")
 
 (* This is written by hand because the corresponding rust type does not exist. *)

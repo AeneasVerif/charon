@@ -717,6 +717,10 @@ and type_decl_kind =
       (** An alias to another type. This only shows up in the top-level list of items, as rustc
           inlines uses of type aliases everywhere else.
        *)
+  | Error of string
+      (** Used if an error happened during the extraction, and we don't panic
+          on error.
+       *)
 
 (** A type declaration.
 
