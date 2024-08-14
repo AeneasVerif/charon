@@ -40,16 +40,20 @@ pub fn get_mir_for_def_id_and_level(
         match level {
             MirLevel::Built => {
                 let body = tcx.mir_built(local_def_id);
-                // We clone to be sure there are no problems with locked values
-                body.borrow().clone()
+                if !body.is_stolen() {
+                    return Some(body.borrow().clone());
+                }
             }
             MirLevel::Promoted => {
                 let (body, _) = tcx.mir_promoted(local_def_id);
-                // We clone to be sure there are no problems with locked values
-                body.borrow().clone()
+                if !body.is_stolen() {
+                    return Some(body.borrow().clone());
+                }
             }
-            MirLevel::Optimized => tcx.optimized_mir(def_id).clone(),
+            MirLevel::Optimized => {}
         }
+        // Use the optimized MIR if it was requested or if the requested body was stolen.
+        tcx.optimized_mir(def_id).clone()
     } else {
         // There are only two MIRs we can fetch for non-local bodies: CTFE mir for globals and
         // const fns, and optimized MIR for inlinable functions. The rest don't have MIR in the
