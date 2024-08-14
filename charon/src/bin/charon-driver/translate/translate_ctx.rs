@@ -22,6 +22,9 @@ use std::fmt;
 use std::path::Component;
 use std::sync::Arc;
 
+/// Ignore the builtin/auto traits like [core::marker::Sized] or [core::marker::Sync].
+const IGNORE_BUILTIN_MARKER_TRAITS: bool = true;
+
 // Re-export to avoid having to fix imports.
 pub(crate) use charon_lib::errors::{
     error_assert, error_or_panic, register_error_or_panic, DepSource, ErrorCtx,
@@ -828,6 +831,20 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         *self.register_id(src, id).as_fun()
     }
 
+    /// Check whether the id corresponds to one of the marker traits we want to filter out.
+    fn is_marker_trait(&mut self, def_id: DefId) -> Result<bool, Error> {
+        use rustc_hir::lang_items::LangItem;
+        let tcx = self.tcx;
+        let rust_id = DefId::from(def_id);
+        let name = self.def_id_to_name(def_id)?;
+        Ok(tcx.is_lang_item(rust_id, LangItem::Sized)
+            || tcx.is_lang_item(rust_id, LangItem::Tuple)
+            || tcx.is_lang_item(rust_id, LangItem::Sync)
+            || tcx.is_diagnostic_item(rustc_span::sym::Send, rust_id)
+            || tcx.is_lang_item(rust_id, LangItem::Unpin)
+            || name.equals_ref_name(&["core", "alloc", "Allocator"]))
+    }
+
     /// Returns an [Option] because we may ignore some builtin or auto traits
     /// like [core::marker::Sized] or [core::marker::Sync].
     pub(crate) fn register_trait_decl_id(
@@ -836,8 +853,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         id: DefId,
     ) -> Result<Option<ast::TraitDeclId>, Error> {
         if IGNORE_BUILTIN_MARKER_TRAITS {
-            let name = self.def_id_to_name(id)?;
-            if assumed::is_marker_trait(&name) {
+            if self.is_marker_trait(id)? {
                 return Ok(None);
             }
         }
