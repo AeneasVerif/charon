@@ -124,19 +124,6 @@ fn test_crate::convert(@1: i32) -> i64
     return
 }
 
-struct core::ptr::non_null::NonNull<T> =
-{
-  pointer: *mut T
-}
-
-struct core::marker::PhantomData<T> = {}
-
-struct core::ptr::unique::Unique<T> =
-{
-  pointer: core::ptr::non_null::NonNull<T>,
-  _marker: core::marker::PhantomData<T>
-}
-
 struct alloc::raw_vec::Cap =
 {
   usize
@@ -144,7 +131,7 @@ struct alloc::raw_vec::Cap =
 
 struct alloc::raw_vec::RawVec<T, A> =
 {
-  ptr: core::ptr::unique::Unique<T>,
+  ptr: core::ptr::Unique<T>,
   cap: alloc::raw_vec::Cap,
   alloc: A
 }

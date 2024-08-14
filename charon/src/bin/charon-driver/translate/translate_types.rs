@@ -235,12 +235,14 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 let adt_did: DefId = def_id.into();
                 trace!("Adt: {:?}", adt_did);
 
+                // Retrieve the type identifier
+                let type_id = self.translate_type_id(span, def_id)?;
+
                 // Retrieve the list of used arguments
-                let used_params = if adt_did.is_local() {
-                    None
+                let used_params = if let TypeId::Assumed(assumed_ty) = type_id {
+                    Some(assumed::type_to_used_params(assumed_ty))
                 } else {
-                    let name = self.t_ctx.def_id_to_name(DefId::from(def_id))?;
-                    assumed::type_to_used_params(&name)
+                    None
                 };
 
                 // Translate the type parameters instantiation
@@ -252,11 +254,8 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                     trait_refs,
                 )?;
 
-                // Retrieve the ADT identifier
-                let def_id = self.translate_type_id(span, def_id)?;
-
                 // Return the instantiated ADT
-                Ok(Ty::Adt(def_id, generics))
+                Ok(Ty::Adt(type_id, generics))
             }
             hax::Ty::Str => {
                 trace!("Str");
@@ -490,6 +489,23 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         })
     }
 
+    /// Checks whether the given id corresponds to a built-in type.
+    fn recognize_builtin_type(&mut self, def_id: &hax::DefId) -> Result<Option<AssumedTy>, Error> {
+        use rustc_hir::lang_items::LangItem;
+        let tcx = self.t_ctx.tcx;
+        let rust_id = DefId::from(def_id);
+        let ty = if tcx.is_lang_item(rust_id, LangItem::OwnedBox) {
+            Some(AssumedTy::Box)
+        } else if tcx.is_lang_item(rust_id, LangItem::PtrUnique) {
+            Some(AssumedTy::PtrUnique)
+        } else if tcx.is_diagnostic_item(rustc_span::sym::NonNull, rust_id) {
+            Some(AssumedTy::PtrNonNull)
+        } else {
+            None
+        };
+        Ok(ty)
+    }
+
     /// Translate a type def id
     pub(crate) fn translate_type_id(
         &mut self,
@@ -497,25 +513,14 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         def_id: &hax::DefId,
     ) -> Result<TypeId, Error> {
         trace!("{:?}", def_id);
-        let rust_id: DefId = def_id.into();
-        if rust_id.is_local() {
-            Ok(TypeId::Adt(self.register_type_decl_id(span, rust_id)))
-        } else {
-            // Non-local: check if the type has primitive support
-
-            // Retrieve the type name
-            let name = self.t_ctx.hax_def_id_to_name(def_id)?;
-            match assumed::get_type_id_from_name(&name) {
-                Some(id) => {
-                    // The type has primitive support
-                    Ok(TypeId::Assumed(id))
-                }
-                None => {
-                    // The type is external
-                    Ok(TypeId::Adt(self.register_type_decl_id(span, rust_id)))
-                }
+        let type_id = match self.recognize_builtin_type(def_id)? {
+            Some(id) => TypeId::Assumed(id),
+            None => {
+                let rust_id: DefId = def_id.into();
+                TypeId::Adt(self.register_type_decl_id(span, rust_id))
             }
-        }
+        };
+        Ok(type_id)
     }
 
     /// Translate the body of a type declaration.

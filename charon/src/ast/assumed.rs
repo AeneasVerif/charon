@@ -5,47 +5,13 @@
 //! we ignore the disambiguators (see [crate::names] and [crate::names_utils]).
 // TODO: rename to "primitive"
 
-use crate::names::*;
 use crate::types::*;
 use crate::ullbc_ast;
 use macros::EnumIsA;
 
-/// Ignore the builtin/auto traits like [core::marker::Sized] or [core::marker::Sync].
-pub const IGNORE_BUILTIN_MARKER_TRAITS: bool = true;
-
-// Ignored traits (includes marker traits, and others)
-pub static MARKER_SIZED_NAME: [&str; 3] = ["core", "marker", "Sized"];
-pub static MARKER_TUPLE_NAME: [&str; 3] = ["core", "marker", "Tuple"];
-pub static SYNC_NAME: [&str; 3] = ["core", "marker", "SYNC"];
-pub static SEND_NAME: [&str; 3] = ["core", "marker", "SEND"];
-pub static UNPIN_NAME: [&str; 3] = ["core", "marker", "UNPIN"];
-pub static ALLOC_ALLOCATOR: [&str; 3] = ["core", "alloc", "Allocator"];
-pub static IGNORED_TRAITS_NAMES: [&[&str]; 6] = [
-    &MARKER_SIZED_NAME,
-    &MARKER_TUPLE_NAME,
-    &SYNC_NAME,
-    &SEND_NAME,
-    &UNPIN_NAME,
-    &ALLOC_ALLOCATOR,
-];
-
-// Built-in types
-pub static BOX_NAME: [&str; 3] = ["alloc", "boxed", "Box"];
-
 // Built-in functions
 // We treat this one specially in the `inline_local_panic_functions` pass. See there for details.
 pub static EXPLICIT_PANIC_NAME: &[&str] = &["core", "panicking", "panic_explicit"];
-pub static PANIC_NAMES: &[&[&str]] = &[
-    &["core", "panicking", "panic"],
-    &["core", "panicking", "panic_fmt"],
-    &["std", "panicking", "begin_panic"],
-    &["std", "rt", "begin_panic"],
-    &["core", "panicking", "assert_failed"],
-    EXPLICIT_PANIC_NAME,
-];
-// Pointers
-pub static PTR_UNIQUE_NAME: [&str; 3] = ["core", "ptr", "Unique"];
-pub static PTR_NON_NULL_NAME: [&str; 3] = ["core", "ptr", "NonNull"];
 
 /// We redefine identifiers for assumed functions here, instead of reusing the
 /// identifiers from [ullbc_ast], because:
@@ -77,40 +43,6 @@ impl BuiltinFun {
         }
     }
 
-    /// Parse a name to recognize built-in functions.
-    pub fn parse_name(name: &Name) -> Option<Self> {
-        if PANIC_NAMES.iter().any(|panic| name.equals_ref_name(panic)) {
-            Some(BuiltinFun::Panic)
-        } else if name.equals_ref_name(&["alloc", "alloc", "box_free"]) {
-            Some(BuiltinFun::BoxFree)
-        } else {
-            // Box::new is peculiar because there is an impl block
-            use PathElem::*;
-            match name.name.as_slice() {
-                [Ident(alloc, _), Ident(boxed, _), Impl(ImplElem::Ty(_, Ty::Adt(TypeId::Assumed(AssumedTy::Box), generics)), _), Ident(new, _)]
-                    if alloc == "alloc" && boxed == "boxed" && new == "new" =>
-                {
-                    let GenericArgs {
-                        regions,
-                        types,
-                        const_generics,
-                        trait_refs,
-                    } = generics;
-                    if regions.is_empty()
-                        && matches!(types.as_slice(), [Ty::TypeVar(_)])
-                        && const_generics.is_empty()
-                        && trait_refs.is_empty()
-                    {
-                        Some(BuiltinFun::BoxNew)
-                    } else {
-                        None
-                    }
-                }
-                _ => None,
-            }
-        }
-    }
-
     /// See the comments for [type_to_used_params]
     pub fn to_fun_info(self) -> Option<FunInfo> {
         match self {
@@ -124,60 +56,33 @@ impl BuiltinFun {
     }
 }
 
-pub fn is_marker_trait(name: &Name) -> bool {
-    for n in IGNORED_TRAITS_NAMES {
-        if name.equals_ref_name(n) {
-            return true;
-        }
-    }
-    false
-}
-
-pub fn get_type_id_from_name(name: &Name) -> Option<AssumedTy> {
-    if name.equals_ref_name(&BOX_NAME) {
-        Some(AssumedTy::Box)
-    } else if name.equals_ref_name(&PTR_UNIQUE_NAME) {
-        Some(AssumedTy::PtrUnique)
-    } else if name.equals_ref_name(&PTR_NON_NULL_NAME) {
-        Some(AssumedTy::PtrNonNull)
-    } else {
-        None
-    }
-}
-
 pub fn get_name_from_type_id(id: AssumedTy) -> Vec<String> {
-    match id {
-        AssumedTy::Box => BOX_NAME.iter().map(|s| s.to_string()).collect(),
-        AssumedTy::PtrUnique => PTR_UNIQUE_NAME.iter().map(|s| s.to_string()).collect(),
-        AssumedTy::PtrNonNull => PTR_NON_NULL_NAME.iter().map(|s| s.to_string()).collect(),
-        AssumedTy::Str => vec!["Str".to_string()],
-        AssumedTy::Array => vec!["Array".to_string()],
-        AssumedTy::Slice => vec!["Slice".to_string()],
-    }
+    let name: &[_] = match id {
+        AssumedTy::Box => &["alloc", "boxed", "Box"],
+        AssumedTy::PtrUnique => &["core", "ptr", "Unique"],
+        AssumedTy::PtrNonNull => &["core", "ptr", "NonNull"],
+        AssumedTy::Str => &["Str"],
+        AssumedTy::Array => &["Array"],
+        AssumedTy::Slice => &["Slice"],
+    };
+    name.iter().map(|s| s.to_string()).collect()
 }
 
 /// When translating from MIR to ULLBC, we ignore some type parameters for some
 /// assumed types.
 /// For instance, many types like box or vec are parameterized (in MIR) by an allocator
 /// (`std::alloc::Allocator`): we ignore it.
-pub fn type_to_used_params(name: &Name) -> Option<Vec<bool>> {
-    trace!("{:?}", name);
-    match get_type_id_from_name(name) {
-        None => None,
-        Some(id) => {
-            let id = match id {
-                AssumedTy::Box => {
-                    vec![true, false]
-                }
-                AssumedTy::PtrUnique | AssumedTy::PtrNonNull => {
-                    vec![true]
-                }
-                AssumedTy::Str => {
-                    vec![]
-                }
-                AssumedTy::Array | AssumedTy::Slice => vec![true],
-            };
-            Some(id)
+pub fn type_to_used_params(id: AssumedTy) -> Vec<bool> {
+    match id {
+        AssumedTy::Box => {
+            vec![true, false]
         }
+        AssumedTy::PtrUnique | AssumedTy::PtrNonNull => {
+            vec![true]
+        }
+        AssumedTy::Str => {
+            vec![]
+        }
+        AssumedTy::Array | AssumedTy::Slice => vec![true],
     }
 }

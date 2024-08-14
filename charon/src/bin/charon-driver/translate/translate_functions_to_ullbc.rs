@@ -786,6 +786,31 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         }
     }
 
+    /// Checks whether the given id corresponds to a built-in function.
+    fn recognize_builtin_fun(&mut self, def_id: &hax::DefId) -> Result<Option<BuiltinFun>, Error> {
+        use rustc_hir::lang_items::LangItem;
+        let tcx = self.t_ctx.tcx;
+        let rust_id = DefId::from(def_id);
+        let name = self.t_ctx.hax_def_id_to_name(def_id)?;
+
+        let panic_lang_items = &[LangItem::Panic, LangItem::PanicFmt, LangItem::BeginPanic];
+        let panic_names = &[&["core", "panicking", "assert_failed"], EXPLICIT_PANIC_NAME];
+        if tcx.is_diagnostic_item(rustc_span::sym::box_new, rust_id) {
+            Ok(Some(BuiltinFun::BoxNew))
+        } else if panic_lang_items
+            .iter()
+            .any(|i| tcx.is_lang_item(rust_id, *i))
+            || panic_names.iter().any(|panic| name.equals_ref_name(panic))
+        {
+            Ok(Some(BuiltinFun::Panic))
+        } else if name.equals_ref_name(&["alloc", "alloc", "box_free"]) {
+            // TODO: check if this is still something that happens
+            Ok(Some(BuiltinFun::BoxFree))
+        } else {
+            Ok(None)
+        }
+    }
+
     /// Auxiliary function to translate function calls and references to functions.
     /// Translate a function id applied with some substitutions and some optional
     /// arguments.
@@ -811,7 +836,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         let name = self.t_ctx.hax_def_id_to_name(def_id)?;
         let is_local = rust_id.is_local();
 
-        let builtin_fun = BuiltinFun::parse_name(&name);
+        let builtin_fun = self.recognize_builtin_fun(def_id)?;
         if matches!(builtin_fun, Some(BuiltinFun::Panic)) {
             return Ok(SubstFunIdOrPanic::Panic(name));
         }
