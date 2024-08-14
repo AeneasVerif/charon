@@ -10,6 +10,7 @@ use serde::{Deserialize, Serialize};
 use std::cmp::{Ord, PartialOrd};
 use std::collections::HashMap;
 use std::fmt;
+use std::ops::{Index, IndexMut};
 
 /// The id of a translated item.
 #[derive(
@@ -232,3 +233,26 @@ impl<'tcx, 'ctx, 'a> IntoFormatter for &'a TranslatedCrate {
         }
     }
 }
+
+/// Delegate `Index` implementations to subfields.
+macro_rules! mk_index_impls {
+    ($ty:ident.$field:ident[$idx:ty]: $output:ty) => {
+        impl Index<$idx> for $ty {
+            type Output = $output;
+            fn index(&self, index: $idx) -> &Self::Output {
+                &self.$field[index]
+            }
+        }
+        impl IndexMut<$idx> for $ty {
+            fn index_mut(&mut self, index: $idx) -> &mut Self::Output {
+                &mut self.$field[index]
+            }
+        }
+    };
+}
+mk_index_impls!(TranslatedCrate.type_decls[TypeDeclId]: TypeDecl);
+mk_index_impls!(TranslatedCrate.fun_decls[FunDeclId]: FunDecl);
+mk_index_impls!(TranslatedCrate.global_decls[GlobalDeclId]: GlobalDecl);
+mk_index_impls!(TranslatedCrate.bodies[BodyId]: Body);
+mk_index_impls!(TranslatedCrate.trait_decls[TraitDeclId]: TraitDecl);
+mk_index_impls!(TranslatedCrate.trait_impls[TraitImplId]: TraitImpl);

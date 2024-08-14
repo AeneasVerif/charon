@@ -113,7 +113,7 @@ fn type_to_ocaml_call(ctx: &GenerateCtx, ty: &Ty) -> String {
             let mut types = generics.types.as_slice();
             match adt_kind {
                 TypeId::Adt(id) => {
-                    let adt: &TypeDecl = &ctx.crate_data.type_decls[*id];
+                    let adt: &TypeDecl = &ctx.crate_data[*id];
                     let mut first = type_name_to_ocaml_ident(&adt.item_meta);
                     if first == "vec" {
                         first = "list".to_string();
@@ -172,7 +172,7 @@ fn type_to_ocaml_name(ctx: &GenerateCtx, ty: &Ty) -> String {
                 .collect_vec();
             match adt_kind {
                 TypeId::Adt(id) => {
-                    let adt: &TypeDecl = &ctx.crate_data.type_decls[*id];
+                    let adt: &TypeDecl = &ctx.crate_data[*id];
                     let mut base_ty = type_name_to_ocaml_ident(&adt.item_meta);
                     if base_ty == "vec" {
                         base_ty = "list".to_string();
