@@ -59,8 +59,6 @@ impl BuiltinFun {
 pub fn get_name_from_type_id(id: AssumedTy) -> Vec<String> {
     let name: &[_] = match id {
         AssumedTy::Box => &["alloc", "boxed", "Box"],
-        AssumedTy::PtrUnique => &["core", "ptr", "Unique"],
-        AssumedTy::PtrNonNull => &["core", "ptr", "NonNull"],
         AssumedTy::Str => &["Str"],
         AssumedTy::Array => &["Array"],
         AssumedTy::Slice => &["Slice"],
@@ -76,9 +74,6 @@ pub fn type_to_used_params(id: AssumedTy) -> Vec<bool> {
     match id {
         AssumedTy::Box => {
             vec![true, false]
-        }
-        AssumedTy::PtrUnique | AssumedTy::PtrNonNull => {
-            vec![true]
         }
         AssumedTy::Str => {
             vec![]

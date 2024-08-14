@@ -294,7 +294,7 @@ class virtual ['self] map_ty_base =
     TODO: move to assumed.rs?
  *)
 type assumed_ty =
-  | TBox  (** Boxes have a special treatment: we translate them as identity. *)
+  | TBox  (** Boxes are de facto a primitive type. *)
   | TArray  (** Primitive type *)
   | TSlice  (** Primitive type *)
   | TStr  (** Primitive type *)

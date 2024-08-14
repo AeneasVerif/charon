@@ -496,10 +496,6 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         let rust_id = DefId::from(def_id);
         let ty = if tcx.is_lang_item(rust_id, LangItem::OwnedBox) {
             Some(AssumedTy::Box)
-        } else if tcx.is_lang_item(rust_id, LangItem::PtrUnique) {
-            Some(AssumedTy::PtrUnique)
-        } else if tcx.is_diagnostic_item(rustc_span::sym::NonNull, rust_id) {
-            Some(AssumedTy::PtrNonNull)
         } else {
             None
         };

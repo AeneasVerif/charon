@@ -710,15 +710,8 @@ pub enum Ty {
 )]
 #[charon::variants_prefix("T")]
 pub enum AssumedTy {
-    /// Boxes have a special treatment: we translate them as identity.
+    /// Boxes are de facto a primitive type.
     Box,
-    /// Comes from the standard library. See the comments for [Ty::RawPtr]
-    /// as to why we have this here.
-    #[charon::opaque]
-    PtrUnique,
-    /// Same comments as for [AssumedTy::PtrUnique]
-    #[charon::opaque]
-    PtrNonNull,
     /// Primitive type
     Array,
     /// Primitive type
