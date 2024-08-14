@@ -16,10 +16,9 @@ pub struct CrateData {
     pub charon_version: String,
     /// Crate name.
     pub name: String,
-    /// The `id_to_file` map is serialized as a vector.
-    /// We use this map for the spans: the spans only store the file ids, not
-    /// the file names, in order to save space.
-    pub id_to_file: Vec<(FileId, FileName)>,
+    /// We use this map for the spans: the spans only store the file ids, not the file names, in
+    /// order to save space.
+    pub id_to_file: Vector<FileId, FileName>,
     pub declarations: Vec<DeclarationGroup>,
     pub types: Vector<TypeDeclId, TypeDecl>,
     pub functions: Vector<FunDeclId, FunDecl>,
@@ -37,15 +36,10 @@ impl CrateData {
     #[charon::opaque]
     pub fn new(ctx: &TransformCtx) -> Self {
         let translated = ctx.translated.clone();
-        // Transform the map file id -> file into a vector.
-        // Sort the vector to make the serialized file as stable as possible.
-        let mut id_to_file: Vec<(FileId, FileName)> = translated.id_to_file.into_iter().collect();
-        id_to_file.sort();
-
         CrateData {
             charon_version: crate::VERSION.to_owned(),
             name: translated.crate_name,
-            id_to_file,
+            id_to_file: translated.id_to_file,
             declarations: translated.ordered_decls.unwrap(),
             types: translated.type_decls,
             functions: translated.fun_decls,

@@ -181,11 +181,7 @@ fn file_name() -> Result<(), Box<dyn Error>> {
         "core::option::Option"
     );
     let file_id = crate_data.types[1].item_meta.span.span.file_id;
-    let (_, file) = crate_data
-        .id_to_file
-        .iter()
-        .find(|(i, _)| *i == file_id)
-        .unwrap();
+    let file = &crate_data.id_to_file[file_id];
     let FileName::Virtual(file) = file else {
         panic!()
     };

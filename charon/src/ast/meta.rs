@@ -7,29 +7,7 @@ use macros::{EnumAsGetters, EnumIsA, EnumToGetters};
 use serde::{Deserialize, Serialize};
 use std::path::PathBuf;
 
-generate_index_type!(LocalFileId);
-generate_index_type!(VirtualFileId);
-
-#[derive(
-    Debug,
-    Clone,
-    Copy,
-    Hash,
-    PartialEq,
-    Eq,
-    PartialOrd,
-    Ord,
-    EnumIsA,
-    EnumAsGetters,
-    Serialize,
-    Deserialize,
-    Drive,
-    DriveMut,
-)]
-pub enum FileId {
-    LocalId(LocalFileId),
-    VirtualId(VirtualFileId),
-}
+generate_index_type!(FileId);
 
 #[derive(Debug, Copy, Clone, Serialize, Deserialize, Drive, DriveMut)]
 pub struct Loc {

@@ -25,33 +25,16 @@ open Types
 open Scalars
 open Expressions
 open GAst
-module LocalFileId = IdGen ()
-module VirtualFileId = IdGen ()
+module FileId = IdGen ()
 
 (** The default logger *)
 let log = Logging.llbc_of_json_logger
 
 (** A file identifier *)
-type file_id = LocalId of LocalFileId.id | VirtualId of VirtualFileId.id
+type file_id = FileId.id
 [@@deriving show, ord]
 
-module OrderedIdToFile : Collections.OrderedType with type t = file_id = struct
-  type t = file_id
-
-  let compare fid0 fid1 = compare_file_id fid0 fid1
-
-  let to_string id =
-    match id with
-    | LocalId id -> "Local " ^ LocalFileId.to_string id
-    | VirtualId id -> "Virtual " ^ VirtualFileId.to_string id
-
-  let pp_t fmt x = Format.pp_print_string fmt (to_string x)
-  let show_t x = to_string x
-end
-
-module IdToFile = Collections.MakeMap (OrderedIdToFile)
-
-type id_to_file_map = file_name IdToFile.t
+type id_to_file_map = file_name FileId.Map.t
 
 let de_bruijn_id_of_json = int_of_json
 let path_buf_of_json = string_of_json
@@ -63,7 +46,7 @@ let disambiguator_of_json = Disambiguator.id_of_json
 let field_id_of_json = FieldId.id_of_json
 let fun_decl_id_of_json = FunDeclId.id_of_json
 let global_decl_id_of_json = GlobalDeclId.id_of_json
-let local_file_id_of_json = LocalFileId.id_of_json
+let file_id_of_json = FileId.id_of_json
 let region_id_of_json = RegionVarId.id_of_json
 let trait_clause_id_of_json = TraitClauseId.id_of_json
 let trait_decl_id_of_json = TraitDeclId.id_of_json
@@ -72,7 +55,6 @@ let type_decl_id_of_json = TypeDeclId.id_of_json
 let type_var_id_of_json = TypeVarId.id_of_json
 let variant_id_of_json = VariantId.id_of_json
 let var_id_of_json = VarId.id_of_json
-let virtual_file_id_of_json = VirtualFileId.id_of_json
 
 (* Start of the `and` chain *)
 let __ = ()
@@ -90,10 +72,14 @@ let id_to_file_of_json (js : json) : (id_to_file_map, string) result =
   combine_error_msgs js __FUNCTION__
     ((* The map is stored as a list of pairs (key, value): we deserialize
       * this list then convert it to a map *)
-     let* key_values =
-       list_of_json (pair_of_json file_id_of_json file_name_of_json) js
+     let* file_names = list_of_json (option_of_json file_name_of_json) js in
+     let names_with_ids =
+       List.filter_map
+         (fun (i, name) ->
+           match name with None -> None | Some name -> Some (i, name))
+         (List.mapi (fun i name -> (FileId.of_int i, name)) file_names)
      in
-     Ok (IdToFile.of_list key_values))
+     Ok (FileId.Map.of_list names_with_ids))
 
 (* __REPLACE2__ *)
 
@@ -104,7 +90,7 @@ let rec raw_span_of_json (id_to_file : id_to_file_map) (js : json) :
     (match js with
     | `Assoc [ ("file_id", file_id); ("beg", beg_loc); ("end", end_loc) ] ->
         let* file_id = file_id_of_json file_id in
-        let file = IdToFile.find file_id id_to_file in
+        let file = FileId.Map.find file_id id_to_file in
         let* beg_loc = loc_of_json beg_loc in
         let* end_loc = loc_of_json end_loc in
         Ok { file; beg_loc; end_loc }

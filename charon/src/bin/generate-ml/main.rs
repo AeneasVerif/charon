@@ -729,7 +729,7 @@ fn main() -> Result<()> {
                     "TypeDeclKind",
                 ]),
                 (GenerationKind::OfJson, &["Loc"]),
-                (GenerationKind::OfJson, &["FileId", "FileName"]),
+                (GenerationKind::OfJson, &["FileName"]),
                 (GenerationKind::OfJson, &[
                     "TraitClause",
                     "OutlivesPred",

@@ -1,6 +1,6 @@
 use crate::ast::*;
 use crate::formatter::{FmtCtx, Formatter, IntoFormatter};
-use crate::ids::{Generator, Vector};
+use crate::ids::Vector;
 use crate::reorder_decls::DeclarationsGroups;
 use derive_visitor::{Drive, DriveMut};
 use linked_hash_set::LinkedHashSet;
@@ -85,13 +85,9 @@ pub struct TranslatedCrate {
 
     /// File names to ids and vice-versa
     #[drive(skip)]
+    pub id_to_file: Vector<FileId, FileName>,
+    #[drive(skip)]
     pub file_to_id: HashMap<FileName, FileId>,
-    #[drive(skip)]
-    pub id_to_file: HashMap<FileId, FileName>,
-    #[drive(skip)]
-    pub real_file_counter: Generator<LocalFileId>,
-    #[drive(skip)]
-    pub virtual_file_counter: Generator<VirtualFileId>,
 
     /// All the ids, in the order in which we encountered them
     #[drive(skip)]
