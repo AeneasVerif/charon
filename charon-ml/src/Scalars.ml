@@ -38,21 +38,39 @@ let isize_max = i64_max
 let usize_min = u64_min
 let usize_max = u64_max
 
+let scalar_min (int_ty : integer_type) : big_int =
+  match int_ty with
+  | Isize -> isize_min
+  | I8 -> i8_min
+  | I16 -> i16_min
+  | I32 -> i32_min
+  | I64 -> i64_min
+  | I128 -> i128_min
+  | Usize -> usize_min
+  | U8 -> u8_min
+  | U16 -> u16_min
+  | U32 -> u32_min
+  | U64 -> u64_min
+  | U128 -> u128_min
+
+let scalar_max (int_ty : integer_type) : big_int =
+  match int_ty with
+  | Isize -> isize_max
+  | I8 -> i8_max
+  | I16 -> i16_max
+  | I32 -> i32_max
+  | I64 -> i64_max
+  | I128 -> i128_max
+  | Usize -> usize_max
+  | U8 -> u8_max
+  | U16 -> u16_max
+  | U32 -> u32_max
+  | U64 -> u64_max
+  | U128 -> u128_max
+
 (** Check that an integer value is in range *)
 let check_int_in_range (int_ty : integer_type) (i : big_int) : bool =
-  match int_ty with
-  | Isize -> Z.leq isize_min i && Z.leq i isize_max
-  | I8 -> Z.leq i8_min i && Z.leq i i8_max
-  | I16 -> Z.leq i16_min i && Z.leq i i16_max
-  | I32 -> Z.leq i32_min i && Z.leq i i32_max
-  | I64 -> Z.leq i64_min i && Z.leq i i64_max
-  | I128 -> Z.leq i128_min i && Z.leq i i128_max
-  | Usize -> Z.leq usize_min i && Z.leq i usize_max
-  | U8 -> Z.leq u8_min i && Z.leq i u8_max
-  | U16 -> Z.leq u16_min i && Z.leq i u16_max
-  | U32 -> Z.leq u32_min i && Z.leq i u32_max
-  | U64 -> Z.leq u64_min i && Z.leq i u64_max
-  | U128 -> Z.leq u128_min i && Z.leq i u128_max
+  Z.leq (scalar_min int_ty) i && Z.leq i (scalar_max int_ty)
 
 (** Check that a scalar value is correct (the integer value it contains is in range) *)
 let check_scalar_value_in_range (v : scalar_value) : bool =
