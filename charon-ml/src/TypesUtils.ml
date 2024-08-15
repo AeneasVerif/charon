@@ -79,6 +79,11 @@ let ty_as_custom_adt (ty : ty) : TypeDeclId.id * generic_args =
 let ty_as_literal (ty : ty) : literal_type =
   match ty with TLiteral lty -> lty | _ -> raise (Failure "Unreachable")
 
+let ty_as_integer (ty : ty) : integer_type =
+  match ty_as_literal ty with
+  | TInteger ty -> ty
+  | _ -> raise (Failure "Unreachable")
+
 let const_generic_as_literal (cg : const_generic) : Values.literal =
   match cg with CgValue v -> v | _ -> raise (Failure "Unreachable")
 
