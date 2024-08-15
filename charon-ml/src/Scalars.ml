@@ -80,3 +80,8 @@ let check_scalar_value_in_range (v : scalar_value) : bool =
 let mk_scalar (int_ty : integer_type) (i : big_int) :
     (scalar_value, unit) result =
   if check_int_in_range int_ty i then Ok { value = i; int_ty } else Error ()
+
+let integer_type_is_signed (int_ty : integer_type) : bool =
+  match int_ty with
+  | Isize | I8 | I16 | I32 | I64 | I128 -> true
+  | Usize | U8 | U16 | U32 | U64 | U128 -> false
