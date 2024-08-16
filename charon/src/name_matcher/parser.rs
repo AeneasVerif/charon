@@ -12,7 +12,8 @@ use nom::{
 };
 use nom_supreme::{error::ErrorTree, ParserExt};
 
-use super::{PatElem, Pattern};
+use super::{PatElem, PatTy, Pattern};
+use crate::ast::RefKind;
 
 type ParseResult<'a, T> = nom::IResult<&'a str, T, ErrorTree<&'a str>>;
 
@@ -67,7 +68,7 @@ fn parse_simple_elem(i: &str) -> ParseResult<'_, PatElem> {
             tag("<").followed_by(multispace0),
             separated_list0(
                 tag(",").followed_by(multispace0),
-                parse_pattern.followed_by(multispace0),
+                parse_pat_ty.followed_by(multispace0),
             ),
             tag(">"),
         );
@@ -84,7 +85,7 @@ fn parse_simple_elem(i: &str) -> ParseResult<'_, PatElem> {
 fn parse_impl_elem(i: &str) -> ParseResult<'_, PatElem> {
     let for_ty = preceded(
         tag("for").followed_by(multispace1),
-        parse_pattern.followed_by(multispace0),
+        parse_pat_ty.followed_by(multispace0),
     );
     let impl_contents = parse_pattern.followed_by(multispace0).and(for_ty.opt());
     let impl_expr = tag("{").followed_by(multispace0).precedes(
@@ -147,6 +148,32 @@ impl fmt::Display for PatElem {
     }
 }
 
+fn parse_pat_ty(i: &str) -> ParseResult<'_, PatTy> {
+    let mutability = tag("mut").followed_by(multispace0).opt().map(|mtbl| {
+        if mtbl.is_some() {
+            RefKind::Mut
+        } else {
+            RefKind::Shared
+        }
+    });
+    tag("&")
+        .followed_by(multispace0)
+        .precedes(mutability.and(parse_pat_ty))
+        .map(|(mtbl, ty)| PatTy::Ref(mtbl, ty.into()))
+        .or(parse_pattern.map(PatTy::Pat))
+        .parse(i)
+}
+
+impl fmt::Display for PatTy {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            PatTy::Pat(p) => write!(f, "{p}"),
+            PatTy::Ref(RefKind::Shared, ty) => write!(f, "&{ty}"),
+            PatTy::Ref(RefKind::Mut, ty) => write!(f, "&mut {ty}"),
+        }
+    }
+}
+
 #[test]
 fn test_roundtrip() {
     let idempotent_test_strings = [
@@ -158,8 +185,9 @@ fn test_roundtrip() {
         "Clone",
         "usize",
         "foo::{impl Clone for usize}::clone",
-        "foo::{impl PartialEq<_> for Type<_, _>}::clone",
-        "foo::{impl PartialEq<usize> for Box<u8>}::clone",
+        "foo::{impl Clone for &&usize}",
+        "foo::{impl PartialEq<_> for Type<_, _>}",
+        "foo::{impl PartialEq<usize> for Box<u8>}",
         "foo::{impl foo::Trait<core::option::Option<_>> for alloc::boxed::Box<_>}::method",
     ];
     let other_test_strings = [
@@ -173,6 +201,7 @@ fn test_roundtrip() {
         "{impl Clone forusize}",
         "foo::{impl  for alloc::boxed::Box<_>}::method",
         "foo::{impl foo::_ for alloc::boxed::Box<_>}::method",
+        "foo::{impl &Clone for usize}",
     ];
 
     let test_strings = idempotent_test_strings

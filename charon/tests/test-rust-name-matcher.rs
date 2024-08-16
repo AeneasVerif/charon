@@ -81,6 +81,16 @@ fn test_name_matcher() -> anyhow::Result<()> {
             #[pattern::fail("test_crate::Trait<_>::method")]
             fn method<U>() {}
         }
+
+        #[pattern::pass("test_crate::{impl test_crate::Trait<_> for Slice<_>}")]
+        impl<T> Trait<T> for [T] {
+            fn method<U>() {}
+        }
+
+        #[pattern::pass("test_crate::{impl test_crate::Trait<_> for &Slice<_>}")]
+        impl<T> Trait<T> for &[T] {
+            fn method<U>() {}
+        }
         "#,
     )?;
     let fmt_ctx = &crate_data.into_fmt();

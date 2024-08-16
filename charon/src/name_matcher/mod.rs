@@ -14,7 +14,7 @@ enum PatElem {
     /// An identifier, optionally with generic arguments. E.g. `std` or `Box<_>`.
     Ident {
         name: String,
-        generics: Vec<Pattern>,
+        generics: Vec<PatTy>,
         /// For pretty-printing only: whether this is the name of a trait.
         is_trait: bool,
     },
@@ -23,6 +23,14 @@ enum PatElem {
     Impl(Box<Pattern>),
     /// A `*` or `_`.
     Glob,
+}
+
+#[derive(Clone)]
+enum PatTy {
+    /// A path, like `my_crate::foo::Type<_, usize>`
+    Pat(Pattern),
+    /// `&T`, `&mut T`
+    Ref(RefKind, Box<Self>),
 }
 
 impl Pattern {
@@ -60,25 +68,6 @@ impl Pattern {
         }
         // Both had the same length and all the elements matched.
         true
-    }
-
-    pub fn matches_generics(ctx: &TranslatedCrate, pats: &[Self], generics: &GenericArgs) -> bool {
-        // We don't include regions in patterns.
-        if pats.len() != generics.types.len() + generics.const_generics.len() {
-            return false;
-        }
-        let (type_pats, const_pats) = pats.split_at(generics.types.len());
-        let types_match = generics
-            .types
-            .iter()
-            .zip(type_pats)
-            .all(|(ty, pat)| pat.matches_ty(ctx, ty));
-        let consts_match = generics
-            .const_generics
-            .iter()
-            .zip(const_pats)
-            .all(|(c, pat)| pat.matches_const(ctx, c));
-        types_match && consts_match
     }
 
     pub fn matches_ty(&self, ctx: &TranslatedCrate, ty: &Ty) -> bool {
@@ -132,7 +121,7 @@ impl PatElem {
                     ..
                 },
                 PathElem::Ident(ident, _),
-            ) => pat_ident == ident && Pattern::matches_generics(ctx, generics, args),
+            ) => pat_ident == ident && PatTy::matches_generics(ctx, generics, args),
             (PatElem::Impl(_pat), PathElem::Impl(ImplElem::Ty(_, _ty), _)) => {
                 todo!()
             }
@@ -146,6 +135,44 @@ impl PatElem {
                 pat.matches_with_generics(ctx, &tdecl.item_meta.name, &timpl.impl_trait.generics)
             }
             _ => false,
+        }
+    }
+}
+
+impl PatTy {
+    pub fn matches_generics(ctx: &TranslatedCrate, pats: &[Self], generics: &GenericArgs) -> bool {
+        // We don't include regions in patterns.
+        if pats.len() != generics.types.len() + generics.const_generics.len() {
+            return false;
+        }
+        let (type_pats, const_pats) = pats.split_at(generics.types.len());
+        let types_match = generics
+            .types
+            .iter()
+            .zip(type_pats)
+            .all(|(ty, pat)| pat.matches_ty(ctx, ty));
+        let consts_match = generics
+            .const_generics
+            .iter()
+            .zip(const_pats)
+            .all(|(c, pat)| pat.matches_const(ctx, c));
+        types_match && consts_match
+    }
+
+    pub fn matches_ty(&self, ctx: &TranslatedCrate, ty: &Ty) -> bool {
+        match (self, ty) {
+            (PatTy::Pat(p), _) => p.matches_ty(ctx, ty),
+            (PatTy::Ref(pat_mtbl, p_ty), Ty::Ref(_, ty, ty_mtbl)) => {
+                pat_mtbl == ty_mtbl && p_ty.matches_ty(ctx, ty)
+            }
+            _ => false,
+        }
+    }
+
+    pub fn matches_const(&self, ctx: &TranslatedCrate, c: &ConstGeneric) -> bool {
+        match self {
+            PatTy::Pat(p) => p.matches_const(ctx, c),
+            PatTy::Ref(..) => false,
         }
     }
 }
