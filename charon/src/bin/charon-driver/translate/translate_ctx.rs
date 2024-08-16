@@ -4,7 +4,6 @@ use charon_lib::ast::*;
 use charon_lib::common::*;
 use charon_lib::formatter::{FmtCtx, IntoFormatter};
 use charon_lib::ids::{MapGenerator, Vector};
-use charon_lib::options::TransOptions;
 use charon_lib::ullbc_ast as ast;
 use hax_frontend_exporter as hax;
 use hax_frontend_exporter::SInto;
@@ -17,6 +16,7 @@ use rustc_hir::Node as HirNode;
 use rustc_middle::ty::TyCtxt;
 use std::cmp::{Ord, PartialOrd};
 use std::collections::HashMap;
+use std::collections::HashSet;
 use std::collections::{BTreeMap, VecDeque};
 use std::fmt;
 use std::path::Component;
@@ -29,6 +29,29 @@ const IGNORE_BUILTIN_MARKER_TRAITS: bool = true;
 pub(crate) use charon_lib::errors::{
     error_assert, error_or_panic, register_error_or_panic, DepSource, ErrorCtx,
 };
+
+/// TODO: maybe we should always target MIR Built, this would make things
+/// simpler. In particular, the MIR optimized is very low level and
+/// reveals too many types and data-structures that we don't want to manipulate.
+#[derive(Clone, Copy, PartialEq, Eq)]
+pub enum MirLevel {
+    /// Original MIR, directly translated from HIR.
+    Built,
+    /// Not sure what this is. Not well tested.
+    Promoted,
+    /// MIR after optimization passes. The last one before codegen.
+    Optimized,
+}
+
+/// The options that control translation.
+pub struct TranslateOptions {
+    /// The level at which to extract the MIR
+    pub mir_level: MirLevel,
+    /// Whether to extract the bodies of foreign methods and structs with private fields.
+    pub extract_opaque_bodies: bool,
+    /// Modules to consider opaque.
+    pub opaque_mods: HashSet<String>,
+}
 
 /// We use a special type to store the Rust identifiers in the stack, to
 /// make sure we translate them in a specific order (top-level constants
@@ -86,7 +109,7 @@ pub struct TranslateCtx<'tcx, 'ctx> {
     pub hax_state: hax::State<hax::Base<'tcx>, (), (), ()>,
 
     /// The options that control translation.
-    pub options: TransOptions,
+    pub options: TranslateOptions,
     /// The translated data.
     pub translated: TranslatedCrate,
 

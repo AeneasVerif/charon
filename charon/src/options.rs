@@ -2,7 +2,7 @@
 use clap::Parser;
 /// The options received as input by cargo-charon
 use serde::{Deserialize, Serialize};
-use std::{collections::HashSet, path::PathBuf};
+use std::path::PathBuf;
 
 /// The name of the environment variable we use to save the serialized Cli options
 /// when calling charon-driver from cargo-charon.
@@ -198,31 +198,4 @@ impl CliOpts {
             "Can't use --abort-on-error and --errors-as-warnings at the same time"
         );
     }
-}
-
-/// TODO: maybe we should always target MIR Built, this would make things
-/// simpler. In particular, the MIR optimized is very low level and
-/// reveals too many types and data-structures that we don't want to manipulate.
-#[derive(Clone, Copy, PartialEq, Eq)]
-pub enum MirLevel {
-    /// Original MIR, directly translated from HIR.
-    Built,
-    /// Not sure what this is. Not well tested.
-    Promoted,
-    /// MIR after optimization passes. The last one before codegen.
-    Optimized,
-}
-
-/// The options that control translation.
-pub struct TransOptions {
-    /// The level at which to extract the MIR
-    pub mir_level: MirLevel,
-    /// Error out if some code ends up being duplicated by the control-flow
-    /// reconstruction (note that because several patterns in a match may lead
-    /// to the same branch, it is node always possible not to duplicate code).
-    pub no_code_duplication: bool,
-    /// Whether to extract the bodies of foreign methods and structs with private fields.
-    pub extract_opaque_bodies: bool,
-    /// Modules to consider opaque.
-    pub opaque_mods: HashSet<String>,
 }

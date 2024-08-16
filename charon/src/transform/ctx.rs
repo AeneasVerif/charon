@@ -3,18 +3,25 @@ use crate::errors::ErrorCtx;
 use crate::formatter::{FmtCtx, IntoFormatter};
 use crate::ids::Vector;
 use crate::llbc_ast;
-use crate::options::TransOptions;
 use crate::pretty::FmtWithCtx;
 use crate::ullbc_ast;
 use rustc_error_messages::MultiSpan;
 use rustc_span::def_id::DefId;
 use std::fmt;
 
+/// The options that control transformation.
+pub struct TransformOptions {
+    /// Error out if some code ends up being duplicated by the control-flow
+    /// reconstruction (note that because several patterns in a match may lead
+    /// to the same branch, it is node always possible not to duplicate code).
+    pub no_code_duplication: bool,
+}
+
 /// Simpler context used for rustc-independent code transformation. This only depends on rustc for
 /// its error reporting machinery.
 pub struct TransformCtx<'ctx> {
-    /// The options that control translation.
-    pub options: TransOptions,
+    /// The options that control transformation.
+    pub options: TransformOptions,
     /// The translated data.
     pub translated: TranslatedCrate,
     /// Context for tracking and reporting errors.

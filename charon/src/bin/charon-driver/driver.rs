@@ -1,7 +1,7 @@
 use crate::translate::translate_crate_to_ullbc;
+use crate::translate::translate_ctx::MirLevel;
 use charon_lib::export;
 use charon_lib::options;
-use charon_lib::options::MirLevel;
 use charon_lib::reorder_decls::compute_reordered_decls;
 use charon_lib::transform::{LLBC_PASSES, ULLBC_PASSES};
 use charon_lib::ullbc_to_llbc;
