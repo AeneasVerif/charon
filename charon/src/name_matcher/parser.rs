@@ -1,4 +1,4 @@
-use std::fmt;
+use std::{fmt, str::FromStr};
 
 use itertools::Itertools;
 use nom::{
@@ -38,7 +38,20 @@ where
 {
 }
 
-pub(super) fn parse_pattern(i: &str) -> ParseResult<'_, Pattern> {
+/// The entry point for this module: parses a string into a `Pattern`.
+impl FromStr for Pattern {
+    type Err = ErrorTree<String>;
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        parse_pattern_complete(s)
+    }
+}
+
+fn parse_pattern_complete(i: &str) -> Result<Pattern, ErrorTree<String>> {
+    nom_supreme::final_parser::final_parser(parse_pattern)(i)
+        .map_err(|e: ErrorTree<_>| e.map_locations(|s: &str| s.to_string()))
+}
+
+fn parse_pattern(i: &str) -> ParseResult<'_, Pattern> {
     separated_list0(tag("::"), parse_pat_elem)
         .map(|elems| Pattern { elems })
         .parse(i)
@@ -47,6 +60,12 @@ pub(super) fn parse_pattern(i: &str) -> ParseResult<'_, Pattern> {
 impl fmt::Display for Pattern {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         self.elems.iter().format("::").fmt(f)
+    }
+}
+
+impl fmt::Debug for Pattern {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{self}")
     }
 }
 

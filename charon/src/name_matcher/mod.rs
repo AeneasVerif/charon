@@ -1,15 +1,18 @@
 use itertools::{EitherOrBoth, Itertools};
+use serde::{Deserialize, Serialize};
 
 use crate::ast::*;
 
 mod parser;
 
-#[derive(Clone)]
+pub use Pattern as NamePattern;
+
+#[derive(Clone, Serialize, Deserialize)]
 pub struct Pattern {
     elems: Vec<PatElem>,
 }
 
-#[derive(Clone)]
+#[derive(Clone, Serialize, Deserialize)]
 enum PatElem {
     /// An identifier, optionally with generic arguments. E.g. `std` or `Box<_>`.
     Ident {
@@ -25,7 +28,7 @@ enum PatElem {
     Glob,
 }
 
-#[derive(Clone)]
+#[derive(Clone, Serialize, Deserialize)]
 enum PatTy {
     /// A path, like `my_crate::foo::Type<_, usize>`
     Pat(Pattern),
@@ -34,8 +37,9 @@ enum PatTy {
 }
 
 impl Pattern {
-    pub fn parse(i: &str) -> Result<Self, nom_supreme::error::ErrorTree<&str>> {
-        nom_supreme::final_parser::final_parser(parser::parse_pattern)(i)
+    pub fn parse(i: &str) -> Result<Self, nom_supreme::error::ErrorTree<String>> {
+        use std::str::FromStr;
+        Self::from_str(i)
     }
 
     pub fn matches(&self, ctx: &TranslatedCrate, name: &Name) -> bool {
