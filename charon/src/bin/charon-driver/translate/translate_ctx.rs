@@ -57,7 +57,7 @@ pub struct TranslateOptions {
 }
 
 impl TranslateOptions {
-    pub(crate) fn new(error_ctx: &mut ErrorCtx<'_>, crate_name: &str, options: &CliOpts) -> Self {
+    pub(crate) fn new(error_ctx: &mut ErrorCtx<'_>, options: &CliOpts) -> Self {
         let mut parse_pattern = |s: &str| match NamePattern::parse(s) {
             Ok(p) => Ok(p),
             Err(e) => {
@@ -86,10 +86,10 @@ impl TranslateOptions {
             }
 
             // We always include the items from the crate.
-            opacities.push((crate_name.to_owned(), Transparent));
+            opacities.push(("crate".to_owned(), Transparent));
 
             for module in options.opaque_modules.iter() {
-                opacities.push((format!("{crate_name}::{module}"), Opaque));
+                opacities.push((format!("crate::{module}"), Opaque));
             }
 
             opacities

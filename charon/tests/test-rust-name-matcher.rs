@@ -47,7 +47,7 @@ fn test_name_matcher() -> anyhow::Result<()> {
             #[pattern::pass("test_crate::_")]
             #[pattern::pass("test_crate::_::bar")]
             #[pattern::fail("test_crate::_::lsdkfjs")]
-            #[pattern::fail("crate::foo::bar")]
+            #[pattern::pass("crate::foo::bar")]
             #[pattern::fail("foo::bar")]
             fn bar() {}
         }

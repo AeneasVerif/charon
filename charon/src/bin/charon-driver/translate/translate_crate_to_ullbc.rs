@@ -384,7 +384,7 @@ pub fn translate<'tcx, 'ctx>(options: &CliOpts, tcx: TyCtxt<'tcx>) -> TransformC
     let transform_options = TransformOptions {
         no_code_duplication: options.no_code_duplication,
     };
-    let translate_options = TranslateOptions::new(&mut error_ctx, &real_crate_name, options);
+    let translate_options = TranslateOptions::new(&mut error_ctx, options);
     let mut ctx = TranslateCtx {
         tcx,
         hax_state,
@@ -392,6 +392,7 @@ pub fn translate<'tcx, 'ctx>(options: &CliOpts, tcx: TyCtxt<'tcx>) -> TransformC
         errors: error_ctx,
         translated: TranslatedCrate {
             crate_name: requested_crate_name,
+            real_crate_name,
             ..TranslatedCrate::default()
         },
         priority_queue: Default::default(),

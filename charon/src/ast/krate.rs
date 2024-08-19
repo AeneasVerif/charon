@@ -84,6 +84,8 @@ pub struct TranslatedCrate {
     /// The name that the user requested for the crate. This may differ from what rustc reports as
     /// the name of the crate.
     pub crate_name: String,
+    /// The name of the crate according to rustc.
+    pub real_crate_name: String,
 
     /// File names to ids and vice-versa
     #[drive(skip)]
