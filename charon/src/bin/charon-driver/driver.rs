@@ -1,5 +1,4 @@
 use crate::translate::translate_crate_to_ullbc;
-use crate::translate::translate_ctx::MirLevel;
 use charon_lib::export;
 use charon_lib::options;
 use charon_lib::reorder_decls::compute_reordered_decls;
@@ -203,26 +202,6 @@ pub fn translate(tcx: TyCtxt, internal: &mut CharonCallbacks) -> export::CrateDa
     trace!();
     let options = &internal.options;
 
-    // Retrieve the crate name: if the user specified a custom name, use
-    // it, otherwise retrieve it from Rustc.
-    let crate_name: String = options.crate_name.as_deref().map_or_else(
-        || {
-            tcx.crate_name(rustc_span::def_id::LOCAL_CRATE)
-                .to_ident_string()
-        },
-        |x: &str| x.to_string(),
-    );
-    trace!("# Crate: {}", crate_name);
-
-    // Adjust the level of MIR we extract, depending on the options
-    let mir_level = if options.mir_optimized {
-        MirLevel::Optimized
-    } else if options.mir_promoted {
-        MirLevel::Promoted
-    } else {
-        MirLevel::Built
-    };
-
     // Some important notes about crates and how to interact with rustc:
     // - when calling rustc, we should give it the root of the crate, for
     //   instance the "main.rs" file. From there, rustc will load all the
@@ -233,7 +212,7 @@ pub fn translate(tcx: TyCtxt, internal: &mut CharonCallbacks) -> export::CrateDa
     // # Translate the declarations in the crate.
     // We translate the declarations in an ad-hoc order, and do not group
     // the mutually recursive groups - we do this in the next step.
-    let mut ctx = translate_crate_to_ullbc::translate(crate_name, options, tcx, mir_level);
+    let mut ctx = translate_crate_to_ullbc::translate(options, tcx);
 
     if options.print_ullbc {
         info!("# ULLBC after translation from MIR:\n\n{ctx}\n");

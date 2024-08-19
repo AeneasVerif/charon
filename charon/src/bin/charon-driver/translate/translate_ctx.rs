@@ -4,6 +4,8 @@ use charon_lib::ast::*;
 use charon_lib::common::*;
 use charon_lib::formatter::{FmtCtx, IntoFormatter};
 use charon_lib::ids::{MapGenerator, Vector};
+use charon_lib::name_matcher::NamePattern;
+use charon_lib::options::CliOpts;
 use charon_lib::ullbc_ast as ast;
 use hax_frontend_exporter as hax;
 use hax_frontend_exporter::SInto;
@@ -16,7 +18,6 @@ use rustc_hir::Node as HirNode;
 use rustc_middle::ty::TyCtxt;
 use std::cmp::{Ord, PartialOrd};
 use std::collections::HashMap;
-use std::collections::HashSet;
 use std::collections::{BTreeMap, VecDeque};
 use std::fmt;
 use std::path::Component;
@@ -49,8 +50,61 @@ pub struct TranslateOptions {
     pub mir_level: MirLevel,
     /// Whether to extract the bodies of foreign methods and structs with private fields.
     pub extract_opaque_bodies: bool,
-    /// Modules to consider opaque.
-    pub opaque_mods: HashSet<String>,
+    // List of patterns to assign a given opacity to. For each name, the most specific pattern that
+    // matches determines the opacity of the item. When no options are provided this is initialized
+    // to treat items in the crate as transparent and items in other crates as foreign.
+    pub item_opacities: Vec<(NamePattern, ItemOpacity)>,
+}
+
+impl TranslateOptions {
+    pub(crate) fn new(error_ctx: &mut ErrorCtx<'_>, crate_name: &str, options: &CliOpts) -> Self {
+        let mut parse_pattern = |s: &str| match NamePattern::parse(s) {
+            Ok(p) => Ok(p),
+            Err(e) => {
+                let msg = format!("failed to parse pattern `{s}` ({e})");
+                error_or_panic!(error_ctx, rustc_span::DUMMY_SP, msg)
+            }
+        };
+
+        let mir_level = if options.mir_optimized {
+            MirLevel::Optimized
+        } else if options.mir_promoted {
+            MirLevel::Promoted
+        } else {
+            MirLevel::Built
+        };
+
+        let item_opacities = {
+            use ItemOpacity::*;
+            let mut opacities = vec![];
+
+            // This is how to treat items that don't match any other pattern.
+            if options.extract_opaque_bodies {
+                opacities.push(("_".to_string(), Transparent));
+            } else {
+                opacities.push(("_".to_string(), Foreign));
+            }
+
+            // We always include the items from the crate.
+            opacities.push((crate_name.to_owned(), Transparent));
+
+            for module in options.opaque_modules.iter() {
+                opacities.push((format!("{crate_name}::{module}"), Opaque));
+            }
+
+            opacities
+                .into_iter()
+                .filter_map(|(s, opacity)| parse_pattern(&s).ok().map(|pat| (pat, opacity)))
+                .collect()
+        };
+
+        TranslateOptions {
+            mir_level,
+            // TODO: remove option
+            extract_opaque_bodies: options.extract_opaque_bodies,
+            item_opacities,
+        }
+    }
 }
 
 /// We use a special type to store the Rust identifiers in the stack, to
@@ -494,17 +548,13 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         let attr_info = self.translate_attr_info_from_rid(def_id, span);
         let is_local = def_id.is_local();
 
-        let opacity = {
-            let is_opaque = self.is_opaque_name(&name)
-                || self.id_is_extern_item(def_id)
-                || attr_info.attributes.iter().any(|attr| attr.is_opaque());
-            if is_opaque {
-                ItemOpacity::Opaque
-            } else if !is_local && !self.options.extract_opaque_bodies {
-                ItemOpacity::Foreign
-            } else {
-                ItemOpacity::Transparent
-            }
+        let opacity = if self.id_is_extern_item(def_id)
+            || attr_info.attributes.iter().any(|attr| attr.is_opaque())
+        {
+            // Force opaque in these cases.
+            ItemOpacity::Opaque
+        } else {
+            self.opacity_for_name(&name)
         };
 
         Ok(ItemMeta {
@@ -780,8 +830,18 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
             .is_some_and(|node| matches!(node, HirNode::ForeignItem(_)))
     }
 
-    pub(crate) fn is_opaque_name(&self, name: &Name) -> bool {
-        name.is_in_modules(&self.translated.crate_name, &self.options.opaque_mods)
+    pub(crate) fn opacity_for_name(&self, name: &Name) -> ItemOpacity {
+        // Find the most precise pattern that matches this name. There is always one since
+        // the list contains the `_` pattern. If there are conflicting settings for this item, we
+        // err on the side of being more transparent.
+        let (_, opacity) = self
+            .options
+            .item_opacities
+            .iter()
+            .filter(|(pat, _)| pat.matches(&self.translated, name))
+            .max()
+            .unwrap();
+        *opacity
     }
 
     /// Register the fact that `id` is a dependency of `src` (if `src` is not `None`).

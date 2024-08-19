@@ -3,7 +3,6 @@
 //! For now, we have one function per object kind (type, trait, function,
 //! module): many of them could be factorized (will do).
 use crate::names::*;
-use std::collections::HashSet;
 
 impl PathElem {
     fn equals_ident(&self, id: &str) -> bool {
@@ -55,30 +54,5 @@ impl Name {
     /// This ignores disambiguators.
     pub fn equals_ref_name(&self, ref_name: &[&str]) -> bool {
         self.compare_with_ref_name(true, ref_name)
-    }
-
-    /// Compare the name to a constant array.
-    /// This ignores disambiguators.
-    pub fn prefix_is_same(&self, ref_name: &[&str]) -> bool {
-        self.compare_with_ref_name(false, ref_name)
-    }
-
-    /// Return `true` if the name identifies an item inside the module: `krate::module`
-    pub fn is_in_module(&self, krate: &String, module: &String) -> bool {
-        self.prefix_is_same(&[krate, module])
-    }
-
-    /// Similar to [Name::is_in_module]
-    pub fn is_in_modules(&self, krate: &String, modules: &HashSet<String>) -> bool {
-        if self.len() >= 2 {
-            match (&self.name[0], &self.name[1]) {
-                (PathElem::Ident(s0, _), PathElem::Ident(s1, _)) => {
-                    s0 == krate && modules.contains(s1)
-                }
-                _ => false,
-            }
-        } else {
-            false
-        }
     }
 }

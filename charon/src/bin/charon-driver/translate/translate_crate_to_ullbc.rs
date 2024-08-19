@@ -58,7 +58,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
                 | ItemKind::Macro(..)
                 | ItemKind::Trait(..) => {
                     let name = self.def_id_to_name(def_id)?;
-                    if self.is_opaque_name(&name) {
+                    if self.opacity_for_name(&name).is_opaque() {
                         trace!("Ignoring {:?} (marked as opaque)", item.item_id());
                         return Ok(());
                     }
@@ -350,13 +350,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
     }
 }
 
-/// Translate all the declarations in the crate.
-pub fn translate<'tcx, 'ctx>(
-    crate_name: String,
-    options: &CliOpts,
-    tcx: TyCtxt<'tcx>,
-    mir_level: MirLevel,
-) -> TransformCtx<'tcx> {
+pub fn translate<'tcx, 'ctx>(options: &CliOpts, tcx: TyCtxt<'tcx>) -> TransformCtx<'tcx> {
     let hax_state = hax::state::State::new(
         tcx,
         hax::options::Options {
@@ -364,7 +358,20 @@ pub fn translate<'tcx, 'ctx>(
             // downgrade_errors: options.errors_as_warnings,
         },
     );
-    let error_ctx = ErrorCtx {
+
+    // Retrieve the crate name: if the user specified a custom name, use
+    // it, otherwise retrieve it from rustc.
+    let real_crate_name = tcx
+        .crate_name(rustc_span::def_id::LOCAL_CRATE)
+        .to_ident_string();
+    let requested_crate_name: String = options
+        .crate_name
+        .as_ref()
+        .unwrap_or(&real_crate_name)
+        .clone();
+    trace!("# Crate: {}", requested_crate_name);
+
+    let mut error_ctx = ErrorCtx {
         continue_on_failure: !options.abort_on_error,
         errors_as_warnings: options.errors_as_warnings,
         dcx: tcx.dcx(),
@@ -377,18 +384,14 @@ pub fn translate<'tcx, 'ctx>(
     let transform_options = TransformOptions {
         no_code_duplication: options.no_code_duplication,
     };
-    let translate_options = TranslateOptions {
-        mir_level,
-        extract_opaque_bodies: options.extract_opaque_bodies,
-        opaque_mods: HashSet::from_iter(options.opaque_modules.iter().cloned()),
-    };
+    let translate_options = TranslateOptions::new(&mut error_ctx, &real_crate_name, options);
     let mut ctx = TranslateCtx {
         tcx,
         hax_state,
         options: translate_options,
         errors: error_ctx,
         translated: TranslatedCrate {
-            crate_name,
+            crate_name: requested_crate_name,
             ..TranslatedCrate::default()
         },
         priority_queue: Default::default(),

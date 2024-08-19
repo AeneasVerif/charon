@@ -1,3 +1,5 @@
+use std::cmp::Ordering;
+
 use itertools::{EitherOrBoth, Itertools};
 use serde::{Deserialize, Serialize};
 
@@ -7,12 +9,12 @@ mod parser;
 
 pub use Pattern as NamePattern;
 
-#[derive(Clone, Serialize, Deserialize)]
+#[derive(Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct Pattern {
     elems: Vec<PatElem>,
 }
 
-#[derive(Clone, Serialize, Deserialize)]
+#[derive(Clone, PartialEq, Eq, Serialize, Deserialize)]
 enum PatElem {
     /// An identifier, optionally with generic arguments. E.g. `std` or `Box<_>`.
     Ident {
@@ -28,7 +30,7 @@ enum PatElem {
     Glob,
 }
 
-#[derive(Clone, Serialize, Deserialize)]
+#[derive(Clone, PartialEq, Eq, Serialize, Deserialize)]
 enum PatTy {
     /// A path, like `my_crate::foo::Type<_, usize>`
     Pat(Pattern),
@@ -40,6 +42,10 @@ impl Pattern {
     pub fn parse(i: &str) -> Result<Self, nom_supreme::error::ErrorTree<String>> {
         use std::str::FromStr;
         Self::from_str(i)
+    }
+
+    fn len(&self) -> usize {
+        self.elems.len()
     }
 
     pub fn matches(&self, ctx: &TranslatedCrate, name: &Name) -> bool {
@@ -106,6 +112,39 @@ impl Pattern {
             return true;
         }
         todo!("non-trivial const generics patterns aren't implemented")
+    }
+
+    /// Compares two patterns that match the same name, in terms of precision. A pattern that is
+    /// fully included in another (i.e. matches a subset of values) is considered "less precise".
+    /// Returns nonsense if the patterns don't match the same name.
+    pub fn compare(&self, other: &Self) -> Ordering {
+        use Ordering::*;
+        use PatElem::*;
+        match self.len().cmp(&other.len()) {
+            o @ (Less | Greater) => return o,
+            _ if self.len() == 0 => return Equal,
+            Equal => {}
+        }
+        match (self.elems.last().unwrap(), other.elems.last().unwrap()) {
+            (Glob, Glob) => Equal,
+            (Glob, _) => Less,
+            (_, Glob) => Greater,
+            // TODO: compare precision of the generics.
+            _ => Equal,
+        }
+    }
+}
+
+/// Orders patterns by precision: the maximal pattern is the most precise. COmparing patterns only
+/// makes sense if they match the same name.
+impl Ord for Pattern {
+    fn cmp(&self, other: &Self) -> Ordering {
+        self.compare(other)
+    }
+}
+impl PartialOrd for Pattern {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        Some(self.compare(other))
     }
 }
 
@@ -178,5 +217,20 @@ impl PatTy {
             PatTy::Pat(p) => p.matches_const(ctx, c),
             PatTy::Ref(..) => false,
         }
+    }
+}
+
+#[test]
+fn test_compare() {
+    use Ordering::*;
+    let tests = [
+        ("_", Less, "crate"),
+        ("crate::_", Less, "crate::foo"),
+        ("crate::foo", Less, "crate::foo::_"),
+    ];
+    for (x, o, y) in tests {
+        let x = Pattern::parse(x).unwrap();
+        let y = Pattern::parse(y).unwrap();
+        assert_eq!(x.compare(&y), o);
     }
 }

@@ -81,7 +81,8 @@ pub enum AnyTransItem<'ctx> {
 /// The data of a translated crate.
 #[derive(Default, Clone, Drive, DriveMut, Serialize, Deserialize)]
 pub struct TranslatedCrate {
-    /// The name of the crate.
+    /// The name that the user requested for the crate. This may differ from what rustc reports as
+    /// the name of the crate.
     pub crate_name: String,
 
     /// File names to ids and vice-versa
