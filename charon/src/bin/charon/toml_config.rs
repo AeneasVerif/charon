@@ -33,6 +33,10 @@ pub struct CharonTomlConfig {
     pub opaque_modules: Vec<String>,
     #[serde(default)]
     pub extract_opaque_bodies: bool,
+    #[serde(default)]
+    pub include: Vec<String>,
+    #[serde(default)]
+    pub exclude: Vec<String>,
 }
 
 #[derive(Debug, Default, Deserialize)]
@@ -53,6 +57,8 @@ impl TomlConfig {
         config.no_code_duplication |= self.charon.no_code_duplication;
         config.opaque_modules.extend(self.charon.opaque_modules);
         config.extract_opaque_bodies |= self.charon.extract_opaque_bodies;
+        config.include.extend(self.charon.include);
+        config.exclude.extend(self.charon.exclude);
         config.rustc_args.extend(self.rustc.flags);
         config
     }

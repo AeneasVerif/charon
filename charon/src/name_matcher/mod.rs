@@ -171,7 +171,8 @@ impl PatElem {
                 same_ident && PatTy::matches_generics(ctx, generics, args)
             }
             (PatElem::Impl(_pat), PathElem::Impl(ImplElem::Ty(_, _ty), _)) => {
-                todo!()
+                // TODO
+                false
             }
             (PatElem::Impl(pat), PathElem::Impl(ImplElem::Trait(impl_id), _)) => {
                 let Some(timpl) = ctx.trait_impls.get(*impl_id) else {

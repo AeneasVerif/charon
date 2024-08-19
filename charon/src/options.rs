@@ -1,6 +1,7 @@
+//! The options received as input by cargo-charon
 #![allow(dead_code)]
 use clap::Parser;
-/// The options received as input by cargo-charon
+use indoc::indoc;
 use serde::{Deserialize, Serialize};
 use std::path::PathBuf;
 
@@ -120,6 +121,37 @@ performs: `y := (x as E2).1`). Producing a better reconstruction is non-trivial.
     #[clap(long = "extract-opaque-bodies")]
     #[serde(default)]
     pub extract_opaque_bodies: bool,
+    /// Whitelist of items to translate. These use the name-matcher syntax.
+    #[clap(
+        long = "include",
+        help = indoc!("
+            Whitelist of items to translate. These use the name-matcher syntax (note: this differs
+            a bit from the ocaml NameMatcher).
+
+            Note: This is very rough at the moment. E.g. this parses `u64` as a path instead of the
+            built-in type. Some parts just don't work. Please report bugs or missing features.
+
+            Examples:
+              - `crate::module1::module2::item`: refers to this item and all its subitems (e.g.
+                  submodules or trait methods);
+              - `crate::module1::module2::item::_`: refers only to the subitems of this item;
+              - `core::convert::{impl core::convert::Into<_> for _}`: retrieve the body of this
+                  very useful impl;
+
+            When multiple patterns in the `--include` and `--exclude` options match the same item,
+            the most precise pattern wins. E.g.: `charon --exclude crate::module --include
+            crate::module::_` makes the `module` opaque (we won't explore its contents), but the
+            items in it transparent (we will translate them if we encounter them.)
+    "))]
+    #[serde(default)]
+    pub include: Vec<String>,
+    /// Blacklist of items to keep opaque. These use the name-matcher syntax.
+    #[clap(
+        long = "exclude",
+        help = "Blacklist of items to keep opaque. Works just like `--include`, see the doc there."
+    )]
+    #[serde(default)]
+    pub exclude: Vec<String>,
     /// Do not run cargo; instead, run the driver directly.
     // FIXME: use a subcommand instead, when we update clap to support flattening.
     #[clap(long = "no-cargo")]

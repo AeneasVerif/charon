@@ -92,6 +92,13 @@ impl TranslateOptions {
                 opacities.push((format!("crate::{module}"), Opaque));
             }
 
+            for pat in options.include.iter() {
+                opacities.push((pat.to_string(), Transparent));
+            }
+            for pat in options.exclude.iter() {
+                opacities.push((pat.to_string(), Opaque));
+            }
+
             opacities
                 .into_iter()
                 .filter_map(|(s, opacity)| parse_pattern(&s).ok().map(|pat| (pat, opacity)))

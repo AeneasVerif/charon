@@ -52,7 +52,7 @@ fn parse_pattern_complete(i: &str) -> Result<Pattern, ErrorTree<String>> {
 }
 
 fn parse_pattern(i: &str) -> ParseResult<'_, Pattern> {
-    separated_list0(tag("::"), parse_pat_elem)
+    separated_list0(tag("::").followed_by(multispace0), parse_pat_elem)
         .map(|elems| Pattern { elems })
         .parse(i)
 }
@@ -109,7 +109,7 @@ fn parse_impl_elem(i: &str) -> ParseResult<'_, PatElem> {
     let impl_contents = parse_pattern.followed_by(multispace0).and(for_ty.opt());
     let impl_expr = tag("{").followed_by(multispace0).precedes(
         delimited(
-            tag("impl").followed_by(multispace1),
+            tag("impl").followed_by(multispace1.cut()).opt(),
             impl_contents,
             tag("}"),
         )
@@ -211,9 +211,10 @@ fn test_roundtrip() {
     ];
     let other_test_strings = [
         ("blah::*", "blah::_"),
-        ("crate  ::foo  ::bar ", "crate::foo::bar"),
+        ("crate  ::  foo  ::bar ", "crate::foo::bar"),
         ("a::b::Type < _  ,  _ >", "a::b::Type<_, _>"),
         ("{ impl  Clone  for  usize }", "{impl Clone for usize}"),
+        ("{Clone for usize}", "{impl Clone for usize}"),
     ];
     let failures = [
         "{implClone for usize}",
