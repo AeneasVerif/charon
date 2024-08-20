@@ -98,7 +98,6 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         let span = item_meta.span.rust_span();
         let erase_regions = false;
         let mut bt_ctx = BodyTransCtx::new(rust_id, self);
-        let name = bt_ctx.t_ctx.def_id_to_name(rust_id)?;
 
         let hax::FullDefKind::Trait { items, .. } = &def.kind else {
             panic!("Unexpected definition: {def:?}")
@@ -251,7 +250,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
                 item_meta.span,
                 format!(
                     "Trait declarations cannot be \"opaque\"; the trait `{}` will be translated as normal.",
-                    name.fmt_with_ctx(&ctx)
+                    item_meta.name.fmt_with_ctx(&ctx)
                 ),
             )
         }

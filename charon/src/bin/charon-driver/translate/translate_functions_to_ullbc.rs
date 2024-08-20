@@ -833,11 +833,11 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         trait_info: &Option<hax::ImplExpr>,
     ) -> Result<SubstFunIdOrPanic, Error> {
         let rust_id = DefId::from(def_id);
-        let name = self.t_ctx.hax_def_id_to_name(def_id)?;
         let is_local = rust_id.is_local();
 
         let builtin_fun = self.recognize_builtin_fun(def_id)?;
         if matches!(builtin_fun, Some(BuiltinFun::Panic)) {
+            let name = self.t_ctx.hax_def_id_to_name(def_id)?;
             return Ok(SubstFunIdOrPanic::Panic(name));
         }
 
