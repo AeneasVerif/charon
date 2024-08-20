@@ -166,13 +166,12 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
             let item_span = bt_ctx.t_ctx.tcx.def_span(rust_item_id);
             match &hax_item.kind {
                 AssocKind::Fn => {
+                    let fun_id = bt_ctx.register_fun_decl_id(item_span, rust_item_id);
                     if hax_item.has_value {
                         // This is a *provided* method,
-                        let fun_id = bt_ctx.register_fun_decl_id(item_span, rust_item_id);
-                        provided_methods.push((item_name.clone(), Some(fun_id)));
+                        provided_methods.push((item_name.clone(), fun_id));
                     } else {
                         // This is a required method (no default implementation)
-                        let fun_id = bt_ctx.register_fun_decl_id(item_span, rust_item_id);
                         required_methods.push((item_name.clone(), fun_id));
                     }
                 }
