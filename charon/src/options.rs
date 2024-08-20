@@ -110,12 +110,6 @@ pub struct CliOpts {
     "))]
     #[serde(default)]
     pub no_code_duplication: bool,
-    /// A list of modules of the extracted crate that we consider as opaque: we
-    /// extract only the signature information, without the definition content
-    /// (of the functions, types, etc.).
-    #[clap(long = "opaque")]
-    #[serde(default)]
-    pub opaque_modules: Vec<String>,
     /// Usually we skip the bodies of foreign methods and structs with private fields. When this
     /// flag is on, we don't.
     #[clap(long = "extract-opaque-bodies")]
@@ -138,8 +132,8 @@ pub struct CliOpts {
               - `core::convert::{impl core::convert::Into<_> for _}`: retrieve the body of this
                   very useful impl;
 
-            When multiple patterns in the `--include` and `--exclude` options match the same item,
-            the most precise pattern wins. E.g.: `charon --exclude crate::module --include
+            When multiple patterns in the `--include` and `--opaque` options match the same item,
+            the most precise pattern wins. E.g.: `charon --opaque crate::module --include
             crate::module::_` makes the `module` opaque (we won't explore its contents), but the
             items in it transparent (we will translate them if we encounter them.)
     "))]
@@ -147,11 +141,11 @@ pub struct CliOpts {
     pub include: Vec<String>,
     /// Blacklist of items to keep opaque. These use the name-matcher syntax.
     #[clap(
-        long = "exclude",
+        long = "opaque",
         help = "Blacklist of items to keep opaque. Works just like `--include`, see the doc there."
     )]
     #[serde(default)]
-    pub exclude: Vec<String>,
+    pub opaque: Vec<String>,
     /// Do not run cargo; instead, run the driver directly.
     // FIXME: use a subcommand instead, when we update clap to support flattening.
     #[clap(long = "no-cargo")]

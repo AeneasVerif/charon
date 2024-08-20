@@ -1,9 +1,9 @@
 [charon]
-opaque_modules = [
-    "cli_options",
-    "common",
-    "deps_errors",
-    "ids",
-    "logger",
-    "pretty",
+exclude = [
+    "crate::cli_options",
+    "crate::common",
+    "crate::deps_errors",
+    "crate::ids",
+    "crate::logger",
+    "crate::pretty",
 ]

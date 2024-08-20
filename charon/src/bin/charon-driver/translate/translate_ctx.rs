@@ -88,14 +88,10 @@ impl TranslateOptions {
             // We always include the items from the crate.
             opacities.push(("crate".to_owned(), Transparent));
 
-            for module in options.opaque_modules.iter() {
-                opacities.push((format!("crate::{module}"), Opaque));
-            }
-
             for pat in options.include.iter() {
                 opacities.push((pat.to_string(), Transparent));
             }
-            for pat in options.exclude.iter() {
+            for pat in options.opaque.iter() {
                 opacities.push((pat.to_string(), Opaque));
             }
 
