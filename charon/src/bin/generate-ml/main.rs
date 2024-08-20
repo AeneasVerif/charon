@@ -113,8 +113,11 @@ fn type_to_ocaml_call(ctx: &GenerateCtx, ty: &Ty) -> String {
             let mut types = generics.types.as_slice();
             match adt_kind {
                 TypeId::Adt(id) => {
-                    let adt: &TypeDecl = &ctx.crate_data[*id];
-                    let mut first = type_name_to_ocaml_ident(&adt.item_meta);
+                    let mut first = if let Some(tdecl) = ctx.crate_data.type_decls.get(*id) {
+                        type_name_to_ocaml_ident(&tdecl.item_meta)
+                    } else {
+                        format!("missing_type_{id}")
+                    };
                     if first == "vec" {
                         first = "list".to_string();
                         types = &types[0..1]; // Remove the allocator generic param
@@ -138,7 +141,7 @@ fn type_to_ocaml_call(ctx: &GenerateCtx, ty: &Ty) -> String {
                 expr.push(type_to_ocaml_call(ctx, ty))
             }
             if let TypeId::Adt(id) = adt_kind {
-                if *ctx.contains_raw_span.get(&id).unwrap() {
+                if *ctx.contains_raw_span.get(&id).unwrap_or(&false) {
                     expr.push("id_to_file".to_string())
                 }
             }
@@ -172,8 +175,17 @@ fn type_to_ocaml_name(ctx: &GenerateCtx, ty: &Ty) -> String {
                 .collect_vec();
             match adt_kind {
                 TypeId::Adt(id) => {
-                    let adt: &TypeDecl = &ctx.crate_data[*id];
-                    let mut base_ty = type_name_to_ocaml_ident(&adt.item_meta);
+                    let mut base_ty = if let Some(tdecl) = ctx.crate_data.type_decls.get(*id) {
+                        type_name_to_ocaml_ident(&tdecl.item_meta)
+                    } else if let Some(name) = ctx.crate_data.item_names.get(&(*id).into()) {
+                        eprintln!(
+                            "Warning: type {} missing from llbc",
+                            repr_name(ctx.crate_data, name)
+                        );
+                        name.name.last().unwrap().as_ident().0.to_lowercase()
+                    } else {
+                        format!("missing_type_{id}")
+                    };
                     if base_ty == "vec" {
                         base_ty = "list".to_string();
                         args.pop(); // Remove the allocator generic param
