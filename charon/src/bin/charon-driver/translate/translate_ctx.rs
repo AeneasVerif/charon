@@ -435,7 +435,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         // For instance: `std::boxed::Box` and `alloc::boxed::Box` are actually
         // the same (the first one is a reexport).
         // This is why we implement a custom function to retrieve the original name
-        // (though this makes us loose aliases - we may want to investigate this
+        // (though this makes us lose aliases - we may want to investigate this
         // issue in the future).
 
         // We lookup the path associated to an id, and convert it to a name.

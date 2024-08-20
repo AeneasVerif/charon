@@ -30,7 +30,7 @@ pub struct RawSpan {
     pub end: Loc,
     /// We keep the rust span so as to be able to leverage Rustc to print
     /// error messages (useful in the micro-passes for instance).
-    /// We use `Span` instead of `SpanData` because `Span` is not `Send` when rustc runs
+    /// We use `SpanData` instead of `Span` because `Span` is not `Send` when rustc runs
     /// single-threaded (default on older versions). We need this to be `Send` because we pass this
     /// data out of the rustc callbacks in charon-driver.
     #[serde(skip)]
