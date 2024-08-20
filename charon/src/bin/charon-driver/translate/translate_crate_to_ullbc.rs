@@ -310,6 +310,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         trans_id: AnyTransId,
     ) -> Result<(), Error> {
         let name = self.def_id_to_name(rust_id)?;
+        self.translated.item_names.insert(trans_id, name.clone());
         let opacity = self.opacity_for_name(&name);
         if opacity.is_invisible() {
             // Don't even start translating the item. In particular don't call `hax_def` on it.

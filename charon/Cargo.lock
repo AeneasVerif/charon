@@ -173,7 +173,7 @@ checksum = "baf1de4339761588bc0619e3cbc0120ee582ebb74b53b4efbf79117bd2da40fd"
 
 [[package]]
 name = "charon"
-version = "0.1.27"
+version = "0.1.28"
 dependencies = [
  "anyhow",
  "assert_cmd",
@@ -201,6 +201,7 @@ dependencies = [
  "regex",
  "rustc_version",
  "serde",
+ "serde-map-to-array",
  "serde_json",
  "serde_stacker",
  "snapbox",
@@ -1016,6 +1017,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7253ab4de971e72fb7be983802300c30b5a7f0c2e56fab8abfc6a214307c0094"
 dependencies = [
  "serde_derive",
+]
+
+[[package]]
+name = "serde-map-to-array"
+version = "1.1.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "c14b52efc56c711e0dbae3f26e0cc233f5dac336c1bf0b07e1b7dc2dca3b2cc7"
+dependencies = [
+ "serde",
 ]
 
 [[package]]

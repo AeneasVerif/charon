@@ -7,6 +7,7 @@ use hashlink::LinkedHashSet;
 use macros::{EnumAsGetters, EnumIsA, VariantIndexArity, VariantName};
 use rustc_span::def_id::DefId;
 use serde::{Deserialize, Serialize};
+use serde_map_to_array::HashMapToArray;
 use std::cmp::{Ord, PartialOrd};
 use std::collections::HashMap;
 use std::fmt;
@@ -98,6 +99,10 @@ pub struct TranslatedCrate {
     /// All the ids, in the order in which we encountered them
     #[drive(skip)]
     pub all_ids: LinkedHashSet<AnyTransId>,
+    /// The names of all registered items. Available so we can know the names even of items that
+    /// failed to translate.
+    #[serde(with = "HashMapToArray::<AnyTransId, Name>")]
+    pub item_names: HashMap<AnyTransId, Name>,
     /// The map from rustc id to translated id.
     #[drive(skip)]
     #[serde(skip)]

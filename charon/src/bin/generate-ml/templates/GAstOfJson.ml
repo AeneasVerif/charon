@@ -261,6 +261,7 @@ and gtranslated_crate_of_json
           ("real_crate_name", _);
           ("id_to_file", id_to_file);
           ("all_ids", _);
+          ("item_names", _);
           ("type_decls", types);
           ("fun_decls", functions);
           ("global_decls", globals);
