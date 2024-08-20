@@ -309,6 +309,10 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         // Translate the meta information
         let def: Arc<hax::FullDef> = self.hax_def(rust_id);
         let item_meta = self.translate_item_meta(&def)?;
+        if item_meta.opacity.is_invisible() {
+            // Don't even start translating the item.
+            return Ok(());
+        }
         match trans_id {
             AnyTransId::Type(id) => {
                 let ty = self.translate_type(id, rust_id, item_meta, &def)?;

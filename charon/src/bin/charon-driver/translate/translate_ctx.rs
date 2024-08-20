@@ -94,6 +94,9 @@ impl TranslateOptions {
             for pat in options.opaque.iter() {
                 opacities.push((pat.to_string(), Opaque));
             }
+            for pat in options.exclude.iter() {
+                opacities.push((pat.to_string(), Invisible));
+            }
 
             opacities
                 .into_iter()

@@ -35,6 +35,8 @@ pub struct CharonTomlConfig {
     pub include: Vec<String>,
     #[serde(default)]
     pub opaque: Vec<String>,
+    #[serde(default)]
+    pub exclude: Vec<String>,
 }
 
 #[derive(Debug, Default, Deserialize)]
@@ -56,6 +58,7 @@ impl TomlConfig {
         config.extract_opaque_bodies |= self.charon.extract_opaque_bodies;
         config.include.extend(self.charon.include);
         config.opaque.extend(self.charon.opaque);
+        config.exclude.extend(self.charon.exclude);
         config.rustc_args.extend(self.rustc.flags);
         config
     }

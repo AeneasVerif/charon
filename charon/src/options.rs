@@ -146,6 +146,13 @@ pub struct CliOpts {
     )]
     #[serde(default)]
     pub opaque: Vec<String>,
+    /// Blacklist of items to not translate at all. These use the name-matcher syntax.
+    #[clap(
+        long = "exclude",
+        help = "Blacklist of items to not translate at all. Works just like `--include`, see the doc there."
+    )]
+    #[serde(default)]
+    pub exclude: Vec<String>,
     /// Do not run cargo; instead, run the driver directly.
     // FIXME: use a subcommand instead, when we update clap to support flattening.
     #[clap(long = "no-cargo")]

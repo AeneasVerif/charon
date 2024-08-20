@@ -190,6 +190,7 @@ impl ItemOpacity {
     pub fn with_content_visibility(self, contents_are_public: bool) -> Self {
         use ItemOpacity::*;
         match self {
+            Invisible => Invisible,
             Transparent => Transparent,
             Foreign if contents_are_public => Transparent,
             Foreign => Opaque,
