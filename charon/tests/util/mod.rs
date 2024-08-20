@@ -1,9 +1,19 @@
 //! Shared utility functions for use in tests.
 //!
 //! This is in `util/mod.rs` instead of `util.rs` to avoid cargo treating it like a test file.
+
+// Needed because this is imported from various tests that each use different items from this
+// module.
+#![allow(dead_code)]
+use assert_cmd::prelude::{CommandCargoExt, OutputAssertExt};
 use snapbox;
 use snapbox::filter::Filter;
+use std::fmt::Display;
 use std::path::Path;
+use std::{fs::File, io::BufReader, process::Command};
+
+use charon_lib::ast::TranslatedCrate;
+use charon_lib::{export::CrateData, logger};
 
 #[derive(Clone, Copy)]
 pub enum Action {
@@ -47,4 +57,41 @@ fn expect_file_contents(path: &Path, actual: snapbox::Data) -> snapbox::assert::
     } else {
         Ok(())
     }
+}
+
+/// Given a string that contains rust code, this calls charon on it and returns the result.
+pub fn translate_rust_text(code: impl Display) -> anyhow::Result<TranslatedCrate> {
+    // Initialize the logger
+    logger::initialize_logger();
+
+    // Write the code to a temporary file.
+    use std::io::Write;
+    let tmp_dir = tempfile::TempDir::new()?;
+    let input_path = tmp_dir.path().join("test_crate.rs");
+    {
+        let mut tmp_file = File::create(&input_path)?;
+        write!(tmp_file, "{}", code)?;
+        drop(tmp_file);
+    }
+
+    // Call charon
+    let output_path = tmp_dir.path().join("test_crate.llbc");
+    Command::cargo_bin("charon")?
+        .arg("--no-cargo")
+        .arg("--rustc-flag=--edition=2021")
+        .arg("--input")
+        .arg(input_path)
+        .arg("--dest-file")
+        .arg(&output_path)
+        .assert()
+        .try_success()?;
+
+    // Extract the computed crate data.
+    let crate_data: CrateData = {
+        let file = File::open(output_path)?;
+        let reader = BufReader::new(file);
+        serde_json::from_reader(reader)?
+    };
+
+    Ok(crate_data.translated)
 }

@@ -171,7 +171,9 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
                     // but still remember their name (unless `extract_opaque_bodies` is set).
                     // TODO: translate function signatures unconditionally.
                     if hax_item.has_value {
-                        // This is a *provided* method
+                        // This is a *provided* method,
+                        // TODO: this branch is a hack: we should always give an id to methods and
+                        // skip translating their body. However today we run into `for<'a>` crashes.
                         if rust_id.is_local() || bt_ctx.t_ctx.options.extract_opaque_bodies {
                             let fun_id = bt_ctx.register_fun_decl_id(item_span, rust_item_id);
                             provided_methods.push((item_name.clone(), Some(fun_id)));

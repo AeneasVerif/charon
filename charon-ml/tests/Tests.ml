@@ -15,4 +15,5 @@ let () =
 let () = Test_Deserialize.run_tests "../../../tests/serialized"
 
 let () =
-  Test_NameMatcher.run_tests "../../../tests/serialized/name-matcher-tests.llbc"
+  Test_NameMatcher.run_tests
+    "../../../tests/serialized/ml-name-matcher-tests.llbc"

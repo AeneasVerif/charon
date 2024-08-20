@@ -1355,7 +1355,7 @@ impl<C: AstFormatter> FmtWithCtx<C> for TypeId {
         match self {
             TypeId::Tuple => "".to_string(),
             TypeId::Adt(def_id) => ctx.format_object(*def_id),
-            TypeId::Assumed(aty) => get_name_from_type_id(*aty).join("::"),
+            TypeId::Assumed(aty) => aty.get_name().fmt_with_ctx(ctx),
         }
     }
 }

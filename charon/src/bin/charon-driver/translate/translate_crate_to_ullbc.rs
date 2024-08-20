@@ -2,9 +2,9 @@ use super::get_mir::extract_constants_at_top_level;
 use super::translate_ctx::*;
 use charon_lib::ast::krate::*;
 use charon_lib::common::*;
-use charon_lib::options::{CliOpts, MirLevel, TransOptions};
+use charon_lib::options::CliOpts;
+use charon_lib::transform::ctx::TransformOptions;
 use charon_lib::transform::TransformCtx;
-
 use hax_frontend_exporter as hax;
 use hax_frontend_exporter::SInto;
 use rustc_hir::def_id::DefId;
@@ -58,7 +58,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
                 | ItemKind::Macro(..)
                 | ItemKind::Trait(..) => {
                     let name = self.def_id_to_name(def_id)?;
-                    if self.is_opaque_name(&name) {
+                    if self.opacity_for_name(&name).is_opaque() {
                         trace!("Ignoring {:?} (marked as opaque)", item.item_id());
                         return Ok(());
                     }
@@ -350,13 +350,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
     }
 }
 
-/// Translate all the declarations in the crate.
-pub fn translate<'tcx, 'ctx>(
-    crate_name: String,
-    options: &CliOpts,
-    tcx: TyCtxt<'tcx>,
-    mir_level: MirLevel,
-) -> TransformCtx<'tcx> {
+pub fn translate<'tcx, 'ctx>(options: &CliOpts, tcx: TyCtxt<'tcx>) -> TransformCtx<'tcx> {
     let hax_state = hax::state::State::new(
         tcx,
         hax::options::Options {
@@ -364,27 +358,41 @@ pub fn translate<'tcx, 'ctx>(
             // downgrade_errors: options.errors_as_warnings,
         },
     );
+
+    // Retrieve the crate name: if the user specified a custom name, use
+    // it, otherwise retrieve it from rustc.
+    let real_crate_name = tcx
+        .crate_name(rustc_span::def_id::LOCAL_CRATE)
+        .to_ident_string();
+    let requested_crate_name: String = options
+        .crate_name
+        .as_ref()
+        .unwrap_or(&real_crate_name)
+        .clone();
+    trace!("# Crate: {}", requested_crate_name);
+
+    let mut error_ctx = ErrorCtx {
+        continue_on_failure: !options.abort_on_error,
+        errors_as_warnings: options.errors_as_warnings,
+        dcx: tcx.dcx(),
+        decls_with_errors: HashSet::new(),
+        ignored_failed_decls: HashSet::new(),
+        dep_sources: HashMap::new(),
+        def_id: None,
+        error_count: 0,
+    };
+    let transform_options = TransformOptions {
+        no_code_duplication: options.no_code_duplication,
+    };
+    let translate_options = TranslateOptions::new(&mut error_ctx, options);
     let mut ctx = TranslateCtx {
         tcx,
         hax_state,
-        options: TransOptions {
-            mir_level,
-            no_code_duplication: options.no_code_duplication,
-            extract_opaque_bodies: options.extract_opaque_bodies,
-            opaque_mods: HashSet::from_iter(options.opaque_modules.iter().cloned()),
-        },
-        errors: ErrorCtx {
-            continue_on_failure: !options.abort_on_error,
-            errors_as_warnings: options.errors_as_warnings,
-            dcx: tcx.dcx(),
-            decls_with_errors: HashSet::new(),
-            ignored_failed_decls: HashSet::new(),
-            dep_sources: HashMap::new(),
-            def_id: None,
-            error_count: 0,
-        },
+        options: translate_options,
+        errors: error_ctx,
         translated: TranslatedCrate {
-            crate_name,
+            crate_name: requested_crate_name,
+            real_crate_name,
             ..TranslatedCrate::default()
         },
         priority_queue: Default::default(),
@@ -438,7 +446,7 @@ pub fn translate<'tcx, 'ctx>(
 
     // Return the context, dropping the hax state and rustc `tcx`.
     TransformCtx {
-        options: ctx.options,
+        options: transform_options,
         translated: ctx.translated,
         errors: ctx.errors,
     }

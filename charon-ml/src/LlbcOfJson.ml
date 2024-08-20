@@ -181,43 +181,42 @@ let split_global (gid_conv : global_id_converter) global :
   (global_decl, fun_decl)
 
 let crate_of_json (js : json) : (crate, string) result =
-  combine_error_msgs js __FUNCTION__
-    begin
-      let* crate = gcrate_of_json expr_body_of_json js in
-      (* When deserializing the globals, we split the global declarations
-       * between the globals themselves and their bodies, which are simply
-       * functions with no arguments. We add the global bodies to the list
-       * of function declarations: the (fresh) ids we use for those bodies
-       * are simply given by: [num_functions + global_id] *)
-      let gid_conv =
-        { fun_count = List.length (FunDeclId.Map.bindings crate.fun_decls) }
-      in
-      let globals, global_bodies =
-        List.split
-          (List.map
-             (fun (_, g) -> split_global gid_conv g)
-             (GlobalDeclId.Map.bindings crate.global_decls))
-      in
+  begin
+    let* crate = gcrate_of_json expr_body_of_json js in
+    (* When deserializing the globals, we split the global declarations
+     * between the globals themselves and their bodies, which are simply
+     * functions with no arguments. We add the global bodies to the list
+     * of function declarations: the (fresh) ids we use for those bodies
+     * are simply given by: [num_functions + global_id] *)
+    let gid_conv =
+      { fun_count = List.length (FunDeclId.Map.bindings crate.fun_decls) }
+    in
+    let globals, global_bodies =
+      List.split
+        (List.map
+           (fun (_, g) -> split_global gid_conv g)
+           (GlobalDeclId.Map.bindings crate.global_decls))
+    in
 
-      (* Add the global bodies to the list of functions *)
-      let fun_decls =
-        List.fold_left
-          (fun m (d : fun_decl) -> FunDeclId.Map.add d.def_id d m)
-          crate.fun_decls global_bodies
-      in
-      let global_decls =
-        GlobalDeclId.Map.of_list
-          (List.map (fun (d : global_decl) -> (d.def_id, d)) globals)
-      in
+    (* Add the global bodies to the list of functions *)
+    let fun_decls =
+      List.fold_left
+        (fun m (d : fun_decl) -> FunDeclId.Map.add d.def_id d m)
+        crate.fun_decls global_bodies
+    in
+    let global_decls =
+      GlobalDeclId.Map.of_list
+        (List.map (fun (d : global_decl) -> (d.def_id, d)) globals)
+    in
 
-      Ok
-        {
-          name = crate.name;
-          declarations = crate.declarations;
-          type_decls = crate.type_decls;
-          fun_decls;
-          global_decls;
-          trait_decls = crate.trait_decls;
-          trait_impls = crate.trait_impls;
-        }
-    end
+    Ok
+      {
+        name = crate.name;
+        declarations = crate.declarations;
+        type_decls = crate.type_decls;
+        fun_decls;
+        global_decls;
+        trait_decls = crate.trait_decls;
+        trait_impls = crate.trait_impls;
+      }
+  end

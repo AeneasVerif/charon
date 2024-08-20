@@ -4,7 +4,8 @@ use charon_lib::ast::*;
 use charon_lib::common::*;
 use charon_lib::formatter::{FmtCtx, IntoFormatter};
 use charon_lib::ids::{MapGenerator, Vector};
-use charon_lib::options::TransOptions;
+use charon_lib::name_matcher::NamePattern;
+use charon_lib::options::CliOpts;
 use charon_lib::ullbc_ast as ast;
 use hax_frontend_exporter as hax;
 use hax_frontend_exporter::SInto;
@@ -29,6 +30,89 @@ const IGNORE_BUILTIN_MARKER_TRAITS: bool = true;
 pub(crate) use charon_lib::errors::{
     error_assert, error_or_panic, register_error_or_panic, DepSource, ErrorCtx,
 };
+
+/// TODO: maybe we should always target MIR Built, this would make things
+/// simpler. In particular, the MIR optimized is very low level and
+/// reveals too many types and data-structures that we don't want to manipulate.
+#[derive(Clone, Copy, PartialEq, Eq)]
+pub enum MirLevel {
+    /// Original MIR, directly translated from HIR.
+    Built,
+    /// Not sure what this is. Not well tested.
+    Promoted,
+    /// MIR after optimization passes. The last one before codegen.
+    Optimized,
+}
+
+/// The options that control translation.
+pub struct TranslateOptions {
+    /// The level at which to extract the MIR
+    pub mir_level: MirLevel,
+    /// Whether to extract the bodies of foreign methods and structs with private fields.
+    pub extract_opaque_bodies: bool,
+    // List of patterns to assign a given opacity to. For each name, the most specific pattern that
+    // matches determines the opacity of the item. When no options are provided this is initialized
+    // to treat items in the crate as transparent and items in other crates as foreign.
+    pub item_opacities: Vec<(NamePattern, ItemOpacity)>,
+}
+
+impl TranslateOptions {
+    pub(crate) fn new(error_ctx: &mut ErrorCtx<'_>, options: &CliOpts) -> Self {
+        let mut parse_pattern = |s: &str| match NamePattern::parse(s) {
+            Ok(p) => Ok(p),
+            Err(e) => {
+                let msg = format!("failed to parse pattern `{s}` ({e})");
+                error_or_panic!(error_ctx, rustc_span::DUMMY_SP, msg)
+            }
+        };
+
+        let mir_level = if options.mir_optimized {
+            MirLevel::Optimized
+        } else if options.mir_promoted {
+            MirLevel::Promoted
+        } else {
+            MirLevel::Built
+        };
+
+        let item_opacities = {
+            use ItemOpacity::*;
+            let mut opacities = vec![];
+
+            // This is how to treat items that don't match any other pattern.
+            if options.extract_opaque_bodies {
+                opacities.push(("_".to_string(), Transparent));
+            } else {
+                opacities.push(("_".to_string(), Foreign));
+            }
+
+            // We always include the items from the crate.
+            opacities.push(("crate".to_owned(), Transparent));
+
+            for module in options.opaque_modules.iter() {
+                opacities.push((format!("crate::{module}"), Opaque));
+            }
+
+            for pat in options.include.iter() {
+                opacities.push((pat.to_string(), Transparent));
+            }
+            for pat in options.exclude.iter() {
+                opacities.push((pat.to_string(), Opaque));
+            }
+
+            opacities
+                .into_iter()
+                .filter_map(|(s, opacity)| parse_pattern(&s).ok().map(|pat| (pat, opacity)))
+                .collect()
+        };
+
+        TranslateOptions {
+            mir_level,
+            // TODO: remove option
+            extract_opaque_bodies: options.extract_opaque_bodies,
+            item_opacities,
+        }
+    }
+}
 
 /// We use a special type to store the Rust identifiers in the stack, to
 /// make sure we translate them in a specific order (top-level constants
@@ -86,7 +170,7 @@ pub struct TranslateCtx<'tcx, 'ctx> {
     pub hax_state: hax::State<hax::Base<'tcx>, (), (), ()>,
 
     /// The options that control translation.
-    pub options: TransOptions,
+    pub options: TranslateOptions,
     /// The translated data.
     pub translated: TranslatedCrate,
 
@@ -471,17 +555,13 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         let attr_info = self.translate_attr_info_from_rid(def_id, span);
         let is_local = def_id.is_local();
 
-        let opacity = {
-            let is_opaque = self.is_opaque_name(&name)
-                || self.id_is_extern_item(def_id)
-                || attr_info.attributes.iter().any(|attr| attr.is_opaque());
-            if is_opaque {
-                ItemOpacity::Opaque
-            } else if !is_local && !self.options.extract_opaque_bodies {
-                ItemOpacity::Foreign
-            } else {
-                ItemOpacity::Transparent
-            }
+        let opacity = if self.id_is_extern_item(def_id)
+            || attr_info.attributes.iter().any(|attr| attr.is_opaque())
+        {
+            // Force opaque in these cases.
+            ItemOpacity::Opaque
+        } else {
+            self.opacity_for_name(&name)
         };
 
         Ok(ItemMeta {
@@ -757,8 +837,18 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
             .is_some_and(|node| matches!(node, HirNode::ForeignItem(_)))
     }
 
-    pub(crate) fn is_opaque_name(&self, name: &Name) -> bool {
-        name.is_in_modules(&self.translated.crate_name, &self.options.opaque_mods)
+    pub(crate) fn opacity_for_name(&self, name: &Name) -> ItemOpacity {
+        // Find the most precise pattern that matches this name. There is always one since
+        // the list contains the `_` pattern. If there are conflicting settings for this item, we
+        // err on the side of being more transparent.
+        let (_, opacity) = self
+            .options
+            .item_opacities
+            .iter()
+            .filter(|(pat, _)| pat.matches(&self.translated, name))
+            .max()
+            .unwrap();
+        *opacity
     }
 
     /// Register the fact that `id` is a dependency of `src` (if `src` is not `None`).

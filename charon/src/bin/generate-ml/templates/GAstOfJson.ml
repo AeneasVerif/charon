@@ -258,6 +258,7 @@ and gtranslated_crate_of_json
     | `Assoc
         [
           ("crate_name", name);
+          ("real_crate_name", _);
           ("id_to_file", id_to_file);
           ("all_ids", _);
           ("type_decls", types);

@@ -1,8 +1,9 @@
+//! The options received as input by cargo-charon
 #![allow(dead_code)]
 use clap::Parser;
-/// The options received as input by cargo-charon
+use indoc::indoc;
 use serde::{Deserialize, Serialize};
-use std::{collections::HashSet, path::PathBuf};
+use std::path::PathBuf;
 
 /// The name of the environment variable we use to save the serialized Cli options
 /// when calling charon-driver from cargo-charon.
@@ -67,46 +68,46 @@ pub struct CliOpts {
     pub use_polonius: bool,
     #[clap(
         long = "no-code-duplication",
-        help = "Check that no code duplication happens during control-flow reconstruction
-of the MIR code.
+        help = indoc!("
+            Check that no code duplication happens during control-flow reconstruction
+            of the MIR code.
 
-This is only used to make sure the reconstructed code is of good quality.
-For instance, if we have the following CFG in MIR:
-  ```
-  b0: switch x [true -> goto b1; false -> goto b2]
-  b1: y := 0; goto b3
-  b2: y := 1; goto b3
-  b3: return y      
-  ```
+            This is only used to make sure the reconstructed code is of good quality.
+            For instance, if we have the following CFG in MIR:
+              ```
+              b0: switch x [true -> goto b1; false -> goto b2]
+              b1: y := 0; goto b3
+              b2: y := 1; goto b3
+              b3: return y      
+              ```
 
-We want to reconstruct the control-flow as:
-  ```
-  if x then { y := 0; } else { y := 1 };
-  return y;
-  ```
+            We want to reconstruct the control-flow as:
+              ```
+              if x then { y := 0; } else { y := 1 };
+              return y;
+              ```
 
-But if we don't do this reconstruction correctly, we might duplicate
-the code starting at b3:
-  ```
-  if x then { y := 0; return y; } else { y := 1; return y; }
-  ```
+            But if we don't do this reconstruction correctly, we might duplicate
+            the code starting at b3:
+              ```
+              if x then { y := 0; return y; } else { y := 1; return y; }
+              ```
 
-When activating this flag, we check that no such things happen.
+            When activating this flag, we check that no such things happen.
 
-Also note that it is sometimes not possible to prevent code duplication,
-if the original Rust looks like this for instance:
-  ```
-  match x with
-  | E1(y,_) | E2(_,y) => { ... } // Some branches are \"fused\"
-  | E3 => { ... }
-  ```
+            Also note that it is sometimes not possible to prevent code duplication,
+            if the original Rust looks like this for instance:
+              ```
+              match x with
+              | E1(y,_) | E2(_,y) => { ... } // Some branches are \"fused\"
+              | E3 => { ... }
+              ```
 
-The reason is that assignments are introduced when desugaring the pattern
-matching, and those assignments are specific to the variant on which we pattern
-match (the `E1` branch performs: `y := (x as E1).0`, while the `E2` branch
-performs: `y := (x as E2).1`). Producing a better reconstruction is non-trivial.
-"
-    )]
+            The reason is that assignments are introduced when desugaring the pattern
+            matching, and those assignments are specific to the variant on which we pattern
+            match (the `E1` branch performs: `y := (x as E1).0`, while the `E2` branch
+            performs: `y := (x as E2).1`). Producing a better reconstruction is non-trivial.
+    "))]
     #[serde(default)]
     pub no_code_duplication: bool,
     /// A list of modules of the extracted crate that we consider as opaque: we
@@ -120,6 +121,37 @@ performs: `y := (x as E2).1`). Producing a better reconstruction is non-trivial.
     #[clap(long = "extract-opaque-bodies")]
     #[serde(default)]
     pub extract_opaque_bodies: bool,
+    /// Whitelist of items to translate. These use the name-matcher syntax.
+    #[clap(
+        long = "include",
+        help = indoc!("
+            Whitelist of items to translate. These use the name-matcher syntax (note: this differs
+            a bit from the ocaml NameMatcher).
+
+            Note: This is very rough at the moment. E.g. this parses `u64` as a path instead of the
+            built-in type. Some parts just don't work. Please report bugs or missing features.
+
+            Examples:
+              - `crate::module1::module2::item`: refers to this item and all its subitems (e.g.
+                  submodules or trait methods);
+              - `crate::module1::module2::item::_`: refers only to the subitems of this item;
+              - `core::convert::{impl core::convert::Into<_> for _}`: retrieve the body of this
+                  very useful impl;
+
+            When multiple patterns in the `--include` and `--exclude` options match the same item,
+            the most precise pattern wins. E.g.: `charon --exclude crate::module --include
+            crate::module::_` makes the `module` opaque (we won't explore its contents), but the
+            items in it transparent (we will translate them if we encounter them.)
+    "))]
+    #[serde(default)]
+    pub include: Vec<String>,
+    /// Blacklist of items to keep opaque. These use the name-matcher syntax.
+    #[clap(
+        long = "exclude",
+        help = "Blacklist of items to keep opaque. Works just like `--include`, see the doc there."
+    )]
+    #[serde(default)]
+    pub exclude: Vec<String>,
     /// Do not run cargo; instead, run the driver directly.
     // FIXME: use a subcommand instead, when we update clap to support flattening.
     #[clap(long = "no-cargo")]
@@ -138,43 +170,30 @@ performs: `y := (x as E2).1`). Producing a better reconstruction is non-trivial.
     #[serde(default)]
     pub abort_on_error: bool,
     /// Print the errors as warnings
-    #[clap(
-        long = "errors-as-warnings",
-        help = "
-Report the errors as warnings
-"
-    )]
+    #[clap(long = "errors-as-warnings", help = "Report the errors as warnings")]
     #[serde(default)]
     pub errors_as_warnings: bool,
     #[clap(
         long = "no-serialize",
-        help = "
-Don't serialize the final (U)LLBC to a file.
-"
+        help = "Don't serialize the final (U)LLBC to a file."
     )]
     #[serde(default)]
     pub no_serialize: bool,
     #[clap(
         long = "print-ullbc",
-        help = "
-Print the ULLBC immediately after extraction from MIR.
-"
+        help = "Print the ULLBC immediately after extraction from MIR."
     )]
     #[serde(default)]
     pub print_ullbc: bool,
     #[clap(
         long = "print-built-llbc",
-        help = "
-Print the LLBC just after we built it (i.e., immediately after loop reconstruction).
-"
+        help = "Print the LLBC just after we built it (i.e., immediately after loop reconstruction)."
     )]
     #[serde(default)]
     pub print_built_llbc: bool,
     #[clap(
         long = "print-llbc",
-        help = "
-Print the final LLBC (after all the cleaning micro-passes).
-"
+        help = "Print the final LLBC (after all the cleaning micro-passes)."
     )]
     #[serde(default)]
     pub print_llbc: bool,
@@ -198,31 +217,4 @@ impl CliOpts {
             "Can't use --abort-on-error and --errors-as-warnings at the same time"
         );
     }
-}
-
-/// TODO: maybe we should always target MIR Built, this would make things
-/// simpler. In particular, the MIR optimized is very low level and
-/// reveals too many types and data-structures that we don't want to manipulate.
-#[derive(Clone, Copy, PartialEq, Eq)]
-pub enum MirLevel {
-    /// Original MIR, directly translated from HIR.
-    Built,
-    /// Not sure what this is. Not well tested.
-    Promoted,
-    /// MIR after optimization passes. The last one before codegen.
-    Optimized,
-}
-
-/// The options that control translation.
-pub struct TransOptions {
-    /// The level at which to extract the MIR
-    pub mir_level: MirLevel,
-    /// Error out if some code ends up being duplicated by the control-flow
-    /// reconstruction (note that because several patterns in a match may lead
-    /// to the same branch, it is node always possible not to duplicate code).
-    pub no_code_duplication: bool,
-    /// Whether to extract the bodies of foreign methods and structs with private fields.
-    pub extract_opaque_bodies: bool,
-    /// Modules to consider opaque.
-    pub opaque_mods: HashSet<String>,
 }

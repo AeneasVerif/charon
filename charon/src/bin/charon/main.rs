@@ -30,8 +30,9 @@
 //! deserialize them later and use them to guide the extraction in the
 //! callbacks.
 
-// Don't link with the `charon_lib` crate so that the `charon` binary doesn't have to dynamically
-// link to `librustc_driver.so` etc.
+// We must not link with the `charon_lib` crate because that would make `charon` need to
+// dynamically link to `librustc_driver.so` etc. The `charon` binary must be runnable _before_
+// setting up the correct toolchain paths.
 #[path = "../../logger.rs"]
 mod logger;
 #[path = "../../options.rs"]

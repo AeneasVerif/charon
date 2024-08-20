@@ -1,49 +1,13 @@
-#![feature(rustc_private)]
-
-use assert_cmd::prelude::{CommandCargoExt, OutputAssertExt};
 use charon_lib::ast::{AnyTransItem, TranslatedCrate};
 use itertools::Itertools;
 use std::collections::HashMap;
-use std::{error::Error, fs::File, io::BufReader, process::Command};
 
-use charon_lib::{
-    export::CrateData, gast::*, logger, meta::*, names::*, types::*, values::ScalarValue,
-};
+use charon_lib::ast::*;
 
-fn translate(code: impl std::fmt::Display) -> Result<TranslatedCrate, Box<dyn Error>> {
-    // Initialize the logger
-    logger::initialize_logger();
+mod util;
 
-    // Write the code to a temporary file.
-    use std::io::Write;
-    let tmp_dir = tempfile::TempDir::new()?;
-    let input_path = tmp_dir.path().join("test_crate.rs");
-    {
-        let mut tmp_file = File::create(&input_path)?;
-        write!(tmp_file, "{}", code)?;
-        drop(tmp_file);
-    }
-
-    // Call charon
-    let output_path = tmp_dir.path().join("test_crate.llbc");
-    Command::cargo_bin("charon")?
-        .arg("--no-cargo")
-        .arg("--rustc-flag=--edition=2021")
-        .arg("--input")
-        .arg(input_path)
-        .arg("--dest-file")
-        .arg(&output_path)
-        .assert()
-        .try_success()?;
-
-    // Extract the computed crate data.
-    let crate_data: CrateData = {
-        let file = File::open(output_path)?;
-        let reader = BufReader::new(file);
-        serde_json::from_reader(reader)?
-    };
-
-    Ok(crate_data.translated)
+fn translate(code: impl std::fmt::Display) -> anyhow::Result<TranslatedCrate> {
+    util::translate_rust_text(code)
 }
 
 /// `Name` is a complex datastructure; to inspect it we serialize it a little bit.
@@ -110,7 +74,7 @@ fn items_by_name<'c>(crate_data: &'c TranslatedCrate) -> HashMap<String, Item<'c
 }
 
 #[test]
-fn type_decl() -> Result<(), Box<dyn Error>> {
+fn type_decl() -> anyhow::Result<()> {
     let crate_data = translate(
         "
         struct Struct;
@@ -125,7 +89,7 @@ fn type_decl() -> Result<(), Box<dyn Error>> {
 }
 
 #[test]
-fn file_name() -> Result<(), Box<dyn Error>> {
+fn file_name() -> anyhow::Result<()> {
     let crate_data = translate(
         "
         type Foo = Option<()>;
@@ -149,7 +113,7 @@ fn file_name() -> Result<(), Box<dyn Error>> {
 }
 
 #[test]
-fn spans() -> Result<(), Box<dyn Error>> {
+fn spans() -> anyhow::Result<()> {
     let crate_data = translate(
         "
         pub fn sum(s: &[u32]) -> u32 {
@@ -178,7 +142,7 @@ fn spans() -> Result<(), Box<dyn Error>> {
 }
 
 #[test]
-fn predicate_origins() -> Result<(), Box<dyn Error>> {
+fn predicate_origins() -> anyhow::Result<()> {
     use PredicateOrigin::*;
     let crate_data = translate(
         "
@@ -277,7 +241,7 @@ fn predicate_origins() -> Result<(), Box<dyn Error>> {
 }
 
 #[test]
-fn attributes() -> Result<(), Box<dyn Error>> {
+fn attributes() -> anyhow::Result<()> {
     // Use the `clippy::` prefix because it's ignored by rustc.
     let unknown_attrs = |item_meta: &ItemMeta| {
         item_meta
@@ -362,7 +326,7 @@ fn attributes() -> Result<(), Box<dyn Error>> {
 }
 
 #[test]
-fn visibility() -> Result<(), Box<dyn Error>> {
+fn visibility() -> anyhow::Result<()> {
     let crate_data = translate(
         r#"
         pub struct Pub;
@@ -394,7 +358,7 @@ fn visibility() -> Result<(), Box<dyn Error>> {
 }
 
 #[test]
-fn discriminants() -> Result<(), Box<dyn Error>> {
+fn discriminants() -> anyhow::Result<()> {
     let crate_data = translate(
         r#"
         enum Foo {
@@ -423,7 +387,7 @@ fn discriminants() -> Result<(), Box<dyn Error>> {
 }
 
 #[test]
-fn rename_attribute() -> Result<(), Box<dyn Error>> {
+fn rename_attribute() -> anyhow::Result<()> {
     let crate_data = translate(
         r#"
         #![feature(register_tool)]
@@ -592,7 +556,7 @@ fn rename_attribute() -> Result<(), Box<dyn Error>> {
 }
 
 #[test]
-fn declaration_groups() -> Result<(), Box<dyn Error>> {
+fn declaration_groups() -> anyhow::Result<()> {
     let crate_data = translate(
         r#"
         fn foo() {

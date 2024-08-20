@@ -1,0 +1,99 @@
+# Final LLBC before serialization:
+
+enum core::option::Option<T> =
+|  None()
+|  Some(T)
+
+
+fn core::option::{core::option::Option<T>}::is_some<'_0, T>(@1: &'_0 (core::option::Option<T>)) -> bool
+{
+    let @0: bool; // return
+    let self@1: &'_ (core::option::Option<T>); // arg #1
+
+    match *(self@1) {
+        1 => {
+            @0 := const (true)
+        },
+        0 => {
+            @0 := const (false)
+        }
+    }
+    return
+}
+
+trait core::convert::Into<Self, T>
+{
+    fn into : core::convert::Into::into
+}
+
+trait core::convert::From<Self, T>
+{
+    fn from : core::convert::From::from
+}
+
+fn core::convert::From::from<Self, T>(@1: T) -> Self
+
+fn core::convert::{impl core::convert::Into<U> for T}#3::into<T, U>(@1: T) -> U
+where
+    // Inherited clauses:
+    [@TraitClause0]: core::convert::From<U, T>,
+{
+    let @0: U; // return
+    let self@1: T; // arg #1
+
+    @0 := @TraitClause0::from(move (self@1))
+    return
+}
+
+impl<T, U> core::convert::{impl core::convert::Into<U> for T}#3<T, U> : core::convert::Into<T, U>
+where
+    [@TraitClause0]: core::convert::From<U, T>,
+{
+    fn into = core::convert::{impl core::convert::Into<U> for T}#3::into
+}
+
+fn core::convert::num::{impl core::convert::From<u32> for u64}#72::from(@1: u32) -> u64
+{
+    let @0: u64; // return
+    let small@1: u32; // arg #1
+
+    @0 := cast<u32, u64>(copy (small@1))
+    return
+}
+
+impl core::convert::num::{impl core::convert::From<u32> for u64}#72 : core::convert::From<u64, u32>
+{
+    fn from = core::convert::num::{impl core::convert::From<u32> for u64}#72::from
+}
+
+fn core::convert::Into::into<Self, T>(@1: Self) -> T
+
+fn test_crate::foo()
+{
+    let @0: (); // return
+    let @1: bool; // anonymous local
+    let @2: &'_ (core::option::Option<i32>); // anonymous local
+    let @3: core::option::Option<i32>; // anonymous local
+    let @4: u64; // anonymous local
+    let @5: (); // anonymous local
+
+    @3 := core::option::Option::Some { 0: const (0 : i32) }
+    @2 := &@3
+    @1 := core::option::{core::option::Option<T>}::is_some<i32>(move (@2))
+    drop @2
+    @fake_read(@1)
+    drop @3
+    drop @1
+    @4 := core::convert::{impl core::convert::Into<U> for T}#3<u32, u64>[core::convert::num::{impl core::convert::From<u32> for u64}#72]::into(const (42 : u32))
+    @fake_read(@4)
+    drop @4
+    @5 := ()
+    @0 := move (@5)
+    @0 := ()
+    return
+}
+
+fn test_crate::module::dont_translate_body()
+
+
+
