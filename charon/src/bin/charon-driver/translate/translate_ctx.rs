@@ -547,10 +547,14 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
     }
 
     /// Compute the meta information for a Rust item.
-    pub(crate) fn translate_item_meta(&mut self, def: &hax::FullDef) -> Result<ItemMeta, Error> {
+    pub(crate) fn translate_item_meta(
+        &mut self,
+        def: &hax::FullDef,
+        name: Name,
+        opacity: ItemOpacity,
+    ) -> Result<ItemMeta, Error> {
         let def_id = (&def.def_id).into();
         let span = self.translate_span_from_rspan(def.span.clone());
-        let name = self.def_id_to_name(def_id)?;
         let attr_info = self.translate_attr_info_from_rid(def_id, span);
         let is_local = def_id.is_local();
 
@@ -558,9 +562,9 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
             || attr_info.attributes.iter().any(|attr| attr.is_opaque())
         {
             // Force opaque in these cases.
-            ItemOpacity::Opaque
+            ItemOpacity::Opaque.max(opacity)
         } else {
-            self.opacity_for_name(&name)
+            opacity
         };
 
         Ok(ItemMeta {
