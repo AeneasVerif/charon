@@ -1172,7 +1172,7 @@ fn compute_switch_exits(
                 // ```
                 let inter = info.succs.clone().intersection(ord_exits_set.clone());
                 if inter.is_empty() {
-                    // No intersectiàn: ok
+                    // No intersection: ok
                     exits_set.insert(exit.id);
                     ord_exits_set.insert(*exit);
                     exits.insert(bid, Some(exit.id));
