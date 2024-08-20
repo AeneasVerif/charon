@@ -839,7 +839,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
     pub(crate) fn opacity_for_name(&self, name: &Name) -> ItemOpacity {
         // Find the most precise pattern that matches this name. There is always one since
         // the list contains the `_` pattern. If there are conflicting settings for this item, we
-        // err on the side of being more transparent.
+        // err on the side of being more opaque.
         let (_, opacity) = self
             .options
             .item_opacities

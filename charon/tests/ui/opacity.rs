@@ -1,4 +1,5 @@
 //@ charon-args=--include core::option
+//@ charon-args=--include test_crate::module::dont_translate_body
 //@ charon-args=--opaque test_crate::module::dont_translate_body
 //@ charon-args=--opaque crate::module::other_mod
 //@ charon-args=--include crate::module::other_mod::_

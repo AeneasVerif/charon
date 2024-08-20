@@ -176,9 +176,13 @@ pub struct AttrInfo {
     EnumIsA,
 )]
 pub enum ItemOpacity {
-    /// Translate nothing of this item. The corresponding map will not have an entry for the
-    /// `AnyTransId`. Useful when even the signature of the item causes errors.
-    Invisible,
+    /// Translate the item fully.
+    Transparent,
+    /// Translate the item depending on the normal rust visibility of its contents: for types, we
+    /// translate fully if it is a struct with public fields or an enum; for functions and globals
+    /// this is equivalent to `Opaque`; for trait decls and impls this is equivalent to
+    /// `Transparent`.
+    Foreign,
     /// Translate the item name and signature, but not its contents. For function and globals, this
     /// means we don't translate the body (the code); for ADTs, this means we don't translate the
     /// fields/variants. For traits and trait impls, this doesn't change anything. For modules,
@@ -188,13 +192,9 @@ pub enum ItemOpacity {
     /// This can happen either if the item was annotated with `#[charon::opaque]` or if it was
     /// declared opaque via a command-line argument.
     Opaque,
-    /// Translate the item depending on the normal rust visibility of its contents: for types, we
-    /// translate fully if it is a struct with public fields or an enum; for functions and globals
-    /// this is equivalent to `Opaque`; for trait decls and impls this is equivalent to
-    /// `Transparent`.
-    Foreign,
-    /// Translate the item fully.
-    Transparent,
+    /// Translate nothing of this item. The corresponding map will not have an entry for the
+    /// `AnyTransId`. Useful when even the signature of the item causes errors.
+    Invisible,
 }
 
 /// Meta information about an item (function, trait decl, trait impl, type decl, global).
