@@ -20,7 +20,7 @@ fn test_crate::wrap<'a>(@1: &'a (u32)) -> core::option::Option<&'a (u32)>
 trait core::clone::Clone<Self>
 {
     fn clone : core::clone::Clone::clone
-    fn clone_from
+    fn clone_from : core::clone::Clone::clone_from
 }
 
 fn test_crate::wrap2<'a>(@1: &'a (u32)) -> core::option::Option<&'a (u32)>
@@ -94,6 +94,8 @@ where
 }
 
 fn core::clone::Clone::clone<'_0, Self>(@1: &'_0 (Self)) -> Self
+
+fn core::clone::Clone::clone_from<'_0, '_1, Self>(@1: &'_0 mut (Self), @2: &'_1 (Self))
 
 
 

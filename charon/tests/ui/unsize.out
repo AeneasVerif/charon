@@ -13,7 +13,7 @@ fn alloc::string::{alloc::string::String}::new() -> alloc::string::String
 trait core::clone::Clone<Self>
 {
     fn clone : core::clone::Clone::clone
-    fn clone_from
+    fn clone_from : core::clone::Clone::clone_from
 }
 
 fn alloc::string::{impl core::clone::Clone for alloc::string::String}#6::clone<'_0>(@1: &'_0 (alloc::string::String)) -> alloc::string::String
@@ -121,6 +121,8 @@ fn test_crate::foo()
     @0 := ()
     return
 }
+
+fn core::clone::Clone::clone_from<'_0, '_1, Self>(@1: &'_0 mut (Self), @2: &'_1 (Self))
 
 
 
