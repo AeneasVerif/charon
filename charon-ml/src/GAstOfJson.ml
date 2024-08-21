@@ -421,12 +421,17 @@ and generic_args_of_json (js : json) : (generic_args, string) result =
           ("const_generics", const_generics);
           ("trait_refs", trait_refs);
         ] ->
-        let* regions = list_of_json region_of_json regions in
-        let* types = list_of_json ty_of_json types in
-        let* const_generics =
-          list_of_json const_generic_of_json const_generics
+        let* regions =
+          vector_of_json region_id_of_json region_of_json regions
         in
-        let* trait_refs = list_of_json trait_ref_of_json trait_refs in
+        let* types = vector_of_json type_var_id_of_json ty_of_json types in
+        let* const_generics =
+          vector_of_json const_generic_var_id_of_json const_generic_of_json
+            const_generics
+        in
+        let* trait_refs =
+          vector_of_json trait_clause_id_of_json trait_ref_of_json trait_refs
+        in
         Ok { regions; types; const_generics; trait_refs }
     | _ -> Error "")
 
@@ -1043,7 +1048,7 @@ and closure_info_of_json (js : json) : (closure_info, string) result =
     (match js with
     | `Assoc [ ("kind", kind); ("state", state) ] ->
         let* kind = closure_kind_of_json kind in
-        let* state = list_of_json ty_of_json state in
+        let* state = vector_of_json type_var_id_of_json ty_of_json state in
         Ok { kind; state }
     | _ -> Error "")
 

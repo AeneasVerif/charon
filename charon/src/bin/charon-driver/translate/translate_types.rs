@@ -213,18 +213,18 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 trace!("Array");
 
                 let c = self.translate_constant_expr_to_const_generic(span, const_param)?;
-                let tys = vec![self.translate_ty(span, erase_regions, ty)?];
-                let cgs = vec![c];
+                let tys = vec![self.translate_ty(span, erase_regions, ty)?].into();
+                let cgs = vec![c].into();
                 let id = TypeId::Assumed(AssumedTy::Array);
                 Ok(Ty::Adt(
                     id,
-                    GenericArgs::new(Vec::new(), tys, cgs, Vec::new()),
+                    GenericArgs::new(Vector::new(), tys, cgs, Vector::new()),
                 ))
             }
             hax::Ty::Slice(ty) => {
                 trace!("Slice");
 
-                let tys = vec![self.translate_ty(span, erase_regions, ty)?];
+                let tys = vec![self.translate_ty(span, erase_regions, ty)?].into();
                 let id = TypeId::Assumed(AssumedTy::Slice);
                 Ok(Ty::Adt(id, GenericArgs::new_from_types(tys)))
             }
@@ -253,7 +253,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             hax::Ty::Tuple(substs) => {
                 trace!("Tuple");
 
-                let mut params = vec![];
+                let mut params = Vector::new();
                 for param in substs.iter() {
                     let param_ty = self.translate_ty(span, erase_regions, param)?;
                     params.push(param_ty);
@@ -379,7 +379,14 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         erase_regions: bool,
         used_params: Option<Vec<bool>>,
         substs: &[hax::GenericArg],
-    ) -> Result<(Vec<Region>, Vec<Ty>, Vec<ConstGeneric>), Error> {
+    ) -> Result<
+        (
+            Vector<RegionId, Region>,
+            Vector<TypeVarId, Ty>,
+            Vector<ConstGenericVarId, ConstGeneric>,
+        ),
+        Error,
+    > {
         trace!("{:?}", substs);
         // Filter the parameters
         let substs: Vec<&hax::GenericArg> = match used_params {
@@ -394,9 +401,9 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             }
         };
 
-        let mut regions: Vec<Region> = vec![];
-        let mut params = vec![];
-        let mut cgs = vec![];
+        let mut regions = Vector::new();
+        let mut params = Vector::new();
+        let mut cgs = Vector::new();
         use hax::GenericArg::*;
         for param in substs.iter() {
             match param {

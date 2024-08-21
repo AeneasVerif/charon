@@ -19,10 +19,10 @@ fn transform_st(s: &mut Statement) -> Option<Vec<Statement>> {
             };
             let func = FunIdOrTraitMethodRef::mk_assumed(id);
             let generics = GenericArgs::new(
-                vec![Region::Erased],
-                vec![ty.clone()],
-                vec![cg.clone()],
-                vec![],
+                vec![Region::Erased].into(),
+                vec![ty.clone()].into(),
+                vec![cg.clone()].into(),
+                vec![].into(),
             );
             let func = FnOperand::Regular(FnPtr { func, generics });
             s.content = RawStatement::Call(Call {
@@ -40,10 +40,10 @@ fn transform_st(s: &mut Statement) -> Option<Vec<Statement>> {
             let id = AssumedFunId::ArrayRepeat;
             let func = FunIdOrTraitMethodRef::mk_assumed(id);
             let generics = GenericArgs::new(
-                vec![Region::Erased],
-                vec![ty.clone()],
-                vec![cg.clone()],
-                vec![],
+                vec![Region::Erased].into(),
+                vec![ty.clone()].into(),
+                vec![cg.clone()].into(),
+                vec![].into(),
             );
             let func = FnOperand::Regular(FnPtr { func, generics });
             s.content = RawStatement::Call(Call {

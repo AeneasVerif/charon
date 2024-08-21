@@ -101,30 +101,23 @@ impl GenericArgs {
     }
 
     pub fn empty() -> Self {
-        GenericArgs {
-            regions: Vec::new(),
-            types: Vec::new(),
-            const_generics: Vec::new(),
-            trait_refs: Vec::new(),
-        }
+        GenericArgs::default()
     }
 
-    pub fn new_from_types(types: Vec<Ty>) -> Self {
+    pub fn new_from_types(types: Vector<TypeVarId, Ty>) -> Self {
         GenericArgs {
-            regions: Vec::new(),
             types,
-            const_generics: Vec::new(),
-            trait_refs: Vec::new(),
+            ..Self::default()
         }
     }
 
     pub fn new(
-        regions: Vec<Region>,
-        types: Vec<Ty>,
-        const_generics: Vec<ConstGeneric>,
-        trait_refs: Vec<TraitRef>,
+        regions: Vector<RegionId, Region>,
+        types: Vector<TypeVarId, Ty>,
+        const_generics: Vector<ConstGenericVarId, ConstGeneric>,
+        trait_refs: Vector<TraitClauseId, TraitRef>,
     ) -> Self {
-        GenericArgs {
+        Self {
             regions,
             types,
             const_generics,
@@ -282,7 +275,7 @@ impl Ty {
                 assert!(generics.regions.is_empty());
                 assert!(generics.types.len() == 1);
                 assert!(generics.const_generics.is_empty());
-                Some(generics.types.get(0).unwrap())
+                Some(&generics.types[0])
             }
             _ => None,
         }

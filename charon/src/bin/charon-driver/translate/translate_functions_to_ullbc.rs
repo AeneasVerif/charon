@@ -877,7 +877,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             // Return
             let func = FnPtr {
                 func: FunIdOrTraitMethodRef::mk_assumed(AssumedFunId::BoxFree),
-                generics: GenericArgs::new_from_types(vec![t_ty]),
+                generics: GenericArgs::new_from_types(vec![t_ty].into()),
             };
             SubstFunId { func, args }
         } else {
@@ -1550,7 +1550,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                     .upvar_tys
                     .iter()
                     .map(|ty| self.translate_ty(span, erase_regions, &ty))
-                    .try_collect::<Vec<Ty>>()?;
+                    .try_collect::<Vector<TypeVarId, Ty>>()?;
                 Some(ClosureInfo { kind, state })
             }
             hax::FullDefKind::Fn { .. } => None,
