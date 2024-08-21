@@ -680,17 +680,19 @@ and item_meta_of_json (id_to_file : id_to_file_map) (js : json) :
     (match js with
     | `Assoc
         [
-          ("span", span);
           ("name", name);
+          ("span", span);
+          ("source_text", source_text);
           ("attr_info", attr_info);
           ("is_local", is_local);
           ("opacity", _);
         ] ->
-        let* span = span_of_json id_to_file span in
         let* name = name_of_json id_to_file name in
+        let* span = span_of_json id_to_file span in
+        let* source_text = option_of_json string_of_json source_text in
         let* attr_info = attr_info_of_json attr_info in
         let* is_local = bool_of_json is_local in
-        Ok { span; name; attr_info; is_local }
+        Ok { name; span; source_text; attr_info; is_local }
     | _ -> Error "")
 
 and type_decl_of_json (id_to_file : id_to_file_map) (js : json) :

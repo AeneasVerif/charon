@@ -562,6 +562,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         let span = self.translate_span_from_rspan(span.sinto(&self.hax_state));
         let attr_info = self.translate_attr_info_from_rid(def_id, span);
         let is_local = def_id.is_local();
+        let source_text = self.tcx.sess.source_map().span_to_snippet(span.into()).ok();
 
         let opacity = if self.id_is_extern_item(def_id)
             || attr_info.attributes.iter().any(|attr| attr.is_opaque())
@@ -573,9 +574,10 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         };
 
         Ok(ItemMeta {
-            span,
-            attr_info,
             name,
+            span,
+            source_text,
+            attr_info,
             is_local,
             opacity,
         })

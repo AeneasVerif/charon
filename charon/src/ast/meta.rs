@@ -73,6 +73,12 @@ pub struct Span {
     pub generated_from_span: Option<RawSpan>,
 }
 
+impl From<Span> for rustc_span::Span {
+    fn from(span: Span) -> Self {
+        span.span.rust_span_data.span()
+    }
+}
+
 impl From<Span> for rustc_error_messages::MultiSpan {
     fn from(span: Span) -> Self {
         span.span.into()
@@ -200,8 +206,10 @@ pub enum ItemOpacity {
 /// Meta information about an item (function, trait decl, trait impl, type decl, global).
 #[derive(Debug, Clone, Serialize, Deserialize, Drive, DriveMut)]
 pub struct ItemMeta {
-    pub span: Span,
     pub name: Name,
+    pub span: Span,
+    /// The source code that corresponds to this item.
+    pub source_text: Option<String>,
     /// Attributes and visibility.
     pub attr_info: AttrInfo,
     /// `true` if the type decl is a local type decl, `false` if it comes from an external crate.

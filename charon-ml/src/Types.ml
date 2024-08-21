@@ -661,8 +661,10 @@ and name = path_elem list
 
 (** Meta information about an item (function, trait decl, trait impl, type decl, global). *)
 and item_meta = {
-  span : span;
   name : name;
+  span : span;
+  source_text : string option;
+      (** The source code that corresponds to this item. *)
   attr_info : attr_info;  (** Attributes and visibility. *)
   is_local : bool;
       (** `true` if the type decl is a local type decl, `false` if it comes from an external crate. *)
