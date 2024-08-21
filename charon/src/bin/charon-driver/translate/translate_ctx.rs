@@ -553,8 +553,13 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         name: Name,
         opacity: ItemOpacity,
     ) -> Result<ItemMeta, Error> {
-        let def_id = (&def.def_id).into();
-        let span = self.translate_span_from_rspan(def.span.clone());
+        let def_id: DefId = (&def.def_id).into();
+        // TODO: upstream to hax
+        let span = def_id
+            .as_local()
+            .map(|local_def_id| self.tcx.source_span(local_def_id))
+            .unwrap_or(def.span.rust_span_data.unwrap().span());
+        let span = self.translate_span_from_rspan(span.sinto(&self.hax_state));
         let attr_info = self.translate_attr_info_from_rid(def_id, span);
         let is_local = def_id.is_local();
 

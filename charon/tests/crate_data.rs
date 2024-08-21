@@ -128,8 +128,8 @@ fn spans() -> anyhow::Result<()> {
         ",
     )?;
     let function = &crate_data.fun_decls[0];
-    // Span of the function signature.
-    assert_eq!(repr_span(function.item_meta.span), "2:8-2:36");
+    // Span of the whole function.
+    assert_eq!(repr_span(function.item_meta.span), "2:8-10:9");
     let body_id = function.body.unwrap();
     let body = &crate_data.bodies[body_id].as_structured().unwrap().body;
     // The whole function declaration.
