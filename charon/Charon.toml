@@ -3,7 +3,9 @@ exclude = [
     "_",
     "derive_visitor::Drive::_",
     "derive_visitor::DriveMut::_",
-    "crate",
+    "crate::_",
+    "crate::ast::_",
+    "crate::ast::krate::_",
     "crate::ast::_::{impl derive_visitor::Drive for _}",
     "crate::ast::_::{impl derive_visitor::DriveMut for _}",
 ]
@@ -17,7 +19,10 @@ include = [
     # TODO: keep names of excluded items.
     "derive_visitor::Drive",
     "derive_visitor::DriveMut",
+    "crate::ast",
+    "crate::ast::krate",
     "crate::ast::krate::AnyTransId",
+    "crate::ast::krate::TranslatedCrate",
     "crate::ast::expressions",
     "crate::ast::gast",
     "crate::ast::llbc_ast",
