@@ -296,7 +296,7 @@ where
     [@TraitClause0]: core::ops::function::FnMut<F, (&'_ (T))>,
     (parents(UNKNOWN(Could not find a clause for parameter: core::ops::function::FnMut<F, (core::slice::iter::{impl core::iter::traits::iterator::Iterator for @Adt2<'a, T>}#182<'_, T>::Item)> (available clauses: [Self]: core::iter::traits::iterator::Iterator<@Adt2<'a, T>>; [@TraitClause0]: core::ops::function::FnMut<F, (&'_ (T))>) (context: core::slice::iter::{impl#182}::any)))::[@TraitClause0])::Output = bool,
 
-Unknown decl: 39
+Missing decl: Fun(39) (core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::Iter<'a, T>}#182::find)
 
 fn core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::Iter<'a, T>}#182::find_map<'a, '_1, T, B, F>(@1: &'_1 mut (core::slice::iter::Iter<'a, T>), @2: F) -> core::option::Option<B>
 where
@@ -335,7 +335,7 @@ where
 
 unsafe fn core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::Iter<'a, T>}#182::__iterator_get_unchecked<'a, '_1, T>(@1: &'_1 mut (core::slice::iter::Iter<'a, T>), @2: usize) -> core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::Iter<'a, T>}#182<'_, T>::Item
 
-Unknown decl: 44
+Missing decl: Fun(44) (core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::Iter<'a, T>}#182::is_sorted_by)
 
 impl<'a, T> core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::Iter<'a, T>}#182<'a, T> : core::iter::traits::iterator::Iterator<core::slice::iter::Iter<'a, T>>
 {
