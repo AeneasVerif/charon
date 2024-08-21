@@ -128,8 +128,8 @@ fn spans() -> anyhow::Result<()> {
         ",
     )?;
     let function = &crate_data.fun_decls[0];
-    // Span of the function signature.
-    assert_eq!(repr_span(function.item_meta.span), "2:8-2:36");
+    // Span of the whole function.
+    assert_eq!(repr_span(function.item_meta.span), "2:8-10:9");
     let body_id = function.body.unwrap();
     let body = &crate_data.bodies[body_id].as_structured().unwrap().body;
     // The whole function declaration.
@@ -576,5 +576,44 @@ fn declaration_groups() -> anyhow::Result<()> {
     assert!(decl_groups[1].as_trait_decl().is_non_rec());
     assert!(decl_groups[2].as_trait_impl().is_non_rec());
 
+    Ok(())
+}
+
+#[test]
+fn source_text() -> anyhow::Result<()> {
+    let crate_data = translate(
+        r#"
+        fn foo() {
+            panic!()
+        }
+        mod bar {
+            fn baz( x : usize )  ->() { 
+            let _ = x;
+                } fn quux () {}
+        }
+        struct Foo { x: usize }
+        trait Trait {
+            fn method() {}
+        }
+        impl Trait for () {}
+        "#,
+    )?;
+
+    let sources = crate_data
+        .all_items()
+        .map(|i| i.item_meta().source_text.as_ref().unwrap())
+        .collect_vec();
+    assert_eq!(sources[0], "fn foo() {\n            panic!()\n        }");
+    assert_eq!(
+        sources[1],
+        "fn baz( x : usize )  ->() { \n            let _ = x;\n                }"
+    );
+    assert_eq!(sources[2], "fn quux () {}");
+    assert_eq!(sources[3], "struct Foo { x: usize }");
+    assert_eq!(
+        sources[4],
+        "trait Trait {\n            fn method() {}\n        }"
+    );
+    assert_eq!(sources[5], "impl Trait for () {}");
     Ok(())
 }

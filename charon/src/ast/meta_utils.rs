@@ -1,7 +1,6 @@
 //! This file groups everything which is linked to implementations about [crate::meta]
 use crate::meta::*;
 use crate::names::{Disambiguator, Name, PathElem};
-use rustc_span::source_map::SourceMap;
 use std::cmp::Ordering;
 use std::iter::Iterator;
 
@@ -69,54 +68,6 @@ pub fn combine_span_iter<'a, T: Iterator<Item = &'a Span>>(mut ms: T) -> Span {
     }
 
     mc
-}
-
-// TODO: remove?
-pub fn span_to_string(source_map: &SourceMap, span: rustc_span::Span) -> String {
-    // Convert the span to lines
-    let (beg, end) = source_map.is_valid_span(span).unwrap();
-
-    // Retrieve the sources snippet:
-    let snippet = source_map.span_to_snippet(span);
-
-    // First convert the filename to a string.
-    // The file is not necessarily a "real" file, because the span might come
-    // from various locations: expanded macro, command line, custom sources, etc.
-    // For our purposes, we should only have to deal with real filenames (so
-    // we ignore the others).
-    match &beg.file.name {
-        rustc_span::FileName::Real(filename) => {
-            let mut out;
-
-            // Even if the file is real, it may be a remapped path (for
-            // example if it is a path into libstd), in which case we use the
-            // local path, which points to the proper file on the user's file
-            // system.
-            match &filename {
-                rustc_span::RealFileName::LocalPath(path) => {
-                    out = path.as_path().to_str().unwrap().to_string();
-                }
-                rustc_span::RealFileName::Remapped {
-                    local_path,
-                    virtual_name: _,
-                } => {
-                    out = local_path.as_deref().unwrap().to_str().unwrap().to_string();
-                }
-            }
-
-            // Add the lines to the string.
-            out.push_str(&format!(
-                ", start: line {} column {}, end: line {} column {}",
-                beg.line, beg.col.0, end.line, end.col.0
-            ));
-
-            // Add the code snippet
-            let _ = snippet.map(|snippet| out.push_str(&format!("\nCode snippet:\n{snippet}")));
-            out
-        }
-        // Other cases: just return a dummy string
-        _ => "<unknown span>".to_string(),
-    }
 }
 
 impl Attribute {
