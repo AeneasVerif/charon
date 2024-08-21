@@ -1,6 +1,6 @@
 use crate::ast::*;
 use crate::transform::TransformCtx;
-use serde::{Deserialize, Serialize};
+use serde::{Deserialize, Deserializer, Serialize};
 use std::fs::File;
 use std::path::Path;
 
@@ -11,6 +11,7 @@ use std::path::Path;
 pub struct CrateData {
     /// The version of charon currently being used. `charon-ml` inspects this and errors if it is
     /// trying to read an incompatible version (for now we compare versions for equality).
+    #[serde(deserialize_with = "ensure_version")]
     pub charon_version: String,
     pub translated: TranslatedCrate,
     #[serde(skip)]
@@ -71,4 +72,19 @@ impl CrateData {
         }
         Ok(())
     }
+}
+
+fn ensure_version<'de, D: Deserializer<'de>>(d: D) -> Result<String, D::Error> {
+    use serde::de::Error;
+    let version = String::deserialize(d)?;
+    if version != crate::VERSION {
+        return Err(D::Error::custom(format!(
+            "Incompatible version of charon: \
+            this program supports llbc emitted by charon v{} \
+            but attempted to read a file emitted by charon v{}",
+            crate::VERSION,
+            version,
+        )));
+    }
+    Ok(version)
 }

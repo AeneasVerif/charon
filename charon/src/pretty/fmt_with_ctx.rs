@@ -54,6 +54,18 @@ impl<C: AstFormatter> FmtWithCtx<C> for AbortKind {
     }
 }
 
+impl<C: AstFormatter> FmtWithCtx<C> for AnyTransItem<'_> {
+    fn fmt_with_ctx(&self, ctx: &C) -> String {
+        match self {
+            AnyTransItem::Type(d) => d.fmt_with_ctx(ctx),
+            AnyTransItem::Fun(d) => d.fmt_with_ctx(ctx),
+            AnyTransItem::Global(d) => d.fmt_with_ctx(ctx),
+            AnyTransItem::TraitDecl(d) => d.fmt_with_ctx(ctx),
+            AnyTransItem::TraitImpl(d) => d.fmt_with_ctx(ctx),
+        }
+    }
+}
+
 impl<C: AstFormatter> FmtWithCtx<C> for BlockData {
     fn fmt_with_ctx_and_indent(&self, tab: &str, ctx: &C) -> String {
         let mut out: Vec<String> = Vec::new();

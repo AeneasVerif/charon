@@ -56,7 +56,6 @@ impl Transform {
                 let Some(variants) = variants else {
                     // An error occurred. We can't keep the `Rvalue::Discriminant` around so we
                     // `Nop` the discriminant read.
-                    assert!(ctx.has_errors());
                     seq[i].content = RawStatement::Nop;
                     return;
                 };

@@ -1,6 +1,6 @@
 [package]
 name = "charon"
-version = "0.1.27"
+version = "0.1.28"
 authors = ["Son Ho <hosonmarc@gmail.com>"]
 edition = "2021"
 
@@ -61,6 +61,7 @@ pretty = "0.12"
 regex = "1.7.1"
 rustc_version = "0.4"
 serde_json = { version = "1.0.91", features = ["unbounded_depth"] }
+serde-map-to-array = { version = "1.1.1", features = ["std"] }
 serde_stacker = "0.1.11"
 serde = { version = "1.0.152", features = ["derive"] }
 stacker = "0.1"

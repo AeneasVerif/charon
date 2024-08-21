@@ -201,7 +201,10 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
                 // exist
                 trace!("{:?}", def_id);
                 let def = self.hax_def(def_id);
-                let item_meta = self.translate_item_meta(&def)?;
+                let name = self.def_id_to_name(def_id)?;
+                let opacity = self.opacity_for_name(&name);
+                // Go through `item_meta` to get take into account the `charon::opaque` attribute.
+                let item_meta = self.translate_item_meta(&def, name, opacity)?;
                 if item_meta.opacity.is_opaque() {
                     // Ignore
                     trace!("Ignoring module [{:?}] because marked as opaque", def_id);
@@ -306,9 +309,16 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         rust_id: DefId,
         trans_id: AnyTransId,
     ) -> Result<(), Error> {
+        let name = self.def_id_to_name(rust_id)?;
+        self.translated.item_names.insert(trans_id, name.clone());
+        let opacity = self.opacity_for_name(&name);
+        if opacity.is_invisible() {
+            // Don't even start translating the item. In particular don't call `hax_def` on it.
+            return Ok(());
+        }
         // Translate the meta information
         let def: Arc<hax::FullDef> = self.hax_def(rust_id);
-        let item_meta = self.translate_item_meta(&def)?;
+        let item_meta = self.translate_item_meta(&def, name, opacity)?;
         match trans_id {
             AnyTransId::Type(id) => {
                 let ty = self.translate_type(id, rust_id, item_meta, &def)?;

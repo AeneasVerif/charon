@@ -221,6 +221,28 @@ impl<'a> FmtCtx<'a> {
             AnyTransId::TraitImpl(id) => self.format_decl(id),
         }
     }
+
+    pub fn get_item(&self, id: AnyTransId) -> Result<AnyTransItem<'_>, Option<&Name>> {
+        let Some(translated) = &self.translated else {
+            return Err(None);
+        };
+        translated
+            .get_item(id)
+            .ok_or_else(|| translated.item_names.get(&id))
+    }
+
+    fn format_any_decl(&self, id: AnyTransId) -> String {
+        match self.get_item(id) {
+            Ok(d) => d.fmt_with_ctx(self),
+            Err(opt_name) => {
+                let opt_name = opt_name
+                    .map(|n| n.fmt_with_ctx(self))
+                    .map(|n| format!(" ({n})"))
+                    .unwrap_or_default();
+                format!("Missing decl: {id:?}{opt_name}")
+            }
+        }
+    }
 }
 
 impl<'a> Formatter<TypeDeclId> for FmtCtx<'a> {
@@ -585,70 +607,30 @@ impl<'a> Formatter<&gast::TraitImpl> for FmtCtx<'a> {
 
 impl<'a> DeclFormatter<TypeDeclId> for FmtCtx<'a> {
     fn format_decl(&self, id: TypeDeclId) -> String {
-        match &self.translated {
-            None => format!("Unknown decl: {:?}", id),
-            Some(translated) => match translated.type_decls.get(id) {
-                None => {
-                    format!("Unknown decl: {:?}", id)
-                }
-                Some(d) => d.fmt_with_ctx(self),
-            },
-        }
+        self.format_any_decl(id.into())
     }
 }
 
 impl<'a> DeclFormatter<GlobalDeclId> for FmtCtx<'a> {
     fn format_decl(&self, id: GlobalDeclId) -> String {
-        match &self.translated {
-            None => format!("Unknown decl: {:?}", id),
-            Some(translated) => match translated.global_decls.get(id) {
-                None => {
-                    format!("Unknown decl: {:?}", id)
-                }
-                Some(d) => d.fmt_with_ctx(self),
-            },
-        }
+        self.format_any_decl(id.into())
     }
 }
 
 impl<'a> DeclFormatter<FunDeclId> for FmtCtx<'a> {
     fn format_decl(&self, id: FunDeclId) -> String {
-        match &self.translated {
-            None => format!("Unknown decl: {:?}", id),
-            Some(translated) => match translated.fun_decls.get(id) {
-                None => {
-                    format!("Unknown decl: {:?}", id)
-                }
-                Some(d) => d.fmt_with_ctx(self),
-            },
-        }
+        self.format_any_decl(id.into())
     }
 }
 
 impl<'a> DeclFormatter<TraitDeclId> for FmtCtx<'a> {
     fn format_decl(&self, id: TraitDeclId) -> String {
-        match &self.translated {
-            None => format!("Unknown decl: {:?}", id),
-            Some(translated) => match translated.trait_decls.get(id) {
-                None => {
-                    format!("Unknown decl: {:?}", id)
-                }
-                Some(d) => d.fmt_with_ctx(self),
-            },
-        }
+        self.format_any_decl(id.into())
     }
 }
 
 impl<'a> DeclFormatter<TraitImplId> for FmtCtx<'a> {
     fn format_decl(&self, id: TraitImplId) -> String {
-        match &self.translated {
-            None => format!("Unknown impl: {:?}", id),
-            Some(translated) => match translated.trait_impls.get(id) {
-                None => {
-                    format!("Unknown impl: {:?}", id)
-                }
-                Some(d) => d.fmt_with_ctx(self),
-            },
-        }
+        self.format_any_decl(id.into())
     }
 }

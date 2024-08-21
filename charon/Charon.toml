@@ -1,9 +1,32 @@
 [charon]
-opaque_modules = [
-    "cli_options",
-    "common",
-    "deps_errors",
-    "ids",
-    "logger",
-    "pretty",
+exclude = [
+    "_",
+    "derive_visitor::Drive::_",
+    "derive_visitor::DriveMut::_",
+    "crate",
+    "crate::ast::_::{impl derive_visitor::Drive for _}",
+    "crate::ast::_::{impl derive_visitor::DriveMut for _}",
+]
+include = [
+    "alloc::alloc::Global",
+    "alloc::string::String",
+    "alloc::vec::Vec",
+    "core::option::Option",
+    "std::path::PathBuf",
+    # Include these two so we can pattern-match on them.
+    # TODO: keep names of excluded items.
+    "derive_visitor::Drive",
+    "derive_visitor::DriveMut",
+    "crate::ast::krate::AnyTransId",
+    "crate::ast::expressions",
+    "crate::ast::gast",
+    "crate::ast::llbc_ast",
+    "crate::ast::meta",
+    "crate::ast::names",
+    "crate::ast::types",
+    "crate::ast::ullbc_ast",
+    "crate::ast::values",
+    "crate::ids::vector::Vector",
+    "crate::transform::reorder_decls::GDeclarationGroup",
+    "crate::transform::reorder_decls::DeclarationGroup",
 ]
