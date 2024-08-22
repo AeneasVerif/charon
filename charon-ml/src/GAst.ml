@@ -338,22 +338,14 @@ type trait_decl = {
   required_methods : (trait_item_name * fun_decl_id) list;
       (** The *required* methods.
 
-        The required methods are the methods declared by the trait but with
-        no default implementation.
+        The required methods are the methods declared by the trait but with no default
+        implementation. The corresponding `FunDecl`s don't have a body.
      *)
-  provided_methods : (trait_item_name * fun_decl_id option) list;
+  provided_methods : (trait_item_name * fun_decl_id) list;
       (** The *provided* methods.
 
-        The provided methods are the methods with a default implementation.
-
-        We include the [FunDeclId] identifiers *only* for the local
-        trait declarations. Otherwise, it would mean we extract *all* the
-        provided methods, which is not something we want to do *yet* for
-        the external traits.
-
-        TODO: allow to optionnaly extract information. For instance: attempt
-        to extract, and fail nicely if we don't succeed (definition not in
-        the supported subset, etc.).
+        The provided methods are the methods with a default implementation. The corresponding
+        `FunDecl`s may have a body, according to the usual rules for extracting function bodies.
      *)
 }
 

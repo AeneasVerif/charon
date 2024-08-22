@@ -1097,9 +1097,8 @@ impl<C: AstFormatter> FmtWithCtx<C> for TraitDecl {
                     .chain(self.required_methods.iter().map(|(name, f)| {
                         format!("{TAB_INCR}fn {name} : {}\n", ctx.format_object(*f))
                     }))
-                    .chain(self.provided_methods.iter().map(|(name, f)| match f {
-                        None => format!("{TAB_INCR}fn {name}\n"),
-                        Some(f) => format!("{TAB_INCR}fn {name} : {}\n", ctx.format_object(*f)),
+                    .chain(self.provided_methods.iter().map(|(name, f)| {
+                        format!("{TAB_INCR}fn {name} : {}\n", ctx.format_object(*f))
                     }))
                     .collect::<Vec<String>>();
             if items.is_empty() {

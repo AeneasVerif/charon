@@ -48,8 +48,6 @@ pub enum MirLevel {
 pub struct TranslateOptions {
     /// The level at which to extract the MIR
     pub mir_level: MirLevel,
-    /// Whether to extract the bodies of foreign methods and structs with private fields.
-    pub extract_opaque_bodies: bool,
     // List of patterns to assign a given opacity to. For each name, the most specific pattern that
     // matches determines the opacity of the item. When no options are provided this is initialized
     // to treat items in the crate as transparent and items in other crates as foreign.
@@ -98,6 +96,37 @@ impl TranslateOptions {
                 opacities.push((pat.to_string(), Invisible));
             }
 
+            // Hide some methods that have signatures we don't handle yet.
+            // TODO: handle these signatures.
+            let tricky_iterator_methods = &[
+                "filter",
+                "find",
+                "inspect",
+                "is_sorted_by",
+                "map_windows",
+                "max_by",
+                "max_by_key",
+                "min_by",
+                "rposition",
+                "min_by_key",
+                "partition",
+                "partition_in_place",
+                "scan",
+                "skip_while",
+                "take_while",
+                "try_find",
+            ];
+            for method in tricky_iterator_methods {
+                opacities.push((
+                    format!("core::iter::traits::iterator::Iterator::{method}"),
+                    Invisible,
+                ));
+            }
+            opacities.push((
+                format!("core::iter::traits::double_ended::DoubleEndedIterator::rfind"),
+                Invisible,
+            ));
+
             opacities
                 .into_iter()
                 .filter_map(|(s, opacity)| parse_pattern(&s).ok().map(|pat| (pat, opacity)))
@@ -106,8 +135,6 @@ impl TranslateOptions {
 
         TranslateOptions {
             mir_level,
-            // TODO: remove option
-            extract_opaque_bodies: options.extract_opaque_bodies,
             item_opacities,
         }
     }

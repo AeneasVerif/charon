@@ -35,7 +35,7 @@ where
 trait core::clone::Clone<Self>
 {
     fn clone : core::clone::Clone::clone
-    fn clone_from
+    fn clone_from : core::clone::Clone::clone_from
 }
 
 trait core::marker::Copy<Self>
@@ -117,6 +117,8 @@ fn test_crate::trait_error<'_0>(@1: &'_0 (Slice<u8>))
 fn core::convert::TryFrom::try_from<Self, T>(@1: T) -> core::result::Result<Self, Self::Error>
 
 fn core::clone::Clone::clone<'_0, Self>(@1: &'_0 (Self)) -> Self
+
+fn core::clone::Clone::clone_from<'_0, '_1, Self>(@1: &'_0 mut (Self), @2: &'_1 (Self))
 
 fn core::fmt::Debug::fmt<'_0, '_1, '_2, Self>(@1: &'_0 (Self), @2: &'_1 mut (core::fmt::Formatter<'_2>)) -> core::result::Result<(), core::fmt::Error>
 

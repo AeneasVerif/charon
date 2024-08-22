@@ -205,7 +205,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
                 let opacity = self.opacity_for_name(&name);
                 // Go through `item_meta` to get take into account the `charon::opaque` attribute.
                 let item_meta = self.translate_item_meta(&def, name, opacity)?;
-                if item_meta.opacity.is_opaque() {
+                if item_meta.opacity.is_opaque() || opacity.is_invisible() {
                     // Ignore
                     trace!("Ignoring module [{:?}] because marked as opaque", def_id);
                 } else {

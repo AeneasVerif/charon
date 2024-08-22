@@ -369,8 +369,8 @@ fn compute_declarations_graph<'tcx, 'ctx>(ctx: &'tcx TransformCtx<'ctx>) -> Deps
 
                 let method_ids = required_methods
                     .iter()
+                    .chain(provided_methods.iter())
                     .map(|(_, id)| id)
-                    .chain(provided_methods.iter().filter_map(|(_, id)| id.as_ref()))
                     .copied();
                 for id in method_ids {
                     // Important: we must ignore the function id, because

@@ -12,39 +12,39 @@ enum core::option::Option<T> =
 trait core::cmp::PartialEq<Self, Rhs>
 {
     fn eq : core::cmp::PartialEq::eq
-    fn ne
+    fn ne : core::cmp::PartialEq::ne
 }
 
 trait core::cmp::Eq<Self>
 {
     parent_clause_0 : [@TraitClause0]: core::cmp::PartialEq<Self, Self>
-    fn assert_receiver_is_total_eq
+    fn assert_receiver_is_total_eq : core::cmp::Eq::assert_receiver_is_total_eq
 }
 
 trait core::hash::Hasher<Self>
 {
     fn finish : core::hash::Hasher::finish
     fn write : core::hash::Hasher::write
-    fn write_u8
-    fn write_u16
-    fn write_u32
-    fn write_u64
-    fn write_u128
-    fn write_usize
-    fn write_i8
-    fn write_i16
-    fn write_i32
-    fn write_i64
-    fn write_i128
-    fn write_isize
-    fn write_length_prefix
-    fn write_str
+    fn write_u8 : core::hash::Hasher::write_u8
+    fn write_u16 : core::hash::Hasher::write_u16
+    fn write_u32 : core::hash::Hasher::write_u32
+    fn write_u64 : core::hash::Hasher::write_u64
+    fn write_u128 : core::hash::Hasher::write_u128
+    fn write_usize : core::hash::Hasher::write_usize
+    fn write_i8 : core::hash::Hasher::write_i8
+    fn write_i16 : core::hash::Hasher::write_i16
+    fn write_i32 : core::hash::Hasher::write_i32
+    fn write_i64 : core::hash::Hasher::write_i64
+    fn write_i128 : core::hash::Hasher::write_i128
+    fn write_isize : core::hash::Hasher::write_isize
+    fn write_length_prefix : core::hash::Hasher::write_length_prefix
+    fn write_str : core::hash::Hasher::write_str
 }
 
 trait core::hash::Hash<Self>
 {
     fn hash : core::hash::Hash::hash
-    fn hash_slice
+    fn hash_slice : core::hash::Hash::hash_slice
 }
 
 trait core::hash::BuildHasher<Self>
@@ -52,7 +52,7 @@ trait core::hash::BuildHasher<Self>
     parent_clause_0 : [@TraitClause0]: core::hash::Hasher<Self::Hasher>
     type Hasher
     fn build_hasher : core::hash::BuildHasher::build_hasher
-    fn hash_one
+    fn hash_one : core::hash::BuildHasher::hash_one
 }
 
 trait core::borrow::Borrow<Self, Borrowed>
@@ -109,16 +109,16 @@ impl core::cmp::impls::{impl core::cmp::Eq for u32}#43 : core::cmp::Eq<u32>
 
 opaque type std::hash::random::DefaultHasher
 
-fn std::hash::random::{impl core::hash::Hasher for std::hash::random::DefaultHasher}#4::write<'_0, '_1>(@1: &'_0 mut (std::hash::random::DefaultHasher), @2: &'_1 (Slice<u8>))
-
 fn std::hash::random::{impl core::hash::Hasher for std::hash::random::DefaultHasher}#4::finish<'_0>(@1: &'_0 (std::hash::random::DefaultHasher)) -> u64
+
+fn std::hash::random::{impl core::hash::Hasher for std::hash::random::DefaultHasher}#4::write<'_0, '_1>(@1: &'_0 mut (std::hash::random::DefaultHasher), @2: &'_1 (Slice<u8>))
 
 fn std::hash::random::{impl core::hash::Hasher for std::hash::random::DefaultHasher}#4::write_str<'_0, '_1>(@1: &'_0 mut (std::hash::random::DefaultHasher), @2: &'_1 (Str))
 
 impl std::hash::random::{impl core::hash::Hasher for std::hash::random::DefaultHasher}#4 : core::hash::Hasher<std::hash::random::DefaultHasher>
 {
-    fn write = std::hash::random::{impl core::hash::Hasher for std::hash::random::DefaultHasher}#4::write
     fn finish = std::hash::random::{impl core::hash::Hasher for std::hash::random::DefaultHasher}#4::finish
+    fn write = std::hash::random::{impl core::hash::Hasher for std::hash::random::DefaultHasher}#4::write
     fn write_str = std::hash::random::{impl core::hash::Hasher for std::hash::random::DefaultHasher}#4::write_str
 }
 
@@ -230,17 +230,58 @@ fn test_crate::get_or_insert<'_0>(@1: &'_0 mut (std::collections::hash::map::Has
 
 fn core::borrow::Borrow::borrow<'_0, Self, Borrowed>(@1: &'_0 (Self)) -> &'_0 (Borrowed)
 
+fn core::cmp::Eq::assert_receiver_is_total_eq<'_0, Self>(@1: &'_0 (Self))
+
 fn core::cmp::PartialEq::eq<'_0, '_1, Self, Rhs>(@1: &'_0 (Self), @2: &'_1 (Rhs)) -> bool
+
+fn core::cmp::PartialEq::ne<'_0, '_1, Self, Rhs>(@1: &'_0 (Self), @2: &'_1 (Rhs)) -> bool
 
 fn core::hash::Hash::hash<'_0, '_1, Self, H>(@1: &'_0 (Self), @2: &'_1 mut (H))
 where
     [@TraitClause0]: core::hash::Hasher<H>,
 
+fn core::hash::Hash::hash_slice<'_0, '_1, Self, H>(@1: &'_0 (Slice<Self>), @2: &'_1 mut (H))
+where
+    [@TraitClause0]: core::hash::Hasher<H>,
+
 fn core::hash::BuildHasher::build_hasher<'_0, Self>(@1: &'_0 (Self)) -> Self::Hasher
+
+fn core::hash::BuildHasher::hash_one<'_0, Self, T>(@1: &'_0 (Self), @2: T) -> u64
+where
+    [@TraitClause0]: core::hash::Hash<T>,
+    [@TraitClause1]: core::hash::Hasher<Self::Hasher>,
 
 fn core::hash::Hasher::finish<'_0, Self>(@1: &'_0 (Self)) -> u64
 
 fn core::hash::Hasher::write<'_0, '_1, Self>(@1: &'_0 mut (Self), @2: &'_1 (Slice<u8>))
+
+fn core::hash::Hasher::write_u8<'_0, Self>(@1: &'_0 mut (Self), @2: u8)
+
+fn core::hash::Hasher::write_u16<'_0, Self>(@1: &'_0 mut (Self), @2: u16)
+
+fn core::hash::Hasher::write_u32<'_0, Self>(@1: &'_0 mut (Self), @2: u32)
+
+fn core::hash::Hasher::write_u64<'_0, Self>(@1: &'_0 mut (Self), @2: u64)
+
+fn core::hash::Hasher::write_u128<'_0, Self>(@1: &'_0 mut (Self), @2: u128)
+
+fn core::hash::Hasher::write_usize<'_0, Self>(@1: &'_0 mut (Self), @2: usize)
+
+fn core::hash::Hasher::write_i8<'_0, Self>(@1: &'_0 mut (Self), @2: i8)
+
+fn core::hash::Hasher::write_i16<'_0, Self>(@1: &'_0 mut (Self), @2: i16)
+
+fn core::hash::Hasher::write_i32<'_0, Self>(@1: &'_0 mut (Self), @2: i32)
+
+fn core::hash::Hasher::write_i64<'_0, Self>(@1: &'_0 mut (Self), @2: i64)
+
+fn core::hash::Hasher::write_i128<'_0, Self>(@1: &'_0 mut (Self), @2: i128)
+
+fn core::hash::Hasher::write_isize<'_0, Self>(@1: &'_0 mut (Self), @2: isize)
+
+fn core::hash::Hasher::write_length_prefix<'_0, Self>(@1: &'_0 mut (Self), @2: usize)
+
+fn core::hash::Hasher::write_str<'_0, '_1, Self>(@1: &'_0 mut (Self), @2: &'_1 (Str))
 
 
 

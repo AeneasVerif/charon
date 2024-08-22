@@ -268,22 +268,14 @@ pub struct TraitDecl {
     pub type_clauses: Vec<(TraitItemName, Vector<TraitClauseId, TraitClause>)>,
     /// The *required* methods.
     ///
-    /// The required methods are the methods declared by the trait but with
-    /// no default implementation.
+    /// The required methods are the methods declared by the trait but with no default
+    /// implementation. The corresponding `FunDecl`s don't have a body.
     pub required_methods: Vec<(TraitItemName, FunDeclId)>,
     /// The *provided* methods.
     ///
-    /// The provided methods are the methods with a default implementation.
-    ///
-    /// We include the [FunDeclId] identifiers *only* for the local
-    /// trait declarations. Otherwise, it would mean we extract *all* the
-    /// provided methods, which is not something we want to do *yet* for
-    /// the external traits.
-    ///
-    /// TODO: allow to optionnaly extract information. For instance: attempt
-    /// to extract, and fail nicely if we don't succeed (definition not in
-    /// the supported subset, etc.).
-    pub provided_methods: Vec<(TraitItemName, Option<FunDeclId>)>,
+    /// The provided methods are the methods with a default implementation. The corresponding
+    /// `FunDecl`s may have a body, according to the usual rules for extracting function bodies.
+    pub provided_methods: Vec<(TraitItemName, FunDeclId)>,
 }
 
 /// A trait **implementation**.

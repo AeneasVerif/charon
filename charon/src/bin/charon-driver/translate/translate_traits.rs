@@ -8,7 +8,6 @@ use charon_lib::pretty::FmtWithCtx;
 use charon_lib::types::*;
 use charon_lib::ullbc_ast as ast;
 use hax_frontend_exporter as hax;
-use hax_frontend_exporter::AssocItemContainer;
 use hax_frontend_exporter::SInto;
 use itertools::Itertools;
 use rustc_hir::def_id::DefId;
@@ -166,22 +165,12 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
             let item_span = bt_ctx.t_ctx.tcx.def_span(rust_item_id);
             match &hax_item.kind {
                 AssocKind::Fn => {
-                    // Skip the provided methods for the *external* trait declarations,
-                    // but still remember their name (unless `extract_opaque_bodies` is set).
-                    // TODO: translate function signatures unconditionally.
+                    let fun_id = bt_ctx.register_fun_decl_id(item_span, rust_item_id);
                     if hax_item.has_value {
                         // This is a *provided* method,
-                        // TODO: this branch is a hack: we should always give an id to methods and
-                        // skip translating their body. However today we run into `for<'a>` crashes.
-                        if rust_id.is_local() || bt_ctx.t_ctx.options.extract_opaque_bodies {
-                            let fun_id = bt_ctx.register_fun_decl_id(item_span, rust_item_id);
-                            provided_methods.push((item_name.clone(), Some(fun_id)));
-                        } else {
-                            provided_methods.push((item_name.clone(), None));
-                        }
+                        provided_methods.push((item_name.clone(), fun_id));
                     } else {
                         // This is a required method (no default implementation)
-                        let fun_id = bt_ctx.register_fun_decl_id(item_span, rust_item_id);
                         required_methods.push((item_name.clone(), fun_id));
                     }
                 }
@@ -372,8 +361,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         let tcx = bt_ctx.t_ctx.tcx;
         let mut consts = HashMap::new();
         let mut types: HashMap<TraitItemName, Ty> = HashMap::new();
-        let mut required_methods = Vec::new();
-        let mut provided_methods = Vec::new();
+        let mut methods = HashMap::new();
 
         for item in impl_items {
             let name = TraitItemName(item.name.clone());
@@ -382,17 +370,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
             match &item.kind {
                 hax::AssocKind::Fn => {
                     let fun_id = bt_ctx.register_fun_decl_id(item_span, rust_item_id);
-                    let AssocItemContainer::TraitImplContainer {
-                        overrides_default, ..
-                    } = item.container
-                    else {
-                        unreachable!()
-                    };
-                    if overrides_default {
-                        provided_methods.push((name, fun_id));
-                    } else {
-                        required_methods.push((name, fun_id));
-                    }
+                    methods.insert(name, fun_id);
                 }
                 hax::AssocKind::Const => {
                     // The parameters of the constant are the same as those of the item that
@@ -428,13 +406,27 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         let mut consts = Vec::new();
         let mut type_clauses = Vec::new();
         let mut types: Vec<(TraitItemName, Ty)> = Vec::new();
-        for item in decl_items {
-            let item_def_id = (&item.def_id).into();
+        let mut required_methods = Vec::new();
+        let mut provided_methods = Vec::new();
+
+        for decl_item in decl_items {
+            let item_def_id = (&decl_item.def_id).into();
             let item_span = tcx.def_span(item_def_id);
-            match &item.kind {
-                hax::AssocKind::Fn => (),
+            let name = TraitItemName(decl_item.name.to_string());
+            match &decl_item.kind {
+                hax::AssocKind::Fn => {
+                    if let Some(&fun_id) = methods.get(&name) {
+                        // Check if we implement a required method or reimplement a provided
+                        // method.
+                        if decl_item.has_value {
+                            provided_methods.push((name, fun_id));
+                        } else {
+                            required_methods.push((name, fun_id));
+                        }
+                    }
+                }
+
                 hax::AssocKind::Const => {
-                    let name = TraitItemName(item.name.to_string());
                     // Does the trait impl provide an implementation for this const?
                     let c = match partial_consts.get(&name) {
                         Some(c) => c.clone(),
@@ -452,7 +444,6 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
                     consts.push((name, c));
                 }
                 hax::AssocKind::Type => {
-                    let name = TraitItemName(item.name.to_string());
                     // Does the trait impl provide an implementation for this type?
                     let ty = match partial_types.get(&name) {
                         Some(ty) => ty.clone(),

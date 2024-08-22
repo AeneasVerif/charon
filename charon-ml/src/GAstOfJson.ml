@@ -1255,8 +1255,7 @@ and trait_decl_of_json (id_to_file : id_to_file_map) (js : json) :
         in
         let* provided_methods =
           list_of_json
-            (pair_of_json trait_item_name_of_json
-               (option_of_json fun_decl_id_of_json))
+            (pair_of_json trait_item_name_of_json fun_decl_id_of_json)
             provided_methods
         in
         Ok

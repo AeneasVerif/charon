@@ -183,12 +183,7 @@ let trait_decl_to_string (env : ('a, 'b) fmt_env) (indent : string)
     let provided_methods =
       List.map
         (fun (name, f) ->
-          match f with
-          | None -> indent1 ^ "fn " ^ name ^ "\n"
-          | Some f ->
-              indent1 ^ "fn " ^ name ^ " : "
-              ^ fun_decl_id_to_string env f
-              ^ "\n")
+          indent1 ^ "fn " ^ name ^ " : " ^ fun_decl_id_to_string env f ^ "\n")
         def.provided_methods
     in
     let items =
