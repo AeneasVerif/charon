@@ -240,16 +240,16 @@ trait core::slice::index::SliceIndex<Self, T>
     fn index_mut : core::slice::index::SliceIndex::index_mut
 }
 
-fn core::slice::index::{impl core::ops::index::Index<I> for Slice<T>}::index<'_0, T, I>(@1: &'_0 (Slice<T>), @2: I) -> &'_0 (@TraitClause0::Output)
+fn core::slice::index::{impl core::ops::index::Index<I> for Slice<T>}::index<'_0, T, I>(@1: &'_0 (Slice<T>), @2: I) -> &'_0 (@TraitClause2::Output)
 where
     // Inherited clauses:
-    [@TraitClause0]: core::slice::index::SliceIndex<I, Slice<T>>,
+    [@TraitClause2]: core::slice::index::SliceIndex<I, Slice<T>>,
 
 impl<T, I> core::slice::index::{impl core::ops::index::Index<I> for Slice<T>}<T, I> : core::ops::index::Index<Slice<T>, I>
 where
-    [@TraitClause0]: core::slice::index::SliceIndex<I, Slice<T>>,
+    [@TraitClause2]: core::slice::index::SliceIndex<I, Slice<T>>,
 {
-    type Output = @TraitClause0::Output
+    type Output = @TraitClause2::Output
     fn index = core::slice::index::{impl core::ops::index::Index<I> for Slice<T>}::index
 }
 
@@ -316,16 +316,16 @@ trait core::ops::index::IndexMut<Self, Idx>
     fn index_mut : core::ops::index::IndexMut::index_mut
 }
 
-fn core::slice::index::{impl core::ops::index::IndexMut<I> for Slice<T>}#1::index_mut<'_0, T, I>(@1: &'_0 mut (Slice<T>), @2: I) -> &'_0 mut (@TraitClause0::Output)
+fn core::slice::index::{impl core::ops::index::IndexMut<I> for Slice<T>}#1::index_mut<'_0, T, I>(@1: &'_0 mut (Slice<T>), @2: I) -> &'_0 mut (@TraitClause2::Output)
 where
     // Inherited clauses:
-    [@TraitClause0]: core::slice::index::SliceIndex<I, Slice<T>>,
+    [@TraitClause2]: core::slice::index::SliceIndex<I, Slice<T>>,
 
 impl<T, I> core::slice::index::{impl core::ops::index::IndexMut<I> for Slice<T>}#1<T, I> : core::ops::index::IndexMut<Slice<T>, I>
 where
-    [@TraitClause0]: core::slice::index::SliceIndex<I, Slice<T>>,
+    [@TraitClause2]: core::slice::index::SliceIndex<I, Slice<T>>,
 {
-    parent_clause0 = core::slice::index::{impl core::ops::index::Index<I> for Slice<T>}<T, I>[@TraitClause0]
+    parent_clause0 = core::slice::index::{impl core::ops::index::Index<I> for Slice<T>}<T, I>[@TraitClause2]
     fn index_mut = core::slice::index::{impl core::ops::index::IndexMut<I> for Slice<T>}#1::index_mut
 }
 
@@ -390,16 +390,16 @@ fn test_crate::array_to_slice_mut_<'_0>(@1: &'_0 mut (Array<u32, 32 : usize>)) -
     return
 }
 
-fn core::array::{impl core::ops::index::Index<I> for Array<T, const N : usize>}#15::index<'_0, T, I, const N : usize>(@1: &'_0 (Array<T, const N : usize>), @2: I) -> &'_0 (core::array::{impl core::ops::index::Index<I> for Array<T, const N : usize>}#15<T, I, const N : usize>[@TraitClause0]::Output)
+fn core::array::{impl core::ops::index::Index<I> for Array<T, const N : usize>}#15::index<'_0, T, I, const N : usize>(@1: &'_0 (Array<T, const N : usize>), @2: I) -> &'_0 (core::array::{impl core::ops::index::Index<I> for Array<T, const N : usize>}#15<T, I, const N : usize>[@TraitClause2]::Output)
 where
     // Inherited clauses:
-    [@TraitClause0]: core::ops::index::Index<Slice<T>, I>,
+    [@TraitClause2]: core::ops::index::Index<Slice<T>, I>,
 
 impl<T, I, const N : usize> core::array::{impl core::ops::index::Index<I> for Array<T, const N : usize>}#15<T, I, const N : usize> : core::ops::index::Index<Array<T, const N : usize>, I>
 where
-    [@TraitClause0]: core::ops::index::Index<Slice<T>, I>,
+    [@TraitClause2]: core::ops::index::Index<Slice<T>, I>,
 {
-    type Output = @TraitClause0::Output
+    type Output = @TraitClause2::Output
     fn index = core::array::{impl core::ops::index::Index<I> for Array<T, const N : usize>}#15::index
 }
 
@@ -432,16 +432,16 @@ fn test_crate::array_subslice_shared_<'_0>(@1: &'_0 (Array<u32, 32 : usize>), @2
     return
 }
 
-fn core::array::{impl core::ops::index::IndexMut<I> for Array<T, const N : usize>}#16::index_mut<'_0, T, I, const N : usize>(@1: &'_0 mut (Array<T, const N : usize>), @2: I) -> &'_0 mut (core::array::{impl core::ops::index::Index<I> for Array<T, const N : usize>}#15<T, I, const N : usize>[(parents(@TraitClause0)::[@TraitClause0])]::Output)
+fn core::array::{impl core::ops::index::IndexMut<I> for Array<T, const N : usize>}#16::index_mut<'_0, T, I, const N : usize>(@1: &'_0 mut (Array<T, const N : usize>), @2: I) -> &'_0 mut (core::array::{impl core::ops::index::Index<I> for Array<T, const N : usize>}#15<T, I, const N : usize>[(parents(@TraitClause2)::[@TraitClause0])]::Output)
 where
     // Inherited clauses:
-    [@TraitClause0]: core::ops::index::IndexMut<Slice<T>, I>,
+    [@TraitClause2]: core::ops::index::IndexMut<Slice<T>, I>,
 
 impl<T, I, const N : usize> core::array::{impl core::ops::index::IndexMut<I> for Array<T, const N : usize>}#16<T, I, const N : usize> : core::ops::index::IndexMut<Array<T, const N : usize>, I>
 where
-    [@TraitClause0]: core::ops::index::IndexMut<Slice<T>, I>,
+    [@TraitClause2]: core::ops::index::IndexMut<Slice<T>, I>,
 {
-    parent_clause0 = core::array::{impl core::ops::index::Index<I> for Array<T, const N : usize>}#15<T, I, const N : usize>[(parents(@TraitClause0)::[@TraitClause0])]
+    parent_clause0 = core::array::{impl core::ops::index::Index<I> for Array<T, const N : usize>}#15<T, I, const N : usize>[(parents(@TraitClause2)::[@TraitClause0])]
     fn index_mut = core::array::{impl core::ops::index::IndexMut<I> for Array<T, const N : usize>}#16::index_mut
 }
 

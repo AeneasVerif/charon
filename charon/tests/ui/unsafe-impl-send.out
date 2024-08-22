@@ -1,0 +1,13 @@
+# Final LLBC before serialization:
+
+struct test_crate::Foo =
+{
+  *const (),
+}
+
+Missing decl: TraitDecl(0) (core::marker::Send)
+
+impl test_crate::{impl @TraitDecl0 for test_crate::Foo} : @TraitDecl0<test_crate::Foo>
+
+
+

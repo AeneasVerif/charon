@@ -54,7 +54,7 @@ fn test_crate::copy_foo(@1: test_crate::Foo)
 
 fn test_crate::copy_generic<T>(@1: T)
 where
-    [@TraitClause0]: core::marker::Copy<T>,
+    [@TraitClause1]: core::marker::Copy<T>,
 {
     let @0: (); // return
     let x@1: T; // arg #1
@@ -81,14 +81,14 @@ trait test_crate::Trait<Self>
     type Ty
 }
 
-fn test_crate::copy_assoc_ty<T>(@1: @TraitClause0::Ty)
+fn test_crate::copy_assoc_ty<T>(@1: @TraitClause1::Ty)
 where
-    [@TraitClause0]: test_crate::Trait<T>,
+    [@TraitClause1]: test_crate::Trait<T>,
 {
     let @0: (); // return
-    let x@1: @TraitClause0::Ty; // arg #1
-    let y@2: @TraitClause0::Ty; // local
-    let z@3: @TraitClause0::Ty; // local
+    let x@1: @TraitClause1::Ty; // arg #1
+    let y@2: @TraitClause1::Ty; // local
+    let z@3: @TraitClause1::Ty; // local
     let @4: (); // anonymous local
 
     y@2 := copy (x@1)

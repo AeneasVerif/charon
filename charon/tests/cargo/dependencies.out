@@ -21,8 +21,8 @@ trait core::ops::function::FnOnce<Self, Args>
 
 fn take_mut::take<'_0, T, F>(@1: &'_0 mut (T), @2: F)
 where
-    [@TraitClause0]: core::ops::function::FnOnce<F, (T)>,
-    @TraitClause0::Output = T,
+    [@TraitClause2]: core::ops::function::FnOnce<F, (T)>,
+    @TraitClause2::Output = T,
 
 fn test_cargo_dependencies::silly_incr<'_0>(@1: &'_0 mut (u32))
 {

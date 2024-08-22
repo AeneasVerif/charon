@@ -18,7 +18,7 @@ trait core::fmt::Display<Self>
 
 fn test_crate::construct<T>(@1: T) -> alloc::boxed::Box<dyn (exists(TODO))>
 where
-    [@TraitClause0]: core::fmt::Display<T>,
+    [@TraitClause1]: core::fmt::Display<T>,
 
 opaque type alloc::string::String
 
@@ -81,6 +81,32 @@ fn test_crate::bar<'_0>(@1: &'_0 (dyn (exists(TODO))))
 }
 
 fn core::fmt::Display::fmt<'_0, '_1, '_2, Self>(@1: &'_0 (Self), @2: &'_1 mut (core::fmt::Formatter<'_2>)) -> core::result::Result<(), core::fmt::Error>
+
+struct alloc::alloc::Global = {}
+
+Missing decl: TraitDecl(3) (core::alloc::Allocator)
+
+Missing decl: Fun(8) (alloc::alloc::{impl @TraitDecl3 for alloc::alloc::Global}#1::allocate)
+
+Missing decl: Fun(10) (alloc::alloc::{impl @TraitDecl3 for alloc::alloc::Global}#1::deallocate)
+
+Missing decl: Fun(9) (alloc::alloc::{impl @TraitDecl3 for alloc::alloc::Global}#1::allocate_zeroed)
+
+Missing decl: Fun(11) (alloc::alloc::{impl @TraitDecl3 for alloc::alloc::Global}#1::grow)
+
+Missing decl: Fun(12) (alloc::alloc::{impl @TraitDecl3 for alloc::alloc::Global}#1::grow_zeroed)
+
+Missing decl: Fun(13) (alloc::alloc::{impl @TraitDecl3 for alloc::alloc::Global}#1::shrink)
+
+impl alloc::alloc::{impl @TraitDecl3 for alloc::alloc::Global}#1 : @TraitDecl3<alloc::alloc::Global>
+{
+    fn allocate = @Fun8
+    fn deallocate = @Fun10
+    fn allocate_zeroed = @Fun9
+    fn grow = @Fun11
+    fn grow_zeroed = @Fun12
+    fn shrink = @Fun13
+}
 
 
 

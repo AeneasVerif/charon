@@ -291,6 +291,32 @@ fn test_crate::nullary_ops<T>() -> usize
     return
 }
 
+struct alloc::alloc::Global = {}
+
+Missing decl: TraitDecl(1) (core::alloc::Allocator)
+
+Missing decl: Fun(12) (alloc::alloc::{impl @TraitDecl1 for alloc::alloc::Global}#1::allocate)
+
+Missing decl: Fun(14) (alloc::alloc::{impl @TraitDecl1 for alloc::alloc::Global}#1::deallocate)
+
+Missing decl: Fun(13) (alloc::alloc::{impl @TraitDecl1 for alloc::alloc::Global}#1::allocate_zeroed)
+
+Missing decl: Fun(15) (alloc::alloc::{impl @TraitDecl1 for alloc::alloc::Global}#1::grow)
+
+Missing decl: Fun(16) (alloc::alloc::{impl @TraitDecl1 for alloc::alloc::Global}#1::grow_zeroed)
+
+Missing decl: Fun(17) (alloc::alloc::{impl @TraitDecl1 for alloc::alloc::Global}#1::shrink)
+
+impl alloc::alloc::{impl @TraitDecl1 for alloc::alloc::Global}#1 : @TraitDecl1<alloc::alloc::Global>
+{
+    fn allocate = @Fun12
+    fn deallocate = @Fun14
+    fn allocate_zeroed = @Fun13
+    fn grow = @Fun15
+    fn grow_zeroed = @Fun16
+    fn shrink = @Fun17
+}
+
 unsafe fn alloc::alloc::exchange_malloc(@1: usize, @2: usize) -> *mut u8
 
 

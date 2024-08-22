@@ -41,7 +41,7 @@ fn core::result::unwrap_failed<'_0, '_1>(@1: &'_0 (Str), @2: &'_1 (dyn (exists(T
 
 fn core::result::{core::result::Result<T, E>}::unwrap<T, E>(@1: core::result::Result<T, E>) -> T
 where
-    [@TraitClause0]: core::fmt::Debug<E>,
+    [@TraitClause2]: core::fmt::Debug<E>,
 {
     let t@0: T; // return
     let self@1: core::result::Result<T, E>; // arg #1
