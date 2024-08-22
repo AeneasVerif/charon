@@ -169,6 +169,13 @@ where
     pub fn iter_indices(&self) -> impl Iterator<Item = I> {
         self.vector.indices()
     }
+
+    /// Like `Vec::split_off`.
+    pub fn split_off(&mut self, at: usize) -> Self {
+        Self {
+            vector: self.vector.split_off(I::from_usize(at)),
+        }
+    }
 }
 
 impl<I: Idx, T> Default for Vector<I, T> {

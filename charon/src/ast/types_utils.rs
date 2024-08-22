@@ -26,6 +26,21 @@ impl TypeVar {
 }
 
 impl GenericParams {
+    pub fn empty() -> Self {
+        Self::default()
+    }
+
+    pub fn is_empty(&self) -> bool {
+        self.len() == 0
+    }
+
+    pub fn has_predicates(&self) -> bool {
+        !self.trait_clauses.is_empty()
+            || !self.types_outlive.is_empty()
+            || !self.regions_outlive.is_empty()
+            || !self.trait_type_constraints.is_empty()
+    }
+
     pub fn len(&self) -> usize {
         let GenericParams {
             regions,
@@ -43,14 +58,6 @@ impl GenericParams {
             + regions_outlive.len()
             + types_outlive.len()
             + trait_type_constraints.len()
-    }
-
-    pub fn is_empty(&self) -> bool {
-        self.len() == 0
-    }
-
-    pub fn empty() -> Self {
-        Self::default()
     }
 
     /// Construct a set of generic arguments in the scope of `self` that matches `self` and feeds
@@ -82,6 +89,23 @@ impl GenericParams {
                 })
                 .collect(),
         }
+    }
+
+    /// Split these params in two, according to the provided `ParamsInfo`.
+    pub fn split(&self, info: &ParamsInfo) -> (Self, Self) {
+        let mut this = self.clone();
+        let other = GenericParams {
+            regions: this.regions.split_off(info.num_region_params),
+            types: this.types.split_off(info.num_type_params),
+            const_generics: this.const_generics.split_off(info.num_const_generic_params),
+            trait_clauses: this.trait_clauses.split_off(info.num_trait_clauses),
+            regions_outlive: this.regions_outlive.split_off(info.num_regions_outlive),
+            types_outlive: this.types_outlive.split_off(info.num_types_outlive),
+            trait_type_constraints: this
+                .trait_type_constraints
+                .split_off(info.num_trait_type_constraints),
+        };
+        (this, other)
     }
 }
 

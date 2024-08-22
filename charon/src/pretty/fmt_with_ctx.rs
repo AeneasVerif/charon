@@ -345,63 +345,94 @@ impl GenericParams {
             format!("<{}>", params.join(", "))
         };
 
-        let mut trait_clauses = generics
-            .trait_clauses
-            .iter()
-            .map(|x| x.fmt_with_ctx(ctx))
-            .collect_vec();
-        let mut types_outlive: Vec<_> = generics
+        let any_clause = generics.has_predicates();
+        let preds = if !any_clause {
+            String::new()
+        } else {
+            let clauses = match info {
+                None => generics.format_clauses(ctx, tab),
+                Some(info) => {
+                    let (inherited_generics, local_generics) = generics.split(info);
+
+                    let delim1 =
+                        if local_generics.has_predicates() && inherited_generics.has_predicates() {
+                            format!("\n{tab}{TAB_INCR}// Local clauses:")
+                        } else {
+                            "".to_string()
+                        };
+
+                    let delim0 = if inherited_generics.has_predicates() {
+                        format!("\n{tab}{TAB_INCR}// Inherited clauses:")
+                    } else {
+                        "".to_string()
+                    };
+
+                    let inherited_clauses = inherited_generics.format_clauses(ctx, tab);
+                    let local_clauses = local_generics.format_clauses(ctx, tab);
+                    format!("{delim0}{inherited_clauses}{delim1}{local_clauses}")
+                }
+            };
+            format!("\n{tab}where{clauses}")
+        };
+        (params, preds, any_clause)
+    }
+
+    fn format_clauses<C>(&self, ctx: &C, tab: &str) -> String
+    where
+        C: AstFormatter,
+    {
+        let trait_clauses = self.trait_clauses.iter().map(|x| x.fmt_with_ctx(ctx));
+        let types_outlive = self
             .types_outlive
             .iter()
-            .map(|OutlivesPred(x, y)| format!("{} : {}", x.fmt_with_ctx(ctx), y.fmt_with_ctx(ctx)))
-            .collect();
-        let mut regions_outlive: Vec<_> = generics
+            .map(|OutlivesPred(x, y)| format!("{} : {}", x.fmt_with_ctx(ctx), y.fmt_with_ctx(ctx)));
+        let regions_outlive = self
             .regions_outlive
             .iter()
-            .map(|OutlivesPred(x, y)| format!("{} : {}", x.fmt_with_ctx(ctx), y.fmt_with_ctx(ctx)))
-            .collect();
-        let mut type_constraints: Vec<_> = generics
+            .map(|OutlivesPred(x, y)| format!("{} : {}", x.fmt_with_ctx(ctx), y.fmt_with_ctx(ctx)));
+        let type_constraints = self
             .trait_type_constraints
             .iter()
-            .map(|x| x.fmt_with_ctx(ctx))
-            .collect();
-        let any_where = !(trait_clauses.is_empty()
-            && types_outlive.is_empty()
-            && regions_outlive.is_empty()
-            && type_constraints.is_empty());
-        let preds = match info {
-            None => {
-                let clauses: Vec<_> = trait_clauses
-                    .into_iter()
-                    .chain(types_outlive.into_iter())
-                    .chain(regions_outlive.into_iter())
-                    .chain(type_constraints.into_iter())
-                    .collect();
-                fmt_where_clauses(tab, 0, clauses)
-            }
-            Some(info) => {
-                // Below: definitely not efficient nor convenient, but it is not really
-                // important
-                let local_clauses: Vec<_> = trait_clauses
-                    .split_off(info.num_trait_clauses)
-                    .into_iter()
-                    .chain(regions_outlive.split_off(info.num_regions_outlive))
-                    .chain(types_outlive.split_off(info.num_types_outlive))
-                    .chain(type_constraints.split_off(info.num_trait_type_constraints))
-                    .collect();
-                let inherited_clauses: Vec<_> = trait_clauses
-                    .into_iter()
-                    .chain(regions_outlive)
-                    .chain(types_outlive)
-                    .chain(type_constraints)
-                    .collect();
-                let num_inherited = inherited_clauses.len();
-                let all_clauses: Vec<_> =
-                    inherited_clauses.into_iter().chain(local_clauses).collect();
-                fmt_where_clauses(tab, num_inherited, all_clauses)
-            }
-        };
-        (params, preds, any_where)
+            .map(|x| x.fmt_with_ctx(ctx));
+        trait_clauses
+            .chain(types_outlive)
+            .chain(regions_outlive)
+            .chain(type_constraints)
+            .map(|x| format!("\n{tab}{TAB_INCR}{x},"))
+            .join("")
+    }
+
+    /// [num_parent_clauses]: we store in the definitions all the clauses
+    /// they have access to, which includes the clauses inherited from the parent.
+    /// This can be confusing: we insert a delimiter between the inherited clauses
+    /// and the local clauses.
+    pub fn fmt_where_clauses(tab: &str, num_parent_clauses: usize, clauses: Vec<String>) -> String {
+        let mut clauses = clauses
+            .iter()
+            .map(|x| format!("\n{tab}{TAB_INCR}{x},"))
+            .collect::<Vec<String>>();
+        if num_parent_clauses > 0 {
+            let local_clauses = clauses.split_off(num_parent_clauses);
+
+            let delim1 = if local_clauses.is_empty() {
+                "".to_string()
+            } else {
+                format!("\n{tab}{TAB_INCR}// Local clauses:")
+            };
+
+            let delim0 = if clauses.is_empty() {
+                "".to_string()
+            } else {
+                format!("\n{tab}{TAB_INCR}// Inherited clauses:")
+            };
+
+            let clauses = clauses.join("");
+            let local_clauses = local_clauses.join("");
+            format!("\n{tab}where{delim0}{clauses}{delim1}{local_clauses}")
+        } else {
+            let clauses = clauses.join("");
+            format!("\n{tab}where{clauses}")
+        }
     }
 }
 
@@ -1603,41 +1634,4 @@ where
         );
     }
     blocks.join("\n")
-}
-
-/// [num_parent_clauses]: we store in the definitions all the clauses
-/// they have access to, which includes the clauses inherited from the parent.
-/// This can be confusing: we insert a delimiter between the inherited clauses
-/// and the local clauses.
-pub fn fmt_where_clauses(tab: &str, num_parent_clauses: usize, clauses: Vec<String>) -> String {
-    if clauses.is_empty() {
-        "".to_string()
-    } else {
-        let mut clauses = clauses
-            .iter()
-            .map(|x| format!("\n{tab}{TAB_INCR}{x},"))
-            .collect::<Vec<String>>();
-        if num_parent_clauses > 0 {
-            let local_clauses = clauses.split_off(num_parent_clauses);
-
-            let delim1 = if local_clauses.is_empty() {
-                "".to_string()
-            } else {
-                format!("\n{tab}{TAB_INCR}// Local clauses:")
-            };
-
-            let delim0 = if clauses.is_empty() {
-                "".to_string()
-            } else {
-                format!("\n{tab}{TAB_INCR}// Inherited clauses:")
-            };
-
-            let clauses = clauses.join("");
-            let local_clauses = local_clauses.join("");
-            format!("\n{tab}where{delim0}{clauses}{delim1}{local_clauses}")
-        } else {
-            let clauses = clauses.join("");
-            format!("\n{tab}where{clauses}")
-        }
-    }
 }
