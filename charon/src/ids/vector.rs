@@ -23,6 +23,8 @@ where
     I: Idx,
 {
     vector: IndexVec<I, Option<T>>,
+    /// The number of non-`None` elements.
+    real_len: usize,
 }
 
 impl<I: std::fmt::Debug, T: std::fmt::Debug> std::fmt::Debug for Vector<I, T>
@@ -43,6 +45,7 @@ where
     pub fn new() -> Self {
         Vector {
             vector: IndexVec::new(),
+            real_len: 0,
         }
     }
 
@@ -55,11 +58,11 @@ where
     }
 
     pub fn is_empty(&self) -> bool {
-        self.vector.is_empty()
+        self.real_len == 0
     }
 
     pub fn len(&self) -> usize {
-        self.vector.len()
+        self.real_len
     }
 
     /// Gets the value of the next available id. Avoid if possible; use `reserve_slot` instead.
@@ -77,14 +80,19 @@ where
     pub fn set_slot(&mut self, id: I, x: T) {
         assert!(self.vector[id].is_none());
         self.vector[id] = Some(x);
+        self.real_len += 1;
     }
 
     /// Remove the value from this slot.
     pub fn remove(&mut self, id: I) {
+        if self.vector[id].is_some() {
+            self.real_len -= 1;
+        }
         self.vector[id] = None
     }
 
     pub fn push(&mut self, x: T) -> I {
+        self.real_len += 1;
         self.vector.push(Some(x))
     }
 
@@ -103,6 +111,7 @@ where
                 .into_iter()
                 .map(|x_opt| x_opt.map(&mut f))
                 .collect(),
+            real_len: self.real_len,
         }
     }
 
@@ -114,6 +123,7 @@ where
                 .iter()
                 .map(|x_opt| x_opt.as_ref().map(&mut f))
                 .collect(),
+            real_len: self.real_len,
         }
     }
 
@@ -125,6 +135,7 @@ where
                 .iter_mut()
                 .map(|x_opt| x_opt.as_mut().map(&mut f))
                 .collect(),
+            real_len: self.real_len,
         }
     }
 
@@ -172,9 +183,13 @@ where
 
     /// Like `Vec::split_off`.
     pub fn split_off(&mut self, at: usize) -> Self {
-        Self {
+        let mut ret = Self {
             vector: self.vector.split_off(I::from_usize(at)),
-        }
+            real_len: 0,
+        };
+        self.real_len = self.iter().count();
+        ret.real_len = ret.iter().count();
+        ret
     }
 }
 
@@ -255,9 +270,9 @@ where
 {
     #[inline]
     fn from_iter<It: IntoIterator<Item = T>>(iter: It) -> Vector<I, T> {
-        Vector {
-            vector: IndexVec::from_iter(iter.into_iter().map(Some)),
-        }
+        let mut real_len = 0;
+        let vector = IndexVec::from_iter(iter.into_iter().inspect(|_| real_len += 1).map(Some));
+        Vector { vector, real_len }
     }
 }
 
@@ -285,9 +300,12 @@ impl<'de, I: Idx, T: Deserialize<'de>> Deserialize<'de> for Vector<I, T> {
     where
         D: serde::Deserializer<'de>,
     {
-        Ok(Self {
+        let mut ret = Self {
             vector: Deserialize::deserialize(deserializer)?,
-        })
+            real_len: 0,
+        };
+        ret.real_len = ret.iter().count();
+        Ok(ret)
     }
 }
 
