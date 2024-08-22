@@ -8,6 +8,8 @@
 //@ charon-args=--include core::convert::num::{core::convert::From<_,_>}
 //@ charon-args=--opaque _::exclude_me
 //@ charon-args=--exclude crate::invisible_mod
+//@ charon-args=--exclude crate::keep_names_of_excluded
+//@ charon-args=--include crate::keep_names_of_excluded::{crate::keep_names_of_excluded::Trait<_>}
 // Note: we don't use the `impl Trait for T` syntax above because we can't have spaces in these
 // options.
 
@@ -30,4 +32,18 @@ fn exclude_me() {}
 
 mod invisible_mod {
     fn invisible() {}
+}
+
+mod keep_names_of_excluded {
+    // We exclude this trait
+    trait Trait {
+        fn method();
+    }
+
+    // We want to include this impl, so we need to keep the name of the trait around.
+    impl Trait for () {
+        fn method() {
+            let _ = 0;
+        }
+    }
 }

@@ -921,6 +921,13 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
                 self.translated.id_map.insert(id.get_id(), trans_id);
                 self.translated.reverse_id_map.insert(trans_id, id.get_id());
                 self.translated.all_ids.insert(trans_id);
+                // Store the name early so the name matcher can identify paths. We can't to it for
+                // trait impls because they register themselves when computing their name.
+                if !matches!(id, OrdRustId::TraitImpl(_)) {
+                    if let Ok(name) = self.def_id_to_name(rust_id) {
+                        self.translated.item_names.insert(trans_id, name);
+                    }
+                }
                 trans_id
             }
         }
