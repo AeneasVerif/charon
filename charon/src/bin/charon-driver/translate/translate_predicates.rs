@@ -94,19 +94,9 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 GenericParamDefKind::Const { .. } => num_const_generic_params += 1,
             }
         }
-        for (pred, span) in &predicates.predicates {
+        for (pred, _span) in &predicates.predicates {
             match &pred.kind.value {
-                PredicateKind::Clause(ClauseKind::Trait(clause)) => {
-                    if self
-                        .register_trait_decl_id(
-                            span.rust_span_data.unwrap().span(),
-                            DefId::from(&clause.trait_ref.def_id),
-                        )?
-                        .is_some()
-                    {
-                        num_trait_clauses += 1;
-                    }
-                }
+                PredicateKind::Clause(ClauseKind::Trait(_)) => num_trait_clauses += 1,
                 PredicateKind::Clause(ClauseKind::RegionOutlives(_)) => num_regions_outlive += 1,
                 PredicateKind::Clause(ClauseKind::TypeOutlives(_)) => num_types_outlive += 1,
                 PredicateKind::Clause(ClauseKind::Projection(_)) => num_trait_type_constraints += 1,
@@ -173,14 +163,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         erase_regions: bool,
         trait_ref: &hax::TraitRef,
     ) -> Result<Option<TraitDeclRef>, Error> {
-        let trait_id = self.register_trait_decl_id(span, DefId::from(&trait_ref.def_id))?;
-        // We might have to ignore the trait
-        let trait_id = if let Some(trait_id) = trait_id {
-            trait_id
-        } else {
-            return Ok(None);
-        };
-
+        let trait_id = self.register_trait_decl_id(span, DefId::from(&trait_ref.def_id));
         let parent_trait_refs = Vec::new();
         let generics = self.translate_substs_and_trait_refs(
             span,
@@ -293,13 +276,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         let erase_regions = false;
 
         let trait_ref = &trait_pred.trait_ref;
-        let trait_id = self.register_trait_decl_id(span, DefId::from(&trait_ref.def_id))?;
-        // We might have to ignore the trait
-        let trait_id = if let Some(trait_id) = trait_id {
-            trait_id
-        } else {
-            return Ok(None);
-        };
+        let trait_id = self.register_trait_decl_id(span, DefId::from(&trait_ref.def_id));
 
         let (regions, types, const_generics) =
             self.translate_substs(span, erase_regions, None, &trait_ref.generic_args)?;
@@ -468,10 +445,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 generics,
             } => {
                 let def_id = DefId::from(impl_def_id);
-                let trait_id = self.register_trait_impl_id(span, def_id)?;
-                // We already tested above whether the trait should be filtered
-                let trait_id = trait_id.unwrap();
-
+                let trait_id = self.register_trait_impl_id(span, def_id);
                 let generics = self.translate_substs_and_trait_refs(
                     span,
                     erase_regions,
@@ -506,9 +480,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 let trait_ref = &trait_ref.value;
 
                 let def_id = DefId::from(&trait_ref.def_id);
-                // Remark: we already filtered the marker traits when translating
-                // the trait decl ref: the trait decl id should be Some(...).
-                let trait_decl_id = self.register_trait_decl_id(span, def_id)?.unwrap();
+                let trait_decl_id = self.register_trait_decl_id(span, def_id);
 
                 // Retrieve the arguments
                 assert!(nested.is_empty());
@@ -547,12 +519,10 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                                 TraitItemName(item.name.clone()),
                                 TraitClauseId::new(*index),
                             );
-                            current_trait_decl_id = self
-                                .register_trait_decl_id(
-                                    span,
-                                    DefId::from(&predicate.value.trait_ref.def_id),
-                                )?
-                                .unwrap();
+                            current_trait_decl_id = self.register_trait_decl_id(
+                                span,
+                                DefId::from(&predicate.value.trait_ref.def_id),
+                            );
                         }
                         Parent {
                             predicate,
@@ -564,12 +534,10 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                                 current_trait_decl_id,
                                 TraitClauseId::new(*index),
                             );
-                            current_trait_decl_id = self
-                                .register_trait_decl_id(
-                                    span,
-                                    DefId::from(&predicate.value.trait_ref.def_id),
-                                )?
-                                .unwrap();
+                            current_trait_decl_id = self.register_trait_decl_id(
+                                span,
+                                DefId::from(&predicate.value.trait_ref.def_id),
+                            );
                         }
                     }
                 }

@@ -139,14 +139,8 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
                         overrides_default,
                         ..
                     } => {
-                        // The trait id should be Some(...): trait markers (that we may eliminate)
-                        // don't have methods.
-                        let trait_id = self
-                            .register_trait_decl_id(src, implemented_trait.into())?
-                            .unwrap();
-
-                        let impl_id = self.register_trait_impl_id(src, impl_id.into())?.unwrap();
-
+                        let trait_id = self.register_trait_decl_id(src, implemented_trait.into());
+                        let impl_id = self.register_trait_impl_id(src, impl_id.into());
                         ItemKind::TraitImpl {
                             impl_id,
                             trait_id,
@@ -164,7 +158,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
                     hax::AssocItemContainer::TraitContainer { trait_id } => {
                         // The trait id should be Some(...): trait markers (that we may eliminate)
                         // don't have associated items.
-                        let trait_id = self.register_trait_decl_id(src, trait_id.into())?.unwrap();
+                        let trait_id = self.register_trait_decl_id(src, trait_id.into());
                         let item_name = TraitItemName(assoc.name.clone());
 
                         ItemKind::TraitDecl {
