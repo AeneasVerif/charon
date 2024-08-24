@@ -3,6 +3,7 @@ name = "charon"
 version = "0.1.30"
 authors = ["Son Ho <hosonmarc@gmail.com>"]
 edition = "2021"
+license = "Apache-2.0"
 
 [lib]
 name = "charon_lib"
