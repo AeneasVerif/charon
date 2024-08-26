@@ -989,27 +989,19 @@ trait core::iter::traits::iterator::Iterator<Self>
     fn intersperse_with : core::iter::traits::iterator::Iterator::intersperse_with
     fn map : core::iter::traits::iterator::Iterator::map
     fn for_each : core::iter::traits::iterator::Iterator::for_each
-    fn filter : @Fun46
     fn filter_map : core::iter::traits::iterator::Iterator::filter_map
     fn enumerate : core::iter::traits::iterator::Iterator::enumerate
     fn peekable : core::iter::traits::iterator::Iterator::peekable
-    fn skip_while : @Fun50
-    fn take_while : @Fun51
     fn map_while : core::iter::traits::iterator::Iterator::map_while
     fn skip : core::iter::traits::iterator::Iterator::skip
     fn take : core::iter::traits::iterator::Iterator::take
-    fn scan : @Fun55
     fn flat_map : core::iter::traits::iterator::Iterator::flat_map
     fn flatten : core::iter::traits::iterator::Iterator::flatten
-    fn map_windows : @Fun58
     fn fuse : core::iter::traits::iterator::Iterator::fuse
-    fn inspect : @Fun60
     fn by_ref : core::iter::traits::iterator::Iterator::by_ref
     fn collect : core::iter::traits::iterator::Iterator::collect
     fn try_collect : core::iter::traits::iterator::Iterator::try_collect
     fn collect_into : core::iter::traits::iterator::Iterator::collect_into
-    fn partition : @Fun65
-    fn partition_in_place : @Fun66
     fn is_partitioned : core::iter::traits::iterator::Iterator::is_partitioned
     fn try_fold : core::iter::traits::iterator::Iterator::try_fold
     fn try_for_each : core::iter::traits::iterator::Iterator::try_for_each
@@ -1018,17 +1010,10 @@ trait core::iter::traits::iterator::Iterator<Self>
     fn try_reduce : core::iter::traits::iterator::Iterator::try_reduce
     fn all : core::iter::traits::iterator::Iterator::all
     fn any : core::iter::traits::iterator::Iterator::any
-    fn find : @Fun75
     fn find_map : core::iter::traits::iterator::Iterator::find_map
-    fn try_find : @Fun77
     fn position : core::iter::traits::iterator::Iterator::position
-    fn rposition : @Fun79
     fn max : core::iter::traits::iterator::Iterator::max
     fn min : core::iter::traits::iterator::Iterator::min
-    fn max_by_key : @Fun82
-    fn max_by : @Fun83
-    fn min_by_key : @Fun84
-    fn min_by : @Fun85
     fn rev : core::iter::traits::iterator::Iterator::rev
     fn unzip : core::iter::traits::iterator::Iterator::unzip
     fn copied : core::iter::traits::iterator::Iterator::copied
@@ -1049,7 +1034,6 @@ trait core::iter::traits::iterator::Iterator<Self>
     fn gt : core::iter::traits::iterator::Iterator::gt
     fn ge : core::iter::traits::iterator::Iterator::ge
     fn is_sorted : core::iter::traits::iterator::Iterator::is_sorted
-    fn is_sorted_by : @Fun106
     fn is_sorted_by_key : core::iter::traits::iterator::Iterator::is_sorted_by_key
     fn __iterator_get_unchecked : core::iter::traits::iterator::Iterator::__iterator_get_unchecked
 }
@@ -1107,7 +1091,6 @@ trait core::iter::traits::double_ended::DoubleEndedIterator<Self>
     fn nth_back : core::iter::traits::double_ended::DoubleEndedIterator::nth_back
     fn try_rfold : core::iter::traits::double_ended::DoubleEndedIterator::try_rfold
     fn rfold : core::iter::traits::double_ended::DoubleEndedIterator::rfold
-    fn rfind : @Fun206
 }
 
 opaque type core::iter::adapters::array_chunks::ArrayChunks<I, const N : usize>

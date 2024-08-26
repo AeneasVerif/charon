@@ -239,27 +239,19 @@ trait core::iter::traits::iterator::Iterator<Self>
     fn intersperse_with : core::iter::traits::iterator::Iterator::intersperse_with
     fn map : core::iter::traits::iterator::Iterator::map
     fn for_each : core::iter::traits::iterator::Iterator::for_each
-    fn filter : @Fun20
     fn filter_map : core::iter::traits::iterator::Iterator::filter_map
     fn enumerate : core::iter::traits::iterator::Iterator::enumerate
     fn peekable : core::iter::traits::iterator::Iterator::peekable
-    fn skip_while : @Fun24
-    fn take_while : @Fun25
     fn map_while : core::iter::traits::iterator::Iterator::map_while
     fn skip : core::iter::traits::iterator::Iterator::skip
     fn take : core::iter::traits::iterator::Iterator::take
-    fn scan : @Fun29
     fn flat_map : core::iter::traits::iterator::Iterator::flat_map
     fn flatten : core::iter::traits::iterator::Iterator::flatten
-    fn map_windows : @Fun32
     fn fuse : core::iter::traits::iterator::Iterator::fuse
-    fn inspect : @Fun34
     fn by_ref : core::iter::traits::iterator::Iterator::by_ref
     fn collect : core::iter::traits::iterator::Iterator::collect
     fn try_collect : core::iter::traits::iterator::Iterator::try_collect
     fn collect_into : core::iter::traits::iterator::Iterator::collect_into
-    fn partition : @Fun39
-    fn partition_in_place : @Fun40
     fn is_partitioned : core::iter::traits::iterator::Iterator::is_partitioned
     fn try_fold : core::iter::traits::iterator::Iterator::try_fold
     fn try_for_each : core::iter::traits::iterator::Iterator::try_for_each
@@ -268,17 +260,10 @@ trait core::iter::traits::iterator::Iterator<Self>
     fn try_reduce : core::iter::traits::iterator::Iterator::try_reduce
     fn all : core::iter::traits::iterator::Iterator::all
     fn any : core::iter::traits::iterator::Iterator::any
-    fn find : @Fun49
     fn find_map : core::iter::traits::iterator::Iterator::find_map
-    fn try_find : @Fun51
     fn position : core::iter::traits::iterator::Iterator::position
-    fn rposition : @Fun53
     fn max : core::iter::traits::iterator::Iterator::max
     fn min : core::iter::traits::iterator::Iterator::min
-    fn max_by_key : @Fun56
-    fn max_by : @Fun57
-    fn min_by_key : @Fun58
-    fn min_by : @Fun59
     fn rev : core::iter::traits::iterator::Iterator::rev
     fn unzip : core::iter::traits::iterator::Iterator::unzip
     fn copied : core::iter::traits::iterator::Iterator::copied
@@ -299,7 +284,6 @@ trait core::iter::traits::iterator::Iterator<Self>
     fn gt : core::iter::traits::iterator::Iterator::gt
     fn ge : core::iter::traits::iterator::Iterator::ge
     fn is_sorted : core::iter::traits::iterator::Iterator::is_sorted
-    fn is_sorted_by : @Fun80
     fn is_sorted_by_key : core::iter::traits::iterator::Iterator::is_sorted_by_key
     fn __iterator_get_unchecked : core::iter::traits::iterator::Iterator::__iterator_get_unchecked
 }
@@ -347,7 +331,6 @@ trait core::iter::traits::double_ended::DoubleEndedIterator<Self>
     fn nth_back : core::iter::traits::double_ended::DoubleEndedIterator::nth_back
     fn try_rfold : core::iter::traits::double_ended::DoubleEndedIterator::try_rfold
     fn rfold : core::iter::traits::double_ended::DoubleEndedIterator::rfold
-    fn rfind : @Fun152
 }
 
 opaque type core::iter::adapters::array_chunks::ArrayChunks<I, const N : usize>
@@ -462,7 +445,7 @@ where
     [@TraitClause0]: core::ops::function::FnMut<F, (&'_ (T))>,
     (parents(UNKNOWN(Could not find a clause for parameter: core::ops::function::FnMut<F, (core::slice::iter::{impl core::iter::traits::iterator::Iterator for @Adt2<'a, T>}#182<'_, T>::Item)> (available clauses: [Self]: core::iter::traits::iterator::Iterator<@Adt2<'a, T>>; [@TraitClause0]: core::ops::function::FnMut<F, (&'_ (T))>) (context: core::slice::iter::{impl#182}::any)))::[@TraitClause0])::Output = bool,
 
-Missing decl: Fun(115) (core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::Iter<'a, T>}#182::find)
+Missing decl: Fun(99) (core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::Iter<'a, T>}#182::find)
 
 fn core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::Iter<'a, T>}#182::find_map<'a, '_1, T, B, F>(@1: &'_1 mut (core::slice::iter::Iter<'a, T>), @2: F) -> core::option::Option<B>
 where
@@ -488,7 +471,7 @@ where
     [@TraitClause2]: core::iter::traits::double_ended::DoubleEndedIterator<core::slice::iter::Iter<'_, T>>,
     (parents(UNKNOWN(Could not find a clause for parameter: core::ops::function::FnMut<P, ((parents(UNKNOWN(Could not find a clause for parameter: @TraitDecl23<@Adt2<'a, T>> (available clauses: [Self]: core::iter::traits::iterator::Iterator<@Adt2<'a, T>>; [@TraitClause0]: core::ops::function::FnMut<P, ((parents(UNKNOWN(Could not find a clause for parameter: @TraitDecl23<@Adt2<'a, T>> (available clauses: [Self]: core::iter::traits::iterator::Iterator<@Adt2<'a, T>>) (context: core::slice::iter::{impl#182}::rposition)))::[@TraitClause0])::Item)>; [@TraitClause2]: core::iter::traits::double_ended::DoubleEndedIterator<@Adt2<'_, T>>; [@TraitClause1]: @TraitDecl23<@Adt2<'_, T>>) (context: core::slice::iter::{impl#182}::rposition)))::[@TraitClause0])::Item)> (available clauses: [Self]: core::iter::traits::iterator::Iterator<@Adt2<'a, T>>; [@TraitClause0]: core::ops::function::FnMut<P, ((parents(UNKNOWN(Could not find a clause for parameter: @TraitDecl23<@Adt2<'a, T>> (available clauses: [Self]: core::iter::traits::iterator::Iterator<@Adt2<'a, T>>) (context: core::slice::iter::{impl#182}::rposition)))::[@TraitClause0])::Item)>; [@TraitClause2]: core::iter::traits::double_ended::DoubleEndedIterator<@Adt2<'_, T>>; [@TraitClause1]: @TraitDecl23<@Adt2<'_, T>>) (context: core::slice::iter::{impl#182}::rposition)))::[@TraitClause0])::Output = bool,
 
-Missing decl: Fun(120) (core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::Iter<'a, T>}#182::is_sorted_by)
+Missing decl: Fun(104) (core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::Iter<'a, T>}#182::is_sorted_by)
 
 unsafe fn core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::Iter<'a, T>}#182::__iterator_get_unchecked<'a, '_1, T>(@1: &'_1 mut (core::slice::iter::Iter<'a, T>), @2: usize) -> core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::Iter<'a, T>}#182<'_, T>::Item
 
@@ -505,11 +488,11 @@ impl<'a, T> core::slice::iter::{impl core::iter::traits::iterator::Iterator for 
     fn fold = core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::Iter<'a, T>}#182::fold
     fn all = core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::Iter<'a, T>}#182::all
     fn any = core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::Iter<'a, T>}#182::any
-    fn find = @Fun115
+    fn find = @Fun99
     fn find_map = core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::Iter<'a, T>}#182::find_map
     fn position = core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::Iter<'a, T>}#182::position
     fn rposition = core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::Iter<'a, T>}#182::rposition
-    fn is_sorted_by = @Fun120
+    fn is_sorted_by = @Fun104
     fn __iterator_get_unchecked = core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::Iter<'a, T>}#182::__iterator_get_unchecked
 }
 

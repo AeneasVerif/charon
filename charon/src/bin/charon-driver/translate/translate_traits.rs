@@ -165,12 +165,19 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
             let item_span = bt_ctx.t_ctx.tcx.def_span(rust_item_id);
             match &hax_item.kind {
                 AssocKind::Fn => {
-                    let fun_id = bt_ctx.register_fun_decl_id(item_span, rust_item_id);
                     if hax_item.has_value {
                         // This is a *provided* method,
-                        provided_methods.push((item_name.clone(), fun_id));
+                        // Hack: To avoid having a trait that lists methods that aren't translated,
+                        // we filter out invisible methods early. FIXME: remove this once we can
+                        // translate all `Iterator` method signatures.
+                        let fun_name = bt_ctx.t_ctx.def_id_to_name(rust_item_id)?;
+                        if !bt_ctx.t_ctx.opacity_for_name(&fun_name).is_invisible() {
+                            let fun_id = bt_ctx.register_fun_decl_id(item_span, rust_item_id);
+                            provided_methods.push((item_name.clone(), fun_id));
+                        }
                     } else {
                         // This is a required method (no default implementation)
+                        let fun_id = bt_ctx.register_fun_decl_id(item_span, rust_item_id);
                         required_methods.push((item_name.clone(), fun_id));
                     }
                 }
