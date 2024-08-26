@@ -136,6 +136,7 @@
           cp ${./charon-ml/src}/Meta.ml committed
           cp ${./charon-ml/src}/Types.ml committed
           cp ${./charon-ml/src}/GAstOfJson.ml committed
+          cp ${./charon-ml/src}/LlbcOfJson.ml committed
 
           if diff -rq committed generated; then
             echo "Ok: the regenerated ocaml files are the same as the checked out files"

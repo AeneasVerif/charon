@@ -40,7 +40,7 @@ fn make_ocaml_ident(name: &str) -> String {
     let mut name = name.to_case(Case::Snake);
     if matches!(
         &*name,
-        "virtual" | "bool" | "char" | "struct" | "type" | "let" | "fun" | "open" | "rec"
+        "virtual" | "bool" | "char" | "struct" | "type" | "let" | "fun" | "open" | "rec" | "assert"
     ) {
         name += "_";
     }
@@ -57,42 +57,52 @@ fn type_name_to_ocaml_ident(item_meta: &ItemMeta) -> String {
 
 /// Traverse all types to figure out which ones transitively contain the given id.
 fn contains_id(crate_data: &TranslatedCrate, haystack: TypeDeclId) -> HashMap<TypeDeclId, bool> {
-    enum ContainsRawSpan {
-        Yes,
-        No,
-        Processing,
-    }
-    use ContainsRawSpan::*;
     fn traverse_ty(
         crate_data: &TranslatedCrate,
         ty: &TypeDecl,
-        map: &mut HashMap<TypeDeclId, ContainsRawSpan>,
-    ) -> bool {
-        match map.get(&ty.def_id) {
-            Some(Yes) => return true,
-            Some(No | Processing) => return false,
-            None => {}
+        stack: &mut Vec<TypeDeclId>,
+        map: &mut HashMap<TypeDeclId, bool>,
+    ) -> Result<bool, TypeDeclId> {
+        if let Some(x) = map.get(&ty.def_id) {
+            return Ok(*x);
         }
-        map.insert(ty.def_id, Processing);
+        if stack.contains(&ty.def_id) {
+            return Err(ty.def_id);
+        }
+
+        stack.push(ty.def_id);
+        let exploring_def_id = ty.def_id;
         let mut contains = false;
+        let mut requires_parent = None;
         ty.drive(&mut derive_visitor::visitor_enter_fn(|id: &TypeDeclId| {
             if let Some(ty) = crate_data.type_decls.get(*id) {
-                if traverse_ty(crate_data, ty, map) {
-                    contains = true;
+                match traverse_ty(crate_data, ty, stack, map) {
+                    Ok(true) => contains = true,
+                    Err(loop_id) if loop_id != exploring_def_id && stack.contains(&loop_id) => {
+                        requires_parent = Some(loop_id)
+                    }
+                    _ => {}
                 }
             }
         }));
-        map.insert(ty.def_id, if contains { Yes } else { No });
-        contains
+        stack.pop();
+
+        if contains {
+            map.insert(ty.def_id, true);
+            Ok(true)
+        } else if let Some(id) = requires_parent {
+            Err(id)
+        } else {
+            map.insert(ty.def_id, false);
+            Ok(false)
+        }
     }
     let mut map = HashMap::new();
-    map.insert(haystack, Yes);
+    map.insert(haystack, true);
     for ty in &crate_data.type_decls {
-        traverse_ty(crate_data, ty, &mut map);
+        let _ = traverse_ty(crate_data, ty, &mut Vec::new(), &mut map);
     }
-    map.into_iter()
-        .map(|(id, x)| (id, matches!(x, Yes)))
-        .collect()
+    map.into_iter().map(|(id, x)| (id, x)).collect()
 }
 
 struct GenerateCtx<'a> {
@@ -792,6 +802,17 @@ fn main() -> Result<()> {
                     "GDeclarationGroup",
                     "DeclarationGroup",
                     "AnyTransId",
+                ]),
+            ],
+        },
+        GenerateCodeFor {
+            template: dir.join("templates/LlbcOfJson.ml"),
+            target: dir.join("generated/LlbcOfJson.ml"),
+            markers: &[
+                (GenerationKind::OfJson, &[
+                    "Assert",
+                    "charon_lib::ast::llbc_ast::Statement",
+                    "Switch",
                 ]),
             ],
         },

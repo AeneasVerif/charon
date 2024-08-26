@@ -17,6 +17,7 @@ use serde::{Deserialize, Serialize};
 /// instance. We eliminate the assertions in [crate::remove_dynamic_checks],
 /// then introduce other dynamic checks in [crate::reconstruct_asserts].
 #[derive(Debug, Clone, Serialize, Deserialize, Drive, DriveMut)]
+#[charon::rename("Assertion")]
 pub struct Assert {
     pub cond: Operand,
     pub expected: bool,

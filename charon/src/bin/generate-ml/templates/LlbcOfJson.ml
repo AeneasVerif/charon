@@ -10,58 +10,7 @@ open LlbcAst
 
 let rec ___ = ()
 
-and assertion_of_json (js : json) : (assertion, string) result =
-  combine_error_msgs js __FUNCTION__
-    (match js with
-    | `Assoc [ ("cond", cond); ("expected", expected) ] ->
-        let* cond = operand_of_json cond in
-        let* expected = bool_of_json expected in
-        Ok { cond; expected }
-    | _ -> Error "")
-
-and statement_of_json (id_to_file : id_to_file_map) (js : json) :
-    (statement, string) result =
-  combine_error_msgs js __FUNCTION__
-    (match js with
-    | `Assoc [ ("span", span); ("content", content) ] ->
-        let* span = span_of_json id_to_file span in
-        let* content = raw_statement_of_json id_to_file content in
-        Ok { span; content }
-    | _ -> Error "")
-
-and switch_of_json (id_to_file : id_to_file_map) (js : json) :
-    (switch, string) result =
-  combine_error_msgs js __FUNCTION__
-    (match js with
-    | `Assoc [ ("If", `List [ x0; x1; x2 ]) ] ->
-        let* x0 = operand_of_json x0 in
-        let* x1 = (statement_of_json id_to_file) x1 in
-        let* x2 = (statement_of_json id_to_file) x2 in
-        Ok (If (x0, x1, x2))
-    | `Assoc [ ("SwitchInt", `List [ x0; x1; x2; x3 ]) ] ->
-        let* x0 = operand_of_json x0 in
-        let* x1 = integer_type_of_json x1 in
-        let* x2 =
-          list_of_json
-            (pair_of_json
-               (list_of_json scalar_value_of_json)
-               (statement_of_json id_to_file))
-            x2
-        in
-        let* x3 = (statement_of_json id_to_file) x3 in
-        Ok (SwitchInt (x0, x1, x2, x3))
-    | `Assoc [ ("Match", `List [ x0; x1; x2 ]) ] ->
-        let* x0 = place_of_json x0 in
-        let* x1 =
-          list_of_json
-            (pair_of_json
-               (list_of_json variant_id_of_json)
-               (statement_of_json id_to_file))
-            x1
-        in
-        let* x2 = option_of_json (statement_of_json id_to_file) x2 in
-        Ok (Match (x0, x1, x2))
-    | _ -> Error "")
+(* __REPLACE0__ *)
 
 (* Hand-written because we change the `Sequence` representation *)
 and raw_statement_of_json (id_to_file : id_to_file_map) (js : json) :
