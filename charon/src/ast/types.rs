@@ -1,4 +1,3 @@
-pub use super::types_utils::*;
 use crate::ast::*;
 use crate::ids::Vector;
 use derivative::Derivative;
@@ -290,13 +289,13 @@ pub struct TraitTypeConstraint {
     pub ty: Ty,
 }
 
-#[derive(Debug, Clone, Eq, PartialEq, Serialize, Deserialize, Hash, Drive, DriveMut)]
+#[derive(Debug, Default, Clone, Eq, PartialEq, Serialize, Deserialize, Hash, Drive, DriveMut)]
 pub struct GenericArgs {
-    pub regions: Vec<Region>,
-    pub types: Vec<Ty>,
-    pub const_generics: Vec<ConstGeneric>,
+    pub regions: Vector<RegionId, Region>,
+    pub types: Vector<TypeVarId, Ty>,
+    pub const_generics: Vector<ConstGenericVarId, ConstGeneric>,
     // TODO: rename to match [GenericParams]?
-    pub trait_refs: Vec<TraitRef>,
+    pub trait_refs: Vector<TraitClauseId, TraitRef>,
 }
 
 /// Generic parameters for a declaration.
@@ -796,7 +795,7 @@ pub struct ClosureInfo {
     ///   (f)(0)
     /// }
     /// ```
-    pub state: Vec<Ty>,
+    pub state: Vector<TypeVarId, Ty>,
 }
 
 /// A function signature.

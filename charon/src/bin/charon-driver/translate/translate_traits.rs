@@ -320,7 +320,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
                 regions,
                 types,
                 const_generics,
-                trait_refs: Vec::new(),
+                trait_refs: Vector::new(),
             };
             TraitDeclRef { trait_id, generics }
         };
@@ -345,9 +345,8 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
                 rust_trait_ref.args,
                 None,
             );
-            let parent_trait_refs: Vec<TraitRef> =
+            let parent_trait_refs =
                 bt_ctx.translate_trait_impl_exprs(span, erase_regions, &parent_trait_refs)?;
-            let parent_trait_refs: Vector<TraitClauseId, TraitRef> = parent_trait_refs.into();
 
             (rust_trait_ref, parent_trait_refs)
         };

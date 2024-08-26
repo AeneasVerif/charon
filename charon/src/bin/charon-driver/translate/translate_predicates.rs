@@ -3,6 +3,7 @@ use super::translate_traits::PredicateLocation;
 use charon_lib::common::*;
 use charon_lib::formatter::{AstFormatter, IntoFormatter};
 use charon_lib::gast::*;
+use charon_lib::ids::Vector;
 use charon_lib::meta::Span;
 use charon_lib::pretty::FmtWithCtx;
 use charon_lib::types::*;
@@ -303,7 +304,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         let (regions, types, const_generics) =
             self.translate_substs(span, erase_regions, None, &trait_ref.generic_args)?;
         // There are no trait refs
-        let generics = GenericArgs::new(regions, types, const_generics, Vec::new());
+        let generics = GenericArgs::new(regions, types, const_generics, Default::default());
 
         let span = self.translate_span_from_rspan(hspan.clone());
 
@@ -405,7 +406,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         span: rustc_span::Span,
         erase_regions: bool,
         impl_sources: &[hax::ImplExpr],
-    ) -> Result<Vec<TraitRef>, Error> {
+    ) -> Result<Vector<TraitClauseId, TraitRef>, Error> {
         let res: Vec<_> = impl_sources
             .iter()
             .map(|x| self.translate_trait_impl_expr(span, erase_regions, x))

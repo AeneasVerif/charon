@@ -86,10 +86,10 @@ impl Pattern {
         }
         match ty {
             Ty::Adt(TypeId::Adt(type_id), args) => {
-                let Some(decl) = ctx.type_decls.get(*type_id) else {
+                let Some(type_name) = ctx.item_names.get(&(*type_id).into()) else {
                     return false;
                 };
-                self.matches_with_generics(ctx, &decl.item_meta.name, args)
+                self.matches_with_generics(ctx, type_name, args)
             }
             Ty::Adt(TypeId::Assumed(assumed_ty), args) => {
                 let name = assumed_ty.get_name();
@@ -168,7 +168,7 @@ impl PatElem {
                 // `crate` is a special keyword that referes to the current crate.
                 let same_ident =
                     pat_ident == ident || (pat_ident == "crate" && ident == &ctx.real_crate_name);
-                same_ident && PatTy::matches_generics(ctx, generics, args)
+                same_ident && (generics.is_empty() || PatTy::matches_generics(ctx, generics, args))
             }
             (PatElem::Impl(_pat), PathElem::Impl(ImplElem::Ty(_, _ty), _)) => {
                 // TODO
@@ -178,10 +178,10 @@ impl PatElem {
                 let Some(timpl) = ctx.trait_impls.get(*impl_id) else {
                     return false;
                 };
-                let Some(tdecl) = ctx.trait_decls.get(timpl.impl_trait.trait_id) else {
+                let Some(trait_name) = ctx.item_names.get(&timpl.impl_trait.trait_id.into()) else {
                     return false;
                 };
-                pat.matches_with_generics(ctx, &tdecl.item_meta.name, &timpl.impl_trait.generics)
+                pat.matches_with_generics(ctx, trait_name, &timpl.impl_trait.generics)
             }
             _ => false,
         }

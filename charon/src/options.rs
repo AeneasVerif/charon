@@ -123,7 +123,8 @@ pub struct CliOpts {
             a bit from the ocaml NameMatcher).
 
             Note: This is very rough at the moment. E.g. this parses `u64` as a path instead of the
-            built-in type. Some parts just don't work. Please report bugs or missing features.
+            built-in type. It is also not possible to filter a trait impl (this will only filter
+            its methods). Please report bugs or missing features.
 
             Examples:
               - `crate::module1::module2::item`: refers to this item and all its subitems (e.g.

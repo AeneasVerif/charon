@@ -39,8 +39,6 @@ type id_to_file_map = file_name FileId.Map.t
 let de_bruijn_id_of_json = int_of_json
 let path_buf_of_json = string_of_json
 let trait_item_name_of_json = string_of_json
-let vector_of_json _ = list_of_json
-
 let const_generic_var_id_of_json = ConstGenericVarId.id_of_json
 let disambiguator_of_json = Disambiguator.id_of_json
 let field_id_of_json = FieldId.id_of_json
@@ -55,6 +53,13 @@ let type_decl_id_of_json = TypeDeclId.id_of_json
 let type_var_id_of_json = TypeVarId.id_of_json
 let variant_id_of_json = VariantId.id_of_json
 let var_id_of_json = VarId.id_of_json
+
+(* A vector can contain empty slots. We filter them out. *)
+let vector_of_json _ item_of_json js =
+  let* list = list_of_json (option_of_json item_of_json) js in
+  Ok (List.filter_map (fun x -> x) list)
+
+
 
 (* Start of the `and` chain *)
 let __ = ()
@@ -270,7 +275,6 @@ and gtranslated_crate_of_json
           ("trait_impls", trait_impls);
           ("ordered_decls", declarations);
         ] ->
-        let flatten_options l = List.filter_map (fun x -> x) l in
         let* name = string_of_json name in
         let* id_to_file = id_to_file_of_json id_to_file in
 
@@ -278,37 +282,32 @@ and gtranslated_crate_of_json
           list_of_json declaration_group_of_json declarations
         in
 
-        let* types =
-          list_of_json (option_of_json (type_decl_of_json id_to_file)) types
-        in
-        let types = flatten_options types in
         let* bodies =
           list_of_json (option_of_json (body_of_json id_to_file)) bodies
         in
+        let* types =
+          vector_of_json type_id_of_json (type_decl_of_json id_to_file) types
+        in
         let* functions =
-          list_of_json
-            (option_of_json (gfun_decl_of_json bodies id_to_file))
+          vector_of_json fun_decl_id_of_json
+            (gfun_decl_of_json bodies id_to_file)
             functions
         in
-        let functions = flatten_options functions in
         let* globals =
-          list_of_json
-            (option_of_json (gglobal_decl_of_json bodies id_to_file))
+          vector_of_json global_decl_id_of_json
+            (gglobal_decl_of_json bodies id_to_file)
             globals
         in
-        let globals = flatten_options globals in
         let* trait_decls =
-          list_of_json
-            (option_of_json (trait_decl_of_json id_to_file))
+          vector_of_json trait_decl_id_of_json
+            (trait_decl_of_json id_to_file)
             trait_decls
         in
-        let trait_decls = flatten_options trait_decls in
         let* trait_impls =
-          list_of_json
-            (option_of_json (trait_impl_of_json id_to_file))
+          vector_of_json trait_impl_id_of_json
+            (trait_impl_of_json id_to_file)
             trait_impls
         in
-        let trait_impls = flatten_options trait_impls in
 
         let type_decls =
           TypeDeclId.Map.of_list

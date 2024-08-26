@@ -1,7 +1,6 @@
 //! This file groups everything which is linked to implementations about [crate::types]
 use crate::ids::Vector;
 use crate::types::*;
-use std::collections::HashMap;
 use std::iter::Iterator;
 
 impl DeBruijnId {
@@ -27,6 +26,21 @@ impl TypeVar {
 }
 
 impl GenericParams {
+    pub fn empty() -> Self {
+        Self::default()
+    }
+
+    pub fn is_empty(&self) -> bool {
+        self.len() == 0
+    }
+
+    pub fn has_predicates(&self) -> bool {
+        !self.trait_clauses.is_empty()
+            || !self.types_outlive.is_empty()
+            || !self.regions_outlive.is_empty()
+            || !self.trait_type_constraints.is_empty()
+    }
+
     pub fn len(&self) -> usize {
         let GenericParams {
             regions,
@@ -44,14 +58,6 @@ impl GenericParams {
             + regions_outlive.len()
             + types_outlive.len()
             + trait_type_constraints.len()
-    }
-
-    pub fn is_empty(&self) -> bool {
-        self.len() == 0
-    }
-
-    pub fn empty() -> Self {
-        Self::default()
     }
 
     /// Construct a set of generic arguments in the scope of `self` that matches `self` and feeds
@@ -84,6 +90,23 @@ impl GenericParams {
                 .collect(),
         }
     }
+
+    /// Split these params in two, according to the provided `ParamsInfo`.
+    pub fn split(&self, info: &ParamsInfo) -> (Self, Self) {
+        let mut this = self.clone();
+        let other = GenericParams {
+            regions: this.regions.split_off(info.num_region_params),
+            types: this.types.split_off(info.num_type_params),
+            const_generics: this.const_generics.split_off(info.num_const_generic_params),
+            trait_clauses: this.trait_clauses.split_off(info.num_trait_clauses),
+            regions_outlive: this.regions_outlive.split_off(info.num_regions_outlive),
+            types_outlive: this.types_outlive.split_off(info.num_types_outlive),
+            trait_type_constraints: this
+                .trait_type_constraints
+                .split_off(info.num_trait_type_constraints),
+        };
+        (this, other)
+    }
 }
 
 impl GenericArgs {
@@ -102,30 +125,23 @@ impl GenericArgs {
     }
 
     pub fn empty() -> Self {
-        GenericArgs {
-            regions: Vec::new(),
-            types: Vec::new(),
-            const_generics: Vec::new(),
-            trait_refs: Vec::new(),
-        }
+        GenericArgs::default()
     }
 
-    pub fn new_from_types(types: Vec<Ty>) -> Self {
+    pub fn new_from_types(types: Vector<TypeVarId, Ty>) -> Self {
         GenericArgs {
-            regions: Vec::new(),
             types,
-            const_generics: Vec::new(),
-            trait_refs: Vec::new(),
+            ..Self::default()
         }
     }
 
     pub fn new(
-        regions: Vec<Region>,
-        types: Vec<Ty>,
-        const_generics: Vec<ConstGeneric>,
-        trait_refs: Vec<TraitRef>,
+        regions: Vector<RegionId, Region>,
+        types: Vector<TypeVarId, Ty>,
+        const_generics: Vector<ConstGenericVarId, ConstGeneric>,
+        trait_refs: Vector<TraitClauseId, TraitRef>,
     ) -> Self {
-        GenericArgs {
+        Self {
             regions,
             types,
             const_generics,
@@ -283,173 +299,10 @@ impl Ty {
                 assert!(generics.regions.is_empty());
                 assert!(generics.types.len() == 1);
                 assert!(generics.const_generics.is_empty());
-                Some(generics.types.get(0).unwrap())
+                Some(&generics.types[0])
             }
             _ => None,
         }
-    }
-}
-
-pub struct TySubst {
-    pub ignore_regions: bool,
-    /// This map is from regions to regions, not from region ids to regions.
-    /// In case the regions are not erased, we must be careful with the
-    /// static region.
-    pub regions_map: HashMap<Region, Region>,
-    pub type_vars_map: HashMap<TypeVarId, Ty>,
-    pub const_generics_map: HashMap<ConstGenericVarId, ConstGeneric>,
-}
-
-macro_rules! check_ok_return {
-    ( $x:expr ) => {{
-        if $x {
-            return Ok(());
-        } else {
-            return Err(());
-        }
-    }};
-}
-
-macro_rules! check_ok {
-    ( $x:expr ) => {{
-        if !$x {
-            return Err(());
-        }
-    }};
-}
-
-impl TySubst {
-    fn new() -> Self {
-        let mut regions_map = HashMap::new();
-        // Fix the static and erased regions
-        regions_map.insert(Region::Static, Region::Static);
-        regions_map.insert(Region::Erased, Region::Erased);
-        TySubst {
-            ignore_regions: false,
-            regions_map,
-            type_vars_map: HashMap::new(),
-            const_generics_map: HashMap::new(),
-        }
-    }
-
-    fn unify_regions(&mut self, src: &Region, tgt: &Region) -> Result<(), ()> {
-        use Result::*;
-        match self.regions_map.get(src) {
-            None => {
-                check_ok_return!(self.regions_map.insert(*src, *tgt).is_none());
-            }
-            Some(src) => {
-                check_ok_return!(src == tgt);
-            }
-        }
-    }
-
-    fn unify_const_generics(&mut self, src: &ConstGeneric, tgt: &ConstGeneric) -> Result<(), ()> {
-        use ConstGeneric::*;
-        use Result::*;
-        if let Var(v) = src {
-            check_ok_return!(self.const_generics_map.insert(*v, tgt.clone()).is_none());
-        }
-        match (src, tgt) {
-            (Global(src), Global(tgt)) => {
-                check_ok_return!(src == tgt);
-            }
-            (Value(src), Value(tgt)) => {
-                check_ok_return!(src == tgt);
-            }
-            _ => Err(()),
-        }
-    }
-
-    fn unify_types(&mut self, src: &Ty, tgt: &Ty) -> Result<(), ()> {
-        use Result::*;
-        use Ty::*;
-
-        if let TypeVar(v) = src {
-            check_ok_return!(self.type_vars_map.insert(*v, tgt.clone()).is_none());
-        }
-
-        match (src, tgt) {
-            (Adt(src_id, src_args), Adt(tgt_id, tgt_args)) => {
-                check_ok!(src_id == tgt_id);
-                self.unify_args(src_args, tgt_args)
-            }
-            (Literal(src), Literal(tgt)) => {
-                check_ok_return!(src == tgt);
-            }
-            (Never, Never) => Ok(()),
-            (Ref(src_r, box src_ty, src_kind), Ref(tgt_r, box tgt_ty, tgt_kind)) => {
-                if !self.ignore_regions {
-                    self.unify_regions(src_r, tgt_r)?;
-                }
-                self.unify_types(src_ty, tgt_ty)?;
-                check_ok_return!(src_kind == tgt_kind);
-            }
-            (RawPtr(box src_ty, src_kind), RawPtr(box tgt_ty, tgt_kind)) => {
-                self.unify_types(src_ty, tgt_ty)?;
-                check_ok_return!(src_kind == tgt_kind);
-            }
-            _ => Err(()),
-        }
-    }
-
-    fn unify_regions_lists(&mut self, src: &[Region], tgt: &[Region]) -> Result<(), ()> {
-        check_ok!(src.len() == tgt.len());
-        for (src, tgt) in src.iter().zip(tgt.iter()) {
-            self.unify_regions(src, tgt)?;
-        }
-        Ok(())
-    }
-
-    fn unify_const_generics_lists(
-        &mut self,
-        src: &[ConstGeneric],
-        tgt: &[ConstGeneric],
-    ) -> Result<(), ()> {
-        check_ok!(src.len() == tgt.len());
-        for (src, tgt) in src.iter().zip(tgt.iter()) {
-            self.unify_const_generics(src, tgt)?;
-        }
-        Ok(())
-    }
-
-    fn unify_types_lists(&mut self, src: &[Ty], tgt: &[Ty]) -> Result<(), ()> {
-        check_ok!(src.len() == tgt.len());
-        for (src, tgt) in src.iter().zip(tgt.iter()) {
-            self.unify_types(src, tgt)?;
-        }
-        Ok(())
-    }
-
-    fn unify_args(&mut self, src: &GenericArgs, tgt: &GenericArgs) -> Result<(), ()> {
-        if !self.ignore_regions {
-            self.unify_regions_lists(&src.regions, &tgt.regions)?;
-        }
-        self.unify_types_lists(&src.types, &tgt.types)?;
-        self.unify_const_generics_lists(&src.const_generics, &tgt.const_generics)?;
-        Ok(())
-    }
-}
-
-impl TySubst {
-    #[allow(clippy::result_unit_err)]
-    pub fn unify_args_with_fixed(
-        fixed_type_vars: impl std::iter::Iterator<Item = TypeVarId>,
-        fixed_const_generic_vars: impl std::iter::Iterator<Item = ConstGenericVarId>,
-        src: &GenericArgs,
-        tgt: &GenericArgs,
-    ) -> Result<Self, ()> {
-        let mut s = TySubst::new();
-        for v in fixed_type_vars {
-            s.type_vars_map.insert(v, Ty::TypeVar(v));
-        }
-        for v in fixed_const_generic_vars {
-            s.const_generics_map.insert(v, ConstGeneric::Var(v));
-        }
-
-        s.ignore_regions = true;
-        s.unify_args(src, tgt)?;
-        Ok(s)
     }
 }
 
