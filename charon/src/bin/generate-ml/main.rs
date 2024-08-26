@@ -722,6 +722,8 @@ fn main() -> Result<()> {
             target: dir.join("generated/GAstOfJson.ml"),
             markers: &[
                 (GenerationKind::OfJson, &[
+                    "FileName",
+                    "Loc",
                     "Span",
                     "InlineAttr",
                     "Attribute",
@@ -736,8 +738,6 @@ fn main() -> Result<()> {
                     "RefKind",
                     "AssumedTy",
                     "TypeId",
-                ]),
-                (GenerationKind::OfJson, &[
                     "ConstGeneric",
                     "Ty",
                     "ExistentialPredicate",
@@ -749,10 +749,6 @@ fn main() -> Result<()> {
                     "Field",
                     "Variant",
                     "TypeDeclKind",
-                ]),
-                (GenerationKind::OfJson, &["Loc"]),
-                (GenerationKind::OfJson, &["FileName"]),
-                (GenerationKind::OfJson, &[
                     "TraitClause",
                     "OutlivesPred",
                     "RegionOutlives",
@@ -791,8 +787,6 @@ fn main() -> Result<()> {
                     "Call",
                     "GExprBody",
                     "ItemKind",
-                ]),
-                (GenerationKind::OfJson, &[
                     "TraitDecl",
                     "TraitImpl",
                     "GDeclarationGroup",

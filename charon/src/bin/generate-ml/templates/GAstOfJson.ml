@@ -59,12 +59,6 @@ let vector_of_json _ item_of_json js =
   let* list = list_of_json (option_of_json item_of_json) js in
   Ok (List.filter_map (fun x -> x) list)
 
-
-
-(* Start of the `and` chain *)
-let __ = ()
-(* __REPLACE3__ *)
-
 (** Deserialize a map from file id to file name.
 
     In the serialized LLBC, the files in the loc spans are refered to by their
@@ -73,7 +67,7 @@ let __ = ()
     the AST.
     The "id to file" map is thus only used in the deserialization process.
   *)
-let id_to_file_of_json (js : json) : (id_to_file_map, string) result =
+let rec id_to_file_of_json (js : json) : (id_to_file_map, string) result =
   combine_error_msgs js __FUNCTION__
     ((* The map is stored as a list of pairs (key, value): we deserialize
       * this list then convert it to a map *)
@@ -86,10 +80,8 @@ let id_to_file_of_json (js : json) : (id_to_file_map, string) result =
      in
      Ok (FileId.Map.of_list names_with_ids))
 
-(* __REPLACE2__ *)
-
 (* This is written by hand because it accessed `id_to_file`. *)
-let rec raw_span_of_json (id_to_file : id_to_file_map) (js : json) :
+ and raw_span_of_json (id_to_file : id_to_file_map) (js : json) :
     (raw_span, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
@@ -101,8 +93,7 @@ let rec raw_span_of_json (id_to_file : id_to_file_map) (js : json) :
         Ok { file; beg_loc; end_loc }
     | _ -> Error "")
 
-(* __REPLACE0__ *)
-let big_int_of_json (js : json) : (big_int, string) result =
+and big_int_of_json (js : json) : (big_int, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
     | `Int i -> Ok (Z.of_int i)
@@ -117,7 +108,7 @@ let big_int_of_json (js : json) : (big_int, string) result =
 
     This is written by hand because it does not match the structure of the
     corresponding rust type. *)
-let rec scalar_value_of_json (js : json) : (scalar_value, string) result =
+and scalar_value_of_json (js : json) : (scalar_value, string) result =
   let res =
     combine_error_msgs js __FUNCTION__
       (match js with
@@ -167,8 +158,6 @@ let rec scalar_value_of_json (js : json) : (scalar_value, string) result =
         raise (Failure ("Scalar value not in range: " ^ show_scalar_value sv)));
       res
 
-(* __REPLACE1__ *)
-
 (* This is written by hand because the corresponding rust type does not exist. *)
 and region_var_group_of_json (js : json) : (region_var_group, string) result =
   combine_error_msgs js __FUNCTION__
@@ -183,9 +172,7 @@ and region_var_group_of_json (js : json) : (region_var_group, string) result =
 and region_var_groups_of_json (js : json) : (region_var_groups, string) result =
   combine_error_msgs js __FUNCTION__ (list_of_json region_var_group_of_json js)
 
-(* __REPLACE4__ *)
-
-let maybe_opaque_body_of_json (bodies : 'body gexpr_body option list)
+and maybe_opaque_body_of_json (bodies : 'body gexpr_body option list)
     (js : json) : ('body gexpr_body option, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
@@ -196,8 +183,10 @@ let maybe_opaque_body_of_json (bodies : 'body gexpr_body option list)
     | `Assoc [ ("Err", `Null) ] -> Ok None
     | _ -> Error "")
 
+(* __REPLACE0__ *)
+
 (* This is written by hand because the corresponding rust type is not type-generic. *)
-let gfun_decl_of_json (bodies : 'body gexpr_body option list)
+and gfun_decl_of_json (bodies : 'body gexpr_body option list)
     (id_to_file : id_to_file_map) (js : json) : ('body gfun_decl, string) result
     =
   combine_error_msgs js __FUNCTION__
@@ -226,7 +215,7 @@ let gfun_decl_of_json (bodies : 'body gexpr_body option list)
           }
     | _ -> Error "")
 
-let rec gglobal_decl_of_json (bodies : 'body gexpr_body option list)
+and gglobal_decl_of_json (bodies : 'body gexpr_body option list)
     (id_to_file : id_to_file_map) (js : json) :
     ('body gexpr_body option gglobal_decl, string) result =
   combine_error_msgs js __FUNCTION__
@@ -251,8 +240,6 @@ let rec gglobal_decl_of_json (bodies : 'body gexpr_body option list)
         in
         Ok global
     | _ -> Error "")
-
-(* __REPLACE5__ *)
 
 (* This is written by hand because the corresponding rust type is not type-generic. *)
 and gtranslated_crate_of_json

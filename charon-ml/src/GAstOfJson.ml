@@ -58,20 +58,6 @@ let vector_of_json _ item_of_json js =
   let* list = list_of_json (option_of_json item_of_json) js in
   Ok (List.filter_map (fun x -> x) list)
 
-(* Start of the `and` chain *)
-let __ = ()
-
-and file_name_of_json (js : json) : (file_name, string) result =
-  combine_error_msgs js __FUNCTION__
-    (match js with
-    | `Assoc [ ("Virtual", virtual_) ] ->
-        let* virtual_ = path_buf_of_json virtual_ in
-        Ok (Virtual virtual_)
-    | `Assoc [ ("Local", local) ] ->
-        let* local = path_buf_of_json local in
-        Ok (Local local)
-    | _ -> Error "")
-
 (** Deserialize a map from file id to file name.
 
     In the serialized LLBC, the files in the loc spans are refered to by their
@@ -80,7 +66,7 @@ and file_name_of_json (js : json) : (file_name, string) result =
     the AST.
     The "id to file" map is thus only used in the deserialization process.
   *)
-let id_to_file_of_json (js : json) : (id_to_file_map, string) result =
+let rec id_to_file_of_json (js : json) : (id_to_file_map, string) result =
   combine_error_msgs js __FUNCTION__
     ((* The map is stored as a list of pairs (key, value): we deserialize
       * this list then convert it to a map *)
@@ -93,17 +79,8 @@ let id_to_file_of_json (js : json) : (id_to_file_map, string) result =
      in
      Ok (FileId.Map.of_list names_with_ids))
 
-and loc_of_json (js : json) : (loc, string) result =
-  combine_error_msgs js __FUNCTION__
-    (match js with
-    | `Assoc [ ("line", line); ("col", col) ] ->
-        let* line = int_of_json line in
-        let* col = int_of_json col in
-        Ok { line; col }
-    | _ -> Error "")
-
 (* This is written by hand because it accessed `id_to_file`. *)
-let rec raw_span_of_json (id_to_file : id_to_file_map) (js : json) :
+and raw_span_of_json (id_to_file : id_to_file_map) (js : json) :
     (raw_span, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
@@ -113,6 +90,116 @@ let rec raw_span_of_json (id_to_file : id_to_file_map) (js : json) :
         let* beg_loc = loc_of_json beg_loc in
         let* end_loc = loc_of_json end_loc in
         Ok { file; beg_loc; end_loc }
+    | _ -> Error "")
+
+and big_int_of_json (js : json) : (big_int, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with
+    | `Int i -> Ok (Z.of_int i)
+    | `String is -> Ok (Z.of_string is)
+    | _ -> Error "")
+
+(** Deserialize a {!Values.scalar_value} from JSON and **check the ranges**.
+
+    Note that in practice we also check that the values are in range
+    in the interpreter functions. Still, it doesn't cost much to be
+    a bit conservative.
+
+    This is written by hand because it does not match the structure of the
+    corresponding rust type. *)
+and scalar_value_of_json (js : json) : (scalar_value, string) result =
+  let res =
+    combine_error_msgs js __FUNCTION__
+      (match js with
+      | `Assoc [ ("Isize", bi) ] ->
+          let* bi = big_int_of_json bi in
+          Ok { value = bi; int_ty = Isize }
+      | `Assoc [ ("I8", bi) ] ->
+          let* bi = big_int_of_json bi in
+          Ok { value = bi; int_ty = I8 }
+      | `Assoc [ ("I16", bi) ] ->
+          let* bi = big_int_of_json bi in
+          Ok { value = bi; int_ty = I16 }
+      | `Assoc [ ("I32", bi) ] ->
+          let* bi = big_int_of_json bi in
+          Ok { value = bi; int_ty = I32 }
+      | `Assoc [ ("I64", bi) ] ->
+          let* bi = big_int_of_json bi in
+          Ok { value = bi; int_ty = I64 }
+      | `Assoc [ ("I128", bi) ] ->
+          let* bi = big_int_of_json bi in
+          Ok { value = bi; int_ty = I128 }
+      | `Assoc [ ("Usize", bi) ] ->
+          let* bi = big_int_of_json bi in
+          Ok { value = bi; int_ty = Usize }
+      | `Assoc [ ("U8", bi) ] ->
+          let* bi = big_int_of_json bi in
+          Ok { value = bi; int_ty = U8 }
+      | `Assoc [ ("U16", bi) ] ->
+          let* bi = big_int_of_json bi in
+          Ok { value = bi; int_ty = U16 }
+      | `Assoc [ ("U32", bi) ] ->
+          let* bi = big_int_of_json bi in
+          Ok { value = bi; int_ty = U32 }
+      | `Assoc [ ("U64", bi) ] ->
+          let* bi = big_int_of_json bi in
+          Ok { value = bi; int_ty = U64 }
+      | `Assoc [ ("U128", bi) ] ->
+          let* bi = big_int_of_json bi in
+          Ok { value = bi; int_ty = U128 }
+      | _ -> Error "")
+  in
+  match res with
+  | Error _ -> res
+  | Ok sv ->
+      if not (check_scalar_value_in_range sv) then (
+        log#serror ("Scalar value not in range: " ^ show_scalar_value sv);
+        raise (Failure ("Scalar value not in range: " ^ show_scalar_value sv)));
+      res
+
+(* This is written by hand because the corresponding rust type does not exist. *)
+and region_var_group_of_json (js : json) : (region_var_group, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with
+    | `Assoc [ ("id", id); ("regions", regions); ("parents", parents) ] ->
+        let* id = RegionGroupId.id_of_json id in
+        let* regions = list_of_json RegionVarId.id_of_json regions in
+        let* parents = list_of_json RegionGroupId.id_of_json parents in
+        Ok { id; regions; parents }
+    | _ -> Error "")
+
+and region_var_groups_of_json (js : json) : (region_var_groups, string) result =
+  combine_error_msgs js __FUNCTION__ (list_of_json region_var_group_of_json js)
+
+and maybe_opaque_body_of_json (bodies : 'body gexpr_body option list)
+    (js : json) : ('body gexpr_body option, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with
+    | `Assoc [ ("Ok", body) ] ->
+        let* body_id = BodyId.id_of_json body in
+        let body = List.nth bodies (BodyId.to_int body_id) in
+        Ok body
+    | `Assoc [ ("Err", `Null) ] -> Ok None
+    | _ -> Error "")
+
+and file_name_of_json (js : json) : (file_name, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with
+    | `Assoc [ ("Virtual", virtual_) ] ->
+        let* virtual_ = path_buf_of_json virtual_ in
+        Ok (Virtual virtual_)
+    | `Assoc [ ("Local", local) ] ->
+        let* local = path_buf_of_json local in
+        Ok (Local local)
+    | _ -> Error "")
+
+and loc_of_json (js : json) : (loc, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with
+    | `Assoc [ ("line", line); ("col", col) ] ->
+        let* line = int_of_json line in
+        let* col = int_of_json col in
+        Ok { line; col }
     | _ -> Error "")
 
 and span_of_json (id_to_file : id_to_file_map) (js : json) :
@@ -278,71 +365,6 @@ and type_id_of_json (js : json) : (type_id, string) result =
         let* assumed = assumed_ty_of_json assumed in
         Ok (TAssumed assumed)
     | _ -> Error "")
-
-let big_int_of_json (js : json) : (big_int, string) result =
-  combine_error_msgs js __FUNCTION__
-    (match js with
-    | `Int i -> Ok (Z.of_int i)
-    | `String is -> Ok (Z.of_string is)
-    | _ -> Error "")
-
-(** Deserialize a {!Values.scalar_value} from JSON and **check the ranges**.
-
-    Note that in practice we also check that the values are in range
-    in the interpreter functions. Still, it doesn't cost much to be
-    a bit conservative.
-
-    This is written by hand because it does not match the structure of the
-    corresponding rust type. *)
-let rec scalar_value_of_json (js : json) : (scalar_value, string) result =
-  let res =
-    combine_error_msgs js __FUNCTION__
-      (match js with
-      | `Assoc [ ("Isize", bi) ] ->
-          let* bi = big_int_of_json bi in
-          Ok { value = bi; int_ty = Isize }
-      | `Assoc [ ("I8", bi) ] ->
-          let* bi = big_int_of_json bi in
-          Ok { value = bi; int_ty = I8 }
-      | `Assoc [ ("I16", bi) ] ->
-          let* bi = big_int_of_json bi in
-          Ok { value = bi; int_ty = I16 }
-      | `Assoc [ ("I32", bi) ] ->
-          let* bi = big_int_of_json bi in
-          Ok { value = bi; int_ty = I32 }
-      | `Assoc [ ("I64", bi) ] ->
-          let* bi = big_int_of_json bi in
-          Ok { value = bi; int_ty = I64 }
-      | `Assoc [ ("I128", bi) ] ->
-          let* bi = big_int_of_json bi in
-          Ok { value = bi; int_ty = I128 }
-      | `Assoc [ ("Usize", bi) ] ->
-          let* bi = big_int_of_json bi in
-          Ok { value = bi; int_ty = Usize }
-      | `Assoc [ ("U8", bi) ] ->
-          let* bi = big_int_of_json bi in
-          Ok { value = bi; int_ty = U8 }
-      | `Assoc [ ("U16", bi) ] ->
-          let* bi = big_int_of_json bi in
-          Ok { value = bi; int_ty = U16 }
-      | `Assoc [ ("U32", bi) ] ->
-          let* bi = big_int_of_json bi in
-          Ok { value = bi; int_ty = U32 }
-      | `Assoc [ ("U64", bi) ] ->
-          let* bi = big_int_of_json bi in
-          Ok { value = bi; int_ty = U64 }
-      | `Assoc [ ("U128", bi) ] ->
-          let* bi = big_int_of_json bi in
-          Ok { value = bi; int_ty = U128 }
-      | _ -> Error "")
-  in
-  match res with
-  | Error _ -> res
-  | Ok sv ->
-      if not (check_scalar_value_in_range sv) then (
-        log#serror ("Scalar value not in range: " ^ show_scalar_value sv);
-        raise (Failure ("Scalar value not in range: " ^ show_scalar_value sv)));
-      res
 
 and const_generic_of_json (js : json) : (const_generic, string) result =
   combine_error_msgs js __FUNCTION__
@@ -536,20 +558,6 @@ and type_decl_kind_of_json (id_to_file : id_to_file_map) (js : json) :
         let* error = string_of_json error in
         Ok (Error error)
     | _ -> Error "")
-
-(* This is written by hand because the corresponding rust type does not exist. *)
-and region_var_group_of_json (js : json) : (region_var_group, string) result =
-  combine_error_msgs js __FUNCTION__
-    (match js with
-    | `Assoc [ ("id", id); ("regions", regions); ("parents", parents) ] ->
-        let* id = RegionGroupId.id_of_json id in
-        let* regions = list_of_json RegionVarId.id_of_json regions in
-        let* parents = list_of_json RegionGroupId.id_of_json parents in
-        Ok { id; regions; parents }
-    | _ -> Error "")
-
-and region_var_groups_of_json (js : json) : (region_var_groups, string) result =
-  combine_error_msgs js __FUNCTION__ (list_of_json region_var_group_of_json js)
 
 and trait_clause_of_json (id_to_file : id_to_file_map) (js : json) :
     (trait_clause, string) result =
@@ -1172,73 +1180,6 @@ and item_kind_of_json (js : json) : (item_kind, string) result =
         Ok (TraitImplItem (impl_id, trait_id, item_name, reuses_default))
     | _ -> Error "")
 
-let maybe_opaque_body_of_json (bodies : 'body gexpr_body option list)
-    (js : json) : ('body gexpr_body option, string) result =
-  combine_error_msgs js __FUNCTION__
-    (match js with
-    | `Assoc [ ("Ok", body) ] ->
-        let* body_id = BodyId.id_of_json body in
-        let body = List.nth bodies (BodyId.to_int body_id) in
-        Ok body
-    | `Assoc [ ("Err", `Null) ] -> Ok None
-    | _ -> Error "")
-
-(* This is written by hand because the corresponding rust type is not type-generic. *)
-let gfun_decl_of_json (bodies : 'body gexpr_body option list)
-    (id_to_file : id_to_file_map) (js : json) : ('body gfun_decl, string) result
-    =
-  combine_error_msgs js __FUNCTION__
-    (match js with
-    | `Assoc
-        [
-          ("def_id", def_id);
-          ("item_meta", item_meta);
-          ("signature", signature);
-          ("kind", kind);
-          ("body", body);
-        ] ->
-        let* def_id = FunDeclId.id_of_json def_id in
-        let* item_meta = item_meta_of_json id_to_file item_meta in
-        let* signature = fun_sig_of_json id_to_file signature in
-        let* kind = item_kind_of_json kind in
-        let* body = maybe_opaque_body_of_json bodies body in
-        Ok
-          {
-            def_id;
-            item_meta;
-            signature;
-            kind;
-            body;
-            is_global_decl_body = false;
-          }
-    | _ -> Error "")
-
-let rec gglobal_decl_of_json (bodies : 'body gexpr_body option list)
-    (id_to_file : id_to_file_map) (js : json) :
-    ('body gexpr_body option gglobal_decl, string) result =
-  combine_error_msgs js __FUNCTION__
-    (match js with
-    | `Assoc
-        [
-          ("def_id", def_id);
-          ("item_meta", item_meta);
-          ("generics", generics);
-          ("ty", ty);
-          ("kind", kind);
-          ("body", body);
-        ] ->
-        let* global_id = GlobalDeclId.id_of_json def_id in
-        let* item_meta = item_meta_of_json id_to_file item_meta in
-        let* generics = generic_params_of_json id_to_file generics in
-        let* ty = ty_of_json ty in
-        let* kind = item_kind_of_json kind in
-        let* body = maybe_opaque_body_of_json bodies body in
-        let global =
-          { def_id = global_id; item_meta; body; generics; ty; kind }
-        in
-        Ok global
-    | _ -> Error "")
-
 and trait_decl_of_json (id_to_file : id_to_file_map) (js : json) :
     (trait_decl, string) result =
   combine_error_msgs js __FUNCTION__
@@ -1412,6 +1353,62 @@ and any_decl_id_of_json (js : json) : (any_decl_id, string) result =
     | `Assoc [ ("TraitImpl", trait_impl) ] ->
         let* trait_impl = trait_impl_id_of_json trait_impl in
         Ok (IdTraitImpl trait_impl)
+    | _ -> Error "")
+
+(* This is written by hand because the corresponding rust type is not type-generic. *)
+and gfun_decl_of_json (bodies : 'body gexpr_body option list)
+    (id_to_file : id_to_file_map) (js : json) : ('body gfun_decl, string) result
+    =
+  combine_error_msgs js __FUNCTION__
+    (match js with
+    | `Assoc
+        [
+          ("def_id", def_id);
+          ("item_meta", item_meta);
+          ("signature", signature);
+          ("kind", kind);
+          ("body", body);
+        ] ->
+        let* def_id = FunDeclId.id_of_json def_id in
+        let* item_meta = item_meta_of_json id_to_file item_meta in
+        let* signature = fun_sig_of_json id_to_file signature in
+        let* kind = item_kind_of_json kind in
+        let* body = maybe_opaque_body_of_json bodies body in
+        Ok
+          {
+            def_id;
+            item_meta;
+            signature;
+            kind;
+            body;
+            is_global_decl_body = false;
+          }
+    | _ -> Error "")
+
+and gglobal_decl_of_json (bodies : 'body gexpr_body option list)
+    (id_to_file : id_to_file_map) (js : json) :
+    ('body gexpr_body option gglobal_decl, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with
+    | `Assoc
+        [
+          ("def_id", def_id);
+          ("item_meta", item_meta);
+          ("generics", generics);
+          ("ty", ty);
+          ("kind", kind);
+          ("body", body);
+        ] ->
+        let* global_id = GlobalDeclId.id_of_json def_id in
+        let* item_meta = item_meta_of_json id_to_file item_meta in
+        let* generics = generic_params_of_json id_to_file generics in
+        let* ty = ty_of_json ty in
+        let* kind = item_kind_of_json kind in
+        let* body = maybe_opaque_body_of_json bodies body in
+        let global =
+          { def_id = global_id; item_meta; body; generics; ty; kind }
+        in
+        Ok global
     | _ -> Error "")
 
 (* This is written by hand because the corresponding rust type is not type-generic. *)
