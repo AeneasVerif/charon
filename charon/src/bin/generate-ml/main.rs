@@ -108,6 +108,7 @@ fn type_to_ocaml_call(ctx: &GenerateCtx, ty: &Ty) -> String {
         Ty::Literal(LiteralTy::Bool) => "bool_of_json".to_string(),
         Ty::Literal(LiteralTy::Char) => "char_of_json".to_string(),
         Ty::Literal(LiteralTy::Integer(_)) => "int_of_json".to_string(),
+        Ty::Literal(LiteralTy::Float(_)) => "float_of_json".to_string(),
         Ty::Adt(adt_kind, generics) => {
             let mut expr = Vec::new();
             for ty in &generics.types {
@@ -157,6 +158,7 @@ fn type_to_ocaml_name(ctx: &GenerateCtx, ty: &Ty) -> String {
         Ty::Literal(LiteralTy::Bool) => "bool".to_string(),
         Ty::Literal(LiteralTy::Char) => "char".to_string(),
         Ty::Literal(LiteralTy::Integer(_)) => "int".to_string(),
+        Ty::Literal(LiteralTy::Float(_)) => "float_of_json".to_string(),
         Ty::Adt(adt_kind, generics) => {
             let mut args = generics
                 .types
