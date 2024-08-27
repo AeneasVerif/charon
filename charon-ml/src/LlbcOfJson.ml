@@ -33,34 +33,34 @@ and switch_of_json (id_to_file : id_to_file_map) (js : json) :
     (switch, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
-    | `Assoc [ ("If", `List [ x0; x1; x2 ]) ] ->
-        let* x0 = operand_of_json x0 in
-        let* x1 = (statement_of_json id_to_file) x1 in
-        let* x2 = (statement_of_json id_to_file) x2 in
-        Ok (If (x0, x1, x2))
-    | `Assoc [ ("SwitchInt", `List [ x0; x1; x2; x3 ]) ] ->
-        let* x0 = operand_of_json x0 in
-        let* x1 = integer_type_of_json x1 in
-        let* x2 =
+    | `Assoc [ ("If", `List [ x_0; x_1; x_2 ]) ] ->
+        let* x_0 = operand_of_json x_0 in
+        let* x_1 = (statement_of_json id_to_file) x_1 in
+        let* x_2 = (statement_of_json id_to_file) x_2 in
+        Ok (If (x_0, x_1, x_2))
+    | `Assoc [ ("SwitchInt", `List [ x_0; x_1; x_2; x_3 ]) ] ->
+        let* x_0 = operand_of_json x_0 in
+        let* x_1 = integer_type_of_json x_1 in
+        let* x_2 =
           list_of_json
             (pair_of_json
                (list_of_json scalar_value_of_json)
                (statement_of_json id_to_file))
-            x2
+            x_2
         in
-        let* x3 = (statement_of_json id_to_file) x3 in
-        Ok (SwitchInt (x0, x1, x2, x3))
-    | `Assoc [ ("Match", `List [ x0; x1; x2 ]) ] ->
-        let* x0 = place_of_json x0 in
-        let* x1 =
+        let* x_3 = (statement_of_json id_to_file) x_3 in
+        Ok (SwitchInt (x_0, x_1, x_2, x_3))
+    | `Assoc [ ("Match", `List [ x_0; x_1; x_2 ]) ] ->
+        let* x_0 = place_of_json x_0 in
+        let* x_1 =
           list_of_json
             (pair_of_json
                (list_of_json variant_id_of_json)
                (statement_of_json id_to_file))
-            x1
+            x_1
         in
-        let* x2 = option_of_json (statement_of_json id_to_file) x2 in
-        Ok (Match (x0, x1, x2))
+        let* x_2 = option_of_json (statement_of_json id_to_file) x_2 in
+        Ok (Match (x_0, x_1, x_2))
     | _ -> Error "")
 
 (* Hand-written because we change the `Sequence` representation *)

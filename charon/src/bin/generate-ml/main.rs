@@ -225,8 +225,8 @@ fn convert_vars<'a>(ctx: &GenerateCtx, fields: impl IntoIterator<Item = &'a Fiel
         .into_iter()
         .filter(|f| !f.is_opaque())
         .map(|f| {
-            let name = f.name.as_deref().unwrap();
-            let rename = f.renamed_name().unwrap();
+            let name = make_ocaml_ident(f.name.as_deref().unwrap());
+            let rename = make_ocaml_ident(f.renamed_name().unwrap());
             let convert = type_to_ocaml_call(ctx, &f.ty);
             format!("let* {rename} = {convert} {name} in")
         })
@@ -321,9 +321,17 @@ fn type_decl_to_json_deserializer(ctx: &GenerateCtx, decl: &TypeDecl) -> String 
             for (i, f) in fields.iter_mut().enumerate() {
                 f.name = Some(format!("x{i}"));
             }
-            let pat: String = fields.iter().map(|f| f.name.as_deref().unwrap()).join(";");
+            let pat: String = fields
+                .iter()
+                .map(|f| f.name.as_deref().unwrap())
+                .map(|n| make_ocaml_ident(n))
+                .join(";");
             let pat = format!("`List [ {pat} ]");
-            let construct = fields.iter().map(|f| f.renamed_name().unwrap()).join(", ");
+            let construct = fields
+                .iter()
+                .map(|f| f.renamed_name().unwrap())
+                .map(|n| make_ocaml_ident(n))
+                .join(", ");
             let construct = format!("( {construct} )");
             build_branch(ctx, &pat, &fields, &construct)
         }
@@ -342,7 +350,11 @@ fn type_decl_to_json_deserializer(ctx: &GenerateCtx, decl: &TypeDecl) -> String 
                 .iter()
                 .map(|f| {
                     let name = f.name.as_ref().unwrap();
-                    let var = if f.is_opaque() { "_" } else { name };
+                    let var = if f.is_opaque() {
+                        "_"
+                    } else {
+                        &make_ocaml_ident(name)
+                    };
                     format!("(\"{name}\", {var});")
                 })
                 .join("\n");
@@ -351,6 +363,7 @@ fn type_decl_to_json_deserializer(ctx: &GenerateCtx, decl: &TypeDecl) -> String 
                 .iter()
                 .filter(|f| !f.is_opaque())
                 .map(|f| f.renamed_name().unwrap())
+                .map(|n| make_ocaml_ident(n))
                 .join("; ");
             let construct = format!("{{ {construct} }}");
             build_branch(ctx, &pat, fields, &construct)
@@ -376,7 +389,7 @@ fn type_decl_to_json_deserializer(ctx: &GenerateCtx, decl: &TypeDecl) -> String 
                                 var
                             } else {
                                 for (i, f) in fields.iter_mut().enumerate() {
-                                    f.name = Some(format!("x{i}"));
+                                    f.name = Some(format!("x_{i}"));
                                 }
                                 let pat =
                                     fields.iter().map(|f| f.name.as_ref().unwrap()).join("; ");
@@ -388,15 +401,22 @@ fn type_decl_to_json_deserializer(ctx: &GenerateCtx, decl: &TypeDecl) -> String 
                                 .iter()
                                 .map(|f| {
                                     let name = f.name.as_ref().unwrap();
-                                    let var = if f.is_opaque() { "_" } else { name };
+                                    let var = if f.is_opaque() {
+                                        "_"
+                                    } else {
+                                        &make_ocaml_ident(name)
+                                    };
                                     format!("(\"{name}\", {var});")
                                 })
                                 .join(" ");
                             format!("`Assoc [ {pat} ]")
                         };
                         let pat = format!("`Assoc [ (\"{name}\", {inner_pat}) ]");
-                        let construct_fields =
-                            fields.iter().map(|f| f.name.as_ref().unwrap()).join(", ");
+                        let construct_fields = fields
+                            .iter()
+                            .map(|f| f.name.as_ref().unwrap())
+                            .map(|n| make_ocaml_ident(n))
+                            .join(", ");
                         let construct = format!("{rename} ({construct_fields})");
                         build_branch(ctx, &pat, &fields, &construct)
                     }
