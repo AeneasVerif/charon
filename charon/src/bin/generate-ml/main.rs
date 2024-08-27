@@ -731,6 +731,7 @@ fn main() -> Result<()> {
                     "RegionVar",
                     "Region",
                     "IntegerTy",
+                    "FloatTy",
                     "LiteralTy",
                     "ConstGenericVar",
                     "RefKind",

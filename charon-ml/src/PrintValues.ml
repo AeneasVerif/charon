@@ -17,9 +17,16 @@ let integer_type_to_string = function
   | U64 -> "u64"
   | U128 -> "u128"
 
+let float_type_to_string = function
+  | F16 -> "f16"
+  | F32 -> "f32"
+  | F64 -> "f64"
+  | F128 -> "f128"
+
 let literal_type_to_string (ty : literal_type) : string =
   match ty with
   | TInteger ity -> integer_type_to_string ity
+  | TFloat fty -> float_type_to_string fty
   | TBool -> "bool"
   | TChar -> "char"
 

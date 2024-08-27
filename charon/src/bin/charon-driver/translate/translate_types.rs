@@ -203,9 +203,16 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                     UintTy::U128 => IntegerTy::U128,
                 })))
             }
-            hax::Ty::Float(_) => {
-                trace!("Float");
-                error_or_panic!(self, span, "Floats are not supported yet")
+            hax::Ty::Float(float_ty) => {
+                use hax::FloatTy;
+                Ok(Ty::Literal(LiteralTy::Float(match float_ty {
+                    FloatTy::F16 => charon_lib::ast::types::FloatTy::F16,
+                    FloatTy::F32 => charon_lib::ast::types::FloatTy::F32,
+                    FloatTy::F64 => charon_lib::ast::types::FloatTy::F64,
+                    FloatTy::F128 => charon_lib::ast::types::FloatTy::F128,
+                })))
+                /* trace!("Float");
+                error_or_panic!(self, span, "Floats are not supported yet") */
             }
             hax::Ty::Never => Ok(Ty::Never),
 

@@ -1452,6 +1452,17 @@ impl std::fmt::Display for IntegerTy {
     }
 }
 
+impl std::fmt::Display for FloatTy {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::result::Result<(), std::fmt::Error> {
+        match self {
+            FloatTy::F16 => write!(f, "f16"),
+            FloatTy::F32 => write!(f, "f32"),
+            FloatTy::F64 => write!(f, "f64"),
+            FloatTy::F128 => write!(f, "f128"),
+        }
+    }
+}
+
 impl std::fmt::Display for Literal {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::result::Result<(), std::fmt::Error> {
         match self {
@@ -1468,6 +1479,7 @@ impl std::fmt::Display for LiteralTy {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::result::Result<(), std::fmt::Error> {
         match self {
             LiteralTy::Integer(ty) => ty.fmt(f),
+            LiteralTy::Float(ty) => ty.fmt(f),
             LiteralTy::Char => write!(f, "char"),
             LiteralTy::Bool => write!(f, "bool"),
         }
