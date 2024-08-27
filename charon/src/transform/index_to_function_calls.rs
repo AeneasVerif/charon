@@ -179,7 +179,16 @@ impl<'a> Visitor<'a> {
     fn enter_rvalue(&mut self, rv: &mut Rvalue) {
         use Rvalue::*;
         match rv {
-            Use(_) | UnaryOp(..) | BinaryOp(..) | Aggregate(..) | Global(..) | Repeat(..) => {}
+            Use(_) | NullaryOp(..) | UnaryOp(..) | BinaryOp(..) | Aggregate(..) | Global(..)
+            | Repeat(..) | ShallowInitBox(..) => {}
+            RawPtr(_, ptrkind) => match *ptrkind {
+                RefKind::Mut => {
+                    self.place_mutability_stack.push(true);
+                }
+                RefKind::Shared => {
+                    self.place_mutability_stack.push(false);
+                }
+            },
             Ref(_, bkind) => match *bkind {
                 BorrowKind::Mut | BorrowKind::TwoPhaseMut => {
                     self.place_mutability_stack.push(true);

@@ -717,6 +717,7 @@ fn main() -> Result<()> {
                 (GenerationKind::TypeDecl(false), &[
                     "CastKind",
                     "UnOp",
+                    "NullOp",
                     "RawConstantExpr",
                     "ConstantExpr",
                     "FnPtr",
@@ -837,6 +838,7 @@ fn main() -> Result<()> {
                     "CastKind",
                     "AbortKind",
                     "Assert",
+                    "NullOp",
                     "UnOp",
                     "BinOp",
                     "Literal",

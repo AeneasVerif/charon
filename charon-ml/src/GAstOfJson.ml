@@ -807,6 +807,10 @@ and cast_kind_of_json (js : json) : (cast_kind, string) result =
         let* x_0 = literal_type_of_json x_0 in
         let* x_1 = literal_type_of_json x_1 in
         Ok (CastScalar (x_0, x_1))
+    | `Assoc [ ("RawPtr", `List [ x_0; x_1 ]) ] ->
+        let* x_0 = ty_of_json x_0 in
+        let* x_1 = ty_of_json x_1 in
+        Ok (CastRawPtr (x_0, x_1))
     | `Assoc [ ("FnPtr", `List [ x_0; x_1 ]) ] ->
         let* x_0 = ty_of_json x_0 in
         let* x_1 = ty_of_json x_1 in
@@ -815,6 +819,10 @@ and cast_kind_of_json (js : json) : (cast_kind, string) result =
         let* x_0 = ty_of_json x_0 in
         let* x_1 = ty_of_json x_1 in
         Ok (CastUnsize (x_0, x_1))
+    | `Assoc [ ("Transmute", `List [ x_0; x_1 ]) ] ->
+        let* x_0 = ty_of_json x_0 in
+        let* x_1 = ty_of_json x_1 in
+        Ok (CastTransmute (x_0, x_1))
     | _ -> Error "")
 
 and abort_kind_of_json (id_to_file : id_to_file_map) (js : json) :
@@ -834,6 +842,19 @@ and assertion_of_json (js : json) : (assertion, string) result =
         let* cond = operand_of_json cond in
         let* expected = bool_of_json expected in
         Ok ({ cond; expected } : assertion)
+    | _ -> Error "")
+
+and nullop_of_json (js : json) : (nullop, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with
+    | `String "SizeOf" -> Ok SizeOf
+    | `String "AlignOf" -> Ok AlignOf
+    | `Assoc [ ("OffsetOf", offset_of) ] ->
+        let* offset_of =
+          list_of_json (pair_of_json int_of_json field_id_of_json) offset_of
+        in
+        Ok (OffsetOf offset_of)
+    | `String "UbChecks" -> Ok UbChecks
     | _ -> Error "")
 
 and unop_of_json (js : json) : (unop, string) result =
@@ -1018,15 +1039,23 @@ and rvalue_of_json (js : json) : (rvalue, string) result =
         let* x_0 = place_of_json x_0 in
         let* x_1 = borrow_kind_of_json x_1 in
         Ok (RvRef (x_0, x_1))
-    | `Assoc [ ("UnaryOp", `List [ x_0; x_1 ]) ] ->
-        let* x_0 = unop_of_json x_0 in
-        let* x_1 = operand_of_json x_1 in
-        Ok (UnaryOp (x_0, x_1))
+    | `Assoc [ ("RawPtr", `List [ x_0; x_1 ]) ] ->
+        let* x_0 = place_of_json x_0 in
+        let* x_1 = ref_kind_of_json x_1 in
+        Ok (RawPtr (x_0, x_1))
     | `Assoc [ ("BinaryOp", `List [ x_0; x_1; x_2 ]) ] ->
         let* x_0 = binop_of_json x_0 in
         let* x_1 = operand_of_json x_1 in
         let* x_2 = operand_of_json x_2 in
         Ok (BinaryOp (x_0, x_1, x_2))
+    | `Assoc [ ("UnaryOp", `List [ x_0; x_1 ]) ] ->
+        let* x_0 = unop_of_json x_0 in
+        let* x_1 = operand_of_json x_1 in
+        Ok (UnaryOp (x_0, x_1))
+    | `Assoc [ ("NullaryOp", `List [ x_0; x_1 ]) ] ->
+        let* x_0 = nullop_of_json x_0 in
+        let* x_1 = ty_of_json x_1 in
+        Ok (NullaryOp (x_0, x_1))
     | `Assoc [ ("Discriminant", `List [ x_0; x_1 ]) ] ->
         let* x_0 = place_of_json x_0 in
         let* x_1 = type_decl_id_of_json x_1 in
@@ -1043,6 +1072,10 @@ and rvalue_of_json (js : json) : (rvalue, string) result =
         let* x_1 = ty_of_json x_1 in
         let* x_2 = option_of_json const_generic_of_json x_2 in
         Ok (Len (x_0, x_1, x_2))
+    | `Assoc [ ("ShallowInitBox", `List [ x_0; x_1 ]) ] ->
+        let* x_0 = operand_of_json x_0 in
+        let* x_1 = ty_of_json x_1 in
+        Ok (ShallowInitBox (x_0, x_1))
     | _ -> Error "")
 
 and params_info_of_json (js : json) : (params_info, string) result =
