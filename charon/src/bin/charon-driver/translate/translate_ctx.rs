@@ -268,16 +268,16 @@ pub(crate) struct BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     pub type_vars: Vector<TypeVarId, TypeVar>,
     /// The map from rust type variable indices to translated type variable
     /// indices.
-    pub type_vars_map: MapGenerator<u32, TypeVarId>,
+    pub type_vars_map: HashMap<u32, TypeVarId>,
     /// The "regular" variables
     pub vars: Vector<VarId, ast::Var>,
     /// The map from rust variable indices to translated variables indices.
-    pub vars_map: MapGenerator<usize, VarId>,
+    pub vars_map: HashMap<usize, VarId>,
     /// The const generic variables
     pub const_generic_vars: Vector<ConstGenericVarId, ConstGenericVar>,
     /// The map from rust const generic variables to translate const generic
     /// variable indices.
-    pub const_generic_vars_map: MapGenerator<u32, ConstGenericVarId>,
+    pub const_generic_vars_map: HashMap<u32, ConstGenericVarId>,
     /// Accumulated clauses to be put into the item's `GenericParams`.
     pub param_trait_clauses: Vector<TraitClauseId, TraitClause>,
     /// (For traits only) accumulated implied trait clauses.
@@ -921,6 +921,13 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
                 self.translated.id_map.insert(id.get_id(), trans_id);
                 self.translated.reverse_id_map.insert(trans_id, id.get_id());
                 self.translated.all_ids.insert(trans_id);
+                // Store the name early so the name matcher can identify paths. We can't to it for
+                // trait impls because they register themselves when computing their name.
+                if !matches!(id, OrdRustId::TraitImpl(_)) {
+                    if let Ok(name) = self.def_id_to_name(rust_id) {
+                        self.translated.item_names.insert(trans_id, name);
+                    }
+                }
                 trans_id
             }
         }
@@ -1036,24 +1043,24 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             t_ctx,
             hax_state,
             region_vars: [Vector::new()].into(),
-            free_region_vars: std::collections::BTreeMap::new(),
+            free_region_vars: Default::default(),
             bound_region_vars: Default::default(),
-            type_vars: Vector::new(),
-            type_vars_map: MapGenerator::new(),
-            vars: Vector::new(),
-            vars_map: MapGenerator::new(),
-            const_generic_vars: Vector::new(),
-            const_generic_vars_map: MapGenerator::new(),
+            type_vars: Default::default(),
+            type_vars_map: Default::default(),
+            vars: Default::default(),
+            vars_map: Default::default(),
+            const_generic_vars: Default::default(),
+            const_generic_vars_map: Default::default(),
             param_trait_clauses: Default::default(),
             parent_trait_clauses: Default::default(),
             item_trait_clauses: Default::default(),
             trait_clauses: Default::default(),
-            regions_outlive: Vec::new(),
-            types_outlive: Vec::new(),
-            trait_type_constraints: Vec::new(),
+            regions_outlive: Default::default(),
+            types_outlive: Default::default(),
+            trait_type_constraints: Default::default(),
             blocks: Default::default(),
-            blocks_map: MapGenerator::new(),
-            blocks_stack: VecDeque::new(),
+            blocks_map: Default::default(),
+            blocks_stack: Default::default(),
         }
     }
 
@@ -1071,7 +1078,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
 
     pub(crate) fn get_local(&self, local: &hax::Local) -> Option<VarId> {
         use rustc_index::Idx;
-        self.vars_map.get(&local.index())
+        self.vars_map.get(&local.index()).copied()
     }
 
     #[allow(dead_code)]
@@ -1193,23 +1200,22 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         res
     }
 
-    pub(crate) fn push_type_var(&mut self, rindex: u32, name: String) -> TypeVarId {
-        let var_id = self.type_vars_map.insert(rindex);
-        assert!(var_id == self.type_vars.next_id());
-        self.type_vars.push_with(|index| TypeVar { index, name })
+    pub(crate) fn push_type_var(&mut self, rid: u32, name: String) -> TypeVarId {
+        let var_id = self.type_vars.push_with(|index| TypeVar { index, name });
+        self.type_vars_map.insert(rid, var_id);
+        var_id
     }
 
     pub(crate) fn push_var(&mut self, rid: usize, ty: Ty, name: Option<String>) {
-        let var_id = self.vars_map.insert(rid);
-        assert!(var_id == self.vars.next_id());
-        self.vars.push_with(|index| ast::Var { index, name, ty });
+        let var_id = self.vars.push_with(|index| Var { index, name, ty });
+        self.vars_map.insert(rid, var_id);
     }
 
     pub(crate) fn push_const_generic_var(&mut self, rid: u32, ty: LiteralTy, name: String) {
-        let var_id = self.const_generic_vars_map.insert(rid);
-        assert!(var_id == self.const_generic_vars.next_id());
-        self.const_generic_vars
-            .push_with(|index| (ConstGenericVar { index, name, ty }));
+        let var_id = self
+            .const_generic_vars
+            .push_with(|index| ConstGenericVar { index, name, ty });
+        self.const_generic_vars_map.insert(rid, var_id);
     }
 
     pub(crate) fn fresh_block_id(&mut self, rid: hax::BasicBlock) -> ast::BlockId {

@@ -110,7 +110,9 @@ fn type_to_ocaml_call(ctx: &GenerateCtx, ty: &Ty) -> String {
         Ty::Literal(LiteralTy::Integer(_)) => "int_of_json".to_string(),
         Ty::Adt(adt_kind, generics) => {
             let mut expr = Vec::new();
-            let mut types = generics.types.as_slice();
+            for ty in &generics.types {
+                expr.push(type_to_ocaml_call(ctx, ty))
+            }
             match adt_kind {
                 TypeId::Adt(id) => {
                     let mut first = if let Some(tdecl) = ctx.crate_data.type_decls.get(*id) {
@@ -120,25 +122,20 @@ fn type_to_ocaml_call(ctx: &GenerateCtx, ty: &Ty) -> String {
                     };
                     if first == "vec" {
                         first = "list".to_string();
-                        types = &types[0..1]; // Remove the allocator generic param
+                        expr.pop(); // Remove the allocator generic param
                     }
-                    expr.push(first + "_of_json");
+                    expr.insert(0, first + "_of_json");
                 }
-                TypeId::Assumed(AssumedTy::Box) => {
-                    types = &types[0..1]; // Remove the allocator generic param
-                }
+                TypeId::Assumed(AssumedTy::Box) => {}
                 TypeId::Tuple => {
-                    let name = match types.len() {
+                    let name = match generics.types.len() {
                         2 => "pair_of_json".to_string(),
                         3 => "triple_of_json".to_string(),
                         len => format!("tuple_{len}_of_json"),
                     };
-                    expr.push(name);
+                    expr.insert(0, name);
                 }
                 _ => unimplemented!("{ty:?}"),
-            }
-            for ty in types {
-                expr.push(type_to_ocaml_call(ctx, ty))
             }
             if let TypeId::Adt(id) = adt_kind {
                 if *ctx.contains_raw_span.get(&id).unwrap_or(&false) {

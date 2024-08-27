@@ -2,7 +2,6 @@
 
 use derive_visitor::{DriveMut, VisitorMut};
 
-use crate::ast::*;
 use crate::ids::Vector;
 use crate::llbc_ast::*;
 use crate::transform::TransformCtx;
@@ -51,7 +50,7 @@ impl<'a> Visitor<'a> {
         for pe in p.projection.clone().into_iter() {
             if let ProjectionElem::Index(arg_index, buf_ty) = pe {
                 let (id, generics) = buf_ty.as_adt();
-                let cgs: Vec<ConstGeneric> = generics.const_generics.to_vec();
+                let cgs: Vector<_, ConstGeneric> = generics.const_generics.clone();
                 let index_id = match id.as_assumed() {
                     AssumedTy::Array => {
                         if mut_access {
@@ -107,7 +106,12 @@ impl<'a> Visitor<'a> {
                 let arg_buf = Operand::Move(Place::new(buf_borrow_var));
                 let index_dest = Place::new(elem_borrow_var);
                 let index_id = FunIdOrTraitMethodRef::mk_assumed(index_id);
-                let generics = GenericArgs::new(vec![Region::Erased], vec![elem_ty], cgs, vec![]);
+                let generics = GenericArgs::new(
+                    vec![Region::Erased].into(),
+                    vec![elem_ty].into(),
+                    cgs,
+                    vec![].into(),
+                );
                 let func = FnOperand::Regular(FnPtr {
                     func: index_id,
                     generics,

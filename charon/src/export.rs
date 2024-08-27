@@ -20,7 +20,6 @@ pub struct CrateData {
 }
 
 impl CrateData {
-    #[charon::opaque]
     pub fn new(ctx: &TransformCtx) -> Self {
         CrateData {
             charon_version: crate::VERSION.to_owned(),
@@ -31,7 +30,6 @@ impl CrateData {
 
     /// Export the translated definitions to a JSON file.
     #[allow(clippy::result_unit_err)]
-    #[charon::opaque]
     pub fn serialize_to_file(&self, target_filename: &Path) -> Result<(), ()> {
         // Create the directory, if necessary (note that if the target directory
         // is not specified, there is no need to create it: otherwise we
