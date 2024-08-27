@@ -692,7 +692,7 @@ fn main() -> Result<()> {
             template: dir.join("templates/GAst.ml"),
             target: dir.join("generated/GAst.ml"),
             markers: &[
-                (GenerationKind::TypeDecl(true), &["FnOperand", "Call"]),
+                (GenerationKind::TypeDecl(false), &["FnOperand", "Call", "Assert"]),
                 (GenerationKind::TypeDecl(false), &[
                     "ParamsInfo",
                     "ClosureKind",
@@ -711,7 +711,7 @@ fn main() -> Result<()> {
             template: dir.join("templates/Expressions.ml"),
             target: dir.join("generated/Expressions.ml"),
             markers: &[
-                (GenerationKind::TypeDecl(false), &["AssumedFunId"]),
+                (GenerationKind::TypeDecl(false), &["AssumedFunId", "AbortKind"]),
                 (GenerationKind::TypeDecl(false), &["FieldProjKind", "ProjectionElem", "Projection", "Place"]),
                 (GenerationKind::TypeDecl(false), &["BorrowKind", "BinOp"]),
                 (GenerationKind::TypeDecl(false), &[
@@ -804,6 +804,8 @@ fn main() -> Result<()> {
                     "Place",
                     "BorrowKind",
                     "CastKind",
+                    "AbortKind",
+                    "Assert",
                     "UnOp",
                     "BinOp",
                     "Literal",
@@ -837,9 +839,23 @@ fn main() -> Result<()> {
             target: dir.join("generated/LlbcOfJson.ml"),
             markers: &[
                 (GenerationKind::OfJson, &[
-                    "Assert",
                     "charon_lib::ast::llbc_ast::Statement",
-                    "Switch",
+                    "charon_lib::ast::llbc_ast::Switch",
+                ]),
+            ],
+        },
+        GenerateCodeFor {
+            template: dir.join("templates/UllbcOfJson.ml"),
+            target: dir.join("generated/UllbcOfJson.ml"),
+            markers: &[
+                (GenerationKind::OfJson, &[
+                    "charon_lib::ast::ullbc_ast::Statement",
+                    "charon_lib::ast::ullbc_ast::RawStatement",
+                    "charon_lib::ast::ullbc_ast::SwitchTargets",
+                    "charon_lib::ast::ullbc_ast::Terminator",
+                    "charon_lib::ast::ullbc_ast::RawTerminator",
+                    "charon_lib::ast::ullbc_ast::BlockData",
+                    "charon_lib::ast::ullbc_ast::BodyContents",
                 ]),
             ],
         },

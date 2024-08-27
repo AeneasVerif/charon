@@ -341,3 +341,14 @@ pub enum AbortKind {
     /// machine.
     UndefinedBehavior,
 }
+
+/// Asserts are special constructs introduced by Rust to perform dynamic
+/// checks, to detect out-of-bounds accesses or divisions by zero for
+/// instance. We eliminate the assertions in [crate::remove_dynamic_checks],
+/// then introduce other dynamic checks in [crate::reconstruct_asserts].
+#[derive(Debug, Clone, Serialize, Deserialize, Drive, DriveMut)]
+#[charon::rename("Assertion")]
+pub struct Assert {
+    pub cond: Operand,
+    pub expected: bool,
+}

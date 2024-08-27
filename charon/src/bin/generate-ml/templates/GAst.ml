@@ -51,9 +51,6 @@ class ['self] map_ast_base =
 (* Below: the types need not be mutually recursive, but it makes it easier
    to derive the visitors *)
 
-(** not present in rust *)
-type assertion = { cond : operand; expected : bool }
-
 (* __REPLACE0__ *)
 [@@deriving
   show,

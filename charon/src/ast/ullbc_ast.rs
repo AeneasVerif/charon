@@ -13,6 +13,7 @@ generate_index_type!(BlockId, "Block");
 // The entry block of a function is always the block with id 0
 pub static START_BLOCK_ID: BlockId = BlockId::ZERO;
 
+#[charon::rename("Blocks")]
 pub type BodyContents = Vector<BlockId, BlockData>;
 pub type ExprBody = GExprBody<BodyContents>;
 
@@ -28,6 +29,7 @@ pub enum RawStatement {
     StorageDead(VarId),
     /// We translate this to [crate::llbc_ast::RawStatement::Drop] in LLBC
     Deinit(Place),
+    #[charon::opaque]
     Error(String),
 }
 
@@ -49,6 +51,7 @@ pub struct Statement {
     Drive,
     DriveMut,
 )]
+#[charon::rename("Switch")]
 pub enum SwitchTargets {
     /// Gives the `if` block and the `else` block
     If(BlockId, BlockId),
@@ -84,8 +87,7 @@ pub enum RawTerminator {
     /// A built-in assert, which corresponds to runtime checks that we remove, namely: bounds
     /// checks, over/underflow checks, div/rem by zero checks, pointer alignement check.
     Assert {
-        cond: Operand,
-        expected: bool,
+        assert: Assert,
         target: BlockId,
     },
 }
@@ -97,6 +99,7 @@ pub struct Terminator {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, Drive, DriveMut)]
+#[charon::rename("Block")]
 pub struct BlockData {
     pub statements: Vec<Statement>,
     pub terminator: Terminator,

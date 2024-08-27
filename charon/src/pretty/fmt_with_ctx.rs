@@ -66,6 +66,16 @@ impl<C: AstFormatter> FmtWithCtx<C> for AnyTransItem<'_> {
     }
 }
 
+impl<C: AstFormatter> FmtWithCtx<C> for Assert {
+    fn fmt_with_ctx(&self, ctx: &C) -> String {
+        format!(
+            "assert({} == {})",
+            self.cond.fmt_with_ctx(ctx),
+            self.expected,
+        )
+    }
+}
+
 impl<C: AstFormatter> FmtWithCtx<C> for BlockData {
     fn fmt_with_ctx_and_indent(&self, tab: &str, ctx: &C) -> String {
         let mut out: Vec<String> = Vec::new();
@@ -909,12 +919,7 @@ impl<C: AstFormatter> FmtWithCtx<C> for llbc::Statement {
             RawStatement::Drop(place) => {
                 format!("{}drop {}", tab, place.fmt_with_ctx(ctx))
             }
-            RawStatement::Assert(assert) => format!(
-                "{}assert({} == {})",
-                tab,
-                assert.cond.fmt_with_ctx(ctx),
-                assert.expected,
-            ),
+            RawStatement::Assert(assert) => format!("{}{}", tab, assert.fmt_with_ctx(ctx),),
             RawStatement::Call(call) => {
                 let (call_s, _) = fmt_call(ctx, call);
                 format!("{tab}{} := {call_s}", call.dest.fmt_with_ctx(ctx),)
@@ -1061,16 +1066,9 @@ impl<C: AstFormatter> FmtWithCtx<C> for Terminator {
                 };
                 format!("{} := {call_s} -> {target}", call.dest.fmt_with_ctx(ctx),)
             }
-            RawTerminator::Assert {
-                cond,
-                expected,
-                target,
-            } => format!(
-                "assert({} == {}) -> bb{}",
-                cond.fmt_with_ctx(ctx),
-                expected,
-                target
-            ),
+            RawTerminator::Assert { assert, target } => {
+                format!("{} -> bb{}", assert.fmt_with_ctx(ctx), target)
+            }
         }
     }
 }

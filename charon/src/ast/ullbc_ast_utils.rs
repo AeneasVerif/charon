@@ -102,12 +102,8 @@ impl BlockData {
                     f(span, &mut nst, arg);
                 }
             }
-            RawTerminator::Assert {
-                cond,
-                expected: _,
-                target: _,
-            } => {
-                f(span, &mut nst, cond);
+            RawTerminator::Assert { assert, .. } => {
+                f(span, &mut nst, &mut assert.cond);
             }
             RawTerminator::Abort(..)
             | RawTerminator::Return

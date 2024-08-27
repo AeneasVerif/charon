@@ -16,6 +16,7 @@ class ['self] iter_statement_base =
   object (_self : 'self)
     inherit [_] GAst.iter_statement_base
     method visit_block_id : 'env -> block_id -> unit = fun _ _ -> ()
+    method visit_abort_kind : 'env -> abort_kind -> unit = fun _ _ -> ()
   end
 
 (** Ancestor for {!UllbcAst.statement} map visitor *)
@@ -23,6 +24,7 @@ class ['self] map_statement_base =
   object (_self : 'self)
     inherit [_] GAst.map_statement_base
     method visit_block_id : 'env -> block_id -> block_id = fun _ x -> x
+    method visit_abort_kind : 'env -> abort_kind -> abort_kind = fun _ x -> x
   end
 
 type statement = {
@@ -85,8 +87,7 @@ type terminator = {
 and raw_terminator =
   | Goto of block_id
   | Switch of operand * switch
-  (* FIXME: rename to `Abort` *)
-  | Panic
+  | Abort of abort_kind
   | Return
   | Drop of place * block_id
   | Call of call * block_id option

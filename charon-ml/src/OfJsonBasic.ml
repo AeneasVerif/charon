@@ -8,7 +8,8 @@ type json = t
 
 let ( let* ) o f = match o with Error e -> Error e | Ok x -> f x
 
-let combine_error_msgs js msg res : ('a, string) result =
+let combine_error_msgs (js : json) (msg : string) (res : ('a, string) result) :
+    ('a, string) result =
   match res with
   | Ok x -> Ok x
   | Error e -> Error ("[" ^ msg ^ "]" ^ " failed on: " ^ show js ^ "\n\n" ^ e)

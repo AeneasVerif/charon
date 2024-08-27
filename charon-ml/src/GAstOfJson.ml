@@ -817,6 +817,25 @@ and cast_kind_of_json (js : json) : (cast_kind, string) result =
         Ok (CastUnsize (x_0, x_1))
     | _ -> Error "")
 
+and abort_kind_of_json (id_to_file : id_to_file_map) (js : json) :
+    (abort_kind, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with
+    | `Assoc [ ("Panic", panic) ] ->
+        let* panic = name_of_json id_to_file panic in
+        Ok (Panic panic)
+    | `String "UndefinedBehavior" -> Ok UndefinedBehavior
+    | _ -> Error "")
+
+and assertion_of_json (js : json) : (assertion, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with
+    | `Assoc [ ("cond", cond); ("expected", expected) ] ->
+        let* cond = operand_of_json cond in
+        let* expected = bool_of_json expected in
+        Ok ({ cond; expected } : assertion)
+    | _ -> Error "")
+
 and unop_of_json (js : json) : (unop, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with

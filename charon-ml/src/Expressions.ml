@@ -79,6 +79,13 @@ type assumed_fun_id =
 
           Signature: `fn<T>(&mut [T], usize) -> &mut T`
        *)
+
+and abort_kind =
+  | Panic of name  (** A built-in panicking function. *)
+  | UndefinedBehavior
+      (** A MIR `Unreachable` terminator corresponds to undefined behavior in the rust abstract
+          machine.
+       *)
 [@@deriving show, ord]
 
 (** Ancestor the field_proj_kind iter visitor *)

@@ -1182,8 +1182,10 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 let cond = self.translate_operand(rustc_span, cond)?;
                 let target = self.translate_basic_block_id(*target);
                 RawTerminator::Assert {
-                    cond,
-                    expected: *expected,
+                    assert: Assert {
+                        cond,
+                        expected: *expected,
+                    },
                     target,
                 }
             }

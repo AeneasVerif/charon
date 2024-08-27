@@ -4,9 +4,9 @@
 //! compiling for release). In our case, we take this into account in the semantics of our
 //! array/slice manipulation and arithmetic functions, on the verification side.
 
+use crate::ast::*;
 use crate::errors::register_error_or_panic;
 use crate::formatter::IntoFormatter;
-use crate::llbc_ast::{BinOp, FieldProjKind, Operand, ProjectionElem, Rvalue};
 use crate::pretty::FmtWithCtx;
 use crate::transform::TransformCtx;
 use crate::ullbc_ast::{BlockData, ExprBody, RawStatement, RawTerminator, Statement};
@@ -17,8 +17,10 @@ use super::ctx::UllbcPass;
 /// this is the only use of this terminator).
 fn remove_dynamic_checks(ctx: &mut TransformCtx, block: &mut BlockData) {
     let RawTerminator::Assert {
-        cond: Operand::Move(cond),
-        expected,
+        assert: Assert {
+            cond: Operand::Move(cond),
+            expected,
+        },
         target,
     } = &block.terminator.content
     else {
