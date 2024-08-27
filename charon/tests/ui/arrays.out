@@ -259,9 +259,9 @@ fn core::slice::index::{impl core::slice::index::SliceIndex<Slice<T>> for core::
 
 fn core::slice::index::{impl core::slice::index::SliceIndex<Slice<T>> for core::ops::range::Range<usize>}#4::get_mut<'_0, T>(@1: core::ops::range::Range<usize>, @2: &'_0 mut (Slice<T>)) -> core::option::Option<&'_0 mut (Slice<T>)>
 
-unsafe fn core::slice::index::{impl core::slice::index::SliceIndex<Slice<T>> for core::ops::range::Range<usize>}#4::get_unchecked<T>(@1: core::ops::range::Range<usize>, @2: *mut Slice<T>) -> *mut Slice<T>
+unsafe fn core::slice::index::{impl core::slice::index::SliceIndex<Slice<T>> for core::ops::range::Range<usize>}#4::get_unchecked<T>(@1: core::ops::range::Range<usize>, @2: *const Slice<T>) -> *const Slice<T>
 
-unsafe fn core::slice::index::{impl core::slice::index::SliceIndex<Slice<T>> for core::ops::range::Range<usize>}#4::get_unchecked_mut<T>(@1: core::ops::range::Range<usize>, @2: *const Slice<T>) -> *const Slice<T>
+unsafe fn core::slice::index::{impl core::slice::index::SliceIndex<Slice<T>> for core::ops::range::Range<usize>}#4::get_unchecked_mut<T>(@1: core::ops::range::Range<usize>, @2: *mut Slice<T>) -> *mut Slice<T>
 
 fn core::slice::index::{impl core::slice::index::SliceIndex<Slice<T>> for core::ops::range::Range<usize>}#4::index<'_0, T>(@1: core::ops::range::Range<usize>, @2: &'_0 (Slice<T>)) -> &'_0 (Slice<T>)
 
@@ -1771,9 +1771,9 @@ fn core::slice::index::SliceIndex::get<'_0, Self, T>(@1: Self, @2: &'_0 (T)) -> 
 
 fn core::slice::index::SliceIndex::get_mut<'_0, Self, T>(@1: Self, @2: &'_0 mut (T)) -> core::option::Option<&'_0 mut (Self::Output)>
 
-unsafe fn core::slice::index::SliceIndex::get_unchecked<Self, T>(@1: Self, @2: *mut T) -> *mut Self::Output
+unsafe fn core::slice::index::SliceIndex::get_unchecked<Self, T>(@1: Self, @2: *const T) -> *const Self::Output
 
-unsafe fn core::slice::index::SliceIndex::get_unchecked_mut<Self, T>(@1: Self, @2: *const T) -> *const Self::Output
+unsafe fn core::slice::index::SliceIndex::get_unchecked_mut<Self, T>(@1: Self, @2: *mut T) -> *mut Self::Output
 
 fn core::slice::index::SliceIndex::index<'_0, Self, T>(@1: Self, @2: &'_0 (T)) -> &'_0 (Self::Output)
 

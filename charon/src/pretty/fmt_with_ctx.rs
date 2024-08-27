@@ -1284,8 +1284,8 @@ impl<C: AstFormatter> FmtWithCtx<C> for Ty {
                 }
             },
             Ty::RawPtr(ty, kind) => match kind {
-                RefKind::Mut => format!("*const {}", ty.fmt_with_ctx(ctx)),
-                RefKind::Shared => format!("*mut {}", ty.fmt_with_ctx(ctx)),
+                RefKind::Shared => format!("*const {}", ty.fmt_with_ctx(ctx)),
+                RefKind::Mut => format!("*mut {}", ty.fmt_with_ctx(ctx)),
             },
             Ty::TraitType(trait_ref, name) => {
                 format!("{}::{name}", trait_ref.fmt_with_ctx(ctx),)
