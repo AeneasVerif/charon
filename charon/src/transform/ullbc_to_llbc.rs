@@ -204,7 +204,9 @@ fn build_cfg_partial_info_edges(
         } else {
             // Not a backward edge: insert the edge and explore
             cfg.cfg_no_be.add_edge(block_id, *tgt, ());
-            build_cfg_partial_info_edges(cfg, &ancestors, explored, body, *tgt);
+            ensure_sufficient_stack(|| {
+                build_cfg_partial_info_edges(cfg, &ancestors, explored, body, *tgt);
+            })
         }
     }
 
@@ -548,56 +550,58 @@ fn compute_loop_exit_candidates(
         // If the parent loop entry is not reachable from the child without going
         // through a backward edge which goes directly to the loop entry, consider
         // this node a potential exit.
-        match filter_loop_parents(cfg, &parent_loops, child) {
-            None => {
-                compute_loop_exit_candidates(
-                    cfg,
-                    explored,
-                    ordered_loops,
-                    loop_exits,
-                    parent_loops.clone(),
-                    child,
-                );
-            }
-            Some(fparent_loops) => {
-                // We filtered some parent loops: it means this child and its
-                // children are loop exit candidates for all those loops: we must
-                // thus register them.
-                // Note that we register the child *and* its children: the reason
-                // is that we might do something *then* actually jump to the exit.
-                // For instance, the following block of code:
-                // ```
-                // if cond { break; } else { ... }
-                // ```
-                //
-                // Gets translated in MIR to something like this:
-                // ```
-                // bb1: {
-                //   if cond -> bb2 else -> bb3; // bb2 is not the real exit
-                // }
-                //
-                // bb2: {
-                //   goto bb4; // bb4 is the real exit
-                // }
-                // ```
-                register_children_as_loop_exit_candidates(
-                    cfg,
-                    loop_exits,
-                    &fparent_loops.removed_parents,
-                    child,
-                );
+        ensure_sufficient_stack(|| {
+            match filter_loop_parents(cfg, &parent_loops, child) {
+                None => {
+                    compute_loop_exit_candidates(
+                        cfg,
+                        explored,
+                        ordered_loops,
+                        loop_exits,
+                        parent_loops.clone(),
+                        child,
+                    );
+                }
+                Some(fparent_loops) => {
+                    // We filtered some parent loops: it means this child and its
+                    // children are loop exit candidates for all those loops: we must
+                    // thus register them.
+                    // Note that we register the child *and* its children: the reason
+                    // is that we might do something *then* actually jump to the exit.
+                    // For instance, the following block of code:
+                    // ```
+                    // if cond { break; } else { ... }
+                    // ```
+                    //
+                    // Gets translated in MIR to something like this:
+                    // ```
+                    // bb1: {
+                    //   if cond -> bb2 else -> bb3; // bb2 is not the real exit
+                    // }
+                    //
+                    // bb2: {
+                    //   goto bb4; // bb4 is the real exit
+                    // }
+                    // ```
+                    register_children_as_loop_exit_candidates(
+                        cfg,
+                        loop_exits,
+                        &fparent_loops.removed_parents,
+                        child,
+                    );
 
-                // Explore, with the filtered parents
-                compute_loop_exit_candidates(
-                    cfg,
-                    explored,
-                    ordered_loops,
-                    loop_exits,
-                    fparent_loops.remaining_parents,
-                    child,
-                );
+                    // Explore, with the filtered parents
+                    compute_loop_exit_candidates(
+                        cfg,
+                        explored,
+                        ordered_loops,
+                        loop_exits,
+                        fparent_loops.remaining_parents,
+                        child,
+                    );
+                }
             }
-        }
+        })
     }
 }
 
@@ -962,11 +966,13 @@ fn compute_switch_exits_explore(
 
     // Find the next blocks, and their successors
     let children: Vec<src::BlockId> = Vec::from_iter(cfg.cfg_no_be.neighbors(block_id));
-    let mut children_succs: Vec<im::OrdSet<OrdBlockId>> = Vec::from_iter(
-        children
-            .iter()
-            .map(|bid| compute_switch_exits_explore(cfg, tsort_map, memoized, *bid).succs),
-    );
+    let mut children_succs: Vec<im::OrdSet<OrdBlockId>> = ensure_sufficient_stack(|| {
+        Vec::from_iter(
+            children
+                .iter()
+                .map(|bid| compute_switch_exits_explore(cfg, tsort_map, memoized, *bid).succs),
+        )
+    });
     trace!("block: {}, children: {:?}", block_id, children);
 
     // Add the children themselves in their sets of successors
@@ -1889,6 +1895,10 @@ fn translate_body(no_code_duplication: bool, body: &mut gast::Body) {
     let Unstructured(src_body) = body else {
         panic!("Called `ullbc_to_llbc` on an already restructured body")
     };
+    trace!(
+        "About to translate to ullbc: {:?}",
+        src_body.span.rust_span()
+    );
     let tgt_body = translate_body_aux(no_code_duplication, src_body);
     *body = Structured(tgt_body);
 }
