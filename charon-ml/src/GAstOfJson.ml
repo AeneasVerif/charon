@@ -219,12 +219,24 @@ and integer_type_of_json (js : json) : (integer_type, string) result =
     | `String "U128" -> Ok U128
     | _ -> Error "")
 
+and float_type_of_json (js : json) : (float_type, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with
+    | `String "F16" -> Ok F16
+    | `String "F32" -> Ok F32
+    | `String "F64" -> Ok F64
+    | `String "F128" -> Ok F128
+    | _ -> Error "")
+
 and literal_type_of_json (js : json) : (literal_type, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
     | `Assoc [ ("Integer", integer) ] ->
         let* integer = integer_type_of_json integer in
         Ok (TInteger integer)
+    | `Assoc [ ("Float", float) ] ->
+        let* float = float_type_of_json float in
+        Ok (TFloat float)
     | `String "Bool" -> Ok TBool
     | `String "Char" -> Ok TChar
     | _ -> Error "")

@@ -493,6 +493,30 @@ pub enum IntegerTy {
     Debug,
     PartialEq,
     Eq,
+    Copy,
+    Clone,
+    EnumIsA,
+    VariantName,
+    Serialize,
+    Deserialize,
+    Drive,
+    DriveMut,
+    Hash,
+    Ord,
+    PartialOrd,
+)]
+#[charon::rename("FloatType")]
+pub enum FloatTy {
+    F16,
+    F32,
+    F64,
+    F128,
+}
+
+#[derive(
+    Debug,
+    PartialEq,
+    Eq,
     Clone,
     Copy,
     Hash,
@@ -573,6 +597,7 @@ pub enum TypeId {
 #[charon::variants_prefix("T")]
 pub enum LiteralTy {
     Integer(IntegerTy),
+    Float(FloatTy),
     Bool,
     Char,
 }

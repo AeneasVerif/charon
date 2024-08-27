@@ -372,6 +372,12 @@ let literal_type_to_string (ty : T.literal_type) : string =
       | U32 -> "u32"
       | U64 -> "u64"
       | U128 -> "u128")
+  | TFloat ty -> (
+      match ty with
+      | F16 -> "f16"
+      | F32 -> "f32"
+      | F64 -> "f64"
+      | F128 -> "f128")
 
 (** Match a pattern with a region.
 

@@ -65,7 +65,13 @@ type integer_type =
   | U64
   | U128
 
-and literal_type = TInteger of integer_type | TBool | TChar
+and float_type = F16 | F32 | F64 | F128
+
+and literal_type =
+  | TInteger of integer_type
+  | TFloat of float_type
+  | TBool
+  | TChar
 
 (** A scalar value
 

@@ -42,6 +42,7 @@ type const_generic_var_id = ConstGenericVarId.id [@@deriving show, ord]
 type global_decl_id = GlobalDeclId.id [@@deriving show, ord]
 
 type integer_type = Values.integer_type [@@deriving show, ord]
+type float_type = Values.float_type [@@deriving show, ord]
 
 (** Same remark as for {!type_var_id} *)
 type variant_id = VariantId.id [@@deriving show, ord]
