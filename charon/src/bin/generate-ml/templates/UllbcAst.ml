@@ -25,17 +25,7 @@ class ['self] map_statement_base =
     method visit_block_id : 'env -> block_id -> block_id = fun _ x -> x
   end
 
-type statement = { span : span; content : raw_statement }
-
-(** A raw statement: a statement without meta data. *)
-and raw_statement =
-  | Assign of place * rvalue
-  | FakeRead of place
-  | SetDiscriminant of place * variant_id
-  | StorageDead of var_id
-      (** We translate this to [crate::llbc_ast::RawStatement::Drop] in LLBC *)
-  | Deinit of place
-      (** We translate this to [crate::llbc_ast::RawStatement::Drop] in LLBC *)
+(* __REPLACE0__ *)
 [@@deriving
   show,
     visitors
@@ -55,13 +45,7 @@ and raw_statement =
         concrete = true;
       }]
 
-type switch =
-  | If of block_id * block_id  (** Gives the `if` block and the `else` block *)
-  | SwitchInt of integer_type * (scalar_value * block_id) list * block_id
-      (** Gives the integer type, a map linking values to switch branches, and the
-          otherwise block. Note that matches over enumerations are performed by
-          switching over the discriminant, which is an integer.
-       *)
+(* __REPLACE1__ *)
 [@@deriving
   show,
     visitors
@@ -81,44 +65,7 @@ type switch =
         concrete = true;
       }]
 
-type terminator = { span : span; content : raw_terminator }
-
-(** A raw terminator: a terminator without meta data. *)
-and raw_terminator =
-  | Goto of block_id  (** 
-          Fields:
-          - [target]
-       *)
-  | Switch of operand * switch
-      (** 
-          Fields:
-          - [discr]
-          - [targets]
-       *)
-  | Abort of abort_kind  (** Handles panics and impossible cases. *)
-  | Return
-  | Drop of place * block_id
-      (** 
-          Fields:
-          - [place]
-          - [target]
-       *)
-  | Call of call * block_id option
-      (** Function call. If `target` is `None`, the function is guaranteed to diverge.
-          For now, we don't support dynamic calls (i.e. to a function pointer in memory).
-
-          Fields:
-          - [call]
-          - [target]
-       *)
-  | Assert of assertion * block_id
-      (** A built-in assert, which corresponds to runtime checks that we remove, namely: bounds
-          checks, over/underflow checks, div/rem by zero checks, pointer alignement check.
-
-          Fields:
-          - [assert]
-          - [target]
-       *)
+(* __REPLACE2__ *)
 [@@deriving
   show,
     visitors
@@ -138,8 +85,8 @@ and raw_terminator =
         concrete = true;
       }]
 
-type block = { statements : statement list; terminator : terminator }
-and blocks = block list [@@deriving show]
+(* __REPLACE3__ *)
+[@@deriving show]
 
 type expr_body = blocks gexpr_body [@@deriving show]
 type fun_body = expr_body [@@deriving show]

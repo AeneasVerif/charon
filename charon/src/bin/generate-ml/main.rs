@@ -755,6 +755,37 @@ fn main() -> Result<()> {
             ],
         },
         GenerateCodeFor {
+            template: dir.join("templates/LlbcAst.ml"),
+            target: dir.join("generated/LlbcAst.ml"),
+            markers: &[
+                (GenerationKind::TypeDecl(true), &[
+                    "charon_lib::ast::llbc_ast::Statement",
+                    "charon_lib::ast::llbc_ast::Switch",
+                ]),
+            ],
+        },
+        GenerateCodeFor {
+            template: dir.join("templates/UllbcAst.ml"),
+            target: dir.join("generated/UllbcAst.ml"),
+            markers: &[
+                (GenerationKind::TypeDecl(false), &[
+                    "charon_lib::ast::ullbc_ast::Statement",
+                    "charon_lib::ast::ullbc_ast::RawStatement",
+                ]),
+                (GenerationKind::TypeDecl(false), &[
+                    "charon_lib::ast::ullbc_ast::SwitchTargets",
+                ]),
+                (GenerationKind::TypeDecl(false), &[
+                    "charon_lib::ast::ullbc_ast::Terminator",
+                    "charon_lib::ast::ullbc_ast::RawTerminator",
+                ]),
+                (GenerationKind::TypeDecl(false), &[
+                    "charon_lib::ast::ullbc_ast::BlockData",
+                    "charon_lib::ast::ullbc_ast::BodyContents",
+                ]),
+            ],
+        },
+        GenerateCodeFor {
             template: dir.join("templates/GAstOfJson.ml"),
             target: dir.join("generated/GAstOfJson.ml"),
             markers: &[

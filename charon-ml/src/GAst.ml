@@ -106,12 +106,14 @@ and assertion = { cond : operand; expected : bool }
 class ['self] iter_statement_base =
   object (_self : 'self)
     inherit [_] iter_call
+    method visit_abort_kind : 'env -> abort_kind -> unit = fun _ _ -> ()
   end
 
 (** Ancestor the {!LlbcAst.statement} and {!Charon.UllbcAst.statement} map visitors *)
 class ['self] map_statement_base =
   object (_self : 'self)
     inherit [_] map_call
+    method visit_abort_kind : 'env -> abort_kind -> abort_kind = fun _ x -> x
   end
 
 (** We use this to store information about the parameters in parent blocks.
