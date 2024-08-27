@@ -211,8 +211,6 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                     FloatTy::F64 => charon_lib::ast::types::FloatTy::F64,
                     FloatTy::F128 => charon_lib::ast::types::FloatTy::F128,
                 })))
-                /* trace!("Float");
-                error_or_panic!(self, span, "Floats are not supported yet") */
             }
             hax::Ty::Never => Ok(Ty::Never),
 
