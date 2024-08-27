@@ -199,7 +199,7 @@ and loc_of_json (js : json) : (loc, string) result =
     | `Assoc [ ("line", line); ("col", col) ] ->
         let* line = int_of_json line in
         let* col = int_of_json col in
-        Ok { line; col }
+        Ok ({ line; col } : loc)
     | _ -> Error "")
 
 and span_of_json (id_to_file : id_to_file_map) (js : json) :
@@ -211,7 +211,7 @@ and span_of_json (id_to_file : id_to_file_map) (js : json) :
         let* generated_from_span =
           option_of_json (raw_span_of_json id_to_file) generated_from_span
         in
-        Ok { span; generated_from_span }
+        Ok ({ span; generated_from_span } : span)
     | _ -> Error "")
 
 and inline_attr_of_json (js : json) : (inline_attr, string) result =
@@ -257,7 +257,7 @@ and attr_info_of_json (js : json) : (attr_info, string) result =
         let* inline = option_of_json inline_attr_of_json inline in
         let* rename = option_of_json string_of_json rename in
         let* public = bool_of_json public in
-        Ok { attributes; inline; rename; public }
+        Ok ({ attributes; inline; rename; public } : attr_info)
     | _ -> Error "")
 
 and type_var_of_json (js : json) : (type_var, string) result =
@@ -266,7 +266,7 @@ and type_var_of_json (js : json) : (type_var, string) result =
     | `Assoc [ ("index", index); ("name", name) ] ->
         let* index = type_var_id_of_json index in
         let* name = string_of_json name in
-        Ok { index; name }
+        Ok ({ index; name } : type_var)
     | _ -> Error "")
 
 and region_var_of_json (js : json) : (region_var, string) result =
@@ -275,7 +275,7 @@ and region_var_of_json (js : json) : (region_var, string) result =
     | `Assoc [ ("index", index); ("name", name) ] ->
         let* index = region_id_of_json index in
         let* name = option_of_json string_of_json name in
-        Ok { index; name }
+        Ok ({ index; name } : region_var)
     | _ -> Error "")
 
 and region_of_json (js : json) : (region, string) result =
@@ -335,7 +335,7 @@ and const_generic_var_of_json (js : json) : (const_generic_var, string) result =
         let* index = const_generic_var_id_of_json index in
         let* name = string_of_json name in
         let* ty = literal_type_of_json ty in
-        Ok { index; name; ty }
+        Ok ({ index; name; ty } : const_generic_var)
     | _ -> Error "")
 
 and ref_kind_of_json (js : json) : (ref_kind, string) result =
@@ -428,7 +428,7 @@ and trait_ref_of_json (js : json) : (trait_ref, string) result =
     | `Assoc [ ("kind", kind); ("trait_decl_ref", trait_decl_ref) ] ->
         let* trait_id = trait_instance_id_of_json kind in
         let* trait_decl_ref = trait_decl_ref_of_json trait_decl_ref in
-        Ok { trait_id; trait_decl_ref }
+        Ok ({ trait_id; trait_decl_ref } : trait_ref)
     | _ -> Error "")
 
 and trait_decl_ref_of_json (js : json) : (trait_decl_ref, string) result =
@@ -437,7 +437,7 @@ and trait_decl_ref_of_json (js : json) : (trait_decl_ref, string) result =
     | `Assoc [ ("trait_id", trait_id); ("generics", generics) ] ->
         let* trait_decl_id = trait_decl_id_of_json trait_id in
         let* decl_generics = generic_args_of_json generics in
-        Ok { trait_decl_id; decl_generics }
+        Ok ({ trait_decl_id; decl_generics } : trait_decl_ref)
     | _ -> Error "")
 
 and global_decl_ref_of_json (js : json) : (global_decl_ref, string) result =
@@ -446,7 +446,7 @@ and global_decl_ref_of_json (js : json) : (global_decl_ref, string) result =
     | `Assoc [ ("id", id); ("generics", generics) ] ->
         let* global_id = global_decl_id_of_json id in
         let* global_generics = generic_args_of_json generics in
-        Ok { global_id; global_generics }
+        Ok ({ global_id; global_generics } : global_decl_ref)
     | _ -> Error "")
 
 and generic_args_of_json (js : json) : (generic_args, string) result =
@@ -470,7 +470,7 @@ and generic_args_of_json (js : json) : (generic_args, string) result =
         let* trait_refs =
           vector_of_json trait_clause_id_of_json trait_ref_of_json trait_refs
         in
-        Ok { regions; types; const_generics; trait_refs }
+        Ok ({ regions; types; const_generics; trait_refs } : generic_args)
     | _ -> Error "")
 
 and trait_instance_id_of_json (js : json) : (trait_instance_id, string) result =
@@ -511,7 +511,7 @@ and field_of_json (id_to_file : id_to_file_map) (js : json) :
         let* attr_info = attr_info_of_json attr_info in
         let* field_name = option_of_json string_of_json name in
         let* field_ty = ty_of_json ty in
-        Ok { span; attr_info; field_name; field_ty }
+        Ok ({ span; attr_info; field_name; field_ty } : field)
     | _ -> Error "")
 
 and variant_of_json (id_to_file : id_to_file_map) (js : json) :
@@ -533,7 +533,7 @@ and variant_of_json (id_to_file : id_to_file_map) (js : json) :
           vector_of_json field_id_of_json (field_of_json id_to_file) fields
         in
         let* discriminant = scalar_value_of_json discriminant in
-        Ok { span; attr_info; variant_name; fields; discriminant }
+        Ok ({ span; attr_info; variant_name; fields; discriminant } : variant)
     | _ -> Error "")
 
 and type_decl_kind_of_json (id_to_file : id_to_file_map) (js : json) :
@@ -573,7 +573,7 @@ and trait_clause_of_json (id_to_file : id_to_file_map) (js : json) :
         let* clause_id = trait_clause_id_of_json clause_id in
         let* span = option_of_json (span_of_json id_to_file) span in
         let* trait = trait_decl_ref_of_json trait in
-        Ok { clause_id; span; trait }
+        Ok ({ clause_id; span; trait } : trait_clause)
     | _ -> Error "")
 
 and outlives_pred_of_json :
@@ -612,7 +612,7 @@ and trait_type_constraint_of_json (js : json) :
         let* trait_ref = trait_ref_of_json trait_ref in
         let* type_name = trait_item_name_of_json type_name in
         let* ty = ty_of_json ty in
-        Ok { trait_ref; type_name; ty }
+        Ok ({ trait_ref; type_name; ty } : trait_type_constraint)
     | _ -> Error "")
 
 and generic_params_of_json (id_to_file : id_to_file_map) (js : json) :
@@ -658,15 +658,16 @@ and generic_params_of_json (id_to_file : id_to_file_map) (js : json) :
           list_of_json trait_type_constraint_of_json trait_type_constraints
         in
         Ok
-          {
-            regions;
-            types;
-            const_generics;
-            trait_clauses;
-            regions_outlive;
-            types_outlive;
-            trait_type_constraints;
-          }
+          ({
+             regions;
+             types;
+             const_generics;
+             trait_clauses;
+             regions_outlive;
+             types_outlive;
+             trait_type_constraints;
+           }
+            : generic_params)
     | _ -> Error "")
 
 and impl_elem_of_json (id_to_file : id_to_file_map) (js : json) :
@@ -721,7 +722,7 @@ and item_meta_of_json (id_to_file : id_to_file_map) (js : json) :
         let* source_text = option_of_json string_of_json source_text in
         let* attr_info = attr_info_of_json attr_info in
         let* is_local = bool_of_json is_local in
-        Ok { name; span; source_text; attr_info; is_local }
+        Ok ({ name; span; source_text; attr_info; is_local } : item_meta)
     | _ -> Error "")
 
 and type_decl_of_json (id_to_file : id_to_file_map) (js : json) :
@@ -739,7 +740,7 @@ and type_decl_of_json (id_to_file : id_to_file_map) (js : json) :
         let* item_meta = item_meta_of_json id_to_file item_meta in
         let* generics = generic_params_of_json id_to_file generics in
         let* kind = type_decl_kind_of_json id_to_file kind in
-        Ok { def_id; item_meta; generics; kind }
+        Ok ({ def_id; item_meta; generics; kind } : type_decl)
     | _ -> Error "")
 
 and var_of_json (js : json) : (var, string) result =
@@ -749,7 +750,7 @@ and var_of_json (js : json) : (var, string) result =
         let* index = var_id_of_json index in
         let* name = option_of_json string_of_json name in
         let* var_ty = ty_of_json ty in
-        Ok { index; name; var_ty }
+        Ok ({ index; name; var_ty } : var)
     | _ -> Error "")
 
 and field_proj_kind_of_json (js : json) : (field_proj_kind, string) result =
@@ -787,7 +788,7 @@ and place_of_json (js : json) : (place, string) result =
     | `Assoc [ ("var_id", var_id); ("projection", projection) ] ->
         let* var_id = var_id_of_json var_id in
         let* projection = list_of_json projection_elem_of_json projection in
-        Ok { var_id; projection }
+        Ok ({ var_id; projection } : place)
     | _ -> Error "")
 
 and borrow_kind_of_json (js : json) : (borrow_kind, string) result =
@@ -915,7 +916,7 @@ and fn_ptr_of_json (js : json) : (fn_ptr, string) result =
     | `Assoc [ ("func", func); ("generics", generics) ] ->
         let* func = fun_id_or_trait_method_ref_of_json func in
         let* generics = generic_args_of_json generics in
-        Ok { func; generics }
+        Ok ({ func; generics } : fn_ptr)
     | _ -> Error "")
 
 and fn_operand_of_json (js : json) : (fn_operand, string) result =
@@ -935,7 +936,7 @@ and constant_expr_of_json (js : json) : (constant_expr, string) result =
     | `Assoc [ ("value", value); ("ty", ty) ] ->
         let* value = raw_constant_expr_of_json value in
         let* ty = ty_of_json ty in
-        Ok { value; ty }
+        Ok ({ value; ty } : constant_expr)
     | _ -> Error "")
 
 and raw_constant_expr_of_json (js : json) : (raw_constant_expr, string) result =
@@ -1048,15 +1049,16 @@ and params_info_of_json (js : json) : (params_info, string) result =
           int_of_json num_trait_type_constraints
         in
         Ok
-          {
-            num_region_params;
-            num_type_params;
-            num_const_generic_params;
-            num_trait_clauses;
-            num_regions_outlive;
-            num_types_outlive;
-            num_trait_type_constraints;
-          }
+          ({
+             num_region_params;
+             num_type_params;
+             num_const_generic_params;
+             num_trait_clauses;
+             num_regions_outlive;
+             num_types_outlive;
+             num_trait_type_constraints;
+           }
+            : params_info)
     | _ -> Error "")
 
 and closure_kind_of_json (js : json) : (closure_kind, string) result =
@@ -1073,7 +1075,7 @@ and closure_info_of_json (js : json) : (closure_info, string) result =
     | `Assoc [ ("kind", kind); ("state", state) ] ->
         let* kind = closure_kind_of_json kind in
         let* state = vector_of_json type_var_id_of_json ty_of_json state in
-        Ok { kind; state }
+        Ok ({ kind; state } : closure_info)
     | _ -> Error "")
 
 and fun_sig_of_json (id_to_file : id_to_file_map) (js : json) :
@@ -1100,15 +1102,16 @@ and fun_sig_of_json (id_to_file : id_to_file_map) (js : json) :
         let* inputs = list_of_json ty_of_json inputs in
         let* output = ty_of_json output in
         Ok
-          {
-            is_unsafe;
-            is_closure;
-            closure_info;
-            generics;
-            parent_params_info;
-            inputs;
-            output;
-          }
+          ({
+             is_unsafe;
+             is_closure;
+             closure_info;
+             generics;
+             parent_params_info;
+             inputs;
+             output;
+           }
+            : fun_sig)
     | _ -> Error "")
 
 and call_of_json (js : json) : (call, string) result =
@@ -1118,7 +1121,7 @@ and call_of_json (js : json) : (call, string) result =
         let* func = fn_operand_of_json func in
         let* args = list_of_json operand_of_json args in
         let* dest = place_of_json dest in
-        Ok { func; args; dest }
+        Ok ({ func; args; dest } : call)
     | _ -> Error "")
 
 and gexpr_body_of_json :
@@ -1141,7 +1144,7 @@ and gexpr_body_of_json :
         let* arg_count = int_of_json arg_count in
         let* locals = vector_of_json var_id_of_json var_of_json locals in
         let* body = arg0_of_json body in
-        Ok { span; arg_count; locals; body }
+        Ok ({ span; arg_count; locals; body } : _ gexpr_body)
     | _ -> Error "")
 
 and item_kind_of_json (js : json) : (item_kind, string) result =
@@ -1221,16 +1224,17 @@ and trait_decl_of_json (id_to_file : id_to_file_map) (js : json) :
             provided_methods
         in
         Ok
-          {
-            def_id;
-            item_meta;
-            generics;
-            parent_clauses;
-            consts;
-            types;
-            required_methods;
-            provided_methods;
-          }
+          ({
+             def_id;
+             item_meta;
+             generics;
+             parent_clauses;
+             consts;
+             types;
+             required_methods;
+             provided_methods;
+           }
+            : trait_decl)
     | _ -> Error "")
 
 and trait_impl_of_json (id_to_file : id_to_file_map) (js : json) :
@@ -1277,17 +1281,18 @@ and trait_impl_of_json (id_to_file : id_to_file_map) (js : json) :
             provided_methods
         in
         Ok
-          {
-            def_id;
-            item_meta;
-            impl_trait;
-            generics;
-            parent_trait_refs;
-            consts;
-            types;
-            required_methods;
-            provided_methods;
-          }
+          ({
+             def_id;
+             item_meta;
+             impl_trait;
+             generics;
+             parent_trait_refs;
+             consts;
+             types;
+             required_methods;
+             provided_methods;
+           }
+            : trait_impl)
     | _ -> Error "")
 
 and g_declaration_group_of_json :

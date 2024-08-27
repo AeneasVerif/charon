@@ -295,6 +295,13 @@ fn build_function(ctx: &GenerateCtx, decl: &TypeDecl, branches: &str) -> String 
 }
 
 fn type_decl_to_json_deserializer(ctx: &GenerateCtx, decl: &TypeDecl) -> String {
+    let return_ty = type_name_to_ocaml_ident(&decl.item_meta);
+    let return_ty = if decl.generics.types.is_empty() {
+        return_ty
+    } else {
+        format!("_ {return_ty}")
+    };
+
     let branches = match &decl.kind {
         TypeDeclKind::Struct(fields) if fields.is_empty() => {
             build_branch(ctx, "`Null", fields, "()")
@@ -365,7 +372,7 @@ fn type_decl_to_json_deserializer(ctx: &GenerateCtx, decl: &TypeDecl) -> String 
                 .map(|f| f.renamed_name().unwrap())
                 .map(|n| make_ocaml_ident(n))
                 .join("; ");
-            let construct = format!("{{ {construct} }}");
+            let construct = format!("({{ {construct} }} : {return_ty})");
             build_branch(ctx, &pat, fields, &construct)
         }
         TypeDeclKind::Enum(variants) => {

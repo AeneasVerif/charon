@@ -16,7 +16,7 @@ and assertion_of_json (js : json) : (assertion, string) result =
     | `Assoc [ ("cond", cond); ("expected", expected) ] ->
         let* cond = operand_of_json cond in
         let* expected = bool_of_json expected in
-        Ok { cond; expected }
+        Ok ({ cond; expected } : assertion)
     | _ -> Error "")
 
 and statement_of_json (id_to_file : id_to_file_map) (js : json) :
@@ -26,7 +26,7 @@ and statement_of_json (id_to_file : id_to_file_map) (js : json) :
     | `Assoc [ ("span", span); ("content", content) ] ->
         let* span = span_of_json id_to_file span in
         let* content = raw_statement_of_json id_to_file content in
-        Ok { span; content }
+        Ok ({ span; content } : statement)
     | _ -> Error "")
 
 and switch_of_json (id_to_file : id_to_file_map) (js : json) :
