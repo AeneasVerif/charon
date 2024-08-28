@@ -1,4 +1,4 @@
-pub mod assumed;
+pub mod builtins;
 pub mod expressions;
 pub mod expressions_utils;
 pub mod gast;
@@ -18,7 +18,7 @@ pub mod values;
 pub mod values_utils;
 
 // Re-export everything except llbc/ullbc, for convenience.
-pub use assumed::*;
+pub use builtins::*;
 pub use expressions::*;
 pub use gast::*;
 pub use krate::*;

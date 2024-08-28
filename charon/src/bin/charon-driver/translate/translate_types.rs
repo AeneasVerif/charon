@@ -1,8 +1,8 @@
 use crate::translate::translate_traits::PredicateLocation;
 
 use super::translate_ctx::*;
-use charon_lib::assumed;
 use charon_lib::ast::*;
+use charon_lib::builtins;
 use charon_lib::common::*;
 use charon_lib::formatter::IntoFormatter;
 use charon_lib::ids::Vector;
@@ -191,7 +191,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
 
                 // Retrieve the list of used arguments
                 let used_params = if let TypeId::Assumed(assumed_ty) = type_id {
-                    Some(assumed::type_to_used_params(assumed_ty))
+                    Some(builtins::type_to_used_params(assumed_ty))
                 } else {
                     None
                 };
