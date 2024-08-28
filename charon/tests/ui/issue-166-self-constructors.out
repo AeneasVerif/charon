@@ -15,7 +15,7 @@ fn test_crate::{test_crate::Foo}::b() -> test_crate::Foo
 
 struct test_crate::Bar<'a> =
 {
-  r: &'a (i32)
+  r: &'a (i32),
 }
 
 fn test_crate::{test_crate::Bar<'a>}#1::new<'a>(@1: &'a (i32)) -> test_crate::Bar<'a>

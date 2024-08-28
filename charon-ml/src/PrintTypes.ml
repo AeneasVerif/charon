@@ -412,8 +412,8 @@ let type_decl_to_string (env : ('a, 'b) fmt_env) (def : type_decl) : string =
   | Struct fields ->
       if fields <> [] then
         let fields =
-          String.concat ","
-            (List.map (fun f -> "\n  " ^ field_to_string env f) fields)
+          String.concat ""
+            (List.map (fun f -> "\n  " ^ field_to_string env f ^ ",") fields)
         in
         "struct " ^ name ^ params ^ clauses ^ "\n{" ^ fields ^ "\n}"
       else "struct " ^ name ^ params ^ clauses ^ "{}"

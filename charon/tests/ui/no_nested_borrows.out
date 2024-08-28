@@ -3,7 +3,7 @@
 struct test_crate::Pair<T1, T2> =
 {
   x: T1,
-  y: T2
+  y: T2,
 }
 
 enum test_crate::List<T> =
@@ -34,7 +34,7 @@ enum test_crate::Sum<T1, T2> =
 struct test_crate::Tuple<T1, T2> =
 {
   T1,
-  T2
+  T2,
 }
 
 fn test_crate::use_tuple_struct<'_0>(@1: &'_0 mut (test_crate::Tuple<u32, u32>))
@@ -84,7 +84,7 @@ fn test_crate::create_pair(@1: u32, @2: u64) -> test_crate::Pair<u32, u64>
 
 struct test_crate::IdType<T> =
 {
-  T
+  T,
 }
 
 fn test_crate::use_id_type<T>(@1: test_crate::IdType<T>) -> T
@@ -558,7 +558,7 @@ fn test_crate::test_even_odd()
 
 struct test_crate::StructWithTuple<T1, T2> =
 {
-  p: (T1, T2)
+  p: (T1, T2),
 }
 
 fn test_crate::new_tuple1() -> test_crate::StructWithTuple<u32, u32>
@@ -596,7 +596,7 @@ fn test_crate::new_tuple3() -> test_crate::StructWithTuple<u64, i64>
 
 struct test_crate::StructWithPair<T1, T2> =
 {
-  p: test_crate::Pair<T1, T2>
+  p: test_crate::Pair<T1, T2>,
 }
 
 fn test_crate::new_pair1() -> test_crate::StructWithPair<u32, u32>

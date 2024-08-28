@@ -65,7 +65,7 @@ enum test_crate::SimpleEnum =
 
 struct test_crate::Foo =
 {
-  field1: u32
+  field1: u32,
 }
 
 global test_crate::C  {

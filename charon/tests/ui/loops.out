@@ -782,7 +782,7 @@ fn test_crate::test_loops()
 struct core::ops::range::Range<Idx> =
 {
   start: Idx,
-  end: Idx
+  end: Idx,
 }
 
 enum core::option::Option<T> =

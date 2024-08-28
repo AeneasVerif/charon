@@ -64,7 +64,7 @@ fn test_crate::main()
 
 struct test_crate::Foo =
 {
-  u32
+  u32,
 }
 
 trait core::marker::StructuralPartialEq<Self>

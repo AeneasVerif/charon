@@ -4,7 +4,7 @@ trait test_crate::Ord<Self>
 
 struct test_crate::AVLTree<T> =
 {
-  x: T
+  x: T,
 }
 
 fn test_crate::{test_crate::AVLTree<T>}::insert<'_0, T>(@1: &'_0 mut (test_crate::AVLTree<T>))

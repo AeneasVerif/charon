@@ -299,7 +299,7 @@ global test_crate::STEAL2  {
 struct test_crate::nullary_ops::Struct<T> =
 {
   a: u8,
-  b: T
+  b: T,
 }
 
 fn test_crate::nullary_ops<T>() -> usize

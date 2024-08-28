@@ -1372,11 +1372,10 @@ impl<C: AstFormatter> FmtWithCtx<C> for TypeDecl {
         match &self.kind {
             TypeDeclKind::Struct(fields) => {
                 if !fields.is_empty() {
-                    let fields: Vec<String> = fields
+                    let fields = fields
                         .iter()
-                        .map(|f| format!("\n  {}", f.fmt_with_ctx(ctx)))
-                        .collect();
-                    let fields = fields.join(",");
+                        .map(|f| format!("\n  {},", f.fmt_with_ctx(ctx)))
+                        .format("");
                     format!(
                         "struct {}{params}{preds}{eq_space}=\n{{{fields}\n}}",
                         self.item_meta.name.fmt_with_ctx(ctx)
@@ -1389,11 +1388,10 @@ impl<C: AstFormatter> FmtWithCtx<C> for TypeDecl {
                 }
             }
             TypeDeclKind::Enum(variants) => {
-                let variants: Vec<String> = variants
+                let variants = variants
                     .iter()
                     .map(|v| format!("|  {}", v.fmt_with_ctx(ctx)))
-                    .collect();
-                let variants = variants.join("\n");
+                    .format("\n");
                 format!(
                     "enum {}{params}{preds}{eq_space}=\n{variants}\n",
                     self.item_meta.name.fmt_with_ctx(ctx)

@@ -55,7 +55,7 @@ impl<T, U> test_crate::{impl test_crate::Trait<alloc::boxed::Box<T>> for core::o
 
 struct core::ops::range::RangeFrom<Idx> =
 {
-  start: Idx
+  start: Idx,
 }
 
 fn core::option::{core::option::Option<T>}::is_some<'_0, T>(@1: &'_0 (core::option::Option<T>)) -> bool
