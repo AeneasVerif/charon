@@ -1,0 +1,16 @@
+thread 'rustc' panicked at src/bin/charon-driver/translate/translate_functions_to_ullbc.rs:51:51:
+not implemented
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+error: Thread panicked when extracting body.
+  --> tests/ui/issue-323-closure-borrow.rs:9:1
+   |
+9  | / fn new(rng: &mut Rng) {
+10 | |     let _ = || {
+11 | |         rng.next_u64();
+12 | |     };
+13 | | }
+   | |_^
+
+error: aborting due to 1 previous error
+
+Error: Charon driver exited with code 101

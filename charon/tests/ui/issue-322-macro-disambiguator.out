@@ -1,0 +1,25 @@
+error: assertion failure: "data.disambiguator == 0"
+  --> tests/ui/issue-322-macro-disambiguator.rs:5:9
+   |
+5  |         struct AssertIsAsBytes;
+   |         ^^^^^^^^^^^^^^^^^^^^^^
+...
+12 |     transmute!();
+   |     ------------ in this macro invocation
+   |
+   = note: this error originates in the macro `transmute` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error: Ignoring the following item due to an error: test_crate::main::AssertIsAsBytes#1
+  --> tests/ui/issue-322-macro-disambiguator.rs:5:9
+   |
+5  |         struct AssertIsAsBytes;
+   |         ^^^^^^^^^^^^^^^^^^^^^^
+...
+12 |     transmute!();
+   |     ------------ in this macro invocation
+   |
+   = note: this error originates in the macro `transmute` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error: aborting due to 2 previous errors
+
+Error: Charon driver exited with code 101

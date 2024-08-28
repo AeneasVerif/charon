@@ -1,0 +1,9 @@
+error: Unexpected ProjectionElem::Subslice
+ --> tests/ui/issue-320-slice-pattern.rs:5:14
+  |
+5 |     let [_a, _b @ .., _c] = array;
+  |              ^^
+
+error: aborting due to 1 previous error
+
+Error: Charon driver exited with code 101
