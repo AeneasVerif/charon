@@ -319,7 +319,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                             Ty::Ref(_, _, _) => {
                                 projection.push(ProjectionElem::Deref);
                             }
-                            Ty::Adt(TypeId::Assumed(AssumedTy::Box), generics) => {
+                            Ty::Adt(TypeId::Builtin(BuiltinTy::Box), generics) => {
                                 // This case only happens in some MIR levels
                                 assert!(!boxes_are_desugared(self.t_ctx.options.mir_level));
                                 assert!(generics.regions.is_empty());
@@ -367,7 +367,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
 
                                         ProjectionElem::Field(proj_kind, field_id)
                                     }
-                                    Ty::Adt(TypeId::Assumed(AssumedTy::Box), generics) => {
+                                    Ty::Adt(TypeId::Builtin(BuiltinTy::Box), generics) => {
                                         assert!(!boxes_are_desugared(self.t_ctx.options.mir_level));
 
                                         // Some more sanity checks
@@ -508,7 +508,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 let (place, ty) = self.translate_place_with_type(span, place)?;
                 let cg = match &ty {
                     Ty::Adt(
-                        TypeId::Assumed(aty @ (AssumedTy::Array | AssumedTy::Slice)),
+                        TypeId::Builtin(aty @ (BuiltinTy::Array | BuiltinTy::Slice)),
                         generics,
                     ) => {
                         if aty.is_array() {
@@ -567,12 +567,12 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                         let unop = if let (
                             Ty::Ref(
                                 _,
-                                deref!(Ty::Adt(TypeId::Assumed(AssumedTy::Array), generics)),
+                                deref!(Ty::Adt(TypeId::Builtin(BuiltinTy::Array), generics)),
                                 kind1,
                             ),
                             Ty::Ref(
                                 _,
-                                deref!(Ty::Adt(TypeId::Assumed(AssumedTy::Slice), generics1)),
+                                deref!(Ty::Adt(TypeId::Builtin(BuiltinTy::Slice), generics1)),
                                 kind2,
                             ),
                         ) = (&src_ty, &tgt_ty)
@@ -781,7 +781,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     /// Translate a function id applied with some substitutions and some optional
     /// arguments.
     ///
-    /// We use a special function because the function might be assumed, and
+    /// We use a special function because the function might be built-in, and
     /// some parameters/arguments might need to be filtered.
     /// We return the fun id, its generics, and filtering information for the
     /// arguments.
@@ -855,16 +855,16 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             // We have to retrieve the type `Box<u32>` and check that it is of the
             // form `Box<T>` (and we generate `box_deref<u32>`).
             match aid {
-                AssumedFunId::BoxNew => {
+                BuiltinFunId::BoxNew => {
                     // Nothing to do
                 }
-                AssumedFunId::ArrayIndexShared
-                | AssumedFunId::ArrayIndexMut
-                | AssumedFunId::ArrayToSliceShared
-                | AssumedFunId::ArrayToSliceMut
-                | AssumedFunId::ArrayRepeat
-                | AssumedFunId::SliceIndexShared
-                | AssumedFunId::SliceIndexMut => {
+                BuiltinFunId::ArrayIndexShared
+                | BuiltinFunId::ArrayIndexMut
+                | BuiltinFunId::ArrayToSliceShared
+                | BuiltinFunId::ArrayToSliceMut
+                | BuiltinFunId::ArrayRepeat
+                | BuiltinFunId::SliceIndexShared
+                | BuiltinFunId::SliceIndexMut => {
                     // Those cases are introduced later, in micro-passes, by desugaring
                     // projections (for ArrayIndex and ArrayIndexMut for instnace) and=
                     // operations (for ArrayToSlice for instance) to function calls.
@@ -872,7 +872,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 }
             };
 
-            FunIdOrTraitMethodRef::Fun(FunId::Assumed(aid))
+            FunIdOrTraitMethodRef::Fun(FunId::Builtin(aid))
         } else {
             // Two cases depending on whether we call a trait method or not
             match trait_info {

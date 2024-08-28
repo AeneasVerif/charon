@@ -195,8 +195,8 @@ impl<C: AstFormatter> FmtWithCtx<C> for FnPtr {
             FunIdOrTraitMethodRef::Fun(FunId::Regular(def_id)) => {
                 format!("{}", ctx.format_object(*def_id),)
             }
-            FunIdOrTraitMethodRef::Fun(FunId::Assumed(assumed)) => {
-                format!("@{}", assumed.variant_name())
+            FunIdOrTraitMethodRef::Fun(FunId::Builtin(builtin)) => {
+                format!("@{}", builtin.variant_name())
             }
             FunIdOrTraitMethodRef::Trait(trait_ref, method_id, _) => {
                 format!("{}::{}", trait_ref.fmt_with_ctx(ctx), &method_id.0)
@@ -842,7 +842,7 @@ impl<C: AstFormatter> FmtWithCtx<C> for Rvalue {
                     AggregateKind::Adt(def_id, variant_id, _) => {
                         match def_id {
                             TypeId::Tuple => format!("({})", ops_s.join(", ")),
-                            TypeId::Assumed(_) => unreachable!(),
+                            TypeId::Builtin(_) => unreachable!(),
                             TypeId::Adt(def_id) => {
                                 // Format every field
                                 let mut fields = vec![];
@@ -1427,7 +1427,7 @@ impl<C: AstFormatter> FmtWithCtx<C> for TypeId {
         match self {
             TypeId::Tuple => "".to_string(),
             TypeId::Adt(def_id) => ctx.format_object(*def_id),
-            TypeId::Assumed(aty) => aty.get_name().fmt_with_ctx(ctx),
+            TypeId::Builtin(aty) => aty.get_name().fmt_with_ctx(ctx),
         }
     }
 }

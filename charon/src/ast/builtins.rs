@@ -1,4 +1,4 @@
-//! This file contains information about the assumed functions/types/traits definitions
+//! This file contains information about the builtin functions/types/traits definitions
 //!
 //! **IMPORTANT**:
 //! When checking whether names are equal to one of the reference names below,
@@ -14,7 +14,7 @@ use macros::EnumIsA;
 // We treat this one specially in the `inline_local_panic_functions` pass. See there for details.
 pub static EXPLICIT_PANIC_NAME: &[&str] = &["core", "panicking", "panic_explicit"];
 
-/// We redefine identifiers for assumed functions here, instead of reusing the
+/// We redefine identifiers for built-in functions here, instead of reusing the
 /// identifiers from [ullbc_ast], because:
 /// - some of the functions (the panic functions) will actually not be translated
 ///   to functions: there are thus missing identifiers.
@@ -29,38 +29,37 @@ pub enum BuiltinFun {
 impl BuiltinFun {
     /// Converts to the ullbc equivalent. Panics if `self` is `Panic` as this should be handled
     /// separately.
-    pub fn to_ullbc_builtin_fun(self) -> ast::AssumedFunId {
+    pub fn to_ullbc_builtin_fun(self) -> ast::BuiltinFunId {
         match self {
-            BuiltinFun::BoxNew => ast::AssumedFunId::BoxNew,
+            BuiltinFun::BoxNew => ast::BuiltinFunId::BoxNew,
             BuiltinFun::Panic => panic!(),
         }
     }
 }
 
-impl AssumedTy {
+impl BuiltinTy {
     pub fn get_name(self) -> Name {
         let name: &[_] = match self {
-            AssumedTy::Box => &["alloc", "boxed", "Box"],
-            AssumedTy::Str => &["Str"],
-            AssumedTy::Array => &["Array"],
-            AssumedTy::Slice => &["Slice"],
+            BuiltinTy::Box => &["alloc", "boxed", "Box"],
+            BuiltinTy::Str => &["Str"],
+            BuiltinTy::Array => &["Array"],
+            BuiltinTy::Slice => &["Slice"],
         };
         Name::from_path(name)
     }
 }
 
-/// When translating from MIR to ULLBC, we ignore some type parameters for some
-/// assumed types.
+/// When translating from MIR to ULLBC, we ignore some type parameters for some builtin types.
 /// For instance, many types like box or vec are parameterized (in MIR) by an allocator
 /// (`std::alloc::Allocator`): we ignore it.
-pub fn type_to_used_params(id: AssumedTy) -> Vec<bool> {
+pub fn type_to_used_params(id: BuiltinTy) -> Vec<bool> {
     match id {
-        AssumedTy::Box => {
+        BuiltinTy::Box => {
             vec![true, false]
         }
-        AssumedTy::Str => {
+        BuiltinTy::Str => {
             vec![]
         }
-        AssumedTy::Array | AssumedTy::Slice => vec![true],
+        BuiltinTy::Array | BuiltinTy::Slice => vec![true],
     }
 }

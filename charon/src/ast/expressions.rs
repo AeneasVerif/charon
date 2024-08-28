@@ -268,10 +268,11 @@ pub enum FunId {
     /// A primitive function, coming from a standard library (for instance:
     /// `alloc::boxed::Box::new`).
     /// TODO: rename to "Primitive"
-    Assumed(AssumedFunId),
+    #[charon::rename("FAssumed")]
+    Builtin(BuiltinFunId),
 }
 
-/// An assumed function identifier, identifying a function coming from a
+/// An built-in function identifier, identifying a function coming from a
 /// standard library.
 #[derive(
     Debug,
@@ -287,7 +288,8 @@ pub enum FunId {
     Drive,
     DriveMut,
 )]
-pub enum AssumedFunId {
+#[charon::rename("AssumedFunId")]
+pub enum BuiltinFunId {
     /// `alloc::boxed::Box::new`
     BoxNew,
     /// Converted from [ProjectionElem::Index].
@@ -547,7 +549,7 @@ pub enum Rvalue {
 #[charon::variants_prefix("Aggregated")]
 pub enum AggregateKind {
     Adt(TypeId, Option<VariantId>, GenericArgs),
-    /// We don't put this with the ADT cas because this is the only assumed type
+    /// We don't put this with the ADT cas because this is the only built-in type
     /// with aggregates, and it is a primitive type. In particular, it makes
     /// sense to treat it differently because it has a variable number of fields.
     Array(Ty, ConstGeneric),

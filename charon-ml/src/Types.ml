@@ -283,16 +283,16 @@ class virtual ['self] map_ty_base =
         { index; name }
   end
 
-(** Assumed types identifiers.
+(** Builtin types identifiers.
 
-    WARNING: for now, all the assumed types are covariant in the generic
+    WARNING: for now, all the built-in types are covariant in the generic
     parameters (if there are). Adding types which don't satisfy this
     will require to update the code abstracting the signatures (to properly
     take into account the lifetime constraints).
 
     TODO: update to not hardcode the types (except `Box` maybe) and be more
     modular.
-    TODO: move to assumed.rs?
+    TODO: move to builtins.rs?
  *)
 type assumed_ty =
   | TBox  (** Boxes are de facto a primitive type. *)
@@ -302,7 +302,7 @@ type assumed_ty =
 
 (** Type identifier.
 
-    Allows us to factorize the code for assumed types, adts and tuples
+    Allows us to factorize the code for built-in types, adts and tuples
  *)
 and type_id =
   | TAdtId of type_decl_id
@@ -313,12 +313,12 @@ and type_id =
        *)
   | TTuple
   | TAssumed of assumed_ty
-      (** Assumed type. Either a primitive type like array or slice, or a
+      (** Built-in type. Either a primitive type like array or slice, or a
           non-primitive type coming from a standard library
           and that we handle like a primitive type. Types falling into this
           category include: Box, Vec, Cell...
           The Array and Slice types were initially modelled as primitive in
-          the [Ty] type. We decided to move them to assumed types as it allows
+          the [Ty] type. We decided to move them to built-in types as it allows
           for more uniform treatment throughout the codebase.
        *)
 
@@ -335,7 +335,7 @@ and ty =
           Note that here ADTs are very general. They can be:
           - user-defined ADTs
           - tuples (including `unit`, which is a 0-tuple)
-          - assumed types (includes some primitive types, e.g., arrays or slices)
+          - built-in types (includes some primitive types, e.g., arrays or slices)
           The information on the nature of the ADT is stored in (`TypeId`)[TypeId].
           The last list is used encode const generics, e.g., the size of an array
 

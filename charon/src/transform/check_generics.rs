@@ -62,7 +62,7 @@ impl CheckGenericsVisitor<'_, '_> {
                     self.error("Mismatched generics: generics for a tuple should be only types")
                 }
             }
-            TypeId::Assumed(..) => {
+            TypeId::Builtin(..) => {
                 // TODO: check generics for built-in types
                 self.discharged_one_generics()
             }
@@ -90,7 +90,7 @@ impl CheckGenericsVisitor<'_, '_> {
             | FunIdOrTraitMethodRef::Trait(_, _, id) => {
                 self.generics_should_match_item(args, *id);
             }
-            FunIdOrTraitMethodRef::Fun(FunId::Assumed(..)) => {
+            FunIdOrTraitMethodRef::Fun(FunId::Builtin(..)) => {
                 // TODO: check generics for built-in types
                 self.discharged_one_generics()
             }

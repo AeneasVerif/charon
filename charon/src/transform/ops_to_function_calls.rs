@@ -14,10 +14,10 @@ fn transform_st(s: &mut Statement) -> Option<Vec<Statement>> {
             // We could avoid the clone operations below if we take the content of
             // the statement. In practice, this shouldn't have much impact.
             let id = match ref_kind {
-                RefKind::Mut => AssumedFunId::ArrayToSliceMut,
-                RefKind::Shared => AssumedFunId::ArrayToSliceShared,
+                RefKind::Mut => BuiltinFunId::ArrayToSliceMut,
+                RefKind::Shared => BuiltinFunId::ArrayToSliceShared,
             };
-            let func = FunIdOrTraitMethodRef::mk_assumed(id);
+            let func = FunIdOrTraitMethodRef::mk_builtin(id);
             let generics = GenericArgs::new(
                 vec![Region::Erased].into(),
                 vec![ty.clone()].into(),
@@ -37,8 +37,8 @@ fn transform_st(s: &mut Statement) -> Option<Vec<Statement>> {
         RawStatement::Assign(p, Rvalue::Repeat(op, ty, cg)) => {
             // We could avoid the clone operations below if we take the content of
             // the statement. In practice, this shouldn't have much impact.
-            let id = AssumedFunId::ArrayRepeat;
-            let func = FunIdOrTraitMethodRef::mk_assumed(id);
+            let id = BuiltinFunId::ArrayRepeat;
+            let func = FunIdOrTraitMethodRef::mk_builtin(id);
             let generics = GenericArgs::new(
                 vec![Region::Erased].into(),
                 vec![ty.clone()].into(),

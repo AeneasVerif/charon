@@ -361,9 +361,9 @@ and type_id_of_json (js : json) : (type_id, string) result =
         let* adt = type_decl_id_of_json adt in
         Ok (TAdtId adt)
     | `String "Tuple" -> Ok TTuple
-    | `Assoc [ ("Assumed", assumed) ] ->
-        let* assumed = assumed_ty_of_json assumed in
-        Ok (TAssumed assumed)
+    | `Assoc [ ("Builtin", builtin) ] ->
+        let* builtin = assumed_ty_of_json builtin in
+        Ok (TAssumed builtin)
     | _ -> Error "")
 
 and const_generic_of_json (js : json) : (const_generic, string) result =
@@ -930,9 +930,9 @@ and fun_id_of_json (js : json) : (fun_id, string) result =
     | `Assoc [ ("Regular", regular) ] ->
         let* regular = fun_decl_id_of_json regular in
         Ok (FRegular regular)
-    | `Assoc [ ("Assumed", assumed) ] ->
-        let* assumed = assumed_fun_id_of_json assumed in
-        Ok (FAssumed assumed)
+    | `Assoc [ ("Builtin", builtin) ] ->
+        let* builtin = assumed_fun_id_of_json builtin in
+        Ok (FAssumed builtin)
     | _ -> Error "")
 
 and fun_id_or_trait_method_ref_of_json (js : json) :

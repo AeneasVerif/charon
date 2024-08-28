@@ -18,8 +18,8 @@ pub fn make_locals_generator(locals: &mut Vector<VarId, Var>) -> impl FnMut(Ty) 
 }
 
 impl FunIdOrTraitMethodRef {
-    pub fn mk_assumed(aid: AssumedFunId) -> Self {
-        Self::Fun(FunId::Assumed(aid))
+    pub fn mk_builtin(aid: BuiltinFunId) -> Self {
+        Self::Fun(FunId::Builtin(aid))
     }
 }
 

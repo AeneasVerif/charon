@@ -20,7 +20,7 @@ module FunDeclId = Types.FunDeclId
   *)
 type var_id = VarId.id [@@deriving show, ord]
 
-(** An assumed function identifier, identifying a function coming from a
+(** An built-in function identifier, identifying a function coming from a
     standard library.
  *)
 type assumed_fun_id =
@@ -402,7 +402,7 @@ type operand =
 and aggregate_kind =
   | AggregatedAdt of type_id * variant_id option * generic_args
   | AggregatedArray of ty * const_generic
-      (** We don't put this with the ADT cas because this is the only assumed type
+      (** We don't put this with the ADT cas because this is the only built-in type
           with aggregates, and it is a primitive type. In particular, it makes
           sense to treat it differently because it has a variable number of fields.
        *)

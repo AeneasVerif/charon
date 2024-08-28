@@ -13,7 +13,7 @@ use charon_lib::export::CrateData;
 use charon_lib::meta::ItemMeta;
 use charon_lib::names::{Name, PathElem};
 use charon_lib::types::{
-    AssumedTy, Field, LiteralTy, Ty, TypeDecl, TypeDeclId, TypeDeclKind, TypeId,
+    BuiltinTy, Field, LiteralTy, Ty, TypeDecl, TypeDeclId, TypeDeclKind, TypeId,
 };
 use convert_case::{Case, Casing};
 use derive_visitor::Drive;
@@ -137,7 +137,7 @@ fn type_to_ocaml_call(ctx: &GenerateCtx, ty: &Ty) -> String {
                     }
                     expr.insert(0, first + "_of_json");
                 }
-                TypeId::Assumed(AssumedTy::Box) => {}
+                TypeId::Builtin(BuiltinTy::Box) => {}
                 TypeId::Tuple => {
                     let name = match generics.types.len() {
                         2 => "pair_of_json".to_string(),
@@ -210,7 +210,7 @@ fn type_to_ocaml_name(ctx: &GenerateCtx, ty: &Ty) -> String {
                     };
                     format!("{args} {base_ty}")
                 }
-                TypeId::Assumed(AssumedTy::Box) => args[0].clone(),
+                TypeId::Builtin(BuiltinTy::Box) => args[0].clone(),
                 TypeId::Tuple => args.iter().join("*"),
                 _ => unimplemented!("{ty:?}"),
             }
@@ -711,7 +711,7 @@ fn main() -> Result<()> {
             template: dir.join("templates/Expressions.ml"),
             target: dir.join("generated/Expressions.ml"),
             markers: &[
-                (GenerationKind::TypeDecl(false), &["AssumedFunId", "AbortKind"]),
+                (GenerationKind::TypeDecl(false), &["BuiltinFunId", "AbortKind"]),
                 (GenerationKind::TypeDecl(false), &["FieldProjKind", "ProjectionElem", "Projection", "Place"]),
                 (GenerationKind::TypeDecl(false), &["BorrowKind", "BinOp"]),
                 (GenerationKind::TypeDecl(false), &[
@@ -740,7 +740,7 @@ fn main() -> Result<()> {
             target: dir.join("generated/Types.ml"),
             markers: &[
                 (GenerationKind::TypeDecl(false), &[
-                    "AssumedTy",
+                    "BuiltinTy",
                     "TypeId",
                     "ExistentialPredicate",
                     "Ty",
@@ -805,7 +805,7 @@ fn main() -> Result<()> {
                     "LiteralTy",
                     "ConstGenericVar",
                     "RefKind",
-                    "AssumedTy",
+                    "BuiltinTy",
                     "TypeId",
                     "ConstGeneric",
                     "Ty",
@@ -842,7 +842,7 @@ fn main() -> Result<()> {
                     "UnOp",
                     "BinOp",
                     "Literal",
-                    "AssumedFunId",
+                    "BuiltinFunId",
                     "FunId",
                     "FunIdOrTraitMethodRef",
                     "FnPtr",

@@ -190,8 +190,8 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 let type_id = self.translate_type_id(span, def_id)?;
 
                 // Retrieve the list of used arguments
-                let used_params = if let TypeId::Assumed(assumed_ty) = type_id {
-                    Some(builtins::type_to_used_params(assumed_ty))
+                let used_params = if let TypeId::Builtin(builtin_ty) = type_id {
+                    Some(builtins::type_to_used_params(builtin_ty))
                 } else {
                     None
                 };
@@ -211,7 +211,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             hax::Ty::Str => {
                 trace!("Str");
 
-                let id = TypeId::Assumed(AssumedTy::Str);
+                let id = TypeId::Builtin(BuiltinTy::Str);
                 Ok(Ty::Adt(id, GenericArgs::empty()))
             }
             hax::Ty::Array(ty, const_param) => {
@@ -220,7 +220,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 let c = self.translate_constant_expr_to_const_generic(span, const_param)?;
                 let tys = vec![self.translate_ty(span, erase_regions, ty)?].into();
                 let cgs = vec![c].into();
-                let id = TypeId::Assumed(AssumedTy::Array);
+                let id = TypeId::Builtin(BuiltinTy::Array);
                 Ok(Ty::Adt(
                     id,
                     GenericArgs::new(Vector::new(), tys, cgs, Vector::new()),
@@ -230,7 +230,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 trace!("Slice");
 
                 let tys = vec![self.translate_ty(span, erase_regions, ty)?].into();
-                let id = TypeId::Assumed(AssumedTy::Slice);
+                let id = TypeId::Builtin(BuiltinTy::Slice);
                 Ok(Ty::Adt(id, GenericArgs::new_from_types(tys)))
             }
             hax::Ty::Ref(region, ty, mutability) => {
@@ -448,12 +448,12 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     }
 
     /// Checks whether the given id corresponds to a built-in type.
-    fn recognize_builtin_type(&mut self, def_id: &hax::DefId) -> Result<Option<AssumedTy>, Error> {
+    fn recognize_builtin_type(&mut self, def_id: &hax::DefId) -> Result<Option<BuiltinTy>, Error> {
         use rustc_hir::lang_items::LangItem;
         let tcx = self.t_ctx.tcx;
         let rust_id = DefId::from(def_id);
         let ty = if tcx.is_lang_item(rust_id, LangItem::OwnedBox) {
-            Some(AssumedTy::Box)
+            Some(BuiltinTy::Box)
         } else {
             None
         };
@@ -468,7 +468,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     ) -> Result<TypeId, Error> {
         trace!("{:?}", def_id);
         let type_id = match self.recognize_builtin_type(def_id)? {
-            Some(id) => TypeId::Assumed(id),
+            Some(id) => TypeId::Builtin(id),
             None => {
                 let rust_id: DefId = def_id.into();
                 TypeId::Adt(self.register_type_decl_id(span, rust_id))
