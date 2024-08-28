@@ -283,7 +283,7 @@ impl Ty {
     /// Return true if the type is Box
     pub fn is_box(&self) -> bool {
         match self {
-            Ty::Adt(TypeId::Assumed(AssumedTy::Box), generics) => {
+            Ty::Adt(TypeId::Builtin(BuiltinTy::Box), generics) => {
                 assert!(generics.regions.is_empty());
                 assert!(generics.types.len() == 1);
                 assert!(generics.const_generics.is_empty());
@@ -295,7 +295,7 @@ impl Ty {
 
     pub fn as_box(&self) -> Option<&Ty> {
         match self {
-            Ty::Adt(TypeId::Assumed(AssumedTy::Box), generics) => {
+            Ty::Adt(TypeId::Builtin(BuiltinTy::Box), generics) => {
                 assert!(generics.regions.is_empty());
                 assert!(generics.types.len() == 1);
                 assert!(generics.const_generics.is_empty());

@@ -129,7 +129,7 @@ impl RunCompilerNormallyCallbacks {
     }
 }
 
-/// Returns the values of the command-line options that match `find_arg`. The options are assumed
+/// Returns the values of the command-line options that match `find_arg`. The options are built-in
 /// to be of the form `--arg=value` or `--arg value`.
 pub fn arg_values<'a, T: Deref<Target = str>>(
     args: &'a [T],

@@ -43,7 +43,7 @@ pub mod pretty;
 pub mod transform;
 
 // Re-export all the ast modules so we can keep the old import structure.
-pub use ast::{assumed, expressions, gast, llbc_ast, meta, names, types, ullbc_ast, values};
+pub use ast::{builtins, expressions, gast, llbc_ast, meta, names, types, ullbc_ast, values};
 pub use pretty::formatter;
 pub use transform::{graphs, reorder_decls, ullbc_to_llbc};
 

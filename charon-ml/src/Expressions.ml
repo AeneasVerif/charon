@@ -20,30 +20,11 @@ module FunDeclId = Types.FunDeclId
   *)
 type var_id = VarId.id [@@deriving show, ord]
 
-(** An assumed function identifier, identifying a function coming from a
+(** An built-in function identifier, identifying a function coming from a
     standard library.
  *)
 type assumed_fun_id =
   | BoxNew  (** `alloc::boxed::Box::new` *)
-  | BoxFree
-      (** `alloc::alloc::box_free`
-          This is actually an unsafe function, but the rust compiler sometimes
-          introduces it when going to MIR.
-
-          Also, in practice, deallocation is performed as follows in MIR:
-          ```text
-          alloc::alloc::box_free::<T, std::alloc::Global>(
-              move (b.0: std::ptr::Unique<T>),
-              move (b.1: std::alloc::Global))
-          ```
-          When translating from MIR to ULLBC, we do as if the MIR was actually the
-          following (this is hardcoded - see [crate::register] and [crate::translate_functions_to_ullbc]):
-          ```text
-          alloc::alloc::box_free::<T>(move b)
-          ```
-
-          Also see the comments in [crate::assumed::type_to_used_params].
-       *)
   | ArrayIndexShared
       (** Converted from [ProjectionElem::Index].
 
@@ -421,7 +402,7 @@ type operand =
 and aggregate_kind =
   | AggregatedAdt of type_id * variant_id option * generic_args
   | AggregatedArray of ty * const_generic
-      (** We don't put this with the ADT cas because this is the only assumed type
+      (** We don't put this with the ADT cas because this is the only built-in type
           with aggregates, and it is a primitive type. In particular, it makes
           sense to treat it differently because it has a variable number of fields.
        *)

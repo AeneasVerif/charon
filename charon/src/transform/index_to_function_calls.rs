@@ -51,19 +51,19 @@ impl<'a> Visitor<'a> {
             if let ProjectionElem::Index(arg_index, buf_ty) = pe {
                 let (id, generics) = buf_ty.as_adt();
                 let cgs: Vector<_, ConstGeneric> = generics.const_generics.clone();
-                let index_id = match id.as_assumed() {
-                    AssumedTy::Array => {
+                let index_id = match id.as_builtin() {
+                    BuiltinTy::Array => {
                         if mut_access {
-                            AssumedFunId::ArrayIndexMut
+                            BuiltinFunId::ArrayIndexMut
                         } else {
-                            AssumedFunId::ArrayIndexShared
+                            BuiltinFunId::ArrayIndexShared
                         }
                     }
-                    AssumedTy::Slice => {
+                    BuiltinTy::Slice => {
                         if mut_access {
-                            AssumedFunId::SliceIndexMut
+                            BuiltinFunId::SliceIndexMut
                         } else {
-                            AssumedFunId::SliceIndexShared
+                            BuiltinFunId::SliceIndexShared
                         }
                     }
                     _ => unreachable!(),
@@ -105,7 +105,7 @@ impl<'a> Visitor<'a> {
                 let elem_borrow_var = self.fresh_var(None, elem_borrow_ty);
                 let arg_buf = Operand::Move(Place::new(buf_borrow_var));
                 let index_dest = Place::new(elem_borrow_var);
-                let index_id = FunIdOrTraitMethodRef::mk_assumed(index_id);
+                let index_id = FunIdOrTraitMethodRef::mk_builtin(index_id);
                 let generics = GenericArgs::new(
                     vec![Region::Erased].into(),
                     vec![elem_ty].into(),

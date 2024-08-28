@@ -13,7 +13,7 @@ use std::collections::HashSet;
 
 use super::{ctx::LlbcPass, TransformCtx};
 use crate::{
-    assumed,
+    builtins,
     llbc_ast::{
         AbortKind, Call, FnOperand, FnPtr, FunId, FunIdOrTraitMethodRef, RawStatement, Statement,
     },
@@ -30,7 +30,7 @@ impl LlbcPass for Transform {
                 let body = body.as_structured().unwrap();
                 // If the whole body is only a call to this specific panic function.
                 if let RawStatement::Abort(AbortKind::Panic(name)) = &body.body.content {
-                    if name.equals_ref_name(assumed::EXPLICIT_PANIC_NAME) {
+                    if name.equals_ref_name(builtins::EXPLICIT_PANIC_NAME) {
                         // FIXME: also check that the name of the function is
                         // `panic_cold_explicit`?
                         panic_fns.insert(decl.def_id);
@@ -39,7 +39,7 @@ impl LlbcPass for Transform {
             }
         });
 
-        let panic_name = Name::from_path(assumed::EXPLICIT_PANIC_NAME);
+        let panic_name = Name::from_path(builtins::EXPLICIT_PANIC_NAME);
         let panic_statement = RawStatement::Abort(AbortKind::Panic(panic_name));
 
         // Replace each call to one such function with a `Panic`.

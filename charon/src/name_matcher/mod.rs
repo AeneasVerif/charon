@@ -91,8 +91,8 @@ impl Pattern {
                 };
                 self.matches_with_generics(ctx, type_name, args)
             }
-            Ty::Adt(TypeId::Assumed(assumed_ty), args) => {
-                let name = assumed_ty.get_name();
+            Ty::Adt(TypeId::Builtin(builtin_ty), args) => {
+                let name = builtin_ty.get_name();
                 self.matches_with_generics(ctx, &name, args)
             }
             Ty::Adt(TypeId::Tuple, _)

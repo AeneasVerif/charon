@@ -612,7 +612,6 @@ and match_expr_with_const_generic (ctx : ctx) (c : match_config) (m : maps)
 let assumed_fun_id_to_string (fid : E.assumed_fun_id) : string =
   match fid with
   | BoxNew -> "alloc::boxed::{Box<@T, alloc::alloc::Global>}::new"
-  | BoxFree -> "alloc::alloc::box_free"
   | ArrayIndexShared -> "ArrayIndexShared"
   | ArrayIndexMut -> "ArrayIndexMut"
   | ArrayToSliceShared -> "ArrayToSliceShared"
@@ -655,9 +654,6 @@ let match_fn_ptr (ctx : ctx) (c : match_config) (p : pattern) (func : E.fn_ptr)
                   true
               | _ -> false)
           | _ -> false)
-      | BoxFree ->
-          let name = to_name [ "alloc"; "alloc"; "box_free" ] in
-          match_name_with_generics ctx c p name func.generics
       | _ ->
           let name = assumed_fun_id_to_string fid in
           match_name_with_generics ctx c p (to_name [ name ]) func.generics)
@@ -997,12 +993,6 @@ let fn_ptr_to_pattern (ctx : ctx) (c : to_pat_config)
               PIdent ("boxed", []);
               PImpl (EComp box_impl);
               PIdent ("new", args);
-            ]
-        | BoxFree ->
-            [
-              PIdent ("alloc", []);
-              PIdent ("alloc", []);
-              PIdent ("box_free", args);
             ]
         | _ ->
             let fid = assumed_fun_id_to_string fid in
