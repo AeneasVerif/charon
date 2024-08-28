@@ -36,7 +36,8 @@ impl Transform {
                     None => None,
                     Some(d) => {
                         match &d.kind {
-                            TypeDeclKind::Struct(_)
+                            TypeDeclKind::Struct(..)
+                            | TypeDeclKind::Union(..)
                             | TypeDeclKind::Opaque
                             | TypeDeclKind::Alias(..) => {
                                 // We shouldn't get there

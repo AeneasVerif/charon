@@ -714,6 +714,7 @@ and variant = {
 and type_decl_kind =
   | Struct of field list
   | Enum of variant list
+  | Union of field list
   | Opaque
       (** An opaque type.
 

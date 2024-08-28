@@ -1387,6 +1387,16 @@ impl<C: AstFormatter> FmtWithCtx<C> for TypeDecl {
                     )
                 }
             }
+            TypeDeclKind::Union(fields) => {
+                let fields = fields
+                    .iter()
+                    .map(|f| format!("\n  {},", f.fmt_with_ctx(ctx)))
+                    .format("");
+                format!(
+                    "union {}{params}{preds}{eq_space}=\n{{{fields}\n}}",
+                    self.item_meta.name.fmt_with_ctx(ctx)
+                )
+            }
             TypeDeclKind::Enum(variants) => {
                 let variants = variants
                     .iter()

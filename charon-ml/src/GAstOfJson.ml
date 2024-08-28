@@ -550,6 +550,11 @@ and type_decl_kind_of_json (id_to_file : id_to_file_map) (js : json) :
           vector_of_json variant_id_of_json (variant_of_json id_to_file) enum
         in
         Ok (Enum enum)
+    | `Assoc [ ("Union", union) ] ->
+        let* union =
+          vector_of_json field_id_of_json (field_of_json id_to_file) union
+        in
+        Ok (Union union)
     | `String "Opaque" -> Ok Opaque
     | `Assoc [ ("Alias", alias) ] ->
         let* alias = ty_of_json alias in

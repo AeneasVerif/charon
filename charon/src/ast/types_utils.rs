@@ -184,25 +184,6 @@ impl GenericArgs {
     }
 }
 
-impl TypeDecl {
-    /// The variant id should be `None` if it is a structure and `Some` if it
-    /// is an enumeration.
-    #[allow(clippy::result_unit_err)]
-    pub fn get_fields(&self, variant_id: Option<VariantId>) -> Result<&Vector<FieldId, Field>, ()> {
-        match &self.kind {
-            TypeDeclKind::Enum(variants) => Ok(&variants.get(variant_id.unwrap()).unwrap().fields),
-            TypeDeclKind::Struct(fields) => {
-                assert!(variant_id.is_none());
-                Ok(fields)
-            }
-            TypeDeclKind::Alias(..) | TypeDeclKind::Opaque => {
-                unreachable!("Opaque or alias type")
-            }
-            TypeDeclKind::Error(_) => Err(()),
-        }
-    }
-}
-
 impl IntegerTy {
     pub fn is_signed(&self) -> bool {
         matches!(

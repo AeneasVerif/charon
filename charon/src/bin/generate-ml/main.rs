@@ -430,6 +430,7 @@ fn type_decl_to_json_deserializer(ctx: &GenerateCtx, decl: &TypeDecl) -> String 
                 })
                 .join("\n")
         }
+        TypeDeclKind::Union(..) => todo!(),
         TypeDeclKind::Opaque => todo!(),
         TypeDeclKind::Error(_) => todo!(),
     };
@@ -576,6 +577,7 @@ fn type_decl_to_ocaml_decl(ctx: &GenerateCtx, decl: &TypeDecl, co_rec: bool) -> 
                 })
                 .join("")
         }
+        TypeDeclKind::Union(..) => todo!(),
         TypeDeclKind::Opaque => todo!(),
         TypeDeclKind::Error(_) => todo!(),
     };
