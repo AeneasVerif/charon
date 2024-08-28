@@ -915,7 +915,6 @@ and assumed_fun_id_of_json (js : json) : (assumed_fun_id, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
     | `String "BoxNew" -> Ok BoxNew
-    | `String "BoxFree" -> Ok BoxFree
     | `String "ArrayIndexShared" -> Ok ArrayIndexShared
     | `String "ArrayIndexMut" -> Ok ArrayIndexMut
     | `String "ArrayToSliceShared" -> Ok ArrayToSliceShared

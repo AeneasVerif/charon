@@ -100,7 +100,6 @@ let binop_to_string (binop : binop) : string =
 let assumed_fun_id_to_string (aid : assumed_fun_id) : string =
   match aid with
   | BoxNew -> "alloc::boxed::Box::new"
-  | BoxFree -> "alloc::alloc::box_free"
   | ArrayIndexShared -> "@ArrayIndexShared"
   | ArrayIndexMut -> "@ArrayIndexMut"
   | ArrayToSliceShared -> "@ArrayToSliceShared"

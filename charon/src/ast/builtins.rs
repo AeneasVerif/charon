@@ -24,13 +24,6 @@ pub static EXPLICIT_PANIC_NAME: &[&str] = &["core", "panicking", "panic_explicit
 pub enum BuiltinFun {
     Panic,
     BoxNew,
-    BoxFree,
-}
-
-pub struct FunInfo {
-    pub used_type_params: Vec<bool>,
-    // TODO: rename. "value_args"?
-    pub used_args: Vec<bool>,
 }
 
 impl BuiltinFun {
@@ -39,20 +32,7 @@ impl BuiltinFun {
     pub fn to_ullbc_builtin_fun(self) -> ast::AssumedFunId {
         match self {
             BuiltinFun::BoxNew => ast::AssumedFunId::BoxNew,
-            BuiltinFun::BoxFree => ast::AssumedFunId::BoxFree,
             BuiltinFun::Panic => panic!(),
-        }
-    }
-
-    /// See the comments for [type_to_used_params]
-    pub fn to_fun_info(self) -> Option<FunInfo> {
-        match self {
-            BuiltinFun::Panic => None,
-            BuiltinFun::BoxNew => None,
-            BuiltinFun::BoxFree => Some(FunInfo {
-                used_type_params: vec![true, false],
-                used_args: vec![true, false],
-            }),
         }
     }
 }

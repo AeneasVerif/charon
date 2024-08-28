@@ -1086,10 +1086,6 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         self.blocks_map.get(&rid)
     }
 
-    pub(crate) fn get_var_from_id(&self, var_id: VarId) -> Option<&ast::Var> {
-        self.vars.get(var_id)
-    }
-
     pub(crate) fn register_type_decl_id(
         &mut self,
         span: rustc_span::Span,

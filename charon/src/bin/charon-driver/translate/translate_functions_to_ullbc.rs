@@ -466,38 +466,6 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         Ok(self.translate_operand_with_type(span, operand)?.0)
     }
 
-    /// Translate an operand which should be `move b.0` where `b` is a box (such
-    /// operands are sometimes introduced here and there).
-    /// This is a degenerate case where we can't use
-    /// [`translate_operand`](translate_operand) on this kind of operands because
-    /// it will panic, due to the fact that we precisely track the type of the
-    /// values we go through during the path exploration.
-    /// We also prefer not to tweak `translate_operand` to account for this
-    /// ad-hoc behaviour (which comes from the fact that we abstract boxes, while
-    /// the rust compiler is too precise when manipulating those boxes, which
-    /// reveals implementation details).
-    fn translate_move_box_first_projector_operand(
-        &mut self,
-        span: rustc_span::Span,
-        operand: &hax::Operand,
-    ) -> Result<Operand, Error> {
-        trace!();
-        match operand {
-            hax::Operand::Move(place) => {
-                let place = self.translate_place(span, place)?;
-
-                // Sanity check
-                let var = self.get_var_from_id(place.var_id).unwrap();
-                assert!(var.ty.is_box());
-
-                Ok(Operand::Move(place))
-            }
-            _ => {
-                unreachable!();
-            }
-        }
-    }
-
     /// Translate an rvalue
     fn translate_rvalue(
         &mut self,
@@ -804,9 +772,6 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             || panic_names.iter().any(|panic| name.equals_ref_name(panic))
         {
             Ok(Some(BuiltinFun::Panic))
-        } else if name.equals_ref_name(&["alloc", "alloc", "box_free"]) {
-            // TODO: check if this is still something that happens
-            Ok(Some(BuiltinFun::BoxFree))
         } else {
             Ok(None)
         }
@@ -834,7 +799,6 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         trait_info: &Option<hax::ImplExpr>,
     ) -> Result<SubstFunIdOrPanic, Error> {
         let rust_id = DefId::from(def_id);
-        let is_local = rust_id.is_local();
 
         let builtin_fun = self.recognize_builtin_fun(def_id)?;
         if matches!(builtin_fun, Some(BuiltinFun::Panic)) {
@@ -842,163 +806,102 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             return Ok(SubstFunIdOrPanic::Panic(name));
         }
 
-        // There is something annoying: when going to MIR, the rust compiler
-        // sometimes introduces very low-level functions, which we need to
-        // catch early - in particular, before we start translating types and
-        // arguments, because we won't be able to translate some of them.
-        let sfid = if matches!(builtin_fun, Some(BuiltinFun::BoxFree)) {
-            assert!(!is_local);
+        // Translate the type parameters
+        let generics =
+            self.translate_substs_and_trait_refs(span, erase_regions, None, substs, trait_refs)?;
 
-            // This deallocates a box.
-            // It should have two type parameters:
-            // - the type of the boxed value
-            // - the type of a global allocator (which we ignore)
-            assert!(substs.len() == 2);
-            assert!(trait_refs.is_empty());
+        // Translate the arguments
+        let args = args
+            .map(|args| self.translate_arguments(span, args))
+            .transpose()?;
 
-            // Translate the type parameter
-            let t_ty = if let hax::GenericArg::Type(ty) = substs.get(0).unwrap() {
-                self.translate_ty(span, erase_regions, ty)?
-            } else {
-                unreachable!()
-            };
+        // Trait information
+        trace!(
+            "Trait information:\n- def_id: {:?}\n- impl source:\n{:?}",
+            rust_id,
+            trait_info
+        );
+        trace!(
+            "Method traits:\n- def_id: {:?}\n- traits:\n{:?}",
+            rust_id,
+            trait_refs
+        );
 
-            let args = args
-                .map(|args| {
-                    assert!(args.len() == 2);
-                    // Translate the first argument - note that we use a special
-                    // function to translate it: the operand should be of the form:
-                    // `move b.0`, and if it is the case it will return `move b`
-                    let arg = &args[0].node;
-                    let t_arg = self.translate_move_box_first_projector_operand(span, arg)?;
-                    Ok(vec![t_arg])
-                })
-                .transpose()?;
+        // Check if the function is considered primitive: primitive
+        // functions benefit from special treatment.
+        let func = if let Some(builtin_fun) = builtin_fun {
+            // Primitive function.
+            //
+            // Note that there are subtleties with regards to the way types parameters
+            // are translated, because some functions are actually traits, where the
+            // types are used for the resolution. For instance, the following:
+            // `core::ops::deref::Deref::<alloc::boxed::Box<T>>::deref`
+            // is translated to:
+            // `box_deref<T>`
+            // (the type parameter is not `Box<T>` but `T`).
+            assert!(trait_info.is_none());
 
-            // Return
-            let func = FnPtr {
-                func: FunIdOrTraitMethodRef::mk_assumed(AssumedFunId::BoxFree),
-                generics: GenericArgs::new_from_types(vec![t_ty].into()),
-            };
-            SubstFunId { func, args }
-        } else {
-            // Retrieve the lists of used parameters, in case of non-local
-            // definitions
-            let (used_type_args, used_args) = if let Some(builtin_fun) = builtin_fun {
-                builtin_fun
-                    .to_fun_info()
-                    .map(|used| (used.used_type_params, used.used_args))
-            } else {
-                None
-            }
-            .unzip();
+            let aid = builtin_fun.to_ullbc_builtin_fun();
 
-            // Translate the type parameters
-            let generics = self.translate_substs_and_trait_refs(
-                span,
-                erase_regions,
-                used_type_args,
-                substs,
-                trait_refs,
-            )?;
-
-            // Translate the arguments
-            let args = args
-                .map(|args| self.translate_arguments(span, used_args, args))
-                .transpose()?;
-
-            // Trait information
-            trace!(
-                "Trait information:\n- def_id: {:?}\n- impl source:\n{:?}",
-                rust_id,
-                trait_info
-            );
-            trace!(
-                "Method traits:\n- def_id: {:?}\n- traits:\n{:?}",
-                rust_id,
-                trait_refs
-            );
-
-            // Check if the function is considered primitive: primitive
-            // functions benefit from special treatment.
-            let func = if let Some(builtin_fun) = builtin_fun {
-                // Primitive function.
-                //
-                // Note that there are subtleties with regards to the way types parameters
-                // are translated, because some functions are actually traits, where the
-                // types are used for the resolution. For instance, the following:
-                // `core::ops::deref::Deref::<alloc::boxed::Box<T>>::deref`
-                // is translated to:
-                // `box_deref<T>`
-                // (the type parameter is not `Box<T>` but `T`).
-                assert!(trait_info.is_none());
-
-                let aid = builtin_fun.to_ullbc_builtin_fun();
-
-                // Note that some functions are actually traits (deref, index, etc.):
-                // we assume that they are called only on a limited set of types
-                // (ex.: box, vec...).
-                // For those trait functions, we need a custom treatment to retrieve
-                // and check the type information.
-                // For instance, derefencing boxes generates MIR of the following form:
-                // ```
-                // _2 = <Box<u32> as Deref>::deref(move _3)
-                // ```
-                // We have to retrieve the type `Box<u32>` and check that it is of the
-                // form `Box<T>` (and we generate `box_deref<u32>`).
-                match aid {
-                    AssumedFunId::BoxNew => {
-                        // Nothing to do
-                    }
-                    AssumedFunId::BoxFree => {
-                        // Special case handled elsewhere
-                        unreachable!();
-                    }
-                    AssumedFunId::ArrayIndexShared
-                    | AssumedFunId::ArrayIndexMut
-                    | AssumedFunId::ArrayToSliceShared
-                    | AssumedFunId::ArrayToSliceMut
-                    | AssumedFunId::ArrayRepeat
-                    | AssumedFunId::SliceIndexShared
-                    | AssumedFunId::SliceIndexMut => {
-                        // Those cases are introduced later, in micro-passes, by desugaring
-                        // projections (for ArrayIndex and ArrayIndexMut for instnace) and=
-                        // operations (for ArrayToSlice for instance) to function calls.
-                        unreachable!()
-                    }
-                };
-
-                FunIdOrTraitMethodRef::Fun(FunId::Assumed(aid))
-            } else {
-                // Two cases depending on whether we call a trait method or not
-                match trait_info {
-                    None => {
-                        // "Regular" function call
-                        let def_id = self.register_fun_decl_id(span, rust_id);
-                        FunIdOrTraitMethodRef::Fun(FunId::Regular(def_id))
-                    }
-                    Some(trait_info) => {
-                        // Trait method
-                        let rust_id = DefId::from(def_id);
-                        let impl_expr =
-                            self.translate_trait_impl_expr(span, erase_regions, trait_info)?;
-                        // The impl source should be Some(...): trait markers (that we may
-                        // eliminate) don't have methods.
-                        let impl_expr = impl_expr.unwrap();
-
-                        trace!("{:?}", rust_id);
-
-                        let trait_method_fun_id = self.register_fun_decl_id(span, rust_id);
-                        let method_name = self.t_ctx.translate_trait_item_name(rust_id)?;
-
-                        FunIdOrTraitMethodRef::Trait(impl_expr, method_name, trait_method_fun_id)
-                    }
+            // Note that some functions are actually traits (deref, index, etc.):
+            // we assume that they are called only on a limited set of types
+            // (ex.: box, vec...).
+            // For those trait functions, we need a custom treatment to retrieve
+            // and check the type information.
+            // For instance, derefencing boxes generates MIR of the following form:
+            // ```
+            // _2 = <Box<u32> as Deref>::deref(move _3)
+            // ```
+            // We have to retrieve the type `Box<u32>` and check that it is of the
+            // form `Box<T>` (and we generate `box_deref<u32>`).
+            match aid {
+                AssumedFunId::BoxNew => {
+                    // Nothing to do
+                }
+                AssumedFunId::ArrayIndexShared
+                | AssumedFunId::ArrayIndexMut
+                | AssumedFunId::ArrayToSliceShared
+                | AssumedFunId::ArrayToSliceMut
+                | AssumedFunId::ArrayRepeat
+                | AssumedFunId::SliceIndexShared
+                | AssumedFunId::SliceIndexMut => {
+                    // Those cases are introduced later, in micro-passes, by desugaring
+                    // projections (for ArrayIndex and ArrayIndexMut for instnace) and=
+                    // operations (for ArrayToSlice for instance) to function calls.
+                    unreachable!()
                 }
             };
-            SubstFunId {
-                func: FnPtr { func, generics },
-                args,
+
+            FunIdOrTraitMethodRef::Fun(FunId::Assumed(aid))
+        } else {
+            // Two cases depending on whether we call a trait method or not
+            match trait_info {
+                None => {
+                    // "Regular" function call
+                    let def_id = self.register_fun_decl_id(span, rust_id);
+                    FunIdOrTraitMethodRef::Fun(FunId::Regular(def_id))
+                }
+                Some(trait_info) => {
+                    // Trait method
+                    let rust_id = DefId::from(def_id);
+                    let impl_expr =
+                        self.translate_trait_impl_expr(span, erase_regions, trait_info)?;
+                    // The impl source should be Some(...): trait markers (that we may
+                    // eliminate) don't have methods.
+                    let impl_expr = impl_expr.unwrap();
+
+                    trace!("{:?}", rust_id);
+
+                    let trait_method_fun_id = self.register_fun_decl_id(span, rust_id);
+                    let method_name = self.t_ctx.translate_trait_item_name(rust_id)?;
+
+                    FunIdOrTraitMethodRef::Trait(impl_expr, method_name, trait_method_fun_id)
+                }
             }
+        };
+        let sfid = SubstFunId {
+            func: FnPtr { func, generics },
+            args,
         };
         Ok(SubstFunIdOrPanic::Fun(sfid))
     }
@@ -1345,7 +1248,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 // this is rather an issue for the statement which creates
                 // the function pointer, by refering to a top-level function
                 // for instance.
-                let args = self.translate_arguments(span, None, args)?;
+                let args = self.translate_arguments(span, args)?;
                 let call = Call {
                     func: FnOperand::Move(p),
                     args,
@@ -1364,28 +1267,14 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     fn translate_arguments(
         &mut self,
         span: rustc_span::Span,
-        used_args: Option<Vec<bool>>,
         args: &Vec<hax::Spanned<hax::Operand>>,
     ) -> Result<Vec<Operand>, Error> {
-        let unspanned_args = args.iter().map(|x| &x.node);
-        let args: Vec<&hax::Operand> = match used_args {
-            None => unspanned_args.collect(),
-            Some(used_args) => {
-                assert!(args.len() == used_args.len());
-                unspanned_args
-                    .zip(used_args.into_iter())
-                    .filter_map(|(param, used)| if used { Some(param) } else { None })
-                    .collect()
-            }
-        };
-
         let mut t_args: Vec<Operand> = Vec::new();
-        for arg in args {
+        for arg in args.iter().map(|x| &x.node) {
             // Translate
             let op = self.translate_operand(span, arg)?;
             t_args.push(op);
         }
-
         Ok(t_args)
     }
 
