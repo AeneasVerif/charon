@@ -57,10 +57,17 @@ let cast_kind_to_string (env : ('a, 'b) fmt_env) (cast : cast_kind) : string =
   | CastScalar (src, tgt) ->
       "cast<" ^ literal_type_to_string src ^ "," ^ literal_type_to_string tgt
       ^ ">"
-  | CastFnPtr (src, tgt) ->
+  | CastFnPtr (src, tgt) | CastRawPtr (src, tgt) | CastTransmute (src, tgt) ->
       "cast<" ^ ty_to_string env src ^ "," ^ ty_to_string env tgt ^ ">"
   | CastUnsize (src, tgt) ->
       "unsize<" ^ ty_to_string env src ^ "," ^ ty_to_string env tgt ^ ">"
+
+let nullop_to_string (env : ('a, 'b) fmt_env) (op : nullop) : string =
+  match op with
+  | SizeOf -> "size_of"
+  | AlignOf -> "align_of"
+  | OffsetOf _ -> "offset_of(?)"
+  | UbChecks -> "ub_checks"
 
 let unop_to_string (env : ('a, 'b) fmt_env) (unop : unop) : string =
   match unop with
@@ -138,13 +145,20 @@ let operand_to_string (env : ('a, 'b) fmt_env) (op : operand) : string =
 let rvalue_to_string (env : ('a, 'b) fmt_env) (rv : rvalue) : string =
   match rv with
   | Use op -> operand_to_string env op
-  | RvRef (p, bk) -> (
+  | RvRef (p, bk) -> begin
       let p = place_to_string env p in
       match bk with
       | BShared -> "&" ^ p
       | BMut -> "&mut " ^ p
       | BTwoPhaseMut -> "&two-phase " ^ p
-      | BShallow -> "&shallow " ^ p)
+      | BShallow -> "&shallow " ^ p
+    end
+  | RawPtr (p, pk) -> begin
+      let p = place_to_string env p in
+      match pk with RShared -> "&raw const " ^ p | RMut -> "&raw mut " ^ p
+    end
+  | NullaryOp (op, ty) ->
+      nullop_to_string env op ^ "<" ^ ty_to_string env ty ^ ">"
   | UnaryOp (unop, op) ->
       unop_to_string env unop ^ " " ^ operand_to_string env op
   | BinaryOp (binop, op1, op2) ->
@@ -163,6 +177,9 @@ let rvalue_to_string (env : ('a, 'b) fmt_env) (rv : rvalue) : string =
   | Global global_ref ->
       let generics = generic_args_to_string env global_ref.global_generics in
       "global " ^ global_decl_id_to_string env global_ref.global_id ^ generics
+  | ShallowInitBox (op, ty) ->
+      "shallow_init_box<" ^ ty_to_string env ty ^ ">("
+      ^ operand_to_string env op ^ ")"
   | Aggregate (akind, ops) -> (
       let ops = List.map (operand_to_string env) ops in
       match akind with

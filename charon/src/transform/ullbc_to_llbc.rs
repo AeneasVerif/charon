@@ -1573,11 +1573,7 @@ fn translate_terminator(
             let st = tgt::Statement::new(src_span, st);
             Some(st.then_opt(opt_child))
         }
-        src::RawTerminator::Assert {
-            cond,
-            expected,
-            target,
-        } => {
+        src::RawTerminator::Assert { assert, target } => {
             let opt_child = translate_child_block(
                 info,
                 parent_loops,
@@ -1585,10 +1581,7 @@ fn translate_terminator(
                 terminator.span,
                 *target,
             );
-            let st = tgt::RawStatement::Assert(tgt::Assert {
-                cond: cond.clone(),
-                expected: *expected,
-            });
+            let st = tgt::RawStatement::Assert(assert.clone());
             let st = tgt::Statement::new(src_span, st);
             Some(st.then_opt(opt_child))
         }

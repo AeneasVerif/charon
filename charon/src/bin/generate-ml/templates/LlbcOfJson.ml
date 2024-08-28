@@ -10,49 +10,7 @@ open LlbcAst
 
 let rec ___ = ()
 
-and statement_of_json (id_to_file : id_to_file_map) (js : json) :
-    (statement, string) result =
-  combine_error_msgs js __FUNCTION__
-    (match js with
-    | `Assoc [ ("span", span); ("content", content) ] ->
-        let* span = span_of_json id_to_file span in
-        let* content = raw_statement_of_json id_to_file content in
-        Ok ({ span; content } : statement)
-    | _ -> Error "")
-
-and switch_of_json (id_to_file : id_to_file_map) (js : json) :
-    (switch, string) result =
-  combine_error_msgs js __FUNCTION__
-    (match js with
-    | `Assoc [ ("If", `List [ x_0; x_1; x_2 ]) ] ->
-        let* x_0 = operand_of_json x_0 in
-        let* x_1 = (statement_of_json id_to_file) x_1 in
-        let* x_2 = (statement_of_json id_to_file) x_2 in
-        Ok (If (x_0, x_1, x_2))
-    | `Assoc [ ("SwitchInt", `List [ x_0; x_1; x_2; x_3 ]) ] ->
-        let* x_0 = operand_of_json x_0 in
-        let* x_1 = integer_type_of_json x_1 in
-        let* x_2 =
-          list_of_json
-            (pair_of_json
-               (list_of_json scalar_value_of_json)
-               (statement_of_json id_to_file))
-            x_2
-        in
-        let* x_3 = (statement_of_json id_to_file) x_3 in
-        Ok (SwitchInt (x_0, x_1, x_2, x_3))
-    | `Assoc [ ("Match", `List [ x_0; x_1; x_2 ]) ] ->
-        let* x_0 = place_of_json x_0 in
-        let* x_1 =
-          list_of_json
-            (pair_of_json
-               (list_of_json variant_id_of_json)
-               (statement_of_json id_to_file))
-            x_1
-        in
-        let* x_2 = option_of_json (statement_of_json id_to_file) x_2 in
-        Ok (Match (x_0, x_1, x_2))
-    | _ -> Error "")
+(* __REPLACE0__ *)
 
 (* Hand-written because we change the `Sequence` representation *)
 and raw_statement_of_json (id_to_file : id_to_file_map) (js : json) :

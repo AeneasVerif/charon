@@ -60,7 +60,7 @@ module Ast = struct
     | Switch (op, tgts) ->
         indent ^ "switch " ^ operand_to_string env op
         ^ switch_to_string indent tgts
-    | Panic -> indent ^ "panic"
+    | Abort _ -> indent ^ "panic"
     | Return -> indent ^ "return"
     | Drop (p, bid) ->
         indent ^ "drop " ^ place_to_string env p ^ ";\n" ^ indent ^ "goto "

@@ -12,16 +12,6 @@ use derive_visitor::{Drive, DriveMut};
 use macros::{EnumAsGetters, EnumIsA, EnumToGetters, VariantIndexArity, VariantName};
 use serde::{Deserialize, Serialize};
 
-/// Asserts are special constructs introduced by Rust to perform dynamic
-/// checks, to detect out-of-bounds accesses or divisions by zero for
-/// instance. We eliminate the assertions in [crate::remove_dynamic_checks],
-/// then introduce other dynamic checks in [crate::reconstruct_asserts].
-#[derive(Debug, Clone, Serialize, Deserialize, Drive, DriveMut)]
-pub struct Assert {
-    pub cond: Operand,
-    pub expected: bool,
-}
-
 /// A raw statement: a statement without meta data.
 #[derive(
     Debug, Clone, EnumIsA, EnumToGetters, EnumAsGetters, Serialize, Deserialize, Drive, DriveMut,

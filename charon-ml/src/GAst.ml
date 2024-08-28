@@ -65,20 +65,24 @@ class ['self] map_ast_base =
 (* Below: the types need not be mutually recursive, but it makes it easier
    to derive the visitors *)
 
-(** not present in rust *)
-type assertion = { cond : operand; expected : bool }
-
 (** A function operand is used in function calls.
     It either designates a top-level function, or a place in case
     we are using function pointers stored in local variables.
  *)
-and fn_operand =
+type fn_operand =
   | FnOpRegular of fn_ptr
       (** Regular case: call to a top-level function, trait method, etc. *)
   | FnOpMove of place
       (** Use of a function pointer stored in a local variable *)
 
 and call = { func : fn_operand; args : operand list; dest : place }
+
+(** Asserts are special constructs introduced by Rust to perform dynamic
+    checks, to detect out-of-bounds accesses or divisions by zero for
+    instance. We eliminate the assertions in [crate::remove_dynamic_checks],
+    then introduce other dynamic checks in [crate::reconstruct_asserts].
+ *)
+and assertion = { cond : operand; expected : bool }
 [@@deriving
   show,
     visitors
@@ -102,12 +106,14 @@ and call = { func : fn_operand; args : operand list; dest : place }
 class ['self] iter_statement_base =
   object (_self : 'self)
     inherit [_] iter_call
+    method visit_abort_kind : 'env -> abort_kind -> unit = fun _ _ -> ()
   end
 
 (** Ancestor the {!LlbcAst.statement} and {!Charon.UllbcAst.statement} map visitors *)
 class ['self] map_statement_base =
   object (_self : 'self)
     inherit [_] map_call
+    method visit_abort_kind : 'env -> abort_kind -> abort_kind = fun _ x -> x
   end
 
 (** We use this to store information about the parameters in parent blocks.

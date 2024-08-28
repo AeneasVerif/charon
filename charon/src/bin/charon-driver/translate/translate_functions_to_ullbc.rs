@@ -525,10 +525,16 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 Ok(Rvalue::Ref(place, borrow_kind))
             }
             hax::Rvalue::ThreadLocalRef(_) => {
-                error_or_panic!(self, span, "Unsupported rvalue: thread local ref");
+                error_or_panic!(
+                    self,
+                    span,
+                    "charon does not support thread local references"
+                );
             }
-            hax::Rvalue::AddressOf(_, _) => {
-                error_or_panic!(self, span, "Unsupported rvalue: address of");
+            hax::Rvalue::AddressOf(mtbl, place) => {
+                let mtbl = if *mtbl { RefKind::Mut } else { RefKind::Shared };
+                let place = self.translate_place(span, place)?;
+                Ok(Rvalue::RawPtr(place, mtbl))
             }
             hax::Rvalue::Len(place) => {
                 let (place, ty) = self.translate_place_with_type(span, place)?;
@@ -549,97 +555,78 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             }
             hax::Rvalue::Cast(cast_kind, operand, tgt_ty) => {
                 trace!("Rvalue::Cast: {:?}", rvalue);
-                // Put aside the pointer casts (which we don't support), I think
-                // casts should only be from integers/booleans to integer/booleans.
-
                 // Translate the target type
                 let tgt_ty = self.translate_ty(span, erase_regions, tgt_ty)?;
 
                 // Translate the operand
                 let (operand, src_ty) = self.translate_operand_with_type(span, operand)?;
 
-                match (cast_kind, &src_ty, &tgt_ty) {
-                    (hax::CastKind::IntToInt, _, _) => {
-                        // Note that bool is considered as an integer by Rust.
+                match cast_kind {
+                    hax::CastKind::IntToInt
+                    | hax::CastKind::IntToFloat
+                    | hax::CastKind::FloatToInt
+                    | hax::CastKind::FloatToFloat => {
                         let tgt_ty = *tgt_ty.as_literal();
                         let src_ty = *src_ty.as_literal();
-
                         Ok(Rvalue::UnaryOp(
                             UnOp::Cast(CastKind::Scalar(src_ty, tgt_ty)),
                             operand,
                         ))
                     }
-                    (
-                        hax::CastKind::PointerCoercion(hax::PointerCoercion::Unsize),
-                        Ty::Ref(
-                            _,
-                            deref!(Ty::Adt(TypeId::Assumed(AssumedTy::Array), generics)),
-                            kind1,
-                        ),
-                        Ty::Ref(
-                            _,
-                            deref!(Ty::Adt(TypeId::Assumed(AssumedTy::Slice), generics1)),
-                            kind2,
-                        ),
-                    ) => {
-                        // In MIR terminology, we go from &[T; l] to &[T] which means we
-                        // effectively "unsize" the type, as `l` no longer appears in the
-                        // destination type. At runtime, the converse happens: the length
-                        // materializes into the fat pointer.
-                        assert!(generics.types.len() == 1 && generics.const_generics.len() == 1);
-                        assert!(generics.types[0] == generics1.types[0]);
-                        assert!(kind1 == kind2);
-                        Ok(Rvalue::UnaryOp(
+                    hax::CastKind::PtrToPtr
+                    | hax::CastKind::PointerCoercion(hax::PointerCoercion::MutToConstPointer)
+                    | hax::CastKind::PointerCoercion(hax::PointerCoercion::ArrayToPointer)
+                    | hax::CastKind::FnPtrToPtr
+                    | hax::CastKind::PointerExposeProvenance
+                    | hax::CastKind::PointerWithExposedProvenance
+                    | hax::CastKind::DynStar => Ok(Rvalue::UnaryOp(
+                        UnOp::Cast(CastKind::RawPtr(src_ty, tgt_ty)),
+                        operand,
+                    )),
+                    hax::CastKind::PointerCoercion(
+                        hax::PointerCoercion::ClosureFnPointer(_)
+                        | hax::PointerCoercion::UnsafeFnPointer
+                        | hax::PointerCoercion::ReifyFnPointer,
+                    ) => Ok(Rvalue::UnaryOp(
+                        UnOp::Cast(CastKind::FnPtr(src_ty, tgt_ty)),
+                        operand,
+                    )),
+                    hax::CastKind::Transmute => Ok(Rvalue::UnaryOp(
+                        UnOp::Cast(CastKind::Transmute(src_ty, tgt_ty)),
+                        operand,
+                    )),
+                    hax::CastKind::PointerCoercion(hax::PointerCoercion::Unsize) => {
+                        let unop = if let (
+                            Ty::Ref(
+                                _,
+                                deref!(Ty::Adt(TypeId::Assumed(AssumedTy::Array), generics)),
+                                kind1,
+                            ),
+                            Ty::Ref(
+                                _,
+                                deref!(Ty::Adt(TypeId::Assumed(AssumedTy::Slice), generics1)),
+                                kind2,
+                            ),
+                        ) = (&src_ty, &tgt_ty)
+                        {
+                            // In MIR terminology, we go from &[T; l] to &[T] which means we
+                            // effectively "unsize" the type, as `l` no longer appears in the
+                            // destination type. At runtime, the converse happens: the length
+                            // materializes into the fat pointer.
+                            assert!(
+                                generics.types.len() == 1 && generics.const_generics.len() == 1
+                            );
+                            assert!(generics.types[0] == generics1.types[0]);
+                            assert!(kind1 == kind2);
                             UnOp::ArrayToSlice(
                                 *kind1,
                                 generics.types[0].clone(),
                                 generics.const_generics[0].clone(),
-                            ),
-                            operand,
-                        ))
-                    }
-                    (hax::CastKind::PointerCoercion(hax::PointerCoercion::Unsize), _, _) => {
-                        Ok(Rvalue::UnaryOp(
-                            UnOp::Cast(CastKind::Unsize(src_ty.clone(), tgt_ty.clone())),
-                            operand,
-                        ))
-                    }
-                    (
-                        hax::CastKind::PointerCoercion(hax::PointerCoercion::ClosureFnPointer(
-                            safety,
-                        )),
-                        src_ty @ Ty::Arrow(..),
-                        tgt_ty @ Ty::Arrow(..),
-                    ) => {
-                        assert!(*safety == hax::Safety::Safe);
-                        let src_ty = src_ty.clone();
-                        let tgt_ty = tgt_ty.clone();
-                        Ok(Rvalue::UnaryOp(
-                            UnOp::Cast(CastKind::FnPtr(src_ty, tgt_ty)),
-                            operand,
-                        ))
-                    }
-                    (
-                        hax::CastKind::PointerCoercion(hax::PointerCoercion::ReifyFnPointer),
-                        src_ty @ Ty::Arrow(..),
-                        tgt_ty @ Ty::Arrow(..),
-                    ) => {
-                        let src_ty = src_ty.clone();
-                        let tgt_ty = tgt_ty.clone();
-                        Ok(Rvalue::UnaryOp(
-                            UnOp::Cast(CastKind::FnPtr(src_ty, tgt_ty)),
-                            operand,
-                        ))
-                    }
-                    _ => {
-                        error_or_panic!(
-                            self,
-                            span,
-                            format!(
-                                "Unsupported cast:\n\n- rvalue: {:?}\n\n- src={:?}\n\n- dst={:?}",
-                                rvalue, src_ty, tgt_ty
                             )
-                        )
+                        } else {
+                            UnOp::Cast(CastKind::Unsize(src_ty.clone(), tgt_ty.clone()))
+                        };
+                        Ok(Rvalue::UnaryOp(unop, operand))
                     }
                 }
             }
@@ -648,11 +635,22 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 self.translate_operand(span, left)?,
                 self.translate_operand(span, right)?,
             )),
-            hax::Rvalue::NullaryOp(nullop, _ty) => {
+            hax::Rvalue::NullaryOp(nullop, ty) => {
                 trace!("NullOp: {:?}", nullop);
-                // Nullary operations are very low-level and shouldn't be necessary
-                // unless one needs to write unsafe code.
-                error_or_panic!(self, span, "Nullary operations are not supported");
+                let ty = self.translate_ty(span, erase_regions, ty)?;
+                let op = match nullop {
+                    hax::NullOp::SizeOf => NullOp::SizeOf,
+                    hax::NullOp::AlignOf => NullOp::AlignOf,
+                    hax::NullOp::OffsetOf(fields) => NullOp::OffsetOf(
+                        fields
+                            .iter()
+                            .copied()
+                            .map(|(n, idx)| (n, translate_field_id(idx)))
+                            .collect(),
+                    ),
+                    hax::NullOp::UbChecks => NullOp::UbChecks,
+                };
+                Ok(Rvalue::NullaryOp(op, ty))
             }
             hax::Rvalue::UnaryOp(unop, operand) => Ok(Rvalue::UnaryOp(
                 translate_unaryop_kind(*unop),
@@ -772,7 +770,8 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                         Ok(Rvalue::Aggregate(akind, operands_t))
                     }
                     hax::AggregateKind::RawPtr(..) => {
-                        error_or_panic!(self, span, "Raw pointers are not supported");
+                        // TODO: replace with a call to `ptr::from_raw_parts`.
+                        error_or_panic!(self, span, "Wide raw pointers are not supported");
                     }
                     hax::AggregateKind::Coroutine(..)
                     | hax::AggregateKind::CoroutineClosure(..) => {
@@ -780,8 +779,10 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                     }
                 }
             }
-            hax::Rvalue::ShallowInitBox(_, _) => {
-                error_or_panic!(self, span, "Unsupported rvalue: shallow init box");
+            hax::Rvalue::ShallowInitBox(op, ty) => {
+                let op = self.translate_operand(span, op)?;
+                let ty = self.translate_ty(span, erase_regions, ty)?;
+                Ok(Rvalue::ShallowInitBox(op, ty))
             }
         }
     }
@@ -1182,8 +1183,10 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 let cond = self.translate_operand(rustc_span, cond)?;
                 let target = self.translate_basic_block_id(*target);
                 RawTerminator::Assert {
-                    cond,
-                    expected: *expected,
+                    assert: Assert {
+                        cond,
+                        expected: *expected,
+                    },
                     target,
                 }
             }

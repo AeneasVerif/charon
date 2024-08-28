@@ -66,6 +66,16 @@ impl<C: AstFormatter> FmtWithCtx<C> for AnyTransItem<'_> {
     }
 }
 
+impl<C: AstFormatter> FmtWithCtx<C> for Assert {
+    fn fmt_with_ctx(&self, ctx: &C) -> String {
+        format!(
+            "assert({} == {})",
+            self.cond.fmt_with_ctx(ctx),
+            self.expected,
+        )
+    }
+}
+
 impl<C: AstFormatter> FmtWithCtx<C> for BlockData {
     fn fmt_with_ctx_and_indent(&self, tab: &str, ctx: &C) -> String {
         let mut out: Vec<String> = Vec::new();
@@ -103,12 +113,19 @@ impl<C: AstFormatter> FmtWithCtx<C> for CastKind {
     fn fmt_with_ctx(&self, ctx: &C) -> String {
         match self {
             CastKind::Scalar(src, tgt) => format!("cast<{src}, {tgt}>"),
-            CastKind::FnPtr(src, tgt) => {
+            CastKind::FnPtr(src, tgt) | CastKind::RawPtr(src, tgt) => {
                 format!("cast<{}, {}>", src.fmt_with_ctx(ctx), tgt.fmt_with_ctx(ctx))
             }
             CastKind::Unsize(src, tgt) => {
                 format!(
                     "unsize_cast<{}, {}>",
+                    src.fmt_with_ctx(ctx),
+                    tgt.fmt_with_ctx(ctx)
+                )
+            }
+            CastKind::Transmute(src, tgt) => {
+                format!(
+                    "transmute<{}, {}>",
                     src.fmt_with_ctx(ctx),
                     tgt.fmt_with_ctx(ctx)
                 )
@@ -666,6 +683,17 @@ impl<C: AstFormatter> FmtWithCtx<C> for Name {
     }
 }
 
+impl<C: AstFormatter> FmtWithCtx<C> for NullOp {
+    fn fmt_with_ctx(&self, _ctx: &C) -> String {
+        match self {
+            NullOp::SizeOf => "size_of".to_string(),
+            NullOp::AlignOf => "align_of".to_string(),
+            NullOp::OffsetOf(_) => "offset_of(?)".to_string(),
+            NullOp::UbChecks => "ub_checks".to_string(),
+        }
+    }
+}
+
 impl<C: AstFormatter> FmtWithCtx<C> for Operand {
     fn fmt_with_ctx(&self, ctx: &C) -> String {
         match self {
@@ -792,11 +820,18 @@ impl<C: AstFormatter> FmtWithCtx<C> for Rvalue {
                 }
                 BorrowKind::Shallow => format!("&shallow {}", place.fmt_with_ctx(ctx)),
             },
+            Rvalue::RawPtr(place, mutability) => match mutability {
+                RefKind::Shared => format!("&raw const {}", place.fmt_with_ctx(ctx)),
+                RefKind::Mut => format!("&raw mut {}", place.fmt_with_ctx(ctx)),
+            },
+            Rvalue::BinaryOp(binop, x, y) => {
+                format!("{} {} {}", x.fmt_with_ctx(ctx), binop, y.fmt_with_ctx(ctx))
+            }
             Rvalue::UnaryOp(unop, x) => {
                 format!("{}({})", unop.fmt_with_ctx(ctx), x.fmt_with_ctx(ctx))
             }
-            Rvalue::BinaryOp(binop, x, y) => {
-                format!("{} {} {}", x.fmt_with_ctx(ctx), binop, y.fmt_with_ctx(ctx))
+            Rvalue::NullaryOp(op, ty) => {
+                format!("{}<{}>", op.fmt_with_ctx(ctx), ty.fmt_with_ctx(ctx))
             }
             Rvalue::Discriminant(p, _) => {
                 format!("@discriminant({})", p.fmt_with_ctx(ctx),)
@@ -847,6 +882,13 @@ impl<C: AstFormatter> FmtWithCtx<C> for Rvalue {
             Rvalue::Len(place, ..) => format!("len({})", place.fmt_with_ctx(ctx)),
             Rvalue::Repeat(op, _ty, cg) => {
                 format!("[{}; {}]", op.fmt_with_ctx(ctx), cg.fmt_with_ctx(ctx))
+            }
+            Rvalue::ShallowInitBox(op, ty) => {
+                format!(
+                    "shallow_init_box::<{}>({})",
+                    ty.fmt_with_ctx(ctx),
+                    op.fmt_with_ctx(ctx)
+                )
             }
         }
     }
@@ -909,12 +951,7 @@ impl<C: AstFormatter> FmtWithCtx<C> for llbc::Statement {
             RawStatement::Drop(place) => {
                 format!("{}drop {}", tab, place.fmt_with_ctx(ctx))
             }
-            RawStatement::Assert(assert) => format!(
-                "{}assert({} == {})",
-                tab,
-                assert.cond.fmt_with_ctx(ctx),
-                assert.expected,
-            ),
+            RawStatement::Assert(assert) => format!("{}{}", tab, assert.fmt_with_ctx(ctx),),
             RawStatement::Call(call) => {
                 let (call_s, _) = fmt_call(ctx, call);
                 format!("{tab}{} := {call_s}", call.dest.fmt_with_ctx(ctx),)
@@ -1061,16 +1098,9 @@ impl<C: AstFormatter> FmtWithCtx<C> for Terminator {
                 };
                 format!("{} := {call_s} -> {target}", call.dest.fmt_with_ctx(ctx),)
             }
-            RawTerminator::Assert {
-                cond,
-                expected,
-                target,
-            } => format!(
-                "assert({} == {}) -> bb{}",
-                cond.fmt_with_ctx(ctx),
-                expected,
-                target
-            ),
+            RawTerminator::Assert { assert, target } => {
+                format!("{} -> bb{}", assert.fmt_with_ctx(ctx), target)
+            }
         }
     }
 }
@@ -1286,8 +1316,8 @@ impl<C: AstFormatter> FmtWithCtx<C> for Ty {
                 }
             },
             Ty::RawPtr(ty, kind) => match kind {
-                RefKind::Mut => format!("*const {}", ty.fmt_with_ctx(ctx)),
-                RefKind::Shared => format!("*mut {}", ty.fmt_with_ctx(ctx)),
+                RefKind::Shared => format!("*const {}", ty.fmt_with_ctx(ctx)),
+                RefKind::Mut => format!("*mut {}", ty.fmt_with_ctx(ctx)),
             },
             Ty::TraitType(trait_ref, name) => {
                 format!("{}::{name}", trait_ref.fmt_with_ctx(ctx),)
@@ -1464,6 +1494,17 @@ impl std::fmt::Display for ConstantExpr {
     }
 }
 
+impl std::fmt::Display for FloatTy {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::result::Result<(), std::fmt::Error> {
+        match self {
+            FloatTy::F16 => write!(f, "f16"),
+            FloatTy::F32 => write!(f, "f32"),
+            FloatTy::F64 => write!(f, "f64"),
+            FloatTy::F128 => write!(f, "f128"),
+        }
+    }
+}
+
 impl std::fmt::Display for IntegerTy {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::result::Result<(), std::fmt::Error> {
         match self {
@@ -1479,17 +1520,6 @@ impl std::fmt::Display for IntegerTy {
             IntegerTy::U32 => write!(f, "u32"),
             IntegerTy::U64 => write!(f, "u64"),
             IntegerTy::U128 => write!(f, "u128"),
-        }
-    }
-}
-
-impl std::fmt::Display for FloatTy {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::result::Result<(), std::fmt::Error> {
-        match self {
-            FloatTy::F16 => write!(f, "f16"),
-            FloatTy::F32 => write!(f, "f32"),
-            FloatTy::F64 => write!(f, "f64"),
-            FloatTy::F128 => write!(f, "f128"),
         }
     }
 }

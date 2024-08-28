@@ -126,7 +126,7 @@ fn test_crate::convert(@1: i32) -> i64
 
 struct core::ptr::non_null::NonNull<T> =
 {
-  pointer: *mut T
+  pointer: *const T
 }
 
 struct core::marker::PhantomData<T> = {}

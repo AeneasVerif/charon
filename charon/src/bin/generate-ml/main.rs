@@ -40,7 +40,7 @@ fn make_ocaml_ident(name: &str) -> String {
     let mut name = name.to_case(Case::Snake);
     if matches!(
         &*name,
-        "virtual" | "bool" | "char" | "struct" | "type" | "let" | "fun" | "open" | "rec"
+        "virtual" | "bool" | "char" | "struct" | "type" | "let" | "fun" | "open" | "rec" | "assert"
     ) {
         name += "_";
     }
@@ -57,42 +57,52 @@ fn type_name_to_ocaml_ident(item_meta: &ItemMeta) -> String {
 
 /// Traverse all types to figure out which ones transitively contain the given id.
 fn contains_id(crate_data: &TranslatedCrate, haystack: TypeDeclId) -> HashMap<TypeDeclId, bool> {
-    enum ContainsRawSpan {
-        Yes,
-        No,
-        Processing,
-    }
-    use ContainsRawSpan::*;
     fn traverse_ty(
         crate_data: &TranslatedCrate,
         ty: &TypeDecl,
-        map: &mut HashMap<TypeDeclId, ContainsRawSpan>,
-    ) -> bool {
-        match map.get(&ty.def_id) {
-            Some(Yes) => return true,
-            Some(No | Processing) => return false,
-            None => {}
+        stack: &mut Vec<TypeDeclId>,
+        map: &mut HashMap<TypeDeclId, bool>,
+    ) -> Result<bool, TypeDeclId> {
+        if let Some(x) = map.get(&ty.def_id) {
+            return Ok(*x);
         }
-        map.insert(ty.def_id, Processing);
+        if stack.contains(&ty.def_id) {
+            return Err(ty.def_id);
+        }
+
+        stack.push(ty.def_id);
+        let exploring_def_id = ty.def_id;
         let mut contains = false;
+        let mut requires_parent = None;
         ty.drive(&mut derive_visitor::visitor_enter_fn(|id: &TypeDeclId| {
             if let Some(ty) = crate_data.type_decls.get(*id) {
-                if traverse_ty(crate_data, ty, map) {
-                    contains = true;
+                match traverse_ty(crate_data, ty, stack, map) {
+                    Ok(true) => contains = true,
+                    Err(loop_id) if loop_id != exploring_def_id && stack.contains(&loop_id) => {
+                        requires_parent = Some(loop_id)
+                    }
+                    _ => {}
                 }
             }
         }));
-        map.insert(ty.def_id, if contains { Yes } else { No });
-        contains
+        stack.pop();
+
+        if contains {
+            map.insert(ty.def_id, true);
+            Ok(true)
+        } else if let Some(id) = requires_parent {
+            Err(id)
+        } else {
+            map.insert(ty.def_id, false);
+            Ok(false)
+        }
     }
     let mut map = HashMap::new();
-    map.insert(haystack, Yes);
+    map.insert(haystack, true);
     for ty in &crate_data.type_decls {
-        traverse_ty(crate_data, ty, &mut map);
+        let _ = traverse_ty(crate_data, ty, &mut Vec::new(), &mut map);
     }
-    map.into_iter()
-        .map(|(id, x)| (id, matches!(x, Yes)))
-        .collect()
+    map.into_iter().map(|(id, x)| (id, x)).collect()
 }
 
 struct GenerateCtx<'a> {
@@ -215,8 +225,8 @@ fn convert_vars<'a>(ctx: &GenerateCtx, fields: impl IntoIterator<Item = &'a Fiel
         .into_iter()
         .filter(|f| !f.is_opaque())
         .map(|f| {
-            let name = f.name.as_deref().unwrap();
-            let rename = f.renamed_name().unwrap();
+            let name = make_ocaml_ident(f.name.as_deref().unwrap());
+            let rename = make_ocaml_ident(f.renamed_name().unwrap());
             let convert = type_to_ocaml_call(ctx, &f.ty);
             format!("let* {rename} = {convert} {name} in")
         })
@@ -285,6 +295,13 @@ fn build_function(ctx: &GenerateCtx, decl: &TypeDecl, branches: &str) -> String 
 }
 
 fn type_decl_to_json_deserializer(ctx: &GenerateCtx, decl: &TypeDecl) -> String {
+    let return_ty = type_name_to_ocaml_ident(&decl.item_meta);
+    let return_ty = if decl.generics.types.is_empty() {
+        return_ty
+    } else {
+        format!("_ {return_ty}")
+    };
+
     let branches = match &decl.kind {
         TypeDeclKind::Struct(fields) if fields.is_empty() => {
             build_branch(ctx, "`Null", fields, "()")
@@ -311,9 +328,17 @@ fn type_decl_to_json_deserializer(ctx: &GenerateCtx, decl: &TypeDecl) -> String 
             for (i, f) in fields.iter_mut().enumerate() {
                 f.name = Some(format!("x{i}"));
             }
-            let pat: String = fields.iter().map(|f| f.name.as_deref().unwrap()).join(";");
+            let pat: String = fields
+                .iter()
+                .map(|f| f.name.as_deref().unwrap())
+                .map(|n| make_ocaml_ident(n))
+                .join(";");
             let pat = format!("`List [ {pat} ]");
-            let construct = fields.iter().map(|f| f.renamed_name().unwrap()).join(", ");
+            let construct = fields
+                .iter()
+                .map(|f| f.renamed_name().unwrap())
+                .map(|n| make_ocaml_ident(n))
+                .join(", ");
             let construct = format!("( {construct} )");
             build_branch(ctx, &pat, &fields, &construct)
         }
@@ -332,7 +357,11 @@ fn type_decl_to_json_deserializer(ctx: &GenerateCtx, decl: &TypeDecl) -> String 
                 .iter()
                 .map(|f| {
                     let name = f.name.as_ref().unwrap();
-                    let var = if f.is_opaque() { "_" } else { name };
+                    let var = if f.is_opaque() {
+                        "_"
+                    } else {
+                        &make_ocaml_ident(name)
+                    };
                     format!("(\"{name}\", {var});")
                 })
                 .join("\n");
@@ -341,8 +370,9 @@ fn type_decl_to_json_deserializer(ctx: &GenerateCtx, decl: &TypeDecl) -> String 
                 .iter()
                 .filter(|f| !f.is_opaque())
                 .map(|f| f.renamed_name().unwrap())
+                .map(|n| make_ocaml_ident(n))
                 .join("; ");
-            let construct = format!("{{ {construct} }}");
+            let construct = format!("({{ {construct} }} : {return_ty})");
             build_branch(ctx, &pat, fields, &construct)
         }
         TypeDeclKind::Enum(variants) => {
@@ -366,7 +396,7 @@ fn type_decl_to_json_deserializer(ctx: &GenerateCtx, decl: &TypeDecl) -> String 
                                 var
                             } else {
                                 for (i, f) in fields.iter_mut().enumerate() {
-                                    f.name = Some(format!("x{i}"));
+                                    f.name = Some(format!("x_{i}"));
                                 }
                                 let pat =
                                     fields.iter().map(|f| f.name.as_ref().unwrap()).join("; ");
@@ -378,15 +408,22 @@ fn type_decl_to_json_deserializer(ctx: &GenerateCtx, decl: &TypeDecl) -> String 
                                 .iter()
                                 .map(|f| {
                                     let name = f.name.as_ref().unwrap();
-                                    let var = if f.is_opaque() { "_" } else { name };
+                                    let var = if f.is_opaque() {
+                                        "_"
+                                    } else {
+                                        &make_ocaml_ident(name)
+                                    };
                                     format!("(\"{name}\", {var});")
                                 })
                                 .join(" ");
                             format!("`Assoc [ {pat} ]")
                         };
                         let pat = format!("`Assoc [ (\"{name}\", {inner_pat}) ]");
-                        let construct_fields =
-                            fields.iter().map(|f| f.name.as_ref().unwrap()).join(", ");
+                        let construct_fields = fields
+                            .iter()
+                            .map(|f| f.name.as_ref().unwrap())
+                            .map(|n| make_ocaml_ident(n))
+                            .join(", ");
                         let construct = format!("{rename} ({construct_fields})");
                         build_branch(ctx, &pat, &fields, &construct)
                     }
@@ -655,7 +692,7 @@ fn main() -> Result<()> {
             template: dir.join("templates/GAst.ml"),
             target: dir.join("generated/GAst.ml"),
             markers: &[
-                (GenerationKind::TypeDecl(true), &["FnOperand", "Call"]),
+                (GenerationKind::TypeDecl(false), &["FnOperand", "Call", "Assert"]),
                 (GenerationKind::TypeDecl(false), &[
                     "ParamsInfo",
                     "ClosureKind",
@@ -674,12 +711,13 @@ fn main() -> Result<()> {
             template: dir.join("templates/Expressions.ml"),
             target: dir.join("generated/Expressions.ml"),
             markers: &[
-                (GenerationKind::TypeDecl(false), &["AssumedFunId"]),
+                (GenerationKind::TypeDecl(false), &["AssumedFunId", "AbortKind"]),
                 (GenerationKind::TypeDecl(false), &["FieldProjKind", "ProjectionElem", "Projection", "Place"]),
                 (GenerationKind::TypeDecl(false), &["BorrowKind", "BinOp"]),
                 (GenerationKind::TypeDecl(false), &[
                     "CastKind",
                     "UnOp",
+                    "NullOp",
                     "RawConstantExpr",
                     "ConstantExpr",
                     "FnPtr",
@@ -718,10 +756,43 @@ fn main() -> Result<()> {
             ],
         },
         GenerateCodeFor {
+            template: dir.join("templates/LlbcAst.ml"),
+            target: dir.join("generated/LlbcAst.ml"),
+            markers: &[
+                (GenerationKind::TypeDecl(true), &[
+                    "charon_lib::ast::llbc_ast::Statement",
+                    "charon_lib::ast::llbc_ast::Switch",
+                ]),
+            ],
+        },
+        GenerateCodeFor {
+            template: dir.join("templates/UllbcAst.ml"),
+            target: dir.join("generated/UllbcAst.ml"),
+            markers: &[
+                (GenerationKind::TypeDecl(false), &[
+                    "charon_lib::ast::ullbc_ast::Statement",
+                    "charon_lib::ast::ullbc_ast::RawStatement",
+                ]),
+                (GenerationKind::TypeDecl(false), &[
+                    "charon_lib::ast::ullbc_ast::SwitchTargets",
+                ]),
+                (GenerationKind::TypeDecl(false), &[
+                    "charon_lib::ast::ullbc_ast::Terminator",
+                    "charon_lib::ast::ullbc_ast::RawTerminator",
+                ]),
+                (GenerationKind::TypeDecl(false), &[
+                    "charon_lib::ast::ullbc_ast::BlockData",
+                    "charon_lib::ast::ullbc_ast::BodyContents",
+                ]),
+            ],
+        },
+        GenerateCodeFor {
             template: dir.join("templates/GAstOfJson.ml"),
             target: dir.join("generated/GAstOfJson.ml"),
             markers: &[
                 (GenerationKind::OfJson, &[
+                    "FileName",
+                    "Loc",
                     "Span",
                     "InlineAttr",
                     "Attribute",
@@ -736,8 +807,6 @@ fn main() -> Result<()> {
                     "RefKind",
                     "AssumedTy",
                     "TypeId",
-                ]),
-                (GenerationKind::OfJson, &[
                     "ConstGeneric",
                     "Ty",
                     "ExistentialPredicate",
@@ -749,10 +818,6 @@ fn main() -> Result<()> {
                     "Field",
                     "Variant",
                     "TypeDeclKind",
-                ]),
-                (GenerationKind::OfJson, &["Loc"]),
-                (GenerationKind::OfJson, &["FileName"]),
-                (GenerationKind::OfJson, &[
                     "TraitClause",
                     "OutlivesPred",
                     "RegionOutlives",
@@ -771,6 +836,9 @@ fn main() -> Result<()> {
                     "Place",
                     "BorrowKind",
                     "CastKind",
+                    "AbortKind",
+                    "Assert",
+                    "NullOp",
                     "UnOp",
                     "BinOp",
                     "Literal",
@@ -791,13 +859,36 @@ fn main() -> Result<()> {
                     "Call",
                     "GExprBody",
                     "ItemKind",
-                ]),
-                (GenerationKind::OfJson, &[
                     "TraitDecl",
                     "TraitImpl",
                     "GDeclarationGroup",
                     "DeclarationGroup",
                     "AnyTransId",
+                ]),
+            ],
+        },
+        GenerateCodeFor {
+            template: dir.join("templates/LlbcOfJson.ml"),
+            target: dir.join("generated/LlbcOfJson.ml"),
+            markers: &[
+                (GenerationKind::OfJson, &[
+                    "charon_lib::ast::llbc_ast::Statement",
+                    "charon_lib::ast::llbc_ast::Switch",
+                ]),
+            ],
+        },
+        GenerateCodeFor {
+            template: dir.join("templates/UllbcOfJson.ml"),
+            target: dir.join("generated/UllbcOfJson.ml"),
+            markers: &[
+                (GenerationKind::OfJson, &[
+                    "charon_lib::ast::ullbc_ast::Statement",
+                    "charon_lib::ast::ullbc_ast::RawStatement",
+                    "charon_lib::ast::ullbc_ast::SwitchTargets",
+                    "charon_lib::ast::ullbc_ast::Terminator",
+                    "charon_lib::ast::ullbc_ast::RawTerminator",
+                    "charon_lib::ast::ullbc_ast::BlockData",
+                    "charon_lib::ast::ullbc_ast::BodyContents",
                 ]),
             ],
         },

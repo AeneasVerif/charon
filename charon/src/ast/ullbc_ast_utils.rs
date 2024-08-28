@@ -2,6 +2,7 @@
 use crate::ids::Vector;
 use crate::meta::Span;
 use crate::ullbc_ast::*;
+use derive_visitor::{visitor_enter_fn_mut, DriveMut};
 use take_mut::take;
 
 impl SwitchTargets {
@@ -35,35 +36,6 @@ impl Terminator {
 }
 
 impl BlockData {
-    /// Visit the operands in an rvalue and generate statements.
-    /// Used below in [BlockData::transform_operands].
-    /// TODO: use visitors
-    fn transform_rvalue_operands<F: FnMut(&Span, &mut Vec<Statement>, &mut Operand)>(
-        span: &Span,
-        nst: &mut Vec<Statement>,
-        rval: &mut Rvalue,
-        f: &mut F,
-    ) {
-        match rval {
-            Rvalue::Use(op) | Rvalue::UnaryOp(_, op) => f(span, nst, op),
-            Rvalue::BinaryOp(_, o1, o2) => {
-                f(span, nst, o1);
-                f(span, nst, o2);
-            }
-            Rvalue::Aggregate(_, ops) => {
-                for op in ops {
-                    f(span, nst, op);
-                }
-            }
-            Rvalue::Repeat(op, _, _) => {
-                f(span, nst, op);
-            }
-            Rvalue::Global(..) | Rvalue::Discriminant(..) | Rvalue::Ref(_, _) | Rvalue::Len(..) => {
-                // No operands: nothing to do
-            }
-        }
-    }
-
     /// See [body_transform_operands]
     pub fn transform_operands<F: FnMut(&Span, &mut Vec<Statement>, &mut Operand)>(
         mut self,
@@ -74,48 +46,20 @@ impl BlockData {
 
         // Explore the operands in the statements
         for mut st in self.statements {
-            let span = &st.span;
-            match &mut st.content {
-                RawStatement::Assign(_, rvalue) => {
-                    BlockData::transform_rvalue_operands(span, &mut nst, rvalue, f);
-                }
-                RawStatement::FakeRead(_)
-                | RawStatement::SetDiscriminant(_, _)
-                | RawStatement::StorageDead(_)
-                | RawStatement::Deinit(_)
-                | RawStatement::Error(_) => {
-                    // No operands: nothing to do
-                }
-            }
+            st.content
+                .drive_mut(&mut visitor_enter_fn_mut(|op: &mut Operand| {
+                    f(&st.span, &mut nst, op)
+                }));
             // Add the statement to the vector of statements
             nst.push(st)
         }
 
         // Explore the terminator
-        let span = &self.terminator.span;
-        match &mut self.terminator.content {
-            RawTerminator::Switch { discr, targets: _ } => {
-                f(span, &mut nst, discr);
-            }
-            RawTerminator::Call { call, target: _ } => {
-                for arg in &mut call.args {
-                    f(span, &mut nst, arg);
-                }
-            }
-            RawTerminator::Assert {
-                cond,
-                expected: _,
-                target: _,
-            } => {
-                f(span, &mut nst, cond);
-            }
-            RawTerminator::Abort(..)
-            | RawTerminator::Return
-            | RawTerminator::Goto { .. }
-            | RawTerminator::Drop { .. } => {
-                // Nothing to do
-            }
-        };
+        self.terminator
+            .content
+            .drive_mut(&mut visitor_enter_fn_mut(|op: &mut Operand| {
+                f(&self.terminator.span, &mut nst, op)
+            }));
 
         // Update the vector of statements
         self.statements = nst;

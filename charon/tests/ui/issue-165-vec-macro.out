@@ -1,0 +1,46 @@
+# Final LLBC before serialization:
+
+opaque type alloc::vec::Vec<T, A>
+
+struct alloc::alloc::Global = {}
+
+unsafe fn alloc::alloc::exchange_malloc(@1: usize, @2: usize) -> *mut u8
+
+fn alloc::slice::{Slice<T>}::into_vec<T, A>(@1: alloc::boxed::Box<Slice<T>>) -> alloc::vec::Vec<T, A>
+
+fn test_crate::foo()
+{
+    let @0: (); // return
+    let _v@1: alloc::vec::Vec<i32, alloc::alloc::Global>; // local
+    let @2: alloc::boxed::Box<Slice<i32>>; // anonymous local
+    let @3: alloc::boxed::Box<Array<i32, 1 : usize>>; // anonymous local
+    let @4: usize; // anonymous local
+    let @5: usize; // anonymous local
+    let @6: *mut u8; // anonymous local
+    let @7: alloc::boxed::Box<Array<i32, 1 : usize>>; // anonymous local
+    let @8: (); // anonymous local
+
+    @4 := size_of<Array<i32, 1 : usize>>
+    @5 := align_of<Array<i32, 1 : usize>>
+    @6 := alloc::alloc::exchange_malloc(move (@4), move (@5))
+    @7 := shallow_init_box::<Array<i32, 1 : usize>>(move (@6))
+    deref_box (@7) := [const (1 : i32); 1 : usize]
+    @3 := move (@7)
+    @2 := unsize_cast<alloc::boxed::Box<Array<i32, 1 : usize>>, alloc::boxed::Box<Slice<i32>>>(move (@3))
+    drop @3
+    drop @7
+    drop @7
+    drop @3
+    _v@1 := alloc::slice::{Slice<T>}::into_vec<i32, alloc::alloc::Global>(move (@2))
+    drop @2
+    @fake_read(_v@1)
+    @8 := ()
+    @0 := move (@8)
+    drop _v@1
+    drop _v@1
+    @0 := ()
+    return
+}
+
+
+
