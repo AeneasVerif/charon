@@ -54,7 +54,7 @@ fn boxes() {
 // remove most of our (indeed useless) assignments.
 static STEAL: [(); transmute([1, 0]) as usize] = [(); 1];
 const fn transmute(x: [u32; 2]) -> u64 {
-    // When optimized, this becomes a uilt-in cast. Otherwise this is just a call to `transmute`.
+    // When optimized, this becomes a built-in cast. Otherwise this is just a call to `transmute`.
     unsafe { std::mem::transmute::<[u32; 2], u64>(x) }
 }
 

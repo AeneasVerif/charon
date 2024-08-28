@@ -179,6 +179,8 @@ pub enum CastKind {
     ///
     /// The special case of `&[T; N]` -> `&[T]` coercion is caught by `UnOp::ArrayToSlice`.
     Unsize(Ty, Ty),
+    /// Reinterprets the bits of a value of one type as another type, i.e. exactly what
+    /// [`std::mem::transmute`] does.
     Transmute(Ty, Ty),
 }
 
@@ -465,7 +467,7 @@ pub struct ConstantExpr {
     Debug, Clone, EnumToGetters, EnumAsGetters, EnumIsA, Serialize, Deserialize, Drive, DriveMut,
 )]
 pub enum Rvalue {
-    /// Returns the operand unchanged.
+    /// Lifts an operand as an rvalue.
     Use(Operand),
     /// Takes a reference to the given place.
     #[charon::rename("RvRef")]
