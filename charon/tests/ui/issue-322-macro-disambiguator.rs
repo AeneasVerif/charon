@@ -1,5 +1,3 @@
-//@ known-failure
-
 macro_rules! transmute {
     () => {{
         struct AssertIsAsBytes;

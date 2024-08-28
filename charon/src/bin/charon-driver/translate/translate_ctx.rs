@@ -356,10 +356,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         let disambiguator = Disambiguator::new(data.disambiguator as usize);
         use rustc_hir::definitions::DefPathData;
         let path_elem = match &data.data {
-            DefPathData::TypeNs(symbol) => {
-                error_assert!(self, span, data.disambiguator == 0); // Sanity check
-                Some(PathElem::Ident(symbol.to_string(), disambiguator))
-            }
+            DefPathData::TypeNs(symbol) => Some(PathElem::Ident(symbol.to_string(), disambiguator)),
             DefPathData::ValueNs(symbol) => {
                 // I think `disambiguator != 0` only with names introduced by macros (though
                 // not sure).
@@ -413,8 +410,6 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
                 None
             }
             DefPathData::MacroNs(symbol) => {
-                error_assert!(self, span, data.disambiguator == 0); // Sanity check
-
                 // There may be namespace collisions between, say, function
                 // names and macros (not sure). However, this isn't much
                 // of an issue here, because for now we don't expose macros
