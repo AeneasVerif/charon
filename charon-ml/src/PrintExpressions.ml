@@ -176,9 +176,6 @@ let rvalue_to_string (env : ('a, 'b) fmt_env) (rv : rvalue) : string =
   | Global global_ref ->
       let generics = generic_args_to_string env global_ref.global_generics in
       "global " ^ global_decl_id_to_string env global_ref.global_id ^ generics
-  | ShallowInitBox (op, ty) ->
-      "shallow_init_box<" ^ ty_to_string env ty ^ ">("
-      ^ operand_to_string env op ^ ")"
   | Aggregate (akind, ops) -> (
       let ops = List.map (operand_to_string env) ops in
       match akind with

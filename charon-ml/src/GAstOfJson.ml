@@ -1076,10 +1076,6 @@ and rvalue_of_json (js : json) : (rvalue, string) result =
         let* x_1 = ty_of_json x_1 in
         let* x_2 = option_of_json const_generic_of_json x_2 in
         Ok (Len (x_0, x_1, x_2))
-    | `Assoc [ ("ShallowInitBox", `List [ x_0; x_1 ]) ] ->
-        let* x_0 = operand_of_json x_0 in
-        let* x_1 = ty_of_json x_1 in
-        Ok (ShallowInitBox (x_0, x_1))
     | _ -> Error "")
 
 and params_info_of_json (js : json) : (params_info, string) result =

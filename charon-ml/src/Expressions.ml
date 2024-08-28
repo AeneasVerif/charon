@@ -482,8 +482,6 @@ and rvalue =
           rustc introduces a check that the length of the slice is exactly equal
           to 1 and that we preserve.
        *)
-  | ShallowInitBox of operand * ty
-      (** Transmutes a `*mut u8` (obtained from `malloc`) into shallow-initialized `Box<T>`. *)
 [@@deriving
   show,
     visitors

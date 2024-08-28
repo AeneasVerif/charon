@@ -270,7 +270,7 @@ pub(crate) struct BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     /// indices.
     pub type_vars_map: HashMap<u32, TypeVarId>,
     /// The "regular" variables
-    pub vars: Vector<VarId, ast::Var>,
+    pub vars: Vector<VarId, Var>,
     /// The map from rust variable indices to translated variables indices.
     pub vars_map: HashMap<usize, VarId>,
     /// The const generic variables

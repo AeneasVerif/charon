@@ -7,6 +7,7 @@ pub mod insert_assign_return_unit;
 pub mod lift_associated_item_clauses;
 pub mod ops_to_function_calls;
 pub mod reconstruct_asserts;
+pub mod reconstruct_boxes;
 pub mod remove_arithmetic_overflow_checks;
 pub mod remove_drop_never;
 pub mod remove_dynamic_checks;
@@ -46,6 +47,9 @@ pub static LLBC_PASSES: &[&dyn ctx::LlbcPass] = &[
     // introduced by Rustc use a special "assert" construct. Because of
     // this, it must happen *before* the [reconstruct_asserts] pass.
     &remove_arithmetic_overflow_checks::Transform,
+    // # Micro-pass: reconstruct the special `Box::new` operations inserted e.g. in the `vec![]`
+    // macro.
+    &reconstruct_boxes::Transform,
     // # Micro-pass: reconstruct the asserts
     &reconstruct_asserts::Transform,
     // # Micro-pass: `panic!()` expands to a new function definition each time. This pass cleans
