@@ -921,13 +921,27 @@ and assumed_fun_id_of_json (js : json) : (assumed_fun_id, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
     | `String "BoxNew" -> Ok BoxNew
-    | `String "ArrayIndexShared" -> Ok ArrayIndexShared
-    | `String "ArrayIndexMut" -> Ok ArrayIndexMut
     | `String "ArrayToSliceShared" -> Ok ArrayToSliceShared
     | `String "ArrayToSliceMut" -> Ok ArrayToSliceMut
     | `String "ArrayRepeat" -> Ok ArrayRepeat
-    | `String "SliceIndexShared" -> Ok SliceIndexShared
-    | `String "SliceIndexMut" -> Ok SliceIndexMut
+    | `Assoc [ ("Index", index) ] ->
+        let* index = builtin_index_op_of_json index in
+        Ok (Index index)
+    | _ -> Error "")
+
+and builtin_index_op_of_json (js : json) : (builtin_index_op, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with
+    | `Assoc
+        [
+          ("is_array", is_array);
+          ("mutability", mutability);
+          ("is_range", is_range);
+        ] ->
+        let* is_array = bool_of_json is_array in
+        let* mutability = ref_kind_of_json mutability in
+        let* is_range = bool_of_json is_range in
+        Ok ({ is_array; mutability; is_range } : builtin_index_op)
     | _ -> Error "")
 
 and fun_id_of_json (js : json) : (fun_id, string) result =

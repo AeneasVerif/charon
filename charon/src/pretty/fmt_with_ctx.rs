@@ -196,7 +196,7 @@ impl<C: AstFormatter> FmtWithCtx<C> for FnPtr {
                 format!("{}", ctx.format_object(*def_id),)
             }
             FunIdOrTraitMethodRef::Fun(FunId::Builtin(builtin)) => {
-                format!("@{}", builtin.variant_name())
+                format!("@{}", builtin)
             }
             FunIdOrTraitMethodRef::Trait(trait_ref, method_id, _) => {
                 format!("{}::{}", trait_ref.fmt_with_ctx(ctx), &method_id.0)
@@ -759,7 +759,40 @@ impl<C: AstFormatter> FmtWithCtx<C> for Place {
                         out = format!("({out}).@closure_state_field_{field_id}");
                     }
                 },
-                ProjectionElem::Index(operand, _) => out = format!("({out})[{}]", operand),
+                ProjectionElem::Index {
+                    offset,
+                    from_end: true,
+                    ..
+                } => out = format!("({out})[-{}]", offset.fmt_with_ctx(ctx)),
+                ProjectionElem::Index {
+                    offset,
+                    from_end: false,
+                    ..
+                } => out = format!("({out})[{}]", offset.fmt_with_ctx(ctx)),
+                ProjectionElem::Subslice {
+                    from,
+                    to,
+                    from_end: true,
+                    ..
+                } => {
+                    out = format!(
+                        "({out})[{}..-{}]",
+                        from.fmt_with_ctx(ctx),
+                        to.fmt_with_ctx(ctx)
+                    )
+                }
+                ProjectionElem::Subslice {
+                    from,
+                    to,
+                    from_end: false,
+                    ..
+                } => {
+                    out = format!(
+                        "({out})[{}..{}]",
+                        from.fmt_with_ctx(ctx),
+                        to.fmt_with_ctx(ctx)
+                    )
+                }
             }
         }
 
@@ -1495,6 +1528,28 @@ impl std::fmt::Display for BorrowKind {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::result::Result<(), std::fmt::Error> {
         // Reuse the derived `Debug` impl to get the variant name.
         write!(f, "{self:?}")
+    }
+}
+
+impl std::fmt::Display for BuiltinFunId {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::result::Result<(), std::fmt::Error> {
+        let name = match *self {
+            BuiltinFunId::BoxNew => "BoxNew",
+            BuiltinFunId::ArrayToSliceShared => "ArrayToSliceShared",
+            BuiltinFunId::ArrayToSliceMut => "ArrayToSliceMut",
+            BuiltinFunId::ArrayRepeat => "ArrayRepeat",
+            BuiltinFunId::Index(BuiltinIndexOp {
+                is_array,
+                mutability,
+                is_range,
+            }) => {
+                let ty = if is_array { "Array" } else { "Slice" };
+                let op = if is_range { "SubSlice" } else { "Index" };
+                let mutability = mutability.variant_name();
+                &format!("{ty}{op}{mutability}")
+            }
+        };
+        f.write_str(name)
     }
 }
 

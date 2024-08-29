@@ -320,3 +320,13 @@ impl Variant {
             .any(|attr| attr.is_opaque())
     }
 }
+
+impl RefKind {
+    pub fn mutable(x: bool) -> Self {
+        if x {
+            Self::Mut
+        } else {
+            Self::Shared
+        }
+    }
+}

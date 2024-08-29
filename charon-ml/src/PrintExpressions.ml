@@ -100,13 +100,14 @@ let binop_to_string (binop : binop) : string =
 let assumed_fun_id_to_string (aid : assumed_fun_id) : string =
   match aid with
   | BoxNew -> "alloc::boxed::Box::new"
-  | ArrayIndexShared -> "@ArrayIndexShared"
-  | ArrayIndexMut -> "@ArrayIndexMut"
   | ArrayToSliceShared -> "@ArrayToSliceShared"
   | ArrayToSliceMut -> "@ArrayToSliceMut"
   | ArrayRepeat -> "@ArrayRepeat"
-  | SliceIndexShared -> "@SliceIndexShared"
-  | SliceIndexMut -> "@SliceIndexMut"
+  | Index { is_array; mutability; is_range } ->
+      let ty = if is_array then "Array" else "Slice" in
+      let op = if is_range then "SubSlice" else "Index" in
+      let mutability = ref_kind_to_string mutability in
+      "@" ^ ty ^ op ^ mutability
 
 let fun_id_to_string (env : ('a, 'b) fmt_env) (fid : fun_id) : string =
   match fid with

@@ -612,13 +612,14 @@ and match_expr_with_const_generic (ctx : ctx) (c : match_config) (m : maps)
 let assumed_fun_id_to_string (fid : E.assumed_fun_id) : string =
   match fid with
   | BoxNew -> "alloc::boxed::{Box<@T, alloc::alloc::Global>}::new"
-  | ArrayIndexShared -> "ArrayIndexShared"
-  | ArrayIndexMut -> "ArrayIndexMut"
   | ArrayToSliceShared -> "ArrayToSliceShared"
   | ArrayToSliceMut -> "ArrayToSliceMut"
   | ArrayRepeat -> "ArrayRepeat"
-  | SliceIndexShared -> "SliceIndexShared"
-  | SliceIndexMut -> "SliceIndexMut"
+  | Index { is_array; mutability; is_range } ->
+      let ty = if is_array then "Array" else "Slice" in
+      let op = if is_range then "SubSlice" else "Index" in
+      let mutability = PrintTypes.ref_kind_to_string mutability in
+      ty ^ op ^ mutability
 
 let match_fn_ptr (ctx : ctx) (c : match_config) (p : pattern) (func : E.fn_ptr)
     : bool =

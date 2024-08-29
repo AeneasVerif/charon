@@ -123,18 +123,11 @@ impl Transform {
                         let targets = variants
                             .iter_indexed_values()
                             .map(|(id, variant)| {
-                                let value = variant.discriminant;
-                                let int_ty = value.get_integer_ty();
-                                let konst = ConstantExpr {
-                                    value: RawConstantExpr::Literal(Literal::Scalar(value)),
-                                    ty: Ty::Literal(LiteralTy::Integer(int_ty)),
-                                };
+                                let discr_value =
+                                    Rvalue::Use(Operand::Const(variant.discriminant.to_constant()));
                                 let statement = Statement {
                                     span: *span1,
-                                    content: RawStatement::Assign(
-                                        dest.clone(),
-                                        Rvalue::Use(Operand::Const(konst)),
-                                    ),
+                                    content: RawStatement::Assign(dest.clone(), discr_value),
                                 };
                                 (vec![id], statement)
                             })

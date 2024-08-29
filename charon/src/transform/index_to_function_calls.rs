@@ -1,5 +1,7 @@
 //! Desugar array/slice index operations to function calls.
 
+use std::mem;
+
 use derive_visitor::{DriveMut, VisitorMut};
 
 use crate::ids::Vector;
@@ -44,105 +46,147 @@ impl<'a> Visitor<'a> {
     }
 
     fn transform_place(&mut self, mut_access: bool, p: &mut Place) {
+        use ProjectionElem::*;
         // Explore the place from the **end** to the beginning
-        let mut var_id = p.var_id;
-        let mut proj = Vec::new();
-        for pe in p.projection.clone().into_iter() {
-            if let ProjectionElem::Index(arg_index, buf_ty) = pe {
-                let (id, generics) = buf_ty.as_adt();
-                let cgs: Vector<_, ConstGeneric> = generics.const_generics.clone();
-                let index_id = match id.as_builtin() {
-                    BuiltinTy::Array => {
-                        if mut_access {
-                            BuiltinFunId::ArrayIndexMut
-                        } else {
-                            BuiltinFunId::ArrayIndexShared
-                        }
-                    }
-                    BuiltinTy::Slice => {
-                        if mut_access {
-                            BuiltinFunId::SliceIndexMut
-                        } else {
-                            BuiltinFunId::SliceIndexShared
-                        }
-                    }
-                    _ => unreachable!(),
-                };
+        for pe in mem::take(&mut p.projection) {
+            let (Index { ty, .. } | Subslice { ty, .. }) = &pe else {
+                // Just stack the projection element
+                p.projection.push(pe);
+                continue;
+            };
 
+            let Ty::Adt(TypeId::Builtin(builtin_ty), generics) = ty else {
+                unreachable!()
+            };
+
+            // The built-in function to call.
+            let indexing_function = {
+                let builtin_fun = BuiltinFunId::Index(BuiltinIndexOp {
+                    is_array: matches!(builtin_ty, BuiltinTy::Array),
+                    mutability: RefKind::mutable(mut_access),
+                    is_range: matches!(pe, Subslice { .. }),
+                });
+                // Same generics as the array/slice type, except for the extra lifetime.
+                let generics = GenericArgs {
+                    regions: vec![Region::Erased].into(),
+                    ..generics.clone()
+                };
+                FnOperand::Regular(FnPtr {
+                    func: FunIdOrTraitMethodRef::mk_builtin(builtin_fun),
+                    generics,
+                })
+            };
+
+            let input_ty = Ty::Ref(
+                Region::Erased,
+                Box::new(ty.clone()),
+                RefKind::mutable(mut_access),
+            );
+
+            let output_ty = {
                 let elem_ty = generics.types[0].clone();
-
-                // We need to introduce intermediate statements (and
-                // temporary variables)
-                let (ref_kind, borrow_kind) = if mut_access {
-                    (RefKind::Mut, BorrowKind::Mut)
+                let output_inner_ty = if matches!(pe, Index { .. }) {
+                    elem_ty
                 } else {
-                    (RefKind::Shared, BorrowKind::Shared)
+                    Ty::Adt(
+                        TypeId::Builtin(BuiltinTy::Slice),
+                        GenericArgs::new_from_types(vec![elem_ty].into()),
+                    )
                 };
+                Ty::Ref(
+                    Region::Erased,
+                    Box::new(output_inner_ty),
+                    RefKind::mutable(mut_access),
+                )
+            };
 
-                // Push the statement:
-                //`tmp0 = & proj`
-                let buf_borrow_ty = Ty::Ref(Region::Erased, Box::new(buf_ty), ref_kind);
-                let buf_borrow_var = self.fresh_var(None, buf_borrow_ty);
+            // Push the statement:
+            //`tmp0 = &{mut}p`
+            let input_var = {
+                let input_var = self.fresh_var(None, input_ty);
                 let borrow_st = RawStatement::Assign(
-                    Place::new(buf_borrow_var),
-                    Rvalue::Ref(
-                        Place {
-                            var_id,
-                            projection: proj,
-                        },
-                        borrow_kind,
-                    ),
+                    Place::new(input_var),
+                    Rvalue::Ref(p.clone(), BorrowKind::mutable(mut_access)),
                 );
                 let borrow_st = Statement {
                     content: borrow_st,
                     span: self.span.unwrap(),
                 };
                 self.statements.push(borrow_st);
+                input_var
+            };
 
-                // Push the statement:
-                // `tmp1 = Array{Mut,Shared}Index(move tmp0, copy i)`
-                let elem_borrow_ty = Ty::Ref(Region::Erased, Box::new(elem_ty.clone()), ref_kind);
-                let elem_borrow_var = self.fresh_var(None, elem_borrow_ty);
-                let arg_buf = Operand::Move(Place::new(buf_borrow_var));
-                let index_dest = Place::new(elem_borrow_var);
-                let index_id = FunIdOrTraitMethodRef::mk_builtin(index_id);
-                let generics = GenericArgs::new(
-                    vec![Region::Erased].into(),
-                    vec![elem_ty].into(),
-                    cgs,
-                    vec![].into(),
-                );
-                let func = FnOperand::Regular(FnPtr {
-                    func: index_id,
-                    generics,
+            // Construct the arguments to pass to the indexing function.
+            let mut args = vec![Operand::Move(Place::new(input_var))];
+            if let Subslice { from, .. } = &pe {
+                args.push(from.clone());
+            }
+            let (last_arg, from_end) = match &pe {
+                Index {
+                    offset: x,
+                    from_end,
+                    ..
+                }
+                | Subslice {
+                    to: x, from_end, ..
+                } => (x.clone(), *from_end),
+                _ => unreachable!(),
+            };
+            if from_end {
+                let usize_ty = Ty::Literal(LiteralTy::Integer(IntegerTy::Usize));
+                let len_var = self.fresh_var(None, usize_ty.clone());
+                self.statements.push(Statement {
+                    content: RawStatement::Assign(
+                        Place::new(len_var),
+                        Rvalue::Len(
+                            p.clone(),
+                            ty.clone(),
+                            generics.const_generics.get(0.into()).cloned(),
+                        ),
+                    ),
+                    span: self.span.unwrap(),
                 });
+                // `index_var = len(p) - last_arg`
+                let index_var = self.fresh_var(None, usize_ty);
+                self.statements.push(Statement {
+                    content: RawStatement::Assign(
+                        Place::new(index_var),
+                        Rvalue::BinaryOp(BinOp::Sub, Operand::Copy(Place::new(len_var)), last_arg),
+                    ),
+                    span: self.span.unwrap(),
+                });
+                args.push(Operand::Copy(Place::new(index_var)));
+            } else {
+                args.push(last_arg);
+            }
+
+            // Call the indexing function:
+            // `tmp1 = {Array,Slice}{Mut,Shared}{Index,SubSlice}(move tmp0, <other args>)`
+            let output_var = {
+                let output_var = self.fresh_var(None, output_ty);
                 let index_call = Call {
-                    func,
-                    args: vec![arg_buf, arg_index],
-                    dest: index_dest,
+                    func: indexing_function,
+                    args,
+                    dest: Place::new(output_var),
                 };
-                let index_st = Statement {
+                self.statements.push(Statement {
                     content: RawStatement::Call(index_call),
                     span: self.span.unwrap(),
-                };
-                self.statements.push(index_st);
+                });
+                output_var
+            };
 
-                // Update the variable in the place, and the projection
-                var_id = elem_borrow_var;
-                proj = vec![ProjectionElem::Deref];
-            } else {
-                // Just stack the projection element
-                proj.push(pe);
-            }
-        }
-
-        // Update the current place
-        *p = Place {
-            var_id,
-            projection: proj,
+            // Update the place.
+            *p = Place {
+                var_id: output_var,
+                projection: vec![ProjectionElem::Deref],
+            };
         }
     }
+}
 
+/// The visitor methods.
+impl<'a> Visitor<'a> {
     fn enter_place(&mut self, p: &mut Place) {
         // We intercept every traversal that would reach a place and push the correct mutability on
         // the stack. If we missed one this will panic.

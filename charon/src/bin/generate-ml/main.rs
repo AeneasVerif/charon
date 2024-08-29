@@ -713,7 +713,7 @@ fn main() -> Result<()> {
             template: dir.join("templates/Expressions.ml"),
             target: dir.join("generated/Expressions.ml"),
             markers: &[
-                (GenerationKind::TypeDecl(false), &["BuiltinFunId", "AbortKind"]),
+                (GenerationKind::TypeDecl(false), &["BuiltinFunId", "BuiltinIndexOp", "AbortKind"]),
                 (GenerationKind::TypeDecl(false), &["FieldProjKind", "ProjectionElem", "Projection", "Place"]),
                 (GenerationKind::TypeDecl(false), &["BorrowKind", "BinOp"]),
                 (GenerationKind::TypeDecl(false), &[
@@ -845,6 +845,7 @@ fn main() -> Result<()> {
                     "BinOp",
                     "Literal",
                     "BuiltinFunId",
+                    "BuiltinIndexOp",
                     "FunId",
                     "FunIdOrTraitMethodRef",
                     "FnPtr",

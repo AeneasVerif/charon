@@ -59,18 +59,28 @@ pub enum ProjectionElem {
     /// We allow projections to be used as left-values and right-values.
     /// We should never have projections to fields of symbolic variants (they
     /// should have been expanded before through a match).
-    /// Note that in MIR, field projections don't contain any type information
-    /// (adt identifier, variant id, etc.). This information can be valuable
-    /// (for pretty printing for instance). We retrieve it through
-    /// type-checking.
     Field(FieldProjKind, FieldId),
     /// MIR imposes that the argument to an index projection be a local variable, meaning
     /// that even constant indices into arrays are let-bound as separate variables.
-    /// We also keep the type of the array/slice that we index for convenience purposes
-    /// (this is not necessary).
     /// We **eliminate** this variant in a micro-pass.
     #[charon::opaque]
-    Index(Operand, Ty),
+    Index {
+        offset: Operand,
+        from_end: bool,
+        // Type of the array/slice that we index into.
+        ty: Ty,
+    },
+    /// Take a subslice of a slice or array. If `from_end` is `true` this is
+    /// `slice[from..slice.len() - to]`, otherwise this is `slice[from..to]`.
+    /// We **eliminate** this variant in a micro-pass.
+    #[charon::opaque]
+    Subslice {
+        from: Operand,
+        to: Operand,
+        from_end: bool,
+        // Type of the array/slice that we index into.
+        ty: Ty,
+    },
 }
 
 #[derive(
@@ -304,14 +314,6 @@ pub enum FunId {
 pub enum BuiltinFunId {
     /// `alloc::boxed::Box::new`
     BoxNew,
-    /// Converted from [ProjectionElem::Index].
-    ///
-    /// Signature: `fn<T,N>(&[T;N], usize) -> &T`
-    ArrayIndexShared,
-    /// Converted from [ProjectionElem::Index].
-    ///
-    /// Signature: `fn<T,N>(&mut [T;N], usize) -> &mut T`
-    ArrayIndexMut,
     /// Cast an array as a slice.
     ///
     /// Converted from [UnOp::ArrayToSlice]
@@ -324,14 +326,28 @@ pub enum BuiltinFunId {
     ///
     /// We introduce this when desugaring the [ArrayRepeat] rvalue.
     ArrayRepeat,
-    /// Converted from [ProjectionElem::Index].
-    ///
-    /// Signature: `fn<T>(&[T], usize) -> &T`
-    SliceIndexShared,
-    /// Converted from [ProjectionElem::Index].
-    ///
-    /// Signature: `fn<T>(&mut [T], usize) -> &mut T`
-    SliceIndexMut,
+    /// Converted from indexing `ProjectionElem`s. The signature depends on the parameters. It
+    /// could look like:
+    /// - `fn ArrayIndexShared<T,N>(&[T;N], usize) -> &T`
+    /// - `fn SliceIndexShared<T>(&[T], usize) -> &T`
+    /// - `fn ArraySubSliceShared<T,N>(&[T;N], usize, usize) -> &[T]`
+    /// - `fn SliceSubSliceMut<T>(&mut [T], usize, usize) -> &mut [T]`
+    /// - etc
+    Index(BuiltinIndexOp),
+}
+
+/// One of 8 built-in indexing operations.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, Drive, DriveMut)]
+pub struct BuiltinIndexOp {
+    /// Whether this is a slice or array.
+    pub is_array: bool,
+    /// Whether we're indexing mutably or not. Determines the type ofreference of the input and
+    /// output.
+    pub mutability: RefKind,
+    /// Whether we're indexing a single element or a subrange. If `true`, the function takes
+    /// two indices and the output is a slice; otherwise, the function take one index and the
+    /// output is a reference to a single element.
+    pub is_range: bool,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, EnumAsGetters, Serialize, Deserialize, Drive, DriveMut)]
