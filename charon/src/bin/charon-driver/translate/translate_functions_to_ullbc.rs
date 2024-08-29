@@ -48,7 +48,7 @@ fn translate_borrow_kind(borrow_kind: hax::BorrowKind) -> BorrowKind {
         hax::BorrowKind::Mut { kind } => match kind {
             hax::MutBorrowKind::Default => BorrowKind::Mut,
             hax::MutBorrowKind::TwoPhaseBorrow => BorrowKind::TwoPhaseMut,
-            hax::MutBorrowKind::ClosureCapture => unimplemented!(),
+            hax::MutBorrowKind::ClosureCapture => BorrowKind::UniqueImmutable,
         },
         hax::BorrowKind::Fake(hax::FakeBorrowKind::Shallow) => BorrowKind::Shallow,
         // This one is used only in deref patterns.

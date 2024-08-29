@@ -803,6 +803,7 @@ and borrow_kind_of_json (js : json) : (borrow_kind, string) result =
     | `String "Mut" -> Ok BMut
     | `String "TwoPhaseMut" -> Ok BTwoPhaseMut
     | `String "Shallow" -> Ok BShallow
+    | `String "UniqueImmutable" -> Ok BUniqueImmutable
     | _ -> Error "")
 
 and cast_kind_of_json (js : json) : (cast_kind, string) result =

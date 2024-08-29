@@ -190,7 +190,9 @@ impl<'a> Visitor<'a> {
                 }
             },
             Ref(_, bkind) => match *bkind {
-                BorrowKind::Mut | BorrowKind::TwoPhaseMut => {
+                // `UniqueImmutable` de facto gives mutable access and only shows up if there is
+                // nested mutable access.
+                BorrowKind::Mut | BorrowKind::TwoPhaseMut | BorrowKind::UniqueImmutable => {
                     self.place_mutability_stack.push(true);
                 }
                 BorrowKind::Shared | BorrowKind::Shallow => {

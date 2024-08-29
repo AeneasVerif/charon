@@ -150,6 +150,7 @@ let rvalue_to_string (env : ('a, 'b) fmt_env) (rv : rvalue) : string =
       | BShared -> "&" ^ p
       | BMut -> "&mut " ^ p
       | BTwoPhaseMut -> "&two-phase " ^ p
+      | BUniqueImmutable -> "&uniq " ^ p
       | BShallow -> "&shallow " ^ p
     end
   | RawPtr (p, pk) -> begin

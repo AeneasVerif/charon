@@ -1,5 +1,3 @@
-//@ known-failure
-
 struct Rng;
 
 impl Rng {

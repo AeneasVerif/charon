@@ -812,18 +812,24 @@ impl<C: AstFormatter> FmtWithCtx<C> for Rvalue {
     fn fmt_with_ctx(&self, ctx: &C) -> String {
         match self {
             Rvalue::Use(x) => x.fmt_with_ctx(ctx),
-            Rvalue::Ref(place, borrow_kind) => match borrow_kind {
-                BorrowKind::Shared => format!("&{}", place.fmt_with_ctx(ctx)),
-                BorrowKind::Mut => format!("&mut {}", place.fmt_with_ctx(ctx)),
-                BorrowKind::TwoPhaseMut => {
-                    format!("&two-phase-mut {}", place.fmt_with_ctx(ctx))
-                }
-                BorrowKind::Shallow => format!("&shallow {}", place.fmt_with_ctx(ctx)),
-            },
-            Rvalue::RawPtr(place, mutability) => match mutability {
-                RefKind::Shared => format!("&raw const {}", place.fmt_with_ctx(ctx)),
-                RefKind::Mut => format!("&raw mut {}", place.fmt_with_ctx(ctx)),
-            },
+            Rvalue::Ref(place, borrow_kind) => {
+                let borrow_kind = match borrow_kind {
+                    BorrowKind::Shared => "&",
+                    BorrowKind::Mut => "&mut ",
+                    BorrowKind::TwoPhaseMut => "&two-phase-mut ",
+                    BorrowKind::UniqueImmutable => "&uniq ",
+                    BorrowKind::Shallow => "&shallow ",
+                };
+                format!("{borrow_kind}{}", place.fmt_with_ctx(ctx))
+            }
+            Rvalue::RawPtr(place, mutability) => {
+                let ptr_kind = match mutability {
+                    RefKind::Shared => "&raw const ",
+                    RefKind::Mut => "&raw mut ",
+                };
+                format!("{ptr_kind}{}", place.fmt_with_ctx(ctx))
+            }
+
             Rvalue::BinaryOp(binop, x, y) => {
                 format!("{} {} {}", x.fmt_with_ctx(ctx), binop, y.fmt_with_ctx(ctx))
             }
@@ -1487,12 +1493,8 @@ impl std::fmt::Display for BinOp {
 
 impl std::fmt::Display for BorrowKind {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::result::Result<(), std::fmt::Error> {
-        match self {
-            BorrowKind::Shared => write!(f, "Shared"),
-            BorrowKind::Mut => write!(f, "Mut"),
-            BorrowKind::TwoPhaseMut => write!(f, "TwoPhaseMut"),
-            BorrowKind::Shallow => write!(f, "Shallow"),
-        }
+        // Reuse the derived `Debug` impl to get the variant name.
+        write!(f, "{self:?}")
     }
 }
 

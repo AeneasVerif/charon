@@ -154,15 +154,28 @@ type borrow_kind =
   | BShared
   | BMut
   | BTwoPhaseMut
-      (** See <https://doc.rust-lang.org/beta/nightly-rustc/rustc_middle/mir/enum.BorrowKind.html#variant.Mut>
+      (** See <https://doc.rust-lang.org/beta/nightly-rustc/rustc_middle/mir/enum.MutBorrowKind.html#variant.TwoPhaseBorrow>
           and <https://rustc-dev-guide.rust-lang.org/borrow_check/two_phase_borrows.html>
        *)
   | BShallow
-      (** See <https://doc.rust-lang.org/beta/nightly-rustc/rustc_middle/mir/enum.BorrowKind.html#variant.Shallow>.
+      (** Those are typically introduced when using guards in matches, to make sure guards don't
+          change the variant of an enum value while me match over it.
 
-          Those are typically introduced when using guards in matches, to make
-          sure guards don't change the variant of an enumeration value while me
-          match over it.
+          See <https://doc.rust-lang.org/beta/nightly-rustc/rustc_middle/mir/enum.FakeBorrowKind.html#variant.Shallow>.
+       *)
+  | BUniqueImmutable
+      (** Data must be immutable but not aliasable. In other words you can't mutate the data but you
+          can mutate *through it*, e.g. if it points to a `&mut T`. This is only used in closure
+          captures, e.g.
+          ```rust,ignore
+          let mut z = 3;
+          let x: &mut isize = &mut z;
+          let y = || *x += 5;
+          ```
+          Here the captured variable can't be `&mut &mut x` since the `x` binding is not mutable, yet
+          we must be able to mutate what it points to.
+
+          See <https://doc.rust-lang.org/beta/nightly-rustc/rustc_middle/mir/enum.MutBorrowKind.html#variant.ClosureCapture>.
        *)
 
 (** Binary operations. *)

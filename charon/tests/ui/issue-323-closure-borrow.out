@@ -1,16 +1,55 @@
-thread 'rustc' panicked at src/bin/charon-driver/translate/translate_functions_to_ullbc.rs:51:51:
-not implemented
-note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
-error: Thread panicked when extracting body.
-  --> tests/ui/issue-323-closure-borrow.rs:9:1
-   |
-9  | / fn new(rng: &mut Rng) {
-10 | |     let _ = || {
-11 | |         rng.next_u64();
-12 | |     };
-13 | | }
-   | |_^
+# Final LLBC before serialization:
 
-error: aborting due to 1 previous error
+struct test_crate::Rng = {}
 
-Error: Charon driver exited with code 101
+fn test_crate::{test_crate::Rng}::next_u64<'_0>(@1: &'_0 mut (test_crate::Rng))
+{
+    let @0: (); // return
+    let self@1: &'_ mut (test_crate::Rng); // arg #1
+    let @2: (); // anonymous local
+
+    @2 := ()
+    @0 := move (@2)
+    @0 := ()
+    return
+}
+
+fn test_crate::new::closure<'_0, '_1>(@1: &'_0 mut ((&'_1 mut (test_crate::Rng))), @2: ())
+{
+    let @0: (); // return
+    let state@1: &'_0 mut ((&'_1 mut (test_crate::Rng))); // arg #1
+    let @2: (); // arg #2
+    let @3: &'_ mut (test_crate::Rng); // anonymous local
+    let @4: (); // anonymous local
+
+    @3 := &two-phase-mut *((*(state@1)).0)
+    @2 := test_crate::{test_crate::Rng}::next_u64(move (@3))
+    drop @3
+    drop @2
+    @4 := ()
+    @0 := move (@4)
+    @0 := ()
+    return
+}
+
+fn test_crate::new<'_0>(@1: &'_0 mut (test_crate::Rng))
+{
+    let @0: (); // return
+    let rng@1: &'_ mut (test_crate::Rng); // arg #1
+    let @2: fn(); // anonymous local
+    let @3: &'_ mut (test_crate::Rng); // anonymous local
+    let @4: (); // anonymous local
+
+    @3 := &uniq *(rng@1)
+    @2 := {test_crate::new::closure} {move (@3)}
+    drop @3
+    @fake_read(@2)
+    drop @2
+    @4 := ()
+    @0 := move (@4)
+    @0 := ()
+    return
+}
+
+
+
