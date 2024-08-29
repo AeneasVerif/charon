@@ -1,0 +1,17 @@
+# Final LLBC before serialization:
+
+trait test_crate::Trait1<Self>
+{
+    parent_clause_0 : [@TraitClause0]: test_crate::Trait2<Self::T>
+    parent_clause_1 : [@TraitClause1]: test_crate::Trait1<Self::T>
+    type T
+}
+
+trait test_crate::Trait2<Self>
+{
+    parent_clause_0 : [@TraitClause0]: test_crate::Trait1<Self>
+    type U
+}
+
+
+

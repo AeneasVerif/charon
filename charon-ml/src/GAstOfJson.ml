@@ -550,6 +550,11 @@ and type_decl_kind_of_json (id_to_file : id_to_file_map) (js : json) :
           vector_of_json variant_id_of_json (variant_of_json id_to_file) enum
         in
         Ok (Enum enum)
+    | `Assoc [ ("Union", union) ] ->
+        let* union =
+          vector_of_json field_id_of_json (field_of_json id_to_file) union
+        in
+        Ok (Union union)
     | `String "Opaque" -> Ok Opaque
     | `Assoc [ ("Alias", alias) ] ->
         let* alias = ty_of_json alias in
@@ -798,6 +803,7 @@ and borrow_kind_of_json (js : json) : (borrow_kind, string) result =
     | `String "Mut" -> Ok BMut
     | `String "TwoPhaseMut" -> Ok BTwoPhaseMut
     | `String "Shallow" -> Ok BShallow
+    | `String "UniqueImmutable" -> Ok BUniqueImmutable
     | _ -> Error "")
 
 and cast_kind_of_json (js : json) : (cast_kind, string) result =
@@ -915,13 +921,27 @@ and assumed_fun_id_of_json (js : json) : (assumed_fun_id, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
     | `String "BoxNew" -> Ok BoxNew
-    | `String "ArrayIndexShared" -> Ok ArrayIndexShared
-    | `String "ArrayIndexMut" -> Ok ArrayIndexMut
     | `String "ArrayToSliceShared" -> Ok ArrayToSliceShared
     | `String "ArrayToSliceMut" -> Ok ArrayToSliceMut
     | `String "ArrayRepeat" -> Ok ArrayRepeat
-    | `String "SliceIndexShared" -> Ok SliceIndexShared
-    | `String "SliceIndexMut" -> Ok SliceIndexMut
+    | `Assoc [ ("Index", index) ] ->
+        let* index = builtin_index_op_of_json index in
+        Ok (Index index)
+    | _ -> Error "")
+
+and builtin_index_op_of_json (js : json) : (builtin_index_op, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with
+    | `Assoc
+        [
+          ("is_array", is_array);
+          ("mutability", mutability);
+          ("is_range", is_range);
+        ] ->
+        let* is_array = bool_of_json is_array in
+        let* mutability = ref_kind_of_json mutability in
+        let* is_range = bool_of_json is_range in
+        Ok ({ is_array; mutability; is_range } : builtin_index_op)
     | _ -> Error "")
 
 and fun_id_of_json (js : json) : (fun_id, string) result =
@@ -1071,10 +1091,6 @@ and rvalue_of_json (js : json) : (rvalue, string) result =
         let* x_1 = ty_of_json x_1 in
         let* x_2 = option_of_json const_generic_of_json x_2 in
         Ok (Len (x_0, x_1, x_2))
-    | `Assoc [ ("ShallowInitBox", `List [ x_0; x_1 ]) ] ->
-        let* x_0 = operand_of_json x_0 in
-        let* x_1 = ty_of_json x_1 in
-        Ok (ShallowInitBox (x_0, x_1))
     | _ -> Error "")
 
 and params_info_of_json (js : json) : (params_info, string) result =

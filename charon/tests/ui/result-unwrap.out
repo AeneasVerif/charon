@@ -27,7 +27,7 @@ struct core::fmt::Formatter<'a>
   align: core::fmt::rt::Alignment,
   width: core::option::Option<usize>,
   precision: core::option::Option<usize>,
-  buf: &'a mut (dyn (exists(TODO)))
+  buf: &'a mut (dyn (exists(TODO))),
 }
 
 struct core::fmt::Error = {}

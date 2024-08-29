@@ -1,6 +1,5 @@
 //! Implementations for [crate::values]
-use crate::types::*;
-use crate::values::*;
+use crate::ast::*;
 use serde::{Deserialize, Serialize, Serializer};
 
 #[derive(Debug, Clone)]
@@ -225,6 +224,13 @@ impl ScalarValue {
             Err(ScalarError::OutOfBounds)
         } else {
             Ok(ScalarValue::from_unchecked_int(ty, v))
+        }
+    }
+
+    pub fn to_constant(self) -> ConstantExpr {
+        ConstantExpr {
+            value: RawConstantExpr::Literal(Literal::Scalar(self)),
+            ty: Ty::Literal(LiteralTy::Integer(self.get_integer_ty())),
         }
     }
 }

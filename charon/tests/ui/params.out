@@ -11,7 +11,7 @@ fn test_crate::test_static(@1: &'static (u32)) -> &'static (u32)
 
 struct test_crate::SStatic =
 {
-  x: &'static (u32)
+  x: &'static (u32),
 }
 
 enum test_crate::E0<'a, 'b, T1, T2>
@@ -105,7 +105,7 @@ struct test_crate::S1<'a, 'b, 'c, 'd>
       'c : 'b,
  =
 {
-  x: test_crate::E1<'a, 'b, &'c mut (u32), &'d (u32)>
+  x: test_crate::E1<'a, 'b, &'c mut (u32), &'d (u32)>,
 }
 
 

@@ -25,16 +25,6 @@ type var_id = VarId.id [@@deriving show, ord]
  *)
 type assumed_fun_id =
   | BoxNew  (** `alloc::boxed::Box::new` *)
-  | ArrayIndexShared
-      (** Converted from [ProjectionElem::Index].
-
-          Signature: `fn<T,N>(&[T;N], usize) -> &T`
-       *)
-  | ArrayIndexMut
-      (** Converted from [ProjectionElem::Index].
-
-          Signature: `fn<T,N>(&mut [T;N], usize) -> &mut T`
-       *)
   | ArrayToSliceShared
       (** Cast an array as a slice.
 
@@ -50,16 +40,29 @@ type assumed_fun_id =
 
           We introduce this when desugaring the [ArrayRepeat] rvalue.
        *)
-  | SliceIndexShared
-      (** Converted from [ProjectionElem::Index].
-
-          Signature: `fn<T>(&[T], usize) -> &T`
+  | Index of builtin_index_op
+      (** Converted from indexing `ProjectionElem`s. The signature depends on the parameters. It
+          could look like:
+          - `fn ArrayIndexShared<T,N>(&[T;N], usize) -> &T`
+          - `fn SliceIndexShared<T>(&[T], usize) -> &T`
+          - `fn ArraySubSliceShared<T,N>(&[T;N], usize, usize) -> &[T]`
+          - `fn SliceSubSliceMut<T>(&mut [T], usize, usize) -> &mut [T]`
+          - etc
        *)
-  | SliceIndexMut
-      (** Converted from [ProjectionElem::Index].
 
-          Signature: `fn<T>(&mut [T], usize) -> &mut T`
-       *)
+(** One of 8 built-in indexing operations. *)
+and builtin_index_op = {
+  is_array : bool;  (** Whether this is a slice or array. *)
+  mutability : ref_kind;
+      (** Whether we're indexing mutably or not. Determines the type ofreference of the input and
+        output.
+     *)
+  is_range : bool;
+      (** Whether we're indexing a single element or a subrange. If `true`, the function takes
+        two indices and the output is a slice; otherwise, the function take one index and the
+        output is a reference to a single element.
+     *)
+}
 
 and abort_kind =
   | Panic of name  (** A built-in panicking function. *)
@@ -121,10 +124,6 @@ and projection_elem =
           We allow projections to be used as left-values and right-values.
           We should never have projections to fields of symbolic variants (they
           should have been expanded before through a match).
-          Note that in MIR, field projections don't contain any type information
-          (adt identifier, variant id, etc.). This information can be valuable
-          (for pretty printing for instance). We retrieve it through
-          type-checking.
        *)
 
 and projection = projection_elem list
@@ -154,15 +153,28 @@ type borrow_kind =
   | BShared
   | BMut
   | BTwoPhaseMut
-      (** See <https://doc.rust-lang.org/beta/nightly-rustc/rustc_middle/mir/enum.BorrowKind.html#variant.Mut>
+      (** See <https://doc.rust-lang.org/beta/nightly-rustc/rustc_middle/mir/enum.MutBorrowKind.html#variant.TwoPhaseBorrow>
           and <https://rustc-dev-guide.rust-lang.org/borrow_check/two_phase_borrows.html>
        *)
   | BShallow
-      (** See <https://doc.rust-lang.org/beta/nightly-rustc/rustc_middle/mir/enum.BorrowKind.html#variant.Shallow>.
+      (** Those are typically introduced when using guards in matches, to make sure guards don't
+          change the variant of an enum value while me match over it.
 
-          Those are typically introduced when using guards in matches, to make
-          sure guards don't change the variant of an enumeration value while me
-          match over it.
+          See <https://doc.rust-lang.org/beta/nightly-rustc/rustc_middle/mir/enum.FakeBorrowKind.html#variant.Shallow>.
+       *)
+  | BUniqueImmutable
+      (** Data must be immutable but not aliasable. In other words you can't mutate the data but you
+          can mutate *through it*, e.g. if it points to a `&mut T`. This is only used in closure
+          captures, e.g.
+          ```rust,ignore
+          let mut z = 3;
+          let x: &mut isize = &mut z;
+          let y = || *x += 5;
+          ```
+          Here the captured variable can't be `&mut &mut x` since the `x` binding is not mutable, yet
+          we must be able to mutate what it points to.
+
+          See <https://doc.rust-lang.org/beta/nightly-rustc/rustc_middle/mir/enum.MutBorrowKind.html#variant.ClosureCapture>.
        *)
 
 (** Binary operations. *)
@@ -482,8 +494,6 @@ and rvalue =
           rustc introduces a check that the length of the slice is exactly equal
           to 1 and that we preserve.
        *)
-  | ShallowInitBox of operand * ty
-      (** Transmutes a `*mut u8` (obtained from `malloc`) into shallow-initialized `Box<T>`. *)
 [@@deriving
   show,
     visitors

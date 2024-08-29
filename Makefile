@@ -55,7 +55,7 @@ build-dev-charon-ml: charon-ml/src/CharonVersion.ml
 
 # Build and run the tests
 .PHONY: test
-test: build-dev charon-tests charon-ml-tests
+test: clean-generated build-dev charon-tests charon-ml-tests
 
 # Run Charon on various test files
 .PHONY: charon-tests

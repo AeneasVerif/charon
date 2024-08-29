@@ -126,7 +126,7 @@ fn test_crate::convert(@1: i32) -> i64
 
 struct core::ptr::non_null::NonNull<T> =
 {
-  pointer: *const T
+  pointer: *const T,
 }
 
 struct core::marker::PhantomData<T> = {}
@@ -134,25 +134,25 @@ struct core::marker::PhantomData<T> = {}
 struct core::ptr::unique::Unique<T> =
 {
   pointer: core::ptr::non_null::NonNull<T>,
-  _marker: core::marker::PhantomData<T>
+  _marker: core::marker::PhantomData<T>,
 }
 
 struct alloc::raw_vec::Cap =
 {
-  usize
+  usize,
 }
 
 struct alloc::raw_vec::RawVec<T, A> =
 {
   ptr: core::ptr::unique::Unique<T>,
   cap: alloc::raw_vec::Cap,
-  alloc: A
+  alloc: A,
 }
 
 struct alloc::vec::Vec<T, A> =
 {
   buf: alloc::raw_vec::RawVec<T, A>,
-  len: usize
+  len: usize,
 }
 
 struct alloc::alloc::Global = {}

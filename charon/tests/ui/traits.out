@@ -219,7 +219,7 @@ fn test_crate::h0(@1: u64) -> u64
 
 struct test_crate::Wrapper<T> =
 {
-  x: T
+  x: T,
 }
 
 fn test_crate::{impl test_crate::ToU64 for test_crate::Wrapper<T>}#4::to_u64<T>(@1: test_crate::Wrapper<T>) -> u64
@@ -345,12 +345,12 @@ where
 
 struct test_crate::TestType<T> =
 {
-  T
+  T,
 }
 
 struct test_crate::{test_crate::TestType<T>}#6::test::TestType1 =
 {
-  u64
+  u64,
 }
 
 trait test_crate::{test_crate::TestType<T>}#6::test::TestTrait<Self>
@@ -419,7 +419,7 @@ where
 
 struct test_crate::BoolWrapper =
 {
-  bool
+  bool,
 }
 
 fn test_crate::ToType::to_type<Self, T>(@1: Self) -> T
@@ -791,7 +791,7 @@ where
 struct test_crate::Foo<T, U> =
 {
   x: T,
-  y: U
+  y: U,
 }
 
 enum core::result::Result<T, E> =

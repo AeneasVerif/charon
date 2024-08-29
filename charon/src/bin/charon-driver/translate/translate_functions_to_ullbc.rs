@@ -48,7 +48,7 @@ fn translate_borrow_kind(borrow_kind: hax::BorrowKind) -> BorrowKind {
         hax::BorrowKind::Mut { kind } => match kind {
             hax::MutBorrowKind::Default => BorrowKind::Mut,
             hax::MutBorrowKind::TwoPhaseBorrow => BorrowKind::TwoPhaseMut,
-            hax::MutBorrowKind::ClosureCapture => unimplemented!(),
+            hax::MutBorrowKind::ClosureCapture => BorrowKind::UniqueImmutable,
         },
         hax::BorrowKind::Fake(hax::FakeBorrowKind::Shallow) => BorrowKind::Shallow,
         // This one is used only in deref patterns.
@@ -394,31 +394,38 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                     hax::ProjectionElem::Index(local) => {
                         let local = self.get_local(local).unwrap();
                         let operand = Operand::Copy(Place::new(local));
-                        projection.push(ProjectionElem::Index(operand, current_ty));
+                        projection.push(ProjectionElem::Index {
+                            offset: operand,
+                            from_end: false,
+                            ty: current_ty,
+                        });
                     }
                     hax::ProjectionElem::Downcast(..) => {
                         // We view it as a nop (the information from the
                         // downcast has been propagated to the other
                         // projection elements by Hax)
                     }
-                    hax::ProjectionElem::ConstantIndex {
+                    &hax::ProjectionElem::ConstantIndex {
                         offset,
+                        from_end,
                         min_length: _,
-                        from_end: false,
                     } => {
-                        let ty = Ty::Literal(LiteralTy::Integer(IntegerTy::Usize));
-                        let value =
-                            RawConstantExpr::Literal(Literal::Scalar(ScalarValue::Usize(*offset)));
-                        let offset = Operand::Const(ConstantExpr { value, ty });
-                        projection.push(ProjectionElem::Index(offset, current_ty));
+                        let offset = Operand::Const(ScalarValue::Usize(offset).to_constant());
+                        projection.push(ProjectionElem::Index {
+                            offset,
+                            from_end,
+                            ty: current_ty,
+                        });
                     }
-                    hax::ProjectionElem::ConstantIndex { .. } => {
-                        // This is not supported yet, see `tests/ui/unsupported/projection-index-from-end.rs`
-                        error_or_panic!(self, span, "Unexpected ProjectionElem::ConstantIndex");
-                    }
-                    hax::ProjectionElem::Subslice { .. } => {
-                        // Those don't seem to occur in MIR built
-                        error_or_panic!(self, span, "Unexpected ProjectionElem::Subslice");
+                    &hax::ProjectionElem::Subslice { from, to, from_end } => {
+                        let from = Operand::Const(ScalarValue::Usize(from).to_constant());
+                        let to = Operand::Const(ScalarValue::Usize(to).to_constant());
+                        projection.push(ProjectionElem::Subslice {
+                            from,
+                            to,
+                            from_end,
+                            ty: current_ty,
+                        });
                     }
                     hax::ProjectionElem::OpaqueCast => {
                         // Don't know what that is
@@ -858,13 +865,10 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 BuiltinFunId::BoxNew => {
                     // Nothing to do
                 }
-                BuiltinFunId::ArrayIndexShared
-                | BuiltinFunId::ArrayIndexMut
+                BuiltinFunId::Index { .. }
                 | BuiltinFunId::ArrayToSliceShared
                 | BuiltinFunId::ArrayToSliceMut
-                | BuiltinFunId::ArrayRepeat
-                | BuiltinFunId::SliceIndexShared
-                | BuiltinFunId::SliceIndexMut => {
+                | BuiltinFunId::ArrayRepeat => {
                     // Those cases are introduced later, in micro-passes, by desugaring
                     // projections (for ArrayIndex and ArrayIndexMut for instnace) and=
                     // operations (for ArrayToSlice for instance) to function calls.

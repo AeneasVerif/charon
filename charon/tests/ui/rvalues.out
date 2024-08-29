@@ -220,49 +220,22 @@ fn test_crate::fn_casts()
     return
 }
 
-opaque type alloc::vec::Vec<T, A>
-
-struct alloc::alloc::Global = {}
-
-unsafe fn alloc::alloc::exchange_malloc(@1: usize, @2: usize) -> *mut u8
-
-fn alloc::slice::{Slice<T>}::into_vec<T, A>(@1: alloc::boxed::Box<Slice<T>>) -> alloc::vec::Vec<T, A>
-
 fn test_crate::boxes()
 {
     let @0: (); // return
     let @1: alloc::boxed::Box<i32>; // anonymous local
-    let @2: alloc::vec::Vec<i32, alloc::alloc::Global>; // anonymous local
-    let @3: alloc::boxed::Box<Slice<i32>>; // anonymous local
-    let @4: alloc::boxed::Box<Array<i32, 2 : usize>>; // anonymous local
-    let @5: usize; // anonymous local
-    let @6: usize; // anonymous local
-    let @7: *mut u8; // anonymous local
-    let @8: alloc::boxed::Box<Array<i32, 2 : usize>>; // anonymous local
-    let @9: (); // anonymous local
+    let @2: alloc::boxed::Box<i32>; // anonymous local
+    let @3: (); // anonymous local
 
-    @1 := @BoxNew<i32>(const (42 : i32))
+    @2 := @BoxNew<i32>(const (42 : i32))
+    @1 := move (@2)
+    drop @2
+    drop @2
     @fake_read(@1)
     drop @1
     drop @1
-    @5 := size_of<Array<i32, 2 : usize>>
-    @6 := align_of<Array<i32, 2 : usize>>
-    @7 := alloc::alloc::exchange_malloc(move (@5), move (@6))
-    @8 := shallow_init_box::<Array<i32, 2 : usize>>(move (@7))
-    deref_box (@8) := [const (0 : i32), const (1 : i32); 2 : usize]
-    @4 := move (@8)
-    @3 := unsize_cast<alloc::boxed::Box<Array<i32, 2 : usize>>, alloc::boxed::Box<Slice<i32>>>(move (@4))
-    drop @4
-    drop @8
-    drop @8
-    drop @4
-    @2 := alloc::slice::{Slice<T>}::into_vec<i32, alloc::alloc::Global>(move (@3))
-    drop @3
-    @fake_read(@2)
-    drop @2
-    drop @2
-    @9 := ()
-    @0 := move (@9)
+    @3 := ()
+    @0 := move (@3)
     @0 := ()
     return
 }
@@ -299,7 +272,7 @@ global test_crate::STEAL2  {
 struct test_crate::nullary_ops::Struct<T> =
 {
   a: u8,
-  b: T
+  b: T,
 }
 
 fn test_crate::nullary_ops<T>() -> usize
@@ -317,6 +290,8 @@ fn test_crate::nullary_ops<T>() -> usize
     @0 := copy (@4) + copy (offset@3)
     return
 }
+
+unsafe fn alloc::alloc::exchange_malloc(@1: usize, @2: usize) -> *mut u8
 
 
 

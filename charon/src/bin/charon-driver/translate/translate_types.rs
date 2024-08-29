@@ -504,16 +504,13 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         // fields). If it is a structure, we check if all the fields are public.
         let contents_are_public = match adt.adt_kind {
             AdtKind::Enum => true,
-            AdtKind::Struct => {
+            AdtKind::Struct | AdtKind::Union => {
                 // Check the unique variant
                 error_assert!(self, def_span, adt.variants.len() == 1);
                 adt.variants[0]
                     .fields
                     .iter()
                     .all(|f| matches!(f.vis, Visibility::Public))
-            }
-            AdtKind::Union => {
-                error_or_panic!(self, def_span, "Unions are not supported")
             }
         };
 
@@ -611,9 +608,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         let type_def_kind: TypeDeclKind = match adt.adt_kind {
             AdtKind::Struct => TypeDeclKind::Struct(variants[0].fields.clone()),
             AdtKind::Enum => TypeDeclKind::Enum(variants),
-            AdtKind::Union => {
-                error_or_panic!(self, def_span, "Union types are not supported")
-            }
+            AdtKind::Union => TypeDeclKind::Union(variants[0].fields.clone()),
         };
 
         Ok(type_def_kind)

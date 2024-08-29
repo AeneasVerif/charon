@@ -100,13 +100,14 @@ let binop_to_string (binop : binop) : string =
 let assumed_fun_id_to_string (aid : assumed_fun_id) : string =
   match aid with
   | BoxNew -> "alloc::boxed::Box::new"
-  | ArrayIndexShared -> "@ArrayIndexShared"
-  | ArrayIndexMut -> "@ArrayIndexMut"
   | ArrayToSliceShared -> "@ArrayToSliceShared"
   | ArrayToSliceMut -> "@ArrayToSliceMut"
   | ArrayRepeat -> "@ArrayRepeat"
-  | SliceIndexShared -> "@SliceIndexShared"
-  | SliceIndexMut -> "@SliceIndexMut"
+  | Index { is_array; mutability; is_range } ->
+      let ty = if is_array then "Array" else "Slice" in
+      let op = if is_range then "SubSlice" else "Index" in
+      let mutability = ref_kind_to_string mutability in
+      "@" ^ ty ^ op ^ mutability
 
 let fun_id_to_string (env : ('a, 'b) fmt_env) (fid : fun_id) : string =
   match fid with
@@ -150,6 +151,7 @@ let rvalue_to_string (env : ('a, 'b) fmt_env) (rv : rvalue) : string =
       | BShared -> "&" ^ p
       | BMut -> "&mut " ^ p
       | BTwoPhaseMut -> "&two-phase " ^ p
+      | BUniqueImmutable -> "&uniq " ^ p
       | BShallow -> "&shallow " ^ p
     end
   | RawPtr (p, pk) -> begin
@@ -176,9 +178,6 @@ let rvalue_to_string (env : ('a, 'b) fmt_env) (rv : rvalue) : string =
   | Global global_ref ->
       let generics = generic_args_to_string env global_ref.global_generics in
       "global " ^ global_decl_id_to_string env global_ref.global_id ^ generics
-  | ShallowInitBox (op, ty) ->
-      "shallow_init_box<" ^ ty_to_string env ty ^ ">("
-      ^ operand_to_string env op ^ ")"
   | Aggregate (akind, ops) -> (
       let ops = List.map (operand_to_string env) ops in
       match akind with

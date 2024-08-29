@@ -53,7 +53,7 @@ fn test_crate::array<const LEN : usize>() -> Array<u8, const LEN : usize>
 struct core::ops::range::Range<Idx> =
 {
   start: Idx,
-  end: Idx
+  end: Idx,
 }
 
 enum core::option::Option<T> =

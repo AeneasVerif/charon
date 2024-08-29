@@ -212,7 +212,7 @@ fn test_crate::index_mut_slice<'_0, T>(@1: &'_0 mut (Slice<T>), @2: usize) -> &'
 struct core::ops::range::Range<Idx> =
 {
   start: Idx,
-  end: Idx
+  end: Idx,
 }
 
 trait core::ops::index::Index<Self, Idx>

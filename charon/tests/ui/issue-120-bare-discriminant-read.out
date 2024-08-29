@@ -5,20 +5,37 @@ enum core::option::Option<T> =
 |  Some(T)
 
 
-fn test_crate::call_is_some<T>(@1: core::option::Option<T>) -> bool
+fn test_crate::discriminant_value<'_0, T>(@1: &'_0 (core::option::Option<T>)) -> isize
+{
+    let @0: isize; // return
+    let opt@1: &'_ (core::option::Option<T>); // arg #1
+
+    match *(opt@1) {
+        0 => {
+            @0 := const (0 : isize)
+        },
+        1 => {
+            @0 := const (1 : isize)
+        }
+    }
+    return
+}
+
+fn test_crate::is_some<T>(@1: core::option::Option<T>) -> bool
 {
     let @0: bool; // return
     let opt@1: core::option::Option<T>; // arg #1
     let @2: isize; // anonymous local
 
     match opt@1 {
-        1 => {
-            @0 := const (true)
-        },
         0 => {
-            @0 := const (false)
+            @2 := const (0 : isize)
+        },
+        1 => {
+            @2 := const (1 : isize)
         }
     }
+    @0 := move (@2) != const (0 : isize)
     drop @2
     drop opt@1
     return

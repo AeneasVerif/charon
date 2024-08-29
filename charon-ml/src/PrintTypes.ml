@@ -412,8 +412,8 @@ let type_decl_to_string (env : ('a, 'b) fmt_env) (def : type_decl) : string =
   | Struct fields ->
       if fields <> [] then
         let fields =
-          String.concat ","
-            (List.map (fun f -> "\n  " ^ field_to_string env f) fields)
+          String.concat ""
+            (List.map (fun f -> "\n  " ^ field_to_string env f ^ ",") fields)
         in
         "struct " ^ name ^ params ^ clauses ^ "\n{" ^ fields ^ "\n}"
       else "struct " ^ name ^ params ^ clauses ^ "{}"
@@ -423,6 +423,14 @@ let type_decl_to_string (env : ('a, 'b) fmt_env) (def : type_decl) : string =
       in
       let variants = String.concat "\n" variants in
       "enum " ^ name ^ params ^ clauses ^ "\n  =\n" ^ variants
+  | Union fields ->
+      if fields <> [] then
+        let fields =
+          String.concat ""
+            (List.map (fun f -> "\n  " ^ field_to_string env f ^ ",") fields)
+        in
+        "union " ^ name ^ params ^ clauses ^ "\n{" ^ fields ^ "\n}"
+      else "union " ^ name ^ params ^ clauses ^ "{}"
   | Alias ty -> "type " ^ name ^ params ^ clauses ^ " = " ^ ty_to_string env ty
   | Opaque -> "opaque type " ^ name ^ params ^ clauses
   | Error err -> "error(\"" ^ err ^ "\")"
@@ -434,12 +442,13 @@ let adt_variant_to_string (env : ('a, 'b) fmt_env) (def_id : TypeDeclId.id)
       type_decl_id_to_pretty_string def_id
       ^ "::"
       ^ variant_id_to_pretty_string variant_id
-  | Some def -> (
+  | Some def -> begin
       match def.kind with
-      | Struct _ | Alias _ | Opaque | Error _ -> raise (Failure "Unreachable")
       | Enum variants ->
           let variant = VariantId.nth variants variant_id in
-          name_to_string env def.item_meta.name ^ "::" ^ variant.variant_name)
+          name_to_string env def.item_meta.name ^ "::" ^ variant.variant_name
+      | _ -> raise (Failure "Unreachable")
+    end
 
 let adt_field_names (env : ('a, 'b) fmt_env) (def_id : TypeDeclId.id)
     (opt_variant_id : VariantId.id option) : string list option =

@@ -214,11 +214,3 @@ let ty_has_regions_in_set (rset : RegionId.Set.t) (ty : ty) : bool =
     obj#visit_ty () ty;
     false
   with Found -> true
-
-(** Checks that a type is copyable.
-  *
-  * This used to recursively traverse the type to ensure all its fields were
-  * `Copy`. Instead we trust rustc's typechecking like we do for other marker
-  * traits.
-  *)
-let ty_is_copyable (_ty : ty) : bool = true

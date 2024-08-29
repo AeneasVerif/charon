@@ -423,6 +423,7 @@ pub struct TypeDecl {
 pub enum TypeDeclKind {
     Struct(Vector<FieldId, Field>),
     Enum(Vector<VariantId, Variant>),
+    Union(Vector<FieldId, Field>),
     /// An opaque type.
     ///
     /// Either a local type marked as opaque, or an external type.

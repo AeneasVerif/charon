@@ -67,7 +67,7 @@ fn test_crate::mk_pair0(@1: u32, @2: u32) -> (u32, u32)
 struct test_crate::Pair<T1, T2> =
 {
   x: T1,
-  y: T2
+  y: T2,
 }
 
 fn test_crate::mk_pair1(@1: u32, @2: u32) -> test_crate::Pair<u32, u32>
@@ -116,7 +116,7 @@ global test_crate::P3  {
 
 struct test_crate::Wrap<T> =
 {
-  value: T
+  value: T,
 }
 
 fn test_crate::{test_crate::Wrap<T>}::new<T>(@1: T) -> test_crate::Wrap<T>
@@ -280,7 +280,7 @@ global test_crate::S4  {
 
 struct test_crate::V<T, const N : usize> =
 {
-  x: Array<T, const N : usize>
+  x: Array<T, const N : usize>,
 }
 
 global test_crate::{test_crate::V<T, const N : usize>}#1::LEN<T, const N : usize>  {

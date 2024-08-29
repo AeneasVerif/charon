@@ -1,0 +1,55 @@
+# Final LLBC before serialization:
+
+struct test_crate::Rng = {}
+
+fn test_crate::{test_crate::Rng}::next_u64<'_0>(@1: &'_0 mut (test_crate::Rng))
+{
+    let @0: (); // return
+    let self@1: &'_ mut (test_crate::Rng); // arg #1
+    let @2: (); // anonymous local
+
+    @2 := ()
+    @0 := move (@2)
+    @0 := ()
+    return
+}
+
+fn test_crate::new::closure<'_0, '_1>(@1: &'_0 mut ((&'_1 mut (test_crate::Rng))), @2: ())
+{
+    let @0: (); // return
+    let state@1: &'_0 mut ((&'_1 mut (test_crate::Rng))); // arg #1
+    let @2: (); // arg #2
+    let @3: &'_ mut (test_crate::Rng); // anonymous local
+    let @4: (); // anonymous local
+
+    @3 := &two-phase-mut *((*(state@1)).0)
+    @2 := test_crate::{test_crate::Rng}::next_u64(move (@3))
+    drop @3
+    drop @2
+    @4 := ()
+    @0 := move (@4)
+    @0 := ()
+    return
+}
+
+fn test_crate::new<'_0>(@1: &'_0 mut (test_crate::Rng))
+{
+    let @0: (); // return
+    let rng@1: &'_ mut (test_crate::Rng); // arg #1
+    let @2: fn(); // anonymous local
+    let @3: &'_ mut (test_crate::Rng); // anonymous local
+    let @4: (); // anonymous local
+
+    @3 := &uniq *(rng@1)
+    @2 := {test_crate::new::closure} {move (@3)}
+    drop @3
+    @fake_read(@2)
+    drop @2
+    @4 := ()
+    @0 := move (@4)
+    @0 := ()
+    return
+}
+
+
+

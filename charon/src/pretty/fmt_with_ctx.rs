@@ -196,7 +196,7 @@ impl<C: AstFormatter> FmtWithCtx<C> for FnPtr {
                 format!("{}", ctx.format_object(*def_id),)
             }
             FunIdOrTraitMethodRef::Fun(FunId::Builtin(builtin)) => {
-                format!("@{}", builtin.variant_name())
+                format!("@{}", builtin)
             }
             FunIdOrTraitMethodRef::Trait(trait_ref, method_id, _) => {
                 format!("{}::{}", trait_ref.fmt_with_ctx(ctx), &method_id.0)
@@ -759,7 +759,40 @@ impl<C: AstFormatter> FmtWithCtx<C> for Place {
                         out = format!("({out}).@closure_state_field_{field_id}");
                     }
                 },
-                ProjectionElem::Index(operand, _) => out = format!("({out})[{}]", operand),
+                ProjectionElem::Index {
+                    offset,
+                    from_end: true,
+                    ..
+                } => out = format!("({out})[-{}]", offset.fmt_with_ctx(ctx)),
+                ProjectionElem::Index {
+                    offset,
+                    from_end: false,
+                    ..
+                } => out = format!("({out})[{}]", offset.fmt_with_ctx(ctx)),
+                ProjectionElem::Subslice {
+                    from,
+                    to,
+                    from_end: true,
+                    ..
+                } => {
+                    out = format!(
+                        "({out})[{}..-{}]",
+                        from.fmt_with_ctx(ctx),
+                        to.fmt_with_ctx(ctx)
+                    )
+                }
+                ProjectionElem::Subslice {
+                    from,
+                    to,
+                    from_end: false,
+                    ..
+                } => {
+                    out = format!(
+                        "({out})[{}..{}]",
+                        from.fmt_with_ctx(ctx),
+                        to.fmt_with_ctx(ctx)
+                    )
+                }
             }
         }
 
@@ -812,18 +845,24 @@ impl<C: AstFormatter> FmtWithCtx<C> for Rvalue {
     fn fmt_with_ctx(&self, ctx: &C) -> String {
         match self {
             Rvalue::Use(x) => x.fmt_with_ctx(ctx),
-            Rvalue::Ref(place, borrow_kind) => match borrow_kind {
-                BorrowKind::Shared => format!("&{}", place.fmt_with_ctx(ctx)),
-                BorrowKind::Mut => format!("&mut {}", place.fmt_with_ctx(ctx)),
-                BorrowKind::TwoPhaseMut => {
-                    format!("&two-phase-mut {}", place.fmt_with_ctx(ctx))
-                }
-                BorrowKind::Shallow => format!("&shallow {}", place.fmt_with_ctx(ctx)),
-            },
-            Rvalue::RawPtr(place, mutability) => match mutability {
-                RefKind::Shared => format!("&raw const {}", place.fmt_with_ctx(ctx)),
-                RefKind::Mut => format!("&raw mut {}", place.fmt_with_ctx(ctx)),
-            },
+            Rvalue::Ref(place, borrow_kind) => {
+                let borrow_kind = match borrow_kind {
+                    BorrowKind::Shared => "&",
+                    BorrowKind::Mut => "&mut ",
+                    BorrowKind::TwoPhaseMut => "&two-phase-mut ",
+                    BorrowKind::UniqueImmutable => "&uniq ",
+                    BorrowKind::Shallow => "&shallow ",
+                };
+                format!("{borrow_kind}{}", place.fmt_with_ctx(ctx))
+            }
+            Rvalue::RawPtr(place, mutability) => {
+                let ptr_kind = match mutability {
+                    RefKind::Shared => "&raw const ",
+                    RefKind::Mut => "&raw mut ",
+                };
+                format!("{ptr_kind}{}", place.fmt_with_ctx(ctx))
+            }
+
             Rvalue::BinaryOp(binop, x, y) => {
                 format!("{} {} {}", x.fmt_with_ctx(ctx), binop, y.fmt_with_ctx(ctx))
             }
@@ -1372,11 +1411,10 @@ impl<C: AstFormatter> FmtWithCtx<C> for TypeDecl {
         match &self.kind {
             TypeDeclKind::Struct(fields) => {
                 if !fields.is_empty() {
-                    let fields: Vec<String> = fields
+                    let fields = fields
                         .iter()
-                        .map(|f| format!("\n  {}", f.fmt_with_ctx(ctx)))
-                        .collect();
-                    let fields = fields.join(",");
+                        .map(|f| format!("\n  {},", f.fmt_with_ctx(ctx)))
+                        .format("");
                     format!(
                         "struct {}{params}{preds}{eq_space}=\n{{{fields}\n}}",
                         self.item_meta.name.fmt_with_ctx(ctx)
@@ -1388,12 +1426,21 @@ impl<C: AstFormatter> FmtWithCtx<C> for TypeDecl {
                     )
                 }
             }
+            TypeDeclKind::Union(fields) => {
+                let fields = fields
+                    .iter()
+                    .map(|f| format!("\n  {},", f.fmt_with_ctx(ctx)))
+                    .format("");
+                format!(
+                    "union {}{params}{preds}{eq_space}=\n{{{fields}\n}}",
+                    self.item_meta.name.fmt_with_ctx(ctx)
+                )
+            }
             TypeDeclKind::Enum(variants) => {
-                let variants: Vec<String> = variants
+                let variants = variants
                     .iter()
                     .map(|v| format!("|  {}", v.fmt_with_ctx(ctx)))
-                    .collect();
-                let variants = variants.join("\n");
+                    .format("\n");
                 format!(
                     "enum {}{params}{preds}{eq_space}=\n{variants}\n",
                     self.item_meta.name.fmt_with_ctx(ctx)
@@ -1479,12 +1526,30 @@ impl std::fmt::Display for BinOp {
 
 impl std::fmt::Display for BorrowKind {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::result::Result<(), std::fmt::Error> {
-        match self {
-            BorrowKind::Shared => write!(f, "Shared"),
-            BorrowKind::Mut => write!(f, "Mut"),
-            BorrowKind::TwoPhaseMut => write!(f, "TwoPhaseMut"),
-            BorrowKind::Shallow => write!(f, "Shallow"),
-        }
+        // Reuse the derived `Debug` impl to get the variant name.
+        write!(f, "{self:?}")
+    }
+}
+
+impl std::fmt::Display for BuiltinFunId {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::result::Result<(), std::fmt::Error> {
+        let name = match *self {
+            BuiltinFunId::BoxNew => "BoxNew",
+            BuiltinFunId::ArrayToSliceShared => "ArrayToSliceShared",
+            BuiltinFunId::ArrayToSliceMut => "ArrayToSliceMut",
+            BuiltinFunId::ArrayRepeat => "ArrayRepeat",
+            BuiltinFunId::Index(BuiltinIndexOp {
+                is_array,
+                mutability,
+                is_range,
+            }) => {
+                let ty = if is_array { "Array" } else { "Slice" };
+                let op = if is_range { "SubSlice" } else { "Index" };
+                let mutability = mutability.variant_name();
+                &format!("{ty}{op}{mutability}")
+            }
+        };
+        f.write_str(name)
     }
 }
 

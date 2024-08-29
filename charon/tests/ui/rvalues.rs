@@ -1,5 +1,6 @@
 #![feature(raw_ref_op)]
 #![feature(const_ub_checks)]
+#![feature(rustc_attrs)]
 
 use std::ptr::addr_of;
 
@@ -46,8 +47,10 @@ fn fn_casts() {
 }
 
 fn boxes() {
-    let _ = Box::new(42);
-    let _ = vec![0, 1];
+    let _ = {
+        #[rustc_box]
+        Box::new(42)
+    };
 }
 
 // We force stealing to get the optimized_mir of the function. Optimizing the whole file would

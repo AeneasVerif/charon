@@ -1,4 +1,4 @@
-thread 'rustc' panicked at src/ast/types.rs:642:5:
+thread 'rustc' panicked at src/ast/types.rs:643:5:
 internal error: entered unreachable code: Ty::to_literal: Not the proper variant
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 error: Thread panicked when extracting item `test_crate::foo`.

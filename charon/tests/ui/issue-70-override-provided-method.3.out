@@ -21,7 +21,7 @@ trait test_crate::GenericTrait<Self, T>
 
 struct test_crate::Override<T> =
 {
-  T
+  T,
 }
 
 enum core::option::Option<T> =
@@ -116,7 +116,7 @@ where
 
 struct test_crate::NoOverride<T> =
 {
-  T
+  T,
 }
 
 fn test_crate::{impl test_crate::GenericTrait<core::option::Option<T>> for test_crate::NoOverride<T>}#1::other_method<T>()
