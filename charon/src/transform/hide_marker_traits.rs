@@ -64,15 +64,22 @@ pub struct Transform;
 impl LlbcPass for Transform {
     fn transform_ctx(&self, ctx: &mut TransformCtx<'_>) {
         // Remove any mention of these traits in generic parameters and arguments.
-        let exclude = [
-            "core::marker::Sized",
-            "core::marker::Tuple",
-            "core::marker::Send",
-            "core::marker::Sync",
-            "core::marker::Unpin",
-            "core::alloc::Allocator",
-        ];
-        let exclude = exclude
+        // We always hide `Allocator` because in `Box` it refers to a type parameter that we always
+        // remove.
+        let exclude: &[_] = if ctx.options.hide_marker_traits {
+            &[
+                "core::marker::Sized",
+                "core::marker::Tuple",
+                "core::marker::Send",
+                "core::marker::Sync",
+                "core::marker::Unpin",
+                "core::alloc::Allocator",
+            ]
+        } else {
+            &["core::alloc::Allocator"]
+        };
+
+        let exclude: Vec<NamePattern> = exclude
             .into_iter()
             .map(|s| NamePattern::parse(s).unwrap())
             .collect_vec();

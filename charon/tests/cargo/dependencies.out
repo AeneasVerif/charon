@@ -13,14 +13,23 @@ fn test_cargo_dependencies::silly_incr::closure(@1: (), @2: (u32)) -> u32
     return
 }
 
+trait core::marker::Sized<Self>
+
+trait core::marker::Tuple<Self>
+
 trait core::ops::function::FnOnce<Self, Args>
 {
+    parent_clause_0 : [@TraitClause0]: core::marker::Sized<Args>
+    parent_clause_1 : [@TraitClause1]: core::marker::Tuple<Args>
+    parent_clause_2 : [@TraitClause2]: core::marker::Sized<Self::Output>
     type Output
     fn call_once : core::ops::function::FnOnce::call_once
 }
 
 fn take_mut::take<'_0, T, F>(@1: &'_0 mut (T), @2: F)
 where
+    [@TraitClause0]: core::marker::Sized<T>,
+    [@TraitClause1]: core::marker::Sized<F>,
     [@TraitClause2]: core::ops::function::FnOnce<F, (T)>,
     @TraitClause2::Output = T,
 
@@ -35,7 +44,7 @@ fn test_cargo_dependencies::silly_incr<'_0>(@1: &'_0 mut (u32))
 
     @3 := &two-phase-mut *(x@1)
     @4 := {test_cargo_dependencies::silly_incr::closure} {}
-    @2 := take_mut::take<u32, fn(u32) -> u32>[core::ops::function::FnOnce<fn(u32) -> u32, (u32)>](move (@3), move (@4))
+    @2 := take_mut::take<u32, fn(u32) -> u32>[core::marker::Sized<u32>, core::marker::Sized<fn(u32) -> u32>, core::ops::function::FnOnce<fn(u32) -> u32, (u32)>](move (@3), move (@4))
     drop @4
     drop @3
     drop @2
@@ -51,7 +60,10 @@ enum core::panicking::AssertKind =
 |  Match()
 
 
-enum core::option::Option<T> =
+enum core::option::Option<T>
+  where
+      [@TraitClause0]: core::marker::Sized<T>,
+ =
 |  None()
 |  Some(T)
 
@@ -83,7 +95,7 @@ fn test_cargo_dependencies::main()
     let @18: &'_ (u32); // anonymous local
     let @19: &'_ (u32); // anonymous local
     let @20: &'_ (u32); // anonymous local
-    let @21: core::option::Option<core::fmt::Arguments<'_>>; // anonymous local
+    let @21: core::option::Option<core::fmt::Arguments<'_>, core::marker::Sized<core::fmt::Arguments<'_>>>; // anonymous local
     let @22: (); // anonymous local
     let @23: (); // anonymous local
 

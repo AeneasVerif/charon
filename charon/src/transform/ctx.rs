@@ -16,6 +16,9 @@ pub struct TransformOptions {
     /// reconstruction (note that because several patterns in a match may lead
     /// to the same branch, it is node always possible not to duplicate code).
     pub no_code_duplication: bool,
+    /// Whether to hide the `Sized`, `Sync`, `Send` and `Unpin` marker traits anywhere they show
+    /// up.
+    pub hide_marker_traits: bool,
     // List of patterns to assign a given opacity to. Same as the corresponding `TranslateOptions`
     // field.
     pub item_opacities: Vec<(NamePattern, ItemOpacity)>,
