@@ -22,9 +22,6 @@ use std::fmt;
 use std::path::Component;
 use std::sync::Arc;
 
-/// Ignore the builtin/auto traits like [core::marker::Sized] or [core::marker::Sync].
-const IGNORE_BUILTIN_MARKER_TRAITS: bool = true;
-
 // Re-export to avoid having to fix imports.
 pub(crate) use charon_lib::errors::{
     error_assert, error_or_panic, register_error_or_panic, DepSource, ErrorCtx,
@@ -123,6 +120,11 @@ impl TranslateOptions {
             }
             opacities.push((
                 format!("core::iter::traits::double_ended::DoubleEndedIterator::rfind"),
+                Invisible,
+            ));
+            opacities.push((format!("core::alloc::Allocator"), Invisible));
+            opacities.push((
+                format!("alloc::alloc::{{impl core::alloc::Allocator for _}}"),
                 Invisible,
             ));
 
@@ -393,12 +395,8 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
                     }
                     // Trait implementation
                     hax::ImplSubject::Trait(..) => {
-                        let impl_id = self.register_trait_impl_id(&None, def_id)?;
-                        if let Some(impl_id) = impl_id {
-                            ImplElem::Trait(impl_id)
-                        } else {
-                            error_or_panic!(self, span, "The trait reference was ignored while we need it to compute the name")
-                        }
+                        let impl_id = self.register_trait_impl_id(&None, def_id);
+                        ImplElem::Trait(impl_id)
                     }
                 };
 
@@ -841,11 +839,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         *self.register_id(src, OrdRustId::Type(id)).as_type()
     }
 
-    pub(crate) fn register_fun_decl_id(
-        &mut self,
-        src: &Option<DepSource>,
-        id: DefId,
-    ) -> ast::FunDeclId {
+    pub(crate) fn register_fun_decl_id(&mut self, src: &Option<DepSource>, id: DefId) -> FunDeclId {
         // FIXME: cache this or even better let hax handle this
         let id = if self.tcx.is_const_fn_raw(id) {
             OrdRustId::ConstFun(id)
@@ -855,49 +849,24 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         *self.register_id(src, id).as_fun()
     }
 
-    /// Check whether the id corresponds to one of the marker traits we want to filter out.
-    fn is_marker_trait(&mut self, def_id: DefId) -> Result<bool, Error> {
-        use rustc_hir::lang_items::LangItem;
-        let tcx = self.tcx;
-        let rust_id = DefId::from(def_id);
-        let name = self.def_id_to_name(def_id)?;
-        Ok(tcx.is_lang_item(rust_id, LangItem::Sized)
-            || tcx.is_lang_item(rust_id, LangItem::Tuple)
-            || tcx.is_lang_item(rust_id, LangItem::Sync)
-            || tcx.is_diagnostic_item(rustc_span::sym::Send, rust_id)
-            || tcx.is_lang_item(rust_id, LangItem::Unpin)
-            || name.equals_ref_name(&["core", "alloc", "Allocator"]))
-    }
-
-    /// Returns an [Option] because we may ignore some builtin or auto traits
-    /// like [core::marker::Sized] or [core::marker::Sync].
     pub(crate) fn register_trait_decl_id(
         &mut self,
         src: &Option<DepSource>,
         id: DefId,
-    ) -> Result<Option<ast::TraitDeclId>, Error> {
-        if IGNORE_BUILTIN_MARKER_TRAITS {
-            if self.is_marker_trait(id)? {
-                return Ok(None);
-            }
-        }
-
-        let id = OrdRustId::TraitDecl(id);
-        let trait_decl_id = *self.register_id(src, id).as_trait_decl();
-        Ok(Some(trait_decl_id))
+    ) -> TraitDeclId {
+        *self
+            .register_id(src, OrdRustId::TraitDecl(id))
+            .as_trait_decl()
     }
 
-    /// Returns an [Option] because we may ignore some builtin or auto traits
-    /// like [core::marker::Sized] or [core::marker::Sync].
     pub(crate) fn register_trait_impl_id(
         &mut self,
         src: &Option<DepSource>,
-        rust_id: DefId,
-    ) -> Result<Option<ast::TraitImplId>, Error> {
-        // Check if we need to filter
+        id: DefId,
+    ) -> TraitImplId {
+        // Register the corresponding trait early so we can filter on its name.
         {
-            // Retrieve the id of the implemented trait decl
-            let def = self.hax_def(rust_id);
+            let def = self.hax_def(id);
             let hax::FullDefKind::Impl {
                 impl_subject: hax::ImplSubject::Trait(trait_pred),
                 ..
@@ -906,19 +875,19 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
                 unreachable!()
             };
             let trait_rust_id = (&trait_pred.trait_ref.def_id).into();
-            let _ = self.register_trait_decl_id(src, trait_rust_id)?;
+            let _ = self.register_trait_decl_id(src, trait_rust_id);
         }
 
-        let id = OrdRustId::TraitImpl(rust_id);
-        let trait_impl_id = *self.register_id(src, id).as_trait_impl();
-        Ok(Some(trait_impl_id))
+        *self
+            .register_id(src, OrdRustId::TraitImpl(id))
+            .as_trait_impl()
     }
 
     pub(crate) fn register_global_decl_id(
         &mut self,
         src: &Option<DepSource>,
         id: DefId,
-    ) -> ast::GlobalDeclId {
+    ) -> GlobalDeclId {
         *self.register_id(src, OrdRustId::Global(id)).as_global()
     }
 
@@ -995,11 +964,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         self.t_ctx.register_type_decl_id(&src, id)
     }
 
-    pub(crate) fn register_fun_decl_id(
-        &mut self,
-        span: rustc_span::Span,
-        id: DefId,
-    ) -> ast::FunDeclId {
+    pub(crate) fn register_fun_decl_id(&mut self, span: rustc_span::Span, id: DefId) -> FunDeclId {
         let src = self.make_dep_source(span);
         self.t_ctx.register_fun_decl_id(&src, id)
     }
@@ -1008,7 +973,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         &mut self,
         span: rustc_span::Span,
         id: DefId,
-    ) -> ast::GlobalDeclId {
+    ) -> GlobalDeclId {
         let src = self.make_dep_source(span);
         self.t_ctx.register_global_decl_id(&src, id)
     }
@@ -1019,7 +984,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         &mut self,
         span: rustc_span::Span,
         id: DefId,
-    ) -> Result<Option<ast::TraitDeclId>, Error> {
+    ) -> TraitDeclId {
         let src = self.make_dep_source(span);
         self.t_ctx.register_trait_decl_id(&src, id)
     }
@@ -1030,7 +995,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         &mut self,
         span: rustc_span::Span,
         id: DefId,
-    ) -> Result<Option<ast::TraitImplId>, Error> {
+    ) -> TraitImplId {
         let src = self.make_dep_source(span);
         self.t_ctx.register_trait_impl_id(&src, id)
     }

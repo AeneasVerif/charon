@@ -39,8 +39,8 @@ fn core::ops::function::Fn::call<'_0, Self, Args>(@1: &'_0 (Self), @2: Args) -> 
 
 fn test_crate::map_option<T, F>(@1: core::option::Option<T>, @2: F) -> core::option::Option<T>
 where
-    [@TraitClause0]: core::ops::function::Fn<F, (T)>,
-    (parents((parents(@TraitClause0)::[@TraitClause0]))::[@TraitClause0])::Output = T,
+    [@TraitClause2]: core::ops::function::Fn<F, (T)>,
+    (parents((parents(@TraitClause2)::[@TraitClause0]))::[@TraitClause0])::Output = T,
 {
     let @0: core::option::Option<T>; // return
     let x@1: core::option::Option<T>; // arg #1
@@ -61,7 +61,7 @@ where
             @5 := &f@2
             @7 := move (x@3)
             @6 := (move (@7))
-            @4 := @TraitClause0::call(move (@5), move (@6))
+            @4 := @TraitClause2::call(move (@5), move (@6))
             drop @7
             drop @7
             drop @6
@@ -227,7 +227,7 @@ trait test_crate::Trait<'a, Self>
 
 fn test_crate::test_closure_ref_early_bound::closure<'a, '_1, '_2, T>(@1: &'_2 (()), @2: (&'_1 (T))) -> &'_1 (T)
 where
-    [@TraitClause0]: test_crate::Trait<'_, T>,
+    [@TraitClause1]: test_crate::Trait<'_, T>,
 {
     let @0: &'_ (T); // return
     let state@1: &'_2 (()); // arg #1
@@ -239,7 +239,7 @@ where
 
 fn test_crate::test_closure_ref_early_bound<'a, T>(@1: &'a (T)) -> &'a (T)
 where
-    [@TraitClause0]: test_crate::Trait<'_, T>,
+    [@TraitClause1]: test_crate::Trait<'_, T>,
 {
     let @0: &'_ (T); // return
     let x@1: &'_ (T); // arg #1
@@ -249,7 +249,7 @@ where
     let @5: fn<'_1_0>(&'_1_0 (T)) -> &'_1_0 (T); // anonymous local
     let @6: &'_ (T); // anonymous local
 
-    @3 := {test_crate::test_closure_ref_early_bound::closure<'_, T>[@TraitClause0]} {}
+    @3 := {test_crate::test_closure_ref_early_bound::closure<'_, T>[@TraitClause1]} {}
     f@2 := cast<fn<'_1_0>(&'_1_0 (T)) -> &'_1_0 (T), fn<'_1_0>(&'_1_0 (T)) -> &'_1_0 (T)>(move (@3))
     drop @3
     @fake_read(f@2)
@@ -350,14 +350,14 @@ fn core::clone::Clone::clone<'_0, Self>(@1: &'_0 (Self)) -> Self
 
 fn test_crate::id_clone<T>(@1: T) -> T
 where
-    [@TraitClause0]: core::clone::Clone<T>,
+    [@TraitClause1]: core::clone::Clone<T>,
 {
     let @0: T; // return
     let x@1: T; // arg #1
     let @2: &'_ (T); // anonymous local
 
     @2 := &x@1
-    @0 := @TraitClause0::clone(move (@2))
+    @0 := @TraitClause1::clone(move (@2))
     drop @2
     drop x@1
     return
@@ -391,7 +391,7 @@ fn test_crate::test_id_clone(@1: u32) -> u32
 
 fn test_crate::test_id_clone_param<T>(@1: T) -> T
 where
-    [@TraitClause0]: core::clone::Clone<T>,
+    [@TraitClause1]: core::clone::Clone<T>,
 {
     let @0: T; // return
     let x@1: T; // arg #1
@@ -399,7 +399,7 @@ where
     let @3: fn(T) -> T; // anonymous local
     let @4: T; // anonymous local
 
-    f@2 := cast<fn(T) -> T, fn(T) -> T>(const (test_crate::id_clone<T>[@TraitClause0]))
+    f@2 := cast<fn(T) -> T, fn(T) -> T>(const (test_crate::id_clone<T>[@TraitClause1]))
     @fake_read(f@2)
     @3 := copy (f@2)
     @4 := move (x@1)
@@ -539,7 +539,7 @@ fn test_crate::test_closure_capture(@1: u32, @2: u32) -> u32
 
 fn test_crate::test_closure_clone::closure<'_0, T>(@1: &'_0 (()), @2: (T)) -> T
 where
-    [@TraitClause0]: core::clone::Clone<T>,
+    [@TraitClause1]: core::clone::Clone<T>,
 {
     let @0: T; // return
     let state@1: &'_0 (()); // arg #1
@@ -547,7 +547,7 @@ where
     let @3: &'_ (T); // anonymous local
 
     @3 := &x@2
-    @0 := @TraitClause0::clone(move (@3))
+    @0 := @TraitClause1::clone(move (@3))
     drop @3
     drop x@2
     return
@@ -555,7 +555,7 @@ where
 
 fn test_crate::test_closure_clone<T>(@1: T) -> T
 where
-    [@TraitClause0]: core::clone::Clone<T>,
+    [@TraitClause1]: core::clone::Clone<T>,
 {
     let @0: T; // return
     let x@1: T; // arg #1
@@ -565,7 +565,7 @@ where
     let @5: (T); // anonymous local
     let @6: T; // anonymous local
 
-    @3 := {test_crate::test_closure_clone::closure<T>[@TraitClause0]} {}
+    @3 := {test_crate::test_closure_clone::closure<T>[@TraitClause1]} {}
     f@2 := &@3
     @fake_read(f@2)
     @4 := &*(f@2)
@@ -594,8 +594,8 @@ fn test_crate::test_array_map::closure<'_0>(@1: &'_0 mut (()), @2: (i32)) -> i32
 
 fn core::array::{Array<T, const N : usize>}#23::map<T, F, U, const N : usize>(@1: Array<T, const N : usize>, @2: F) -> Array<U, const N : usize>
 where
-    [@TraitClause0]: core::ops::function::FnMut<F, (T)>,
-    (parents(@TraitClause0)::[@TraitClause0])::Output = U,
+    [@TraitClause3]: core::ops::function::FnMut<F, (T)>,
+    (parents(@TraitClause3)::[@TraitClause0])::Output = U,
 
 fn test_crate::test_array_map(@1: Array<i32, 256 : usize>) -> Array<i32, 256 : usize>
 {
@@ -622,21 +622,21 @@ struct test_crate::Foo<'a, T>
 
 fn test_crate::{test_crate::Foo<'a, T>}::test_nested_closures::closure::closure::closure<'a, '_1, '_2, T>(@1: &'_1 ((&'_2 (T))), @2: ()) -> T
 where
-    [@TraitClause0]: core::clone::Clone<T>,
+    [@TraitClause1]: core::clone::Clone<T>,
 {
     let @0: T; // return
     let state@1: &'_1 ((&'_2 (T))); // arg #1
     let @2: &'_ (T); // arg #2
 
     @2 := &*((*(state@1)).0)
-    @0 := @TraitClause0::clone(move (@2))
+    @0 := @TraitClause1::clone(move (@2))
     drop @2
     return
 }
 
 fn test_crate::{test_crate::Foo<'a, T>}::test_nested_closures::closure::closure<'a, '_1, '_2, T>(@1: &'_1 ((&'_2 (T))), @2: ()) -> fn() -> T
 where
-    [@TraitClause0]: core::clone::Clone<T>,
+    [@TraitClause1]: core::clone::Clone<T>,
 {
     let @0: fn() -> T; // return
     let state@1: &'_1 ((&'_2 (T))); // arg #1
@@ -650,7 +650,7 @@ where
 
 fn test_crate::{test_crate::Foo<'a, T>}::test_nested_closures::closure<'a, '_1, '_2, T>(@1: &'_1 ((&'_2 (T))), @2: ()) -> fn() -> fn() -> T
 where
-    [@TraitClause0]: core::clone::Clone<T>,
+    [@TraitClause1]: core::clone::Clone<T>,
 {
     let @0: fn() -> fn() -> T; // return
     let state@1: &'_1 ((&'_2 (T))); // arg #1
@@ -665,7 +665,7 @@ where
 fn test_crate::{test_crate::Foo<'a, T>}::test_nested_closures<'a, 'b, T>(@1: &'a (&'b (T))) -> T
 where
     // Inherited clauses:
-    [@TraitClause0]: core::clone::Clone<T>,
+    [@TraitClause1]: core::clone::Clone<T>,
 {
     let @0: T; // return
     let x@1: &'_ (&'_ (T)); // arg #1

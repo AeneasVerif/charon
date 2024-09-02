@@ -305,9 +305,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         };
 
         // Retrieve the information about the implemented trait.
-        let trait_id = bt_ctx.register_trait_decl_id(span, implemented_trait_rust_id)?;
-        // We already tested above whether the trait should be filtered
-        let trait_id = trait_id.unwrap();
+        let trait_id = bt_ctx.register_trait_decl_id(span, implemented_trait_rust_id);
         let implemented_trait = {
             let implemented_trait = &trait_pred.trait_ref;
             let (regions, types, const_generics) = bt_ctx.translate_substs(

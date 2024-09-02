@@ -674,7 +674,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 }
                 | FullDefKind::Trait { self_predicate, .. } => {
                     let trait_rust_id = DefId::from(&self_predicate.trait_ref.def_id);
-                    self.register_trait_decl_id(span, trait_rust_id)?;
+                    self.register_trait_decl_id(span, trait_rust_id);
                     let hax_span = span.sinto(&self.t_ctx.hax_state);
                     self.translate_self_trait_clause(&hax_span, &self_predicate)?;
                 }
@@ -702,7 +702,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 // TODO: distinguish trait where clauses from trait supertraits. Currently we
                 // consider them all as parent clauses.
                 FullDefKind::Trait { .. } => {
-                    let trait_id = self.register_trait_decl_id(span, rust_id)?.unwrap();
+                    let trait_id = self.register_trait_decl_id(span, rust_id);
                     (
                         PredicateOrigin::WhereClauseOnTrait,
                         PredicateLocation::Parent(trait_id),

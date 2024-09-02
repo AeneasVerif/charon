@@ -41,16 +41,16 @@ enum core::option::Option<T> =
 fn core::option::{impl core::clone::Clone for core::option::Option<T>}#5::clone<'_0, T>(@1: &'_0 (core::option::Option<T>)) -> core::option::Option<T>
 where
     // Inherited clauses:
-    [@TraitClause0]: core::clone::Clone<T>,
+    [@TraitClause1]: core::clone::Clone<T>,
 
 fn core::option::{impl core::clone::Clone for core::option::Option<T>}#5::clone_from<'_0, '_1, T>(@1: &'_0 mut (core::option::Option<T>), @2: &'_1 (core::option::Option<T>))
 where
     // Inherited clauses:
-    [@TraitClause0]: core::clone::Clone<T>,
+    [@TraitClause1]: core::clone::Clone<T>,
 
 impl<T> core::option::{impl core::clone::Clone for core::option::Option<T>}#5<T> : core::clone::Clone<core::option::Option<T>>
 where
-    [@TraitClause0]: core::clone::Clone<T>,
+    [@TraitClause1]: core::clone::Clone<T>,
 {
     fn clone = core::option::{impl core::clone::Clone for core::option::Option<T>}#5::clone
     fn clone_from = core::option::{impl core::clone::Clone for core::option::Option<T>}#5::clone_from
@@ -65,16 +65,16 @@ impl<'a, T> test_crate::{impl test_crate::Foo<'a> for &'a (T)}<'a, T> : test_cra
 
 fn core::clone::Clone::clone<'_0, Self>(@1: &'_0 (Self)) -> Self
 
-fn test_crate::external_use_item<'a, T>(@1: @TraitClause0::Item) -> @TraitClause0::Item
+fn test_crate::external_use_item<'a, T>(@1: @TraitClause1::Item) -> @TraitClause1::Item
 where
-    [@TraitClause0]: test_crate::Foo<'_, T>,
+    [@TraitClause1]: test_crate::Foo<'_, T>,
 {
-    let @0: @TraitClause0::Item; // return
-    let x@1: @TraitClause0::Item; // arg #1
-    let @2: &'_ (@TraitClause0::Item); // anonymous local
+    let @0: @TraitClause1::Item; // return
+    let x@1: @TraitClause1::Item; // arg #1
+    let @2: &'_ (@TraitClause1::Item); // anonymous local
 
     @2 := &x@1
-    @0 := (parents(@TraitClause0)::[@TraitClause1])::clone(move (@2))
+    @0 := (parents(@TraitClause1)::[@TraitClause1])::clone(move (@2))
     drop @2
     drop x@1
     return
@@ -98,14 +98,14 @@ fn test_crate::call_fn()
     return
 }
 
-fn test_crate::type_equality<'a, I, J>(@1: @TraitClause0::Item) -> @TraitClause1::Item
+fn test_crate::type_equality<'a, I, J>(@1: @TraitClause2::Item) -> @TraitClause3::Item
 where
-    [@TraitClause0]: test_crate::Foo<'_, I>,
-    [@TraitClause1]: test_crate::Foo<'_, J>,
-    @TraitClause1::Item = @TraitClause0::Item,
+    [@TraitClause2]: test_crate::Foo<'_, I>,
+    [@TraitClause3]: test_crate::Foo<'_, J>,
+    @TraitClause3::Item = @TraitClause2::Item,
 {
-    let @0: @TraitClause0::Item; // return
-    let x@1: @TraitClause0::Item; // arg #1
+    let @0: @TraitClause2::Item; // return
+    let x@1: @TraitClause2::Item; // arg #1
 
     @0 := move (x@1)
     drop x@1
@@ -138,8 +138,8 @@ impl test_crate::loopy::{impl test_crate::loopy::Foo for ()}#1 : test_crate::loo
 
 trait test_crate::loopy::Baz<Self, T>
 {
-    parent_clause_0 : [@TraitClause0]: test_crate::loopy::Baz<T, T>
-    parent_clause_1 : [@TraitClause1]: test_crate::loopy::Bar<T>
+    parent_clause_1 : [@TraitClause1]: test_crate::loopy::Baz<T, T>
+    parent_clause_2 : [@TraitClause2]: test_crate::loopy::Bar<T>
     type BazTy
 }
 

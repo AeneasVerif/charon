@@ -1,6 +1,8 @@
 pub mod check_generics;
 pub mod ctx;
+pub mod filter_invisible_trait_impls;
 pub mod graphs;
+pub mod hide_marker_traits;
 pub mod index_to_function_calls;
 pub mod inline_local_panic_functions;
 pub mod insert_assign_return_unit;
@@ -38,6 +40,11 @@ pub static ULLBC_PASSES: &[&dyn ctx::UllbcPass] = &[
 ];
 
 pub static LLBC_PASSES: &[&dyn ctx::LlbcPass] = &[
+    // # Micro-pass: hide some overly-common traits we don't need: Sized, Sync, Allocator, etc..
+    &hide_marker_traits::Transform,
+    // # Micro-pass: filter the trait impls that were marked invisible since we couldn't filter
+    // them out earlier.
+    &filter_invisible_trait_impls::Transform,
     // # Micro-pass: the first local variable of closures is the
     // closure itself. This is not consistent with the closure signature,
     // which ignores this first variable. This micro-pass updates this.

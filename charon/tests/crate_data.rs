@@ -171,21 +171,35 @@ fn predicate_origins() -> anyhow::Result<()> {
     let expected_function_clause_origins: Vec<(&str, Vec<_>)> = vec![
         (
             "test_crate::top_level_function",
-            vec![(WhereClauseOnFn, "Clone"), (WhereClauseOnFn, "Default")],
+            vec![
+                (WhereClauseOnFn, "Sized"),
+                (WhereClauseOnFn, "Clone"),
+                (WhereClauseOnFn, "Default"),
+            ],
         ),
         (
             "test_crate::Struct",
-            vec![(WhereClauseOnType, "Clone"), (WhereClauseOnType, "Default")],
+            vec![
+                (WhereClauseOnType, "Sized"),
+                (WhereClauseOnType, "Clone"),
+                (WhereClauseOnType, "Default"),
+            ],
         ),
         (
             "test_crate::TypeAlias",
-            vec![(WhereClauseOnType, "Clone"), (WhereClauseOnType, "Default")],
+            vec![
+                (WhereClauseOnType, "Sized"),
+                (WhereClauseOnType, "Clone"),
+                (WhereClauseOnType, "Default"),
+            ],
         ),
         (
             "test_crate::<inherent impl>::inherent_method",
             vec![
+                (WhereClauseOnImpl, "Sized"),
                 (WhereClauseOnImpl, "Clone"),
                 (WhereClauseOnImpl, "Default"),
+                (WhereClauseOnFn, "Sized"),
                 (WhereClauseOnFn, "From"),
                 (WhereClauseOnFn, "From"),
             ],
@@ -194,25 +208,37 @@ fn predicate_origins() -> anyhow::Result<()> {
             "test_crate::Trait",
             vec![
                 (WhereClauseOnTrait, "Clone"),
+                (WhereClauseOnTrait, "Sized"),
                 (WhereClauseOnTrait, "Copy"),
                 (WhereClauseOnTrait, "Default"),
                 (TraitItem(TraitItemName("AssocType".to_owned())), "Default"),
+                (TraitItem(TraitItemName("AssocType".to_owned())), "Sized"),
             ],
         ),
         // Interesting note: the method definition does not mention the clauses on the trait.
         (
             "test_crate::Trait::trait_method",
-            vec![(WhereClauseOnFn, "From"), (WhereClauseOnFn, "From")],
+            vec![
+                (WhereClauseOnFn, "Sized"),
+                (WhereClauseOnFn, "From"),
+                (WhereClauseOnFn, "From"),
+            ],
         ),
         (
             "test_crate::<impl for Trait>",
-            vec![(WhereClauseOnImpl, "Copy"), (WhereClauseOnImpl, "Default")],
+            vec![
+                (WhereClauseOnImpl, "Sized"),
+                (WhereClauseOnImpl, "Copy"),
+                (WhereClauseOnImpl, "Default"),
+            ],
         ),
         (
             "test_crate::<impl for Trait>::trait_method",
             vec![
+                (WhereClauseOnImpl, "Sized"),
                 (WhereClauseOnImpl, "Copy"),
                 (WhereClauseOnImpl, "Default"),
+                (WhereClauseOnFn, "Sized"),
                 (WhereClauseOnFn, "From"),
                 (WhereClauseOnFn, "From"),
             ],

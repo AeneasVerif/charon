@@ -154,6 +154,11 @@ pub struct CliOpts {
     )]
     #[serde(default)]
     pub exclude: Vec<String>,
+    /// Whether to hide the `Sized`, `Sync`, `Send` and `Unpin` marker traits anywhere they show
+    /// up.
+    #[clap(long = "hide-marker-traits")]
+    #[serde(default)]
+    pub hide_marker_traits: bool,
     /// Do not run cargo; instead, run the driver directly.
     // FIXME: use a subcommand instead, when we update clap to support flattening.
     #[clap(long = "no-cargo")]

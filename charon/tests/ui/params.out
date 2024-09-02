@@ -108,5 +108,7 @@ struct test_crate::S1<'a, 'b, 'c, 'd>
   x: test_crate::E1<'a, 'b, &'c mut (u32), &'d (u32)>,
 }
 
+struct alloc::alloc::Global = {}
+
 
 

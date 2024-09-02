@@ -291,6 +291,8 @@ fn test_crate::nullary_ops<T>() -> usize
     return
 }
 
+struct alloc::alloc::Global = {}
+
 unsafe fn alloc::alloc::exchange_malloc(@1: usize, @2: usize) -> *mut u8
 
 

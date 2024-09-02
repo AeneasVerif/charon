@@ -18,7 +18,7 @@ trait core::fmt::Display<Self>
 
 fn test_crate::construct<T>(@1: T) -> alloc::boxed::Box<dyn (exists(TODO))>
 where
-    [@TraitClause0]: core::fmt::Display<T>,
+    [@TraitClause1]: core::fmt::Display<T>,
 
 opaque type alloc::string::String
 
@@ -81,6 +81,8 @@ fn test_crate::bar<'_0>(@1: &'_0 (dyn (exists(TODO))))
 }
 
 fn core::fmt::Display::fmt<'_0, '_1, '_2, Self>(@1: &'_0 (Self), @2: &'_1 mut (core::fmt::Formatter<'_2>)) -> core::result::Result<(), core::fmt::Error>
+
+struct alloc::alloc::Global = {}
 
 
 

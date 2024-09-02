@@ -391,9 +391,6 @@ pub fn translate<'tcx, 'ctx>(options: &CliOpts, tcx: TyCtxt<'tcx>) -> TransformC
         def_id: None,
         error_count: 0,
     };
-    let transform_options = TransformOptions {
-        no_code_duplication: options.no_code_duplication,
-    };
     let translate_options = TranslateOptions::new(&mut error_ctx, options);
     let mut ctx = TranslateCtx {
         tcx,
@@ -454,6 +451,11 @@ pub fn translate<'tcx, 'ctx>(options: &CliOpts, tcx: TyCtxt<'tcx>) -> TransformC
         ctx.translate_item(ord_id.get_id(), trans_id);
     }
 
+    let transform_options = TransformOptions {
+        no_code_duplication: options.no_code_duplication,
+        hide_marker_traits: options.hide_marker_traits,
+        item_opacities: ctx.options.item_opacities,
+    };
     // Return the context, dropping the hax state and rustc `tcx`.
     TransformCtx {
         options: transform_options,

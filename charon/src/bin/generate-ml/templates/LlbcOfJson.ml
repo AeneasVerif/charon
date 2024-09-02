@@ -139,7 +139,13 @@ let crate_of_json (js : json) : (crate, string) result =
      * of function declarations: the (fresh) ids we use for those bodies
      * are simply given by: [num_functions + global_id] *)
     let gid_conv =
-      { fun_count = List.length (FunDeclId.Map.bindings crate.fun_decls) }
+      {
+        fun_count =
+          List.fold_left
+            (fun acc (id, _) -> max acc (1 + FunDeclId.to_int id))
+            0
+            (FunDeclId.Map.bindings crate.fun_decls);
+      }
     in
     let globals, global_bodies =
       List.split
