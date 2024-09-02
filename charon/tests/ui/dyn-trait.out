@@ -84,15 +84,5 @@ fn core::fmt::Display::fmt<'_0, '_1, '_2, Self>(@1: &'_0 (Self), @2: &'_1 mut (c
 
 struct alloc::alloc::Global = {}
 
-impl alloc::alloc::{impl @TraitDecl3 for alloc::alloc::Global}#1 : @TraitDecl3<alloc::alloc::Global>
-{
-    fn allocate = @Fun8
-    fn deallocate = @Fun10
-    fn allocate_zeroed = @Fun9
-    fn grow = @Fun11
-    fn grow_zeroed = @Fun12
-    fn shrink = @Fun13
-}
-
 
 

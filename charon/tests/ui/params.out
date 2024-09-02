@@ -110,15 +110,5 @@ struct test_crate::S1<'a, 'b, 'c, 'd>
 
 struct alloc::alloc::Global = {}
 
-impl alloc::alloc::{impl @TraitDecl1 for alloc::alloc::Global}#1 : @TraitDecl1<alloc::alloc::Global>
-{
-    fn allocate = @Fun1
-    fn deallocate = @Fun3
-    fn allocate_zeroed = @Fun2
-    fn grow = @Fun4
-    fn grow_zeroed = @Fun5
-    fn shrink = @Fun6
-}
-
 
 

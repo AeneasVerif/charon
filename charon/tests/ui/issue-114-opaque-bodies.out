@@ -208,16 +208,6 @@ where
     return
 }
 
-impl alloc::alloc::{impl @TraitDecl2 for alloc::alloc::Global}#1 : @TraitDecl2<alloc::alloc::Global>
-{
-    fn allocate = @Fun13
-    fn deallocate = @Fun15
-    fn allocate_zeroed = @Fun14
-    fn grow = @Fun16
-    fn grow_zeroed = @Fun17
-    fn shrink = @Fun18
-}
-
 fn core::cmp::PartialEq::eq<'_0, '_1, Self, Rhs>(@1: &'_0 (Self), @2: &'_1 (Rhs)) -> bool
 
 fn core::cmp::PartialEq::ne<'_0, '_1, Self, Rhs>(@1: &'_0 (Self), @2: &'_1 (Rhs)) -> bool

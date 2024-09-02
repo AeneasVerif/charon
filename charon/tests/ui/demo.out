@@ -409,15 +409,5 @@ where
 
 struct alloc::alloc::Global = {}
 
-impl alloc::alloc::{impl @TraitDecl2 for alloc::alloc::Global}#1 : @TraitDecl2<alloc::alloc::Global>
-{
-    fn allocate = @Fun14
-    fn deallocate = @Fun16
-    fn allocate_zeroed = @Fun15
-    fn grow = @Fun17
-    fn grow_zeroed = @Fun18
-    fn shrink = @Fun19
-}
-
 
 

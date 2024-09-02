@@ -78,15 +78,5 @@ fn core::clone::Clone::clone<'_0, Self>(@1: &'_0 (Self)) -> Self
 
 fn core::clone::Clone::clone_from<'_0, '_1, Self>(@1: &'_0 mut (Self), @2: &'_1 (Self))
 
-impl alloc::alloc::{impl @TraitDecl4 for alloc::alloc::Global}#1 : @TraitDecl4<alloc::alloc::Global>
-{
-    fn allocate = @Fun7
-    fn deallocate = @Fun9
-    fn allocate_zeroed = @Fun8
-    fn grow = @Fun10
-    fn grow_zeroed = @Fun11
-    fn shrink = @Fun12
-}
-
 
 

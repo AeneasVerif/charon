@@ -3,6 +3,7 @@ use crate::errors::ErrorCtx;
 use crate::formatter::{FmtCtx, IntoFormatter};
 use crate::ids::Vector;
 use crate::llbc_ast;
+use crate::name_matcher::NamePattern;
 use crate::pretty::FmtWithCtx;
 use crate::ullbc_ast;
 use rustc_error_messages::MultiSpan;
@@ -15,6 +16,9 @@ pub struct TransformOptions {
     /// reconstruction (note that because several patterns in a match may lead
     /// to the same branch, it is node always possible not to duplicate code).
     pub no_code_duplication: bool,
+    // List of patterns to assign a given opacity to. Same as the corresponding `TranslateOptions`
+    // field.
+    pub item_opacities: Vec<(NamePattern, ItemOpacity)>,
 }
 
 /// Simpler context used for rustc-independent code transformation. This only depends on rustc for

@@ -172,16 +172,6 @@ fn test_crate::Trait::method<Self, T, U>()
 
 struct alloc::alloc::Global = {}
 
-impl alloc::alloc::{impl @TraitDecl2 for alloc::alloc::Global}#1 : @TraitDecl2<alloc::alloc::Global>
-{
-    fn allocate = @Fun5
-    fn deallocate = @Fun7
-    fn allocate_zeroed = @Fun6
-    fn grow = @Fun8
-    fn grow_zeroed = @Fun9
-    fn shrink = @Fun10
-}
-
 fn core::slice::index::SliceIndex::get<'_0, Self, T>(@1: Self, @2: &'_0 (T)) -> core::option::Option<&'_0 (Self::Output)>
 
 fn core::slice::index::SliceIndex::get_mut<'_0, Self, T>(@1: Self, @2: &'_0 mut (T)) -> core::option::Option<&'_0 mut (Self::Output)>

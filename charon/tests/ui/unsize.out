@@ -122,16 +122,6 @@ fn test_crate::foo()
     return
 }
 
-impl alloc::alloc::{impl @TraitDecl1 for alloc::alloc::Global}#1 : @TraitDecl1<alloc::alloc::Global>
-{
-    fn allocate = @Fun5
-    fn deallocate = @Fun7
-    fn allocate_zeroed = @Fun6
-    fn grow = @Fun8
-    fn grow_zeroed = @Fun9
-    fn shrink = @Fun10
-}
-
 fn core::clone::Clone::clone_from<'_0, '_1, Self>(@1: &'_0 mut (Self), @2: &'_1 (Self))
 
 

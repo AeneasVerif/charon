@@ -35,16 +35,6 @@ fn test_crate::foo()
     return
 }
 
-impl alloc::alloc::{impl @TraitDecl1 for alloc::alloc::Global}#1 : @TraitDecl1<alloc::alloc::Global>
-{
-    fn allocate = @Fun3
-    fn deallocate = @Fun5
-    fn allocate_zeroed = @Fun4
-    fn grow = @Fun6
-    fn grow_zeroed = @Fun7
-    fn shrink = @Fun8
-}
-
 unsafe fn alloc::alloc::exchange_malloc(@1: usize, @2: usize) -> *mut u8
 
 

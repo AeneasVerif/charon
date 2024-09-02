@@ -2314,16 +2314,6 @@ unsafe fn core::iter::traits::iterator::Iterator::__iterator_get_unchecked<'_0, 
 where
     [@TraitClause0]: core::iter::adapters::zip::TrustedRandomAccessNoCoerce<Self>,
 
-impl alloc::alloc::{impl @TraitDecl7 for alloc::alloc::Global}#1 : @TraitDecl7<alloc::alloc::Global>
-{
-    fn allocate = @Fun158
-    fn deallocate = @Fun160
-    fn allocate_zeroed = @Fun159
-    fn grow = @Fun161
-    fn grow_zeroed = @Fun162
-    fn shrink = @Fun163
-}
-
 fn core::slice::index::SliceIndex::get<'_0, Self, T>(@1: Self, @2: &'_0 (T)) -> core::option::Option<&'_0 (Self::Output)>
 
 fn core::slice::index::SliceIndex::get_mut<'_0, Self, T>(@1: Self, @2: &'_0 mut (T)) -> core::option::Option<&'_0 mut (Self::Output)>

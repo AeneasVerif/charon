@@ -293,16 +293,6 @@ fn test_crate::nullary_ops<T>() -> usize
 
 struct alloc::alloc::Global = {}
 
-impl alloc::alloc::{impl @TraitDecl1 for alloc::alloc::Global}#1 : @TraitDecl1<alloc::alloc::Global>
-{
-    fn allocate = @Fun12
-    fn deallocate = @Fun14
-    fn allocate_zeroed = @Fun13
-    fn grow = @Fun15
-    fn grow_zeroed = @Fun16
-    fn shrink = @Fun17
-}
-
 unsafe fn alloc::alloc::exchange_malloc(@1: usize, @2: usize) -> *mut u8
 
 

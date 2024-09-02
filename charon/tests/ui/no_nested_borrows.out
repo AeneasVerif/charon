@@ -637,15 +637,5 @@ fn test_crate::read_then_incr<'_0>(@1: &'_0 mut (u32)) -> u32
     return
 }
 
-impl alloc::alloc::{impl @TraitDecl1 for alloc::alloc::Global}#1 : @TraitDecl1<alloc::alloc::Global>
-{
-    fn allocate = @Fun26
-    fn deallocate = @Fun28
-    fn allocate_zeroed = @Fun27
-    fn grow = @Fun29
-    fn grow_zeroed = @Fun30
-    fn shrink = @Fun31
-}
-
 
 
