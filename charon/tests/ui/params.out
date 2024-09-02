@@ -110,20 +110,6 @@ struct test_crate::S1<'a, 'b, 'c, 'd>
 
 struct alloc::alloc::Global = {}
 
-Missing decl: TraitDecl(1) (core::alloc::Allocator)
-
-Missing decl: Fun(1) (alloc::alloc::{impl @TraitDecl1 for alloc::alloc::Global}#1::allocate)
-
-Missing decl: Fun(3) (alloc::alloc::{impl @TraitDecl1 for alloc::alloc::Global}#1::deallocate)
-
-Missing decl: Fun(2) (alloc::alloc::{impl @TraitDecl1 for alloc::alloc::Global}#1::allocate_zeroed)
-
-Missing decl: Fun(4) (alloc::alloc::{impl @TraitDecl1 for alloc::alloc::Global}#1::grow)
-
-Missing decl: Fun(5) (alloc::alloc::{impl @TraitDecl1 for alloc::alloc::Global}#1::grow_zeroed)
-
-Missing decl: Fun(6) (alloc::alloc::{impl @TraitDecl1 for alloc::alloc::Global}#1::shrink)
-
 impl alloc::alloc::{impl @TraitDecl1 for alloc::alloc::Global}#1 : @TraitDecl1<alloc::alloc::Global>
 {
     fn allocate = @Fun1

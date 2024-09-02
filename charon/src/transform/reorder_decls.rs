@@ -428,7 +428,10 @@ fn group_declarations_from_scc(
 
     // Iterate over the SCC ids in the proper order
     for scc in reordered_sccs.iter() {
-        assert!(!scc.is_empty());
+        if scc.is_empty() {
+            // This can happen if we failed to translate the item in this group.
+            continue;
+        }
 
         // Note that the length of an SCC should be at least 1.
         let mut it = scc.iter();
@@ -498,7 +501,13 @@ pub fn compute_reordered_decls(ctx: &TransformCtx) -> DeclarationsGroups {
     // Remark: the [get_id_dependencies] function will be called once per id, meaning
     // it is ok if it is not very efficient and clones values.
     let get_id_dependencies = &|id| graph.graph.get(&id).unwrap().iter().copied().collect();
-    let all_ids: Vec<AnyTransId> = graph.graph.keys().copied().collect();
+    let all_ids: Vec<AnyTransId> = graph
+        .graph
+        .keys()
+        .copied()
+        // Don't list ids that weren't translated.
+        .filter(|id| ctx.translated.get_item(*id).is_some())
+        .collect();
     let reordered_sccs = reorder_sccs::<AnyTransId>(get_id_dependencies, &all_ids, &sccs);
 
     // Finally, generate the list of declarations

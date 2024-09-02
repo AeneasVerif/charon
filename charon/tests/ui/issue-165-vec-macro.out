@@ -35,20 +35,6 @@ fn test_crate::foo()
     return
 }
 
-Missing decl: TraitDecl(1) (core::alloc::Allocator)
-
-Missing decl: Fun(3) (alloc::alloc::{impl @TraitDecl1 for alloc::alloc::Global}#1::allocate)
-
-Missing decl: Fun(5) (alloc::alloc::{impl @TraitDecl1 for alloc::alloc::Global}#1::deallocate)
-
-Missing decl: Fun(4) (alloc::alloc::{impl @TraitDecl1 for alloc::alloc::Global}#1::allocate_zeroed)
-
-Missing decl: Fun(6) (alloc::alloc::{impl @TraitDecl1 for alloc::alloc::Global}#1::grow)
-
-Missing decl: Fun(7) (alloc::alloc::{impl @TraitDecl1 for alloc::alloc::Global}#1::grow_zeroed)
-
-Missing decl: Fun(8) (alloc::alloc::{impl @TraitDecl1 for alloc::alloc::Global}#1::shrink)
-
 impl alloc::alloc::{impl @TraitDecl1 for alloc::alloc::Global}#1 : @TraitDecl1<alloc::alloc::Global>
 {
     fn allocate = @Fun3

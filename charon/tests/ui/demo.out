@@ -409,20 +409,6 @@ where
 
 struct alloc::alloc::Global = {}
 
-Missing decl: TraitDecl(2) (core::alloc::Allocator)
-
-Missing decl: Fun(14) (alloc::alloc::{impl @TraitDecl2 for alloc::alloc::Global}#1::allocate)
-
-Missing decl: Fun(16) (alloc::alloc::{impl @TraitDecl2 for alloc::alloc::Global}#1::deallocate)
-
-Missing decl: Fun(15) (alloc::alloc::{impl @TraitDecl2 for alloc::alloc::Global}#1::allocate_zeroed)
-
-Missing decl: Fun(17) (alloc::alloc::{impl @TraitDecl2 for alloc::alloc::Global}#1::grow)
-
-Missing decl: Fun(18) (alloc::alloc::{impl @TraitDecl2 for alloc::alloc::Global}#1::grow_zeroed)
-
-Missing decl: Fun(19) (alloc::alloc::{impl @TraitDecl2 for alloc::alloc::Global}#1::shrink)
-
 impl alloc::alloc::{impl @TraitDecl2 for alloc::alloc::Global}#1 : @TraitDecl2<alloc::alloc::Global>
 {
     fn allocate = @Fun14

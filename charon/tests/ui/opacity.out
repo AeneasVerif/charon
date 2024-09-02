@@ -68,8 +68,6 @@ impl core::convert::num::{impl core::convert::From<u32> for u64}#72 : core::conv
 
 fn core::convert::Into::into<Self, T>(@1: Self) -> T
 
-Missing decl: Fun(4) (core::slice::raw::from_ref)
-
 fn test_crate::foo()
 {
     let @0: (); // return
