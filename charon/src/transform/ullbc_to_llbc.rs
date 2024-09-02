@@ -32,7 +32,6 @@ use crate::values as v;
 use hashlink::linked_hash_map::LinkedHashMap;
 use im::Vector;
 use itertools::Itertools;
-use petgraph::algo::floyd_warshall::floyd_warshall;
 use petgraph::algo::toposort;
 use petgraph::graphmap::DiGraphMap;
 use petgraph::Direction;
@@ -105,13 +104,6 @@ struct CfgInfo {
     pub backward_edges: HashSet<(src::BlockId, src::BlockId)>,
     pub switch_blocks: HashSet<src::BlockId>,
     pub only_reach_error: HashSet<src::BlockId>,
-    /// The reachability matrix:
-    /// src can reach dest <==> (src, dest) in reachability
-    ///
-    /// TODO: this is not necessary anymore. There is a place where we use it
-    /// as a test to shortcut some computations, but computing this matrix
-    /// is actually probably too expensive for the shortcut to be useful...
-    pub reachability: HashSet<(src::BlockId, src::BlockId)>,
 }
 
 /// Build the CFGs (the "regular" CFG and the CFG without backward edges) and
@@ -245,41 +237,7 @@ impl PartialOrd for OrdBlockId {
     }
 }
 
-/// Compute the reachability matrix for a graph.
-///
-/// We represent the reachability matrix as a set such R that:
-/// there exists a path from src to dest <==> (src, dest) in R
-fn compute_reachability(cfg: &CfgPartialInfo) -> HashSet<(src::BlockId, src::BlockId)> {
-    // We simply use Floyd-Warshall.
-    // We just need to be a little careful: we have to make sure the value we
-    // use for infinity is never reached. That is to say, that there are
-    // less edges in the graph than usize::MAX.
-    // Note that for now, the assertion will actually always statically succeed,
-    // because `edge_count` returns a usize...
-    // Also, if we have as many edges as usize::MAX, the computer will probably
-    // be out of memory...
-    // It it still good to keep it there, though.
-    assert!(cfg.cfg.edge_count() < std::usize::MAX); // Making the comparison strict to avoid warnings...
-
-    let fw_matrix: HashMap<(src::BlockId, src::BlockId), usize> =
-        floyd_warshall(&cfg.cfg, &|_| 1).unwrap();
-
-    // Convert the fw_matrix
-    let reachability: HashSet<(src::BlockId, src::BlockId)> =
-        HashSet::from_iter(fw_matrix.into_iter().filter_map(|((src, dst), dest)| {
-            if dest == std::usize::MAX {
-                None
-            } else {
-                Some((src, dst))
-            }
-        }));
-
-    reachability
-}
-
 fn compute_cfg_info_from_partial(cfg: CfgPartialInfo) -> CfgInfo {
-    let reachability = compute_reachability(&cfg);
-
     let CfgPartialInfo {
         cfg,
         cfg_no_be,
@@ -296,7 +254,6 @@ fn compute_cfg_info_from_partial(cfg: CfgPartialInfo) -> CfgInfo {
         backward_edges,
         switch_blocks,
         only_reach_error,
-        reachability,
     }
 }
 
@@ -343,11 +300,6 @@ fn loop_entry_is_reachable_from_inner(
     loop_entry: src::BlockId,
     block_id: src::BlockId,
 ) -> bool {
-    // Shortcut: the loop entry is not reachable at all
-    if !cfg.reachability.contains(&(block_id, loop_entry)) {
-        return false;
-    }
-
     // It is reachable in the complete graph. Check if it is reachable by not
     // going through backward edges which go to outer loops. In practice, we
     // just need to forbid the use of any backward edges at the exception of
