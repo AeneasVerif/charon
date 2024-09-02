@@ -88,25 +88,31 @@ module PatternTest = struct
     }
 
   (* Parse a test from the annotation string as given by Charon. *)
-  let parse (whole_attribute : string) : t option =
-    match Core.String.chop_prefix whole_attribute ~prefix:"pattern::" with
-    | None -> None
-    | Some attribute -> (
-        let re =
-          Re.compile
-            (Re.Pcre.re
-               "^(pass|fail)\\((call\\s*\\[(\\d+)\\],\\s*)?\"(.*)\"\\)$")
-        in
-        match Re.exec_opt re attribute with
-        | Some groups ->
-            let success = Re.Group.get groups 1 = "pass" in
-            let call_idx =
-              Option.map int_of_string (Re.Group.get_opt groups 3)
-            in
-            let pattern = parse_pattern (Re.Group.get groups 4) in
-            Some { pattern; call_idx; success }
-        | None ->
-            failwith ("Couldn't parse attribute: `" ^ whole_attribute ^ "`"))
+  let parse (attribute : raw_attribute) : t option =
+    let fail () =
+      failwith
+        ("Couldn't parse attribute: `"
+        ^ PrintTypes.raw_attribute_to_string attribute
+        ^ "`")
+    in
+    if attribute.path = "pattern::pass" || attribute.path = "pattern::fail" then
+      match attribute.args with
+      | None -> fail ()
+      | Some arg -> begin
+          let re =
+            Re.compile (Re.Pcre.re "^(call\\s*\\[(\\d+)\\],\\s*)?\"(.*)\"$")
+          in
+          match Re.exec_opt re arg with
+          | Some groups ->
+              let success = attribute.path = "pattern::pass" in
+              let call_idx =
+                Option.map int_of_string (Re.Group.get_opt groups 2)
+              in
+              let pattern = parse_pattern (Re.Group.get groups 3) in
+              Some { pattern; call_idx; success }
+          | None -> fail ()
+        end
+    else None
 
   (* Check that the given function declaration matches the pattern. *)
   let check_fun_decl (env : env) (decl : fun_decl) (test : t) : bool =

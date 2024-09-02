@@ -1,6 +1,7 @@
 //! This file groups everything which is linked to implementations about [crate::meta]
 use crate::meta::*;
 use crate::names::{Disambiguator, Name, PathElem};
+use itertools::Itertools;
 use std::cmp::Ordering;
 use std::iter::Iterator;
 
@@ -71,11 +72,30 @@ pub fn combine_span_iter<'a, T: Iterator<Item = &'a Span>>(mut ms: T) -> Span {
 }
 
 impl Attribute {
+    /// Parse a raw attribute to recognize our special `charon::*` and `aeneas::*` attributes.
+    pub fn parse_from_raw(raw_attr: RawAttribute) -> Result<Self, String> {
+        // If the attribute path has two components, the first of which is `charon` or `aeneas`, we
+        // try to parse it. Otherwise we return `Unknown`.
+        let path = raw_attr.path.split("::").collect_vec();
+        let attr_name = if let &[path_start, attr_name] = path.as_slice()
+            && (path_start == "charon" || path_start == "aeneas")
+        {
+            attr_name
+        } else {
+            return Ok(Self::Unknown(raw_attr));
+        };
+
+        match Self::parse_special_attr(attr_name, raw_attr.args.as_deref())? {
+            Some(parsed) => Ok(parsed),
+            None => Err(format!(
+                "Unrecognized attribute: `{}`",
+                raw_attr.to_string()
+            )),
+        }
+    }
+
     /// Parse a `charon::*` or `aeneas::*` attribute.
-    pub fn parse_special_attr(
-        attr_name: &str,
-        args: Option<String>,
-    ) -> Result<Option<Self>, String> {
+    fn parse_special_attr(attr_name: &str, args: Option<&str>) -> Result<Option<Self>, String> {
         let parsed = match attr_name {
             // `#[charon::opaque]`
             "opaque" if args.is_none() => Self::Opaque,

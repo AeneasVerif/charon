@@ -306,7 +306,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         // There are no trait refs
         let generics = GenericArgs::new(regions, types, const_generics, Default::default());
 
-        let span = self.translate_span_from_rspan(hspan.clone());
+        let span = self.translate_span_from_hax(hspan.clone());
 
         Ok(Some(NonLocalTraitClause {
             clause_id,

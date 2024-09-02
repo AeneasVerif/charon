@@ -239,8 +239,17 @@ and attribute_of_json (js : json) : (attribute, string) result =
         let* doc_comment = string_of_json doc_comment in
         Ok (AttrDocComment doc_comment)
     | `Assoc [ ("Unknown", unknown) ] ->
-        let* unknown = string_of_json unknown in
+        let* unknown = raw_attribute_of_json unknown in
         Ok (AttrUnknown unknown)
+    | _ -> Error "")
+
+and raw_attribute_of_json (js : json) : (raw_attribute, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with
+    | `Assoc [ ("path", path); ("args", args) ] ->
+        let* path = string_of_json path in
+        let* args = option_of_json string_of_json args in
+        Ok ({ path; args } : raw_attribute)
     | _ -> Error "")
 
 and attr_info_of_json (js : json) : (attr_info, string) result =

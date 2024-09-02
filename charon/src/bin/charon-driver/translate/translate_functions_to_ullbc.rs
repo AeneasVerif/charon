@@ -805,8 +805,6 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         trait_refs: &Vec<hax::ImplExpr>,
         trait_info: &Option<hax::ImplExpr>,
     ) -> Result<SubstFunIdOrPanic, Error> {
-        let rust_id = DefId::from(def_id);
-
         let builtin_fun = self.recognize_builtin_fun(def_id)?;
         if matches!(builtin_fun, Some(BuiltinFun::Panic)) {
             let name = self.t_ctx.hax_def_id_to_name(def_id)?;
@@ -825,12 +823,12 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         // Trait information
         trace!(
             "Trait information:\n- def_id: {:?}\n- impl source:\n{:?}",
-            rust_id,
+            def_id,
             trait_info
         );
         trace!(
             "Method traits:\n- def_id: {:?}\n- traits:\n{:?}",
-            rust_id,
+            def_id,
             trait_refs
         );
 
@@ -878,28 +876,24 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
 
             FunIdOrTraitMethodRef::Fun(FunId::Builtin(aid))
         } else {
+            let rust_id = DefId::from(def_id);
+            let fun_id = self.register_fun_decl_id(span, rust_id);
             // Two cases depending on whether we call a trait method or not
             match trait_info {
                 None => {
                     // "Regular" function call
-                    let def_id = self.register_fun_decl_id(span, rust_id);
-                    FunIdOrTraitMethodRef::Fun(FunId::Regular(def_id))
+                    FunIdOrTraitMethodRef::Fun(FunId::Regular(fun_id))
                 }
                 Some(trait_info) => {
                     // Trait method
-                    let rust_id = DefId::from(def_id);
                     let impl_expr =
                         self.translate_trait_impl_expr(span, erase_regions, trait_info)?;
                     // The impl source should be Some(...): trait markers (that we may
                     // eliminate) don't have methods.
                     let impl_expr = impl_expr.unwrap();
 
-                    trace!("{:?}", rust_id);
-
-                    let trait_method_fun_id = self.register_fun_decl_id(span, rust_id);
                     let method_name = self.t_ctx.translate_trait_item_name(rust_id)?;
-
-                    FunIdOrTraitMethodRef::Trait(impl_expr, method_name, trait_method_fun_id)
+                    FunIdOrTraitMethodRef::Trait(impl_expr, method_name, fun_id)
                 }
             }
         };
@@ -1342,7 +1336,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         self.translate_transparent_expression_body(&body)?;
 
         // Compute the span information
-        let span = self.translate_span_from_rspan(body.span);
+        let span = self.translate_span_from_hax(body.span);
 
         // We need to convert the blocks map to an index vector
         // We clone things while we could move them...

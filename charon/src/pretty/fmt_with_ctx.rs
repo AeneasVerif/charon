@@ -1630,6 +1630,16 @@ impl std::fmt::Display for Place {
     }
 }
 
+impl std::fmt::Display for RawAttribute {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::result::Result<(), std::fmt::Error> {
+        write!(f, "{}", self.path)?;
+        if let Some(args) = &self.args {
+            write!(f, "({args})")?;
+        }
+        Ok(())
+    }
+}
+
 impl std::fmt::Display for Region {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::result::Result<(), std::fmt::Error> {
         match self {

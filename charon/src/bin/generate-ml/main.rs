@@ -308,12 +308,9 @@ fn type_decl_to_json_deserializer(ctx: &GenerateCtx, decl: &TypeDecl) -> String 
         }
         TypeDeclKind::Struct(fields)
             if fields.len() == 1
-                && decl
-                    .item_meta
-                    .attr_info
-                    .attributes
-                    .iter()
-                    .any(|a| a.is_unknown() && a.as_unknown() == "serde(transparent)") =>
+                && decl.item_meta.attr_info.attributes.iter().any(|a| {
+                    a.is_unknown() && a.as_unknown().to_string() == "serde(transparent)"
+                }) =>
         {
             let ty = &fields[0].ty;
             let call = type_to_ocaml_call(ctx, ty);
@@ -350,7 +347,7 @@ fn type_decl_to_json_deserializer(ctx: &GenerateCtx, decl: &TypeDecl) -> String 
                         .attr_info
                         .attributes
                         .iter()
-                        .any(|a| a.is_unknown() && a.as_unknown() == "serde(skip)")
+                        .any(|a| a.is_unknown() && a.as_unknown().to_string() == "serde(skip)")
                 })
                 .collect_vec();
             let pat: String = fields
@@ -506,12 +503,9 @@ fn type_decl_to_ocaml_decl(ctx: &GenerateCtx, decl: &TypeDecl, co_rec: bool) -> 
         TypeDeclKind::Struct(fields) if fields.is_empty() => "unit".to_string(),
         TypeDeclKind::Struct(fields)
             if fields.len() == 1
-                && decl
-                    .item_meta
-                    .attr_info
-                    .attributes
-                    .iter()
-                    .any(|a| a.is_unknown() && a.as_unknown() == "serde(transparent)") =>
+                && decl.item_meta.attr_info.attributes.iter().any(|a| {
+                    a.is_unknown() && a.as_unknown().to_string() == "serde(transparent)"
+                }) =>
         {
             type_to_ocaml_name(ctx, &fields[0].ty)
         }
@@ -734,7 +728,13 @@ fn main() -> Result<()> {
             target: dir.join("generated/Meta.ml"),
             markers: &[
                 (GenerationKind::TypeDecl(false), &["Loc", "FileName"]),
-                (GenerationKind::TypeDecl(false), &["Span", "InlineAttr", "Attribute", "AttrInfo"]),
+                (GenerationKind::TypeDecl(false), &[
+                    "Span",
+                    "InlineAttr",
+                    "Attribute",
+                    "RawAttribute",
+                    "AttrInfo",
+                ]),
             ],
         },
         GenerateCodeFor {
@@ -798,6 +798,7 @@ fn main() -> Result<()> {
                     "Span",
                     "InlineAttr",
                     "Attribute",
+                    "RawAttribute",
                     "AttrInfo",
                     "TypeVar",
                     "RegionVar",

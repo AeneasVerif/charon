@@ -132,7 +132,16 @@ pub enum Attribute {
     /// A doc-comment such as `/// ...`.
     DocComment(String),
     /// A non-charon-specific attribute.
-    Unknown(String),
+    Unknown(RawAttribute),
+}
+
+/// A general attribute.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Drive, DriveMut)]
+pub struct RawAttribute {
+    pub path: String,
+    /// The arguments passed to the attribute, if any. We don't distinguish different delimiters or
+    /// the `path = lit` case.
+    pub args: Option<String>,
 }
 
 /// Information about the attributes and visibility of an item, field or variant..

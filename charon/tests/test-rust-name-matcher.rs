@@ -11,19 +11,15 @@ fn parse_pattern_attr(a: &Attribute) -> Option<(bool, Pattern)> {
     let Attribute::Unknown(a) = a else {
         return None;
     };
-    let (pass, a) = if let Some(a) = a.strip_prefix("pattern::pass") {
+    let (pass, a) = if a.path == "pattern::pass" {
         (true, a)
-    } else if let Some(a) = a.strip_prefix("pattern::fail") {
+    } else if a.path == "pattern::fail" {
         (false, a)
     } else {
         return None;
     };
-    let Some(a) = a.strip_prefix("(\"") else {
-        return None;
-    };
-    let Some(a) = a.strip_suffix("\")") else {
-        return None;
-    };
+    let a = a.args.as_ref()?;
+    let a = a.strip_prefix("\"")?.strip_suffix("\"")?;
     match Pattern::parse(a) {
         Ok(pat) => Some((pass, pat)),
         Err(e) => {
