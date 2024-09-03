@@ -1099,7 +1099,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             .iter()
             .enumerate()
             .all(|(i, c)| c.clause_id.index() == i));
-        GenericParams {
+        let generic_params = GenericParams {
             regions: self.region_vars[0].clone(),
             types: self.type_vars.clone(),
             const_generics: self.const_generic_vars.clone(),
@@ -1107,7 +1107,9 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             regions_outlive: self.regions_outlive.clone(),
             types_outlive: self.types_outlive.clone(),
             trait_type_constraints: self.trait_type_constraints.clone(),
-        }
+        };
+        trace!("Translated generics: {generic_params:?}");
+        generic_params
     }
 
     pub(crate) fn make_dep_source(&self, span: rustc_span::Span) -> Option<DepSource> {

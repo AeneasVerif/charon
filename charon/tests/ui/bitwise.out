@@ -1,5 +1,59 @@
 # Final LLBC before serialization:
 
+fn test_crate::shift_u32(@1: u32) -> u32
+{
+    let @0: u32; // return
+    let a@1: u32; // arg #1
+    let i@2: usize; // local
+    let t@3: u32; // local
+    let @4: u32; // anonymous local
+    let @5: usize; // anonymous local
+    let @6: usize; // anonymous local
+
+    i@2 := const (16 : usize)
+    @fake_read(i@2)
+    @4 := copy (a@1)
+    @5 := copy (i@2)
+    t@3 := move (@4) >> move (@5)
+    drop @5
+    drop @4
+    @fake_read(t@3)
+    @6 := copy (i@2)
+    t@3 := copy (t@3) << move (@6)
+    drop @6
+    @0 := copy (t@3)
+    drop t@3
+    drop i@2
+    return
+}
+
+fn test_crate::shift_i32(@1: i32) -> i32
+{
+    let @0: i32; // return
+    let a@1: i32; // arg #1
+    let i@2: isize; // local
+    let t@3: i32; // local
+    let @4: i32; // anonymous local
+    let @5: isize; // anonymous local
+    let @6: isize; // anonymous local
+
+    i@2 := const (16 : isize)
+    @fake_read(i@2)
+    @4 := copy (a@1)
+    @5 := copy (i@2)
+    t@3 := move (@4) >> move (@5)
+    drop @5
+    drop @4
+    @fake_read(t@3)
+    @6 := copy (i@2)
+    t@3 := copy (t@3) << move (@6)
+    drop @6
+    @0 := copy (t@3)
+    drop t@3
+    drop i@2
+    return
+}
+
 fn test_crate::xor_u32(@1: u32, @2: u32) -> u32
 {
     let @0: u32; // return

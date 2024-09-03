@@ -1479,6 +1479,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
 
 impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
     /// Translate one function.
+    #[tracing::instrument(skip(self, rust_id, item_meta))]
     pub fn translate_function(
         &mut self,
         def_id: FunDeclId,
@@ -1532,6 +1533,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
     }
 
     /// Translate one global.
+    #[tracing::instrument(skip(self, rust_id, item_meta))]
     pub fn translate_global(
         &mut self,
         def_id: GlobalDeclId,
