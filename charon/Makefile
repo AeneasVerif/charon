@@ -3,7 +3,7 @@ all: build
 
 .PHONY: build
 build: format
-	cargo build --release
+	CARGO_PROFILE_RELEASE_DEBUG=true cargo build --release
 
 .PHONY: format
 format:
