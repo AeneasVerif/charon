@@ -117,6 +117,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     /// Note that we take as parameter a function to translate regions, because
     /// regions can be translated in several manners (non-erased region or erased
     /// regions), in which case the return type is different.
+    #[tracing::instrument(skip(self, span, erase_regions))]
     pub(crate) fn translate_ty(
         &mut self,
         span: rustc_span::Span,
@@ -763,6 +764,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
     /// Note that we translate the types one by one: we don't need to take into
     /// account the fact that some types are mutually recursive at this point
     /// (we will need to take that into account when generating the code in a file).
+    #[tracing::instrument(skip(self, rust_id, item_meta))]
     pub fn translate_type(
         &mut self,
         trans_id: TypeDeclId,

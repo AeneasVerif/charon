@@ -336,7 +336,7 @@ impl<'a> Formatter<(DeBruijnId, RegionId)> for FmtCtx<'a> {
             Some(gr) => match gr.get(id) {
                 None => {
                     let region = Region::BVar(grid, id);
-                    log::warn!(
+                    tracing::warn!(
                         "Found incorrect region `{region}` while pretty-printing. Look for \
                         \"wrong_region\" in the pretty output"
                     );

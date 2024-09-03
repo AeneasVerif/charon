@@ -393,6 +393,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
 
     /// Returns an [Option] because we may ignore some builtin or auto traits
     /// like [core::marker::Sized] or [core::marker::Sync].
+    #[tracing::instrument(skip(self, span, erase_regions))]
     pub(crate) fn translate_trait_impl_expr(
         &mut self,
         span: rustc_span::Span,
@@ -607,6 +608,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
 
     /// Find the trait instance fullfilling a trait obligation.
     /// TODO: having to do this is very annoying. Isn't there a better way?
+    #[tracing::instrument(skip(self))]
     fn find_trait_clause_for_param(
         &self,
         trait_id: TraitDeclId,
@@ -651,7 +653,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             );
         } else {
             // Return the UNKNOWN clause
-            log::warn!(
+            tracing::warn!(
                 "Could not find a clause for parameter:\n- target param: {}\n- available clauses:\n{}\n- context: {:?}",
                 trait_ref, clauses.join("\n"), self.def_id
             );

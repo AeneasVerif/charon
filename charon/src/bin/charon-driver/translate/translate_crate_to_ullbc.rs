@@ -360,6 +360,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
     }
 }
 
+#[tracing::instrument(skip(tcx))]
 pub fn translate<'tcx, 'ctx>(options: &CliOpts, tcx: TyCtxt<'tcx>) -> TransformCtx<'tcx> {
     let hax_state = hax::state::State::new(
         tcx,

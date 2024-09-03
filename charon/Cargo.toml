@@ -69,7 +69,8 @@ stacker = "0.1"
 take_mut = "0.2.2"
 toml = { version = "0.8", features = ["parse"] }
 tracing-subscriber = { version = "0.3", features = [ "env-filter", "std", "fmt" ] }
-tracing-tree = "0.3"
+tracing-tree = { git = "https://github.com/Nadrieril/tracing-tree", features = [ "time" ] } # Fork with improved formating and timing info.
+# tracing-tree = { path = "../../tracing-tree", features = [ "time" ] }
 tracing = { version = "0.1", features = [ "max_level_trace", "release_max_level_warn" ] }
 which = "6.0.1"
 

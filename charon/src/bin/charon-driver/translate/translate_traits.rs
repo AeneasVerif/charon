@@ -83,6 +83,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         Ok(TraitItemName(name.to_string()))
     }
 
+    #[tracing::instrument(skip(self, rust_id, item_meta))]
     pub fn translate_trait_decl(
         &mut self,
         def_id: TraitDeclId,
@@ -268,6 +269,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         })
     }
 
+    #[tracing::instrument(skip(self, rust_id, item_meta))]
     pub fn translate_trait_impl(
         &mut self,
         def_id: TraitImplId,
