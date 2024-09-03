@@ -126,7 +126,7 @@ let expr_body_of_json (id_to_file : id_to_file_map) (js : json) :
     | _ -> Error "")
 
 (** Strict type for the number of function declarations (see {!global_to_fun_id} below) *)
-type global_id_converter = { fun_count : int } [@@deriving show]
+type global_id_converter = { max_fun_id : int } [@@deriving show]
 
 (** Converts a global id to its corresponding function id.
     To do so, it adds the global id to the number of function declarations :
@@ -134,7 +134,7 @@ type global_id_converter = { fun_count : int } [@@deriving show]
 *)
 let global_to_fun_id (conv : global_id_converter) (gid : GlobalDeclId.id) :
     FunDeclId.id =
-  FunDeclId.of_int (GlobalDeclId.to_int gid + conv.fun_count)
+  FunDeclId.of_int (GlobalDeclId.to_int gid + conv.max_fun_id)
 
 (** Deserialize a global declaration, and decompose it into a global declaration
     and a function declaration.
@@ -178,11 +178,11 @@ let crate_of_json (js : json) : (crate, string) result =
     (* When deserializing the globals, we split the global declarations
      * between the globals themselves and their bodies, which are simply
      * functions with no arguments. We add the global bodies to the list
-     * of function declarations: the (fresh) ids we use for those bodies
-     * are simply given by: [num_functions + global_id] *)
+     * of function declarations; we give fresh ids to these new bodies
+     * by incrementing from the last function id recorded *)
     let gid_conv =
       {
-        fun_count =
+        max_fun_id =
           List.fold_left
             (fun acc (id, _) -> max acc (1 + FunDeclId.to_int id))
             0
