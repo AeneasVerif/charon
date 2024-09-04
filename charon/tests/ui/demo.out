@@ -260,7 +260,37 @@ fn test_crate::list_nth_mut1<'a, T>(@1: &'a mut (test_crate::CList<T>), @2: u32)
         @fake_read(l@1)
         match *(l@1) {
             0 => {
-                nop
+                x@5 := &mut (*(l@1) as variant @0).0
+                tl@6 := &mut (*(l@1) as variant @0).1
+                @9 := copy (i@2)
+                @8 := move (@9) == const (0 : u32)
+                if move (@8) {
+                    nop
+                }
+                else {
+                    drop @9
+                    @13 := ()
+                    @7 := move (@13)
+                    drop @8
+                    drop @7
+                    i@2 := copy (i@2) - const (1 : u32)
+                    @10 := &mut deref_box (*(tl@6))
+                    l@1 := move (@10)
+                    drop @10
+                    @14 := ()
+                    @4 := move (@14)
+                    drop tl@6
+                    drop x@5
+                    continue 0
+                }
+                drop @9
+                @0 := &mut *(x@5)
+                drop @8
+                drop @7
+                drop tl@6
+                drop x@5
+                drop @3
+                return
             },
             _ => {
                 @12 := ()
@@ -270,37 +300,6 @@ fn test_crate::list_nth_mut1<'a, T>(@1: &'a mut (test_crate::CList<T>), @2: u32)
                 panic(core::panicking::panic_explicit)
             }
         }
-        x@5 := &mut (*(l@1) as variant @0).0
-        tl@6 := &mut (*(l@1) as variant @0).1
-        @9 := copy (i@2)
-        @8 := move (@9) == const (0 : u32)
-        if move (@8) {
-            nop
-        }
-        else {
-            drop @9
-            @13 := ()
-            @7 := move (@13)
-            drop @8
-            drop @7
-            i@2 := copy (i@2) - const (1 : u32)
-            @10 := &mut deref_box (*(tl@6))
-            l@1 := move (@10)
-            drop @10
-            @14 := ()
-            @4 := move (@14)
-            drop tl@6
-            drop x@5
-            continue 0
-        }
-        drop @9
-        @0 := &mut *(x@5)
-        drop @8
-        drop @7
-        drop tl@6
-        drop x@5
-        drop @3
-        return
     }
 }
 

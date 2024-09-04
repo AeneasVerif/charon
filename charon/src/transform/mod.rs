@@ -7,6 +7,7 @@ pub mod index_to_function_calls;
 pub mod inline_local_panic_functions;
 pub mod insert_assign_return_unit;
 pub mod lift_associated_item_clauses;
+pub mod merge_goto_chains;
 pub mod ops_to_function_calls;
 pub mod prettify_cfg;
 pub mod reconstruct_asserts;
@@ -38,6 +39,9 @@ pub static ULLBC_PASSES: &[&dyn ctx::UllbcPass] = &[
     // # Micro-pass: desugar the constants to other values/operands as much
     // as possible.
     &simplify_constants::Transform,
+    // # Micro-pass: merge single-origin gotos into their parent. This drastically reduces the
+    // graph size of the CFG.
+    &merge_goto_chains::Transform,
 ];
 
 pub static LLBC_PASSES: &[&dyn ctx::LlbcPass] = &[
