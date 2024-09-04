@@ -670,7 +670,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                         ))
                     }
                     hax::AggregateKind::Tuple => Ok(Rvalue::Aggregate(
-                        AggregateKind::Adt(TypeId::Tuple, None, GenericArgs::empty()),
+                        AggregateKind::Adt(TypeId::Tuple, None, None, GenericArgs::empty()),
                         operands_t,
                     )),
                     hax::AggregateKind::Adt(
@@ -687,8 +687,6 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                         // We ignore type annotations since rustc has already inferred all the
                         // types we need.
                         let _ = user_annotation;
-                        // The union field index if specified. We don't handle unions today.
-                        error_assert!(self, span, field_index.is_none());
 
                         // Translate the substitution
                         let generics = self.translate_substs_and_trait_refs(
@@ -705,17 +703,15 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
 
                         use hax::AdtKind;
                         let variant_id = match kind {
-                            AdtKind::Struct => None,
-                            AdtKind::Enum => {
-                                let variant_id = translate_variant_id(*variant_idx);
-                                Some(variant_id)
-                            }
-                            AdtKind::Union => {
-                                error_or_panic!(self, span, "Union values are not supported");
-                            }
+                            AdtKind::Struct | AdtKind::Union => None,
+                            AdtKind::Enum => Some(translate_variant_id(*variant_idx)),
+                        };
+                        let field_id = match kind {
+                            AdtKind::Struct | AdtKind::Enum => None,
+                            AdtKind::Union => Some(translate_field_id(field_index.unwrap())),
                         };
 
-                        let akind = AggregateKind::Adt(type_id, variant_id, generics);
+                        let akind = AggregateKind::Adt(type_id, variant_id, field_id, generics);
                         Ok(Rvalue::Aggregate(akind, operands_t))
                     }
                     hax::AggregateKind::Closure(def_id, substs, trait_refs, sig) => {

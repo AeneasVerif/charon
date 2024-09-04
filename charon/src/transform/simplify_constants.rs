@@ -21,11 +21,6 @@ use crate::values::VarId;
 
 use super::ctx::UllbcPass;
 
-fn make_aggregate_kind(ty: &Ty, var_index: Option<VariantId>) -> AggregateKind {
-    let (id, generics) = ty.as_adt();
-    AggregateKind::Adt(*id, var_index, generics.clone())
-}
-
 /// If the constant value is a constant ADT, push `Assign::Aggregate` statements
 /// to the vector of statements, that bind new variables to the ADT parts and
 /// the variable assigned to the complete ADT.
@@ -148,7 +143,11 @@ fn transform_constant_expr<F: FnMut(Ty) -> VarId>(
                 .collect();
 
             // Introduce an intermediate assignment for the aggregated ADT
-            let rval = Rvalue::Aggregate(make_aggregate_kind(&val.ty, variant), fields);
+            let rval = {
+                let (adt_kind, generics) = val.ty.as_adt();
+                let aggregate_kind = AggregateKind::Adt(*adt_kind, variant, None, generics.clone());
+                Rvalue::Aggregate(aggregate_kind, fields)
+            };
             let var_id = make_new_var(val.ty);
             nst.push(Statement::new(
                 *span,

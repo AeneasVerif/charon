@@ -580,7 +580,10 @@ pub enum Rvalue {
 #[derive(Debug, Clone, VariantIndexArity, Serialize, Deserialize, Drive, DriveMut)]
 #[charon::variants_prefix("Aggregated")]
 pub enum AggregateKind {
-    Adt(TypeId, Option<VariantId>, GenericArgs),
+    /// A struct, enum or union aggregate. The `VariantId`, if present, indicates this is an enum
+    /// and the aggregate uses that variant. The `FieldId`, if present, indicates this is a union
+    /// and the aggregate writes into that field. Otherwise this is a struct.
+    Adt(TypeId, Option<VariantId>, Option<FieldId>, GenericArgs),
     /// We don't put this with the ADT cas because this is the only built-in type
     /// with aggregates, and it is a primitive type. In particular, it makes
     /// sense to treat it differently because it has a variable number of fields.

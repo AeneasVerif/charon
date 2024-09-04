@@ -878,7 +878,7 @@ impl<C: AstFormatter> FmtWithCtx<C> for Rvalue {
             Rvalue::Aggregate(kind, ops) => {
                 let ops_s: Vec<String> = ops.iter().map(|op| op.fmt_with_ctx(ctx)).collect();
                 match kind {
-                    AggregateKind::Adt(def_id, variant_id, _) => {
+                    AggregateKind::Adt(def_id, variant_id, field_id, _) => {
                         match def_id {
                             TypeId::Tuple => format!("({})", ops_s.join(", ")),
                             TypeId::Builtin(_) => unreachable!(),
@@ -886,7 +886,13 @@ impl<C: AstFormatter> FmtWithCtx<C> for Rvalue {
                                 // Format every field
                                 let mut fields = vec![];
                                 for (i, op) in ops.iter().enumerate() {
-                                    let field_id = FieldId::new(i);
+                                    let field_id = match *field_id {
+                                        None => FieldId::new(i),
+                                        Some(field_id) => {
+                                            assert_eq!(i, 0); // there should be only one operand
+                                            field_id
+                                        }
+                                    };
                                     let field_name =
                                         ctx.format_object((*def_id, *variant_id, field_id));
                                     fields.push(format!(

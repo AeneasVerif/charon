@@ -189,7 +189,7 @@ let rvalue_to_string (env : ('a, 'b) fmt_env) (rv : rvalue) : string =
   | Aggregate (akind, ops) -> (
       let ops = List.map (operand_to_string env) ops in
       match akind with
-      | AggregatedAdt (type_id, opt_variant_id, _generics) -> (
+      | AggregatedAdt (type_id, opt_variant_id, opt_field_id, _generics) -> (
           match type_id with
           | TTuple -> "(" ^ String.concat ", " ops ^ ")"
           | TAdtId def_id ->
@@ -205,6 +205,13 @@ let rvalue_to_string (env : ('a, 'b) fmt_env) (rv : rvalue) : string =
                 match adt_field_names env def_id opt_variant_id with
                 | None -> "(" ^ String.concat ", " ops ^ ")"
                 | Some field_names ->
+                    let field_names =
+                      match opt_field_id with
+                      | None -> field_names
+                      (* Only keep the selected field *)
+                      | Some field_id ->
+                          [ List.nth field_names (FieldId.to_int field_id) ]
+                    in
                     let fields = List.combine field_names ops in
                     let fields =
                       List.map

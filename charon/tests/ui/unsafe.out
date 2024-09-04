@@ -75,5 +75,30 @@ fn test_crate::access_mutable_static()
     return
 }
 
+union test_crate::Foo =
+{
+  one: u64,
+  two: Array<u32, 2 : usize>,
+}
+
+fn test_crate::access_union_field()
+{
+    let @0: (); // return
+    let one@1: test_crate::Foo; // local
+    let _two@2: Array<u32, 2 : usize>; // local
+    let @3: (); // anonymous local
+
+    one@1 := test_crate::Foo { one: const (42 : u64) }
+    @fake_read(one@1)
+    _two@2 := copy ((one@1).two)
+    @fake_read(_two@2)
+    @3 := ()
+    @0 := move (@3)
+    drop _two@2
+    drop one@1
+    @0 := ()
+    return
+}
+
 
 

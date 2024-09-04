@@ -25,12 +25,12 @@ fn access_mutable_static() {
     }
 }
 
-// union Foo {
-//     one: u64,
-//     two: [u32; 2],
-// }
+union Foo {
+    one: u64,
+    two: [u32; 2],
+}
 
-// fn access_union_field() {
-//     let one = Foo { one: 42 };
-//     let _two = unsafe { one.two };
-// }
+fn access_union_field() {
+    let one = Foo { one: 42 };
+    let _two = unsafe { one.two };
+}

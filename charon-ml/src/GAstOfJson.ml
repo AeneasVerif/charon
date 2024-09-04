@@ -1042,11 +1042,12 @@ and operand_of_json (js : json) : (operand, string) result =
 and aggregate_kind_of_json (js : json) : (aggregate_kind, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
-    | `Assoc [ ("Adt", `List [ x_0; x_1; x_2 ]) ] ->
+    | `Assoc [ ("Adt", `List [ x_0; x_1; x_2; x_3 ]) ] ->
         let* x_0 = type_id_of_json x_0 in
         let* x_1 = option_of_json variant_id_of_json x_1 in
-        let* x_2 = generic_args_of_json x_2 in
-        Ok (AggregatedAdt (x_0, x_1, x_2))
+        let* x_2 = option_of_json field_id_of_json x_2 in
+        let* x_3 = generic_args_of_json x_3 in
+        Ok (AggregatedAdt (x_0, x_1, x_2, x_3))
     | `Assoc [ ("Array", `List [ x_0; x_1 ]) ] ->
         let* x_0 = ty_of_json x_0 in
         let* x_1 = const_generic_of_json x_1 in

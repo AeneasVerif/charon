@@ -1,6 +1,3 @@
-//@ known-failure
-//@ no-check-output
-
 union Foo {
     one: u64,
     two: [u32; 2],
