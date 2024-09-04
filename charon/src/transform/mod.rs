@@ -90,11 +90,9 @@ pub static LLBC_PASSES: &[&dyn ctx::LlbcPass] = &[
     // # Micro-pass: remove the drops of locals whose type is `Never` (`!`). This
     // is in preparation of the next transformation.
     &remove_drop_never::Transform,
-    // # Micro-pass: remove the locals which are never used. After doing so, we
-    // check that there are no remaining locals with type `Never`.
+    // # Micro-pass: remove the locals which are never used.
     &remove_unused_locals::Transform,
-    // # Micro-pass (not necessary, but good for cleaning): remove the
-    // useless no-ops.
+    // # Micro-pass: remove the useless `StatementKind::Nop`s.
     &remove_nops::Transform,
     // Check that all supplied generic types match the corresponding generic parameters.
     &check_generics::Check,
