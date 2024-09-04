@@ -8,6 +8,7 @@ pub mod inline_local_panic_functions;
 pub mod insert_assign_return_unit;
 pub mod lift_associated_item_clauses;
 pub mod ops_to_function_calls;
+pub mod prettify_cfg;
 pub mod reconstruct_asserts;
 pub mod reconstruct_boxes;
 pub mod remove_arithmetic_overflow_checks;
@@ -71,6 +72,8 @@ pub static LLBC_PASSES: &[&dyn ctx::LlbcPass] = &[
     &index_to_function_calls::Transform,
     // # Micro-pass: Remove the discriminant reads (merge them with the switches)
     &remove_read_discriminant::Transform,
+    // Cleanup the cfg.
+    &prettify_cfg::Transform,
     // # Micro-pass: add the missing assignments to the return value.
     // When the function return type is unit, the generated MIR doesn't
     // set the return value to `()`. This can be a concern: in the case

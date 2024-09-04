@@ -5,7 +5,6 @@ fn test_crate::panic1()
     let @0: (); // return
 
     panic(core::panicking::panic_explicit)
-    undefined_behavior
 }
 
 opaque type core::fmt::Arguments<'a>

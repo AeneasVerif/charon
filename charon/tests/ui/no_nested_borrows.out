@@ -398,7 +398,6 @@ fn test_crate::split_list<T>(@1: test_crate::List<T>) -> (T, test_crate::List<T>
         },
         _ => {
             panic(core::panicking::panic_explicit)
-            undefined_behavior
         }
     }
     hd@2 := move ((l@1 as variant @0).0)

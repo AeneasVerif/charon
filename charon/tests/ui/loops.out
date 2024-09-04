@@ -1920,7 +1920,6 @@ fn test_crate::get_elem_mut<'_0>(@1: &'_0 mut (test_crate::List<usize>), @2: usi
             },
             1 => {
                 panic(core::panicking::panic_explicit)
-                undefined_behavior
             }
         }
         y@4 := &mut (*(ls@1) as variant @0).0
@@ -1982,7 +1981,6 @@ fn test_crate::list_nth_mut_loop_with_id<'_0, T>(@1: &'_0 mut (test_crate::List<
                 drop @10
                 drop @3
                 panic(core::panicking::panic_explicit)
-                undefined_behavior
             }
         }
         x@5 := &mut (*(ls@1) as variant @0).0
