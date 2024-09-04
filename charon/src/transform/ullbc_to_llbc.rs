@@ -1453,24 +1453,17 @@ fn opt_statement_to_nop_if_none(span: Span, opt_st: Option<tgt::Statement>) -> t
 
 fn translate_statement(st: &src::Statement) -> Option<tgt::Statement> {
     let src_span = st.span;
-    let st = match &st.content {
-        src::RawStatement::Assign(place, rvalue) => {
-            tgt::RawStatement::Assign(place.clone(), rvalue.clone())
-        }
-        src::RawStatement::FakeRead(place) => tgt::RawStatement::FakeRead(place.clone()),
+    let st = match st.content.clone() {
+        src::RawStatement::Assign(place, rvalue) => tgt::RawStatement::Assign(place, rvalue),
+        src::RawStatement::FakeRead(place) => tgt::RawStatement::FakeRead(place),
         src::RawStatement::SetDiscriminant(place, variant_id) => {
-            tgt::RawStatement::SetDiscriminant(place.clone(), *variant_id)
+            tgt::RawStatement::SetDiscriminant(place, variant_id)
         }
-        src::RawStatement::StorageDead(var_id) => {
-            // We translate a StorageDead as a drop
-            let place = Place::new(*var_id);
-            tgt::RawStatement::Drop(place)
-        }
-        src::RawStatement::Deinit(place) => {
-            // We translate a deinit as a drop
-            tgt::RawStatement::Drop(place.clone())
-        }
-        src::RawStatement::Error(s) => tgt::RawStatement::Error(s.clone()),
+        // We translate a StorageDead as a drop
+        src::RawStatement::StorageDead(var_id) => tgt::RawStatement::Drop(Place::new(var_id)),
+        // We translate a deinit as a drop
+        src::RawStatement::Deinit(place) => tgt::RawStatement::Drop(place),
+        src::RawStatement::Error(s) => tgt::RawStatement::Error(s),
     };
     Some(tgt::Statement::new(src_span, st))
 }

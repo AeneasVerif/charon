@@ -919,10 +919,9 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 Some(RawStatement::FakeRead(t_place))
             }
             StatementKind::PlaceMention(place) => {
-                // Simply accesses a place. Introduced for instance in place
-                // of `let _ = ...`. We desugar it to a fake read.
+                // Simply accesses a place, for use of the borrow checker. Introduced for instance
+                // in place of `let _ = ...`. We desugar it to a fake read.
                 let t_place = self.translate_place(span, place)?;
-
                 Some(RawStatement::FakeRead(t_place))
             }
             StatementKind::SetDiscriminant {
@@ -933,32 +932,11 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 let variant_id = translate_variant_id(*variant_index);
                 Some(RawStatement::SetDiscriminant(t_place, variant_id))
             }
-            StatementKind::StorageLive(_) => {
-                // We ignore StorageLive
-                None
-            }
+            // We ignore StorageLive
+            StatementKind::StorageLive(_) => None,
             StatementKind::StorageDead(local) => {
                 let var_id = self.get_local(local).unwrap();
                 Some(RawStatement::StorageDead(var_id))
-            }
-            StatementKind::Retag(_, _) => {
-                // This is for the stacked borrows
-                trace!("retag");
-                None
-            }
-            StatementKind::AscribeUserType(_, _) => {
-                trace!("AscribedUserType");
-                // We ignore those: they are just used by the type checker.
-                // Note that this instruction is used only in certain passes
-                // (it is not present in optimized MIR for instance).
-                None
-            }
-            StatementKind::Coverage(_) => {
-                error_or_panic!(self, span, "Unsupported statement kind: coverage");
-            }
-            StatementKind::Nop => {
-                // We ignore this statement
-                None
             }
             StatementKind::Deinit(place) => {
                 let t_place = self.translate_place(span, place)?;
@@ -967,12 +945,18 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             StatementKind::Intrinsic(_) => {
                 error_or_panic!(self, span, "Unsupported statement kind: intrinsic");
             }
-            StatementKind::ConstEvalCounter => {
-                // See the doc: only used in the interpreter, to check that
-                // const code doesn't run for too long or even indefinitely.
-                // We consider it as a no-op.
-                None
-            }
+            // This is for the stacked borrows memory model.
+            StatementKind::Retag(_, _) => None,
+            // There are user-provided type annotations with no semantic effect (since we get a
+            // fully-typechecked MIR (TODO: this isn't quite true with opaque types, we should
+            // really use promoted MIR)).
+            StatementKind::AscribeUserType(_, _) => None,
+            // Used for coverage instrumentation.
+            StatementKind::Coverage(_) => None,
+            // Used in the interpreter to check that const code doesn't run for too long or even
+            // indefinitely.
+            StatementKind::ConstEvalCounter => None,
+            StatementKind::Nop => None,
         };
 
         // Add the span information
