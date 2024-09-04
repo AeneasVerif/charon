@@ -59,27 +59,86 @@ fn transform_constant_expr<F: FnMut(Ty) -> VarId>(
             Operand::Move(Place::new(var_id))
         }
         RawConstantExpr::Ref(box bval) => {
-            // Recurse on the borrowed value
-            let bval_ty = bval.ty.clone();
-            let bval = transform_constant_expr(span, nst, bval, make_new_var);
+            match bval.value {
+                RawConstantExpr::Global(global_ref) => {
+                    // Introduce an intermediate statement to borrow the static.
+                    let ref_var_id = make_new_var(val.ty);
+                    nst.push(Statement::new(
+                        *span,
+                        RawStatement::Assign(
+                            Place::new(ref_var_id),
+                            Rvalue::GlobalRef(global_ref, RefKind::Shared),
+                        ),
+                    ));
 
-            // Introduce an intermediate statement to evaluate the referenced value
-            let bvar_id = make_new_var(bval_ty);
-            nst.push(Statement::new(
-                *span,
-                RawStatement::Assign(Place::new(bvar_id), Rvalue::Use(bval)),
-            ));
+                    // Return the new operand
+                    Operand::Move(Place::new(ref_var_id))
+                }
+                _ => {
+                    // Recurse on the borrowed value
+                    let bval_ty = bval.ty.clone();
+                    let bval = transform_constant_expr(span, nst, bval, make_new_var);
 
-            // Introduce an intermediate statement to borrow the value
-            let ref_var_id = make_new_var(val.ty);
-            let rvalue = Rvalue::Ref(Place::new(bvar_id), BorrowKind::Shared);
-            nst.push(Statement::new(
-                *span,
-                RawStatement::Assign(Place::new(ref_var_id), rvalue),
-            ));
+                    // Introduce an intermediate statement to evaluate the referenced value
+                    let bvar_id = make_new_var(bval_ty);
+                    nst.push(Statement::new(
+                        *span,
+                        RawStatement::Assign(Place::new(bvar_id), Rvalue::Use(bval)),
+                    ));
 
-            // Return the new operand
-            Operand::Move(Place::new(ref_var_id))
+                    // Introduce an intermediate statement to borrow the value
+                    let ref_var_id = make_new_var(val.ty);
+                    let rvalue = Rvalue::Ref(Place::new(bvar_id), BorrowKind::Shared);
+                    nst.push(Statement::new(
+                        *span,
+                        RawStatement::Assign(Place::new(ref_var_id), rvalue),
+                    ));
+
+                    // Return the new operand
+                    Operand::Move(Place::new(ref_var_id))
+                }
+            }
+        }
+        RawConstantExpr::MutPtr(box bval) => {
+            match bval.value {
+                RawConstantExpr::Global(global_ref) => {
+                    // Introduce an intermediate statement to borrow the static.
+                    let ref_var_id = make_new_var(val.ty);
+                    nst.push(Statement::new(
+                        *span,
+                        RawStatement::Assign(
+                            Place::new(ref_var_id),
+                            Rvalue::GlobalRef(global_ref, RefKind::Mut),
+                        ),
+                    ));
+
+                    // Return the new operand
+                    Operand::Move(Place::new(ref_var_id))
+                }
+                _ => {
+                    // Recurse on the borrowed value
+                    let bval_ty = bval.ty.clone();
+                    let bval = transform_constant_expr(span, nst, bval, make_new_var);
+
+                    // Introduce an intermediate statement to evaluate the referenced value
+                    let bvar_id = make_new_var(bval_ty);
+                    nst.push(Statement::new(
+                        *span,
+                        RawStatement::Assign(Place::new(bvar_id), Rvalue::Use(bval)),
+                    ));
+
+                    // Introduce an intermediate statement to borrow the value
+                    let ref_var_id = make_new_var(val.ty);
+                    let rvalue = Rvalue::RawPtr(Place::new(bvar_id), RefKind::Mut);
+                    nst.push(Statement::new(
+                        *span,
+                        RawStatement::Assign(Place::new(ref_var_id), rvalue),
+                    ));
+
+                    // Return the new operand
+                    Operand::Move(Place::new(ref_var_id))
+                }
+            }
         }
         RawConstantExpr::Adt(variant, fields) => {
             // Recurse on the fields

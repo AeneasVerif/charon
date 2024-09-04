@@ -51,5 +51,29 @@ trait test_crate::Trait<Self>
 
 impl test_crate::{impl test_crate::Trait for ()} : test_crate::Trait<()>
 
+global test_crate::COUNTER  {
+    let @0: usize; // return
+
+    @0 := const (0 : usize)
+    return
+}
+
+fn test_crate::access_mutable_static()
+{
+    let @0: (); // return
+    let @1: *mut usize; // anonymous local
+    let @2: *mut usize; // anonymous local
+    let @3: (); // anonymous local
+
+    @2 := &raw mut test_crate::COUNTER
+    @1 := move (@2)
+    *(@1) := copy (*(@1)) + const (1 : usize)
+    drop @1
+    @3 := ()
+    @0 := move (@3)
+    @0 := ()
+    return
+}
+
 
 

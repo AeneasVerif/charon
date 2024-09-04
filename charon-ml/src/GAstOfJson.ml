@@ -1095,6 +1095,10 @@ and rvalue_of_json (js : json) : (rvalue, string) result =
     | `Assoc [ ("Global", global) ] ->
         let* global = global_decl_ref_of_json global in
         Ok (Global global)
+    | `Assoc [ ("GlobalRef", `List [ x_0; x_1 ]) ] ->
+        let* x_0 = global_decl_ref_of_json x_0 in
+        let* x_1 = ref_kind_of_json x_1 in
+        Ok (GlobalRef (x_0, x_1))
     | `Assoc [ ("Len", `List [ x_0; x_1; x_2 ]) ] ->
         let* x_0 = place_of_json x_0 in
         let* x_1 = ty_of_json x_1 in

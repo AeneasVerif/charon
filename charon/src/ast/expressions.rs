@@ -413,8 +413,7 @@ pub enum RawConstantExpr {
     /// We eliminate this case in a micro-pass.
     #[charon::opaque]
     Adt(Option<VariantId>, Vec<ConstantExpr>),
-    ///
-    /// The value is a top-level value.
+    /// The value is a top-level constant/static.
     ///
     /// We eliminate this case in a micro-pass.
     ///
@@ -447,12 +446,16 @@ pub enum RawConstantExpr {
     /// Remark: trait constants can not be used in types, they are necessarily
     /// values.
     TraitConst(TraitRef, TraitItemName),
-    ///
-    /// A shared reference to a constant value
+    /// A shared reference to a constant value.
     ///
     /// We eliminate this case in a micro-pass.
     #[charon::opaque]
     Ref(Box<ConstantExpr>),
+    /// A mutable pointer to a mutable static.
+    ///
+    /// We eliminate this case in a micro-pass.
+    #[charon::opaque]
+    MutPtr(Box<ConstantExpr>),
     /// A const generic var
     Var(ConstGenericVarId),
     /// Function pointer
@@ -512,9 +515,13 @@ pub enum Rvalue {
     /// Remark: in case of closures, the aggregated value groups the closure id
     /// together with its state.
     Aggregate(AggregateKind, Vec<Operand>),
-    /// Not present in MIR: we introduce it when replacing constant variables
-    /// in operands in [extract_global_assignments.rs].
+    /// Copy the value of the referenced global.
+    /// Not present in MIR; introduced in [simplify_constants.rs].
     Global(GlobalDeclRef),
+    /// Reference the value of the global. This has type `&T` or `*mut T` depending on desired
+    /// mutability.
+    /// Not present in MIR; introduced in [simplify_constants.rs].
+    GlobalRef(GlobalDeclRef, RefKind),
     /// Length of a memory location. The run-time length of e.g. a vector or a slice is
     /// represented differently (but pretty-prints the same, FIXME).
     /// Should be seen as a function of signature:

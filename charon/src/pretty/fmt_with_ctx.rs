@@ -819,6 +819,9 @@ impl<C: AstFormatter> FmtWithCtx<C> for RawConstantExpr {
             RawConstantExpr::Ref(cv) => {
                 format!("&{}", cv.fmt_with_ctx(ctx))
             }
+            RawConstantExpr::MutPtr(cv) => {
+                format!("&raw mut {}", cv.fmt_with_ctx(ctx))
+            }
             RawConstantExpr::Var(id) => format!("{}", ctx.format_object(*id)),
             RawConstantExpr::FnPtr(f) => {
                 format!("{}", f.fmt_with_ctx(ctx),)
@@ -915,6 +918,12 @@ impl<C: AstFormatter> FmtWithCtx<C> for Rvalue {
                 }
             }
             Rvalue::Global(global_ref) => global_ref.fmt_with_ctx(ctx),
+            Rvalue::GlobalRef(global_ref, RefKind::Shared) => {
+                format!("&{}", global_ref.fmt_with_ctx(ctx))
+            }
+            Rvalue::GlobalRef(global_ref, RefKind::Mut) => {
+                format!("&raw mut {}", global_ref.fmt_with_ctx(ctx))
+            }
             Rvalue::Len(place, ..) => format!("len({})", place.fmt_with_ctx(ctx)),
             Rvalue::Repeat(op, _ty, cg) => {
                 format!("[{}; {}]", op.fmt_with_ctx(ctx), cg.fmt_with_ctx(ctx))

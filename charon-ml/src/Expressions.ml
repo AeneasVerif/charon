@@ -467,8 +467,13 @@ and rvalue =
           together with its state.
        *)
   | Global of global_decl_ref
-      (** Not present in MIR: we introduce it when replacing constant variables
-          in operands in [extract_global_assignments.rs].
+      (** Copy the value of the referenced global.
+          Not present in MIR; introduced in [simplify_constants.rs].
+       *)
+  | GlobalRef of global_decl_ref * ref_kind
+      (** Reference the value of the global. This has type `&T` or `*mut T` depending on desired
+          mutability.
+          Not present in MIR; introduced in [simplify_constants.rs].
        *)
   | Len of place * ty * const_generic option
       (** Length of a memory location. The run-time length of e.g. a vector or a slice is

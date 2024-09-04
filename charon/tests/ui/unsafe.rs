@@ -17,13 +17,13 @@ unsafe trait Trait {}
 
 unsafe impl Trait for () {}
 
-// static mut COUNTER: usize = 0;
+static mut COUNTER: usize = 0;
 
-// fn access_mutable_static() {
-//     unsafe {
-//         COUNTER += 1;
-//     }
-// }
+fn access_mutable_static() {
+    unsafe {
+        COUNTER += 1;
+    }
+}
 
 // union Foo {
 //     one: u64,

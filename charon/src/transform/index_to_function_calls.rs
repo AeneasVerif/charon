@@ -224,7 +224,7 @@ impl<'a> Visitor<'a> {
         use Rvalue::*;
         match rv {
             Use(_) | NullaryOp(..) | UnaryOp(..) | BinaryOp(..) | Aggregate(..) | Global(..)
-            | Repeat(..) | ShallowInitBox(..) => {}
+            | GlobalRef(..) | Repeat(..) | ShallowInitBox(..) => {}
             RawPtr(_, ptrkind) => match *ptrkind {
                 RefKind::Mut => {
                     self.place_mutability_stack.push(true);

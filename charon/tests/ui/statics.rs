@@ -13,20 +13,20 @@ fn shared_static() {
 
     let _val = SHARED_STATIC;
     let _ref = &SHARED_STATIC;
-    // let _ptr = &raw const SHARED_STATIC;
+    let _ptr = &raw const SHARED_STATIC;
 }
 
-// fn mut_static() {
-//     static mut MUT_STATIC: usize = 0;
+fn mut_static() {
+    static mut MUT_STATIC: usize = 0;
 
-//     unsafe {
-//         let _val = MUT_STATIC;
-//         let _ref = &MUT_STATIC;
-//         let _ref_mut = &mut MUT_STATIC;
-//         let _ptr = &raw const MUT_STATIC;
-//         let _ptr_mut = &raw mut MUT_STATIC;
-//     }
-// }
+    unsafe {
+        let _val = MUT_STATIC;
+        let _ref = &MUT_STATIC;
+        let _ref_mut = &mut MUT_STATIC;
+        let _ptr = &raw const MUT_STATIC;
+        let _ptr_mut = &raw mut MUT_STATIC;
+    }
+}
 
 fn non_copy_static() {
     struct Foo;
