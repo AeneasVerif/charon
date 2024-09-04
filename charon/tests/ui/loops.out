@@ -1919,7 +1919,8 @@ fn test_crate::get_elem_mut<'_0>(@1: &'_0 mut (test_crate::List<usize>), @2: usi
                 nop
             },
             1 => {
-                break 0
+                panic(core::panicking::panic_explicit)
+                undefined_behavior
             }
         }
         y@4 := &mut (*(ls@1) as variant @0).0
@@ -1951,7 +1952,6 @@ fn test_crate::get_elem_mut<'_0>(@1: &'_0 mut (test_crate::List<usize>), @2: usi
         drop y@4
         return
     }
-    panic(core::panicking::panic_explicit)
 }
 
 fn test_crate::list_nth_mut_loop_with_id<'_0, T>(@1: &'_0 mut (test_crate::List<T>), @2: u32) -> &'_0 mut (T)
@@ -1977,7 +1977,12 @@ fn test_crate::list_nth_mut_loop_with_id<'_0, T>(@1: &'_0 mut (test_crate::List<
                 nop
             },
             _ => {
-                break 0
+                @11 := ()
+                @3 := move (@11)
+                drop @10
+                drop @3
+                panic(core::panicking::panic_explicit)
+                undefined_behavior
             }
         }
         x@5 := &mut (*(ls@1) as variant @0).0
@@ -2008,11 +2013,6 @@ fn test_crate::list_nth_mut_loop_with_id<'_0, T>(@1: &'_0 mut (test_crate::List<
         drop @3
         return
     }
-    @11 := ()
-    @3 := move (@11)
-    drop @10
-    drop @3
-    panic(core::panicking::panic_explicit)
 }
 
 fn core::iter::range::Step::steps_between<'_0, '_1, Self>(@1: &'_0 (Self), @2: &'_1 (Self)) -> core::option::Option<usize>

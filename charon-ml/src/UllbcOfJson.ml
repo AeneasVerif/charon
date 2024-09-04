@@ -30,6 +30,9 @@ and raw_statement_of_json (js : json) : (raw_statement, string) result =
         let* x_0 = place_of_json x_0 in
         let* x_1 = rvalue_of_json x_1 in
         Ok (Assign (x_0, x_1))
+    | `Assoc [ ("Call", call) ] ->
+        let* call = call_of_json call in
+        Ok (Call call)
     | `Assoc [ ("FakeRead", fake_read) ] ->
         let* fake_read = place_of_json fake_read in
         Ok (FakeRead fake_read)
@@ -43,9 +46,12 @@ and raw_statement_of_json (js : json) : (raw_statement, string) result =
     | `Assoc [ ("Deinit", deinit) ] ->
         let* deinit = place_of_json deinit in
         Ok (Deinit deinit)
+    | `Assoc [ ("Drop", drop) ] ->
+        let* drop = place_of_json drop in
+        Ok (Drop drop)
     | `Assoc [ ("Assert", assert_) ] ->
         let* assert_ = assertion_of_json assert_ in
-        Ok (StAssert assert_)
+        Ok (Assert assert_)
     | _ -> Error "")
 
 and switch_of_json (js : json) : (switch, string) result =
@@ -90,19 +96,6 @@ and raw_terminator_of_json (id_to_file : id_to_file_map) (js : json) :
         let* abort = abort_kind_of_json id_to_file abort in
         Ok (Abort abort)
     | `String "Return" -> Ok Return
-    | `Assoc [ ("Drop", `Assoc [ ("place", place); ("target", target) ]) ] ->
-        let* place = place_of_json place in
-        let* target = block_id_of_json target in
-        Ok (Drop (place, target))
-    | `Assoc [ ("Call", `Assoc [ ("call", call); ("target", target) ]) ] ->
-        let* call = call_of_json call in
-        let* target = option_of_json block_id_of_json target in
-        Ok (Call (call, target))
-    | `Assoc [ ("Assert", `Assoc [ ("assert", assert_); ("target", target) ]) ]
-      ->
-        let* assert_ = assertion_of_json assert_ in
-        let* target = block_id_of_json target in
-        Ok (Assert (assert_, target))
     | _ -> Error "")
 
 and block_of_json (id_to_file : id_to_file_map) (js : json) :

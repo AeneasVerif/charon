@@ -124,6 +124,7 @@ fn test_crate::slice_pat3()
         drop _b@6
         drop _a@5
         panic(core::panicking::panic_explicit)
+        undefined_behavior
     }
     @12 := &*(slice@1)
     @13 := @SliceIndexShared<'_, i32>(move (@12), const (0 : usize))

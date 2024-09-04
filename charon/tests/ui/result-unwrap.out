@@ -59,6 +59,7 @@ where
             @5 := &e@2
             @4 := unsize_cast<&'_ (E), &'_ (dyn (exists(TODO)))>(copy (@5))
             @3 := core::result::unwrap_failed(const ("called `Result::unwrap()` on an `Err` value"), move (@4))
+            undefined_behavior
         }
     }
     t@0 := move ((self@1 as variant @0).0)

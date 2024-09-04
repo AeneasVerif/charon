@@ -146,6 +146,7 @@ fn test_crate::list_nth<'a, T>(@1: &'a (test_crate::CList<T>), @2: u32) -> &'a (
         },
         1 => {
             panic(core::panicking::panic_explicit)
+            undefined_behavior
         }
     }
     x@3 := &(*(l@1) as variant @0).0
@@ -200,6 +201,7 @@ fn test_crate::list_nth_mut<'a, T>(@1: &'a mut (test_crate::CList<T>), @2: u32) 
         },
         1 => {
             panic(core::panicking::panic_explicit)
+            undefined_behavior
         }
     }
     x@5 := &mut (*(l@1) as variant @0).0
@@ -263,7 +265,12 @@ fn test_crate::list_nth_mut1<'a, T>(@1: &'a mut (test_crate::CList<T>), @2: u32)
                 nop
             },
             _ => {
-                break 0
+                @12 := ()
+                @3 := move (@12)
+                drop @11
+                drop @3
+                panic(core::panicking::panic_explicit)
+                undefined_behavior
             }
         }
         x@5 := &mut (*(l@1) as variant @0).0
@@ -298,11 +305,6 @@ fn test_crate::list_nth_mut1<'a, T>(@1: &'a mut (test_crate::CList<T>), @2: u32)
         drop @3
         return
     }
-    @12 := ()
-    @3 := move (@12)
-    drop @11
-    drop @3
-    panic(core::panicking::panic_explicit)
 }
 
 fn test_crate::i32_id(@1: i32) -> i32

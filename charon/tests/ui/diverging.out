@@ -6,6 +6,7 @@ fn test_crate::my_panic(@1: u32) -> !
     let _x@1: u32; // arg #1
 
     panic(core::panicking::panic_explicit)
+    undefined_behavior
 }
 
 fn test_crate::do_something_else()
@@ -25,6 +26,7 @@ fn test_crate::call_my_panic()
     let @1: !; // anonymous local
 
     @1 := test_crate::my_panic(const (0 : u32))
+    undefined_behavior
 }
 
 

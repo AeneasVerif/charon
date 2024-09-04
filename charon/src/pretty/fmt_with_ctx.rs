@@ -954,24 +954,21 @@ impl<C: AstFormatter> FmtWithCtx<C> for ullbc::Statement {
                 place.fmt_with_ctx(ctx),
                 rvalue.fmt_with_ctx(ctx),
             ),
-            RawStatement::FakeRead(place) => {
-                format!("@fake_read({})", place.fmt_with_ctx(ctx))
+            RawStatement::Call(call) => {
+                let (call_s, _) = fmt_call(ctx, call);
+                format!("{} := {call_s}", call.dest.fmt_with_ctx(ctx))
             }
+            RawStatement::FakeRead(place) => format!("@fake_read({})", place.fmt_with_ctx(ctx)),
             RawStatement::SetDiscriminant(place, variant_id) => format!(
                 "@discriminant({}) := {}",
                 place.fmt_with_ctx(ctx),
                 variant_id
             ),
-            RawStatement::StorageDead(vid) => {
-                format!("@storage_dead({})", vid.to_pretty_string())
-            }
-            RawStatement::Deinit(place) => {
-                format!("@deinit({})", place.fmt_with_ctx(ctx))
-            }
+            RawStatement::StorageDead(vid) => format!("@storage_dead({})", vid.to_pretty_string()),
+            RawStatement::Deinit(place) => format!("@deinit({})", place.fmt_with_ctx(ctx)),
+            RawStatement::Drop(place) => format!("drop {}", place.fmt_with_ctx(ctx)),
             RawStatement::Assert(assert) => format!("{}", assert.fmt_with_ctx(ctx)),
-            RawStatement::Error(s) => {
-                format!("@Error({})", s)
-            }
+            RawStatement::Error(s) => format!("@Error({})", s),
         }
     }
 }
@@ -1138,21 +1135,6 @@ impl<C: AstFormatter> FmtWithCtx<C> for Terminator {
             },
             RawTerminator::Abort(kind) => kind.fmt_with_ctx(ctx),
             RawTerminator::Return => "return".to_string(),
-            RawTerminator::Drop { place, target } => {
-                format!("drop {} -> bb{}", place.fmt_with_ctx(ctx), target)
-            }
-            RawTerminator::Call { call, target } => {
-                let (call_s, _) = fmt_call(ctx, call);
-                let target = if let Some(target) = target {
-                    format!("bb{target}")
-                } else {
-                    format!("!")
-                };
-                format!("{} := {call_s} -> {target}", call.dest.fmt_with_ctx(ctx),)
-            }
-            RawTerminator::Assert { assert, target } => {
-                format!("{} -> bb{}", assert.fmt_with_ctx(ctx), target)
-            }
         }
     }
 }

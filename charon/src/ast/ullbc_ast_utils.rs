@@ -36,6 +36,18 @@ impl Terminator {
 }
 
 impl BlockData {
+    pub fn targets(&self) -> Vec<BlockId> {
+        match &self.terminator.content {
+            RawTerminator::Goto { target } => {
+                vec![*target]
+            }
+            RawTerminator::Switch { targets, .. } => targets.get_targets(),
+            RawTerminator::Abort(..) | RawTerminator::Return => {
+                vec![]
+            }
+        }
+    }
+
     /// See [body_transform_operands]
     pub fn transform_operands<F: FnMut(&Span, &mut Vec<Statement>, &mut Operand)>(
         mut self,

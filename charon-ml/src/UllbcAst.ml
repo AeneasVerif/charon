@@ -30,13 +30,19 @@ type statement = { span : span; content : raw_statement }
 (** A raw statement: a statement without meta data. *)
 and raw_statement =
   | Assign of place * rvalue
+  | Call of call
+      (** A call. For now, we don't support dynamic calls (i.e. to a function pointer in memory). *)
   | FakeRead of place
   | SetDiscriminant of place * variant_id
   | StorageDead of var_id
       (** We translate this to [crate::llbc_ast::RawStatement::Drop] in LLBC *)
   | Deinit of place
       (** We translate this to [crate::llbc_ast::RawStatement::Drop] in LLBC *)
-  | StAssert of assertion
+  | Drop of place
+  | Assert of assertion
+      (** A built-in assert, which corresponds to runtime checks that we remove, namely: bounds
+          checks, over/underflow checks, div/rem by zero checks, pointer alignement check.
+       *)
 [@@deriving
   show,
     visitors
@@ -98,28 +104,6 @@ and raw_terminator =
        *)
   | Abort of abort_kind  (** Handles panics and impossible cases. *)
   | Return
-  | Drop of place * block_id
-      (** 
-          Fields:
-          - [place]
-          - [target]
-       *)
-  | Call of call * block_id option
-      (** Function call. If `target` is `None`, the function is guaranteed to diverge.
-          For now, we don't support dynamic calls (i.e. to a function pointer in memory).
-
-          Fields:
-          - [call]
-          - [target]
-       *)
-  | Assert of assertion * block_id
-      (** A built-in assert, which corresponds to runtime checks that we remove, namely: bounds
-          checks, over/underflow checks, div/rem by zero checks, pointer alignement check.
-
-          Fields:
-          - [assert]
-          - [target]
-       *)
 [@@deriving
   show,
     visitors
