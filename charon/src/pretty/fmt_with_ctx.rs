@@ -740,9 +740,6 @@ impl<C: AstFormatter> FmtWithCtx<C> for Place {
                 ProjectionElem::DerefBox => {
                     out = format!("deref_box ({out})");
                 }
-                ProjectionElem::DerefRawPtr => {
-                    out = format!("deref_raw_ptr ({out})");
-                }
                 ProjectionElem::Field(proj_kind, field_id) => match proj_kind {
                     FieldProjKind::Adt(adt_id, opt_variant_id) => {
                         let field_name = ctx.format_object((*adt_id, *opt_variant_id, *field_id));
@@ -822,6 +819,9 @@ impl<C: AstFormatter> FmtWithCtx<C> for RawConstantExpr {
             RawConstantExpr::Ref(cv) => {
                 format!("&{}", cv.fmt_with_ctx(ctx))
             }
+            RawConstantExpr::MutPtr(cv) => {
+                format!("&raw mut {}", cv.fmt_with_ctx(ctx))
+            }
             RawConstantExpr::Var(id) => format!("{}", ctx.format_object(*id)),
             RawConstantExpr::FnPtr(f) => {
                 format!("{}", f.fmt_with_ctx(ctx),)
@@ -878,7 +878,7 @@ impl<C: AstFormatter> FmtWithCtx<C> for Rvalue {
             Rvalue::Aggregate(kind, ops) => {
                 let ops_s: Vec<String> = ops.iter().map(|op| op.fmt_with_ctx(ctx)).collect();
                 match kind {
-                    AggregateKind::Adt(def_id, variant_id, _) => {
+                    AggregateKind::Adt(def_id, variant_id, field_id, _) => {
                         match def_id {
                             TypeId::Tuple => format!("({})", ops_s.join(", ")),
                             TypeId::Builtin(_) => unreachable!(),
@@ -886,7 +886,13 @@ impl<C: AstFormatter> FmtWithCtx<C> for Rvalue {
                                 // Format every field
                                 let mut fields = vec![];
                                 for (i, op) in ops.iter().enumerate() {
-                                    let field_id = FieldId::new(i);
+                                    let field_id = match *field_id {
+                                        None => FieldId::new(i),
+                                        Some(field_id) => {
+                                            assert_eq!(i, 0); // there should be only one operand
+                                            field_id
+                                        }
+                                    };
                                     let field_name =
                                         ctx.format_object((*def_id, *variant_id, field_id));
                                     fields.push(format!(
@@ -918,6 +924,12 @@ impl<C: AstFormatter> FmtWithCtx<C> for Rvalue {
                 }
             }
             Rvalue::Global(global_ref) => global_ref.fmt_with_ctx(ctx),
+            Rvalue::GlobalRef(global_ref, RefKind::Shared) => {
+                format!("&{}", global_ref.fmt_with_ctx(ctx))
+            }
+            Rvalue::GlobalRef(global_ref, RefKind::Mut) => {
+                format!("&raw mut {}", global_ref.fmt_with_ctx(ctx))
+            }
             Rvalue::Len(place, ..) => format!("len({})", place.fmt_with_ctx(ctx)),
             Rvalue::Repeat(op, _ty, cg) => {
                 format!("[{}; {}]", op.fmt_with_ctx(ctx), cg.fmt_with_ctx(ctx))
@@ -956,6 +968,7 @@ impl<C: AstFormatter> FmtWithCtx<C> for ullbc::Statement {
             RawStatement::Deinit(place) => {
                 format!("@deinit({})", place.fmt_with_ctx(ctx))
             }
+            RawStatement::Assert(assert) => format!("{}", assert.fmt_with_ctx(ctx)),
             RawStatement::Error(s) => {
                 format!("@Error({})", s)
             }

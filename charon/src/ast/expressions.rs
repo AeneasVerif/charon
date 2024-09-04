@@ -40,7 +40,7 @@ pub type Projection = Vec<ProjectionElem>;
     DriveMut,
 )]
 pub enum ProjectionElem {
-    /// Dereference a shared/mutable reference.
+    /// Dereference a shared/mutable reference or a raw pointer.
     Deref,
     /// Dereference a boxed value.
     /// Note that this doesn't exist in MIR where `Deref` is used both for the
@@ -49,12 +49,6 @@ pub enum ProjectionElem {
     /// during the translation.
     /// In rust, this comes from the `*` operator applied on boxes.
     DerefBox,
-    /// Dereference a raw pointer. See the comments for [crate::types::Ty::RawPtr].
-    /// TODO: remove those (we would also need: `DerefPtrUnique`, `DerefPtrNonNull`, etc.)
-    /// and only keep a single `Deref` variant?
-    /// Or if we keep them, change to: `Deref(DerefKind)`?
-    #[charon::opaque]
-    DerefRawPtr,
     /// Projection from ADTs (variants, structures).
     /// We allow projections to be used as left-values and right-values.
     /// We should never have projections to fields of symbolic variants (they
@@ -419,8 +413,7 @@ pub enum RawConstantExpr {
     /// We eliminate this case in a micro-pass.
     #[charon::opaque]
     Adt(Option<VariantId>, Vec<ConstantExpr>),
-    ///
-    /// The value is a top-level value.
+    /// The value is a top-level constant/static.
     ///
     /// We eliminate this case in a micro-pass.
     ///
@@ -453,12 +446,16 @@ pub enum RawConstantExpr {
     /// Remark: trait constants can not be used in types, they are necessarily
     /// values.
     TraitConst(TraitRef, TraitItemName),
-    ///
-    /// A shared reference to a constant value
+    /// A shared reference to a constant value.
     ///
     /// We eliminate this case in a micro-pass.
     #[charon::opaque]
     Ref(Box<ConstantExpr>),
+    /// A mutable pointer to a mutable static.
+    ///
+    /// We eliminate this case in a micro-pass.
+    #[charon::opaque]
+    MutPtr(Box<ConstantExpr>),
     /// A const generic var
     Var(ConstGenericVarId),
     /// Function pointer
@@ -518,9 +515,13 @@ pub enum Rvalue {
     /// Remark: in case of closures, the aggregated value groups the closure id
     /// together with its state.
     Aggregate(AggregateKind, Vec<Operand>),
-    /// Not present in MIR: we introduce it when replacing constant variables
-    /// in operands in [extract_global_assignments.rs].
+    /// Copy the value of the referenced global.
+    /// Not present in MIR; introduced in [simplify_constants.rs].
     Global(GlobalDeclRef),
+    /// Reference the value of the global. This has type `&T` or `*mut T` depending on desired
+    /// mutability.
+    /// Not present in MIR; introduced in [simplify_constants.rs].
+    GlobalRef(GlobalDeclRef, RefKind),
     /// Length of a memory location. The run-time length of e.g. a vector or a slice is
     /// represented differently (but pretty-prints the same, FIXME).
     /// Should be seen as a function of signature:
@@ -579,7 +580,10 @@ pub enum Rvalue {
 #[derive(Debug, Clone, VariantIndexArity, Serialize, Deserialize, Drive, DriveMut)]
 #[charon::variants_prefix("Aggregated")]
 pub enum AggregateKind {
-    Adt(TypeId, Option<VariantId>, GenericArgs),
+    /// A struct, enum or union aggregate. The `VariantId`, if present, indicates this is an enum
+    /// and the aggregate uses that variant. The `FieldId`, if present, indicates this is a union
+    /// and the aggregate writes into that field. Otherwise this is a struct.
+    Adt(TypeId, Option<VariantId>, Option<FieldId>, GenericArgs),
     /// We don't put this with the ADT cas because this is the only built-in type
     /// with aggregates, and it is a primitive type. In particular, it makes
     /// sense to treat it differently because it has a variable number of fields.

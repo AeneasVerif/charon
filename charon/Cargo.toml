@@ -1,6 +1,6 @@
 [package]
 name = "charon"
-version = "0.1.36"
+version = "0.1.37"
 authors = ["Son Ho <hosonmarc@gmail.com>"]
 edition = "2021"
 license = "Apache-2.0"
@@ -74,8 +74,8 @@ tracing-tree = { git = "https://github.com/Nadrieril/tracing-tree", features = [
 tracing = { version = "0.1", features = [ "max_level_trace", "release_max_level_warn" ] }
 which = "6.0.1"
 
-hax-frontend-exporter = { git = "https://github.com/hacspec/hax", branch = "main", optional = true }
-# hax-frontend-exporter = { git = "https://github.com/Nadrieril/hax", branch = "update-rustc", optional = true }
+# hax-frontend-exporter = { git = "https://github.com/hacspec/hax", branch = "main", optional = true }
+hax-frontend-exporter = { git = "https://github.com/Nadrieril/hax", branch = "charon", optional = true }
 # hax-frontend-exporter = { path = "../../hax/frontend/exporter", optional = true }
 macros = { path = "./macros" }
 

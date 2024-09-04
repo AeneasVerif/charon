@@ -43,6 +43,9 @@ and raw_statement_of_json (js : json) : (raw_statement, string) result =
     | `Assoc [ ("Deinit", deinit) ] ->
         let* deinit = place_of_json deinit in
         Ok (Deinit deinit)
+    | `Assoc [ ("Assert", assert_) ] ->
+        let* assert_ = assertion_of_json assert_ in
+        Ok (StAssert assert_)
     | _ -> Error "")
 
 and switch_of_json (js : json) : (switch, string) result =

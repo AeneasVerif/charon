@@ -247,14 +247,10 @@ global test_crate::S2  {
     let @0: u32; // return
     let @1: u32; // anonymous local
     let @2: &'_ (u32); // anonymous local
-    let @3: u32; // anonymous local
-    let @4: u32; // anonymous local
-    let @5: &'_ (u32); // anonymous local
+    let @3: &'_ (u32); // anonymous local
 
-    @3 := test_crate::S1
-    @4 := move (@3)
-    @5 := &@4
-    @2 := move (@5)
+    @3 := &test_crate::S1
+    @2 := move (@3)
     @1 := copy (*(@2))
     @0 := test_crate::incr(move (@1))
     drop @2

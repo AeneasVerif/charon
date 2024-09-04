@@ -310,7 +310,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                     hax::ProjectionElem::Deref => {
                         // We use the type to disambiguate
                         match current_ty {
-                            Ty::Ref(_, _, _) => {
+                            Ty::Ref(_, _, _) | Ty::RawPtr(_, _) => {
                                 projection.push(ProjectionElem::Deref);
                             }
                             Ty::Adt(TypeId::Builtin(BuiltinTy::Box), generics) => {
@@ -320,9 +320,6 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                                 assert!(generics.types.len() == 1);
                                 assert!(generics.const_generics.is_empty());
                                 projection.push(ProjectionElem::DerefBox);
-                            }
-                            Ty::RawPtr(_, _) => {
-                                projection.push(ProjectionElem::DerefRawPtr);
                             }
                             _ => {
                                 unreachable!(
@@ -673,7 +670,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                         ))
                     }
                     hax::AggregateKind::Tuple => Ok(Rvalue::Aggregate(
-                        AggregateKind::Adt(TypeId::Tuple, None, GenericArgs::empty()),
+                        AggregateKind::Adt(TypeId::Tuple, None, None, GenericArgs::empty()),
                         operands_t,
                     )),
                     hax::AggregateKind::Adt(
@@ -690,8 +687,6 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                         // We ignore type annotations since rustc has already inferred all the
                         // types we need.
                         let _ = user_annotation;
-                        // The union field index if specified. We don't handle unions today.
-                        error_assert!(self, span, field_index.is_none());
 
                         // Translate the substitution
                         let generics = self.translate_substs_and_trait_refs(
@@ -708,17 +703,15 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
 
                         use hax::AdtKind;
                         let variant_id = match kind {
-                            AdtKind::Struct => None,
-                            AdtKind::Enum => {
-                                let variant_id = translate_variant_id(*variant_idx);
-                                Some(variant_id)
-                            }
-                            AdtKind::Union => {
-                                error_or_panic!(self, span, "Union values are not supported");
-                            }
+                            AdtKind::Struct | AdtKind::Union => None,
+                            AdtKind::Enum => Some(translate_variant_id(*variant_idx)),
+                        };
+                        let field_id = match kind {
+                            AdtKind::Struct | AdtKind::Enum => None,
+                            AdtKind::Union => Some(translate_field_id(field_index.unwrap())),
                         };
 
-                        let akind = AggregateKind::Adt(type_id, variant_id, generics);
+                        let akind = AggregateKind::Adt(type_id, variant_id, field_id, generics);
                         Ok(Rvalue::Aggregate(akind, operands_t))
                     }
                     hax::AggregateKind::Closure(def_id, substs, trait_refs, sig) => {
@@ -926,10 +919,9 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 Some(RawStatement::FakeRead(t_place))
             }
             StatementKind::PlaceMention(place) => {
-                // Simply accesses a place. Introduced for instance in place
-                // of `let _ = ...`. We desugar it to a fake read.
+                // Simply accesses a place, for use of the borrow checker. Introduced for instance
+                // in place of `let _ = ...`. We desugar it to a fake read.
                 let t_place = self.translate_place(span, place)?;
-
                 Some(RawStatement::FakeRead(t_place))
             }
             StatementKind::SetDiscriminant {
@@ -940,46 +932,39 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 let variant_id = translate_variant_id(*variant_index);
                 Some(RawStatement::SetDiscriminant(t_place, variant_id))
             }
-            StatementKind::StorageLive(_) => {
-                // We ignore StorageLive
-                None
-            }
+            // We ignore StorageLive
+            StatementKind::StorageLive(_) => None,
             StatementKind::StorageDead(local) => {
                 let var_id = self.get_local(local).unwrap();
                 Some(RawStatement::StorageDead(var_id))
-            }
-            StatementKind::Retag(_, _) => {
-                // This is for the stacked borrows
-                trace!("retag");
-                None
-            }
-            StatementKind::AscribeUserType(_, _) => {
-                trace!("AscribedUserType");
-                // We ignore those: they are just used by the type checker.
-                // Note that this instruction is used only in certain passes
-                // (it is not present in optimized MIR for instance).
-                None
-            }
-            StatementKind::Coverage(_) => {
-                error_or_panic!(self, span, "Unsupported statement kind: coverage");
-            }
-            StatementKind::Nop => {
-                // We ignore this statement
-                None
             }
             StatementKind::Deinit(place) => {
                 let t_place = self.translate_place(span, place)?;
                 Some(RawStatement::Deinit(t_place))
             }
-            StatementKind::Intrinsic(_) => {
-                error_or_panic!(self, span, "Unsupported statement kind: intrinsic");
+            // This asserts the operand true on pain of UB. We treat it like a normal assertion.
+            StatementKind::Intrinsic(hax::NonDivergingIntrinsic::Assume(op)) => {
+                let op = self.translate_operand(span, op)?;
+                Some(RawStatement::Assert(Assert {
+                    cond: op,
+                    expected: true,
+                }))
             }
-            StatementKind::ConstEvalCounter => {
-                // See the doc: only used in the interpreter, to check that
-                // const code doesn't run for too long or even indefinitely.
-                // We consider it as a no-op.
-                None
+            StatementKind::Intrinsic(hax::NonDivergingIntrinsic::CopyNonOverlapping(..)) => {
+                error_or_panic!(self, span, "Unsupported statement kind: CopyNonOverlapping");
             }
+            // This is for the stacked borrows memory model.
+            StatementKind::Retag(_, _) => None,
+            // There are user-provided type annotations with no semantic effect (since we get a
+            // fully-typechecked MIR (TODO: this isn't quite true with opaque types, we should
+            // really use promoted MIR)).
+            StatementKind::AscribeUserType(_, _) => None,
+            // Used for coverage instrumentation.
+            StatementKind::Coverage(_) => None,
+            // Used in the interpreter to check that const code doesn't run for too long or even
+            // indefinitely.
+            StatementKind::ConstEvalCounter => None,
+            StatementKind::Nop => None,
         };
 
         // Add the span information

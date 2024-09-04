@@ -1,0 +1,192 @@
+# Final LLBC before serialization:
+
+global test_crate::constant::CONST  {
+    let @0: usize; // return
+
+    @0 := const (0 : usize)
+    return
+}
+
+fn test_crate::constant()
+{
+    let @0: (); // return
+    let _val@1: usize; // local
+    let _ref@2: &'_ (usize); // local
+    let @3: usize; // anonymous local
+    let _ref_mut@4: &'_ mut (usize); // local
+    let @5: usize; // anonymous local
+    let @6: usize; // anonymous local
+    let @7: usize; // anonymous local
+    let @8: usize; // anonymous local
+    let @9: (); // anonymous local
+
+    @6 := test_crate::constant::CONST
+    _val@1 := move (@6)
+    @fake_read(_val@1)
+    @7 := test_crate::constant::CONST
+    @3 := move (@7)
+    _ref@2 := &@3
+    @fake_read(_ref@2)
+    @8 := test_crate::constant::CONST
+    @5 := move (@8)
+    _ref_mut@4 := &mut @5
+    @fake_read(_ref_mut@4)
+    @9 := ()
+    @0 := move (@9)
+    drop @5
+    drop _ref_mut@4
+    drop @3
+    drop _ref@2
+    drop _val@1
+    @0 := ()
+    return
+}
+
+global test_crate::shared_static::SHARED_STATIC  {
+    let @0: usize; // return
+
+    @0 := const (0 : usize)
+    return
+}
+
+fn test_crate::shared_static()
+{
+    let @0: (); // return
+    let _val@1: usize; // local
+    let @2: &'_ (usize); // anonymous local
+    let _ref@3: &'_ (usize); // local
+    let @4: &'_ (usize); // anonymous local
+    let _ptr@5: *const usize; // local
+    let @6: &'_ (usize); // anonymous local
+    let @7: &'_ (usize); // anonymous local
+    let @8: &'_ (usize); // anonymous local
+    let @9: &'_ (usize); // anonymous local
+    let @10: (); // anonymous local
+
+    @7 := &test_crate::shared_static::SHARED_STATIC
+    @2 := move (@7)
+    _val@1 := copy (*(@2))
+    @fake_read(_val@1)
+    drop @2
+    @8 := &test_crate::shared_static::SHARED_STATIC
+    @4 := move (@8)
+    _ref@3 := &*(@4)
+    @fake_read(_ref@3)
+    @9 := &test_crate::shared_static::SHARED_STATIC
+    @6 := move (@9)
+    _ptr@5 := &raw const *(@6)
+    @fake_read(_ptr@5)
+    @10 := ()
+    @0 := move (@10)
+    drop @6
+    drop _ptr@5
+    drop @4
+    drop _ref@3
+    drop _val@1
+    @0 := ()
+    return
+}
+
+global test_crate::mut_static::MUT_STATIC  {
+    let @0: usize; // return
+
+    @0 := const (0 : usize)
+    return
+}
+
+fn test_crate::mut_static()
+{
+    let @0: (); // return
+    let _val@1: usize; // local
+    let @2: *mut usize; // anonymous local
+    let _ref@3: &'_ (usize); // local
+    let @4: *mut usize; // anonymous local
+    let _ref_mut@5: &'_ mut (usize); // local
+    let @6: *mut usize; // anonymous local
+    let _ptr@7: *const usize; // local
+    let @8: *mut usize; // anonymous local
+    let _ptr_mut@9: *mut usize; // local
+    let @10: *mut usize; // anonymous local
+    let @11: *mut usize; // anonymous local
+    let @12: *mut usize; // anonymous local
+    let @13: *mut usize; // anonymous local
+    let @14: *mut usize; // anonymous local
+    let @15: *mut usize; // anonymous local
+    let @16: (); // anonymous local
+
+    @11 := &raw mut test_crate::mut_static::MUT_STATIC
+    @2 := move (@11)
+    _val@1 := copy (*(@2))
+    @fake_read(_val@1)
+    drop @2
+    @12 := &raw mut test_crate::mut_static::MUT_STATIC
+    @4 := move (@12)
+    _ref@3 := &*(@4)
+    @fake_read(_ref@3)
+    @13 := &raw mut test_crate::mut_static::MUT_STATIC
+    @6 := move (@13)
+    _ref_mut@5 := &mut *(@6)
+    @fake_read(_ref_mut@5)
+    @14 := &raw mut test_crate::mut_static::MUT_STATIC
+    @8 := move (@14)
+    _ptr@7 := &raw const *(@8)
+    @fake_read(_ptr@7)
+    @15 := &raw mut test_crate::mut_static::MUT_STATIC
+    @10 := move (@15)
+    _ptr_mut@9 := &raw mut *(@10)
+    @fake_read(_ptr_mut@9)
+    @16 := ()
+    @0 := move (@16)
+    drop @10
+    drop _ptr_mut@9
+    drop @8
+    drop _ptr@7
+    drop @6
+    drop _ref_mut@5
+    drop @4
+    drop _ref@3
+    drop _val@1
+    @0 := ()
+    return
+}
+
+struct test_crate::non_copy_static::Foo = {}
+
+global test_crate::non_copy_static::FOO  {
+    let @0: test_crate::non_copy_static::Foo; // return
+
+    @0 := test_crate::non_copy_static::Foo {  }
+    return
+}
+
+fn test_crate::non_copy_static::{test_crate::non_copy_static::Foo}::method<'_0>(@1: &'_0 (test_crate::non_copy_static::Foo))
+{
+    let @0: (); // return
+    let self@1: &'_ (test_crate::non_copy_static::Foo); // arg #1
+    let @2: (); // anonymous local
+
+    @2 := ()
+    @0 := move (@2)
+    @0 := ()
+    return
+}
+
+fn test_crate::non_copy_static()
+{
+    let @0: (); // return
+    let @1: &'_ (test_crate::non_copy_static::Foo); // anonymous local
+    let @2: &'_ (test_crate::non_copy_static::Foo); // anonymous local
+    let @3: &'_ (test_crate::non_copy_static::Foo); // anonymous local
+
+    @3 := &test_crate::non_copy_static::FOO
+    @2 := move (@3)
+    @1 := &*(@2)
+    @0 := test_crate::non_copy_static::{test_crate::non_copy_static::Foo}::method(move (@1))
+    drop @1
+    drop @2
+    @0 := ()
+    return
+}
+
+
+

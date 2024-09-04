@@ -21,11 +21,6 @@ use crate::values::VarId;
 
 use super::ctx::UllbcPass;
 
-fn make_aggregate_kind(ty: &Ty, var_index: Option<VariantId>) -> AggregateKind {
-    let (id, generics) = ty.as_adt();
-    AggregateKind::Adt(*id, var_index, generics.clone())
-}
-
 /// If the constant value is a constant ADT, push `Assign::Aggregate` statements
 /// to the vector of statements, that bind new variables to the ADT parts and
 /// the variable assigned to the complete ADT.
@@ -59,27 +54,86 @@ fn transform_constant_expr<F: FnMut(Ty) -> VarId>(
             Operand::Move(Place::new(var_id))
         }
         RawConstantExpr::Ref(box bval) => {
-            // Recurse on the borrowed value
-            let bval_ty = bval.ty.clone();
-            let bval = transform_constant_expr(span, nst, bval, make_new_var);
+            match bval.value {
+                RawConstantExpr::Global(global_ref) => {
+                    // Introduce an intermediate statement to borrow the static.
+                    let ref_var_id = make_new_var(val.ty);
+                    nst.push(Statement::new(
+                        *span,
+                        RawStatement::Assign(
+                            Place::new(ref_var_id),
+                            Rvalue::GlobalRef(global_ref, RefKind::Shared),
+                        ),
+                    ));
 
-            // Introduce an intermediate statement to evaluate the referenced value
-            let bvar_id = make_new_var(bval_ty);
-            nst.push(Statement::new(
-                *span,
-                RawStatement::Assign(Place::new(bvar_id), Rvalue::Use(bval)),
-            ));
+                    // Return the new operand
+                    Operand::Move(Place::new(ref_var_id))
+                }
+                _ => {
+                    // Recurse on the borrowed value
+                    let bval_ty = bval.ty.clone();
+                    let bval = transform_constant_expr(span, nst, bval, make_new_var);
 
-            // Introduce an intermediate statement to borrow the value
-            let ref_var_id = make_new_var(val.ty);
-            let rvalue = Rvalue::Ref(Place::new(bvar_id), BorrowKind::Shared);
-            nst.push(Statement::new(
-                *span,
-                RawStatement::Assign(Place::new(ref_var_id), rvalue),
-            ));
+                    // Introduce an intermediate statement to evaluate the referenced value
+                    let bvar_id = make_new_var(bval_ty);
+                    nst.push(Statement::new(
+                        *span,
+                        RawStatement::Assign(Place::new(bvar_id), Rvalue::Use(bval)),
+                    ));
 
-            // Return the new operand
-            Operand::Move(Place::new(ref_var_id))
+                    // Introduce an intermediate statement to borrow the value
+                    let ref_var_id = make_new_var(val.ty);
+                    let rvalue = Rvalue::Ref(Place::new(bvar_id), BorrowKind::Shared);
+                    nst.push(Statement::new(
+                        *span,
+                        RawStatement::Assign(Place::new(ref_var_id), rvalue),
+                    ));
+
+                    // Return the new operand
+                    Operand::Move(Place::new(ref_var_id))
+                }
+            }
+        }
+        RawConstantExpr::MutPtr(box bval) => {
+            match bval.value {
+                RawConstantExpr::Global(global_ref) => {
+                    // Introduce an intermediate statement to borrow the static.
+                    let ref_var_id = make_new_var(val.ty);
+                    nst.push(Statement::new(
+                        *span,
+                        RawStatement::Assign(
+                            Place::new(ref_var_id),
+                            Rvalue::GlobalRef(global_ref, RefKind::Mut),
+                        ),
+                    ));
+
+                    // Return the new operand
+                    Operand::Move(Place::new(ref_var_id))
+                }
+                _ => {
+                    // Recurse on the borrowed value
+                    let bval_ty = bval.ty.clone();
+                    let bval = transform_constant_expr(span, nst, bval, make_new_var);
+
+                    // Introduce an intermediate statement to evaluate the referenced value
+                    let bvar_id = make_new_var(bval_ty);
+                    nst.push(Statement::new(
+                        *span,
+                        RawStatement::Assign(Place::new(bvar_id), Rvalue::Use(bval)),
+                    ));
+
+                    // Introduce an intermediate statement to borrow the value
+                    let ref_var_id = make_new_var(val.ty);
+                    let rvalue = Rvalue::RawPtr(Place::new(bvar_id), RefKind::Mut);
+                    nst.push(Statement::new(
+                        *span,
+                        RawStatement::Assign(Place::new(ref_var_id), rvalue),
+                    ));
+
+                    // Return the new operand
+                    Operand::Move(Place::new(ref_var_id))
+                }
+            }
         }
         RawConstantExpr::Adt(variant, fields) => {
             // Recurse on the fields
@@ -89,7 +143,11 @@ fn transform_constant_expr<F: FnMut(Ty) -> VarId>(
                 .collect();
 
             // Introduce an intermediate assignment for the aggregated ADT
-            let rval = Rvalue::Aggregate(make_aggregate_kind(&val.ty, variant), fields);
+            let rval = {
+                let (adt_kind, generics) = val.ty.as_adt();
+                let aggregate_kind = AggregateKind::Adt(*adt_kind, variant, None, generics.clone());
+                Rvalue::Aggregate(aggregate_kind, fields)
+            };
             let var_id = make_new_var(val.ty);
             nst.push(Statement::new(
                 *span,

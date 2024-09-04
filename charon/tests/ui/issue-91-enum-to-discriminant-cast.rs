@@ -1,4 +1,3 @@
-//@ known-failure
 #[derive(Copy, Clone)]
 enum Foo {
     A,

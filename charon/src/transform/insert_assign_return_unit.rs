@@ -16,7 +16,7 @@ fn transform_st(st: &mut Statement) -> Option<Vec<Statement>> {
             projection: Projection::new(),
         };
         let unit_value = Rvalue::Aggregate(
-            AggregateKind::Adt(TypeId::Tuple, None, GenericArgs::empty()),
+            AggregateKind::Adt(TypeId::Tuple, None, None, GenericArgs::empty()),
             Vec::new(),
         );
         let assign_st = Statement::new(st.span, RawStatement::Assign(ret_place, unit_value));

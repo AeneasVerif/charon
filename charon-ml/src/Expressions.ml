@@ -110,7 +110,7 @@ type field_proj_kind =
     language, we thus merge downcasts and field projections.
  *)
 and projection_elem =
-  | Deref  (** Dereference a shared/mutable reference. *)
+  | Deref  (** Dereference a shared/mutable reference or a raw pointer. *)
   | DerefBox
       (** Dereference a boxed value.
           Note that this doesn't exist in MIR where `Deref` is used both for the
@@ -412,7 +412,12 @@ type operand =
     the field 0, etc.).
  *)
 and aggregate_kind =
-  | AggregatedAdt of type_id * variant_id option * generic_args
+  | AggregatedAdt of
+      type_id * variant_id option * field_id option * generic_args
+      (** A struct, enum or union aggregate. The `VariantId`, if present, indicates this is an enum
+          and the aggregate uses that variant. The `FieldId`, if present, indicates this is a union
+          and the aggregate writes into that field. Otherwise this is a struct.
+       *)
   | AggregatedArray of ty * const_generic
       (** We don't put this with the ADT cas because this is the only built-in type
           with aggregates, and it is a primitive type. In particular, it makes
@@ -467,8 +472,13 @@ and rvalue =
           together with its state.
        *)
   | Global of global_decl_ref
-      (** Not present in MIR: we introduce it when replacing constant variables
-          in operands in [extract_global_assignments.rs].
+      (** Copy the value of the referenced global.
+          Not present in MIR; introduced in [simplify_constants.rs].
+       *)
+  | GlobalRef of global_decl_ref * ref_kind
+      (** Reference the value of the global. This has type `&T` or `*mut T` depending on desired
+          mutability.
+          Not present in MIR; introduced in [simplify_constants.rs].
        *)
   | Len of place * ty * const_generic option
       (** Length of a memory location. The run-time length of e.g. a vector or a slice is

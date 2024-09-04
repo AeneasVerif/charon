@@ -1,0 +1,115 @@
+# Final LLBC before serialization:
+
+fn core::ptr::null<T>() -> *const T
+where
+    [@TraitClause0]: @TraitDecl1<T>,
+
+unsafe fn core::ptr::const_ptr::{*const T}::read<T>(@1: *const T) -> T
+
+fn test_crate::call_unsafe_fn()
+{
+    let @0: (); // return
+    let x@1: *const u32; // local
+    let @2: u32; // anonymous local
+    let @3: *const u32; // anonymous local
+    let @4: (); // anonymous local
+
+    x@1 := core::ptr::null<u32>[@TraitDecl1<u32>]()
+    @fake_read(x@1)
+    @3 := copy (x@1)
+    @2 := core::ptr::const_ptr::{*const T}::read<u32>(move (@3))
+    drop @3
+    @fake_read(@2)
+    drop @2
+    @4 := ()
+    @0 := move (@4)
+    drop x@1
+    @0 := ()
+    return
+}
+
+fn test_crate::deref_raw_ptr()
+{
+    let @0: (); // return
+    let x@1: *const u32; // local
+    let @2: u32; // anonymous local
+    let @3: (); // anonymous local
+
+    x@1 := core::ptr::null<u32>[@TraitDecl1<u32>]()
+    @fake_read(x@1)
+    @2 := copy (*(x@1))
+    @fake_read(@2)
+    drop @2
+    @3 := ()
+    @0 := move (@3)
+    drop x@1
+    @0 := ()
+    return
+}
+
+trait test_crate::Trait<Self>
+
+impl test_crate::{impl test_crate::Trait for ()} : test_crate::Trait<()>
+
+global test_crate::COUNTER  {
+    let @0: usize; // return
+
+    @0 := const (0 : usize)
+    return
+}
+
+fn test_crate::access_mutable_static()
+{
+    let @0: (); // return
+    let @1: *mut usize; // anonymous local
+    let @2: *mut usize; // anonymous local
+    let @3: (); // anonymous local
+
+    @2 := &raw mut test_crate::COUNTER
+    @1 := move (@2)
+    *(@1) := copy (*(@1)) + const (1 : usize)
+    drop @1
+    @3 := ()
+    @0 := move (@3)
+    @0 := ()
+    return
+}
+
+union test_crate::Foo =
+{
+  one: u64,
+  two: Array<u32, 2 : usize>,
+}
+
+fn test_crate::access_union_field()
+{
+    let @0: (); // return
+    let one@1: test_crate::Foo; // local
+    let _two@2: Array<u32, 2 : usize>; // local
+    let @3: (); // anonymous local
+
+    one@1 := test_crate::Foo { one: const (42 : u64) }
+    @fake_read(one@1)
+    _two@2 := copy ((one@1).two)
+    @fake_read(_two@2)
+    @3 := ()
+    @0 := move (@3)
+    drop _two@2
+    drop one@1
+    @0 := ()
+    return
+}
+
+unsafe fn core::intrinsics::assume(@1: bool)
+
+fn test_crate::assume()
+{
+    let @0: (); // return
+
+    @0 := core::intrinsics::assume(const (true))
+    @0 := ()
+    return
+}
+
+
+

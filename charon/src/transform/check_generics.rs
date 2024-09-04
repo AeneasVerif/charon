@@ -74,7 +74,7 @@ impl CheckGenericsVisitor<'_, '_> {
 impl CheckGenericsVisitor<'_, '_> {
     fn enter_aggregate_kind(&mut self, agg: &AggregateKind) {
         match agg {
-            AggregateKind::Adt(kind, _, args) => {
+            AggregateKind::Adt(kind, _, _, args) => {
                 self.check_typeid_generics(args, kind);
             }
             AggregateKind::Closure(id, args) => {

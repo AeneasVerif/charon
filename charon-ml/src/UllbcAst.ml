@@ -36,6 +36,7 @@ and raw_statement =
       (** We translate this to [crate::llbc_ast::RawStatement::Drop] in LLBC *)
   | Deinit of place
       (** We translate this to [crate::llbc_ast::RawStatement::Drop] in LLBC *)
+  | StAssert of assertion
 [@@deriving
   show,
     visitors
