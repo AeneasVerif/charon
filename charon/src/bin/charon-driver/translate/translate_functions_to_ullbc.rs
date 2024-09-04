@@ -942,8 +942,16 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 let t_place = self.translate_place(span, place)?;
                 Some(RawStatement::Deinit(t_place))
             }
-            StatementKind::Intrinsic(_) => {
-                error_or_panic!(self, span, "Unsupported statement kind: intrinsic");
+            // This asserts the operand true on pain of UB. We treat it like a normal assertion.
+            StatementKind::Intrinsic(hax::NonDivergingIntrinsic::Assume(op)) => {
+                let op = self.translate_operand(span, op)?;
+                Some(RawStatement::Assert(Assert {
+                    cond: op,
+                    expected: true,
+                }))
+            }
+            StatementKind::Intrinsic(hax::NonDivergingIntrinsic::CopyNonOverlapping(..)) => {
+                error_or_panic!(self, span, "Unsupported statement kind: CopyNonOverlapping");
             }
             // This is for the stacked borrows memory model.
             StatementKind::Retag(_, _) => None,

@@ -1463,6 +1463,7 @@ fn translate_statement(st: &src::Statement) -> Option<tgt::Statement> {
         src::RawStatement::StorageDead(var_id) => tgt::RawStatement::Drop(Place::new(var_id)),
         // We translate a deinit as a drop
         src::RawStatement::Deinit(place) => tgt::RawStatement::Drop(place),
+        src::RawStatement::Assert(assert) => tgt::RawStatement::Assert(assert),
         src::RawStatement::Error(s) => tgt::RawStatement::Error(s),
     };
     Some(tgt::Statement::new(src_span, st))

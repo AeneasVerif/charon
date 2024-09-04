@@ -29,6 +29,8 @@ pub enum RawStatement {
     StorageDead(VarId),
     /// We translate this to [crate::llbc_ast::RawStatement::Drop] in LLBC
     Deinit(Place),
+    #[charon::rename("StAssert")]
+    Assert(Assert),
     #[charon::opaque]
     Error(String),
 }

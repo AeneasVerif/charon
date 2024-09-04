@@ -31,6 +31,7 @@ module Ast = struct
     | StorageDead var_id ->
         indent ^ "storage_dead " ^ var_id_to_string env var_id
     | Deinit p -> indent ^ "deinit " ^ place_to_string env p
+    | StAssert a -> assertion_to_string env indent a
 
   let switch_to_string (indent : string) (tgt : switch) : string =
     match tgt with

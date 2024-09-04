@@ -34,3 +34,7 @@ fn access_union_field() {
     let one = Foo { one: 42 };
     let _two = unsafe { one.two };
 }
+
+fn assume() {
+    std::intrinsics::assume(true)
+}

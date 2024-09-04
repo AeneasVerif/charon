@@ -100,5 +100,16 @@ fn test_crate::access_union_field()
     return
 }
 
+unsafe fn core::intrinsics::assume(@1: bool)
+
+fn test_crate::assume()
+{
+    let @0: (); // return
+
+    @0 := core::intrinsics::assume(const (true))
+    @0 := ()
+    return
+}
+
 
 
