@@ -99,8 +99,12 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         let erase_regions = false;
         let mut bt_ctx = BodyTransCtx::new(rust_id, self);
 
+        if let hax::FullDefKind::TraitAlias { .. } = def.kind() {
+            error_or_panic!(self, span, &format!("Trait aliases are not supported"));
+        }
+
         let hax::FullDefKind::Trait { items, .. } = &def.kind else {
-            panic!("Unexpected definition: {def:?}")
+            error_or_panic!(self, span, &format!("Unexpected definition: {def:?}"));
         };
         let items: Vec<(TraitItemName, &hax::AssocItem, Option<Arc<hax::FullDef>>)> = items
             .iter()

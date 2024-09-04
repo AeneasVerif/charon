@@ -40,7 +40,7 @@ pub type Projection = Vec<ProjectionElem>;
     DriveMut,
 )]
 pub enum ProjectionElem {
-    /// Dereference a shared/mutable reference.
+    /// Dereference a shared/mutable reference or a raw pointer.
     Deref,
     /// Dereference a boxed value.
     /// Note that this doesn't exist in MIR where `Deref` is used both for the
@@ -49,12 +49,6 @@ pub enum ProjectionElem {
     /// during the translation.
     /// In rust, this comes from the `*` operator applied on boxes.
     DerefBox,
-    /// Dereference a raw pointer. See the comments for [crate::types::Ty::RawPtr].
-    /// TODO: remove those (we would also need: `DerefPtrUnique`, `DerefPtrNonNull`, etc.)
-    /// and only keep a single `Deref` variant?
-    /// Or if we keep them, change to: `Deref(DerefKind)`?
-    #[charon::opaque]
-    DerefRawPtr,
     /// Projection from ADTs (variants, structures).
     /// We allow projections to be used as left-values and right-values.
     /// We should never have projections to fields of symbolic variants (they

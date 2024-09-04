@@ -126,6 +126,9 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 let be = self.translate_constant_expr_to_constant_expr(span, be)?;
                 RawConstantExpr::Ref(Box::new(be))
             }
+            ConstantExprKind::MutPtr(_) => {
+                todo!()
+            }
             ConstantExprKind::ConstRef { id } => {
                 let var_id = self.const_generic_vars_map.get(&id.index);
                 if let Some(var_id) = var_id {

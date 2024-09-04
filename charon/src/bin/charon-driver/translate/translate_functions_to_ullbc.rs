@@ -310,7 +310,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                     hax::ProjectionElem::Deref => {
                         // We use the type to disambiguate
                         match current_ty {
-                            Ty::Ref(_, _, _) => {
+                            Ty::Ref(_, _, _) | Ty::RawPtr(_, _) => {
                                 projection.push(ProjectionElem::Deref);
                             }
                             Ty::Adt(TypeId::Builtin(BuiltinTy::Box), generics) => {
@@ -320,9 +320,6 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                                 assert!(generics.types.len() == 1);
                                 assert!(generics.const_generics.is_empty());
                                 projection.push(ProjectionElem::DerefBox);
-                            }
-                            Ty::RawPtr(_, _) => {
-                                projection.push(ProjectionElem::DerefRawPtr);
                             }
                             _ => {
                                 unreachable!(

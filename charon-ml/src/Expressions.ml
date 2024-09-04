@@ -110,7 +110,7 @@ type field_proj_kind =
     language, we thus merge downcasts and field projections.
  *)
 and projection_elem =
-  | Deref  (** Dereference a shared/mutable reference. *)
+  | Deref  (** Dereference a shared/mutable reference or a raw pointer. *)
   | DerefBox
       (** Dereference a boxed value.
           Note that this doesn't exist in MIR where `Deref` is used both for the
