@@ -319,7 +319,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                                 assert!(generics.regions.is_empty());
                                 assert!(generics.types.len() == 1);
                                 assert!(generics.const_generics.is_empty());
-                                projection.push(ProjectionElem::DerefBox);
+                                projection.push(ProjectionElem::Deref);
                             }
                             _ => {
                                 unreachable!(
@@ -368,7 +368,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                                         assert!(variant_id.is_none());
                                         assert!(field_id == FieldId::ZERO);
 
-                                        ProjectionElem::DerefBox
+                                        ProjectionElem::Deref
                                     }
                                     _ => {
                                         error_or_panic!(self, span, "Unexpected field projection");

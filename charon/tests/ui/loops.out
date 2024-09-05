@@ -1919,7 +1919,7 @@ fn test_crate::get_elem_mut<'_0>(@1: &'_0 mut (test_crate::List<usize>), @2: usi
                 else {
                     drop @8
                     drop @7
-                    @9 := &mut deref_box (*(tl@5))
+                    @9 := &mut *(*(tl@5))
                     ls@1 := move (@9)
                     drop @9
                     @10 := ()
@@ -1973,7 +1973,7 @@ fn test_crate::list_nth_mut_loop_with_id<'_0, T>(@1: &'_0 mut (test_crate::List<
                 }
                 else {
                     drop @8
-                    @9 := &mut deref_box (*(tl@6))
+                    @9 := &mut *(*(tl@6))
                     ls@1 := move (@9)
                     drop @9
                     i@2 := copy (i@2) - const (1 : u32)

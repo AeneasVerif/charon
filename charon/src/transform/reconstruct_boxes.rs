@@ -19,7 +19,7 @@ impl Transform {
     /// @3 := align_of<i32>
     /// @4 := alloc::alloc::exchange_malloc(move (@2), move (@3))
     /// @5 := shallow_init_box::<i32>(move (@4))
-    /// deref_box (@5) := x
+    /// *(@5) := x
     /// ```
     ///
     /// We reconstruct this into a call to `Box::new(x)`.
@@ -48,7 +48,7 @@ impl Transform {
                 && arg1 == align
                 && call_malloc.dest == *alloc_use
                 && box_deref.var_id == box_make.var_id
-                && let [ProjectionElem::DerefBox] = box_deref.projection.as_slice()
+                && let [ProjectionElem::Deref] = box_deref.projection.as_slice()
                 && box_make.projection.is_empty()
                 && let var_id = box_make.var_id
                 && let Ty::Adt(TypeId::Builtin(BuiltinTy::Box), generics) = &locals[var_id].ty

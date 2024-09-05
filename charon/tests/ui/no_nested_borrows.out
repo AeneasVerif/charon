@@ -403,7 +403,7 @@ fn test_crate::split_list<T>(@1: test_crate::List<T>) -> (T, test_crate::List<T>
     hd@2 := move ((l@1 as variant @0).0)
     tl@3 := move ((l@1 as variant @0).1)
     @4 := move (hd@2)
-    @5 := move (deref_box (tl@3))
+    @5 := move (*(tl@3))
     @0 := (move (@4), move (@5))
     drop @5
     drop @5

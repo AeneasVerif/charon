@@ -158,7 +158,7 @@ fn test_crate::list_nth<'a, T>(@1: &'a (test_crate::CList<T>), @2: u32) -> &'a (
     }
     else {
         drop @6
-        @8 := &deref_box (*(tl@4))
+        @8 := &*(*(tl@4))
         @10 := copy (i@2)
         @9 := move (@10) - const (1 : u32)
         drop @10
@@ -214,7 +214,7 @@ fn test_crate::list_nth_mut<'a, T>(@1: &'a mut (test_crate::CList<T>), @2: u32) 
     }
     else {
         drop @10
-        @13 := &two-phase-mut deref_box (*(tl@6))
+        @13 := &two-phase-mut *(*(tl@6))
         @15 := copy (i@2)
         @14 := move (@15) - const (1 : u32)
         drop @15
@@ -274,7 +274,7 @@ fn test_crate::list_nth_mut1<'a, T>(@1: &'a mut (test_crate::CList<T>), @2: u32)
                     drop @8
                     drop @7
                     i@2 := copy (i@2) - const (1 : u32)
-                    @10 := &mut deref_box (*(tl@6))
+                    @10 := &mut *(*(tl@6))
                     l@1 := move (@10)
                     drop @10
                     @14 := ()
@@ -347,7 +347,7 @@ fn test_crate::list_tail<'a, T>(@1: &'a mut (test_crate::CList<T>)) -> &'a mut (
     match *(l@1) {
         0 => {
             tl@4 := &mut (*(l@1) as variant @0).1
-            @6 := &two-phase-mut deref_box (*(tl@4))
+            @6 := &two-phase-mut *(*(tl@4))
             @5 := test_crate::list_tail<T>(move (@6))
             @3 := &mut *(@5)
             drop @6
