@@ -31,7 +31,9 @@ module Ast = struct
     | StorageDead var_id ->
         indent ^ "storage_dead " ^ var_id_to_string env var_id
     | Deinit p -> indent ^ "deinit " ^ place_to_string env p
-    | StAssert a -> assertion_to_string env indent a
+    | Assert a -> assertion_to_string env indent a
+    | Drop p -> indent ^ "drop " ^ place_to_string env p
+    | Call call -> call_to_string env indent call
 
   let switch_to_string (indent : string) (tgt : switch) : string =
     match tgt with
@@ -63,16 +65,6 @@ module Ast = struct
         ^ switch_to_string indent tgts
     | Abort _ -> indent ^ "panic"
     | Return -> indent ^ "return"
-    | Drop (p, bid) ->
-        indent ^ "drop " ^ place_to_string env p ^ ";\n" ^ indent ^ "goto "
-        ^ block_id_to_string bid
-    | Call (call, bid) -> (
-        call_to_string env indent call
-        ^ ";\n" ^ indent ^ "goto "
-        ^ match bid with Some bid -> block_id_to_string bid | None -> "!")
-    | Assert (a, bid) ->
-        assertion_to_string env indent a
-        ^ ";\n" ^ indent ^ "goto " ^ block_id_to_string bid
 
   let block_to_string (env : fmt_env) (indent : string) (indent_incr : string)
       (id : BlockId.id) (block : block) : string =

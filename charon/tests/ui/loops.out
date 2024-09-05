@@ -25,21 +25,20 @@ fn test_crate::test_loop1(@1: u32) -> u32
         @8 := copy (max@1)
         @6 := move (@7) < move (@8)
         if move (@6) {
-            nop
+            drop @8
+            drop @7
+            @9 := copy (i@2)
+            s@3 := copy (s@3) + move (@9)
+            drop @9
+            i@2 := copy (i@2) + const (1 : u32)
+            @11 := ()
+            @5 := move (@11)
+            drop @6
+            continue 0
         }
         else {
             break 0
         }
-        drop @8
-        drop @7
-        @9 := copy (i@2)
-        s@3 := copy (s@3) + move (@9)
-        drop @9
-        i@2 := copy (i@2) + const (1 : u32)
-        @11 := ()
-        @5 := move (@11)
-        drop @6
-        continue 0
     }
     drop @8
     drop @7
@@ -171,71 +170,69 @@ fn test_crate::test_loop3(@1: u32) -> u32
         @9 := copy (max@1)
         @7 := move (@8) < move (@9)
         if move (@7) {
-            nop
+            drop @9
+            drop @8
+            loop {
+                @12 := copy (j@3)
+                @13 := copy (max@1)
+                @11 := move (@12) < move (@13)
+                if move (@11) {
+                    drop @13
+                    drop @12
+                    @17 := copy (i@2)
+                    @18 := copy (j@3)
+                    @16 := move (@17) + move (@18)
+                    drop @18
+                    drop @17
+                    @15 := move (@16) == const (17 : u32)
+                    if move (@15) {
+                        nop
+                    }
+                    else {
+                        drop @16
+                        @26 := ()
+                        @14 := move (@26)
+                        drop @15
+                        drop @14
+                        @19 := copy (i@2)
+                        s@4 := copy (s@4) + move (@19)
+                        drop @19
+                        j@3 := copy (j@3) + const (1 : u32)
+                        drop @11
+                        drop @10
+                        drop @7
+                        continue 1
+                    }
+                    drop @16
+                    drop @15
+                    drop @14
+                    drop @11
+                    continue 0
+                }
+                else {
+                    break 0
+                }
+            }
+            drop @13
+            drop @12
+            @24 := ()
+            @10 := move (@24)
+            drop @20
+            drop @11
+            drop @10
+            j@3 := const (0 : u32)
+            @21 := copy (i@2)
+            s@4 := copy (s@4) + move (@21)
+            drop @21
+            i@2 := copy (i@2) + const (1 : u32)
+            @25 := ()
+            @6 := move (@25)
+            drop @7
+            continue 0
         }
         else {
             break 0
         }
-        drop @9
-        drop @8
-        loop {
-            @12 := copy (j@3)
-            @13 := copy (max@1)
-            @11 := move (@12) < move (@13)
-            if move (@11) {
-                nop
-            }
-            else {
-                break 0
-            }
-            drop @13
-            drop @12
-            @17 := copy (i@2)
-            @18 := copy (j@3)
-            @16 := move (@17) + move (@18)
-            drop @18
-            drop @17
-            @15 := move (@16) == const (17 : u32)
-            if move (@15) {
-                nop
-            }
-            else {
-                drop @16
-                @26 := ()
-                @14 := move (@26)
-                drop @15
-                drop @14
-                @19 := copy (i@2)
-                s@4 := copy (s@4) + move (@19)
-                drop @19
-                j@3 := copy (j@3) + const (1 : u32)
-                drop @11
-                drop @10
-                drop @7
-                continue 1
-            }
-            drop @16
-            drop @15
-            drop @14
-            drop @11
-            continue 0
-        }
-        drop @13
-        drop @12
-        @24 := ()
-        @10 := move (@24)
-        drop @20
-        drop @11
-        drop @10
-        j@3 := const (0 : u32)
-        @21 := copy (i@2)
-        s@4 := copy (s@4) + move (@21)
-        drop @21
-        i@2 := copy (i@2) + const (1 : u32)
-        @25 := ()
-        @6 := move (@25)
-        drop @7
-        continue 0
     }
     drop @9
     drop @8
@@ -407,49 +404,47 @@ fn test_crate::test_loop5(@1: u32) -> u32
         @9 := copy (max@1)
         @7 := move (@8) < move (@9)
         if move (@7) {
-            nop
+            drop @9
+            drop @8
+            loop {
+                @12 := copy (j@3)
+                @13 := copy (max@1)
+                @11 := move (@12) < move (@13)
+                if move (@11) {
+                    drop @13
+                    drop @12
+                    @14 := copy (j@3)
+                    s@4 := copy (s@4) + move (@14)
+                    drop @14
+                    j@3 := copy (j@3) + const (1 : u32)
+                    @19 := ()
+                    @6 := move (@19)
+                    drop @11
+                    continue 0
+                }
+                else {
+                    break 0
+                }
+            }
+            drop @13
+            drop @12
+            @20 := ()
+            @10 := move (@20)
+            drop @15
+            drop @11
+            drop @10
+            @16 := copy (i@2)
+            s@4 := copy (s@4) + move (@16)
+            drop @16
+            i@2 := copy (i@2) + const (1 : u32)
+            @21 := ()
+            @6 := move (@21)
+            drop @7
+            continue 0
         }
         else {
             break 0
         }
-        drop @9
-        drop @8
-        loop {
-            @12 := copy (j@3)
-            @13 := copy (max@1)
-            @11 := move (@12) < move (@13)
-            if move (@11) {
-                nop
-            }
-            else {
-                break 0
-            }
-            drop @13
-            drop @12
-            @14 := copy (j@3)
-            s@4 := copy (s@4) + move (@14)
-            drop @14
-            j@3 := copy (j@3) + const (1 : u32)
-            @19 := ()
-            @6 := move (@19)
-            drop @11
-            continue 0
-        }
-        drop @13
-        drop @12
-        @20 := ()
-        @10 := move (@20)
-        drop @15
-        drop @11
-        drop @10
-        @16 := copy (i@2)
-        s@4 := copy (s@4) + move (@16)
-        drop @16
-        i@2 := copy (i@2) + const (1 : u32)
-        @21 := ()
-        @6 := move (@21)
-        drop @7
-        continue 0
     }
     drop @9
     drop @8
@@ -1663,21 +1658,20 @@ fn test_crate::sum(@1: u32) -> u32
         @8 := copy (max@1)
         @6 := move (@7) < move (@8)
         if move (@6) {
-            nop
+            drop @8
+            drop @7
+            @9 := copy (i@2)
+            s@3 := copy (s@3) + move (@9)
+            drop @9
+            i@2 := copy (i@2) + const (1 : u32)
+            @11 := ()
+            @5 := move (@11)
+            drop @6
+            continue 0
         }
         else {
             break 0
         }
-        drop @8
-        drop @7
-        @9 := copy (i@2)
-        s@3 := copy (s@3) + move (@9)
-        drop @9
-        i@2 := copy (i@2) + const (1 : u32)
-        @11 := ()
-        @5 := move (@11)
-        drop @6
-        continue 0
     }
     drop @8
     drop @7
@@ -1719,24 +1713,23 @@ fn test_crate::sum_array<const N : usize>(@1: Array<u32, const N : usize>) -> u3
         @7 := copy (i@2)
         @6 := move (@7) < const (const N : usize)
         if move (@6) {
-            nop
+            drop @7
+            @9 := copy (i@2)
+            @13 := &a@1
+            @14 := @ArrayIndexShared<'_, u32, const N : usize>(move (@13), copy (@9))
+            @8 := copy (*(@14))
+            s@3 := copy (s@3) + move (@8)
+            drop @8
+            drop @9
+            i@2 := copy (i@2) + const (1 : usize)
+            @12 := ()
+            @5 := move (@12)
+            drop @6
+            continue 0
         }
         else {
             break 0
         }
-        drop @7
-        @9 := copy (i@2)
-        @13 := &a@1
-        @14 := @ArrayIndexShared<'_, u32, const N : usize>(move (@13), copy (@9))
-        @8 := copy (*(@14))
-        s@3 := copy (s@3) + move (@8)
-        drop @8
-        drop @9
-        i@2 := copy (i@2) + const (1 : usize)
-        @12 := ()
-        @5 := move (@12)
-        drop @6
-        continue 0
     }
     drop @7
     @11 := ()
@@ -1862,25 +1855,24 @@ fn test_crate::clear<'_0>(@1: &'_0 mut (alloc::vec::Vec<u32, alloc::alloc::Globa
         drop @7
         @4 := move (@5) < move (@6)
         if move (@4) {
-            nop
+            drop @6
+            drop @5
+            @9 := &mut *(v@1)
+            @10 := copy (i@2)
+            @8 := alloc::vec::{impl core::ops::index::IndexMut<I> for alloc::vec::Vec<T, A>}#14<u32, usize, alloc::alloc::Global>[core::slice::index::{impl core::slice::index::SliceIndex<Slice<T>> for usize}#2<u32>]::index_mut(move (@9), move (@10))
+            drop @10
+            drop @9
+            *(@8) := const (0 : u32)
+            drop @8
+            i@2 := copy (i@2) + const (1 : usize)
+            @13 := ()
+            @3 := move (@13)
+            drop @4
+            continue 0
         }
         else {
             break 0
         }
-        drop @6
-        drop @5
-        @9 := &mut *(v@1)
-        @10 := copy (i@2)
-        @8 := alloc::vec::{impl core::ops::index::IndexMut<I> for alloc::vec::Vec<T, A>}#14<u32, usize, alloc::alloc::Global>[core::slice::index::{impl core::slice::index::SliceIndex<Slice<T>> for usize}#2<u32>]::index_mut(move (@9), move (@10))
-        drop @10
-        drop @9
-        *(@8) := const (0 : u32)
-        drop @8
-        i@2 := copy (i@2) + const (1 : usize)
-        @13 := ()
-        @3 := move (@13)
-        drop @4
-        continue 0
     }
     drop @6
     drop @5
@@ -1916,42 +1908,40 @@ fn test_crate::get_elem_mut<'_0>(@1: &'_0 mut (test_crate::List<usize>), @2: usi
         @fake_read(ls@1)
         match *(ls@1) {
             0 => {
-                nop
+                y@4 := &mut (*(ls@1) as variant @0).0
+                tl@5 := &mut (*(ls@1) as variant @0).1
+                @7 := copy (*(y@4))
+                @8 := copy (x@2)
+                @6 := move (@7) == move (@8)
+                if move (@6) {
+                    nop
+                }
+                else {
+                    drop @8
+                    drop @7
+                    @9 := &mut deref_box (*(tl@5))
+                    ls@1 := move (@9)
+                    drop @9
+                    @10 := ()
+                    @3 := move (@10)
+                    drop @6
+                    drop tl@5
+                    drop y@4
+                    continue 0
+                }
+                drop @8
+                drop @7
+                @0 := &mut *(y@4)
+                drop @6
+                drop tl@5
+                drop y@4
+                return
             },
             1 => {
-                break 0
+                panic(core::panicking::panic_explicit)
             }
         }
-        y@4 := &mut (*(ls@1) as variant @0).0
-        tl@5 := &mut (*(ls@1) as variant @0).1
-        @7 := copy (*(y@4))
-        @8 := copy (x@2)
-        @6 := move (@7) == move (@8)
-        if move (@6) {
-            nop
-        }
-        else {
-            drop @8
-            drop @7
-            @9 := &mut deref_box (*(tl@5))
-            ls@1 := move (@9)
-            drop @9
-            @10 := ()
-            @3 := move (@10)
-            drop @6
-            drop tl@5
-            drop y@4
-            continue 0
-        }
-        drop @8
-        drop @7
-        @0 := &mut *(y@4)
-        drop @6
-        drop tl@5
-        drop y@4
-        return
     }
-    panic(core::panicking::panic_explicit)
 }
 
 fn test_crate::list_nth_mut_loop_with_id<'_0, T>(@1: &'_0 mut (test_crate::List<T>), @2: u32) -> &'_0 mut (T)
@@ -1974,45 +1964,43 @@ fn test_crate::list_nth_mut_loop_with_id<'_0, T>(@1: &'_0 mut (test_crate::List<
         @fake_read(ls@1)
         match *(ls@1) {
             0 => {
-                nop
+                x@5 := &mut (*(ls@1) as variant @0).0
+                tl@6 := &mut (*(ls@1) as variant @0).1
+                @8 := copy (i@2)
+                @7 := move (@8) == const (0 : u32)
+                if move (@7) {
+                    nop
+                }
+                else {
+                    drop @8
+                    @9 := &mut deref_box (*(tl@6))
+                    ls@1 := move (@9)
+                    drop @9
+                    i@2 := copy (i@2) - const (1 : u32)
+                    @12 := ()
+                    @4 := move (@12)
+                    drop @7
+                    drop tl@6
+                    drop x@5
+                    continue 0
+                }
+                drop @8
+                @0 := &mut *(x@5)
+                drop @7
+                drop tl@6
+                drop x@5
+                drop @3
+                return
             },
             _ => {
-                break 0
+                @11 := ()
+                @3 := move (@11)
+                drop @10
+                drop @3
+                panic(core::panicking::panic_explicit)
             }
         }
-        x@5 := &mut (*(ls@1) as variant @0).0
-        tl@6 := &mut (*(ls@1) as variant @0).1
-        @8 := copy (i@2)
-        @7 := move (@8) == const (0 : u32)
-        if move (@7) {
-            nop
-        }
-        else {
-            drop @8
-            @9 := &mut deref_box (*(tl@6))
-            ls@1 := move (@9)
-            drop @9
-            i@2 := copy (i@2) - const (1 : u32)
-            @12 := ()
-            @4 := move (@12)
-            drop @7
-            drop tl@6
-            drop x@5
-            continue 0
-        }
-        drop @8
-        @0 := &mut *(x@5)
-        drop @7
-        drop tl@6
-        drop x@5
-        drop @3
-        return
     }
-    @11 := ()
-    @3 := move (@11)
-    drop @10
-    drop @3
-    panic(core::panicking::panic_explicit)
 }
 
 fn core::iter::range::Step::steps_between<'_0, '_1, Self>(@1: &'_0 (Self), @2: &'_1 (Self)) -> core::option::Option<usize>

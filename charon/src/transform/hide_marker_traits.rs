@@ -27,7 +27,7 @@ impl Visitor {
         for i in 0..trait_clauses.len() {
             let clause = &trait_clauses[i];
             if self.exclude.contains(&clause.trait_.trait_id) {
-                trait_clauses.remove(<_ as Idx>::from_usize(i))
+                trait_clauses.remove(<_ as Idx>::from_usize(i));
             }
         }
     }
@@ -36,7 +36,7 @@ impl Visitor {
         for i in 0..trait_refs.len() {
             let tref = &trait_refs[i];
             if self.exclude.contains(&tref.trait_decl_ref.trait_id) {
-                trait_refs.remove(<_ as Idx>::from_usize(i))
+                trait_refs.remove(<_ as Idx>::from_usize(i));
             }
         }
     }
@@ -45,7 +45,7 @@ impl Visitor {
         for i in 0..trait_clauses.len() {
             let clause = &trait_clauses[i];
             if self.exclude.contains(&clause.trait_.trait_id) {
-                trait_clauses.remove(<_ as Idx>::from_usize(i))
+                trait_clauses.remove(<_ as Idx>::from_usize(i));
             }
         }
     }
@@ -54,7 +54,7 @@ impl Visitor {
         for i in 0..trait_refs.len() {
             let tref = &trait_refs[i];
             if self.exclude.contains(&tref.trait_decl_ref.trait_id) {
-                trait_refs.remove(<_ as Idx>::from_usize(i))
+                trait_refs.remove(<_ as Idx>::from_usize(i));
             }
         }
     }

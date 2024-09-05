@@ -7,7 +7,9 @@ pub mod index_to_function_calls;
 pub mod inline_local_panic_functions;
 pub mod insert_assign_return_unit;
 pub mod lift_associated_item_clauses;
+pub mod merge_goto_chains;
 pub mod ops_to_function_calls;
+pub mod prettify_cfg;
 pub mod reconstruct_asserts;
 pub mod reconstruct_boxes;
 pub mod remove_arithmetic_overflow_checks;
@@ -37,6 +39,9 @@ pub static ULLBC_PASSES: &[&dyn ctx::UllbcPass] = &[
     // # Micro-pass: desugar the constants to other values/operands as much
     // as possible.
     &simplify_constants::Transform,
+    // # Micro-pass: merge single-origin gotos into their parent. This drastically reduces the
+    // graph size of the CFG.
+    &merge_goto_chains::Transform,
 ];
 
 pub static LLBC_PASSES: &[&dyn ctx::LlbcPass] = &[
@@ -71,6 +76,8 @@ pub static LLBC_PASSES: &[&dyn ctx::LlbcPass] = &[
     &index_to_function_calls::Transform,
     // # Micro-pass: Remove the discriminant reads (merge them with the switches)
     &remove_read_discriminant::Transform,
+    // Cleanup the cfg.
+    &prettify_cfg::Transform,
     // # Micro-pass: add the missing assignments to the return value.
     // When the function return type is unit, the generated MIR doesn't
     // set the return value to `()`. This can be a concern: in the case
@@ -83,11 +90,9 @@ pub static LLBC_PASSES: &[&dyn ctx::LlbcPass] = &[
     // # Micro-pass: remove the drops of locals whose type is `Never` (`!`). This
     // is in preparation of the next transformation.
     &remove_drop_never::Transform,
-    // # Micro-pass: remove the locals which are never used. After doing so, we
-    // check that there are no remaining locals with type `Never`.
+    // # Micro-pass: remove the locals which are never used.
     &remove_unused_locals::Transform,
-    // # Micro-pass (not necessary, but good for cleaning): remove the
-    // useless no-ops.
+    // # Micro-pass: remove the useless `StatementKind::Nop`s.
     &remove_nops::Transform,
     // Check that all supplied generic types match the corresponding generic parameters.
     &check_generics::Check,

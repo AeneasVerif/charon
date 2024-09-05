@@ -253,7 +253,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
 
         // Translate the terminator
         let terminator = block.terminator.as_ref().unwrap();
-        let terminator = self.translate_terminator(body, terminator)?;
+        let terminator = self.translate_terminator(body, terminator, &mut statements)?;
 
         // Insert the block in the translated blocks
         let block = BlockData {
@@ -985,6 +985,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         &mut self,
         body: &hax::MirBody<()>,
         terminator: &hax::Terminator,
+        statements: &mut Vec<Statement>,
     ) -> Result<Terminator, Error> {
         trace!("About to translate terminator (MIR) {:?}", terminator);
         let rustc_span = terminator.source_info.span.rust_span_data.unwrap().span();
@@ -1028,10 +1029,15 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 target,
                 unwind: _, // We consider that panic is an error, and don't model unwinding
                 replace: _,
-            } => RawTerminator::Drop {
-                place: self.translate_place(rustc_span, place)?,
-                target: self.translate_basic_block_id(*target),
-            },
+            } => {
+                let place = self.translate_place(rustc_span, place)?;
+                statements.push(Statement {
+                    span,
+                    content: RawStatement::Drop(place),
+                });
+                let target = self.translate_basic_block_id(*target);
+                RawTerminator::Goto { target }
+            }
             TerminatorKind::Call {
                 fun,
                 generics,
@@ -1040,10 +1046,12 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 target,
                 trait_refs,
                 trait_info,
-                unwind: _, // We consider that panic is an error, and don't model unwinding
+                unwind: _, // We model unwinding as an effet, we don't represent it in control flow
                 call_source: _,
                 fn_span: _,
             } => self.translate_function_call(
+                statements,
+                span,
                 rustc_span,
                 fun,
                 generics,
@@ -1058,17 +1066,18 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 expected,
                 msg: _,
                 target,
-                unwind: _, // We consider that panic is an error, and don't model unwinding
+                unwind: _, // We model unwinding as an effet, we don't represent it in control flow
             } => {
-                let cond = self.translate_operand(rustc_span, cond)?;
+                let assert = Assert {
+                    cond: self.translate_operand(rustc_span, cond)?,
+                    expected: *expected,
+                };
+                statements.push(Statement {
+                    span,
+                    content: RawStatement::Assert(assert),
+                });
                 let target = self.translate_basic_block_id(*target);
-                RawTerminator::Assert {
-                    assert: Assert {
-                        cond,
-                        expected: *expected,
-                    },
-                    target,
-                }
+                RawTerminator::Goto { target }
             }
             TerminatorKind::FalseEdge {
                 real_target,
@@ -1151,6 +1160,8 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     #[allow(clippy::too_many_arguments)]
     fn translate_function_call(
         &mut self,
+        statements: &mut Vec<Statement>,
+        terminator_span: Span,
         span: rustc_span::Span,
         fun: &hax::FunOperand,
         generics: &Vec<hax::GenericArg>,
@@ -1164,7 +1175,9 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         // There are two cases, depending on whether this is a "regular"
         // call to a top-level function identified by its id, or if we
         // are using a local function pointer (i.e., the operand is a "move").
-        match fun {
+        let lval = self.translate_place(span, destination)?;
+        let next_block = target.map(|target| self.translate_basic_block_id(target));
+        let (fn_operand, args) = match fun {
             hax::FunOperand::Id(def_id) => {
                 // Regular function call
                 let rust_id = DefId::from(def_id);
@@ -1190,24 +1203,13 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                         // If the call is `panic!`, then the target is `None`.
                         // I don't know in which other cases it can be `None`.
                         assert!(target.is_none());
-
                         // We ignore the arguments
-                        Ok(RawTerminator::Abort(AbortKind::Panic(name)))
+                        return Ok(RawTerminator::Abort(AbortKind::Panic(name)));
                     }
                     SubstFunIdOrPanic::Fun(fid) => {
-                        let lval = self.translate_place(span, destination)?;
-                        let next_block = target.map(|target| self.translate_basic_block_id(target));
-
-                        let call = Call {
-                            func: FnOperand::Regular(fid.func),
-                            args: fid.args.unwrap(),
-                            dest: lval,
-                        };
-
-                        Ok(RawTerminator::Call {
-                            call,
-                            target: next_block,
-                        })
+                        let fn_operand = FnOperand::Regular(fid.func);
+                        let args = fid.args.unwrap();
+                        (fn_operand, args)
                     }
                 }
             }
@@ -1216,9 +1218,6 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 // The function
                 let p = self.translate_place(span, p)?;
 
-                let lval = self.translate_place(span, destination)?;
-                let next_block = target.map(|target| self.translate_basic_block_id(target));
-
                 // TODO: we may have a problem here because as we don't
                 // know which function is being called, we may not be
                 // able to filter the arguments properly... But maybe
@@ -1226,17 +1225,23 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 // the function pointer, by refering to a top-level function
                 // for instance.
                 let args = self.translate_arguments(span, args)?;
-                let call = Call {
-                    func: FnOperand::Move(p),
-                    args,
-                    dest: lval,
-                };
-                Ok(RawTerminator::Call {
-                    call,
-                    target: next_block,
-                })
+                let fn_operand = FnOperand::Move(p);
+                (fn_operand, args)
             }
-        }
+        };
+        let call = Call {
+            func: fn_operand,
+            args,
+            dest: lval,
+        };
+        statements.push(Statement {
+            span: terminator_span,
+            content: RawStatement::Call(call),
+        });
+        Ok(match next_block {
+            Some(target) => RawTerminator::Goto { target },
+            None => RawTerminator::Abort(AbortKind::UndefinedBehavior),
+        })
     }
 
     /// Evaluate function arguments in a context, and return the list of computed

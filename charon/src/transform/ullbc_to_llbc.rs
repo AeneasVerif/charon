@@ -55,31 +55,9 @@ struct BlockInfo<'a> {
     explored: &'a mut HashSet<src::BlockId>,
 }
 
-fn get_block_targets(body: &src::ExprBody, block_id: src::BlockId) -> Vec<src::BlockId> {
-    let block = body.body.get(block_id).unwrap();
-
-    match &block.terminator.content {
-        src::RawTerminator::Goto { target }
-        | src::RawTerminator::Drop { target, .. }
-        | src::RawTerminator::Call {
-            target: Some(target),
-            ..
-        }
-        | src::RawTerminator::Assert { target, .. } => {
-            vec![*target]
-        }
-        src::RawTerminator::Switch { targets, .. } => targets.get_targets(),
-        src::RawTerminator::Call { target: None, .. }
-        | src::RawTerminator::Abort(..)
-        | src::RawTerminator::Return => {
-            vec![]
-        }
-    }
-}
-
 /// This structure contains various information about a function's CFG.
 #[derive(Debug)]
-struct CfgPartialInfo {
+struct CfgInfo {
     /// The CFG
     pub cfg: Cfg,
     /// The CFG where all the backward edges have been removed
@@ -95,21 +73,10 @@ struct CfgPartialInfo {
     pub only_reach_error: HashSet<src::BlockId>,
 }
 
-/// Similar to `CfgPartialInfo`, but with more information
-#[derive(Debug)]
-struct CfgInfo {
-    pub cfg: Cfg,
-    pub cfg_no_be: Cfg,
-    pub loop_entries: HashSet<src::BlockId>,
-    pub backward_edges: HashSet<(src::BlockId, src::BlockId)>,
-    pub switch_blocks: HashSet<src::BlockId>,
-    pub only_reach_error: HashSet<src::BlockId>,
-}
-
 /// Build the CFGs (the "regular" CFG and the CFG without backward edges) and
 /// compute some information like the loop entries and the switch blocks.
-fn build_cfg_partial_info(body: &src::ExprBody) -> CfgPartialInfo {
-    let mut cfg = CfgPartialInfo {
+fn build_cfg_info(body: &src::ExprBody) -> CfgInfo {
+    let mut cfg = CfgInfo {
         cfg: Cfg::new(),
         cfg_no_be: Cfg::new(),
         loop_entries: HashSet::new(),
@@ -149,14 +116,12 @@ fn block_is_error(body: &src::ExprBody, block_id: src::BlockId) -> bool {
     use src::RawTerminator::*;
     match &block.terminator.content {
         Abort(..) => true,
-        Goto { .. } | Switch { .. } | Return { .. } | Drop { .. } | Call { .. } | Assert { .. } => {
-            false
-        }
+        Goto { .. } | Switch { .. } | Return { .. } => false,
     }
 }
 
 fn build_cfg_partial_info_edges(
-    cfg: &mut CfgPartialInfo,
+    cfg: &mut CfgInfo,
     ancestors: &im::HashSet<src::BlockId>,
     explored: &mut im::HashSet<src::BlockId>,
     body: &src::ExprBody,
@@ -178,7 +143,7 @@ fn build_cfg_partial_info_edges(
     }
 
     // Retrieve the block targets
-    let targets = get_block_targets(body, block_id);
+    let targets = body.body.get(block_id).unwrap().targets();
     let mut has_backward_edge = false;
 
     // Add edges for all the targets and explore them, if they are not predecessors
@@ -234,26 +199,6 @@ impl Ord for OrdBlockId {
 impl PartialOrd for OrdBlockId {
     fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
         Some(self.cmp(other))
-    }
-}
-
-fn compute_cfg_info_from_partial(cfg: CfgPartialInfo) -> CfgInfo {
-    let CfgPartialInfo {
-        cfg,
-        cfg_no_be,
-        loop_entries,
-        backward_edges,
-        switch_blocks,
-        only_reach_error,
-    } = cfg;
-
-    CfgInfo {
-        cfg,
-        cfg_no_be,
-        loop_entries,
-        backward_edges,
-        switch_blocks,
-        only_reach_error,
     }
 }
 
@@ -1455,6 +1400,7 @@ fn translate_statement(st: &src::Statement) -> Option<tgt::Statement> {
     let src_span = st.span;
     let st = match st.content.clone() {
         src::RawStatement::Assign(place, rvalue) => tgt::RawStatement::Assign(place, rvalue),
+        src::RawStatement::Call(s) => tgt::RawStatement::Call(s),
         src::RawStatement::FakeRead(place) => tgt::RawStatement::FakeRead(place),
         src::RawStatement::SetDiscriminant(place, variant_id) => {
             tgt::RawStatement::SetDiscriminant(place, variant_id)
@@ -1463,6 +1409,7 @@ fn translate_statement(st: &src::Statement) -> Option<tgt::Statement> {
         src::RawStatement::StorageDead(var_id) => tgt::RawStatement::Drop(Place::new(var_id)),
         // We translate a deinit as a drop
         src::RawStatement::Deinit(place) => tgt::RawStatement::Drop(place),
+        src::RawStatement::Drop(place) => tgt::RawStatement::Drop(place),
         src::RawStatement::Assert(assert) => tgt::RawStatement::Assert(assert),
         src::RawStatement::Error(s) => tgt::RawStatement::Error(s),
     };
@@ -1492,45 +1439,6 @@ fn translate_terminator(
             terminator.span,
             *target,
         ),
-        src::RawTerminator::Drop { place, target } => {
-            let opt_child = translate_child_block(
-                info,
-                parent_loops,
-                switch_exit_blocks,
-                terminator.span,
-                *target,
-            );
-            let st = tgt::Statement::new(src_span, tgt::RawStatement::Drop(place.clone()));
-            Some(st.then_opt(opt_child))
-        }
-        src::RawTerminator::Call { call, target } => {
-            let opt_child = if let Some(target) = target {
-                translate_child_block(
-                    info,
-                    parent_loops,
-                    switch_exit_blocks,
-                    terminator.span,
-                    *target,
-                )
-            } else {
-                None
-            };
-            let st = tgt::RawStatement::Call(call.clone());
-            let st = tgt::Statement::new(src_span, st);
-            Some(st.then_opt(opt_child))
-        }
-        src::RawTerminator::Assert { assert, target } => {
-            let opt_child = translate_child_block(
-                info,
-                parent_loops,
-                switch_exit_blocks,
-                terminator.span,
-                *target,
-            );
-            let st = tgt::RawStatement::Assert(assert.clone());
-            let st = tgt::Statement::new(src_span, st);
-            Some(st.then_opt(opt_child))
-        }
         src::RawTerminator::Switch { discr, targets } => {
             // Translate the target expressions
             let switch = match &targets {
@@ -1786,8 +1694,7 @@ fn translate_block(
 fn translate_body_aux(no_code_duplication: bool, src_body: &src::ExprBody) -> tgt::ExprBody {
     // Explore the function body to create the control-flow graph without backward
     // edges, and identify the loop entries (which are destinations of backward edges).
-    let cfg_info = build_cfg_partial_info(src_body);
-    let cfg_info = compute_cfg_info_from_partial(cfg_info);
+    let cfg_info = build_cfg_info(src_body);
     trace!("cfg_info: {:?}", cfg_info);
 
     // Find the exit block for all the loops and switches, if such an exit point

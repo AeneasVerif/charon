@@ -9,26 +9,28 @@ use crate::errors::register_error_or_panic;
 use crate::formatter::IntoFormatter;
 use crate::pretty::FmtWithCtx;
 use crate::transform::TransformCtx;
-use crate::ullbc_ast::{BlockData, ExprBody, RawStatement, RawTerminator, Statement};
+use crate::ullbc_ast::{BlockData, ExprBody, RawStatement, Statement};
 
 use super::ctx::UllbcPass;
 
-/// Rustc inserts dybnamic checks during MIR lowering. They all end in an `Assert` terminator (and
-/// this is the only use of this terminator).
+/// Rustc inserts dybnamic checks during MIR lowering. They all end in an `Assert` statement (and
+/// this is the only use of this statement).
 fn remove_dynamic_checks(ctx: &mut TransformCtx, block: &mut BlockData) {
-    let RawTerminator::Assert {
-        assert: Assert {
-            cond: Operand::Move(cond),
-            expected,
-        },
-        target,
-    } = &block.terminator.content
+    // We know the `Assert` statement is always last before a `goto` terminator.
+    let [prefix @ .., Statement {
+        content:
+            RawStatement::Assert(Assert {
+                cond: Operand::Move(cond),
+                expected,
+            }),
+        ..
+    }] = block.statements.as_mut_slice()
     else {
         return;
     };
 
     // We return the statements we want to keep, which must be a prefix of `block.statements`.
-    let statements_to_keep = match block.statements.as_mut_slice() {
+    let statements_to_keep = match prefix {
         // Bounds checks for arrays/slices. They look like:
         //   l := len(a)
         //   b := copy x < copy l
@@ -126,7 +128,7 @@ fn remove_dynamic_checks(ctx: &mut TransformCtx, block: &mut BlockData) {
             && p_id.index() == 1
             && *expected == false =>
         {
-            // We leave this assert intact; it will be silplified in
+            // We leave this assert intact; it will be simplified in
             // [`remove_arithmetic_overflow_checks`].
             return;
         }
@@ -145,10 +147,9 @@ fn remove_dynamic_checks(ctx: &mut TransformCtx, block: &mut BlockData) {
         }
     };
 
-    // Remove the statements and replace the assert with a goto.
+    // Remove the statements.
     let len = statements_to_keep.len();
     block.statements.truncate(len);
-    block.terminator.content = RawTerminator::Goto { target: *target };
 }
 
 pub struct Transform;

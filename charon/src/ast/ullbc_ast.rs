@@ -23,13 +23,17 @@ pub type ExprBody = GExprBody<BodyContents>;
 )]
 pub enum RawStatement {
     Assign(Place, Rvalue),
+    /// A call. For now, we don't support dynamic calls (i.e. to a function pointer in memory).
+    Call(Call),
     FakeRead(Place),
     SetDiscriminant(Place, VariantId),
     /// We translate this to [crate::llbc_ast::RawStatement::Drop] in LLBC
     StorageDead(VarId),
     /// We translate this to [crate::llbc_ast::RawStatement::Drop] in LLBC
     Deinit(Place),
-    #[charon::rename("StAssert")]
+    Drop(Place),
+    /// A built-in assert, which corresponds to runtime checks that we remove, namely: bounds
+    /// checks, over/underflow checks, div/rem by zero checks, pointer alignement check.
     Assert(Assert),
     #[charon::opaque]
     Error(String),
@@ -76,22 +80,6 @@ pub enum RawTerminator {
     /// Handles panics and impossible cases.
     Abort(AbortKind),
     Return,
-    Drop {
-        place: Place,
-        target: BlockId,
-    },
-    /// Function call. If `target` is `None`, the function is guaranteed to diverge.
-    /// For now, we don't support dynamic calls (i.e. to a function pointer in memory).
-    Call {
-        call: Call,
-        target: Option<BlockId>,
-    },
-    /// A built-in assert, which corresponds to runtime checks that we remove, namely: bounds
-    /// checks, over/underflow checks, div/rem by zero checks, pointer alignement check.
-    Assert {
-        assert: Assert,
-        target: BlockId,
-    },
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, Drive, DriveMut)]

@@ -84,11 +84,11 @@ where
     }
 
     /// Remove the value from this slot.
-    pub fn remove(&mut self, id: I) {
+    pub fn remove(&mut self, id: I) -> Option<T> {
         if self.vector[id].is_some() {
             self.real_len -= 1;
         }
-        self.vector[id] = None
+        std::mem::replace(&mut self.vector[id], None)
     }
 
     pub fn push(&mut self, x: T) -> I {
@@ -177,8 +177,9 @@ where
         self.vector.iter_enumerated()
     }
 
-    pub fn iter_indices(&self) -> impl Iterator<Item = I> {
-        self.vector.indices()
+    pub fn iter_indices(&self) -> impl Iterator<Item = I> + '_ {
+        // Reuse `iter_indexed` to filter only the filled indices.
+        self.iter_indexed().map(|(id, _)| id)
     }
 
     /// Like `Vec::split_off`.
