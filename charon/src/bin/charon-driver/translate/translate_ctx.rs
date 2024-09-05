@@ -6,7 +6,10 @@ use charon_lib::formatter::{FmtCtx, IntoFormatter};
 use charon_lib::ids::{MapGenerator, Vector};
 use charon_lib::name_matcher::NamePattern;
 use charon_lib::options::CliOpts;
+use charon_lib::pretty::FmtWithCtx;
 use charon_lib::ullbc_ast as ast;
+use derive_visitor::visitor_enter_fn_mut;
+use derive_visitor::DriveMut;
 use hax_frontend_exporter as hax;
 use hax_frontend_exporter::SInto;
 use itertools::Itertools;
@@ -289,7 +292,9 @@ pub(crate) struct BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     /// `ImplExprAtom::LocalBound`, we use this to recover the specific trait reference it
     /// corresponds to.
     /// FIXME: hax should take care of this matching up.
-    pub trait_clauses: BTreeMap<TraitDeclId, Vec<NonLocalTraitClause>>,
+    /// We use a betreemap to get a consistent output order and `OrdRustId` to get an orderable
+    /// `DefId`.
+    pub trait_clauses: BTreeMap<OrdRustId, Vec<NonLocalTraitClause>>,
     ///
     pub types_outlive: Vec<TypeOutlives>,
     ///
@@ -1099,7 +1104,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             .iter()
             .enumerate()
             .all(|(i, c)| c.clause_id.index() == i));
-        let generic_params = GenericParams {
+        let mut generic_params = GenericParams {
             regions: self.region_vars[0].clone(),
             types: self.type_vars.clone(),
             const_generics: self.const_generic_vars.clone(),
@@ -1108,6 +1113,52 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             types_outlive: self.types_outlive.clone(),
             trait_type_constraints: self.trait_type_constraints.clone(),
         };
+        // Solve trait refs now that all clauses have been registered.
+        generic_params.drive_mut(&mut visitor_enter_fn_mut(|tref_kind: &mut TraitRefKind| {
+            if let TraitRefKind::Unsolved(hax_trait_ref) = tref_kind {
+                let new_kind = self.find_trait_clause_for_param(hax_trait_ref);
+                *tref_kind = if let TraitRefKind::Unsolved(_) = new_kind {
+                    // Could not find a clause.
+                    // Check if we are in the registration process, otherwise report an error.
+                    let fmt_ctx = self.into_fmt();
+                    let trait_ref = format!("{:?}", hax_trait_ref);
+                    let clauses: Vec<String> = self
+                        .trait_clauses
+                        .values()
+                        .flat_map(|x| x)
+                        .map(|x| x.fmt_with_ctx(&fmt_ctx))
+                        .collect();
+
+                    if !self.t_ctx.continue_on_failure() {
+                        let clauses = clauses.join("\n");
+                        unreachable!(
+                            "Could not find a clause for parameter:\n- target param: {}\n\
+                            - available clauses:\n{}\n- context: {:?}",
+                            trait_ref, clauses, self.def_id
+                        );
+                    } else {
+                        // Return the UNKNOWN clause
+                        tracing::warn!(
+                            "Could not find a clause for parameter:\n- target param: {}\n\
+                            - available clauses:\n{}\n- context: {:?}",
+                            trait_ref,
+                            clauses.join("\n"),
+                            self.def_id
+                        );
+                        TraitRefKind::Unknown(format!(
+                            "Could not find a clause for parameter: {} \
+                            (available clauses: {}) (context: {:?})",
+                            trait_ref,
+                            clauses.join("; "),
+                            self.def_id
+                        ))
+                    }
+                } else {
+                    new_kind
+                }
+            }
+        }));
+
         trace!("Translated generics: {generic_params:?}");
         generic_params
     }

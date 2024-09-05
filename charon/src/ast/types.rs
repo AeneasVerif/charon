@@ -2,6 +2,7 @@ use crate::ast::*;
 use crate::ids::Vector;
 use derivative::Derivative;
 use derive_visitor::{Drive, DriveMut, Event, Visitor, VisitorMut};
+use hax_frontend_exporter as hax;
 use macros::{EnumAsGetters, EnumIsA, EnumToGetters, VariantIndexArity, VariantName};
 use serde::{Deserialize, Serialize};
 
@@ -220,6 +221,12 @@ pub enum TraitRefKind {
     /// The automatically-generated implementation for `dyn Trait`.
     Dyn(TraitDeclRef),
 
+    /// The trait ref could not be resolved, likely because the corresponding clause had not been
+    /// registered yet. We will try resolving it again once all clauses are registered.
+    #[charon::opaque]
+    #[drive(skip)]
+    Unsolved(hax::TraitRef),
+
     /// For error reporting.
     #[charon::rename("UnknownTrait")]
     Unknown(String),
@@ -339,6 +346,7 @@ pub struct TraitClause {
     /// to a parameter.
     pub clause_id: TraitClauseId,
     #[derivative(PartialEq = "ignore")]
+    // TODO: does not need to be an option.
     pub span: Option<Span>,
     /// Where the predicate was written, relative to the item that requires it.
     #[derivative(PartialEq = "ignore")]

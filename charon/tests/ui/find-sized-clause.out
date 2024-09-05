@@ -1,18 +1,13 @@
-thread 'rustc' panicked at src/bin/charon-driver/translate/translate_predicates.rs:650:13:
-internal error: entered unreachable code: Could not find a clause for parameter:
-- target param: @TraitDecl1<T>
-- available clauses:
+# Final LLBC before serialization:
 
-- context: test_crate::{impl#0}
-note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
-error: Thread panicked when extracting item `test_crate::{impl#0}`.
- --> tests/ui/find-sized-clause.rs:5:1
-  |
-5 | impl<T> Trait for Option<T> {}
-  | ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+trait test_crate::Trait<Self>
 
-thread 'rustc' panicked at src/bin/charon-driver/translate/translate_crate_to_ullbc.rs:284:25:
-Thread panicked when extracting item `test_crate::{impl#0}`.
-error: aborting due to 1 previous error
+enum core::option::Option<T> =
+|  None()
+|  Some(T)
 
-Error: Charon driver exited with code 101
+
+impl<T> test_crate::{impl test_crate::Trait for core::option::Option<T>}<T> : test_crate::Trait<core::option::Option<T>>
+
+
+
