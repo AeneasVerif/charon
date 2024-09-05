@@ -24,7 +24,7 @@ where
         },
         0 => {
             @0 := const (false)
-        }
+        },
     }
     return
 }

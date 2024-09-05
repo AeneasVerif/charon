@@ -68,7 +68,6 @@ fn test_crate::panic4()
 
     @2 := const (false)
     if move (@2) {
-
     }
     else {
         panic(core::panicking::panic)
@@ -97,7 +96,6 @@ fn test_crate::panic5()
 
     @2 := const (false)
     if move (@2) {
-
     }
     else {
         @6 := [const ("assert failed"); 1 : usize]

@@ -74,7 +74,7 @@ fn test_crate::main()
         },
         1 => {
             @4 := const (1 : isize)
-        }
+        },
     }
     @5 := cast<isize, u8>(copy (@4))
     @6 := copy (@5) <= const (1 : u8)
@@ -90,7 +90,7 @@ fn test_crate::main()
         },
         1 => {
             @9 := const (1 : isize)
-        }
+        },
     }
     @10 := cast<isize, u8>(copy (@9))
     @11 := copy (@10) <= const (1 : u8)
@@ -111,7 +111,7 @@ fn test_crate::main()
         },
         2 => {
             @15 := const (1 : isize)
-        }
+        },
     }
     @16 := cast<isize, u8>(copy (@15))
     @17 := copy (@16) >= const (255 : u8)

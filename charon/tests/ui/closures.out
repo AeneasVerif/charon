@@ -71,7 +71,7 @@ where
             drop @4
             drop x@3
             drop x@3
-        }
+        },
     }
     drop f@2
     drop x@1
@@ -104,7 +104,7 @@ fn test_crate::map_option_pointer_ref<'a, T, F>(@1: &'a (core::option::Option<T>
             drop @4
             drop @4
             drop x@3
-        }
+        },
     }
     return
 }

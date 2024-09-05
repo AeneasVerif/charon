@@ -28,7 +28,7 @@ fn test_crate::main()
         2 => {
             @4 := ()
             @0 := move (@4)
-        }
+        },
     }
     drop @1
     @0 := ()

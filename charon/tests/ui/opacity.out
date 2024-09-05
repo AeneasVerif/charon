@@ -16,7 +16,7 @@ fn core::option::{core::option::Option<T>}::is_some<'_0, T>(@1: &'_0 (core::opti
         },
         0 => {
             @0 := const (false)
-        }
+        },
     }
     return
 }

@@ -86,7 +86,8 @@ impl<C: AstFormatter> FmtWithCtx<C> for llbc::Block {
         self.statements
             .iter()
             .map(|st| st.fmt_with_ctx_and_indent(tab, ctx))
-            .join("\n")
+            .map(|st| format!("{st}\n"))
+            .join("")
     }
 }
 
@@ -616,7 +617,7 @@ where
                 if body == "<error>" {
                     String::new()
                 } else {
-                    format!("\n{tab}{{\n{body}\n{tab}}}")
+                    format!("\n{tab}{{\n{body}{tab}}}")
                 }
             }
             Err(Opaque) => String::new(),
@@ -661,7 +662,7 @@ where
                 if body == "<error>" {
                     String::new()
                 } else {
-                    format!(" {{\n{body}\n{tab}}}")
+                    format!(" {{\n{body}{tab}}}")
                 }
             }
             Err(Opaque) => String::new(),
@@ -1026,14 +1027,10 @@ impl<C: AstFormatter> FmtWithCtx<C> for llbc::Statement {
                 Switch::If(discr, true_st, false_st) => {
                     let inner_tab = format!("{tab}{TAB_INCR}");
                     format!(
-                        "{}if {} {{\n{}\n{}}}\n{}else {{\n{}\n{}}}",
-                        tab,
+                        "{tab}if {} {{\n{}{tab}}}\n{tab}else {{\n{}{tab}}}",
                         discr.fmt_with_ctx(ctx),
                         true_st.fmt_with_ctx_and_indent(&inner_tab, ctx),
-                        tab,
-                        tab,
                         false_st.fmt_with_ctx_and_indent(&inner_tab, ctx),
-                        tab,
                     )
                 }
                 Switch::SwitchInt(discr, _ty, maps, otherwise) => {
@@ -1045,28 +1042,21 @@ impl<C: AstFormatter> FmtWithCtx<C> for llbc::Statement {
                             // Note that there may be several pattern values
                             let pvl: Vec<String> = pvl.iter().map(|v| v.to_string()).collect();
                             format!(
-                                "{}{} => {{\n{}\n{}}}",
-                                inner_tab1,
+                                "{inner_tab1}{} => {{\n{}{inner_tab1}}},\n",
                                 pvl.join(" | "),
                                 st.fmt_with_ctx_and_indent(&inner_tab2, ctx),
-                                inner_tab1
                             )
                         })
                         .collect();
                     maps.push(format!(
-                        "{}_ => {{\n{}\n{}}}",
-                        inner_tab1,
+                        "{inner_tab1}_ => {{\n{}{inner_tab1}}},\n",
                         otherwise.fmt_with_ctx_and_indent(&inner_tab2, ctx),
-                        inner_tab1
                     ));
-                    let maps = maps.join(",\n");
 
                     format!(
-                        "{}switch {} {{\n{}\n{}}}",
-                        tab,
+                        "{tab}switch {} {{\n{}{tab}}}",
                         discr.fmt_with_ctx(ctx),
-                        maps,
-                        tab
+                        maps.iter().format(""),
                     )
                 }
                 Switch::Match(discr, maps, otherwise) => {
@@ -1078,40 +1068,31 @@ impl<C: AstFormatter> FmtWithCtx<C> for llbc::Statement {
                             // Note that there may be several pattern values
                             let pvl: Vec<String> = pvl.iter().map(|v| v.to_string()).collect();
                             format!(
-                                "{}{} => {{\n{}\n{}}}",
-                                inner_tab1,
+                                "{inner_tab1}{} => {{\n{}{inner_tab1}}},\n",
                                 pvl.join(" | "),
                                 st.fmt_with_ctx_and_indent(&inner_tab2, ctx),
-                                inner_tab1
                             )
                         })
                         .collect();
                     if let Some(otherwise) = otherwise {
                         maps.push(format!(
-                            "{}_ => {{\n{}\n{}}}",
-                            inner_tab1,
+                            "{inner_tab1}_ => {{\n{}{inner_tab1}}},\n",
                             otherwise.fmt_with_ctx_and_indent(&inner_tab2, ctx),
-                            inner_tab1
                         ));
                     };
-                    let maps = maps.join(",\n");
 
                     format!(
-                        "{}match {} {{\n{}\n{}}}",
-                        tab,
+                        "{tab}match {} {{\n{}{tab}}}",
                         discr.fmt_with_ctx(ctx),
-                        maps,
-                        tab
+                        maps.iter().format(""),
                     )
                 }
             },
             RawStatement::Loop(body) => {
                 let inner_tab = format!("{tab}{TAB_INCR}");
                 format!(
-                    "{}loop {{\n{}\n{}}}",
-                    tab,
+                    "{tab}loop {{\n{}{tab}}}",
                     body.fmt_with_ctx_and_indent(&inner_tab, ctx),
-                    tab
                 )
             }
             RawStatement::Error(s) => format!("{tab}@ERROR({})", s),

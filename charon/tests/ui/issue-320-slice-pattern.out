@@ -117,7 +117,6 @@ fn test_crate::slice_pat3()
     @9 := const (2 : usize)
     @10 := move (@8) >= move (@9)
     if move (@10) {
-
     }
     else {
         drop _c@7

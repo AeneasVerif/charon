@@ -72,7 +72,7 @@ fn test_crate::{impl test_crate::BoolTrait for core::option::Option<T>}#1::get_b
         },
         1 => {
             @0 := const (true)
-        }
+        },
     }
     return
 }

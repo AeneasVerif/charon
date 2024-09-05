@@ -1204,7 +1204,6 @@ fn test_crate::sum2<'_0, '_1>(@1: &'_0 (Slice<u32>), @2: &'_1 (Slice<u32>)) -> u
     drop @9
     @5 := move (@6) == move (@8)
     if move (@5) {
-
     }
     else {
         drop @8

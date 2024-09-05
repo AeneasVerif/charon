@@ -674,7 +674,7 @@ fn test_crate::main()
                 @68 := ()
                 @8 := move (@68)
                 continue 0
-            }
+            },
         }
     }
     @66 := ()
@@ -723,7 +723,7 @@ fn test_crate::main()
                 @71 := ()
                 @8 := move (@71)
                 continue 0
-            }
+            },
         }
     }
     @69 := ()
@@ -763,7 +763,7 @@ fn test_crate::main()
                 @74 := ()
                 @8 := move (@74)
                 continue 0
-            }
+            },
         }
     }
     @72 := ()
@@ -803,7 +803,7 @@ fn test_crate::main()
                 @77 := ()
                 @8 := move (@77)
                 continue 0
-            }
+            },
         }
     }
     @75 := ()
@@ -828,7 +828,6 @@ fn test_crate::main()
     @58 := copy (*(right_val@55))
     @56 := move (@57) == move (@58)
     if move (@56) {
-
     }
     else {
         drop @58
