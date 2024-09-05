@@ -1,11 +1,11 @@
 use super::translate_ctx::*;
 use super::translate_traits::PredicateLocation;
+use charon_lib::common::*;
 use charon_lib::formatter::AstFormatter;
 use charon_lib::gast::*;
 use charon_lib::ids::Vector;
 use charon_lib::pretty::FmtWithCtx;
 use charon_lib::types::*;
-use charon_lib::{common::*, formatter::IntoFormatter};
 use hax_frontend_exporter as hax;
 use macros::{EnumAsGetters, EnumIsA, EnumToGetters};
 use rustc_hir::def_id::DefId;
@@ -36,6 +36,25 @@ use rustc_hir::def_id::DefId;
 pub(crate) struct NonLocalTraitClause {
     pub hax_trait_ref: hax::TraitRef,
     pub trait_ref_kind: TraitRefKind,
+}
+
+impl NonLocalTraitClause {
+    fn matches(&self, hax_trait_ref: &hax::TraitRef) -> bool {
+        // We ignore regions.
+        let skip_lifetimes = |arg: &&hax::GenericArg| match arg {
+            hax::GenericArg::Lifetime(_) => false,
+            _ => true,
+        };
+        hax_trait_ref
+            .generic_args
+            .iter()
+            .filter(skip_lifetimes)
+            .eq(self
+                .hax_trait_ref
+                .generic_args
+                .iter()
+                .filter(skip_lifetimes))
+    }
 }
 
 impl<C: AstFormatter> FmtWithCtx<C> for NonLocalTraitClause {
@@ -527,7 +546,10 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     /// Find the trait instance fullfilling a trait obligation.
     /// TODO: having to do this is very annoying. Isn't there a better way?
     #[tracing::instrument(skip(self))]
-    fn find_trait_clause_for_param(&self, hax_trait_ref: &hax::TraitRef) -> TraitRefKind {
+    pub(crate) fn find_trait_clause_for_param(
+        &self,
+        hax_trait_ref: &hax::TraitRef,
+    ) -> TraitRefKind {
         trace!(
             "Inside context of: {:?}\nSpan: {:?}",
             self.def_id,
@@ -539,58 +561,13 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         if let Some(clauses_for_this_trait) = self.trait_clauses.get(&OrdRustId::TraitDecl(def_id))
         {
             for trait_clause in clauses_for_this_trait {
-                // We ignore regions.
-                if hax_trait_ref
-                    .generic_args
-                    .iter()
-                    .filter(|arg| match arg {
-                        hax::GenericArg::Lifetime(_) => false,
-                        _ => true,
-                    })
-                    .eq(trait_clause
-                        .hax_trait_ref
-                        .generic_args
-                        .iter()
-                        .filter(|arg| match arg {
-                            hax::GenericArg::Lifetime(_) => false,
-                            _ => true,
-                        }))
-                {
+                if trait_clause.matches(hax_trait_ref) {
                     return trait_clause.trait_ref_kind.clone();
                 }
             }
         };
 
-        // Could not find a clause.
-        // Check if we are in the registration process, otherwise report an error.
-        // TODO: we might be registering a where clause.
-        let fmt_ctx = self.into_fmt();
-        let trait_ref = format!("{:?}", hax_trait_ref);
-        let clauses: Vec<String> = self
-            .trait_clauses
-            .values()
-            .flat_map(|x| x)
-            .map(|x| x.fmt_with_ctx(&fmt_ctx))
-            .collect();
-
-        if !self.t_ctx.continue_on_failure() {
-            let clauses = clauses.join("\n");
-            unreachable!(
-                "Could not find a clause for parameter:\n- target param: {}\n- available clauses:\n{}\n- context: {:?}",
-                trait_ref, clauses, self.def_id
-            );
-        } else {
-            // Return the UNKNOWN clause
-            tracing::warn!(
-                "Could not find a clause for parameter:\n- target param: {}\n- available clauses:\n{}\n- context: {:?}",
-                trait_ref, clauses.join("\n"), self.def_id
-            );
-            TraitRefKind::Unknown(format!(
-                "Could not find a clause for parameter: {} (available clauses: {}) (context: {:?})",
-                trait_ref,
-                clauses.join("; "),
-                self.def_id
-            ))
-        }
+        // Try solving it again later, when more clauses are registered.
+        TraitRefKind::Unsolved(hax_trait_ref.clone())
     }
 }
