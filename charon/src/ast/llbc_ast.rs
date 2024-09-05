@@ -45,15 +45,8 @@ pub enum RawStatement {
     Continue(usize),
     /// No-op.
     Nop,
-    /// The contained statements must NOT be sequences. To ensure that, use [Sequence::then] to
-    /// build sequences.
-    /// Note that on the ml side, sequences will be in the shape of
-    /// `Sequence of statement * statement` where the second `statement` might
-    ///  be a sequence if needed, but not the first one, e.g. `Sequence [a, b,
-    ///  c]` becomes `Sequence (a, Sequence (b, c))`
-    Sequence(Vec<Statement>),
     Switch(Switch),
-    Loop(Box<Statement>),
+    Loop(Block),
     Error(String),
 }
 
@@ -61,6 +54,12 @@ pub enum RawStatement {
 pub struct Statement {
     pub span: Span,
     pub content: RawStatement,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, Drive, DriveMut)]
+pub struct Block {
+    pub span: Span,
+    pub statements: Vec<Statement>,
 }
 
 #[derive(
@@ -83,7 +82,7 @@ pub enum Switch {
     /// v@2 := move v@3 == 0; // Represented as `Assign(v@2, BinOp(BinOp::Eq, Move(y), Const(0)))`
     /// if (move v@2) { // Represented as `If(Move(v@2), <then branch>, <else branch>)`
     /// ```
-    If(Operand, Box<Statement>, Box<Statement>),
+    If(Operand, Block, Block),
     /// Gives the integer type, a map linking values to switch branches, and the
     /// otherwise block. Note that matches over enumerations are performed by
     /// switching over the discriminant, which is an integer.
@@ -98,23 +97,13 @@ pub enum Switch {
     ///   E::V3 => ...
     /// }
     /// ```
-    SwitchInt(
-        Operand,
-        IntegerTy,
-        Vec<(Vec<ScalarValue>, Statement)>,
-        Box<Statement>,
-    ),
+    SwitchInt(Operand, IntegerTy, Vec<(Vec<ScalarValue>, Block)>, Block),
     /// A match over an ADT.
     ///
     /// The match statement is introduced in [crate::remove_read_discriminant]
     /// (whenever we find a discriminant read, we merge it with the subsequent
     /// switch into a match).
-    Match(
-        Place,
-        Vec<(Vec<VariantId>, Statement)>,
-        Option<Box<Statement>>,
-    ),
+    Match(Place, Vec<(Vec<VariantId>, Block)>, Option<Block>),
 }
 
-pub type BodyContents = Statement;
-pub type ExprBody = GExprBody<BodyContents>;
+pub type ExprBody = GExprBody<Block>;

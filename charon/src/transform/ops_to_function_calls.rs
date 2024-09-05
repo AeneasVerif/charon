@@ -7,7 +7,7 @@ use crate::transform::TransformCtx;
 
 use super::ctx::LlbcPass;
 
-fn transform_st(s: &mut Statement) -> Option<Vec<Statement>> {
+fn transform_st(s: &mut Statement) {
     match &s.content {
         // Transform the ArrayToSlice unop
         RawStatement::Assign(p, Rvalue::UnaryOp(UnOp::ArrayToSlice(ref_kind, ty, cg), op)) => {
@@ -30,8 +30,6 @@ fn transform_st(s: &mut Statement) -> Option<Vec<Statement>> {
                 args: vec![op.clone()],
                 dest: p.clone(),
             });
-
-            None
         }
         // Transform the array aggregates to function calls
         RawStatement::Assign(p, Rvalue::Repeat(op, ty, cg)) => {
@@ -51,16 +49,14 @@ fn transform_st(s: &mut Statement) -> Option<Vec<Statement>> {
                 args: vec![op.clone()],
                 dest: p.clone(),
             });
-
-            None
         }
-        _ => None,
+        _ => {}
     }
 }
 
 pub struct Transform;
 impl LlbcPass for Transform {
     fn transform_body(&self, _ctx: &mut TransformCtx<'_>, b: &mut ExprBody) {
-        b.body.transform(&mut transform_st);
+        b.body.visit_statements(&mut transform_st);
     }
 }

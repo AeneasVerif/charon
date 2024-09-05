@@ -3,33 +3,33 @@
 //! introduce `if ... then { panic!(...) } else { ...}`.
 //! This pass introduces `assert` instead in order to make the code shorter.
 
-use take_mut::take;
+use std::mem;
 
 use crate::llbc_ast::*;
 use crate::transform::TransformCtx;
 
 use super::ctx::LlbcPass;
 
-fn transform_st(st: &mut Statement) -> Option<Vec<Statement>> {
-    if let RawStatement::Switch(Switch::If(_, st1, _)) = &mut st.content {
-        // Check if the first statement is a panic: if yes, replace
-        // the if .. then ... else ... by an assertion.
-        if st1.content.is_abort() {
-            // Replace: we need to take the value
-            take(&mut st.content, |st| {
-                let (op, st1, st2) = st.to_switch().to_if();
-                let st1 = Statement::new(
-                    st1.span,
-                    RawStatement::Assert(Assert {
-                        cond: op,
-                        expected: false,
-                    }),
-                );
-                st1.then(*st2).content
-            });
-        }
+fn transform_st(st: &mut Statement) -> Vec<Statement> {
+    if let RawStatement::Switch(Switch::If(_, then_block, _)) = &mut st.content
+        && let Some(first) = then_block.statements.first_mut()
+        && first.content.is_abort()
+    {
+        // Replace the `if` with a `nop`.
+        let (op, then_block, else_block) = mem::replace(&mut st.content, RawStatement::Nop)
+            .to_switch()
+            .to_if();
+        let assert = Statement::new(
+            then_block.span,
+            RawStatement::Assert(Assert {
+                cond: op,
+                expected: false,
+            }),
+        );
+        [assert].into_iter().chain(else_block.statements).collect()
+    } else {
+        Vec::new()
     }
-    None
 }
 
 pub struct Transform;

@@ -20,14 +20,11 @@ use super::ctx::LlbcPass;
 /// the statement, we insert those before the statement.
 #[derive(VisitorMut)]
 #[visitor(
-    Statement(enter, exit),
     Place(enter),
     Operand(enter),
     Call(enter),
     FnOperand(enter),
-    Rvalue(enter),
-    RawStatement(enter),
-    Switch(enter)
+    Rvalue(enter)
 )]
 struct Visitor<'a> {
     locals: &'a mut Vector<VarId, Var>,
@@ -36,8 +33,8 @@ struct Visitor<'a> {
     // stack. Unfortunately this requires us to be very careful to catch all the cases where we
     // see places.
     place_mutability_stack: Vec<bool>,
-    // Span information of the outer statement
-    span: Option<Span>,
+    // Span information of the statement
+    span: Span,
 }
 
 impl<'a> Visitor<'a> {
@@ -110,7 +107,7 @@ impl<'a> Visitor<'a> {
                 );
                 let borrow_st = Statement {
                     content: borrow_st,
-                    span: self.span.unwrap(),
+                    span: self.span,
                 };
                 self.statements.push(borrow_st);
                 input_var
@@ -144,7 +141,7 @@ impl<'a> Visitor<'a> {
                             generics.const_generics.get(0.into()).cloned(),
                         ),
                     ),
-                    span: self.span.unwrap(),
+                    span: self.span,
                 });
                 // `index_var = len(p) - last_arg`
                 let index_var = self.fresh_var(None, usize_ty);
@@ -153,7 +150,7 @@ impl<'a> Visitor<'a> {
                         Place::new(index_var),
                         Rvalue::BinaryOp(BinOp::Sub, Operand::Copy(Place::new(len_var)), last_arg),
                     ),
-                    span: self.span.unwrap(),
+                    span: self.span,
                 });
                 args.push(Operand::Copy(Place::new(index_var)));
             } else {
@@ -171,7 +168,7 @@ impl<'a> Visitor<'a> {
                 };
                 self.statements.push(Statement {
                     content: RawStatement::Call(index_call),
-                    span: self.span.unwrap(),
+                    span: self.span,
                 });
                 output_var
             };
@@ -250,50 +247,6 @@ impl<'a> Visitor<'a> {
             }
         }
     }
-
-    fn enter_statement(&mut self, st: &mut Statement) {
-        // Retrieve the span information
-        self.span = Some(st.span);
-        // As we explore this statement, we may collect extra statements to prepend to it.
-        assert!(self.statements.is_empty());
-    }
-
-    fn exit_statement(&mut self, st: &mut Statement) {
-        self.span = None;
-
-        // Reparenthesize sequences we messed up while traversing.
-        st.flatten();
-
-        // We potentially collected statements to prepend to this one.
-        let seq = std::mem::take(&mut self.statements);
-        if !seq.is_empty() {
-            take_mut::take(st, |st| chain_statements(seq, st))
-        }
-    }
-
-    fn enter_raw_statement(&mut self, st: &mut RawStatement) {
-        use RawStatement::*;
-        // The match is explicit on purpose: we want to make sure we intercept changes
-        match st {
-            Sequence(..) | Abort(..) | Return | Break(..) | Continue(..) | Nop | Switch(..)
-            | Loop(..) | Error(..) | Assert(..) | Call(..) => {}
-            FakeRead(_) => {
-                self.place_mutability_stack.push(false);
-            }
-            Assign(..) | SetDiscriminant(..) | Drop(..) => {
-                self.place_mutability_stack.push(true);
-            }
-        }
-    }
-
-    fn enter_switch(&mut self, s: &mut Switch) {
-        match s {
-            Switch::If(..) | Switch::SwitchInt(..) => {}
-            Switch::Match(..) => {
-                self.place_mutability_stack.push(false);
-            }
-        }
-    }
 }
 
 pub struct Transform;
@@ -358,12 +311,38 @@ pub struct Transform;
 /// ```
 impl LlbcPass for Transform {
     fn transform_body(&self, _ctx: &mut TransformCtx<'_>, b: &mut ExprBody) {
-        let mut visitor = Visitor {
-            locals: &mut b.locals,
-            statements: Vec::new(),
-            place_mutability_stack: Vec::new(),
-            span: None,
-        };
-        b.body.drive_mut(&mut visitor);
+        b.body.transform(&mut |st: &mut Statement| {
+            let mut visitor = Visitor {
+                locals: &mut b.locals,
+                statements: Vec::new(),
+                place_mutability_stack: Vec::new(),
+                span: st.span,
+            };
+
+            // We don't explore sub-statements.
+            use llbc_ast::Switch::*;
+            use RawStatement::*;
+            match &mut st.content {
+                Loop(..) => {}
+                Switch(If(op, ..) | SwitchInt(op, ..)) => op.drive_mut(&mut visitor),
+                Switch(Match(place, ..)) => {
+                    visitor.place_mutability_stack.push(false); // Unsure why we do this
+                    place.drive_mut(&mut visitor)
+                }
+                Abort(..) | Return | Break(..) | Continue(..) | Nop | Error(..) | Assert(..)
+                | Call(..) => {
+                    st.drive_mut(&mut visitor);
+                }
+                FakeRead(place) => {
+                    visitor.place_mutability_stack.push(false);
+                    place.drive_mut(&mut visitor);
+                }
+                Assign(..) | SetDiscriminant(..) | Drop(..) => {
+                    visitor.place_mutability_stack.push(true);
+                    st.drive_mut(&mut visitor);
+                }
+            }
+            visitor.statements
+        });
     }
 }

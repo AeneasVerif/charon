@@ -52,7 +52,7 @@ where
 
     match self@1 {
         0 => {
-            nop
+
         },
         1 => {
             e@2 := move ((self@1 as variant @1).0)

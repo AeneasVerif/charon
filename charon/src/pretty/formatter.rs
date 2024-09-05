@@ -182,7 +182,7 @@ pub trait AstFormatter = Formatter<TypeVarId>
     + for<'a> Formatter<&'a ImplElem>
     + for<'a> Formatter<&'a RegionVar>
     + for<'a> Formatter<&'a Vector<ullbc_ast::BlockId, ullbc_ast::BlockData>>
-    + for<'a> Formatter<&'a llbc_ast::Statement>
+    + for<'a> Formatter<&'a llbc_ast::Block>
     + for<'a> SetGenerics<'a>
     + for<'a> SetLocals<'a>
     + for<'a> PushBoundRegions<'a>;
@@ -539,8 +539,8 @@ impl<'a> Formatter<VarId> for FmtCtx<'a> {
     }
 }
 
-impl<'a> Formatter<&llbc_ast::Statement> for FmtCtx<'a> {
-    fn format_object(&self, x: &llbc_ast::Statement) -> String {
+impl<'a> Formatter<&llbc_ast::Block> for FmtCtx<'a> {
+    fn format_object(&self, x: &llbc_ast::Block) -> String {
         x.fmt_with_ctx(self)
     }
 }

@@ -76,6 +76,20 @@ impl<C: AstFormatter> FmtWithCtx<C> for Assert {
     }
 }
 
+impl<C: AstFormatter> FmtWithCtx<C> for llbc::Block {
+    fn fmt_with_ctx(&self, ctx: &C) -> String {
+        // By default use a tab.
+        self.fmt_with_ctx_and_indent(TAB_INCR, ctx)
+    }
+
+    fn fmt_with_ctx_and_indent(&self, tab: &str, ctx: &C) -> String {
+        self.statements
+            .iter()
+            .map(|st| st.fmt_with_ctx_and_indent(tab, ctx))
+            .join("\n")
+    }
+}
+
 impl<C: AstFormatter> FmtWithCtx<C> for BlockData {
     fn fmt_with_ctx_and_indent(&self, tab: &str, ctx: &C) -> String {
         let mut out: Vec<String> = Vec::new();
@@ -1008,10 +1022,6 @@ impl<C: AstFormatter> FmtWithCtx<C> for llbc::Statement {
             RawStatement::Break(index) => format!("{tab}break {index}"),
             RawStatement::Continue(index) => format!("{tab}continue {index}"),
             RawStatement::Nop => format!("{tab}nop"),
-            RawStatement::Sequence(vec) => vec
-                .iter()
-                .map(|st| st.fmt_with_ctx_and_indent(tab, ctx))
-                .join("\n"),
             RawStatement::Switch(switch) => match switch {
                 Switch::If(discr, true_st, false_st) => {
                     let inner_tab = format!("{tab}{TAB_INCR}");

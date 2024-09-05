@@ -828,7 +828,7 @@ fn test_crate::main()
     @58 := copy (*(right_val@55))
     @56 := move (@57) == move (@58)
     if move (@56) {
-        nop
+
     }
     else {
         drop @58
