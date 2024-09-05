@@ -1,6 +1,6 @@
-thread 'rustc' panicked at src/bin/charon-driver/translate/translate_predicates.rs:650:13:
+thread 'rustc' panicked at src/bin/charon-driver/translate/translate_predicates.rs:578:13:
 internal error: entered unreachable code: Could not find a clause for parameter:
-- target param: @TraitDecl1<T>
+- target param: TraitRef { def_id: core::marker::Sized, generic_args: [Type(Param(ParamTy { index: 0, name: "T" }))] }
 - available clauses:
 
 - context: test_crate::{impl#0}

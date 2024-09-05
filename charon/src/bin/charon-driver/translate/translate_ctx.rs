@@ -289,7 +289,9 @@ pub(crate) struct BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     /// `ImplExprAtom::LocalBound`, we use this to recover the specific trait reference it
     /// corresponds to.
     /// FIXME: hax should take care of this matching up.
-    pub trait_clauses: BTreeMap<TraitDeclId, Vec<NonLocalTraitClause>>,
+    /// We use a betreemap to get a consistent output order and `OrdRustId` to get an orderable
+    /// `DefId`.
+    pub trait_clauses: BTreeMap<OrdRustId, Vec<NonLocalTraitClause>>,
     ///
     pub types_outlive: Vec<TypeOutlives>,
     ///
