@@ -231,7 +231,7 @@ pub fn translate(tcx: TyCtxt, internal: &mut CharonCallbacks) -> export::CrateDa
     // Run the micro-passes that clean up bodies.
     for pass in ULLBC_PASSES.iter() {
         trace!("# Starting pass {}", pass.name());
-        pass.transform_ctx(&mut ctx)
+        pass.run(&mut ctx)
     }
 
     // # There are two options:
@@ -250,7 +250,7 @@ pub fn translate(tcx: TyCtxt, internal: &mut CharonCallbacks) -> export::CrateDa
         // Run the micro-passes that clean up bodies.
         for pass in LLBC_PASSES.iter() {
             trace!("# Starting pass {}", pass.name());
-            pass.transform_ctx(&mut ctx)
+            pass.run(&mut ctx)
         }
 
         // # Reorder the graph of dependencies and compute the strictly

@@ -24,10 +24,12 @@ pub mod ullbc_to_llbc;
 pub mod update_closure_signatures;
 
 pub use ctx::TransformCtx;
+use ctx::{LlbcPass, TransformPass, UllbcPass};
+use Pass::*;
 
-pub static ULLBC_PASSES: &[&dyn ctx::UllbcPass] = &[
+pub static ULLBC_PASSES: &[Pass] = &[
     // Move clauses on associated types to be parent clauses
-    &lift_associated_item_clauses::Transform,
+    NonBody(&lift_associated_item_clauses::Transform),
     // # Micro-pass: Remove overflow/div-by-zero/bounds checks since they are already part of the
     // arithmetic/array operation in the semantics of (U)LLBC.
     // **WARNING**: this pass uses the fact that the dynamic checks introduced by Rustc use a
@@ -35,49 +37,49 @@ pub static ULLBC_PASSES: &[&dyn ctx::UllbcPass] = &[
     // [reconstruct_asserts] pass. See the comments in [crate::remove_dynamic_checks].
     // **WARNING**: this pass relies on a precise structure of the MIR statements. Because of this,
     // it must happen before passes that insert statements like [simplify_constants].
-    &remove_dynamic_checks::Transform,
+    UnstructuredBody(&remove_dynamic_checks::Transform),
     // # Micro-pass: desugar the constants to other values/operands as much
     // as possible.
-    &simplify_constants::Transform,
+    UnstructuredBody(&simplify_constants::Transform),
     // # Micro-pass: merge single-origin gotos into their parent. This drastically reduces the
     // graph size of the CFG.
-    &merge_goto_chains::Transform,
+    UnstructuredBody(&merge_goto_chains::Transform),
 ];
 
-pub static LLBC_PASSES: &[&dyn ctx::LlbcPass] = &[
+pub static LLBC_PASSES: &[Pass] = &[
     // # Micro-pass: hide some overly-common traits we don't need: Sized, Sync, Allocator, etc..
-    &hide_marker_traits::Transform,
+    NonBody(&hide_marker_traits::Transform),
     // # Micro-pass: filter the trait impls that were marked invisible since we couldn't filter
     // them out earlier.
-    &filter_invisible_trait_impls::Transform,
+    NonBody(&filter_invisible_trait_impls::Transform),
     // # Micro-pass: the first local variable of closures is the
     // closure itself. This is not consistent with the closure signature,
     // which ignores this first variable. This micro-pass updates this.
-    &update_closure_signatures::Transform,
+    StructuredBody(&update_closure_signatures::Transform),
     // # Micro-pass: remove the dynamic checks we couldn't remove in [`remove_dynamic_checks`].
     // **WARNING**: this pass uses the fact that the dynamic checks
     // introduced by Rustc use a special "assert" construct. Because of
     // this, it must happen *before* the [reconstruct_asserts] pass.
-    &remove_arithmetic_overflow_checks::Transform,
+    StructuredBody(&remove_arithmetic_overflow_checks::Transform),
     // # Micro-pass: reconstruct the special `Box::new` operations inserted e.g. in the `vec![]`
     // macro.
-    &reconstruct_boxes::Transform,
+    StructuredBody(&reconstruct_boxes::Transform),
     // # Micro-pass: reconstruct the asserts
-    &reconstruct_asserts::Transform,
+    StructuredBody(&reconstruct_asserts::Transform),
     // # Micro-pass: `panic!()` expands to a new function definition each time. This pass cleans
     // those up.
-    &inline_local_panic_functions::Transform,
+    StructuredBody(&inline_local_panic_functions::Transform),
     // # Micro-pass: replace some unops/binops and the array aggregates with
     // function calls (introduces: ArrayToSlice, etc.)
-    &ops_to_function_calls::Transform,
+    StructuredBody(&ops_to_function_calls::Transform),
     // # Micro-pass: replace the arrays/slices index operations with function
     // calls.
     // (introduces: ArrayIndexShared, ArrayIndexMut, etc.)
-    &index_to_function_calls::Transform,
+    StructuredBody(&index_to_function_calls::Transform),
     // # Micro-pass: Remove the discriminant reads (merge them with the switches)
-    &remove_read_discriminant::Transform,
+    StructuredBody(&remove_read_discriminant::Transform),
     // Cleanup the cfg.
-    &prettify_cfg::Transform,
+    StructuredBody(&prettify_cfg::Transform),
     // # Micro-pass: add the missing assignments to the return value.
     // When the function return type is unit, the generated MIR doesn't
     // set the return value to `()`. This can be a concern: in the case
@@ -86,14 +88,39 @@ pub static LLBC_PASSES: &[&dyn ctx::LlbcPass] = &[
     // an extra assignment just before returning.
     // This also applies to globals (for checking or executing code before
     // the main or at compile-time).
-    &insert_assign_return_unit::Transform,
+    StructuredBody(&insert_assign_return_unit::Transform),
     // # Micro-pass: remove the drops of locals whose type is `Never` (`!`). This
     // is in preparation of the next transformation.
-    &remove_drop_never::Transform,
+    StructuredBody(&remove_drop_never::Transform),
     // # Micro-pass: remove the locals which are never used.
-    &remove_unused_locals::Transform,
+    StructuredBody(&remove_unused_locals::Transform),
     // # Micro-pass: remove the useless `StatementKind::Nop`s.
-    &remove_nops::Transform,
+    StructuredBody(&remove_nops::Transform),
     // Check that all supplied generic types match the corresponding generic parameters.
-    &check_generics::Check,
+    NonBody(&check_generics::Check),
 ];
+
+#[derive(Clone, Copy)]
+pub enum Pass {
+    NonBody(&'static dyn TransformPass),
+    UnstructuredBody(&'static dyn UllbcPass),
+    StructuredBody(&'static dyn LlbcPass),
+}
+
+impl Pass {
+    pub fn run(self, ctx: &mut TransformCtx<'_>) {
+        match self {
+            NonBody(pass) => pass.transform_ctx(ctx),
+            UnstructuredBody(pass) => pass.transform_ctx(ctx),
+            StructuredBody(pass) => pass.transform_ctx(ctx),
+        }
+    }
+
+    pub fn name(&self) -> &str {
+        match self {
+            NonBody(pass) => pass.name(),
+            UnstructuredBody(pass) => pass.name(),
+            StructuredBody(pass) => pass.name(),
+        }
+    }
+}

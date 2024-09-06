@@ -5,7 +5,7 @@ use derive_visitor::Visitor;
 
 use crate::{ast::*, errors::ErrorCtx, register_error_or_panic};
 
-use super::{ctx::LlbcPass, TransformCtx};
+use super::{ctx::TransformPass, TransformCtx};
 
 #[derive(Visitor)]
 #[visitor(
@@ -159,7 +159,7 @@ impl CheckGenericsVisitor<'_, '_> {
 }
 
 pub struct Check;
-impl LlbcPass for Check {
+impl TransformPass for Check {
     fn transform_ctx(&self, ctx: &mut TransformCtx<'_>) {
         for item in ctx.translated.all_items() {
             let mut visitor = CheckGenericsVisitor {
