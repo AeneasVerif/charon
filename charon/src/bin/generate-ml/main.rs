@@ -16,9 +16,9 @@ use charon_lib::types::{
     BuiltinTy, Field, LiteralTy, Ty, TypeDecl, TypeDeclId, TypeDeclKind, TypeId,
 };
 use convert_case::{Case, Casing};
-use derive_visitor::Drive;
+use derive_visitor::{visitor_enter_fn, Drive};
 use itertools::Itertools;
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use std::fs;
 use std::fs::File;
 use std::io::BufReader;
@@ -51,6 +51,7 @@ fn make_ocaml_ident(name: &str) -> String {
             | "rec"
             | "assert"
             | "float"
+            | "end"
     ) {
         name += "_";
     }
@@ -119,6 +120,90 @@ struct GenerateCtx<'a> {
     crate_data: &'a TranslatedCrate,
     contains_raw_span: HashMap<TypeDeclId, bool>,
     name_to_type: HashMap<String, &'a TypeDecl>,
+    /// For each type, list the types it contains.
+    type_tree: HashMap<TypeDeclId, HashSet<TypeDeclId>>,
+}
+
+impl<'a> GenerateCtx<'a> {
+    fn new(crate_data: &'a TranslatedCrate) -> Self {
+        let mut name_to_type: HashMap<String, &TypeDecl> = Default::default();
+        let mut type_tree = HashMap::default();
+        for ty in &crate_data.type_decls {
+            let long_name = repr_name(crate_data, &ty.item_meta.name);
+            if long_name.starts_with("charon_lib") {
+                let short_name = ty.item_meta.name.name.last().unwrap().as_ident().0.clone();
+                name_to_type.insert(short_name, ty);
+            }
+            name_to_type.insert(long_name, ty);
+
+            let mut contained = HashSet::new();
+            ty.drive(&mut visitor_enter_fn(|id: &TypeDeclId| {
+                contained.insert(*id);
+            }));
+            type_tree.insert(ty.def_id, contained);
+        }
+        let contains_raw_span = {
+            let raw_span = name_to_type.get("RawSpan").unwrap();
+            contains_id(crate_data, raw_span.def_id)
+        };
+
+        GenerateCtx {
+            crate_data: &crate_data,
+            contains_raw_span,
+            name_to_type,
+            type_tree,
+        }
+    }
+
+    fn id_from_name(&self, name: &str) -> TypeDeclId {
+        self.name_to_type
+            .get(name)
+            .expect(&format!("Name not found: `{name}`"))
+            .def_id
+    }
+
+    /// List the (recursive) children of this type.
+    fn children_of(&self, name: &str) -> HashSet<TypeDeclId> {
+        let start_id = self.id_from_name(name);
+        self.children_of_inner(vec![start_id])
+    }
+
+    fn children_of_inner(&self, ty: Vec<TypeDeclId>) -> HashSet<TypeDeclId> {
+        let mut children = HashSet::new();
+        let mut stack = ty.to_vec();
+        while let Some(id) = stack.pop() {
+            if !children.contains(&id)
+                && self
+                    .crate_data
+                    .type_decls
+                    .get(id)
+                    .is_some_and(|decl| decl.item_meta.is_local)
+            {
+                children.insert(id);
+                if let Some(contained) = self.type_tree.get(&id) {
+                    stack.extend(contained);
+                }
+            }
+        }
+        children
+    }
+
+    fn markers_from_names(
+        &self,
+        markers: &'a [(GenerationKind, &'a [&'a str])],
+    ) -> Vec<(GenerationKind, HashSet<TypeDeclId>)> {
+        markers
+            .iter()
+            .copied()
+            .map(|(kind, type_names)| {
+                let types = type_names
+                    .iter()
+                    .map(|name| self.id_from_name(*name))
+                    .collect();
+                (kind, types)
+            })
+            .collect()
+    }
 }
 
 /// Converts a type to the appropriate `*_of_json` call. In case of generics, this combines several
@@ -589,6 +674,7 @@ fn type_decl_to_ocaml_decl(ctx: &GenerateCtx, decl: &TypeDecl, co_rec: bool) -> 
 }
 
 /// The kind of code generation to perform.
+#[derive(Clone, Copy)]
 enum GenerationKind {
     OfJson,
     /// The boolean indicates whether this is an open recursion group (i.e. shuold start with `and
@@ -598,7 +684,7 @@ enum GenerationKind {
 }
 
 /// Replace markers in `template` with auto-generated code.
-struct GenerateCodeFor<'a> {
+struct GenerateCodeFor {
     template: PathBuf,
     target: PathBuf,
     /// Each list corresponds to a marker. We replace the ith `__REPLACE{i}__` marker with
@@ -606,22 +692,19 @@ struct GenerateCodeFor<'a> {
     ///
     /// Eventually we should reorder definitions so the generated ones are all in one block.
     /// Keeping the order is important while we migrate away from hand-written code.
-    markers: &'a [(GenerationKind, &'a [&'a str])],
+    markers: Vec<(GenerationKind, HashSet<TypeDeclId>)>,
 }
 
-impl GenerateCodeFor<'_> {
+impl GenerateCodeFor {
     fn generate(&self, ctx: &GenerateCtx) -> Result<()> {
         let mut template = fs::read_to_string(&self.template)
             .with_context(|| format!("Failed to read template file {}", self.template.display()))?;
         for (i, (kind, names)) in self.markers.iter().enumerate() {
             let generated = names
                 .iter()
-                .map(|name| {
-                    ctx.name_to_type
-                        .get(*name)
-                        .expect(&format!("Name not found: `{name}`"))
-                })
-                .sorted_by_key(|tdecl| tdecl.def_id)
+                .copied()
+                .sorted()
+                .map(|id| &ctx.crate_data[id])
                 .enumerate()
                 .map(|(i, ty)| match kind {
                     GenerationKind::OfJson => type_decl_to_json_deserializer(&ctx, ty),
@@ -674,32 +757,72 @@ fn main() -> Result<()> {
         CrateData::deserialize(deserializer)?.translated
     };
 
-    let mut name_to_type: HashMap<String, &TypeDecl> = Default::default();
-    for ty in &crate_data.type_decls {
-        let long_name = repr_name(&crate_data, &ty.item_meta.name);
-        if long_name.starts_with("charon_lib") {
-            let short_name = ty.item_meta.name.name.last().unwrap().as_ident().0.clone();
-            name_to_type.insert(short_name, ty);
-        }
-        name_to_type.insert(long_name, ty);
-    }
-    let contains_raw_span = {
-        let raw_span = name_to_type.get("RawSpan").unwrap();
-        contains_id(&crate_data, raw_span.def_id)
-    };
+    let ctx = GenerateCtx::new(&crate_data);
 
-    let ctx = GenerateCtx {
-        crate_data: &crate_data,
-        contains_raw_span,
-        name_to_type,
-    };
+    // Compute the sets of type to be put in each module.
+    let manually_implemented: HashSet<_> = [
+        "BlockId",
+        "BodyId",
+        "ConstGenericVarId",
+        "DeBruijnId",
+        "Disambiguator",
+        "FieldId",
+        "FileId",
+        "FunDeclId",
+        "GlobalDeclId",
+        "RegionId",
+        "TraitClauseId",
+        "TraitDeclId",
+        "TraitImplId",
+        "TypeDeclId",
+        "TypeVarId",
+        "VariantId",
+        "VarId",
+        "Vector",
+        "ScalarValue",
+        "RawSpan",
+        "TraitItemName",
+        "ItemOpacity",
+        "PredicateOrigin",
+        "charon_lib::ast::llbc_ast::RawStatement",
+        "Opaque",
+        "Body",
+        "FunDecl",
+        "GlobalDecl",
+        "TranslatedCrate",
+    ]
+    .iter()
+    .map(|name| ctx.id_from_name(name))
+    .collect();
+    let llbc_types: HashSet<_> = ctx.children_of("charon_lib::ast::llbc_ast::Statement");
+    let ullbc_types: HashSet<_> = ctx.children_of("charon_lib::ast::ullbc_ast::BodyContents");
+    let common_types: HashSet<_> = llbc_types.intersection(&ullbc_types).copied().collect();
+    let llbc_types: HashSet<_> = llbc_types
+        .difference(&common_types.union(&manually_implemented).copied().collect())
+        .copied()
+        .collect();
+    let ullbc_types: HashSet<_> = ullbc_types
+        .difference(&common_types.union(&manually_implemented).copied().collect())
+        .copied()
+        .collect();
+    let body_specific_types: HashSet<_> = llbc_types.union(&ullbc_types).copied().collect();
+    let gast_types: HashSet<_> = ctx
+        .children_of("TranslatedCrate")
+        .difference(
+            &body_specific_types
+                .union(&manually_implemented)
+                .copied()
+                .collect(),
+        )
+        .copied()
+        .collect();
 
     #[rustfmt::skip]
     let generate_code_for = vec![
         GenerateCodeFor {
             template: dir.join("templates/GAst.ml"),
             target: dir.join("generated/GAst.ml"),
-            markers: &[
+            markers: ctx.markers_from_names(&[
                 (GenerationKind::TypeDecl(false), &["FnOperand", "Call", "Assert"]),
                 (GenerationKind::TypeDecl(false), &[
                     "ParamsInfo",
@@ -713,12 +836,12 @@ fn main() -> Result<()> {
                 (GenerationKind::TypeDecl(false), &["DeclarationGroup"]),
                 (GenerationKind::TypeDecl(false), &["Var"]),
                 (GenerationKind::TypeDecl(false), &["AnyTransId"]),
-            ],
+            ]),
         },
         GenerateCodeFor {
             template: dir.join("templates/Expressions.ml"),
             target: dir.join("generated/Expressions.ml"),
-            markers: &[
+            markers: ctx.markers_from_names(&[
                 (GenerationKind::TypeDecl(false), &["BuiltinFunId", "BuiltinIndexOp", "AbortKind"]),
                 (GenerationKind::TypeDecl(false), &["FieldProjKind", "ProjectionElem", "Projection", "Place"]),
                 (GenerationKind::TypeDecl(false), &["BorrowKind", "BinOp"]),
@@ -733,12 +856,12 @@ fn main() -> Result<()> {
                     "FunId",
                 ]),
                 (GenerationKind::TypeDecl(false), &["Operand", "AggregateKind", "Rvalue"]),
-            ],
+            ]),
         },
         GenerateCodeFor {
             template: dir.join("templates/Meta.ml"),
             target: dir.join("generated/Meta.ml"),
-            markers: &[
+            markers: ctx.markers_from_names(&[
                 (GenerationKind::TypeDecl(false), &["Loc", "FileName"]),
                 (GenerationKind::TypeDecl(false), &[
                     "Span",
@@ -747,12 +870,12 @@ fn main() -> Result<()> {
                     "RawAttribute",
                     "AttrInfo",
                 ]),
-            ],
+            ]),
         },
         GenerateCodeFor {
             template: dir.join("templates/Types.ml"),
             target: dir.join("generated/Types.ml"),
-            markers: &[
+            markers: ctx.markers_from_names(&[
                 (GenerationKind::TypeDecl(false), &[
                     "BuiltinTy",
                     "TypeId",
@@ -767,12 +890,12 @@ fn main() -> Result<()> {
                 (GenerationKind::TypeDecl(true), &["TraitTypeConstraint"]),
                 (GenerationKind::TypeDecl(false), &["ImplElem", "PathElem", "Name", "ItemMeta"]),
                 (GenerationKind::TypeDecl(false), &["Field", "Variant", "TypeDeclKind", "TypeDecl"]),
-            ],
+            ]),
         },
         GenerateCodeFor {
             template: dir.join("templates/Values.ml"),
             target: dir.join("generated/Values.ml"),
-            markers: &[
+            markers: ctx.markers_from_names(&[
                 (GenerationKind::TypeDecl(false), &[
                     "IntegerTy",
                     "FloatTy",
@@ -780,22 +903,22 @@ fn main() -> Result<()> {
                     "LiteralTy",
                     "Literal",
                 ]),
-            ],
+            ]),
         },
         GenerateCodeFor {
             template: dir.join("templates/LlbcAst.ml"),
             target: dir.join("generated/LlbcAst.ml"),
-            markers: &[
+            markers: ctx.markers_from_names(&[
                 (GenerationKind::TypeDecl(true), &[
                     "charon_lib::ast::llbc_ast::Statement",
                     "charon_lib::ast::llbc_ast::Switch",
                 ]),
-            ],
+            ]),
         },
         GenerateCodeFor {
             template: dir.join("templates/UllbcAst.ml"),
             target: dir.join("generated/UllbcAst.ml"),
-            markers: &[
+            markers: ctx.markers_from_names(&[
                 (GenerationKind::TypeDecl(false), &[
                     "charon_lib::ast::ullbc_ast::Statement",
                     "charon_lib::ast::ullbc_ast::RawStatement",
@@ -811,116 +934,22 @@ fn main() -> Result<()> {
                     "charon_lib::ast::ullbc_ast::BlockData",
                     "charon_lib::ast::ullbc_ast::BodyContents",
                 ]),
-            ],
+            ]),
         },
         GenerateCodeFor {
             template: dir.join("templates/GAstOfJson.ml"),
             target: dir.join("generated/GAstOfJson.ml"),
-            markers: &[
-                (GenerationKind::OfJson, &[
-                    "FileName",
-                    "Loc",
-                    "Span",
-                    "InlineAttr",
-                    "Attribute",
-                    "RawAttribute",
-                    "AttrInfo",
-                    "TypeVar",
-                    "RegionVar",
-                    "Region",
-                    "IntegerTy",
-                    "FloatTy",
-                    "LiteralTy",
-                    "ConstGenericVar",
-                    "RefKind",
-                    "BuiltinTy",
-                    "TypeId",
-                    "ConstGeneric",
-                    "Ty",
-                    "ExistentialPredicate",
-                    "TraitRef",
-                    "TraitDeclRef",
-                    "GlobalDeclRef",
-                    "GenericArgs",
-                    "TraitRefKind",
-                    "Field",
-                    "Variant",
-                    "TypeDeclKind",
-                    "TraitClause",
-                    "OutlivesPred",
-                    "RegionOutlives",
-                    "TypeOutlives",
-                    "TraitTypeConstraint",
-                    "GenericParams",
-                    "ImplElem",
-                    "PathElem",
-                    "Name",
-                    "ItemMeta",
-                    "TypeDecl",
-                    "Var",
-                    "FieldProjKind",
-                    "ProjectionElem",
-                    "Projection",
-                    "Place",
-                    "BorrowKind",
-                    "CastKind",
-                    "AbortKind",
-                    "Assert",
-                    "NullOp",
-                    "UnOp",
-                    "BinOp",
-                    "Literal",
-                    "FloatValue",
-                    "BuiltinFunId",
-                    "BuiltinIndexOp",
-                    "FunId",
-                    "FunIdOrTraitMethodRef",
-                    "FnPtr",
-                    "FnOperand",
-                    "ConstantExpr",
-                    "RawConstantExpr",
-                    "Operand",
-                    "AggregateKind",
-                    "Rvalue",
-                    "ParamsInfo",
-                    "ClosureKind",
-                    "ClosureInfo",
-                    "FunSig",
-                    "Call",
-                    "GExprBody",
-                    "ItemKind",
-                    "TraitDecl",
-                    "TraitImpl",
-                    "GDeclarationGroup",
-                    "DeclarationGroup",
-                    "AnyTransId",
-                ]),
-            ],
+            markers: vec![(GenerationKind::OfJson, gast_types)],
         },
         GenerateCodeFor {
             template: dir.join("templates/LlbcOfJson.ml"),
             target: dir.join("generated/LlbcOfJson.ml"),
-            markers: &[
-                (GenerationKind::OfJson, &[
-                    "charon_lib::ast::llbc_ast::Statement",
-                    "charon_lib::ast::llbc_ast::Switch",
-                ]),
-            ],
+            markers: vec![(GenerationKind::OfJson, llbc_types)],
         },
         GenerateCodeFor {
             template: dir.join("templates/UllbcOfJson.ml"),
             target: dir.join("generated/UllbcOfJson.ml"),
-            markers: &[
-                (GenerationKind::OfJson, &[
-                    "charon_lib::ast::ullbc_ast::Statement",
-                    "charon_lib::ast::ullbc_ast::RawStatement",
-                    "charon_lib::ast::ullbc_ast::SwitchTargets",
-                    "charon_lib::ast::ullbc_ast::Terminator",
-                    "charon_lib::ast::ullbc_ast::RawTerminator",
-                    "charon_lib::ast::ullbc_ast::BlockData",
-                    "charon_lib::ast::ullbc_ast::BodyContents",
-                ]),
-            ],
+            markers: vec![(GenerationKind::OfJson, ullbc_types)],
         },
     ];
     for file in generate_code_for {

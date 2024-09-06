@@ -132,8 +132,8 @@ pub struct TranslatedCrate {
 }
 
 impl TranslatedCrate {
-    pub fn get_item(&self, trans_id: AnyTransId) -> Option<AnyTransItem<'_>> {
-        match trans_id {
+    pub fn get_item(&self, trans_id: impl Into<AnyTransId>) -> Option<AnyTransItem<'_>> {
+        match trans_id.into() {
             AnyTransId::Type(id) => self.type_decls.get(id).map(AnyTransItem::Type),
             AnyTransId::Fun(id) => self.fun_decls.get(id).map(AnyTransItem::Fun),
             AnyTransId::Global(id) => self.global_decls.get(id).map(AnyTransItem::Global),

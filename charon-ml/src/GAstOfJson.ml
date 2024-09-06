@@ -191,12 +191,6 @@ and place_of_json (js : json) : (place, string) result =
         Ok ({ var_id; projection } : place)
     | _ -> Error "")
 
-and projection_of_json (js : json) : (projection, string) result =
-  combine_error_msgs js __FUNCTION__
-    (match js with
-    | x -> list_of_json projection_elem_of_json x
-    | _ -> Error "")
-
 and projection_elem_of_json (js : json) : (projection_elem, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
@@ -960,18 +954,6 @@ and outlives_pred_of_json :
         let* x_0 = arg0_of_json x_0 in
         let* x_1 = arg1_of_json x_1 in
         Ok (x_0, x_1)
-    | _ -> Error "")
-
-and region_outlives_of_json (js : json) : (region_outlives, string) result =
-  combine_error_msgs js __FUNCTION__
-    (match js with
-    | x -> outlives_pred_of_json region_of_json region_of_json x
-    | _ -> Error "")
-
-and type_outlives_of_json (js : json) : (type_outlives, string) result =
-  combine_error_msgs js __FUNCTION__
-    (match js with
-    | x -> outlives_pred_of_json ty_of_json region_of_json x
     | _ -> Error "")
 
 and trait_type_constraint_of_json (js : json) :
