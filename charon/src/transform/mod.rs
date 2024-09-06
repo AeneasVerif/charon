@@ -30,6 +30,11 @@ use Pass::*;
 pub static ULLBC_PASSES: &[Pass] = &[
     // Move clauses on associated types to be parent clauses
     NonBody(&lift_associated_item_clauses::Transform),
+    // # Micro-pass: hide some overly-common traits we don't need: Sized, Sync, Allocator, etc..
+    NonBody(&hide_marker_traits::Transform),
+    // # Micro-pass: filter the trait impls that were marked invisible since we couldn't filter
+    // them out earlier.
+    NonBody(&filter_invisible_trait_impls::Transform),
     // # Micro-pass: Remove overflow/div-by-zero/bounds checks since they are already part of the
     // arithmetic/array operation in the semantics of (U)LLBC.
     // **WARNING**: this pass uses the fact that the dynamic checks introduced by Rustc use a
@@ -47,11 +52,6 @@ pub static ULLBC_PASSES: &[Pass] = &[
 ];
 
 pub static LLBC_PASSES: &[Pass] = &[
-    // # Micro-pass: hide some overly-common traits we don't need: Sized, Sync, Allocator, etc..
-    NonBody(&hide_marker_traits::Transform),
-    // # Micro-pass: filter the trait impls that were marked invisible since we couldn't filter
-    // them out earlier.
-    NonBody(&filter_invisible_trait_impls::Transform),
     // # Micro-pass: the first local variable of closures is the
     // closure itself. This is not consistent with the closure signature,
     // which ignores this first variable. This micro-pass updates this.
