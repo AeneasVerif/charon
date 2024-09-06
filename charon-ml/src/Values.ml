@@ -80,6 +80,8 @@ and literal_type =
  *)
 and scalar_value = { value : big_int; int_ty : integer_type }
 
+and float_value = { float_value : string; float_ty : float_type }
+
 (** A literal value.
 
     Can be used by operands (in which case it represents a constant) or by
@@ -87,6 +89,7 @@ and scalar_value = { value : big_int; int_ty : integer_type }
  *)
 and literal =
   | VScalar of scalar_value
+  | VFloat of float_value
   | VBool of bool
   | VChar of char
   | VStr of string

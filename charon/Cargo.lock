@@ -126,6 +126,12 @@ dependencies = [
 
 [[package]]
 name = "bitflags"
+version = "1.3.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "bef38d45163c2f1dde094a7dfd33ccf595c92905c8f8f4fdc18d06fb1037718a"
+
+[[package]]
+name = "bitflags"
 version = "2.6.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b048fb63fd8b5923fc5aa7b340d8e156aec7ec02f0c78fa8a6ddc2613f6f71de"
@@ -173,7 +179,7 @@ checksum = "baf1de4339761588bc0619e3cbc0120ee582ebb74b53b4efbf79117bd2da40fd"
 
 [[package]]
 name = "charon"
-version = "0.1.38"
+version = "0.1.39"
 dependencies = [
  "anyhow",
  "assert_cmd",
@@ -199,6 +205,7 @@ dependencies = [
  "petgraph",
  "pretty",
  "regex",
+ "rustc_apfloat",
  "rustc_version",
  "serde",
  "serde-map-to-array",
@@ -499,7 +506,7 @@ dependencies = [
 [[package]]
 name = "hax-adt-into"
 version = "0.1.0-pre.1"
-source = "git+https://github.com/Nadrieril/hax?branch=charon#5199a6307b0e52a6855f8ed25f58540ace97caf8"
+source = "git+https://github.com/hacspec/hax?branch=afromher_float#005594778f2aff4111e4f47fd893f52e29f84263"
 dependencies = [
  "itertools 0.11.0",
  "proc-macro2",
@@ -510,7 +517,7 @@ dependencies = [
 [[package]]
 name = "hax-frontend-exporter"
 version = "0.1.0-pre.1"
-source = "git+https://github.com/Nadrieril/hax?branch=charon#5199a6307b0e52a6855f8ed25f58540ace97caf8"
+source = "git+https://github.com/hacspec/hax?branch=afromher_float#005594778f2aff4111e4f47fd893f52e29f84263"
 dependencies = [
  "bincode",
  "extension-traits",
@@ -528,7 +535,7 @@ dependencies = [
 [[package]]
 name = "hax-frontend-exporter-options"
 version = "0.1.0-pre.1"
-source = "git+https://github.com/Nadrieril/hax?branch=charon#5199a6307b0e52a6855f8ed25f58540ace97caf8"
+source = "git+https://github.com/hacspec/hax?branch=afromher_float#005594778f2aff4111e4f47fd893f52e29f84263"
 dependencies = [
  "bincode",
  "hax-adt-into",
@@ -974,6 +981,16 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7a66a03ae7c801facd77a29370b4faec201768915ac14a721ba36f20bc9c209b"
 
 [[package]]
+name = "rustc_apfloat"
+version = "0.2.1+llvm-462a31f5a5ab"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "886d94c63c812a8037c4faca2607453a0fa4cf82f734665266876b022244543f"
+dependencies = [
+ "bitflags 1.3.2",
+ "smallvec",
+]
+
+[[package]]
 name = "rustc_version"
 version = "0.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -988,7 +1005,7 @@ version = "0.38.34"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "70dc5ec042f7a43c4a73241207cecc9873a06d45debb38b329f8541d85c2730f"
 dependencies = [
- "bitflags",
+ "bitflags 2.6.0",
  "errno",
  "libc",
  "linux-raw-sys",

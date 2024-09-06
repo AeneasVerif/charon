@@ -330,9 +330,9 @@ and literal_type_of_json (js : json) : (literal_type, string) result =
     | `Assoc [ ("Integer", integer) ] ->
         let* integer = integer_type_of_json integer in
         Ok (TInteger integer)
-    | `Assoc [ ("Float", float) ] ->
-        let* float = float_type_of_json float in
-        Ok (TFloat float)
+    | `Assoc [ ("Float", float_) ] ->
+        let* float_ = float_type_of_json float_ in
+        Ok (TFloat float_)
     | `String "Bool" -> Ok TBool
     | `String "Char" -> Ok TChar
     | _ -> Error "")
@@ -912,6 +912,9 @@ and literal_of_json (js : json) : (literal, string) result =
     | `Assoc [ ("Scalar", scalar) ] ->
         let* scalar = scalar_value_of_json scalar in
         Ok (VScalar scalar)
+    | `Assoc [ ("Float", float_) ] ->
+        let* float_ = float_value_of_json float_ in
+        Ok (VFloat float_)
     | `Assoc [ ("Bool", bool_) ] ->
         let* bool_ = bool_of_json bool_ in
         Ok (VBool bool_)
@@ -924,6 +927,15 @@ and literal_of_json (js : json) : (literal, string) result =
     | `Assoc [ ("Str", str) ] ->
         let* str = string_of_json str in
         Ok (VStr str)
+    | _ -> Error "")
+
+and float_value_of_json (js : json) : (float_value, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with
+    | `Assoc [ ("value", value); ("ty", ty) ] ->
+        let* float_value = string_of_json value in
+        let* float_ty = float_type_of_json ty in
+        Ok ({ float_value; float_ty } : float_value)
     | _ -> Error "")
 
 and assumed_fun_id_of_json (js : json) : (assumed_fun_id, string) result =

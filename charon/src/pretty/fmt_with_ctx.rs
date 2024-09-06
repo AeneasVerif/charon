@@ -1589,6 +1589,7 @@ impl std::fmt::Display for Literal {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::result::Result<(), std::fmt::Error> {
         match self {
             Literal::Scalar(v) => write!(f, "{v}"),
+            Literal::Float(v) => write!(f, "{v}"),
             Literal::Bool(v) => write!(f, "{v}"),
             Literal::Char(v) => write!(f, "{v}"),
             Literal::Str(v) => write!(f, "\"{v}\""),
@@ -1668,6 +1669,18 @@ impl std::fmt::Display for ScalarValue {
             ScalarValue::U32(v) => write!(f, "{v} : u32"),
             ScalarValue::U64(v) => write!(f, "{v} : u64"),
             ScalarValue::U128(v) => write!(f, "{v} : u128"),
+        }
+    }
+}
+
+impl std::fmt::Display for FloatValue {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::result::Result<(), std::fmt::Error> {
+        let v = &self.value;
+        match self.ty {
+            FloatTy::F16 => write!(f, "{v} : f16"),
+            FloatTy::F32 => write!(f, "{v} : f32"),
+            FloatTy::F64 => write!(f, "{v} : f64"),
+            FloatTy::F128 => write!(f, "{v} : f128"),
         }
     }
 }
