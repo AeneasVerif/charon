@@ -25,10 +25,8 @@ class ['self] map_statement_base =
     method visit_block_id : 'env -> block_id -> block_id = fun _ x -> x
   end
 
-type statement = { span : span; content : raw_statement }
-
 (** A raw statement: a statement without meta data. *)
-and raw_statement =
+type raw_statement =
   | Assign of place * rvalue
   | Call of call
       (** A call. For now, we don't support dynamic calls (i.e. to a function pointer in memory). *)
@@ -44,6 +42,8 @@ and raw_statement =
           checks, over/underflow checks, div/rem by zero checks, pointer alignement check.
        *)
   | Nop  (** Does nothing. Useful for passes. *)
+
+and statement = { span : span; content : raw_statement }
 [@@deriving
   show,
     visitors
@@ -89,10 +89,8 @@ type switch =
         concrete = true;
       }]
 
-type terminator = { span : span; content : raw_terminator }
-
 (** A raw terminator: a terminator without meta data. *)
-and raw_terminator =
+type raw_terminator =
   | Goto of block_id  (** 
           Fields:
           - [target]
@@ -105,6 +103,8 @@ and raw_terminator =
        *)
   | Abort of abort_kind  (** Handles panics and impossible cases. *)
   | Return
+
+and terminator = { span : span; content : raw_terminator }
 [@@deriving
   show,
     visitors
@@ -124,8 +124,10 @@ and raw_terminator =
         concrete = true;
       }]
 
-type block = { statements : statement list; terminator : terminator }
-and blocks = block list [@@deriving show]
+type blocks = block list
+
+and block = { statements : statement list; terminator : terminator }
+[@@deriving show]
 
 type expr_body = blocks gexpr_body [@@deriving show]
 type fun_body = expr_body [@@deriving show]

@@ -621,6 +621,7 @@ impl GenerateCodeFor<'_> {
                         .get(*name)
                         .expect(&format!("Name not found: `{name}`"))
                 })
+                .sorted_by_key(|tdecl| tdecl.def_id)
                 .enumerate()
                 .map(|(i, ty)| match kind {
                     GenerationKind::OfJson => type_decl_to_json_deserializer(&ctx, ty),

@@ -95,10 +95,8 @@ class ['self] map_place_base =
     method visit_field_id : 'env -> field_id -> field_id = fun _ x -> x
   end
 
-type field_proj_kind =
-  | ProjAdt of type_decl_id * variant_id option
-  | ProjTuple of int
-      (** If we project from a tuple, the projection kind gives the arity of the tuple. *)
+type place = { var_id : var_id; projection : projection_elem list }
+and projection = projection_elem list
 
 (** Note that we don't have the equivalent of "downcasts".
     Downcasts are actually necessary, for instance when initializing enumeration
@@ -119,9 +117,10 @@ and projection_elem =
           should have been expanded before through a match).
        *)
 
-and projection = projection_elem list
-
-and place = { var_id : var_id; projection : projection_elem list }
+and field_proj_kind =
+  | ProjAdt of type_decl_id * variant_id option
+  | ProjTuple of int
+      (** If we project from a tuple, the projection kind gives the arity of the tuple. *)
 [@@deriving
   show,
     ord,
@@ -237,10 +236,24 @@ class ['self] map_constant_expr_base =
       fun _ x -> x
   end
 
+(** Unary operation *)
+type unop =
+  | Not
+  | Neg
+      (** This can overflow. In practice, rust introduces an assert before
+          (in debug mode) to check that it is not equal to the minimum integer
+          value (for the proper type).
+       *)
+  | Cast of cast_kind
+      (** Casts are rvalues in MIR, but we treat them as unops. *)
+
+(** Nullary operation *)
+and nullop = SizeOf | AlignOf | OffsetOf of (int * field_id) list | UbChecks
+
 (** For all the variants: the first type gives the source type, the second one gives
     the destination type.
  *)
-type cast_kind =
+and cast_kind =
   | CastScalar of literal_type * literal_type
       (** Conversion between types in {Integer, Bool}
           Remark: for now we don't support conversions with Char.
@@ -259,19 +272,27 @@ type cast_kind =
           [`std::mem::transmute`] does.
        *)
 
-(** Unary operation *)
-and unop =
-  | Not
-  | Neg
-      (** This can overflow. In practice, rust introduces an assert before
-          (in debug mode) to check that it is not equal to the minimum integer
-          value (for the proper type).
+(** A function identifier. See [crate::ullbc_ast::Terminator] *)
+and fun_id =
+  | FRegular of fun_decl_id
+      (** A "regular" function (function local to the crate, external function
+          not treated as a primitive one).
        *)
-  | Cast of cast_kind
-      (** Casts are rvalues in MIR, but we treat them as unops. *)
+  | FAssumed of assumed_fun_id
+      (** A primitive function, coming from a standard library (for instance:
+          `alloc::boxed::Box::new`).
+          TODO: rename to "Primitive"
+       *)
 
-(** Nullary operation *)
-and nullop = SizeOf | AlignOf | OffsetOf of (int * field_id) list | UbChecks
+and fun_id_or_trait_method_ref =
+  | FunId of fun_id
+  | TraitMethod of trait_ref * trait_item_name * fun_decl_id
+      (** If a trait: the reference to the trait and the id of the trait method.
+          The fun decl id is not really necessary - we put it here for convenience
+          purposes.
+       *)
+
+and fn_ptr = { func : fun_id_or_trait_method_ref; generics : generic_args }
 
 (** A constant expression.
 
@@ -320,27 +341,6 @@ and raw_constant_expr =
   | CFnPtr of fn_ptr  (** Function pointer *)
 
 and constant_expr = { value : raw_constant_expr; ty : ty }
-and fn_ptr = { func : fun_id_or_trait_method_ref; generics : generic_args }
-
-and fun_id_or_trait_method_ref =
-  | FunId of fun_id
-  | TraitMethod of trait_ref * trait_item_name * fun_decl_id
-      (** If a trait: the reference to the trait and the id of the trait method.
-          The fun decl id is not really necessary - we put it here for convenience
-          purposes.
-       *)
-
-(** A function identifier. See [crate::ullbc_ast::Terminator] *)
-and fun_id =
-  | FRegular of fun_decl_id
-      (** A "regular" function (function local to the crate, external function
-          not treated as a primitive one).
-       *)
-  | FAssumed of assumed_fun_id
-      (** A primitive function, coming from a standard library (for instance:
-          `alloc::boxed::Box::new`).
-          TODO: rename to "Primitive"
-       *)
 [@@deriving
   show,
     ord,
@@ -382,44 +382,6 @@ type operand =
   | Move of place
   | Constant of constant_expr
       (** Constant value (including constant and static variables) *)
-
-(** An aggregated ADT.
-
-    Note that ADTs are desaggregated at some point in MIR. For instance, if
-    we have in Rust:
-    ```ignore
-      let ls = Cons(hd, tl);
-    ```
-
-    In MIR we have (yes, the discriminant update happens *at the end* for some
-    reason):
-    ```text
-      (ls as Cons).0 = move hd;
-      (ls as Cons).1 = move tl;
-      discriminant(ls) = 0; // assuming `Cons` is the variant of index 0
-    ```
-
-    Rem.: in the Aeneas semantics, both cases are handled (in case of desaggregated
-    initialization, `ls` is initialized to `⊥`, then this `⊥` is expanded to
-    `Cons (⊥, ⊥)` upon the first assignment, at which point we can initialize
-    the field 0, etc.).
- *)
-and aggregate_kind =
-  | AggregatedAdt of
-      type_id * variant_id option * field_id option * generic_args
-      (** A struct, enum or union aggregate. The `VariantId`, if present, indicates this is an enum
-          and the aggregate uses that variant. The `FieldId`, if present, indicates this is a union
-          and the aggregate writes into that field. Otherwise this is a struct.
-       *)
-  | AggregatedArray of ty * const_generic
-      (** We don't put this with the ADT cas because this is the only built-in type
-          with aggregates, and it is a primitive type. In particular, it makes
-          sense to treat it differently because it has a variable number of fields.
-       *)
-  | AggregatedClosure of fun_decl_id * generic_args
-      (** Aggregated values for closures group the function id together with its
-          state.
-       *)
 
 (** TODO: we could factor out [Rvalue] and function calls (for LLBC, not ULLBC).
     We can also factor out the unops, binops with the function calls.
@@ -496,6 +458,44 @@ and rvalue =
           ```
           rustc introduces a check that the length of the slice is exactly equal
           to 1 and that we preserve.
+       *)
+
+(** An aggregated ADT.
+
+    Note that ADTs are desaggregated at some point in MIR. For instance, if
+    we have in Rust:
+    ```ignore
+      let ls = Cons(hd, tl);
+    ```
+
+    In MIR we have (yes, the discriminant update happens *at the end* for some
+    reason):
+    ```text
+      (ls as Cons).0 = move hd;
+      (ls as Cons).1 = move tl;
+      discriminant(ls) = 0; // assuming `Cons` is the variant of index 0
+    ```
+
+    Rem.: in the Aeneas semantics, both cases are handled (in case of desaggregated
+    initialization, `ls` is initialized to `⊥`, then this `⊥` is expanded to
+    `Cons (⊥, ⊥)` upon the first assignment, at which point we can initialize
+    the field 0, etc.).
+ *)
+and aggregate_kind =
+  | AggregatedAdt of
+      type_id * variant_id option * field_id option * generic_args
+      (** A struct, enum or union aggregate. The `VariantId`, if present, indicates this is an enum
+          and the aggregate uses that variant. The `FieldId`, if present, indicates this is a union
+          and the aggregate writes into that field. Otherwise this is a struct.
+       *)
+  | AggregatedArray of ty * const_generic
+      (** We don't put this with the ADT cas because this is the only built-in type
+          with aggregates, and it is a primitive type. In particular, it makes
+          sense to treat it differently because it has a variable number of fields.
+       *)
+  | AggregatedClosure of fun_decl_id * generic_args
+      (** Aggregated values for closures group the function id together with its
+          state.
        *)
 [@@deriving
   show,

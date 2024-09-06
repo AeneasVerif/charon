@@ -116,6 +116,69 @@ class ['self] map_statement_base =
     method visit_abort_kind : 'env -> abort_kind -> abort_kind = fun _ x -> x
   end
 
+(** An expression body.
+    TODO: arg_count should be stored in GFunDecl below. But then,
+          the print is obfuscated and Aeneas may need some refactoring.
+ *)
+type 'a0 gexpr_body = {
+  span : span;
+  arg_count : int;
+      (** The number of local variables used for the input arguments. *)
+  locals : var list;
+      (** The local variables.
+        We always have, in the following order:
+        - the local used for the return value (index 0)
+        - the input arguments
+        - the remaining locals, used for the intermediate computations
+     *)
+  body : 'a0;
+}
+
+(** Item kind: whether this function/const is part of a trait declaration, trait implementation, or
+    neither.
+
+    Example:
+    ```text
+    trait Foo {
+        fn bar(x : u32) -> u32; // trait item decl without default
+
+        fn baz(x : bool) -> bool { x } // trait item decl with default
+    }
+
+    impl Foo for ... {
+        fn bar(x : u32) -> u32 { x } // trait item implementation
+    }
+
+    fn test(...) { ... } // regular
+
+    impl Type {
+        fn test(...) { ... } // regular
+    }
+    ```
+ *)
+and item_kind =
+  | RegularItem
+      (** A function/const at the top level or in an inherent impl block. *)
+  | TraitDeclItem of trait_decl_id * trait_item_name * bool
+      (** Function/const that is part of a trait declaration. It has a body if and only if the trait
+          provided a default implementation.
+
+          Fields:
+          - [trait_id]:  The trait declaration this item belongs to.
+          - [item_name]:  The name of the item.
+          - [has_default]:  Whether the trait declaration provides a default implementation.
+       *)
+  | TraitImplItem of trait_impl_id * trait_decl_id * trait_item_name * bool
+      (** Function/const that is part of a trait implementation.
+
+          Fields:
+          - [impl_id]:  The trait implementation the method belongs to
+          - [trait_id]:  The trait declaration this item belongs to.
+          - [item_name]:  The name of the item
+          - [reuses_default]:  True if the trait decl had a default implementation for this function/const and this
+          item is a copy of the default item.
+       *)
+
 (** We use this to store information about the parameters in parent blocks.
     This is necessary because in the definitions we store *all* the generics,
     including those coming from the outer impl block.
@@ -159,7 +222,7 @@ class ['self] map_statement_base =
     the generics of the outer block(s), we need to do it only for one level
     (this definitely makes things simpler).
  *)
-type params_info = {
+and params_info = {
   num_region_params : int;
   num_type_params : int;
   num_const_generic_params : int;
@@ -209,69 +272,6 @@ and fun_sig = {
       (** Optional fields, for trait methods only (see the comments in [ParamsInfo]). *)
   inputs : ty list;
   output : ty;
-}
-
-(** Item kind: whether this function/const is part of a trait declaration, trait implementation, or
-    neither.
-
-    Example:
-    ```text
-    trait Foo {
-        fn bar(x : u32) -> u32; // trait item decl without default
-
-        fn baz(x : bool) -> bool { x } // trait item decl with default
-    }
-
-    impl Foo for ... {
-        fn bar(x : u32) -> u32 { x } // trait item implementation
-    }
-
-    fn test(...) { ... } // regular
-
-    impl Type {
-        fn test(...) { ... } // regular
-    }
-    ```
- *)
-and item_kind =
-  | RegularItem
-      (** A function/const at the top level or in an inherent impl block. *)
-  | TraitDeclItem of trait_decl_id * trait_item_name * bool
-      (** Function/const that is part of a trait declaration. It has a body if and only if the trait
-          provided a default implementation.
-
-          Fields:
-          - [trait_id]:  The trait declaration this item belongs to.
-          - [item_name]:  The name of the item.
-          - [has_default]:  Whether the trait declaration provides a default implementation.
-       *)
-  | TraitImplItem of trait_impl_id * trait_decl_id * trait_item_name * bool
-      (** Function/const that is part of a trait implementation.
-
-          Fields:
-          - [impl_id]:  The trait implementation the method belongs to
-          - [trait_id]:  The trait declaration this item belongs to.
-          - [item_name]:  The name of the item
-          - [reuses_default]:  True if the trait decl had a default implementation for this function/const and this
-          item is a copy of the default item.
-       *)
-
-(** An expression body.
-    TODO: arg_count should be stored in GFunDecl below. But then,
-          the print is obfuscated and Aeneas may need some refactoring.
- *)
-and 'a0 gexpr_body = {
-  span : span;
-  arg_count : int;
-      (** The number of local variables used for the input arguments. *)
-  locals : var list;
-      (** The local variables.
-        We always have, in the following order:
-        - the local used for the return value (index 0)
-        - the input arguments
-        - the remaining locals, used for the intermediate computations
-     *)
-  body : 'a0;
 }
 [@@deriving show]
 

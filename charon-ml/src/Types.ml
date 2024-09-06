@@ -283,22 +283,44 @@ class virtual ['self] map_ty_base =
         { index; name }
   end
 
-(** Builtin types identifiers.
+(** Reference to a global declaration. *)
+type global_decl_ref = {
+  global_id : global_decl_id;
+  global_generics : generic_args;
+}
 
-    WARNING: for now, all the built-in types are covariant in the generic
-    parameters (if there are). Adding types which don't satisfy this
-    will require to update the code abstracting the signatures (to properly
-    take into account the lifetime constraints).
+(** A reference to a trait *)
+and trait_ref = {
+  trait_id : trait_instance_id;
+  trait_decl_ref : trait_decl_ref;  (** Not necessary, but useful *)
+}
 
-    TODO: update to not hardcode the types (except `Box` maybe) and be more
-    modular.
-    TODO: move to builtins.rs?
+(** Reference to a trait declaration.
+
+    About the generics, if we write:
+    ```text
+    impl Foo<bool> for String { ... }
+    ```
+
+    The substitution is: `[String, bool]`.
  *)
-type assumed_ty =
-  | TBox  (** Boxes are de facto a primitive type. *)
-  | TArray  (** Primitive type *)
-  | TSlice  (** Primitive type *)
-  | TStr  (** Primitive type *)
+and trait_decl_ref = {
+  trait_decl_id : trait_decl_id;
+  decl_generics : generic_args;
+}
+
+and generic_args = {
+  regions : region list;
+  types : ty list;
+  const_generics : const_generic list;
+  trait_refs : trait_ref list;
+}
+
+(** A predicate of the form `exists<T> where T: Trait`.
+
+    TODO: store something useful here
+ *)
+and existential_predicate = unit
 
 (** Type identifier.
 
@@ -321,12 +343,6 @@ and type_id =
           the [Ty] type. We decided to move them to built-in types as it allows
           for more uniform treatment throughout the codebase.
        *)
-
-(** A predicate of the form `exists<T> where T: Trait`.
-
-    TODO: store something useful here
- *)
-and existential_predicate = unit
 
 (** A type. *)
 and ty =
@@ -388,38 +404,22 @@ and ty =
           (no generic types), no predicates, etc.
        *)
 
-(** A reference to a trait *)
-and trait_ref = {
-  trait_id : trait_instance_id;
-  trait_decl_ref : trait_decl_ref;  (** Not necessary, but useful *)
-}
+(** Builtin types identifiers.
 
-(** Reference to a trait declaration.
+    WARNING: for now, all the built-in types are covariant in the generic
+    parameters (if there are). Adding types which don't satisfy this
+    will require to update the code abstracting the signatures (to properly
+    take into account the lifetime constraints).
 
-    About the generics, if we write:
-    ```text
-    impl Foo<bool> for String { ... }
-    ```
-
-    The substitution is: `[String, bool]`.
+    TODO: update to not hardcode the types (except `Box` maybe) and be more
+    modular.
+    TODO: move to builtins.rs?
  *)
-and trait_decl_ref = {
-  trait_decl_id : trait_decl_id;
-  decl_generics : generic_args;
-}
-
-(** Reference to a global declaration. *)
-and global_decl_ref = {
-  global_id : global_decl_id;
-  global_generics : generic_args;
-}
-
-and generic_args = {
-  regions : region list;
-  types : ty list;
-  const_generics : const_generic list;
-  trait_refs : trait_ref list;
-}
+and assumed_ty =
+  | TBox  (** Boxes are de facto a primitive type. *)
+  | TArray  (** Primitive type *)
+  | TSlice  (** Primitive type *)
+  | TStr  (** Primitive type *)
 
 (* Hand-written because we add an extra variant not present on the rust side *)
 and trait_instance_id =
@@ -602,6 +602,22 @@ and trait_type_constraint = {
         polymorphic = false;
       }]
 
+(** Meta information about an item (function, trait decl, trait impl, type decl, global). *)
+type item_meta = {
+  name : name;
+  span : span;
+  source_text : string option;
+      (** The source code that corresponds to this item. *)
+  attr_info : attr_info;  (** Attributes and visibility. *)
+  is_local : bool;
+      (** `true` if the type decl is a local type decl, `false` if it comes from an external crate. *)
+}
+
+(** See the comments for [Name] *)
+and path_elem =
+  | PeIdent of string * disambiguator
+  | PeImpl of impl_elem * disambiguator
+
 (** There are two kinds of `impl` blocks:
     - impl blocks linked to a type ("inherent" impl blocks following Rust terminology):
       ```text
@@ -613,14 +629,9 @@ and trait_type_constraint = {
       ```
     We distinguish the two.
  *)
-type impl_elem =
+and impl_elem =
   | ImplElemTy of generic_params * ty
   | ImplElemTrait of trait_impl_id
-
-(** See the comments for [Name] *)
-and path_elem =
-  | PeIdent of string * disambiguator
-  | PeImpl of impl_elem * disambiguator
 
 (** An item name/path
 
@@ -658,19 +669,7 @@ and path_elem =
 
     Also note that the first path element in the name is always the crate name.
  *)
-and name = path_elem list
-
-(** Meta information about an item (function, trait decl, trait impl, type decl, global). *)
-and item_meta = {
-  name : name;
-  span : span;
-  source_text : string option;
-      (** The source code that corresponds to this item. *)
-  attr_info : attr_info;  (** Attributes and visibility. *)
-  is_local : bool;
-      (** `true` if the type decl is a local type decl, `false` if it comes from an external crate. *)
-}
-[@@deriving show, ord]
+and name = path_elem list [@@deriving show, ord]
 
 (* Hand-written because these don't exist on the rust side *)
 
@@ -693,22 +692,25 @@ type region_var_group = (RegionVarId.id, RegionGroupId.id) g_region_group
 
 type region_var_groups = region_var_group list [@@deriving show]
 
-type field = {
-  span : span;
-  attr_info : attr_info;
-  field_name : string option;
-  field_ty : ty;
-}
+(** A type declaration.
 
-and variant = {
-  span : span;
-  attr_info : attr_info;
-  variant_name : string;
-  fields : field list;
-  discriminant : scalar_value;
-      (** The discriminant used at runtime. This is used in `remove_read_discriminant` to match up
-        `SwitchInt` targets with the corresponding `Variant`.
-     *)
+    Types can be opaque or transparent.
+
+    Transparent types are local types not marked as opaque.
+    Opaque types are the others: local types marked as opaque, and non-local
+    types (coming from external dependencies).
+
+    In case the type is transparent, the declaration also contains the
+    type definition (see [TypeDeclKind]).
+
+    A type can only be an ADT (structure or enumeration), as type aliases are
+    inlined in MIR.
+ *)
+type type_decl = {
+  def_id : type_decl_id;
+  item_meta : item_meta;  (** Meta information associated with the item. *)
+  generics : generic_params;
+  kind : type_decl_kind;  (** The type kind: enum, struct, or opaque. *)
 }
 
 and type_decl_kind =
@@ -729,24 +731,21 @@ and type_decl_kind =
           on error.
        *)
 
-(** A type declaration.
+and variant = {
+  span : span;
+  attr_info : attr_info;
+  variant_name : string;
+  fields : field list;
+  discriminant : scalar_value;
+      (** The discriminant used at runtime. This is used in `remove_read_discriminant` to match up
+        `SwitchInt` targets with the corresponding `Variant`.
+     *)
+}
 
-    Types can be opaque or transparent.
-
-    Transparent types are local types not marked as opaque.
-    Opaque types are the others: local types marked as opaque, and non-local
-    types (coming from external dependencies).
-
-    In case the type is transparent, the declaration also contains the
-    type definition (see [TypeDeclKind]).
-
-    A type can only be an ADT (structure or enumeration), as type aliases are
-    inlined in MIR.
- *)
-and type_decl = {
-  def_id : type_decl_id;
-  item_meta : item_meta;  (** Meta information associated with the item. *)
-  generics : generic_params;
-  kind : type_decl_kind;  (** The type kind: enum, struct, or opaque. *)
+and field = {
+  span : span;
+  attr_info : attr_info;
+  field_name : string option;
+  field_ty : ty;
 }
 [@@deriving show]

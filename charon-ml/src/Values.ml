@@ -66,12 +66,6 @@ type integer_type =
 
 and float_type = F16 | F32 | F64 | F128
 
-(** This is simlar to the Scalar value above. However, instead of storing
-    the float value itself, we store its String representation. This allows
-    to derive the Eq and Ord traits, which are not implemented for floats
- *)
-and float_value = { float_value : string; float_ty : float_type }
-
 (** Types of primitive values. Either an integer, bool, char *)
 and literal_type =
   | TInteger of integer_type
@@ -90,6 +84,12 @@ and literal =
   | VChar of char
   | VByteStr of int list
   | VStr of string
+
+(** This is simlar to the Scalar value above. However, instead of storing
+    the float value itself, we store its String representation. This allows
+    to derive the Eq and Ord traits, which are not implemented for floats
+ *)
+and float_value = { float_value : string; float_ty : float_type }
 
 (** A scalar value
 
