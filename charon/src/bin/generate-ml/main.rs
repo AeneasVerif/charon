@@ -19,6 +19,7 @@ use convert_case::{Case, Casing};
 use derive_visitor::{visitor_enter_fn, Drive};
 use itertools::Itertools;
 use std::collections::{HashMap, HashSet};
+use std::fmt::Write;
 use std::fs;
 use std::fs::File;
 use std::io::BufReader;
@@ -683,6 +684,106 @@ fn type_decl_to_ocaml_decl(ctx: &GenerateCtx, decl: &TypeDecl, co_rec: bool) -> 
     build_type(ctx, decl, co_rec, &body)
 }
 
+fn generate_visitor_bases(
+    _ctx: &GenerateCtx,
+    name: &str,
+    inherits: Option<&str>,
+    reduce: bool,
+    ty_names: &[String],
+) -> String {
+    let mut out = String::new();
+    let make_inherit = |variety| {
+        if let Some(ancestor) = inherits {
+            if let [module, name] = ancestor.split(".").collect_vec().as_slice() {
+                format!("{module}.{variety}_{name}")
+            } else {
+                format!("{variety}_{ancestor}")
+            }
+        } else {
+            format!("VisitorsRuntime.{variety}")
+        }
+    };
+
+    let iter_methods = ty_names
+        .iter()
+        .map(|ty| format!("method visit_{ty} : 'env -> {ty} -> unit = fun _ _ -> ()"))
+        .format("\n");
+    let _ = write!(
+        &mut out,
+        "
+        class ['self] iter_{name} =
+          object (self : 'self)
+            inherit [_] {}
+            {iter_methods}
+          end
+        ",
+        make_inherit("iter")
+    );
+
+    let map_methods = ty_names
+        .iter()
+        .map(|ty| format!("method visit_{ty} : 'env -> {ty} -> {ty} = fun _ x -> x"))
+        .format("\n");
+    let _ = write!(
+        &mut out,
+        "
+        class ['self] map_{name} =
+          object (self : 'self)
+            inherit [_] {}
+            {map_methods}
+          end
+        ",
+        make_inherit("map")
+    );
+
+    if reduce {
+        let reduce_methods = ty_names
+            .iter()
+            .map(|ty| format!("method visit_{ty} : 'env -> {ty} -> 'a = fun _ _ -> self#zero"))
+            .format("\n");
+        let _ = write!(
+            &mut out,
+            "
+            class virtual ['self] reduce_{name} =
+              object (self : 'self)
+                inherit [_] {}
+                {reduce_methods}
+              end
+            ",
+            make_inherit("reduce")
+        );
+
+        let mapreduce_methods = ty_names
+            .iter()
+            .map(|ty| {
+                format!("method visit_{ty} : 'env -> {ty} -> {ty} * 'a = fun _ x -> (x, self#zero)")
+            })
+            .format("\n");
+        let _ = write!(
+            &mut out,
+            "
+            class virtual ['self] mapreduce_{name} =
+              object (self : 'self)
+                inherit [_] {}
+                {mapreduce_methods}
+              end
+            ",
+            make_inherit("mapreduce")
+        );
+    }
+
+    out
+}
+
+#[derive(Clone, Copy)]
+struct DeriveVisitors {
+    name: &'static str,
+    ancestor: Option<&'static str>,
+    ord: bool,
+    reduce: bool,
+    extra_types: &'static [&'static str],
+}
+
 /// The kind of code generation to perform.
 #[derive(Clone, Copy)]
 enum GenerationKind {
@@ -690,7 +791,7 @@ enum GenerationKind {
     /// The boolean indicates whether this is an open recursion group (i.e. shuold start with `and
     /// ty = ...`). If `false`, the first element of the group will be `type ty = ...` instead of
     /// `and ty = ...`;
-    TypeDecl(bool),
+    TypeDecl(bool, Option<DeriveVisitors>),
 }
 
 /// Replace markers in `template` with auto-generated code.
@@ -710,20 +811,79 @@ impl GenerateCodeFor {
         let mut template = fs::read_to_string(&self.template)
             .with_context(|| format!("Failed to read template file {}", self.template.display()))?;
         for (i, (kind, names)) in self.markers.iter().enumerate() {
-            let generated = names
-                .iter()
-                .copied()
-                .sorted()
-                .map(|id| &ctx.crate_data[id])
-                .enumerate()
-                .map(|(i, ty)| match kind {
-                    GenerationKind::OfJson => type_decl_to_json_deserializer(&ctx, ty),
-                    GenerationKind::TypeDecl(open_rec) => {
-                        let co_recursive = *open_rec || i != 0;
-                        type_decl_to_ocaml_decl(&ctx, ty, co_recursive)
-                    }
-                })
-                .join("\n");
+            let tys = names.iter().copied().sorted().map(|id| &ctx.crate_data[id]);
+            let generated = match kind {
+                GenerationKind::OfJson => tys
+                    .map(|ty| type_decl_to_json_deserializer(ctx, ty))
+                    .join("\n"),
+                GenerationKind::TypeDecl(open_rec, visitors) => {
+                    let mut decls = tys
+                        .enumerate()
+                        .map(|(i, ty)| {
+                            let co_recursive = *open_rec || i != 0;
+                            type_decl_to_ocaml_decl(ctx, ty, co_recursive)
+                        })
+                        .join("\n");
+                    if let Some(visitors) = visitors {
+                        let DeriveVisitors {
+                            name,
+                            mut ancestor,
+                            ord,
+                            reduce,
+                            extra_types,
+                        } = visitors;
+                        let varieties: &[_] = if *reduce {
+                            &["iter", "map", "reduce", "mapreduce"]
+                        } else {
+                            &["iter", "map"]
+                        };
+                        let intermediate_visitor_name;
+                        if !extra_types.is_empty() {
+                            intermediate_visitor_name = format!("{name}_base");
+                            let intermediate_visitor = generate_visitor_bases(
+                                ctx,
+                                &intermediate_visitor_name,
+                                ancestor,
+                                *reduce,
+                                extra_types
+                                    .iter()
+                                    .map(|s| s.to_string())
+                                    .collect_vec()
+                                    .as_slice(),
+                            );
+                            ancestor = Some(&intermediate_visitor_name);
+                            decls = format!("(* Ancestors for the {name} visitors *){intermediate_visitor}\n{decls}");
+                        }
+                        let visitors = varieties
+                            .iter()
+                            .map(|variety| {
+                                let ancestors = if let Some(ancestor) = ancestor {
+                                    format!(
+                                        r#"
+                                        ancestors = [ "{variety}_{ancestor}" ];
+                                        nude = true (* Don't inherit VisitorsRuntime *);
+                                    "#
+                                    )
+                                } else {
+                                    String::new()
+                                };
+                                format!(
+                                    r#"
+                                    visitors {{
+                                        name = "{variety}_{name}";
+                                        variety = "{variety}";
+                                        {ancestors}
+                                    }}
+                                "#
+                                )
+                            })
+                            .format(", ");
+                        let ord = if *ord { ", ord" } else { "" };
+                        let _ = write!(&mut decls, "\n[@@deriving show {ord}, {visitors}]");
+                    };
+                    decls
+                }
+            };
             let placeholder = format!("(* __REPLACE{i}__ *)");
             template = template.replace(&placeholder, &generated);
         }
@@ -812,14 +972,28 @@ fn main() -> Result<()> {
         .copied()
         .collect();
 
+    // TODO: give handwritten versions through rust
+    // TODO: that way we can generate all the visitor boilerplate
+    // TODO: try to move everything else from the template files to the rust side
+    // TODO: merge visitors as convenient
     #[rustfmt::skip]
     let generate_code_for = vec![
         GenerateCodeFor {
             template: dir.join("templates/GAst.ml"),
             target: dir.join("generated/GAst.ml"),
             markers: ctx.markers_from_names(&[
-                (GenerationKind::TypeDecl(false), &["FnOperand", "Call", "Assert"]),
-                (GenerationKind::TypeDecl(false), &[
+                (GenerationKind::TypeDecl(false, Some(DeriveVisitors {
+                    name: "call",
+                    ancestor: Some("ast_base"),
+                    reduce: false,
+                    ord: false,
+                    extra_types: &[],
+                })), &[
+                    "FnOperand",
+                    "Call",
+                    "Assert",
+                ]),
+                (GenerationKind::TypeDecl(false, None), &[
                     "ParamsInfo",
                     "ClosureKind",
                     "ClosureInfo",
@@ -827,20 +1001,48 @@ fn main() -> Result<()> {
                     "ItemKind",
                     "GExprBody",
                 ]),
-                (GenerationKind::TypeDecl(false), &["TraitDecl", "TraitImpl", "GDeclarationGroup"]),
-                (GenerationKind::TypeDecl(false), &["DeclarationGroup"]),
-                (GenerationKind::TypeDecl(false), &["Var"]),
-                (GenerationKind::TypeDecl(false), &["AnyTransId"]),
+                (GenerationKind::TypeDecl(false, None), &["TraitDecl", "TraitImpl", "GDeclarationGroup"]),
+                (GenerationKind::TypeDecl(false, None), &["DeclarationGroup"]),
+                (GenerationKind::TypeDecl(false, None), &["Var"]),
+                (GenerationKind::TypeDecl(false, None), &["AnyTransId"]),
             ]),
         },
         GenerateCodeFor {
             template: dir.join("templates/Expressions.ml"),
             target: dir.join("generated/Expressions.ml"),
             markers: ctx.markers_from_names(&[
-                (GenerationKind::TypeDecl(false), &["BuiltinFunId", "BuiltinIndexOp", "AbortKind"]),
-                (GenerationKind::TypeDecl(false), &["FieldProjKind", "ProjectionElem", "Projection", "Place"]),
-                (GenerationKind::TypeDecl(false), &["BorrowKind", "BinOp"]),
-                (GenerationKind::TypeDecl(false), &[
+                (GenerationKind::TypeDecl(false, None), &[
+                    "BuiltinFunId",
+                    "BuiltinIndexOp",
+                    "AbortKind",
+                ]),
+                (GenerationKind::TypeDecl(false, Some(DeriveVisitors {
+                    name: "place",
+                    ancestor: Some("ty"),
+                    reduce: false,
+                    ord: true,
+                    extra_types: &[
+                        "var_id",
+                        "variant_id",
+                        "field_id",
+                    ],
+                })), &[
+                    "FieldProjKind",
+                    "ProjectionElem",
+                    "Projection",
+                    "Place",
+                ]),
+                (GenerationKind::TypeDecl(false, None), &[
+                    "BorrowKind",
+                    "BinOp",
+                ]),
+                (GenerationKind::TypeDecl(false, Some(DeriveVisitors {
+                    name: "constant_expr",
+                    ancestor: Some("place"),
+                    reduce: false,
+                    ord: true,
+                    extra_types: &["assumed_fun_id"],
+                })), &[
                     "CastKind",
                     "UnOp",
                     "NullOp",
@@ -850,15 +1052,28 @@ fn main() -> Result<()> {
                     "FunIdOrTraitMethodRef",
                     "FunId",
                 ]),
-                (GenerationKind::TypeDecl(false), &["Operand", "AggregateKind", "Rvalue"]),
+                (GenerationKind::TypeDecl(false, Some(DeriveVisitors {
+                    name: "rvalue",
+                    ancestor: Some("constant_expr"),
+                    reduce: false,
+                    ord: false,
+                    extra_types: &["binop", "borrow_kind"],
+                })), &[
+                    "Operand",
+                    "AggregateKind",
+                    "Rvalue",
+                ]),
             ]),
         },
         GenerateCodeFor {
             template: dir.join("templates/Meta.ml"),
             target: dir.join("generated/Meta.ml"),
             markers: ctx.markers_from_names(&[
-                (GenerationKind::TypeDecl(false), &["Loc", "FileName"]),
-                (GenerationKind::TypeDecl(false), &[
+                (GenerationKind::TypeDecl(false, None), &[
+                    "Loc",
+                    "FileName",
+                ]),
+                (GenerationKind::TypeDecl(false, None), &[
                     "Span",
                     "InlineAttr",
                     "Attribute",
@@ -871,7 +1086,7 @@ fn main() -> Result<()> {
             template: dir.join("templates/Types.ml"),
             target: dir.join("generated/Types.ml"),
             markers: ctx.markers_from_names(&[
-                (GenerationKind::TypeDecl(false), &[
+                (GenerationKind::TypeDecl(false, None), &[
                     "BuiltinTy",
                     "TypeId",
                     "ExistentialPredicate",
@@ -881,17 +1096,54 @@ fn main() -> Result<()> {
                     "GlobalDeclRef",
                     "GenericArgs",
                 ]),
-                (GenerationKind::TypeDecl(true), &["TraitClause"]),
-                (GenerationKind::TypeDecl(true), &["TraitTypeConstraint"]),
-                (GenerationKind::TypeDecl(false), &["ImplElem", "PathElem", "Name", "ItemMeta"]),
-                (GenerationKind::TypeDecl(false), &["Field", "Variant", "TypeDeclKind", "TypeDecl"]),
+                (GenerationKind::TypeDecl(true, None), &[
+                    "TraitClause",
+                ]),
+                (GenerationKind::TypeDecl(true, Some(DeriveVisitors {
+                    name: "generic_params",
+                    ancestor: Some("generic_params_base"),
+                    reduce: false,
+                    ord: true,
+                    extra_types: &[],
+                })), &[
+                    "TraitTypeConstraint",
+                ]),
+                (GenerationKind::TypeDecl(false, None), &["ImplElem", "PathElem", "Name", "ItemMeta"]),
+                (GenerationKind::TypeDecl(false, None), &["Field", "Variant", "TypeDeclKind", "TypeDecl"]),
+                (GenerationKind::TypeDecl(false, Some(DeriveVisitors {
+                    name: "const_generic",
+                    ancestor: Some("literal"),
+                    reduce: true,
+                    ord: true,
+                    extra_types: &[
+                        "type_decl_id",
+                        "global_decl_id",
+                        "const_generic_var_id",
+                    ],
+                })), &[
+                    "ConstGeneric",
+                ]),
+                (GenerationKind::TypeDecl(false, Some(DeriveVisitors {
+                    name: "ty",
+                    ancestor: Some("ty_base"),
+                    reduce: false,
+                    ord: true,
+                    extra_types: &[],
+                })), &[
+                ]),
             ]),
         },
         GenerateCodeFor {
             template: dir.join("templates/Values.ml"),
             target: dir.join("generated/Values.ml"),
             markers: ctx.markers_from_names(&[
-                (GenerationKind::TypeDecl(false), &[
+                (GenerationKind::TypeDecl(true, Some(DeriveVisitors {
+                    name: "literal",
+                    ancestor: Some("literal_base"),
+                    reduce: true,
+                    ord: true,
+                    extra_types: &[],
+                })), &[
                     "IntegerTy",
                     "FloatTy",
                     "FloatValue",
@@ -904,7 +1156,13 @@ fn main() -> Result<()> {
             template: dir.join("templates/LlbcAst.ml"),
             target: dir.join("generated/LlbcAst.ml"),
             markers: ctx.markers_from_names(&[
-                (GenerationKind::TypeDecl(true), &[
+                (GenerationKind::TypeDecl(true, Some(DeriveVisitors {
+                    name: "statement",
+                    ancestor: Some("statement_base"),
+                    reduce: false,
+                    ord: false,
+                    extra_types: &[],
+                })), &[
                     "charon_lib::ast::llbc_ast::Statement",
                     "charon_lib::ast::llbc_ast::Switch",
                 ]),
@@ -914,18 +1172,38 @@ fn main() -> Result<()> {
             template: dir.join("templates/UllbcAst.ml"),
             target: dir.join("generated/UllbcAst.ml"),
             markers: ctx.markers_from_names(&[
-                (GenerationKind::TypeDecl(false), &[
+                (GenerationKind::TypeDecl(false, Some(DeriveVisitors {
+                    name: "statement",
+                    ancestor: Some("GAst.statement_base"),
+                    reduce: false,
+                    ord: false,
+                    extra_types: &[
+                        "block_id",
+                    ],
+                })), &[
                     "charon_lib::ast::ullbc_ast::Statement",
                     "charon_lib::ast::ullbc_ast::RawStatement",
                 ]),
-                (GenerationKind::TypeDecl(false), &[
+                (GenerationKind::TypeDecl(false, Some(DeriveVisitors {
+                    name: "switch",
+                    ancestor: Some("statement"),
+                    reduce: false,
+                    ord: false,
+                    extra_types: &[],
+                })), &[
                     "charon_lib::ast::ullbc_ast::SwitchTargets",
                 ]),
-                (GenerationKind::TypeDecl(false), &[
+                (GenerationKind::TypeDecl(false, Some(DeriveVisitors {
+                    name: "terminator",
+                    ancestor: Some("switch"),
+                    reduce: false,
+                    ord: false,
+                    extra_types: &[],
+                })), &[
                     "charon_lib::ast::ullbc_ast::Terminator",
                     "charon_lib::ast::ullbc_ast::RawTerminator",
                 ]),
-                (GenerationKind::TypeDecl(false), &[
+                (GenerationKind::TypeDecl(false, None), &[
                     "charon_lib::ast::ullbc_ast::BlockData",
                     "charon_lib::ast::ullbc_ast::BodyContents",
                 ]),

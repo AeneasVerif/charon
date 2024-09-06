@@ -50,7 +50,16 @@ class virtual ['self] mapreduce_literal_base =
       fun _ x -> (x, self#zero)
   end
 
-type integer_type =
+(** A scalar value
+
+    Note that we use unbounded integers everywhere.
+    We then harcode the boundaries for the different types.
+
+    Hand-written because the rust version is an enum with custom (de)serialization functions.
+ *)
+type scalar_value = { value : big_int; int_ty : integer_type }
+
+and integer_type =
   | Isize
   | I8
   | I16
@@ -90,15 +99,6 @@ and literal =
     to derive the Eq and Ord traits, which are not implemented for floats
  *)
 and float_value = { float_value : string; float_ty : float_type }
-
-(** A scalar value
-
-    Note that we use unbounded integers everywhere.
-    We then harcode the boundaries for the different types.
-
-    Hand-written because the rust version is an enum with custom (de)serialization functions.
- *)
-and scalar_value = { value : big_int; int_ty : integer_type }
 [@@deriving
   show,
     ord,
@@ -107,28 +107,26 @@ and scalar_value = { value : big_int; int_ty : integer_type }
         name = "iter_literal";
         variety = "iter";
         ancestors = [ "iter_literal_base" ];
-        nude = true;
-        concrete = true;
+        nude = true (* Don't inherit VisitorsRuntime *);
       },
     visitors
       {
         name = "map_literal";
         variety = "map";
         ancestors = [ "map_literal_base" ];
-        nude = true;
-        concrete = true;
+        nude = true (* Don't inherit VisitorsRuntime *);
       },
     visitors
       {
         name = "reduce_literal";
         variety = "reduce";
         ancestors = [ "reduce_literal_base" ];
-        nude = true;
+        nude = true (* Don't inherit VisitorsRuntime *);
       },
     visitors
       {
         name = "mapreduce_literal";
         variety = "mapreduce";
         ancestors = [ "mapreduce_literal_base" ];
-        nude = true;
+        nude = true (* Don't inherit VisitorsRuntime *);
       }]

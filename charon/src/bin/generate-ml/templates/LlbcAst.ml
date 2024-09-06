@@ -31,24 +31,6 @@ type raw_statement =
   | Error of string
 
 (* __REPLACE0__ *)
-[@@deriving
-  show,
-    visitors
-      {
-        name = "iter_statement";
-        variety = "iter";
-        ancestors = [ "iter_statement_base" ];
-        nude = true (* Don't inherit {!VisitorsRuntime.iter} *);
-        concrete = true;
-      },
-    visitors
-      {
-        name = "map_statement";
-        variety = "map";
-        ancestors = [ "map_statement_base" ];
-        nude = true (* Don't inherit {!VisitorsRuntime.iter} *);
-        concrete = true;
-      }]
 
 type expr_body = statement gexpr_body [@@deriving show]
 type fun_body = expr_body [@@deriving show]

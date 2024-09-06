@@ -72,24 +72,18 @@ and abort_kind =
        *)
 [@@deriving show, ord]
 
-(** Ancestor the field_proj_kind iter visitor *)
+(* Ancestors for the place visitors *)
 class ['self] iter_place_base =
-  object (_self : 'self)
-    inherit [_] VisitorsRuntime.iter
-    method visit_type_decl_id : 'env -> type_decl_id -> unit = fun _ _ -> ()
+  object (self : 'self)
+    inherit [_] iter_ty
     method visit_var_id : 'env -> var_id -> unit = fun _ _ -> ()
     method visit_variant_id : 'env -> variant_id -> unit = fun _ _ -> ()
     method visit_field_id : 'env -> field_id -> unit = fun _ _ -> ()
   end
 
-(** Ancestor the field_proj_kind map visitor *)
 class ['self] map_place_base =
-  object (_self : 'self)
-    inherit [_] VisitorsRuntime.map
-
-    method visit_type_decl_id : 'env -> type_decl_id -> type_decl_id =
-      fun _ x -> x
-
+  object (self : 'self)
+    inherit [_] map_ty
     method visit_var_id : 'env -> var_id -> var_id = fun _ x -> x
     method visit_variant_id : 'env -> variant_id -> variant_id = fun _ x -> x
     method visit_field_id : 'env -> field_id -> field_id = fun _ x -> x
@@ -129,16 +123,14 @@ and field_proj_kind =
         name = "iter_place";
         variety = "iter";
         ancestors = [ "iter_place_base" ];
-        nude = true (* Don't inherit {!VisitorsRuntime.iter} *);
-        concrete = true;
+        nude = true (* Don't inherit VisitorsRuntime *);
       },
     visitors
       {
         name = "map_place";
         variety = "map";
         ancestors = [ "map_place_base" ];
-        nude = true (* Don't inherit {!VisitorsRuntime.iter} *);
-        concrete = true;
+        nude = true (* Don't inherit VisitorsRuntime *);
       }]
 
 type borrow_kind =
@@ -218,19 +210,16 @@ let all_binops =
     Shr;
   ]
 
-(** Ancestor for the constant_expr iter visitor *)
+(* Ancestors for the constant_expr visitors *)
 class ['self] iter_constant_expr_base =
-  object (_self : 'self)
+  object (self : 'self)
     inherit [_] iter_place
-    inherit! [_] iter_ty
     method visit_assumed_fun_id : 'env -> assumed_fun_id -> unit = fun _ _ -> ()
   end
 
-(** Ancestor the constant_expr map visitor *)
 class ['self] map_constant_expr_base =
-  object (_self : 'self)
+  object (self : 'self)
     inherit [_] map_place
-    inherit! [_] map_ty
 
     method visit_assumed_fun_id : 'env -> assumed_fun_id -> assumed_fun_id =
       fun _ x -> x
@@ -349,29 +338,26 @@ and constant_expr = { value : raw_constant_expr; ty : ty }
         name = "iter_constant_expr";
         variety = "iter";
         ancestors = [ "iter_constant_expr_base" ];
-        nude = true (* Don't inherit {!VisitorsRuntime.iter} *);
-        concrete = true;
+        nude = true (* Don't inherit VisitorsRuntime *);
       },
     visitors
       {
         name = "map_constant_expr";
         variety = "map";
         ancestors = [ "map_constant_expr_base" ];
-        nude = true (* Don't inherit {!VisitorsRuntime.iter} *);
-        concrete = true;
+        nude = true (* Don't inherit VisitorsRuntime *);
       }]
 
-(** Ancestor the operand iter visitor *)
+(* Ancestors for the rvalue visitors *)
 class ['self] iter_rvalue_base =
-  object (_self : 'self)
+  object (self : 'self)
     inherit [_] iter_constant_expr
     method visit_binop : 'env -> binop -> unit = fun _ _ -> ()
     method visit_borrow_kind : 'env -> borrow_kind -> unit = fun _ _ -> ()
   end
 
-(** Ancestor the operand map visitor *)
 class ['self] map_rvalue_base =
-  object (_self : 'self)
+  object (self : 'self)
     inherit [_] map_constant_expr
     method visit_binop : 'env -> binop -> binop = fun _ x -> x
     method visit_borrow_kind : 'env -> borrow_kind -> borrow_kind = fun _ x -> x
@@ -504,14 +490,12 @@ and aggregate_kind =
         name = "iter_rvalue";
         variety = "iter";
         ancestors = [ "iter_rvalue_base" ];
-        nude = true (* Don't inherit {!VisitorsRuntime.iter} *);
-        concrete = true;
+        nude = true (* Don't inherit VisitorsRuntime *);
       },
     visitors
       {
         name = "map_rvalue";
         variety = "map";
         ancestors = [ "map_rvalue_base" ];
-        nude = true (* Don't inherit {!VisitorsRuntime.iter} *);
-        concrete = true;
+        nude = true (* Don't inherit VisitorsRuntime *);
       }]

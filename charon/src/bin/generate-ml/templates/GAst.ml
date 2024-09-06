@@ -48,28 +48,7 @@ class ['self] map_ast_base =
     inherit! [_] map_generic_params
   end
 
-(* Below: the types need not be mutually recursive, but it makes it easier
-   to derive the visitors *)
-
 (* __REPLACE0__ *)
-[@@deriving
-  show,
-    visitors
-      {
-        name = "iter_call";
-        variety = "iter";
-        ancestors = [ "iter_ast_base" ];
-        nude = true (* Don't inherit {!VisitorsRuntime.iter} *);
-        concrete = true;
-      },
-    visitors
-      {
-        name = "map_call";
-        variety = "map";
-        ancestors = [ "map_ast_base" ];
-        nude = true (* Don't inherit {!VisitorsRuntime.iter} *);
-        concrete = true;
-      }]
 
 (** Ancestor the {!LlbcAst.statement} and {!Charon.UllbcAst.statement} iter visitors *)
 class ['self] iter_statement_base =

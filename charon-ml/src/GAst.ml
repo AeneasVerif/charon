@@ -62,9 +62,6 @@ class ['self] map_ast_base =
     inherit! [_] map_generic_params
   end
 
-(* Below: the types need not be mutually recursive, but it makes it easier
-   to derive the visitors *)
-
 (** A function operand is used in function calls.
     It either designates a top-level function, or a place in case
     we are using function pointers stored in local variables.
@@ -90,16 +87,14 @@ and assertion = { cond : operand; expected : bool }
         name = "iter_call";
         variety = "iter";
         ancestors = [ "iter_ast_base" ];
-        nude = true (* Don't inherit {!VisitorsRuntime.iter} *);
-        concrete = true;
+        nude = true (* Don't inherit VisitorsRuntime *);
       },
     visitors
       {
         name = "map_call";
         variety = "map";
         ancestors = [ "map_ast_base" ];
-        nude = true (* Don't inherit {!VisitorsRuntime.iter} *);
-        concrete = true;
+        nude = true (* Don't inherit VisitorsRuntime *);
       }]
 
 (** Ancestor the {!LlbcAst.statement} and {!Charon.UllbcAst.statement} iter visitors *)

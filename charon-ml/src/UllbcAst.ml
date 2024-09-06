@@ -11,16 +11,15 @@ module BlockId = IdGen ()
   *)
 type block_id = BlockId.id [@@deriving show, ord]
 
-(** Ancestor for {!UllbcAst.statement} iter visitor *)
+(* Ancestors for the statement visitors *)
 class ['self] iter_statement_base =
-  object (_self : 'self)
+  object (self : 'self)
     inherit [_] GAst.iter_statement_base
     method visit_block_id : 'env -> block_id -> unit = fun _ _ -> ()
   end
 
-(** Ancestor for {!UllbcAst.statement} map visitor *)
 class ['self] map_statement_base =
-  object (_self : 'self)
+  object (self : 'self)
     inherit [_] GAst.map_statement_base
     method visit_block_id : 'env -> block_id -> block_id = fun _ x -> x
   end
@@ -51,16 +50,14 @@ and statement = { span : span; content : raw_statement }
         name = "iter_statement";
         variety = "iter";
         ancestors = [ "iter_statement_base" ];
-        nude = true (* Don't inherit {!VisitorsRuntime.iter} *);
-        concrete = true;
+        nude = true (* Don't inherit VisitorsRuntime *);
       },
     visitors
       {
         name = "map_statement";
         variety = "map";
         ancestors = [ "map_statement_base" ];
-        nude = true (* Don't inherit {!VisitorsRuntime.iter} *);
-        concrete = true;
+        nude = true (* Don't inherit VisitorsRuntime *);
       }]
 
 type switch =
@@ -77,16 +74,14 @@ type switch =
         name = "iter_switch";
         variety = "iter";
         ancestors = [ "iter_statement" ];
-        nude = true (* Don't inherit {!VisitorsRuntime.iter} *);
-        concrete = true;
+        nude = true (* Don't inherit VisitorsRuntime *);
       },
     visitors
       {
         name = "map_switch";
         variety = "map";
         ancestors = [ "map_statement" ];
-        nude = true (* Don't inherit {!VisitorsRuntime.iter} *);
-        concrete = true;
+        nude = true (* Don't inherit VisitorsRuntime *);
       }]
 
 (** A raw terminator: a terminator without meta data. *)
@@ -112,16 +107,14 @@ and terminator = { span : span; content : raw_terminator }
         name = "iter_terminator";
         variety = "iter";
         ancestors = [ "iter_switch" ];
-        nude = true (* Don't inherit {!VisitorsRuntime.iter} *);
-        concrete = true;
+        nude = true (* Don't inherit VisitorsRuntime *);
       },
     visitors
       {
         name = "map_terminator";
         variety = "map";
         ancestors = [ "map_switch" ];
-        nude = true (* Don't inherit {!VisitorsRuntime.iter} *);
-        concrete = true;
+        nude = true (* Don't inherit VisitorsRuntime *);
       }]
 
 type blocks = block list

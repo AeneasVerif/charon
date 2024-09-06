@@ -29,54 +29,27 @@ module BodyId = IdGen ()
 
 type ('a, 'b) outlives_pred = 'a * 'b
 type ('id, 'x) vector = 'x list [@@deriving show, ord]
+type integer_type = Values.integer_type [@@deriving show, ord]
+type float_type = Values.float_type [@@deriving show, ord]
 
-(** We define this type to control the name of the visitor functions
+(** We define these types to control the name of the visitor functions
     (see e.g., {!class:Types.iter_ty_base} and {!Types.TVar}).
   *)
 type type_var_id = TypeVarId.id [@@deriving show, ord]
 
-(** Same remark as for {!type_var_id} *)
 type const_generic_var_id = ConstGenericVarId.id [@@deriving show, ord]
-
-(** Same remark as for {!type_var_id} *)
 type global_decl_id = GlobalDeclId.id [@@deriving show, ord]
-
-type integer_type = Values.integer_type [@@deriving show, ord]
-type float_type = Values.float_type [@@deriving show, ord]
-
-(** Same remark as for {!type_var_id} *)
 type variant_id = VariantId.id [@@deriving show, ord]
-
-(** Same remark as for {!type_var_id} *)
 type field_id = FieldId.id [@@deriving show, ord]
-
-(** Same remark as for {!type_var_id} *)
 type type_decl_id = TypeDeclId.id [@@deriving show, ord]
-
-(** Same remark as for {!type_var_id} *)
 type fun_decl_id = FunDeclId.id [@@deriving show, ord]
-
-(** Same remark as for {!type_var_id} *)
 type trait_decl_id = TraitDeclId.id [@@deriving show, ord]
-
-(** Same remark as for {!type_var_id} *)
 type trait_impl_id = TraitImplId.id [@@deriving show, ord]
-
-(** Same remark as for {!type_var_id} *)
 type trait_clause_id = TraitClauseId.id [@@deriving show, ord]
-
-(** Same remark as for {!type_var_id} *)
 type region_var_id = RegionVarId.id [@@deriving show, ord]
-
-(** Same remark as for {!type_var_id} *)
 type region_id = RegionId.id [@@deriving show, ord]
-
-(** Same remark as for {!type_var_id} *)
 type region_group_id = RegionGroupId.id [@@deriving show, ord]
-
 type disambiguator = Disambiguator.id [@@deriving show, ord]
-
-(** Region DeBruijn identifiers *)
 type region_db_id = int [@@deriving show, ord]
 
 type ('id, 'name) indexed_var = {
@@ -111,9 +84,9 @@ let option_none_id = VariantId.of_int 0
 (** The variant id for [Option::Some] *)
 let option_some_id = VariantId.of_int 1
 
-(** Ancestor for iter visitor for {!Types.const_generic} *)
+(* Ancestors for the const_generic visitors *)
 class ['self] iter_const_generic_base =
-  object (_self : 'self)
+  object (self : 'self)
     inherit [_] iter_literal
     method visit_type_decl_id : 'env -> type_decl_id -> unit = fun _ _ -> ()
     method visit_global_decl_id : 'env -> global_decl_id -> unit = fun _ _ -> ()
@@ -122,9 +95,8 @@ class ['self] iter_const_generic_base =
       fun _ _ -> ()
   end
 
-(** Ancestor for map visitor for {!Types.const_generic} *)
 class ['self] map_const_generic_base =
-  object (_self : 'self)
+  object (self : 'self)
     inherit [_] map_literal
 
     method visit_type_decl_id : 'env -> type_decl_id -> type_decl_id =
@@ -138,7 +110,6 @@ class ['self] map_const_generic_base =
       fun _ x -> x
   end
 
-(** Ancestor for reduce visitor for {!Types.const_generic} *)
 class virtual ['self] reduce_const_generic_base =
   object (self : 'self)
     inherit [_] reduce_literal
@@ -153,7 +124,6 @@ class virtual ['self] reduce_const_generic_base =
       fun _ _ -> self#zero
   end
 
-(** Ancestor for mapreduce visitor for {!Types.const_generic} *)
 class virtual ['self] mapreduce_const_generic_base =
   object (self : 'self)
     inherit [_] mapreduce_literal
@@ -170,12 +140,11 @@ class virtual ['self] mapreduce_const_generic_base =
       fun _ x -> (x, self#zero)
   end
 
-(** Remark: we have to use long names because otherwise we have collisions in
-    the functions derived for the visitors. *)
+(** Const Generic Values. Either a primitive value, or a variable corresponding to a primitve value *)
 type const_generic =
-  | CgGlobal of global_decl_id
-  | CgVar of const_generic_var_id
-  | CgValue of literal
+  | CgGlobal of global_decl_id  (** A global constant *)
+  | CgVar of const_generic_var_id  (** A const generic variable *)
+  | CgValue of literal  (** A concrete value *)
 [@@deriving
   show,
     ord,
@@ -184,34 +153,28 @@ type const_generic =
         name = "iter_const_generic";
         variety = "iter";
         ancestors = [ "iter_const_generic_base" ];
-        nude = true (* Don't inherit {!VisitorsRuntime.iter} *);
-        concrete = true;
-        polymorphic = false;
+        nude = true (* Don't inherit VisitorsRuntime *);
       },
     visitors
       {
         name = "map_const_generic";
         variety = "map";
         ancestors = [ "map_const_generic_base" ];
-        nude = true (* Don't inherit {!VisitorsRuntime.map} *);
-        concrete = true;
-        polymorphic = false;
+        nude = true (* Don't inherit VisitorsRuntime *);
       },
     visitors
       {
         name = "reduce_const_generic";
         variety = "reduce";
         ancestors = [ "reduce_const_generic_base" ];
-        nude = true (* Don't inherit {!VisitorsRuntime.reduce} *);
-        polymorphic = false;
+        nude = true (* Don't inherit VisitorsRuntime *);
       },
     visitors
       {
         name = "mapreduce_const_generic";
         variety = "mapreduce";
         ancestors = [ "mapreduce_const_generic_base" ];
-        nude = true (* Don't inherit {!VisitorsRuntime.mapreduce} *);
-        polymorphic = false;
+        nude = true (* Don't inherit VisitorsRuntime *);
       }]
 
 type trait_item_name = string [@@deriving show, ord]
@@ -462,18 +425,14 @@ and region =
         name = "iter_ty";
         variety = "iter";
         ancestors = [ "iter_ty_base" ];
-        nude = true (* Don't inherit {!VisitorsRuntime.iter} *);
-        concrete = true;
-        polymorphic = false;
+        nude = true (* Don't inherit VisitorsRuntime *);
       },
     visitors
       {
         name = "map_ty";
         variety = "map";
         ancestors = [ "map_ty_base" ];
-        nude = true (* Don't inherit {!VisitorsRuntime.map} *);
-        concrete = false;
-        polymorphic = false;
+        nude = true (* Don't inherit VisitorsRuntime *);
       }]
 
 (** Ancestor for iter visitor for {!type: Types.generic_params} *)
@@ -588,18 +547,14 @@ and trait_type_constraint = {
         name = "iter_generic_params";
         variety = "iter";
         ancestors = [ "iter_generic_params_base" ];
-        nude = true (* Don't inherit {!VisitorsRuntime.iter} *);
-        concrete = true;
-        polymorphic = false;
+        nude = true (* Don't inherit VisitorsRuntime *);
       },
     visitors
       {
         name = "map_generic_params";
         variety = "map";
         ancestors = [ "map_generic_params_base" ];
-        nude = true (* Don't inherit {!VisitorsRuntime.map} *);
-        concrete = false;
-        polymorphic = false;
+        nude = true (* Don't inherit VisitorsRuntime *);
       }]
 
 (** Meta information about an item (function, trait decl, trait impl, type decl, global). *)

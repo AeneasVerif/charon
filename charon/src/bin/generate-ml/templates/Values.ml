@@ -50,8 +50,6 @@ class virtual ['self] mapreduce_literal_base =
       fun _ x -> (x, self#zero)
   end
 
-(* __REPLACE0__ *)
-
 (** A scalar value
 
     Note that we use unbounded integers everywhere.
@@ -59,37 +57,6 @@ class virtual ['self] mapreduce_literal_base =
 
     Hand-written because the rust version is an enum with custom (de)serialization functions.
  *)
-and scalar_value = { value : big_int; int_ty : integer_type }
-[@@deriving
-  show,
-    ord,
-    visitors
-      {
-        name = "iter_literal";
-        variety = "iter";
-        ancestors = [ "iter_literal_base" ];
-        nude = true;
-        concrete = true;
-      },
-    visitors
-      {
-        name = "map_literal";
-        variety = "map";
-        ancestors = [ "map_literal_base" ];
-        nude = true;
-        concrete = true;
-      },
-    visitors
-      {
-        name = "reduce_literal";
-        variety = "reduce";
-        ancestors = [ "reduce_literal_base" ];
-        nude = true;
-      },
-    visitors
-      {
-        name = "mapreduce_literal";
-        variety = "mapreduce";
-        ancestors = [ "mapreduce_literal_base" ];
-        nude = true;
-      }]
+type scalar_value = { value : big_int; int_ty : integer_type }
+
+(* __REPLACE0__ *)
