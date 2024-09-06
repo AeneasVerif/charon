@@ -50,46 +50,7 @@ class virtual ['self] mapreduce_literal_base =
       fun _ x -> (x, self#zero)
   end
 
-type integer_type =
-  | Isize
-  | I8
-  | I16
-  | I32
-  | I64
-  | I128
-  | Usize
-  | U8
-  | U16
-  | U32
-  | U64
-  | U128
-
-and float_type = F16 | F32 | F64 | F128
-
-(** This is simlar to the Scalar value above. However, instead of storing
-    the float value itself, we store its String representation. This allows
-    to derive the Eq and Ord traits, which are not implemented for floats
- *)
-and float_value = { float_value : string; float_ty : float_type }
-
-(** Types of primitive values. Either an integer, bool, char *)
-and literal_type =
-  | TInteger of integer_type
-  | TFloat of float_type
-  | TBool
-  | TChar
-
-(** A primitive value.
-
-    Those are for instance used for the constant operands [crate::expressions::Operand::Const]
- *)
-and literal =
-  | VScalar of scalar_value
-  | VFloat of float_value
-  | VBool of bool
-  | VChar of char
-  | VByteStr of int list
-  | VStr of string
+(* __REPLACE0__ *)
 
 (** A scalar value
 

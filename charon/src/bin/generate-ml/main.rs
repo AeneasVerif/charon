@@ -769,6 +769,19 @@ fn main() -> Result<()> {
             ],
         },
         GenerateCodeFor {
+            template: dir.join("templates/Values.ml"),
+            target: dir.join("generated/Values.ml"),
+            markers: &[
+                (GenerationKind::TypeDecl(false), &[
+                    "IntegerTy",
+                    "FloatTy",
+                    "FloatValue",
+                    "LiteralTy",
+                    "Literal",
+                ]),
+            ],
+        },
+        GenerateCodeFor {
             template: dir.join("templates/LlbcAst.ml"),
             target: dir.join("generated/LlbcAst.ml"),
             markers: &[
