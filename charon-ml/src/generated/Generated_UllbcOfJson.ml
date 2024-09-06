@@ -38,7 +38,7 @@ and raw_statement_of_json (ctx : of_json_ctx) (js : json) :
         let* x_1 = variant_id_of_json ctx x_1 in
         Ok (SetDiscriminant (x_0, x_1))
     | `Assoc [ ("StorageDead", storage_dead) ] ->
-        let* storage_dead = var_id_of_json ctx storage_dead in
+        let* storage_dead = local_id_of_json ctx storage_dead in
         Ok (StorageDead storage_dead)
     | `Assoc [ ("Deinit", deinit) ] ->
         let* deinit = place_of_json ctx deinit in

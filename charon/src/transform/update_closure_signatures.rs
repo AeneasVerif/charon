@@ -78,8 +78,8 @@ fn transform_function(_ctx: &TransformCtx, def: &mut FunDecl) -> Result<(), Erro
             let body = body.as_unstructured_mut().unwrap();
 
             // Update the type of the local 1 (which is the closure)
-            assert!(body.locals.vars.elem_count() > 1);
-            let state_var = &mut body.locals.vars[1];
+            assert!(body.locals.locals.elem_count() > 1);
+            let state_var = &mut body.locals.locals[1];
             state_var.ty = inputs[0].clone();
             state_var.name = Some("state".to_string());
 

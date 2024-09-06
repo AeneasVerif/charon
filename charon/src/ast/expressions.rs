@@ -27,7 +27,7 @@ pub struct Place {
 )]
 #[charon::variants_prefix("Place")]
 pub enum PlaceKind {
-    Base(VarId),
+    Base(LocalId),
     Projection(Box<Place>, ProjectionElem),
 }
 

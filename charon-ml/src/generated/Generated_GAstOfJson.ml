@@ -43,7 +43,7 @@ and place_kind_of_json (ctx : of_json_ctx) (js : json) :
   combine_error_msgs js __FUNCTION__
     (match js with
     | `Assoc [ ("Base", base) ] ->
-        let* base = var_id_of_json ctx base in
+        let* base = local_id_of_json ctx base in
         Ok (PlaceBase base)
     | `Assoc [ ("Projection", `List [ x_0; x_1 ]) ] ->
         let* x_0 = box_of_json place_of_json ctx x_0 in
@@ -338,23 +338,25 @@ and aggregate_kind_of_json (ctx : of_json_ctx) (js : json) :
         Ok (AggregatedClosure (x_0, x_1))
     | _ -> Error "")
 
-and var_of_json (ctx : of_json_ctx) (js : json) : (var, string) result =
+and local_of_json (ctx : of_json_ctx) (js : json) : (local, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
     | `Assoc [ ("index", index); ("name", name); ("ty", ty) ] ->
-        let* index = var_id_of_json ctx index in
+        let* index = local_id_of_json ctx index in
         let* name = option_of_json string_of_json ctx name in
         let* var_ty = ty_of_json ctx ty in
-        Ok ({ index; name; var_ty } : var)
+        Ok ({ index; name; var_ty } : local)
     | _ -> Error "")
 
 and locals_of_json (ctx : of_json_ctx) (js : json) : (locals, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
-    | `Assoc [ ("arg_count", arg_count); ("vars", vars) ] ->
+    | `Assoc [ ("arg_count", arg_count); ("locals", locals) ] ->
         let* arg_count = int_of_json ctx arg_count in
-        let* vars = vector_of_json var_id_of_json var_of_json ctx vars in
-        Ok ({ arg_count; vars } : locals)
+        let* locals =
+          vector_of_json local_id_of_json local_of_json ctx locals
+        in
+        Ok ({ arg_count; locals } : locals)
     | _ -> Error "")
 
 and gexpr_body_of_json :
@@ -1492,10 +1494,11 @@ and fun_sig_of_json (ctx : of_json_ctx) (js : json) : (fun_sig, string) result =
             : fun_sig)
     | _ -> Error "")
 
-and var_id_of_json (ctx : of_json_ctx) (js : json) : (var_id, string) result =
+and local_id_of_json (ctx : of_json_ctx) (js : json) : (local_id, string) result
+    =
   combine_error_msgs js __FUNCTION__
     (match js with
-    | x -> VarId.id_of_json ctx x
+    | x -> LocalId.id_of_json ctx x
     | _ -> Error "")
 
 and literal_of_json (ctx : of_json_ctx) (js : json) : (literal, string) result =

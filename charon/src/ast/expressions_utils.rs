@@ -3,9 +3,9 @@ use crate::ast::*;
 use crate::ids::Vector;
 
 impl Place {
-    pub fn new(var_id: VarId, ty: Ty) -> Place {
+    pub fn new(local_id: LocalId, ty: Ty) -> Place {
         Place {
-            kind: PlaceKind::Base(var_id),
+            kind: PlaceKind::Base(local_id),
             ty,
         }
     }
@@ -20,7 +20,7 @@ impl Place {
     }
 
     /// If this place corresponds to an unprojected local, return the variable id.
-    pub fn as_local(&self) -> Option<VarId> {
+    pub fn as_local(&self) -> Option<LocalId> {
         self.kind.as_base().copied()
     }
 
@@ -28,10 +28,14 @@ impl Place {
         self.kind.as_projection().map(|(pl, pj)| (pl.as_ref(), pj))
     }
 
-    pub fn var_id(&self) -> VarId {
+    #[deprecated(note = "use `local_id` instead")]
+    pub fn var_id(&self) -> LocalId {
+        self.local_id()
+    }
+    pub fn local_id(&self) -> LocalId {
         match &self.kind {
             PlaceKind::Base(var_id) => *var_id,
-            PlaceKind::Projection(subplace, _) => subplace.var_id(),
+            PlaceKind::Projection(subplace, _) => subplace.local_id(),
         }
     }
 

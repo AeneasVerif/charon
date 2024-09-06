@@ -7,20 +7,33 @@ open PrintUtils
 open PrintTypes
 
 let fun_decl_id_to_string = PrintTypes.fun_decl_id_to_string
-let var_id_to_pretty_string (id : var_id) : string = "v@" ^ VarId.to_string id
 
-let var_to_string (v : var) : string =
+let local_id_to_pretty_string (id : local_id) : string =
+  "v@" ^ LocalId.to_string id
+
+let local_to_string (v : local) : string =
   match v.name with
-  | None -> var_id_to_pretty_string v.index
-  | Some name -> name ^ "^" ^ VarId.to_string v.index
+  | None -> local_id_to_pretty_string v.index
+  | Some name -> name ^ "^" ^ LocalId.to_string v.index
 
-let var_id_to_string (env : 'a fmt_env) (id : VarId.id) : string =
+let local_id_to_string (env : 'a fmt_env) (id : LocalId.id) : string =
   match List.find_opt (fun (i, _) -> i = id) env.locals with
-  | None -> var_id_to_pretty_string id
+  | None -> local_id_to_pretty_string id
   | Some (_, name) -> (
       match name with
-      | None -> var_id_to_pretty_string id
-      | Some name -> name ^ "^" ^ VarId.to_string id)
+      | None -> local_id_to_pretty_string id
+      | Some name -> name ^ "^" ^ LocalId.to_string id)
+
+let (var_id_to_pretty_string
+    [@ocaml.alert deprecated "use [local_id_to_pretty_string] instead"]) =
+  local_id_to_pretty_string
+
+let (var_id_to_string
+    [@ocaml.alert deprecated "use [local_id_to_string] instead"]) =
+  local_id_to_string
+
+let (var_to_string [@ocaml.alert deprecated "use [local_to_string] instead"]) =
+  local_to_string
 
 let projection_elem_to_string (env : 'a fmt_env) (sub : string)
     (pe : projection_elem) : string =
@@ -41,7 +54,7 @@ let projection_elem_to_string (env : 'a fmt_env) (sub : string)
 
 let rec place_to_string (env : 'a fmt_env) (p : place) : string =
   match p.kind with
-  | PlaceBase var_id -> var_id_to_string env var_id
+  | PlaceBase var_id -> local_id_to_string env var_id
   | PlaceProjection (subplace, pe) ->
       let subplace = place_to_string env subplace in
       projection_elem_to_string env subplace pe

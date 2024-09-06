@@ -1339,7 +1339,7 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
             let output_ty = self.translate_ty(span, output_ty)?;
             let mut locals = Locals {
                 arg_count: fields.len(),
-                vars: Vector::new(),
+                locals: Vector::new(),
             };
             locals.new_var(None, output_ty); // return place
             let args: Vec<_> = fields

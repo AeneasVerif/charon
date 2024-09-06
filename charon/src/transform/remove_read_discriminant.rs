@@ -103,7 +103,7 @@ impl Transform {
                                 else {
                                     unreachable!()
                                 };
-                                assert!(op_p.is_local() && op_p.var_id() == dest.var_id());
+                                assert!(op_p.is_local() && op_p.local_id() == dest.local_id());
 
                                 let mut covered_discriminants: HashSet<ScalarValue> =
                                     HashSet::default();

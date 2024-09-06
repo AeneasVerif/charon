@@ -45,35 +45,35 @@ impl Body {
 impl Locals {
     /// Creates a new variable and returns a place pointing to it.
     pub fn new_var(&mut self, name: Option<String>, ty: Ty) -> Place {
-        let var_id = self.vars.push_with(|index| Var {
+        let local_id = self.locals.push_with(|index| Local {
             index,
             name,
             ty: ty.clone(),
         });
-        Place::new(var_id, ty)
+        Place::new(local_id, ty)
     }
 
     /// Gets a place pointing to the corresponding variable.
-    pub fn place_for_var(&self, var_id: VarId) -> Place {
-        let ty = self.vars[var_id].ty.clone();
-        Place::new(var_id, ty)
+    pub fn place_for_var(&self, local_id: LocalId) -> Place {
+        let ty = self.locals[local_id].ty.clone();
+        Place::new(local_id, ty)
     }
 
     /// The place where we write the return value.
     pub fn return_place(&self) -> Place {
-        self.place_for_var(VarId::new(0))
+        self.place_for_var(LocalId::new(0))
     }
 
     /// Locals that aren't arguments or return values.
-    pub fn non_argument_locals(&self) -> impl Iterator<Item = (VarId, &Var)> {
-        self.vars.iter_indexed().skip(1 + self.arg_count)
+    pub fn non_argument_locals(&self) -> impl Iterator<Item = (LocalId, &Local)> {
+        self.locals.iter_indexed().skip(1 + self.arg_count)
     }
 }
 
-impl std::ops::Index<VarId> for Locals {
-    type Output = Var;
-    fn index(&self, var_id: VarId) -> &Self::Output {
-        &self.vars[var_id]
+impl std::ops::Index<LocalId> for Locals {
+    type Output = Local;
+    fn index(&self, local_id: LocalId) -> &Self::Output {
+        &self.locals[local_id]
     }
 }
 

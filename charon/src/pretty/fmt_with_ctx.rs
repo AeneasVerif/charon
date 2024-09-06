@@ -457,7 +457,7 @@ where
 
         // Format the local variables
         let mut locals: Vec<String> = Vec::new();
-        for v in &self.locals.vars {
+        for v in &self.locals.locals {
             let index = v.index.index();
             let comment = if index == 0 {
                 "// return".to_string()
@@ -530,7 +530,7 @@ where
         let mut args: Vec<String> = Vec::new();
         for i in 0..self.signature.inputs.len() {
             // The input variables start at index 1
-            let id = VarId::new(i + 1);
+            let id = LocalId::new(i + 1);
             let arg_ty = &self.signature.inputs.get(i).unwrap();
             args.push(
                 format!("{}: {}", id.to_pretty_string(), arg_ty.fmt_with_ctx(ctx)).to_string(),
@@ -1759,7 +1759,7 @@ impl std::fmt::Display for TypeVar {
     }
 }
 
-impl std::string::ToString for Var {
+impl std::string::ToString for Local {
     fn to_string(&self) -> String {
         let id = self.index.to_pretty_string();
         match &self.name {

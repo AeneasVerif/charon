@@ -24,7 +24,7 @@ impl UllbcPass for Transform {
         // Find the unused locals of unit type.
         #[derive(Visitor)]
         struct UnitLocalsVisitor {
-            unused_unit_locals: HashSet<VarId>,
+            unused_unit_locals: HashSet<LocalId>,
         }
         impl VisitBody for UnitLocalsVisitor {
             fn enter_place(&mut self, x: &Place) {
