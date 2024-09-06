@@ -402,11 +402,21 @@ fn type_decl_to_json_deserializer(ctx: &GenerateCtx, decl: &TypeDecl) -> String 
             build_branch(ctx, "`Null", fields, "()")
         }
         TypeDeclKind::Struct(fields)
-            if fields.len() == 1
-                && decl.item_meta.attr_info.attributes.iter().any(|a| {
-                    a.is_unknown() && a.as_unknown().to_string() == "serde(transparent)"
-                }) =>
+            if fields.len() == 1 && fields[0].name.as_ref().is_some_and(|name| name == "_raw") =>
         {
+            // These are the special strongly-typed integers.
+            let short_name = decl
+                .item_meta
+                .name
+                .name
+                .last()
+                .unwrap()
+                .as_ident()
+                .0
+                .clone();
+            format!("| x -> {short_name}.id_of_json x")
+        }
+        TypeDeclKind::Struct(fields) if fields.len() == 1 => {
             let ty = &fields[0].ty;
             let call = type_to_ocaml_call(ctx, ty);
             format!("| x -> {call} x")
@@ -761,32 +771,17 @@ fn main() -> Result<()> {
 
     // Compute the sets of type to be put in each module.
     let manually_implemented: HashSet<_> = [
-        "BlockId",
-        "BodyId",
-        "ConstGenericVarId",
-        "DeBruijnId",
-        "Disambiguator",
-        "FieldId",
-        "FileId",
-        "FunDeclId",
-        "GlobalDeclId",
-        "RegionId",
-        "TraitClauseId",
-        "TraitDeclId",
-        "TraitImplId",
-        "TypeDeclId",
-        "TypeVarId",
-        "VariantId",
-        "VarId",
         "Vector",
         "ScalarValue",
         "RawSpan",
-        "TraitItemName",
         "ItemOpacity",
+        "DeBruijnId",
+        "RegionId",
         "PredicateOrigin",
         "charon_lib::ast::llbc_ast::RawStatement",
         "Opaque",
         "Body",
+        "BodyId",
         "FunDecl",
         "GlobalDecl",
         "TranslatedCrate",

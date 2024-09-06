@@ -9,9 +9,11 @@ open Types
 open Expressions
 open UllbcAst
 
-let block_id_of_json = BlockId.id_of_json
-
 let rec ___ = ()
+
+and block_id_of_json (js : json) : (block_id, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with x -> BlockId.id_of_json x | _ -> Error "")
 
 and blocks_of_json (id_to_file : id_to_file_map) (js : json) :
     (blocks, string) result =

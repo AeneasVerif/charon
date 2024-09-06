@@ -142,13 +142,7 @@ module IdGen () : Id = struct
   let to_string = string_of_int
   let to_int x = x
   let of_int x = x
-
-  let id_of_json js =
-    (* TODO: check boundaries ? *)
-    match js with
-    | `Int i -> Ok i
-    | _ -> Error ("id_of_json: failed on " ^ Yojson.Basic.show js)
-
+  let id_of_json = OfJsonBasic.int_of_json
   let compare_id = compare
   let max id0 id1 = if id0 > id1 then id0 else id1
   let min id0 id1 = if id0 < id1 then id0 else id1

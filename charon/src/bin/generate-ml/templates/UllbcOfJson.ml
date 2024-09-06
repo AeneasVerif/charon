@@ -9,8 +9,6 @@ open Types
 open Expressions
 open UllbcAst
 
-let block_id_of_json = BlockId.id_of_json
-
 let rec ___ = ()
 
 (* __REPLACE0__ *)

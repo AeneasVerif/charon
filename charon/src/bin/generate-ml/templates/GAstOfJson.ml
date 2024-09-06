@@ -38,21 +38,7 @@ type id_to_file_map = file_name FileId.Map.t
 
 let de_bruijn_id_of_json = int_of_json
 let path_buf_of_json = string_of_json
-let trait_item_name_of_json = string_of_json
-let const_generic_var_id_of_json = ConstGenericVarId.id_of_json
-let disambiguator_of_json = Disambiguator.id_of_json
-let field_id_of_json = FieldId.id_of_json
-let fun_decl_id_of_json = FunDeclId.id_of_json
-let global_decl_id_of_json = GlobalDeclId.id_of_json
-let file_id_of_json = FileId.id_of_json
 let region_id_of_json = RegionVarId.id_of_json
-let trait_clause_id_of_json = TraitClauseId.id_of_json
-let trait_decl_id_of_json = TraitDeclId.id_of_json
-let trait_impl_id_of_json = TraitImplId.id_of_json
-let type_decl_id_of_json = TypeDeclId.id_of_json
-let type_var_id_of_json = TypeVarId.id_of_json
-let variant_id_of_json = VariantId.id_of_json
-let var_id_of_json = VarId.id_of_json
 
 (* A vector can contain empty slots. We filter them out. *)
 let vector_of_json _ item_of_json js =

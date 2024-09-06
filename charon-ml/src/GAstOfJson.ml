@@ -37,21 +37,7 @@ type id_to_file_map = file_name FileId.Map.t
 
 let de_bruijn_id_of_json = int_of_json
 let path_buf_of_json = string_of_json
-let trait_item_name_of_json = string_of_json
-let const_generic_var_id_of_json = ConstGenericVarId.id_of_json
-let disambiguator_of_json = Disambiguator.id_of_json
-let field_id_of_json = FieldId.id_of_json
-let fun_decl_id_of_json = FunDeclId.id_of_json
-let global_decl_id_of_json = GlobalDeclId.id_of_json
-let file_id_of_json = FileId.id_of_json
 let region_id_of_json = RegionVarId.id_of_json
-let trait_clause_id_of_json = TraitClauseId.id_of_json
-let trait_decl_id_of_json = TraitDeclId.id_of_json
-let trait_impl_id_of_json = TraitImplId.id_of_json
-let type_decl_id_of_json = TypeDeclId.id_of_json
-let type_var_id_of_json = TypeVarId.id_of_json
-let variant_id_of_json = VariantId.id_of_json
-let var_id_of_json = VarId.id_of_json
 
 (* A vector can contain empty slots. We filter them out. *)
 let vector_of_json _ item_of_json js =
@@ -465,6 +451,10 @@ and aggregate_kind_of_json (js : json) : (aggregate_kind, string) result =
         Ok (AggregatedClosure (x_0, x_1))
     | _ -> Error "")
 
+and fun_decl_id_of_json (js : json) : (fun_decl_id, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with x -> FunDeclId.id_of_json x | _ -> Error "")
+
 and var_of_json (js : json) : (var, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
@@ -542,6 +532,10 @@ and global_decl_ref_of_json (js : json) : (global_decl_ref, string) result =
         let* global_generics = generic_args_of_json generics in
         Ok ({ global_id; global_generics } : global_decl_ref)
     | _ -> Error "")
+
+and trait_item_name_of_json (js : json) : (trait_item_name, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with x -> string_of_json x | _ -> Error "")
 
 and trait_decl_of_json (id_to_file : id_to_file_map) (js : json) :
     (trait_decl, string) result =
@@ -715,6 +709,10 @@ and any_decl_id_of_json (js : json) : (any_decl_id, string) result =
         Ok (IdTraitImpl trait_impl)
     | _ -> Error "")
 
+and file_id_of_json (js : json) : (file_id, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with x -> FileId.id_of_json x | _ -> Error "")
+
 and loc_of_json (js : json) : (loc, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
@@ -823,6 +821,10 @@ and file_name_of_json (js : json) : (file_name, string) result =
         Ok (Local local)
     | _ -> Error "")
 
+and disambiguator_of_json (js : json) : (disambiguator, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with x -> Disambiguator.id_of_json x | _ -> Error "")
+
 and path_elem_of_json (id_to_file : id_to_file_map) (js : json) :
     (path_elem, string) result =
   combine_error_msgs js __FUNCTION__
@@ -856,6 +858,31 @@ and name_of_json (id_to_file : id_to_file_map) (js : json) :
     (match js with
     | x -> list_of_json (path_elem_of_json id_to_file) x
     | _ -> Error "")
+
+and type_var_id_of_json (js : json) : (type_var_id, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with x -> TypeVarId.id_of_json x | _ -> Error "")
+
+and type_decl_id_of_json (js : json) : (type_decl_id, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with x -> TypeDeclId.id_of_json x | _ -> Error "")
+
+and variant_id_of_json (js : json) : (variant_id, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with x -> VariantId.id_of_json x | _ -> Error "")
+
+and field_id_of_json (js : json) : (field_id, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with x -> FieldId.id_of_json x | _ -> Error "")
+
+and const_generic_var_id_of_json (js : json) :
+    (const_generic_var_id, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with x -> ConstGenericVarId.id_of_json x | _ -> Error "")
+
+and global_decl_id_of_json (js : json) : (global_decl_id, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with x -> GlobalDeclId.id_of_json x | _ -> Error "")
 
 and type_var_of_json (js : json) : (type_var, string) result =
   combine_error_msgs js __FUNCTION__
@@ -1051,6 +1078,18 @@ and existential_predicate_of_json (js : json) :
     (existential_predicate, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with `Null -> Ok () | _ -> Error "")
+
+and trait_clause_id_of_json (js : json) : (trait_clause_id, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with x -> TraitClauseId.id_of_json x | _ -> Error "")
+
+and trait_decl_id_of_json (js : json) : (trait_decl_id, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with x -> TraitDeclId.id_of_json x | _ -> Error "")
+
+and trait_impl_id_of_json (js : json) : (trait_impl_id, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with x -> TraitImplId.id_of_json x | _ -> Error "")
 
 and trait_clause_of_json (id_to_file : id_to_file_map) (js : json) :
     (trait_clause, string) result =
@@ -1356,6 +1395,10 @@ and fun_sig_of_json (id_to_file : id_to_file_map) (js : json) :
            }
             : fun_sig)
     | _ -> Error "")
+
+and var_id_of_json (js : json) : (var_id, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with x -> VarId.id_of_json x | _ -> Error "")
 
 and literal_of_json (js : json) : (literal, string) result =
   combine_error_msgs js __FUNCTION__
