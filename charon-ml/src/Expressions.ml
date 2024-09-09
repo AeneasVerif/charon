@@ -110,15 +110,8 @@ type field_proj_kind =
     language, we thus merge downcasts and field projections.
  *)
 and projection_elem =
-  | Deref  (** Dereference a shared/mutable reference or a raw pointer. *)
-  | DerefBox
-      (** Dereference a boxed value.
-          Note that this doesn't exist in MIR where `Deref` is used both for the
-          mutable and shared references *and* the boxed values. As semantically we
-          don't handle those two cases the same way at all, we disambiguate them
-          during the translation.
-          In rust, this comes from the `*` operator applied on boxes.
-       *)
+  | Deref
+      (** Dereference a shared/mutable reference, a box, or a raw pointer. *)
   | Field of field_proj_kind * field_id
       (** Projection from ADTs (variants, structures).
           We allow projections to be used as left-values and right-values.

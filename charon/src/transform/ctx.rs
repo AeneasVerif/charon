@@ -180,17 +180,11 @@ pub trait LlbcPass: Sync {
 /// A pass that transforms the crate data.
 pub trait TransformPass: Sync {
     fn transform_ctx(&self, ctx: &mut TransformCtx<'_>);
-}
 
-impl TransformPass for dyn UllbcPass {
-    fn transform_ctx(&self, ctx: &mut TransformCtx<'_>) {
-        self.transform_ctx(ctx)
-    }
-}
-
-impl TransformPass for dyn LlbcPass {
-    fn transform_ctx(&self, ctx: &mut TransformCtx<'_>) {
-        self.transform_ctx(ctx)
+    /// The name of the pass, used for debug logging. The default implementation uses the type
+    /// name.
+    fn name(&self) -> &str {
+        std::any::type_name::<Self>()
     }
 }
 

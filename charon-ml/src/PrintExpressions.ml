@@ -30,7 +30,6 @@ let rec projection_to_string (env : ('a, 'b) fmt_env) (s : string)
       let s =
         match pe with
         | Deref -> "*(" ^ s ^ ")"
-        | DerefBox -> "deref_box(" ^ s ^ ")"
         | Field (ProjTuple _, fid) -> "(" ^ s ^ ")." ^ FieldId.to_string fid
         | Field (ProjAdt (adt_id, opt_variant_id), fid) -> (
             let field_name =

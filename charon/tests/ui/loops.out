@@ -1394,19 +1394,19 @@ fn test_crate::nested_loops_enum(@1: usize, @2: usize) -> usize
             },
             1 => {
                 s@3 := copy (s@3) + const (1 : usize)
-                @30 := ()
-                @9 := move (@30)
+                @31 := ()
+                @9 := move (@31)
                 drop @12
                 drop @10
                 drop @9
-                @31 := ()
-                @8 := move (@31)
+                @32 := ()
+                @8 := move (@32)
                 continue 0
             }
         }
     }
-    @32 := ()
-    @4 := move (@32)
+    @30 := ()
+    @4 := move (@30)
     drop @12
     drop @10
     drop @9
@@ -1450,19 +1450,19 @@ fn test_crate::nested_loops_enum(@1: usize, @2: usize) -> usize
                         },
                         1 => {
                             s@3 := copy (s@3) + const (1 : usize)
-                            @34 := ()
-                            @26 := move (@34)
+                            @36 := ()
+                            @26 := move (@36)
                             drop @29
                             drop @27
                             drop @26
-                            @35 := ()
-                            @8 := move (@35)
+                            @37 := ()
+                            @8 := move (@37)
                             continue 0
                         }
                     }
                 }
-                @36 := ()
-                @18 := move (@36)
+                @34 := ()
+                @18 := move (@34)
                 drop @29
                 drop @27
                 drop @26
@@ -1471,8 +1471,8 @@ fn test_crate::nested_loops_enum(@1: usize, @2: usize) -> usize
                 drop @21
                 drop @19
                 drop @18
-                @37 := ()
-                @8 := move (@37)
+                @35 := ()
+                @8 := move (@35)
                 continue 0
             }
         }
@@ -1603,20 +1603,20 @@ fn test_crate::loop_inside_if(@1: bool, @2: u32) -> u32
                     @16 := copy (i@15)
                     s@4 := copy (s@4) + move (@16)
                     drop @16
-                    @17 := ()
-                    @11 := move (@17)
+                    @18 := ()
+                    @11 := move (@18)
                     drop i@15
                     drop @14
                     drop @12
                     drop @11
-                    @18 := ()
-                    @10 := move (@18)
+                    @19 := ()
+                    @10 := move (@19)
                     continue 0
                 }
             }
         }
-        @19 := ()
-        @5 := move (@19)
+        @17 := ()
+        @5 := move (@17)
         drop @14
         drop @12
         drop @11
@@ -1722,8 +1722,8 @@ fn test_crate::sum_array<const N : usize>(@1: Array<u32, const N : usize>) -> u3
             drop @8
             drop @9
             i@2 := copy (i@2) + const (1 : usize)
-            @12 := ()
-            @5 := move (@12)
+            @11 := ()
+            @5 := move (@11)
             drop @6
             continue 0
         }
@@ -1732,8 +1732,8 @@ fn test_crate::sum_array<const N : usize>(@1: Array<u32, const N : usize>) -> u3
         }
     }
     drop @7
-    @11 := ()
-    @4 := move (@11)
+    @12 := ()
+    @4 := move (@12)
     drop @10
     drop @6
     drop @4
@@ -1865,8 +1865,8 @@ fn test_crate::clear<'_0>(@1: &'_0 mut (alloc::vec::Vec<u32, alloc::alloc::Globa
             *(@8) := const (0 : u32)
             drop @8
             i@2 := copy (i@2) + const (1 : usize)
-            @13 := ()
-            @3 := move (@13)
+            @12 := ()
+            @3 := move (@12)
             drop @4
             continue 0
         }
@@ -1876,8 +1876,8 @@ fn test_crate::clear<'_0>(@1: &'_0 mut (alloc::vec::Vec<u32, alloc::alloc::Globa
     }
     drop @6
     drop @5
-    @12 := ()
-    @0 := move (@12)
+    @13 := ()
+    @0 := move (@13)
     drop @11
     drop @4
     drop i@2
@@ -1919,7 +1919,7 @@ fn test_crate::get_elem_mut<'_0>(@1: &'_0 mut (test_crate::List<usize>), @2: usi
                 else {
                     drop @8
                     drop @7
-                    @9 := &mut deref_box (*(tl@5))
+                    @9 := &mut *(*(tl@5))
                     ls@1 := move (@9)
                     drop @9
                     @10 := ()
@@ -1973,7 +1973,7 @@ fn test_crate::list_nth_mut_loop_with_id<'_0, T>(@1: &'_0 mut (test_crate::List<
                 }
                 else {
                     drop @8
-                    @9 := &mut deref_box (*(tl@6))
+                    @9 := &mut *(*(tl@6))
                     ls@1 := move (@9)
                     drop @9
                     i@2 := copy (i@2) - const (1 : u32)

@@ -392,7 +392,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
                         // a body translation context.
                         let mut bt_ctx = BodyTransCtx::new(def_id, self);
 
-                        bt_ctx.push_generics_for_def(span, def_id, &def)?;
+                        bt_ctx.push_generics_for_def(span, &def)?;
                         let generics = bt_ctx.get_generics();
 
                         let ty = bt_ctx.translate_ty(span, erase_regions, &ty)?;
@@ -963,24 +963,28 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     pub(crate) fn register_type_decl_id(
         &mut self,
         span: rustc_span::Span,
-        id: DefId,
+        id: impl Into<DefId>,
     ) -> TypeDeclId {
         let src = self.make_dep_source(span);
-        self.t_ctx.register_type_decl_id(&src, id)
+        self.t_ctx.register_type_decl_id(&src, id.into())
     }
 
-    pub(crate) fn register_fun_decl_id(&mut self, span: rustc_span::Span, id: DefId) -> FunDeclId {
+    pub(crate) fn register_fun_decl_id(
+        &mut self,
+        span: rustc_span::Span,
+        id: impl Into<DefId>,
+    ) -> FunDeclId {
         let src = self.make_dep_source(span);
-        self.t_ctx.register_fun_decl_id(&src, id)
+        self.t_ctx.register_fun_decl_id(&src, id.into())
     }
 
     pub(crate) fn register_global_decl_id(
         &mut self,
         span: rustc_span::Span,
-        id: DefId,
+        id: impl Into<DefId>,
     ) -> GlobalDeclId {
         let src = self.make_dep_source(span);
-        self.t_ctx.register_global_decl_id(&src, id)
+        self.t_ctx.register_global_decl_id(&src, id.into())
     }
 
     /// Returns an [Option] because we may ignore some builtin or auto traits
@@ -988,10 +992,10 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     pub(crate) fn register_trait_decl_id(
         &mut self,
         span: rustc_span::Span,
-        id: DefId,
+        id: impl Into<DefId>,
     ) -> TraitDeclId {
         let src = self.make_dep_source(span);
-        self.t_ctx.register_trait_decl_id(&src, id)
+        self.t_ctx.register_trait_decl_id(&src, id.into())
     }
 
     /// Returns an [Option] because we may ignore some builtin or auto traits
@@ -999,10 +1003,10 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     pub(crate) fn register_trait_impl_id(
         &mut self,
         span: rustc_span::Span,
-        id: DefId,
+        id: impl Into<DefId>,
     ) -> TraitImplId {
         let src = self.make_dep_source(span);
-        self.t_ctx.register_trait_impl_id(&src, id)
+        self.t_ctx.register_trait_impl_id(&src, id.into())
     }
 
     /// Push a free region.

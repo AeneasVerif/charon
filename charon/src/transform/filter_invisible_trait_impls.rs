@@ -4,10 +4,10 @@ use std::collections::HashSet;
 
 use crate::ast::*;
 
-use super::{ctx::LlbcPass, TransformCtx};
+use super::{ctx::TransformPass, TransformCtx};
 
 pub struct Transform;
-impl LlbcPass for Transform {
+impl TransformPass for Transform {
     fn transform_ctx(&self, ctx: &mut TransformCtx<'_>) {
         let exclude: HashSet<TraitImplId> = ctx
             .translated

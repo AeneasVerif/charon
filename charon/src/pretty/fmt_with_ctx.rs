@@ -737,9 +737,6 @@ impl<C: AstFormatter> FmtWithCtx<C> for Place {
                 ProjectionElem::Deref => {
                     out = format!("*({out})");
                 }
-                ProjectionElem::DerefBox => {
-                    out = format!("deref_box ({out})");
-                }
                 ProjectionElem::Field(proj_kind, field_id) => match proj_kind {
                     FieldProjKind::Adt(adt_id, opt_variant_id) => {
                         let field_name = ctx.format_object((*adt_id, *opt_variant_id, *field_id));
@@ -968,6 +965,7 @@ impl<C: AstFormatter> FmtWithCtx<C> for ullbc::Statement {
             RawStatement::Deinit(place) => format!("@deinit({})", place.fmt_with_ctx(ctx)),
             RawStatement::Drop(place) => format!("drop {}", place.fmt_with_ctx(ctx)),
             RawStatement::Assert(assert) => format!("{}", assert.fmt_with_ctx(ctx)),
+            RawStatement::Nop => format!("nop"),
             RawStatement::Error(s) => format!("@Error({})", s),
         }
     }
