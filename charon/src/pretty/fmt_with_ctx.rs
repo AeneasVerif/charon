@@ -965,6 +965,7 @@ impl<C: AstFormatter> FmtWithCtx<C> for ullbc::Statement {
             RawStatement::Deinit(place) => format!("@deinit({})", place.fmt_with_ctx(ctx)),
             RawStatement::Drop(place) => format!("drop {}", place.fmt_with_ctx(ctx)),
             RawStatement::Assert(assert) => format!("{}", assert.fmt_with_ctx(ctx)),
+            RawStatement::Nop => format!("nop"),
             RawStatement::Error(s) => format!("@Error({})", s),
         }
     }

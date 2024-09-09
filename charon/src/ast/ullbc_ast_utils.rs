@@ -79,6 +79,28 @@ impl BlockData {
         // Return
         self
     }
+
+    /// Apply a transformer to all the statements, in a bottom-up manner.
+    ///
+    /// The transformer should:
+    /// - mutate the current statements in place
+    /// - return a list of `(i, statements)` where `statements` will be inserted before index `i`.
+    pub fn transform_sequences<F>(&mut self, f: &mut F)
+    where
+        F: FnMut(&mut [Statement]) -> Vec<(usize, Vec<Statement>)>,
+    {
+        for i in (0..self.statements.len()).rev() {
+            let mut to_insert = f(&mut self.statements[i..]);
+            if !to_insert.is_empty() {
+                to_insert.sort_by_key(|(i, _)| *i);
+                for (j, statements) in to_insert.into_iter().rev() {
+                    // Insert the new elements at index `j`. This only modifies `statements[j..]`
+                    // so we can keep iterating `j` (and `i`) down as if nothing happened.
+                    self.statements.splice(i + j..i + j, statements);
+                }
+            }
+        }
+    }
 }
 
 /// Transform a body by applying a function to its operands, and

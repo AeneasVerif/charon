@@ -43,12 +43,18 @@ pub static ULLBC_PASSES: &[Pass] = &[
     // **WARNING**: this pass relies on a precise structure of the MIR statements. Because of this,
     // it must happen before passes that insert statements like [simplify_constants].
     UnstructuredBody(&remove_dynamic_checks::Transform),
-    // # Micro-pass: desugar the constants to other values/operands as much
-    // as possible.
-    UnstructuredBody(&simplify_constants::Transform),
     // # Micro-pass: merge single-origin gotos into their parent. This drastically reduces the
     // graph size of the CFG.
     UnstructuredBody(&merge_goto_chains::Transform),
+    // # Micro-pass: reconstruct the special `Box::new` operations inserted e.g. in the `vec![]`
+    // macro.
+    // **WARNING**: this pass relies on a precise structure of the MIR statements. Because of this,
+    // it must happen before passes that insert statements like [simplify_constants].
+    // **WARNING**: this pass works across calls, hence must happen after `merge_goto_chains`,
+    UnstructuredBody(&reconstruct_boxes::Transform),
+    // # Micro-pass: desugar the constants to other values/operands as much
+    // as possible.
+    UnstructuredBody(&simplify_constants::Transform),
 ];
 
 pub static LLBC_PASSES: &[Pass] = &[
@@ -61,9 +67,6 @@ pub static LLBC_PASSES: &[Pass] = &[
     // introduced by Rustc use a special "assert" construct. Because of
     // this, it must happen *before* the [reconstruct_asserts] pass.
     StructuredBody(&remove_arithmetic_overflow_checks::Transform),
-    // # Micro-pass: reconstruct the special `Box::new` operations inserted e.g. in the `vec![]`
-    // macro.
-    StructuredBody(&reconstruct_boxes::Transform),
     // # Micro-pass: reconstruct the asserts
     StructuredBody(&reconstruct_asserts::Transform),
     // # Micro-pass: `panic!()` expands to a new function definition each time. This pass cleans

@@ -52,6 +52,7 @@ and raw_statement_of_json (js : json) : (raw_statement, string) result =
     | `Assoc [ ("Assert", assert_) ] ->
         let* assert_ = assertion_of_json assert_ in
         Ok (Assert assert_)
+    | `String "Nop" -> Ok Nop
     | _ -> Error "")
 
 and switch_of_json (js : json) : (switch, string) result =
