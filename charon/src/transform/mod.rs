@@ -35,6 +35,9 @@ pub static ULLBC_PASSES: &[Pass] = &[
     // # Micro-pass: filter the trait impls that were marked invisible since we couldn't filter
     // them out earlier.
     NonBody(&filter_invisible_trait_impls::Transform),
+    // # Micro-pass: merge single-origin gotos into their parent. This drastically reduces the
+    // graph size of the CFG.
+    UnstructuredBody(&merge_goto_chains::Transform),
     // # Micro-pass: Remove overflow/div-by-zero/bounds checks since they are already part of the
     // arithmetic/array operation in the semantics of (U)LLBC.
     // **WARNING**: this pass uses the fact that the dynamic checks introduced by Rustc use a
@@ -43,9 +46,6 @@ pub static ULLBC_PASSES: &[Pass] = &[
     // **WARNING**: this pass relies on a precise structure of the MIR statements. Because of this,
     // it must happen before passes that insert statements like [simplify_constants].
     UnstructuredBody(&remove_dynamic_checks::Transform),
-    // # Micro-pass: merge single-origin gotos into their parent. This drastically reduces the
-    // graph size of the CFG.
-    UnstructuredBody(&merge_goto_chains::Transform),
     // # Micro-pass: reconstruct the special `Box::new` operations inserted e.g. in the `vec![]`
     // macro.
     // **WARNING**: this pass relies on a precise structure of the MIR statements. Because of this,
