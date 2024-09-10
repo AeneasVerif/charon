@@ -59,8 +59,7 @@ macro_rules! code_location {
 #[macro_export]
 macro_rules! trace {
     ($($arg:tt)+) => {{
-        let msg = format!($($arg)+);
-        tracing::trace!("{}:\n{}", $crate::code_location!(yellow), msg)
+        tracing::trace!("{}:\n{}", $crate::code_location!(yellow), format!($($arg)+))
     }};
     () => {{
         tracing::trace!("{}", $crate::code_location!(yellow))
@@ -71,8 +70,7 @@ macro_rules! trace {
 #[macro_export]
 macro_rules! error {
     ($($arg:tt)+) => {{
-        let msg = format!($($arg)+);
-        tracing::error!("{}:\n{}", $crate::code_location!(red), msg)
+        tracing::error!("{}:\n{}", $crate::code_location!(red), format!($($arg)+))
     }};
 }
 
@@ -80,8 +78,7 @@ macro_rules! error {
 #[macro_export]
 macro_rules! warn {
     ($($arg:tt)+) => {{
-        let msg = format!($($arg)+);
-        tracing::warn!("{}:\n{}", $crate::code_location!(yellow), msg)
+        tracing::warn!("{}:\n{}", $crate::code_location!(yellow), format!($($arg)+))
     }};
 }
 
@@ -89,10 +86,8 @@ macro_rules! warn {
 #[macro_export]
 macro_rules! info {
     ($($arg:tt)+) => {{
-        let msg = format!($($arg)+);
-        // As for info we generally output simple messages, we don't insert
-        // a breakline
-        tracing::info!("{}: {}", $crate::code_location!(yellow), msg)
+        // As for info we generally output simple messages, we don't insert a newline.
+        tracing::info!("{}: {}", $crate::code_location!(yellow), format!($($arg)+))
     }};
     () => {{
         tracing::info!("{}", $crate::code_location!(yellow))
