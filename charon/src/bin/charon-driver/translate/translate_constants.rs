@@ -42,6 +42,28 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 };
                 Literal::Scalar(scalar)
             }
+            hax::ConstantLiteral::Float(bits, float_type) => {
+                use rustc_apfloat::Float;
+                let value = match float_type {
+                    hax::FloatTy::F16 => FloatValue {
+                        value: rustc_apfloat::ieee::Half::from_bits(*bits).to_string(),
+                        ty: FloatTy::F16,
+                    },
+                    hax::FloatTy::F32 => FloatValue {
+                        value: rustc_apfloat::ieee::Single::from_bits(*bits).to_string(),
+                        ty: FloatTy::F32,
+                    },
+                    hax::FloatTy::F64 => FloatValue {
+                        value: rustc_apfloat::ieee::Double::from_bits(*bits).to_string(),
+                        ty: FloatTy::F64,
+                    },
+                    hax::FloatTy::F128 => FloatValue {
+                        value: rustc_apfloat::ieee::Quad::from_bits(*bits).to_string(),
+                        ty: FloatTy::F128,
+                    },
+                };
+                Literal::Float(value)
+            }
         };
         Ok(RawConstantExpr::Literal(lit))
     }

@@ -35,9 +35,13 @@ let big_int_to_string (bi : big_int) : string = Z.to_string bi
 let scalar_value_to_string (sv : scalar_value) : string =
   big_int_to_string sv.value ^ ": " ^ integer_type_to_string sv.int_ty
 
+let float_value_to_string (fv : float_value) : string =
+  fv.float_value ^ ": " ^ float_type_to_string fv.float_ty
+
 let literal_to_string (lit : literal) : string =
   match lit with
   | VScalar sv -> scalar_value_to_string sv
+  | VFloat fv -> float_value_to_string fv
   | VBool b -> Bool.to_string b
   | VChar c -> String.make 1 c
   | VStr s -> "\"" ^ s ^ "\""

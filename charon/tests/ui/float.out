@@ -25,5 +25,27 @@ fn test_crate::sum_float(@1: f64, @2: f64) -> f64
     return
 }
 
+fn test_crate::literal_float() -> f64
+{
+    let @0: f64; // return
+    let x@1: f64; // local
+    let y@2: f64; // local
+    let @3: f64; // anonymous local
+    let @4: f64; // anonymous local
+
+    x@1 := const (1 : f64)
+    @fake_read(x@1)
+    y@2 := const (1.5 : f64)
+    @fake_read(y@2)
+    @3 := copy (x@1)
+    @4 := copy (y@2)
+    @0 := move (@3) + move (@4)
+    drop @4
+    drop @3
+    drop y@2
+    drop x@1
+    return
+}
+
 
 

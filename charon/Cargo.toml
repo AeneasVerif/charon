@@ -1,6 +1,6 @@
 [package]
 name = "charon"
-version = "0.1.39"
+version = "0.1.40"
 authors = ["Son Ho <hosonmarc@gmail.com>"]
 edition = "2021"
 license = "Apache-2.0"
@@ -60,6 +60,7 @@ nom-supreme = "0.8.0"
 petgraph = "0.6.2"
 pretty = "0.12"
 regex = "1.7.1"
+rustc_apfloat = "0.2.1"
 rustc_version = "0.4"
 serde_json = { version = "1.0.91", features = ["unbounded_depth"] }
 serde-map-to-array = { version = "1.1.1", features = ["std"] }
@@ -74,8 +75,8 @@ tracing-tree = { git = "https://github.com/Nadrieril/tracing-tree", features = [
 tracing = { version = "0.1", features = [ "max_level_trace" ] }
 which = "6.0.1"
 
-# hax-frontend-exporter = { git = "https://github.com/hacspec/hax", branch = "main", optional = true }
-hax-frontend-exporter = { git = "https://github.com/Nadrieril/hax", branch = "charon", optional = true }
+hax-frontend-exporter = { git = "https://github.com/hacspec/hax", branch = "main", optional = true }
+# hax-frontend-exporter = { git = "https://github.com/Nadrieril/hax", branch = "charon", optional = true }
 # hax-frontend-exporter = { path = "../../hax/frontend/exporter", optional = true }
 macros = { path = "./macros" }
 

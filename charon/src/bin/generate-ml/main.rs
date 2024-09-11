@@ -40,7 +40,17 @@ fn make_ocaml_ident(name: &str) -> String {
     let mut name = name.to_case(Case::Snake);
     if matches!(
         &*name,
-        "virtual" | "bool" | "char" | "struct" | "type" | "let" | "fun" | "open" | "rec" | "assert"
+        "virtual"
+            | "bool"
+            | "char"
+            | "struct"
+            | "type"
+            | "let"
+            | "fun"
+            | "open"
+            | "rec"
+            | "assert"
+            | "float"
     ) {
         name += "_";
     }
@@ -846,6 +856,7 @@ fn main() -> Result<()> {
                     "UnOp",
                     "BinOp",
                     "Literal",
+                    "FloatValue",
                     "BuiltinFunId",
                     "BuiltinIndexOp",
                     "FunId",

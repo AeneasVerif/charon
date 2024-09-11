@@ -792,8 +792,9 @@ let literal_to_pattern (_c : to_pat_config) (lit : Values.literal) : literal =
   | VScalar sv -> LInt sv.value
   | VBool v -> LBool v
   | VChar v -> LChar v
-  | VStr _ | VByteStr _ ->
-      raise (Failure "String and byte string literals are not valid in names")
+  | VFloat _ | VStr _ | VByteStr _ ->
+      raise
+        (Failure "Float, string and byte string literals are not valid in names")
 
 let rec name_with_generic_args_to_pattern_aux (ctx : ctx) (c : to_pat_config)
     (n : T.name) (generics : generic_args option) : pattern =

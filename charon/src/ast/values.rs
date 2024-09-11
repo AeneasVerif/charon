@@ -1,5 +1,6 @@
 //! Contains definitions for variables and constant values.
 
+use crate::ast::FloatTy;
 use core::hash::Hash;
 use derive_visitor::{Drive, DriveMut};
 use macros::{EnumAsGetters, EnumIsA, VariantIndexArity, VariantName};
@@ -35,6 +36,7 @@ generate_index_type!(VarId, "");
 #[charon::variants_prefix("V")]
 pub enum Literal {
     Scalar(ScalarValue),
+    Float(FloatValue),
     Bool(bool),
     Char(char),
     ByteStr(Vec<u8>),
@@ -80,4 +82,17 @@ pub enum ScalarValue {
     U32(u32),
     U64(u64),
     U128(u128),
+}
+
+/// This is simlar to the Scalar value above. However, instead of storing
+/// the float value itself, we store its String representation. This allows
+/// to derive the Eq and Ord traits, which are not implemented for floats
+#[derive(
+    Debug, PartialEq, Eq, Clone, Serialize, Deserialize, Hash, PartialOrd, Ord, Drive, DriveMut,
+)]
+pub struct FloatValue {
+    #[charon::rename("float_value")]
+    pub value: String,
+    #[charon::rename("float_ty")]
+    pub ty: FloatTy,
 }
