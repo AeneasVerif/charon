@@ -1008,7 +1008,6 @@ fn compute_switch_exits(
     {
         trace!("Successors info:\n{}\n", {
             let mut out = vec![];
-            panic!();
             for (bid, info) in &succs_info_map {
                 out.push(
                     format!(
