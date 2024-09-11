@@ -1006,17 +1006,19 @@ fn compute_switch_exits(
 
     // Debugging: print all the successors
     {
-        let mut out = vec![];
-        for (bid, info) in &succs_info_map {
-            out.push(
-                format!(
-                    "{} -> {{succs: {:?}, best inter: {:?}}}",
-                    bid, &info.succs, &info.best_inter_succs
-                )
-                .to_string(),
-            );
-        }
-        trace!("Successors info:\n{}\n", out.join("\n"));
+        trace!("Successors info:\n{}\n", {
+            let mut out = vec![];
+            for (bid, info) in &succs_info_map {
+                out.push(
+                    format!(
+                        "{} -> {{succs: {:?}, best inter: {:?}}}",
+                        bid, &info.succs, &info.best_inter_succs
+                    )
+                    .to_string(),
+                );
+            }
+            out.join("\n")
+        });
     }
 
     // For every node which is a switch, retrieve the exit.
