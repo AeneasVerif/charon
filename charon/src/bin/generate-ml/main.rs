@@ -1214,8 +1214,6 @@ fn generate_ml(crate_data: TranslatedCrate, output_dir: PathBuf) -> anyhow::Resu
         .copied()
         .collect();
 
-    // TODO: try to move everything else from the template files to the rust side
-    // TODO: merge visitors as convenient
     #[rustfmt::skip]
     let generate_code_for = vec![
         GenerateCodeFor {
@@ -1223,11 +1221,13 @@ fn generate_ml(crate_data: TranslatedCrate, output_dir: PathBuf) -> anyhow::Resu
             target: output_dir.join("generated/GAst.ml"),
             markers: ctx.markers_from_names(&[
                 (GenerationKind::TypeDecl(false, Some(DeriveVisitors {
-                    name: "call",
-                    ancestor: Some("ast_base"),
+                    name: "statement_base",
+                    ancestor: Some("rvalue"),
                     reduce: false,
                     ord: false,
-                    extra_types: &[],
+                    extra_types: &[
+                        "abort_kind",
+                    ],
                 })), &[
                     "FnOperand",
                     "Call",
@@ -1240,11 +1240,12 @@ fn generate_ml(crate_data: TranslatedCrate, output_dir: PathBuf) -> anyhow::Resu
                     "FunSig",
                     "ItemKind",
                     "GExprBody",
+                    "TraitDecl",
+                    "TraitImpl",
+                    "GDeclarationGroup",
+                    "DeclarationGroup",
                 ]),
-                (GenerationKind::TypeDecl(false, None), &["TraitDecl", "TraitImpl", "GDeclarationGroup"]),
-                (GenerationKind::TypeDecl(false, None), &["DeclarationGroup"]),
-                (GenerationKind::TypeDecl(false, None), &["Var"]),
-                (GenerationKind::TypeDecl(false, None), &["AnyTransId", "FunDeclId"]),
+                (GenerationKind::TypeDecl(false, None), &["Var", "AnyTransId", "FunDeclId"]),
             ]),
         },
         GenerateCodeFor {
@@ -1253,13 +1254,12 @@ fn generate_ml(crate_data: TranslatedCrate, output_dir: PathBuf) -> anyhow::Resu
             markers: ctx.markers_from_names(&[
                 (GenerationKind::TypeDecl(false, None), &[
                     "VarId",
-                    "BuiltinFunId",
-                    "BuiltinIndexOp",
+                    // TODO: can't move because of variant name clash with `raw_statement::Panic`
                     "AbortKind",
                 ]),
                 (GenerationKind::TypeDecl(false, Some(DeriveVisitors {
-                    name: "place",
-                    ancestor: Some("ty"),
+                    name: "rvalue",
+                    ancestor: Some("generic_params"),
                     reduce: false,
                     ord: true,
                     extra_types: &[
@@ -1268,22 +1268,14 @@ fn generate_ml(crate_data: TranslatedCrate, output_dir: PathBuf) -> anyhow::Resu
                         "field_id",
                     ],
                 })), &[
+                    "BuiltinIndexOp",
+                    "BuiltinFunId",
+                    "BorrowKind",
+                    "BinOp",
                     "FieldProjKind",
                     "ProjectionElem",
                     "Projection",
                     "Place",
-                ]),
-                (GenerationKind::TypeDecl(false, None), &[
-                    "BorrowKind",
-                    "BinOp",
-                ]),
-                (GenerationKind::TypeDecl(false, Some(DeriveVisitors {
-                    name: "constant_expr",
-                    ancestor: Some("place"),
-                    reduce: false,
-                    ord: true,
-                    extra_types: &["assumed_fun_id"],
-                })), &[
                     "CastKind",
                     "UnOp",
                     "NullOp",
@@ -1292,14 +1284,6 @@ fn generate_ml(crate_data: TranslatedCrate, output_dir: PathBuf) -> anyhow::Resu
                     "FnPtr",
                     "FunIdOrTraitMethodRef",
                     "FunId",
-                ]),
-                (GenerationKind::TypeDecl(false, Some(DeriveVisitors {
-                    name: "rvalue",
-                    ancestor: Some("constant_expr"),
-                    reduce: false,
-                    ord: false,
-                    extra_types: &["binop", "borrow_kind"],
-                })), &[
                     "Operand",
                     "AggregateKind",
                     "Rvalue",
@@ -1313,8 +1297,6 @@ fn generate_ml(crate_data: TranslatedCrate, output_dir: PathBuf) -> anyhow::Resu
                 (GenerationKind::TypeDecl(false, None), &[
                     "Loc",
                     "FileName",
-                ]),
-                (GenerationKind::TypeDecl(false, None), &[
                     "RawSpan",
                     "Span",
                     "InlineAttr",
@@ -1328,28 +1310,56 @@ fn generate_ml(crate_data: TranslatedCrate, output_dir: PathBuf) -> anyhow::Resu
             template: output_dir.join("templates/Types.ml"),
             target: output_dir.join("generated/Types.ml"),
             markers: ctx.markers_from_names(&[
+                (GenerationKind::TypeDecl(false, None), &[
+                    "ConstGenericVarId",
+                    "Disambiguator",
+                    "FieldId",
+                    "FunDeclId",
+                    "GlobalDeclId",
+                    "RegionId",
+                    "TraitClauseId",
+                    "TraitDeclId",
+                    "TraitImplId",
+                    "TypeDeclId",
+                    "TypeVarId",
+                    "VariantId",
+                ]),
+                (GenerationKind::TypeDecl(false, Some(DeriveVisitors {
+                    name: "const_generic",
+                    ancestor: Some("literal"),
+                    reduce: true,
+                    ord: true,
+                    extra_types: &[
+                        "const_generic_var_id",
+                        "fun_decl_id",
+                        "global_decl_id",
+                        "region_db_id",
+                        "region_id",
+                        "region_var_id",
+                        "trait_clause_id",
+                        "trait_decl_id",
+                        "trait_impl_id",
+                        "type_decl_id",
+                        "type_var_id",
+                    ],
+                })), &[
+                    "ConstGeneric",
+                ]),
+                // Can't merge into aboce because aeneas uses the above alongside their own partial
+                // copy of `ty`, which causes method type clashes.
                 (GenerationKind::TypeDecl(false, Some(DeriveVisitors {
                     name: "ty",
                     ancestor: Some("ty_base_base"),
                     reduce: false,
                     ord: true,
-                    extra_types: &[
-                        "region_db_id",
-                        "region_var_id",
-                        "region_id",
-                        "type_var_id",
-                        "ref_kind",
-                        "trait_item_name",
-                        "fun_decl_id",
-                        "trait_decl_id",
-                        "trait_impl_id",
-                        "trait_clause_id",
-                    ],
+                    extra_types: &[],
                 })), &[
+                    "TraitItemName",
                     "BuiltinTy",
                     "TypeId",
                     "ExistentialPredicate",
                     "RegionVar",
+                    "RefKind",
                     "Ty",
                     "Region",
                     "TraitRef",
@@ -1358,6 +1368,7 @@ fn generate_ml(crate_data: TranslatedCrate, output_dir: PathBuf) -> anyhow::Resu
                     "GlobalDeclRef",
                     "GenericArgs",
                 ]),
+                // TODO: can't merge into above because of field name clashes (`types`, `regions` etc).
                 (GenerationKind::TypeDecl(false, Some(DeriveVisitors {
                     name: "generic_params",
                     ancestor: Some("ty"),
@@ -1375,37 +1386,15 @@ fn generate_ml(crate_data: TranslatedCrate, output_dir: PathBuf) -> anyhow::Resu
                     "ConstGenericVar",
                     "TraitTypeConstraint",
                 ]),
-                (GenerationKind::TypeDecl(false, None), &[]),
-                (GenerationKind::TypeDecl(false, None), &["ImplElem", "PathElem", "Name", "ItemMeta"]),
-                (GenerationKind::TypeDecl(false, None), &["Field", "Variant", "TypeDeclKind", "TypeDecl"]),
-                (GenerationKind::TypeDecl(false, Some(DeriveVisitors { // 5
-                    name: "const_generic",
-                    ancestor: Some("literal"),
-                    reduce: true,
-                    ord: true,
-                    extra_types: &[
-                        "type_decl_id",
-                        "global_decl_id",
-                        "const_generic_var_id",
-                    ],
-                })), &[
-                    "ConstGeneric",
-                ]),
                 (GenerationKind::TypeDecl(false, None), &[
-                    "TraitItemName",
-                    "RefKind",
-                    "ConstGenericVarId",
-                    "Disambiguator",
-                    "FieldId",
-                    "FunDeclId",
-                    "GlobalDeclId",
-                    "RegionId",
-                    "TraitClauseId",
-                    "TraitDeclId",
-                    "TraitImplId",
-                    "TypeDeclId",
-                    "TypeVarId",
-                    "VariantId",
+                    "ImplElem",
+                    "PathElem",
+                    "Name",
+                    "ItemMeta",
+                    "Field",
+                    "Variant",
+                    "TypeDeclKind",
+                    "TypeDecl",
                 ]),
             ]),
         },
@@ -1463,27 +1452,18 @@ fn generate_ml(crate_data: TranslatedCrate, output_dir: PathBuf) -> anyhow::Resu
                 })), &[
                     "charon_lib::ast::ullbc_ast::Statement",
                     "charon_lib::ast::ullbc_ast::RawStatement",
-                ]),
-                (GenerationKind::TypeDecl(false, Some(DeriveVisitors {
-                    name: "switch",
-                    ancestor: Some("statement"),
-                    reduce: false,
-                    ord: false,
-                    extra_types: &[],
-                })), &[
                     "charon_lib::ast::ullbc_ast::SwitchTargets",
                 ]),
+                // TODO: Can't merge with above because of field name clashes (`content` and `span`).
                 (GenerationKind::TypeDecl(false, Some(DeriveVisitors {
-                    name: "terminator",
-                    ancestor: Some("switch"),
+                    name: "ullbc_ast",
+                    ancestor: Some("statement"),
                     reduce: false,
                     ord: false,
                     extra_types: &[],
                 })), &[
                     "charon_lib::ast::ullbc_ast::Terminator",
                     "charon_lib::ast::ullbc_ast::RawTerminator",
-                ]),
-                (GenerationKind::TypeDecl(false, None), &[
                     "charon_lib::ast::ullbc_ast::BlockData",
                     "charon_lib::ast::ullbc_ast::BodyContents",
                 ]),

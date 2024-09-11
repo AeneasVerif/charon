@@ -28,6 +28,16 @@ type fun_id_or_trait_method_ref = Expressions.fun_id_or_trait_method_ref
 
 type fun_decl_id = FunDeclId.id
 
+(** A variable *)
+and var = {
+  index : var_id;  (** Unique index identifying the variable *)
+  name : string option;
+      (** Variable name - may be `None` if the variable was introduced by Rust
+        through desugaring.
+     *)
+  var_ty : ty;  (** The variable type *)
+}
+
 (** The id of a translated item. *)
 and any_decl_id =
   | IdType of type_decl_id
@@ -37,29 +47,17 @@ and any_decl_id =
   | IdTraitImpl of trait_impl_id
 [@@deriving show, ord]
 
-(** A variable *)
-type var = {
-  index : var_id;  (** Unique index identifying the variable *)
-  name : string option;
-      (** Variable name - may be `None` if the variable was introduced by Rust
-        through desugaring.
-     *)
-  var_ty : ty;  (** The variable type *)
-}
-[@@deriving show]
-
-(** Ancestor the AST iter visitors *)
-class ['self] iter_ast_base =
-  object (_self : 'self)
+(* Ancestors for the statement_base visitors *)
+class ['self] iter_statement_base_base =
+  object (self : 'self)
     inherit [_] iter_rvalue
-    inherit! [_] iter_generic_params
+    method visit_abort_kind : 'env -> abort_kind -> unit = fun _ _ -> ()
   end
 
-(** Ancestor the AST map visitors *)
-class ['self] map_ast_base =
-  object (_self : 'self)
+class ['self] map_statement_base_base =
+  object (self : 'self)
     inherit [_] map_rvalue
-    inherit! [_] map_generic_params
+    method visit_abort_kind : 'env -> abort_kind -> abort_kind = fun _ x -> x
   end
 
 (** A function operand is used in function calls.
@@ -84,32 +82,18 @@ and assertion = { cond : operand; expected : bool }
   show,
     visitors
       {
-        name = "iter_call";
+        name = "iter_statement_base";
         variety = "iter";
-        ancestors = [ "iter_ast_base" ];
+        ancestors = [ "iter_statement_base_base" ];
         nude = true (* Don't inherit VisitorsRuntime *);
       },
     visitors
       {
-        name = "map_call";
+        name = "map_statement_base";
         variety = "map";
-        ancestors = [ "map_ast_base" ];
+        ancestors = [ "map_statement_base_base" ];
         nude = true (* Don't inherit VisitorsRuntime *);
       }]
-
-(** Ancestor the {!LlbcAst.statement} and {!Charon.UllbcAst.statement} iter visitors *)
-class ['self] iter_statement_base =
-  object (_self : 'self)
-    inherit [_] iter_call
-    method visit_abort_kind : 'env -> abort_kind -> unit = fun _ _ -> ()
-  end
-
-(** Ancestor the {!LlbcAst.statement} and {!Charon.UllbcAst.statement} map visitors *)
-class ['self] map_statement_base =
-  object (_self : 'self)
-    inherit [_] map_call
-    method visit_abort_kind : 'env -> abort_kind -> abort_kind = fun _ x -> x
-  end
 
 (** An expression body.
     TODO: arg_count should be stored in GFunDecl below. But then,
@@ -173,6 +157,107 @@ and item_kind =
           - [reuses_default]:  True if the trait decl had a default implementation for this function/const and this
           item is a copy of the default item.
        *)
+
+(** A trait **declaration**.
+
+    For instance:
+    ```text
+    trait Foo {
+      type Bar;
+
+      fn baz(...); // required method (see below)
+
+      fn test() -> bool { true } // provided method (see below)
+    }
+    ```
+
+    In case of a trait declaration, we don't include the provided methods (the methods
+    with a default implementation): they will be translated on a per-need basis. This is
+    important for two reasons:
+    - this makes the trait definitions a lot smaller (the Iterator trait
+      has *one* declared function and more than 70 provided functions)
+    - this is important for the external traits, whose provided methods
+      often use features we don't support yet
+
+    Remark:
+    In Aeneas, we still translate the provided methods on an individual basis,
+    and in such a way thay they take as input a trait instance. This means that
+    we can use default methods *but*:
+    - implementations of required methods shoudln't call default methods
+    - trait implementations shouldn't redefine required methods
+    The use case we have in mind is [std::iter::Iterator]: it declares one required
+    method (`next`) that should be implemented for every iterator, and defines many
+    helpers like `all`, `map`, etc. that shouldn't be re-implemented.
+    Of course, this forbids other useful use cases such as visitors implemented
+    by means of traits.
+ *)
+and trait_decl = {
+  def_id : trait_decl_id;
+  item_meta : item_meta;
+  generics : generic_params;
+  parent_clauses : trait_clause list;
+      (** The "parent" clauses: the supertraits.
+
+        Supertraits are actually regular where clauses, but we decided to have
+        a custom treatment.
+        ```text
+        trait Foo : Bar {
+                    ^^^
+                supertrait, that we treat as a parent predicate
+        }
+        ```
+        TODO: actually, as of today, we consider that all trait clauses of
+        trait declarations are parent clauses.
+     *)
+  consts : (trait_item_name * ty) list;
+      (** The associated constants declared in the trait, along with their type. *)
+  types : trait_item_name list;
+      (** The associated types declared in the trait. *)
+  required_methods : (trait_item_name * fun_decl_id) list;
+      (** The *required* methods.
+
+        The required methods are the methods declared by the trait but with no default
+        implementation. The corresponding `FunDecl`s don't have a body.
+     *)
+  provided_methods : (trait_item_name * fun_decl_id) list;
+      (** The *provided* methods.
+
+        The provided methods are the methods with a default implementation. The corresponding
+        `FunDecl`s may have a body, according to the usual rules for extracting function bodies.
+     *)
+}
+
+(** A trait **implementation**.
+
+    For instance:
+    ```text
+    impl Foo for List {
+      type Bar = ...
+
+      fn baz(...) { ... }
+    }
+    ```
+ *)
+and trait_impl = {
+  def_id : trait_impl_id;
+  item_meta : item_meta;
+  impl_trait : trait_decl_ref;
+      (** The information about the implemented trait.
+        Note that this contains the instantiation of the "parent"
+        clauses.
+     *)
+  generics : generic_params;
+  parent_trait_refs : trait_ref list;
+      (** The trait references for the parent clauses (see [TraitDecl]). *)
+  consts : (trait_item_name * global_decl_ref) list;
+      (** The associated constants declared in the trait. *)
+  types : (trait_item_name * ty) list;
+      (** The associated types declared in the trait. *)
+  required_methods : (trait_item_name * fun_decl_id) list;
+      (** The implemented required methods *)
+  provided_methods : (trait_item_name * fun_decl_id) list;
+      (** The re-implemented provided methods *)
+}
 
 (** We use this to store information about the parameters in parent blocks.
     This is necessary because in the definitions we store *all* the generics,
@@ -268,119 +353,19 @@ and fun_sig = {
   inputs : ty list;
   output : ty;
 }
-[@@deriving show]
 
-(* Hand-written because the rust equivalent isn't generic *)
-type 'body gfun_decl = {
-  def_id : FunDeclId.id;
-  item_meta : item_meta;
-  signature : fun_sig;
-  kind : item_kind;
-  body : 'body gexpr_body option;
-  is_global_decl_body : bool;
-}
-[@@deriving show]
-
-(** A trait **declaration**.
-
-    For instance:
-    ```text
-    trait Foo {
-      type Bar;
-
-      fn baz(...); // required method (see below)
-
-      fn test() -> bool { true } // provided method (see below)
-    }
-    ```
-
-    In case of a trait declaration, we don't include the provided methods (the methods
-    with a default implementation): they will be translated on a per-need basis. This is
-    important for two reasons:
-    - this makes the trait definitions a lot smaller (the Iterator trait
-      has *one* declared function and more than 70 provided functions)
-    - this is important for the external traits, whose provided methods
-      often use features we don't support yet
-
-    Remark:
-    In Aeneas, we still translate the provided methods on an individual basis,
-    and in such a way thay they take as input a trait instance. This means that
-    we can use default methods *but*:
-    - implementations of required methods shoudln't call default methods
-    - trait implementations shouldn't redefine required methods
-    The use case we have in mind is [std::iter::Iterator]: it declares one required
-    method (`next`) that should be implemented for every iterator, and defines many
-    helpers like `all`, `map`, etc. that shouldn't be re-implemented.
-    Of course, this forbids other useful use cases such as visitors implemented
-    by means of traits.
- *)
-type trait_decl = {
-  def_id : trait_decl_id;
-  item_meta : item_meta;
-  generics : generic_params;
-  parent_clauses : trait_clause list;
-      (** The "parent" clauses: the supertraits.
-
-        Supertraits are actually regular where clauses, but we decided to have
-        a custom treatment.
-        ```text
-        trait Foo : Bar {
-                    ^^^
-                supertrait, that we treat as a parent predicate
-        }
-        ```
-        TODO: actually, as of today, we consider that all trait clauses of
-        trait declarations are parent clauses.
-     *)
-  consts : (trait_item_name * ty) list;
-      (** The associated constants declared in the trait, along with their type. *)
-  types : trait_item_name list;
-      (** The associated types declared in the trait. *)
-  required_methods : (trait_item_name * fun_decl_id) list;
-      (** The *required* methods.
-
-        The required methods are the methods declared by the trait but with no default
-        implementation. The corresponding `FunDecl`s don't have a body.
-     *)
-  provided_methods : (trait_item_name * fun_decl_id) list;
-      (** The *provided* methods.
-
-        The provided methods are the methods with a default implementation. The corresponding
-        `FunDecl`s may have a body, according to the usual rules for extracting function bodies.
-     *)
-}
-
-(** A trait **implementation**.
-
-    For instance:
-    ```text
-    impl Foo for List {
-      type Bar = ...
-
-      fn baz(...) { ... }
-    }
-    ```
- *)
-and trait_impl = {
-  def_id : trait_impl_id;
-  item_meta : item_meta;
-  impl_trait : trait_decl_ref;
-      (** The information about the implemented trait.
-        Note that this contains the instantiation of the "parent"
-        clauses.
-     *)
-  generics : generic_params;
-  parent_trait_refs : trait_ref list;
-      (** The trait references for the parent clauses (see [TraitDecl]). *)
-  consts : (trait_item_name * global_decl_ref) list;
-      (** The associated constants declared in the trait. *)
-  types : (trait_item_name * ty) list;
-      (** The associated types declared in the trait. *)
-  required_methods : (trait_item_name * fun_decl_id) list;
-      (** The implemented required methods *)
-  provided_methods : (trait_item_name * fun_decl_id) list;
-      (** The re-implemented provided methods *)
-}
+(** A (group of) top-level declaration(s), properly reordered. *)
+and declaration_group =
+  | TypeGroup of type_decl_id g_declaration_group
+      (** A type declaration group *)
+  | FunGroup of fun_decl_id g_declaration_group
+      (** A function declaration group *)
+  | GlobalGroup of global_decl_id g_declaration_group
+      (** A global declaration group *)
+  | TraitDeclGroup of trait_decl_id g_declaration_group
+  | TraitImplGroup of trait_impl_id g_declaration_group
+  | MixedGroup of any_decl_id g_declaration_group
+      (** Anything that doesn't fit into these categories. *)
 
 (** A (group of) top-level declaration(s), properly reordered.
     "G" stands for "generic"
@@ -405,18 +390,15 @@ type trait_declaration_group = TraitDeclId.id g_declaration_group
 type trait_impl_group = TraitImplId.id g_declaration_group [@@deriving show]
 type mixed_declaration_group = any_decl_id g_declaration_group [@@deriving show]
 
-(** A (group of) top-level declaration(s), properly reordered. *)
-type declaration_group =
-  | TypeGroup of type_decl_id g_declaration_group
-      (** A type declaration group *)
-  | FunGroup of fun_decl_id g_declaration_group
-      (** A function declaration group *)
-  | GlobalGroup of global_decl_id g_declaration_group
-      (** A global declaration group *)
-  | TraitDeclGroup of trait_decl_id g_declaration_group
-  | TraitImplGroup of trait_impl_id g_declaration_group
-  | MixedGroup of any_decl_id g_declaration_group
-      (** Anything that doesn't fit into these categories. *)
+(* Hand-written because the rust equivalent isn't generic *)
+type 'body gfun_decl = {
+  def_id : FunDeclId.id;
+  item_meta : item_meta;
+  signature : fun_sig;
+  kind : item_kind;
+  body : 'body gexpr_body option;
+  is_global_decl_body : bool;
+}
 [@@deriving show]
 
 (* Hand-written because the rust equivalent isn't generic *)

@@ -15,11 +15,6 @@ type block_id = BlockId.id [@@deriving show, ord]
 
 (* __REPLACE1__ *)
 
-(* __REPLACE2__ *)
-
-(* __REPLACE3__ *)
-[@@deriving show]
-
 type expr_body = blocks gexpr_body [@@deriving show]
 type fun_body = expr_body [@@deriving show]
 type fun_decl = blocks gfun_decl [@@deriving show]

@@ -19,9 +19,6 @@ module FunDeclId = Types.FunDeclId
 
 (* __REPLACE1__ *)
 
-(* __REPLACE2__ *)
-[@@deriving show, ord]
-
 let all_binops =
   [
     BitXor;
@@ -41,7 +38,3 @@ let all_binops =
     Shl;
     Shr;
   ]
-
-(* __REPLACE3__ *)
-
-(* __REPLACE4__ *)

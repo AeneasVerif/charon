@@ -48,7 +48,7 @@ type ('id, 'name) indexed_var = {
 }
 [@@deriving show, ord]
 
-(* __REPLACE6__ *)
+(* __REPLACE0__ *)
 [@@deriving show, ord]
 
 let all_signed_int_types = [ Isize; I8; I16; I32; I64; I128 ]
@@ -61,7 +61,7 @@ let option_none_id = VariantId.of_int 0
 (** The variant id for [Option::Some] *)
 let option_some_id = VariantId.of_int 1
 
-(* __REPLACE5__ *)
+(* __REPLACE1__ *)
 
 (** Ancestor for iter visitor for {!type: Types.ty} *)
 class ['self] iter_ty_base_base =
@@ -125,11 +125,11 @@ class virtual ['self] map_ty_base_base =
         (left, right)
   end
 
-(* __REPLACE0__ *)
-
-(* __REPLACE1__ *)
+(* __REPLACE2__ *)
 
 (* __REPLACE3__ *)
+
+(* __REPLACE4__ *)
 [@@deriving show, ord]
 
 (** A group of regions.
@@ -151,9 +151,6 @@ type region_var_group = (RegionVarId.id, RegionGroupId.id) g_region_group
 [@@deriving show]
 
 type region_var_groups = region_var_group list [@@deriving show]
-
-(* __REPLACE4__ *)
-[@@deriving show]
 
 (** Type with erased regions (this only has an informative purpose) *)
 type ety = ty

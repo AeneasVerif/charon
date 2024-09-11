@@ -43,6 +43,14 @@ type raw_statement =
   | Nop  (** Does nothing. Useful for passes. *)
 
 and statement = { span : span; content : raw_statement }
+
+and switch =
+  | If of block_id * block_id  (** Gives the `if` block and the `else` block *)
+  | SwitchInt of integer_type * (scalar_value * block_id) list * block_id
+      (** Gives the integer type, a map linking values to switch branches, and the
+          otherwise block. Note that matches over enumerations are performed by
+          switching over the discriminant, which is an integer.
+       *)
 [@@deriving
   show,
     visitors
@@ -60,32 +68,10 @@ and statement = { span : span; content : raw_statement }
         nude = true (* Don't inherit VisitorsRuntime *);
       }]
 
-type switch =
-  | If of block_id * block_id  (** Gives the `if` block and the `else` block *)
-  | SwitchInt of integer_type * (scalar_value * block_id) list * block_id
-      (** Gives the integer type, a map linking values to switch branches, and the
-          otherwise block. Note that matches over enumerations are performed by
-          switching over the discriminant, which is an integer.
-       *)
-[@@deriving
-  show,
-    visitors
-      {
-        name = "iter_switch";
-        variety = "iter";
-        ancestors = [ "iter_statement" ];
-        nude = true (* Don't inherit VisitorsRuntime *);
-      },
-    visitors
-      {
-        name = "map_switch";
-        variety = "map";
-        ancestors = [ "map_statement" ];
-        nude = true (* Don't inherit VisitorsRuntime *);
-      }]
+type blocks = block list
 
 (** A raw terminator: a terminator without meta data. *)
-type raw_terminator =
+and raw_terminator =
   | Goto of block_id  (** 
           Fields:
           - [target]
@@ -100,27 +86,24 @@ type raw_terminator =
   | Return
 
 and terminator = { span : span; content : raw_terminator }
+
+and block = { statements : statement list; terminator : terminator }
 [@@deriving
   show,
     visitors
       {
-        name = "iter_terminator";
+        name = "iter_ullbc_ast";
         variety = "iter";
-        ancestors = [ "iter_switch" ];
+        ancestors = [ "iter_statement" ];
         nude = true (* Don't inherit VisitorsRuntime *);
       },
     visitors
       {
-        name = "map_terminator";
+        name = "map_ullbc_ast";
         variety = "map";
-        ancestors = [ "map_switch" ];
+        ancestors = [ "map_statement" ];
         nude = true (* Don't inherit VisitorsRuntime *);
       }]
-
-type blocks = block list
-
-and block = { statements : statement list; terminator : terminator }
-[@@deriving show]
 
 type expr_body = blocks gexpr_body [@@deriving show]
 type fun_body = expr_body [@@deriving show]

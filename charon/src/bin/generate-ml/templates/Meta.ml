@@ -14,7 +14,3 @@ type path_buf = string
 
 (* __REPLACE0__ *)
 [@@deriving show, ord]
-
-(** Span data *)
-(* __REPLACE1__ *)
-[@@deriving show, ord]

@@ -48,7 +48,6 @@ type ('id, 'name) indexed_var = {
 [@@deriving show, ord]
 
 type fun_decl_id = FunDeclId.id
-and trait_item_name = string
 and disambiguator = Disambiguator.id
 and type_var_id = TypeVarId.id
 and type_decl_id = TypeDeclId.id
@@ -59,8 +58,7 @@ and const_generic_var_id = ConstGenericVarId.id
 and global_decl_id = GlobalDeclId.id
 and trait_clause_id = TraitClauseId.id
 and trait_decl_id = TraitDeclId.id
-and trait_impl_id = TraitImplId.id
-and ref_kind = RMut | RShared [@@deriving show, ord]
+and trait_impl_id = TraitImplId.id [@@deriving show, ord]
 
 let all_signed_int_types = [ Isize; I8; I16; I32; I64; I128 ]
 let all_unsigned_int_types = [ Usize; U8; U16; U32; U64; U128 ]
@@ -76,55 +74,134 @@ let option_some_id = VariantId.of_int 1
 class ['self] iter_const_generic_base =
   object (self : 'self)
     inherit [_] iter_literal
-    method visit_type_decl_id : 'env -> type_decl_id -> unit = fun _ _ -> ()
-    method visit_global_decl_id : 'env -> global_decl_id -> unit = fun _ _ -> ()
 
     method visit_const_generic_var_id : 'env -> const_generic_var_id -> unit =
       fun _ _ -> ()
+
+    method visit_fun_decl_id : 'env -> fun_decl_id -> unit = fun _ _ -> ()
+    method visit_global_decl_id : 'env -> global_decl_id -> unit = fun _ _ -> ()
+    method visit_region_db_id : 'env -> region_db_id -> unit = fun _ _ -> ()
+    method visit_region_id : 'env -> region_id -> unit = fun _ _ -> ()
+    method visit_region_var_id : 'env -> region_var_id -> unit = fun _ _ -> ()
+
+    method visit_trait_clause_id : 'env -> trait_clause_id -> unit =
+      fun _ _ -> ()
+
+    method visit_trait_decl_id : 'env -> trait_decl_id -> unit = fun _ _ -> ()
+    method visit_trait_impl_id : 'env -> trait_impl_id -> unit = fun _ _ -> ()
+    method visit_type_decl_id : 'env -> type_decl_id -> unit = fun _ _ -> ()
+    method visit_type_var_id : 'env -> type_var_id -> unit = fun _ _ -> ()
   end
 
 class ['self] map_const_generic_base =
   object (self : 'self)
     inherit [_] map_literal
 
-    method visit_type_decl_id : 'env -> type_decl_id -> type_decl_id =
+    method visit_const_generic_var_id
+        : 'env -> const_generic_var_id -> const_generic_var_id =
       fun _ x -> x
+
+    method visit_fun_decl_id : 'env -> fun_decl_id -> fun_decl_id = fun _ x -> x
 
     method visit_global_decl_id : 'env -> global_decl_id -> global_decl_id =
       fun _ x -> x
 
-    method visit_const_generic_var_id
-        : 'env -> const_generic_var_id -> const_generic_var_id =
+    method visit_region_db_id : 'env -> region_db_id -> region_db_id =
       fun _ x -> x
+
+    method visit_region_id : 'env -> region_id -> region_id = fun _ x -> x
+
+    method visit_region_var_id : 'env -> region_var_id -> region_var_id =
+      fun _ x -> x
+
+    method visit_trait_clause_id : 'env -> trait_clause_id -> trait_clause_id =
+      fun _ x -> x
+
+    method visit_trait_decl_id : 'env -> trait_decl_id -> trait_decl_id =
+      fun _ x -> x
+
+    method visit_trait_impl_id : 'env -> trait_impl_id -> trait_impl_id =
+      fun _ x -> x
+
+    method visit_type_decl_id : 'env -> type_decl_id -> type_decl_id =
+      fun _ x -> x
+
+    method visit_type_var_id : 'env -> type_var_id -> type_var_id = fun _ x -> x
   end
 
 class virtual ['self] reduce_const_generic_base =
   object (self : 'self)
     inherit [_] reduce_literal
 
-    method visit_type_decl_id : 'env -> type_decl_id -> 'a =
+    method visit_const_generic_var_id : 'env -> const_generic_var_id -> 'a =
       fun _ _ -> self#zero
+
+    method visit_fun_decl_id : 'env -> fun_decl_id -> 'a = fun _ _ -> self#zero
 
     method visit_global_decl_id : 'env -> global_decl_id -> 'a =
       fun _ _ -> self#zero
 
-    method visit_const_generic_var_id : 'env -> const_generic_var_id -> 'a =
+    method visit_region_db_id : 'env -> region_db_id -> 'a =
       fun _ _ -> self#zero
+
+    method visit_region_id : 'env -> region_id -> 'a = fun _ _ -> self#zero
+
+    method visit_region_var_id : 'env -> region_var_id -> 'a =
+      fun _ _ -> self#zero
+
+    method visit_trait_clause_id : 'env -> trait_clause_id -> 'a =
+      fun _ _ -> self#zero
+
+    method visit_trait_decl_id : 'env -> trait_decl_id -> 'a =
+      fun _ _ -> self#zero
+
+    method visit_trait_impl_id : 'env -> trait_impl_id -> 'a =
+      fun _ _ -> self#zero
+
+    method visit_type_decl_id : 'env -> type_decl_id -> 'a =
+      fun _ _ -> self#zero
+
+    method visit_type_var_id : 'env -> type_var_id -> 'a = fun _ _ -> self#zero
   end
 
 class virtual ['self] mapreduce_const_generic_base =
   object (self : 'self)
     inherit [_] mapreduce_literal
 
-    method visit_type_decl_id : 'env -> type_decl_id -> type_decl_id * 'a =
+    method visit_const_generic_var_id
+        : 'env -> const_generic_var_id -> const_generic_var_id * 'a =
+      fun _ x -> (x, self#zero)
+
+    method visit_fun_decl_id : 'env -> fun_decl_id -> fun_decl_id * 'a =
       fun _ x -> (x, self#zero)
 
     method visit_global_decl_id : 'env -> global_decl_id -> global_decl_id * 'a
         =
       fun _ x -> (x, self#zero)
 
-    method visit_const_generic_var_id
-        : 'env -> const_generic_var_id -> const_generic_var_id * 'a =
+    method visit_region_db_id : 'env -> region_db_id -> region_db_id * 'a =
+      fun _ x -> (x, self#zero)
+
+    method visit_region_id : 'env -> region_id -> region_id * 'a =
+      fun _ x -> (x, self#zero)
+
+    method visit_region_var_id : 'env -> region_var_id -> region_var_id * 'a =
+      fun _ x -> (x, self#zero)
+
+    method visit_trait_clause_id
+        : 'env -> trait_clause_id -> trait_clause_id * 'a =
+      fun _ x -> (x, self#zero)
+
+    method visit_trait_decl_id : 'env -> trait_decl_id -> trait_decl_id * 'a =
+      fun _ x -> (x, self#zero)
+
+    method visit_trait_impl_id : 'env -> trait_impl_id -> trait_impl_id * 'a =
+      fun _ x -> (x, self#zero)
+
+    method visit_type_decl_id : 'env -> type_decl_id -> type_decl_id * 'a =
+      fun _ x -> (x, self#zero)
+
+    method visit_type_var_id : 'env -> type_var_id -> type_var_id * 'a =
       fun _ x -> (x, self#zero)
   end
 
@@ -227,61 +304,13 @@ class virtual ['self] map_ty_base_base =
         (left, right)
   end
 
-(* Ancestors for the ty visitors *)
-class ['self] iter_ty_base =
-  object (self : 'self)
-    inherit [_] iter_ty_base_base
-    method visit_region_db_id : 'env -> region_db_id -> unit = fun _ _ -> ()
-    method visit_region_var_id : 'env -> region_var_id -> unit = fun _ _ -> ()
-    method visit_region_id : 'env -> region_id -> unit = fun _ _ -> ()
-    method visit_type_var_id : 'env -> type_var_id -> unit = fun _ _ -> ()
-    method visit_ref_kind : 'env -> ref_kind -> unit = fun _ _ -> ()
-
-    method visit_trait_item_name : 'env -> trait_item_name -> unit =
-      fun _ _ -> ()
-
-    method visit_fun_decl_id : 'env -> fun_decl_id -> unit = fun _ _ -> ()
-    method visit_trait_decl_id : 'env -> trait_decl_id -> unit = fun _ _ -> ()
-    method visit_trait_impl_id : 'env -> trait_impl_id -> unit = fun _ _ -> ()
-
-    method visit_trait_clause_id : 'env -> trait_clause_id -> unit =
-      fun _ _ -> ()
-  end
-
-class ['self] map_ty_base =
-  object (self : 'self)
-    inherit [_] map_ty_base_base
-
-    method visit_region_db_id : 'env -> region_db_id -> region_db_id =
-      fun _ x -> x
-
-    method visit_region_var_id : 'env -> region_var_id -> region_var_id =
-      fun _ x -> x
-
-    method visit_region_id : 'env -> region_id -> region_id = fun _ x -> x
-    method visit_type_var_id : 'env -> type_var_id -> type_var_id = fun _ x -> x
-    method visit_ref_kind : 'env -> ref_kind -> ref_kind = fun _ x -> x
-
-    method visit_trait_item_name : 'env -> trait_item_name -> trait_item_name =
-      fun _ x -> x
-
-    method visit_fun_decl_id : 'env -> fun_decl_id -> fun_decl_id = fun _ x -> x
-
-    method visit_trait_decl_id : 'env -> trait_decl_id -> trait_decl_id =
-      fun _ x -> x
-
-    method visit_trait_impl_id : 'env -> trait_impl_id -> trait_impl_id =
-      fun _ x -> x
-
-    method visit_trait_clause_id : 'env -> trait_clause_id -> trait_clause_id =
-      fun _ x -> x
-  end
-
 (** Reference to a global declaration. *)
 type global_decl_ref = {
   global_id : global_decl_id;
   global_generics : generic_args;
 }
+
+and trait_item_name = string
 
 (** Region variable. *)
 and region_var = (region_var_id, string option) indexed_var
@@ -347,6 +376,8 @@ and generic_args = {
     TODO: store something useful here
  *)
 and existential_predicate = unit
+
+and ref_kind = RMut | RShared
 
 (** Type identifier.
 
@@ -453,14 +484,14 @@ and assumed_ty =
       {
         name = "iter_ty";
         variety = "iter";
-        ancestors = [ "iter_ty_base" ];
+        ancestors = [ "iter_ty_base_base" ];
         nude = true (* Don't inherit VisitorsRuntime *);
       },
     visitors
       {
         name = "map_ty";
         variety = "map";
-        ancestors = [ "map_ty_base" ];
+        ancestors = [ "map_ty_base_base" ];
         nude = true (* Don't inherit VisitorsRuntime *);
       }]
 
@@ -623,28 +654,7 @@ and impl_elem =
 
     Also note that the first path element in the name is always the crate name.
  *)
-and name = path_elem list [@@deriving show, ord]
-
-(* Hand-written because these don't exist on the rust side *)
-
-(** A group of regions.
-
-    Results from a lifetime analysis: we group the regions with the same
-    lifetime together, and compute the hierarchy between the regions.
-    This is necessary to introduce the proper abstraction with the
-    proper constraints, when evaluating a function call in symbolic mode.
-*)
-type ('rid, 'id) g_region_group = {
-  id : 'id;
-  regions : 'rid list;
-  parents : 'id list;
-}
-[@@deriving show]
-
-type region_var_group = (RegionVarId.id, RegionGroupId.id) g_region_group
-[@@deriving show]
-
-type region_var_groups = region_var_group list [@@deriving show]
+and name = path_elem list
 
 (** A type declaration.
 
@@ -660,7 +670,7 @@ type region_var_groups = region_var_group list [@@deriving show]
     A type can only be an ADT (structure or enumeration), as type aliases are
     inlined in MIR.
  *)
-type type_decl = {
+and type_decl = {
   def_id : type_decl_id;
   item_meta : item_meta;  (** Meta information associated with the item. *)
   generics : generic_params;
@@ -702,7 +712,28 @@ and field = {
   field_name : string option;
   field_ty : ty;
 }
+[@@deriving show, ord]
+
+(* Hand-written because these don't exist on the rust side *)
+
+(** A group of regions.
+
+    Results from a lifetime analysis: we group the regions with the same
+    lifetime together, and compute the hierarchy between the regions.
+    This is necessary to introduce the proper abstraction with the
+    proper constraints, when evaluating a function call in symbolic mode.
+*)
+type ('rid, 'id) g_region_group = {
+  id : 'id;
+  regions : 'rid list;
+  parents : 'id list;
+}
 [@@deriving show]
+
+type region_var_group = (RegionVarId.id, RegionGroupId.id) g_region_group
+[@@deriving show]
+
+type region_var_groups = region_var_group list [@@deriving show]
 
 (** Type with erased regions (this only has an informative purpose) *)
 type ety = ty
