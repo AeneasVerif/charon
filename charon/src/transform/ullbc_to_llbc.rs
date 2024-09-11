@@ -1006,17 +1006,19 @@ fn compute_switch_exits(
 
     // Debugging: print all the successors
     {
-        let mut out = vec![];
-        for (bid, info) in &succs_info_map {
-            out.push(
-                format!(
-                    "{} -> {{succs: {:?}, best inter: {:?}}}",
-                    bid, &info.succs, &info.best_inter_succs
-                )
-                .to_string(),
-            );
-        }
-        trace!("Successors info:\n{}\n", out.join("\n"));
+        trace!("Successors info:\n{}\n", {
+            let mut out = vec![];
+            for (bid, info) in &succs_info_map {
+                out.push(
+                    format!(
+                        "{} -> {{succs: {:?}, best inter: {:?}}}",
+                        bid, &info.succs, &info.best_inter_succs
+                    )
+                    .to_string(),
+                );
+            }
+            out.join("\n")
+        });
     }
 
     // For every node which is a switch, retrieve the exit.
@@ -1411,6 +1413,7 @@ fn translate_statement(st: &src::Statement) -> Option<tgt::Statement> {
         src::RawStatement::Deinit(place) => tgt::RawStatement::Drop(place),
         src::RawStatement::Drop(place) => tgt::RawStatement::Drop(place),
         src::RawStatement::Assert(assert) => tgt::RawStatement::Assert(assert),
+        src::RawStatement::Nop => tgt::RawStatement::Nop,
         src::RawStatement::Error(s) => tgt::RawStatement::Error(s),
     };
     Some(tgt::Statement::new(src_span, st))

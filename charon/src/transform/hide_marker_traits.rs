@@ -6,7 +6,7 @@ use itertools::Itertools;
 
 use crate::{ast::*, name_matcher::NamePattern};
 
-use super::{ctx::LlbcPass, TransformCtx};
+use super::{ctx::TransformPass, TransformCtx};
 
 #[derive(VisitorMut)]
 #[visitor(
@@ -61,7 +61,7 @@ impl Visitor {
 }
 
 pub struct Transform;
-impl LlbcPass for Transform {
+impl TransformPass for Transform {
     fn transform_ctx(&self, ctx: &mut TransformCtx<'_>) {
         // Remove any mention of these traits in generic parameters and arguments.
         // We always hide `Allocator` because in `Box` it refers to a type parameter that we always

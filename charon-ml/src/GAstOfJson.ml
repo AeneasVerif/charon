@@ -783,7 +783,6 @@ and projection_elem_of_json (js : json) : (projection_elem, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
     | `String "Deref" -> Ok Deref
-    | `String "DerefBox" -> Ok DerefBox
     | `Assoc [ ("Field", `List [ x_0; x_1 ]) ] ->
         let* x_0 = field_proj_kind_of_json x_0 in
         let* x_1 = field_id_of_json x_1 in

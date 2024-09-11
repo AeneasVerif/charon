@@ -35,6 +35,8 @@ pub enum RawStatement {
     /// A built-in assert, which corresponds to runtime checks that we remove, namely: bounds
     /// checks, over/underflow checks, div/rem by zero checks, pointer alignement check.
     Assert(Assert),
+    /// Does nothing. Useful for passes.
+    Nop,
     #[charon::opaque]
     Error(String),
 }

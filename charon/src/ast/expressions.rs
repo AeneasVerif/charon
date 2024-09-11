@@ -40,15 +40,8 @@ pub type Projection = Vec<ProjectionElem>;
     DriveMut,
 )]
 pub enum ProjectionElem {
-    /// Dereference a shared/mutable reference or a raw pointer.
+    /// Dereference a shared/mutable reference, a box, or a raw pointer.
     Deref,
-    /// Dereference a boxed value.
-    /// Note that this doesn't exist in MIR where `Deref` is used both for the
-    /// mutable and shared references *and* the boxed values. As semantically we
-    /// don't handle those two cases the same way at all, we disambiguate them
-    /// during the translation.
-    /// In rust, this comes from the `*` operator applied on boxes.
-    DerefBox,
     /// Projection from ADTs (variants, structures).
     /// We allow projections to be used as left-values and right-values.
     /// We should never have projections to fields of symbolic variants (they

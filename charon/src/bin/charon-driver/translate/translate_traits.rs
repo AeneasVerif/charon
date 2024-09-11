@@ -74,10 +74,10 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
     /// Remark: this **doesn't** register the def id (on purpose)
     pub(crate) fn translate_trait_item_name(
         &mut self,
-        rust_id: DefId,
+        def_id: &hax::DefId,
     ) -> Result<TraitItemName, Error> {
         // Translate the name
-        let name = self.def_id_to_name(rust_id)?;
+        let name = self.hax_def_id_to_name(def_id)?;
         let (name, id) = name.name.last().unwrap().as_ident();
         assert!(id.is_zero());
         Ok(TraitItemName(name.to_string()))
@@ -124,7 +124,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
             .collect_vec();
 
         // Translate the generics
-        bt_ctx.push_generics_for_def(span, rust_id, def)?;
+        bt_ctx.push_generics_for_def(span, def)?;
 
         // Gather the associated type clauses
         let mut type_clauses = Vec::new();
@@ -166,7 +166,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         let mut required_methods = Vec::new();
         let mut provided_methods = Vec::new();
         for (item_name, hax_item, opt_hax_def) in &items {
-            let rust_item_id = (&hax_item.def_id).into();
+            let rust_item_id = DefId::from(&hax_item.def_id);
             let item_span = bt_ctx.t_ctx.tcx.def_span(rust_item_id);
             match &hax_item.kind {
                 AssocKind::Fn => {
@@ -289,7 +289,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         let erase_regions = false;
         let mut bt_ctx = BodyTransCtx::new(rust_id, self);
 
-        bt_ctx.push_generics_for_def(span, rust_id, def)?;
+        bt_ctx.push_generics_for_def(span, def)?;
         let generics = bt_ctx.get_generics();
 
         let hax::FullDefKind::Impl {
@@ -301,8 +301,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
             unreachable!()
         };
         let implemented_trait_id = &trait_pred.trait_ref.def_id;
-        let implemented_trait_rust_id = implemented_trait_id.into();
-        let trait_def = bt_ctx.t_ctx.hax_def(implemented_trait_rust_id);
+        let trait_def = bt_ctx.t_ctx.hax_def(implemented_trait_id);
         let hax::FullDefKind::Trait {
             items: decl_items, ..
         } = trait_def.kind()
@@ -311,7 +310,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         };
 
         // Retrieve the information about the implemented trait.
-        let trait_id = bt_ctx.register_trait_decl_id(span, implemented_trait_rust_id);
+        let trait_id = bt_ctx.register_trait_decl_id(span, implemented_trait_id);
         let implemented_trait = {
             let implemented_trait = &trait_pred.trait_ref;
             let (regions, types, const_generics) = bt_ctx.translate_substs(
@@ -375,7 +374,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
 
         for item in impl_items {
             let name = TraitItemName(item.name.clone());
-            let rust_item_id = (&item.def_id).into();
+            let rust_item_id = DefId::from(&item.def_id);
             let item_span = tcx.def_span(rust_item_id);
             match &item.kind {
                 hax::AssocKind::Fn => {

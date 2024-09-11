@@ -8,10 +8,10 @@ use derive_visitor::{visitor_enter_fn_mut, DriveMut};
 
 use crate::{ast::*, ids::Vector};
 
-use super::{ctx::UllbcPass, TransformCtx};
+use super::{ctx::TransformPass, TransformCtx};
 
 pub struct Transform;
-impl UllbcPass for Transform {
+impl TransformPass for Transform {
     fn transform_ctx(&self, ctx: &mut TransformCtx<'_>) {
         // For each trait, we move the item-local clauses to be top-level parent clauses, and
         // record the mapping from the old to the new ids.

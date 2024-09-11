@@ -5,37 +5,21 @@
 //! array/slice manipulation and arithmetic functions, on the verification side.
 
 use crate::ast::*;
-use crate::errors::register_error_or_panic;
-use crate::formatter::IntoFormatter;
-use crate::pretty::FmtWithCtx;
 use crate::transform::TransformCtx;
-use crate::ullbc_ast::{BlockData, ExprBody, RawStatement, Statement};
+use crate::ullbc_ast::{ExprBody, RawStatement, Statement};
 
 use super::ctx::UllbcPass;
 
 /// Rustc inserts dybnamic checks during MIR lowering. They all end in an `Assert` statement (and
 /// this is the only use of this statement).
-fn remove_dynamic_checks(ctx: &mut TransformCtx, block: &mut BlockData) {
-    // We know the `Assert` statement is always last before a `goto` terminator.
-    let [prefix @ .., Statement {
-        content:
-            RawStatement::Assert(Assert {
-                cond: Operand::Move(cond),
-                expected,
-            }),
-        ..
-    }] = block.statements.as_mut_slice()
-    else {
-        return;
-    };
-
+fn remove_dynamic_checks(_ctx: &mut TransformCtx, statements: &mut [Statement]) {
     // We return the statements we want to keep, which must be a prefix of `block.statements`.
-    let statements_to_keep = match prefix {
+    let statements_to_keep = match statements {
         // Bounds checks for arrays/slices. They look like:
         //   l := len(a)
         //   b := copy x < copy l
         //   assert(move b == true)
-        [rest @ .., Statement {
+        [Statement {
             content: RawStatement::Assign(len, Rvalue::Len(..)),
             ..
         }, Statement {
@@ -45,23 +29,45 @@ fn remove_dynamic_checks(ctx: &mut TransformCtx, block: &mut BlockData) {
                     Rvalue::BinaryOp(BinOp::Lt, _, Operand::Copy(lt_op2)),
                 ),
             ..
-        }] if lt_op2 == len && cond == is_in_bounds && *expected == true => rest,
+        }, Statement {
+            content:
+                RawStatement::Assert(Assert {
+                    cond: Operand::Move(cond),
+                    expected,
+                }),
+            ..
+        }, rest @ ..]
+            if lt_op2 == len && cond == is_in_bounds && *expected == true =>
+        {
+            rest
+        }
 
         // Zero checks for division and remainder. They look like:
         //   b := copy x == const 0
         //   assert(move b == false)
-        [rest @ .., Statement {
+        [Statement {
             content:
                 RawStatement::Assign(is_zero, Rvalue::BinaryOp(BinOp::Eq, _, Operand::Const(_zero))),
             ..
-        }] if cond == is_zero && *expected == false => rest,
+        }, Statement {
+            content:
+                RawStatement::Assert(Assert {
+                    cond: Operand::Move(cond),
+                    expected,
+                }),
+            ..
+        }, rest @ ..]
+            if cond == is_zero && *expected == false =>
+        {
+            rest
+        }
 
         // Overflow checks for signed division and remainder. They look like:
         //   is_neg_1 := y == (-1)
         //   is_min := x == INT::min
         //   has_overflow := move (is_neg_1) & move (is_min)
         //   assert(move has_overflow == false)
-        [rest @ .., Statement {
+        [Statement {
             content: RawStatement::Assign(is_neg_1, Rvalue::BinaryOp(BinOp::Eq, _y_op, _minus_1)),
             ..
         }, Statement {
@@ -74,10 +80,18 @@ fn remove_dynamic_checks(ctx: &mut TransformCtx, block: &mut BlockData) {
                     Rvalue::BinaryOp(BinOp::BitAnd, Operand::Move(and_op1), Operand::Move(and_op2)),
                 ),
             ..
-        }] if and_op1 == is_neg_1
-            && and_op2 == is_min
-            && cond == has_overflow
-            && *expected == false =>
+        }, Statement {
+            content:
+                RawStatement::Assert(Assert {
+                    cond: Operand::Move(cond),
+                    expected,
+                }),
+            ..
+        }, rest @ ..]
+            if and_op1 == is_neg_1
+                && and_op2 == is_min
+                && cond == has_overflow
+                && *expected == false =>
         {
             rest
         }
@@ -86,7 +100,7 @@ fn remove_dynamic_checks(ctx: &mut TransformCtx, block: &mut BlockData) {
         //   x := ...;
         //   b := move x < const 32; // or another constant
         //   assert(move b == true);
-        [rest @ .., Statement {
+        [Statement {
             content: RawStatement::Assign(x, _),
             ..
         }, Statement {
@@ -96,67 +110,91 @@ fn remove_dynamic_checks(ctx: &mut TransformCtx, block: &mut BlockData) {
                     Rvalue::BinaryOp(BinOp::Lt, Operand::Move(lt_op2), Operand::Const(..)),
                 ),
             ..
-        }] if lt_op2 == x && cond == has_overflow && *expected == true => rest,
+        }, Statement {
+            content:
+                RawStatement::Assert(Assert {
+                    cond: Operand::Move(cond),
+                    expected,
+                }),
+            ..
+        }, rest @ ..]
+            if lt_op2 == x && cond == has_overflow && *expected == true =>
+        {
+            rest
+        }
         // They can also look like:
         //   b := const c < const 32; // or another constant
         //   assert(move b == true);
-        [rest @ .., Statement {
+        [Statement {
             content:
                 RawStatement::Assign(
                     has_overflow,
                     Rvalue::BinaryOp(BinOp::Lt, Operand::Const(..), Operand::Const(..)),
                 ),
             ..
-        }] if cond == has_overflow && *expected == true => rest,
+        }, Statement {
+            content:
+                RawStatement::Assert(Assert {
+                    cond: Operand::Move(cond),
+                    expected,
+                }),
+            ..
+        }, rest @ ..]
+            if cond == has_overflow && *expected == true =>
+        {
+            rest
+        }
 
         // Overflow checks for addition/subtraction/multiplication. They look like:
         //   r := x checked.+ y;
         //   assert(move r.1 == false);
         // They only happen in constants because we compile with `-C opt-level=3`. They span two
         // blocks so we remove them in a later pass.
-        [.., Statement {
+        [Statement {
             content:
                 RawStatement::Assign(
                     result,
                     Rvalue::BinaryOp(BinOp::CheckedAdd | BinOp::CheckedSub | BinOp::CheckedMul, ..),
                 ),
             ..
-        }] if cond.var_id == result.var_id
-            && result.projection.is_empty()
-            && let [ProjectionElem::Field(FieldProjKind::Tuple(2), p_id)] =
-                cond.projection.as_slice()
-            && p_id.index() == 1
-            && *expected == false =>
+        }, Statement {
+            content:
+                RawStatement::Assert(Assert {
+                    cond: Operand::Move(cond),
+                    expected,
+                }),
+            ..
+        }, ..]
+            if cond.var_id == result.var_id
+                && result.projection.is_empty()
+                && let [ProjectionElem::Field(FieldProjKind::Tuple(2), p_id)] =
+                    cond.projection.as_slice()
+                && p_id.index() == 1
+                && *expected == false =>
         {
             // We leave this assert intact; it will be simplified in
             // [`remove_arithmetic_overflow_checks`].
             return;
         }
 
-        _ => {
-            // This can happen for the dynamic checks we don't handle, corresponding to the
-            // `rustc_middle::mir::AssertKind` variants `ResumedAfterReturn`, `ResumedAfterPanic`
-            // and `MisalignedPointerDereference`.
-            let fmt_ctx = ctx.into_fmt();
-            let msg = format!(
-                "Found an `assert` we don't recognize:\n{}",
-                block.fmt_with_ctx(&fmt_ctx)
-            );
-            register_error_or_panic!(ctx, block.terminator.span.span, msg);
-            return;
-        }
+        _ => return,
     };
 
     // Remove the statements.
-    let len = statements_to_keep.len();
-    block.statements.truncate(len);
+    let keep_len = statements_to_keep.len();
+    for i in 0..statements.len() - keep_len {
+        statements[i].content = RawStatement::Nop;
+    }
 }
 
 pub struct Transform;
 impl UllbcPass for Transform {
     fn transform_body(&self, ctx: &mut TransformCtx<'_>, b: &mut ExprBody) {
         for block in b.body.iter_mut() {
-            remove_dynamic_checks(ctx, block);
+            block.transform_sequences(&mut |seq| {
+                remove_dynamic_checks(ctx, seq);
+                Vec::new()
+            });
         }
     }
 }

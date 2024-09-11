@@ -33,6 +33,7 @@ module Ast = struct
     | Deinit p -> indent ^ "deinit " ^ place_to_string env p
     | Assert a -> assertion_to_string env indent a
     | Drop p -> indent ^ "drop " ^ place_to_string env p
+    | Nop -> "nop"
     | Call call -> call_to_string env indent call
 
   let switch_to_string (indent : string) (tgt : switch) : string =
