@@ -927,9 +927,13 @@ fn main() -> Result<()> {
         CrateData::deserialize(deserializer)?.translated
     };
 
+    generate_ml(crate_data, dir)
+}
+
+fn generate_ml(crate_data: TranslatedCrate, output_dir: PathBuf) -> anyhow::Result<()> {
     let ctx = GenerateCtx::new(&crate_data);
 
-    // Compute the sets of type to be put in each module.
+    // Compute the sets of types to be put in each module.
     let manually_implemented: HashSet<_> = [
         "Vector",
         "ScalarValue",
@@ -979,8 +983,8 @@ fn main() -> Result<()> {
     #[rustfmt::skip]
     let generate_code_for = vec![
         GenerateCodeFor {
-            template: dir.join("templates/GAst.ml"),
-            target: dir.join("generated/GAst.ml"),
+            template: output_dir.join("templates/GAst.ml"),
+            target: output_dir.join("generated/GAst.ml"),
             markers: ctx.markers_from_names(&[
                 (GenerationKind::TypeDecl(false, Some(DeriveVisitors {
                     name: "call",
@@ -1008,8 +1012,8 @@ fn main() -> Result<()> {
             ]),
         },
         GenerateCodeFor {
-            template: dir.join("templates/Expressions.ml"),
-            target: dir.join("generated/Expressions.ml"),
+            template: output_dir.join("templates/Expressions.ml"),
+            target: output_dir.join("generated/Expressions.ml"),
             markers: ctx.markers_from_names(&[
                 (GenerationKind::TypeDecl(false, None), &[
                     "BuiltinFunId",
@@ -1066,8 +1070,8 @@ fn main() -> Result<()> {
             ]),
         },
         GenerateCodeFor {
-            template: dir.join("templates/Meta.ml"),
-            target: dir.join("generated/Meta.ml"),
+            template: output_dir.join("templates/Meta.ml"),
+            target: output_dir.join("generated/Meta.ml"),
             markers: ctx.markers_from_names(&[
                 (GenerationKind::TypeDecl(false, None), &[
                     "Loc",
@@ -1083,8 +1087,8 @@ fn main() -> Result<()> {
             ]),
         },
         GenerateCodeFor {
-            template: dir.join("templates/Types.ml"),
-            target: dir.join("generated/Types.ml"),
+            template: output_dir.join("templates/Types.ml"),
+            target: output_dir.join("generated/Types.ml"),
             markers: ctx.markers_from_names(&[
                 (GenerationKind::TypeDecl(false, None), &[
                     "BuiltinTy",
@@ -1134,8 +1138,8 @@ fn main() -> Result<()> {
             ]),
         },
         GenerateCodeFor {
-            template: dir.join("templates/Values.ml"),
-            target: dir.join("generated/Values.ml"),
+            template: output_dir.join("templates/Values.ml"),
+            target: output_dir.join("generated/Values.ml"),
             markers: ctx.markers_from_names(&[
                 (GenerationKind::TypeDecl(true, Some(DeriveVisitors {
                     name: "literal",
@@ -1153,8 +1157,8 @@ fn main() -> Result<()> {
             ]),
         },
         GenerateCodeFor {
-            template: dir.join("templates/LlbcAst.ml"),
-            target: dir.join("generated/LlbcAst.ml"),
+            template: output_dir.join("templates/LlbcAst.ml"),
+            target: output_dir.join("generated/LlbcAst.ml"),
             markers: ctx.markers_from_names(&[
                 (GenerationKind::TypeDecl(true, Some(DeriveVisitors {
                     name: "statement",
@@ -1169,8 +1173,8 @@ fn main() -> Result<()> {
             ]),
         },
         GenerateCodeFor {
-            template: dir.join("templates/UllbcAst.ml"),
-            target: dir.join("generated/UllbcAst.ml"),
+            template: output_dir.join("templates/UllbcAst.ml"),
+            target: output_dir.join("generated/UllbcAst.ml"),
             markers: ctx.markers_from_names(&[
                 (GenerationKind::TypeDecl(false, Some(DeriveVisitors {
                     name: "statement",
@@ -1210,18 +1214,18 @@ fn main() -> Result<()> {
             ]),
         },
         GenerateCodeFor {
-            template: dir.join("templates/GAstOfJson.ml"),
-            target: dir.join("generated/GAstOfJson.ml"),
+            template: output_dir.join("templates/GAstOfJson.ml"),
+            target: output_dir.join("generated/GAstOfJson.ml"),
             markers: vec![(GenerationKind::OfJson, gast_types)],
         },
         GenerateCodeFor {
-            template: dir.join("templates/LlbcOfJson.ml"),
-            target: dir.join("generated/LlbcOfJson.ml"),
+            template: output_dir.join("templates/LlbcOfJson.ml"),
+            target: output_dir.join("generated/LlbcOfJson.ml"),
             markers: vec![(GenerationKind::OfJson, llbc_types)],
         },
         GenerateCodeFor {
-            template: dir.join("templates/UllbcOfJson.ml"),
-            target: dir.join("generated/UllbcOfJson.ml"),
+            template: output_dir.join("templates/UllbcOfJson.ml"),
+            target: output_dir.join("generated/UllbcOfJson.ml"),
             markers: vec![(GenerationKind::OfJson, ullbc_types)],
         },
     ];
