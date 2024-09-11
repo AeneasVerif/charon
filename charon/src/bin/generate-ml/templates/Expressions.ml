@@ -14,11 +14,6 @@ module VarId = IdGen ()
 module GlobalDeclId = Types.GlobalDeclId
 module FunDeclId = Types.FunDeclId
 
-(** We define this type to control the name of the visitor functions
-    (see e.g., {!Charon.UllbcAst.iter_statement_base}).
-  *)
-type var_id = VarId.id [@@deriving show, ord]
-
 (* __REPLACE0__ *)
 [@@deriving show, ord]
 

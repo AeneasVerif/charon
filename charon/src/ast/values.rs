@@ -43,14 +43,9 @@ pub enum Literal {
     Str(String),
 }
 
-/// It might be a good idea to use a structure:
-/// `{ value: ??; int_ty: IntegerTy; }`
-/// But then it is not obvious how to naturally store the integer (for instance,
-/// in OCaml it is possible to use big integers).
-///
-/// Also, we don't automatically derive the serializer, because it would serialize
-/// the values to integers, leading to potential overflows: we implement a custom
-/// serialization, which serializes the values to strings.
+/// A scalar value.
+// We encode it as `{ value: ??; int_ty: IntegerTy; }` in json and on the ocaml side. We therefore
+// use a custom (de)serializer.
 #[derive(
     Debug,
     PartialEq,

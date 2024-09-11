@@ -19,22 +19,22 @@ module TraitDeclId = Types.TraitDeclId
 module TraitImplId = Types.TraitImplId
 module TraitClauseId = Types.TraitClauseId
 
-(* Note: this is duplicated in `Types.ml` but re-exported here to not break dependent projects. *)
-type fun_decl_id = FunDeclId.id [@@deriving show, ord]
+(* Imports *)
+type assumed_fun_id = Expressions.assumed_fun_id [@@deriving show, ord]
+type fun_id = Expressions.fun_id [@@deriving show, ord]
+
+type fun_id_or_trait_method_ref = Expressions.fun_id_or_trait_method_ref
+[@@deriving show, ord]
+
+type fun_decl_id = FunDeclId.id
 
 (** The id of a translated item. *)
-type any_decl_id =
+and any_decl_id =
   | IdType of type_decl_id
   | IdFun of fun_decl_id
   | IdGlobal of global_decl_id
   | IdTraitDecl of trait_decl_id
   | IdTraitImpl of trait_impl_id
-[@@deriving show, ord]
-
-type assumed_fun_id = Expressions.assumed_fun_id [@@deriving show, ord]
-type fun_id = Expressions.fun_id [@@deriving show, ord]
-
-type fun_id_or_trait_method_ref = Expressions.fun_id_or_trait_method_ref
 [@@deriving show, ord]
 
 (** A variable *)

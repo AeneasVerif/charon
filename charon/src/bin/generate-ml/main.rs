@@ -6,6 +6,8 @@
 //!
 //! To run it, call `cargo run --bin generate-ml`. It is also run by `make generate-ml` in the
 //! crate root. Don't forget to format the output code after regenerating.
+#![feature(if_let_guard)]
+
 use anyhow::{bail, Context, Result};
 use assert_cmd::cargo::CommandCargoExt;
 use charon_lib::ast::{AttrInfo, Attribute, TranslatedCrate};
@@ -17,6 +19,7 @@ use charon_lib::types::{
 };
 use convert_case::{Case, Casing};
 use derive_visitor::{visitor_enter_fn, Drive};
+use indoc::indoc;
 use itertools::Itertools;
 use std::collections::{HashMap, HashSet};
 use std::fmt::Write;
@@ -123,10 +126,16 @@ struct GenerateCtx<'a> {
     name_to_type: HashMap<String, &'a TypeDecl>,
     /// For each type, list the types it contains.
     type_tree: HashMap<TypeDeclId, HashSet<TypeDeclId>>,
+    manual_type_impls: HashMap<TypeDeclId, String>,
+    manual_json_impls: HashMap<TypeDeclId, String>,
 }
 
 impl<'a> GenerateCtx<'a> {
-    fn new(crate_data: &'a TranslatedCrate) -> Self {
+    fn new(
+        crate_data: &'a TranslatedCrate,
+        manual_type_impls: &[(&str, &str)],
+        manual_json_impls: &[(&str, &str)],
+    ) -> Self {
         let mut name_to_type: HashMap<String, &TypeDecl> = Default::default();
         let mut type_tree = HashMap::default();
         for ty in &crate_data.type_decls {
@@ -148,12 +157,23 @@ impl<'a> GenerateCtx<'a> {
             contains_id(crate_data, raw_span.def_id)
         };
 
-        GenerateCtx {
+        let mut ctx = GenerateCtx {
             crate_data: &crate_data,
             contains_raw_span,
             name_to_type,
             type_tree,
-        }
+            manual_type_impls: Default::default(),
+            manual_json_impls: Default::default(),
+        };
+        ctx.manual_type_impls = manual_type_impls
+            .iter()
+            .map(|(name, def)| (ctx.id_from_name(name), def.to_string()))
+            .collect();
+        ctx.manual_json_impls = manual_json_impls
+            .iter()
+            .map(|(name, def)| (ctx.id_from_name(name), def.to_string()))
+            .collect();
+        ctx
     }
 
     fn id_from_name(&self, name: &str) -> TypeDeclId {
@@ -399,6 +419,7 @@ fn type_decl_to_json_deserializer(ctx: &GenerateCtx, decl: &TypeDecl) -> String 
     };
 
     let branches = match &decl.kind {
+        _ if let Some(def) = ctx.manual_json_impls.get(&decl.def_id) => def.clone(),
         TypeDeclKind::Struct(fields) if fields.is_empty() => {
             build_branch(ctx, "`Null", fields, "()")
         }
@@ -606,19 +627,33 @@ fn build_type(_ctx: &GenerateCtx, decl: &TypeDecl, co_rec: bool, body: &str) -> 
 /// should be declared with `and` instead of `type`).
 fn type_decl_to_ocaml_decl(ctx: &GenerateCtx, decl: &TypeDecl, co_rec: bool) -> String {
     let body = match &decl.kind {
+        _ if let Some(def) = ctx.manual_type_impls.get(&decl.def_id) => def.clone(),
+        TypeDeclKind::Alias(ty) => type_to_ocaml_name(ctx, ty),
         TypeDeclKind::Struct(fields) if fields.is_empty() => "unit".to_string(),
         TypeDeclKind::Struct(fields)
-            if fields.len() == 1
-                && decl.item_meta.attr_info.attributes.iter().any(|a| {
-                    a.is_unknown() && a.as_unknown().to_string() == "serde(transparent)"
-                }) =>
+            if fields.len() == 1 && fields[0].name.as_ref().is_some_and(|name| name == "_raw") =>
         {
-            type_to_ocaml_name(ctx, &fields[0].ty)
+            // These are the special strongly-typed integers.
+            let short_name = decl
+                .item_meta
+                .name
+                .name
+                .last()
+                .unwrap()
+                .as_ident()
+                .0
+                .clone();
+            format!("{short_name}.id")
         }
-        TypeDeclKind::Alias(ty) => type_to_ocaml_name(ctx, ty),
-        TypeDeclKind::Struct(fields) if fields.iter().all(|f| f.name.is_none()) => {
-            todo!()
-        }
+        TypeDeclKind::Struct(fields) if fields.len() == 1 => type_to_ocaml_name(ctx, &fields[0].ty),
+        TypeDeclKind::Struct(fields) if fields.iter().all(|f| f.name.is_none()) => fields
+            .iter()
+            .filter(|f| !f.is_opaque())
+            .map(|f| {
+                let ty = type_to_ocaml_name(ctx, &f.ty);
+                format!("{ty}")
+            })
+            .join("*"),
         TypeDeclKind::Struct(fields) => {
             let fields = fields
                 .iter()
@@ -813,9 +848,12 @@ impl GenerateCodeFor {
         for (i, (kind, names)) in self.markers.iter().enumerate() {
             let tys = names.iter().copied().sorted().map(|id| &ctx.crate_data[id]);
             let generated = match kind {
-                GenerationKind::OfJson => tys
-                    .map(|ty| type_decl_to_json_deserializer(ctx, ty))
-                    .join("\n"),
+                GenerationKind::OfJson => {
+                    let fns = tys
+                        .map(|ty| type_decl_to_json_deserializer(ctx, ty))
+                        .format("\n");
+                    format!("let rec ___ = ()\n{fns}")
+                }
                 GenerationKind::TypeDecl(open_rec, visitors) => {
                     let mut decls = tys
                         .enumerate()
@@ -931,18 +969,218 @@ fn main() -> Result<()> {
 }
 
 fn generate_ml(crate_data: TranslatedCrate, output_dir: PathBuf) -> anyhow::Result<()> {
-    let ctx = GenerateCtx::new(&crate_data);
+    let manual_type_impls = &[
+        // Hand-written because we replace the `FileId` with the corresponding file name.
+        (
+            "RawSpan",
+            "{ file : file_name; beg_loc : loc; end_loc : loc }",
+        ),
+        // Hand-written because the rust version is an enum with custom (de)serialization
+        // functions.
+        (
+            "ScalarValue",
+            indoc!(
+                "
+                (* Note that we use unbounded integers everywhere.
+                   We then harcode the boundaries for the different types.
+                 *)
+                { value : big_int; int_ty : integer_type }
+                "
+            ),
+        ),
+        // Hand-written because we encode sequences differently.
+        // TODO: encode sequences identically.
+        (
+            "charon_lib::ast::llbc_ast::RawStatement",
+            indoc!(
+                "
+                | Assign of place * rvalue
+                | FakeRead of place
+                | SetDiscriminant of place * variant_id
+                | Drop of place
+                | Assert of assertion
+                | Call of call
+                (* FIXME: rename to `Abort` *)
+                | Panic
+                | Return
+                | Break of int
+                    (** Break to (outer) loop. The [int] identifies the loop to break to:
+                        * 0: break to the first outer loop (the current loop)
+                        * 1: break to the second outer loop
+                        * ...
+                        *)
+                | Continue of int
+                    (** Continue to (outer) loop. The loop identifier works
+                        the same way as for {!Break} *)
+                | Nop
+                | Sequence of statement * statement
+                | Switch of switch
+                | Loop of statement
+                | Error of string
+                "
+            ),
+        ),
+        // Hand-written because we're keeping some now-removed variants around.
+        // TODO: remove these variants.
+        (
+            "TraitRefKind",
+            indoc!(
+                "
+                | Self
+                    (** Reference to *self*, in case of trait declarations/implementations *)
+                | TraitImpl of trait_impl_id * generic_args  (** A specific implementation *)
+                | BuiltinOrAuto of trait_decl_ref
+                | Clause of trait_clause_id
+                | ParentClause of trait_instance_id * trait_decl_id * trait_clause_id
+                | FnPointer of ty
+                | Closure of fun_decl_id * generic_args
+                | Dyn of trait_decl_ref
+                | Unsolved of trait_decl_id * generic_args
+                | UnknownTrait of string
+                "
+            ),
+        ),
+        // Hand-written because we add an extra variant not present on the rust side.
+        // TODO: either add this variant to the rust side or duplicate this code on the aeneas
+        // side.
+        (
+            "Region",
+            indoc!(
+                "
+                | RStatic  (** Static region *)
+                | RBVar of region_db_id * region_var_id
+                    (** Bound region. We use those in function signatures, type definitions, etc. *)
+                | RFVar of region_id
+                    (** Free region. We use those during the symbolic execution. *)
+                | RErased  (** Erased region *)
+                "
+            ),
+        ),
+        // Handwritten because we use `indexed_var` as a hack to be able to reuse field names.
+        // TODO: remove the need for this hack.
+        ("RegionVar", "(region_var_id, string option) indexed_var"),
+        ("TypeVar", "(type_var_id, string) indexed_var"),
+    ];
+    let manual_json_impls = &[
+        // Hand-written because we filter out `None` values.
+        (
+            "Vector",
+            indoc!(
+                r#"
+                | js ->
+                    let* list = list_of_json (option_of_json arg1_of_json) js in
+                    Ok (List.filter_map (fun x -> x) list)
+                "#
+            ),
+        ),
+        // Hand-written because we replace the `FileId` with the corresponding file name.
+        (
+            "RawSpan",
+            indoc!(
+                r#"
+                | `Assoc [ ("file_id", file_id); ("beg", beg_loc); ("end", end_loc) ] ->
+                    let* file_id = file_id_of_json file_id in
+                    let file = FileId.Map.find file_id id_to_file in
+                    let* beg_loc = loc_of_json beg_loc in
+                    let* end_loc = loc_of_json end_loc in
+                    Ok { file; beg_loc; end_loc }
+                "#,
+            ),
+        ),
+        // Hand-written because the rust version is an enum with custom (de)serialization
+        // functions.
+        (
+            "ScalarValue",
+            indoc!(
+                r#"
+                | `Assoc [ (ty, bi) ] ->
+                    let big_int_of_json (js : json) : (big_int, string) result =
+                      combine_error_msgs js __FUNCTION__
+                        (match js with
+                        | `Int i -> Ok (Z.of_int i)
+                        | `String is -> Ok (Z.of_string is)
+                        | _ -> Error "")
+                    in
+                    let* value = big_int_of_json bi in
+                    let* int_ty = integer_type_of_json (`String ty) in
+                    let sv = { value; int_ty } in
+                    if not (check_scalar_value_in_range sv) then
+                      raise (Failure ("Scalar value not in range: " ^ show_scalar_value sv));
+                    Ok sv
+                "#
+            ),
+        ),
+        // Hand-written because we encode sequences differently.
+        // TODO: encode sequences identically.
+        (
+            "charon_lib::ast::llbc_ast::RawStatement",
+            indoc!(
+                r#"
+                | `Assoc [ ("Assign", `List [ place; rvalue ]) ] ->
+                    let* place = place_of_json place in
+                    let* rvalue = rvalue_of_json rvalue in
+                    Ok (Assign (place, rvalue))
+                | `Assoc [ ("FakeRead", place) ] ->
+                    let* place = place_of_json place in
+                    Ok (FakeRead place)
+                | `Assoc [ ("SetDiscriminant", `List [ place; variant_id ]) ] ->
+                    let* place = place_of_json place in
+                    let* variant_id = VariantId.id_of_json variant_id in
+                    Ok (SetDiscriminant (place, variant_id))
+                | `Assoc [ ("Drop", place) ] ->
+                    let* place = place_of_json place in
+                    Ok (Drop place)
+                | `Assoc [ ("Assert", assertion) ] ->
+                    let* assertion = assertion_of_json assertion in
+                    Ok (Assert assertion)
+                | `Assoc [ ("Call", call) ] ->
+                    let* call = call_of_json call in
+                    Ok (Call call)
+                | `Assoc [ ("Abort", _) ] -> Ok Panic
+                | `String "Return" -> Ok Return
+                | `Assoc [ ("Break", i) ] ->
+                    let* i = int_of_json i in
+                    Ok (Break i)
+                | `Assoc [ ("Continue", i) ] ->
+                    let* i = int_of_json i in
+                    Ok (Continue i)
+                | `String "Nop" -> Ok Nop
+                (* We get a list from the rust side, which we fold into our recursive `Sequence` representation. *)
+                | `Assoc [ ("Sequence", `List seq) ] -> (
+                    let seq = List.map (statement_of_json id_to_file) seq in
+                    match List.rev seq with
+                    | [] -> Ok Nop
+                    | last :: rest ->
+                        let* seq =
+                          List.fold_left
+                            (fun acc st ->
+                              let* st = st in
+                              let* acc = acc in
+                              Ok { span = st.span; content = Sequence (st, acc) })
+                            last rest
+                        in
+                        Ok seq.content)
+                | `Assoc [ ("Switch", tgt) ] ->
+                    let* switch = switch_of_json id_to_file tgt in
+                    Ok (Switch switch)
+                | `Assoc [ ("Loop", st) ] ->
+                    let* st = statement_of_json id_to_file st in
+                    Ok (Loop st)
+                | `Assoc [ ("Error", s) ] ->
+                    let* s = string_of_json s in
+                    Ok (Error s)
+                "#
+            ),
+        ),
+    ];
+    let ctx = GenerateCtx::new(&crate_data, manual_type_impls, manual_json_impls);
 
     // Compute the sets of types to be put in each module.
     let manually_implemented: HashSet<_> = [
-        "Vector",
-        "ScalarValue",
-        "RawSpan",
         "ItemOpacity",
         "DeBruijnId",
         "RegionId",
         "PredicateOrigin",
-        "charon_lib::ast::llbc_ast::RawStatement",
         "Opaque",
         "Body",
         "BodyId",
@@ -976,8 +1214,6 @@ fn generate_ml(crate_data: TranslatedCrate, output_dir: PathBuf) -> anyhow::Resu
         .copied()
         .collect();
 
-    // TODO: give handwritten versions through rust
-    // TODO: that way we can generate all the visitor boilerplate
     // TODO: try to move everything else from the template files to the rust side
     // TODO: merge visitors as convenient
     #[rustfmt::skip]
@@ -1008,7 +1244,7 @@ fn generate_ml(crate_data: TranslatedCrate, output_dir: PathBuf) -> anyhow::Resu
                 (GenerationKind::TypeDecl(false, None), &["TraitDecl", "TraitImpl", "GDeclarationGroup"]),
                 (GenerationKind::TypeDecl(false, None), &["DeclarationGroup"]),
                 (GenerationKind::TypeDecl(false, None), &["Var"]),
-                (GenerationKind::TypeDecl(false, None), &["AnyTransId"]),
+                (GenerationKind::TypeDecl(false, None), &["AnyTransId", "FunDeclId"]),
             ]),
         },
         GenerateCodeFor {
@@ -1016,6 +1252,7 @@ fn generate_ml(crate_data: TranslatedCrate, output_dir: PathBuf) -> anyhow::Resu
             target: output_dir.join("generated/Expressions.ml"),
             markers: ctx.markers_from_names(&[
                 (GenerationKind::TypeDecl(false, None), &[
+                    "VarId",
                     "BuiltinFunId",
                     "BuiltinIndexOp",
                     "AbortKind",
@@ -1078,6 +1315,7 @@ fn generate_ml(crate_data: TranslatedCrate, output_dir: PathBuf) -> anyhow::Resu
                     "FileName",
                 ]),
                 (GenerationKind::TypeDecl(false, None), &[
+                    "RawSpan",
                     "Span",
                     "InlineAttr",
                     "Attribute",
@@ -1090,31 +1328,57 @@ fn generate_ml(crate_data: TranslatedCrate, output_dir: PathBuf) -> anyhow::Resu
             template: output_dir.join("templates/Types.ml"),
             target: output_dir.join("generated/Types.ml"),
             markers: ctx.markers_from_names(&[
-                (GenerationKind::TypeDecl(false, None), &[
+                (GenerationKind::TypeDecl(false, Some(DeriveVisitors {
+                    name: "ty",
+                    ancestor: Some("ty_base_base"),
+                    reduce: false,
+                    ord: true,
+                    extra_types: &[
+                        "region_db_id",
+                        "region_var_id",
+                        "region_id",
+                        "type_var_id",
+                        "ref_kind",
+                        "trait_item_name",
+                        "fun_decl_id",
+                        "trait_decl_id",
+                        "trait_impl_id",
+                        "trait_clause_id",
+                    ],
+                })), &[
                     "BuiltinTy",
                     "TypeId",
                     "ExistentialPredicate",
+                    "RegionVar",
                     "Ty",
+                    "Region",
                     "TraitRef",
+                    "TraitRefKind",
                     "TraitDeclRef",
                     "GlobalDeclRef",
                     "GenericArgs",
                 ]),
-                (GenerationKind::TypeDecl(true, None), &[
-                    "TraitClause",
-                ]),
-                (GenerationKind::TypeDecl(true, Some(DeriveVisitors {
+                (GenerationKind::TypeDecl(false, Some(DeriveVisitors {
                     name: "generic_params",
-                    ancestor: Some("generic_params_base"),
+                    ancestor: Some("ty"),
                     reduce: false,
                     ord: true,
-                    extra_types: &[],
+                    extra_types: &[
+                        "span",
+                    ],
                 })), &[
+                    "TraitClause",
+                    "TypeVar",
+                    "RegionOutlives",
+                    "TypeOutlives",
+                    "GenericParams",
+                    "ConstGenericVar",
                     "TraitTypeConstraint",
                 ]),
+                (GenerationKind::TypeDecl(false, None), &[]),
                 (GenerationKind::TypeDecl(false, None), &["ImplElem", "PathElem", "Name", "ItemMeta"]),
                 (GenerationKind::TypeDecl(false, None), &["Field", "Variant", "TypeDeclKind", "TypeDecl"]),
-                (GenerationKind::TypeDecl(false, Some(DeriveVisitors {
+                (GenerationKind::TypeDecl(false, Some(DeriveVisitors { // 5
                     name: "const_generic",
                     ancestor: Some("literal"),
                     reduce: true,
@@ -1127,13 +1391,21 @@ fn generate_ml(crate_data: TranslatedCrate, output_dir: PathBuf) -> anyhow::Resu
                 })), &[
                     "ConstGeneric",
                 ]),
-                (GenerationKind::TypeDecl(false, Some(DeriveVisitors {
-                    name: "ty",
-                    ancestor: Some("ty_base"),
-                    reduce: false,
-                    ord: true,
-                    extra_types: &[],
-                })), &[
+                (GenerationKind::TypeDecl(false, None), &[
+                    "TraitItemName",
+                    "RefKind",
+                    "ConstGenericVarId",
+                    "Disambiguator",
+                    "FieldId",
+                    "FunDeclId",
+                    "GlobalDeclId",
+                    "RegionId",
+                    "TraitClauseId",
+                    "TraitDeclId",
+                    "TraitImplId",
+                    "TypeDeclId",
+                    "TypeVarId",
+                    "VariantId",
                 ]),
             ]),
         },
@@ -1141,17 +1413,20 @@ fn generate_ml(crate_data: TranslatedCrate, output_dir: PathBuf) -> anyhow::Resu
             template: output_dir.join("templates/Values.ml"),
             target: output_dir.join("generated/Values.ml"),
             markers: ctx.markers_from_names(&[
-                (GenerationKind::TypeDecl(true, Some(DeriveVisitors {
+                (GenerationKind::TypeDecl(false, Some(DeriveVisitors {
                     name: "literal",
-                    ancestor: Some("literal_base"),
+                    ancestor: None,
                     reduce: true,
                     ord: true,
-                    extra_types: &[],
+                    extra_types: &[
+                        "big_int",
+                    ],
                 })), &[
                     "IntegerTy",
                     "FloatTy",
                     "FloatValue",
                     "LiteralTy",
+                    "ScalarValue",
                     "Literal",
                 ]),
             ]),
@@ -1160,13 +1435,14 @@ fn generate_ml(crate_data: TranslatedCrate, output_dir: PathBuf) -> anyhow::Resu
             template: output_dir.join("templates/LlbcAst.ml"),
             target: output_dir.join("generated/LlbcAst.ml"),
             markers: ctx.markers_from_names(&[
-                (GenerationKind::TypeDecl(true, Some(DeriveVisitors {
+                (GenerationKind::TypeDecl(false, Some(DeriveVisitors {
                     name: "statement",
                     ancestor: Some("statement_base"),
                     reduce: false,
                     ord: false,
                     extra_types: &[],
                 })), &[
+                    "charon_lib::ast::llbc_ast::RawStatement",
                     "charon_lib::ast::llbc_ast::Statement",
                     "charon_lib::ast::llbc_ast::Switch",
                 ]),

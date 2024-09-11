@@ -4,7 +4,7 @@ open Values
 open Expressions
 open Meta
 
-(* Hand-written because we encode sequences differently. *)
+(** A raw statement: a statement without meta data. *)
 type raw_statement =
   | Assign of place * rvalue
   | FakeRead of place
@@ -17,13 +17,13 @@ type raw_statement =
   | Return
   | Break of int
       (** Break to (outer) loop. The [int] identifies the loop to break to:
-          * 0: break to the first outer loop (the current loop)
-          * 1: break to the second outer loop
-          * ...
-          *)
+        * 0: break to the first outer loop (the current loop)
+        * 1: break to the second outer loop
+        * ...
+        *)
   | Continue of int
       (** Continue to (outer) loop. The loop identifier works
-          the same way as for {!Break} *)
+        the same way as for {!Break} *)
   | Nop
   | Sequence of statement * statement
   | Switch of switch

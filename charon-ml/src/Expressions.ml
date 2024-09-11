@@ -15,11 +15,6 @@ module VarId = IdGen ()
 module GlobalDeclId = Types.GlobalDeclId
 module FunDeclId = Types.FunDeclId
 
-(** We define this type to control the name of the visitor functions
-    (see e.g., {!Charon.UllbcAst.iter_statement_base}).
-  *)
-type var_id = VarId.id [@@deriving show, ord]
-
 (** An built-in function identifier, identifying a function coming from a
     standard library.
  *)
@@ -70,7 +65,8 @@ and abort_kind =
       (** A MIR `Unreachable` terminator corresponds to undefined behavior in the rust abstract
           machine.
        *)
-[@@deriving show, ord]
+
+and var_id = VarId.id [@@deriving show, ord]
 
 (* Ancestors for the place visitors *)
 class ['self] iter_place_base =

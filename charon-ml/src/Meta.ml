@@ -24,14 +24,13 @@ and file_name =
       (** A local path (a file coming from the current crate for instance) *)
 [@@deriving show, ord]
 
-(* Hand-written because doesn't match the rust type *)
-
 (** Span data *)
+
+(** Span information *)
 type raw_span = { file : file_name; beg_loc : loc; end_loc : loc }
-[@@deriving show, ord]
 
 (** Meta information about a piece of code (block, statement, etc.) *)
-type span = {
+and span = {
   span : raw_span;
       (** The source code span.
 

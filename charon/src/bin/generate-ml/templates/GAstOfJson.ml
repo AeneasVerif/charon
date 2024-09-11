@@ -40,123 +40,7 @@ let de_bruijn_id_of_json = int_of_json
 let path_buf_of_json = string_of_json
 let region_id_of_json = RegionVarId.id_of_json
 
-(* A vector can contain empty slots. We filter them out. *)
-let vector_of_json _ item_of_json js =
-  let* list = list_of_json (option_of_json item_of_json) js in
-  Ok (List.filter_map (fun x -> x) list)
-
-(** Deserialize a map from file id to file name.
-
-    In the serialized LLBC, the files in the loc spans are refered to by their
-    ids, in order to save space. In a functional language like OCaml this is
-    not necessary: we thus replace the file ids by the file name themselves in
-    the AST.
-    The "id to file" map is thus only used in the deserialization process.
-  *)
-let rec id_to_file_of_json (js : json) : (id_to_file_map, string) result =
-  combine_error_msgs js __FUNCTION__
-    ((* The map is stored as a list of pairs (key, value): we deserialize
-      * this list then convert it to a map *)
-     let* file_names = list_of_json (option_of_json file_name_of_json) js in
-     let names_with_ids =
-       List.filter_map
-         (fun (i, name) ->
-           match name with None -> None | Some name -> Some (i, name))
-         (List.mapi (fun i name -> (FileId.of_int i, name)) file_names)
-     in
-     Ok (FileId.Map.of_list names_with_ids))
-
-(* This is written by hand because it accessed `id_to_file`. *)
- and raw_span_of_json (id_to_file : id_to_file_map) (js : json) :
-    (raw_span, string) result =
-  combine_error_msgs js __FUNCTION__
-    (match js with
-    | `Assoc [ ("file_id", file_id); ("beg", beg_loc); ("end", end_loc) ] ->
-        let* file_id = file_id_of_json file_id in
-        let file = FileId.Map.find file_id id_to_file in
-        let* beg_loc = loc_of_json beg_loc in
-        let* end_loc = loc_of_json end_loc in
-        Ok { file; beg_loc; end_loc }
-    | _ -> Error "")
-
-and big_int_of_json (js : json) : (big_int, string) result =
-  combine_error_msgs js __FUNCTION__
-    (match js with
-    | `Int i -> Ok (Z.of_int i)
-    | `String is -> Ok (Z.of_string is)
-    | _ -> Error "")
-
-(** Deserialize a {!Values.scalar_value} from JSON and **check the ranges**.
-
-    Note that in practice we also check that the values are in range
-    in the interpreter functions. Still, it doesn't cost much to be
-    a bit conservative.
-
-    This is written by hand because it does not match the structure of the
-    corresponding rust type. *)
-and scalar_value_of_json (js : json) : (scalar_value, string) result =
-  let res =
-    combine_error_msgs js __FUNCTION__
-      (match js with
-      | `Assoc [ ("Isize", bi) ] ->
-          let* bi = big_int_of_json bi in
-          Ok { value = bi; int_ty = Isize }
-      | `Assoc [ ("I8", bi) ] ->
-          let* bi = big_int_of_json bi in
-          Ok { value = bi; int_ty = I8 }
-      | `Assoc [ ("I16", bi) ] ->
-          let* bi = big_int_of_json bi in
-          Ok { value = bi; int_ty = I16 }
-      | `Assoc [ ("I32", bi) ] ->
-          let* bi = big_int_of_json bi in
-          Ok { value = bi; int_ty = I32 }
-      | `Assoc [ ("I64", bi) ] ->
-          let* bi = big_int_of_json bi in
-          Ok { value = bi; int_ty = I64 }
-      | `Assoc [ ("I128", bi) ] ->
-          let* bi = big_int_of_json bi in
-          Ok { value = bi; int_ty = I128 }
-      | `Assoc [ ("Usize", bi) ] ->
-          let* bi = big_int_of_json bi in
-          Ok { value = bi; int_ty = Usize }
-      | `Assoc [ ("U8", bi) ] ->
-          let* bi = big_int_of_json bi in
-          Ok { value = bi; int_ty = U8 }
-      | `Assoc [ ("U16", bi) ] ->
-          let* bi = big_int_of_json bi in
-          Ok { value = bi; int_ty = U16 }
-      | `Assoc [ ("U32", bi) ] ->
-          let* bi = big_int_of_json bi in
-          Ok { value = bi; int_ty = U32 }
-      | `Assoc [ ("U64", bi) ] ->
-          let* bi = big_int_of_json bi in
-          Ok { value = bi; int_ty = U64 }
-      | `Assoc [ ("U128", bi) ] ->
-          let* bi = big_int_of_json bi in
-          Ok { value = bi; int_ty = U128 }
-      | _ -> Error "")
-  in
-  match res with
-  | Error _ -> res
-  | Ok sv ->
-      if not (check_scalar_value_in_range sv) then (
-        log#serror ("Scalar value not in range: " ^ show_scalar_value sv);
-        raise (Failure ("Scalar value not in range: " ^ show_scalar_value sv)));
-      res
-
-(* This is written by hand because the corresponding rust type does not exist. *)
-and region_var_group_of_json (js : json) : (region_var_group, string) result =
-  combine_error_msgs js __FUNCTION__
-    (match js with
-    | `Assoc [ ("id", id); ("regions", regions); ("parents", parents) ] ->
-        let* id = RegionGroupId.id_of_json id in
-        let* regions = list_of_json RegionVarId.id_of_json regions in
-        let* parents = list_of_json RegionGroupId.id_of_json parents in
-        Ok { id; regions; parents }
-    | _ -> Error "")
-
-and region_var_groups_of_json (js : json) : (region_var_groups, string) result =
-  combine_error_msgs js __FUNCTION__ (list_of_json region_var_group_of_json js)
+(* __REPLACE0__ *)
 
 and maybe_opaque_body_of_json (bodies : 'body gexpr_body option list)
     (js : json) : ('body gexpr_body option, string) result =
@@ -168,8 +52,6 @@ and maybe_opaque_body_of_json (bodies : 'body gexpr_body option list)
         Ok body
     | `Assoc [ ("Err", `Null) ] -> Ok None
     | _ -> Error "")
-
-(* __REPLACE0__ *)
 
 (* This is written by hand because the corresponding rust type is not type-generic. *)
 and gfun_decl_of_json (bodies : 'body gexpr_body option list)
@@ -201,6 +83,7 @@ and gfun_decl_of_json (bodies : 'body gexpr_body option list)
           }
     | _ -> Error "")
 
+(* This is written by hand because the corresponding rust type is not type-generic. *)
 and gglobal_decl_of_json (bodies : 'body gexpr_body option list)
     (id_to_file : id_to_file_map) (js : json) :
     ('body gexpr_body option gglobal_decl, string) result =
@@ -226,6 +109,27 @@ and gglobal_decl_of_json (bodies : 'body gexpr_body option list)
         in
         Ok global
     | _ -> Error "")
+
+(** Deserialize a map from file id to file name.
+
+    In the serialized LLBC, the files in the loc spans are refered to by their
+    ids, in order to save space. In a functional language like OCaml this is
+    not necessary: we thus replace the file ids by the file name themselves in
+    the AST.
+    The "id to file" map is thus only used in the deserialization process.
+  *)
+and id_to_file_of_json (js : json) : (id_to_file_map, string) result =
+  combine_error_msgs js __FUNCTION__
+    ((* The map is stored as a list of pairs (key, value): we deserialize
+      * this list then convert it to a map *)
+     let* file_names = list_of_json (option_of_json file_name_of_json) js in
+     let names_with_ids =
+       List.filter_map
+         (fun (i, name) ->
+           match name with None -> None | Some name -> Some (i, name))
+         (List.mapi (fun i name -> (FileId.of_int i, name)) file_names)
+     in
+     Ok (FileId.Map.of_list names_with_ids))
 
 (* This is written by hand because the corresponding rust type is not type-generic. *)
 and gtranslated_crate_of_json

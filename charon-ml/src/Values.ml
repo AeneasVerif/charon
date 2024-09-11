@@ -20,28 +20,25 @@ let pp_big_int (fmt : Format.formatter) (bi : big_int) : unit =
 let compare_big_int (bi0 : big_int) (bi1 : big_int) : int = Z.compare bi0 bi1
 let show_big_int (bi : big_int) : string = Z.to_string bi
 
-(** Ancestor the literal iter visitor *)
+(* Ancestors for the literal visitors *)
 class ['self] iter_literal_base =
-  object (_self : 'self)
+  object (self : 'self)
     inherit [_] VisitorsRuntime.iter
     method visit_big_int : 'env -> big_int -> unit = fun _ _ -> ()
   end
 
-(** Ancestor the literal map visitor *)
 class ['self] map_literal_base =
-  object (_self : 'self)
+  object (self : 'self)
     inherit [_] VisitorsRuntime.map
     method visit_big_int : 'env -> big_int -> big_int = fun _ x -> x
   end
 
-(** Ancestor the literal reduce visitor *)
 class virtual ['self] reduce_literal_base =
   object (self : 'self)
     inherit [_] VisitorsRuntime.reduce
     method visit_big_int : 'env -> big_int -> 'a = fun _ _ -> self#zero
   end
 
-(** Ancestor the literal mapreduce visitor *)
 class virtual ['self] mapreduce_literal_base =
   object (self : 'self)
     inherit [_] VisitorsRuntime.mapreduce
@@ -50,16 +47,7 @@ class virtual ['self] mapreduce_literal_base =
       fun _ x -> (x, self#zero)
   end
 
-(** A scalar value
-
-    Note that we use unbounded integers everywhere.
-    We then harcode the boundaries for the different types.
-
-    Hand-written because the rust version is an enum with custom (de)serialization functions.
- *)
-type scalar_value = { value : big_int; int_ty : integer_type }
-
-and integer_type =
+type integer_type =
   | Isize
   | I8
   | I16
@@ -93,6 +81,15 @@ and literal =
   | VChar of char
   | VByteStr of int list
   | VStr of string
+
+(** A scalar value. *)
+and scalar_value = {
+  (* Note that we use unbounded integers everywhere.
+     We then harcode the boundaries for the different types.
+  *)
+  value : big_int;
+  int_ty : integer_type;
+}
 
 (** This is simlar to the Scalar value above. However, instead of storing
     the float value itself, we store its String representation. This allows
