@@ -822,10 +822,7 @@ struct DeriveVisitors {
 #[derive(Clone, Copy)]
 enum GenerationKind {
     OfJson,
-    /// The boolean indicates whether this is an open recursion group (i.e. shuold start with `and
-    /// ty = ...`). If `false`, the first element of the group will be `type ty = ...` instead of
-    /// `and ty = ...`;
-    TypeDecl(bool, Option<DeriveVisitors>),
+    TypeDecl(Option<DeriveVisitors>),
 }
 
 /// Replace markers in `template` with auto-generated code.
@@ -853,11 +850,11 @@ impl GenerateCodeFor {
                         .format("\n");
                     format!("let rec ___ = ()\n{fns}")
                 }
-                GenerationKind::TypeDecl(open_rec, visitors) => {
+                GenerationKind::TypeDecl(visitors) => {
                     let mut decls = tys
                         .enumerate()
                         .map(|(i, ty)| {
-                            let co_recursive = *open_rec || i != 0;
+                            let co_recursive = i != 0;
                             type_decl_to_ocaml_decl(ctx, ty, co_recursive)
                         })
                         .join("\n");
@@ -1224,7 +1221,7 @@ fn generate_ml(crate_data: TranslatedCrate, output_dir: PathBuf) -> anyhow::Resu
             template: output_dir.join("templates/GAst.ml"),
             target: output_dir.join("generated/GAst.ml"),
             markers: ctx.markers_from_names(&[
-                (GenerationKind::TypeDecl(false, Some(DeriveVisitors {
+                (GenerationKind::TypeDecl(Some(DeriveVisitors {
                     name: "statement_base",
                     ancestor: Some("rvalue"),
                     reduce: false,
@@ -1236,7 +1233,7 @@ fn generate_ml(crate_data: TranslatedCrate, output_dir: PathBuf) -> anyhow::Resu
                     "Call",
                     "Assert",
                 ]),
-                (GenerationKind::TypeDecl(false, None), &[
+                (GenerationKind::TypeDecl(None), &[
                     "ParamsInfo",
                     "ClosureKind",
                     "ClosureInfo",
@@ -1248,19 +1245,19 @@ fn generate_ml(crate_data: TranslatedCrate, output_dir: PathBuf) -> anyhow::Resu
                     "GDeclarationGroup",
                     "DeclarationGroup",
                 ]),
-                (GenerationKind::TypeDecl(false, None), &["Var", "AnyTransId", "FunDeclId"]),
+                (GenerationKind::TypeDecl(None), &["Var", "AnyTransId", "FunDeclId"]),
             ]),
         },
         GenerateCodeFor {
             template: output_dir.join("templates/Expressions.ml"),
             target: output_dir.join("generated/Expressions.ml"),
             markers: ctx.markers_from_names(&[
-                (GenerationKind::TypeDecl(false, None), &[
+                (GenerationKind::TypeDecl(None), &[
                     "VarId",
                     // TODO: can't move because of variant name clash with `raw_statement::Panic`
                     "AbortKind",
                 ]),
-                (GenerationKind::TypeDecl(false, Some(DeriveVisitors {
+                (GenerationKind::TypeDecl(Some(DeriveVisitors {
                     name: "rvalue",
                     ancestor: Some("generic_params"),
                     reduce: false,
@@ -1296,7 +1293,7 @@ fn generate_ml(crate_data: TranslatedCrate, output_dir: PathBuf) -> anyhow::Resu
             template: output_dir.join("templates/Meta.ml"),
             target: output_dir.join("generated/Meta.ml"),
             markers: ctx.markers_from_names(&[
-                (GenerationKind::TypeDecl(false, None), &[
+                (GenerationKind::TypeDecl(None), &[
                     "Loc",
                     "FileName",
                     "RawSpan",
@@ -1312,7 +1309,7 @@ fn generate_ml(crate_data: TranslatedCrate, output_dir: PathBuf) -> anyhow::Resu
             template: output_dir.join("templates/Types.ml"),
             target: output_dir.join("generated/Types.ml"),
             markers: ctx.markers_from_names(&[
-                (GenerationKind::TypeDecl(false, None), &[
+                (GenerationKind::TypeDecl(None), &[
                     "ConstGenericVarId",
                     "Disambiguator",
                     "FieldId",
@@ -1326,7 +1323,7 @@ fn generate_ml(crate_data: TranslatedCrate, output_dir: PathBuf) -> anyhow::Resu
                     "TypeVarId",
                     "VariantId",
                 ]),
-                (GenerationKind::TypeDecl(false, Some(DeriveVisitors {
+                (GenerationKind::TypeDecl(Some(DeriveVisitors {
                     name: "const_generic",
                     ancestor: Some("literal"),
                     reduce: true,
@@ -1348,7 +1345,7 @@ fn generate_ml(crate_data: TranslatedCrate, output_dir: PathBuf) -> anyhow::Resu
                 ]),
                 // Can't merge into aboce because aeneas uses the above alongside their own partial
                 // copy of `ty`, which causes method type clashes.
-                (GenerationKind::TypeDecl(false, Some(DeriveVisitors {
+                (GenerationKind::TypeDecl(Some(DeriveVisitors {
                     name: "ty",
                     ancestor: Some("ty_base_base"),
                     reduce: false,
@@ -1369,7 +1366,7 @@ fn generate_ml(crate_data: TranslatedCrate, output_dir: PathBuf) -> anyhow::Resu
                     "GenericArgs",
                 ]),
                 // TODO: can't merge into above because of field name clashes (`types`, `regions` etc).
-                (GenerationKind::TypeDecl(false, Some(DeriveVisitors {
+                (GenerationKind::TypeDecl(Some(DeriveVisitors {
                     name: "generic_params",
                     ancestor: Some("ty"),
                     reduce: false,
@@ -1385,7 +1382,7 @@ fn generate_ml(crate_data: TranslatedCrate, output_dir: PathBuf) -> anyhow::Resu
                     "ConstGenericVar",
                     "TraitTypeConstraint",
                 ]),
-                (GenerationKind::TypeDecl(false, None), &[
+                (GenerationKind::TypeDecl(None), &[
                     "ImplElem",
                     "PathElem",
                     "Name",
@@ -1401,7 +1398,7 @@ fn generate_ml(crate_data: TranslatedCrate, output_dir: PathBuf) -> anyhow::Resu
             template: output_dir.join("templates/Values.ml"),
             target: output_dir.join("generated/Values.ml"),
             markers: ctx.markers_from_names(&[
-                (GenerationKind::TypeDecl(false, Some(DeriveVisitors {
+                (GenerationKind::TypeDecl(Some(DeriveVisitors {
                     name: "literal",
                     ancestor: None,
                     reduce: true,
@@ -1422,7 +1419,7 @@ fn generate_ml(crate_data: TranslatedCrate, output_dir: PathBuf) -> anyhow::Resu
             template: output_dir.join("templates/LlbcAst.ml"),
             target: output_dir.join("generated/LlbcAst.ml"),
             markers: vec![
-                (GenerationKind::TypeDecl(false, Some(DeriveVisitors {
+                (GenerationKind::TypeDecl(Some(DeriveVisitors {
                     name: "statement",
                     ancestor: Some("statement_base"),
                     reduce: false,
@@ -1434,7 +1431,7 @@ fn generate_ml(crate_data: TranslatedCrate, output_dir: PathBuf) -> anyhow::Resu
             template: output_dir.join("templates/UllbcAst.ml"),
             target: output_dir.join("generated/UllbcAst.ml"),
             markers: ctx.markers_from_names(&[
-                (GenerationKind::TypeDecl(false, Some(DeriveVisitors {
+                (GenerationKind::TypeDecl(Some(DeriveVisitors {
                     name: "statement",
                     ancestor: Some("GAst.statement_base"),
                     reduce: false,
@@ -1447,7 +1444,7 @@ fn generate_ml(crate_data: TranslatedCrate, output_dir: PathBuf) -> anyhow::Resu
                     "charon_lib::ast::ullbc_ast::SwitchTargets",
                 ]),
                 // TODO: Can't merge with above because of field name clashes (`content` and `span`).
-                (GenerationKind::TypeDecl(false, Some(DeriveVisitors {
+                (GenerationKind::TypeDecl(Some(DeriveVisitors {
                     name: "ullbc_ast",
                     ancestor: Some("statement"),
                     reduce: false,
