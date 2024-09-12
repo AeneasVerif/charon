@@ -1188,28 +1188,35 @@ fn generate_ml(crate_data: TranslatedCrate, output_dir: PathBuf) -> anyhow::Resu
     .iter()
     .map(|name| ctx.id_from_name(name))
     .collect();
-    let llbc_types: HashSet<_> = ctx.children_of("charon_lib::ast::llbc_ast::Statement");
-    let ullbc_types: HashSet<_> = ctx.children_of("charon_lib::ast::ullbc_ast::BodyContents");
-    let common_types: HashSet<_> = llbc_types.intersection(&ullbc_types).copied().collect();
-    let llbc_types: HashSet<_> = llbc_types
-        .difference(&common_types.union(&manually_implemented).copied().collect())
-        .copied()
-        .collect();
-    let ullbc_types: HashSet<_> = ullbc_types
-        .difference(&common_types.union(&manually_implemented).copied().collect())
-        .copied()
-        .collect();
-    let body_specific_types: HashSet<_> = llbc_types.union(&ullbc_types).copied().collect();
-    let gast_types: HashSet<_> = ctx
-        .children_of("TranslatedCrate")
-        .difference(
-            &body_specific_types
-                .union(&manually_implemented)
-                .copied()
-                .collect(),
-        )
-        .copied()
-        .collect();
+
+    let (gast_types, llbc_types, ullbc_types) = {
+        let llbc_types: HashSet<_> = ctx.children_of("charon_lib::ast::llbc_ast::Statement");
+        let ullbc_types: HashSet<_> = ctx.children_of("charon_lib::ast::ullbc_ast::BodyContents");
+        let common_types: HashSet<_> = llbc_types.intersection(&ullbc_types).copied().collect();
+
+        let llbc_types: HashSet<_> = llbc_types
+            .difference(&common_types.union(&manually_implemented).copied().collect())
+            .copied()
+            .collect();
+        let ullbc_types: HashSet<_> = ullbc_types
+            .difference(&common_types.union(&manually_implemented).copied().collect())
+            .copied()
+            .collect();
+
+        let body_specific_types: HashSet<_> = llbc_types.union(&ullbc_types).copied().collect();
+        let gast_types: HashSet<_> = ctx
+            .children_of("TranslatedCrate")
+            .difference(
+                &body_specific_types
+                    .union(&manually_implemented)
+                    .copied()
+                    .collect(),
+            )
+            .copied()
+            .collect();
+
+        (gast_types, llbc_types, ullbc_types)
+    };
 
     #[rustfmt::skip]
     let generate_code_for = vec![
@@ -1414,18 +1421,14 @@ fn generate_ml(crate_data: TranslatedCrate, output_dir: PathBuf) -> anyhow::Resu
         GenerateCodeFor {
             template: output_dir.join("templates/LlbcAst.ml"),
             target: output_dir.join("generated/LlbcAst.ml"),
-            markers: ctx.markers_from_names(&[
+            markers: vec![
                 (GenerationKind::TypeDecl(false, Some(DeriveVisitors {
                     name: "statement",
                     ancestor: Some("statement_base"),
                     reduce: false,
                     extra_types: &[],
-                })), &[
-                    "charon_lib::ast::llbc_ast::RawStatement",
-                    "charon_lib::ast::llbc_ast::Statement",
-                    "charon_lib::ast::llbc_ast::Switch",
-                ]),
-            ]),
+                })), llbc_types.clone()),
+            ],
         },
         GenerateCodeFor {
             template: output_dir.join("templates/UllbcAst.ml"),
