@@ -1,0 +1,90 @@
+# Final LLBC before serialization:
+
+fn core::slice::{Slice<T>}::len<'_0, T>(@1: &'_0 (Slice<T>)) -> usize
+
+fn test_crate::sum<'_0>(@1: &'_0 (Slice<u32>)) -> u32
+{
+    let @0: u32; // return
+    let s@1: &'_ (Slice<u32>); // arg #1
+    let sum@2: u32; // local
+    let i@3: usize; // local
+    let @4: (); // anonymous local
+    let @5: (); // anonymous local
+    let @6: bool; // anonymous local
+    let @7: usize; // anonymous local
+    let @8: usize; // anonymous local
+    let @9: &'_ (Slice<u32>); // anonymous local
+    let @10: u32; // anonymous local
+    let @11: usize; // anonymous local
+    let @12: (); // anonymous local
+    let @13: u32; // anonymous local
+    let @14: bool; // anonymous local
+    let @15: u32; // anonymous local
+    let @16: u32; // anonymous local
+    let @17: (); // anonymous local
+    let @18: (); // anonymous local
+    let @19: &'_ (Slice<u32>); // anonymous local
+    let @20: &'_ (u32); // anonymous local
+
+    sum@2 := const (0 : u32)
+    @fake_read(sum@2)
+    // Comment1
+    i@3 := const (0 : usize)
+    @fake_read(i@3)
+    // Comment2
+    loop {
+        @7 := copy (i@3)
+        @9 := &*(s@1)
+        @8 := core::slice::{Slice<T>}::len<u32>(move (@9))
+        drop @9
+        @6 := move (@7) < move (@8)
+        if move (@6) {
+            drop @8
+            drop @7
+            @11 := copy (i@3)
+            @19 := &*(s@1)
+            @20 := @SliceIndexShared<'_, u32>(move (@19), copy (@11))
+            @10 := copy (*(@20))
+            sum@2 := copy (sum@2) + move (@10)
+            drop @10
+            drop @11
+            i@3 := copy (i@3) + const (1 : usize)
+            @17 := ()
+            @5 := move (@17)
+            drop @6
+            continue 0
+        }
+        else {
+            break 0
+        }
+    }
+    drop @8
+    drop @7
+    @18 := ()
+    @4 := move (@18)
+    drop @12
+    drop @6
+    drop @4
+    @15 := copy (sum@2)
+    @14 := move (@15) > const (10 : u32)
+    if move (@14) {
+        drop @15
+        @16 := copy (sum@2)
+        @13 := move (@16) + const (100 : u32)
+        drop @16
+    }
+    else {
+        drop @15
+        @13 := copy (sum@2)
+    }
+    drop @14
+    sum@2 := move (@13)
+    drop @13
+    @0 := copy (sum@2)
+    drop i@3
+    drop sum@2
+    return
+}
+
+
+

@@ -18,6 +18,7 @@ use charon_lib::pretty::FmtWithCtx;
 use charon_lib::ullbc_ast::*;
 use hax_frontend_exporter as hax;
 use hax_frontend_exporter::{HasMirSetter, HasOwnerIdSetter, SInto};
+use itertools::Itertools;
 use rustc_hir::def_id::DefId;
 use rustc_middle::mir::START_BLOCK;
 use translate_types::translate_bound_region_kind_name;
@@ -1256,6 +1257,48 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         Ok(t_args)
     }
 
+    /// Gather all the lines that start with `//` inside the given span.
+    fn translate_body_comments(&mut self, charon_span: Span) -> Vec<(usize, Vec<String>)> {
+        let rust_span = charon_span.rust_span();
+        let source_map = self.t_ctx.tcx.sess.source_map();
+        if rust_span.ctxt().is_root()
+            && let Ok(body_text) = source_map.span_to_snippet(rust_span.into())
+        {
+            let mut comments = body_text
+                .lines()
+                // Iter through the lines of this body in reverse order.
+                .rev()
+                .enumerate()
+                // Compute the absolute line number
+                .map(|(i, line)| (charon_span.span.end.line - i, line))
+                // Extract the comment if this line starts with `//`
+                .map(|(line_nbr, line)| (line_nbr, line.trim_start().strip_prefix("//")))
+                .peekable()
+                .batching(|iter| {
+                    // Get the next line. This is not a comment: it's either the last line of the
+                    // body or a line that wasn't consumed by `peeking_take_while`.
+                    let (line_nbr, _first) = iter.next()?;
+                    // Collect all the comments before this line.
+                    let mut comments = iter
+                        // `peeking_take_while` ensures we don't consume a line that returns
+                        // `false`. It will be consumed by the next round of `batching`.
+                        .peeking_take_while(|(_, opt_comment)| opt_comment.is_some())
+                        .map(|(_, opt_comment)| opt_comment.unwrap())
+                        .map(str::trim_start)
+                        .map(str::to_owned)
+                        .collect_vec();
+                    comments.reverse();
+                    Some((line_nbr, comments))
+                })
+                .filter(|(_, comments)| !comments.is_empty())
+                .collect_vec();
+            comments.reverse();
+            comments
+        } else {
+            Vec::new()
+        }
+    }
+
     /// Translate a function body if we can (it has MIR) and we want to (we don't translate bodies
     /// declared opaque, and only translate non-local bodies if `extract_opaque_bodies` is set).
     fn translate_body(
@@ -1332,6 +1375,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             span,
             arg_count,
             locals: mem::take(&mut self.vars),
+            comments: self.translate_body_comments(span),
             body: blocks,
         })))
     }
@@ -1416,11 +1460,11 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                     hax::ClosureKind::FnMut => ClosureKind::FnMut,
                     hax::ClosureKind::FnOnce => ClosureKind::FnOnce,
                 };
-                let state = args
+                let state: Vector<TypeVarId, Ty> = args
                     .upvar_tys
                     .iter()
                     .map(|ty| self.translate_ty(span, erase_regions, &ty))
-                    .try_collect::<Vector<TypeVarId, Ty>>()?;
+                    .try_collect()?;
                 Some(ClosureInfo { kind, state })
             }
             hax::FullDefKind::Fn { .. } => None,

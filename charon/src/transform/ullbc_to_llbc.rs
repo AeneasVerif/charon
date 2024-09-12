@@ -1727,6 +1727,7 @@ fn translate_body_aux(no_code_duplication: bool, src_body: &src::ExprBody) -> tg
         span: src_body.span,
         arg_count: src_body.arg_count,
         locals: src_body.locals.clone(),
+        comments: src_body.comments.clone(),
         body: tgt_body,
     }
 }

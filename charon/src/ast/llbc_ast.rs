@@ -54,6 +54,9 @@ pub enum RawStatement {
 pub struct Statement {
     pub span: Span,
     pub content: RawStatement,
+    /// Comments that precede this statement.
+    // This is filled in a late pass after all the control-flow manipulation.
+    pub comments_before: Vec<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, Drive, DriveMut)]

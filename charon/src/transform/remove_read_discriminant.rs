@@ -22,6 +22,7 @@ impl Transform {
             if let [Statement {
                 content: RawStatement::Assign(dest, Rvalue::Discriminant(p, adt_id)),
                 span: span1,
+                ..
             }, rest @ ..] = suffix
             {
                 // The destination should be a variable
@@ -122,10 +123,10 @@ impl Transform {
                             .map(|(id, variant)| {
                                 let discr_value =
                                     Rvalue::Use(Operand::Const(variant.discriminant.to_constant()));
-                                let statement = Statement {
-                                    span: *span1,
-                                    content: RawStatement::Assign(dest.clone(), discr_value),
-                                };
+                                let statement = Statement::new(
+                                    *span1,
+                                    RawStatement::Assign(dest.clone(), discr_value),
+                                );
                                 (vec![id], statement.into_block())
                             })
                             .collect();

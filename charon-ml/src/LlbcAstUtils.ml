@@ -42,7 +42,7 @@ let fun_decl_has_loops (fd : fun_decl) : bool =
 let mk_sequence (st1 : statement) (st2 : statement) : statement =
   let span = MetaUtils.combine_span st1.span st2.span in
   let content = Sequence (st1, st2) in
-  { span; content }
+  { span; content; comments_before = [] }
 
 (** Chain two statements into a sequence, by pushing the second statement
     at the end of the first one (diving into sequences, switches, etc.).
@@ -60,7 +60,7 @@ let rec chain_statements (st1 : statement) (st2 : statement) : statement =
       (* Insert inside the switch *)
       let span = MetaUtils.combine_span st1.span st2.span in
       let content = Switch (chain_statements_in_switch switch st2) in
-      { span; content }
+      { span; content; comments_before = [] }
   | Sequence (st3, st4) ->
       (* Insert at the end of the statement *)
       mk_sequence st3 (chain_statements st4 st2)

@@ -352,6 +352,7 @@ and gexpr_body_of_json :
           ("span", span);
           ("arg_count", arg_count);
           ("locals", locals);
+          ("comments", _);
           ("body", body);
         ] ->
         let* span = span_of_json id_to_file span in

@@ -59,6 +59,10 @@ pub struct GExprBody<T> {
     /// - the input arguments
     /// - the remaining locals, used for the intermediate computations
     pub locals: Vector<VarId, Var>,
+    /// For each line inside the body, we record any whole-line `//` comments found before it. They
+    /// are added to statements in the late `recover_body_comments` pass.
+    #[charon::opaque]
+    pub comments: Vec<(usize, Vec<String>)>,
     pub body: T,
 }
 

@@ -59,7 +59,11 @@ impl Switch {
 
 impl Statement {
     pub fn new(span: Span, content: RawStatement) -> Self {
-        Statement { span, content }
+        Statement {
+            span,
+            content,
+            comments_before: vec![],
+        }
     }
 
     pub fn into_box(self) -> Box<Self> {

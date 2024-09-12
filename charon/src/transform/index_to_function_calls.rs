@@ -101,15 +101,11 @@ impl<'a> Visitor<'a> {
             //`tmp0 = &{mut}p`
             let input_var = {
                 let input_var = self.fresh_var(None, input_ty);
-                let borrow_st = RawStatement::Assign(
+                let kind = RawStatement::Assign(
                     Place::new(input_var),
                     Rvalue::Ref(p.clone(), BorrowKind::mutable(mut_access)),
                 );
-                let borrow_st = Statement {
-                    content: borrow_st,
-                    span: self.span,
-                };
-                self.statements.push(borrow_st);
+                self.statements.push(Statement::new(self.span, kind));
                 input_var
             };
 
@@ -132,26 +128,22 @@ impl<'a> Visitor<'a> {
             if from_end {
                 let usize_ty = Ty::Literal(LiteralTy::Integer(IntegerTy::Usize));
                 let len_var = self.fresh_var(None, usize_ty.clone());
-                self.statements.push(Statement {
-                    content: RawStatement::Assign(
-                        Place::new(len_var),
-                        Rvalue::Len(
-                            p.clone(),
-                            ty.clone(),
-                            generics.const_generics.get(0.into()).cloned(),
-                        ),
+                let kind = RawStatement::Assign(
+                    Place::new(len_var),
+                    Rvalue::Len(
+                        p.clone(),
+                        ty.clone(),
+                        generics.const_generics.get(0.into()).cloned(),
                     ),
-                    span: self.span,
-                });
+                );
+                self.statements.push(Statement::new(self.span, kind));
                 // `index_var = len(p) - last_arg`
                 let index_var = self.fresh_var(None, usize_ty);
-                self.statements.push(Statement {
-                    content: RawStatement::Assign(
-                        Place::new(index_var),
-                        Rvalue::BinaryOp(BinOp::Sub, Operand::Copy(Place::new(len_var)), last_arg),
-                    ),
-                    span: self.span,
-                });
+                let kind = RawStatement::Assign(
+                    Place::new(index_var),
+                    Rvalue::BinaryOp(BinOp::Sub, Operand::Copy(Place::new(len_var)), last_arg),
+                );
+                self.statements.push(Statement::new(self.span, kind));
                 args.push(Operand::Copy(Place::new(index_var)));
             } else {
                 args.push(last_arg);
@@ -166,10 +158,8 @@ impl<'a> Visitor<'a> {
                     args,
                     dest: Place::new(output_var),
                 };
-                self.statements.push(Statement {
-                    content: RawStatement::Call(index_call),
-                    span: self.span,
-                });
+                let kind = RawStatement::Call(index_call);
+                self.statements.push(Statement::new(self.span, kind));
                 output_var
             };
 
