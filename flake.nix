@@ -137,6 +137,7 @@
           cp ${./charon-ml/src}/Expressions.ml committed
           cp ${./charon-ml/src}/Meta.ml committed
           cp ${./charon-ml/src}/Types.ml committed
+          cp ${./charon-ml/src}/Values.ml committed
           cp ${./charon-ml/src}/GAstOfJson.ml committed
           cp ${./charon-ml/src}/LlbcOfJson.ml committed
           cp ${./charon-ml/src}/UllbcOfJson.ml committed

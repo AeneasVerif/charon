@@ -11,24 +11,21 @@ module BlockId = IdGen ()
   *)
 type block_id = BlockId.id [@@deriving show, ord]
 
-(** Ancestor for {!UllbcAst.statement} iter visitor *)
+(* Ancestors for the statement visitors *)
 class ['self] iter_statement_base =
-  object (_self : 'self)
+  object (self : 'self)
     inherit [_] GAst.iter_statement_base
     method visit_block_id : 'env -> block_id -> unit = fun _ _ -> ()
   end
 
-(** Ancestor for {!UllbcAst.statement} map visitor *)
 class ['self] map_statement_base =
-  object (_self : 'self)
+  object (self : 'self)
     inherit [_] GAst.map_statement_base
     method visit_block_id : 'env -> block_id -> block_id = fun _ x -> x
   end
 
-type statement = { span : span; content : raw_statement }
-
 (** A raw statement: a statement without meta data. *)
-and raw_statement =
+type raw_statement =
   | Assign of place * rvalue
   | Call of call
       (** A call. For now, we don't support dynamic calls (i.e. to a function pointer in memory). *)
@@ -44,26 +41,10 @@ and raw_statement =
           checks, over/underflow checks, div/rem by zero checks, pointer alignement check.
        *)
   | Nop  (** Does nothing. Useful for passes. *)
-[@@deriving
-  show,
-    visitors
-      {
-        name = "iter_statement";
-        variety = "iter";
-        ancestors = [ "iter_statement_base" ];
-        nude = true (* Don't inherit {!VisitorsRuntime.iter} *);
-        concrete = true;
-      },
-    visitors
-      {
-        name = "map_statement";
-        variety = "map";
-        ancestors = [ "map_statement_base" ];
-        nude = true (* Don't inherit {!VisitorsRuntime.iter} *);
-        concrete = true;
-      }]
 
-type switch =
+and statement = { span : span; content : raw_statement }
+
+and switch =
   | If of block_id * block_id  (** Gives the `if` block and the `else` block *)
   | SwitchInt of integer_type * (scalar_value * block_id) list * block_id
       (** Gives the integer type, a map linking values to switch branches, and the
@@ -72,24 +53,23 @@ type switch =
        *)
 [@@deriving
   show,
+    ord,
     visitors
       {
-        name = "iter_switch";
+        name = "iter_statement";
         variety = "iter";
-        ancestors = [ "iter_statement" ];
-        nude = true (* Don't inherit {!VisitorsRuntime.iter} *);
-        concrete = true;
+        ancestors = [ "iter_statement_base" ];
+        nude = true (* Don't inherit VisitorsRuntime *);
       },
     visitors
       {
-        name = "map_switch";
+        name = "map_statement";
         variety = "map";
-        ancestors = [ "map_statement" ];
-        nude = true (* Don't inherit {!VisitorsRuntime.iter} *);
-        concrete = true;
+        ancestors = [ "map_statement_base" ];
+        nude = true (* Don't inherit VisitorsRuntime *);
       }]
 
-type terminator = { span : span; content : raw_terminator }
+type blocks = block list
 
 (** A raw terminator: a terminator without meta data. *)
 and raw_terminator =
@@ -105,27 +85,27 @@ and raw_terminator =
        *)
   | Abort of abort_kind  (** Handles panics and impossible cases. *)
   | Return
+
+and terminator = { span : span; content : raw_terminator }
+
+and block = { statements : statement list; terminator : terminator }
 [@@deriving
   show,
+    ord,
     visitors
       {
-        name = "iter_terminator";
+        name = "iter_ullbc_ast";
         variety = "iter";
-        ancestors = [ "iter_switch" ];
-        nude = true (* Don't inherit {!VisitorsRuntime.iter} *);
-        concrete = true;
+        ancestors = [ "iter_statement" ];
+        nude = true (* Don't inherit VisitorsRuntime *);
       },
     visitors
       {
-        name = "map_terminator";
+        name = "map_ullbc_ast";
         variety = "map";
-        ancestors = [ "map_switch" ];
-        nude = true (* Don't inherit {!VisitorsRuntime.iter} *);
-        concrete = true;
+        ancestors = [ "map_statement" ];
+        nude = true (* Don't inherit VisitorsRuntime *);
       }]
-
-type block = { statements : statement list; terminator : terminator }
-and blocks = block list [@@deriving show]
 
 type expr_body = blocks gexpr_body [@@deriving show]
 type fun_body = expr_body [@@deriving show]

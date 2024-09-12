@@ -19,87 +19,17 @@ module TraitDeclId = Types.TraitDeclId
 module TraitImplId = Types.TraitImplId
 module TraitClauseId = Types.TraitClauseId
 
-(* Note: this is duplicated in `Types.ml` but re-exported here to not break dependent projects. *)
-type fun_decl_id = FunDeclId.id [@@deriving show, ord]
-
-(* __REPLACE5__ *)
-[@@deriving show, ord]
-
+(* Imports *)
 type assumed_fun_id = Expressions.assumed_fun_id [@@deriving show, ord]
 type fun_id = Expressions.fun_id [@@deriving show, ord]
-
-type fun_id_or_trait_method_ref = Expressions.fun_id_or_trait_method_ref
-[@@deriving show, ord]
-
-(* __REPLACE4__ *)
-[@@deriving show]
-
-(** Ancestor the AST iter visitors *)
-class ['self] iter_ast_base =
-  object (_self : 'self)
-    inherit [_] iter_rvalue
-    inherit! [_] iter_generic_params
-  end
-
-(** Ancestor the AST map visitors *)
-class ['self] map_ast_base =
-  object (_self : 'self)
-    inherit [_] map_rvalue
-    inherit! [_] map_generic_params
-  end
-
-(* Below: the types need not be mutually recursive, but it makes it easier
-   to derive the visitors *)
-
-(* __REPLACE0__ *)
-[@@deriving
-  show,
-    visitors
-      {
-        name = "iter_call";
-        variety = "iter";
-        ancestors = [ "iter_ast_base" ];
-        nude = true (* Don't inherit {!VisitorsRuntime.iter} *);
-        concrete = true;
-      },
-    visitors
-      {
-        name = "map_call";
-        variety = "map";
-        ancestors = [ "map_ast_base" ];
-        nude = true (* Don't inherit {!VisitorsRuntime.iter} *);
-        concrete = true;
-      }]
-
-(** Ancestor the {!LlbcAst.statement} and {!Charon.UllbcAst.statement} iter visitors *)
-class ['self] iter_statement_base =
-  object (_self : 'self)
-    inherit [_] iter_call
-    method visit_abort_kind : 'env -> abort_kind -> unit = fun _ _ -> ()
-  end
-
-(** Ancestor the {!LlbcAst.statement} and {!Charon.UllbcAst.statement} map visitors *)
-class ['self] map_statement_base =
-  object (_self : 'self)
-    inherit [_] map_call
-    method visit_abort_kind : 'env -> abort_kind -> abort_kind = fun _ x -> x
-  end
-
-(* __REPLACE1__ *)
-[@@deriving show]
-
-(* Hand-written because the rust equivalent isn't generic *)
-type 'body gfun_decl = {
-  def_id : FunDeclId.id;
-  item_meta : item_meta;
-  signature : fun_sig;
-  kind : item_kind;
-  body : 'body gexpr_body option;
-  is_global_decl_body : bool;
-}
-[@@deriving show]
+type fun_id_or_trait_method_ref = Expressions.fun_id_or_trait_method_ref [@@deriving show, ord]
 
 (* __REPLACE2__ *)
+[@@deriving show, ord]
+
+(* __REPLACE0__ *)
+
+(* __REPLACE1__ *)
 [@@deriving show]
 
 (* Hand-written because they don't exist in rust *)
@@ -117,7 +47,15 @@ type trait_declaration_group = TraitDeclId.id g_declaration_group
 type trait_impl_group = TraitImplId.id g_declaration_group [@@deriving show]
 type mixed_declaration_group = any_decl_id g_declaration_group [@@deriving show]
 
-(* __REPLACE3__ *)
+(* Hand-written because the rust equivalent isn't generic *)
+type 'body gfun_decl = {
+  def_id : FunDeclId.id;
+  item_meta : item_meta;
+  signature : fun_sig;
+  kind : item_kind;
+  body : 'body gexpr_body option;
+  is_global_decl_body : bool;
+}
 [@@deriving show]
 
 (* Hand-written because the rust equivalent isn't generic *)

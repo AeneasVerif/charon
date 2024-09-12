@@ -8,69 +8,7 @@ open OfJsonBasic
 open Types
 open LlbcAst
 
-let rec ___ = ()
-
 (* __REPLACE0__ *)
-
-(* Hand-written because we change the `Sequence` representation *)
-and raw_statement_of_json (id_to_file : id_to_file_map) (js : json) :
-    (raw_statement, string) result =
-  combine_error_msgs js __FUNCTION__
-    (match js with
-    | `Assoc [ ("Assign", `List [ place; rvalue ]) ] ->
-        let* place = place_of_json place in
-        let* rvalue = rvalue_of_json rvalue in
-        Ok (Assign (place, rvalue))
-    | `Assoc [ ("FakeRead", place) ] ->
-        let* place = place_of_json place in
-        Ok (FakeRead place)
-    | `Assoc [ ("SetDiscriminant", `List [ place; variant_id ]) ] ->
-        let* place = place_of_json place in
-        let* variant_id = VariantId.id_of_json variant_id in
-        Ok (SetDiscriminant (place, variant_id))
-    | `Assoc [ ("Drop", place) ] ->
-        let* place = place_of_json place in
-        Ok (Drop place)
-    | `Assoc [ ("Assert", assertion) ] ->
-        let* assertion = assertion_of_json assertion in
-        Ok (Assert assertion)
-    | `Assoc [ ("Call", call) ] ->
-        let* call = call_of_json call in
-        Ok (Call call)
-    | `Assoc [ ("Abort", _) ] -> Ok Panic
-    | `String "Return" -> Ok Return
-    | `Assoc [ ("Break", i) ] ->
-        let* i = int_of_json i in
-        Ok (Break i)
-    | `Assoc [ ("Continue", i) ] ->
-        let* i = int_of_json i in
-        Ok (Continue i)
-    | `String "Nop" -> Ok Nop
-    (* We get a list from the rust side, which we fold into our recursive `Sequence` representation. *)
-    | `Assoc [ ("Sequence", `List seq) ] -> (
-        let seq = List.map (statement_of_json id_to_file) seq in
-        match List.rev seq with
-        | [] -> Ok Nop
-        | last :: rest ->
-            let* seq =
-              List.fold_left
-                (fun acc st ->
-                  let* st = st in
-                  let* acc = acc in
-                  Ok { span = st.span; content = Sequence (st, acc) })
-                last rest
-            in
-            Ok seq.content)
-    | `Assoc [ ("Switch", tgt) ] ->
-        let* switch = switch_of_json id_to_file tgt in
-        Ok (Switch switch)
-    | `Assoc [ ("Loop", st) ] ->
-        let* st = statement_of_json id_to_file st in
-        Ok (Loop st)
-    | `Assoc [ ("Error", s) ] ->
-        let* s = string_of_json s in
-        Ok (Error s)
-    | _ -> Error "")
 
 let expr_body_of_json (id_to_file : id_to_file_map) (js : json) :
     (expr_body, string) result =

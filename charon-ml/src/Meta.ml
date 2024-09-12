@@ -17,21 +17,11 @@ type loc = {
   col : int;  (** The (0-based) column offset. *)
 }
 
-(** A filename. *)
-and file_name =
-  | Virtual of path_buf  (** A remapped path (namely paths into stdlib) *)
-  | Local of path_buf
-      (** A local path (a file coming from the current crate for instance) *)
-[@@deriving show, ord]
-
-(* Hand-written because doesn't match the rust type *)
-
-(** Span data *)
-type raw_span = { file : file_name; beg_loc : loc; end_loc : loc }
-[@@deriving show, ord]
+(** Span information *)
+and raw_span = { file : file_name; beg_loc : loc; end_loc : loc }
 
 (** Meta information about a piece of code (block, statement, etc.) *)
-type span = {
+and span = {
   span : raw_span;
       (** The source code span.
 
@@ -121,4 +111,10 @@ and attr_info = {
         true`; computing item reachability is harder.
      *)
 }
+
+(** A filename. *)
+and file_name =
+  | Virtual of path_buf  (** A remapped path (namely paths into stdlib) *)
+  | Local of path_buf
+      (** A local path (a file coming from the current crate for instance) *)
 [@@deriving show, ord]

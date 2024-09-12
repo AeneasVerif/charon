@@ -27,57 +27,19 @@ module Disambiguator = IdGen ()
 module FunDeclId = IdGen ()
 module BodyId = IdGen ()
 
-type ('a, 'b) outlives_pred = 'a * 'b
+type ('a, 'b) outlives_pred = 'a * 'b [@@deriving show, ord]
 type ('id, 'x) vector = 'x list [@@deriving show, ord]
-
-(** We define this type to control the name of the visitor functions
-    (see e.g., {!class:Types.iter_ty_base} and {!Types.TVar}).
-  *)
-type type_var_id = TypeVarId.id [@@deriving show, ord]
-
-(** Same remark as for {!type_var_id} *)
-type const_generic_var_id = ConstGenericVarId.id [@@deriving show, ord]
-
-(** Same remark as for {!type_var_id} *)
-type global_decl_id = GlobalDeclId.id [@@deriving show, ord]
-
 type integer_type = Values.integer_type [@@deriving show, ord]
 type float_type = Values.float_type [@@deriving show, ord]
+type literal_type = Values.literal_type [@@deriving show, ord]
+type region_db_id = int [@@deriving show, ord]
 
-(** Same remark as for {!type_var_id} *)
-type variant_id = VariantId.id [@@deriving show, ord]
-
-(** Same remark as for {!type_var_id} *)
-type field_id = FieldId.id [@@deriving show, ord]
-
-(** Same remark as for {!type_var_id} *)
-type type_decl_id = TypeDeclId.id [@@deriving show, ord]
-
-(** Same remark as for {!type_var_id} *)
-type fun_decl_id = FunDeclId.id [@@deriving show, ord]
-
-(** Same remark as for {!type_var_id} *)
-type trait_decl_id = TraitDeclId.id [@@deriving show, ord]
-
-(** Same remark as for {!type_var_id} *)
-type trait_impl_id = TraitImplId.id [@@deriving show, ord]
-
-(** Same remark as for {!type_var_id} *)
-type trait_clause_id = TraitClauseId.id [@@deriving show, ord]
-
-(** Same remark as for {!type_var_id} *)
+(** We define these types to control the name of the visitor functions
+    (see e.g., {!class:Types.iter_ty_base} and {!Types.TVar}).
+  *)
 type region_var_id = RegionVarId.id [@@deriving show, ord]
 
-(** Same remark as for {!type_var_id} *)
-type region_id = RegionId.id [@@deriving show, ord]
-
-(** Same remark as for {!type_var_id} *)
 type region_group_id = RegionGroupId.id [@@deriving show, ord]
-
-type disambiguator = Disambiguator.id [@@deriving show, ord]
-
-(** Region DeBruijn identifiers *)
-type region_db_id = int [@@deriving show, ord]
 
 type ('id, 'name) indexed_var = {
   index : 'id;  (** Unique index identifying the variable *)
@@ -85,25 +47,22 @@ type ('id, 'name) indexed_var = {
 }
 [@@deriving show, ord]
 
-type type_var = (TypeVarId.id, string) indexed_var [@@deriving show, ord]
-
-type region_var = (RegionVarId.id, string option) indexed_var
-[@@deriving show, ord]
-
-type literal_type = Values.literal_type [@@deriving show, ord]
-
-type const_generic_var = {
-  index : ConstGenericVarId.id;
-  name : string;
-  ty : literal_type;
-}
-[@@deriving show, ord]
+type fun_decl_id = FunDeclId.id
+and disambiguator = Disambiguator.id
+and type_var_id = TypeVarId.id
+and type_decl_id = TypeDeclId.id
+and variant_id = VariantId.id
+and field_id = FieldId.id
+and region_id = RegionId.id
+and const_generic_var_id = ConstGenericVarId.id
+and global_decl_id = GlobalDeclId.id
+and trait_clause_id = TraitClauseId.id
+and trait_decl_id = TraitDeclId.id
+and trait_impl_id = TraitImplId.id [@@deriving show, ord]
 
 let all_signed_int_types = [ Isize; I8; I16; I32; I64; I128 ]
 let all_unsigned_int_types = [ Usize; U8; U16; U32; U64; U128 ]
 let all_int_types = List.append all_signed_int_types all_unsigned_int_types
-
-type ref_kind = RMut | RShared [@@deriving show, ord]
 
 (** The variant id for [Option::None] *)
 let option_none_id = VariantId.of_int 0
@@ -111,71 +70,146 @@ let option_none_id = VariantId.of_int 0
 (** The variant id for [Option::Some] *)
 let option_some_id = VariantId.of_int 1
 
-(** Ancestor for iter visitor for {!Types.const_generic} *)
+(* Ancestors for the const_generic visitors *)
 class ['self] iter_const_generic_base =
-  object (_self : 'self)
+  object (self : 'self)
     inherit [_] iter_literal
-    method visit_type_decl_id : 'env -> type_decl_id -> unit = fun _ _ -> ()
-    method visit_global_decl_id : 'env -> global_decl_id -> unit = fun _ _ -> ()
 
     method visit_const_generic_var_id : 'env -> const_generic_var_id -> unit =
       fun _ _ -> ()
+
+    method visit_fun_decl_id : 'env -> fun_decl_id -> unit = fun _ _ -> ()
+    method visit_global_decl_id : 'env -> global_decl_id -> unit = fun _ _ -> ()
+    method visit_region_db_id : 'env -> region_db_id -> unit = fun _ _ -> ()
+    method visit_region_id : 'env -> region_id -> unit = fun _ _ -> ()
+    method visit_region_var_id : 'env -> region_var_id -> unit = fun _ _ -> ()
+
+    method visit_trait_clause_id : 'env -> trait_clause_id -> unit =
+      fun _ _ -> ()
+
+    method visit_trait_decl_id : 'env -> trait_decl_id -> unit = fun _ _ -> ()
+    method visit_trait_impl_id : 'env -> trait_impl_id -> unit = fun _ _ -> ()
+    method visit_type_decl_id : 'env -> type_decl_id -> unit = fun _ _ -> ()
+    method visit_type_var_id : 'env -> type_var_id -> unit = fun _ _ -> ()
   end
 
-(** Ancestor for map visitor for {!Types.const_generic} *)
 class ['self] map_const_generic_base =
-  object (_self : 'self)
+  object (self : 'self)
     inherit [_] map_literal
-
-    method visit_type_decl_id : 'env -> type_decl_id -> type_decl_id =
-      fun _ x -> x
-
-    method visit_global_decl_id : 'env -> global_decl_id -> global_decl_id =
-      fun _ x -> x
 
     method visit_const_generic_var_id
         : 'env -> const_generic_var_id -> const_generic_var_id =
       fun _ x -> x
+
+    method visit_fun_decl_id : 'env -> fun_decl_id -> fun_decl_id = fun _ x -> x
+
+    method visit_global_decl_id : 'env -> global_decl_id -> global_decl_id =
+      fun _ x -> x
+
+    method visit_region_db_id : 'env -> region_db_id -> region_db_id =
+      fun _ x -> x
+
+    method visit_region_id : 'env -> region_id -> region_id = fun _ x -> x
+
+    method visit_region_var_id : 'env -> region_var_id -> region_var_id =
+      fun _ x -> x
+
+    method visit_trait_clause_id : 'env -> trait_clause_id -> trait_clause_id =
+      fun _ x -> x
+
+    method visit_trait_decl_id : 'env -> trait_decl_id -> trait_decl_id =
+      fun _ x -> x
+
+    method visit_trait_impl_id : 'env -> trait_impl_id -> trait_impl_id =
+      fun _ x -> x
+
+    method visit_type_decl_id : 'env -> type_decl_id -> type_decl_id =
+      fun _ x -> x
+
+    method visit_type_var_id : 'env -> type_var_id -> type_var_id = fun _ x -> x
   end
 
-(** Ancestor for reduce visitor for {!Types.const_generic} *)
 class virtual ['self] reduce_const_generic_base =
   object (self : 'self)
     inherit [_] reduce_literal
 
-    method visit_type_decl_id : 'env -> type_decl_id -> 'a =
+    method visit_const_generic_var_id : 'env -> const_generic_var_id -> 'a =
       fun _ _ -> self#zero
+
+    method visit_fun_decl_id : 'env -> fun_decl_id -> 'a = fun _ _ -> self#zero
 
     method visit_global_decl_id : 'env -> global_decl_id -> 'a =
       fun _ _ -> self#zero
 
-    method visit_const_generic_var_id : 'env -> const_generic_var_id -> 'a =
+    method visit_region_db_id : 'env -> region_db_id -> 'a =
       fun _ _ -> self#zero
+
+    method visit_region_id : 'env -> region_id -> 'a = fun _ _ -> self#zero
+
+    method visit_region_var_id : 'env -> region_var_id -> 'a =
+      fun _ _ -> self#zero
+
+    method visit_trait_clause_id : 'env -> trait_clause_id -> 'a =
+      fun _ _ -> self#zero
+
+    method visit_trait_decl_id : 'env -> trait_decl_id -> 'a =
+      fun _ _ -> self#zero
+
+    method visit_trait_impl_id : 'env -> trait_impl_id -> 'a =
+      fun _ _ -> self#zero
+
+    method visit_type_decl_id : 'env -> type_decl_id -> 'a =
+      fun _ _ -> self#zero
+
+    method visit_type_var_id : 'env -> type_var_id -> 'a = fun _ _ -> self#zero
   end
 
-(** Ancestor for mapreduce visitor for {!Types.const_generic} *)
 class virtual ['self] mapreduce_const_generic_base =
   object (self : 'self)
     inherit [_] mapreduce_literal
 
-    method visit_type_decl_id : 'env -> type_decl_id -> type_decl_id * 'a =
+    method visit_const_generic_var_id
+        : 'env -> const_generic_var_id -> const_generic_var_id * 'a =
+      fun _ x -> (x, self#zero)
+
+    method visit_fun_decl_id : 'env -> fun_decl_id -> fun_decl_id * 'a =
       fun _ x -> (x, self#zero)
 
     method visit_global_decl_id : 'env -> global_decl_id -> global_decl_id * 'a
         =
       fun _ x -> (x, self#zero)
 
-    method visit_const_generic_var_id
-        : 'env -> const_generic_var_id -> const_generic_var_id * 'a =
+    method visit_region_db_id : 'env -> region_db_id -> region_db_id * 'a =
+      fun _ x -> (x, self#zero)
+
+    method visit_region_id : 'env -> region_id -> region_id * 'a =
+      fun _ x -> (x, self#zero)
+
+    method visit_region_var_id : 'env -> region_var_id -> region_var_id * 'a =
+      fun _ x -> (x, self#zero)
+
+    method visit_trait_clause_id
+        : 'env -> trait_clause_id -> trait_clause_id * 'a =
+      fun _ x -> (x, self#zero)
+
+    method visit_trait_decl_id : 'env -> trait_decl_id -> trait_decl_id * 'a =
+      fun _ x -> (x, self#zero)
+
+    method visit_trait_impl_id : 'env -> trait_impl_id -> trait_impl_id * 'a =
+      fun _ x -> (x, self#zero)
+
+    method visit_type_decl_id : 'env -> type_decl_id -> type_decl_id * 'a =
+      fun _ x -> (x, self#zero)
+
+    method visit_type_var_id : 'env -> type_var_id -> type_var_id * 'a =
       fun _ x -> (x, self#zero)
   end
 
-(** Remark: we have to use long names because otherwise we have collisions in
-    the functions derived for the visitors. *)
+(** Const Generic Values. Either a primitive value, or a variable corresponding to a primitve value *)
 type const_generic =
-  | CgGlobal of global_decl_id
-  | CgVar of const_generic_var_id
-  | CgValue of literal
+  | CgGlobal of global_decl_id  (** A global constant *)
+  | CgVar of const_generic_var_id  (** A const generic variable *)
+  | CgValue of literal  (** A concrete value *)
 [@@deriving
   show,
     ord,
@@ -184,121 +218,166 @@ type const_generic =
         name = "iter_const_generic";
         variety = "iter";
         ancestors = [ "iter_const_generic_base" ];
-        nude = true (* Don't inherit {!VisitorsRuntime.iter} *);
-        concrete = true;
-        polymorphic = false;
+        nude = true (* Don't inherit VisitorsRuntime *);
       },
     visitors
       {
         name = "map_const_generic";
         variety = "map";
         ancestors = [ "map_const_generic_base" ];
-        nude = true (* Don't inherit {!VisitorsRuntime.map} *);
-        concrete = true;
-        polymorphic = false;
+        nude = true (* Don't inherit VisitorsRuntime *);
       },
     visitors
       {
         name = "reduce_const_generic";
         variety = "reduce";
         ancestors = [ "reduce_const_generic_base" ];
-        nude = true (* Don't inherit {!VisitorsRuntime.reduce} *);
-        polymorphic = false;
+        nude = true (* Don't inherit VisitorsRuntime *);
       },
     visitors
       {
         name = "mapreduce_const_generic";
         variety = "mapreduce";
         ancestors = [ "mapreduce_const_generic_base" ];
-        nude = true (* Don't inherit {!VisitorsRuntime.mapreduce} *);
-        polymorphic = false;
+        nude = true (* Don't inherit VisitorsRuntime *);
       }]
 
-type trait_item_name = string [@@deriving show, ord]
-
 (** Ancestor for iter visitor for {!type: Types.ty} *)
-class ['self] iter_ty_base =
+class ['self] iter_ty_base_base =
   object (self : 'self)
     inherit [_] iter_const_generic
-    method visit_region_db_id : 'env -> region_db_id -> unit = fun _ _ -> ()
-    method visit_region_var_id : 'env -> region_var_id -> unit = fun _ _ -> ()
-    method visit_region_id : 'env -> region_id -> unit = fun _ _ -> ()
-    method visit_type_var_id : 'env -> type_var_id -> unit = fun _ _ -> ()
-    method visit_ref_kind : 'env -> ref_kind -> unit = fun _ _ -> ()
 
-    method visit_trait_item_name : 'env -> trait_item_name -> unit =
-      fun _ _ -> ()
+    method visit_indexed_var
+        : 'id 'name.
+          ('env -> 'id -> unit) ->
+          ('env -> 'name -> unit) ->
+          'env ->
+          ('id, 'name) indexed_var ->
+          unit =
+      fun visit_index visit_name env x ->
+        let { index; name } = x in
+        visit_index env index;
+        visit_name env name
 
-    method visit_fun_decl_id : 'env -> fun_decl_id -> unit = fun _ _ -> ()
-    method visit_trait_decl_id : 'env -> trait_decl_id -> unit = fun _ _ -> ()
-    method visit_trait_impl_id : 'env -> trait_impl_id -> unit = fun _ _ -> ()
-
-    method visit_trait_clause_id : 'env -> trait_clause_id -> unit =
-      fun _ _ -> ()
-
-    method visit_region_var : 'env -> region_var -> unit =
-      fun env x ->
-        let { index; name } : region_var = x in
-        self#visit_region_var_id env index;
-        self#visit_option self#visit_string env name
+    method visit_outlives_pred
+        : 'l 'r.
+          ('env -> 'l -> unit) ->
+          ('env -> 'r -> unit) ->
+          'env ->
+          ('l, 'r) outlives_pred ->
+          unit =
+      fun visit_left visit_right env x ->
+        let left, right = x in
+        visit_left env left;
+        visit_right env right
   end
 
 (** Ancestor for map visitor for {!type: Types.ty} *)
-class virtual ['self] map_ty_base =
+class virtual ['self] map_ty_base_base =
   object (self : 'self)
     inherit [_] map_const_generic
 
-    method visit_region_db_id : 'env -> region_db_id -> region_db_id =
-      fun _ id -> id
-
-    method visit_region_var_id : 'env -> region_var_id -> region_var_id =
-      fun _ id -> id
-
-    method visit_region_id : 'env -> region_id -> region_id = fun _ id -> id
-
-    method visit_type_var_id : 'env -> type_var_id -> type_var_id =
-      fun _ id -> id
-
-    method visit_ref_kind : 'env -> ref_kind -> ref_kind = fun _ rk -> rk
-
-    method visit_trait_item_name : 'env -> trait_item_name -> trait_item_name =
-      fun _ x -> x
-
-    method visit_fun_decl_id : 'env -> fun_decl_id -> fun_decl_id = fun _ x -> x
-
-    method visit_trait_decl_id : 'env -> trait_decl_id -> trait_decl_id =
-      fun _ x -> x
-
-    method visit_trait_impl_id : 'env -> trait_impl_id -> trait_impl_id =
-      fun _ x -> x
-
-    method visit_trait_clause_id : 'env -> trait_clause_id -> trait_clause_id =
-      fun _ x -> x
-
-    method visit_region_var : 'env -> region_var -> region_var =
-      fun env x ->
-        let { index; name } : region_var = x in
-        let index = self#visit_region_var_id env index in
-        let name = self#visit_option self#visit_string env name in
+    method visit_indexed_var
+        : 'id 'name.
+          ('env -> 'id -> 'id) ->
+          ('env -> 'name -> 'name) ->
+          'env ->
+          ('id, 'name) indexed_var ->
+          ('id, 'name) indexed_var =
+      fun visit_index visit_name env x ->
+        let { index; name } = x in
+        let index = visit_index env index in
+        let name = visit_name env name in
         { index; name }
+
+    method visit_outlives_pred
+        : 'l 'r.
+          ('env -> 'l -> 'l) ->
+          ('env -> 'r -> 'r) ->
+          'env ->
+          ('l, 'r) outlives_pred ->
+          ('l, 'r) outlives_pred =
+      fun visit_left visit_right env x ->
+        let left, right = x in
+        let left = visit_left env left in
+        let right = visit_right env right in
+        (left, right)
   end
 
-(** Builtin types identifiers.
+(** Reference to a global declaration. *)
+type global_decl_ref = {
+  global_id : global_decl_id;
+  global_generics : generic_args;
+}
 
-    WARNING: for now, all the built-in types are covariant in the generic
-    parameters (if there are). Adding types which don't satisfy this
-    will require to update the code abstracting the signatures (to properly
-    take into account the lifetime constraints).
+and trait_item_name = string
 
-    TODO: update to not hardcode the types (except `Box` maybe) and be more
-    modular.
-    TODO: move to builtins.rs?
+(** Region variable. *)
+and region_var = (region_var_id, string option) indexed_var
+
+and region =
+  | RStatic  (** Static region *)
+  | RBVar of region_db_id * region_var_id
+      (** Bound region. We use those in function signatures, type definitions, etc. *)
+  | RFVar of region_id
+      (** Free region. We use those during the symbolic execution. *)
+  | RErased  (** Erased region *)
+
+(** Identifier of a trait instance.
+    This is derived from the trait resolution.
+
+    Should be read as a path inside the trait clauses which apply to the current
+    definition. Note that every path designated by [TraitInstanceId] refers
+    to a *trait instance*, which is why the [Clause] variant may seem redundant
+    with some of the other variants.
  *)
-type assumed_ty =
-  | TBox  (** Boxes are de facto a primitive type. *)
-  | TArray  (** Primitive type *)
-  | TSlice  (** Primitive type *)
-  | TStr  (** Primitive type *)
+and trait_instance_id =
+  | Self
+      (** Reference to *self*, in case of trait declarations/implementations *)
+  | TraitImpl of trait_impl_id * generic_args  (** A specific implementation *)
+  | BuiltinOrAuto of trait_decl_ref
+  | Clause of trait_clause_id
+  | ParentClause of trait_instance_id * trait_decl_id * trait_clause_id
+  | FnPointer of ty
+  | Closure of fun_decl_id * generic_args
+  | Dyn of trait_decl_ref
+  | Unsolved of trait_decl_id * generic_args
+  | UnknownTrait of string
+
+(** A reference to a trait *)
+and trait_ref = {
+  trait_id : trait_instance_id;
+  trait_decl_ref : trait_decl_ref;  (** Not necessary, but useful *)
+}
+
+(** Reference to a trait declaration.
+
+    About the generics, if we write:
+    ```text
+    impl Foo<bool> for String { ... }
+    ```
+
+    The substitution is: `[String, bool]`.
+ *)
+and trait_decl_ref = {
+  trait_decl_id : trait_decl_id;
+  decl_generics : generic_args;
+}
+
+and generic_args = {
+  regions : region list;
+  types : ty list;
+  const_generics : const_generic list;
+  trait_refs : trait_ref list;
+}
+
+(** A predicate of the form `exists<T> where T: Trait`.
+
+    TODO: store something useful here
+ *)
+and existential_predicate = unit
+
+and ref_kind = RMut | RShared
 
 (** Type identifier.
 
@@ -321,12 +400,6 @@ and type_id =
           the [Ty] type. We decided to move them to built-in types as it allows
           for more uniform treatment throughout the codebase.
        *)
-
-(** A predicate of the form `exists<T> where T: Trait`.
-
-    TODO: store something useful here
- *)
-and existential_predicate = unit
 
 (** A type. *)
 and ty =
@@ -388,72 +461,22 @@ and ty =
           (no generic types), no predicates, etc.
        *)
 
-(** A reference to a trait *)
-and trait_ref = {
-  trait_id : trait_instance_id;
-  trait_decl_ref : trait_decl_ref;  (** Not necessary, but useful *)
-}
+(** Builtin types identifiers.
 
-(** Reference to a trait declaration.
+    WARNING: for now, all the built-in types are covariant in the generic
+    parameters (if there are). Adding types which don't satisfy this
+    will require to update the code abstracting the signatures (to properly
+    take into account the lifetime constraints).
 
-    About the generics, if we write:
-    ```text
-    impl Foo<bool> for String { ... }
-    ```
-
-    The substitution is: `[String, bool]`.
+    TODO: update to not hardcode the types (except `Box` maybe) and be more
+    modular.
+    TODO: move to builtins.rs?
  *)
-and trait_decl_ref = {
-  trait_decl_id : trait_decl_id;
-  decl_generics : generic_args;
-}
-
-(** Reference to a global declaration. *)
-and global_decl_ref = {
-  global_id : global_decl_id;
-  global_generics : generic_args;
-}
-
-and generic_args = {
-  regions : region list;
-  types : ty list;
-  const_generics : const_generic list;
-  trait_refs : trait_ref list;
-}
-
-(* Hand-written because we add an extra variant not present on the rust side *)
-and trait_instance_id =
-  | Self
-      (** Reference to *self*, in case of trait declarations/implementations *)
-  | TraitImpl of trait_impl_id * generic_args  (** A specific implementation *)
-  | BuiltinOrAuto of trait_decl_ref
-  | Clause of trait_clause_id
-  | ParentClause of trait_instance_id * trait_decl_id * trait_clause_id
-  | FnPointer of ty
-  | Closure of fun_decl_id * generic_args
-  | Dyn of trait_decl_ref
-  | Unsolved of trait_decl_id * generic_args
-  | UnknownTrait of string
-      (** Not present in the Rust version of Charon.
-
-          We use this in the substitutions, to substitute [Self] when [Self] shouldn't
-          appear: this allows us to track errors by making sure [Self] indeed did not
-          appear.
-       *)
-(* Hand-written because we add an extra variant not present on the rust side *)
-
-(** A region.
-
-    This definition doesn't need to be mutually recursive with the others, but
-    this allows us to factor out the visitors.
- *)
-and region =
-  | RStatic  (** Static region *)
-  | RBVar of region_db_id * region_var_id
-      (** Bound region. We use those in function signatures, type definitions, etc. *)
-  | RFVar of region_id
-      (** Free region. We use those during the symbolic execution. *)
-  | RErased  (** Erased region *)
+and assumed_ty =
+  | TBox  (** Boxes are de facto a primitive type. *)
+  | TArray  (** Primitive type *)
+  | TSlice  (** Primitive type *)
+  | TStr  (** Primitive type *)
 [@@deriving
   show,
     ord,
@@ -461,111 +484,45 @@ and region =
       {
         name = "iter_ty";
         variety = "iter";
-        ancestors = [ "iter_ty_base" ];
-        nude = true (* Don't inherit {!VisitorsRuntime.iter} *);
-        concrete = true;
-        polymorphic = false;
+        ancestors = [ "iter_ty_base_base" ];
+        nude = true (* Don't inherit VisitorsRuntime *);
       },
     visitors
       {
         name = "map_ty";
         variety = "map";
-        ancestors = [ "map_ty_base" ];
-        nude = true (* Don't inherit {!VisitorsRuntime.map} *);
-        concrete = false;
-        polymorphic = false;
+        ancestors = [ "map_ty_base_base" ];
+        nude = true (* Don't inherit VisitorsRuntime *);
       }]
 
-(** Ancestor for iter visitor for {!type: Types.generic_params} *)
+(* Ancestors for the generic_params visitors *)
 class ['self] iter_generic_params_base =
   object (self : 'self)
     inherit [_] iter_ty
     method visit_span : 'env -> span -> unit = fun _ _ -> ()
-
-    method visit_type_var : 'env -> type_var -> unit =
-      fun env x ->
-        let { index; name } : type_var = x in
-        self#visit_type_var_id env index;
-        self#visit_string env name
-
-    method visit_const_generic_var : 'env -> const_generic_var -> unit =
-      fun env x ->
-        let { index; name; ty } : const_generic_var = x in
-        self#visit_const_generic_var_id env index;
-        self#visit_string env name;
-        self#visit_literal_type env ty
   end
 
-(** Ancestor for map visitor for {!type: Types.generic_params} *)
-class virtual ['self] map_generic_params_base =
+class ['self] map_generic_params_base =
   object (self : 'self)
     inherit [_] map_ty
     method visit_span : 'env -> span -> span = fun _ x -> x
-
-    method visit_type_var : 'env -> type_var -> type_var =
-      fun env x ->
-        let { index; name } : type_var = x in
-        let index = self#visit_type_var_id env index in
-        let name = self#visit_string env name in
-        { index; name }
-
-    method visit_const_generic_var
-        : 'env -> const_generic_var -> const_generic_var =
-      fun env x ->
-        let { index; name; ty } : const_generic_var = x in
-        let index = self#visit_const_generic_var_id env index in
-        let name = self#visit_string env name in
-        let ty = self#visit_literal_type env ty in
-        { index; name; ty }
   end
 
-(** Type with erased regions (this only has an informative purpose) *)
-type ety = ty
+(** Type variable.
+    We make sure not to mix variables and type variables by having two distinct
+    definitions.
+ *)
+type type_var = (type_var_id, string) indexed_var
 
-(** Type with non-erased regions (this only has an informative purpose) *)
-and rty = ty
-
-(** A predicate of the form `Type: Trait<Args>`. *)
-and trait_clause = {
-  clause_id : trait_clause_id;
-      (** We use this id when solving trait constraints, to be able to refer
-        to specific where clauses when the selected trait actually is linked
-        to a parameter.
-     *)
-  span : span option;
-  trait : trait_decl_ref;  (** The trait that is implemented. *)
+(** Const Generic Variable *)
+and const_generic_var = {
+  index : const_generic_var_id;  (** Unique index identifying the variable *)
+  name : string;  (** Const generic name *)
+  ty : literal_type;  (** Type of the const generic *)
 }
 
-(* Hand-written because visitors can't handle `outlives_pred` *)
-and generic_params = {
-  regions : region_var list;
-  types : type_var list;
-      (** The type parameters can be indexed with {!Types.TypeVarId.id}.
-
-          See {!Identifiers.Id.mapi} for instance.
-       *)
-  const_generics : const_generic_var list;
-      (** The const generic parameters can be indexed with {!Types.ConstGenericVarId.id}.
-
-          See {!Identifiers.Id.mapi} for instance.
-       *)
-  trait_clauses : trait_clause list;
-      (** **REMARK:**:
-          The indices used by the trait clauses may not be contiguous
-          (e.g., we may have the list: `[clause 0; clause 2; clause3; clause 5]`).
-          because of the way the clauses are resolved in hax (see the comments
-          in Charon).
-        *)
-  regions_outlive : region_outlives list;
-  types_outlive : type_outlives list;
-  trait_type_constraints : trait_type_constraint list;
-}
-
-(** ('long, 'short) means that 'long outlives 'short *)
-and region_outlives = region * region
-
-(** (T, 'a) means that T outlives 'a *)
-and type_outlives = ty * region
+and region_outlives = (region, region) outlives_pred
+and type_outlives = (ty, region) outlives_pred
 
 (** A constraint over a trait associated type.
 
@@ -580,6 +537,38 @@ and trait_type_constraint = {
   type_name : trait_item_name;
   ty : ty;
 }
+
+(** Generic parameters for a declaration.
+    We group the generics which come from the Rust compiler substitutions
+    (the regions, types and const generics) as well as the trait clauses.
+    The reason is that we consider that those are parameters that need to
+    be filled. We group in a different place the predicates which are not
+    trait clauses, because those enforce constraints but do not need to
+    be filled with witnesses/instances.
+ *)
+and generic_params = {
+  regions : region_var list;
+  types : type_var list;
+  const_generics : const_generic_var list;
+  trait_clauses : trait_clause list;
+  regions_outlive : (region, region) outlives_pred list;
+      (** The first region in the pair outlives the second region *)
+  types_outlive : (ty, region) outlives_pred list;
+      (** The type outlives the region *)
+  trait_type_constraints : trait_type_constraint list;
+      (** Constraints over trait associated types *)
+}
+
+(** A predicate of the form `Type: Trait<Args>`. *)
+and trait_clause = {
+  clause_id : trait_clause_id;
+      (** We use this id when solving trait constraints, to be able to refer
+        to specific where clauses when the selected trait actually is linked
+        to a parameter.
+     *)
+  span : span option;
+  trait : trait_decl_ref;  (** The trait that is implemented. *)
+}
 [@@deriving
   show,
     ord,
@@ -588,19 +577,31 @@ and trait_type_constraint = {
         name = "iter_generic_params";
         variety = "iter";
         ancestors = [ "iter_generic_params_base" ];
-        nude = true (* Don't inherit {!VisitorsRuntime.iter} *);
-        concrete = true;
-        polymorphic = false;
+        nude = true (* Don't inherit VisitorsRuntime *);
       },
     visitors
       {
         name = "map_generic_params";
         variety = "map";
         ancestors = [ "map_generic_params_base" ];
-        nude = true (* Don't inherit {!VisitorsRuntime.map} *);
-        concrete = false;
-        polymorphic = false;
+        nude = true (* Don't inherit VisitorsRuntime *);
       }]
+
+(** Meta information about an item (function, trait decl, trait impl, type decl, global). *)
+type item_meta = {
+  name : name;
+  span : span;
+  source_text : string option;
+      (** The source code that corresponds to this item. *)
+  attr_info : attr_info;  (** Attributes and visibility. *)
+  is_local : bool;
+      (** `true` if the type decl is a local type decl, `false` if it comes from an external crate. *)
+}
+
+(** See the comments for [Name] *)
+and path_elem =
+  | PeIdent of string * disambiguator
+  | PeImpl of impl_elem * disambiguator
 
 (** There are two kinds of `impl` blocks:
     - impl blocks linked to a type ("inherent" impl blocks following Rust terminology):
@@ -613,14 +614,9 @@ and trait_type_constraint = {
       ```
     We distinguish the two.
  *)
-type impl_elem =
+and impl_elem =
   | ImplElemTy of generic_params * ty
   | ImplElemTrait of trait_impl_id
-
-(** See the comments for [Name] *)
-and path_elem =
-  | PeIdent of string * disambiguator
-  | PeImpl of impl_elem * disambiguator
 
 (** An item name/path
 
@@ -660,15 +656,61 @@ and path_elem =
  *)
 and name = path_elem list
 
-(** Meta information about an item (function, trait decl, trait impl, type decl, global). *)
-and item_meta = {
-  name : name;
+(** A type declaration.
+
+    Types can be opaque or transparent.
+
+    Transparent types are local types not marked as opaque.
+    Opaque types are the others: local types marked as opaque, and non-local
+    types (coming from external dependencies).
+
+    In case the type is transparent, the declaration also contains the
+    type definition (see [TypeDeclKind]).
+
+    A type can only be an ADT (structure or enumeration), as type aliases are
+    inlined in MIR.
+ *)
+and type_decl = {
+  def_id : type_decl_id;
+  item_meta : item_meta;  (** Meta information associated with the item. *)
+  generics : generic_params;
+  kind : type_decl_kind;  (** The type kind: enum, struct, or opaque. *)
+}
+
+and type_decl_kind =
+  | Struct of field list
+  | Enum of variant list
+  | Union of field list
+  | Opaque
+      (** An opaque type.
+
+          Either a local type marked as opaque, or an external type.
+       *)
+  | Alias of ty
+      (** An alias to another type. This only shows up in the top-level list of items, as rustc
+          inlines uses of type aliases everywhere else.
+       *)
+  | Error of string
+      (** Used if an error happened during the extraction, and we don't panic
+          on error.
+       *)
+
+and variant = {
   span : span;
-  source_text : string option;
-      (** The source code that corresponds to this item. *)
-  attr_info : attr_info;  (** Attributes and visibility. *)
-  is_local : bool;
-      (** `true` if the type decl is a local type decl, `false` if it comes from an external crate. *)
+  attr_info : attr_info;
+  variant_name : string;
+  fields : field list;
+  discriminant : scalar_value;
+      (** The discriminant used at runtime. This is used in `remove_read_discriminant` to match up
+        `SwitchInt` targets with the corresponding `Variant`.
+     *)
+}
+
+and field = {
+  span : span;
+  attr_info : attr_info;
+  field_name : string option;
+  field_ty : ty;
 }
 [@@deriving show, ord]
 
@@ -693,60 +735,8 @@ type region_var_group = (RegionVarId.id, RegionGroupId.id) g_region_group
 
 type region_var_groups = region_var_group list [@@deriving show]
 
-type field = {
-  span : span;
-  attr_info : attr_info;
-  field_name : string option;
-  field_ty : ty;
-}
+(** Type with erased regions (this only has an informative purpose) *)
+type ety = ty
 
-and variant = {
-  span : span;
-  attr_info : attr_info;
-  variant_name : string;
-  fields : field list;
-  discriminant : scalar_value;
-      (** The discriminant used at runtime. This is used in `remove_read_discriminant` to match up
-        `SwitchInt` targets with the corresponding `Variant`.
-     *)
-}
-
-and type_decl_kind =
-  | Struct of field list
-  | Enum of variant list
-  | Union of field list
-  | Opaque
-      (** An opaque type.
-
-          Either a local type marked as opaque, or an external type.
-       *)
-  | Alias of ty
-      (** An alias to another type. This only shows up in the top-level list of items, as rustc
-          inlines uses of type aliases everywhere else.
-       *)
-  | Error of string
-      (** Used if an error happened during the extraction, and we don't panic
-          on error.
-       *)
-
-(** A type declaration.
-
-    Types can be opaque or transparent.
-
-    Transparent types are local types not marked as opaque.
-    Opaque types are the others: local types marked as opaque, and non-local
-    types (coming from external dependencies).
-
-    In case the type is transparent, the declaration also contains the
-    type definition (see [TypeDeclKind]).
-
-    A type can only be an ADT (structure or enumeration), as type aliases are
-    inlined in MIR.
- *)
-and type_decl = {
-  def_id : type_decl_id;
-  item_meta : item_meta;  (** Meta information associated with the item. *)
-  generics : generic_params;
-  kind : type_decl_kind;  (** The type kind: enum, struct, or opaque. *)
-}
-[@@deriving show]
+(** Type with non-erased regions (this only has an informative purpose) *)
+and rty = ty [@@deriving show, ord]

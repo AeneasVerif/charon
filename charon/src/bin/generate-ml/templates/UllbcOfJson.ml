@@ -9,10 +9,6 @@ open Types
 open Expressions
 open UllbcAst
 
-let block_id_of_json = BlockId.id_of_json
-
-let rec ___ = ()
-
 (* __REPLACE0__ *)
 
 let expr_body_of_json (id_to_file : id_to_file_map) (js : json) :

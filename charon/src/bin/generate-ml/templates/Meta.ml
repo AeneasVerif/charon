@@ -14,11 +14,3 @@ type path_buf = string
 
 (* __REPLACE0__ *)
 [@@deriving show, ord]
-
-(** Span data *)
-(* Hand-written because doesn't match the rust type *)
-type raw_span = { file : file_name; beg_loc : loc; end_loc : loc }
-[@@deriving show, ord]
-
-(* __REPLACE1__ *)
-[@@deriving show, ord]
