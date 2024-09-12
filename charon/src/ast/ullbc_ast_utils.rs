@@ -2,7 +2,7 @@
 use crate::ids::Vector;
 use crate::meta::Span;
 use crate::ullbc_ast::*;
-use derive_visitor::{visitor_enter_fn_mut, DriveMut};
+use derive_visitor::{visitor_enter_fn_mut, visitor_fn_mut, DriveMut, Event};
 use take_mut::take;
 
 impl SwitchTargets {
@@ -100,6 +100,26 @@ impl BlockData {
                 }
             }
         }
+    }
+}
+
+impl ExprBody {
+    pub fn transform_sequences<F>(&mut self, f: &mut F)
+    where
+        F: FnMut(&mut Vector<VarId, Var>, &mut [Statement]) -> Vec<(usize, Vec<Statement>)>,
+    {
+        for block in &mut self.body {
+            block.transform_sequences(&mut |seq| f(&mut self.locals, seq));
+        }
+    }
+
+    /// Apply a function to all the statements, in a bottom-up manner.
+    pub fn visit_statements<F: FnMut(&mut Statement)>(&mut self, f: &mut F) {
+        self.drive_mut(&mut visitor_fn_mut(|st: &mut Statement, e: Event| {
+            if matches!(e, Event::Exit) {
+                f(st)
+            }
+        }))
     }
 }
 

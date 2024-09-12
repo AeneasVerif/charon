@@ -55,26 +55,26 @@ pub static ULLBC_PASSES: &[Pass] = &[
     // # Micro-pass: desugar the constants to other values/operands as much
     // as possible.
     UnstructuredBody(&simplify_constants::Transform),
-];
-
-pub static LLBC_PASSES: &[Pass] = &[
     // # Micro-pass: the first local variable of closures is the
     // closure itself. This is not consistent with the closure signature,
     // which ignores this first variable. This micro-pass updates this.
-    StructuredBody(&update_closure_signatures::Transform),
+    UnstructuredBody(&update_closure_signatures::Transform),
     // # Micro-pass: remove the dynamic checks we couldn't remove in [`remove_dynamic_checks`].
     // **WARNING**: this pass uses the fact that the dynamic checks
     // introduced by Rustc use a special "assert" construct. Because of
     // this, it must happen *before* the [reconstruct_asserts] pass.
-    StructuredBody(&remove_arithmetic_overflow_checks::Transform),
+    UnstructuredBody(&remove_arithmetic_overflow_checks::Transform),
+    // # Micro-pass: replace some unops/binops and the array aggregates with
+    // function calls (introduces: ArrayToSlice, etc.)
+    UnstructuredBody(&ops_to_function_calls::Transform),
+];
+
+pub static LLBC_PASSES: &[Pass] = &[
     // # Micro-pass: reconstruct the asserts
     StructuredBody(&reconstruct_asserts::Transform),
     // # Micro-pass: `panic!()` expands to a new function definition each time. This pass cleans
     // those up.
     StructuredBody(&inline_local_panic_functions::Transform),
-    // # Micro-pass: replace some unops/binops and the array aggregates with
-    // function calls (introduces: ArrayToSlice, etc.)
-    StructuredBody(&ops_to_function_calls::Transform),
     // # Micro-pass: replace the arrays/slices index operations with function
     // calls.
     // (introduces: ArrayIndexShared, ArrayIndexMut, etc.)
