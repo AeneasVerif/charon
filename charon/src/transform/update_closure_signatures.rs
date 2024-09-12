@@ -5,10 +5,10 @@ use derive_visitor::{visitor_enter_fn_mut, DriveMut, VisitorMut};
 
 use crate::common::*;
 use crate::ids::Vector;
-use crate::llbc_ast::*;
 use crate::transform::TransformCtx;
+use crate::ullbc_ast::*;
 
-use super::ctx::LlbcPass;
+use super::ctx::UllbcPass;
 
 #[derive(VisitorMut)]
 #[visitor(Region(exit), Ty(enter, exit))]
@@ -150,7 +150,7 @@ fn transform_function(
 }
 
 pub struct Transform;
-impl LlbcPass for Transform {
+impl UllbcPass for Transform {
     fn transform_function(
         &self,
         ctx: &mut TransformCtx,

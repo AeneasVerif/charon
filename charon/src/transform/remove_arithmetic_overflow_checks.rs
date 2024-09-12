@@ -1,9 +1,9 @@
 //! # Micro-pass: remove the overflow checks for arithmetic operations we couldn't remove in
 //! [`remove_dynamic_checks`]. See comments there for more details.
-use crate::llbc_ast::*;
 use crate::transform::TransformCtx;
+use crate::ullbc_ast::*;
 
-use super::ctx::LlbcPass;
+use super::ctx::UllbcPass;
 
 pub struct Transform;
 
@@ -78,9 +78,9 @@ impl Transform {
     }
 }
 
-impl LlbcPass for Transform {
+impl UllbcPass for Transform {
     fn transform_body(&self, _ctx: &mut TransformCtx<'_>, b: &mut ExprBody) {
-        b.body.transform_sequences(&mut |seq| {
+        b.transform_sequences(&mut |_, seq| {
             Transform::update_statements(seq);
             Vec::new()
         })
