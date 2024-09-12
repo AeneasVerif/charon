@@ -134,8 +134,11 @@ fn spans() -> anyhow::Result<()> {
     let body = &crate_data.bodies[body_id].as_structured().unwrap().body;
     // The whole function declaration.
     assert_eq!(repr_span(body.span), "2:8-10:9");
-    let seq = body.clone().into_sequence();
-    let the_loop = seq.iter().find(|st| st.content.is_loop()).unwrap();
+    let the_loop = body
+        .statements
+        .iter()
+        .find(|st| st.content.is_loop())
+        .unwrap();
     // That's not a very precise span :/
     assert_eq!(repr_span(the_loop.span), "4:12-10:9");
     Ok(())

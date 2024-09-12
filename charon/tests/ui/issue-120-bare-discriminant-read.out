@@ -16,7 +16,7 @@ fn test_crate::discriminant_value<'_0, T>(@1: &'_0 (core::option::Option<T>)) ->
         },
         1 => {
             @0 := const (1 : isize)
-        }
+        },
     }
     return
 }
@@ -33,7 +33,7 @@ fn test_crate::is_some<T>(@1: core::option::Option<T>) -> bool
         },
         1 => {
             @2 := const (1 : isize)
-        }
+        },
     }
     @0 := move (@2) != const (0 : isize)
     drop @2
@@ -52,7 +52,7 @@ fn test_crate::my_is_some<T>(@1: core::option::Option<T>) -> isize
         },
         1 => {
             @0 := const (1 : isize)
-        }
+        },
     }
     drop opt@1
     return

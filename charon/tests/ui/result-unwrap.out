@@ -52,14 +52,13 @@ where
 
     match self@1 {
         0 => {
-            nop
         },
         1 => {
             e@2 := move ((self@1 as variant @1).0)
             @5 := &e@2
             @4 := unsize_cast<&'_ (E), &'_ (dyn (exists(TODO)))>(copy (@5))
             @3 := core::result::unwrap_failed(const ("called `Result::unwrap()` on an `Err` value"), move (@4))
-        }
+        },
     }
     t@0 := move ((self@1 as variant @0).0)
     return
@@ -134,13 +133,13 @@ fn core::fmt::num::{impl core::fmt::Debug for u32}#86::fmt<'_0, '_1, '_2>(@1: &'
                 _ => {
                     drop @5
                     @0 := core::fmt::num::{impl core::fmt::UpperHex for u32}#61::fmt(move (self@1), move (f@2))
-                }
+                },
             }
         },
         _ => {
             drop @3
             @0 := core::fmt::num::{impl core::fmt::LowerHex for u32}#60::fmt(move (self@1), move (f@2))
-        }
+        },
     }
     return
 }

@@ -16,7 +16,7 @@ let expr_body_of_json (id_to_file : id_to_file_map) (js : json) :
     (match js with
     | `Assoc [ ("Structured", body) ] ->
         let* body =
-          gexpr_body_of_json (statement_of_json id_to_file) id_to_file body
+          gexpr_body_of_json (block_of_json id_to_file) id_to_file body
         in
         Ok body
     | _ -> Error "")

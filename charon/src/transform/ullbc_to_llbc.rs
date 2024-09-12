@@ -1316,17 +1316,6 @@ fn compute_loop_switch_exits(cfg_info: &CfgInfo) -> ExitInfo {
     exit_info
 }
 
-fn combine_statements_and_statement(
-    statements: Vec<tgt::Statement>,
-    next: Option<tgt::Statement>,
-) -> Option<tgt::Statement> {
-    if let Some(st) = tgt::Statement::from_seq(statements) {
-        Some(st.then_opt(next))
-    } else {
-        next
-    }
-}
-
 fn get_goto_kind(
     exits_info: &ExitInfo,
     parent_loops: &Vector<src::BlockId>,
@@ -1372,30 +1361,35 @@ fn translate_child_block(
     switch_exit_blocks: &im::HashSet<src::BlockId>,
     parent_span: Span,
     child_id: src::BlockId,
-) -> Option<tgt::Statement> {
+) -> Option<tgt::Block> {
     // Check if this is a backward call
     match get_goto_kind(info.exits_info, parent_loops, switch_exit_blocks, child_id) {
         GotoKind::Break(index) => {
             let st = tgt::RawStatement::Break(index);
-            Some(tgt::Statement::new(parent_span, st))
+            Some(tgt::Statement::new(parent_span, st).into_block())
         }
         GotoKind::Continue(index) => {
             let st = tgt::RawStatement::Continue(index);
-            Some(tgt::Statement::new(parent_span, st))
+            Some(tgt::Statement::new(parent_span, st).into_block())
         }
         // If we are going to an exit block we simply ignore the goto
         GotoKind::ExitBlock => None,
         GotoKind::Goto => {
             // "Standard" goto: just recursively translate
             ensure_sufficient_stack(|| {
-                translate_block(info, parent_loops, switch_exit_blocks, child_id)
+                Some(translate_block(
+                    info,
+                    parent_loops,
+                    switch_exit_blocks,
+                    child_id,
+                ))
             })
         }
     }
 }
 
-fn opt_statement_to_nop_if_none(span: Span, opt_st: Option<tgt::Statement>) -> tgt::Statement {
-    opt_st.unwrap_or_else(|| tgt::Statement::new(span, tgt::RawStatement::Nop))
+fn opt_block_unwrap_or_nop(span: Span, opt_block: Option<tgt::Block>) -> tgt::Block {
+    opt_block.unwrap_or_else(|| tgt::Statement::new(span, tgt::RawStatement::Nop).into_block())
 }
 
 fn translate_statement(st: &src::Statement) -> Option<tgt::Statement> {
@@ -1424,30 +1418,33 @@ fn translate_terminator(
     parent_loops: &Vector<src::BlockId>,
     switch_exit_blocks: &im::HashSet<src::BlockId>,
     terminator: &src::Terminator,
-) -> Option<tgt::Statement> {
+) -> tgt::Block {
     let src_span = terminator.span;
 
     match &terminator.content {
-        src::RawTerminator::Abort(kind) => Some(tgt::Statement::new(
-            src_span,
-            tgt::RawStatement::Abort(kind.clone()),
-        )),
-        src::RawTerminator::Return => {
-            Some(tgt::Statement::new(src_span, tgt::RawStatement::Return))
+        src::RawTerminator::Abort(kind) => {
+            tgt::Statement::new(src_span, tgt::RawStatement::Abort(kind.clone())).into_block()
         }
-        src::RawTerminator::Goto { target } => translate_child_block(
-            info,
-            parent_loops,
-            switch_exit_blocks,
-            terminator.span,
-            *target,
-        ),
+        src::RawTerminator::Return => {
+            tgt::Statement::new(src_span, tgt::RawStatement::Return).into_block()
+        }
+        src::RawTerminator::Goto { target } => {
+            let block = translate_child_block(
+                info,
+                parent_loops,
+                switch_exit_blocks,
+                terminator.span,
+                *target,
+            );
+            let block = opt_block_unwrap_or_nop(terminator.span, block);
+            block
+        }
         src::RawTerminator::Switch { discr, targets } => {
             // Translate the target expressions
             let switch = match &targets {
                 src::SwitchTargets::If(then_tgt, else_tgt) => {
                     // Translate the children expressions
-                    let then_exp = translate_child_block(
+                    let then_block = translate_child_block(
                         info,
                         parent_loops,
                         switch_exit_blocks,
@@ -1456,18 +1453,18 @@ fn translate_terminator(
                     );
                     // We use the terminator span information in case then
                     // then statement is `None`
-                    let then_exp = opt_statement_to_nop_if_none(terminator.span, then_exp);
-                    let else_exp = translate_child_block(
+                    let then_block = opt_block_unwrap_or_nop(terminator.span, then_block);
+                    let else_block = translate_child_block(
                         info,
                         parent_loops,
                         switch_exit_blocks,
                         terminator.span,
                         *else_tgt,
                     );
-                    let else_exp = opt_statement_to_nop_if_none(terminator.span, else_exp);
+                    let else_block = opt_block_unwrap_or_nop(terminator.span, else_block);
 
                     // Translate
-                    tgt::Switch::If(discr.clone(), then_exp.into_box(), else_exp.into_box())
+                    tgt::Switch::If(discr.clone(), then_block, else_block)
                 }
                 src::SwitchTargets::SwitchInt(int_ty, targets, otherwise) => {
                     // Note that some branches can be grouped together, like
@@ -1491,7 +1488,7 @@ fn translate_terminator(
                     // - translated blocks
                     let mut branches: LinkedHashMap<
                         src::BlockId,
-                        (Vec<v::ScalarValue>, tgt::Statement),
+                        (Vec<v::ScalarValue>, tgt::Block),
                     > = LinkedHashMap::new();
 
                     // Translate the children expressions
@@ -1505,7 +1502,7 @@ fn translate_terminator(
                             branch.0.push(*v);
                         } else {
                             // Not translated: translate it
-                            let exp = translate_child_block(
+                            let block = translate_child_block(
                                 info,
                                 parent_loops,
                                 switch_exit_blocks,
@@ -1514,14 +1511,14 @@ fn translate_terminator(
                             );
                             // We use the terminator span information in case then
                             // then statement is `None`
-                            let exp = opt_statement_to_nop_if_none(terminator.span, exp);
-                            branches.insert(*bid, (vec![*v], exp));
+                            let block = opt_block_unwrap_or_nop(terminator.span, block);
+                            branches.insert(*bid, (vec![*v], block));
                         }
                     }
-                    let targets_exps: Vec<(Vec<v::ScalarValue>, tgt::Statement)> =
+                    let targets_blocks: Vec<(Vec<v::ScalarValue>, tgt::Block)> =
                         branches.into_iter().map(|(_, x)| x).collect();
 
-                    let otherwise_exp = translate_child_block(
+                    let otherwise_block = translate_child_block(
                         info,
                         parent_loops,
                         switch_exit_blocks,
@@ -1530,16 +1527,10 @@ fn translate_terminator(
                     );
                     // We use the terminator span information in case then
                     // then statement is `None`
-                    let otherwise_exp =
-                        opt_statement_to_nop_if_none(terminator.span, otherwise_exp);
+                    let otherwise_block = opt_block_unwrap_or_nop(terminator.span, otherwise_block);
 
                     // Translate
-                    tgt::Switch::SwitchInt(
-                        discr.clone(),
-                        *int_ty,
-                        targets_exps,
-                        otherwise_exp.into_box(),
-                    )
+                    tgt::Switch::SwitchInt(discr.clone(), *int_ty, targets_blocks, otherwise_block)
                 }
             };
 
@@ -1547,13 +1538,9 @@ fn translate_terminator(
             let span = tgt::combine_switch_targets_span(&switch);
             let span = combine_span(&src_span, &span);
             let st = tgt::RawStatement::Switch(switch);
-            Some(tgt::Statement::new(span, st))
+            tgt::Statement::new(span, st).into_block()
         }
     }
-}
-
-fn is_terminal(exp: &tgt::Statement) -> bool {
-    is_terminal_explore(0, exp)
 }
 
 /// Return `true` if whatever the path we take, evaluating the statement
@@ -1561,6 +1548,10 @@ fn is_terminal(exp: &tgt::Statement) -> bool {
 /// - a panic or return
 /// - a break which goes to a loop outside the expression
 /// - a continue statement
+fn is_terminal(block: &tgt::Block) -> bool {
+    is_terminal_explore_block(0, block)
+}
+
 fn is_terminal_explore(num_loops: usize, st: &tgt::Statement) -> bool {
     match &st.content {
         tgt::RawStatement::Assign(_, _)
@@ -1574,13 +1565,17 @@ fn is_terminal_explore(num_loops: usize, st: &tgt::Statement) -> bool {
         tgt::RawStatement::Abort(..) | tgt::RawStatement::Return => true,
         tgt::RawStatement::Break(index) => *index >= num_loops,
         tgt::RawStatement::Continue(_index) => true,
-        tgt::RawStatement::Sequence(seq) => seq.iter().any(|st| is_terminal_explore(num_loops, st)),
         tgt::RawStatement::Switch(switch) => switch
-            .get_targets()
-            .iter()
-            .all(|tgt_st| is_terminal_explore(num_loops, tgt_st)),
-        tgt::RawStatement::Loop(loop_st) => is_terminal_explore(num_loops + 1, loop_st),
+            .iter_targets()
+            .all(|tgt_st| is_terminal_explore_block(num_loops, tgt_st)),
+        tgt::RawStatement::Loop(loop_st) => is_terminal_explore_block(num_loops + 1, loop_st),
     }
+}
+fn is_terminal_explore_block(num_loops: usize, block: &tgt::Block) -> bool {
+    block
+        .statements
+        .iter()
+        .any(|st| is_terminal_explore(num_loops, st))
 }
 
 /// Remark: some values are boxed (here, the returned statement) so that they
@@ -1592,7 +1587,7 @@ fn translate_block(
     parent_loops: &Vector<src::BlockId>,
     switch_exit_blocks: &im::HashSet<src::BlockId>,
     block_id: src::BlockId,
-) -> Option<tgt::Statement> {
+) -> tgt::Block {
     // If the user activated this check: check that we didn't already translate
     // this block, and insert the block id in the set of already translated blocks.
     trace!(
@@ -1661,23 +1656,21 @@ fn translate_block(
         .collect_vec();
 
     // Prepend the statements to the terminator.
-    let mut exp = combine_statements_and_statement(statements, terminator);
+    let mut block = if let Some(st) = tgt::Block::from_seq(statements) {
+        st.merge(terminator)
+    } else {
+        terminator
+    };
 
     if is_loop {
-        // Put the whole loop body inside a `Loop` wrapper
-        exp = {
-            let exp = exp.unwrap();
-            Some(tgt::Statement::new(
-                exp.span,
-                tgt::RawStatement::Loop(exp.into_box()),
-            ))
-        }
+        // Put the loop body inside a `Loop`.
+        block = tgt::Statement::new(block.span, tgt::RawStatement::Loop(block)).into_block()
     } else if is_switch {
         if next_block.is_some() {
             // Sanity check: if there is an exit block, this block must be
             // reachable (i.e, there must exist a path in the switch which
             // doesn't end with `panic`, `return`, etc.).
-            assert!(!is_terminal(exp.as_ref().unwrap()));
+            assert!(!is_terminal(&block));
         }
     } else {
         assert!(next_block.is_none());
@@ -1685,13 +1678,13 @@ fn translate_block(
 
     // Concatenate the exit expression, if needs be
     if let Some(exit_block_id) = next_block {
-        let next_exp = ensure_sufficient_stack(|| {
+        let next_block = ensure_sufficient_stack(|| {
             translate_block(info, parent_loops, switch_exit_blocks, exit_block_id)
         });
-        exp = Some(exp.unwrap().then_opt(next_exp));
+        block = block.merge(next_block);
     }
 
-    exp
+    block
 }
 
 fn translate_body_aux(no_code_duplication: bool, src_body: &src::ExprBody) -> tgt::ExprBody {
@@ -1723,8 +1716,7 @@ fn translate_body_aux(no_code_duplication: bool, src_body: &src::ExprBody) -> tg
         &Vector::new(),
         &im::HashSet::new(),
         src::BlockId::ZERO,
-    )
-    .unwrap();
+    );
 
     // Sanity: check that we translated all the blocks
     for (bid, _) in src_body.body.iter_indexed_values() {

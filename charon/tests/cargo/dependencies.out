@@ -120,7 +120,6 @@ fn test_cargo_dependencies::main()
     @14 := copy (*(right_val@11))
     @12 := move (@13) == move (@14)
     if move (@12) {
-        nop
     }
     else {
         drop @14

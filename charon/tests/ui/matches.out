@@ -18,7 +18,7 @@ fn test_crate::test1(@1: test_crate::E1) -> bool
         },
         2 => {
             @0 := const (false)
-        }
+        },
     }
     return
 }
@@ -59,7 +59,7 @@ fn test_crate::test2(@1: test_crate::E2) -> u32
         },
         2 => {
             @0 := const (0 : u32)
-        }
+        },
     }
     return
 }
@@ -92,7 +92,7 @@ fn test_crate::test3(@1: test_crate::E2) -> u32
         },
         2 => {
             y@3 := const (0 : u32)
-        }
+        },
     }
     @fake_read(y@3)
     z@5 := test_crate::id<u32>(const (3 : u32))

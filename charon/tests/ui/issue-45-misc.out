@@ -595,7 +595,7 @@ fn test_crate::cbd(@1: Array<u8, 33 : usize>)
                 @15 := ()
                 @5 := move (@15)
                 continue 0
-            }
+            },
         }
     }
     @13 := ()

@@ -314,7 +314,6 @@ fn test_crate::test_box1()
     @8 := copy (*(x@4))
     @7 := move (@8) == const (1 : i32)
     if move (@7) {
-        nop
     }
     else {
         drop @8
@@ -353,7 +352,6 @@ fn test_crate::test_unreachable(@1: bool)
 
     @2 := copy (b@1)
     if move (@2) {
-        nop
     }
     else {
         @3 := ()
@@ -377,7 +375,7 @@ fn test_crate::is_cons<'_0, T>(@1: &'_0 (test_crate::List<T>)) -> bool
         },
         1 => {
             @0 := const (false)
-        }
+        },
     }
     return
 }
@@ -394,11 +392,10 @@ fn test_crate::split_list<T>(@1: test_crate::List<T>) -> (T, test_crate::List<T>
     @fake_read(l@1)
     match l@1 {
         0 => {
-            nop
         },
         _ => {
             panic(core::panicking::panic_explicit)
-        }
+        },
     }
     hd@2 := move ((l@1 as variant @0).0)
     tl@3 := move ((l@1 as variant @0).1)
@@ -508,7 +505,6 @@ fn test_crate::test_even_odd()
 
     @2 := test_crate::even(const (0 : u32))
     if move (@2) {
-        nop
     }
     else {
         panic(core::panicking::panic)
@@ -519,7 +515,6 @@ fn test_crate::test_even_odd()
     drop @1
     @4 := test_crate::even(const (4 : u32))
     if move (@4) {
-        nop
     }
     else {
         panic(core::panicking::panic)
@@ -530,7 +525,6 @@ fn test_crate::test_even_odd()
     drop @3
     @6 := test_crate::odd(const (1 : u32))
     if move (@6) {
-        nop
     }
     else {
         panic(core::panicking::panic)
@@ -541,7 +535,6 @@ fn test_crate::test_even_odd()
     drop @5
     @8 := test_crate::odd(const (5 : u32))
     if move (@8) {
-        nop
     }
     else {
         panic(core::panicking::panic)

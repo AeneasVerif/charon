@@ -31,9 +31,10 @@ type raw_statement =
   | Error of string
 
 and statement = { span : span; content : raw_statement }
+and block = statement
 
 and switch =
-  | If of operand * statement * statement
+  | If of operand * block * block
       (** Gives the `if` block and the `else` block. The `Operand` is the condition of the `if`, e.g. `if (y == 0)` could become
           ```rust,ignore
           v@3 := copy y; // Represented as `Assign(v@3, Use(Copy(y))`
@@ -42,7 +43,7 @@ and switch =
           ```
        *)
   | SwitchInt of
-      operand * integer_type * (scalar_value list * statement) list * statement
+      operand * integer_type * (scalar_value list * block) list * block
       (** Gives the integer type, a map linking values to switch branches, and the
           otherwise block. Note that matches over enumerations are performed by
           switching over the discriminant, which is an integer.
@@ -58,7 +59,7 @@ and switch =
           }
           ```
        *)
-  | Match of place * (variant_id list * statement) list * statement option
+  | Match of place * (variant_id list * block) list * block option
       (** A match over an ADT.
 
           The match statement is introduced in [crate::remove_read_discriminant]

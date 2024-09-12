@@ -9,7 +9,7 @@ use crate::transform::TransformCtx;
 
 use super::ctx::LlbcPass;
 
-fn transform_st(st: &mut Statement) -> Option<Vec<Statement>> {
+fn transform_st(st: &mut Statement) -> Vec<Statement> {
     if let RawStatement::Return = &mut st.content {
         let ret_place = Place {
             var_id: VarId::new(0),
@@ -20,10 +20,10 @@ fn transform_st(st: &mut Statement) -> Option<Vec<Statement>> {
             Vec::new(),
         );
         let assign_st = Statement::new(st.span, RawStatement::Assign(ret_place, unit_value));
-        let ret_st = Statement::new(st.span, RawStatement::Return);
-        st.content = assign_st.then(ret_st).content;
-    };
-    None
+        vec![assign_st]
+    } else {
+        Vec::new()
+    }
 }
 
 pub struct Transform;

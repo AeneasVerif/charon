@@ -15,13 +15,10 @@ use super::ctx::LlbcPass;
 
 pub struct Transform;
 impl Transform {
-    fn update_statement(ctx: &mut TransformCtx<'_>, st: &mut Statement) {
-        let RawStatement::Sequence(seq) = &mut st.content else {
-            return;
-        };
+    fn update_block(ctx: &mut TransformCtx<'_>, block: &mut Block) {
         // Iterate through the statements.
-        for i in 0..seq.len() {
-            let suffix = &mut seq[i..];
+        for i in 0..block.statements.len() {
+            let suffix = &mut block.statements[i..];
             if let [Statement {
                 content: RawStatement::Assign(dest, Rvalue::Discriminant(p, adt_id)),
                 span: span1,
@@ -43,7 +40,7 @@ impl Transform {
                                 // We shouldn't get there
                                 register_error_or_panic!(
                                     ctx,
-                                    st.span.span.rust_span_data.span(),
+                                    block.span.span.rust_span_data.span(),
                                     "Unreachable case"
                                 );
                                 None
@@ -56,7 +53,7 @@ impl Transform {
                 let Some(variants) = variants else {
                     // An error occurred. We can't keep the `Rvalue::Discriminant` around so we
                     // `Nop` the discriminant read.
-                    seq[i].content = RawStatement::Nop;
+                    block.statements[i].content = RawStatement::Nop;
                     return;
                 };
 
@@ -94,7 +91,7 @@ impl Transform {
                                                 discr_to_id.get(&discr).or_else(|| {
                                                     register_error_or_panic!(
                                                         ctx,
-                                                        st.span.span.rust_span_data.span(),
+                                                        block.span.span.rust_span_data.span(),
                                                         "Found incorrect discriminant {discr} for enum {adt_id}"
                                                     );
                                                     None
@@ -114,7 +111,7 @@ impl Transform {
                             Switch::Match(p.clone(), targets, otherwise)
                         });
                         // `Nop` the discriminant read.
-                        seq[i].content = RawStatement::Nop;
+                        block.statements[i].content = RawStatement::Nop;
                     }
                     _ => {
                         // The discriminant read is not followed by a `SwitchInt`. This can happen
@@ -129,10 +126,10 @@ impl Transform {
                                     span: *span1,
                                     content: RawStatement::Assign(dest.clone(), discr_value),
                                 };
-                                (vec![id], statement)
+                                (vec![id], statement.into_block())
                             })
                             .collect();
-                        seq[i].content =
+                        block.statements[i].content =
                             RawStatement::Switch(Switch::Match(p.clone(), targets, None))
                     }
                 }
@@ -144,8 +141,8 @@ impl Transform {
 impl LlbcPass for Transform {
     fn transform_body(&self, ctx: &mut TransformCtx<'_>, b: &mut ExprBody) {
         b.body
-            .drive_mut(&mut visitor_enter_fn_mut(|st: &mut Statement| {
-                Transform::update_statement(ctx, st);
+            .drive_mut(&mut visitor_enter_fn_mut(|block: &mut Block| {
+                Transform::update_block(ctx, block);
             }));
     }
 }

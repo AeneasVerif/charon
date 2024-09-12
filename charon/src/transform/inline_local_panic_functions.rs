@@ -29,7 +29,9 @@ impl LlbcPass for Transform {
             if let Ok(body) = body {
                 let body = body.as_structured().unwrap();
                 // If the whole body is only a call to this specific panic function.
-                if let RawStatement::Abort(AbortKind::Panic(name)) = &body.body.content {
+                if let [st] = body.body.statements.as_slice()
+                    && let RawStatement::Abort(AbortKind::Panic(name)) = &st.content
+                {
                     if name.equals_ref_name(builtins::EXPLICIT_PANIC_NAME) {
                         // FIXME: also check that the name of the function is
                         // `panic_cold_explicit`?

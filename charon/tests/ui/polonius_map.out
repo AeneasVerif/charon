@@ -220,7 +220,7 @@ fn test_crate::get_or_insert<'_0>(@1: &'_0 mut (std::collections::hash::map::Has
             v@7 := copy ((@2 as variant @1).0)
             @0 := &*(v@7)
             drop v@7
-        }
+        },
     }
     drop @6
     drop @5
