@@ -53,6 +53,7 @@ and switch =
        *)
 [@@deriving
   show,
+    ord,
     visitors
       {
         name = "iter_statement";
@@ -90,6 +91,7 @@ and terminator = { span : span; content : raw_terminator }
 and block = { statements : statement list; terminator : terminator }
 [@@deriving
   show,
+    ord,
     visitors
       {
         name = "iter_ullbc_ast";

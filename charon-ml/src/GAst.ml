@@ -80,6 +80,7 @@ and call = { func : fn_operand; args : operand list; dest : place }
 and assertion = { cond : operand; expected : bool }
 [@@deriving
   show,
+    ord,
     visitors
       {
         name = "iter_statement_base";

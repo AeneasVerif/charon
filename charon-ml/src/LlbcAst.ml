@@ -67,6 +67,7 @@ and switch =
        *)
 [@@deriving
   show,
+    ord,
     visitors
       {
         name = "iter_statement";

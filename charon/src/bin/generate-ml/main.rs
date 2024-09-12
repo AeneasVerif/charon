@@ -814,7 +814,6 @@ fn generate_visitor_bases(
 struct DeriveVisitors {
     name: &'static str,
     ancestor: Option<&'static str>,
-    ord: bool,
     reduce: bool,
     extra_types: &'static [&'static str],
 }
@@ -866,7 +865,6 @@ impl GenerateCodeFor {
                         let DeriveVisitors {
                             name,
                             mut ancestor,
-                            ord,
                             reduce,
                             extra_types,
                         } = visitors;
@@ -916,8 +914,7 @@ impl GenerateCodeFor {
                                 )
                             })
                             .format(", ");
-                        let ord = if *ord { ", ord" } else { "" };
-                        let _ = write!(&mut decls, "\n[@@deriving show {ord}, {visitors}]");
+                        let _ = write!(&mut decls, "\n[@@deriving show, ord, {visitors}]");
                     };
                     decls
                 }
@@ -1224,7 +1221,6 @@ fn generate_ml(crate_data: TranslatedCrate, output_dir: PathBuf) -> anyhow::Resu
                     name: "statement_base",
                     ancestor: Some("rvalue"),
                     reduce: false,
-                    ord: false,
                     extra_types: &[
                         "abort_kind",
                     ],
@@ -1261,7 +1257,6 @@ fn generate_ml(crate_data: TranslatedCrate, output_dir: PathBuf) -> anyhow::Resu
                     name: "rvalue",
                     ancestor: Some("generic_params"),
                     reduce: false,
-                    ord: true,
                     extra_types: &[
                         "var_id",
                         "variant_id",
@@ -1328,7 +1323,6 @@ fn generate_ml(crate_data: TranslatedCrate, output_dir: PathBuf) -> anyhow::Resu
                     name: "const_generic",
                     ancestor: Some("literal"),
                     reduce: true,
-                    ord: true,
                     extra_types: &[
                         "const_generic_var_id",
                         "fun_decl_id",
@@ -1351,7 +1345,6 @@ fn generate_ml(crate_data: TranslatedCrate, output_dir: PathBuf) -> anyhow::Resu
                     name: "ty",
                     ancestor: Some("ty_base_base"),
                     reduce: false,
-                    ord: true,
                     extra_types: &[],
                 })), &[
                     "TraitItemName",
@@ -1373,7 +1366,6 @@ fn generate_ml(crate_data: TranslatedCrate, output_dir: PathBuf) -> anyhow::Resu
                     name: "generic_params",
                     ancestor: Some("ty"),
                     reduce: false,
-                    ord: true,
                     extra_types: &[
                         "span",
                     ],
@@ -1406,7 +1398,6 @@ fn generate_ml(crate_data: TranslatedCrate, output_dir: PathBuf) -> anyhow::Resu
                     name: "literal",
                     ancestor: None,
                     reduce: true,
-                    ord: true,
                     extra_types: &[
                         "big_int",
                     ],
@@ -1428,7 +1419,6 @@ fn generate_ml(crate_data: TranslatedCrate, output_dir: PathBuf) -> anyhow::Resu
                     name: "statement",
                     ancestor: Some("statement_base"),
                     reduce: false,
-                    ord: false,
                     extra_types: &[],
                 })), &[
                     "charon_lib::ast::llbc_ast::RawStatement",
@@ -1445,7 +1435,6 @@ fn generate_ml(crate_data: TranslatedCrate, output_dir: PathBuf) -> anyhow::Resu
                     name: "statement",
                     ancestor: Some("GAst.statement_base"),
                     reduce: false,
-                    ord: false,
                     extra_types: &[
                         "block_id",
                     ],
@@ -1459,7 +1448,6 @@ fn generate_ml(crate_data: TranslatedCrate, output_dir: PathBuf) -> anyhow::Resu
                     name: "ullbc_ast",
                     ancestor: Some("statement"),
                     reduce: false,
-                    ord: false,
                     extra_types: &[],
                 })), &[
                     "charon_lib::ast::ullbc_ast::Terminator",
