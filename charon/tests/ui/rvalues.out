@@ -283,6 +283,7 @@ fn test_crate::nullary_ops<T>() -> usize
     let offset@3: usize; // local
     let @4: usize; // anonymous local
 
+    // This one seems to be optimized out.
     size@1 := size_of<T>
     align@2 := align_of<T>
     offset@3 := offset_of(?)<test_crate::nullary_ops::Struct<T>>

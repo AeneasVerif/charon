@@ -30,7 +30,12 @@ type raw_statement =
   | Loop of statement
   | Error of string
 
-and statement = { span : span; content : raw_statement }
+and statement = {
+  span : span;
+  content : raw_statement;
+  comments_before : string list;  (** Comments that precede this statement. *)
+}
+
 and block = statement
 
 and switch =

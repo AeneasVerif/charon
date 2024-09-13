@@ -12,6 +12,7 @@ pub mod ops_to_function_calls;
 pub mod prettify_cfg;
 pub mod reconstruct_asserts;
 pub mod reconstruct_boxes;
+pub mod recover_body_comments;
 pub mod remove_arithmetic_overflow_checks;
 pub mod remove_drop_never;
 pub mod remove_dynamic_checks;
@@ -99,6 +100,10 @@ pub static LLBC_PASSES: &[Pass] = &[
     StructuredBody(&remove_unused_locals::Transform),
     // # Micro-pass: remove the useless `StatementKind::Nop`s.
     StructuredBody(&remove_nops::Transform),
+    // # Micro-pass: take all the comments found in the original body and assign them to
+    // statements. This must be last after all the statement-affecting passes to avoid losing
+    // comments.
+    StructuredBody(&recover_body_comments::Transform),
     // Check that all supplied generic types match the corresponding generic parameters.
     NonBody(&check_generics::Check),
 ];

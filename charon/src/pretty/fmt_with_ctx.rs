@@ -9,6 +9,7 @@ use crate::{
     ullbc_ast::{self as ullbc, *},
 };
 use itertools::Itertools;
+use std::fmt::Write;
 
 /// Format the AST type as a string.
 pub trait FmtWithCtx<C> {
@@ -994,39 +995,50 @@ impl<C: AstFormatter> FmtWithCtx<C> for llbc::Statement {
 
     fn fmt_with_ctx_and_indent(&self, tab: &str, ctx: &C) -> String {
         use llbc::RawStatement;
-        match &self.content {
-            RawStatement::Assign(place, rvalue) => format!(
+        let mut out = String::new();
+        for line in &self.comments_before {
+            let _ = writeln!(&mut out, "{tab}// {line}");
+        }
+        let _ = match &self.content {
+            RawStatement::Assign(place, rvalue) => write!(
+                &mut out,
                 "{}{} := {}",
                 tab,
                 place.fmt_with_ctx(ctx),
                 rvalue.fmt_with_ctx(ctx),
             ),
             RawStatement::FakeRead(place) => {
-                format!("{}@fake_read({})", tab, place.fmt_with_ctx(ctx))
+                write!(&mut out, "{}@fake_read({})", tab, place.fmt_with_ctx(ctx))
             }
-            RawStatement::SetDiscriminant(place, variant_id) => format!(
+            RawStatement::SetDiscriminant(place, variant_id) => write!(
+                &mut out,
                 "{}@discriminant({}) := {}",
                 tab,
                 place.fmt_with_ctx(ctx),
                 variant_id
             ),
             RawStatement::Drop(place) => {
-                format!("{}drop {}", tab, place.fmt_with_ctx(ctx))
+                write!(&mut out, "{}drop {}", tab, place.fmt_with_ctx(ctx))
             }
-            RawStatement::Assert(assert) => format!("{}{}", tab, assert.fmt_with_ctx(ctx),),
+            RawStatement::Assert(assert) => {
+                write!(&mut out, "{}{}", tab, assert.fmt_with_ctx(ctx),)
+            }
             RawStatement::Call(call) => {
                 let (call_s, _) = fmt_call(ctx, call);
-                format!("{tab}{} := {call_s}", call.dest.fmt_with_ctx(ctx),)
+                write!(&mut out, "{tab}{} := {call_s}", call.dest.fmt_with_ctx(ctx),)
             }
-            RawStatement::Abort(kind) => kind.fmt_with_ctx_and_indent(tab, ctx),
-            RawStatement::Return => format!("{tab}return"),
-            RawStatement::Break(index) => format!("{tab}break {index}"),
-            RawStatement::Continue(index) => format!("{tab}continue {index}"),
-            RawStatement::Nop => format!("{tab}nop"),
+            RawStatement::Abort(kind) => {
+                write!(&mut out, "{}", kind.fmt_with_ctx_and_indent(tab, ctx))
+            }
+            RawStatement::Return => write!(&mut out, "{tab}return"),
+            RawStatement::Break(index) => write!(&mut out, "{tab}break {index}"),
+            RawStatement::Continue(index) => write!(&mut out, "{tab}continue {index}"),
+            RawStatement::Nop => write!(&mut out, "{tab}nop"),
             RawStatement::Switch(switch) => match switch {
                 Switch::If(discr, true_st, false_st) => {
                     let inner_tab = format!("{tab}{TAB_INCR}");
-                    format!(
+                    write!(
+                        &mut out,
                         "{tab}if {} {{\n{}{tab}}}\n{tab}else {{\n{}{tab}}}",
                         discr.fmt_with_ctx(ctx),
                         true_st.fmt_with_ctx_and_indent(&inner_tab, ctx),
@@ -1053,7 +1065,8 @@ impl<C: AstFormatter> FmtWithCtx<C> for llbc::Statement {
                         otherwise.fmt_with_ctx_and_indent(&inner_tab2, ctx),
                     ));
 
-                    format!(
+                    write!(
+                        &mut out,
                         "{tab}switch {} {{\n{}{tab}}}",
                         discr.fmt_with_ctx(ctx),
                         maps.iter().format(""),
@@ -1081,7 +1094,8 @@ impl<C: AstFormatter> FmtWithCtx<C> for llbc::Statement {
                         ));
                     };
 
-                    format!(
+                    write!(
+                        &mut out,
                         "{tab}match {} {{\n{}{tab}}}",
                         discr.fmt_with_ctx(ctx),
                         maps.iter().format(""),
@@ -1090,13 +1104,15 @@ impl<C: AstFormatter> FmtWithCtx<C> for llbc::Statement {
             },
             RawStatement::Loop(body) => {
                 let inner_tab = format!("{tab}{TAB_INCR}");
-                format!(
+                write!(
+                    &mut out,
                     "{tab}loop {{\n{}{tab}}}",
                     body.fmt_with_ctx_and_indent(&inner_tab, ctx),
                 )
             }
-            RawStatement::Error(s) => format!("{tab}@ERROR({})", s),
-        }
+            RawStatement::Error(s) => write!(&mut out, "{tab}@ERROR({})", s),
+        };
+        out
     }
 }
 

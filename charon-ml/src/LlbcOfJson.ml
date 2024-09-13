@@ -58,10 +58,16 @@ and statement_of_json (id_to_file : id_to_file_map) (js : json) :
     (statement, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
-    | `Assoc [ ("span", span); ("content", content) ] ->
+    | `Assoc
+        [
+          ("span", span);
+          ("content", content);
+          ("comments_before", comments_before);
+        ] ->
         let* span = span_of_json id_to_file span in
         let* content = raw_statement_of_json id_to_file content in
-        Ok ({ span; content } : statement)
+        let* comments_before = list_of_json string_of_json comments_before in
+        Ok ({ span; content; comments_before } : statement)
     | _ -> Error "")
 
 and block_of_json (id_to_file : id_to_file_map) (js : json) :
@@ -74,11 +80,16 @@ and block_of_json (id_to_file : id_to_file_map) (js : json) :
           list_of_json (statement_of_json id_to_file) statements
         in
         match List.rev statements with
-        | [] -> Ok { span; content = Nop }
+        | [] -> Ok { span; content = Nop; comments_before = [] }
         | last :: rest ->
             let seq =
               List.fold_left
-                (fun acc st -> { span = st.span; content = Sequence (st, acc) })
+                (fun acc st ->
+                  {
+                    span = st.span;
+                    content = Sequence (st, acc);
+                    comments_before = [];
+                  })
                 last rest
             in
             Ok seq

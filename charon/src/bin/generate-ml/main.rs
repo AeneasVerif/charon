@@ -1164,11 +1164,11 @@ fn generate_ml(crate_data: TranslatedCrate, output_dir: PathBuf) -> anyhow::Resu
                       list_of_json (statement_of_json id_to_file) statements
                     in
                     match List.rev statements with
-                    | [] -> Ok { span; content = Nop }
+                    | [] -> Ok { span; content = Nop; comments_before = [] }
                     | last :: rest ->
                         let seq =
                           List.fold_left
-                            (fun acc st -> { span = st.span; content = Sequence (st, acc) })
+                            (fun acc st -> { span = st.span; content = Sequence (st, acc); comments_before = [] })
                             last rest
                         in
                         Ok seq
