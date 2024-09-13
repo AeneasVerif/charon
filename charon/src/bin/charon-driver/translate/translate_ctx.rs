@@ -688,18 +688,18 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         source_info: &hax::SourceInfo,
     ) -> Span {
         // Translate the span
-        let mut scope_data = source_scopes.get(source_info.scope).unwrap();
-        let span = self.translate_raw_span(scope_data.span.clone());
+        let span = self.translate_raw_span(source_info.span.clone());
 
         // Lookup the top-most inlined parent scope.
-        if scope_data.inlined_parent_scope.is_some() {
-            while scope_data.inlined_parent_scope.is_some() {
-                let parent_scope = scope_data.inlined_parent_scope.unwrap();
-                scope_data = source_scopes.get(parent_scope).unwrap();
-            }
+        let mut parent_span = None;
+        let mut scope_data = &source_scopes[source_info.scope];
+        while let Some(parent_scope) = scope_data.inlined_parent_scope {
+            scope_data = &source_scopes[parent_scope];
+            parent_span = Some(&scope_data.span);
+        }
 
-            let parent_span = self.translate_raw_span(scope_data.span.clone());
-
+        if let Some(parent_span) = parent_span {
+            let parent_span = self.translate_raw_span(parent_span.clone());
             Span {
                 span: parent_span,
                 generated_from_span: Some(span),

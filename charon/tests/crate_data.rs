@@ -1,9 +1,6 @@
 use charon_lib::ast::{AnyTransItem, TranslatedCrate};
-use derive_visitor::{visitor_enter_fn, Drive};
-use indoc::indoc;
 use itertools::Itertools;
-use llbc_ast::Statement;
-use std::collections::{HashMap, HashSet};
+use std::collections::HashMap;
 
 use charon_lib::ast::*;
 
@@ -133,84 +130,19 @@ fn spans() -> anyhow::Result<()> {
     let function = &crate_data.fun_decls[0];
     // Span of the whole function.
     assert_eq!(repr_span(function.item_meta.span), "2:8-10:9");
+
     let body_id = function.body.unwrap();
     let body = &crate_data.bodies[body_id].as_structured().unwrap().body;
-    // The whole function declaration.
-    assert_eq!(repr_span(body.span), "2:8-10:9");
+    // Span of the function body
+    assert_eq!(repr_span(body.span), "3:16-10:9");
+
     let the_loop = body
         .statements
         .iter()
         .find(|st| st.content.is_loop())
         .unwrap();
-    // That's not a very precise span :/
-    assert_eq!(repr_span(the_loop.span), "4:12-10:9");
-    Ok(())
-}
+    assert_eq!(repr_span(the_loop.span), "5:12-8:13");
 
-#[test]
-fn comments() -> anyhow::Result<()> {
-    let crate_data = translate(
-        "
-        pub fn sum(s: &[u32]) -> u32 {
-            // Comment1
-            let mut sum = 0;
-            // Comment2
-            let mut i = 0;
-            // Comment3
-            while i < s.len() {
-                // Comment4
-                sum += s[i];
-                // Comment5
-                i += 1;
-            }
-            // Comment6
-            sum = if sum > 10 {
-                // Comment7
-                sum + 100
-            } else {
-                // Comment8
-                sum
-            };
-            // Comment9
-            sum
-        }
-        ",
-    )?;
-    let function = &crate_data.fun_decls[0];
-    let body_id = function.body.unwrap();
-    let body = &crate_data.bodies[body_id].as_structured().unwrap();
-    assert_eq!(function.item_meta.span.span.beg.line, 2);
-
-    let mut statement_lines = HashSet::new();
-    body.body.drive(&mut visitor_enter_fn(|st: &Statement| {
-        statement_lines.insert(st.span.span.beg.line);
-    }));
-    // This is terrible, we only distinguish three lines out of so many.
-    assert_eq!(
-        statement_lines.into_iter().sorted().collect_vec(),
-        vec![2, 4, 6]
-    );
-
-    let comments = body
-        .comments
-        .iter()
-        .map(|(i, comments)| format!("{i}: {comments:?}"))
-        .join("\n");
-    assert_eq!(
-        comments,
-        indoc!(
-            r#"
-            4: ["Comment1"]
-            6: ["Comment2"]
-            8: ["Comment3"]
-            10: ["Comment4"]
-            12: ["Comment5"]
-            15: ["Comment6"]
-            17: ["Comment7"]
-            20: ["Comment8"]
-            23: ["Comment9"]"#
-        )
-    );
     Ok(())
 }
 

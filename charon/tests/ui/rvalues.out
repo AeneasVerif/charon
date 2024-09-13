@@ -255,6 +255,7 @@ fn test_crate::transmute(@1: Array<u32, 2 : usize>) -> u64
     let @0: u64; // return
     let x@1: Array<u32, 2 : usize>; // arg #1
 
+    // When optimized, this becomes a built-in cast. Otherwise this is just a call to `transmute`.
     @0 := transmute<Array<u32, 2 : usize>, u64>(copy (x@1))
     return
 }

@@ -14,9 +14,8 @@ impl LlbcPass for Transform {
         // - each comment should be assigned to exactly one statement;
         // - the order of comments in the source should refine the partial order of control flow;
         // - a comment should come before the statement it was applied to.
-        // Statement spans are way too imprecise for that.
 
-        // This is a pretty terrible heuristic but the spans are really terrible.
+        // This is a pretty simple heuristic which is good enough for now.
         let mut comments: Vec<(usize, Vec<String>)> = b.comments.clone();
         b.body
             .drive_mut(&mut visitor_enter_fn_mut(|st: &mut Statement| {
