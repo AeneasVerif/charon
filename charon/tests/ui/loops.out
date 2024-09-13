@@ -528,6 +528,7 @@ fn test_crate::test_loop6(@1: u32) -> u32
     }
     drop @6
     drop @4
+    // All the below nodes are exit candidates (each of them is referenced twice)
     s@3 := copy (s@3) + const (1 : u32)
     @0 := copy (s@3)
     drop s@3

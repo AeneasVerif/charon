@@ -688,6 +688,7 @@ fn test_crate::take_all()
 
     x@1 := [const (0 : u32), const (0 : u32); 2 : usize]
     @fake_read(x@1)
+    // x is deep copied (copy node appears in Charon, followed by a move)
     @3 := copy (x@1)
     @2 := test_crate::take_array(move (@3))
     drop @3
@@ -696,12 +697,14 @@ fn test_crate::take_all()
     @4 := test_crate::take_array(move (@5))
     drop @5
     drop @4
+    // x passed by address, there is a reborrow here
     @8 := &x@1
     @7 := &*(@8)
     @6 := test_crate::take_array_borrow(move (@7))
     drop @7
     drop @8
     drop @6
+    // automatic cast from array to slice (spanning entire array)
     @12 := &x@1
     @11 := &*(@12)
     @10 := @ArrayToSliceShared<'_, u32, 2 : usize>(move (@11))
@@ -710,6 +713,8 @@ fn test_crate::take_all()
     drop @10
     drop @12
     drop @9
+    // note that both appear as SliceNew expressions, meaning the SliceNew UnOp is overloaded for
+    // mut and non-mut cases
     @16 := &mut x@1
     @15 := &mut *(@16)
     @14 := @ArrayToSliceMut<'_, u32, 2 : usize>(move (@15))
@@ -1000,6 +1005,7 @@ fn test_crate::range_all()
 
     x@1 := [const (0 : u32), const (0 : u32), const (0 : u32), const (0 : u32); 4 : usize]
     @fake_read(x@1)
+    // CONFIRM: there is no way to shrink [T;N] into [T;M] with M<N?
     @6 := &mut x@1
     @7 := core::ops::range::Range { start: const (1 : usize), end: const (3 : usize) }
     @5 := core::array::{impl core::ops::index::IndexMut<I> for Array<T, const N : usize>}#16<u32, core::ops::range::Range<usize>, 4 : usize>[core::slice::index::{impl core::ops::index::IndexMut<I> for Slice<T>}#1<u32, core::ops::range::Range<usize>>[core::slice::index::{impl core::slice::index::SliceIndex<Slice<T>> for core::ops::range::Range<usize>}#4<u32>]]::index_mut(move (@6), move (@7))
@@ -1087,12 +1093,16 @@ fn test_crate::non_copyable_array()
     drop @3
     drop @2
     @fake_read(x@1)
+    // x is moved (not deep copied!)
+    // TODO: determine whether the translation needs to be aware of that and pass by ref instead of by copy
     @5 := move (x@1)
     @4 := test_crate::take_array_t(move (@5))
     drop @5
     drop @4
     @6 := ()
     @0 := move (@6)
+    // this fails, naturally:
+    // take_array_t(x);
     drop x@1
     @0 := ()
     return
