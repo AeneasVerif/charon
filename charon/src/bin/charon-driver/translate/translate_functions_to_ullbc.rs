@@ -906,10 +906,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         let t_statement: Option<RawStatement> = match &*statement.kind {
             StatementKind::Assign((place, rvalue)) => {
                 let t_place = self.translate_place(span, place)?;
-                let t_rvalue = self.translate_rvalue(
-                    statement.source_info.span.rust_span_data.unwrap().span(),
-                    rvalue,
-                )?;
+                let t_rvalue = self.translate_rvalue(span, rvalue)?;
 
                 Some(RawStatement::Assign(t_place, t_rvalue))
             }
