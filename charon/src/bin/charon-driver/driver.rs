@@ -10,7 +10,6 @@ use rustc_interface::{interface::Compiler, Queries};
 use rustc_middle::ty::TyCtxt;
 use std::fmt;
 use std::ops::Deref;
-use std::panic::{self, AssertUnwindSafe};
 
 /// The callbacks for Charon
 pub struct CharonCallbacks {
@@ -22,7 +21,6 @@ pub struct CharonCallbacks {
 
 pub enum CharonFailure {
     RustcError(usize),
-    Panic,
     Serialize,
 }
 
@@ -32,7 +30,6 @@ impl fmt::Display for CharonFailure {
             CharonFailure::RustcError(error_count) => {
                 write!(f, "Compilation encountered {} errors", error_count)?
             }
-            CharonFailure::Panic => write!(f, "Compilation panicked")?,
             CharonFailure::Serialize => write!(f, "Could not serialize output file")?,
         }
         Ok(())
@@ -54,13 +51,8 @@ impl CharonCallbacks {
         // Arguments list always start with the executable name. We put a silly value to ensure
         // it's not used for anything.
         args.insert(0, "__CHARON_MYSTERIOUS_FIRST_ARG__".to_string());
-        let mut this = AssertUnwindSafe(self);
-        panic::catch_unwind(move || {
-            let res = rustc_driver::RunCompiler::new(&args, *this).run();
-            res.map_err(|_| CharonFailure::RustcError(this.error_count))
-        })
-        .map_err(|_| CharonFailure::Panic)??;
-        Ok(())
+        let res = rustc_driver::RunCompiler::new(&args, self).run();
+        res.map_err(|_| CharonFailure::RustcError(self.error_count))
     }
 }
 
