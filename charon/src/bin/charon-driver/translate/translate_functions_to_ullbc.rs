@@ -334,7 +334,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                         use hax::ProjectionElemFieldKind::*;
                         let proj_elem = match field_kind {
                             Tuple(id) => {
-                                let (_, generics) = current_ty.as_adt();
+                                let (_, generics) = current_ty.as_adt().unwrap();
                                 let field_id = translate_field_id(*id);
                                 let proj_kind = FieldProjKind::Tuple(generics.types.len());
                                 ProjectionElem::Field(proj_kind, field_id)
@@ -533,8 +533,8 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                     | hax::CastKind::IntToFloat
                     | hax::CastKind::FloatToInt
                     | hax::CastKind::FloatToFloat => {
-                        let tgt_ty = *tgt_ty.as_literal();
-                        let src_ty = *src_ty.as_literal();
+                        let tgt_ty = *tgt_ty.as_literal().unwrap();
+                        let src_ty = *src_ty.as_literal().unwrap();
                         Ok(Rvalue::UnaryOp(
                             UnOp::Cast(CastKind::Scalar(src_ty, tgt_ty)),
                             operand,
@@ -1135,7 +1135,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 Ok(SwitchTargets::If(if_block, then_block))
             }
             hax::SwitchTargets::SwitchInt(_, targets_map, otherwise) => {
-                let int_ty = *switch_ty.as_literal().as_integer();
+                let int_ty = *switch_ty.as_literal().unwrap().as_integer().unwrap();
                 let targets_map: Vec<(ScalarValue, BlockId)> = targets_map
                     .iter()
                     .map(|(v, tgt)| {

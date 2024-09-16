@@ -234,15 +234,12 @@ pub fn derive_enum_variant_method(item: TokenStream, method_kind: EnumMethodKind
                 EnumAsGetters | EnumAsMutGetters | EnumToGetters => {
                     let vars = &mp.pattern_vars;
                     let tys = &mp.arg_types;
-                    let unreachable_msg =
-                        format!("{adt_name}::{method_name}: Not the proper variant",);
-
                     quote!(
-                        pub fn #method_name(#ref_kind self) -> ( #(#ref_kind #tys),* ) {
+                        pub fn #method_name(#ref_kind self) -> Option<( #(#ref_kind #tys),* )> {
                             #[allow(unreachable)]
                             match self {
-                                #pattern => ( #(#vars),* ),
-                                _ => unreachable!(#unreachable_msg),
+                                #pattern => Some(( #(#vars),* )),
+                                _ => None,
                             }
                         }
                     )

@@ -74,7 +74,7 @@ impl Transform {
 
                         take_mut::take(switch, |switch| {
                             let (Operand::Move(op_p), _, targets, otherwise) =
-                                switch.to_switch_int()
+                                switch.to_switch_int().unwrap()
                             else {
                                 unreachable!()
                             };

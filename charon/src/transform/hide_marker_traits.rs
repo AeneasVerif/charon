@@ -88,7 +88,7 @@ impl TransformPass for Transform {
             .item_names
             .iter()
             .filter(|(_, name)| exclude.iter().any(|p| p.matches(&ctx.translated, name)))
-            .map(|(id, _)| *id.as_trait_decl())
+            .map(|(id, _)| *id.as_trait_decl().unwrap())
             .collect();
 
         for &id in &exclude {

@@ -449,7 +449,7 @@ impl<'a> Formatter<(TypeDeclId, VariantId)> for FmtCtx<'a> {
                         variant_id.to_pretty_string()
                     ),
                     Some(def) if def.kind.is_enum() => {
-                        let variants = def.kind.as_enum();
+                        let variants = def.kind.as_enum().unwrap();
                         let mut name = def.item_meta.name.fmt_with_ctx(self);
                         let variant_name = &variants.get(variant_id).unwrap().name;
                         name.push_str("::");

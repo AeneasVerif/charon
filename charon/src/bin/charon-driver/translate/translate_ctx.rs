@@ -552,11 +552,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
             .collect_vec();
 
         let rename = {
-            let mut renames = attributes
-                .iter()
-                .filter(|a| a.is_rename())
-                .map(|a| a.as_rename())
-                .cloned();
+            let mut renames = attributes.iter().filter_map(|a| a.as_rename()).cloned();
             let rename = renames.next();
             if renames.next().is_some() {
                 self.span_err(
@@ -844,7 +840,10 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         src: &Option<DepSource>,
         id: DefId,
     ) -> TypeDeclId {
-        *self.register_id(src, OrdRustId::Type(id)).as_type()
+        *self
+            .register_id(src, OrdRustId::Type(id))
+            .as_type()
+            .unwrap()
     }
 
     pub(crate) fn register_fun_decl_id(&mut self, src: &Option<DepSource>, id: DefId) -> FunDeclId {
@@ -854,7 +853,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         } else {
             OrdRustId::Fun(id)
         };
-        *self.register_id(src, id).as_fun()
+        *self.register_id(src, id).as_fun().unwrap()
     }
 
     pub(crate) fn register_trait_decl_id(
@@ -865,6 +864,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         *self
             .register_id(src, OrdRustId::TraitDecl(id))
             .as_trait_decl()
+            .unwrap()
     }
 
     pub(crate) fn register_trait_impl_id(
@@ -889,6 +889,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         *self
             .register_id(src, OrdRustId::TraitImpl(id))
             .as_trait_impl()
+            .unwrap()
     }
 
     pub(crate) fn register_global_decl_id(
@@ -896,7 +897,10 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         src: &Option<DepSource>,
         id: DefId,
     ) -> GlobalDeclId {
-        *self.register_id(src, OrdRustId::Global(id)).as_global()
+        *self
+            .register_id(src, OrdRustId::Global(id))
+            .as_global()
+            .unwrap()
     }
 
     pub(crate) fn with_def_id<F, T>(&mut self, def_id: DefId, f: F) -> T
