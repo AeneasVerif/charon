@@ -770,6 +770,10 @@ and global_decl_id_of_json (js : json) : (global_decl_id, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with x -> GlobalDeclId.id_of_json x | _ -> Error "")
 
+and unsolved_trait_id_of_json (js : json) : (unsolved_trait_id, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with x -> UnsolvedTraitId.id_of_json x | _ -> Error "")
+
 and type_var_of_json (js : json) : (type_var, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with

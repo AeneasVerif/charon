@@ -542,7 +542,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     /// TODO: having to do this is very annoying. Isn't there a better way?
     #[tracing::instrument(skip(self))]
     pub(crate) fn find_trait_clause_for_param(
-        &self,
+        &mut self,
         hax_trait_ref: &hax::TraitRef,
     ) -> TraitRefKind {
         trace!(
@@ -563,6 +563,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         };
 
         // Try solving it again later, when more clauses are registered.
-        TraitRefKind::Unsolved(hax_trait_ref.clone())
+        let id = self.unsolved_traits.push(hax_trait_ref.clone());
+        TraitRefKind::Unsolved(id)
     }
 }
