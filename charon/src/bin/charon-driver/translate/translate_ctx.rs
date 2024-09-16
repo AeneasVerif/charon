@@ -18,6 +18,7 @@ use rustc_error_messages::MultiSpan;
 use rustc_hir::def_id::DefId;
 use rustc_hir::Node as HirNode;
 use rustc_middle::ty::TyCtxt;
+use std::borrow::Cow;
 use std::cmp::{Ord, PartialOrd};
 use std::collections::HashMap;
 use std::collections::{BTreeMap, VecDeque};
@@ -238,6 +239,7 @@ pub(crate) struct BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     pub t_ctx: &'ctx mut TranslateCtx<'tcx, 'ctx1>,
     /// A hax state with an owner id
     pub hax_state: hax::State<hax::Base<'tcx>, (), (), rustc_hir::def_id::DefId>,
+
     /// The regions.
     /// We use DeBruijn indices, so we have a stack of regions.
     /// See the comments for [Region::BVar].
@@ -268,25 +270,17 @@ pub(crate) struct BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     /// ==============
     /// We use DeBruijn indices. See the comments for [Region::Var].
     pub bound_region_vars: VecDeque<Box<[RegionId]>>,
-    /// The type variables
-    pub type_vars: Vector<TypeVarId, TypeVar>,
-    /// The map from rust type variable indices to translated type variable
-    /// indices.
+    /// The generic parameters for the item. `regions` must be empty, as regions are handled
+    /// separately.
+    pub generic_params: GenericParams,
+    /// The map from rust type variable indices to translated type variable indices.
     pub type_vars_map: HashMap<u32, TypeVarId>,
-    /// The "regular" variables
-    pub vars: Vector<VarId, Var>,
-    /// The map from rust variable indices to translated variables indices.
-    pub vars_map: HashMap<usize, VarId>,
-    /// The const generic variables
-    pub const_generic_vars: Vector<ConstGenericVarId, ConstGenericVar>,
     /// The map from rust const generic variables to translate const generic
     /// variable indices.
     pub const_generic_vars_map: HashMap<u32, ConstGenericVarId>,
     /// Trait refs we couldn't solve at the moment of translating them and will solve in a second
     /// pass before extracting the generic params.
     pub unsolved_traits: Vector<UnsolvedTraitId, hax::TraitRef>,
-    /// Accumulated clauses to be put into the item's `GenericParams`.
-    pub param_trait_clauses: Vector<TraitClauseId, TraitClause>,
     /// (For traits only) accumulated implied trait clauses.
     pub parent_trait_clauses: Vector<TraitClauseId, TraitClause>,
     /// (For traits only) accumulated trait clauses on associated types.
@@ -296,14 +290,13 @@ pub(crate) struct BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     /// corresponds to.
     /// FIXME: hax should take care of this matching up.
     /// We use a betreemap to get a consistent output order and `OrdRustId` to get an orderable
-    /// `DefId`.
-    pub trait_clauses: BTreeMap<OrdRustId, Vec<NonLocalTraitClause>>,
-    ///
-    pub types_outlive: Vec<TypeOutlives>,
-    ///
-    pub regions_outlive: Vec<RegionOutlives>,
-    ///
-    pub trait_type_constraints: Vec<TraitTypeConstraint>,
+    /// `DefId` but they're all `OrdRustId::TraitDecl`.
+    pub trait_clauses_map: BTreeMap<OrdRustId, Vec<NonLocalTraitClause>>,
+
+    /// The "regular" variables
+    pub vars: Vector<VarId, ast::Var>,
+    /// The map from rust variable indices to translated variables indices.
+    pub vars_map: HashMap<usize, VarId>,
     /// The translated blocks. We can't use `ast::Vector<BlockId, ast::BlockData>`
     /// here because we might generate several fresh indices before actually
     /// adding the resulting blocks to the map.
@@ -926,20 +919,15 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             region_vars: [Vector::new()].into(),
             free_region_vars: Default::default(),
             bound_region_vars: Default::default(),
-            type_vars: Default::default(),
+            generic_params: Default::default(),
             type_vars_map: Default::default(),
-            vars: Default::default(),
-            vars_map: Default::default(),
-            const_generic_vars: Default::default(),
             const_generic_vars_map: Default::default(),
             unsolved_traits: Default::default(),
-            param_trait_clauses: Default::default(),
             parent_trait_clauses: Default::default(),
             item_trait_clauses: Default::default(),
-            trait_clauses: Default::default(),
-            regions_outlive: Default::default(),
-            types_outlive: Default::default(),
-            trait_type_constraints: Default::default(),
+            trait_clauses_map: Default::default(),
+            vars: Default::default(),
+            vars_map: Default::default(),
             blocks: Default::default(),
             blocks_map: Default::default(),
             blocks_stack: Default::default(),
@@ -1079,7 +1067,10 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     }
 
     pub(crate) fn push_type_var(&mut self, rid: u32, name: String) -> TypeVarId {
-        let var_id = self.type_vars.push_with(|index| TypeVar { index, name });
+        let var_id = self
+            .generic_params
+            .types
+            .push_with(|index| TypeVar { index, name });
         self.type_vars_map.insert(rid, var_id);
         var_id
     }
@@ -1091,7 +1082,8 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
 
     pub(crate) fn push_const_generic_var(&mut self, rid: u32, ty: LiteralTy, name: String) {
         let var_id = self
-            .const_generic_vars
+            .generic_params
+            .const_generics
             .push_with(|index| ConstGenericVar { index, name, ty });
         self.const_generic_vars_map.insert(rid, var_id);
     }
@@ -1111,20 +1103,15 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         // Sanity checks
         self.check_generics();
         assert!(self.region_vars.len() == 1);
-        assert!(self
-            .param_trait_clauses
+        let mut generic_params = self.generic_params.clone();
+        assert!(generic_params.regions.is_empty());
+        generic_params.regions = self.region_vars[0].clone();
+        assert!(generic_params
+            .trait_clauses
             .iter()
             .enumerate()
             .all(|(i, c)| c.clause_id.index() == i));
-        let mut generic_params = GenericParams {
-            regions: self.region_vars[0].clone(),
-            types: self.type_vars.clone(),
-            const_generics: self.const_generic_vars.clone(),
-            trait_clauses: self.param_trait_clauses.clone(),
-            regions_outlive: self.regions_outlive.clone(),
-            types_outlive: self.types_outlive.clone(),
-            trait_type_constraints: self.trait_type_constraints.clone(),
-        };
+
         // Solve trait refs now that all clauses have been registered.
         generic_params.drive_mut(&mut visitor_enter_fn_mut(|tref_kind: &mut TraitRefKind| {
             if let TraitRefKind::Unsolved(unsolved_trait_id) = *tref_kind {
@@ -1136,7 +1123,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                     let fmt_ctx = self.into_fmt();
                     let trait_ref = format!("{:?}", hax_trait_ref);
                     let clauses: Vec<String> = self
-                        .trait_clauses
+                        .trait_clauses_map
                         .values()
                         .flat_map(|x| x)
                         .map(|x| x.fmt_with_ctx(&fmt_ctx))
@@ -1193,11 +1180,25 @@ impl<'tcx, 'ctx, 'ctx1, 'a> IntoFormatter for &'a BodyTransCtx<'tcx, 'ctx, 'ctx1
     type C = FmtCtx<'a>;
 
     fn into_fmt(self) -> Self::C {
+        // Translate our generics into a stack of generics. Only the outermost binder has
+        // non-region parameters.
+        let mut generics: VecDeque<Cow<'_, GenericParams>> = self
+            .region_vars
+            .iter()
+            .cloned()
+            .map(|regions| {
+                Cow::Owned(GenericParams {
+                    regions,
+                    ..Default::default()
+                })
+            })
+            .collect();
+        let outermost_generics = generics.back_mut().unwrap().to_mut();
+        outermost_generics.types = self.generic_params.types.clone();
+        outermost_generics.const_generics = self.generic_params.const_generics.clone();
         FmtCtx {
             translated: Some(&self.t_ctx.translated),
-            region_vars: self.region_vars.clone(),
-            type_vars: Some(&self.type_vars),
-            const_generic_vars: Some(&self.const_generic_vars),
+            generics,
             locals: Some(&self.vars),
         }
     }

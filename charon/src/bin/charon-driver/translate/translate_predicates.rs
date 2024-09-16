@@ -147,9 +147,11 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 match self.translate_predicate(pred, span, origin.clone(), location)? {
                     None => (),
                     Some(pred) => match pred {
-                        Predicate::TypeOutlives(p) => self.types_outlive.push(p),
-                        Predicate::RegionOutlives(p) => self.regions_outlive.push(p),
-                        Predicate::TraitType(p) => self.trait_type_constraints.push(p),
+                        Predicate::TypeOutlives(p) => self.generic_params.types_outlive.push(p),
+                        Predicate::RegionOutlives(p) => self.generic_params.regions_outlive.push(p),
+                        Predicate::TraitType(p) => {
+                            self.generic_params.trait_type_constraints.push(p)
+                        }
                         Predicate::Trait(_) => unreachable!(),
                     },
                 }
@@ -193,7 +195,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
 
         let trait_decl_ref = self.translate_trait_predicate(hspan, trait_pred)?;
         let vec = match location {
-            PredicateLocation::Base => &mut self.param_trait_clauses,
+            PredicateLocation::Base => &mut self.generic_params.trait_clauses,
             PredicateLocation::Parent(..) => &mut self.parent_trait_clauses,
             PredicateLocation::Item(.., item_name) => self
                 .item_trait_clauses
@@ -222,7 +224,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             ),
         };
         let def_id = DefId::from(&trait_pred.trait_ref.def_id);
-        self.trait_clauses
+        self.trait_clauses_map
             .entry(OrdRustId::TraitDecl(def_id))
             .or_default()
             .push(NonLocalTraitClause {
@@ -247,7 +249,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             trait_ref_kind: TraitRefKind::SelfId,
         };
         let def_id = DefId::from(&trait_pred.trait_ref.def_id);
-        self.trait_clauses
+        self.trait_clauses_map
             .entry(OrdRustId::TraitDecl(def_id))
             .or_default()
             .push(clause);
@@ -553,7 +555,8 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
 
         // Simply explore the trait clauses
         let def_id = DefId::from(&hax_trait_ref.def_id);
-        if let Some(clauses_for_this_trait) = self.trait_clauses.get(&OrdRustId::TraitDecl(def_id))
+        if let Some(clauses_for_this_trait) =
+            self.trait_clauses_map.get(&OrdRustId::TraitDecl(def_id))
         {
             for trait_clause in clauses_for_this_trait {
                 if trait_clause.matches(hax_trait_ref) {
