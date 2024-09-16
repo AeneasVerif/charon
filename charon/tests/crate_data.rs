@@ -279,8 +279,8 @@ fn attributes() -> anyhow::Result<()> {
             .attr_info
             .attributes
             .iter()
-            .filter(|a| a.is_unknown())
-            .map(|a| a.as_unknown().to_string())
+            .filter_map(|a| a.as_unknown())
+            .map(|a| a.to_string())
             .collect_vec()
     };
     let crate_data = translate(
@@ -403,7 +403,12 @@ fn discriminants() -> anyhow::Result<()> {
         "#,
     )?;
     fn get_enum_discriminants(ty: &TypeDecl) -> Vec<ScalarValue> {
-        ty.kind.as_enum().iter().map(|v| v.discriminant).collect()
+        ty.kind
+            .as_enum()
+            .unwrap()
+            .iter()
+            .map(|v| v.discriminant)
+            .collect()
     }
     assert_eq!(
         get_enum_discriminants(&crate_data.type_decls[0]),
@@ -540,11 +545,11 @@ fn rename_attribute() -> anyhow::Result<()> {
     );
 
     assert_eq!(
-        crate_data.type_decls[1].kind.as_enum()[0].renamed_name(),
+        crate_data.type_decls[1].kind.as_enum().unwrap()[0].renamed_name(),
         "Variant1"
     );
     assert_eq!(
-        crate_data.type_decls[1].kind.as_enum()[1].renamed_name(),
+        crate_data.type_decls[1].kind.as_enum().unwrap()[1].renamed_name(),
         "SimpleSecondVariant_"
     );
 
@@ -576,7 +581,7 @@ fn rename_attribute() -> anyhow::Result<()> {
     );
 
     assert_eq!(
-        crate_data.type_decls[2].kind.as_struct()[0]
+        crate_data.type_decls[2].kind.as_struct().unwrap()[0]
             .attr_info
             .rename
             .as_deref(),
@@ -602,9 +607,9 @@ fn declaration_groups() -> anyhow::Result<()> {
     let decl_groups = crate_data.ordered_decls.unwrap();
     assert_eq!(crate_data.fun_decls.iter().count(), 1);
     assert_eq!(decl_groups.len(), 3);
-    assert!(decl_groups[0].as_fun().is_non_rec());
-    assert!(decl_groups[1].as_trait_decl().is_non_rec());
-    assert!(decl_groups[2].as_trait_impl().is_non_rec());
+    assert!(decl_groups[0].as_fun().unwrap().is_non_rec());
+    assert!(decl_groups[1].as_trait_decl().unwrap().is_non_rec());
+    assert!(decl_groups[2].as_trait_impl().unwrap().is_non_rec());
 
     Ok(())
 }

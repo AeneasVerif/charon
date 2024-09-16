@@ -18,7 +18,9 @@ fn transform_st(st: &mut Statement) -> Vec<Statement> {
         // Replace the `if` with a `nop`.
         let (op, then_block, else_block) = mem::replace(&mut st.content, RawStatement::Nop)
             .to_switch()
-            .to_if();
+            .unwrap()
+            .to_if()
+            .unwrap();
         let assert = Statement::new(
             then_block.span,
             RawStatement::Assert(Assert {

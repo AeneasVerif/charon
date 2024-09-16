@@ -66,7 +66,7 @@ fn type_name_to_ocaml_ident(item_meta: &ItemMeta) -> String {
         .attr_info
         .rename
         .as_ref()
-        .unwrap_or(item_meta.name.name.last().unwrap().as_ident().0);
+        .unwrap_or(item_meta.name.name.last().unwrap().as_ident().unwrap().0);
     make_ocaml_ident(name)
 }
 
@@ -141,7 +141,16 @@ impl<'a> GenerateCtx<'a> {
         for ty in &crate_data.type_decls {
             let long_name = repr_name(crate_data, &ty.item_meta.name);
             if long_name.starts_with("charon_lib") {
-                let short_name = ty.item_meta.name.name.last().unwrap().as_ident().0.clone();
+                let short_name = ty
+                    .item_meta
+                    .name
+                    .name
+                    .last()
+                    .unwrap()
+                    .as_ident()
+                    .unwrap()
+                    .0
+                    .clone();
                 name_to_type.insert(short_name, ty);
             }
             name_to_type.insert(long_name, ty);
@@ -307,7 +316,13 @@ fn type_to_ocaml_name(ctx: &GenerateCtx, ty: &Ty) -> String {
                             "Warning: type {} missing from llbc",
                             repr_name(ctx.crate_data, name)
                         );
-                        name.name.last().unwrap().as_ident().0.to_lowercase()
+                        name.name
+                            .last()
+                            .unwrap()
+                            .as_ident()
+                            .unwrap()
+                            .0
+                            .to_lowercase()
                     } else {
                         format!("missing_type_{id}")
                     };
@@ -434,6 +449,7 @@ fn type_decl_to_json_deserializer(ctx: &GenerateCtx, decl: &TypeDecl) -> String 
                 .last()
                 .unwrap()
                 .as_ident()
+                .unwrap()
                 .0
                 .clone();
             format!("| x -> {short_name}.id_of_json x")
@@ -474,7 +490,8 @@ fn type_decl_to_json_deserializer(ctx: &GenerateCtx, decl: &TypeDecl) -> String 
                         .attr_info
                         .attributes
                         .iter()
-                        .any(|a| a.is_unknown() && a.as_unknown().to_string() == "serde(skip)")
+                        .filter_map(|a| a.as_unknown())
+                        .any(|a| a.to_string() == "serde(skip)")
                 })
                 .collect_vec();
             let pat: String = fields
@@ -562,13 +579,11 @@ fn type_decl_to_json_deserializer(ctx: &GenerateCtx, decl: &TypeDecl) -> String 
 }
 
 fn extract_doc_comments(attr_info: &AttrInfo) -> String {
-    let comments = attr_info
+    attr_info
         .attributes
         .iter()
-        .filter(|a| a.is_doc_comment())
-        .map(|a| a.as_doc_comment())
-        .collect_vec();
-    comments.into_iter().join("\n")
+        .filter_map(|a| a.as_doc_comment())
+        .join("\n")
 }
 
 /// Make a doc comment that contains the given string, indenting it if necessary.
@@ -641,6 +656,7 @@ fn type_decl_to_ocaml_decl(ctx: &GenerateCtx, decl: &TypeDecl, co_rec: bool) -> 
                 .last()
                 .unwrap()
                 .as_ident()
+                .unwrap()
                 .0
                 .clone();
             format!("{short_name}.id")

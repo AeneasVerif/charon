@@ -581,14 +581,16 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                     .attr_info
                     .attributes
                     .iter()
-                    .find(|a| a.is_variants_prefix())
-                    .map(|attr| attr.as_variants_prefix().as_str());
+                    .filter_map(|a| a.as_variants_prefix())
+                    .next()
+                    .map(|attr| attr.as_str());
                 let suffix = item_meta
                     .attr_info
                     .attributes
                     .iter()
-                    .find(|a| a.is_variants_suffix())
-                    .map(|attr| attr.as_variants_suffix().as_str());
+                    .filter_map(|a| a.as_variants_suffix())
+                    .next()
+                    .map(|attr| attr.as_str());
                 if prefix.is_some() || suffix.is_some() {
                     let prefix = prefix.unwrap_or_default();
                     let suffix = suffix.unwrap_or_default();
@@ -615,7 +617,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         discr: &hax::DiscriminantValue,
     ) -> Result<ScalarValue, Error> {
         let ty = self.translate_ty(def_span, true, &discr.ty)?;
-        let int_ty = *ty.as_literal().as_integer();
+        let int_ty = *ty.as_literal().unwrap().as_integer().unwrap();
         Ok(ScalarValue::from_bits(int_ty, discr.val))
     }
 
@@ -743,7 +745,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 // The type should be primitive, meaning it shouldn't contain variables,
                 // non-primitive adts, etc. As a result, we can use an empty context.
                 let ty = self.translate_ty(span, false, ty)?;
-                let ty = ty.to_literal();
+                let ty = ty.to_literal().unwrap();
                 self.push_const_generic_var(param.index, ty, param.name.clone());
             }
         }
