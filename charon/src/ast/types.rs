@@ -2,7 +2,6 @@ use crate::ast::*;
 use crate::ids::Vector;
 use derivative::Derivative;
 use derive_visitor::{Drive, DriveMut, Event, Visitor, VisitorMut};
-use hax_frontend_exporter as hax;
 use macros::{EnumAsGetters, EnumIsA, EnumToGetters, VariantIndexArity, VariantName};
 use serde::{Deserialize, Serialize};
 
@@ -20,6 +19,7 @@ generate_index_type!(FieldId, "Field");
 generate_index_type!(RegionId, "Region");
 generate_index_type!(ConstGenericVarId, "Const");
 generate_index_type!(GlobalDeclId, "Global");
+generate_index_type!(UnsolvedTraitId, "UnsolvedTrait");
 
 /// Type variable.
 /// We make sure not to mix variables and type variables by having two distinct
@@ -225,7 +225,7 @@ pub enum TraitRefKind {
     /// registered yet. We will try resolving it again once all clauses are registered.
     #[charon::opaque]
     #[drive(skip)]
-    Unsolved(hax::TraitRef),
+    Unsolved(UnsolvedTraitId),
 
     /// For error reporting.
     #[charon::rename("UnknownTrait")]

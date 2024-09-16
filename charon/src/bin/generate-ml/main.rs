@@ -1331,6 +1331,7 @@ fn generate_ml(crate_data: TranslatedCrate, output_dir: PathBuf) -> anyhow::Resu
                     "TraitImplId",
                     "TypeDeclId",
                     "TypeVarId",
+                    "UnsolvedTraitId",
                     "VariantId",
                 ]),
                 (GenerationKind::TypeDecl(Some(DeriveVisitors {

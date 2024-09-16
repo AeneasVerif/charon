@@ -282,6 +282,9 @@ pub(crate) struct BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     /// The map from rust const generic variables to translate const generic
     /// variable indices.
     pub const_generic_vars_map: HashMap<u32, ConstGenericVarId>,
+    /// Trait refs we couldn't solve at the moment of translating them and will solve in a second
+    /// pass before extracting the generic params.
+    pub unsolved_traits: Vector<UnsolvedTraitId, hax::TraitRef>,
     /// Accumulated clauses to be put into the item's `GenericParams`.
     pub param_trait_clauses: Vector<TraitClauseId, TraitClause>,
     /// (For traits only) accumulated implied trait clauses.
@@ -925,6 +928,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             vars_map: Default::default(),
             const_generic_vars: Default::default(),
             const_generic_vars_map: Default::default(),
+            unsolved_traits: Default::default(),
             param_trait_clauses: Default::default(),
             parent_trait_clauses: Default::default(),
             item_trait_clauses: Default::default(),
@@ -1099,7 +1103,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         self.blocks.insert(id, block);
     }
 
-    pub(crate) fn get_generics(&self) -> GenericParams {
+    pub(crate) fn get_generics(&mut self) -> GenericParams {
         // Sanity checks
         self.check_generics();
         assert!(self.region_vars.len() == 1);
@@ -1119,8 +1123,9 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         };
         // Solve trait refs now that all clauses have been registered.
         generic_params.drive_mut(&mut visitor_enter_fn_mut(|tref_kind: &mut TraitRefKind| {
-            if let TraitRefKind::Unsolved(hax_trait_ref) = tref_kind {
-                let new_kind = self.find_trait_clause_for_param(hax_trait_ref);
+            if let TraitRefKind::Unsolved(unsolved_trait_id) = *tref_kind {
+                let hax_trait_ref = self.unsolved_traits.remove(unsolved_trait_id).unwrap();
+                let new_kind = self.find_trait_clause_for_param(&hax_trait_ref);
                 *tref_kind = if let TraitRefKind::Unsolved(_) = new_kind {
                     // Could not find a clause.
                     // Check if we are in the registration process, otherwise report an error.
