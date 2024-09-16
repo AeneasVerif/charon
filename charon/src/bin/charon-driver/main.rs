@@ -34,6 +34,7 @@ use crate::driver::{
 use charon_lib::logger;
 use charon_lib::options;
 use charon_lib::trace;
+use itertools::Itertools;
 
 fn main() {
     // Initialize the logger
@@ -190,6 +191,52 @@ fn main() {
     for extra_flag in options.rustc_args.iter().cloned() {
         compiler_args.push(extra_flag);
     }
+
+    let disabled_mir_passes = [
+        "AfterConstProp",
+        "AfterGVN",
+        "AfterUnreachableEnumBranching)",
+        "BeforeConstProp",
+        "CheckAlignment",
+        "CopyProp",
+        "CriticalCallEdges",
+        "DataflowConstProp",
+        "DeduplicateBlocks",
+        "DestinationPropagation",
+        "EarlyOtherwiseBranch",
+        "EnumSizeOpt",
+        "GVN",
+        "Initial",
+        "Inline",
+        "InstSimplify",
+        "JumpThreading",
+        "LowerSliceLenCalls",
+        "MatchBranchSimplification",
+        "MentionedItems",
+        "MultipleReturnTerminators",
+        "ReferencePropagation",
+        "RemoveNoopLandingPads",
+        "RemoveStorageMarkers",
+        "RemoveUnneededDrops",
+        "RemoveZsts",
+        "RenameReturnPlace",
+        "ReorderBasicBlocks",
+        "ReorderLocals",
+        "ScalarReplacementOfAggregates",
+        "SimplifyComparisonIntegral",
+        "SimplifyLocals",
+        "SingleUseConsts",
+        "UnreachableEnumBranching",
+        "UnreachablePropagation",
+    ];
+    // Disable all these mir passes.
+    compiler_args.push(format!(
+        "-Zmir-enable-passes={}",
+        disabled_mir_passes
+            .iter()
+            .map(|p| format!("-{p}"))
+            .format(",")
+    ));
 
     trace!("Compiler arguments: {:?}", compiler_args);
 

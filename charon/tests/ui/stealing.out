@@ -14,7 +14,7 @@ fn test_crate::four() -> usize
 {
     let @0: usize; // return
 
-    @0 := const (4 : usize)
+    @0 := const (2 : usize) + const (2 : usize)
     return
 }
 
