@@ -166,8 +166,10 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         &mut self,
         span: rustc_span::Span,
         erase_regions: bool,
-        trait_ref: &hax::TraitRef,
+        trait_ref: &hax::Binder<hax::TraitRef>,
     ) -> Result<Option<TraitDeclRef>, Error> {
+        // TODO: handle binder properly
+        let trait_ref = trait_ref.as_ref().hax_skip_binder();
         let trait_id = self.register_trait_decl_id(span, &trait_ref.def_id);
         let parent_trait_refs = Vec::new();
         let generics = self.translate_substs_and_trait_refs(
