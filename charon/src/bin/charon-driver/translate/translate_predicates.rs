@@ -526,6 +526,18 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 kind: TraitRefKind::BuiltinOrAuto(trait_decl_ref.clone()),
                 trait_decl_ref,
             },
+            ImplExprAtom::Error(msg) => {
+                let error = format!("Error during trait resolution: {}", msg);
+                self.span_err(span, &error);
+                if !self.t_ctx.continue_on_failure() {
+                    panic!("{}", error)
+                } else {
+                    TraitRef {
+                        kind: TraitRefKind::Unknown(msg.clone()),
+                        trait_decl_ref,
+                    }
+                }
+            }
         };
         Ok(Some(trait_ref))
     }
