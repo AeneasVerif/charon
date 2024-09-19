@@ -1,0 +1,23 @@
+# Final LLBC before serialization:
+
+fn test_crate::main()
+{
+    let @0: (); // return
+    let @1: *const u8; // anonymous local
+    let @2: usize; // anonymous local
+    let x@3: &'_ (u8); // local
+    let @4: u8; // anonymous local
+    let @5: &'_ (u8); // anonymous local
+
+    @4 := const ([0])
+    @5 := &@4
+    x@3 := move (@5)
+    @1 := &raw const *(x@3)
+    @2 := cast<*const u8, usize>(copy (@1))
+    drop @2
+    @0 := ()
+    return
+}
+
+
+

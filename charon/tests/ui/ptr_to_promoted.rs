@@ -1,4 +1,3 @@
-//@ known-failure
 //@ charon-args=--mir_optimized
 
 fn main() {
