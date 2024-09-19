@@ -75,7 +75,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                     let rid = self
                         .bound_region_vars
                         .get(*id)
-                        .unwrap()
+                        .expect("Error: missing binder when translating lifetime")
                         .get(br.var)
                         .unwrap();
                     let br_id = DeBruijnId::new(*id);

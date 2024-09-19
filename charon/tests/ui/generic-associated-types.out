@@ -31,49 +31,6 @@ error: Ignoring the following item due to an error: test_crate::LendingIterator:
 7 |     fn next<'a>(&'a mut self) -> Option<Self::Item<'a>>;
   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-disabled backtrace
-warning[E9999]: Hax frontend found a projected type with escaping bound vars. Please report https://github.com/hacspec/hax/issues/495
-                
-                Context:
-                 - alias_ty: AliasTy {
-                    args: [
-                        impl for<'a> FnMut(I::Item<'a>)/#1,
-                        (Alias(Projection, AliasTy { args: [I/#0, '^0.Named(test_crate::for_each::'a, "'a")], def_id: test_crate::LendingIterator::Item, .. }),),
-                    ],
-                    def_id: core::ops::function::FnOnce::Output,
-                    ..
-                }
-                 - alias_kind: Projection
-                 - trait_ref: <impl for<'a> FnMut(I::Item<'a>) as std::ops::FnOnce<(<I as LendingIterator>::Item<'a>,)>>
-                 - trait_ref_and_generics: (
-                    <impl for<'a> FnMut(I::Item<'a>) as std::ops::FnOnce<(<I as LendingIterator>::Item<'a>,)>>,
-                    [],
-                )
-                 - rebased_generics: [
-                    impl for<'a> FnMut(I::Item<'a>)/#1,
-                    (Alias(Projection, AliasTy { args: [I/#0, '^0.Named(test_crate::for_each::'a, "'a")], def_id: test_crate::LendingIterator::Item, .. }),),
-                    (Alias(Projection, AliasTy { args: [I/#0, '^0.Named(test_crate::for_each::'a, "'a")], def_id: test_crate::LendingIterator::Item, .. }),),
-                ]
-                 - norm_rebased_generics: Err(
-                    Type(
-                        (Alias(Projection, AliasTy { args: [impl for<'a> FnMut(I::Item<'a>)/#1, '^0.Named(test_crate::for_each::'a, "'a")], def_id: test_crate::LendingIterator::Item, .. }),),
-                    ),
-                )
-                 - norm_generics: Err(
-                    Type(
-                        (Alias(Projection, AliasTy { args: [impl for<'a> FnMut(I::Item<'a>)/#1, '^0.Named(test_crate::for_each::'a, "'a")], def_id: test_crate::LendingIterator::Item, .. }),),
-                    ),
-                )
-                 - early_binder_generics: Ok(
-                    <(<I as LendingIterator>::Item<'a>,) as std::ops::FnOnce<(<impl for<'a> FnMut(I::Item<'a>) as LendingIterator>::Item<'a>,)>>,
-                )
-                 - early_binder_rebased_generics: Ok(
-                    <(<I as LendingIterator>::Item<'a>,) as std::ops::FnOnce<(<impl for<'a> FnMut(I::Item<'a>) as LendingIterator>::Item<'a>,)>>,
-                )
-  |
-  = note: ⚠️ This is a bug in Hax's frontend.
-          Please report this error to https://github.com/hacspec/hax/issues with some context (e.g. the current crate)!
-
 thread 'rustc' panicked at /rustc/730d5d4095a264ef5f7c0a0781eea68c15431d45/compiler/rustc_type_ir/src/binder.rs:783:9:
 const parameter `'a/#1` ('a/#1/1) out of range when instantiating args=[I/#0]
 error: Thread panicked when extracting item `test_crate::for_each`.
@@ -96,6 +53,6 @@ warning: unused variable: `x`
    |
    = note: `#[warn(unused_variables)]` on by default
 
-error: aborting due to 6 previous errors; 2 warnings emitted
+error: aborting due to 6 previous errors; 1 warning emitted
 
 Error: Charon driver exited with code 101

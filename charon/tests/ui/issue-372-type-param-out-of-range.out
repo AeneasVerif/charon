@@ -1,0 +1,64 @@
+thread 'rustc' panicked at src/bin/charon-driver/translate/translate_types.rs:78:26:
+Error: missing binder when translating lifetime
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+error: Thread panicked when extracting item `test_crate::{impl#0}::f`.
+  --> tests/ui/issue-372-type-param-out-of-range.rs:8:5
+   |
+8  | /     pub fn f<F>()
+9  | |     where
+10 | |         F: FnMut(&u32),
+   | |_______________________^
+
+error: Ignoring the following item due to an error: test_crate::{impl#0}::f
+  --> tests/ui/issue-372-type-param-out-of-range.rs:8:5
+   |
+8  | /     pub fn f<F>()
+9  | |     where
+10 | |         F: FnMut(&u32),
+   | |_______________________^
+
+disabled backtrace
+warning[E9999]: Could not find a clause for `Binder { value: <F as std::ops::FnOnce<(&'b u32,)>>, bound_vars: [Region(BrNamed(test_crate::{impl#0}::g::'b, 'b))] }` in the item parameters
+  |
+  = note: ⚠️ This is a bug in Hax's frontend.
+          Please report this error to https://github.com/hacspec/hax/issues with some context (e.g. the current crate)!
+
+thread 'rustc' panicked at src/bin/charon-driver/translate/translate_types.rs:78:26:
+Error: missing binder when translating lifetime
+error: Thread panicked when extracting item `test_crate::{impl#0}::g`.
+  --> tests/ui/issue-372-type-param-out-of-range.rs:14:5
+   |
+14 | /     pub fn g<F>()
+15 | |     where
+16 | |         for<'b> F: FnMut(&'b u32),
+   | |__________________________________^
+
+error: Ignoring the following item due to an error: test_crate::{impl#0}::g
+  --> tests/ui/issue-372-type-param-out-of-range.rs:14:5
+   |
+14 | /     pub fn g<F>()
+15 | |     where
+16 | |         for<'b> F: FnMut(&'b u32),
+   | |__________________________________^
+
+thread 'rustc' panicked at src/bin/charon-driver/translate/translate_types.rs:78:26:
+Error: missing binder when translating lifetime
+error: Thread panicked when extracting item `test_crate::{impl#1}::f`.
+  --> tests/ui/issue-372-type-param-out-of-range.rs:24:5
+   |
+24 | /     pub fn f<F>()
+25 | |     where
+26 | |         F: FnMut(&u32),
+   | |_______________________^
+
+error: Ignoring the following item due to an error: test_crate::{impl#1}::f
+  --> tests/ui/issue-372-type-param-out-of-range.rs:24:5
+   |
+24 | /     pub fn f<F>()
+25 | |     where
+26 | |         F: FnMut(&u32),
+   | |_______________________^
+
+error: aborting due to 6 previous errors; 1 warning emitted
+
+Error: Charon driver exited with code 101

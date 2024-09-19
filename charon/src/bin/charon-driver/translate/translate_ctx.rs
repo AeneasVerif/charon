@@ -198,7 +198,7 @@ pub struct TranslateCtx<'tcx, 'ctx> {
     /// The Rust compiler type context
     pub tcx: TyCtxt<'tcx>,
     /// The Hax context
-    pub hax_state: hax::State<hax::Base<'tcx>, (), (), ()>,
+    pub hax_state: hax::StateWithBase<'tcx>,
 
     /// The options that control translation.
     pub options: TranslateOptions,
@@ -238,7 +238,7 @@ pub(crate) struct BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     /// The translation context containing the top-level definitions/ids.
     pub t_ctx: &'ctx mut TranslateCtx<'tcx, 'ctx1>,
     /// A hax state with an owner id
-    pub hax_state: hax::State<hax::Base<'tcx>, (), (), rustc_hir::def_id::DefId>,
+    pub hax_state: hax::StateWithOwner<'tcx>,
 
     /// The regions.
     /// We use DeBruijn indices, so we have a stack of regions.
