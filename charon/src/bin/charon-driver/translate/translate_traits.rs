@@ -57,7 +57,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         for bound in bounds {
             if let rustc_middle::ty::ClauseKind::Trait(trait_pred) = bound.kind().skip_binder() {
                 let trait_ref = bound.kind().rebind(trait_pred.trait_ref);
-                let trait_ref = hax::solve_trait(&self.hax_state, param_env, trait_ref);
+                let trait_ref = hax::solve_trait(&self.hax_state, trait_ref);
                 let trait_ref = self.translate_trait_impl_expr(span, erase_regions, &trait_ref)?;
                 if let Some(trait_ref) = trait_ref {
                     trait_refs.push(trait_ref);
@@ -343,7 +343,6 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
             };
             let parent_trait_refs = hax::solve_item_traits(
                 &bt_ctx.hax_state,
-                tcx.param_env(rust_id),
                 rust_trait_ref.def_id,
                 rust_trait_ref.args,
                 None,

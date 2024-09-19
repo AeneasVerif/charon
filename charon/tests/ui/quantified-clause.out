@@ -1,0 +1,61 @@
+disabled backtrace
+warning[E9999]: Hax frontend found a projected type with escaping bound vars. Please report https://github.com/hacspec/hax/issues/495
+                
+                Context:
+                 - alias_ty: AliasTy {
+                    args: [
+                        F/#0,
+                        (&'^0.Named(test_crate::foo::'a, "'a") (),),
+                    ],
+                    def_id: core::ops::function::FnOnce::Output,
+                    ..
+                }
+                 - alias_kind: Projection
+                 - trait_ref: <F as std::ops::FnOnce<(&'a (),)>>
+                 - trait_ref_and_generics: (
+                    <F as std::ops::FnOnce<(&'a (),)>>,
+                    [],
+                )
+                 - rebased_generics: [
+                    F/#0,
+                    (&'^0.Named(test_crate::foo::'a, "'a") (),),
+                    (&'^0.Named(test_crate::foo::'a, "'a") (),),
+                ]
+                 - norm_rebased_generics: Ok(
+                    <F as std::ops::FnOnce<(&'a (),)>>,
+                )
+                 - norm_generics: Ok(
+                    <F as std::ops::FnOnce<(&'a (),)>>,
+                )
+                 - early_binder_generics: Ok(
+                    <F as std::ops::FnOnce<(&'a (),)>>,
+                )
+                 - early_binder_rebased_generics: Ok(
+                    <F as std::ops::FnOnce<(&'a (),)>>,
+                )
+  |
+  = note: ⚠️ This is a bug in Hax's frontend.
+          Please report this error to https://github.com/hacspec/hax/issues with some context (e.g. the current crate)!
+
+thread 'rustc' panicked at src/bin/charon-driver/translate/translate_types.rs:78:26:
+called `Option::unwrap()` on a `None` value
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+error: Thread panicked when extracting item `test_crate::foo`.
+ --> tests/ui/quantified-clause.rs:3:1
+  |
+3 | / fn foo<F>(_f: F)
+4 | | where
+5 | |     F: for<'a> FnMut(&'a ()),
+  | |_____________________________^
+
+error: Ignoring the following item due to an error: test_crate::foo
+ --> tests/ui/quantified-clause.rs:3:1
+  |
+3 | / fn foo<F>(_f: F)
+4 | | where
+5 | |     F: for<'a> FnMut(&'a ()),
+  | |_____________________________^
+
+error: aborting due to 2 previous errors; 1 warning emitted
+
+Error: Charon driver exited with code 101
