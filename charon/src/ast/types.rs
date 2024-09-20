@@ -216,10 +216,10 @@ pub enum TraitRefKind {
 
     /// A specific builtin trait implementation like [core::marker::Sized] or
     /// auto trait implementation like [core::marker::Syn].
-    BuiltinOrAuto(TraitDeclRef),
+    BuiltinOrAuto(PolyTraitDeclRef),
 
     /// The automatically-generated implementation for `dyn Trait`.
-    Dyn(TraitDeclRef),
+    Dyn(PolyTraitDeclRef),
 
     /// The trait ref could not be resolved, likely because the corresponding clause had not been
     /// registered yet. We will try resolving it again once all clauses are registered.
@@ -238,10 +238,10 @@ pub struct TraitRef {
     #[charon::rename("trait_id")]
     pub kind: TraitRefKind,
     /// Not necessary, but useful
-    pub trait_decl_ref: TraitDeclRef,
+    pub trait_decl_ref: PolyTraitDeclRef,
 }
 
-/// Reference to a trait declaration.
+/// A predicate of the form `Type: Trait<Args>`.
 ///
 /// About the generics, if we write:
 /// ```text
@@ -256,6 +256,9 @@ pub struct TraitDeclRef {
     #[charon::rename("decl_generics")]
     pub generics: GenericArgs,
 }
+
+/// A quantified trait predicate, e.g. `for<'a> Type<'a>: Trait<'a, Args>`.
+pub type PolyTraitDeclRef = RegionBinder<TraitDeclRef>;
 
 /// .0 outlives .1
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
@@ -305,6 +308,19 @@ pub struct GenericArgs {
     pub trait_refs: Vector<TraitClauseId, TraitRef>,
 }
 
+/// A value of type `T` bound by generic parameters. Used in any context where we're adding generic
+/// parameters that aren't on the top-level item, e.g. `for<'a>` clauses, trait methods (TODO),
+/// GATs (TODO).
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Hash)]
+pub struct RegionBinder<T> {
+    #[charon::rename("binder_regions")]
+    pub regions: Vector<RegionId, RegionVar>,
+    /// Named this way to highlight accesses to the inner value that might be handling parameters
+    /// incorrectly. Prefer using helper methods.
+    #[charon::rename("binder_value")]
+    pub skip_binder: T,
+}
+
 /// Generic parameters for a declaration.
 /// We group the generics which come from the Rust compiler substitutions
 /// (the regions, types and const generics) as well as the trait clauses.
@@ -320,11 +336,11 @@ pub struct GenericParams {
     // TODO: rename to match [GenericArgs]?
     pub trait_clauses: Vector<TraitClauseId, TraitClause>,
     /// The first region in the pair outlives the second region
-    pub regions_outlive: Vec<RegionOutlives>,
+    pub regions_outlive: Vec<RegionBinder<RegionOutlives>>,
     /// The type outlives the region
-    pub types_outlive: Vec<TypeOutlives>,
+    pub types_outlive: Vec<RegionBinder<TypeOutlives>>,
     /// Constraints over trait associated types
-    pub trait_type_constraints: Vec<TraitTypeConstraint>,
+    pub trait_type_constraints: Vec<RegionBinder<TraitTypeConstraint>>,
 }
 
 /// A predicate of the form `exists<T> where T: Trait`.
@@ -354,7 +370,7 @@ pub struct TraitClause {
     pub origin: PredicateOrigin,
     /// The trait that is implemented.
     #[charon::rename("trait")]
-    pub trait_: TraitDeclRef,
+    pub trait_: PolyTraitDeclRef,
 }
 
 impl Eq for TraitClause {}

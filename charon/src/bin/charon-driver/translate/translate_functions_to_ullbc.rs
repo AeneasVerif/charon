@@ -1408,7 +1408,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         self.push_generics_for_def(span, &def)?;
 
         // Add the *late-bound* parameters (bound in the signature, can only be lifetimes).
-        let binder = signature.as_ref().map(|_| ());
+        let binder = signature.rebind(());
         self.set_first_bound_regions_group(span, binder)?;
 
         let generics = self.get_generics();

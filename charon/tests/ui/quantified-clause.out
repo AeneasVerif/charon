@@ -1,5 +1,5 @@
-thread 'rustc' panicked at src/bin/charon-driver/translate/translate_types.rs:78:26:
-Error: missing binder when translating lifetime
+thread 'rustc' panicked at src/bin/charon-driver/translate/translate_predicates.rs:470:17:
+assertion failed: trait_ref.bound_vars.is_empty()
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 error: Thread panicked when extracting item `test_crate::foo`.
  --> tests/ui/quantified-clause.rs:3:1
@@ -17,24 +17,6 @@ error: Ignoring the following item due to an error: test_crate::foo
 5 | |     F: for<'a> FnMut(&'a ()),
   | |_____________________________^
 
-thread 'rustc' panicked at src/bin/charon-driver/translate/translate_types.rs:78:26:
-Error: missing binder when translating lifetime
-error: Thread panicked when extracting item `test_crate::bar`.
-  --> tests/ui/quantified-clause.rs:9:1
-   |
-9  | / fn bar<'b, T>()
-10 | | where
-11 | |     for<'a> &'b T: 'a,
-   | |______________________^
-
-error: Ignoring the following item due to an error: test_crate::bar
-  --> tests/ui/quantified-clause.rs:9:1
-   |
-9  | / fn bar<'b, T>()
-10 | | where
-11 | |     for<'a> &'b T: 'a,
-   | |______________________^
-
-error: aborting due to 4 previous errors
+error: aborting due to 2 previous errors
 
 Error: Charon driver exited with code 101

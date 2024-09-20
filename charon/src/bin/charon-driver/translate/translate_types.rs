@@ -77,7 +77,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                         .get(*id)
                         .expect("Error: missing binder when translating lifetime")
                         .get(br.var)
-                        .unwrap();
+                        .expect("Error: lifetime not found, binders were handled incorrectly");
                     let br_id = DeBruijnId::new(*id);
                     Ok(Region::BVar(br_id, *rid))
                 }
@@ -326,7 +326,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 trace!("bound vars: {:?}", sig.bound_vars);
 
                 let erase_regions = false;
-                let binder = sig.as_ref().map(|_| ());
+                let binder = sig.rebind(());
                 self.with_locally_bound_regions_group(span, binder, move |ctx| {
                     let regions = ctx.region_vars[0].clone();
                     let inputs = sig

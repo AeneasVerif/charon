@@ -1,6 +1,7 @@
 //! This file groups everything which is linked to implementations about [crate::types]
 use crate::ids::Vector;
 use crate::types::*;
+use derive_visitor::{Drive, DriveMut, Event, Visitor, VisitorMut};
 use std::iter::Iterator;
 
 impl DeBruijnId {
@@ -328,5 +329,24 @@ impl RefKind {
         } else {
             Self::Shared
         }
+    }
+}
+
+// The derive macro doesn't handle generics.
+impl<T: Drive> Drive for RegionBinder<T> {
+    fn drive<V: Visitor>(&self, visitor: &mut V) {
+        visitor.visit(self, Event::Enter);
+        self.regions.drive(visitor);
+        self.skip_binder.drive(visitor);
+        visitor.visit(self, Event::Exit);
+    }
+}
+
+impl<T: DriveMut> DriveMut for RegionBinder<T> {
+    fn drive_mut<V: VisitorMut>(&mut self, visitor: &mut V) {
+        visitor.visit(self, Event::Enter);
+        self.regions.drive_mut(visitor);
+        self.skip_binder.drive_mut(visitor);
+        visitor.visit(self, Event::Exit);
     }
 }

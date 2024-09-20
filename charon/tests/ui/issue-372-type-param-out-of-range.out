@@ -1,5 +1,5 @@
-thread 'rustc' panicked at src/bin/charon-driver/translate/translate_types.rs:78:26:
-Error: missing binder when translating lifetime
+thread 'rustc' panicked at src/bin/charon-driver/translate/translate_predicates.rs:470:17:
+assertion failed: trait_ref.bound_vars.is_empty()
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 error: Thread panicked when extracting item `test_crate::{impl#0}::f`.
   --> tests/ui/issue-372-type-param-out-of-range.rs:8:5
@@ -17,8 +17,8 @@ error: Ignoring the following item due to an error: test_crate::{impl#0}::f
 10 | |         F: FnMut(&u32),
    | |_______________________^
 
-thread 'rustc' panicked at src/bin/charon-driver/translate/translate_types.rs:78:26:
-Error: missing binder when translating lifetime
+thread 'rustc' panicked at src/bin/charon-driver/translate/translate_predicates.rs:470:17:
+assertion failed: trait_ref.bound_vars.is_empty()
 error: Thread panicked when extracting item `test_crate::{impl#0}::g`.
   --> tests/ui/issue-372-type-param-out-of-range.rs:14:5
    |
@@ -35,8 +35,8 @@ error: Ignoring the following item due to an error: test_crate::{impl#0}::g
 16 | |         for<'b> F: FnMut(&'b u32),
    | |__________________________________^
 
-thread 'rustc' panicked at src/bin/charon-driver/translate/translate_types.rs:78:26:
-Error: missing binder when translating lifetime
+thread 'rustc' panicked at src/bin/charon-driver/translate/translate_predicates.rs:470:17:
+assertion failed: trait_ref.bound_vars.is_empty()
 error: Thread panicked when extracting item `test_crate::{impl#1}::f`.
   --> tests/ui/issue-372-type-param-out-of-range.rs:24:5
    |
