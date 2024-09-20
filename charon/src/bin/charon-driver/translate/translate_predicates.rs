@@ -7,7 +7,6 @@ use charon_lib::ids::Vector;
 use charon_lib::pretty::FmtWithCtx;
 use charon_lib::types::*;
 use hax_frontend_exporter as hax;
-use macros::{EnumAsGetters, EnumIsA, EnumToGetters};
 use rustc_span::def_id::DefId;
 
 /// Same as [TraitClause], but where the clause id is a [TraitInstanceId].
@@ -65,14 +64,6 @@ impl<C: AstFormatter> FmtWithCtx<C> for NonLocalTraitClause {
     }
 }
 
-#[derive(Debug, Clone, EnumIsA, EnumAsGetters, EnumToGetters)]
-pub(crate) enum Predicate {
-    Trait(#[expect(dead_code)] TraitClauseId),
-    TypeOutlives(TypeOutlives),
-    RegionOutlives(RegionOutlives),
-    TraitType(TraitTypeConstraint),
-}
-
 impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     pub fn count_generics(
         &mut self,
@@ -120,7 +111,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
 
     /// This function should be called **after** we translated the generics (type parameters,
     /// regions...).
-    pub(crate) fn translate_predicates(
+    pub(crate) fn register_predicates(
         &mut self,
         preds: &hax::GenericPredicates,
         origin: PredicateOrigin,
@@ -134,9 +125,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 pred.kind.value,
                 hax::PredicateKind::Clause(hax::ClauseKind::Trait(_))
             ) {
-                // Don't need to do anything with the translated clause, it is already registered
-                // in `self.trait_clauses`.
-                let _ = self.translate_predicate(pred, span, origin.clone(), location)?;
+                self.register_predicate(pred, span, origin.clone(), location)?;
             }
         }
         for (pred, span) in &preds.predicates {
@@ -144,17 +133,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 pred.kind.value,
                 hax::PredicateKind::Clause(hax::ClauseKind::Trait(_))
             ) {
-                match self.translate_predicate(pred, span, origin.clone(), location)? {
-                    None => (),
-                    Some(pred) => match pred {
-                        Predicate::TypeOutlives(p) => self.generic_params.types_outlive.push(p),
-                        Predicate::RegionOutlives(p) => self.generic_params.regions_outlive.push(p),
-                        Predicate::TraitType(p) => {
-                            self.generic_params.trait_type_constraints.push(p)
-                        }
-                        Predicate::Trait(_) => unreachable!(),
-                    },
-                }
+                self.register_predicate(pred, span, origin.clone(), location)?;
             }
         }
         Ok(())
@@ -186,7 +165,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     /// auto traits like [core::marker::Sized] and [core::marker::Sync].
     ///
     /// `origin` is where this clause comes from.
-    pub(crate) fn translate_trait_clause(
+    pub(crate) fn register_trait_clause(
         &mut self,
         hspan: &hax::Span,
         trait_pred: &hax::TraitPredicate,
@@ -281,13 +260,13 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         Ok(TraitDeclRef { trait_id, generics })
     }
 
-    pub(crate) fn translate_predicate(
+    pub(crate) fn register_predicate(
         &mut self,
         pred: &hax::Predicate,
         hspan: &hax::Span,
         origin: PredicateOrigin,
         location: &PredicateLocation,
-    ) -> Result<Option<Predicate>, Error> {
+    ) -> Result<(), Error> {
         trace!("{:?}", pred);
         // Predicates are always used in signatures/type definitions, etc.
         // For this reason, we do not erase the regions.
@@ -299,21 +278,24 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         // but it is ok because we only do a simple check.
         let pred_kind = &pred.kind.value;
         use hax::{ClauseKind, PredicateKind};
+
         match pred_kind {
             PredicateKind::Clause(kind) => {
                 match kind {
-                    ClauseKind::Trait(trait_pred) => Ok(self
-                        .translate_trait_clause(hspan, trait_pred, origin, location)?
-                        .map(Predicate::Trait)),
+                    ClauseKind::Trait(trait_pred) => {
+                        self.register_trait_clause(hspan, trait_pred, origin, location)?;
+                    }
                     ClauseKind::RegionOutlives(p) => {
                         let r0 = self.translate_region(span, erase_regions, &p.lhs)?;
                         let r1 = self.translate_region(span, erase_regions, &p.rhs)?;
-                        Ok(Some(Predicate::RegionOutlives(OutlivesPred(r0, r1))))
+                        self.generic_params
+                            .regions_outlive
+                            .push(OutlivesPred(r0, r1));
                     }
                     ClauseKind::TypeOutlives(p) => {
                         let ty = self.translate_ty(span, erase_regions, &p.lhs)?;
                         let r = self.translate_region(span, erase_regions, &p.rhs)?;
-                        Ok(Some(Predicate::TypeOutlives(OutlivesPred(ty, r))))
+                        self.generic_params.types_outlive.push(OutlivesPred(ty, r));
                     }
                     ClauseKind::Projection(p) => {
                         // This is used to express constraints over associated types.
@@ -335,17 +317,18 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                         let trait_ref = trait_ref.unwrap();
                         let ty = self.translate_ty(span, erase_regions, ty).unwrap();
                         let type_name = TraitItemName(assoc_item.name.clone().into());
-                        Ok(Some(Predicate::TraitType(TraitTypeConstraint {
-                            trait_ref,
-                            type_name,
-                            ty,
-                        })))
+                        self.generic_params
+                            .trait_type_constraints
+                            .push(TraitTypeConstraint {
+                                trait_ref,
+                                type_name,
+                                ty,
+                            });
                     }
                     ClauseKind::ConstArgHasType(..) => {
                         // I don't really understand that one. Why don't they put
                         // the type information in the const generic parameters
                         // directly? For now we just ignore it.
-                        Ok(None)
                     }
                     ClauseKind::WellFormed(_) | ClauseKind::ConstEvaluatable(_) => {
                         error_or_panic!(self, span, format!("Unsupported clause: {:?}", kind))
@@ -364,6 +347,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 format!("Unsupported predicate: {:?}", pred_kind)
             ),
         }
+        Ok(())
     }
 
     pub(crate) fn translate_trait_impl_exprs(

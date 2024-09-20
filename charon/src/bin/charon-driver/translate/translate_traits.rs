@@ -138,7 +138,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
                     };
                     // TODO: handle generics (i.e. GATs).
                     // Register the trait clauses as item trait clauses
-                    bt_ctx.translate_predicates(
+                    bt_ctx.register_predicates(
                         &predicates,
                         PredicateOrigin::TraitItem(name.clone()),
                         &PredicateLocation::Item(def_id, name.clone()),

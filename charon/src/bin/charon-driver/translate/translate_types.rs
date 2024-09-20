@@ -680,7 +680,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 }
                 _ => panic!("Unexpected def: {def:?}"),
             };
-            self.translate_predicates(predicates, origin, &location)?;
+            self.register_predicates(predicates, origin, &location)?;
         }
         Ok(())
     }
