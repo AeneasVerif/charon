@@ -17,12 +17,6 @@ error: Ignoring the following item due to an error: test_crate::{impl#0}::f
 10 | |         F: FnMut(&u32),
    | |_______________________^
 
-disabled backtrace
-warning[E9999]: Could not find a clause for `Binder { value: <F as std::ops::FnOnce<(&'b u32,)>>, bound_vars: [Region(BrNamed(test_crate::{impl#0}::g::'b, 'b))] }` in the item parameters
-  |
-  = note: ⚠️ This is a bug in Hax's frontend.
-          Please report this error to https://github.com/hacspec/hax/issues with some context (e.g. the current crate)!
-
 thread 'rustc' panicked at src/bin/charon-driver/translate/translate_types.rs:78:26:
 Error: missing binder when translating lifetime
 error: Thread panicked when extracting item `test_crate::{impl#0}::g`.
@@ -59,6 +53,6 @@ error: Ignoring the following item due to an error: test_crate::{impl#1}::f
 26 | |         F: FnMut(&u32),
    | |_______________________^
 
-error: aborting due to 6 previous errors; 1 warning emitted
+error: aborting due to 6 previous errors
 
 Error: Charon driver exited with code 101

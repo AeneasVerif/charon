@@ -1,9 +1,3 @@
-disabled backtrace
-warning[E9999]: Could not find a clause for `Binder { value: <F as std::ops::FnOnce<(&'a (),)>>, bound_vars: [Region(BrNamed(test_crate::foo::'a, 'a))] }` in the item parameters
-  |
-  = note: ⚠️ This is a bug in Hax's frontend.
-          Please report this error to https://github.com/hacspec/hax/issues with some context (e.g. the current crate)!
-
 thread 'rustc' panicked at src/bin/charon-driver/translate/translate_types.rs:78:26:
 Error: missing binder when translating lifetime
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
@@ -41,6 +35,6 @@ error: Ignoring the following item due to an error: test_crate::bar
 11 | |     for<'a> &'b T: 'a,
    | |______________________^
 
-error: aborting due to 4 previous errors; 1 warning emitted
+error: aborting due to 4 previous errors
 
 Error: Charon driver exited with code 101

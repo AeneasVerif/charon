@@ -436,9 +436,9 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 path,
             }
             | ImplExprAtom::LocalBound {
-                predicate_id: _,
                 r#trait: trait_ref,
                 path,
+                ..
             } => {
                 assert!(nested.is_empty());
                 trace!(

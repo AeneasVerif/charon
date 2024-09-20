@@ -16,8 +16,8 @@ error: Ignoring the following item due to an error: test_crate::{impl#0}
 10 | impl<'a, T> LendingIterator for Option<&'a T> {
    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-thread 'rustc' panicked at /rustc/730d5d4095a264ef5f7c0a0781eea68c15431d45/compiler/rustc_type_ir/src/binder.rs:783:9:
-const parameter `'a/#1` ('a/#1/1) out of range when instantiating args=[Self/#0]
+thread 'rustc' panicked at compiler/rustc_trait_selection/src/traits/normalize.rs:151:9:
+Normalizing <<Self as LendingIterator>::Item<'a> as std::marker::Sized> without wrapping in a `Binder`
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 error: Thread panicked when extracting item `test_crate::LendingIterator::next`.
  --> tests/ui/generic-associated-types.rs:7:5
@@ -30,6 +30,20 @@ error: Ignoring the following item due to an error: test_crate::LendingIterator:
   |
 7 |     fn next<'a>(&'a mut self) -> Option<Self::Item<'a>>;
   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+thread 'rustc' panicked at src/bin/charon-driver/translate/translate_types.rs:78:26:
+Error: missing binder when translating lifetime
+error: Thread panicked when extracting item `test_crate::{impl#0}::next`.
+  --> tests/ui/generic-associated-types.rs:13:5
+   |
+13 |     fn next<'b>(&'b mut self) -> Option<Self::Item<'b>> {
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error: Ignoring the following item due to an error: test_crate::{impl#0}::next
+  --> tests/ui/generic-associated-types.rs:13:5
+   |
+13 |     fn next<'b>(&'b mut self) -> Option<Self::Item<'b>> {
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 thread 'rustc' panicked at /rustc/730d5d4095a264ef5f7c0a0781eea68c15431d45/compiler/rustc_type_ir/src/binder.rs:783:9:
 const parameter `'a/#1` ('a/#1/1) out of range when instantiating args=[I/#0]
@@ -53,6 +67,6 @@ warning: unused variable: `x`
    |
    = note: `#[warn(unused_variables)]` on by default
 
-error: aborting due to 6 previous errors; 1 warning emitted
+error: aborting due to 8 previous errors; 1 warning emitted
 
 Error: Charon driver exited with code 101
