@@ -9,7 +9,6 @@ use std::rc::Rc;
 
 use super::get_mir::{boxes_are_desugared, get_mir_for_def_id_and_level};
 use super::translate_ctx::*;
-use super::translate_types;
 use charon_lib::ast::*;
 use charon_lib::common::*;
 use charon_lib::formatter::{Formatter, IntoFormatter};
@@ -21,7 +20,6 @@ use hax_frontend_exporter::{HasMirSetter, HasOwnerIdSetter, SInto};
 use itertools::Itertools;
 use rustc_hir::def_id::DefId;
 use rustc_middle::mir::START_BLOCK;
-use translate_types::translate_bound_region_kind_name;
 
 pub(crate) struct SubstFunId {
     pub func: FnPtr,
@@ -1410,18 +1408,8 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         self.push_generics_for_def(span, &def)?;
 
         // Add the *late-bound* parameters (bound in the signature, can only be lifetimes).
-        let bvar_names = signature
-            .bound_vars
-            .iter()
-            // There should only be regions in the late-bound parameters
-            .map(|bvar| match bvar {
-                hax::BoundVariableKind::Region(br) => Ok(translate_bound_region_kind_name(&br)),
-                hax::BoundVariableKind::Ty(_) | hax::BoundVariableKind::Const => {
-                    error_or_panic!(self, span, format!("Unexpected bound variable: {:?}", bvar))
-                }
-            })
-            .try_collect()?;
-        self.set_first_bound_regions_group(bvar_names);
+        let binder = signature.as_ref().map(|_| ());
+        self.set_first_bound_regions_group(span, binder)?;
 
         let generics = self.get_generics();
 

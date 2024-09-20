@@ -325,36 +325,9 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 trace!("Arrow");
                 trace!("bound vars: {:?}", sig.bound_vars);
 
-                // Translate the generics parameters.
-                // Note that there can only be bound regions.
-                let bound_region_names: Vec<Option<String>> = sig
-                    .bound_vars
-                    .iter()
-                    .map(|p| {
-                        use hax::BoundVariableKind::*;
-                        match p {
-                            Region(region) => Ok(translate_bound_region_kind_name(region)),
-                            Ty(_) => {
-                                error_or_panic!(
-                                    self,
-                                    span,
-                                    "Unexpected locally bound type variable"
-                                );
-                            }
-                            Const => {
-                                error_or_panic!(
-                                    self,
-                                    span,
-                                    "Unexpected locally bound const generic variable"
-                                );
-                            }
-                        }
-                    })
-                    .try_collect()?;
-
-                // Push the ground region group
                 let erase_regions = false;
-                self.with_locally_bound_regions_group(bound_region_names, move |ctx| {
+                let binder = sig.as_ref().map(|_| ());
+                self.with_locally_bound_regions_group(span, binder, move |ctx| {
                     let regions = ctx.region_vars[0].clone();
                     let inputs = sig
                         .value

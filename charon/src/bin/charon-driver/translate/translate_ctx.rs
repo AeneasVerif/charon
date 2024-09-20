@@ -1,5 +1,6 @@
 //! The translation contexts.
 use super::translate_predicates::NonLocalTraitClause;
+use super::translate_types::translate_bound_region_kind_name;
 use charon_lib::ast::*;
 use charon_lib::common::*;
 use charon_lib::formatter::{FmtCtx, IntoFormatter};
@@ -23,6 +24,7 @@ use std::cmp::{Ord, PartialOrd};
 use std::collections::HashMap;
 use std::collections::{BTreeMap, VecDeque};
 use std::fmt;
+use std::mem;
 use std::path::Component;
 use std::sync::Arc;
 
@@ -1018,18 +1020,54 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         rid
     }
 
+    /// Translate a binder of regions by appending the stored reguions to the given vector.
+    pub(crate) fn translate_region_binder(
+        &mut self,
+        span: rustc_span::Span,
+        binder: hax::Binder<()>,
+        region_vars: &mut Vector<RegionId, RegionVar>,
+    ) -> Result<Box<[RegionId]>, Error> {
+        use hax::BoundVariableKind::*;
+        binder
+            .bound_vars
+            .into_iter()
+            .map(|p| match p {
+                Region(region) => {
+                    let name = translate_bound_region_kind_name(&region);
+                    let id = region_vars.push_with(|index| RegionVar { index, name });
+                    Ok(id)
+                }
+                Ty(_) => {
+                    error_or_panic!(self, span, "Unexpected locally bound type variable");
+                }
+                Const => {
+                    error_or_panic!(
+                        self,
+                        span,
+                        "Unexpected locally bound const generic variable"
+                    );
+                }
+            })
+            .try_collect()
+    }
+
     /// Set the first bound regions group
-    pub(crate) fn set_first_bound_regions_group(&mut self, names: Vec<Option<String>>) {
+    pub(crate) fn set_first_bound_regions_group(
+        &mut self,
+        span: rustc_span::Span,
+        binder: hax::Binder<()>,
+    ) -> Result<(), Error> {
         assert!(self.bound_region_vars.is_empty());
+        assert_eq!(self.region_vars.len(), 1);
 
         // Register the variables
-        let var_ids: Box<[RegionId]> = names
-            .into_iter()
-            .map(|name| self.region_vars[0].push_with(|index| RegionVar { index, name }))
-            .collect();
-
-        // Push the group
+        // There may already be lifetimes in the current group.
+        let mut region_vars = mem::take(&mut self.region_vars[0]);
+        let var_ids = self.translate_region_binder(span, binder, &mut region_vars)?;
+        self.region_vars[0] = region_vars;
         self.bound_region_vars.push_front(var_ids);
+
+        Ok(())
     }
 
     /// Push a group of bound regions and call the continuation.
@@ -1037,23 +1075,20 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     /// it contains universally quantified regions).
     pub(crate) fn with_locally_bound_regions_group<F, T>(
         &mut self,
-        names: Vec<Option<String>>,
+        span: rustc_span::Span,
+        binder: hax::Binder<()>,
         f: F,
-    ) -> T
+    ) -> Result<T, Error>
     where
-        F: FnOnce(&mut Self) -> T,
+        F: FnOnce(&mut Self) -> Result<T, Error>,
     {
         assert!(!self.region_vars.is_empty());
-        self.region_vars.push_front(Vector::new());
 
         // Register the variables
-        let var_ids: Box<[RegionId]> = names
-            .into_iter()
-            .map(|name| self.region_vars[0].push_with(|index| RegionVar { index, name }))
-            .collect();
-
-        // Push the group
+        let mut bound_vars = Vector::new();
+        let var_ids = self.translate_region_binder(span, binder, &mut bound_vars)?;
         self.bound_region_vars.push_front(var_ids);
+        self.region_vars.push_front(bound_vars);
 
         // Call the continuation
         let res = f(self);
