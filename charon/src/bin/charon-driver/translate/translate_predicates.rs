@@ -1,68 +1,10 @@
 use super::translate_ctx::*;
 use super::translate_traits::PredicateLocation;
 use charon_lib::common::*;
-use charon_lib::formatter::AstFormatter;
 use charon_lib::gast::*;
 use charon_lib::ids::Vector;
-use charon_lib::pretty::FmtWithCtx;
 use charon_lib::types::*;
 use hax_frontend_exporter as hax;
-use rustc_span::def_id::DefId;
-
-/// Same as [TraitClause], but where the clause id is a [TraitInstanceId].
-/// We need this information to solve the provenance of traits coming from
-/// where clauses: when translating the where clauses and adding them to the
-/// context, we recursively explore their parent/item clauses.
-///
-/// We have to do this because of this kind of situations
-///```text
-/// trait Foo {
-///   type W: Bar // Bar contains a method bar
-/// }
-///
-/// fn f<T : Foo>(x : T::W) {
-///   x.bar(); // We need to refer to the trait clause declared for Foo::W
-///            // and this clause is not immediately accessible.
-/// }
-///
-/// trait FooChild : Foo {}
-///
-/// fn g<T : FooChild>(x: <T as Foo>::W) { ... }
-///                       ^^^^^^^^^^^^^
-/// //     We need to have access to a clause `FooChild : Foo` to solve this
-/// ```
-#[derive(Debug, Clone)]
-pub(crate) struct NonLocalTraitClause {
-    pub hax_trait_ref: hax::TraitRef,
-    pub trait_ref_kind: TraitRefKind,
-}
-
-impl NonLocalTraitClause {
-    fn matches(&self, hax_trait_ref: &hax::TraitRef) -> bool {
-        // We ignore regions.
-        let skip_lifetimes = |arg: &&hax::GenericArg| match arg {
-            hax::GenericArg::Lifetime(_) => false,
-            _ => true,
-        };
-        hax_trait_ref
-            .generic_args
-            .iter()
-            .filter(skip_lifetimes)
-            .eq(self
-                .hax_trait_ref
-                .generic_args
-                .iter()
-                .filter(skip_lifetimes))
-    }
-}
-
-impl<C: AstFormatter> FmtWithCtx<C> for NonLocalTraitClause {
-    fn fmt_with_ctx(&self, ctx: &C) -> String {
-        let clause_id = self.trait_ref_kind.fmt_with_ctx(ctx);
-        let generics_ = &self.hax_trait_ref;
-        format!("[{clause_id}]: {generics_:?}")
-    }
-}
 
 impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     pub fn count_generics(
@@ -188,8 +130,8 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         };
         let vec = match location {
             PredicateLocation::Base => &mut self.generic_params.trait_clauses,
-            PredicateLocation::Parent(..) => &mut self.parent_trait_clauses,
-            PredicateLocation::Item(.., item_name) => self
+            PredicateLocation::Parent => &mut self.parent_trait_clauses,
+            PredicateLocation::Item(item_name) => self
                 .item_trait_clauses
                 .entry(item_name.clone())
                 .or_default(),
@@ -201,51 +143,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             trait_: poly_trait_ref,
         });
 
-        let trait_ref_kind = match location {
-            PredicateLocation::Base => TraitRefKind::Clause(clause_id),
-            PredicateLocation::Parent(trait_decl_id) => TraitRefKind::ParentClause(
-                Box::new(TraitRefKind::SelfId),
-                *trait_decl_id,
-                clause_id,
-            ),
-            PredicateLocation::Item(trait_decl_id, item_name) => TraitRefKind::ItemClause(
-                Box::new(TraitRefKind::SelfId),
-                *trait_decl_id,
-                item_name.clone(),
-                clause_id,
-            ),
-        };
-        let def_id = DefId::from(&trait_pred.trait_ref.def_id);
-        self.trait_clauses_map
-            .entry(OrdRustId::TraitDecl(def_id))
-            .or_default()
-            .push(NonLocalTraitClause {
-                hax_trait_ref: trait_pred.trait_ref.clone(),
-                trait_ref_kind,
-            });
-
         Ok(Some(clause_id))
-    }
-
-    /// Returns an [Option] because we may filter clauses about builtin or
-    /// auto traits like [core::marker::Sized] and [core::marker::Sync].
-    pub(crate) fn translate_self_trait_clause(
-        &mut self,
-        span: &hax::Span,
-        trait_pred: &hax::TraitPredicate,
-    ) -> Result<(), Error> {
-        // Save the self clause (and its parent/item clauses)
-        let _ = self.translate_trait_predicate(span, &trait_pred)?;
-        let clause = NonLocalTraitClause {
-            hax_trait_ref: trait_pred.trait_ref.clone(),
-            trait_ref_kind: TraitRefKind::SelfId,
-        };
-        let def_id = DefId::from(&trait_pred.trait_ref.def_id);
-        self.trait_clauses_map
-            .entry(OrdRustId::TraitDecl(def_id))
-            .or_default()
-            .push(clause);
-        Ok(())
     }
 
     pub(crate) fn translate_trait_predicate(
@@ -467,19 +365,18 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                     trait_ref,
                     path,
                 );
-                assert!(trait_ref.bound_vars.is_empty());
-                let trait_ref = trait_ref.hax_skip_binder_ref();
-
                 // If we are refering to a trait clause, we need to find the
                 // relevant one.
                 let mut trait_id = match &impl_source.r#impl {
                     ImplExprAtom::SelfImpl { .. } => TraitRefKind::SelfId,
-                    ImplExprAtom::LocalBound { .. } => self.find_trait_clause_for_param(trait_ref),
+                    ImplExprAtom::LocalBound { index, .. } => {
+                        TraitRefKind::Clause(TraitClauseId::from_usize(*index))
+                    }
                     _ => unreachable!(),
                 };
 
                 let mut current_trait_decl_id =
-                    self.register_trait_decl_id(span, &trait_ref.def_id);
+                    self.register_trait_decl_id(span, &trait_ref.hax_skip_binder_ref().def_id);
 
                 // Apply the path
                 for path_elem in path {
@@ -549,35 +446,5 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             }
         };
         Ok(Some(trait_ref))
-    }
-
-    /// Find the trait instance fullfilling a trait obligation.
-    /// TODO: having to do this is very annoying. Isn't there a better way?
-    #[tracing::instrument(skip(self))]
-    pub(crate) fn find_trait_clause_for_param(
-        &mut self,
-        hax_trait_ref: &hax::TraitRef,
-    ) -> TraitRefKind {
-        trace!(
-            "Inside context of: {:?}\nSpan: {:?}",
-            self.def_id,
-            self.t_ctx.tcx.def_ident_span(self.def_id)
-        );
-
-        // Simply explore the trait clauses
-        let def_id = DefId::from(&hax_trait_ref.def_id);
-        if let Some(clauses_for_this_trait) =
-            self.trait_clauses_map.get(&OrdRustId::TraitDecl(def_id))
-        {
-            for trait_clause in clauses_for_this_trait {
-                if trait_clause.matches(hax_trait_ref) {
-                    return trait_clause.trait_ref_kind.clone();
-                }
-            }
-        };
-
-        // Try solving it again later, when more clauses are registered.
-        let id = self.unsolved_traits.push(hax_trait_ref.clone());
-        TraitRefKind::Unsolved(id)
     }
 }

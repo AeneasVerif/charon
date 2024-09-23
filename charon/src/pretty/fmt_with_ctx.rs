@@ -1353,7 +1353,6 @@ impl<C: AstFormatter> FmtWithCtx<C> for TraitRefKind {
             }
             TraitRefKind::Clause(id) => ctx.format_object(*id),
             TraitRefKind::BuiltinOrAuto(tr) | TraitRefKind::Dyn(tr) => tr.fmt_with_ctx(ctx),
-            TraitRefKind::Unsolved(tref) => format!("Unsolved({tref:?})"),
             TraitRefKind::Unknown(msg) => format!("UNKNOWN({msg})"),
         }
     }

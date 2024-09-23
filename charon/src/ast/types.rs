@@ -19,7 +19,6 @@ generate_index_type!(FieldId, "Field");
 generate_index_type!(RegionId, "Region");
 generate_index_type!(ConstGenericVarId, "Const");
 generate_index_type!(GlobalDeclId, "Global");
-generate_index_type!(UnsolvedTraitId, "UnsolvedTrait");
 
 /// Type variable.
 /// We make sure not to mix variables and type variables by having two distinct
@@ -220,12 +219,6 @@ pub enum TraitRefKind {
 
     /// The automatically-generated implementation for `dyn Trait`.
     Dyn(PolyTraitDeclRef),
-
-    /// The trait ref could not be resolved, likely because the corresponding clause had not been
-    /// registered yet. We will try resolving it again once all clauses are registered.
-    #[charon::opaque]
-    #[drive(skip)]
-    Unsolved(UnsolvedTraitId),
 
     /// For error reporting.
     #[charon::rename("UnknownTrait")]

@@ -1,5 +1,4 @@
 //! The translation contexts.
-use super::translate_predicates::NonLocalTraitClause;
 use super::translate_types::translate_bound_region_kind_name;
 use charon_lib::ast::*;
 use charon_lib::common::*;
@@ -7,10 +6,7 @@ use charon_lib::formatter::{FmtCtx, IntoFormatter};
 use charon_lib::ids::{MapGenerator, Vector};
 use charon_lib::name_matcher::NamePattern;
 use charon_lib::options::CliOpts;
-use charon_lib::pretty::FmtWithCtx;
 use charon_lib::ullbc_ast as ast;
-use derive_visitor::visitor_enter_fn_mut;
-use derive_visitor::DriveMut;
 use hax_frontend_exporter as hax;
 use hax_frontend_exporter::SInto;
 use itertools::Itertools;
@@ -280,20 +276,10 @@ pub(crate) struct BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     /// The map from rust const generic variables to translate const generic
     /// variable indices.
     pub const_generic_vars_map: HashMap<u32, ConstGenericVarId>,
-    /// Trait refs we couldn't solve at the moment of translating them and will solve in a second
-    /// pass before extracting the generic params.
-    pub unsolved_traits: Vector<UnsolvedTraitId, hax::TraitRef>,
     /// (For traits only) accumulated implied trait clauses.
     pub parent_trait_clauses: Vector<TraitClauseId, TraitClause>,
     /// (For traits only) accumulated trait clauses on associated types.
     pub item_trait_clauses: HashMap<TraitItemName, Vector<TraitClauseId, TraitClause>>,
-    /// All the trait clauses accessible from the current environment. When `hax` gives us a
-    /// `ImplExprAtom::LocalBound`, we use this to recover the specific trait reference it
-    /// corresponds to.
-    /// FIXME: hax should take care of this matching up.
-    /// We use a betreemap to get a consistent output order and `OrdRustId` to get an orderable
-    /// `DefId` but they're all `OrdRustId::TraitDecl`.
-    pub trait_clauses_map: BTreeMap<OrdRustId, Vec<NonLocalTraitClause>>,
 
     /// The "regular" variables
     pub vars: Vector<VarId, ast::Var>,
@@ -924,10 +910,8 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             generic_params: Default::default(),
             type_vars_map: Default::default(),
             const_generic_vars_map: Default::default(),
-            unsolved_traits: Default::default(),
             parent_trait_clauses: Default::default(),
             item_trait_clauses: Default::default(),
-            trait_clauses_map: Default::default(),
             vars: Default::default(),
             vars_map: Default::default(),
             blocks: Default::default(),
@@ -1146,54 +1130,6 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             .iter()
             .enumerate()
             .all(|(i, c)| c.clause_id.index() == i));
-
-        // Solve trait refs now that all clauses have been registered.
-        generic_params.drive_mut(&mut visitor_enter_fn_mut(|tref_kind: &mut TraitRefKind| {
-            if let TraitRefKind::Unsolved(unsolved_trait_id) = *tref_kind {
-                let hax_trait_ref = self.unsolved_traits.remove(unsolved_trait_id).unwrap();
-                let new_kind = self.find_trait_clause_for_param(&hax_trait_ref);
-                *tref_kind = if let TraitRefKind::Unsolved(_) = new_kind {
-                    // Could not find a clause.
-                    // Check if we are in the registration process, otherwise report an error.
-                    let fmt_ctx = self.into_fmt();
-                    let trait_ref = format!("{:?}", hax_trait_ref);
-                    let clauses: Vec<String> = self
-                        .trait_clauses_map
-                        .values()
-                        .flat_map(|x| x)
-                        .map(|x| x.fmt_with_ctx(&fmt_ctx))
-                        .collect();
-
-                    if !self.t_ctx.continue_on_failure() {
-                        let clauses = clauses.join("\n");
-                        unreachable!(
-                            "Could not find a clause for parameter:\n- target param: {}\n\
-                            - available clauses:\n{}\n- context: {:?}",
-                            trait_ref, clauses, self.def_id
-                        );
-                    } else {
-                        // Return the UNKNOWN clause
-                        tracing::warn!(
-                            "Could not find a clause for parameter:\n- target param: {}\n\
-                            - available clauses:\n{}\n- context: {:?}",
-                            trait_ref,
-                            clauses.join("\n"),
-                            self.def_id
-                        );
-                        TraitRefKind::Unknown(format!(
-                            "Could not find a clause for parameter: {} \
-                            (available clauses: {}) (context: {:?})",
-                            trait_ref,
-                            clauses.join("; "),
-                            self.def_id
-                        ))
-                    }
-                } else {
-                    new_kind
-                }
-            }
-        }));
-
         trace!("Translated generics: {generic_params:?}");
         generic_params
     }
