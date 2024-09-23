@@ -433,16 +433,18 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 trait_decl_ref,
             },
             ImplExprAtom::Error(msg) => {
-                let error = format!("Error during trait resolution: {}", msg);
-                self.span_err(span, &error);
-                if !self.t_ctx.continue_on_failure() {
-                    panic!("{}", error)
-                } else {
-                    TraitRef {
-                        kind: TraitRefKind::Unknown(msg.clone()),
-                        trait_decl_ref,
+                let trait_ref = TraitRef {
+                    kind: TraitRefKind::Unknown(msg.clone()),
+                    trait_decl_ref,
+                };
+                if self.error_on_impl_expr_error {
+                    let error = format!("Error during trait resolution: {}", msg);
+                    self.span_err(span, &error);
+                    if !self.t_ctx.continue_on_failure() {
+                        panic!("{}", error)
                     }
                 }
+                trait_ref
             }
         };
         Ok(Some(trait_ref))

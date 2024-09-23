@@ -68,6 +68,8 @@ type test_crate::Generic2<'a, T>
   where
       [@TraitClause1]: core::clone::Clone<T>, = alloc::borrow::Cow<'a, Slice<T>, alloc::slice::{impl alloc::borrow::ToOwned for Slice<T>}#9<T>[@TraitClause1]>
 
+type test_crate::GenericWithoutBound<'a, T> = alloc::borrow::Cow<'a, Slice<T>, UNKNOWN(Could not find a clause for `Binder { value: <[T] as std::borrow::ToOwned>, bound_vars: [] }` in the current context: `Unimplemented`)>
+
 fn alloc::borrow::ToOwned::to_owned<'_0, Self>(@1: &'_0 (Self)) -> Self::Owned
 
 fn alloc::borrow::ToOwned::clone_into<'_0, '_1, Self>(@1: &'_0 (Self), @2: &'_1 mut (Self::Owned))

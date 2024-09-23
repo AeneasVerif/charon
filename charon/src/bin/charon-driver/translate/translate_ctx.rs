@@ -237,6 +237,9 @@ pub(crate) struct BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     pub t_ctx: &'ctx mut TranslateCtx<'tcx, 'ctx1>,
     /// A hax state with an owner id
     pub hax_state: hax::StateWithOwner<'tcx>,
+    /// Whether to consider a `ImplExprAtom::Error` as an error for us. True except inside type
+    /// aliases, because rust does not enforce correct trait bounds on type aliases.
+    pub error_on_impl_expr_error: bool,
 
     /// The regions.
     /// We use DeBruijn indices, so we have a stack of regions.
@@ -904,6 +907,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             def_id,
             t_ctx,
             hax_state,
+            error_on_impl_expr_error: true,
             region_vars: [Vector::new()].into(),
             free_region_vars: Default::default(),
             bound_region_vars: Default::default(),

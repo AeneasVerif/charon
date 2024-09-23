@@ -755,6 +755,8 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
             _ if item_meta.opacity.is_opaque() => Ok(TypeDeclKind::Opaque),
             hax::FullDefKind::OpaqueTy | hax::FullDefKind::ForeignTy => Ok(TypeDeclKind::Opaque),
             hax::FullDefKind::TyAlias { ty, .. } => {
+                // Don't error on missing trait refs.
+                bt_ctx.error_on_impl_expr_error = false;
                 // We only translate crate-local type aliases so the `unwrap` is ok.
                 let ty = ty.as_ref().unwrap();
                 bt_ctx
