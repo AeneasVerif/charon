@@ -26,6 +26,7 @@ pub fn derive_variant_index_arity(item: TokenStream) -> TokenStream {
 }
 
 /// Macro `EnumIsA`
+///
 /// Derives functions of the form `fn is_{variant_name}(&self) -> bool` returning true
 /// if an enumeration instance is of some variant. For lists, it would generate
 /// `is_cons` and `is_nil`.
@@ -40,6 +41,7 @@ pub fn derive_enum_is_a(item: TokenStream) -> TokenStream {
 }
 
 /// Macro `EnumAsGetters`
+///
 /// Derives functions of the form `fn as_{variant_name}(&self) -> ...` checking
 /// that an enumeration instance is of the proper variant and returning shared
 /// borrows to its fields.
@@ -59,6 +61,7 @@ pub fn derive_enum_as_getters(item: TokenStream) -> TokenStream {
 }
 
 /// Macro `EnumToGetters`
+///
 /// Derives functions of the form `fn to_{variant_name}(self) -> ...` checking
 /// that an enumeration instance is of the proper variant and returning its
 /// fields (while consuming the instance).
