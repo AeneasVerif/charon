@@ -19,8 +19,10 @@ pub struct TransformOptions {
     /// Whether to hide the `Sized`, `Sync`, `Send` and `Unpin` marker traits anywhere they show
     /// up.
     pub hide_marker_traits: bool,
-    // List of patterns to assign a given opacity to. Same as the corresponding `TranslateOptions`
-    // field.
+    /// Do not merge the chains of gotos.
+    pub no_merge_goto_chains: bool,
+    /// List of patterns to assign a given opacity to. Same as the corresponding `TranslateOptions`
+    /// field.
     pub item_opacities: Vec<(NamePattern, ItemOpacity)>,
 }
 

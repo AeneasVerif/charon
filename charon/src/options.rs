@@ -204,6 +204,13 @@ pub struct CliOpts {
     )]
     #[serde(default)]
     pub print_llbc: bool,
+    #[clap(
+        long = "no-merge-goto-chains",
+        help = indoc!("
+            Do not merge the chains of gotos in the ULLBC control-flow graph.
+    "))]
+    #[serde(default)]
+    pub no_merge_goto_chains: bool,
 }
 
 impl CliOpts {
