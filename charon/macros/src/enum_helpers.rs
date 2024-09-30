@@ -19,7 +19,7 @@ fn to_snake_case(s: &str) -> String {
     // "I32" -> "I3_2"
     let mut last_is_lowercase = false;
 
-    for (_, c) in s.chars().enumerate() {
+    for c in s.chars() {
         if c.is_uppercase() {
             if last_is_lowercase {
                 snake_case.push('_');
