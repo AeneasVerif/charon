@@ -455,6 +455,7 @@ pub fn translate<'tcx, 'ctx>(options: &CliOpts, tcx: TyCtxt<'tcx>) -> TransformC
     let transform_options = TransformOptions {
         no_code_duplication: options.no_code_duplication,
         hide_marker_traits: options.hide_marker_traits,
+        no_merge_goto_chains: options.no_merge_goto_chains,
         item_opacities: ctx.options.item_opacities,
     };
     // Return the context, dropping the hax state and rustc `tcx`.

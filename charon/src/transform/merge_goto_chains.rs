@@ -9,7 +9,12 @@ use super::ctx::UllbcPass;
 
 pub struct Transform;
 impl UllbcPass for Transform {
-    fn transform_body(&self, _ctx: &mut TransformCtx<'_>, body: &mut ExprBody) {
+    fn transform_body(&self, ctx: &mut TransformCtx<'_>, body: &mut ExprBody) {
+        // Check the option which instructs to ignore this pass
+        if ctx.options.no_merge_goto_chains {
+            return;
+        }
+
         // Compute for each block the number of blocks that points to it.
         let mut antecedents: Vector<BlockId, usize> = body.body.map_ref(|_| 0);
         for block in body.body.iter() {

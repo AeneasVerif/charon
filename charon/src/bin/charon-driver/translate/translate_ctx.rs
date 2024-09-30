@@ -48,9 +48,9 @@ pub enum MirLevel {
 pub struct TranslateOptions {
     /// The level at which to extract the MIR
     pub mir_level: MirLevel,
-    // List of patterns to assign a given opacity to. For each name, the most specific pattern that
-    // matches determines the opacity of the item. When no options are provided this is initialized
-    // to treat items in the crate as transparent and items in other crates as foreign.
+    /// List of patterns to assign a given opacity to. For each name, the most specific pattern that
+    /// matches determines the opacity of the item. When no options are provided this is initialized
+    /// to treat items in the crate as transparent and items in other crates as foreign.
     pub item_opacities: Vec<(NamePattern, ItemOpacity)>,
 }
 
