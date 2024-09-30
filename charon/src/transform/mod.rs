@@ -22,6 +22,7 @@ pub mod remove_unused_locals;
 pub mod reorder_decls;
 pub mod simplify_constants;
 pub mod ullbc_to_llbc;
+pub mod update_block_indices;
 pub mod update_closure_signatures;
 
 pub use ctx::TransformCtx;
@@ -68,6 +69,8 @@ pub static ULLBC_PASSES: &[Pass] = &[
     // # Micro-pass: replace some unops/binops and the array aggregates with
     // function calls (introduces: ArrayToSlice, etc.)
     UnstructuredBody(&ops_to_function_calls::Transform),
+    // # Micro-pass: make sure the block ids used in the ULLBC are consecutive
+    UnstructuredBody(&update_block_indices::Transform),
 ];
 
 pub static LLBC_PASSES: &[Pass] = &[
