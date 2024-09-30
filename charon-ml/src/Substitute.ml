@@ -48,6 +48,20 @@ let st_substitute_visitor (subst : subst) =
       let output = self#visit_ty subst output in
       TArrow (regions, inputs, output)
 
+    (** We need to properly handle the DeBruijn indices *)
+    method! visit_region_binder visit_value subst x =
+      (* Decrement the DeBruijn indices before calling the substitution *)
+      let r_subst r =
+        match r with
+        | RBVar (db, rid) -> subst.r_subst (RBVar (db - 1, rid))
+        | _ -> subst.r_subst r
+      in
+      let subst = { subst with r_subst } in
+      (* Note that we ignore the bound regions variables *)
+      let { binder_regions; binder_value } = x in
+      let binder_value = visit_value subst binder_value in
+      { binder_regions; binder_value }
+
     method! visit_TVar (subst : subst) id = subst.ty_subst id
     method! visit_CgVar _ id = subst.cg_subst id
     method! visit_Clause (subst : subst) id = subst.tr_subst id
@@ -111,11 +125,16 @@ let predicates_substitute (subst : subst) (p : generic_params) : generic_params
     const_generics;
     trait_clauses = List.map (visitor#visit_trait_clause subst) trait_clauses;
     regions_outlive =
-      List.map (visitor#visit_region_outlives subst) regions_outlive;
-    types_outlive = List.map (visitor#visit_type_outlives subst) types_outlive;
+      List.map
+        (visitor#visit_region_binder visitor#visit_region_outlives subst)
+        regions_outlive;
+    types_outlive =
+      List.map
+        (visitor#visit_region_binder visitor#visit_type_outlives subst)
+        types_outlive;
     trait_type_constraints =
       List.map
-        (visitor#visit_trait_type_constraint subst)
+        (visitor#visit_region_binder visitor#visit_trait_type_constraint subst)
         trait_type_constraints;
   }
 

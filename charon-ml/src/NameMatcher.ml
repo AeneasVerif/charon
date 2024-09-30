@@ -295,6 +295,12 @@ let maps_push_bound_regions_group (m : maps) : maps =
   in
   { m with rmap }
 
+(** Push a group of bound regions if the group is non-empty - TODO: make this
+    more precise *)
+let maps_push_bound_regions_group_if_nonempty (m : maps) (regions : 'a list) :
+    maps =
+  match regions with [] -> m | _ -> maps_push_bound_regions_group m
+
 (** Update a map and check that there are no incompatible
     constraints at the same time. *)
 let update_map (find_opt : 'a -> 'm -> 'b option) (add : 'a -> 'b -> 'm -> 'm)
@@ -500,10 +506,10 @@ and match_expr_with_ty (ctx : ctx) (c : match_config) (m : maps) (pty : expr)
       && match_ref_kind prk rk
   | EVar v, _ -> opt_update_tmap c m v ty
   | EComp pid, TTraitType (trait_ref, type_name) ->
-      match_trait_type ctx c pid trait_ref type_name
-  | EArrow (pinputs, pout), TArrow (_, inputs, out) -> (
-      (* Push a region group in the map *)
-      let m = maps_push_bound_regions_group m in
+      match_trait_type ctx c m pid trait_ref type_name
+  | EArrow (pinputs, pout), TArrow (regions, inputs, out) -> (
+      (* Push a region group in the map, if necessary - TODO: make this more precise *)
+      let m = maps_push_bound_regions_group_if_nonempty m regions in
       (* Match *)
       List.for_all2 (match_expr_with_ty ctx c m) pinputs inputs
       &&
@@ -530,24 +536,30 @@ and match_expr_with_trait_impl_id (ctx : ctx) (c : match_config) (ptr : expr)
         impl.impl_trait.decl_generics
   | EPrimAdt _ | ERef _ | EVar _ | EArrow _ | ERawPtr _ -> false
 
-and match_trait_ref (ctx : ctx) (c : match_config) (pid : pattern)
+and match_trait_ref (ctx : ctx) (c : match_config) (m : maps) (pid : pattern)
     (tr : T.trait_ref) : bool =
   (* Lookup the trait declaration *)
   let d =
-    T.TraitDeclId.Map.find tr.trait_decl_ref.trait_decl_id ctx.trait_decls
+    T.TraitDeclId.Map.find tr.trait_decl_ref.binder_value.trait_decl_id
+      ctx.trait_decls
+  in
+  (* Push a region group in the map, if necessary - TODO: make this more precise *)
+  let m =
+    maps_push_bound_regions_group_if_nonempty m tr.trait_decl_ref.binder_regions
   in
   (* Match the trait decl ref *)
-  match_name_with_generics ctx c pid d.item_meta.name
-    tr.trait_decl_ref.decl_generics
+  match_name_with_generics ctx c ~m pid d.item_meta.name
+    tr.trait_decl_ref.binder_value.decl_generics
 
-and match_trait_ref_item (ctx : ctx) (c : match_config) (pid : pattern)
-    (tr : T.trait_ref) (item_name : string) (generics : T.generic_args) : bool =
+and match_trait_ref_item (ctx : ctx) (c : match_config) (m : maps)
+    (pid : pattern) (tr : T.trait_ref) (item_name : string)
+    (generics : T.generic_args) : bool =
   if c.match_with_trait_decl_refs then
     (* We match the trait decl ref *)
     (* We split the pattern between the trait decl ref and the associated item name *)
     let pid, pitem_name = Collections.List.pop_last pid in
     (* Match the trait ref *)
-    match_trait_ref ctx c pid tr
+    match_trait_ref ctx c m pid tr
     &&
     (* Match the item name *)
     match pitem_name with
@@ -557,9 +569,9 @@ and match_trait_ref_item (ctx : ctx) (c : match_config) (pid : pattern)
     | _ -> false
   else raise (Failure "Unimplemented")
 
-and match_trait_type (ctx : ctx) (c : match_config) (pid : pattern)
+and match_trait_type (ctx : ctx) (c : match_config) (m : maps) (pid : pattern)
     (tr : T.trait_ref) (type_name : string) : bool =
-  match_trait_ref_item ctx c pid tr type_name TypesUtils.empty_generic_args
+  match_trait_ref_item ctx c m pid tr type_name TypesUtils.empty_generic_args
 
 and match_generic_args (ctx : ctx) (c : match_config) (m : maps)
     (pgenerics : generic_args) (generics : T.generic_args) : bool =
@@ -662,7 +674,8 @@ let match_fn_ptr (ctx : ctx) (c : match_config) (p : pattern) (func : E.fn_ptr)
       let d = A.FunDeclId.Map.find fid ctx.fun_decls in
       match_name_with_generics ctx c p d.item_meta.name func.generics
   | TraitMethod (tr, method_name, _) ->
-      match_trait_ref_item ctx c p tr method_name func.generics
+      match_trait_ref_item ctx c (mk_empty_maps ()) p tr method_name
+        func.generics
 
 let mk_name_with_generics_matcher (ctx : ctx) (c : match_config) (pat : string)
     : T.name -> T.generic_args -> bool =
@@ -773,6 +786,12 @@ let constraints_map_push_regions_map (m : constraints)
   let rmap = constraints_map_compute_regions_map regions in
   { m with rmap = rmap :: m.rmap }
 
+(** Push a regions map to the constraints map, if the group of regions
+    is non-empty - TODO: do something more precise *)
+let constraints_map_push_regions_map_if_nonempty (m : constraints)
+    (regions : T.region_var list) : constraints =
+  match regions with [] -> m | _ -> constraints_map_push_regions_map m regions
+
 type to_pat_config = {
   tgt : target_kind;
   use_trait_decl_refs : bool;  (** See {!match_with_trait_decl_refs} *)
@@ -868,7 +887,8 @@ and ty_to_pattern_aux (ctx : ctx) (c : to_pat_config) (m : constraints)
       in
       EComp name
   | TArrow (regions, inputs, out) ->
-      let m = constraints_map_push_regions_map m regions in
+      (* Push a regions map if necessary - TODO: make this more precise *)
+      let m = constraints_map_push_regions_map_if_nonempty m regions in
       let inputs = List.map (ty_to_pattern_aux ctx c m) inputs in
       let out =
         if out = TypesUtils.mk_unit_ty then None
@@ -886,9 +906,17 @@ and trait_ref_item_with_generics_to_pattern (ctx : ctx) (c : to_pat_config)
   if c.use_trait_decl_refs then
     let trait_decl_ref = trait_ref.trait_decl_ref in
     let d =
-      T.TraitDeclId.Map.find trait_decl_ref.trait_decl_id ctx.trait_decls
+      T.TraitDeclId.Map.find trait_decl_ref.binder_value.trait_decl_id
+        ctx.trait_decls
     in
-    let g = generic_args_to_pattern ctx c m trait_decl_ref.decl_generics in
+    (* Push a regions map if necessary - TODO: make this more precise *)
+    let m =
+      constraints_map_push_regions_map_if_nonempty m
+        trait_decl_ref.binder_regions
+    in
+    let g =
+      generic_args_to_pattern ctx c m trait_decl_ref.binder_value.decl_generics
+    in
     let name =
       name_with_generic_args_to_pattern_aux ctx c d.item_meta.name (Some g)
     in

@@ -1041,12 +1041,12 @@ fn generate_ml(crate_data: TranslatedCrate, output_dir: PathBuf) -> anyhow::Resu
                 | Self
                     (** Reference to *self*, in case of trait declarations/implementations *)
                 | TraitImpl of trait_impl_id * generic_args  (** A specific implementation *)
-                | BuiltinOrAuto of trait_decl_ref
+                | BuiltinOrAuto of trait_decl_ref region_binder
                 | Clause of trait_clause_id
                 | ParentClause of trait_instance_id * trait_decl_id * trait_clause_id
                 | FnPointer of ty
                 | Closure of fun_decl_id * generic_args
-                | Dyn of trait_decl_ref
+                | Dyn of trait_decl_ref region_binder
                 | Unsolved of trait_decl_id * generic_args
                 | UnknownTrait of string
                 "
@@ -1347,7 +1347,6 @@ fn generate_ml(crate_data: TranslatedCrate, output_dir: PathBuf) -> anyhow::Resu
                     "TraitImplId",
                     "TypeDeclId",
                     "TypeVarId",
-                    "UnsolvedTraitId",
                     "VariantId",
                 ]),
                 (GenerationKind::TypeDecl(Some(DeriveVisitors {
@@ -1370,7 +1369,7 @@ fn generate_ml(crate_data: TranslatedCrate, output_dir: PathBuf) -> anyhow::Resu
                 })), &[
                     "ConstGeneric",
                 ]),
-                // Can't merge into aboce because aeneas uses the above alongside their own partial
+                // Can't merge into above because aeneas uses the above alongside their own partial
                 // copy of `ty`, which causes method type clashes.
                 (GenerationKind::TypeDecl(Some(DeriveVisitors {
                     name: "ty",
@@ -1382,7 +1381,6 @@ fn generate_ml(crate_data: TranslatedCrate, output_dir: PathBuf) -> anyhow::Resu
                     "BuiltinTy",
                     "TypeId",
                     "ExistentialPredicate",
-                    "RegionVar",
                     "RefKind",
                     "Ty",
                     "Region",

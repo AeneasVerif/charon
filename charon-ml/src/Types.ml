@@ -57,7 +57,6 @@ and field_id = FieldId.id
 and region_id = RegionId.id
 and const_generic_var_id = ConstGenericVarId.id
 and global_decl_id = GlobalDeclId.id
-and unsolved_trait_id = UnsolvedTraitId.id
 and trait_clause_id = TraitClauseId.id
 and trait_decl_id = TraitDeclId.id
 and trait_impl_id = TraitImplId.id [@@deriving show, ord]
@@ -244,6 +243,14 @@ type const_generic =
         nude = true (* Don't inherit VisitorsRuntime *);
       }]
 
+(** Region variable. *)
+type region_var = (region_var_id, string option) indexed_var
+[@@deriving show, ord]
+
+(** A value of type `'a` bound by generic parameters. *)
+type 'a region_binder = { binder_regions : region_var list; binder_value : 'a }
+[@@deriving show, ord]
+
 (** Ancestor for iter visitor for {!type: Types.ty} *)
 class ['self] iter_ty_base_base =
   object (self : 'self)
@@ -272,6 +279,18 @@ class ['self] iter_ty_base_base =
         let left, right = x in
         visit_left env left;
         visit_right env right
+
+    method visit_region_var env (x : region_var) =
+      self#visit_indexed_var self#visit_region_var_id
+        (self#visit_option self#visit_string)
+        env x
+
+    method visit_region_binder
+        : 'a. ('env -> 'a -> unit) -> 'env -> 'a region_binder -> unit =
+      fun visit_binder_value env x ->
+        let { binder_regions; binder_value } = x in
+        self#visit_list self#visit_region_var env binder_regions;
+        visit_binder_value env binder_value
   end
 
 (** Ancestor for map visitor for {!type: Types.ty} *)
@@ -304,6 +323,22 @@ class virtual ['self] map_ty_base_base =
         let left = visit_left env left in
         let right = visit_right env right in
         (left, right)
+
+    method visit_region_var env (x : region_var) =
+      self#visit_indexed_var self#visit_region_var_id
+        (self#visit_option self#visit_string)
+        env x
+
+    method visit_region_binder
+        : 'a. ('env -> 'a -> 'a) -> 'env -> 'a region_binder -> 'a region_binder
+        =
+      fun visit_binder_value env x ->
+        let { binder_regions; binder_value } = x in
+        let binder_regions =
+          self#visit_list self#visit_region_var env binder_regions
+        in
+        let binder_value = visit_binder_value env binder_value in
+        { binder_regions; binder_value }
   end
 
 (** Reference to a global declaration. *)
@@ -313,9 +348,6 @@ type global_decl_ref = {
 }
 
 and trait_item_name = string
-
-(** Region variable. *)
-and region_var = (region_var_id, string option) indexed_var
 
 and region =
   | RStatic  (** Static region *)
@@ -337,22 +369,23 @@ and trait_instance_id =
   | Self
       (** Reference to *self*, in case of trait declarations/implementations *)
   | TraitImpl of trait_impl_id * generic_args  (** A specific implementation *)
-  | BuiltinOrAuto of trait_decl_ref
+  | BuiltinOrAuto of trait_decl_ref region_binder
   | Clause of trait_clause_id
   | ParentClause of trait_instance_id * trait_decl_id * trait_clause_id
   | FnPointer of ty
   | Closure of fun_decl_id * generic_args
-  | Dyn of trait_decl_ref
+  | Dyn of trait_decl_ref region_binder
   | Unsolved of trait_decl_id * generic_args
   | UnknownTrait of string
 
 (** A reference to a trait *)
 and trait_ref = {
   trait_id : trait_instance_id;
-  trait_decl_ref : trait_decl_ref;  (** Not necessary, but useful *)
+  trait_decl_ref : trait_decl_ref region_binder;
+      (** Not necessary, but useful *)
 }
 
-(** Reference to a trait declaration.
+(** A predicate of the form `Type: Trait<Args>`.
 
     About the generics, if we write:
     ```text
@@ -553,11 +586,11 @@ and generic_params = {
   types : type_var list;
   const_generics : const_generic_var list;
   trait_clauses : trait_clause list;
-  regions_outlive : (region, region) outlives_pred list;
+  regions_outlive : (region, region) outlives_pred region_binder list;
       (** The first region in the pair outlives the second region *)
-  types_outlive : (ty, region) outlives_pred list;
+  types_outlive : (ty, region) outlives_pred region_binder list;
       (** The type outlives the region *)
-  trait_type_constraints : trait_type_constraint list;
+  trait_type_constraints : trait_type_constraint region_binder list;
       (** Constraints over trait associated types *)
 }
 
@@ -569,7 +602,7 @@ and trait_clause = {
         to a parameter.
      *)
   span : span option;
-  trait : trait_decl_ref;  (** The trait that is implemented. *)
+  trait : trait_decl_ref region_binder;  (** The trait that is implemented. *)
 }
 [@@deriving
   show,

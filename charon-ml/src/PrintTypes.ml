@@ -95,6 +95,17 @@ let region_to_string (env : ('a, 'b) fmt_env) (r : region) : string =
 
 let trait_clause_id_to_string _ id = trait_clause_id_to_pretty_string id
 
+let region_binder_to_string (value_to_string : ('a, 'b) fmt_env -> 'c -> string)
+    (env : ('a, 'b) fmt_env) (rb : 'c region_binder) : string =
+  let env = fmt_env_push_regions env rb.binder_regions in
+  let value = value_to_string env rb.binder_value in
+  match rb.binder_regions with
+  | [] -> value
+  | _ ->
+      "for <"
+      ^ String.concat "," (List.map region_var_to_string rb.binder_regions)
+      ^ "> " ^ value
+
 let rec type_id_to_string (env : ('a, 'b) fmt_env) (id : type_id) : string =
   match id with
   | TAdtId id -> type_decl_id_to_string env id
@@ -231,7 +242,8 @@ and trait_instance_id_to_string (env : ('a, 'b) fmt_env)
       let impl = trait_impl_id_to_string env id in
       let generics = generic_args_to_string env generics in
       impl ^ generics
-  | BuiltinOrAuto trait -> trait_decl_ref_to_string env trait
+  | BuiltinOrAuto trait ->
+      region_binder_to_string trait_decl_ref_to_string env trait
   | Clause id -> trait_clause_id_to_string env id
   | ParentClause (inst_id, _decl_id, clause_id) ->
       let inst_id = trait_instance_id_to_string env inst_id in
@@ -244,7 +256,7 @@ and trait_instance_id_to_string (env : ('a, 'b) fmt_env)
       ^ generic_args_to_string env generics
       ^ ")"
   | Dyn trait ->
-      let trait = trait_decl_ref_to_string env trait in
+      let trait = region_binder_to_string trait_decl_ref_to_string env trait in
       "dyn(" ^ trait ^ ")"
   | Unsolved (decl_id, generics) ->
       "unsolved("
@@ -302,7 +314,9 @@ and raw_attribute_to_string (attr : raw_attribute) : string =
 let trait_clause_to_string (env : ('a, 'b) fmt_env) (clause : trait_clause) :
     string =
   let clause_id = trait_clause_id_to_string env clause.clause_id in
-  let trait = trait_decl_ref_to_string env clause.trait in
+  let trait =
+    region_binder_to_string trait_decl_ref_to_string env clause.trait
+  in
   "[" ^ clause_id ^ "]: " ^ trait
 
 let generic_params_to_strings (env : ('a, 'b) fmt_env)
@@ -363,18 +377,24 @@ let predicates_and_trait_clauses_to_string (env : ('a, 'b) fmt_env)
   let params, trait_clauses = generic_params_to_strings env generics in
   let region_to_string = region_to_string env in
   let regions_outlive =
+    let outlive_to_string _ (x, y) =
+      region_to_string x ^ " : " ^ region_to_string y
+    in
     List.map
-      (fun (x, y) -> region_to_string x ^ " : " ^ region_to_string y)
+      (region_binder_to_string outlive_to_string env)
       generics.regions_outlive
   in
   let types_outlive =
+    let outlive_to_string _ (x, y) =
+      ty_to_string env x ^ " : " ^ region_to_string y
+    in
     List.map
-      (fun (x, y) -> ty_to_string env x ^ " : " ^ region_to_string y)
+      (region_binder_to_string outlive_to_string env)
       generics.types_outlive
   in
   let trait_type_constraints =
     List.map
-      (trait_type_constraint_to_string env)
+      (region_binder_to_string trait_type_constraint_to_string env)
       generics.trait_type_constraints
   in
   (* Split between the inherited clauses and the local clauses *)
