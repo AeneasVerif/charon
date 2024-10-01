@@ -98,11 +98,10 @@ pub struct TranslatedCrate {
 
     /// File id to content.
     ///
-    /// Note that we leave the slots for the virtual files as empty: the non-empty slots
-    /// are for the "real" files that we managed to read.
+    /// Note that some files may be missing, if they are not "real" files.
     #[drive(skip)]
-    #[serde(with = "HashMapToArray::<FileId, Vec<String>>")]
-    pub file_id_to_content: HashMap<FileId, Vec<String>>,
+    #[serde(with = "HashMapToArray::<FileId, String>")]
+    pub file_id_to_content: HashMap<FileId, String>,
 
     /// All the ids, in the order in which we encountered them
     #[drive(skip)]

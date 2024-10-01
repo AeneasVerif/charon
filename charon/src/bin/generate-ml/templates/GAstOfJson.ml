@@ -188,7 +188,7 @@ and gtranslated_crate_of_json
         in
         let* source_files =
           list_of_json
-            (key_value_pair_of_json file_id_of_json (list_of_json string_of_json))
+            (key_value_pair_of_json file_id_of_json string_of_json)
             file_id_to_content
         in
 

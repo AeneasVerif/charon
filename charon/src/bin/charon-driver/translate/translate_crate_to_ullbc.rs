@@ -359,28 +359,27 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         }
         Ok(self.translated.get_item(id).unwrap())
     }
-}
 
-/// Read and return the content of a source file.
-fn read_file_content(filename: &FileName) -> Option<Vec<String>> {
-    use std::fs::File;
-    use std::io::prelude::*;
-    use std::io::BufReader;
-    use FileName::*;
-    match filename {
-        Local(path) => {
-            let file = File::open(path).ok()?;
-            BufReader::new(file)
-                .lines()
-                .into_iter()
-                .collect::<Result<Vec<String>, _>>()
-                .ok()
-        }
-        Virtual(_) => {
-            // TODO: we should be able to retrieve the file content here
-            None
-        }
-        NotReal(_) => None,
+    /// Return a map from source file name to file content.
+    fn read_source_files(&mut self) -> HashMap<FileName, String> {
+        // Retrieve the source map
+        let source_map = self.tcx.sess.source_map();
+
+        // Read all the files
+        use std::ops::Deref;
+        source_map
+            .files()
+            .deref()
+            .iter()
+            .filter_map(|file| {
+                // Convert the filename
+                let filename: hax::FileName = file.name.sinto(&self.hax_state);
+                let filename = self.translate_filename(&filename);
+
+                // Retrieve the content
+                file.src.as_ref().map(|src| (filename, src.deref().clone()))
+            })
+            .collect()
     }
 }
 
@@ -476,6 +475,16 @@ pub fn translate<'tcx, 'ctx>(options: &CliOpts, tcx: TyCtxt<'tcx>) -> TransformC
         ctx.translate_item(ord_id.get_id(), trans_id);
     }
 
+    // Read the source files
+    let source_files = ctx.read_source_files();
+    ctx.translated.file_id_to_content = ctx
+        .translated
+        .id_to_file
+        .iter_indexed()
+        .filter_map(|(id, filename)| (source_files.get(filename).map(|file| (id, file.clone()))))
+        .collect();
+
+    // Return the context, dropping the hax state and rustc `tcx`.
     let transform_options = TransformOptions {
         no_code_duplication: options.no_code_duplication,
         hide_marker_traits: options.hide_marker_traits,
@@ -483,15 +492,6 @@ pub fn translate<'tcx, 'ctx>(options: &CliOpts, tcx: TyCtxt<'tcx>) -> TransformC
         item_opacities: ctx.options.item_opacities,
     };
 
-    // Read the source files
-    ctx.translated.file_id_to_content = ctx
-        .translated
-        .id_to_file
-        .iter_indexed()
-        .filter_map(|(id, filename)| (read_file_content(filename).map(|file| (id, file))))
-        .collect();
-
-    // Return the context, dropping the hax state and rustc `tcx`.
     TransformCtx {
         options: transform_options,
         translated: ctx.translated,
