@@ -17,10 +17,10 @@ use std::sync::Arc;
 /// The context in which we are translating a clause, used to generate the appropriate ids and
 /// trait references.
 pub(crate) enum PredicateLocation {
-    /// We're translating the parent clauses of a trait.
-    Parent(TraitDeclId),
-    /// We're translating the item clauses of a trait.
-    Item(TraitDeclId, TraitItemName),
+    /// We're translating the parent clauses of this trait.
+    Parent,
+    /// We're translating the item clauses of this trait.
+    Item(TraitItemName),
     /// We're translating anything else.
     Base,
 }
@@ -138,10 +138,10 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
                     };
                     // TODO: handle generics (i.e. GATs).
                     // Register the trait clauses as item trait clauses
-                    bt_ctx.translate_predicates(
+                    bt_ctx.register_predicates(
                         &predicates,
                         PredicateOrigin::TraitItem(name.clone()),
-                        &PredicateLocation::Item(def_id, name.clone()),
+                        &PredicateLocation::Item(name.clone()),
                     )?;
                     if let Some(clauses) = bt_ctx.item_trait_clauses.get(name) {
                         type_clauses.push((name.clone(), clauses.clone()));
@@ -225,13 +225,6 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         // Debugging:
         {
             let ctx = bt_ctx.into_fmt();
-            let clauses = bt_ctx
-                .trait_clauses_map
-                .values()
-                .flat_map(|x| x)
-                .map(|c| c.fmt_with_ctx(&ctx))
-                .collect::<Vec<String>>()
-                .join("\n");
             let generic_clauses = generics
                 .trait_clauses
                 .iter()
@@ -239,9 +232,8 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
                 .collect::<Vec<String>>()
                 .join("\n");
             trace!(
-                "Trait decl: {:?}:\n- all clauses:\n{}\n- generic.trait_clauses:\n{}\n",
+                "Trait decl: {:?}:\n- generic.trait_clauses:\n{}\n",
                 def_id,
-                clauses,
                 generic_clauses
             );
         }

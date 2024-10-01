@@ -1,77 +1,10 @@
 use super::translate_ctx::*;
 use super::translate_traits::PredicateLocation;
 use charon_lib::common::*;
-use charon_lib::formatter::AstFormatter;
 use charon_lib::gast::*;
 use charon_lib::ids::Vector;
-use charon_lib::pretty::FmtWithCtx;
 use charon_lib::types::*;
 use hax_frontend_exporter as hax;
-use macros::{EnumAsGetters, EnumIsA, EnumToGetters};
-use rustc_span::def_id::DefId;
-
-/// Same as [TraitClause], but where the clause id is a [TraitInstanceId].
-/// We need this information to solve the provenance of traits coming from
-/// where clauses: when translating the where clauses and adding them to the
-/// context, we recursively explore their parent/item clauses.
-///
-/// We have to do this because of this kind of situations
-///```text
-/// trait Foo {
-///   type W: Bar // Bar contains a method bar
-/// }
-///
-/// fn f<T : Foo>(x : T::W) {
-///   x.bar(); // We need to refer to the trait clause declared for Foo::W
-///            // and this clause is not immediately accessible.
-/// }
-///
-/// trait FooChild : Foo {}
-///
-/// fn g<T : FooChild>(x: <T as Foo>::W) { ... }
-///                       ^^^^^^^^^^^^^
-/// //     We need to have access to a clause `FooChild : Foo` to solve this
-/// ```
-#[derive(Debug, Clone)]
-pub(crate) struct NonLocalTraitClause {
-    pub hax_trait_ref: hax::TraitRef,
-    pub trait_ref_kind: TraitRefKind,
-}
-
-impl NonLocalTraitClause {
-    fn matches(&self, hax_trait_ref: &hax::TraitRef) -> bool {
-        // We ignore regions.
-        let skip_lifetimes = |arg: &&hax::GenericArg| match arg {
-            hax::GenericArg::Lifetime(_) => false,
-            _ => true,
-        };
-        hax_trait_ref
-            .generic_args
-            .iter()
-            .filter(skip_lifetimes)
-            .eq(self
-                .hax_trait_ref
-                .generic_args
-                .iter()
-                .filter(skip_lifetimes))
-    }
-}
-
-impl<C: AstFormatter> FmtWithCtx<C> for NonLocalTraitClause {
-    fn fmt_with_ctx(&self, ctx: &C) -> String {
-        let clause_id = self.trait_ref_kind.fmt_with_ctx(ctx);
-        let generics_ = &self.hax_trait_ref;
-        format!("[{clause_id}]: {generics_:?}")
-    }
-}
-
-#[derive(Debug, Clone, EnumIsA, EnumAsGetters, EnumToGetters)]
-pub(crate) enum Predicate {
-    Trait(#[expect(dead_code)] TraitClauseId),
-    TypeOutlives(TypeOutlives),
-    RegionOutlives(RegionOutlives),
-    TraitType(TraitTypeConstraint),
-}
 
 impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     pub fn count_generics(
@@ -120,7 +53,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
 
     /// This function should be called **after** we translated the generics (type parameters,
     /// regions...).
-    pub(crate) fn translate_predicates(
+    pub(crate) fn register_predicates(
         &mut self,
         preds: &hax::GenericPredicates,
         origin: PredicateOrigin,
@@ -134,9 +67,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 pred.kind.value,
                 hax::PredicateKind::Clause(hax::ClauseKind::Trait(_))
             ) {
-                // Don't need to do anything with the translated clause, it is already registered
-                // in `self.trait_clauses`.
-                let _ = self.translate_predicate(pred, span, origin.clone(), location)?;
+                self.register_predicate(pred, span, origin.clone(), location)?;
             }
         }
         for (pred, span) in &preds.predicates {
@@ -144,17 +75,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 pred.kind.value,
                 hax::PredicateKind::Clause(hax::ClauseKind::Trait(_))
             ) {
-                match self.translate_predicate(pred, span, origin.clone(), location)? {
-                    None => (),
-                    Some(pred) => match pred {
-                        Predicate::TypeOutlives(p) => self.generic_params.types_outlive.push(p),
-                        Predicate::RegionOutlives(p) => self.generic_params.regions_outlive.push(p),
-                        Predicate::TraitType(p) => {
-                            self.generic_params.trait_type_constraints.push(p)
-                        }
-                        Predicate::Trait(_) => unreachable!(),
-                    },
-                }
+                self.register_predicate(pred, span, origin.clone(), location)?;
             }
         }
         Ok(())
@@ -166,27 +87,33 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         &mut self,
         span: rustc_span::Span,
         erase_regions: bool,
-        trait_ref: &hax::Binder<hax::TraitRef>,
-    ) -> Result<Option<TraitDeclRef>, Error> {
-        // TODO: handle binder properly
-        let trait_ref = trait_ref.as_ref().hax_skip_binder();
-        let trait_id = self.register_trait_decl_id(span, &trait_ref.def_id);
-        let parent_trait_refs = Vec::new();
-        let generics = self.translate_substs_and_trait_refs(
-            span,
-            erase_regions,
-            None,
-            &trait_ref.generic_args,
-            &parent_trait_refs,
-        )?;
-        Ok(Some(TraitDeclRef { trait_id, generics }))
+        bound_trait_ref: &hax::Binder<hax::TraitRef>,
+    ) -> Result<Option<PolyTraitDeclRef>, Error> {
+        let binder = bound_trait_ref.rebind(());
+        self.with_locally_bound_regions_group(span, binder, move |ctx| {
+            let trait_ref = bound_trait_ref.hax_skip_binder_ref();
+            let trait_id = ctx.register_trait_decl_id(span, &trait_ref.def_id);
+            let parent_trait_refs = Vec::new();
+            let generics = ctx.translate_substs_and_trait_refs(
+                span,
+                erase_regions,
+                None,
+                &trait_ref.generic_args,
+                &parent_trait_refs,
+            )?;
+
+            Ok(Some(RegionBinder {
+                regions: ctx.region_vars[0].clone(),
+                skip_binder: TraitDeclRef { trait_id, generics },
+            }))
+        })
     }
 
     /// Returns an [Option] because we may filter clauses about builtin or
     /// auto traits like [core::marker::Sized] and [core::marker::Sync].
     ///
     /// `origin` is where this clause comes from.
-    pub(crate) fn translate_trait_clause(
+    pub(crate) fn register_trait_clause(
         &mut self,
         hspan: &hax::Span,
         trait_pred: &hax::TraitPredicate,
@@ -196,10 +123,15 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         let span = self.translate_span_from_hax(hspan.clone());
 
         let trait_decl_ref = self.translate_trait_predicate(hspan, trait_pred)?;
+        let poly_trait_ref = RegionBinder {
+            // We're under the binder of `hax::Predicate`, we re-wrap it here.
+            regions: self.region_vars[0].clone(),
+            skip_binder: trait_decl_ref,
+        };
         let vec = match location {
             PredicateLocation::Base => &mut self.generic_params.trait_clauses,
-            PredicateLocation::Parent(..) => &mut self.parent_trait_clauses,
-            PredicateLocation::Item(.., item_name) => self
+            PredicateLocation::Parent => &mut self.parent_trait_clauses,
+            PredicateLocation::Item(item_name) => self
                 .item_trait_clauses
                 .entry(item_name.clone())
                 .or_default(),
@@ -208,54 +140,10 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             clause_id,
             origin,
             span: Some(span),
-            trait_: trait_decl_ref,
+            trait_: poly_trait_ref,
         });
 
-        let trait_ref_kind = match location {
-            PredicateLocation::Base => TraitRefKind::Clause(clause_id),
-            PredicateLocation::Parent(trait_decl_id) => TraitRefKind::ParentClause(
-                Box::new(TraitRefKind::SelfId),
-                *trait_decl_id,
-                clause_id,
-            ),
-            PredicateLocation::Item(trait_decl_id, item_name) => TraitRefKind::ItemClause(
-                Box::new(TraitRefKind::SelfId),
-                *trait_decl_id,
-                item_name.clone(),
-                clause_id,
-            ),
-        };
-        let def_id = DefId::from(&trait_pred.trait_ref.def_id);
-        self.trait_clauses_map
-            .entry(OrdRustId::TraitDecl(def_id))
-            .or_default()
-            .push(NonLocalTraitClause {
-                hax_trait_ref: trait_pred.trait_ref.clone(),
-                trait_ref_kind,
-            });
-
         Ok(Some(clause_id))
-    }
-
-    /// Returns an [Option] because we may filter clauses about builtin or
-    /// auto traits like [core::marker::Sized] and [core::marker::Sync].
-    pub(crate) fn translate_self_trait_clause(
-        &mut self,
-        span: &hax::Span,
-        trait_pred: &hax::TraitPredicate,
-    ) -> Result<(), Error> {
-        // Save the self clause (and its parent/item clauses)
-        let _ = self.translate_trait_predicate(span, &trait_pred)?;
-        let clause = NonLocalTraitClause {
-            hax_trait_ref: trait_pred.trait_ref.clone(),
-            trait_ref_kind: TraitRefKind::SelfId,
-        };
-        let def_id = DefId::from(&trait_pred.trait_ref.def_id);
-        self.trait_clauses_map
-            .entry(OrdRustId::TraitDecl(def_id))
-            .or_default()
-            .push(clause);
-        Ok(())
     }
 
     pub(crate) fn translate_trait_predicate(
@@ -281,89 +169,104 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         Ok(TraitDeclRef { trait_id, generics })
     }
 
-    pub(crate) fn translate_predicate(
+    pub(crate) fn register_predicate(
         &mut self,
         pred: &hax::Predicate,
         hspan: &hax::Span,
         origin: PredicateOrigin,
         location: &PredicateLocation,
-    ) -> Result<Option<Predicate>, Error> {
+    ) -> Result<(), Error> {
         trace!("{:?}", pred);
         // Predicates are always used in signatures/type definitions, etc.
         // For this reason, we do not erase the regions.
         let erase_regions = false;
         let span = hspan.rust_span_data.unwrap().span();
 
-        // Skip the binder (which lists the quantified variables).
-        // By doing so, we allow the predicates to contain DeBruijn indices,
-        // but it is ok because we only do a simple check.
-        let pred_kind = &pred.kind.value;
-        use hax::{ClauseKind, PredicateKind};
-        match pred_kind {
-            PredicateKind::Clause(kind) => {
-                match kind {
-                    ClauseKind::Trait(trait_pred) => Ok(self
-                        .translate_trait_clause(hspan, trait_pred, origin, location)?
-                        .map(Predicate::Trait)),
-                    ClauseKind::RegionOutlives(p) => {
-                        let r0 = self.translate_region(span, erase_regions, &p.lhs)?;
-                        let r1 = self.translate_region(span, erase_regions, &p.rhs)?;
-                        Ok(Some(Predicate::RegionOutlives(OutlivesPred(r0, r1))))
-                    }
-                    ClauseKind::TypeOutlives(p) => {
-                        let ty = self.translate_ty(span, erase_regions, &p.lhs)?;
-                        let r = self.translate_region(span, erase_regions, &p.rhs)?;
-                        Ok(Some(Predicate::TypeOutlives(OutlivesPred(ty, r))))
-                    }
-                    ClauseKind::Projection(p) => {
-                        // This is used to express constraints over associated types.
-                        // For instance:
-                        // ```
-                        // T : Foo<S = String>
-                        //         ^^^^^^^^^^
-                        // ```
-                        let hax::ProjectionPredicate {
-                            impl_expr,
-                            assoc_item,
-                            ty,
-                        } = p;
+        let binder = pred.kind.rebind(());
+        self.with_locally_bound_regions_group(span, binder, move |ctx| {
+            let pred_kind = pred.kind.hax_skip_binder_ref();
+            use hax::{ClauseKind, PredicateKind};
+            match pred_kind {
+                PredicateKind::Clause(kind) => {
+                    // We're under the binder of `hax::Predicate`, we re-wrap that binder here
+                    // except in the clause case where this is done already.
+                    let regions = ctx.region_vars[0].clone();
+                    match kind {
+                        ClauseKind::Trait(trait_pred) => {
+                            ctx.register_trait_clause(hspan, trait_pred, origin, location)?;
+                        }
+                        ClauseKind::RegionOutlives(p) => {
+                            // TODO: we're under a binder, we should re-bind
+                            let r0 = ctx.translate_region(span, erase_regions, &p.lhs)?;
+                            let r1 = ctx.translate_region(span, erase_regions, &p.rhs)?;
+                            ctx.generic_params.regions_outlive.push(RegionBinder {
+                                regions,
+                                skip_binder: OutlivesPred(r0, r1),
+                            });
+                        }
+                        ClauseKind::TypeOutlives(p) => {
+                            let ty = ctx.translate_ty(span, erase_regions, &p.lhs)?;
+                            let r = ctx.translate_region(span, erase_regions, &p.rhs)?;
+                            ctx.generic_params.types_outlive.push(RegionBinder {
+                                regions,
+                                skip_binder: OutlivesPred(ty, r),
+                            });
+                        }
+                        ClauseKind::Projection(p) => {
+                            // TODO: we're under a binder, we should re-bind
+                            // This is used to express constraints over associated types.
+                            // For instance:
+                            // ```
+                            // T : Foo<S = String>
+                            //         ^^^^^^^^^^
+                            // ```
+                            let hax::ProjectionPredicate {
+                                impl_expr,
+                                assoc_item,
+                                ty,
+                            } = p;
 
-                        let trait_ref =
-                            self.translate_trait_impl_expr(span, erase_regions, impl_expr)?;
-                        // The trait ref should be Some(...): the marker traits (that
-                        // we may filter) don't have associated types.
-                        let trait_ref = trait_ref.unwrap();
-                        let ty = self.translate_ty(span, erase_regions, ty).unwrap();
-                        let type_name = TraitItemName(assoc_item.name.clone().into());
-                        Ok(Some(Predicate::TraitType(TraitTypeConstraint {
-                            trait_ref,
-                            type_name,
-                            ty,
-                        })))
-                    }
-                    ClauseKind::ConstArgHasType(..) => {
-                        // I don't really understand that one. Why don't they put
-                        // the type information in the const generic parameters
-                        // directly? For now we just ignore it.
-                        Ok(None)
-                    }
-                    ClauseKind::WellFormed(_) | ClauseKind::ConstEvaluatable(_) => {
-                        error_or_panic!(self, span, format!("Unsupported clause: {:?}", kind))
+                            let trait_ref =
+                                ctx.translate_trait_impl_expr(span, erase_regions, impl_expr)?;
+                            // The trait ref should be Some(...): the marker traits (that
+                            // we may filter) don't have associated types.
+                            let trait_ref = trait_ref.unwrap();
+                            let ty = ctx.translate_ty(span, erase_regions, ty).unwrap();
+                            let type_name = TraitItemName(assoc_item.name.clone().into());
+                            ctx.generic_params
+                                .trait_type_constraints
+                                .push(RegionBinder {
+                                    regions,
+                                    skip_binder: TraitTypeConstraint {
+                                        trait_ref,
+                                        type_name,
+                                        ty,
+                                    },
+                                });
+                        }
+                        ClauseKind::ConstArgHasType(..) => {
+                            // I don't really understand that one. Why don't they put
+                            // the type information in the const generic parameters
+                            // directly? For now we just ignore it.
+                        }
+                        ClauseKind::WellFormed(_) | ClauseKind::ConstEvaluatable(_) => {
+                            error_or_panic!(ctx, span, format!("Unsupported clause: {:?}", kind))
+                        }
                     }
                 }
+                PredicateKind::AliasRelate(..)
+                | PredicateKind::Ambiguous
+                | PredicateKind::Coerce(_)
+                | PredicateKind::ConstEquate(_, _)
+                | PredicateKind::ObjectSafe(_)
+                | PredicateKind::NormalizesTo(_)
+                | PredicateKind::Subtype(_) => {
+                    error_or_panic!(ctx, span, format!("Unsupported predicate: {:?}", pred_kind))
+                }
             }
-            PredicateKind::AliasRelate(..)
-            | PredicateKind::Ambiguous
-            | PredicateKind::Coerce(_)
-            | PredicateKind::ConstEquate(_, _)
-            | PredicateKind::ObjectSafe(_)
-            | PredicateKind::NormalizesTo(_)
-            | PredicateKind::Subtype(_) => error_or_panic!(
-                self,
-                span,
-                format!("Unsupported predicate: {:?}", pred_kind)
-            ),
-        }
+            Ok(())
+        })?;
+        Ok(())
     }
 
     pub(crate) fn translate_trait_impl_exprs(
@@ -421,7 +324,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         span: rustc_span::Span,
         erase_regions: bool,
         impl_source: &hax::ImplExpr,
-        trait_decl_ref: TraitDeclRef,
+        trait_decl_ref: PolyTraitDeclRef,
     ) -> Result<Option<TraitRef>, Error> {
         // TODO: in the body of this function:
         trace!("impl_source: {:?}", impl_source);
@@ -452,9 +355,9 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 path,
             }
             | ImplExprAtom::LocalBound {
-                predicate_id: _,
                 r#trait: trait_ref,
                 path,
+                ..
             } => {
                 assert!(nested.is_empty());
                 trace!(
@@ -462,19 +365,18 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                     trait_ref,
                     path,
                 );
-                assert!(trait_ref.bound_vars.is_empty());
-                let trait_ref = &trait_ref.value;
-
                 // If we are refering to a trait clause, we need to find the
                 // relevant one.
                 let mut trait_id = match &impl_source.r#impl {
                     ImplExprAtom::SelfImpl { .. } => TraitRefKind::SelfId,
-                    ImplExprAtom::LocalBound { .. } => self.find_trait_clause_for_param(trait_ref),
+                    ImplExprAtom::LocalBound { index, .. } => {
+                        TraitRefKind::Clause(TraitClauseId::from_usize(*index))
+                    }
                     _ => unreachable!(),
                 };
 
                 let mut current_trait_decl_id =
-                    self.register_trait_decl_id(span, &trait_ref.def_id);
+                    self.register_trait_decl_id(span, &trait_ref.hax_skip_binder_ref().def_id);
 
                 // Apply the path
                 for path_elem in path {
@@ -492,8 +394,10 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                                 TraitItemName(item.name.clone()),
                                 TraitClauseId::new(*index),
                             );
-                            current_trait_decl_id = self
-                                .register_trait_decl_id(span, &predicate.value.trait_ref.def_id);
+                            current_trait_decl_id = self.register_trait_decl_id(
+                                span,
+                                &predicate.hax_skip_binder_ref().trait_ref.def_id,
+                            );
                         }
                         Parent {
                             predicate,
@@ -505,8 +409,10 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                                 current_trait_decl_id,
                                 TraitClauseId::new(*index),
                             );
-                            current_trait_decl_id = self
-                                .register_trait_decl_id(span, &predicate.value.trait_ref.def_id);
+                            current_trait_decl_id = self.register_trait_decl_id(
+                                span,
+                                &predicate.hax_skip_binder_ref().trait_ref.def_id,
+                            );
                         }
                     }
                 }
@@ -527,48 +433,20 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 trait_decl_ref,
             },
             ImplExprAtom::Error(msg) => {
-                let error = format!("Error during trait resolution: {}", msg);
-                self.span_err(span, &error);
-                if !self.t_ctx.continue_on_failure() {
-                    panic!("{}", error)
-                } else {
-                    TraitRef {
-                        kind: TraitRefKind::Unknown(msg.clone()),
-                        trait_decl_ref,
+                let trait_ref = TraitRef {
+                    kind: TraitRefKind::Unknown(msg.clone()),
+                    trait_decl_ref,
+                };
+                if self.error_on_impl_expr_error {
+                    let error = format!("Error during trait resolution: {}", msg);
+                    self.span_err(span, &error);
+                    if !self.t_ctx.continue_on_failure() {
+                        panic!("{}", error)
                     }
                 }
+                trait_ref
             }
         };
         Ok(Some(trait_ref))
-    }
-
-    /// Find the trait instance fullfilling a trait obligation.
-    /// TODO: having to do this is very annoying. Isn't there a better way?
-    #[tracing::instrument(skip(self))]
-    pub(crate) fn find_trait_clause_for_param(
-        &mut self,
-        hax_trait_ref: &hax::TraitRef,
-    ) -> TraitRefKind {
-        trace!(
-            "Inside context of: {:?}\nSpan: {:?}",
-            self.def_id,
-            self.t_ctx.tcx.def_ident_span(self.def_id)
-        );
-
-        // Simply explore the trait clauses
-        let def_id = DefId::from(&hax_trait_ref.def_id);
-        if let Some(clauses_for_this_trait) =
-            self.trait_clauses_map.get(&OrdRustId::TraitDecl(def_id))
-        {
-            for trait_clause in clauses_for_this_trait {
-                if trait_clause.matches(hax_trait_ref) {
-                    return trait_clause.trait_ref_kind.clone();
-                }
-            }
-        };
-
-        // Try solving it again later, when more clauses are registered.
-        let id = self.unsolved_traits.push(hax_trait_ref.clone());
-        TraitRefKind::Unsolved(id)
     }
 }

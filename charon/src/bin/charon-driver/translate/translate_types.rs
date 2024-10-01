@@ -77,7 +77,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                         .get(*id)
                         .expect("Error: missing binder when translating lifetime")
                         .get(br.var)
-                        .unwrap();
+                        .expect("Error: lifetime not found, binders were handled incorrectly");
                     let br_id = DeBruijnId::new(*id);
                     Ok(Region::BVar(br_id, *rid))
                 }
@@ -325,36 +325,9 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 trace!("Arrow");
                 trace!("bound vars: {:?}", sig.bound_vars);
 
-                // Translate the generics parameters.
-                // Note that there can only be bound regions.
-                let bound_region_names: Vec<Option<String>> = sig
-                    .bound_vars
-                    .iter()
-                    .map(|p| {
-                        use hax::BoundVariableKind::*;
-                        match p {
-                            Region(region) => Ok(translate_bound_region_kind_name(region)),
-                            Ty(_) => {
-                                error_or_panic!(
-                                    self,
-                                    span,
-                                    "Unexpected locally bound type variable"
-                                );
-                            }
-                            Const => {
-                                error_or_panic!(
-                                    self,
-                                    span,
-                                    "Unexpected locally bound const generic variable"
-                                );
-                            }
-                        }
-                    })
-                    .try_collect()?;
-
-                // Push the ground region group
                 let erase_regions = false;
-                self.with_locally_bound_regions_group(bound_region_names, move |ctx| {
+                let binder = sig.rebind(());
+                self.with_locally_bound_regions_group(span, binder, move |ctx| {
                     let regions = ctx.region_vars[0].clone();
                     let inputs = sig
                         .value
@@ -673,7 +646,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 | FullDefKind::Trait { self_predicate, .. } => {
                     self.register_trait_decl_id(span, &self_predicate.trait_ref.def_id);
                     let hax_span = span.sinto(&self.t_ctx.hax_state);
-                    self.translate_self_trait_clause(&hax_span, &self_predicate)?;
+                    let _ = self.translate_trait_predicate(&hax_span, self_predicate)?;
                 }
                 _ => {}
             }
@@ -699,15 +672,15 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 // TODO: distinguish trait where clauses from trait supertraits. Currently we
                 // consider them all as parent clauses.
                 FullDefKind::Trait { .. } => {
-                    let trait_id = self.register_trait_decl_id(span, &def.def_id);
+                    let _ = self.register_trait_decl_id(span, &def.def_id);
                     (
                         PredicateOrigin::WhereClauseOnTrait,
-                        PredicateLocation::Parent(trait_id),
+                        PredicateLocation::Parent,
                     )
                 }
                 _ => panic!("Unexpected def: {def:?}"),
             };
-            self.translate_predicates(predicates, origin, &location)?;
+            self.register_predicates(predicates, origin, &location)?;
         }
         Ok(())
     }
@@ -782,6 +755,8 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
             _ if item_meta.opacity.is_opaque() => Ok(TypeDeclKind::Opaque),
             hax::FullDefKind::OpaqueTy | hax::FullDefKind::ForeignTy => Ok(TypeDeclKind::Opaque),
             hax::FullDefKind::TyAlias { ty, .. } => {
+                // Don't error on missing trait refs.
+                bt_ctx.error_on_impl_expr_error = false;
                 // We only translate crate-local type aliases so the `unwrap` is ok.
                 let ty = ty.as_ref().unwrap();
                 bt_ctx

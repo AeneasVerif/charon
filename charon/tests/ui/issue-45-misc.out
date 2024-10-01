@@ -913,21 +913,21 @@ where
     [@TraitClause6]: core::default::Default<FromB>,
     [@TraitClause7]: core::iter::traits::collect::Extend<FromB, B>,
     [@TraitClause9]: core::iter::traits::iterator::Iterator<Self>,
-    Self::Item = (A, B),
+    @TraitClause9::Item = (A, B),
 
 fn core::iter::traits::iterator::Iterator::copied<'a, Self, T>(@1: Self) -> core::iter::adapters::copied::Copied<Self>
 where
     [@TraitClause2]: core::iter::traits::iterator::Iterator<Self>,
     [@TraitClause3]: core::marker::Copy<T>,
     T : 'a,
-    Self::Item = &'a (T),
+    @TraitClause2::Item = &'a (T),
 
 fn core::iter::traits::iterator::Iterator::cloned<'a, Self, T>(@1: Self) -> core::iter::adapters::cloned::Cloned<Self>
 where
     [@TraitClause2]: core::iter::traits::iterator::Iterator<Self>,
     [@TraitClause3]: core::clone::Clone<T>,
     T : 'a,
-    Self::Item = &'a (T),
+    @TraitClause2::Item = &'a (T),
 
 fn core::iter::traits::iterator::Iterator::cycle<Self>(@1: Self) -> core::iter::adapters::cycle::Cycle<Self>
 where

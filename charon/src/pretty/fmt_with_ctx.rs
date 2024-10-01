@@ -415,18 +415,12 @@ impl GenericParams {
         C: AstFormatter,
     {
         let trait_clauses = self.trait_clauses.iter().map(|x| x.fmt_with_ctx(ctx));
-        let types_outlive = self
-            .types_outlive
-            .iter()
-            .map(|OutlivesPred(x, y)| format!("{} : {}", x.fmt_with_ctx(ctx), y.fmt_with_ctx(ctx)));
-        let regions_outlive = self
-            .regions_outlive
-            .iter()
-            .map(|OutlivesPred(x, y)| format!("{} : {}", x.fmt_with_ctx(ctx), y.fmt_with_ctx(ctx)));
+        let types_outlive = self.types_outlive.iter().map(|pred| pred.fmt_as_for(ctx));
+        let regions_outlive = self.regions_outlive.iter().map(|pred| pred.fmt_as_for(ctx));
         let type_constraints = self
             .trait_type_constraints
             .iter()
-            .map(|x| x.fmt_with_ctx(ctx));
+            .map(|pred| pred.fmt_as_for(ctx));
         trait_clauses
             .chain(types_outlive)
             .chain(regions_outlive)
@@ -720,6 +714,20 @@ impl<C: AstFormatter> FmtWithCtx<C> for Operand {
     }
 }
 
+impl<C: AstFormatter, T, U> FmtWithCtx<C> for OutlivesPred<T, U>
+where
+    T: FmtWithCtx<C>,
+    U: FmtWithCtx<C>,
+{
+    fn fmt_with_ctx(&self, ctx: &C) -> String {
+        format!(
+            "{} : {}",
+            self.0.fmt_with_ctx(ctx),
+            self.1.fmt_with_ctx(ctx)
+        )
+    }
+}
+
 impl<C: AstFormatter> FmtWithCtx<C> for PathElem {
     fn fmt_with_ctx(&self, ctx: &C) -> String {
         match self {
@@ -810,6 +818,12 @@ impl<C: AstFormatter> FmtWithCtx<C> for Place {
     }
 }
 
+impl<C: AstFormatter> FmtWithCtx<C> for PolyTraitDeclRef {
+    fn fmt_with_ctx(&self, ctx: &C) -> String {
+        self.fmt_as_for(ctx)
+    }
+}
+
 impl<C: AstFormatter> FmtWithCtx<C> for RawConstantExpr {
     fn fmt_with_ctx(&self, ctx: &C) -> String {
         match self {
@@ -851,6 +865,36 @@ impl<C: AstFormatter> FmtWithCtx<C> for Region {
             Region::Erased => "'_".to_string(),
             Region::Unknown => "'_UNKNOWN_".to_string(),
         }
+    }
+}
+
+impl<T> RegionBinder<T> {
+    /// Format the parameters and contents of this binder and returns the resulting strings.
+    fn fmt_split<'a, C>(&'a self, ctx: &'a C) -> (String, String)
+    where
+        C: AstFormatter,
+        T: FmtWithCtx<<C as PushBoundRegions<'a>>::C>,
+    {
+        let ctx = &ctx.push_bound_regions(&self.regions);
+        (
+            self.regions.iter().map(|r| ctx.format_object(r)).join(", "),
+            self.skip_binder.fmt_with_ctx(ctx),
+        )
+    }
+
+    /// Formats the binder as `for<params> value`.
+    fn fmt_as_for<'a, C>(&'a self, ctx: &'a C) -> String
+    where
+        C: AstFormatter,
+        T: FmtWithCtx<<C as PushBoundRegions<'a>>::C>,
+    {
+        let (regions, value) = self.fmt_split(ctx);
+        let regions = if regions.is_empty() {
+            "".to_string()
+        } else {
+            format!("for<{regions}> ",)
+        };
+        format!("{regions}{value}",)
     }
 }
 
@@ -1309,7 +1353,6 @@ impl<C: AstFormatter> FmtWithCtx<C> for TraitRefKind {
             }
             TraitRefKind::Clause(id) => ctx.format_object(*id),
             TraitRefKind::BuiltinOrAuto(tr) | TraitRefKind::Dyn(tr) => tr.fmt_with_ctx(ctx),
-            TraitRefKind::Unsolved(tref) => format!("Unsolved({tref:?})"),
             TraitRefKind::Unknown(msg) => format!("UNKNOWN({msg})"),
         }
     }

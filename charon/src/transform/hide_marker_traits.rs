@@ -26,7 +26,7 @@ impl Visitor {
         let trait_clauses = &mut args.trait_clauses;
         for i in 0..trait_clauses.len() {
             let clause = &trait_clauses[i];
-            if self.exclude.contains(&clause.trait_.trait_id) {
+            if self.exclude.contains(&clause.trait_.skip_binder.trait_id) {
                 trait_clauses.remove(<_ as Idx>::from_usize(i));
             }
         }
@@ -35,7 +35,10 @@ impl Visitor {
         let trait_refs = &mut args.trait_refs;
         for i in 0..trait_refs.len() {
             let tref = &trait_refs[i];
-            if self.exclude.contains(&tref.trait_decl_ref.trait_id) {
+            if self
+                .exclude
+                .contains(&tref.trait_decl_ref.skip_binder.trait_id)
+            {
                 trait_refs.remove(<_ as Idx>::from_usize(i));
             }
         }
@@ -44,7 +47,7 @@ impl Visitor {
         let trait_clauses = &mut tdecl.parent_clauses;
         for i in 0..trait_clauses.len() {
             let clause = &trait_clauses[i];
-            if self.exclude.contains(&clause.trait_.trait_id) {
+            if self.exclude.contains(&clause.trait_.skip_binder.trait_id) {
                 trait_clauses.remove(<_ as Idx>::from_usize(i));
             }
         }
@@ -53,7 +56,10 @@ impl Visitor {
         let trait_refs = &mut timpl.parent_trait_refs;
         for i in 0..trait_refs.len() {
             let tref = &trait_refs[i];
-            if self.exclude.contains(&tref.trait_decl_ref.trait_id) {
+            if self
+                .exclude
+                .contains(&tref.trait_decl_ref.skip_binder.trait_id)
+            {
                 trait_refs.remove(<_ as Idx>::from_usize(i));
             }
         }

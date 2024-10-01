@@ -770,10 +770,6 @@ and global_decl_id_of_json (js : json) : (global_decl_id, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with x -> GlobalDeclId.id_of_json x | _ -> Error "")
 
-and unsolved_trait_id_of_json (js : json) : (unsolved_trait_id, string) result =
-  combine_error_msgs js __FUNCTION__
-    (match js with x -> UnsolvedTraitId.id_of_json x | _ -> Error "")
-
 and type_var_of_json (js : json) : (type_var, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
@@ -830,10 +826,12 @@ and trait_instance_id_of_json (js : json) : (trait_instance_id, string) result =
         Ok (ParentClause (x_0, x_1, x_2))
     | `String "SelfId" -> Ok Self
     | `Assoc [ ("BuiltinOrAuto", builtin_or_auto) ] ->
-        let* builtin_or_auto = trait_decl_ref_of_json builtin_or_auto in
+        let* builtin_or_auto =
+          region_binder_of_json trait_decl_ref_of_json builtin_or_auto
+        in
         Ok (BuiltinOrAuto builtin_or_auto)
     | `Assoc [ ("Dyn", dyn) ] ->
-        let* dyn = trait_decl_ref_of_json dyn in
+        let* dyn = region_binder_of_json trait_decl_ref_of_json dyn in
         Ok (Dyn dyn)
     | `Assoc [ ("Unknown", unknown) ] ->
         let* unknown = string_of_json unknown in
@@ -845,7 +843,9 @@ and trait_ref_of_json (js : json) : (trait_ref, string) result =
     (match js with
     | `Assoc [ ("kind", kind); ("trait_decl_ref", trait_decl_ref) ] ->
         let* trait_id = trait_instance_id_of_json kind in
-        let* trait_decl_ref = trait_decl_ref_of_json trait_decl_ref in
+        let* trait_decl_ref =
+          region_binder_of_json trait_decl_ref_of_json trait_decl_ref
+        in
         Ok ({ trait_id; trait_decl_ref } : trait_ref)
     | _ -> Error "")
 
@@ -909,6 +909,22 @@ and generic_args_of_json (js : json) : (generic_args, string) result =
         Ok ({ regions; types; const_generics; trait_refs } : generic_args)
     | _ -> Error "")
 
+and region_binder_of_json :
+      'a0.
+      (json -> ('a0, string) result) ->
+      json ->
+      ('a0 region_binder, string) result =
+ fun arg0_of_json js ->
+  combine_error_msgs js __FUNCTION__
+    (match js with
+    | `Assoc [ ("regions", regions); ("skip_binder", skip_binder) ] ->
+        let* binder_regions =
+          vector_of_json region_id_of_json region_var_of_json regions
+        in
+        let* binder_value = arg0_of_json skip_binder in
+        Ok ({ binder_regions; binder_value } : _ region_binder)
+    | _ -> Error "")
+
 and generic_params_of_json (id_to_file : id_to_file_map) (js : json) :
     (generic_params, string) result =
   combine_error_msgs js __FUNCTION__
@@ -940,16 +956,20 @@ and generic_params_of_json (id_to_file : id_to_file_map) (js : json) :
         in
         let* regions_outlive =
           list_of_json
-            (outlives_pred_of_json region_of_json region_of_json)
+            (region_binder_of_json
+               (outlives_pred_of_json region_of_json region_of_json))
             regions_outlive
         in
         let* types_outlive =
           list_of_json
-            (outlives_pred_of_json ty_of_json region_of_json)
+            (region_binder_of_json
+               (outlives_pred_of_json ty_of_json region_of_json))
             types_outlive
         in
         let* trait_type_constraints =
-          list_of_json trait_type_constraint_of_json trait_type_constraints
+          list_of_json
+            (region_binder_of_json trait_type_constraint_of_json)
+            trait_type_constraints
         in
         Ok
           ({
@@ -994,7 +1014,7 @@ and trait_clause_of_json (id_to_file : id_to_file_map) (js : json) :
         ] ->
         let* clause_id = trait_clause_id_of_json clause_id in
         let* span = option_of_json (span_of_json id_to_file) span in
-        let* trait = trait_decl_ref_of_json trait in
+        let* trait = region_binder_of_json trait_decl_ref_of_json trait in
         Ok ({ clause_id; span; trait } : trait_clause)
     | _ -> Error "")
 

@@ -1,5 +1,3 @@
-//@ known-failure
-
 pub struct S<'a, K> {
     x: &'a K,
 }

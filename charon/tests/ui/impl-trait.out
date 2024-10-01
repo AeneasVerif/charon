@@ -1,0 +1,17 @@
+error: Unimplemented: Alias(Alias { kind: Opaque, args: [Type(Param(ParamTy { index: 0, name: "U" }))], def_id: test_crate::wrap::{opaque#0} })
+ --> tests/ui/impl-trait.rs:4:1
+  |
+4 | / pub fn wrap<U>() -> impl for<'a> FnOnce(&'a U) -> WrapClone<&'a U> {
+5 | |     |x| WrapClone(x)
+6 | | }
+  | |_^
+
+error: Ignoring the following item due to an error: test_crate::wrap
+ --> tests/ui/impl-trait.rs:4:1
+  |
+4 | pub fn wrap<U>() -> impl for<'a> FnOnce(&'a U) -> WrapClone<&'a U> {
+  | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error: aborting due to 2 previous errors
+
+Error: Charon driver exited with code 101

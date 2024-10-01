@@ -64,6 +64,14 @@ let option_some_id = VariantId.of_int 1
 
 (* __REPLACE1__ *)
 
+(** Region variable. *)
+type region_var = (region_var_id, string option) indexed_var
+[@@deriving show, ord]
+
+(** A value of type `'a` bound by generic parameters. *)
+type 'a region_binder = { binder_regions : region_var list; binder_value : 'a }
+[@@deriving show, ord]
+
 (** Ancestor for iter visitor for {!type: Types.ty} *)
 class ['self] iter_ty_base_base =
   object (self : 'self)
@@ -89,9 +97,21 @@ class ['self] iter_ty_base_base =
           ('l, 'r) outlives_pred ->
           unit =
       fun visit_left visit_right env x ->
-        let (left, right) = x in
+        let left, right = x in
         visit_left env left;
         visit_right env right
+
+    method visit_region_var env (x : region_var) =
+      self#visit_indexed_var self#visit_region_var_id
+        (self#visit_option self#visit_string)
+        env x
+
+    method visit_region_binder
+        : 'a. ('env -> 'a -> unit) -> 'env -> 'a region_binder -> unit =
+      fun visit_binder_value env x ->
+        let { binder_regions; binder_value } = x in
+        self#visit_list self#visit_region_var env binder_regions;
+        visit_binder_value env binder_value
   end
 
 (** Ancestor for map visitor for {!type: Types.ty} *)
@@ -120,10 +140,24 @@ class virtual ['self] map_ty_base_base =
           ('l, 'r) outlives_pred ->
           ('l, 'r) outlives_pred =
       fun visit_left visit_right env x ->
-        let (left, right) = x in
+        let left, right = x in
         let left = visit_left env left in
         let right = visit_right env right in
         (left, right)
+
+    method visit_region_var env (x : region_var) =
+      self#visit_indexed_var self#visit_region_var_id
+        (self#visit_option self#visit_string)
+        env x
+
+    method visit_region_binder
+        : 'a. ('env -> 'a -> 'a) -> 'env -> 'a region_binder -> 'a region_binder
+        =
+      fun visit_binder_value env x ->
+        let { binder_regions; binder_value } = x in
+        let binder_regions = self#visit_list self#visit_region_var env binder_regions in
+        let binder_value = visit_binder_value env binder_value in
+        { binder_regions; binder_value }
   end
 
 (* __REPLACE2__ *)

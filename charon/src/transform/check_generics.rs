@@ -111,7 +111,6 @@ impl CheckGenericsVisitor<'_, '_> {
             | TraitRefKind::ParentClause(..)
             | TraitRefKind::ItemClause(..)
             | TraitRefKind::SelfId
-            | TraitRefKind::Unsolved(_)
             | TraitRefKind::Unknown(_) => {}
         }
     }

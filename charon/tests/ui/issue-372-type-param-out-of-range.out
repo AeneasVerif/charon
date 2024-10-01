@@ -1,64 +1,72 @@
-thread 'rustc' panicked at src/bin/charon-driver/translate/translate_types.rs:78:26:
-Error: missing binder when translating lifetime
-note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
-error: Thread panicked when extracting item `test_crate::{impl#0}::f`.
-  --> tests/ui/issue-372-type-param-out-of-range.rs:8:5
-   |
-8  | /     pub fn f<F>()
-9  | |     where
-10 | |         F: FnMut(&u32),
-   | |_______________________^
+# Final LLBC before serialization:
 
-error: Ignoring the following item due to an error: test_crate::{impl#0}::f
-  --> tests/ui/issue-372-type-param-out-of-range.rs:8:5
-   |
-8  | /     pub fn f<F>()
-9  | |     where
-10 | |         F: FnMut(&u32),
-   | |_______________________^
+struct test_crate::S<'a, K>
+  where
+      K : 'a,
+ =
+{
+  x: &'a (K),
+}
 
-disabled backtrace
-warning[E9999]: Could not find a clause for `Binder { value: <F as std::ops::FnOnce<(&'b u32,)>>, bound_vars: [Region(BrNamed(test_crate::{impl#0}::g::'b, 'b))] }` in the item parameters
-  |
-  = note: ⚠️ This is a bug in Hax's frontend.
-          Please report this error to https://github.com/hacspec/hax/issues with some context (e.g. the current crate)!
+trait core::ops::function::FnOnce<Self, Args>
+{
+    type Output
+    fn call_once : core::ops::function::FnOnce::call_once
+}
 
-thread 'rustc' panicked at src/bin/charon-driver/translate/translate_types.rs:78:26:
-Error: missing binder when translating lifetime
-error: Thread panicked when extracting item `test_crate::{impl#0}::g`.
-  --> tests/ui/issue-372-type-param-out-of-range.rs:14:5
-   |
-14 | /     pub fn g<F>()
-15 | |     where
-16 | |         for<'b> F: FnMut(&'b u32),
-   | |__________________________________^
+trait core::ops::function::FnMut<Self, Args>
+{
+    parent_clause_0 : [@TraitClause0]: core::ops::function::FnOnce<Self, Args>
+    fn call_mut : core::ops::function::FnMut::call_mut
+}
 
-error: Ignoring the following item due to an error: test_crate::{impl#0}::g
-  --> tests/ui/issue-372-type-param-out-of-range.rs:14:5
-   |
-14 | /     pub fn g<F>()
-15 | |     where
-16 | |         for<'b> F: FnMut(&'b u32),
-   | |__________________________________^
+fn test_crate::{test_crate::S<'a, K>}::f<'a, K, F>()
+where
+    [@TraitClause2]: for<'_1_0> core::ops::function::FnMut<F, (&'_1_0 (u32))>,
+    for<'_1_0> (parents(@TraitClause2)::[@TraitClause0])::Output = (),
+{
+    let @0: (); // return
+    let @1: (); // anonymous local
 
-thread 'rustc' panicked at src/bin/charon-driver/translate/translate_types.rs:78:26:
-Error: missing binder when translating lifetime
-error: Thread panicked when extracting item `test_crate::{impl#1}::f`.
-  --> tests/ui/issue-372-type-param-out-of-range.rs:24:5
-   |
-24 | /     pub fn f<F>()
-25 | |     where
-26 | |         F: FnMut(&u32),
-   | |_______________________^
+    @1 := ()
+    @0 := move (@1)
+    @0 := ()
+    return
+}
 
-error: Ignoring the following item due to an error: test_crate::{impl#1}::f
-  --> tests/ui/issue-372-type-param-out-of-range.rs:24:5
-   |
-24 | /     pub fn f<F>()
-25 | |     where
-26 | |         F: FnMut(&u32),
-   | |_______________________^
+fn test_crate::{test_crate::S<'a, K>}::g<'a, K, F>()
+where
+    [@TraitClause2]: for<'_1_0> core::ops::function::FnMut<F, (&'_1_0 (u32))>,
+    for<'b> (parents(@TraitClause2)::[@TraitClause0])::Output = (),
+{
+    let @0: (); // return
+    let @1: (); // anonymous local
 
-error: aborting due to 6 previous errors; 1 warning emitted
+    @1 := ()
+    @0 := move (@1)
+    @0 := ()
+    return
+}
 
-Error: Charon driver exited with code 101
+struct test_crate::T = {}
+
+fn test_crate::{test_crate::T}#1::f<F>()
+where
+    [@TraitClause1]: for<'_1_0> core::ops::function::FnMut<F, (&'_1_0 (u32))>,
+    for<'_1_0> (parents(@TraitClause1)::[@TraitClause0])::Output = (),
+{
+    let @0: (); // return
+    let @1: (); // anonymous local
+
+    @1 := ()
+    @0 := move (@1)
+    @0 := ()
+    return
+}
+
+fn core::ops::function::FnMut::call_mut<'_0, Self, Args>(@1: &'_0 mut (Self), @2: Args) -> (parents(Self)::[@TraitClause0])::Output
+
+fn core::ops::function::FnOnce::call_once<Self, Args>(@1: Self, @2: Args) -> Self::Output
+
+
+
