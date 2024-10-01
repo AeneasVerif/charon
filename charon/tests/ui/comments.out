@@ -1,5 +1,17 @@
 # Final LLBC before serialization:
 
+fn test_crate::function_call(@1: u32)
+{
+    let @0: (); // return
+    let @1: u32; // arg #1
+    let @2: (); // anonymous local
+
+    @2 := ()
+    @0 := move (@2)
+    @0 := ()
+    return
+}
+
 fn core::slice::{Slice<T>}::len<'_0, T>(@1: &'_0 (Slice<T>)) -> usize
 
 fn test_crate::sum<'_0>(@1: &'_0 (Slice<u32>)) -> u32
@@ -9,87 +21,394 @@ fn test_crate::sum<'_0>(@1: &'_0 (Slice<u32>)) -> u32
     let sum@2: u32; // local
     let i@3: usize; // local
     let @4: (); // anonymous local
-    let @5: (); // anonymous local
-    let @6: bool; // anonymous local
-    let @7: usize; // anonymous local
-    let @8: usize; // anonymous local
-    let @9: &'_ (Slice<u32>); // anonymous local
-    let @10: u32; // anonymous local
+    let @5: u32; // anonymous local
+    let @6: u32; // anonymous local
+    let @7: (); // anonymous local
+    let @8: (); // anonymous local
+    let @9: bool; // anonymous local
+    let @10: usize; // anonymous local
     let @11: usize; // anonymous local
-    let @12: (); // anonymous local
+    let @12: &'_ (Slice<u32>); // anonymous local
     let @13: u32; // anonymous local
-    let @14: bool; // anonymous local
-    let @15: u32; // anonymous local
+    let @14: usize; // anonymous local
+    let @15: (); // anonymous local
     let @16: u32; // anonymous local
-    let @17: (); // anonymous local
-    let @18: (); // anonymous local
-    let @19: &'_ (Slice<u32>); // anonymous local
-    let @20: &'_ (u32); // anonymous local
+    let @17: bool; // anonymous local
+    let @18: u32; // anonymous local
+    let @19: u32; // anonymous local
+    let @20: (); // anonymous local
+    let @21: u32; // anonymous local
+    let @22: u32; // anonymous local
+    let @23: (); // anonymous local
+    let @24: (); // anonymous local
+    let @25: &'_ (Slice<u32>); // anonymous local
+    let @26: &'_ (u32); // anonymous local
 
-    // Comment1
+    // `let sum`
     sum@2 := const (0 : u32)
     @fake_read(sum@2)
-    // Comment2
+    // `let i`
+    // indented sub-comment
+    // unindented sub-comment
     i@3 := const (0 : usize)
     @fake_read(i@3)
-    // Comment3
+    // Function call
+    @6 := copy (sum@2)
+    @5 := move (@6) + const (2 : u32)
+    drop @6
+    @4 := test_crate::function_call(move (@5))
+    drop @5
+    drop @4
+    // Start of loop
     loop {
-        @7 := copy (i@3)
-        @9 := &*(s@1)
-        @8 := core::slice::{Slice<T>}::len<u32>(move (@9))
-        drop @9
-        @6 := move (@7) < move (@8)
-        if move (@6) {
-            drop @8
-            drop @7
-            // Comment4
-            @11 := copy (i@3)
-            @19 := &*(s@1)
-            @20 := @SliceIndexShared<'_, u32>(move (@19), copy (@11))
-            @10 := copy (*(@20))
-            sum@2 := copy (sum@2) + move (@10)
-            drop @10
+        @10 := copy (i@3)
+        @12 := &*(s@1)
+        @11 := core::slice::{Slice<T>}::len<u32>(move (@12))
+        drop @12
+        @9 := move (@10) < move (@11)
+        if move (@9) {
             drop @11
-            // Comment5
+            drop @10
+            // Add to running sum
+            @14 := copy (i@3)
+            @25 := &*(s@1)
+            @26 := @SliceIndexShared<'_, u32>(move (@25), copy (@14))
+            @13 := copy (*(@26))
+            sum@2 := copy (sum@2) + move (@13)
+            drop @13
+            drop @14
+            // Increment `i`
             i@3 := copy (i@3) + const (1 : usize)
-            @17 := ()
-            @5 := move (@17)
-            drop @6
+            @23 := ()
+            @8 := move (@23)
+            // Before end of loop
+            drop @9
             continue 0
         }
         else {
             break 0
         }
     }
-    drop @8
+    drop @11
+    drop @10
+    @24 := ()
+    @7 := move (@24)
+    drop @15
+    drop @9
     drop @7
-    @18 := ()
-    @4 := move (@18)
-    drop @12
-    drop @6
-    drop @4
-    // Comment6
-    @15 := copy (sum@2)
-    @14 := move (@15) > const (10 : u32)
-    if move (@14) {
-        drop @15
-        // Comment7
-        @16 := copy (sum@2)
-        @13 := move (@16) + const (100 : u32)
-        drop @16
+    // Assign the result of an `if`.
+    @18 := copy (sum@2)
+    @17 := move (@18) > const (10 : u32)
+    if move (@17) {
+        drop @18
+        // sum + 100
+        @19 := copy (sum@2)
+        @16 := move (@19) + const (100 : u32)
+        drop @19
     }
     else {
-        drop @15
-        // Comment8
-        @13 := copy (sum@2)
+        drop @18
+        // let sum untouched
+        @16 := copy (sum@2)
     }
-    drop @14
-    sum@2 := move (@13)
-    drop @13
-    // Comment9
+    drop @17
+    sum@2 := move (@16)
+    drop @16
+    // Function call
+    @22 := copy (sum@2)
+    @21 := move (@22) + const (2 : u32)
+    drop @22
+    @20 := test_crate::function_call(move (@21))
+    drop @21
+    drop @20
+    // Return final value
     @0 := copy (sum@2)
     drop i@3
     drop sum@2
+    return
+}
+
+struct test_crate::Foo =
+{
+  x: u32,
+  y: u32,
+}
+
+trait core::default::Default<Self>
+{
+    fn default : core::default::Default::default
+}
+
+fn core::default::{impl core::default::Default for u32}#7::default() -> u32
+
+impl core::default::{impl core::default::Default for u32}#7 : core::default::Default<u32>
+{
+    fn default = core::default::{impl core::default::Default for u32}#7::default
+}
+
+fn core::default::Default::default<Self>() -> Self
+
+fn test_crate::{impl core::default::Default for test_crate::Foo}::default() -> test_crate::Foo
+{
+    let @0: test_crate::Foo; // return
+    let @1: u32; // anonymous local
+    let @2: u32; // anonymous local
+
+    @1 := core::default::{impl core::default::Default for u32}#7::default()
+    @2 := core::default::{impl core::default::Default for u32}#7::default()
+    @0 := test_crate::Foo { x: move (@1), y: move (@2) }
+    drop @2
+    drop @1
+    return
+}
+
+impl test_crate::{impl core::default::Default for test_crate::Foo} : core::default::Default<test_crate::Foo>
+{
+    fn default = test_crate::{impl core::default::Default for test_crate::Foo}::default
+}
+
+struct test_crate::Bar =
+{
+  x: u32,
+  super_long_field_name: u32,
+}
+
+fn test_crate::{impl core::default::Default for test_crate::Bar}#1::default() -> test_crate::Bar
+{
+    let @0: test_crate::Bar; // return
+    let @1: u32; // anonymous local
+    let @2: u32; // anonymous local
+
+    @1 := core::default::{impl core::default::Default for u32}#7::default()
+    @2 := core::default::{impl core::default::Default for u32}#7::default()
+    @0 := test_crate::Bar { x: move (@1), super_long_field_name: move (@2) }
+    drop @2
+    drop @1
+    return
+}
+
+impl test_crate::{impl core::default::Default for test_crate::Bar}#1 : core::default::Default<test_crate::Bar>
+{
+    fn default = test_crate::{impl core::default::Default for test_crate::Bar}#1::default
+}
+
+fn test_crate::eat<T>(@1: T)
+{
+    let @0: (); // return
+    let @1: T; // arg #1
+    let @2: (); // anonymous local
+
+    @2 := ()
+    @0 := move (@2)
+    drop @1
+    @0 := ()
+    return
+}
+
+enum core::panicking::AssertKind =
+|  Eq()
+|  Ne()
+|  Match()
+
+
+enum core::option::Option<T> =
+|  None()
+|  Some(T)
+
+
+opaque type core::fmt::Arguments<'a>
+  where
+      'a : 'a,
+
+fn test_crate::foo()
+{
+    let @0: (); // return
+    let x@1: u32; // local
+    let y@2: u32; // local
+    let @3: test_crate::Foo; // anonymous local
+    let @4: (); // anonymous local
+    let @5: test_crate::Foo; // anonymous local
+    let @6: u32; // anonymous local
+    let @7: u32; // anonymous local
+    let x@8: u32; // local
+    let super_long_field_name@9: u32; // local
+    let @10: test_crate::Bar; // anonymous local
+    let @11: (); // anonymous local
+    let @12: test_crate::Bar; // anonymous local
+    let @13: u32; // anonymous local
+    let @14: u32; // anonymous local
+    let a@15: Array<u32, 10 : usize>; // local
+    let @16: (); // anonymous local
+    let @17: (&'_ (u32), &'_ (u32)); // anonymous local
+    let @18: &'_ (u32); // anonymous local
+    let @19: usize; // anonymous local
+    let @20: &'_ (u32); // anonymous local
+    let @21: u32; // anonymous local
+    let left_val@22: &'_ (u32); // local
+    let right_val@23: &'_ (u32); // local
+    let @24: bool; // anonymous local
+    let @25: u32; // anonymous local
+    let @26: u32; // anonymous local
+    let kind@27: core::panicking::AssertKind; // local
+    let @28: core::panicking::AssertKind; // anonymous local
+    let @29: &'_ (u32); // anonymous local
+    let @30: &'_ (u32); // anonymous local
+    let @31: &'_ (u32); // anonymous local
+    let @32: &'_ (u32); // anonymous local
+    let @33: core::option::Option<core::fmt::Arguments<'_>>; // anonymous local
+    let @34: (); // anonymous local
+    let @35: (); // anonymous local
+    let @36: &'_ (Array<u32, 10 : usize>); // anonymous local
+    let @37: &'_ (u32); // anonymous local
+
+    // Call `default` and destructure the result
+    @3 := test_crate::{impl core::default::Default for test_crate::Foo}::default()
+    @fake_read(@3)
+    x@1 := copy ((@3).x)
+    y@2 := copy ((@3).y)
+    drop @3
+    // Call `eat` on an aggregate value
+    @6 := copy (x@1)
+    @7 := copy (y@2)
+    @5 := test_crate::Foo { x: move (@6), y: move (@7) }
+    drop @7
+    drop @6
+    @4 := test_crate::eat<test_crate::Foo>(move (@5))
+    drop @5
+    drop @4
+    // Call `default` and destructure the result
+    // This is the long field
+    @10 := test_crate::{impl core::default::Default for test_crate::Bar}#1::default()
+    @fake_read(@10)
+    x@8 := copy ((@10).x)
+    super_long_field_name@9 := copy ((@10).super_long_field_name)
+    drop @10
+    // Call `eat` on an aggregate value
+    @13 := copy (x@8)
+    // This is the long field
+    @14 := copy (super_long_field_name@9)
+    @12 := test_crate::Bar { x: move (@13), super_long_field_name: move (@14) }
+    drop @14
+    drop @13
+    @11 := test_crate::eat<test_crate::Bar>(move (@12))
+    drop @12
+    drop @11
+    // Build an array
+    a@15 := @ArrayRepeat<'_, u32, 10 : usize>(const (0 : u32))
+    @fake_read(a@15)
+    // `assert_eq`
+    @19 := const (9 : usize)
+    @36 := &a@15
+    @37 := @ArrayIndexShared<'_, u32, 10 : usize>(move (@36), copy (@19))
+    @18 := &*(@37)
+    @21 := const (9 : u32)
+    @20 := &@21
+    @17 := (move (@18), move (@20))
+    drop @20
+    drop @18
+    @fake_read(@17)
+    left_val@22 := copy ((@17).0)
+    right_val@23 := copy ((@17).1)
+    @25 := copy (*(left_val@22))
+    @26 := copy (*(right_val@23))
+    @24 := move (@25) == move (@26)
+    if move (@24) {
+    }
+    else {
+        drop @26
+        drop @25
+        kind@27 := core::panicking::AssertKind::Eq {  }
+        @fake_read(kind@27)
+        @28 := move (kind@27)
+        @30 := &*(left_val@22)
+        @29 := &*(@30)
+        @32 := &*(right_val@23)
+        @31 := &*(@32)
+        @33 := core::option::Option::None {  }
+        panic(core::panicking::assert_failed)
+    }
+    drop @26
+    drop @25
+    @34 := ()
+    @16 := move (@34)
+    drop @24
+    drop right_val@23
+    drop left_val@22
+    drop @21
+    drop @19
+    drop @17
+    drop @16
+    @35 := ()
+    @0 := move (@35)
+    drop a@15
+    drop super_long_field_name@9
+    drop x@8
+    drop y@2
+    drop x@1
+    @0 := ()
+    return
+}
+
+global test_crate::CONSTANT  {
+    let @0: u32; // return
+
+    @0 := const (42 : u32)
+    return
+}
+
+fn test_crate::thing()
+{
+    let @0: (); // return
+    let x@1: u32; // local
+    let @2: u32; // anonymous local
+    let @3: (); // anonymous local
+    let @4: u32; // anonymous local
+    let @5: u32; // anonymous local
+    let @6: (); // anonymous local
+
+    // This comment belongs above the assignment to `x` and not above intermediate computations.
+    @5 := test_crate::CONSTANT
+    @2 := move (@5) >> const (3 : i32)
+    x@1 := move (@2) + const (12 : u32)
+    drop @2
+    @fake_read(x@1)
+    @4 := copy (x@1)
+    @3 := test_crate::function_call(move (@4))
+    drop @4
+    drop @3
+    @6 := ()
+    @0 := move (@6)
+    drop x@1
+    @0 := ()
+    return
+}
+
+fn test_crate::fake_read(@1: u32)
+{
+    let @0: (); // return
+    let x@1: u32; // arg #1
+    let @2: (); // anonymous local
+
+    // This statement is translated to a `fake_read`.
+    @fake_read(x@1)
+    @2 := ()
+    @0 := move (@2)
+    @0 := ()
+    return
+}
+
+fn test_crate::fool()
+{
+    let @0: (); // return
+    let @1: &'_ (Str); // anonymous local
+
+    @1 := const ("
+    // Fooled ya")
+    @fake_read(@1)
+    drop @1
+    // Fooled ya";
+    @0 := ()
+    @0 := ()
     return
 }
 
