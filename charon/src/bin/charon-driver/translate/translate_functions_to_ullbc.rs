@@ -1279,7 +1279,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                         // `false`. It will be consumed by the next round of `batching`.
                         .peeking_take_while(|(_, opt_comment)| opt_comment.is_some())
                         .map(|(_, opt_comment)| opt_comment.unwrap())
-                        .map(str::trim_start)
+                        .map(|s| s.strip_prefix(" ").unwrap_or(s))
                         .map(str::to_owned)
                         .collect_vec();
                     comments.reverse();

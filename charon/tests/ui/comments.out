@@ -48,7 +48,7 @@ fn test_crate::sum<'_0>(@1: &'_0 (Slice<u32>)) -> u32
     sum@2 := const (0 : u32)
     @fake_read(sum@2)
     // `let i`
-    // indented sub-comment
+    //  indented sub-comment
     // unindented sub-comment
     i@3 := const (0 : usize)
     @fake_read(i@3)
