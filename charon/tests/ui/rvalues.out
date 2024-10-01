@@ -259,7 +259,6 @@ fn test_crate::transmute(@1: Array<u32, 2 : usize>) -> u64
     let @0: u64; // return
     let x@1: Array<u32, 2 : usize>; // arg #1
 
-    // When optimized, this becomes a built-in cast. Otherwise this is just a call to `transmute`.
     @0 := transmute<Array<u32, 2 : usize>, u64>(copy (x@1))
     return
 }
@@ -293,7 +292,6 @@ where
     let offset@3: usize; // local
     let @4: usize; // anonymous local
 
-    // This one seems to be optimized out.
     size@1 := size_of<T>
     align@2 := align_of<T>
     offset@3 := offset_of(?)<test_crate::nullary_ops::Struct<T, @TraitClause0>>

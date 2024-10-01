@@ -652,9 +652,9 @@ fn test_crate::new_pair1() -> test_crate::StructWithPair<u32, u32, core::marker:
     let @0: test_crate::StructWithPair<u32, u32, core::marker::Sized<u32>, core::marker::Sized<u32>>; // return
     let @1: test_crate::Pair<u32, u32, core::marker::Sized<u32>, core::marker::Sized<u32>>; // anonymous local
 
+    @1 := test_crate::Pair { x: const (1 : u32), y: const (2 : u32) }
     // This actually doesn't make rustc generate a constant...
     // I guess it only happens for tuples.
-    @1 := test_crate::Pair { x: const (1 : u32), y: const (2 : u32) }
     @0 := test_crate::StructWithPair { p: move (@1) }
     drop @1
     return

@@ -16,12 +16,11 @@ impl LlbcPass for Transform {
         // - a comment should come before the statement it was applied to.
 
         // This is a pretty simple heuristic which is good enough for now.
-        let mut comments: Vec<(usize, Vec<String>)> = b.comments.clone();
+        let mut comments: Vec<(Loc, Vec<String>)> = b.comments.clone();
         b.body
             .drive_mut(&mut visitor_enter_fn_mut(|st: &mut Statement| {
-                let st_line = st.span.span.beg.line;
                 st.comments_before = comments
-                    .extract_if(|(i, _)| *i <= st_line)
+                    .extract_if(|(loc, _)| *loc == st.span.span.beg)
                     .flat_map(|(_, comments)| comments)
                     .collect();
             }));
