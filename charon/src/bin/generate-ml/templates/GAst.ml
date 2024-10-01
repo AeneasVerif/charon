@@ -70,6 +70,7 @@ type 'body gglobal_decl = {
 [@@deriving show]
 
 (* Hand-written because the rust equivalent isn't generic *)
+
 (** A crate *)
 type ('fun_body, 'global_body) gcrate = {
   name : string;
@@ -79,5 +80,6 @@ type ('fun_body, 'global_body) gcrate = {
   global_decls : 'global_body gglobal_decl GlobalDeclId.Map.t;
   trait_decls : trait_decl TraitDeclId.Map.t;
   trait_impls : trait_impl TraitImplId.Map.t;
+  source_files : string list FileNameMap.t;
 }
 [@@deriving show]

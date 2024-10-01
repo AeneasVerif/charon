@@ -96,6 +96,14 @@ pub struct TranslatedCrate {
     #[charon::opaque]
     pub file_to_id: HashMap<FileName, FileId>,
 
+    /// File id to content.
+    ///
+    /// Note that we leave the slots for the virtual files as empty: the non-empty slots
+    /// are for the "real" files that we managed to read.
+    #[drive(skip)]
+    #[serde(with = "HashMapToArray::<FileId, Vec<String>>")]
+    pub file_id_to_content: HashMap<FileId, Vec<String>>,
+
     /// All the ids, in the order in which we encountered them
     #[drive(skip)]
     pub all_ids: LinkedHashSet<AnyTransId>,

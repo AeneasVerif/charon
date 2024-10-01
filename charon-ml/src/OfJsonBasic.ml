@@ -74,3 +74,13 @@ let option_of_json (a_of_json : json -> ('a, string) result) (js : json) :
 let string_option_of_json (js : json) : (string option, string) result =
   combine_error_msgs js "string_option_of_json"
     (option_of_json string_of_json js)
+
+let key_value_pair_of_json (a_of_json : json -> ('a, string) result)
+    (b_of_json : json -> ('b, string) result) (js : json) :
+    ('a * 'b, string) result =
+  match js with
+  | `Assoc [ ("key", a); ("value", b) ] ->
+      let* a = a_of_json a in
+      let* b = b_of_json b in
+      Ok (a, b)
+  | _ -> Error ("key_value_pair_of_json failed on: " ^ show js)

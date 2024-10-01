@@ -1,6 +1,7 @@
 use super::get_mir::extract_constants_at_top_level;
 use super::translate_ctx::*;
 use charon_lib::ast::krate::*;
+use charon_lib::ast::meta::FileName;
 use charon_lib::common::*;
 use charon_lib::options::CliOpts;
 use charon_lib::transform::ctx::TransformOptions;
@@ -360,6 +361,29 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
     }
 }
 
+/// Read and return the content of a source file.
+fn read_file_content(filename: &FileName) -> Option<Vec<String>> {
+    use std::fs::File;
+    use std::io::prelude::*;
+    use std::io::BufReader;
+    use FileName::*;
+    match filename {
+        Local(path) => {
+            let file = File::open(path).ok()?;
+            BufReader::new(file)
+                .lines()
+                .into_iter()
+                .collect::<Result<Vec<String>, _>>()
+                .ok()
+        }
+        Virtual(_) => {
+            // TODO: we should be able to retrieve the file content here
+            None
+        }
+        NotReal(_) => None,
+    }
+}
+
 #[tracing::instrument(skip(tcx))]
 pub fn translate<'tcx, 'ctx>(options: &CliOpts, tcx: TyCtxt<'tcx>) -> TransformCtx<'tcx> {
     let hax_state = hax::state::State::new(
@@ -458,6 +482,15 @@ pub fn translate<'tcx, 'ctx>(options: &CliOpts, tcx: TyCtxt<'tcx>) -> TransformC
         no_merge_goto_chains: options.no_merge_goto_chains,
         item_opacities: ctx.options.item_opacities,
     };
+
+    // Read the source files
+    ctx.translated.file_id_to_content = ctx
+        .translated
+        .id_to_file
+        .iter_indexed()
+        .filter_map(|(id, filename)| (read_file_content(filename).map(|file| (id, file))))
+        .collect();
+
     // Return the context, dropping the hax state and rustc `tcx`.
     TransformCtx {
         options: transform_options,

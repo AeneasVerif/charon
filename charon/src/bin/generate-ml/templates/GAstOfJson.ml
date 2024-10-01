@@ -142,6 +142,7 @@ and gtranslated_crate_of_json
           ("crate_name", name);
           ("real_crate_name", _);
           ("id_to_file", id_to_file);
+          ("file_id_to_content", file_id_to_content);
           ("all_ids", _);
           ("item_names", _);
           ("type_decls", types);
@@ -185,6 +186,11 @@ and gtranslated_crate_of_json
             (trait_impl_of_json id_to_file)
             trait_impls
         in
+        let* source_files =
+          list_of_json
+            (key_value_pair_of_json file_id_of_json (list_of_json string_of_json))
+            file_id_to_content
+        in
 
         let type_decls =
           TypeDeclId.Map.of_list
@@ -208,6 +214,15 @@ and gtranslated_crate_of_json
           TraitImplId.Map.of_list
             (List.map (fun (d : trait_impl) -> (d.def_id, d)) trait_impls)
         in
+        let source_files =
+          FileNameMap.of_list
+            (List.filter_map
+               (fun (file_id, content) ->
+                 Option.map
+                   (fun filename -> (filename, content))
+                   (FileId.Map.find_opt file_id id_to_file))
+               source_files)
+        in
 
         Ok
           {
@@ -218,6 +233,7 @@ and gtranslated_crate_of_json
             global_decls;
             trait_decls;
             trait_impls;
+            source_files;
           }
     | _ -> Error "")
 

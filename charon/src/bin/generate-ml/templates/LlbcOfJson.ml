@@ -112,5 +112,6 @@ let crate_of_json (js : json) : (crate, string) result =
         global_decls;
         trait_decls = crate.trait_decls;
         trait_impls = crate.trait_impls;
+        source_files = crate.source_files;
       }
   end
