@@ -21,6 +21,10 @@ impl LlbcPass for Transform {
         // correspond to what the comment was intended to point to.
         let mut best_span_for_line: HashMap<usize, Span> = Default::default();
         b.body.drive(&mut visitor_enter_fn(|st: &Statement| {
+            if matches!(st.content, RawStatement::FakeRead(_)) {
+                // These are added after many `let` statements and mess up the comments.
+                return;
+            }
             let span = st.span;
             best_span_for_line
                 .entry(span.span.beg.line)
