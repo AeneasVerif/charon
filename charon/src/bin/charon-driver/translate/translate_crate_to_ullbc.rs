@@ -361,7 +361,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
     }
 
     /// Return a map from source file name to file content.
-    fn read_source_files(&mut self) -> HashMap<FileName, String> {
+    fn read_source_files(&mut self) -> HashMap<FileName, Arc<String>> {
         // Retrieve the source map
         let source_map = self.tcx.sess.source_map();
 
@@ -377,7 +377,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
                 let filename = self.translate_filename(&filename);
 
                 // Retrieve the content
-                file.src.as_ref().map(|src| (filename, src.deref().clone()))
+                file.src.as_ref().map(|src| (filename, src.clone()))
             })
             .collect()
     }
@@ -477,11 +477,16 @@ pub fn translate<'tcx, 'ctx>(options: &CliOpts, tcx: TyCtxt<'tcx>) -> TransformC
 
     // Read the source files
     let source_files = ctx.read_source_files();
+    use std::ops::Deref;
     ctx.translated.file_id_to_content = ctx
         .translated
         .id_to_file
         .iter_indexed()
-        .filter_map(|(id, filename)| (source_files.get(filename).map(|file| (id, file.clone()))))
+        .filter_map(|(id, filename)| {
+            source_files
+                .get(filename)
+                .map(|file| (id, file.deref().clone()))
+        })
         .collect();
 
     // Return the context, dropping the hax state and rustc `tcx`.
