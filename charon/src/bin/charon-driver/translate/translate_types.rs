@@ -621,14 +621,14 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         span: rustc_span::Span,
         def: &hax::FullDef,
     ) -> Result<(), Error> {
-        self.push_generics_for_def_inner(span, def, true)
+        self.push_generics_for_def_inner(span, def, false)
     }
 
     fn push_generics_for_def_inner(
         &mut self,
         span: rustc_span::Span,
         def: &hax::FullDef,
-        include_late_bound: bool,
+        is_parent: bool,
     ) -> Result<(), Error> {
         use hax::FullDefKind;
         // Add generics from the parent item, recursively (recursivity is useful for closures, as
@@ -639,8 +639,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             | FullDefKind::AssocConst { parent, .. }
             | FullDefKind::Closure { parent, .. } => {
                 let parent_def = self.t_ctx.hax_def(parent);
-                // We don't want the late-bound parameters of the parent, only early-bound ones.
-                self.push_generics_for_def_inner(span, &parent_def, false)?;
+                self.push_generics_for_def_inner(span, &parent_def, true)?;
             }
             _ => {}
         }
@@ -691,6 +690,23 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 _ => panic!("Unexpected def: {def:?}"),
             };
             self.register_predicates(predicates, origin, &location)?;
+
+            // Also add the predicates on associated types.
+            if let hax::FullDefKind::Trait { items, .. } = &def.kind
+                && !is_parent
+            {
+                for item in items {
+                    let item_def = self.t_ctx.hax_def(&item.def_id);
+                    if let hax::FullDefKind::AssocTy { predicates, .. } = &item_def.kind {
+                        let name = TraitItemName(item.name.clone());
+                        self.register_predicates(
+                            &predicates,
+                            PredicateOrigin::TraitItem(name.clone()),
+                            &PredicateLocation::Item(name),
+                        )?;
+                    }
+                }
+            }
         }
 
         // The parameters (and in particular the lifetimes) are split between
@@ -707,8 +723,9 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             hax::FullDefKind::AssocFn { sig, .. } => Some(sig),
             _ => None,
         };
+        // We don't want the late-bound parameters of the parent, only early-bound ones.
         if let Some(signature) = signature
-            && include_late_bound
+            && !is_parent
         {
             let binder = signature.rebind(());
             self.set_first_bound_regions_group(span, binder)?;

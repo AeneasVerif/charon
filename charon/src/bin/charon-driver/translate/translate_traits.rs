@@ -115,28 +115,10 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
             .collect_vec();
 
         // Translate the generics
-        bt_ctx.push_generics_for_def(span, def)?;
-
-        // Gather the associated type clauses
-        let mut type_clauses = Vec::new();
-        for (name, _, def) in &items {
-            if let hax::FullDefKind::AssocTy { predicates, .. } = &def.kind {
-                // TODO: handle generics (i.e. GATs).
-                // Register the trait clauses as item trait clauses
-                bt_ctx.register_predicates(
-                    &predicates,
-                    PredicateOrigin::TraitItem(name.clone()),
-                    &PredicateLocation::Item(name.clone()),
-                )?;
-                if let Some(clauses) = bt_ctx.item_trait_clauses.get(name) {
-                    type_clauses.push((name.clone(), clauses.clone()));
-                }
-            }
-        }
-
         // Note that in the generics returned by [get_generics], the trait refs only contain the
         // local trait clauses. The parent clauses are stored in `bt_ctx.parent_trait_clauses`.
         // TODO: Distinguish between required and implied trait clauses?
+        bt_ctx.push_generics_for_def(span, def)?;
         let generics = bt_ctx.get_generics();
 
         // Translate the associated items
@@ -144,6 +126,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         let mut consts = Vec::new();
         let mut const_defaults = HashMap::new();
         let mut types = Vec::new();
+        let mut type_clauses = Vec::new();
         let mut type_defaults = HashMap::new();
         let mut required_methods = Vec::new();
         let mut provided_methods = Vec::new();
@@ -176,6 +159,10 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
                     consts.push((item_name.clone(), ty));
                 }
                 hax::FullDefKind::AssocTy { value, .. } => {
+                    // TODO: handle generics (i.e. GATs).
+                    if let Some(clauses) = bt_ctx.item_trait_clauses.get(item_name) {
+                        type_clauses.push((item_name.clone(), clauses.clone()));
+                    }
                     if let Some(ty) = value {
                         let ty = bt_ctx.translate_ty(item_span, erase_regions, &ty)?;
                         type_defaults.insert(item_name.clone(), ty);
