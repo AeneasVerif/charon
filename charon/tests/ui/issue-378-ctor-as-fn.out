@@ -1,0 +1,6 @@
+error: Unexpected DefPathData for `core::option::Option::Some::{constructor#0}`: DisambiguatedDefPathData { data: Ctor, disambiguator: 0 }
+ --> /rustc/730d5d4095a264ef5f7c0a0781eea68c15431d45/library/core/src/option.rs:579:5
+
+error: aborting due to 1 previous error
+
+Error: Charon driver exited with code 101

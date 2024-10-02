@@ -1,49 +1,39 @@
-# Final LLBC before serialization:
+disabled backtrace
+warning[E9999]: Hax frontend found a projected type with escaping bound vars. Please report https://github.com/hacspec/hax/issues/495
+  |
+  = note: ⚠️ This is a bug in Hax's frontend.
+          Please report this error to https://github.com/hacspec/hax/issues with some context (e.g. the current crate)!
 
-trait core::ops::function::FnOnce<Self, Args>
-{
-    type Output
-    fn call_once : core::ops::function::FnOnce::call_once
-}
+error: Unimplemented: Alias(Alias { kind: Opaque, args: [Type(Ref(Region { kind: ReBound(0, BoundRegion { var: 0, kind: BrAnon }) }, Adt { generic_args: [Type(Param(ParamTy { index: 0, name: "T" })), Type(Param(ParamTy { index: 1, name: "U" }))], trait_refs: [ImplExpr { trait: Binder { value: TraitRef { def_id: core::marker::Sized, generic_args: [Type(Param(ParamTy { index: 0, name: "T" }))] }, bound_vars: [] }, impl: LocalBound { predicate_id: PredicateId(2260340255824257914), index: 0, trait: Binder { value: TraitRef { def_id: core::marker::Sized, generic_args: [Type(Param(ParamTy { index: 0, name: "T" }))] }, bound_vars: [] }, path: [] }, args: [] }, ImplExpr { trait: Binder { value: TraitRef { def_id: core::marker::Sized, generic_args: [Type(Param(ParamTy { index: 1, name: "U" }))] }, bound_vars: [] }, impl: LocalBound { predicate_id: PredicateId(12095651497061745849), index: 1, trait: Binder { value: TraitRef { def_id: core::marker::Sized, generic_args: [Type(Param(ParamTy { index: 1, name: "U" }))] }, bound_vars: [] }, path: [] }, args: [] }], def_id: core::result::Result }, false))], def_id: core::iter::traits::collect::IntoIterator::Item })
+  --> tests/ui/quantified-clause.rs:26:55
+   |
+26 |     for<'a> <&'a Result<T, U> as IntoIterator>::Item: Copy,
+   |                                                       ^^^^
 
-trait core::ops::function::FnMut<Self, Args>
-{
-    parent_clause_0 : [@TraitClause0]: core::ops::function::FnOnce<Self, Args>
-    fn call_mut : core::ops::function::FnMut::call_mut
-}
+error: Ignoring the following item due to an error: test_crate::{impl#0}
+  --> tests/ui/quantified-clause.rs:23:1
+   |
+23 | / impl<T, U> Trait for Result<T, U>
+24 | | where
+25 | |     for<'a> &'a Result<T, U>: IntoIterator,
+26 | |     for<'a> <&'a Result<T, U> as IntoIterator>::Item: Copy,
+   | |___________________________________________________________^
 
-fn test_crate::foo<F>(@1: F)
-where
-    [@TraitClause1]: for<'_1_0> core::ops::function::FnMut<F, (&'_1_0 (()))>,
-    for<'a> (parents(@TraitClause1)::[@TraitClause0])::Output = (),
-{
-    let @0: (); // return
-    let _f@1: F; // arg #1
-    let @2: (); // anonymous local
+thread 'rustc' panicked at compiler/rustc_trait_selection/src/traits/normalize.rs:151:9:
+Normalizing &'^1_0.Named(test_crate::f::'a, "'a") u8 without wrapping in a `Binder`
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+error: Thread panicked when extracting item `test_crate::f`.
+  --> tests/ui/quantified-clause.rs:16:1
+   |
+16 | pub fn f<'a>(_: &'a ()) -> Option<(&'a u8,)> {
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-    @2 := ()
-    @0 := move (@2)
-    drop _f@1
-    @0 := ()
-    return
-}
+error: Ignoring the following item due to an error: test_crate::f
+  --> tests/ui/quantified-clause.rs:16:1
+   |
+16 | pub fn f<'a>(_: &'a ()) -> Option<(&'a u8,)> {
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-fn test_crate::bar<'b, T>()
-where
-    for<'a> &'b (T) : 'a,
-{
-    let @0: (); // return
-    let @1: (); // anonymous local
+error: aborting due to 4 previous errors; 1 warning emitted
 
-    @1 := ()
-    @0 := move (@1)
-    @0 := ()
-    return
-}
-
-fn core::ops::function::FnMut::call_mut<'_0, Self, Args>(@1: &'_0 mut (Self), @2: Args) -> (parents(Self)::[@TraitClause0])::Output
-
-fn core::ops::function::FnOnce::call_once<Self, Args>(@1: Self, @2: Args) -> Self::Output
-
-
-
+Error: Charon driver exited with code 101

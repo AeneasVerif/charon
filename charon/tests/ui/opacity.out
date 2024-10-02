@@ -1,14 +1,22 @@
 # Final LLBC before serialization:
 
-enum core::option::Option<T> =
+trait core::marker::Sized<Self>
+
+enum core::option::Option<T>
+  where
+      [@TraitClause0]: core::marker::Sized<T>,
+ =
 |  None()
 |  Some(T)
 
 
-fn core::option::{core::option::Option<T>}::is_some<'_0, T>(@1: &'_0 (core::option::Option<T>)) -> bool
+fn core::option::{core::option::Option<T, @TraitClause0>}::is_some<'_0, T>(@1: &'_0 (core::option::Option<T, @TraitClause0>)) -> bool
+where
+    // Inherited clauses:
+    [@TraitClause0]: core::marker::Sized<T>,
 {
     let @0: bool; // return
-    let self@1: &'_ (core::option::Option<T>); // arg #1
+    let self@1: &'_ (core::option::Option<T, @TraitClause0>); // arg #1
 
     match *(self@1) {
         1 => {
@@ -23,11 +31,15 @@ fn core::option::{core::option::Option<T>}::is_some<'_0, T>(@1: &'_0 (core::opti
 
 trait core::convert::Into<Self, T>
 {
+    parent_clause_0 : [@TraitClause0]: core::marker::Sized<Self>
+    parent_clause_1 : [@TraitClause1]: core::marker::Sized<T>
     fn into : core::convert::Into::into
 }
 
 trait core::convert::From<Self, T>
 {
+    parent_clause_0 : [@TraitClause0]: core::marker::Sized<Self>
+    parent_clause_1 : [@TraitClause1]: core::marker::Sized<T>
     fn from : core::convert::From::from
 }
 
@@ -36,6 +48,8 @@ fn core::convert::From::from<Self, T>(@1: T) -> Self
 fn core::convert::{impl core::convert::Into<U> for T}#3::into<T, U>(@1: T) -> U
 where
     // Inherited clauses:
+    [@TraitClause0]: core::marker::Sized<T>,
+    [@TraitClause1]: core::marker::Sized<U>,
     [@TraitClause2]: core::convert::From<U, T>,
 {
     let @0: U; // return
@@ -47,8 +61,12 @@ where
 
 impl<T, U> core::convert::{impl core::convert::Into<U> for T}#3<T, U> : core::convert::Into<T, U>
 where
+    [@TraitClause0]: core::marker::Sized<T>,
+    [@TraitClause1]: core::marker::Sized<U>,
     [@TraitClause2]: core::convert::From<U, T>,
 {
+    parent_clause0 = @TraitClause0
+    parent_clause1 = @TraitClause1
     fn into = core::convert::{impl core::convert::Into<U> for T}#3::into
 }
 
@@ -63,6 +81,8 @@ fn core::convert::num::{impl core::convert::From<u32> for u64}#72::from(@1: u32)
 
 impl core::convert::num::{impl core::convert::From<u32> for u64}#72 : core::convert::From<u64, u32>
 {
+    parent_clause0 = core::marker::Sized<u64>
+    parent_clause1 = core::marker::Sized<u32>
     fn from = core::convert::num::{impl core::convert::From<u32> for u64}#72::from
 }
 
@@ -72,8 +92,8 @@ fn test_crate::foo()
 {
     let @0: (); // return
     let @1: bool; // anonymous local
-    let @2: &'_ (core::option::Option<i32>); // anonymous local
-    let @3: core::option::Option<i32>; // anonymous local
+    let @2: &'_ (core::option::Option<i32, core::marker::Sized<i32>>); // anonymous local
+    let @3: core::option::Option<i32, core::marker::Sized<i32>>; // anonymous local
     let @4: u64; // anonymous local
     let @5: &'_ (Slice<i32>); // anonymous local
     let @6: &'_ (i32); // anonymous local
@@ -83,18 +103,18 @@ fn test_crate::foo()
 
     @3 := core::option::Option::Some { 0: const (0 : i32) }
     @2 := &@3
-    @1 := core::option::{core::option::Option<T>}::is_some<i32>(move (@2))
+    @1 := core::option::{core::option::Option<T, @TraitClause0>}::is_some<i32>[core::marker::Sized<i32>](move (@2))
     drop @2
     @fake_read(@1)
     drop @3
     drop @1
-    @4 := core::convert::{impl core::convert::Into<U> for T}#3<u32, u64>[core::convert::num::{impl core::convert::From<u32> for u64}#72]::into(const (42 : u32))
+    @4 := core::convert::{impl core::convert::Into<U> for T}#3<u32, u64>[core::marker::Sized<u32>, core::marker::Sized<u64>, core::convert::num::{impl core::convert::From<u32> for u64}#72]::into(const (42 : u32))
     @fake_read(@4)
     drop @4
     @8 := const (0 : i32)
     @7 := &@8
     @6 := &*(@7)
-    @5 := @Fun4<i32>(move (@6))
+    @5 := @Fun4<i32>[core::marker::Sized<i32>](move (@6))
     drop @6
     @fake_read(@5)
     drop @8

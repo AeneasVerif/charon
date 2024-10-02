@@ -2,34 +2,40 @@
 
 trait test_crate::Ord<Self>
 
-struct test_crate::AVLTree<T> =
+trait core::marker::Sized<Self>
+
+struct test_crate::AVLTree<T>
+  where
+      [@TraitClause0]: core::marker::Sized<T>,
+ =
 {
   x: T,
 }
 
-fn test_crate::{test_crate::AVLTree<T>}::insert<'_0, T>(@1: &'_0 mut (test_crate::AVLTree<T>))
+fn test_crate::{test_crate::AVLTree<T, @TraitClause0>}::insert<'_0, T>(@1: &'_0 mut (test_crate::AVLTree<T, @TraitClause0>))
 where
     // Inherited clauses:
+    [@TraitClause0]: core::marker::Sized<T>,
     [@TraitClause1]: test_crate::Ord<T>,
 {
     let @0: (); // return
-    let self@1: &'_ mut (test_crate::AVLTree<T>); // arg #1
+    let self@1: &'_ mut (test_crate::AVLTree<T, @TraitClause0>); // arg #1
 
     panic(core::panicking::panic)
 }
 
 impl test_crate::{impl test_crate::Ord for u32}#1 : test_crate::Ord<u32>
 
-fn test_crate::test(@1: test_crate::AVLTree<u32>)
+fn test_crate::test(@1: test_crate::AVLTree<u32, core::marker::Sized<u32>>)
 {
     let @0: (); // return
-    let tree@1: test_crate::AVLTree<u32>; // arg #1
+    let tree@1: test_crate::AVLTree<u32, core::marker::Sized<u32>>; // arg #1
     let @2: (); // anonymous local
-    let @3: &'_ mut (test_crate::AVLTree<u32>); // anonymous local
+    let @3: &'_ mut (test_crate::AVLTree<u32, core::marker::Sized<u32>>); // anonymous local
     let @4: (); // anonymous local
 
     @3 := &two-phase-mut tree@1
-    @2 := test_crate::{test_crate::AVLTree<T>}::insert<u32>[test_crate::{impl test_crate::Ord for u32}#1](move (@3))
+    @2 := test_crate::{test_crate::AVLTree<T, @TraitClause0>}::insert<u32>[core::marker::Sized<u32>, test_crate::{impl test_crate::Ord for u32}#1](move (@3))
     drop @3
     drop @2
     @4 := ()

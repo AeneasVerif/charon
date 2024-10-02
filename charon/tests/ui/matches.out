@@ -23,7 +23,11 @@ fn test_crate::test1(@1: test_crate::E1) -> bool
     return
 }
 
+trait core::marker::Sized<Self>
+
 fn test_crate::id<T>(@1: T) -> T
+where
+    [@TraitClause0]: core::marker::Sized<T>,
 {
     let @0: T; // return
     let x@1: T; // arg #1
@@ -95,7 +99,7 @@ fn test_crate::test3(@1: test_crate::E2) -> u32
         },
     }
     @fake_read(y@3)
-    z@5 := test_crate::id<u32>(const (3 : u32))
+    z@5 := test_crate::id<u32>[core::marker::Sized<u32>](const (3 : u32))
     @fake_read(z@5)
     @6 := copy (y@3)
     @7 := copy (z@5)

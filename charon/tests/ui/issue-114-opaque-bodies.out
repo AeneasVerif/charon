@@ -18,7 +18,11 @@ fn issue_114_opaque_bodies_aux::inline_sometimes() -> u32
 
 fn issue_114_opaque_bodies_aux::inline_never() -> u32
 
+trait core::marker::Sized<Self>
+
 fn issue_114_opaque_bodies_aux::inline_generic<T>() -> u32
+where
+    [@TraitClause0]: core::marker::Sized<T>,
 {
     let @0: u32; // return
 
@@ -45,21 +49,26 @@ fn test_crate::use_inlines() -> u32
     @1 := move (@2) + move (@5)
     drop @5
     drop @2
-    @6 := issue_114_opaque_bodies_aux::inline_generic<bool>()
+    @6 := issue_114_opaque_bodies_aux::inline_generic<bool>[core::marker::Sized<bool>]()
     @0 := move (@1) + move (@6)
     drop @6
     drop @1
     return
 }
 
-enum core::option::Option<T> =
+enum core::option::Option<T>
+  where
+      [@TraitClause0]: core::marker::Sized<T>,
+ =
 |  None()
 |  Some(T)
 
 
-fn core::bool::{bool}::then_some<T>(@1: bool, @2: T) -> core::option::Option<T>
+fn core::bool::{bool}::then_some<T>(@1: bool, @2: T) -> core::option::Option<T, @TraitClause0>
+where
+    [@TraitClause0]: core::marker::Sized<T>,
 {
-    let @0: core::option::Option<T>; // return
+    let @0: core::option::Option<T, @TraitClause0>; // return
     let self@1: bool; // arg #1
     let t@2: T; // arg #2
     let @3: T; // anonymous local
@@ -76,16 +85,16 @@ fn core::bool::{bool}::then_some<T>(@1: bool, @2: T) -> core::option::Option<T>
     return
 }
 
-fn test_crate::bool_to_opt(@1: bool) -> core::option::Option<()>
+fn test_crate::bool_to_opt(@1: bool) -> core::option::Option<(), core::marker::Sized<()>>
 {
-    let @0: core::option::Option<()>; // return
+    let @0: core::option::Option<(), core::marker::Sized<()>>; // return
     let b@1: bool; // arg #1
     let @2: bool; // anonymous local
     let @3: (); // anonymous local
 
     @2 := copy (b@1)
     @3 := ()
-    @0 := core::bool::{bool}::then_some<()>(move (@2), move (@3))
+    @0 := core::bool::{bool}::then_some<()>[core::marker::Sized<()>](move (@2), move (@3))
     drop @3
     drop @2
     return
@@ -93,6 +102,8 @@ fn test_crate::bool_to_opt(@1: bool) -> core::option::Option<()>
 
 trait core::convert::From<Self, T>
 {
+    parent_clause_0 : [@TraitClause0]: core::marker::Sized<Self>
+    parent_clause_1 : [@TraitClause1]: core::marker::Sized<T>
     fn from : core::convert::From::from
 }
 
@@ -107,6 +118,8 @@ fn core::convert::num::{impl core::convert::From<i32> for i64}#83::from(@1: i32)
 
 impl core::convert::num::{impl core::convert::From<i32> for i64}#83 : core::convert::From<i64, i32>
 {
+    parent_clause0 = core::marker::Sized<i64>
+    parent_clause1 = core::marker::Sized<i32>
     fn from = core::convert::num::{impl core::convert::From<i32> for i64}#83::from
 }
 
@@ -142,25 +155,33 @@ struct alloc::raw_vec::Cap =
   usize,
 }
 
-struct alloc::raw_vec::RawVec<T, A> =
+struct alloc::raw_vec::RawVec<T, A>
+  where
+      [@TraitClause0]: core::marker::Sized<T>,
+      [@TraitClause1]: core::marker::Sized<A>,
+ =
 {
   ptr: core::ptr::unique::Unique<T>,
   cap: alloc::raw_vec::Cap,
   alloc: A,
 }
 
-struct alloc::vec::Vec<T, A> =
+struct alloc::vec::Vec<T, A>
+  where
+      [@TraitClause0]: core::marker::Sized<T>,
+      [@TraitClause1]: core::marker::Sized<A>,
+ =
 {
-  buf: alloc::raw_vec::RawVec<T, A>,
+  buf: alloc::raw_vec::RawVec<T, A, @TraitClause0, @TraitClause1>,
   len: usize,
 }
 
 struct alloc::alloc::Global = {}
 
-fn test_crate::vec(@1: alloc::vec::Vec<u32, alloc::alloc::Global>)
+fn test_crate::vec(@1: alloc::vec::Vec<u32, alloc::alloc::Global, core::marker::Sized<u32>, core::marker::Sized<alloc::alloc::Global>>)
 {
     let @0: (); // return
-    let _x@1: alloc::vec::Vec<u32, alloc::alloc::Global>; // arg #1
+    let _x@1: alloc::vec::Vec<u32, alloc::alloc::Global, core::marker::Sized<u32>, core::marker::Sized<alloc::alloc::Global>>; // arg #1
     let @2: (); // anonymous local
 
     @2 := ()
@@ -195,6 +216,7 @@ trait core::cmp::PartialEq<Self, Rhs>
 
 fn test_crate::partial_eq<T>(@1: T)
 where
+    [@TraitClause0]: core::marker::Sized<T>,
     [@TraitClause1]: core::cmp::PartialEq<T, T>,
 {
     let @0: (); // return

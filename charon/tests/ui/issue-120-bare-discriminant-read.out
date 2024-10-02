@@ -1,14 +1,21 @@
 # Final LLBC before serialization:
 
-enum core::option::Option<T> =
+trait core::marker::Sized<Self>
+
+enum core::option::Option<T>
+  where
+      [@TraitClause0]: core::marker::Sized<T>,
+ =
 |  None()
 |  Some(T)
 
 
-fn test_crate::discriminant_value<'_0, T>(@1: &'_0 (core::option::Option<T>)) -> isize
+fn test_crate::discriminant_value<'_0, T>(@1: &'_0 (core::option::Option<T, @TraitClause0>)) -> isize
+where
+    [@TraitClause0]: core::marker::Sized<T>,
 {
     let @0: isize; // return
-    let opt@1: &'_ (core::option::Option<T>); // arg #1
+    let opt@1: &'_ (core::option::Option<T, @TraitClause0>); // arg #1
 
     match *(opt@1) {
         0 => {
@@ -21,10 +28,12 @@ fn test_crate::discriminant_value<'_0, T>(@1: &'_0 (core::option::Option<T>)) ->
     return
 }
 
-fn test_crate::is_some<T>(@1: core::option::Option<T>) -> bool
+fn test_crate::is_some<T>(@1: core::option::Option<T, @TraitClause0>) -> bool
+where
+    [@TraitClause0]: core::marker::Sized<T>,
 {
     let @0: bool; // return
-    let opt@1: core::option::Option<T>; // arg #1
+    let opt@1: core::option::Option<T, @TraitClause0>; // arg #1
     let @2: isize; // anonymous local
 
     match opt@1 {
@@ -41,10 +50,12 @@ fn test_crate::is_some<T>(@1: core::option::Option<T>) -> bool
     return
 }
 
-fn test_crate::my_is_some<T>(@1: core::option::Option<T>) -> isize
+fn test_crate::my_is_some<T>(@1: core::option::Option<T, @TraitClause0>) -> isize
+where
+    [@TraitClause0]: core::marker::Sized<T>,
 {
     let @0: isize; // return
-    let opt@1: core::option::Option<T>; // arg #1
+    let opt@1: core::option::Option<T, @TraitClause0>; // arg #1
 
     match opt@1 {
         0 => {

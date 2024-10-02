@@ -178,7 +178,6 @@ fn perform_test(test_case: &Case, action: Action) -> anyhow::Result<()> {
     cmd.arg("--no-cargo");
 
     cmd.arg("--print-llbc");
-    cmd.arg("--hide-marker-traits");
     cmd.arg("--crate=test_crate");
     cmd.arg("--input");
     cmd.arg(&test_case.input_path);

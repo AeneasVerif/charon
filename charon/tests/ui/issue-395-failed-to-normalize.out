@@ -1,0 +1,20 @@
+error: internal compiler error: compiler/rustc_middle/src/ty/normalize_erasing_regions.rs:169:90: Failed to normalize Alias(Projection, AliasTy { args: [I/#0], def_id: core::iter::traits::iterator::Iterator::Item, .. }), maybe try to call `try_normalize_erasing_regions` instead
+
+thread 'rustc' panicked at compiler/rustc_middle/src/ty/normalize_erasing_regions.rs:169:90:
+Box<dyn Any>
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+error: Thread panicked when extracting item `test_crate::S2`.
+  --> tests/ui/issue-395-failed-to-normalize.rs:10:1
+   |
+10 | pub type S2<I, F> = S<I, F>;
+   | ^^^^^^^^^^^^^^^^^
+
+error: Ignoring the following item due to an error: test_crate::S2
+  --> tests/ui/issue-395-failed-to-normalize.rs:10:1
+   |
+10 | pub type S2<I, F> = S<I, F>;
+   | ^^^^^^^^^^^^^^^^^
+
+error: aborting due to 3 previous errors
+
+Error: Charon driver exited with code 101

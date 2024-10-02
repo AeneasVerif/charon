@@ -78,8 +78,11 @@ fn main() -> Result<(), Box<dyn Error>> {
         mktest("toml", root.join("toml"), &[]),
         mktest(
             "workspace",
-            root.join("workspace").join("crate2"),
-            &["--extract-opaque-bodies".to_owned()],
+            root.join("workspace"),
+            &[
+                "--cargo-arg=--package=crate2".to_owned(),
+                "--extract-opaque-bodies".to_owned(),
+            ],
         ),
     ];
 

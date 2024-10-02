@@ -12,7 +12,12 @@ fn test_crate::function_call(@1: u32)
     return
 }
 
+trait core::marker::Sized<Self>
+
 fn core::slice::{Slice<T>}::len<'_0, T>(@1: &'_0 (Slice<T>)) -> usize
+where
+    // Inherited clauses:
+    [@TraitClause0]: core::marker::Sized<T>,
 
 fn test_crate::sum<'_0>(@1: &'_0 (Slice<u32>)) -> u32
 {
@@ -63,7 +68,7 @@ fn test_crate::sum<'_0>(@1: &'_0 (Slice<u32>)) -> u32
     loop {
         @10 := copy (i@3)
         @12 := &*(s@1)
-        @11 := core::slice::{Slice<T>}::len<u32>(move (@12))
+        @11 := core::slice::{Slice<T>}::len<u32>[core::marker::Sized<u32>](move (@12))
         drop @12
         @9 := move (@10) < move (@11)
         if move (@9) {
@@ -136,6 +141,7 @@ struct test_crate::Foo =
 
 trait core::default::Default<Self>
 {
+    parent_clause_0 : [@TraitClause0]: core::marker::Sized<Self>
     fn default : core::default::Default::default
 }
 
@@ -143,6 +149,7 @@ fn core::default::{impl core::default::Default for u32}#7::default() -> u32
 
 impl core::default::{impl core::default::Default for u32}#7 : core::default::Default<u32>
 {
+    parent_clause0 = core::marker::Sized<u32>
     fn default = core::default::{impl core::default::Default for u32}#7::default
 }
 
@@ -164,6 +171,7 @@ fn test_crate::{impl core::default::Default for test_crate::Foo}::default() -> t
 
 impl test_crate::{impl core::default::Default for test_crate::Foo} : core::default::Default<test_crate::Foo>
 {
+    parent_clause0 = core::marker::Sized<test_crate::Foo>
     fn default = test_crate::{impl core::default::Default for test_crate::Foo}::default
 }
 
@@ -189,10 +197,13 @@ fn test_crate::{impl core::default::Default for test_crate::Bar}#1::default() ->
 
 impl test_crate::{impl core::default::Default for test_crate::Bar}#1 : core::default::Default<test_crate::Bar>
 {
+    parent_clause0 = core::marker::Sized<test_crate::Bar>
     fn default = test_crate::{impl core::default::Default for test_crate::Bar}#1::default
 }
 
 fn test_crate::eat<T>(@1: T)
+where
+    [@TraitClause0]: core::marker::Sized<T>,
 {
     let @0: (); // return
     let @1: T; // arg #1
@@ -211,7 +222,10 @@ enum core::panicking::AssertKind =
 |  Match()
 
 
-enum core::option::Option<T> =
+enum core::option::Option<T>
+  where
+      [@TraitClause0]: core::marker::Sized<T>,
+ =
 |  None()
 |  Some(T)
 
@@ -255,7 +269,7 @@ fn test_crate::foo()
     let @30: &'_ (u32); // anonymous local
     let @31: &'_ (u32); // anonymous local
     let @32: &'_ (u32); // anonymous local
-    let @33: core::option::Option<core::fmt::Arguments<'_>>; // anonymous local
+    let @33: core::option::Option<core::fmt::Arguments<'_>, core::marker::Sized<core::fmt::Arguments<'_>>>; // anonymous local
     let @34: (); // anonymous local
     let @35: (); // anonymous local
     let @36: &'_ (Array<u32, 10 : usize>); // anonymous local
@@ -273,7 +287,7 @@ fn test_crate::foo()
     @5 := test_crate::Foo { x: move (@6), y: move (@7) }
     drop @7
     drop @6
-    @4 := test_crate::eat<test_crate::Foo>(move (@5))
+    @4 := test_crate::eat<test_crate::Foo>[core::marker::Sized<test_crate::Foo>](move (@5))
     drop @5
     drop @4
     // Call `default` and destructure the result
@@ -290,7 +304,7 @@ fn test_crate::foo()
     @12 := test_crate::Bar { x: move (@13), super_long_field_name: move (@14) }
     drop @14
     drop @13
-    @11 := test_crate::eat<test_crate::Bar>(move (@12))
+    @11 := test_crate::eat<test_crate::Bar>[core::marker::Sized<test_crate::Bar>](move (@12))
     drop @12
     drop @11
     // Build an array

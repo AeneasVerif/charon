@@ -2,8 +2,11 @@
 
 struct test_crate::Foo = {}
 
+trait core::marker::Sized<Self>
+
 trait core::clone::Clone<Self>
 {
+    parent_clause_0 : [@TraitClause0]: core::marker::Sized<Self>
     fn clone : core::clone::Clone::clone
     fn clone_from : core::clone::Clone::clone_from
 }
@@ -19,6 +22,7 @@ fn test_crate::{impl core::clone::Clone for test_crate::Foo}::clone<'_0>(@1: &'_
 
 impl test_crate::{impl core::clone::Clone for test_crate::Foo} : core::clone::Clone<test_crate::Foo>
 {
+    parent_clause0 = core::marker::Sized<test_crate::Foo>
     fn clone = test_crate::{impl core::clone::Clone for test_crate::Foo}::clone
 }
 
@@ -54,6 +58,7 @@ fn test_crate::copy_foo(@1: test_crate::Foo)
 
 fn test_crate::copy_generic<T>(@1: T)
 where
+    [@TraitClause0]: core::marker::Sized<T>,
     [@TraitClause1]: core::marker::Copy<T>,
 {
     let @0: (); // return
@@ -78,11 +83,13 @@ trait test_crate::Trait<Self>
 {
     parent_clause_0 : [@TraitClause0]: core::marker::Copy<Self::Ty>
     parent_clause_1 : [@TraitClause1]: core::clone::Clone<Self::Ty>
+    parent_clause_2 : [@TraitClause2]: core::marker::Sized<Self::Ty>
     type Ty
 }
 
 fn test_crate::copy_assoc_ty<T>(@1: @TraitClause1::Ty)
 where
+    [@TraitClause0]: core::marker::Sized<T>,
     [@TraitClause1]: test_crate::Trait<T>,
 {
     let @0: (); // return
