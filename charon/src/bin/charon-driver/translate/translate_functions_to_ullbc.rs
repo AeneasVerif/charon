@@ -1387,31 +1387,15 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         let erase_regions = false;
         let span = item_meta.span.rust_span();
 
+        self.push_generics_for_def(span, &def)?;
+        let generics = self.get_generics();
+
         let signature = match &def.kind {
             hax::FullDefKind::Closure { args, .. } => &args.sig,
             hax::FullDefKind::Fn { sig, .. } => sig,
             hax::FullDefKind::AssocFn { sig, .. } => sig,
             _ => panic!("Unexpected definition for function: {def:?}"),
         };
-
-        // The parameters (and in particular the lifetimes) are split between
-        // early bound and late bound parameters. See those blog posts for explanations:
-        // https://smallcultfollowing.com/babysteps/blog/2013/10/29/intermingled-parameter-lists/
-        // https://smallcultfollowing.com/babysteps/blog/2013/11/04/intermingled-parameter-lists/
-        // Note that only lifetimes can be late bound.
-        //
-        // [TyCtxt.generics_of] gives us the early-bound parameters
-        // The late-bounds parameters are bound in the [Binder] returned by
-        // [TyCtxt.type_of].
-
-        // Add the early bound parameters and predicates.
-        self.push_generics_for_def(span, &def)?;
-
-        // Add the *late-bound* parameters (bound in the signature, can only be lifetimes).
-        let binder = signature.rebind(());
-        self.set_first_bound_regions_group(span, binder)?;
-
-        let generics = self.get_generics();
 
         // Translate the signature
         trace!("signature of {def_id:?}:\n{:?}", signature.value);

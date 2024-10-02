@@ -621,6 +621,15 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         span: rustc_span::Span,
         def: &hax::FullDef,
     ) -> Result<(), Error> {
+        self.push_generics_for_def_inner(span, def, true)
+    }
+
+    fn push_generics_for_def_inner(
+        &mut self,
+        span: rustc_span::Span,
+        def: &hax::FullDef,
+        include_late_bound: bool,
+    ) -> Result<(), Error> {
         use hax::FullDefKind;
         // Add generics from the parent item, recursively (recursivity is useful for closures, as
         // they could be nested).
@@ -630,7 +639,8 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             | FullDefKind::AssocConst { parent, .. }
             | FullDefKind::Closure { parent, .. } => {
                 let parent_def = self.t_ctx.hax_def(parent);
-                self.push_generics_for_def(span, &parent_def)?;
+                // We don't want the late-bound parameters of the parent, only early-bound ones.
+                self.push_generics_for_def_inner(span, &parent_def, false)?;
             }
             _ => {}
         }
@@ -682,6 +692,28 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             };
             self.register_predicates(predicates, origin, &location)?;
         }
+
+        // The parameters (and in particular the lifetimes) are split between
+        // early bound and late bound parameters. See those blog posts for explanations:
+        // https://smallcultfollowing.com/babysteps/blog/2013/10/29/intermingled-parameter-lists/
+        // https://smallcultfollowing.com/babysteps/blog/2013/11/04/intermingled-parameter-lists/
+        // Note that only lifetimes can be late bound.
+        //
+        // [TyCtxt.generics_of] gives us the early-bound parameters. We add the late-bound
+        // parameters here.
+        let signature = match &def.kind {
+            hax::FullDefKind::Closure { args, .. } => Some(&args.sig),
+            hax::FullDefKind::Fn { sig, .. } => Some(sig),
+            hax::FullDefKind::AssocFn { sig, .. } => Some(sig),
+            _ => None,
+        };
+        if let Some(signature) = signature
+            && include_late_bound
+        {
+            let binder = signature.rebind(());
+            self.set_first_bound_regions_group(span, binder)?;
+        }
+
         Ok(())
     }
 
