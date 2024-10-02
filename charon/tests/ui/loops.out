@@ -869,9 +869,15 @@ trait core::ops::function::FnMut<Self, Args>
 
 opaque type core::iter::adapters::map::Map<I, F>
 
+opaque type core::iter::adapters::filter::Filter<I, P>
+
 opaque type core::iter::adapters::filter_map::FilterMap<I, F>
 
 opaque type core::iter::adapters::enumerate::Enumerate<I>
+
+opaque type core::iter::adapters::skip_while::SkipWhile<I, P>
+
+opaque type core::iter::adapters::take_while::TakeWhile<I, P>
 
 opaque type core::iter::adapters::map_while::MapWhile<I, P>
 
@@ -879,7 +885,11 @@ opaque type core::iter::adapters::skip::Skip<I>
 
 opaque type core::iter::adapters::take::Take<I>
 
+opaque type core::iter::adapters::scan::Scan<I, St, F>
+
 opaque type core::iter::adapters::fuse::Fuse<I>
+
+opaque type core::iter::adapters::inspect::Inspect<I, F>
 
 trait core::ops::try_trait::FromResidual<Self, R>
 {
@@ -908,6 +918,11 @@ where
     parent_clause_1 : [@TraitClause1]: core::ops::try_trait::Try<Self::TryType>
     parent_clause_2 : [@TraitClause2]: core::ops::try_trait::FromResidual<Self::TryType, Self>
     type TryType
+}
+
+trait core::default::Default<Self>
+{
+    fn default : core::default::Default::default
 }
 
 trait core::cmp::PartialEq<Self, Rhs>
@@ -950,11 +965,6 @@ trait core::cmp::Ord<Self>
 
 opaque type core::iter::adapters::rev::Rev<T>
 
-trait core::default::Default<Self>
-{
-    fn default : core::default::Default::default
-}
-
 opaque type core::iter::adapters::copied::Copied<I>
 
 opaque type core::iter::adapters::cloned::Cloned<I>
@@ -978,19 +988,27 @@ trait core::iter::traits::iterator::Iterator<Self>
     fn intersperse_with : core::iter::traits::iterator::Iterator::intersperse_with
     fn map : core::iter::traits::iterator::Iterator::map
     fn for_each : core::iter::traits::iterator::Iterator::for_each
+    fn filter : core::iter::traits::iterator::Iterator::filter
     fn filter_map : core::iter::traits::iterator::Iterator::filter_map
     fn enumerate : core::iter::traits::iterator::Iterator::enumerate
     fn peekable : core::iter::traits::iterator::Iterator::peekable
+    fn skip_while : core::iter::traits::iterator::Iterator::skip_while
+    fn take_while : core::iter::traits::iterator::Iterator::take_while
     fn map_while : core::iter::traits::iterator::Iterator::map_while
     fn skip : core::iter::traits::iterator::Iterator::skip
     fn take : core::iter::traits::iterator::Iterator::take
+    fn scan : core::iter::traits::iterator::Iterator::scan
     fn flat_map : core::iter::traits::iterator::Iterator::flat_map
     fn flatten : core::iter::traits::iterator::Iterator::flatten
+    fn map_windows : core::iter::traits::iterator::Iterator::map_windows
     fn fuse : core::iter::traits::iterator::Iterator::fuse
+    fn inspect : core::iter::traits::iterator::Iterator::inspect
     fn by_ref : core::iter::traits::iterator::Iterator::by_ref
     fn collect : core::iter::traits::iterator::Iterator::collect
     fn try_collect : core::iter::traits::iterator::Iterator::try_collect
     fn collect_into : core::iter::traits::iterator::Iterator::collect_into
+    fn partition : core::iter::traits::iterator::Iterator::partition
+    fn partition_in_place : core::iter::traits::iterator::Iterator::partition_in_place
     fn is_partitioned : core::iter::traits::iterator::Iterator::is_partitioned
     fn try_fold : core::iter::traits::iterator::Iterator::try_fold
     fn try_for_each : core::iter::traits::iterator::Iterator::try_for_each
@@ -999,10 +1017,17 @@ trait core::iter::traits::iterator::Iterator<Self>
     fn try_reduce : core::iter::traits::iterator::Iterator::try_reduce
     fn all : core::iter::traits::iterator::Iterator::all
     fn any : core::iter::traits::iterator::Iterator::any
+    fn find : core::iter::traits::iterator::Iterator::find
     fn find_map : core::iter::traits::iterator::Iterator::find_map
+    fn try_find : core::iter::traits::iterator::Iterator::try_find
     fn position : core::iter::traits::iterator::Iterator::position
+    fn rposition : core::iter::traits::iterator::Iterator::rposition
     fn max : core::iter::traits::iterator::Iterator::max
     fn min : core::iter::traits::iterator::Iterator::min
+    fn max_by_key : core::iter::traits::iterator::Iterator::max_by_key
+    fn max_by : core::iter::traits::iterator::Iterator::max_by
+    fn min_by_key : core::iter::traits::iterator::Iterator::min_by_key
+    fn min_by : core::iter::traits::iterator::Iterator::min_by
     fn rev : core::iter::traits::iterator::Iterator::rev
     fn unzip : core::iter::traits::iterator::Iterator::unzip
     fn copied : core::iter::traits::iterator::Iterator::copied
@@ -1023,6 +1048,7 @@ trait core::iter::traits::iterator::Iterator<Self>
     fn gt : core::iter::traits::iterator::Iterator::gt
     fn ge : core::iter::traits::iterator::Iterator::ge
     fn is_sorted : core::iter::traits::iterator::Iterator::is_sorted
+    fn is_sorted_by : core::iter::traits::iterator::Iterator::is_sorted_by
     fn is_sorted_by_key : core::iter::traits::iterator::Iterator::is_sorted_by_key
     fn __iterator_get_unchecked : core::iter::traits::iterator::Iterator::__iterator_get_unchecked
 }
@@ -1059,6 +1085,10 @@ opaque type core::iter::adapters::flatten::Flatten<I>
       [@TraitClause1]: core::iter::traits::iterator::Iterator<I>,
       [@TraitClause2]: core::iter::traits::collect::IntoIterator<@TraitClause1::Item>,
 
+opaque type core::iter::adapters::map_windows::MapWindows<I, F, const N : usize>
+  where
+      [@TraitClause2]: core::iter::traits::iterator::Iterator<I>,
+
 trait core::iter::traits::collect::FromIterator<Self, A>
 {
     fn from_iter : core::iter::traits::collect::FromIterator::from_iter
@@ -1080,6 +1110,14 @@ trait core::iter::traits::double_ended::DoubleEndedIterator<Self>
     fn nth_back : core::iter::traits::double_ended::DoubleEndedIterator::nth_back
     fn try_rfold : core::iter::traits::double_ended::DoubleEndedIterator::try_rfold
     fn rfold : core::iter::traits::double_ended::DoubleEndedIterator::rfold
+    fn rfind : core::iter::traits::double_ended::DoubleEndedIterator::rfind
+}
+
+trait core::iter::traits::exact_size::ExactSizeIterator<Self>
+{
+    parent_clause_0 : [@TraitClause0]: core::iter::traits::iterator::Iterator<Self>
+    fn len : core::iter::traits::exact_size::ExactSizeIterator::len
+    fn is_empty : core::iter::traits::exact_size::ExactSizeIterator::is_empty
 }
 
 opaque type core::iter::adapters::array_chunks::ArrayChunks<I, const N : usize>
@@ -2069,6 +2107,11 @@ where
     [@TraitClause2]: core::ops::function::FnMut<F, (Self::Item)>,
     (parents(@TraitClause2)::[@TraitClause0])::Output = (),
 
+fn core::iter::traits::iterator::Iterator::filter<Self, P>(@1: Self, @2: P) -> core::iter::adapters::filter::Filter<Self, P>
+where
+    [@TraitClause2]: for<'_1_0> core::ops::function::FnMut<P, (&'_1_0 (Self::Item))>,
+    for<'_1_0> (parents(@TraitClause2)::[@TraitClause0])::Output = bool,
+
 fn core::iter::traits::iterator::Iterator::filter_map<Self, B, F>(@1: Self, @2: F) -> core::iter::adapters::filter_map::FilterMap<Self, F>
 where
     [@TraitClause3]: core::ops::function::FnMut<F, (Self::Item)>,
@@ -2078,6 +2121,16 @@ fn core::iter::traits::iterator::Iterator::enumerate<Self>(@1: Self) -> core::it
 
 fn core::iter::traits::iterator::Iterator::peekable<Self>(@1: Self) -> core::iter::adapters::peekable::Peekable<Self, Self>
 
+fn core::iter::traits::iterator::Iterator::skip_while<Self, P>(@1: Self, @2: P) -> core::iter::adapters::skip_while::SkipWhile<Self, P>
+where
+    [@TraitClause2]: for<'_1_0> core::ops::function::FnMut<P, (&'_1_0 (Self::Item))>,
+    for<'_1_0> (parents(@TraitClause2)::[@TraitClause0])::Output = bool,
+
+fn core::iter::traits::iterator::Iterator::take_while<Self, P>(@1: Self, @2: P) -> core::iter::adapters::take_while::TakeWhile<Self, P>
+where
+    [@TraitClause2]: for<'_1_0> core::ops::function::FnMut<P, (&'_1_0 (Self::Item))>,
+    for<'_1_0> (parents(@TraitClause2)::[@TraitClause0])::Output = bool,
+
 fn core::iter::traits::iterator::Iterator::map_while<Self, B, P>(@1: Self, @2: P) -> core::iter::adapters::map_while::MapWhile<Self, P>
 where
     [@TraitClause3]: core::ops::function::FnMut<P, (Self::Item)>,
@@ -2086,6 +2139,11 @@ where
 fn core::iter::traits::iterator::Iterator::skip<Self>(@1: Self, @2: usize) -> core::iter::adapters::skip::Skip<Self>
 
 fn core::iter::traits::iterator::Iterator::take<Self>(@1: Self, @2: usize) -> core::iter::adapters::take::Take<Self>
+
+fn core::iter::traits::iterator::Iterator::scan<Self, St, B, F>(@1: Self, @2: St, @3: F) -> core::iter::adapters::scan::Scan<Self, St, F>
+where
+    [@TraitClause4]: for<'_1_0> core::ops::function::FnMut<F, (&'_1_0 mut (St), Self::Item)>,
+    for<'_1_0> (parents(@TraitClause4)::[@TraitClause0])::Output = core::option::Option<B>,
 
 fn core::iter::traits::iterator::Iterator::flat_map<Self, U, F>(@1: Self, @2: F) -> core::iter::adapters::flatten::FlatMap<Self, U, F, @TraitClause3>
 where
@@ -2097,7 +2155,17 @@ fn core::iter::traits::iterator::Iterator::flatten<Self>(@1: Self) -> core::iter
 where
     [@TraitClause1]: core::iter::traits::collect::IntoIterator<Self::Item>,
 
+fn core::iter::traits::iterator::Iterator::map_windows<Self, F, R, const N : usize>(@1: Self, @2: F) -> core::iter::adapters::map_windows::MapWindows<Self, F, const N : usize, Self>
+where
+    [@TraitClause3]: for<'_1_0> core::ops::function::FnMut<F, (&'_1_0 (Array<Self::Item, const N : usize>))>,
+    for<'_1_0> (parents(@TraitClause3)::[@TraitClause0])::Output = R,
+
 fn core::iter::traits::iterator::Iterator::fuse<Self>(@1: Self) -> core::iter::adapters::fuse::Fuse<Self>
+
+fn core::iter::traits::iterator::Iterator::inspect<Self, F>(@1: Self, @2: F) -> core::iter::adapters::inspect::Inspect<Self, F>
+where
+    [@TraitClause2]: for<'_1_0> core::ops::function::FnMut<F, (&'_1_0 (Self::Item))>,
+    for<'_1_0> (parents(@TraitClause2)::[@TraitClause0])::Output = (),
 
 fn core::iter::traits::iterator::Iterator::by_ref<'_0, Self>(@1: &'_0 mut (Self)) -> &'_0 mut (Self)
 
@@ -2114,6 +2182,21 @@ where
 fn core::iter::traits::iterator::Iterator::collect_into<'_0, Self, E>(@1: Self, @2: &'_0 mut (E)) -> &'_0 mut (E)
 where
     [@TraitClause1]: core::iter::traits::collect::Extend<E, Self::Item>,
+
+fn core::iter::traits::iterator::Iterator::partition<Self, B, F>(@1: Self, @2: F) -> (B, B)
+where
+    [@TraitClause3]: core::default::Default<B>,
+    [@TraitClause4]: core::iter::traits::collect::Extend<B, Self::Item>,
+    [@TraitClause5]: for<'_1_0> core::ops::function::FnMut<F, (&'_1_0 (Self::Item))>,
+    for<'_1_0> (parents(@TraitClause5)::[@TraitClause0])::Output = bool,
+
+fn core::iter::traits::iterator::Iterator::partition_in_place<'a, Self, T, P>(@1: Self, @2: P) -> usize
+where
+    [@TraitClause3]: core::iter::traits::double_ended::DoubleEndedIterator<Self>,
+    [@TraitClause4]: for<'_1_0> core::ops::function::FnMut<P, (&'_1_0 (T))>,
+    T : 'a,
+    Self::Item = &'a mut (T),
+    for<'_1_0> (parents(@TraitClause4)::[@TraitClause0])::Output = bool,
 
 fn core::iter::traits::iterator::Iterator::is_partitioned<Self, P>(@1: Self, @2: P) -> bool
 where
@@ -2162,15 +2245,35 @@ where
     [@TraitClause2]: core::ops::function::FnMut<F, (Self::Item)>,
     (parents(@TraitClause2)::[@TraitClause0])::Output = bool,
 
+fn core::iter::traits::iterator::Iterator::find<'_0, Self, P>(@1: &'_0 mut (Self), @2: P) -> core::option::Option<Self::Item>
+where
+    [@TraitClause2]: for<'_1_0> core::ops::function::FnMut<P, (&'_1_0 (Self::Item))>,
+    for<'_1_0> (parents(@TraitClause2)::[@TraitClause0])::Output = bool,
+
 fn core::iter::traits::iterator::Iterator::find_map<'_0, Self, B, F>(@1: &'_0 mut (Self), @2: F) -> core::option::Option<B>
 where
     [@TraitClause3]: core::ops::function::FnMut<F, (Self::Item)>,
     (parents(@TraitClause3)::[@TraitClause0])::Output = core::option::Option<B>,
 
+fn core::iter::traits::iterator::Iterator::try_find<'_0, Self, R, impl FnMut(&Self::Item) -> R>(@1: &'_0 mut (Self), @2: impl FnMut(&Self::Item) -> R) -> @TraitClause4::TryType
+where
+    [@TraitClause3]: core::ops::try_trait::Try<R>,
+    [@TraitClause4]: core::ops::try_trait::Residual<@TraitClause3::Residual, core::option::Option<Self::Item>>,
+    [@TraitClause5]: for<'_1_0> core::ops::function::FnMut<impl FnMut(&Self::Item) -> R, (&'_1_0 (Self::Item))>,
+    @TraitClause3::Output = bool,
+    for<'_1_0> (parents(@TraitClause5)::[@TraitClause0])::Output = R,
+
 fn core::iter::traits::iterator::Iterator::position<'_0, Self, P>(@1: &'_0 mut (Self), @2: P) -> core::option::Option<usize>
 where
     [@TraitClause2]: core::ops::function::FnMut<P, (Self::Item)>,
     (parents(@TraitClause2)::[@TraitClause0])::Output = bool,
+
+fn core::iter::traits::iterator::Iterator::rposition<'_0, Self, P>(@1: &'_0 mut (Self), @2: P) -> core::option::Option<usize>
+where
+    [@TraitClause1]: core::ops::function::FnMut<P, (Self::Item)>,
+    [@TraitClause3]: core::iter::traits::exact_size::ExactSizeIterator<Self>,
+    [@TraitClause4]: core::iter::traits::double_ended::DoubleEndedIterator<Self>,
+    (parents(@TraitClause1)::[@TraitClause0])::Output = bool,
 
 fn core::iter::traits::iterator::Iterator::max<Self>(@1: Self) -> core::option::Option<Self::Item>
 where
@@ -2179,6 +2282,28 @@ where
 fn core::iter::traits::iterator::Iterator::min<Self>(@1: Self) -> core::option::Option<Self::Item>
 where
     [@TraitClause1]: core::cmp::Ord<Self::Item>,
+
+fn core::iter::traits::iterator::Iterator::max_by_key<Self, B, F>(@1: Self, @2: F) -> core::option::Option<Self::Item>
+where
+    [@TraitClause2]: core::cmp::Ord<B>,
+    [@TraitClause4]: for<'_1_0> core::ops::function::FnMut<F, (&'_1_0 (Self::Item))>,
+    for<'_1_0> (parents(@TraitClause4)::[@TraitClause0])::Output = B,
+
+fn core::iter::traits::iterator::Iterator::max_by<Self, F>(@1: Self, @2: F) -> core::option::Option<Self::Item>
+where
+    [@TraitClause2]: for<'_1_0, '_1_1> core::ops::function::FnMut<F, (&'_1_0 (Self::Item), &'_1_1 (Self::Item))>,
+    for<'_1_0, '_1_1> (parents(@TraitClause2)::[@TraitClause0])::Output = core::cmp::Ordering,
+
+fn core::iter::traits::iterator::Iterator::min_by_key<Self, B, F>(@1: Self, @2: F) -> core::option::Option<Self::Item>
+where
+    [@TraitClause2]: core::cmp::Ord<B>,
+    [@TraitClause4]: for<'_1_0> core::ops::function::FnMut<F, (&'_1_0 (Self::Item))>,
+    for<'_1_0> (parents(@TraitClause4)::[@TraitClause0])::Output = B,
+
+fn core::iter::traits::iterator::Iterator::min_by<Self, F>(@1: Self, @2: F) -> core::option::Option<Self::Item>
+where
+    [@TraitClause2]: for<'_1_0, '_1_1> core::ops::function::FnMut<F, (&'_1_0 (Self::Item), &'_1_1 (Self::Item))>,
+    for<'_1_0, '_1_1> (parents(@TraitClause2)::[@TraitClause0])::Output = core::cmp::Ordering,
 
 fn core::iter::traits::iterator::Iterator::rev<Self>(@1: Self) -> core::iter::adapters::rev::Rev<Self>
 where
@@ -2284,6 +2409,11 @@ fn core::iter::traits::iterator::Iterator::is_sorted<Self>(@1: Self) -> bool
 where
     [@TraitClause1]: core::cmp::PartialOrd<Self::Item, Self::Item>,
 
+fn core::iter::traits::iterator::Iterator::is_sorted_by<Self, F>(@1: Self, @2: F) -> bool
+where
+    [@TraitClause2]: for<'_1_0, '_1_1> core::ops::function::FnMut<F, (&'_1_0 (Self::Item), &'_1_1 (Self::Item))>,
+    for<'_1_0, '_1_1> (parents(@TraitClause2)::[@TraitClause0])::Output = bool,
+
 fn core::iter::traits::iterator::Iterator::is_sorted_by_key<Self, F, K>(@1: Self, @2: F) -> bool
 where
     [@TraitClause3]: core::ops::function::FnMut<F, (Self::Item)>,
@@ -2350,6 +2480,8 @@ fn core::iter::traits::collect::Extend::extend_reserve<'_0, Self, A>(@1: &'_0 mu
 
 unsafe fn core::iter::traits::collect::Extend::extend_one_unchecked<'_0, Self, A>(@1: &'_0 mut (Self), @2: A)
 
+fn core::default::Default::default<Self>() -> Self
+
 fn core::iter::traits::double_ended::DoubleEndedIterator::next_back<'_0, Self>(@1: &'_0 mut (Self)) -> core::option::Option<(parents(Self)::[@TraitClause0])::Item>
 
 fn core::iter::traits::double_ended::DoubleEndedIterator::advance_back_by<'_0, Self>(@1: &'_0 mut (Self), @2: usize) -> core::result::Result<(), core::num::nonzero::NonZero<usize, core::num::nonzero::{impl core::num::nonzero::ZeroablePrimitive for usize}#26>>
@@ -2368,7 +2500,14 @@ where
     [@TraitClause3]: core::ops::function::FnMut<F, (B, (parents(Self)::[@TraitClause0])::Item)>,
     (parents(@TraitClause3)::[@TraitClause0])::Output = B,
 
-fn core::default::Default::default<Self>() -> Self
+fn core::iter::traits::double_ended::DoubleEndedIterator::rfind<'_0, Self, P>(@1: &'_0 mut (Self), @2: P) -> core::option::Option<(parents(Self)::[@TraitClause0])::Item>
+where
+    [@TraitClause2]: for<'_1_0> core::ops::function::FnMut<P, (&'_1_0 ((parents(Self)::[@TraitClause0])::Item))>,
+    for<'_1_0> (parents(@TraitClause2)::[@TraitClause0])::Output = bool,
+
+fn core::iter::traits::exact_size::ExactSizeIterator::len<'_0, Self>(@1: &'_0 (Self)) -> usize
+
+fn core::iter::traits::exact_size::ExactSizeIterator::is_empty<'_0, Self>(@1: &'_0 (Self)) -> bool
 
 fn core::iter::traits::accum::Sum::sum<Self, A, I>(@1: I) -> Self
 where
