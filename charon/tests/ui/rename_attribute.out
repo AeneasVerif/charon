@@ -20,6 +20,8 @@ impl test_crate::{impl test_crate::BoolTrait for bool} : test_crate::BoolTrait<b
     fn get_bool = test_crate::{impl test_crate::BoolTrait for bool}::get_bool
 }
 
+trait core::marker::Sized<Self>
+
 fn test_crate::BoolTrait::get_bool<'_0, Self>(@1: &'_0 (Self)) -> bool
 
 fn test_crate::BoolTrait::ret_true<'_0, Self>(@1: &'_0 (Self)) -> bool
@@ -32,6 +34,8 @@ fn test_crate::BoolTrait::ret_true<'_0, Self>(@1: &'_0 (Self)) -> bool
 }
 
 fn test_crate::test_bool_trait<T>(@1: bool) -> bool
+where
+    [@TraitClause0]: core::marker::Sized<T>,
 {
     let @0: bool; // return
     let x@1: bool; // arg #1

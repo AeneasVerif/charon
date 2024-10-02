@@ -20,12 +20,19 @@ impl test_crate::{impl test_crate::BoolTrait for bool} : test_crate::BoolTrait<b
     fn get_bool = test_crate::{impl test_crate::BoolTrait for bool}::get_bool
 }
 
-enum core::option::Option<T> =
+trait core::marker::Sized<Self>
+
+enum core::option::Option<T>
+  where
+      [@TraitClause0]: core::marker::Sized<T>,
+ =
 |  None()
 |  Some(T)
 
 
-fn test_crate::test_bool_trait_option<T>(@1: core::option::Option<T>) -> bool
+fn test_crate::test_bool_trait_option<T>(@1: core::option::Option<T, @TraitClause0>) -> bool
+where
+    [@TraitClause0]: core::marker::Sized<T>,
 
 opaque type test_crate::Test
 

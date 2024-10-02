@@ -1,7 +1,10 @@
 # Final LLBC before serialization:
 
+trait core::marker::Sized<Self>
+
 trait core::clone::Clone<Self>
 {
+    parent_clause_0 : [@TraitClause0]: core::marker::Sized<Self>
     fn clone : core::clone::Clone::clone
     fn clone_from : core::clone::Clone::clone_from
 }
@@ -17,6 +20,7 @@ where
 {
     parent_clause_0 : [@TraitClause0]: core::marker::Copy<Self>
     parent_clause_1 : [@TraitClause1]: core::clone::Clone<Self::Item>
+    parent_clause_2 : [@TraitClause2]: core::marker::Sized<Self::Item>
     type Item
     fn use_item : test_crate::Foo::use_item
 }
@@ -25,6 +29,7 @@ fn core::clone::impls::{impl core::clone::Clone for &'_0 (T)}#3::clone<'_0, '_1,
 
 impl<'_0, T> core::clone::impls::{impl core::clone::Clone for &'_0 (T)}#3<'_0, T> : core::clone::Clone<&'_0 (T)>
 {
+    parent_clause0 = core::marker::Sized<&'_ (T)>
     fn clone = core::clone::impls::{impl core::clone::Clone for &'_0 (T)}#3::clone
 }
 
@@ -33,40 +38,51 @@ impl<'_0, T> core::marker::{impl core::marker::Copy for &'_0 (T)}#4<'_0, T> : co
     parent_clause0 = core::clone::impls::{impl core::clone::Clone for &'_0 (T)}#3<'_, T>
 }
 
-enum core::option::Option<T> =
+enum core::option::Option<T>
+  where
+      [@TraitClause0]: core::marker::Sized<T>,
+ =
 |  None()
 |  Some(T)
 
 
-fn core::option::{impl core::clone::Clone for core::option::Option<T>}#5::clone<'_0, T>(@1: &'_0 (core::option::Option<T>)) -> core::option::Option<T>
+fn core::option::{impl core::clone::Clone for core::option::Option<T, @TraitClause0>}#5::clone<'_0, T>(@1: &'_0 (core::option::Option<T, @TraitClause0>)) -> core::option::Option<T, @TraitClause0>
 where
     // Inherited clauses:
+    [@TraitClause0]: core::marker::Sized<T>,
     [@TraitClause1]: core::clone::Clone<T>,
 
-fn core::option::{impl core::clone::Clone for core::option::Option<T>}#5::clone_from<'_0, '_1, T>(@1: &'_0 mut (core::option::Option<T>), @2: &'_1 (core::option::Option<T>))
+fn core::option::{impl core::clone::Clone for core::option::Option<T, @TraitClause0>}#5::clone_from<'_0, '_1, T>(@1: &'_0 mut (core::option::Option<T, @TraitClause0>), @2: &'_1 (core::option::Option<T, @TraitClause0>))
 where
     // Inherited clauses:
+    [@TraitClause0]: core::marker::Sized<T>,
     [@TraitClause1]: core::clone::Clone<T>,
 
-impl<T> core::option::{impl core::clone::Clone for core::option::Option<T>}#5<T> : core::clone::Clone<core::option::Option<T>>
+impl<T> core::option::{impl core::clone::Clone for core::option::Option<T, @TraitClause0>}#5<T> : core::clone::Clone<core::option::Option<T, @TraitClause0>>
 where
+    [@TraitClause0]: core::marker::Sized<T>,
     [@TraitClause1]: core::clone::Clone<T>,
 {
-    fn clone = core::option::{impl core::clone::Clone for core::option::Option<T>}#5::clone
-    fn clone_from = core::option::{impl core::clone::Clone for core::option::Option<T>}#5::clone_from
+    parent_clause0 = core::marker::Sized<core::option::Option<T, @TraitClause0>>
+    fn clone = core::option::{impl core::clone::Clone for core::option::Option<T, @TraitClause0>}#5::clone
+    fn clone_from = core::option::{impl core::clone::Clone for core::option::Option<T, @TraitClause0>}#5::clone_from
 }
 
 impl<'a, T> test_crate::{impl test_crate::Foo<'a> for &'a (T)}<'a, T> : test_crate::Foo<'a, &'a (T)>
+where
+    [@TraitClause0]: core::marker::Sized<T>,
 {
     parent_clause0 = core::marker::{impl core::marker::Copy for &'_0 (T)}#4<'_, T>
-    parent_clause1 = core::option::{impl core::clone::Clone for core::option::Option<T>}#5<&'_ (T)>[core::clone::impls::{impl core::clone::Clone for &'_0 (T)}#3<'_, T>]
-    type Item = core::option::Option<&'a (T)>
+    parent_clause1 = core::option::{impl core::clone::Clone for core::option::Option<T, @TraitClause0>}#5<&'_ (T)>[core::marker::Sized<&'_ (T)>, core::clone::impls::{impl core::clone::Clone for &'_0 (T)}#3<'_, T>]
+    parent_clause2 = core::marker::Sized<core::option::Option<&'_ (T), core::marker::Sized<&'_ (T)>>>
+    type Item = core::option::Option<&'a (T), core::marker::Sized<&'_ (T)>>
 }
 
 fn core::clone::Clone::clone<'_0, Self>(@1: &'_0 (Self)) -> Self
 
 fn test_crate::external_use_item<'a, T>(@1: @TraitClause1::Item) -> @TraitClause1::Item
 where
+    [@TraitClause0]: core::marker::Sized<T>,
     [@TraitClause1]: test_crate::Foo<'_, T>,
 {
     let @0: @TraitClause1::Item; // return
@@ -83,12 +99,12 @@ where
 fn test_crate::call_fn()
 {
     let @0: (); // return
-    let @1: core::option::Option<&'_ (bool)>; // anonymous local
-    let @2: core::option::Option<&'_ (bool)>; // anonymous local
+    let @1: core::option::Option<&'_ (bool), core::marker::Sized<&'_ (bool)>>; // anonymous local
+    let @2: core::option::Option<&'_ (bool), core::marker::Sized<&'_ (bool)>>; // anonymous local
     let @3: (); // anonymous local
 
     @2 := core::option::Option::None {  }
-    @1 := test_crate::external_use_item<'_, &'_ (bool)>[test_crate::{impl test_crate::Foo<'a> for &'a (T)}<'_, bool>](move (@2))
+    @1 := test_crate::external_use_item<'_, &'_ (bool)>[core::marker::Sized<&'_ (bool)>, test_crate::{impl test_crate::Foo<'a> for &'a (T)}<'_, bool>[core::marker::Sized<bool>]](move (@2))
     drop @2
     @fake_read(@1)
     drop @1
@@ -100,6 +116,8 @@ fn test_crate::call_fn()
 
 fn test_crate::type_equality<'a, I, J>(@1: @TraitClause2::Item) -> @TraitClause3::Item
 where
+    [@TraitClause0]: core::marker::Sized<I>,
+    [@TraitClause1]: core::marker::Sized<J>,
     [@TraitClause2]: test_crate::Foo<'_, I>,
     [@TraitClause3]: test_crate::Foo<'_, J>,
     @TraitClause3::Item = @TraitClause2::Item,
@@ -114,11 +132,13 @@ where
 
 trait test_crate::loopy::Bar<Self>
 {
+    parent_clause_0 : [@TraitClause0]: core::marker::Sized<Self::BarTy>
     type BarTy
 }
 
 impl test_crate::loopy::{impl test_crate::loopy::Bar for ()} : test_crate::loopy::Bar<()>
 {
+    parent_clause0 = core::marker::Sized<bool>
     type BarTy = bool
 }
 
@@ -126,6 +146,7 @@ trait test_crate::loopy::Foo<Self>
 {
     parent_clause_0 : [@TraitClause0]: test_crate::loopy::Bar<Self::FooTy>
     parent_clause_1 : [@TraitClause1]: test_crate::loopy::Foo<Self::FooTy>
+    parent_clause_2 : [@TraitClause2]: core::marker::Sized<Self::FooTy>
     type FooTy
 }
 
@@ -133,20 +154,25 @@ impl test_crate::loopy::{impl test_crate::loopy::Foo for ()}#1 : test_crate::loo
 {
     parent_clause0 = test_crate::loopy::{impl test_crate::loopy::Bar for ()}
     parent_clause1 = test_crate::loopy::{impl test_crate::loopy::Foo for ()}#1
+    parent_clause2 = core::marker::Sized<()>
     type FooTy = ()
 }
 
 trait test_crate::loopy::Baz<Self, T>
 {
+    parent_clause_0 : [@TraitClause0]: core::marker::Sized<T>
     parent_clause_1 : [@TraitClause1]: test_crate::loopy::Baz<T, T>
     parent_clause_2 : [@TraitClause2]: test_crate::loopy::Bar<T>
+    parent_clause_3 : [@TraitClause3]: core::marker::Sized<Self::BazTy>
     type BazTy
 }
 
 impl test_crate::loopy::{impl test_crate::loopy::Baz<()> for ()}#2 : test_crate::loopy::Baz<(), ()>
 {
-    parent_clause0 = test_crate::loopy::{impl test_crate::loopy::Baz<()> for ()}#2
-    parent_clause1 = test_crate::loopy::{impl test_crate::loopy::Bar for ()}
+    parent_clause0 = core::marker::Sized<()>
+    parent_clause1 = test_crate::loopy::{impl test_crate::loopy::Baz<()> for ()}#2
+    parent_clause2 = test_crate::loopy::{impl test_crate::loopy::Bar for ()}
+    parent_clause3 = core::marker::Sized<usize>
     type BazTy = usize
 }
 
@@ -158,6 +184,7 @@ trait core::borrow::Borrow<Self, Borrowed>
 trait alloc::borrow::ToOwned<Self>
 {
     parent_clause_0 : [@TraitClause0]: core::borrow::Borrow<Self::Owned, Self>
+    parent_clause_1 : [@TraitClause1]: core::marker::Sized<Self::Owned>
     type Owned
     fn to_owned : alloc::borrow::ToOwned::to_owned
     fn clone_into : alloc::borrow::ToOwned::clone_into
@@ -175,14 +202,22 @@ enum test_crate::cow::Cow<'a, B>
 
 trait test_crate::params::Foo<'a, Self, T>
 {
+    parent_clause_0 : [@TraitClause0]: core::marker::Sized<T>
+    parent_clause_1 : [@TraitClause1]: core::marker::Sized<Self::X>
+    parent_clause_2 : [@TraitClause2]: core::marker::Sized<Self::Item>
     type X
     type Item
 }
 
-impl<'a, T> test_crate::params::{impl test_crate::params::Foo<'a, core::option::Option<T>> for ()}<'a, T> : test_crate::params::Foo<'a, (), core::option::Option<T>>
+impl<'a, T> test_crate::params::{impl test_crate::params::Foo<'a, core::option::Option<T, @TraitClause0>> for ()}<'a, T> : test_crate::params::Foo<'a, (), core::option::Option<T, @TraitClause0>>
+where
+    [@TraitClause0]: core::marker::Sized<T>,
 {
+    parent_clause0 = core::marker::Sized<core::option::Option<T, @TraitClause0>>
+    parent_clause1 = core::marker::Sized<&'_ (())>
+    parent_clause2 = core::marker::Sized<&'_ ((core::option::Option<T, @TraitClause0>, &'_ (())))>
     type X = &'a (())
-    type Item = &'a ((core::option::Option<T>, test_crate::params::{impl test_crate::params::Foo<'a, core::option::Option<T>> for ()}<'_, T>::X))
+    type Item = &'a ((core::option::Option<T, @TraitClause0>, test_crate::params::{impl test_crate::params::Foo<'a, core::option::Option<T, @TraitClause0>> for ()}<'_, T>[@TraitClause0]::X))
 }
 
 fn test_crate::Foo::use_item<'a, '_1, Self>(@1: &'_1 (Self::Item)) -> &'_1 (Self::Item)

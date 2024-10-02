@@ -1,15 +1,23 @@
 # Final LLBC before serialization:
 
+trait core::marker::Sized<Self>
+
 struct test_crate::S<'a, K>
   where
+      [@TraitClause0]: core::marker::Sized<K>,
       K : 'a,
  =
 {
   x: &'a (K),
 }
 
+trait core::marker::Tuple<Self>
+
 trait core::ops::function::FnOnce<Self, Args>
 {
+    parent_clause_0 : [@TraitClause0]: core::marker::Sized<Args>
+    parent_clause_1 : [@TraitClause1]: core::marker::Tuple<Args>
+    parent_clause_2 : [@TraitClause2]: core::marker::Sized<Self::Output>
     type Output
     fn call_once : core::ops::function::FnOnce::call_once
 }
@@ -17,11 +25,17 @@ trait core::ops::function::FnOnce<Self, Args>
 trait core::ops::function::FnMut<Self, Args>
 {
     parent_clause_0 : [@TraitClause0]: core::ops::function::FnOnce<Self, Args>
+    parent_clause_1 : [@TraitClause1]: core::marker::Sized<Args>
+    parent_clause_2 : [@TraitClause2]: core::marker::Tuple<Args>
     fn call_mut : core::ops::function::FnMut::call_mut
 }
 
-fn test_crate::{test_crate::S<'a, K>}::f<'a, K, F>()
+fn test_crate::{test_crate::S<'a, K, @TraitClause0>}::f<'a, K, F>()
 where
+    // Inherited clauses:
+    [@TraitClause0]: core::marker::Sized<K>,
+    // Local clauses:
+    [@TraitClause1]: core::marker::Sized<F>,
     [@TraitClause2]: for<'_1_0> core::ops::function::FnMut<F, (&'_1_0 (u32))>,
     for<'_1_0> (parents(@TraitClause2)::[@TraitClause0])::Output = (),
 {
@@ -34,8 +48,12 @@ where
     return
 }
 
-fn test_crate::{test_crate::S<'a, K>}::g<'a, K, F>()
+fn test_crate::{test_crate::S<'a, K, @TraitClause0>}::g<'a, K, F>()
 where
+    // Inherited clauses:
+    [@TraitClause0]: core::marker::Sized<K>,
+    // Local clauses:
+    [@TraitClause1]: core::marker::Sized<F>,
     [@TraitClause2]: for<'_1_0> core::ops::function::FnMut<F, (&'_1_0 (u32))>,
     for<'b> (parents(@TraitClause2)::[@TraitClause0])::Output = (),
 {
@@ -52,6 +70,7 @@ struct test_crate::T = {}
 
 fn test_crate::{test_crate::T}#1::f<F>()
 where
+    [@TraitClause0]: core::marker::Sized<F>,
     [@TraitClause1]: for<'_1_0> core::ops::function::FnMut<F, (&'_1_0 (u32))>,
     for<'_1_0> (parents(@TraitClause1)::[@TraitClause0])::Output = (),
 {

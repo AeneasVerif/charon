@@ -1,6 +1,13 @@
 # Final LLBC before serialization:
 
+trait core::marker::Sized<Self>
+
+trait core::marker::Send<Self>
+
 fn test_crate::foo<M>(@1: M)
+where
+    [@TraitClause0]: core::marker::Sized<M>,
+    [@TraitClause1]: core::marker::Send<M>,
 {
     let @0: (); // return
     let _msg@1: M; // arg #1
@@ -21,7 +28,7 @@ fn test_crate::main()
     let @3: (); // anonymous local
 
     @2 := ()
-    @1 := test_crate::foo<()>(move (@2))
+    @1 := test_crate::foo<()>[core::marker::Sized<()>, core::marker::Send<()>](move (@2))
     drop @2
     drop @1
     @3 := ()

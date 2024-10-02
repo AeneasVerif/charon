@@ -1,11 +1,19 @@
 # Final LLBC before serialization:
 
-struct test_crate::V<T, const N : usize> =
+trait core::marker::Sized<Self>
+
+struct test_crate::V<T, const N : usize>
+  where
+      [@TraitClause0]: core::marker::Sized<T>,
+ =
 {
   x: Array<T, const N : usize>,
 }
 
-global test_crate::{test_crate::V<T, const N : usize>}::LEN<T, const N : usize>  {
+global test_crate::{test_crate::V<T, const N : usize, @TraitClause0>}::LEN<T, const N : usize>
+  where
+      [@TraitClause0]: core::marker::Sized<T>,
+  {
     let @0: usize; // return
 
     @0 := const (const N : usize)

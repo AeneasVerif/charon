@@ -5,8 +5,11 @@ enum test_crate::Foo =
 |  B()
 
 
+trait core::marker::Sized<Self>
+
 trait core::clone::Clone<Self>
 {
+    parent_clause_0 : [@TraitClause0]: core::marker::Sized<Self>
     fn clone : core::clone::Clone::clone
     fn clone_from : core::clone::Clone::clone_from
 }
@@ -27,6 +30,7 @@ fn test_crate::{impl core::clone::Clone for test_crate::Foo}#1::clone<'_0>(@1: &
 
 impl test_crate::{impl core::clone::Clone for test_crate::Foo}#1 : core::clone::Clone<test_crate::Foo>
 {
+    parent_clause0 = core::marker::Sized<test_crate::Foo>
     fn clone = test_crate::{impl core::clone::Clone for test_crate::Foo}#1::clone
 }
 

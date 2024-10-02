@@ -220,14 +220,18 @@ fn test_crate::fn_casts()
     return
 }
 
+trait core::marker::Sized<Self>
+
+struct alloc::alloc::Global = {}
+
 fn test_crate::boxes()
 {
     let @0: (); // return
-    let @1: alloc::boxed::Box<i32>; // anonymous local
-    let @2: alloc::boxed::Box<i32>; // anonymous local
+    let @1: alloc::boxed::Box<i32, core::marker::Sized<alloc::alloc::Global>>; // anonymous local
+    let @2: alloc::boxed::Box<i32, core::marker::Sized<alloc::alloc::Global>>; // anonymous local
     let @3: (); // anonymous local
 
-    @2 := @BoxNew<i32>(const (42 : i32))
+    @2 := @BoxNew<i32>[core::marker::Sized<alloc::alloc::Global>](const (42 : i32))
     @1 := move (@2)
     drop @2
     drop @2
@@ -270,13 +274,18 @@ global test_crate::STEAL2  {
     return
 }
 
-struct test_crate::nullary_ops::Struct<T> =
+struct test_crate::nullary_ops::Struct<T>
+  where
+      [@TraitClause0]: core::marker::Sized<T>,
+ =
 {
   a: u8,
   b: T,
 }
 
 fn test_crate::nullary_ops<T>() -> usize
+where
+    [@TraitClause0]: core::marker::Sized<T>,
 {
     let @0: usize; // return
     let size@1: usize; // local
@@ -287,13 +296,11 @@ fn test_crate::nullary_ops<T>() -> usize
     // This one seems to be optimized out.
     size@1 := size_of<T>
     align@2 := align_of<T>
-    offset@3 := offset_of(?)<test_crate::nullary_ops::Struct<T>>
+    offset@3 := offset_of(?)<test_crate::nullary_ops::Struct<T, @TraitClause0>>
     @4 := copy (size@1) + copy (align@2)
     @0 := copy (@4) + copy (offset@3)
     return
 }
-
-struct alloc::alloc::Global = {}
 
 unsafe fn alloc::alloc::exchange_malloc(@1: usize, @2: usize) -> *mut u8
 

@@ -5,7 +5,9 @@ struct test_crate::Foo =
   *const (),
 }
 
-impl test_crate::{impl @TraitDecl0 for test_crate::Foo} : @TraitDecl0<test_crate::Foo>
+trait core::marker::Send<Self>
+
+impl test_crate::{impl core::marker::Send for test_crate::Foo} : core::marker::Send<test_crate::Foo>
 
 
 
