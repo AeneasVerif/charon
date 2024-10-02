@@ -361,15 +361,20 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
     }
 
     /// Return a map from source file name to file content.
+    ///
+    /// Note that we collect *all* the source files found in the session,
+    /// including the source files from the dependencies. We later filter
+    /// those to build a map from the file names we actually refer to in
+    /// the spans to the file contents (ignoring the other files). This
+    /// is the reason why here we build a map from file name to `Arc<String>`
+    /// and not directly to `String`: we don't want to clone too much data.
     fn read_source_files(&mut self) -> HashMap<FileName, Arc<String>> {
         // Retrieve the source map
         let source_map = self.tcx.sess.source_map();
 
         // Read all the files
-        use std::ops::Deref;
         source_map
             .files()
-            .deref()
             .iter()
             .filter_map(|file| {
                 // Convert the filename
