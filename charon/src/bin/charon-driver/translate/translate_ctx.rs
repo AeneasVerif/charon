@@ -94,36 +94,7 @@ impl TranslateOptions {
                 opacities.push((pat.to_string(), Invisible));
             }
 
-            // Hide some methods that have signatures we don't handle yet.
-            // TODO: handle these signatures.
-            let tricky_iterator_methods = &[
-                "filter",
-                "find",
-                "inspect",
-                "is_sorted_by",
-                "map_windows",
-                "max_by",
-                "max_by_key",
-                "min_by",
-                "min_by_key",
-                "partition",
-                "partition_in_place",
-                "rposition",
-                "scan",
-                "skip_while",
-                "take_while",
-                "try_find",
-            ];
-            for method in tricky_iterator_methods {
-                opacities.push((
-                    format!("core::iter::traits::iterator::Iterator::{method}"),
-                    Invisible,
-                ));
-            }
-            opacities.push((
-                format!("core::iter::traits::double_ended::DoubleEndedIterator::rfind"),
-                Invisible,
-            ));
+            // We always hide this trait.
             opacities.push((format!("core::alloc::Allocator"), Invisible));
             opacities.push((
                 format!("alloc::alloc::{{impl core::alloc::Allocator for _}}"),
