@@ -206,8 +206,8 @@ pub fn translate(tcx: TyCtxt, internal: &mut CharonCallbacks) -> export::CrateDa
     // the mutually recursive groups - we do this in the next step.
     let mut ctx = translate_crate_to_ullbc::translate(options, tcx);
 
-    if options.print_ullbc {
-        info!("# ULLBC after translation from MIR:\n\n{ctx}\n");
+    if options.print_original_ullbc {
+        println!("# ULLBC after translation from MIR:\n\n{ctx}\n");
     } else {
         trace!("# ULLBC after translation from MIR:\n\n{ctx}\n");
     }
@@ -224,6 +224,17 @@ pub fn translate(tcx: TyCtxt, internal: &mut CharonCallbacks) -> export::CrateDa
     for pass in ULLBC_PASSES.iter() {
         trace!("# Starting pass {}", pass.name());
         pass.run(&mut ctx)
+    }
+
+    let next_phase = if options.ullbc {
+        "serialization"
+    } else {
+        "control-flow reconstruction"
+    };
+    if options.print_ullbc {
+        println!("# Final ULLBC before {next_phase}:\n\n{ctx}\n");
+    } else {
+        trace!("# Final ULLBC before {next_phase}:\n\n{ctx}\n");
     }
 
     // # There are two options:
@@ -250,7 +261,7 @@ pub fn translate(tcx: TyCtxt, internal: &mut CharonCallbacks) -> export::CrateDa
         // - compute the order in which to extract the definitions
         // - find the recursive definitions
         // - group the mutually recursive definitions
-        let reordered_decls = compute_reordered_decls(&mut ctx);
+        let reordered_decls = compute_reordered_decls(&ctx);
         ctx.translated.ordered_decls = Some(reordered_decls);
 
         if options.print_llbc {

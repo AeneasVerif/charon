@@ -187,8 +187,14 @@ pub struct CliOpts {
     #[serde(default)]
     pub no_serialize: bool,
     #[clap(
-        long = "print-ullbc",
+        long = "print-original-ullbc",
         help = "Print the ULLBC immediately after extraction from MIR."
+    )]
+    #[serde(default)]
+    pub print_original_ullbc: bool,
+    #[clap(
+        long = "print-ullbc",
+        help = "Print the ULLBC after applying the micro-passes (before serialization/control-flow reconstruction)."
     )]
     #[serde(default)]
     pub print_ullbc: bool,
