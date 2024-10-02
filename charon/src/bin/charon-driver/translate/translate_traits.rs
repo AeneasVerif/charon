@@ -115,11 +115,11 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
             .collect_vec();
 
         // Translate the generics
-        // Note that in the generics returned by [get_generics], the trait refs only contain the
-        // local trait clauses. The parent clauses are stored in `bt_ctx.parent_trait_clauses`.
+        // Note that in the generics returned by [translate_def_generics], the trait refs only
+        // contain the local trait clauses. The parent clauses are stored in
+        // `bt_ctx.parent_trait_clauses`.
         // TODO: Distinguish between required and implied trait clauses?
-        bt_ctx.push_generics_for_def(span, def)?;
-        let generics = bt_ctx.get_generics();
+        let generics = bt_ctx.translate_def_generics(span, def)?;
 
         // Translate the associated items
         // We do something subtle here: TODO: explain
@@ -232,8 +232,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         let erase_regions = false;
         let mut bt_ctx = BodyTransCtx::new(rust_id, self);
 
-        bt_ctx.push_generics_for_def(span, def)?;
-        let generics = bt_ctx.get_generics();
+        let generics = bt_ctx.translate_def_generics(span, def)?;
 
         let hax::FullDefKind::Impl {
             impl_subject: hax::ImplSubject::Trait(trait_pred),

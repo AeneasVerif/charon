@@ -615,16 +615,34 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         }
     }
 
-    /// Add the generics and predicates of this item and its parents to the current context.
-    pub(crate) fn push_generics_for_def(
+    /// Translate the generics and predicates of this item and its parents.
+    pub(crate) fn translate_def_generics(
         &mut self,
         span: rustc_span::Span,
         def: &hax::FullDef,
-    ) -> Result<(), Error> {
-        self.push_generics_for_def_inner(span, def, false)
+    ) -> Result<GenericParams, Error> {
+        self.push_generics_for_def(span, def, false)?;
+        let mut generic_params = self.generic_params.clone();
+
+        // Sanity checks
+        self.check_generics();
+        assert!(generic_params
+            .trait_clauses
+            .iter()
+            .enumerate()
+            .all(|(i, c)| c.clause_id.index() == i));
+
+        // The regons were tracked separately, we add them back here.
+        assert!(generic_params.regions.is_empty());
+        assert!(self.region_vars.len() == 1);
+        generic_params.regions = self.region_vars[0].clone();
+
+        trace!("Translated generics: {generic_params:?}");
+        Ok(generic_params)
     }
 
-    fn push_generics_for_def_inner(
+    /// Add the generics and predicates of this item and its parents to the current context.
+    fn push_generics_for_def(
         &mut self,
         span: rustc_span::Span,
         def: &hax::FullDef,
@@ -639,7 +657,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             | FullDefKind::AssocConst { parent, .. }
             | FullDefKind::Closure { parent, .. } => {
                 let parent_def = self.t_ctx.hax_def(parent);
-                self.push_generics_for_def_inner(span, &parent_def, true)?;
+                self.push_generics_for_def(span, &parent_def, true)?;
             }
             _ => {}
         }
@@ -796,8 +814,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         let span = item_meta.span.rust_span();
 
         // Translate generics and predicates
-        bt_ctx.push_generics_for_def(span, def)?;
-        let generics = bt_ctx.get_generics();
+        let generics = bt_ctx.translate_def_generics(span, def)?;
 
         // Translate type body
         let kind = match &def.kind {

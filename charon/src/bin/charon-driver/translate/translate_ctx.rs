@@ -349,10 +349,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
                         // substs and bounds. In order to properly do so, we introduce
                         // a body translation context.
                         let mut bt_ctx = BodyTransCtx::new(def_id, self);
-
-                        bt_ctx.push_generics_for_def(span, &def)?;
-                        let generics = bt_ctx.get_generics();
-
+                        let generics = bt_ctx.translate_def_generics(span, &def)?;
                         let ty = bt_ctx.translate_ty(span, erase_regions, &ty)?;
                         ImplElem::Ty(generics, ty)
                     }
@@ -1091,22 +1088,6 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
 
     pub(crate) fn push_block(&mut self, id: ast::BlockId, block: ast::BlockData) {
         self.blocks.insert(id, block);
-    }
-
-    pub(crate) fn get_generics(&mut self) -> GenericParams {
-        // Sanity checks
-        self.check_generics();
-        assert!(self.region_vars.len() == 1);
-        let mut generic_params = self.generic_params.clone();
-        assert!(generic_params.regions.is_empty());
-        generic_params.regions = self.region_vars[0].clone();
-        assert!(generic_params
-            .trait_clauses
-            .iter()
-            .enumerate()
-            .all(|(i, c)| c.clause_id.index() == i));
-        trace!("Translated generics: {generic_params:?}");
-        generic_params
     }
 
     pub(crate) fn make_dep_source(&self, span: rustc_span::Span) -> Option<DepSource> {

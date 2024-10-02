@@ -1387,8 +1387,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         let erase_regions = false;
         let span = item_meta.span.rust_span();
 
-        self.push_generics_for_def(span, &def)?;
-        let generics = self.get_generics();
+        let generics = self.translate_def_generics(span, def)?;
 
         let signature = match &def.kind {
             hax::FullDefKind::Closure { args, .. } => &args.sig,
@@ -1558,8 +1557,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         //   const LEN : usize = N;
         // }
         // ```
-        bt_ctx.push_generics_for_def(span, def)?;
-        let generics = bt_ctx.get_generics();
+        let generics = bt_ctx.translate_def_generics(span, def)?;
 
         trace!("Translating global type");
         let ty = match &def.kind {
