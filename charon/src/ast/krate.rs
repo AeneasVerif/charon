@@ -96,6 +96,13 @@ pub struct TranslatedCrate {
     #[charon::opaque]
     pub file_to_id: HashMap<FileName, FileId>,
 
+    /// File id to content.
+    ///
+    /// Note that some files may be missing, if they are not "real" files.
+    #[drive(skip)]
+    #[serde(with = "HashMapToArray::<FileId, String>")]
+    pub file_id_to_content: HashMap<FileId, String>,
+
     /// All the ids, in the order in which we encountered them
     #[drive(skip)]
     pub all_ids: LinkedHashSet<AnyTransId>,
