@@ -23,7 +23,7 @@ pub fn sum(s: &[u32]) -> u32 {
         // sum + 100
         sum + 100
     } else {
-        // let sum untouched
+        // return sum untouched
         sum
     };
     // Function call

@@ -21,6 +21,16 @@ impl LlbcPass for Transform {
     // We may drop some comments if no statement starts with the relevant line (this can happen if
     // e.g. the statement was optimized out or the comment applied to an item instead).
     fn transform_body(&self, _ctx: &mut TransformCtx<'_>, b: &mut ExprBody) {
+        let mut statements_for_line: HashMap<usize, HashSet<ByAddress<&Statement>>> =
+            Default::default();
+        b.body.drive(&mut visitor_enter_fn(|st: &Statement| {
+            let span = st.span;
+            let end_line = statements_for_line
+                .entry(span.span.beg.line)
+                .or_insert(span.span.beg.line);
+            *end_line = max(*end_line, span.span.end.line);
+        }));
+
         // For each source line (that a comment may apply to), we try to compute the set of lines
         // that are spanned by the statement/expression that starts on that line. This assumes
         // standard one-statement-per-line rust formatting.
@@ -34,8 +44,6 @@ impl LlbcPass for Transform {
             *end_line = max(*end_line, span.span.end.line);
         }));
 
-        // TODO: for each syntactic line, find the span of the corresponding semantic line if
-        // possible.
         // TODO: order by statement kind: call, assign
         // Find for each line the statement span that starts the earliest as this is more likely to
         // correspond to what the comment was intended to point to.
