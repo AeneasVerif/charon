@@ -74,8 +74,12 @@ jobs:
     if: needs.check_if_skip_duplicate_job.outputs.should_skip != 'true'
     runs-on: [self-hosted, linux, nix]
     steps:
+      - uses: actions/checkout@v4
+        with:
+          repository: cryspen/libcrux
       - run: |
-          nix build --refresh -L github:cryspen/libcrux#ml-kem \
+          nix develop --command cargo generate-lockfile
+          nix build --refresh -L '.#ml-kem' \
               --override-input charon github:aeneasverif/charon/${{ github.sha }} \
               --update-input charon/rust-overlay \
               --update-input eurydice \
