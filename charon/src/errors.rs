@@ -65,7 +65,9 @@ pub use error_assert;
 #[derive(Debug, Clone, Copy, Hash, PartialEq, Eq)]
 pub struct DepSource {
     pub src_id: DefId,
-    pub span: Span,
+    /// The location where the id was referred to. We store `None` for external dependencies as we
+    /// don't want to show these to the users.
+    pub span: Option<Span>,
 }
 
 impl DepSource {
@@ -87,12 +89,6 @@ impl Ord for DepSource {
     }
 }
 
-impl DepSource {
-    pub fn make(src_id: DefId, span: Span) -> Option<Self> {
-        Some(DepSource { src_id, span })
-    }
-}
-
 /// The context for tracking and reporting errors.
 pub struct ErrorCtx<'ctx> {
     /// If true, do not abort on the first error and attempt to extract as much as possible.
@@ -102,14 +98,16 @@ pub struct ErrorCtx<'ctx> {
 
     /// The compiler session, used for displaying errors.
     pub dcx: DiagCtxtHandle<'ctx>,
-    /// The ids of the declarations for which extraction we encountered errors.
-    pub decls_with_errors: HashSet<DefId>,
+    /// The ids of the external_declarations for which extraction we encountered errors.
+    pub external_decls_with_errors: HashSet<DefId>,
     /// The ids of the declarations we completely failed to extract and had to ignore.
     pub ignored_failed_decls: HashSet<DefId>,
-    /// Dependency graph with sources. See [DepSource].
-    pub dep_sources: HashMap<DefId, HashSet<DepSource>>,
+    /// For each external item, a list of locations that point to it. See [DepSource].
+    pub external_dep_sources: HashMap<DefId, HashSet<DepSource>>,
     /// The id of the definition we are exploring, used to track the source of errors.
     pub def_id: Option<DefId>,
+    /// Whether the definition being explored is local to the crate or not.
+    pub def_id_is_local: bool,
     /// The number of errors encountered so far.
     pub error_count: usize,
 }
@@ -136,24 +134,10 @@ impl ErrorCtx<'_> {
     pub fn span_err(&mut self, span: Span, msg: &str) {
         self.span_err_no_register(span, msg);
         self.error_count += 1;
-        if let Some(id) = self.def_id {
-            let _ = self.decls_with_errors.insert(id);
-        }
-    }
-
-    /// Register the fact that `id` is a dependency of `src` (if `src` is not `None`).
-    pub fn register_dep_source(&mut self, src: &Option<DepSource>, id: DefId) {
-        if let Some(src) = src {
-            if src.src_id != id {
-                match self.dep_sources.get_mut(&id) {
-                    None => {
-                        let _ = self.dep_sources.insert(id, HashSet::from([*src]));
-                    }
-                    Some(srcs) => {
-                        let _ = srcs.insert(*src);
-                    }
-                }
-            }
+        if let Some(id) = self.def_id
+            && !self.def_id_is_local
+        {
+            let _ = self.external_decls_with_errors.insert(id);
         }
     }
 
@@ -245,20 +229,17 @@ impl ErrorCtx<'_> {
         // - from local def to external def
         let mut graph = Graph::new();
 
-        trace!("dep_sources:\n{:?}", self.dep_sources);
-        for (id, srcs) in &self.dep_sources {
-            // Only insert dependencies from external defs
-            if !id.is_local() {
-                let node = Node::External(*id);
-                graph.insert_node(node);
+        trace!("dep_sources:\n{:?}", self.external_dep_sources);
+        for (id, srcs) in &self.external_dep_sources {
+            let src_node = Node::External(*id);
+            graph.insert_node(src_node);
 
-                for src in srcs {
-                    if src.src_id.is_local() {
-                        graph.insert_edge(node, Node::Local(src.src_id, src.span));
-                    } else {
-                        graph.insert_edge(node, Node::External(src.src_id));
-                    }
-                }
+            for src in srcs {
+                let tgt_node = match src.span {
+                    Some(span) => Node::Local(src.src_id, span),
+                    None => Node::External(src.src_id),
+                };
+                graph.insert_edge(src_node, tgt_node)
             }
         }
         trace!("Graph:\n{}", graph);
@@ -266,26 +247,24 @@ impl ErrorCtx<'_> {
         // We need to compute the reachability graph. An easy way is simply
         // to use Dijkstra on every external definition which triggered an
         // error.
-        for id in &self.decls_with_errors {
-            if !id.is_local() {
-                let reachable = dijkstra(&graph.dgraph, Node::External(*id), None, &mut |_| 1);
-                trace!("id: {:?}\nreachable:\n{:?}", id, reachable);
+        for id in &self.external_decls_with_errors {
+            let reachable = dijkstra(&graph.dgraph, Node::External(*id), None, &mut |_| 1);
+            trace!("id: {:?}\nreachable:\n{:?}", id, reachable);
 
-                let reachable: Vec<rustc_span::Span> = reachable
-                    .iter()
-                    .filter_map(|(n, _)| match n {
-                        Node::External(_) => None,
-                        Node::Local(_, span) => Some(span.rust_span()),
-                    })
-                    .collect();
+            let reachable: Vec<rustc_span::Span> = reachable
+                .iter()
+                .filter_map(|(n, _)| match n {
+                    Node::External(_) => None,
+                    Node::Local(_, span) => Some(span.rust_span()),
+                })
+                .collect();
 
-                // Display the error message
-                let span = MultiSpan::from_spans(reachable);
-                let msg = format!("The external definition `{:?}` triggered errors. It is (transitively) used at the following location(s):",
+            // Display the error message
+            let span = MultiSpan::from_spans(reachable);
+            let msg = format!("The external definition `{:?}` triggered errors. It is (transitively) used at the following location(s):",
                 *id,
                 );
-                self.span_err_no_register(span, &msg);
-            }
+            self.span_err_no_register(span, &msg);
         }
     }
 }

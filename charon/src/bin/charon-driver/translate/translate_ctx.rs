@@ -747,7 +747,15 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
 
     /// Register the fact that `id` is a dependency of `src` (if `src` is not `None`).
     pub(crate) fn register_dep_source(&mut self, src: &Option<DepSource>, id: DefId) {
-        self.errors.register_dep_source(src, id)
+        if let Some(src) = src {
+            if src.src_id != id && !id.is_local() {
+                self.errors
+                    .external_dep_sources
+                    .entry(id)
+                    .or_default()
+                    .insert(*src);
+            }
+        }
     }
 
     pub(crate) fn register_id(&mut self, src: &Option<DepSource>, id: OrdRustId) -> AnyTransId {
@@ -863,9 +871,12 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         F: FnOnce(&mut Self) -> T,
     {
         let current_def_id = self.errors.def_id;
+        let current_def_id_is_local = self.errors.def_id_is_local;
         self.errors.def_id = Some(def_id);
+        self.errors.def_id_is_local = def_id.is_local();
         let ret = f(self);
         self.errors.def_id = current_def_id;
+        self.errors.def_id_is_local = current_def_id_is_local;
         ret
     }
 }
@@ -1090,7 +1101,11 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     }
 
     pub(crate) fn make_dep_source(&self, span: Span) -> Option<DepSource> {
-        DepSource::make(self.def_id, span)
+        let src_id = self.def_id;
+        Some(DepSource {
+            src_id,
+            span: src_id.is_local().then_some(span),
+        })
     }
 }
 

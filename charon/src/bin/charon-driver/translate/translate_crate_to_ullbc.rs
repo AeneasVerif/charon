@@ -416,10 +416,11 @@ pub fn translate<'tcx, 'ctx>(options: &CliOpts, tcx: TyCtxt<'tcx>) -> TransformC
         continue_on_failure: !options.abort_on_error,
         errors_as_warnings: options.errors_as_warnings,
         dcx: tcx.dcx(),
-        decls_with_errors: HashSet::new(),
+        external_decls_with_errors: HashSet::new(),
         ignored_failed_decls: HashSet::new(),
-        dep_sources: HashMap::new(),
+        external_dep_sources: HashMap::new(),
         def_id: None,
+        def_id_is_local: false,
         error_count: 0,
     };
     let translate_options = TranslateOptions::new(&mut error_ctx, options);
