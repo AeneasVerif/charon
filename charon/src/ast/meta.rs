@@ -37,9 +37,11 @@ pub struct RawSpan {
     #[drive(skip)]
     #[serde(default = "dummy_span_data")]
     #[charon::opaque]
+    #[cfg(feature = "rustc")]
     pub rust_span_data: rustc_span::SpanData,
 }
 
+#[cfg(feature = "rustc")]
 impl From<RawSpan> for rustc_error_messages::MultiSpan {
     fn from(span: RawSpan) -> Self {
         span.rust_span_data.span().into()
@@ -73,18 +75,21 @@ pub struct Span {
     pub generated_from_span: Option<RawSpan>,
 }
 
+#[cfg(feature = "rustc")]
 impl From<Span> for rustc_span::Span {
     fn from(span: Span) -> Self {
         span.span.rust_span_data.span()
     }
 }
 
+#[cfg(feature = "rustc")]
 impl From<Span> for rustc_error_messages::MultiSpan {
     fn from(span: Span) -> Self {
         span.span.into()
     }
 }
 
+#[cfg(feature = "rustc")]
 impl Span {
     pub fn rust_span(self) -> rustc_span::Span {
         self.span.rust_span_data.span()

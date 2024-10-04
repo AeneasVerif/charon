@@ -99,6 +99,8 @@ pub struct TranslatedCrate {
     /// File id to content.
     ///
     /// Note that some files may be missing, if they are not "real" files.
+    // Remark: I would like to use [Arc<HashMap<...>>] but I don't manage
+    // to make it work with serde.
     #[drive(skip)]
     #[serde(with = "HashMapToArray::<FileId, String>")]
     pub file_id_to_content: HashMap<FileId, String>,

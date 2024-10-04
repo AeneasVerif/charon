@@ -54,3 +54,27 @@ impl Body {
         }
     }
 }
+
+impl FunDecl {
+    #[cfg(feature = "rustc")]
+    pub fn item_id(&self) -> rustc_span::def_id::DefId {
+        self.rust_id
+    }
+
+    #[cfg(not(feature = "rustc"))]
+    pub fn item_id(&self) -> crate::ast::krate::AnyTransId {
+        crate::ast::krate::AnyTransId::Fun(self.def_id)
+    }
+}
+
+impl GlobalDecl {
+    #[cfg(feature = "rustc")]
+    pub fn item_id(&self) -> rustc_span::def_id::DefId {
+        self.rust_id
+    }
+
+    #[cfg(not(feature = "rustc"))]
+    pub fn item_id(&self) -> crate::ast::krate::AnyTransId {
+        crate::ast::krate::AnyTransId::Global(self.def_id)
+    }
+}

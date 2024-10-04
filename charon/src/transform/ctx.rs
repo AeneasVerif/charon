@@ -1,14 +1,19 @@
 use crate::ast::*;
-use crate::errors::ErrorCtx;
+use crate::errors::{DefId, ErrorCtx};
 use crate::formatter::{FmtCtx, IntoFormatter};
 use crate::ids::Vector;
 use crate::llbc_ast;
 use crate::name_matcher::NamePattern;
 use crate::pretty::FmtWithCtx;
 use crate::ullbc_ast;
+#[cfg(feature = "rustc")]
 use rustc_error_messages::MultiSpan;
-use rustc_span::def_id::DefId;
 use std::fmt;
+
+#[cfg(feature = "rustc")]
+pub type Span = MultiSpan;
+#[cfg(not(feature = "rustc"))]
+pub type Span = crate::ast::meta::Span;
 
 /// The options that control transformation.
 pub struct TransformOptions {
@@ -199,7 +204,7 @@ impl<'ctx> TransformCtx<'ctx> {
     }
 
     /// Span an error and register the error.
-    pub(crate) fn span_err<S: Into<MultiSpan>>(&mut self, span: S, msg: &str) {
+    pub(crate) fn span_err<S: Into<Span>>(&mut self, span: S, msg: &str) {
         self.errors.span_err(span, msg)
     }
 
@@ -280,7 +285,7 @@ impl<'ctx> TransformCtx<'ctx> {
                         }
                         Err(Opaque) => Err(Opaque),
                     };
-                    ctx.with_def_id(decl.rust_id, |ctx| {
+                    ctx.with_def_id(decl.item_id(), |ctx| {
                         f(ctx, decl, body);
                     })
                 }
@@ -306,7 +311,7 @@ impl<'ctx> TransformCtx<'ctx> {
                         }
                         Err(Opaque) => Err(Opaque),
                     };
-                    ctx.with_def_id(decl.rust_id, |ctx| {
+                    ctx.with_def_id(decl.item_id(), |ctx| {
                         f(ctx, decl, body);
                     })
                 }

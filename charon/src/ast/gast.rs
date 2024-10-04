@@ -153,6 +153,7 @@ pub enum ItemKind {
 pub struct FunDecl {
     #[drive(skip)]
     pub def_id: FunDeclId,
+    #[cfg(feature = "rustc")]
     #[serde(skip)]
     #[drive(skip)]
     #[serde(default = "dummy_def_id")]
@@ -175,6 +176,7 @@ pub struct FunDecl {
 pub struct GlobalDecl {
     #[drive(skip)]
     pub def_id: GlobalDeclId,
+    #[cfg(feature = "rustc")]
     #[serde(skip)]
     #[drive(skip)]
     #[serde(default = "dummy_def_id")]

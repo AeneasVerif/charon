@@ -102,6 +102,20 @@ impl CheckGenericsVisitor<'_, '_> {
     fn enter_trait_decl_ref(&mut self, tref: &TraitDeclRef) {
         self.generics_should_match_item(&tref.generics, tref.trait_id);
     }
+    #[cfg(feature = "rustc")]
+    fn enter_trait_ref_kind(&mut self, kind: &TraitRefKind) {
+        match kind {
+            TraitRefKind::TraitImpl(id, args) => self.generics_should_match_item(args, *id),
+            TraitRefKind::BuiltinOrAuto(..)
+            | TraitRefKind::Dyn(..)
+            | TraitRefKind::Clause(..)
+            | TraitRefKind::ParentClause(..)
+            | TraitRefKind::ItemClause(..)
+            | TraitRefKind::SelfId
+            | TraitRefKind::Unknown(_) => {}
+        }
+    }
+    #[cfg(not(feature = "rustc"))]
     fn enter_trait_ref_kind(&mut self, kind: &TraitRefKind) {
         match kind {
             TraitRefKind::TraitImpl(id, args) => self.generics_should_match_item(args, *id),

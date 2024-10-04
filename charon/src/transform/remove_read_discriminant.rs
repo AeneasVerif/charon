@@ -39,11 +39,7 @@ impl Transform {
                             | TypeDeclKind::Opaque
                             | TypeDeclKind::Alias(..) => {
                                 // We shouldn't get there
-                                register_error_or_panic!(
-                                    ctx,
-                                    block.span.span.rust_span_data.span(),
-                                    "Unreachable case"
-                                );
+                                register_error_or_panic!(ctx, block.span, "Unreachable case");
                                 None
                             }
                             TypeDeclKind::Error(_) => None,
@@ -92,7 +88,7 @@ impl Transform {
                                                 discr_to_id.get(&discr).or_else(|| {
                                                     register_error_or_panic!(
                                                         ctx,
-                                                        block.span.span.rust_span_data.span(),
+                                                        block.span,
                                                         "Found incorrect discriminant {discr} for enum {adt_id}"
                                                     );
                                                     None

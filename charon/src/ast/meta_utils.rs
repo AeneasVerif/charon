@@ -38,6 +38,7 @@ pub fn combine_span(m0: &Span, m1: &Span) -> Span {
             file_id: m0.span.file_id,
             beg: Loc::min(&m0.span.beg, &m1.span.beg),
             end: Loc::max(&m0.span.end, &m1.span.end),
+            #[cfg(feature = "rustc")]
             rust_span_data: m0
                 .span
                 .rust_span_data

@@ -1,12 +1,22 @@
 //! Utilities to generate error reports about the external dependencies.
-use macros::VariantIndexArity;
-use petgraph::algo::dijkstra::dijkstra;
-use petgraph::graphmap::DiGraphMap;
+use crate::ast::{FileId, FileName};
+#[cfg(feature = "rustc")]
 use rustc_error_messages::MultiSpan;
+#[cfg(feature = "rustc")]
 use rustc_errors::DiagCtxtHandle;
-use rustc_span::def_id::DefId;
+#[cfg(feature = "rustc")]
 use std::cmp::{Ord, PartialOrd};
 use std::collections::{HashMap, HashSet};
+
+#[cfg(feature = "rustc")]
+pub type Span = MultiSpan;
+#[cfg(not(feature = "rustc"))]
+pub type Span = crate::ast::meta::Span;
+
+#[cfg(feature = "rustc")]
+pub type DefId = rustc_span::def_id::DefId;
+#[cfg(not(feature = "rustc"))]
+pub type DefId = crate::ast::krate::AnyTransId;
 
 #[macro_export]
 macro_rules! register_error_or_panic {
@@ -54,12 +64,14 @@ pub use error_assert;
 /// dependencies, especially if some external dependencies don't extract:
 /// we use this information to tell the user what is the code which
 /// (transitively) lead to the extraction of those problematic dependencies.
+#[cfg(feature = "rustc")]
 #[derive(Debug, Clone, Copy, Hash, PartialEq, Eq)]
 pub struct DepSource {
     pub src_id: DefId,
     pub span: rustc_span::Span,
 }
 
+#[cfg(feature = "rustc")]
 impl DepSource {
     /// Value with which we order `DepSource`s.
     fn sort_key(&self) -> impl Ord {
@@ -67,18 +79,21 @@ impl DepSource {
     }
 }
 
+#[cfg(feature = "rustc")]
 /// Manual impls because `DefId` is not orderable.
 impl PartialOrd for DepSource {
     fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
         Some(self.cmp(other))
     }
 }
+#[cfg(feature = "rustc")]
 impl Ord for DepSource {
     fn cmp(&self, other: &Self) -> std::cmp::Ordering {
         self.sort_key().cmp(&other.sort_key())
     }
 }
 
+#[cfg(feature = "rustc")]
 impl DepSource {
     pub fn make(src_id: DefId, span: rustc_span::Span) -> Option<Self> {
         Some(DepSource { src_id, span })
@@ -93,17 +108,28 @@ pub struct ErrorCtx<'ctx> {
     pub errors_as_warnings: bool,
 
     /// The compiler session, used for displaying errors.
+    #[cfg(feature = "rustc")]
     pub dcx: DiagCtxtHandle<'ctx>,
     /// The ids of the declarations for which extraction we encountered errors.
     pub decls_with_errors: HashSet<DefId>,
     /// The ids of the declarations we completely failed to extract and had to ignore.
     pub ignored_failed_decls: HashSet<DefId>,
     /// Dependency graph with sources. See [DepSource].
+    #[cfg(feature = "rustc")]
     pub dep_sources: HashMap<DefId, HashSet<DepSource>>,
     /// The id of the definition we are exploring, used to track the source of errors.
     pub def_id: Option<DefId>,
     /// The number of errors encountered so far.
     pub error_count: usize,
+
+    /// The source files
+    #[cfg(not(feature = "rustc"))]
+    pub file_to_id: HashMap<FileName, FileId>,
+
+    /// In case we don't use rustc as a dependency, we still need to refer
+    /// to the lifetime 'ctx somewhere.
+    #[cfg(not(feature = "rustc"))]
+    phantom: std::marker::PhantomData<&'ctx ()>,
 }
 
 impl ErrorCtx<'_> {
@@ -115,7 +141,7 @@ impl ErrorCtx<'_> {
     }
 
     /// Report an error without registering anything.
-    pub(crate) fn span_err_no_register<S: Into<MultiSpan>>(&self, span: S, msg: &str) {
+    pub(crate) fn span_err_no_register<S: Into<Span>>(&self, span: S, msg: &str) {
         let msg = msg.to_string();
         if self.errors_as_warnings {
             self.dcx.span_warn(span, msg);
@@ -125,7 +151,7 @@ impl ErrorCtx<'_> {
     }
 
     /// Report and register an error.
-    pub fn span_err<S: Into<MultiSpan>>(&mut self, span: S, msg: &str) {
+    pub fn span_err<S: Into<Span>>(&mut self, span: S, msg: &str) {
         self.span_err_no_register(span, msg);
         self.error_count += 1;
         if let Some(id) = self.def_id {
@@ -134,6 +160,7 @@ impl ErrorCtx<'_> {
     }
 
     /// Register the fact that `id` is a dependency of `src` (if `src` is not `None`).
+    #[cfg(feature = "rustc")]
     pub fn register_dep_source(&mut self, src: &Option<DepSource>, id: DefId) {
         if let Some(src) = src {
             if src.src_id != id {
@@ -154,129 +181,137 @@ impl ErrorCtx<'_> {
     }
 }
 
-/// For tracing error dependencies.
-#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash, VariantIndexArity)]
-enum Node {
-    External(DefId),
-    /// We use the span information only for local references
-    Local(DefId, rustc_span::Span),
-}
+#[cfg(feature = "rustc")]
+mod graph {
+    use super::*;
+    use macros::VariantIndexArity;
+    use petgraph::algo::dijkstra::dijkstra;
+    use petgraph::graphmap::DiGraphMap;
 
-impl Node {
-    /// Value with which we order `Node`s.
-    fn sort_key(&self) -> impl Ord {
-        let (variant_index, _) = self.variant_index_arity();
-        let (Self::External(def_id) | Self::Local(def_id, _)) = self;
-        (variant_index, def_id.index, def_id.krate)
+    /// For tracing error dependencies.
+    #[derive(Debug, Copy, Clone, PartialEq, Eq, Hash, VariantIndexArity)]
+    enum Node {
+        External(DefId),
+        /// We use the span information only for local references
+        Local(DefId, rustc_span::Span),
     }
-}
 
-/// Manual impls because `DefId` is not orderable.
-impl PartialOrd for Node {
-    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
-        Some(self.cmp(other))
-    }
-}
-impl Ord for Node {
-    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
-        self.sort_key().cmp(&other.sort_key())
-    }
-}
-
-struct Graph {
-    dgraph: DiGraphMap<Node, ()>,
-}
-
-impl std::fmt::Display for Graph {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::result::Result<(), std::fmt::Error> {
-        for (from, to, _) in self.dgraph.all_edges() {
-            writeln!(f, "{from:?} -> {to:?}")?
-        }
-        Ok(())
-    }
-}
-
-impl Graph {
-    fn new() -> Self {
-        Graph {
-            dgraph: DiGraphMap::new(),
+    impl Node {
+        /// Value with which we order `Node`s.
+        fn sort_key(&self) -> impl Ord {
+            let (variant_index, _) = self.variant_index_arity();
+            let (Self::External(def_id) | Self::Local(def_id, _)) = self;
+            (variant_index, def_id.index, def_id.krate)
         }
     }
 
-    fn insert_node(&mut self, n: Node) {
-        // We have to be careful about duplicate nodes
-        if !self.dgraph.contains_node(n) {
-            self.dgraph.add_node(n);
+    /// Manual impls because `DefId` is not orderable.
+    impl PartialOrd for Node {
+        fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
+            Some(self.cmp(other))
+        }
+    }
+    impl Ord for Node {
+        fn cmp(&self, other: &Self) -> std::cmp::Ordering {
+            self.sort_key().cmp(&other.sort_key())
         }
     }
 
-    fn insert_edge(&mut self, from: Node, to: Node) {
-        self.insert_node(from);
-        self.insert_node(to);
-        if !self.dgraph.contains_edge(from, to) {
-            self.dgraph.add_edge(from, to, ());
+    struct Graph {
+        dgraph: DiGraphMap<Node, ()>,
+    }
+
+    impl std::fmt::Display for Graph {
+        fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::result::Result<(), std::fmt::Error> {
+            for (from, to, _) in self.dgraph.all_edges() {
+                writeln!(f, "{from:?} -> {to:?}")?
+            }
+            Ok(())
         }
     }
-}
 
-impl ErrorCtx<'_> {
-    /// In case errors happened when extracting the definitions coming from
-    /// the external dependencies, print a detailed report to explain
-    /// to the user which dependencies were problematic, and where they
-    /// are used in the code.
-    pub fn report_external_deps_errors(&self) {
-        if !self.has_errors() {
-            return;
+    impl Graph {
+        fn new() -> Self {
+            Graph {
+                dgraph: DiGraphMap::new(),
+            }
         }
 
-        // Create a dependency graph, with spans.
-        // We want to know what are the usages in the source code which
-        // lead to the extraction of the problematic definitions. For this
-        // reason, we only include edges:
-        // - from external def to external def
-        // - from local def to external def
-        let mut graph = Graph::new();
+        fn insert_node(&mut self, n: Node) {
+            // We have to be careful about duplicate nodes
+            if !self.dgraph.contains_node(n) {
+                self.dgraph.add_node(n);
+            }
+        }
 
-        trace!("dep_sources:\n{:?}", self.dep_sources);
-        for (id, srcs) in &self.dep_sources {
-            // Only insert dependencies from external defs
-            if !id.is_local() {
-                let node = Node::External(*id);
-                graph.insert_node(node);
+        fn insert_edge(&mut self, from: Node, to: Node) {
+            self.insert_node(from);
+            self.insert_node(to);
+            if !self.dgraph.contains_edge(from, to) {
+                self.dgraph.add_edge(from, to, ());
+            }
+        }
+    }
 
-                for src in srcs {
-                    if src.src_id.is_local() {
-                        graph.insert_edge(node, Node::Local(src.src_id, src.span));
-                    } else {
-                        graph.insert_edge(node, Node::External(src.src_id));
+    impl ErrorCtx<'_> {
+        /// In case errors happened when extracting the definitions coming from
+        /// the external dependencies, print a detailed report to explain
+        /// to the user which dependencies were problematic, and where they
+        /// are used in the code.
+        pub fn report_external_deps_errors(&self) {
+            if !self.has_errors() {
+                return;
+            }
+
+            // Create a dependency graph, with spans.
+            // We want to know what are the usages in the source code which
+            // lead to the extraction of the problematic definitions. For this
+            // reason, we only include edges:
+            // - from external def to external def
+            // - from local def to external def
+            let mut graph = graph::Graph::new();
+
+            trace!("dep_sources:\n{:?}", self.dep_sources);
+            for (id, srcs) in &self.dep_sources {
+                // Only insert dependencies from external defs
+                if !id.is_local() {
+                    let node = Node::External(*id);
+                    graph.insert_node(node);
+
+                    for src in srcs {
+                        if src.src_id.is_local() {
+                            graph.insert_edge(node, Node::Local(src.src_id, src.span));
+                        } else {
+                            graph.insert_edge(node, Node::External(src.src_id));
+                        }
                     }
                 }
             }
-        }
-        trace!("Graph:\n{}", graph);
+            trace!("Graph:\n{}", graph);
 
-        // We need to compute the reachability graph. An easy way is simply
-        // to use Dijkstra on every external definition which triggered an
-        // error.
-        for id in &self.decls_with_errors {
-            if !id.is_local() {
-                let reachable = dijkstra(&graph.dgraph, Node::External(*id), None, &mut |_| 1);
-                trace!("id: {:?}\nreachable:\n{:?}", id, reachable);
+            // We need to compute the reachability graph. An easy way is simply
+            // to use Dijkstra on every external definition which triggered an
+            // error.
+            for id in &self.decls_with_errors {
+                if !id.is_local() {
+                    let reachable = dijkstra(&graph.dgraph, Node::External(*id), None, &mut |_| 1);
+                    trace!("id: {:?}\nreachable:\n{:?}", id, reachable);
 
-                let reachable: Vec<rustc_span::Span> = reachable
-                    .iter()
-                    .filter_map(|(n, _)| match n {
-                        Node::External(_) => None,
-                        Node::Local(_, span) => Some(*span),
-                    })
-                    .collect();
+                    let reachable: Vec<rustc_span::Span> = reachable
+                        .iter()
+                        .filter_map(|(n, _)| match n {
+                            Node::External(_) => None,
+                            Node::Local(_, span) => Some(*span),
+                        })
+                        .collect();
 
-                // Display the error message
-                let span = MultiSpan::from_spans(reachable);
-                let msg = format!("The external definition `{:?}` triggered errors. It is (transitively) used at the following location(s):",
+                    // Display the error message
+                    let span = MultiSpan::from_spans(reachable);
+                    let msg = format!("The external definition `{:?}` triggered errors. It is (transitively) used at the following location(s):",
                 *id,
                 );
-                self.span_err_no_register(span, &msg);
+                    self.span_err_no_register(span, &msg);
+                }
             }
         }
     }
