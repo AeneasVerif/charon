@@ -309,6 +309,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         rust_id: DefId,
         trans_id: AnyTransId,
     ) -> Result<(), Error> {
+        // Translate the meta information
         let name = self.def_id_to_name(rust_id)?;
         self.translated.item_names.insert(trans_id, name.clone());
         let opacity = self.opacity_for_name(&name);
@@ -316,28 +317,30 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
             // Don't even start translating the item. In particular don't call `hax_def` on it.
             return Ok(());
         }
-        // Translate the meta information
         let def: Arc<hax::FullDef> = self.hax_def(rust_id);
         let item_meta = self.translate_item_meta(&def, name, opacity)?;
+
+        // Initialize the body translation context
+        let bt_ctx = BodyTransCtx::new(rust_id, self);
         match trans_id {
             AnyTransId::Type(id) => {
-                let ty = self.translate_type(id, rust_id, item_meta, &def)?;
+                let ty = bt_ctx.translate_type(id, item_meta, &def)?;
                 self.translated.type_decls.set_slot(id, ty);
             }
             AnyTransId::Fun(id) => {
-                let fun_decl = self.translate_function(id, rust_id, item_meta, &def)?;
+                let fun_decl = bt_ctx.translate_function(id, rust_id, item_meta, &def)?;
                 self.translated.fun_decls.set_slot(id, fun_decl);
             }
             AnyTransId::Global(id) => {
-                let global_decl = self.translate_global(id, rust_id, item_meta, &def)?;
+                let global_decl = bt_ctx.translate_global(id, rust_id, item_meta, &def)?;
                 self.translated.global_decls.set_slot(id, global_decl);
             }
             AnyTransId::TraitDecl(id) => {
-                let trait_decl = self.translate_trait_decl(id, rust_id, item_meta, &def)?;
+                let trait_decl = bt_ctx.translate_trait_decl(id, rust_id, item_meta, &def)?;
                 self.translated.trait_decls.set_slot(id, trait_decl);
             }
             AnyTransId::TraitImpl(id) => {
-                let trait_impl = self.translate_trait_impl(id, rust_id, item_meta, &def)?;
+                let trait_impl = bt_ctx.translate_trait_impl(id, rust_id, item_meta, &def)?;
                 self.translated.trait_impls.set_slot(id, trait_impl);
             }
         }

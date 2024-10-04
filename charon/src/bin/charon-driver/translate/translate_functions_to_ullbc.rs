@@ -1270,13 +1270,13 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     /// Translate a function body if we can (it has MIR) and we want to (we don't translate bodies
     /// declared opaque, and only translate non-local bodies if `extract_opaque_bodies` is set).
     fn translate_body(
-        mut self,
+        &mut self,
         rust_id: DefId,
         arg_count: usize,
         item_meta: &ItemMeta,
     ) -> Result<Result<Body, Opaque>, Error> {
         // Stopgap measure because there are still many panics in charon and hax.
-        let mut this = panic::AssertUnwindSafe(&mut self);
+        let mut this = panic::AssertUnwindSafe(&mut *self);
         let res =
             panic::catch_unwind(move || this.translate_body_aux(rust_id, arg_count, item_meta));
         match res {
@@ -1451,11 +1451,11 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     }
 }
 
-impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
+impl BodyTransCtx<'_, '_, '_> {
     /// Translate one function.
     #[tracing::instrument(skip(self, rust_id, item_meta))]
     pub fn translate_function(
-        &mut self,
+        mut self,
         def_id: FunDeclId,
         rust_id: DefId,
         item_meta: ItemMeta,
@@ -1464,14 +1464,11 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         trace!("About to translate function:\n{:?}", rust_id);
         let def_span = item_meta.span;
 
-        // Initialize the body translation context
-        let mut bt_ctx = BodyTransCtx::new(rust_id, self);
-
         // Check whether this function is a method declaration for a trait definition.
         // If this is the case, it shouldn't contain a body.
-        let kind = bt_ctx
+        let kind = self
             .t_ctx
-            .get_item_kind(&DepSource::make(rust_id, def_span), def)?;
+            .get_item_kind(&self.make_dep_source(def_span), def)?;
         let is_trait_method_decl_without_default = match &kind {
             ItemKind::Regular | ItemKind::TraitImpl { .. } => false,
             ItemKind::TraitDecl { has_default, .. } => !has_default,
@@ -1479,18 +1476,18 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
 
         // Translate the function signature
         trace!("Translating function signature");
-        let signature = bt_ctx.translate_function_signature(rust_id, &item_meta, def)?;
+        let signature = self.translate_function_signature(rust_id, &item_meta, def)?;
 
         let body_id = if !is_trait_method_decl_without_default {
             // Translate the body. This doesn't store anything if we can't/decide not to translate
             // this body.
-            match bt_ctx.translate_body(rust_id, signature.inputs.len(), &item_meta) {
-                Ok(Ok(body)) => Ok(self.translated.bodies.push(body)),
+            match self.translate_body(rust_id, signature.inputs.len(), &item_meta) {
+                Ok(Ok(body)) => Ok(self.t_ctx.translated.bodies.push(body)),
                 // Opaque declaration
                 Ok(Err(Opaque)) => Err(Opaque),
                 // Translation error. We reserve a slot and leave it empty.
                 // FIXME: handle error cases more explicitly.
-                Err(_) => Ok(self.translated.bodies.reserve_slot()),
+                Err(_) => Ok(self.t_ctx.translated.bodies.reserve_slot()),
             }
         } else {
             Err(Opaque)
@@ -1509,7 +1506,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
     /// Translate one global.
     #[tracing::instrument(skip(self, rust_id, item_meta))]
     pub fn translate_global(
-        &mut self,
+        mut self,
         def_id: GlobalDeclId,
         rust_id: DefId,
         item_meta: ItemMeta,
@@ -1518,13 +1515,8 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         trace!("About to translate global:\n{:?}", rust_id);
         let span = item_meta.span;
 
-        // Initialize the body translation context
-        let mut bt_ctx = BodyTransCtx::new(rust_id, self);
-
         // Retrieve the kind
-        let global_kind = bt_ctx
-            .t_ctx
-            .get_item_kind(&DepSource::make(rust_id, span), &def)?;
+        let global_kind = self.t_ctx.get_item_kind(&self.make_dep_source(span), def)?;
 
         // Translate the generics and predicates - globals *can* have generics
         // Ex.:
@@ -1533,7 +1525,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         //   const LEN : usize = N;
         // }
         // ```
-        let generics = bt_ctx.translate_def_generics(span, def)?;
+        let generics = self.translate_def_generics(span, def)?;
 
         trace!("Translating global type");
         let ty = match &def.kind {
@@ -1543,17 +1535,17 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
             _ => panic!("Unexpected def for constant: {def:?}"),
         };
         let erase_regions = false; // This doesn't matter: there shouldn't be any regions
-        let ty = bt_ctx.translate_ty(span, erase_regions, ty)?;
+        let ty = self.translate_ty(span, erase_regions, ty)?;
 
         // Translate its body like the body of a function. This returns `Opaque if we can't/decide
         // not to translate this body.
-        let body_id = match bt_ctx.translate_body(rust_id, 0, &item_meta) {
-            Ok(Ok(body)) => Ok(self.translated.bodies.push(body)),
+        let body_id = match self.translate_body(rust_id, 0, &item_meta) {
+            Ok(Ok(body)) => Ok(self.t_ctx.translated.bodies.push(body)),
             // Opaque declaration
             Ok(Err(Opaque)) => Err(Opaque),
             // Translation error. We reserve a slot and leave it empty.
             // FIXME: handle error cases more explicitly.
-            Err(_) => Ok(self.translated.bodies.reserve_slot()),
+            Err(_) => Ok(self.t_ctx.translated.bodies.reserve_slot()),
         };
 
         Ok(GlobalDecl {
