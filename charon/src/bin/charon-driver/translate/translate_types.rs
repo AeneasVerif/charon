@@ -10,7 +10,6 @@ use charon_lib::pretty::FmtWithCtx;
 use core::convert::*;
 use hax::Visibility;
 use hax_frontend_exporter as hax;
-use hax_frontend_exporter::SInto;
 use rustc_hir::def_id::DefId;
 
 /// Small helper: we ignore some region names (when they are equal to "'_")
@@ -58,7 +57,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     // Translate a region
     pub(crate) fn translate_region(
         &mut self,
-        span: rustc_span::Span,
+        span: Span,
         erase_regions: bool,
         region: &hax::Region,
     ) -> Result<Region, Error> {
@@ -120,7 +119,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     #[tracing::instrument(skip(self, span, erase_regions))]
     pub(crate) fn translate_ty(
         &mut self,
-        span: rustc_span::Span,
+        span: Span,
         erase_regions: bool,
         ty: &hax::Ty,
     ) -> Result<Ty, Error> {
@@ -353,7 +352,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     #[allow(clippy::type_complexity)]
     pub fn translate_substs(
         &mut self,
-        span: rustc_span::Span,
+        span: Span,
         erase_regions: bool,
         used_params: Option<Vec<bool>>,
         substs: &[hax::GenericArg],
@@ -403,7 +402,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
 
     pub fn translate_substs_and_trait_refs(
         &mut self,
-        span: rustc_span::Span,
+        span: Span,
         erase_regions: bool,
         used_params: Option<Vec<bool>>,
         substs: &[hax::GenericArg],
@@ -436,7 +435,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     /// Translate a type def id
     pub(crate) fn translate_type_id(
         &mut self,
-        span: rustc_span::Span,
+        span: Span,
         def_id: &hax::DefId,
     ) -> Result<TypeId, Error> {
         trace!("{:?}", def_id);
@@ -455,7 +454,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     fn translate_adt_def(
         &mut self,
         trans_id: TypeDeclId,
-        def_span: rustc_span::Span,
+        def_span: Span,
         item_meta: &ItemMeta,
         adt: &hax::AdtDef,
     ) -> Result<TypeDeclKind, Error> {
@@ -504,9 +503,8 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             for (j, field_def) in var_def.fields.iter().enumerate() {
                 trace!("variant {i}: field {j}: {field_def:?}");
                 let field_span = self.t_ctx.translate_span_from_hax(field_def.span.clone());
-                let field_rspan = field_span.span.rust_span_data.span();
                 // Translate the field type
-                let ty = self.translate_ty(field_rspan, erase_regions, &field_def.ty)?;
+                let ty = self.translate_ty(field_span, erase_regions, &field_def.ty)?;
                 let field_full_def = self.t_ctx.hax_def(&field_def.did);
                 let field_attrs = self.t_ctx.translate_attr_info(&field_full_def);
 
@@ -521,7 +519,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                         }
                     }
                     Some(b) => {
-                        error_assert!(self, field_rspan, *b == field_name.is_some());
+                        error_assert!(self, field_span, *b == field_name.is_some());
                     }
                 };
 
@@ -586,7 +584,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
 
     fn translate_discriminant(
         &mut self,
-        def_span: rustc_span::Span,
+        def_span: Span,
         discr: &hax::DiscriminantValue,
     ) -> Result<ScalarValue, Error> {
         let ty = self.translate_ty(def_span, true, &discr.ty)?;
@@ -618,7 +616,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     /// Translate the generics and predicates of this item and its parents.
     pub(crate) fn translate_def_generics(
         &mut self,
-        span: rustc_span::Span,
+        span: Span,
         def: &hax::FullDef,
     ) -> Result<GenericParams, Error> {
         self.push_generics_for_def(span, def, false)?;
@@ -644,7 +642,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     /// Add the generics and predicates of this item and its parents to the current context.
     fn push_generics_for_def(
         &mut self,
-        span: rustc_span::Span,
+        span: Span,
         def: &hax::FullDef,
         is_parent: bool,
     ) -> Result<(), Error> {
@@ -672,8 +670,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 }
                 | FullDefKind::Trait { self_predicate, .. } => {
                     self.register_trait_decl_id(span, &self_predicate.trait_ref.def_id);
-                    let hax_span = span.sinto(&self.t_ctx.hax_state);
-                    let _ = self.translate_trait_predicate(&hax_span, self_predicate)?;
+                    let _ = self.translate_trait_predicate(span, self_predicate)?;
                 }
                 _ => {}
             }
@@ -754,7 +751,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
 
     pub(crate) fn push_generic_params(
         &mut self,
-        span: rustc_span::Span,
+        span: Span,
         generics: &hax::TyGenerics,
     ) -> Result<(), Error> {
         for param in &generics.params {
@@ -765,7 +762,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
 
     pub(crate) fn push_generic_param(
         &mut self,
-        span: rustc_span::Span,
+        span: Span,
         param: &hax::GenericParamDef,
     ) -> Result<(), Error> {
         match &param.kind {
@@ -811,7 +808,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         let mut bt_ctx = BodyTransCtx::new(rust_id, self);
 
         let erase_regions = false;
-        let span = item_meta.span.rust_span();
+        let span = item_meta.span;
 
         // Translate generics and predicates
         let generics = bt_ctx.translate_def_generics(span, def)?;

@@ -257,7 +257,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
             return;
         }
         self.with_def_id(rust_id, |mut ctx| {
-            let span = ctx.tcx.def_span(rust_id);
+            let span = ctx.def_span(rust_id);
             // Catch cycles
             let res = if ctx.translate_stack.contains(&trans_id) {
                 ctx.span_err(
@@ -354,7 +354,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         self.translate_item(rust_id, id);
 
         if self.errors.ignored_failed_decls.contains(&rust_id) {
-            let span = self.tcx.def_span(rust_id);
+            let span = self.def_span(rust_id);
             error_or_panic!(self, span, format!("Failed to translate item {id:?}."))
         }
         Ok(self.translated.get_item(id).unwrap())

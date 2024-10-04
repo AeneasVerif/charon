@@ -1,4 +1,5 @@
 //! Utilities to generate error reports about the external dependencies.
+use crate::ast::Span;
 use macros::VariantIndexArity;
 use petgraph::algo::dijkstra::dijkstra;
 use petgraph::graphmap::DiGraphMap;
@@ -25,7 +26,7 @@ macro_rules! error_or_panic {
     ($ctx:expr, $span:expr, $msg:expr) => {{
         $crate::errors::register_error_or_panic!($ctx, $span, $msg);
         let e = $crate::common::Error {
-            span: $span,
+            span: $span.into(),
             msg: $msg.to_string(),
         };
         return Err(e);
@@ -80,8 +81,11 @@ impl Ord for DepSource {
 }
 
 impl DepSource {
-    pub fn make(src_id: DefId, span: rustc_span::Span) -> Option<Self> {
-        Some(DepSource { src_id, span })
+    pub fn make(src_id: DefId, span: Span) -> Option<Self> {
+        Some(DepSource {
+            src_id,
+            span: span.rust_span(),
+        })
     }
 }
 

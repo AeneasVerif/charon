@@ -298,7 +298,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
 
     pub fn def_id_to_path_elem(
         &mut self,
-        span: rustc_span::Span,
+        span: Span,
         def_id: DefId,
     ) -> Result<Option<PathElem>, Error> {
         if let Some(path_elem) = self.cached_path_elems.get(&def_id) {
@@ -404,7 +404,8 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         }
         trace!("{:?}", def_id);
         let tcx = self.tcx;
-        let span = tcx.def_span(def_id);
+        let span = &tcx.def_span(def_id);
+        let span = self.translate_span_from_hax(span.sinto(&self.hax_state));
 
         // We have to be a bit careful when retrieving names from def ids. For instance,
         // due to reexports, [`TyCtxt::def_path_str`](TyCtxt::def_path_str) might give
@@ -507,8 +508,9 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
             let mut renames = attributes.iter().filter_map(|a| a.as_rename()).cloned();
             let rename = renames.next();
             if renames.next().is_some() {
+                let span = self.translate_span_from_hax(def.span.clone());
                 self.span_err(
-                    def.span.rust_span_data.unwrap().span(),
+                    span,
                     "There should be at most one `charon::rename(\"...\")` \
                     or `aeneas::rename(\"...\")` attribute per declaration",
                 );
@@ -670,6 +672,11 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         }
     }
 
+    pub(crate) fn def_span(&mut self, def_id: impl Into<DefId>) -> Span {
+        let span = self.tcx.def_span(def_id.into()).sinto(&self.hax_state);
+        self.translate_span_from_hax(span)
+    }
+
     /// Translates a rust attribute. Returns `None` if the attribute is a doc comment (rustc
     /// encodes them as attributes). For now we use `String`s for `Attributes`.
     pub(crate) fn translate_attribute(&mut self, attr: &hax::Attribute) -> Option<Attribute> {
@@ -692,10 +699,8 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
                 match Attribute::parse_from_raw(raw_attr) {
                     Ok(a) => Some(a),
                     Err(msg) => {
-                        self.span_err(
-                            attr.span.rust_span_data.unwrap().span(),
-                            &format!("Error parsing attribute: {msg}"),
-                        );
+                        let span = self.translate_span_from_hax(attr.span.clone());
+                        self.span_err(span, &format!("Error parsing attribute: {msg}"));
                         None
                     }
                 }
@@ -896,12 +901,16 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         self.t_ctx.continue_on_failure()
     }
 
-    pub fn span_err(&mut self, span: rustc_span::Span, msg: &str) {
+    pub fn span_err(&mut self, span: Span, msg: &str) {
         self.t_ctx.span_err(span, msg)
     }
 
     pub(crate) fn translate_span_from_hax(&mut self, rspan: hax::Span) -> Span {
         self.t_ctx.translate_span_from_hax(rspan)
+    }
+
+    pub(crate) fn def_span(&mut self, def_id: impl Into<DefId>) -> Span {
+        self.t_ctx.def_span(def_id)
     }
 
     pub(crate) fn get_local(&self, local: &hax::Local) -> Option<VarId> {
@@ -914,27 +923,19 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         self.blocks_map.get(&rid)
     }
 
-    pub(crate) fn register_type_decl_id(
-        &mut self,
-        span: rustc_span::Span,
-        id: impl Into<DefId>,
-    ) -> TypeDeclId {
+    pub(crate) fn register_type_decl_id(&mut self, span: Span, id: impl Into<DefId>) -> TypeDeclId {
         let src = self.make_dep_source(span);
         self.t_ctx.register_type_decl_id(&src, id.into())
     }
 
-    pub(crate) fn register_fun_decl_id(
-        &mut self,
-        span: rustc_span::Span,
-        id: impl Into<DefId>,
-    ) -> FunDeclId {
+    pub(crate) fn register_fun_decl_id(&mut self, span: Span, id: impl Into<DefId>) -> FunDeclId {
         let src = self.make_dep_source(span);
         self.t_ctx.register_fun_decl_id(&src, id.into())
     }
 
     pub(crate) fn register_global_decl_id(
         &mut self,
-        span: rustc_span::Span,
+        span: Span,
         id: impl Into<DefId>,
     ) -> GlobalDeclId {
         let src = self.make_dep_source(span);
@@ -945,7 +946,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     /// like [core::marker::Sized] or [core::marker::Sync].
     pub(crate) fn register_trait_decl_id(
         &mut self,
-        span: rustc_span::Span,
+        span: Span,
         id: impl Into<DefId>,
     ) -> TraitDeclId {
         let src = self.make_dep_source(span);
@@ -956,7 +957,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     /// like [core::marker::Sized] or [core::marker::Sync].
     pub(crate) fn register_trait_impl_id(
         &mut self,
-        span: rustc_span::Span,
+        span: Span,
         id: impl Into<DefId>,
     ) -> TraitImplId {
         let src = self.make_dep_source(span);
@@ -979,7 +980,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     /// Translate a binder of regions by appending the stored reguions to the given vector.
     pub(crate) fn translate_region_binder(
         &mut self,
-        span: rustc_span::Span,
+        span: Span,
         binder: hax::Binder<()>,
         region_vars: &mut Vector<RegionId, RegionVar>,
     ) -> Result<Box<[RegionId]>, Error> {
@@ -1010,7 +1011,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     /// Set the first bound regions group
     pub(crate) fn set_first_bound_regions_group(
         &mut self,
-        span: rustc_span::Span,
+        span: Span,
         binder: hax::Binder<()>,
     ) -> Result<(), Error> {
         assert!(self.bound_region_vars.is_empty());
@@ -1031,7 +1032,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     /// it contains universally quantified regions).
     pub(crate) fn with_locally_bound_regions_group<F, T>(
         &mut self,
-        span: rustc_span::Span,
+        span: Span,
         binder: hax::Binder<()>,
         f: F,
     ) -> Result<T, Error>
@@ -1090,7 +1091,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         self.blocks.insert(id, block);
     }
 
-    pub(crate) fn make_dep_source(&self, span: rustc_span::Span) -> Option<DepSource> {
+    pub(crate) fn make_dep_source(&self, span: Span) -> Option<DepSource> {
         DepSource::make(self.def_id, span)
     }
 }

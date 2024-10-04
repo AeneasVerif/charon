@@ -43,7 +43,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         );
 
         let tcx = self.t_ctx.tcx;
-        let span = tcx.def_span(trait_impl_def_id);
+        let span = self.def_span(trait_impl_def_id);
 
         // Lookup the trait clauses and substitute - TODO: not sure about the substitution
         let subst = rust_impl_trait_ref.args;
@@ -94,7 +94,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         trace!("About to translate trait decl:\n{:?}", rust_id);
         trace!("Trait decl id:\n{:?}", def_id);
 
-        let span = item_meta.span.rust_span();
+        let span = item_meta.span;
         let erase_regions = false;
         let mut bt_ctx = BodyTransCtx::new(rust_id, self);
 
@@ -132,7 +132,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         let mut provided_methods = Vec::new();
         for (item_name, hax_item, hax_def) in &items {
             let rust_item_id = DefId::from(&hax_item.def_id);
-            let item_span = bt_ctx.t_ctx.tcx.def_span(rust_item_id);
+            let item_span = bt_ctx.def_span(rust_item_id);
             match &hax_def.kind {
                 hax::FullDefKind::AssocFn { .. } => {
                     let fun_id = bt_ctx.register_fun_decl_id(item_span, rust_item_id);
@@ -228,7 +228,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         trace!("Trait impl id:\n{:?}", def_id);
 
         let tcx = self.tcx;
-        let span = item_meta.span.rust_span();
+        let span = item_meta.span;
         let erase_regions = false;
         let mut bt_ctx = BodyTransCtx::new(rust_id, self);
 
@@ -315,18 +315,17 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
 
         for item in impl_items {
             let name = TraitItemName(item.name.clone());
-            let rust_item_id = DefId::from(&item.def_id);
-            let item_span = tcx.def_span(rust_item_id);
+            let item_span = bt_ctx.def_span(&item.def_id);
             match &item.kind {
                 hax::AssocKind::Fn => {
-                    let fun_id = bt_ctx.register_fun_decl_id(item_span, rust_item_id);
+                    let fun_id = bt_ctx.register_fun_decl_id(item_span, &item.def_id);
                     methods.insert(name, fun_id);
                 }
                 hax::AssocKind::Const => {
                     // The parameters of the constant are the same as those of the item that
                     // declares them.
                     let gref = GlobalDeclRef {
-                        id: bt_ctx.register_global_decl_id(item_span, rust_item_id),
+                        id: bt_ctx.register_global_decl_id(item_span, &item.def_id),
                         generics: generics.identity_args(),
                     };
                     consts.insert(name, gref);
@@ -361,7 +360,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
 
         for decl_item in decl_items {
             let item_def_id = (&decl_item.def_id).into();
-            let item_span = tcx.def_span(item_def_id);
+            let item_span = bt_ctx.def_span(item_def_id);
             let name = TraitItemName(decl_item.name.to_string());
             match &decl_item.kind {
                 hax::AssocKind::Fn => {

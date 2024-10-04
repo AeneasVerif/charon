@@ -64,11 +64,7 @@ fn translate_unaryop_kind(binop: hax::UnOp) -> UnOp {
 }
 
 impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
-    fn translate_binaryop_kind(
-        &mut self,
-        span: rustc_span::Span,
-        binop: hax::BinOp,
-    ) -> Result<BinOp, Error> {
+    fn translate_binaryop_kind(&mut self, span: Span, binop: hax::BinOp) -> Result<BinOp, Error> {
         Ok(match binop {
             hax::BinOp::BitXor => BinOp::BitXor,
             hax::BinOp::BitAnd => BinOp::BitAnd,
@@ -184,7 +180,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
 
             // Translate the type
             let erase_regions = true;
-            let span = var.source_info.span.rust_span_data.unwrap().span();
+            let span = self.translate_span_from_hax(var.source_info.span.clone());
             let ty = self.translate_ty(span, erase_regions, &var.ty)?;
 
             // Add the variable to the environment
@@ -268,7 +264,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     /// Translate a place and return its type
     fn translate_place_with_type(
         &mut self,
-        span: rustc_span::Span,
+        span: Span,
         place: &hax::Place,
     ) -> Result<(Place, Ty), Error> {
         let erase_regions = true;
@@ -278,11 +274,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     }
 
     /// Translate a place
-    fn translate_place(
-        &mut self,
-        span: rustc_span::Span,
-        place: &hax::Place,
-    ) -> Result<Place, Error> {
+    fn translate_place(&mut self, span: Span, place: &hax::Place) -> Result<Place, Error> {
         Ok(self.translate_place_with_type(span, place)?.0)
     }
 
@@ -291,7 +283,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     /// update our representation of places to match the Hax representation.
     fn translate_projection(
         &mut self,
-        span: rustc_span::Span,
+        span: Span,
         place: &hax::Place,
     ) -> Result<(VarId, Projection), Error> {
         let erase_regions = true;
@@ -432,7 +424,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     /// Translate an operand with its type
     fn translate_operand_with_type(
         &mut self,
-        span: rustc_span::Span,
+        span: Span,
         operand: &hax::Operand,
     ) -> Result<(Operand, Ty), Error> {
         trace!();
@@ -454,21 +446,13 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     }
 
     /// Translate an operand
-    fn translate_operand(
-        &mut self,
-        span: rustc_span::Span,
-        operand: &hax::Operand,
-    ) -> Result<Operand, Error> {
+    fn translate_operand(&mut self, span: Span, operand: &hax::Operand) -> Result<Operand, Error> {
         trace!();
         Ok(self.translate_operand_with_type(span, operand)?.0)
     }
 
     /// Translate an rvalue
-    fn translate_rvalue(
-        &mut self,
-        span: rustc_span::Span,
-        rvalue: &hax::Rvalue,
-    ) -> Result<Rvalue, Error> {
+    fn translate_rvalue(&mut self, span: Span, rvalue: &hax::Rvalue) -> Result<Rvalue, Error> {
         let erase_regions = true;
         match rvalue {
             hax::Rvalue::Use(operand) => Ok(Rvalue::Use(self.translate_operand(span, operand)?)),
@@ -783,7 +767,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     #[allow(clippy::too_many_arguments)]
     pub(crate) fn translate_fun_decl_id_with_args(
         &mut self,
-        span: rustc_span::Span,
+        span: Span,
         erase_regions: bool,
         def_id: &hax::DefId,
         substs: &Vec<hax::GenericArg>,
@@ -898,7 +882,9 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         statement: &hax::Statement,
     ) -> Result<Option<Statement>, Error> {
         trace!("About to translate statement (MIR) {:?}", statement);
-        let span = statement.source_info.span.rust_span_data.unwrap().span();
+        let span = self
+            .t_ctx
+            .translate_span_from_source_info(&body.source_scopes, &statement.source_info);
 
         use hax::StatementKind;
         let t_statement: Option<RawStatement> = match &*statement.kind {
@@ -963,16 +949,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         };
 
         // Add the span information
-        match t_statement {
-            None => Ok(None),
-            Some(t_statement) => {
-                let span = self
-                    .t_ctx
-                    .translate_span_from_source_info(&body.source_scopes, &statement.source_info);
-
-                Ok(Some(Statement::new(span, t_statement)))
-            }
-        }
+        Ok(t_statement.map(|kind| Statement::new(span, kind)))
     }
 
     /// Translate a terminator
@@ -983,8 +960,6 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         statements: &mut Vec<Statement>,
     ) -> Result<Terminator, Error> {
         trace!("About to translate terminator (MIR) {:?}", terminator);
-        let rustc_span = terminator.source_info.span.rust_span_data.unwrap().span();
-
         // Compute the span information beforehand (we might need it to introduce
         // intermediate statements - we desugar some terminators)
         let span = self
@@ -1000,7 +975,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             }
             TerminatorKind::SwitchInt { discr, targets } => {
                 // Translate the operand which gives the discriminant
-                let (discr, discr_ty) = self.translate_operand_with_type(rustc_span, discr)?;
+                let (discr, discr_ty) = self.translate_operand_with_type(span, discr)?;
 
                 // Translate the switch targets
                 let targets = self.translate_switch_targets(&discr_ty, targets)?;
@@ -1010,10 +985,10 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             TerminatorKind::UnwindResume => {
                 // This is used to correctly unwind. We shouldn't get there: if
                 // we panic, the state gets stuck.
-                error_or_panic!(self, rustc_span, "Unexpected terminator: UnwindResume");
+                error_or_panic!(self, span, "Unexpected terminator: UnwindResume");
             }
             TerminatorKind::UnwindTerminate { .. } => {
-                error_or_panic!(self, rustc_span, "Unexpected terminator: UnwindTerminate")
+                error_or_panic!(self, span, "Unexpected terminator: UnwindTerminate")
             }
             TerminatorKind::Return => RawTerminator::Return,
             // A MIR `Unreachable` terminator indicates undefined behavior of the rust abstract
@@ -1025,7 +1000,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 unwind: _, // We consider that panic is an error, and don't model unwinding
                 replace: _,
             } => {
-                let place = self.translate_place(rustc_span, place)?;
+                let place = self.translate_place(span, place)?;
                 statements.push(Statement {
                     span,
                     content: RawStatement::Drop(place),
@@ -1047,7 +1022,6 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             } => self.translate_function_call(
                 statements,
                 span,
-                rustc_span,
                 fun,
                 generics,
                 args,
@@ -1064,7 +1038,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 unwind: _, // We model unwinding as an effet, we don't represent it in control flow
             } => {
                 let assert = Assert {
-                    cond: self.translate_operand(rustc_span, cond)?,
+                    cond: self.translate_operand(span, cond)?,
                     expected: *expected,
                 };
                 statements.push(Statement {
@@ -1102,14 +1076,14 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 RawTerminator::Goto { target }
             }
             TerminatorKind::InlineAsm { .. } => {
-                error_or_panic!(self, rustc_span, "Inline assembly is not supported");
+                error_or_panic!(self, span, "Inline assembly is not supported");
             }
             TerminatorKind::CoroutineDrop
             | TerminatorKind::TailCall { .. }
             | TerminatorKind::Yield { .. } => {
                 error_or_panic!(
                     self,
-                    rustc_span,
+                    span,
                     format!("Unsupported terminator: {:?}", terminator.kind)
                 );
             }
@@ -1156,8 +1130,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     fn translate_function_call(
         &mut self,
         statements: &mut Vec<Statement>,
-        terminator_span: Span,
-        span: rustc_span::Span,
+        span: Span,
         fun: &hax::FunOperand,
         generics: &Vec<hax::GenericArg>,
         args: &Vec<hax::Spanned<hax::Operand>>,
@@ -1227,7 +1200,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             dest: lval,
         };
         statements.push(Statement {
-            span: terminator_span,
+            span,
             content: RawStatement::Call(call),
         });
         Ok(match next_block {
@@ -1240,7 +1213,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     /// values.
     fn translate_arguments(
         &mut self,
-        span: rustc_span::Span,
+        span: Span,
         args: &Vec<hax::Spanned<hax::Operand>>,
     ) -> Result<Vec<Operand>, Error> {
         let mut t_args: Vec<Operand> = Vec::new();
@@ -1311,8 +1284,11 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             // Translation error
             Ok(Err(e)) => Err(e),
             Err(_) => {
-                let span = item_meta.span.rust_span();
-                error_or_panic!(self, span, "Thread panicked when extracting body.");
+                error_or_panic!(
+                    self,
+                    item_meta.span,
+                    "Thread panicked when extracting body."
+                );
             }
         }
     }
@@ -1385,7 +1361,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         def: &hax::FullDef,
     ) -> Result<FunSig, Error> {
         let erase_regions = false;
-        let span = item_meta.span.rust_span();
+        let span = item_meta.span;
 
         let generics = self.translate_def_generics(span, def)?;
 
@@ -1486,7 +1462,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         def: &hax::FullDef,
     ) -> Result<FunDecl, Error> {
         trace!("About to translate function:\n{:?}", rust_id);
-        let def_span = item_meta.span.rust_span();
+        let def_span = item_meta.span;
 
         // Initialize the body translation context
         let mut bt_ctx = BodyTransCtx::new(rust_id, self);
@@ -1540,7 +1516,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         def: &hax::FullDef,
     ) -> Result<GlobalDecl, Error> {
         trace!("About to translate global:\n{:?}", rust_id);
-        let span = item_meta.span.rust_span();
+        let span = item_meta.span;
 
         // Initialize the body translation context
         let mut bt_ctx = BodyTransCtx::new(rust_id, self);
