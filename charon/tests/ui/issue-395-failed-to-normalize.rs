@@ -1,5 +1,3 @@
-//@ known-failure
-
 pub trait Trait {
     type AssocType;
 }
