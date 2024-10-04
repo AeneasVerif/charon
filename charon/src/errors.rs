@@ -141,6 +141,18 @@ impl ErrorCtx<'_> {
     }
 
     /// Report an error without registering anything.
+    #[cfg(feature = "rustc")]
+    pub(crate) fn span_err_no_register<S: Into<Span>>(&self, span: S, msg: &str) {
+        let msg = msg.to_string();
+        if self.errors_as_warnings {
+            self.dcx.span_warn(span, msg);
+        } else {
+            self.dcx.span_err(span, msg);
+        }
+    }
+
+    /// Report an error without registering anything.
+    #[cfg(not(feature = "rustc"))]
     pub(crate) fn span_err_no_register<S: Into<Span>>(&self, span: S, msg: &str) {
         let msg = msg.to_string();
         if self.errors_as_warnings {
