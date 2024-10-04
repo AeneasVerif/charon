@@ -1,5 +1,10 @@
 //@ known-failure
 
+pub trait Trait {
+    type AssocType;
+}
+pub type Alias<T> = Option<<T as Trait>::AssocType>;
+
 pub trait C<T> {}
 
 pub struct S<I, F>
