@@ -11,7 +11,6 @@ use hax_frontend_exporter as hax;
 use hax_frontend_exporter::SInto;
 use itertools::Itertools;
 use macros::VariantIndexArity;
-use rustc_error_messages::MultiSpan;
 use rustc_hir::def_id::DefId;
 use rustc_hir::Node as HirNode;
 use rustc_middle::ty::TyCtxt;
@@ -58,7 +57,7 @@ impl TranslateOptions {
             Ok(p) => Ok(p),
             Err(e) => {
                 let msg = format!("failed to parse pattern `{s}` ({e})");
-                error_or_panic!(error_ctx, rustc_span::DUMMY_SP, msg)
+                error_or_panic!(error_ctx, Span::dummy(), msg)
             }
         };
 
@@ -279,7 +278,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
     }
 
     /// Span an error and register the error.
-    pub fn span_err<S: Into<MultiSpan>>(&mut self, span: S, msg: &str) {
+    pub fn span_err(&mut self, span: Span, msg: &str) {
         self.errors.span_err(span, msg)
     }
 

@@ -3,7 +3,7 @@ pub static TAB_INCR: &str = "    ";
 /// Common error used during the translation.
 #[derive(Debug)]
 pub struct Error {
-    pub span: rustc_span::Span,
+    pub span: crate::ast::Span,
     pub msg: String,
 }
 

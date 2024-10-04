@@ -6,7 +6,6 @@ use crate::llbc_ast;
 use crate::name_matcher::NamePattern;
 use crate::pretty::FmtWithCtx;
 use crate::ullbc_ast;
-use rustc_error_messages::MultiSpan;
 use rustc_span::def_id::DefId;
 use std::fmt;
 
@@ -199,7 +198,7 @@ impl<'ctx> TransformCtx<'ctx> {
     }
 
     /// Span an error and register the error.
-    pub(crate) fn span_err<S: Into<MultiSpan>>(&mut self, span: S, msg: &str) {
+    pub(crate) fn span_err(&mut self, span: Span, msg: &str) {
         self.errors.span_err(span, msg)
     }
 

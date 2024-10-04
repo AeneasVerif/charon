@@ -26,7 +26,7 @@ macro_rules! error_or_panic {
     ($ctx:expr, $span:expr, $msg:expr) => {{
         $crate::errors::register_error_or_panic!($ctx, $span, $msg);
         let e = $crate::common::Error {
-            span: $span.into(),
+            span: $span,
             msg: $msg.to_string(),
         };
         return Err(e);
@@ -58,7 +58,7 @@ pub use error_assert;
 #[derive(Debug, Clone, Copy, Hash, PartialEq, Eq)]
 pub struct DepSource {
     pub src_id: DefId,
-    pub span: rustc_span::Span,
+    pub span: Span,
 }
 
 impl DepSource {
@@ -82,10 +82,7 @@ impl Ord for DepSource {
 
 impl DepSource {
     pub fn make(src_id: DefId, span: Span) -> Option<Self> {
-        Some(DepSource {
-            src_id,
-            span: span.rust_span(),
-        })
+        Some(DepSource { src_id, span })
     }
 }
 
@@ -129,7 +126,7 @@ impl ErrorCtx<'_> {
     }
 
     /// Report and register an error.
-    pub fn span_err<S: Into<MultiSpan>>(&mut self, span: S, msg: &str) {
+    pub fn span_err(&mut self, span: Span, msg: &str) {
         self.span_err_no_register(span, msg);
         self.error_count += 1;
         if let Some(id) = self.def_id {
@@ -163,7 +160,7 @@ impl ErrorCtx<'_> {
 enum Node {
     External(DefId),
     /// We use the span information only for local references
-    Local(DefId, rustc_span::Span),
+    Local(DefId, Span),
 }
 
 impl Node {
@@ -271,7 +268,7 @@ impl ErrorCtx<'_> {
                     .iter()
                     .filter_map(|(n, _)| match n {
                         Node::External(_) => None,
-                        Node::Local(_, span) => Some(*span),
+                        Node::Local(_, span) => Some(span.rust_span()),
                     })
                     .collect();
 

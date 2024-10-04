@@ -6,6 +6,10 @@ use std::cmp::Ordering;
 use std::iter::Iterator;
 
 impl Loc {
+    fn dummy() -> Self {
+        Loc { line: 0, col: 0 }
+    }
+
     fn min(l0: &Loc, l1: &Loc) -> Loc {
         match l0.line.cmp(&l1.line) {
             Ordering::Equal => Loc {
@@ -25,6 +29,26 @@ impl Loc {
             },
             Ordering::Greater => *l0,
             Ordering::Less => *l1,
+        }
+    }
+}
+
+impl RawSpan {
+    pub fn dummy() -> Self {
+        RawSpan {
+            file_id: FileId::from_raw(0),
+            beg: Loc::dummy(),
+            end: Loc::dummy(),
+            rust_span_data: rustc_span::DUMMY_SP.data(),
+        }
+    }
+}
+
+impl Span {
+    pub fn dummy() -> Self {
+        Span {
+            span: RawSpan::dummy(),
+            generated_from_span: None,
         }
     }
 }
