@@ -1,7 +1,6 @@
 //! Functions to translate constants to LLBC.
 use super::translate_ctx::*;
 use charon_lib::ast::*;
-use charon_lib::common::*;
 use hax_frontend_exporter as hax;
 
 impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {

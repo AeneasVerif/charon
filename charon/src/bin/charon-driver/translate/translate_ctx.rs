@@ -1,7 +1,6 @@
 //! The translation contexts.
 use super::translate_types::translate_bound_region_kind_name;
 use charon_lib::ast::*;
-use charon_lib::common::*;
 use charon_lib::formatter::{FmtCtx, IntoFormatter};
 use charon_lib::ids::{MapGenerator, Vector};
 use charon_lib::name_matcher::NamePattern;

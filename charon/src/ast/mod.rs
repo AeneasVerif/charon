@@ -18,6 +18,7 @@ pub mod values;
 pub mod values_utils;
 
 // Re-export everything except llbc/ullbc, for convenience.
+pub use crate::errors::Error;
 pub use builtins::*;
 pub use expressions::*;
 pub use gast::*;

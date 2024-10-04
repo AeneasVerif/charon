@@ -9,6 +9,13 @@ use rustc_span::def_id::DefId;
 use std::cmp::{Ord, PartialOrd};
 use std::collections::{HashMap, HashSet};
 
+/// Common error used during the translation.
+#[derive(Debug)]
+pub struct Error {
+    pub span: Span,
+    pub msg: String,
+}
+
 #[macro_export]
 macro_rules! register_error_or_panic {
     ($ctx:expr, $span: expr, $msg: expr) => {{
@@ -25,7 +32,7 @@ pub use register_error_or_panic;
 macro_rules! error_or_panic {
     ($ctx:expr, $span:expr, $msg:expr) => {{
         $crate::errors::register_error_or_panic!($ctx, $span, $msg);
-        let e = $crate::common::Error {
+        let e = $crate::errors::Error {
             span: $span,
             msg: $msg.to_string(),
         };

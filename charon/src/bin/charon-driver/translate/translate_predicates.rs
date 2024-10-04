@@ -1,7 +1,6 @@
 use super::translate_ctx::*;
 use super::translate_traits::PredicateLocation;
 use charon_lib::ast::*;
-use charon_lib::common::*;
 use charon_lib::ids::Vector;
 use hax_frontend_exporter as hax;
 

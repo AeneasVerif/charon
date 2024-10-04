@@ -3,7 +3,6 @@
 //! which ignores this first variable. This micro-pass updates this.
 use derive_visitor::{visitor_enter_fn_mut, DriveMut, VisitorMut};
 
-use crate::common::*;
 use crate::ids::Vector;
 use crate::transform::TransformCtx;
 use crate::ullbc_ast::*;

@@ -3,7 +3,6 @@ use crate::translate::translate_traits::PredicateLocation;
 use super::translate_ctx::*;
 use charon_lib::ast::*;
 use charon_lib::builtins;
-use charon_lib::common::*;
 use charon_lib::formatter::IntoFormatter;
 use charon_lib::ids::Vector;
 use charon_lib::pretty::FmtWithCtx;
