@@ -2,7 +2,7 @@
 
 fn core::ptr::null<T>() -> *const T
 where
-    [@TraitClause0]: @TraitDecl1<T>,
+    [@TraitClause0]: core::ptr::metadata::Thin<T>,
 
 trait core::marker::Sized<Self>
 
@@ -18,7 +18,7 @@ fn test_crate::call_unsafe_fn()
     let @3: *const u32; // anonymous local
     let @4: (); // anonymous local
 
-    x@1 := core::ptr::null<u32>[@TraitDecl1<u32>]()
+    x@1 := core::ptr::null<u32>[core::ptr::metadata::Thin<u32>]()
     @fake_read(x@1)
     @3 := copy (x@1)
     @2 := core::ptr::const_ptr::{*const T}::read<u32>[core::marker::Sized<u32>](move (@3))
@@ -39,7 +39,7 @@ fn test_crate::deref_raw_ptr()
     let @2: u32; // anonymous local
     let @3: (); // anonymous local
 
-    x@1 := core::ptr::null<u32>[@TraitDecl1<u32>]()
+    x@1 := core::ptr::null<u32>[core::ptr::metadata::Thin<u32>]()
     @fake_read(x@1)
     @2 := copy (*(x@1))
     @fake_read(@2)
