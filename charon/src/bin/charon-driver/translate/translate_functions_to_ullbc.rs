@@ -1495,7 +1495,6 @@ impl BodyTransCtx<'_, '_, '_> {
 
         Ok(FunDecl {
             def_id,
-            rust_id,
             item_meta,
             signature,
             kind,
@@ -1550,7 +1549,6 @@ impl BodyTransCtx<'_, '_, '_> {
 
         Ok(GlobalDecl {
             def_id,
-            rust_id,
             item_meta,
             generics,
             ty,

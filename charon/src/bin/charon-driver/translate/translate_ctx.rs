@@ -172,6 +172,11 @@ pub struct TranslateCtx<'tcx, 'ctx> {
     /// The translated data.
     pub translated: TranslatedCrate,
 
+    /// The map from rustc id to translated id.
+    pub id_map: HashMap<DefId, AnyTransId>,
+    /// The reverse map of ids.
+    pub reverse_id_map: HashMap<AnyTransId, DefId>,
+
     /// Context for tracking and reporting errors.
     pub errors: ErrorCtx<'ctx>,
     /// The declarations we came accross and which we haven't translated yet.
@@ -767,7 +772,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
 
     pub(crate) fn register_id(&mut self, src: &Option<DepSource>, id: OrdRustId) -> AnyTransId {
         let rust_id = id.get_id();
-        let item_id = match self.translated.id_map.get(&rust_id) {
+        let item_id = match self.id_map.get(&rust_id) {
             Some(tid) => *tid,
             None => {
                 let trans_id = match id {
@@ -789,8 +794,8 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
                 };
                 // Add the id to the queue of declarations to translate
                 self.priority_queue.insert(id, trans_id);
-                self.translated.id_map.insert(id.get_id(), trans_id);
-                self.translated.reverse_id_map.insert(trans_id, id.get_id());
+                self.id_map.insert(id.get_id(), trans_id);
+                self.reverse_id_map.insert(trans_id, id.get_id());
                 self.translated.all_ids.insert(trans_id);
                 // Store the name early so the name matcher can identify paths. We can't to it for
                 // trait impls because they register themselves when computing their name.

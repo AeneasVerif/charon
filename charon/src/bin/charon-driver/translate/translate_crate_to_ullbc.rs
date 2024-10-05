@@ -351,7 +351,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
     /// translated version of this item.
     #[allow(dead_code)]
     pub(crate) fn get_or_translate(&mut self, id: AnyTransId) -> Result<AnyTransItem<'_>, Error> {
-        let rust_id = *self.translated.reverse_id_map.get(&id).unwrap();
+        let rust_id = *self.reverse_id_map.get(&id).unwrap();
         // Translate if not already translated.
         self.translate_item(rust_id, id);
 
@@ -434,6 +434,8 @@ pub fn translate<'tcx, 'ctx>(options: &CliOpts, tcx: TyCtxt<'tcx>) -> TransformC
             real_crate_name,
             ..TranslatedCrate::default()
         },
+        id_map: Default::default(),
+        reverse_id_map: Default::default(),
         priority_queue: Default::default(),
         translate_stack: Default::default(),
         cached_defs: Default::default(),
