@@ -1,12 +1,20 @@
 //! Utilities to generate error reports about the external dependencies.
+use crate::ast::{AnyTransId, Span};
+use crate::formatter::{FmtCtx, Formatter};
 use macros::VariantIndexArity;
 use petgraph::algo::dijkstra::dijkstra;
 use petgraph::graphmap::DiGraphMap;
 use rustc_error_messages::MultiSpan;
 use rustc_errors::DiagCtxtHandle;
-use rustc_span::def_id::DefId;
 use std::cmp::{Ord, PartialOrd};
 use std::collections::{HashMap, HashSet};
+
+/// Common error used during the translation.
+#[derive(Debug)]
+pub struct Error {
+    pub span: Span,
+    pub msg: String,
+}
 
 #[macro_export]
 macro_rules! register_error_or_panic {
@@ -24,7 +32,7 @@ pub use register_error_or_panic;
 macro_rules! error_or_panic {
     ($ctx:expr, $span:expr, $msg:expr) => {{
         $crate::errors::register_error_or_panic!($ctx, $span, $msg);
-        let e = $crate::common::Error {
+        let e = $crate::errors::Error {
             span: $span,
             msg: $msg.to_string(),
         };
@@ -54,35 +62,12 @@ pub use error_assert;
 /// dependencies, especially if some external dependencies don't extract:
 /// we use this information to tell the user what is the code which
 /// (transitively) lead to the extraction of those problematic dependencies.
-#[derive(Debug, Clone, Copy, Hash, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, Hash, PartialEq, Eq, PartialOrd, Ord)]
 pub struct DepSource {
-    pub src_id: DefId,
-    pub span: rustc_span::Span,
-}
-
-impl DepSource {
-    /// Value with which we order `DepSource`s.
-    fn sort_key(&self) -> impl Ord {
-        (self.src_id.index, self.src_id.krate)
-    }
-}
-
-/// Manual impls because `DefId` is not orderable.
-impl PartialOrd for DepSource {
-    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
-        Some(self.cmp(other))
-    }
-}
-impl Ord for DepSource {
-    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
-        self.sort_key().cmp(&other.sort_key())
-    }
-}
-
-impl DepSource {
-    pub fn make(src_id: DefId, span: rustc_span::Span) -> Option<Self> {
-        Some(DepSource { src_id, span })
-    }
+    pub src_id: AnyTransId,
+    /// The location where the id was referred to. We store `None` for external dependencies as we
+    /// don't want to show these to the users.
+    pub span: Option<Span>,
 }
 
 /// The context for tracking and reporting errors.
@@ -94,14 +79,16 @@ pub struct ErrorCtx<'ctx> {
 
     /// The compiler session, used for displaying errors.
     pub dcx: DiagCtxtHandle<'ctx>,
-    /// The ids of the declarations for which extraction we encountered errors.
-    pub decls_with_errors: HashSet<DefId>,
+    /// The ids of the external_declarations for which extraction we encountered errors.
+    pub external_decls_with_errors: HashSet<AnyTransId>,
     /// The ids of the declarations we completely failed to extract and had to ignore.
-    pub ignored_failed_decls: HashSet<DefId>,
-    /// Dependency graph with sources. See [DepSource].
-    pub dep_sources: HashMap<DefId, HashSet<DepSource>>,
+    pub ignored_failed_decls: HashSet<AnyTransId>,
+    /// For each external item, a list of locations that point to it. See [DepSource].
+    pub external_dep_sources: HashMap<AnyTransId, HashSet<DepSource>>,
     /// The id of the definition we are exploring, used to track the source of errors.
-    pub def_id: Option<DefId>,
+    pub def_id: Option<AnyTransId>,
+    /// Whether the definition being explored is local to the crate or not.
+    pub def_id_is_local: bool,
     /// The number of errors encountered so far.
     pub error_count: usize,
 }
@@ -125,62 +112,27 @@ impl ErrorCtx<'_> {
     }
 
     /// Report and register an error.
-    pub fn span_err<S: Into<MultiSpan>>(&mut self, span: S, msg: &str) {
+    pub fn span_err(&mut self, span: Span, msg: &str) {
         self.span_err_no_register(span, msg);
         self.error_count += 1;
-        if let Some(id) = self.def_id {
-            let _ = self.decls_with_errors.insert(id);
+        if let Some(id) = self.def_id
+            && !self.def_id_is_local
+        {
+            let _ = self.external_decls_with_errors.insert(id);
         }
     }
 
-    /// Register the fact that `id` is a dependency of `src` (if `src` is not `None`).
-    pub fn register_dep_source(&mut self, src: &Option<DepSource>, id: DefId) {
-        if let Some(src) = src {
-            if src.src_id != id {
-                match self.dep_sources.get_mut(&id) {
-                    None => {
-                        let _ = self.dep_sources.insert(id, HashSet::from([*src]));
-                    }
-                    Some(srcs) => {
-                        let _ = srcs.insert(*src);
-                    }
-                }
-            }
-        }
-    }
-
-    pub fn ignore_failed_decl(&mut self, id: DefId) {
+    pub fn ignore_failed_decl(&mut self, id: AnyTransId) {
         self.ignored_failed_decls.insert(id);
     }
 }
 
 /// For tracing error dependencies.
-#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash, VariantIndexArity)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, VariantIndexArity)]
 enum Node {
-    External(DefId),
+    External(AnyTransId),
     /// We use the span information only for local references
-    Local(DefId, rustc_span::Span),
-}
-
-impl Node {
-    /// Value with which we order `Node`s.
-    fn sort_key(&self) -> impl Ord {
-        let (variant_index, _) = self.variant_index_arity();
-        let (Self::External(def_id) | Self::Local(def_id, _)) = self;
-        (variant_index, def_id.index, def_id.krate)
-    }
-}
-
-/// Manual impls because `DefId` is not orderable.
-impl PartialOrd for Node {
-    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
-        Some(self.cmp(other))
-    }
-}
-impl Ord for Node {
-    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
-        self.sort_key().cmp(&other.sort_key())
-    }
+    Local(AnyTransId, Span),
 }
 
 struct Graph {
@@ -224,7 +176,7 @@ impl ErrorCtx<'_> {
     /// the external dependencies, print a detailed report to explain
     /// to the user which dependencies were problematic, and where they
     /// are used in the code.
-    pub fn report_external_deps_errors(&self) {
+    pub fn report_external_deps_errors(&self, f: FmtCtx<'_>) {
         if !self.has_errors() {
             return;
         }
@@ -237,20 +189,17 @@ impl ErrorCtx<'_> {
         // - from local def to external def
         let mut graph = Graph::new();
 
-        trace!("dep_sources:\n{:?}", self.dep_sources);
-        for (id, srcs) in &self.dep_sources {
-            // Only insert dependencies from external defs
-            if !id.is_local() {
-                let node = Node::External(*id);
-                graph.insert_node(node);
+        trace!("dep_sources:\n{:?}", self.external_dep_sources);
+        for (id, srcs) in &self.external_dep_sources {
+            let src_node = Node::External(*id);
+            graph.insert_node(src_node);
 
-                for src in srcs {
-                    if src.src_id.is_local() {
-                        graph.insert_edge(node, Node::Local(src.src_id, src.span));
-                    } else {
-                        graph.insert_edge(node, Node::External(src.src_id));
-                    }
-                }
+            for src in srcs {
+                let tgt_node = match src.span {
+                    Some(span) => Node::Local(src.src_id, span),
+                    None => Node::External(src.src_id),
+                };
+                graph.insert_edge(src_node, tgt_node)
             }
         }
         trace!("Graph:\n{}", graph);
@@ -258,26 +207,26 @@ impl ErrorCtx<'_> {
         // We need to compute the reachability graph. An easy way is simply
         // to use Dijkstra on every external definition which triggered an
         // error.
-        for id in &self.decls_with_errors {
-            if !id.is_local() {
-                let reachable = dijkstra(&graph.dgraph, Node::External(*id), None, &mut |_| 1);
-                trace!("id: {:?}\nreachable:\n{:?}", id, reachable);
+        for id in &self.external_decls_with_errors {
+            let reachable = dijkstra(&graph.dgraph, Node::External(*id), None, &mut |_| 1);
+            trace!("id: {:?}\nreachable:\n{:?}", id, reachable);
 
-                let reachable: Vec<rustc_span::Span> = reachable
-                    .iter()
-                    .filter_map(|(n, _)| match n {
-                        Node::External(_) => None,
-                        Node::Local(_, span) => Some(*span),
-                    })
-                    .collect();
+            let reachable: Vec<rustc_span::Span> = reachable
+                .iter()
+                .filter_map(|(n, _)| match n {
+                    Node::External(_) => None,
+                    Node::Local(_, span) => Some(span.rust_span()),
+                })
+                .collect();
 
-                // Display the error message
-                let span = MultiSpan::from_spans(reachable);
-                let msg = format!("The external definition `{:?}` triggered errors. It is (transitively) used at the following location(s):",
-                *id,
-                );
-                self.span_err_no_register(span, &msg);
-            }
+            // Display the error message
+            let span = MultiSpan::from_spans(reachable);
+            let msg = format!(
+                "The external definition `{}` triggered errors. \
+                It is (transitively) used at the following location(s):",
+                f.format_object(*id)
+            );
+            self.span_err_no_register(span, &msg);
         }
     }
 }

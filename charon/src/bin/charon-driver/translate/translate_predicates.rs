@@ -1,9 +1,7 @@
 use super::translate_ctx::*;
 use super::translate_traits::PredicateLocation;
-use charon_lib::common::*;
-use charon_lib::gast::*;
+use charon_lib::ast::*;
 use charon_lib::ids::Vector;
-use charon_lib::types::*;
 use hax_frontend_exporter as hax;
 
 impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
@@ -85,7 +83,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     /// auto traits like [core::marker::Sized] and [core::marker::Sync].
     pub(crate) fn translate_trait_decl_ref(
         &mut self,
-        span: rustc_span::Span,
+        span: Span,
         erase_regions: bool,
         bound_trait_ref: &hax::Binder<hax::TraitRef>,
     ) -> Result<Option<PolyTraitDeclRef>, Error> {
@@ -115,14 +113,12 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     /// `origin` is where this clause comes from.
     pub(crate) fn register_trait_clause(
         &mut self,
-        hspan: &hax::Span,
+        span: Span,
         trait_pred: &hax::TraitPredicate,
         origin: PredicateOrigin,
         location: &PredicateLocation,
     ) -> Result<Option<TraitClauseId>, Error> {
-        let span = self.translate_span_from_hax(hspan.clone());
-
-        let trait_decl_ref = self.translate_trait_predicate(hspan, trait_pred)?;
+        let trait_decl_ref = self.translate_trait_predicate(span, trait_pred)?;
         let poly_trait_ref = RegionBinder {
             // We're under the binder of `hax::Predicate`, we re-wrap it here.
             regions: self.region_vars[0].clone(),
@@ -148,12 +144,11 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
 
     pub(crate) fn translate_trait_predicate(
         &mut self,
-        hspan: &hax::Span,
+        span: Span,
         trait_pred: &hax::TraitPredicate,
     ) -> Result<TraitDeclRef, Error> {
         // Note sure what this is about
         assert!(trait_pred.is_positive);
-        let span = hspan.rust_span_data.unwrap().span();
 
         // We translate trait clauses for signatures, etc. so we do not erase the regions
         let erase_regions = false;
@@ -180,7 +175,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         // Predicates are always used in signatures/type definitions, etc.
         // For this reason, we do not erase the regions.
         let erase_regions = false;
-        let span = hspan.rust_span_data.unwrap().span();
+        let span = self.translate_span_from_hax(hspan.clone());
 
         let binder = pred.kind.rebind(());
         self.with_locally_bound_regions_group(span, binder, move |ctx| {
@@ -193,7 +188,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                     let regions = ctx.region_vars[0].clone();
                     match kind {
                         ClauseKind::Trait(trait_pred) => {
-                            ctx.register_trait_clause(hspan, trait_pred, origin, location)?;
+                            ctx.register_trait_clause(span, trait_pred, origin, location)?;
                         }
                         ClauseKind::RegionOutlives(p) => {
                             // TODO: we're under a binder, we should re-bind
@@ -271,7 +266,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
 
     pub(crate) fn translate_trait_impl_exprs(
         &mut self,
-        span: rustc_span::Span,
+        span: Span,
         erase_regions: bool,
         impl_sources: &[hax::ImplExpr],
     ) -> Result<Vector<TraitClauseId, TraitRef>, Error> {
@@ -287,7 +282,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     #[tracing::instrument(skip(self, span, erase_regions))]
     pub(crate) fn translate_trait_impl_expr(
         &mut self,
-        span: rustc_span::Span,
+        span: Span,
         erase_regions: bool,
         impl_expr: &hax::ImplExpr,
     ) -> Result<Option<TraitRef>, Error> {
@@ -321,7 +316,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
 
     pub(crate) fn translate_trait_impl_expr_aux(
         &mut self,
-        span: rustc_span::Span,
+        span: Span,
         erase_regions: bool,
         impl_source: &hax::ImplExpr,
         trait_decl_ref: PolyTraitDeclRef,

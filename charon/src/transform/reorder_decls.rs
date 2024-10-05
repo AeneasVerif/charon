@@ -95,23 +95,17 @@ pub struct DeclInfo {
 
 pub type DeclarationsGroups = Vec<DeclarationGroup>;
 
-/// We use the [Debug] trait instead of [Display] for the identifiers, because
-/// the rustc [DefId] doesn't implement [Display]...
-impl<Id: Debug> Display for GDeclarationGroup<Id> {
+impl<Id: Display> Display for GDeclarationGroup<Id> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::result::Result<(), Error> {
         match self {
-            GDeclarationGroup::NonRec(id) => write!(f, "non-rec: {id:?}"),
-            GDeclarationGroup::Rec(ids) => write!(
-                f,
-                "rec: {}",
-                vec_to_string(&|id| format!("    {id:?}"), ids)
-            ),
+            GDeclarationGroup::NonRec(id) => write!(f, "non-rec: {id}"),
+            GDeclarationGroup::Rec(ids) => {
+                write!(f, "rec: {}", vec_to_string(&|id| format!("    {id}"), ids))
+            }
         }
     }
 }
 
-/// We use the [Debug] trait instead of [Display] for the identifiers, because
-/// the rustc [DefId] doesn't implement [Display]...
 impl Display for DeclarationGroup {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::result::Result<(), Error> {
         match self {

@@ -1542,6 +1542,19 @@ impl<C: AstFormatter> FmtWithCtx<C> for Variant {
     }
 }
 
+impl std::fmt::Display for AnyTransId {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::result::Result<(), std::fmt::Error> {
+        let s = match self {
+            AnyTransId::Type(x) => x.to_pretty_string(),
+            AnyTransId::Fun(x) => x.to_pretty_string(),
+            AnyTransId::Global(x) => x.to_pretty_string(),
+            AnyTransId::TraitDecl(x) => x.to_pretty_string(),
+            AnyTransId::TraitImpl(x) => x.to_pretty_string(),
+        };
+        f.write_str(&s)
+    }
+}
+
 impl std::fmt::Display for BinOp {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::result::Result<(), std::fmt::Error> {
         match self {

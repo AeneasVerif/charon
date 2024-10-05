@@ -1,7 +1,6 @@
 //! The translation contexts.
 use super::translate_types::translate_bound_region_kind_name;
 use charon_lib::ast::*;
-use charon_lib::common::*;
 use charon_lib::formatter::{FmtCtx, IntoFormatter};
 use charon_lib::ids::{MapGenerator, Vector};
 use charon_lib::name_matcher::NamePattern;
@@ -11,7 +10,6 @@ use hax_frontend_exporter as hax;
 use hax_frontend_exporter::SInto;
 use itertools::Itertools;
 use macros::VariantIndexArity;
-use rustc_error_messages::MultiSpan;
 use rustc_hir::def_id::DefId;
 use rustc_hir::Node as HirNode;
 use rustc_middle::ty::TyCtxt;
@@ -58,7 +56,7 @@ impl TranslateOptions {
             Ok(p) => Ok(p),
             Err(e) => {
                 let msg = format!("failed to parse pattern `{s}` ({e})");
-                error_or_panic!(error_ctx, rustc_span::DUMMY_SP, msg)
+                error_or_panic!(error_ctx, Span::dummy(), msg)
             }
         };
 
@@ -174,6 +172,11 @@ pub struct TranslateCtx<'tcx, 'ctx> {
     /// The translated data.
     pub translated: TranslatedCrate,
 
+    /// The map from rustc id to translated id.
+    pub id_map: HashMap<DefId, AnyTransId>,
+    /// The reverse map of ids.
+    pub reverse_id_map: HashMap<AnyTransId, DefId>,
+
     /// Context for tracking and reporting errors.
     pub errors: ErrorCtx<'ctx>,
     /// The declarations we came accross and which we haven't translated yet.
@@ -202,8 +205,10 @@ pub struct TranslateCtx<'tcx, 'ctx> {
 /// us to use those collections.
 pub(crate) struct BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     /// The definition we are currently extracting.
-    /// TODO: this duplicates the field of [TranslateCtx]
+    /// TODO: this duplicates the field of [ErrorCtx]
     pub def_id: DefId,
+    /// The id of the definition we are currently extracting, if there is one.
+    pub item_id: Option<AnyTransId>,
     /// The translation context containing the top-level definitions/ids.
     pub t_ctx: &'ctx mut TranslateCtx<'tcx, 'ctx1>,
     /// A hax state with an owner id
@@ -279,7 +284,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
     }
 
     /// Span an error and register the error.
-    pub fn span_err<S: Into<MultiSpan>>(&mut self, span: S, msg: &str) {
+    pub fn span_err(&mut self, span: Span, msg: &str) {
         self.errors.span_err(span, msg)
     }
 
@@ -298,7 +303,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
 
     pub fn def_id_to_path_elem(
         &mut self,
-        span: rustc_span::Span,
+        span: Span,
         def_id: DefId,
     ) -> Result<Option<PathElem>, Error> {
         if let Some(path_elem) = self.cached_path_elems.get(&def_id) {
@@ -348,7 +353,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
                         // We need to convert the type, which may contain quantified
                         // substs and bounds. In order to properly do so, we introduce
                         // a body translation context.
-                        let mut bt_ctx = BodyTransCtx::new(def_id, self);
+                        let mut bt_ctx = BodyTransCtx::new(def_id, None, self);
                         let generics = bt_ctx.translate_def_generics(span, &def)?;
                         let ty = bt_ctx.translate_ty(span, erase_regions, &ty)?;
                         ImplElem::Ty(generics, ty)
@@ -404,7 +409,8 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         }
         trace!("{:?}", def_id);
         let tcx = self.tcx;
-        let span = tcx.def_span(def_id);
+        let span = &tcx.def_span(def_id);
+        let span = self.translate_span_from_hax(span.sinto(&self.hax_state));
 
         // We have to be a bit careful when retrieving names from def ids. For instance,
         // due to reexports, [`TyCtxt::def_path_str`](TyCtxt::def_path_str) might give
@@ -507,8 +513,9 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
             let mut renames = attributes.iter().filter_map(|a| a.as_rename()).cloned();
             let rename = renames.next();
             if renames.next().is_some() {
+                let span = self.translate_span_from_hax(def.span.clone());
                 self.span_err(
-                    def.span.rust_span_data.unwrap().span(),
+                    span,
                     "There should be at most one `charon::rename(\"...\")` \
                     or `aeneas::rename(\"...\")` attribute per declaration",
                 );
@@ -670,6 +677,11 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         }
     }
 
+    pub(crate) fn def_span(&mut self, def_id: impl Into<DefId>) -> Span {
+        let span = self.tcx.def_span(def_id.into()).sinto(&self.hax_state);
+        self.translate_span_from_hax(span)
+    }
+
     /// Translates a rust attribute. Returns `None` if the attribute is a doc comment (rustc
     /// encodes them as attributes). For now we use `String`s for `Attributes`.
     pub(crate) fn translate_attribute(&mut self, attr: &hax::Attribute) -> Option<Attribute> {
@@ -692,10 +704,8 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
                 match Attribute::parse_from_raw(raw_attr) {
                     Ok(a) => Some(a),
                     Err(msg) => {
-                        self.span_err(
-                            attr.span.rust_span_data.unwrap().span(),
-                            &format!("Error parsing attribute: {msg}"),
-                        );
+                        let span = self.translate_span_from_hax(attr.span.clone());
+                        self.span_err(span, &format!("Error parsing attribute: {msg}"));
                         None
                     }
                 }
@@ -743,14 +753,26 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
     }
 
     /// Register the fact that `id` is a dependency of `src` (if `src` is not `None`).
-    pub(crate) fn register_dep_source(&mut self, src: &Option<DepSource>, id: DefId) {
-        self.errors.register_dep_source(src, id)
+    pub(crate) fn register_dep_source(
+        &mut self,
+        src: &Option<DepSource>,
+        def_id: DefId,
+        item_id: AnyTransId,
+    ) {
+        if let Some(src) = src {
+            if src.src_id != item_id && !def_id.is_local() {
+                self.errors
+                    .external_dep_sources
+                    .entry(item_id)
+                    .or_default()
+                    .insert(*src);
+            }
+        }
     }
 
     pub(crate) fn register_id(&mut self, src: &Option<DepSource>, id: OrdRustId) -> AnyTransId {
         let rust_id = id.get_id();
-        self.register_dep_source(src, rust_id);
-        match self.translated.id_map.get(&rust_id) {
+        let item_id = match self.id_map.get(&rust_id) {
             Some(tid) => *tid,
             None => {
                 let trans_id = match id {
@@ -772,8 +794,8 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
                 };
                 // Add the id to the queue of declarations to translate
                 self.priority_queue.insert(id, trans_id);
-                self.translated.id_map.insert(id.get_id(), trans_id);
-                self.translated.reverse_id_map.insert(trans_id, id.get_id());
+                self.id_map.insert(id.get_id(), trans_id);
+                self.reverse_id_map.insert(trans_id, id.get_id());
                 self.translated.all_ids.insert(trans_id);
                 // Store the name early so the name matcher can identify paths. We can't to it for
                 // trait impls because they register themselves when computing their name.
@@ -784,7 +806,9 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
                 }
                 trans_id
             }
-        }
+        };
+        self.register_dep_source(src, rust_id, item_id);
+        item_id
     }
 
     pub(crate) fn register_type_decl_id(
@@ -855,24 +879,32 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
             .unwrap()
     }
 
-    pub(crate) fn with_def_id<F, T>(&mut self, def_id: DefId, f: F) -> T
+    pub(crate) fn with_def_id<F, T>(&mut self, def_id: DefId, item_id: AnyTransId, f: F) -> T
     where
         F: FnOnce(&mut Self) -> T,
     {
         let current_def_id = self.errors.def_id;
-        self.errors.def_id = Some(def_id);
+        let current_def_id_is_local = self.errors.def_id_is_local;
+        self.errors.def_id = Some(item_id);
+        self.errors.def_id_is_local = def_id.is_local();
         let ret = f(self);
         self.errors.def_id = current_def_id;
+        self.errors.def_id_is_local = current_def_id_is_local;
         ret
     }
 }
 
 impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     /// Create a new `ExecContext`.
-    pub(crate) fn new(def_id: DefId, t_ctx: &'ctx mut TranslateCtx<'tcx, 'ctx1>) -> Self {
+    pub(crate) fn new(
+        def_id: DefId,
+        item_id: Option<AnyTransId>,
+        t_ctx: &'ctx mut TranslateCtx<'tcx, 'ctx1>,
+    ) -> Self {
         let hax_state = hax::State::new_from_state_and_id(&t_ctx.hax_state, def_id);
         BodyTransCtx {
             def_id,
+            item_id,
             t_ctx,
             hax_state,
             error_on_impl_expr_error: true,
@@ -896,12 +928,16 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         self.t_ctx.continue_on_failure()
     }
 
-    pub fn span_err(&mut self, span: rustc_span::Span, msg: &str) {
+    pub fn span_err(&mut self, span: Span, msg: &str) {
         self.t_ctx.span_err(span, msg)
     }
 
     pub(crate) fn translate_span_from_hax(&mut self, rspan: hax::Span) -> Span {
         self.t_ctx.translate_span_from_hax(rspan)
+    }
+
+    pub(crate) fn def_span(&mut self, def_id: impl Into<DefId>) -> Span {
+        self.t_ctx.def_span(def_id)
     }
 
     pub(crate) fn get_local(&self, local: &hax::Local) -> Option<VarId> {
@@ -914,27 +950,19 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         self.blocks_map.get(&rid)
     }
 
-    pub(crate) fn register_type_decl_id(
-        &mut self,
-        span: rustc_span::Span,
-        id: impl Into<DefId>,
-    ) -> TypeDeclId {
+    pub(crate) fn register_type_decl_id(&mut self, span: Span, id: impl Into<DefId>) -> TypeDeclId {
         let src = self.make_dep_source(span);
         self.t_ctx.register_type_decl_id(&src, id.into())
     }
 
-    pub(crate) fn register_fun_decl_id(
-        &mut self,
-        span: rustc_span::Span,
-        id: impl Into<DefId>,
-    ) -> FunDeclId {
+    pub(crate) fn register_fun_decl_id(&mut self, span: Span, id: impl Into<DefId>) -> FunDeclId {
         let src = self.make_dep_source(span);
         self.t_ctx.register_fun_decl_id(&src, id.into())
     }
 
     pub(crate) fn register_global_decl_id(
         &mut self,
-        span: rustc_span::Span,
+        span: Span,
         id: impl Into<DefId>,
     ) -> GlobalDeclId {
         let src = self.make_dep_source(span);
@@ -945,7 +973,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     /// like [core::marker::Sized] or [core::marker::Sync].
     pub(crate) fn register_trait_decl_id(
         &mut self,
-        span: rustc_span::Span,
+        span: Span,
         id: impl Into<DefId>,
     ) -> TraitDeclId {
         let src = self.make_dep_source(span);
@@ -956,7 +984,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     /// like [core::marker::Sized] or [core::marker::Sync].
     pub(crate) fn register_trait_impl_id(
         &mut self,
-        span: rustc_span::Span,
+        span: Span,
         id: impl Into<DefId>,
     ) -> TraitImplId {
         let src = self.make_dep_source(span);
@@ -979,7 +1007,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     /// Translate a binder of regions by appending the stored reguions to the given vector.
     pub(crate) fn translate_region_binder(
         &mut self,
-        span: rustc_span::Span,
+        span: Span,
         binder: hax::Binder<()>,
         region_vars: &mut Vector<RegionId, RegionVar>,
     ) -> Result<Box<[RegionId]>, Error> {
@@ -1010,7 +1038,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     /// Set the first bound regions group
     pub(crate) fn set_first_bound_regions_group(
         &mut self,
-        span: rustc_span::Span,
+        span: Span,
         binder: hax::Binder<()>,
     ) -> Result<(), Error> {
         assert!(self.bound_region_vars.is_empty());
@@ -1031,7 +1059,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     /// it contains universally quantified regions).
     pub(crate) fn with_locally_bound_regions_group<F, T>(
         &mut self,
-        span: rustc_span::Span,
+        span: Span,
         binder: hax::Binder<()>,
         f: F,
     ) -> Result<T, Error>
@@ -1090,8 +1118,11 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         self.blocks.insert(id, block);
     }
 
-    pub(crate) fn make_dep_source(&self, span: rustc_span::Span) -> Option<DepSource> {
-        DepSource::make(self.def_id, span)
+    pub(crate) fn make_dep_source(&self, span: Span) -> Option<DepSource> {
+        Some(DepSource {
+            src_id: self.item_id?,
+            span: self.def_id.is_local().then_some(span),
+        })
     }
 }
 

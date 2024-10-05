@@ -5,7 +5,6 @@ use crate::reorder_decls::DeclarationsGroups;
 use derive_visitor::{Drive, DriveMut};
 use hashlink::LinkedHashSet;
 use macros::{EnumAsGetters, EnumIsA, VariantIndexArity, VariantName};
-use rustc_span::def_id::DefId;
 use serde::{Deserialize, Serialize};
 use serde_map_to_array::HashMapToArray;
 use std::cmp::{Ord, PartialOrd};
@@ -110,16 +109,6 @@ pub struct TranslatedCrate {
     /// failed to translate.
     #[serde(with = "HashMapToArray::<AnyTransId, Name>")]
     pub item_names: HashMap<AnyTransId, Name>,
-    /// The map from rustc id to translated id.
-    #[drive(skip)]
-    #[serde(skip)]
-    #[charon::opaque]
-    pub id_map: HashMap<DefId, AnyTransId>,
-    /// The reverse map of ids.
-    #[drive(skip)]
-    #[serde(skip)]
-    #[charon::opaque]
-    pub reverse_id_map: HashMap<AnyTransId, DefId>,
 
     /// The translated type definitions
     pub type_decls: Vector<TypeDeclId, TypeDecl>,

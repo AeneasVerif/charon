@@ -1,12 +1,5 @@
 pub static TAB_INCR: &str = "    ";
 
-/// Common error used during the translation.
-#[derive(Debug)]
-pub struct Error {
-    pub span: rustc_span::Span,
-    pub msg: String,
-}
-
 /// Custom function to pretty-print elements from an iterator
 /// The output format is:
 /// ```text

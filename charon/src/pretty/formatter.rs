@@ -211,84 +211,54 @@ impl<'a> FmtCtx<'a> {
 
 impl<'a> Formatter<TypeDeclId> for FmtCtx<'a> {
     fn format_object(&self, id: TypeDeclId) -> String {
-        match &self.translated {
-            None => id.to_pretty_string(),
-            Some(translated) => match translated.type_decls.get(id) {
-                None => id.to_pretty_string(),
-                Some(d) => d.item_meta.name.fmt_with_ctx(self),
-            },
-        }
+        self.format_object(AnyTransId::from(id))
     }
 }
 
 impl<'a> Formatter<GlobalDeclId> for FmtCtx<'a> {
     fn format_object(&self, id: GlobalDeclId) -> String {
-        match &self.translated {
-            None => id.to_pretty_string(),
-            Some(translated) => match translated.global_decls.get(id) {
-                None => id.to_pretty_string(),
-                Some(d) => d.item_meta.name.fmt_with_ctx(self),
-            },
-        }
+        self.format_object(AnyTransId::from(id))
     }
 }
 
-impl<'a> Formatter<ast::FunDeclId> for FmtCtx<'a> {
+impl<'a> Formatter<FunDeclId> for FmtCtx<'a> {
     fn format_object(&self, id: ast::FunDeclId) -> String {
-        match &self.translated {
-            None => id.to_pretty_string(),
-            Some(translated) => match translated.fun_decls.get(id) {
-                None => id.to_pretty_string(),
-                Some(d) => d.item_meta.name.fmt_with_ctx(self),
-            },
-        }
+        self.format_object(AnyTransId::from(id))
     }
 }
 
 impl<'a> Formatter<BodyId> for FmtCtx<'a> {
     fn format_object(&self, id: BodyId) -> String {
-        match &self.translated {
+        match self
+            .translated
+            .and_then(|translated| translated.bodies.get(id))
+        {
             None => "<error>".to_owned(),
-            Some(translated) => match translated.bodies.get(id) {
-                None => "<error>".to_owned(),
-                Some(d) => d.fmt_with_ctx(self),
-            },
+            Some(d) => d.fmt_with_ctx(self),
         }
     }
 }
 
-impl<'a> Formatter<ast::TraitDeclId> for FmtCtx<'a> {
+impl<'a> Formatter<TraitDeclId> for FmtCtx<'a> {
     fn format_object(&self, id: ast::TraitDeclId) -> String {
-        match &self.translated {
-            None => id.to_pretty_string(),
-            Some(translated) => match translated.trait_decls.get(id) {
-                None => id.to_pretty_string(),
-                Some(d) => d.item_meta.name.fmt_with_ctx(self),
-            },
-        }
+        self.format_object(AnyTransId::from(id))
     }
 }
 
-impl<'a> Formatter<ast::TraitImplId> for FmtCtx<'a> {
+impl<'a> Formatter<TraitImplId> for FmtCtx<'a> {
     fn format_object(&self, id: ast::TraitImplId) -> String {
-        match &self.translated {
-            None => id.to_pretty_string(),
-            Some(translated) => match translated.trait_impls.get(id) {
-                None => id.to_pretty_string(),
-                Some(d) => d.item_meta.name.fmt_with_ctx(self),
-            },
-        }
+        self.format_object(AnyTransId::from(id))
     }
 }
 
 impl<'a> Formatter<AnyTransId> for FmtCtx<'a> {
     fn format_object(&self, id: AnyTransId) -> String {
-        match id {
-            AnyTransId::Type(x) => self.format_object(x),
-            AnyTransId::Fun(x) => self.format_object(x),
-            AnyTransId::Global(x) => self.format_object(x),
-            AnyTransId::TraitDecl(x) => self.format_object(x),
-            AnyTransId::TraitImpl(x) => self.format_object(x),
+        match self
+            .translated
+            .and_then(|translated| translated.item_names.get(&id))
+        {
+            None => id.to_string(),
+            Some(name) => name.fmt_with_ctx(self),
         }
     }
 }

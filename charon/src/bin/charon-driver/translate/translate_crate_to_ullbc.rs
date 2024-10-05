@@ -1,8 +1,7 @@
 use super::get_mir::extract_constants_at_top_level;
 use super::translate_ctx::*;
-use charon_lib::ast::krate::*;
 use charon_lib::ast::meta::FileName;
-use charon_lib::common::*;
+use charon_lib::ast::*;
 use charon_lib::options::CliOpts;
 use charon_lib::transform::ctx::TransformOptions;
 use charon_lib::transform::TransformCtx;
@@ -251,13 +250,13 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
     }
 
     pub(crate) fn translate_item(&mut self, rust_id: DefId, trans_id: AnyTransId) {
-        if self.errors.ignored_failed_decls.contains(&rust_id)
+        if self.errors.ignored_failed_decls.contains(&trans_id)
             || self.translated.get_item(trans_id).is_some()
         {
             return;
         }
-        self.with_def_id(rust_id, |mut ctx| {
-            let span = ctx.tcx.def_span(rust_id);
+        self.with_def_id(rust_id, trans_id, |mut ctx| {
+            let span = ctx.def_span(rust_id);
             // Catch cycles
             let res = if ctx.translate_stack.contains(&trans_id) {
                 ctx.span_err(
@@ -300,7 +299,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
                     span,
                     &format!("Ignoring the following item due to an error: {rust_id:?}"),
                 );
-                ctx.errors.ignore_failed_decl(rust_id);
+                ctx.errors.ignore_failed_decl(trans_id);
             }
         })
     }
@@ -310,6 +309,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         rust_id: DefId,
         trans_id: AnyTransId,
     ) -> Result<(), Error> {
+        // Translate the meta information
         let name = self.def_id_to_name(rust_id)?;
         self.translated.item_names.insert(trans_id, name.clone());
         let opacity = self.opacity_for_name(&name);
@@ -317,28 +317,30 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
             // Don't even start translating the item. In particular don't call `hax_def` on it.
             return Ok(());
         }
-        // Translate the meta information
         let def: Arc<hax::FullDef> = self.hax_def(rust_id);
         let item_meta = self.translate_item_meta(&def, name, opacity)?;
+
+        // Initialize the body translation context
+        let bt_ctx = BodyTransCtx::new(rust_id, Some(trans_id), self);
         match trans_id {
             AnyTransId::Type(id) => {
-                let ty = self.translate_type(id, rust_id, item_meta, &def)?;
+                let ty = bt_ctx.translate_type(id, item_meta, &def)?;
                 self.translated.type_decls.set_slot(id, ty);
             }
             AnyTransId::Fun(id) => {
-                let fun_decl = self.translate_function(id, rust_id, item_meta, &def)?;
+                let fun_decl = bt_ctx.translate_function(id, rust_id, item_meta, &def)?;
                 self.translated.fun_decls.set_slot(id, fun_decl);
             }
             AnyTransId::Global(id) => {
-                let global_decl = self.translate_global(id, rust_id, item_meta, &def)?;
+                let global_decl = bt_ctx.translate_global(id, rust_id, item_meta, &def)?;
                 self.translated.global_decls.set_slot(id, global_decl);
             }
             AnyTransId::TraitDecl(id) => {
-                let trait_decl = self.translate_trait_decl(id, rust_id, item_meta, &def)?;
+                let trait_decl = bt_ctx.translate_trait_decl(id, rust_id, item_meta, &def)?;
                 self.translated.trait_decls.set_slot(id, trait_decl);
             }
             AnyTransId::TraitImpl(id) => {
-                let trait_impl = self.translate_trait_impl(id, rust_id, item_meta, &def)?;
+                let trait_impl = bt_ctx.translate_trait_impl(id, rust_id, item_meta, &def)?;
                 self.translated.trait_impls.set_slot(id, trait_impl);
             }
         }
@@ -349,12 +351,12 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
     /// translated version of this item.
     #[allow(dead_code)]
     pub(crate) fn get_or_translate(&mut self, id: AnyTransId) -> Result<AnyTransItem<'_>, Error> {
-        let rust_id = *self.translated.reverse_id_map.get(&id).unwrap();
+        let rust_id = *self.reverse_id_map.get(&id).unwrap();
         // Translate if not already translated.
         self.translate_item(rust_id, id);
 
-        if self.errors.ignored_failed_decls.contains(&rust_id) {
-            let span = self.tcx.def_span(rust_id);
+        if self.errors.ignored_failed_decls.contains(&id) {
+            let span = self.def_span(rust_id);
             error_or_panic!(self, span, format!("Failed to translate item {id:?}."))
         }
         Ok(self.translated.get_item(id).unwrap())
@@ -414,10 +416,11 @@ pub fn translate<'tcx, 'ctx>(options: &CliOpts, tcx: TyCtxt<'tcx>) -> TransformC
         continue_on_failure: !options.abort_on_error,
         errors_as_warnings: options.errors_as_warnings,
         dcx: tcx.dcx(),
-        decls_with_errors: HashSet::new(),
+        external_decls_with_errors: HashSet::new(),
         ignored_failed_decls: HashSet::new(),
-        dep_sources: HashMap::new(),
+        external_dep_sources: HashMap::new(),
         def_id: None,
+        def_id_is_local: false,
         error_count: 0,
     };
     let translate_options = TranslateOptions::new(&mut error_ctx, options);
@@ -431,6 +434,8 @@ pub fn translate<'tcx, 'ctx>(options: &CliOpts, tcx: TyCtxt<'tcx>) -> TransformC
             real_crate_name,
             ..TranslatedCrate::default()
         },
+        id_map: Default::default(),
+        reverse_id_map: Default::default(),
         priority_queue: Default::default(),
         translate_stack: Default::default(),
         cached_defs: Default::default(),

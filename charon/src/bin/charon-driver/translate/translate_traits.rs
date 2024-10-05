@@ -1,11 +1,9 @@
 use super::translate_ctx::*;
-use charon_lib::common::*;
+use charon_lib::ast::*;
 use charon_lib::formatter::IntoFormatter;
-use charon_lib::gast::*;
 use charon_lib::ids::Vector;
 use charon_lib::meta::ItemMeta;
 use charon_lib::pretty::FmtWithCtx;
-use charon_lib::types::*;
 use charon_lib::ullbc_ast as ast;
 use hax_frontend_exporter as hax;
 use hax_frontend_exporter::SInto;
@@ -43,7 +41,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         );
 
         let tcx = self.t_ctx.tcx;
-        let span = tcx.def_span(trait_impl_def_id);
+        let span = self.def_span(trait_impl_def_id);
 
         // Lookup the trait clauses and substitute - TODO: not sure about the substitution
         let subst = rust_impl_trait_ref.args;
@@ -82,10 +80,12 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         assert!(id.is_zero());
         Ok(TraitItemName(name.to_string()))
     }
+}
 
+impl BodyTransCtx<'_, '_, '_> {
     #[tracing::instrument(skip(self, rust_id, item_meta))]
     pub fn translate_trait_decl(
-        &mut self,
+        mut self,
         def_id: TraitDeclId,
         rust_id: DefId,
         item_meta: ItemMeta,
@@ -94,9 +94,8 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         trace!("About to translate trait decl:\n{:?}", rust_id);
         trace!("Trait decl id:\n{:?}", def_id);
 
-        let span = item_meta.span.rust_span();
+        let span = item_meta.span;
         let erase_regions = false;
-        let mut bt_ctx = BodyTransCtx::new(rust_id, self);
 
         if let hax::FullDefKind::TraitAlias { .. } = def.kind() {
             error_or_panic!(self, span, &format!("Trait aliases are not supported"));
@@ -109,7 +108,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
             .iter()
             .map(|item| {
                 let name = TraitItemName(item.name.clone());
-                let def = bt_ctx.t_ctx.hax_def(&item.def_id);
+                let def = self.t_ctx.hax_def(&item.def_id);
                 (name, item, def)
             })
             .collect_vec();
@@ -117,9 +116,9 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         // Translate the generics
         // Note that in the generics returned by [translate_def_generics], the trait refs only
         // contain the local trait clauses. The parent clauses are stored in
-        // `bt_ctx.parent_trait_clauses`.
+        // `self.parent_trait_clauses`.
         // TODO: Distinguish between required and implied trait clauses?
-        let generics = bt_ctx.translate_def_generics(span, def)?;
+        let generics = self.translate_def_generics(span, def)?;
 
         // Translate the associated items
         // We do something subtle here: TODO: explain
@@ -132,10 +131,10 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         let mut provided_methods = Vec::new();
         for (item_name, hax_item, hax_def) in &items {
             let rust_item_id = DefId::from(&hax_item.def_id);
-            let item_span = bt_ctx.t_ctx.tcx.def_span(rust_item_id);
+            let item_span = self.def_span(rust_item_id);
             match &hax_def.kind {
                 hax::FullDefKind::AssocFn { .. } => {
-                    let fun_id = bt_ctx.register_fun_decl_id(item_span, rust_item_id);
+                    let fun_id = self.register_fun_decl_id(item_span, rust_item_id);
                     if hax_item.has_value {
                         // This is a provided method,
                         provided_methods.push((item_name.clone(), fun_id));
@@ -150,21 +149,21 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
                         // The parameters of the constant are the same as those of the item that
                         // declares them.
                         let gref = GlobalDeclRef {
-                            id: bt_ctx.register_global_decl_id(item_span, rust_item_id),
+                            id: self.register_global_decl_id(item_span, rust_item_id),
                             generics: generics.identity_args(),
                         };
                         const_defaults.insert(item_name.clone(), gref);
                     };
-                    let ty = bt_ctx.translate_ty(item_span, erase_regions, ty)?;
+                    let ty = self.translate_ty(item_span, erase_regions, ty)?;
                     consts.push((item_name.clone(), ty));
                 }
                 hax::FullDefKind::AssocTy { value, .. } => {
                     // TODO: handle generics (i.e. GATs).
-                    if let Some(clauses) = bt_ctx.item_trait_clauses.get(item_name) {
+                    if let Some(clauses) = self.item_trait_clauses.get(item_name) {
                         type_clauses.push((item_name.clone(), clauses.clone()));
                     }
                     if let Some(ty) = value {
-                        let ty = bt_ctx.translate_ty(item_span, erase_regions, &ty)?;
+                        let ty = self.translate_ty(item_span, erase_regions, &ty)?;
                         type_defaults.insert(item_name.clone(), ty);
                     };
                     types.push(item_name.clone());
@@ -175,7 +174,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
 
         // Debugging:
         {
-            let ctx = bt_ctx.into_fmt();
+            let ctx = self.into_fmt();
             let generic_clauses = generics
                 .trait_clauses
                 .iter()
@@ -189,8 +188,8 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
             );
         }
         if item_meta.opacity.is_opaque() {
-            let ctx = bt_ctx.into_fmt();
-            bt_ctx.t_ctx.errors.dcx.span_warn(
+            let ctx = self.into_fmt();
+            self.t_ctx.errors.dcx.span_warn(
                 item_meta.span,
                 format!(
                     "Trait declarations cannot be \"opaque\"; the trait `{}` will be translated as normal.",
@@ -205,7 +204,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
             def_id,
             item_meta,
             generics,
-            parent_clauses: bt_ctx.parent_trait_clauses,
+            parent_clauses: self.parent_trait_clauses,
             type_clauses,
             consts,
             const_defaults,
@@ -218,7 +217,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
 
     #[tracing::instrument(skip(self, rust_id, item_meta))]
     pub fn translate_trait_impl(
-        &mut self,
+        mut self,
         def_id: TraitImplId,
         rust_id: DefId,
         item_meta: ItemMeta,
@@ -227,12 +226,11 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         trace!("About to translate trait impl:\n{:?}", rust_id);
         trace!("Trait impl id:\n{:?}", def_id);
 
-        let tcx = self.tcx;
-        let span = item_meta.span.rust_span();
+        let tcx = self.t_ctx.tcx;
+        let span = item_meta.span;
         let erase_regions = false;
-        let mut bt_ctx = BodyTransCtx::new(rust_id, self);
 
-        let generics = bt_ctx.translate_def_generics(span, def)?;
+        let generics = self.translate_def_generics(span, def)?;
 
         let hax::FullDefKind::Impl {
             impl_subject: hax::ImplSubject::Trait(trait_pred),
@@ -243,7 +241,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
             unreachable!()
         };
         let implemented_trait_id = &trait_pred.trait_ref.def_id;
-        let trait_def = bt_ctx.t_ctx.hax_def(implemented_trait_id);
+        let trait_def = self.t_ctx.hax_def(implemented_trait_id);
         let hax::FullDefKind::Trait {
             items: decl_items, ..
         } = trait_def.kind()
@@ -252,15 +250,11 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         };
 
         // Retrieve the information about the implemented trait.
-        let trait_id = bt_ctx.register_trait_decl_id(span, implemented_trait_id);
+        let trait_id = self.register_trait_decl_id(span, implemented_trait_id);
         let implemented_trait = {
             let implemented_trait = &trait_pred.trait_ref;
-            let (regions, types, const_generics) = bt_ctx.translate_substs(
-                span,
-                erase_regions,
-                None,
-                &implemented_trait.generic_args,
-            )?;
+            let (regions, types, const_generics) =
+                self.translate_substs(span, erase_regions, None, &implemented_trait.generic_args)?;
             let generics = GenericArgs {
                 regions,
                 types,
@@ -284,20 +278,20 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
                 unreachable!()
             };
             let parent_trait_refs = hax::solve_item_traits(
-                &bt_ctx.hax_state,
+                &self.hax_state,
                 rust_trait_ref.def_id,
                 rust_trait_ref.args,
                 None,
             );
             let parent_trait_refs =
-                bt_ctx.translate_trait_impl_exprs(span, erase_regions, &parent_trait_refs)?;
+                self.translate_trait_impl_exprs(span, erase_regions, &parent_trait_refs)?;
 
             (rust_trait_ref, parent_trait_refs)
         };
 
         {
             // Debugging
-            let ctx = bt_ctx.into_fmt();
+            let ctx = self.into_fmt();
             let refs = parent_trait_refs
                 .iter()
                 .map(|c| c.fmt_with_ctx(&ctx))
@@ -308,25 +302,24 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
 
         // Explore the associated items
         // We do something subtle here: TODO
-        let tcx = bt_ctx.t_ctx.tcx;
+        let tcx = self.t_ctx.tcx;
         let mut consts = HashMap::new();
         let mut types: HashMap<TraitItemName, Ty> = HashMap::new();
         let mut methods = HashMap::new();
 
         for item in impl_items {
             let name = TraitItemName(item.name.clone());
-            let rust_item_id = DefId::from(&item.def_id);
-            let item_span = tcx.def_span(rust_item_id);
+            let item_span = self.def_span(&item.def_id);
             match &item.kind {
                 hax::AssocKind::Fn => {
-                    let fun_id = bt_ctx.register_fun_decl_id(item_span, rust_item_id);
+                    let fun_id = self.register_fun_decl_id(item_span, &item.def_id);
                     methods.insert(name, fun_id);
                 }
                 hax::AssocKind::Const => {
                     // The parameters of the constant are the same as those of the item that
                     // declares them.
                     let gref = GlobalDeclRef {
-                        id: bt_ctx.register_global_decl_id(item_span, rust_item_id),
+                        id: self.register_global_decl_id(item_span, &item.def_id),
                         generics: generics.identity_args(),
                     };
                     consts.insert(name, gref);
@@ -335,14 +328,14 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
                     // Warning: don't call `hax_def` on associated functions because this triggers
                     // hax crashes on functions with higher-kinded predicates like
                     // `Iterator::scan`.
-                    let item_def = bt_ctx.t_ctx.hax_def(&item.def_id);
+                    let item_def = self.t_ctx.hax_def(&item.def_id);
                     let hax::FullDefKind::AssocTy {
                         value: Some(ty), ..
                     } = item_def.kind()
                     else {
                         unreachable!()
                     };
-                    let ty = bt_ctx.translate_ty(item_span, erase_regions, ty)?;
+                    let ty = self.translate_ty(item_span, erase_regions, ty)?;
                     types.insert(name, ty);
                 }
             }
@@ -361,7 +354,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
 
         for decl_item in decl_items {
             let item_def_id = (&decl_item.def_id).into();
-            let item_span = tcx.def_span(item_def_id);
+            let item_span = self.def_span(item_def_id);
             let name = TraitItemName(decl_item.name.to_string());
             match &decl_item.kind {
                 hax::AssocKind::Fn => {
@@ -386,7 +379,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
                             // The parameters of the constant are the same as those of the item
                             // that declares them.
                             GlobalDeclRef {
-                                id: bt_ctx.register_global_decl_id(item_span, item_def_id),
+                                id: self.register_global_decl_id(item_span, item_def_id),
                                 generics: implemented_trait.generics.clone(),
                             }
                         }
@@ -403,14 +396,14 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
                             let ty = tcx
                                 .type_of(item_def_id)
                                 .instantiate(tcx, rust_implemented_trait_ref.args)
-                                .sinto(&bt_ctx.hax_state);
-                            bt_ctx.translate_ty(item_span, erase_regions, &ty)?
+                                .sinto(&self.hax_state);
+                            self.translate_ty(item_span, erase_regions, &ty)?
                         }
                     };
                     types.push((name.clone(), ty));
 
                     // Retrieve the trait refs
-                    let trait_refs = bt_ctx.translate_trait_refs_from_impl_trait_item(
+                    let trait_refs = self.translate_trait_refs_from_impl_trait_item(
                         rust_id,
                         &rust_implemented_trait_ref,
                         item_def_id,
@@ -420,8 +413,8 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
             }
         }
         if item_meta.opacity.is_opaque() {
-            let ctx = bt_ctx.into_fmt();
-            bt_ctx.t_ctx.errors.dcx.span_warn(
+            let ctx = self.into_fmt();
+            self.t_ctx.errors.dcx.span_warn(
                 item_meta.span,
                 format!(
                     "Trait implementations cannot be \"opaque\"; the impl `{}` will be translated as normal.",

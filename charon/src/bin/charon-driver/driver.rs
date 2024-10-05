@@ -1,5 +1,6 @@
 use crate::translate::translate_crate_to_ullbc;
 use charon_lib::export;
+use charon_lib::formatter::IntoFormatter;
 use charon_lib::options;
 use charon_lib::reorder_decls::compute_reordered_decls;
 use charon_lib::transform::{LLBC_PASSES, ULLBC_PASSES};
@@ -271,7 +272,7 @@ pub fn translate(tcx: TyCtxt, internal: &mut CharonCallbacks) -> export::CrateDa
         }
 
         // Display an error report about the external dependencies, if necessary
-        ctx.errors.report_external_deps_errors();
+        ctx.errors.report_external_deps_errors(ctx.into_fmt());
     }
 
     trace!("Done");

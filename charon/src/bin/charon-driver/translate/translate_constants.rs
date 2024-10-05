@@ -1,7 +1,6 @@
 //! Functions to translate constants to LLBC.
 use super::translate_ctx::*;
 use charon_lib::ast::*;
-use charon_lib::common::*;
 use hax_frontend_exporter as hax;
 
 impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
@@ -75,7 +74,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     /// update hax.
     pub(crate) fn translate_constant_expr_to_constant_expr(
         &mut self,
-        span: rustc_span::Span,
+        span: Span,
         v: &hax::ConstantExpr,
     ) -> Result<ConstantExpr, Error> {
         use hax::ConstantExprKind;
@@ -202,7 +201,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     /// the default span (i.e., it is useless), hence the additional span argument.
     pub(crate) fn translate_constant_expr_to_const_generic(
         &mut self,
-        span: rustc_span::Span,
+        span: Span,
         v: &hax::ConstantExpr,
     ) -> Result<ConstGeneric, Error> {
         // Remark: we can't user globals as constant generics (meaning
@@ -237,7 +236,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     /// the default span (i.e., it is useless), hence the additional span argument.
     pub(crate) fn translate_constant_to_constant_expr(
         &mut self,
-        span: rustc_span::Span,
+        span: Span,
         v: &hax::Constant,
     ) -> Result<ConstantExpr, Error> {
         self.translate_constant_expr_to_constant_expr(span, &v.const_.constant_kind)
