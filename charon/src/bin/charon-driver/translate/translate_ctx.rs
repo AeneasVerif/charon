@@ -200,8 +200,10 @@ pub struct TranslateCtx<'tcx, 'ctx> {
 /// us to use those collections.
 pub(crate) struct BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     /// The definition we are currently extracting.
-    /// TODO: this duplicates the field of [TranslateCtx]
+    /// TODO: this duplicates the field of [ErrorCtx]
     pub def_id: DefId,
+    /// The id of the definition we are currently extracting, if there is one.
+    pub item_id: Option<AnyTransId>,
     /// The translation context containing the top-level definitions/ids.
     pub t_ctx: &'ctx mut TranslateCtx<'tcx, 'ctx1>,
     /// A hax state with an owner id
@@ -346,7 +348,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
                         // We need to convert the type, which may contain quantified
                         // substs and bounds. In order to properly do so, we introduce
                         // a body translation context.
-                        let mut bt_ctx = BodyTransCtx::new(def_id, self);
+                        let mut bt_ctx = BodyTransCtx::new(def_id, None, self);
                         let generics = bt_ctx.translate_def_generics(span, &def)?;
                         let ty = bt_ctx.translate_ty(span, erase_regions, &ty)?;
                         ImplElem::Ty(generics, ty)
@@ -746,12 +748,17 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
     }
 
     /// Register the fact that `id` is a dependency of `src` (if `src` is not `None`).
-    pub(crate) fn register_dep_source(&mut self, src: &Option<DepSource>, id: DefId) {
+    pub(crate) fn register_dep_source(
+        &mut self,
+        src: &Option<DepSource>,
+        def_id: DefId,
+        item_id: AnyTransId,
+    ) {
         if let Some(src) = src {
-            if src.src_id != id && !id.is_local() {
+            if src.src_id != item_id && !def_id.is_local() {
                 self.errors
                     .external_dep_sources
-                    .entry(id)
+                    .entry(item_id)
                     .or_default()
                     .insert(*src);
             }
@@ -760,8 +767,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
 
     pub(crate) fn register_id(&mut self, src: &Option<DepSource>, id: OrdRustId) -> AnyTransId {
         let rust_id = id.get_id();
-        self.register_dep_source(src, rust_id);
-        match self.translated.id_map.get(&rust_id) {
+        let item_id = match self.translated.id_map.get(&rust_id) {
             Some(tid) => *tid,
             None => {
                 let trans_id = match id {
@@ -795,7 +801,9 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
                 }
                 trans_id
             }
-        }
+        };
+        self.register_dep_source(src, rust_id, item_id);
+        item_id
     }
 
     pub(crate) fn register_type_decl_id(
@@ -866,13 +874,13 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
             .unwrap()
     }
 
-    pub(crate) fn with_def_id<F, T>(&mut self, def_id: DefId, f: F) -> T
+    pub(crate) fn with_def_id<F, T>(&mut self, def_id: DefId, item_id: AnyTransId, f: F) -> T
     where
         F: FnOnce(&mut Self) -> T,
     {
         let current_def_id = self.errors.def_id;
         let current_def_id_is_local = self.errors.def_id_is_local;
-        self.errors.def_id = Some(def_id);
+        self.errors.def_id = Some(item_id);
         self.errors.def_id_is_local = def_id.is_local();
         let ret = f(self);
         self.errors.def_id = current_def_id;
@@ -883,10 +891,15 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
 
 impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     /// Create a new `ExecContext`.
-    pub(crate) fn new(def_id: DefId, t_ctx: &'ctx mut TranslateCtx<'tcx, 'ctx1>) -> Self {
+    pub(crate) fn new(
+        def_id: DefId,
+        item_id: Option<AnyTransId>,
+        t_ctx: &'ctx mut TranslateCtx<'tcx, 'ctx1>,
+    ) -> Self {
         let hax_state = hax::State::new_from_state_and_id(&t_ctx.hax_state, def_id);
         BodyTransCtx {
             def_id,
+            item_id,
             t_ctx,
             hax_state,
             error_on_impl_expr_error: true,
@@ -1101,10 +1114,9 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     }
 
     pub(crate) fn make_dep_source(&self, span: Span) -> Option<DepSource> {
-        let src_id = self.def_id;
         Some(DepSource {
-            src_id,
-            span: src_id.is_local().then_some(span),
+            src_id: self.item_id?,
+            span: self.def_id.is_local().then_some(span),
         })
     }
 }

@@ -9,7 +9,20 @@ use std::path::PathBuf;
 
 generate_index_type!(FileId);
 
-#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash, Serialize, Deserialize, Drive, DriveMut)]
+#[derive(
+    Debug,
+    Copy,
+    Clone,
+    PartialEq,
+    Eq,
+    PartialOrd,
+    Ord,
+    Hash,
+    Serialize,
+    Deserialize,
+    Drive,
+    DriveMut,
+)]
 pub struct Loc {
     /// The (1-based) line number.
     pub line: usize,
@@ -47,7 +60,20 @@ impl From<RawSpan> for rustc_error_messages::MultiSpan {
 }
 
 /// Meta information about a piece of code (block, statement, etc.)
-#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash, Serialize, Deserialize, Drive, DriveMut)]
+#[derive(
+    Debug,
+    Copy,
+    Clone,
+    PartialEq,
+    Eq,
+    PartialOrd,
+    Ord,
+    Hash,
+    Serialize,
+    Deserialize,
+    Drive,
+    DriveMut,
+)]
 pub struct Span {
     /// The source code span.
     ///

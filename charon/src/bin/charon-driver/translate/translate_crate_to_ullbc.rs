@@ -250,12 +250,12 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
     }
 
     pub(crate) fn translate_item(&mut self, rust_id: DefId, trans_id: AnyTransId) {
-        if self.errors.ignored_failed_decls.contains(&rust_id)
+        if self.errors.ignored_failed_decls.contains(&trans_id)
             || self.translated.get_item(trans_id).is_some()
         {
             return;
         }
-        self.with_def_id(rust_id, |mut ctx| {
+        self.with_def_id(rust_id, trans_id, |mut ctx| {
             let span = ctx.def_span(rust_id);
             // Catch cycles
             let res = if ctx.translate_stack.contains(&trans_id) {
@@ -299,7 +299,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
                     span,
                     &format!("Ignoring the following item due to an error: {rust_id:?}"),
                 );
-                ctx.errors.ignore_failed_decl(rust_id);
+                ctx.errors.ignore_failed_decl(trans_id);
             }
         })
     }
@@ -321,7 +321,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         let item_meta = self.translate_item_meta(&def, name, opacity)?;
 
         // Initialize the body translation context
-        let bt_ctx = BodyTransCtx::new(rust_id, self);
+        let bt_ctx = BodyTransCtx::new(rust_id, Some(trans_id), self);
         match trans_id {
             AnyTransId::Type(id) => {
                 let ty = bt_ctx.translate_type(id, item_meta, &def)?;
@@ -355,7 +355,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         // Translate if not already translated.
         self.translate_item(rust_id, id);
 
-        if self.errors.ignored_failed_decls.contains(&rust_id) {
+        if self.errors.ignored_failed_decls.contains(&id) {
             let span = self.def_span(rust_id);
             error_or_panic!(self, span, format!("Failed to translate item {id:?}."))
         }

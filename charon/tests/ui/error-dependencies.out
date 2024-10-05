@@ -4,7 +4,7 @@ error: Trait aliases are not supported
 error: Ignoring the following item due to an error: core::ptr::metadata::Thin
  --> /rustc/730d5d4095a264ef5f7c0a0781eea68c15431d45/library/core/src/ptr/metadata.rs:81:1
 
-error: The external definition `core::ptr::metadata::Thin` triggered errors. It is (transitively) used at the following location(s):
+error: The external definition `@TraitDecl0` triggered errors. It is (transitively) used at the following location(s):
   --> tests/ui/error-dependencies.rs:8:13
    |
 8  |     let _ = core::ptr::null::<u8>();

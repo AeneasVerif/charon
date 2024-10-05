@@ -42,6 +42,23 @@ impl RawSpan {
             rust_span_data: rustc_span::DUMMY_SP.data(),
         }
     }
+
+    /// Value with which we order `RawSpans`s.
+    fn sort_key(&self) -> impl Ord {
+        (self.file_id, self.beg, self.end)
+    }
+}
+
+/// Manual impls because `SpanData` is not orderable.
+impl PartialOrd for RawSpan {
+    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
+        Some(self.cmp(other))
+    }
+}
+impl Ord for RawSpan {
+    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
+        self.sort_key().cmp(&other.sort_key())
+    }
 }
 
 impl Span {

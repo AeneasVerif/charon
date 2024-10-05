@@ -6,7 +6,6 @@ use crate::llbc_ast;
 use crate::name_matcher::NamePattern;
 use crate::pretty::FmtWithCtx;
 use crate::ullbc_ast;
-use rustc_span::def_id::DefId;
 use std::fmt;
 
 /// The options that control transformation.
@@ -202,13 +201,18 @@ impl<'ctx> TransformCtx<'ctx> {
         self.errors.span_err(span, msg)
     }
 
-    pub(crate) fn with_def_id<F, T>(&mut self, def_id: DefId, def_id_is_local: bool, f: F) -> T
+    pub(crate) fn with_def_id<F, T>(
+        &mut self,
+        def_id: impl Into<AnyTransId>,
+        def_id_is_local: bool,
+        f: F,
+    ) -> T
     where
         F: FnOnce(&mut Self) -> T,
     {
         let current_def_id = self.errors.def_id;
         let current_def_id_is_local = self.errors.def_id_is_local;
-        self.errors.def_id = Some(def_id);
+        self.errors.def_id = Some(def_id.into());
         self.errors.def_id_is_local = def_id_is_local;
         let ret = f(self);
         self.errors.def_id = current_def_id;
@@ -282,7 +286,7 @@ impl<'ctx> TransformCtx<'ctx> {
                         }
                         Err(Opaque) => Err(Opaque),
                     };
-                    ctx.with_def_id(decl.rust_id, decl.item_meta.is_local, |ctx| {
+                    ctx.with_def_id(decl.def_id, decl.item_meta.is_local, |ctx| {
                         f(ctx, decl, body);
                     })
                 }
@@ -308,7 +312,7 @@ impl<'ctx> TransformCtx<'ctx> {
                         }
                         Err(Opaque) => Err(Opaque),
                     };
-                    ctx.with_def_id(decl.rust_id, decl.item_meta.is_local, |ctx| {
+                    ctx.with_def_id(decl.def_id, decl.item_meta.is_local, |ctx| {
                         f(ctx, decl, body);
                     })
                 }
