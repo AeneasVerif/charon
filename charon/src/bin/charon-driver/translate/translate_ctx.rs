@@ -289,13 +289,18 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
     }
 
     /// Register a file if it is a "real" file and was not already registered
-    fn register_file(&mut self, filename: FileName) -> FileId {
+    /// `span` must be a span from which we obtained that filename.
+    fn register_file(&mut self, filename: FileName, span: rustc_span::Span) -> FileId {
         // Lookup the file if it was already registered
         match self.translated.file_to_id.get(&filename) {
             Some(id) => *id,
             None => {
                 let id = self.translated.id_to_file.push(filename.clone());
                 self.translated.file_to_id.insert(filename.clone(), id);
+                let source_file = self.tcx.sess.source_map().lookup_source_file(span.lo());
+                if let Some(src) = source_file.src.as_deref() {
+                    self.translated.file_id_to_content.insert(id, src.clone());
+                }
                 id
             }
         }
@@ -613,12 +618,15 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
 
     pub fn translate_raw_span(&mut self, rspan: hax::Span) -> meta::RawSpan {
         let filename = self.translate_filename(&rspan.filename);
+        let rust_span_data = rspan.rust_span_data.unwrap();
         let file_id = match &filename {
             FileName::NotReal(_) => {
                 // For now we forbid not real filenames
                 unimplemented!();
             }
-            FileName::Virtual(_) | FileName::Local(_) => self.register_file(filename),
+            FileName::Virtual(_) | FileName::Local(_) => {
+                self.register_file(filename, rust_span_data.span())
+            }
         };
 
         fn convert_loc(loc: hax::Loc) -> Loc {
@@ -635,7 +643,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
             file_id,
             beg,
             end,
-            rust_span_data: rspan.rust_span_data.unwrap(),
+            rust_span_data,
         }
     }
 

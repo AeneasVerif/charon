@@ -1,6 +1,5 @@
 use super::get_mir::extract_constants_at_top_level;
 use super::translate_ctx::*;
-use charon_lib::ast::meta::FileName;
 use charon_lib::ast::*;
 use charon_lib::options::CliOpts;
 use charon_lib::transform::ctx::TransformOptions;
@@ -361,33 +360,6 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         }
         Ok(self.translated.get_item(id).unwrap())
     }
-
-    /// Return a map from source file name to file content.
-    ///
-    /// Note that we collect *all* the source files found in the session,
-    /// including the source files from the dependencies. We later filter
-    /// those to build a map from the file names we actually refer to in
-    /// the spans to the file contents (ignoring the other files). This
-    /// is the reason why here we build a map from file name to `Arc<String>`
-    /// and not directly to `String`: we don't want to clone too much data.
-    fn read_source_files(&mut self) -> HashMap<FileName, Arc<String>> {
-        // Retrieve the source map
-        let source_map = self.tcx.sess.source_map();
-
-        // Read all the files
-        source_map
-            .files()
-            .iter()
-            .filter_map(|file| {
-                // Convert the filename
-                let filename: hax::FileName = file.name.sinto(&self.hax_state);
-                let filename = self.translate_filename(&filename);
-
-                // Retrieve the content
-                file.src.as_ref().map(|src| (filename, src.clone()))
-            })
-            .collect()
-    }
 }
 
 #[tracing::instrument(skip(tcx))]
@@ -484,20 +456,6 @@ pub fn translate<'tcx, 'ctx>(options: &CliOpts, tcx: TyCtxt<'tcx>) -> TransformC
         trace!("About to translate id: {:?}", ord_id);
         ctx.translate_item(ord_id.get_id(), trans_id);
     }
-
-    // Read the source files
-    let source_files = ctx.read_source_files();
-    use std::ops::Deref;
-    ctx.translated.file_id_to_content = ctx
-        .translated
-        .id_to_file
-        .iter_indexed()
-        .filter_map(|(id, filename)| {
-            source_files
-                .get(filename)
-                .map(|file| (id, file.deref().clone()))
-        })
-        .collect();
 
     // Return the context, dropping the hax state and rustc `tcx`.
     let transform_options = TransformOptions {
