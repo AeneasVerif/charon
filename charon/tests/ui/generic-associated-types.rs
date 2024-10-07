@@ -1,4 +1,6 @@
 //@ known-failure
+// See also `non-lifetime-gats.rs`
+
 trait LendingIterator {
     type Item<'a>
     where

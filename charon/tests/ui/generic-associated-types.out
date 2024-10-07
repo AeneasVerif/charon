@@ -2,15 +2,15 @@ thread 'rustc' panicked at compiler/rustc_trait_selection/src/traits/normalize.r
 Normalizing <<Self as LendingIterator>::Item<'a> as std::marker::Sized> without wrapping in a `Binder`
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 error: Thread panicked when extracting item `test_crate::LendingIterator`.
- --> tests/ui/generic-associated-types.rs:2:1
+ --> tests/ui/generic-associated-types.rs:4:1
   |
-2 | trait LendingIterator {
+4 | trait LendingIterator {
   | ^^^^^^^^^^^^^^^^^^^^^
 
 error: Ignoring the following item due to an error: test_crate::LendingIterator
- --> tests/ui/generic-associated-types.rs:2:1
+ --> tests/ui/generic-associated-types.rs:4:1
   |
-2 | trait LendingIterator {
+4 | trait LendingIterator {
   | ^^^^^^^^^^^^^^^^^^^^^
 
 error: Could not find region: Region { kind: ReEarlyParam(EarlyParamRegion { index: 2, name: "'b" }) }
@@ -20,35 +20,35 @@ error: Could not find region: Region { kind: ReEarlyParam(EarlyParamRegion { ind
        
        Bound region vars:
        []
-  --> tests/ui/generic-associated-types.rs:11:5
+  --> tests/ui/generic-associated-types.rs:13:5
    |
-11 |     type Item<'b> = &'b T;
+13 |     type Item<'b> = &'b T;
    |     ^^^^^^^^^^^^^
 
 error: Ignoring the following item due to an error: test_crate::{impl#0}
-  --> tests/ui/generic-associated-types.rs:10:1
+  --> tests/ui/generic-associated-types.rs:12:1
    |
-10 | impl<'a, T> LendingIterator for Option<&'a T> {
+12 | impl<'a, T> LendingIterator for Option<&'a T> {
    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 thread 'rustc' panicked at compiler/rustc_trait_selection/src/traits/normalize.rs:151:9:
 Normalizing <<Self as LendingIterator>::Item<'a> as std::marker::Sized> without wrapping in a `Binder`
 error: Thread panicked when extracting item `test_crate::LendingIterator::next`.
- --> tests/ui/generic-associated-types.rs:7:5
+ --> tests/ui/generic-associated-types.rs:9:5
   |
-7 |     fn next<'a>(&'a mut self) -> Option<Self::Item<'a>>;
+9 |     fn next<'a>(&'a mut self) -> Option<Self::Item<'a>>;
   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 error: Ignoring the following item due to an error: test_crate::LendingIterator::next
- --> tests/ui/generic-associated-types.rs:7:5
+ --> tests/ui/generic-associated-types.rs:9:5
   |
-7 |     fn next<'a>(&'a mut self) -> Option<Self::Item<'a>>;
+9 |     fn next<'a>(&'a mut self) -> Option<Self::Item<'a>>;
   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 warning: unused variable: `x`
-  --> tests/ui/generic-associated-types.rs:31:9
+  --> tests/ui/generic-associated-types.rs:33:9
    |
-31 |     let x = 42;
+33 |     let x = 42;
    |         ^ help: if this is intentional, prefix it with an underscore: `_x`
    |
    = note: `#[warn(unused_variables)]` on by default
