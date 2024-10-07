@@ -3,7 +3,6 @@
 , craneLib
 , lib
 , makeWrapper
-, runCommand
 , rustToolchain
 , stdenv
 , zlib
@@ -17,18 +16,14 @@ let
     filter =
       path: type:
       (craneLib.filterCargoSources path type)
+      || (lib.hasPrefix (toString ../charon/rust-toolchain) path) # We read it at compile-time
       || (lib.hasPrefix (toString ../charon/tests) path && !lib.hasSuffix ".llbc" path)
       || (lib.hasPrefix (toString ../charon/src/bin/generate-ml) path && !lib.hasSuffix ".llbc" path);
   };
 
   craneArgs = {
     inherit cargoLock;
-    # Copy the `rust-toolchain` file because charon reads it at build time.
-    src = runCommand "charon-clean-src" { } ''
-      mkdir $out
-      cp -r ${cleanedUpSrc}/* $out/
-      cp ${../rust-toolchain} $out/rust-toolchain
-    '';
+    src = cleanedUpSrc;
     RUSTFLAGS = "-D warnings"; # Turn all warnings into errors.
   };
 
@@ -36,7 +31,7 @@ in
 
 craneLib.buildPackage (
   craneArgs
-    // {
+    // rec {
     buildInputs = [
       makeWrapper
       zlib
@@ -81,5 +76,10 @@ craneLib.buildPackage (
     '';
 
     passthru.check-fmt = craneLib.cargoFmt craneArgs;
+    passthru.check-no-rustc = craneLib.mkCargoDerivation (craneArgs // {
+      inherit cargoArtifacts;
+      pnameSuffix = "-check-no-rustc";
+      buildPhaseCargoCommand = "cargoWithProfile check --lib --no-default-features";
+    });
   }
 )

@@ -1737,10 +1737,7 @@ fn translate_body(no_code_duplication: bool, body: &mut gast::Body) {
     let Unstructured(src_body) = body else {
         panic!("Called `ullbc_to_llbc` on an already restructured body")
     };
-    trace!(
-        "About to translate to ullbc: {:?}",
-        src_body.span.rust_span()
-    );
+    trace!("About to translate to ullbc: {:?}", src_body.span);
     let tgt_body = translate_body_aux(no_code_duplication, src_body);
     *body = Structured(tgt_body);
 }

@@ -501,7 +501,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             let mut have_names: Option<bool> = None;
             for (j, field_def) in var_def.fields.iter().enumerate() {
                 trace!("variant {i}: field {j}: {field_def:?}");
-                let field_span = self.t_ctx.translate_span_from_hax(field_def.span.clone());
+                let field_span = self.t_ctx.translate_span_from_hax(&field_def.span);
                 // Translate the field type
                 let ty = self.translate_ty(field_span, erase_regions, &field_def.ty)?;
                 let field_full_def = self.t_ctx.hax_def(&field_def.did);
@@ -533,7 +533,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             }
 
             let discriminant = self.translate_discriminant(def_span, &var_def.discr_val)?;
-            let variant_span = self.t_ctx.translate_span_from_hax(var_def.span.clone());
+            let variant_span = self.t_ctx.translate_span_from_hax(&var_def.span);
             let variant_name = var_def.name.clone();
             let variant_full_def = self.t_ctx.hax_def(&var_def.def_id);
             let variant_attrs = self.t_ctx.translate_attr_info(&variant_full_def);

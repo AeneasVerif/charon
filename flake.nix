@@ -27,6 +27,8 @@
 
         # Check rust files are correctly formatted.
         charon-check-fmt = charon.passthru.check-fmt;
+        # Check that the crate builds with the "rustc" feature off.
+        charon-check-no-rustc = charon.passthru.check-no-rustc;
 
         # A utility that extracts the llbc of a crate using charon. This uses
         # `crane` to handle dependencies and toolchain management.
@@ -188,7 +190,10 @@
             self.packages.${system}.charon-ml
           ];
         };
-        checks = { inherit charon-ml-tests charon-check-fmt charon-ml-check-fmt check-generated-ml; };
+        checks = {
+          inherit charon-ml-tests charon-check-fmt charon-check-no-rustc
+            charon-ml-check-fmt check-generated-ml;
+        };
 
         # Export this function so that users of charon can use it in nix. This
         # fits in none of the standard flake output categories hace why it is
