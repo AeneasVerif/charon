@@ -175,7 +175,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         // Predicates are always used in signatures/type definitions, etc.
         // For this reason, we do not erase the regions.
         let erase_regions = false;
-        let span = self.translate_span_from_hax(hspan.clone());
+        let span = self.translate_span_from_hax(hspan);
 
         let binder = pred.kind.rebind(());
         self.with_locally_bound_regions_group(span, binder, move |ctx| {

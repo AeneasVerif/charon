@@ -180,7 +180,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
 
             // Translate the type
             let erase_regions = true;
-            let span = self.translate_span_from_hax(var.source_info.span.clone());
+            let span = self.translate_span_from_hax(&var.source_info.span);
             let ty = self.translate_ty(span, erase_regions, &var.ty)?;
 
             // Add the variable to the environment
@@ -1330,7 +1330,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         self.translate_transparent_expression_body(&body)?;
 
         // Compute the span information
-        let span = self.translate_span_from_hax(body.span);
+        let span = self.translate_span_from_hax(&body.span);
 
         // We need to convert the blocks map to an index vector
         // We clone things while we could move them...
