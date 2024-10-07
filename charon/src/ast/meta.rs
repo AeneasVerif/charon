@@ -31,6 +31,7 @@ pub struct Loc {
 }
 
 /// For use when deserializing.
+#[cfg(feature = "rustc")]
 fn dummy_span_data() -> rustc_span::SpanData {
     rustc_span::DUMMY_SP.data()
 }
@@ -46,6 +47,7 @@ pub struct RawSpan {
     /// We use `SpanData` instead of `Span` because `Span` is not `Send` when rustc runs
     /// single-threaded (default on older versions). We need this to be `Send` because we pass this
     /// data out of the rustc callbacks in charon-driver.
+    #[cfg(feature = "rustc")]
     #[serde(skip)]
     #[drive(skip)]
     #[serde(default = "dummy_span_data")]
@@ -53,6 +55,7 @@ pub struct RawSpan {
     pub rust_span_data: rustc_span::SpanData,
 }
 
+#[cfg(feature = "rustc")]
 impl From<RawSpan> for rustc_error_messages::MultiSpan {
     fn from(span: RawSpan) -> Self {
         span.rust_span_data.span().into()
@@ -99,12 +102,14 @@ pub struct Span {
     pub generated_from_span: Option<RawSpan>,
 }
 
+#[cfg(feature = "rustc")]
 impl From<Span> for rustc_span::Span {
     fn from(span: Span) -> Self {
         span.span.rust_span_data.span()
     }
 }
 
+#[cfg(feature = "rustc")]
 impl From<Span> for rustc_error_messages::MultiSpan {
     fn from(span: Span) -> Self {
         span.span.into()
@@ -112,6 +117,7 @@ impl From<Span> for rustc_error_messages::MultiSpan {
 }
 
 impl Span {
+    #[cfg(feature = "rustc")]
     pub fn rust_span(self) -> rustc_span::Span {
         self.span.rust_span_data.span()
     }

@@ -1,11 +1,5 @@
 //! Utilities to generate error reports about the external dependencies.
 use crate::ast::{AnyTransId, Span};
-use crate::formatter::{FmtCtx, Formatter};
-use macros::VariantIndexArity;
-use petgraph::algo::dijkstra::dijkstra;
-use petgraph::graphmap::DiGraphMap;
-use rustc_error_messages::MultiSpan;
-use rustc_errors::DiagCtxtHandle;
 use std::cmp::{Ord, PartialOrd};
 use std::collections::{HashMap, HashSet};
 
@@ -78,7 +72,10 @@ pub struct ErrorCtx<'ctx> {
     pub errors_as_warnings: bool,
 
     /// The compiler session, used for displaying errors.
-    pub dcx: DiagCtxtHandle<'ctx>,
+    #[cfg(feature = "rustc")]
+    pub dcx: rustc_errors::DiagCtxtHandle<'ctx>,
+    #[cfg(not(feature = "rustc"))]
+    pub dcx: &'ctx (),
     /// The ids of the external_declarations for which extraction we encountered errors.
     pub external_decls_with_errors: HashSet<AnyTransId>,
     /// The ids of the declarations we completely failed to extract and had to ignore.
@@ -102,12 +99,26 @@ impl ErrorCtx<'_> {
     }
 
     /// Report an error without registering anything.
-    pub(crate) fn span_err_no_register<S: Into<MultiSpan>>(&self, span: S, msg: &str) {
+    #[cfg(feature = "rustc")]
+    pub(crate) fn span_err_no_register<S: Into<rustc_error_messages::MultiSpan>>(
+        &self,
+        span: S,
+        msg: &str,
+    ) {
         let msg = msg.to_string();
         if self.errors_as_warnings {
             self.dcx.span_warn(span, msg);
         } else {
             self.dcx.span_err(span, msg);
+        }
+    }
+    #[cfg(not(feature = "rustc"))]
+    pub(crate) fn span_err_no_register(&self, _span: Span, msg: &str) {
+        let msg = msg.to_string();
+        if self.errors_as_warnings {
+            error!("{}", msg);
+        } else {
+            warn!("{}", msg);
         }
     }
 
@@ -127,58 +138,68 @@ impl ErrorCtx<'_> {
     }
 }
 
-/// For tracing error dependencies.
-#[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, VariantIndexArity)]
-enum Node {
-    External(AnyTransId),
-    /// We use the span information only for local references
-    Local(AnyTransId, Span),
-}
-
-struct Graph {
-    dgraph: DiGraphMap<Node, ()>,
-}
-
-impl std::fmt::Display for Graph {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::result::Result<(), std::fmt::Error> {
-        for (from, to, _) in self.dgraph.all_edges() {
-            writeln!(f, "{from:?} -> {to:?}")?
-        }
-        Ok(())
-    }
-}
-
-impl Graph {
-    fn new() -> Self {
-        Graph {
-            dgraph: DiGraphMap::new(),
-        }
-    }
-
-    fn insert_node(&mut self, n: Node) {
-        // We have to be careful about duplicate nodes
-        if !self.dgraph.contains_node(n) {
-            self.dgraph.add_node(n);
-        }
-    }
-
-    fn insert_edge(&mut self, from: Node, to: Node) {
-        self.insert_node(from);
-        self.insert_node(to);
-        if !self.dgraph.contains_edge(from, to) {
-            self.dgraph.add_edge(from, to, ());
-        }
-    }
-}
-
 impl ErrorCtx<'_> {
     /// In case errors happened when extracting the definitions coming from
     /// the external dependencies, print a detailed report to explain
     /// to the user which dependencies were problematic, and where they
     /// are used in the code.
-    pub fn report_external_deps_errors(&self, f: FmtCtx<'_>) {
+    #[cfg(feature = "rustc")]
+    pub fn report_external_deps_errors(&self, f: crate::formatter::FmtCtx<'_>) {
+        use crate::formatter::Formatter;
+        use macros::VariantIndexArity;
+        use petgraph::algo::dijkstra::dijkstra;
+        use petgraph::graphmap::DiGraphMap;
+        use rustc_error_messages::MultiSpan;
+
         if !self.has_errors() {
             return;
+        }
+
+        /// For tracing error dependencies.
+        #[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, VariantIndexArity)]
+        enum Node {
+            External(AnyTransId),
+            /// We use the span information only for local references
+            Local(AnyTransId, Span),
+        }
+
+        struct Graph {
+            dgraph: DiGraphMap<Node, ()>,
+        }
+
+        impl std::fmt::Display for Graph {
+            fn fmt(
+                &self,
+                f: &mut std::fmt::Formatter<'_>,
+            ) -> std::result::Result<(), std::fmt::Error> {
+                for (from, to, _) in self.dgraph.all_edges() {
+                    writeln!(f, "{from:?} -> {to:?}")?
+                }
+                Ok(())
+            }
+        }
+
+        impl Graph {
+            fn new() -> Self {
+                Graph {
+                    dgraph: DiGraphMap::new(),
+                }
+            }
+
+            fn insert_node(&mut self, n: Node) {
+                // We have to be careful about duplicate nodes
+                if !self.dgraph.contains_node(n) {
+                    self.dgraph.add_node(n);
+                }
+            }
+
+            fn insert_edge(&mut self, from: Node, to: Node) {
+                self.insert_node(from);
+                self.insert_node(to);
+                if !self.dgraph.contains_edge(from, to) {
+                    self.dgraph.add_edge(from, to, ());
+                }
+            }
         }
 
         // Create a dependency graph, with spans.
