@@ -36,3 +36,20 @@ fn main() {
     for_each(iter, |item| sum += *item);
     assert_eq!(sum, 42);
 }
+
+mod lifetimes {
+    trait Foo<T> {
+        fn foo(self) -> T;
+    }
+
+    trait Bar<'a> {
+        type Type<'b>: for<'c> Foo<&'a &'b &'c ()>;
+    }
+
+    fn bar<'x, 'y, 'z, T>(x: <T as Bar<'x>>::Type<'y>) -> &'x &'y &'z ()
+    where
+        T: Bar<'x>,
+    {
+        x.foo()
+    }
+}
