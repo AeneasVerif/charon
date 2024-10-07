@@ -1,7 +1,12 @@
 error: Mismatched generics:
-       expected: GenericParams { regions: [], types: [Some(TypeVar { index: 0, name: "T" })], const_generics: [], trait_clauses: [Some(TraitClause { clause_id: 0, span: Some(Span { span: RawSpan { file_id: 1, beg: Loc { line: 2498, col: 5 }, end: Loc { line: 2498, col: 6 }, rust_span_data: /rustc/730d5d4095a264ef5f7c0a0781eea68c15431d45/library/core/src/option.rs:2498:6: 2498:7 (#0) }, generated_from_span: None }), origin: WhereClauseOnImpl, trait_: RegionBinder { regions: [], skip_binder: TraitDeclRef { trait_id: 0, generics: GenericArgs { regions: [], types: [Some(TypeVar(0))], const_generics: [], trait_refs: [] } } } })], regions_outlive: [], types_outlive: [], trait_type_constraints: [] }
-            got: GenericArgs { regions: [], types: [Some(TypeVar(0))], const_generics: [], trait_refs: [Some(TraitRef { kind: Clause(0), trait_decl_ref: RegionBinder { regions: [], skip_binder: TraitDeclRef { trait_id: 0, generics: GenericArgs { regions: [], types: [Some(TypeVar(0))], const_generics: [], trait_refs: [] } } } }), Some(TraitRef { kind: Clause(0), trait_decl_ref: RegionBinder { regions: [], skip_binder: TraitDeclRef { trait_id: 0, generics: GenericArgs { regions: [], types: [Some(TypeVar(0))], const_generics: [], trait_refs: [] } } } })] }
- --> /rustc/730d5d4095a264ef5f7c0a0781eea68c15431d45/library/core/src/option.rs:2479:1
+       expected: GenericParams { regions: [], types: [Some(TypeVar { index: 0, name: "T" })], const_generics: [], trait_clauses: [Some(TraitClause { clause_id: 0, span: Some(Span { span: RawSpan { file_id: 0, beg: Loc { line: 12, col: 5 }, end: Loc { line: 12, col: 6 }, rust_span_data: tests/ui/issue-369-mismatched-genericparams.rs:12:6: 12:7 (#0) }, generated_from_span: None }), origin: WhereClauseOnImpl, trait_: RegionBinder { regions: [], skip_binder: TraitDeclRef { trait_id: 2, generics: GenericArgs { regions: [], types: [Some(TypeVar(0))], const_generics: [], trait_refs: [] } } } })], regions_outlive: [], types_outlive: [], trait_type_constraints: [] }
+            got: GenericArgs { regions: [], types: [Some(TypeVar(0))], const_generics: [], trait_refs: [Some(TraitRef { kind: Clause(0), trait_decl_ref: RegionBinder { regions: [], skip_binder: TraitDeclRef { trait_id: 2, generics: GenericArgs { regions: [], types: [Some(TypeVar(0))], const_generics: [], trait_refs: [] } } } }), Some(TraitRef { kind: Clause(0), trait_decl_ref: RegionBinder { regions: [], skip_binder: TraitDeclRef { trait_id: 2, generics: GenericArgs { regions: [], types: [Some(TypeVar(0))], const_generics: [], trait_refs: [] } } } })] }
+  --> tests/ui/issue-369-mismatched-genericparams.rs:8:1
+   |
+8  | / impl<T> Try for Option<T> {
+9  | |     type Residual = ();
+10 | | }
+   | |_^
 
 error: aborting due to 1 previous error
 
