@@ -31,7 +31,7 @@ in
 
 craneLib.buildPackage (
   craneArgs
-    // {
+    // rec {
     buildInputs = [
       makeWrapper
       zlib
@@ -76,5 +76,10 @@ craneLib.buildPackage (
     '';
 
     passthru.check-fmt = craneLib.cargoFmt craneArgs;
+    passthru.check-no-rustc = craneLib.mkCargoDerivation (craneArgs // {
+      inherit cargoArtifacts;
+      pnameSuffix = "-check-no-rustc";
+      buildPhaseCargoCommand = "cargoWithProfile check --lib --no-default-features";
+    });
   }
 )
