@@ -1,5 +1,5 @@
-thread 'rustc' panicked at /rustc/730d5d4095a264ef5f7c0a0781eea68c15431d45/compiler/rustc_type_ir/src/binder.rs:711:9:
-type parameter `T/#1` (T/#1/1) out of range when instantiating, args=[Self/#0]
+thread 'rustc' panicked at src/bin/charon-driver/translate/translate_predicates.rs:357:17:
+assertion failed: nested.is_empty()
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 error: Thread panicked when extracting item `test_crate::PointerFamily`.
  --> tests/ui/non-lifetime-gats.rs:4:1
