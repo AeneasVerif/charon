@@ -1326,11 +1326,8 @@ impl<C: AstFormatter> FmtWithCtx<C> for TraitRefKind {
             TraitRefKind::SelfId => "Self".to_string(),
             TraitRefKind::ParentClause(id, _decl_id, clause_id) => {
                 let id = id.fmt_with_ctx(ctx);
-                // Using on purpose [to_pretty_string] instead of [format_object]:
-                // the clause is local to the associated type, so it should not
-                // be referenced in the current context.
-                let clause = clause_id.to_pretty_string();
-                format!("(parents({id})::[{clause}])")
+                let clause = clause_id.index();
+                format!("{id}::parent_clause_{clause}")
             }
             TraitRefKind::ItemClause(id, _decl_id, type_name, clause_id) => {
                 let id = id.fmt_with_ctx(ctx);

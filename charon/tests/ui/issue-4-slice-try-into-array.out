@@ -31,7 +31,7 @@ trait core::convert::TryFrom<Self, T>
     fn try_from : core::convert::TryFrom::try_from
 }
 
-fn core::convert::{impl core::convert::TryInto<U> for T}#6::try_into<T, U>(@1: T) -> core::result::Result<U, @TraitClause2::Error>[@TraitClause1, (parents(@TraitClause2)::[@TraitClause2])]
+fn core::convert::{impl core::convert::TryInto<U> for T}#6::try_into<T, U>(@1: T) -> core::result::Result<U, @TraitClause2::Error>[@TraitClause1, @TraitClause2::parent_clause_2]
 where
     // Inherited clauses:
     [@TraitClause0]: core::marker::Sized<T>,
@@ -46,7 +46,7 @@ where
 {
     parent_clause0 = @TraitClause0
     parent_clause1 = @TraitClause1
-    parent_clause2 = (parents(@TraitClause2)::[@TraitClause2])
+    parent_clause2 = @TraitClause2::parent_clause_2
     type Error = @TraitClause2::Error
     fn try_into = core::convert::{impl core::convert::TryInto<U> for T}#6::try_into
 }
@@ -94,7 +94,7 @@ impl core::marker::{impl core::marker::Copy for u8}#38 : core::marker::Copy<u8>
     parent_clause0 = core::clone::impls::{impl core::clone::Clone for u8}#6
 }
 
-fn core::convert::TryInto::try_into<Self, T>(@1: Self) -> core::result::Result<T, Self::Error>[(parents(Self)::[@TraitClause1]), (parents(Self)::[@TraitClause2])]
+fn core::convert::TryInto::try_into<Self, T>(@1: Self) -> core::result::Result<T, Self::Error>[Self::parent_clause_1, Self::parent_clause_2]
 
 opaque type core::fmt::Formatter<'a>
   where
@@ -144,7 +144,7 @@ fn test_crate::trait_error<'_0>(@1: &'_0 (Slice<u8>))
     return
 }
 
-fn core::convert::TryFrom::try_from<Self, T>(@1: T) -> core::result::Result<Self, Self::Error>[(parents(Self)::[@TraitClause0]), (parents(Self)::[@TraitClause2])]
+fn core::convert::TryFrom::try_from<Self, T>(@1: T) -> core::result::Result<Self, Self::Error>[Self::parent_clause_0, Self::parent_clause_2]
 
 fn core::clone::Clone::clone<'_0, Self>(@1: &'_0 (Self)) -> Self
 

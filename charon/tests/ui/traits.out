@@ -581,7 +581,7 @@ where
     let @2: @TraitClause1::W; // anonymous local
 
     @2 := move (x@1)
-    @0 := (parents(@TraitClause1)::[@TraitClause1])::to_u64(move (@2))
+    @0 := @TraitClause1::parent_clause_1::to_u64(move (@2))
     drop @2
     drop x@1
     return
@@ -648,24 +648,24 @@ where
     let @2: &'_ (T); // anonymous local
 
     @2 := &*(x@1)
-    @0 := (parents(@TraitClause1)::[@TraitClause0])::get_name(move (@2))
+    @0 := @TraitClause1::parent_clause_0::get_name(move (@2))
     drop @2
     return
 }
 
 fn test_crate::ParentTrait0::get_w<'_0, Self>(@1: &'_0 (Self)) -> Self::W
 
-fn test_crate::test_child_trait2<'_0, T>(@1: &'_0 (T)) -> (parents(@TraitClause1)::[@TraitClause0])::W
+fn test_crate::test_child_trait2<'_0, T>(@1: &'_0 (T)) -> @TraitClause1::parent_clause_0::W
 where
     [@TraitClause0]: core::marker::Sized<T>,
     [@TraitClause1]: test_crate::ChildTrait<T>,
 {
-    let @0: (parents(@TraitClause1)::[@TraitClause0])::W; // return
+    let @0: @TraitClause1::parent_clause_0::W; // return
     let x@1: &'_ (T); // arg #1
     let @2: &'_ (T); // anonymous local
 
     @2 := &*(x@1)
-    @0 := (parents(@TraitClause1)::[@TraitClause0])::get_w(move (@2))
+    @0 := @TraitClause1::parent_clause_0::get_w(move (@2))
     drop @2
     return
 }
@@ -707,7 +707,7 @@ trait test_crate::Iterator<Self>
 
 trait test_crate::IntoIterator<Self>
 where
-    (parents(Self)::[@TraitClause1])::Item = Self::Item,
+    Self::parent_clause_1::Item = Self::Item,
 {
     parent_clause_0 : [@TraitClause0]: core::marker::Sized<Self::Item>
     parent_clause_1 : [@TraitClause1]: test_crate::Iterator<Self::IntoIter>
@@ -951,13 +951,13 @@ fn test_crate::WithConstTy::f<'_0, '_1, Self, const LEN : usize>(@1: &'_0 mut (S
 
 fn test_crate::IntoIterator::into_iter<Self>(@1: Self) -> Self::IntoIter
 
-fn test_crate::ChildTrait2::convert<Self>(@1: (parents(Self)::[@TraitClause0])::U) -> (parents((parents(Self)::[@TraitClause0]))::[@TraitClause0])::Target
+fn test_crate::ChildTrait2::convert<Self>(@1: Self::parent_clause_0::U) -> Self::parent_clause_0::parent_clause_0::Target
 
 fn test_crate::CFnOnce::call_once<Self, Args>(@1: Self, @2: Args) -> Self::Output
 
-fn test_crate::CFnMut::call_mut<'_0, Self, Args>(@1: &'_0 mut (Self), @2: Args) -> (parents(Self)::[@TraitClause0])::Output
+fn test_crate::CFnMut::call_mut<'_0, Self, Args>(@1: &'_0 mut (Self), @2: Args) -> Self::parent_clause_0::Output
 
-fn test_crate::CFn::call<'_0, Self, Args>(@1: &'_0 (Self), @2: Args) -> (parents((parents(Self)::[@TraitClause0]))::[@TraitClause0])::Output
+fn test_crate::CFn::call<'_0, Self, Args>(@1: &'_0 (Self), @2: Args) -> Self::parent_clause_0::parent_clause_0::Output
 
 
 

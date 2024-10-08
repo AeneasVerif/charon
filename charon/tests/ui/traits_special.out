@@ -39,7 +39,7 @@ impl<'_0> test_crate::{impl test_crate::From<&'_0 (bool)> for bool}<'_0> : test_
     fn from = test_crate::{impl test_crate::From<&'_0 (bool)> for bool}::from
 }
 
-fn test_crate::From::from<Self, T>(@1: T) -> core::result::Result<Self, Self::Error>[@TraitClause0, (parents(Self)::[@TraitClause1])]
+fn test_crate::From::from<Self, T>(@1: T) -> core::result::Result<Self, Self::Error>[@TraitClause0, Self::parent_clause_1]
 where
     [@TraitClause0]: core::marker::Sized<Self>,
 

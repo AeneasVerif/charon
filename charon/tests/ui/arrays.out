@@ -386,7 +386,7 @@ where
     fn index_mut = core::slice::index::{impl core::ops::index::IndexMut<I> for Slice<T>}#1::index_mut
 }
 
-fn core::ops::index::IndexMut::index_mut<'_0, Self, Idx>(@1: &'_0 mut (Self), @2: Idx) -> &'_0 mut ((parents(Self)::[@TraitClause0])::Output)
+fn core::ops::index::IndexMut::index_mut<'_0, Self, Idx>(@1: &'_0 mut (Self), @2: Idx) -> &'_0 mut (Self::parent_clause_0::Output)
 
 fn test_crate::slice_subslice_mut_<'_0>(@1: &'_0 mut (Slice<u32>), @2: usize, @3: usize) -> &'_0 mut (Slice<u32>)
 {
@@ -493,7 +493,7 @@ fn test_crate::array_subslice_shared_<'_0>(@1: &'_0 (Array<u32, 32 : usize>), @2
     return
 }
 
-fn core::array::{impl core::ops::index::IndexMut<I> for Array<T, const N : usize>}#16::index_mut<'_0, T, I, const N : usize>(@1: &'_0 mut (Array<T, const N : usize>), @2: I) -> &'_0 mut (core::array::{impl core::ops::index::Index<I> for Array<T, const N : usize>}#15<T, I, const N : usize>[@TraitClause0, @TraitClause1, (parents(@TraitClause2)::[@TraitClause0])]::Output)
+fn core::array::{impl core::ops::index::IndexMut<I> for Array<T, const N : usize>}#16::index_mut<'_0, T, I, const N : usize>(@1: &'_0 mut (Array<T, const N : usize>), @2: I) -> &'_0 mut (core::array::{impl core::ops::index::Index<I> for Array<T, const N : usize>}#15<T, I, const N : usize>[@TraitClause0, @TraitClause1, @TraitClause2::parent_clause_0]::Output)
 where
     // Inherited clauses:
     [@TraitClause0]: core::marker::Sized<T>,
@@ -506,7 +506,7 @@ where
     [@TraitClause1]: core::marker::Sized<I>,
     [@TraitClause2]: core::ops::index::IndexMut<Slice<T>, I>,
 {
-    parent_clause0 = core::array::{impl core::ops::index::Index<I> for Array<T, const N : usize>}#15<T, I, const N : usize>[@TraitClause0, @TraitClause1, (parents(@TraitClause2)::[@TraitClause0])]
+    parent_clause0 = core::array::{impl core::ops::index::Index<I> for Array<T, const N : usize>}#15<T, I, const N : usize>[@TraitClause0, @TraitClause1, @TraitClause2::parent_clause_0]
     fn index_mut = core::array::{impl core::ops::index::IndexMut<I> for Array<T, const N : usize>}#16::index_mut
 }
 

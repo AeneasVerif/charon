@@ -37,7 +37,7 @@ where
     // Local clauses:
     [@TraitClause1]: core::marker::Sized<F>,
     [@TraitClause2]: for<'_1_0> core::ops::function::FnMut<F, (&'_1_0 (u32))>,
-    for<'_1_0> (parents(@TraitClause2)::[@TraitClause0])::Output = (),
+    for<'_1_0> @TraitClause2::parent_clause_0::Output = (),
 {
     let @0: (); // return
     let @1: (); // anonymous local
@@ -55,7 +55,7 @@ where
     // Local clauses:
     [@TraitClause1]: core::marker::Sized<F>,
     [@TraitClause2]: for<'_1_0> core::ops::function::FnMut<F, (&'_1_0 (u32))>,
-    for<'b> (parents(@TraitClause2)::[@TraitClause0])::Output = (),
+    for<'b> @TraitClause2::parent_clause_0::Output = (),
 {
     let @0: (); // return
     let @1: (); // anonymous local
@@ -72,7 +72,7 @@ fn test_crate::{test_crate::T}#1::f<F>()
 where
     [@TraitClause0]: core::marker::Sized<F>,
     [@TraitClause1]: for<'_1_0> core::ops::function::FnMut<F, (&'_1_0 (u32))>,
-    for<'_1_0> (parents(@TraitClause1)::[@TraitClause0])::Output = (),
+    for<'_1_0> @TraitClause1::parent_clause_0::Output = (),
 {
     let @0: (); // return
     let @1: (); // anonymous local
@@ -83,7 +83,7 @@ where
     return
 }
 
-fn core::ops::function::FnMut::call_mut<'_0, Self, Args>(@1: &'_0 mut (Self), @2: Args) -> (parents(Self)::[@TraitClause0])::Output
+fn core::ops::function::FnMut::call_mut<'_0, Self, Args>(@1: &'_0 mut (Self), @2: Args) -> Self::parent_clause_0::Output
 
 fn core::ops::function::FnOnce::call_once<Self, Args>(@1: Self, @2: Args) -> Self::Output
 

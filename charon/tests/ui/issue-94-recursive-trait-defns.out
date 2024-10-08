@@ -71,7 +71,7 @@ fn test_crate::T6::f<Self, T>(@1: u64)
     let @2: u64; // anonymous local
 
     @2 := copy (x@1)
-    @0 := (parents(Self)::[@TraitClause1])::g(move (@2))
+    @0 := Self::parent_clause_1::g(move (@2))
     drop @2
     @0 := ()
     return
