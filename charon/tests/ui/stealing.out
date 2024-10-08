@@ -1,12 +1,39 @@
-thread 'rustc' panicked at compiler/rustc_mir_transform/src/lib.rs:649:24:
-do not use `optimized_mir` for constants: Const { inline: false }
-note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
-error: Thread panicked when extracting body.
-  --> tests/ui/stealing.rs:13:1
-   |
-13 | const FOO: usize = 42;
-   | ^^^^^^^^^^^^^^^^^^^^^^
+# Final LLBC before serialization:
 
-error: aborting due to 1 previous error
+global test_crate::SLICE  {
+    let @0: Array<(), 4 : usize>; // return
+    let @1: (); // anonymous local
 
-Error: Charon driver exited with code 101
+    @1 := ()
+    @0 := @ArrayRepeat<'_, (), 4 : usize>(move (@1))
+    drop @1
+    return
+}
+
+fn test_crate::four() -> usize
+{
+    let @0: usize; // return
+
+    @0 := const (4 : usize)
+    return
+}
+
+global test_crate::BAR  {
+    let @0: Array<(), 42 : usize>; // return
+    let @1: (); // anonymous local
+
+    @1 := ()
+    @0 := @ArrayRepeat<'_, (), 42 : usize>(move (@1))
+    drop @1
+    return
+}
+
+global test_crate::FOO  {
+    let @0: usize; // return
+
+    @0 := const (42 : usize)
+    return
+}
+
+
+
