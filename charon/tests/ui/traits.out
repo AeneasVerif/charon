@@ -947,6 +947,72 @@ impl test_crate::{impl test_crate::RecursiveImpl for ()}#17 : test_crate::Recurs
     type Item = ()
 }
 
+fn test_crate::flabada<'a>(@1: &'a (())) -> test_crate::Wrapper<(bool, &'a (()))>[core::marker::Sized<(bool, &'a (()))>]
+{
+    let @0: test_crate::Wrapper<(bool, &'_ (()))>[core::marker::Sized<(bool, &'_ (()))>]; // return
+    let _x@1: &'_ (()); // arg #1
+
+    panic(core::panicking::panic)
+}
+
+trait core::marker::Tuple<Self>
+
+trait core::ops::function::FnOnce<Self, Args>
+{
+    parent_clause0 : [@TraitClause0]: core::marker::Sized<Args>
+    parent_clause1 : [@TraitClause1]: core::marker::Tuple<Args>
+    parent_clause2 : [@TraitClause2]: core::marker::Sized<Self::Output>
+    type Output
+    fn call_once : core::ops::function::FnOnce::call_once
+}
+
+trait core::ops::function::FnMut<Self, Args>
+{
+    parent_clause0 : [@TraitClause0]: core::ops::function::FnOnce<Self, Args>
+    parent_clause1 : [@TraitClause1]: core::marker::Sized<Args>
+    parent_clause2 : [@TraitClause2]: core::marker::Tuple<Args>
+    fn call_mut : core::ops::function::FnMut::call_mut
+}
+
+trait core::ops::function::Fn<Self, Args>
+{
+    parent_clause0 : [@TraitClause0]: core::ops::function::FnMut<Self, Args>
+    parent_clause1 : [@TraitClause1]: core::marker::Sized<Args>
+    parent_clause2 : [@TraitClause2]: core::marker::Tuple<Args>
+    fn call : core::ops::function::Fn::call
+}
+
+fn test_crate::call<'a, F>(@1: F)
+where
+    [@TraitClause0]: core::marker::Sized<F>,
+    [@TraitClause1]: core::ops::function::Fn<F, (&'_ (()))>,
+    @TraitClause1::parent_clause0::parent_clause0::Output = test_crate::Wrapper<(bool, &'a (()))>[core::marker::Sized<(bool, &'_ (()))>],
+{
+    let @0: (); // return
+    let @1: F; // arg #1
+    let @2: (); // anonymous local
+
+    @2 := ()
+    @0 := move (@2)
+    drop @1
+    @0 := ()
+    return
+}
+
+fn test_crate::flibidi()
+{
+    let @0: (); // return
+    let @1: (); // anonymous local
+    let @2: (); // anonymous local
+
+    @1 := test_crate::call<'_, fn<'a>(&'a (())) -> test_crate::Wrapper<(bool, &'a (()))>[core::marker::Sized<(bool, &'a (()))>]>[core::marker::Sized<fn<'a>(&'a (())) -> test_crate::Wrapper<(bool, &'a (()))>[core::marker::Sized<(bool, &'a (()))>]>, core::ops::function::Fn<fn<'a>(&'a (())) -> test_crate::Wrapper<(bool, &'a (()))>[core::marker::Sized<(bool, &'a (()))>], (&'_ (()))>](const (test_crate::flabada))
+    drop @1
+    @2 := ()
+    @0 := move (@2)
+    @0 := ()
+    return
+}
+
 fn test_crate::WithConstTy::f<'_0, '_1, Self, const LEN : usize>(@1: &'_0 mut (Self::W), @2: &'_1 (Array<u8, const LEN : usize>))
 
 fn test_crate::IntoIterator::into_iter<Self>(@1: Self) -> Self::IntoIter
@@ -958,6 +1024,12 @@ fn test_crate::CFnOnce::call_once<Self, Args>(@1: Self, @2: Args) -> Self::Outpu
 fn test_crate::CFnMut::call_mut<'_0, Self, Args>(@1: &'_0 mut (Self), @2: Args) -> Self::parent_clause0::Output
 
 fn test_crate::CFn::call<'_0, Self, Args>(@1: &'_0 (Self), @2: Args) -> Self::parent_clause0::parent_clause0::Output
+
+fn core::ops::function::Fn::call<'_0, Self, Args>(@1: &'_0 (Self), @2: Args) -> Self::parent_clause0::parent_clause0::Output
+
+fn core::ops::function::FnMut::call_mut<'_0, Self, Args>(@1: &'_0 mut (Self), @2: Args) -> Self::parent_clause0::Output
+
+fn core::ops::function::FnOnce::call_once<Self, Args>(@1: Self, @2: Args) -> Self::Output
 
 
 

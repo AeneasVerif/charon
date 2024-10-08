@@ -19,21 +19,6 @@ error: Ignoring the following item due to an error: test_crate::{impl#0}
 26 | |     for<'a> <&'a Result<T, U> as IntoIterator>::Item: Copy,
    | |___________________________________________________________^
 
-thread 'rustc' panicked at compiler/rustc_trait_selection/src/traits/normalize.rs:151:9:
-Normalizing &'^1_0.Named(test_crate::f::'a, "'a") u8 without wrapping in a `Binder`
-note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
-error: Thread panicked when extracting item `test_crate::f`.
-  --> tests/ui/quantified-clause.rs:16:1
-   |
-16 | pub fn f<'a>(_: &'a ()) -> Option<(&'a u8,)> {
-   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-error: Ignoring the following item due to an error: test_crate::f
-  --> tests/ui/quantified-clause.rs:16:1
-   |
-16 | pub fn f<'a>(_: &'a ()) -> Option<(&'a u8,)> {
-   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-error: aborting due to 4 previous errors; 1 warning emitted
+error: aborting due to 2 previous errors; 1 warning emitted
 
 Error: Charon driver exited with code 101
