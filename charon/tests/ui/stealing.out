@@ -18,5 +18,22 @@ fn test_crate::four() -> usize
     return
 }
 
+global test_crate::BAR  {
+    let @0: Array<(), 42 : usize>; // return
+    let @1: (); // anonymous local
+
+    @1 := ()
+    @0 := @ArrayRepeat<'_, (), 42 : usize>(move (@1))
+    drop @1
+    return
+}
+
+global test_crate::FOO  {
+    let @0: usize; // return
+
+    @0 := const (42 : usize)
+    return
+}
+
 
 

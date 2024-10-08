@@ -36,7 +36,7 @@ pub fn get_mir_for_def_id_and_level(
 ) -> Option<Body<'_>> {
     // Below: we **clone** the bodies to make sure we don't have issues with
     // locked values (we had in the past).
-    let body = if let Some(local_def_id) = def_id.as_local() {
+    if let Some(local_def_id) = def_id.as_local() {
         match level {
             MirLevel::Built => {
                 let body = tcx.mir_built(local_def_id);
@@ -52,19 +52,27 @@ pub fn get_mir_for_def_id_and_level(
             }
             MirLevel::Optimized => {}
         }
-        // Use the optimized MIR if it was requested or if the requested body was stolen.
-        tcx.optimized_mir(def_id).clone()
-    } else {
-        // There are only two MIRs we can fetch for non-local bodies: CTFE mir for globals and
-        // const fns, and optimized MIR for inlinable functions. The rest don't have MIR in the
-        // rlib.
-        if tcx.is_mir_available(def_id) {
-            tcx.optimized_mir(def_id).clone()
-        } else if tcx.is_ctfe_mir_available(def_id) {
+        // We fall back to optimized MIR if the requested body was stolen.
+    }
+
+    // There are only two MIRs we can fetch for non-local bodies: CTFE mir for globals and
+    // const fns, and optimized MIR for inlinable functions. The rest don't have MIR in the
+    // rlib.
+    let body = if tcx.is_mir_available(def_id) {
+        if let Some(local_def_id) = def_id.as_local()
+            && !matches!(
+                tcx.hir().body_const_context(local_def_id),
+                None | Some(rustc_hir::ConstContext::ConstFn)
+            )
+        {
             tcx.mir_for_ctfe(def_id).clone()
         } else {
-            return None;
+            tcx.optimized_mir(def_id).clone()
         }
+    } else if tcx.is_ctfe_mir_available(def_id) {
+        tcx.mir_for_ctfe(def_id).clone()
+    } else {
+        return None;
     };
     Some(body)
 }

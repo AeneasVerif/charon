@@ -5,3 +5,7 @@ static SLICE: [(); four()] = [(); 4];
 const fn four() -> usize {
     2 + 2
 }
+
+// The order counts, we want to translate `BAR` first to steal `FOO`.
+const BAR: [(); FOO] = [(); FOO];
+const FOO: usize = 42;
