@@ -97,7 +97,7 @@ trait test_crate::Foo<Self>
     type S
 }
 
-fn test_crate::f<T, U>() -> core::option::Option<@TraitClause2::S, (parents(@TraitClause2)::[@TraitClause0])>
+fn test_crate::f<T, U>() -> core::option::Option<@TraitClause2::S, (parents(@TraitClause3)::[@TraitClause0])>
 where
     [@TraitClause0]: core::marker::Sized<T>,
     [@TraitClause1]: core::marker::Sized<U>,
@@ -105,7 +105,7 @@ where
     [@TraitClause3]: test_crate::Foo<U>,
     @TraitClause2::S = @TraitClause3::S,
 {
-    let @0: core::option::Option<@TraitClause3::S, (parents(@TraitClause2)::[@TraitClause0])>; // return
+    let @0: core::option::Option<@TraitClause3::S, (parents(@TraitClause3)::[@TraitClause0])>; // return
 
     panic(core::panicking::panic)
 }
