@@ -10,9 +10,9 @@ enum core::option::Option<T>
 |  Some(T)
 
 
-fn test_crate::wrap<'a>(@1: &'a (u32)) -> core::option::Option<&'a (u32), core::marker::Sized<&'a (u32)>>
+fn test_crate::wrap<'a>(@1: &'a (u32)) -> core::option::Option<&'a (u32)>[core::marker::Sized<&'a (u32)>]
 {
-    let @0: core::option::Option<&'_ (u32), core::marker::Sized<&'_ (u32)>>; // return
+    let @0: core::option::Option<&'_ (u32)>[core::marker::Sized<&'_ (u32)>]; // return
     let x@1: &'_ (u32); // arg #1
     let @2: &'_ (u32); // anonymous local
 
@@ -24,16 +24,16 @@ fn test_crate::wrap<'a>(@1: &'a (u32)) -> core::option::Option<&'a (u32), core::
 
 trait core::clone::Clone<Self>
 {
-    parent_clause_0 : [@TraitClause0]: core::marker::Sized<Self>
+    parent_clause0 : [@TraitClause0]: core::marker::Sized<Self>
     fn clone : core::clone::Clone::clone
     fn clone_from : core::clone::Clone::clone_from
 }
 
-fn test_crate::wrap2<'a>(@1: &'a (u32)) -> core::option::Option<&'a (u32), core::marker::Sized<&'_ (u32)>>
+fn test_crate::wrap2<'a>(@1: &'a (u32)) -> core::option::Option<&'a (u32)>[core::marker::Sized<&'_ (u32)>]
 where
     [@TraitClause0]: core::clone::Clone<&'_ (())>,
 {
-    let @0: core::option::Option<&'_ (u32), core::marker::Sized<&'_ (u32)>>; // return
+    let @0: core::option::Option<&'_ (u32)>[core::marker::Sized<&'_ (u32)>]; // return
     let x@1: &'_ (u32); // arg #1
     let @2: &'_ (u32); // anonymous local
 
@@ -65,13 +65,13 @@ where
     // Inherited clauses:
     [@TraitClause0]: core::marker::Sized<T>,
 
-fn core::cell::{core::cell::RefCell<T>}#22::try_borrow<'_0, T>(@1: &'_0 (core::cell::RefCell<T>)) -> core::result::Result<core::cell::Ref<'_0, T>, core::cell::BorrowError, core::marker::Sized<core::cell::Ref<'_1_0, T>>, core::marker::Sized<core::cell::BorrowError>>
+fn core::cell::{core::cell::RefCell<T>}#22::try_borrow<'_0, T>(@1: &'_0 (core::cell::RefCell<T>)) -> core::result::Result<core::cell::Ref<'_0, T>, core::cell::BorrowError>[core::marker::Sized<core::cell::Ref<'_1_0, T>>, core::marker::Sized<core::cell::BorrowError>]
 
 fn test_crate::foo()
 {
     let @0: (); // return
     let ref_b@1: core::cell::RefCell<bool>; // local
-    let @2: core::result::Result<core::cell::Ref<'_, bool>, core::cell::BorrowError, core::marker::Sized<core::cell::Ref<'_, bool>>, core::marker::Sized<core::cell::BorrowError>>; // anonymous local
+    let @2: core::result::Result<core::cell::Ref<'_, bool>, core::cell::BorrowError>[core::marker::Sized<core::cell::Ref<'_, bool>>, core::marker::Sized<core::cell::BorrowError>]; // anonymous local
     let @3: &'_ (core::cell::RefCell<bool>); // anonymous local
     let @4: (); // anonymous local
 
@@ -93,11 +93,11 @@ fn test_crate::foo()
 
 trait test_crate::Foo<Self>
 {
-    parent_clause_0 : [@TraitClause0]: core::marker::Sized<Self::S>
+    parent_clause0 : [@TraitClause0]: core::marker::Sized<Self::S>
     type S
 }
 
-fn test_crate::f<T, U>() -> core::option::Option<@TraitClause2::S, (parents(@TraitClause3)::[@TraitClause0])>
+fn test_crate::f<T, U>() -> core::option::Option<@TraitClause2::S>[@TraitClause3::parent_clause0]
 where
     [@TraitClause0]: core::marker::Sized<T>,
     [@TraitClause1]: core::marker::Sized<U>,
@@ -105,7 +105,7 @@ where
     [@TraitClause3]: test_crate::Foo<U>,
     @TraitClause2::S = @TraitClause3::S,
 {
-    let @0: core::option::Option<@TraitClause3::S, (parents(@TraitClause3)::[@TraitClause0])>; // return
+    let @0: core::option::Option<@TraitClause3::S>[@TraitClause3::parent_clause0]; // return
 
     panic(core::panicking::panic)
 }

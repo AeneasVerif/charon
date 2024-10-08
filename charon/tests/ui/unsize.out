@@ -10,7 +10,7 @@ opaque type alloc::rc::Rc<T, A>
 
 opaque type alloc::string::String
 
-fn alloc::rc::{alloc::rc::Rc<T, alloc::alloc::Global, core::marker::Sized<alloc::alloc::Global>>}#8::new<T>(@1: T) -> alloc::rc::Rc<T, alloc::alloc::Global, core::marker::Sized<alloc::alloc::Global>>
+fn alloc::rc::{alloc::rc::Rc<T, alloc::alloc::Global>[core::marker::Sized<alloc::alloc::Global>]}#8::new<T>(@1: T) -> alloc::rc::Rc<T, alloc::alloc::Global>[core::marker::Sized<alloc::alloc::Global>]
 where
     // Inherited clauses:
     [@TraitClause0]: core::marker::Sized<T>,
@@ -19,7 +19,7 @@ fn alloc::string::{alloc::string::String}::new() -> alloc::string::String
 
 trait core::clone::Clone<Self>
 {
-    parent_clause_0 : [@TraitClause0]: core::marker::Sized<Self>
+    parent_clause0 : [@TraitClause0]: core::marker::Sized<Self>
     fn clone : core::clone::Clone::clone
     fn clone_from : core::clone::Clone::clone_from
 }
@@ -44,22 +44,22 @@ fn test_crate::foo()
     let @2: &'_ (Slice<i32>); // anonymous local
     let @3: &'_ (Array<i32, 2 : usize>); // anonymous local
     let @4: &'_ (Array<i32, 2 : usize>); // anonymous local
-    let @5: alloc::boxed::Box<Slice<i32>, core::marker::Sized<alloc::alloc::Global>>; // anonymous local
-    let @6: alloc::boxed::Box<Array<i32, 2 : usize>, core::marker::Sized<alloc::alloc::Global>>; // anonymous local
+    let @5: alloc::boxed::Box<Slice<i32>>[core::marker::Sized<alloc::alloc::Global>]; // anonymous local
+    let @6: alloc::boxed::Box<Array<i32, 2 : usize>>[core::marker::Sized<alloc::alloc::Global>]; // anonymous local
     let @7: Array<i32, 2 : usize>; // anonymous local
-    let @8: alloc::rc::Rc<Slice<i32>, alloc::alloc::Global, core::marker::Sized<alloc::alloc::Global>>; // anonymous local
-    let @9: alloc::rc::Rc<Array<i32, 2 : usize>, alloc::alloc::Global, core::marker::Sized<alloc::alloc::Global>>; // anonymous local
+    let @8: alloc::rc::Rc<Slice<i32>, alloc::alloc::Global>[core::marker::Sized<alloc::alloc::Global>]; // anonymous local
+    let @9: alloc::rc::Rc<Array<i32, 2 : usize>, alloc::alloc::Global>[core::marker::Sized<alloc::alloc::Global>]; // anonymous local
     let @10: Array<i32, 2 : usize>; // anonymous local
     let string@11: alloc::string::String; // local
     let @12: &'_ (dyn (exists(TODO))); // anonymous local
     let @13: &'_ (alloc::string::String); // anonymous local
     let @14: &'_ (alloc::string::String); // anonymous local
-    let @15: alloc::boxed::Box<dyn (exists(TODO)), core::marker::Sized<alloc::alloc::Global>>; // anonymous local
-    let @16: alloc::boxed::Box<alloc::string::String, core::marker::Sized<alloc::alloc::Global>>; // anonymous local
+    let @15: alloc::boxed::Box<dyn (exists(TODO))>[core::marker::Sized<alloc::alloc::Global>]; // anonymous local
+    let @16: alloc::boxed::Box<alloc::string::String>[core::marker::Sized<alloc::alloc::Global>]; // anonymous local
     let @17: alloc::string::String; // anonymous local
     let @18: &'_ (alloc::string::String); // anonymous local
-    let @19: alloc::rc::Rc<dyn (exists(TODO)), alloc::alloc::Global, core::marker::Sized<alloc::alloc::Global>>; // anonymous local
-    let @20: alloc::rc::Rc<alloc::string::String, alloc::alloc::Global, core::marker::Sized<alloc::alloc::Global>>; // anonymous local
+    let @19: alloc::rc::Rc<dyn (exists(TODO)), alloc::alloc::Global>[core::marker::Sized<alloc::alloc::Global>]; // anonymous local
+    let @20: alloc::rc::Rc<alloc::string::String, alloc::alloc::Global>[core::marker::Sized<alloc::alloc::Global>]; // anonymous local
     let @21: alloc::string::String; // anonymous local
     let @22: &'_ (alloc::string::String); // anonymous local
     let @23: (); // anonymous local
@@ -75,7 +75,7 @@ fn test_crate::foo()
     drop @2
     @7 := copy (array@1)
     @6 := @BoxNew<Array<i32, 2 : usize>>[core::marker::Sized<Array<i32, 2 : usize>>](move (@7))
-    @5 := unsize_cast<alloc::boxed::Box<Array<i32, 2 : usize>, core::marker::Sized<alloc::alloc::Global>>, alloc::boxed::Box<Slice<i32>, core::marker::Sized<alloc::alloc::Global>>>(move (@6))
+    @5 := unsize_cast<alloc::boxed::Box<Array<i32, 2 : usize>>[core::marker::Sized<alloc::alloc::Global>], alloc::boxed::Box<Slice<i32>>[core::marker::Sized<alloc::alloc::Global>]>(move (@6))
     drop @6
     drop @7
     drop @6
@@ -83,8 +83,8 @@ fn test_crate::foo()
     drop @5
     drop @5
     @10 := copy (array@1)
-    @9 := alloc::rc::{alloc::rc::Rc<T, alloc::alloc::Global, core::marker::Sized<alloc::alloc::Global>>}#8::new<Array<i32, 2 : usize>>[core::marker::Sized<Array<i32, 2 : usize>>](move (@10))
-    @8 := unsize_cast<alloc::rc::Rc<Array<i32, 2 : usize>, alloc::alloc::Global, core::marker::Sized<alloc::alloc::Global>>, alloc::rc::Rc<Slice<i32>, alloc::alloc::Global, core::marker::Sized<alloc::alloc::Global>>>(move (@9))
+    @9 := alloc::rc::{alloc::rc::Rc<T, alloc::alloc::Global>[core::marker::Sized<alloc::alloc::Global>]}#8::new<Array<i32, 2 : usize>>[core::marker::Sized<Array<i32, 2 : usize>>](move (@10))
+    @8 := unsize_cast<alloc::rc::Rc<Array<i32, 2 : usize>, alloc::alloc::Global>[core::marker::Sized<alloc::alloc::Global>], alloc::rc::Rc<Slice<i32>, alloc::alloc::Global>[core::marker::Sized<alloc::alloc::Global>]>(move (@9))
     drop @9
     drop @10
     drop @9
@@ -104,7 +104,7 @@ fn test_crate::foo()
     @17 := alloc::string::{impl core::clone::Clone for alloc::string::String}#6::clone(move (@18))
     drop @18
     @16 := @BoxNew<alloc::string::String>[core::marker::Sized<alloc::string::String>](move (@17))
-    @15 := unsize_cast<alloc::boxed::Box<alloc::string::String, core::marker::Sized<alloc::alloc::Global>>, alloc::boxed::Box<dyn (exists(TODO)), core::marker::Sized<alloc::alloc::Global>>>(move (@16))
+    @15 := unsize_cast<alloc::boxed::Box<alloc::string::String>[core::marker::Sized<alloc::alloc::Global>], alloc::boxed::Box<dyn (exists(TODO))>[core::marker::Sized<alloc::alloc::Global>]>(move (@16))
     drop @16
     drop @17
     drop @16
@@ -114,8 +114,8 @@ fn test_crate::foo()
     @22 := &string@11
     @21 := alloc::string::{impl core::clone::Clone for alloc::string::String}#6::clone(move (@22))
     drop @22
-    @20 := alloc::rc::{alloc::rc::Rc<T, alloc::alloc::Global, core::marker::Sized<alloc::alloc::Global>>}#8::new<alloc::string::String>[core::marker::Sized<alloc::string::String>](move (@21))
-    @19 := unsize_cast<alloc::rc::Rc<alloc::string::String, alloc::alloc::Global, core::marker::Sized<alloc::alloc::Global>>, alloc::rc::Rc<dyn (exists(TODO)), alloc::alloc::Global, core::marker::Sized<alloc::alloc::Global>>>(move (@20))
+    @20 := alloc::rc::{alloc::rc::Rc<T, alloc::alloc::Global>[core::marker::Sized<alloc::alloc::Global>]}#8::new<alloc::string::String>[core::marker::Sized<alloc::string::String>](move (@21))
+    @19 := unsize_cast<alloc::rc::Rc<alloc::string::String, alloc::alloc::Global>[core::marker::Sized<alloc::alloc::Global>], alloc::rc::Rc<dyn (exists(TODO)), alloc::alloc::Global>[core::marker::Sized<alloc::alloc::Global>]>(move (@20))
     drop @20
     drop @21
     drop @20

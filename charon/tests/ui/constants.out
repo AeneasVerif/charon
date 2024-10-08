@@ -76,9 +76,9 @@ struct test_crate::Pair<T1, T2>
   y: T2,
 }
 
-fn test_crate::mk_pair1(@1: u32, @2: u32) -> test_crate::Pair<u32, u32, core::marker::Sized<u32>, core::marker::Sized<u32>>
+fn test_crate::mk_pair1(@1: u32, @2: u32) -> test_crate::Pair<u32, u32>[core::marker::Sized<u32>, core::marker::Sized<u32>]
 {
-    let @0: test_crate::Pair<u32, u32, core::marker::Sized<u32>, core::marker::Sized<u32>>; // return
+    let @0: test_crate::Pair<u32, u32>[core::marker::Sized<u32>, core::marker::Sized<u32>]; // return
     let x@1: u32; // arg #1
     let y@2: u32; // arg #2
     let @3: u32; // anonymous local
@@ -100,7 +100,7 @@ global test_crate::P0  {
 }
 
 global test_crate::P1  {
-    let @0: test_crate::Pair<u32, u32, core::marker::Sized<u32>, core::marker::Sized<u32>>; // return
+    let @0: test_crate::Pair<u32, u32>[core::marker::Sized<u32>, core::marker::Sized<u32>]; // return
 
     @0 := test_crate::mk_pair1(const (0 : u32), const (1 : u32))
     return
@@ -114,7 +114,7 @@ global test_crate::P2  {
 }
 
 global test_crate::P3  {
-    let @0: test_crate::Pair<u32, u32, core::marker::Sized<u32>, core::marker::Sized<u32>>; // return
+    let @0: test_crate::Pair<u32, u32>[core::marker::Sized<u32>, core::marker::Sized<u32>]; // return
 
     @0 := test_crate::Pair { x: const (0 : u32), y: const (1 : u32) }
     return
@@ -128,12 +128,12 @@ struct test_crate::Wrap<T>
   value: T,
 }
 
-fn test_crate::{test_crate::Wrap<T, @TraitClause0>}::new<T>(@1: T) -> test_crate::Wrap<T, @TraitClause0>
+fn test_crate::{test_crate::Wrap<T>[@TraitClause0]}::new<T>(@1: T) -> test_crate::Wrap<T>[@TraitClause0]
 where
     // Inherited clauses:
     [@TraitClause0]: core::marker::Sized<T>,
 {
-    let @0: test_crate::Wrap<T, @TraitClause0>; // return
+    let @0: test_crate::Wrap<T>[@TraitClause0]; // return
     let value@1: T; // arg #1
     let @2: T; // anonymous local
 
@@ -146,17 +146,17 @@ where
 }
 
 global test_crate::Y  {
-    let @0: test_crate::Wrap<i32, core::marker::Sized<i32>>; // return
+    let @0: test_crate::Wrap<i32>[core::marker::Sized<i32>]; // return
 
-    @0 := test_crate::{test_crate::Wrap<T, @TraitClause0>}::new<i32>[core::marker::Sized<i32>](const (2 : i32))
+    @0 := test_crate::{test_crate::Wrap<T>[@TraitClause0]}::new<i32>[core::marker::Sized<i32>](const (2 : i32))
     return
 }
 
 fn test_crate::unwrap_y() -> i32
 {
     let @0: i32; // return
-    let @1: test_crate::Wrap<i32, core::marker::Sized<i32>>; // anonymous local
-    let @2: test_crate::Wrap<i32, core::marker::Sized<i32>>; // anonymous local
+    let @1: test_crate::Wrap<i32>[core::marker::Sized<i32>]; // anonymous local
+    let @2: test_crate::Wrap<i32>[core::marker::Sized<i32>]; // anonymous local
 
     @2 := test_crate::Y
     @1 := move (@2)
@@ -271,8 +271,8 @@ global test_crate::S2  {
 }
 
 global test_crate::S3  {
-    let @0: test_crate::Pair<u32, u32, core::marker::Sized<u32>, core::marker::Sized<u32>>; // return
-    let @1: test_crate::Pair<u32, u32, core::marker::Sized<u32>, core::marker::Sized<u32>>; // anonymous local
+    let @0: test_crate::Pair<u32, u32>[core::marker::Sized<u32>, core::marker::Sized<u32>]; // return
+    let @1: test_crate::Pair<u32, u32>[core::marker::Sized<u32>, core::marker::Sized<u32>]; // anonymous local
 
     @1 := test_crate::P3
     @0 := move (@1)
@@ -280,7 +280,7 @@ global test_crate::S3  {
 }
 
 global test_crate::S4  {
-    let @0: test_crate::Pair<u32, u32, core::marker::Sized<u32>, core::marker::Sized<u32>>; // return
+    let @0: test_crate::Pair<u32, u32>[core::marker::Sized<u32>, core::marker::Sized<u32>]; // return
 
     @0 := test_crate::mk_pair1(const (7 : u32), const (8 : u32))
     return
@@ -294,7 +294,7 @@ struct test_crate::V<T, const N : usize>
   x: Array<T, const N : usize>,
 }
 
-global test_crate::{test_crate::V<T, const N : usize, @TraitClause0>}#1::LEN<T, const N : usize>
+global test_crate::{test_crate::V<T, const N : usize>[@TraitClause0]}#1::LEN<T, const N : usize>
   where
       [@TraitClause0]: core::marker::Sized<T>,
   {
@@ -311,7 +311,7 @@ where
     let @0: usize; // return
     let @1: usize; // anonymous local
 
-    @1 := test_crate::{test_crate::V<T, const N : usize, @TraitClause0>}#1::LEN<T, const N : usize>[@TraitClause0]
+    @1 := test_crate::{test_crate::V<T, const N : usize>[@TraitClause0]}#1::LEN<T, const N : usize>[@TraitClause0]
     @0 := move (@1)
     return
 }

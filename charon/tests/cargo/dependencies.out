@@ -19,9 +19,9 @@ trait core::marker::Tuple<Self>
 
 trait core::ops::function::FnOnce<Self, Args>
 {
-    parent_clause_0 : [@TraitClause0]: core::marker::Sized<Args>
-    parent_clause_1 : [@TraitClause1]: core::marker::Tuple<Args>
-    parent_clause_2 : [@TraitClause2]: core::marker::Sized<Self::Output>
+    parent_clause0 : [@TraitClause0]: core::marker::Sized<Args>
+    parent_clause1 : [@TraitClause1]: core::marker::Tuple<Args>
+    parent_clause2 : [@TraitClause2]: core::marker::Sized<Self::Output>
     type Output
     fn call_once : core::ops::function::FnOnce::call_once
 }
@@ -95,7 +95,7 @@ fn test_cargo_dependencies::main()
     let @18: &'_ (u32); // anonymous local
     let @19: &'_ (u32); // anonymous local
     let @20: &'_ (u32); // anonymous local
-    let @21: core::option::Option<core::fmt::Arguments<'_>, core::marker::Sized<core::fmt::Arguments<'_>>>; // anonymous local
+    let @21: core::option::Option<core::fmt::Arguments<'_>>[core::marker::Sized<core::fmt::Arguments<'_>>]; // anonymous local
     let @22: (); // anonymous local
     let @23: (); // anonymous local
 

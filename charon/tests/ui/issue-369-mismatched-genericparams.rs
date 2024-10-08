@@ -1,10 +1,12 @@
 //@ known-failure
-
-fn maybe() -> Option<usize> {
-    Some(42)
+pub trait Try: FromResidual<()> {
+    type Residual;
 }
 
-fn pop() -> Option<()> {
-    let _ = maybe()?;
-    Some(())
+pub trait FromResidual<R> {}
+
+impl<T> Try for Option<T> {
+    type Residual = ();
 }
+
+impl<T> FromResidual<<Self as Try>::Residual> for Option<T> {}

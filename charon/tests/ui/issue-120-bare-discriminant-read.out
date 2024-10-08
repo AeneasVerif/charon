@@ -10,12 +10,12 @@ enum core::option::Option<T>
 |  Some(T)
 
 
-fn test_crate::discriminant_value<'_0, T>(@1: &'_0 (core::option::Option<T, @TraitClause0>)) -> isize
+fn test_crate::discriminant_value<'_0, T>(@1: &'_0 (core::option::Option<T>[@TraitClause0])) -> isize
 where
     [@TraitClause0]: core::marker::Sized<T>,
 {
     let @0: isize; // return
-    let opt@1: &'_ (core::option::Option<T, @TraitClause0>); // arg #1
+    let opt@1: &'_ (core::option::Option<T>[@TraitClause0]); // arg #1
 
     match *(opt@1) {
         0 => {
@@ -28,12 +28,12 @@ where
     return
 }
 
-fn test_crate::is_some<T>(@1: core::option::Option<T, @TraitClause0>) -> bool
+fn test_crate::is_some<T>(@1: core::option::Option<T>[@TraitClause0]) -> bool
 where
     [@TraitClause0]: core::marker::Sized<T>,
 {
     let @0: bool; // return
-    let opt@1: core::option::Option<T, @TraitClause0>; // arg #1
+    let opt@1: core::option::Option<T>[@TraitClause0]; // arg #1
     let @2: isize; // anonymous local
 
     match opt@1 {
@@ -50,12 +50,12 @@ where
     return
 }
 
-fn test_crate::my_is_some<T>(@1: core::option::Option<T, @TraitClause0>) -> isize
+fn test_crate::my_is_some<T>(@1: core::option::Option<T>[@TraitClause0]) -> isize
 where
     [@TraitClause0]: core::marker::Sized<T>,
 {
     let @0: isize; // return
-    let opt@1: core::option::Option<T, @TraitClause0>; // arg #1
+    let opt@1: core::option::Option<T>[@TraitClause0]; // arg #1
 
     match opt@1 {
         0 => {

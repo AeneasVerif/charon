@@ -26,7 +26,7 @@ trait core::cmp::PartialEq<Self, Rhs>
 
 trait core::cmp::Eq<Self>
 {
-    parent_clause_0 : [@TraitClause0]: core::cmp::PartialEq<Self, Self>
+    parent_clause0 : [@TraitClause0]: core::cmp::PartialEq<Self, Self>
     fn assert_receiver_is_total_eq : core::cmp::Eq::assert_receiver_is_total_eq
 }
 
@@ -58,8 +58,8 @@ trait core::hash::Hash<Self>
 
 trait core::hash::BuildHasher<Self>
 {
-    parent_clause_0 : [@TraitClause0]: core::hash::Hasher<Self::Hasher>
-    parent_clause_1 : [@TraitClause1]: core::marker::Sized<Self::Hasher>
+    parent_clause0 : [@TraitClause0]: core::hash::Hasher<Self::Hasher>
+    parent_clause1 : [@TraitClause1]: core::marker::Sized<Self::Hasher>
     type Hasher
     fn build_hasher : core::hash::BuildHasher::build_hasher
     fn hash_one : core::hash::BuildHasher::hash_one
@@ -70,7 +70,7 @@ trait core::borrow::Borrow<Self, Borrowed>
     fn borrow : core::borrow::Borrow::borrow
 }
 
-fn std::collections::hash::map::{std::collections::hash::map::HashMap<K, V, S, @TraitClause0, @TraitClause1, @TraitClause2>}#2::get<'_0, '_1, K, V, S, Q>(@1: &'_0 (std::collections::hash::map::HashMap<K, V, S, @TraitClause0, @TraitClause1, @TraitClause2>), @2: &'_1 (Q)) -> core::option::Option<&'_0 (V), core::marker::Sized<&'_1_0 (V)>>
+fn std::collections::hash::map::{std::collections::hash::map::HashMap<K, V, S>[@TraitClause0, @TraitClause1, @TraitClause2]}#2::get<'_0, '_1, K, V, S, Q>(@1: &'_0 (std::collections::hash::map::HashMap<K, V, S>[@TraitClause0, @TraitClause1, @TraitClause2]), @2: &'_1 (Q)) -> core::option::Option<&'_0 (V)>[core::marker::Sized<&'_1_0 (V)>]
 where
     // Inherited clauses:
     [@TraitClause0]: core::marker::Sized<K>,
@@ -147,7 +147,7 @@ impl std::hash::random::{impl core::hash::BuildHasher for std::hash::random::Ran
     fn build_hasher = std::hash::random::{impl core::hash::BuildHasher for std::hash::random::RandomState}#1::build_hasher
 }
 
-fn std::collections::hash::map::{std::collections::hash::map::HashMap<K, V, S, @TraitClause0, @TraitClause1, @TraitClause2>}#2::insert<'_0, K, V, S>(@1: &'_0 mut (std::collections::hash::map::HashMap<K, V, S, @TraitClause0, @TraitClause1, @TraitClause2>), @2: K, @3: V) -> core::option::Option<V, @TraitClause1>
+fn std::collections::hash::map::{std::collections::hash::map::HashMap<K, V, S>[@TraitClause0, @TraitClause1, @TraitClause2]}#2::insert<'_0, K, V, S>(@1: &'_0 mut (std::collections::hash::map::HashMap<K, V, S>[@TraitClause0, @TraitClause1, @TraitClause2]), @2: K, @3: V) -> core::option::Option<V>[@TraitClause1]
 where
     // Inherited clauses:
     [@TraitClause0]: core::marker::Sized<K>,
@@ -163,7 +163,7 @@ trait core::ops::index::Index<Self, Idx>
     fn index : core::ops::index::Index::index
 }
 
-fn std::collections::hash::map::{impl core::ops::index::Index<&'_0 (Q)> for std::collections::hash::map::HashMap<K, V, S, @TraitClause0, @TraitClause1, @TraitClause2>}#9::index<'_0, '_1, '_2, K, Q, V, S>(@1: &'_1 (std::collections::hash::map::HashMap<K, V, S, @TraitClause0, @TraitClause1, @TraitClause2>), @2: &'_2 (Q)) -> &'_1 (V)
+fn std::collections::hash::map::{impl core::ops::index::Index<&'_0 (Q)> for std::collections::hash::map::HashMap<K, V, S>[@TraitClause0, @TraitClause1, @TraitClause2]}#9::index<'_0, '_1, '_2, K, Q, V, S>(@1: &'_1 (std::collections::hash::map::HashMap<K, V, S>[@TraitClause0, @TraitClause1, @TraitClause2]), @2: &'_2 (Q)) -> &'_1 (V)
 where
     // Inherited clauses:
     [@TraitClause0]: core::marker::Sized<K>,
@@ -176,7 +176,7 @@ where
     [@TraitClause7]: core::hash::Hash<Q>,
     [@TraitClause8]: core::hash::BuildHasher<S>,
 
-impl<'_0, K, Q, V, S> std::collections::hash::map::{impl core::ops::index::Index<&'_0 (Q)> for std::collections::hash::map::HashMap<K, V, S, @TraitClause0, @TraitClause1, @TraitClause2>}#9<'_0, K, Q, V, S> : core::ops::index::Index<std::collections::hash::map::HashMap<K, V, S, @TraitClause0, @TraitClause1, @TraitClause2>, &'_0 (Q)>
+impl<'_0, K, Q, V, S> std::collections::hash::map::{impl core::ops::index::Index<&'_0 (Q)> for std::collections::hash::map::HashMap<K, V, S>[@TraitClause0, @TraitClause1, @TraitClause2]}#9<'_0, K, Q, V, S> : core::ops::index::Index<std::collections::hash::map::HashMap<K, V, S>[@TraitClause0, @TraitClause1, @TraitClause2], &'_0 (Q)>
 where
     [@TraitClause0]: core::marker::Sized<K>,
     [@TraitClause1]: core::marker::Sized<V>,
@@ -189,26 +189,26 @@ where
     [@TraitClause8]: core::hash::BuildHasher<S>,
 {
     type Output = V
-    fn index = std::collections::hash::map::{impl core::ops::index::Index<&'_0 (Q)> for std::collections::hash::map::HashMap<K, V, S, @TraitClause0, @TraitClause1, @TraitClause2>}#9::index
+    fn index = std::collections::hash::map::{impl core::ops::index::Index<&'_0 (Q)> for std::collections::hash::map::HashMap<K, V, S>[@TraitClause0, @TraitClause1, @TraitClause2]}#9::index
 }
 
 fn core::ops::index::Index::index<'_0, Self, Idx>(@1: &'_0 (Self), @2: Idx) -> &'_0 (Self::Output)
 
-fn test_crate::get_or_insert<'_0>(@1: &'_0 mut (std::collections::hash::map::HashMap<u32, u32, std::hash::random::RandomState, core::marker::Sized<u32>, core::marker::Sized<u32>, core::marker::Sized<std::hash::random::RandomState>>)) -> &'_0 (u32)
+fn test_crate::get_or_insert<'_0>(@1: &'_0 mut (std::collections::hash::map::HashMap<u32, u32, std::hash::random::RandomState>[core::marker::Sized<u32>, core::marker::Sized<u32>, core::marker::Sized<std::hash::random::RandomState>])) -> &'_0 (u32)
 {
     let @0: &'_ (u32); // return
-    let map@1: &'_ mut (std::collections::hash::map::HashMap<u32, u32, std::hash::random::RandomState, core::marker::Sized<u32>, core::marker::Sized<u32>, core::marker::Sized<std::hash::random::RandomState>>); // arg #1
-    let @2: core::option::Option<&'_ (u32), core::marker::Sized<&'_ (u32)>>; // anonymous local
-    let @3: &'_ (std::collections::hash::map::HashMap<u32, u32, std::hash::random::RandomState, core::marker::Sized<u32>, core::marker::Sized<u32>, core::marker::Sized<std::hash::random::RandomState>>); // anonymous local
+    let map@1: &'_ mut (std::collections::hash::map::HashMap<u32, u32, std::hash::random::RandomState>[core::marker::Sized<u32>, core::marker::Sized<u32>, core::marker::Sized<std::hash::random::RandomState>]); // arg #1
+    let @2: core::option::Option<&'_ (u32)>[core::marker::Sized<&'_ (u32)>]; // anonymous local
+    let @3: &'_ (std::collections::hash::map::HashMap<u32, u32, std::hash::random::RandomState>[core::marker::Sized<u32>, core::marker::Sized<u32>, core::marker::Sized<std::hash::random::RandomState>]); // anonymous local
     let @4: &'_ (u32); // anonymous local
     let @5: &'_ (u32); // anonymous local
     let @6: u32; // anonymous local
     let v@7: &'_ (u32); // local
-    let @8: core::option::Option<u32, core::marker::Sized<u32>>; // anonymous local
-    let @9: &'_ mut (std::collections::hash::map::HashMap<u32, u32, std::hash::random::RandomState, core::marker::Sized<u32>, core::marker::Sized<u32>, core::marker::Sized<std::hash::random::RandomState>>); // anonymous local
+    let @8: core::option::Option<u32>[core::marker::Sized<u32>]; // anonymous local
+    let @9: &'_ mut (std::collections::hash::map::HashMap<u32, u32, std::hash::random::RandomState>[core::marker::Sized<u32>, core::marker::Sized<u32>, core::marker::Sized<std::hash::random::RandomState>]); // anonymous local
     let @10: &'_ (u32); // anonymous local
     let @11: &'_ (u32); // anonymous local
-    let @12: &'_ (std::collections::hash::map::HashMap<u32, u32, std::hash::random::RandomState, core::marker::Sized<u32>, core::marker::Sized<u32>, core::marker::Sized<std::hash::random::RandomState>>); // anonymous local
+    let @12: &'_ (std::collections::hash::map::HashMap<u32, u32, std::hash::random::RandomState>[core::marker::Sized<u32>, core::marker::Sized<u32>, core::marker::Sized<std::hash::random::RandomState>]); // anonymous local
     let @13: &'_ (u32); // anonymous local
     let @14: &'_ (u32); // anonymous local
     let @15: u32; // anonymous local
@@ -217,21 +217,21 @@ fn test_crate::get_or_insert<'_0>(@1: &'_0 mut (std::collections::hash::map::Has
     @6 := const (22 : u32)
     @5 := &@6
     @4 := &*(@5)
-    @2 := std::collections::hash::map::{std::collections::hash::map::HashMap<K, V, S, @TraitClause0, @TraitClause1, @TraitClause2>}#2::get<u32, u32, std::hash::random::RandomState, u32>[core::borrow::{impl core::borrow::Borrow<T> for T}<u32>, core::hash::impls::{impl core::hash::Hash for u32}#11, core::cmp::impls::{impl core::cmp::Eq for u32}#43, core::marker::Sized<u32>, core::marker::Sized<u32>, core::marker::Sized<std::hash::random::RandomState>, core::cmp::impls::{impl core::cmp::Eq for u32}#43, core::hash::impls::{impl core::hash::Hash for u32}#11, std::hash::random::{impl core::hash::BuildHasher for std::hash::random::RandomState}#1](move (@3), move (@4))
+    @2 := std::collections::hash::map::{std::collections::hash::map::HashMap<K, V, S>[@TraitClause0, @TraitClause1, @TraitClause2]}#2::get<u32, u32, std::hash::random::RandomState, u32>[core::borrow::{impl core::borrow::Borrow<T> for T}<u32>, core::hash::impls::{impl core::hash::Hash for u32}#11, core::cmp::impls::{impl core::cmp::Eq for u32}#43, core::marker::Sized<u32>, core::marker::Sized<u32>, core::marker::Sized<std::hash::random::RandomState>, core::cmp::impls::{impl core::cmp::Eq for u32}#43, core::hash::impls::{impl core::hash::Hash for u32}#11, std::hash::random::{impl core::hash::BuildHasher for std::hash::random::RandomState}#1](move (@3), move (@4))
     drop @4
     drop @3
     @fake_read(@2)
     match @2 {
         0 => {
             @9 := &two-phase-mut *(map@1)
-            @8 := std::collections::hash::map::{std::collections::hash::map::HashMap<K, V, S, @TraitClause0, @TraitClause1, @TraitClause2>}#2::insert<u32, u32, std::hash::random::RandomState>[core::marker::Sized<u32>, core::marker::Sized<u32>, core::marker::Sized<std::hash::random::RandomState>, core::cmp::impls::{impl core::cmp::Eq for u32}#43, core::hash::impls::{impl core::hash::Hash for u32}#11, std::hash::random::{impl core::hash::BuildHasher for std::hash::random::RandomState}#1](move (@9), const (22 : u32), const (33 : u32))
+            @8 := std::collections::hash::map::{std::collections::hash::map::HashMap<K, V, S>[@TraitClause0, @TraitClause1, @TraitClause2]}#2::insert<u32, u32, std::hash::random::RandomState>[core::marker::Sized<u32>, core::marker::Sized<u32>, core::marker::Sized<std::hash::random::RandomState>, core::cmp::impls::{impl core::cmp::Eq for u32}#43, core::hash::impls::{impl core::hash::Hash for u32}#11, std::hash::random::{impl core::hash::BuildHasher for std::hash::random::RandomState}#1](move (@9), const (22 : u32), const (33 : u32))
             drop @9
             drop @8
             @12 := &*(map@1)
             @15 := const (22 : u32)
             @14 := &@15
             @13 := &*(@14)
-            @11 := std::collections::hash::map::{impl core::ops::index::Index<&'_0 (Q)> for std::collections::hash::map::HashMap<K, V, S, @TraitClause0, @TraitClause1, @TraitClause2>}#9<'_, u32, u32, u32, std::hash::random::RandomState>[core::marker::Sized<u32>, core::marker::Sized<u32>, core::marker::Sized<std::hash::random::RandomState>, core::cmp::impls::{impl core::cmp::Eq for u32}#43, core::hash::impls::{impl core::hash::Hash for u32}#11, core::borrow::{impl core::borrow::Borrow<T> for T}<u32>, core::cmp::impls::{impl core::cmp::Eq for u32}#43, core::hash::impls::{impl core::hash::Hash for u32}#11, std::hash::random::{impl core::hash::BuildHasher for std::hash::random::RandomState}#1]::index(move (@12), move (@13))
+            @11 := std::collections::hash::map::{impl core::ops::index::Index<&'_0 (Q)> for std::collections::hash::map::HashMap<K, V, S>[@TraitClause0, @TraitClause1, @TraitClause2]}#9<'_, u32, u32, u32, std::hash::random::RandomState>[core::marker::Sized<u32>, core::marker::Sized<u32>, core::marker::Sized<std::hash::random::RandomState>, core::cmp::impls::{impl core::cmp::Eq for u32}#43, core::hash::impls::{impl core::hash::Hash for u32}#11, core::borrow::{impl core::borrow::Borrow<T> for T}<u32>, core::cmp::impls::{impl core::cmp::Eq for u32}#43, core::hash::impls::{impl core::hash::Hash for u32}#11, std::hash::random::{impl core::hash::BuildHasher for std::hash::random::RandomState}#1]::index(move (@12), move (@13))
             drop @13
             drop @12
             @10 := &*(@11)
