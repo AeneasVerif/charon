@@ -102,8 +102,8 @@ fn test_crate::bool_to_opt(@1: bool) -> core::option::Option<()>[core::marker::S
 
 trait core::convert::From<Self, T>
 {
-    parent_clause_0 : [@TraitClause0]: core::marker::Sized<Self>
-    parent_clause_1 : [@TraitClause1]: core::marker::Sized<T>
+    parent_clause0 : [@TraitClause0]: core::marker::Sized<Self>
+    parent_clause1 : [@TraitClause1]: core::marker::Sized<T>
     fn from : core::convert::From::from
 }
 

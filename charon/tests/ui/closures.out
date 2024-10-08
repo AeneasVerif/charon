@@ -18,26 +18,26 @@ trait core::marker::Tuple<Self>
 
 trait core::ops::function::FnOnce<Self, Args>
 {
-    parent_clause_0 : [@TraitClause0]: core::marker::Sized<Args>
-    parent_clause_1 : [@TraitClause1]: core::marker::Tuple<Args>
-    parent_clause_2 : [@TraitClause2]: core::marker::Sized<Self::Output>
+    parent_clause0 : [@TraitClause0]: core::marker::Sized<Args>
+    parent_clause1 : [@TraitClause1]: core::marker::Tuple<Args>
+    parent_clause2 : [@TraitClause2]: core::marker::Sized<Self::Output>
     type Output
     fn call_once : core::ops::function::FnOnce::call_once
 }
 
 trait core::ops::function::FnMut<Self, Args>
 {
-    parent_clause_0 : [@TraitClause0]: core::ops::function::FnOnce<Self, Args>
-    parent_clause_1 : [@TraitClause1]: core::marker::Sized<Args>
-    parent_clause_2 : [@TraitClause2]: core::marker::Tuple<Args>
+    parent_clause0 : [@TraitClause0]: core::ops::function::FnOnce<Self, Args>
+    parent_clause1 : [@TraitClause1]: core::marker::Sized<Args>
+    parent_clause2 : [@TraitClause2]: core::marker::Tuple<Args>
     fn call_mut : core::ops::function::FnMut::call_mut
 }
 
 trait core::ops::function::Fn<Self, Args>
 {
-    parent_clause_0 : [@TraitClause0]: core::ops::function::FnMut<Self, Args>
-    parent_clause_1 : [@TraitClause1]: core::marker::Sized<Args>
-    parent_clause_2 : [@TraitClause2]: core::marker::Tuple<Args>
+    parent_clause0 : [@TraitClause0]: core::ops::function::FnMut<Self, Args>
+    parent_clause1 : [@TraitClause1]: core::marker::Sized<Args>
+    parent_clause2 : [@TraitClause2]: core::marker::Tuple<Args>
     fn call : core::ops::function::Fn::call
 }
 
@@ -49,14 +49,14 @@ enum core::option::Option<T>
 |  Some(T)
 
 
-fn core::ops::function::Fn::call<'_0, Self, Args>(@1: &'_0 (Self), @2: Args) -> Self::parent_clause_0::parent_clause_0::Output
+fn core::ops::function::Fn::call<'_0, Self, Args>(@1: &'_0 (Self), @2: Args) -> Self::parent_clause0::parent_clause0::Output
 
 fn test_crate::map_option<T, F>(@1: core::option::Option<T>[@TraitClause0], @2: F) -> core::option::Option<T>[@TraitClause0]
 where
     [@TraitClause0]: core::marker::Sized<T>,
     [@TraitClause1]: core::marker::Sized<F>,
     [@TraitClause2]: core::ops::function::Fn<F, (T)>,
-    @TraitClause2::parent_clause_0::parent_clause_0::Output = T,
+    @TraitClause2::parent_clause0::parent_clause0::Output = T,
 {
     let @0: core::option::Option<T>[@TraitClause0]; // return
     let x@1: core::option::Option<T>[@TraitClause0]; // arg #1
@@ -369,7 +369,7 @@ fn test_crate::test_map_option_id2(@1: core::option::Option<u32>[core::marker::S
 
 trait core::clone::Clone<Self>
 {
-    parent_clause_0 : [@TraitClause0]: core::marker::Sized<Self>
+    parent_clause0 : [@TraitClause0]: core::marker::Sized<Self>
     fn clone : core::clone::Clone::clone
     fn clone_from : core::clone::Clone::clone_from
 }
@@ -633,7 +633,7 @@ where
     [@TraitClause1]: core::marker::Sized<F>,
     [@TraitClause2]: core::marker::Sized<U>,
     [@TraitClause3]: core::ops::function::FnMut<F, (T)>,
-    @TraitClause3::parent_clause_0::Output = U,
+    @TraitClause3::parent_clause0::Output = U,
 
 fn test_crate::test_array_map(@1: Array<i32, 256 : usize>) -> Array<i32, 256 : usize>
 {
@@ -776,7 +776,7 @@ global test_crate::BLAH  {
 
 fn core::clone::Clone::clone_from<'_0, '_1, Self>(@1: &'_0 mut (Self), @2: &'_1 (Self))
 
-fn core::ops::function::FnMut::call_mut<'_0, Self, Args>(@1: &'_0 mut (Self), @2: Args) -> Self::parent_clause_0::Output
+fn core::ops::function::FnMut::call_mut<'_0, Self, Args>(@1: &'_0 mut (Self), @2: Args) -> Self::parent_clause0::Output
 
 fn core::ops::function::FnOnce::call_once<Self, Args>(@1: Self, @2: Args) -> Self::Output
 

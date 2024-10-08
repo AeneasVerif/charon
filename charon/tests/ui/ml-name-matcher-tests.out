@@ -15,7 +15,7 @@ trait core::marker::Sized<Self>
 
 trait test_crate::Trait<Self, T>
 {
-    parent_clause_0 : [@TraitClause0]: core::marker::Sized<T>
+    parent_clause0 : [@TraitClause0]: core::marker::Sized<T>
     fn method : test_crate::Trait::method
 }
 
@@ -102,7 +102,7 @@ trait core::slice::index::private_slice_index::Sealed<Self>
 
 trait core::slice::index::SliceIndex<Self, T>
 {
-    parent_clause_0 : [@TraitClause0]: core::slice::index::private_slice_index::Sealed<Self>
+    parent_clause0 : [@TraitClause0]: core::slice::index::private_slice_index::Sealed<Self>
     type Output
     fn get : core::slice::index::SliceIndex::get
     fn get_mut : core::slice::index::SliceIndex::get_mut

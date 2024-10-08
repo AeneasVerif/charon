@@ -9,14 +9,14 @@ trait core::marker::Sized<Self>
 
 trait core::clone::Clone<Self>
 {
-    parent_clause_0 : [@TraitClause0]: core::marker::Sized<Self>
+    parent_clause0 : [@TraitClause0]: core::marker::Sized<Self>
     fn clone : core::clone::Clone::clone
     fn clone_from : core::clone::Clone::clone_from
 }
 
 trait core::marker::Copy<Self>
 {
-    parent_clause_0 : [@TraitClause0]: core::clone::Clone<Self>
+    parent_clause0 : [@TraitClause0]: core::clone::Clone<Self>
 }
 
 fn test_crate::{impl core::clone::Clone for test_crate::Foo}#1::clone<'_0>(@1: &'_0 (test_crate::Foo)) -> test_crate::Foo

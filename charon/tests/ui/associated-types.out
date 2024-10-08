@@ -4,23 +4,23 @@ trait core::marker::Sized<Self>
 
 trait core::clone::Clone<Self>
 {
-    parent_clause_0 : [@TraitClause0]: core::marker::Sized<Self>
+    parent_clause0 : [@TraitClause0]: core::marker::Sized<Self>
     fn clone : core::clone::Clone::clone
     fn clone_from : core::clone::Clone::clone_from
 }
 
 trait core::marker::Copy<Self>
 {
-    parent_clause_0 : [@TraitClause0]: core::clone::Clone<Self>
+    parent_clause0 : [@TraitClause0]: core::clone::Clone<Self>
 }
 
 trait test_crate::Foo<'a, Self>
 where
     Self::Item : 'a,
 {
-    parent_clause_0 : [@TraitClause0]: core::marker::Copy<Self>
-    parent_clause_1 : [@TraitClause1]: core::clone::Clone<Self::Item>
-    parent_clause_2 : [@TraitClause2]: core::marker::Sized<Self::Item>
+    parent_clause0 : [@TraitClause0]: core::marker::Copy<Self>
+    parent_clause1 : [@TraitClause1]: core::clone::Clone<Self::Item>
+    parent_clause2 : [@TraitClause2]: core::marker::Sized<Self::Item>
     type Item
     fn use_item : test_crate::Foo::use_item
 }
@@ -90,7 +90,7 @@ where
     let @2: &'_ (@TraitClause1::Item); // anonymous local
 
     @2 := &x@1
-    @0 := @TraitClause1::parent_clause_1::clone(move (@2))
+    @0 := @TraitClause1::parent_clause1::clone(move (@2))
     drop @2
     drop x@1
     return
@@ -132,7 +132,7 @@ where
 
 trait test_crate::loopy::Bar<Self>
 {
-    parent_clause_0 : [@TraitClause0]: core::marker::Sized<Self::BarTy>
+    parent_clause0 : [@TraitClause0]: core::marker::Sized<Self::BarTy>
     type BarTy
 }
 
@@ -144,9 +144,9 @@ impl test_crate::loopy::{impl test_crate::loopy::Bar for ()} : test_crate::loopy
 
 trait test_crate::loopy::Foo<Self>
 {
-    parent_clause_0 : [@TraitClause0]: test_crate::loopy::Bar<Self::FooTy>
-    parent_clause_1 : [@TraitClause1]: test_crate::loopy::Foo<Self::FooTy>
-    parent_clause_2 : [@TraitClause2]: core::marker::Sized<Self::FooTy>
+    parent_clause0 : [@TraitClause0]: test_crate::loopy::Bar<Self::FooTy>
+    parent_clause1 : [@TraitClause1]: test_crate::loopy::Foo<Self::FooTy>
+    parent_clause2 : [@TraitClause2]: core::marker::Sized<Self::FooTy>
     type FooTy
 }
 
@@ -160,10 +160,10 @@ impl test_crate::loopy::{impl test_crate::loopy::Foo for ()}#1 : test_crate::loo
 
 trait test_crate::loopy::Baz<Self, T>
 {
-    parent_clause_0 : [@TraitClause0]: core::marker::Sized<T>
-    parent_clause_1 : [@TraitClause1]: test_crate::loopy::Baz<T, T>
-    parent_clause_2 : [@TraitClause2]: test_crate::loopy::Bar<T>
-    parent_clause_3 : [@TraitClause3]: core::marker::Sized<Self::BazTy>
+    parent_clause0 : [@TraitClause0]: core::marker::Sized<T>
+    parent_clause1 : [@TraitClause1]: test_crate::loopy::Baz<T, T>
+    parent_clause2 : [@TraitClause2]: test_crate::loopy::Bar<T>
+    parent_clause3 : [@TraitClause3]: core::marker::Sized<Self::BazTy>
     type BazTy
 }
 
@@ -183,8 +183,8 @@ trait core::borrow::Borrow<Self, Borrowed>
 
 trait alloc::borrow::ToOwned<Self>
 {
-    parent_clause_0 : [@TraitClause0]: core::borrow::Borrow<Self::Owned, Self>
-    parent_clause_1 : [@TraitClause1]: core::marker::Sized<Self::Owned>
+    parent_clause0 : [@TraitClause0]: core::borrow::Borrow<Self::Owned, Self>
+    parent_clause1 : [@TraitClause1]: core::marker::Sized<Self::Owned>
     type Owned
     fn to_owned : alloc::borrow::ToOwned::to_owned
     fn clone_into : alloc::borrow::ToOwned::clone_into
@@ -202,9 +202,9 @@ enum test_crate::cow::Cow<'a, B>
 
 trait test_crate::params::Foo<'a, Self, T>
 {
-    parent_clause_0 : [@TraitClause0]: core::marker::Sized<T>
-    parent_clause_1 : [@TraitClause1]: core::marker::Sized<Self::X>
-    parent_clause_2 : [@TraitClause2]: core::marker::Sized<Self::Item>
+    parent_clause0 : [@TraitClause0]: core::marker::Sized<T>
+    parent_clause1 : [@TraitClause1]: core::marker::Sized<Self::X>
+    parent_clause2 : [@TraitClause2]: core::marker::Sized<Self::Item>
     type X
     type Item
 }

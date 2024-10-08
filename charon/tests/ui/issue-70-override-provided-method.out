@@ -107,7 +107,7 @@ enum core::cmp::Ordering =
 
 trait core::cmp::PartialOrd<Self, Rhs>
 {
-    parent_clause_0 : [@TraitClause0]: core::cmp::PartialEq<Self, Rhs>
+    parent_clause0 : [@TraitClause0]: core::cmp::PartialEq<Self, Rhs>
     fn partial_cmp : core::cmp::PartialOrd::partial_cmp
     fn lt : core::cmp::PartialOrd::lt
     fn le : core::cmp::PartialOrd::le

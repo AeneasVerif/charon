@@ -26,7 +26,7 @@ trait core::cmp::PartialEq<Self, Rhs>
 
 trait core::cmp::Eq<Self>
 {
-    parent_clause_0 : [@TraitClause0]: core::cmp::PartialEq<Self, Self>
+    parent_clause0 : [@TraitClause0]: core::cmp::PartialEq<Self, Self>
     fn assert_receiver_is_total_eq : core::cmp::Eq::assert_receiver_is_total_eq
 }
 
@@ -58,8 +58,8 @@ trait core::hash::Hash<Self>
 
 trait core::hash::BuildHasher<Self>
 {
-    parent_clause_0 : [@TraitClause0]: core::hash::Hasher<Self::Hasher>
-    parent_clause_1 : [@TraitClause1]: core::marker::Sized<Self::Hasher>
+    parent_clause0 : [@TraitClause0]: core::hash::Hasher<Self::Hasher>
+    parent_clause1 : [@TraitClause1]: core::marker::Sized<Self::Hasher>
     type Hasher
     fn build_hasher : core::hash::BuildHasher::build_hasher
     fn hash_one : core::hash::BuildHasher::hash_one

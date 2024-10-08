@@ -13,8 +13,8 @@ enum core::result::Result<T, E>
 
 trait test_crate::MyTryFrom<Self, T>
 {
-    parent_clause_0 : [@TraitClause0]: core::marker::Sized<T>
-    parent_clause_1 : [@TraitClause1]: core::marker::Sized<Self::Error>
+    parent_clause0 : [@TraitClause0]: core::marker::Sized<T>
+    parent_clause1 : [@TraitClause1]: core::marker::Sized<Self::Error>
     type Error
     fn from : test_crate::MyTryFrom::from
 }
@@ -39,7 +39,7 @@ impl<'_0> test_crate::{impl test_crate::MyTryFrom<&'_0 (bool)> for bool}<'_0> : 
     fn from = test_crate::{impl test_crate::MyTryFrom<&'_0 (bool)> for bool}::from
 }
 
-fn test_crate::MyTryFrom::from<Self, T>(@1: T) -> core::result::Result<Self, Self::Error>[@TraitClause0, Self::parent_clause_1]
+fn test_crate::MyTryFrom::from<Self, T>(@1: T) -> core::result::Result<Self, Self::Error>[@TraitClause0, Self::parent_clause1]
 where
     [@TraitClause0]: core::marker::Sized<Self>,
 

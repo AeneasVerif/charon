@@ -27,26 +27,26 @@ where
 
 trait core::clone::Clone<Self>
 {
-    parent_clause_0 : [@TraitClause0]: core::marker::Sized<Self>
+    parent_clause0 : [@TraitClause0]: core::marker::Sized<Self>
     fn clone : core::clone::Clone::clone
     fn clone_from : core::clone::Clone::clone_from
 }
 
 trait core::marker::Copy<Self>
 {
-    parent_clause_0 : [@TraitClause0]: core::clone::Clone<Self>
+    parent_clause0 : [@TraitClause0]: core::clone::Clone<Self>
 }
 
 trait core::num::nonzero::private::Sealed<Self>
 
 trait core::num::nonzero::ZeroablePrimitive<Self>
 {
-    parent_clause_0 : [@TraitClause0]: core::marker::Sized<Self>
-    parent_clause_1 : [@TraitClause1]: core::marker::Copy<Self>
-    parent_clause_2 : [@TraitClause2]: core::num::nonzero::private::Sealed<Self>
-    parent_clause_3 : [@TraitClause3]: core::marker::Copy<Self::NonZeroInner>
-    parent_clause_4 : [@TraitClause4]: core::clone::Clone<Self::NonZeroInner>
-    parent_clause_5 : [@TraitClause5]: core::marker::Sized<Self::NonZeroInner>
+    parent_clause0 : [@TraitClause0]: core::marker::Sized<Self>
+    parent_clause1 : [@TraitClause1]: core::marker::Copy<Self>
+    parent_clause2 : [@TraitClause2]: core::num::nonzero::private::Sealed<Self>
+    parent_clause3 : [@TraitClause3]: core::marker::Copy<Self::NonZeroInner>
+    parent_clause4 : [@TraitClause4]: core::clone::Clone<Self::NonZeroInner>
+    parent_clause5 : [@TraitClause5]: core::marker::Sized<Self::NonZeroInner>
     type NonZeroInner
 }
 

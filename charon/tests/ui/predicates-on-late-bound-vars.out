@@ -24,7 +24,7 @@ fn test_crate::wrap<'a>(@1: &'a (u32)) -> core::option::Option<&'a (u32)>[core::
 
 trait core::clone::Clone<Self>
 {
-    parent_clause_0 : [@TraitClause0]: core::marker::Sized<Self>
+    parent_clause0 : [@TraitClause0]: core::marker::Sized<Self>
     fn clone : core::clone::Clone::clone
     fn clone_from : core::clone::Clone::clone_from
 }
@@ -93,11 +93,11 @@ fn test_crate::foo()
 
 trait test_crate::Foo<Self>
 {
-    parent_clause_0 : [@TraitClause0]: core::marker::Sized<Self::S>
+    parent_clause0 : [@TraitClause0]: core::marker::Sized<Self::S>
     type S
 }
 
-fn test_crate::f<T, U>() -> core::option::Option<@TraitClause2::S>[@TraitClause3::parent_clause_0]
+fn test_crate::f<T, U>() -> core::option::Option<@TraitClause2::S>[@TraitClause3::parent_clause0]
 where
     [@TraitClause0]: core::marker::Sized<T>,
     [@TraitClause1]: core::marker::Sized<U>,
@@ -105,7 +105,7 @@ where
     [@TraitClause3]: test_crate::Foo<U>,
     @TraitClause2::S = @TraitClause3::S,
 {
-    let @0: core::option::Option<@TraitClause3::S>[@TraitClause3::parent_clause_0]; // return
+    let @0: core::option::Option<@TraitClause3::S>[@TraitClause3::parent_clause0]; // return
 
     panic(core::panicking::panic)
 }

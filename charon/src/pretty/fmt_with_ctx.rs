@@ -1206,8 +1206,8 @@ impl<C: AstFormatter> FmtWithCtx<C> for TraitDecl {
                     .iter()
                     .map(|c| {
                         format!(
-                            "{TAB_INCR}parent_clause_{} : {}\n",
-                            c.clause_id.to_string(),
+                            "{TAB_INCR}parent_clause{} : {}\n",
+                            c.clause_id,
                             c.fmt_with_ctx(ctx)
                         )
                     })
@@ -1326,8 +1326,7 @@ impl<C: AstFormatter> FmtWithCtx<C> for TraitRefKind {
             TraitRefKind::SelfId => "Self".to_string(),
             TraitRefKind::ParentClause(id, _decl_id, clause_id) => {
                 let id = id.fmt_with_ctx(ctx);
-                let clause = clause_id.index();
-                format!("{id}::parent_clause_{clause}")
+                format!("{id}::parent_clause{clause_id}")
             }
             TraitRefKind::ItemClause(id, _decl_id, type_name, clause_id) => {
                 let id = id.fmt_with_ctx(ctx);

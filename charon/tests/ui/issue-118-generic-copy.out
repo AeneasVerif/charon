@@ -6,7 +6,7 @@ trait core::marker::Sized<Self>
 
 trait core::clone::Clone<Self>
 {
-    parent_clause_0 : [@TraitClause0]: core::marker::Sized<Self>
+    parent_clause0 : [@TraitClause0]: core::marker::Sized<Self>
     fn clone : core::clone::Clone::clone
     fn clone_from : core::clone::Clone::clone_from
 }
@@ -28,7 +28,7 @@ impl test_crate::{impl core::clone::Clone for test_crate::Foo} : core::clone::Cl
 
 trait core::marker::Copy<Self>
 {
-    parent_clause_0 : [@TraitClause0]: core::clone::Clone<Self>
+    parent_clause0 : [@TraitClause0]: core::clone::Clone<Self>
 }
 
 impl test_crate::{impl core::marker::Copy for test_crate::Foo}#1 : core::marker::Copy<test_crate::Foo>
@@ -81,9 +81,9 @@ where
 
 trait test_crate::Trait<Self>
 {
-    parent_clause_0 : [@TraitClause0]: core::marker::Copy<Self::Ty>
-    parent_clause_1 : [@TraitClause1]: core::clone::Clone<Self::Ty>
-    parent_clause_2 : [@TraitClause2]: core::marker::Sized<Self::Ty>
+    parent_clause0 : [@TraitClause0]: core::marker::Copy<Self::Ty>
+    parent_clause1 : [@TraitClause1]: core::clone::Clone<Self::Ty>
+    parent_clause2 : [@TraitClause2]: core::marker::Sized<Self::Ty>
     type Ty
 }
 
