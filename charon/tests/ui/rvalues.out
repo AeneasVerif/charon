@@ -227,8 +227,8 @@ struct alloc::alloc::Global = {}
 fn test_crate::boxes()
 {
     let @0: (); // return
-    let @1: alloc::boxed::Box<i32, core::marker::Sized<alloc::alloc::Global>>; // anonymous local
-    let @2: alloc::boxed::Box<i32, core::marker::Sized<alloc::alloc::Global>>; // anonymous local
+    let @1: alloc::boxed::Box<i32>[core::marker::Sized<alloc::alloc::Global>]; // anonymous local
+    let @2: alloc::boxed::Box<i32>[core::marker::Sized<alloc::alloc::Global>]; // anonymous local
     let @3: (); // anonymous local
 
     @2 := @BoxNew<i32>[core::marker::Sized<alloc::alloc::Global>](const (42 : i32))
@@ -296,7 +296,7 @@ where
     // This one seems to be optimized out.
     size@1 := size_of<T>
     align@2 := align_of<T>
-    offset@3 := offset_of(?)<test_crate::nullary_ops::Struct<T, @TraitClause0>>
+    offset@3 := offset_of(?)<test_crate::nullary_ops::Struct<T>[@TraitClause0]>
     @4 := copy (size@1) + copy (align@2)
     @0 := copy (@4) + copy (offset@3)
     return

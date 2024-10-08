@@ -46,26 +46,26 @@ enum core::option::Option<T>
 |  Some(T)
 
 
-fn core::option::{impl core::clone::Clone for core::option::Option<T, @TraitClause0>}#5::clone<'_0, T>(@1: &'_0 (core::option::Option<T, @TraitClause0>)) -> core::option::Option<T, @TraitClause0>
+fn core::option::{impl core::clone::Clone for core::option::Option<T>[@TraitClause0]}#5::clone<'_0, T>(@1: &'_0 (core::option::Option<T>[@TraitClause0])) -> core::option::Option<T>[@TraitClause0]
 where
     // Inherited clauses:
     [@TraitClause0]: core::marker::Sized<T>,
     [@TraitClause1]: core::clone::Clone<T>,
 
-fn core::option::{impl core::clone::Clone for core::option::Option<T, @TraitClause0>}#5::clone_from<'_0, '_1, T>(@1: &'_0 mut (core::option::Option<T, @TraitClause0>), @2: &'_1 (core::option::Option<T, @TraitClause0>))
+fn core::option::{impl core::clone::Clone for core::option::Option<T>[@TraitClause0]}#5::clone_from<'_0, '_1, T>(@1: &'_0 mut (core::option::Option<T>[@TraitClause0]), @2: &'_1 (core::option::Option<T>[@TraitClause0]))
 where
     // Inherited clauses:
     [@TraitClause0]: core::marker::Sized<T>,
     [@TraitClause1]: core::clone::Clone<T>,
 
-impl<T> core::option::{impl core::clone::Clone for core::option::Option<T, @TraitClause0>}#5<T> : core::clone::Clone<core::option::Option<T, @TraitClause0>>
+impl<T> core::option::{impl core::clone::Clone for core::option::Option<T>[@TraitClause0]}#5<T> : core::clone::Clone<core::option::Option<T>[@TraitClause0]>
 where
     [@TraitClause0]: core::marker::Sized<T>,
     [@TraitClause1]: core::clone::Clone<T>,
 {
-    parent_clause0 = core::marker::Sized<core::option::Option<T, @TraitClause0>>
-    fn clone = core::option::{impl core::clone::Clone for core::option::Option<T, @TraitClause0>}#5::clone
-    fn clone_from = core::option::{impl core::clone::Clone for core::option::Option<T, @TraitClause0>}#5::clone_from
+    parent_clause0 = core::marker::Sized<core::option::Option<T>[@TraitClause0]>
+    fn clone = core::option::{impl core::clone::Clone for core::option::Option<T>[@TraitClause0]}#5::clone
+    fn clone_from = core::option::{impl core::clone::Clone for core::option::Option<T>[@TraitClause0]}#5::clone_from
 }
 
 impl<'a, T> test_crate::{impl test_crate::Foo<'a> for &'a (T)}<'a, T> : test_crate::Foo<'a, &'a (T)>
@@ -73,9 +73,9 @@ where
     [@TraitClause0]: core::marker::Sized<T>,
 {
     parent_clause0 = core::marker::{impl core::marker::Copy for &'_0 (T)}#4<'_, T>
-    parent_clause1 = core::option::{impl core::clone::Clone for core::option::Option<T, @TraitClause0>}#5<&'_ (T)>[core::marker::Sized<&'_ (T)>, core::clone::impls::{impl core::clone::Clone for &'_0 (T)}#3<'_, T>]
-    parent_clause2 = core::marker::Sized<core::option::Option<&'_ (T), core::marker::Sized<&'_ (T)>>>
-    type Item = core::option::Option<&'a (T), core::marker::Sized<&'_ (T)>>
+    parent_clause1 = core::option::{impl core::clone::Clone for core::option::Option<T>[@TraitClause0]}#5<&'_ (T)>[core::marker::Sized<&'_ (T)>, core::clone::impls::{impl core::clone::Clone for &'_0 (T)}#3<'_, T>]
+    parent_clause2 = core::marker::Sized<core::option::Option<&'_ (T)>[core::marker::Sized<&'_ (T)>]>
+    type Item = core::option::Option<&'a (T)>[core::marker::Sized<&'_ (T)>]
 }
 
 fn core::clone::Clone::clone<'_0, Self>(@1: &'_0 (Self)) -> Self
@@ -99,8 +99,8 @@ where
 fn test_crate::call_fn()
 {
     let @0: (); // return
-    let @1: core::option::Option<&'_ (bool), core::marker::Sized<&'_ (bool)>>; // anonymous local
-    let @2: core::option::Option<&'_ (bool), core::marker::Sized<&'_ (bool)>>; // anonymous local
+    let @1: core::option::Option<&'_ (bool)>[core::marker::Sized<&'_ (bool)>]; // anonymous local
+    let @2: core::option::Option<&'_ (bool)>[core::marker::Sized<&'_ (bool)>]; // anonymous local
     let @3: (); // anonymous local
 
     @2 := core::option::Option::None {  }
@@ -209,15 +209,15 @@ trait test_crate::params::Foo<'a, Self, T>
     type Item
 }
 
-impl<'a, T> test_crate::params::{impl test_crate::params::Foo<'a, core::option::Option<T, @TraitClause0>> for ()}<'a, T> : test_crate::params::Foo<'a, (), core::option::Option<T, @TraitClause0>>
+impl<'a, T> test_crate::params::{impl test_crate::params::Foo<'a, core::option::Option<T>[@TraitClause0]> for ()}<'a, T> : test_crate::params::Foo<'a, (), core::option::Option<T>[@TraitClause0]>
 where
     [@TraitClause0]: core::marker::Sized<T>,
 {
-    parent_clause0 = core::marker::Sized<core::option::Option<T, @TraitClause0>>
+    parent_clause0 = core::marker::Sized<core::option::Option<T>[@TraitClause0]>
     parent_clause1 = core::marker::Sized<&'_ (())>
-    parent_clause2 = core::marker::Sized<&'_ ((core::option::Option<T, @TraitClause0>, &'_ (())))>
+    parent_clause2 = core::marker::Sized<&'_ ((core::option::Option<T>[@TraitClause0], &'_ (())))>
     type X = &'a (())
-    type Item = &'a ((core::option::Option<T, @TraitClause0>, test_crate::params::{impl test_crate::params::Foo<'a, core::option::Option<T, @TraitClause0>> for ()}<'_, T>[@TraitClause0]::X))
+    type Item = &'a ((core::option::Option<T>[@TraitClause0], test_crate::params::{impl test_crate::params::Foo<'a, core::option::Option<T>[@TraitClause0]> for ()}<'_, T>[@TraitClause0]::X))
 }
 
 fn test_crate::Foo::use_item<'a, '_1, Self>(@1: &'_1 (Self::Item)) -> &'_1 (Self::Item)

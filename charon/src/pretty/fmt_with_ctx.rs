@@ -206,7 +206,7 @@ impl<C: AstFormatter> FmtWithCtx<C> for FnOperand {
 
 impl<C: AstFormatter> FmtWithCtx<C> for FnPtr {
     fn fmt_with_ctx(&self, ctx: &C) -> String {
-        let generics = self.generics.fmt_with_ctx_split_trait_refs(ctx);
+        let generics = self.generics.fmt_with_ctx(ctx);
         let f = match &self.func {
             FunIdOrTraitMethodRef::Fun(FunId::Regular(def_id)) => {
                 format!("{}", ctx.format_object(*def_id),)
@@ -280,12 +280,13 @@ impl GenericArgs {
     where
         C: AstFormatter,
     {
+        assert!(self.trait_refs.is_empty());
         let mut params = Vec::new();
         let GenericArgs {
             regions,
             types,
             const_generics,
-            trait_refs,
+            trait_refs: _,
         } = self;
         for x in regions {
             params.push(x.fmt_with_ctx(ctx));
@@ -295,9 +296,6 @@ impl GenericArgs {
         }
         for x in const_generics {
             params.push(x.fmt_with_ctx(ctx));
-        }
-        for x in trait_refs {
-            params.push(x.fmt_with_ctx(ctx))
         }
         params.join(", ")
     }
@@ -343,11 +341,7 @@ impl GenericArgs {
 
 impl<C: AstFormatter> FmtWithCtx<C> for GenericArgs {
     fn fmt_with_ctx(&self, ctx: &C) -> String {
-        if self.is_empty() {
-            "".to_string()
-        } else {
-            format!("<{}>", self.fmt_with_ctx_no_brackets(ctx),)
-        }
+        self.fmt_with_ctx_split_trait_refs(ctx)
     }
 }
 
@@ -671,7 +665,7 @@ where
 impl<C: AstFormatter> FmtWithCtx<C> for GlobalDeclRef {
     fn fmt_with_ctx(&self, ctx: &C) -> String {
         let global_id = ctx.format_object(self.id);
-        let generics = self.generics.fmt_with_ctx_split_trait_refs(ctx);
+        let generics = self.generics.fmt_with_ctx(ctx);
         format!("{global_id}{generics}")
     }
 }
@@ -974,7 +968,7 @@ impl<C: AstFormatter> FmtWithCtx<C> for Rvalue {
                         format!(
                             "{{{}{}}} {{{}}}",
                             ctx.format_object(*fn_id),
-                            generics.fmt_with_ctx_split_trait_refs(ctx),
+                            generics.fmt_with_ctx(ctx),
                             ops_s.join(", ")
                         )
                     }
@@ -1259,7 +1253,7 @@ impl<C: AstFormatter> FmtWithCtx<C> for TraitDecl {
 impl<C: AstFormatter> FmtWithCtx<C> for TraitDeclRef {
     fn fmt_with_ctx(&self, ctx: &C) -> String {
         let trait_id = ctx.format_object(self.trait_id);
-        let generics = self.generics.fmt_with_ctx_split_trait_refs(ctx);
+        let generics = self.generics.fmt_with_ctx(ctx);
         format!("{trait_id}{generics}")
     }
 }
@@ -1348,7 +1342,7 @@ impl<C: AstFormatter> FmtWithCtx<C> for TraitRefKind {
             }
             TraitRefKind::TraitImpl(id, args) => {
                 let impl_ = ctx.format_object(*id);
-                let args = args.fmt_with_ctx_split_trait_refs(ctx);
+                let args = args.fmt_with_ctx(ctx);
                 format!("{impl_}{args}")
             }
             TraitRefKind::Clause(id) => ctx.format_object(*id),

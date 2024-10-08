@@ -269,7 +269,7 @@ fn test_crate::foo()
     let @30: &'_ (u32); // anonymous local
     let @31: &'_ (u32); // anonymous local
     let @32: &'_ (u32); // anonymous local
-    let @33: core::option::Option<core::fmt::Arguments<'_>, core::marker::Sized<core::fmt::Arguments<'_>>>; // anonymous local
+    let @33: core::option::Option<core::fmt::Arguments<'_>>[core::marker::Sized<core::fmt::Arguments<'_>>]; // anonymous local
     let @34: (); // anonymous local
     let @35: (); // anonymous local
     let @36: &'_ (Array<u32, 10 : usize>); // anonymous local

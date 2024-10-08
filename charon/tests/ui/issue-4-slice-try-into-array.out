@@ -31,7 +31,7 @@ trait core::convert::TryFrom<Self, T>
     fn try_from : core::convert::TryFrom::try_from
 }
 
-fn core::convert::{impl core::convert::TryInto<U> for T}#6::try_into<T, U>(@1: T) -> core::result::Result<U, @TraitClause2::Error, @TraitClause1, (parents(@TraitClause2)::[@TraitClause2])>
+fn core::convert::{impl core::convert::TryInto<U> for T}#6::try_into<T, U>(@1: T) -> core::result::Result<U, @TraitClause2::Error>[@TraitClause1, (parents(@TraitClause2)::[@TraitClause2])]
 where
     // Inherited clauses:
     [@TraitClause0]: core::marker::Sized<T>,
@@ -63,7 +63,7 @@ trait core::marker::Copy<Self>
     parent_clause_0 : [@TraitClause0]: core::clone::Clone<Self>
 }
 
-fn core::array::{impl core::convert::TryFrom<&'_0 (Slice<T>)> for Array<T, const N : usize>}#7::try_from<'_0, '_1, T, const N : usize>(@1: &'_1 (Slice<T>)) -> core::result::Result<Array<T, const N : usize>, core::array::TryFromSliceError, core::marker::Sized<Array<T, const N : usize>>, core::marker::Sized<core::array::TryFromSliceError>>
+fn core::array::{impl core::convert::TryFrom<&'_0 (Slice<T>)> for Array<T, const N : usize>}#7::try_from<'_0, '_1, T, const N : usize>(@1: &'_1 (Slice<T>)) -> core::result::Result<Array<T, const N : usize>, core::array::TryFromSliceError>[core::marker::Sized<Array<T, const N : usize>>, core::marker::Sized<core::array::TryFromSliceError>]
 where
     // Inherited clauses:
     [@TraitClause0]: core::marker::Sized<T>,
@@ -94,7 +94,7 @@ impl core::marker::{impl core::marker::Copy for u8}#38 : core::marker::Copy<u8>
     parent_clause0 = core::clone::impls::{impl core::clone::Clone for u8}#6
 }
 
-fn core::convert::TryInto::try_into<Self, T>(@1: Self) -> core::result::Result<T, Self::Error, (parents(Self)::[@TraitClause1]), (parents(Self)::[@TraitClause2])>
+fn core::convert::TryInto::try_into<Self, T>(@1: Self) -> core::result::Result<T, Self::Error>[(parents(Self)::[@TraitClause1]), (parents(Self)::[@TraitClause2])]
 
 opaque type core::fmt::Formatter<'a>
   where
@@ -107,7 +107,7 @@ trait core::fmt::Debug<Self>
     fn fmt : core::fmt::Debug::fmt
 }
 
-fn core::result::{core::result::Result<T, E, @TraitClause0, @TraitClause1>}::unwrap<T, E>(@1: core::result::Result<T, E, @TraitClause0, @TraitClause1>) -> T
+fn core::result::{core::result::Result<T, E>[@TraitClause0, @TraitClause1]}::unwrap<T, E>(@1: core::result::Result<T, E>[@TraitClause0, @TraitClause1]) -> T
 where
     // Inherited clauses:
     [@TraitClause0]: core::marker::Sized<T>,
@@ -115,7 +115,7 @@ where
     // Local clauses:
     [@TraitClause2]: core::fmt::Debug<E>,
 
-fn core::array::{impl core::fmt::Debug for core::array::TryFromSliceError}#26::fmt<'_0, '_1, '_2>(@1: &'_0 (core::array::TryFromSliceError), @2: &'_1 mut (core::fmt::Formatter<'_2>)) -> core::result::Result<(), core::fmt::Error, core::marker::Sized<()>, core::marker::Sized<core::fmt::Error>>
+fn core::array::{impl core::fmt::Debug for core::array::TryFromSliceError}#26::fmt<'_0, '_1, '_2>(@1: &'_0 (core::array::TryFromSliceError), @2: &'_1 mut (core::fmt::Formatter<'_2>)) -> core::result::Result<(), core::fmt::Error>[core::marker::Sized<()>, core::marker::Sized<core::fmt::Error>]
 
 impl core::array::{impl core::fmt::Debug for core::array::TryFromSliceError}#26 : core::fmt::Debug<core::array::TryFromSliceError>
 {
@@ -127,14 +127,14 @@ fn test_crate::trait_error<'_0>(@1: &'_0 (Slice<u8>))
     let @0: (); // return
     let s@1: &'_ (Slice<u8>); // arg #1
     let _array@2: Array<u8, 4 : usize>; // local
-    let @3: core::result::Result<Array<u8, 4 : usize>, core::array::TryFromSliceError, core::marker::Sized<Array<u8, 4 : usize>>, core::marker::Sized<core::array::TryFromSliceError>>; // anonymous local
+    let @3: core::result::Result<Array<u8, 4 : usize>, core::array::TryFromSliceError>[core::marker::Sized<Array<u8, 4 : usize>>, core::marker::Sized<core::array::TryFromSliceError>]; // anonymous local
     let @4: &'_ (Slice<u8>); // anonymous local
     let @5: (); // anonymous local
 
     @4 := &*(s@1)
     @3 := core::convert::{impl core::convert::TryInto<U> for T}#6<&'_ (Slice<u8>), Array<u8, 4 : usize>>[core::marker::Sized<&'_ (Slice<u8>)>, core::marker::Sized<Array<u8, 4 : usize>>, core::array::{impl core::convert::TryFrom<&'_0 (Slice<T>)> for Array<T, const N : usize>}#7<'_, u8, 4 : usize>[core::marker::Sized<u8>, core::marker::{impl core::marker::Copy for u8}#38]]::try_into(move (@4))
     drop @4
-    _array@2 := core::result::{core::result::Result<T, E, @TraitClause0, @TraitClause1>}::unwrap<Array<u8, 4 : usize>, core::array::TryFromSliceError>[core::array::{impl core::fmt::Debug for core::array::TryFromSliceError}#26, core::marker::Sized<Array<u8, 4 : usize>>, core::marker::Sized<core::array::TryFromSliceError>](move (@3))
+    _array@2 := core::result::{core::result::Result<T, E>[@TraitClause0, @TraitClause1]}::unwrap<Array<u8, 4 : usize>, core::array::TryFromSliceError>[core::array::{impl core::fmt::Debug for core::array::TryFromSliceError}#26, core::marker::Sized<Array<u8, 4 : usize>>, core::marker::Sized<core::array::TryFromSliceError>](move (@3))
     drop @3
     @fake_read(_array@2)
     @5 := ()
@@ -144,13 +144,13 @@ fn test_crate::trait_error<'_0>(@1: &'_0 (Slice<u8>))
     return
 }
 
-fn core::convert::TryFrom::try_from<Self, T>(@1: T) -> core::result::Result<Self, Self::Error, (parents(Self)::[@TraitClause0]), (parents(Self)::[@TraitClause2])>
+fn core::convert::TryFrom::try_from<Self, T>(@1: T) -> core::result::Result<Self, Self::Error>[(parents(Self)::[@TraitClause0]), (parents(Self)::[@TraitClause2])]
 
 fn core::clone::Clone::clone<'_0, Self>(@1: &'_0 (Self)) -> Self
 
 fn core::clone::Clone::clone_from<'_0, '_1, Self>(@1: &'_0 mut (Self), @2: &'_1 (Self))
 
-fn core::fmt::Debug::fmt<'_0, '_1, '_2, Self>(@1: &'_0 (Self), @2: &'_1 mut (core::fmt::Formatter<'_2>)) -> core::result::Result<(), core::fmt::Error, core::marker::Sized<()>, core::marker::Sized<core::fmt::Error>>
+fn core::fmt::Debug::fmt<'_0, '_1, '_2, Self>(@1: &'_0 (Self), @2: &'_1 mut (core::fmt::Formatter<'_2>)) -> core::result::Result<(), core::fmt::Error>[core::marker::Sized<()>, core::marker::Sized<core::fmt::Error>]
 
 
 

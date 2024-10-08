@@ -95,7 +95,7 @@ fn test_cargo_dependencies::main()
     let @18: &'_ (u32); // anonymous local
     let @19: &'_ (u32); // anonymous local
     let @20: &'_ (u32); // anonymous local
-    let @21: core::option::Option<core::fmt::Arguments<'_>, core::marker::Sized<core::fmt::Arguments<'_>>>; // anonymous local
+    let @21: core::option::Option<core::fmt::Arguments<'_>>[core::marker::Sized<core::fmt::Arguments<'_>>]; // anonymous local
     let @22: (); // anonymous local
     let @23: (); // anonymous local
 

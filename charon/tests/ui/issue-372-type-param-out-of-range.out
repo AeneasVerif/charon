@@ -30,7 +30,7 @@ trait core::ops::function::FnMut<Self, Args>
     fn call_mut : core::ops::function::FnMut::call_mut
 }
 
-fn test_crate::{test_crate::S<'a, K, @TraitClause0>}::f<'a, K, F>()
+fn test_crate::{test_crate::S<'a, K>[@TraitClause0]}::f<'a, K, F>()
 where
     // Inherited clauses:
     [@TraitClause0]: core::marker::Sized<K>,
@@ -48,7 +48,7 @@ where
     return
 }
 
-fn test_crate::{test_crate::S<'a, K, @TraitClause0>}::g<'a, K, F>()
+fn test_crate::{test_crate::S<'a, K>[@TraitClause0]}::g<'a, K, F>()
 where
     // Inherited clauses:
     [@TraitClause0]: core::marker::Sized<K>,

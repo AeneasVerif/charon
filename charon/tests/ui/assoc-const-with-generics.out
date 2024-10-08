@@ -10,7 +10,7 @@ struct test_crate::V<T, const N : usize>
   x: Array<T, const N : usize>,
 }
 
-global test_crate::{test_crate::V<T, const N : usize, @TraitClause0>}::LEN<T, const N : usize>
+global test_crate::{test_crate::V<T, const N : usize>[@TraitClause0]}::LEN<T, const N : usize>
   where
       [@TraitClause0]: core::marker::Sized<T>,
   {

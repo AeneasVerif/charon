@@ -130,23 +130,23 @@ enum test_crate::CList<T>
   where
       [@TraitClause0]: core::marker::Sized<T>,
  =
-|  CCons(T, alloc::boxed::Box<test_crate::CList<T, @TraitClause0>, core::marker::Sized<alloc::alloc::Global>>)
+|  CCons(T, alloc::boxed::Box<test_crate::CList<T>[@TraitClause0]>[core::marker::Sized<alloc::alloc::Global>])
 |  CNil()
 
 
-fn test_crate::list_nth<'a, T>(@1: &'a (test_crate::CList<T, @TraitClause0>), @2: u32) -> &'a (T)
+fn test_crate::list_nth<'a, T>(@1: &'a (test_crate::CList<T>[@TraitClause0]), @2: u32) -> &'a (T)
 where
     [@TraitClause0]: core::marker::Sized<T>,
 {
     let @0: &'_ (T); // return
-    let l@1: &'_ (test_crate::CList<T, @TraitClause0>); // arg #1
+    let l@1: &'_ (test_crate::CList<T>[@TraitClause0]); // arg #1
     let i@2: u32; // arg #2
     let x@3: &'_ (T); // local
-    let tl@4: &'_ (alloc::boxed::Box<test_crate::CList<T, @TraitClause0>, core::marker::Sized<alloc::alloc::Global>>); // local
+    let tl@4: &'_ (alloc::boxed::Box<test_crate::CList<T>[@TraitClause0]>[core::marker::Sized<alloc::alloc::Global>]); // local
     let @5: bool; // anonymous local
     let @6: u32; // anonymous local
     let @7: &'_ (T); // anonymous local
-    let @8: &'_ (test_crate::CList<T, @TraitClause0>); // anonymous local
+    let @8: &'_ (test_crate::CList<T>[@TraitClause0]); // anonymous local
     let @9: u32; // anonymous local
     let @10: u32; // anonymous local
 
@@ -184,24 +184,24 @@ where
     return
 }
 
-fn test_crate::list_nth_mut<'a, T>(@1: &'a mut (test_crate::CList<T, @TraitClause0>), @2: u32) -> &'a mut (T)
+fn test_crate::list_nth_mut<'a, T>(@1: &'a mut (test_crate::CList<T>[@TraitClause0]), @2: u32) -> &'a mut (T)
 where
     [@TraitClause0]: core::marker::Sized<T>,
 {
     let @0: &'_ mut (T); // return
-    let l@1: &'_ mut (test_crate::CList<T, @TraitClause0>); // arg #1
+    let l@1: &'_ mut (test_crate::CList<T>[@TraitClause0]); // arg #1
     let i@2: u32; // arg #2
     let @3: &'_ mut (T); // anonymous local
     let @4: &'_ mut (T); // anonymous local
     let x@5: &'_ mut (T); // local
-    let tl@6: &'_ mut (alloc::boxed::Box<test_crate::CList<T, @TraitClause0>, core::marker::Sized<alloc::alloc::Global>>); // local
+    let tl@6: &'_ mut (alloc::boxed::Box<test_crate::CList<T>[@TraitClause0]>[core::marker::Sized<alloc::alloc::Global>]); // local
     let @7: &'_ mut (T); // anonymous local
     let @8: &'_ mut (T); // anonymous local
     let @9: bool; // anonymous local
     let @10: u32; // anonymous local
     let @11: &'_ mut (T); // anonymous local
     let @12: &'_ mut (T); // anonymous local
-    let @13: &'_ mut (test_crate::CList<T, @TraitClause0>); // anonymous local
+    let @13: &'_ mut (test_crate::CList<T>[@TraitClause0]); // anonymous local
     let @14: u32; // anonymous local
     let @15: u32; // anonymous local
 
@@ -249,21 +249,21 @@ where
     return
 }
 
-fn test_crate::list_nth_mut1<'a, T>(@1: &'a mut (test_crate::CList<T, @TraitClause0>), @2: u32) -> &'a mut (T)
+fn test_crate::list_nth_mut1<'a, T>(@1: &'a mut (test_crate::CList<T>[@TraitClause0]), @2: u32) -> &'a mut (T)
 where
     [@TraitClause0]: core::marker::Sized<T>,
 {
     let @0: &'_ mut (T); // return
-    let l@1: &'_ mut (test_crate::CList<T, @TraitClause0>); // arg #1
+    let l@1: &'_ mut (test_crate::CList<T>[@TraitClause0]); // arg #1
     let i@2: u32; // arg #2
     let @3: (); // anonymous local
     let @4: (); // anonymous local
     let x@5: &'_ mut (T); // local
-    let tl@6: &'_ mut (alloc::boxed::Box<test_crate::CList<T, @TraitClause0>, core::marker::Sized<alloc::alloc::Global>>); // local
+    let tl@6: &'_ mut (alloc::boxed::Box<test_crate::CList<T>[@TraitClause0]>[core::marker::Sized<alloc::alloc::Global>]); // local
     let @7: (); // anonymous local
     let @8: bool; // anonymous local
     let @9: u32; // anonymous local
-    let @10: &'_ mut (test_crate::CList<T, @TraitClause0>); // anonymous local
+    let @10: &'_ mut (test_crate::CList<T>[@TraitClause0]); // anonymous local
     let @11: (); // anonymous local
     let @12: (); // anonymous local
     let @13: (); // anonymous local
@@ -345,17 +345,17 @@ fn test_crate::i32_id(@1: i32) -> i32
     return
 }
 
-fn test_crate::list_tail<'a, T>(@1: &'a mut (test_crate::CList<T, @TraitClause0>)) -> &'a mut (test_crate::CList<T, @TraitClause0>)
+fn test_crate::list_tail<'a, T>(@1: &'a mut (test_crate::CList<T>[@TraitClause0])) -> &'a mut (test_crate::CList<T>[@TraitClause0])
 where
     [@TraitClause0]: core::marker::Sized<T>,
 {
-    let @0: &'_ mut (test_crate::CList<T, @TraitClause0>); // return
-    let l@1: &'_ mut (test_crate::CList<T, @TraitClause0>); // arg #1
-    let @2: &'_ mut (test_crate::CList<T, @TraitClause0>); // anonymous local
-    let @3: &'_ mut (test_crate::CList<T, @TraitClause0>); // anonymous local
-    let tl@4: &'_ mut (alloc::boxed::Box<test_crate::CList<T, @TraitClause0>, core::marker::Sized<alloc::alloc::Global>>); // local
-    let @5: &'_ mut (test_crate::CList<T, @TraitClause0>); // anonymous local
-    let @6: &'_ mut (test_crate::CList<T, @TraitClause0>); // anonymous local
+    let @0: &'_ mut (test_crate::CList<T>[@TraitClause0]); // return
+    let l@1: &'_ mut (test_crate::CList<T>[@TraitClause0]); // arg #1
+    let @2: &'_ mut (test_crate::CList<T>[@TraitClause0]); // anonymous local
+    let @3: &'_ mut (test_crate::CList<T>[@TraitClause0]); // anonymous local
+    let tl@4: &'_ mut (alloc::boxed::Box<test_crate::CList<T>[@TraitClause0]>[core::marker::Sized<alloc::alloc::Global>]); // local
+    let @5: &'_ mut (test_crate::CList<T>[@TraitClause0]); // anonymous local
+    let @6: &'_ mut (test_crate::CList<T>[@TraitClause0]); // anonymous local
 
     @fake_read(l@1)
     match *(l@1) {

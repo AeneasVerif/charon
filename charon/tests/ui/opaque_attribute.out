@@ -30,7 +30,7 @@ enum core::option::Option<T>
 |  Some(T)
 
 
-fn test_crate::test_bool_trait_option<T>(@1: core::option::Option<T, @TraitClause0>) -> bool
+fn test_crate::test_bool_trait_option<T>(@1: core::option::Option<T>[@TraitClause0]) -> bool
 where
     [@TraitClause0]: core::marker::Sized<T>,
 

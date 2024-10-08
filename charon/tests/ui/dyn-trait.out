@@ -24,7 +24,7 @@ trait core::fmt::Display<Self>
 
 struct alloc::alloc::Global = {}
 
-fn test_crate::construct<T>(@1: T) -> alloc::boxed::Box<dyn (exists(TODO)), core::marker::Sized<alloc::alloc::Global>>
+fn test_crate::construct<T>(@1: T) -> alloc::boxed::Box<dyn (exists(TODO))>[core::marker::Sized<alloc::alloc::Global>]
 where
     [@TraitClause0]: core::marker::Sized<T>,
     [@TraitClause1]: core::fmt::Display<T>,
@@ -91,7 +91,7 @@ fn test_crate::bar<'_0>(@1: &'_0 (dyn (exists(TODO))))
     return
 }
 
-fn core::fmt::Display::fmt<'_0, '_1, '_2, Self>(@1: &'_0 (Self), @2: &'_1 mut (core::fmt::Formatter<'_2>)) -> core::result::Result<(), core::fmt::Error, core::marker::Sized<()>, core::marker::Sized<core::fmt::Error>>
+fn core::fmt::Display::fmt<'_0, '_1, '_2, Self>(@1: &'_0 (Self), @2: &'_1 mut (core::fmt::Formatter<'_2>)) -> core::result::Result<(), core::fmt::Error>[core::marker::Sized<()>, core::marker::Sized<core::fmt::Error>]
 
 
 

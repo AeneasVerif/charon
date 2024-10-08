@@ -16,7 +16,7 @@ opaque type core::slice::iter::Iter<'a, T>
       T : 'a,
       T : 'a,
 
-fn core::slice::{Slice<T>}::iter<'_0, T>(@1: &'_0 (Slice<T>)) -> core::slice::iter::Iter<'_0, T, @TraitClause0>
+fn core::slice::{Slice<T>}::iter<'_0, T>(@1: &'_0 (Slice<T>)) -> core::slice::iter::Iter<'_0, T>[@TraitClause0]
 where
     // Inherited clauses:
     [@TraitClause0]: core::marker::Sized<T>,
@@ -484,47 +484,47 @@ trait core::iter::adapters::zip::TrustedRandomAccessNoCoerce<Self>
     fn size : core::iter::adapters::zip::TrustedRandomAccessNoCoerce::size
 }
 
-fn core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::Iter<'a, T, @TraitClause0>}#182::next<'a, '_1, T>(@1: &'_1 mut (core::slice::iter::Iter<'a, T, @TraitClause0>)) -> core::option::Option<&'a (T), core::marker::Sized<&'_ (T)>>
+fn core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::Iter<'a, T>[@TraitClause0]}#182::next<'a, '_1, T>(@1: &'_1 mut (core::slice::iter::Iter<'a, T>[@TraitClause0])) -> core::option::Option<&'a (T)>[core::marker::Sized<&'_ (T)>]
 where
     // Inherited clauses:
     [@TraitClause0]: core::marker::Sized<T>,
 
-fn core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::Iter<'a, T, @TraitClause0>}#182::size_hint<'a, '_1, T>(@1: &'_1 (core::slice::iter::Iter<'a, T, @TraitClause0>)) -> (usize, core::option::Option<usize, core::marker::Sized<usize>>)
+fn core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::Iter<'a, T>[@TraitClause0]}#182::size_hint<'a, '_1, T>(@1: &'_1 (core::slice::iter::Iter<'a, T>[@TraitClause0])) -> (usize, core::option::Option<usize>[core::marker::Sized<usize>])
 where
     // Inherited clauses:
     [@TraitClause0]: core::marker::Sized<T>,
 
-fn core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::Iter<'a, T, @TraitClause0>}#182::count<'a, T>(@1: core::slice::iter::Iter<'a, T, @TraitClause0>) -> usize
+fn core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::Iter<'a, T>[@TraitClause0]}#182::count<'a, T>(@1: core::slice::iter::Iter<'a, T>[@TraitClause0]) -> usize
 where
     // Inherited clauses:
     [@TraitClause0]: core::marker::Sized<T>,
 
-fn core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::Iter<'a, T, @TraitClause0>}#182::last<'a, T>(@1: core::slice::iter::Iter<'a, T, @TraitClause0>) -> core::option::Option<&'a (T), core::marker::Sized<&'_ (T)>>
+fn core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::Iter<'a, T>[@TraitClause0]}#182::last<'a, T>(@1: core::slice::iter::Iter<'a, T>[@TraitClause0]) -> core::option::Option<&'a (T)>[core::marker::Sized<&'_ (T)>]
 where
     // Inherited clauses:
     [@TraitClause0]: core::marker::Sized<T>,
 
-fn core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::Iter<'a, T, @TraitClause0>}#182::advance_by<'a, '_1, T>(@1: &'_1 mut (core::slice::iter::Iter<'a, T, @TraitClause0>), @2: usize) -> core::result::Result<(), core::num::nonzero::NonZero<usize, core::marker::Sized<usize>, core::num::nonzero::{impl core::num::nonzero::ZeroablePrimitive for usize}#26>, core::marker::Sized<()>, core::marker::Sized<core::num::nonzero::NonZero<usize, core::marker::Sized<usize>, core::num::nonzero::{impl core::num::nonzero::ZeroablePrimitive for usize}#26>>>
+fn core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::Iter<'a, T>[@TraitClause0]}#182::advance_by<'a, '_1, T>(@1: &'_1 mut (core::slice::iter::Iter<'a, T>[@TraitClause0]), @2: usize) -> core::result::Result<(), core::num::nonzero::NonZero<usize>[core::marker::Sized<usize>, core::num::nonzero::{impl core::num::nonzero::ZeroablePrimitive for usize}#26]>[core::marker::Sized<()>, core::marker::Sized<core::num::nonzero::NonZero<usize>[core::marker::Sized<usize>, core::num::nonzero::{impl core::num::nonzero::ZeroablePrimitive for usize}#26]>]
 where
     // Inherited clauses:
     [@TraitClause0]: core::marker::Sized<T>,
 
-fn core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::Iter<'a, T, @TraitClause0>}#182::nth<'a, '_1, T>(@1: &'_1 mut (core::slice::iter::Iter<'a, T, @TraitClause0>), @2: usize) -> core::option::Option<&'a (T), core::marker::Sized<&'_ (T)>>
+fn core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::Iter<'a, T>[@TraitClause0]}#182::nth<'a, '_1, T>(@1: &'_1 mut (core::slice::iter::Iter<'a, T>[@TraitClause0]), @2: usize) -> core::option::Option<&'a (T)>[core::marker::Sized<&'_ (T)>]
 where
     // Inherited clauses:
     [@TraitClause0]: core::marker::Sized<T>,
 
-fn core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::Iter<'a, T, @TraitClause0>}#182::for_each<'a, T, F>(@1: core::slice::iter::Iter<'a, T, @TraitClause0>, @2: F)
+fn core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::Iter<'a, T>[@TraitClause0]}#182::for_each<'a, T, F>(@1: core::slice::iter::Iter<'a, T>[@TraitClause0], @2: F)
 where
     // Inherited clauses:
     [@TraitClause0]: core::marker::Sized<T>,
     // Local clauses:
     [@TraitClause1]: core::marker::Sized<F>,
-    [@TraitClause2]: core::marker::Sized<core::slice::iter::Iter<'_, T, @TraitClause0>>,
+    [@TraitClause2]: core::marker::Sized<core::slice::iter::Iter<'_, T>[@TraitClause0]>,
     [@TraitClause3]: core::ops::function::FnMut<F, (&'_ (T))>,
     (parents(@TraitClause3)::[@TraitClause0])::Output = (),
 
-fn core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::Iter<'a, T, @TraitClause0>}#182::fold<'a, T, B, F>(@1: core::slice::iter::Iter<'a, T, @TraitClause0>, @2: B, @3: F) -> B
+fn core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::Iter<'a, T>[@TraitClause0]}#182::fold<'a, T, B, F>(@1: core::slice::iter::Iter<'a, T>[@TraitClause0], @2: B, @3: F) -> B
 where
     // Inherited clauses:
     [@TraitClause0]: core::marker::Sized<T>,
@@ -534,109 +534,109 @@ where
     [@TraitClause3]: core::ops::function::FnMut<F, (B, &'_ (T))>,
     (parents(@TraitClause3)::[@TraitClause0])::Output = B,
 
-fn core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::Iter<'a, T, @TraitClause0>}#182::all<'a, '_1, T, F>(@1: &'_1 mut (core::slice::iter::Iter<'a, T, @TraitClause0>), @2: F) -> bool
+fn core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::Iter<'a, T>[@TraitClause0]}#182::all<'a, '_1, T, F>(@1: &'_1 mut (core::slice::iter::Iter<'a, T>[@TraitClause0]), @2: F) -> bool
 where
     // Inherited clauses:
     [@TraitClause0]: core::marker::Sized<T>,
     // Local clauses:
     [@TraitClause1]: core::marker::Sized<F>,
-    [@TraitClause2]: core::marker::Sized<core::slice::iter::Iter<'_, T, @TraitClause0>>,
+    [@TraitClause2]: core::marker::Sized<core::slice::iter::Iter<'_, T>[@TraitClause0]>,
     [@TraitClause3]: core::ops::function::FnMut<F, (&'_ (T))>,
     (parents(@TraitClause3)::[@TraitClause0])::Output = bool,
 
-fn core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::Iter<'a, T, @TraitClause0>}#182::any<'a, '_1, T, F>(@1: &'_1 mut (core::slice::iter::Iter<'a, T, @TraitClause0>), @2: F) -> bool
+fn core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::Iter<'a, T>[@TraitClause0]}#182::any<'a, '_1, T, F>(@1: &'_1 mut (core::slice::iter::Iter<'a, T>[@TraitClause0]), @2: F) -> bool
 where
     // Inherited clauses:
     [@TraitClause0]: core::marker::Sized<T>,
     // Local clauses:
     [@TraitClause1]: core::marker::Sized<F>,
-    [@TraitClause2]: core::marker::Sized<core::slice::iter::Iter<'_, T, @TraitClause0>>,
+    [@TraitClause2]: core::marker::Sized<core::slice::iter::Iter<'_, T>[@TraitClause0]>,
     [@TraitClause3]: core::ops::function::FnMut<F, (&'_ (T))>,
     (parents(@TraitClause3)::[@TraitClause0])::Output = bool,
 
-fn core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::Iter<'a, T, @TraitClause0>}#182::find<'a, '_1, T, P>(@1: &'_1 mut (core::slice::iter::Iter<'a, T, @TraitClause0>), @2: P) -> core::option::Option<core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::Iter<'a, T, @TraitClause0>}#182<'_, T>[@TraitClause0]::Item, core::marker::Sized<&'_ (T)>>
+fn core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::Iter<'a, T>[@TraitClause0]}#182::find<'a, '_1, T, P>(@1: &'_1 mut (core::slice::iter::Iter<'a, T>[@TraitClause0]), @2: P) -> core::option::Option<core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::Iter<'a, T>[@TraitClause0]}#182<'_, T>[@TraitClause0]::Item>[core::marker::Sized<&'_ (T)>]
 where
     // Inherited clauses:
     [@TraitClause0]: core::marker::Sized<T>,
     // Local clauses:
     [@TraitClause1]: core::marker::Sized<P>,
-    [@TraitClause2]: core::marker::Sized<core::slice::iter::Iter<'_, T, @TraitClause0>>,
+    [@TraitClause2]: core::marker::Sized<core::slice::iter::Iter<'_, T>[@TraitClause0]>,
     [@TraitClause3]: for<'_1_0> core::ops::function::FnMut<P, (&'_1_0 (&'_ (T)))>,
     for<'_1_0> (parents(@TraitClause3)::[@TraitClause0])::Output = bool,
 
-fn core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::Iter<'a, T, @TraitClause0>}#182::find_map<'a, '_1, T, B, F>(@1: &'_1 mut (core::slice::iter::Iter<'a, T, @TraitClause0>), @2: F) -> core::option::Option<B, @TraitClause1>
+fn core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::Iter<'a, T>[@TraitClause0]}#182::find_map<'a, '_1, T, B, F>(@1: &'_1 mut (core::slice::iter::Iter<'a, T>[@TraitClause0]), @2: F) -> core::option::Option<B>[@TraitClause1]
 where
     // Inherited clauses:
     [@TraitClause0]: core::marker::Sized<T>,
     // Local clauses:
     [@TraitClause1]: core::marker::Sized<B>,
     [@TraitClause2]: core::marker::Sized<F>,
-    [@TraitClause3]: core::marker::Sized<core::slice::iter::Iter<'_, T, @TraitClause0>>,
+    [@TraitClause3]: core::marker::Sized<core::slice::iter::Iter<'_, T>[@TraitClause0]>,
     [@TraitClause4]: core::ops::function::FnMut<F, (&'_ (T))>,
-    (parents(@TraitClause4)::[@TraitClause0])::Output = core::option::Option<B, @TraitClause1>,
+    (parents(@TraitClause4)::[@TraitClause0])::Output = core::option::Option<B>[@TraitClause1],
 
-fn core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::Iter<'a, T, @TraitClause0>}#182::position<'a, '_1, T, P>(@1: &'_1 mut (core::slice::iter::Iter<'a, T, @TraitClause0>), @2: P) -> core::option::Option<usize, core::marker::Sized<usize>>
+fn core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::Iter<'a, T>[@TraitClause0]}#182::position<'a, '_1, T, P>(@1: &'_1 mut (core::slice::iter::Iter<'a, T>[@TraitClause0]), @2: P) -> core::option::Option<usize>[core::marker::Sized<usize>]
 where
     // Inherited clauses:
     [@TraitClause0]: core::marker::Sized<T>,
     // Local clauses:
     [@TraitClause1]: core::marker::Sized<P>,
-    [@TraitClause2]: core::marker::Sized<core::slice::iter::Iter<'_, T, @TraitClause0>>,
+    [@TraitClause2]: core::marker::Sized<core::slice::iter::Iter<'_, T>[@TraitClause0]>,
     [@TraitClause3]: core::ops::function::FnMut<P, (&'_ (T))>,
     (parents(@TraitClause3)::[@TraitClause0])::Output = bool,
 
-fn core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::Iter<'a, T, @TraitClause0>}#182::rposition<'a, '_1, T, P>(@1: &'_1 mut (core::slice::iter::Iter<'a, T, @TraitClause0>), @2: P) -> core::option::Option<usize, core::marker::Sized<usize>>
+fn core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::Iter<'a, T>[@TraitClause0]}#182::rposition<'a, '_1, T, P>(@1: &'_1 mut (core::slice::iter::Iter<'a, T>[@TraitClause0]), @2: P) -> core::option::Option<usize>[core::marker::Sized<usize>]
 where
     // Inherited clauses:
     [@TraitClause0]: core::marker::Sized<T>,
     // Local clauses:
     [@TraitClause1]: core::marker::Sized<P>,
     [@TraitClause2]: core::ops::function::FnMut<P, ((parents(@TraitClause4)::[@TraitClause0])::Item)>,
-    [@TraitClause3]: core::marker::Sized<core::slice::iter::Iter<'_, T, @TraitClause0>>,
-    [@TraitClause4]: core::iter::traits::exact_size::ExactSizeIterator<core::slice::iter::Iter<'_, T, @TraitClause0>>,
-    [@TraitClause5]: core::iter::traits::double_ended::DoubleEndedIterator<core::slice::iter::Iter<'_, T, @TraitClause0>>,
+    [@TraitClause3]: core::marker::Sized<core::slice::iter::Iter<'_, T>[@TraitClause0]>,
+    [@TraitClause4]: core::iter::traits::exact_size::ExactSizeIterator<core::slice::iter::Iter<'_, T>[@TraitClause0]>,
+    [@TraitClause5]: core::iter::traits::double_ended::DoubleEndedIterator<core::slice::iter::Iter<'_, T>[@TraitClause0]>,
     (parents(@TraitClause2)::[@TraitClause0])::Output = bool,
 
-fn core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::Iter<'a, T, @TraitClause0>}#182::is_sorted_by<'a, T, F>(@1: core::slice::iter::Iter<'a, T, @TraitClause0>, @2: F) -> bool
+fn core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::Iter<'a, T>[@TraitClause0]}#182::is_sorted_by<'a, T, F>(@1: core::slice::iter::Iter<'a, T>[@TraitClause0], @2: F) -> bool
 where
     // Inherited clauses:
     [@TraitClause0]: core::marker::Sized<T>,
     // Local clauses:
     [@TraitClause1]: core::marker::Sized<F>,
-    [@TraitClause2]: core::marker::Sized<core::slice::iter::Iter<'_, T, @TraitClause0>>,
+    [@TraitClause2]: core::marker::Sized<core::slice::iter::Iter<'_, T>[@TraitClause0]>,
     [@TraitClause3]: for<'_1_0, '_1_1> core::ops::function::FnMut<F, (&'_1_0 (&'_ (T)), &'_1_1 (&'_ (T)))>,
     for<'_1_0, '_1_1> (parents(@TraitClause3)::[@TraitClause0])::Output = bool,
 
-unsafe fn core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::Iter<'a, T, @TraitClause0>}#182::__iterator_get_unchecked<'a, '_1, T>(@1: &'_1 mut (core::slice::iter::Iter<'a, T, @TraitClause0>), @2: usize) -> core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::Iter<'a, T, @TraitClause0>}#182<'_, T>[@TraitClause0]::Item
+unsafe fn core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::Iter<'a, T>[@TraitClause0]}#182::__iterator_get_unchecked<'a, '_1, T>(@1: &'_1 mut (core::slice::iter::Iter<'a, T>[@TraitClause0]), @2: usize) -> core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::Iter<'a, T>[@TraitClause0]}#182<'_, T>[@TraitClause0]::Item
 where
     // Inherited clauses:
     [@TraitClause0]: core::marker::Sized<T>,
 
-impl<'a, T> core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::Iter<'a, T, @TraitClause0>}#182<'a, T> : core::iter::traits::iterator::Iterator<core::slice::iter::Iter<'a, T, @TraitClause0>>
+impl<'a, T> core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::Iter<'a, T>[@TraitClause0]}#182<'a, T> : core::iter::traits::iterator::Iterator<core::slice::iter::Iter<'a, T>[@TraitClause0]>
 where
     [@TraitClause0]: core::marker::Sized<T>,
 {
     parent_clause0 = core::marker::Sized<&'_ (T)>
     type Item = &'a (T)
-    fn next = core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::Iter<'a, T, @TraitClause0>}#182::next
-    fn size_hint = core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::Iter<'a, T, @TraitClause0>}#182::size_hint
-    fn count = core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::Iter<'a, T, @TraitClause0>}#182::count
-    fn last = core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::Iter<'a, T, @TraitClause0>}#182::last
-    fn advance_by = core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::Iter<'a, T, @TraitClause0>}#182::advance_by
-    fn nth = core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::Iter<'a, T, @TraitClause0>}#182::nth
-    fn for_each = core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::Iter<'a, T, @TraitClause0>}#182::for_each
-    fn fold = core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::Iter<'a, T, @TraitClause0>}#182::fold
-    fn all = core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::Iter<'a, T, @TraitClause0>}#182::all
-    fn any = core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::Iter<'a, T, @TraitClause0>}#182::any
-    fn find = core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::Iter<'a, T, @TraitClause0>}#182::find
-    fn find_map = core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::Iter<'a, T, @TraitClause0>}#182::find_map
-    fn position = core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::Iter<'a, T, @TraitClause0>}#182::position
-    fn rposition = core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::Iter<'a, T, @TraitClause0>}#182::rposition
-    fn is_sorted_by = core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::Iter<'a, T, @TraitClause0>}#182::is_sorted_by
-    fn __iterator_get_unchecked = core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::Iter<'a, T, @TraitClause0>}#182::__iterator_get_unchecked
+    fn next = core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::Iter<'a, T>[@TraitClause0]}#182::next
+    fn size_hint = core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::Iter<'a, T>[@TraitClause0]}#182::size_hint
+    fn count = core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::Iter<'a, T>[@TraitClause0]}#182::count
+    fn last = core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::Iter<'a, T>[@TraitClause0]}#182::last
+    fn advance_by = core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::Iter<'a, T>[@TraitClause0]}#182::advance_by
+    fn nth = core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::Iter<'a, T>[@TraitClause0]}#182::nth
+    fn for_each = core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::Iter<'a, T>[@TraitClause0]}#182::for_each
+    fn fold = core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::Iter<'a, T>[@TraitClause0]}#182::fold
+    fn all = core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::Iter<'a, T>[@TraitClause0]}#182::all
+    fn any = core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::Iter<'a, T>[@TraitClause0]}#182::any
+    fn find = core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::Iter<'a, T>[@TraitClause0]}#182::find
+    fn find_map = core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::Iter<'a, T>[@TraitClause0]}#182::find_map
+    fn position = core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::Iter<'a, T>[@TraitClause0]}#182::position
+    fn rposition = core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::Iter<'a, T>[@TraitClause0]}#182::rposition
+    fn is_sorted_by = core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::Iter<'a, T>[@TraitClause0]}#182::is_sorted_by
+    fn __iterator_get_unchecked = core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::Iter<'a, T>[@TraitClause0]}#182::__iterator_get_unchecked
 }
 
-fn core::iter::traits::iterator::Iterator::next<'_0, Self>(@1: &'_0 mut (Self)) -> core::option::Option<Self::Item, (parents(Self)::[@TraitClause0])>
+fn core::iter::traits::iterator::Iterator::next<'_0, Self>(@1: &'_0 mut (Self)) -> core::option::Option<Self::Item>[(parents(Self)::[@TraitClause0])]
 
 fn test_crate::main()
 {
@@ -645,9 +645,9 @@ fn test_crate::main()
     let @2: &'_ (Array<i32, 1 : usize>); // anonymous local
     let @3: &'_ (Array<i32, 1 : usize>); // anonymous local
     let @4: Array<i32, 1 : usize>; // anonymous local
-    let @5: core::option::Option<&'_ (i32), core::marker::Sized<&'_ (i32)>>; // anonymous local
-    let @6: &'_ mut (core::slice::iter::Iter<'_, i32, core::marker::Sized<i32>>); // anonymous local
-    let @7: core::slice::iter::Iter<'_, i32, core::marker::Sized<i32>>; // anonymous local
+    let @5: core::option::Option<&'_ (i32)>[core::marker::Sized<&'_ (i32)>]; // anonymous local
+    let @6: &'_ mut (core::slice::iter::Iter<'_, i32>[core::marker::Sized<i32>]); // anonymous local
+    let @7: core::slice::iter::Iter<'_, i32>[core::marker::Sized<i32>]; // anonymous local
     let @8: &'_ (Slice<i32>); // anonymous local
     let @9: (); // anonymous local
 
@@ -662,7 +662,7 @@ fn test_crate::main()
     @7 := core::slice::{Slice<T>}::iter<i32>[core::marker::Sized<i32>](move (@8))
     @6 := &two-phase-mut @7
     drop @8
-    @5 := core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::Iter<'a, T, @TraitClause0>}#182<'_, i32>[core::marker::Sized<i32>]::next(move (@6))
+    @5 := core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::Iter<'a, T>[@TraitClause0]}#182<'_, i32>[core::marker::Sized<i32>]::next(move (@6))
     drop @6
     @fake_read(@5)
     drop @7
@@ -675,54 +675,54 @@ fn test_crate::main()
     return
 }
 
-fn core::iter::traits::iterator::Iterator::next_chunk<'_0, Self, const N : usize>(@1: &'_0 mut (Self)) -> core::result::Result<Array<Self::Item, const N : usize>, core::array::iter::IntoIter<Self::Item, const N : usize, (parents(Self)::[@TraitClause0])>, core::marker::Sized<Array<Self::Item, const N : usize>>, core::marker::Sized<core::array::iter::IntoIter<Self::Item, const N : usize, (parents(Self)::[@TraitClause0])>>>
+fn core::iter::traits::iterator::Iterator::next_chunk<'_0, Self, const N : usize>(@1: &'_0 mut (Self)) -> core::result::Result<Array<Self::Item, const N : usize>, core::array::iter::IntoIter<Self::Item, const N : usize>[(parents(Self)::[@TraitClause0])]>[core::marker::Sized<Array<Self::Item, const N : usize>>, core::marker::Sized<core::array::iter::IntoIter<Self::Item, const N : usize>[(parents(Self)::[@TraitClause0])]>]
 where
     [@TraitClause0]: core::marker::Sized<Self>,
 
-fn core::iter::traits::iterator::Iterator::size_hint<'_0, Self>(@1: &'_0 (Self)) -> (usize, core::option::Option<usize, core::marker::Sized<usize>>)
+fn core::iter::traits::iterator::Iterator::size_hint<'_0, Self>(@1: &'_0 (Self)) -> (usize, core::option::Option<usize>[core::marker::Sized<usize>])
 
 fn core::iter::traits::iterator::Iterator::count<Self>(@1: Self) -> usize
 where
     [@TraitClause0]: core::marker::Sized<Self>,
 
-fn core::iter::traits::iterator::Iterator::last<Self>(@1: Self) -> core::option::Option<Self::Item, (parents(Self)::[@TraitClause0])>
+fn core::iter::traits::iterator::Iterator::last<Self>(@1: Self) -> core::option::Option<Self::Item>[(parents(Self)::[@TraitClause0])]
 where
     [@TraitClause0]: core::marker::Sized<Self>,
 
-fn core::iter::traits::iterator::Iterator::advance_by<'_0, Self>(@1: &'_0 mut (Self), @2: usize) -> core::result::Result<(), core::num::nonzero::NonZero<usize, core::marker::Sized<usize>, core::num::nonzero::{impl core::num::nonzero::ZeroablePrimitive for usize}#26>, core::marker::Sized<()>, core::marker::Sized<core::num::nonzero::NonZero<usize, core::marker::Sized<usize>, core::num::nonzero::{impl core::num::nonzero::ZeroablePrimitive for usize}#26>>>
+fn core::iter::traits::iterator::Iterator::advance_by<'_0, Self>(@1: &'_0 mut (Self), @2: usize) -> core::result::Result<(), core::num::nonzero::NonZero<usize>[core::marker::Sized<usize>, core::num::nonzero::{impl core::num::nonzero::ZeroablePrimitive for usize}#26]>[core::marker::Sized<()>, core::marker::Sized<core::num::nonzero::NonZero<usize>[core::marker::Sized<usize>, core::num::nonzero::{impl core::num::nonzero::ZeroablePrimitive for usize}#26]>]
 
-fn core::iter::traits::iterator::Iterator::nth<'_0, Self>(@1: &'_0 mut (Self), @2: usize) -> core::option::Option<Self::Item, (parents(Self)::[@TraitClause0])>
+fn core::iter::traits::iterator::Iterator::nth<'_0, Self>(@1: &'_0 mut (Self), @2: usize) -> core::option::Option<Self::Item>[(parents(Self)::[@TraitClause0])]
 
-fn core::iter::traits::iterator::Iterator::step_by<Self>(@1: Self, @2: usize) -> core::iter::adapters::step_by::StepBy<Self, @TraitClause0>
+fn core::iter::traits::iterator::Iterator::step_by<Self>(@1: Self, @2: usize) -> core::iter::adapters::step_by::StepBy<Self>[@TraitClause0]
 where
     [@TraitClause0]: core::marker::Sized<Self>,
 
-fn core::iter::traits::iterator::Iterator::chain<Self, U>(@1: Self, @2: U) -> core::iter::adapters::chain::Chain<Self, @TraitClause2::IntoIter, @TraitClause1, (parents(@TraitClause2)::[@TraitClause2])>
+fn core::iter::traits::iterator::Iterator::chain<Self, U>(@1: Self, @2: U) -> core::iter::adapters::chain::Chain<Self, @TraitClause2::IntoIter>[@TraitClause1, (parents(@TraitClause2)::[@TraitClause2])]
 where
     [@TraitClause0]: core::marker::Sized<U>,
     [@TraitClause1]: core::marker::Sized<Self>,
     [@TraitClause2]: core::iter::traits::collect::IntoIterator<U>,
     @TraitClause2::Item = Self::Item,
 
-fn core::iter::traits::iterator::Iterator::zip<Self, U>(@1: Self, @2: U) -> core::iter::adapters::zip::Zip<Self, @TraitClause2::IntoIter, @TraitClause1, (parents(@TraitClause2)::[@TraitClause2])>
+fn core::iter::traits::iterator::Iterator::zip<Self, U>(@1: Self, @2: U) -> core::iter::adapters::zip::Zip<Self, @TraitClause2::IntoIter>[@TraitClause1, (parents(@TraitClause2)::[@TraitClause2])]
 where
     [@TraitClause0]: core::marker::Sized<U>,
     [@TraitClause1]: core::marker::Sized<Self>,
     [@TraitClause2]: core::iter::traits::collect::IntoIterator<U>,
 
-fn core::iter::traits::iterator::Iterator::intersperse<Self>(@1: Self, @2: Self::Item) -> core::iter::adapters::intersperse::Intersperse<Self, @TraitClause0, Self, @TraitClause1>
+fn core::iter::traits::iterator::Iterator::intersperse<Self>(@1: Self, @2: Self::Item) -> core::iter::adapters::intersperse::Intersperse<Self>[@TraitClause0, Self, @TraitClause1]
 where
     [@TraitClause0]: core::marker::Sized<Self>,
     [@TraitClause1]: core::clone::Clone<Self::Item>,
 
-fn core::iter::traits::iterator::Iterator::intersperse_with<Self, G>(@1: Self, @2: G) -> core::iter::adapters::intersperse::IntersperseWith<Self, G, @TraitClause1, @TraitClause0, Self>
+fn core::iter::traits::iterator::Iterator::intersperse_with<Self, G>(@1: Self, @2: G) -> core::iter::adapters::intersperse::IntersperseWith<Self, G>[@TraitClause1, @TraitClause0, Self]
 where
     [@TraitClause0]: core::marker::Sized<G>,
     [@TraitClause1]: core::marker::Sized<Self>,
     [@TraitClause2]: core::ops::function::FnMut<G, ()>,
     (parents(@TraitClause2)::[@TraitClause0])::Output = Self::Item,
 
-fn core::iter::traits::iterator::Iterator::map<Self, B, F>(@1: Self, @2: F) -> core::iter::adapters::map::Map<Self, F, @TraitClause2, @TraitClause1>
+fn core::iter::traits::iterator::Iterator::map<Self, B, F>(@1: Self, @2: F) -> core::iter::adapters::map::Map<Self, F>[@TraitClause2, @TraitClause1]
 where
     [@TraitClause0]: core::marker::Sized<B>,
     [@TraitClause1]: core::marker::Sized<F>,
@@ -737,69 +737,69 @@ where
     [@TraitClause2]: core::ops::function::FnMut<F, (Self::Item)>,
     (parents(@TraitClause2)::[@TraitClause0])::Output = (),
 
-fn core::iter::traits::iterator::Iterator::filter<Self, P>(@1: Self, @2: P) -> core::iter::adapters::filter::Filter<Self, P, @TraitClause1, @TraitClause0>
+fn core::iter::traits::iterator::Iterator::filter<Self, P>(@1: Self, @2: P) -> core::iter::adapters::filter::Filter<Self, P>[@TraitClause1, @TraitClause0]
 where
     [@TraitClause0]: core::marker::Sized<P>,
     [@TraitClause1]: core::marker::Sized<Self>,
     [@TraitClause2]: for<'_1_0> core::ops::function::FnMut<P, (&'_1_0 (Self::Item))>,
     for<'_1_0> (parents(@TraitClause2)::[@TraitClause0])::Output = bool,
 
-fn core::iter::traits::iterator::Iterator::filter_map<Self, B, F>(@1: Self, @2: F) -> core::iter::adapters::filter_map::FilterMap<Self, F, @TraitClause2, @TraitClause1>
+fn core::iter::traits::iterator::Iterator::filter_map<Self, B, F>(@1: Self, @2: F) -> core::iter::adapters::filter_map::FilterMap<Self, F>[@TraitClause2, @TraitClause1]
 where
     [@TraitClause0]: core::marker::Sized<B>,
     [@TraitClause1]: core::marker::Sized<F>,
     [@TraitClause2]: core::marker::Sized<Self>,
     [@TraitClause3]: core::ops::function::FnMut<F, (Self::Item)>,
-    (parents(@TraitClause3)::[@TraitClause0])::Output = core::option::Option<B, @TraitClause0>,
+    (parents(@TraitClause3)::[@TraitClause0])::Output = core::option::Option<B>[@TraitClause0],
 
-fn core::iter::traits::iterator::Iterator::enumerate<Self>(@1: Self) -> core::iter::adapters::enumerate::Enumerate<Self, @TraitClause0>
+fn core::iter::traits::iterator::Iterator::enumerate<Self>(@1: Self) -> core::iter::adapters::enumerate::Enumerate<Self>[@TraitClause0]
 where
     [@TraitClause0]: core::marker::Sized<Self>,
 
-fn core::iter::traits::iterator::Iterator::peekable<Self>(@1: Self) -> core::iter::adapters::peekable::Peekable<Self, @TraitClause0, Self>
+fn core::iter::traits::iterator::Iterator::peekable<Self>(@1: Self) -> core::iter::adapters::peekable::Peekable<Self>[@TraitClause0, Self]
 where
     [@TraitClause0]: core::marker::Sized<Self>,
 
-fn core::iter::traits::iterator::Iterator::skip_while<Self, P>(@1: Self, @2: P) -> core::iter::adapters::skip_while::SkipWhile<Self, P, @TraitClause1, @TraitClause0>
+fn core::iter::traits::iterator::Iterator::skip_while<Self, P>(@1: Self, @2: P) -> core::iter::adapters::skip_while::SkipWhile<Self, P>[@TraitClause1, @TraitClause0]
 where
     [@TraitClause0]: core::marker::Sized<P>,
     [@TraitClause1]: core::marker::Sized<Self>,
     [@TraitClause2]: for<'_1_0> core::ops::function::FnMut<P, (&'_1_0 (Self::Item))>,
     for<'_1_0> (parents(@TraitClause2)::[@TraitClause0])::Output = bool,
 
-fn core::iter::traits::iterator::Iterator::take_while<Self, P>(@1: Self, @2: P) -> core::iter::adapters::take_while::TakeWhile<Self, P, @TraitClause1, @TraitClause0>
+fn core::iter::traits::iterator::Iterator::take_while<Self, P>(@1: Self, @2: P) -> core::iter::adapters::take_while::TakeWhile<Self, P>[@TraitClause1, @TraitClause0]
 where
     [@TraitClause0]: core::marker::Sized<P>,
     [@TraitClause1]: core::marker::Sized<Self>,
     [@TraitClause2]: for<'_1_0> core::ops::function::FnMut<P, (&'_1_0 (Self::Item))>,
     for<'_1_0> (parents(@TraitClause2)::[@TraitClause0])::Output = bool,
 
-fn core::iter::traits::iterator::Iterator::map_while<Self, B, P>(@1: Self, @2: P) -> core::iter::adapters::map_while::MapWhile<Self, P, @TraitClause2, @TraitClause1>
+fn core::iter::traits::iterator::Iterator::map_while<Self, B, P>(@1: Self, @2: P) -> core::iter::adapters::map_while::MapWhile<Self, P>[@TraitClause2, @TraitClause1]
 where
     [@TraitClause0]: core::marker::Sized<B>,
     [@TraitClause1]: core::marker::Sized<P>,
     [@TraitClause2]: core::marker::Sized<Self>,
     [@TraitClause3]: core::ops::function::FnMut<P, (Self::Item)>,
-    (parents(@TraitClause3)::[@TraitClause0])::Output = core::option::Option<B, @TraitClause0>,
+    (parents(@TraitClause3)::[@TraitClause0])::Output = core::option::Option<B>[@TraitClause0],
 
-fn core::iter::traits::iterator::Iterator::skip<Self>(@1: Self, @2: usize) -> core::iter::adapters::skip::Skip<Self, @TraitClause0>
+fn core::iter::traits::iterator::Iterator::skip<Self>(@1: Self, @2: usize) -> core::iter::adapters::skip::Skip<Self>[@TraitClause0]
 where
     [@TraitClause0]: core::marker::Sized<Self>,
 
-fn core::iter::traits::iterator::Iterator::take<Self>(@1: Self, @2: usize) -> core::iter::adapters::take::Take<Self, @TraitClause0>
+fn core::iter::traits::iterator::Iterator::take<Self>(@1: Self, @2: usize) -> core::iter::adapters::take::Take<Self>[@TraitClause0]
 where
     [@TraitClause0]: core::marker::Sized<Self>,
 
-fn core::iter::traits::iterator::Iterator::scan<Self, St, B, F>(@1: Self, @2: St, @3: F) -> core::iter::adapters::scan::Scan<Self, St, F, @TraitClause3, @TraitClause0, @TraitClause2>
+fn core::iter::traits::iterator::Iterator::scan<Self, St, B, F>(@1: Self, @2: St, @3: F) -> core::iter::adapters::scan::Scan<Self, St, F>[@TraitClause3, @TraitClause0, @TraitClause2]
 where
     [@TraitClause0]: core::marker::Sized<St>,
     [@TraitClause1]: core::marker::Sized<B>,
     [@TraitClause2]: core::marker::Sized<F>,
     [@TraitClause3]: core::marker::Sized<Self>,
     [@TraitClause4]: for<'_1_0> core::ops::function::FnMut<F, (&'_1_0 mut (St), Self::Item)>,
-    for<'_1_0> (parents(@TraitClause4)::[@TraitClause0])::Output = core::option::Option<B, @TraitClause1>,
+    for<'_1_0> (parents(@TraitClause4)::[@TraitClause0])::Output = core::option::Option<B>[@TraitClause1],
 
-fn core::iter::traits::iterator::Iterator::flat_map<Self, U, F>(@1: Self, @2: F) -> core::iter::adapters::flatten::FlatMap<Self, U, F, @TraitClause2, @TraitClause0, @TraitClause1, @TraitClause3>
+fn core::iter::traits::iterator::Iterator::flat_map<Self, U, F>(@1: Self, @2: F) -> core::iter::adapters::flatten::FlatMap<Self, U, F>[@TraitClause2, @TraitClause0, @TraitClause1, @TraitClause3]
 where
     [@TraitClause0]: core::marker::Sized<U>,
     [@TraitClause1]: core::marker::Sized<F>,
@@ -808,12 +808,12 @@ where
     [@TraitClause4]: core::ops::function::FnMut<F, (Self::Item)>,
     (parents(@TraitClause4)::[@TraitClause0])::Output = U,
 
-fn core::iter::traits::iterator::Iterator::flatten<Self>(@1: Self) -> core::iter::adapters::flatten::Flatten<Self, @TraitClause0, Self, @TraitClause1>
+fn core::iter::traits::iterator::Iterator::flatten<Self>(@1: Self) -> core::iter::adapters::flatten::Flatten<Self>[@TraitClause0, Self, @TraitClause1]
 where
     [@TraitClause0]: core::marker::Sized<Self>,
     [@TraitClause1]: core::iter::traits::collect::IntoIterator<Self::Item>,
 
-fn core::iter::traits::iterator::Iterator::map_windows<Self, F, R, const N : usize>(@1: Self, @2: F) -> core::iter::adapters::map_windows::MapWindows<Self, F, const N : usize, @TraitClause2, @TraitClause0, Self>
+fn core::iter::traits::iterator::Iterator::map_windows<Self, F, R, const N : usize>(@1: Self, @2: F) -> core::iter::adapters::map_windows::MapWindows<Self, F, const N : usize>[@TraitClause2, @TraitClause0, Self]
 where
     [@TraitClause0]: core::marker::Sized<F>,
     [@TraitClause1]: core::marker::Sized<R>,
@@ -821,11 +821,11 @@ where
     [@TraitClause3]: for<'_1_0> core::ops::function::FnMut<F, (&'_1_0 (Array<Self::Item, const N : usize>))>,
     for<'_1_0> (parents(@TraitClause3)::[@TraitClause0])::Output = R,
 
-fn core::iter::traits::iterator::Iterator::fuse<Self>(@1: Self) -> core::iter::adapters::fuse::Fuse<Self, @TraitClause0>
+fn core::iter::traits::iterator::Iterator::fuse<Self>(@1: Self) -> core::iter::adapters::fuse::Fuse<Self>[@TraitClause0]
 where
     [@TraitClause0]: core::marker::Sized<Self>,
 
-fn core::iter::traits::iterator::Iterator::inspect<Self, F>(@1: Self, @2: F) -> core::iter::adapters::inspect::Inspect<Self, F, @TraitClause1, @TraitClause0>
+fn core::iter::traits::iterator::Iterator::inspect<Self, F>(@1: Self, @2: F) -> core::iter::adapters::inspect::Inspect<Self, F>[@TraitClause1, @TraitClause0]
 where
     [@TraitClause0]: core::marker::Sized<F>,
     [@TraitClause1]: core::marker::Sized<Self>,
@@ -913,7 +913,7 @@ where
     [@TraitClause3]: core::ops::function::FnMut<F, (B, Self::Item)>,
     (parents(@TraitClause3)::[@TraitClause0])::Output = B,
 
-fn core::iter::traits::iterator::Iterator::reduce<Self, F>(@1: Self, @2: F) -> core::option::Option<Self::Item, (parents(Self)::[@TraitClause0])>
+fn core::iter::traits::iterator::Iterator::reduce<Self, F>(@1: Self, @2: F) -> core::option::Option<Self::Item>[(parents(Self)::[@TraitClause0])]
 where
     [@TraitClause0]: core::marker::Sized<F>,
     [@TraitClause1]: core::marker::Sized<Self>,
@@ -926,7 +926,7 @@ where
     [@TraitClause1]: core::marker::Sized<impl FnMut(Self::Item, Self::Item) -> R>,
     [@TraitClause2]: core::marker::Sized<Self>,
     [@TraitClause3]: core::ops::try_trait::Try<R>,
-    [@TraitClause4]: core::ops::try_trait::Residual<@TraitClause3::Residual, core::option::Option<Self::Item, (parents(Self)::[@TraitClause0])>>,
+    [@TraitClause4]: core::ops::try_trait::Residual<@TraitClause3::Residual, core::option::Option<Self::Item>[(parents(Self)::[@TraitClause0])]>,
     [@TraitClause5]: core::ops::function::FnMut<impl FnMut(Self::Item, Self::Item) -> R, (Self::Item, Self::Item)>,
     @TraitClause3::Output = Self::Item,
     (parents(@TraitClause5)::[@TraitClause0])::Output = R,
@@ -945,20 +945,20 @@ where
     [@TraitClause2]: core::ops::function::FnMut<F, (Self::Item)>,
     (parents(@TraitClause2)::[@TraitClause0])::Output = bool,
 
-fn core::iter::traits::iterator::Iterator::find<'_0, Self, P>(@1: &'_0 mut (Self), @2: P) -> core::option::Option<Self::Item, (parents(Self)::[@TraitClause0])>
+fn core::iter::traits::iterator::Iterator::find<'_0, Self, P>(@1: &'_0 mut (Self), @2: P) -> core::option::Option<Self::Item>[(parents(Self)::[@TraitClause0])]
 where
     [@TraitClause0]: core::marker::Sized<P>,
     [@TraitClause1]: core::marker::Sized<Self>,
     [@TraitClause2]: for<'_1_0> core::ops::function::FnMut<P, (&'_1_0 (Self::Item))>,
     for<'_1_0> (parents(@TraitClause2)::[@TraitClause0])::Output = bool,
 
-fn core::iter::traits::iterator::Iterator::find_map<'_0, Self, B, F>(@1: &'_0 mut (Self), @2: F) -> core::option::Option<B, @TraitClause0>
+fn core::iter::traits::iterator::Iterator::find_map<'_0, Self, B, F>(@1: &'_0 mut (Self), @2: F) -> core::option::Option<B>[@TraitClause0]
 where
     [@TraitClause0]: core::marker::Sized<B>,
     [@TraitClause1]: core::marker::Sized<F>,
     [@TraitClause2]: core::marker::Sized<Self>,
     [@TraitClause3]: core::ops::function::FnMut<F, (Self::Item)>,
-    (parents(@TraitClause3)::[@TraitClause0])::Output = core::option::Option<B, @TraitClause0>,
+    (parents(@TraitClause3)::[@TraitClause0])::Output = core::option::Option<B>[@TraitClause0],
 
 fn core::iter::traits::iterator::Iterator::try_find<'_0, Self, R, impl FnMut(&Self::Item) -> R>(@1: &'_0 mut (Self), @2: impl FnMut(&Self::Item) -> R) -> @TraitClause4::TryType
 where
@@ -966,19 +966,19 @@ where
     [@TraitClause1]: core::marker::Sized<impl FnMut(&Self::Item) -> R>,
     [@TraitClause2]: core::marker::Sized<Self>,
     [@TraitClause3]: core::ops::try_trait::Try<R>,
-    [@TraitClause4]: core::ops::try_trait::Residual<@TraitClause3::Residual, core::option::Option<Self::Item, (parents(Self)::[@TraitClause0])>>,
+    [@TraitClause4]: core::ops::try_trait::Residual<@TraitClause3::Residual, core::option::Option<Self::Item>[(parents(Self)::[@TraitClause0])]>,
     [@TraitClause5]: for<'_1_0> core::ops::function::FnMut<impl FnMut(&Self::Item) -> R, (&'_1_0 (Self::Item))>,
     @TraitClause3::Output = bool,
     for<'_1_0> (parents(@TraitClause5)::[@TraitClause0])::Output = R,
 
-fn core::iter::traits::iterator::Iterator::position<'_0, Self, P>(@1: &'_0 mut (Self), @2: P) -> core::option::Option<usize, core::marker::Sized<usize>>
+fn core::iter::traits::iterator::Iterator::position<'_0, Self, P>(@1: &'_0 mut (Self), @2: P) -> core::option::Option<usize>[core::marker::Sized<usize>]
 where
     [@TraitClause0]: core::marker::Sized<P>,
     [@TraitClause1]: core::marker::Sized<Self>,
     [@TraitClause2]: core::ops::function::FnMut<P, (Self::Item)>,
     (parents(@TraitClause2)::[@TraitClause0])::Output = bool,
 
-fn core::iter::traits::iterator::Iterator::rposition<'_0, Self, P>(@1: &'_0 mut (Self), @2: P) -> core::option::Option<usize, core::marker::Sized<usize>>
+fn core::iter::traits::iterator::Iterator::rposition<'_0, Self, P>(@1: &'_0 mut (Self), @2: P) -> core::option::Option<usize>[core::marker::Sized<usize>]
 where
     [@TraitClause0]: core::marker::Sized<P>,
     [@TraitClause1]: core::ops::function::FnMut<P, (Self::Item)>,
@@ -987,17 +987,17 @@ where
     [@TraitClause4]: core::iter::traits::double_ended::DoubleEndedIterator<Self>,
     (parents(@TraitClause1)::[@TraitClause0])::Output = bool,
 
-fn core::iter::traits::iterator::Iterator::max<Self>(@1: Self) -> core::option::Option<Self::Item, (parents(Self)::[@TraitClause0])>
+fn core::iter::traits::iterator::Iterator::max<Self>(@1: Self) -> core::option::Option<Self::Item>[(parents(Self)::[@TraitClause0])]
 where
     [@TraitClause0]: core::marker::Sized<Self>,
     [@TraitClause1]: core::cmp::Ord<Self::Item>,
 
-fn core::iter::traits::iterator::Iterator::min<Self>(@1: Self) -> core::option::Option<Self::Item, (parents(Self)::[@TraitClause0])>
+fn core::iter::traits::iterator::Iterator::min<Self>(@1: Self) -> core::option::Option<Self::Item>[(parents(Self)::[@TraitClause0])]
 where
     [@TraitClause0]: core::marker::Sized<Self>,
     [@TraitClause1]: core::cmp::Ord<Self::Item>,
 
-fn core::iter::traits::iterator::Iterator::max_by_key<Self, B, F>(@1: Self, @2: F) -> core::option::Option<Self::Item, (parents(Self)::[@TraitClause0])>
+fn core::iter::traits::iterator::Iterator::max_by_key<Self, B, F>(@1: Self, @2: F) -> core::option::Option<Self::Item>[(parents(Self)::[@TraitClause0])]
 where
     [@TraitClause0]: core::marker::Sized<B>,
     [@TraitClause1]: core::marker::Sized<F>,
@@ -1006,14 +1006,14 @@ where
     [@TraitClause4]: for<'_1_0> core::ops::function::FnMut<F, (&'_1_0 (Self::Item))>,
     for<'_1_0> (parents(@TraitClause4)::[@TraitClause0])::Output = B,
 
-fn core::iter::traits::iterator::Iterator::max_by<Self, F>(@1: Self, @2: F) -> core::option::Option<Self::Item, (parents(Self)::[@TraitClause0])>
+fn core::iter::traits::iterator::Iterator::max_by<Self, F>(@1: Self, @2: F) -> core::option::Option<Self::Item>[(parents(Self)::[@TraitClause0])]
 where
     [@TraitClause0]: core::marker::Sized<F>,
     [@TraitClause1]: core::marker::Sized<Self>,
     [@TraitClause2]: for<'_1_0, '_1_1> core::ops::function::FnMut<F, (&'_1_0 (Self::Item), &'_1_1 (Self::Item))>,
     for<'_1_0, '_1_1> (parents(@TraitClause2)::[@TraitClause0])::Output = core::cmp::Ordering,
 
-fn core::iter::traits::iterator::Iterator::min_by_key<Self, B, F>(@1: Self, @2: F) -> core::option::Option<Self::Item, (parents(Self)::[@TraitClause0])>
+fn core::iter::traits::iterator::Iterator::min_by_key<Self, B, F>(@1: Self, @2: F) -> core::option::Option<Self::Item>[(parents(Self)::[@TraitClause0])]
 where
     [@TraitClause0]: core::marker::Sized<B>,
     [@TraitClause1]: core::marker::Sized<F>,
@@ -1022,14 +1022,14 @@ where
     [@TraitClause4]: for<'_1_0> core::ops::function::FnMut<F, (&'_1_0 (Self::Item))>,
     for<'_1_0> (parents(@TraitClause4)::[@TraitClause0])::Output = B,
 
-fn core::iter::traits::iterator::Iterator::min_by<Self, F>(@1: Self, @2: F) -> core::option::Option<Self::Item, (parents(Self)::[@TraitClause0])>
+fn core::iter::traits::iterator::Iterator::min_by<Self, F>(@1: Self, @2: F) -> core::option::Option<Self::Item>[(parents(Self)::[@TraitClause0])]
 where
     [@TraitClause0]: core::marker::Sized<F>,
     [@TraitClause1]: core::marker::Sized<Self>,
     [@TraitClause2]: for<'_1_0, '_1_1> core::ops::function::FnMut<F, (&'_1_0 (Self::Item), &'_1_1 (Self::Item))>,
     for<'_1_0, '_1_1> (parents(@TraitClause2)::[@TraitClause0])::Output = core::cmp::Ordering,
 
-fn core::iter::traits::iterator::Iterator::rev<Self>(@1: Self) -> core::iter::adapters::rev::Rev<Self, @TraitClause0>
+fn core::iter::traits::iterator::Iterator::rev<Self>(@1: Self) -> core::iter::adapters::rev::Rev<Self>[@TraitClause0]
 where
     [@TraitClause0]: core::marker::Sized<Self>,
     [@TraitClause1]: core::iter::traits::double_ended::DoubleEndedIterator<Self>,
@@ -1048,7 +1048,7 @@ where
     [@TraitClause9]: core::iter::traits::iterator::Iterator<Self>,
     Self::Item = (A, B),
 
-fn core::iter::traits::iterator::Iterator::copied<'a, Self, T>(@1: Self) -> core::iter::adapters::copied::Copied<Self, @TraitClause1>
+fn core::iter::traits::iterator::Iterator::copied<'a, Self, T>(@1: Self) -> core::iter::adapters::copied::Copied<Self>[@TraitClause1]
 where
     [@TraitClause0]: core::marker::Sized<T>,
     [@TraitClause1]: core::marker::Sized<Self>,
@@ -1057,7 +1057,7 @@ where
     T : 'a,
     Self::Item = &'a (T),
 
-fn core::iter::traits::iterator::Iterator::cloned<'a, Self, T>(@1: Self) -> core::iter::adapters::cloned::Cloned<Self, @TraitClause1>
+fn core::iter::traits::iterator::Iterator::cloned<'a, Self, T>(@1: Self) -> core::iter::adapters::cloned::Cloned<Self>[@TraitClause1]
 where
     [@TraitClause0]: core::marker::Sized<T>,
     [@TraitClause1]: core::marker::Sized<Self>,
@@ -1066,12 +1066,12 @@ where
     T : 'a,
     Self::Item = &'a (T),
 
-fn core::iter::traits::iterator::Iterator::cycle<Self>(@1: Self) -> core::iter::adapters::cycle::Cycle<Self, @TraitClause0>
+fn core::iter::traits::iterator::Iterator::cycle<Self>(@1: Self) -> core::iter::adapters::cycle::Cycle<Self>[@TraitClause0]
 where
     [@TraitClause0]: core::marker::Sized<Self>,
     [@TraitClause1]: core::clone::Clone<Self>,
 
-fn core::iter::traits::iterator::Iterator::array_chunks<Self, const N : usize>(@1: Self) -> core::iter::adapters::array_chunks::ArrayChunks<Self, const N : usize, @TraitClause0, Self>
+fn core::iter::traits::iterator::Iterator::array_chunks<Self, const N : usize>(@1: Self) -> core::iter::adapters::array_chunks::ArrayChunks<Self, const N : usize>[@TraitClause0, Self]
 where
     [@TraitClause0]: core::marker::Sized<Self>,
 
@@ -1104,21 +1104,21 @@ where
     [@TraitClause4]: core::ops::function::FnMut<F, (Self::Item, @TraitClause3::Item)>,
     (parents(@TraitClause4)::[@TraitClause0])::Output = core::cmp::Ordering,
 
-fn core::iter::traits::iterator::Iterator::partial_cmp<Self, I>(@1: Self, @2: I) -> core::option::Option<core::cmp::Ordering, core::marker::Sized<core::cmp::Ordering>>
+fn core::iter::traits::iterator::Iterator::partial_cmp<Self, I>(@1: Self, @2: I) -> core::option::Option<core::cmp::Ordering>[core::marker::Sized<core::cmp::Ordering>]
 where
     [@TraitClause0]: core::marker::Sized<I>,
     [@TraitClause1]: core::iter::traits::collect::IntoIterator<I>,
     [@TraitClause2]: core::cmp::PartialOrd<Self::Item, @TraitClause1::Item>,
     [@TraitClause3]: core::marker::Sized<Self>,
 
-fn core::iter::traits::iterator::Iterator::partial_cmp_by<Self, I, F>(@1: Self, @2: I, @3: F) -> core::option::Option<core::cmp::Ordering, core::marker::Sized<core::cmp::Ordering>>
+fn core::iter::traits::iterator::Iterator::partial_cmp_by<Self, I, F>(@1: Self, @2: I, @3: F) -> core::option::Option<core::cmp::Ordering>[core::marker::Sized<core::cmp::Ordering>]
 where
     [@TraitClause0]: core::marker::Sized<I>,
     [@TraitClause1]: core::marker::Sized<F>,
     [@TraitClause2]: core::marker::Sized<Self>,
     [@TraitClause3]: core::iter::traits::collect::IntoIterator<I>,
     [@TraitClause4]: core::ops::function::FnMut<F, (Self::Item, @TraitClause3::Item)>,
-    (parents(@TraitClause4)::[@TraitClause0])::Output = core::option::Option<core::cmp::Ordering, core::marker::Sized<core::cmp::Ordering>>,
+    (parents(@TraitClause4)::[@TraitClause0])::Output = core::option::Option<core::cmp::Ordering>[core::marker::Sized<core::cmp::Ordering>],
 
 fn core::iter::traits::iterator::Iterator::eq<Self, I>(@1: Self, @2: I) -> bool
 where
@@ -1214,7 +1214,7 @@ where
 
 fn core::ops::try_trait::Try::from_output<Self>(@1: Self::Output) -> Self
 
-fn core::ops::try_trait::Try::branch<Self>(@1: Self) -> core::ops::control_flow::ControlFlow<Self::Residual, Self::Output, (parents((parents(Self)::[@TraitClause0]))::[@TraitClause0]), (parents(Self)::[@TraitClause1])>
+fn core::ops::try_trait::Try::branch<Self>(@1: Self) -> core::ops::control_flow::ControlFlow<Self::Residual, Self::Output>[(parents((parents(Self)::[@TraitClause0]))::[@TraitClause0]), (parents(Self)::[@TraitClause1])]
 
 fn core::ops::try_trait::FromResidual::from_residual<Self, R>(@1: R) -> Self
 
@@ -1234,11 +1234,11 @@ where
 
 fn core::default::Default::default<Self>() -> Self
 
-fn core::iter::traits::double_ended::DoubleEndedIterator::next_back<'_0, Self>(@1: &'_0 mut (Self)) -> core::option::Option<(parents(Self)::[@TraitClause0])::Item, (parents((parents(Self)::[@TraitClause0]))::[@TraitClause0])>
+fn core::iter::traits::double_ended::DoubleEndedIterator::next_back<'_0, Self>(@1: &'_0 mut (Self)) -> core::option::Option<(parents(Self)::[@TraitClause0])::Item>[(parents((parents(Self)::[@TraitClause0]))::[@TraitClause0])]
 
-fn core::iter::traits::double_ended::DoubleEndedIterator::advance_back_by<'_0, Self>(@1: &'_0 mut (Self), @2: usize) -> core::result::Result<(), core::num::nonzero::NonZero<usize, core::marker::Sized<usize>, core::num::nonzero::{impl core::num::nonzero::ZeroablePrimitive for usize}#26>, core::marker::Sized<()>, core::marker::Sized<core::num::nonzero::NonZero<usize, core::marker::Sized<usize>, core::num::nonzero::{impl core::num::nonzero::ZeroablePrimitive for usize}#26>>>
+fn core::iter::traits::double_ended::DoubleEndedIterator::advance_back_by<'_0, Self>(@1: &'_0 mut (Self), @2: usize) -> core::result::Result<(), core::num::nonzero::NonZero<usize>[core::marker::Sized<usize>, core::num::nonzero::{impl core::num::nonzero::ZeroablePrimitive for usize}#26]>[core::marker::Sized<()>, core::marker::Sized<core::num::nonzero::NonZero<usize>[core::marker::Sized<usize>, core::num::nonzero::{impl core::num::nonzero::ZeroablePrimitive for usize}#26]>]
 
-fn core::iter::traits::double_ended::DoubleEndedIterator::nth_back<'_0, Self>(@1: &'_0 mut (Self), @2: usize) -> core::option::Option<(parents(Self)::[@TraitClause0])::Item, (parents((parents(Self)::[@TraitClause0]))::[@TraitClause0])>
+fn core::iter::traits::double_ended::DoubleEndedIterator::nth_back<'_0, Self>(@1: &'_0 mut (Self), @2: usize) -> core::option::Option<(parents(Self)::[@TraitClause0])::Item>[(parents((parents(Self)::[@TraitClause0]))::[@TraitClause0])]
 
 fn core::iter::traits::double_ended::DoubleEndedIterator::try_rfold<'_0, Self, B, F, R>(@1: &'_0 mut (Self), @2: B, @3: F) -> R
 where
@@ -1259,7 +1259,7 @@ where
     [@TraitClause3]: core::ops::function::FnMut<F, (B, (parents(Self)::[@TraitClause0])::Item)>,
     (parents(@TraitClause3)::[@TraitClause0])::Output = B,
 
-fn core::iter::traits::double_ended::DoubleEndedIterator::rfind<'_0, Self, P>(@1: &'_0 mut (Self), @2: P) -> core::option::Option<(parents(Self)::[@TraitClause0])::Item, (parents((parents(Self)::[@TraitClause0]))::[@TraitClause0])>
+fn core::iter::traits::double_ended::DoubleEndedIterator::rfind<'_0, Self, P>(@1: &'_0 mut (Self), @2: P) -> core::option::Option<(parents(Self)::[@TraitClause0])::Item>[(parents((parents(Self)::[@TraitClause0]))::[@TraitClause0])]
 where
     [@TraitClause0]: core::marker::Sized<P>,
     [@TraitClause1]: core::marker::Sized<Self>,
@@ -1291,7 +1291,7 @@ fn core::cmp::PartialEq::eq<'_0, '_1, Self, Rhs>(@1: &'_0 (Self), @2: &'_1 (Rhs)
 
 fn core::cmp::PartialEq::ne<'_0, '_1, Self, Rhs>(@1: &'_0 (Self), @2: &'_1 (Rhs)) -> bool
 
-fn core::cmp::PartialOrd::partial_cmp<'_0, '_1, Self, Rhs>(@1: &'_0 (Self), @2: &'_1 (Rhs)) -> core::option::Option<core::cmp::Ordering, core::marker::Sized<core::cmp::Ordering>>
+fn core::cmp::PartialOrd::partial_cmp<'_0, '_1, Self, Rhs>(@1: &'_0 (Self), @2: &'_1 (Rhs)) -> core::option::Option<core::cmp::Ordering>[core::marker::Sized<core::cmp::Ordering>]
 
 fn core::cmp::PartialOrd::lt<'_0, '_1, Self, Rhs>(@1: &'_0 (Self), @2: &'_1 (Rhs)) -> bool
 
