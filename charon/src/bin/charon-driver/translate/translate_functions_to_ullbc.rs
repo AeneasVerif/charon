@@ -1226,7 +1226,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     }
 
     /// Gather all the lines that start with `//` inside the given span.
-    fn translate_body_comments(&mut self, charon_span: Span) -> Vec<(usize, Vec<String>)> {
+    fn translate_body_comments(&mut self, charon_span: Span) -> Vec<(Loc, Vec<String>)> {
         let rust_span = charon_span.rust_span();
         let source_map = self.t_ctx.tcx.sess.source_map();
         if rust_span.ctxt().is_root()
@@ -1240,12 +1240,20 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 // Compute the absolute line number
                 .map(|(i, line)| (charon_span.span.end.line - i, line))
                 // Extract the comment if this line starts with `//`
-                .map(|(line_nbr, line)| (line_nbr, line.trim_start().strip_prefix("//")))
+                .map(|(line_nbr, line)| {
+                    let trimmed = line.trim_start();
+                    // The location of the start of the line
+                    let loc = Loc {
+                        line: line_nbr,
+                        col: line.len() - trimmed.len(),
+                    };
+                    (loc, trimmed.strip_prefix("//"))
+                })
                 .peekable()
                 .batching(|iter| {
                     // Get the next line. This is not a comment: it's either the last line of the
                     // body or a line that wasn't consumed by `peeking_take_while`.
-                    let (line_nbr, _first) = iter.next()?;
+                    let (loc, _first) = iter.next()?;
                     // Collect all the comments before this line.
                     let mut comments = iter
                         // `peeking_take_while` ensures we don't consume a line that returns
@@ -1256,7 +1264,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                         .map(str::to_owned)
                         .collect_vec();
                     comments.reverse();
-                    Some((line_nbr, comments))
+                    Some((loc, comments))
                 })
                 .filter(|(_, comments)| !comments.is_empty())
                 .collect_vec();

@@ -1,14 +1,12 @@
 //! Definitions common to [crate::ullbc_ast] and [crate::llbc_ast]
 pub use super::gast_utils::*;
-use crate::expressions::*;
+use crate::ast::*;
 use crate::generate_index_type;
 use crate::ids::Vector;
 use crate::llbc_ast;
 use crate::meta::{ItemMeta, Span};
 use crate::names::Name;
-use crate::types::*;
 use crate::ullbc_ast;
-use crate::values::*;
 use derive_visitor::{Drive, DriveMut, Event, Visitor, VisitorMut};
 use macros::EnumIsA;
 use macros::EnumToGetters;
@@ -50,10 +48,11 @@ pub struct GExprBody<T> {
     /// - the input arguments
     /// - the remaining locals, used for the intermediate computations
     pub locals: Vector<VarId, Var>,
-    /// For each line inside the body, we record any whole-line `//` comments found before it. They
-    /// are added to statements in the late `recover_body_comments` pass.
+    /// For each line inside the body, we record any whole-line `//` comments found before it. The
+    /// `Loc` is the location of the start of the (non-comment) line. They are added to statements
+    /// in the late `recover_body_comments` pass.
     #[charon::opaque]
-    pub comments: Vec<(usize, Vec<String>)>,
+    pub comments: Vec<(Loc, Vec<String>)>,
     pub body: T,
 }
 

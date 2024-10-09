@@ -431,11 +431,6 @@ where
     let @7: u64; // anonymous local
     let @8: &'_ (test_crate::{test_crate::TestType<T>[@TraitClause0]}#6::test::TestType1); // anonymous local
 
-    // Remark: we can't write: impl TestTrait for TestType<T>,
-    // we have to use a *local* parameter (can't use the outer T).
-    // In other words: the parameters used in the items inside
-    // an impl must be bound by the impl block (can't come from outer
-    // blocks).
     @4 := move (x@2)
     x@3 := @TraitClause1::to_u64(move (@4))
     drop @4
