@@ -346,3 +346,13 @@ trait RecursiveImpl {
 impl RecursiveImpl for () {
     type Item = ();
 }
+
+pub fn flabada<'a>(_x: &'a ()) -> Wrapper<(bool, &'a ())> {
+    todo!()
+}
+
+pub fn call<'a, F: Fn(&'a ()) -> Wrapper<(bool, &'a ())>>(_: F) {}
+
+pub fn flibidi() -> () {
+    call(flabada);
+}

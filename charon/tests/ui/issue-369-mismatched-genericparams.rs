@@ -1,4 +1,3 @@
-//@ known-failure
 pub trait Try: FromResidual<()> {
     type Residual;
 }
