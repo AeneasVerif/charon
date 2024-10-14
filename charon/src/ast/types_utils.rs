@@ -355,15 +355,6 @@ impl RefKind {
     }
 }
 
-/// Note: this destroys all sharing
-impl DriveMut for Ty {
-    fn drive_mut<V: VisitorMut>(&mut self, visitor: &mut V) {
-        visitor.visit(self, Event::Enter);
-        self.with_kind_mut(|kind| kind.drive_mut(visitor));
-        visitor.visit(self, Event::Exit);
-    }
-}
-
 // The derive macro doesn't handle generics.
 impl<T: Drive> Drive for RegionBinder<T> {
     fn drive<V: Visitor>(&self, visitor: &mut V) {

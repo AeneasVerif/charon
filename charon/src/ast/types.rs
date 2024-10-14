@@ -1,10 +1,9 @@
-use crate::ast::*;
 use crate::ids::Vector;
+use crate::{ast::*, common::hash_consing::HashConsed};
 use derivative::Derivative;
 use derive_visitor::{Drive, DriveMut, Event, Visitor, VisitorMut};
 use macros::{EnumAsGetters, EnumIsA, EnumToGetters, VariantIndexArity, VariantName};
 use serde::{Deserialize, Serialize};
-use std::sync::Arc;
 
 pub type FieldName = String;
 
@@ -649,22 +648,16 @@ pub enum ConstGeneric {
 }
 
 /// A type.
-#[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize, Drive)]
-pub struct Ty(Arc<TyKind>);
+#[derive(Debug, Clone, Hash, PartialEq, Eq, Serialize, Deserialize, Drive, DriveMut)]
+pub struct Ty(HashConsed<TyKind>);
 
 impl Ty {
     pub fn new(kind: TyKind) -> Self {
-        Ty(Arc::new(kind))
+        Ty(HashConsed::new(kind))
     }
 
     pub fn kind(&self) -> &TyKind {
-        self.0.as_ref()
-    }
-
-    /// Clones if needed to get mutable access to the type kind.
-    pub fn with_kind_mut<T>(&mut self, f: impl FnOnce(&mut TyKind) -> T) -> T {
-        let kind = Arc::make_mut(&mut self.0);
-        f(kind)
+        self.0.inner()
     }
 }
 
