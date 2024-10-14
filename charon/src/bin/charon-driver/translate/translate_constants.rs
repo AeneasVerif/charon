@@ -90,10 +90,11 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                     // TODO: the user_ty is not always None
                     .map(|f| self.translate_constant_expr_to_constant_expr(span, &f.value))
                     .try_collect()?;
-                let vid = if info.typ_is_struct {
-                    None
+                use hax::VariantKind;
+                let vid = if let VariantKind::Enum { index, .. } = info.kind {
+                    Some(VariantId::new(index))
                 } else {
-                    Some(VariantId::new(info.variant_index))
+                    None
                 };
                 RawConstantExpr::Adt(vid, fields)
             }
