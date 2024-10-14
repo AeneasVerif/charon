@@ -115,7 +115,7 @@ impl CheckGenericsVisitor<'_, '_> {
         }
     }
     fn enter_ty(&mut self, ty: &Ty) {
-        if let Ty::Adt(kind, args) = ty {
+        if let TyKind::Adt(kind, args) = ty.kind() {
             self.check_typeid_generics(args, kind);
         }
     }

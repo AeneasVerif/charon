@@ -4,6 +4,7 @@ use derivative::Derivative;
 use derive_visitor::{Drive, DriveMut, Event, Visitor, VisitorMut};
 use macros::{EnumAsGetters, EnumIsA, EnumToGetters, VariantIndexArity, VariantName};
 use serde::{Deserialize, Serialize};
+use std::sync::Arc;
 
 pub type FieldName = String;
 
@@ -648,6 +649,25 @@ pub enum ConstGeneric {
 }
 
 /// A type.
+#[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize, Drive)]
+pub struct Ty(Arc<TyKind>);
+
+impl Ty {
+    pub fn new(kind: TyKind) -> Self {
+        Ty(Arc::new(kind))
+    }
+
+    pub fn kind(&self) -> &TyKind {
+        self.0.as_ref()
+    }
+
+    /// Clones if needed to get mutable access to the type kind.
+    pub fn with_kind_mut<T>(&mut self, f: impl FnOnce(&mut TyKind) -> T) -> T {
+        let kind = Arc::make_mut(&mut self.0);
+        f(kind)
+    }
+}
+
 #[derive(
     Debug,
     Clone,
@@ -665,7 +685,8 @@ pub enum ConstGeneric {
     DriveMut,
 )]
 #[charon::variants_prefix("T")]
-pub enum Ty {
+#[charon::rename("Ty")]
+pub enum TyKind {
     /// An ADT.
     /// Note that here ADTs are very general. They can be:
     /// - user-defined ADTs
@@ -698,9 +719,9 @@ pub enum Ty {
     Never,
     // We don't support floating point numbers on purpose (for now)
     /// A borrow
-    Ref(Region, Box<Ty>, RefKind),
+    Ref(Region, Ty, RefKind),
     /// A raw pointer.
-    RawPtr(Box<Ty>, RefKind),
+    RawPtr(Ty, RefKind),
     /// A trait associated type
     ///
     /// Ex.:
@@ -721,7 +742,7 @@ pub enum Ty {
     /// This is essentially a "constrained" function signature:
     /// arrow types can only contain generic lifetime parameters
     /// (no generic types), no predicates, etc.
-    Arrow(Vector<RegionId, RegionVar>, Vec<Ty>, Box<Ty>),
+    Arrow(Vector<RegionId, RegionVar>, Vec<Ty>, Ty),
 }
 
 /// Builtin types identifiers.

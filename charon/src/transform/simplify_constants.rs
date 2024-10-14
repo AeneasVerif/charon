@@ -138,7 +138,7 @@ fn transform_constant_expr<F: FnMut(Ty) -> VarId>(
 
             // Introduce an intermediate assignment for the aggregated ADT
             let rval = {
-                let (adt_kind, generics) = val.ty.as_adt().unwrap();
+                let (adt_kind, generics) = val.ty.kind().as_adt().unwrap();
                 let aggregate_kind = AggregateKind::Adt(*adt_kind, variant, None, generics.clone());
                 Rvalue::Aggregate(aggregate_kind, fields)
             };

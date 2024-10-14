@@ -52,7 +52,8 @@ impl Transform {
                 && call_malloc.dest == *alloc_use
                 && box_make.projection.is_empty()
                 && let var_id = box_make.var_id
-                && let Ty::Adt(TypeId::Builtin(BuiltinTy::Box), generics) = &locals[var_id].ty
+                && let TyKind::Adt(TypeId::Builtin(BuiltinTy::Box), generics) =
+                    locals[var_id].ty.kind()
             {
                 // Find the assignment into the box.
                 for i in 0..rest.len() {

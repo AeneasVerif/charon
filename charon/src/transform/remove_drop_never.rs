@@ -20,7 +20,7 @@ impl LlbcPass for Transform {
                 // `x` has type `Never`. Otherwise leave it unchanged.
                 if let RawStatement::Drop(p) = &st.content
                     && p.projection.is_empty()
-                    && locals.get(p.var_id).unwrap().ty.is_never()
+                    && locals.get(p.var_id).unwrap().ty.kind().is_never()
                 {
                     st.content = RawStatement::Nop;
                 }

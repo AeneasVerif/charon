@@ -74,7 +74,7 @@ impl GenericParams {
             types: self
                 .types
                 .iter_indexed()
-                .map(|(id, _)| Ty::TypeVar(id))
+                .map(|(id, _)| TyKind::TypeVar(id).into_ty())
                 .collect(),
             const_generics: self
                 .const_generics
@@ -225,8 +225,8 @@ impl IntegerTy {
 impl Ty {
     /// Return true if it is actually unit (i.e.: 0-tuple)
     pub fn is_unit(&self) -> bool {
-        match self {
-            Ty::Adt(TypeId::Tuple, args) => {
+        match self.kind() {
+            TyKind::Adt(TypeId::Tuple, args) => {
                 assert!(args.regions.is_empty());
                 assert!(args.const_generics.is_empty());
                 args.types.is_empty()
@@ -237,35 +237,35 @@ impl Ty {
 
     /// Return the unit type
     pub fn mk_unit() -> Ty {
-        Ty::Adt(TypeId::Tuple, GenericArgs::empty())
+        TyKind::Adt(TypeId::Tuple, GenericArgs::empty()).into_ty()
     }
 
     /// Return true if this is a scalar type
     pub fn is_scalar(&self) -> bool {
-        match self {
-            Ty::Literal(kind) => kind.is_integer(),
+        match self.kind() {
+            TyKind::Literal(kind) => kind.is_integer(),
             _ => false,
         }
     }
 
     pub fn is_unsigned_scalar(&self) -> bool {
-        match self {
-            Ty::Literal(LiteralTy::Integer(kind)) => kind.is_unsigned(),
+        match self.kind() {
+            TyKind::Literal(LiteralTy::Integer(kind)) => kind.is_unsigned(),
             _ => false,
         }
     }
 
     pub fn is_signed_scalar(&self) -> bool {
-        match self {
-            Ty::Literal(LiteralTy::Integer(kind)) => kind.is_signed(),
+        match self.kind() {
+            TyKind::Literal(LiteralTy::Integer(kind)) => kind.is_signed(),
             _ => false,
         }
     }
 
     /// Return true if the type is Box
     pub fn is_box(&self) -> bool {
-        match self {
-            Ty::Adt(TypeId::Builtin(BuiltinTy::Box), generics) => {
+        match self.kind() {
+            TyKind::Adt(TypeId::Builtin(BuiltinTy::Box), generics) => {
                 assert!(generics.regions.is_empty());
                 assert!(generics.types.len() == 1);
                 assert!(generics.const_generics.is_empty());
@@ -276,8 +276,8 @@ impl Ty {
     }
 
     pub fn as_box(&self) -> Option<&Ty> {
-        match self {
-            Ty::Adt(TypeId::Builtin(BuiltinTy::Box), generics) => {
+        match self.kind() {
+            TyKind::Adt(TypeId::Builtin(BuiltinTy::Box), generics) => {
                 assert!(generics.regions.is_empty());
                 assert!(generics.types.len() == 1);
                 assert!(generics.const_generics.is_empty());
@@ -287,6 +287,29 @@ impl Ty {
         }
     }
 }
+
+impl TyKind {
+    pub fn into_ty(self) -> Ty {
+        Ty::new(self)
+    }
+}
+
+impl From<TyKind> for Ty {
+    fn from(kind: TyKind) -> Ty {
+        kind.into_ty()
+    }
+}
+
+/// Convenience for migration purposes.
+impl std::ops::Deref for Ty {
+    type Target = TyKind;
+
+    fn deref(&self) -> &Self::Target {
+        self.kind()
+    }
+}
+/// For deref patterns.
+unsafe impl std::ops::DerefPure for Ty {}
 
 impl Field {
     /// The new name for this field, as suggested by the `#[charon::rename]` attribute.
@@ -329,6 +352,15 @@ impl RefKind {
         } else {
             Self::Shared
         }
+    }
+}
+
+/// Note: this destroys all sharing
+impl DriveMut for Ty {
+    fn drive_mut<V: VisitorMut>(&mut self, visitor: &mut V) {
+        visitor.visit(self, Event::Enter);
+        self.with_kind_mut(|kind| kind.drive_mut(visitor));
+        visitor.visit(self, Event::Exit);
     }
 }
 

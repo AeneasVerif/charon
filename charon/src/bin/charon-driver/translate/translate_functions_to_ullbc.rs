@@ -300,11 +300,11 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 match kind {
                     hax::ProjectionElem::Deref => {
                         // We use the type to disambiguate
-                        match current_ty {
-                            Ty::Ref(_, _, _) | Ty::RawPtr(_, _) => {
+                        match current_ty.kind() {
+                            TyKind::Ref(_, _, _) | TyKind::RawPtr(_, _) => {
                                 projection.push(ProjectionElem::Deref);
                             }
-                            Ty::Adt(TypeId::Builtin(BuiltinTy::Box), generics) => {
+                            TyKind::Adt(TypeId::Builtin(BuiltinTy::Box), generics) => {
                                 // This case only happens in some MIR levels
                                 assert!(!boxes_are_desugared(self.t_ctx.options.mir_level));
                                 assert!(generics.regions.is_empty());
@@ -324,7 +324,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                         use hax::ProjectionElemFieldKind::*;
                         let proj_elem = match field_kind {
                             Tuple(id) => {
-                                let (_, generics) = current_ty.as_adt().unwrap();
+                                let (_, generics) = current_ty.kind().as_adt().unwrap();
                                 let field_id = translate_field_id(*id);
                                 let proj_kind = FieldProjKind::Tuple(generics.types.len());
                                 ProjectionElem::Field(proj_kind, field_id)
@@ -336,12 +336,12 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                             } => {
                                 let field_id = translate_field_id(*index);
                                 let variant_id = variant.map(translate_variant_id);
-                                match current_ty {
-                                    Ty::Adt(TypeId::Adt(type_id), ..) => {
-                                        let proj_kind = FieldProjKind::Adt(type_id, variant_id);
+                                match current_ty.kind() {
+                                    TyKind::Adt(TypeId::Adt(type_id), ..) => {
+                                        let proj_kind = FieldProjKind::Adt(*type_id, variant_id);
                                         ProjectionElem::Field(proj_kind, field_id)
                                     }
-                                    Ty::Adt(TypeId::Tuple, generics) => {
+                                    TyKind::Adt(TypeId::Tuple, generics) => {
                                         assert!(generics.regions.is_empty());
                                         assert!(variant.is_none());
                                         assert!(generics.const_generics.is_empty());
@@ -349,7 +349,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
 
                                         ProjectionElem::Field(proj_kind, field_id)
                                     }
-                                    Ty::Adt(TypeId::Builtin(BuiltinTy::Box), generics) => {
+                                    TyKind::Adt(TypeId::Builtin(BuiltinTy::Box), generics) => {
                                         assert!(!boxes_are_desugared(self.t_ctx.options.mir_level));
 
                                         // Some more sanity checks
@@ -487,8 +487,8 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             }
             hax::Rvalue::Len(place) => {
                 let (place, ty) = self.translate_place_with_type(span, place)?;
-                let cg = match &ty {
-                    Ty::Adt(
+                let cg = match ty.kind() {
+                    TyKind::Adt(
                         TypeId::Builtin(aty @ (BuiltinTy::Array | BuiltinTy::Slice)),
                         generics,
                     ) => {
@@ -515,8 +515,8 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                     | hax::CastKind::IntToFloat
                     | hax::CastKind::FloatToInt
                     | hax::CastKind::FloatToFloat => {
-                        let tgt_ty = *tgt_ty.as_literal().unwrap();
-                        let src_ty = *src_ty.as_literal().unwrap();
+                        let tgt_ty = *tgt_ty.kind().as_literal().unwrap();
+                        let src_ty = *src_ty.kind().as_literal().unwrap();
                         Ok(Rvalue::UnaryOp(
                             UnOp::Cast(CastKind::Scalar(src_ty, tgt_ty)),
                             operand,
@@ -546,17 +546,17 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                     )),
                     hax::CastKind::PointerCoercion(hax::PointerCoercion::Unsize) => {
                         let unop = if let (
-                            Ty::Ref(
+                            TyKind::Ref(
                                 _,
-                                deref!(Ty::Adt(TypeId::Builtin(BuiltinTy::Array), generics)),
+                                deref!(TyKind::Adt(TypeId::Builtin(BuiltinTy::Array), generics)),
                                 kind1,
                             ),
-                            Ty::Ref(
+                            TyKind::Ref(
                                 _,
-                                deref!(Ty::Adt(TypeId::Builtin(BuiltinTy::Slice), generics1)),
+                                deref!(TyKind::Adt(TypeId::Builtin(BuiltinTy::Slice), generics1)),
                                 kind2,
                             ),
-                        ) = (&src_ty, &tgt_ty)
+                        ) = (src_ty.kind(), tgt_ty.kind())
                         {
                             // In MIR terminology, we go from &[T; l] to &[T] which means we
                             // effectively "unsize" the type, as `l` no longer appears in the
@@ -607,7 +607,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             )),
             hax::Rvalue::Discriminant(place) => {
                 let (place, ty) = self.translate_place_with_type(span, place)?;
-                if let Ty::Adt(TypeId::Adt(adt_id), _) = &ty {
+                if let TyKind::Adt(TypeId::Adt(adt_id), _) = ty.kind() {
                     Ok(Rvalue::Discriminant(place, *adt_id))
                 } else {
                     error_or_panic!(
@@ -1106,7 +1106,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 Ok(SwitchTargets::If(if_block, then_block))
             }
             hax::SwitchTargets::SwitchInt(_, targets_map, otherwise) => {
-                let int_ty = *switch_ty.as_literal().unwrap().as_integer().unwrap();
+                let int_ty = *switch_ty.kind().as_literal().unwrap().as_integer().unwrap();
                 let targets_map: Vec<(ScalarValue, BlockId)> = targets_map
                     .iter()
                     .map(|(v, tgt)| {

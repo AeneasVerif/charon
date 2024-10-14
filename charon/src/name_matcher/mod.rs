@@ -84,26 +84,26 @@ impl Pattern {
         if let [PatElem::Glob] = self.elems.as_slice() {
             return true;
         }
-        match ty {
-            Ty::Adt(TypeId::Adt(type_id), args) => {
+        match ty.kind() {
+            TyKind::Adt(TypeId::Adt(type_id), args) => {
                 let Some(type_name) = ctx.item_names.get(&(*type_id).into()) else {
                     return false;
                 };
                 self.matches_with_generics(ctx, type_name, args)
             }
-            Ty::Adt(TypeId::Builtin(builtin_ty), args) => {
+            TyKind::Adt(TypeId::Builtin(builtin_ty), args) => {
                 let name = builtin_ty.get_name();
                 self.matches_with_generics(ctx, &name, args)
             }
-            Ty::Adt(TypeId::Tuple, _)
-            | Ty::TypeVar(_)
-            | Ty::Literal(_)
-            | Ty::Never
-            | Ty::Ref(_, _, _)
-            | Ty::RawPtr(_, _)
-            | Ty::TraitType(_, _)
-            | Ty::DynTrait(_)
-            | Ty::Arrow(_, _, _) => false,
+            TyKind::Adt(TypeId::Tuple, _)
+            | TyKind::TypeVar(_)
+            | TyKind::Literal(_)
+            | TyKind::Never
+            | TyKind::Ref(_, _, _)
+            | TyKind::RawPtr(_, _)
+            | TyKind::TraitType(_, _)
+            | TyKind::DynTrait(_)
+            | TyKind::Arrow(_, _, _) => false,
         }
     }
 
@@ -209,9 +209,9 @@ impl PatTy {
     }
 
     pub fn matches_ty(&self, ctx: &TranslatedCrate, ty: &Ty) -> bool {
-        match (self, ty) {
+        match (self, ty.kind()) {
             (PatTy::Pat(p), _) => p.matches_ty(ctx, ty),
-            (PatTy::Ref(pat_mtbl, p_ty), Ty::Ref(_, ty, ty_mtbl)) => {
+            (PatTy::Ref(pat_mtbl, p_ty), TyKind::Ref(_, ty, ty_mtbl)) => {
                 pat_mtbl == ty_mtbl && p_ty.matches_ty(ctx, ty)
             }
             _ => false,

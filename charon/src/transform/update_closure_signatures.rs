@@ -30,13 +30,13 @@ impl<'a> InsertRegions<'a> {
     }
 
     fn enter_ty(&mut self, ty: &mut Ty) {
-        if let Ty::Arrow(..) = ty {
+        if let TyKind::Arrow(..) = ty.kind() {
             self.depth += 1;
         }
     }
 
     fn exit_ty(&mut self, ty: &mut Ty) {
-        if let Ty::Arrow(..) = ty {
+        if let TyKind::Arrow(..) = ty.kind() {
             self.depth -= 1;
         }
     }
@@ -65,10 +65,11 @@ fn transform_function(
 
         // Group the types into a tuple
         let num_fields = info.state.len();
-        let state = Ty::Adt(
+        let state = TyKind::Adt(
             TypeId::Tuple,
             GenericArgs::new_from_types(info.state.clone()),
-        );
+        )
+        .into_ty();
         // Depending on the kind of the closure, add a reference
         let mut state = match &info.kind {
             ClosureKind::FnOnce => state,
@@ -83,7 +84,7 @@ fn transform_function(
                     RefKind::Mut
                 };
                 //let r = Region::BVar(DeBruijnId::new(0), index);
-                Ty::Ref(Region::Erased, Box::new(state), mutability)
+                TyKind::Ref(Region::Erased, state, mutability).into_ty()
             }
         };
 

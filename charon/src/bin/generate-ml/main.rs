@@ -10,13 +10,8 @@
 
 use anyhow::{bail, Context, Result};
 use assert_cmd::cargo::CommandCargoExt;
-use charon_lib::ast::{AttrInfo, Attribute, TranslatedCrate};
+use charon_lib::ast::*;
 use charon_lib::export::CrateData;
-use charon_lib::meta::ItemMeta;
-use charon_lib::names::{Name, PathElem};
-use charon_lib::types::{
-    BuiltinTy, Field, LiteralTy, Ty, TypeDecl, TypeDeclId, TypeDeclKind, TypeId,
-};
 use convert_case::{Case, Casing};
 use derive_visitor::{visitor_enter_fn, Drive};
 use indoc::indoc;
@@ -239,12 +234,12 @@ impl<'a> GenerateCtx<'a> {
 /// Converts a type to the appropriate `*_of_json` call. In case of generics, this combines several
 /// functions, e.g. `list_of_json bool_of_json`.
 fn type_to_ocaml_call(ctx: &GenerateCtx, ty: &Ty) -> String {
-    match ty {
-        Ty::Literal(LiteralTy::Bool) => "bool_of_json".to_string(),
-        Ty::Literal(LiteralTy::Char) => "char_of_json".to_string(),
-        Ty::Literal(LiteralTy::Integer(_)) => "int_of_json".to_string(),
-        Ty::Literal(LiteralTy::Float(_)) => "float_of_json".to_string(),
-        Ty::Adt(adt_kind, generics) => {
+    match ty.kind() {
+        TyKind::Literal(LiteralTy::Bool) => "bool_of_json".to_string(),
+        TyKind::Literal(LiteralTy::Char) => "char_of_json".to_string(),
+        TyKind::Literal(LiteralTy::Integer(_)) => "int_of_json".to_string(),
+        TyKind::Literal(LiteralTy::Float(_)) => "float_of_json".to_string(),
+        TyKind::Adt(adt_kind, generics) => {
             let mut expr = Vec::new();
             for ty in &generics.types {
                 expr.push(type_to_ocaml_call(ctx, ty))
@@ -280,8 +275,8 @@ fn type_to_ocaml_call(ctx: &GenerateCtx, ty: &Ty) -> String {
             }
             expr.into_iter().map(|f| format!("({f})")).join(" ")
         }
-        Ty::TypeVar(var_id) => format!("arg{}_of_json", var_id.index()),
-        // Ty::Ref(_, _, _) => todo!(),
+        TyKind::TypeVar(var_id) => format!("arg{}_of_json", var_id.index()),
+        // TyKind::Ref(_, _, _) => todo!(),
         _ => unimplemented!("{ty:?}"),
     }
 }
@@ -289,12 +284,12 @@ fn type_to_ocaml_call(ctx: &GenerateCtx, ty: &Ty) -> String {
 /// Converts a type to the appropriate ocaml name. In case of generics, this provides appropriate
 /// parameters.
 fn type_to_ocaml_name(ctx: &GenerateCtx, ty: &Ty) -> String {
-    match ty {
-        Ty::Literal(LiteralTy::Bool) => "bool".to_string(),
-        Ty::Literal(LiteralTy::Char) => "char".to_string(),
-        Ty::Literal(LiteralTy::Integer(_)) => "int".to_string(),
-        Ty::Literal(LiteralTy::Float(_)) => "float_of_json".to_string(),
-        Ty::Adt(adt_kind, generics) => {
+    match ty.kind() {
+        TyKind::Literal(LiteralTy::Bool) => "bool".to_string(),
+        TyKind::Literal(LiteralTy::Char) => "char".to_string(),
+        TyKind::Literal(LiteralTy::Integer(_)) => "int".to_string(),
+        TyKind::Literal(LiteralTy::Float(_)) => "float_of_json".to_string(),
+        TyKind::Adt(adt_kind, generics) => {
             let mut args = generics
                 .types
                 .iter()
@@ -346,7 +341,7 @@ fn type_to_ocaml_name(ctx: &GenerateCtx, ty: &Ty) -> String {
                 _ => unimplemented!("{ty:?}"),
             }
         }
-        Ty::TypeVar(var_id) => format!("'a{}", var_id.index()),
+        TyKind::TypeVar(var_id) => format!("'a{}", var_id.index()),
         _ => unimplemented!("{ty:?}"),
     }
 }
@@ -1201,6 +1196,7 @@ fn generate_ml(crate_data: TranslatedCrate, output_dir: PathBuf) -> anyhow::Resu
         "DeBruijnId",
         "RegionId",
         "PredicateOrigin",
+        "Ty", // We exclude it since `TyKind` is renamed to `ty`
         "Opaque",
         "Body",
         "BodyId",
@@ -1382,7 +1378,7 @@ fn generate_ml(crate_data: TranslatedCrate, output_dir: PathBuf) -> anyhow::Resu
                     "TypeId",
                     "ExistentialPredicate",
                     "RefKind",
-                    "Ty",
+                    "TyKind",
                     "Region",
                     "TraitRef",
                     "TraitRefKind",

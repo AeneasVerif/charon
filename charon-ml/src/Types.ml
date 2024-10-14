@@ -436,7 +436,6 @@ and type_id =
           for more uniform treatment throughout the codebase.
        *)
 
-(** A type. *)
 and ty =
   | TAdt of type_id * generic_args
       (** An ADT.
