@@ -279,7 +279,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
 
     /// Returns an [Option] because we may ignore some builtin or auto traits
     /// like [core::marker::Sized] or [core::marker::Sync].
-    #[tracing::instrument(skip(self, span, erase_regions))]
+    #[tracing::instrument(skip(self, span, erase_regions, impl_expr))]
     pub(crate) fn translate_trait_impl_expr(
         &mut self,
         span: Span,
@@ -321,8 +321,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         impl_source: &hax::ImplExpr,
         trait_decl_ref: PolyTraitDeclRef,
     ) -> Result<Option<TraitRef>, Error> {
-        // TODO: in the body of this function:
-        trace!("impl_source: {:?}", impl_source);
+        trace!("impl_expr: {:#?}", impl_source);
         use hax::ImplExprAtom;
 
         let nested = &impl_source.args;

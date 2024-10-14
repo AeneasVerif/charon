@@ -123,10 +123,10 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         ty: &hax::Ty,
     ) -> Result<Ty, Error> {
         trace!("{:?}", ty);
-        match ty {
-            hax::Ty::Bool => Ok(Ty::Literal(LiteralTy::Bool)),
-            hax::Ty::Char => Ok(Ty::Literal(LiteralTy::Char)),
-            hax::Ty::Int(int_ty) => {
+        match ty.kind() {
+            hax::TyKind::Bool => Ok(Ty::Literal(LiteralTy::Bool)),
+            hax::TyKind::Char => Ok(Ty::Literal(LiteralTy::Char)),
+            hax::TyKind::Int(int_ty) => {
                 use hax::IntTy;
                 Ok(Ty::Literal(LiteralTy::Integer(match int_ty {
                     IntTy::Isize => IntegerTy::Isize,
@@ -137,7 +137,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                     IntTy::I128 => IntegerTy::I128,
                 })))
             }
-            hax::Ty::Uint(int_ty) => {
+            hax::TyKind::Uint(int_ty) => {
                 use hax::UintTy;
                 Ok(Ty::Literal(LiteralTy::Integer(match int_ty {
                     UintTy::Usize => IntegerTy::Usize,
@@ -148,7 +148,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                     UintTy::U128 => IntegerTy::U128,
                 })))
             }
-            hax::Ty::Float(float_ty) => {
+            hax::TyKind::Float(float_ty) => {
                 use hax::FloatTy;
                 Ok(Ty::Literal(LiteralTy::Float(match float_ty {
                     FloatTy::F16 => charon_lib::ast::types::FloatTy::F16,
@@ -157,9 +157,9 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                     FloatTy::F128 => charon_lib::ast::types::FloatTy::F128,
                 })))
             }
-            hax::Ty::Never => Ok(Ty::Never),
+            hax::TyKind::Never => Ok(Ty::Never),
 
-            hax::Ty::Alias(alias) => match &alias.kind {
+            hax::TyKind::Alias(alias) => match &alias.kind {
                 hax::AliasKind::Projection {
                     impl_expr,
                     assoc_item,
@@ -177,7 +177,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 }
             },
 
-            hax::Ty::Adt {
+            hax::TyKind::Adt {
                 generic_args: substs,
                 trait_refs,
                 def_id,
@@ -206,13 +206,13 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 // Return the instantiated ADT
                 Ok(Ty::Adt(type_id, generics))
             }
-            hax::Ty::Str => {
+            hax::TyKind::Str => {
                 trace!("Str");
 
                 let id = TypeId::Builtin(BuiltinTy::Str);
                 Ok(Ty::Adt(id, GenericArgs::empty()))
             }
-            hax::Ty::Array(ty, const_param) => {
+            hax::TyKind::Array(ty, const_param) => {
                 trace!("Array");
 
                 let c = self.translate_constant_expr_to_const_generic(span, const_param)?;
@@ -224,14 +224,14 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                     GenericArgs::new(Vector::new(), tys, cgs, Vector::new()),
                 ))
             }
-            hax::Ty::Slice(ty) => {
+            hax::TyKind::Slice(ty) => {
                 trace!("Slice");
 
                 let tys = vec![self.translate_ty(span, erase_regions, ty)?].into();
                 let id = TypeId::Builtin(BuiltinTy::Slice);
                 Ok(Ty::Adt(id, GenericArgs::new_from_types(tys)))
             }
-            hax::Ty::Ref(region, ty, mutability) => {
+            hax::TyKind::Ref(region, ty, mutability) => {
                 trace!("Ref");
 
                 let region = self.translate_region(span, erase_regions, region)?;
@@ -243,7 +243,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 };
                 Ok(Ty::Ref(region, Box::new(ty), kind))
             }
-            hax::Ty::RawPtr(ty, mutbl) => {
+            hax::TyKind::RawPtr(ty, mutbl) => {
                 trace!("RawPtr: {:?}", (ty, mutbl));
                 let ty = self.translate_ty(span, erase_regions, ty)?;
                 let kind = if *mutbl {
@@ -253,7 +253,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 };
                 Ok(Ty::RawPtr(Box::new(ty), kind))
             }
-            hax::Ty::Tuple(substs) => {
+            hax::TyKind::Tuple(substs) => {
                 trace!("Tuple");
 
                 let mut params = Vector::new();
@@ -265,7 +265,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 Ok(Ty::Adt(TypeId::Tuple, GenericArgs::new_from_types(params)))
             }
 
-            hax::Ty::Param(param) => {
+            hax::TyKind::Param(param) => {
                 // A type parameter, for example `T` in `fn f<T>(x : T) {}`.
                 // Note that this type parameter may actually have been
                 // instantiated (in our environment, we may map it to another
@@ -289,37 +289,37 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 }
             }
 
-            hax::Ty::Foreign(def_id) => {
+            hax::TyKind::Foreign(def_id) => {
                 trace!("Foreign");
                 let def_id = self.translate_type_id(span, def_id)?;
                 Ok(Ty::Adt(def_id, GenericArgs::empty()))
             }
-            hax::Ty::Infer(_) => {
+            hax::TyKind::Infer(_) => {
                 trace!("Infer");
                 error_or_panic!(self, span, "Unsupported type: infer type")
             }
 
-            hax::Ty::Dynamic(_existential_preds, _region, _) => {
+            hax::TyKind::Dynamic(_existential_preds, _region, _) => {
                 // TODO: we don't translate the predicates yet because our machinery can't handle
                 // it.
                 trace!("Dynamic");
                 Ok(Ty::DynTrait(ExistentialPredicate))
             }
 
-            hax::Ty::Coroutine(..) => {
+            hax::TyKind::Coroutine(..) => {
                 trace!("Coroutine");
                 error_or_panic!(self, span, "Coroutine types are not supported yet")
             }
 
-            hax::Ty::Bound(_, _) => {
+            hax::TyKind::Bound(_, _) => {
                 trace!("Bound");
                 error_or_panic!(self, span, "Unexpected type kind: bound")
             }
-            hax::Ty::Placeholder(_) => {
+            hax::TyKind::Placeholder(_) => {
                 trace!("PlaceHolder");
                 error_or_panic!(self, span, "Unsupported type: placeholder")
             }
-            hax::Ty::Arrow(box sig) => {
+            hax::TyKind::Arrow(box sig) => {
                 trace!("Arrow");
                 trace!("bound vars: {:?}", sig.bound_vars);
 
@@ -337,11 +337,11 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                     Ok(Ty::Arrow(regions, inputs, Box::new(output)))
                 })
             }
-            hax::Ty::Error => {
+            hax::TyKind::Error => {
                 trace!("Error");
                 error_or_panic!(self, span, "Type checking error")
             }
-            hax::Ty::Todo(s) => {
+            hax::TyKind::Todo(s) => {
                 trace!("Todo: {s}");
                 error_or_panic!(self, span, format!("Unsupported type: {:?}", s))
             }

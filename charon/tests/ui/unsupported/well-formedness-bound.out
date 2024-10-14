@@ -1,4 +1,4 @@
-error: Unsupported clause: WellFormed(Type(Ref(Region { kind: ReEarlyParam(EarlyParamRegion { index: 0, name: "'a" }) }, Tuple([]), false)))
+error: Unsupported clause: WellFormed(Type(Ty { kind: Ref(Region { kind: ReEarlyParam(EarlyParamRegion { index: 0, name: "'a" }) }, Ty { kind: Tuple([]) }, false) }))
  --> tests/ui/unsupported/well-formedness-bound.rs:4:5
   |
 4 |     &'a ():,
