@@ -1,4 +1,4 @@
-error: Unimplemented: Alias(Alias { kind: Opaque, args: [Lifetime(Region { kind: ReEarlyParam(EarlyParamRegion { index: 0, name: "'a" }) }), Lifetime(Region { kind: ReEarlyParam(EarlyParamRegion { index: 0, name: "'a" }) })], def_id: test_crate::sparse_transitions::{opaque#0} })
+error: Unimplemented: Ty { kind: Alias(Alias { kind: Opaque, args: [Lifetime(Region { kind: ReEarlyParam(EarlyParamRegion { index: 0, name: "'a" }) }), Lifetime(Region { kind: ReEarlyParam(EarlyParamRegion { index: 0, name: "'a" }) })], def_id: test_crate::sparse_transitions::{opaque#0} }) }
  --> tests/ui/issue-394-rpit-with-lifetime.rs:3:1
   |
 3 | / fn sparse_transitions<'a>() -> impl Iterator<Item = u8> + 'a {

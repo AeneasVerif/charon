@@ -1,4 +1,4 @@
-error: Unimplemented: Alias(Alias { kind: Opaque, args: [Type(Param(ParamTy { index: 0, name: "U" }))], def_id: test_crate::wrap::{opaque#0} })
+error: Unimplemented: Ty { kind: Alias(Alias { kind: Opaque, args: [Type(Ty { kind: Param(ParamTy { index: 0, name: "U" }) })], def_id: test_crate::wrap::{opaque#0} }) }
  --> tests/ui/impl-trait.rs:4:1
   |
 4 | / pub fn wrap<U>() -> impl for<'a> FnOnce(&'a U) -> WrapClone<&'a U> {
