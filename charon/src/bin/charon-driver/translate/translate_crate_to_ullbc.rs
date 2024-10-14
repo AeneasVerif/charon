@@ -134,8 +134,8 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
                 }
 
                 // Explore the items
-                for (item, _) in items {
-                    let def_id = (&item.def_id).into();
+                for (item, item_def) in items {
+                    let def_id = item_def.rust_def_id();
                     // Match on the impl item kind
                     match &item.kind {
                         hax::AssocKind::Const => {

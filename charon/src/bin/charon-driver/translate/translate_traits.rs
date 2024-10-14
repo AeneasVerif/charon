@@ -347,9 +347,9 @@ impl BodyTransCtx<'_, '_, '_> {
         let mut required_methods = Vec::new();
         let mut provided_methods = Vec::new();
 
-        for (decl_item, _) in decl_items {
-            let item_def_id = (&decl_item.def_id).into();
-            let item_span = self.def_span(item_def_id);
+        for (decl_item, decl_item_def) in decl_items {
+            let item_def_id = decl_item_def.rust_def_id();
+            let item_span = self.translate_span_from_hax(&decl_item_def.span);
             let name = TraitItemName(decl_item.name.to_string());
             match &decl_item.kind {
                 hax::AssocKind::Fn => {

@@ -733,19 +733,17 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     }
 
     /// Checks whether the given id corresponds to a built-in function.
-    fn recognize_builtin_fun(&mut self, def_id: &hax::DefId) -> Result<Option<BuiltinFun>, Error> {
-        use rustc_hir::lang_items::LangItem;
-        let tcx = self.t_ctx.tcx;
-        let rust_id = DefId::from(def_id);
-        let name = self.t_ctx.hax_def_id_to_name(def_id)?;
-
-        let panic_lang_items = &[LangItem::Panic, LangItem::PanicFmt, LangItem::BeginPanic];
+    fn recognize_builtin_fun(&mut self, def: &hax::FullDef) -> Result<Option<BuiltinFun>, Error> {
+        let name = self.t_ctx.hax_def_id_to_name(&def.def_id)?;
+        let panic_lang_items = &["panic", "panic_fmt", "begin_panic"];
         let panic_names = &[&["core", "panicking", "assert_failed"], EXPLICIT_PANIC_NAME];
-        if tcx.is_diagnostic_item(rustc_span::sym::box_new, rust_id) {
+
+        if def.diagnostic_item.as_deref() == Some("box_new") {
             Ok(Some(BuiltinFun::BoxNew))
-        } else if panic_lang_items
-            .iter()
-            .any(|i| tcx.is_lang_item(rust_id, *i))
+        } else if def
+            .lang_item
+            .as_deref()
+            .is_some_and(|lang_it| panic_lang_items.iter().contains(&lang_it))
             || panic_names.iter().any(|panic| name.equals_ref_name(panic))
         {
             Ok(Some(BuiltinFun::Panic))
@@ -775,7 +773,8 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         trait_refs: &Vec<hax::ImplExpr>,
         trait_info: &Option<hax::ImplExpr>,
     ) -> Result<SubstFunIdOrPanic, Error> {
-        let builtin_fun = self.recognize_builtin_fun(def_id)?;
+        let fun_def = self.t_ctx.hax_def(def_id);
+        let builtin_fun = self.recognize_builtin_fun(&fun_def)?;
         if matches!(builtin_fun, Some(BuiltinFun::Panic)) {
             let name = self.t_ctx.hax_def_id_to_name(def_id)?;
             return Ok(SubstFunIdOrPanic::Panic(name));
@@ -1226,12 +1225,12 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     }
 
     /// Gather all the lines that start with `//` inside the given span.
-    fn translate_body_comments(&mut self, charon_span: Span) -> Vec<(usize, Vec<String>)> {
-        let rust_span = charon_span.rust_span();
-        let source_map = self.t_ctx.tcx.sess.source_map();
-        if rust_span.ctxt().is_root()
-            && let Ok(body_text) = source_map.span_to_snippet(rust_span.into())
-        {
+    fn translate_body_comments(
+        &mut self,
+        def: &hax::FullDef,
+        charon_span: Span,
+    ) -> Vec<(usize, Vec<String>)> {
+        if let Some(body_text) = &def.source_text {
             let mut comments = body_text
                 .lines()
                 // Iter through the lines of this body in reverse order.
@@ -1271,14 +1270,13 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     /// declared opaque, and only translate non-local bodies if `extract_opaque_bodies` is set).
     fn translate_body(
         &mut self,
-        rust_id: DefId,
+        def: &hax::FullDef,
         arg_count: usize,
         item_meta: &ItemMeta,
     ) -> Result<Result<Body, Opaque>, Error> {
         // Stopgap measure because there are still many panics in charon and hax.
         let mut this = panic::AssertUnwindSafe(&mut *self);
-        let res =
-            panic::catch_unwind(move || this.translate_body_aux(rust_id, arg_count, item_meta));
+        let res = panic::catch_unwind(move || this.translate_body_aux(def, arg_count, item_meta));
         match res {
             Ok(Ok(body)) => Ok(body),
             // Translation error
@@ -1295,7 +1293,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
 
     fn translate_body_aux(
         &mut self,
-        rust_id: DefId,
+        def: &hax::FullDef,
         arg_count: usize,
         item_meta: &ItemMeta,
     ) -> Result<Result<Body, Opaque>, Error> {
@@ -1305,6 +1303,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         }
 
         // Retrieve the body
+        let rust_id = def.rust_def_id();
         let Some(body) =
             get_mir_for_def_id_and_level(self.t_ctx.tcx, rust_id, self.t_ctx.options.mir_level)
         else {
@@ -1346,7 +1345,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             span,
             arg_count,
             locals: mem::take(&mut self.vars),
-            comments: self.translate_body_comments(span),
+            comments: self.translate_body_comments(def, span),
             body: blocks,
         })))
     }
@@ -1481,7 +1480,7 @@ impl BodyTransCtx<'_, '_, '_> {
         let body_id = if !is_trait_method_decl_without_default {
             // Translate the body. This doesn't store anything if we can't/decide not to translate
             // this body.
-            match self.translate_body(rust_id, signature.inputs.len(), &item_meta) {
+            match self.translate_body(def, signature.inputs.len(), &item_meta) {
                 Ok(Ok(body)) => Ok(self.t_ctx.translated.bodies.push(body)),
                 // Opaque declaration
                 Ok(Err(Opaque)) => Err(Opaque),
@@ -1538,7 +1537,7 @@ impl BodyTransCtx<'_, '_, '_> {
 
         // Translate its body like the body of a function. This returns `Opaque if we can't/decide
         // not to translate this body.
-        let body_id = match self.translate_body(rust_id, 0, &item_meta) {
+        let body_id = match self.translate_body(def, 0, &item_meta) {
             Ok(Ok(body)) => Ok(self.t_ctx.translated.bodies.push(body)),
             // Opaque declaration
             Ok(Err(Opaque)) => Err(Opaque),

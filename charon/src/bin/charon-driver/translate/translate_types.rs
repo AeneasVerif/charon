@@ -9,7 +9,6 @@ use charon_lib::pretty::FmtWithCtx;
 use core::convert::*;
 use hax::Visibility;
 use hax_frontend_exporter as hax;
-use rustc_hir::def_id::DefId;
 
 /// Small helper: we ignore some region names (when they are equal to "'_")
 fn check_region_name(s: Option<String>) -> Option<String> {
@@ -420,10 +419,8 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
 
     /// Checks whether the given id corresponds to a built-in type.
     fn recognize_builtin_type(&mut self, def_id: &hax::DefId) -> Result<Option<BuiltinTy>, Error> {
-        use rustc_hir::lang_items::LangItem;
-        let tcx = self.t_ctx.tcx;
-        let rust_id = DefId::from(def_id);
-        let ty = if tcx.is_lang_item(rust_id, LangItem::OwnedBox) {
+        let def = self.t_ctx.hax_def(def_id);
+        let ty = if def.lang_item.as_deref() == Some("owned_box") {
             Some(BuiltinTy::Box)
         } else {
             None

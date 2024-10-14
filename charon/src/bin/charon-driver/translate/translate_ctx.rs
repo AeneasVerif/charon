@@ -536,14 +536,9 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         name: Name,
         opacity: ItemOpacity,
     ) -> Result<ItemMeta, Error> {
-        let def_id: DefId = (&def.def_id).into();
-        // TODO: upstream to hax
-        let span = def_id
-            .as_local()
-            .map(|local_def_id| self.tcx.source_span(local_def_id))
-            .unwrap_or(def.span.rust_span_data.unwrap().span());
-        let source_text = self.tcx.sess.source_map().span_to_snippet(span.into()).ok();
-        let span = self.translate_span_from_hax(&span.sinto(&self.hax_state));
+        let def_id = def.rust_def_id();
+        let span = def.source_span.as_ref().unwrap_or(&def.span);
+        let span = self.translate_span_from_hax(span);
         let attr_info = self.translate_attr_info(def);
         let is_local = def.def_id.is_local;
 
@@ -559,7 +554,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         Ok(ItemMeta {
             name,
             span,
-            source_text,
+            source_text: def.source_text.clone(),
             attr_info,
             is_local,
             opacity,
@@ -679,7 +674,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
     }
 
     pub(crate) fn def_span(&mut self, def_id: impl Into<DefId>) -> Span {
-        let span = self.tcx.def_span(def_id.into()).sinto(&self.hax_state);
+        let span = &self.hax_def(def_id).span;
         self.translate_span_from_hax(&span)
     }
 
