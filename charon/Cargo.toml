@@ -78,6 +78,7 @@ which = "6.0.1"
 hax-frontend-exporter = { git = "https://github.com/hacspec/hax", branch = "main", optional = true }
 # hax-frontend-exporter = { path = "../../hax/frontend/exporter", optional = true }
 macros = { path = "./macros" }
+by_address = "1.2.1"
 
 [features]
 default = ["rustc"]
