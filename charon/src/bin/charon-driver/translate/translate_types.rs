@@ -715,12 +715,19 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             };
             self.register_predicates(predicates, origin, &location)?;
 
-            // Also add the predicates on associated types.
             if let hax::FullDefKind::Trait { items, .. } = &def.kind
                 && !is_parent
             {
+                // Also add the predicates on associated types.
+                // FIXME(gat): don't skip GATs.
                 for (item, item_def) in items {
-                    if let hax::FullDefKind::AssocTy { predicates, .. } = &item_def.kind {
+                    if let hax::FullDefKind::AssocTy {
+                        generics,
+                        predicates,
+                        ..
+                    } = &item_def.kind
+                        && generics.params.is_empty()
+                    {
                         let name = TraitItemName(item.name.clone());
                         self.register_predicates(
                             &predicates,

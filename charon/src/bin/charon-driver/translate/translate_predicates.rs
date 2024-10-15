@@ -1,7 +1,9 @@
 use super::translate_ctx::*;
 use super::translate_traits::PredicateLocation;
 use charon_lib::ast::*;
+use charon_lib::formatter::IntoFormatter;
 use charon_lib::ids::Vector;
+use charon_lib::pretty::FmtWithCtx;
 use hax_frontend_exporter as hax;
 
 impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
@@ -226,7 +228,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                             // The trait ref should be Some(...): the marker traits (that
                             // we may filter) don't have associated types.
                             let trait_ref = trait_ref.unwrap();
-                            let ty = ctx.translate_ty(span, erase_regions, ty).unwrap();
+                            let ty = ctx.translate_ty(span, erase_regions, ty)?;
                             let type_name = TraitItemName(assoc_item.name.clone().into());
                             ctx.generic_params
                                 .trait_type_constraints
@@ -378,10 +380,22 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                     match path_elem {
                         AssocItem {
                             item,
+                            generic_args,
                             predicate,
                             index,
                             ..
                         } => {
+                            if !generic_args.is_empty() {
+                                error_or_panic!(
+                                    self,
+                                    span,
+                                    format!(
+                                        "Found unsupported GAT `{}` when resolving trait `{}`",
+                                        item.name,
+                                        trait_decl_ref.fmt_with_ctx(&self.into_fmt())
+                                    )
+                                )
+                            }
                             trait_id = TraitRefKind::ItemClause(
                                 Box::new(trait_id),
                                 current_trait_decl_id,
