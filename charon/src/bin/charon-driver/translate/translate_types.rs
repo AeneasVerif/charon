@@ -664,7 +664,11 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             // Add the self trait clause.
             match &def.kind {
                 FullDefKind::Impl {
-                    impl_subject: hax::ImplSubject::Trait(self_predicate),
+                    impl_subject:
+                        hax::ImplSubject::Trait {
+                            trait_pred: self_predicate,
+                            ..
+                        },
                     ..
                 }
                 | FullDefKind::Trait { self_predicate, .. } => {
@@ -709,8 +713,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             if let hax::FullDefKind::Trait { items, .. } = &def.kind
                 && !is_parent
             {
-                for item in items {
-                    let item_def = self.t_ctx.hax_def(&item.def_id);
+                for (item, item_def) in items {
                     if let hax::FullDefKind::AssocTy { predicates, .. } = &item_def.kind {
                         let name = TraitItemName(item.name.clone());
                         self.register_predicates(

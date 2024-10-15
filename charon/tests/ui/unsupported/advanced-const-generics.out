@@ -1,4 +1,4 @@
-thread 'rustc' panicked at src/bin/charon-driver/translate/translate_types.rs:784:42:
+thread 'rustc' panicked at src/bin/charon-driver/translate/translate_types.rs:787:42:
 called `Option::unwrap()` on a `None` value
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 error: Thread panicked when extracting item `test_crate::foo`.
@@ -25,9 +25,15 @@ error[E9999]: Supposely unreachable place in the Rust AST. The label is "Transla
                       N/#0,
                   ],
               }
-  |
-  = note: ⚠️ This is a bug in Hax's frontend.
-          Please report this error to https://github.com/hacspec/hax/issues with some context (e.g. the current crate)!
+  --> tests/ui/unsupported/advanced-const-generics.rs:18:1
+   |
+18 | / fn bar<const N: usize>()
+19 | | where
+20 | |     [(); N + 1]:,
+   | |_________________^
+   |
+   = note: ⚠️ This is a bug in Hax's frontend.
+           Please report this error to https://github.com/hacspec/hax/issues with some context (e.g. the current crate)!
 
 error: Thread panicked when extracting item `test_crate::bar`.
   --> tests/ui/unsupported/advanced-const-generics.rs:18:1

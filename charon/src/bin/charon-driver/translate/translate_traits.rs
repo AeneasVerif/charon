@@ -106,10 +106,9 @@ impl BodyTransCtx<'_, '_, '_> {
         };
         let items: Vec<(TraitItemName, &hax::AssocItem, Arc<hax::FullDef>)> = items
             .iter()
-            .map(|item| {
+            .map(|(item, def)| {
                 let name = TraitItemName(item.name.clone());
-                let def = self.t_ctx.hax_def(&item.def_id);
-                (name, item, def)
+                (name, item, def.clone())
             })
             .collect_vec();
 
@@ -233,7 +232,7 @@ impl BodyTransCtx<'_, '_, '_> {
         let generics = self.translate_def_generics(span, def)?;
 
         let hax::FullDefKind::Impl {
-            impl_subject: hax::ImplSubject::Trait(trait_pred),
+            impl_subject: hax::ImplSubject::Trait { trait_pred, .. },
             items: impl_items,
             ..
         } = &def.kind
@@ -307,7 +306,7 @@ impl BodyTransCtx<'_, '_, '_> {
         let mut types: HashMap<TraitItemName, Ty> = HashMap::new();
         let mut methods = HashMap::new();
 
-        for item in impl_items {
+        for (item, item_def) in impl_items {
             let name = TraitItemName(item.name.clone());
             let item_span = self.def_span(&item.def_id);
             match &item.kind {
@@ -325,17 +324,13 @@ impl BodyTransCtx<'_, '_, '_> {
                     consts.insert(name, gref);
                 }
                 hax::AssocKind::Type => {
-                    // Warning: don't call `hax_def` on associated functions because this triggers
-                    // hax crashes on functions with higher-kinded predicates like
-                    // `Iterator::scan`.
-                    let item_def = self.t_ctx.hax_def(&item.def_id);
                     let hax::FullDefKind::AssocTy {
                         value: Some(ty), ..
                     } = item_def.kind()
                     else {
                         unreachable!()
                     };
-                    let ty = self.translate_ty(item_span, erase_regions, ty)?;
+                    let ty = self.translate_ty(item_span, erase_regions, &ty)?;
                     types.insert(name, ty);
                 }
             }
@@ -352,7 +347,7 @@ impl BodyTransCtx<'_, '_, '_> {
         let mut required_methods = Vec::new();
         let mut provided_methods = Vec::new();
 
-        for decl_item in decl_items {
+        for (decl_item, _) in decl_items {
             let item_def_id = (&decl_item.def_id).into();
             let item_span = self.def_span(item_def_id);
             let name = TraitItemName(decl_item.name.to_string());

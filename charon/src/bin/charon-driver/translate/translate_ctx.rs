@@ -186,8 +186,6 @@ pub struct TranslateCtx<'tcx, 'ctx> {
     /// Stack of the translations currently happening. Used to avoid cycles where items need to
     /// translate themselves transitively.
     pub translate_stack: Vec<AnyTransId>,
-    /// Cache the `hax::FullDef`s to compute them only once each.
-    pub cached_defs: HashMap<DefId, Arc<hax::FullDef>>,
     /// Cache the `PathElem`s to compute them only once each. It's an `Option` because some
     /// `DefId`s (e.g. `extern {}` blocks) don't appear in the `Name`.
     pub cached_path_elems: HashMap<DefId, Option<PathElem>>,
@@ -364,7 +362,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
                         ImplElem::Ty(generics, ty)
                     }
                     // Trait implementation
-                    hax::ImplSubject::Trait(..) => {
+                    hax::ImplSubject::Trait { .. } => {
                         let impl_id = self.register_trait_impl_id(&None, def_id);
                         ImplElem::Trait(impl_id)
                     }
@@ -495,12 +493,8 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
 
     pub fn hax_def(&mut self, def_id: impl Into<DefId>) -> Arc<hax::FullDef> {
         let def_id: DefId = def_id.into();
-        // We return an `Arc` because keeping a borrow would prevent us from doing anything useful
-        // with `self`.
-        self.cached_defs
-            .entry(def_id)
-            .or_insert_with(|| Arc::new(def_id.sinto(&self.hax_state)))
-            .clone()
+        // Hax takes care of caching the translation.
+        def_id.sinto(&self.hax_state)
     }
 
     pub(crate) fn translate_attr_info(&mut self, def: &hax::FullDef) -> AttrInfo {
@@ -859,7 +853,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         {
             let def = self.hax_def(id);
             let hax::FullDefKind::Impl {
-                impl_subject: hax::ImplSubject::Trait(trait_pred),
+                impl_subject: hax::ImplSubject::Trait { trait_pred, .. },
                 ..
             } = def.kind()
             else {
