@@ -1,5 +1,5 @@
-use crate::ast::*;
 use crate::ids::Vector;
+use crate::{ast::*, common::hash_consing::HashConsed};
 use derivative::Derivative;
 use derive_visitor::{Drive, DriveMut, Event, Visitor, VisitorMut};
 use macros::{EnumAsGetters, EnumIsA, EnumToGetters, VariantIndexArity, VariantName};
@@ -648,6 +648,19 @@ pub enum ConstGeneric {
 }
 
 /// A type.
+#[derive(Debug, Clone, Hash, PartialEq, Eq, Serialize, Deserialize, Drive, DriveMut)]
+pub struct Ty(HashConsed<TyKind>);
+
+impl Ty {
+    pub fn new(kind: TyKind) -> Self {
+        Ty(HashConsed::new(kind))
+    }
+
+    pub fn kind(&self) -> &TyKind {
+        self.0.inner()
+    }
+}
+
 #[derive(
     Debug,
     Clone,
@@ -665,7 +678,8 @@ pub enum ConstGeneric {
     DriveMut,
 )]
 #[charon::variants_prefix("T")]
-pub enum Ty {
+#[charon::rename("Ty")]
+pub enum TyKind {
     /// An ADT.
     /// Note that here ADTs are very general. They can be:
     /// - user-defined ADTs
@@ -698,9 +712,9 @@ pub enum Ty {
     Never,
     // We don't support floating point numbers on purpose (for now)
     /// A borrow
-    Ref(Region, Box<Ty>, RefKind),
+    Ref(Region, Ty, RefKind),
     /// A raw pointer.
-    RawPtr(Box<Ty>, RefKind),
+    RawPtr(Ty, RefKind),
     /// A trait associated type
     ///
     /// Ex.:
@@ -721,7 +735,7 @@ pub enum Ty {
     /// This is essentially a "constrained" function signature:
     /// arrow types can only contain generic lifetime parameters
     /// (no generic types), no predicates, etc.
-    Arrow(Vector<RegionId, RegionVar>, Vec<Ty>, Box<Ty>),
+    Arrow(Vector<RegionId, RegionVar>, Vec<Ty>, Ty),
 }
 
 /// Builtin types identifiers.

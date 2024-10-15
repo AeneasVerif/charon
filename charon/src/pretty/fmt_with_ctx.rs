@@ -1364,8 +1364,8 @@ impl<C: AstFormatter> FmtWithCtx<C> for TraitTypeConstraint {
 
 impl<C: AstFormatter> FmtWithCtx<C> for Ty {
     fn fmt_with_ctx(&self, ctx: &C) -> String {
-        match self {
-            Ty::Adt(id, generics) => {
+        match self.kind() {
+            TyKind::Adt(id, generics) => {
                 let adt_ident = id.fmt_with_ctx(ctx);
 
                 if id.is_tuple() {
@@ -1377,10 +1377,10 @@ impl<C: AstFormatter> FmtWithCtx<C> for Ty {
                     format!("{adt_ident}{generics}")
                 }
             }
-            Ty::TypeVar(id) => ctx.format_object(*id),
-            Ty::Literal(kind) => kind.to_string(),
-            Ty::Never => "!".to_string(),
-            Ty::Ref(r, ty, kind) => match kind {
+            TyKind::TypeVar(id) => ctx.format_object(*id),
+            TyKind::Literal(kind) => kind.to_string(),
+            TyKind::Never => "!".to_string(),
+            TyKind::Ref(r, ty, kind) => match kind {
                 RefKind::Mut => {
                     format!("&{} mut ({})", r.fmt_with_ctx(ctx), ty.fmt_with_ctx(ctx))
                 }
@@ -1388,15 +1388,15 @@ impl<C: AstFormatter> FmtWithCtx<C> for Ty {
                     format!("&{} ({})", r.fmt_with_ctx(ctx), ty.fmt_with_ctx(ctx))
                 }
             },
-            Ty::RawPtr(ty, kind) => match kind {
+            TyKind::RawPtr(ty, kind) => match kind {
                 RefKind::Shared => format!("*const {}", ty.fmt_with_ctx(ctx)),
                 RefKind::Mut => format!("*mut {}", ty.fmt_with_ctx(ctx)),
             },
-            Ty::TraitType(trait_ref, name) => {
+            TyKind::TraitType(trait_ref, name) => {
                 format!("{}::{name}", trait_ref.fmt_with_ctx(ctx),)
             }
-            Ty::DynTrait(pred) => format!("dyn ({})", pred.with_ctx(ctx)),
-            Ty::Arrow(regions, inputs, box output) => {
+            TyKind::DynTrait(pred) => format!("dyn ({})", pred.with_ctx(ctx)),
+            TyKind::Arrow(regions, inputs, output) => {
                 // Update the bound regions
                 let ctx = &ctx.push_bound_regions(regions);
 

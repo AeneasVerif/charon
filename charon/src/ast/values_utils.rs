@@ -230,7 +230,7 @@ impl ScalarValue {
     pub fn to_constant(self) -> ConstantExpr {
         ConstantExpr {
             value: RawConstantExpr::Literal(Literal::Scalar(self)),
-            ty: Ty::Literal(LiteralTy::Integer(self.get_integer_ty())),
+            ty: TyKind::Literal(LiteralTy::Integer(self.get_integer_ty())).into_ty(),
         }
     }
 }

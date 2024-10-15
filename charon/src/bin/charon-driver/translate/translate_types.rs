@@ -3,6 +3,7 @@ use crate::translate::translate_traits::PredicateLocation;
 use super::translate_ctx::*;
 use charon_lib::ast::*;
 use charon_lib::builtins;
+use charon_lib::common::hash_by_addr::HashByAddr;
 use charon_lib::formatter::IntoFormatter;
 use charon_lib::ids::Vector;
 use charon_lib::pretty::FmtWithCtx;
@@ -122,41 +123,46 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         ty: &hax::Ty,
     ) -> Result<Ty, Error> {
         trace!("{:?}", ty);
-        match ty.kind() {
-            hax::TyKind::Bool => Ok(Ty::Literal(LiteralTy::Bool)),
-            hax::TyKind::Char => Ok(Ty::Literal(LiteralTy::Char)),
+        let cache_key = HashByAddr(ty.kind.clone());
+        if let Some(ty) = self.type_trans_cache.get(&cache_key) {
+            return Ok(ty.clone());
+        }
+
+        let kind = match ty.kind() {
+            hax::TyKind::Bool => TyKind::Literal(LiteralTy::Bool),
+            hax::TyKind::Char => TyKind::Literal(LiteralTy::Char),
             hax::TyKind::Int(int_ty) => {
                 use hax::IntTy;
-                Ok(Ty::Literal(LiteralTy::Integer(match int_ty {
+                TyKind::Literal(LiteralTy::Integer(match int_ty {
                     IntTy::Isize => IntegerTy::Isize,
                     IntTy::I8 => IntegerTy::I8,
                     IntTy::I16 => IntegerTy::I16,
                     IntTy::I32 => IntegerTy::I32,
                     IntTy::I64 => IntegerTy::I64,
                     IntTy::I128 => IntegerTy::I128,
-                })))
+                }))
             }
             hax::TyKind::Uint(int_ty) => {
                 use hax::UintTy;
-                Ok(Ty::Literal(LiteralTy::Integer(match int_ty {
+                TyKind::Literal(LiteralTy::Integer(match int_ty {
                     UintTy::Usize => IntegerTy::Usize,
                     UintTy::U8 => IntegerTy::U8,
                     UintTy::U16 => IntegerTy::U16,
                     UintTy::U32 => IntegerTy::U32,
                     UintTy::U64 => IntegerTy::U64,
                     UintTy::U128 => IntegerTy::U128,
-                })))
+                }))
             }
             hax::TyKind::Float(float_ty) => {
                 use hax::FloatTy;
-                Ok(Ty::Literal(LiteralTy::Float(match float_ty {
+                TyKind::Literal(LiteralTy::Float(match float_ty {
                     FloatTy::F16 => charon_lib::ast::types::FloatTy::F16,
                     FloatTy::F32 => charon_lib::ast::types::FloatTy::F32,
                     FloatTy::F64 => charon_lib::ast::types::FloatTy::F64,
                     FloatTy::F128 => charon_lib::ast::types::FloatTy::F128,
-                })))
+                }))
             }
-            hax::TyKind::Never => Ok(Ty::Never),
+            hax::TyKind::Never => TyKind::Never,
 
             hax::TyKind::Alias(alias) => match &alias.kind {
                 hax::AliasKind::Projection {
@@ -169,7 +175,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                     // ignore) has associated types.
                     let trait_ref = trait_ref.unwrap();
                     let name = TraitItemName(assoc_item.name.clone().into());
-                    Ok(Ty::TraitType(trait_ref, name))
+                    TyKind::TraitType(trait_ref, name)
                 }
                 _ => {
                     error_or_panic!(self, span, format!("Unimplemented: {:?}", ty))
@@ -203,13 +209,13 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 )?;
 
                 // Return the instantiated ADT
-                Ok(Ty::Adt(type_id, generics))
+                TyKind::Adt(type_id, generics)
             }
             hax::TyKind::Str => {
                 trace!("Str");
 
                 let id = TypeId::Builtin(BuiltinTy::Str);
-                Ok(Ty::Adt(id, GenericArgs::empty()))
+                TyKind::Adt(id, GenericArgs::empty())
             }
             hax::TyKind::Array(ty, const_param) => {
                 trace!("Array");
@@ -218,17 +224,14 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 let tys = vec![self.translate_ty(span, erase_regions, ty)?].into();
                 let cgs = vec![c].into();
                 let id = TypeId::Builtin(BuiltinTy::Array);
-                Ok(Ty::Adt(
-                    id,
-                    GenericArgs::new(Vector::new(), tys, cgs, Vector::new()),
-                ))
+                TyKind::Adt(id, GenericArgs::new(Vector::new(), tys, cgs, Vector::new()))
             }
             hax::TyKind::Slice(ty) => {
                 trace!("Slice");
 
                 let tys = vec![self.translate_ty(span, erase_regions, ty)?].into();
                 let id = TypeId::Builtin(BuiltinTy::Slice);
-                Ok(Ty::Adt(id, GenericArgs::new_from_types(tys)))
+                TyKind::Adt(id, GenericArgs::new_from_types(tys))
             }
             hax::TyKind::Ref(region, ty, mutability) => {
                 trace!("Ref");
@@ -240,7 +243,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 } else {
                     RefKind::Shared
                 };
-                Ok(Ty::Ref(region, Box::new(ty), kind))
+                TyKind::Ref(region, ty, kind)
             }
             hax::TyKind::RawPtr(ty, mutbl) => {
                 trace!("RawPtr: {:?}", (ty, mutbl));
@@ -250,7 +253,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 } else {
                     RefKind::Shared
                 };
-                Ok(Ty::RawPtr(Box::new(ty), kind))
+                TyKind::RawPtr(ty, kind)
             }
             hax::TyKind::Tuple(substs) => {
                 trace!("Tuple");
@@ -261,7 +264,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                     params.push(param_ty);
                 }
 
-                Ok(Ty::Adt(TypeId::Tuple, GenericArgs::new_from_types(params)))
+                TyKind::Adt(TypeId::Tuple, GenericArgs::new_from_types(params))
             }
 
             hax::TyKind::Param(param) => {
@@ -284,14 +287,14 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                             param.name, param.index
                         )
                     ),
-                    Some(var_id) => Ok(Ty::TypeVar(*var_id)),
+                    Some(var_id) => TyKind::TypeVar(*var_id),
                 }
             }
 
             hax::TyKind::Foreign(def_id) => {
                 trace!("Foreign");
                 let def_id = self.translate_type_id(span, def_id)?;
-                Ok(Ty::Adt(def_id, GenericArgs::empty()))
+                TyKind::Adt(def_id, GenericArgs::empty())
             }
             hax::TyKind::Infer(_) => {
                 trace!("Infer");
@@ -302,7 +305,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 // TODO: we don't translate the predicates yet because our machinery can't handle
                 // it.
                 trace!("Dynamic");
-                Ok(Ty::DynTrait(ExistentialPredicate))
+                TyKind::DynTrait(ExistentialPredicate)
             }
 
             hax::TyKind::Coroutine(..) => {
@@ -333,8 +336,8 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                         .map(|x| ctx.translate_ty(span, erase_regions, x))
                         .try_collect()?;
                     let output = ctx.translate_ty(span, erase_regions, &sig.value.output)?;
-                    Ok(Ty::Arrow(regions, inputs, Box::new(output)))
-                })
+                    Ok(TyKind::Arrow(regions, inputs, output))
+                })?
             }
             hax::TyKind::Error => {
                 trace!("Error");
@@ -344,7 +347,10 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 trace!("Todo: {s}");
                 error_or_panic!(self, span, format!("Unsupported type: {:?}", s))
             }
-        }
+        };
+        let ty = kind.into_ty();
+        self.type_trans_cache.insert(cache_key, ty.clone());
+        Ok(ty)
     }
 
     #[allow(clippy::type_complexity)]
@@ -584,7 +590,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         discr: &hax::DiscriminantValue,
     ) -> Result<ScalarValue, Error> {
         let ty = self.translate_ty(def_span, true, &discr.ty)?;
-        let int_ty = *ty.as_literal().unwrap().as_integer().unwrap();
+        let int_ty = *ty.kind().as_literal().unwrap().as_integer().unwrap();
         Ok(ScalarValue::from_bits(int_ty, discr.val))
     }
 
@@ -781,7 +787,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 // The type should be primitive, meaning it shouldn't contain variables,
                 // non-primitive adts, etc. As a result, we can use an empty context.
                 let ty = self.translate_ty(span, false, ty)?;
-                let ty = ty.to_literal().unwrap();
+                let ty = *ty.kind().as_literal().unwrap();
                 self.push_const_generic_var(param.index, ty, param.name.clone());
             }
         }

@@ -52,7 +52,7 @@ impl<'a> Visitor<'a> {
                 continue;
             };
 
-            let Ty::Adt(TypeId::Builtin(builtin_ty), generics) = ty else {
+            let TyKind::Adt(TypeId::Builtin(builtin_ty), generics) = ty.kind() else {
                 unreachable!()
             };
 
@@ -74,27 +74,26 @@ impl<'a> Visitor<'a> {
                 })
             };
 
-            let input_ty = Ty::Ref(
-                Region::Erased,
-                Box::new(ty.clone()),
-                RefKind::mutable(mut_access),
-            );
+            let input_ty =
+                TyKind::Ref(Region::Erased, ty.clone(), RefKind::mutable(mut_access)).into_ty();
 
             let output_ty = {
                 let elem_ty = generics.types[0].clone();
                 let output_inner_ty = if matches!(pe, Index { .. }) {
                     elem_ty
                 } else {
-                    Ty::Adt(
+                    TyKind::Adt(
                         TypeId::Builtin(BuiltinTy::Slice),
                         GenericArgs::new_from_types(vec![elem_ty].into()),
                     )
+                    .into_ty()
                 };
-                Ty::Ref(
+                TyKind::Ref(
                     Region::Erased,
-                    Box::new(output_inner_ty),
+                    output_inner_ty,
                     RefKind::mutable(mut_access),
                 )
+                .into_ty()
             };
 
             // Push the statement:
@@ -126,7 +125,7 @@ impl<'a> Visitor<'a> {
                 _ => unreachable!(),
             };
             if from_end {
-                let usize_ty = Ty::Literal(LiteralTy::Integer(IntegerTy::Usize));
+                let usize_ty = TyKind::Literal(LiteralTy::Integer(IntegerTy::Usize)).into_ty();
                 let len_var = self.fresh_var(None, usize_ty.clone());
                 let kind = RawStatement::Assign(
                     Place::new(len_var),
