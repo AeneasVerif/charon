@@ -380,7 +380,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                             item,
                             predicate,
                             index,
-                            predicate_id: _,
+                            ..
                         } => {
                             trait_id = TraitRefKind::ItemClause(
                                 Box::new(trait_id),
@@ -394,9 +394,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                             );
                         }
                         Parent {
-                            predicate,
-                            index,
-                            predicate_id: _,
+                            predicate, index, ..
                         } => {
                             trait_id = TraitRefKind::ParentClause(
                                 Box::new(trait_id),

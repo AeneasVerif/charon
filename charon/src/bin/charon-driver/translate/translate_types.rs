@@ -177,6 +177,9 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                     let name = TraitItemName(assoc_item.name.clone().into());
                     TyKind::TraitType(trait_ref, name)
                 }
+                hax::AliasKind::Opaque { hidden_ty, .. } => {
+                    return self.translate_ty(span, erase_regions, hidden_ty)
+                }
                 _ => {
                     error_or_panic!(self, span, format!("Unimplemented: {:?}", ty))
                 }

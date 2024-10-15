@@ -20,7 +20,7 @@ error[E9999]: Supposely unreachable place in the Rust AST. The label is "Transla
    = note: ⚠️ This is a bug in Hax's frontend.
            Please report this error to https://github.com/hacspec/hax/issues with some context (e.g. the current crate)!
 
-thread 'rustc' panicked at src/bin/charon-driver/translate/translate_types.rs:790:50:
+thread 'rustc' panicked at src/bin/charon-driver/translate/translate_types.rs:793:50:
 called `Option::unwrap()` on a `None` value
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 error: Thread panicked when extracting item `test_crate::foo`.

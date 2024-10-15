@@ -1,5 +1,7 @@
-thread 'rustc' panicked at src/bin/charon-driver/translate/translate_predicates.rs:356:17:
-assertion failed: nested.is_empty()
+error: Could not find the type variable "T" (index: 1)
+
+thread 'rustc' panicked at src/bin/charon-driver/translate/translate_predicates.rs:229:80:
+called `Result::unwrap()` on an `Err` value: Error { span: Span { span: RawSpan { file_id: 0, beg: Loc { line: 1, col: 0 }, end: Loc { line: 1, col: 0 }, rust_span_data: no-location (#0) }, generated_from_span: None }, msg: "Could not find the type variable \"T\" (index: 1)" }
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 error: Thread panicked when extracting item `test_crate::PointerFamily`.
  --> tests/ui/non-lifetime-gats.rs:4:1
@@ -37,6 +39,6 @@ error: Ignoring the following item due to an error: test_crate::moar_variables::
 38 |     impl<T> Trait<Option<T>> for Foo {
    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-error: aborting due to 6 previous errors
+error: aborting due to 7 previous errors
 
 Error: Charon driver exited with code 101

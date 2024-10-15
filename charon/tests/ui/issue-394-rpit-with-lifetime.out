@@ -1,17 +1,68 @@
-error: Unimplemented: Ty { kind: Alias(Alias { kind: Opaque, args: [Lifetime(Region { kind: ReEarlyParam(EarlyParamRegion { index: 0, name: "'a" }) }), Lifetime(Region { kind: ReEarlyParam(EarlyParamRegion { index: 0, name: "'a" }) })], def_id: test_crate::sparse_transitions::{opaque#0} }) }
- --> tests/ui/issue-394-rpit-with-lifetime.rs:3:1
-  |
-3 | / fn sparse_transitions<'a>() -> impl Iterator<Item = u8> + 'a {
-4 | |     core::iter::from_fn(|| None)
-5 | | }
-  | |_^
+# Final LLBC before serialization:
 
-error: Ignoring the following item due to an error: test_crate::sparse_transitions
- --> tests/ui/issue-394-rpit-with-lifetime.rs:3:1
-  |
-3 | fn sparse_transitions<'a>() -> impl Iterator<Item = u8> + 'a {
-  | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+trait core::marker::Sized<Self>
 
-error: aborting due to 2 previous errors
+opaque type core::iter::sources::from_fn::FromFn<F>
+  where
+      [@TraitClause0]: core::marker::Sized<F>,
 
-Error: Charon driver exited with code 101
+enum core::option::Option<T>
+  where
+      [@TraitClause0]: core::marker::Sized<T>,
+ =
+|  None()
+|  Some(T)
+
+
+fn test_crate::sparse_transitions::closure<'a, '_1>(@1: &'_1 mut (()), @2: ()) -> core::option::Option<u8>[core::marker::Sized<u8>]
+{
+    let @0: core::option::Option<u8>[core::marker::Sized<u8>]; // return
+    let state@1: &'_1 mut (()); // arg #1
+
+    @0 := core::option::Option::None {  }
+    return
+}
+
+trait core::marker::Tuple<Self>
+
+trait core::ops::function::FnOnce<Self, Args>
+{
+    parent_clause0 : [@TraitClause0]: core::marker::Sized<Args>
+    parent_clause1 : [@TraitClause1]: core::marker::Tuple<Args>
+    parent_clause2 : [@TraitClause2]: core::marker::Sized<Self::Output>
+    type Output
+    fn call_once : core::ops::function::FnOnce::call_once
+}
+
+trait core::ops::function::FnMut<Self, Args>
+{
+    parent_clause0 : [@TraitClause0]: core::ops::function::FnOnce<Self, Args>
+    parent_clause1 : [@TraitClause1]: core::marker::Sized<Args>
+    parent_clause2 : [@TraitClause2]: core::marker::Tuple<Args>
+    fn call_mut : core::ops::function::FnMut::call_mut
+}
+
+fn core::iter::sources::from_fn::from_fn<T, F>(@1: F) -> core::iter::sources::from_fn::FromFn<F>[@TraitClause1]
+where
+    [@TraitClause0]: core::marker::Sized<T>,
+    [@TraitClause1]: core::marker::Sized<F>,
+    [@TraitClause2]: core::ops::function::FnMut<F, ()>,
+    @TraitClause2::parent_clause0::Output = core::option::Option<T>[@TraitClause0],
+
+fn test_crate::sparse_transitions<'a>() -> core::iter::sources::from_fn::FromFn<fn() -> core::option::Option<u8>[core::marker::Sized<u8>]>[core::marker::Sized<fn() -> core::option::Option<u8>[core::marker::Sized<u8>]>]
+{
+    let @0: core::iter::sources::from_fn::FromFn<fn() -> core::option::Option<u8>[core::marker::Sized<u8>]>[core::marker::Sized<fn() -> core::option::Option<u8>[core::marker::Sized<u8>]>]; // return
+    let @1: fn() -> core::option::Option<u8>[core::marker::Sized<u8>]; // anonymous local
+
+    @1 := {test_crate::sparse_transitions::closure<'_>} {}
+    @0 := core::iter::sources::from_fn::from_fn<u8, fn() -> core::option::Option<u8>[core::marker::Sized<u8>]>[core::marker::Sized<u8>, core::marker::Sized<fn() -> core::option::Option<u8>[core::marker::Sized<u8>]>, core::ops::function::FnMut<fn() -> core::option::Option<u8>[core::marker::Sized<u8>], ()>](move (@1))
+    drop @1
+    return
+}
+
+fn core::ops::function::FnMut::call_mut<'_0, Self, Args>(@1: &'_0 mut (Self), @2: Args) -> Self::parent_clause0::Output
+
+fn core::ops::function::FnOnce::call_once<Self, Args>(@1: Self, @2: Args) -> Self::Output
+
+
+
