@@ -55,14 +55,6 @@ fn translate_borrow_kind(borrow_kind: hax::BorrowKind) -> BorrowKind {
     }
 }
 
-fn translate_unaryop_kind(binop: hax::UnOp) -> UnOp {
-    match binop {
-        hax::UnOp::Not => UnOp::Not,
-        hax::UnOp::Neg => UnOp::Neg,
-        hax::UnOp::PtrMetadata => unimplemented!("Unop::PtrMetadata"),
-    }
-}
-
 impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
     fn translate_binaryop_kind(&mut self, span: Span, binop: hax::BinOp) -> Result<BinOp, Error> {
         Ok(match binop {
@@ -601,10 +593,19 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 };
                 Ok(Rvalue::NullaryOp(op, ty))
             }
-            hax::Rvalue::UnaryOp(unop, operand) => Ok(Rvalue::UnaryOp(
-                translate_unaryop_kind(*unop),
-                self.translate_operand(span, operand)?,
-            )),
+            hax::Rvalue::UnaryOp(unop, operand) => {
+                let unop = match unop {
+                    hax::UnOp::Not => UnOp::Not,
+                    hax::UnOp::Neg => UnOp::Neg,
+                    hax::UnOp::PtrMetadata => {
+                        error_or_panic!(self, span, "Unsupported operation: PtrMetadata")
+                    }
+                };
+                Ok(Rvalue::UnaryOp(
+                    unop,
+                    self.translate_operand(span, operand)?,
+                ))
+            }
             hax::Rvalue::Discriminant(place) => {
                 let (place, ty) = self.translate_place_with_type(span, place)?;
                 if let TyKind::Adt(TypeId::Adt(adt_id), _) = ty.kind() {
@@ -1362,6 +1363,13 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             hax::FullDefKind::Closure { args, .. } => &args.sig,
             hax::FullDefKind::Fn { sig, .. } => sig,
             hax::FullDefKind::AssocFn { sig, .. } => sig,
+            hax::FullDefKind::Ctor { .. } => {
+                error_or_panic!(
+                    self,
+                    span,
+                    "Casting constructors to function pointers is not supported"
+                )
+            }
             _ => panic!("Unexpected definition for function: {def:?}"),
         };
 

@@ -1,5 +1,5 @@
 //@ known-failure
-//! This file tests the error messages that indicates why we attempte to translate a given
+//! This file tests the error messages that indicates why we attempt to translate a given
 //! definition.
 #![feature(register_tool)]
 #![register_tool(charon)]

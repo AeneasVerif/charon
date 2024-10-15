@@ -241,7 +241,14 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                             // the type information in the const generic parameters
                             // directly? For now we just ignore it.
                         }
-                        ClauseKind::WellFormed(_) | ClauseKind::ConstEvaluatable(_) => {
+                        ClauseKind::WellFormed(_) => {
+                            error_or_panic!(
+                                ctx,
+                                span,
+                                format!("Well-formedness clauses are unsupported")
+                            )
+                        }
+                        ClauseKind::ConstEvaluatable(_) => {
                             error_or_panic!(ctx, span, format!("Unsupported clause: {:?}", kind))
                         }
                     }

@@ -178,7 +178,11 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                     return self.translate_ty(span, erase_regions, hidden_ty)
                 }
                 _ => {
-                    error_or_panic!(self, span, format!("Unimplemented: {:?}", ty))
+                    error_or_panic!(
+                        self,
+                        span,
+                        format!("Unsupported alias type: {:?}", alias.kind)
+                    )
                 }
             },
 

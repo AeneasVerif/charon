@@ -397,6 +397,11 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
                 // block.
                 None
             }
+            DefPathData::Ctor => {
+                // Do nothing, the constructor of a struct/variant has the same name as the
+                // struct/variant.
+                None
+            }
             _ => {
                 error_or_panic!(
                     self,
