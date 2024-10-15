@@ -171,10 +171,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 } => {
                     let trait_ref =
                         self.translate_trait_impl_expr(span, erase_regions, impl_expr)?;
-                    // This should succeed because no marker trait (that we may
-                    // ignore) has associated types.
-                    let trait_ref = trait_ref.unwrap();
-                    let name = TraitItemName(assoc_item.name.clone().into());
+                    let name = TraitItemName(assoc_item.name.clone());
                     TyKind::TraitType(trait_ref, name)
                 }
                 hax::AliasKind::Opaque { hidden_ty, .. } => {

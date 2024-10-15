@@ -848,18 +848,12 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             let fun_id = self.register_fun_decl_id(span, def_id);
             // Two cases depending on whether we call a trait method or not
             match trait_info {
-                None => {
-                    // "Regular" function call
-                    FunIdOrTraitMethodRef::Fun(FunId::Regular(fun_id))
-                }
+                // Direct function call
+                None => FunIdOrTraitMethodRef::Fun(FunId::Regular(fun_id)),
+                // Trait method
                 Some(trait_info) => {
-                    // Trait method
                     let impl_expr =
                         self.translate_trait_impl_expr(span, erase_regions, trait_info)?;
-                    // The impl source should be Some(...): trait markers (that we may
-                    // eliminate) don't have methods.
-                    let impl_expr = impl_expr.unwrap();
-
                     let method_name = self.t_ctx.translate_trait_item_name(def_id)?;
                     FunIdOrTraitMethodRef::Trait(impl_expr, method_name, fun_id)
                 }

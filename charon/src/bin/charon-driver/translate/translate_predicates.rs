@@ -81,14 +81,12 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         Ok(())
     }
 
-    /// Returns an [Option] because we may filter trait refs about builtin or
-    /// auto traits like [core::marker::Sized] and [core::marker::Sync].
     pub(crate) fn translate_trait_decl_ref(
         &mut self,
         span: Span,
         erase_regions: bool,
         bound_trait_ref: &hax::Binder<hax::TraitRef>,
-    ) -> Result<Option<PolyTraitDeclRef>, Error> {
+    ) -> Result<PolyTraitDeclRef, Error> {
         let binder = bound_trait_ref.rebind(());
         self.with_locally_bound_regions_group(span, binder, move |ctx| {
             let trait_ref = bound_trait_ref.hax_skip_binder_ref();
@@ -102,10 +100,10 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 &parent_trait_refs,
             )?;
 
-            Ok(Some(RegionBinder {
+            Ok(RegionBinder {
                 regions: ctx.region_vars[0].clone(),
                 skip_binder: TraitDeclRef { trait_id, generics },
-            }))
+            })
         })
     }
 
@@ -225,9 +223,6 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
 
                             let trait_ref =
                                 ctx.translate_trait_impl_expr(span, erase_regions, impl_expr)?;
-                            // The trait ref should be Some(...): the marker traits (that
-                            // we may filter) don't have associated types.
-                            let trait_ref = trait_ref.unwrap();
                             let ty = ctx.translate_ty(span, erase_regions, ty)?;
                             let type_name = TraitItemName(assoc_item.name.clone().into());
                             ctx.generic_params
@@ -272,27 +267,21 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         erase_regions: bool,
         impl_sources: &[hax::ImplExpr],
     ) -> Result<Vector<TraitClauseId, TraitRef>, Error> {
-        let res: Vec<_> = impl_sources
+        impl_sources
             .iter()
             .map(|x| self.translate_trait_impl_expr(span, erase_regions, x))
-            .try_collect()?;
-        Ok(res.into_iter().flatten().collect())
+            .try_collect()
     }
 
-    /// Returns an [Option] because we may ignore some builtin or auto traits
-    /// like [core::marker::Sized] or [core::marker::Sync].
     #[tracing::instrument(skip(self, span, erase_regions, impl_expr))]
     pub(crate) fn translate_trait_impl_expr(
         &mut self,
         span: Span,
         erase_regions: bool,
         impl_expr: &hax::ImplExpr,
-    ) -> Result<Option<TraitRef>, Error> {
+    ) -> Result<TraitRef, Error> {
         let trait_decl_ref =
-            match self.translate_trait_decl_ref(span, erase_regions, &impl_expr.r#trait)? {
-                None => return Ok(None),
-                Some(tr) => tr,
-            };
+            self.translate_trait_decl_ref(span, erase_regions, &impl_expr.r#trait)?;
 
         match self.translate_trait_impl_expr_aux(
             span,
@@ -307,10 +296,10 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 } else {
                     let msg = format!("Error during trait resolution: {}", &err.msg);
                     self.span_err(span, &msg);
-                    Ok(Some(TraitRef {
+                    Ok(TraitRef {
                         kind: TraitRefKind::Unknown(err.msg),
                         trait_decl_ref,
-                    }))
+                    })
                 }
             }
         }
@@ -322,7 +311,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         erase_regions: bool,
         impl_source: &hax::ImplExpr,
         trait_decl_ref: PolyTraitDeclRef,
-    ) -> Result<Option<TraitRef>, Error> {
+    ) -> Result<TraitRef, Error> {
         trace!("impl_expr: {:#?}", impl_source);
         use hax::ImplExprAtom;
 
@@ -453,6 +442,6 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 trait_ref
             }
         };
-        Ok(Some(trait_ref))
+        Ok(trait_ref)
     }
 }

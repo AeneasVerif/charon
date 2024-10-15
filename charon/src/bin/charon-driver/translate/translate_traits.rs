@@ -57,9 +57,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 let trait_ref = bound.kind().rebind(trait_pred.trait_ref);
                 let trait_ref = hax::solve_trait(&self.hax_state, trait_ref);
                 let trait_ref = self.translate_trait_impl_expr(span, erase_regions, &trait_ref)?;
-                if let Some(trait_ref) = trait_ref {
-                    trait_refs.push(trait_ref);
-                }
+                trait_refs.push(trait_ref);
             }
         }
 
