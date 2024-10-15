@@ -666,7 +666,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         }
         if let Some((generics, predicates)) = def.generics() {
             // Add the generic params.
-            self.push_generic_params(span, generics)?;
+            self.push_generic_params(generics)?;
             // Add the self trait clause.
             match &def.kind {
                 FullDefKind::Impl {
@@ -757,22 +757,14 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         Ok(())
     }
 
-    pub(crate) fn push_generic_params(
-        &mut self,
-        span: Span,
-        generics: &hax::TyGenerics,
-    ) -> Result<(), Error> {
+    pub(crate) fn push_generic_params(&mut self, generics: &hax::TyGenerics) -> Result<(), Error> {
         for param in &generics.params {
-            self.push_generic_param(span, param)?;
+            self.push_generic_param(param)?;
         }
         Ok(())
     }
 
-    pub(crate) fn push_generic_param(
-        &mut self,
-        span: Span,
-        param: &hax::GenericParamDef,
-    ) -> Result<(), Error> {
+    pub(crate) fn push_generic_param(&mut self, param: &hax::GenericParamDef) -> Result<(), Error> {
         match &param.kind {
             hax::GenericParamDefKind::Lifetime => {
                 let region = hax::Region {
@@ -787,11 +779,18 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 let _ = self.push_type_var(param.index, param.name.clone());
             }
             hax::GenericParamDefKind::Const { ty, .. } => {
+                let span = self.def_span(&param.def_id);
                 // The type should be primitive, meaning it shouldn't contain variables,
                 // non-primitive adts, etc. As a result, we can use an empty context.
                 let ty = self.translate_ty(span, false, ty)?;
-                let ty = *ty.kind().as_literal().unwrap();
-                self.push_const_generic_var(param.index, ty, param.name.clone());
+                match ty.kind().as_literal() {
+                    Some(ty) => self.push_const_generic_var(param.index, *ty, param.name.clone()),
+                    None => error_or_panic!(
+                        self,
+                        span,
+                        "Constant parameters of non-literal type are not supported"
+                    ),
+                }
             }
         }
 
