@@ -1,6 +1,7 @@
 //! The translation contexts.
 use super::translate_types::translate_bound_region_kind_name;
 use charon_lib::ast::*;
+use charon_lib::common::hash_by_addr::HashByAddr;
 use charon_lib::formatter::{FmtCtx, IntoFormatter};
 use charon_lib::ids::{MapGenerator, Vector};
 use charon_lib::name_matcher::NamePattern;
@@ -257,6 +258,9 @@ pub(crate) struct BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     pub parent_trait_clauses: Vector<TraitClauseId, TraitClause>,
     /// (For traits only) accumulated trait clauses on associated types.
     pub item_trait_clauses: HashMap<TraitItemName, Vector<TraitClauseId, TraitClause>>,
+
+    /// Cache the translation of types. This harnesses the deduplication of `TyKind` that hax does.
+    pub type_trans_cache: HashMap<HashByAddr<Arc<hax::TyKind>>, Ty>,
 
     /// The "regular" variables
     pub vars: Vector<VarId, ast::Var>,
@@ -912,6 +916,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             const_generic_vars_map: Default::default(),
             parent_trait_clauses: Default::default(),
             item_trait_clauses: Default::default(),
+            type_trans_cache: Default::default(),
             vars: Default::default(),
             vars_map: Default::default(),
             blocks: Default::default(),
@@ -1046,6 +1051,8 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         let var_ids = self.translate_region_binder(span, binder, &mut region_vars)?;
         self.region_vars[0] = region_vars;
         self.bound_region_vars.push_front(var_ids);
+        // Translation of types depends on bound variables, we must not mix that up.
+        self.type_trans_cache = Default::default();
 
         Ok(())
     }
@@ -1069,6 +1076,8 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         let var_ids = self.translate_region_binder(span, binder, &mut bound_vars)?;
         self.bound_region_vars.push_front(var_ids);
         self.region_vars.push_front(bound_vars);
+        // Translation of types depends on bound variables, we must not mix that up.
+        let old_ty_cache = std::mem::take(&mut self.type_trans_cache);
 
         // Call the continuation
         let res = f(self);
@@ -1076,6 +1085,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         // Reset
         self.bound_region_vars.pop_front();
         self.region_vars.pop_front();
+        self.type_trans_cache = old_ty_cache;
 
         // Return
         res

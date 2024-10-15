@@ -216,6 +216,38 @@ pub mod hash_consing {
     }
 }
 
+pub mod hash_by_addr {
+    use std::{
+        hash::{Hash, Hasher},
+        ops::Deref,
+    };
+
+    /// A wrapper around a smart pointer that hashes and compares the contents by the address of
+    /// the pointee.
+    #[derive(Debug, Clone)]
+    pub struct HashByAddr<T>(pub T);
+
+    impl<T: Deref> HashByAddr<T> {
+        fn addr(&self) -> *const T::Target {
+            self.0.deref()
+        }
+    }
+
+    impl<T: Eq + Deref> Eq for HashByAddr<T> {}
+
+    impl<T: PartialEq + Deref> PartialEq for HashByAddr<T> {
+        fn eq(&self, other: &Self) -> bool {
+            std::ptr::addr_eq(self.addr(), other.addr())
+        }
+    }
+
+    impl<T: Hash + Deref> Hash for HashByAddr<T> {
+        fn hash<H: Hasher>(&self, state: &mut H) {
+            self.addr().hash(state);
+        }
+    }
+}
+
 // This is the amount of bytes that need to be left on the stack before increasing the size. It
 // must be at least as large as the stack required by any code that does not call
 // `ensure_sufficient_stack`.

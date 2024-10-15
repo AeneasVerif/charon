@@ -3,6 +3,7 @@ use crate::translate::translate_traits::PredicateLocation;
 use super::translate_ctx::*;
 use charon_lib::ast::*;
 use charon_lib::builtins;
+use charon_lib::common::hash_by_addr::HashByAddr;
 use charon_lib::formatter::IntoFormatter;
 use charon_lib::ids::Vector;
 use charon_lib::pretty::FmtWithCtx;
@@ -122,6 +123,11 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         ty: &hax::Ty,
     ) -> Result<Ty, Error> {
         trace!("{:?}", ty);
+        let cache_key = HashByAddr(ty.kind.clone());
+        if let Some(ty) = self.type_trans_cache.get(&cache_key) {
+            return Ok(ty.clone());
+        }
+
         let kind = match ty.kind() {
             hax::TyKind::Bool => TyKind::Literal(LiteralTy::Bool),
             hax::TyKind::Char => TyKind::Literal(LiteralTy::Char),
@@ -342,7 +348,9 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 error_or_panic!(self, span, format!("Unsupported type: {:?}", s))
             }
         };
-        Ok(kind.into_ty())
+        let ty = kind.into_ty();
+        self.type_trans_cache.insert(cache_key, ty.clone());
+        Ok(ty)
     }
 
     #[allow(clippy::type_complexity)]
