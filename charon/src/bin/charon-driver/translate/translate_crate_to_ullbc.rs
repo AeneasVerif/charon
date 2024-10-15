@@ -129,13 +129,13 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
                 };
 
                 // If this is a trait implementation, register it
-                if let hax::ImplSubject::Trait(..) = impl_subject {
+                if let hax::ImplSubject::Trait { .. } = impl_subject {
                     let _ = self.register_trait_impl_id(&None, def_id);
                 }
 
                 // Explore the items
-                for item in items {
-                    let def_id = (&item.def_id).into();
+                for (item, item_def) in items {
+                    let def_id = item_def.rust_def_id();
                     // Match on the impl item kind
                     match &item.kind {
                         hax::AssocKind::Const => {
@@ -410,7 +410,6 @@ pub fn translate<'tcx, 'ctx>(options: &CliOpts, tcx: TyCtxt<'tcx>) -> TransformC
         reverse_id_map: Default::default(),
         priority_queue: Default::default(),
         translate_stack: Default::default(),
-        cached_defs: Default::default(),
         cached_path_elems: Default::default(),
         cached_names: Default::default(),
     };
