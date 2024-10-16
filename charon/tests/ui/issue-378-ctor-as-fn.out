@@ -1,6 +1,18 @@
-error: Unexpected DefPathData for `core::option::Option::Some::{constructor#0}`: DisambiguatedDefPathData { data: Ctor, disambiguator: 0 }
+error: Casting constructors to function pointers is not supported
  --> /rustc/730d5d4095a264ef5f7c0a0781eea68c15431d45/library/core/src/option.rs:579:5
 
-error: aborting due to 1 previous error
+error: Ignoring the following item due to an error: core::option::Option::Some::{constructor#0}
+ --> /rustc/730d5d4095a264ef5f7c0a0781eea68c15431d45/library/core/src/option.rs:579:5
+
+error: The external definition `core::option::Option::Some` triggered errors. It is (transitively) used at the following location(s):
+ --> tests/ui/issue-378-ctor-as-fn.rs:3:34
+  |
+3 | static F: fn(u8) -> Option<u8> = Some;
+  |                                  ^^^^
+...
+6 |     let f: fn(u8) -> _ = Some;
+  |                          ^^^^
+
+error: aborting due to 3 previous errors
 
 Error: Charon driver exited with code 101

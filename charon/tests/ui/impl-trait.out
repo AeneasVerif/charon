@@ -1,17 +1,59 @@
-error: Unimplemented: Ty { kind: Alias(Alias { kind: Opaque, args: [Type(Ty { kind: Param(ParamTy { index: 0, name: "U" }) })], def_id: test_crate::wrap::{opaque#0} }) }
- --> tests/ui/impl-trait.rs:4:1
-  |
-4 | / pub fn wrap<U>() -> impl for<'a> FnOnce(&'a U) -> WrapClone<&'a U> {
-5 | |     |x| WrapClone(x)
-6 | | }
-  | |_^
+# Final LLBC before serialization:
 
-error: Ignoring the following item due to an error: test_crate::wrap
- --> tests/ui/impl-trait.rs:4:1
-  |
-4 | pub fn wrap<U>() -> impl for<'a> FnOnce(&'a U) -> WrapClone<&'a U> {
-  | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+trait core::marker::Sized<Self>
 
-error: aborting due to 2 previous errors
+trait core::clone::Clone<Self>
+{
+    parent_clause0 : [@TraitClause0]: core::marker::Sized<Self>
+    fn clone : core::clone::Clone::clone
+    fn clone_from : core::clone::Clone::clone_from
+}
 
-Error: Charon driver exited with code 101
+struct test_crate::WrapClone<T>
+  where
+      [@TraitClause0]: core::marker::Sized<T>,
+      [@TraitClause1]: core::clone::Clone<T>,
+ =
+{
+  T,
+}
+
+fn core::clone::impls::{impl core::clone::Clone for &'_0 (T)}#3::clone<'_0, '_1, T>(@1: &'_1 (&'_0 (T))) -> &'_0 (T)
+
+impl<'_0, T> core::clone::impls::{impl core::clone::Clone for &'_0 (T)}#3<'_0, T> : core::clone::Clone<&'_0 (T)>
+{
+    parent_clause0 = core::marker::Sized<&'_ (T)>
+    fn clone = core::clone::impls::{impl core::clone::Clone for &'_0 (T)}#3::clone
+}
+
+fn test_crate::wrap::closure<'_0, U>(@1: (), @2: (&'_0 (U))) -> test_crate::WrapClone<&'_0 (U)>[core::marker::Sized<&'_1_0 (U)>, core::clone::impls::{impl core::clone::Clone for &'_0 (T)}#3<'_, U>]
+where
+    [@TraitClause0]: core::marker::Sized<U>,
+{
+    let @0: test_crate::WrapClone<&'_ (U)>[core::marker::Sized<&'_ (U)>, core::clone::impls::{impl core::clone::Clone for &'_0 (T)}#3<'_, U>]; // return
+    let state@1: (); // arg #1
+    let x@2: &'_ (U); // arg #2
+    let @3: &'_ (U); // anonymous local
+
+    @3 := copy (x@2)
+    @0 := test_crate::WrapClone { 0: move (@3) }
+    drop @3
+    return
+}
+
+fn test_crate::wrap<U>() -> fn<'_1_0>(&'_1_0 (U)) -> test_crate::WrapClone<&'_1_0 (U)>[core::marker::Sized<&'_2_0 (U)>, core::clone::impls::{impl core::clone::Clone for &'_0 (T)}#3<'_, U>]
+where
+    [@TraitClause0]: core::marker::Sized<U>,
+{
+    let @0: fn<'_1_0>(&'_1_0 (U)) -> test_crate::WrapClone<&'_1_0 (U)>[core::marker::Sized<&'_2_0 (U)>, core::clone::impls::{impl core::clone::Clone for &'_0 (T)}#3<'_, U>]; // return
+
+    @0 := {test_crate::wrap::closure<U>[@TraitClause0]} {}
+    return
+}
+
+fn core::clone::Clone::clone<'_0, Self>(@1: &'_0 (Self)) -> Self
+
+fn core::clone::Clone::clone_from<'_0, '_1, Self>(@1: &'_0 mut (Self), @2: &'_1 (Self))
+
+
+

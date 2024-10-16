@@ -57,9 +57,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 let trait_ref = bound.kind().rebind(trait_pred.trait_ref);
                 let trait_ref = hax::solve_trait(&self.hax_state, trait_ref);
                 let trait_ref = self.translate_trait_impl_expr(span, erase_regions, &trait_ref)?;
-                if let Some(trait_ref) = trait_ref {
-                    trait_refs.push(trait_ref);
-                }
+                trait_refs.push(trait_ref);
             }
         }
 
@@ -155,6 +153,13 @@ impl BodyTransCtx<'_, '_, '_> {
                     };
                     let ty = self.translate_ty(item_span, erase_regions, ty)?;
                     consts.push((item_name.clone(), ty));
+                }
+                hax::FullDefKind::AssocTy { generics, .. } if !generics.params.is_empty() => {
+                    error_or_panic!(
+                        self,
+                        item_span,
+                        &format!("Generic associated types are not supported")
+                    );
                 }
                 hax::FullDefKind::AssocTy { value, .. } => {
                     // TODO: handle generics (i.e. GATs).
@@ -309,12 +314,12 @@ impl BodyTransCtx<'_, '_, '_> {
         for (item, item_def) in impl_items {
             let name = TraitItemName(item.name.clone());
             let item_span = self.def_span(&item.def_id);
-            match &item.kind {
-                hax::AssocKind::Fn => {
+            match item_def.kind() {
+                hax::FullDefKind::AssocFn { .. } => {
                     let fun_id = self.register_fun_decl_id(item_span, &item.def_id);
                     methods.insert(name, fun_id);
                 }
-                hax::AssocKind::Const => {
+                hax::FullDefKind::AssocConst { .. } => {
                     // The parameters of the constant are the same as those of the item that
                     // declares them.
                     let gref = GlobalDeclRef {
@@ -323,7 +328,14 @@ impl BodyTransCtx<'_, '_, '_> {
                     };
                     consts.insert(name, gref);
                 }
-                hax::AssocKind::Type => {
+                hax::FullDefKind::AssocTy { generics, .. } if !generics.params.is_empty() => {
+                    error_or_panic!(
+                        self,
+                        item_span,
+                        &format!("Generic associated types are not supported")
+                    );
+                }
+                hax::FullDefKind::AssocTy { .. } => {
                     let hax::FullDefKind::AssocTy {
                         value: Some(ty), ..
                     } = item_def.kind()
@@ -333,6 +345,7 @@ impl BodyTransCtx<'_, '_, '_> {
                     let ty = self.translate_ty(item_span, erase_regions, &ty)?;
                     types.insert(name, ty);
                 }
+                _ => panic!("Unexpected definition for trait item: {item_def:?}"),
             }
         }
 
@@ -351,8 +364,8 @@ impl BodyTransCtx<'_, '_, '_> {
             let item_def_id = decl_item_def.rust_def_id();
             let item_span = self.translate_span_from_hax(&decl_item_def.span);
             let name = TraitItemName(decl_item.name.to_string());
-            match &decl_item.kind {
-                hax::AssocKind::Fn => {
+            match decl_item_def.kind() {
+                hax::FullDefKind::AssocFn { .. } => {
                     if let Some(&fun_id) = methods.get(&name) {
                         // Check if we implement a required method or reimplement a provided
                         // method.
@@ -364,7 +377,7 @@ impl BodyTransCtx<'_, '_, '_> {
                     }
                 }
 
-                hax::AssocKind::Const => {
+                hax::FullDefKind::AssocConst { .. } => {
                     // Does the trait impl provide an implementation for this const?
                     let c = match partial_consts.get(&name) {
                         Some(c) => c.clone(),
@@ -381,7 +394,10 @@ impl BodyTransCtx<'_, '_, '_> {
                     };
                     consts.push((name, c));
                 }
-                hax::AssocKind::Type => {
+                hax::FullDefKind::AssocTy { generics, .. } if !generics.params.is_empty() => {
+                    // The error was already reported in the trait declaration.
+                }
+                hax::FullDefKind::AssocTy { .. } => {
                     // Does the trait impl provide an implementation for this type?
                     let ty = match partial_types.get(&name) {
                         Some(ty) => ty.clone(),
@@ -405,6 +421,7 @@ impl BodyTransCtx<'_, '_, '_> {
                     )?;
                     type_clauses.push((name, trait_refs));
                 }
+                _ => panic!("Unexpected definition for trait item: {decl_item_def:?}"),
             }
         }
         if item_meta.opacity.is_opaque() {

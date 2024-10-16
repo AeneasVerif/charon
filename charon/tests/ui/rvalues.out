@@ -258,9 +258,12 @@ fn test_crate::transmute(@1: Array<u32, 2 : usize>) -> u64
 {
     let @0: u64; // return
     let x@1: Array<u32, 2 : usize>; // arg #1
+    let @2: Array<u32, 2 : usize>; // anonymous local
 
     // When optimized, this becomes a built-in cast. Otherwise this is just a call to `transmute`.
-    @0 := transmute<Array<u32, 2 : usize>, u64>(copy (x@1))
+    @2 := copy (x@1)
+    @0 := transmute<Array<u32, 2 : usize>, u64>(move (@2))
+    drop @2
     return
 }
 
@@ -273,6 +276,14 @@ global test_crate::STEAL2  {
     drop @1
     return
 }
+
+fn core::mem::size_of<T>() -> usize
+where
+    [@TraitClause0]: core::marker::Sized<T>,
+
+fn core::mem::align_of<T>() -> usize
+where
+    [@TraitClause0]: core::marker::Sized<T>,
 
 struct test_crate::nullary_ops::Struct<T>
   where
@@ -290,15 +301,40 @@ where
     let @0: usize; // return
     let size@1: usize; // local
     let align@2: usize; // local
-    let offset@3: usize; // local
-    let @4: usize; // anonymous local
+    let ub@3: bool; // local
+    let offset@4: usize; // local
+    let @5: usize; // anonymous local
+    let @6: usize; // anonymous local
+    let @7: usize; // anonymous local
+    let @8: usize; // anonymous local
+    let @9: usize; // anonymous local
+    let @10: bool; // anonymous local
+    let @11: usize; // anonymous local
 
+    size@1 := core::mem::size_of<T>[@TraitClause0]()
+    align@2 := core::mem::align_of<T>[@TraitClause0]()
     // This one seems to be optimized out.
-    size@1 := size_of<T>
-    align@2 := align_of<T>
-    offset@3 := offset_of(?)<test_crate::nullary_ops::Struct<T>[@TraitClause0]>
-    @4 := copy (size@1) + copy (align@2)
-    @0 := copy (@4) + copy (offset@3)
+    ub@3 := const (false)
+    offset@4 := offset_of(?)<test_crate::nullary_ops::Struct<T>[@TraitClause0]>
+    @7 := copy (size@1)
+    @8 := copy (align@2)
+    @6 := move (@7) + move (@8)
+    drop @8
+    drop @7
+    @10 := copy (ub@3)
+    @9 := cast<bool, usize>(move (@10))
+    drop @10
+    @5 := move (@6) + move (@9)
+    drop @9
+    drop @6
+    @11 := copy (offset@4)
+    @0 := move (@5) + move (@11)
+    drop @11
+    drop @5
+    drop offset@4
+    drop ub@3
+    drop align@2
+    drop size@1
     return
 }
 

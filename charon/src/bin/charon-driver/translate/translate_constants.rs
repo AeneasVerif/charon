@@ -111,9 +111,6 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             }
             ConstantExprKind::TraitConst { impl_expr, name } => {
                 let trait_ref = self.translate_trait_impl_expr(span, erase_regions, impl_expr)?;
-                // The trait ref should be Some(...): trait markers (that we
-                // may eliminate) don't have constants.
-                let trait_ref = trait_ref.unwrap();
                 let name = TraitItemName(name.clone());
                 RawConstantExpr::TraitConst(trait_ref, name)
             }

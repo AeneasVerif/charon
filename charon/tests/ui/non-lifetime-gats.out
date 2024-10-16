@@ -1,11 +1,8 @@
-thread 'rustc' panicked at src/bin/charon-driver/translate/translate_predicates.rs:356:17:
-assertion failed: nested.is_empty()
-note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
-error: Thread panicked when extracting item `test_crate::PointerFamily`.
- --> tests/ui/non-lifetime-gats.rs:4:1
+error: Generic associated types are not supported
+ --> tests/ui/non-lifetime-gats.rs:5:5
   |
-4 | trait PointerFamily {
-  | ^^^^^^^^^^^^^^^^^^^
+5 |     type Pointer<T>: Deref<Target = T>;
+  |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 error: Ignoring the following item due to an error: test_crate::PointerFamily
  --> tests/ui/non-lifetime-gats.rs:4:1
@@ -13,7 +10,19 @@ error: Ignoring the following item due to an error: test_crate::PointerFamily
 4 | trait PointerFamily {
   | ^^^^^^^^^^^^^^^^^^^
 
-error: Could not find the type variable "T" (index: 0)
+error: Generic associated types are not supported
+  --> tests/ui/non-lifetime-gats.rs:34:9
+   |
+34 |         type Type<U>: Link<T>;
+   |         ^^^^^^^^^^^^^^^^^^^^^
+
+error: Ignoring the following item due to an error: test_crate::moar_variables::Trait
+  --> tests/ui/non-lifetime-gats.rs:33:5
+   |
+33 |     trait Trait<T> {
+   |     ^^^^^^^^^^^^^^
+
+error: Generic associated types are not supported
   --> tests/ui/non-lifetime-gats.rs:13:5
    |
 13 |     type Pointer<T> = Box<T>;
@@ -25,7 +34,7 @@ error: Ignoring the following item due to an error: test_crate::{impl#0}
 12 | impl PointerFamily for BoxFamily {
    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-error: Could not find the type variable "U" (index: 1)
+error: Generic associated types are not supported
   --> tests/ui/non-lifetime-gats.rs:39:9
    |
 39 |         type Type<U> = (T, U);
@@ -37,6 +46,6 @@ error: Ignoring the following item due to an error: test_crate::moar_variables::
 38 |     impl<T> Trait<Option<T>> for Foo {
    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-error: aborting due to 6 previous errors
+error: aborting due to 8 previous errors
 
 Error: Charon driver exited with code 101
