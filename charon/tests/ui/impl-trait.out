@@ -9,6 +9,74 @@ trait core::clone::Clone<Self>
     fn clone_from : core::clone::Clone::clone_from
 }
 
+trait test_crate::Foo<Self>
+{
+    parent_clause0 : [@TraitClause0]: core::clone::Clone<Self::Type>
+    parent_clause1 : [@TraitClause1]: core::marker::Sized<Self::Type>
+    type Type
+    fn get_ty : test_crate::Foo::get_ty
+}
+
+fn test_crate::{impl test_crate::Foo for ()}::get_ty<'_0>(@1: &'_0 (())) -> &'_0 (())
+{
+    let @0: &'_ (()); // return
+    let self@1: &'_ (()); // arg #1
+
+    @0 := copy (self@1)
+    return
+}
+
+impl test_crate::{impl test_crate::Foo for ()} : test_crate::Foo<()>
+{
+    parent_clause0 = core::clone::Clone<()>
+    parent_clause1 = core::marker::Sized<()>
+    type Type = ()
+    fn get_ty = test_crate::{impl test_crate::Foo for ()}::get_ty
+}
+
+fn test_crate::mk_foo()
+{
+    let @0: (); // return
+
+    @0 := ()
+    @0 := ()
+    return
+}
+
+fn test_crate::Foo::get_ty<'_0, Self>(@1: &'_0 (Self)) -> &'_0 (Self::Type)
+
+fn core::clone::Clone::clone<'_0, Self>(@1: &'_0 (Self)) -> Self
+
+fn test_crate::use_foo()
+{
+    let @0: (); // return
+    let foo@1: (); // local
+    let @2: test_crate::{impl test_crate::Foo for ()}::Type; // anonymous local
+    let @3: &'_ (test_crate::{impl test_crate::Foo for ()}::Type); // anonymous local
+    let @4: &'_ (test_crate::{impl test_crate::Foo for ()}::Type); // anonymous local
+    let @5: &'_ (()); // anonymous local
+    let @6: (); // anonymous local
+
+    foo@1 := test_crate::mk_foo()
+    @fake_read(foo@1)
+    @5 := &foo@1
+    @4 := test_crate::{impl test_crate::Foo for ()}::get_ty(move (@5))
+    @3 := &*(@4)
+    drop @5
+    @2 := core::clone::Clone<test_crate::{impl test_crate::Foo for ()}::Type>::clone(move (@3))
+    drop @3
+    @fake_read(@2)
+    drop @2
+    drop @4
+    drop @2
+    @6 := ()
+    @0 := move (@6)
+    drop foo@1
+    drop foo@1
+    @0 := ()
+    return
+}
+
 struct test_crate::WrapClone<T>
   where
       [@TraitClause0]: core::marker::Sized<T>,
@@ -51,7 +119,64 @@ where
     return
 }
 
-fn core::clone::Clone::clone<'_0, Self>(@1: &'_0 (Self)) -> Self
+trait core::marker::Tuple<Self>
+
+trait core::ops::function::FnOnce<Self, Args>
+{
+    parent_clause0 : [@TraitClause0]: core::marker::Sized<Args>
+    parent_clause1 : [@TraitClause1]: core::marker::Tuple<Args>
+    parent_clause2 : [@TraitClause2]: core::marker::Sized<Self::Output>
+    type Output
+    fn call_once : core::ops::function::FnOnce::call_once
+}
+
+fn core::ops::function::FnOnce::call_once<Self, Args>(@1: Self, @2: Args) -> Self::Output
+
+fn test_crate::use_wrap()
+{
+    let @0: (); // return
+    let f@1: fn<'_1_0>(&'_1_0 (u32)) -> test_crate::WrapClone<&'_1_0 (u32)>[core::marker::Sized<&'_2_0 (u32)>, core::clone::impls::{impl core::clone::Clone for &'_0 (T)}#3<'_, u32>]; // local
+    let @2: test_crate::WrapClone<&'_ (u32)>[core::marker::Sized<&'_ (u32)>, core::clone::impls::{impl core::clone::Clone for &'_0 (T)}#3<'_, u32>]; // anonymous local
+    let @3: fn<'_1_0>(&'_1_0 (u32)) -> test_crate::WrapClone<&'_1_0 (u32)>[core::marker::Sized<&'_2_0 (u32)>, core::clone::impls::{impl core::clone::Clone for &'_0 (T)}#3<'_, u32>]; // anonymous local
+    let @4: (&'_ (u32)); // anonymous local
+    let @5: &'_ (u32); // anonymous local
+    let @6: &'_ (u32); // anonymous local
+    let @7: u32; // anonymous local
+    let @8: (); // anonymous local
+
+    f@1 := test_crate::wrap<u32>[core::marker::Sized<u32>]()
+    @fake_read(f@1)
+    @3 := move (f@1)
+    @7 := const (42 : u32)
+    @6 := &@7
+    @5 := &*(@6)
+    @4 := (move (@5))
+    @2 := core::ops::function::FnOnce<fn<'_2_0>(&'_2_0 (u32)) -> test_crate::WrapClone<&'_2_0 (u32)>[core::marker::Sized<&'_3_0 (u32)>, core::clone::impls::{impl core::clone::Clone for &'_0 (T)}#3<'_, u32>], (&'_ (u32))>::call_once(move (@3), move (@4))
+    drop @5
+    drop @4
+    drop @3
+    @fake_read(@2)
+    drop @7
+    drop @6
+    drop @2
+    @8 := ()
+    @0 := move (@8)
+    drop f@1
+    drop f@1
+    @0 := ()
+    return
+}
+
+fn test_crate::main()
+{
+    let @0: (); // return
+    let @1: (); // anonymous local
+
+    @1 := ()
+    @0 := move (@1)
+    @0 := ()
+    return
+}
 
 fn core::clone::Clone::clone_from<'_0, '_1, Self>(@1: &'_0 mut (Self), @2: &'_1 (Self))
 
