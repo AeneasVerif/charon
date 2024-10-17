@@ -4,7 +4,7 @@ error: Generic associated types are not supported
 5 |     type Item<'a>
   |     ^^^^^^^^^^^^^
 
-error: Ignoring the following item due to an error: test_crate::LendingIterator
+error: Ignoring the following item due to a previous error: test_crate::LendingIterator
  --> tests/ui/generic-associated-types.rs:4:1
   |
 4 | trait LendingIterator {
@@ -16,7 +16,7 @@ error: Generic associated types are not supported
 46 |         type Type<'b>: for<'c> Foo<&'a &'b &'c ()>;
    |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-error: Ignoring the following item due to an error: test_crate::lifetimes::Bar
+error: Ignoring the following item due to a previous error: test_crate::lifetimes::Bar
   --> tests/ui/generic-associated-types.rs:45:5
    |
 45 |     trait Bar<'a> {
@@ -28,7 +28,7 @@ error: Generic associated types are not supported
 13 |     type Item<'b> = &'b T;
    |     ^^^^^^^^^^^^^
 
-error: Ignoring the following item due to an error: test_crate::{impl#0}
+error: Ignoring the following item due to a previous error: test_crate::{impl#0}
   --> tests/ui/generic-associated-types.rs:12:1
    |
 12 | impl<'a, T> LendingIterator for Option<&'a T> {
