@@ -1,8 +1,8 @@
 //! This file groups everything which is linked to implementations about [crate::types]
-use crate::ids::Vector;
 use crate::types::*;
+use crate::{common::visitor_event::VisitEvent, ids::Vector};
 use derive_visitor::{Drive, DriveMut, Event, Visitor, VisitorMut};
-use std::iter::Iterator;
+use std::{collections::HashMap, iter::Iterator};
 
 impl DeBruijnId {
     pub fn new(index: usize) -> Self {
@@ -286,6 +286,24 @@ impl Ty {
             _ => None,
         }
     }
+
+    /// Wrap a visitor to make it visit the contents of types it encounters.
+    pub fn visit_inside<V>(visitor: V) -> VisitInsideTy<V> {
+        VisitInsideTy {
+            visitor,
+            cache: None,
+        }
+    }
+    /// Wrap a stateless visitor to make it visit the contents of types it encounters. This will
+    /// only visit each type once and cache the results. For this to behave as expecte, the visitor
+    /// must be stateless.
+    /// The performance impact does not appear to be significant.
+    pub fn visit_inside_stateless<V>(visitor: V) -> VisitInsideTy<V> {
+        VisitInsideTy {
+            visitor,
+            cache: Some(Default::default()),
+        }
+    }
 }
 
 impl TyKind {
@@ -371,5 +389,110 @@ impl<T: DriveMut> DriveMut for RegionBinder<T> {
         self.regions.drive_mut(visitor);
         self.skip_binder.drive_mut(visitor);
         visitor.visit(self, Event::Exit);
+    }
+}
+
+/// See comment on `Ty`: this impl doesn't recurse into the contents of the type.
+impl Drive for Ty {
+    fn drive<V: Visitor>(&self, visitor: &mut V) {
+        visitor.visit(self, Event::Enter);
+        visitor.visit(self, Event::Exit);
+    }
+}
+
+/// See comment on `Ty`: this impl doesn't recurse into the contents of the type.
+impl DriveMut for Ty {
+    fn drive_mut<V: VisitorMut>(&mut self, visitor: &mut V) {
+        visitor.visit(self, Event::Enter);
+        visitor.visit(self, Event::Exit);
+    }
+}
+
+pub struct VisitInsideTy<V> {
+    visitor: V,
+    /// If `Some`, record the effected visits and don't do them again. Only valid if the wrapped
+    /// visitor is stateless.
+    cache: Option<HashMap<(Ty, VisitEvent), Ty>>,
+}
+
+impl<V> VisitInsideTy<V> {
+    pub fn into_inner(self) -> V {
+        self.visitor
+    }
+}
+
+impl<V: Visitor> Visitor for VisitInsideTy<V> {
+    fn visit(&mut self, item: &dyn std::any::Any, event: Event) {
+        match item.downcast_ref::<Ty>() {
+            Some(ty) => {
+                let visit_event: VisitEvent = (&event).into();
+
+                // Shortcut if we already visited this.
+                if let Some(cache) = &self.cache
+                    && cache.contains_key(&(ty.clone(), visit_event))
+                {
+                    return;
+                }
+
+                // Recursively visit the type.
+                self.visitor.visit(ty, event);
+                if matches!(visit_event, VisitEvent::Enter) {
+                    ty.drive_inner(self);
+                }
+
+                // Remember we just visited that.
+                if let Some(cache) = &mut self.cache {
+                    cache.insert((ty.clone(), visit_event), ty.clone());
+                }
+            }
+            None => {
+                self.visitor.visit(item, event);
+            }
+        }
+    }
+}
+impl<V: VisitorMut> VisitorMut for VisitInsideTy<V> {
+    fn visit(&mut self, item: &mut dyn std::any::Any, event: Event) {
+        match item.downcast_mut::<Ty>() {
+            Some(ty) => {
+                let visit_event: VisitEvent = (&event).into();
+
+                // Shortcut if we already visited this.
+                if let Some(cache) = &self.cache
+                    && let Some(new_ty) = cache.get(&(ty.clone(), visit_event))
+                {
+                    *ty = new_ty.clone();
+                    return;
+                }
+
+                // Recursively visit the type.
+                let pre_visit = ty.clone();
+                self.visitor.visit(ty, event);
+                if matches!(visit_event, VisitEvent::Enter) {
+                    ty.drive_inner_mut(self);
+                }
+
+                // Cache the visit we just did.
+                if let Some(cache) = &mut self.cache {
+                    let post_visit = ty.clone();
+                    cache.insert((pre_visit, visit_event), post_visit);
+                }
+            }
+            None => {
+                self.visitor.visit(item, event);
+            }
+        }
+    }
+}
+
+impl<V> std::ops::Deref for VisitInsideTy<V> {
+    type Target = V;
+    fn deref(&self) -> &Self::Target {
+        &self.visitor
+    }
+}
+impl<V> std::ops::DerefMut for VisitInsideTy<V> {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.visitor
     }
 }

@@ -161,12 +161,12 @@ pub struct Check;
 impl TransformPass for Check {
     fn transform_ctx(&self, ctx: &mut TransformCtx<'_>) {
         for item in ctx.translated.all_items() {
-            let mut visitor = CheckGenericsVisitor {
+            let mut visitor = Ty::visit_inside_stateless(CheckGenericsVisitor {
                 translated: &ctx.translated,
                 error_ctx: &mut ctx.errors,
                 discharged_args: 0,
                 item_span: item.item_meta().span,
-            };
+            });
             item.drive(&mut visitor);
             assert_eq!(
                 visitor.discharged_args, 0,

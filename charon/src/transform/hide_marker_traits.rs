@@ -102,6 +102,7 @@ impl TransformPass for Transform {
             ctx.translated.trait_decls.remove(id);
         }
 
-        ctx.translated.drive_mut(&mut Visitor { exclude });
+        ctx.translated
+            .drive_mut(&mut Ty::visit_inside_stateless(Visitor { exclude }));
     }
 }

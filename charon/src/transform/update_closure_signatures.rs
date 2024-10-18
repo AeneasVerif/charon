@@ -90,10 +90,10 @@ fn transform_function(
 
         // Explore the state and introduce fresh regions for the erased
         // regions we find.
-        let mut visitor = InsertRegions {
+        let mut visitor = Ty::visit_inside(InsertRegions {
             regions: &mut generics.regions,
             depth: 0,
-        };
+        });
         state.drive_mut(&mut visitor);
 
         // Update the inputs (slightly annoying to push to the front of

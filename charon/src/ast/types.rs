@@ -648,7 +648,11 @@ pub enum ConstGeneric {
 }
 
 /// A type.
-#[derive(Debug, Clone, Hash, PartialEq, Eq, Serialize, Deserialize, Drive, DriveMut)]
+///
+/// Warning: for performance reasons, the `Drive` and `DriveMut` impls of `Ty` don't explore the
+/// contents of the type, they only yield a pointer to the type itself. To recurse into the type,
+/// use `drive_inner{_mut}` or `visit_inside`.
+#[derive(Debug, Clone, Hash, PartialEq, Eq, Serialize, Deserialize)]
 pub struct Ty(HashConsed<TyKind>);
 
 impl Ty {
@@ -658,6 +662,13 @@ impl Ty {
 
     pub fn kind(&self) -> &TyKind {
         self.0.inner()
+    }
+
+    pub fn drive_inner<V: Visitor>(&self, visitor: &mut V) {
+        self.0.drive(visitor)
+    }
+    pub fn drive_inner_mut<V: VisitorMut>(&mut self, visitor: &mut V) {
+        self.0.drive_mut(visitor)
     }
 }
 
