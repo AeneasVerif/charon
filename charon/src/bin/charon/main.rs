@@ -248,6 +248,7 @@ pub fn main() -> anyhow::Result<()> {
         Ok(())
     } else {
         let code = exit_status.code().unwrap_or(-1);
-        bail!("Charon driver exited with code {code}")
+        // Rethrow the exit code
+        std::process::exit(code);
     }
 }
