@@ -30,13 +30,12 @@ use crate::transform::TransformCtx;
 use crate::ullbc_ast::{self as src};
 use crate::values as v;
 use hashlink::linked_hash_map::LinkedHashMap;
-use im::Vector;
 use itertools::Itertools;
 use petgraph::algo::toposort;
 use petgraph::graphmap::DiGraphMap;
 use petgraph::Direction;
 use std::cmp::Ordering;
-use std::collections::{HashMap, HashSet, VecDeque};
+use std::collections::{BTreeSet, HashMap, HashSet, VecDeque};
 use std::iter::FromIterator;
 
 /// Control-Flow Graph
@@ -92,8 +91,8 @@ fn build_cfg_info(body: &src::ExprBody) -> CfgInfo {
     }
 
     // Add the edges
-    let ancestors = im::HashSet::new();
-    let mut explored = im::HashSet::new();
+    let ancestors = HashSet::new();
+    let mut explored = HashSet::new();
     build_cfg_partial_info_edges(
         &mut cfg,
         &ancestors,
@@ -122,8 +121,8 @@ fn block_is_error(body: &src::ExprBody, block_id: src::BlockId) -> bool {
 
 fn build_cfg_partial_info_edges(
     cfg: &mut CfgInfo,
-    ancestors: &im::HashSet<src::BlockId>,
-    explored: &mut im::HashSet<src::BlockId>,
+    ancestors: &HashSet<src::BlockId>,
+    explored: &mut HashSet<src::BlockId>,
     body: &src::ExprBody,
     block_id: src::BlockId,
 ) {
@@ -290,13 +289,13 @@ fn loop_entry_is_reachable_from_inner(
 }
 
 struct FilteredLoopParents {
-    remaining_parents: Vector<(src::BlockId, usize)>,
-    removed_parents: Vector<(src::BlockId, usize)>,
+    remaining_parents: Vec<(src::BlockId, usize)>,
+    removed_parents: Vec<(src::BlockId, usize)>,
 }
 
 fn filter_loop_parents(
     cfg: &CfgInfo,
-    parent_loops: &Vector<(src::BlockId, usize)>,
+    parent_loops: &Vec<(src::BlockId, usize)>,
     block_id: src::BlockId,
 ) -> Option<FilteredLoopParents> {
     let mut eliminate: usize = 0;
@@ -310,24 +309,21 @@ fn filter_loop_parents(
 
     if eliminate > 0 {
         // Split the vector of parents
-        let (mut remaining_parents, removed_parents) = parent_loops
-            .clone()
-            .split_at(parent_loops.len() - eliminate);
-        //        let removed_parents = Vector::from_iter(removed_parents.into_iter().map(|(bid, _)| bid));
+        let (remaining_parents, removed_parents) =
+            parent_loops.split_at(parent_loops.len() - eliminate);
+        let (mut remaining_parents, removed_parents) =
+            (remaining_parents.to_vec(), removed_parents.to_vec());
 
         // Update the distance to the last loop - we just increment the distance
         // by 1, because from the point of view of the parent loop, we just exited
         // a block and go to the next sequence of instructions.
         if !remaining_parents.is_empty() {
-            remaining_parents
-                .get_mut(remaining_parents.len() - 1)
-                .unwrap()
-                .1 += 1;
+            remaining_parents.last_mut().unwrap().1 += 1;
         }
 
         Some(FilteredLoopParents {
-            remaining_parents,
-            removed_parents,
+            remaining_parents: remaining_parents.to_vec(),
+            removed_parents: removed_parents.to_vec(),
         })
     } else {
         None
@@ -372,7 +368,7 @@ fn list_reachable(cfg: &Cfg, start: src::BlockId) -> HashMap<src::BlockId, usize
 fn register_children_as_loop_exit_candidates(
     cfg: &CfgInfo,
     loop_exits: &mut HashMap<src::BlockId, LinkedHashMap<src::BlockId, LoopExitCandidateInfo>>,
-    removed_parent_loops: &Vector<(src::BlockId, usize)>,
+    removed_parent_loops: &Vec<(src::BlockId, usize)>,
     block_id: src::BlockId,
 ) {
     // List the reachable nodes
@@ -422,7 +418,7 @@ fn compute_loop_exit_candidates(
     // List of parent loops, with the distance to the entry of the loop (the distance
     // is the distance between the current node and the loop entry for the last parent,
     // and the distance between the parents for the others).
-    mut parent_loops: Vector<(src::BlockId, usize)>,
+    mut parent_loops: Vec<(src::BlockId, usize)>,
     block_id: src::BlockId,
 ) {
     if explored.contains(&block_id) {
@@ -432,12 +428,12 @@ fn compute_loop_exit_candidates(
 
     // Check if we enter a loop - add the corresponding node if necessary
     if cfg.loop_entries.contains(&block_id) {
-        parent_loops.push_back((block_id, 1));
+        parent_loops.push((block_id, 1));
         ordered_loops.push(block_id);
     } else {
         // Increase the distance with the parent loop
         if !parent_loops.is_empty() {
-            parent_loops.get_mut(parent_loops.len() - 1).unwrap().1 += 1;
+            parent_loops.last_mut().unwrap().1 += 1;
         }
     };
 
@@ -649,7 +645,7 @@ fn compute_loop_exits(cfg: &CfgInfo) -> HashMap<src::BlockId, Option<src::BlockI
         &mut explored,
         &mut ordered_loops,
         &mut loop_exits,
-        Vector::new(),
+        Vec::new(),
         src::BlockId::ZERO,
     );
 
@@ -817,7 +813,7 @@ fn compute_loop_exits(cfg: &CfgInfo) -> HashMap<src::BlockId, Option<src::BlockI
 #[derive(Debug, Clone)]
 struct BlocksInfo {
     /// All the successors of the block
-    succs: im::OrdSet<OrdBlockId>,
+    succs: BTreeSet<OrdBlockId>,
     /// The "best" intersection between the successors of the different
     /// direct children of the block. We use this to find switch exits
     /// candidates: if the intersection is non-empty and because the
@@ -835,7 +831,7 @@ struct BlocksInfo {
     /// ```
     /// The branches 0 and 1 have successors which intersect, but the branch 2
     /// doesn't because it terminates: we thus ignore it.
-    best_inter_succs: im::OrdSet<OrdBlockId>,
+    best_inter_succs: BTreeSet<OrdBlockId>,
 }
 
 /// Create an [OrdBlockId] from a block id and a rank given by a map giving
@@ -863,7 +859,7 @@ fn compute_switch_exits_explore(
 
     // Find the next blocks, and their successors
     let children: Vec<src::BlockId> = Vec::from_iter(cfg.cfg_no_be.neighbors(block_id));
-    let mut children_succs: Vec<im::OrdSet<OrdBlockId>> = ensure_sufficient_stack(|| {
+    let mut children_succs: Vec<BTreeSet<OrdBlockId>> = ensure_sufficient_stack(|| {
         Vec::from_iter(
             children
                 .iter()
@@ -878,9 +874,9 @@ fn compute_switch_exits_explore(
     }
 
     // Compute the full sets of successors of the children
-    let all_succs: im::OrdSet<OrdBlockId> = children_succs
+    let all_succs: BTreeSet<OrdBlockId> = children_succs
         .iter()
-        .fold(im::OrdSet::new(), |acc, s| acc.union(s.clone()));
+        .fold(BTreeSet::new(), |acc, s| acc.union(s).cloned().collect());
 
     // Then, compute the "best" intersection of the successors
     // If there is exactly one child or less, it is trivial
@@ -915,7 +911,7 @@ fn compute_switch_exits_explore(
     // general case.
     else {
         let mut max_number_inter: u32 = 0;
-        let mut max_inter_succs: im::OrdSet<OrdBlockId> = im::OrdSet::new();
+        let mut max_inter_succs: BTreeSet<OrdBlockId> = BTreeSet::new();
 
         // For every child
         for i in 0..children_succs.len() {
@@ -924,14 +920,18 @@ fn compute_switch_exits_explore(
             // sets of successors
             let mut i_succs = children_succs.get(i).unwrap().clone();
             i_succs.insert(make_ord_block_id(children[i], tsort_map));
-            let mut current_inter_succs: im::OrdSet<OrdBlockId> = i_succs;
+            let mut current_inter_succs: BTreeSet<OrdBlockId> = i_succs;
 
             // Compute the "best" intersection with all the other children
             for (j, mut j_succs) in children_succs.iter().cloned().enumerate() {
                 j_succs.insert(make_ord_block_id(children[j], tsort_map));
 
                 // Annoying that we have to clone the current intersection set...
-                let inter = current_inter_succs.clone().intersection(j_succs);
+                let inter: BTreeSet<OrdBlockId> = current_inter_succs
+                    .clone()
+                    .intersection(&j_succs)
+                    .cloned()
+                    .collect();
 
                 if !inter.is_empty() {
                     current_number_inter += 1;
@@ -999,7 +999,7 @@ fn compute_switch_exits(
 
     // We need to give precedence to the outer switches: we thus iterate
     // over the switch blocks in topological order.
-    let mut sorted_switch_blocks: im::OrdSet<OrdBlockId> = im::OrdSet::new();
+    let mut sorted_switch_blocks: BTreeSet<OrdBlockId> = BTreeSet::new();
     for bid in cfg.switch_blocks.iter() {
         sorted_switch_blocks.insert(make_ord_block_id(*bid, tsort_map));
     }
@@ -1027,7 +1027,7 @@ fn compute_switch_exits(
     // Also, we need to explore the nodes in topological order, to give
     // precedence to the outer switches.
     let mut exits_set = HashSet::new();
-    let mut ord_exits_set = im::OrdSet::new();
+    let mut ord_exits_set = BTreeSet::new();
     let mut exits = HashMap::new();
     for bid in sorted_switch_blocks {
         let bid = bid.id;
@@ -1075,7 +1075,12 @@ fn compute_switch_exits(
                 //   ...
                 // }
                 // ```
-                let inter = info.succs.clone().intersection(ord_exits_set.clone());
+                let inter: BTreeSet<OrdBlockId> = info
+                    .succs
+                    .clone()
+                    .intersection(&ord_exits_set)
+                    .cloned()
+                    .collect();
                 if inter.is_empty() {
                     // No intersection: ok
                     exits_set.insert(exit.id);
@@ -1246,7 +1251,7 @@ fn compute_loop_switch_exits(cfg_info: &CfgInfo) -> ExitInfo {
 
     // We need to give precedence to the outer switches and loops: we thus iterate
     // over the blocks in topological order.
-    let mut sorted_blocks: im::OrdSet<OrdBlockId> = im::OrdSet::new();
+    let mut sorted_blocks: BTreeSet<OrdBlockId> = BTreeSet::new();
     for bid in cfg_info
         .loop_entries
         .iter()
@@ -1318,8 +1323,8 @@ fn compute_loop_switch_exits(cfg_info: &CfgInfo) -> ExitInfo {
 
 fn get_goto_kind(
     exits_info: &ExitInfo,
-    parent_loops: &Vector<src::BlockId>,
-    switch_exit_blocks: &im::HashSet<src::BlockId>,
+    parent_loops: &Vec<src::BlockId>,
+    switch_exit_blocks: &HashSet<src::BlockId>,
     next_block_id: src::BlockId,
 ) -> GotoKind {
     // First explore the parent loops in revert order
@@ -1357,8 +1362,8 @@ enum GotoKind {
 /// We use the one for the parent terminator.
 fn translate_child_block(
     info: &mut BlockInfo<'_>,
-    parent_loops: &Vector<src::BlockId>,
-    switch_exit_blocks: &im::HashSet<src::BlockId>,
+    parent_loops: &Vec<src::BlockId>,
+    switch_exit_blocks: &HashSet<src::BlockId>,
     parent_span: Span,
     child_id: src::BlockId,
 ) -> Option<tgt::Block> {
@@ -1415,8 +1420,8 @@ fn translate_statement(st: &src::Statement) -> Option<tgt::Statement> {
 
 fn translate_terminator(
     info: &mut BlockInfo<'_>,
-    parent_loops: &Vector<src::BlockId>,
-    switch_exit_blocks: &im::HashSet<src::BlockId>,
+    parent_loops: &Vec<src::BlockId>,
+    switch_exit_blocks: &HashSet<src::BlockId>,
     terminator: &src::Terminator,
 ) -> tgt::Block {
     let src_span = terminator.span;
@@ -1584,8 +1589,8 @@ fn is_terminal_explore_block(num_loops: usize, block: &tgt::Block) -> bool {
 /// to make this code constant space, but that would require a serious rewriting.
 fn translate_block(
     info: &mut BlockInfo<'_>,
-    parent_loops: &Vector<src::BlockId>,
-    switch_exit_blocks: &im::HashSet<src::BlockId>,
+    parent_loops: &Vec<src::BlockId>,
+    switch_exit_blocks: &HashSet<src::BlockId>,
     block_id: src::BlockId,
 ) -> tgt::Block {
     // If the user activated this check: check that we didn't already translate
@@ -1605,10 +1610,10 @@ fn translate_block(
 
     // Check if we enter a loop: if so, update parent_loops and the current_exit_block
     let is_loop = info.cfg.loop_entries.contains(&block_id);
-    let mut nparent_loops: Vector<src::BlockId>;
+    let mut nparent_loops: Vec<src::BlockId>;
     let nparent_loops = if info.cfg.loop_entries.contains(&block_id) {
         nparent_loops = parent_loops.clone();
-        nparent_loops.push_back(block_id);
+        nparent_loops.push(block_id);
         &nparent_loops
     } else {
         parent_loops
@@ -1711,12 +1716,7 @@ fn translate_body_aux(no_code_duplication: bool, src_body: &src::ExprBody) -> tg
         exits_info: &exits_info,
         explored: &mut explored,
     };
-    let tgt_body = translate_block(
-        &mut info,
-        &Vector::new(),
-        &im::HashSet::new(),
-        src::BlockId::ZERO,
-    );
+    let tgt_body = translate_block(&mut info, &Vec::new(), &HashSet::new(), src::BlockId::ZERO);
 
     // Sanity: check that we translated all the blocks
     for (bid, _) in src_body.body.iter_indexed_values() {
