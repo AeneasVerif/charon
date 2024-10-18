@@ -48,4 +48,4 @@ error: Ignoring the following item due to an error: test_crate::moar_variables::
 
 error: aborting due to 8 previous errors
 
-Error: Charon driver exited with code 101
+ERROR Compilation encountered 8 errors

@@ -8,4 +8,4 @@ error: Unexpected `ShallowInitBox`
 
 error: aborting due to 1 previous error
 
-Error: Charon driver exited with code 101
+ERROR Compilation encountered 1 errors

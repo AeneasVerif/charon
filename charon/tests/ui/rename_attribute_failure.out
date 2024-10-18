@@ -36,4 +36,4 @@ error: Error parsing attribute: Unrecognized attribute: `charon::something_else(
 
 error: aborting due to 6 previous errors
 
-Error: Charon driver exited with code 101
+ERROR Compilation encountered 6 errors

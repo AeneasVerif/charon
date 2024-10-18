@@ -34,4 +34,4 @@ error: Ignoring the following item due to an error: test_crate::foo
 
 error: aborting due to 3 previous errors
 
-Error: Charon driver exited with code 101
+ERROR Compilation encountered 2 errors

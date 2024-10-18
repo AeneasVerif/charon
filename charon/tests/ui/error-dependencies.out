@@ -18,4 +18,4 @@ error: The external definition `core::ptr::metadata::Thin` triggered errors. It 
 
 error: aborting due to 3 previous errors
 
-Error: Charon driver exited with code 101
+ERROR Compilation encountered 2 errors

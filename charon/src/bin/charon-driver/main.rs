@@ -276,6 +276,13 @@ fn main() {
         }
     }
 
+    if !errors_as_warnings && matches!(res, Err(CharonFailure::Panic)) {
+        // If we emitted any error, the call into rustc will panic. Hence we assume this is
+        // just a normal failure.
+        // TODO: emit errors ourselves to avoid this (#409).
+        res = Err(CharonFailure::RustcError(error_count));
+    }
+
     match res {
         Ok(()) => {
             if error_count > 0 {
@@ -284,16 +291,14 @@ fn main() {
                 log::warn!("{}", msg);
             }
         }
-        Err(err) if errors_as_warnings => {
+        Err(err) => {
             log::error!("{err}");
-        }
-        Err(CharonFailure::Panic) => {
-            // Standard rust panic error code.
-            std::process::exit(101);
-        }
-        Err(err @ (CharonFailure::RustcError(_) | CharonFailure::Serialize)) => {
-            log::error!("{err}");
-            std::process::exit(1);
+            if matches!(err, CharonFailure::Panic) {
+                // This is a real panic, exit with the standard rust panic error code.
+                std::process::exit(101);
+            } else if !errors_as_warnings {
+                std::process::exit(1);
+            }
         }
     }
 }

@@ -80,4 +80,4 @@ error: Error during trait resolution: Found unsupported GAT `Type` when resolvin
 
 error: aborting due to 12 previous errors; 1 warning emitted
 
-Error: Charon driver exited with code 101
+ERROR Compilation encountered 12 errors
