@@ -177,6 +177,7 @@ fn perform_test(test_case: &Case, action: Action) -> anyhow::Result<()> {
     let mut cmd = Command::cargo_bin("charon")?;
     cmd.arg("--no-cargo");
 
+    cmd.arg("--error-on-warnings");
     cmd.arg("--print-llbc");
     cmd.arg("--crate=test_crate");
     cmd.arg("--input");

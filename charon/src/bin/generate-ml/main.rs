@@ -949,7 +949,6 @@ fn main() -> Result<()> {
         // Call charon on itself
         let mut cmd = Command::cargo_bin("charon")?;
         cmd.arg("--cargo-arg=--lib");
-        cmd.arg("--errors-as-warnings");
         cmd.arg("--hide-marker-traits");
         cmd.arg("--dest-file");
         cmd.arg(&charon_llbc);
