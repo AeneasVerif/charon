@@ -84,17 +84,19 @@ fn contains_id(crate_data: &TranslatedCrate, haystack: TypeDeclId) -> HashMap<Ty
         let exploring_def_id = ty.def_id;
         let mut contains = false;
         let mut requires_parent = None;
-        ty.drive(&mut derive_visitor::visitor_enter_fn(|id: &TypeDeclId| {
-            if let Some(ty) = crate_data.type_decls.get(*id) {
-                match traverse_ty(crate_data, ty, stack, map) {
-                    Ok(true) => contains = true,
-                    Err(loop_id) if loop_id != exploring_def_id && stack.contains(&loop_id) => {
-                        requires_parent = Some(loop_id)
+        ty.drive(&mut Ty::visit_inside(derive_visitor::visitor_enter_fn(
+            |id: &TypeDeclId| {
+                if let Some(ty) = crate_data.type_decls.get(*id) {
+                    match traverse_ty(crate_data, ty, stack, map) {
+                        Ok(true) => contains = true,
+                        Err(loop_id) if loop_id != exploring_def_id && stack.contains(&loop_id) => {
+                            requires_parent = Some(loop_id)
+                        }
+                        _ => {}
                     }
-                    _ => {}
                 }
-            }
-        }));
+            },
+        )));
         stack.pop();
 
         if contains {
@@ -151,9 +153,11 @@ impl<'a> GenerateCtx<'a> {
             name_to_type.insert(long_name, ty);
 
             let mut contained = HashSet::new();
-            ty.drive(&mut visitor_enter_fn(|id: &TypeDeclId| {
-                contained.insert(*id);
-            }));
+            ty.drive(&mut Ty::visit_inside(visitor_enter_fn(
+                |id: &TypeDeclId| {
+                    contained.insert(*id);
+                },
+            )));
             type_tree.insert(ty.def_id, contained);
         }
         let contains_raw_span = {

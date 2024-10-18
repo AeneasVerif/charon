@@ -286,6 +286,11 @@ impl Ty {
             _ => None,
         }
     }
+
+    /// Wrap a visitor to make it visit the contents of types it encounters.
+    pub fn visit_inside<V>(visitor: V) -> VisitInsideTy<V> {
+        VisitInsideTy(visitor)
+    }
 }
 
 impl TyKind {
@@ -371,5 +376,54 @@ impl<T: DriveMut> DriveMut for RegionBinder<T> {
         self.regions.drive_mut(visitor);
         self.skip_binder.drive_mut(visitor);
         visitor.visit(self, Event::Exit);
+    }
+}
+
+/// See comment on `Ty`: this impl doesn't recurse into the contents of the type.
+impl Drive for Ty {
+    fn drive<V: Visitor>(&self, visitor: &mut V) {
+        visitor.visit(self, Event::Enter);
+        visitor.visit(self, Event::Exit);
+    }
+}
+
+/// See comment on `Ty`: this impl doesn't recurse into the contents of the type.
+impl DriveMut for Ty {
+    fn drive_mut<V: VisitorMut>(&mut self, visitor: &mut V) {
+        visitor.visit(self, Event::Enter);
+        visitor.visit(self, Event::Exit);
+    }
+}
+
+pub struct VisitInsideTy<V>(pub V);
+
+impl<V: Visitor> Visitor for VisitInsideTy<V> {
+    fn visit(&mut self, item: &dyn std::any::Any, event: Event) {
+        let is_enter = matches!(event, Event::Enter);
+        self.0.visit(item, event);
+        if is_enter && let Some(ty) = item.downcast_ref::<Ty>() {
+            ty.drive_inner(self)
+        }
+    }
+}
+impl<V: VisitorMut> VisitorMut for VisitInsideTy<V> {
+    fn visit(&mut self, item: &mut dyn std::any::Any, event: Event) {
+        let is_enter = matches!(event, Event::Enter);
+        self.0.visit(item, event);
+        if is_enter && let Some(ty) = item.downcast_mut::<Ty>() {
+            ty.drive_inner_mut(self)
+        }
+    }
+}
+
+impl<V> std::ops::Deref for VisitInsideTy<V> {
+    type Target = V;
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+impl<V> std::ops::DerefMut for VisitInsideTy<V> {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.0
     }
 }

@@ -46,27 +46,32 @@ impl TransformPass for Transform {
 
         // Update trait refs.
         ctx.translated
-            .drive_mut(&mut visitor_enter_fn_mut(|trkind: &mut TraitRefKind| {
-                use TraitRefKind::*;
-                if let ItemClause(..) = trkind {
-                    take_mut::take(trkind, |trkind| {
-                        let ItemClause(trait_ref, trait_decl, item_name, item_clause_id) = trkind
-                        else {
-                            unreachable!()
-                        };
-                        let new_id = (|| {
-                            let new_id = *trait_item_clause_ids
-                                .get(trait_decl)?
-                                .get(&item_name)?
-                                .get(item_clause_id)?;
-                            Some(new_id)
-                        })();
-                        match new_id {
-                            Some(new_id) => ParentClause(trait_ref, trait_decl, new_id),
-                            None => ItemClause(trait_ref, trait_decl, item_name, item_clause_id),
-                        }
-                    })
-                }
-            }));
+            .drive_mut(&mut Ty::visit_inside(visitor_enter_fn_mut(
+                |trkind: &mut TraitRefKind| {
+                    use TraitRefKind::*;
+                    if let ItemClause(..) = trkind {
+                        take_mut::take(trkind, |trkind| {
+                            let ItemClause(trait_ref, trait_decl, item_name, item_clause_id) =
+                                trkind
+                            else {
+                                unreachable!()
+                            };
+                            let new_id = (|| {
+                                let new_id = *trait_item_clause_ids
+                                    .get(trait_decl)?
+                                    .get(&item_name)?
+                                    .get(item_clause_id)?;
+                                Some(new_id)
+                            })();
+                            match new_id {
+                                Some(new_id) => ParentClause(trait_ref, trait_decl, new_id),
+                                None => {
+                                    ItemClause(trait_ref, trait_decl, item_name, item_clause_id)
+                                }
+                            }
+                        })
+                    }
+                },
+            )));
     }
 }

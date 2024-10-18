@@ -126,7 +126,8 @@ impl Display for DeclarationGroup {
     GlobalDeclId(enter),
     TraitImplId(enter),
     TraitDeclId(enter),
-    BodyId(enter)
+    BodyId(enter),
+    Ty(enter)
 )]
 pub struct Deps<'tcx, 'ctx> {
     ctx: &'tcx TransformCtx<'ctx>,
@@ -279,6 +280,11 @@ impl Deps<'_, '_> {
         if let Some(body) = self.ctx.translated.bodies.get(*id) {
             body.drive(self);
         }
+    }
+
+    fn enter_ty(&mut self, ty: &Ty) {
+        // Recurse into the type, which doesn't happen by default.
+        ty.drive_inner(self);
     }
 }
 
