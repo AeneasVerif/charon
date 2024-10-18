@@ -68,8 +68,8 @@ pub struct DepSource {
 pub struct ErrorCtx<'ctx> {
     /// If true, do not abort on the first error and attempt to extract as much as possible.
     pub continue_on_failure: bool,
-    /// If true, print the errors as warnings, and do not abort.
-    pub errors_as_warnings: bool,
+    /// If true, print the warnings as errors, and abort if any errors were raised.
+    pub error_on_warnings: bool,
 
     /// The compiler session, used for displaying errors.
     #[cfg(feature = "rustc")]
@@ -106,16 +106,16 @@ impl ErrorCtx<'_> {
         msg: &str,
     ) {
         let msg = msg.to_string();
-        if self.errors_as_warnings {
-            self.dcx.span_warn(span, msg);
-        } else {
+        if self.error_on_warnings {
             self.dcx.span_err(span, msg);
+        } else {
+            self.dcx.span_warn(span, msg);
         }
     }
     #[cfg(not(feature = "rustc"))]
     pub(crate) fn span_err_no_register(&self, _span: Span, msg: &str) {
         let msg = msg.to_string();
-        if self.errors_as_warnings {
+        if self.error_on_warnings {
             error!("{}", msg);
         } else {
             warn!("{}", msg);

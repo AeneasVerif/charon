@@ -4,7 +4,7 @@ error: Well-formedness clauses are unsupported
 4 |     &'a ():,
   |     ^^^^^^
 
-error: Ignoring the following item due to an error: test_crate::get
+error: Ignoring the following item due to a previous error: test_crate::get
  --> tests/ui/unsupported/well-formedness-bound.rs:2:1
   |
 2 | / fn get<'a>(x: &'a u32) -> Option<&'a u32>

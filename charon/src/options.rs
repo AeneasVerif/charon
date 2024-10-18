@@ -177,9 +177,9 @@ pub struct CliOpts {
     #[serde(default)]
     pub abort_on_error: bool,
     /// Print the errors as warnings
-    #[clap(long = "errors-as-warnings", help = "Report the errors as warnings")]
+    #[clap(long = "error-on-warnings", help = "Consider any warnings as errors")]
     #[serde(default)]
-    pub errors_as_warnings: bool,
+    pub error_on_warnings: bool,
     #[clap(
         long = "no-serialize",
         help = "Don't serialize the final (U)LLBC to a file."
@@ -230,11 +230,6 @@ impl CliOpts {
         assert!(
             !self.mir_promoted || !self.mir_optimized,
             "Can't use --mir_promoted and --mir_optimized at the same time"
-        );
-
-        assert!(
-            !self.abort_on_error || !self.errors_as_warnings,
-            "Can't use --abort-on-error and --errors-as-warnings at the same time"
         );
     }
 }

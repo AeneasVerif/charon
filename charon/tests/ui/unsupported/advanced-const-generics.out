@@ -26,7 +26,7 @@ error: Constant parameters of non-literal type are not supported
 14 | fn foo<const X: Foo>() -> Foo {
    |        ^^^^^^^^^^^^
 
-error: Ignoring the following item due to an error: test_crate::foo
+error: Ignoring the following item due to a previous error: test_crate::foo
   --> tests/ui/unsupported/advanced-const-generics.rs:14:1
    |
 14 | fn foo<const X: Foo>() -> Foo {

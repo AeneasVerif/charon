@@ -1,4 +1,3 @@
-//@ charon-args=--errors-as-warnings
 // This (for now) produces `TraitRefKind::Unknown`; it's a regression test because we used to
 // not parse this in `charon-ml`.
 fn main() {

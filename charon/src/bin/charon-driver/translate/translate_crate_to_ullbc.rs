@@ -296,7 +296,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
             if res.is_err() {
                 ctx.span_err(
                     span,
-                    &format!("Ignoring the following item due to an error: {rust_id:?}"),
+                    &format!("Ignoring the following item due to a previous error: {rust_id:?}"),
                 );
                 ctx.errors.ignore_failed_decl(trans_id);
             }
@@ -368,7 +368,6 @@ pub fn translate<'tcx, 'ctx>(options: &CliOpts, tcx: TyCtxt<'tcx>) -> TransformC
         tcx,
         hax::options::Options {
             inline_macro_calls: Vec::new(),
-            // downgrade_errors: options.errors_as_warnings,
         },
     );
 
@@ -386,7 +385,7 @@ pub fn translate<'tcx, 'ctx>(options: &CliOpts, tcx: TyCtxt<'tcx>) -> TransformC
 
     let mut error_ctx = ErrorCtx {
         continue_on_failure: !options.abort_on_error,
-        errors_as_warnings: options.errors_as_warnings,
+        error_on_warnings: options.error_on_warnings,
         dcx: tcx.dcx(),
         external_decls_with_errors: HashSet::new(),
         ignored_failed_decls: HashSet::new(),

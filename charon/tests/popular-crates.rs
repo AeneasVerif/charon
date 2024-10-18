@@ -102,7 +102,6 @@ fn process_crate(version: &Version) -> Result<()> {
         .stderr(Stdio::piped())
         .current_dir(&crate_dir)
         .arg("--hide-marker-traits")
-        .arg("--errors-as-warnings")
         .arg("--dest-file")
         .arg(&llbc_path)
         .spawn()?;

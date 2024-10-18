@@ -1,7 +1,7 @@
 error: Casting constructors to function pointers is not supported
  --> /rustc/730d5d4095a264ef5f7c0a0781eea68c15431d45/library/core/src/option.rs:579:5
 
-error: Ignoring the following item due to an error: core::option::Option::Some::{constructor#0}
+error: Ignoring the following item due to a previous error: core::option::Option::Some::{constructor#0}
  --> /rustc/730d5d4095a264ef5f7c0a0781eea68c15431d45/library/core/src/option.rs:579:5
 
 error: The external definition `core::option::Option::Some` triggered errors. It is (transitively) used at the following location(s):

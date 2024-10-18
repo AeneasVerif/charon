@@ -241,7 +241,6 @@ fn main() {
     trace!("Compiler arguments: {:?}", compiler_args);
 
     // Call the Rust compiler with our custom callback.
-    let errors_as_warnings = options.errors_as_warnings;
     let mut callback = CharonCallbacks::new(options);
     let mut res = callback.run_compiler(compiler_args);
     let CharonCallbacks {
@@ -253,7 +252,7 @@ fn main() {
 
     if !options.no_serialize {
         // # Final step: generate the files.
-        if res.is_ok() || options.errors_as_warnings {
+        if res.is_ok() || !options.error_on_warnings {
             // `crate_data` is set by our callbacks when there is no fatal error.
             if let Some(crate_data) = crate_data {
                 let dest_file = match options.dest_file.clone() {
@@ -276,7 +275,7 @@ fn main() {
         }
     }
 
-    if !errors_as_warnings && matches!(res, Err(CharonFailure::Panic)) {
+    if options.error_on_warnings && matches!(res, Err(CharonFailure::Panic)) {
         // If we emitted any error, the call into rustc will panic. Hence we assume this is
         // just a normal failure.
         // TODO: emit errors ourselves to avoid this (#409).
@@ -286,7 +285,7 @@ fn main() {
     match res {
         Ok(()) => {
             if error_count > 0 {
-                assert!(errors_as_warnings);
+                assert!(!options.error_on_warnings);
                 let msg = format!("The extraction generated {} warnings", error_count);
                 log::warn!("{}", msg);
             }
@@ -296,7 +295,7 @@ fn main() {
             if matches!(err, CharonFailure::Panic) {
                 // This is a real panic, exit with the standard rust panic error code.
                 std::process::exit(101);
-            } else if !errors_as_warnings {
+            } else if options.error_on_warnings {
                 std::process::exit(1);
             }
         }
