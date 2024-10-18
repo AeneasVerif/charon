@@ -46,7 +46,7 @@ impl TransformPass for Transform {
 
         // Update trait refs.
         ctx.translated
-            .drive_mut(&mut Ty::visit_inside(visitor_enter_fn_mut(
+            .drive_mut(&mut Ty::visit_inside_stateless(visitor_enter_fn_mut(
                 |trkind: &mut TraitRefKind| {
                     use TraitRefKind::*;
                     if let ItemClause(..) = trkind {

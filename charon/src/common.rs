@@ -248,6 +248,33 @@ pub mod hash_by_addr {
     }
 }
 
+pub mod visitor_event {
+    /// `derive_visitor::Event` doesn't derive all the useful traits so we use this instead.
+    #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+    pub enum VisitEvent {
+        Enter,
+        Exit,
+    }
+
+    impl From<&derive_visitor::Event> for VisitEvent {
+        fn from(value: &derive_visitor::Event) -> Self {
+            match value {
+                derive_visitor::Event::Enter => VisitEvent::Enter,
+                derive_visitor::Event::Exit => VisitEvent::Exit,
+            }
+        }
+    }
+
+    impl From<VisitEvent> for derive_visitor::Event {
+        fn from(value: VisitEvent) -> Self {
+            match value {
+                VisitEvent::Enter => derive_visitor::Event::Enter,
+                VisitEvent::Exit => derive_visitor::Event::Exit,
+            }
+        }
+    }
+}
+
 // This is the amount of bytes that need to be left on the stack before increasing the size. It
 // must be at least as large as the stack required by any code that does not call
 // `ensure_sufficient_stack`.

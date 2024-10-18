@@ -103,6 +103,6 @@ impl TransformPass for Transform {
         }
 
         ctx.translated
-            .drive_mut(&mut Ty::visit_inside(Visitor { exclude }));
+            .drive_mut(&mut Ty::visit_inside_stateless(Visitor { exclude }));
     }
 }
