@@ -86,7 +86,7 @@ impl Pattern {
         }
         match ty.kind() {
             TyKind::Adt(TypeId::Adt(type_id), args) => {
-                let Some(type_name) = ctx.item_names.get(&(*type_id).into()) else {
+                let Some(type_name) = ctx.item_name(*type_id) else {
                     return false;
                 };
                 self.matches_with_generics(ctx, type_name, args)
@@ -178,7 +178,7 @@ impl PatElem {
                 let Some(timpl) = ctx.trait_impls.get(*impl_id) else {
                     return false;
                 };
-                let Some(trait_name) = ctx.item_names.get(&timpl.impl_trait.trait_id.into()) else {
+                let Some(trait_name) = ctx.item_name(timpl.impl_trait.trait_id) else {
                     return false;
                 };
                 pat.matches_with_generics(ctx, trait_name, &timpl.impl_trait.generics)

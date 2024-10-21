@@ -42,7 +42,7 @@ impl Transform {
                         kind: TypeDeclKind::Opaque,
                         ..
                     }) => {
-                        let name = ctx.translated.item_names.get(&(*adt_id).into()).unwrap();
+                        let name = ctx.translated.item_name(*adt_id).unwrap();
                         let msg = format!(
                             "reading the discriminant of an opaque enum. \
                             Add `--include {}` to the `charon` arguments \

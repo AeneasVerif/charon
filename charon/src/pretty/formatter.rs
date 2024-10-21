@@ -192,7 +192,7 @@ impl<'a> FmtCtx<'a> {
         };
         translated
             .get_item(id)
-            .ok_or_else(|| translated.item_names.get(&id))
+            .ok_or_else(|| translated.item_name(id))
     }
 
     fn format_any_decl(&self, id: AnyTransId) -> String {
@@ -255,7 +255,7 @@ impl<'a> Formatter<AnyTransId> for FmtCtx<'a> {
     fn format_object(&self, id: AnyTransId) -> String {
         match self
             .translated
-            .and_then(|translated| translated.item_names.get(&id))
+            .and_then(|translated| translated.item_name(id))
         {
             None => id.to_string(),
             Some(name) => name.fmt_with_ctx(self),
