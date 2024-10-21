@@ -1,13 +1,9 @@
 [charon]
+# This filters Charon to keep only the type definitions we care about for `generate-ml`.
 exclude = [
     "_",
-    "derive_visitor::Drive::_",
-    "derive_visitor::DriveMut::_",
     "crate::_",
     "crate::ast::_",
-    "crate::ast::krate::_",
-    "crate::ast::_::{impl derive_visitor::Drive for _}",
-    "crate::ast::_::{impl derive_visitor::DriveMut for _}",
 ]
 include = [
     "alloc::alloc::Global",
@@ -15,14 +11,8 @@ include = [
     "alloc::vec::Vec",
     "core::option::Option",
     "std::path::PathBuf",
-    # Include these two so we can pattern-match on them.
-    # TODO: keep names of excluded items.
-    "derive_visitor::Drive",
-    "derive_visitor::DriveMut",
     "crate::ast",
     "crate::ast::krate",
-    "crate::ast::krate::AnyTransId",
-    "crate::ast::krate::TranslatedCrate",
     "crate::ast::expressions",
     "crate::ast::gast",
     "crate::ast::llbc_ast",
