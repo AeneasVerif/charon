@@ -101,9 +101,9 @@ clean-generated:
 
 .PHONY: clean
 clean: clean-generated
-	cd charon/attributes && cargo clean
 	cd charon && cargo clean
 	cd charon/macros && cargo clean
+	cd charon-ml && dune clean
 
 # Build the Nix packages
 .PHONY: nix
