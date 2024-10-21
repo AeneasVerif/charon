@@ -1,5 +1,5 @@
 //@ known-failure
-
-fn next(iter: &mut std::vec::IntoIter<u8>) -> Option<Vec<u8>> {
-    Some(vec![iter.next()?])
+fn next(b: bool) -> Option<Vec<u8>> {
+    let vec = vec![if b { 42 } else { return None }];
+    Some(vec)
 }

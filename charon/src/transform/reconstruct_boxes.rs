@@ -116,7 +116,12 @@ impl UllbcPass for Transform {
         // Make sure we got all the `ShallowInitBox`es.
         b.body.drive(&mut visitor_enter_fn(|rvalue: &Rvalue| {
             if rvalue.is_shallow_init_box() {
-                register_error_or_panic!(ctx, b.span, "Unexpected `ShallowInitBox`");
+                register_error_or_panic!(
+                    ctx,
+                    b.span,
+                    "Could not reconstruct `Box` initialization; \
+                    branching during `Box` initialization is not supported."
+                );
             }
         }));
     }
