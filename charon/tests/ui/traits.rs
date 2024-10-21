@@ -356,3 +356,32 @@ pub fn call<'a, F: Fn(&'a ()) -> Wrapper<(bool, &'a ())>>(_: F) {}
 pub fn flibidi() -> () {
     call(flabada);
 }
+
+mod dictionary_passing_style_is_tricky {
+    trait Iterator {
+        type Item;
+    }
+    trait IntoIterator {
+        type Item;
+        type IntoIter: Iterator<Item = Self::Item>;
+    }
+    impl<I: Iterator> IntoIterator for I {
+        type Item = I::Item;
+        type IntoIter = I;
+    }
+
+    // See https://github.com/lcnr/random-rust-snippets/issues/2
+    fn callee<T>(t: <T as Iterator>::Item) -> <T as IntoIterator>::Item
+    where
+        T: Iterator,
+    {
+        t
+    }
+
+    fn caller<T>(t: <T as Iterator>::Item) -> <T as IntoIterator>::Item
+    where
+        T: Iterator + IntoIterator,
+    {
+        callee::<T>(t)
+    }
+}
