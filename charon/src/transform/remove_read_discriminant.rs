@@ -4,7 +4,9 @@
 //! filtering). Then, we filter the unused variables ([crate::remove_unused_locals]).
 
 use crate::errors::register_error_or_panic;
+use crate::formatter::IntoFormatter;
 use crate::llbc_ast::*;
+use crate::pretty::FmtWithCtx;
 use crate::transform::TransformCtx;
 use derive_visitor::visitor_enter_fn_mut;
 use derive_visitor::DriveMut;
@@ -30,22 +32,42 @@ impl Transform {
 
                 // Lookup the type of the scrutinee
                 let variants = match ctx.translated.type_decls.get(*adt_id) {
-                    // This can happen if there was an error while extracting the definitions
-                    None => None,
-                    Some(d) => {
-                        match &d.kind {
-                            TypeDeclKind::Struct(..)
-                            | TypeDeclKind::Union(..)
-                            | TypeDeclKind::Opaque
-                            | TypeDeclKind::Alias(..) => {
-                                // We shouldn't get there
-                                register_error_or_panic!(ctx, block.span, "Unreachable case");
-                                None
-                            }
-                            TypeDeclKind::Error(_) => None,
-                            TypeDeclKind::Enum(variants) => Some(variants),
-                        }
+                    Some(TypeDecl {
+                        kind: TypeDeclKind::Enum(variants),
+                        ..
+                    }) => Some(variants),
+                    // This can happen if the type was declared as invisible or opaque.
+                    None
+                    | Some(TypeDecl {
+                        kind: TypeDeclKind::Opaque,
+                        ..
+                    }) => {
+                        let name = ctx.translated.item_name(*adt_id).unwrap();
+                        let msg = format!(
+                            "reading the discriminant of an opaque enum. \
+                            Add `--include {}` to the `charon` arguments \
+                            to translate this enum.",
+                            name.fmt_with_ctx(&ctx.into_fmt())
+                        );
+                        register_error_or_panic!(ctx, block.span, msg);
+                        None
                     }
+                    Some(TypeDecl {
+                        kind:
+                            TypeDeclKind::Struct(..) | TypeDeclKind::Union(..) | TypeDeclKind::Alias(..),
+                        ..
+                    }) => {
+                        register_error_or_panic!(
+                            ctx,
+                            block.span,
+                            "reading the discriminant of a non-enum type"
+                        );
+                        None
+                    }
+                    Some(TypeDecl {
+                        kind: TypeDeclKind::Error(..),
+                        ..
+                    }) => None,
                 };
                 let Some(variants) = variants else {
                     // An error occurred. We can't keep the `Rvalue::Discriminant` around so we

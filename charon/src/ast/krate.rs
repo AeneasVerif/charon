@@ -138,6 +138,10 @@ impl TranslatedCrate {
         }
     }
 
+    pub fn item_name(&self, trans_id: impl Into<AnyTransId>) -> Option<&Name> {
+        self.item_names.get(&trans_id.into())
+    }
+
     pub fn all_items(&self) -> impl Iterator<Item = AnyTransItem<'_>> {
         self.all_items_with_ids().map(|(_, item)| item)
     }

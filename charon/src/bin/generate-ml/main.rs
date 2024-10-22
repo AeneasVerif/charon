@@ -310,7 +310,7 @@ fn type_to_ocaml_name(ctx: &GenerateCtx, ty: &Ty) -> String {
                 TypeId::Adt(id) => {
                     let mut base_ty = if let Some(tdecl) = ctx.crate_data.type_decls.get(*id) {
                         type_name_to_ocaml_ident(&tdecl.item_meta)
-                    } else if let Some(name) = ctx.crate_data.item_names.get(&(*id).into()) {
+                    } else if let Some(name) = ctx.crate_data.item_name(*id) {
                         eprintln!(
                             "Warning: type {} missing from llbc",
                             repr_name(ctx.crate_data, name)
