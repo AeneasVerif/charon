@@ -237,7 +237,12 @@ impl BodyTransCtx<'_, '_, '_> {
         let generics = self.translate_def_generics(span, def)?;
 
         let hax::FullDefKind::Impl {
-            impl_subject: hax::ImplSubject::Trait { trait_pred, .. },
+            impl_subject:
+                hax::ImplSubject::Trait {
+                    trait_pred,
+                    required_impl_exprs,
+                    ..
+                },
             items: impl_items,
             ..
         } = &def.kind
@@ -268,29 +273,14 @@ impl BodyTransCtx<'_, '_, '_> {
             TraitDeclRef { trait_id, generics }
         };
 
-        // Compute the parent trait references.
-        let (
-            rust_implemented_trait_ref,
-            // [parent_trait_refs]: the trait refs which implement the parent
-            // clauses of the implemented trait decl.
-            parent_trait_refs,
-        ) = {
-            // TODO: what is below duplicates a bit [add_trait_impl_self_trait_clause]
-            let rustc_middle::ty::ImplSubject::Trait(rust_trait_ref) =
-                tcx.impl_subject(rust_id).instantiate_identity()
-            else {
-                unreachable!()
-            };
-            let parent_trait_refs = hax::solve_item_traits(
-                &self.hax_state,
-                rust_trait_ref.def_id,
-                rust_trait_ref.args,
-                None,
-            );
-            let parent_trait_refs =
-                self.translate_trait_impl_exprs(span, erase_regions, &parent_trait_refs)?;
-
-            (rust_trait_ref, parent_trait_refs)
+        // The trait refs which implement the parent clauses of the implemented trait decl.
+        let parent_trait_refs =
+            self.translate_trait_impl_exprs(span, erase_regions, &required_impl_exprs)?;
+        // We need this to compute associated type bounds.
+        let rustc_middle::ty::ImplSubject::Trait(rust_implemented_trait_ref) =
+            tcx.impl_subject(rust_id).instantiate_identity()
+        else {
+            unreachable!()
         };
 
         {
