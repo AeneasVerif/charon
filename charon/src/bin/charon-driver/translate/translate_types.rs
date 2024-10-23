@@ -123,7 +123,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         ty: &hax::Ty,
     ) -> Result<Ty, Error> {
         trace!("{:?}", ty);
-        let cache_key = HashByAddr(ty.kind.clone());
+        let cache_key = HashByAddr(ty.inner().clone());
         if let Some(ty) = self.type_trans_cache.get(&cache_key) {
             return Ok(ty.clone());
         }
