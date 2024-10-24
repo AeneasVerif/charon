@@ -82,11 +82,11 @@ trait core::fmt::Display<Self>
     fn fmt : core::fmt::Display::fmt
 }
 
-fn core::fmt::num::imp::{impl core::fmt::Display for u32}#5::fmt<'_0, '_1, '_2>(@1: &'_0 (u32), @2: &'_1 mut (core::fmt::Formatter<'_2>)) -> core::result::Result<(), core::fmt::Error>[core::marker::Sized<()>, core::marker::Sized<core::fmt::Error>]
+fn core::fmt::num::imp::{impl core::fmt::Display for u32}#10::fmt<'_0, '_1, '_2>(@1: &'_0 (u32), @2: &'_1 mut (core::fmt::Formatter<'_2>)) -> core::result::Result<(), core::fmt::Error>[core::marker::Sized<()>, core::marker::Sized<core::fmt::Error>]
 
-impl core::fmt::num::imp::{impl core::fmt::Display for u32}#5 : core::fmt::Display<u32>
+impl core::fmt::num::imp::{impl core::fmt::Display for u32}#10 : core::fmt::Display<u32>
 {
-    fn fmt = core::fmt::num::imp::{impl core::fmt::Display for u32}#5::fmt
+    fn fmt = core::fmt::num::imp::{impl core::fmt::Display for u32}#10::fmt
 }
 
 fn core::fmt::Display::fmt<'_0, '_1, '_2, Self>(@1: &'_0 (Self), @2: &'_1 mut (core::fmt::Formatter<'_2>)) -> core::result::Result<(), core::fmt::Error>[core::marker::Sized<()>, core::marker::Sized<core::fmt::Error>]
@@ -141,7 +141,7 @@ fn core::fmt::num::{impl core::fmt::Debug for u32}#86::fmt<'_0, '_1, '_2>(@1: &'
             switch move (@5) {
                 0 : u32 => {
                     drop @5
-                    @0 := core::fmt::num::imp::{impl core::fmt::Display for u32}#5::fmt(move (self@1), move (f@2))
+                    @0 := core::fmt::num::imp::{impl core::fmt::Display for u32}#10::fmt(move (self@1), move (f@2))
                 },
                 _ => {
                     drop @5

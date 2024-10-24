@@ -472,7 +472,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                     "charon does not support thread local references"
                 );
             }
-            hax::Rvalue::AddressOf(mtbl, place) => {
+            hax::Rvalue::RawPtr(mtbl, place) => {
                 let mtbl = if *mtbl { RefKind::Mut } else { RefKind::Shared };
                 let place = self.translate_place(span, place)?;
                 Ok(Rvalue::RawPtr(place, mtbl))
@@ -515,12 +515,12 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                         ))
                     }
                     hax::CastKind::PtrToPtr
-                    | hax::CastKind::PointerCoercion(hax::PointerCoercion::MutToConstPointer)
-                    | hax::CastKind::PointerCoercion(hax::PointerCoercion::ArrayToPointer)
+                    | hax::CastKind::PointerCoercion(hax::PointerCoercion::MutToConstPointer, ..)
+                    | hax::CastKind::PointerCoercion(hax::PointerCoercion::ArrayToPointer, ..)
+                    | hax::CastKind::PointerCoercion(hax::PointerCoercion::DynStar, ..)
                     | hax::CastKind::FnPtrToPtr
                     | hax::CastKind::PointerExposeProvenance
-                    | hax::CastKind::PointerWithExposedProvenance
-                    | hax::CastKind::DynStar => Ok(Rvalue::UnaryOp(
+                    | hax::CastKind::PointerWithExposedProvenance => Ok(Rvalue::UnaryOp(
                         UnOp::Cast(CastKind::RawPtr(src_ty, tgt_ty)),
                         operand,
                     )),
@@ -528,6 +528,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                         hax::PointerCoercion::ClosureFnPointer(_)
                         | hax::PointerCoercion::UnsafeFnPointer
                         | hax::PointerCoercion::ReifyFnPointer,
+                        ..,
                     ) => Ok(Rvalue::UnaryOp(
                         UnOp::Cast(CastKind::FnPtr(src_ty, tgt_ty)),
                         operand,
@@ -536,7 +537,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                         UnOp::Cast(CastKind::Transmute(src_ty, tgt_ty)),
                         operand,
                     )),
-                    hax::CastKind::PointerCoercion(hax::PointerCoercion::Unsize) => {
+                    hax::CastKind::PointerCoercion(hax::PointerCoercion::Unsize, ..) => {
                         let unop = if let (
                             TyKind::Ref(
                                 _,

@@ -1,6 +1,7 @@
 #![feature(raw_ref_op)]
 #![feature(const_ub_checks)]
 #![feature(rustc_attrs)]
+#![allow(internal_features)]
 
 use std::ptr::addr_of;
 
@@ -62,11 +63,11 @@ const fn transmute(x: [u32; 2]) -> u64 {
 }
 
 // We force stealing to get the optimized_mir of the function.
-static STEAL2: [(); nullary_ops::<u32>()] = [(); 12];
+static STEAL2: [(); nullary_ops::<u32>()] = [(); 13];
 const fn nullary_ops<T>() -> usize {
     let size = size_of::<T>();
     let align = align_of::<T>();
-    // This one seems to be optimized out.
+    // This is `const (false)` in the MIR we get, but `true` in const evaluation.
     let ub = core::intrinsics::ub_checks();
 
     #[repr(C)]

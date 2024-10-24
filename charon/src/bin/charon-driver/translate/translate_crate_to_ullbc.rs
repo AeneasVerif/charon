@@ -43,8 +43,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
                     trace!("Ignoring {:?} (ignoring item kind)", item.item_id());
                     return Ok(());
                 }
-                ItemKind::OpaqueTy(..)
-                | ItemKind::Union(..)
+                ItemKind::Union(..)
                 | ItemKind::TyAlias(..)
                 | ItemKind::Enum(..)
                 | ItemKind::Struct(..)
@@ -77,7 +76,6 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
                 let _ = self.register_type_decl_id(&None, def_id);
                 Ok(())
             }
-            ItemKind::OpaqueTy(_) => unimplemented!(),
             ItemKind::Enum(..) | ItemKind::Struct(_, _) | ItemKind::Union(..) => {
                 let _ = self.register_type_decl_id(&None, def_id);
                 Ok(())

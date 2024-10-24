@@ -2789,7 +2789,6 @@ where
 fn core::cmp::Ord::clamp<Self>(@1: Self, @2: Self, @3: Self) -> Self
 where
     [@TraitClause0]: core::marker::Sized<Self>,
-    [@TraitClause1]: core::cmp::PartialOrd<Self, Self>,
 
 fn core::cmp::Eq::assert_receiver_is_total_eq<'_0, Self>(@1: &'_0 (Self))
 

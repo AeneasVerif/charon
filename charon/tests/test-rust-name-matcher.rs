@@ -1,3 +1,4 @@
+#![feature(rustc_private)]
 use charon_lib::formatter::IntoFormatter;
 use charon_lib::pretty::FmtWithCtx;
 use itertools::Itertools;
