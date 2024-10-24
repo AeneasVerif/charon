@@ -12,12 +12,15 @@ use rustc_middle::ty::TyCtxt;
 use std::fmt;
 use std::ops::Deref;
 use std::panic::{self, AssertUnwindSafe};
+use std::path::PathBuf;
 
 /// The callbacks for Charon
 pub struct CharonCallbacks {
     pub options: options::CliOpts,
     /// This is to be filled during the extraction
     pub crate_data: Option<export::CrateData>,
+    /// The root of the toolchain.
+    pub sysroot: PathBuf,
     pub error_count: usize,
 }
 
@@ -41,10 +44,11 @@ impl fmt::Display for CharonFailure {
 }
 
 impl CharonCallbacks {
-    pub fn new(options: options::CliOpts) -> Self {
+    pub fn new(options: options::CliOpts, sysroot: PathBuf) -> Self {
         Self {
             options,
             crate_data: None,
+            sysroot,
             error_count: 0,
         }
     }
@@ -213,7 +217,7 @@ pub fn translate(tcx: TyCtxt, internal: &mut CharonCallbacks) -> export::CrateDa
     // # Translate the declarations in the crate.
     // We translate the declarations in an ad-hoc order, and do not group
     // the mutually recursive groups - we do this in the next step.
-    let mut ctx = translate_crate_to_ullbc::translate(options, tcx);
+    let mut ctx = translate_crate_to_ullbc::translate(options, tcx, internal.sysroot.clone());
 
     if options.print_original_ullbc {
         println!("# ULLBC after translation from MIR:\n\n{ctx}\n");
