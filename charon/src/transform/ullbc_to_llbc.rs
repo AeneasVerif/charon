@@ -36,7 +36,6 @@ use petgraph::graphmap::DiGraphMap;
 use petgraph::Direction;
 use std::cmp::Ordering;
 use std::collections::{BTreeSet, HashMap, HashSet, VecDeque};
-use std::iter::FromIterator;
 
 /// Control-Flow Graph
 type Cfg = DiGraphMap<src::BlockId, ()>;
@@ -322,8 +321,8 @@ fn filter_loop_parents(
         }
 
         Some(FilteredLoopParents {
-            remaining_parents: remaining_parents.to_vec(),
-            removed_parents: removed_parents.to_vec(),
+            remaining_parents,
+            removed_parents,
         })
     } else {
         None
@@ -676,18 +675,18 @@ fn compute_loop_exits(cfg: &CfgInfo) -> HashMap<src::BlockId, Option<src::BlockI
         // - compute the number of occurrences
         // - compute the sum of distances
         // TODO: we could simply order by using a lexicographic order
-        let loop_exits = Vec::from_iter(loop_exits.get(&loop_id).unwrap().iter().filter_map(
-            |(candidate_id, candidate_info)| {
-                // If candidate already selected for another loop: ignore
-                if exits.contains(candidate_id) {
-                    None
-                } else {
-                    let num_occurrences = candidate_info.occurrences.len();
-                    let dist_sum = candidate_info.occurrences.iter().sum();
-                    Some((*candidate_id, num_occurrences, dist_sum))
-                }
-            },
-        ));
+        let loop_exits = loop_exits
+            .get(&loop_id)
+            .unwrap()
+            .iter()
+            // If candidate already selected for another loop: ignore
+            .filter(|(candidate_id, _)| !exits.contains(candidate_id))
+            .map(|(candidate_id, candidate_info)| {
+                let num_occurrences = candidate_info.occurrences.len();
+                let dist_sum = candidate_info.occurrences.iter().sum();
+                (*candidate_id, num_occurrences, dist_sum)
+            })
+            .collect_vec();
 
         trace!(
             "Loop {}: possible exits:\n{}",
@@ -709,7 +708,7 @@ fn compute_loop_exits(cfg: &CfgInfo) -> HashMap<src::BlockId, Option<src::BlockI
         let mut best_exit: Option<src::BlockId> = None;
         let mut best_occurrences = 0;
         let mut best_dist_sum = std::usize::MAX;
-        for (candidate_id, occurrences, dist_sum) in loop_exits.iter() {
+        for (candidate_id, occurrences, dist_sum) in &loop_exits {
             if (*occurrences > best_occurrences)
                 || (*occurrences == best_occurrences && *dist_sum < best_dist_sum)
             {
@@ -858,13 +857,12 @@ fn compute_switch_exits_explore(
     }
 
     // Find the next blocks, and their successors
-    let children: Vec<src::BlockId> = Vec::from_iter(cfg.cfg_no_be.neighbors(block_id));
+    let children: Vec<src::BlockId> = cfg.cfg_no_be.neighbors(block_id).collect_vec();
     let mut children_succs: Vec<BTreeSet<OrdBlockId>> = ensure_sufficient_stack(|| {
-        Vec::from_iter(
-            children
-                .iter()
-                .map(|bid| compute_switch_exits_explore(cfg, tsort_map, memoized, *bid).succs),
-        )
+        children
+            .iter()
+            .map(|bid| compute_switch_exits_explore(cfg, tsort_map, memoized, *bid).succs)
+            .collect_vec()
     });
     trace!("block: {}, children: {:?}", block_id, children);
 
@@ -876,7 +874,7 @@ fn compute_switch_exits_explore(
     // Compute the full sets of successors of the children
     let all_succs: BTreeSet<OrdBlockId> = children_succs
         .iter()
-        .fold(BTreeSet::new(), |acc, s| acc.union(s).cloned().collect());
+        .fold(BTreeSet::new(), |acc, s| acc.union(s).copied().collect());
 
     // Then, compute the "best" intersection of the successors
     // If there is exactly one child or less, it is trivial
@@ -914,11 +912,10 @@ fn compute_switch_exits_explore(
         let mut max_inter_succs: BTreeSet<OrdBlockId> = BTreeSet::new();
 
         // For every child
-        for i in 0..children_succs.len() {
+        for (i, mut i_succs) in children_succs.iter().cloned().enumerate() {
             let mut current_number_inter = 1;
             // Note that we need to add the children themselves to the
             // sets of successors
-            let mut i_succs = children_succs.get(i).unwrap().clone();
             i_succs.insert(make_ord_block_id(children[i], tsort_map));
             let mut current_inter_succs: BTreeSet<OrdBlockId> = i_succs;
 
@@ -928,9 +925,8 @@ fn compute_switch_exits_explore(
 
                 // Annoying that we have to clone the current intersection set...
                 let inter: BTreeSet<OrdBlockId> = current_inter_succs
-                    .clone()
                     .intersection(&j_succs)
-                    .cloned()
+                    .copied()
                     .collect();
 
                 if !inter.is_empty() {
@@ -1075,13 +1071,7 @@ fn compute_switch_exits(
                 //   ...
                 // }
                 // ```
-                let inter: BTreeSet<OrdBlockId> = info
-                    .succs
-                    .clone()
-                    .intersection(&ord_exits_set)
-                    .cloned()
-                    .collect();
-                if inter.is_empty() {
+                if info.succs.intersection(&ord_exits_set).next().is_none() {
                     // No intersection: ok
                     exits_set.insert(exit.id);
                     ord_exits_set.insert(*exit);
@@ -1229,12 +1219,11 @@ fn compute_loop_switch_exits(cfg_info: &CfgInfo) -> ExitInfo {
     let tsorted: Vec<src::BlockId> = toposort(&cfg_info.cfg_no_be, None).unwrap();
 
     // Build the map: block id -> topological sort rank
-    let tsort_map: HashMap<src::BlockId, usize> = HashMap::from_iter(
-        tsorted
-            .into_iter()
-            .enumerate()
-            .map(|(i, block_id)| (block_id, i)),
-    );
+    let tsort_map: HashMap<src::BlockId, usize> = tsorted
+        .into_iter()
+        .enumerate()
+        .map(|(i, block_id)| (block_id, i))
+        .collect();
 
     // Compute the loop exits
     let loop_exits = compute_loop_exits(cfg_info);
