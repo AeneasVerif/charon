@@ -20,7 +20,7 @@ use std::collections::HashMap;
 use std::collections::{BTreeMap, VecDeque};
 use std::fmt;
 use std::mem;
-use std::path::Component;
+use std::path::{Component, PathBuf};
 use std::sync::Arc;
 
 // Re-export to avoid having to fix imports.
@@ -165,6 +165,8 @@ impl Ord for OrdRustId {
 pub struct TranslateCtx<'tcx, 'ctx> {
     /// The Rust compiler type context
     pub tcx: TyCtxt<'tcx>,
+    /// Path to the toolchain root.
+    pub sysroot: PathBuf,
     /// The Hax context
     pub hax_state: hax::StateWithBase<'tcx>,
 
@@ -575,7 +577,27 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
             hax::FileName::Real(name) => {
                 use hax::RealFileName;
                 match name {
-                    RealFileName::LocalPath(path) => FileName::Local(path.clone()),
+                    RealFileName::LocalPath(path) => {
+                        let path = if let Ok(path) = path.strip_prefix(&self.sysroot) {
+                            // The path to files in the standard library may be full paths to somewhere
+                            // in the sysroot. This may depend on how the toolchain is installed
+                            // (rustup vs nix), so we normalize the paths here to avoid
+                            // inconsistencies in the translation.
+                            if let Ok(path) = path.strip_prefix("lib/rustlib/src/rust") {
+                                let mut rewritten_path: PathBuf = "/rustc".into();
+                                rewritten_path.extend(path);
+                                rewritten_path
+                            } else {
+                                // Unclear if this can happen, but just in case.
+                                let mut rewritten_path: PathBuf = "/toolchain".into();
+                                rewritten_path.extend(path);
+                                rewritten_path
+                            }
+                        } else {
+                            path.clone()
+                        };
+                        FileName::Local(path)
+                    }
                     RealFileName::Remapped { virtual_name, .. } => {
                         // We use the virtual name because it is always available.
                         // That name normally starts with `/rustc/<hash>/`. For our purposes we hide

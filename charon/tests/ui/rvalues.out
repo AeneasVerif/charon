@@ -268,11 +268,11 @@ fn test_crate::transmute(@1: Array<u32, 2 : usize>) -> u64
 }
 
 global test_crate::STEAL2  {
-    let @0: Array<(), 12 : usize>; // return
+    let @0: Array<(), 13 : usize>; // return
     let @1: (); // anonymous local
 
     @1 := ()
-    @0 := @ArrayRepeat<'_, (), 12 : usize>(move (@1))
+    @0 := @ArrayRepeat<'_, (), 13 : usize>(move (@1))
     drop @1
     return
 }
@@ -313,7 +313,7 @@ where
 
     size@1 := core::mem::size_of<T>[@TraitClause0]()
     align@2 := core::mem::align_of<T>[@TraitClause0]()
-    // This one seems to be optimized out.
+    // This is `const (false)` in the MIR we get, but `true` in const evaluation.
     ub@3 := const (false)
     offset@4 := offset_of(?)<test_crate::nullary_ops::Struct<T>[@TraitClause0]>
     @7 := copy (size@1)

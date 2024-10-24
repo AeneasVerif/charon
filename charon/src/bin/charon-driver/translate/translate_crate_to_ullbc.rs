@@ -10,6 +10,7 @@ use rustc_hir::def_id::DefId;
 use rustc_hir::{ForeignItemKind, ItemId, ItemKind};
 use rustc_middle::ty::TyCtxt;
 use std::collections::{HashMap, HashSet};
+use std::path::PathBuf;
 use std::sync::Arc;
 
 impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
@@ -43,8 +44,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
                     trace!("Ignoring {:?} (ignoring item kind)", item.item_id());
                     return Ok(());
                 }
-                ItemKind::OpaqueTy(..)
-                | ItemKind::Union(..)
+                ItemKind::Union(..)
                 | ItemKind::TyAlias(..)
                 | ItemKind::Enum(..)
                 | ItemKind::Struct(..)
@@ -77,7 +77,6 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
                 let _ = self.register_type_decl_id(&None, def_id);
                 Ok(())
             }
-            ItemKind::OpaqueTy(_) => unimplemented!(),
             ItemKind::Enum(..) | ItemKind::Struct(_, _) | ItemKind::Union(..) => {
                 let _ = self.register_type_decl_id(&None, def_id);
                 Ok(())
@@ -363,7 +362,11 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
 }
 
 #[tracing::instrument(skip(tcx))]
-pub fn translate<'tcx, 'ctx>(options: &CliOpts, tcx: TyCtxt<'tcx>) -> TransformCtx<'tcx> {
+pub fn translate<'tcx, 'ctx>(
+    options: &CliOpts,
+    tcx: TyCtxt<'tcx>,
+    sysroot: PathBuf,
+) -> TransformCtx<'tcx> {
     let hax_state = hax::state::State::new(
         tcx,
         hax::options::Options {
@@ -397,6 +400,7 @@ pub fn translate<'tcx, 'ctx>(options: &CliOpts, tcx: TyCtxt<'tcx>) -> TransformC
     let translate_options = TranslateOptions::new(&mut error_ctx, options);
     let mut ctx = TranslateCtx {
         tcx,
+        sysroot,
         hax_state,
         options: translate_options,
         errors: error_ctx,

@@ -155,15 +155,24 @@ struct alloc::raw_vec::Cap =
   usize,
 }
 
+struct alloc::raw_vec::RawVecInner<A>
+  where
+      [@TraitClause0]: core::marker::Sized<A>,
+ =
+{
+  ptr: core::ptr::unique::Unique<u8>,
+  cap: alloc::raw_vec::Cap,
+  alloc: A,
+}
+
 struct alloc::raw_vec::RawVec<T, A>
   where
       [@TraitClause0]: core::marker::Sized<T>,
       [@TraitClause1]: core::marker::Sized<A>,
  =
 {
-  ptr: core::ptr::unique::Unique<T>,
-  cap: alloc::raw_vec::Cap,
-  alloc: A,
+  inner: alloc::raw_vec::RawVecInner<A>[@TraitClause1],
+  _marker: core::marker::PhantomData<T>,
 }
 
 struct alloc::vec::Vec<T, A>

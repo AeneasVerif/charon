@@ -92,7 +92,7 @@ fn main() {
     };
 
     if !has_sysroot_arg {
-        compiler_args.extend(vec!["--sysroot".to_string(), sysroot]);
+        compiler_args.extend(vec!["--sysroot".to_string(), sysroot.clone()]);
     }
     if options.use_polonius {
         compiler_args.push("-Zpolonius".to_string());
@@ -241,7 +241,7 @@ fn main() {
     trace!("Compiler arguments: {:?}", compiler_args);
 
     // Call the Rust compiler with our custom callback.
-    let mut callback = CharonCallbacks::new(options);
+    let mut callback = CharonCallbacks::new(options, sysroot.into());
     let mut res = callback.run_compiler(compiler_args);
     let CharonCallbacks {
         options,

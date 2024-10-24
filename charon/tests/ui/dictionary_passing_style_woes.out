@@ -1,0 +1,144 @@
+# Final LLBC before serialization:
+
+trait core::marker::Sized<Self>
+
+trait test_crate::Iterator<Self>
+{
+    parent_clause0 : [@TraitClause0]: core::marker::Sized<Self::Item>
+    type Item
+}
+
+trait test_crate::IntoIterator<Self>
+where
+    Self::parent_clause1::Item = Self::Item,
+{
+    parent_clause0 : [@TraitClause0]: core::marker::Sized<Self::Item>
+    parent_clause1 : [@TraitClause1]: test_crate::Iterator<Self::IntoIter>
+    parent_clause2 : [@TraitClause2]: core::marker::Sized<Self::IntoIter>
+    type Item
+    type IntoIter
+}
+
+impl<I> test_crate::{impl test_crate::IntoIterator for I}<I> : test_crate::IntoIterator<I>
+where
+    [@TraitClause0]: core::marker::Sized<I>,
+    [@TraitClause1]: test_crate::Iterator<I>,
+{
+    parent_clause0 = @TraitClause1::parent_clause0
+    parent_clause1 = @TraitClause1
+    parent_clause2 = @TraitClause0
+    type Item = @TraitClause1::Item
+    type IntoIter = I
+}
+
+fn test_crate::callee<T>(@1: @TraitClause1::Item) -> test_crate::{impl test_crate::IntoIterator for I}<T>[@TraitClause0, @TraitClause1]::Item
+where
+    [@TraitClause0]: core::marker::Sized<T>,
+    [@TraitClause1]: test_crate::Iterator<T>,
+{
+    let @0: @TraitClause1::Item; // return
+    let t@1: @TraitClause1::Item; // arg #1
+
+    @0 := move (t@1)
+    drop t@1
+    return
+}
+
+fn test_crate::caller<T>(@1: @TraitClause1::Item) -> @TraitClause2::Item
+where
+    [@TraitClause0]: core::marker::Sized<T>,
+    [@TraitClause1]: test_crate::Iterator<T>,
+    [@TraitClause2]: test_crate::IntoIterator<T>,
+{
+    let @0: @TraitClause2::Item; // return
+    let t@1: @TraitClause1::Item; // arg #1
+    let @2: @TraitClause1::Item; // anonymous local
+
+    @2 := move (t@1)
+    @0 := test_crate::callee<T>[@TraitClause0, @TraitClause1](move (@2))
+    drop @2
+    drop t@1
+    return
+}
+
+trait test_crate::X<Self>
+{
+    parent_clause0 : [@TraitClause0]: core::marker::Sized<Self::Assoc>
+    type Assoc
+    fn method : test_crate::X::method
+}
+
+trait test_crate::A<Self>
+{
+    parent_clause0 : [@TraitClause0]: test_crate::X<Self>
+}
+
+trait test_crate::B<Self>
+{
+    parent_clause0 : [@TraitClause0]: test_crate::X<Self>
+}
+
+fn test_crate::X::method<'_0, Self>(@1: &'_0 (Self)) -> Self::Assoc
+
+fn test_crate::a<T>(@1: T) -> @TraitClause1::parent_clause0::Assoc
+where
+    [@TraitClause0]: core::marker::Sized<T>,
+    [@TraitClause1]: test_crate::A<T>,
+{
+    let @0: @TraitClause1::parent_clause0::Assoc; // return
+    let x@1: T; // arg #1
+    let @2: &'_ (T); // anonymous local
+
+    @2 := &x@1
+    @0 := @TraitClause1::parent_clause0::method(move (@2))
+    drop @2
+    drop x@1
+    return
+}
+
+fn test_crate::b<T>(@1: T) -> @TraitClause1::parent_clause0::Assoc
+where
+    [@TraitClause0]: core::marker::Sized<T>,
+    [@TraitClause1]: test_crate::B<T>,
+{
+    let @0: @TraitClause1::parent_clause0::Assoc; // return
+    let x@1: T; // arg #1
+    let @2: &'_ (T); // anonymous local
+
+    @2 := &x@1
+    @0 := @TraitClause1::parent_clause0::method(move (@2))
+    drop @2
+    drop x@1
+    return
+}
+
+fn test_crate::x<T>(@1: T) -> (@TraitClause1::parent_clause0::Assoc, @TraitClause1::parent_clause0::Assoc)
+where
+    [@TraitClause0]: core::marker::Sized<T>,
+    [@TraitClause1]: test_crate::A<T>,
+    [@TraitClause2]: test_crate::B<T>,
+{
+    let @0: (@TraitClause1::parent_clause0::Assoc, @TraitClause1::parent_clause0::Assoc); // return
+    let x@1: T; // arg #1
+    let @2: @TraitClause1::parent_clause0::Assoc; // anonymous local
+    let @3: T; // anonymous local
+    let @4: @TraitClause1::parent_clause0::Assoc; // anonymous local
+    let @5: T; // anonymous local
+
+    @3 := move (x@1)
+    @2 := test_crate::a<T>[@TraitClause0, @TraitClause1](move (@3))
+    drop @3
+    @5 := move (x@1)
+    @4 := test_crate::b<T>[@TraitClause0, @TraitClause2](move (@5))
+    drop @5
+    @0 := (move (@2), move (@4))
+    drop @4
+    drop @4
+    drop @2
+    drop @2
+    drop x@1
+    return
+}
+
+
+

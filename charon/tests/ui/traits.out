@@ -1013,65 +1013,6 @@ fn test_crate::flibidi()
     return
 }
 
-trait test_crate::dictionary_passing_style_is_tricky::Iterator<Self>
-{
-    parent_clause0 : [@TraitClause0]: core::marker::Sized<Self::Item>
-    type Item
-}
-
-trait test_crate::dictionary_passing_style_is_tricky::IntoIterator<Self>
-where
-    Self::parent_clause1::Item = Self::Item,
-{
-    parent_clause0 : [@TraitClause0]: core::marker::Sized<Self::Item>
-    parent_clause1 : [@TraitClause1]: test_crate::dictionary_passing_style_is_tricky::Iterator<Self::IntoIter>
-    parent_clause2 : [@TraitClause2]: core::marker::Sized<Self::IntoIter>
-    type Item
-    type IntoIter
-}
-
-impl<I> test_crate::dictionary_passing_style_is_tricky::{impl test_crate::dictionary_passing_style_is_tricky::IntoIterator for I}<I> : test_crate::dictionary_passing_style_is_tricky::IntoIterator<I>
-where
-    [@TraitClause0]: core::marker::Sized<I>,
-    [@TraitClause1]: test_crate::dictionary_passing_style_is_tricky::Iterator<I>,
-{
-    parent_clause0 = @TraitClause1::parent_clause0
-    parent_clause1 = @TraitClause1
-    parent_clause2 = @TraitClause0
-    type Item = @TraitClause1::Item
-    type IntoIter = I
-}
-
-fn test_crate::dictionary_passing_style_is_tricky::callee<T>(@1: @TraitClause1::Item) -> test_crate::dictionary_passing_style_is_tricky::{impl test_crate::dictionary_passing_style_is_tricky::IntoIterator for I}<T>[@TraitClause0, @TraitClause1]::Item
-where
-    [@TraitClause0]: core::marker::Sized<T>,
-    [@TraitClause1]: test_crate::dictionary_passing_style_is_tricky::Iterator<T>,
-{
-    let @0: @TraitClause1::Item; // return
-    let t@1: @TraitClause1::Item; // arg #1
-
-    @0 := move (t@1)
-    drop t@1
-    return
-}
-
-fn test_crate::dictionary_passing_style_is_tricky::caller<T>(@1: @TraitClause1::Item) -> @TraitClause2::Item
-where
-    [@TraitClause0]: core::marker::Sized<T>,
-    [@TraitClause1]: test_crate::dictionary_passing_style_is_tricky::Iterator<T>,
-    [@TraitClause2]: test_crate::dictionary_passing_style_is_tricky::IntoIterator<T>,
-{
-    let @0: @TraitClause2::Item; // return
-    let t@1: @TraitClause1::Item; // arg #1
-    let @2: @TraitClause1::Item; // anonymous local
-
-    @2 := move (t@1)
-    @0 := test_crate::dictionary_passing_style_is_tricky::callee<T>[@TraitClause0, @TraitClause1](move (@2))
-    drop @2
-    drop t@1
-    return
-}
-
 fn test_crate::WithConstTy::f<'_0, '_1, Self, const LEN : usize>(@1: &'_0 mut (Self::W), @2: &'_1 (Array<u8, const LEN : usize>))
 
 fn test_crate::IntoIterator::into_iter<Self>(@1: Self) -> Self::IntoIter

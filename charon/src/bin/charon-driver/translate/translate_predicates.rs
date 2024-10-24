@@ -257,7 +257,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 | PredicateKind::Ambiguous
                 | PredicateKind::Coerce(_)
                 | PredicateKind::ConstEquate(_, _)
-                | PredicateKind::ObjectSafe(_)
+                | PredicateKind::DynCompatible(_)
                 | PredicateKind::NormalizesTo(_)
                 | PredicateKind::Subtype(_) => {
                     error_or_panic!(ctx, span, format!("Unsupported predicate: {:?}", pred_kind))

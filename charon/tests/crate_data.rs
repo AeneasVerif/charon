@@ -1,3 +1,4 @@
+#![feature(rustc_private)]
 use charon_lib::ast::{AnyTransItem, TranslatedCrate};
 use itertools::Itertools;
 use std::collections::HashMap;
@@ -106,7 +107,7 @@ fn file_name() -> anyhow::Result<()> {
     let file_id = crate_data.type_decls[1].item_meta.span.span.file_id;
     let file = &crate_data.id_to_file[file_id];
     let FileName::Virtual(file) = file else {
-        panic!()
+        panic!("file should be virtual, found instead: {file:?}")
     };
     assert_eq!(file.to_str().unwrap(), "/rustc/library/core/src/option.rs");
     Ok(())
