@@ -538,7 +538,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         def: &hax::FullDef,
         name: Name,
         opacity: ItemOpacity,
-    ) -> Result<ItemMeta, Error> {
+    ) -> ItemMeta {
         let def_id = def.rust_def_id();
         let span = def.source_span.as_ref().unwrap_or(&def.span);
         let span = self.translate_span_from_hax(span);
@@ -554,14 +554,14 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
             opacity
         };
 
-        Ok(ItemMeta {
+        ItemMeta {
             name,
             span,
             source_text: def.source_text.clone(),
             attr_info,
             is_local,
             opacity,
-        })
+        }
     }
 
     pub fn translate_filename(&mut self, name: &hax::FileName) -> meta::FileName {

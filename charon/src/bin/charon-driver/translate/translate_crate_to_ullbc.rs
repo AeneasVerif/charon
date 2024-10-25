@@ -12,16 +12,30 @@ use std::path::PathBuf;
 use std::sync::Arc;
 
 impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
-    /// General function to register a MIR item. It is called on all the top-level
-    /// items. This includes: crate inclusions and `use` instructions (which are
-    /// ignored), but also type and functions declarations.
-    /// Note that this function checks if the item has been registered, and adds
-    /// its def_id to the list of registered items otherwise.
-    fn register_local_hir_item(&mut self, item_id: ItemId) -> Result<(), Error> {
+    /// Register a HIR item and all its children. We call this on the crate root items and end up
+    /// exploring the whole crate.
+    fn register_local_hir_item(&mut self, item_id: ItemId) {
+        let mut ctx_ref = std::panic::AssertUnwindSafe(&mut *self);
+        // Catch panics that could happen during registration.
+        let res = std::panic::catch_unwind(move || ctx_ref.register_local_hir_item_inner(item_id));
+        if res.is_err() {
+            let hir_map = self.tcx.hir();
+            let item = hir_map.item(item_id);
+            let def_id = item.owner_id.to_def_id();
+            let span = self.tcx.def_span(def_id);
+            self.errors
+                .span_err_no_register(span, &format!("panicked while registering `{def_id:?}`"));
+            self.errors.error_count += 1;
+        }
+    }
+
+    fn register_local_hir_item_inner(&mut self, item_id: ItemId) {
         let hir_map = self.tcx.hir();
         let item = hir_map.item(item_id);
         let def_id = item.owner_id.to_def_id();
-        let name = self.def_id_to_name(def_id)?;
+        let name = self
+            .def_id_to_name(def_id)
+            .expect("could not translate name");
         trace!("Registering {:?}", def_id);
 
         // Case disjunction on the item kind.
@@ -106,7 +120,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
                 let def = self.hax_def(def_id);
                 let opacity = self.opacity_for_name(&name);
                 // Go through `item_meta` to get take into account the `charon::opaque` attribute.
-                let item_meta = self.translate_item_meta(&def, name, opacity)?;
+                let item_meta = self.translate_item_meta(&def, name, opacity);
                 if item_meta.opacity.is_opaque() || opacity.is_invisible() {
                     // Ignore
                     trace!(
@@ -118,7 +132,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
                     trace!("Diving into module [{:?}]", def_id);
                     // Lookup and register the items
                     for item_id in module.item_ids {
-                        self.register_local_hir_item(*item_id)?;
+                        self.register_local_hir_item(*item_id);
                     }
                 }
             }
@@ -147,8 +161,6 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
             ItemKind::Macro(..) => {}
             ItemKind::ExternCrate(..) | ItemKind::GlobalAsm(..) | ItemKind::Use(..) => {}
         }
-
-        Ok(())
     }
 
     pub(crate) fn translate_item(&mut self, rust_id: DefId, trans_id: AnyTransId) {
@@ -220,7 +232,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
             return Ok(());
         }
         let def: Arc<hax::FullDef> = self.hax_def(rust_id);
-        let item_meta = self.translate_item_meta(&def, name, opacity)?;
+        let item_meta = self.translate_item_meta(&def, name, opacity);
 
         // Initialize the body translation context
         let bt_ctx = BodyTransCtx::new(rust_id, Some(trans_id), self);
@@ -321,30 +333,12 @@ pub fn translate<'tcx, 'ctx>(
         cached_names: Default::default(),
     };
 
-    // First push all the items in the stack of items to translate.
-    //
-    // We explore the crate by starting with the root module.
-    //
-    // Remark: It is important to do like this (and not iterate over all the items)
-    // if we want the "opaque" options (to ignore parts of the crate) to work.
-    // For instance, if we mark "foo::bar" as opaque, we will ignore the module
-    // "foo::bar" altogether (we will not even look at the items).
-    // If we look at the items, we risk registering items just by looking
-    // at their name. For instance, if we check the item `foo::bar::{foo::bar::Ty}::f`,
-    // then by converting the Rust name to an LLBC name, we will actually register
-    // the name "foo::bar::Ty" (so that we can generate the "impl" path element
-    // `{foo::bar::Ty}`), which means we will register the item `foo::bar::Ty`.
-    // We could make the name translation work differently if we do have to
-    // explore all the items in the crate.
+    // Recursively register all the items in the crate, starting from the root module. We could
+    // instead ask rustc for the plain list of all items in the crate, but we wouldn't be able to
+    // skip items inside modules annotated with `#[charon::opaque]`.
     let hir = tcx.hir();
     for item_id in hir.root_module().item_ids {
-        let mut ctx_ref = std::panic::AssertUnwindSafe(&mut ctx);
-        // Stopgap measure because there are still many panics in charon and hax.
-        // If registration fails we simply skip the item.
-        let res = std::panic::catch_unwind(move || ctx_ref.register_local_hir_item(*item_id));
-        if res.is_err() {
-            ctx.errors.error_count += 1;
-        }
+        ctx.register_local_hir_item(*item_id);
     }
 
     trace!(
