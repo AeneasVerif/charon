@@ -12,6 +12,7 @@ use hax_frontend_exporter::SInto;
 use itertools::Itertools;
 use macros::VariantIndexArity;
 use rustc_hir::def_id::DefId;
+use rustc_hir::definitions::{DefPathData, DisambiguatedDefPathData};
 use rustc_hir::Node as HirNode;
 use rustc_middle::ty::TyCtxt;
 use std::borrow::Cow;
@@ -322,29 +323,15 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         }
     }
 
-    pub fn def_id_to_path_elem(
+    fn translate_def_path_element(
         &mut self,
         span: Span,
         def_id: DefId,
+        data: &DisambiguatedDefPathData,
     ) -> Result<Option<PathElem>, Error> {
-        if let Some(path_elem) = self.cached_path_elems.get(&def_id) {
-            return Ok(path_elem.clone());
-        }
-        // Warning: we can't call `hax_def` unconditionally, because this may cause MIR
-        // stealing issues. E.g.:
-        // ```rust
-        // pub const SIZE: usize = 32;
-        // // Causes the MIR of `SIZE` to get optimized, stealing its `mir_built`.
-        // pub fn f(_x: &[u32; SIZE]) {}
-        // ```
-        // Rk.: below we try to be as tight as possible with regards to sanity
-        // checks, to make sure we understand what happens with def paths, and
-        // fail whenever we get something which is even slightly outside what
-        // we expect.
-        let data = self.tcx.def_key(def_id).disambiguated_data;
-        // Disambiguator disambiguates identically-named (but distinct) identifiers. This happens with macros.
+        // Disambiguator disambiguates identically-named (but distinct) identifiers. This happens
+        // notably with macros and inherent impl blocks.
         let disambiguator = Disambiguator::new(data.disambiguator as usize);
-        use rustc_hir::definitions::DefPathData;
         // Match over the key data
         let path_elem = match &data.data {
             DefPathData::TypeNs(symbol) => Some(PathElem::Ident(symbol.to_string(), disambiguator)),
@@ -416,6 +403,19 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
                 );
             }
         };
+        Ok(path_elem)
+    }
+
+    pub fn def_id_to_path_elem(
+        &mut self,
+        span: Span,
+        def_id: DefId,
+    ) -> Result<Option<PathElem>, Error> {
+        if let Some(path_elem) = self.cached_path_elems.get(&def_id) {
+            return Ok(path_elem.clone());
+        }
+        let data = self.tcx.def_key(def_id).disambiguated_data;
+        let path_elem = self.translate_def_path_element(span, def_id, &data)?;
         self.cached_path_elems.insert(def_id, path_elem.clone());
         Ok(path_elem)
     }
