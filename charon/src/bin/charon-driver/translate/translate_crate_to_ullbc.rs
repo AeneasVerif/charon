@@ -17,20 +17,12 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
     /// ignored), but also type and functions declarations.
     /// Note that this function checks if the item has been registered, and adds
     /// its def_id to the list of registered items otherwise.
-    fn register_local_hir_item(&mut self, is_top_item: bool, item_id: ItemId) -> Result<(), Error> {
+    fn register_local_hir_item(&mut self, item_id: ItemId) -> Result<(), Error> {
         let hir_map = self.tcx.hir();
         let item = hir_map.item(item_id);
         let def_id = item.owner_id.to_def_id();
+        let name = self.def_id_to_name(def_id)?;
         trace!("Registering {:?}", def_id);
-
-        if is_top_item {
-            let name = self.def_id_to_name(def_id)?;
-            let opacity = self.opacity_for_name(&name);
-            if opacity.is_opaque() {
-                trace!("Ignoring {:?} (marked as opaque)", item.item_id());
-                return Ok(());
-            }
-        }
 
         // Case disjunction on the item kind.
         match &item.kind {
@@ -112,7 +104,6 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
                 // exist
                 trace!("{:?}", def_id);
                 let def = self.hax_def(def_id);
-                let name = self.def_id_to_name(def_id)?;
                 let opacity = self.opacity_for_name(&name);
                 // Go through `item_meta` to get take into account the `charon::opaque` attribute.
                 let item_meta = self.translate_item_meta(&def, name, opacity)?;
@@ -127,7 +118,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
                     trace!("Diving into module [{:?}]", def_id);
                     // Lookup and register the items
                     for item_id in module.item_ids {
-                        self.register_local_hir_item(false, *item_id)?;
+                        self.register_local_hir_item(*item_id)?;
                     }
                 }
             }
@@ -350,7 +341,7 @@ pub fn translate<'tcx, 'ctx>(
         let mut ctx_ref = std::panic::AssertUnwindSafe(&mut ctx);
         // Stopgap measure because there are still many panics in charon and hax.
         // If registration fails we simply skip the item.
-        let res = std::panic::catch_unwind(move || ctx_ref.register_local_hir_item(true, *item_id));
+        let res = std::panic::catch_unwind(move || ctx_ref.register_local_hir_item(*item_id));
         if res.is_err() {
             ctx.errors.error_count += 1;
         }

@@ -128,5 +128,7 @@ fn test_crate::foo()
 
 fn test_crate::module::dont_translate_body()
 
+fn test_crate::exclude_me()
+
 
 
