@@ -34,4 +34,4 @@ error: Ignoring the following item due to a previous error: test_crate::foo
 
 error: aborting due to 3 previous errors
 
-ERROR Compilation encountered 2 errors
+ERROR Compilation encountered 3 errors

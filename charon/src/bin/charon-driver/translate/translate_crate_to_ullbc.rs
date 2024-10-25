@@ -19,77 +19,34 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
     /// ignored), but also type and functions declarations.
     /// Note that this function checks if the item has been registered, and adds
     /// its def_id to the list of registered items otherwise.
-    ///
-    /// `stack`: the stack of definitions we explored before reaching this one.
-    /// This is useful for debugging purposes, to check how we reached a point
-    /// (in particular if we want to figure out where we failed to consider a
-    /// definition as opaque).
-    fn register_local_hir_item(&mut self, top_item: bool, item_id: ItemId) -> Result<(), Error> {
+    fn register_local_hir_item(&mut self, is_top_item: bool, item_id: ItemId) -> Result<(), Error> {
         let hir_map = self.tcx.hir();
         let item = hir_map.item(item_id);
-        trace!("{:?}", item);
+        let def_id = item.owner_id.to_def_id();
+        trace!("Registering {:?}", def_id);
 
-        // The annoying thing is that when iterating over the items in a crate, we
-        // iterate over *all* the items, which is a problem with regards to the
-        // *opaque* modules: we see all the definitions which are in there, and
-        // not only those which are transitively reachable from the root.
-        // Because of this, we need the following check: if the item is a "top"
-        // item (not an item transitively reachable from an item which is not
-        // opaque) and inside an opaque module (or sub-module), we ignore it.
-        if top_item {
-            let def_id = item.owner_id.to_def_id();
-            match &item.kind {
-                ItemKind::ExternCrate(..) | ItemKind::Use(..) => {
-                    // This kind of item is to be ignored
-                    trace!("Ignoring {:?} (ignoring item kind)", item.item_id());
-                    return Ok(());
-                }
-                ItemKind::Union(..)
-                | ItemKind::TyAlias(..)
-                | ItemKind::Enum(..)
-                | ItemKind::Struct(..)
-                | ItemKind::Fn(..)
-                | ItemKind::Impl(..)
-                | ItemKind::Mod(..)
-                | ItemKind::ForeignMod { .. }
-                | ItemKind::Const(..)
-                | ItemKind::Static(..)
-                | ItemKind::Macro(..)
-                | ItemKind::Trait(..) => {
-                    let name = self.def_id_to_name(def_id)?;
-                    if self.opacity_for_name(&name).is_opaque() {
-                        trace!("Ignoring {:?} (marked as opaque)", item.item_id());
-                        return Ok(());
-                    }
-                    // Continue
-                }
-                _ => {
-                    unimplemented!("{:?}", item.kind);
-                }
+        if is_top_item {
+            let name = self.def_id_to_name(def_id)?;
+            let opacity = self.opacity_for_name(&name);
+            if opacity.is_opaque() {
+                trace!("Ignoring {:?} (marked as opaque)", item.item_id());
+                return Ok(());
             }
         }
-        trace!("Registering {:?}", item.item_id());
 
         // Case disjunction on the item kind.
-        let def_id = item.owner_id.to_def_id();
         match &item.kind {
-            ItemKind::TyAlias(_, _) => {
+            ItemKind::Enum(..)
+            | ItemKind::Struct(..)
+            | ItemKind::Union(..)
+            | ItemKind::TyAlias(..) => {
                 let _ = self.register_type_decl_id(&None, def_id);
-                Ok(())
             }
-            ItemKind::Enum(..) | ItemKind::Struct(_, _) | ItemKind::Union(..) => {
-                let _ = self.register_type_decl_id(&None, def_id);
-                Ok(())
-            }
-            ItemKind::Fn(_, _, _) => {
+            ItemKind::Fn(..) => {
                 let _ = self.register_fun_decl_id(&None, def_id);
-                Ok(())
             }
             ItemKind::Trait(..) => {
                 let _ = self.register_trait_decl_id(&None, def_id);
-                // We don't need to explore the associated items: we will
-                // explore them when translating the trait
-                Ok(())
             }
             ItemKind::Const(..) | ItemKind::Static(..) => {
                 // We ignore the anonymous constants, which are introduced
@@ -112,9 +69,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
                         // Avoid registering globals in optimized MIR (they will be inlined)
                     }
                 }
-                Ok(())
             }
-
             ItemKind::Impl(..) => {
                 trace!("impl");
                 let def = self.hax_def(def_id);
@@ -180,15 +135,6 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
                         }
                     }
                 }
-                Ok(())
-            }
-            ItemKind::Use(_, _) => {
-                // Ignore
-                Ok(())
-            }
-            ItemKind::ExternCrate(_) => {
-                // Ignore
-                Ok(())
             }
             ItemKind::Mod(module) => {
                 trace!("module");
@@ -205,15 +151,18 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
                 let item_meta = self.translate_item_meta(&def, name, opacity)?;
                 if item_meta.opacity.is_opaque() || opacity.is_invisible() {
                     // Ignore
-                    trace!("Ignoring module [{:?}] because marked as opaque", def_id);
+                    trace!(
+                        "Ignoring module [{:?}] \
+                        because it is marked as opaque",
+                        def_id
+                    );
                 } else {
                     trace!("Diving into module [{:?}]", def_id);
+                    // Lookup and register the items
                     for item_id in module.item_ids {
-                        // Lookup and register the item
                         self.register_local_hir_item(false, *item_id)?;
                     }
                 }
-                Ok(())
             }
             ItemKind::ForeignMod { items, .. } => {
                 trace!("Diving into `extern` block [{:?}]", def_id);
@@ -233,18 +182,15 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
                         }
                     }
                 }
-                Ok(())
             }
-            ItemKind::Macro(..) => {
-                // We ignore macro definitions. Note that when a macro is applied,
-                // we directly see the result of its expansion by the Rustc compiler,
-                // which is why we don't have to care about them.
-                Ok(())
-            }
-            _ => {
-                unimplemented!("{:?}", item.kind);
-            }
+            // TODO: trait aliases (https://github.com/AeneasVerif/charon/issues/366)
+            ItemKind::TraitAlias(..) => {}
+            // Macros are already expanded.
+            ItemKind::Macro(..) => {}
+            ItemKind::ExternCrate(..) | ItemKind::GlobalAsm(..) | ItemKind::Use(..) => {}
         }
+
+        Ok(())
     }
 
     pub(crate) fn translate_item(&mut self, rust_id: DefId, trans_id: AnyTransId) {
@@ -434,10 +380,13 @@ pub fn translate<'tcx, 'ctx>(
     // explore all the items in the crate.
     let hir = tcx.hir();
     for item_id in hir.root_module().item_ids {
-        let mut ctx = std::panic::AssertUnwindSafe(&mut ctx);
+        let mut ctx_ref = std::panic::AssertUnwindSafe(&mut ctx);
         // Stopgap measure because there are still many panics in charon and hax.
         // If registration fails we simply skip the item.
-        let _ = std::panic::catch_unwind(move || ctx.register_local_hir_item(true, *item_id));
+        let res = std::panic::catch_unwind(move || ctx_ref.register_local_hir_item(true, *item_id));
+        if res.is_err() {
+            ctx.errors.error_count += 1;
+        }
     }
 
     trace!(

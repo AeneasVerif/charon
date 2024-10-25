@@ -330,14 +330,13 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         // fail whenever we get something which is even slightly outside what
         // we expect.
         let data = self.tcx.def_key(def_id).disambiguated_data;
-        // Match over the key data
+        // Disambiguator disambiguates identically-named (but distinct) identifiers. This happens with macros.
         let disambiguator = Disambiguator::new(data.disambiguator as usize);
         use rustc_hir::definitions::DefPathData;
+        // Match over the key data
         let path_elem = match &data.data {
             DefPathData::TypeNs(symbol) => Some(PathElem::Ident(symbol.to_string(), disambiguator)),
             DefPathData::ValueNs(symbol) => {
-                // I think `disambiguator != 0` only with names introduced by macros (though
-                // not sure).
                 Some(PathElem::Ident(symbol.to_string(), disambiguator))
             }
             DefPathData::CrateRoot => {
@@ -376,34 +375,27 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
 
                 Some(PathElem::Impl(impl_elem, disambiguator))
             }
-            DefPathData::OpaqueTy => {
-                // TODO: do nothing for now
-                None
-            }
+            // TODO: do nothing for now
+            DefPathData::OpaqueTy => None,
+            // There may be namespace collisions between, say, function
+            // names and macros (not sure). However, this isn't much
+            // of an issue here, because for now we don't expose macros
+            // in the AST, and only use macro names in [register], for
+            // instance to filter opaque modules.
             DefPathData::MacroNs(symbol) => {
-                // There may be namespace collisions between, say, function
-                // names and macros (not sure). However, this isn't much
-                // of an issue here, because for now we don't expose macros
-                // in the AST, and only use macro names in [register], for
-                // instance to filter opaque modules.
                 Some(PathElem::Ident(symbol.to_string(), disambiguator))
             }
-            DefPathData::Closure => {
-                // TODO: this is not very satisfactory, but on the other hand
-                // we should be able to extract closures in local let-bindings
-                // (i.e., we shouldn't have to introduce top-level let-bindings).
-                Some(PathElem::Ident("closure".to_string(), disambiguator))
-            }
-            DefPathData::ForeignMod => {
-                // Do nothing, functions in `extern` blocks are in the same namespace as the
-                // block.
-                None
-            }
-            DefPathData::Ctor => {
-                // Do nothing, the constructor of a struct/variant has the same name as the
-                // struct/variant.
-                None
-            }
+            // TODO: this is not very satisfactory, but on the other hand
+            // we should be able to extract closures in local let-bindings
+            // (i.e., we shouldn't have to introduce top-level let-bindings).
+            DefPathData::Closure => Some(PathElem::Ident("closure".to_string(), disambiguator)),
+            // Do nothing, functions in `extern` blocks are in the same namespace as the
+            // block.
+            DefPathData::ForeignMod => None,
+            // Do nothing, the constructor of a struct/variant has the same name as the
+            // struct/variant.
+            DefPathData::Ctor => None,
+            DefPathData::Use => Some(PathElem::Ident("<use>".to_string(), disambiguator)),
             _ => {
                 error_or_panic!(
                     self,
