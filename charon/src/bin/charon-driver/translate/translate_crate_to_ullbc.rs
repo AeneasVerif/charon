@@ -5,7 +5,6 @@ use charon_lib::options::CliOpts;
 use charon_lib::transform::ctx::TransformOptions;
 use charon_lib::transform::TransformCtx;
 use hax_frontend_exporter as hax;
-use hax_frontend_exporter::SInto;
 use rustc_hir::def_id::DefId;
 use rustc_hir::{ForeignItemKind, ItemId, ItemKind};
 use rustc_middle::ty::TyCtxt;
@@ -49,25 +48,10 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
                 let _ = self.register_trait_decl_id(&None, def_id);
             }
             ItemKind::Const(..) | ItemKind::Static(..) => {
-                // We ignore the anonymous constants, which are introduced
-                // by the Rust compiler: those constants will be inlined in the
-                // function bodies.
-                //
-                // Important: if we try to retrieve the MIR of anonymous constants,
-                // it will steal the MIR of the bodies of the functions in which
-                // they appear.
-                //
-                // Also note that this is the only place where we need to check
-                // if an item is an anonymous constant: when translating the bodies,
-                // as the anonymous constants are inlined in those bodies, they
-                // disappear completely.
-                let trans_id: hax::DefId = def_id.sinto(&self.hax_state);
-                if trans_id.path.last().unwrap().data != hax::DefPathItem::AnonConst {
-                    if extract_constants_at_top_level(self.options.mir_level) {
-                        let _ = self.register_global_decl_id(&None, def_id);
-                    } else {
-                        // Avoid registering globals in optimized MIR (they will be inlined)
-                    }
+                if extract_constants_at_top_level(self.options.mir_level) {
+                    let _ = self.register_global_decl_id(&None, def_id);
+                } else {
+                    // Avoid registering globals in optimized MIR (they will be inlined)
                 }
             }
             ItemKind::Impl(..) => {
