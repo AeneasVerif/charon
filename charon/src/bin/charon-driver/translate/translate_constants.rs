@@ -118,6 +118,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 id,
                 generics,
                 trait_refs,
+                ..
             } => {
                 trace!(
                     "\n- generics: {:?}\n- trait_resf: {:?}\n",
