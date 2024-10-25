@@ -32,9 +32,6 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         let hir_map = self.tcx.hir();
         let item = hir_map.item(item_id);
         let def_id = item.owner_id.to_def_id();
-        let name = self
-            .def_id_to_name(def_id)
-            .expect("could not translate name");
         trace!("Registering {:?}", def_id);
 
         // Case disjunction on the item kind.
@@ -56,9 +53,9 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
             }
             ItemKind::Impl(..) => {
                 trace!("impl");
-                let def = self
-                    .hax_def(def_id)
-                    .expect("hax failed when registering impl block");
+                let Ok(def) = self.hax_def(def_id) else {
+                    return; // Error has already been emitted
+                };
                 let hax::FullDefKind::Impl {
                     items,
                     impl_subject,
@@ -118,9 +115,12 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
                 // to check that all the opaque modules given as arguments actually
                 // exist
                 trace!("{:?}", def_id);
-                let def = self
-                    .hax_def(def_id)
-                    .expect("hax failed when registering module");
+                let Ok(name) = self.def_id_to_name(def_id) else {
+                    return; // Error has already been emitted
+                };
+                let Ok(def) = self.hax_def(def_id) else {
+                    return; // Error has already been emitted
+                };
                 let opacity = self.opacity_for_name(&name);
                 // Go through `item_meta` to get take into account the `charon::opaque` attribute.
                 let item_meta = self.translate_item_meta(&def, name, opacity);
