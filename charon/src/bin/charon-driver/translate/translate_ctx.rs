@@ -429,16 +429,6 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         let tcx = self.tcx;
         let span = self.def_span(def_id);
 
-        // We have to be a bit careful when retrieving names from def ids. For instance,
-        // due to reexports, [`TyCtxt::def_path_str`](TyCtxt::def_path_str) might give
-        // different names depending on the def id on which it is called, even though
-        // those def ids might actually identify the same definition.
-        // For instance: `std::boxed::Box` and `alloc::boxed::Box` are actually
-        // the same (the first one is a reexport).
-        // This is why we implement a custom function to retrieve the original name
-        // (though this makes us lose aliases - we may want to investigate this
-        // issue in the future).
-
         // We lookup the path associated to an id, and convert it to a name.
         // Paths very precisely identify where an item is. There are important
         // subcases, like the items in an `Impl` block:
@@ -481,7 +471,8 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         // `[Ident("test"), Ident("bla"), Ident("Foo"), Impl(impl<T> Ty<T>, Disambiguator(1)), Ident("bar")]`
         let mut name: Vec<PathElem> = Vec::new();
 
-        // Note: we can't use `hax_def`, because this may cause MIR stealing issues.
+        // We can't use `tcx.def_path` because for path elements that correspond to impl blocks, we
+        // need their `DefId`.
         for cur_id in std::iter::successors(Some(def_id), |cur_id| tcx.opt_parent(*cur_id)) {
             if let Some(path_elem) = self.def_id_to_path_elem(span, cur_id)? {
                 name.push(path_elem);
