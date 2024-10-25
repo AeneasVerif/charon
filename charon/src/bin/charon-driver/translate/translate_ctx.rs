@@ -697,7 +697,8 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
     }
 
     pub(crate) fn def_span(&mut self, def_id: impl Into<DefId>) -> Span {
-        let span = &self.hax_def(def_id).span;
+        let span = self.tcx.def_span(def_id.into());
+        let span = span.sinto(&self.hax_state);
         self.translate_span_from_hax(&span)
     }
 
