@@ -1,4 +1,3 @@
-use super::get_mir::extract_constants_at_top_level;
 use super::translate_ctx::*;
 use charon_lib::ast::*;
 use charon_lib::options::CliOpts;
@@ -48,11 +47,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
                 let _ = self.register_trait_decl_id(&None, def_id);
             }
             ItemKind::Const(..) | ItemKind::Static(..) => {
-                if extract_constants_at_top_level(self.options.mir_level) {
-                    let _ = self.register_global_decl_id(&None, def_id);
-                } else {
-                    // Avoid registering globals in optimized MIR (they will be inlined)
-                }
+                let _ = self.register_global_decl_id(&None, def_id);
             }
             ItemKind::Impl(..) => {
                 trace!("impl");

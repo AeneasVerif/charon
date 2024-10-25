@@ -6,18 +6,7 @@ use rustc_middle::ty::TyCtxt;
 
 use crate::translate::translate_ctx::MirLevel;
 
-/// Indicates if the constants should be extracted in their own identifier,
-/// or if they must be evaluated to a constant value, depending on the
-/// MIR level which we extract.
-pub fn extract_constants_at_top_level(level: MirLevel) -> bool {
-    match level {
-        MirLevel::Built => true,
-        MirLevel::Promoted => true,
-        MirLevel::Optimized => false,
-    }
-}
-
-/// Are boxe manipulations desugared to very low-level code using raw pointers,
+/// Are box manipulations desugared to very low-level code using raw pointers,
 /// unique and non-null pointers? See [crate::types::TyKind::RawPtr] for detailed explanations.
 pub fn boxes_are_desugared(level: MirLevel) -> bool {
     match level {
