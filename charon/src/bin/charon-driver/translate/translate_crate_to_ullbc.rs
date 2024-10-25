@@ -61,56 +61,44 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
                     unreachable!()
                 };
 
-                // If this is a trait implementation, register it
-                if let hax::ImplSubject::Trait { .. } = impl_subject {
-                    let _ = self.register_trait_impl_id(&None, def_id);
-                }
-
-                // Explore the items
-                for (item, item_def) in items {
-                    let def_id = item_def.rust_def_id();
-                    // Match on the impl item kind
-                    match &item.kind {
-                        hax::AssocKind::Const => {
-                            // Associated constant:
-                            // ```
-                            // trait Foo {
-                            //   const C : usize;
-                            // }
-                            // impl Foo for Bar {
-                            //   const C = 32; // HERE
-                            // }
-                            // // or
-                            // impl Bar {
-                            //   const C = 32; // HERE
-                            // }
-                            // ```
-                            let _ = self.register_global_decl_id(&None, def_id);
-                        }
-                        hax::AssocKind::Type => {
-                            // Associated type:
-                            // ```
-                            // trait Foo {
-                            //   type T;
-                            // }
-                            // impl Foo for Bar {
-                            //   type T = bool; // HERE
-                            // }
-                            // // or
-                            // impl Bar {
-                            //   type T = bool; // HERE
-                            // }
-                            // ```
-                            //
-                            // Only handle inherent associated types. Associated types in trait
-                            // impls will be processed when translating the impl.
-                            if let hax::ImplSubject::Inherent(_) = impl_subject {
-                                let _ = self.register_type_decl_id(&None, def_id);
+                match impl_subject {
+                    hax::ImplSubject::Trait { .. } => {
+                        let _ = self.register_trait_impl_id(&None, def_id);
+                    }
+                    hax::ImplSubject::Inherent { .. } => {
+                        // Register the items
+                        for (item, item_def) in items {
+                            let def_id = item_def.rust_def_id();
+                            // Match on the impl item kind
+                            match &item.kind {
+                                // Associated constant:
+                                // ```
+                                // impl Bar {
+                                //   const C = 32;
+                                // }
+                                // ```
+                                hax::AssocKind::Const => {
+                                    let _ = self.register_global_decl_id(&None, def_id);
+                                }
+                                // Associated type:
+                                // ```
+                                // impl Bar {
+                                //   type T = bool;
+                                // }
+                                // ```
+                                hax::AssocKind::Type => {
+                                    let _ = self.register_type_decl_id(&None, def_id);
+                                }
+                                // Inherent method
+                                // ```
+                                // impl Bar {
+                                //   fn is_foo() -> bool { false }
+                                // }
+                                // ```
+                                hax::AssocKind::Fn => {
+                                    let _ = self.register_fun_decl_id(&None, def_id);
+                                }
                             }
-                        }
-                        hax::AssocKind::Fn => {
-                            // Trait method implementation or inherent method.
-                            let _ = self.register_fun_decl_id(&None, def_id);
                         }
                     }
                 }
