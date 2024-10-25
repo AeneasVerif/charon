@@ -6,7 +6,6 @@ use charon_lib::meta::ItemMeta;
 use charon_lib::pretty::FmtWithCtx;
 use charon_lib::ullbc_ast as ast;
 use hax_frontend_exporter as hax;
-use hax_frontend_exporter::SInto;
 use itertools::Itertools;
 use rustc_hir::def_id::DefId;
 use std::collections::HashMap;
@@ -250,7 +249,7 @@ impl BodyTransCtx<'_, '_, '_> {
             unreachable!()
         };
         let implemented_trait_id = &trait_pred.trait_ref.def_id;
-        let trait_def = self.t_ctx.hax_def(implemented_trait_id);
+        let trait_def = self.t_ctx.hax_def(implemented_trait_id)?;
         let hax::FullDefKind::Trait {
             items: decl_items, ..
         } = trait_def.kind()
@@ -396,8 +395,8 @@ impl BodyTransCtx<'_, '_, '_> {
                             // define a default value.
                             let ty = tcx
                                 .type_of(item_def_id)
-                                .instantiate(tcx, rust_implemented_trait_ref.args)
-                                .sinto(&self.hax_state);
+                                .instantiate(tcx, rust_implemented_trait_ref.args);
+                            let ty = self.t_ctx.catch_sinto(&self.hax_state, span, &ty)?;
                             self.translate_ty(item_span, erase_regions, &ty)?
                         }
                     };

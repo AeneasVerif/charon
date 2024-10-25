@@ -19,6 +19,7 @@ use std::cmp::{Ord, PartialOrd};
 use std::collections::HashMap;
 use std::collections::{BTreeMap, VecDeque};
 use std::fmt;
+use std::fmt::Debug;
 use std::mem;
 use std::path::{Component, PathBuf};
 use std::sync::Arc;
@@ -282,6 +283,17 @@ pub(crate) struct BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     pub blocks_stack: VecDeque<hax::BasicBlock>,
 }
 
+/// Translates `T` into `U` using `hax`'s `SInto` trait, catching any hax panics.
+pub fn catch_sinto<S, T, U>(s: &S, err: &mut ErrorCtx, span: Span, x: &T) -> Result<U, Error>
+where
+    T: Debug + SInto<S, U>,
+{
+    let unwind_safe_s = std::panic::AssertUnwindSafe(s);
+    let unwind_safe_x = std::panic::AssertUnwindSafe(x);
+    std::panic::catch_unwind(move || unwind_safe_x.sinto(*unwind_safe_s))
+        .or_else(|_| error_or_panic!(err, span, format!("Hax panicked when translating `{x:?}`.")))
+}
+
 impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
     pub fn continue_on_failure(&self) -> bool {
         self.errors.continue_on_failure()
@@ -346,7 +358,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
                 None
             }
             DefPathData::Impl => {
-                let def = self.hax_def(def_id);
+                let def = self.hax_def(def_id)?;
                 let hax::FullDefKind::Impl { impl_subject, .. } = &def.kind else {
                     unreachable!()
                 };
@@ -494,10 +506,19 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         self.def_id_to_name(DefId::from(def_id))
     }
 
-    pub fn hax_def(&mut self, def_id: impl Into<DefId>) -> Arc<hax::FullDef> {
+    /// Translates `T` into `U` using `hax`'s `SInto` trait, catching any hax panics.
+    pub fn catch_sinto<S, T, U>(&mut self, s: &S, span: Span, x: &T) -> Result<U, Error>
+    where
+        T: Debug + SInto<S, U>,
+    {
+        catch_sinto(s, &mut self.errors, span, x)
+    }
+
+    pub fn hax_def(&mut self, def_id: impl Into<DefId>) -> Result<Arc<hax::FullDef>, Error> {
         let def_id: DefId = def_id.into();
+        let span = self.def_span(def_id);
         // Hax takes care of caching the translation.
-        def_id.sinto(&self.hax_state)
+        catch_sinto(&self.hax_state, &mut self.errors, span, &def_id)
     }
 
     pub(crate) fn translate_attr_info(&mut self, def: &hax::FullDef) -> AttrInfo {
@@ -870,7 +891,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
     ) -> TraitImplId {
         // Register the corresponding trait early so we can filter on its name.
         {
-            let def = self.hax_def(id);
+            let def = self.hax_def(id).expect("hax failed when translating item");
             let hax::FullDefKind::Impl {
                 impl_subject: hax::ImplSubject::Trait { trait_pred, .. },
                 ..

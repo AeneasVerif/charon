@@ -32,7 +32,7 @@ error[E9999]: Supposely unreachable place in the Rust AST. The label is "Transla
    = note: ⚠️ This is a bug in Hax's frontend.
            Please report this error to https://github.com/hacspec/hax/issues with some context (e.g. the current crate)!
 
-error: Thread panicked when extracting item `test_crate::bar`.
+error: Hax panicked when translating `test_crate::bar`.
   --> tests/ui/unsupported/advanced-const-generics.rs:18:1
    |
 18 | / fn bar<const N: usize>()

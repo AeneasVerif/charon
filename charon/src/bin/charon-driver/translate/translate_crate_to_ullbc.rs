@@ -9,7 +9,6 @@ use rustc_hir::{ForeignItemKind, ItemId, ItemKind};
 use rustc_middle::ty::TyCtxt;
 use std::collections::{HashMap, HashSet};
 use std::path::PathBuf;
-use std::sync::Arc;
 
 impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
     /// Register a HIR item and all its children. We call this on the crate root items and end up
@@ -57,7 +56,9 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
             }
             ItemKind::Impl(..) => {
                 trace!("impl");
-                let def = self.hax_def(def_id);
+                let def = self
+                    .hax_def(def_id)
+                    .expect("hax failed when registering impl block");
                 let hax::FullDefKind::Impl {
                     items,
                     impl_subject,
@@ -117,7 +118,9 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
                 // to check that all the opaque modules given as arguments actually
                 // exist
                 trace!("{:?}", def_id);
-                let def = self.hax_def(def_id);
+                let def = self
+                    .hax_def(def_id)
+                    .expect("hax failed when registering module");
                 let opacity = self.opacity_for_name(&name);
                 // Go through `item_meta` to get take into account the `charon::opaque` attribute.
                 let item_meta = self.translate_item_meta(&def, name, opacity);
@@ -231,7 +234,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
             // Don't even start translating the item. In particular don't call `hax_def` on it.
             return Ok(());
         }
-        let def: Arc<hax::FullDef> = self.hax_def(rust_id);
+        let def = self.hax_def(rust_id)?;
         let item_meta = self.translate_item_meta(&def, name, opacity);
 
         // Initialize the body translation context

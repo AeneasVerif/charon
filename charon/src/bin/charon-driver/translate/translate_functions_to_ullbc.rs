@@ -16,7 +16,7 @@ use charon_lib::ids::Vector;
 use charon_lib::pretty::FmtWithCtx;
 use charon_lib::ullbc_ast::*;
 use hax_frontend_exporter as hax;
-use hax_frontend_exporter::{HasMirSetter, HasOwnerIdSetter, SInto};
+use hax_frontend_exporter::{HasMirSetter, HasOwnerIdSetter};
 use itertools::Itertools;
 use rustc_hir::def_id::DefId;
 use rustc_middle::mir::START_BLOCK;
@@ -775,7 +775,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         trait_refs: &Vec<hax::ImplExpr>,
         trait_info: &Option<hax::ImplExpr>,
     ) -> Result<SubstFunIdOrPanic, Error> {
-        let fun_def = self.t_ctx.hax_def(def_id);
+        let fun_def = self.t_ctx.hax_def(def_id)?;
         let builtin_fun = self.recognize_builtin_fun(&fun_def)?;
         if matches!(builtin_fun, Some(BuiltinFun::Panic)) {
             let name = self.t_ctx.hax_def_id_to_name(def_id)?;
@@ -1314,7 +1314,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             .with_owner_id(rust_id)
             .with_mir(Rc::new(body.clone()));
         // Translate
-        let body: hax::MirBody<()> = body.sinto(&state);
+        let body: hax::MirBody<()> = self.t_ctx.catch_sinto(&state, item_meta.span, &body)?;
 
         // Initialize the local variables
         trace!("Translating the body locals");
@@ -1424,7 +1424,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 associated_item,
                 ..
             } => {
-                let parent_def = self.t_ctx.hax_def(parent);
+                let parent_def = self.t_ctx.hax_def(parent)?;
                 let (parent_generics, parent_predicates) = parent_def.generics().unwrap();
                 let mut params_info = self.count_generics(parent_generics, parent_predicates)?;
                 // If this is a trait decl method, we need to adjust the number of parent clauses
