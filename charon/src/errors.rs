@@ -100,9 +100,9 @@ impl ErrorCtx<'_> {
 
     /// Report an error without registering anything.
     #[cfg(feature = "rustc")]
-    pub(crate) fn span_err_no_register<S: Into<rustc_error_messages::MultiSpan>>(
+    pub fn span_err_no_register(
         &self,
-        span: S,
+        span: impl Into<rustc_error_messages::MultiSpan>,
         msg: &str,
     ) {
         let msg = msg.to_string();

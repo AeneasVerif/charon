@@ -492,7 +492,7 @@ fn rename_attribute() -> anyhow::Result<()> {
     );
 
     assert_eq!(
-        crate_data.fun_decls[2]
+        crate_data.fun_decls[1]
             .item_meta
             .attr_info
             .rename
@@ -501,7 +501,7 @@ fn rename_attribute() -> anyhow::Result<()> {
     );
 
     assert_eq!(
-        crate_data.fun_decls[3]
+        crate_data.fun_decls[2]
             .item_meta
             .attr_info
             .rename
@@ -519,7 +519,7 @@ fn rename_attribute() -> anyhow::Result<()> {
     );
 
     assert_eq!(
-        crate_data.fun_decls[1]
+        crate_data.fun_decls[0]
             .item_meta
             .attr_info
             .rename
