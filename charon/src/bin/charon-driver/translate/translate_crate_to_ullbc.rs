@@ -34,6 +34,9 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         let def_id = item.owner_id.to_def_id();
         trace!("Registering {:?}", def_id);
 
+        let Ok(def) = self.hax_def(def_id) else {
+            return; // Error has already been emitted
+        };
         // Case disjunction on the item kind.
         match &item.kind {
             ItemKind::Enum(..)
@@ -53,9 +56,6 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
             }
             ItemKind::Impl(..) => {
                 trace!("impl");
-                let Ok(def) = self.hax_def(def_id) else {
-                    return; // Error has already been emitted
-                };
                 let hax::FullDefKind::Impl {
                     items,
                     impl_subject,
@@ -116,9 +116,6 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
                 // exist
                 trace!("{:?}", def_id);
                 let Ok(name) = self.def_id_to_name(def_id) else {
-                    return; // Error has already been emitted
-                };
-                let Ok(def) = self.hax_def(def_id) else {
                     return; // Error has already been emitted
                 };
                 let opacity = self.opacity_for_name(&name);
