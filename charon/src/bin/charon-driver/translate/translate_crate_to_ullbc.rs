@@ -275,7 +275,6 @@ pub fn translate<'tcx, 'ctx>(
         reverse_id_map: Default::default(),
         items_to_translate: Default::default(),
         translate_stack: Default::default(),
-        cached_path_elems: Default::default(),
         cached_names: Default::default(),
     };
 

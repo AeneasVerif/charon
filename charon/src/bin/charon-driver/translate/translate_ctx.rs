@@ -184,9 +184,6 @@ pub struct TranslateCtx<'tcx, 'ctx> {
     /// translate themselves transitively.
     // FIXME: we don't use recursive item translation anywhere.
     pub translate_stack: Vec<AnyTransId>,
-    /// Cache the `PathElem`s to compute them only once each. It's an `Option` because some
-    /// `DefId`s (e.g. `extern {}` blocks) don't appear in the `Name`.
-    pub cached_path_elems: HashMap<DefId, Option<PathElem>>,
     /// Cache the names to compute them only once each.
     pub cached_names: HashMap<DefId, Name>,
 }
@@ -327,11 +324,10 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         let disambiguator = Disambiguator::new(path_elem.disambiguator as usize);
         // Match over the key data
         let path_elem = match path_elem.data {
-            DefPathItem::CrateRoot { .. } => {
+            DefPathItem::CrateRoot { name, .. } => {
                 // Sanity check
                 error_assert!(self, span, path_elem.disambiguator == 0);
-                // We add the crate name unconditionally elsewhere
-                None
+                Some(PathElem::Ident(name.clone(), disambiguator))
             }
             // We map the three namespaces onto a single one. We can always disambiguate by looking
             // at the definition.
@@ -392,86 +388,66 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         Ok(path_elem)
     }
 
-    pub fn cached_path_elem_for_def(
-        &mut self,
-        span: Span,
-        def: &hax::DefId,
-    ) -> Result<Option<PathElem>, Error> {
-        let def_id = def.to_rust_def_id();
-        if let Some(path_elem) = self.cached_path_elems.get(&def_id) {
-            return Ok(path_elem.clone());
-        }
-        let path_elem = self.path_elem_for_def(span, &def)?;
-        self.cached_path_elems.insert(def_id, path_elem.clone());
-        Ok(path_elem)
-    }
-
     /// Retrieve an item name from a [DefId].
+    /// We lookup the path associated to an id, and convert it to a name.
+    /// Paths very precisely identify where an item is. There are important
+    /// subcases, like the items in an `Impl` block:
+    /// ```ignore
+    /// impl<T> List<T> {
+    ///   fn new() ...
+    /// }
+    /// ```
+    ///
+    /// One issue here is that "List" *doesn't appear* in the path, which would
+    /// look like the following:
+    ///
+    ///   `TypeNS("Crate") :: Impl :: ValueNs("new")`
+    ///                       ^^^
+    ///           This is where "List" should be
+    ///
+    /// For this reason, whenever we find an `Impl` path element, we actually
+    /// lookup the type of the sub-path, from which we can derive a name.
+    ///
+    /// Besides, as there may be several "impl" blocks for one type, each impl
+    /// block is identified by a unique number (rustc calls this a
+    /// "disambiguator"), which we grab.
+    ///
+    /// Example:
+    /// ========
+    /// For instance, if we write the following code in crate `test` and module
+    /// `bla`:
+    /// ```ignore
+    /// impl<T> Foo<T> {
+    ///   fn foo() { ... }
+    /// }
+    ///
+    /// impl<T> Foo<T> {
+    ///   fn bar() { ... }
+    /// }
+    /// ```
+    ///
+    /// The names we will generate for `foo` and `bar` are:
+    /// `[Ident("test"), Ident("bla"), Ident("Foo"), Impl(impl<T> Ty<T>, Disambiguator(0)), Ident("foo")]`
+    /// `[Ident("test"), Ident("bla"), Ident("Foo"), Impl(impl<T> Ty<T>, Disambiguator(1)), Ident("bar")]`
     pub fn hax_def_id_to_name(&mut self, def: &hax::DefId) -> Result<Name, Error> {
         let def_id = def.to_rust_def_id();
         if let Some(name) = self.cached_names.get(&def_id) {
             return Ok(name.clone());
         }
-        trace!("{:?}", def_id);
+        trace!("Computing name for `{def_id:?}`");
+
+        let parent_name = if let Some(parent) = &def.parent {
+            self.hax_def_id_to_name(parent)?
+        } else {
+            Name { name: Vec::new() }
+        };
         let span = self.def_span(def_id);
-
-        // We lookup the path associated to an id, and convert it to a name.
-        // Paths very precisely identify where an item is. There are important
-        // subcases, like the items in an `Impl` block:
-        // ```
-        // impl<T> List<T> {
-        //   fn new() ...
-        // }
-        // ```
-        //
-        // One issue here is that "List" *doesn't appear* in the path, which would
-        // look like the following:
-        //
-        //   `TypeNS("Crate") :: Impl :: ValueNs("new")`
-        //                       ^^^
-        //           This is where "List" should be
-        //
-        // For this reason, whenever we find an `Impl` path element, we actually
-        // lookup the type of the sub-path, from which we can derive a name.
-        //
-        // Besides, as there may be several "impl" blocks for one type, each impl
-        // block is identified by a unique number (rustc calls this a
-        // "disambiguator"), which we grab.
-        //
-        // Example:
-        // ========
-        // For instance, if we write the following code in crate `test` and module
-        // `bla`:
-        // ```
-        // impl<T> Foo<T> {
-        //   fn foo() { ... }
-        // }
-        //
-        // impl<T> Foo<T> {
-        //   fn bar() { ... }
-        // }
-        // ```
-        //
-        // The names we will generate for `foo` and `bar` are:
-        // `[Ident("test"), Ident("bla"), Ident("Foo"), Impl(impl<T> Ty<T>, Disambiguator(0)), Ident("foo")]`
-        // `[Ident("test"), Ident("bla"), Ident("Foo"), Impl(impl<T> Ty<T>, Disambiguator(1)), Ident("bar")]`
-        let mut name: Vec<PathElem> = Vec::new();
-
-        // We can't use `tcx.def_path` because for path elements that correspond to impl blocks, we
-        // need their `DefId`. Instead we recursively explore the parents of this definition.
-        for def in def.ancestry() {
-            if let Some(path_elem) = self.cached_path_elem_for_def(span, def)? {
-                name.push(path_elem);
-            }
+        let mut name = parent_name;
+        if let Some(path_elem) = self.path_elem_for_def(span, &def)? {
+            name.name.push(path_elem);
         }
 
-        // We always add the crate name at the beginning.
-        name.push(PathElem::Ident(def.krate.clone(), Disambiguator::new(0)));
-
-        name.reverse();
-        let name = Name { name };
-
-        trace!("{:?}", name);
+        trace!("Computed name for `{def_id:?}`: `{name:?}`");
         self.cached_names.insert(def_id, name.clone());
         Ok(name)
     }
