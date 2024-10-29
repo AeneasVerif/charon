@@ -25,13 +25,17 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
             | FullDefKind::Struct { .. }
             | FullDefKind::Union { .. }
             | FullDefKind::TyAlias { .. }
+            | FullDefKind::AssocTy { .. }
             | FullDefKind::ForeignTy => {
                 let _ = self.register_type_decl_id(&None, def_id);
             }
-            FullDefKind::Fn { .. } => {
+
+            FullDefKind::Fn { .. } | FullDefKind::AssocFn { .. } => {
                 let _ = self.register_fun_decl_id(&None, def_id);
             }
-            FullDefKind::Const { .. } | FullDefKind::Static { .. } => {
+            FullDefKind::Const { .. }
+            | FullDefKind::Static { .. }
+            | FullDefKind::AssocConst { .. } => {
                 let _ = self.register_global_decl_id(&None, def_id);
             }
 
@@ -49,39 +53,8 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
                         let _ = self.register_trait_impl_id(&None, def_id);
                     }
                     hax::ImplSubject::Inherent { .. } => {
-                        // Register the items
-                        for (item, item_def) in items {
-                            let def_id = item_def.rust_def_id();
-                            // Match on the impl item kind
-                            match &item.kind {
-                                // Associated constant:
-                                // ```
-                                // impl Bar {
-                                //   const C = 32;
-                                // }
-                                // ```
-                                hax::AssocKind::Const => {
-                                    let _ = self.register_global_decl_id(&None, def_id);
-                                }
-                                // Associated type:
-                                // ```
-                                // impl Bar {
-                                //   type T = bool;
-                                // }
-                                // ```
-                                hax::AssocKind::Type => {
-                                    let _ = self.register_type_decl_id(&None, def_id);
-                                }
-                                // Inherent method
-                                // ```
-                                // impl Bar {
-                                //   fn is_foo() -> bool { false }
-                                // }
-                                // ```
-                                hax::AssocKind::Fn => {
-                                    let _ = self.register_fun_decl_id(&None, def_id);
-                                }
-                            }
+                        for (item, _) in items {
+                            self.register_local_item((&item.def_id).into());
                         }
                     }
                 }
@@ -129,9 +102,6 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
             | FullDefKind::Use { .. } => {}
             // We cannot encounter these since they're not top-level items.
             FullDefKind::AnonConst { .. }
-            | FullDefKind::AssocConst { .. }
-            | FullDefKind::AssocFn { .. }
-            | FullDefKind::AssocTy { .. }
             | FullDefKind::Closure { .. }
             | FullDefKind::ConstParam { .. }
             | FullDefKind::Ctor { .. }
