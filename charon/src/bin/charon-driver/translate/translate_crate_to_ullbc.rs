@@ -5,7 +5,6 @@ use charon_lib::transform::ctx::TransformOptions;
 use charon_lib::transform::TransformCtx;
 use hax_frontend_exporter as hax;
 use rustc_hir::def_id::DefId;
-use rustc_hir::{ForeignItemKind, ItemId, ItemKind};
 use rustc_middle::ty::TyCtxt;
 use std::collections::{HashMap, HashSet};
 use std::path::PathBuf;
@@ -13,14 +12,11 @@ use std::path::PathBuf;
 impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
     /// Register a HIR item and all its children. We call this on the crate root items and end up
     /// exploring the whole crate.
-    fn register_local_hir_item(&mut self, item_id: ItemId) {
+    fn register_local_item(&mut self, def_id: DefId) {
         let mut ctx_ref = std::panic::AssertUnwindSafe(&mut *self);
         // Catch panics that could happen during registration.
-        let res = std::panic::catch_unwind(move || ctx_ref.register_local_hir_item_inner(item_id));
+        let res = std::panic::catch_unwind(move || ctx_ref.register_local_item_inner(def_id));
         if res.is_err() {
-            let hir_map = self.tcx.hir();
-            let item = hir_map.item(item_id);
-            let def_id = item.owner_id.to_def_id();
             let span = self.tcx.def_span(def_id);
             self.errors
                 .span_err_no_register(span, &format!("panicked while registering `{def_id:?}`"));
@@ -28,43 +24,38 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         }
     }
 
-    fn register_local_hir_item_inner(&mut self, item_id: ItemId) {
-        let hir_map = self.tcx.hir();
-        let item = hir_map.item(item_id);
-        let def_id = item.owner_id.to_def_id();
+    fn register_local_item_inner(&mut self, def_id: DefId) {
+        use hax::FullDefKind;
         trace!("Registering {:?}", def_id);
 
         let Ok(def) = self.hax_def(def_id) else {
             return; // Error has already been emitted
         };
-        // Case disjunction on the item kind.
-        match &item.kind {
-            ItemKind::Enum(..)
-            | ItemKind::Struct(..)
-            | ItemKind::Union(..)
-            | ItemKind::TyAlias(..) => {
+
+        match def.kind() {
+            FullDefKind::Enum { .. }
+            | FullDefKind::Struct { .. }
+            | FullDefKind::Union { .. }
+            | FullDefKind::TyAlias { .. }
+            | FullDefKind::ForeignTy => {
                 let _ = self.register_type_decl_id(&None, def_id);
             }
-            ItemKind::Fn(..) => {
+            FullDefKind::Fn { .. } => {
                 let _ = self.register_fun_decl_id(&None, def_id);
             }
-            ItemKind::Trait(..) => {
-                let _ = self.register_trait_decl_id(&None, def_id);
-            }
-            ItemKind::Const(..) | ItemKind::Static(..) => {
+            FullDefKind::Const { .. } | FullDefKind::Static { .. } => {
                 let _ = self.register_global_decl_id(&None, def_id);
             }
-            ItemKind::Impl(..) => {
-                trace!("impl");
-                let hax::FullDefKind::Impl {
-                    items,
-                    impl_subject,
-                    ..
-                } = &def.kind
-                else {
-                    unreachable!()
-                };
 
+            FullDefKind::Trait { .. } => {
+                let _ = self.register_trait_decl_id(&None, def_id);
+            }
+            FullDefKind::Impl {
+                items,
+                impl_subject,
+                ..
+            } => {
+                trace!("impl");
                 match impl_subject {
                     hax::ImplSubject::Trait { .. } => {
                         let _ = self.register_trait_impl_id(&None, def_id);
@@ -107,15 +98,16 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
                     }
                 }
             }
-            ItemKind::Mod(module) => {
-                trace!("module");
+            // TODO: trait aliases (https://github.com/AeneasVerif/charon/issues/366)
+            FullDefKind::TraitAlias { .. } => {}
 
+            FullDefKind::Mod { items, .. } => {
+                trace!("module");
                 // Explore the module, only if it was not marked as "opaque"
-                // TODO: we may want to accumulate the set of modules we found,
-                // to check that all the opaque modules given as arguments actually
-                // exist
+                // TODO: we may want to accumulate the set of modules we found, to check that all
+                // the opaque modules given as arguments actually exist
                 trace!("{:?}", def_id);
-                let Ok(name) = self.def_id_to_name(def_id) else {
+                let Ok(name) = self.hax_def_id_to_name(&def.def_id) else {
                     return; // Error has already been emitted
                 };
                 let opacity = self.opacity_for_name(&name);
@@ -131,35 +123,46 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
                 } else {
                     trace!("Diving into module [{:?}]", def_id);
                     // Lookup and register the items
-                    for item_id in module.item_ids {
-                        self.register_local_hir_item(*item_id);
+                    for def_id in items {
+                        self.register_local_item(def_id.into());
                     }
                 }
             }
-            ItemKind::ForeignMod { items, .. } => {
-                trace!("Diving into `extern` block [{:?}]", def_id);
-                for item in *items {
-                    // Lookup and register the item
-                    let item = hir_map.foreign_item(item.id);
-                    let def_id = item.owner_id.to_def_id();
-                    match item.kind {
-                        ForeignItemKind::Fn(..) => {
-                            let _ = self.register_fun_decl_id(&None, def_id);
-                        }
-                        ForeignItemKind::Static(..) => {
-                            let _ = self.register_global_decl_id(&None, def_id);
-                        }
-                        ForeignItemKind::Type => {
-                            let _ = self.register_type_decl_id(&None, def_id);
-                        }
-                    }
+            FullDefKind::ForeignMod { items, .. } => {
+                for def_id in items {
+                    self.register_local_item(def_id.into());
                 }
             }
-            // TODO: trait aliases (https://github.com/AeneasVerif/charon/issues/366)
-            ItemKind::TraitAlias(..) => {}
-            // Macros are already expanded.
-            ItemKind::Macro(..) => {}
-            ItemKind::ExternCrate(..) | ItemKind::GlobalAsm(..) | ItemKind::Use(..) => {}
+
+            // We skip these
+            FullDefKind::ExternCrate { .. }
+            | FullDefKind::GlobalAsm { .. }
+            | FullDefKind::Macro { .. }
+            | FullDefKind::Use { .. } => {}
+            // We cannot encounter these since they're not top-level items.
+            FullDefKind::AnonConst { .. }
+            | FullDefKind::AssocConst { .. }
+            | FullDefKind::AssocFn { .. }
+            | FullDefKind::AssocTy { .. }
+            | FullDefKind::Closure { .. }
+            | FullDefKind::ConstParam { .. }
+            | FullDefKind::Ctor { .. }
+            | FullDefKind::Field { .. }
+            | FullDefKind::InlineConst { .. }
+            | FullDefKind::LifetimeParam { .. }
+            | FullDefKind::OpaqueTy { .. }
+            | FullDefKind::SyntheticCoroutineBody { .. }
+            | FullDefKind::TyParam { .. }
+            | FullDefKind::Variant { .. } => {
+                let span = self.def_span(def_id);
+                self.errors.span_err(
+                    span,
+                    &format!(
+                        "Cannot register this item: `{def_id:?}` with kind `{:?}`",
+                        def.kind()
+                    ),
+                );
+            }
         }
     }
 
@@ -333,13 +336,11 @@ pub fn translate<'tcx, 'ctx>(
         cached_names: Default::default(),
     };
 
-    // Recursively register all the items in the crate, starting from the root module. We could
+    // Recursively register all the items in the crate, starting from the crate root. We could
     // instead ask rustc for the plain list of all items in the crate, but we wouldn't be able to
     // skip items inside modules annotated with `#[charon::opaque]`.
-    let hir = tcx.hir();
-    for item_id in hir.root_module().item_ids {
-        ctx.register_local_hir_item(*item_id);
-    }
+    let crate_def_id = rustc_span::def_id::CRATE_DEF_ID.to_def_id();
+    ctx.register_local_item(crate_def_id);
 
     trace!(
         "Queue after we explored the crate:\n{:?}",
