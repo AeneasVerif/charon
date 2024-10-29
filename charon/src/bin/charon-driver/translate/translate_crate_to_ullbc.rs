@@ -14,11 +14,19 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
     /// exploring the whole crate.
     fn register_local_item(&mut self, def_id: DefId) {
         use hax::FullDefKind;
-        trace!("Registering {:?}", def_id);
+        trace!("Registering {def_id:?}");
 
         let Ok(def) = self.hax_def(def_id) else {
             return; // Error has already been emitted
         };
+
+        let Ok(name) = self.hax_def_id_to_name(&def.def_id) else {
+            return; // Error has already been emitted
+        };
+        let opacity = self.opacity_for_name(&name);
+        // Use `item_meta` to take into account the `charon::opaque` attribute.
+        let opacity = self.translate_item_meta(&def, name, opacity).opacity;
+        let explore_inside = !(opacity.is_opaque() || opacity.is_invisible());
 
         match def.kind() {
             FullDefKind::Enum { .. }
@@ -46,50 +54,33 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
                 items,
                 impl_subject,
                 ..
-            } => {
-                trace!("impl");
-                match impl_subject {
-                    hax::ImplSubject::Trait { .. } => {
-                        let _ = self.register_trait_impl_id(&None, def_id);
-                    }
-                    hax::ImplSubject::Inherent { .. } => {
+            } => match impl_subject {
+                hax::ImplSubject::Trait { .. } => {
+                    let _ = self.register_trait_impl_id(&None, def_id);
+                }
+                hax::ImplSubject::Inherent { .. } => {
+                    if explore_inside {
                         for (item, _) in items {
                             self.register_local_item((&item.def_id).into());
                         }
                     }
                 }
-            }
+            },
             // TODO: trait aliases (https://github.com/AeneasVerif/charon/issues/366)
             FullDefKind::TraitAlias { .. } => {}
 
             FullDefKind::Mod { items, .. } => {
-                trace!("module");
                 // Explore the module, only if it was not marked as "opaque"
                 // TODO: we may want to accumulate the set of modules we found, to check that all
                 // the opaque modules given as arguments actually exist
-                trace!("{:?}", def_id);
-                let Ok(name) = self.hax_def_id_to_name(&def.def_id) else {
-                    return; // Error has already been emitted
-                };
-                let opacity = self.opacity_for_name(&name);
-                // Go through `item_meta` to get take into account the `charon::opaque` attribute.
-                let item_meta = self.translate_item_meta(&def, name, opacity);
-                if item_meta.opacity.is_opaque() || opacity.is_invisible() {
-                    // Ignore
-                    trace!(
-                        "Ignoring module [{:?}] \
-                        because it is marked as opaque",
-                        def_id
-                    );
-                } else {
-                    trace!("Diving into module [{:?}]", def_id);
-                    // Lookup and register the items
+                if explore_inside {
                     for def_id in items {
                         self.register_local_item(def_id.into());
                     }
                 }
             }
             FullDefKind::ForeignMod { items, .. } => {
+                // Foreign modules can't be named or have attributes, so we can't mark them opaque.
                 for def_id in items {
                     self.register_local_item(def_id.into());
                 }
