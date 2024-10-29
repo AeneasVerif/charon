@@ -13,18 +13,6 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
     /// Register a HIR item and all its children. We call this on the crate root items and end up
     /// exploring the whole crate.
     fn register_local_item(&mut self, def_id: DefId) {
-        let mut ctx_ref = std::panic::AssertUnwindSafe(&mut *self);
-        // Catch panics that could happen during registration.
-        let res = std::panic::catch_unwind(move || ctx_ref.register_local_item_inner(def_id));
-        if res.is_err() {
-            let span = self.tcx.def_span(def_id);
-            self.errors
-                .span_err_no_register(span, &format!("panicked while registering `{def_id:?}`"));
-            self.errors.error_count += 1;
-        }
-    }
-
-    fn register_local_item_inner(&mut self, def_id: DefId) {
         use hax::FullDefKind;
         trace!("Registering {:?}", def_id);
 
