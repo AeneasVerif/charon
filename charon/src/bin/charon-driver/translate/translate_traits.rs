@@ -324,13 +324,9 @@ impl BodyTransCtx<'_, '_, '_> {
                         &format!("Generic associated types are not supported")
                     );
                 }
-                hax::FullDefKind::AssocTy { .. } => {
-                    let hax::FullDefKind::AssocTy {
-                        value: Some(ty), ..
-                    } = item_def.kind()
-                    else {
-                        unreachable!()
-                    };
+                hax::FullDefKind::AssocTy {
+                    value: Some(ty), ..
+                } => {
                     let ty = self.translate_ty(item_span, erase_regions, &ty)?;
                     types.insert(name, ty);
                 }
