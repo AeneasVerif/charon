@@ -22,49 +22,6 @@ pub(crate) enum PredicateLocation {
     Base,
 }
 
-impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
-    /// Helper for [translate_trait_impl].
-    ///
-    /// Remark: the [decl_item] is the item from the trait declaration.
-    fn translate_trait_refs_from_impl_trait_item(
-        &mut self,
-        trait_impl_def_id: DefId,
-        rust_impl_trait_ref: &rustc_middle::ty::TraitRef<'tcx>,
-        item_id: DefId,
-    ) -> Result<Vec<TraitRef>, Error> {
-        trace!(
-            "- trait_impl_def_id: {:?}\n- rust_impl_trait_ref: {:?}\n- decl_item: {:?}",
-            trait_impl_def_id,
-            rust_impl_trait_ref,
-            item_id
-        );
-
-        let tcx = self.t_ctx.tcx;
-        let span = self.def_span(trait_impl_def_id);
-
-        // Lookup the trait clauses and substitute - TODO: not sure about the substitution
-        let subst = rust_impl_trait_ref.args;
-        let bounds = tcx.item_bounds(item_id);
-        let param_env = tcx.param_env(trait_impl_def_id);
-        let bounds = tcx.instantiate_and_normalize_erasing_regions(subst, param_env, bounds);
-        let erase_regions = false;
-
-        // Solve the predicate bounds
-        let mut trait_refs = Vec::new();
-        for bound in bounds {
-            if let rustc_middle::ty::ClauseKind::Trait(trait_pred) = bound.kind().skip_binder() {
-                let trait_ref = bound.kind().rebind(trait_pred.trait_ref);
-                let trait_ref = hax::solve_trait(&self.hax_state, trait_ref);
-                let trait_ref = self.translate_trait_impl_expr(span, erase_regions, &trait_ref)?;
-                trait_refs.push(trait_ref);
-            }
-        }
-
-        // Return
-        Ok(trait_refs)
-    }
-}
-
 impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
     /// Remark: this **doesn't** register the def id (on purpose)
     pub(crate) fn translate_trait_item_name(
@@ -229,7 +186,6 @@ impl BodyTransCtx<'_, '_, '_> {
         trace!("About to translate trait impl:\n{:?}", rust_id);
         trace!("Trait impl id:\n{:?}", def_id);
 
-        let tcx = self.t_ctx.tcx;
         let span = item_meta.span;
         let erase_regions = false;
 
@@ -275,12 +231,6 @@ impl BodyTransCtx<'_, '_, '_> {
         // The trait refs which implement the parent clauses of the implemented trait decl.
         let parent_trait_refs =
             self.translate_trait_impl_exprs(span, erase_regions, &required_impl_exprs)?;
-        // We need this to compute associated type bounds.
-        let rustc_middle::ty::ImplSubject::Trait(rust_implemented_trait_ref) =
-            tcx.impl_subject(rust_id).instantiate_identity()
-        else {
-            unreachable!()
-        };
 
         {
             // Debugging
@@ -294,10 +244,10 @@ impl BodyTransCtx<'_, '_, '_> {
         }
 
         // Explore the associated items
-        // We do something subtle here: TODO
         let tcx = self.t_ctx.tcx;
         let mut consts = HashMap::new();
         let mut types: HashMap<TraitItemName, Ty> = HashMap::new();
+        let mut type_clauses = Vec::new();
         let mut methods = HashMap::new();
 
         for (item, item_def) in impl_items {
@@ -328,7 +278,22 @@ impl BodyTransCtx<'_, '_, '_> {
                     value: Some(ty), ..
                 } => {
                     let ty = self.translate_ty(item_span, erase_regions, &ty)?;
-                    types.insert(name, ty);
+                    types.insert(name.clone(), ty);
+
+                    // Retrieve the trait refs
+                    let hax::AssocItemContainer::TraitImplContainer {
+                        required_impl_exprs,
+                        ..
+                    } = &item.container
+                    else {
+                        unreachable!()
+                    };
+                    // TODO: use clause ids
+                    let trait_refs = self
+                        .translate_trait_impl_exprs(span, erase_regions, &required_impl_exprs)?
+                        .into_iter()
+                        .collect();
+                    type_clauses.push((name, trait_refs));
                 }
                 _ => panic!("Unexpected definition for trait item: {item_def:?}"),
             }
@@ -340,7 +305,6 @@ impl BodyTransCtx<'_, '_, '_> {
         let partial_consts = consts;
         let partial_types = types;
         let mut consts = Vec::new();
-        let mut type_clauses = Vec::new();
         let mut types: Vec<(TraitItemName, Ty)> = Vec::new();
         let mut required_methods = Vec::new();
         let mut provided_methods = Vec::new();
@@ -384,27 +348,45 @@ impl BodyTransCtx<'_, '_, '_> {
                 }
                 hax::FullDefKind::AssocTy { .. } => {
                     // Does the trait impl provide an implementation for this type?
-                    let ty = match partial_types.get(&name) {
-                        Some(ty) => ty.clone(),
+                    match partial_types.get(&name) {
+                        Some(ty) => types.push((name.clone(), ty.clone())),
                         None => {
+                            let rust_implemented_trait_ref =
+                                tcx.impl_trait_ref(rust_id).unwrap().instantiate_identity();
+                            let trait_args = rust_implemented_trait_ref.args;
+
                             // The item is not defined in the trait impl: the trait decl *must*
                             // define a default value.
-                            let ty = tcx
-                                .type_of(item_def_id)
-                                .instantiate(tcx, rust_implemented_trait_ref.args);
+                            let ty = tcx.type_of(item_def_id).instantiate(tcx, trait_args);
                             let ty = self.t_ctx.catch_sinto(&self.hax_state, span, &ty)?;
-                            self.translate_ty(item_span, erase_regions, &ty)?
-                        }
-                    };
-                    types.push((name.clone(), ty));
+                            let ty = self.translate_ty(item_span, erase_regions, &ty)?;
+                            types.push((name.clone(), ty));
 
-                    // Retrieve the trait refs
-                    let trait_refs = self.translate_trait_refs_from_impl_trait_item(
-                        rust_id,
-                        &rust_implemented_trait_ref,
-                        item_def_id,
-                    )?;
-                    type_clauses.push((name, trait_refs));
+                            // Retrieve the trait refs
+                            let impl_exprs = {
+                                use hax::HasOwnerIdSetter;
+                                use rustc_middle::ty::GenericArgs;
+                                let item_args = GenericArgs::identity_for_item(tcx, item_def_id);
+                                // Subtlety: we have to add the GAT arguments (if any) to the trait ref arguments.
+                                let args = item_args.rebase_onto(tcx, rust_id, trait_args);
+                                // Note: this is wrong for GATs! We need a param_env that has the
+                                // arguments of the impl plus those of the associated type, but
+                                // there's no def_id with that param_env.
+                                let state_with_id = self.hax_state.clone().with_owner_id(rust_id);
+                                let impl_exprs = hax::solve_item_implied_traits(
+                                    &state_with_id,
+                                    item_def_id,
+                                    args,
+                                );
+                                impl_exprs
+                            };
+                            let trait_refs = self
+                                .translate_trait_impl_exprs(item_span, erase_regions, &impl_exprs)?
+                                .into_iter()
+                                .collect();
+                            type_clauses.push((name.clone(), trait_refs));
+                        }
+                    }
                 }
                 _ => panic!("Unexpected definition for trait item: {decl_item_def:?}"),
             }
