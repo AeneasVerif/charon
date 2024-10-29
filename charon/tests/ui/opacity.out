@@ -130,5 +130,9 @@ fn test_crate::module::dont_translate_body()
 
 fn test_crate::exclude_me()
 
+struct test_crate::Struct = {}
+
+unsafe fn test_crate::extern_fn(@1: i32)
+
 
 

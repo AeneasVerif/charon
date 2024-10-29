@@ -12,6 +12,8 @@
 //@ charon-args=--include crate::keep_names_of_excluded::{crate::keep_names_of_excluded::Trait<_>}
 // Note: we don't use the `impl Trait for T` syntax above because we can't have spaces in these
 // options.
+#![feature(register_tool)]
+#![register_tool(charon)]
 
 fn foo() {
     let _ = Some(0).is_some();
@@ -46,4 +48,19 @@ mod keep_names_of_excluded {
             let _ = 0;
         }
     }
+}
+
+struct Struct;
+
+#[charon::opaque]
+impl Struct {
+    fn method() {
+        let _ = 0;
+    }
+}
+
+// Foreign modules can't be named or have attributes, so we can't mark them opaque.
+#[charon::opaque]
+extern "C" {
+    fn extern_fn(x: i32);
 }
