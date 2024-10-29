@@ -1,0 +1,9 @@
+error: Unsupported constant: `ConstantExprKind::Cast {..}`
+ --> tests/ui/pointers-in-consts.rs:6:9
+  |
+6 |         DISGUISED_INT => {}
+  |         ^^^^^^^^^^^^^
+
+error: aborting due to 1 previous error
+
+ERROR Compilation encountered 1 errors

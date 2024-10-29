@@ -145,9 +145,28 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 let be = self.translate_constant_expr_to_constant_expr(span, be)?;
                 RawConstantExpr::Ref(Box::new(be))
             }
-            ConstantExprKind::MutPtr(be) => {
-                let be = self.translate_constant_expr_to_constant_expr(span, be)?;
-                RawConstantExpr::MutPtr(Box::new(be))
+            ConstantExprKind::Cast { .. } => {
+                error_or_panic!(
+                    self,
+                    span,
+                    &format!("Unsupported constant: `ConstantExprKind::Cast {{..}}`",)
+                )
+            }
+            ConstantExprKind::RawBorrow {
+                mutability: false, ..
+            } => {
+                error_or_panic!(
+                    self,
+                    span,
+                    &format!("Unsupported constant: `ConstantExprKind::RawBorrow {{mutability: false, ..}}`",)
+                )
+            }
+            ConstantExprKind::RawBorrow {
+                mutability: true,
+                arg,
+            } => {
+                let arg = self.translate_constant_expr_to_constant_expr(span, arg)?;
+                RawConstantExpr::MutPtr(Box::new(arg))
             }
             ConstantExprKind::ConstRef { id } => {
                 let var_id = self.const_generic_vars_map.get(&id.index);
