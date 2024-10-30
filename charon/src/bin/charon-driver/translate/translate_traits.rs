@@ -285,15 +285,11 @@ impl BodyTransCtx<'_, '_, '_> {
                     let ty = self.translate_ty(item_span, erase_regions, &ty)?;
                     types.push((name.clone(), ty));
 
-                    // TODO: use clause ids
-                    let trait_refs = self
-                        .translate_trait_impl_exprs(
-                            item_span,
-                            erase_regions,
-                            &impl_item.required_impl_exprs,
-                        )?
-                        .into_iter()
-                        .collect();
+                    let trait_refs = self.translate_trait_impl_exprs(
+                        item_span,
+                        erase_regions,
+                        &impl_item.required_impl_exprs,
+                    )?;
                     type_clauses.push((name, trait_refs));
                 }
                 _ => panic!("Unexpected definition for trait item: {item_def:?}"),
