@@ -10,7 +10,7 @@ trait PointerFamily {
 struct BoxFamily;
 
 impl PointerFamily for BoxFamily {
-    type Pointer<T> = Box<T>;
+    type Pointer<U> = Box<U>;
 
     fn new<T>(value: T) -> Self::Pointer<T> {
         Box::new(value)
