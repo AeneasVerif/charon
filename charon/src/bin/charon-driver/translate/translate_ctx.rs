@@ -7,12 +7,11 @@ use charon_lib::ids::{MapGenerator, Vector};
 use charon_lib::name_matcher::NamePattern;
 use charon_lib::options::CliOpts;
 use charon_lib::ullbc_ast as ast;
-use hax_frontend_exporter as hax;
 use hax_frontend_exporter::SInto;
+use hax_frontend_exporter::{self as hax, DefPathItem};
 use itertools::Itertools;
 use macros::VariantIndexArity;
 use rustc_hir::def_id::DefId;
-use rustc_hir::definitions::{DefPathData, DisambiguatedDefPathData};
 use rustc_middle::ty::TyCtxt;
 use std::borrow::Cow;
 use std::cmp::Ord;
@@ -317,33 +316,35 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         }
     }
 
-    fn translate_def_path_element(
+    fn path_elem_for_def(
         &mut self,
         span: Span,
-        def_id: DefId,
-        data: &DisambiguatedDefPathData,
+        def: &hax::DefId,
     ) -> Result<Option<PathElem>, Error> {
+        let path_elem = def.path_item();
         // Disambiguator disambiguates identically-named (but distinct) identifiers. This happens
         // notably with macros and inherent impl blocks.
-        let disambiguator = Disambiguator::new(data.disambiguator as usize);
+        let disambiguator = Disambiguator::new(path_elem.disambiguator as usize);
         // Match over the key data
-        let path_elem = match &data.data {
-            DefPathData::TypeNs(symbol) => Some(PathElem::Ident(symbol.to_string(), disambiguator)),
-            DefPathData::ValueNs(symbol) => {
-                Some(PathElem::Ident(symbol.to_string(), disambiguator))
-            }
-            DefPathData::CrateRoot => {
+        let path_elem = match path_elem.data {
+            DefPathItem::CrateRoot { .. } => {
                 // Sanity check
-                error_assert!(self, span, data.disambiguator == 0);
+                error_assert!(self, span, path_elem.disambiguator == 0);
                 // We add the crate name unconditionally elsewhere
                 None
             }
-            DefPathData::Impl => {
-                let def = self.hax_def(def_id)?;
+            // We map the three namespaces onto a single one. We can always disambiguate by looking
+            // at the definition.
+            DefPathItem::TypeNs(symbol)
+            | DefPathItem::ValueNs(symbol)
+            | DefPathItem::MacroNs(symbol) => Some(PathElem::Ident(symbol, disambiguator)),
+            DefPathItem::Impl => {
+                let def_id = def.to_rust_def_id();
+                let full_def = self.hax_def(def_id)?;
                 // Two cases, depending on whether the impl block is
                 // a "regular" impl block (`impl Foo { ... }`) or a trait
                 // implementation (`impl Bar for Foo { ... }`).
-                let impl_elem = match def.kind() {
+                let impl_elem = match full_def.kind() {
                     // Inherent impl ("regular" impl)
                     hax::FullDefKind::InherentImpl { ty, .. } => {
                         let erase_regions = false;
@@ -352,7 +353,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
                         // substs and bounds. In order to properly do so, we introduce
                         // a body translation context.
                         let mut bt_ctx = BodyTransCtx::new(def_id, None, self);
-                        let generics = bt_ctx.translate_def_generics(span, &def)?;
+                        let generics = bt_ctx.translate_def_generics(span, &full_def)?;
                         let ty = bt_ctx.translate_ty(span, erase_regions, &ty)?;
                         ImplElem::Ty(generics, ty)
                     }
@@ -367,58 +368,51 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
                 Some(PathElem::Impl(impl_elem, disambiguator))
             }
             // TODO: do nothing for now
-            DefPathData::OpaqueTy => None,
-            // There may be namespace collisions between, say, function
-            // names and macros (not sure). However, this isn't much
-            // of an issue here, because for now we don't expose macros
-            // in the AST, and only use macro names in [register], for
-            // instance to filter opaque modules.
-            DefPathData::MacroNs(symbol) => {
-                Some(PathElem::Ident(symbol.to_string(), disambiguator))
-            }
+            DefPathItem::OpaqueTy => None,
             // TODO: this is not very satisfactory, but on the other hand
             // we should be able to extract closures in local let-bindings
             // (i.e., we shouldn't have to introduce top-level let-bindings).
-            DefPathData::Closure => Some(PathElem::Ident("closure".to_string(), disambiguator)),
+            DefPathItem::Closure => Some(PathElem::Ident("closure".to_string(), disambiguator)),
             // Do nothing, functions in `extern` blocks are in the same namespace as the
             // block.
-            DefPathData::ForeignMod => None,
+            DefPathItem::ForeignMod => None,
             // Do nothing, the constructor of a struct/variant has the same name as the
             // struct/variant.
-            DefPathData::Ctor => None,
-            DefPathData::Use => Some(PathElem::Ident("<use>".to_string(), disambiguator)),
+            DefPathItem::Ctor => None,
+            DefPathItem::Use => Some(PathElem::Ident("<use>".to_string(), disambiguator)),
             _ => {
+                let def_id = def.to_rust_def_id();
                 error_or_panic!(
                     self,
                     span,
-                    format!("Unexpected DefPathData for `{def_id:?}`: {data:?}")
+                    format!("Unexpected DefPathItem for `{def_id:?}`: {path_elem:?}")
                 );
             }
         };
         Ok(path_elem)
     }
 
-    pub fn def_id_to_path_elem(
+    pub fn cached_path_elem_for_def(
         &mut self,
         span: Span,
-        def_id: DefId,
+        def: &hax::DefId,
     ) -> Result<Option<PathElem>, Error> {
+        let def_id = def.to_rust_def_id();
         if let Some(path_elem) = self.cached_path_elems.get(&def_id) {
             return Ok(path_elem.clone());
         }
-        let data = self.tcx.def_key(def_id).disambiguated_data;
-        let path_elem = self.translate_def_path_element(span, def_id, &data)?;
+        let path_elem = self.path_elem_for_def(span, &def)?;
         self.cached_path_elems.insert(def_id, path_elem.clone());
         Ok(path_elem)
     }
 
     /// Retrieve an item name from a [DefId].
-    pub fn def_id_to_name(&mut self, def_id: DefId) -> Result<Name, Error> {
+    pub fn hax_def_id_to_name(&mut self, def: &hax::DefId) -> Result<Name, Error> {
+        let def_id = def.to_rust_def_id();
         if let Some(name) = self.cached_names.get(&def_id) {
             return Ok(name.clone());
         }
         trace!("{:?}", def_id);
-        let tcx = self.tcx;
         let span = self.def_span(def_id);
 
         // We lookup the path associated to an id, and convert it to a name.
@@ -464,17 +458,15 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         let mut name: Vec<PathElem> = Vec::new();
 
         // We can't use `tcx.def_path` because for path elements that correspond to impl blocks, we
-        // need their `DefId`.
-        for cur_id in std::iter::successors(Some(def_id), |cur_id| tcx.opt_parent(*cur_id)) {
-            if let Some(path_elem) = self.def_id_to_path_elem(span, cur_id)? {
+        // need their `DefId`. Instead we recursively explore the parents of this definition.
+        for def in def.ancestry() {
+            if let Some(path_elem) = self.cached_path_elem_for_def(span, def)? {
                 name.push(path_elem);
             }
         }
 
         // We always add the crate name at the beginning.
-        let def_path = tcx.def_path(def_id);
-        let crate_name = tcx.crate_name(def_path.krate).to_string();
-        name.push(PathElem::Ident(crate_name, Disambiguator::new(0)));
+        name.push(PathElem::Ident(def.krate.clone(), Disambiguator::new(0)));
 
         name.reverse();
         let name = Name { name };
@@ -484,9 +476,8 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         Ok(name)
     }
 
-    pub fn hax_def_id_to_name(&mut self, def_id: &hax::DefId) -> Result<Name, Error> {
-        // We have to create a hax state, which is annoying...
-        self.def_id_to_name(DefId::from(def_id))
+    pub fn def_id_to_name(&mut self, def_id: DefId) -> Result<Name, Error> {
+        self.hax_def_id_to_name(&def_id.sinto(&self.hax_state))
     }
 
     /// Translates `T` into `U` using `hax`'s `SInto` trait, catching any hax panics.
