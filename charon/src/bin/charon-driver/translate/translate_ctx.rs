@@ -13,7 +13,6 @@ use itertools::Itertools;
 use macros::VariantIndexArity;
 use rustc_hir::def_id::DefId;
 use rustc_hir::definitions::{DefPathData, DisambiguatedDefPathData};
-use rustc_hir::Node as HirNode;
 use rustc_middle::ty::TyCtxt;
 use std::borrow::Cow;
 use std::cmp::Ord;
@@ -544,13 +543,12 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         name: Name,
         opacity: ItemOpacity,
     ) -> ItemMeta {
-        let def_id = def.rust_def_id();
         let span = def.source_span.as_ref().unwrap_or(&def.span);
         let span = self.translate_span_from_hax(span);
         let attr_info = self.translate_attr_info(def);
         let is_local = def.def_id.is_local;
 
-        let opacity = if self.id_is_extern_item(def_id)
+        let opacity = if self.is_extern_item(def)
             || attr_info.attributes.iter().any(|attr| attr.is_opaque())
         {
             // Force opaque in these cases.
@@ -702,7 +700,9 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
     }
 
     pub(crate) fn def_span(&mut self, def_id: impl Into<DefId>) -> Span {
-        let span = self.tcx.def_span(def_id.into());
+        let def_id = def_id.into();
+        let def_kind = hax::get_def_kind(self.tcx, def_id);
+        let span = hax::get_def_span(self.tcx, def_id, def_kind);
         let span = span.sinto(&self.hax_state);
         self.translate_span_from_hax(&span)
     }
@@ -756,11 +756,12 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
     }
 
     /// Whether this item is in an `extern { .. }` block, in which case it has no body.
-    pub(crate) fn id_is_extern_item(&mut self, id: DefId) -> bool {
-        self.tcx
-            .hir()
-            .get_if_local(id)
-            .is_some_and(|node| matches!(node, HirNode::ForeignItem(_)))
+    pub(crate) fn is_extern_item(&mut self, def: &hax::FullDef) -> bool {
+        def.parent.as_ref().is_some_and(|parent| {
+            self.hax_def(parent).is_ok_and(|parent_def| {
+                matches!(parent_def.kind(), hax::FullDefKind::ForeignMod { .. })
+            })
+        })
     }
 
     pub(crate) fn opacity_for_name(&self, name: &Name) -> ItemOpacity {
