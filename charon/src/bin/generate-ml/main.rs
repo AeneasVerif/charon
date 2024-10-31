@@ -974,10 +974,19 @@ fn main() -> Result<()> {
         CrateData::deserialize(deserializer)?.translated
     };
 
-    generate_ml(crate_data, dir)
+    let output_dir = if std::env::var("IN_CI").as_deref() == Ok("1") {
+        dir.join("generated")
+    } else {
+        dir.join("../../../../charon-ml/src")
+    };
+    generate_ml(crate_data, dir.join("templates"), output_dir)
 }
 
-fn generate_ml(crate_data: TranslatedCrate, output_dir: PathBuf) -> anyhow::Result<()> {
+fn generate_ml(
+    crate_data: TranslatedCrate,
+    template_dir: PathBuf,
+    output_dir: PathBuf,
+) -> anyhow::Result<()> {
     let manual_type_impls = &[
         // Hand-written because we replace the `FileId` with the corresponding file name.
         (
@@ -1244,8 +1253,8 @@ fn generate_ml(crate_data: TranslatedCrate, output_dir: PathBuf) -> anyhow::Resu
     #[rustfmt::skip]
     let generate_code_for = vec![
         GenerateCodeFor {
-            template: output_dir.join("templates/GAst.ml"),
-            target: output_dir.join("generated/GAst.ml"),
+            template: template_dir.join("GAst.ml"),
+            target: output_dir.join("GAst.ml"),
             markers: ctx.markers_from_names(&[
                 (GenerationKind::TypeDecl(Some(DeriveVisitors {
                     name: "statement_base",
@@ -1275,8 +1284,8 @@ fn generate_ml(crate_data: TranslatedCrate, output_dir: PathBuf) -> anyhow::Resu
             ]),
         },
         GenerateCodeFor {
-            template: output_dir.join("templates/Expressions.ml"),
-            target: output_dir.join("generated/Expressions.ml"),
+            template: template_dir.join("Expressions.ml"),
+            target: output_dir.join("Expressions.ml"),
             markers: ctx.markers_from_names(&[
                 (GenerationKind::TypeDecl(None), &[
                     "VarId",
@@ -1316,8 +1325,8 @@ fn generate_ml(crate_data: TranslatedCrate, output_dir: PathBuf) -> anyhow::Resu
             ]),
         },
         GenerateCodeFor {
-            template: output_dir.join("templates/Meta.ml"),
-            target: output_dir.join("generated/Meta.ml"),
+            template: template_dir.join("Meta.ml"),
+            target: output_dir.join("Meta.ml"),
             markers: ctx.markers_from_names(&[
                 (GenerationKind::TypeDecl(None), &[
                     "Loc",
@@ -1332,8 +1341,8 @@ fn generate_ml(crate_data: TranslatedCrate, output_dir: PathBuf) -> anyhow::Resu
             ]),
         },
         GenerateCodeFor {
-            template: output_dir.join("templates/Types.ml"),
-            target: output_dir.join("generated/Types.ml"),
+            template: template_dir.join("Types.ml"),
+            target: output_dir.join("Types.ml"),
             markers: ctx.markers_from_names(&[
                 (GenerationKind::TypeDecl(None), &[
                     "ConstGenericVarId",
@@ -1420,8 +1429,8 @@ fn generate_ml(crate_data: TranslatedCrate, output_dir: PathBuf) -> anyhow::Resu
             ]),
         },
         GenerateCodeFor {
-            template: output_dir.join("templates/Values.ml"),
-            target: output_dir.join("generated/Values.ml"),
+            template: template_dir.join("Values.ml"),
+            target: output_dir.join("Values.ml"),
             markers: ctx.markers_from_names(&[
                 (GenerationKind::TypeDecl(Some(DeriveVisitors {
                     name: "literal",
@@ -1441,8 +1450,8 @@ fn generate_ml(crate_data: TranslatedCrate, output_dir: PathBuf) -> anyhow::Resu
             ]),
         },
         GenerateCodeFor {
-            template: output_dir.join("templates/LlbcAst.ml"),
-            target: output_dir.join("generated/LlbcAst.ml"),
+            template: template_dir.join("LlbcAst.ml"),
+            target: output_dir.join("LlbcAst.ml"),
             markers: vec![
                 (GenerationKind::TypeDecl(Some(DeriveVisitors {
                     name: "statement",
@@ -1453,8 +1462,8 @@ fn generate_ml(crate_data: TranslatedCrate, output_dir: PathBuf) -> anyhow::Resu
             ],
         },
         GenerateCodeFor {
-            template: output_dir.join("templates/UllbcAst.ml"),
-            target: output_dir.join("generated/UllbcAst.ml"),
+            template: template_dir.join("UllbcAst.ml"),
+            target: output_dir.join("UllbcAst.ml"),
             markers: ctx.markers_from_names(&[
                 (GenerationKind::TypeDecl(Some(DeriveVisitors {
                     name: "statement",
@@ -1483,18 +1492,18 @@ fn generate_ml(crate_data: TranslatedCrate, output_dir: PathBuf) -> anyhow::Resu
             ]),
         },
         GenerateCodeFor {
-            template: output_dir.join("templates/GAstOfJson.ml"),
-            target: output_dir.join("generated/GAstOfJson.ml"),
+            template: template_dir.join("GAstOfJson.ml"),
+            target: output_dir.join("GAstOfJson.ml"),
             markers: vec![(GenerationKind::OfJson, gast_types)],
         },
         GenerateCodeFor {
-            template: output_dir.join("templates/LlbcOfJson.ml"),
-            target: output_dir.join("generated/LlbcOfJson.ml"),
+            template: template_dir.join("LlbcOfJson.ml"),
+            target: output_dir.join("LlbcOfJson.ml"),
             markers: vec![(GenerationKind::OfJson, llbc_types)],
         },
         GenerateCodeFor {
-            template: output_dir.join("templates/UllbcOfJson.ml"),
-            target: output_dir.join("generated/UllbcOfJson.ml"),
+            template: template_dir.join("UllbcOfJson.ml"),
+            target: output_dir.join("UllbcOfJson.ml"),
             markers: vec![(GenerationKind::OfJson, ullbc_types)],
         },
     ];
