@@ -273,7 +273,7 @@ pub fn translate<'tcx, 'ctx>(
         },
         id_map: Default::default(),
         reverse_id_map: Default::default(),
-        priority_queue: Default::default(),
+        items_to_translate: Default::default(),
         translate_stack: Default::default(),
         cached_path_elems: Default::default(),
         cached_names: Default::default(),
@@ -287,7 +287,7 @@ pub fn translate<'tcx, 'ctx>(
 
     trace!(
         "Queue after we explored the crate:\n{:?}",
-        &ctx.priority_queue
+        &ctx.items_to_translate
     );
 
     // Translate.
@@ -299,7 +299,7 @@ pub fn translate<'tcx, 'ctx>(
     // Note that the order in which we translate the definitions doesn't matter:
     // we never need to lookup a translated definition, and only use the map
     // from Rust ids to translated ids.
-    while let Some((ord_id, trans_id)) = ctx.priority_queue.pop_first() {
+    while let Some((ord_id, trans_id)) = ctx.items_to_translate.pop_first() {
         trace!("About to translate id: {:?}", ord_id);
         ctx.translate_item(ord_id.get_id(), trans_id);
     }
