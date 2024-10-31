@@ -1,7 +1,9 @@
-{ charon
+{ lib
+, charon
 , fetchFromGitHub
-, stdenv
 , ocamlPackages
+, runCommand
+, stdenv
 }:
 let
   easy_logging = ocamlPackages.buildDunePackage rec {
@@ -16,7 +18,14 @@ let
     buildInputs = [ ocamlPackages.calendar ];
   };
 
-  src = ../charon-ml;
+  # We need both `charon-ml` and the `dune-project` file.
+  src = lib.cleanSourceWith {
+    src = ./..;
+    filter =
+      path: type:
+      (lib.hasPrefix (toString ../charon-ml) path)
+      || (lib.hasPrefix (toString ../dune-project) path);
+  };
 
   charon-name_matcher_parser =
     ocamlPackages.buildDunePackage {
@@ -64,8 +73,8 @@ let
       OCAMLPARAM = "_,warn-error=+A"; # Turn all warnings into errors.
       preCheck =
         if doCheck then ''
-          mkdir -p tests/serialized
-          cp ${charon}/tests-llbc/* tests/serialized
+          mkdir -p charon-ml/tests/serialized
+          cp ${charon}/tests-llbc/* charon-ml/tests/serialized
         '' else
           "";
       propagatedBuildInputs = with ocamlPackages; [

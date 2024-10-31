@@ -12,8 +12,6 @@ let () =
   with Not_found -> log#set_level EL.Info
 
 (* Call the tests *)
-let () = Test_Deserialize.run_tests "../../../tests/serialized"
-
-let () =
-  Test_NameMatcher.run_tests
-    "../../../tests/serialized/ml-name-matcher-tests.llbc"
+(* llbc files are copied into the `_build` dir by the `(deps)` rule in `./dune`. *)
+let () = Test_Deserialize.run_tests "./serialized"
+let () = Test_NameMatcher.run_tests "./serialized/ml-name-matcher-tests.llbc"
