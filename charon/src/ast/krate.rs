@@ -12,6 +12,13 @@ use std::collections::HashMap;
 use std::fmt;
 use std::ops::{Index, IndexMut};
 
+generate_index_type!(FunDeclId, "Fun");
+generate_index_type!(TypeDeclId, "Adt");
+generate_index_type!(GlobalDeclId, "Global");
+generate_index_type!(TraitDeclId, "TraitDecl");
+generate_index_type!(TraitImplId, "TraitImpl");
+generate_index_type!(BodyId, "Body");
+
 /// The id of a translated item.
 #[derive(
     Copy,

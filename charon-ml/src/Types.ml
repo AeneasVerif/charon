@@ -49,17 +49,17 @@ type ('id, 'name) indexed_var = {
 [@@deriving show, ord]
 
 type fun_decl_id = FunDeclId.id
+and type_decl_id = TypeDeclId.id
+and global_decl_id = GlobalDeclId.id
+and trait_decl_id = TraitDeclId.id
+and trait_impl_id = TraitImplId.id
 and disambiguator = Disambiguator.id
 and type_var_id = TypeVarId.id
-and type_decl_id = TypeDeclId.id
 and variant_id = VariantId.id
 and field_id = FieldId.id
 and region_id = RegionId.id
 and const_generic_var_id = ConstGenericVarId.id
-and global_decl_id = GlobalDeclId.id
-and trait_clause_id = TraitClauseId.id
-and trait_decl_id = TraitDeclId.id
-and trait_impl_id = TraitImplId.id [@@deriving show, ord]
+and trait_clause_id = TraitClauseId.id [@@deriving show, ord]
 
 let all_signed_int_types = [ Isize; I8; I16; I32; I64; I128 ]
 let all_unsigned_int_types = [ Usize; U8; U16; U32; U64; U128 ]

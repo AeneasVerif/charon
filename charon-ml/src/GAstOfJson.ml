@@ -336,10 +336,6 @@ and aggregate_kind_of_json (js : json) : (aggregate_kind, string) result =
         Ok (AggregatedClosure (x_0, x_1))
     | _ -> Error "")
 
-and fun_decl_id_of_json (js : json) : (fun_decl_id, string) result =
-  combine_error_msgs js __FUNCTION__
-    (match js with x -> FunDeclId.id_of_json x | _ -> Error "")
-
 and var_of_json (js : json) : (var, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
@@ -578,6 +574,26 @@ and assertion_of_json (js : json) : (assertion, string) result =
         Ok ({ cond; expected } : assertion)
     | _ -> Error "")
 
+and fun_decl_id_of_json (js : json) : (fun_decl_id, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with x -> FunDeclId.id_of_json x | _ -> Error "")
+
+and type_decl_id_of_json (js : json) : (type_decl_id, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with x -> TypeDeclId.id_of_json x | _ -> Error "")
+
+and global_decl_id_of_json (js : json) : (global_decl_id, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with x -> GlobalDeclId.id_of_json x | _ -> Error "")
+
+and trait_decl_id_of_json (js : json) : (trait_decl_id, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with x -> TraitDeclId.id_of_json x | _ -> Error "")
+
+and trait_impl_id_of_json (js : json) : (trait_impl_id, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with x -> TraitImplId.id_of_json x | _ -> Error "")
+
 and any_decl_id_of_json (js : json) : (any_decl_id, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
@@ -764,10 +780,6 @@ and type_var_id_of_json (js : json) : (type_var_id, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with x -> TypeVarId.id_of_json x | _ -> Error "")
 
-and type_decl_id_of_json (js : json) : (type_decl_id, string) result =
-  combine_error_msgs js __FUNCTION__
-    (match js with x -> TypeDeclId.id_of_json x | _ -> Error "")
-
 and variant_id_of_json (js : json) : (variant_id, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with x -> VariantId.id_of_json x | _ -> Error "")
@@ -780,10 +792,6 @@ and const_generic_var_id_of_json (js : json) :
     (const_generic_var_id, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with x -> ConstGenericVarId.id_of_json x | _ -> Error "")
-
-and global_decl_id_of_json (js : json) : (global_decl_id, string) result =
-  combine_error_msgs js __FUNCTION__
-    (match js with x -> GlobalDeclId.id_of_json x | _ -> Error "")
 
 and type_var_of_json (js : json) : (type_var, string) result =
   combine_error_msgs js __FUNCTION__
@@ -1007,14 +1015,6 @@ and existential_predicate_of_json (js : json) :
 and trait_clause_id_of_json (js : json) : (trait_clause_id, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with x -> TraitClauseId.id_of_json x | _ -> Error "")
-
-and trait_decl_id_of_json (js : json) : (trait_decl_id, string) result =
-  combine_error_msgs js __FUNCTION__
-    (match js with x -> TraitDeclId.id_of_json x | _ -> Error "")
-
-and trait_impl_id_of_json (js : json) : (trait_impl_id, string) result =
-  combine_error_msgs js __FUNCTION__
-    (match js with x -> TraitImplId.id_of_json x | _ -> Error "")
 
 and trait_clause_of_json (id_to_file : id_to_file_map) (js : json) :
     (trait_clause, string) result =

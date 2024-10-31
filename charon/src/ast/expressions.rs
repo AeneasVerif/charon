@@ -1,8 +1,6 @@
 //! Implements expressions: paths, operands, rvalues, lvalues
 
-use crate::gast::*;
-use crate::types::*;
-use crate::values::*;
+use crate::ast::*;
 use derive_visitor::{Drive, DriveMut};
 use macros::{EnumAsGetters, EnumIsA, EnumToGetters, VariantIndexArity, VariantName};
 use serde::{Deserialize, Serialize};

@@ -1,21 +1,13 @@
 //! Definitions common to [crate::ullbc_ast] and [crate::llbc_ast]
-use crate::expressions::*;
-use crate::generate_index_type;
+use crate::ast::*;
 use crate::ids::Vector;
 use crate::llbc_ast;
-use crate::meta::{ItemMeta, Span};
-use crate::names::Name;
-use crate::types::*;
 use crate::ullbc_ast;
-use crate::values::*;
 use derive_visitor::{Drive, DriveMut, Event, Visitor, VisitorMut};
 use macros::EnumIsA;
 use macros::EnumToGetters;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
-
-generate_index_type!(FunDeclId, "Fun");
-generate_index_type!(BodyId, "Body");
 
 /// A variable
 #[derive(Debug, Clone, Serialize, Deserialize, Drive, DriveMut)]
