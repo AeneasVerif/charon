@@ -122,7 +122,6 @@ impl TranslateOptions {
 #[derive(Clone, Copy, Debug, Eq, PartialEq, VariantIndexArity)]
 pub enum OrdRustId {
     Global(DefId),
-    ConstFun(DefId),
     TraitDecl(DefId),
     TraitImpl(DefId),
     Fun(DefId),
@@ -133,7 +132,6 @@ impl OrdRustId {
     pub(crate) fn get_id(&self) -> DefId {
         match self {
             OrdRustId::Global(id)
-            | OrdRustId::ConstFun(id)
             | OrdRustId::TraitDecl(id)
             | OrdRustId::TraitImpl(id)
             | OrdRustId::Fun(id)
@@ -818,9 +816,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
                     OrdRustId::Global(_) => {
                         AnyTransId::Global(self.translated.global_decls.reserve_slot())
                     }
-                    OrdRustId::ConstFun(_) | OrdRustId::Fun(_) => {
-                        AnyTransId::Fun(self.translated.fun_decls.reserve_slot())
-                    }
+                    OrdRustId::Fun(_) => AnyTransId::Fun(self.translated.fun_decls.reserve_slot()),
                 };
                 // Add the id to the queue of declarations to translate
                 self.priority_queue.insert(id, trans_id);
@@ -853,13 +849,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
     }
 
     pub(crate) fn register_fun_decl_id(&mut self, src: &Option<DepSource>, id: DefId) -> FunDeclId {
-        // FIXME: cache this or even better let hax handle this
-        let id = if self.tcx.is_const_fn_raw(id) {
-            OrdRustId::ConstFun(id)
-        } else {
-            OrdRustId::Fun(id)
-        };
-        *self.register_id(src, id).as_fun().unwrap()
+        *self.register_id(src, OrdRustId::Fun(id)).as_fun().unwrap()
     }
 
     pub(crate) fn register_trait_decl_id(
