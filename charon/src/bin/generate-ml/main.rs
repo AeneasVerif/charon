@@ -974,7 +974,12 @@ fn main() -> Result<()> {
         CrateData::deserialize(deserializer)?.translated
     };
 
-    generate_ml(crate_data, dir.join("templates"), dir.join("generated"))
+    let output_dir = if std::env::var("IN_CI").as_deref() == Ok("1") {
+        dir.join("generated")
+    } else {
+        dir.join("../../../../charon-ml/src")
+    };
+    generate_ml(crate_data, dir.join("templates"), output_dir)
 }
 
 fn generate_ml(

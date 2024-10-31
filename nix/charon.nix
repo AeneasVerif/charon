@@ -40,12 +40,6 @@ craneLib.buildPackage (
     nativeBuildInputs = lib.optionals (stdenv.isDarwin) [ bintools ];
     # It's important to pass the same `RUSTFLAGS` to dependencies otherwise we'll have to rebuild them.
     cargoArtifacts = craneLib.buildDepsOnly craneArgs;
-    postPatch = ''
-      # This directory is a symlink outside of the charon directory. We remove
-      # it so that we regenerate fresh files in its place.
-      rm -f src/bin/generate-ml/generated
-      mkdir src/bin/generate-ml/generated
-    '';
     # Make sure the toolchain is in $PATH so that `cargo` can work
     # properly. On mac we also have to tell `charon-driver` where to find
     # the rustc_driver dynamic library; this is done automatically on
@@ -63,6 +57,7 @@ craneLib.buildPackage (
     checkPhaseCargoCommand = ''
       CHARON_TOOLCHAIN_IS_IN_PATH=1 IN_CI=1 cargo test --profile release --locked
       # We also re-generate the ocaml files.
+      mkdir src/bin/generate-ml/generated
       CHARON_TOOLCHAIN_IS_IN_PATH=1 IN_CI=1 cargo run --release --locked --bin generate-ml
 
       # While running tests we also outputted llbc files. We export them for charon-ml tests.
