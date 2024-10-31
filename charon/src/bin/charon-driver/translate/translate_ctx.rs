@@ -16,7 +16,7 @@ use rustc_hir::definitions::{DefPathData, DisambiguatedDefPathData};
 use rustc_hir::Node as HirNode;
 use rustc_middle::ty::TyCtxt;
 use std::borrow::Cow;
-use std::cmp::{Ord, PartialOrd};
+use std::cmp::Ord;
 use std::collections::HashMap;
 use std::collections::{BTreeMap, VecDeque};
 use std::fmt;
@@ -115,34 +115,29 @@ impl TranslateOptions {
     }
 }
 
-/// We use a special type to store the Rust identifiers in the stack, to
-/// make sure we translate them in a specific order (top-level constants
-/// before constant functions before functions...). This allows us to
-/// avoid stealing issues when looking up the MIR bodies.
-#[derive(Clone, Copy, Debug, Eq, PartialEq, VariantIndexArity)]
-pub enum OrdRustId {
+/// The id of an untranslated item.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, VariantIndexArity)]
+pub enum TransItemSource {
     Global(DefId),
-    ConstFun(DefId),
     TraitDecl(DefId),
     TraitImpl(DefId),
     Fun(DefId),
     Type(DefId),
 }
 
-impl OrdRustId {
+impl TransItemSource {
     pub(crate) fn get_id(&self) -> DefId {
         match self {
-            OrdRustId::Global(id)
-            | OrdRustId::ConstFun(id)
-            | OrdRustId::TraitDecl(id)
-            | OrdRustId::TraitImpl(id)
-            | OrdRustId::Fun(id)
-            | OrdRustId::Type(id) => *id,
+            TransItemSource::Global(id)
+            | TransItemSource::TraitDecl(id)
+            | TransItemSource::TraitImpl(id)
+            | TransItemSource::Fun(id)
+            | TransItemSource::Type(id) => *id,
         }
     }
 }
 
-impl OrdRustId {
+impl TransItemSource {
     /// Value with which we order values.
     fn sort_key(&self) -> impl Ord {
         let (variant_index, _) = self.variant_index_arity();
@@ -152,12 +147,12 @@ impl OrdRustId {
 }
 
 /// Manual impls because `DefId` is not orderable.
-impl PartialOrd for OrdRustId {
+impl PartialOrd for TransItemSource {
     fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
         Some(self.cmp(other))
     }
 }
-impl Ord for OrdRustId {
+impl Ord for TransItemSource {
     fn cmp(&self, other: &Self) -> std::cmp::Ordering {
         self.sort_key().cmp(&other.sort_key())
     }
@@ -184,12 +179,12 @@ pub struct TranslateCtx<'tcx, 'ctx> {
 
     /// Context for tracking and reporting errors.
     pub errors: ErrorCtx<'ctx>,
-    /// The declarations we came accross and which we haven't translated yet.
-    /// We use an ordered map to make sure we translate them in a specific
-    /// order (this avoids stealing issues when querying the MIR bodies).
-    pub priority_queue: BTreeMap<OrdRustId, AnyTransId>,
+    /// The declarations we came accross and which we haven't translated yet. We keep them sorted
+    /// to make the output order a bit more stable.
+    pub items_to_translate: BTreeMap<TransItemSource, AnyTransId>,
     /// Stack of the translations currently happening. Used to avoid cycles where items need to
     /// translate themselves transitively.
+    // FIXME: we don't use recursive item translation anywhere.
     pub translate_stack: Vec<AnyTransId>,
     /// Cache the `PathElem`s to compute them only once each. It's an `Option` because some
     /// `DefId`s (e.g. `extern {}` blocks) don't appear in the `Name`.
@@ -800,36 +795,40 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         }
     }
 
-    pub(crate) fn register_id(&mut self, src: &Option<DepSource>, id: OrdRustId) -> AnyTransId {
+    pub(crate) fn register_id(
+        &mut self,
+        src: &Option<DepSource>,
+        id: TransItemSource,
+    ) -> AnyTransId {
         let rust_id = id.get_id();
         let item_id = match self.id_map.get(&rust_id) {
             Some(tid) => *tid,
             None => {
                 let trans_id = match id {
-                    OrdRustId::Type(_) => {
+                    TransItemSource::Type(_) => {
                         AnyTransId::Type(self.translated.type_decls.reserve_slot())
                     }
-                    OrdRustId::TraitDecl(_) => {
+                    TransItemSource::TraitDecl(_) => {
                         AnyTransId::TraitDecl(self.translated.trait_decls.reserve_slot())
                     }
-                    OrdRustId::TraitImpl(_) => {
+                    TransItemSource::TraitImpl(_) => {
                         AnyTransId::TraitImpl(self.translated.trait_impls.reserve_slot())
                     }
-                    OrdRustId::Global(_) => {
+                    TransItemSource::Global(_) => {
                         AnyTransId::Global(self.translated.global_decls.reserve_slot())
                     }
-                    OrdRustId::ConstFun(_) | OrdRustId::Fun(_) => {
+                    TransItemSource::Fun(_) => {
                         AnyTransId::Fun(self.translated.fun_decls.reserve_slot())
                     }
                 };
                 // Add the id to the queue of declarations to translate
-                self.priority_queue.insert(id, trans_id);
+                self.items_to_translate.insert(id, trans_id);
                 self.id_map.insert(id.get_id(), trans_id);
                 self.reverse_id_map.insert(trans_id, id.get_id());
                 self.translated.all_ids.insert(trans_id);
                 // Store the name early so the name matcher can identify paths. We can't to it for
                 // trait impls because they register themselves when computing their name.
-                if !matches!(id, OrdRustId::TraitImpl(_)) {
+                if !matches!(id, TransItemSource::TraitImpl(_)) {
                     if let Ok(name) = self.def_id_to_name(rust_id) {
                         self.translated.item_names.insert(trans_id, name);
                     }
@@ -847,19 +846,16 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         id: DefId,
     ) -> TypeDeclId {
         *self
-            .register_id(src, OrdRustId::Type(id))
+            .register_id(src, TransItemSource::Type(id))
             .as_type()
             .unwrap()
     }
 
     pub(crate) fn register_fun_decl_id(&mut self, src: &Option<DepSource>, id: DefId) -> FunDeclId {
-        // FIXME: cache this or even better let hax handle this
-        let id = if self.tcx.is_const_fn_raw(id) {
-            OrdRustId::ConstFun(id)
-        } else {
-            OrdRustId::Fun(id)
-        };
-        *self.register_id(src, id).as_fun().unwrap()
+        *self
+            .register_id(src, TransItemSource::Fun(id))
+            .as_fun()
+            .unwrap()
     }
 
     pub(crate) fn register_trait_decl_id(
@@ -868,7 +864,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         id: DefId,
     ) -> TraitDeclId {
         *self
-            .register_id(src, OrdRustId::TraitDecl(id))
+            .register_id(src, TransItemSource::TraitDecl(id))
             .as_trait_decl()
             .unwrap()
     }
@@ -889,7 +885,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         }
 
         *self
-            .register_id(src, OrdRustId::TraitImpl(id))
+            .register_id(src, TransItemSource::TraitImpl(id))
             .as_trait_impl()
             .unwrap()
     }
@@ -900,7 +896,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         id: DefId,
     ) -> GlobalDeclId {
         *self
-            .register_id(src, OrdRustId::Global(id))
+            .register_id(src, TransItemSource::Global(id))
             .as_global()
             .unwrap()
     }
