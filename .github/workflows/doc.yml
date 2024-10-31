@@ -12,6 +12,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Build static files
+        env:
+          CARGO_TERM_COLOR: always
         id: build
         run: |
           cd charon
