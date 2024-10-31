@@ -50,25 +50,19 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
             FullDefKind::Trait { .. } => {
                 let _ = self.register_trait_decl_id(&None, def_id);
             }
-            FullDefKind::Impl {
-                items,
-                impl_subject,
-                ..
-            } => match impl_subject {
-                hax::ImplSubject::Trait { .. } => {
-                    let _ = self.register_trait_impl_id(&None, def_id);
-                }
-                hax::ImplSubject::Inherent { .. } => {
-                    if explore_inside {
-                        for (item, _) in items {
-                            self.register_local_item((&item.def_id).into());
-                        }
-                    }
-                }
-            },
+            FullDefKind::TraitImpl { .. } => {
+                let _ = self.register_trait_impl_id(&None, def_id);
+            }
             // TODO: trait aliases (https://github.com/AeneasVerif/charon/issues/366)
             FullDefKind::TraitAlias { .. } => {}
 
+            FullDefKind::InherentImpl { items, .. } => {
+                if explore_inside {
+                    for (_, item_def) in items {
+                        self.register_local_item(item_def.rust_def_id());
+                    }
+                }
+            }
             FullDefKind::Mod { items, .. } => {
                 // Explore the module, only if it was not marked as "opaque"
                 // TODO: we may want to accumulate the set of modules we found, to check that all

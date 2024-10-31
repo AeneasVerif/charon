@@ -22,18 +22,6 @@ error: Ignoring the following item due to a previous error: test_crate::lifetime
 45 |     trait Bar<'a> {
    |     ^^^^^^^^^^^^^
 
-error: Generic associated types are not supported
-  --> tests/ui/generic-associated-types.rs:13:5
-   |
-13 |     type Item<'b> = &'b T;
-   |     ^^^^^^^^^^^^^
-
-error: Ignoring the following item due to a previous error: test_crate::{impl#0}
-  --> tests/ui/generic-associated-types.rs:12:1
-   |
-12 | impl<'a, T> LendingIterator for Option<&'a T> {
-   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
 error: Found unsupported GAT `Item` when resolving trait `core::marker::Sized<@TraitClause2::Item>`
   --> tests/ui/generic-associated-types.rs:27:28
    |
@@ -78,6 +66,6 @@ error: Error during trait resolution: Found unsupported GAT `Type` when resolvin
 53 |         x.foo()
    |         ^^^^^^^
 
-error: aborting due to 12 previous errors; 1 warning emitted
+error: aborting due to 10 previous errors; 1 warning emitted
 
-ERROR Compilation encountered 12 errors
+ERROR Compilation encountered 10 errors
