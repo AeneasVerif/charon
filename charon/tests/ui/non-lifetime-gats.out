@@ -22,30 +22,6 @@ error: Ignoring the following item due to a previous error: test_crate::moar_var
 33 |     trait Trait<T> {
    |     ^^^^^^^^^^^^^^
 
-error: Generic associated types are not supported
-  --> tests/ui/non-lifetime-gats.rs:13:5
-   |
-13 |     type Pointer<U> = Box<U>;
-   |     ^^^^^^^^^^^^^^^
+error: aborting due to 4 previous errors
 
-error: Ignoring the following item due to a previous error: test_crate::{impl#0}
-  --> tests/ui/non-lifetime-gats.rs:12:1
-   |
-12 | impl PointerFamily for BoxFamily {
-   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-error: Generic associated types are not supported
-  --> tests/ui/non-lifetime-gats.rs:39:9
-   |
-39 |         type Type<U> = (T, U);
-   |         ^^^^^^^^^^^^
-
-error: Ignoring the following item due to a previous error: test_crate::moar_variables::{impl#1}
-  --> tests/ui/non-lifetime-gats.rs:38:5
-   |
-38 |     impl<T> Trait<Option<T>> for Foo {
-   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-error: aborting due to 8 previous errors
-
-ERROR Compilation encountered 8 errors
+ERROR Compilation encountered 4 errors

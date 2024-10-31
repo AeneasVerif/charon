@@ -191,29 +191,18 @@ impl BodyTransCtx<'_, '_, '_> {
 
         let generics = self.translate_def_generics(span, def)?;
 
-        let hax::FullDefKind::Impl {
-            impl_subject:
-                hax::ImplSubject::Trait {
-                    trait_pred,
-                    required_impl_exprs,
-                    ..
-                },
+        let hax::FullDefKind::TraitImpl {
+            trait_pred,
+            required_impl_exprs,
             items: impl_items,
             ..
         } = &def.kind
         else {
             unreachable!()
         };
-        let implemented_trait_id = &trait_pred.trait_ref.def_id;
-        let trait_def = self.t_ctx.hax_def(implemented_trait_id)?;
-        let hax::FullDefKind::Trait {
-            items: decl_items, ..
-        } = trait_def.kind()
-        else {
-            unreachable!()
-        };
 
         // Retrieve the information about the implemented trait.
+        let implemented_trait_id = &trait_pred.trait_ref.def_id;
         let trait_id = self.register_trait_decl_id(span, implemented_trait_id);
         let implemented_trait = {
             let implemented_trait = &trait_pred.trait_ref;
@@ -244,153 +233,69 @@ impl BodyTransCtx<'_, '_, '_> {
         }
 
         // Explore the associated items
-        let tcx = self.t_ctx.tcx;
-        let mut consts = HashMap::new();
-        let mut types: HashMap<TraitItemName, Ty> = HashMap::new();
+        let mut consts = Vec::new();
+        let mut types: Vec<(TraitItemName, Ty)> = Vec::new();
+        let mut required_methods = Vec::new();
+        let mut provided_methods = Vec::new();
         let mut type_clauses = Vec::new();
-        let mut methods = HashMap::new();
 
-        for (item, item_def) in impl_items {
-            let name = TraitItemName(item.name.clone());
-            let item_span = self.def_span(&item.def_id);
+        for impl_item in impl_items {
+            use hax::ImplAssocItemValue::*;
+            let name = TraitItemName(impl_item.name.clone());
+            let item_def = impl_item.def(); // The impl item or the corresponding trait default.
+            let item_span = self.def_span(item_def.rust_def_id());
+            let item_def_id = item_def.rust_def_id();
             match item_def.kind() {
                 hax::FullDefKind::AssocFn { .. } => {
-                    let fun_id = self.register_fun_decl_id(item_span, &item.def_id);
-                    methods.insert(name, fun_id);
+                    let fun_id = self.register_fun_decl_id(item_span, item_def_id);
+                    match &impl_item.value {
+                        Provided { is_override, .. } => {
+                            if *is_override {
+                                provided_methods.push((name, fun_id));
+                            } else {
+                                required_methods.push((name, fun_id));
+                            }
+                        }
+                        DefaultedFn { .. } => {
+                            // TODO: handle defaulted methods
+                        }
+                        _ => unreachable!(),
+                    }
                 }
                 hax::FullDefKind::AssocConst { .. } => {
+                    let id = self.register_global_decl_id(item_span, item_def_id);
                     // The parameters of the constant are the same as those of the item that
                     // declares them.
-                    let gref = GlobalDeclRef {
-                        id: self.register_global_decl_id(item_span, &item.def_id),
-                        generics: generics.identity_args(),
+                    let generics = match &impl_item.value {
+                        Provided { .. } => generics.identity_args(),
+                        _ => implemented_trait.generics.clone(),
                     };
-                    consts.insert(name, gref);
+                    let gref = GlobalDeclRef { id, generics };
+                    consts.push((name, gref));
                 }
                 hax::FullDefKind::AssocTy { generics, .. } if !generics.params.is_empty() => {
-                    error_or_panic!(
-                        self,
-                        item_span,
-                        &format!("Generic associated types are not supported")
-                    );
+                    // We don't support GATs; the error was already reported in the trait declaration.
                 }
-                hax::FullDefKind::AssocTy {
-                    value: Some(ty), ..
-                } => {
-                    let ty = self.translate_ty(item_span, erase_regions, &ty)?;
-                    types.insert(name.clone(), ty);
-
-                    // Retrieve the trait refs
-                    let hax::AssocItemContainer::TraitImplContainer {
-                        required_impl_exprs,
-                        ..
-                    } = &item.container
-                    else {
-                        unreachable!()
+                hax::FullDefKind::AssocTy { value, .. } => {
+                    let ty = match &impl_item.value {
+                        Provided { .. } => value.as_ref().unwrap(),
+                        DefaultedTy { ty, .. } => ty,
+                        _ => unreachable!(),
                     };
-                    // TODO: use clause ids
-                    let trait_refs = self
-                        .translate_trait_impl_exprs(span, erase_regions, &required_impl_exprs)?
-                        .into_iter()
-                        .collect();
+                    let ty = self.translate_ty(item_span, erase_regions, &ty)?;
+                    types.push((name.clone(), ty));
+
+                    let trait_refs = self.translate_trait_impl_exprs(
+                        item_span,
+                        erase_regions,
+                        &impl_item.required_impl_exprs,
+                    )?;
                     type_clauses.push((name, trait_refs));
                 }
                 _ => panic!("Unexpected definition for trait item: {item_def:?}"),
             }
         }
 
-        // In case of a trait implementation, some values may not have been
-        // provided, in case the declaration provided default values. We
-        // check those, and lookup the relevant values.
-        let partial_consts = consts;
-        let partial_types = types;
-        let mut consts = Vec::new();
-        let mut types: Vec<(TraitItemName, Ty)> = Vec::new();
-        let mut required_methods = Vec::new();
-        let mut provided_methods = Vec::new();
-
-        for (decl_item, decl_item_def) in decl_items {
-            let item_def_id = decl_item_def.rust_def_id();
-            let item_span = self.translate_span_from_hax(&decl_item_def.span);
-            let name = TraitItemName(decl_item.name.to_string());
-            match decl_item_def.kind() {
-                hax::FullDefKind::AssocFn { .. } => {
-                    if let Some(&fun_id) = methods.get(&name) {
-                        // Check if we implement a required method or reimplement a provided
-                        // method.
-                        if decl_item.has_value {
-                            provided_methods.push((name, fun_id));
-                        } else {
-                            required_methods.push((name, fun_id));
-                        }
-                    }
-                }
-
-                hax::FullDefKind::AssocConst { .. } => {
-                    // Does the trait impl provide an implementation for this const?
-                    let c = match partial_consts.get(&name) {
-                        Some(c) => c.clone(),
-                        None => {
-                            // The item is not defined in the trait impl: the trait decl *must*
-                            // define a default value.
-                            // The parameters of the constant are the same as those of the item
-                            // that declares them.
-                            GlobalDeclRef {
-                                id: self.register_global_decl_id(item_span, item_def_id),
-                                generics: implemented_trait.generics.clone(),
-                            }
-                        }
-                    };
-                    consts.push((name, c));
-                }
-                hax::FullDefKind::AssocTy { generics, .. } if !generics.params.is_empty() => {
-                    // The error was already reported in the trait declaration.
-                }
-                hax::FullDefKind::AssocTy { .. } => {
-                    // Does the trait impl provide an implementation for this type?
-                    match partial_types.get(&name) {
-                        Some(ty) => types.push((name.clone(), ty.clone())),
-                        None => {
-                            let rust_implemented_trait_ref =
-                                tcx.impl_trait_ref(rust_id).unwrap().instantiate_identity();
-                            let trait_args = rust_implemented_trait_ref.args;
-
-                            // The item is not defined in the trait impl: the trait decl *must*
-                            // define a default value.
-                            let ty = tcx.type_of(item_def_id).instantiate(tcx, trait_args);
-                            let ty = self.t_ctx.catch_sinto(&self.hax_state, span, &ty)?;
-                            let ty = self.translate_ty(item_span, erase_regions, &ty)?;
-                            types.push((name.clone(), ty));
-
-                            // Retrieve the trait refs
-                            let impl_exprs = {
-                                use hax::HasOwnerIdSetter;
-                                use rustc_middle::ty::GenericArgs;
-                                let item_args = GenericArgs::identity_for_item(tcx, item_def_id);
-                                // Subtlety: we have to add the GAT arguments (if any) to the trait ref arguments.
-                                let args = item_args.rebase_onto(tcx, rust_id, trait_args);
-                                // Note: this is wrong for GATs! We need a param_env that has the
-                                // arguments of the impl plus those of the associated type, but
-                                // there's no def_id with that param_env.
-                                let state_with_id = self.hax_state.clone().with_owner_id(rust_id);
-                                let impl_exprs = hax::solve_item_implied_traits(
-                                    &state_with_id,
-                                    item_def_id,
-                                    args,
-                                );
-                                impl_exprs
-                            };
-                            let trait_refs = self
-                                .translate_trait_impl_exprs(item_span, erase_regions, &impl_exprs)?
-                                .into_iter()
-                                .collect();
-                            type_clauses.push((name.clone(), trait_refs));
-                        }
-                    }
-                }
-                _ => panic!("Unexpected definition for trait item: {decl_item_def:?}"),
-            }
-        }
         if item_meta.opacity.is_opaque() {
             let ctx = self.into_fmt();
             self.t_ctx.errors.dcx.span_warn(

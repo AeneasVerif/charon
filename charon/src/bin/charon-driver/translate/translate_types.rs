@@ -670,12 +670,8 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             self.push_generic_params(generics)?;
             // Add the self trait clause.
             match &def.kind {
-                FullDefKind::Impl {
-                    impl_subject:
-                        hax::ImplSubject::Trait {
-                            trait_pred: self_predicate,
-                            ..
-                        },
+                FullDefKind::TraitImpl {
+                    trait_pred: self_predicate,
                     ..
                 }
                 | FullDefKind::Trait { self_predicate, .. } => {
@@ -700,7 +696,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 | FullDefKind::Static { .. } => {
                     (PredicateOrigin::WhereClauseOnFn, PredicateLocation::Base)
                 }
-                FullDefKind::Impl { .. } => {
+                FullDefKind::TraitImpl { .. } | FullDefKind::InherentImpl { .. } => {
                     (PredicateOrigin::WhereClauseOnImpl, PredicateLocation::Base)
                 }
                 // TODO: distinguish trait where clauses from trait supertraits. Currently we

@@ -346,15 +346,12 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
             }
             DefPathData::Impl => {
                 let def = self.hax_def(def_id)?;
-                let hax::FullDefKind::Impl { impl_subject, .. } = &def.kind else {
-                    unreachable!()
-                };
                 // Two cases, depending on whether the impl block is
                 // a "regular" impl block (`impl Foo { ... }`) or a trait
                 // implementation (`impl Bar for Foo { ... }`).
-                let impl_elem = match impl_subject {
+                let impl_elem = match def.kind() {
                     // Inherent impl ("regular" impl)
-                    hax::ImplSubject::Inherent(ty) => {
+                    hax::FullDefKind::InherentImpl { ty, .. } => {
                         let erase_regions = false;
 
                         // We need to convert the type, which may contain quantified
@@ -366,10 +363,11 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
                         ImplElem::Ty(generics, ty)
                     }
                     // Trait implementation
-                    hax::ImplSubject::Trait { .. } => {
+                    hax::FullDefKind::TraitImpl { .. } => {
                         let impl_id = self.register_trait_impl_id(&None, def_id);
                         ImplElem::Trait(impl_id)
                     }
+                    _ => unreachable!(),
                 };
 
                 Some(PathElem::Impl(impl_elem, disambiguator))
@@ -883,11 +881,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         // Register the corresponding trait early so we can filter on its name.
         {
             let def = self.hax_def(id).expect("hax failed when translating item");
-            let hax::FullDefKind::Impl {
-                impl_subject: hax::ImplSubject::Trait { trait_pred, .. },
-                ..
-            } = def.kind()
-            else {
+            let hax::FullDefKind::TraitImpl { trait_pred, .. } = def.kind() else {
                 unreachable!()
             };
             let trait_rust_id = (&trait_pred.trait_ref.def_id).into();

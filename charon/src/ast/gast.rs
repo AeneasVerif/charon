@@ -294,7 +294,7 @@ pub struct TraitImpl {
     /// The `Vec` corresponds to the same `Vector` in `TraitDecl`. In the same way, this is
     /// empty after the `lift_associated_item_clauses` pass.
     #[charon::opaque]
-    pub type_clauses: Vec<(TraitItemName, Vec<TraitRef>)>,
+    pub type_clauses: Vec<(TraitItemName, Vector<TraitClauseId, TraitRef>)>,
     /// The implemented required methods
     pub required_methods: Vec<(TraitItemName, FunDeclId)>,
     /// The re-implemented provided methods
