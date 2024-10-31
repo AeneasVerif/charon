@@ -5,14 +5,14 @@ build: format build-dev
 # Build, without formatting the code
 .PHONY: build-dev
 build-dev:
-	dune build && dune build @doc
+	cd .. && dune build && dune build @doc
 
 # The tests.
 # You can use the environment variable "CHARON_LOG" to activate the log.
 # For instance: `CHARON_LOG=1 make tests`.
 .PHONY: tests
 tests: copy-tests
-	dune test
+	cd .. && dune test
 
 # Reformat the code
 .PHONY: format

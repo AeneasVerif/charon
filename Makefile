@@ -103,7 +103,7 @@ clean-generated:
 clean: clean-generated
 	cd charon && cargo clean
 	cd charon/macros && cargo clean
-	cd charon-ml && dune clean
+	dune clean
 
 # Build the Nix packages
 .PHONY: nix
