@@ -24,103 +24,19 @@
         craneLib = (crane.mkLib pkgs).overrideToolchain rustToolchain;
 
         charon = pkgs.callPackage ./nix/charon.nix { inherit craneLib rustToolchain; };
+        charon-ml = pkgs.callPackage ./nix/charon-ml.nix { inherit charon; };
 
         # Check rust files are correctly formatted.
         charon-check-fmt = charon.passthru.check-fmt;
         # Check that the crate builds with the "rustc" feature off.
         charon-check-no-rustc = charon.passthru.check-no-rustc;
-
-        # A utility that extracts the llbc of a crate using charon. This uses
-        # `crane` to handle dependencies and toolchain management.
-        extractCrateWithCharon = { name, src, charonFlags ? "", craneExtraArgs ? { } }:
-          craneLib.buildPackage ({
-            inherit name;
-            src = pkgs.lib.cleanSourceWith {
-              inherit src;
-              filter = path: type: (craneLib.filterCargoSources path type);
-            };
-            cargoArtifacts = craneLib.buildDepsOnly { inherit src; };
-            buildPhase = ''
-              ${charon}/bin/charon ${charonFlags} --dest $out/llbc
-            '';
-            dontInstall = true;
-          } // craneExtraArgs);
+        # Check ocaml files are correctly formatted.
+        charon-ml-check-fmt = charon-ml.charon-ml-check-fmt;
+        # Run ocaml tests
+        charon-ml-tests = charon-ml.charon-ml-tests;
 
         # Runs charon on the whole rustc ui test suite.
         rustc-tests = pkgs.callPackage ./nix/rustc-tests.nix { inherit charon rustToolchain; };
-
-        ocamlPackages = pkgs.ocamlPackages;
-        easy_logging = ocamlPackages.buildDunePackage rec {
-          pname = "easy_logging";
-          version = "0.8.2";
-          src = pkgs.fetchFromGitHub {
-            owner = "sapristi";
-            repo = "easy_logging";
-            rev = "v${version}";
-            sha256 = "sha256-Xy6Rfef7r2K8DTok7AYa/9m3ZEV07LlUeMQSRayLBco=";
-          };
-          buildInputs = [ ocamlPackages.calendar ];
-        };
-        charon-name_matcher_parser =
-          ocamlPackages.buildDunePackage {
-            pname = "name_matcher_parser";
-            version = "0.1.0";
-            duneVersion = "3";
-            nativeBuildInputs = with ocamlPackages; [
-              menhir
-            ];
-            propagatedBuildInputs = with ocamlPackages; [
-              ppx_deriving
-              visitors
-              zarith
-              menhirLib
-            ];
-            src = ./charon-ml;
-          };
-        mk-charon-ml = doCheck:
-          ocamlPackages.buildDunePackage {
-            pname = "charon";
-            version = "0.1.0";
-            duneVersion = "3";
-            OCAMLPARAM = "_,warn-error=+A"; # Turn all warnings into errors.
-            preCheck =
-              if doCheck then ''
-                mkdir -p tests/serialized
-                cp ${charon}/tests-llbc/* tests/serialized
-              '' else
-                "";
-            propagatedBuildInputs = with ocamlPackages; [
-              core
-              ppx_deriving
-              visitors
-              easy_logging
-              zarith
-              yojson
-              calendar
-              charon-name_matcher_parser
-            ];
-            src = ./charon-ml;
-            inherit doCheck;
-          };
-        charon-ml = mk-charon-ml false;
-        charon-ml-tests = mk-charon-ml true;
-
-        charon-ml-check-fmt = pkgs.stdenv.mkDerivation {
-          name = "charon-ml-check-fmt";
-          src = ./charon-ml;
-          buildInputs = [
-            ocamlPackages.dune_3
-            ocamlPackages.ocaml
-            ocamlPackages.ocamlformat
-          ];
-          buildPhase = ''
-            if ! dune build @fmt; then
-              echo 'ERROR: Ocaml code is not formatted. Run `make format` to format the project files'.
-              exit 1
-            fi
-          '';
-          installPhase = "touch $out";
-        };
 
         # Check that the generated ocaml files match what is committed to the repo.
         check-generated-ml = pkgs.runCommand "check-generated-ml" { } ''
@@ -150,6 +66,22 @@
           fi
           touch $out
         '';
+
+        # A utility that extracts the llbc of a crate using charon. This uses
+        # `crane` to handle dependencies and toolchain management.
+        extractCrateWithCharon = { name, src, charonFlags ? "", craneExtraArgs ? { } }:
+          craneLib.buildPackage ({
+            inherit name;
+            src = pkgs.lib.cleanSourceWith {
+              inherit src;
+              filter = path: type: (craneLib.filterCargoSources path type);
+            };
+            cargoArtifacts = craneLib.buildDepsOnly { inherit src; };
+            buildPhase = ''
+              ${charon}/bin/charon ${charonFlags} --dest $out/llbc
+            '';
+            dontInstall = true;
+          } // craneExtraArgs);
       in
       {
         packages = {
