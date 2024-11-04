@@ -102,7 +102,7 @@ impl Callbacks for CharonCallbacks {
     /// For this reason, and as we may want to plug ourselves at different
     /// phases of the compilation process, we query the context as early as
     /// possible (i.e., after parsing). See [charon_lib::get_mir].
-    fn after_crate_root_parsing<'tcx>(
+    fn after_expansion<'tcx>(
         &mut self,
         _c: &Compiler,
         queries: &'tcx Queries<'tcx>,
