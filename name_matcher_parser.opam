@@ -9,6 +9,10 @@ homepage: "https://github.com/AeneasVerif/charon"
 bug-reports: "https://github.com/AeneasVerif/charon/issues"
 depends: [
   "dune" {>= "3.7"}
+  "menhirLib"
+  "ppx_deriving"
+  "visitors"
+  "zarith"
   "odoc" {with-doc}
 ]
 build: [

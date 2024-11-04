@@ -15,6 +15,12 @@ homepage: "https://github.com/AeneasVerif/charon"
 bug-reports: "https://github.com/AeneasVerif/charon/issues"
 depends: [
   "dune" {>= "3.7"}
+  "easy_logging"
+  "ppx_deriving"
+  "visitors"
+  "yojson"
+  "zarith"
+  "name_matcher_parser"
   "odoc" {with-doc}
 ]
 build: [
