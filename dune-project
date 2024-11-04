@@ -45,6 +45,7 @@
  (synopsis "Parser to define name matchers")
  (description "")
  (depends
+   (menhir :build)
    menhirLib
    ppx_deriving
    visitors
