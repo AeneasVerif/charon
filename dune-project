@@ -29,9 +29,26 @@
    This library allows for manipulation of LLBC, the language output by
    Charon. Charon acts as an interface between the rustc compiler and program
    verification projects.  Its purpose is to process Rust .rs files and convert
-   them into files easy to handle by program verifiers."))
+   them into files easy to handle by program verifiers.")
+ (depends
+   easy_logging
+   ppx_deriving
+   visitors
+   yojson
+   zarith
+   name_matcher_parser
+ )
+)
 
 (package
  (name name_matcher_parser)
  (synopsis "Parser to define name matchers")
- (description ""))
+ (description "")
+ (depends
+   (menhir :build)
+   menhirLib
+   ppx_deriving
+   visitors
+   zarith
+ )
+)
