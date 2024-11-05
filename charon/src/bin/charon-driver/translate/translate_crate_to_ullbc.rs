@@ -273,6 +273,7 @@ pub fn translate<'tcx, 'ctx>(
         },
         id_map: Default::default(),
         reverse_id_map: Default::default(),
+        file_to_id: Default::default(),
         items_to_translate: Default::default(),
         translate_stack: Default::default(),
         cached_names: Default::default(),

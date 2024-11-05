@@ -1534,10 +1534,10 @@ and gtranslated_crate_of_json
         [
           ("crate_name", name);
           ("real_crate_name", _);
-          ("id_to_file", id_to_file);
           ("file_id_to_content", file_id_to_content);
           ("all_ids", _);
           ("item_names", _);
+          ("id_to_file", id_to_file);
           ("type_decls", types);
           ("fun_decls", functions);
           ("global_decls", globals);
