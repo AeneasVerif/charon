@@ -3,25 +3,27 @@ error: Generic associated types are not supported
   |
 5 |     type Pointer<T>: Deref<Target = T>;
   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  |
 
 error: Item `test_crate::PointerFamily` caused errors; ignoring.
  --> tests/ui/non-lifetime-gats.rs:4:1
   |
 4 | trait PointerFamily {
   | ^^^^^^^^^^^^^^^^^^^
+  |
 
 error: Generic associated types are not supported
   --> tests/ui/non-lifetime-gats.rs:34:9
    |
 34 |         type Type<U>: Link<T>;
    |         ^^^^^^^^^^^^^^^^^^^^^
+   |
 
 error: Item `test_crate::moar_variables::Trait` caused errors; ignoring.
   --> tests/ui/non-lifetime-gats.rs:33:5
    |
 33 |     trait Trait<T> {
    |     ^^^^^^^^^^^^^^
+   |
 
-error: aborting due to 4 previous errors
-
-ERROR Compilation encountered 4 errors
+ERROR The extraction generated 4 errors

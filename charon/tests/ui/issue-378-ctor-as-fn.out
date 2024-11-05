@@ -1,18 +1,17 @@
 error: Casting constructors to function pointers is not supported
- --> /rustc/86d69c705a552236a622eee3fdea94bf13c5f102/library/core/src/option.rs:579:5
+ --> /rustc/library/core/src/option.rs:579:5
 
 note: the error occurred when translating `core::option::Option::Some`, which is (transitively) used at the following location(s):
  --> tests/ui/issue-378-ctor-as-fn.rs:3:34
   |
 3 | static F: fn(u8) -> Option<u8> = Some;
-  |                                  ^^^^
-...
+  |                                  ----
+4 | 
+5 | fn main() {
 6 |     let f: fn(u8) -> _ = Some;
-  |                          ^^^^
-
+  |                          ----
+  |
 error: Item `core::option::Option::Some::{constructor#0}` caused errors; ignoring.
- --> /rustc/86d69c705a552236a622eee3fdea94bf13c5f102/library/core/src/option.rs:579:5
+ --> /rustc/library/core/src/option.rs:579:5
 
-error: aborting due to 2 previous errors
-
-ERROR Compilation encountered 2 errors
+ERROR The extraction generated 2 errors

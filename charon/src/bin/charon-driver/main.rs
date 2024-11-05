@@ -283,9 +283,13 @@ fn main() {
     }
 
     match res {
+        Ok(()) if error_count == 0 => {}
         Ok(()) => {
-            if error_count > 0 {
-                assert!(!options.error_on_warnings);
+            if options.error_on_warnings {
+                let msg = format!("The extraction generated {} errors", error_count);
+                log::error!("{}", msg);
+                std::process::exit(1);
+            } else {
                 let msg = format!("The extraction generated {} warnings", error_count);
                 log::warn!("{}", msg);
             }

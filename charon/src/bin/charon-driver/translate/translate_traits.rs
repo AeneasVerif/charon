@@ -1,4 +1,5 @@
 use super::translate_ctx::*;
+use annotate_snippets::Level;
 use charon_lib::ast::*;
 use charon_lib::formatter::IntoFormatter;
 use charon_lib::meta::ItemMeta;
@@ -147,8 +148,10 @@ impl BodyTransCtx<'_, '_, '_> {
         }
         if item_meta.opacity.is_opaque() {
             let ctx = self.into_fmt();
-            self.t_ctx.errors.dcx.span_warn(
+            self.t_ctx.errors.display_error(
+                &self.t_ctx.translated,
                 item_meta.span,
+                Level::Warning,
                 format!(
                     "Trait declarations cannot be \"opaque\"; the trait `{}` will be translated as normal.",
                     item_meta.name.fmt_with_ctx(&ctx)
@@ -285,8 +288,10 @@ impl BodyTransCtx<'_, '_, '_> {
 
         if item_meta.opacity.is_opaque() {
             let ctx = self.into_fmt();
-            self.t_ctx.errors.dcx.span_warn(
+            self.t_ctx.errors.display_error(
+                &self.t_ctx.translated,
                 item_meta.span,
+                Level::Warning,
                 format!(
                     "Trait implementations cannot be \"opaque\"; the impl `{}` will be translated as normal.",
                     item_meta.name.fmt_with_ctx(&ctx)

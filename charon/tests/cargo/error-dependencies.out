@@ -1,21 +1,24 @@
 error: Trait aliases are not supported
- --> /rustc/86d69c705a552236a622eee3fdea94bf13c5f102/library/core/src/ptr/metadata.rs:81:1
+ --> /rustc/library/core/src/ptr/metadata.rs:81:1
 
 note: the error occurred when translating `core::ptr::metadata::Thin`, which is (transitively) used at the following location(s):
   --> src/main.rs:15:27
    |
 15 |     pub fn custom_null<T: core::ptr::Thin>() {}
-   |                           ^^^^^^^^^^^^^^^
+   |                           ---------------
    |
   ::: src/module.rs:6:13
    |
-6  |     let _ = core::ptr::null::<u8>();
-   |             ^^^^^^^^^^^^^^^^^^^^^^^
-7  |     let _ = crate::opaque::custom_null::<u8>();
-   |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
+ 6 |     let _ = core::ptr::null::<u8>();
+   |             -----------------------
+ 7 |     let _ = crate::opaque::custom_null::<u8>();
+   |             ----------------------------------
+   |
 error: Item `core::ptr::metadata::Thin` caused errors; ignoring.
- --> /rustc/86d69c705a552236a622eee3fdea94bf13c5f102/library/core/src/ptr/metadata.rs:81:1
+ --> /rustc/library/core/src/ptr/metadata.rs:81:1
 
-ERROR Compilation encountered 2 errors
-error: could not compile `test-cargo` (bin "test-cargo") due to 2 previous errors
+ERROR The extraction generated 2 errors
+error: could not compile `test-cargo` (bin "test-cargo")
+
+Caused by:
+  process didn't exit successfully: `/home/nadrieril/wip/work/charon/charon/target/debug/charon-driver rustc --crate-name test_cargo --edition=2021 src/main.rs --error-format=json --json=diagnostic-rendered-ansi,artifacts,future-incompat --crate-type bin --emit=dep-info,link -C embed-bitcode=no -C debuginfo=2 --check-cfg 'cfg(docsrs)' --check-cfg 'cfg(feature, values())' -C metadata=adf03e40289d3b86 -C extra-filename=-adf03e40289d3b86 --out-dir /home/nadrieril/wip/work/charon/charon/tests/cargo/error-dependencies/target/x86_64-unknown-linux-gnu/debug/deps --target x86_64-unknown-linux-gnu -C incremental=/home/nadrieril/wip/work/charon/charon/tests/cargo/error-dependencies/target/x86_64-unknown-linux-gnu/debug/incremental -L dependency=/home/nadrieril/wip/work/charon/charon/tests/cargo/error-dependencies/target/x86_64-unknown-linux-gnu/debug/deps -L dependency=/home/nadrieril/wip/work/charon/charon/tests/cargo/error-dependencies/target/debug/deps` (exit status: 1)

@@ -1,16 +1,13 @@
 //! Utilities to generate error reports about the external dependencies.
 use crate::ast::*;
+use crate::formatter::{Formatter, IntoFormatter};
+pub use annotate_snippets::Level;
+use itertools::Itertools;
 use macros::VariantIndexArity;
+use petgraph::algo::dijkstra::dijkstra;
 use petgraph::prelude::DiGraphMap;
 use std::cmp::{Ord, PartialOrd};
-use std::collections::HashSet;
-
-/// Common error used during the translation.
-#[derive(Debug)]
-pub struct Error {
-    pub span: Span,
-    pub msg: String,
-}
+use std::collections::{HashMap, HashSet};
 
 #[macro_export]
 macro_rules! register_error_or_panic {
@@ -67,6 +64,51 @@ macro_rules! error_assert {
     };
 }
 pub use error_assert;
+
+/// Common error used during the translation.
+#[derive(Debug)]
+pub struct Error {
+    pub span: Span,
+    pub msg: String,
+}
+
+impl Error {
+    pub(crate) fn render(&self, krate: &TranslatedCrate, level: Level) -> String {
+        use annotate_snippets::*;
+        let msg_indent = format!("{level:?}: ").len();
+        // If the message is multiline, indent the other lines to match the first line.
+        let mut msg = self
+            .msg
+            .replace('\n', &format!("\n{}", str::repeat(" ", msg_indent)));
+
+        let span = self.span.span;
+        let origin;
+        let message = if let Some(file) = krate.files.get(span.file_id) {
+            if let Some(source) = &file.contents {
+                origin = format!("{}", file.name);
+                let snippet = Snippet::source(source)
+                    .origin(&origin)
+                    .fold(true)
+                    .annotation(level.span(span.to_byte_range(source)));
+                level.title(&msg).snippet(snippet)
+            } else {
+                // Show just the file and line/col.
+                msg = format!(
+                    "{msg}\n --> {}:{}:{}",
+                    file.name,
+                    span.beg.line,
+                    span.beg.col + 1
+                );
+                level.title(&msg)
+            }
+        } else {
+            level.title(&msg)
+        };
+
+        let out = Renderer::styled().render(message).to_string();
+        out
+    }
+}
 
 /// We use this to save the origin of an id. This is useful for the external
 /// dependencies, especially if some external dependencies don't extract:
@@ -181,28 +223,20 @@ impl<'ctx> ErrorCtx<'ctx> {
     }
 
     /// Report an error without registering anything.
-    #[cfg(feature = "rustc")]
-    pub fn span_err_no_register(
-        &self,
-        _krate: &TranslatedCrate,
-        span: impl Into<rustc_error_messages::MultiSpan>,
-        msg: &str,
-    ) {
-        let msg = msg.to_string();
-        if self.error_on_warnings {
-            self.dcx.span_err(span, msg);
-        } else {
-            self.dcx.span_warn(span, msg);
-        }
+    pub fn display_error(&self, krate: &TranslatedCrate, span: Span, level: Level, msg: String) {
+        // TODO: `Error` is redundantly constructed in two places
+        let error = Error { span, msg };
+        anstream::eprintln!("{}\n", error.render(krate, level));
     }
-    #[cfg(not(feature = "rustc"))]
-    pub(crate) fn span_err_no_register(&self, _krate: &TranslatedCrate, _span: Span, msg: &str) {
-        let msg = msg.to_string();
-        if self.error_on_warnings {
-            error!("{}", msg);
+
+    /// Report an error without registering anything.
+    pub fn span_err_no_register(&self, krate: &TranslatedCrate, span: Span, msg: &str) {
+        let level = if self.error_on_warnings {
+            Level::Error
         } else {
-            warn!("{}", msg);
-        }
+            Level::Warning
+        };
+        self.display_error(krate, span, level, msg.to_string());
     }
 
     /// Report and register an error.
@@ -211,13 +245,11 @@ impl<'ctx> ErrorCtx<'ctx> {
         self.error_count += 1;
         // If this item comes from an external crate, after the first error for that item we
         // display where in the local crate that item was reached from.
-        #[cfg(feature = "rustc")]
         if !self.def_id_is_local
             && let Some(id) = self.def_id
             && self.external_decls_with_errors.insert(id)
         {
-            use crate::formatter::IntoFormatter;
-            self.report_external_dep_error(&krate.into_fmt(), id);
+            self.report_external_dep_error(krate, id);
         }
     }
 
@@ -250,35 +282,58 @@ impl<'ctx> ErrorCtx<'ctx> {
     /// In case errors happened when extracting the definitions coming from the external
     /// dependencies, print a detailed report to explain to the user which dependencies were
     /// problematic, and where they are used in the code.
-    #[cfg(feature = "rustc")]
-    pub fn report_external_dep_error(&self, f: &crate::formatter::FmtCtx<'_>, id: AnyTransId) {
-        use crate::formatter::Formatter;
-        use petgraph::algo::dijkstra::dijkstra;
-        use rustc_error_messages::MultiSpan;
+    pub fn report_external_dep_error(&self, krate: &TranslatedCrate, id: AnyTransId) {
+        use annotate_snippets::*;
 
-        // We need to compute the reachability graph. An easy way is simply
-        // to use Dijkstra on every external definition which triggered an
-        // error.
+        // Use `Dijkstra's` algorithm to find the local items reachable from the current non-local
+        // item.
         let graph = &self.external_dep_graph;
         let reachable = dijkstra(&graph.dgraph, DepNode::External(id), None, &mut |_| 1);
         trace!("id: {:?}\nreachable:\n{:?}", id, reachable);
 
-        let reachable: Vec<rustc_span::Span> = reachable
+        // Collect reachable local spans.
+        let by_file: HashMap<FileId, Vec<Span>> = reachable
             .iter()
             .filter_map(|(n, _)| match n {
                 DepNode::External(_) => None,
-                DepNode::Local(_, span) => Some(span.rust_span()),
+                DepNode::Local(_, span) => Some(*span),
+            })
+            .into_group_map_by(|span| span.span.file_id);
+
+        // Collect to a `Vec` to be able to sort it and to borrow `origin` (needed by
+        // `Snippet::source`).
+        let mut by_file: Vec<(FileId, _, _, Vec<Span>)> = by_file
+            .into_iter()
+            .filter_map(|(file_id, mut spans)| {
+                spans.sort(); // Sort spans to display in file order
+                let file = krate.files.get(file_id)?;
+                let source = file.contents.as_ref()?;
+                let file_name = file.name.to_string();
+                Some((file_id, file_name, source, spans))
             })
             .collect();
+        // Sort by file id to avoid output instability.
+        by_file.sort_by_key(|(file_id, ..)| *file_id);
 
-        // Display the error message
-        let spans = MultiSpan::from_spans(reachable);
+        let level = Level::Note;
+        let snippets = by_file.iter().map(|(_, origin, source, spans)| {
+            Snippet::source(source)
+                .origin(&origin)
+                .fold(true)
+                .annotations(
+                    spans
+                        .iter()
+                        .map(|span| level.span(span.span.to_byte_range(source))),
+                )
+        });
+
         let msg = format!(
             "the error occurred when translating `{}`, \
              which is (transitively) used at the following location(s):",
-            f.format_object(id)
+            krate.into_fmt().format_object(id)
         );
-
-        self.dcx.span_note(spans, msg);
+        let message = level.title(&msg).snippets(snippets);
+        let out = Renderer::styled().render(message).to_string();
+        anstream::eprintln!("{}", out);
     }
 }
