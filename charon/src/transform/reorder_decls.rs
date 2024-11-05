@@ -337,8 +337,7 @@ fn compute_declarations_graph<'tcx, 'ctx>(ctx: &'tcx TransformCtx<'ctx>) -> Deps
                 d.body.drive(&mut graph);
             }
             AnyTransItem::Global(d) => {
-                // FIXME: shouldn't we visit the generics etc?
-                d.body.drive(&mut graph);
+                d.drive(&mut graph);
             }
             AnyTransItem::TraitDecl(d) => {
                 let TraitDecl {

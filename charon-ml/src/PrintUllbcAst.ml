@@ -6,7 +6,7 @@ open PrintTypes
 open PrintValues
 open PrintExpressions
 
-type fmt_env = (blocks, global_body option) PrintUtils.fmt_env
+type fmt_env = blocks PrintUtils.fmt_env
 
 (** Pretty-printing for ULLBC AST (generic functions) *)
 module Ast = struct
@@ -103,16 +103,8 @@ module Ast = struct
     let name = name_to_string env def.item_meta.name in
     let ty = ty_to_string env def.ty in
 
-    (* We print the declaration differently if it is opaque (no body) or transparent
-     * (we have access to a body) *)
-    match def.body with
-    | None ->
-        (* Put everything together *)
-        indent ^ "opaque global " ^ name ^ params ^ clauses ^ " : " ^ ty
-    | Some body ->
-        let body = blocks_to_string env indent indent_incr body.body in
-        indent ^ "global " ^ name ^ params ^ clauses ^ " : " ^ ty ^ " =\n"
-        ^ body
+    let body_id = fun_decl_id_to_string env def.body in
+    indent ^ "global " ^ name ^ params ^ clauses ^ " : " ^ ty ^ " = " ^ body_id
 end
 
 (** Pretty-printing for ASTs (functions based on a declaration context) *)

@@ -200,12 +200,15 @@ fn test_crate::vec(@1: alloc::vec::Vec<u32, alloc::alloc::Global>[core::marker::
     return
 }
 
-global core::num::{usize}#11::MAX  {
+fn core::num::{usize}#11::MAX() -> usize
+{
     let @0: usize; // return
 
     @0 := ~(const (0 : usize))
     return
 }
+
+global core::num::{usize}#11::MAX: usize = core::num::{usize}#11::MAX()
 
 fn test_crate::max() -> usize
 {

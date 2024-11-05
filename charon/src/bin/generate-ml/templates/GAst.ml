@@ -59,25 +59,14 @@ type 'body gfun_decl = {
 [@@deriving show]
 
 (* Hand-written because the rust equivalent isn't generic *)
-type 'body gglobal_decl = {
-  def_id : GlobalDeclId.id;
-  item_meta : item_meta;
-  generics : generic_params;
-  ty : ty;
-  kind : item_kind;
-  body : 'body;
-}
-[@@deriving show]
-
-(* Hand-written because the rust equivalent isn't generic *)
 
 (** A crate *)
-type ('fun_body, 'global_body) gcrate = {
+type 'fun_body gcrate = {
   name : string;
   declarations : declaration_group list;
   type_decls : type_decl TypeDeclId.Map.t;
   fun_decls : 'fun_body gfun_decl FunDeclId.Map.t;
-  global_decls : 'global_body gglobal_decl GlobalDeclId.Map.t;
+  global_decls : global_decl GlobalDeclId.Map.t;
   trait_decls : trait_decl TraitDeclId.Map.t;
   trait_impls : trait_impl TraitImplId.Map.t;
   source_files : string FileNameMap.t;

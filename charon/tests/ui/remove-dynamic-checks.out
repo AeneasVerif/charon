@@ -371,70 +371,98 @@ fn test_crate::shr(@1: u32, @2: u32) -> u32
     return
 }
 
-global test_crate::_  {
+fn test_crate::_() -> isize
+{
     let @0: isize; // return
 
     @0 := const (1 : isize) + const (1 : isize)
     return
 }
 
-global test_crate::_#1  {
+global test_crate::_: isize = test_crate::_()
+
+fn test_crate::_#1() -> isize
+{
     let @0: isize; // return
 
     @0 := const (1 : isize) - const (1 : isize)
     return
 }
 
-global test_crate::_#2  {
+global test_crate::_#1: isize = test_crate::_#1()
+
+fn test_crate::_#2() -> isize
+{
     let @0: isize; // return
 
     @0 := const (-1 : isize)
     return
 }
 
-global test_crate::_#3  {
+global test_crate::_#2: isize = test_crate::_#2()
+
+fn test_crate::_#3() -> isize
+{
     let @0: isize; // return
 
     @0 := const (2 : isize) * const (2 : isize)
     return
 }
 
-global test_crate::_#4  {
+global test_crate::_#3: isize = test_crate::_#3()
+
+fn test_crate::_#4() -> isize
+{
     let @0: isize; // return
 
     @0 := const (2 : isize) >> const (2 : i32)
     return
 }
 
-global test_crate::_#5  {
+global test_crate::_#4: isize = test_crate::_#4()
+
+fn test_crate::_#5() -> isize
+{
     let @0: isize; // return
 
     @0 := const (2 : isize) << const (2 : i32)
     return
 }
 
-global test_crate::_#6  {
+global test_crate::_#5: isize = test_crate::_#5()
+
+fn test_crate::_#6() -> isize
+{
     let @0: isize; // return
 
     @0 := const (2 : isize) % const (2 : isize)
     return
 }
 
-global test_crate::_#7  {
+global test_crate::_#6: isize = test_crate::_#6()
+
+fn test_crate::_#7() -> isize
+{
     let @0: isize; // return
 
     @0 := const (2 : isize) / const (2 : isize)
     return
 }
 
-global test_crate::FOO  {
+global test_crate::_#7: isize = test_crate::_#7()
+
+fn test_crate::FOO() -> u32
+{
     let @0: u32; // return
 
     @0 := const (10 : u32)
     return
 }
 
-global test_crate::_#8  {
+global test_crate::FOO: u32 = test_crate::FOO()
+
+fn test_crate::_#8() -> u32
+{
     let @0: u32; // return
     let @1: u32; // anonymous local
 
@@ -443,7 +471,10 @@ global test_crate::_#8  {
     return
 }
 
-global test_crate::_#9  {
+global test_crate::_#8: u32 = test_crate::_#8()
+
+fn test_crate::_#9() -> u32
+{
     let @0: u32; // return
     let @1: u32; // anonymous local
 
@@ -452,7 +483,10 @@ global test_crate::_#9  {
     return
 }
 
-global test_crate::_#10  {
+global test_crate::_#9: u32 = test_crate::_#9()
+
+fn test_crate::_#10() -> u32
+{
     let @0: u32; // return
     let @1: u32; // anonymous local
 
@@ -461,7 +495,10 @@ global test_crate::_#10  {
     return
 }
 
-global test_crate::_#11  {
+global test_crate::_#10: u32 = test_crate::_#10()
+
+fn test_crate::_#11() -> u32
+{
     let @0: u32; // return
     let @1: u32; // anonymous local
 
@@ -470,7 +507,10 @@ global test_crate::_#11  {
     return
 }
 
-global test_crate::_#12  {
+global test_crate::_#11: u32 = test_crate::_#11()
+
+fn test_crate::_#12() -> u32
+{
     let @0: u32; // return
     let @1: u32; // anonymous local
 
@@ -479,7 +519,10 @@ global test_crate::_#12  {
     return
 }
 
-global test_crate::_#13  {
+global test_crate::_#12: u32 = test_crate::_#12()
+
+fn test_crate::_#13() -> u32
+{
     let @0: u32; // return
     let @1: u32; // anonymous local
 
@@ -488,7 +531,10 @@ global test_crate::_#13  {
     return
 }
 
-global test_crate::_#14  {
+global test_crate::_#13: u32 = test_crate::_#13()
+
+fn test_crate::_#14() -> u32
+{
     let @0: u32; // return
     let @1: u32; // anonymous local
 
@@ -497,12 +543,17 @@ global test_crate::_#14  {
     return
 }
 
-global test_crate::div_signed_with_constant::FOO  {
+global test_crate::_#14: u32 = test_crate::_#14()
+
+fn test_crate::div_signed_with_constant::FOO() -> i32
+{
     let @0: i32; // return
 
     @0 := const (42 : i32)
     return
 }
+
+global test_crate::div_signed_with_constant::FOO: i32 = test_crate::div_signed_with_constant::FOO()
 
 fn test_crate::div_signed_with_constant() -> i32
 {

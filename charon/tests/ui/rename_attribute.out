@@ -72,7 +72,8 @@ struct test_crate::Foo =
   field1: u32,
 }
 
-global test_crate::C  {
+fn test_crate::C() -> u32
+{
     let @0: u32; // return
     let @1: u32; // anonymous local
 
@@ -81,6 +82,8 @@ global test_crate::C  {
     drop @1
     return
 }
+
+global test_crate::C: u32 = test_crate::C()
 
 type test_crate::Test2 = u32
 

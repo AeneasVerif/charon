@@ -1,6 +1,7 @@
 # Final LLBC before serialization:
 
-global test_crate::SLICE  {
+fn test_crate::SLICE() -> Array<(), 4 : usize>
+{
     let @0: Array<(), 4 : usize>; // return
     let @1: (); // anonymous local
 
@@ -10,6 +11,8 @@ global test_crate::SLICE  {
     return
 }
 
+global test_crate::SLICE: Array<(), 4 : usize> = test_crate::SLICE()
+
 fn test_crate::four() -> usize
 {
     let @0: usize; // return
@@ -18,7 +21,8 @@ fn test_crate::four() -> usize
     return
 }
 
-global test_crate::BAR  {
+fn test_crate::BAR() -> Array<(), 42 : usize>
+{
     let @0: Array<(), 42 : usize>; // return
     let @1: (); // anonymous local
 
@@ -28,12 +32,17 @@ global test_crate::BAR  {
     return
 }
 
-global test_crate::FOO  {
+global test_crate::BAR: Array<(), 42 : usize> = test_crate::BAR()
+
+fn test_crate::FOO() -> usize
+{
     let @0: usize; // return
 
     @0 := const (42 : usize)
     return
 }
+
+global test_crate::FOO: usize = test_crate::FOO()
 
 
 

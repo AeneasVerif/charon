@@ -30,9 +30,13 @@ fn test_crate::addr_of()
     return
 }
 
-global core::f64::{f64}::MIN 
+fn core::f64::{f64}::MIN() -> f64
 
-global core::f32::{f32}::MAX 
+global core::f64::{f64}::MIN: f64 = core::f64::{f64}::MIN()
+
+fn core::f32::{f32}::MAX() -> f32
+
+global core::f32::{f32}::MAX: f32 = core::f32::{f32}::MAX()
 
 fn test_crate::literal_casts()
 {
@@ -244,7 +248,8 @@ fn test_crate::boxes()
     return
 }
 
-global test_crate::STEAL  {
+fn test_crate::STEAL() -> Array<(), 1 : usize>
+{
     let @0: Array<(), 1 : usize>; // return
     let @1: (); // anonymous local
 
@@ -253,6 +258,8 @@ global test_crate::STEAL  {
     drop @1
     return
 }
+
+global test_crate::STEAL: Array<(), 1 : usize> = test_crate::STEAL()
 
 fn test_crate::transmute(@1: Array<u32, 2 : usize>) -> u64
 {
@@ -267,7 +274,8 @@ fn test_crate::transmute(@1: Array<u32, 2 : usize>) -> u64
     return
 }
 
-global test_crate::STEAL2  {
+fn test_crate::STEAL2() -> Array<(), 13 : usize>
+{
     let @0: Array<(), 13 : usize>; // return
     let @1: (); // anonymous local
 
@@ -276,6 +284,8 @@ global test_crate::STEAL2  {
     drop @1
     return
 }
+
+global test_crate::STEAL2: Array<(), 13 : usize> = test_crate::STEAL2()
 
 fn core::mem::size_of<T>() -> usize
 where

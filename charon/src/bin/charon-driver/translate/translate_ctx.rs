@@ -113,7 +113,9 @@ impl TranslateOptions {
     }
 }
 
-/// The id of an untranslated item.
+/// The id of an untranslated item. Note that a given `DefId` may show up as multiple different
+/// item sources, e.g. a constant will have both a `Global` version (for the constant itself) and a
+/// `FunDecl` one (for its initializer function).
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, VariantIndexArity)]
 pub enum TransItemSource {
     Global(DefId),

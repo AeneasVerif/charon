@@ -11,10 +11,10 @@ let block_id_to_string (id : UllbcAst.BlockId.id) : string =
 (** The formatting environment can be incomplete: if some information is missing
     (for instance we can't find the type variable for a given index) we print
     the id in raw format. *)
-type ('fun_body, 'global_body) fmt_env = {
+type 'fun_body fmt_env = {
   type_decls : type_decl TypeDeclId.Map.t;
   fun_decls : 'fun_body gfun_decl FunDeclId.Map.t;
-  global_decls : 'global_body gglobal_decl GlobalDeclId.Map.t;
+  global_decls : global_decl GlobalDeclId.Map.t;
   trait_decls : trait_decl TraitDeclId.Map.t;
   trait_impls : trait_impl TraitImplId.Map.t;
   regions : region_var list list;
@@ -32,11 +32,11 @@ type ('fun_body, 'global_body) fmt_env = {
       (** The local variables don't need to be ordered (same as the generics) *)
 }
 
-let fmt_env_update_generics_and_preds (env : ('a, 'b) fmt_env)
-    (generics : generic_params) : ('a, 'b) fmt_env =
+let fmt_env_update_generics_and_preds (env : 'a fmt_env)
+    (generics : generic_params) : 'a fmt_env =
   let { regions; _ } : generic_params = generics in
   { env with regions = regions :: env.regions; generics }
 
-let fmt_env_push_regions (env : ('a, 'b) fmt_env) (regions : region_var list) :
-    ('a, 'b) fmt_env =
+let fmt_env_push_regions (env : 'a fmt_env) (regions : region_var list) :
+    'a fmt_env =
   { env with regions = regions :: env.regions }

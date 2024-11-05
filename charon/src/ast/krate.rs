@@ -118,7 +118,7 @@ pub struct TranslatedCrate {
     pub fun_decls: Vector<FunDeclId, FunDecl>,
     /// The translated global definitions
     pub global_decls: Vector<GlobalDeclId, GlobalDecl>,
-    /// The bodies of functions and constants
+    /// The bodies of functions
     pub bodies: Vector<BodyId, Body>,
     /// The translated trait declarations
     pub trait_decls: Vector<TraitDeclId, TraitDecl>,

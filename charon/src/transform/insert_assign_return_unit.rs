@@ -37,18 +37,6 @@ impl LlbcPass for Transform {
             }
         }
     }
-    fn transform_global(
-        &self,
-        ctx: &mut TransformCtx,
-        decl: &mut GlobalDecl,
-        body: Result<&mut ExprBody, Opaque>,
-    ) {
-        if decl.ty.is_unit() {
-            if let Ok(body) = body {
-                self.transform_body(ctx, body)
-            }
-        }
-    }
     fn transform_body(&self, _ctx: &mut TransformCtx<'_>, body: &mut ExprBody) {
         body.body
             .transform(&mut |st| transform_st(&body.locals, st));

@@ -153,7 +153,7 @@ pub struct FunDecl {
     pub body: Result<BodyId, Opaque>,
 }
 
-/// A global variable definition
+/// A global variable definition (constant or static).
 #[derive(Debug, Clone, Serialize, Deserialize, Drive, DriveMut)]
 pub struct GlobalDecl {
     #[drive(skip)]
@@ -164,7 +164,9 @@ pub struct GlobalDecl {
     pub ty: Ty,
     /// The global kind: "regular" function, trait const declaration, etc.
     pub kind: ItemKind,
-    pub body: Result<BodyId, Opaque>,
+    /// The initializer function used to compute the initial value for this constant/static.
+    #[charon::rename("body")]
+    pub init: FunDeclId,
 }
 
 /// Reference to a global declaration.

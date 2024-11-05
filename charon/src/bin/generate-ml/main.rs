@@ -1236,7 +1236,6 @@ fn generate_ml(
         "Body",
         "BodyId",
         "FunDecl",
-        "GlobalDecl",
         "TranslatedCrate",
     ]
     .iter()
@@ -1298,6 +1297,7 @@ fn generate_ml(
                     "ItemKind",
                     "Locals",
                     "GExprBody",
+                    "GlobalDecl",
                     "TraitDecl",
                     "TraitImpl",
                     "GDeclarationGroup",

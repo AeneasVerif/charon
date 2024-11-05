@@ -36,7 +36,9 @@ where
 
 opaque type test_crate::Test
 
-global test_crate::SIX_SIX_SIX 
+fn test_crate::SIX_SIX_SIX() -> u32
+
+global test_crate::SIX_SIX_SIX: u32 = test_crate::SIX_SIX_SIX()
 
 opaque type test_crate::Test2
 
