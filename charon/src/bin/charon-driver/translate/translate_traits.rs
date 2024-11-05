@@ -49,7 +49,6 @@ impl BodyTransCtx<'_, '_, '_> {
         trace!("Trait decl id:\n{:?}", def_id);
 
         let span = item_meta.span;
-        let erase_regions = false;
 
         if let hax::FullDefKind::TraitAlias { .. } = def.kind() {
             error_or_panic!(self, span, &format!("Trait aliases are not supported"));
@@ -107,7 +106,7 @@ impl BodyTransCtx<'_, '_, '_> {
                         };
                         const_defaults.insert(item_name.clone(), gref);
                     };
-                    let ty = self.translate_ty(item_span, erase_regions, ty)?;
+                    let ty = self.translate_ty(item_span, ty)?;
                     consts.push((item_name.clone(), ty));
                 }
                 hax::FullDefKind::AssocTy { generics, .. } if !generics.params.is_empty() => {
@@ -123,7 +122,7 @@ impl BodyTransCtx<'_, '_, '_> {
                         type_clauses.push((item_name.clone(), clauses.clone()));
                     }
                     if let Some(ty) = value {
-                        let ty = self.translate_ty(item_span, erase_regions, &ty)?;
+                        let ty = self.translate_ty(item_span, &ty)?;
                         type_defaults.insert(item_name.clone(), ty);
                     };
                     types.push(item_name.clone());
@@ -187,7 +186,6 @@ impl BodyTransCtx<'_, '_, '_> {
         trace!("Trait impl id:\n{:?}", def_id);
 
         let span = item_meta.span;
-        let erase_regions = false;
 
         let generics = self.translate_def_generics(span, def)?;
 
@@ -207,7 +205,7 @@ impl BodyTransCtx<'_, '_, '_> {
         let implemented_trait = {
             let implemented_trait = &trait_pred.trait_ref;
             let (regions, types, const_generics) =
-                self.translate_substs(span, erase_regions, None, &implemented_trait.generic_args)?;
+                self.translate_substs(span, None, &implemented_trait.generic_args)?;
             let generics = GenericArgs {
                 regions,
                 types,
@@ -218,8 +216,7 @@ impl BodyTransCtx<'_, '_, '_> {
         };
 
         // The trait refs which implement the parent clauses of the implemented trait decl.
-        let parent_trait_refs =
-            self.translate_trait_impl_exprs(span, erase_regions, &required_impl_exprs)?;
+        let parent_trait_refs = self.translate_trait_impl_exprs(span, &required_impl_exprs)?;
 
         {
             // Debugging
@@ -282,14 +279,11 @@ impl BodyTransCtx<'_, '_, '_> {
                         DefaultedTy { ty, .. } => ty,
                         _ => unreachable!(),
                     };
-                    let ty = self.translate_ty(item_span, erase_regions, &ty)?;
+                    let ty = self.translate_ty(item_span, &ty)?;
                     types.push((name.clone(), ty));
 
-                    let trait_refs = self.translate_trait_impl_exprs(
-                        item_span,
-                        erase_regions,
-                        &impl_item.required_impl_exprs,
-                    )?;
+                    let trait_refs =
+                        self.translate_trait_impl_exprs(item_span, &impl_item.required_impl_exprs)?;
                     type_clauses.push((name, trait_refs));
                 }
                 _ => panic!("Unexpected definition for trait item: {item_def:?}"),

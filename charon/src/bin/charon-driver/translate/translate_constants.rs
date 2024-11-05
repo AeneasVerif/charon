@@ -67,7 +67,6 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     ) -> Result<ConstantExpr, Error> {
         use hax::ConstantExprKind;
         let ty = &v.ty;
-        let erase_regions = true;
         let value = match &(*v.contents) {
             ConstantExprKind::Literal(lit) => {
                 self.translate_constant_literal_to_raw_constant_expr(lit)?
@@ -98,7 +97,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 RawConstantExpr::Adt(None, fields)
             }
             ConstantExprKind::TraitConst { impl_expr, name } => {
-                let trait_ref = self.translate_trait_impl_expr(span, erase_regions, impl_expr)?;
+                let trait_ref = self.translate_trait_impl_expr(span, impl_expr)?;
                 let name = TraitItemName(name.clone());
                 RawConstantExpr::TraitConst(trait_ref, name)
             }
@@ -113,15 +112,9 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                     generics,
                     trait_refs
                 );
-                let erase_regions = true;
                 let used_params = None;
-                let generics = self.translate_substs_and_trait_refs(
-                    span,
-                    erase_regions,
-                    used_params,
-                    generics,
-                    trait_refs,
-                )?;
+                let generics =
+                    self.translate_substs_and_trait_refs(span, used_params, generics, trait_refs)?;
 
                 let global_id = self.register_global_decl_id(span, id);
                 RawConstantExpr::Global(GlobalDeclRef {
@@ -178,15 +171,8 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 method_impl: trait_info,
             } => {
                 use super::translate_functions_to_ullbc::SubstFunIdOrPanic;
-                let erase_regions = true; // TODO: not sure
                 let fn_id = self.translate_fun_decl_id_with_args(
-                    span,
-                    erase_regions,
-                    fn_id,
-                    substs,
-                    None,
-                    trait_refs,
-                    trait_info,
+                    span, fn_id, substs, None, trait_refs, trait_info,
                 )?;
                 let SubstFunIdOrPanic::Fun(fn_id) = fn_id else {
                     unreachable!()
@@ -199,7 +185,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             }
         };
 
-        let ty = self.translate_ty(span, erase_regions, ty)?;
+        let ty = self.translate_ty(span, ty)?;
         Ok(ConstantExpr { value, ty })
     }
 

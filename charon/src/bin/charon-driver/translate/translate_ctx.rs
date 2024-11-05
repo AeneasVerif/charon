@@ -343,14 +343,12 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
                 let impl_elem = match full_def.kind() {
                     // Inherent impl ("regular" impl)
                     hax::FullDefKind::InherentImpl { ty, .. } => {
-                        let erase_regions = false;
-
                         // We need to convert the type, which may contain quantified
                         // substs and bounds. In order to properly do so, we introduce
                         // a body translation context.
                         let mut bt_ctx = BodyTransCtx::new(def_id, None, self);
                         let generics = bt_ctx.translate_def_generics(span, &full_def)?;
-                        let ty = bt_ctx.translate_ty(span, erase_regions, &ty)?;
+                        let ty = bt_ctx.translate_ty(span, &ty)?;
                         ImplElem::Ty(generics, ty)
                     }
                     // Trait implementation
