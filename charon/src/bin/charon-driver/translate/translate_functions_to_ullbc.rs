@@ -171,9 +171,8 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             let name: Option<String> = var.name.clone();
 
             // Translate the type
-            let erase_regions = true;
             let span = self.translate_span_from_hax(&var.source_info.span);
-            let ty = self.translate_ty(span, erase_regions, &var.ty)?;
+            let ty = self.translate_ty(span, &var.ty)?;
 
             // Add the variable to the environment
             self.push_var(index, ty, name);
@@ -259,8 +258,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         span: Span,
         place: &hax::Place,
     ) -> Result<(Place, Ty), Error> {
-        let erase_regions = true;
-        let ty = self.translate_ty(span, erase_regions, &place.ty)?;
+        let ty = self.translate_ty(span, &place.ty)?;
         let (var_id, projection) = self.translate_projection(span, place)?;
         Ok((Place { var_id, projection }, ty))
     }
@@ -278,7 +276,6 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         span: Span,
         place: &hax::Place,
     ) -> Result<(VarId, Projection), Error> {
-        let erase_regions = true;
         match &place.kind {
             hax::PlaceKind::Local(local) => {
                 let var_id = self.get_local(local).unwrap();
@@ -288,7 +285,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 let (var_id, mut projection) = self.translate_projection(span, place)?;
                 // Compute the type of the value *before* projection - we use this
                 // to disambiguate
-                let current_ty = self.translate_ty(span, erase_regions, &place.ty)?;
+                let current_ty = self.translate_ty(span, &place.ty)?;
                 match kind {
                     hax::ProjectionElem::Deref => {
                         // We use the type to disambiguate
@@ -445,7 +442,6 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
 
     /// Translate an rvalue
     fn translate_rvalue(&mut self, span: Span, rvalue: &hax::Rvalue) -> Result<Rvalue, Error> {
-        let erase_regions = true;
         match rvalue {
             hax::Rvalue::Use(operand) => Ok(Rvalue::Use(self.translate_operand(span, operand)?)),
             hax::Rvalue::CopyForDeref(place) => {
@@ -497,7 +493,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             hax::Rvalue::Cast(cast_kind, operand, tgt_ty) => {
                 trace!("Rvalue::Cast: {:?}", rvalue);
                 // Translate the target type
-                let tgt_ty = self.translate_ty(span, erase_regions, tgt_ty)?;
+                let tgt_ty = self.translate_ty(span, tgt_ty)?;
 
                 // Translate the operand
                 let (operand, src_ty) = self.translate_operand_with_type(span, operand)?;
@@ -579,7 +575,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             )),
             hax::Rvalue::NullaryOp(nullop, ty) => {
                 trace!("NullOp: {:?}", nullop);
-                let ty = self.translate_ty(span, erase_regions, ty)?;
+                let ty = self.translate_ty(span, ty)?;
                 let op = match nullop {
                     hax::NullOp::SizeOf => NullOp::SizeOf,
                     hax::NullOp::AlignOf => NullOp::AlignOf,
@@ -645,7 +641,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
 
                 match aggregate_kind {
                     hax::AggregateKind::Array(ty) => {
-                        let t_ty = self.translate_ty(span, erase_regions, ty)?;
+                        let t_ty = self.translate_ty(span, ty)?;
                         let cg = ConstGeneric::Value(Literal::Scalar(ScalarValue::Usize(
                             operands_t.len() as u64,
                         )));
@@ -674,13 +670,8 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                         let _ = user_annotation;
 
                         // Translate the substitution
-                        let generics = self.translate_substs_and_trait_refs(
-                            span,
-                            erase_regions,
-                            None,
-                            substs,
-                            trait_refs,
-                        )?;
+                        let generics =
+                            self.translate_substs_and_trait_refs(span, None, substs, trait_refs)?;
 
                         let type_id = self.translate_type_id(span, adt_id)?;
                         // Sanity check
@@ -703,13 +694,8 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                         trace!("Closure:\n\n- def_id: {:?}\n\n- sig:\n{:?}", def_id, sig);
 
                         // Translate the substitution
-                        let generics = self.translate_substs_and_trait_refs(
-                            span,
-                            erase_regions,
-                            None,
-                            substs,
-                            trait_refs,
-                        )?;
+                        let generics =
+                            self.translate_substs_and_trait_refs(span, None, substs, trait_refs)?;
 
                         let def_id = self.register_fun_decl_id(span, def_id);
                         let akind = AggregateKind::Closure(def_id, generics);
@@ -728,7 +714,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             }
             hax::Rvalue::ShallowInitBox(op, ty) => {
                 let op = self.translate_operand(span, op)?;
-                let ty = self.translate_ty(span, erase_regions, ty)?;
+                let ty = self.translate_ty(span, ty)?;
                 Ok(Rvalue::ShallowInitBox(op, ty))
             }
         }
@@ -768,7 +754,6 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     pub(crate) fn translate_fun_decl_id_with_args(
         &mut self,
         span: Span,
-        erase_regions: bool,
         def_id: &hax::DefId,
         substs: &Vec<hax::GenericArg>,
         args: Option<&Vec<hax::Spanned<hax::Operand>>>,
@@ -783,8 +768,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         }
 
         // Translate the type parameters
-        let generics =
-            self.translate_substs_and_trait_refs(span, erase_regions, None, substs, trait_refs)?;
+        let generics = self.translate_substs_and_trait_refs(span, None, substs, trait_refs)?;
 
         // Translate the arguments
         let args = args
@@ -854,8 +838,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 None => FunIdOrTraitMethodRef::Fun(FunId::Regular(fun_id)),
                 // Trait method
                 Some(trait_info) => {
-                    let impl_expr =
-                        self.translate_trait_impl_expr(span, erase_regions, trait_info)?;
+                    let impl_expr = self.translate_trait_impl_expr(span, trait_info)?;
                     let method_name = self.t_ctx.translate_trait_item_name(def_id)?;
                     FunIdOrTraitMethodRef::Trait(impl_expr, method_name, fun_id)
                 }
@@ -1147,10 +1130,8 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 trace!("func: {:?}", def_id);
 
                 // Translate the function id, with its parameters
-                let erase_regions = true;
                 let fid = self.translate_fun_decl_id_with_args(
                     span,
-                    erase_regions,
                     def_id,
                     generics,
                     Some(args),
@@ -1355,7 +1336,6 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         item_meta: &ItemMeta,
         def: &hax::FullDef,
     ) -> Result<FunSig, Error> {
-        let erase_regions = false;
         let span = item_meta.span;
 
         let generics = self.translate_def_generics(span, def)?;
@@ -1380,9 +1360,9 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             .value
             .inputs
             .iter()
-            .map(|ty| self.translate_ty(span, erase_regions, ty))
+            .map(|ty| self.translate_ty(span, ty))
             .try_collect()?;
-        let output = self.translate_ty(span, erase_regions, &signature.value.output)?;
+        let output = self.translate_ty(span, &signature.value.output)?;
 
         let fmt_ctx = self.into_fmt();
         trace!(
@@ -1409,7 +1389,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 let state: Vector<TypeVarId, Ty> = args
                     .upvar_tys
                     .iter()
-                    .map(|ty| self.translate_ty(span, erase_regions, &ty))
+                    .map(|ty| self.translate_ty(span, &ty))
                     .try_collect()?;
                 Some(ClosureInfo { kind, state })
             }
@@ -1535,8 +1515,7 @@ impl BodyTransCtx<'_, '_, '_> {
             | hax::FullDefKind::Static { ty, .. } => ty,
             _ => panic!("Unexpected def for constant: {def:?}"),
         };
-        let erase_regions = false; // This doesn't matter: there shouldn't be any regions
-        let ty = self.translate_ty(span, erase_regions, ty)?;
+        let ty = self.translate_ty(span, ty)?;
 
         // Translate its body like the body of a function. This returns `Opaque if we can't/decide
         // not to translate this body.

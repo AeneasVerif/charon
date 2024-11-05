@@ -84,7 +84,6 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     pub(crate) fn translate_trait_decl_ref(
         &mut self,
         span: Span,
-        erase_regions: bool,
         bound_trait_ref: &hax::Binder<hax::TraitRef>,
     ) -> Result<PolyTraitDeclRef, Error> {
         let binder = bound_trait_ref.rebind(());
@@ -94,7 +93,6 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             let parent_trait_refs = Vec::new();
             let generics = ctx.translate_substs_and_trait_refs(
                 span,
-                erase_regions,
                 None,
                 &trait_ref.generic_args,
                 &parent_trait_refs,
@@ -150,14 +148,11 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         // Note sure what this is about
         assert!(trait_pred.is_positive);
 
-        // We translate trait clauses for signatures, etc. so we do not erase the regions
-        let erase_regions = false;
-
         let trait_ref = &trait_pred.trait_ref;
         let trait_id = self.register_trait_decl_id(span, &trait_ref.def_id);
 
         let (regions, types, const_generics) =
-            self.translate_substs(span, erase_regions, None, &trait_ref.generic_args)?;
+            self.translate_substs(span, None, &trait_ref.generic_args)?;
         // There are no trait refs
         let generics = GenericArgs::new(regions, types, const_generics, Default::default());
 
@@ -172,9 +167,6 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         location: &PredicateLocation,
     ) -> Result<(), Error> {
         trace!("{:?}", pred);
-        // Predicates are always used in signatures/type definitions, etc.
-        // For this reason, we do not erase the regions.
-        let erase_regions = false;
         let span = self.translate_span_from_hax(hspan);
 
         let binder = pred.kind.rebind(());
@@ -192,16 +184,16 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                         }
                         ClauseKind::RegionOutlives(p) => {
                             // TODO: we're under a binder, we should re-bind
-                            let r0 = ctx.translate_region(span, erase_regions, &p.lhs)?;
-                            let r1 = ctx.translate_region(span, erase_regions, &p.rhs)?;
+                            let r0 = ctx.translate_region(span, &p.lhs)?;
+                            let r1 = ctx.translate_region(span, &p.rhs)?;
                             ctx.generic_params.regions_outlive.push(RegionBinder {
                                 regions,
                                 skip_binder: OutlivesPred(r0, r1),
                             });
                         }
                         ClauseKind::TypeOutlives(p) => {
-                            let ty = ctx.translate_ty(span, erase_regions, &p.lhs)?;
-                            let r = ctx.translate_region(span, erase_regions, &p.rhs)?;
+                            let ty = ctx.translate_ty(span, &p.lhs)?;
+                            let r = ctx.translate_region(span, &p.rhs)?;
                             ctx.generic_params.types_outlive.push(RegionBinder {
                                 regions,
                                 skip_binder: OutlivesPred(ty, r),
@@ -221,9 +213,8 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                                 ty,
                             } = p;
 
-                            let trait_ref =
-                                ctx.translate_trait_impl_expr(span, erase_regions, impl_expr)?;
-                            let ty = ctx.translate_ty(span, erase_regions, ty)?;
+                            let trait_ref = ctx.translate_trait_impl_expr(span, impl_expr)?;
+                            let ty = ctx.translate_ty(span, ty)?;
                             let type_name = TraitItemName(assoc_item.name.clone().into());
                             ctx.generic_params
                                 .trait_type_constraints
@@ -271,31 +262,23 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     pub(crate) fn translate_trait_impl_exprs(
         &mut self,
         span: Span,
-        erase_regions: bool,
         impl_sources: &[hax::ImplExpr],
     ) -> Result<Vector<TraitClauseId, TraitRef>, Error> {
         impl_sources
             .iter()
-            .map(|x| self.translate_trait_impl_expr(span, erase_regions, x))
+            .map(|x| self.translate_trait_impl_expr(span, x))
             .try_collect()
     }
 
-    #[tracing::instrument(skip(self, span, erase_regions, impl_expr))]
+    #[tracing::instrument(skip(self, span, impl_expr))]
     pub(crate) fn translate_trait_impl_expr(
         &mut self,
         span: Span,
-        erase_regions: bool,
         impl_expr: &hax::ImplExpr,
     ) -> Result<TraitRef, Error> {
-        let trait_decl_ref =
-            self.translate_trait_decl_ref(span, erase_regions, &impl_expr.r#trait)?;
+        let trait_decl_ref = self.translate_trait_decl_ref(span, &impl_expr.r#trait)?;
 
-        match self.translate_trait_impl_expr_aux(
-            span,
-            erase_regions,
-            impl_expr,
-            trait_decl_ref.clone(),
-        ) {
+        match self.translate_trait_impl_expr_aux(span, impl_expr, trait_decl_ref.clone()) {
             Ok(res) => Ok(res),
             Err(err) => {
                 if !self.t_ctx.continue_on_failure() {
@@ -315,7 +298,6 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     pub(crate) fn translate_trait_impl_expr_aux(
         &mut self,
         span: Span,
-        erase_regions: bool,
         impl_source: &hax::ImplExpr,
         trait_decl_ref: PolyTraitDeclRef,
     ) -> Result<TraitRef, Error> {
@@ -329,13 +311,8 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 generics,
             } => {
                 let impl_id = self.register_trait_impl_id(span, impl_def_id);
-                let generics = self.translate_substs_and_trait_refs(
-                    span,
-                    erase_regions,
-                    None,
-                    generics,
-                    nested,
-                )?;
+                let generics =
+                    self.translate_substs_and_trait_refs(span, None, generics, nested)?;
                 TraitRef {
                     kind: TraitRefKind::TraitImpl(impl_id, generics),
                     trait_decl_ref,

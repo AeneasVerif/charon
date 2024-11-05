@@ -57,50 +57,45 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     pub(crate) fn translate_region(
         &mut self,
         span: Span,
-        erase_regions: bool,
         region: &hax::Region,
     ) -> Result<Region, Error> {
-        if erase_regions {
-            Ok(Region::Erased)
-        } else {
-            match &region.kind {
-                hax::RegionKind::ReErased => Ok(Region::Erased),
-                hax::RegionKind::ReStatic => Ok(Region::Static),
-                hax::RegionKind::ReBound(id, br) => {
-                    // See the comments in [BodyTransCtx.bound_vars]:
-                    // - the De Bruijn index identifies the group of variables
-                    // - the var id identifies the variable inside the group
-                    let rid = self
-                        .bound_region_vars
-                        .get(*id)
-                        .expect("Error: missing binder when translating lifetime")
-                        .get(br.var)
-                        .expect("Error: lifetime not found, binders were handled incorrectly");
-                    let br_id = DeBruijnId::new(*id);
-                    Ok(Region::BVar(br_id, *rid))
-                }
-                hax::RegionKind::ReVar(_) => {
-                    // Shouldn't exist outside of type inference.
-                    let err = format!("Should not exist outside of type inference: {region:?}");
-                    error_or_panic!(self, span, err)
-                }
-                _ => {
-                    // For the other regions, we use the regions map, which
-                    // contains the early-bound (free) regions.
-                    match self.free_region_vars.get(region) {
-                        Some(rid) => {
-                            // Note that the DeBruijn index depends
-                            // on the current stack of bound region groups.
-                            let db_id = self.region_vars.len() - 1;
-                            Ok(Region::BVar(DeBruijnId::new(db_id), *rid))
-                        }
-                        None => {
-                            let err = format!(
+        match &region.kind {
+            hax::RegionKind::ReErased => Ok(Region::Erased),
+            hax::RegionKind::ReStatic => Ok(Region::Static),
+            hax::RegionKind::ReBound(id, br) => {
+                // See the comments in [BodyTransCtx.bound_vars]:
+                // - the De Bruijn index identifies the group of variables
+                // - the var id identifies the variable inside the group
+                let rid = self
+                    .bound_region_vars
+                    .get(*id)
+                    .expect("Error: missing binder when translating lifetime")
+                    .get(br.var)
+                    .expect("Error: lifetime not found, binders were handled incorrectly");
+                let br_id = DeBruijnId::new(*id);
+                Ok(Region::BVar(br_id, *rid))
+            }
+            hax::RegionKind::ReVar(_) => {
+                // Shouldn't exist outside of type inference.
+                let err = format!("Should not exist outside of type inference: {region:?}");
+                error_or_panic!(self, span, err)
+            }
+            _ => {
+                // For the other regions, we use the regions map, which
+                // contains the early-bound (free) regions.
+                match self.free_region_vars.get(region) {
+                    Some(rid) => {
+                        // Note that the DeBruijn index depends
+                        // on the current stack of bound region groups.
+                        let db_id = self.region_vars.len() - 1;
+                        Ok(Region::BVar(DeBruijnId::new(db_id), *rid))
+                    }
+                    None => {
+                        let err = format!(
                                 "Could not find region: {:?}\n\nRegion vars map:\n{:?}\n\nBound region vars:\n{:?}",
                                 region, self.free_region_vars, self.bound_region_vars
                             );
-                            error_or_panic!(self, span, err)
-                        }
+                        error_or_panic!(self, span, err)
                     }
                 }
             }
@@ -115,13 +110,8 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     /// Note that we take as parameter a function to translate regions, because
     /// regions can be translated in several manners (non-erased region or erased
     /// regions), in which case the return type is different.
-    #[tracing::instrument(skip(self, span, erase_regions))]
-    pub(crate) fn translate_ty(
-        &mut self,
-        span: Span,
-        erase_regions: bool,
-        ty: &hax::Ty,
-    ) -> Result<Ty, Error> {
+    #[tracing::instrument(skip(self, span))]
+    pub(crate) fn translate_ty(&mut self, span: Span, ty: &hax::Ty) -> Result<Ty, Error> {
         trace!("{:?}", ty);
         let cache_key = HashByAddr(ty.inner().clone());
         if let Some(ty) = self.type_trans_cache.get(&cache_key) {
@@ -169,13 +159,12 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                     impl_expr,
                     assoc_item,
                 } => {
-                    let trait_ref =
-                        self.translate_trait_impl_expr(span, erase_regions, impl_expr)?;
+                    let trait_ref = self.translate_trait_impl_expr(span, impl_expr)?;
                     let name = TraitItemName(assoc_item.name.clone());
                     TyKind::TraitType(trait_ref, name)
                 }
                 hax::AliasKind::Opaque { hidden_ty, .. } => {
-                    return self.translate_ty(span, erase_regions, hidden_ty)
+                    return self.translate_ty(span, hidden_ty)
                 }
                 _ => {
                     error_or_panic!(
@@ -204,13 +193,8 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 };
 
                 // Translate the type parameters instantiation
-                let generics = self.translate_substs_and_trait_refs(
-                    span,
-                    erase_regions,
-                    used_params,
-                    substs,
-                    trait_refs,
-                )?;
+                let generics =
+                    self.translate_substs_and_trait_refs(span, used_params, substs, trait_refs)?;
 
                 // Return the instantiated ADT
                 TyKind::Adt(type_id, generics)
@@ -225,7 +209,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 trace!("Array");
 
                 let c = self.translate_constant_expr_to_const_generic(span, const_param)?;
-                let tys = vec![self.translate_ty(span, erase_regions, ty)?].into();
+                let tys = vec![self.translate_ty(span, ty)?].into();
                 let cgs = vec![c].into();
                 let id = TypeId::Builtin(BuiltinTy::Array);
                 TyKind::Adt(id, GenericArgs::new(Vector::new(), tys, cgs, Vector::new()))
@@ -233,15 +217,15 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             hax::TyKind::Slice(ty) => {
                 trace!("Slice");
 
-                let tys = vec![self.translate_ty(span, erase_regions, ty)?].into();
+                let tys = vec![self.translate_ty(span, ty)?].into();
                 let id = TypeId::Builtin(BuiltinTy::Slice);
                 TyKind::Adt(id, GenericArgs::new_from_types(tys))
             }
             hax::TyKind::Ref(region, ty, mutability) => {
                 trace!("Ref");
 
-                let region = self.translate_region(span, erase_regions, region)?;
-                let ty = self.translate_ty(span, erase_regions, ty)?;
+                let region = self.translate_region(span, region)?;
+                let ty = self.translate_ty(span, ty)?;
                 let kind = if *mutability {
                     RefKind::Mut
                 } else {
@@ -251,7 +235,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             }
             hax::TyKind::RawPtr(ty, mutbl) => {
                 trace!("RawPtr: {:?}", (ty, mutbl));
-                let ty = self.translate_ty(span, erase_regions, ty)?;
+                let ty = self.translate_ty(span, ty)?;
                 let kind = if *mutbl {
                     RefKind::Mut
                 } else {
@@ -264,7 +248,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
 
                 let mut params = Vector::new();
                 for param in substs.iter() {
-                    let param_ty = self.translate_ty(span, erase_regions, param)?;
+                    let param_ty = self.translate_ty(span, param)?;
                     params.push(param_ty);
                 }
 
@@ -329,7 +313,6 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 trace!("Arrow");
                 trace!("bound vars: {:?}", sig.bound_vars);
 
-                let erase_regions = false;
                 let binder = sig.rebind(());
                 self.with_locally_bound_regions_group(span, binder, move |ctx| {
                     let regions = ctx.region_vars[0].clone();
@@ -337,9 +320,9 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                         .value
                         .inputs
                         .iter()
-                        .map(|x| ctx.translate_ty(span, erase_regions, x))
+                        .map(|x| ctx.translate_ty(span, x))
                         .try_collect()?;
-                    let output = ctx.translate_ty(span, erase_regions, &sig.value.output)?;
+                    let output = ctx.translate_ty(span, &sig.value.output)?;
                     Ok(TyKind::Arrow(regions, inputs, output))
                 })?
             }
@@ -361,7 +344,6 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     pub fn translate_substs(
         &mut self,
         span: Span,
-        erase_regions: bool,
         used_params: Option<Vec<bool>>,
         substs: &[hax::GenericArg],
     ) -> Result<
@@ -393,11 +375,11 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         for param in substs.iter() {
             match param {
                 Type(param_ty) => {
-                    let param_ty = self.translate_ty(span, erase_regions, param_ty)?;
+                    let param_ty = self.translate_ty(span, param_ty)?;
                     params.push(param_ty);
                 }
                 Lifetime(region) => {
-                    regions.push(self.translate_region(span, erase_regions, region)?);
+                    regions.push(self.translate_region(span, region)?);
                 }
                 Const(c) => {
                     cgs.push(self.translate_constant_expr_to_const_generic(span, c)?);
@@ -411,14 +393,12 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     pub fn translate_substs_and_trait_refs(
         &mut self,
         span: Span,
-        erase_regions: bool,
         used_params: Option<Vec<bool>>,
         substs: &[hax::GenericArg],
         trait_refs: &[hax::ImplExpr],
     ) -> Result<GenericArgs, Error> {
-        let (regions, types, const_generics) =
-            self.translate_substs(span, erase_regions, used_params, substs)?;
-        let trait_refs = self.translate_trait_impl_exprs(span, erase_regions, trait_refs)?;
+        let (regions, types, const_generics) = self.translate_substs(span, used_params, substs)?;
+        let trait_refs = self.translate_trait_impl_exprs(span, trait_refs)?;
         Ok(GenericArgs {
             regions,
             types,
@@ -465,7 +445,6 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         adt: &hax::AdtDef,
     ) -> Result<TypeDeclKind, Error> {
         use hax::AdtKind;
-        let erase_regions = false;
 
         if item_meta.opacity.is_opaque() {
             return Ok(TypeDeclKind::Opaque);
@@ -510,7 +489,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 trace!("variant {i}: field {j}: {field_def:?}");
                 let field_span = self.t_ctx.translate_span_from_hax(&field_def.span);
                 // Translate the field type
-                let ty = self.translate_ty(field_span, erase_regions, &field_def.ty)?;
+                let ty = self.translate_ty(field_span, &field_def.ty)?;
                 let field_full_def = self.t_ctx.hax_def(&field_def.did)?;
                 let field_attrs = self.t_ctx.translate_attr_info(&field_full_def);
 
@@ -593,7 +572,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         def_span: Span,
         discr: &hax::DiscriminantValue,
     ) -> Result<ScalarValue, Error> {
-        let ty = self.translate_ty(def_span, true, &discr.ty)?;
+        let ty = self.translate_ty(def_span, &discr.ty)?;
         let int_ty = *ty.kind().as_literal().unwrap().as_integer().unwrap();
         Ok(ScalarValue::from_bits(int_ty, discr.val))
     }
@@ -786,7 +765,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 let span = self.def_span(&param.def_id);
                 // The type should be primitive, meaning it shouldn't contain variables,
                 // non-primitive adts, etc. As a result, we can use an empty context.
-                let ty = self.translate_ty(span, false, ty)?;
+                let ty = self.translate_ty(span, ty)?;
                 match ty.kind().as_literal() {
                     Some(ty) => self.push_const_generic_var(param.index, *ty, param.name.clone()),
                     None => error_or_panic!(
@@ -815,7 +794,6 @@ impl BodyTransCtx<'_, '_, '_> {
         item_meta: ItemMeta,
         def: &hax::FullDef,
     ) -> Result<TypeDecl, Error> {
-        let erase_regions = false;
         let span = item_meta.span;
 
         // Translate generics and predicates
@@ -830,8 +808,7 @@ impl BodyTransCtx<'_, '_, '_> {
                 self.error_on_impl_expr_error = false;
                 // We only translate crate-local type aliases so the `unwrap` is ok.
                 let ty = ty.as_ref().unwrap();
-                self.translate_ty(span, erase_regions, ty)
-                    .map(TypeDeclKind::Alias)
+                self.translate_ty(span, ty).map(TypeDeclKind::Alias)
             }
             hax::FullDefKind::Struct { def, .. }
             | hax::FullDefKind::Enum { def, .. }
