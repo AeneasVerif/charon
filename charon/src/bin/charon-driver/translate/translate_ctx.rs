@@ -306,12 +306,13 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         match self.file_to_id.get(&filename) {
             Some(id) => *id,
             None => {
-                let id = self.translated.id_to_file.push(filename.clone());
-                self.file_to_id.insert(filename.clone(), id);
                 let source_file = self.tcx.sess.source_map().lookup_source_file(span.lo());
-                if let Some(src) = source_file.src.as_deref() {
-                    self.translated.file_id_to_content.insert(id, src.clone());
-                }
+                let file = File {
+                    name: filename.clone(),
+                    contents: source_file.src.as_deref().cloned(),
+                };
+                let id = self.translated.files.push(file);
+                self.file_to_id.insert(filename, id);
                 id
             }
         }

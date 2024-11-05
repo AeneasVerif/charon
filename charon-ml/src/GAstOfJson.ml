@@ -33,7 +33,7 @@ let log = Logging.llbc_of_json_logger
 (** A file identifier *)
 type file_id = FileId.id [@@deriving show, ord]
 
-type id_to_file_map = file_name FileId.Map.t
+type id_to_file_map = file FileId.Map.t
 
 let de_bruijn_id_of_json = int_of_json
 let path_buf_of_json = string_of_json
@@ -758,6 +758,15 @@ and file_name_of_json (js : json) : (file_name, string) result =
     | `Assoc [ ("Local", local) ] ->
         let* local = path_buf_of_json local in
         Ok (Local local)
+    | _ -> Error "")
+
+and file_of_json (js : json) : (file, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with
+    | `Assoc [ ("name", name); ("contents", contents) ] ->
+        let* name = file_name_of_json name in
+        let* contents = option_of_json string_of_json contents in
+        Ok ({ name; contents } : file)
     | _ -> Error "")
 
 and disambiguator_of_json (js : json) : (disambiguator, string) result =
@@ -1506,14 +1515,14 @@ and id_to_file_of_json (js : json) : (id_to_file_map, string) result =
   combine_error_msgs js __FUNCTION__
     ((* The map is stored as a list of pairs (key, value): we deserialize
       * this list then convert it to a map *)
-     let* file_names = list_of_json (option_of_json file_name_of_json) js in
-     let names_with_ids =
+     let* files = list_of_json (option_of_json file_of_json) js in
+     let files_with_ids =
        List.filter_map
-         (fun (i, name) ->
-           match name with None -> None | Some name -> Some (i, name))
-         (List.mapi (fun i name -> (FileId.of_int i, name)) file_names)
+         (fun (i, file) ->
+           match file with None -> None | Some file -> Some (i, file))
+         (List.mapi (fun i file -> (FileId.of_int i, file)) files)
      in
-     Ok (FileId.Map.of_list names_with_ids))
+     Ok (FileId.Map.of_list files_with_ids))
 
 (* This is written by hand because the corresponding rust type is not type-generic. *)
 and gtranslated_crate_of_json
@@ -1525,10 +1534,9 @@ and gtranslated_crate_of_json
         [
           ("crate_name", name);
           ("real_crate_name", _);
-          ("file_id_to_content", file_id_to_content);
           ("all_ids", _);
           ("item_names", _);
-          ("id_to_file", id_to_file);
+          ("files", files);
           ("type_decls", types);
           ("fun_decls", functions);
           ("global_decls", globals);
@@ -1538,7 +1546,7 @@ and gtranslated_crate_of_json
           ("ordered_decls", declarations);
         ] ->
         let* name = string_of_json name in
-        let* id_to_file = id_to_file_of_json id_to_file in
+        let* id_to_file = id_to_file_of_json files in
 
         let* declarations =
           list_of_json declaration_group_of_json declarations
@@ -1570,11 +1578,6 @@ and gtranslated_crate_of_json
             (trait_impl_of_json id_to_file)
             trait_impls
         in
-        let* source_files =
-          list_of_json
-            (key_value_pair_of_json file_id_of_json string_of_json)
-            file_id_to_content
-        in
 
         let type_decls =
           TypeDeclId.Map.of_list
@@ -1596,15 +1599,6 @@ and gtranslated_crate_of_json
           TraitImplId.Map.of_list
             (List.map (fun (d : trait_impl) -> (d.def_id, d)) trait_impls)
         in
-        let source_files =
-          FileNameMap.of_list
-            (List.filter_map
-               (fun (file_id, content) ->
-                 Option.map
-                   (fun filename -> (filename, content))
-                   (FileId.Map.find_opt file_id id_to_file))
-               source_files)
-        in
 
         Ok
           {
@@ -1615,7 +1609,6 @@ and gtranslated_crate_of_json
             global_decls;
             trait_decls;
             trait_impls;
-            source_files;
           }
     | _ -> Error "")
 

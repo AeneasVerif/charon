@@ -94,13 +94,6 @@ pub struct TranslatedCrate {
     /// The name of the crate according to rustc.
     pub real_crate_name: String,
 
-    /// File id to content.
-    ///
-    /// Note that some files may be missing, if they are not "real" files.
-    #[drive(skip)]
-    #[serde(with = "HashMapToArray::<FileId, String>")]
-    pub file_id_to_content: HashMap<FileId, String>,
-
     /// All the item ids, in the order in which we encountered them
     #[drive(skip)]
     pub all_ids: LinkedHashSet<AnyTransId>,
@@ -111,7 +104,7 @@ pub struct TranslatedCrate {
 
     /// The translated files.
     #[drive(skip)]
-    pub id_to_file: Vector<FileId, FileName>,
+    pub files: Vector<FileId, File>,
     /// The translated type definitions
     pub type_decls: Vector<TypeDeclId, TypeDecl>,
     /// The translated function definitions
