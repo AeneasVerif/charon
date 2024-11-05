@@ -85,7 +85,11 @@ and all dependencies should be made available.
 
 ## Documentation
 
-If you run `make`, you will generate a documentation accessible from
+You can access the Rust documentation
+[online](https://aeneasverif.github.io/charon/charon_lib/index.html).
+
+You can also run `make` to generate the documentation locally.
+It will generate a documentation accessible from
 [`doc-rust.html`](./doc-rust.html) (for the Rust project) and
 [`doc-ml.html`](./doc-ml.html) (for the ML library).
 
