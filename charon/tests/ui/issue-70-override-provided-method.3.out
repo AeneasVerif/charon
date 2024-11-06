@@ -83,8 +83,6 @@ where
 
 fn core::cmp::PartialEq::eq<'_0, '_1, Self, Rhs>(@1: &'_0 (Self), @2: &'_1 (Rhs)) -> bool
 
-fn test_crate::GenericTrait::other_method<Self, T>()
-
 fn test_crate::{impl test_crate::GenericTrait<core::option::Option<T>[@TraitClause0]> for test_crate::Override<T>[@TraitClause0]}::provided<T, U>(@1: T, @2: U)
 where
     // Inherited clauses:
@@ -108,7 +106,7 @@ where
     if move (@3) {
         drop @5
         drop @4
-        @0 := test_crate::{impl test_crate::GenericTrait<core::option::Option<T>[@TraitClause0]> for test_crate::Override<T>[@TraitClause0]}<T>[@TraitClause0, @TraitClause1]::other_method()
+        @0 := test_crate::{impl test_crate::GenericTrait<core::option::Option<T>[@TraitClause0]> for test_crate::Override<T>[@TraitClause0]}::other_method<T>[@TraitClause0, @TraitClause1]()
     }
     else {
         drop @5
@@ -165,6 +163,8 @@ where
     parent_clause1 = core::option::{impl core::clone::Clone for core::option::Option<T>[@TraitClause0]}#5<T>[@TraitClause0, @TraitClause1::parent_clause0]
     fn other_method = test_crate::{impl test_crate::GenericTrait<core::option::Option<T>[@TraitClause0]> for test_crate::NoOverride<T>[@TraitClause0]}#1::other_method
 }
+
+fn test_crate::GenericTrait::other_method<Self, T>()
 
 fn test_crate::GenericTrait::provided<Self, T, U>(@1: T, @2: U)
 where

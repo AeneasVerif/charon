@@ -32,19 +32,7 @@ global test_crate::BAR: &'static (Slice<u8>) = test_crate::BAR()
 
 opaque type alloc::string::String
 
-trait alloc::string::ToString<Self>
-{
-    fn to_string : alloc::string::ToString::to_string
-}
-
 fn alloc::string::{impl alloc::string::ToString for Str}#102::to_string<'_0>(@1: &'_0 (Str)) -> alloc::string::String
-
-impl alloc::string::{impl alloc::string::ToString for Str}#102 : alloc::string::ToString<Str>
-{
-    fn to_string = alloc::string::{impl alloc::string::ToString for Str}#102::to_string
-}
-
-fn alloc::string::ToString::to_string<'_0, Self>(@1: &'_0 (Self)) -> alloc::string::String
 
 fn test_crate::main()
 {
@@ -66,6 +54,18 @@ fn test_crate::main()
     drop _s@1
     @0 := ()
     return
+}
+
+fn alloc::string::ToString::to_string<'_0, Self>(@1: &'_0 (Self)) -> alloc::string::String
+
+trait alloc::string::ToString<Self>
+{
+    fn to_string : alloc::string::ToString::to_string
+}
+
+impl alloc::string::{impl alloc::string::ToString for Str}#102 : alloc::string::ToString<Str>
+{
+    fn to_string = alloc::string::{impl alloc::string::ToString for Str}#102::to_string
 }
 
 

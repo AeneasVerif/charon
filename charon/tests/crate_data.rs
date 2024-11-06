@@ -689,8 +689,17 @@ fn known_trait_method_call() -> Result<(), Box<dyn Error>> {
     let FnOperand::Regular(fn_ptr) = &call.func else {
         panic!()
     };
-    // For now this call goes through a trait ref. FIXME: call the function directly.
-    let FunIdOrTraitMethodRef::Trait(..) = &fn_ptr.func else {
+    // Assert that this call referes to the method directly, without using a trait ref.
+    let FunIdOrTraitMethodRef::Fun(FunId::Regular(id)) = &fn_ptr.func else {
+        panic!()
+    };
+    // This is the function that gets called.
+    let function = &crate_data.fun_decls[id.index()];
+    assert_eq!(
+        repr_name(&crate_data, &function.item_meta.name),
+        "test_crate::<impl Default for ??>::default"
+    );
+    let ItemKind::TraitImpl { .. } = &function.kind else {
         panic!()
     };
     Ok(())

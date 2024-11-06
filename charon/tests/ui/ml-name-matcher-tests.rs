@@ -53,9 +53,11 @@ impl<T, U> Trait<Box<T>> for Option<U> {
 #[pattern::pass(call[0], "core::option::{core::option::Option<@T>}::is_some")]
 #[pattern::pass(call[1], "ArrayToSliceShared<'_, bool, 1>")]
 // This is a trait instance call.
-#[pattern::pass(call[2], "core::ops::index::Index<[bool], core::ops::range::RangeFrom<usize>>::index")]
-// We can't reference the method directly.
-#[pattern::fail(call[2], "core::slice::index::{core::ops::index::Index<[@T], @I>}::index<bool, core::ops::range::RangeFrom<usize>>")]
+// TODO: fix
+#[pattern::fail(call[2], "core::ops::index::Index<[bool], core::ops::range::RangeFrom<usize>>::index")]
+#[pattern::fail(call[2], "core::ops::index::Index<[@T], @I>::index")]
+// We can reference the method directly.
+#[pattern::pass(call[2], "core::slice::index::{core::ops::index::Index<[@T], @I>}::index<bool, core::ops::range::RangeFrom<usize>>")]
 fn foo() {
     let _ = Some(0).is_some();
     let slice: &[bool] = &[false];

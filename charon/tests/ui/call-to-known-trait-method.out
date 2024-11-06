@@ -104,6 +104,8 @@ impl core::default::{impl core::default::Default for bool}#1 : core::default::De
     fn default = core::default::{impl core::default::Default for bool}#1::default
 }
 
+opaque type alloc::string::String
+
 fn core::clone::impls::{impl core::clone::Clone for u8}#6::clone<'_0>(@1: &'_0 (u8)) -> u8
 
 impl core::clone::impls::{impl core::clone::Clone for u8}#6 : core::clone::Clone<u8>
@@ -122,12 +124,6 @@ impl core::cmp::impls::{impl core::cmp::PartialEq<bool> for bool}#19 : core::cmp
     fn ne = core::cmp::impls::{impl core::cmp::PartialEq<bool> for bool}#19::ne
 }
 
-fn test_crate::Trait::method<Self, B, C>()
-where
-    [@TraitClause0]: core::marker::Sized<C>,
-
-opaque type alloc::string::String
-
 fn test_crate::main()
 {
     let @0: (); // return
@@ -138,9 +134,9 @@ fn test_crate::main()
 
     _x@1 := (const (0 : u8), const (false))
     @fake_read(_x@1)
-    _y@2 := test_crate::{impl core::default::Default for test_crate::Struct<A>[@TraitClause0]}#1<bool>[core::marker::Sized<bool>, core::default::{impl core::default::Default for bool}#1]::default()
+    _y@2 := test_crate::{impl core::default::Default for test_crate::Struct<A>[@TraitClause0]}#1::default<bool>[core::marker::Sized<bool>, core::default::{impl core::default::Default for bool}#1]()
     @fake_read(_y@2)
-    @3 := test_crate::{impl test_crate::Trait<B> for test_crate::Struct<A>[@TraitClause0]}<u8, bool>[core::marker::Sized<u8>, core::marker::Sized<bool>, core::clone::impls::{impl core::clone::Clone for u8}#6, core::cmp::impls::{impl core::cmp::PartialEq<bool> for bool}#19]::method<alloc::string::String>[core::marker::Sized<alloc::string::String>]()
+    @3 := test_crate::{impl test_crate::Trait<B> for test_crate::Struct<A>[@TraitClause0]}::method<u8, bool, alloc::string::String>[core::marker::Sized<u8>, core::marker::Sized<bool>, core::clone::impls::{impl core::clone::Clone for u8}#6, core::cmp::impls::{impl core::cmp::PartialEq<bool> for bool}#19, core::marker::Sized<alloc::string::String>]()
     drop @3
     @4 := ()
     @0 := move (@4)
@@ -149,6 +145,10 @@ fn test_crate::main()
     @0 := ()
     return
 }
+
+fn test_crate::Trait::method<Self, B, C>()
+where
+    [@TraitClause0]: core::marker::Sized<C>,
 
 fn core::clone::Clone::clone<'_0, Self>(@1: &'_0 (Self)) -> Self
 

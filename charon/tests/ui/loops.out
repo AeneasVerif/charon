@@ -1256,19 +1256,6 @@ where
     [@TraitClause0]: core::marker::Sized<I>,
     [@TraitClause1]: core::iter::traits::iterator::Iterator<I>,
 
-impl<I> core::iter::traits::collect::{impl core::iter::traits::collect::IntoIterator for I}#1<I> : core::iter::traits::collect::IntoIterator<I>
-where
-    [@TraitClause0]: core::marker::Sized<I>,
-    [@TraitClause1]: core::iter::traits::iterator::Iterator<I>,
-{
-    parent_clause0 = @TraitClause1::parent_clause0
-    parent_clause1 = @TraitClause1
-    parent_clause2 = @TraitClause0
-    type Item = @TraitClause1::Item
-    type IntoIter = I
-    fn into_iter = core::iter::traits::collect::{impl core::iter::traits::collect::IntoIterator for I}#1::into_iter
-}
-
 trait core::iter::range::Step<Self>
 {
     parent_clause0 : [@TraitClause0]: core::marker::Sized<Self>
@@ -1434,10 +1421,6 @@ impl core::iter::range::{impl core::iter::range::Step for i32}#40 : core::iter::
     fn backward_unchecked = core::iter::range::{impl core::iter::range::Step for i32}#40::backward_unchecked
 }
 
-fn core::iter::traits::collect::IntoIterator::into_iter<Self>(@1: Self) -> Self::IntoIter
-
-fn core::iter::traits::iterator::Iterator::next<'_0, Self>(@1: &'_0 mut (Self)) -> core::option::Option<Self::Item>[Self::parent_clause0]
-
 fn core::cmp::impls::{impl core::cmp::PartialEq<usize> for usize}#21::eq<'_0, '_1>(@1: &'_0 (usize), @2: &'_1 (usize)) -> bool
 
 fn core::cmp::impls::{impl core::cmp::PartialEq<usize> for usize}#21::ne<'_0, '_1>(@1: &'_0 (usize), @2: &'_1 (usize)) -> bool
@@ -1540,14 +1523,14 @@ fn test_crate::nested_loops_enum(@1: usize, @2: usize) -> usize
     s@3 := const (0 : usize)
     @fake_read(s@3)
     @6 := core::ops::range::Range { start: const (0 : i32), end: const (128 : i32) }
-    @5 := core::iter::traits::collect::{impl core::iter::traits::collect::IntoIterator for I}#1<core::ops::range::Range<i32>[core::marker::Sized<i32>]>[core::marker::Sized<core::ops::range::Range<i32>[core::marker::Sized<i32>]>, core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>[@TraitClause0]}#6<i32>[core::marker::Sized<i32>, core::iter::range::{impl core::iter::range::Step for i32}#40]]::into_iter(move (@6))
+    @5 := core::iter::traits::collect::{impl core::iter::traits::collect::IntoIterator for I}#1::into_iter<core::ops::range::Range<i32>[core::marker::Sized<i32>]>[core::marker::Sized<core::ops::range::Range<i32>[core::marker::Sized<i32>]>, core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>[@TraitClause0]}#6<i32>[core::marker::Sized<i32>, core::iter::range::{impl core::iter::range::Step for i32}#40]](move (@6))
     drop @6
     @fake_read(@5)
     iter@7 := move (@5)
     loop {
         @12 := &mut iter@7
         @11 := &two-phase-mut *(@12)
-        @10 := core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>[@TraitClause0]}#6<i32>[core::marker::Sized<i32>, core::iter::range::{impl core::iter::range::Step for i32}#40]::next<'_>(move (@11))
+        @10 := core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>[@TraitClause0]}#6::next<'_, i32>[core::marker::Sized<i32>, core::iter::range::{impl core::iter::range::Step for i32}#40](move (@11))
         drop @11
         @fake_read(@10)
         match @10 {
@@ -1578,14 +1561,14 @@ fn test_crate::nested_loops_enum(@1: usize, @2: usize) -> usize
     @16 := copy (step_out@1)
     @15 := core::ops::range::Range { start: const (0 : usize), end: move (@16) }
     drop @16
-    @14 := core::iter::traits::collect::{impl core::iter::traits::collect::IntoIterator for I}#1<core::ops::range::Range<usize>[core::marker::Sized<usize>]>[core::marker::Sized<core::ops::range::Range<usize>[core::marker::Sized<usize>]>, core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>[@TraitClause0]}#6<usize>[core::marker::Sized<usize>, core::iter::range::{impl core::iter::range::Step for usize}#43]]::into_iter(move (@15))
+    @14 := core::iter::traits::collect::{impl core::iter::traits::collect::IntoIterator for I}#1::into_iter<core::ops::range::Range<usize>[core::marker::Sized<usize>]>[core::marker::Sized<core::ops::range::Range<usize>[core::marker::Sized<usize>]>, core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>[@TraitClause0]}#6<usize>[core::marker::Sized<usize>, core::iter::range::{impl core::iter::range::Step for usize}#43]](move (@15))
     drop @15
     @fake_read(@14)
     iter@17 := move (@14)
     loop {
         @21 := &mut iter@17
         @20 := &two-phase-mut *(@21)
-        @19 := core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>[@TraitClause0]}#6<usize>[core::marker::Sized<usize>, core::iter::range::{impl core::iter::range::Step for usize}#43]::next<'_>(move (@20))
+        @19 := core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>[@TraitClause0]}#6::next<'_, usize>[core::marker::Sized<usize>, core::iter::range::{impl core::iter::range::Step for usize}#43](move (@20))
         drop @20
         @fake_read(@19)
         match @19 {
@@ -1596,14 +1579,14 @@ fn test_crate::nested_loops_enum(@1: usize, @2: usize) -> usize
                 @24 := copy (step_in@2)
                 @23 := core::ops::range::Range { start: const (0 : usize), end: move (@24) }
                 drop @24
-                @22 := core::iter::traits::collect::{impl core::iter::traits::collect::IntoIterator for I}#1<core::ops::range::Range<usize>[core::marker::Sized<usize>]>[core::marker::Sized<core::ops::range::Range<usize>[core::marker::Sized<usize>]>, core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>[@TraitClause0]}#6<usize>[core::marker::Sized<usize>, core::iter::range::{impl core::iter::range::Step for usize}#43]]::into_iter(move (@23))
+                @22 := core::iter::traits::collect::{impl core::iter::traits::collect::IntoIterator for I}#1::into_iter<core::ops::range::Range<usize>[core::marker::Sized<usize>]>[core::marker::Sized<core::ops::range::Range<usize>[core::marker::Sized<usize>]>, core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>[@TraitClause0]}#6<usize>[core::marker::Sized<usize>, core::iter::range::{impl core::iter::range::Step for usize}#43]](move (@23))
                 drop @23
                 @fake_read(@22)
                 iter@25 := move (@22)
                 loop {
                     @29 := &mut iter@25
                     @28 := &two-phase-mut *(@29)
-                    @27 := core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>[@TraitClause0]}#6<usize>[core::marker::Sized<usize>, core::iter::range::{impl core::iter::range::Step for usize}#43]::next<'_>(move (@28))
+                    @27 := core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>[@TraitClause0]}#6::next<'_, usize>[core::marker::Sized<usize>, core::iter::range::{impl core::iter::range::Step for usize}#43](move (@28))
                     drop @28
                     @fake_read(@27)
                     match @27 {
@@ -1748,14 +1731,14 @@ fn test_crate::loop_inside_if(@1: bool, @2: u32) -> u32
         @8 := copy (n@2)
         @7 := core::ops::range::Range { start: const (0 : u32), end: move (@8) }
         drop @8
-        @6 := core::iter::traits::collect::{impl core::iter::traits::collect::IntoIterator for I}#1<core::ops::range::Range<u32>[core::marker::Sized<u32>]>[core::marker::Sized<core::ops::range::Range<u32>[core::marker::Sized<u32>]>, core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>[@TraitClause0]}#6<u32>[core::marker::Sized<u32>, core::iter::range::{impl core::iter::range::Step for u32}#39]]::into_iter(move (@7))
+        @6 := core::iter::traits::collect::{impl core::iter::traits::collect::IntoIterator for I}#1::into_iter<core::ops::range::Range<u32>[core::marker::Sized<u32>]>[core::marker::Sized<core::ops::range::Range<u32>[core::marker::Sized<u32>]>, core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>[@TraitClause0]}#6<u32>[core::marker::Sized<u32>, core::iter::range::{impl core::iter::range::Step for u32}#39]](move (@7))
         drop @7
         @fake_read(@6)
         iter@9 := move (@6)
         loop {
             @14 := &mut iter@9
             @13 := &two-phase-mut *(@14)
-            @12 := core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>[@TraitClause0]}#6<u32>[core::marker::Sized<u32>, core::iter::range::{impl core::iter::range::Step for u32}#39]::next<'_>(move (@13))
+            @12 := core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>[@TraitClause0]}#6::next<'_, u32>[core::marker::Sized<u32>, core::iter::range::{impl core::iter::range::Step for u32}#39](move (@13))
             drop @13
             @fake_read(@12)
             match @12 {
@@ -1920,18 +1903,6 @@ where
     [@TraitClause0]: core::marker::Sized<T>,
     [@TraitClause1]: core::marker::Sized<A>,
 
-trait core::ops::index::Index<Self, Idx>
-{
-    type Output
-    fn index : core::ops::index::Index::index
-}
-
-trait core::ops::index::IndexMut<Self, Idx>
-{
-    parent_clause0 : [@TraitClause0]: core::ops::index::Index<Self, Idx>
-    fn index_mut : core::ops::index::IndexMut::index_mut
-}
-
 trait core::slice::index::private_slice_index::Sealed<Self>
 
 trait core::slice::index::SliceIndex<Self, T>
@@ -1944,6 +1915,12 @@ trait core::slice::index::SliceIndex<Self, T>
     fn get_unchecked_mut : core::slice::index::SliceIndex::get_unchecked_mut
     fn index : core::slice::index::SliceIndex::index
     fn index_mut : core::slice::index::SliceIndex::index_mut
+}
+
+trait core::ops::index::Index<Self, Idx>
+{
+    type Output
+    fn index : core::ops::index::Index::index
 }
 
 fn alloc::vec::{impl core::ops::index::Index<I> for alloc::vec::Vec<T, A>[@TraitClause0, @TraitClause2]}#13::index<'_0, T, I, A>(@1: &'_0 (alloc::vec::Vec<T, A>[@TraitClause0, @TraitClause2]), @2: I) -> &'_0 (alloc::vec::{impl core::ops::index::Index<I> for alloc::vec::Vec<T, A>[@TraitClause0, @TraitClause2]}#13<T, I, A>[@TraitClause0, @TraitClause1, @TraitClause2, @TraitClause3]::Output)
@@ -1972,17 +1949,6 @@ where
     [@TraitClause1]: core::marker::Sized<I>,
     [@TraitClause2]: core::marker::Sized<A>,
     [@TraitClause3]: core::slice::index::SliceIndex<I, Slice<T>>,
-
-impl<T, I, A> alloc::vec::{impl core::ops::index::IndexMut<I> for alloc::vec::Vec<T, A>[@TraitClause0, @TraitClause2]}#14<T, I, A> : core::ops::index::IndexMut<alloc::vec::Vec<T, A>[@TraitClause0, @TraitClause2], I>
-where
-    [@TraitClause0]: core::marker::Sized<T>,
-    [@TraitClause1]: core::marker::Sized<I>,
-    [@TraitClause2]: core::marker::Sized<A>,
-    [@TraitClause3]: core::slice::index::SliceIndex<I, Slice<T>>,
-{
-    parent_clause0 = alloc::vec::{impl core::ops::index::Index<I> for alloc::vec::Vec<T, A>[@TraitClause0, @TraitClause2]}#13<T, I, A>[@TraitClause0, @TraitClause1, @TraitClause2, @TraitClause3]
-    fn index_mut = alloc::vec::{impl core::ops::index::IndexMut<I> for alloc::vec::Vec<T, A>[@TraitClause0, @TraitClause2]}#14::index_mut
-}
 
 impl core::slice::index::private_slice_index::{impl core::slice::index::private_slice_index::Sealed for usize} : core::slice::index::private_slice_index::Sealed<usize>
 
@@ -2030,8 +1996,6 @@ where
     fn index_mut = core::slice::index::{impl core::slice::index::SliceIndex<Slice<T>> for usize}#2::index_mut
 }
 
-fn core::ops::index::IndexMut::index_mut<'_0, Self, Idx>(@1: &'_0 mut (Self), @2: Idx) -> &'_0 mut (Self::parent_clause0::Output)
-
 fn test_crate::clear<'_0>(@1: &'_0 mut (alloc::vec::Vec<u32, alloc::alloc::Global>[core::marker::Sized<u32>, core::marker::Sized<alloc::alloc::Global>]))
 {
     let @0: (); // return
@@ -2062,7 +2026,7 @@ fn test_crate::clear<'_0>(@1: &'_0 mut (alloc::vec::Vec<u32, alloc::alloc::Globa
             drop @5
             @9 := &mut *(v@1)
             @10 := copy (i@2)
-            @8 := alloc::vec::{impl core::ops::index::IndexMut<I> for alloc::vec::Vec<T, A>[@TraitClause0, @TraitClause2]}#14<u32, usize, alloc::alloc::Global>[core::marker::Sized<u32>, core::marker::Sized<usize>, core::marker::Sized<alloc::alloc::Global>, core::slice::index::{impl core::slice::index::SliceIndex<Slice<T>> for usize}#2<u32>[core::marker::Sized<u32>]]::index_mut<'_>(move (@9), move (@10))
+            @8 := alloc::vec::{impl core::ops::index::IndexMut<I> for alloc::vec::Vec<T, A>[@TraitClause0, @TraitClause2]}#14::index_mut<'_, u32, usize, alloc::alloc::Global>[core::marker::Sized<u32>, core::marker::Sized<usize>, core::marker::Sized<alloc::alloc::Global>, core::slice::index::{impl core::slice::index::SliceIndex<Slice<T>> for usize}#2<u32>[core::marker::Sized<u32>]](move (@9), move (@10))
             drop @10
             drop @9
             *(@8) := const (0 : u32)
@@ -2207,6 +2171,42 @@ where
             },
         }
     }
+}
+
+fn core::iter::traits::collect::IntoIterator::into_iter<Self>(@1: Self) -> Self::IntoIter
+
+impl<I> core::iter::traits::collect::{impl core::iter::traits::collect::IntoIterator for I}#1<I> : core::iter::traits::collect::IntoIterator<I>
+where
+    [@TraitClause0]: core::marker::Sized<I>,
+    [@TraitClause1]: core::iter::traits::iterator::Iterator<I>,
+{
+    parent_clause0 = @TraitClause1::parent_clause0
+    parent_clause1 = @TraitClause1
+    parent_clause2 = @TraitClause0
+    type Item = @TraitClause1::Item
+    type IntoIter = I
+    fn into_iter = core::iter::traits::collect::{impl core::iter::traits::collect::IntoIterator for I}#1::into_iter
+}
+
+fn core::iter::traits::iterator::Iterator::next<'_0, Self>(@1: &'_0 mut (Self)) -> core::option::Option<Self::Item>[Self::parent_clause0]
+
+fn core::ops::index::IndexMut::index_mut<'_0, Self, Idx>(@1: &'_0 mut (Self), @2: Idx) -> &'_0 mut (Self::parent_clause0::Output)
+
+trait core::ops::index::IndexMut<Self, Idx>
+{
+    parent_clause0 : [@TraitClause0]: core::ops::index::Index<Self, Idx>
+    fn index_mut : core::ops::index::IndexMut::index_mut
+}
+
+impl<T, I, A> alloc::vec::{impl core::ops::index::IndexMut<I> for alloc::vec::Vec<T, A>[@TraitClause0, @TraitClause2]}#14<T, I, A> : core::ops::index::IndexMut<alloc::vec::Vec<T, A>[@TraitClause0, @TraitClause2], I>
+where
+    [@TraitClause0]: core::marker::Sized<T>,
+    [@TraitClause1]: core::marker::Sized<I>,
+    [@TraitClause2]: core::marker::Sized<A>,
+    [@TraitClause3]: core::slice::index::SliceIndex<I, Slice<T>>,
+{
+    parent_clause0 = alloc::vec::{impl core::ops::index::Index<I> for alloc::vec::Vec<T, A>[@TraitClause0, @TraitClause2]}#13<T, I, A>[@TraitClause0, @TraitClause1, @TraitClause2, @TraitClause3]
+    fn index_mut = alloc::vec::{impl core::ops::index::IndexMut<I> for alloc::vec::Vec<T, A>[@TraitClause0, @TraitClause2]}#14::index_mut
 }
 
 fn core::iter::range::Step::steps_between<'_0, '_1, Self>(@1: &'_0 (Self), @2: &'_1 (Self)) -> core::option::Option<usize>[core::marker::Sized<usize>]

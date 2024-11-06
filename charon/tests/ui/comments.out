@@ -147,14 +147,6 @@ trait core::default::Default<Self>
 
 fn core::default::{impl core::default::Default for u32}#7::default() -> u32
 
-impl core::default::{impl core::default::Default for u32}#7 : core::default::Default<u32>
-{
-    parent_clause0 = core::marker::Sized<u32>
-    fn default = core::default::{impl core::default::Default for u32}#7::default
-}
-
-fn core::default::Default::default<Self>() -> Self
-
 fn test_crate::{impl core::default::Default for test_crate::Foo}::default() -> test_crate::Foo
 {
     let @0: test_crate::Foo; // return
@@ -427,6 +419,14 @@ fn test_crate::fool()
     @0 := ()
     @0 := ()
     return
+}
+
+fn core::default::Default::default<Self>() -> Self
+
+impl core::default::{impl core::default::Default for u32}#7 : core::default::Default<u32>
+{
+    parent_clause0 = core::marker::Sized<u32>
+    fn default = core::default::{impl core::default::Default for u32}#7::default
 }
 
 

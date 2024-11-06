@@ -57,10 +57,6 @@ fn test_crate::mk_foo()
     return
 }
 
-fn test_crate::Foo::get_ty<'_0, Self>(@1: &'_0 (Self)) -> &'_0 (Self::Type)
-
-fn core::clone::Clone::clone<'_0, Self>(@1: &'_0 (Self)) -> Self
-
 fn test_crate::use_foo()
 {
     let @0: (); // return
@@ -125,6 +121,10 @@ fn test_crate::RPITIT::make_foo<Self>() -> Self::
     @0 := move (@1)
     return
 }
+
+fn test_crate::Foo::get_ty<'_0, Self>(@1: &'_0 (Self)) -> &'_0 (Self::Type)
+
+fn core::clone::Clone::clone<'_0, Self>(@1: &'_0 (Self)) -> Self
 
 fn test_crate::use_tait<T>()
 where

@@ -100,13 +100,6 @@ fn test_crate::bool_to_opt(@1: bool) -> core::option::Option<()>[core::marker::S
     return
 }
 
-trait core::convert::From<Self, T>
-{
-    parent_clause0 : [@TraitClause0]: core::marker::Sized<Self>
-    parent_clause1 : [@TraitClause1]: core::marker::Sized<T>
-    fn from : core::convert::From::from
-}
-
 fn core::convert::num::{impl core::convert::From<i32> for i64}#83::from(@1: i32) -> i64
 {
     let @0: i64; // return
@@ -115,15 +108,6 @@ fn core::convert::num::{impl core::convert::From<i32> for i64}#83::from(@1: i32)
     @0 := cast<i32, i64>(copy (small@1))
     return
 }
-
-impl core::convert::num::{impl core::convert::From<i32> for i64}#83 : core::convert::From<i64, i32>
-{
-    parent_clause0 = core::marker::Sized<i64>
-    parent_clause1 = core::marker::Sized<i32>
-    fn from = core::convert::num::{impl core::convert::From<i32> for i64}#83::from
-}
-
-fn core::convert::From::from<Self, T>(@1: T) -> Self
 
 fn test_crate::convert(@1: i32) -> i64
 {
@@ -240,6 +224,22 @@ where
     drop _x@1
     @0 := ()
     return
+}
+
+fn core::convert::From::from<Self, T>(@1: T) -> Self
+
+trait core::convert::From<Self, T>
+{
+    parent_clause0 : [@TraitClause0]: core::marker::Sized<Self>
+    parent_clause1 : [@TraitClause1]: core::marker::Sized<T>
+    fn from : core::convert::From::from
+}
+
+impl core::convert::num::{impl core::convert::From<i32> for i64}#83 : core::convert::From<i64, i32>
+{
+    parent_clause0 = core::marker::Sized<i64>
+    parent_clause1 = core::marker::Sized<i32>
+    fn from = core::convert::num::{impl core::convert::From<i32> for i64}#83::from
 }
 
 fn core::cmp::PartialEq::eq<'_0, '_1, Self, Rhs>(@1: &'_0 (Self), @2: &'_1 (Rhs)) -> bool

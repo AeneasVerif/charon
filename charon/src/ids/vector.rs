@@ -103,6 +103,20 @@ where
         id
     }
 
+    pub fn push_all<It>(&mut self, it: It) -> impl Iterator<Item = I> + use<'_, I, T, It>
+    where
+        It: Iterator<Item = T>,
+    {
+        it.map(move |x| self.push(x))
+    }
+
+    pub fn extend<It>(&mut self, it: It)
+    where
+        It: Iterator<Item = T>,
+    {
+        self.push_all(it).for_each(|_| ())
+    }
+
     /// Map each entry to a new one, keeping the same ids.
     pub fn map<U>(self, mut f: impl FnMut(T) -> U) -> Vector<I, U> {
         Vector {

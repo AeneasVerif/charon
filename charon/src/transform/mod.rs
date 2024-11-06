@@ -22,6 +22,7 @@ pub mod remove_read_discriminant;
 pub mod remove_unused_locals;
 pub mod reorder_decls;
 pub mod simplify_constants;
+pub mod skip_trait_refs_when_known;
 pub mod ullbc_to_llbc;
 pub mod update_block_indices;
 pub mod update_closure_signatures;
@@ -58,6 +59,10 @@ pub static ULLBC_PASSES: &[Pass] = &[
     // # Micro-pass: desugar the constants to other values/operands as much
     // as possible.
     UnstructuredBody(&simplify_constants::Transform),
+    // # Micro-pass: whenever we call a trait method on a known type, refer to the method `FunDecl`
+    // directly instead of going via a `TraitRef`. This is done before `reorder_decls` to remove
+    // some sources of mutual recursion.
+    UnstructuredBody(&skip_trait_refs_when_known::Transform),
     // # Micro-pass: the first local variable of closures is the
     // closure itself. This is not consistent with the closure signature,
     // which ignores this first variable. This micro-pass updates this.
