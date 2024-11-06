@@ -728,7 +728,30 @@ let match_fn_ptr (ctx : ctx) (c : match_config) (p : pattern) (func : E.fn_ptr)
           match_name_with_generics ctx c p (to_name [ name ]) func.generics)
   | FunId (FRegular fid) ->
       let d = A.FunDeclId.Map.find fid ctx.fun_decls in
-      match_name_with_generics ctx c p d.item_meta.name func.generics
+      (* Match the pattern on the name of the function. *)
+      let match_function_name =
+        match_name_with_generics ctx c p d.item_meta.name func.generics
+      in
+      (* Match the pattern on the trait implementation and method name, if applicable. *)
+      let match_trait_ref =
+        match d.kind with
+        | TraitImplItem (_, trait_ref, method_name, _)
+          when c.match_with_trait_decl_refs ->
+            let subst =
+              Substitute.make_subst_from_generics d.signature.generics
+                func.generics Self
+            in
+            let trait_ref =
+              Substitute.trait_decl_ref_substitute subst trait_ref
+            in
+            (* TODO: recover the method generics somehow *)
+            let method_generics = TypesUtils.empty_generic_args in
+            match_trait_decl_ref_item ctx c (mk_empty_maps ()) p
+              { binder_value = trait_ref; binder_regions = [] }
+              method_name method_generics
+        | _ -> false
+      in
+      match_function_name || match_trait_ref
   | TraitMethod (tr, method_name, _) ->
       match_trait_decl_ref_item ctx c (mk_empty_maps ()) p tr.trait_decl_ref
         method_name func.generics

@@ -28,7 +28,7 @@ impl<T> Trait<Option<T>> for Box<T> {
         "test_crate::{test_crate::Trait<alloc::boxed::Box<@T>, core::option::Option<@U>>}::method"
     )]
     #[pattern::pass("test_crate::{test_crate::Trait<@T, @U>}::method")]
-    #[pattern::fail("test_crate::Trait<@T, @U>::method")]
+    #[pattern::pass("test_crate::Trait<@T, @U>::method")]
     fn method<U>() {}
 }
 
@@ -53,9 +53,8 @@ impl<T, U> Trait<Box<T>> for Option<U> {
 #[pattern::pass(call[0], "core::option::{core::option::Option<@T>}::is_some")]
 #[pattern::pass(call[1], "ArrayToSliceShared<'_, bool, 1>")]
 // This is a trait instance call.
-// TODO: fix
-#[pattern::fail(call[2], "core::ops::index::Index<[bool], core::ops::range::RangeFrom<usize>>::index")]
-#[pattern::fail(call[2], "core::ops::index::Index<[@T], @I>::index")]
+#[pattern::pass(call[2], "core::ops::index::Index<[bool], core::ops::range::RangeFrom<usize>>::index")]
+#[pattern::pass(call[2], "core::ops::index::Index<[@T], @I>::index")]
 // We can reference the method directly.
 #[pattern::pass(call[2], "core::slice::index::{core::ops::index::Index<[@T], @I>}::index<bool, core::ops::range::RangeFrom<usize>>")]
 fn foo() {
