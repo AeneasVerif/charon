@@ -287,6 +287,28 @@ impl Ty {
         }
     }
 
+    pub fn as_array_or_slice(&self) -> Option<&Ty> {
+        match self.kind() {
+            TyKind::Adt(TypeId::Builtin(BuiltinTy::Array | BuiltinTy::Slice), generics) => {
+                assert!(generics.regions.is_empty());
+                assert!(generics.types.len() == 1);
+                Some(&generics.types[0])
+            }
+            _ => None,
+        }
+    }
+
+    pub fn as_tuple(&self) -> Option<&Vector<TypeVarId, Ty>> {
+        match self.kind() {
+            TyKind::Adt(TypeId::Tuple, generics) => {
+                assert!(generics.regions.is_empty());
+                assert!(generics.const_generics.is_empty());
+                Some(&generics.types)
+            }
+            _ => None,
+        }
+    }
+
     /// Wrap a visitor to make it visit the contents of types it encounters.
     pub fn visit_inside<V>(visitor: V) -> VisitInsideTy<V> {
         VisitInsideTy {
