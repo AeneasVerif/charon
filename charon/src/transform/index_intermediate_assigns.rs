@@ -3,7 +3,7 @@
 //!
 //! The problem comes from "and assignments" like in the snippet of code below:
 //! ```text
-//! x[0] += 1; // Desugards to: x[0] = copy x[0] + 1
+//! x[0] += 1; // Desugars to: x[0] = copy x[0] + 1
 //! ```
 //!
 //! If we don't introduce an intermediate assignment, then the micro-pass which
@@ -12,7 +12,7 @@
 //! ```text
 //! dest = &mut x[0];
 //! src = & x[0]; // Invalidates dest
-//! *dest = copy (*src) + 1; // Can't derefference dest!
+//! *dest = copy (*src) + 1; // Can't dereference dest!
 //! ```
 //! (also note that the problem remains if we introduce `src` *then* `dest`).
 //!
