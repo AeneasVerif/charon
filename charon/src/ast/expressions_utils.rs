@@ -3,10 +3,15 @@ use crate::ast::*;
 use crate::ids::Vector;
 
 impl Place {
-    pub fn new(var_id: VarId) -> Place {
+    pub fn new(var_id: VarId, ty: Ty) -> Place {
         Place {
             kind: PlaceKind::Base(var_id),
+            ty,
         }
+    }
+
+    pub fn ty(&self) -> &Ty {
+        &self.ty
     }
 
     /// Whether this place corresponds to a local variable without any projections.
@@ -30,9 +35,10 @@ impl Place {
         }
     }
 
-    pub fn project(self, elem: ProjectionElem) -> Self {
+    pub fn project(self, elem: ProjectionElem, ty: Ty) -> Self {
         Self {
             kind: PlaceKind::Projection(Box::new(self), elem),
+            ty,
         }
     }
 }
@@ -44,19 +50,6 @@ impl BorrowKind {
         } else {
             Self::Shared
         }
-    }
-}
-
-impl Place {
-    /// Compute the type of a place.
-    pub fn ty(&self, type_decls: &Vector<TypeDeclId, TypeDecl>, locals: &Locals) -> Result<Ty, ()> {
-        Ok(match &self.kind {
-            PlaceKind::Base(var_id) => locals.vars.get(*var_id).ok_or(())?.ty.clone(),
-            PlaceKind::Projection(sub_place, proj) => {
-                let sub_ty = sub_place.ty(type_decls, locals)?;
-                proj.project_type(type_decls, &sub_ty)?
-            }
-        })
     }
 }
 
@@ -130,16 +123,7 @@ impl ProjectionElem {
                     ClosureState => return Err(()),
                 }
             }
-            Index { ty, .. } | Subslice { ty, .. } => {
-                let expected_ty = ty.as_array_or_slice().ok_or(())?;
-                let ty = ty.as_array_or_slice().ok_or(())?;
-                // Sanity check: ensure we're using the same types.
-                if expected_ty == ty {
-                    ty.clone()
-                } else {
-                    return Err(());
-                }
-            }
+            Index { .. } | Subslice { .. } => ty.as_array_or_slice().ok_or(())?.clone(),
         })
     }
 }

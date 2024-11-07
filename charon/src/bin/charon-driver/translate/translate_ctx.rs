@@ -929,7 +929,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         self.t_ctx.def_span(def_id)
     }
 
-    pub(crate) fn get_local(&self, local: &hax::Local) -> Option<VarId> {
+    pub(crate) fn translate_local(&self, local: &hax::Local) -> Option<VarId> {
         use rustc_index::Idx;
         self.vars_map.get(&local.index()).copied()
     }

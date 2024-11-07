@@ -35,12 +35,10 @@ impl<'a> Visitor<'a> {
 
     fn transform_place(&mut self, mut_access: bool, place: &mut Place) {
         use ProjectionElem::*;
-        let PlaceKind::Projection(subplace, pe @ (Index { ty, .. } | Subslice { ty, .. })) =
-            &place.kind
-        else {
+        let Some((subplace, pe @ (Index { .. } | Subslice { .. }))) = place.as_projection() else {
             return;
         };
-        let TyKind::Adt(TypeId::Builtin(builtin_ty), generics) = ty.kind() else {
+        let TyKind::Adt(TypeId::Builtin(builtin_ty), generics) = subplace.ty().kind() else {
             unreachable!()
         };
 
@@ -62,23 +60,27 @@ impl<'a> Visitor<'a> {
             })
         };
 
-        let input_ty =
-            TyKind::Ref(Region::Erased, ty.clone(), RefKind::mutable(mut_access)).into_ty();
+        let input_ty = TyKind::Ref(
+            Region::Erased,
+            subplace.ty().clone(),
+            RefKind::mutable(mut_access),
+        )
+        .into_ty();
 
+        let elem_ty = generics.types[0].clone();
+        let output_inner_ty = if matches!(pe, Index { .. }) {
+            elem_ty
+        } else {
+            TyKind::Adt(
+                TypeId::Builtin(BuiltinTy::Slice),
+                GenericArgs::new_from_types(vec![elem_ty].into()),
+            )
+            .into_ty()
+        };
         let output_ty = {
-            let elem_ty = generics.types[0].clone();
-            let output_inner_ty = if matches!(pe, Index { .. }) {
-                elem_ty
-            } else {
-                TyKind::Adt(
-                    TypeId::Builtin(BuiltinTy::Slice),
-                    GenericArgs::new_from_types(vec![elem_ty].into()),
-                )
-                .into_ty()
-            };
             TyKind::Ref(
                 Region::Erased,
-                output_inner_ty,
+                output_inner_ty.clone(),
                 RefKind::mutable(mut_access),
             )
             .into_ty()
@@ -90,7 +92,7 @@ impl<'a> Visitor<'a> {
             let input_var = self.fresh_var(None, input_ty);
             let kind = RawStatement::Assign(
                 input_var.clone(),
-                Rvalue::Ref(subplace.as_ref().clone(), BorrowKind::mutable(mut_access)),
+                Rvalue::Ref(subplace.clone(), BorrowKind::mutable(mut_access)),
             );
             self.statements.push(Statement::new(self.span, kind));
             input_var
@@ -118,8 +120,8 @@ impl<'a> Visitor<'a> {
             let kind = RawStatement::Assign(
                 len_var.clone(),
                 Rvalue::Len(
-                    subplace.as_ref().clone(),
-                    ty.clone(),
+                    subplace.clone(),
+                    subplace.ty().clone(),
                     generics.const_generics.get(0.into()).cloned(),
                 ),
             );
@@ -151,7 +153,7 @@ impl<'a> Visitor<'a> {
         };
 
         // Update the place.
-        *place = output_var.project(ProjectionElem::Deref);
+        *place = output_var.project(ProjectionElem::Deref, output_inner_ty);
     }
 }
 

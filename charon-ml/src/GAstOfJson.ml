@@ -44,9 +44,10 @@ let rec ___ = ()
 and place_of_json (js : json) : (place, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
-    | `Assoc [ ("kind", kind) ] ->
+    | `Assoc [ ("kind", kind); ("ty", ty) ] ->
         let* kind = place_kind_of_json kind in
-        Ok ({ kind } : place)
+        let* ty = ty_of_json ty in
+        Ok ({ kind; ty } : place)
     | _ -> Error "")
 
 and place_kind_of_json (js : json) : (place_kind, string) result =

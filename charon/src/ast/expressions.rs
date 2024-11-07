@@ -11,6 +11,7 @@ use std::vec::Vec;
 #[derive(Debug, PartialEq, Eq, Clone, Serialize, Deserialize, Drive, DriveMut)]
 pub struct Place {
     pub kind: PlaceKind,
+    pub ty: Ty,
 }
 
 #[derive(
@@ -69,8 +70,6 @@ pub enum ProjectionElem {
     Index {
         offset: Box<Operand>,
         from_end: bool,
-        // Type of the array/slice that we index into.
-        ty: Ty,
     },
     /// Take a subslice of a slice or array. If `from_end` is `true` this is
     /// `slice[from..slice.len() - to]`, otherwise this is `slice[from..to]`.
@@ -80,8 +79,6 @@ pub enum ProjectionElem {
         from: Box<Operand>,
         to: Box<Operand>,
         from_end: bool,
-        // Type of the array/slice that we index into.
-        ty: Ty,
     },
 }
 

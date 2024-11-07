@@ -41,7 +41,7 @@ class ['self] map_rvalue_base =
     method visit_field_id : 'env -> field_id -> field_id = fun _ x -> x
   end
 
-type place = { kind : place_kind }
+type place = { kind : place_kind; ty : ty }
 
 and place_kind =
   | PlaceBase of var_id

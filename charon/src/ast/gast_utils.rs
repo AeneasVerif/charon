@@ -45,13 +45,18 @@ impl Body {
 impl Locals {
     /// Creates a new variable and returns a place pointing to it.
     pub fn new_var(&mut self, name: Option<String>, ty: Ty) -> Place {
-        let var_id = self.vars.push_with(|index| Var { index, name, ty });
-        Place::new(var_id)
+        let var_id = self.vars.push_with(|index| Var {
+            index,
+            name,
+            ty: ty.clone(),
+        });
+        Place::new(var_id, ty)
     }
 
     /// Gets a place pointing to the corresponding variable.
     pub fn place_for_var(&self, var_id: VarId) -> Place {
-        Place::new(var_id)
+        let ty = self.vars[var_id].ty.clone();
+        Place::new(var_id, ty)
     }
 
     /// The place where we write the return value.
