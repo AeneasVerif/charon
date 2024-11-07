@@ -62,7 +62,7 @@ impl Transform {
                         ..
                     } = &mut rest[i]
                         && let Some((sub, ProjectionElem::Deref)) = box_deref.as_projection()
-                        && sub == *box_make
+                        && sub == box_make
                     {
                         let real_i = prefix_len + i;
                         let mut to_insert = Vec::new();

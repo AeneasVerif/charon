@@ -354,9 +354,9 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                     }
                     hax::ProjectionElem::Index(local) => {
                         let local = self.get_local(local).unwrap();
-                        let operand = Operand::Copy(Place::new(local));
+                        let offset = Operand::Copy(Place::new(local));
                         place.project(ProjectionElem::Index {
-                            offset: operand,
+                            offset: Box::new(offset),
                             from_end: false,
                             ty: current_ty,
                         })
@@ -374,7 +374,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                     } => {
                         let offset = Operand::Const(ScalarValue::Usize(offset).to_constant());
                         place.project(ProjectionElem::Index {
-                            offset,
+                            offset: Box::new(offset),
                             from_end,
                             ty: current_ty,
                         })
@@ -383,8 +383,8 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                         let from = Operand::Const(ScalarValue::Usize(from).to_constant());
                         let to = Operand::Const(ScalarValue::Usize(to).to_constant());
                         place.project(ProjectionElem::Subslice {
-                            from,
-                            to,
+                            from: Box::new(from),
+                            to: Box::new(to),
                             from_end,
                             ty: current_ty,
                         })

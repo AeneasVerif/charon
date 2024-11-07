@@ -10,12 +10,27 @@ use std::vec::Vec;
 
 #[derive(Debug, PartialEq, Eq, Clone, Serialize, Deserialize, Drive, DriveMut)]
 pub struct Place {
-    // TODO: update to transform to a recursive type
-    pub var_id: VarId,
-    pub projection: Projection,
+    pub kind: PlaceKind,
 }
 
-pub type Projection = Vec<ProjectionElem>;
+#[derive(
+    Debug,
+    PartialEq,
+    Eq,
+    Clone,
+    EnumIsA,
+    EnumAsGetters,
+    EnumToGetters,
+    Serialize,
+    Deserialize,
+    Drive,
+    DriveMut,
+)]
+#[charon::variants_prefix("Place")]
+pub enum PlaceKind {
+    Base(VarId),
+    Projection(Box<Place>, ProjectionElem),
+}
 
 /// Note that we don't have the equivalent of "downcasts".
 /// Downcasts are actually necessary, for instance when initializing enumeration
@@ -52,7 +67,7 @@ pub enum ProjectionElem {
     /// We **eliminate** this variant in a micro-pass.
     #[charon::opaque]
     Index {
-        offset: Operand,
+        offset: Box<Operand>,
         from_end: bool,
         // Type of the array/slice that we index into.
         ty: Ty,
@@ -62,8 +77,8 @@ pub enum ProjectionElem {
     /// We **eliminate** this variant in a micro-pass.
     #[charon::opaque]
     Subslice {
-        from: Operand,
-        to: Operand,
+        from: Box<Operand>,
+        to: Box<Operand>,
         from_end: bool,
         // Type of the array/slice that we index into.
         ty: Ty,

@@ -54,8 +54,8 @@ impl Transform {
                     assert_cond.as_projection()
                 && fid1.index() == 1
                 && binop.is_local()
-                && sub0 == *binop
-                && sub1 == *binop
+                && *sub0 == *binop
+                && *sub1 == *binop
             {
                 // Switch to the unchecked operation.
                 *op = match op {

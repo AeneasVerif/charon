@@ -22,34 +22,29 @@ let var_id_to_string (env : ('a, 'b) fmt_env) (id : VarId.id) : string =
       | None -> var_id_to_pretty_string id
       | Some name -> name ^ "^" ^ VarId.to_string id)
 
-let rec projection_to_string (env : ('a, 'b) fmt_env) (s : string)
-    (p : projection) : string =
-  match p with
-  | [] -> s
-  | pe :: p' ->
-      let s =
-        match pe with
-        | Deref -> "*(" ^ s ^ ")"
-        | Field (ProjTuple _, fid) -> "(" ^ s ^ ")." ^ FieldId.to_string fid
-        | Field (ProjAdt (adt_id, opt_variant_id), fid) -> (
-            let field_name =
-              match adt_field_to_string env adt_id opt_variant_id fid with
-              | Some field_name -> field_name
-              | None -> FieldId.to_string fid
-            in
-            match opt_variant_id with
-            | None -> "(" ^ s ^ ")." ^ field_name
-            | Some variant_id ->
-                let variant_name =
-                  adt_variant_to_string env adt_id variant_id
-                in
-                "(" ^ s ^ " as " ^ variant_name ^ ")." ^ field_name)
+let projection_elem_to_string (env : ('a, 'b) fmt_env) (sub : string)
+    (pe : projection_elem) : string =
+  match pe with
+  | Deref -> "*(" ^ sub ^ ")"
+  | Field (ProjTuple _, fid) -> "(" ^ sub ^ ")." ^ FieldId.to_string fid
+  | Field (ProjAdt (adt_id, opt_variant_id), fid) -> (
+      let field_name =
+        match adt_field_to_string env adt_id opt_variant_id fid with
+        | Some field_name -> field_name
+        | None -> FieldId.to_string fid
       in
-      projection_to_string env s p'
+      match opt_variant_id with
+      | None -> "(" ^ sub ^ ")." ^ field_name
+      | Some variant_id ->
+          let variant_name = adt_variant_to_string env adt_id variant_id in
+          "(" ^ sub ^ " as " ^ variant_name ^ ")." ^ field_name)
 
-let place_to_string (env : ('a, 'b) fmt_env) (p : place) : string =
-  let var = var_id_to_string env p.var_id in
-  projection_to_string env var p.projection
+let rec place_to_string (env : ('a, 'b) fmt_env) (p : place) : string =
+  match p.kind with
+  | PlaceBase var_id -> var_id_to_string env var_id
+  | PlaceProjection (subplace, pe) ->
+      let subplace = place_to_string env subplace in
+      projection_elem_to_string env subplace pe
 
 let cast_kind_to_string (env : ('a, 'b) fmt_env) (cast : cast_kind) : string =
   match cast with

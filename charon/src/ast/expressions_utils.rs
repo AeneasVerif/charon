@@ -5,41 +5,35 @@ use crate::ids::Vector;
 impl Place {
     pub fn new(var_id: VarId) -> Place {
         Place {
-            var_id,
-            projection: Vec::new(),
+            kind: PlaceKind::Base(var_id),
         }
     }
 
     /// Whether this place corresponds to a local variable without any projections.
     pub fn is_local(&self) -> bool {
-        self.projection.is_empty()
+        self.as_local().is_some()
     }
 
     /// If this place corresponds to an unprojected local, return the variable id.
     pub fn as_local(&self) -> Option<VarId> {
-        self.projection.is_empty().then_some(self.var_id)
+        self.kind.as_base().copied()
     }
 
-    pub fn as_projection(&self) -> Option<(Self, &ProjectionElem)> {
-        match self.projection.as_slice() {
-            [] => None,
-            [rest @ .., p] => Some((
-                Place {
-                    var_id: self.var_id,
-                    projection: rest.to_vec(),
-                },
-                p,
-            )),
-        }
+    pub fn as_projection(&self) -> Option<(&Self, &ProjectionElem)> {
+        self.kind.as_projection().map(|(pl, pj)| (pl.as_ref(), pj))
     }
 
     pub fn var_id(&self) -> VarId {
-        self.var_id
+        match &self.kind {
+            PlaceKind::Base(var_id) => *var_id,
+            PlaceKind::Projection(subplace, _) => subplace.var_id(),
+        }
     }
 
-    pub fn project(mut self, elem: ProjectionElem) -> Self {
-        self.projection.push(elem);
-        self
+    pub fn project(self, elem: ProjectionElem) -> Self {
+        Self {
+            kind: PlaceKind::Projection(Box::new(self), elem),
+        }
     }
 }
 
@@ -60,15 +54,13 @@ impl Place {
         type_decls: &Vector<TypeDeclId, TypeDecl>,
         locals: &Vector<VarId, Var>,
     ) -> Result<Ty, ()> {
-        // Lookup the local
-        let mut cur_ty = locals.get(self.var_id).ok_or(())?.ty.clone();
-
-        // Apply the projection
-        for pe in &self.projection {
-            cur_ty = pe.project_type(type_decls, &cur_ty)?;
-        }
-
-        Ok(cur_ty)
+        Ok(match &self.kind {
+            PlaceKind::Base(var_id) => locals.get(*var_id).ok_or(())?.ty.clone(),
+            PlaceKind::Projection(sub_place, proj) => {
+                let sub_ty = sub_place.ty(type_decls, locals)?;
+                proj.project_type(type_decls, &sub_ty)?
+            }
+        })
     }
 }
 

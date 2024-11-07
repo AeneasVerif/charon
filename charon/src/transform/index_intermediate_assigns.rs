@@ -36,41 +36,30 @@
 use crate::ids::Vector;
 use crate::llbc_ast::*;
 use crate::transform::TransformCtx;
-use derive_visitor::{Drive, Visitor};
+use derive_visitor::{visitor_enter_fn, Drive};
 
 use super::ctx::LlbcPass;
 
-impl Place {
-    fn contains_index(&self) -> bool {
-        for pe in &self.projection {
-            use ProjectionElem::*;
-            if let Index { .. } | Subslice { .. } = pe {
-                return true;
-            };
+fn contains_index_proj<T: Drive>(x: &T) -> bool {
+    let mut contains_index = false;
+    x.drive(&mut visitor_enter_fn(|proj: &ProjectionElem| {
+        use ProjectionElem::*;
+        if let Index { .. } | Subslice { .. } = proj {
+            contains_index = true;
         }
-        return false;
-    }
+    }));
+    contains_index
 }
 
-#[derive(Visitor)]
-#[visitor(Place(enter))]
-struct RvalueVisitor {
-    contains_index: bool,
-}
-
-impl RvalueVisitor {
-    fn enter_place(&mut self, p: &Place) {
-        self.contains_index = self.contains_index || p.contains_index();
+impl Place {
+    fn contains_index_proj(&self) -> bool {
+        contains_index_proj(self)
     }
 }
 
 impl Rvalue {
-    fn contains_index(&self) -> bool {
-        let mut v = RvalueVisitor {
-            contains_index: false,
-        };
-        self.drive(&mut v);
-        v.contains_index
+    fn contains_index_proj(&self) -> bool {
+        contains_index_proj(self)
     }
 }
 
@@ -125,7 +114,7 @@ impl LlbcPass for Transform {
                     // if both the rhs and the lhs contain an "index"
                     // projection element (this way we avoid introducing
                     // too many intermediate assignments).
-                    if lhs.contains_index() && rhs.contains_index() {
+                    if lhs.contains_index_proj() && rhs.contains_index_proj() {
                         introduce_intermediate_let_binding(ctx, st.span, locals, lhs, rhs)
                     } else {
                         vec![]

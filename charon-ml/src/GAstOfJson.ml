@@ -44,10 +44,21 @@ let rec ___ = ()
 and place_of_json (js : json) : (place, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
-    | `Assoc [ ("var_id", var_id); ("projection", projection) ] ->
-        let* var_id = var_id_of_json var_id in
-        let* projection = list_of_json projection_elem_of_json projection in
-        Ok ({ var_id; projection } : place)
+    | `Assoc [ ("kind", kind) ] ->
+        let* kind = place_kind_of_json kind in
+        Ok ({ kind } : place)
+    | _ -> Error "")
+
+and place_kind_of_json (js : json) : (place_kind, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with
+    | `Assoc [ ("Base", base) ] ->
+        let* base = var_id_of_json base in
+        Ok (PlaceBase base)
+    | `Assoc [ ("Projection", `List [ x_0; x_1 ]) ] ->
+        let* x_0 = place_of_json x_0 in
+        let* x_1 = projection_elem_of_json x_1 in
+        Ok (PlaceProjection (x_0, x_1))
     | _ -> Error "")
 
 and projection_elem_of_json (js : json) : (projection_elem, string) result =

@@ -41,8 +41,11 @@ class ['self] map_rvalue_base =
     method visit_field_id : 'env -> field_id -> field_id = fun _ x -> x
   end
 
-type place = { var_id : var_id; projection : projection_elem list }
-and projection = projection_elem list
+type place = { kind : place_kind }
+
+and place_kind =
+  | PlaceBase of var_id
+  | PlaceProjection of place * projection_elem
 
 (** Note that we don't have the equivalent of "downcasts".
     Downcasts are actually necessary, for instance when initializing enumeration
