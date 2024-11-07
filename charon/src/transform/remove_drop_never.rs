@@ -19,8 +19,8 @@ impl LlbcPass for Transform {
                 // Filter the statement by replacing it with `Nop` if it is a `Drop(x)` where
                 // `x` has type `Never`. Otherwise leave it unchanged.
                 if let RawStatement::Drop(p) = &st.content
-                    && p.projection.is_empty()
-                    && locals.get(p.var_id).unwrap().ty.kind().is_never()
+                    && p.as_local()
+                        .is_some_and(|var_id| locals.get(var_id).unwrap().ty.kind().is_never())
                 {
                     st.content = RawStatement::Nop;
                 }

@@ -11,10 +11,7 @@ use super::ctx::LlbcPass;
 
 fn transform_st(st: &mut Statement) -> Vec<Statement> {
     if let RawStatement::Return = &mut st.content {
-        let ret_place = Place {
-            var_id: VarId::new(0),
-            projection: Projection::new(),
-        };
+        let ret_place = Place::new(VarId::new(0));
         let unit_value = Rvalue::Aggregate(
             AggregateKind::Adt(TypeId::Tuple, None, None, GenericArgs::empty()),
             Vec::new(),

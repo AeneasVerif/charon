@@ -259,39 +259,29 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         place: &hax::Place,
     ) -> Result<(Place, Ty), Error> {
         let ty = self.translate_ty(span, &place.ty)?;
-        let (var_id, projection) = self.translate_projection(span, place)?;
-        Ok((Place { var_id, projection }, ty))
+        let place = self.translate_place(span, place)?;
+        Ok((place, ty))
     }
 
     /// Translate a place
-    fn translate_place(&mut self, span: Span, place: &hax::Place) -> Result<Place, Error> {
-        Ok(self.translate_place_with_type(span, place)?.0)
-    }
-
-    /// Translate a place - TODO: rename
     /// TODO: Hax represents places in a different manner than MIR. We should
     /// update our representation of places to match the Hax representation.
-    fn translate_projection(
-        &mut self,
-        span: Span,
-        place: &hax::Place,
-    ) -> Result<(VarId, Projection), Error> {
+    fn translate_place(&mut self, span: Span, place: &hax::Place) -> Result<Place, Error> {
         match &place.kind {
             hax::PlaceKind::Local(local) => {
                 let var_id = self.get_local(local).unwrap();
-                Ok((var_id, Vec::new()))
+                Ok(Place::new(var_id))
             }
             hax::PlaceKind::Projection { place, kind } => {
-                let (var_id, mut projection) = self.translate_projection(span, place)?;
                 // Compute the type of the value *before* projection - we use this
                 // to disambiguate
-                let current_ty = self.translate_ty(span, &place.ty)?;
-                match kind {
+                let (place, current_ty) = self.translate_place_with_type(span, place)?;
+                let place = match kind {
                     hax::ProjectionElem::Deref => {
                         // We use the type to disambiguate
                         match current_ty.kind() {
                             TyKind::Ref(_, _, _) | TyKind::RawPtr(_, _) => {
-                                projection.push(ProjectionElem::Deref);
+                                place.project(ProjectionElem::Deref)
                             }
                             TyKind::Adt(TypeId::Builtin(BuiltinTy::Box), generics) => {
                                 // This case only happens in some MIR levels
@@ -299,13 +289,13 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                                 assert!(generics.regions.is_empty());
                                 assert!(generics.types.len() == 1);
                                 assert!(generics.const_generics.is_empty());
-                                projection.push(ProjectionElem::Deref);
+                                place.project(ProjectionElem::Deref)
                             }
                             _ => {
                                 unreachable!(
                                     "\n- place.kind: {:?}\n- current_ty: {:?}",
                                     kind, current_ty
-                                );
+                                )
                             }
                         }
                     }
@@ -360,21 +350,22 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                                 ProjectionElem::Field(FieldProjKind::ClosureState, field_id)
                             }
                         };
-                        projection.push(proj_elem);
+                        place.project(proj_elem)
                     }
                     hax::ProjectionElem::Index(local) => {
                         let local = self.get_local(local).unwrap();
                         let operand = Operand::Copy(Place::new(local));
-                        projection.push(ProjectionElem::Index {
+                        place.project(ProjectionElem::Index {
                             offset: operand,
                             from_end: false,
                             ty: current_ty,
-                        });
+                        })
                     }
                     hax::ProjectionElem::Downcast(..) => {
                         // We view it as a nop (the information from the
                         // downcast has been propagated to the other
                         // projection elements by Hax)
+                        place
                     }
                     &hax::ProjectionElem::ConstantIndex {
                         offset,
@@ -382,21 +373,21 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                         min_length: _,
                     } => {
                         let offset = Operand::Const(ScalarValue::Usize(offset).to_constant());
-                        projection.push(ProjectionElem::Index {
+                        place.project(ProjectionElem::Index {
                             offset,
                             from_end,
                             ty: current_ty,
-                        });
+                        })
                     }
                     &hax::ProjectionElem::Subslice { from, to, from_end } => {
                         let from = Operand::Const(ScalarValue::Usize(from).to_constant());
                         let to = Operand::Const(ScalarValue::Usize(to).to_constant());
-                        projection.push(ProjectionElem::Subslice {
+                        place.project(ProjectionElem::Subslice {
                             from,
                             to,
                             from_end,
                             ty: current_ty,
-                        });
+                        })
                     }
                     hax::ProjectionElem::OpaqueCast => {
                         // Don't know what that is
@@ -405,7 +396,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 };
 
                 // Return
-                Ok((var_id, projection))
+                Ok(place)
             }
         }
     }

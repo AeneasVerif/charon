@@ -82,7 +82,7 @@ fn introduce_intermediate_let_binding(
     rhs: &mut Rvalue,
 ) -> Vec<Statement> {
     // Compute the type of the lhs
-    let Ok(lhs_ty) = lhs.compute_projected_type(&ctx.translated.type_decls, locals) else {
+    let Ok(lhs_ty) = lhs.ty(&ctx.translated.type_decls, locals) else {
         use crate::pretty::fmt_with_ctx::FmtWithCtx;
         use crate::pretty::formatter::IntoFormatter;
         let msg = format!(

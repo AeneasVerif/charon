@@ -163,10 +163,7 @@ impl<'a> Visitor<'a> {
             };
 
             // Update the place.
-            *p = Place {
-                var_id: output_var,
-                projection: vec![ProjectionElem::Deref],
-            };
+            *p = Place::new(output_var).project(ProjectionElem::Deref);
         }
     }
 }

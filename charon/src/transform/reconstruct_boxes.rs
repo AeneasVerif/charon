@@ -50,8 +50,8 @@ impl Transform {
                 && arg0 == size
                 && arg1 == align
                 && call_malloc.dest == *alloc_use
-                && box_make.projection.is_empty()
-                && let var_id = box_make.var_id
+                && box_make.is_local()
+                && let var_id = box_make.var_id()
                 && let TyKind::Adt(TypeId::Builtin(BuiltinTy::Box), generics) =
                     locals[var_id].ty.kind()
             {
@@ -61,8 +61,8 @@ impl Transform {
                         content: RawStatement::Assign(box_deref, val),
                         ..
                     } = &mut rest[i]
-                        && box_deref.var_id == box_make.var_id
-                        && let [ProjectionElem::Deref] = box_deref.projection.as_slice()
+                        && let Some((sub, ProjectionElem::Deref)) = box_deref.as_projection()
+                        && sub == *box_make
                     {
                         let real_i = prefix_len + i;
                         let mut to_insert = Vec::new();

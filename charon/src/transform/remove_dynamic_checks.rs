@@ -165,10 +165,11 @@ fn remove_dynamic_checks(_ctx: &mut TransformCtx, statements: &mut [Statement]) 
                 }),
             ..
         }, ..]
-            if cond.var_id == result.var_id
-                && result.projection.is_empty()
-                && let [ProjectionElem::Field(FieldProjKind::Tuple(2), p_id)] =
-                    cond.projection.as_slice()
+            if result.is_local()
+                && let Some((sub, ProjectionElem::Field(FieldProjKind::Tuple(2), p_id))) =
+                    cond.as_projection()
+                && sub.is_local()
+                && cond.var_id() == result.var_id()
                 && p_id.index() == 1
                 && *expected == false =>
         {
