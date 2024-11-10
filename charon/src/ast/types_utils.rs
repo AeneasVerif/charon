@@ -309,6 +309,13 @@ impl Ty {
         }
     }
 
+    pub fn as_adt(&self) -> Option<(TypeId, &GenericArgs)> {
+        match self.kind() {
+            TyKind::Adt(id, generics) => Some((*id, generics)),
+            _ => None,
+        }
+    }
+
     /// Wrap a visitor to make it visit the contents of types it encounters.
     pub fn visit_inside<V>(visitor: V) -> VisitInsideTy<V> {
         VisitInsideTy {
@@ -516,5 +523,120 @@ impl<V> std::ops::Deref for VisitInsideTy<V> {
 impl<V> std::ops::DerefMut for VisitInsideTy<V> {
     fn deref_mut(&mut self) -> &mut Self::Target {
         &mut self.visitor
+    }
+}
+
+struct Subst {
+    /// Tracks the current de Bruijn level
+    current_level: usize,
+    region_subst: Vector<RegionId, Region>,
+    ty_subst: Vector<TypeVarId, Ty>,
+    cg_subst: Vector<ConstGenericVarId, ConstGeneric>,
+    trait_subst: Vector<TraitClauseId, TraitRef>,
+}
+
+impl Subst {
+    /// Returns [true] if the item is a binder (we use this to skip some checks)
+    fn try_enter_or_exit_binder(&mut self, item: &mut dyn std::any::Any, enters: bool) -> bool {
+        // This is the only possible instantation of [RegionBinder] inside a type so far
+        match item.downcast_mut::<PolyTraitDeclRef>() {
+            Some(_) => {
+                if enters {
+                    self.current_level += 1;
+                } else {
+                    self.current_level -= 1;
+                }
+                true
+            }
+            None => false,
+        }
+    }
+
+    fn try_subst_in_region(&mut self, item: &mut dyn std::any::Any) -> bool {
+        match item.downcast_mut::<Region>() {
+            Some(r) => {
+                match r {
+                    Region::BVar(db, id) => {
+                        if db.index == self.current_level {
+                            *r = self.region_subst.get(*id).unwrap().clone()
+                        }
+                    }
+                    _ => (),
+                };
+                true
+            }
+            None => false,
+        }
+    }
+
+    /// Returns [true] if the item is a binder (we use this to skip some checks)
+    fn try_subst_in_ty(&mut self, item: &mut dyn std::any::Any) -> bool {
+        match item.downcast_mut::<Ty>() {
+            Some(ty) => {
+                match ty.kind() {
+                    TyKind::TypeVar(id) => *ty = self.ty_subst.get(*id).unwrap().clone(),
+                    _ => (),
+                };
+                true
+            }
+            None => false,
+        }
+    }
+
+    fn try_subst_in_const_generic(&mut self, item: &mut dyn std::any::Any) -> bool {
+        match item.downcast_mut::<ConstGeneric>() {
+            Some(cg) => {
+                match cg {
+                    ConstGeneric::Var(id) => *cg = self.cg_subst.get(*id).unwrap().clone(),
+                    _ => (),
+                };
+                true
+            }
+            None => false,
+        }
+    }
+
+    fn try_subst_in_trait_ref(&mut self, item: &mut dyn std::any::Any) -> bool {
+        match item.downcast_mut::<TraitRef>() {
+            Some(tr) => {
+                match &mut tr.kind {
+                    TraitRefKind::Clause(id) => *tr = self.trait_subst.get(*id).unwrap().clone(),
+                    _ => (),
+                };
+                true
+            }
+            None => false,
+        }
+    }
+}
+
+impl VisitorMut for Subst {
+    fn visit(&mut self, item: &mut dyn std::any::Any, event: Event) {
+        // Check if this is a binder
+        let enters = matches!(event, Event::Enter);
+        if self.try_enter_or_exit_binder(item, enters) {
+        }
+        // Other cases: we only do something upon entering
+        else if enters {
+            if self.try_subst_in_region(item) {
+            } else if self.try_subst_in_ty(item) {
+            } else if self.try_subst_in_const_generic(item) {
+            } else {
+                let _ = self.try_subst_in_trait_ref(item);
+            }
+        }
+    }
+}
+
+impl Ty {
+    pub fn substitute(&mut self, generics: &GenericArgs) {
+        let mut subst = Subst {
+            current_level: 0,
+            region_subst: Vector::from_iter(generics.regions.iter().cloned()),
+            ty_subst: Vector::from_iter(generics.types.iter().cloned()),
+            cg_subst: Vector::from_iter(generics.const_generics.iter().cloned()),
+            trait_subst: Vector::from_iter(generics.trait_refs.iter().cloned()),
+        };
+        self.drive_mut(&mut subst);
     }
 }
