@@ -115,6 +115,14 @@ pub fn update_update_array(mut s: [[u32; 32]; 32], i: usize, j: usize) {
     s[i][j] = 0;
 }
 
+pub fn incr_array_self(s: &mut [u32; 2]) {
+    s[0] += 1;
+}
+
+pub fn incr_slice_self(s: &mut [u32]) {
+    s[0] += 1;
+}
+
 pub fn array_local_deep_copy(x: &[u32; 32]) {
     let _y = *x;
 }
