@@ -77,7 +77,6 @@ impl Rvalue {
 fn introduce_intermediate_let_binding(
     ctx: &mut TransformCtx<'_>,
     span: Span,
-    comments_before: &mut Vec<String>,
     locals: &mut Vector<VarId, Var>,
     lhs: &mut Place,
     rhs: &mut Rvalue,
@@ -104,14 +103,11 @@ fn introduce_intermediate_let_binding(
     // Update the rhs
     let tmp_rhs = std::mem::replace(rhs, Rvalue::Use(Operand::Move(Place::new(tmp_var))));
 
-    // Retrieve the "comments before" to move them to the new intermediate statement
-    let comments_before = std::mem::take(comments_before);
-
     // Introduce the intermediate let-binding
     vec![Statement {
         span,
         content: RawStatement::Assign(Place::new(tmp_var), tmp_rhs),
-        comments_before,
+        comments_before: vec![],
     }]
 }
 
@@ -130,14 +126,7 @@ impl LlbcPass for Transform {
                     // projection element (this way we avoid introducing
                     // too many intermediate assignments).
                     if lhs.contains_index() && rhs.contains_index() {
-                        introduce_intermediate_let_binding(
-                            ctx,
-                            st.span,
-                            &mut st.comments_before,
-                            locals,
-                            lhs,
-                            rhs,
-                        )
+                        introduce_intermediate_let_binding(ctx, st.span, locals, lhs, rhs)
                     } else {
                         vec![]
                     }
