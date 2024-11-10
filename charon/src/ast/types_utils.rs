@@ -526,16 +526,13 @@ impl<V> std::ops::DerefMut for VisitInsideTy<V> {
     }
 }
 
-struct Subst {
+struct Subst<'a> {
     /// Tracks the current de Bruijn level
     current_level: usize,
-    region_subst: Vector<RegionId, Region>,
-    ty_subst: Vector<TypeVarId, Ty>,
-    cg_subst: Vector<ConstGenericVarId, ConstGeneric>,
-    trait_subst: Vector<TraitClauseId, TraitRef>,
+    generics: &'a GenericArgs,
 }
 
-impl Subst {
+impl<'a> Subst<'a> {
     /// Returns [true] if the item is a binder (we use this to skip some checks)
     fn try_enter_or_exit_binder(&mut self, item: &mut dyn std::any::Any, enters: bool) -> bool {
         // This is the only possible instantation of [RegionBinder] inside a type so far
@@ -558,7 +555,7 @@ impl Subst {
                 match r {
                     Region::BVar(db, id) => {
                         if db.index == self.current_level {
-                            *r = self.region_subst.get(*id).unwrap().clone()
+                            *r = self.generics.regions.get(*id).unwrap().clone()
                         }
                     }
                     _ => (),
@@ -574,7 +571,7 @@ impl Subst {
         match item.downcast_mut::<Ty>() {
             Some(ty) => {
                 match ty.kind() {
-                    TyKind::TypeVar(id) => *ty = self.ty_subst.get(*id).unwrap().clone(),
+                    TyKind::TypeVar(id) => *ty = self.generics.types.get(*id).unwrap().clone(),
                     _ => (),
                 };
                 true
@@ -587,7 +584,9 @@ impl Subst {
         match item.downcast_mut::<ConstGeneric>() {
             Some(cg) => {
                 match cg {
-                    ConstGeneric::Var(id) => *cg = self.cg_subst.get(*id).unwrap().clone(),
+                    ConstGeneric::Var(id) => {
+                        *cg = self.generics.const_generics.get(*id).unwrap().clone()
+                    }
                     _ => (),
                 };
                 true
@@ -600,7 +599,9 @@ impl Subst {
         match item.downcast_mut::<TraitRef>() {
             Some(tr) => {
                 match &mut tr.kind {
-                    TraitRefKind::Clause(id) => *tr = self.trait_subst.get(*id).unwrap().clone(),
+                    TraitRefKind::Clause(id) => {
+                        *tr = self.generics.trait_refs.get(*id).unwrap().clone()
+                    }
                     _ => (),
                 };
                 true
@@ -610,7 +611,7 @@ impl Subst {
     }
 }
 
-impl VisitorMut for Subst {
+impl<'a> VisitorMut for Subst<'a> {
     fn visit(&mut self, item: &mut dyn std::any::Any, event: Event) {
         // Check if this is a binder
         let enters = matches!(event, Event::Enter);
@@ -632,10 +633,7 @@ impl Ty {
     pub fn substitute(&mut self, generics: &GenericArgs) {
         let mut subst = Subst {
             current_level: 0,
-            region_subst: Vector::from_iter(generics.regions.iter().cloned()),
-            ty_subst: Vector::from_iter(generics.types.iter().cloned()),
-            cg_subst: Vector::from_iter(generics.const_generics.iter().cloned()),
-            trait_subst: Vector::from_iter(generics.trait_refs.iter().cloned()),
+            generics,
         };
         self.drive_mut(&mut subst);
     }
