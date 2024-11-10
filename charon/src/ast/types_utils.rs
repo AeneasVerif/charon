@@ -526,105 +526,60 @@ impl<V> std::ops::DerefMut for VisitInsideTy<V> {
     }
 }
 
+#[derive(VisitorMut)]
+#[visitor(
+    PolyTraitDeclRef(enter, exit),
+    Region(exit),
+    Ty(exit),
+    ConstGeneric(exit),
+    TraitRef(exit)
+)]
 struct Subst<'a> {
-    /// Tracks the current de Bruijn level
-    current_level: usize,
+    // Tracks the current de Bruijn level
+    current_level: DeBruijnId,
     generics: &'a GenericArgs,
 }
 
 impl<'a> Subst<'a> {
     /// Returns [true] if the item is a binder (we use this to skip some checks)
-    fn try_enter_or_exit_binder(&mut self, item: &mut dyn std::any::Any, enters: bool) -> bool {
-        // This is the only possible instantation of [RegionBinder] inside a type so far
-        match item.downcast_mut::<PolyTraitDeclRef>() {
-            Some(_) => {
-                if enters {
-                    self.current_level += 1;
-                } else {
-                    self.current_level -= 1;
-                }
-                true
-            }
-            None => false,
-        }
+    fn enter_poly_trait_decl_ref(&mut self, _: &mut PolyTraitDeclRef) {
+        self.current_level.index += 1;
     }
 
-    fn try_subst_in_region(&mut self, item: &mut dyn std::any::Any) -> bool {
-        match item.downcast_mut::<Region>() {
-            Some(r) => {
-                match r {
-                    Region::BVar(db, id) => {
-                        if db.index == self.current_level {
-                            *r = self.generics.regions.get(*id).unwrap().clone()
-                        }
-                    }
-                    _ => (),
-                };
-                true
+    fn exit_poly_trait_decl_ref(&mut self, _: &mut PolyTraitDeclRef) {
+        self.current_level.index -= 1;
+    }
+
+    fn exit_region(&mut self, r: &mut Region) {
+        match r {
+            Region::BVar(db, id) => {
+                if *db == self.current_level {
+                    *r = self.generics.regions.get(*id).unwrap().clone()
+                }
             }
-            None => false,
+            _ => (),
         }
     }
 
     /// Returns [true] if the item is a binder (we use this to skip some checks)
-    fn try_subst_in_ty(&mut self, item: &mut dyn std::any::Any) -> bool {
-        match item.downcast_mut::<Ty>() {
-            Some(ty) => {
-                match ty.kind() {
-                    TyKind::TypeVar(id) => *ty = self.generics.types.get(*id).unwrap().clone(),
-                    _ => (),
-                };
-                true
-            }
-            None => false,
+    fn exit_ty(&mut self, ty: &mut Ty) {
+        match ty.kind() {
+            TyKind::TypeVar(id) => *ty = self.generics.types.get(*id).unwrap().clone(),
+            _ => (),
         }
     }
 
-    fn try_subst_in_const_generic(&mut self, item: &mut dyn std::any::Any) -> bool {
-        match item.downcast_mut::<ConstGeneric>() {
-            Some(cg) => {
-                match cg {
-                    ConstGeneric::Var(id) => {
-                        *cg = self.generics.const_generics.get(*id).unwrap().clone()
-                    }
-                    _ => (),
-                };
-                true
-            }
-            None => false,
+    fn exit_const_generic(&mut self, cg: &mut ConstGeneric) {
+        match cg {
+            ConstGeneric::Var(id) => *cg = self.generics.const_generics.get(*id).unwrap().clone(),
+            _ => (),
         }
     }
 
-    fn try_subst_in_trait_ref(&mut self, item: &mut dyn std::any::Any) -> bool {
-        match item.downcast_mut::<TraitRef>() {
-            Some(tr) => {
-                match &mut tr.kind {
-                    TraitRefKind::Clause(id) => {
-                        *tr = self.generics.trait_refs.get(*id).unwrap().clone()
-                    }
-                    _ => (),
-                };
-                true
-            }
-            None => false,
-        }
-    }
-}
-
-impl<'a> VisitorMut for Subst<'a> {
-    fn visit(&mut self, item: &mut dyn std::any::Any, event: Event) {
-        // Check if this is a binder
-        let enters = matches!(event, Event::Enter);
-        if self.try_enter_or_exit_binder(item, enters) {
-        }
-        // Other cases: we only do something upon entering
-        else if enters {
-            if self.try_subst_in_region(item) {
-            } else if self.try_subst_in_ty(item) {
-            } else if self.try_subst_in_const_generic(item) {
-            } else {
-                let _ = self.try_subst_in_trait_ref(item);
-            }
+    fn exit_trait_ref(&mut self, tr: &mut TraitRef) {
+        match &mut tr.kind {
+            TraitRefKind::Clause(id) => *tr = self.generics.trait_refs.get(*id).unwrap().clone(),
+            _ => (),
         }
     }
 }
@@ -632,9 +587,9 @@ impl<'a> VisitorMut for Subst<'a> {
 impl Ty {
     pub fn substitute(&mut self, generics: &GenericArgs) {
         let mut subst = Subst {
-            current_level: 0,
+            current_level: DeBruijnId { index: 0 },
             generics,
         };
-        self.drive_mut(&mut subst);
+        self.drive_inner_mut(&mut subst);
     }
 }
