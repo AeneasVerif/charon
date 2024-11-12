@@ -94,10 +94,9 @@ impl Place {
                     }
                 }
                 Index { ty, .. } | Subslice { ty, .. } => {
-                    // We could check that that the current type is compatible with
-                    // the type of the
                     let cur_ty = cur_ty.as_array_or_slice().ok_or(())?;
                     let ty = ty.as_array_or_slice().ok_or(())?;
+                    // Sanity check: ensure we're using the same types.
                     if cur_ty == ty {
                         ty.clone()
                     } else {
