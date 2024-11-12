@@ -40,7 +40,7 @@ let fun_decl_has_loops (fd : fun_decl) : bool =
 
 (** Create a sequence *)
 let mk_sequence (st1 : statement) (st2 : statement) : statement =
-  let span = MetaUtils.combine_span st1.span st2.span in
+  let span = MetaUtils.safe_combine_span st1.span st2.span in
   let content = Sequence (st1, st2) in
   { span; content; comments_before = [] }
 
@@ -58,9 +58,9 @@ let rec chain_statements (st1 : statement) (st2 : statement) : statement =
       (* Ignore the second statement, which won't be evaluated *) st1
   | Switch switch ->
       (* Insert inside the switch *)
-      let span = MetaUtils.combine_span st1.span st2.span in
+      let span = MetaUtils.safe_combine_span st1.span st2.span in
       let content = Switch (chain_statements_in_switch switch st2) in
-      { span; content; comments_before = [] }
+      { span; content; comments_before = st1.comments_before }
   | Sequence (st3, st4) ->
       (* Insert at the end of the statement *)
       mk_sequence st3 (chain_statements st4 st2)
@@ -79,11 +79,7 @@ and chain_statements_in_switch (switch : switch) (st : statement) : switch =
       let branches =
         List.map (fun (svl, br) -> (svl, chain_statements br st)) branches
       in
-      let otherwise =
-        match otherwise with
-        | None -> None
-        | Some otherwise -> Some (chain_statements otherwise st)
-      in
+      let otherwise = Option.map (fun b -> chain_statements b st) otherwise in
       Match (op, branches, otherwise)
 
 (** Compute a map from function declaration ids to declaration groups. *)
