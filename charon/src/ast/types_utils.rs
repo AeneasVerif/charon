@@ -526,7 +526,6 @@ impl<V> std::ops::DerefMut for VisitInsideTy<V> {
     }
 }
 
-
 /// Visitor for the [Ty::substitute] function.
 ///
 /// Important: [PolyTraitDeclRef] is the only occurrence of a [RegionBinder]
