@@ -561,7 +561,6 @@ impl<'a> Subst<'a> {
         }
     }
 
-    /// Returns [true] if the item is a binder (we use this to skip some checks)
     fn exit_ty(&mut self, ty: &mut Ty) {
         match ty.kind() {
             TyKind::TypeVar(id) => *ty = self.generics.types.get(*id).unwrap().clone(),
