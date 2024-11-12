@@ -541,7 +541,6 @@ struct Subst<'a> {
 }
 
 impl<'a> Subst<'a> {
-    /// Returns [true] if the item is a binder (we use this to skip some checks)
     fn enter_poly_trait_decl_ref(&mut self, _: &mut PolyTraitDeclRef) {
         self.current_level.index += 1;
     }
@@ -585,7 +584,7 @@ impl<'a> Subst<'a> {
 
 impl Ty {
     pub fn substitute(&mut self, generics: &GenericArgs) {
-        let mut subst = Subst {
+        let subst = Subst {
             current_level: DeBruijnId { index: 0 },
             generics,
         };

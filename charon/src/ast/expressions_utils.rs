@@ -39,6 +39,9 @@ impl Place {
                     use TyKind::*;
                     match cur_ty.kind() {
                         Ref(_, ty, _) | RawPtr(ty, _) => ty.clone(),
+                        Adt(TypeId::Builtin(BuiltinTy::Box), args) => {
+                            args.types.get(TypeVarId::new(0)).unwrap().clone()
+                        }
                         Adt(..) | TypeVar(_) | Literal(_) | Never | TraitType(..) | DynTrait(_)
                         | Arrow(..) => {
                             // Unreachable
@@ -65,7 +68,7 @@ impl Place {
                             );
                             use TypeDeclKind::*;
                             match &type_decl.kind {
-                                Struct(fields) => {
+                                Struct(fields) | Union(fields) => {
                                     if variant_id.is_some() {
                                         return Err(());
                                     };
@@ -81,7 +84,7 @@ impl Place {
                                     ty.substitute(generics);
                                     ty
                                 }
-                                Union(_) | Opaque | Alias(_) | Error(_) => return Err(()),
+                                Opaque | Alias(_) | Error(_) => return Err(()),
                             }
                         }
                         Tuple(_) => cur_ty
