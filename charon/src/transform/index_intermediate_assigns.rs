@@ -33,7 +33,6 @@
 //! *dest = move tmp;
 //! ```
 
-use crate::ids::Vector;
 use crate::llbc_ast::*;
 use crate::transform::TransformCtx;
 use derive_visitor::{visitor_enter_fn, Drive};
@@ -66,7 +65,7 @@ impl Rvalue {
 fn introduce_intermediate_let_binding(
     ctx: &mut TransformCtx<'_>,
     span: Span,
-    locals: &mut Vector<VarId, Var>,
+    locals: &mut Locals,
     lhs: &mut Place,
     rhs: &mut Rvalue,
 ) -> Vec<Statement> {
@@ -83,21 +82,13 @@ fn introduce_intermediate_let_binding(
     };
 
     // Introduce a fresh local variable, for the temporary assignment
-    let tmp_var = locals.push_with(|index| Var {
-        index,
-        name: None,
-        ty: lhs_ty,
-    });
+    let tmp_var = locals.new_var(None, lhs_ty);
 
     // Update the rhs
-    let tmp_rhs = std::mem::replace(rhs, Rvalue::Use(Operand::Move(Place::new(tmp_var))));
+    let tmp_rhs = std::mem::replace(rhs, Rvalue::Use(Operand::Move(tmp_var.clone())));
 
     // Introduce the intermediate let-binding
-    vec![Statement {
-        span,
-        content: RawStatement::Assign(Place::new(tmp_var), tmp_rhs),
-        comments_before: vec![],
-    }]
+    vec![Statement::new(span, RawStatement::Assign(tmp_var, tmp_rhs))]
 }
 
 pub struct Transform;
@@ -105,20 +96,14 @@ pub struct Transform;
 impl LlbcPass for Transform {
     fn transform_body(&self, ctx: &mut TransformCtx<'_>, b: &mut ExprBody) {
         b.body.transform(&mut |st: &mut Statement| {
-            let locals = &mut b.locals;
-
-            //
             match &mut st.content {
-                RawStatement::Assign(lhs, rhs) => {
-                    // Introduce an intermediate statement if and only
-                    // if both the rhs and the lhs contain an "index"
-                    // projection element (this way we avoid introducing
-                    // too many intermediate assignments).
-                    if lhs.contains_index_proj() && rhs.contains_index_proj() {
-                        introduce_intermediate_let_binding(ctx, st.span, locals, lhs, rhs)
-                    } else {
-                        vec![]
-                    }
+                RawStatement::Assign(lhs, rhs)
+                    if lhs.contains_index_proj() && rhs.contains_index_proj() =>
+                {
+                    // Introduce an intermediate statement if both the rhs and the lhs contain an
+                    // "index" projection element (this way we avoid introducing too many
+                    // intermediate assignments).
+                    introduce_intermediate_let_binding(ctx, st.span, &mut b.locals, lhs, rhs)
                 }
                 _ => vec![],
             }

@@ -506,11 +506,11 @@ where
 
         // Format the local variables
         let mut locals: Vec<String> = Vec::new();
-        for v in &self.locals {
+        for v in &self.locals.vars {
             let index = v.index.index();
             let comment = if index == 0 {
                 "// return".to_string()
-            } else if index <= self.arg_count {
+            } else if index <= self.locals.arg_count {
                 format!("// arg #{index}").to_string()
             } else {
                 match &v.name {

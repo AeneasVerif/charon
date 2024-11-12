@@ -2,7 +2,6 @@
 use derive_visitor::visitor_enter_fn;
 use derive_visitor::Drive;
 
-use crate::ids::*;
 use crate::register_error_or_panic;
 use crate::transform::TransformCtx;
 use crate::ullbc_ast::*;
@@ -25,7 +24,7 @@ impl Transform {
     ///
     /// We reconstruct this into a call to `Box::new(x)`.
     fn update_statements(
-        locals: &mut Vector<VarId, Var>,
+        locals: &mut Locals,
         seq: &mut [Statement],
     ) -> Vec<(usize, Vec<Statement>)> {
         let seq_len = seq.len();
@@ -79,13 +78,13 @@ impl Transform {
                                 // We need to create a new variable to store the value.
                                 let name = locals[var_id].name.clone();
                                 let ty = generics.types[0].clone();
-                                let var = locals.push_with(|index| Var { index, name, ty });
+                                let var = locals.new_var(name, ty);
                                 let st = Statement {
                                     span: seq[real_i].span,
-                                    content: RawStatement::Assign(Place::new(var), val),
+                                    content: RawStatement::Assign(var.clone(), val),
                                 };
                                 to_insert.push((real_i, vec![st]));
-                                Operand::Move(Place::new(var))
+                                Operand::Move(var)
                             }
                         };
                         seq[real_i].content = RawStatement::Call(Call {

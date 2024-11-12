@@ -1296,6 +1296,7 @@ fn generate_ml(
                     "ClosureInfo",
                     "FunSig",
                     "ItemKind",
+                    "Locals",
                     "GExprBody",
                     "TraitDecl",
                     "TraitImpl",

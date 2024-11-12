@@ -91,13 +91,13 @@ impl<'a, 'b> SetGenerics<'a> for FmtCtx<'b> {
 pub trait SetLocals<'a> {
     type C: 'a + AstFormatter;
 
-    fn set_locals(&'a self, locals: &'a Vector<VarId, ast::Var>) -> Self::C;
+    fn set_locals(&'a self, locals: &'a Locals) -> Self::C;
 }
 
 impl<'a, 'b> SetLocals<'a> for FmtCtx<'b> {
     type C = FmtCtx<'a>;
 
-    fn set_locals(&'a self, locals: &'a Vector<VarId, ast::Var>) -> Self::C {
+    fn set_locals(&'a self, locals: &'a Locals) -> Self::C {
         FmtCtx {
             translated: self.translated.as_deref(),
             generics: self.generics.clone(),
@@ -168,7 +168,7 @@ pub struct FmtCtx<'a> {
     /// Generics form a stack, where each binder introduces a new level. For DeBruijn indices to
     /// work, we keep the innermost parameters at the start of the vector.
     pub generics: VecDeque<Cow<'a, GenericParams>>,
-    pub locals: Option<&'a Vector<VarId, ast::Var>>,
+    pub locals: Option<&'a Locals>,
 }
 
 impl<'a> FmtCtx<'a> {
@@ -465,7 +465,7 @@ impl<'a> Formatter<VarId> for FmtCtx<'a> {
     fn format_object(&self, id: VarId) -> String {
         match &self.locals {
             None => id.to_pretty_string(),
-            Some(vars) => match vars.get(id) {
+            Some(locals) => match locals.vars.get(id) {
                 None => id.to_pretty_string(),
                 Some(v) => v.to_string(),
             },

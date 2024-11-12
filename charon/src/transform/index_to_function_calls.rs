@@ -2,7 +2,6 @@
 
 use derive_visitor::{DriveMut, VisitorMut};
 
-use crate::ids::Vector;
 use crate::llbc_ast::*;
 use crate::transform::TransformCtx;
 
@@ -19,7 +18,7 @@ use super::ctx::LlbcPass;
 #[derive(VisitorMut)]
 #[visitor(Place(exit), Operand, Call, FnOperand, Rvalue)]
 struct Visitor<'a> {
-    locals: &'a mut Vector<VarId, Var>,
+    locals: &'a mut Locals,
     statements: Vec<Statement>,
     // When we encounter a place, we remember when a given place is accessed mutably in this
     // stack. Unfortunately this requires us to be very careful to catch all the cases where we
@@ -30,8 +29,8 @@ struct Visitor<'a> {
 }
 
 impl<'a> Visitor<'a> {
-    fn fresh_var(&mut self, name: Option<String>, ty: Ty) -> VarId {
-        self.locals.push_with(|index| Var { index, name, ty })
+    fn fresh_var(&mut self, name: Option<String>, ty: Ty) -> Place {
+        self.locals.new_var(name, ty)
     }
 
     fn transform_place(&mut self, mut_access: bool, place: &mut Place) {
@@ -90,7 +89,7 @@ impl<'a> Visitor<'a> {
         let input_var = {
             let input_var = self.fresh_var(None, input_ty);
             let kind = RawStatement::Assign(
-                Place::new(input_var),
+                input_var.clone(),
                 Rvalue::Ref(subplace.as_ref().clone(), BorrowKind::mutable(mut_access)),
             );
             self.statements.push(Statement::new(self.span, kind));
@@ -98,7 +97,7 @@ impl<'a> Visitor<'a> {
         };
 
         // Construct the arguments to pass to the indexing function.
-        let mut args = vec![Operand::Move(Place::new(input_var))];
+        let mut args = vec![Operand::Move(input_var)];
         if let Subslice { from, .. } = &pe {
             args.push(from.as_ref().clone());
         }
@@ -117,7 +116,7 @@ impl<'a> Visitor<'a> {
             let usize_ty = TyKind::Literal(LiteralTy::Integer(IntegerTy::Usize)).into_ty();
             let len_var = self.fresh_var(None, usize_ty.clone());
             let kind = RawStatement::Assign(
-                Place::new(len_var),
+                len_var.clone(),
                 Rvalue::Len(
                     subplace.as_ref().clone(),
                     ty.clone(),
@@ -128,11 +127,11 @@ impl<'a> Visitor<'a> {
             // `index_var = len(p) - last_arg`
             let index_var = self.fresh_var(None, usize_ty);
             let kind = RawStatement::Assign(
-                Place::new(index_var),
-                Rvalue::BinaryOp(BinOp::Sub, Operand::Copy(Place::new(len_var)), last_arg),
+                index_var.clone(),
+                Rvalue::BinaryOp(BinOp::Sub, Operand::Copy(len_var), last_arg),
             );
             self.statements.push(Statement::new(self.span, kind));
-            args.push(Operand::Copy(Place::new(index_var)));
+            args.push(Operand::Copy(index_var));
         } else {
             args.push(last_arg);
         }
@@ -144,7 +143,7 @@ impl<'a> Visitor<'a> {
             let index_call = Call {
                 func: indexing_function,
                 args,
-                dest: Place::new(output_var),
+                dest: output_var.clone(),
             };
             let kind = RawStatement::Call(index_call);
             self.statements.push(Statement::new(self.span, kind));
@@ -152,7 +151,7 @@ impl<'a> Visitor<'a> {
         };
 
         // Update the place.
-        *place = Place::new(output_var).project(ProjectionElem::Deref);
+        *place = output_var.project(ProjectionElem::Deref);
     }
 }
 

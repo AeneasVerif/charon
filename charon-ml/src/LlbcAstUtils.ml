@@ -13,10 +13,7 @@ let fun_decl_list_from_crate (crate : crate) : fun_decl list =
 *)
 let get_fun_args (fun_decl : fun_decl) : var list option =
   match fun_decl.body with
-  | Some body ->
-      let input_number = body.arg_count in
-      let input_list = List.tl body.locals in
-      Some (fst (List.split_at input_list input_number))
+  | Some body -> Some (GAstUtils.locals_get_input_vars body.locals)
   | None -> None
 
 (** Check if a {!type:Charon.LlbcAst.statement} contains loops *)

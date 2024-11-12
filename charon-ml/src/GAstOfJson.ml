@@ -349,6 +349,15 @@ and var_of_json (js : json) : (var, string) result =
         Ok ({ index; name; var_ty } : var)
     | _ -> Error "")
 
+and locals_of_json (js : json) : (locals, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with
+    | `Assoc [ ("arg_count", arg_count); ("vars", vars) ] ->
+        let* arg_count = int_of_json arg_count in
+        let* vars = vector_of_json var_id_of_json var_of_json vars in
+        Ok ({ arg_count; vars } : locals)
+    | _ -> Error "")
+
 and gexpr_body_of_json :
       'a0.
       (json -> ('a0, string) result) ->
@@ -359,18 +368,12 @@ and gexpr_body_of_json :
   combine_error_msgs js __FUNCTION__
     (match js with
     | `Assoc
-        [
-          ("span", span);
-          ("arg_count", arg_count);
-          ("locals", locals);
-          ("comments", _);
-          ("body", body);
-        ] ->
+        [ ("span", span); ("locals", locals); ("comments", _); ("body", body) ]
+      ->
         let* span = span_of_json id_to_file span in
-        let* arg_count = int_of_json arg_count in
-        let* locals = vector_of_json var_id_of_json var_of_json locals in
+        let* locals = locals_of_json locals in
         let* body = arg0_of_json body in
-        Ok ({ span; arg_count; locals; body } : _ gexpr_body)
+        Ok ({ span; locals; body } : _ gexpr_body)
     | _ -> Error "")
 
 and item_kind_of_json (js : json) : (item_kind, string) result =

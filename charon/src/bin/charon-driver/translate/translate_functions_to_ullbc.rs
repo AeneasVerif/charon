@@ -1278,6 +1278,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             return Ok(Err(Opaque));
         };
 
+        self.locals.arg_count = arg_count;
         // Here, we have to create a MIR state, which contains the body
         // Yes, we have to clone, this is annoying: we end up cloning the body twice
         let state = self
@@ -1311,8 +1312,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         // Create the body
         Ok(Ok(Body::Unstructured(ExprBody {
             span,
-            arg_count,
-            locals: mem::take(&mut self.vars),
+            locals: mem::take(&mut self.locals),
             comments: self.translate_body_comments(def, span),
             body: blocks,
         })))

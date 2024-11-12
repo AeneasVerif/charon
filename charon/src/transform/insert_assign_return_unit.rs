@@ -9,9 +9,9 @@ use crate::transform::TransformCtx;
 
 use super::ctx::LlbcPass;
 
-fn transform_st(st: &mut Statement) -> Vec<Statement> {
+fn transform_st(locals: &Locals, st: &mut Statement) -> Vec<Statement> {
     if let RawStatement::Return = &mut st.content {
-        let ret_place = Place::new(VarId::new(0));
+        let ret_place = locals.return_place();
         let unit_value = Rvalue::Aggregate(
             AggregateKind::Adt(TypeId::Tuple, None, None, GenericArgs::empty()),
             Vec::new(),
@@ -50,6 +50,7 @@ impl LlbcPass for Transform {
         }
     }
     fn transform_body(&self, _ctx: &mut TransformCtx<'_>, body: &mut ExprBody) {
-        body.body.transform(&mut transform_st);
+        body.body
+            .transform(&mut |st| transform_st(&body.locals, st));
     }
 }

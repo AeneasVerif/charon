@@ -338,7 +338,7 @@ let fun_body_substitute_in_body (subst : subst) (body : fun_body) :
   let locals =
     List.map
       (fun (v : var) -> { v with var_ty = ty_substitute subst v.var_ty })
-      body.locals
+      body.locals.vars
   in
   let body = statement_substitute subst body.body in
   (locals, body)

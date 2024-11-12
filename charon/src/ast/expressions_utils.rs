@@ -49,13 +49,9 @@ impl BorrowKind {
 
 impl Place {
     /// Compute the type of a place.
-    pub fn ty(
-        &self,
-        type_decls: &Vector<TypeDeclId, TypeDecl>,
-        locals: &Vector<VarId, Var>,
-    ) -> Result<Ty, ()> {
+    pub fn ty(&self, type_decls: &Vector<TypeDeclId, TypeDecl>, locals: &Locals) -> Result<Ty, ()> {
         Ok(match &self.kind {
-            PlaceKind::Base(var_id) => locals.get(*var_id).ok_or(())?.ty.clone(),
+            PlaceKind::Base(var_id) => locals.vars.get(*var_id).ok_or(())?.ty.clone(),
             PlaceKind::Projection(sub_place, proj) => {
                 let sub_ty = sub_place.ty(type_decls, locals)?;
                 proj.project_type(type_decls, &sub_ty)?
