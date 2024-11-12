@@ -287,6 +287,35 @@ impl Ty {
         }
     }
 
+    pub fn as_array_or_slice(&self) -> Option<&Ty> {
+        match self.kind() {
+            TyKind::Adt(TypeId::Builtin(BuiltinTy::Array | BuiltinTy::Slice), generics) => {
+                assert!(generics.regions.is_empty());
+                assert!(generics.types.len() == 1);
+                Some(&generics.types[0])
+            }
+            _ => None,
+        }
+    }
+
+    pub fn as_tuple(&self) -> Option<&Vector<TypeVarId, Ty>> {
+        match self.kind() {
+            TyKind::Adt(TypeId::Tuple, generics) => {
+                assert!(generics.regions.is_empty());
+                assert!(generics.const_generics.is_empty());
+                Some(&generics.types)
+            }
+            _ => None,
+        }
+    }
+
+    pub fn as_adt(&self) -> Option<(TypeId, &GenericArgs)> {
+        match self.kind() {
+            TyKind::Adt(id, generics) => Some((*id, generics)),
+            _ => None,
+        }
+    }
+
     /// Wrap a visitor to make it visit the contents of types it encounters.
     pub fn visit_inside<V>(visitor: V) -> VisitInsideTy<V> {
         VisitInsideTy {
@@ -494,5 +523,76 @@ impl<V> std::ops::Deref for VisitInsideTy<V> {
 impl<V> std::ops::DerefMut for VisitInsideTy<V> {
     fn deref_mut(&mut self) -> &mut Self::Target {
         &mut self.visitor
+    }
+}
+
+/// Visitor for the [Ty::substitute] function.
+///
+/// Important: [PolyTraitDeclRef] is the only occurrence of a [RegionBinder]
+/// which can appear in a type for now. There may be more in the future, which
+/// means that this visitor has to be carefully updated.
+#[derive(VisitorMut)]
+#[visitor(
+    PolyTraitDeclRef(enter, exit),
+    Region(exit),
+    Ty(exit),
+    ConstGeneric(exit),
+    TraitRef(exit)
+)]
+struct Subst<'a> {
+    // Tracks the current de Bruijn level
+    current_level: DeBruijnId,
+    generics: &'a GenericArgs,
+}
+
+impl<'a> Subst<'a> {
+    fn enter_poly_trait_decl_ref(&mut self, _: &mut PolyTraitDeclRef) {
+        self.current_level.index += 1;
+    }
+
+    fn exit_poly_trait_decl_ref(&mut self, _: &mut PolyTraitDeclRef) {
+        self.current_level.index -= 1;
+    }
+
+    fn exit_region(&mut self, r: &mut Region) {
+        match r {
+            Region::BVar(db, id) => {
+                if *db == self.current_level {
+                    *r = self.generics.regions.get(*id).unwrap().clone()
+                }
+            }
+            _ => (),
+        }
+    }
+
+    fn exit_ty(&mut self, ty: &mut Ty) {
+        match ty.kind() {
+            TyKind::TypeVar(id) => *ty = self.generics.types.get(*id).unwrap().clone(),
+            _ => (),
+        }
+    }
+
+    fn exit_const_generic(&mut self, cg: &mut ConstGeneric) {
+        match cg {
+            ConstGeneric::Var(id) => *cg = self.generics.const_generics.get(*id).unwrap().clone(),
+            _ => (),
+        }
+    }
+
+    fn exit_trait_ref(&mut self, tr: &mut TraitRef) {
+        match &mut tr.kind {
+            TraitRefKind::Clause(id) => *tr = self.generics.trait_refs.get(*id).unwrap().clone(),
+            _ => (),
+        }
+    }
+}
+
+impl Ty {
+    pub fn substitute(&mut self, generics: &GenericArgs) {
+        let subst = Subst {
+            current_level: DeBruijnId { index: 0 },
+            generics,
+        };
+        self.drive_inner_mut(&mut Ty::visit_inside(subst));
     }
 }

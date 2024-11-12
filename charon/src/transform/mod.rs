@@ -3,6 +3,7 @@ pub mod ctx;
 pub mod filter_invisible_trait_impls;
 pub mod graphs;
 pub mod hide_marker_traits;
+pub mod index_intermediate_assigns;
 pub mod index_to_function_calls;
 pub mod inline_local_panic_functions;
 pub mod insert_assign_return_unit;
@@ -79,6 +80,9 @@ pub static LLBC_PASSES: &[Pass] = &[
     // # Micro-pass: `panic!()` expands to a new function definition each time. This pass cleans
     // those up.
     StructuredBody(&inline_local_panic_functions::Transform),
+    // # Micro-pass: introduce intermediate assignments in preparation of the
+    // [`index_to_function_calls`] pass.
+    StructuredBody(&index_intermediate_assigns::Transform),
     // # Micro-pass: replace the arrays/slices index operations with function
     // calls.
     // (introduces: ArrayIndexShared, ArrayIndexMut, etc.)

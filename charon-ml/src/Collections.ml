@@ -116,6 +116,16 @@ module List = struct
   let filter_mapi (f : int -> 'a -> 'b option) (l : 'a list) : 'b list =
     let l = mapi f l in
     filter_map (fun x -> x) l
+
+  (** Monadic map function *)
+  let rec mmap (f : 'a -> 'b option) (l : 'a list) : 'b list option =
+    match l with
+    | [] -> Some []
+    | hd :: tl -> (
+        match f hd with
+        | None -> None
+        | Some hd -> (
+            match mmap f tl with None -> None | Some tl -> Some (hd :: tl)))
 end
 
 module type OrderedType = sig

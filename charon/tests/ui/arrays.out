@@ -638,6 +638,58 @@ fn test_crate::update_update_array(@1: Array<Array<u32, 32 : usize>, 32 : usize>
     return
 }
 
+fn test_crate::incr_array_self<'_0>(@1: &'_0 mut (Array<u32, 2 : usize>))
+{
+    let @0: (); // return
+    let s@1: &'_ mut (Array<u32, 2 : usize>); // arg #1
+    let @2: usize; // anonymous local
+    let @3: (); // anonymous local
+    let @4: u32; // anonymous local
+    let @5: &'_ mut (Array<u32, 2 : usize>); // anonymous local
+    let @6: &'_ mut (u32); // anonymous local
+    let @7: &'_ (Array<u32, 2 : usize>); // anonymous local
+    let @8: &'_ (u32); // anonymous local
+
+    @2 := const (0 : usize)
+    @7 := &*(s@1)
+    @8 := @ArrayIndexShared<'_, u32, 2 : usize>(move (@7), copy (@2))
+    @4 := copy (*(@8)) + const (1 : u32)
+    @5 := &mut *(s@1)
+    @6 := @ArrayIndexMut<'_, u32, 2 : usize>(move (@5), copy (@2))
+    *(@6) := move (@4)
+    drop @2
+    @3 := ()
+    @0 := move (@3)
+    @0 := ()
+    return
+}
+
+fn test_crate::incr_slice_self<'_0>(@1: &'_0 mut (Slice<u32>))
+{
+    let @0: (); // return
+    let s@1: &'_ mut (Slice<u32>); // arg #1
+    let @2: usize; // anonymous local
+    let @3: (); // anonymous local
+    let @4: u32; // anonymous local
+    let @5: &'_ mut (Slice<u32>); // anonymous local
+    let @6: &'_ mut (u32); // anonymous local
+    let @7: &'_ (Slice<u32>); // anonymous local
+    let @8: &'_ (u32); // anonymous local
+
+    @2 := const (0 : usize)
+    @7 := &*(s@1)
+    @8 := @SliceIndexShared<'_, u32>(move (@7), copy (@2))
+    @4 := copy (*(@8)) + const (1 : u32)
+    @5 := &mut *(s@1)
+    @6 := @SliceIndexMut<'_, u32>(move (@5), copy (@2))
+    *(@6) := move (@4)
+    drop @2
+    @3 := ()
+    @0 := move (@3)
+    @0 := ()
+    return
+}
+
 fn test_crate::array_local_deep_copy<'_0>(@1: &'_0 (Array<u32, 32 : usize>))
 {
     let @0: (); // return
