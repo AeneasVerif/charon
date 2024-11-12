@@ -11,28 +11,8 @@ on:
   # Makes it possible to run the forkflow by hand from GItHub's interface.
   workflow_dispatch:
 
-# Minimum permissions required by skip-duplicate-actions
-permissions:
-  actions: write
-  contents: read
-
 jobs:
-  # Avoid `push` and `pull_request` running the same job twice
-  check_if_skip_duplicate_job:
-    runs-on: [self-hosted, linux, nix]
-    steps:
-      - id: skip_check
-        uses: fkirc/skip-duplicate-actions@v5
-        with:
-          concurrent_skipping: 'same_content_newer'
-          skip_after_successful_duplicate: 'true'
-          cancel_others: 'true'
-    outputs:
-      should_skip: ${{ steps.skip_check.outputs.should_skip }}
-
   nix:
-    needs: check_if_skip_duplicate_job
-    if: needs.check_if_skip_duplicate_job.outputs.should_skip != 'true'
     #runs-on: ubuntu-latest
     runs-on: [self-hosted, linux, nix]
     steps:
@@ -51,8 +31,7 @@ jobs:
       - run: nix develop --command ./scripts/ci-check-version-number.sh
 
   aeneas:
-    needs: [check_if_skip_duplicate_job, nix]
-    if: needs.check_if_skip_duplicate_job.outputs.should_skip != 'true'
+    needs: [nix]
     runs-on: [self-hosted, linux, nix]
     steps:
       - run: |
@@ -61,8 +40,7 @@ jobs:
               --override-input charon/rust-overlay github:oxalica/rust-overlay/master
 
   eurydice:
-    needs: [check_if_skip_duplicate_job, nix]
-    if: needs.check_if_skip_duplicate_job.outputs.should_skip != 'true'
+    needs: [nix]
     runs-on: [self-hosted, linux, nix]
     steps:
       - run: |
@@ -71,8 +49,7 @@ jobs:
               --override-input charon/rust-overlay github:oxalica/rust-overlay/master
 
   kyber:
-    needs: [check_if_skip_duplicate_job, eurydice]
-    if: needs.check_if_skip_duplicate_job.outputs.should_skip != 'true'
+    needs: [eurydice]
     runs-on: [self-hosted, linux, nix]
     steps:
       - uses: actions/checkout@v4
