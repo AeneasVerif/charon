@@ -589,6 +589,6 @@ impl Ty {
             current_level: DeBruijnId { index: 0 },
             generics,
         };
-        self.drive_inner_mut(&mut subst);
+        self.drive_inner_mut(&mut Ty::visit_inside(subst));
     }
 }
