@@ -1,7 +1,6 @@
 use crate::ids::Vector;
 use crate::{ast::*, common::hash_consing::HashConsed};
 use derive_visitor::{Drive, DriveMut, Event, Visitor, VisitorMut};
-use derive_where::derive_where;
 use macros::{EnumAsGetters, EnumIsA, EnumToGetters, VariantIndexArity, VariantName};
 use serde::{Deserialize, Serialize};
 
@@ -348,22 +347,26 @@ generate_index_type!(TraitImplId, "TraitImpl");
 
 /// A predicate of the form `Type: Trait<Args>`.
 #[derive(Debug, Clone, Serialize, Deserialize, Drive, DriveMut)]
-#[derive_where(PartialEq)]
 pub struct TraitClause {
     /// We use this id when solving trait constraints, to be able to refer
     /// to specific where clauses when the selected trait actually is linked
     /// to a parameter.
     pub clause_id: TraitClauseId,
-    #[derive_where(skip)]
     // TODO: does not need to be an option.
     pub span: Option<Span>,
     /// Where the predicate was written, relative to the item that requires it.
-    #[derive_where(skip)]
     #[charon::opaque]
     pub origin: PredicateOrigin,
     /// The trait that is implemented.
     #[charon::rename("trait")]
     pub trait_: PolyTraitDeclRef,
+}
+
+impl PartialEq for TraitClause {
+    fn eq(&self, other: &Self) -> bool {
+        // Skip `span` and `origin`
+        self.clause_id == other.clause_id && self.trait_ == other.trait_
+    }
 }
 
 impl Eq for TraitClause {}
