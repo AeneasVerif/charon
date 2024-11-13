@@ -1,6 +1,5 @@
 use crate::ids::Vector;
 use crate::{ast::*, common::hash_consing::HashConsed};
-use derivative::Derivative;
 use derive_visitor::{Drive, DriveMut, Event, Visitor, VisitorMut};
 use macros::{EnumAsGetters, EnumIsA, EnumToGetters, VariantIndexArity, VariantName};
 use serde::{Deserialize, Serialize};
@@ -347,18 +346,15 @@ generate_index_type!(TraitDeclId, "TraitDecl");
 generate_index_type!(TraitImplId, "TraitImpl");
 
 /// A predicate of the form `Type: Trait<Args>`.
-#[derive(Debug, Clone, Serialize, Deserialize, Derivative, Drive, DriveMut)]
-#[derivative(PartialEq)]
+#[derive(Debug, Clone, Serialize, Deserialize, Drive, DriveMut)]
 pub struct TraitClause {
     /// We use this id when solving trait constraints, to be able to refer
     /// to specific where clauses when the selected trait actually is linked
     /// to a parameter.
     pub clause_id: TraitClauseId,
-    #[derivative(PartialEq = "ignore")]
     // TODO: does not need to be an option.
     pub span: Option<Span>,
     /// Where the predicate was written, relative to the item that requires it.
-    #[derivative(PartialEq = "ignore")]
     #[charon::opaque]
     pub origin: PredicateOrigin,
     /// The trait that is implemented.
@@ -366,10 +362,17 @@ pub struct TraitClause {
     pub trait_: PolyTraitDeclRef,
 }
 
+impl PartialEq for TraitClause {
+    fn eq(&self, other: &Self) -> bool {
+        // Skip `span` and `origin`
+        self.clause_id == other.clause_id && self.trait_ == other.trait_
+    }
+}
+
 impl Eq for TraitClause {}
 
 /// Where a given predicate came from.
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Derivative, Drive, DriveMut)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Drive, DriveMut)]
 pub enum PredicateOrigin {
     // Note: we use this for globals too, but that's only available with an unstable feature.
     // ```
