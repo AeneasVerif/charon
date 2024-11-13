@@ -1,7 +1,7 @@
 use crate::ids::Vector;
 use crate::{ast::*, common::hash_consing::HashConsed};
-use derive_where::derive_where;
 use derive_visitor::{Drive, DriveMut, Event, Visitor, VisitorMut};
+use derive_where::derive_where;
 use macros::{EnumAsGetters, EnumIsA, EnumToGetters, VariantIndexArity, VariantName};
 use serde::{Deserialize, Serialize};
 
@@ -354,11 +354,11 @@ pub struct TraitClause {
     /// to specific where clauses when the selected trait actually is linked
     /// to a parameter.
     pub clause_id: TraitClauseId,
-    #[drive_where(skip)]
+    #[derive_where(skip)]
     // TODO: does not need to be an option.
     pub span: Option<Span>,
     /// Where the predicate was written, relative to the item that requires it.
-    #[drive_where(skip)]
+    #[derive_where(skip)]
     #[charon::opaque]
     pub origin: PredicateOrigin,
     /// The trait that is implemented.
