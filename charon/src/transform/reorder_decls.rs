@@ -148,8 +148,7 @@ impl Display for DeclarationGroup {
 }
 
 #[derive(Visitor)]
-pub struct Deps<'tcx> {
-    ctx: &'tcx TransformCtx,
+pub struct Deps {
     dgraph: DiGraphMap<AnyTransId, ()>,
     // Want to make sure we remember the order of insertion
     graph: LinkedHashMap<AnyTransId, LinkedHashSet<AnyTransId>>,
@@ -200,10 +199,9 @@ pub struct Deps<'tcx> {
     parent_trait_decl: Option<TraitDeclId>,
 }
 
-impl<'tcx> Deps<'tcx> {
-    fn new(ctx: &'tcx TransformCtx) -> Self {
+impl Deps {
+    fn new() -> Self {
         Deps {
-            ctx,
             dgraph: DiGraphMap::new(),
             graph: LinkedHashMap::new(),
             current_id: None,
@@ -267,7 +265,7 @@ impl<'tcx> Deps<'tcx> {
     }
 }
 
-impl VisitAst for Deps<'_> {
+impl VisitAst for Deps {
     fn enter_type_decl_id(&mut self, id: &TypeDeclId) {
         self.insert_edge((*id).into());
     }
@@ -306,12 +304,6 @@ impl VisitAst for Deps<'_> {
         self.insert_edge((*id).into());
     }
 
-    fn enter_body_id(&mut self, id: &BodyId) {
-        if let Some(body) = self.ctx.translated.bodies.get(*id) {
-            body.drive(self);
-        }
-    }
-
     fn visit_item_meta(&mut self, _: &ItemMeta) -> ControlFlow<Self::Break> {
         // Don't look inside because trait impls contain their own id in their name.
         Continue(())
@@ -337,7 +329,7 @@ impl AnyTransId {
     }
 }
 
-impl Deps<'_> {
+impl Deps {
     fn fmt_with_ctx(&self, ctx: &TransformCtx) -> String {
         self.dgraph
             .nodes()
@@ -356,8 +348,8 @@ impl Deps<'_> {
     }
 }
 
-fn compute_declarations_graph<'tcx>(ctx: &'tcx TransformCtx) -> Deps<'tcx> {
-    let mut graph = Deps::new(ctx);
+fn compute_declarations_graph<'tcx>(ctx: &'tcx TransformCtx) -> Deps {
+    let mut graph = Deps::new();
     for (id, item) in ctx.translated.all_items_with_ids() {
         graph.set_current_id(ctx, id);
         match item {
@@ -428,7 +420,7 @@ fn compute_declarations_graph<'tcx>(ctx: &'tcx TransformCtx) -> Deps<'tcx> {
 
 fn group_declarations_from_scc(
     _ctx: &TransformCtx,
-    graph: Deps<'_>,
+    graph: Deps,
     reordered_sccs: SCCs<AnyTransId>,
 ) -> DeclarationsGroups {
     let reordered_sccs = &reordered_sccs.sccs;

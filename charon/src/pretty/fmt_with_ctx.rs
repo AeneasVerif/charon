@@ -518,15 +518,10 @@ where
         };
 
         // Body
-        let body = match self.body {
-            Ok(body_id) => {
-                // FIXME: pass the indent here somehow
-                let body = ctx.format_object(body_id);
-                if body == "<error>" {
-                    String::new()
-                } else {
-                    format!("\n{tab}{{\n{body}{tab}}}")
-                }
+        let body = match &self.body {
+            Ok(body) => {
+                let body = body.fmt_with_ctx(ctx);
+                format!("\n{tab}{{\n{body}{tab}}}")
             }
             Err(Opaque) => String::new(),
         };

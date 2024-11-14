@@ -182,13 +182,6 @@ impl TransformPass for Check {
                 visitor.discharged_args, 0,
                 "Got confused about `GenericArgs` locations"
             );
-            if let AnyTransItem::Fun(d) = item {
-                if let Ok(body_id) = d.body {
-                    if let Some(body) = ctx.translated.bodies.get(body_id) {
-                        body.drive(&mut visitor);
-                    }
-                }
-            }
         }
     }
 }

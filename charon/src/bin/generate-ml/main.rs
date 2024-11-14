@@ -1068,7 +1068,6 @@ fn generate_ml(
         "Ty", // We exclude it since `TyKind` is renamed to `ty`
         "Opaque",
         "Body",
-        "BodyId",
         "FunDecl",
         "TranslatedCrate",
     ]

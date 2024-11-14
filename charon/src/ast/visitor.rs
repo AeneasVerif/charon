@@ -69,7 +69,7 @@ use index_vec::Idx;
         for<T: AstVisitable> Binder<T>,
         llbc_statement: llbc_ast::Statement, ullbc_statement: ullbc_ast::Statement,
         AggregateKind, FnPtr, ItemKind, ItemMeta, Span,
-        BodyId, FunDeclId, GlobalDeclId, TypeDeclId, TraitDeclId, TraitImplId,
+        FunDeclId, GlobalDeclId, TypeDeclId, TraitDeclId, TraitImplId,
         FunDecl, GlobalDecl, TypeDecl, TraitDecl, TraitImpl,
     )
 )]

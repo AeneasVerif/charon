@@ -1568,12 +1568,12 @@ impl BodyTransCtx<'_, '_> {
             // Translate the body. This doesn't store anything if we can't/decide not to translate
             // this body.
             match self.translate_body(def, &signature, &item_meta) {
-                Ok(Ok(body)) => Ok(self.t_ctx.translated.bodies.push(body)),
+                Ok(Ok(body)) => Ok(body),
                 // Opaque declaration
                 Ok(Err(Opaque)) => Err(Opaque),
-                // Translation error. We reserve a slot and leave it empty.
+                // Translation error.
                 // FIXME: handle error cases more explicitly.
-                Err(_) => Ok(self.t_ctx.translated.bodies.reserve_slot()),
+                Err(_) => Err(Opaque),
             }
         } else {
             Err(Opaque)

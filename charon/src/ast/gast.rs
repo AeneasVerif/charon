@@ -139,7 +139,7 @@ pub struct FunDecl {
     /// The function body, unless the function is opaque.
     /// Opaque functions are: external functions, or local functions tagged
     /// as opaque.
-    pub body: Result<BodyId, Opaque>,
+    pub body: Result<Body, Opaque>,
 }
 
 /// A global variable definition (constant or static).

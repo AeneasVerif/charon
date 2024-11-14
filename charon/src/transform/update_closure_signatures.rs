@@ -38,11 +38,7 @@ impl VisitAstMut for InsertRegions<'_> {
     }
 }
 
-fn transform_function(
-    _ctx: &TransformCtx,
-    def: &mut FunDecl,
-    body: Option<&mut ExprBody>,
-) -> Result<(), Error> {
+fn transform_function(_ctx: &TransformCtx, def: &mut FunDecl) -> Result<(), Error> {
     let FunSig {
         closure_info,
         inputs,
@@ -77,7 +73,10 @@ fn transform_function(
         // ```
         // We also update the corresponding field accesses in the body of
         // the function.
-        if let Some(body) = body {
+
+        if let Ok(body) = &mut def.body {
+            let body = body.as_unstructured_mut().unwrap();
+
             // Update the type of the local 1 (which is the closure)
             assert!(body.locals.vars.len() > 1);
             let state_var = &mut body.locals.vars[1];
@@ -103,13 +102,8 @@ fn transform_function(
 
 pub struct Transform;
 impl UllbcPass for Transform {
-    fn transform_function(
-        &self,
-        ctx: &mut TransformCtx,
-        def: &mut FunDecl,
-        body: Result<&mut ExprBody, Opaque>,
-    ) {
+    fn transform_function(&self, ctx: &mut TransformCtx, def: &mut FunDecl) {
         // Ignore the errors, which should have been reported
-        let _ = transform_function(ctx, def, body.ok());
+        let _ = transform_function(ctx, def);
     }
 }

@@ -17,7 +17,6 @@ generate_index_type!(TypeDeclId, "Adt");
 generate_index_type!(GlobalDeclId, "Global");
 generate_index_type!(TraitDeclId, "TraitDecl");
 generate_index_type!(TraitImplId, "TraitImpl");
-generate_index_type!(BodyId, "Body");
 
 /// The id of a translated item.
 #[derive(
@@ -131,8 +130,6 @@ pub struct TranslatedCrate {
     pub fun_decls: Vector<FunDeclId, FunDecl>,
     /// The translated global definitions
     pub global_decls: Vector<GlobalDeclId, GlobalDecl>,
-    /// The bodies of functions
-    pub bodies: Vector<BodyId, Body>,
     /// The translated trait declarations
     pub trait_decls: Vector<TraitDeclId, TraitDecl>,
     /// The translated trait declarations
@@ -334,6 +331,5 @@ macro_rules! mk_index_impls {
 mk_index_impls!(TranslatedCrate.type_decls[TypeDeclId]: TypeDecl);
 mk_index_impls!(TranslatedCrate.fun_decls[FunDeclId]: FunDecl);
 mk_index_impls!(TranslatedCrate.global_decls[GlobalDeclId]: GlobalDecl);
-mk_index_impls!(TranslatedCrate.bodies[BodyId]: Body);
 mk_index_impls!(TranslatedCrate.trait_decls[TraitDeclId]: TraitDecl);
 mk_index_impls!(TranslatedCrate.trait_impls[TraitImplId]: TraitImpl);
