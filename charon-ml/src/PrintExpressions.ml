@@ -91,7 +91,7 @@ let binop_to_string (binop : binop) : string =
   | Shl -> "<<"
   | Shr -> ">>"
 
-let assumed_fun_id_to_string (aid : assumed_fun_id) : string =
+let builtin_fun_id_to_string (aid : builtin_fun_id) : string =
   match aid with
   | BoxNew -> "alloc::boxed::Box::new"
   | ArrayToSliceShared -> "@ArrayToSliceShared"
@@ -106,7 +106,7 @@ let assumed_fun_id_to_string (aid : assumed_fun_id) : string =
 let fun_id_to_string (env : ('a, 'b) fmt_env) (fid : fun_id) : string =
   match fid with
   | FRegular fid -> fun_decl_id_to_string env fid
-  | FAssumed aid -> assumed_fun_id_to_string aid
+  | FBuiltin aid -> builtin_fun_id_to_string aid
 
 let fun_id_or_trait_method_ref_to_string (env : ('a, 'b) fmt_env)
     (r : fun_id_or_trait_method_ref) : string =
@@ -216,7 +216,7 @@ let rvalue_to_string (env : ('a, 'b) fmt_env) (rv : rvalue) : string =
                     "{ " ^ fields ^ " }"
               in
               variant_name ^ " " ^ fields
-          | TAssumed _ -> raise (Failure "Unreachable"))
+          | TBuiltin _ -> raise (Failure "Unreachable"))
       | AggregatedArray (_ty, _cg) -> "[" ^ String.concat ", " ops ^ "]"
       | AggregatedClosure (fid, generics) ->
           "{"

@@ -426,7 +426,7 @@ and type_id =
           and external ADTs).
        *)
   | TTuple
-  | TAssumed of assumed_ty
+  | TBuiltin of builtin_ty
       (** Built-in type. Either a primitive type like array or slice, or a
           non-primitive type coming from a standard library
           and that we handle like a primitive type. Types falling into this
@@ -506,7 +506,7 @@ and ty =
     modular.
     TODO: move to builtins.rs?
  *)
-and assumed_ty =
+and builtin_ty =
   | TBox  (** Boxes are de facto a primitive type. *)
   | TArray  (** Primitive type *)
   | TSlice  (** Primitive type *)

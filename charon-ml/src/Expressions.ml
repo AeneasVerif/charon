@@ -175,7 +175,7 @@ and fun_id =
       (** A "regular" function (function local to the crate, external function
           not treated as a primitive one).
        *)
-  | FAssumed of assumed_fun_id
+  | FBuiltin of builtin_fun_id
       (** A primitive function, coming from a standard library (for instance:
           `alloc::boxed::Box::new`).
           TODO: rename to "Primitive"
@@ -184,7 +184,7 @@ and fun_id =
 (** An built-in function identifier, identifying a function coming from a
     standard library.
  *)
-and assumed_fun_id =
+and builtin_fun_id =
   | BoxNew  (** `alloc::boxed::Box::new` *)
   | ArrayToSliceShared
       (** Cast an array as a slice.

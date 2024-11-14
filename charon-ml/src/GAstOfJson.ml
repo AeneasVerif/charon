@@ -187,11 +187,11 @@ and fun_id_of_json (js : json) : (fun_id, string) result =
         let* regular = fun_decl_id_of_json regular in
         Ok (FRegular regular)
     | `Assoc [ ("Builtin", builtin) ] ->
-        let* builtin = assumed_fun_id_of_json builtin in
-        Ok (FAssumed builtin)
+        let* builtin = builtin_fun_id_of_json builtin in
+        Ok (FBuiltin builtin)
     | _ -> Error "")
 
-and assumed_fun_id_of_json (js : json) : (assumed_fun_id, string) result =
+and builtin_fun_id_of_json (js : json) : (builtin_fun_id, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
     | `String "BoxNew" -> Ok BoxNew
@@ -1156,8 +1156,8 @@ and type_id_of_json (js : json) : (type_id, string) result =
         Ok (TAdtId adt)
     | `String "Tuple" -> Ok TTuple
     | `Assoc [ ("Builtin", builtin) ] ->
-        let* builtin = assumed_ty_of_json builtin in
-        Ok (TAssumed builtin)
+        let* builtin = builtin_ty_of_json builtin in
+        Ok (TBuiltin builtin)
     | _ -> Error "")
 
 and literal_type_of_json (js : json) : (literal_type, string) result =
@@ -1224,7 +1224,7 @@ and ty_of_json (js : json) : (ty, string) result =
         Ok (TArrow (x_0, x_1, x_2))
     | _ -> Error "")
 
-and assumed_ty_of_json (js : json) : (assumed_ty, string) result =
+and builtin_ty_of_json (js : json) : (builtin_ty, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
     | `String "Box" -> Ok TBox
