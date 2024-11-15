@@ -79,7 +79,6 @@ and gfun_decl_of_json (bodies : 'body gexpr_body option list)
             signature;
             kind;
             body;
-            is_global_decl_body = false;
           }
     | _ -> Error "")
 

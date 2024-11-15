@@ -1315,6 +1315,7 @@ and fun_sig_of_json (id_to_file : id_to_file_map) (js : json) :
         [
           ("is_unsafe", is_unsafe);
           ("is_closure", is_closure);
+          ("is_global_initializer", is_global_initializer);
           ("closure_info", closure_info);
           ("generics", generics);
           ("parent_params_info", parent_params_info);
@@ -1323,6 +1324,7 @@ and fun_sig_of_json (id_to_file : id_to_file_map) (js : json) :
         ] ->
         let* is_unsafe = bool_of_json is_unsafe in
         let* is_closure = bool_of_json is_closure in
+        let* is_global_initializer = bool_of_json is_global_initializer in
         let* closure_info = option_of_json closure_info_of_json closure_info in
         let* generics = generic_params_of_json id_to_file generics in
         let* parent_params_info =
@@ -1334,6 +1336,7 @@ and fun_sig_of_json (id_to_file : id_to_file_map) (js : json) :
           ({
              is_unsafe;
              is_closure;
+             is_global_initializer;
              closure_info;
              generics;
              parent_params_info;
@@ -1487,15 +1490,7 @@ and gfun_decl_of_json (bodies : 'body gexpr_body option list)
         let* signature = fun_sig_of_json id_to_file signature in
         let* kind = item_kind_of_json kind in
         let* body = maybe_opaque_body_of_json bodies body in
-        Ok
-          {
-            def_id;
-            item_meta;
-            signature;
-            kind;
-            body;
-            is_global_decl_body = false;
-          }
+        Ok { def_id; item_meta; signature; kind; body }
     | _ -> Error "")
 
 (** Deserialize a map from file id to file name.

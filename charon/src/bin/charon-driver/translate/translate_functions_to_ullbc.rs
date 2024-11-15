@@ -1433,6 +1433,12 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             generics,
             is_unsafe,
             is_closure: matches!(&def.kind, hax::FullDefKind::Closure { .. }),
+            is_global_initializer: matches!(
+                &def.kind,
+                hax::FullDefKind::Const { .. }
+                    | hax::FullDefKind::AssocConst { .. }
+                    | hax::FullDefKind::Static { .. }
+            ),
             closure_info,
             parent_params_info,
             inputs,

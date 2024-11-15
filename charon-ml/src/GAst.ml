@@ -363,6 +363,10 @@ and fun_sig = {
           (the function in which the closure is defined)
         - the region variables are local to the closure
      *)
+  is_global_initializer : bool;
+      (** Whether this function is in fact the body of a constant/static that we turned into an
+        initializer function.
+     *)
   closure_info : closure_info option;
       (** Additional information if this is the signature of a closure. *)
   generics : generic_params;
@@ -415,7 +419,6 @@ type 'body gfun_decl = {
   signature : fun_sig;
   kind : item_kind;
   body : 'body gexpr_body option;
-  is_global_decl_body : bool;
 }
 [@@deriving show]
 

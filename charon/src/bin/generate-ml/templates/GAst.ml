@@ -54,7 +54,6 @@ type 'body gfun_decl = {
   signature : fun_sig;
   kind : item_kind;
   body : 'body gexpr_body option;
-  is_global_decl_body : bool;
 }
 [@@deriving show]
 
