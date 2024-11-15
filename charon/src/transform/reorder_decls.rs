@@ -53,12 +53,14 @@ impl<Id: Copy> GDeclarationGroup<Id> {
             Rec(ids) => ids.as_slice(),
         }
     }
+
     pub fn get_any_trans_ids(&self) -> Vec<AnyTransId>
     where
         Id: Into<AnyTransId>,
     {
         self.get_ids().iter().copied().map(|id| id.into()).collect()
     }
+
     fn make_group(is_rec: bool, gr: impl Iterator<Item = AnyTransId>) -> Self
     where
         Id: TryFrom<AnyTransId>,
@@ -72,9 +74,31 @@ impl<Id: Copy> GDeclarationGroup<Id> {
             GDeclarationGroup::NonRec(gr[0])
         }
     }
+
+    fn to_mixed(&self) -> GDeclarationGroup<AnyTransId>
+    where
+        Id: Into<AnyTransId>,
+    {
+        match self {
+            GDeclarationGroup::NonRec(x) => GDeclarationGroup::NonRec((*x).into()),
+            GDeclarationGroup::Rec(_) => GDeclarationGroup::Rec(self.get_any_trans_ids()),
+        }
+    }
 }
 
 impl DeclarationGroup {
+    pub fn to_mixed_group(&self) -> GDeclarationGroup<AnyTransId> {
+        use DeclarationGroup::*;
+        match self {
+            Type(gr) => gr.to_mixed(),
+            Fun(gr) => gr.to_mixed(),
+            Global(gr) => gr.to_mixed(),
+            TraitDecl(gr) => gr.to_mixed(),
+            TraitImpl(gr) => gr.to_mixed(),
+            Mixed(gr) => gr.clone(),
+        }
+    }
+
     pub fn get_ids(&self) -> Vec<AnyTransId> {
         use DeclarationGroup::*;
         match self {
@@ -177,7 +201,8 @@ pub struct Deps<'tcx, 'ctx> {
     // //                                       ^^^^^^^^^^^^^^^
     // //                                    refers to the trait impl
     // ```
-    impl_trait_id: Option<TraitImplId>,
+    parent_trait_impl: Option<TraitImplId>,
+    parent_trait_decl: Option<TraitDeclId>,
 }
 
 impl<'tcx, 'ctx> Deps<'tcx, 'ctx> {
@@ -187,30 +212,34 @@ impl<'tcx, 'ctx> Deps<'tcx, 'ctx> {
             dgraph: DiGraphMap::new(),
             graph: LinkedHashMap::new(),
             current_id: None,
-            impl_trait_id: None,
+            parent_trait_impl: None,
+            parent_trait_decl: None,
         }
     }
 
+    fn set_impl_or_trait_id(&mut self, kind: &ItemKind) {
+        match kind {
+            ItemKind::Regular => {}
+            ItemKind::TraitDecl { trait_id, .. } => self.parent_trait_decl = Some(*trait_id),
+            ItemKind::TraitImpl { impl_id, .. } => self.parent_trait_impl = Some(*impl_id),
+        }
+    }
     fn set_current_id(&mut self, ctx: &TransformCtx, id: AnyTransId) {
         self.insert_node(id);
         self.current_id = Some(id);
 
-        // Add the id of the trait impl trait this item belongs to, if necessary
+        // Add the id of the impl/trait this item belongs to, if necessary
         use AnyTransId::*;
         match id {
-            TraitDecl(_) | TraitImpl(_) => (),
-            Type(_) | Global(_) => {
-                // TODO
+            TraitDecl(_) | TraitImpl(_) | Type(_) => (),
+            Global(id) => {
+                if let Some(decl) = ctx.translated.global_decls.get(id) {
+                    self.set_impl_or_trait_id(&decl.kind);
+                }
             }
             Fun(id) => {
-                // Lookup the function declaration.
-                //
-                // The declaration may not be present if we encountered errors.
                 if let Some(decl) = ctx.translated.fun_decls.get(id) {
-                    if let ItemKind::TraitImpl { impl_id, .. } = &decl.kind {
-                        // Register the trait decl id
-                        self.impl_trait_id = Some(*impl_id)
-                    }
+                    self.set_impl_or_trait_id(&decl.kind);
                 }
             }
         }
@@ -218,7 +247,8 @@ impl<'tcx, 'ctx> Deps<'tcx, 'ctx> {
 
     fn unset_current_id(&mut self) {
         self.current_id = None;
-        self.impl_trait_id = None;
+        self.parent_trait_impl = None;
+        self.parent_trait_decl = None;
     }
 
     fn insert_node(&mut self, id: AnyTransId) {
@@ -242,38 +272,41 @@ impl<'tcx, 'ctx> Deps<'tcx, 'ctx> {
 
 impl Deps<'_, '_> {
     fn enter_type_decl_id(&mut self, id: &TypeDeclId) {
-        let id = AnyTransId::Type(*id);
-        self.insert_edge(id);
+        self.insert_edge((*id).into());
     }
 
     fn enter_global_decl_id(&mut self, id: &GlobalDeclId) {
-        let id = AnyTransId::Global(*id);
-        self.insert_edge(id);
+        self.insert_edge((*id).into());
     }
 
     fn enter_trait_impl_id(&mut self, id: &TraitImplId) {
         // If the impl is the impl this item belongs to, we ignore it
-        // TODO: this is not very satisfying but this is the only way
-        // we have of preventing mutually recursive groups between
-        // method impls and trait impls in the presence of associated types...
-        if let Some(impl_id) = &self.impl_trait_id
+        // TODO: this is not very satisfying but this is the only way we have of preventing
+        // mutually recursive groups between method impls and trait impls in the presence of
+        // associated types...
+        if let Some(impl_id) = &self.parent_trait_impl
             && impl_id == id
         {
-            // Ignore
-        } else {
-            let id = AnyTransId::TraitImpl(*id);
-            self.insert_edge(id);
+            return;
         }
+        self.insert_edge((*id).into());
     }
 
     fn enter_trait_decl_id(&mut self, id: &TraitDeclId) {
-        let id = AnyTransId::TraitDecl(*id);
-        self.insert_edge(id);
+        // If the trait is the trait this item belongs to, we ignore it
+        // TODO: this is not very satisfying but this is the only way we have of preventing
+        // mutually recursive groups between methods and trait decls in the presence of associated
+        // types...
+        if let Some(trait_id) = &self.parent_trait_decl
+            && trait_id == id
+        {
+            return;
+        }
+        self.insert_edge((*id).into());
     }
 
     fn enter_fun_decl_id(&mut self, id: &FunDeclId) {
-        let id = AnyTransId::Fun(*id);
-        self.insert_edge(id);
+        self.insert_edge((*id).into());
     }
 
     fn enter_body_id(&mut self, id: &BodyId) {
