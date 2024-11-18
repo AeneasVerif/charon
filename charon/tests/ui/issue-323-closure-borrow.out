@@ -23,7 +23,7 @@ fn test_crate::new::closure<'_0, '_1>(@1: &'_0 mut ((&'_1 mut (test_crate::Rng))
     let @4: (); // anonymous local
 
     @3 := &two-phase-mut *((*(state@1)).0)
-    @2 := test_crate::{test_crate::Rng}::next_u64(move (@3))
+    @2 := test_crate::{test_crate::Rng}::next_u64<'_>(move (@3))
     drop @3
     drop @2
     @4 := ()

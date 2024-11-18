@@ -101,19 +101,19 @@ fn test_crate::use_incr()
     @fake_read(x@1)
     @4 := &mut x@1
     @3 := &two-phase-mut *(@4)
-    @2 := test_crate::incr(move (@3))
+    @2 := test_crate::incr<'_>(move (@3))
     drop @3
     drop @4
     drop @2
     @7 := &mut x@1
     @6 := &two-phase-mut *(@7)
-    @5 := test_crate::incr(move (@6))
+    @5 := test_crate::incr<'_>(move (@6))
     drop @6
     drop @7
     drop @5
     @10 := &mut x@1
     @9 := &two-phase-mut *(@10)
-    @8 := test_crate::incr(move (@9))
+    @8 := test_crate::incr<'_>(move (@9))
     drop @9
     drop @10
     drop @8
@@ -172,7 +172,7 @@ where
         @10 := copy (i@2)
         @9 := move (@10) - const (1 : u32)
         drop @10
-        @7 := test_crate::list_nth<T>[@TraitClause0](move (@8), move (@9))
+        @7 := test_crate::list_nth<'_, T>[@TraitClause0](move (@8), move (@9))
         @0 := &*(@7)
         drop @9
         drop @8
@@ -229,7 +229,7 @@ where
         @15 := copy (i@2)
         @14 := move (@15) - const (1 : u32)
         drop @15
-        @12 := test_crate::list_nth_mut<T>[@TraitClause0](move (@13), move (@14))
+        @12 := test_crate::list_nth_mut<'_, T>[@TraitClause0](move (@13), move (@14))
         @8 := &mut *(@12)
         drop @14
         drop @13
@@ -362,7 +362,7 @@ where
         0 => {
             tl@4 := &mut (*(l@1) as variant @0).1
             @6 := &two-phase-mut *(*(tl@4))
-            @5 := test_crate::list_tail<T>[@TraitClause0](move (@6))
+            @5 := test_crate::list_tail<'_, T>[@TraitClause0](move (@6))
             @3 := &mut *(@5)
             drop @6
             drop @5
@@ -415,7 +415,7 @@ where
     let @2: &'_ mut (T); // anonymous local
 
     @2 := &two-phase-mut *(cnt@1)
-    @0 := @TraitClause1::incr(move (@2))
+    @0 := @TraitClause1::incr<'_>(move (@2))
     drop @2
     return
 }

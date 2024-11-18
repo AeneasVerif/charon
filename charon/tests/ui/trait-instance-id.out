@@ -964,7 +964,7 @@ fn test_crate::main()
     loop {
         @12 := &mut iter@7
         @11 := &two-phase-mut *(@12)
-        @10 := core::array::iter::{impl core::iter::traits::iterator::Iterator for core::array::iter::IntoIter<T, const N : usize>[@TraitClause0]}#2<i32, 7 : usize>[core::marker::Sized<i32>]::next(move (@11))
+        @10 := core::array::iter::{impl core::iter::traits::iterator::Iterator for core::array::iter::IntoIter<T, const N : usize>[@TraitClause0]}#2<i32, 7 : usize>[core::marker::Sized<i32>]::next<'_>(move (@11))
         drop @11
         @fake_read(@10)
         match @10 {
@@ -1001,7 +1001,7 @@ fn test_crate::main()
     @19 := &a@1
     @18 := @ArrayToSliceShared<'_, i32, 7 : usize>(move (@19))
     drop @19
-    @17 := core::slice::{Slice<T>}::iter<i32>[core::marker::Sized<i32>](move (@18))
+    @17 := core::slice::{Slice<T>}::iter<'_, i32>[core::marker::Sized<i32>](move (@18))
     drop @18
     @16 := core::iter::traits::collect::{impl core::iter::traits::collect::IntoIterator for I}#1<core::slice::iter::Iter<'_, i32>[core::marker::Sized<i32>]>[core::marker::Sized<core::slice::iter::Iter<'_, i32>[core::marker::Sized<i32>]>, core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::Iter<'a, T>[@TraitClause0]}#182<'_, i32>[core::marker::Sized<i32>]]::into_iter(move (@17))
     drop @17
@@ -1010,7 +1010,7 @@ fn test_crate::main()
     loop {
         @24 := &mut iter@20
         @23 := &two-phase-mut *(@24)
-        @22 := core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::Iter<'a, T>[@TraitClause0]}#182<'_, i32>[core::marker::Sized<i32>]::next(move (@23))
+        @22 := core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::Iter<'a, T>[@TraitClause0]}#182<'_, i32>[core::marker::Sized<i32>]::next<'_>(move (@23))
         drop @23
         @fake_read(@22)
         match @22 {
@@ -1021,7 +1021,7 @@ fn test_crate::main()
                 v@25 := copy ((@22 as variant @1).0)
                 @27 := &two-phase-mut i@2
                 @28 := copy (v@25)
-                @26 := core::ops::arith::{impl core::ops::arith::AddAssign<&'_0 (i32)> for i32}#365<'_>::add_assign(move (@27), move (@28))
+                @26 := core::ops::arith::{impl core::ops::arith::AddAssign<&'_0 (i32)> for i32}#365<'_>::add_assign<'_>(move (@27), move (@28))
                 drop @28
                 drop @27
                 drop @26
@@ -1048,7 +1048,7 @@ fn test_crate::main()
     @33 := &a@1
     @32 := @ArrayToSliceShared<'_, i32, 7 : usize>(move (@33))
     drop @33
-    @31 := core::slice::{Slice<T>}::chunks<i32>[core::marker::Sized<i32>](move (@32), const (2 : usize))
+    @31 := core::slice::{Slice<T>}::chunks<'_, i32>[core::marker::Sized<i32>](move (@32), const (2 : usize))
     drop @32
     @30 := core::iter::traits::collect::{impl core::iter::traits::collect::IntoIterator for I}#1<core::slice::iter::Chunks<'_, i32>[core::marker::Sized<i32>]>[core::marker::Sized<core::slice::iter::Chunks<'_, i32>[core::marker::Sized<i32>]>, core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::Chunks<'a, T>[@TraitClause0]}#71<'_, i32>[core::marker::Sized<i32>]]::into_iter(move (@31))
     drop @31
@@ -1057,7 +1057,7 @@ fn test_crate::main()
     loop {
         @38 := &mut iter@34
         @37 := &two-phase-mut *(@38)
-        @36 := core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::Chunks<'a, T>[@TraitClause0]}#71<'_, i32>[core::marker::Sized<i32>]::next(move (@37))
+        @36 := core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::Chunks<'a, T>[@TraitClause0]}#71<'_, i32>[core::marker::Sized<i32>]::next<'_>(move (@37))
         drop @37
         @fake_read(@36)
         match @36 {
@@ -1088,7 +1088,7 @@ fn test_crate::main()
     @43 := &a@1
     @42 := @ArrayToSliceShared<'_, i32, 7 : usize>(move (@43))
     drop @43
-    @41 := core::slice::{Slice<T>}::chunks_exact<i32>[core::marker::Sized<i32>](move (@42), const (2 : usize))
+    @41 := core::slice::{Slice<T>}::chunks_exact<'_, i32>[core::marker::Sized<i32>](move (@42), const (2 : usize))
     drop @42
     @40 := core::iter::traits::collect::{impl core::iter::traits::collect::IntoIterator for I}#1<core::slice::iter::ChunksExact<'_, i32>[core::marker::Sized<i32>]>[core::marker::Sized<core::slice::iter::ChunksExact<'_, i32>[core::marker::Sized<i32>]>, core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::ChunksExact<'a, T>[@TraitClause0]}#90<'_, i32>[core::marker::Sized<i32>]]::into_iter(move (@41))
     drop @41
@@ -1097,7 +1097,7 @@ fn test_crate::main()
     loop {
         @48 := &mut iter@44
         @47 := &two-phase-mut *(@48)
-        @46 := core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::ChunksExact<'a, T>[@TraitClause0]}#90<'_, i32>[core::marker::Sized<i32>]::next(move (@47))
+        @46 := core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::ChunksExact<'a, T>[@TraitClause0]}#90<'_, i32>[core::marker::Sized<i32>]::next<'_>(move (@47))
         drop @47
         @fake_read(@46)
         match @46 {

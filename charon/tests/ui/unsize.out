@@ -101,7 +101,7 @@ fn test_crate::foo()
     drop @14
     drop @12
     @18 := &string@11
-    @17 := alloc::string::{impl core::clone::Clone for alloc::string::String}#6::clone(move (@18))
+    @17 := alloc::string::{impl core::clone::Clone for alloc::string::String}#6::clone<'_>(move (@18))
     drop @18
     @16 := @BoxNew<alloc::string::String>[core::marker::Sized<alloc::string::String>](move (@17))
     @15 := unsize_cast<alloc::boxed::Box<alloc::string::String>[core::marker::Sized<alloc::alloc::Global>], alloc::boxed::Box<dyn (exists(TODO))>[core::marker::Sized<alloc::alloc::Global>]>(move (@16))
@@ -112,7 +112,7 @@ fn test_crate::foo()
     drop @15
     drop @15
     @22 := &string@11
-    @21 := alloc::string::{impl core::clone::Clone for alloc::string::String}#6::clone(move (@22))
+    @21 := alloc::string::{impl core::clone::Clone for alloc::string::String}#6::clone<'_>(move (@22))
     drop @22
     @20 := alloc::rc::{alloc::rc::Rc<T, alloc::alloc::Global>[core::marker::Sized<alloc::alloc::Global>]}#8::new<alloc::string::String>[core::marker::Sized<alloc::string::String>](move (@21))
     @19 := unsize_cast<alloc::rc::Rc<alloc::string::String, alloc::alloc::Global>[core::marker::Sized<alloc::alloc::Global>], alloc::rc::Rc<dyn (exists(TODO)), alloc::alloc::Global>[core::marker::Sized<alloc::alloc::Global>]>(move (@20))

@@ -624,21 +624,35 @@ and match_generic_args (ctx : ctx) (c : match_config) (m : maps)
        ^ generic_args_to_string { tgt = TkPattern } pgenerics
        ^ "\n- generics: "
        ^ PrintTypes.generic_args_to_string fmt_env generics));
-  let { regions; types; const_generics; trait_refs = _ } : T.generic_args =
-    generics
-  in
-  let generics =
+  let merged_generics =
     List.concat
       [
-        List.map (fun x -> MRegion x) regions;
-        List.map (fun x -> MTy x) types;
-        List.map (fun x -> MCg x) const_generics;
+        List.map (fun x -> MRegion x) generics.regions;
+        List.map (fun x -> MTy x) generics.types;
+        List.map (fun x -> MCg x) generics.const_generics;
       ]
   in
   if List.length pgenerics = 0 then true (* Generics can be omitted *)
-  else if List.length pgenerics = List.length generics then
-    List.for_all2 (match_generic_arg ctx c m) pgenerics generics
-  else false
+  else begin
+    (* Regions can be omitted *)
+    let any_region_pat =
+      List.exists
+        (function
+          | GRegion _ -> true
+          | _ -> false)
+        pgenerics
+    in
+    let pgenerics =
+      if (not (List.length generics.regions = 0)) && not any_region_pat then
+        List.append
+          (List.map (fun _ -> GRegion (RVar None)) generics.regions)
+          pgenerics
+      else pgenerics
+    in
+    if List.length pgenerics = List.length merged_generics then
+      List.for_all2 (match_generic_arg ctx c m) pgenerics merged_generics
+    else false
+  end
 
 and match_generic_arg (ctx : ctx) (c : match_config) (m : maps)
     (pg : generic_arg) (g : mexpr) : bool =

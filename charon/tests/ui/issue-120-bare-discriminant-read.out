@@ -43,7 +43,7 @@ where
 
     @4 := &opt@1
     @3 := copy (@4)
-    @2 := test_crate::discriminant_value<T>[@TraitClause0](move (@3))
+    @2 := test_crate::discriminant_value<'_, T>[@TraitClause0](move (@3))
     drop @3
     @0 := move (@2) != const (0 : isize)
     drop @2

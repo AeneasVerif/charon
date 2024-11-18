@@ -57,7 +57,7 @@ fn test_crate::destruct<'_0>(@1: &'_0 (dyn (exists(TODO)))) -> alloc::string::St
     let @2: &'_ (dyn (exists(TODO))); // anonymous local
 
     @2 := &*(x@1)
-    @0 := alloc::string::{impl alloc::string::ToString for T}#32<dyn (exists(TODO))>[core::fmt::Display<dyn (exists(TODO))>]::to_string(move (@2))
+    @0 := alloc::string::{impl alloc::string::ToString for T}#32<dyn (exists(TODO))>[core::fmt::Display<dyn (exists(TODO))>]::to_string<'_>(move (@2))
     drop @2
     return
 }

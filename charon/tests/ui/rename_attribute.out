@@ -44,11 +44,11 @@ where
     let @4: &'_ (bool); // anonymous local
 
     @3 := &x@1
-    @2 := test_crate::{impl test_crate::BoolTrait for bool}::get_bool(move (@3))
+    @2 := test_crate::{impl test_crate::BoolTrait for bool}::get_bool<'_>(move (@3))
     if move (@2) {
         drop @3
         @4 := &x@1
-        @0 := test_crate::{impl test_crate::BoolTrait for bool}::ret_true(move (@4))
+        @0 := test_crate::{impl test_crate::BoolTrait for bool}::ret_true<'_>(move (@4))
         drop @4
     }
     else {

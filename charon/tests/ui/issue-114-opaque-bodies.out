@@ -251,7 +251,7 @@ fn core::cmp::PartialEq::ne<'_0, '_1, Self, Rhs>(@1: &'_0 (Self), @2: &'_1 (Rhs)
     let other@2: &'_ (Rhs); // arg #2
     let @3: bool; // anonymous local
 
-    @3 := Self::eq(move (self@1), move (other@2))
+    @3 := Self::eq<'_, '_>(move (self@1), move (other@2))
     @0 := ~(move (@3))
     drop @3
     return

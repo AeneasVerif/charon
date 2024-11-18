@@ -56,7 +56,7 @@ fn test_crate::main()
     @2 := &@3
     @5 := core::option::Option::Some { 0: const (1 : i32) }
     @4 := &@5
-    @1 := core::option::{impl core::cmp::PartialEq<core::option::Option<T>[@TraitClause0]> for core::option::Option<T>[@TraitClause0]}#14<i32>[core::marker::Sized<i32>, core::cmp::impls::{impl core::cmp::PartialEq<i32> for i32}#30]::eq(move (@2), move (@4))
+    @1 := core::option::{impl core::cmp::PartialEq<core::option::Option<T>[@TraitClause0]> for core::option::Option<T>[@TraitClause0]}#14<i32>[core::marker::Sized<i32>, core::cmp::impls::{impl core::cmp::PartialEq<i32> for i32}#30]::eq<'_, '_>(move (@2), move (@4))
     drop @4
     drop @2
     @fake_read(@1)
@@ -161,7 +161,7 @@ fn test_crate::{impl core::cmp::PartialOrd<test_crate::Foo> for test_crate::Foo}
     @3 := &*(@4)
     @6 := &(*(other@2)).0
     @5 := &*(@6)
-    @0 := core::cmp::impls::{impl core::cmp::PartialOrd<u32> for u32}#64::partial_cmp(move (@3), move (@5))
+    @0 := core::cmp::impls::{impl core::cmp::PartialOrd<u32> for u32}#64::partial_cmp<'_, '_>(move (@3), move (@5))
     drop @5
     drop @3
     drop @6

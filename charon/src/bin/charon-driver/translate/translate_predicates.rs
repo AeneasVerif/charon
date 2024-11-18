@@ -96,6 +96,7 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
                 None,
                 &trait_ref.generic_args,
                 &parent_trait_refs,
+                None,
             )?;
 
             Ok(RegionBinder {
@@ -157,7 +158,8 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
     ) -> Result<TraitDeclRef, Error> {
         let trait_id = self.register_trait_decl_id(span, &trait_ref.def_id);
         // For now a trait has no required bounds, so we pass an empty list.
-        let generics = self.translate_generic_args(span, None, &trait_ref.generic_args, &[])?;
+        let generics =
+            self.translate_generic_args(span, None, &trait_ref.generic_args, &[], None)?;
         Ok(TraitDeclRef { trait_id, generics })
     }
 
@@ -313,7 +315,7 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
                 generics,
             } => {
                 let impl_id = self.register_trait_impl_id(span, impl_def_id);
-                let generics = self.translate_generic_args(span, None, generics, nested)?;
+                let generics = self.translate_generic_args(span, None, generics, nested, None)?;
                 TraitRef {
                     kind: TraitRefKind::TraitImpl(impl_id, generics),
                     trait_decl_ref,

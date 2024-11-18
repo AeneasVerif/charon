@@ -195,7 +195,7 @@ fn test_crate::foo()
 
     @3 := core::option::Option::Some { 0: const (0 : i32) }
     @2 := &@3
-    @1 := core::option::{core::option::Option<T>[@TraitClause0]}::is_some<i32>[core::marker::Sized<i32>](move (@2))
+    @1 := core::option::{core::option::Option<T>[@TraitClause0]}::is_some<'_, i32>[core::marker::Sized<i32>](move (@2))
     drop @2
     @fake_read(@1)
     drop @3
@@ -209,7 +209,7 @@ fn test_crate::foo()
     drop @6
     @10 := &*(slice@4)
     @11 := core::ops::range::RangeFrom { start: const (1 : usize) }
-    @9 := core::slice::index::{impl core::ops::index::Index<I> for Slice<T>}<bool, core::ops::range::RangeFrom<usize>[core::marker::Sized<usize>]>[core::marker::Sized<bool>, core::marker::Sized<core::ops::range::RangeFrom<usize>[core::marker::Sized<usize>]>, core::slice::index::{impl core::slice::index::SliceIndex<Slice<T>> for core::ops::range::RangeFrom<usize>[core::marker::Sized<usize>]}#7<bool>[core::marker::Sized<bool>]]::index(move (@10), move (@11))
+    @9 := core::slice::index::{impl core::ops::index::Index<I> for Slice<T>}<bool, core::ops::range::RangeFrom<usize>[core::marker::Sized<usize>]>[core::marker::Sized<bool>, core::marker::Sized<core::ops::range::RangeFrom<usize>[core::marker::Sized<usize>]>, core::slice::index::{impl core::slice::index::SliceIndex<Slice<T>> for core::ops::range::RangeFrom<usize>[core::marker::Sized<usize>]}#7<bool>[core::marker::Sized<bool>]]::index<'_>(move (@10), move (@11))
     drop @11
     drop @10
     @8 := &*(@9)

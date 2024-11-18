@@ -742,7 +742,7 @@ fn test_crate::cbd(@1: Array<u8, 33 : usize>)
     loop {
         @9 := &mut iter@4
         @8 := &two-phase-mut *(@9)
-        @7 := core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>[@TraitClause0]}#6<u8>[core::marker::Sized<u8>, core::iter::range::{impl core::iter::range::Step for u8}#35]::next(move (@8))
+        @7 := core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>[@TraitClause0]}#6<u8>[core::marker::Sized<u8>, core::iter::range::{impl core::iter::range::Step for u8}#35]::next<'_>(move (@8))
         drop @8
         @fake_read(@7)
         match @7 {
@@ -831,11 +831,11 @@ fn test_crate::select<'_0, '_1>(@1: &'_0 (Slice<u8>), @2: &'_1 (Slice<u8>))
     @4 := const (false)
     if move (@4) {
         @9 := &*(lhs@1)
-        @8 := core::slice::{Slice<T>}::len<u8>[core::marker::Sized<u8>](move (@9))
+        @8 := core::slice::{Slice<T>}::len<'_, u8>[core::marker::Sized<u8>](move (@9))
         drop @9
         @7 := &@8
         @12 := &*(rhs@2)
-        @11 := core::slice::{Slice<T>}::len<u8>[core::marker::Sized<u8>](move (@12))
+        @11 := core::slice::{Slice<T>}::len<'_, u8>[core::marker::Sized<u8>](move (@12))
         drop @12
         @10 := &@11
         @6 := (move (@7), move (@10))

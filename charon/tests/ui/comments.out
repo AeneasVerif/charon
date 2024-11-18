@@ -68,7 +68,7 @@ fn test_crate::sum<'_0>(@1: &'_0 (Slice<u32>)) -> u32
     loop {
         @10 := copy (i@3)
         @12 := &*(s@1)
-        @11 := core::slice::{Slice<T>}::len<u32>[core::marker::Sized<u32>](move (@12))
+        @11 := core::slice::{Slice<T>}::len<'_, u32>[core::marker::Sized<u32>](move (@12))
         drop @12
         @9 := move (@10) < move (@11)
         if move (@9) {

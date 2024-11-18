@@ -90,7 +90,7 @@ where
     let @2: &'_ (T); // anonymous local
 
     @2 := &x@1
-    @0 := @TraitClause1::parent_clause0::method(move (@2))
+    @0 := @TraitClause1::parent_clause0::method<'_>(move (@2))
     drop @2
     drop x@1
     return
@@ -106,7 +106,7 @@ where
     let @2: &'_ (T); // anonymous local
 
     @2 := &x@1
-    @0 := @TraitClause1::parent_clause0::method(move (@2))
+    @0 := @TraitClause1::parent_clause0::method<'_>(move (@2))
     drop @2
     drop x@1
     return

@@ -77,7 +77,7 @@ where
             @5 := &f@2
             @7 := move (x@3)
             @6 := (move (@7))
-            @4 := @TraitClause2::call(move (@5), move (@6))
+            @4 := @TraitClause2::call<'_>(move (@5), move (@6))
             drop @7
             drop @7
             drop @6
@@ -192,7 +192,7 @@ fn test_crate::test_closure_ref_u32<'a>(@1: &'a (u32)) -> &'a (u32)
     let @5: fn<'_1_0>(&'_1_0 (u32)) -> &'_1_0 (u32); // anonymous local
     let @6: &'_ (u32); // anonymous local
 
-    @3 := {test_crate::test_closure_ref_u32::closure} {}
+    @3 := {test_crate::test_closure_ref_u32::closure<'_>} {}
     f@2 := cast<fn<'_1_0>(&'_1_0 (u32)) -> &'_1_0 (u32), fn<'_1_0>(&'_1_0 (u32)) -> &'_1_0 (u32)>(move (@3))
     drop @3
     @fake_read(f@2)
@@ -231,7 +231,7 @@ where
     let @5: fn<'_1_0>(&'_1_0 (T)) -> &'_1_0 (T); // anonymous local
     let @6: &'_ (T); // anonymous local
 
-    @3 := {test_crate::test_closure_ref_param::closure<T>[@TraitClause0]} {}
+    @3 := {test_crate::test_closure_ref_param::closure<'_, T>[@TraitClause0]} {}
     f@2 := cast<fn<'_1_0>(&'_1_0 (T)) -> &'_1_0 (T), fn<'_1_0>(&'_1_0 (T)) -> &'_1_0 (T)>(move (@3))
     drop @3
     @fake_read(f@2)
@@ -274,7 +274,7 @@ where
     let @5: fn<'_1_0>(&'_1_0 (T)) -> &'_1_0 (T); // anonymous local
     let @6: &'_ (T); // anonymous local
 
-    @3 := {test_crate::test_closure_ref_early_bound::closure<'_, T>[@TraitClause0, @TraitClause1]} {}
+    @3 := {test_crate::test_closure_ref_early_bound::closure<'_, '_, T>[@TraitClause0, @TraitClause1]} {}
     f@2 := cast<fn<'_1_0>(&'_1_0 (T)) -> &'_1_0 (T), fn<'_1_0>(&'_1_0 (T)) -> &'_1_0 (T)>(move (@3))
     drop @3
     @fake_read(f@2)
@@ -386,7 +386,7 @@ where
     let @2: &'_ (T); // anonymous local
 
     @2 := &x@1
-    @0 := @TraitClause1::clone(move (@2))
+    @0 := @TraitClause1::clone<'_>(move (@2))
     drop @2
     drop x@1
     return
@@ -502,7 +502,7 @@ fn test_crate::test_regions<'a>(@1: &'a (u32)) -> u32
     let @5: &'_ (&'_ (u32)); // anonymous local
     let @6: &'_ (&'_ (u32)); // anonymous local
 
-    @3 := {test_crate::test_regions::closure} {}
+    @3 := {test_crate::test_regions::closure<'_>} {}
     f@2 := cast<fn<'_1_0>(&'_1_0 (&'_ (u32))) -> u32, fn<'_1_0>(&'_1_0 (&'_ (u32))) -> u32>(move (@3))
     drop @3
     @fake_read(f@2)
@@ -560,7 +560,7 @@ fn test_crate::test_closure_capture(@1: u32, @2: u32) -> u32
     @fake_read(f@3)
     @7 := &*(f@3)
     @8 := (const (0 : u32))
-    @0 := core::ops::function::Fn<fn(u32) -> u32, (u32)>::call(move (@7), move (@8))
+    @0 := core::ops::function::Fn<fn(u32) -> u32, (u32)>::call<'_>(move (@7), move (@8))
     drop @8
     drop @7
     drop @4
@@ -579,7 +579,7 @@ where
     let @3: &'_ (T); // anonymous local
 
     @3 := &x@2
-    @0 := @TraitClause1::clone(move (@3))
+    @0 := @TraitClause1::clone<'_>(move (@3))
     drop @3
     drop x@2
     return
@@ -604,7 +604,7 @@ where
     @4 := &*(f@2)
     @6 := move (x@1)
     @5 := (move (@6))
-    @0 := core::ops::function::Fn<fn(T) -> T, (T)>::call(move (@4), move (@5))
+    @0 := core::ops::function::Fn<fn(T) -> T, (T)>::call<'_>(move (@4), move (@5))
     drop @6
     drop @6
     drop @5
@@ -669,7 +669,7 @@ where
     let @2: &'_ (T); // arg #2
 
     @2 := &*((*(state@1)).0)
-    @0 := @TraitClause1::clone(move (@2))
+    @0 := @TraitClause1::clone<'_>(move (@2))
     drop @2
     return
 }
@@ -729,17 +729,17 @@ where
     @fake_read(clo@2)
     @8 := &clo@2
     @9 := ()
-    @7 := core::ops::function::Fn<fn() -> fn() -> fn() -> T, ()>::call(move (@8), move (@9))
+    @7 := core::ops::function::Fn<fn() -> fn() -> fn() -> T, ()>::call<'_>(move (@8), move (@9))
     @6 := &@7
     drop @9
     drop @8
     @10 := ()
-    @5 := core::ops::function::Fn<fn() -> fn() -> T, ()>::call(move (@6), move (@10))
+    @5 := core::ops::function::Fn<fn() -> fn() -> T, ()>::call<'_>(move (@6), move (@10))
     @4 := &@5
     drop @10
     drop @6
     @11 := ()
-    @0 := core::ops::function::Fn<fn() -> T, ()>::call(move (@4), move (@11))
+    @0 := core::ops::function::Fn<fn() -> T, ()>::call<'_>(move (@4), move (@11))
     drop @11
     drop @4
     drop clo@2
@@ -768,7 +768,7 @@ fn test_crate::BLAH() -> u32
     @fake_read(clo@1)
     @2 := &clo@1
     @3 := ()
-    @0 := core::ops::function::Fn<fn() -> u32, ()>::call(move (@2), move (@3))
+    @0 := core::ops::function::Fn<fn() -> u32, ()>::call<'_>(move (@2), move (@3))
     drop @3
     drop @2
     drop clo@1

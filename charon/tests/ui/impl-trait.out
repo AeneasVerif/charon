@@ -74,10 +74,10 @@ fn test_crate::use_foo()
     foo@1 := test_crate::mk_foo()
     @fake_read(foo@1)
     @5 := &foo@1
-    @4 := test_crate::{impl test_crate::Foo for ()}::get_ty(move (@5))
+    @4 := test_crate::{impl test_crate::Foo for ()}::get_ty<'_>(move (@5))
     @3 := &*(@4)
     drop @5
-    @2 := core::clone::impls::{impl core::clone::Clone for u32}#8::clone(move (@3))
+    @2 := core::clone::impls::{impl core::clone::Clone for u32}#8::clone<'_>(move (@3))
     drop @3
     @fake_read(@2)
     drop @2
@@ -142,10 +142,10 @@ where
     foo@1 := @TraitClause1::make_foo()
     @fake_read(foo@1)
     @5 := &foo@1
-    @4 := @TraitClause1::parent_clause0::get_ty(move (@5))
+    @4 := @TraitClause1::parent_clause0::get_ty<'_>(move (@5))
     @3 := &*(@4)
     drop @5
-    @2 := @TraitClause1::parent_clause0::parent_clause0::clone(move (@3))
+    @2 := @TraitClause1::parent_clause0::parent_clause0::clone<'_>(move (@3))
     drop @3
     @fake_read(@2)
     drop @2
@@ -197,7 +197,7 @@ where
 {
     let @0: fn<'_1_0>(&'_1_0 (U)) -> test_crate::WrapClone<&'_1_0 (U)>[core::marker::Sized<&'_2_0 (U)>, core::clone::impls::{impl core::clone::Clone for &'_0 (T)}#3<'_, U>]; // return
 
-    @0 := {test_crate::wrap::closure<U>[@TraitClause0]} {}
+    @0 := {test_crate::wrap::closure<'_, U>[@TraitClause0]} {}
     return
 }
 
