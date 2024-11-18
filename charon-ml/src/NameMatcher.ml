@@ -468,7 +468,7 @@ and match_pattern_with_type_id (ctx : ctx) (c : match_config) (m : maps)
       let d = T.TypeDeclId.Map.find id ctx.type_decls in
       match_name_with_generics ctx c ~m pid d.item_meta.name generics
   | TTuple -> false
-  | TAssumed id -> (
+  | TBuiltin id -> (
       match (id, pid) with
       | ( TBox,
           ( [ PIdent ("Box", pgenerics) ]
@@ -488,7 +488,7 @@ and match_pattern_with_literal_type (pty : pattern) (ty : T.literal_type) : bool
 
 and match_primitive_adt (pid : primitive_adt) (id : T.type_id) : bool =
   match (pid, id) with
-  | TTuple, TTuple | TArray, TAssumed TArray | TSlice, TAssumed TSlice -> true
+  | TTuple, TTuple | TArray, TBuiltin TArray | TSlice, TBuiltin TSlice -> true
   | _ -> false
 
 and match_expr_with_ty (ctx : ctx) (c : match_config) (m : maps) (pty : expr)
@@ -621,7 +621,7 @@ and match_expr_with_const_generic (ctx : ctx) (c : match_config) (m : maps)
       match_name ctx c pat d.item_meta.name
   | _ -> false
 
-let assumed_fun_id_to_string (fid : E.assumed_fun_id) : string =
+let builtin_fun_id_to_string (fid : E.builtin_fun_id) : string =
   match fid with
   | BoxNew -> "alloc::boxed::{Box<@T, alloc::alloc::Global>}::new"
   | ArrayToSliceShared -> "ArrayToSliceShared"
@@ -639,7 +639,7 @@ let match_fn_ptr (ctx : ctx) (c : match_config) (p : pattern) (func : E.fn_ptr)
     List.map (fun s -> T.PeIdent (s, T.Disambiguator.of_int 0)) s
   in
   match func.func with
-  | FunId (FAssumed fid) -> (
+  | FunId (FBuiltin fid) -> (
       match fid with
       | BoxNew -> (
           (* Slightly annoying because of the impl block.
@@ -668,7 +668,7 @@ let match_fn_ptr (ctx : ctx) (c : match_config) (p : pattern) (func : E.fn_ptr)
               | _ -> false)
           | _ -> false)
       | _ ->
-          let name = assumed_fun_id_to_string fid in
+          let name = builtin_fun_id_to_string fid in
           match_name_with_generics ctx c p (to_name [ name ]) func.generics)
   | FunId (FRegular fid) ->
       let d = A.FunDeclId.Map.find fid ctx.fun_decls in
@@ -869,10 +869,10 @@ and ty_to_pattern_aux (ctx : ctx) (c : to_pat_config) (m : constraints)
             (name_with_generic_args_to_pattern_aux ctx c d.item_meta.name
                (Some generics))
       | TTuple -> EPrimAdt (TTuple, generics)
-      | TAssumed TArray -> EPrimAdt (TArray, generics)
-      | TAssumed TSlice -> EPrimAdt (TSlice, generics)
-      | TAssumed TBox -> EComp [ PIdent ("Box", generics) ]
-      | TAssumed TStr -> EComp [ PIdent ("str", generics) ])
+      | TBuiltin TArray -> EPrimAdt (TArray, generics)
+      | TBuiltin TSlice -> EPrimAdt (TSlice, generics)
+      | TBuiltin TBox -> EComp [ PIdent ("Box", generics) ]
+      | TBuiltin TStr -> EComp [ PIdent ("str", generics) ])
   | TVar v -> EVar (type_var_to_pattern m v)
   | TLiteral lit -> literal_type_to_pattern c lit
   | TRef (r, ty, rk) ->
@@ -1007,7 +1007,7 @@ let fn_ptr_to_pattern (ctx : ctx) (c : to_pat_config)
   let args = generic_args_to_pattern ctx c m func.generics in
   let pat =
     match func.func with
-    | FunId (FAssumed fid) -> (
+    | FunId (FBuiltin fid) -> (
         match fid with
         | BoxNew ->
             let var = Some (VarName "T") in
@@ -1025,7 +1025,7 @@ let fn_ptr_to_pattern (ctx : ctx) (c : to_pat_config)
               PIdent ("new", args);
             ]
         | _ ->
-            let fid = assumed_fun_id_to_string fid in
+            let fid = builtin_fun_id_to_string fid in
             [ PIdent (fid, args) ])
     | FunId (FRegular fid) ->
         let d = A.FunDeclId.Map.find fid ctx.fun_decls in

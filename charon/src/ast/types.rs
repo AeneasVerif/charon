@@ -592,7 +592,7 @@ pub enum TypeId {
     /// The Array and Slice types were initially modelled as primitive in
     /// the [Ty] type. We decided to move them to built-in types as it allows
     /// for more uniform treatment throughout the codebase.
-    #[charon::rename("TAssumed")]
+    #[charon::rename("TBuiltin")]
     Builtin(BuiltinTy),
 }
 
@@ -780,7 +780,6 @@ pub enum TyKind {
     PartialOrd,
 )]
 #[charon::variants_prefix("T")]
-#[charon::rename("AssumedTy")]
 pub enum BuiltinTy {
     /// Boxes are de facto a primitive type.
     Box,

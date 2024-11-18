@@ -138,7 +138,7 @@ let mk_usize_ty : ty = TLiteral (TInteger Usize)
 (** Deconstruct a type of the form [Box<T>] to retrieve the [T] inside *)
 let ty_get_box (box_ty : ty) : ty =
   match box_ty with
-  | TAdt (TAssumed TBox, { types = [ boxed_ty ]; _ }) -> boxed_ty
+  | TAdt (TBuiltin TBox, { types = [ boxed_ty ]; _ }) -> boxed_ty
   | _ -> raise (Failure "Not a boxed type")
 
 (** Deconstruct a type of the form [&T] or [&mut T] to retrieve the [T] (and
@@ -154,7 +154,7 @@ let mk_ref_ty (r : region) (ty : ty) (ref_kind : ref_kind) : ty =
 
 (** Make a box type *)
 let mk_box_ty (ty : ty) : ty =
-  TAdt (TAssumed TBox, mk_generic_args_from_types [ ty ])
+  TAdt (TBuiltin TBox, mk_generic_args_from_types [ ty ])
 
 (** Check if a region is in a set of regions.
 

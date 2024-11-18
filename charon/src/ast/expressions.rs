@@ -289,7 +289,7 @@ pub enum FunId {
     /// A primitive function, coming from a standard library (for instance:
     /// `alloc::boxed::Box::new`).
     /// TODO: rename to "Primitive"
-    #[charon::rename("FAssumed")]
+    #[charon::rename("FBuiltin")]
     Builtin(BuiltinFunId),
 }
 
@@ -309,7 +309,6 @@ pub enum FunId {
     Drive,
     DriveMut,
 )]
-#[charon::rename("AssumedFunId")]
 pub enum BuiltinFunId {
     /// `alloc::boxed::Box::new`
     BoxNew,

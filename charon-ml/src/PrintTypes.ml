@@ -18,7 +18,7 @@ let region_var_to_string (rv : region_var) : string =
 let ref_kind_to_string (rk : ref_kind) : string =
   match rk with RMut -> "Mut" | RShared -> "Shared"
 
-let assumed_ty_to_string (_ : assumed_ty) : string = "Box"
+let builtin_ty_to_string (_ : builtin_ty) : string = "Box"
 
 let trait_clause_id_to_pretty_string (id : trait_clause_id) : string =
   "TraitClause@" ^ TraitClauseId.to_string id
@@ -110,7 +110,7 @@ let rec type_id_to_string (env : ('a, 'b) fmt_env) (id : type_id) : string =
   match id with
   | TAdtId id -> type_decl_id_to_string env id
   | TTuple -> ""
-  | TAssumed aty -> (
+  | TBuiltin aty -> (
       match aty with
       | TBox -> "alloc::boxed::Box"
       | TStr -> "str"

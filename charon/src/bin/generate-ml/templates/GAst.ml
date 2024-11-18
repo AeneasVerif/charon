@@ -20,7 +20,7 @@ module TraitImplId = Types.TraitImplId
 module TraitClauseId = Types.TraitClauseId
 
 (* Imports *)
-type assumed_fun_id = Expressions.assumed_fun_id [@@deriving show, ord]
+type builtin_fun_id = Expressions.builtin_fun_id [@@deriving show, ord]
 type fun_id = Expressions.fun_id [@@deriving show, ord]
 type fun_id_or_trait_method_ref = Expressions.fun_id_or_trait_method_ref [@@deriving show, ord]
 
