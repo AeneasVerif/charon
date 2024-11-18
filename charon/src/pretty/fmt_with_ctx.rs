@@ -506,11 +506,11 @@ where
 
         // Format the local variables
         let mut locals: Vec<String> = Vec::new();
-        for v in &self.locals {
+        for v in &self.locals.vars {
             let index = v.index.index();
             let comment = if index == 0 {
                 "// return".to_string()
-            } else if index <= self.arg_count {
+            } else if index <= self.locals.arg_count {
                 format!("// arg #{index}").to_string()
             } else {
                 match &v.name {
@@ -748,67 +748,64 @@ impl<C: AstFormatter> FmtWithCtx<C> for PathElem {
 
 impl<C: AstFormatter> FmtWithCtx<C> for Place {
     fn fmt_with_ctx(&self, ctx: &C) -> String {
-        let mut out = ctx.format_object(self.var_id);
-
-        for p in &self.projection {
-            match p {
-                ProjectionElem::Deref => {
-                    out = format!("*({out})");
-                }
-                ProjectionElem::Field(proj_kind, field_id) => match proj_kind {
-                    FieldProjKind::Adt(adt_id, opt_variant_id) => {
-                        let field_name = ctx.format_object((*adt_id, *opt_variant_id, *field_id));
-                        let downcast = match opt_variant_id {
-                            None => "".to_string(),
-                            Some(variant_id) => format!(" as variant @{variant_id}"),
-                        };
-                        out = format!("({out}{downcast}).{field_name}");
+        match &self.kind {
+            PlaceKind::Base(var_id) => ctx.format_object(*var_id),
+            PlaceKind::Projection(subplace, projection) => {
+                let sub = subplace.fmt_with_ctx(ctx);
+                match projection {
+                    ProjectionElem::Deref => {
+                        format!("*({sub})")
                     }
-                    FieldProjKind::Tuple(_) => {
-                        out = format!("({out}).{field_id}");
-                    }
-                    FieldProjKind::ClosureState => {
-                        out = format!("({out}).@closure_state_field_{field_id}");
-                    }
-                },
-                ProjectionElem::Index {
-                    offset,
-                    from_end: true,
-                    ..
-                } => out = format!("({out})[-{}]", offset.fmt_with_ctx(ctx)),
-                ProjectionElem::Index {
-                    offset,
-                    from_end: false,
-                    ..
-                } => out = format!("({out})[{}]", offset.fmt_with_ctx(ctx)),
-                ProjectionElem::Subslice {
-                    from,
-                    to,
-                    from_end: true,
-                    ..
-                } => {
-                    out = format!(
-                        "({out})[{}..-{}]",
+                    ProjectionElem::Field(proj_kind, field_id) => match proj_kind {
+                        FieldProjKind::Adt(adt_id, opt_variant_id) => {
+                            let field_name =
+                                ctx.format_object((*adt_id, *opt_variant_id, *field_id));
+                            let downcast = match opt_variant_id {
+                                None => "".to_string(),
+                                Some(variant_id) => format!(" as variant @{variant_id}"),
+                            };
+                            format!("({sub}{downcast}).{field_name}")
+                        }
+                        FieldProjKind::Tuple(_) => {
+                            format!("({sub}).{field_id}")
+                        }
+                        FieldProjKind::ClosureState => {
+                            format!("({sub}).@closure_state_field_{field_id}")
+                        }
+                    },
+                    ProjectionElem::Index {
+                        offset,
+                        from_end: true,
+                        ..
+                    } => format!("({sub})[-{}]", offset.fmt_with_ctx(ctx)),
+                    ProjectionElem::Index {
+                        offset,
+                        from_end: false,
+                        ..
+                    } => format!("({sub})[{}]", offset.fmt_with_ctx(ctx)),
+                    ProjectionElem::Subslice {
+                        from,
+                        to,
+                        from_end: true,
+                        ..
+                    } => format!(
+                        "({sub})[{}..-{}]",
                         from.fmt_with_ctx(ctx),
                         to.fmt_with_ctx(ctx)
-                    )
-                }
-                ProjectionElem::Subslice {
-                    from,
-                    to,
-                    from_end: false,
-                    ..
-                } => {
-                    out = format!(
-                        "({out})[{}..{}]",
+                    ),
+                    ProjectionElem::Subslice {
+                        from,
+                        to,
+                        from_end: false,
+                        ..
+                    } => format!(
+                        "({sub})[{}..{}]",
                         from.fmt_with_ctx(ctx),
                         to.fmt_with_ctx(ctx)
-                    )
+                    ),
                 }
             }
         }
-
-        out
     }
 }
 

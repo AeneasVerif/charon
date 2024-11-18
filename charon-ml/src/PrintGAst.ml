@@ -102,14 +102,11 @@ let gfun_decl_to_string (env : ('a, 'b) fmt_env) (indent : string)
         (Some name) None sg
   | Some body ->
       (* Locally update the environment *)
-      let locals = List.map (fun v -> (v.index, v.name)) body.locals in
+      let locals = List.map (fun v -> (v.index, v.name)) body.locals.vars in
       let env = { env with locals } in
 
       (* Arguments *)
-      let inputs = List.tl body.locals in
-      let inputs, _aux_locals =
-        Collections.List.split_at inputs body.arg_count
-      in
+      let inputs = GAstUtils.locals_get_input_vars body.locals in
 
       (* All the locals (with erased regions) *)
       let locals =
@@ -118,7 +115,7 @@ let gfun_decl_to_string (env : ('a, 'b) fmt_env) (indent : string)
             indent ^ indent_incr ^ var_to_string var ^ " : "
             ^ ty_to_string env var.var_ty
             ^ ";")
-          body.locals
+          body.locals.vars
       in
       let locals = String.concat "\n" locals in
 

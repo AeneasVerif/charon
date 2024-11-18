@@ -21,7 +21,7 @@ use super::ctx::UllbcPass;
 ///
 /// Goes fom e.g. `f(T::A(x, y))` to `let a = T::A(x, y); f(a)`.
 /// The function is recursively called on the aggregate fields (e.g. here x and y).
-fn transform_constant_expr<F: FnMut(Ty) -> VarId>(
+fn transform_constant_expr<F: FnMut(Ty) -> Place>(
     span: &Span,
     nst: &mut Vec<Statement>,
     val: ConstantExpr,
@@ -40,28 +40,28 @@ fn transform_constant_expr<F: FnMut(Ty) -> VarId>(
         }
         RawConstantExpr::Global(global_ref) => {
             // Introduce an intermediate statement
-            let var_id = make_new_var(val.ty.clone());
+            let var = make_new_var(val.ty.clone());
             nst.push(Statement::new(
                 *span,
-                RawStatement::Assign(Place::new(var_id), Rvalue::Global(global_ref)),
+                RawStatement::Assign(var.clone(), Rvalue::Global(global_ref)),
             ));
-            Operand::Move(Place::new(var_id))
+            Operand::Move(var)
         }
         RawConstantExpr::Ref(box bval) => {
             match bval.value {
                 RawConstantExpr::Global(global_ref) => {
                     // Introduce an intermediate statement to borrow the static.
-                    let ref_var_id = make_new_var(val.ty);
+                    let ref_var = make_new_var(val.ty);
                     nst.push(Statement::new(
                         *span,
                         RawStatement::Assign(
-                            Place::new(ref_var_id),
+                            ref_var.clone(),
                             Rvalue::GlobalRef(global_ref, RefKind::Shared),
                         ),
                     ));
 
                     // Return the new operand
-                    Operand::Move(Place::new(ref_var_id))
+                    Operand::Move(ref_var)
                 }
                 _ => {
                     // Recurse on the borrowed value
@@ -69,22 +69,22 @@ fn transform_constant_expr<F: FnMut(Ty) -> VarId>(
                     let bval = transform_constant_expr(span, nst, bval, make_new_var);
 
                     // Introduce an intermediate statement to evaluate the referenced value
-                    let bvar_id = make_new_var(bval_ty);
+                    let bvar = make_new_var(bval_ty);
                     nst.push(Statement::new(
                         *span,
-                        RawStatement::Assign(Place::new(bvar_id), Rvalue::Use(bval)),
+                        RawStatement::Assign(bvar.clone(), Rvalue::Use(bval)),
                     ));
 
                     // Introduce an intermediate statement to borrow the value
-                    let ref_var_id = make_new_var(val.ty);
-                    let rvalue = Rvalue::Ref(Place::new(bvar_id), BorrowKind::Shared);
+                    let ref_var = make_new_var(val.ty);
+                    let rvalue = Rvalue::Ref(bvar, BorrowKind::Shared);
                     nst.push(Statement::new(
                         *span,
-                        RawStatement::Assign(Place::new(ref_var_id), rvalue),
+                        RawStatement::Assign(ref_var.clone(), rvalue),
                     ));
 
                     // Return the new operand
-                    Operand::Move(Place::new(ref_var_id))
+                    Operand::Move(ref_var)
                 }
             }
         }
@@ -92,17 +92,17 @@ fn transform_constant_expr<F: FnMut(Ty) -> VarId>(
             match bval.value {
                 RawConstantExpr::Global(global_ref) => {
                     // Introduce an intermediate statement to borrow the static.
-                    let ref_var_id = make_new_var(val.ty);
+                    let ref_var = make_new_var(val.ty);
                     nst.push(Statement::new(
                         *span,
                         RawStatement::Assign(
-                            Place::new(ref_var_id),
+                            ref_var.clone(),
                             Rvalue::GlobalRef(global_ref, RefKind::Mut),
                         ),
                     ));
 
                     // Return the new operand
-                    Operand::Move(Place::new(ref_var_id))
+                    Operand::Move(ref_var)
                 }
                 _ => {
                     // Recurse on the borrowed value
@@ -110,22 +110,22 @@ fn transform_constant_expr<F: FnMut(Ty) -> VarId>(
                     let bval = transform_constant_expr(span, nst, bval, make_new_var);
 
                     // Introduce an intermediate statement to evaluate the referenced value
-                    let bvar_id = make_new_var(bval_ty);
+                    let bvar = make_new_var(bval_ty);
                     nst.push(Statement::new(
                         *span,
-                        RawStatement::Assign(Place::new(bvar_id), Rvalue::Use(bval)),
+                        RawStatement::Assign(bvar.clone(), Rvalue::Use(bval)),
                     ));
 
                     // Introduce an intermediate statement to borrow the value
-                    let ref_var_id = make_new_var(val.ty);
-                    let rvalue = Rvalue::RawPtr(Place::new(bvar_id), RefKind::Mut);
+                    let ref_var = make_new_var(val.ty);
+                    let rvalue = Rvalue::RawPtr(bvar, RefKind::Mut);
                     nst.push(Statement::new(
                         *span,
-                        RawStatement::Assign(Place::new(ref_var_id), rvalue),
+                        RawStatement::Assign(ref_var.clone(), rvalue),
                     ));
 
                     // Return the new operand
-                    Operand::Move(Place::new(ref_var_id))
+                    Operand::Move(ref_var)
                 }
             }
         }
@@ -142,19 +142,19 @@ fn transform_constant_expr<F: FnMut(Ty) -> VarId>(
                 let aggregate_kind = AggregateKind::Adt(*adt_kind, variant, None, generics.clone());
                 Rvalue::Aggregate(aggregate_kind, fields)
             };
-            let var_id = make_new_var(val.ty);
+            let var = make_new_var(val.ty);
             nst.push(Statement::new(
                 *span,
-                RawStatement::Assign(Place::new(var_id), rval),
+                RawStatement::Assign(var.clone(), rval),
             ));
 
             // Return the new operand
-            Operand::Move(Place::new(var_id))
+            Operand::Move(var)
         }
     }
 }
 
-fn transform_operand<F: FnMut(Ty) -> VarId>(
+fn transform_operand<F: FnMut(Ty) -> Place>(
     span: &Span,
     nst: &mut Vec<Statement>,
     op: &mut Operand,
@@ -173,7 +173,7 @@ fn transform_operand<F: FnMut(Ty) -> VarId>(
 pub struct Transform;
 impl UllbcPass for Transform {
     fn transform_body(&self, _ctx: &mut TransformCtx<'_>, b: &mut ExprBody) {
-        let mut f = make_locals_generator(&mut b.locals);
+        let mut f = |ty| b.locals.new_var(None, ty);
         body_transform_operands(&mut b.body, &mut |span, nst, op| {
             transform_operand(span, nst, op, &mut f)
         });

@@ -28,7 +28,7 @@ impl Transform {
             }, rest @ ..] = suffix
             {
                 // The destination should be a variable
-                assert!(dest.projection.is_empty());
+                assert!(dest.is_local());
 
                 // Lookup the type of the scrutinee
                 let variants = match ctx.translated.type_decls.get(*adt_id) {
@@ -96,7 +96,7 @@ impl Transform {
                             else {
                                 unreachable!()
                             };
-                            assert!(op_p.projection.is_empty() && op_p.var_id == dest.var_id);
+                            assert!(op_p.is_local() && op_p.var_id() == dest.var_id());
 
                             let mut covered_discriminants: HashSet<ScalarValue> =
                                 HashSet::default();

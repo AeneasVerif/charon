@@ -1,5 +1,4 @@
 //! Definitions common to [crate::ullbc_ast] and [crate::llbc_ast]
-pub use super::gast_utils::*;
 use crate::expressions::*;
 use crate::generate_index_type;
 use crate::ids::Vector;
@@ -35,6 +34,19 @@ pub struct Var {
 #[derive(Debug, Copy, Clone, Serialize, Deserialize, Drive, DriveMut)]
 pub struct Opaque;
 
+/// The local variables of a body.
+#[derive(Debug, Default, Clone, Serialize, Deserialize, Drive, DriveMut)]
+pub struct Locals {
+    /// The number of local variables used for the input arguments.
+    pub arg_count: usize,
+    /// The local variables.
+    /// We always have, in the following order:
+    /// - the local used for the return value (index 0)
+    /// - the `arg_count` input arguments
+    /// - the remaining locals, used for the intermediate computations
+    pub vars: Vector<VarId, Var>,
+}
+
 /// An expression body.
 /// TODO: arg_count should be stored in GFunDecl below. But then,
 ///       the print is obfuscated and Aeneas may need some refactoring.
@@ -42,14 +54,8 @@ pub struct Opaque;
 #[charon::rename("GexprBody")]
 pub struct GExprBody<T> {
     pub span: Span,
-    /// The number of local variables used for the input arguments.
-    pub arg_count: usize,
     /// The local variables.
-    /// We always have, in the following order:
-    /// - the local used for the return value (index 0)
-    /// - the input arguments
-    /// - the remaining locals, used for the intermediate computations
-    pub locals: Vector<VarId, Var>,
+    pub locals: Locals,
     /// For each line inside the body, we record any whole-line `//` comments found before it. They
     /// are added to statements in the late `recover_body_comments` pass.
     #[charon::opaque]
@@ -62,7 +68,6 @@ impl<T: Drive> Drive for GExprBody<T> {
     fn drive<V: Visitor>(&self, visitor: &mut V) {
         visitor.visit(self, Event::Enter);
         self.span.drive(visitor);
-        self.arg_count.drive(visitor);
         self.locals.drive(visitor);
         self.body.drive(visitor);
         visitor.visit(self, Event::Exit);
@@ -72,7 +77,6 @@ impl<T: DriveMut> DriveMut for GExprBody<T> {
     fn drive_mut<V: VisitorMut>(&mut self, visitor: &mut V) {
         visitor.visit(self, Event::Enter);
         self.span.drive_mut(visitor);
-        self.arg_count.drive_mut(visitor);
         self.locals.drive_mut(visitor);
         self.body.drive_mut(visitor);
         visitor.visit(self, Event::Exit);

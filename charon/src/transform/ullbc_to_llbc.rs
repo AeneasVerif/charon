@@ -20,15 +20,13 @@
 //! only be performed by terminators -, meaning that MIR graphs don't have that
 //! many nodes and edges).
 
+use crate::ast::*;
 use crate::common::ensure_sufficient_stack;
-use crate::expressions::Place;
 use crate::formatter::{Formatter, IntoFormatter};
-use crate::gast;
 use crate::llbc_ast as tgt;
 use crate::meta::{combine_span, Span};
 use crate::transform::TransformCtx;
 use crate::ullbc_ast::{self as src};
-use crate::values as v;
 use hashlink::linked_hash_map::LinkedHashMap;
 use itertools::Itertools;
 use petgraph::algo::toposort;
@@ -1386,7 +1384,7 @@ fn opt_block_unwrap_or_nop(span: Span, opt_block: Option<tgt::Block>) -> tgt::Bl
     opt_block.unwrap_or_else(|| tgt::Statement::new(span, tgt::RawStatement::Nop).into_block())
 }
 
-fn translate_statement(st: &src::Statement) -> Option<tgt::Statement> {
+fn translate_statement(locals: &Locals, st: &src::Statement) -> Option<tgt::Statement> {
     let src_span = st.span;
     let st = match st.content.clone() {
         src::RawStatement::Assign(place, rvalue) => tgt::RawStatement::Assign(place, rvalue),
@@ -1396,7 +1394,9 @@ fn translate_statement(st: &src::Statement) -> Option<tgt::Statement> {
             tgt::RawStatement::SetDiscriminant(place, variant_id)
         }
         // We translate a StorageDead as a drop
-        src::RawStatement::StorageDead(var_id) => tgt::RawStatement::Drop(Place::new(var_id)),
+        src::RawStatement::StorageDead(var_id) => {
+            tgt::RawStatement::Drop(locals.place_for_var(var_id))
+        }
         // We translate a deinit as a drop
         src::RawStatement::Deinit(place) => tgt::RawStatement::Drop(place),
         src::RawStatement::Drop(place) => tgt::RawStatement::Drop(place),
@@ -1480,10 +1480,8 @@ fn translate_terminator(
                     // We link block ids to:
                     // - vector of matched integer values
                     // - translated blocks
-                    let mut branches: LinkedHashMap<
-                        src::BlockId,
-                        (Vec<v::ScalarValue>, tgt::Block),
-                    > = LinkedHashMap::new();
+                    let mut branches: LinkedHashMap<src::BlockId, (Vec<ScalarValue>, tgt::Block)> =
+                        LinkedHashMap::new();
 
                     // Translate the children expressions
                     for (v, bid) in targets.iter() {
@@ -1509,7 +1507,7 @@ fn translate_terminator(
                             branches.insert(*bid, (vec![*v], block));
                         }
                     }
-                    let targets_blocks: Vec<(Vec<v::ScalarValue>, tgt::Block)> =
+                    let targets_blocks: Vec<(Vec<ScalarValue>, tgt::Block)> =
                         branches.into_iter().map(|(_, x)| x).collect();
 
                     let otherwise_block = translate_child_block(
@@ -1646,7 +1644,7 @@ fn translate_block(
     let statements = block
         .statements
         .iter()
-        .filter_map(translate_statement)
+        .filter_map(|st| translate_statement(&info.body.locals, st))
         .collect_vec();
 
     // Prepend the statements to the terminator.
@@ -1714,7 +1712,6 @@ fn translate_body_aux(no_code_duplication: bool, src_body: &src::ExprBody) -> tg
 
     tgt::ExprBody {
         span: src_body.span,
-        arg_count: src_body.arg_count,
         locals: src_body.locals.clone(),
         comments: src_body.comments.clone(),
         body: tgt_body,

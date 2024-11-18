@@ -106,7 +106,7 @@ impl BlockData {
 impl ExprBody {
     pub fn transform_sequences<F>(&mut self, f: &mut F)
     where
-        F: FnMut(&mut Vector<VarId, Var>, &mut [Statement]) -> Vec<(usize, Vec<Statement>)>,
+        F: FnMut(&mut Locals, &mut [Statement]) -> Vec<(usize, Vec<Statement>)>,
     {
         for block in &mut self.body {
             block.transform_sequences(&mut |seq| f(&mut self.locals, seq));

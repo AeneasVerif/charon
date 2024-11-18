@@ -252,68 +252,50 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         Ok(())
     }
 
-    /// Translate a place and return its type
-    fn translate_place_with_type(
-        &mut self,
-        span: Span,
-        place: &hax::Place,
-    ) -> Result<(Place, Ty), Error> {
-        let ty = self.translate_ty(span, &place.ty)?;
-        let (var_id, projection) = self.translate_projection(span, place)?;
-        Ok((Place { var_id, projection }, ty))
-    }
-
     /// Translate a place
-    fn translate_place(&mut self, span: Span, place: &hax::Place) -> Result<Place, Error> {
-        Ok(self.translate_place_with_type(span, place)?.0)
-    }
-
-    /// Translate a place - TODO: rename
     /// TODO: Hax represents places in a different manner than MIR. We should
     /// update our representation of places to match the Hax representation.
-    fn translate_projection(
-        &mut self,
-        span: Span,
-        place: &hax::Place,
-    ) -> Result<(VarId, Projection), Error> {
+    fn translate_place(&mut self, span: Span, place: &hax::Place) -> Result<Place, Error> {
         match &place.kind {
             hax::PlaceKind::Local(local) => {
-                let var_id = self.get_local(local).unwrap();
-                Ok((var_id, Vec::new()))
+                let var_id = self.translate_local(local).unwrap();
+                Ok(self.locals.place_for_var(var_id))
             }
-            hax::PlaceKind::Projection { place, kind } => {
-                let (var_id, mut projection) = self.translate_projection(span, place)?;
+            hax::PlaceKind::Projection {
+                place: subplace,
+                kind,
+            } => {
+                let ty = self.translate_ty(span, &place.ty)?;
                 // Compute the type of the value *before* projection - we use this
                 // to disambiguate
-                let current_ty = self.translate_ty(span, &place.ty)?;
-                match kind {
+                let subplace = self.translate_place(span, subplace)?;
+                let place = match kind {
                     hax::ProjectionElem::Deref => {
                         // We use the type to disambiguate
-                        match current_ty.kind() {
-                            TyKind::Ref(_, _, _) | TyKind::RawPtr(_, _) => {
-                                projection.push(ProjectionElem::Deref);
-                            }
+                        match subplace.ty().kind() {
+                            TyKind::Ref(_, _, _) | TyKind::RawPtr(_, _) => {}
                             TyKind::Adt(TypeId::Builtin(BuiltinTy::Box), generics) => {
                                 // This case only happens in some MIR levels
                                 assert!(!boxes_are_desugared(self.t_ctx.options.mir_level));
                                 assert!(generics.regions.is_empty());
                                 assert!(generics.types.len() == 1);
                                 assert!(generics.const_generics.is_empty());
-                                projection.push(ProjectionElem::Deref);
                             }
                             _ => {
                                 unreachable!(
-                                    "\n- place.kind: {:?}\n- current_ty: {:?}",
-                                    kind, current_ty
-                                );
+                                    "\n- place.kind: {:?}\n- subplace.ty(): {:?}",
+                                    kind,
+                                    subplace.ty()
+                                )
                             }
                         }
+                        subplace.project(ProjectionElem::Deref, ty)
                     }
                     hax::ProjectionElem::Field(field_kind) => {
                         use hax::ProjectionElemFieldKind::*;
                         let proj_elem = match field_kind {
                             Tuple(id) => {
-                                let (_, generics) = current_ty.kind().as_adt().unwrap();
+                                let (_, generics) = subplace.ty().kind().as_adt().unwrap();
                                 let field_id = translate_field_id(*id);
                                 let proj_kind = FieldProjKind::Tuple(generics.types.len());
                                 ProjectionElem::Field(proj_kind, field_id)
@@ -325,7 +307,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                             } => {
                                 let field_id = translate_field_id(*index);
                                 let variant_id = variant.map(translate_variant_id);
-                                match current_ty.kind() {
+                                match subplace.ty().kind() {
                                     TyKind::Adt(TypeId::Adt(type_id), ..) => {
                                         let proj_kind = FieldProjKind::Adt(*type_id, variant_id);
                                         ProjectionElem::Field(proj_kind, field_id)
@@ -360,21 +342,25 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                                 ProjectionElem::Field(FieldProjKind::ClosureState, field_id)
                             }
                         };
-                        projection.push(proj_elem);
+                        subplace.project(proj_elem, ty)
                     }
                     hax::ProjectionElem::Index(local) => {
-                        let local = self.get_local(local).unwrap();
-                        let operand = Operand::Copy(Place::new(local));
-                        projection.push(ProjectionElem::Index {
-                            offset: operand,
-                            from_end: false,
-                            ty: current_ty,
-                        });
+                        let var_id = self.translate_local(local).unwrap();
+                        let local = self.locals.place_for_var(var_id);
+                        let offset = Operand::Copy(local);
+                        subplace.project(
+                            ProjectionElem::Index {
+                                offset: Box::new(offset),
+                                from_end: false,
+                            },
+                            ty,
+                        )
                     }
                     hax::ProjectionElem::Downcast(..) => {
                         // We view it as a nop (the information from the
                         // downcast has been propagated to the other
                         // projection elements by Hax)
+                        subplace
                     }
                     &hax::ProjectionElem::ConstantIndex {
                         offset,
@@ -382,21 +368,25 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                         min_length: _,
                     } => {
                         let offset = Operand::Const(ScalarValue::Usize(offset).to_constant());
-                        projection.push(ProjectionElem::Index {
-                            offset,
-                            from_end,
-                            ty: current_ty,
-                        });
+                        subplace.project(
+                            ProjectionElem::Index {
+                                offset: Box::new(offset),
+                                from_end,
+                            },
+                            ty,
+                        )
                     }
                     &hax::ProjectionElem::Subslice { from, to, from_end } => {
                         let from = Operand::Const(ScalarValue::Usize(from).to_constant());
                         let to = Operand::Const(ScalarValue::Usize(to).to_constant());
-                        projection.push(ProjectionElem::Subslice {
-                            from,
-                            to,
-                            from_end,
-                            ty: current_ty,
-                        });
+                        subplace.project(
+                            ProjectionElem::Subslice {
+                                from: Box::new(from),
+                                to: Box::new(to),
+                                from_end,
+                            },
+                            ty,
+                        )
                     }
                     hax::ProjectionElem::OpaqueCast => {
                         // Don't know what that is
@@ -405,7 +395,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 };
 
                 // Return
-                Ok((var_id, projection))
+                Ok(place)
             }
         }
     }
@@ -419,11 +409,13 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         trace!();
         match operand {
             hax::Operand::Copy(place) => {
-                let (p, ty) = self.translate_place_with_type(span, place)?;
+                let p = self.translate_place(span, place)?;
+                let ty = p.ty().clone();
                 Ok((Operand::Copy(p), ty))
             }
             hax::Operand::Move(place) => {
-                let (p, ty) = self.translate_place_with_type(span, place)?;
+                let p = self.translate_place(span, place)?;
+                let ty = p.ty().clone();
                 Ok((Operand::Move(p), ty))
             }
             hax::Operand::Constant(constant) => {
@@ -474,7 +466,8 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 Ok(Rvalue::RawPtr(place, mtbl))
             }
             hax::Rvalue::Len(place) => {
-                let (place, ty) = self.translate_place_with_type(span, place)?;
+                let place = self.translate_place(span, place)?;
+                let ty = place.ty().clone();
                 let cg = match ty.kind() {
                     TyKind::Adt(
                         TypeId::Builtin(aty @ (BuiltinTy::Array | BuiltinTy::Slice)),
@@ -604,16 +597,16 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 ))
             }
             hax::Rvalue::Discriminant(place) => {
-                let (place, ty) = self.translate_place_with_type(span, place)?;
-                if let TyKind::Adt(TypeId::Adt(adt_id), _) = ty.kind() {
-                    Ok(Rvalue::Discriminant(place, *adt_id))
+                let place = self.translate_place(span, place)?;
+                if let TyKind::Adt(TypeId::Adt(adt_id), _) = *place.ty().kind() {
+                    Ok(Rvalue::Discriminant(place, adt_id))
                 } else {
                     error_or_panic!(
                         self,
                         span,
                         format!(
                             "Unexpected scrutinee type for ReadDiscriminant: {}",
-                            ty.fmt_with_ctx(&self.into_fmt())
+                            place.ty().fmt_with_ctx(&self.into_fmt())
                         )
                     )
                 }
@@ -894,7 +887,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             // We ignore StorageLive
             StatementKind::StorageLive(_) => None,
             StatementKind::StorageDead(local) => {
-                let var_id = self.get_local(local).unwrap();
+                let var_id = self.translate_local(local).unwrap();
                 Some(RawStatement::StorageDead(var_id))
             }
             StatementKind::Deinit(place) => {
@@ -1287,6 +1280,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             return Ok(Err(Opaque));
         };
 
+        self.locals.arg_count = arg_count;
         // Here, we have to create a MIR state, which contains the body
         // Yes, we have to clone, this is annoying: we end up cloning the body twice
         let state = self
@@ -1320,8 +1314,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         // Create the body
         Ok(Ok(Body::Unstructured(ExprBody {
             span,
-            arg_count,
-            locals: mem::take(&mut self.vars),
+            locals: mem::take(&mut self.locals),
             comments: self.translate_body_comments(def, span),
             body: blocks,
         })))

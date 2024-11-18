@@ -126,11 +126,11 @@ fn transform_function(
         // the function.
 
         if let Some(body) = body {
-            body.arg_count += 1;
+            body.locals.arg_count += 1;
 
             // Update the type of the local 1 (which is the closure)
-            assert!(body.locals.len() > 1);
-            let state_var = &mut body.locals[1];
+            assert!(body.locals.vars.len() > 1);
+            let state_var = &mut body.locals.vars[1];
             state_var.ty = state;
             state_var.name = Some("state".to_string());
 

@@ -17,8 +17,9 @@ impl LlbcPass for Transform {
     fn transform_body(&self, _ctx: &mut TransformCtx<'_>, b: &mut ExprBody) {
         // Compute the set of used locals.
         // We always register the return variable and the input arguments.
-        let mut used_locals: HashSet<VarId> =
-            (0..(b.arg_count + 1)).map(|i| VarId::new(i)).collect();
+        let mut used_locals: HashSet<VarId> = (0..(b.locals.arg_count + 1))
+            .map(|i| VarId::new(i))
+            .collect();
         b.body.drive(&mut visitor_enter_fn(|vid: &VarId| {
             used_locals.insert(*vid);
         }));
@@ -26,10 +27,10 @@ impl LlbcPass for Transform {
 
         // Keep only the variables that are used and update their indices to be contiguous.
         let mut vids_map: HashMap<VarId, VarId> = HashMap::new();
-        for var in mem::take(&mut b.locals) {
+        for var in mem::take(&mut b.locals.vars) {
             if used_locals.contains(&var.index) {
                 let old_id = var.index;
-                let new_id = b.locals.push_with(|index| Var { index, ..var });
+                let new_id = b.locals.vars.push_with(|index| Var { index, ..var });
                 vids_map.insert(old_id, new_id);
             }
         }

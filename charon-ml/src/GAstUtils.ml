@@ -34,12 +34,12 @@ let list_ordered_ancestor_region_groups (regions_hierarchy : region_var_groups)
   let parents = List.map (fun (rg : region_var_group) -> rg.id) parents in
   parents
 
-let gexpr_body_get_input_vars (fbody : 'body gexpr_body) : var list =
-  let locals = List.tl fbody.locals in
-  Collections.List.prefix fbody.arg_count locals
+let locals_get_input_vars (locals : locals) : var list =
+  let args = List.tl locals.vars in
+  Collections.List.prefix locals.arg_count args
 
 let fun_body_get_input_vars (fbody : 'body gexpr_body) : var list =
-  gexpr_body_get_input_vars fbody
+  locals_get_input_vars fbody.locals
 
 let g_declaration_group_to_list (g : 'a g_declaration_group) : 'a list =
   match g with RecGroup ids -> ids | NonRecGroup id -> [ id ]

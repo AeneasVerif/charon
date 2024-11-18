@@ -454,7 +454,17 @@ fn type_decl_to_json_deserializer(ctx: &GenerateCtx, decl: &TypeDecl) -> String 
                 .clone();
             format!("| x -> {short_name}.id_of_json x")
         }
-        TypeDeclKind::Struct(fields) if fields.len() == 1 => {
+        TypeDeclKind::Struct(fields)
+            if fields.len() == 1
+                && (fields[0].name.is_none()
+                    || decl
+                        .item_meta
+                        .attr_info
+                        .attributes
+                        .iter()
+                        .filter_map(|a| a.as_unknown())
+                        .any(|a| a.to_string() == "serde(transparent)")) =>
+        {
             let ty = &fields[0].ty;
             let call = type_to_ocaml_call(ctx, ty);
             format!("| x -> {call} x")
@@ -661,7 +671,19 @@ fn type_decl_to_ocaml_decl(ctx: &GenerateCtx, decl: &TypeDecl, co_rec: bool) -> 
                 .clone();
             format!("{short_name}.id")
         }
-        TypeDeclKind::Struct(fields) if fields.len() == 1 => type_to_ocaml_name(ctx, &fields[0].ty),
+        TypeDeclKind::Struct(fields)
+            if fields.len() == 1
+                && (fields[0].name.is_none()
+                    || decl
+                        .item_meta
+                        .attr_info
+                        .attributes
+                        .iter()
+                        .filter_map(|a| a.as_unknown())
+                        .any(|a| a.to_string() == "serde(transparent)")) =>
+        {
+            type_to_ocaml_name(ctx, &fields[0].ty)
+        }
         TypeDeclKind::Struct(fields) if fields.iter().all(|f| f.name.is_none()) => fields
             .iter()
             .filter(|f| !f.is_opaque())
@@ -1274,6 +1296,7 @@ fn generate_ml(
                     "ClosureInfo",
                     "FunSig",
                     "ItemKind",
+                    "Locals",
                     "GExprBody",
                     "TraitDecl",
                     "TraitImpl",
@@ -1308,7 +1331,7 @@ fn generate_ml(
                     "BinOp",
                     "FieldProjKind",
                     "ProjectionElem",
-                    "Projection",
+                    "PlaceKind",
                     "Place",
                     "CastKind",
                     "UnOp",

@@ -47,32 +47,28 @@ impl Transform {
         {
             // assigned should be: binop.0
             // assert_cond should be: binop.1
-            if let (
-                [ProjectionElem::Field(FieldProjKind::Tuple(..), fid0)],
-                [ProjectionElem::Field(FieldProjKind::Tuple(..), fid1)],
-            ) = (
-                assigned.projection.as_slice(),
-                assert_cond.projection.as_slice(),
-            ) {
-                if assert_cond.var_id == binop.var_id
-                    && assigned.var_id == binop.var_id
-                    && binop.projection.len() == 0
-                    && fid0.index() == 0
-                    && fid1.index() == 1
-                {
-                    // Switch to the unchecked operation.
-                    *op = match op {
-                        BinOp::CheckedAdd => BinOp::Add,
-                        BinOp::CheckedSub => BinOp::Sub,
-                        BinOp::CheckedMul => BinOp::Mul,
-                        _ => unreachable!(),
-                    };
-                    // Assign to the correct value in the first statement.
-                    std::mem::swap(binop, final_value);
-                    // Remove the other two statements.
-                    seq[1].content = RawStatement::Nop;
-                    seq[2].content = RawStatement::Nop;
-                }
+            if let Some((sub0, ProjectionElem::Field(FieldProjKind::Tuple(..), fid0))) =
+                assigned.as_projection()
+                && fid0.index() == 0
+                && let Some((sub1, ProjectionElem::Field(FieldProjKind::Tuple(..), fid1))) =
+                    assert_cond.as_projection()
+                && fid1.index() == 1
+                && binop.is_local()
+                && *sub0 == *binop
+                && *sub1 == *binop
+            {
+                // Switch to the unchecked operation.
+                *op = match op {
+                    BinOp::CheckedAdd => BinOp::Add,
+                    BinOp::CheckedSub => BinOp::Sub,
+                    BinOp::CheckedMul => BinOp::Mul,
+                    _ => unreachable!(),
+                };
+                // Assign to the correct value in the first statement.
+                std::mem::swap(binop, final_value);
+                // Remove the other two statements.
+                seq[1].content = RawStatement::Nop;
+                seq[2].content = RawStatement::Nop;
             }
         }
     }

@@ -44,10 +44,22 @@ let rec ___ = ()
 and place_of_json (js : json) : (place, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
-    | `Assoc [ ("var_id", var_id); ("projection", projection) ] ->
-        let* var_id = var_id_of_json var_id in
-        let* projection = list_of_json projection_elem_of_json projection in
-        Ok ({ var_id; projection } : place)
+    | `Assoc [ ("kind", kind); ("ty", ty) ] ->
+        let* kind = place_kind_of_json kind in
+        let* ty = ty_of_json ty in
+        Ok ({ kind; ty } : place)
+    | _ -> Error "")
+
+and place_kind_of_json (js : json) : (place_kind, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with
+    | `Assoc [ ("Base", base) ] ->
+        let* base = var_id_of_json base in
+        Ok (PlaceBase base)
+    | `Assoc [ ("Projection", `List [ x_0; x_1 ]) ] ->
+        let* x_0 = place_of_json x_0 in
+        let* x_1 = projection_elem_of_json x_1 in
+        Ok (PlaceProjection (x_0, x_1))
     | _ -> Error "")
 
 and projection_elem_of_json (js : json) : (projection_elem, string) result =
@@ -338,6 +350,15 @@ and var_of_json (js : json) : (var, string) result =
         Ok ({ index; name; var_ty } : var)
     | _ -> Error "")
 
+and locals_of_json (js : json) : (locals, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with
+    | `Assoc [ ("arg_count", arg_count); ("vars", vars) ] ->
+        let* arg_count = int_of_json arg_count in
+        let* vars = vector_of_json var_id_of_json var_of_json vars in
+        Ok ({ arg_count; vars } : locals)
+    | _ -> Error "")
+
 and gexpr_body_of_json :
       'a0.
       (json -> ('a0, string) result) ->
@@ -348,18 +369,12 @@ and gexpr_body_of_json :
   combine_error_msgs js __FUNCTION__
     (match js with
     | `Assoc
-        [
-          ("span", span);
-          ("arg_count", arg_count);
-          ("locals", locals);
-          ("comments", _);
-          ("body", body);
-        ] ->
+        [ ("span", span); ("locals", locals); ("comments", _); ("body", body) ]
+      ->
         let* span = span_of_json id_to_file span in
-        let* arg_count = int_of_json arg_count in
-        let* locals = vector_of_json var_id_of_json var_of_json locals in
+        let* locals = locals_of_json locals in
         let* body = arg0_of_json body in
-        Ok ({ span; arg_count; locals; body } : _ gexpr_body)
+        Ok ({ span; locals; body } : _ gexpr_body)
     | _ -> Error "")
 
 and item_kind_of_json (js : json) : (item_kind, string) result =

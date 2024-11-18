@@ -256,8 +256,8 @@ pub(crate) struct BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     /// Cache the translation of types. This harnesses the deduplication of `TyKind` that hax does.
     pub type_trans_cache: HashMap<HashByAddr<Arc<hax::TyKind>>, Ty>,
 
-    /// The "regular" variables
-    pub vars: Vector<VarId, ast::Var>,
+    /// The (regular) variables in the current function body.
+    pub locals: Locals,
     /// The map from rust variable indices to translated variables indices.
     pub vars_map: HashMap<usize, VarId>,
     /// The translated blocks. We can't use `ast::Vector<BlockId, ast::BlockData>`
@@ -905,7 +905,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             parent_trait_clauses: Default::default(),
             item_trait_clauses: Default::default(),
             type_trans_cache: Default::default(),
-            vars: Default::default(),
+            locals: Default::default(),
             vars_map: Default::default(),
             blocks: Default::default(),
             blocks_map: Default::default(),
@@ -929,7 +929,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         self.t_ctx.def_span(def_id)
     }
 
-    pub(crate) fn get_local(&self, local: &hax::Local) -> Option<VarId> {
+    pub(crate) fn translate_local(&self, local: &hax::Local) -> Option<VarId> {
         use rustc_index::Idx;
         self.vars_map.get(&local.index()).copied()
     }
@@ -1089,7 +1089,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     }
 
     pub(crate) fn push_var(&mut self, rid: usize, ty: Ty, name: Option<String>) {
-        let var_id = self.vars.push_with(|index| Var { index, name, ty });
+        let var_id = self.locals.vars.push_with(|index| Var { index, name, ty });
         self.vars_map.insert(rid, var_id);
     }
 
@@ -1151,7 +1151,7 @@ impl<'tcx, 'ctx, 'ctx1, 'a> IntoFormatter for &'a BodyTransCtx<'tcx, 'ctx, 'ctx1
         FmtCtx {
             translated: Some(&self.t_ctx.translated),
             generics,
-            locals: Some(&self.vars),
+            locals: Some(&self.locals),
         }
     }
 }
