@@ -780,7 +780,6 @@ pub enum TyKind {
     PartialOrd,
 )]
 #[charon::variants_prefix("T")]
-#[charon::rename("AssumedTy")]
 pub enum BuiltinTy {
     /// Boxes are de facto a primitive type.
     Box,

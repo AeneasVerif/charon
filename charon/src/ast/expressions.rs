@@ -309,7 +309,6 @@ pub enum FunId {
     Drive,
     DriveMut,
 )]
-#[charon::rename("AssumedFunId")]
 pub enum BuiltinFunId {
     /// `alloc::boxed::Box::new`
     BoxNew,
