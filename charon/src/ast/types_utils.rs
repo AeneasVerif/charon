@@ -190,11 +190,11 @@ impl GenericArgs {
             types,
             const_generics,
             trait_refs,
-        } = &mut self;
-        regions.extend(other.regions.iter().cloned());
-        types.extend(other.types.iter().cloned());
-        const_generics.extend(other.const_generics.iter().cloned());
-        trait_refs.extend(other.trait_refs.iter().cloned());
+        } = other;
+        self.regions.extend_from_slice(regions);
+        self.types.extend_from_slice(types);
+        self.const_generics.extend_from_slice(const_generics);
+        self.trait_refs.extend_from_slice(trait_refs);
         self
     }
 }

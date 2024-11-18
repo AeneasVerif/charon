@@ -75,11 +75,19 @@ impl VisitAst for CheckGenericsVisitor<'_> {
         }
     }
     fn enter_fn_ptr(&mut self, fn_ptr: &FnPtr) {
-        let args = &fn_ptr.generics;
         match &fn_ptr.func {
-            FunIdOrTraitMethodRef::Fun(FunId::Regular(id))
-            | FunIdOrTraitMethodRef::Trait(_, _, id) => {
+            FunIdOrTraitMethodRef::Fun(FunId::Regular(id)) => {
+                let args = &fn_ptr.generics;
                 self.generics_should_match_item(args, *id);
+            }
+            FunIdOrTraitMethodRef::Trait(tref, _, id) => {
+                let args = tref
+                    .trait_decl_ref
+                    .skip_binder
+                    .generics
+                    .clone()
+                    .concat(&fn_ptr.generics);
+                self.generics_should_match_item(&args, *id);
             }
             FunIdOrTraitMethodRef::Fun(FunId::Builtin(..)) => {
                 // TODO: check generics for built-in types
@@ -174,6 +182,13 @@ impl TransformPass for Check {
                 visitor.discharged_args, 0,
                 "Got confused about `GenericArgs` locations"
             );
+            if let AnyTransItem::Fun(d) = item {
+                if let Ok(body_id) = d.body {
+                    if let Some(body) = ctx.translated.bodies.get(body_id) {
+                        body.drive(&mut visitor);
+                    }
+                }
+            }
         }
     }
 }
