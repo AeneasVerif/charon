@@ -147,6 +147,9 @@ pub struct FunDecl {
     pub signature: FunSig,
     /// The function kind: "regular" function, trait method declaration, etc.
     pub kind: ItemKind,
+    /// Whether this function is in fact the body of a constant/static that we turned into an
+    /// initializer function.
+    pub is_global_initializer: Option<GlobalDeclId>,
     /// The function body, unless the function is opaque.
     /// Opaque functions are: external functions, or local functions tagged
     /// as opaque.

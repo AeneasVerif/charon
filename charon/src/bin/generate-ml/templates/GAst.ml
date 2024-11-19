@@ -53,6 +53,7 @@ type 'body gfun_decl = {
   item_meta : item_meta;
   signature : fun_sig;
   kind : item_kind;
+  is_global_initializer: GlobalDeclId.id option;
   body : 'body gexpr_body option;
 }
 [@@deriving show]

@@ -65,21 +65,18 @@ and gfun_decl_of_json (bodies : 'body gexpr_body option list)
           ("item_meta", item_meta);
           ("signature", signature);
           ("kind", kind);
+          ("is_global_initializer", is_global_initializer);
           ("body", body);
         ] ->
         let* def_id = FunDeclId.id_of_json def_id in
         let* item_meta = item_meta_of_json id_to_file item_meta in
         let* signature = fun_sig_of_json id_to_file signature in
         let* kind = item_kind_of_json kind in
+        let* is_global_initializer =
+          option_of_json global_decl_id_of_json is_global_initializer
+        in
         let* body = maybe_opaque_body_of_json bodies body in
-        Ok
-          {
-            def_id;
-            item_meta;
-            signature;
-            kind;
-            body;
-          }
+        Ok { def_id; item_meta; signature; kind; is_global_initializer; body }
     | _ -> Error "")
 
 (** Deserialize a map from file id to file name.

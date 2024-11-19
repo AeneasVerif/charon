@@ -878,9 +878,6 @@ pub struct FunSig {
     ///   (the function in which the closure is defined)
     /// - the region variables are local to the closure
     pub is_closure: bool,
-    /// Whether this function is in fact the body of a constant/static that we turned into an
-    /// initializer function.
-    pub is_global_initializer: bool,
     /// Additional information if this is the signature of a closure.
     pub closure_info: Option<ClosureInfo>,
     pub generics: GenericParams,

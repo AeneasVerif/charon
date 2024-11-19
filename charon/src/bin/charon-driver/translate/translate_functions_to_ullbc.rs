@@ -1433,12 +1433,6 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             generics,
             is_unsafe,
             is_closure: matches!(&def.kind, hax::FullDefKind::Closure { .. }),
-            is_global_initializer: matches!(
-                &def.kind,
-                hax::FullDefKind::Const { .. }
-                    | hax::FullDefKind::AssocConst { .. }
-                    | hax::FullDefKind::Static { .. }
-            ),
             closure_info,
             parent_params_info,
             inputs,
@@ -1470,6 +1464,15 @@ impl BodyTransCtx<'_, '_, '_> {
             ItemKind::TraitDecl { has_default, .. } => !has_default,
         };
 
+        let is_global_initializer = matches!(
+            def.kind(),
+            hax::FullDefKind::Const { .. }
+                | hax::FullDefKind::AssocConst { .. }
+                | hax::FullDefKind::Static { .. }
+        );
+        let is_global_initializer =
+            is_global_initializer.then(|| self.register_global_decl_id(item_meta.span, rust_id));
+
         // Translate the function signature
         trace!("Translating function signature");
         let signature = self.translate_function_signature(rust_id, &item_meta, def)?;
@@ -1488,12 +1491,12 @@ impl BodyTransCtx<'_, '_, '_> {
         } else {
             Err(Opaque)
         };
-
         Ok(FunDecl {
             def_id,
             item_meta,
             signature,
             kind,
+            is_global_initializer,
             body: body_id,
         })
     }
