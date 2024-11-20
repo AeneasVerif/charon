@@ -35,6 +35,7 @@ type file_id = FileId.id
 [@@deriving show, ord]
 
 type id_to_file_map = file FileId.Map.t
+type of_json_ctx = id_to_file_map
 
 let de_bruijn_id_of_json = int_of_json
 let path_buf_of_json = string_of_json
@@ -55,7 +56,7 @@ and maybe_opaque_body_of_json (bodies : 'body gexpr_body option list)
 
 (* This is written by hand because the corresponding rust type is not type-generic. *)
 and gfun_decl_of_json (bodies : 'body gexpr_body option list)
-    (id_to_file : id_to_file_map) (js : json) : ('body gfun_decl, string) result
+    (ctx : of_json_ctx) (js : json) : ('body gfun_decl, string) result
     =
   combine_error_msgs js __FUNCTION__
     (match js with
@@ -69,8 +70,8 @@ and gfun_decl_of_json (bodies : 'body gexpr_body option list)
           ("body", body);
         ] ->
         let* def_id = FunDeclId.id_of_json def_id in
-        let* item_meta = item_meta_of_json id_to_file item_meta in
-        let* signature = fun_sig_of_json id_to_file signature in
+        let* item_meta = item_meta_of_json ctx item_meta in
+        let* signature = fun_sig_of_json ctx signature in
         let* kind = item_kind_of_json kind in
         let* is_global_initializer =
           option_of_json global_decl_id_of_json is_global_initializer
@@ -87,7 +88,7 @@ and gfun_decl_of_json (bodies : 'body gexpr_body option list)
     the AST.
     The "id to file" map is thus only used in the deserialization process.
   *)
-and id_to_file_of_json (js : json) : (id_to_file_map, string) result =
+and id_to_file_of_json (js : json) : (of_json_ctx, string) result =
   combine_error_msgs js __FUNCTION__
     ((* The map is stored as a list of pairs (key, value): we deserialize
       * this list then convert it to a map *)
@@ -102,7 +103,7 @@ and id_to_file_of_json (js : json) : (id_to_file_map, string) result =
 
 (* This is written by hand because the corresponding rust type is not type-generic. *)
 and gtranslated_crate_of_json
-    (body_of_json : id_to_file_map -> json -> ('body gexpr_body, string) result)
+    (body_of_json : of_json_ctx -> json -> ('body gexpr_body, string) result)
     (js : json) : ('body gcrate, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
@@ -122,36 +123,36 @@ and gtranslated_crate_of_json
           ("ordered_decls", declarations);
         ] ->
         let* name = string_of_json name in
-        let* id_to_file = id_to_file_of_json files in
+        let* ctx = id_to_file_of_json files in
 
         let* declarations =
           list_of_json declaration_group_of_json declarations
         in
 
         let* bodies =
-          list_of_json (option_of_json (body_of_json id_to_file)) bodies
+          list_of_json (option_of_json (body_of_json ctx)) bodies
         in
         let* types =
-          vector_of_json type_id_of_json (type_decl_of_json id_to_file) types
+          vector_of_json type_id_of_json (type_decl_of_json ctx) types
         in
         let* functions =
           vector_of_json fun_decl_id_of_json
-            (gfun_decl_of_json bodies id_to_file)
+            (gfun_decl_of_json bodies ctx)
             functions
         in
         let* globals =
           vector_of_json global_decl_id_of_json
-            (global_decl_of_json id_to_file)
+            (global_decl_of_json ctx)
             globals
         in
         let* trait_decls =
           vector_of_json trait_decl_id_of_json
-            (trait_decl_of_json id_to_file)
+            (trait_decl_of_json ctx)
             trait_decls
         in
         let* trait_impls =
           vector_of_json trait_impl_id_of_json
-            (trait_impl_of_json id_to_file)
+            (trait_impl_of_json ctx)
             trait_impls
         in
 
@@ -189,7 +190,7 @@ and gtranslated_crate_of_json
     | _ -> Error "")
 
 and gcrate_of_json
-    (body_of_json : id_to_file_map -> json -> ('body gexpr_body, string) result)
+    (body_of_json : of_json_ctx -> json -> ('body gexpr_body, string) result)
     (js : json) : ('body gcrate, string) result =
   match js with
   | `Assoc [ ("charon_version", charon_version); ("translated", translated) ] ->

@@ -275,7 +275,7 @@ fn type_to_ocaml_call(ctx: &GenerateCtx, ty: &Ty) -> String {
             }
             if let TypeId::Adt(id) = adt_kind {
                 if *ctx.contains_raw_span.get(&id).unwrap_or(&false) {
-                    expr.push("id_to_file".to_string())
+                    expr.push("ctx".to_string())
                 }
             }
             expr.into_iter().map(|f| format!("({f})")).join(" ")
@@ -378,12 +378,12 @@ fn build_function(ctx: &GenerateCtx, decl: &TypeDecl, branches: &str) -> String 
     let ty_name = type_name_to_ocaml_ident(&decl.item_meta);
     let contains_raw_span = *ctx.contains_raw_span.get(&decl.def_id).unwrap();
     let signature = if decl.generics.types.is_empty() {
-        let id_to_file = if contains_raw_span {
-            "(id_to_file : id_to_file_map) "
+        let ctx = if contains_raw_span {
+            "(ctx : of_json_ctx) "
         } else {
             ""
         };
-        format!("{ty_name}_of_json {id_to_file}(js : json) : ({ty_name}, string) result =")
+        format!("{ty_name}_of_json {ctx}(js : json) : ({ty_name}, string) result =")
     } else {
         let types = &decl.generics.types;
         let gen_vars_space = types
@@ -404,8 +404,8 @@ fn build_function(ctx: &GenerateCtx, decl: &TypeDecl, branches: &str) -> String 
             ty_args.push(format!("(json -> ('a{i}, string) result)"));
         }
         if contains_raw_span {
-            args.push("id_to_file".to_string());
-            ty_args.push("id_to_file_map".to_string());
+            args.push("ctx".to_string());
+            ty_args.push("of_json_ctx".to_string());
         }
         args.push("js".to_string());
         ty_args.push("json".to_string());
@@ -1119,7 +1119,7 @@ fn generate_ml(
                 r#"
                 | `Assoc [ ("file_id", file_id); ("beg", beg_loc); ("end", end_loc) ] ->
                     let* file_id = file_id_of_json file_id in
-                    let file = FileId.Map.find file_id id_to_file in
+                    let file = FileId.Map.find file_id ctx in
                     let* beg_loc = loc_of_json beg_loc in
                     let* end_loc = loc_of_json end_loc in
                     Ok { file; beg_loc; end_loc }
@@ -1185,10 +1185,10 @@ fn generate_ml(
                     Ok (Continue i)
                 | `String "Nop" -> Ok Nop
                 | `Assoc [ ("Switch", tgt) ] ->
-                    let* switch = switch_of_json id_to_file tgt in
+                    let* switch = switch_of_json ctx tgt in
                     Ok (Switch switch)
                 | `Assoc [ ("Loop", st) ] ->
-                    let* st = block_of_json id_to_file st in
+                    let* st = block_of_json ctx st in
                     Ok (Loop st)
                 | `Assoc [ ("Error", s) ] ->
                     let* s = string_of_json s in
@@ -1202,9 +1202,9 @@ fn generate_ml(
             indoc!(
                 r#"
                 | `Assoc [ ("span", span); ("statements", statements) ] -> begin
-                    let* span = span_of_json id_to_file span in
+                    let* span = span_of_json ctx span in
                     let* statements =
-                      list_of_json (statement_of_json id_to_file) statements
+                      list_of_json (statement_of_json ctx) statements
                     in
                     match List.rev statements with
                     | [] -> Ok { span; content = Nop; comments_before = [] }
