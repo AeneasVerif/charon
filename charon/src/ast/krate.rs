@@ -75,7 +75,7 @@ wrap_unwrap_enum!(AnyTransId::Type(TypeDeclId));
 wrap_unwrap_enum!(AnyTransId::TraitDecl(TraitDeclId));
 wrap_unwrap_enum!(AnyTransId::TraitImpl(TraitImplId));
 
-/// A translated item.
+/// A reference to a translated item.
 #[derive(Debug, Clone, Copy, EnumIsA, EnumAsGetters, VariantName, VariantIndexArity)]
 pub enum AnyTransItem<'ctx> {
     Type(&'ctx TypeDecl),
@@ -83,6 +83,16 @@ pub enum AnyTransItem<'ctx> {
     Global(&'ctx GlobalDecl),
     TraitDecl(&'ctx TraitDecl),
     TraitImpl(&'ctx TraitImpl),
+}
+
+/// A mutable reference to a translated item.
+#[derive(Debug, EnumIsA, EnumAsGetters, VariantName, VariantIndexArity)]
+pub enum AnyTransItemMut<'ctx> {
+    Type(&'ctx mut TypeDecl),
+    Fun(&'ctx mut FunDecl),
+    Global(&'ctx mut GlobalDecl),
+    TraitDecl(&'ctx mut TraitDecl),
+    TraitImpl(&'ctx mut TraitImpl),
 }
 
 /// The data of a translated crate.
@@ -123,6 +133,10 @@ pub struct TranslatedCrate {
 }
 
 impl TranslatedCrate {
+    pub fn item_name(&self, trans_id: impl Into<AnyTransId>) -> Option<&Name> {
+        self.item_names.get(&trans_id.into())
+    }
+
     pub fn get_item(&self, trans_id: impl Into<AnyTransId>) -> Option<AnyTransItem<'_>> {
         match trans_id.into() {
             AnyTransId::Type(id) => self.type_decls.get(id).map(AnyTransItem::Type),
@@ -133,8 +147,18 @@ impl TranslatedCrate {
         }
     }
 
-    pub fn item_name(&self, trans_id: impl Into<AnyTransId>) -> Option<&Name> {
-        self.item_names.get(&trans_id.into())
+    pub fn get_item_mut(&mut self, trans_id: AnyTransId) -> Option<AnyTransItemMut<'_>> {
+        match trans_id {
+            AnyTransId::Type(id) => self.type_decls.get_mut(id).map(AnyTransItemMut::Type),
+            AnyTransId::Fun(id) => self.fun_decls.get_mut(id).map(AnyTransItemMut::Fun),
+            AnyTransId::Global(id) => self.global_decls.get_mut(id).map(AnyTransItemMut::Global),
+            AnyTransId::TraitDecl(id) => {
+                self.trait_decls.get_mut(id).map(AnyTransItemMut::TraitDecl)
+            }
+            AnyTransId::TraitImpl(id) => {
+                self.trait_impls.get_mut(id).map(AnyTransItemMut::TraitImpl)
+            }
+        }
     }
 
     pub fn all_items(&self) -> impl Iterator<Item = AnyTransItem<'_>> {
@@ -188,6 +212,31 @@ impl<'ctx> AnyTransItem<'ctx> {
             AnyTransItem::Global(d) => d.drive(visitor),
             AnyTransItem::TraitDecl(d) => d.drive(visitor),
             AnyTransItem::TraitImpl(d) => d.drive(visitor),
+        }
+    }
+}
+
+impl<'ctx> AnyTransItemMut<'ctx> {
+    /// The generic parameters of this item.
+    pub fn generic_params(&mut self) -> &mut GenericParams {
+        match self {
+            AnyTransItemMut::Type(d) => &mut d.generics,
+            AnyTransItemMut::Fun(d) => &mut d.signature.generics,
+            AnyTransItemMut::Global(d) => &mut d.generics,
+            AnyTransItemMut::TraitDecl(d) => &mut d.generics,
+            AnyTransItemMut::TraitImpl(d) => &mut d.generics,
+        }
+    }
+
+    /// We can't implement the `DriveMut` type because of the `'static` constraint, but it's ok
+    /// because `AnyTransItemMut` isn't contained in any of our types.
+    pub fn drive_mut<V: derive_visitor::VisitorMut>(&mut self, visitor: &mut V) {
+        match self {
+            AnyTransItemMut::Type(d) => d.drive_mut(visitor),
+            AnyTransItemMut::Fun(d) => d.drive_mut(visitor),
+            AnyTransItemMut::Global(d) => d.drive_mut(visitor),
+            AnyTransItemMut::TraitDecl(d) => d.drive_mut(visitor),
+            AnyTransItemMut::TraitImpl(d) => d.drive_mut(visitor),
         }
     }
 }
