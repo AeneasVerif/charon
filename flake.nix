@@ -123,6 +123,7 @@
           ];
         };
         checks = {
+          default = charon-ml-tests;
           inherit charon-ml-tests charon-check-fmt charon-check-no-rustc
             charon-ml-check-fmt check-generated-ml;
         };
