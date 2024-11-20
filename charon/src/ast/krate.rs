@@ -12,6 +12,13 @@ use std::collections::HashMap;
 use std::fmt;
 use std::ops::{Index, IndexMut};
 
+generate_index_type!(FunDeclId, "Fun");
+generate_index_type!(TypeDeclId, "Adt");
+generate_index_type!(GlobalDeclId, "Global");
+generate_index_type!(TraitDeclId, "TraitDecl");
+generate_index_type!(TraitImplId, "TraitImpl");
+generate_index_type!(BodyId, "Body");
+
 /// The id of a translated item.
 #[derive(
     Copy,
@@ -87,14 +94,6 @@ pub struct TranslatedCrate {
     /// The name of the crate according to rustc.
     pub real_crate_name: String,
 
-    /// File names to ids and vice-versa
-    #[drive(skip)]
-    pub id_to_file: Vector<FileId, FileName>,
-    #[drive(skip)]
-    #[serde(skip)]
-    #[charon::opaque]
-    pub file_to_id: HashMap<FileName, FileId>,
-
     /// File id to content.
     ///
     /// Note that some files may be missing, if they are not "real" files.
@@ -102,7 +101,7 @@ pub struct TranslatedCrate {
     #[serde(with = "HashMapToArray::<FileId, String>")]
     pub file_id_to_content: HashMap<FileId, String>,
 
-    /// All the ids, in the order in which we encountered them
+    /// All the item ids, in the order in which we encountered them
     #[drive(skip)]
     pub all_ids: LinkedHashSet<AnyTransId>,
     /// The names of all registered items. Available so we can know the names even of items that
@@ -110,13 +109,16 @@ pub struct TranslatedCrate {
     #[serde(with = "HashMapToArray::<AnyTransId, Name>")]
     pub item_names: HashMap<AnyTransId, Name>,
 
+    /// The translated files.
+    #[drive(skip)]
+    pub id_to_file: Vector<FileId, FileName>,
     /// The translated type definitions
     pub type_decls: Vector<TypeDeclId, TypeDecl>,
     /// The translated function definitions
     pub fun_decls: Vector<FunDeclId, FunDecl>,
     /// The translated global definitions
     pub global_decls: Vector<GlobalDeclId, GlobalDecl>,
-    /// The bodies of functions and constants
+    /// The bodies of functions
     pub bodies: Vector<BodyId, Body>,
     /// The translated trait declarations
     pub trait_decls: Vector<TraitDeclId, TraitDecl>,

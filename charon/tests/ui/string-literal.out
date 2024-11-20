@@ -1,13 +1,17 @@
 # Final LLBC before serialization:
 
-global test_crate::FOO  {
+fn test_crate::FOO() -> &'static (Str)
+{
     let @0: &'_ (Str); // return
 
     @0 := const ("hello")
     return
 }
 
-global test_crate::BAR  {
+global test_crate::FOO: &'static (Str) = test_crate::FOO()
+
+fn test_crate::BAR() -> &'static (Slice<u8>)
+{
     let @0: &'_ (Slice<u8>); // return
     let @1: &'_ (Array<u8, 5 : usize>); // anonymous local
     let @2: &'_ (Array<u8, 5 : usize>); // anonymous local
@@ -23,6 +27,8 @@ global test_crate::BAR  {
     drop @1
     return
 }
+
+global test_crate::BAR: &'static (Slice<u8>) = test_crate::BAR()
 
 opaque type alloc::string::String
 

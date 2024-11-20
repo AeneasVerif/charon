@@ -26,10 +26,8 @@ type fun_id = Expressions.fun_id [@@deriving show, ord]
 type fun_id_or_trait_method_ref = Expressions.fun_id_or_trait_method_ref
 [@@deriving show, ord]
 
-type fun_decl_id = FunDeclId.id
-
 (** A variable *)
-and var = {
+type var = {
   index : var_id;  (** Unique index identifying the variable *)
   name : string option;
       (** Variable name - may be `None` if the variable was introduced by Rust
@@ -37,6 +35,8 @@ and var = {
      *)
   var_ty : ty;  (** The variable type *)
 }
+
+and fun_decl_id = FunDeclId.id
 
 (** The id of a translated item. *)
 and any_decl_id =
@@ -163,6 +163,18 @@ and item_kind =
           - [reuses_default]:  True if the trait decl had a default implementation for this function/const and this
           item is a copy of the default item.
        *)
+
+(** A global variable definition (constant or static). *)
+and global_decl = {
+  def_id : global_decl_id;
+  item_meta : item_meta;  (** The meta data associated with the declaration. *)
+  generics : generic_params;
+  ty : ty;
+  kind : item_kind;
+      (** The global kind: "regular" function, trait const declaration, etc. *)
+  body : fun_decl_id;
+      (** The initializer function used to compute the initial value for this constant/static. *)
+}
 
 (** A trait **declaration**.
 
@@ -402,31 +414,20 @@ type 'body gfun_decl = {
   item_meta : item_meta;
   signature : fun_sig;
   kind : item_kind;
+  is_global_initializer : GlobalDeclId.id option;
   body : 'body gexpr_body option;
-  is_global_decl_body : bool;
-}
-[@@deriving show]
-
-(* Hand-written because the rust equivalent isn't generic *)
-type 'body gglobal_decl = {
-  def_id : GlobalDeclId.id;
-  item_meta : item_meta;
-  generics : generic_params;
-  ty : ty;
-  kind : item_kind;
-  body : 'body;
 }
 [@@deriving show]
 
 (* Hand-written because the rust equivalent isn't generic *)
 
 (** A crate *)
-type ('fun_body, 'global_body) gcrate = {
+type 'fun_body gcrate = {
   name : string;
   declarations : declaration_group list;
   type_decls : type_decl TypeDeclId.Map.t;
   fun_decls : 'fun_body gfun_decl FunDeclId.Map.t;
-  global_decls : 'global_body gglobal_decl GlobalDeclId.Map.t;
+  global_decls : global_decl GlobalDeclId.Map.t;
   trait_decls : trait_decl TraitDeclId.Map.t;
   trait_impls : trait_impl TraitImplId.Map.t;
   source_files : string FileNameMap.t;

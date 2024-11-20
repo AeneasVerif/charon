@@ -113,8 +113,10 @@ impl TranslateOptions {
     }
 }
 
-/// The id of an untranslated item.
-#[derive(Clone, Copy, Debug, PartialEq, Eq, VariantIndexArity)]
+/// The id of an untranslated item. Note that a given `DefId` may show up as multiple different
+/// item sources, e.g. a constant will have both a `Global` version (for the constant itself) and a
+/// `FunDecl` one (for its initializer function).
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, VariantIndexArity)]
 pub enum TransItemSource {
     Global(DefId),
     TraitDecl(DefId),
@@ -124,7 +126,7 @@ pub enum TransItemSource {
 }
 
 impl TransItemSource {
-    pub(crate) fn get_id(&self) -> DefId {
+    pub(crate) fn to_def_id(&self) -> DefId {
         match self {
             TransItemSource::Global(id)
             | TransItemSource::TraitDecl(id)
@@ -139,7 +141,7 @@ impl TransItemSource {
     /// Value with which we order values.
     fn sort_key(&self) -> impl Ord {
         let (variant_index, _) = self.variant_index_arity();
-        let def_id = self.get_id();
+        let def_id = self.to_def_id();
         (variant_index, def_id.index, def_id.krate)
     }
 }
@@ -171,9 +173,11 @@ pub struct TranslateCtx<'tcx, 'ctx> {
     pub translated: TranslatedCrate,
 
     /// The map from rustc id to translated id.
-    pub id_map: HashMap<DefId, AnyTransId>,
+    pub id_map: HashMap<TransItemSource, AnyTransId>,
     /// The reverse map of ids.
-    pub reverse_id_map: HashMap<AnyTransId, DefId>,
+    pub reverse_id_map: HashMap<AnyTransId, TransItemSource>,
+    /// The reverse filename map.
+    pub file_to_id: HashMap<FileName, FileId>,
 
     /// Context for tracking and reporting errors.
     pub errors: ErrorCtx<'ctx>,
@@ -299,11 +303,11 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
     /// `span` must be a span from which we obtained that filename.
     fn register_file(&mut self, filename: FileName, span: rustc_span::Span) -> FileId {
         // Lookup the file if it was already registered
-        match self.translated.file_to_id.get(&filename) {
+        match self.file_to_id.get(&filename) {
             Some(id) => *id,
             None => {
                 let id = self.translated.id_to_file.push(filename.clone());
-                self.translated.file_to_id.insert(filename.clone(), id);
+                self.file_to_id.insert(filename.clone(), id);
                 let source_file = self.tcx.sess.source_map().lookup_source_file(span.lo());
                 if let Some(src) = source_file.src.as_deref() {
                     self.translated.file_id_to_content.insert(id, src.clone());
@@ -766,8 +770,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         src: &Option<DepSource>,
         id: TransItemSource,
     ) -> AnyTransId {
-        let rust_id = id.get_id();
-        let item_id = match self.id_map.get(&rust_id) {
+        let item_id = match self.id_map.get(&id) {
             Some(tid) => *tid,
             None => {
                 let trans_id = match id {
@@ -789,20 +792,20 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
                 };
                 // Add the id to the queue of declarations to translate
                 self.items_to_translate.insert(id, trans_id);
-                self.id_map.insert(id.get_id(), trans_id);
-                self.reverse_id_map.insert(trans_id, id.get_id());
+                self.id_map.insert(id, trans_id);
+                self.reverse_id_map.insert(trans_id, id);
                 self.translated.all_ids.insert(trans_id);
                 // Store the name early so the name matcher can identify paths. We can't to it for
                 // trait impls because they register themselves when computing their name.
                 if !matches!(id, TransItemSource::TraitImpl(_)) {
-                    if let Ok(name) = self.def_id_to_name(rust_id) {
+                    if let Ok(name) = self.def_id_to_name(id.to_def_id()) {
                         self.translated.item_names.insert(trans_id, name);
                     }
                 }
                 trans_id
             }
         };
-        self.register_dep_source(src, rust_id, item_id);
+        self.register_dep_source(src, id.to_def_id(), item_id);
         item_id
     }
 

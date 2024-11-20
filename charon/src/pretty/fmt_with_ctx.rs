@@ -633,6 +633,8 @@ where
         let (params, preds, any_where) = self
             .generics
             .fmt_with_ctx_with_trait_clauses(ctx, "  ", &None);
+        // Type
+        let ty = self.ty.fmt_with_ctx(ctx);
         // Predicates
         let eq_space = if !any_where {
             " ".to_string()
@@ -642,23 +644,10 @@ where
 
         // Decl name
         let name = self.item_meta.name.fmt_with_ctx(ctx);
-
-        // Body
-        let body = match self.body {
-            Ok(body_id) => {
-                // FIXME: pass the indent here somehow
-                let body = ctx.format_object(body_id);
-                if body == "<error>" {
-                    String::new()
-                } else {
-                    format!(" {{\n{body}{tab}}}")
-                }
-            }
-            Err(Opaque) => String::new(),
-        };
+        let initializer = ctx.format_object(self.init);
 
         // Put everything together
-        format!("{tab}global {name}{params}{preds}{eq_space}{body}")
+        format!("{tab}global {name}{params}: {ty}{preds}{eq_space}= {initializer}()")
     }
 }
 

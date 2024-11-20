@@ -336,10 +336,6 @@ and aggregate_kind_of_json (js : json) : (aggregate_kind, string) result =
         Ok (AggregatedClosure (x_0, x_1))
     | _ -> Error "")
 
-and fun_decl_id_of_json (js : json) : (fun_decl_id, string) result =
-  combine_error_msgs js __FUNCTION__
-    (match js with x -> FunDeclId.id_of_json x | _ -> Error "")
-
 and var_of_json (js : json) : (var, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
@@ -411,6 +407,28 @@ and item_kind_of_json (js : json) : (item_kind, string) result =
         let* item_name = trait_item_name_of_json item_name in
         let* reuses_default = bool_of_json reuses_default in
         Ok (TraitImplItem (impl_id, trait_id, item_name, reuses_default))
+    | _ -> Error "")
+
+and global_decl_of_json (id_to_file : id_to_file_map) (js : json) :
+    (global_decl, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with
+    | `Assoc
+        [
+          ("def_id", def_id);
+          ("item_meta", item_meta);
+          ("generics", generics);
+          ("ty", ty);
+          ("kind", kind);
+          ("init", init);
+        ] ->
+        let* def_id = global_decl_id_of_json def_id in
+        let* item_meta = item_meta_of_json id_to_file item_meta in
+        let* generics = generic_params_of_json id_to_file generics in
+        let* ty = ty_of_json ty in
+        let* kind = item_kind_of_json kind in
+        let* body = fun_decl_id_of_json init in
+        Ok ({ def_id; item_meta; generics; ty; kind; body } : global_decl)
     | _ -> Error "")
 
 and global_decl_ref_of_json (js : json) : (global_decl_ref, string) result =
@@ -577,6 +595,26 @@ and assertion_of_json (js : json) : (assertion, string) result =
         let* expected = bool_of_json expected in
         Ok ({ cond; expected } : assertion)
     | _ -> Error "")
+
+and fun_decl_id_of_json (js : json) : (fun_decl_id, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with x -> FunDeclId.id_of_json x | _ -> Error "")
+
+and type_decl_id_of_json (js : json) : (type_decl_id, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with x -> TypeDeclId.id_of_json x | _ -> Error "")
+
+and global_decl_id_of_json (js : json) : (global_decl_id, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with x -> GlobalDeclId.id_of_json x | _ -> Error "")
+
+and trait_decl_id_of_json (js : json) : (trait_decl_id, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with x -> TraitDeclId.id_of_json x | _ -> Error "")
+
+and trait_impl_id_of_json (js : json) : (trait_impl_id, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with x -> TraitImplId.id_of_json x | _ -> Error "")
 
 and any_decl_id_of_json (js : json) : (any_decl_id, string) result =
   combine_error_msgs js __FUNCTION__
@@ -764,10 +802,6 @@ and type_var_id_of_json (js : json) : (type_var_id, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with x -> TypeVarId.id_of_json x | _ -> Error "")
 
-and type_decl_id_of_json (js : json) : (type_decl_id, string) result =
-  combine_error_msgs js __FUNCTION__
-    (match js with x -> TypeDeclId.id_of_json x | _ -> Error "")
-
 and variant_id_of_json (js : json) : (variant_id, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with x -> VariantId.id_of_json x | _ -> Error "")
@@ -780,10 +814,6 @@ and const_generic_var_id_of_json (js : json) :
     (const_generic_var_id, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with x -> ConstGenericVarId.id_of_json x | _ -> Error "")
-
-and global_decl_id_of_json (js : json) : (global_decl_id, string) result =
-  combine_error_msgs js __FUNCTION__
-    (match js with x -> GlobalDeclId.id_of_json x | _ -> Error "")
 
 and type_var_of_json (js : json) : (type_var, string) result =
   combine_error_msgs js __FUNCTION__
@@ -1007,14 +1037,6 @@ and existential_predicate_of_json (js : json) :
 and trait_clause_id_of_json (js : json) : (trait_clause_id, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with x -> TraitClauseId.id_of_json x | _ -> Error "")
-
-and trait_decl_id_of_json (js : json) : (trait_decl_id, string) result =
-  combine_error_msgs js __FUNCTION__
-    (match js with x -> TraitDeclId.id_of_json x | _ -> Error "")
-
-and trait_impl_id_of_json (js : json) : (trait_impl_id, string) result =
-  combine_error_msgs js __FUNCTION__
-    (match js with x -> TraitImplId.id_of_json x | _ -> Error "")
 
 and trait_clause_of_json (id_to_file : id_to_file_map) (js : json) :
     (trait_clause, string) result =
@@ -1458,49 +1480,18 @@ and gfun_decl_of_json (bodies : 'body gexpr_body option list)
           ("item_meta", item_meta);
           ("signature", signature);
           ("kind", kind);
+          ("is_global_initializer", is_global_initializer);
           ("body", body);
         ] ->
         let* def_id = FunDeclId.id_of_json def_id in
         let* item_meta = item_meta_of_json id_to_file item_meta in
         let* signature = fun_sig_of_json id_to_file signature in
         let* kind = item_kind_of_json kind in
-        let* body = maybe_opaque_body_of_json bodies body in
-        Ok
-          {
-            def_id;
-            item_meta;
-            signature;
-            kind;
-            body;
-            is_global_decl_body = false;
-          }
-    | _ -> Error "")
-
-(* This is written by hand because the corresponding rust type is not type-generic. *)
-and gglobal_decl_of_json (bodies : 'body gexpr_body option list)
-    (id_to_file : id_to_file_map) (js : json) :
-    ('body gexpr_body option gglobal_decl, string) result =
-  combine_error_msgs js __FUNCTION__
-    (match js with
-    | `Assoc
-        [
-          ("def_id", def_id);
-          ("item_meta", item_meta);
-          ("generics", generics);
-          ("ty", ty);
-          ("kind", kind);
-          ("body", body);
-        ] ->
-        let* global_id = GlobalDeclId.id_of_json def_id in
-        let* item_meta = item_meta_of_json id_to_file item_meta in
-        let* generics = generic_params_of_json id_to_file generics in
-        let* ty = ty_of_json ty in
-        let* kind = item_kind_of_json kind in
-        let* body = maybe_opaque_body_of_json bodies body in
-        let global =
-          { def_id = global_id; item_meta; body; generics; ty; kind }
+        let* is_global_initializer =
+          option_of_json global_decl_id_of_json is_global_initializer
         in
-        Ok global
+        let* body = maybe_opaque_body_of_json bodies body in
+        Ok { def_id; item_meta; signature; kind; is_global_initializer; body }
     | _ -> Error "")
 
 (** Deserialize a map from file id to file name.
@@ -1527,17 +1518,17 @@ and id_to_file_of_json (js : json) : (id_to_file_map, string) result =
 (* This is written by hand because the corresponding rust type is not type-generic. *)
 and gtranslated_crate_of_json
     (body_of_json : id_to_file_map -> json -> ('body gexpr_body, string) result)
-    (js : json) : (('body, 'body gexpr_body option) gcrate, string) result =
+    (js : json) : ('body gcrate, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
     | `Assoc
         [
           ("crate_name", name);
           ("real_crate_name", _);
-          ("id_to_file", id_to_file);
           ("file_id_to_content", file_id_to_content);
           ("all_ids", _);
           ("item_names", _);
+          ("id_to_file", id_to_file);
           ("type_decls", types);
           ("fun_decls", functions);
           ("global_decls", globals);
@@ -1566,7 +1557,7 @@ and gtranslated_crate_of_json
         in
         let* globals =
           vector_of_json global_decl_id_of_json
-            (gglobal_decl_of_json bodies id_to_file)
+            (global_decl_of_json id_to_file)
             globals
         in
         let* trait_decls =
@@ -1595,9 +1586,7 @@ and gtranslated_crate_of_json
         in
         let global_decls =
           GlobalDeclId.Map.of_list
-            (List.map
-               (fun (d : 'body gexpr_body option gglobal_decl) -> (d.def_id, d))
-               globals)
+            (List.map (fun (d : global_decl) -> (d.def_id, d)) globals)
         in
         let trait_decls =
           TraitDeclId.Map.of_list
@@ -1632,7 +1621,7 @@ and gtranslated_crate_of_json
 
 and gcrate_of_json
     (body_of_json : id_to_file_map -> json -> ('body gexpr_body, string) result)
-    (js : json) : (('body, 'body gexpr_body option) gcrate, string) result =
+    (js : json) : ('body gcrate, string) result =
   match js with
   | `Assoc [ ("charon_version", charon_version); ("translated", translated) ] ->
       (* Ensure the version is the one we support. *)

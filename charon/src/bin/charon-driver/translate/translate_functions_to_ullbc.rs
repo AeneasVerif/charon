@@ -1344,6 +1344,23 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                     "Casting constructors to function pointers is not supported"
                 )
             }
+            hax::FullDefKind::Const { ty, .. }
+            | hax::FullDefKind::AssocConst { ty, .. }
+            | hax::FullDefKind::Static { ty, .. } => {
+                let sig = hax::TyFnSig {
+                    inputs: vec![],
+                    output: ty.clone(),
+                    c_variadic: false,
+                    safety: hax::Safety::Safe,
+                    abi: hax::Abi::Abi {
+                        todo: String::new(),
+                    },
+                };
+                &hax::Binder {
+                    value: sig,
+                    bound_vars: Default::default(),
+                }
+            }
             _ => panic!("Unexpected definition for function: {def:?}"),
         };
 
@@ -1386,9 +1403,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                     .try_collect()?;
                 Some(ClosureInfo { kind, state })
             }
-            hax::FullDefKind::Fn { .. } => None,
-            hax::FullDefKind::AssocFn { .. } => None,
-            _ => panic!("Unexpected definition for function: {def:?}"),
+            _ => None,
         };
 
         let parent_params_info = match &def.kind {
@@ -1449,6 +1464,15 @@ impl BodyTransCtx<'_, '_, '_> {
             ItemKind::TraitDecl { has_default, .. } => !has_default,
         };
 
+        let is_global_initializer = matches!(
+            def.kind(),
+            hax::FullDefKind::Const { .. }
+                | hax::FullDefKind::AssocConst { .. }
+                | hax::FullDefKind::Static { .. }
+        );
+        let is_global_initializer =
+            is_global_initializer.then(|| self.register_global_decl_id(item_meta.span, rust_id));
+
         // Translate the function signature
         trace!("Translating function signature");
         let signature = self.translate_function_signature(rust_id, &item_meta, def)?;
@@ -1467,12 +1491,12 @@ impl BodyTransCtx<'_, '_, '_> {
         } else {
             Err(Opaque)
         };
-
         Ok(FunDecl {
             def_id,
             item_meta,
             signature,
             kind,
+            is_global_initializer,
             body: body_id,
         })
     }
@@ -1510,16 +1534,7 @@ impl BodyTransCtx<'_, '_, '_> {
         };
         let ty = self.translate_ty(span, ty)?;
 
-        // Translate its body like the body of a function. This returns `Opaque if we can't/decide
-        // not to translate this body.
-        let body_id = match self.translate_body(def, 0, &item_meta) {
-            Ok(Ok(body)) => Ok(self.t_ctx.translated.bodies.push(body)),
-            // Opaque declaration
-            Ok(Err(Opaque)) => Err(Opaque),
-            // Translation error. We reserve a slot and leave it empty.
-            // FIXME: handle error cases more explicitly.
-            Err(_) => Ok(self.t_ctx.translated.bodies.reserve_slot()),
-        };
+        let initializer = self.register_fun_decl_id(span, rust_id);
 
         Ok(GlobalDecl {
             def_id,
@@ -1527,7 +1542,7 @@ impl BodyTransCtx<'_, '_, '_> {
             generics,
             ty,
             kind: global_kind,
-            body: body_id,
+            init: initializer,
         })
     }
 }

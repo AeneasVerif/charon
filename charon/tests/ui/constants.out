@@ -1,15 +1,21 @@
 # Final LLBC before serialization:
 
-global test_crate::X0  {
+fn test_crate::X0() -> u32
+{
     let @0: u32; // return
 
     @0 := const (0 : u32)
     return
 }
 
-global core::num::{u32}#8::MAX 
+global test_crate::X0: u32 = test_crate::X0()
 
-global test_crate::X1  {
+fn core::num::{u32}#8::MAX() -> u32
+
+global core::num::{u32}#8::MAX: u32 = core::num::{u32}#8::MAX()
+
+fn test_crate::X1() -> u32
+{
     let @0: u32; // return
     let @1: u32; // anonymous local
 
@@ -18,7 +24,10 @@ global test_crate::X1  {
     return
 }
 
-global test_crate::X2  {
+global test_crate::X1: u32 = test_crate::X1()
+
+fn test_crate::X2() -> u32
+{
     let @0: u32; // return
     let x@1: u32; // local
 
@@ -28,6 +37,8 @@ global test_crate::X2  {
     drop x@1
     return
 }
+
+global test_crate::X2: u32 = test_crate::X2()
 
 fn test_crate::incr(@1: u32) -> u32
 {
@@ -41,12 +52,15 @@ fn test_crate::incr(@1: u32) -> u32
     return
 }
 
-global test_crate::X3  {
+fn test_crate::X3() -> u32
+{
     let @0: u32; // return
 
     @0 := test_crate::incr(const (32 : u32))
     return
 }
+
+global test_crate::X3: u32 = test_crate::X3()
 
 fn test_crate::mk_pair0(@1: u32, @2: u32) -> (u32, u32)
 {
@@ -92,33 +106,45 @@ fn test_crate::mk_pair1(@1: u32, @2: u32) -> test_crate::Pair<u32, u32>[core::ma
     return
 }
 
-global test_crate::P0  {
+fn test_crate::P0() -> (u32, u32)
+{
     let @0: (u32, u32); // return
 
     @0 := test_crate::mk_pair0(const (0 : u32), const (1 : u32))
     return
 }
 
-global test_crate::P1  {
+global test_crate::P0: (u32, u32) = test_crate::P0()
+
+fn test_crate::P1() -> test_crate::Pair<u32, u32>[core::marker::Sized<u32>, core::marker::Sized<u32>]
+{
     let @0: test_crate::Pair<u32, u32>[core::marker::Sized<u32>, core::marker::Sized<u32>]; // return
 
     @0 := test_crate::mk_pair1(const (0 : u32), const (1 : u32))
     return
 }
 
-global test_crate::P2  {
+global test_crate::P1: test_crate::Pair<u32, u32>[core::marker::Sized<u32>, core::marker::Sized<u32>] = test_crate::P1()
+
+fn test_crate::P2() -> (u32, u32)
+{
     let @0: (u32, u32); // return
 
     @0 := (const (0 : u32), const (1 : u32))
     return
 }
 
-global test_crate::P3  {
+global test_crate::P2: (u32, u32) = test_crate::P2()
+
+fn test_crate::P3() -> test_crate::Pair<u32, u32>[core::marker::Sized<u32>, core::marker::Sized<u32>]
+{
     let @0: test_crate::Pair<u32, u32>[core::marker::Sized<u32>, core::marker::Sized<u32>]; // return
 
     @0 := test_crate::Pair { x: const (0 : u32), y: const (1 : u32) }
     return
 }
+
+global test_crate::P3: test_crate::Pair<u32, u32>[core::marker::Sized<u32>, core::marker::Sized<u32>] = test_crate::P3()
 
 struct test_crate::Wrap<T>
   where
@@ -145,12 +171,15 @@ where
     return
 }
 
-global test_crate::Y  {
+fn test_crate::Y() -> test_crate::Wrap<i32>[core::marker::Sized<i32>]
+{
     let @0: test_crate::Wrap<i32>[core::marker::Sized<i32>]; // return
 
     @0 := test_crate::{test_crate::Wrap<T>[@TraitClause0]}::new<i32>[core::marker::Sized<i32>](const (2 : i32))
     return
 }
+
+global test_crate::Y: test_crate::Wrap<i32>[core::marker::Sized<i32>] = test_crate::Y()
 
 fn test_crate::unwrap_y() -> i32
 {
@@ -165,19 +194,25 @@ fn test_crate::unwrap_y() -> i32
     return
 }
 
-global test_crate::YVAL  {
+fn test_crate::YVAL() -> i32
+{
     let @0: i32; // return
 
     @0 := test_crate::unwrap_y()
     return
 }
 
-global test_crate::get_z1::Z1  {
+global test_crate::YVAL: i32 = test_crate::YVAL()
+
+fn test_crate::get_z1::Z1() -> i32
+{
     let @0: i32; // return
 
     @0 := const (3 : i32)
     return
 }
+
+global test_crate::get_z1::Z1: i32 = test_crate::get_z1::Z1()
 
 fn test_crate::get_z1() -> i32
 {
@@ -205,14 +240,18 @@ fn test_crate::add(@1: i32, @2: i32) -> i32
     return
 }
 
-global test_crate::Q1  {
+fn test_crate::Q1() -> i32
+{
     let @0: i32; // return
 
     @0 := const (5 : i32)
     return
 }
 
-global test_crate::Q2  {
+global test_crate::Q1: i32 = test_crate::Q1()
+
+fn test_crate::Q2() -> i32
+{
     let @0: i32; // return
     let @1: i32; // anonymous local
 
@@ -221,7 +260,10 @@ global test_crate::Q2  {
     return
 }
 
-global test_crate::Q3  {
+global test_crate::Q2: i32 = test_crate::Q2()
+
+fn test_crate::Q3() -> i32
+{
     let @0: i32; // return
     let @1: i32; // anonymous local
 
@@ -229,6 +271,8 @@ global test_crate::Q3  {
     @0 := test_crate::add(move (@1), const (3 : i32))
     return
 }
+
+global test_crate::Q3: i32 = test_crate::Q3()
 
 fn test_crate::get_z2() -> i32
 {
@@ -248,14 +292,18 @@ fn test_crate::get_z2() -> i32
     return
 }
 
-global test_crate::S1  {
+fn test_crate::S1() -> u32
+{
     let @0: u32; // return
 
     @0 := const (6 : u32)
     return
 }
 
-global test_crate::S2  {
+global test_crate::S1: u32 = test_crate::S1()
+
+fn test_crate::S2() -> u32
+{
     let @0: u32; // return
     let @1: u32; // anonymous local
     let @2: &'_ (u32); // anonymous local
@@ -270,7 +318,10 @@ global test_crate::S2  {
     return
 }
 
-global test_crate::S3  {
+global test_crate::S2: u32 = test_crate::S2()
+
+fn test_crate::S3() -> test_crate::Pair<u32, u32>[core::marker::Sized<u32>, core::marker::Sized<u32>]
+{
     let @0: test_crate::Pair<u32, u32>[core::marker::Sized<u32>, core::marker::Sized<u32>]; // return
     let @1: test_crate::Pair<u32, u32>[core::marker::Sized<u32>, core::marker::Sized<u32>]; // anonymous local
 
@@ -279,12 +330,17 @@ global test_crate::S3  {
     return
 }
 
-global test_crate::S4  {
+global test_crate::S3: test_crate::Pair<u32, u32>[core::marker::Sized<u32>, core::marker::Sized<u32>] = test_crate::S3()
+
+fn test_crate::S4() -> test_crate::Pair<u32, u32>[core::marker::Sized<u32>, core::marker::Sized<u32>]
+{
     let @0: test_crate::Pair<u32, u32>[core::marker::Sized<u32>, core::marker::Sized<u32>]; // return
 
     @0 := test_crate::mk_pair1(const (7 : u32), const (8 : u32))
     return
 }
+
+global test_crate::S4: test_crate::Pair<u32, u32>[core::marker::Sized<u32>, core::marker::Sized<u32>] = test_crate::S4()
 
 struct test_crate::V<T, const N : usize>
   where
@@ -294,15 +350,20 @@ struct test_crate::V<T, const N : usize>
   x: Array<T, const N : usize>,
 }
 
-global test_crate::{test_crate::V<T, const N : usize>[@TraitClause0]}#1::LEN<T, const N : usize>
-  where
-      [@TraitClause0]: core::marker::Sized<T>,
-  {
+fn test_crate::{test_crate::V<T, const N : usize>[@TraitClause0]}#1::LEN<T, const N : usize>() -> usize
+where
+    [@TraitClause0]: core::marker::Sized<T>,
+{
     let @0: usize; // return
 
     @0 := const (const N : usize)
     return
 }
+
+global test_crate::{test_crate::V<T, const N : usize>[@TraitClause0]}#1::LEN<T, const N : usize>: usize
+  where
+      [@TraitClause0]: core::marker::Sized<T>,
+ = test_crate::{test_crate::V<T, const N : usize>[@TraitClause0]}#1::LEN()
 
 fn test_crate::use_v<T, const N : usize>() -> usize
 where
@@ -316,7 +377,10 @@ where
     return
 }
 
-global test_crate::REC1  {
+global test_crate::REC1: usize = test_crate::REC1()
+
+fn test_crate::REC1() -> usize
+{
     let @0: usize; // return
     let @1: bool; // anonymous local
     let @2: usize; // anonymous local
@@ -333,7 +397,10 @@ global test_crate::REC1  {
     return
 }
 
-global test_crate::REC2  {
+global test_crate::REC2: usize = test_crate::REC2()
+
+fn test_crate::REC2() -> usize
+{
     let @0: usize; // return
     let @1: bool; // anonymous local
     let @2: usize; // anonymous local

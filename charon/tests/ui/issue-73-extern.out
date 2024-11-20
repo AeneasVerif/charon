@@ -2,7 +2,9 @@
 
 unsafe fn test_crate::foo(@1: i32)
 
-global test_crate::CONST 
+fn test_crate::CONST() -> u8
+
+global test_crate::CONST: u8 = test_crate::CONST()
 
 opaque type test_crate::Type
 

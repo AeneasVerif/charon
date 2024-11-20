@@ -6,7 +6,7 @@ open PrintTypes
 open PrintValues
 open PrintExpressions
 
-type fmt_env = (statement, FunDeclId.id) PrintUtils.fmt_env
+type fmt_env = statement PrintUtils.fmt_env
 
 (** Pretty-printing for LLBC AST (generic functions) *)
 module Ast = struct

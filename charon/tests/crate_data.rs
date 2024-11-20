@@ -497,11 +497,20 @@ fn rename_attribute() -> anyhow::Result<()> {
             .attr_info
             .rename
             .as_deref(),
-        Some("getTest")
+        Some("Const_Test")
     );
 
     assert_eq!(
         crate_data.fun_decls[2]
+            .item_meta
+            .attr_info
+            .rename
+            .as_deref(),
+        Some("getTest")
+    );
+
+    assert_eq!(
+        crate_data.fun_decls[3]
             .item_meta
             .attr_info
             .rename
@@ -598,7 +607,9 @@ fn declaration_groups() -> anyhow::Result<()> {
         fn foo() {
             panic!()
         }
-        trait Foo {}
+        trait Foo {
+            const FOO: usize = 42;
+        }
         impl Foo for () {}
         "#,
     )?;
@@ -606,11 +617,11 @@ fn declaration_groups() -> anyhow::Result<()> {
     // There are two function ids registered, but only one is nonempty. `functions.len() == 2` as
     // `len()` counts the empty slots too.
     let decl_groups = crate_data.ordered_decls.unwrap();
-    assert_eq!(crate_data.fun_decls.iter().count(), 1);
-    assert_eq!(decl_groups.len(), 3);
-    assert!(decl_groups[0].as_fun().unwrap().is_non_rec());
-    assert!(decl_groups[1].as_trait_decl().unwrap().is_non_rec());
-    assert!(decl_groups[2].as_trait_impl().unwrap().is_non_rec());
+    assert_eq!(crate_data.fun_decls.iter().count(), 2);
+    assert_eq!(decl_groups.len(), 5);
+    assert!(decl_groups
+        .iter()
+        .all(|group| group.to_mixed_group().is_non_rec()));
 
     Ok(())
 }

@@ -52,29 +52,12 @@ pub trait UllbcPass: Sync {
         }
     }
 
-    /// Transform a global declaration. This forwards to `transform_body` by default.
-    fn transform_global(
-        &self,
-        ctx: &mut TransformCtx<'_>,
-        _decl: &mut GlobalDecl,
-        body: Result<&mut ullbc_ast::ExprBody, Opaque>,
-    ) {
-        if let Ok(body) = body {
-            self.transform_body(ctx, body)
-        }
-    }
-
     /// Transform the given context. This forwards to the other methods by default.
     fn transform_ctx(&self, ctx: &mut TransformCtx<'_>) {
         ctx.for_each_fun_decl(|ctx, decl, body| {
             let body = body.map(|body| body.as_unstructured_mut().unwrap());
             self.log_before_body(ctx, &decl.item_meta.name, body.as_deref());
             self.transform_function(ctx, decl, body);
-        });
-        ctx.for_each_global_decl(|ctx, decl, body| {
-            let body = body.map(|body| body.as_unstructured_mut().unwrap());
-            self.log_before_body(ctx, &decl.item_meta.name, body.as_deref());
-            self.transform_global(ctx, decl, body);
         });
     }
 
@@ -123,29 +106,12 @@ pub trait LlbcPass: Sync {
         }
     }
 
-    /// Transform a global declaration. This forwards to `transform_body` by default.
-    fn transform_global(
-        &self,
-        ctx: &mut TransformCtx<'_>,
-        _decl: &mut GlobalDecl,
-        body: Result<&mut llbc_ast::ExprBody, Opaque>,
-    ) {
-        if let Ok(body) = body {
-            self.transform_body(ctx, body)
-        }
-    }
-
     /// Transform the given context. This forwards to the other methods by default.
     fn transform_ctx(&self, ctx: &mut TransformCtx<'_>) {
         ctx.for_each_fun_decl(|ctx, decl, body| {
             let body = body.map(|body| body.as_structured_mut().unwrap());
             self.log_before_body(ctx, &decl.item_meta.name, body.as_deref());
             self.transform_function(ctx, decl, body);
-        });
-        ctx.for_each_global_decl(|ctx, decl, body| {
-            let body = body.map(|body| body.as_structured_mut().unwrap());
-            self.log_before_body(ctx, &decl.item_meta.name, body.as_deref());
-            self.transform_global(ctx, decl, body);
         });
     }
 
@@ -240,16 +206,6 @@ impl<'ctx> TransformCtx<'ctx> {
         self.translated.fun_decls = fun_decls;
         ret
     }
-    /// Get mutable access to both the ctx and the global declarations.
-    pub(crate) fn with_mut_global_decls<R>(
-        &mut self,
-        f: impl FnOnce(&mut Self, &mut Vector<GlobalDeclId, GlobalDecl>) -> R,
-    ) -> R {
-        let mut global_decls = std::mem::take(&mut self.translated.global_decls);
-        let ret = f(self, &mut global_decls);
-        self.translated.global_decls = global_decls;
-        ret
-    }
 
     /// Mutably iterate over the bodies.
     // FIXME: this does not set `with_def_id` to track error sources. That would require having a
@@ -275,32 +231,6 @@ impl<'ctx> TransformCtx<'ctx> {
     ) {
         self.with_mut_bodies(|ctx, bodies| {
             ctx.with_mut_fun_decls(|ctx, decls| {
-                for decl in decls.iter_mut() {
-                    let body = match decl.body {
-                        Ok(id) => {
-                            match bodies.get_mut(id) {
-                                Some(body) => Ok(body),
-                                // This body has errored, we skip the item.
-                                None => continue,
-                            }
-                        }
-                        Err(Opaque) => Err(Opaque),
-                    };
-                    ctx.with_def_id(decl.def_id, decl.item_meta.is_local, |ctx| {
-                        f(ctx, decl, body);
-                    })
-                }
-            })
-        })
-    }
-
-    /// Mutably iterate over the global declarations without errors.
-    pub(crate) fn for_each_global_decl(
-        &mut self,
-        mut f: impl FnMut(&mut Self, &mut GlobalDecl, Result<&mut Body, Opaque>),
-    ) {
-        self.with_mut_bodies(|ctx, bodies| {
-            ctx.with_mut_global_decls(|ctx, decls| {
                 for decl in decls.iter_mut() {
                     let body = match decl.body {
                         Ok(id) => {

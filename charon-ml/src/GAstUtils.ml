@@ -101,10 +101,10 @@ let split_declarations_to_group_maps (decls : declaration_group list) :
   let module G (M : Map.S) = struct
     let add_group (map : M.key g_declaration_group M.t)
         (group : M.key g_declaration_group) : M.key g_declaration_group M.t =
-      match group with
-      | NonRecGroup id -> M.add id group map
-      | RecGroup ids ->
-          List.fold_left (fun map id -> M.add id group map) map ids
+      List.fold_left
+        (fun map id -> M.add id group map)
+        map
+        (g_declaration_group_to_list group)
 
     let create_map (groups : M.key g_declaration_group list) :
         M.key g_declaration_group M.t =

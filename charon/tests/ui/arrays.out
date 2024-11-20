@@ -1542,12 +1542,15 @@ fn test_crate::f3() -> u32
     return
 }
 
-global test_crate::SZ  {
+fn test_crate::SZ() -> usize
+{
     let @0: usize; // return
 
     @0 := const (32 : usize)
     return
 }
+
+global test_crate::SZ: usize = test_crate::SZ()
 
 fn test_crate::f5<'_0>(@1: &'_0 (Array<u32, 32 : usize>)) -> u32
 {

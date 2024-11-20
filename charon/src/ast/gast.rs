@@ -1,21 +1,13 @@
 //! Definitions common to [crate::ullbc_ast] and [crate::llbc_ast]
-use crate::expressions::*;
-use crate::generate_index_type;
+use crate::ast::*;
 use crate::ids::Vector;
 use crate::llbc_ast;
-use crate::meta::{ItemMeta, Span};
-use crate::names::Name;
-use crate::types::*;
 use crate::ullbc_ast;
-use crate::values::*;
 use derive_visitor::{Drive, DriveMut, Event, Visitor, VisitorMut};
 use macros::EnumIsA;
 use macros::EnumToGetters;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
-
-generate_index_type!(FunDeclId, "Fun");
-generate_index_type!(BodyId, "Body");
 
 /// A variable
 #[derive(Debug, Clone, Serialize, Deserialize, Drive, DriveMut)]
@@ -155,13 +147,16 @@ pub struct FunDecl {
     pub signature: FunSig,
     /// The function kind: "regular" function, trait method declaration, etc.
     pub kind: ItemKind,
+    /// Whether this function is in fact the body of a constant/static that we turned into an
+    /// initializer function.
+    pub is_global_initializer: Option<GlobalDeclId>,
     /// The function body, unless the function is opaque.
     /// Opaque functions are: external functions, or local functions tagged
     /// as opaque.
     pub body: Result<BodyId, Opaque>,
 }
 
-/// A global variable definition
+/// A global variable definition (constant or static).
 #[derive(Debug, Clone, Serialize, Deserialize, Drive, DriveMut)]
 pub struct GlobalDecl {
     #[drive(skip)]
@@ -172,7 +167,9 @@ pub struct GlobalDecl {
     pub ty: Ty,
     /// The global kind: "regular" function, trait const declaration, etc.
     pub kind: ItemKind,
-    pub body: Result<BodyId, Opaque>,
+    /// The initializer function used to compute the initial value for this constant/static.
+    #[charon::rename("body")]
+    pub init: FunDeclId,
 }
 
 /// Reference to a global declaration.

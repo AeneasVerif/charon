@@ -757,7 +757,8 @@ fn test_crate::BLAH::closure<'_0>(@1: &'_0 (()), @2: ()) -> u32
     return
 }
 
-global test_crate::BLAH  {
+fn test_crate::BLAH() -> u32
+{
     let @0: u32; // return
     let clo@1: fn() -> u32; // local
     let @2: &'_ (fn() -> u32); // anonymous local
@@ -773,6 +774,8 @@ global test_crate::BLAH  {
     drop clo@1
     return
 }
+
+global test_crate::BLAH: u32 = test_crate::BLAH()
 
 fn core::clone::Clone::clone_from<'_0, '_1, Self>(@1: &'_0 mut (Self), @2: &'_1 (Self))
 

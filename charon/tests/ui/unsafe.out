@@ -55,12 +55,15 @@ trait test_crate::Trait<Self>
 
 impl test_crate::{impl test_crate::Trait for ()} : test_crate::Trait<()>
 
-global test_crate::COUNTER  {
+fn test_crate::COUNTER() -> usize
+{
     let @0: usize; // return
 
     @0 := const (0 : usize)
     return
 }
+
+global test_crate::COUNTER: usize = test_crate::COUNTER()
 
 fn test_crate::access_mutable_static()
 {

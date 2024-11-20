@@ -18,8 +18,6 @@ type block_id = BlockId.id [@@deriving show, ord]
 type expr_body = blocks gexpr_body [@@deriving show]
 type fun_body = expr_body [@@deriving show]
 type fun_decl = blocks gfun_decl [@@deriving show]
-type global_body = expr_body [@@deriving show]
-type global_decl = global_body option gglobal_decl [@@deriving show]
 
 (** ULLBC crate *)
-type crate = (blocks, global_body option) gcrate
+type crate = blocks gcrate
