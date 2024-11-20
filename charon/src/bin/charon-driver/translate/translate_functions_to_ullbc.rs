@@ -85,10 +85,12 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
             }
         })
     }
+}
 
+impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     pub(crate) fn get_item_kind(
         &mut self,
-        src: &Option<DepSource>,
+        span: Span,
         def: &hax::FullDef,
     ) -> Result<ItemKind, Error> {
         let assoc = match &def.kind {
@@ -123,8 +125,8 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
                 overrides_default,
                 ..
             } => {
-                let trait_id = self.register_trait_decl_id(src, implemented_trait);
-                let impl_id = self.register_trait_impl_id(src, impl_id);
+                let trait_id = self.register_trait_decl_id(span, implemented_trait);
+                let impl_id = self.register_trait_impl_id(span, impl_id);
                 ItemKind::TraitImpl {
                     impl_id,
                     trait_id,
@@ -142,7 +144,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
             hax::AssocItemContainer::TraitContainer { trait_id } => {
                 // The trait id should be Some(...): trait markers (that we may eliminate)
                 // don't have associated items.
-                let trait_id = self.register_trait_decl_id(src, trait_id);
+                let trait_id = self.register_trait_decl_id(span, trait_id);
                 let item_name = TraitItemName(assoc.name.clone());
 
                 ItemKind::TraitDecl {
@@ -153,9 +155,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
             }
         })
     }
-}
 
-impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     /// Translate a function's local variables by adding them in the environment.
     fn translate_body_locals(&mut self, body: &hax::MirBody<()>) -> Result<(), Error> {
         // Translate the parameters
@@ -1449,11 +1449,13 @@ impl BodyTransCtx<'_, '_, '_> {
         trace!("About to translate function:\n{:?}", rust_id);
         let def_span = item_meta.span;
 
+        // Translate the function signature
+        trace!("Translating function signature");
+        let signature = self.translate_function_signature(rust_id, &item_meta, def)?;
+
         // Check whether this function is a method declaration for a trait definition.
         // If this is the case, it shouldn't contain a body.
-        let kind = self
-            .t_ctx
-            .get_item_kind(&self.make_dep_source(def_span), def)?;
+        let kind = self.get_item_kind(def_span, def)?;
         let is_trait_method_decl_without_default = match &kind {
             ItemKind::Regular | ItemKind::TraitImpl { .. } => false,
             ItemKind::TraitDecl { has_default, .. } => !has_default,
@@ -1467,10 +1469,6 @@ impl BodyTransCtx<'_, '_, '_> {
         );
         let is_global_initializer =
             is_global_initializer.then(|| self.register_global_decl_id(item_meta.span, rust_id));
-
-        // Translate the function signature
-        trace!("Translating function signature");
-        let signature = self.translate_function_signature(rust_id, &item_meta, def)?;
 
         let body_id = if !is_trait_method_decl_without_default {
             // Translate the body. This doesn't store anything if we can't/decide not to translate
@@ -1508,9 +1506,6 @@ impl BodyTransCtx<'_, '_, '_> {
         trace!("About to translate global:\n{:?}", rust_id);
         let span = item_meta.span;
 
-        // Retrieve the kind
-        let global_kind = self.t_ctx.get_item_kind(&self.make_dep_source(span), def)?;
-
         // Translate the generics and predicates - globals *can* have generics
         // Ex.:
         // ```
@@ -1519,6 +1514,9 @@ impl BodyTransCtx<'_, '_, '_> {
         // }
         // ```
         let generics = self.translate_def_generics(span, def)?;
+
+        // Retrieve the kind
+        let global_kind = self.get_item_kind(span, def)?;
 
         trace!("Translating global type");
         let ty = match &def.kind {
