@@ -18,7 +18,7 @@ type loc = {
 }
 
 (** Span information *)
-and raw_span = { file : file_name; beg_loc : loc; end_loc : loc }
+and raw_span = { file : file; beg_loc : loc; end_loc : loc }
 
 (** Meta information about a piece of code (block, statement, etc.) *)
 and span = {
@@ -117,6 +117,14 @@ and file_name =
   | Virtual of path_buf  (** A remapped path (namely paths into stdlib) *)
   | Local of path_buf
       (** A local path (a file coming from the current crate for instance) *)
+
+and file = {
+  name : file_name;  (** The path to the file. *)
+  contents : string option;
+      (** The contents of the source file, as seen by rustc at the time of translation.
+        Some files don't have contents.
+     *)
+}
 [@@deriving show, ord]
 
 (** Ordered file name *)

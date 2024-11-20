@@ -1010,11 +1010,8 @@ fn generate_ml(
     output_dir: PathBuf,
 ) -> anyhow::Result<()> {
     let manual_type_impls = &[
-        // Hand-written because we replace the `FileId` with the corresponding file name.
-        (
-            "RawSpan",
-            "{ file : file_name; beg_loc : loc; end_loc : loc }",
-        ),
+        // Hand-written because we replace the `FileId` with the corresponding file.
+        ("RawSpan", "{ file : file; beg_loc : loc; end_loc : loc }"),
         // Hand-written because the rust version is an enum with custom (de)serialization
         // functions.
         (
@@ -1354,6 +1351,7 @@ fn generate_ml(
                 (GenerationKind::TypeDecl(None), &[
                     "Loc",
                     "FileName",
+                    "File",
                     "RawSpan",
                     "Span",
                     "InlineAttr",

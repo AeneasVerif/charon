@@ -5,7 +5,6 @@ use charon_lib::options;
 use charon_lib::reorder_decls::compute_reordered_decls;
 use charon_lib::transform::{LLBC_PASSES, ULLBC_PASSES};
 use charon_lib::ullbc_to_llbc;
-use regex::Regex;
 use rustc_driver::{Callbacks, Compilation};
 use rustc_interface::{interface::Compiler, Queries};
 use rustc_middle::ty::TyCtxt;
@@ -174,11 +173,10 @@ pub fn arg_values<'a, T: Deref<Target = str>>(
 /// Note that the driver is sometimes called without a source, for Cargo to
 /// retrieve information about the crate for instance.
 pub fn get_args_source_index<T: Deref<Target = str>>(args: &[T]) -> Option<usize> {
-    let re = Regex::new(r".*\.rs").unwrap();
     let indices: Vec<usize> = args
         .iter()
         .enumerate()
-        .filter_map(|(i, s)| if re.is_match(s) { Some(i) } else { None })
+        .filter_map(|(i, s)| if s.ends_with(".rs") { Some(i) } else { None })
         .collect();
     assert!(indices.len() <= 1);
     if indices.len() == 1 {
