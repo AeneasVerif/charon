@@ -66,61 +66,8 @@ fn type_name_to_ocaml_ident(item_meta: &ItemMeta) -> String {
     make_ocaml_ident(name)
 }
 
-/// Traverse all types to figure out which ones transitively contain the given id.
-fn contains_id(crate_data: &TranslatedCrate, haystack: TypeDeclId) -> HashMap<TypeDeclId, bool> {
-    fn traverse_ty(
-        crate_data: &TranslatedCrate,
-        ty: &TypeDecl,
-        stack: &mut Vec<TypeDeclId>,
-        map: &mut HashMap<TypeDeclId, bool>,
-    ) -> Result<bool, TypeDeclId> {
-        if let Some(x) = map.get(&ty.def_id) {
-            return Ok(*x);
-        }
-        if stack.contains(&ty.def_id) {
-            return Err(ty.def_id);
-        }
-
-        stack.push(ty.def_id);
-        let exploring_def_id = ty.def_id;
-        let mut contains = false;
-        let mut requires_parent = None;
-        ty.drive(&mut Ty::visit_inside(derive_visitor::visitor_enter_fn(
-            |id: &TypeDeclId| {
-                if let Some(ty) = crate_data.type_decls.get(*id) {
-                    match traverse_ty(crate_data, ty, stack, map) {
-                        Ok(true) => contains = true,
-                        Err(loop_id) if loop_id != exploring_def_id && stack.contains(&loop_id) => {
-                            requires_parent = Some(loop_id)
-                        }
-                        _ => {}
-                    }
-                }
-            },
-        )));
-        stack.pop();
-
-        if contains {
-            map.insert(ty.def_id, true);
-            Ok(true)
-        } else if let Some(id) = requires_parent {
-            Err(id)
-        } else {
-            map.insert(ty.def_id, false);
-            Ok(false)
-        }
-    }
-    let mut map = HashMap::new();
-    map.insert(haystack, true);
-    for ty in &crate_data.type_decls {
-        let _ = traverse_ty(crate_data, ty, &mut Vec::new(), &mut map);
-    }
-    map.into_iter().map(|(id, x)| (id, x)).collect()
-}
-
 struct GenerateCtx<'a> {
     crate_data: &'a TranslatedCrate,
-    contains_raw_span: HashMap<TypeDeclId, bool>,
     name_to_type: HashMap<String, &'a TypeDecl>,
     /// For each type, list the types it contains.
     type_tree: HashMap<TypeDeclId, HashSet<TypeDeclId>>,
@@ -161,14 +108,9 @@ impl<'a> GenerateCtx<'a> {
             )));
             type_tree.insert(ty.def_id, contained);
         }
-        let contains_raw_span = {
-            let raw_span = name_to_type.get("RawSpan").unwrap();
-            contains_id(crate_data, raw_span.def_id)
-        };
 
         let mut ctx = GenerateCtx {
             crate_data: &crate_data,
-            contains_raw_span,
             name_to_type,
             type_tree,
             manual_type_impls: Default::default(),
@@ -240,10 +182,10 @@ impl<'a> GenerateCtx<'a> {
 /// functions, e.g. `list_of_json bool_of_json`.
 fn type_to_ocaml_call(ctx: &GenerateCtx, ty: &Ty) -> String {
     match ty.kind() {
-        TyKind::Literal(LiteralTy::Bool) => "bool_of_json".to_string(),
-        TyKind::Literal(LiteralTy::Char) => "char_of_json".to_string(),
-        TyKind::Literal(LiteralTy::Integer(_)) => "int_of_json".to_string(),
-        TyKind::Literal(LiteralTy::Float(_)) => "float_of_json".to_string(),
+        TyKind::Literal(LiteralTy::Bool) => "bool_of_json ctx".to_string(),
+        TyKind::Literal(LiteralTy::Char) => "char_of_json ctx".to_string(),
+        TyKind::Literal(LiteralTy::Integer(_)) => "int_of_json ctx".to_string(),
+        TyKind::Literal(LiteralTy::Float(_)) => "float_of_json ctx".to_string(),
         TyKind::Adt(adt_kind, generics) => {
             let mut expr = Vec::new();
             for ty in &generics.types {
@@ -262,7 +204,7 @@ fn type_to_ocaml_call(ctx: &GenerateCtx, ty: &Ty) -> String {
                     }
                     expr.insert(0, first + "_of_json");
                 }
-                TypeId::Builtin(BuiltinTy::Box) => {}
+                TypeId::Builtin(BuiltinTy::Box) => expr.insert(0, "box_of_json".to_owned()),
                 TypeId::Tuple => {
                     let name = match generics.types.len() {
                         2 => "pair_of_json".to_string(),
@@ -273,11 +215,7 @@ fn type_to_ocaml_call(ctx: &GenerateCtx, ty: &Ty) -> String {
                 }
                 _ => unimplemented!("{ty:?}"),
             }
-            if let TypeId::Adt(id) = adt_kind {
-                if *ctx.contains_raw_span.get(&id).unwrap_or(&false) {
-                    expr.push("ctx".to_string())
-                }
-            }
+            expr.push("ctx".to_string());
             expr.into_iter().map(|f| format!("({f})")).join(" ")
         }
         TyKind::TypeVar(var_id) => format!("arg{}_of_json", var_id.index()),
@@ -374,16 +312,10 @@ fn build_branch<'a>(
     format!("| {pat} -> {convert} Ok ({construct})")
 }
 
-fn build_function(ctx: &GenerateCtx, decl: &TypeDecl, branches: &str) -> String {
+fn build_function(_ctx: &GenerateCtx, decl: &TypeDecl, branches: &str) -> String {
     let ty_name = type_name_to_ocaml_ident(&decl.item_meta);
-    let contains_raw_span = *ctx.contains_raw_span.get(&decl.def_id).unwrap();
     let signature = if decl.generics.types.is_empty() {
-        let ctx = if contains_raw_span {
-            "(ctx : of_json_ctx) "
-        } else {
-            ""
-        };
-        format!("{ty_name}_of_json {ctx}(js : json) : ({ty_name}, string) result =")
+        format!("{ty_name}_of_json (ctx : of_json_ctx) (js : json) : ({ty_name}, string) result =")
     } else {
         let types = &decl.generics.types;
         let gen_vars_space = types
@@ -403,10 +335,8 @@ fn build_function(ctx: &GenerateCtx, decl: &TypeDecl, branches: &str) -> String 
             args.push(format!("arg{i}_of_json"));
             ty_args.push(format!("(json -> ('a{i}, string) result)"));
         }
-        if contains_raw_span {
-            args.push("ctx".to_string());
-            ty_args.push("of_json_ctx".to_string());
-        }
+        args.push("ctx".to_string());
+        ty_args.push("of_json_ctx".to_string());
         args.push("js".to_string());
         ty_args.push("json".to_string());
 
@@ -452,7 +382,7 @@ fn type_decl_to_json_deserializer(ctx: &GenerateCtx, decl: &TypeDecl) -> String 
                 .unwrap()
                 .0
                 .clone();
-            format!("| x -> {short_name}.id_of_json x")
+            format!("| x -> {short_name}.id_of_json ctx x")
         }
         TypeDeclKind::Struct(fields)
             if fields.len() == 1
@@ -1107,7 +1037,7 @@ fn generate_ml(
             indoc!(
                 r#"
                 | js ->
-                    let* list = list_of_json (option_of_json arg1_of_json) js in
+                    let* list = list_of_json (option_of_json arg1_of_json ctx) ctx js in
                     Ok (List.filter_map (fun x -> x) list)
                 "#
             ),
@@ -1118,10 +1048,10 @@ fn generate_ml(
             indoc!(
                 r#"
                 | `Assoc [ ("file_id", file_id); ("beg", beg_loc); ("end", end_loc) ] ->
-                    let* file_id = file_id_of_json file_id in
+                    let* file_id = file_id_of_json ctx file_id in
                     let file = FileId.Map.find file_id ctx in
-                    let* beg_loc = loc_of_json beg_loc in
-                    let* end_loc = loc_of_json end_loc in
+                    let* beg_loc = loc_of_json ctx beg_loc in
+                    let* end_loc = loc_of_json ctx end_loc in
                     Ok { file; beg_loc; end_loc }
                 "#,
             ),
@@ -1141,7 +1071,7 @@ fn generate_ml(
                         | _ -> Error "")
                     in
                     let* value = big_int_of_json bi in
-                    let* int_ty = integer_type_of_json (`String ty) in
+                    let* int_ty = integer_type_of_json ctx (`String ty) in
                     let sv = { value; int_ty } in
                     if not (check_scalar_value_in_range sv) then
                       raise (Failure ("Scalar value not in range: " ^ show_scalar_value sv));
@@ -1156,32 +1086,32 @@ fn generate_ml(
             indoc!(
                 r#"
                 | `Assoc [ ("Assign", `List [ place; rvalue ]) ] ->
-                    let* place = place_of_json place in
-                    let* rvalue = rvalue_of_json rvalue in
+                    let* place = place_of_json ctx place in
+                    let* rvalue = rvalue_of_json ctx rvalue in
                     Ok (Assign (place, rvalue))
                 | `Assoc [ ("FakeRead", place) ] ->
-                    let* place = place_of_json place in
+                    let* place = place_of_json ctx place in
                     Ok (FakeRead place)
                 | `Assoc [ ("SetDiscriminant", `List [ place; variant_id ]) ] ->
-                    let* place = place_of_json place in
-                    let* variant_id = VariantId.id_of_json variant_id in
+                    let* place = place_of_json ctx place in
+                    let* variant_id = VariantId.id_of_json ctx variant_id in
                     Ok (SetDiscriminant (place, variant_id))
                 | `Assoc [ ("Drop", place) ] ->
-                    let* place = place_of_json place in
+                    let* place = place_of_json ctx place in
                     Ok (Drop place)
                 | `Assoc [ ("Assert", assertion) ] ->
-                    let* assertion = assertion_of_json assertion in
+                    let* assertion = assertion_of_json ctx assertion in
                     Ok (Assert assertion)
                 | `Assoc [ ("Call", call) ] ->
-                    let* call = call_of_json call in
+                    let* call = call_of_json ctx call in
                     Ok (Call call)
                 | `Assoc [ ("Abort", _) ] -> Ok Panic
                 | `String "Return" -> Ok Return
                 | `Assoc [ ("Break", i) ] ->
-                    let* i = int_of_json i in
+                    let* i = int_of_json ctx i in
                     Ok (Break i)
                 | `Assoc [ ("Continue", i) ] ->
-                    let* i = int_of_json i in
+                    let* i = int_of_json ctx i in
                     Ok (Continue i)
                 | `String "Nop" -> Ok Nop
                 | `Assoc [ ("Switch", tgt) ] ->
@@ -1191,7 +1121,7 @@ fn generate_ml(
                     let* st = block_of_json ctx st in
                     Ok (Loop st)
                 | `Assoc [ ("Error", s) ] ->
-                    let* s = string_of_json s in
+                    let* s = string_of_json ctx s in
                     Ok (Error s)
                 "#
             ),
@@ -1204,7 +1134,7 @@ fn generate_ml(
                 | `Assoc [ ("span", span); ("statements", statements) ] -> begin
                     let* span = span_of_json ctx span in
                     let* statements =
-                      list_of_json (statement_of_json ctx) statements
+                      list_of_json (statement_of_json ctx) ctx statements
                     in
                     match List.rev statements with
                     | [] -> Ok { span; content = Nop; comments_before = [] }
