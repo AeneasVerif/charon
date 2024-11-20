@@ -1377,7 +1377,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         let fmt_ctx = self.into_fmt();
         trace!(
             "# Input variables types:\n{}",
-            iterator_to_string(&|x| fmt_ctx.format_object(x), inputs.iter())
+            pretty_display_list(|x| fmt_ctx.format_object(x), &inputs)
         );
         trace!(
             "# Output variable type:\n{}",

@@ -1,3 +1,5 @@
+use itertools::Itertools;
+
 pub static TAB_INCR: &str = "    ";
 
 /// Custom function to pretty-print elements from an iterator
@@ -9,50 +11,20 @@ pub static TAB_INCR: &str = "    ";
 ///   elem_n
 /// ]
 /// ```
-pub fn iterator_to_string<T>(
-    t_to_string: &dyn Fn(T) -> String,
-    it: impl Iterator<Item = T>,
+pub fn pretty_display_list<T>(
+    t_to_string: impl Fn(T) -> String,
+    it: impl IntoIterator<Item = T>,
 ) -> String {
-    let elems: Vec<String> = it.map(|x| format!("  {}", t_to_string(x))).collect();
-    if elems.is_empty() {
+    let mut elems = it
+        .into_iter()
+        .map(t_to_string)
+        .map(|x| format!("  {},\n", x))
+        .peekable();
+    if elems.peek().is_none() {
         "[]".to_owned()
     } else {
-        format!("[\n{}\n]", elems.join(",\n"))
+        format!("[\n{}]", elems.format(""))
     }
-}
-
-/// Custom function to pretty-print a vector.
-pub fn vec_to_string<T>(t_to_string: &dyn Fn(&T) -> String, v: &[T]) -> String {
-    iterator_to_string(t_to_string, v.iter())
-}
-
-/// Rk.: in practice, T should be a shared ref
-pub fn write_iterator<T: Copy>(
-    write_t: &dyn Fn(&mut std::fmt::Formatter<'_>, T) -> std::result::Result<(), std::fmt::Error>,
-    f: &mut std::fmt::Formatter<'_>,
-    it: impl Iterator<Item = T>,
-) -> std::result::Result<(), std::fmt::Error> {
-    let elems: Vec<T> = it.collect();
-    if elems.is_empty() {
-        write!(f, "[]")
-    } else {
-        writeln!(f, "[")?;
-        for i in 0..elems.len() {
-            write_t(f, elems[i])?;
-            if i + 1 < elems.len() {
-                writeln!(f, ",")?;
-            }
-        }
-        write!(f, "\n]")
-    }
-}
-
-pub fn write_vec<T>(
-    write_t: &dyn Fn(&mut std::fmt::Formatter<'_>, &T) -> std::result::Result<(), std::fmt::Error>,
-    f: &mut std::fmt::Formatter<'_>,
-    v: &[T],
-) -> std::result::Result<(), std::fmt::Error> {
-    write_iterator(write_t, f, v.iter())
 }
 
 pub mod type_map {
