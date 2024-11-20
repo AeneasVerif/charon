@@ -91,7 +91,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         src: &Option<DepSource>,
         def: &hax::FullDef,
     ) -> Result<ItemKind, Error> {
-        let assoc_item = match &def.kind {
+        let assoc = match &def.kind {
             hax::FullDefKind::AssocTy {
                 associated_item, ..
             }
@@ -100,60 +100,55 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
             }
             | hax::FullDefKind::AssocFn {
                 associated_item, ..
-            } => Some(associated_item),
-            _ => None,
+            } => associated_item,
+            _ => return Ok(ItemKind::Regular),
         };
-        Ok(match assoc_item {
-            None => ItemKind::Regular,
-            Some(assoc) => {
-                match &assoc.container {
-                    // E.g.:
-                    // ```
-                    // impl<T> List<T> {
-                    //   fn new() -> Self { ... } <- inherent method
-                    // }
-                    // ```
-                    hax::AssocItemContainer::InherentImplContainer { .. } => ItemKind::Regular,
-                    // E.g.:
-                    // ```
-                    // impl Foo for Bar {
-                    //   fn baz(...) { ... } // <- implementation of a trait method
-                    // }
-                    // ```
-                    hax::AssocItemContainer::TraitImplContainer {
-                        impl_id,
-                        implemented_trait,
-                        overrides_default,
-                        ..
-                    } => {
-                        let trait_id = self.register_trait_decl_id(src, implemented_trait);
-                        let impl_id = self.register_trait_impl_id(src, impl_id);
-                        ItemKind::TraitImpl {
-                            impl_id,
-                            trait_id,
-                            item_name: TraitItemName(assoc.name.clone()),
-                            reuses_default: !overrides_default,
-                        }
-                    }
-                    // This method is the *declaration* of a trait item
-                    // E.g.:
-                    // ```
-                    // trait Foo {
-                    //   fn baz(...); // <- declaration of a trait method
-                    // }
-                    // ```
-                    hax::AssocItemContainer::TraitContainer { trait_id } => {
-                        // The trait id should be Some(...): trait markers (that we may eliminate)
-                        // don't have associated items.
-                        let trait_id = self.register_trait_decl_id(src, trait_id);
-                        let item_name = TraitItemName(assoc.name.clone());
+        Ok(match &assoc.container {
+            // E.g.:
+            // ```
+            // impl<T> List<T> {
+            //   fn new() -> Self { ... } <- inherent method
+            // }
+            // ```
+            hax::AssocItemContainer::InherentImplContainer { .. } => ItemKind::Regular,
+            // E.g.:
+            // ```
+            // impl Foo for Bar {
+            //   fn baz(...) { ... } // <- implementation of a trait method
+            // }
+            // ```
+            hax::AssocItemContainer::TraitImplContainer {
+                impl_id,
+                implemented_trait,
+                overrides_default,
+                ..
+            } => {
+                let trait_id = self.register_trait_decl_id(src, implemented_trait);
+                let impl_id = self.register_trait_impl_id(src, impl_id);
+                ItemKind::TraitImpl {
+                    impl_id,
+                    trait_id,
+                    item_name: TraitItemName(assoc.name.clone()),
+                    reuses_default: !overrides_default,
+                }
+            }
+            // This method is the *declaration* of a trait item
+            // E.g.:
+            // ```
+            // trait Foo {
+            //   fn baz(...); // <- declaration of a trait method
+            // }
+            // ```
+            hax::AssocItemContainer::TraitContainer { trait_id } => {
+                // The trait id should be Some(...): trait markers (that we may eliminate)
+                // don't have associated items.
+                let trait_id = self.register_trait_decl_id(src, trait_id);
+                let item_name = TraitItemName(assoc.name.clone());
 
-                        ItemKind::TraitDecl {
-                            trait_id,
-                            item_name,
-                            has_default: assoc.has_value,
-                        }
-                    }
+                ItemKind::TraitDecl {
+                    trait_id,
+                    item_name,
+                    has_default: assoc.has_value,
                 }
             }
         })
