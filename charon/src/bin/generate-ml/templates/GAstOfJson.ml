@@ -74,7 +74,7 @@ and gfun_decl_of_json (bodies : 'body gexpr_body option list)
         let* signature = fun_sig_of_json ctx signature in
         let* kind = item_kind_of_json ctx kind in
         let* is_global_initializer =
-          option_of_json (global_decl_id_of_json ctx) ctx is_global_initializer
+          option_of_json global_decl_id_of_json ctx is_global_initializer
         in
         let* body = maybe_opaque_body_of_json bodies ctx body in
         Ok { def_id; item_meta; signature; kind; is_global_initializer; body }
@@ -92,7 +92,7 @@ and id_to_file_of_json (js : json) : (of_json_ctx, string) result =
   combine_error_msgs js __FUNCTION__
     ((* The map is stored as a list of pairs (key, value): we deserialize
       * this list then convert it to a map *)
-     let* files = list_of_json (option_of_json (file_of_json FileId.Map.empty) ()) () js in
+     let* files = list_of_json (option_of_json file_of_json) FileId.Map.empty js in
      let files_with_ids =
        List.filter_map
          (fun (i, file) ->
@@ -126,33 +126,26 @@ and gtranslated_crate_of_json
         let* name = string_of_json ctx name in
 
         let* declarations =
-          list_of_json (declaration_group_of_json ctx) ctx declarations
+          list_of_json declaration_group_of_json ctx declarations
         in
 
-        let* bodies =
-          list_of_json (option_of_json (body_of_json ctx) ctx) ctx bodies
-        in
+        let* bodies = list_of_json (option_of_json body_of_json) ctx bodies in
         let* types =
-          vector_of_json (type_id_of_json ctx) (type_decl_of_json ctx) ctx types
+          vector_of_json type_id_of_json type_decl_of_json ctx types
         in
         let* functions =
-          vector_of_json (fun_decl_id_of_json ctx)
-            (gfun_decl_of_json bodies ctx) ctx
+          vector_of_json fun_decl_id_of_json (gfun_decl_of_json bodies) ctx
             functions
         in
         let* globals =
-          vector_of_json (global_decl_id_of_json ctx)
-            (global_decl_of_json ctx) ctx
-            globals
+          vector_of_json global_decl_id_of_json global_decl_of_json ctx globals
         in
         let* trait_decls =
-          vector_of_json (trait_decl_id_of_json ctx)
-            (trait_decl_of_json ctx) ctx
+          vector_of_json trait_decl_id_of_json trait_decl_of_json ctx
             trait_decls
         in
         let* trait_impls =
-          vector_of_json (trait_impl_id_of_json ctx)
-            (trait_impl_of_json ctx) ctx
+          vector_of_json trait_impl_id_of_json trait_impl_of_json ctx
             trait_impls
         in
 

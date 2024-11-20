@@ -19,7 +19,7 @@ and block_id_of_json (ctx : of_json_ctx) (js : json) : (block_id, string) result
 and blocks_of_json (ctx : of_json_ctx) (js : json) : (blocks, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
-    | x -> vector_of_json (block_id_of_json ctx) (block_of_json ctx) ctx x
+    | x -> vector_of_json block_id_of_json block_of_json ctx x
     | _ -> Error "")
 
 and raw_statement_of_json (ctx : of_json_ctx) (js : json) :
@@ -76,7 +76,7 @@ and switch_of_json (ctx : of_json_ctx) (js : json) : (switch, string) result =
         let* x_0 = integer_type_of_json ctx x_0 in
         let* x_1 =
           list_of_json
-            (pair_of_json (scalar_value_of_json ctx) (block_id_of_json ctx) ctx)
+            (pair_of_json scalar_value_of_json block_id_of_json)
             ctx x_1
         in
         let* x_2 = block_id_of_json ctx x_2 in
@@ -115,7 +115,7 @@ and block_of_json (ctx : of_json_ctx) (js : json) : (block, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
     | `Assoc [ ("statements", statements); ("terminator", terminator) ] ->
-        let* statements = list_of_json (statement_of_json ctx) ctx statements in
+        let* statements = list_of_json statement_of_json ctx statements in
         let* terminator = terminator_of_json ctx terminator in
         Ok ({ statements; terminator } : block)
     | _ -> Error "")
@@ -125,7 +125,7 @@ let expr_body_of_json (ctx : of_json_ctx) (js : json) :
   combine_error_msgs js __FUNCTION__
     (match js with
     | `Assoc [ ("Unstructured", body) ] ->
-        let* body = gexpr_body_of_json (blocks_of_json ctx) ctx body in
+        let* body = gexpr_body_of_json blocks_of_json ctx body in
         Ok body
     | _ -> Error "")
 

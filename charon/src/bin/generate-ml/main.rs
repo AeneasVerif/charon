@@ -182,10 +182,10 @@ impl<'a> GenerateCtx<'a> {
 /// functions, e.g. `list_of_json bool_of_json`.
 fn type_to_ocaml_call(ctx: &GenerateCtx, ty: &Ty) -> String {
     match ty.kind() {
-        TyKind::Literal(LiteralTy::Bool) => "bool_of_json ctx".to_string(),
-        TyKind::Literal(LiteralTy::Char) => "char_of_json ctx".to_string(),
-        TyKind::Literal(LiteralTy::Integer(_)) => "int_of_json ctx".to_string(),
-        TyKind::Literal(LiteralTy::Float(_)) => "float_of_json ctx".to_string(),
+        TyKind::Literal(LiteralTy::Bool) => "bool_of_json".to_string(),
+        TyKind::Literal(LiteralTy::Char) => "char_of_json".to_string(),
+        TyKind::Literal(LiteralTy::Integer(_)) => "int_of_json".to_string(),
+        TyKind::Literal(LiteralTy::Float(_)) => "float_of_json".to_string(),
         TyKind::Adt(adt_kind, generics) => {
             let mut expr = Vec::new();
             for ty in &generics.types {
@@ -215,7 +215,6 @@ fn type_to_ocaml_call(ctx: &GenerateCtx, ty: &Ty) -> String {
                 }
                 _ => unimplemented!("{ty:?}"),
             }
-            expr.push("ctx".to_string());
             expr.into_iter().map(|f| format!("({f})")).join(" ")
         }
         TyKind::TypeVar(var_id) => format!("arg{}_of_json", var_id.index()),
@@ -297,7 +296,7 @@ fn convert_vars<'a>(ctx: &GenerateCtx, fields: impl IntoIterator<Item = &'a Fiel
             let name = make_ocaml_ident(f.name.as_deref().unwrap());
             let rename = make_ocaml_ident(f.renamed_name().unwrap());
             let convert = type_to_ocaml_call(ctx, &f.ty);
-            format!("let* {rename} = {convert} {name} in")
+            format!("let* {rename} = {convert} ctx {name} in")
         })
         .join("\n")
 }
@@ -333,7 +332,7 @@ fn build_function(_ctx: &GenerateCtx, decl: &TypeDecl, branches: &str) -> String
         let mut ty_args = Vec::new();
         for (i, _) in types.iter().enumerate() {
             args.push(format!("arg{i}_of_json"));
-            ty_args.push(format!("(json -> ('a{i}, string) result)"));
+            ty_args.push(format!("(of_json_ctx -> json -> ('a{i}, string) result)"));
         }
         args.push("ctx".to_string());
         ty_args.push("of_json_ctx".to_string());
@@ -397,11 +396,11 @@ fn type_decl_to_json_deserializer(ctx: &GenerateCtx, decl: &TypeDecl) -> String 
         {
             let ty = &fields[0].ty;
             let call = type_to_ocaml_call(ctx, ty);
-            format!("| x -> {call} x")
+            format!("| x -> {call} ctx x")
         }
         TypeDeclKind::Alias(ty) => {
             let call = type_to_ocaml_call(ctx, ty);
-            format!("| x -> {call} x")
+            format!("| x -> {call} ctx x")
         }
         TypeDeclKind::Struct(fields) if fields.iter().all(|f| f.name.is_none()) => {
             let mut fields = fields.clone();
@@ -1037,7 +1036,7 @@ fn generate_ml(
             indoc!(
                 r#"
                 | js ->
-                    let* list = list_of_json (option_of_json arg1_of_json ctx) ctx js in
+                    let* list = list_of_json (option_of_json arg1_of_json) ctx js in
                     Ok (List.filter_map (fun x -> x) list)
                 "#
             ),
@@ -1134,7 +1133,7 @@ fn generate_ml(
                 | `Assoc [ ("span", span); ("statements", statements) ] -> begin
                     let* span = span_of_json ctx span in
                     let* statements =
-                      list_of_json (statement_of_json ctx) ctx statements
+                      list_of_json statement_of_json ctx statements
                     in
                     match List.rev statements with
                     | [] -> Ok { span; content = Nop; comments_before = [] }

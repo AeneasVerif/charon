@@ -31,30 +31,30 @@ let char_of_json (ctx : 'ctx) (js : json) : (char, string) result =
       else Error ("char_of_json: stricly more than one character in: " ^ show js)
   | _ -> Error ("char_of_json: not a char: " ^ show js)
 
-let rec of_json_list (a_of_json : json -> ('a, string) result) (jsl : json list)
-    : ('a list, string) result =
+let rec of_json_list (a_of_json : 'ctx -> json -> ('a, string) result)
+    (ctx : 'ctx) (jsl : json list) : ('a list, string) result =
   match jsl with
   | [] -> Ok []
   | x :: jsl' ->
-      let* x = a_of_json x in
-      let* jsl' = of_json_list a_of_json jsl' in
+      let* x = a_of_json ctx x in
+      let* jsl' = of_json_list a_of_json ctx jsl' in
       Ok (x :: jsl')
 
-let pair_of_json (a_of_json : json -> ('a, string) result)
-    (b_of_json : json -> ('b, string) result) (ctx : 'ctx) (js : json) :
+let pair_of_json (a_of_json : 'ctx -> json -> ('a, string) result)
+    (b_of_json : 'ctx -> json -> ('b, string) result) (ctx : 'ctx) (js : json) :
     ('a * 'b, string) result =
   match js with
   | `List [ a; b ] ->
-      let* a = a_of_json a in
-      let* b = b_of_json b in
+      let* a = a_of_json ctx a in
+      let* b = b_of_json ctx b in
       Ok (a, b)
   | _ -> Error ("pair_of_json failed on: " ^ show js)
 
-let list_of_json (a_of_json : json -> ('a, string) result) (ctx : 'ctx)
+let list_of_json (a_of_json : 'ctx -> json -> ('a, string) result) (ctx : 'ctx)
     (js : json) : ('a list, string) result =
   combine_error_msgs js "list_of_json"
     (match js with
-    | `List jsl -> of_json_list a_of_json jsl
+    | `List jsl -> of_json_list a_of_json ctx jsl
     | _ -> Error ("not a list: " ^ show js))
 
 let string_of_json (ctx : 'ctx) (js : json) : (string, string) result =
@@ -62,30 +62,29 @@ let string_of_json (ctx : 'ctx) (js : json) : (string, string) result =
   | `String str -> Ok str
   | _ -> Error ("string_of_json: not a string: " ^ show js)
 
-let option_of_json (a_of_json : json -> ('a, string) result) (ctx : 'ctx)
-    (js : json) : ('a option, string) result =
+let option_of_json (a_of_json : 'ctx -> json -> ('a, string) result)
+    (ctx : 'ctx) (js : json) : ('a option, string) result =
   combine_error_msgs js "option_of_json"
     (match js with
     | `Null -> Ok None
     | _ ->
-        let* x = a_of_json js in
+        let* x = a_of_json ctx js in
         Ok (Some x))
 
-let box_of_json (a_of_json : json -> ('a, string) result) (ctx : 'ctx)
+let box_of_json (a_of_json : 'ctx -> json -> ('a, string) result) (ctx : 'ctx)
     (js : json) : ('a, string) result =
-  a_of_json js
+  a_of_json ctx js
 
 let string_option_of_json (ctx : 'ctx) (js : json) :
     (string option, string) result =
-  combine_error_msgs js "string_option_of_json"
-    (option_of_json (string_of_json ctx) ctx js)
+  option_of_json string_of_json ctx js
 
-let key_value_pair_of_json (a_of_json : json -> ('a, string) result)
-    (b_of_json : json -> ('b, string) result) (ctx : 'ctx) (js : json) :
+let key_value_pair_of_json (a_of_json : 'ctx -> json -> ('a, string) result)
+    (b_of_json : 'ctx -> json -> ('b, string) result) (ctx : 'ctx) (js : json) :
     ('a * 'b, string) result =
   match js with
   | `Assoc [ ("key", a); ("value", b) ] ->
-      let* a = a_of_json a in
-      let* b = b_of_json b in
+      let* a = a_of_json ctx a in
+      let* b = b_of_json ctx b in
       Ok (a, b)
   | _ -> Error ("key_value_pair_of_json failed on: " ^ show js)

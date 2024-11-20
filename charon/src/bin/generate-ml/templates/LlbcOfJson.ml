@@ -16,7 +16,7 @@ let expr_body_of_json (ctx : of_json_ctx) (js : json) :
     (match js with
     | `Assoc [ ("Structured", body) ] ->
         let* body =
-          gexpr_body_of_json (block_of_json ctx) ctx body
+          gexpr_body_of_json block_of_json ctx body
         in
         Ok body
     | _ -> Error "")

@@ -59,7 +59,7 @@ and place_kind_of_json (ctx : of_json_ctx) (js : json) :
         let* base = var_id_of_json ctx base in
         Ok (PlaceBase base)
     | `Assoc [ ("Projection", `List [ x_0; x_1 ]) ] ->
-        let* x_0 = box_of_json (place_of_json ctx) ctx x_0 in
+        let* x_0 = box_of_json place_of_json ctx x_0 in
         let* x_1 = projection_elem_of_json ctx x_1 in
         Ok (PlaceProjection (x_0, x_1))
     | _ -> Error "")
@@ -81,7 +81,7 @@ and field_proj_kind_of_json (ctx : of_json_ctx) (js : json) :
     (match js with
     | `Assoc [ ("Adt", `List [ x_0; x_1 ]) ] ->
         let* x_0 = type_decl_id_of_json ctx x_0 in
-        let* x_1 = option_of_json (variant_id_of_json ctx) ctx x_1 in
+        let* x_1 = option_of_json variant_id_of_json ctx x_1 in
         Ok (ProjAdt (x_0, x_1))
     | `Assoc [ ("Tuple", tuple) ] ->
         let* tuple = int_of_json ctx tuple in
@@ -116,9 +116,7 @@ and nullop_of_json (ctx : of_json_ctx) (js : json) : (nullop, string) result =
     | `String "AlignOf" -> Ok AlignOf
     | `Assoc [ ("OffsetOf", offset_of) ] ->
         let* offset_of =
-          list_of_json
-            (pair_of_json (int_of_json ctx) (field_id_of_json ctx) ctx)
-            ctx offset_of
+          list_of_json (pair_of_json int_of_json field_id_of_json) ctx offset_of
         in
         Ok (OffsetOf offset_of)
     | `String "UbChecks" -> Ok UbChecks
@@ -313,7 +311,7 @@ and rvalue_of_json (ctx : of_json_ctx) (js : json) : (rvalue, string) result =
         Ok (Discriminant (x_0, x_1))
     | `Assoc [ ("Aggregate", `List [ x_0; x_1 ]) ] ->
         let* x_0 = aggregate_kind_of_json ctx x_0 in
-        let* x_1 = list_of_json (operand_of_json ctx) ctx x_1 in
+        let* x_1 = list_of_json operand_of_json ctx x_1 in
         Ok (Aggregate (x_0, x_1))
     | `Assoc [ ("Global", global) ] ->
         let* global = global_decl_ref_of_json ctx global in
@@ -325,7 +323,7 @@ and rvalue_of_json (ctx : of_json_ctx) (js : json) : (rvalue, string) result =
     | `Assoc [ ("Len", `List [ x_0; x_1; x_2 ]) ] ->
         let* x_0 = place_of_json ctx x_0 in
         let* x_1 = ty_of_json ctx x_1 in
-        let* x_2 = option_of_json (const_generic_of_json ctx) ctx x_2 in
+        let* x_2 = option_of_json const_generic_of_json ctx x_2 in
         Ok (Len (x_0, x_1, x_2))
     | _ -> Error "")
 
@@ -335,8 +333,8 @@ and aggregate_kind_of_json (ctx : of_json_ctx) (js : json) :
     (match js with
     | `Assoc [ ("Adt", `List [ x_0; x_1; x_2; x_3 ]) ] ->
         let* x_0 = type_id_of_json ctx x_0 in
-        let* x_1 = option_of_json (variant_id_of_json ctx) ctx x_1 in
-        let* x_2 = option_of_json (field_id_of_json ctx) ctx x_2 in
+        let* x_1 = option_of_json variant_id_of_json ctx x_1 in
+        let* x_2 = option_of_json field_id_of_json ctx x_2 in
         let* x_3 = generic_args_of_json ctx x_3 in
         Ok (AggregatedAdt (x_0, x_1, x_2, x_3))
     | `Assoc [ ("Array", `List [ x_0; x_1 ]) ] ->
@@ -354,7 +352,7 @@ and var_of_json (ctx : of_json_ctx) (js : json) : (var, string) result =
     (match js with
     | `Assoc [ ("index", index); ("name", name); ("ty", ty) ] ->
         let* index = var_id_of_json ctx index in
-        let* name = option_of_json (string_of_json ctx) ctx name in
+        let* name = option_of_json string_of_json ctx name in
         let* var_ty = ty_of_json ctx ty in
         Ok ({ index; name; var_ty } : var)
     | _ -> Error "")
@@ -364,15 +362,13 @@ and locals_of_json (ctx : of_json_ctx) (js : json) : (locals, string) result =
     (match js with
     | `Assoc [ ("arg_count", arg_count); ("vars", vars) ] ->
         let* arg_count = int_of_json ctx arg_count in
-        let* vars =
-          vector_of_json (var_id_of_json ctx) (var_of_json ctx) ctx vars
-        in
+        let* vars = vector_of_json var_id_of_json var_of_json ctx vars in
         Ok ({ arg_count; vars } : locals)
     | _ -> Error "")
 
 and gexpr_body_of_json :
       'a0.
-      (json -> ('a0, string) result) ->
+      (of_json_ctx -> json -> ('a0, string) result) ->
       of_json_ctx ->
       json ->
       ('a0 gexpr_body, string) result =
@@ -384,7 +380,7 @@ and gexpr_body_of_json :
       ->
         let* span = span_of_json ctx span in
         let* locals = locals_of_json ctx locals in
-        let* body = arg0_of_json body in
+        let* body = arg0_of_json ctx body in
         Ok ({ span; locals; body } : _ gexpr_body)
     | _ -> Error "")
 
@@ -484,28 +480,23 @@ and trait_decl_of_json (ctx : of_json_ctx) (js : json) :
         let* item_meta = item_meta_of_json ctx item_meta in
         let* generics = generic_params_of_json ctx generics in
         let* parent_clauses =
-          vector_of_json
-            (trait_clause_id_of_json ctx)
-            (trait_clause_of_json ctx) ctx parent_clauses
+          vector_of_json trait_clause_id_of_json trait_clause_of_json ctx
+            parent_clauses
         in
         let* consts =
           list_of_json
-            (pair_of_json (trait_item_name_of_json ctx) (ty_of_json ctx) ctx)
+            (pair_of_json trait_item_name_of_json ty_of_json)
             ctx consts
         in
-        let* types = list_of_json (trait_item_name_of_json ctx) ctx types in
+        let* types = list_of_json trait_item_name_of_json ctx types in
         let* required_methods =
           list_of_json
-            (pair_of_json
-               (trait_item_name_of_json ctx)
-               (fun_decl_id_of_json ctx) ctx)
+            (pair_of_json trait_item_name_of_json fun_decl_id_of_json)
             ctx required_methods
         in
         let* provided_methods =
           list_of_json
-            (pair_of_json
-               (trait_item_name_of_json ctx)
-               (fun_decl_id_of_json ctx) ctx)
+            (pair_of_json trait_item_name_of_json fun_decl_id_of_json)
             ctx provided_methods
         in
         Ok
@@ -544,35 +535,27 @@ and trait_impl_of_json (ctx : of_json_ctx) (js : json) :
         let* impl_trait = trait_decl_ref_of_json ctx impl_trait in
         let* generics = generic_params_of_json ctx generics in
         let* parent_trait_refs =
-          vector_of_json
-            (trait_clause_id_of_json ctx)
-            (trait_ref_of_json ctx) ctx parent_trait_refs
+          vector_of_json trait_clause_id_of_json trait_ref_of_json ctx
+            parent_trait_refs
         in
         let* consts =
           list_of_json
-            (pair_of_json
-               (trait_item_name_of_json ctx)
-               (global_decl_ref_of_json ctx)
-               ctx)
+            (pair_of_json trait_item_name_of_json global_decl_ref_of_json)
             ctx consts
         in
         let* types =
           list_of_json
-            (pair_of_json (trait_item_name_of_json ctx) (ty_of_json ctx) ctx)
+            (pair_of_json trait_item_name_of_json ty_of_json)
             ctx types
         in
         let* required_methods =
           list_of_json
-            (pair_of_json
-               (trait_item_name_of_json ctx)
-               (fun_decl_id_of_json ctx) ctx)
+            (pair_of_json trait_item_name_of_json fun_decl_id_of_json)
             ctx required_methods
         in
         let* provided_methods =
           list_of_json
-            (pair_of_json
-               (trait_item_name_of_json ctx)
-               (fun_decl_id_of_json ctx) ctx)
+            (pair_of_json trait_item_name_of_json fun_decl_id_of_json)
             ctx provided_methods
         in
         Ok
@@ -607,7 +590,7 @@ and call_of_json (ctx : of_json_ctx) (js : json) : (call, string) result =
     (match js with
     | `Assoc [ ("func", func); ("args", args); ("dest", dest) ] ->
         let* func = fn_operand_of_json ctx func in
-        let* args = list_of_json (operand_of_json ctx) ctx args in
+        let* args = list_of_json operand_of_json ctx args in
         let* dest = place_of_json ctx dest in
         Ok ({ func; args; dest } : call)
     | _ -> Error "")
@@ -709,7 +692,7 @@ and span_of_json (ctx : of_json_ctx) (js : json) : (span, string) result =
     | `Assoc [ ("span", span); ("generated_from_span", generated_from_span) ] ->
         let* span = raw_span_of_json ctx span in
         let* generated_from_span =
-          option_of_json (raw_span_of_json ctx) ctx generated_from_span
+          option_of_json raw_span_of_json ctx generated_from_span
         in
         Ok ({ span; generated_from_span } : span)
     | _ -> Error "")
@@ -751,7 +734,7 @@ and raw_attribute_of_json (ctx : of_json_ctx) (js : json) :
     (match js with
     | `Assoc [ ("path", path); ("args", args) ] ->
         let* path = string_of_json ctx path in
-        let* args = option_of_json (string_of_json ctx) ctx args in
+        let* args = option_of_json string_of_json ctx args in
         Ok ({ path; args } : raw_attribute)
     | _ -> Error "")
 
@@ -766,9 +749,9 @@ and attr_info_of_json (ctx : of_json_ctx) (js : json) :
           ("rename", rename);
           ("public", public);
         ] ->
-        let* attributes = list_of_json (attribute_of_json ctx) ctx attributes in
-        let* inline = option_of_json (inline_attr_of_json ctx) ctx inline in
-        let* rename = option_of_json (string_of_json ctx) ctx rename in
+        let* attributes = list_of_json attribute_of_json ctx attributes in
+        let* inline = option_of_json inline_attr_of_json ctx inline in
+        let* rename = option_of_json string_of_json ctx rename in
         let* public = bool_of_json ctx public in
         Ok ({ attributes; inline; rename; public } : attr_info)
     | _ -> Error "")
@@ -788,9 +771,7 @@ and item_meta_of_json (ctx : of_json_ctx) (js : json) :
         ] ->
         let* name = name_of_json ctx name in
         let* span = span_of_json ctx span in
-        let* source_text =
-          option_of_json (string_of_json ctx) ctx source_text
-        in
+        let* source_text = option_of_json string_of_json ctx source_text in
         let* attr_info = attr_info_of_json ctx attr_info in
         let* is_local = bool_of_json ctx is_local in
         Ok ({ name; span; source_text; attr_info; is_local } : item_meta)
@@ -813,7 +794,7 @@ and file_of_json (ctx : of_json_ctx) (js : json) : (file, string) result =
     (match js with
     | `Assoc [ ("name", name); ("contents", contents) ] ->
         let* name = file_name_of_json ctx name in
-        let* contents = option_of_json (string_of_json ctx) ctx contents in
+        let* contents = option_of_json string_of_json ctx contents in
         Ok ({ name; contents } : file)
     | _ -> Error "")
 
@@ -851,9 +832,7 @@ and impl_elem_of_json (ctx : of_json_ctx) (js : json) :
 
 and name_of_json (ctx : of_json_ctx) (js : json) : (name, string) result =
   combine_error_msgs js __FUNCTION__
-    (match js with
-    | x -> list_of_json (path_elem_of_json ctx) ctx x
-    | _ -> Error "")
+    (match js with x -> list_of_json path_elem_of_json ctx x | _ -> Error "")
 
 and type_var_id_of_json (ctx : of_json_ctx) (js : json) :
     (type_var_id, string) result =
@@ -891,7 +870,7 @@ and region_var_of_json (ctx : of_json_ctx) (js : json) :
     (match js with
     | `Assoc [ ("index", index); ("name", name) ] ->
         let* index = region_id_of_json ctx index in
-        let* name = option_of_json (string_of_json ctx) ctx name in
+        let* name = option_of_json string_of_json ctx name in
         Ok ({ index; name } : region_var)
     | _ -> Error "")
 
@@ -929,18 +908,18 @@ and trait_instance_id_of_json (ctx : of_json_ctx) (js : json) :
         let* clause = trait_clause_id_of_json ctx clause in
         Ok (Clause clause)
     | `Assoc [ ("ParentClause", `List [ x_0; x_1; x_2 ]) ] ->
-        let* x_0 = box_of_json (trait_instance_id_of_json ctx) ctx x_0 in
+        let* x_0 = box_of_json trait_instance_id_of_json ctx x_0 in
         let* x_1 = trait_decl_id_of_json ctx x_1 in
         let* x_2 = trait_clause_id_of_json ctx x_2 in
         Ok (ParentClause (x_0, x_1, x_2))
     | `String "SelfId" -> Ok Self
     | `Assoc [ ("BuiltinOrAuto", builtin_or_auto) ] ->
         let* builtin_or_auto =
-          region_binder_of_json (trait_decl_ref_of_json ctx) ctx builtin_or_auto
+          region_binder_of_json trait_decl_ref_of_json ctx builtin_or_auto
         in
         Ok (BuiltinOrAuto builtin_or_auto)
     | `Assoc [ ("Dyn", dyn) ] ->
-        let* dyn = region_binder_of_json (trait_decl_ref_of_json ctx) ctx dyn in
+        let* dyn = region_binder_of_json trait_decl_ref_of_json ctx dyn in
         Ok (Dyn dyn)
     | `Assoc [ ("Unknown", unknown) ] ->
         let* unknown = string_of_json ctx unknown in
@@ -954,7 +933,7 @@ and trait_ref_of_json (ctx : of_json_ctx) (js : json) :
     | `Assoc [ ("kind", kind); ("trait_decl_ref", trait_decl_ref) ] ->
         let* trait_id = trait_instance_id_of_json ctx kind in
         let* trait_decl_ref =
-          region_binder_of_json (trait_decl_ref_of_json ctx) ctx trait_decl_ref
+          region_binder_of_json trait_decl_ref_of_json ctx trait_decl_ref
         in
         Ok ({ trait_id; trait_decl_ref } : trait_ref)
     | _ -> Error "")
@@ -971,8 +950,8 @@ and trait_decl_ref_of_json (ctx : of_json_ctx) (js : json) :
 
 and outlives_pred_of_json :
       'a0 'a1.
-      (json -> ('a0, string) result) ->
-      (json -> ('a1, string) result) ->
+      (of_json_ctx -> json -> ('a0, string) result) ->
+      (of_json_ctx -> json -> ('a1, string) result) ->
       of_json_ctx ->
       json ->
       (('a0, 'a1) outlives_pred, string) result =
@@ -980,8 +959,8 @@ and outlives_pred_of_json :
   combine_error_msgs js __FUNCTION__
     (match js with
     | `List [ x_0; x_1 ] ->
-        let* x_0 = arg0_of_json x_0 in
-        let* x_1 = arg1_of_json x_1 in
+        let* x_0 = arg0_of_json ctx x_0 in
+        let* x_1 = arg1_of_json ctx x_1 in
         Ok (x_0, x_1)
     | _ -> Error "")
 
@@ -1009,29 +988,23 @@ and generic_args_of_json (ctx : of_json_ctx) (js : json) :
           ("trait_refs", trait_refs);
         ] ->
         let* regions =
-          vector_of_json (region_id_of_json ctx) (region_of_json ctx) ctx
-            regions
+          vector_of_json region_id_of_json region_of_json ctx regions
         in
-        let* types =
-          vector_of_json (type_var_id_of_json ctx) (ty_of_json ctx) ctx types
-        in
+        let* types = vector_of_json type_var_id_of_json ty_of_json ctx types in
         let* const_generics =
-          vector_of_json
-            (const_generic_var_id_of_json ctx)
-            (const_generic_of_json ctx)
-            ctx const_generics
+          vector_of_json const_generic_var_id_of_json const_generic_of_json ctx
+            const_generics
         in
         let* trait_refs =
-          vector_of_json
-            (trait_clause_id_of_json ctx)
-            (trait_ref_of_json ctx) ctx trait_refs
+          vector_of_json trait_clause_id_of_json trait_ref_of_json ctx
+            trait_refs
         in
         Ok ({ regions; types; const_generics; trait_refs } : generic_args)
     | _ -> Error "")
 
 and region_binder_of_json :
       'a0.
-      (json -> ('a0, string) result) ->
+      (of_json_ctx -> json -> ('a0, string) result) ->
       of_json_ctx ->
       json ->
       ('a0 region_binder, string) result =
@@ -1040,10 +1013,9 @@ and region_binder_of_json :
     (match js with
     | `Assoc [ ("regions", regions); ("skip_binder", skip_binder) ] ->
         let* binder_regions =
-          vector_of_json (region_id_of_json ctx) (region_var_of_json ctx) ctx
-            regions
+          vector_of_json region_id_of_json region_var_of_json ctx regions
         in
-        let* binder_value = arg0_of_json skip_binder in
+        let* binder_value = arg0_of_json ctx skip_binder in
         Ok ({ binder_regions; binder_value } : _ region_binder)
     | _ -> Error "")
 
@@ -1062,42 +1034,34 @@ and generic_params_of_json (ctx : of_json_ctx) (js : json) :
           ("trait_type_constraints", trait_type_constraints);
         ] ->
         let* regions =
-          vector_of_json (region_id_of_json ctx) (region_var_of_json ctx) ctx
-            regions
+          vector_of_json region_id_of_json region_var_of_json ctx regions
         in
         let* types =
-          vector_of_json (type_var_id_of_json ctx) (type_var_of_json ctx) ctx
-            types
+          vector_of_json type_var_id_of_json type_var_of_json ctx types
         in
         let* const_generics =
-          vector_of_json
-            (const_generic_var_id_of_json ctx)
-            (const_generic_var_of_json ctx)
+          vector_of_json const_generic_var_id_of_json const_generic_var_of_json
             ctx const_generics
         in
         let* trait_clauses =
-          vector_of_json
-            (trait_clause_id_of_json ctx)
-            (trait_clause_of_json ctx) ctx trait_clauses
+          vector_of_json trait_clause_id_of_json trait_clause_of_json ctx
+            trait_clauses
         in
         let* regions_outlive =
           list_of_json
             (region_binder_of_json
-               (outlives_pred_of_json (region_of_json ctx) (region_of_json ctx)
-                  ctx)
-               ctx)
+               (outlives_pred_of_json region_of_json region_of_json))
             ctx regions_outlive
         in
         let* types_outlive =
           list_of_json
             (region_binder_of_json
-               (outlives_pred_of_json (ty_of_json ctx) (region_of_json ctx) ctx)
-               ctx)
+               (outlives_pred_of_json ty_of_json region_of_json))
             ctx types_outlive
         in
         let* trait_type_constraints =
           list_of_json
-            (region_binder_of_json (trait_type_constraint_of_json ctx) ctx)
+            (region_binder_of_json trait_type_constraint_of_json)
             ctx trait_type_constraints
         in
         Ok
@@ -1135,10 +1099,8 @@ and trait_clause_of_json (ctx : of_json_ctx) (js : json) :
           ("trait_", trait);
         ] ->
         let* clause_id = trait_clause_id_of_json ctx clause_id in
-        let* span = option_of_json (span_of_json ctx) ctx span in
-        let* trait =
-          region_binder_of_json (trait_decl_ref_of_json ctx) ctx trait
-        in
+        let* span = option_of_json span_of_json ctx span in
+        let* trait = region_binder_of_json trait_decl_ref_of_json ctx trait in
         Ok ({ clause_id; span; trait } : trait_clause)
     | _ -> Error "")
 
@@ -1166,18 +1128,16 @@ and type_decl_kind_of_json (ctx : of_json_ctx) (js : json) :
     (match js with
     | `Assoc [ ("Struct", struct_) ] ->
         let* struct_ =
-          vector_of_json (field_id_of_json ctx) (field_of_json ctx) ctx struct_
+          vector_of_json field_id_of_json field_of_json ctx struct_
         in
         Ok (Struct struct_)
     | `Assoc [ ("Enum", enum) ] ->
         let* enum =
-          vector_of_json (variant_id_of_json ctx) (variant_of_json ctx) ctx enum
+          vector_of_json variant_id_of_json variant_of_json ctx enum
         in
         Ok (Enum enum)
     | `Assoc [ ("Union", union) ] ->
-        let* union =
-          vector_of_json (field_id_of_json ctx) (field_of_json ctx) ctx union
-        in
+        let* union = vector_of_json field_id_of_json field_of_json ctx union in
         Ok (Union union)
     | `String "Opaque" -> Ok Opaque
     | `Assoc [ ("Alias", alias) ] ->
@@ -1203,7 +1163,7 @@ and variant_of_json (ctx : of_json_ctx) (js : json) : (variant, string) result =
         let* attr_info = attr_info_of_json ctx attr_info in
         let* variant_name = string_of_json ctx name in
         let* fields =
-          vector_of_json (field_id_of_json ctx) (field_of_json ctx) ctx fields
+          vector_of_json field_id_of_json field_of_json ctx fields
         in
         let* discriminant = scalar_value_of_json ctx discriminant in
         Ok ({ span; attr_info; variant_name; fields; discriminant } : variant)
@@ -1217,7 +1177,7 @@ and field_of_json (ctx : of_json_ctx) (js : json) : (field, string) result =
       ->
         let* span = span_of_json ctx span in
         let* attr_info = attr_info_of_json ctx attr_info in
-        let* field_name = option_of_json (string_of_json ctx) ctx name in
+        let* field_name = option_of_json string_of_json ctx name in
         let* field_ty = ty_of_json ctx ty in
         Ok ({ span; attr_info; field_name; field_ty } : field)
     | _ -> Error "")
@@ -1331,10 +1291,9 @@ and ty_of_json (ctx : of_json_ctx) (js : json) : (ty, string) result =
         Ok (TDynTrait dyn_trait)
     | `Assoc [ ("Arrow", `List [ x_0; x_1; x_2 ]) ] ->
         let* x_0 =
-          vector_of_json (region_id_of_json ctx) (region_var_of_json ctx) ctx
-            x_0
+          vector_of_json region_id_of_json region_var_of_json ctx x_0
         in
-        let* x_1 = list_of_json (ty_of_json ctx) ctx x_1 in
+        let* x_1 = list_of_json ty_of_json ctx x_1 in
         let* x_2 = ty_of_json ctx x_2 in
         Ok (TArrow (x_0, x_1, x_2))
     | _ -> Error "")
@@ -1402,9 +1361,7 @@ and closure_info_of_json (ctx : of_json_ctx) (js : json) :
     (match js with
     | `Assoc [ ("kind", kind); ("state", state) ] ->
         let* kind = closure_kind_of_json ctx kind in
-        let* state =
-          vector_of_json (type_var_id_of_json ctx) (ty_of_json ctx) ctx state
-        in
+        let* state = vector_of_json type_var_id_of_json ty_of_json ctx state in
         Ok ({ kind; state } : closure_info)
     | _ -> Error "")
 
@@ -1424,13 +1381,13 @@ and fun_sig_of_json (ctx : of_json_ctx) (js : json) : (fun_sig, string) result =
         let* is_unsafe = bool_of_json ctx is_unsafe in
         let* is_closure = bool_of_json ctx is_closure in
         let* closure_info =
-          option_of_json (closure_info_of_json ctx) ctx closure_info
+          option_of_json closure_info_of_json ctx closure_info
         in
         let* generics = generic_params_of_json ctx generics in
         let* parent_params_info =
-          option_of_json (params_info_of_json ctx) ctx parent_params_info
+          option_of_json params_info_of_json ctx parent_params_info
         in
-        let* inputs = list_of_json (ty_of_json ctx) ctx inputs in
+        let* inputs = list_of_json ty_of_json ctx inputs in
         let* output = ty_of_json ctx output in
         Ok
           ({
@@ -1465,7 +1422,7 @@ and literal_of_json (ctx : of_json_ctx) (js : json) : (literal, string) result =
         let* char_ = char_of_json ctx char_ in
         Ok (VChar char_)
     | `Assoc [ ("ByteStr", byte_str) ] ->
-        let* byte_str = list_of_json (int_of_json ctx) ctx byte_str in
+        let* byte_str = list_of_json int_of_json ctx byte_str in
         Ok (VByteStr byte_str)
     | `Assoc [ ("Str", str) ] ->
         let* str = string_of_json ctx str in
@@ -1504,8 +1461,8 @@ and float_value_of_json (ctx : of_json_ctx) (js : json) :
 
 and vector_of_json :
       'a0 'a1.
-      (json -> ('a0, string) result) ->
-      (json -> ('a1, string) result) ->
+      (of_json_ctx -> json -> ('a0, string) result) ->
+      (of_json_ctx -> json -> ('a1, string) result) ->
       of_json_ctx ->
       json ->
       (('a0, 'a1) vector, string) result =
@@ -1513,7 +1470,7 @@ and vector_of_json :
   combine_error_msgs js __FUNCTION__
     (match js with
     | js ->
-        let* list = list_of_json (option_of_json arg1_of_json ctx) ctx js in
+        let* list = list_of_json (option_of_json arg1_of_json) ctx js in
         Ok (List.filter_map (fun x -> x) list)
     | _ -> Error "")
 
@@ -1523,39 +1480,37 @@ and declaration_group_of_json (ctx : of_json_ctx) (js : json) :
     (match js with
     | `Assoc [ ("Type", type_) ] ->
         let* type_ =
-          g_declaration_group_of_json (type_decl_id_of_json ctx) ctx type_
+          g_declaration_group_of_json type_decl_id_of_json ctx type_
         in
         Ok (TypeGroup type_)
     | `Assoc [ ("Fun", fun_) ] ->
-        let* fun_ =
-          g_declaration_group_of_json (fun_decl_id_of_json ctx) ctx fun_
-        in
+        let* fun_ = g_declaration_group_of_json fun_decl_id_of_json ctx fun_ in
         Ok (FunGroup fun_)
     | `Assoc [ ("Global", global) ] ->
         let* global =
-          g_declaration_group_of_json (global_decl_id_of_json ctx) ctx global
+          g_declaration_group_of_json global_decl_id_of_json ctx global
         in
         Ok (GlobalGroup global)
     | `Assoc [ ("TraitDecl", trait_decl) ] ->
         let* trait_decl =
-          g_declaration_group_of_json (trait_decl_id_of_json ctx) ctx trait_decl
+          g_declaration_group_of_json trait_decl_id_of_json ctx trait_decl
         in
         Ok (TraitDeclGroup trait_decl)
     | `Assoc [ ("TraitImpl", trait_impl) ] ->
         let* trait_impl =
-          g_declaration_group_of_json (trait_impl_id_of_json ctx) ctx trait_impl
+          g_declaration_group_of_json trait_impl_id_of_json ctx trait_impl
         in
         Ok (TraitImplGroup trait_impl)
     | `Assoc [ ("Mixed", mixed) ] ->
         let* mixed =
-          g_declaration_group_of_json (any_decl_id_of_json ctx) ctx mixed
+          g_declaration_group_of_json any_decl_id_of_json ctx mixed
         in
         Ok (MixedGroup mixed)
     | _ -> Error "")
 
 and g_declaration_group_of_json :
       'a0.
-      (json -> ('a0, string) result) ->
+      (of_json_ctx -> json -> ('a0, string) result) ->
       of_json_ctx ->
       json ->
       ('a0 g_declaration_group, string) result =
@@ -1563,7 +1518,7 @@ and g_declaration_group_of_json :
   combine_error_msgs js __FUNCTION__
     (match js with
     | `Assoc [ ("NonRec", non_rec) ] ->
-        let* non_rec = arg0_of_json non_rec in
+        let* non_rec = arg0_of_json ctx non_rec in
         Ok (NonRecGroup non_rec)
     | `Assoc [ ("Rec", rec_) ] ->
         let* rec_ = list_of_json arg0_of_json ctx rec_ in
@@ -1600,7 +1555,7 @@ and gfun_decl_of_json (bodies : 'body gexpr_body option list)
         let* signature = fun_sig_of_json ctx signature in
         let* kind = item_kind_of_json ctx kind in
         let* is_global_initializer =
-          option_of_json (global_decl_id_of_json ctx) ctx is_global_initializer
+          option_of_json global_decl_id_of_json ctx is_global_initializer
         in
         let* body = maybe_opaque_body_of_json bodies ctx body in
         Ok { def_id; item_meta; signature; kind; is_global_initializer; body }
@@ -1619,7 +1574,7 @@ and id_to_file_of_json (js : json) : (of_json_ctx, string) result =
     ((* The map is stored as a list of pairs (key, value): we deserialize
       * this list then convert it to a map *)
      let* files =
-       list_of_json (option_of_json (file_of_json FileId.Map.empty) ()) () js
+       list_of_json (option_of_json file_of_json) FileId.Map.empty js
      in
      let files_with_ids =
        List.filter_map
@@ -1654,34 +1609,27 @@ and gtranslated_crate_of_json
         let* name = string_of_json ctx name in
 
         let* declarations =
-          list_of_json (declaration_group_of_json ctx) ctx declarations
+          list_of_json declaration_group_of_json ctx declarations
         in
 
-        let* bodies =
-          list_of_json (option_of_json (body_of_json ctx) ctx) ctx bodies
-        in
+        let* bodies = list_of_json (option_of_json body_of_json) ctx bodies in
         let* types =
-          vector_of_json (type_id_of_json ctx) (type_decl_of_json ctx) ctx types
+          vector_of_json type_id_of_json type_decl_of_json ctx types
         in
         let* functions =
-          vector_of_json (fun_decl_id_of_json ctx)
-            (gfun_decl_of_json bodies ctx)
-            ctx functions
+          vector_of_json fun_decl_id_of_json (gfun_decl_of_json bodies) ctx
+            functions
         in
         let* globals =
-          vector_of_json
-            (global_decl_id_of_json ctx)
-            (global_decl_of_json ctx) ctx globals
+          vector_of_json global_decl_id_of_json global_decl_of_json ctx globals
         in
         let* trait_decls =
-          vector_of_json
-            (trait_decl_id_of_json ctx)
-            (trait_decl_of_json ctx) ctx trait_decls
+          vector_of_json trait_decl_id_of_json trait_decl_of_json ctx
+            trait_decls
         in
         let* trait_impls =
-          vector_of_json
-            (trait_impl_id_of_json ctx)
-            (trait_impl_of_json ctx) ctx trait_impls
+          vector_of_json trait_impl_id_of_json trait_impl_of_json ctx
+            trait_impls
         in
 
         let type_decls =

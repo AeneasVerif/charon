@@ -17,7 +17,7 @@ let expr_body_of_json (ctx : of_json_ctx) (js : json) :
     (match js with
     | `Assoc [ ("Unstructured", body) ] ->
         let* body =
-          gexpr_body_of_json (blocks_of_json ctx) ctx body
+          gexpr_body_of_json blocks_of_json ctx body
         in
         Ok body
     | _ -> Error "")
