@@ -1,7 +1,6 @@
 use super::translate_ctx::*;
 use charon_lib::ast::*;
 use charon_lib::formatter::IntoFormatter;
-use charon_lib::ids::Vector;
 use charon_lib::meta::ItemMeta;
 use charon_lib::pretty::FmtWithCtx;
 use charon_lib::ullbc_ast as ast;
@@ -204,14 +203,8 @@ impl BodyTransCtx<'_, '_, '_> {
         let trait_id = self.register_trait_decl_id(span, implemented_trait_id);
         let implemented_trait = {
             let implemented_trait = &trait_pred.trait_ref;
-            let (regions, types, const_generics) =
-                self.translate_substs(span, None, &implemented_trait.generic_args)?;
-            let generics = GenericArgs {
-                regions,
-                types,
-                const_generics,
-                trait_refs: Vector::new(),
-            };
+            let generics =
+                self.translate_generic_args(span, None, &implemented_trait.generic_args, &[])?;
             TraitDeclRef { trait_id, generics }
         };
 

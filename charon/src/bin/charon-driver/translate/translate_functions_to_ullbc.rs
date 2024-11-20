@@ -664,7 +664,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
 
                         // Translate the substitution
                         let generics =
-                            self.translate_substs_and_trait_refs(span, None, substs, trait_refs)?;
+                            self.translate_generic_args(span, None, substs, trait_refs)?;
 
                         let type_id = self.translate_type_id(span, adt_id)?;
                         // Sanity check
@@ -688,7 +688,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
 
                         // Translate the substitution
                         let generics =
-                            self.translate_substs_and_trait_refs(span, None, substs, trait_refs)?;
+                            self.translate_generic_args(span, None, substs, trait_refs)?;
 
                         let def_id = self.register_fun_decl_id(span, def_id);
                         let akind = AggregateKind::Closure(def_id, generics);
@@ -761,7 +761,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         }
 
         // Translate the type parameters
-        let generics = self.translate_substs_and_trait_refs(span, None, substs, trait_refs)?;
+        let generics = self.translate_generic_args(span, None, substs, trait_refs)?;
 
         // Translate the arguments
         let args = args
