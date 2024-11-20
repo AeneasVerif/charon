@@ -394,31 +394,31 @@ and item_kind_of_json (ctx : of_json_ctx) (js : json) :
           ( "TraitDecl",
             `Assoc
               [
-                ("trait_id", trait_id);
+                ("trait_ref", trait_ref);
                 ("item_name", item_name);
                 ("has_default", has_default);
               ] );
         ] ->
-        let* trait_id = trait_decl_id_of_json ctx trait_id in
+        let* trait_ref = trait_decl_ref_of_json ctx trait_ref in
         let* item_name = trait_item_name_of_json ctx item_name in
         let* has_default = bool_of_json ctx has_default in
-        Ok (TraitDeclItem (trait_id, item_name, has_default))
+        Ok (TraitDeclItem (trait_ref, item_name, has_default))
     | `Assoc
         [
           ( "TraitImpl",
             `Assoc
               [
-                ("impl_id", impl_id);
-                ("trait_id", trait_id);
+                ("impl_ref", impl_ref);
+                ("trait_ref", trait_ref);
                 ("item_name", item_name);
                 ("reuses_default", reuses_default);
               ] );
         ] ->
-        let* impl_id = trait_impl_id_of_json ctx impl_id in
-        let* trait_id = trait_decl_id_of_json ctx trait_id in
+        let* impl_ref = trait_impl_ref_of_json ctx impl_ref in
+        let* trait_ref = trait_decl_ref_of_json ctx trait_ref in
         let* item_name = trait_item_name_of_json ctx item_name in
         let* reuses_default = bool_of_json ctx reuses_default in
-        Ok (TraitImplItem (impl_id, trait_id, item_name, reuses_default))
+        Ok (TraitImplItem (impl_ref, trait_ref, item_name, reuses_default))
     | _ -> Error "")
 
 and global_decl_of_json (ctx : of_json_ctx) (js : json) :
@@ -972,6 +972,16 @@ and trait_decl_ref_of_json (ctx : of_json_ctx) (js : json) :
         let* trait_decl_id = trait_decl_id_of_json ctx trait_id in
         let* decl_generics = generic_args_of_json ctx generics in
         Ok ({ trait_decl_id; decl_generics } : trait_decl_ref)
+    | _ -> Error "")
+
+and trait_impl_ref_of_json (ctx : of_json_ctx) (js : json) :
+    (trait_impl_ref, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with
+    | `Assoc [ ("impl_id", impl_id); ("generics", generics) ] ->
+        let* trait_impl_id = trait_impl_id_of_json ctx impl_id in
+        let* impl_generics = generic_args_of_json ctx generics in
+        Ok ({ trait_impl_id; impl_generics } : trait_impl_ref)
     | _ -> Error "")
 
 and outlives_pred_of_json :

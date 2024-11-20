@@ -121,15 +121,25 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
             // ```
             hax::AssocItemContainer::TraitImplContainer {
                 impl_id,
+                impl_generics,
+                impl_required_impl_exprs,
                 implemented_trait_ref,
                 overrides_default,
                 ..
             } => {
-                let trait_id = self.register_trait_decl_id(span, &implemented_trait_ref.def_id);
-                let impl_id = self.register_trait_impl_id(span, impl_id);
+                let impl_ref = TraitImplRef {
+                    impl_id: self.register_trait_impl_id(span, impl_id),
+                    generics: self.translate_generic_args(
+                        span,
+                        None,
+                        impl_generics,
+                        impl_required_impl_exprs,
+                    )?,
+                };
+                let trait_ref = self.translate_trait_ref(span, implemented_trait_ref)?;
                 ItemKind::TraitImpl {
-                    impl_id,
-                    trait_id,
+                    impl_ref,
+                    trait_ref,
                     item_name: TraitItemName(assoc.name.clone()),
                     reuses_default: !overrides_default,
                 }
@@ -144,11 +154,10 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
             hax::AssocItemContainer::TraitContainer { trait_ref, .. } => {
                 // The trait id should be Some(...): trait markers (that we may eliminate)
                 // don't have associated items.
-                let trait_id = self.register_trait_decl_id(span, &trait_ref.def_id);
+                let trait_ref = self.translate_trait_ref(span, trait_ref)?;
                 let item_name = TraitItemName(assoc.name.clone());
-
                 ItemKind::TraitDecl {
-                    trait_id,
+                    trait_ref,
                     item_name,
                     has_default: assoc.has_value,
                 }
