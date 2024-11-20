@@ -53,6 +53,22 @@ mod loopy {
     }
 }
 
+mod loopy_with_generics {
+    trait Bar<'a, T, U> {
+        type BarTy;
+    }
+    impl<'a, T> Bar<'a, u8, T> for () {
+        type BarTy = &'a T;
+    }
+
+    trait Foo<'b, T> {
+        type FooTy: Foo<'b, T> + Bar<'b, u8, Option<T>>;
+    }
+    impl Foo<'static, u16> for () {
+        type FooTy = ();
+    }
+}
+
 mod cow {
     enum Cow<'a, B>
     where

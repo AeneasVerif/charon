@@ -1622,6 +1622,18 @@ impl std::fmt::Display for IntegerTy {
     }
 }
 
+impl std::fmt::Display for GenericArgs {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::result::Result<(), std::fmt::Error> {
+        write!(f, "{}", self.fmt_with_ctx(&FmtCtx::new()))
+    }
+}
+
+impl std::fmt::Debug for GenericArgs {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::result::Result<(), std::fmt::Error> {
+        write!(f, "{}", self)
+    }
+}
+
 impl std::fmt::Display for Literal {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::result::Result<(), std::fmt::Error> {
         match self {

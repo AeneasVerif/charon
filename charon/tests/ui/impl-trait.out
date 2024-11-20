@@ -17,20 +17,34 @@ trait test_crate::Foo<Self>
     fn get_ty : test_crate::Foo::get_ty
 }
 
-fn test_crate::{impl test_crate::Foo for ()}::get_ty<'_0>(@1: &'_0 (())) -> &'_0 (())
-{
-    let @0: &'_ (()); // return
-    let self@1: &'_ (()); // arg #1
+fn core::clone::impls::{impl core::clone::Clone for u32}#8::clone<'_0>(@1: &'_0 (u32)) -> u32
 
-    @0 := copy (self@1)
+impl core::clone::impls::{impl core::clone::Clone for u32}#8 : core::clone::Clone<u32>
+{
+    parent_clause0 = core::marker::Sized<u32>
+    fn clone = core::clone::impls::{impl core::clone::Clone for u32}#8::clone
+}
+
+fn test_crate::{impl test_crate::Foo for ()}::get_ty<'_0>(@1: &'_0 (())) -> &'_0 (u32)
+{
+    let @0: &'_ (u32); // return
+    let self@1: &'_ (()); // arg #1
+    let @2: &'_ (u32); // anonymous local
+    let @3: u32; // anonymous local
+
+    @3 := const (42 : u32)
+    @2 := &@3
+    @0 := &*(@2)
+    drop @3
+    drop @2
     return
 }
 
 impl test_crate::{impl test_crate::Foo for ()} : test_crate::Foo<()>
 {
-    parent_clause0 = core::clone::Clone<()>
-    parent_clause1 = core::marker::Sized<()>
-    type Type = ()
+    parent_clause0 = core::clone::impls::{impl core::clone::Clone for u32}#8
+    parent_clause1 = core::marker::Sized<u32>
+    type Type = u32
     fn get_ty = test_crate::{impl test_crate::Foo for ()}::get_ty
 }
 
@@ -63,7 +77,75 @@ fn test_crate::use_foo()
     @4 := test_crate::{impl test_crate::Foo for ()}::get_ty(move (@5))
     @3 := &*(@4)
     drop @5
-    @2 := core::clone::Clone<test_crate::{impl test_crate::Foo for ()}::Type>::clone(move (@3))
+    @2 := core::clone::impls::{impl core::clone::Clone for u32}#8::clone(move (@3))
+    drop @3
+    @fake_read(@2)
+    drop @2
+    drop @4
+    drop @2
+    @6 := ()
+    @0 := move (@6)
+    drop foo@1
+    drop foo@1
+    @0 := ()
+    return
+}
+
+trait test_crate::RPITIT<Self>
+{
+    parent_clause0 : [@TraitClause0]: test_crate::Foo<Self::>
+    parent_clause1 : [@TraitClause1]: core::marker::Sized<Self::>
+    type 
+    fn make_foo : test_crate::RPITIT::make_foo
+}
+
+fn test_crate::{impl test_crate::RPITIT for ()}#1::make_foo()
+{
+    let @0: (); // return
+
+    @0 := ()
+    @0 := ()
+    return
+}
+
+impl test_crate::{impl test_crate::RPITIT for ()}#1 : test_crate::RPITIT<()>
+{
+    parent_clause0 = test_crate::{impl test_crate::Foo for ()}
+    parent_clause1 = core::marker::Sized<()>
+    type  = ()
+    fn make_foo = test_crate::{impl test_crate::RPITIT for ()}#1::make_foo
+}
+
+fn test_crate::RPITIT::make_foo<Self>() -> Self::
+{
+    let @0: (); // return
+    let @1: (); // anonymous local
+
+    @1 := ()
+    @0 := move (@1)
+    return
+}
+
+fn test_crate::use_tait<T>()
+where
+    [@TraitClause0]: core::marker::Sized<T>,
+    [@TraitClause1]: test_crate::RPITIT<T>,
+{
+    let @0: (); // return
+    let foo@1: @TraitClause1::; // local
+    let @2: @TraitClause1::parent_clause0::Type; // anonymous local
+    let @3: &'_ (@TraitClause1::parent_clause0::Type); // anonymous local
+    let @4: &'_ (@TraitClause1::parent_clause0::Type); // anonymous local
+    let @5: &'_ (@TraitClause1::); // anonymous local
+    let @6: (); // anonymous local
+
+    foo@1 := @TraitClause1::make_foo()
+    @fake_read(foo@1)
+    @5 := &foo@1
+    @4 := @TraitClause1::parent_clause0::get_ty(move (@5))
+    @3 := &*(@4)
+    drop @5
+    @2 := @TraitClause1::parent_clause0::parent_clause0::clone(move (@3))
     drop @3
     @fake_read(@2)
     drop @2
@@ -163,17 +245,6 @@ fn test_crate::use_wrap()
     @0 := move (@8)
     drop f@1
     drop f@1
-    @0 := ()
-    return
-}
-
-fn test_crate::main()
-{
-    let @0: (); // return
-    let @1: (); // anonymous local
-
-    @1 := ()
-    @0 := move (@1)
     @0 := ()
     return
 }
