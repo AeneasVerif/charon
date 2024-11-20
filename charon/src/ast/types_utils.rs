@@ -5,12 +5,22 @@ use derive_visitor::{Drive, DriveMut, Event, Visitor, VisitorMut};
 use std::{collections::HashMap, iter::Iterator};
 
 impl DeBruijnId {
+    pub fn zero() -> Self {
+        DeBruijnId { index: 0 }
+    }
+
     pub fn new(index: usize) -> Self {
         DeBruijnId { index }
     }
 
     pub fn is_zero(&self) -> bool {
         self.index == 0
+    }
+
+    pub fn incr(&self) -> Self {
+        DeBruijnId {
+            index: self.index + 1,
+        }
     }
 
     pub fn decr(&self) -> Self {
@@ -527,37 +537,43 @@ impl<V> std::ops::DerefMut for VisitInsideTy<V> {
 }
 
 /// Visitor for the [Ty::substitute] function.
-///
-/// Important: [PolyTraitDeclRef] is the only occurrence of a [RegionBinder]
-/// which can appear in a type for now. There may be more in the future, which
-/// means that this visitor has to be carefully updated.
 #[derive(VisitorMut)]
 #[visitor(
     PolyTraitDeclRef(enter, exit),
     Region(exit),
-    Ty(exit),
+    Ty(enter, exit),
     ConstGeneric(exit),
     TraitRef(exit)
 )]
-struct Subst<'a> {
-    // Tracks the current de Bruijn level
-    current_level: DeBruijnId,
+struct SubstVisitor<'a> {
     generics: &'a GenericArgs,
+    // Tracks the depth of binders we're inside of.
+    // Important: we must update it whenever we go inside a binder. Visitors are not generic so we
+    // must handle all the specific cases by hand. So far there's only `PolyTraitDeclRef` but there
+    // may be more in the future.
+    binder_depth: DeBruijnId,
 }
 
-impl<'a> Subst<'a> {
+impl<'a> SubstVisitor<'a> {
+    pub(crate) fn new(generics: &'a GenericArgs) -> VisitInsideTy<Self> {
+        Ty::visit_inside(Self {
+            generics,
+            binder_depth: DeBruijnId::zero(),
+        })
+    }
+
     fn enter_poly_trait_decl_ref(&mut self, _: &mut PolyTraitDeclRef) {
-        self.current_level.index += 1;
+        self.binder_depth = self.binder_depth.incr();
     }
 
     fn exit_poly_trait_decl_ref(&mut self, _: &mut PolyTraitDeclRef) {
-        self.current_level.index -= 1;
+        self.binder_depth = self.binder_depth.decr();
     }
 
     fn exit_region(&mut self, r: &mut Region) {
         match r {
             Region::BVar(db, id) => {
-                if *db == self.current_level {
+                if *db == self.binder_depth {
                     *r = self.generics.regions.get(*id).unwrap().clone()
                 }
             }
@@ -565,9 +581,16 @@ impl<'a> Subst<'a> {
         }
     }
 
+    fn enter_ty(&mut self, ty: &mut Ty) {
+        match ty.kind() {
+            TyKind::Arrow(_, _, _) => self.binder_depth = self.binder_depth.incr(),
+            _ => {}
+        }
+    }
     fn exit_ty(&mut self, ty: &mut Ty) {
         match ty.kind() {
             TyKind::TypeVar(id) => *ty = self.generics.types.get(*id).unwrap().clone(),
+            TyKind::Arrow(_, _, _) => self.binder_depth = self.binder_depth.decr(),
             _ => (),
         }
     }
@@ -589,10 +612,6 @@ impl<'a> Subst<'a> {
 
 impl Ty {
     pub fn substitute(&mut self, generics: &GenericArgs) {
-        let subst = Subst {
-            current_level: DeBruijnId { index: 0 },
-            generics,
-        };
-        self.drive_inner_mut(&mut Ty::visit_inside(subst));
+        self.drive_inner_mut(&mut SubstVisitor::new(generics));
     }
 }
