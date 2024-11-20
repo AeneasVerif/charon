@@ -48,10 +48,13 @@ jobs:
     needs: [nix]
     runs-on: [self-hosted, linux, nix]
     steps:
+      - uses: actions/checkout@v4
+        with:
+          repository: Inria-Prosecco/circus-green
       - run: |
-          nix flake check --refresh -L github:aeneasverif/eurydice \
-              --override-input charon github:aeneasverif/charon/${{ github.sha }} \
-              --override-input charon/rust-overlay github:oxalica/rust-overlay/master
+          nix flake lock --refresh --update-input eurydice
+          nix flake lock --override-input charon github:aeneasverif/charon/${{ github.sha }}
+          ./check.sh eurydice
 
   kyber:
     needs: [eurydice]
@@ -59,12 +62,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          repository: cryspen/libcrux
+          repository: Inria-Prosecco/circus-green
       - run: |
-          nix develop --command cargo generate-lockfile
-          nix build --refresh -L '.#ml-kem' \
-              --override-input charon github:aeneasverif/charon/${{ github.sha }} \
-              --update-input charon/rust-overlay \
-              --update-input eurydice \
-              --update-input hax \
-              --update-input crane
+          nix flake lock --refresh --update-input eurydice
+          nix flake lock --override-input charon github:aeneasverif/charon/${{ github.sha }}
+          ./check.sh ml-kem-small
