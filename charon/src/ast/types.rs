@@ -289,7 +289,7 @@ pub struct TraitTypeConstraint {
     pub ty: Ty,
 }
 
-#[derive(Debug, Default, Clone, Eq, PartialEq, Serialize, Deserialize, Hash, Drive, DriveMut)]
+#[derive(Default, Clone, Eq, PartialEq, Serialize, Deserialize, Hash, Drive, DriveMut)]
 pub struct GenericArgs {
     pub regions: Vector<RegionId, Region>,
     pub types: Vector<TypeVarId, Ty>,
