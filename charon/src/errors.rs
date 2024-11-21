@@ -1,5 +1,5 @@
 //! Utilities to generate error reports about the external dependencies.
-use crate::ast::{AnyTransId, Span};
+use crate::ast::{AnyTransId, Span, TranslatedCrate};
 use std::cmp::{Ord, PartialOrd};
 use std::collections::{HashMap, HashSet};
 
@@ -18,6 +18,12 @@ macro_rules! register_error_or_panic {
             panic!("{}", $msg);
         }
     }};
+    ($ctx:expr, $krate:expr, $span: expr, $msg: expr) => {{
+        $ctx.span_err($krate, $span, &$msg);
+        if !$ctx.continue_on_failure() {
+            panic!("{}", $msg);
+        }
+    }};
 }
 pub use register_error_or_panic;
 
@@ -26,6 +32,14 @@ pub use register_error_or_panic;
 macro_rules! error_or_panic {
     ($ctx:expr, $span:expr, $msg:expr) => {{
         $crate::errors::register_error_or_panic!($ctx, $span, $msg);
+        let e = $crate::errors::Error {
+            span: $span,
+            msg: $msg.to_string(),
+        };
+        return Err(e);
+    }};
+    ($ctx:expr, $krate:expr, $span:expr, $msg:expr) => {{
+        $crate::errors::register_error_or_panic!($ctx, $krate, $span, $msg);
         let e = $crate::errors::Error {
             span: $span,
             msg: $msg.to_string(),
@@ -102,6 +116,7 @@ impl ErrorCtx<'_> {
     #[cfg(feature = "rustc")]
     pub fn span_err_no_register(
         &self,
+        _krate: &TranslatedCrate,
         span: impl Into<rustc_error_messages::MultiSpan>,
         msg: &str,
     ) {
@@ -113,7 +128,7 @@ impl ErrorCtx<'_> {
         }
     }
     #[cfg(not(feature = "rustc"))]
-    pub(crate) fn span_err_no_register(&self, _span: Span, msg: &str) {
+    pub(crate) fn span_err_no_register(&self, _krate: &TranslatedCrate, _span: Span, msg: &str) {
         let msg = msg.to_string();
         if self.error_on_warnings {
             error!("{}", msg);
@@ -123,8 +138,8 @@ impl ErrorCtx<'_> {
     }
 
     /// Report and register an error.
-    pub fn span_err(&mut self, span: Span, msg: &str) {
-        self.span_err_no_register(span, msg);
+    pub fn span_err(&mut self, krate: &TranslatedCrate, span: Span, msg: &str) {
+        self.span_err_no_register(krate, span, msg);
         self.error_count += 1;
         if let Some(id) = self.def_id
             && !self.def_id_is_local
@@ -247,7 +262,11 @@ impl ErrorCtx<'_> {
                 It is (transitively) used at the following location(s):",
                 f.format_object(*id)
             );
-            self.span_err_no_register(span, &msg);
+            if self.error_on_warnings {
+                self.dcx.span_err(span, msg);
+            } else {
+                self.dcx.span_warn(span, msg);
+            }
         }
     }
 }

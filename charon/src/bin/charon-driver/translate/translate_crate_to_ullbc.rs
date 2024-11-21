@@ -98,7 +98,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
             | FullDefKind::TyParam { .. }
             | FullDefKind::Variant { .. } => {
                 let span = self.def_span(def_id);
-                self.errors.span_err(
+                self.span_err(
                     span,
                     &format!(
                         "Cannot register this item: `{def_id:?}` with kind `{:?}`",

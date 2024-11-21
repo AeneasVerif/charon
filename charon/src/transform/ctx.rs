@@ -164,7 +164,7 @@ impl<'ctx> TransformCtx<'ctx> {
 
     /// Span an error and register the error.
     pub(crate) fn span_err(&mut self, span: Span, msg: &str) {
-        self.errors.span_err(span, msg)
+        self.errors.span_err(&self.translated, span, msg)
     }
 
     pub(crate) fn with_def_id<F, T>(
