@@ -306,12 +306,13 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         match self.file_to_id.get(&filename) {
             Some(id) => *id,
             None => {
-                let id = self.translated.id_to_file.push(filename.clone());
-                self.file_to_id.insert(filename.clone(), id);
                 let source_file = self.tcx.sess.source_map().lookup_source_file(span.lo());
-                if let Some(src) = source_file.src.as_deref() {
-                    self.translated.file_id_to_content.insert(id, src.clone());
-                }
+                let file = File {
+                    name: filename.clone(),
+                    contents: source_file.src.as_deref().cloned(),
+                };
+                let id = self.translated.files.push(file);
+                self.file_to_id.insert(filename, id);
                 id
             }
         }
@@ -812,17 +813,21 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
     pub(crate) fn register_type_decl_id(
         &mut self,
         src: &Option<DepSource>,
-        id: DefId,
+        id: impl Into<DefId>,
     ) -> TypeDeclId {
         *self
-            .register_id(src, TransItemSource::Type(id))
+            .register_id(src, TransItemSource::Type(id.into()))
             .as_type()
             .unwrap()
     }
 
-    pub(crate) fn register_fun_decl_id(&mut self, src: &Option<DepSource>, id: DefId) -> FunDeclId {
+    pub(crate) fn register_fun_decl_id(
+        &mut self,
+        src: &Option<DepSource>,
+        id: impl Into<DefId>,
+    ) -> FunDeclId {
         *self
-            .register_id(src, TransItemSource::Fun(id))
+            .register_id(src, TransItemSource::Fun(id.into()))
             .as_fun()
             .unwrap()
     }
@@ -830,10 +835,10 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
     pub(crate) fn register_trait_decl_id(
         &mut self,
         src: &Option<DepSource>,
-        id: DefId,
+        id: impl Into<DefId>,
     ) -> TraitDeclId {
         *self
-            .register_id(src, TransItemSource::TraitDecl(id))
+            .register_id(src, TransItemSource::TraitDecl(id.into()))
             .as_trait_decl()
             .unwrap()
     }
@@ -841,15 +846,16 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
     pub(crate) fn register_trait_impl_id(
         &mut self,
         src: &Option<DepSource>,
-        id: DefId,
+        id: impl Into<DefId>,
     ) -> TraitImplId {
+        let id = id.into();
         // Register the corresponding trait early so we can filter on its name.
         {
             let def = self.hax_def(id).expect("hax failed when translating item");
             let hax::FullDefKind::TraitImpl { trait_pred, .. } = def.kind() else {
                 unreachable!()
             };
-            let trait_rust_id = (&trait_pred.trait_ref.def_id).into();
+            let trait_rust_id = &trait_pred.trait_ref.def_id;
             let _ = self.register_trait_decl_id(src, trait_rust_id);
         }
 
@@ -862,10 +868,10 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
     pub(crate) fn register_global_decl_id(
         &mut self,
         src: &Option<DepSource>,
-        id: DefId,
+        id: impl Into<DefId>,
     ) -> GlobalDeclId {
         *self
-            .register_id(src, TransItemSource::Global(id))
+            .register_id(src, TransItemSource::Global(id.into()))
             .as_global()
             .unwrap()
     }
@@ -944,12 +950,12 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
 
     pub(crate) fn register_type_decl_id(&mut self, span: Span, id: impl Into<DefId>) -> TypeDeclId {
         let src = self.make_dep_source(span);
-        self.t_ctx.register_type_decl_id(&src, id.into())
+        self.t_ctx.register_type_decl_id(&src, id)
     }
 
     pub(crate) fn register_fun_decl_id(&mut self, span: Span, id: impl Into<DefId>) -> FunDeclId {
         let src = self.make_dep_source(span);
-        self.t_ctx.register_fun_decl_id(&src, id.into())
+        self.t_ctx.register_fun_decl_id(&src, id)
     }
 
     pub(crate) fn register_global_decl_id(
@@ -958,7 +964,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         id: impl Into<DefId>,
     ) -> GlobalDeclId {
         let src = self.make_dep_source(span);
-        self.t_ctx.register_global_decl_id(&src, id.into())
+        self.t_ctx.register_global_decl_id(&src, id)
     }
 
     /// Returns an [Option] because we may ignore some builtin or auto traits
@@ -969,7 +975,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         id: impl Into<DefId>,
     ) -> TraitDeclId {
         let src = self.make_dep_source(span);
-        self.t_ctx.register_trait_decl_id(&src, id.into())
+        self.t_ctx.register_trait_decl_id(&src, id)
     }
 
     /// Returns an [Option] because we may ignore some builtin or auto traits
@@ -980,7 +986,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         id: impl Into<DefId>,
     ) -> TraitImplId {
         let src = self.make_dep_source(span);
-        self.t_ctx.register_trait_impl_id(&src, id.into())
+        self.t_ctx.register_trait_impl_id(&src, id)
     }
 
     /// Push a free region.

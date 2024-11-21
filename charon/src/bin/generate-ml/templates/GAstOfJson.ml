@@ -34,7 +34,8 @@ let log = Logging.llbc_of_json_logger
 type file_id = FileId.id
 [@@deriving show, ord]
 
-type id_to_file_map = file_name FileId.Map.t
+type id_to_file_map = file FileId.Map.t
+type of_json_ctx = id_to_file_map
 
 let de_bruijn_id_of_json = int_of_json
 let path_buf_of_json = string_of_json
@@ -43,11 +44,11 @@ let region_id_of_json = RegionVarId.id_of_json
 (* __REPLACE0__ *)
 
 and maybe_opaque_body_of_json (bodies : 'body gexpr_body option list)
-    (js : json) : ('body gexpr_body option, string) result =
+    (ctx : of_json_ctx) (js : json) : ('body gexpr_body option, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
     | `Assoc [ ("Ok", body) ] ->
-        let* body_id = BodyId.id_of_json body in
+        let* body_id = BodyId.id_of_json ctx body in
         let body = List.nth bodies (BodyId.to_int body_id) in
         Ok body
     | `Assoc [ ("Err", `Null) ] -> Ok None
@@ -55,7 +56,7 @@ and maybe_opaque_body_of_json (bodies : 'body gexpr_body option list)
 
 (* This is written by hand because the corresponding rust type is not type-generic. *)
 and gfun_decl_of_json (bodies : 'body gexpr_body option list)
-    (id_to_file : id_to_file_map) (js : json) : ('body gfun_decl, string) result
+    (ctx : of_json_ctx) (js : json) : ('body gfun_decl, string) result
     =
   combine_error_msgs js __FUNCTION__
     (match js with
@@ -68,14 +69,14 @@ and gfun_decl_of_json (bodies : 'body gexpr_body option list)
           ("is_global_initializer", is_global_initializer);
           ("body", body);
         ] ->
-        let* def_id = FunDeclId.id_of_json def_id in
-        let* item_meta = item_meta_of_json id_to_file item_meta in
-        let* signature = fun_sig_of_json id_to_file signature in
-        let* kind = item_kind_of_json kind in
+        let* def_id = FunDeclId.id_of_json ctx def_id in
+        let* item_meta = item_meta_of_json ctx item_meta in
+        let* signature = fun_sig_of_json ctx signature in
+        let* kind = item_kind_of_json ctx kind in
         let* is_global_initializer =
-          option_of_json global_decl_id_of_json is_global_initializer
+          option_of_json global_decl_id_of_json ctx is_global_initializer
         in
-        let* body = maybe_opaque_body_of_json bodies body in
+        let* body = maybe_opaque_body_of_json bodies ctx body in
         Ok { def_id; item_meta; signature; kind; is_global_initializer; body }
     | _ -> Error "")
 
@@ -87,22 +88,22 @@ and gfun_decl_of_json (bodies : 'body gexpr_body option list)
     the AST.
     The "id to file" map is thus only used in the deserialization process.
   *)
-and id_to_file_of_json (js : json) : (id_to_file_map, string) result =
+and id_to_file_of_json (js : json) : (of_json_ctx, string) result =
   combine_error_msgs js __FUNCTION__
     ((* The map is stored as a list of pairs (key, value): we deserialize
       * this list then convert it to a map *)
-     let* file_names = list_of_json (option_of_json file_name_of_json) js in
-     let names_with_ids =
+     let* files = list_of_json (option_of_json file_of_json) FileId.Map.empty js in
+     let files_with_ids =
        List.filter_map
-         (fun (i, name) ->
-           match name with None -> None | Some name -> Some (i, name))
-         (List.mapi (fun i name -> (FileId.of_int i, name)) file_names)
+         (fun (i, file) ->
+           match file with None -> None | Some file -> Some (i, file))
+         (List.mapi (fun i file -> (FileId.of_int i, file)) files)
      in
-     Ok (FileId.Map.of_list names_with_ids))
+     Ok (FileId.Map.of_list files_with_ids))
 
 (* This is written by hand because the corresponding rust type is not type-generic. *)
 and gtranslated_crate_of_json
-    (body_of_json : id_to_file_map -> json -> ('body gexpr_body, string) result)
+    (body_of_json : of_json_ctx -> json -> ('body gexpr_body, string) result)
     (js : json) : ('body gcrate, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
@@ -110,10 +111,9 @@ and gtranslated_crate_of_json
         [
           ("crate_name", name);
           ("real_crate_name", _);
-          ("file_id_to_content", file_id_to_content);
           ("all_ids", _);
           ("item_names", _);
-          ("id_to_file", id_to_file);
+          ("files", files);
           ("type_decls", types);
           ("fun_decls", functions);
           ("global_decls", globals);
@@ -122,43 +122,31 @@ and gtranslated_crate_of_json
           ("trait_impls", trait_impls);
           ("ordered_decls", declarations);
         ] ->
-        let* name = string_of_json name in
-        let* id_to_file = id_to_file_of_json id_to_file in
+        let* ctx = id_to_file_of_json files in
+        let* name = string_of_json ctx name in
 
         let* declarations =
-          list_of_json declaration_group_of_json declarations
+          list_of_json declaration_group_of_json ctx declarations
         in
 
-        let* bodies =
-          list_of_json (option_of_json (body_of_json id_to_file)) bodies
-        in
+        let* bodies = list_of_json (option_of_json body_of_json) ctx bodies in
         let* types =
-          vector_of_json type_id_of_json (type_decl_of_json id_to_file) types
+          vector_of_json type_id_of_json type_decl_of_json ctx types
         in
         let* functions =
-          vector_of_json fun_decl_id_of_json
-            (gfun_decl_of_json bodies id_to_file)
+          vector_of_json fun_decl_id_of_json (gfun_decl_of_json bodies) ctx
             functions
         in
         let* globals =
-          vector_of_json global_decl_id_of_json
-            (global_decl_of_json id_to_file)
-            globals
+          vector_of_json global_decl_id_of_json global_decl_of_json ctx globals
         in
         let* trait_decls =
-          vector_of_json trait_decl_id_of_json
-            (trait_decl_of_json id_to_file)
+          vector_of_json trait_decl_id_of_json trait_decl_of_json ctx
             trait_decls
         in
         let* trait_impls =
-          vector_of_json trait_impl_id_of_json
-            (trait_impl_of_json id_to_file)
+          vector_of_json trait_impl_id_of_json trait_impl_of_json ctx
             trait_impls
-        in
-        let* source_files =
-          list_of_json
-            (key_value_pair_of_json file_id_of_json string_of_json)
-            file_id_to_content
         in
 
         let type_decls =
@@ -181,15 +169,6 @@ and gtranslated_crate_of_json
           TraitImplId.Map.of_list
             (List.map (fun (d : trait_impl) -> (d.def_id, d)) trait_impls)
         in
-        let source_files =
-          FileNameMap.of_list
-            (List.filter_map
-               (fun (file_id, content) ->
-                 Option.map
-                   (fun filename -> (filename, content))
-                   (FileId.Map.find_opt file_id id_to_file))
-               source_files)
-        in
 
         Ok
           {
@@ -200,17 +179,16 @@ and gtranslated_crate_of_json
             global_decls;
             trait_decls;
             trait_impls;
-            source_files;
           }
     | _ -> Error "")
 
 and gcrate_of_json
-    (body_of_json : id_to_file_map -> json -> ('body gexpr_body, string) result)
+    (body_of_json : of_json_ctx -> json -> ('body gexpr_body, string) result)
     (js : json) : ('body gcrate, string) result =
   match js with
   | `Assoc [ ("charon_version", charon_version); ("translated", translated) ] ->
       (* Ensure the version is the one we support. *)
-      let* charon_version = string_of_json charon_version in
+      let* charon_version = string_of_json () charon_version in
       if
         not (String.equal charon_version CharonVersion.supported_charon_version)
       then

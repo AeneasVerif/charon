@@ -176,6 +176,42 @@ impl test_crate::loopy::{impl test_crate::loopy::Baz<()> for ()}#2 : test_crate:
     type BazTy = usize
 }
 
+trait test_crate::loopy_with_generics::Bar<'a, Self, T, U>
+{
+    parent_clause0 : [@TraitClause0]: core::marker::Sized<T>
+    parent_clause1 : [@TraitClause1]: core::marker::Sized<U>
+    parent_clause2 : [@TraitClause2]: core::marker::Sized<Self::BarTy>
+    type BarTy
+}
+
+impl<'a, T> test_crate::loopy_with_generics::{impl test_crate::loopy_with_generics::Bar<'a, u8, T> for ()}<'a, T> : test_crate::loopy_with_generics::Bar<'a, (), u8, T>
+where
+    [@TraitClause0]: core::marker::Sized<T>,
+{
+    parent_clause0 = core::marker::Sized<u8>
+    parent_clause1 = @TraitClause0
+    parent_clause2 = core::marker::Sized<&'_ (T)>
+    type BarTy = &'a (T)
+}
+
+trait test_crate::loopy_with_generics::Foo<'b, Self, T>
+{
+    parent_clause0 : [@TraitClause0]: core::marker::Sized<T>
+    parent_clause1 : [@TraitClause1]: test_crate::loopy_with_generics::Bar<'_, Self::FooTy, u8, core::option::Option<T>[Self::parent_clause0]>
+    parent_clause2 : [@TraitClause2]: test_crate::loopy_with_generics::Foo<'_, Self::FooTy, T>
+    parent_clause3 : [@TraitClause3]: core::marker::Sized<Self::FooTy>
+    type FooTy
+}
+
+impl test_crate::loopy_with_generics::{impl test_crate::loopy_with_generics::Foo<'static, u16> for ()}#1 : test_crate::loopy_with_generics::Foo<'static, (), u16>
+{
+    parent_clause0 = core::marker::Sized<u16>
+    parent_clause1 = test_crate::loopy_with_generics::{impl test_crate::loopy_with_generics::Bar<'a, u8, T> for ()}<'_, core::option::Option<u16>[core::marker::Sized<u16>]>[core::marker::Sized<core::option::Option<u16>[core::marker::Sized<u16>]>]
+    parent_clause2 = test_crate::loopy_with_generics::{impl test_crate::loopy_with_generics::Foo<'static, u16> for ()}#1
+    parent_clause3 = core::marker::Sized<()>
+    type FooTy = ()
+}
+
 trait core::borrow::Borrow<Self, Borrowed>
 {
     fn borrow : core::borrow::Borrow::borrow

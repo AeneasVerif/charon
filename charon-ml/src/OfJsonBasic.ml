@@ -14,73 +14,77 @@ let combine_error_msgs (js : json) (msg : string) (res : ('a, string) result) :
   | Ok x -> Ok x
   | Error e -> Error ("[" ^ msg ^ "]" ^ " failed on: " ^ show js ^ "\n\n" ^ e)
 
-let bool_of_json (js : json) : (bool, string) result =
+let bool_of_json (ctx : 'ctx) (js : json) : (bool, string) result =
   match js with
   | `Bool b -> Ok b
   | _ -> Error ("bool_of_json: not a bool: " ^ show js)
 
-let int_of_json (js : json) : (int, string) result =
+let int_of_json (ctx : 'ctx) (js : json) : (int, string) result =
   match js with
   | `Int i -> Ok i
   | _ -> Error ("int_of_json: not an int: " ^ show js)
 
-let char_of_json (js : json) : (char, string) result =
+let char_of_json (ctx : 'ctx) (js : json) : (char, string) result =
   match js with
   | `String c ->
       if String.length c = 1 then Ok c.[0]
       else Error ("char_of_json: stricly more than one character in: " ^ show js)
   | _ -> Error ("char_of_json: not a char: " ^ show js)
 
-let rec of_json_list (a_of_json : json -> ('a, string) result) (jsl : json list)
-    : ('a list, string) result =
+let rec of_json_list (a_of_json : 'ctx -> json -> ('a, string) result)
+    (ctx : 'ctx) (jsl : json list) : ('a list, string) result =
   match jsl with
   | [] -> Ok []
   | x :: jsl' ->
-      let* x = a_of_json x in
-      let* jsl' = of_json_list a_of_json jsl' in
+      let* x = a_of_json ctx x in
+      let* jsl' = of_json_list a_of_json ctx jsl' in
       Ok (x :: jsl')
 
-let pair_of_json (a_of_json : json -> ('a, string) result)
-    (b_of_json : json -> ('b, string) result) (js : json) :
+let pair_of_json (a_of_json : 'ctx -> json -> ('a, string) result)
+    (b_of_json : 'ctx -> json -> ('b, string) result) (ctx : 'ctx) (js : json) :
     ('a * 'b, string) result =
   match js with
   | `List [ a; b ] ->
-      let* a = a_of_json a in
-      let* b = b_of_json b in
+      let* a = a_of_json ctx a in
+      let* b = b_of_json ctx b in
       Ok (a, b)
   | _ -> Error ("pair_of_json failed on: " ^ show js)
 
-let list_of_json (a_of_json : json -> ('a, string) result) (js : json) :
-    ('a list, string) result =
+let list_of_json (a_of_json : 'ctx -> json -> ('a, string) result) (ctx : 'ctx)
+    (js : json) : ('a list, string) result =
   combine_error_msgs js "list_of_json"
     (match js with
-    | `List jsl -> of_json_list a_of_json jsl
+    | `List jsl -> of_json_list a_of_json ctx jsl
     | _ -> Error ("not a list: " ^ show js))
 
-let string_of_json (js : json) : (string, string) result =
+let string_of_json (ctx : 'ctx) (js : json) : (string, string) result =
   match js with
   | `String str -> Ok str
   | _ -> Error ("string_of_json: not a string: " ^ show js)
 
-let option_of_json (a_of_json : json -> ('a, string) result) (js : json) :
-    ('a option, string) result =
+let option_of_json (a_of_json : 'ctx -> json -> ('a, string) result)
+    (ctx : 'ctx) (js : json) : ('a option, string) result =
   combine_error_msgs js "option_of_json"
     (match js with
     | `Null -> Ok None
     | _ ->
-        let* x = a_of_json js in
+        let* x = a_of_json ctx js in
         Ok (Some x))
 
-let string_option_of_json (js : json) : (string option, string) result =
-  combine_error_msgs js "string_option_of_json"
-    (option_of_json string_of_json js)
+let box_of_json (a_of_json : 'ctx -> json -> ('a, string) result) (ctx : 'ctx)
+    (js : json) : ('a, string) result =
+  a_of_json ctx js
 
-let key_value_pair_of_json (a_of_json : json -> ('a, string) result)
-    (b_of_json : json -> ('b, string) result) (js : json) :
+let string_option_of_json (ctx : 'ctx) (js : json) :
+    (string option, string) result =
+  option_of_json string_of_json ctx js
+
+let key_value_pair_of_json (a_of_json : 'ctx -> json -> ('a, string) result)
+    (b_of_json : 'ctx -> json -> ('b, string) result) (ctx : 'ctx) (js : json) :
     ('a * 'b, string) result =
   match js with
   | `Assoc [ ("key", a); ("value", b) ] ->
-      let* a = a_of_json a in
-      let* b = b_of_json b in
+      let* a = a_of_json ctx a in
+      let* b = b_of_json ctx b in
       Ok (a, b)
   | _ -> Error ("key_value_pair_of_json failed on: " ^ show js)

@@ -194,7 +194,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
 
                 // Translate the type parameters instantiation
                 let generics =
-                    self.translate_substs_and_trait_refs(span, used_params, substs, trait_refs)?;
+                    self.translate_generic_args(span, used_params, substs, trait_refs)?;
 
                 // Return the instantiated ADT
                 TyKind::Adt(type_id, generics)
@@ -340,21 +340,16 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         Ok(ty)
     }
 
-    #[allow(clippy::type_complexity)]
-    pub fn translate_substs(
+    pub fn translate_generic_args(
         &mut self,
         span: Span,
         used_params: Option<Vec<bool>>,
         substs: &[hax::GenericArg],
-    ) -> Result<
-        (
-            Vector<RegionId, Region>,
-            Vector<TypeVarId, Ty>,
-            Vector<ConstGenericVarId, ConstGeneric>,
-        ),
-        Error,
-    > {
+        trait_refs: &[hax::ImplExpr],
+    ) -> Result<GenericArgs, Error> {
+        use hax::GenericArg::*;
         trace!("{:?}", substs);
+
         // Filter the parameters
         let substs: Vec<&hax::GenericArg> = match used_params {
             None => substs.iter().collect(),
@@ -369,36 +364,23 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         };
 
         let mut regions = Vector::new();
-        let mut params = Vector::new();
-        let mut cgs = Vector::new();
-        use hax::GenericArg::*;
+        let mut types = Vector::new();
+        let mut const_generics = Vector::new();
         for param in substs.iter() {
             match param {
                 Type(param_ty) => {
-                    let param_ty = self.translate_ty(span, param_ty)?;
-                    params.push(param_ty);
+                    types.push(self.translate_ty(span, param_ty)?);
                 }
                 Lifetime(region) => {
                     regions.push(self.translate_region(span, region)?);
                 }
                 Const(c) => {
-                    cgs.push(self.translate_constant_expr_to_const_generic(span, c)?);
+                    const_generics.push(self.translate_constant_expr_to_const_generic(span, c)?);
                 }
             }
         }
-
-        Ok((regions, params, cgs))
-    }
-
-    pub fn translate_substs_and_trait_refs(
-        &mut self,
-        span: Span,
-        used_params: Option<Vec<bool>>,
-        substs: &[hax::GenericArg],
-        trait_refs: &[hax::ImplExpr],
-    ) -> Result<GenericArgs, Error> {
-        let (regions, types, const_generics) = self.translate_substs(span, used_params, substs)?;
         let trait_refs = self.translate_trait_impl_exprs(span, trait_refs)?;
+
         Ok(GenericArgs {
             regions,
             types,

@@ -91,7 +91,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
             let trait_ref = bound_trait_ref.hax_skip_binder_ref();
             let trait_id = ctx.register_trait_decl_id(span, &trait_ref.def_id);
             let parent_trait_refs = Vec::new();
-            let generics = ctx.translate_substs_and_trait_refs(
+            let generics = ctx.translate_generic_args(
                 span,
                 None,
                 &trait_ref.generic_args,
@@ -145,17 +145,19 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         span: Span,
         trait_pred: &hax::TraitPredicate,
     ) -> Result<TraitDeclRef, Error> {
-        // Note sure what this is about
+        // we don't handle negative trait predicates.
         assert!(trait_pred.is_positive);
+        self.translate_trait_ref(span, &trait_pred.trait_ref)
+    }
 
-        let trait_ref = &trait_pred.trait_ref;
+    pub(crate) fn translate_trait_ref(
+        &mut self,
+        span: Span,
+        trait_ref: &hax::TraitRef,
+    ) -> Result<TraitDeclRef, Error> {
         let trait_id = self.register_trait_decl_id(span, &trait_ref.def_id);
-
-        let (regions, types, const_generics) =
-            self.translate_substs(span, None, &trait_ref.generic_args)?;
-        // There are no trait refs
-        let generics = GenericArgs::new(regions, types, const_generics, Default::default());
-
+        // For now a trait has no required bounds, so we pass an empty list.
+        let generics = self.translate_generic_args(span, None, &trait_ref.generic_args, &[])?;
         Ok(TraitDeclRef { trait_id, generics })
     }
 
@@ -311,8 +313,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
                 generics,
             } => {
                 let impl_id = self.register_trait_impl_id(span, impl_def_id);
-                let generics =
-                    self.translate_substs_and_trait_refs(span, None, generics, nested)?;
+                let generics = self.translate_generic_args(span, None, generics, nested)?;
                 TraitRef {
                     kind: TraitRefKind::TraitImpl(impl_id, generics),
                     trait_decl_ref,

@@ -266,9 +266,6 @@ pub struct ItemMeta {
     pub opacity: ItemOpacity,
 }
 
-#[derive(Debug, PartialEq, Eq, Clone, Copy, Serialize, Deserialize, Drive, DriveMut)]
-pub struct FileInfo {}
-
 /// A filename.
 #[derive(
     Debug, PartialEq, Eq, Clone, Hash, PartialOrd, Ord, Serialize, Deserialize, Drive, DriveMut,
@@ -283,4 +280,15 @@ pub enum FileName {
     /// A "not real" file name (macro, query, etc.)
     #[charon::opaque]
     NotReal(String),
+}
+
+#[derive(
+    Debug, PartialEq, Eq, Clone, Hash, PartialOrd, Ord, Serialize, Deserialize, Drive, DriveMut,
+)]
+pub struct File {
+    /// The path to the file.
+    pub name: FileName,
+    /// The contents of the source file, as seen by rustc at the time of translation.
+    /// Some files don't have contents.
+    pub contents: Option<String>,
 }

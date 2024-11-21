@@ -56,7 +56,7 @@ module type Id = sig
   val to_string : id -> string
   val pp_id : Format.formatter -> id -> unit
   val show_id : id -> string
-  val id_of_json : Yojson.Basic.t -> (id, string) result
+  val id_of_json : 'ctx -> Yojson.Basic.t -> (id, string) result
   val compare_id : id -> id -> int
   val max : id -> id -> id
   val min : id -> id -> id

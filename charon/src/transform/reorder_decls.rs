@@ -124,7 +124,11 @@ impl<Id: Display> Display for GDeclarationGroup<Id> {
         match self {
             GDeclarationGroup::NonRec(id) => write!(f, "non-rec: {id}"),
             GDeclarationGroup::Rec(ids) => {
-                write!(f, "rec: {}", vec_to_string(&|id| format!("    {id}"), ids))
+                write!(
+                    f,
+                    "rec: {}",
+                    pretty_display_list(|id| format!("    {id}"), ids)
+                )
             }
         }
     }
