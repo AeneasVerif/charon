@@ -51,13 +51,15 @@ and any_decl_id =
 class ['self] iter_statement_base_base =
   object (self : 'self)
     inherit [_] iter_rvalue
-    method visit_abort_kind : 'env -> abort_kind -> unit = fun _ _ -> ()
+    method visit_abort_kind : 'env. 'env -> abort_kind -> unit = fun _ _ -> ()
   end
 
 class ['self] map_statement_base_base =
   object (self : 'self)
     inherit [_] map_rvalue
-    method visit_abort_kind : 'env -> abort_kind -> abort_kind = fun _ x -> x
+
+    method visit_abort_kind : 'env. 'env -> abort_kind -> abort_kind =
+      fun _ x -> x
   end
 
 (** A function operand is used in function calls.
