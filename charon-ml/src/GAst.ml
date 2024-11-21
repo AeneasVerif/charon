@@ -47,19 +47,6 @@ and any_decl_id =
   | IdTraitImpl of trait_impl_id
 [@@deriving show, ord]
 
-(* Ancestors for the statement_base visitors *)
-class ['self] iter_statement_base_base =
-  object (self : 'self)
-    inherit [_] iter_rvalue
-    method visit_abort_kind : 'env -> abort_kind -> unit = fun _ _ -> ()
-  end
-
-class ['self] map_statement_base_base =
-  object (self : 'self)
-    inherit [_] map_rvalue
-    method visit_abort_kind : 'env -> abort_kind -> abort_kind = fun _ x -> x
-  end
-
 (** A function operand is used in function calls.
     It either designates a top-level function, or a place in case
     we are using function pointers stored in local variables.
@@ -85,14 +72,14 @@ and assertion = { cond : operand; expected : bool }
       {
         name = "iter_statement_base";
         variety = "iter";
-        ancestors = [ "iter_statement_base_base" ];
+        ancestors = [ "iter_rvalue" ];
         nude = true (* Don't inherit VisitorsRuntime *);
       },
     visitors
       {
         name = "map_statement_base";
         variety = "map";
-        ancestors = [ "map_statement_base_base" ];
+        ancestors = [ "map_rvalue" ];
         nude = true (* Don't inherit VisitorsRuntime *);
       }]
 

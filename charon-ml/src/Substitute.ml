@@ -29,13 +29,13 @@ let empty_subst : subst =
     tr_self = Self;
   }
 
-let st_substitute_visitor (subst : subst) =
+let st_substitute_visitor =
   object (self)
     inherit [_] map_statement
     method! visit_region (subst : subst) r = subst.r_subst r
 
     (** We need to properly handle the DeBruijn indices *)
-    method! visit_TArrow subst regions inputs output =
+    method! visit_TArrow (subst : subst) regions inputs output =
       (* Decrement the DeBruijn indices before calling the substitution *)
       let r_subst r =
         match r with
@@ -49,7 +49,7 @@ let st_substitute_visitor (subst : subst) =
       TArrow (regions, inputs, output)
 
     (** We need to properly handle the DeBruijn indices *)
-    method! visit_region_binder visit_value subst x =
+    method! visit_region_binder visit_value (subst : subst) x =
       (* Decrement the DeBruijn indices before calling the substitution *)
       let r_subst r =
         match r with
@@ -63,15 +63,15 @@ let st_substitute_visitor (subst : subst) =
       { binder_regions; binder_value }
 
     method! visit_TVar (subst : subst) id = subst.ty_subst id
-    method! visit_CgVar _ id = subst.cg_subst id
+    method! visit_CgVar (subst : subst) id = subst.cg_subst id
     method! visit_Clause (subst : subst) id = subst.tr_subst id
     method! visit_Self (subst : subst) = subst.tr_self
 
-    method! visit_type_var_id _ _ =
+    method! visit_type_var_id (_ : subst) _ =
       (* We should never get here because we reimplemented [visit_TypeVar] *)
       raise (Failure "Unexpected")
 
-    method! visit_const_generic_var_id _ _ =
+    method! visit_const_generic_var_id (_ : subst) _ =
       (* We should never get here because we reimplemented [visit_Var] *)
       raise (Failure "Unexpected")
   end
@@ -81,24 +81,20 @@ let st_substitute_visitor (subst : subst) =
     **IMPORTANT**: this doesn't normalize the types.
  *)
 let ty_substitute (subst : subst) (ty : ty) : ty =
-  let visitor = st_substitute_visitor subst in
-  visitor#visit_ty subst ty
+  st_substitute_visitor#visit_ty subst ty
 
 (** **IMPORTANT**: this doesn't normalize the types. *)
 let trait_ref_substitute (subst : subst) (tr : trait_ref) : trait_ref =
-  let visitor = st_substitute_visitor subst in
-  visitor#visit_trait_ref subst tr
+  st_substitute_visitor#visit_trait_ref subst tr
 
 (** **IMPORTANT**: this doesn't normalize the types. *)
 let trait_instance_id_substitute (subst : subst) (tr : trait_instance_id) :
     trait_instance_id =
-  let visitor = st_substitute_visitor subst in
-  visitor#visit_trait_instance_id subst tr
+  st_substitute_visitor#visit_trait_instance_id subst tr
 
 (** **IMPORTANT**: this doesn't normalize the types. *)
 let generic_args_substitute (subst : subst) (g : generic_args) : generic_args =
-  let visitor = st_substitute_visitor subst in
-  visitor#visit_generic_args subst g
+  st_substitute_visitor#visit_generic_args subst g
 
 (** Substitute the predicates (clauses, outlives predicates, etc) inside these
     generic params. This leaves the list of parameters (regions, types and
@@ -106,7 +102,7 @@ let generic_args_substitute (subst : subst) (g : generic_args) : generic_args =
     **IMPORTANT**: this doesn't normalize the types. *)
 let predicates_substitute (subst : subst) (p : generic_params) : generic_params
     =
-  let visitor = st_substitute_visitor subst in
+  let visitor = st_substitute_visitor in
   let {
     regions;
     types;
@@ -309,27 +305,27 @@ let type_decl_get_instantiated_field_types (def : type_decl)
 (** Apply a type substitution to a place *)
 let place_substitute (subst : subst) (p : place) : place =
   (* There is in fact nothing to do *)
-  (st_substitute_visitor subst)#visit_place subst p
+  st_substitute_visitor#visit_place subst p
 
 (** Apply a type substitution to an operand *)
 let operand_substitute (subst : subst) (op : operand) : operand =
-  (st_substitute_visitor subst)#visit_operand subst op
+  st_substitute_visitor#visit_operand subst op
 
 (** Apply a type substitution to an rvalue *)
 let rvalue_substitute (subst : subst) (rv : rvalue) : rvalue =
-  (st_substitute_visitor subst)#visit_rvalue subst rv
+  st_substitute_visitor#visit_rvalue subst rv
 
 (** Apply a type substitution to an assertion *)
 let assertion_substitute (subst : subst) (a : assertion) : assertion =
-  (st_substitute_visitor subst)#visit_assertion subst a
+  st_substitute_visitor#visit_assertion subst a
 
 (** Apply a type substitution to a call *)
 let call_substitute (subst : subst) (call : call) : call =
-  (st_substitute_visitor subst)#visit_call subst call
+  st_substitute_visitor#visit_call subst call
 
 (** Apply a type substitution to a statement *)
 let statement_substitute (subst : subst) (st : statement) : statement =
-  (st_substitute_visitor subst)#visit_statement subst st
+  st_substitute_visitor#visit_statement subst st
 
 (** Apply a type substitution to a function body. Return the local variables
     and the body. *)
@@ -346,7 +342,7 @@ let fun_body_substitute_in_body (subst : subst) (body : fun_body) :
 let trait_type_constraint_substitute (subst : subst)
     (ttc : trait_type_constraint) : trait_type_constraint =
   let { trait_ref; type_name; ty } = ttc in
-  let visitor = st_substitute_visitor subst in
+  let visitor = st_substitute_visitor in
   let trait_ref = visitor#visit_trait_ref subst trait_ref in
   let ty = visitor#visit_ty subst ty in
   { trait_ref; type_name; ty }
