@@ -1207,9 +1207,7 @@ fn generate_ml(
                     name: "statement_base",
                     ancestor: Some("rvalue"),
                     reduce: false,
-                    extra_types: &[
-                        "abort_kind",
-                    ],
+                    extra_types: &[],
                 })), &[
                     "FnOperand",
                     "Call",
@@ -1420,7 +1418,7 @@ fn generate_ml(
                     ancestor: Some("GAst.statement_base"),
                     reduce: false,
                     extra_types: &[
-                        "block_id",
+                        "abort_kind", "block_id",
                     ],
                 })), &[
                     "charon_lib::ast::ullbc_ast::Statement",
