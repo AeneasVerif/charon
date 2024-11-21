@@ -10,13 +10,13 @@ open LlbcAst
 
 (* __REPLACE0__ *)
 
-let expr_body_of_json (id_to_file : id_to_file_map) (js : json) :
+let expr_body_of_json (ctx : of_json_ctx) (js : json) :
     (expr_body, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
     | `Assoc [ ("Structured", body) ] ->
         let* body =
-          gexpr_body_of_json (block_of_json id_to_file) id_to_file body
+          gexpr_body_of_json block_of_json ctx body
         in
         Ok body
     | _ -> Error "")
