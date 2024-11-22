@@ -1,5 +1,7 @@
 //! Utilities to generate error reports about the external dependencies.
-use crate::ast::{AnyTransId, Span, TranslatedCrate};
+use crate::ast::*;
+use macros::VariantIndexArity;
+use petgraph::prelude::DiGraphMap;
 use std::cmp::{Ord, PartialOrd};
 use std::collections::{HashMap, HashSet};
 
@@ -76,6 +78,51 @@ pub struct DepSource {
     /// The location where the id was referred to. We store `None` for external dependencies as we
     /// don't want to show these to the users.
     pub span: Option<Span>,
+}
+
+/// For tracing error dependencies.
+#[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, VariantIndexArity)]
+enum DepNode {
+    External(AnyTransId),
+    /// We use the span information only for local references
+    Local(AnyTransId, Span),
+}
+
+/// Graph of dependencies between erroring definitions and the definitions they came from.
+struct DepGraph {
+    dgraph: DiGraphMap<DepNode, ()>,
+}
+
+impl DepGraph {
+    fn new() -> Self {
+        DepGraph {
+            dgraph: DiGraphMap::new(),
+        }
+    }
+
+    fn insert_node(&mut self, n: DepNode) {
+        // We have to be careful about duplicate nodes
+        if !self.dgraph.contains_node(n) {
+            self.dgraph.add_node(n);
+        }
+    }
+
+    fn insert_edge(&mut self, from: DepNode, to: DepNode) {
+        self.insert_node(from);
+        self.insert_node(to);
+        if !self.dgraph.contains_edge(from, to) {
+            self.dgraph.add_edge(from, to, ());
+        }
+    }
+}
+
+impl std::fmt::Display for DepGraph {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::result::Result<(), std::fmt::Error> {
+        for (from, to, _) in self.dgraph.all_edges() {
+            writeln!(f, "{from:?} -> {to:?}")?
+        }
+        Ok(())
+    }
 }
 
 /// The context for tracking and reporting errors.
@@ -178,79 +225,29 @@ impl ErrorCtx<'_> {
     #[cfg(feature = "rustc")]
     pub fn report_external_deps_errors(&self, f: crate::formatter::FmtCtx<'_>) {
         use crate::formatter::Formatter;
-        use macros::VariantIndexArity;
         use petgraph::algo::dijkstra::dijkstra;
-        use petgraph::graphmap::DiGraphMap;
         use rustc_error_messages::MultiSpan;
 
         if !self.has_errors() {
             return;
         }
-
-        /// For tracing error dependencies.
-        #[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, VariantIndexArity)]
-        enum Node {
-            External(AnyTransId),
-            /// We use the span information only for local references
-            Local(AnyTransId, Span),
-        }
-
-        struct Graph {
-            dgraph: DiGraphMap<Node, ()>,
-        }
-
-        impl std::fmt::Display for Graph {
-            fn fmt(
-                &self,
-                f: &mut std::fmt::Formatter<'_>,
-            ) -> std::result::Result<(), std::fmt::Error> {
-                for (from, to, _) in self.dgraph.all_edges() {
-                    writeln!(f, "{from:?} -> {to:?}")?
-                }
-                Ok(())
-            }
-        }
-
-        impl Graph {
-            fn new() -> Self {
-                Graph {
-                    dgraph: DiGraphMap::new(),
-                }
-            }
-
-            fn insert_node(&mut self, n: Node) {
-                // We have to be careful about duplicate nodes
-                if !self.dgraph.contains_node(n) {
-                    self.dgraph.add_node(n);
-                }
-            }
-
-            fn insert_edge(&mut self, from: Node, to: Node) {
-                self.insert_node(from);
-                self.insert_node(to);
-                if !self.dgraph.contains_edge(from, to) {
-                    self.dgraph.add_edge(from, to, ());
-                }
-            }
-        }
-
         // Create a dependency graph, with spans.
         // We want to know what are the usages in the source code which
         // lead to the extraction of the problematic definitions. For this
         // reason, we only include edges:
         // - from external def to external def
         // - from local def to external def
-        let mut graph = Graph::new();
+        let mut graph = DepGraph::new();
 
         trace!("dep_sources:\n{:?}", self.external_dep_sources);
         for (id, srcs) in &self.external_dep_sources {
-            let src_node = Node::External(*id);
+            let src_node = DepNode::External(*id);
             graph.insert_node(src_node);
 
             for src in srcs {
                 let tgt_node = match src.span {
-                    Some(span) => Node::Local(src.src_id, span),
-                    None => Node::External(src.src_id),
+                    Some(span) => DepNode::Local(src.src_id, span),
+                    None => DepNode::External(src.src_id),
                 };
                 graph.insert_edge(src_node, tgt_node)
             }
@@ -261,14 +258,14 @@ impl ErrorCtx<'_> {
         // to use Dijkstra on every external definition which triggered an
         // error.
         for id in &self.external_decls_with_errors {
-            let reachable = dijkstra(&graph.dgraph, Node::External(*id), None, &mut |_| 1);
+            let reachable = dijkstra(&graph.dgraph, DepNode::External(*id), None, &mut |_| 1);
             trace!("id: {:?}\nreachable:\n{:?}", id, reachable);
 
             let reachable: Vec<rustc_span::Span> = reachable
                 .iter()
                 .filter_map(|(n, _)| match n {
-                    Node::External(_) => None,
-                    Node::Local(_, span) => Some(span.rust_span()),
+                    DepNode::External(_) => None,
+                    DepNode::Local(_, span) => Some(span.rust_span()),
                 })
                 .collect();
 
