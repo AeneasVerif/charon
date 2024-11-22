@@ -57,7 +57,7 @@ impl TranslateOptions {
             Ok(p) => Ok(p),
             Err(e) => {
                 let msg = format!("failed to parse pattern `{s}` ({e})");
-                error_or_panic!(error_ctx, Span::dummy(), msg)
+                error_or_panic!(error_ctx, &TranslatedCrate::default(), Span::dummy(), msg)
             }
         };
 
@@ -279,14 +279,26 @@ pub(crate) struct BodyTransCtx<'tcx, 'ctx, 'ctx1> {
 }
 
 /// Translates `T` into `U` using `hax`'s `SInto` trait, catching any hax panics.
-pub fn catch_sinto<S, T, U>(s: &S, err: &mut ErrorCtx, span: Span, x: &T) -> Result<U, Error>
+pub fn catch_sinto<S, T, U>(
+    s: &S,
+    err: &mut ErrorCtx,
+    krate: &TranslatedCrate,
+    span: Span,
+    x: &T,
+) -> Result<U, Error>
 where
     T: Debug + SInto<S, U>,
 {
     let unwind_safe_s = std::panic::AssertUnwindSafe(s);
     let unwind_safe_x = std::panic::AssertUnwindSafe(x);
-    std::panic::catch_unwind(move || unwind_safe_x.sinto(*unwind_safe_s))
-        .or_else(|_| error_or_panic!(err, span, format!("Hax panicked when translating `{x:?}`.")))
+    std::panic::catch_unwind(move || unwind_safe_x.sinto(*unwind_safe_s)).or_else(|_| {
+        error_or_panic!(
+            err,
+            krate,
+            span,
+            format!("Hax panicked when translating `{x:?}`.")
+        )
+    })
 }
 
 impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
@@ -296,7 +308,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
 
     /// Span an error and register the error.
     pub fn span_err(&mut self, span: Span, msg: &str) {
-        self.errors.span_err(span, msg)
+        self.errors.span_err(&self.translated, span, msg)
     }
 
     /// Register a file if it is a "real" file and was not already registered
@@ -464,14 +476,20 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
     where
         T: Debug + SInto<S, U>,
     {
-        catch_sinto(s, &mut self.errors, span, x)
+        catch_sinto(s, &mut self.errors, &self.translated, span, x)
     }
 
     pub fn hax_def(&mut self, def_id: impl Into<DefId>) -> Result<Arc<hax::FullDef>, Error> {
         let def_id: DefId = def_id.into();
         let span = self.def_span(def_id);
         // Hax takes care of caching the translation.
-        catch_sinto(&self.hax_state, &mut self.errors, span, &def_id)
+        catch_sinto(
+            &self.hax_state,
+            &mut self.errors,
+            &self.translated,
+            span,
+            &def_id,
+        )
     }
 
     pub(crate) fn translate_attr_info(&mut self, def: &hax::FullDef) -> AttrInfo {
@@ -748,24 +766,6 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         *opacity
     }
 
-    /// Register the fact that `id` is a dependency of `src` (if `src` is not `None`).
-    pub(crate) fn register_dep_source(
-        &mut self,
-        src: &Option<DepSource>,
-        def_id: DefId,
-        item_id: AnyTransId,
-    ) {
-        if let Some(src) = src {
-            if src.src_id != item_id && !def_id.is_local() {
-                self.errors
-                    .external_dep_sources
-                    .entry(item_id)
-                    .or_default()
-                    .insert(*src);
-            }
-        }
-    }
-
     pub(crate) fn register_id(
         &mut self,
         src: &Option<DepSource>,
@@ -806,7 +806,8 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
                 trans_id
             }
         };
-        self.register_dep_source(src, id.to_def_id(), item_id);
+        self.errors
+            .register_dep_source(src, item_id, id.to_def_id().is_local());
         item_id
     }
 

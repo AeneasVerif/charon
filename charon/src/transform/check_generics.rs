@@ -31,7 +31,7 @@ impl CheckGenericsVisitor<'_, '_> {
     fn error(&mut self, message: impl Display) {
         let span = self.item_span;
         let message = message.to_string();
-        register_error_or_panic!(self.error_ctx, span, message);
+        register_error_or_panic!(self.error_ctx, self.translated, span, message);
     }
 
     /// Count that we just discharged one instance of `GenericArgs`.

@@ -6,7 +6,6 @@ use charon_lib::transform::TransformCtx;
 use hax_frontend_exporter as hax;
 use rustc_hir::def_id::DefId;
 use rustc_middle::ty::TyCtxt;
-use std::collections::{HashMap, HashSet};
 use std::path::PathBuf;
 
 impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
@@ -98,7 +97,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
             | FullDefKind::TyParam { .. }
             | FullDefKind::Variant { .. } => {
                 let span = self.def_span(def_id);
-                self.errors.span_err(
+                self.span_err(
                     span,
                     &format!(
                         "Cannot register this item: `{def_id:?}` with kind `{:?}`",
@@ -158,7 +157,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
             if res.is_err() {
                 ctx.span_err(
                     span,
-                    &format!("Ignoring the following item due to a previous error: {rust_id:?}"),
+                    &format!("Item `{rust_id:?}` caused errors; ignoring."),
                 );
                 ctx.errors.ignore_failed_decl(trans_id);
             }
@@ -249,17 +248,11 @@ pub fn translate<'tcx, 'ctx>(
         .clone();
     trace!("# Crate: {}", requested_crate_name);
 
-    let mut error_ctx = ErrorCtx {
-        continue_on_failure: !options.abort_on_error,
-        error_on_warnings: options.error_on_warnings,
-        dcx: tcx.dcx(),
-        external_decls_with_errors: HashSet::new(),
-        ignored_failed_decls: HashSet::new(),
-        external_dep_sources: HashMap::new(),
-        def_id: None,
-        def_id_is_local: false,
-        error_count: 0,
-    };
+    let mut error_ctx = ErrorCtx::new(
+        !options.abort_on_error,
+        options.error_on_warnings,
+        tcx.dcx(),
+    );
     let translate_options = TranslateOptions::new(&mut error_ctx, options);
     let mut ctx = TranslateCtx {
         tcx,

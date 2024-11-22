@@ -1,7 +1,9 @@
 //! Utilities to generate error reports about the external dependencies.
-use crate::ast::{AnyTransId, Span};
+use crate::ast::*;
+use macros::VariantIndexArity;
+use petgraph::prelude::DiGraphMap;
 use std::cmp::{Ord, PartialOrd};
-use std::collections::{HashMap, HashSet};
+use std::collections::HashSet;
 
 /// Common error used during the translation.
 #[derive(Debug)]
@@ -18,6 +20,12 @@ macro_rules! register_error_or_panic {
             panic!("{}", $msg);
         }
     }};
+    ($ctx:expr, $krate:expr, $span: expr, $msg: expr) => {{
+        $ctx.span_err($krate, $span, &$msg);
+        if !$ctx.continue_on_failure() {
+            panic!("{}", $msg);
+        }
+    }};
 }
 pub use register_error_or_panic;
 
@@ -26,6 +34,14 @@ pub use register_error_or_panic;
 macro_rules! error_or_panic {
     ($ctx:expr, $span:expr, $msg:expr) => {{
         $crate::errors::register_error_or_panic!($ctx, $span, $msg);
+        let e = $crate::errors::Error {
+            span: $span,
+            msg: $msg.to_string(),
+        };
+        return Err(e);
+    }};
+    ($ctx:expr, $krate:expr, $span:expr, $msg:expr) => {{
+        $crate::errors::register_error_or_panic!($ctx, $krate, $span, $msg);
         let e = $crate::errors::Error {
             span: $span,
             msg: $msg.to_string(),
@@ -64,6 +80,51 @@ pub struct DepSource {
     pub span: Option<Span>,
 }
 
+/// For tracing error dependencies.
+#[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, VariantIndexArity)]
+enum DepNode {
+    External(AnyTransId),
+    /// We use the span information only for local references
+    Local(AnyTransId, Span),
+}
+
+/// Graph of dependencies between erroring definitions and the definitions they came from.
+struct DepGraph {
+    dgraph: DiGraphMap<DepNode, ()>,
+}
+
+impl DepGraph {
+    fn new() -> Self {
+        DepGraph {
+            dgraph: DiGraphMap::new(),
+        }
+    }
+
+    fn insert_node(&mut self, n: DepNode) {
+        // We have to be careful about duplicate nodes
+        if !self.dgraph.contains_node(n) {
+            self.dgraph.add_node(n);
+        }
+    }
+
+    fn insert_edge(&mut self, from: DepNode, to: DepNode) {
+        self.insert_node(from);
+        self.insert_node(to);
+        if !self.dgraph.contains_edge(from, to) {
+            self.dgraph.add_edge(from, to, ());
+        }
+    }
+}
+
+impl std::fmt::Display for DepGraph {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::result::Result<(), std::fmt::Error> {
+        for (from, to, _) in self.dgraph.all_edges() {
+            writeln!(f, "{from:?} -> {to:?}")?
+        }
+        Ok(())
+    }
+}
+
 /// The context for tracking and reporting errors.
 pub struct ErrorCtx<'ctx> {
     /// If true, do not abort on the first error and attempt to extract as much as possible.
@@ -80,8 +141,10 @@ pub struct ErrorCtx<'ctx> {
     pub external_decls_with_errors: HashSet<AnyTransId>,
     /// The ids of the declarations we completely failed to extract and had to ignore.
     pub ignored_failed_decls: HashSet<AnyTransId>,
-    /// For each external item, a list of locations that point to it. See [DepSource].
-    pub external_dep_sources: HashMap<AnyTransId, HashSet<DepSource>>,
+    /// Graph of dependencies between items: there is an edge from item `a` to item `b` if `b`
+    /// registered the id for `a` during its translation. Because we only use this to report errors
+    /// on external items, we only record edges where `a` is an external item.
+    external_dep_graph: DepGraph,
     /// The id of the definition we are exploring, used to track the source of errors.
     pub def_id: Option<AnyTransId>,
     /// Whether the definition being explored is local to the crate or not.
@@ -90,7 +153,26 @@ pub struct ErrorCtx<'ctx> {
     pub error_count: usize,
 }
 
-impl ErrorCtx<'_> {
+impl<'ctx> ErrorCtx<'ctx> {
+    pub fn new(
+        continue_on_failure: bool,
+        error_on_warnings: bool,
+        #[cfg(feature = "rustc")] dcx: rustc_errors::DiagCtxtHandle<'ctx>,
+        #[cfg(not(feature = "rustc"))] dcx: &'ctx (),
+    ) -> Self {
+        Self {
+            continue_on_failure,
+            error_on_warnings,
+            dcx,
+            external_decls_with_errors: HashSet::new(),
+            ignored_failed_decls: HashSet::new(),
+            external_dep_graph: DepGraph::new(),
+            def_id: None,
+            def_id_is_local: false,
+            error_count: 0,
+        }
+    }
+
     pub fn continue_on_failure(&self) -> bool {
         self.continue_on_failure
     }
@@ -102,6 +184,7 @@ impl ErrorCtx<'_> {
     #[cfg(feature = "rustc")]
     pub fn span_err_no_register(
         &self,
+        _krate: &TranslatedCrate,
         span: impl Into<rustc_error_messages::MultiSpan>,
         msg: &str,
     ) {
@@ -113,7 +196,7 @@ impl ErrorCtx<'_> {
         }
     }
     #[cfg(not(feature = "rustc"))]
-    pub(crate) fn span_err_no_register(&self, _span: Span, msg: &str) {
+    pub(crate) fn span_err_no_register(&self, _krate: &TranslatedCrate, _span: Span, msg: &str) {
         let msg = msg.to_string();
         if self.error_on_warnings {
             error!("{}", msg);
@@ -123,131 +206,79 @@ impl ErrorCtx<'_> {
     }
 
     /// Report and register an error.
-    pub fn span_err(&mut self, span: Span, msg: &str) {
-        self.span_err_no_register(span, msg);
+    pub fn span_err(&mut self, krate: &TranslatedCrate, span: Span, msg: &str) {
+        self.span_err_no_register(krate, span, msg);
         self.error_count += 1;
-        if let Some(id) = self.def_id
-            && !self.def_id_is_local
+        // If this item comes from an external crate, after the first error for that item we
+        // display where in the local crate that item was reached from.
+        #[cfg(feature = "rustc")]
+        if !self.def_id_is_local
+            && let Some(id) = self.def_id
+            && self.external_decls_with_errors.insert(id)
         {
-            let _ = self.external_decls_with_errors.insert(id);
+            use crate::formatter::IntoFormatter;
+            self.report_external_dep_error(&krate.into_fmt(), id);
         }
     }
 
     pub fn ignore_failed_decl(&mut self, id: AnyTransId) {
         self.ignored_failed_decls.insert(id);
     }
-}
 
-impl ErrorCtx<'_> {
-    /// In case errors happened when extracting the definitions coming from
-    /// the external dependencies, print a detailed report to explain
-    /// to the user which dependencies were problematic, and where they
-    /// are used in the code.
+    /// Register the fact that `id` is a dependency of `src` (if `src` is not `None`).
+    pub fn register_dep_source(
+        &mut self,
+        src: &Option<DepSource>,
+        item_id: AnyTransId,
+        is_local: bool,
+    ) {
+        if let Some(src) = src
+            && src.src_id != item_id
+            && !is_local
+        {
+            let src_node = DepNode::External(item_id);
+            self.external_dep_graph.insert_node(src_node);
+
+            let tgt_node = match src.span {
+                Some(span) => DepNode::Local(src.src_id, span),
+                None => DepNode::External(src.src_id),
+            };
+            self.external_dep_graph.insert_edge(src_node, tgt_node)
+        }
+    }
+
+    /// In case errors happened when extracting the definitions coming from the external
+    /// dependencies, print a detailed report to explain to the user which dependencies were
+    /// problematic, and where they are used in the code.
     #[cfg(feature = "rustc")]
-    pub fn report_external_deps_errors(&self, f: crate::formatter::FmtCtx<'_>) {
+    pub fn report_external_dep_error(&self, f: &crate::formatter::FmtCtx<'_>, id: AnyTransId) {
         use crate::formatter::Formatter;
-        use macros::VariantIndexArity;
         use petgraph::algo::dijkstra::dijkstra;
-        use petgraph::graphmap::DiGraphMap;
         use rustc_error_messages::MultiSpan;
-
-        if !self.has_errors() {
-            return;
-        }
-
-        /// For tracing error dependencies.
-        #[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, VariantIndexArity)]
-        enum Node {
-            External(AnyTransId),
-            /// We use the span information only for local references
-            Local(AnyTransId, Span),
-        }
-
-        struct Graph {
-            dgraph: DiGraphMap<Node, ()>,
-        }
-
-        impl std::fmt::Display for Graph {
-            fn fmt(
-                &self,
-                f: &mut std::fmt::Formatter<'_>,
-            ) -> std::result::Result<(), std::fmt::Error> {
-                for (from, to, _) in self.dgraph.all_edges() {
-                    writeln!(f, "{from:?} -> {to:?}")?
-                }
-                Ok(())
-            }
-        }
-
-        impl Graph {
-            fn new() -> Self {
-                Graph {
-                    dgraph: DiGraphMap::new(),
-                }
-            }
-
-            fn insert_node(&mut self, n: Node) {
-                // We have to be careful about duplicate nodes
-                if !self.dgraph.contains_node(n) {
-                    self.dgraph.add_node(n);
-                }
-            }
-
-            fn insert_edge(&mut self, from: Node, to: Node) {
-                self.insert_node(from);
-                self.insert_node(to);
-                if !self.dgraph.contains_edge(from, to) {
-                    self.dgraph.add_edge(from, to, ());
-                }
-            }
-        }
-
-        // Create a dependency graph, with spans.
-        // We want to know what are the usages in the source code which
-        // lead to the extraction of the problematic definitions. For this
-        // reason, we only include edges:
-        // - from external def to external def
-        // - from local def to external def
-        let mut graph = Graph::new();
-
-        trace!("dep_sources:\n{:?}", self.external_dep_sources);
-        for (id, srcs) in &self.external_dep_sources {
-            let src_node = Node::External(*id);
-            graph.insert_node(src_node);
-
-            for src in srcs {
-                let tgt_node = match src.span {
-                    Some(span) => Node::Local(src.src_id, span),
-                    None => Node::External(src.src_id),
-                };
-                graph.insert_edge(src_node, tgt_node)
-            }
-        }
-        trace!("Graph:\n{}", graph);
 
         // We need to compute the reachability graph. An easy way is simply
         // to use Dijkstra on every external definition which triggered an
         // error.
-        for id in &self.external_decls_with_errors {
-            let reachable = dijkstra(&graph.dgraph, Node::External(*id), None, &mut |_| 1);
-            trace!("id: {:?}\nreachable:\n{:?}", id, reachable);
+        let graph = &self.external_dep_graph;
+        let reachable = dijkstra(&graph.dgraph, DepNode::External(id), None, &mut |_| 1);
+        trace!("id: {:?}\nreachable:\n{:?}", id, reachable);
 
-            let reachable: Vec<rustc_span::Span> = reachable
-                .iter()
-                .filter_map(|(n, _)| match n {
-                    Node::External(_) => None,
-                    Node::Local(_, span) => Some(span.rust_span()),
-                })
-                .collect();
+        let reachable: Vec<rustc_span::Span> = reachable
+            .iter()
+            .filter_map(|(n, _)| match n {
+                DepNode::External(_) => None,
+                DepNode::Local(_, span) => Some(span.rust_span()),
+            })
+            .collect();
 
-            // Display the error message
-            let span = MultiSpan::from_spans(reachable);
-            let msg = format!(
-                "The external definition `{}` triggered errors. \
-                It is (transitively) used at the following location(s):",
-                f.format_object(*id)
-            );
-            self.span_err_no_register(span, &msg);
-        }
+        // Display the error message
+        let spans = MultiSpan::from_spans(reachable);
+        let msg = format!(
+            "the error occurred when translating `{}`, \
+             which is (transitively) used at the following location(s):",
+            f.format_object(id)
+        );
+
+        self.dcx.span_note(spans, msg);
     }
 }

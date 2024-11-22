@@ -18,7 +18,7 @@ error: Could not find region: Region { kind: ReError(ErrorGuaranteed { todo: "Er
 5 | fn get(_x: &'a u32) {}
   | ^^^^^^^^^^^^^^^^^^^^^^
 
-error: Ignoring the following item due to a previous error: test_crate::get
+error: Item `test_crate::get` caused errors; ignoring.
  --> tests/ui/unsupported/unbound-lifetime.rs:5:1
   |
 5 | fn get(_x: &'a u32) {}

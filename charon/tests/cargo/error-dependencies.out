@@ -2,20 +2,20 @@ error: Trait aliases are not supported
  --> /rustc/86d69c705a552236a622eee3fdea94bf13c5f102/library/core/src/ptr/metadata.rs:81:1
 
 note: the error occurred when translating `core::ptr::metadata::Thin`, which is (transitively) used at the following location(s):
-  --> tests/ui/error-dependencies.rs:8:13
+  --> src/main.rs:15:27
    |
-8  |     let _ = core::ptr::null::<u8>();
+15 |     pub fn custom_null<T: core::ptr::Thin>() {}
+   |                           ^^^^^^^^^^^^^^^
+   |
+  ::: src/module.rs:6:13
+   |
+6  |     let _ = core::ptr::null::<u8>();
    |             ^^^^^^^^^^^^^^^^^^^^^^^
-...
-15 |         let _ = custom_null::<u8>();
-   |                 ^^^^^^^^^^^^^^^^^^^
-16 |     }
-17 |     fn custom_null<T: core::ptr::Thin>() {}
-   |                       ^^^^^^^^^^^^^^^
+7  |     let _ = crate::opaque::custom_null::<u8>();
+   |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 error: Item `core::ptr::metadata::Thin` caused errors; ignoring.
  --> /rustc/86d69c705a552236a622eee3fdea94bf13c5f102/library/core/src/ptr/metadata.rs:81:1
 
-error: aborting due to 2 previous errors
-
 ERROR Compilation encountered 2 errors
+error: could not compile `test-cargo` (bin "test-cargo") due to 2 previous errors
