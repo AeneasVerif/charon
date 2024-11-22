@@ -2,6 +2,7 @@
 //! shenanigans such as dependencies.
 use anyhow::bail;
 use assert_cmd::prelude::CommandCargoExt;
+use itertools::Itertools;
 use libtest_mimic::Trial;
 use std::{error::Error, path::PathBuf, process::Command};
 
@@ -55,10 +56,21 @@ fn perform_test(test_case: &Case, action: Action) -> anyhow::Result<()> {
     } else {
         output.stderr
     };
-    let output = String::from_utf8(output.clone())?;
+    let mut output = String::from_utf8(output.clone())?;
     match test_case.expect {
         Success if !success => bail!("Compilation failed: {output}"),
         Failure if success => bail!("Compilation succeeded but shouldn't have: {output}"),
+        Failure if !success => {
+            // Hack to avoid differences between CI and local tests.
+            output = output
+                .lines()
+                .filter(|line| {
+                    !line
+                        .trim_start()
+                        .starts_with("process didn't exit successfully")
+                })
+                .join("\n");
+        }
         _ => {}
     }
     compare_or_overwrite(action, output, &test_case.output_file)?;
