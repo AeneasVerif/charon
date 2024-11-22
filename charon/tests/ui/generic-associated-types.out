@@ -10,18 +10,6 @@ error: Ignoring the following item due to a previous error: test_crate::LendingI
 4 | trait LendingIterator {
   | ^^^^^^^^^^^^^^^^^^^^^
 
-error: Generic associated types are not supported
-  --> tests/ui/generic-associated-types.rs:46:9
-   |
-46 |         type Type<'b>: for<'c> Foo<&'a &'b &'c ()>;
-   |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-error: Ignoring the following item due to a previous error: test_crate::lifetimes::Bar
-  --> tests/ui/generic-associated-types.rs:45:5
-   |
-45 |     trait Bar<'a> {
-   |     ^^^^^^^^^^^^^
-
 error: Found unsupported GAT `Item` when resolving trait `core::marker::Sized<@TraitClause2::Item>`
   --> tests/ui/generic-associated-types.rs:27:28
    |
@@ -53,6 +41,18 @@ warning: unused variable: `x`
    |         ^ help: if this is intentional, prefix it with an underscore: `_x`
    |
    = note: `#[warn(unused_variables)]` on by default
+
+error: Generic associated types are not supported
+  --> tests/ui/generic-associated-types.rs:46:9
+   |
+46 |         type Type<'b>: for<'c> Foo<&'a &'b &'c ()>;
+   |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error: Ignoring the following item due to a previous error: test_crate::lifetimes::Bar
+  --> tests/ui/generic-associated-types.rs:45:5
+   |
+45 |     trait Bar<'a> {
+   |     ^^^^^^^^^^^^^
 
 error: Found unsupported GAT `Type` when resolving trait `test_crate::lifetimes::Foo<@TraitClause1::Type, &'_ (&'_ (&'_ (())))>`
   --> tests/ui/generic-associated-types.rs:53:9

@@ -142,7 +142,7 @@ impl TransItemSource {
     fn sort_key(&self) -> impl Ord {
         let (variant_index, _) = self.variant_index_arity();
         let def_id = self.to_def_id();
-        (variant_index, def_id.index, def_id.krate)
+        (def_id.krate, def_id.index, variant_index)
     }
 }
 

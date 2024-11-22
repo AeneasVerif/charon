@@ -492,16 +492,16 @@ fn rename_attribute() -> anyhow::Result<()> {
     );
 
     assert_eq!(
-        crate_data.fun_decls[1]
+        crate_data.fun_decls[0]
             .item_meta
             .attr_info
             .rename
             .as_deref(),
-        Some("Const_Test")
+        Some("BoolFn")
     );
 
     assert_eq!(
-        crate_data.fun_decls[2]
+        crate_data.fun_decls[1]
             .item_meta
             .attr_info
             .rename
@@ -510,12 +510,21 @@ fn rename_attribute() -> anyhow::Result<()> {
     );
 
     assert_eq!(
-        crate_data.fun_decls[3]
+        crate_data.fun_decls[2]
             .item_meta
             .attr_info
             .rename
             .as_deref(),
         Some("retTest")
+    );
+
+    assert_eq!(
+        crate_data.fun_decls[4]
+            .item_meta
+            .attr_info
+            .rename
+            .as_deref(),
+        Some("Const_Test")
     );
 
     assert_eq!(
@@ -525,15 +534,6 @@ fn rename_attribute() -> anyhow::Result<()> {
             .rename
             .as_deref(),
         Some("BoolImpl")
-    );
-
-    assert_eq!(
-        crate_data.fun_decls[0]
-            .item_meta
-            .attr_info
-            .rename
-            .as_deref(),
-        Some("BoolFn")
     );
 
     assert_eq!(

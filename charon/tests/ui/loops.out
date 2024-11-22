@@ -2245,20 +2245,6 @@ fn core::iter::traits::iterator::Iterator::next_chunk<'_0, Self, const N : usize
 where
     [@TraitClause0]: core::marker::Sized<Self>,
 
-fn core::iter::traits::iterator::Iterator::size_hint<'_0, Self>(@1: &'_0 (Self)) -> (usize, core::option::Option<usize>[core::marker::Sized<usize>])
-
-fn core::iter::traits::iterator::Iterator::count<Self>(@1: Self) -> usize
-where
-    [@TraitClause0]: core::marker::Sized<Self>,
-
-fn core::iter::traits::iterator::Iterator::last<Self>(@1: Self) -> core::option::Option<Self::Item>[Self::parent_clause0]
-where
-    [@TraitClause0]: core::marker::Sized<Self>,
-
-fn core::iter::traits::iterator::Iterator::advance_by<'_0, Self>(@1: &'_0 mut (Self), @2: usize) -> core::result::Result<(), core::num::nonzero::NonZero<usize>[core::marker::Sized<usize>, core::num::nonzero::{impl core::num::nonzero::ZeroablePrimitive for usize}#26]>[core::marker::Sized<()>, core::marker::Sized<core::num::nonzero::NonZero<usize>[core::marker::Sized<usize>, core::num::nonzero::{impl core::num::nonzero::ZeroablePrimitive for usize}#26]>]
-
-fn core::iter::traits::iterator::Iterator::nth<'_0, Self>(@1: &'_0 mut (Self), @2: usize) -> core::option::Option<Self::Item>[Self::parent_clause0]
-
 fn core::iter::traits::iterator::Iterator::step_by<Self>(@1: Self, @2: usize) -> core::iter::adapters::step_by::StepBy<Self>[@TraitClause0]
 where
     [@TraitClause0]: core::marker::Sized<Self>,
@@ -2553,16 +2539,6 @@ where
     [@TraitClause4]: core::iter::traits::double_ended::DoubleEndedIterator<Self>,
     @TraitClause1::parent_clause0::Output = bool,
 
-fn core::iter::traits::iterator::Iterator::max<Self>(@1: Self) -> core::option::Option<Self::Item>[Self::parent_clause0]
-where
-    [@TraitClause0]: core::marker::Sized<Self>,
-    [@TraitClause1]: core::cmp::Ord<Self::Item>,
-
-fn core::iter::traits::iterator::Iterator::min<Self>(@1: Self) -> core::option::Option<Self::Item>[Self::parent_clause0]
-where
-    [@TraitClause0]: core::marker::Sized<Self>,
-    [@TraitClause1]: core::cmp::Ord<Self::Item>,
-
 fn core::iter::traits::iterator::Iterator::max_by_key<Self, B, F>(@1: Self, @2: F) -> core::option::Option<Self::Item>[Self::parent_clause0]
 where
     [@TraitClause0]: core::marker::Sized<B>,
@@ -2737,11 +2713,6 @@ where
     [@TraitClause2]: core::cmp::PartialOrd<Self::Item, @TraitClause1::Item>,
     [@TraitClause3]: core::marker::Sized<Self>,
 
-fn core::iter::traits::iterator::Iterator::is_sorted<Self>(@1: Self) -> bool
-where
-    [@TraitClause0]: core::marker::Sized<Self>,
-    [@TraitClause1]: core::cmp::PartialOrd<Self::Item, Self::Item>,
-
 fn core::iter::traits::iterator::Iterator::is_sorted_by<Self, F>(@1: Self, @2: F) -> bool
 where
     [@TraitClause0]: core::marker::Sized<F>,
@@ -2757,24 +2728,6 @@ where
     [@TraitClause3]: core::ops::function::FnMut<F, (Self::Item)>,
     [@TraitClause4]: core::cmp::PartialOrd<K, K>,
     @TraitClause3::parent_clause0::Output = K,
-
-unsafe fn core::iter::traits::iterator::Iterator::__iterator_get_unchecked<'_0, Self>(@1: &'_0 mut (Self), @2: usize) -> Self::Item
-where
-    [@TraitClause0]: core::iter::adapters::zip::TrustedRandomAccessNoCoerce<Self>,
-
-fn core::slice::index::SliceIndex::get<'_0, Self, T>(@1: Self, @2: &'_0 (T)) -> core::option::Option<&'_0 (Self::Output)>[core::marker::Sized<&'_1_0 (Self::Output)>]
-
-fn core::slice::index::SliceIndex::get_mut<'_0, Self, T>(@1: Self, @2: &'_0 mut (T)) -> core::option::Option<&'_0 mut (Self::Output)>[core::marker::Sized<&'_1_0 mut (Self::Output)>]
-
-unsafe fn core::slice::index::SliceIndex::get_unchecked<Self, T>(@1: Self, @2: *const T) -> *const Self::Output
-
-unsafe fn core::slice::index::SliceIndex::get_unchecked_mut<Self, T>(@1: Self, @2: *mut T) -> *mut Self::Output
-
-fn core::slice::index::SliceIndex::index<'_0, Self, T>(@1: Self, @2: &'_0 (T)) -> &'_0 (Self::Output)
-
-fn core::slice::index::SliceIndex::index_mut<'_0, Self, T>(@1: Self, @2: &'_0 mut (T)) -> &'_0 mut (Self::Output)
-
-fn core::ops::index::Index::index<'_0, Self, Idx>(@1: &'_0 (Self), @2: Idx) -> &'_0 (Self::Output)
 
 fn core::cmp::Ord::cmp<'_0, '_1, Self>(@1: &'_0 (Self), @2: &'_1 (Self)) -> core::cmp::Ordering
 
@@ -2795,6 +2748,39 @@ fn core::cmp::Eq::assert_receiver_is_total_eq<'_0, Self>(@1: &'_0 (Self))
 fn core::iter::adapters::zip::TrustedRandomAccessNoCoerce::size<'_0, Self>(@1: &'_0 (Self)) -> usize
 where
     [@TraitClause0]: core::iter::traits::iterator::Iterator<Self>,
+
+fn core::iter::traits::iterator::Iterator::size_hint<'_0, Self>(@1: &'_0 (Self)) -> (usize, core::option::Option<usize>[core::marker::Sized<usize>])
+
+fn core::iter::traits::iterator::Iterator::count<Self>(@1: Self) -> usize
+where
+    [@TraitClause0]: core::marker::Sized<Self>,
+
+fn core::iter::traits::iterator::Iterator::last<Self>(@1: Self) -> core::option::Option<Self::Item>[Self::parent_clause0]
+where
+    [@TraitClause0]: core::marker::Sized<Self>,
+
+fn core::iter::traits::iterator::Iterator::advance_by<'_0, Self>(@1: &'_0 mut (Self), @2: usize) -> core::result::Result<(), core::num::nonzero::NonZero<usize>[core::marker::Sized<usize>, core::num::nonzero::{impl core::num::nonzero::ZeroablePrimitive for usize}#26]>[core::marker::Sized<()>, core::marker::Sized<core::num::nonzero::NonZero<usize>[core::marker::Sized<usize>, core::num::nonzero::{impl core::num::nonzero::ZeroablePrimitive for usize}#26]>]
+
+fn core::iter::traits::iterator::Iterator::nth<'_0, Self>(@1: &'_0 mut (Self), @2: usize) -> core::option::Option<Self::Item>[Self::parent_clause0]
+
+fn core::iter::traits::iterator::Iterator::max<Self>(@1: Self) -> core::option::Option<Self::Item>[Self::parent_clause0]
+where
+    [@TraitClause0]: core::marker::Sized<Self>,
+    [@TraitClause1]: core::cmp::Ord<Self::Item>,
+
+fn core::iter::traits::iterator::Iterator::min<Self>(@1: Self) -> core::option::Option<Self::Item>[Self::parent_clause0]
+where
+    [@TraitClause0]: core::marker::Sized<Self>,
+    [@TraitClause1]: core::cmp::Ord<Self::Item>,
+
+fn core::iter::traits::iterator::Iterator::is_sorted<Self>(@1: Self) -> bool
+where
+    [@TraitClause0]: core::marker::Sized<Self>,
+    [@TraitClause1]: core::cmp::PartialOrd<Self::Item, Self::Item>,
+
+unsafe fn core::iter::traits::iterator::Iterator::__iterator_get_unchecked<'_0, Self>(@1: &'_0 mut (Self), @2: usize) -> Self::Item
+where
+    [@TraitClause0]: core::iter::adapters::zip::TrustedRandomAccessNoCoerce<Self>,
 
 fn core::ops::function::FnMut::call_mut<'_0, Self, Args>(@1: &'_0 mut (Self), @2: Args) -> Self::parent_clause0::Output
 
@@ -2875,6 +2861,20 @@ where
     [@TraitClause0]: core::marker::Sized<I>,
     [@TraitClause1]: core::iter::traits::iterator::Iterator<I>,
     @TraitClause1::Item = A,
+
+fn core::slice::index::SliceIndex::get<'_0, Self, T>(@1: Self, @2: &'_0 (T)) -> core::option::Option<&'_0 (Self::Output)>[core::marker::Sized<&'_1_0 (Self::Output)>]
+
+fn core::slice::index::SliceIndex::get_mut<'_0, Self, T>(@1: Self, @2: &'_0 mut (T)) -> core::option::Option<&'_0 mut (Self::Output)>[core::marker::Sized<&'_1_0 mut (Self::Output)>]
+
+unsafe fn core::slice::index::SliceIndex::get_unchecked<Self, T>(@1: Self, @2: *const T) -> *const Self::Output
+
+unsafe fn core::slice::index::SliceIndex::get_unchecked_mut<Self, T>(@1: Self, @2: *mut T) -> *mut Self::Output
+
+fn core::slice::index::SliceIndex::index<'_0, Self, T>(@1: Self, @2: &'_0 (T)) -> &'_0 (Self::Output)
+
+fn core::slice::index::SliceIndex::index_mut<'_0, Self, T>(@1: Self, @2: &'_0 mut (T)) -> &'_0 mut (Self::Output)
+
+fn core::ops::index::Index::index<'_0, Self, Idx>(@1: &'_0 (Self), @2: Idx) -> &'_0 (Self::Output)
 
 
 
