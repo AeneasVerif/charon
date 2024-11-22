@@ -11,7 +11,6 @@
 //! we reconstructed the control-flow to have `if ... then ... else ...`,
 //! loops, etc. instead of `GOTO`s).
 
-#![feature(rustc_private)]
 // For rustdoc: prevents overflows
 #![recursion_limit = "256"]
 #![feature(box_patterns)]

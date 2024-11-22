@@ -1,4 +1,3 @@
-#![feature(rustc_private)]
 //! Ui tests for the charon compiler. Each `<file>.rs` file in `ui/` will be passed to the charon
 //! driver. The corresponding pretty-printed llbc output will be stored in `<file>.llbc`, and CI
 //! will ensure these stay up-to-date.

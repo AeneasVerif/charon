@@ -1,4 +1,3 @@
-#![feature(rustc_private)]
 //! Tests for running charon with cargo. Cases are set up by hand; this aims to test cargo-specific
 //! shenanigans such as dependencies.
 use anyhow::bail;

@@ -1,4 +1,3 @@
-#![feature(rustc_private)]
 use charon_lib::ast::{AnyTransItem, TranslatedCrate};
 use itertools::Itertools;
 use std::collections::HashMap;
