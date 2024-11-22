@@ -1,0 +1,21 @@
+error: Trait aliases are not supported
+ --> /rustc/86d69c705a552236a622eee3fdea94bf13c5f102/library/core/src/ptr/metadata.rs:81:1
+
+error: Ignoring the following item due to a previous error: core::ptr::metadata::Thin
+ --> /rustc/86d69c705a552236a622eee3fdea94bf13c5f102/library/core/src/ptr/metadata.rs:81:1
+
+error: The external definition `core::ptr::metadata::Thin` triggered errors. It is (transitively) used at the following location(s):
+  --> src/main.rs:15:27
+   |
+15 |     pub fn custom_null<T: core::ptr::Thin>() {}
+   |                           ^^^^^^^^^^^^^^^
+   |
+  ::: src/module.rs:6:13
+   |
+6  |     let _ = core::ptr::null::<u8>();
+   |             ^^^^^^^^^^^^^^^^^^^^^^^
+7  |     let _ = crate::opaque::custom_null::<u8>();
+   |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+ERROR Compilation encountered 2 errors
+error: could not compile `test-cargo` (bin "test-cargo") due to 3 previous errors

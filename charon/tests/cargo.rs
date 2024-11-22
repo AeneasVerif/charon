@@ -12,11 +12,19 @@ mod util;
 
 static TESTS_DIR: &str = "tests/cargo";
 
+use Expect::*;
+enum Expect {
+    Success,
+    Failure,
+}
+
 struct Case {
     /// Directory to run `charon` in.
     dir: PathBuf,
     /// Path of the output pretty-llbc file.
-    expected: PathBuf,
+    output_file: PathBuf,
+    /// Should charon succeed or fail?
+    expect: Expect,
     /// Extra arguments to pass to charon.
     charon_args: Vec<String>,
 }
@@ -32,20 +40,29 @@ fn perform_test(test_case: &Case, action: Action) -> anyhow::Result<()> {
     cmd.current_dir(&test_case.dir);
     cmd.arg("--error-on-warnings");
     cmd.arg("--print-llbc");
+    if matches!(test_case.expect, Failure) {
+        cmd.arg("--cargo-arg=--quiet");
+    }
     cmd.arg("--dest-file");
-    cmd.arg(test_case.expected.with_extension("llbc"));
+    cmd.arg(test_case.output_file.with_extension("llbc"));
     for arg in &test_case.charon_args {
         cmd.arg(arg);
     }
     let output = cmd.output()?;
 
-    if output.status.success() {
-        let stdout = String::from_utf8(output.stdout.clone())?;
-        compare_or_overwrite(action, stdout, &test_case.expected)?;
+    let success = output.status.success();
+    let output = if success {
+        output.stdout
     } else {
-        let stderr = String::from_utf8(output.stderr.clone())?;
-        bail!("Compilation failed: {stderr}")
+        output.stderr
+    };
+    let output = String::from_utf8(output.clone())?;
+    match test_case.expect {
+        Success if !success => bail!("Compilation failed: {output}"),
+        Failure if success => bail!("Compilation succeeded but shouldn't have: {output}"),
+        _ => {}
     }
+    compare_or_overwrite(action, output, &test_case.output_file)?;
 
     Ok(())
 }
@@ -58,26 +75,34 @@ fn main() -> Result<(), Box<dyn Error>> {
     };
 
     let root: PathBuf = PathBuf::from(TESTS_DIR).canonicalize()?;
-    let mktest = |name: &str, dir: PathBuf, charon_args: &[String]| {
+    let mktest = |name: &str, dir: PathBuf, charon_args: &[String], expect: Expect| {
         let charon_args = charon_args.to_vec();
-        let expected = root.join(format!("{name}.out"));
+        let output_file = root.join(format!("{name}.out"));
         Trial::test(name, move || {
             let case = Case {
                 dir,
-                expected,
+                output_file,
+                expect,
                 charon_args,
             };
             perform_test(&case, action).map_err(|err| err.into())
         })
     };
     let tests = vec![
-        mktest("build-script", root.join("build-script"), &[]),
+        mktest("build-script", root.join("build-script"), &[], Success),
         mktest(
             "dependencies",
             root.join("dependencies"),
             &["--cargo-arg=--features=test_feature".to_owned()],
+            Success,
         ),
-        mktest("toml", root.join("toml"), &[]),
+        mktest(
+            "error-dependencies",
+            root.join("error-dependencies"),
+            &[],
+            Failure,
+        ),
+        mktest("toml", root.join("toml"), &[], Success),
         mktest(
             "workspace",
             root.join("workspace"),
@@ -85,6 +110,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                 "--cargo-arg=--package=crate2".to_owned(),
                 "--extract-opaque-bodies".to_owned(),
             ],
+            Success,
         ),
     ];
 
