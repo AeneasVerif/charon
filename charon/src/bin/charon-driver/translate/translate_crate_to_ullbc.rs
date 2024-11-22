@@ -157,7 +157,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
             if res.is_err() {
                 ctx.span_err(
                     span,
-                    &format!("Ignoring the following item due to a previous error: {rust_id:?}"),
+                    &format!("Item `{rust_id:?}` caused errors; ignoring."),
                 );
                 ctx.errors.ignore_failed_decl(trans_id);
             }

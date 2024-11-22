@@ -14,7 +14,7 @@ note: the error occurred when translating `core::ptr::metadata::Thin`, which is 
 7  |     let _ = crate::opaque::custom_null::<u8>();
    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-error: Ignoring the following item due to a previous error: core::ptr::metadata::Thin
+error: Item `core::ptr::metadata::Thin` caused errors; ignoring.
  --> /rustc/86d69c705a552236a622eee3fdea94bf13c5f102/library/core/src/ptr/metadata.rs:81:1
 
 ERROR Compilation encountered 2 errors

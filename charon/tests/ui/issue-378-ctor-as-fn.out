@@ -10,7 +10,7 @@ note: the error occurred when translating `core::option::Option::Some`, which is
 6 |     let f: fn(u8) -> _ = Some;
   |                          ^^^^
 
-error: Ignoring the following item due to a previous error: core::option::Option::Some::{constructor#0}
+error: Item `core::option::Option::Some::{constructor#0}` caused errors; ignoring.
  --> /rustc/86d69c705a552236a622eee3fdea94bf13c5f102/library/core/src/option.rs:579:5
 
 error: aborting due to 2 previous errors

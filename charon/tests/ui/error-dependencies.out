@@ -13,7 +13,7 @@ note: the error occurred when translating `core::ptr::metadata::Thin`, which is 
 17 |     fn custom_null<T: core::ptr::Thin>() {}
    |                       ^^^^^^^^^^^^^^^
 
-error: Ignoring the following item due to a previous error: core::ptr::metadata::Thin
+error: Item `core::ptr::metadata::Thin` caused errors; ignoring.
  --> /rustc/86d69c705a552236a622eee3fdea94bf13c5f102/library/core/src/ptr/metadata.rs:81:1
 
 error: aborting due to 2 previous errors
