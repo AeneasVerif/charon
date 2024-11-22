@@ -282,7 +282,7 @@ pub fn translate(tcx: TyCtxt, internal: &mut CharonCallbacks) -> export::CrateDa
         }
 
         // Display an error report about the external dependencies, if necessary
-        ctx.errors.report_external_deps_errors(ctx.into_fmt());
+        ctx.errors.report_external_deps_errors(&ctx.into_fmt());
     }
 
     trace!("Done");

@@ -241,51 +241,58 @@ impl<'ctx> ErrorCtx<'ctx> {
             self.external_dep_graph.insert_edge(src_node, tgt_node)
         }
     }
-}
 
-impl ErrorCtx<'_> {
-    /// In case errors happened when extracting the definitions coming from
-    /// the external dependencies, print a detailed report to explain
-    /// to the user which dependencies were problematic, and where they
-    /// are used in the code.
+    /// In case errors happened when extracting the definitions coming from the external
+    /// dependencies, print a detailed report to explain to the user which dependencies were
+    /// problematic, and where they are used in the code.
     #[cfg(feature = "rustc")]
-    pub fn report_external_deps_errors(&self, f: crate::formatter::FmtCtx<'_>) {
+    pub fn report_external_dep_error(&self, f: &crate::formatter::FmtCtx<'_>, id: AnyTransId) {
         use crate::formatter::Formatter;
         use petgraph::algo::dijkstra::dijkstra;
         use rustc_error_messages::MultiSpan;
-
-        if !self.has_errors() {
-            return;
-        }
 
         // We need to compute the reachability graph. An easy way is simply
         // to use Dijkstra on every external definition which triggered an
         // error.
         let graph = &self.external_dep_graph;
-        for id in &self.external_decls_with_errors {
-            let reachable = dijkstra(&graph.dgraph, DepNode::External(*id), None, &mut |_| 1);
-            trace!("id: {:?}\nreachable:\n{:?}", id, reachable);
+        let reachable = dijkstra(&graph.dgraph, DepNode::External(id), None, &mut |_| 1);
+        trace!("id: {:?}\nreachable:\n{:?}", id, reachable);
 
-            let reachable: Vec<rustc_span::Span> = reachable
-                .iter()
-                .filter_map(|(n, _)| match n {
-                    DepNode::External(_) => None,
-                    DepNode::Local(_, span) => Some(span.rust_span()),
-                })
-                .collect();
+        let reachable: Vec<rustc_span::Span> = reachable
+            .iter()
+            .filter_map(|(n, _)| match n {
+                DepNode::External(_) => None,
+                DepNode::Local(_, span) => Some(span.rust_span()),
+            })
+            .collect();
 
-            // Display the error message
-            let span = MultiSpan::from_spans(reachable);
-            let msg = format!(
-                "The external definition `{}` triggered errors. \
+        // Display the error message
+        let span = MultiSpan::from_spans(reachable);
+        let msg = format!(
+            "The external definition `{}` triggered errors. \
                 It is (transitively) used at the following location(s):",
-                f.format_object(*id)
-            );
-            if self.error_on_warnings {
-                self.dcx.span_err(span, msg);
-            } else {
-                self.dcx.span_warn(span, msg);
-            }
+            f.format_object(id)
+        );
+
+        if self.error_on_warnings {
+            self.dcx.span_err(span, msg);
+        } else {
+            self.dcx.span_warn(span, msg);
+        }
+    }
+
+    /// In case errors happened when extracting the definitions coming from
+    /// the external dependencies, print a detailed report to explain
+    /// to the user which dependencies were problematic, and where they
+    /// are used in the code.
+    #[cfg(feature = "rustc")]
+    pub fn report_external_deps_errors(&self, f: &crate::formatter::FmtCtx<'_>) {
+        if !self.has_errors() {
+            return;
+        }
+
+        for id in &self.external_decls_with_errors {
+            self.report_external_dep_error(f, *id);
         }
     }
 }
