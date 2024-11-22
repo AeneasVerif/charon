@@ -3,7 +3,7 @@ use crate::ast::*;
 use macros::VariantIndexArity;
 use petgraph::prelude::DiGraphMap;
 use std::cmp::{Ord, PartialOrd};
-use std::collections::{HashMap, HashSet};
+use std::collections::HashSet;
 
 /// Common error used during the translation.
 #[derive(Debug)]
@@ -141,8 +141,10 @@ pub struct ErrorCtx<'ctx> {
     pub external_decls_with_errors: HashSet<AnyTransId>,
     /// The ids of the declarations we completely failed to extract and had to ignore.
     pub ignored_failed_decls: HashSet<AnyTransId>,
-    /// For each external item, a list of locations that point to it. See [DepSource].
-    pub external_dep_sources: HashMap<AnyTransId, HashSet<DepSource>>,
+    /// Graph of dependencies between items: there is an edge from item `a` to item `b` if `b`
+    /// registered the id for `a` during its translation. Because we only use this to report errors
+    /// on external items, we only record edges where `a` is an external item.
+    external_dep_graph: DepGraph,
     /// The id of the definition we are exploring, used to track the source of errors.
     pub def_id: Option<AnyTransId>,
     /// Whether the definition being explored is local to the crate or not.
@@ -164,7 +166,7 @@ impl<'ctx> ErrorCtx<'ctx> {
             dcx,
             external_decls_with_errors: HashSet::new(),
             ignored_failed_decls: HashSet::new(),
-            external_dep_sources: HashMap::new(),
+            external_dep_graph: DepGraph::new(),
             def_id: None,
             def_id_is_local: false,
             error_count: 0,
@@ -225,13 +227,18 @@ impl<'ctx> ErrorCtx<'ctx> {
         item_id: AnyTransId,
         is_local: bool,
     ) {
-        if let Some(src) = src {
-            if src.src_id != item_id && !is_local {
-                self.external_dep_sources
-                    .entry(item_id)
-                    .or_default()
-                    .insert(*src);
-            }
+        if let Some(src) = src
+            && src.src_id != item_id
+            && !is_local
+        {
+            let src_node = DepNode::External(item_id);
+            self.external_dep_graph.insert_node(src_node);
+
+            let tgt_node = match src.span {
+                Some(span) => DepNode::Local(src.src_id, span),
+                None => DepNode::External(src.src_id),
+            };
+            self.external_dep_graph.insert_edge(src_node, tgt_node)
         }
     }
 }
@@ -250,32 +257,11 @@ impl ErrorCtx<'_> {
         if !self.has_errors() {
             return;
         }
-        // Create a dependency graph, with spans.
-        // We want to know what are the usages in the source code which
-        // lead to the extraction of the problematic definitions. For this
-        // reason, we only include edges:
-        // - from external def to external def
-        // - from local def to external def
-        let mut graph = DepGraph::new();
-
-        trace!("dep_sources:\n{:?}", self.external_dep_sources);
-        for (id, srcs) in &self.external_dep_sources {
-            let src_node = DepNode::External(*id);
-            graph.insert_node(src_node);
-
-            for src in srcs {
-                let tgt_node = match src.span {
-                    Some(span) => DepNode::Local(src.src_id, span),
-                    None => DepNode::External(src.src_id),
-                };
-                graph.insert_edge(src_node, tgt_node)
-            }
-        }
-        trace!("Graph:\n{}", graph);
 
         // We need to compute the reachability graph. An easy way is simply
         // to use Dijkstra on every external definition which triggered an
         // error.
+        let graph = &self.external_dep_graph;
         for id in &self.external_decls_with_errors {
             let reachable = dijkstra(&graph.dgraph, DepNode::External(*id), None, &mut |_| 1);
             trace!("id: {:?}\nreachable:\n{:?}", id, reachable);
