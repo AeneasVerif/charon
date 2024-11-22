@@ -766,24 +766,6 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         *opacity
     }
 
-    /// Register the fact that `id` is a dependency of `src` (if `src` is not `None`).
-    pub(crate) fn register_dep_source(
-        &mut self,
-        src: &Option<DepSource>,
-        def_id: DefId,
-        item_id: AnyTransId,
-    ) {
-        if let Some(src) = src {
-            if src.src_id != item_id && !def_id.is_local() {
-                self.errors
-                    .external_dep_sources
-                    .entry(item_id)
-                    .or_default()
-                    .insert(*src);
-            }
-        }
-    }
-
     pub(crate) fn register_id(
         &mut self,
         src: &Option<DepSource>,
@@ -824,7 +806,8 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
                 trans_id
             }
         };
-        self.register_dep_source(src, id.to_def_id(), item_id);
+        self.errors
+            .register_dep_source(src, item_id, id.to_def_id().is_local());
         item_id
     }
 

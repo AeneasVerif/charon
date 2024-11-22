@@ -151,6 +151,23 @@ impl ErrorCtx<'_> {
     pub fn ignore_failed_decl(&mut self, id: AnyTransId) {
         self.ignored_failed_decls.insert(id);
     }
+
+    /// Register the fact that `id` is a dependency of `src` (if `src` is not `None`).
+    pub fn register_dep_source(
+        &mut self,
+        src: &Option<DepSource>,
+        item_id: AnyTransId,
+        is_local: bool,
+    ) {
+        if let Some(src) = src {
+            if src.src_id != item_id && !is_local {
+                self.external_dep_sources
+                    .entry(item_id)
+                    .or_default()
+                    .insert(*src);
+            }
+        }
+    }
 }
 
 impl ErrorCtx<'_> {
