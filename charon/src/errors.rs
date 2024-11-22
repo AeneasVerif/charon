@@ -151,7 +151,26 @@ pub struct ErrorCtx<'ctx> {
     pub error_count: usize,
 }
 
-impl ErrorCtx<'_> {
+impl<'ctx> ErrorCtx<'ctx> {
+    pub fn new(
+        continue_on_failure: bool,
+        error_on_warnings: bool,
+        #[cfg(feature = "rustc")] dcx: rustc_errors::DiagCtxtHandle<'ctx>,
+        #[cfg(not(feature = "rustc"))] dcx: &'ctx (),
+    ) -> Self {
+        Self {
+            continue_on_failure,
+            error_on_warnings,
+            dcx,
+            external_decls_with_errors: HashSet::new(),
+            ignored_failed_decls: HashSet::new(),
+            external_dep_sources: HashMap::new(),
+            def_id: None,
+            def_id_is_local: false,
+            error_count: 0,
+        }
+    }
+
     pub fn continue_on_failure(&self) -> bool {
         self.continue_on_failure
     }
