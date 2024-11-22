@@ -26,13 +26,6 @@
 // For when we use charon on itself :3
 #![register_tool(charon)]
 
-#[cfg(feature = "rustc")]
-extern crate rustc_driver;
-#[cfg(feature = "rustc")]
-extern crate rustc_error_messages;
-#[cfg(feature = "rustc")]
-extern crate rustc_span;
-
 #[macro_use]
 pub mod ids;
 #[macro_use]

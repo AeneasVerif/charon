@@ -628,15 +628,13 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
 
     pub fn translate_raw_span(&mut self, rspan: &hax::Span) -> meta::RawSpan {
         let filename = self.translate_filename(&rspan.filename);
-        let rust_span_data = rspan.rust_span_data.unwrap();
+        let rust_span = rspan.rust_span_data.unwrap().span();
         let file_id = match &filename {
             FileName::NotReal(_) => {
                 // For now we forbid not real filenames
                 unimplemented!();
             }
-            FileName::Virtual(_) | FileName::Local(_) => {
-                self.register_file(filename, rust_span_data.span())
-            }
+            FileName::Virtual(_) | FileName::Local(_) => self.register_file(filename, rust_span),
         };
 
         fn convert_loc(loc: &hax::Loc) -> Loc {
@@ -649,12 +647,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
         let end = convert_loc(&rspan.hi);
 
         // Put together
-        meta::RawSpan {
-            file_id,
-            beg,
-            end,
-            rust_span_data,
-        }
+        meta::RawSpan { file_id, beg, end }
     }
 
     /// Compute span data from a Rust source scope
