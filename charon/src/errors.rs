@@ -209,10 +209,15 @@ impl<'ctx> ErrorCtx<'ctx> {
     pub fn span_err(&mut self, krate: &TranslatedCrate, span: Span, msg: &str) {
         self.span_err_no_register(krate, span, msg);
         self.error_count += 1;
-        if let Some(id) = self.def_id
-            && !self.def_id_is_local
+        // If this item comes from an external crate, after the first error for that item we
+        // display where in the local crate that item was reached from.
+        #[cfg(feature = "rustc")]
+        if !self.def_id_is_local
+            && let Some(id) = self.def_id
+            && self.external_decls_with_errors.insert(id)
         {
-            let _ = self.external_decls_with_errors.insert(id);
+            use crate::formatter::IntoFormatter;
+            self.report_external_dep_error(&krate.into_fmt(), id);
         }
     }
 
@@ -267,32 +272,13 @@ impl<'ctx> ErrorCtx<'ctx> {
             .collect();
 
         // Display the error message
-        let span = MultiSpan::from_spans(reachable);
+        let spans = MultiSpan::from_spans(reachable);
         let msg = format!(
-            "The external definition `{}` triggered errors. \
-                It is (transitively) used at the following location(s):",
+            "the error occurred when translating `{}`, \
+             which is (transitively) used at the following location(s):",
             f.format_object(id)
         );
 
-        if self.error_on_warnings {
-            self.dcx.span_err(span, msg);
-        } else {
-            self.dcx.span_warn(span, msg);
-        }
-    }
-
-    /// In case errors happened when extracting the definitions coming from
-    /// the external dependencies, print a detailed report to explain
-    /// to the user which dependencies were problematic, and where they
-    /// are used in the code.
-    #[cfg(feature = "rustc")]
-    pub fn report_external_deps_errors(&self, f: &crate::formatter::FmtCtx<'_>) {
-        if !self.has_errors() {
-            return;
-        }
-
-        for id in &self.external_decls_with_errors {
-            self.report_external_dep_error(f, *id);
-        }
+        self.dcx.span_note(spans, msg);
     }
 }
