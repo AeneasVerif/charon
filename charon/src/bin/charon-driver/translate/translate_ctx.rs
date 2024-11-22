@@ -190,6 +190,8 @@ pub struct TranslateCtx<'tcx, 'ctx> {
     pub translate_stack: Vec<AnyTransId>,
     /// Cache the names to compute them only once each.
     pub cached_names: HashMap<DefId, Name>,
+    /// Cache the `ItemMeta`s to compute them only once each.
+    pub cached_item_metas: HashMap<DefId, ItemMeta>,
 }
 
 /// A translation context for type/global/function bodies.
@@ -529,8 +531,11 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         &mut self,
         def: &hax::FullDef,
         name: Name,
-        opacity: ItemOpacity,
+        name_opacity: ItemOpacity,
     ) -> ItemMeta {
+        if let Some(item_meta) = self.cached_item_metas.get(&def.rust_def_id()) {
+            return item_meta.clone();
+        }
         let span = def.source_span.as_ref().unwrap_or(&def.span);
         let span = self.translate_span_from_hax(span);
         let attr_info = self.translate_attr_info(def);
@@ -540,19 +545,22 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
             || attr_info.attributes.iter().any(|attr| attr.is_opaque())
         {
             // Force opaque in these cases.
-            ItemOpacity::Opaque.max(opacity)
+            ItemOpacity::Opaque.max(name_opacity)
         } else {
-            opacity
+            name_opacity
         };
 
-        ItemMeta {
+        let item_meta = ItemMeta {
             name,
             span,
             source_text: def.source_text.clone(),
             attr_info,
             is_local,
             opacity,
-        }
+        };
+        self.cached_item_metas
+            .insert(def.rust_def_id(), item_meta.clone());
+        item_meta
     }
 
     pub fn translate_filename(&mut self, name: &hax::FileName) -> meta::FileName {
