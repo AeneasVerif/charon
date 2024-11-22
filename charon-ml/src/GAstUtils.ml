@@ -42,7 +42,9 @@ let fun_body_get_input_vars (fbody : 'body gexpr_body) : var list =
   locals_get_input_vars fbody.locals
 
 let g_declaration_group_to_list (g : 'a g_declaration_group) : 'a list =
-  match g with RecGroup ids -> ids | NonRecGroup id -> [ id ]
+  match g with
+  | RecGroup ids -> ids
+  | NonRecGroup id -> [ id ]
 
 (** List all the ids in this declaration group. *)
 let declaration_group_to_list (g : declaration_group) : any_decl_id list =

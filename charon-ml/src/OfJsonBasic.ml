@@ -6,7 +6,10 @@ open Yojson.Basic
 
 type json = t
 
-let ( let* ) o f = match o with Error e -> Error e | Ok x -> f x
+let ( let* ) o f =
+  match o with
+  | Error e -> Error e
+  | Ok x -> f x
 
 let combine_error_msgs (js : json) (msg : string) (res : ('a, string) result) :
     ('a, string) result =

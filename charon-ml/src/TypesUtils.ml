@@ -18,10 +18,14 @@ let to_name (ls : string list) : name =
   List.map (fun s -> PeIdent (s, Disambiguator.zero)) ls
 
 let as_ident (e : path_elem) : string =
-  match e with PeIdent (s, _) -> s | _ -> raise (Failure "Unexpected")
+  match e with
+  | PeIdent (s, _) -> s
+  | _ -> raise (Failure "Unexpected")
 
 let type_decl_is_opaque (d : type_decl) : bool =
-  match d.kind with Opaque -> true | _ -> false
+  match d.kind with
+  | Opaque -> true
+  | _ -> false
 
 (** Retrieve the list of fields for the given variant of a {!Charon.Types.type_decl}.
 
@@ -34,7 +38,9 @@ let type_decl_get_fields (def : type_decl)
   | Struct fields, None -> fields
   | _ ->
       let opt_variant_id =
-        match opt_variant_id with None -> "None" | Some _ -> "Some"
+        match opt_variant_id with
+        | None -> "None"
+        | Some _ -> "Some"
       in
       raise
         (Invalid_argument
@@ -44,19 +50,22 @@ let type_decl_get_fields (def : type_decl)
           ^ opt_variant_id))
 
 let type_decl_is_enum (def : type_decl) : bool =
-  match def.kind with Enum _ -> true | _ -> false
+  match def.kind with
+  | Enum _ -> true
+  | _ -> false
 
 (** Return [true] if a {!type:Charon.Types.ty} is actually [unit] *)
 let ty_is_unit (ty : ty) : bool =
   match ty with
   | TAdt
       (TTuple, { regions = []; types = []; const_generics = []; trait_refs = _ })
-    ->
-      true
+    -> true
   | _ -> false
 
 let ty_is_adt (ty : ty) : bool =
-  match ty with TAdt (_, _) -> true | _ -> false
+  match ty with
+  | TAdt (_, _) -> true
+  | _ -> false
 
 let ty_as_adt (ty : ty) : type_id * generic_args =
   match ty with
@@ -69,7 +78,9 @@ let ty_as_ref (ty : ty) : region * ty * ref_kind =
   | _ -> raise (Failure "Unreachable")
 
 let ty_is_custom_adt (ty : ty) : bool =
-  match ty with TAdt (TAdtId _, _) -> true | _ -> false
+  match ty with
+  | TAdt (TAdtId _, _) -> true
+  | _ -> false
 
 let ty_as_custom_adt (ty : ty) : TypeDeclId.id * generic_args =
   match ty with
@@ -77,7 +88,9 @@ let ty_as_custom_adt (ty : ty) : TypeDeclId.id * generic_args =
   | _ -> raise (Failure "Unreachable")
 
 let ty_as_literal (ty : ty) : literal_type =
-  match ty with TLiteral lty -> lty | _ -> raise (Failure "Unreachable")
+  match ty with
+  | TLiteral lty -> lty
+  | _ -> raise (Failure "Unreachable")
 
 let ty_as_integer (ty : ty) : integer_type =
   match ty_as_literal ty with
@@ -85,7 +98,9 @@ let ty_as_integer (ty : ty) : integer_type =
   | _ -> raise (Failure "Unreachable")
 
 let const_generic_as_literal (cg : const_generic) : Values.literal =
-  match cg with CgValue v -> v | _ -> raise (Failure "Unreachable")
+  match cg with
+  | CgValue v -> v
+  | _ -> raise (Failure "Unreachable")
 
 let trait_instance_id_as_trait_impl (id : trait_instance_id) :
     trait_impl_id * generic_args =

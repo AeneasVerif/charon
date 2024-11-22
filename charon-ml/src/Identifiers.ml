@@ -159,7 +159,9 @@ module IdGen () : Id = struct
 
   let mapi_from1 f ls =
     let rec aux i ls =
-      match ls with [] -> [] | x :: ls' -> f i x :: aux (i + 1) ls'
+      match ls with
+      | [] -> []
+      | x :: ls' -> f i x :: aux (i + 1) ls'
     in
     aux 1 ls
 

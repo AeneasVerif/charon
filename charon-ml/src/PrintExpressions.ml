@@ -149,7 +149,9 @@ let rvalue_to_string (env : 'a fmt_env) (rv : rvalue) : string =
     end
   | RawPtr (p, pk) -> begin
       let p = place_to_string env p in
-      match pk with RShared -> "&raw const " ^ p | RMut -> "&raw mut " ^ p
+      match pk with
+      | RShared -> "&raw const " ^ p
+      | RMut -> "&raw mut " ^ p
     end
   | NullaryOp (op, ty) ->
       nullop_to_string env op ^ "<" ^ ty_to_string env ty ^ ">"
@@ -161,7 +163,9 @@ let rvalue_to_string (env : 'a fmt_env) (rv : rvalue) : string =
   | Discriminant (p, _) -> "discriminant(" ^ place_to_string env p ^ ")"
   | Len (place, ty, const_generics) ->
       let const_generics =
-        match const_generics with None -> [] | Some cg -> [ cg ]
+        match const_generics with
+        | None -> []
+        | Some cg -> [ cg ]
       in
       "len<"
       ^ String.concat ", "
