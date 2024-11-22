@@ -12,7 +12,7 @@ use super::ctx::LlbcPass;
 
 pub struct Transform;
 impl LlbcPass for Transform {
-    fn transform_body(&self, _ctx: &mut TransformCtx<'_>, b: &mut ExprBody) {
+    fn transform_body(&self, _ctx: &mut TransformCtx, b: &mut ExprBody) {
         let locals = &b.locals;
         b.body
             .drive_mut(&mut visitor_enter_fn_mut(|st: &mut Statement| {

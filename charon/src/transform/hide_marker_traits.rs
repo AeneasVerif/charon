@@ -68,7 +68,7 @@ impl Visitor {
 
 pub struct Transform;
 impl TransformPass for Transform {
-    fn transform_ctx(&self, ctx: &mut TransformCtx<'_>) {
+    fn transform_ctx(&self, ctx: &mut TransformCtx) {
         // Remove any mention of these traits in generic parameters and arguments.
         // We always hide `Allocator` because in `Box` it refers to a type parameter that we always
         // remove.

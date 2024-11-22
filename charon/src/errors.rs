@@ -168,17 +168,12 @@ impl std::fmt::Display for DepGraph {
 }
 
 /// The context for tracking and reporting errors.
-pub struct ErrorCtx<'ctx> {
+pub struct ErrorCtx {
     /// If true, do not abort on the first error and attempt to extract as much as possible.
     pub continue_on_failure: bool,
     /// If true, print the warnings as errors, and abort if any errors were raised.
     pub error_on_warnings: bool,
 
-    /// The compiler session, used for displaying errors.
-    #[cfg(feature = "rustc")]
-    pub dcx: rustc_errors::DiagCtxtHandle<'ctx>,
-    #[cfg(not(feature = "rustc"))]
-    pub dcx: &'ctx (),
     /// The ids of the external_declarations for which extraction we encountered errors.
     pub external_decls_with_errors: HashSet<AnyTransId>,
     /// The ids of the declarations we completely failed to extract and had to ignore.
@@ -195,17 +190,11 @@ pub struct ErrorCtx<'ctx> {
     pub error_count: usize,
 }
 
-impl<'ctx> ErrorCtx<'ctx> {
-    pub fn new(
-        continue_on_failure: bool,
-        error_on_warnings: bool,
-        #[cfg(feature = "rustc")] dcx: rustc_errors::DiagCtxtHandle<'ctx>,
-        #[cfg(not(feature = "rustc"))] dcx: &'ctx (),
-    ) -> Self {
+impl ErrorCtx {
+    pub fn new(continue_on_failure: bool, error_on_warnings: bool) -> Self {
         Self {
             continue_on_failure,
             error_on_warnings,
-            dcx,
             external_decls_with_errors: HashSet::new(),
             ignored_failed_decls: HashSet::new(),
             external_dep_graph: DepGraph::new(),

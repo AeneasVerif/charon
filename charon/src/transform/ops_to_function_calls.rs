@@ -56,7 +56,7 @@ fn transform_st(s: &mut Statement) {
 
 pub struct Transform;
 impl UllbcPass for Transform {
-    fn transform_body(&self, _ctx: &mut TransformCtx<'_>, b: &mut ExprBody) {
+    fn transform_body(&self, _ctx: &mut TransformCtx, b: &mut ExprBody) {
         b.visit_statements(&mut transform_st);
     }
 }

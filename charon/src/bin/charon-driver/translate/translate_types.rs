@@ -52,7 +52,7 @@ pub fn translate_region_name(region: &hax::Region) -> Option<String> {
     check_region_name(s)
 }
 
-impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
+impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
     // Translate a region
     pub(crate) fn translate_region(
         &mut self,
@@ -763,7 +763,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     }
 }
 
-impl BodyTransCtx<'_, '_, '_> {
+impl BodyTransCtx<'_, '_> {
     /// Translate a type definition.
     ///
     /// Note that we translate the types one by one: we don't need to take into

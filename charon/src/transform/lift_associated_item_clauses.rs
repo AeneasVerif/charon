@@ -12,7 +12,7 @@ use super::{ctx::TransformPass, TransformCtx};
 
 pub struct Transform;
 impl TransformPass for Transform {
-    fn transform_ctx(&self, ctx: &mut TransformCtx<'_>) {
+    fn transform_ctx(&self, ctx: &mut TransformCtx) {
         // For each trait, we move the item-local clauses to be top-level parent clauses, and
         // record the mapping from the old to the new ids.
         let trait_item_clause_ids: Vector<

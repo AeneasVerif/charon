@@ -55,7 +55,7 @@ fn translate_borrow_kind(borrow_kind: hax::BorrowKind) -> BorrowKind {
     }
 }
 
-impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
+impl<'tcx, 'ctx> TranslateCtx<'tcx> {
     fn translate_binaryop_kind(&mut self, span: Span, binop: hax::BinOp) -> Result<BinOp, Error> {
         Ok(match binop {
             hax::BinOp::BitXor => BinOp::BitXor,
@@ -87,7 +87,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
     }
 }
 
-impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
+impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
     pub(crate) fn get_item_kind(
         &mut self,
         span: Span,
@@ -1436,7 +1436,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     }
 }
 
-impl BodyTransCtx<'_, '_, '_> {
+impl BodyTransCtx<'_, '_> {
     /// Translate one function.
     #[tracing::instrument(skip(self, rust_id, item_meta))]
     pub fn translate_function(

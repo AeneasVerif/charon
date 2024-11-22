@@ -75,7 +75,7 @@ impl Transform {
 }
 
 impl UllbcPass for Transform {
-    fn transform_body(&self, _ctx: &mut TransformCtx<'_>, b: &mut ExprBody) {
+    fn transform_body(&self, _ctx: &mut TransformCtx, b: &mut ExprBody) {
         b.transform_sequences(&mut |_, seq| {
             Transform::update_statements(seq);
             Vec::new()

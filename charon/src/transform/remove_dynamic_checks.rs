@@ -190,7 +190,7 @@ fn remove_dynamic_checks(_ctx: &mut TransformCtx, statements: &mut [Statement]) 
 
 pub struct Transform;
 impl UllbcPass for Transform {
-    fn transform_body(&self, ctx: &mut TransformCtx<'_>, b: &mut ExprBody) {
+    fn transform_body(&self, ctx: &mut TransformCtx, b: &mut ExprBody) {
         for block in b.body.iter_mut() {
             block.transform_sequences(&mut |seq| {
                 remove_dynamic_checks(ctx, seq);

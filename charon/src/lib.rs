@@ -31,8 +31,6 @@ extern crate rustc_driver;
 #[cfg(feature = "rustc")]
 extern crate rustc_error_messages;
 #[cfg(feature = "rustc")]
-extern crate rustc_errors;
-#[cfg(feature = "rustc")]
 extern crate rustc_span;
 
 #[macro_use]

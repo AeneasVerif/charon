@@ -52,7 +52,7 @@ pub struct TranslateOptions {
 }
 
 impl TranslateOptions {
-    pub(crate) fn new(error_ctx: &mut ErrorCtx<'_>, options: &CliOpts) -> Self {
+    pub(crate) fn new(error_ctx: &mut ErrorCtx, options: &CliOpts) -> Self {
         let mut parse_pattern = |s: &str| match NamePattern::parse(s) {
             Ok(p) => Ok(p),
             Err(e) => {
@@ -159,7 +159,7 @@ impl Ord for TransItemSource {
 }
 
 /// Translation context used while translating the crate data into our representation.
-pub struct TranslateCtx<'tcx, 'ctx> {
+pub struct TranslateCtx<'tcx> {
     /// The Rust compiler type context
     pub tcx: TyCtxt<'tcx>,
     /// Path to the toolchain root.
@@ -180,7 +180,7 @@ pub struct TranslateCtx<'tcx, 'ctx> {
     pub file_to_id: HashMap<FileName, FileId>,
 
     /// Context for tracking and reporting errors.
-    pub errors: ErrorCtx<'ctx>,
+    pub errors: ErrorCtx,
     /// The declarations we came accross and which we haven't translated yet. We keep them sorted
     /// to make the output order a bit more stable.
     pub items_to_translate: BTreeMap<TransItemSource, AnyTransId>,
@@ -202,14 +202,14 @@ pub struct TranslateCtx<'tcx, 'ctx> {
 /// implement support for universally quantified traits, where we might need
 /// to be able to dive in/out of universal quantifiers. Also, it doesn't cost
 /// us to use those collections.
-pub(crate) struct BodyTransCtx<'tcx, 'ctx, 'ctx1> {
+pub(crate) struct BodyTransCtx<'tcx, 'ctx> {
     /// The definition we are currently extracting.
     /// TODO: this duplicates the field of [ErrorCtx]
     pub def_id: DefId,
     /// The id of the definition we are currently extracting, if there is one.
     pub item_id: Option<AnyTransId>,
     /// The translation context containing the top-level definitions/ids.
-    pub t_ctx: &'ctx mut TranslateCtx<'tcx, 'ctx1>,
+    pub t_ctx: &'ctx mut TranslateCtx<'tcx>,
     /// A hax state with an owner id
     pub hax_state: hax::StateWithOwner<'tcx>,
     /// Whether to consider a `ImplExprAtom::Error` as an error for us. True except inside type
@@ -303,7 +303,7 @@ where
     })
 }
 
-impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
+impl<'tcx, 'ctx> TranslateCtx<'tcx> {
     pub fn continue_on_failure(&self) -> bool {
         self.errors.continue_on_failure()
     }
@@ -900,12 +900,12 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
     }
 }
 
-impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
+impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
     /// Create a new `ExecContext`.
     pub(crate) fn new(
         def_id: DefId,
         item_id: Option<AnyTransId>,
-        t_ctx: &'ctx mut TranslateCtx<'tcx, 'ctx1>,
+        t_ctx: &'ctx mut TranslateCtx<'tcx>,
     ) -> Self {
         let hax_state = hax::State::new_from_state_and_id(&t_ctx.hax_state, def_id);
         BodyTransCtx {
@@ -1138,7 +1138,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     }
 }
 
-impl<'tcx, 'ctx, 'a> IntoFormatter for &'a TranslateCtx<'tcx, 'ctx> {
+impl<'tcx, 'ctx, 'a> IntoFormatter for &'a TranslateCtx<'tcx> {
     type C = FmtCtx<'a>;
 
     fn into_fmt(self) -> Self::C {
@@ -1146,7 +1146,7 @@ impl<'tcx, 'ctx, 'a> IntoFormatter for &'a TranslateCtx<'tcx, 'ctx> {
     }
 }
 
-impl<'tcx, 'ctx, 'ctx1, 'a> IntoFormatter for &'a BodyTransCtx<'tcx, 'ctx, 'ctx1> {
+impl<'tcx, 'ctx, 'a> IntoFormatter for &'a BodyTransCtx<'tcx, 'ctx> {
     type C = FmtCtx<'a>;
 
     fn into_fmt(self) -> Self::C {
@@ -1174,7 +1174,7 @@ impl<'tcx, 'ctx, 'ctx1, 'a> IntoFormatter for &'a BodyTransCtx<'tcx, 'ctx, 'ctx1
     }
 }
 
-impl<'tcx, 'ctx> fmt::Display for TranslateCtx<'tcx, 'ctx> {
+impl<'tcx, 'ctx> fmt::Display for TranslateCtx<'tcx> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         self.translated.fmt(f)
     }

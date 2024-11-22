@@ -22,7 +22,7 @@ pub(crate) enum PredicateLocation {
     Base,
 }
 
-impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
+impl<'tcx, 'ctx> TranslateCtx<'tcx> {
     /// Remark: this **doesn't** register the def id (on purpose)
     pub(crate) fn translate_trait_item_name(
         &mut self,
@@ -36,7 +36,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
     }
 }
 
-impl BodyTransCtx<'_, '_, '_> {
+impl BodyTransCtx<'_, '_> {
     #[tracing::instrument(skip(self, rust_id, item_meta))]
     pub fn translate_trait_decl(
         mut self,

@@ -123,7 +123,7 @@ pub enum Pass {
 }
 
 impl Pass {
-    pub fn run(self, ctx: &mut TransformCtx<'_>) {
+    pub fn run(self, ctx: &mut TransformCtx) {
         match self {
             NonBody(pass) => pass.transform_ctx(ctx),
             UnstructuredBody(pass) => pass.transform_ctx(ctx),
