@@ -12,7 +12,7 @@ type subst = {
       (** Remark: this might be called with bound regions with a negative
           DeBruijn index. A negative DeBruijn index means that the region
           is locally bound. *)
-  ty_subst : TypeVarId.id -> ty;
+  ty_subst : TypeVarId.id de_bruijn_var -> ty;
   cg_subst : ConstGenericVarId.id -> const_generic;
       (** Substitution from *local* trait clause to trait instance *)
   tr_subst : TraitClauseId.id -> trait_instance_id;
@@ -23,7 +23,7 @@ type subst = {
 let empty_subst : subst =
   {
     r_subst = (fun x -> x);
-    ty_subst = (fun id -> TVar id);
+    ty_subst = (fun var -> TVar var);
     cg_subst = (fun id -> CgVar id);
     tr_subst = (fun id -> Clause id);
     tr_self = Self;
@@ -164,7 +164,7 @@ let generic_args_erase_regions (tr : generic_args) : generic_args =
   generic_args_substitute erase_regions_subst tr
 
 (** Erase the regions in a type and perform a substitution *)
-let erase_regions_substitute_types (ty_subst : TypeVarId.id -> ty)
+let erase_regions_substitute_types (ty_subst : TypeVarId.id de_bruijn_var -> ty)
     (cg_subst : ConstGenericVarId.id -> const_generic)
     (tr_subst : TraitClauseId.id -> trait_instance_id)
     (tr_self : trait_instance_id) (ty : ty) : ty =
@@ -186,9 +186,9 @@ let make_region_subst (var_ids : RegionVarId.id list) (regions : region list) :
     match r with
     | RStatic | RErased -> r
     | RFVar _ -> raise (Failure "Unexpected")
-    | RBVar { dbid; varid } ->
+    | RBVar var ->
         (* Only substitute the bound regions with DeBruijn index equal to 0 *)
-        if dbid = 0 then RegionVarId.Map.find varid mp else r
+        if var.dbid = 0 then RegionVarId.Map.find var.varid mp else r
 
 let make_region_subst_from_vars (vars : region_var list) (regions : region list)
     : region -> region =
@@ -197,17 +197,19 @@ let make_region_subst_from_vars (vars : region_var list) (regions : region list)
 (** Create a type substitution from a list of type variable ids and a list of
     types (with which to substitute the type variable ids) *)
 let make_type_subst (var_ids : TypeVarId.id list) (tys : ty list) :
-    TypeVarId.id -> ty =
+    TypeVarId.id de_bruijn_var -> ty =
   let ls = List.combine var_ids tys in
   let mp =
     List.fold_left
       (fun mp (k, v) -> TypeVarId.Map.add k v mp)
       TypeVarId.Map.empty ls
   in
-  fun id -> TypeVarId.Map.find id mp
+  fun var ->
+    (* Only substitute the variables with DeBruijn index equal to 0 *)
+    if var.dbid = 0 then TypeVarId.Map.find var.varid mp else TVar var
 
 let make_type_subst_from_vars (vars : type_var list) (tys : ty list) :
-    TypeVarId.id -> ty =
+    TypeVarId.id de_bruijn_var -> ty =
   make_type_subst (List.map (fun (x : type_var) -> x.index) vars) tys
 
 (** Create a const generic substitution from a list of const generic variable ids and a list of

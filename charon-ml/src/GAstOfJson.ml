@@ -1321,7 +1321,9 @@ and ty_of_json (ctx : of_json_ctx) (js : json) : (ty, string) result =
         let* x_1 = generic_args_of_json ctx x_1 in
         Ok (TAdt (x_0, x_1))
     | `Assoc [ ("TypeVar", type_var) ] ->
-        let* type_var = type_var_id_of_json ctx type_var in
+        let* type_var =
+          de_bruijn_var_of_json type_var_id_of_json ctx type_var
+        in
         Ok (TVar type_var)
     | `Assoc [ ("Literal", literal) ] ->
         let* literal = literal_type_of_json ctx literal in

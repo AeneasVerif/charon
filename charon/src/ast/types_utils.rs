@@ -104,7 +104,7 @@ impl GenericParams {
             types: self
                 .types
                 .iter_indexed()
-                .map(|(id, _)| TyKind::TypeVar(id).into_ty())
+                .map(|(id, _)| TyKind::TypeVar(DeBruijnVar::new(DeBruijnId::new(0), id)).into_ty())
                 .collect(),
             const_generics: self
                 .const_generics
@@ -625,7 +625,10 @@ impl<'a> SubstVisitor<'a> {
     }
     fn exit_ty(&mut self, ty: &mut Ty) {
         match ty.kind() {
-            TyKind::TypeVar(id) => *ty = self.generics.types.get(*id).unwrap().clone(),
+            TyKind::TypeVar(id) => {
+                assert_eq!(id.dbid, self.binder_depth); // the only type binder is at the top-level
+                *ty = self.generics.types.get(id.varid).unwrap().clone()
+            }
             TyKind::Arrow(_, _, _) => self.binder_depth = self.binder_depth.decr(),
             _ => (),
         }

@@ -235,8 +235,7 @@ let ctx_to_fmt_env (ctx : ctx) : PrintLlbcAst.fmt_env =
     global_decls = ctx.global_decls;
     trait_decls = ctx.trait_decls;
     trait_impls = ctx.trait_impls;
-    regions = [];
-    generics = TypesUtils.empty_generic_params;
+    generics = [];
     locals = [];
   }
 
@@ -770,21 +769,25 @@ let mk_name_matcher (ctx : ctx) (c : match_config) (pat : string) :
  * Helpers to convert names to patterns
  *)
 
-(* We use this to store the constraints maps (the map from variable
-   ids to option pattern variable ids) *)
-type constraints = {
-  rmap : var option T.RegionVarId.Map.t list;
-      (** Note that we have a stack of maps for the regions *)
+(* Maps from variable ids to option pattern variable ids *)
+type vars_map = {
+  rmap : var option T.RegionVarId.Map.t;
   tmap : var option T.TypeVarId.Map.t;
   cmap : var option T.ConstGenericVarId.Map.t;
 }
 
-let empty_constraints =
+let empty_vars_map =
   {
-    rmap = [ T.RegionVarId.Map.empty ];
+    rmap = T.RegionVarId.Map.empty;
     tmap = T.TypeVarId.Map.empty;
     cmap = T.ConstGenericVarId.Map.empty;
   }
+
+(* We use this to store the constraints maps. Not that we have a stack of map,
+   with one level per binder. *)
+type constraints = vars_map list
+
+let empty_constraints = [ empty_vars_map ]
 
 let ref_kind_to_pattern (rk : T.ref_kind) : ref_kind =
   match rk with
@@ -795,10 +798,10 @@ let region_to_pattern (m : constraints) (r : T.region) : region =
   match r with
   | RBVar { dbid; varid } ->
       RVar
-        (match List.nth_opt m.rmap dbid with
+        (match List.nth_opt m dbid with
         | None -> None
-        | Some rmap -> (
-            match T.RegionVarId.Map.find_opt varid rmap with
+        | Some map -> (
+            match T.RegionVarId.Map.find_opt varid map.rmap with
             | Some r -> r
             | None -> None))
   | RFVar _ ->
@@ -812,16 +815,21 @@ let region_to_pattern (m : constraints) (r : T.region) : region =
          detect specific function calls) to patterns. *)
       RVar None
 
-let type_var_to_pattern (m : constraints) (v : T.TypeVarId.id) : var option =
-  match T.TypeVarId.Map.find_opt v m.tmap with
-  | Some v -> v
-  | None ->
-      (* Return the empty pattern *)
-      None
+let type_var_to_pattern (m : constraints) (v : T.TypeVarId.id T.de_bruijn_var) :
+    var option =
+  match List.nth_opt m v.dbid with
+  | None -> None
+  | Some map -> begin
+      match T.TypeVarId.Map.find_opt v.varid map.tmap with
+      | Some v -> v
+      | None ->
+          (* Return the empty pattern *)
+          None
+    end
 
 let const_generic_var_to_pattern (m : constraints) (v : T.ConstGenericVarId.id)
     : var option =
-  match T.ConstGenericVarId.Map.find_opt v m.cmap with
+  match T.ConstGenericVarId.Map.find_opt v (List.hd (List.rev m)).cmap with
   | Some v -> v
   | None ->
       (* Return the empty pattern *)
@@ -847,7 +855,7 @@ let constraints_map_compute_regions_map (regions : T.region_var list) :
        regions)
 
 let compute_constraints_map (generics : T.generic_params) : constraints =
-  let rmap = [ constraints_map_compute_regions_map generics.regions ] in
+  let rmap = constraints_map_compute_regions_map generics.regions in
   let tmap =
     T.TypeVarId.Map.of_list
       (List.map
@@ -860,12 +868,12 @@ let compute_constraints_map (generics : T.generic_params) : constraints =
          (fun (x : T.const_generic_var) -> (x.index, Some (VarName x.name)))
          generics.const_generics)
   in
-  { rmap; tmap; cmap }
+  [ { rmap; tmap; cmap } ]
 
 let constraints_map_push_regions_map (m : constraints)
     (regions : T.region_var list) : constraints =
   let rmap = constraints_map_compute_regions_map regions in
-  { m with rmap = rmap :: m.rmap }
+  { empty_vars_map with rmap } :: m
 
 (** Push a regions map to the constraints map, if the group of regions
     is non-empty - TODO: do something more precise *)

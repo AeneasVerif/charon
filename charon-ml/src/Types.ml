@@ -64,23 +64,29 @@ and const_generic_var_id = ConstGenericVarId.id
 
     **Important**:
     ==============
-    Similarly to what the Rust compiler does, we use De Bruijn indices to
-    identify *groups* of bound variables, and variable identifiers to
-    identity the variables inside the groups.
+    Similarly to what the Rust compiler does, we use De Bruijn indices to identify *groups* of
+    bound variables, and variable identifiers to identify the variables inside the groups. Each
+    syntactic item that introduces generics counts as one group of generics; we count type, region
+    and const generics variables together.
+
+    The exception is methods: we merge the generics of the impl/trait block with the generics of
+    the function. In other words, every top-level item (as considered by charon) has a single
+    binder for its generic parameters.
 
     For instance, we have the following:
     ```text
-                        we compute the De Bruijn indices from here
-                               VVVVVVVVVVVVVVVVVVVVVVV
-    fn f<'a, 'b>(x: for<'c> fn(&'a u8, &'b u16, &'c u32) -> u64) {}
-         ^^^^^^         ^^       ^       ^        ^
-           |      De Bruijn: 0   |       |        |
-     De Bruijn: 1                |       |        |
-                           De Bruijn: 1  |    De Bruijn: 0
-                              Var id: 0  |       Var id: 0
-                                         |
-                                   De Bruijn: 1
-                                      Var id: 1
+    fn f<'a, 'b, T>(x: for<'c> fn(&'a u8, &'b u16, &'c T) -> u64) {}
+                                    ^       ^        ^ ^
+                                    |       |        | |
+                                    |       |        | |
+                              De Bruijn: 1  |        | De Bruijn: 1
+                                 Var id: 0  |        |    Var id: 0
+                                            |        |
+                                      De Bruijn: 1   |
+                                         Var id: 1   |
+                                                     |
+                                                 De Bruijn: 0
+                                                    Var id: 0
     ```
 
     This is generic in the variable type. Typical values for `V` are `RegionId` and `TypeVarId`.
@@ -502,7 +508,7 @@ and ty =
           Note: this is incorrectly named: this can refer to any valid `TypeDecl` including extern
           types.
        *)
-  | TVar of type_var_id
+  | TVar of type_var_id de_bruijn_var
   | TLiteral of literal_type
   | TNever
       (** The never type, for computations which don't return. It is sometimes
@@ -595,10 +601,7 @@ class ['self] map_generic_params_base =
     method visit_span : 'env -> span -> span = fun _ x -> x
   end
 
-(** Type variable.
-    We make sure not to mix variables and type variables by having two distinct
-    definitions.
- *)
+(** Type variable. *)
 type type_var = (type_var_id, string) indexed_var
 
 (** Const Generic Variable *)

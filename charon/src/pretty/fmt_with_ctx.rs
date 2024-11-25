@@ -1592,6 +1592,12 @@ impl std::fmt::Display for ConstantExpr {
     }
 }
 
+impl std::fmt::Display for DeBruijnId {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::result::Result<(), std::fmt::Error> {
+        write!(f, "{}", self.index)
+    }
+}
+
 impl std::fmt::Display for FileName {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::result::Result<(), std::fmt::Error> {
         match self {

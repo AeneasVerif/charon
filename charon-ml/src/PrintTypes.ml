@@ -32,8 +32,8 @@ let bound_region_var_to_pretty_string (var : region_var_id de_bruijn_var) :
 let region_id_to_pretty_string (id : region_id) : string =
   "'" ^ RegionId.to_string id
 
-let type_var_id_to_pretty_string (id : type_var_id) : string =
-  "T@" ^ TypeVarId.to_string id
+let type_var_id_to_pretty_string (var : type_var_id de_bruijn_var) : string =
+  "T@" ^ show_de_bruijn_id var.dbid ^ "_" ^ TypeVarId.to_string var.varid
 
 let const_generic_var_id_to_pretty_string (id : const_generic_var_id) : string =
   "C@" ^ ConstGenericVarId.to_string id
@@ -61,23 +61,30 @@ let field_id_to_pretty_string (id : field_id) : string =
 
 let bound_region_var_to_string (env : 'a fmt_env)
     (var : region_var_id de_bruijn_var) : string =
-  match List.nth_opt env.regions var.dbid with
+  match List.nth_opt env.generics var.dbid with
   | None -> bound_region_var_to_pretty_string var
-  | Some regions -> (
+  | Some generics -> (
       (* Note that the regions are not necessarily ordered following their indices *)
       match
-        List.find_opt (fun (r : region_var) -> r.index = var.varid) regions
+        List.find_opt
+          (fun (r : region_var) -> r.index = var.varid)
+          generics.regions
       with
       | None -> bound_region_var_to_pretty_string var
       | Some r -> region_var_to_string r)
 
-let type_var_id_to_string (env : 'a fmt_env) (id : type_var_id) : string =
-  (* Note that the types are not necessarily ordered following their indices *)
-  match
-    List.find_opt (fun (x : type_var) -> x.index = id) env.generics.types
-  with
-  | None -> type_var_id_to_pretty_string id
-  | Some x -> type_var_to_string x
+let type_var_id_to_string (env : 'a fmt_env) (var : type_var_id de_bruijn_var) :
+    string =
+  match List.nth_opt env.generics var.dbid with
+  | None -> type_var_id_to_pretty_string var
+  | Some generics -> begin
+      (* Note that the types are not necessarily ordered following their indices *)
+      match
+        List.find_opt (fun (x : type_var) -> x.index = var.varid) generics.types
+      with
+      | None -> type_var_id_to_pretty_string var
+      | Some x -> type_var_to_string x
+    end
 
 let const_generic_var_id_to_string (env : 'a fmt_env)
     (id : const_generic_var_id) : string =
@@ -85,7 +92,7 @@ let const_generic_var_id_to_string (env : 'a fmt_env)
   match
     List.find_opt
       (fun (x : const_generic_var) -> x.index = id)
-      env.generics.const_generics
+      (List.hd (List.rev env.generics)).const_generics
   with
   | None -> const_generic_var_id_to_pretty_string id
   | Some x -> const_generic_var_to_string x
@@ -186,7 +193,7 @@ and ty_to_string (env : 'a fmt_env) (ty : ty) : string =
       | RMut -> "*mut " ^ ty_to_string env rty
       | RShared -> "*const " ^ ty_to_string env rty)
   | TArrow (regions, inputs, output) ->
-      let env = { env with regions = regions :: env.regions } in
+      let env = fmt_env_push_regions env regions in
       let inputs =
         "(" ^ String.concat ", " (List.map (ty_to_string env) inputs) ^ ") -> "
       in
