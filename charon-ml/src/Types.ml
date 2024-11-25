@@ -105,10 +105,65 @@ let option_none_id = VariantId.of_int 0
 (** The variant id for [Option::Some] *)
 let option_some_id = VariantId.of_int 1
 
+(** Ancestor for iter visitor for {!Types.const_generic} *)
+class ['self] iter_const_generic_base_base =
+  object (self : 'self)
+    inherit [_] iter_literal
+
+    method visit_de_bruijn_var
+        : 'var. ('env -> 'var -> unit) -> 'env -> 'var de_bruijn_var -> unit =
+      fun visit_var env x ->
+        let { dbid; varid } = x in
+        visit_var env varid
+  end
+
+class ['self] map_const_generic_base_base =
+  object (self : 'self)
+    inherit [_] map_literal
+
+    method visit_de_bruijn_var
+        : 'var.
+          ('env -> 'var -> 'var) ->
+          'env ->
+          'var de_bruijn_var ->
+          'var de_bruijn_var =
+      fun visit_var env x ->
+        let { dbid; varid } = x in
+        let varid = visit_var env varid in
+        { dbid; varid }
+  end
+
+class virtual ['self] reduce_const_generic_base_base =
+  object (self : 'self)
+    inherit [_] reduce_literal
+
+    method visit_de_bruijn_var
+        : 'var. ('env -> 'var -> 'a) -> 'env -> 'var de_bruijn_var -> 'a =
+      fun visit_var env x ->
+        let { dbid; varid } = x in
+        visit_var env varid
+  end
+
+class virtual ['self] mapreduce_const_generic_base_base =
+  object (self : 'self)
+    inherit [_] mapreduce_literal
+
+    method visit_de_bruijn_var
+        : 'var.
+          ('env -> 'var -> 'var * 'a) ->
+          'env ->
+          'var de_bruijn_var ->
+          'var de_bruijn_var * 'a =
+      fun visit_var env x ->
+        let { dbid; varid } = x in
+        let varid, acc = visit_var env varid in
+        ({ dbid; varid }, acc)
+  end
+
 (* Ancestors for the const_generic visitors *)
 class ['self] iter_const_generic_base =
   object (self : 'self)
-    inherit [_] iter_literal
+    inherit [_] iter_const_generic_base_base
 
     method visit_const_generic_var_id : 'env -> const_generic_var_id -> unit =
       fun _ _ -> ()
@@ -130,7 +185,7 @@ class ['self] iter_const_generic_base =
 
 class ['self] map_const_generic_base =
   object (self : 'self)
-    inherit [_] map_literal
+    inherit [_] map_const_generic_base_base
 
     method visit_const_generic_var_id
         : 'env -> const_generic_var_id -> const_generic_var_id =
@@ -166,7 +221,7 @@ class ['self] map_const_generic_base =
 
 class virtual ['self] reduce_const_generic_base =
   object (self : 'self)
-    inherit [_] reduce_literal
+    inherit [_] reduce_const_generic_base_base
 
     method visit_const_generic_var_id : 'env -> const_generic_var_id -> 'a =
       fun _ _ -> self#zero
@@ -201,7 +256,7 @@ class virtual ['self] reduce_const_generic_base =
 
 class virtual ['self] mapreduce_const_generic_base =
   object (self : 'self)
-    inherit [_] mapreduce_literal
+    inherit [_] mapreduce_const_generic_base_base
 
     method visit_const_generic_var_id
         : 'env -> const_generic_var_id -> const_generic_var_id * 'a =
@@ -243,7 +298,7 @@ class virtual ['self] mapreduce_const_generic_base =
 (** Const Generic Values. Either a primitive value, or a variable corresponding to a primitve value *)
 type const_generic =
   | CgGlobal of global_decl_id  (** A global constant *)
-  | CgVar of const_generic_var_id  (** A const generic variable *)
+  | CgVar of const_generic_var_id de_bruijn_var  (** A const generic variable *)
   | CgValue of literal  (** A concrete value *)
 [@@deriving
   show,
@@ -314,13 +369,6 @@ class ['self] iter_ty_base_base =
         visit_left env left;
         visit_right env right
 
-    method visit_de_bruijn_var
-        : 'var. ('env -> 'var -> unit) -> 'env -> 'var de_bruijn_var -> unit =
-      fun visit_var env x ->
-        let { dbid; varid } = x in
-        self#visit_de_bruijn_id env dbid;
-        visit_var env varid
-
     method visit_region_var env (x : region_var) =
       self#visit_indexed_var self#visit_region_var_id
         (self#visit_option self#visit_string)
@@ -364,18 +412,6 @@ class virtual ['self] map_ty_base_base =
         let left = visit_left env left in
         let right = visit_right env right in
         (left, right)
-
-    method visit_de_bruijn_var
-        : 'var.
-          ('env -> 'var -> 'var) ->
-          'env ->
-          'var de_bruijn_var ->
-          'var de_bruijn_var =
-      fun visit_var env x ->
-        let { dbid; varid } = x in
-        let dbid = self#visit_de_bruijn_id env dbid in
-        let varid = visit_var env varid in
-        { dbid; varid }
 
     method visit_region_var env (x : region_var) =
       self#visit_indexed_var self#visit_region_var_id

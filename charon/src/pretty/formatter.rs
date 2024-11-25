@@ -132,7 +132,7 @@ impl<'a, 'b> PushBoundRegions<'a> for FmtCtx<'b> {
 
 pub trait AstFormatter = Formatter<DeBruijnVar<TypeVarId>>
     + Formatter<TypeDeclId>
-    + Formatter<ConstGenericVarId>
+    + Formatter<DeBruijnVar<ConstGenericVarId>>
     + Formatter<FunDeclId>
     + Formatter<GlobalDeclId>
     + Formatter<BodyId>
@@ -311,14 +311,15 @@ impl<'a> Formatter<DeBruijnVar<TypeVarId>> for FmtCtx<'a> {
     }
 }
 
-impl<'a> Formatter<ConstGenericVarId> for FmtCtx<'a> {
-    fn format_object(&self, id: ConstGenericVarId) -> String {
-        match &self.generics.back() {
-            None => id.to_pretty_string(),
-            Some(generics) => match generics.const_generics.get(id) {
-                None => id.to_pretty_string(),
-                Some(v) => v.to_string(),
-            },
+impl<'a> Formatter<DeBruijnVar<ConstGenericVarId>> for FmtCtx<'a> {
+    fn format_object(&self, var: DeBruijnVar<ConstGenericVarId>) -> String {
+        match self
+            .generics
+            .get(var.dbid.index)
+            .and_then(|generics| generics.const_generics.get(var.varid))
+        {
+            None => format!("@{}{}_{}", var.varid.pretty_name(), var.dbid, var.varid),
+            Some(v) => v.to_string(),
         }
     }
 }

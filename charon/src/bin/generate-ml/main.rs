@@ -1314,7 +1314,7 @@ fn generate_ml(
                 ]),
                 (GenerationKind::TypeDecl(Some(DeriveVisitors {
                     name: "const_generic",
-                    ancestor: Some("literal"),
+                    ancestor: Some("const_generic_base_base"),
                     reduce: true,
                     extra_types: &[
                         "const_generic_var_id",

@@ -13,7 +13,7 @@ type subst = {
           DeBruijn index. A negative DeBruijn index means that the region
           is locally bound. *)
   ty_subst : TypeVarId.id de_bruijn_var -> ty;
-  cg_subst : ConstGenericVarId.id -> const_generic;
+  cg_subst : ConstGenericVarId.id de_bruijn_var -> const_generic;
       (** Substitution from *local* trait clause to trait instance *)
   tr_subst : TraitClauseId.id -> trait_instance_id;
       (** Substitution for the [Self] trait instance *)
@@ -24,7 +24,7 @@ let empty_subst : subst =
   {
     r_subst = (fun x -> x);
     ty_subst = (fun var -> TVar var);
-    cg_subst = (fun id -> CgVar id);
+    cg_subst = (fun var -> CgVar var);
     tr_subst = (fun id -> Clause id);
     tr_self = Self;
   }
@@ -165,7 +165,7 @@ let generic_args_erase_regions (tr : generic_args) : generic_args =
 
 (** Erase the regions in a type and perform a substitution *)
 let erase_regions_substitute_types (ty_subst : TypeVarId.id de_bruijn_var -> ty)
-    (cg_subst : ConstGenericVarId.id -> const_generic)
+    (cg_subst : ConstGenericVarId.id de_bruijn_var -> const_generic)
     (tr_subst : TraitClauseId.id -> trait_instance_id)
     (tr_self : trait_instance_id) (ty : ty) : ty =
   let r_subst (_ : region) : region = RErased in
@@ -215,17 +215,21 @@ let make_type_subst_from_vars (vars : type_var list) (tys : ty list) :
 (** Create a const generic substitution from a list of const generic variable ids and a list of
     const generics (with which to substitute the const generic variable ids) *)
 let make_const_generic_subst (var_ids : ConstGenericVarId.id list)
-    (cgs : const_generic list) : ConstGenericVarId.id -> const_generic =
+    (cgs : const_generic list) :
+    ConstGenericVarId.id de_bruijn_var -> const_generic =
   let ls = List.combine var_ids cgs in
   let mp =
     List.fold_left
       (fun mp (k, v) -> ConstGenericVarId.Map.add k v mp)
       ConstGenericVarId.Map.empty ls
   in
-  fun id -> ConstGenericVarId.Map.find id mp
+  fun var ->
+    (* Only substitute the variables with DeBruijn index equal to 0 *)
+    if var.dbid = 0 then ConstGenericVarId.Map.find var.varid mp else CgVar var
 
 let make_const_generic_subst_from_vars (vars : const_generic_var list)
-    (cgs : const_generic list) : ConstGenericVarId.id -> const_generic =
+    (cgs : const_generic list) :
+    ConstGenericVarId.id de_bruijn_var -> const_generic =
   make_const_generic_subst
     (List.map (fun (x : const_generic_var) -> x.index) vars)
     cgs

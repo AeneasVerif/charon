@@ -827,13 +827,17 @@ let type_var_to_pattern (m : constraints) (v : T.TypeVarId.id T.de_bruijn_var) :
           None
     end
 
-let const_generic_var_to_pattern (m : constraints) (v : T.ConstGenericVarId.id)
-    : var option =
-  match T.ConstGenericVarId.Map.find_opt v (List.hd (List.rev m)).cmap with
-  | Some v -> v
-  | None ->
-      (* Return the empty pattern *)
-      None
+let const_generic_var_to_pattern (m : constraints)
+    (v : T.ConstGenericVarId.id T.de_bruijn_var) : var option =
+  match List.nth_opt m v.dbid with
+  | None -> None
+  | Some map -> begin
+      match T.ConstGenericVarId.Map.find_opt v.varid map.cmap with
+      | Some v -> v
+      | None ->
+          (* Return the empty pattern *)
+          None
+    end
 
 let constraints_map_compute_regions_map (regions : T.region_var list) :
     var option T.RegionVarId.Map.t =

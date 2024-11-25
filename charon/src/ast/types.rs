@@ -663,7 +663,7 @@ pub enum ConstGeneric {
     /// A global constant
     Global(GlobalDeclId),
     /// A const generic variable
-    Var(ConstGenericVarId),
+    Var(DeBruijnVar<ConstGenericVarId>),
     /// A concrete value
     Value(Literal),
 }

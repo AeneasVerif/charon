@@ -35,8 +35,10 @@ let region_id_to_pretty_string (id : region_id) : string =
 let type_var_id_to_pretty_string (var : type_var_id de_bruijn_var) : string =
   "T@" ^ show_de_bruijn_id var.dbid ^ "_" ^ TypeVarId.to_string var.varid
 
-let const_generic_var_id_to_pretty_string (id : const_generic_var_id) : string =
-  "C@" ^ ConstGenericVarId.to_string id
+let const_generic_var_id_to_pretty_string
+    (var : const_generic_var_id de_bruijn_var) : string =
+  "C@" ^ show_de_bruijn_id var.dbid ^ "_"
+  ^ ConstGenericVarId.to_string var.varid
 
 let type_decl_id_to_pretty_string (id : type_decl_id) : string =
   "TypeDecl@" ^ TypeDeclId.to_string id
@@ -87,15 +89,19 @@ let type_var_id_to_string (env : 'a fmt_env) (var : type_var_id de_bruijn_var) :
     end
 
 let const_generic_var_id_to_string (env : 'a fmt_env)
-    (id : const_generic_var_id) : string =
-  (* Note that the const generics are not necessarily ordered following their indices *)
-  match
-    List.find_opt
-      (fun (x : const_generic_var) -> x.index = id)
-      (List.hd (List.rev env.generics)).const_generics
-  with
-  | None -> const_generic_var_id_to_pretty_string id
-  | Some x -> const_generic_var_to_string x
+    (var : const_generic_var_id de_bruijn_var) : string =
+  match List.nth_opt env.generics var.dbid with
+  | None -> const_generic_var_id_to_pretty_string var
+  | Some generics -> begin
+      (* Note that the const generics are not necessarily ordered following their indices *)
+      match
+        List.find_opt
+          (fun (x : const_generic_var) -> x.index = var.varid)
+          generics.const_generics
+      with
+      | None -> const_generic_var_id_to_pretty_string var
+      | Some x -> const_generic_var_to_string x
+    end
 
 let region_to_string (env : 'a fmt_env) (r : region) : string =
   match r with
@@ -163,7 +169,7 @@ and trait_impl_id_to_string env id =
 and const_generic_to_string (env : 'a fmt_env) (cg : const_generic) : string =
   match cg with
   | CgGlobal id -> global_decl_id_to_string env id
-  | CgVar id -> const_generic_var_id_to_string env id
+  | CgVar var -> const_generic_var_id_to_string env var
   | CgValue lit -> literal_to_string lit
 
 and ty_to_string (env : 'a fmt_env) (ty : ty) : string =

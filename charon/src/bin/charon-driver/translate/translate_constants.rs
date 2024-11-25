@@ -152,7 +152,12 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
             ConstantExprKind::ConstRef { id } => {
                 let var_id = self.const_generic_vars_map.get(&id.index);
                 if let Some(var_id) = var_id {
-                    RawConstantExpr::Var(*var_id)
+                    // The DeBruijn index depends on the current stack of binders. Today we only
+                    // allow lifetimes in non-top-level binders, hence why we use
+                    // `region_vars.len()`.
+                    let db_id = self.region_vars.len() - 1;
+                    let var = DeBruijnVar::new(DeBruijnId::new(db_id), *var_id);
+                    RawConstantExpr::Var(var)
                 } else {
                     error_or_panic!(
                         self,
