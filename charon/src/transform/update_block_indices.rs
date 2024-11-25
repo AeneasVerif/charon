@@ -12,7 +12,7 @@ use super::ctx::UllbcPass;
 
 pub struct Transform;
 impl UllbcPass for Transform {
-    fn transform_body(&self, _ctx: &mut TransformCtx<'_>, b: &mut ExprBody) {
+    fn transform_body(&self, _ctx: &mut TransformCtx, b: &mut ExprBody) {
         // Push each block into a new vector to make it consecutive and return the map from old to
         // new ids.
         let id_map: Vector<BlockId, BlockId> =

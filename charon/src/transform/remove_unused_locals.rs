@@ -14,7 +14,7 @@ use super::ctx::LlbcPass;
 
 pub struct Transform;
 impl LlbcPass for Transform {
-    fn transform_body(&self, _ctx: &mut TransformCtx<'_>, b: &mut ExprBody) {
+    fn transform_body(&self, _ctx: &mut TransformCtx, b: &mut ExprBody) {
         // Compute the set of used locals.
         // We always register the return variable and the input arguments.
         let mut used_locals: HashSet<VarId> = (0..(b.locals.arg_count + 1))

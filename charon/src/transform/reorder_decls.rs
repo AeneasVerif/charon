@@ -157,8 +157,8 @@ impl Display for DeclarationGroup {
     BodyId(enter),
     Ty(enter)
 )]
-pub struct Deps<'tcx, 'ctx> {
-    ctx: &'tcx TransformCtx<'ctx>,
+pub struct Deps<'tcx> {
+    ctx: &'tcx TransformCtx,
     dgraph: DiGraphMap<AnyTransId, ()>,
     // Want to make sure we remember the order of insertion
     graph: LinkedHashMap<AnyTransId, LinkedHashSet<AnyTransId>>,
@@ -209,8 +209,8 @@ pub struct Deps<'tcx, 'ctx> {
     parent_trait_decl: Option<TraitDeclId>,
 }
 
-impl<'tcx, 'ctx> Deps<'tcx, 'ctx> {
-    fn new(ctx: &'tcx TransformCtx<'ctx>) -> Self {
+impl<'tcx> Deps<'tcx> {
+    fn new(ctx: &'tcx TransformCtx) -> Self {
         Deps {
             ctx,
             dgraph: DiGraphMap::new(),
@@ -274,7 +274,7 @@ impl<'tcx, 'ctx> Deps<'tcx, 'ctx> {
     }
 }
 
-impl Deps<'_, '_> {
+impl Deps<'_> {
     fn enter_type_decl_id(&mut self, id: &TypeDeclId) {
         self.insert_edge((*id).into());
     }
@@ -339,7 +339,7 @@ impl AnyTransId {
     }
 }
 
-impl Deps<'_, '_> {
+impl Deps<'_> {
     fn fmt_with_ctx(&self, ctx: &TransformCtx) -> String {
         self.dgraph
             .nodes()
@@ -358,7 +358,7 @@ impl Deps<'_, '_> {
     }
 }
 
-fn compute_declarations_graph<'tcx, 'ctx>(ctx: &'tcx TransformCtx<'ctx>) -> Deps<'tcx, 'ctx> {
+fn compute_declarations_graph<'tcx>(ctx: &'tcx TransformCtx) -> Deps<'tcx> {
     let mut graph = Deps::new(ctx);
     for (id, item) in ctx.translated.all_items_with_ids() {
         graph.set_current_id(ctx, id);
@@ -456,7 +456,7 @@ fn compute_declarations_graph<'tcx, 'ctx>(ctx: &'tcx TransformCtx<'ctx>) -> Deps
 
 fn group_declarations_from_scc(
     _ctx: &TransformCtx,
-    graph: Deps<'_, '_>,
+    graph: Deps<'_>,
     reordered_sccs: SCCs<AnyTransId>,
 ) -> DeclarationsGroups {
     let reordered_sccs = &reordered_sccs.sccs;

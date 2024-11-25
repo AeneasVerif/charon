@@ -1,4 +1,3 @@
-#![feature(rustc_private)]
 //! Ui tests for the charon compiler. Each `<file>.rs` file in `ui/` will be passed to the charon
 //! driver. The corresponding pretty-printed llbc output will be stored in `<file>.llbc`, and CI
 //! will ensure these stay up-to-date.
@@ -183,8 +182,16 @@ fn perform_test(test_case: &Case, action: Action) -> anyhow::Result<()> {
     cmd.arg("--crate=test_crate");
     cmd.arg("--input");
     cmd.arg(&test_case.input_path);
-    cmd.arg("--dest-file");
-    cmd.arg(test_case.input_path.with_extension("llbc"));
+
+    if matches!(
+        test_case.magic_comments.test_kind,
+        TestKind::KnownPanic | TestKind::KnownFailure
+    ) {
+        cmd.arg("--no-serialize");
+    } else {
+        cmd.arg("--dest-file");
+        cmd.arg(test_case.input_path.with_extension("llbc"));
+    }
 
     cmd.arg("--rustc-flag=--edition=2021");
     for (crate_name, _, rlib_path) in deps {

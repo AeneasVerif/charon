@@ -17,7 +17,7 @@ use super::ctx::LlbcPass;
 
 pub struct Transform;
 impl Transform {
-    fn update_block(ctx: &mut TransformCtx<'_>, block: &mut Block) {
+    fn update_block(ctx: &mut TransformCtx, block: &mut Block) {
         // Iterate through the statements.
         for i in 0..block.statements.len() {
             let suffix = &mut block.statements[i..];
@@ -158,7 +158,7 @@ impl Transform {
 }
 
 impl LlbcPass for Transform {
-    fn transform_body(&self, ctx: &mut TransformCtx<'_>, b: &mut ExprBody) {
+    fn transform_body(&self, ctx: &mut TransformCtx, b: &mut ExprBody) {
         b.body
             .drive_mut(&mut visitor_enter_fn_mut(|block: &mut Block| {
                 Transform::update_block(ctx, block);

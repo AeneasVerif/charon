@@ -107,7 +107,7 @@ impl Transform {
 }
 
 impl UllbcPass for Transform {
-    fn transform_body(&self, ctx: &mut TransformCtx<'_>, b: &mut ExprBody) {
+    fn transform_body(&self, ctx: &mut TransformCtx, b: &mut ExprBody) {
         for block in &mut b.body {
             block.transform_sequences(&mut |seq| Transform::update_statements(&mut b.locals, seq));
         }

@@ -18,16 +18,16 @@ use super::{ctx::TransformPass, TransformCtx};
     TraitRefKind(enter),
     Ty(enter)
 )]
-struct CheckGenericsVisitor<'a, 'ctx> {
+struct CheckGenericsVisitor<'a> {
     translated: &'a TranslatedCrate,
-    error_ctx: &'a mut ErrorCtx<'ctx>,
+    error_ctx: &'a mut ErrorCtx,
     // Count how many `GenericArgs` we handled. This is to make sure we don't miss one.
     discharged_args: u32,
     // Tracks an enclosing span to make errors useful.
     item_span: Span,
 }
 
-impl CheckGenericsVisitor<'_, '_> {
+impl CheckGenericsVisitor<'_> {
     fn error(&mut self, message: impl Display) {
         let span = self.item_span;
         let message = message.to_string();
@@ -71,7 +71,7 @@ impl CheckGenericsVisitor<'_, '_> {
 }
 
 // Visitor functions
-impl CheckGenericsVisitor<'_, '_> {
+impl CheckGenericsVisitor<'_> {
     fn enter_aggregate_kind(&mut self, agg: &AggregateKind) {
         match agg {
             AggregateKind::Adt(kind, _, _, args) => {
@@ -159,7 +159,7 @@ impl CheckGenericsVisitor<'_, '_> {
 
 pub struct Check;
 impl TransformPass for Check {
-    fn transform_ctx(&self, ctx: &mut TransformCtx<'_>) {
+    fn transform_ctx(&self, ctx: &mut TransformCtx) {
         for item in ctx.translated.all_items() {
             let mut visitor = Ty::visit_inside_stateless(CheckGenericsVisitor {
                 translated: &ctx.translated,

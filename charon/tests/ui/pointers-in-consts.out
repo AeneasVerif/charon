@@ -3,7 +3,6 @@ error: Unsupported constant: `ConstantExprKind::Cast {..}`
   |
 6 |         DISGUISED_INT => {}
   |         ^^^^^^^^^^^^^
+  |
 
-error: aborting due to 1 previous error
-
-ERROR Compilation encountered 1 errors
+ERROR The extraction generated 1 errors

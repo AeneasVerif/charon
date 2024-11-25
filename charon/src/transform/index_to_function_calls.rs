@@ -318,7 +318,7 @@ pub struct Transform;
 ///   *tmp1 = x
 /// ```
 impl LlbcPass for Transform {
-    fn transform_body(&self, _ctx: &mut TransformCtx<'_>, b: &mut ExprBody) {
+    fn transform_body(&self, _ctx: &mut TransformCtx, b: &mut ExprBody) {
         b.body.transform(&mut |st: &mut Statement| {
             let mut visitor = Visitor {
                 locals: &mut b.locals,

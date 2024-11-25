@@ -26,24 +26,24 @@ pub struct TransformOptions {
 
 /// Simpler context used for rustc-independent code transformation. This only depends on rustc for
 /// its error reporting machinery.
-pub struct TransformCtx<'ctx> {
+pub struct TransformCtx {
     /// The options that control transformation.
     pub options: TransformOptions,
     /// The translated data.
     pub translated: TranslatedCrate,
     /// Context for tracking and reporting errors.
-    pub errors: ErrorCtx<'ctx>,
+    pub errors: ErrorCtx,
 }
 
 /// A pass that modifies ullbc bodies.
 pub trait UllbcPass: Sync {
     /// Transform a body.
-    fn transform_body(&self, _ctx: &mut TransformCtx<'_>, _body: &mut ullbc_ast::ExprBody) {}
+    fn transform_body(&self, _ctx: &mut TransformCtx, _body: &mut ullbc_ast::ExprBody) {}
 
     /// Transform a function declaration. This forwards to `transform_body` by default.
     fn transform_function(
         &self,
-        ctx: &mut TransformCtx<'_>,
+        ctx: &mut TransformCtx,
         _decl: &mut FunDecl,
         body: Result<&mut ullbc_ast::ExprBody, Opaque>,
     ) {
@@ -53,7 +53,7 @@ pub trait UllbcPass: Sync {
     }
 
     /// Transform the given context. This forwards to the other methods by default.
-    fn transform_ctx(&self, ctx: &mut TransformCtx<'_>) {
+    fn transform_ctx(&self, ctx: &mut TransformCtx) {
         ctx.for_each_fun_decl(|ctx, decl, body| {
             let body = body.map(|body| body.as_unstructured_mut().unwrap());
             self.log_before_body(ctx, &decl.item_meta.name, body.as_deref());
@@ -70,7 +70,7 @@ pub trait UllbcPass: Sync {
     /// Log that the pass is about to be run on this body.
     fn log_before_body(
         &self,
-        ctx: &TransformCtx<'_>,
+        ctx: &TransformCtx,
         name: &Name,
         body: Result<&ullbc_ast::ExprBody, &Opaque>,
     ) {
@@ -92,12 +92,12 @@ pub trait UllbcPass: Sync {
 /// A pass that modifies llbc bodies.
 pub trait LlbcPass: Sync {
     /// Transform a body.
-    fn transform_body(&self, _ctx: &mut TransformCtx<'_>, _body: &mut llbc_ast::ExprBody) {}
+    fn transform_body(&self, _ctx: &mut TransformCtx, _body: &mut llbc_ast::ExprBody) {}
 
     /// Transform a function declaration. This forwards to `transform_body` by default.
     fn transform_function(
         &self,
-        ctx: &mut TransformCtx<'_>,
+        ctx: &mut TransformCtx,
         _decl: &mut FunDecl,
         body: Result<&mut llbc_ast::ExprBody, Opaque>,
     ) {
@@ -107,7 +107,7 @@ pub trait LlbcPass: Sync {
     }
 
     /// Transform the given context. This forwards to the other methods by default.
-    fn transform_ctx(&self, ctx: &mut TransformCtx<'_>) {
+    fn transform_ctx(&self, ctx: &mut TransformCtx) {
         ctx.for_each_fun_decl(|ctx, decl, body| {
             let body = body.map(|body| body.as_structured_mut().unwrap());
             self.log_before_body(ctx, &decl.item_meta.name, body.as_deref());
@@ -124,7 +124,7 @@ pub trait LlbcPass: Sync {
     /// Log that the pass is about to be run on this body.
     fn log_before_body(
         &self,
-        ctx: &TransformCtx<'_>,
+        ctx: &TransformCtx,
         name: &Name,
         body: Result<&llbc_ast::ExprBody, &Opaque>,
     ) {
@@ -145,7 +145,7 @@ pub trait LlbcPass: Sync {
 
 /// A pass that transforms the crate data.
 pub trait TransformPass: Sync {
-    fn transform_ctx(&self, ctx: &mut TransformCtx<'_>);
+    fn transform_ctx(&self, ctx: &mut TransformCtx);
 
     /// The name of the pass, used for debug logging. The default implementation uses the type
     /// name.
@@ -154,7 +154,7 @@ pub trait TransformPass: Sync {
     }
 }
 
-impl<'ctx> TransformCtx<'ctx> {
+impl<'ctx> TransformCtx {
     pub(crate) fn continue_on_failure(&self) -> bool {
         self.errors.continue_on_failure()
     }
@@ -251,7 +251,7 @@ impl<'ctx> TransformCtx<'ctx> {
     }
 }
 
-impl<'a> IntoFormatter for &'a TransformCtx<'_> {
+impl<'a> IntoFormatter for &'a TransformCtx {
     type C = FmtCtx<'a>;
 
     fn into_fmt(self) -> Self::C {
@@ -259,7 +259,7 @@ impl<'a> IntoFormatter for &'a TransformCtx<'_> {
     }
 }
 
-impl fmt::Display for TransformCtx<'_> {
+impl fmt::Display for TransformCtx {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         self.translated.fmt(f)
     }

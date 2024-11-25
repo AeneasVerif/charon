@@ -11,7 +11,6 @@
 //! we reconstructed the control-flow to have `if ... then ... else ...`,
 //! loops, etc. instead of `GOTO`s).
 
-#![feature(rustc_private)]
 // For rustdoc: prevents overflows
 #![recursion_limit = "256"]
 #![feature(box_patterns)]
@@ -25,15 +24,6 @@
 #![feature(register_tool)]
 // For when we use charon on itself :3
 #![register_tool(charon)]
-
-#[cfg(feature = "rustc")]
-extern crate rustc_driver;
-#[cfg(feature = "rustc")]
-extern crate rustc_error_messages;
-#[cfg(feature = "rustc")]
-extern crate rustc_errors;
-#[cfg(feature = "rustc")]
-extern crate rustc_span;
 
 #[macro_use]
 pub mod ids;

@@ -8,7 +8,7 @@ use rustc_hir::def_id::DefId;
 use rustc_middle::ty::TyCtxt;
 use std::path::PathBuf;
 
-impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
+impl<'tcx, 'ctx> TranslateCtx<'tcx> {
     /// Register a HIR item and all its children. We call this on the crate root items and end up
     /// exploring the whole crate.
     fn register_local_item(&mut self, def_id: DefId) {
@@ -228,7 +228,7 @@ pub fn translate<'tcx, 'ctx>(
     options: &CliOpts,
     tcx: TyCtxt<'tcx>,
     sysroot: PathBuf,
-) -> TransformCtx<'tcx> {
+) -> TransformCtx {
     let hax_state = hax::state::State::new(
         tcx,
         hax::options::Options {
@@ -248,11 +248,7 @@ pub fn translate<'tcx, 'ctx>(
         .clone();
     trace!("# Crate: {}", requested_crate_name);
 
-    let mut error_ctx = ErrorCtx::new(
-        !options.abort_on_error,
-        options.error_on_warnings,
-        tcx.dcx(),
-    );
+    let mut error_ctx = ErrorCtx::new(!options.abort_on_error, options.error_on_warnings);
     let translate_options = TranslateOptions::new(&mut error_ctx, options);
     let mut ctx = TranslateCtx {
         tcx,
@@ -270,6 +266,7 @@ pub fn translate<'tcx, 'ctx>(
         file_to_id: Default::default(),
         items_to_translate: Default::default(),
         translate_stack: Default::default(),
+        cached_item_metas: Default::default(),
         cached_names: Default::default(),
     };
 

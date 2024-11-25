@@ -65,7 +65,7 @@ impl Rvalue {
 pub struct Transform;
 
 impl LlbcPass for Transform {
-    fn transform_body(&self, _ctx: &mut TransformCtx<'_>, b: &mut ExprBody) {
+    fn transform_body(&self, _ctx: &mut TransformCtx, b: &mut ExprBody) {
         b.body.transform(&mut |st: &mut Statement| {
             match &mut st.content {
                 // Introduce an intermediate statement if both the rhs and the lhs contain an
