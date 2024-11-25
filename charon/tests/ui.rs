@@ -182,8 +182,16 @@ fn perform_test(test_case: &Case, action: Action) -> anyhow::Result<()> {
     cmd.arg("--crate=test_crate");
     cmd.arg("--input");
     cmd.arg(&test_case.input_path);
-    cmd.arg("--dest-file");
-    cmd.arg(test_case.input_path.with_extension("llbc"));
+
+    if matches!(
+        test_case.magic_comments.test_kind,
+        TestKind::KnownPanic | TestKind::KnownFailure
+    ) {
+        cmd.arg("--no-serialize");
+    } else {
+        cmd.arg("--dest-file");
+        cmd.arg(test_case.input_path.with_extension("llbc"));
+    }
 
     cmd.arg("--rustc-flag=--edition=2021");
     for (crate_name, _, rlib_path) in deps {

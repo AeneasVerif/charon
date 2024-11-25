@@ -42,6 +42,7 @@ fn perform_test(test_case: &Case, action: Action) -> anyhow::Result<()> {
     cmd.arg("--print-llbc");
     if matches!(test_case.expect, Failure) {
         cmd.arg("--cargo-arg=--quiet");
+        cmd.arg("--no-serialize");
     }
     cmd.arg("--dest-file");
     cmd.arg(test_case.output_file.with_extension("llbc"));
