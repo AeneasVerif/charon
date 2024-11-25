@@ -39,7 +39,8 @@ let st_substitute_visitor =
       (* Decrement the DeBruijn indices before calling the substitution *)
       let r_subst r =
         match r with
-        | RBVar (db, rid) -> subst.r_subst (RBVar (db - 1, rid))
+        | RBVar { dbid; varid } ->
+            subst.r_subst (RBVar { dbid = dbid - 1; varid })
         | _ -> subst.r_subst r
       in
       let subst = { subst with r_subst } in
@@ -53,7 +54,8 @@ let st_substitute_visitor =
       (* Decrement the DeBruijn indices before calling the substitution *)
       let r_subst r =
         match r with
-        | RBVar (db, rid) -> subst.r_subst (RBVar (db - 1, rid))
+        | RBVar { dbid; varid } ->
+            subst.r_subst (RBVar { dbid = dbid - 1; varid })
         | _ -> subst.r_subst r
       in
       let subst = { subst with r_subst } in
@@ -184,9 +186,9 @@ let make_region_subst (var_ids : RegionVarId.id list) (regions : region list) :
     match r with
     | RStatic | RErased -> r
     | RFVar _ -> raise (Failure "Unexpected")
-    | RBVar (bdid, id) ->
+    | RBVar { dbid; varid } ->
         (* Only substitute the bound regions with DeBruijn index equal to 0 *)
-        if bdid = 0 then RegionVarId.Map.find id mp else r
+        if dbid = 0 then RegionVarId.Map.find varid mp else r
 
 let make_region_subst_from_vars (vars : region_var list) (regions : region list)
     : region -> region =

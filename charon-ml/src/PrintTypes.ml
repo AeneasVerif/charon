@@ -25,9 +25,9 @@ let builtin_ty_to_string (_ : builtin_ty) : string = "Box"
 let trait_clause_id_to_pretty_string (id : trait_clause_id) : string =
   "TraitClause@" ^ TraitClauseId.to_string id
 
-let region_var_id_to_pretty_string (db_id : region_db_id) (id : region_var_id) :
+let bound_region_var_to_pretty_string (var : region_var_id de_bruijn_var) :
     string =
-  "'" ^ show_region_db_id db_id ^ "_" ^ RegionVarId.to_string id
+  "'" ^ show_de_bruijn_id var.dbid ^ "_" ^ RegionVarId.to_string var.varid
 
 let region_id_to_pretty_string (id : region_id) : string =
   "'" ^ RegionId.to_string id
@@ -59,14 +59,16 @@ let variant_id_to_pretty_string (id : variant_id) : string =
 let field_id_to_pretty_string (id : field_id) : string =
   "Field@" ^ FieldId.to_string id
 
-let region_var_id_to_string (env : 'a fmt_env) (db_id : region_db_id)
-    (id : region_var_id) : string =
-  match List.nth_opt env.regions db_id with
-  | None -> region_var_id_to_pretty_string db_id id
+let bound_region_var_to_string (env : 'a fmt_env)
+    (var : region_var_id de_bruijn_var) : string =
+  match List.nth_opt env.regions var.dbid with
+  | None -> bound_region_var_to_pretty_string var
   | Some regions -> (
       (* Note that the regions are not necessarily ordered following their indices *)
-      match List.find_opt (fun (r : region_var) -> r.index = id) regions with
-      | None -> region_var_id_to_pretty_string db_id id
+      match
+        List.find_opt (fun (r : region_var) -> r.index = var.varid) regions
+      with
+      | None -> bound_region_var_to_pretty_string var
       | Some r -> region_var_to_string r)
 
 let type_var_id_to_string (env : 'a fmt_env) (id : type_var_id) : string =
@@ -92,7 +94,7 @@ let region_to_string (env : 'a fmt_env) (r : region) : string =
   match r with
   | RStatic -> "'static"
   | RErased -> "'_"
-  | RBVar (db, rid) -> region_var_id_to_string env db rid
+  | RBVar var -> bound_region_var_to_string env var
   | RFVar rid -> region_id_to_pretty_string rid
 
 let trait_clause_id_to_string _ id = trait_clause_id_to_pretty_string id

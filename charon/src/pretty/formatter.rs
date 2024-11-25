@@ -140,7 +140,7 @@ pub trait AstFormatter = Formatter<TypeVarId>
     + Formatter<TraitImplId>
     + Formatter<AnyTransId>
     + Formatter<TraitClauseId>
-    + Formatter<(DeBruijnId, RegionId)>
+    + Formatter<DeBruijnVar<RegionId>>
     + Formatter<VarId>
     + Formatter<(TypeDeclId, VariantId)>
     + Formatter<(TypeDeclId, Option<VariantId>, FieldId)>
@@ -263,13 +263,13 @@ impl<'a> Formatter<AnyTransId> for FmtCtx<'a> {
     }
 }
 
-impl<'a> Formatter<(DeBruijnId, RegionId)> for FmtCtx<'a> {
-    fn format_object(&self, (grid, id): (DeBruijnId, RegionId)) -> String {
-        match self.generics.get(grid.index) {
-            None => Region::BVar(grid, id).to_string(),
-            Some(generics) => match generics.regions.get(id) {
+impl<'a> Formatter<DeBruijnVar<RegionId>> for FmtCtx<'a> {
+    fn format_object(&self, var: DeBruijnVar<RegionId>) -> String {
+        match self.generics.get(var.dbid.index) {
+            None => Region::BVar(var).to_string(),
+            Some(generics) => match generics.regions.get(var.varid) {
                 None => {
-                    let region = Region::BVar(grid, id);
+                    let region = Region::BVar(var);
                     tracing::warn!(
                         "Found incorrect region `{region}` while pretty-printing. Look for \
                         \"wrong_region\" in the pretty output"

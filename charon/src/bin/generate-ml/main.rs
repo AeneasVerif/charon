@@ -1015,7 +1015,7 @@ fn generate_ml(
             indoc!(
                 "
                 | RStatic  (** Static region *)
-                | RBVar of region_db_id * region_var_id
+                | RBVar of region_var_id de_bruijn_var
                     (** Bound region. We use those in function signatures, type definitions, etc. *)
                 | RFVar of region_id
                     (** Free region. We use those during the symbolic execution. *)
@@ -1304,6 +1304,7 @@ fn generate_ml(
                     "TypeDeclId",
                     "TypeVarId",
                     "VariantId",
+                    "DeBruijnVar"
                 ]),
                 (GenerationKind::TypeDecl(Some(DeriveVisitors {
                     name: "const_generic",
@@ -1313,7 +1314,7 @@ fn generate_ml(
                         "const_generic_var_id",
                         "fun_decl_id",
                         "global_decl_id",
-                        "region_db_id",
+                        "de_bruijn_id",
                         "region_id",
                         "region_var_id",
                         "trait_clause_id",

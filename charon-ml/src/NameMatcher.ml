@@ -351,13 +351,13 @@ let update_rmap (c : match_config) (m : maps) (id : var) (v : T.region) : bool =
   if c.map_vars_to_vars && not is_var then false
   else
     match v with
-    | RBVar (db_id, rid) -> (
+    | RBVar { dbid; varid } -> (
         (* Special treatment for the bound regions *)
-        match List.nth_opt m.rmap.bound_regions db_id with
+        match List.nth_opt m.rmap.bound_regions dbid with
         | None -> raise (Failure "Unexpected bound variable")
         | Some brmap ->
             update_map T.RegionVarId.Map.find_opt T.RegionVarId.Map.add brmap
-              rid v)
+              varid v)
     | _ -> update_map VarMap.find_opt VarMap.add m.rmap.regions id v
 
 let update_tmap (c : match_config) (m : maps) (id : var) (v : T.ty) : bool =
@@ -793,12 +793,12 @@ let ref_kind_to_pattern (rk : T.ref_kind) : ref_kind =
 
 let region_to_pattern (m : constraints) (r : T.region) : region =
   match r with
-  | RBVar (bdid, r) ->
+  | RBVar { dbid; varid } ->
       RVar
-        (match List.nth_opt m.rmap bdid with
+        (match List.nth_opt m.rmap dbid with
         | None -> None
         | Some rmap -> (
-            match T.RegionVarId.Map.find_opt r rmap with
+            match T.RegionVarId.Map.find_opt varid rmap with
             | Some r -> r
             | None -> None))
   | RFVar _ ->

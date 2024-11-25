@@ -33,7 +33,7 @@ type ('id, 'x) vector = 'x list [@@deriving show, ord]
 type integer_type = Values.integer_type [@@deriving show, ord]
 type float_type = Values.float_type [@@deriving show, ord]
 type literal_type = Values.literal_type [@@deriving show, ord]
-type region_db_id = int [@@deriving show, ord]
+type de_bruijn_id = int [@@deriving show, ord]
 
 (** We define these types to control the name of the visitor functions
     (see e.g., {!class:Types.iter_ty_base} and {!Types.TVar}).
@@ -59,6 +59,34 @@ and variant_id = VariantId.id
 and field_id = FieldId.id
 and region_id = RegionId.id
 and const_generic_var_id = ConstGenericVarId.id
+
+(** Bound variable.
+
+    **Important**:
+    ==============
+    Similarly to what the Rust compiler does, we use De Bruijn indices to
+    identify *groups* of bound variables, and variable identifiers to
+    identity the variables inside the groups.
+
+    For instance, we have the following:
+    ```text
+                        we compute the De Bruijn indices from here
+                               VVVVVVVVVVVVVVVVVVVVVVV
+    fn f<'a, 'b>(x: for<'c> fn(&'a u8, &'b u16, &'c u32) -> u64) {}
+         ^^^^^^         ^^       ^       ^        ^
+           |      De Bruijn: 0   |       |        |
+     De Bruijn: 1                |       |        |
+                           De Bruijn: 1  |    De Bruijn: 0
+                              Var id: 0  |       Var id: 0
+                                         |
+                                   De Bruijn: 1
+                                      Var id: 1
+    ```
+
+    This is generic in the variable type. Typical values for `V` are `RegionId` and `TypeVarId`.
+ *)
+and 'a0 de_bruijn_var = { dbid : de_bruijn_id; varid : 'a0 }
+
 and trait_clause_id = TraitClauseId.id [@@deriving show, ord]
 
 let all_signed_int_types = [ Isize; I8; I16; I32; I64; I128 ]
@@ -81,7 +109,7 @@ class ['self] iter_const_generic_base =
 
     method visit_fun_decl_id : 'env -> fun_decl_id -> unit = fun _ _ -> ()
     method visit_global_decl_id : 'env -> global_decl_id -> unit = fun _ _ -> ()
-    method visit_region_db_id : 'env -> region_db_id -> unit = fun _ _ -> ()
+    method visit_de_bruijn_id : 'env -> de_bruijn_id -> unit = fun _ _ -> ()
     method visit_region_id : 'env -> region_id -> unit = fun _ _ -> ()
     method visit_region_var_id : 'env -> region_var_id -> unit = fun _ _ -> ()
 
@@ -107,7 +135,7 @@ class ['self] map_const_generic_base =
     method visit_global_decl_id : 'env -> global_decl_id -> global_decl_id =
       fun _ x -> x
 
-    method visit_region_db_id : 'env -> region_db_id -> region_db_id =
+    method visit_de_bruijn_id : 'env -> de_bruijn_id -> de_bruijn_id =
       fun _ x -> x
 
     method visit_region_id : 'env -> region_id -> region_id = fun _ x -> x
@@ -142,7 +170,7 @@ class virtual ['self] reduce_const_generic_base =
     method visit_global_decl_id : 'env -> global_decl_id -> 'a =
       fun _ _ -> self#zero
 
-    method visit_region_db_id : 'env -> region_db_id -> 'a =
+    method visit_de_bruijn_id : 'env -> de_bruijn_id -> 'a =
       fun _ _ -> self#zero
 
     method visit_region_id : 'env -> region_id -> 'a = fun _ _ -> self#zero
@@ -180,7 +208,7 @@ class virtual ['self] mapreduce_const_generic_base =
         =
       fun _ x -> (x, self#zero)
 
-    method visit_region_db_id : 'env -> region_db_id -> region_db_id * 'a =
+    method visit_de_bruijn_id : 'env -> de_bruijn_id -> de_bruijn_id * 'a =
       fun _ x -> (x, self#zero)
 
     method visit_region_id : 'env -> region_id -> region_id * 'a =
@@ -280,6 +308,13 @@ class ['self] iter_ty_base_base =
         visit_left env left;
         visit_right env right
 
+    method visit_de_bruijn_var
+        : 'var. ('env -> 'var -> unit) -> 'env -> 'var de_bruijn_var -> unit =
+      fun visit_var env x ->
+        let { dbid; varid } = x in
+        self#visit_de_bruijn_id env dbid;
+        visit_var env varid
+
     method visit_region_var env (x : region_var) =
       self#visit_indexed_var self#visit_region_var_id
         (self#visit_option self#visit_string)
@@ -324,6 +359,18 @@ class virtual ['self] map_ty_base_base =
         let right = visit_right env right in
         (left, right)
 
+    method visit_de_bruijn_var
+        : 'var.
+          ('env -> 'var -> 'var) ->
+          'env ->
+          'var de_bruijn_var ->
+          'var de_bruijn_var =
+      fun visit_var env x ->
+        let { dbid; varid } = x in
+        let dbid = self#visit_de_bruijn_id env dbid in
+        let varid = visit_var env varid in
+        { dbid; varid }
+
     method visit_region_var env (x : region_var) =
       self#visit_indexed_var self#visit_region_var_id
         (self#visit_option self#visit_string)
@@ -351,7 +398,7 @@ and trait_item_name = string
 
 and region =
   | RStatic  (** Static region *)
-  | RBVar of region_db_id * region_var_id
+  | RBVar of region_var_id de_bruijn_var
       (** Bound region. We use those in function signatures, type definitions, etc. *)
   | RFVar of region_id
       (** Free region. We use those during the symbolic execution. *)

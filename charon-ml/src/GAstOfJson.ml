@@ -911,14 +911,28 @@ and const_generic_var_of_json (ctx : of_json_ctx) (js : json) :
         Ok ({ index; name; ty } : const_generic_var)
     | _ -> Error "")
 
+and de_bruijn_var_of_json :
+      'a0.
+      (of_json_ctx -> json -> ('a0, string) result) ->
+      of_json_ctx ->
+      json ->
+      ('a0 de_bruijn_var, string) result =
+ fun arg0_of_json ctx js ->
+  combine_error_msgs js __FUNCTION__
+    (match js with
+    | `Assoc [ ("dbid", dbid); ("varid", varid) ] ->
+        let* dbid = de_bruijn_id_of_json ctx dbid in
+        let* varid = arg0_of_json ctx varid in
+        Ok ({ dbid; varid } : _ de_bruijn_var)
+    | _ -> Error "")
+
 and region_of_json (ctx : of_json_ctx) (js : json) : (region, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
     | `String "Static" -> Ok RStatic
-    | `Assoc [ ("BVar", `List [ x_0; x_1 ]) ] ->
-        let* x_0 = de_bruijn_id_of_json ctx x_0 in
-        let* x_1 = region_id_of_json ctx x_1 in
-        Ok (RBVar (x_0, x_1))
+    | `Assoc [ ("BVar", b_var) ] ->
+        let* b_var = de_bruijn_var_of_json region_id_of_json ctx b_var in
+        Ok (RBVar b_var)
     | `String "Erased" -> Ok RErased
     | _ -> Error "")
 

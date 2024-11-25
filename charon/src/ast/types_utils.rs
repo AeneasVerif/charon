@@ -2,7 +2,8 @@
 use crate::types::*;
 use crate::{common::visitor_event::VisitEvent, ids::Vector};
 use derive_visitor::{Drive, DriveMut, Event, Visitor, VisitorMut};
-use std::{collections::HashMap, iter::Iterator};
+use std::collections::HashMap;
+use std::iter::Iterator;
 
 impl DeBruijnId {
     pub fn zero() -> Self {
@@ -26,6 +27,25 @@ impl DeBruijnId {
     pub fn decr(&self) -> Self {
         DeBruijnId {
             index: self.index - 1,
+        }
+    }
+}
+
+impl<V> DeBruijnVar<V> {
+    pub fn new(index: DeBruijnId, var: V) -> Self {
+        DeBruijnVar {
+            dbid: index,
+            varid: var,
+        }
+    }
+
+    pub fn decr(&self) -> Self
+    where
+        V: Clone,
+    {
+        DeBruijnVar {
+            dbid: self.dbid.decr(),
+            varid: self.varid.clone(),
         }
     }
 }
@@ -79,7 +99,7 @@ impl GenericParams {
             regions: self
                 .regions
                 .iter_indexed()
-                .map(|(id, _)| Region::BVar(DeBruijnId::new(0), id))
+                .map(|(id, _)| Region::BVar(DeBruijnVar::new(DeBruijnId::new(0), id)))
                 .collect(),
             types: self
                 .types
@@ -588,9 +608,9 @@ impl<'a> SubstVisitor<'a> {
 
     fn exit_region(&mut self, r: &mut Region) {
         match r {
-            Region::BVar(db, id) => {
-                if *db == self.binder_depth {
-                    *r = self.generics.regions.get(*id).unwrap().clone()
+            Region::BVar(var) => {
+                if var.dbid == self.binder_depth {
+                    *r = self.generics.regions.get(var.varid).unwrap().clone()
                 }
             }
             _ => (),
@@ -629,5 +649,24 @@ impl<'a> SubstVisitor<'a> {
 impl Ty {
     pub fn substitute(&mut self, generics: &GenericArgs) {
         self.drive_inner_mut(&mut SubstVisitor::new(generics));
+    }
+}
+
+// The derive macro doesn't handle generics.
+impl<T: Drive> Drive for DeBruijnVar<T> {
+    fn drive<V: Visitor>(&self, visitor: &mut V) {
+        visitor.visit(self, Event::Enter);
+        self.dbid.drive(visitor);
+        self.varid.drive(visitor);
+        visitor.visit(self, Event::Exit);
+    }
+}
+
+impl<T: DriveMut> DriveMut for DeBruijnVar<T> {
+    fn drive_mut<V: VisitorMut>(&mut self, visitor: &mut V) {
+        visitor.visit(self, Event::Enter);
+        self.dbid.drive_mut(visitor);
+        self.varid.drive_mut(visitor);
+        visitor.visit(self, Event::Exit);
     }
 }
