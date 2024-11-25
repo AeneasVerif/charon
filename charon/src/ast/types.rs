@@ -153,7 +153,7 @@ pub enum TraitRefKind {
     ///                    ^^^^^^^
     ///                    Clause(0)
     /// ```
-    Clause(TraitClauseId),
+    Clause(DeBruijnVar<TraitClauseId>),
 
     /// A parent clause
     ///

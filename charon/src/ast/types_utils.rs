@@ -95,6 +95,7 @@ impl GenericParams {
     /// each required parameter with itself. E.g. given parameters for `<T, U> where U:
     /// PartialEq<T>`, the arguments would be `<T, U>[@TraitClause0]`.
     pub fn identity_args(&self) -> GenericArgs {
+        // TODO: pass a debruijn index instead of assuming `0`.
         GenericArgs {
             regions: self
                 .regions
@@ -115,7 +116,7 @@ impl GenericParams {
                 .trait_clauses
                 .iter_indexed()
                 .map(|(id, clause)| TraitRef {
-                    kind: TraitRefKind::Clause(id),
+                    kind: TraitRefKind::Clause(DeBruijnVar::new(DeBruijnId::new(0), id)),
                     trait_decl_ref: clause.trait_.clone(),
                 })
                 .collect(),
@@ -646,7 +647,10 @@ impl<'a> SubstVisitor<'a> {
 
     fn exit_trait_ref(&mut self, tr: &mut TraitRef) {
         match &mut tr.kind {
-            TraitRefKind::Clause(id) => *tr = self.generics.trait_refs.get(*id).unwrap().clone(),
+            TraitRefKind::Clause(id) => {
+                assert_eq!(id.dbid, self.binder_depth); // the only clause binder is at the top-level
+                *tr = self.generics.trait_refs.get(id.varid).unwrap().clone()
+            }
             _ => (),
         }
     }

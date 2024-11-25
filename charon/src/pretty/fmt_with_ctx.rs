@@ -1170,7 +1170,7 @@ impl<C: AstFormatter> FmtWithCtx<C> for Terminator {
 
 impl<C: AstFormatter> FmtWithCtx<C> for TraitClause {
     fn fmt_with_ctx(&self, ctx: &C) -> String {
-        let clause_id = ctx.format_object(self.clause_id);
+        let clause_id = self.clause_id.to_pretty_string();
         let trait_ = self.trait_.fmt_with_ctx(ctx);
         format!("[{clause_id}]: {trait_}")
     }

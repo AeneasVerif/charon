@@ -342,7 +342,15 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
                 let mut trait_id = match &impl_source.r#impl {
                     ImplExprAtom::SelfImpl { .. } => TraitRefKind::SelfId,
                     ImplExprAtom::LocalBound { index, .. } => {
-                        TraitRefKind::Clause(TraitClauseId::from_usize(*index))
+                        // The DeBruijn index depends on the current stack of binders. Today we
+                        // only allow lifetimes in non-top-level binders, hence why we use
+                        // `region_vars.len()`.
+                        let db_id = self.region_vars.len() - 1;
+                        let var = DeBruijnVar::new(
+                            DeBruijnId::new(db_id),
+                            TraitClauseId::from_usize(*index),
+                        );
+                        TraitRefKind::Clause(var)
                     }
                     _ => unreachable!(),
                 };

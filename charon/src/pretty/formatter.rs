@@ -130,16 +130,16 @@ impl<'a, 'b> PushBoundRegions<'a> for FmtCtx<'b> {
     }
 }
 
-pub trait AstFormatter = Formatter<DeBruijnVar<TypeVarId>>
-    + Formatter<TypeDeclId>
-    + Formatter<DeBruijnVar<ConstGenericVarId>>
+pub trait AstFormatter = Formatter<TypeDeclId>
     + Formatter<FunDeclId>
     + Formatter<GlobalDeclId>
     + Formatter<BodyId>
     + Formatter<TraitDeclId>
     + Formatter<TraitImplId>
     + Formatter<AnyTransId>
-    + Formatter<TraitClauseId>
+    + Formatter<DeBruijnVar<TypeVarId>>
+    + Formatter<DeBruijnVar<ConstGenericVarId>>
+    + Formatter<DeBruijnVar<TraitClauseId>>
     + Formatter<DeBruijnVar<RegionId>>
     + Formatter<VarId>
     + Formatter<(TypeDeclId, VariantId)>
@@ -324,9 +324,13 @@ impl<'a> Formatter<DeBruijnVar<ConstGenericVarId>> for FmtCtx<'a> {
     }
 }
 
-impl<'a> Formatter<ast::TraitClauseId> for FmtCtx<'a> {
-    fn format_object(&self, id: ast::TraitClauseId) -> String {
-        id.to_pretty_string()
+impl<'a> Formatter<DeBruijnVar<TraitClauseId>> for FmtCtx<'a> {
+    fn format_object(&self, var: DeBruijnVar<TraitClauseId>) -> String {
+        if var.dbid.index + 1 == self.generics.len() {
+            format!("@{}{}", var.varid.pretty_name(), var.varid)
+        } else {
+            format!("@{}{}_{}", var.varid.pretty_name(), var.dbid, var.varid)
+        }
     }
 }
 

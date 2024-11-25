@@ -25,6 +25,11 @@ let builtin_ty_to_string (_ : builtin_ty) : string = "Box"
 let trait_clause_id_to_pretty_string (id : trait_clause_id) : string =
   "TraitClause@" ^ TraitClauseId.to_string id
 
+let trait_clause_var_to_pretty_string (var : trait_clause_id de_bruijn_var) :
+    string =
+  "TraitClause@" ^ show_de_bruijn_id var.dbid ^ "_"
+  ^ TraitClauseId.to_string var.varid
+
 let bound_region_var_to_pretty_string (var : region_var_id de_bruijn_var) :
     string =
   "'" ^ show_de_bruijn_id var.dbid ^ "_" ^ RegionVarId.to_string var.varid
@@ -262,7 +267,7 @@ and trait_instance_id_to_string (env : 'a fmt_env) (id : trait_instance_id) :
       impl ^ generics
   | BuiltinOrAuto trait ->
       region_binder_to_string trait_decl_ref_to_string env trait
-  | Clause id -> trait_clause_id_to_string env id
+  | Clause id -> trait_clause_var_to_pretty_string id
   | ParentClause (inst_id, _decl_id, clause_id) ->
       let inst_id = trait_instance_id_to_string env inst_id in
       let clause_id = trait_clause_id_to_string env clause_id in

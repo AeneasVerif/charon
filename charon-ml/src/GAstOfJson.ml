@@ -945,7 +945,9 @@ and trait_instance_id_of_json (ctx : of_json_ctx) (js : json) :
         let* x_1 = generic_args_of_json ctx x_1 in
         Ok (TraitImpl (x_0, x_1))
     | `Assoc [ ("Clause", clause) ] ->
-        let* clause = trait_clause_id_of_json ctx clause in
+        let* clause =
+          de_bruijn_var_of_json trait_clause_id_of_json ctx clause
+        in
         Ok (Clause clause)
     | `Assoc [ ("ParentClause", `List [ x_0; x_1; x_2 ]) ] ->
         let* x_0 = box_of_json trait_instance_id_of_json ctx x_0 in

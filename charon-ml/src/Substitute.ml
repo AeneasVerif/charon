@@ -15,7 +15,7 @@ type subst = {
   ty_subst : TypeVarId.id de_bruijn_var -> ty;
   cg_subst : ConstGenericVarId.id de_bruijn_var -> const_generic;
       (** Substitution from *local* trait clause to trait instance *)
-  tr_subst : TraitClauseId.id -> trait_instance_id;
+  tr_subst : TraitClauseId.id de_bruijn_var -> trait_instance_id;
       (** Substitution for the [Self] trait instance *)
   tr_self : trait_instance_id;
 }
@@ -166,7 +166,7 @@ let generic_args_erase_regions (tr : generic_args) : generic_args =
 (** Erase the regions in a type and perform a substitution *)
 let erase_regions_substitute_types (ty_subst : TypeVarId.id de_bruijn_var -> ty)
     (cg_subst : ConstGenericVarId.id de_bruijn_var -> const_generic)
-    (tr_subst : TraitClauseId.id -> trait_instance_id)
+    (tr_subst : TraitClauseId.id de_bruijn_var -> trait_instance_id)
     (tr_self : trait_instance_id) (ty : ty) : ty =
   let r_subst (_ : region) : region = RErased in
   let subst = { r_subst; ty_subst; cg_subst; tr_subst; tr_self } in
@@ -237,17 +237,20 @@ let make_const_generic_subst_from_vars (vars : const_generic_var list)
 (** Create a trait substitution from a list of trait clause ids and a list of
     trait refs *)
 let make_trait_subst (clause_ids : TraitClauseId.id list) (trs : trait_ref list)
-    : TraitClauseId.id -> trait_instance_id =
+    : TraitClauseId.id de_bruijn_var -> trait_instance_id =
   let ls = List.combine clause_ids trs in
   let mp =
     List.fold_left
       (fun mp (k, v) -> TraitClauseId.Map.add k v.trait_id mp)
       TraitClauseId.Map.empty ls
   in
-  fun id -> TraitClauseId.Map.find id mp
+  fun var ->
+    (* Only substitute the variables with DeBruijn index equal to 0 *)
+    if var.dbid = 0 then TraitClauseId.Map.find var.varid mp else Clause var
 
 let make_trait_subst_from_clauses (clauses : trait_clause list)
-    (trs : trait_ref list) : TraitClauseId.id -> trait_instance_id =
+    (trs : trait_ref list) : TraitClauseId.id de_bruijn_var -> trait_instance_id
+    =
   make_trait_subst
     (List.map (fun (x : trait_clause) -> x.clause_id) clauses)
     trs

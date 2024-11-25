@@ -459,7 +459,7 @@ and trait_instance_id =
       (** Reference to *self*, in case of trait declarations/implementations *)
   | TraitImpl of trait_impl_id * generic_args  (** A specific implementation *)
   | BuiltinOrAuto of trait_decl_ref region_binder
-  | Clause of trait_clause_id
+  | Clause of trait_clause_id de_bruijn_var
   | ParentClause of trait_instance_id * trait_decl_id * trait_clause_id
   | FnPointer of ty
   | Closure of fun_decl_id * generic_args
