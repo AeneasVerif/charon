@@ -29,6 +29,25 @@ let empty_subst : subst =
     tr_self = Self;
   }
 
+(** Decrement the debruijn index of a debruijn variable *)
+let decr_db_var (var : 'a de_bruijn_var) : 'a de_bruijn_var =
+  { dbid = var.dbid - 1; varid = var.varid }
+
+(** Shift the indices of the substitution under on binder level. *)
+let shift_subst (subst : subst) : subst =
+  let shift_region r =
+    match r with
+    | RBVar var -> RBVar (decr_db_var var)
+    | _ -> r
+  in
+  {
+    r_subst = (fun r -> subst.r_subst (shift_region r));
+    ty_subst = (fun var -> subst.ty_subst (decr_db_var var));
+    cg_subst = (fun var -> subst.cg_subst (decr_db_var var));
+    tr_subst = (fun var -> subst.tr_subst (decr_db_var var));
+    tr_self = subst.tr_self;
+  }
+
 let st_substitute_visitor =
   object (self)
     inherit [_] map_statement
@@ -37,13 +56,7 @@ let st_substitute_visitor =
     (** We need to properly handle the DeBruijn indices *)
     method! visit_TArrow (subst : subst) regions inputs output =
       (* Decrement the DeBruijn indices before calling the substitution *)
-      let r_subst r =
-        match r with
-        | RBVar { dbid; varid } ->
-            subst.r_subst (RBVar { dbid = dbid - 1; varid })
-        | _ -> subst.r_subst r
-      in
-      let subst = { subst with r_subst } in
+      let subst = shift_subst subst in
       (* Note that we ignore the bound regions variables *)
       let inputs = List.map (self#visit_ty subst) inputs in
       let output = self#visit_ty subst output in
@@ -52,13 +65,7 @@ let st_substitute_visitor =
     (** We need to properly handle the DeBruijn indices *)
     method! visit_region_binder visit_value (subst : subst) x =
       (* Decrement the DeBruijn indices before calling the substitution *)
-      let r_subst r =
-        match r with
-        | RBVar { dbid; varid } ->
-            subst.r_subst (RBVar { dbid = dbid - 1; varid })
-        | _ -> subst.r_subst r
-      in
-      let subst = { subst with r_subst } in
+      let subst = shift_subst subst in
       (* Note that we ignore the bound regions variables *)
       let { binder_regions; binder_value } = x in
       let binder_value = visit_value subst binder_value in
