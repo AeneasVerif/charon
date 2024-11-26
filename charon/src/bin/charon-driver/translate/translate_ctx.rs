@@ -216,10 +216,11 @@ pub(crate) struct BodyTransCtx<'tcx, 'ctx> {
     /// aliases, because rust does not enforce correct trait bounds on type aliases.
     pub error_on_impl_expr_error: bool,
 
-    /// The regions.
-    /// We use DeBruijn indices, so we have a stack of regions.
-    /// See the comments for [Region::BVar].
-    pub region_vars: VecDeque<Vector<RegionId, RegionVar>>,
+    /// The stack of generic parameter binders for the current context. Each binder introduces an
+    /// entry in this stack, wich the entry as index `0` being the innermost binder. FOr now, only
+    /// the outermost binder can have non-lifetime generics. These parameters are referenced using
+    /// [`DeBruijnVar`]; see there for details.
+    pub generic_params: VecDeque<GenericParams>,
     /// The map from rust (free) regions to translated region indices.
     /// This contains the early bound regions.
     ///
@@ -235,7 +236,6 @@ pub(crate) struct BodyTransCtx<'tcx, 'ctx> {
     /// The [bound_region_vars] field below takes care of the regions which
     /// are bound in the Rustc representation.
     pub free_region_vars: std::collections::BTreeMap<hax::Region, RegionId>,
-    ///
     /// The stack of late-bound parameters (can only be lifetimes for now), which
     /// use DeBruijn indices (the other parameters use free variables).
     /// For explanations about what early-bound and late-bound parameters are, see:
@@ -246,9 +246,6 @@ pub(crate) struct BodyTransCtx<'tcx, 'ctx> {
     /// ==============
     /// We use DeBruijn indices. See the comments for [Region::Var].
     pub bound_region_vars: VecDeque<Box<[RegionId]>>,
-    /// The generic parameters for the item. `regions` must be empty, as regions are handled
-    /// separately.
-    pub generic_params: GenericParams,
     /// The map from rust type variable indices to translated type variable indices.
     pub type_vars_map: HashMap<u32, TypeVarId>,
     /// The map from rust const generic variables to translate const generic
@@ -366,8 +363,9 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
                         // substs and bounds. In order to properly do so, we introduce
                         // a body translation context.
                         let mut bt_ctx = BodyTransCtx::new(def_id, None, self);
-                        let generics = bt_ctx.translate_def_generics(span, &full_def)?;
+                        bt_ctx.translate_def_generics(span, &full_def)?;
                         let ty = bt_ctx.translate_ty(span, &ty)?;
+                        let generics = bt_ctx.into_generics();
                         ImplElem::Ty(generics, ty)
                     }
                     // Trait implementation
@@ -907,10 +905,9 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
             t_ctx,
             hax_state,
             error_on_impl_expr_error: true,
-            region_vars: [Vector::new()].into(),
+            generic_params: Default::default(),
             free_region_vars: Default::default(),
             bound_region_vars: Default::default(),
-            generic_params: Default::default(),
             type_vars_map: Default::default(),
             const_generic_vars_map: Default::default(),
             parent_trait_clauses: Default::default(),
@@ -999,7 +996,9 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
         let name = super::translate_types::translate_region_name(&r);
         // Check that there are no late-bound regions
         assert!(self.bound_region_vars.is_empty());
-        let rid = self.region_vars[0].push_with(|index| RegionVar { index, name });
+        let rid = self.generic_params[0]
+            .regions
+            .push_with(|index| RegionVar { index, name });
         self.free_region_vars.insert(r, rid);
         rid
     }
@@ -1042,13 +1041,13 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
         binder: hax::Binder<()>,
     ) -> Result<(), Error> {
         assert!(self.bound_region_vars.is_empty());
-        assert_eq!(self.region_vars.len(), 1);
+        assert_eq!(self.generic_params.len(), 1);
 
         // Register the variables
         // There may already be lifetimes in the current group.
-        let mut region_vars = mem::take(&mut self.region_vars[0]);
+        let mut region_vars = mem::take(&mut self.generic_params[0].regions);
         let var_ids = self.translate_region_binder(span, binder, &mut region_vars)?;
-        self.region_vars[0] = region_vars;
+        self.generic_params[0].regions = region_vars;
         self.bound_region_vars.push_front(var_ids);
         // Translation of types depends on bound variables, we must not mix that up.
         self.type_trans_cache = Default::default();
@@ -1068,13 +1067,13 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
     where
         F: FnOnce(&mut Self) -> Result<T, Error>,
     {
-        assert!(!self.region_vars.is_empty());
+        assert!(!self.generic_params.is_empty());
 
         // Register the variables
-        let mut bound_vars = Vector::new();
-        let var_ids = self.translate_region_binder(span, binder, &mut bound_vars)?;
+        let mut generic_params = GenericParams::default();
+        let var_ids = self.translate_region_binder(span, binder, &mut generic_params.regions)?;
         self.bound_region_vars.push_front(var_ids);
-        self.region_vars.push_front(bound_vars);
+        self.generic_params.push_front(generic_params);
         // Translation of types depends on bound variables, we must not mix that up.
         let old_ty_cache = std::mem::take(&mut self.type_trans_cache);
 
@@ -1083,7 +1082,7 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
 
         // Reset
         self.bound_region_vars.pop_front();
-        self.region_vars.pop_front();
+        self.generic_params.pop_front();
         self.type_trans_cache = old_ty_cache;
 
         // Return
@@ -1093,6 +1092,8 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
     pub(crate) fn push_type_var(&mut self, rid: u32, name: String) -> TypeVarId {
         let var_id = self
             .generic_params
+            .back_mut()
+            .unwrap()
             .types
             .push_with(|index| TypeVar { index, name });
         self.type_vars_map.insert(rid, var_id);
@@ -1107,6 +1108,8 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
     pub(crate) fn push_const_generic_var(&mut self, rid: u32, ty: LiteralTy, name: String) {
         let var_id = self
             .generic_params
+            .back_mut()
+            .unwrap()
             .const_generics
             .push_with(|index| ConstGenericVar { index, name, ty });
         self.const_generic_vars_map.insert(rid, var_id);
@@ -1143,25 +1146,9 @@ impl<'tcx, 'ctx, 'a> IntoFormatter for &'a BodyTransCtx<'tcx, 'ctx> {
     type C = FmtCtx<'a>;
 
     fn into_fmt(self) -> Self::C {
-        // Translate our generics into a stack of generics. Only the outermost binder has
-        // non-region parameters.
-        let mut generics: VecDeque<Cow<'_, GenericParams>> = self
-            .region_vars
-            .iter()
-            .cloned()
-            .map(|regions| {
-                Cow::Owned(GenericParams {
-                    regions,
-                    ..Default::default()
-                })
-            })
-            .collect();
-        let outermost_generics = generics.back_mut().unwrap().to_mut();
-        outermost_generics.types = self.generic_params.types.clone();
-        outermost_generics.const_generics = self.generic_params.const_generics.clone();
         FmtCtx {
             translated: Some(&self.t_ctx.translated),
-            generics,
+            generics: self.generic_params.iter().map(Cow::Borrowed).collect(),
             locals: Some(&self.locals),
         }
     }

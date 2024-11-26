@@ -100,7 +100,7 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
             )?;
 
             Ok(RegionBinder {
-                regions: ctx.region_vars[0].clone(),
+                regions: ctx.generic_params[0].regions.clone(),
                 skip_binder: TraitDeclRef { trait_id, generics },
             })
         })
@@ -120,11 +120,11 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
         let trait_decl_ref = self.translate_trait_predicate(span, trait_pred)?;
         let poly_trait_ref = RegionBinder {
             // We're under the binder of `hax::Predicate`, we re-wrap it here.
-            regions: self.region_vars[0].clone(),
+            regions: self.generic_params[0].regions.clone(),
             skip_binder: trait_decl_ref,
         };
         let vec = match location {
-            PredicateLocation::Base => &mut self.generic_params.trait_clauses,
+            PredicateLocation::Base => &mut self.generic_params.back_mut().unwrap().trait_clauses,
             PredicateLocation::Parent => &mut self.parent_trait_clauses,
             PredicateLocation::Item(item_name) => self
                 .item_trait_clauses
@@ -181,27 +181,32 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
                 PredicateKind::Clause(kind) => {
                     // We're under the binder of `hax::Predicate`, we re-wrap that binder here
                     // except in the clause case where this is done already.
-                    let regions = ctx.region_vars[0].clone();
+                    let regions = ctx.generic_params[0].regions.clone();
                     match kind {
                         ClauseKind::Trait(trait_pred) => {
+                            // TODO: inline
                             ctx.register_trait_clause(span, trait_pred, origin, location)?;
                         }
                         ClauseKind::RegionOutlives(p) => {
                             // TODO: we're under a binder, we should re-bind
                             let r0 = ctx.translate_region(span, &p.lhs)?;
                             let r1 = ctx.translate_region(span, &p.rhs)?;
-                            ctx.generic_params.regions_outlive.push(RegionBinder {
-                                regions,
-                                skip_binder: OutlivesPred(r0, r1),
-                            });
+                            ctx.generic_params.back_mut().unwrap().regions_outlive.push(
+                                RegionBinder {
+                                    regions,
+                                    skip_binder: OutlivesPred(r0, r1),
+                                },
+                            );
                         }
                         ClauseKind::TypeOutlives(p) => {
                             let ty = ctx.translate_ty(span, &p.lhs)?;
                             let r = ctx.translate_region(span, &p.rhs)?;
-                            ctx.generic_params.types_outlive.push(RegionBinder {
-                                regions,
-                                skip_binder: OutlivesPred(ty, r),
-                            });
+                            ctx.generic_params.back_mut().unwrap().types_outlive.push(
+                                RegionBinder {
+                                    regions,
+                                    skip_binder: OutlivesPred(ty, r),
+                                },
+                            );
                         }
                         ClauseKind::Projection(p) => {
                             // TODO: we're under a binder, we should re-bind
@@ -221,6 +226,8 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
                             let ty = ctx.translate_ty(span, ty)?;
                             let type_name = TraitItemName(assoc_item.name.clone().into());
                             ctx.generic_params
+                                .back_mut()
+                                .unwrap()
                                 .trait_type_constraints
                                 .push(RegionBinder {
                                     regions,
@@ -342,10 +349,8 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
                 let mut trait_id = match &impl_source.r#impl {
                     ImplExprAtom::SelfImpl { .. } => TraitRefKind::SelfId,
                     ImplExprAtom::LocalBound { index, .. } => {
-                        // The DeBruijn index depends on the current stack of binders. Today we
-                        // only allow lifetimes in non-top-level binders, hence why we use
-                        // `region_vars.len()`.
-                        let db_id = self.region_vars.len() - 1;
+                        // Trait clauses are bound at the top-level binder.
+                        let db_id = self.generic_params.len() - 1;
                         let var = DeBruijnVar::new(
                             DeBruijnId::new(db_id),
                             TraitClauseId::from_usize(*index),

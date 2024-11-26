@@ -9,6 +9,7 @@ use hax_frontend_exporter as hax;
 use itertools::Itertools;
 use rustc_hir::def_id::DefId;
 use std::collections::HashMap;
+use std::mem;
 use std::sync::Arc;
 
 /// The context in which we are translating a clause, used to generate the appropriate ids and
@@ -70,7 +71,7 @@ impl BodyTransCtx<'_, '_> {
         // contain the local trait clauses. The parent clauses are stored in
         // `self.parent_trait_clauses`.
         // TODO: Distinguish between required and implied trait clauses?
-        let generics = self.translate_def_generics(span, def)?;
+        self.translate_def_generics(span, def)?;
 
         // Translate the associated items
         // We do something subtle here: TODO: explain
@@ -102,7 +103,7 @@ impl BodyTransCtx<'_, '_> {
                         // declares them.
                         let gref = GlobalDeclRef {
                             id: self.register_global_decl_id(item_span, rust_item_id),
-                            generics: generics.identity_args(),
+                            generics: self.top_level_generics().identity_args(),
                         };
                         const_defaults.insert(item_name.clone(), gref);
                     };
@@ -131,21 +132,6 @@ impl BodyTransCtx<'_, '_> {
             }
         }
 
-        // Debugging:
-        {
-            let ctx = self.into_fmt();
-            let generic_clauses = generics
-                .trait_clauses
-                .iter()
-                .map(|c| c.fmt_with_ctx(&ctx))
-                .collect::<Vec<String>>()
-                .join("\n");
-            trace!(
-                "Trait decl: {:?}:\n- generic.trait_clauses:\n{}\n",
-                def_id,
-                generic_clauses
-            );
-        }
         if item_meta.opacity.is_opaque() {
             let ctx = self.into_fmt();
             self.t_ctx.errors.display_error(
@@ -164,8 +150,8 @@ impl BodyTransCtx<'_, '_> {
         Ok(ast::TraitDecl {
             def_id,
             item_meta,
-            generics,
-            parent_clauses: self.parent_trait_clauses,
+            parent_clauses: mem::take(&mut self.parent_trait_clauses),
+            generics: self.into_generics(),
             type_clauses,
             consts,
             const_defaults,
@@ -189,7 +175,7 @@ impl BodyTransCtx<'_, '_> {
 
         let span = item_meta.span;
 
-        let generics = self.translate_def_generics(span, def)?;
+        self.translate_def_generics(span, def)?;
 
         let hax::FullDefKind::TraitImpl {
             trait_pred,
@@ -265,7 +251,7 @@ impl BodyTransCtx<'_, '_> {
                     // The parameters of the constant are the same as those of the item that
                     // declares them.
                     let generics = match &impl_item.value {
-                        Provided { .. } => generics.identity_args(),
+                        Provided { .. } => self.top_level_generics().identity_args(),
                         _ => implemented_trait.generics.clone(),
                     };
                     let gref = GlobalDeclRef { id, generics };
@@ -308,7 +294,7 @@ impl BodyTransCtx<'_, '_> {
             def_id,
             item_meta,
             impl_trait: implemented_trait,
-            generics,
+            generics: self.into_generics(),
             parent_trait_refs,
             type_clauses,
             consts,
