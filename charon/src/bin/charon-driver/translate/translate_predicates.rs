@@ -101,41 +101,6 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
         })
     }
 
-    /// Returns an [Option] because we may filter clauses about builtin or
-    /// auto traits like [core::marker::Sized] and [core::marker::Sync].
-    ///
-    /// `origin` is where this clause comes from.
-    pub(crate) fn register_trait_clause(
-        &mut self,
-        span: Span,
-        trait_pred: &hax::TraitPredicate,
-        origin: PredicateOrigin,
-        location: &PredicateLocation,
-    ) -> Result<Option<TraitClauseId>, Error> {
-        let trait_decl_ref = self.translate_trait_predicate(span, trait_pred)?;
-        let poly_trait_ref = RegionBinder {
-            // We're under the binder of `hax::Predicate`, we re-wrap it here.
-            regions: self.generic_params[0].regions.clone(),
-            skip_binder: trait_decl_ref,
-        };
-        let vec = match location {
-            PredicateLocation::Base => &mut self.generic_params.back_mut().unwrap().trait_clauses,
-            PredicateLocation::Parent => &mut self.parent_trait_clauses,
-            PredicateLocation::Item(item_name) => self
-                .item_trait_clauses
-                .entry(item_name.clone())
-                .or_default(),
-        };
-        let clause_id = vec.push_with(|clause_id| TraitClause {
-            clause_id,
-            origin,
-            span: Some(span),
-            trait_: poly_trait_ref,
-        });
-
-        Ok(Some(clause_id))
-    }
-
     pub(crate) fn translate_trait_predicate(
         &mut self,
         span: Span,
@@ -165,25 +130,40 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
         origin: PredicateOrigin,
         location: &PredicateLocation,
     ) -> Result<(), Error> {
+        use hax::{ClauseKind, PredicateKind};
         trace!("{:?}", pred);
         let span = self.translate_span_from_hax(hspan);
 
         let binder = pred.kind.rebind(());
         self.with_locally_bound_regions_group(span, binder, move |ctx| {
             let pred_kind = pred.kind.hax_skip_binder_ref();
-            use hax::{ClauseKind, PredicateKind};
             match pred_kind {
                 PredicateKind::Clause(kind) => {
-                    // We're under the binder of `hax::Predicate`, we re-wrap that binder here
-                    // except in the clause case where this is done already.
+                    // We're under the binder of `hax::Predicate`, we re-wrap that binder here.
                     let regions = ctx.generic_params[0].regions.clone();
                     match kind {
                         ClauseKind::Trait(trait_pred) => {
-                            // TODO: inline
-                            ctx.register_trait_clause(span, trait_pred, origin, location)?;
+                            let trait_decl_ref = ctx.translate_trait_predicate(span, trait_pred)?;
+                            let location = match location {
+                                PredicateLocation::Base => {
+                                    &mut ctx.generic_params.back_mut().unwrap().trait_clauses
+                                }
+                                PredicateLocation::Parent => &mut ctx.parent_trait_clauses,
+                                PredicateLocation::Item(item_name) => {
+                                    ctx.item_trait_clauses.entry(item_name.clone()).or_default()
+                                }
+                            };
+                            location.push_with(|clause_id| TraitClause {
+                                clause_id,
+                                origin,
+                                span: Some(span),
+                                trait_: RegionBinder {
+                                    regions,
+                                    skip_binder: trait_decl_ref,
+                                },
+                            });
                         }
                         ClauseKind::RegionOutlives(p) => {
-                            // TODO: we're under a binder, we should re-bind
                             let r0 = ctx.translate_region(span, &p.lhs)?;
                             let r1 = ctx.translate_region(span, &p.rhs)?;
                             ctx.generic_params.back_mut().unwrap().regions_outlive.push(
@@ -204,7 +184,6 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
                             );
                         }
                         ClauseKind::Projection(p) => {
-                            // TODO: we're under a binder, we should re-bind
                             // This is used to express constraints over associated types.
                             // For instance:
                             // ```
