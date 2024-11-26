@@ -109,6 +109,7 @@ let trait_instance_id_as_trait_impl (id : trait_instance_id) :
   | TraitImpl (impl_id, args) -> (impl_id, args)
   | _ -> raise (Failure "Unreachable")
 
+(* Make a debruijn variable of index 0 *)
 let zero_db_var (varid : 'id) : 'id de_bruijn_var = Bound (0, varid)
 
 let free_var_of_db_var (var : 'id de_bruijn_var) : 'id option =

@@ -7,6 +7,9 @@ open TypesUtils
 open Expressions
 open LlbcAst
 
+(* TODO: use Core.Fn.compose *)
+let compose f g x = f (g x)
+
 (* A substitution that takes a full variable as input *)
 type subst = {
   r_subst : RegionId.id de_bruijn_var -> region;
@@ -73,11 +76,18 @@ let st_substitute_visitor =
   object (self)
     inherit [_] map_statement
 
-    (** We need to properly handle the DeBruijn indices *)
     method! visit_region_binder visit_value (subst : subst) x =
-      (* Decrement the DeBruijn indices before calling the substitution *)
-      let r_subst var = subst.r_subst (decr_db_var var) in
-      let subst = { subst with r_subst } in
+      (* Shift the indices of the substitution under one binder level. *)
+      let shift_subst (subst : subst) : subst =
+        {
+          r_subst = compose subst.r_subst decr_db_var;
+          ty_subst = compose subst.ty_subst decr_db_var;
+          cg_subst = compose subst.cg_subst decr_db_var;
+          tr_subst = compose subst.tr_subst decr_db_var;
+          tr_self = subst.tr_self;
+        }
+      in
+      let subst = shift_subst subst in
       (* Note that we ignore the bound regions variables *)
       let { binder_regions; binder_value } = x in
       let binder_value = visit_value subst binder_value in
