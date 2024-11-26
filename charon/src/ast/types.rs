@@ -250,6 +250,15 @@ pub struct TraitDeclRef {
 /// A quantified trait predicate, e.g. `for<'a> Type<'a>: Trait<'a, Args>`.
 pub type PolyTraitDeclRef = RegionBinder<TraitDeclRef>;
 
+/// A reference to a tait impl, using the provided arguments.
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Hash, Drive, DriveMut)]
+pub struct TraitImplRef {
+    #[charon::rename("trait_impl_id")]
+    pub impl_id: TraitImplId,
+    #[charon::rename("impl_generics")]
+    pub generics: GenericArgs,
+}
+
 /// .0 outlives .1
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 pub struct OutlivesPred<T, U>(pub T, pub U);

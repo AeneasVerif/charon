@@ -224,8 +224,10 @@ impl<'tcx> Deps<'tcx> {
     fn set_impl_or_trait_id(&mut self, kind: &ItemKind) {
         match kind {
             ItemKind::Regular => {}
-            ItemKind::TraitDecl { trait_id, .. } => self.parent_trait_decl = Some(*trait_id),
-            ItemKind::TraitImpl { impl_id, .. } => self.parent_trait_impl = Some(*impl_id),
+            ItemKind::TraitDecl { trait_ref, .. } => {
+                self.parent_trait_decl = Some(trait_ref.trait_id)
+            }
+            ItemKind::TraitImpl { impl_ref, .. } => self.parent_trait_impl = Some(impl_ref.impl_id),
         }
     }
     fn set_current_id(&mut self, ctx: &TransformCtx, id: AnyTransId) {

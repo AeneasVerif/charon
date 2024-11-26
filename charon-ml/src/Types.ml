@@ -399,6 +399,12 @@ and trait_decl_ref = {
   decl_generics : generic_args;
 }
 
+(** A reference to a tait impl, using the provided arguments. *)
+and trait_impl_ref = {
+  trait_impl_id : trait_impl_id;
+  impl_generics : generic_args;
+}
+
 and generic_args = {
   regions : region list;
   types : ty list;

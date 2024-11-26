@@ -15,6 +15,7 @@ use super::{ctx::TransformPass, TransformCtx};
     FnPtr(enter),
     GlobalDeclRef(enter),
     TraitDeclRef(enter),
+    TraitImplRef(enter),
     TraitRefKind(enter),
     Ty(enter)
 )]
@@ -101,6 +102,9 @@ impl CheckGenericsVisitor<'_> {
     }
     fn enter_trait_decl_ref(&mut self, tref: &TraitDeclRef) {
         self.generics_should_match_item(&tref.generics, tref.trait_id);
+    }
+    fn enter_trait_impl_ref(&mut self, impl_ref: &TraitImplRef) {
+        self.generics_should_match_item(&impl_ref.generics, impl_ref.impl_id);
     }
     fn enter_trait_ref_kind(&mut self, kind: &TraitRefKind) {
         match kind {

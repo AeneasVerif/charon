@@ -115,7 +115,7 @@ pub enum ItemKind {
     /// provided a default implementation.
     TraitDecl {
         /// The trait declaration this item belongs to.
-        trait_id: TraitDeclId,
+        trait_ref: TraitDeclRef,
         /// The name of the item.
         item_name: TraitItemName,
         /// Whether the trait declaration provides a default implementation.
@@ -123,10 +123,10 @@ pub enum ItemKind {
     },
     /// Function/const that is part of a trait implementation.
     TraitImpl {
-        /// The trait implementation the method belongs to
-        impl_id: TraitImplId,
-        /// The trait declaration this item belongs to.
-        trait_id: TraitDeclId,
+        /// The trait implementation the method belongs to.
+        impl_ref: TraitImplRef,
+        /// The trait declaration that the impl block implements.
+        trait_ref: TraitDeclRef,
         /// The name of the item
         item_name: TraitItemName,
         /// True if the trait decl had a default implementation for this function/const and this
