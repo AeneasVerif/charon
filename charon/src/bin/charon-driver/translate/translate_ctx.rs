@@ -19,7 +19,6 @@ use std::collections::HashMap;
 use std::collections::{BTreeMap, VecDeque};
 use std::fmt;
 use std::fmt::Debug;
-use std::mem;
 use std::path::{Component, PathBuf};
 use std::sync::Arc;
 
@@ -194,6 +193,100 @@ pub struct TranslateCtx<'tcx> {
     pub cached_item_metas: HashMap<DefId, ItemMeta>,
 }
 
+/// A level of binding for type-level variables. Each item has a top-level binding level
+/// corresponding to the parameters and clauses to the items. We may then encounter inner binding
+/// levels in the following cases:
+/// - `for<..>` binders in predicates;
+/// - `fn<..>` function pointer types;
+/// - `dyn Trait` types, represented as `dyn<T: Trait>` (TODO);
+/// - types in a trait declaration or implementation block (TODO);
+/// - methods in a trait declaration or implementation block (TODO).
+///
+/// At each level, we store two things: a `GenericParams` that contains the parameters bound at
+/// this level, and various maps from the rustc-internal indices to our indices.
+#[derive(Default)]
+pub(crate) struct BindingLevel {
+    /// The parameters and predicates bound at this level.
+    pub params: GenericParams,
+    /// Rust makes the distinction between early and late-bound region parameters. We do not make
+    /// this distinction, and merge early and late bound regions. For details, see:
+    /// https://smallcultfollowing.com/babysteps/blog/2013/10/29/intermingled-parameter-lists/
+    /// https://smallcultfollowing.com/babysteps/blog/2013/11/04/intermingled-parameter-lists/
+    ///
+    /// The map from rust early regions to translated region indices.
+    pub early_region_vars: std::collections::BTreeMap<hax::EarlyParamRegion, RegionId>,
+    /// The map from rust late/bound regions to translated region indices.
+    pub bound_region_vars: Vec<RegionId>,
+    /// The map from rust type variable indices to translated type variable indices.
+    pub type_vars_map: HashMap<u32, TypeVarId>,
+    /// The map from rust const generic variables to translate const generic variable indices.
+    pub const_generic_vars_map: HashMap<u32, ConstGenericVarId>,
+    /// Cache the translation of types. This harnesses the deduplication of `TyKind` that hax does.
+    pub type_trans_cache: HashMap<HashByAddr<Arc<hax::TyKind>>, Ty>,
+}
+
+impl BindingLevel {
+    /// Important: we must push all the early-bound regions before pushing any other region.
+    pub(crate) fn push_early_region(&mut self, region: hax::EarlyParamRegion) -> RegionId {
+        let name = super::translate_types::translate_region_name(&region);
+        // Check that there are no late-bound regions
+        assert!(
+            self.bound_region_vars.is_empty(),
+            "Early regions must be tralsnated before late ones"
+        );
+        let rid = self
+            .params
+            .regions
+            .push_with(|index| RegionVar { index, name });
+        self.early_region_vars.insert(region, rid);
+        rid
+    }
+
+    /// Important: we must push all the early-bound regions before pushing any other region.
+    pub(crate) fn push_bound_region(&mut self, region: hax::BoundRegionKind) -> RegionId {
+        let name = translate_bound_region_kind_name(&region);
+        let rid = self
+            .params
+            .regions
+            .push_with(|index| RegionVar { index, name });
+        self.bound_region_vars.push(rid);
+        rid
+    }
+
+    pub(crate) fn push_type_var(&mut self, rid: u32, name: String) -> TypeVarId {
+        let var_id = self.params.types.push_with(|index| TypeVar { index, name });
+        self.type_vars_map.insert(rid, var_id);
+        var_id
+    }
+
+    pub(crate) fn push_const_generic_var(&mut self, rid: u32, ty: LiteralTy, name: String) {
+        let var_id = self
+            .params
+            .const_generics
+            .push_with(|index| ConstGenericVar { index, name, ty });
+        self.const_generic_vars_map.insert(rid, var_id);
+    }
+
+    /// Translate a binder of regions by appending the stored reguions to the given vector.
+    pub(crate) fn push_params_from_binder(&mut self, binder: hax::Binder<()>) -> Result<(), Error> {
+        use hax::BoundVariableKind::*;
+        for p in binder.bound_vars {
+            match p {
+                Region(region) => {
+                    self.push_bound_region(region);
+                }
+                Ty(_) => {
+                    panic!("Unexpected locally bound type variable");
+                }
+                Const => {
+                    panic!("Unexpected locally bound const generic variable");
+                }
+            }
+        }
+        Ok(())
+    }
+}
+
 /// A translation context for type/global/function bodies.
 /// Simply augments the [TranslateCtx] with local variables.
 ///
@@ -216,50 +309,14 @@ pub(crate) struct BodyTransCtx<'tcx, 'ctx> {
     /// aliases, because rust does not enforce correct trait bounds on type aliases.
     pub error_on_impl_expr_error: bool,
 
-    /// The regions.
-    /// We use DeBruijn indices, so we have a stack of regions.
-    /// See the comments for [Region::BVar].
-    pub region_vars: VecDeque<Vector<RegionId, RegionVar>>,
-    /// The map from rust (free) regions to translated region indices.
-    /// This contains the early bound regions.
-    ///
-    /// Important:
-    /// ==========
-    /// Rust makes the distinction between the early bound regions, which
-    /// are free, and the late-bound regions, which are bound (and use
-    /// DeBruijn indices).
-    /// We do not make this distinction, and use bound regions everywhere.
-    /// This means that we consider the free regions as belonging to the first
-    /// group of bound regions.
-    ///
-    /// The [bound_region_vars] field below takes care of the regions which
-    /// are bound in the Rustc representation.
-    pub free_region_vars: std::collections::BTreeMap<hax::EarlyParamRegion, RegionId>,
-    /// The stack of late-bound parameters (can only be lifetimes for now), which
-    /// use DeBruijn indices (the other parameters use free variables).
-    /// For explanations about what early-bound and late-bound parameters are, see:
-    /// https://smallcultfollowing.com/babysteps/blog/2013/10/29/intermingled-parameter-lists/
-    /// https://smallcultfollowing.com/babysteps/blog/2013/11/04/intermingled-parameter-lists/
-    ///
-    /// **Important**:
-    /// ==============
-    /// We use DeBruijn indices. See the comments for [Region::Var].
-    pub bound_region_vars: VecDeque<Box<[RegionId]>>,
-    /// The generic parameters for the item. `regions` must be empty, as regions are handled
-    /// separately.
-    pub generic_params: GenericParams,
-    /// The map from rust type variable indices to translated type variable indices.
-    pub type_vars_map: HashMap<u32, TypeVarId>,
-    /// The map from rust const generic variables to translate const generic
-    /// variable indices.
-    pub const_generic_vars_map: HashMap<u32, ConstGenericVarId>,
+    /// The stack of generic parameter binders for the current context. Each binder introduces an
+    /// entry in this stack, with the entry as index `0` being the innermost binder. These
+    /// parameters are referenced using [`DeBruijnVar`]; see there for details.
+    pub binding_levels: VecDeque<BindingLevel>,
     /// (For traits only) accumulated implied trait clauses.
     pub parent_trait_clauses: Vector<TraitClauseId, TraitClause>,
     /// (For traits only) accumulated trait clauses on associated types.
     pub item_trait_clauses: HashMap<TraitItemName, Vector<TraitClauseId, TraitClause>>,
-
-    /// Cache the translation of types. This harnesses the deduplication of `TyKind` that hax does.
-    pub type_trans_cache: HashMap<HashByAddr<Arc<hax::TyKind>>, Ty>,
 
     /// The (regular) variables in the current function body.
     pub locals: Locals,
@@ -365,10 +422,10 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
                         // substs and bounds. In order to properly do so, we introduce
                         // a body translation context.
                         let mut bt_ctx = BodyTransCtx::new(def_id, None, self);
-                        let params = bt_ctx.translate_def_generics(span, &full_def)?;
+                        bt_ctx.translate_def_generics(span, &full_def)?;
                         let ty = bt_ctx.translate_ty(span, &ty)?;
                         ImplElem::Ty(Binder {
-                            params,
+                            params: bt_ctx.into_generics(),
                             skip_binder: ty,
                         })
                     }
@@ -909,15 +966,9 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
             t_ctx,
             hax_state,
             error_on_impl_expr_error: true,
-            region_vars: [Vector::new()].into(),
-            free_region_vars: Default::default(),
-            bound_region_vars: Default::default(),
-            generic_params: Default::default(),
-            type_vars_map: Default::default(),
-            const_generic_vars_map: Default::default(),
+            binding_levels: Default::default(),
             parent_trait_clauses: Default::default(),
             item_trait_clauses: Default::default(),
-            type_trans_cache: Default::default(),
             locals: Default::default(),
             vars_map: Default::default(),
             blocks: Default::default(),
@@ -993,69 +1044,74 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
         self.t_ctx.register_trait_impl_id(&src, id)
     }
 
-    /// Push a free region.
-    ///
-    /// Important: we must push *all* the free regions (which are early-bound
-    /// regions) before pushing any (late-)bound region.
-    pub(crate) fn push_free_region(&mut self, r: hax::EarlyParamRegion) -> RegionId {
-        let name = super::translate_types::translate_region_name(&r);
-        // Check that there are no late-bound regions
-        assert!(self.bound_region_vars.is_empty());
-        let rid = self.region_vars[0].push_with(|index| RegionVar { index, name });
-        self.free_region_vars.insert(r, rid);
-        rid
+    pub(crate) fn outermost_binder(&self) -> &BindingLevel {
+        self.binding_levels.back().unwrap()
     }
 
-    /// Translate a binder of regions by appending the stored reguions to the given vector.
-    pub(crate) fn register_region_binder(
-        &mut self,
-        span: Span,
-        binder: hax::Binder<()>,
-        region_vars: &mut Vector<RegionId, RegionVar>,
-    ) -> Result<Box<[RegionId]>, Error> {
-        use hax::BoundVariableKind::*;
-        binder
-            .bound_vars
-            .into_iter()
-            .map(|p| match p {
-                Region(region) => {
-                    let name = translate_bound_region_kind_name(&region);
-                    let id = region_vars.push_with(|index| RegionVar { index, name });
-                    Ok(id)
-                }
-                Ty(_) => {
-                    error_or_panic!(self, span, "Unexpected locally bound type variable");
-                }
-                Const => {
-                    error_or_panic!(
-                        self,
-                        span,
-                        "Unexpected locally bound const generic variable"
-                    );
-                }
-            })
-            .try_collect()
+    pub(crate) fn outermost_binder_mut(&mut self) -> &mut BindingLevel {
+        self.binding_levels.back_mut().unwrap()
     }
 
-    /// Set the first bound regions group
-    pub(crate) fn set_first_bound_regions_group(
-        &mut self,
-        span: Span,
-        binder: hax::Binder<()>,
-    ) -> Result<(), Error> {
-        assert!(self.bound_region_vars.is_empty());
-        assert_eq!(self.region_vars.len(), 1);
+    pub(crate) fn innermost_binder(&mut self) -> &mut BindingLevel {
+        self.binding_levels.front_mut().unwrap()
+    }
 
-        // Register the variables
-        // There may already be lifetimes in the current group.
-        let mut region_vars = mem::take(&mut self.region_vars[0]);
-        let var_ids = self.register_region_binder(span, binder, &mut region_vars)?;
-        self.region_vars[0] = region_vars;
-        self.bound_region_vars.push_front(var_ids);
-        // Translation of types depends on bound variables, we must not mix that up.
-        self.type_trans_cache = Default::default();
+    pub(crate) fn lookup_bound_region(
+        &self,
+        dbid: hax::DebruijnIndex,
+        var: hax::BoundVar,
+    ) -> Option<RegionDbVar> {
+        let rid = self.binding_levels.get(dbid)?.bound_region_vars.get(var)?;
+        Some(if dbid == self.binding_levels.len() - 1 {
+            DeBruijnVar::free(*rid)
+        } else {
+            DeBruijnVar::bound(DeBruijnId::new(dbid), *rid)
+        })
+    }
 
-        Ok(())
+    pub(crate) fn lookup_early_region(
+        &self,
+        region: &hax::EarlyParamRegion,
+    ) -> Option<RegionDbVar> {
+        // TODO: handle non-top-level full binders.
+        let id = self.outermost_binder().early_region_vars.get(region)?;
+        Some(DeBruijnVar::free(*id))
+    }
+
+    pub(crate) fn lookup_type_var(&self, param: &hax::ParamTy) -> Option<TypeDbVar> {
+        // TODO: handle non-top-level full binders.
+        let id = self.outermost_binder().type_vars_map.get(&param.index)?;
+        Some(DeBruijnVar::free(*id))
+    }
+
+    pub(crate) fn lookup_const_generic_var(
+        &self,
+        param: &hax::ParamConst,
+    ) -> Option<ConstGenericDbVar> {
+        // TODO: handle non-top-level full binders.
+        let id = self
+            .outermost_binder()
+            .const_generic_vars_map
+            .get(&param.index)?;
+        Some(DeBruijnVar::free(*id))
+    }
+
+    pub(crate) fn lookup_clause_var(&self, id: usize) -> Option<ClauseDbVar> {
+        // TODO: handle non-top-level full binders.
+        let id = TraitClauseId::from_usize(id);
+        Some(DeBruijnVar::free(id))
+    }
+
+    pub(crate) fn lookup_cached_type(
+        &self,
+        cache_key: &HashByAddr<Arc<hax::TyKind>>,
+    ) -> Option<Ty> {
+        for bl in self.binding_levels.iter().rev() {
+            if let Some(ty) = bl.type_trans_cache.get(&cache_key) {
+                return Some(ty.clone());
+            }
+        }
+        None
     }
 
     /// Push a group of bound regions and call the continuation.
@@ -1063,30 +1119,25 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
     /// it contains universally quantified regions).
     pub(crate) fn translate_region_binder<F, T, U>(
         &mut self,
-        span: Span,
+        _span: Span,
         binder: &hax::Binder<T>,
         f: F,
     ) -> Result<RegionBinder<U>, Error>
     where
         F: FnOnce(&mut Self, &T) -> Result<U, Error>,
     {
-        assert!(!self.region_vars.is_empty());
+        assert!(!self.binding_levels.is_empty());
+
         // Register the variables
-        let mut bound_vars = Vector::new();
-        let unit_binder = binder.rebind(());
-        let var_ids = self.register_region_binder(span, unit_binder, &mut bound_vars)?;
-        self.bound_region_vars.push_front(var_ids);
-        self.region_vars.push_front(bound_vars);
-        // Translation of types depends on bound variables, we must not mix that up.
-        let old_ty_cache = std::mem::take(&mut self.type_trans_cache);
+        let mut binding_level = BindingLevel::default();
+        binding_level.push_params_from_binder(binder.rebind(()))?;
+        self.binding_levels.push_front(binding_level);
 
         // Call the continuation. Important: do not short-circuit on error here.
         let res = f(self, binder.hax_skip_binder_ref());
 
         // Reset
-        self.bound_region_vars.pop_front();
-        let regions = self.region_vars.pop_front().unwrap();
-        self.type_trans_cache = old_ty_cache;
+        let regions = self.binding_levels.pop_front().unwrap().params.regions;
 
         // Return
         res.map(|skip_binder| RegionBinder {
@@ -1095,26 +1146,9 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
         })
     }
 
-    pub(crate) fn push_type_var(&mut self, rid: u32, name: String) -> TypeVarId {
-        let var_id = self
-            .generic_params
-            .types
-            .push_with(|index| TypeVar { index, name });
-        self.type_vars_map.insert(rid, var_id);
-        var_id
-    }
-
     pub(crate) fn push_var(&mut self, rid: usize, ty: Ty, name: Option<String>) {
         let var_id = self.locals.vars.push_with(|index| Var { index, name, ty });
         self.vars_map.insert(rid, var_id);
-    }
-
-    pub(crate) fn push_const_generic_var(&mut self, rid: u32, ty: LiteralTy, name: String) {
-        let var_id = self
-            .generic_params
-            .const_generics
-            .push_with(|index| ConstGenericVar { index, name, ty });
-        self.const_generic_vars_map.insert(rid, var_id);
     }
 
     pub(crate) fn fresh_block_id(&mut self, rid: hax::BasicBlock) -> ast::BlockId {
@@ -1148,25 +1182,13 @@ impl<'tcx, 'ctx, 'a> IntoFormatter for &'a BodyTransCtx<'tcx, 'ctx> {
     type C = FmtCtx<'a>;
 
     fn into_fmt(self) -> Self::C {
-        // Translate our generics into a stack of generics. Only the outermost binder has
-        // non-region parameters.
-        let mut generics: VecDeque<Cow<'_, GenericParams>> = self
-            .region_vars
-            .iter()
-            .cloned()
-            .map(|regions| {
-                Cow::Owned(GenericParams {
-                    regions,
-                    ..Default::default()
-                })
-            })
-            .collect();
-        let outermost_generics = generics.back_mut().unwrap().to_mut();
-        outermost_generics.types = self.generic_params.types.clone();
-        outermost_generics.const_generics = self.generic_params.const_generics.clone();
         FmtCtx {
             translated: Some(&self.t_ctx.translated),
-            generics,
+            generics: self
+                .binding_levels
+                .iter()
+                .map(|bl| Cow::Borrowed(&bl.params))
+                .collect(),
             locals: Some(&self.locals),
         }
     }
