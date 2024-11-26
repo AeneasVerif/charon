@@ -1004,7 +1004,7 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
     }
 
     /// Translate a binder of regions by appending the stored reguions to the given vector.
-    pub(crate) fn translate_region_binder(
+    pub(crate) fn register_region_binder(
         &mut self,
         span: Span,
         binder: hax::Binder<()>,
@@ -1046,7 +1046,7 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
         // Register the variables
         // There may already be lifetimes in the current group.
         let mut region_vars = mem::take(&mut self.generic_params[0].regions);
-        let var_ids = self.translate_region_binder(span, binder, &mut region_vars)?;
+        let var_ids = self.register_region_binder(span, binder, &mut region_vars)?;
         self.generic_params[0].regions = region_vars;
         self.bound_region_vars.push_front(var_ids);
         // Translation of types depends on bound variables, we must not mix that up.
@@ -1058,27 +1058,26 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
     /// Push a group of bound regions and call the continuation.
     /// We use this when diving into a `for<'a>`, or inside an arrow type (because
     /// it contains universally quantified regions).
-    pub(crate) fn with_locally_bound_regions_group<F, T>(
+    pub(crate) fn translate_region_binder<F, T, U>(
         &mut self,
         span: Span,
-        binder: hax::Binder<()>,
+        binder: &hax::Binder<T>,
         f: F,
-    ) -> Result<(T, Vector<RegionId, RegionVar>), Error>
+    ) -> Result<RegionBinder<U>, Error>
     where
-        F: FnOnce(&mut Self) -> Result<T, Error>,
+        F: FnOnce(&mut Self, &T) -> Result<U, Error>,
     {
-        assert!(!self.generic_params.is_empty());
-
         // Register the variables
         let mut generic_params = GenericParams::default();
-        let var_ids = self.translate_region_binder(span, binder, &mut generic_params.regions)?;
+        let var_ids =
+            self.register_region_binder(span, binder.rebind(()), &mut generic_params.regions)?;
         self.bound_region_vars.push_front(var_ids);
         self.generic_params.push_front(generic_params);
         // Translation of types depends on bound variables, we must not mix that up.
         let old_ty_cache = std::mem::take(&mut self.type_trans_cache);
 
-        // Call the continuation
-        let res = f(self);
+        // Call the continuation. Important: do not short-circuit on error here.
+        let res = f(self, binder.hax_skip_binder_ref());
 
         // Reset
         self.bound_region_vars.pop_front();
@@ -1086,7 +1085,10 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
         self.type_trans_cache = old_ty_cache;
 
         // Return
-        res.map(|res| (res, regions))
+        res.map(|skip_binder| RegionBinder {
+            regions,
+            skip_binder,
+        })
     }
 
     pub(crate) fn push_type_var(&mut self, rid: u32, name: String) -> TypeVarId {
