@@ -203,14 +203,18 @@ let ty_regions_intersect (ty : ty) (regions : RegionId.Set.t) : bool =
   not (RegionId.Set.disjoint ty_regions regions)
 
 (** Check if a {!type:Charon.Types.ty} contains regions from a given set *)
-let ty_has_regions_in_set (rset : RegionId.Set.t) (ty : ty) : bool =
+let ty_has_regions_in_pred (pred : region -> bool) (ty : ty) : bool =
   let obj =
     object
       inherit [_] iter_ty
-      method! visit_region _ r = if region_in_set r rset then raise Found
+      method! visit_region _ r = if pred r then raise Found
     end
   in
   try
     obj#visit_ty () ty;
     false
   with Found -> true
+
+(** Check if a {!type:Charon.Types.ty} contains regions from a given set *)
+let ty_has_regions_in_set (rset : RegionId.Set.t) (ty : ty) : bool =
+  ty_has_regions_in_pred (fun r -> region_in_set r rset) ty
