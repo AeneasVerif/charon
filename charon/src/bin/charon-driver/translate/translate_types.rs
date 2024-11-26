@@ -617,11 +617,14 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
         // Add generics from the parent item, recursively (recursivity is useful for closures, as
         // they could be nested).
         match &def.kind {
-            FullDefKind::AssocTy { parent, .. }
-            | FullDefKind::AssocFn { parent, .. }
-            | FullDefKind::AssocConst { parent, .. }
-            | FullDefKind::Closure { parent, .. } => {
-                let parent_def = self.t_ctx.hax_def(parent)?;
+            FullDefKind::AssocTy { .. }
+            | FullDefKind::AssocFn { .. }
+            | FullDefKind::AssocConst { .. }
+            | FullDefKind::Closure { .. }
+            | FullDefKind::Ctor { .. }
+            | FullDefKind::Variant { .. } => {
+                let parent_def_id = def.parent.as_ref().unwrap();
+                let parent_def = self.t_ctx.hax_def(parent_def_id)?;
                 self.push_generics_for_def(span, &parent_def, true)?;
             }
             _ => {}

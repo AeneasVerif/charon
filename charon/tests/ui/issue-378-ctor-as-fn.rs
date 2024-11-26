@@ -1,12 +1,18 @@
-//@ known-failure
-
 static F: fn(u8) -> Option<u8> = Some;
 
-fn main() {
-    let f: fn(u8) -> _ = Some;
-    let _ = f(42);
+struct Foo(u32, String);
+
+enum Bar<'a, T> {
+    Variant(&'a T),
 }
 
-enum Foo<'a, T> {
-    Variant(&'a T),
+fn main() {
+    let f = Some;
+    let _ = f(42);
+    let f: fn(u8) -> _ = f;
+    let _ = f(42);
+    let f = Foo;
+    let _ = f(42, String::new());
+    let f = Bar::Variant;
+    let _ = f(&42);
 }

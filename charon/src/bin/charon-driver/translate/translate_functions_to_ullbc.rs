@@ -121,11 +121,11 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
             // ```
             hax::AssocItemContainer::TraitImplContainer {
                 impl_id,
-                implemented_trait,
+                implemented_trait_ref,
                 overrides_default,
                 ..
             } => {
-                let trait_id = self.register_trait_decl_id(span, implemented_trait);
+                let trait_id = self.register_trait_decl_id(span, &implemented_trait_ref.def_id);
                 let impl_id = self.register_trait_impl_id(span, impl_id);
                 ItemKind::TraitImpl {
                     impl_id,
@@ -141,10 +141,10 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
             //   fn baz(...); // <- declaration of a trait method
             // }
             // ```
-            hax::AssocItemContainer::TraitContainer { trait_id } => {
+            hax::AssocItemContainer::TraitContainer { trait_ref, .. } => {
                 // The trait id should be Some(...): trait markers (that we may eliminate)
                 // don't have associated items.
-                let trait_id = self.register_trait_decl_id(span, trait_id);
+                let trait_id = self.register_trait_decl_id(span, &trait_ref.def_id);
                 let item_name = TraitItemName(assoc.name.clone());
 
                 ItemKind::TraitDecl {
@@ -1236,12 +1236,12 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
     fn translate_body(
         &mut self,
         def: &hax::FullDef,
-        arg_count: usize,
+        sig: &FunSig,
         item_meta: &ItemMeta,
     ) -> Result<Result<Body, Opaque>, Error> {
         // Stopgap measure because there are still many panics in charon and hax.
         let mut this = panic::AssertUnwindSafe(&mut *self);
-        let res = panic::catch_unwind(move || this.translate_body_aux(def, arg_count, item_meta));
+        let res = panic::catch_unwind(move || this.translate_body_aux(def, sig, item_meta));
         match res {
             Ok(Ok(body)) => Ok(body),
             // Translation error
@@ -1259,12 +1259,72 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
     fn translate_body_aux(
         &mut self,
         def: &hax::FullDef,
-        arg_count: usize,
+        sig: &FunSig,
         item_meta: &ItemMeta,
     ) -> Result<Result<Body, Opaque>, Error> {
         if item_meta.opacity.with_private_contents().is_opaque() {
             // The bodies of foreign functions are opaque by default.
             return Ok(Err(Opaque));
+        }
+
+        if let hax::FullDefKind::Ctor {
+            adt_def_id,
+            ctor_of,
+            variant_id,
+            fields,
+            output_ty,
+            ..
+        } = def.kind()
+        {
+            let span = item_meta.span;
+            let adt_decl_id = self.register_type_decl_id(span, adt_def_id);
+            let output_ty = self.translate_ty(span, output_ty)?;
+            let mut locals = Locals {
+                arg_count: fields.len(),
+                vars: Vector::new(),
+            };
+            locals.new_var(None, output_ty); // return place
+            let args: Vec<_> = fields
+                .iter()
+                .map(|field| {
+                    let ty = self.translate_ty(span, &field.ty)?;
+                    let place = locals.new_var(None, ty);
+                    Ok(Operand::Move(place))
+                })
+                .try_collect()?;
+            let variant = match ctor_of {
+                hax::CtorOf::Struct => None,
+                hax::CtorOf::Variant => Some(VariantId::from(*variant_id)),
+            };
+            let statement = Statement {
+                span,
+                content: RawStatement::Assign(
+                    locals.return_place(),
+                    Rvalue::Aggregate(
+                        AggregateKind::Adt(
+                            TypeId::Adt(adt_decl_id),
+                            variant,
+                            None,
+                            sig.generics.identity_args(),
+                        ),
+                        args,
+                    ),
+                ),
+            };
+            let block = BlockData {
+                statements: vec![statement],
+                terminator: Terminator {
+                    span,
+                    content: RawTerminator::Return,
+                },
+            };
+            let body = Body::Unstructured(GExprBody {
+                span,
+                locals,
+                comments: Default::default(),
+                body: [block].into_iter().collect(),
+            });
+            return Ok(Ok(body));
         }
 
         // Retrieve the body
@@ -1275,7 +1335,7 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
             return Ok(Err(Opaque));
         };
 
-        self.locals.arg_count = arg_count;
+        self.locals.arg_count = sig.inputs.len();
         // Here, we have to create a MIR state, which contains the body
         // Yes, we have to clone, this is annoying: we end up cloning the body twice
         let state = self
@@ -1332,12 +1392,20 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
             hax::FullDefKind::Closure { args, .. } => &args.sig,
             hax::FullDefKind::Fn { sig, .. } => sig,
             hax::FullDefKind::AssocFn { sig, .. } => sig,
-            hax::FullDefKind::Ctor { .. } => {
-                error_or_panic!(
-                    self,
-                    span,
-                    "Casting constructors to function pointers is not supported"
-                )
+            hax::FullDefKind::Ctor {
+                fields, output_ty, ..
+            } => {
+                let sig = hax::TyFnSig {
+                    inputs: fields.iter().map(|field| field.ty.clone()).collect(),
+                    output: output_ty.clone(),
+                    c_variadic: false,
+                    safety: hax::Safety::Safe,
+                    abi: hax::Abi::Rust,
+                };
+                &hax::Binder {
+                    value: sig,
+                    bound_vars: Default::default(),
+                }
             }
             hax::FullDefKind::Const { ty, .. }
             | hax::FullDefKind::AssocConst { ty, .. }
@@ -1347,9 +1415,7 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
                     output: ty.clone(),
                     c_variadic: false,
                     safety: hax::Safety::Safe,
-                    abi: hax::Abi::Abi {
-                        todo: String::new(),
-                    },
+                    abi: hax::Abi::Rust,
                 };
                 &hax::Binder {
                     value: sig,
@@ -1473,7 +1539,7 @@ impl BodyTransCtx<'_, '_> {
         let body_id = if !is_trait_method_decl_without_default {
             // Translate the body. This doesn't store anything if we can't/decide not to translate
             // this body.
-            match self.translate_body(def, signature.inputs.len(), &item_meta) {
+            match self.translate_body(def, &signature, &item_meta) {
                 Ok(Ok(body)) => Ok(self.t_ctx.translated.bodies.push(body)),
                 // Opaque declaration
                 Ok(Err(Opaque)) => Err(Opaque),
