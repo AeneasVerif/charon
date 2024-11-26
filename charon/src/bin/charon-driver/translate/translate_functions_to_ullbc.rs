@@ -121,11 +121,11 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
             // ```
             hax::AssocItemContainer::TraitImplContainer {
                 impl_id,
-                implemented_trait,
+                implemented_trait_ref,
                 overrides_default,
                 ..
             } => {
-                let trait_id = self.register_trait_decl_id(span, implemented_trait);
+                let trait_id = self.register_trait_decl_id(span, &implemented_trait_ref.def_id);
                 let impl_id = self.register_trait_impl_id(span, impl_id);
                 ItemKind::TraitImpl {
                     impl_id,
@@ -141,10 +141,10 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
             //   fn baz(...); // <- declaration of a trait method
             // }
             // ```
-            hax::AssocItemContainer::TraitContainer { trait_id } => {
+            hax::AssocItemContainer::TraitContainer { trait_ref, .. } => {
                 // The trait id should be Some(...): trait markers (that we may eliminate)
                 // don't have associated items.
-                let trait_id = self.register_trait_decl_id(span, trait_id);
+                let trait_id = self.register_trait_decl_id(span, &trait_ref.def_id);
                 let item_name = TraitItemName(assoc.name.clone());
 
                 ItemKind::TraitDecl {
@@ -1347,9 +1347,7 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
                     output: ty.clone(),
                     c_variadic: false,
                     safety: hax::Safety::Safe,
-                    abi: hax::Abi::Abi {
-                        todo: String::new(),
-                    },
+                    abi: hax::Abi::Rust,
                 };
                 &hax::Binder {
                     value: sig,
