@@ -46,8 +46,14 @@ let mk_sequence (st1 : statement) (st2 : statement) : statement =
  *)
 let rec chain_statements (st1 : statement) (st2 : statement) : statement =
   match st1.content with
-  | SetDiscriminant _ | Assert _ | Call _ | Assign _ | FakeRead _ | Drop _
-  | Loop _ | Error _ ->
+  | SetDiscriminant _
+  | Assert _
+  | Call _
+  | Assign _
+  | FakeRead _
+  | Drop _
+  | Loop _
+  | Error _ ->
       (* Simply create a sequence *)
       mk_sequence st1 st2
   | Nop -> (* Ignore the nop *) st2
@@ -91,8 +97,7 @@ let compute_fun_decl_groups_map (c : crate) : FunDeclId.Set.t FunDeclId.Map.t =
                 let idset = FunDeclId.Set.of_list ids in
                 Some (List.map (fun id -> (id, idset)) ids)
             | TypeGroup _ | GlobalGroup _ | TraitDeclGroup _ | TraitImplGroup _
-              ->
-                None
+              -> None
             | MixedGroup _ ->
                 raise
                   (Failure

@@ -16,7 +16,9 @@ let region_var_to_string (rv : region_var) : string =
   | None -> RegionVarId.to_string rv.index
 
 let ref_kind_to_string (rk : ref_kind) : string =
-  match rk with RMut -> "Mut" | RShared -> "Shared"
+  match rk with
+  | RMut -> "Mut"
+  | RShared -> "Shared"
 
 let builtin_ty_to_string (_ : builtin_ty) : string = "Box"
 
@@ -158,7 +160,11 @@ and const_generic_to_string (env : 'a fmt_env) (cg : const_generic) : string =
 and ty_to_string (env : 'a fmt_env) (ty : ty) : string =
   match ty with
   | TAdt (id, generics) ->
-      let is_tuple = match id with TTuple -> true | _ -> false in
+      let is_tuple =
+        match id with
+        | TTuple -> true
+        | _ -> false
+      in
       let params = params_to_string env is_tuple generics in
       type_id_to_string env id ^ params
   | TVar tv -> type_var_id_to_string env tv
@@ -304,7 +310,9 @@ and name_to_string (env : 'a fmt_env) (n : name) : string =
 
 and raw_attribute_to_string (attr : raw_attribute) : string =
   let args =
-    match attr.args with None -> "" | Some args -> "(" ^ args ^ ")"
+    match attr.args with
+    | None -> ""
+    | Some args -> "(" ^ args ^ ")"
   in
   attr.path ^ args
 

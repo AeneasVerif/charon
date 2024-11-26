@@ -3,15 +3,15 @@ error: Well-formedness clauses are unsupported
   |
 4 |     &'a ():,
   |     ^^^^^^
+  |
 
-error: Ignoring the following item due to a previous error: test_crate::get
+error: Item `test_crate::get` caused errors; ignoring.
  --> tests/ui/unsupported/well-formedness-bound.rs:2:1
   |
 2 | / fn get<'a>(x: &'a u32) -> Option<&'a u32>
 3 | | where
 4 | |     &'a ():,
   | |____________^
+  |
 
-error: aborting due to 2 previous errors
-
-ERROR Compilation encountered 2 errors
+ERROR The extraction generated 2 errors

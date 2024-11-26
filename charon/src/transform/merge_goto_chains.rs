@@ -9,7 +9,7 @@ use super::ctx::UllbcPass;
 
 pub struct Transform;
 impl UllbcPass for Transform {
-    fn transform_body(&self, ctx: &mut TransformCtx<'_>, body: &mut ExprBody) {
+    fn transform_body(&self, ctx: &mut TransformCtx, body: &mut ExprBody) {
         // Check the option which instructs to ignore this pass
         if ctx.options.no_merge_goto_chains {
             return;

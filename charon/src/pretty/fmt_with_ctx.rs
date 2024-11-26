@@ -1592,6 +1592,17 @@ impl std::fmt::Display for ConstantExpr {
     }
 }
 
+impl std::fmt::Display for FileName {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::result::Result<(), std::fmt::Error> {
+        match self {
+            FileName::Virtual(path_buf) | FileName::Local(path_buf) => {
+                write!(f, "{}", path_buf.display())
+            }
+            FileName::NotReal(name) => write!(f, "{}", name),
+        }
+    }
+}
+
 impl std::fmt::Display for FloatTy {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::result::Result<(), std::fmt::Error> {
         match self {

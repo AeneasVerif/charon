@@ -52,7 +52,7 @@ pub fn translate_region_name(region: &hax::Region) -> Option<String> {
     check_region_name(s)
 }
 
-impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
+impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
     // Translate a region
     pub(crate) fn translate_region(
         &mut self,
@@ -617,11 +617,14 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
         // Add generics from the parent item, recursively (recursivity is useful for closures, as
         // they could be nested).
         match &def.kind {
-            FullDefKind::AssocTy { parent, .. }
-            | FullDefKind::AssocFn { parent, .. }
-            | FullDefKind::AssocConst { parent, .. }
-            | FullDefKind::Closure { parent, .. } => {
-                let parent_def = self.t_ctx.hax_def(parent)?;
+            FullDefKind::AssocTy { .. }
+            | FullDefKind::AssocFn { .. }
+            | FullDefKind::AssocConst { .. }
+            | FullDefKind::Closure { .. }
+            | FullDefKind::Ctor { .. }
+            | FullDefKind::Variant { .. } => {
+                let parent_def_id = def.parent.as_ref().unwrap();
+                let parent_def = self.t_ctx.hax_def(parent_def_id)?;
                 self.push_generics_for_def(span, &parent_def, true)?;
             }
             _ => {}
@@ -763,7 +766,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     }
 }
 
-impl BodyTransCtx<'_, '_, '_> {
+impl BodyTransCtx<'_, '_> {
     /// Translate a type definition.
     ///
     /// Note that we translate the types one by one: we don't need to take into

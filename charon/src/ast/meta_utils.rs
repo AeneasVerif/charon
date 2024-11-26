@@ -2,8 +2,24 @@
 use crate::meta::*;
 use crate::names::{Disambiguator, Name, PathElem};
 use itertools::Itertools;
+use std::borrow::Cow;
 use std::cmp::Ordering;
 use std::iter::Iterator;
+use std::ops::Range;
+
+/// Given a line number within a source file, get the byte of the start of the line. Obviously not
+/// efficient to do many times, but this is used is diagnostic paths only. The line numer is
+/// expected to be 1-based.
+fn line_to_start_byte(source: &str, line_nbr: usize) -> usize {
+    let mut cur_byte = 0;
+    for (i, line) in source.split_inclusive('\n').enumerate() {
+        if line_nbr == i + 1 {
+            break;
+        }
+        cur_byte += line.len();
+    }
+    cur_byte
+}
 
 impl Loc {
     fn dummy() -> Self {
@@ -31,6 +47,10 @@ impl Loc {
             Ordering::Less => *l1,
         }
     }
+
+    pub fn to_byte(self, source: &str) -> usize {
+        line_to_start_byte(source, self.line) + self.col
+    }
 }
 
 impl RawSpan {
@@ -39,14 +59,16 @@ impl RawSpan {
             file_id: FileId::from_raw(0),
             beg: Loc::dummy(),
             end: Loc::dummy(),
-            #[cfg(feature = "rustc")]
-            rust_span_data: rustc_span::DUMMY_SP.data(),
         }
     }
 
     /// Value with which we order `RawSpans`s.
     fn sort_key(&self) -> impl Ord {
         (self.file_id, self.beg, self.end)
+    }
+
+    pub fn to_byte_range(self, source: &str) -> Range<usize> {
+        self.beg.to_byte(source)..self.end.to_byte(source)
     }
 }
 
@@ -80,13 +102,6 @@ pub fn combine_span(m0: &Span, m1: &Span) -> Span {
             file_id: m0.span.file_id,
             beg: Loc::min(&m0.span.beg, &m1.span.beg),
             end: Loc::max(&m0.span.end, &m1.span.end),
-            #[cfg(feature = "rustc")]
-            rust_span_data: m0
-                .span
-                .rust_span_data
-                .span()
-                .to(m1.span.rust_span_data.span())
-                .data(),
         };
 
         // We don't attempt to merge the "generated from" spans: they might
@@ -112,6 +127,15 @@ pub fn combine_span_iter<'a, T: Iterator<Item = &'a Span>>(mut ms: T) -> Span {
     }
 
     mc
+}
+
+impl FileName {
+    pub fn to_string(&self) -> Cow<'_, str> {
+        match self {
+            FileName::Virtual(path_buf) | FileName::Local(path_buf) => path_buf.to_string_lossy(),
+            FileName::NotReal(path) => Cow::Borrowed(path),
+        }
+    }
 }
 
 impl Attribute {

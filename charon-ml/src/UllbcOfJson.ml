@@ -14,7 +14,9 @@ let rec ___ = ()
 and block_id_of_json (ctx : of_json_ctx) (js : json) : (block_id, string) result
     =
   combine_error_msgs js __FUNCTION__
-    (match js with x -> BlockId.id_of_json ctx x | _ -> Error "")
+    (match js with
+    | x -> BlockId.id_of_json ctx x
+    | _ -> Error "")
 
 and blocks_of_json (ctx : of_json_ctx) (js : json) : (blocks, string) result =
   combine_error_msgs js __FUNCTION__

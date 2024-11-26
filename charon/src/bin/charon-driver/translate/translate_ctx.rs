@@ -52,12 +52,12 @@ pub struct TranslateOptions {
 }
 
 impl TranslateOptions {
-    pub(crate) fn new(error_ctx: &mut ErrorCtx<'_>, options: &CliOpts) -> Self {
+    pub(crate) fn new(error_ctx: &mut ErrorCtx, options: &CliOpts) -> Self {
         let mut parse_pattern = |s: &str| match NamePattern::parse(s) {
             Ok(p) => Ok(p),
             Err(e) => {
                 let msg = format!("failed to parse pattern `{s}` ({e})");
-                error_or_panic!(error_ctx, Span::dummy(), msg)
+                error_or_panic!(error_ctx, &TranslatedCrate::default(), Span::dummy(), msg)
             }
         };
 
@@ -142,7 +142,7 @@ impl TransItemSource {
     fn sort_key(&self) -> impl Ord {
         let (variant_index, _) = self.variant_index_arity();
         let def_id = self.to_def_id();
-        (variant_index, def_id.index, def_id.krate)
+        (def_id.krate, def_id.index, variant_index)
     }
 }
 
@@ -159,7 +159,7 @@ impl Ord for TransItemSource {
 }
 
 /// Translation context used while translating the crate data into our representation.
-pub struct TranslateCtx<'tcx, 'ctx> {
+pub struct TranslateCtx<'tcx> {
     /// The Rust compiler type context
     pub tcx: TyCtxt<'tcx>,
     /// Path to the toolchain root.
@@ -180,7 +180,7 @@ pub struct TranslateCtx<'tcx, 'ctx> {
     pub file_to_id: HashMap<FileName, FileId>,
 
     /// Context for tracking and reporting errors.
-    pub errors: ErrorCtx<'ctx>,
+    pub errors: ErrorCtx,
     /// The declarations we came accross and which we haven't translated yet. We keep them sorted
     /// to make the output order a bit more stable.
     pub items_to_translate: BTreeMap<TransItemSource, AnyTransId>,
@@ -190,6 +190,8 @@ pub struct TranslateCtx<'tcx, 'ctx> {
     pub translate_stack: Vec<AnyTransId>,
     /// Cache the names to compute them only once each.
     pub cached_names: HashMap<DefId, Name>,
+    /// Cache the `ItemMeta`s to compute them only once each.
+    pub cached_item_metas: HashMap<DefId, ItemMeta>,
 }
 
 /// A translation context for type/global/function bodies.
@@ -200,14 +202,14 @@ pub struct TranslateCtx<'tcx, 'ctx> {
 /// implement support for universally quantified traits, where we might need
 /// to be able to dive in/out of universal quantifiers. Also, it doesn't cost
 /// us to use those collections.
-pub(crate) struct BodyTransCtx<'tcx, 'ctx, 'ctx1> {
+pub(crate) struct BodyTransCtx<'tcx, 'ctx> {
     /// The definition we are currently extracting.
     /// TODO: this duplicates the field of [ErrorCtx]
     pub def_id: DefId,
     /// The id of the definition we are currently extracting, if there is one.
     pub item_id: Option<AnyTransId>,
     /// The translation context containing the top-level definitions/ids.
-    pub t_ctx: &'ctx mut TranslateCtx<'tcx, 'ctx1>,
+    pub t_ctx: &'ctx mut TranslateCtx<'tcx>,
     /// A hax state with an owner id
     pub hax_state: hax::StateWithOwner<'tcx>,
     /// Whether to consider a `ImplExprAtom::Error` as an error for us. True except inside type
@@ -279,24 +281,36 @@ pub(crate) struct BodyTransCtx<'tcx, 'ctx, 'ctx1> {
 }
 
 /// Translates `T` into `U` using `hax`'s `SInto` trait, catching any hax panics.
-pub fn catch_sinto<S, T, U>(s: &S, err: &mut ErrorCtx, span: Span, x: &T) -> Result<U, Error>
+pub fn catch_sinto<S, T, U>(
+    s: &S,
+    err: &mut ErrorCtx,
+    krate: &TranslatedCrate,
+    span: Span,
+    x: &T,
+) -> Result<U, Error>
 where
     T: Debug + SInto<S, U>,
 {
     let unwind_safe_s = std::panic::AssertUnwindSafe(s);
     let unwind_safe_x = std::panic::AssertUnwindSafe(x);
-    std::panic::catch_unwind(move || unwind_safe_x.sinto(*unwind_safe_s))
-        .or_else(|_| error_or_panic!(err, span, format!("Hax panicked when translating `{x:?}`.")))
+    std::panic::catch_unwind(move || unwind_safe_x.sinto(*unwind_safe_s)).or_else(|_| {
+        error_or_panic!(
+            err,
+            krate,
+            span,
+            format!("Hax panicked when translating `{x:?}`.")
+        )
+    })
 }
 
-impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
+impl<'tcx, 'ctx> TranslateCtx<'tcx> {
     pub fn continue_on_failure(&self) -> bool {
         self.errors.continue_on_failure()
     }
 
     /// Span an error and register the error.
     pub fn span_err(&mut self, span: Span, msg: &str) {
-        self.errors.span_err(span, msg)
+        self.errors.span_err(&self.translated, span, msg)
     }
 
     /// Register a file if it is a "real" file and was not already registered
@@ -464,14 +478,20 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
     where
         T: Debug + SInto<S, U>,
     {
-        catch_sinto(s, &mut self.errors, span, x)
+        catch_sinto(s, &mut self.errors, &self.translated, span, x)
     }
 
     pub fn hax_def(&mut self, def_id: impl Into<DefId>) -> Result<Arc<hax::FullDef>, Error> {
         let def_id: DefId = def_id.into();
         let span = self.def_span(def_id);
         // Hax takes care of caching the translation.
-        catch_sinto(&self.hax_state, &mut self.errors, span, &def_id)
+        catch_sinto(
+            &self.hax_state,
+            &mut self.errors,
+            &self.translated,
+            span,
+            &def_id,
+        )
     }
 
     pub(crate) fn translate_attr_info(&mut self, def: &hax::FullDef) -> AttrInfo {
@@ -511,8 +531,11 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         &mut self,
         def: &hax::FullDef,
         name: Name,
-        opacity: ItemOpacity,
+        name_opacity: ItemOpacity,
     ) -> ItemMeta {
+        if let Some(item_meta) = self.cached_item_metas.get(&def.rust_def_id()) {
+            return item_meta.clone();
+        }
         let span = def.source_span.as_ref().unwrap_or(&def.span);
         let span = self.translate_span_from_hax(span);
         let attr_info = self.translate_attr_info(def);
@@ -522,19 +545,22 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
             || attr_info.attributes.iter().any(|attr| attr.is_opaque())
         {
             // Force opaque in these cases.
-            ItemOpacity::Opaque.max(opacity)
+            ItemOpacity::Opaque.max(name_opacity)
         } else {
-            opacity
+            name_opacity
         };
 
-        ItemMeta {
+        let item_meta = ItemMeta {
             name,
             span,
             source_text: def.source_text.clone(),
             attr_info,
             is_local,
             opacity,
-        }
+        };
+        self.cached_item_metas
+            .insert(def.rust_def_id(), item_meta.clone());
+        item_meta
     }
 
     pub fn translate_filename(&mut self, name: &hax::FileName) -> meta::FileName {
@@ -602,15 +628,13 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
 
     pub fn translate_raw_span(&mut self, rspan: &hax::Span) -> meta::RawSpan {
         let filename = self.translate_filename(&rspan.filename);
-        let rust_span_data = rspan.rust_span_data.unwrap();
+        let rust_span = rspan.rust_span_data.unwrap().span();
         let file_id = match &filename {
             FileName::NotReal(_) => {
                 // For now we forbid not real filenames
                 unimplemented!();
             }
-            FileName::Virtual(_) | FileName::Local(_) => {
-                self.register_file(filename, rust_span_data.span())
-            }
+            FileName::Virtual(_) | FileName::Local(_) => self.register_file(filename, rust_span),
         };
 
         fn convert_loc(loc: &hax::Loc) -> Loc {
@@ -623,12 +647,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         let end = convert_loc(&rspan.hi);
 
         // Put together
-        meta::RawSpan {
-            file_id,
-            beg,
-            end,
-            rust_span_data,
-        }
+        meta::RawSpan { file_id, beg, end }
     }
 
     /// Compute span data from a Rust source scope
@@ -748,24 +767,6 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
         *opacity
     }
 
-    /// Register the fact that `id` is a dependency of `src` (if `src` is not `None`).
-    pub(crate) fn register_dep_source(
-        &mut self,
-        src: &Option<DepSource>,
-        def_id: DefId,
-        item_id: AnyTransId,
-    ) {
-        if let Some(src) = src {
-            if src.src_id != item_id && !def_id.is_local() {
-                self.errors
-                    .external_dep_sources
-                    .entry(item_id)
-                    .or_default()
-                    .insert(*src);
-            }
-        }
-    }
-
     pub(crate) fn register_id(
         &mut self,
         src: &Option<DepSource>,
@@ -806,7 +807,8 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
                 trans_id
             }
         };
-        self.register_dep_source(src, id.to_def_id(), item_id);
+        self.errors
+            .register_dep_source(src, item_id, id.to_def_id().is_local());
         item_id
     }
 
@@ -891,12 +893,12 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
     }
 }
 
-impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
+impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
     /// Create a new `ExecContext`.
     pub(crate) fn new(
         def_id: DefId,
         item_id: Option<AnyTransId>,
-        t_ctx: &'ctx mut TranslateCtx<'tcx, 'ctx1>,
+        t_ctx: &'ctx mut TranslateCtx<'tcx>,
     ) -> Self {
         let hax_state = hax::State::new_from_state_and_id(&t_ctx.hax_state, def_id);
         BodyTransCtx {
@@ -1129,7 +1131,7 @@ impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
     }
 }
 
-impl<'tcx, 'ctx, 'a> IntoFormatter for &'a TranslateCtx<'tcx, 'ctx> {
+impl<'tcx, 'ctx, 'a> IntoFormatter for &'a TranslateCtx<'tcx> {
     type C = FmtCtx<'a>;
 
     fn into_fmt(self) -> Self::C {
@@ -1137,7 +1139,7 @@ impl<'tcx, 'ctx, 'a> IntoFormatter for &'a TranslateCtx<'tcx, 'ctx> {
     }
 }
 
-impl<'tcx, 'ctx, 'ctx1, 'a> IntoFormatter for &'a BodyTransCtx<'tcx, 'ctx, 'ctx1> {
+impl<'tcx, 'ctx, 'a> IntoFormatter for &'a BodyTransCtx<'tcx, 'ctx> {
     type C = FmtCtx<'a>;
 
     fn into_fmt(self) -> Self::C {
@@ -1165,7 +1167,7 @@ impl<'tcx, 'ctx, 'ctx1, 'a> IntoFormatter for &'a BodyTransCtx<'tcx, 'ctx, 'ctx1
     }
 }
 
-impl<'tcx, 'ctx> fmt::Display for TranslateCtx<'tcx, 'ctx> {
+impl<'tcx, 'ctx> fmt::Display for TranslateCtx<'tcx> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         self.translated.fmt(f)
     }

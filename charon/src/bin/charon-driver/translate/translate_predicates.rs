@@ -6,7 +6,7 @@ use charon_lib::ids::Vector;
 use charon_lib::pretty::FmtWithCtx;
 use hax_frontend_exporter as hax;
 
-impl<'tcx, 'ctx, 'ctx1> BodyTransCtx<'tcx, 'ctx, 'ctx1> {
+impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
     pub fn count_generics(
         &mut self,
         generics: &hax::TyGenerics,

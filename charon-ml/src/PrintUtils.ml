@@ -3,7 +3,9 @@ open Expressions
 open GAst
 
 let option_to_string (to_string : 'a -> string) (x : 'a option) : string =
-  match x with Some x -> "Some (" ^ to_string x ^ ")" | None -> "None"
+  match x with
+  | Some x -> "Some (" ^ to_string x ^ ")"
+  | None -> "None"
 
 let block_id_to_string (id : UllbcAst.BlockId.id) : string =
   "block@" ^ UllbcAst.BlockId.to_string id

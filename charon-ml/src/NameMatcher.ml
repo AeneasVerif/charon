@@ -80,7 +80,9 @@ let region_var_to_string (c : print_config) (v : var option) : string =
 let region_to_string (c : print_config) (r : region) : string =
   match r with
   | RStatic -> (
-      match c.tgt with TkPattern | TkPretty -> "'static" | TkName -> "Static")
+      match c.tgt with
+      | TkPattern | TkPretty -> "'static"
+      | TkName -> "Static")
   | RVar v -> region_var_to_string c v
 
 let opt_var_to_string (c : print_config) (v : var option) : string =
@@ -98,7 +100,11 @@ let opt_var_to_string (c : print_config) (v : var option) : string =
       | Some (VarIndex id) -> "P" ^ string_of_int id)
 
 let rec pattern_to_string (c : print_config) (p : pattern) : string =
-  let sep = match c.tgt with TkPattern | TkPretty -> "::" | TkName -> "" in
+  let sep =
+    match c.tgt with
+    | TkPattern | TkPretty -> "::"
+    | TkName -> ""
+  in
   String.concat sep (List.map (pattern_elem_to_string c) p)
 
 and pattern_elem_to_string (c : print_config) (e : pattern_elem) : string =
@@ -106,7 +112,9 @@ and pattern_elem_to_string (c : print_config) (e : pattern_elem) : string =
   | PIdent (s, g) -> s ^ generic_args_to_string c g
   | PImpl ty -> (
       let ty = expr_to_string c ty in
-      match c.tgt with TkPattern | TkPretty -> "{" ^ ty ^ "}" | TkName -> ty)
+      match c.tgt with
+      | TkPattern | TkPretty -> "{" ^ ty ^ "}"
+      | TkName -> ty)
 
 and expr_to_string (c : print_config) (e : expr) : string =
   match e with
@@ -136,7 +144,11 @@ and expr_to_string (c : print_config) (e : expr) : string =
               | TkName -> "Slice" ^ ty)
           | _ -> raise (Failure "Ill-formed pattern")))
   | ERef (r, ty, rk) ->
-      let rk = match rk with RMut -> "mut " | RShared -> "" in
+      let rk =
+        match rk with
+        | RMut -> "mut "
+        | RShared -> ""
+      in
       "&" ^ region_to_string c r ^ " " ^ rk ^ expr_to_string c ty
   | EVar v -> opt_var_to_string c v
   | EArrow (inputs, out) -> (
@@ -144,19 +156,32 @@ and expr_to_string (c : print_config) (e : expr) : string =
       let out = Option.map (expr_to_string c) out in
       match c.tgt with
       | TkPattern | TkPretty ->
-          let out = match out with None -> "" | Some out -> " -> " ^ out in
+          let out =
+            match out with
+            | None -> ""
+            | Some out -> " -> " ^ out
+          in
           "fn (" ^ String.concat ", " inputs ^ ")" ^ out
       | TkName -> (
           "Arrow" ^ String.concat "" inputs
-          ^ match out with None -> "" | Some out -> out))
+          ^
+          match out with
+          | None -> ""
+          | Some out -> out))
   | ERawPtr (mut, ty) -> (
       match c.tgt with
       | TkPattern | TkPretty ->
-          let mut = match mut with Mut -> "*mut" | Not -> "*const" in
+          let mut =
+            match mut with
+            | Mut -> "*mut"
+            | Not -> "*const"
+          in
           mut ^ " " ^ expr_to_string c ty
       | TkName ->
           let mut =
-            match mut with Mut -> "RawPtrMut" | Not -> "RawPtrConst"
+            match mut with
+            | Mut -> "RawPtrMut"
+            | Not -> "RawPtrConst"
           in
           mut ^ expr_to_string c ty)
 
@@ -299,7 +324,9 @@ let maps_push_bound_regions_group (m : maps) : maps =
     more precise *)
 let maps_push_bound_regions_group_if_nonempty (m : maps) (regions : 'a list) :
     maps =
-  match regions with [] -> m | _ -> maps_push_bound_regions_group m
+  match regions with
+  | [] -> m
+  | _ -> maps_push_bound_regions_group m
 
 (** Update a map and check that there are no incompatible
     constraints at the same time. *)
@@ -317,7 +344,9 @@ let update_map (find_opt : 'a -> 'm -> 'b option) (add : 'a -> 'b -> 'm -> 'm)
 let update_rmap (c : match_config) (m : maps) (id : var) (v : T.region) : bool =
   (* When it comes to matching, we treat erased regions like variables. *)
   let is_var =
-    match v with RBVar _ | RErased | RFVar _ -> true | _ -> false
+    match v with
+    | RBVar _ | RErased | RFVar _ -> true
+    | _ -> false
   in
   if c.map_vars_to_vars && not is_var then false
   else
@@ -332,27 +361,41 @@ let update_rmap (c : match_config) (m : maps) (id : var) (v : T.region) : bool =
     | _ -> update_map VarMap.find_opt VarMap.add m.rmap.regions id v
 
 let update_tmap (c : match_config) (m : maps) (id : var) (v : T.ty) : bool =
-  let is_var = match v with TVar _ -> true | _ -> false in
+  let is_var =
+    match v with
+    | TVar _ -> true
+    | _ -> false
+  in
   if c.map_vars_to_vars && not is_var then false
   else update_map VarMap.find_opt VarMap.add m.vmap id (MTy v)
 
 let update_cmap (c : match_config) (m : maps) (id : var) (v : T.const_generic) :
     bool =
-  let is_var = match v with CgVar _ -> true | _ -> false in
+  let is_var =
+    match v with
+    | CgVar _ -> true
+    | _ -> false
+  in
   if c.map_vars_to_vars && not is_var then false
   else update_map VarMap.find_opt VarMap.add m.vmap id (MCg v)
 
 let opt_update_rmap (c : match_config) (m : maps) (id : var option)
     (v : T.region) : bool =
-  match id with None -> true | Some id -> update_rmap c m id v
+  match id with
+  | None -> true
+  | Some id -> update_rmap c m id v
 
 let opt_update_tmap (c : match_config) (m : maps) (id : var option) (v : T.ty) :
     bool =
-  match id with None -> true | Some id -> update_tmap c m id v
+  match id with
+  | None -> true
+  | Some id -> update_tmap c m id v
 
 let opt_update_cmap (c : match_config) (m : maps) (id : var option)
     (v : T.const_generic) : bool =
-  match id with None -> true | Some id -> update_cmap c m id v
+  match id with
+  | None -> true
+  | Some id -> update_cmap c m id v
 
 (** Pay attention when updating the names because we use this function
     for several purposes:
@@ -400,7 +443,9 @@ let match_region (c : match_config) (m : maps) (id : region) (v : T.region) :
   | _ -> false
 
 let match_ref_kind (prk : ref_kind) (rk : T.ref_kind) : bool =
-  match (prk, rk) with RMut, RMut | RShared, RShared -> true | _ -> false
+  match (prk, rk) with
+  | RMut, RMut | RShared, RShared -> true
+  | _ -> false
 
 let match_literal (pl : literal) (l : Values.literal) : bool =
   match (pl, l) with
@@ -476,8 +521,7 @@ and match_pattern_with_type_id (ctx : ctx) (c : match_config) (m : maps)
               PIdent ("alloc", []);
               PIdent ("boxed", []);
               PIdent ("Box", pgenerics);
-            ] ) ) ->
-          match_generic_args ctx c m pgenerics generics
+            ] ) ) -> match_generic_args ctx c m pgenerics generics
       | TStr, [ PIdent ("str", []) ] -> generics = TypesUtils.empty_generic_args
       | _ -> false)
 
@@ -663,8 +707,7 @@ let match_fn_ptr (ctx : ctx) (c : match_config) (p : pattern) (func : E.fn_ptr)
                   PIdent ("alloc", []);
                   PIdent ("boxed", []);
                   PIdent ("Box", [ GExpr (EVar _) ]);
-                ] ->
-                  true
+                ] -> true
               | _ -> false)
           | _ -> false)
       | _ ->
@@ -708,7 +751,9 @@ let empty_constraints =
   }
 
 let ref_kind_to_pattern (rk : T.ref_kind) : ref_kind =
-  match rk with RMut -> RMut | RShared -> RShared
+  match rk with
+  | RMut -> RMut
+  | RShared -> RShared
 
 let region_to_pattern (m : constraints) (r : T.region) : region =
   match r with
@@ -790,7 +835,9 @@ let constraints_map_push_regions_map (m : constraints)
     is non-empty - TODO: do something more precise *)
 let constraints_map_push_regions_map_if_nonempty (m : constraints)
     (regions : T.region_var list) : constraints =
-  match regions with [] -> m | _ -> constraints_map_push_regions_map m regions
+  match regions with
+  | [] -> m
+  | _ -> constraints_map_push_regions_map m regions
 
 type to_pat_config = {
   tgt : target_kind;
@@ -1074,7 +1121,10 @@ let empty_conv_map = { rmap = empty_inj_map; vmap = empty_inj_map }
 
 open Result
 
-let ( let* ) o f = match o with Error e -> Error e | Ok x -> f x
+let ( let* ) o f =
+  match o with
+  | Error e -> Error e
+  | Ok x -> f x
 
 let gen_var_convertible (c : conv_config) (m : inj_map) (v0 : var) (v1 : var) :
     (inj_map, unit) result =

@@ -38,7 +38,7 @@ impl Transform {
 }
 
 impl LlbcPass for Transform {
-    fn transform_body(&self, _ctx: &mut TransformCtx<'_>, b: &mut ExprBody) {
+    fn transform_body(&self, _ctx: &mut TransformCtx, b: &mut ExprBody) {
         b.body
             .transform_sequences(&mut |seq| Transform::update_statements(&b.locals, seq))
     }

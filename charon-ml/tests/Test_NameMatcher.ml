@@ -189,7 +189,9 @@ let annotated_rust_tests test_file =
       (fun _ (decl : fun_decl) ->
         let attrs =
           List.filter_map
-            (function AttrUnknown attr -> Some attr | _ -> None)
+            (function
+              | AttrUnknown attr -> Some attr
+              | _ -> None)
             decl.item_meta.attr_info.attributes
         in
         let tests = List.filter_map PatternTest.parse attrs in

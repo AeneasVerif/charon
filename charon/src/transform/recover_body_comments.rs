@@ -9,7 +9,7 @@ use super::ctx::LlbcPass;
 
 pub struct Transform;
 impl LlbcPass for Transform {
-    fn transform_body(&self, _ctx: &mut TransformCtx<'_>, b: &mut ExprBody) {
+    fn transform_body(&self, _ctx: &mut TransformCtx, b: &mut ExprBody) {
         // Constraints in the ideal case:
         // - each comment should be assigned to exactly one statement;
         // - the order of comments in the source should refine the partial order of control flow;

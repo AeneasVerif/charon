@@ -45,10 +45,20 @@ dependencies = [
 ]
 
 [[package]]
-name = "anstream"
-version = "0.6.14"
+name = "annotate-snippets"
+version = "0.11.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "418c75fa768af9c03be99d17643f93f79bbba589895012a80e3452a19ddda15b"
+checksum = "24e35ed54e5ea7997c14ed4c70ba043478db1112e98263b3b035907aa197d991"
+dependencies = [
+ "anstyle",
+ "unicode-width",
+]
+
+[[package]]
+name = "anstream"
+version = "0.6.18"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "8acc5369981196006228e28809f761875c0327210a891e941f4c683b3a99529b"
 dependencies = [
  "anstyle",
  "anstyle-parse",
@@ -85,12 +95,12 @@ dependencies = [
 
 [[package]]
 name = "anstyle-wincon"
-version = "3.0.3"
+version = "3.0.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "61a38449feb7068f52bb06c12759005cf459ee52bb4adc1d5a7c4322d716fb19"
+checksum = "2109dbce0e72be3ec00bed26e6a7479ca384ad226efdd66db8fa2e3a38c83125"
 dependencies = [
  "anstyle",
- "windows-sys 0.52.0",
+ "windows-sys 0.59.0",
 ]
 
 [[package]]
@@ -211,8 +221,10 @@ checksum = "baf1de4339761588bc0619e3cbc0120ee582ebb74b53b4efbf79117bd2da40fd"
 
 [[package]]
 name = "charon"
-version = "0.1.49"
+version = "0.1.50"
 dependencies = [
+ "annotate-snippets",
+ "anstream",
  "anyhow",
  "assert_cmd",
  "clap",
@@ -765,7 +777,7 @@ dependencies = [
 [[package]]
 name = "hax-adt-into"
 version = "0.1.0-alpha.1"
-source = "git+https://github.com/hacspec/hax?branch=main#291e34e51a0182c0f1b29f27cbafe3d40490e39a"
+source = "git+https://github.com/hacspec/hax?branch=main#01e7ecd775c10abc4519ea2f8279bc741ed24a37"
 dependencies = [
  "itertools 0.11.0",
  "proc-macro2",
@@ -776,7 +788,7 @@ dependencies = [
 [[package]]
 name = "hax-frontend-exporter"
 version = "0.1.0-alpha.1"
-source = "git+https://github.com/hacspec/hax?branch=main#291e34e51a0182c0f1b29f27cbafe3d40490e39a"
+source = "git+https://github.com/hacspec/hax?branch=main#01e7ecd775c10abc4519ea2f8279bc741ed24a37"
 dependencies = [
  "extension-traits",
  "hax-adt-into",
@@ -793,7 +805,7 @@ dependencies = [
 [[package]]
 name = "hax-frontend-exporter-options"
 version = "0.1.0-alpha.1"
-source = "git+https://github.com/hacspec/hax?branch=main#291e34e51a0182c0f1b29f27cbafe3d40490e39a"
+source = "git+https://github.com/hacspec/hax?branch=main#01e7ecd775c10abc4519ea2f8279bc741ed24a37"
 dependencies = [
  "hax-adt-into",
  "schemars",
@@ -2223,6 +2235,12 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d4c87d22b6e3f4a18d4d40ef354e97c90fcb14dd91d7dc0aa9d8a1172ebf7202"
 
 [[package]]
+name = "unicode-width"
+version = "0.1.14"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7dd6e30e90baa6f72411720665d41d89b9a3d039dc45b8faea1ddd07f617f6af"
+
+[[package]]
 name = "untrusted"
 version = "0.9.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2461,6 +2479,15 @@ name = "windows-sys"
 version = "0.52.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "282be5f36a8ce781fad8c8ae18fa3f9beff57ec1b52cb3de0789201425d9a33d"
+dependencies = [
+ "windows-targets 0.52.6",
+]
+
+[[package]]
+name = "windows-sys"
+version = "0.59.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1e38bc4d79ed67fd075bcc251a1c39b32a1776bbe92e5bef1f0bf1f8c531853b"
 dependencies = [
  "windows-targets 0.52.6",
 ]

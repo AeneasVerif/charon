@@ -8,7 +8,7 @@ use super::{ctx::TransformPass, TransformCtx};
 
 pub struct Transform;
 impl TransformPass for Transform {
-    fn transform_ctx(&self, ctx: &mut TransformCtx<'_>) {
+    fn transform_ctx(&self, ctx: &mut TransformCtx) {
         let exclude: HashSet<TraitImplId> = ctx
             .translated
             .trait_impls

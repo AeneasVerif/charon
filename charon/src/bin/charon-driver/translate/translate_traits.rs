@@ -1,4 +1,5 @@
 use super::translate_ctx::*;
+use annotate_snippets::Level;
 use charon_lib::ast::*;
 use charon_lib::formatter::IntoFormatter;
 use charon_lib::meta::ItemMeta;
@@ -21,7 +22,7 @@ pub(crate) enum PredicateLocation {
     Base,
 }
 
-impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
+impl<'tcx, 'ctx> TranslateCtx<'tcx> {
     /// Remark: this **doesn't** register the def id (on purpose)
     pub(crate) fn translate_trait_item_name(
         &mut self,
@@ -35,7 +36,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx, 'ctx> {
     }
 }
 
-impl BodyTransCtx<'_, '_, '_> {
+impl BodyTransCtx<'_, '_> {
     #[tracing::instrument(skip(self, rust_id, item_meta))]
     pub fn translate_trait_decl(
         mut self,
@@ -147,8 +148,10 @@ impl BodyTransCtx<'_, '_, '_> {
         }
         if item_meta.opacity.is_opaque() {
             let ctx = self.into_fmt();
-            self.t_ctx.errors.dcx.span_warn(
+            self.t_ctx.errors.display_error(
+                &self.t_ctx.translated,
                 item_meta.span,
+                Level::Warning,
                 format!(
                     "Trait declarations cannot be \"opaque\"; the trait `{}` will be translated as normal.",
                     item_meta.name.fmt_with_ctx(&ctx)
@@ -285,8 +288,10 @@ impl BodyTransCtx<'_, '_, '_> {
 
         if item_meta.opacity.is_opaque() {
             let ctx = self.into_fmt();
-            self.t_ctx.errors.dcx.span_warn(
+            self.t_ctx.errors.display_error(
+                &self.t_ctx.translated,
                 item_meta.span,
+                Level::Warning,
                 format!(
                     "Trait implementations cannot be \"opaque\"; the impl `{}` will be translated as normal.",
                     item_meta.name.fmt_with_ctx(&ctx)

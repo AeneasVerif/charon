@@ -37,7 +37,7 @@ impl LlbcPass for Transform {
             }
         }
     }
-    fn transform_body(&self, _ctx: &mut TransformCtx<'_>, body: &mut ExprBody) {
+    fn transform_body(&self, _ctx: &mut TransformCtx, body: &mut ExprBody) {
         body.body
             .transform(&mut |st| transform_st(&body.locals, st));
     }

@@ -172,7 +172,7 @@ fn transform_operand<F: FnMut(Ty) -> Place>(
 
 pub struct Transform;
 impl UllbcPass for Transform {
-    fn transform_body(&self, _ctx: &mut TransformCtx<'_>, b: &mut ExprBody) {
+    fn transform_body(&self, _ctx: &mut TransformCtx, b: &mut ExprBody) {
         let mut f = |ty| b.locals.new_var(None, ty);
         body_transform_operands(&mut b.body, &mut |span, nst, op| {
             transform_operand(span, nst, op, &mut f)

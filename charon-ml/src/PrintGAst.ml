@@ -72,8 +72,16 @@ let fun_sig_with_name_to_string (env : 'a fmt_env) (indent : string)
   in
 
   (* Put everything together *)
-  let attribute = match attribute with None -> "" | Some attr -> attr ^ " " in
-  let name = match name with None -> "" | Some name -> " " ^ name in
+  let attribute =
+    match attribute with
+    | None -> ""
+    | Some attr -> attr ^ " "
+  in
+  let name =
+    match name with
+    | None -> ""
+    | Some name -> " " ^ name
+  in
   indent ^ attribute ^ unsafe ^ "fn" ^ name ^ params ^ "(" ^ args ^ ")" ^ ret_ty
   ^ clauses
 

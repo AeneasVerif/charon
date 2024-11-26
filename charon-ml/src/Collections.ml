@@ -125,7 +125,9 @@ module List = struct
         match f hd with
         | None -> None
         | Some hd -> (
-            match mmap f tl with None -> None | Some tl -> Some (hd :: tl)))
+            match mmap f tl with
+            | None -> None
+            | Some tl -> Some (hd :: tl)))
 end
 
 module type OrderedType = sig
@@ -212,7 +214,9 @@ module MakeMap (Ord : OrderedType) : Map with type key = Ord.t = struct
 
   let to_string indent_opt a_to_string m =
     let indent, break =
-      match indent_opt with Some indent -> (indent, "\n") | None -> ("", " ")
+      match indent_opt with
+      | Some indent -> (indent, "\n")
+      | None -> ("", " ")
     in
     let sep = "," ^ break in
     let ls =
@@ -314,7 +318,9 @@ module MakeSet (Ord : OrderedType) : Set with type elt = Ord.t = struct
 
   let to_string indent_opt m =
     let indent, break =
-      match indent_opt with Some indent -> (indent, "\n") | None -> ("", " ")
+      match indent_opt with
+      | Some indent -> (indent, "\n")
+      | None -> ("", " ")
     in
     let sep = "," ^ break in
     let ls = Set.fold (fun v ls -> (indent ^ Ord.to_string v) :: ls) m [] in
@@ -508,7 +514,9 @@ module MakeInjMap (Key : OrderedType) (Elem : OrderedType) :
   let find k m = Map.find k m.map
 
   let find_with_default k v m =
-    match Map.find_opt k m.map with None -> v | Some v -> v
+    match Map.find_opt k m.map with
+    | None -> v
+    | Some v -> v
 
   let find_opt k m = Map.find_opt k m.map
   let find_first k m = Map.find_first k m.map

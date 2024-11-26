@@ -1,18 +1,139 @@
-error: Casting constructors to function pointers is not supported
- --> /rustc/86d69c705a552236a622eee3fdea94bf13c5f102/library/core/src/option.rs:579:5
+# Final LLBC before serialization:
 
-error: Ignoring the following item due to a previous error: core::option::Option::Some::{constructor#0}
- --> /rustc/86d69c705a552236a622eee3fdea94bf13c5f102/library/core/src/option.rs:579:5
+trait core::marker::Sized<Self>
 
-error: The external definition `core::option::Option::Some` triggered errors. It is (transitively) used at the following location(s):
- --> tests/ui/issue-378-ctor-as-fn.rs:3:34
-  |
-3 | static F: fn(u8) -> Option<u8> = Some;
-  |                                  ^^^^
-...
-6 |     let f: fn(u8) -> _ = Some;
-  |                          ^^^^
+enum core::option::Option<T>
+  where
+      [@TraitClause0]: core::marker::Sized<T>,
+ =
+|  None()
+|  Some(T)
 
-error: aborting due to 3 previous errors
 
-ERROR Compilation encountered 2 errors
+fn core::option::Option::Some<T>(@1: T) -> core::option::Option<T>[@TraitClause0]
+where
+    [@TraitClause0]: core::marker::Sized<T>,
+
+fn test_crate::F() -> fn(u8) -> core::option::Option<u8>[core::marker::Sized<u8>]
+{
+    let @0: fn(u8) -> core::option::Option<u8>[core::marker::Sized<u8>]; // return
+
+    @0 := cast<fn(u8) -> core::option::Option<u8>[core::marker::Sized<u8>], fn(u8) -> core::option::Option<u8>[core::marker::Sized<u8>]>(const (core::option::Option::Some<u8>))
+    return
+}
+
+global test_crate::F: fn(u8) -> core::option::Option<u8>[core::marker::Sized<u8>] = test_crate::F()
+
+opaque type alloc::string::String
+
+struct test_crate::Foo =
+{
+  u32,
+  alloc::string::String,
+}
+
+enum test_crate::Bar<'a, T>
+  where
+      [@TraitClause0]: core::marker::Sized<T>,
+      T : 'a,
+ =
+|  Variant(&'a (T))
+
+
+fn test_crate::Foo(@1: u32, @2: alloc::string::String) -> test_crate::Foo
+{
+    let @0: test_crate::Foo; // return
+    let @1: u32; // arg #1
+    let @2: alloc::string::String; // arg #2
+
+    @0 := test_crate::Foo { 0: move (@1), 1: move (@2) }
+    return
+}
+
+fn alloc::string::{alloc::string::String}::new() -> alloc::string::String
+
+fn test_crate::Bar::Variant<'a, T>(@1: &'a (T)) -> test_crate::Bar<'a, T>[@TraitClause0]
+where
+    [@TraitClause0]: core::marker::Sized<T>,
+    T : 'a,
+{
+    let @0: test_crate::Bar<'a, T>[@TraitClause0]; // return
+    let @1: &'a (T); // arg #1
+
+    @0 := test_crate::Bar::Variant { 0: move (@1) }
+    return
+}
+
+fn test_crate::main()
+{
+    let @0: (); // return
+    let f@1: fn(u8) -> core::option::Option<u8>[core::marker::Sized<u8>]; // local
+    let @2: core::option::Option<u8>[core::marker::Sized<u8>]; // anonymous local
+    let @3: fn(u8) -> core::option::Option<u8>[core::marker::Sized<u8>]; // anonymous local
+    let f@4: fn(u8) -> core::option::Option<u8>[core::marker::Sized<u8>]; // local
+    let @5: fn(u8) -> core::option::Option<u8>[core::marker::Sized<u8>]; // anonymous local
+    let @6: core::option::Option<u8>[core::marker::Sized<u8>]; // anonymous local
+    let @7: fn(u8) -> core::option::Option<u8>[core::marker::Sized<u8>]; // anonymous local
+    let f@8: fn(u32, alloc::string::String) -> test_crate::Foo; // local
+    let @9: test_crate::Foo; // anonymous local
+    let @10: fn(u32, alloc::string::String) -> test_crate::Foo; // anonymous local
+    let @11: alloc::string::String; // anonymous local
+    let f@12: fn(&'_ (i32)) -> test_crate::Bar<'_, i32>[core::marker::Sized<i32>]; // local
+    let @13: test_crate::Bar<'_, i32>[core::marker::Sized<i32>]; // anonymous local
+    let @14: fn(&'_ (i32)) -> test_crate::Bar<'_, i32>[core::marker::Sized<i32>]; // anonymous local
+    let @15: &'_ (i32); // anonymous local
+    let @16: &'_ (i32); // anonymous local
+    let @17: i32; // anonymous local
+    let @18: (); // anonymous local
+
+    f@1 := const (core::option::Option::Some<u8>)
+    @fake_read(f@1)
+    @3 := copy (f@1)
+    @2 := core::option::Option::Some<u8>(const (42 : u8))
+    drop @3
+    @fake_read(@2)
+    drop @2
+    @5 := copy (f@1)
+    f@4 := cast<fn(u8) -> core::option::Option<u8>[core::marker::Sized<u8>], fn(u8) -> core::option::Option<u8>[core::marker::Sized<u8>]>(move (@5))
+    drop @5
+    @fake_read(f@4)
+    @7 := copy (f@4)
+    @6 := (move @7)(const (42 : u8))
+    drop @7
+    @fake_read(@6)
+    drop @6
+    f@8 := const (test_crate::Foo)
+    @fake_read(f@8)
+    @10 := copy (f@8)
+    @11 := alloc::string::{alloc::string::String}::new()
+    @9 := test_crate::Foo(const (42 : u32), move (@11))
+    drop @11
+    drop @10
+    @fake_read(@9)
+    drop @9
+    drop @9
+    f@12 := const (test_crate::Bar::Variant<'_, i32>)
+    @fake_read(f@12)
+    @14 := copy (f@12)
+    @17 := const (42 : i32)
+    @16 := &@17
+    @15 := &*(@16)
+    @13 := test_crate::Bar::Variant<'_, i32>(move (@15))
+    drop @15
+    drop @14
+    @fake_read(@13)
+    drop @17
+    drop @16
+    drop @13
+    @18 := ()
+    @0 := move (@18)
+    drop f@12
+    drop f@8
+    drop f@4
+    drop f@1
+    @0 := ()
+    return
+}
+
+
+
