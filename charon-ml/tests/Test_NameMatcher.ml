@@ -119,10 +119,11 @@ module PatternTest = struct
     let fn_ptr =
       match test.call_idx with
       | None ->
-          {
-            func = FunId (FRegular decl.def_id);
-            generics = Charon.TypesUtils.empty_generic_args;
-          }
+          let generics =
+            TypesUtils.generic_args_of_params decl.item_meta.span
+              decl.signature.generics
+          in
+          { func = FunId (FRegular decl.def_id); generics }
       | Some idx ->
           (* Find the nth function call in the function body. *)
           let rec list_calls (statement : statement) : call list =
