@@ -1,5 +1,6 @@
 (tests
  (names Tests)
+ (modes byte exe)
  (modules Tests Test_Deserialize Test_NameMatcher)
  (deps
   (glob_files ./serialized/*.llbc))
