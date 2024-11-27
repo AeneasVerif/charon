@@ -635,7 +635,8 @@ and match_generic_args (ctx : ctx) (c : match_config) (m : maps)
         List.map (fun x -> MCg x) const_generics;
       ]
   in
-  if List.length pgenerics = List.length generics then
+  if List.length pgenerics = 0 then true (* Generics can be omitted *)
+  else if List.length pgenerics = List.length generics then
     List.for_all2 (match_generic_arg ctx c m) pgenerics generics
   else false
 
