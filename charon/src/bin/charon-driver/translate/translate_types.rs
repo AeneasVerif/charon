@@ -194,7 +194,7 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
 
                 // Translate the type parameters instantiation
                 let generics =
-                    self.translate_generic_args(span, used_params, substs, trait_refs)?;
+                    self.translate_generic_args(span, used_params, substs, trait_refs, None)?;
 
                 // Return the instantiated ADT
                 TyKind::Adt(type_id, generics)
@@ -346,6 +346,7 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
         used_params: Option<Vec<bool>>,
         substs: &[hax::GenericArg],
         trait_refs: &[hax::ImplExpr],
+        late_bound: Option<hax::Binder<()>>,
     ) -> Result<GenericArgs, Error> {
         use hax::GenericArg::*;
         trace!("{:?}", substs);
@@ -376,6 +377,22 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
                 }
                 Const(c) => {
                     const_generics.push(self.translate_constant_expr_to_const_generic(span, c)?);
+                }
+            }
+        }
+        // Add the late-bounds lifetimes if any.
+        if let Some(binder) = late_bound {
+            for v in &binder.bound_vars {
+                match v {
+                    hax::BoundVariableKind::Region(_) => {
+                        regions.push(Region::Erased);
+                    }
+                    hax::BoundVariableKind::Ty(_) => {
+                        error_or_panic!(self, span, "Unexpected locally bound type variable")
+                    }
+                    hax::BoundVariableKind::Const => {
+                        error_or_panic!(self, span, "Unexpected locally bound const generic")
+                    }
                 }
             }
         }

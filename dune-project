@@ -1,5 +1,6 @@
 (lang dune 3.7)
 (using menhir 2.1)
+(map_workspace_root false)
 
 (name charon)
 

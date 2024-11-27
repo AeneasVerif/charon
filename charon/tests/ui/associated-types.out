@@ -90,7 +90,7 @@ where
     let @2: &'_ (@TraitClause1::Item); // anonymous local
 
     @2 := &x@1
-    @0 := @TraitClause1::parent_clause1::clone(move (@2))
+    @0 := @TraitClause1::parent_clause1::clone<'_>(move (@2))
     drop @2
     drop x@1
     return

@@ -67,6 +67,12 @@ charon-tests:
 charon-ml-tests: build-charon-ml
 	cd charon-ml && make tests
 
+# Debug the ocaml tests in `ocamldebug`
+.PHONY: debug-ml-tests
+debug-ml-tests: build-charon-ml charon-tests
+	cd charon-ml && make copy-tests
+	rlwrap ocamldebug -cd _build/default/charon-ml/tests/ Tests.bc
+
 # Generate some of the ml code automatically from the rust definitions.
 .PHONY: generate-ml
 generate-ml:

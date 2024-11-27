@@ -21,6 +21,50 @@ where
     // Inherited clauses:
     [@TraitClause0]: core::marker::Sized<T>,
 
+fn core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::Iter<'a, T>[@TraitClause0]}#182::next<'a, '_1, T>(@1: &'_1 mut (core::slice::iter::Iter<'a, T>[@TraitClause0])) -> core::option::Option<&'a (T)>[core::marker::Sized<&'_ (T)>]
+where
+    // Inherited clauses:
+    [@TraitClause0]: core::marker::Sized<T>,
+
+fn test_crate::main()
+{
+    let @0: (); // return
+    let slice@1: &'_ (Slice<i32>); // local
+    let @2: &'_ (Array<i32, 1 : usize>); // anonymous local
+    let @3: &'_ (Array<i32, 1 : usize>); // anonymous local
+    let @4: Array<i32, 1 : usize>; // anonymous local
+    let @5: core::option::Option<&'_ (i32)>[core::marker::Sized<&'_ (i32)>]; // anonymous local
+    let @6: &'_ mut (core::slice::iter::Iter<'_, i32>[core::marker::Sized<i32>]); // anonymous local
+    let @7: core::slice::iter::Iter<'_, i32>[core::marker::Sized<i32>]; // anonymous local
+    let @8: &'_ (Slice<i32>); // anonymous local
+    let @9: (); // anonymous local
+
+    @4 := [const (0 : i32); 1 : usize]
+    @3 := &@4
+    @2 := &*(@3)
+    slice@1 := @ArrayToSliceShared<'_, i32, 1 : usize>(move (@2))
+    drop @2
+    @fake_read(slice@1)
+    drop @3
+    @8 := &*(slice@1)
+    @7 := core::slice::{Slice<T>}::iter<'_, i32>[core::marker::Sized<i32>](move (@8))
+    @6 := &two-phase-mut @7
+    drop @8
+    @5 := core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::Iter<'a, T>[@TraitClause0]}#182::next<'_, '_, i32>[core::marker::Sized<i32>](move (@6))
+    drop @6
+    @fake_read(@5)
+    drop @7
+    drop @5
+    @9 := ()
+    @0 := move (@9)
+    drop @4
+    drop slice@1
+    @0 := ()
+    return
+}
+
+fn core::iter::traits::iterator::Iterator::next<'_0, Self>(@1: &'_0 mut (Self)) -> core::option::Option<Self::Item>[Self::parent_clause0]
+
 enum core::result::Result<T, E>
   where
       [@TraitClause0]: core::marker::Sized<T>,
@@ -484,11 +528,6 @@ trait core::iter::adapters::zip::TrustedRandomAccessNoCoerce<Self>
     fn size : core::iter::adapters::zip::TrustedRandomAccessNoCoerce::size
 }
 
-fn core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::Iter<'a, T>[@TraitClause0]}#182::next<'a, '_1, T>(@1: &'_1 mut (core::slice::iter::Iter<'a, T>[@TraitClause0])) -> core::option::Option<&'a (T)>[core::marker::Sized<&'_ (T)>]
-where
-    // Inherited clauses:
-    [@TraitClause0]: core::marker::Sized<T>,
-
 fn core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::Iter<'a, T>[@TraitClause0]}#182::size_hint<'a, '_1, T>(@1: &'_1 (core::slice::iter::Iter<'a, T>[@TraitClause0])) -> (usize, core::option::Option<usize>[core::marker::Sized<usize>])
 where
     // Inherited clauses:
@@ -634,45 +673,6 @@ where
     fn rposition = core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::Iter<'a, T>[@TraitClause0]}#182::rposition
     fn is_sorted_by = core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::Iter<'a, T>[@TraitClause0]}#182::is_sorted_by
     fn __iterator_get_unchecked = core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::Iter<'a, T>[@TraitClause0]}#182::__iterator_get_unchecked
-}
-
-fn core::iter::traits::iterator::Iterator::next<'_0, Self>(@1: &'_0 mut (Self)) -> core::option::Option<Self::Item>[Self::parent_clause0]
-
-fn test_crate::main()
-{
-    let @0: (); // return
-    let slice@1: &'_ (Slice<i32>); // local
-    let @2: &'_ (Array<i32, 1 : usize>); // anonymous local
-    let @3: &'_ (Array<i32, 1 : usize>); // anonymous local
-    let @4: Array<i32, 1 : usize>; // anonymous local
-    let @5: core::option::Option<&'_ (i32)>[core::marker::Sized<&'_ (i32)>]; // anonymous local
-    let @6: &'_ mut (core::slice::iter::Iter<'_, i32>[core::marker::Sized<i32>]); // anonymous local
-    let @7: core::slice::iter::Iter<'_, i32>[core::marker::Sized<i32>]; // anonymous local
-    let @8: &'_ (Slice<i32>); // anonymous local
-    let @9: (); // anonymous local
-
-    @4 := [const (0 : i32); 1 : usize]
-    @3 := &@4
-    @2 := &*(@3)
-    slice@1 := @ArrayToSliceShared<'_, i32, 1 : usize>(move (@2))
-    drop @2
-    @fake_read(slice@1)
-    drop @3
-    @8 := &*(slice@1)
-    @7 := core::slice::{Slice<T>}::iter<i32>[core::marker::Sized<i32>](move (@8))
-    @6 := &two-phase-mut @7
-    drop @8
-    @5 := core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::Iter<'a, T>[@TraitClause0]}#182<'_, i32>[core::marker::Sized<i32>]::next(move (@6))
-    drop @6
-    @fake_read(@5)
-    drop @7
-    drop @5
-    @9 := ()
-    @0 := move (@9)
-    drop @4
-    drop slice@1
-    @0 := ()
-    return
 }
 
 fn core::iter::traits::iterator::Iterator::next_chunk<'_0, Self, const N : usize>(@1: &'_0 mut (Self)) -> core::result::Result<Array<Self::Item, const N : usize>, core::array::iter::IntoIter<Self::Item, const N : usize>[Self::parent_clause0]>[core::marker::Sized<Array<Self::Item, const N : usize>>, core::marker::Sized<core::array::iter::IntoIter<Self::Item, const N : usize>[Self::parent_clause0]>]

@@ -22,8 +22,6 @@ impl test_crate::{impl test_crate::BoolTrait for bool} : test_crate::BoolTrait<b
 
 trait core::marker::Sized<Self>
 
-fn test_crate::BoolTrait::get_bool<'_0, Self>(@1: &'_0 (Self)) -> bool
-
 fn test_crate::BoolTrait::ret_true<'_0, Self>(@1: &'_0 (Self)) -> bool
 {
     let @0: bool; // return
@@ -44,11 +42,11 @@ where
     let @4: &'_ (bool); // anonymous local
 
     @3 := &x@1
-    @2 := test_crate::{impl test_crate::BoolTrait for bool}::get_bool(move (@3))
+    @2 := test_crate::{impl test_crate::BoolTrait for bool}::get_bool<'_>(move (@3))
     if move (@2) {
         drop @3
         @4 := &x@1
-        @0 := test_crate::{impl test_crate::BoolTrait for bool}::ret_true(move (@4))
+        @0 := test_crate::{impl test_crate::BoolTrait for bool}::ret_true<'_>(move (@4))
         drop @4
     }
     else {
@@ -86,6 +84,8 @@ fn test_crate::C() -> u32
 global test_crate::C: u32 = test_crate::C()
 
 type test_crate::Test2 = u32
+
+fn test_crate::BoolTrait::get_bool<'_0, Self>(@1: &'_0 (Self)) -> bool
 
 
 

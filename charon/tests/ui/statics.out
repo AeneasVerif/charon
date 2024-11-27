@@ -193,7 +193,7 @@ fn test_crate::non_copy_static()
     @3 := &test_crate::non_copy_static::FOO
     @2 := move (@3)
     @1 := &*(@2)
-    @0 := test_crate::non_copy_static::{test_crate::non_copy_static::Foo}::method(move (@1))
+    @0 := test_crate::non_copy_static::{test_crate::non_copy_static::Foo}::method<'_>(move (@1))
     drop @1
     drop @2
     @0 := ()

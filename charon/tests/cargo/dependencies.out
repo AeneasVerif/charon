@@ -44,7 +44,7 @@ fn test_cargo_dependencies::silly_incr<'_0>(@1: &'_0 mut (u32))
 
     @3 := &two-phase-mut *(x@1)
     @4 := {test_cargo_dependencies::silly_incr::closure} {}
-    @2 := take_mut::take<u32, fn(u32) -> u32>[core::marker::Sized<u32>, core::marker::Sized<fn(u32) -> u32>, core::ops::function::FnOnce<fn(u32) -> u32, (u32)>](move (@3), move (@4))
+    @2 := take_mut::take<'_, u32, fn(u32) -> u32>[core::marker::Sized<u32>, core::marker::Sized<fn(u32) -> u32>, core::ops::function::FnOnce<fn(u32) -> u32, (u32)>](move (@3), move (@4))
     drop @4
     drop @3
     drop @2
@@ -103,7 +103,7 @@ fn test_cargo_dependencies::main()
     @fake_read(x@1)
     @4 := &mut x@1
     @3 := &two-phase-mut *(@4)
-    @2 := test_cargo_dependencies::silly_incr(move (@3))
+    @2 := test_cargo_dependencies::silly_incr<'_>(move (@3))
     drop @3
     drop @4
     drop @2

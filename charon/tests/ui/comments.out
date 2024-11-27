@@ -68,7 +68,7 @@ fn test_crate::sum<'_0>(@1: &'_0 (Slice<u32>)) -> u32
     loop {
         @10 := copy (i@3)
         @12 := &*(s@1)
-        @11 := core::slice::{Slice<T>}::len<u32>[core::marker::Sized<u32>](move (@12))
+        @11 := core::slice::{Slice<T>}::len<'_, u32>[core::marker::Sized<u32>](move (@12))
         drop @12
         @9 := move (@10) < move (@11)
         if move (@9) {
@@ -146,14 +146,6 @@ trait core::default::Default<Self>
 }
 
 fn core::default::{impl core::default::Default for u32}#7::default() -> u32
-
-impl core::default::{impl core::default::Default for u32}#7 : core::default::Default<u32>
-{
-    parent_clause0 = core::marker::Sized<u32>
-    fn default = core::default::{impl core::default::Default for u32}#7::default
-}
-
-fn core::default::Default::default<Self>() -> Self
 
 fn test_crate::{impl core::default::Default for test_crate::Foo}::default() -> test_crate::Foo
 {
@@ -427,6 +419,14 @@ fn test_crate::fool()
     @0 := ()
     @0 := ()
     return
+}
+
+fn core::default::Default::default<Self>() -> Self
+
+impl core::default::{impl core::default::Default for u32}#7 : core::default::Default<u32>
+{
+    parent_clause0 = core::marker::Sized<u32>
+    fn default = core::default::{impl core::default::Default for u32}#7::default
 }
 
 

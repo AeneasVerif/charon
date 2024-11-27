@@ -1,8 +1,9 @@
 use charon_lib::ast::{AnyTransItem, TranslatedCrate};
 use itertools::Itertools;
 use std::collections::HashMap;
+use std::error::Error;
 
-use charon_lib::ast::*;
+use charon_lib::llbc_ast::*;
 
 mod util;
 
@@ -21,7 +22,7 @@ fn repr_name(crate_data: &TranslatedCrate, n: &Name) -> String {
                     None => format!("<trait impl#{impl_id}>"),
                     Some(timpl) => {
                         let trait_name = trait_name(crate_data, timpl.impl_trait.trait_id);
-                        format!("<impl for {trait_name}>")
+                        format!("<impl {trait_name} for ??>")
                     }
                 },
                 ImplElem::Ty(..) => "<inherent impl>".to_string(),
@@ -227,7 +228,7 @@ fn predicate_origins() -> anyhow::Result<()> {
             ],
         ),
         (
-            "test_crate::<impl for Trait>",
+            "test_crate::<impl Trait for ??>",
             vec![
                 (WhereClauseOnImpl, "Sized"),
                 (WhereClauseOnImpl, "Copy"),
@@ -235,7 +236,7 @@ fn predicate_origins() -> anyhow::Result<()> {
             ],
         ),
         (
-            "test_crate::<impl for Trait>::trait_method",
+            "test_crate::<impl Trait for ??>::trait_method",
             vec![
                 (WhereClauseOnImpl, "Sized"),
                 (WhereClauseOnImpl, "Copy"),
@@ -658,5 +659,48 @@ fn source_text() -> anyhow::Result<()> {
         "trait Trait {\n            fn method() {}\n        }"
     );
     assert_eq!(sources[5], "impl Trait for () {}");
+    Ok(())
+}
+
+#[test]
+fn known_trait_method_call() -> Result<(), Box<dyn Error>> {
+    let crate_data = translate(
+        r#"
+        #[derive(Default)]
+        struct Struct;
+        fn use_default() -> Struct {
+            Struct::default()
+        }
+        "#,
+    )?;
+    let function = &crate_data.fun_decls[0];
+    assert_eq!(
+        repr_name(&crate_data, &function.item_meta.name),
+        "test_crate::use_default"
+    );
+    let body_id = function.body.unwrap();
+    let body = &crate_data.bodies[body_id].as_structured().unwrap().body;
+    let [first_stmt, ..] = body.statements.as_slice() else {
+        panic!()
+    };
+    let RawStatement::Call(call) = &first_stmt.content else {
+        panic!()
+    };
+    let FnOperand::Regular(fn_ptr) = &call.func else {
+        panic!()
+    };
+    // Assert that this call referes to the method directly, without using a trait ref.
+    let FunIdOrTraitMethodRef::Fun(FunId::Regular(id)) = &fn_ptr.func else {
+        panic!()
+    };
+    // This is the function that gets called.
+    let function = &crate_data.fun_decls[id.index()];
+    assert_eq!(
+        repr_name(&crate_data, &function.item_meta.name),
+        "test_crate::<impl Default for ??>::default"
+    );
+    let ItemKind::TraitImpl { .. } = &function.kind else {
+        panic!()
+    };
     Ok(())
 }

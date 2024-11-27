@@ -92,12 +92,6 @@ where
     // Inherited clauses:
     [@TraitClause0]: core::marker::Sized<T>,
 
-trait core::ops::index::Index<Self, Idx>
-{
-    type Output
-    fn index : core::ops::index::Index::index
-}
-
 trait core::slice::index::private_slice_index::Sealed<Self>
 
 trait core::slice::index::SliceIndex<Self, T>
@@ -118,16 +112,6 @@ where
     [@TraitClause0]: core::marker::Sized<T>,
     [@TraitClause1]: core::marker::Sized<I>,
     [@TraitClause2]: core::slice::index::SliceIndex<I, Slice<T>>,
-
-impl<T, I> core::slice::index::{impl core::ops::index::Index<I> for Slice<T>}<T, I> : core::ops::index::Index<Slice<T>, I>
-where
-    [@TraitClause0]: core::marker::Sized<T>,
-    [@TraitClause1]: core::marker::Sized<I>,
-    [@TraitClause2]: core::slice::index::SliceIndex<I, Slice<T>>,
-{
-    type Output = @TraitClause2::Output
-    fn index = core::slice::index::{impl core::ops::index::Index<I> for Slice<T>}::index
-}
 
 impl core::slice::index::private_slice_index::{impl core::slice::index::private_slice_index::Sealed for core::ops::range::RangeFrom<usize>[core::marker::Sized<usize>]}#3 : core::slice::index::private_slice_index::Sealed<core::ops::range::RangeFrom<usize>[core::marker::Sized<usize>]>
 
@@ -175,8 +159,6 @@ where
     fn index_mut = core::slice::index::{impl core::slice::index::SliceIndex<Slice<T>> for core::ops::range::RangeFrom<usize>[core::marker::Sized<usize>]}#7::index_mut
 }
 
-fn core::ops::index::Index::index<'_0, Self, Idx>(@1: &'_0 (Self), @2: Idx) -> &'_0 (Self::Output)
-
 fn test_crate::foo()
 {
     let @0: (); // return
@@ -195,7 +177,7 @@ fn test_crate::foo()
 
     @3 := core::option::Option::Some { 0: const (0 : i32) }
     @2 := &@3
-    @1 := core::option::{core::option::Option<T>[@TraitClause0]}::is_some<i32>[core::marker::Sized<i32>](move (@2))
+    @1 := core::option::{core::option::Option<T>[@TraitClause0]}::is_some<'_, i32>[core::marker::Sized<i32>](move (@2))
     drop @2
     @fake_read(@1)
     drop @3
@@ -209,7 +191,7 @@ fn test_crate::foo()
     drop @6
     @10 := &*(slice@4)
     @11 := core::ops::range::RangeFrom { start: const (1 : usize) }
-    @9 := core::slice::index::{impl core::ops::index::Index<I> for Slice<T>}<bool, core::ops::range::RangeFrom<usize>[core::marker::Sized<usize>]>[core::marker::Sized<bool>, core::marker::Sized<core::ops::range::RangeFrom<usize>[core::marker::Sized<usize>]>, core::slice::index::{impl core::slice::index::SliceIndex<Slice<T>> for core::ops::range::RangeFrom<usize>[core::marker::Sized<usize>]}#7<bool>[core::marker::Sized<bool>]]::index(move (@10), move (@11))
+    @9 := core::slice::index::{impl core::ops::index::Index<I> for Slice<T>}::index<'_, bool, core::ops::range::RangeFrom<usize>[core::marker::Sized<usize>]>[core::marker::Sized<bool>, core::marker::Sized<core::ops::range::RangeFrom<usize>[core::marker::Sized<usize>]>, core::slice::index::{impl core::slice::index::SliceIndex<Slice<T>> for core::ops::range::RangeFrom<usize>[core::marker::Sized<usize>]}#7<bool>[core::marker::Sized<bool>]](move (@10), move (@11))
     drop @11
     drop @10
     @8 := &*(@9)
@@ -227,6 +209,24 @@ fn test_crate::foo()
 fn test_crate::Trait::method<Self, T, U>()
 where
     [@TraitClause0]: core::marker::Sized<U>,
+
+fn core::ops::index::Index::index<'_0, Self, Idx>(@1: &'_0 (Self), @2: Idx) -> &'_0 (Self::Output)
+
+trait core::ops::index::Index<Self, Idx>
+{
+    type Output
+    fn index : core::ops::index::Index::index
+}
+
+impl<T, I> core::slice::index::{impl core::ops::index::Index<I> for Slice<T>}<T, I> : core::ops::index::Index<Slice<T>, I>
+where
+    [@TraitClause0]: core::marker::Sized<T>,
+    [@TraitClause1]: core::marker::Sized<I>,
+    [@TraitClause2]: core::slice::index::SliceIndex<I, Slice<T>>,
+{
+    type Output = @TraitClause2::Output
+    fn index = core::slice::index::{impl core::ops::index::Index<I> for Slice<T>}::index
+}
 
 fn core::slice::index::SliceIndex::get<'_0, Self, T>(@1: Self, @2: &'_0 (T)) -> core::option::Option<&'_0 (Self::Output)>[core::marker::Sized<&'_1_0 (Self::Output)>]
 

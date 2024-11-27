@@ -29,13 +29,6 @@ where
     return
 }
 
-trait core::convert::Into<Self, T>
-{
-    parent_clause0 : [@TraitClause0]: core::marker::Sized<Self>
-    parent_clause1 : [@TraitClause1]: core::marker::Sized<T>
-    fn into : core::convert::Into::into
-}
-
 trait core::convert::From<Self, T>
 {
     parent_clause0 : [@TraitClause0]: core::marker::Sized<Self>
@@ -59,17 +52,6 @@ where
     return
 }
 
-impl<T, U> core::convert::{impl core::convert::Into<U> for T}#3<T, U> : core::convert::Into<T, U>
-where
-    [@TraitClause0]: core::marker::Sized<T>,
-    [@TraitClause1]: core::marker::Sized<U>,
-    [@TraitClause2]: core::convert::From<U, T>,
-{
-    parent_clause0 = @TraitClause0
-    parent_clause1 = @TraitClause1
-    fn into = core::convert::{impl core::convert::Into<U> for T}#3::into
-}
-
 fn core::convert::num::{impl core::convert::From<u32> for u64}#72::from(@1: u32) -> u64
 {
     let @0: u64; // return
@@ -86,8 +68,6 @@ impl core::convert::num::{impl core::convert::From<u32> for u64}#72 : core::conv
     fn from = core::convert::num::{impl core::convert::From<u32> for u64}#72::from
 }
 
-fn core::convert::Into::into<Self, T>(@1: Self) -> T
-
 fn test_crate::foo()
 {
     let @0: (); // return
@@ -103,18 +83,18 @@ fn test_crate::foo()
 
     @3 := core::option::Option::Some { 0: const (0 : i32) }
     @2 := &@3
-    @1 := core::option::{core::option::Option<T>[@TraitClause0]}::is_some<i32>[core::marker::Sized<i32>](move (@2))
+    @1 := core::option::{core::option::Option<T>[@TraitClause0]}::is_some<'_, i32>[core::marker::Sized<i32>](move (@2))
     drop @2
     @fake_read(@1)
     drop @3
     drop @1
-    @4 := core::convert::{impl core::convert::Into<U> for T}#3<u32, u64>[core::marker::Sized<u32>, core::marker::Sized<u64>, core::convert::num::{impl core::convert::From<u32> for u64}#72]::into(const (42 : u32))
+    @4 := core::convert::{impl core::convert::Into<U> for T}#3::into<u32, u64>[core::marker::Sized<u32>, core::marker::Sized<u64>, core::convert::num::{impl core::convert::From<u32> for u64}#72](const (42 : u32))
     @fake_read(@4)
     drop @4
     @8 := const (0 : i32)
     @7 := &@8
     @6 := &*(@7)
-    @5 := core::slice::raw::from_ref<i32>[core::marker::Sized<i32>](move (@6))
+    @5 := core::slice::raw::from_ref<'_, i32>[core::marker::Sized<i32>](move (@6))
     drop @6
     @fake_read(@5)
     drop @8
@@ -133,6 +113,26 @@ fn test_crate::exclude_me()
 struct test_crate::Struct = {}
 
 unsafe fn test_crate::extern_fn(@1: i32)
+
+fn core::convert::Into::into<Self, T>(@1: Self) -> T
+
+trait core::convert::Into<Self, T>
+{
+    parent_clause0 : [@TraitClause0]: core::marker::Sized<Self>
+    parent_clause1 : [@TraitClause1]: core::marker::Sized<T>
+    fn into : core::convert::Into::into
+}
+
+impl<T, U> core::convert::{impl core::convert::Into<U> for T}#3<T, U> : core::convert::Into<T, U>
+where
+    [@TraitClause0]: core::marker::Sized<T>,
+    [@TraitClause1]: core::marker::Sized<U>,
+    [@TraitClause2]: core::convert::From<U, T>,
+{
+    parent_clause0 = @TraitClause0
+    parent_clause1 = @TraitClause1
+    fn into = core::convert::{impl core::convert::Into<U> for T}#3::into
+}
 
 
 

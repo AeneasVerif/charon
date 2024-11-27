@@ -39,7 +39,7 @@ fn test_cargo_toml::main()
 
     @3 := core::option::Option::Some { 0: const (false) }
     @2 := &@3
-    @1 := core::option::{core::option::Option<T>[@TraitClause0]}::is_some<bool>[core::marker::Sized<bool>](move (@2))
+    @1 := core::option::{core::option::Option<T>[@TraitClause0]}::is_some<'_, bool>[core::marker::Sized<bool>](move (@2))
     drop @2
     @fake_read(@1)
     drop @3

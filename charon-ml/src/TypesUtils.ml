@@ -144,6 +144,24 @@ let merge_generic_args (g1 : generic_args) (g2 : generic_args) : generic_args =
     trait_refs = tr1 @ tr2;
   }
 
+let generic_args_of_params span (generics : generic_params) : generic_args =
+  let regions =
+    List.map (fun (v : region_var) -> RBVar (0, v.index)) generics.regions
+  in
+  let types = List.map (fun (v : type_var) -> TVar v.index) generics.types in
+  let const_generics =
+    List.map
+      (fun (v : const_generic_var) -> CgVar v.index)
+      generics.const_generics
+  in
+  let trait_refs =
+    List.map
+      (fun (c : trait_clause) ->
+        { trait_id = Clause c.clause_id; trait_decl_ref = c.trait })
+      generics.trait_clauses
+  in
+  { regions; types; const_generics; trait_refs }
+
 (** The unit type *)
 let mk_unit_ty : ty = TAdt (TTuple, empty_generic_args)
 

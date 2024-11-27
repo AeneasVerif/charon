@@ -109,6 +109,7 @@
 
           nativeBuildInputs = [
             pkgs.pkg-config
+            pkgs.rlwrap
           ];
 
           # To compile some rust crates that need system dependencies.

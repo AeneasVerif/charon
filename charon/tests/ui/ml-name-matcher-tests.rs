@@ -28,7 +28,7 @@ impl<T> Trait<Option<T>> for Box<T> {
         "test_crate::{test_crate::Trait<alloc::boxed::Box<@T>, core::option::Option<@U>>}::method"
     )]
     #[pattern::pass("test_crate::{test_crate::Trait<@T, @U>}::method")]
-    #[pattern::fail("test_crate::Trait<@T, @U>::method")]
+    #[pattern::pass("test_crate::Trait<@T, @U>::method")]
     fn method<U>() {}
 }
 
@@ -45,15 +45,18 @@ impl<T, U> Trait<Box<T>> for Option<U> {
 }
 
 // `call[i]` is a hack to be able to refer to `Call` statements inside the function body.
+#[pattern::pass(call[0], "core::option::{core::option::Option<@T>}::is_some<'_, i32>")]
+// Regions can be omitted
 #[pattern::pass(call[0], "core::option::{core::option::Option<@T>}::is_some<i32>")]
 #[pattern::pass(call[0], "core::option::{core::option::Option<@T>}::is_some<@T>")]
-// Generic arguments are required.
-#[pattern::fail(call[0], "core::option::{core::option::Option<@T>}::is_some")]
+// Generic arguments are not required.
+#[pattern::pass(call[0], "core::option::{core::option::Option<@T>}::is_some")]
 #[pattern::pass(call[1], "ArrayToSliceShared<'_, bool, 1>")]
 // This is a trait instance call.
 #[pattern::pass(call[2], "core::ops::index::Index<[bool], core::ops::range::RangeFrom<usize>>::index")]
-// We can't reference the method directly.
-#[pattern::fail(call[2], "core::slice::index::{core::ops::index::Index<[@T], @I>}::index<bool, core::ops::range::RangeFrom<usize>>")]
+#[pattern::pass(call[2], "core::ops::index::Index<[@T], @I>::index")]
+// We can reference the method directly.
+#[pattern::pass(call[2], "core::slice::index::{core::ops::index::Index<[@T], @I>}::index<bool, core::ops::range::RangeFrom<usize>>")]
 fn foo() {
     let _ = Some(0).is_some();
     let slice: &[bool] = &[false];

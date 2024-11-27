@@ -70,54 +70,18 @@ where
             e@2 := move ((self@1 as variant @1).0)
             @5 := &e@2
             @4 := unsize_cast<&'_ (E), &'_ (dyn (exists(TODO)))>(copy (@5))
-            @3 := core::result::unwrap_failed(const ("called `Result::unwrap()` on an `Err` value"), move (@4))
+            @3 := core::result::unwrap_failed<'_, '_>(const ("called `Result::unwrap()` on an `Err` value"), move (@4))
         },
     }
     t@0 := move ((self@1 as variant @0).0)
     return
 }
 
-trait core::fmt::Display<Self>
-{
-    fn fmt : core::fmt::Display::fmt
-}
-
 fn core::fmt::num::imp::{impl core::fmt::Display for u32}#10::fmt<'_0, '_1, '_2>(@1: &'_0 (u32), @2: &'_1 mut (core::fmt::Formatter<'_2>)) -> core::result::Result<(), core::fmt::Error>[core::marker::Sized<()>, core::marker::Sized<core::fmt::Error>]
-
-impl core::fmt::num::imp::{impl core::fmt::Display for u32}#10 : core::fmt::Display<u32>
-{
-    fn fmt = core::fmt::num::imp::{impl core::fmt::Display for u32}#10::fmt
-}
-
-fn core::fmt::Display::fmt<'_0, '_1, '_2, Self>(@1: &'_0 (Self), @2: &'_1 mut (core::fmt::Formatter<'_2>)) -> core::result::Result<(), core::fmt::Error>[core::marker::Sized<()>, core::marker::Sized<core::fmt::Error>]
-
-trait core::fmt::UpperHex<Self>
-{
-    fn fmt : core::fmt::UpperHex::fmt
-}
 
 fn core::fmt::num::{impl core::fmt::UpperHex for u32}#61::fmt<'_0, '_1, '_2>(@1: &'_0 (u32), @2: &'_1 mut (core::fmt::Formatter<'_2>)) -> core::result::Result<(), core::fmt::Error>[core::marker::Sized<()>, core::marker::Sized<core::fmt::Error>]
 
-impl core::fmt::num::{impl core::fmt::UpperHex for u32}#61 : core::fmt::UpperHex<u32>
-{
-    fn fmt = core::fmt::num::{impl core::fmt::UpperHex for u32}#61::fmt
-}
-
-fn core::fmt::UpperHex::fmt<'_0, '_1, '_2, Self>(@1: &'_0 (Self), @2: &'_1 mut (core::fmt::Formatter<'_2>)) -> core::result::Result<(), core::fmt::Error>[core::marker::Sized<()>, core::marker::Sized<core::fmt::Error>]
-
-trait core::fmt::LowerHex<Self>
-{
-    fn fmt : core::fmt::LowerHex::fmt
-}
-
 fn core::fmt::num::{impl core::fmt::LowerHex for u32}#60::fmt<'_0, '_1, '_2>(@1: &'_0 (u32), @2: &'_1 mut (core::fmt::Formatter<'_2>)) -> core::result::Result<(), core::fmt::Error>[core::marker::Sized<()>, core::marker::Sized<core::fmt::Error>]
-
-impl core::fmt::num::{impl core::fmt::LowerHex for u32}#60 : core::fmt::LowerHex<u32>
-{
-    fn fmt = core::fmt::num::{impl core::fmt::LowerHex for u32}#60::fmt
-}
-
-fn core::fmt::LowerHex::fmt<'_0, '_1, '_2, Self>(@1: &'_0 (Self), @2: &'_1 mut (core::fmt::Formatter<'_2>)) -> core::result::Result<(), core::fmt::Error>[core::marker::Sized<()>, core::marker::Sized<core::fmt::Error>]
 
 fn core::fmt::num::{impl core::fmt::Debug for u32}#86::fmt<'_0, '_1, '_2>(@1: &'_0 (u32), @2: &'_1 mut (core::fmt::Formatter<'_2>)) -> core::result::Result<(), core::fmt::Error>[core::marker::Sized<()>, core::marker::Sized<core::fmt::Error>]
 {
@@ -141,17 +105,17 @@ fn core::fmt::num::{impl core::fmt::Debug for u32}#86::fmt<'_0, '_1, '_2>(@1: &'
             switch move (@5) {
                 0 : u32 => {
                     drop @5
-                    @0 := core::fmt::num::imp::{impl core::fmt::Display for u32}#10::fmt(move (self@1), move (f@2))
+                    @0 := core::fmt::num::imp::{impl core::fmt::Display for u32}#10::fmt<'_, '_, '_>(move (self@1), move (f@2))
                 },
                 _ => {
                     drop @5
-                    @0 := core::fmt::num::{impl core::fmt::UpperHex for u32}#61::fmt(move (self@1), move (f@2))
+                    @0 := core::fmt::num::{impl core::fmt::UpperHex for u32}#61::fmt<'_, '_, '_>(move (self@1), move (f@2))
                 },
             }
         },
         _ => {
             drop @3
-            @0 := core::fmt::num::{impl core::fmt::LowerHex for u32}#60::fmt(move (self@1), move (f@2))
+            @0 := core::fmt::num::{impl core::fmt::LowerHex for u32}#60::fmt<'_, '_, '_>(move (self@1), move (f@2))
         },
     }
     return
@@ -175,6 +139,42 @@ fn test_crate::unwrap(@1: core::result::Result<u32, u32>[core::marker::Sized<u32
 }
 
 fn core::fmt::Debug::fmt<'_0, '_1, '_2, Self>(@1: &'_0 (Self), @2: &'_1 mut (core::fmt::Formatter<'_2>)) -> core::result::Result<(), core::fmt::Error>[core::marker::Sized<()>, core::marker::Sized<core::fmt::Error>]
+
+fn core::fmt::LowerHex::fmt<'_0, '_1, '_2, Self>(@1: &'_0 (Self), @2: &'_1 mut (core::fmt::Formatter<'_2>)) -> core::result::Result<(), core::fmt::Error>[core::marker::Sized<()>, core::marker::Sized<core::fmt::Error>]
+
+trait core::fmt::LowerHex<Self>
+{
+    fn fmt : core::fmt::LowerHex::fmt
+}
+
+impl core::fmt::num::{impl core::fmt::LowerHex for u32}#60 : core::fmt::LowerHex<u32>
+{
+    fn fmt = core::fmt::num::{impl core::fmt::LowerHex for u32}#60::fmt
+}
+
+fn core::fmt::Display::fmt<'_0, '_1, '_2, Self>(@1: &'_0 (Self), @2: &'_1 mut (core::fmt::Formatter<'_2>)) -> core::result::Result<(), core::fmt::Error>[core::marker::Sized<()>, core::marker::Sized<core::fmt::Error>]
+
+trait core::fmt::Display<Self>
+{
+    fn fmt : core::fmt::Display::fmt
+}
+
+impl core::fmt::num::imp::{impl core::fmt::Display for u32}#10 : core::fmt::Display<u32>
+{
+    fn fmt = core::fmt::num::imp::{impl core::fmt::Display for u32}#10::fmt
+}
+
+fn core::fmt::UpperHex::fmt<'_0, '_1, '_2, Self>(@1: &'_0 (Self), @2: &'_1 mut (core::fmt::Formatter<'_2>)) -> core::result::Result<(), core::fmt::Error>[core::marker::Sized<()>, core::marker::Sized<core::fmt::Error>]
+
+trait core::fmt::UpperHex<Self>
+{
+    fn fmt : core::fmt::UpperHex::fmt
+}
+
+impl core::fmt::num::{impl core::fmt::UpperHex for u32}#61 : core::fmt::UpperHex<u32>
+{
+    fn fmt = core::fmt::num::{impl core::fmt::UpperHex for u32}#61::fmt
+}
 
 
 

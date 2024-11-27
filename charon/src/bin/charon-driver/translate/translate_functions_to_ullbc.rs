@@ -134,6 +134,7 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
                         None,
                         impl_generics,
                         impl_required_impl_exprs,
+                        None,
                     )?,
                 };
                 let trait_ref = self.translate_trait_ref(span, implemented_trait_ref)?;
@@ -668,7 +669,7 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
 
                         // Translate the substitution
                         let generics =
-                            self.translate_generic_args(span, None, substs, trait_refs)?;
+                            self.translate_generic_args(span, None, substs, trait_refs, None)?;
 
                         let type_id = self.translate_type_id(span, adt_id)?;
                         // Sanity check
@@ -690,9 +691,20 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
                     hax::AggregateKind::Closure(def_id, substs, trait_refs, sig) => {
                         trace!("Closure:\n\n- def_id: {:?}\n\n- sig:\n{:?}", def_id, sig);
 
+                        // Retrieve the late-bound variables.
+                        let binder = match self.t_ctx.hax_def(def_id)?.kind() {
+                            hax::FullDefKind::Closure { args, .. } => args.sig.as_ref().rebind(()),
+                            _ => unreachable!(),
+                        };
+
                         // Translate the substitution
-                        let generics =
-                            self.translate_generic_args(span, None, substs, trait_refs)?;
+                        let generics = self.translate_generic_args(
+                            span,
+                            None,
+                            substs,
+                            trait_refs,
+                            Some(binder),
+                        )?;
 
                         let def_id = self.register_fun_decl_id(span, def_id);
                         let akind = AggregateKind::Closure(def_id, generics);
@@ -764,8 +776,16 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
             return Ok(SubstFunIdOrPanic::Panic(name));
         }
 
+        // Retreive the late-bound variables.
+        let binder = match self.t_ctx.hax_def(def_id)?.kind() {
+            hax::FullDefKind::Fn { sig, .. } | hax::FullDefKind::AssocFn { sig, .. } => {
+                Some(sig.as_ref().rebind(()))
+            }
+            _ => None,
+        };
+
         // Translate the type parameters
-        let generics = self.translate_generic_args(span, None, substs, trait_refs)?;
+        let generics = self.translate_generic_args(span, None, substs, trait_refs, binder)?;
 
         // Translate the arguments
         let args = args

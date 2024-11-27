@@ -88,6 +88,11 @@ let trait_ref_substitute (subst : subst) (tr : trait_ref) : trait_ref =
   st_substitute_visitor#visit_trait_ref subst tr
 
 (** **IMPORTANT**: this doesn't normalize the types. *)
+let trait_decl_ref_substitute (subst : subst) (tr : trait_decl_ref) :
+    trait_decl_ref =
+  st_substitute_visitor#visit_trait_decl_ref subst tr
+
+(** **IMPORTANT**: this doesn't normalize the types. *)
 let trait_instance_id_substitute (subst : subst) (tr : trait_instance_id) :
     trait_instance_id =
   st_substitute_visitor#visit_trait_instance_id subst tr

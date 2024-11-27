@@ -193,6 +193,22 @@ impl GenericArgs {
             },
         )
     }
+
+    /// Concatenate this set of arguments with another one. Use with care, you must manage the
+    /// order of arguments correctly.
+    pub fn concat(mut self, other: &Self) -> Self {
+        let Self {
+            regions,
+            types,
+            const_generics,
+            trait_refs,
+        } = &mut self;
+        regions.extend(other.regions.iter().cloned());
+        types.extend(other.types.iter().cloned());
+        const_generics.extend(other.const_generics.iter().cloned());
+        trait_refs.extend(other.trait_refs.iter().cloned());
+        self
+    }
 }
 
 impl IntegerTy {
