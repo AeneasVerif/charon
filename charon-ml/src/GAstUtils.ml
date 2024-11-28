@@ -95,11 +95,13 @@ let split_declarations (decls : declaration_group list) :
     declaration groups.
  *)
 let split_declarations_to_group_maps (decls : declaration_group list) :
-    type_declaration_group TypeDeclId.Map.t
-    * fun_declaration_group FunDeclId.Map.t
-    * global_declaration_group GlobalDeclId.Map.t
-    * trait_declaration_group TraitDeclId.Map.t
-    * trait_impl_group TraitImplId.Map.t =
+    ( type_declaration_group TypeDeclId.Map.t
+      * fun_declaration_group FunDeclId.Map.t
+      * global_declaration_group GlobalDeclId.Map.t
+      * trait_declaration_group TraitDeclId.Map.t
+      * trait_impl_group TraitImplId.Map.t,
+      mixed_declaration_group list )
+    Result.result =
   let module G (M : Map.S) = struct
     let add_group (map : M.key g_declaration_group M.t)
         (group : M.key g_declaration_group) : M.key g_declaration_group M.t =
@@ -115,16 +117,16 @@ let split_declarations_to_group_maps (decls : declaration_group list) :
   let types, funs, globals, trait_decls, trait_impls, mixed_groups =
     split_declarations decls
   in
-  if List.length mixed_groups <> 0 then
-    raise (Failure "Mixed declaration groups cannot be indexed by declaration");
-  let module TG = G (TypeDeclId.Map) in
-  let types = TG.create_map types in
-  let module FG = G (FunDeclId.Map) in
-  let funs = FG.create_map funs in
-  let module GG = G (GlobalDeclId.Map) in
-  let globals = GG.create_map globals in
-  let module TDG = G (TraitDeclId.Map) in
-  let trait_decls = TDG.create_map trait_decls in
-  let module TIG = G (TraitImplId.Map) in
-  let trait_impls = TIG.create_map trait_impls in
-  (types, funs, globals, trait_decls, trait_impls)
+  if mixed_groups <> [] then Error mixed_groups
+  else
+    let module TG = G (TypeDeclId.Map) in
+    let types = TG.create_map types in
+    let module FG = G (FunDeclId.Map) in
+    let funs = FG.create_map funs in
+    let module GG = G (GlobalDeclId.Map) in
+    let globals = GG.create_map globals in
+    let module TDG = G (TraitDeclId.Map) in
+    let trait_decls = TDG.create_map trait_decls in
+    let module TIG = G (TraitImplId.Map) in
+    let trait_impls = TIG.create_map trait_impls in
+    Ok (types, funs, globals, trait_decls, trait_impls)
