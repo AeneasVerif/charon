@@ -694,7 +694,22 @@ and impl_elem =
 
     Also note that the first path element in the name is always the crate name.
  *)
-and name = path_elem list
+and name = path_elem list [@@deriving show, ord]
+
+(* Ancestors for the type_decl visitors *)
+class ['self] iter_type_decl_base =
+  object (self : 'self)
+    inherit [_] iter_generic_params
+    method visit_attr_info : 'env -> attr_info -> unit = fun _ _ -> ()
+    method visit_item_meta : 'env -> item_meta -> unit = fun _ _ -> ()
+  end
+
+class ['self] map_type_decl_base =
+  object (self : 'self)
+    inherit [_] map_generic_params
+    method visit_attr_info : 'env -> attr_info -> attr_info = fun _ x -> x
+    method visit_item_meta : 'env -> item_meta -> item_meta = fun _ x -> x
+  end
 
 (** A type declaration.
 
@@ -710,7 +725,7 @@ and name = path_elem list
     A type can only be an ADT (structure or enumeration), as type aliases are
     inlined in MIR.
  *)
-and type_decl = {
+type type_decl = {
   def_id : type_decl_id;
   item_meta : item_meta;  (** Meta information associated with the item. *)
   generics : generic_params;
@@ -730,7 +745,7 @@ and type_decl_kind =
       (** An alias to another type. This only shows up in the top-level list of items, as rustc
           inlines uses of type aliases everywhere else.
        *)
-  | Error of string
+  | TError of string
       (** Used if an error happened during the extraction, and we don't panic
           on error.
        *)
@@ -752,7 +767,23 @@ and field = {
   field_name : string option;
   field_ty : ty;
 }
-[@@deriving show, ord]
+[@@deriving
+  show,
+    ord,
+    visitors
+      {
+        name = "iter_type_decl";
+        variety = "iter";
+        ancestors = [ "iter_type_decl_base" ];
+        nude = true (* Don't inherit VisitorsRuntime *);
+      },
+    visitors
+      {
+        name = "map_type_decl";
+        variety = "map";
+        ancestors = [ "map_type_decl_base" ];
+        nude = true (* Don't inherit VisitorsRuntime *);
+      }]
 
 (* Hand-written because these don't exist on the rust side *)
 

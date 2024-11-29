@@ -78,14 +78,14 @@ and switch =
       {
         name = "iter_statement";
         variety = "iter";
-        ancestors = [ "iter_statement_base" ];
+        ancestors = [ "iter_trait_impl" ];
         nude = true (* Don't inherit VisitorsRuntime *);
       },
     visitors
       {
         name = "map_statement";
         variety = "map";
-        ancestors = [ "map_statement_base" ];
+        ancestors = [ "map_trait_impl" ];
         nude = true (* Don't inherit VisitorsRuntime *);
       }]
 

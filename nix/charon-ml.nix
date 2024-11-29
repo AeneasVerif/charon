@@ -86,6 +86,7 @@ let
         yojson
         calendar
         charon-name_matcher_parser
+        unionFind
       ];
       inherit doCheck;
 

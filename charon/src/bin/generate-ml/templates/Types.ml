@@ -167,6 +167,8 @@ class virtual ['self] map_ty_base_base =
 (* __REPLACE4__ *)
 [@@deriving show, ord]
 
+(* __REPLACE5__ *)
+
 (** A group of regions.
 
     Results from a lifetime analysis: we group the regions with the same

@@ -464,7 +464,7 @@ let type_decl_to_string (env : 'a fmt_env) (def : type_decl) : string =
       else "union " ^ name ^ params ^ clauses ^ "{}"
   | Alias ty -> "type " ^ name ^ params ^ clauses ^ " = " ^ ty_to_string env ty
   | Opaque -> "opaque type " ^ name ^ params ^ clauses
-  | Error err -> "error(\"" ^ err ^ "\")"
+  | TError err -> "error(\"" ^ err ^ "\")"
 
 let adt_variant_to_string (env : 'a fmt_env) (def_id : TypeDeclId.id)
     (variant_id : VariantId.id) : string =

@@ -24,12 +24,18 @@ type builtin_fun_id = Expressions.builtin_fun_id [@@deriving show, ord]
 type fun_id = Expressions.fun_id [@@deriving show, ord]
 type fun_id_or_trait_method_ref = Expressions.fun_id_or_trait_method_ref [@@deriving show, ord]
 
-(* __REPLACE2__ *)
+(* __REPLACE0__ *)
 [@@deriving show, ord]
 
-(* __REPLACE0__ *)
-
 (* __REPLACE1__ *)
+
+(* __REPLACE2__ *)
+
+(* __REPLACE3__ *)
+
+(* __REPLACE4__ *)
+
+(* __REPLACE5__ *)
 [@@deriving show]
 
 (* Hand-written because they don't exist in rust *)

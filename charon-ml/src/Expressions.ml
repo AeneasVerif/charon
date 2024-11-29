@@ -27,7 +27,7 @@ and var_id = VarId.id [@@deriving show, ord]
 (* Ancestors for the rvalue visitors *)
 class ['self] iter_rvalue_base =
   object (self : 'self)
-    inherit [_] iter_generic_params
+    inherit [_] iter_type_decl
     method visit_var_id : 'env -> var_id -> unit = fun _ _ -> ()
     method visit_variant_id : 'env -> variant_id -> unit = fun _ _ -> ()
     method visit_field_id : 'env -> field_id -> unit = fun _ _ -> ()
@@ -35,7 +35,7 @@ class ['self] iter_rvalue_base =
 
 class ['self] map_rvalue_base =
   object (self : 'self)
-    inherit [_] map_generic_params
+    inherit [_] map_type_decl
     method visit_var_id : 'env -> var_id -> var_id = fun _ x -> x
     method visit_variant_id : 'env -> variant_id -> variant_id = fun _ x -> x
     method visit_field_id : 'env -> field_id -> field_id = fun _ x -> x
