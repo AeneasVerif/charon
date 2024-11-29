@@ -1202,31 +1202,54 @@ fn generate_ml(
             template: template_dir.join("GAst.ml"),
             target: output_dir.join("GAst.ml"),
             markers: ctx.markers_from_names(&[
+                (GenerationKind::TypeDecl(None), &["FunDeclId"]),
                 (GenerationKind::TypeDecl(Some(DeriveVisitors {
-                    name: "statement_base",
+                    name: "fun_sig",
                     ancestor: Some("rvalue"),
                     reduce: false,
                     extra_types: &[],
                 })), &[
+                    "Var",
+                    "AnyTransId",
                     "FnOperand",
                     "Call",
                     "Assert",
-                ]),
-                (GenerationKind::TypeDecl(None), &[
                     "ParamsInfo",
                     "ClosureKind",
                     "ClosureInfo",
-                    "FunSig",
                     "ItemKind",
                     "Locals",
-                    "GExprBody",
+                    "FunSig",
+                ]),
+                (GenerationKind::TypeDecl(Some(DeriveVisitors {
+                    name: "global_decl",
+                    ancestor: Some("fun_sig"),
+                    reduce: false,
+                    extra_types: &[],
+                })), &[
                     "GlobalDecl",
+                ]),
+                (GenerationKind::TypeDecl(Some(DeriveVisitors {
+                    name: "trait_decl",
+                    ancestor: Some("global_decl"),
+                    reduce: false,
+                    extra_types: &[],
+                })), &[
                     "TraitDecl",
+                ]),
+                (GenerationKind::TypeDecl(Some(DeriveVisitors {
+                    name: "trait_impl",
+                    ancestor: Some("trait_decl"),
+                    reduce: false,
+                    extra_types: &[],
+                })), &[
                     "TraitImpl",
+                ]),
+                (GenerationKind::TypeDecl(None), &[
+                    "GExprBody",
                     "GDeclarationGroup",
                     "DeclarationGroup",
                 ]),
-                (GenerationKind::TypeDecl(None), &["Var", "AnyTransId", "FunDeclId"]),
             ]),
         },
         GenerateCodeFor {
@@ -1240,7 +1263,7 @@ fn generate_ml(
                 ]),
                 (GenerationKind::TypeDecl(Some(DeriveVisitors {
                     name: "rvalue",
-                    ancestor: Some("generic_params"),
+                    ancestor: Some("type_decl"),
                     reduce: false,
                     extra_types: &[
                         "var_id",
@@ -1369,6 +1392,13 @@ fn generate_ml(
                     "PathElem",
                     "Name",
                     "ItemMeta",
+                ]),
+                (GenerationKind::TypeDecl(Some(DeriveVisitors {
+                    name: "type_decl",
+                    ancestor: Some("type_decl_base"),
+                    reduce: false,
+                    extra_types: &[],
+                })), &[
                     "Field",
                     "Variant",
                     "TypeDeclKind",
@@ -1403,7 +1433,7 @@ fn generate_ml(
             markers: vec![
                 (GenerationKind::TypeDecl(Some(DeriveVisitors {
                     name: "statement",
-                    ancestor: Some("statement_base"),
+                    ancestor: Some("trait_impl"),
                     reduce: false,
                     extra_types: &[],
                 })), llbc_types.clone()),
@@ -1415,7 +1445,7 @@ fn generate_ml(
             markers: ctx.markers_from_names(&[
                 (GenerationKind::TypeDecl(Some(DeriveVisitors {
                     name: "statement",
-                    ancestor: Some("GAst.statement_base"),
+                    ancestor: Some("trait_impl"),
                     reduce: false,
                     extra_types: &[
                         "abort_kind", "block_id",

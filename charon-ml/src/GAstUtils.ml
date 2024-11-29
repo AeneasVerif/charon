@@ -130,3 +130,24 @@ let split_declarations_to_group_maps (decls : declaration_group list) :
     let module TIG = G (TraitImplId.Map) in
     let trait_impls = TIG.create_map trait_impls in
     Ok (types, funs, globals, trait_decls, trait_impls)
+
+module OrderedAnyDeclId : Collections.OrderedType with type t = any_decl_id =
+struct
+  type t = any_decl_id
+
+  let compare = compare_any_decl_id
+  let to_string = show_any_decl_id
+  let pp_t fmt x = Format.pp_print_string fmt (show_any_decl_id x)
+  let show_t = show_any_decl_id
+end
+
+module AnyDeclIdSet = Collections.MakeSet (OrderedAnyDeclId)
+module AnyDeclIdMap = Collections.MakeMap (OrderedAnyDeclId)
+
+let any_decl_id_to_kind_name (id : any_decl_id) : string =
+  match id with
+  | IdType _ -> "type decl"
+  | IdFun _ -> "fun decl"
+  | IdGlobal _ -> "global decl"
+  | IdTraitDecl _ -> "trait decl"
+  | IdTraitImpl _ -> "trait impl"

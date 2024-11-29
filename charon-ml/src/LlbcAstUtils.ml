@@ -103,3 +103,27 @@ let compute_fun_decl_groups_map (c : crate) : FunDeclId.Set.t FunDeclId.Map.t =
                   (Failure
                      "Mixed declaration groups cannot be indexed by declaration"))
           c.declarations))
+
+let crate_get_item_meta (m : crate) (id : any_decl_id) : Types.item_meta option
+    =
+  match id with
+  | IdType id ->
+      Option.map
+        (fun (d : Types.type_decl) -> d.item_meta)
+        (Types.TypeDeclId.Map.find_opt id m.type_decls)
+  | IdFun id ->
+      Option.map
+        (fun (d : fun_decl) -> d.item_meta)
+        (FunDeclId.Map.find_opt id m.fun_decls)
+  | IdGlobal id ->
+      Option.map
+        (fun (d : global_decl) -> d.item_meta)
+        (GlobalDeclId.Map.find_opt id m.global_decls)
+  | IdTraitDecl id ->
+      Option.map
+        (fun (d : trait_decl) -> d.item_meta)
+        (TraitDeclId.Map.find_opt id m.trait_decls)
+  | IdTraitImpl id ->
+      Option.map
+        (fun (d : trait_impl) -> d.item_meta)
+        (TraitImplId.Map.find_opt id m.trait_impls)

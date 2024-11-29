@@ -29,3 +29,15 @@ let safe_combine_span (m0 : span) (m1 : span) : span =
   match combine_span m0 m1 with
   | None -> m0
   | Some m -> m
+
+module OrderedSpan : Collections.OrderedType with type t = span = struct
+  type t = span
+
+  let compare = compare_span
+  let to_string = show_span
+  let pp_t fmt x = Format.pp_print_string fmt (show_span x)
+  let show_t = show_span
+end
+
+module SpanSet = Collections.MakeSet (OrderedSpan)
+module SpanMap = Collections.MakeMap (OrderedSpan)

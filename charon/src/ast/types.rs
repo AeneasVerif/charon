@@ -458,6 +458,7 @@ pub enum TypeDeclKind {
     Alias(Ty),
     /// Used if an error happened during the extraction, and we don't panic
     /// on error.
+    #[charon::rename("TError")]
     Error(String),
 }
 

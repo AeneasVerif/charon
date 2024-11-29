@@ -26,6 +26,8 @@ type fun_id = Expressions.fun_id [@@deriving show, ord]
 type fun_id_or_trait_method_ref = Expressions.fun_id_or_trait_method_ref
 [@@deriving show, ord]
 
+type fun_decl_id = FunDeclId.id [@@deriving show, ord]
+
 (** A variable *)
 type var = {
   index : var_id;  (** Unique index identifying the variable *)
@@ -36,55 +38,8 @@ type var = {
   var_ty : ty;  (** The variable type *)
 }
 
-and fun_decl_id = FunDeclId.id
-
-(** The id of a translated item. *)
-and any_decl_id =
-  | IdType of type_decl_id
-  | IdFun of fun_decl_id
-  | IdGlobal of global_decl_id
-  | IdTraitDecl of trait_decl_id
-  | IdTraitImpl of trait_impl_id
-[@@deriving show, ord]
-
-(** A function operand is used in function calls.
-    It either designates a top-level function, or a place in case
-    we are using function pointers stored in local variables.
- *)
-type fn_operand =
-  | FnOpRegular of fn_ptr
-      (** Regular case: call to a top-level function, trait method, etc. *)
-  | FnOpMove of place
-      (** Use of a function pointer stored in a local variable *)
-
-and call = { func : fn_operand; args : operand list; dest : place }
-
-(** Asserts are special constructs introduced by Rust to perform dynamic
-    checks, to detect out-of-bounds accesses or divisions by zero for
-    instance. We eliminate the assertions in [crate::remove_dynamic_checks],
-    then introduce other dynamic checks in [crate::reconstruct_asserts].
- *)
-and assertion = { cond : operand; expected : bool }
-[@@deriving
-  show,
-    ord,
-    visitors
-      {
-        name = "iter_statement_base";
-        variety = "iter";
-        ancestors = [ "iter_rvalue" ];
-        nude = true (* Don't inherit VisitorsRuntime *);
-      },
-    visitors
-      {
-        name = "map_statement_base";
-        variety = "map";
-        ancestors = [ "map_rvalue" ];
-        nude = true (* Don't inherit VisitorsRuntime *);
-      }]
-
 (** The local variables of a body. *)
-type locals = {
+and locals = {
   arg_count : int;
       (** The number of local variables used for the input arguments. *)
   vars : var list;
@@ -94,16 +49,6 @@ type locals = {
         - the `arg_count` input arguments
         - the remaining locals, used for the intermediate computations
      *)
-}
-
-(** An expression body.
-    TODO: arg_count should be stored in GFunDecl below. But then,
-          the print is obfuscated and Aeneas may need some refactoring.
- *)
-and 'a0 gexpr_body = {
-  span : span;
-  locals : locals;  (** The local variables. *)
-  body : 'a0;
 }
 
 (** Item kind: whether this function/const is part of a trait declaration, trait implementation, or
@@ -151,118 +96,32 @@ and item_kind =
           item is a copy of the default item.
        *)
 
-(** A global variable definition (constant or static). *)
-and global_decl = {
-  def_id : global_decl_id;
-  item_meta : item_meta;  (** The meta data associated with the declaration. *)
-  generics : generic_params;
-  ty : ty;
-  kind : item_kind;
-      (** The global kind: "regular" function, trait const declaration, etc. *)
-  body : fun_decl_id;
-      (** The initializer function used to compute the initial value for this constant/static. *)
-}
-
-(** A trait **declaration**.
-
-    For instance:
-    ```text
-    trait Foo {
-      type Bar;
-
-      fn baz(...); // required method (see below)
-
-      fn test() -> bool { true } // provided method (see below)
-    }
-    ```
-
-    In case of a trait declaration, we don't include the provided methods (the methods
-    with a default implementation): they will be translated on a per-need basis. This is
-    important for two reasons:
-    - this makes the trait definitions a lot smaller (the Iterator trait
-      has *one* declared function and more than 70 provided functions)
-    - this is important for the external traits, whose provided methods
-      often use features we don't support yet
-
-    Remark:
-    In Aeneas, we still translate the provided methods on an individual basis,
-    and in such a way thay they take as input a trait instance. This means that
-    we can use default methods *but*:
-    - implementations of required methods shoudln't call default methods
-    - trait implementations shouldn't redefine required methods
-    The use case we have in mind is [std::iter::Iterator]: it declares one required
-    method (`next`) that should be implemented for every iterator, and defines many
-    helpers like `all`, `map`, etc. that shouldn't be re-implemented.
-    Of course, this forbids other useful use cases such as visitors implemented
-    by means of traits.
+(** A function operand is used in function calls.
+    It either designates a top-level function, or a place in case
+    we are using function pointers stored in local variables.
  *)
-and trait_decl = {
-  def_id : trait_decl_id;
-  item_meta : item_meta;
-  generics : generic_params;
-  parent_clauses : trait_clause list;
-      (** The "parent" clauses: the supertraits.
+and fn_operand =
+  | FnOpRegular of fn_ptr
+      (** Regular case: call to a top-level function, trait method, etc. *)
+  | FnOpMove of place
+      (** Use of a function pointer stored in a local variable *)
 
-        Supertraits are actually regular where clauses, but we decided to have
-        a custom treatment.
-        ```text
-        trait Foo : Bar {
-                    ^^^
-                supertrait, that we treat as a parent predicate
-        }
-        ```
-        TODO: actually, as of today, we consider that all trait clauses of
-        trait declarations are parent clauses.
-     *)
-  consts : (trait_item_name * ty) list;
-      (** The associated constants declared in the trait, along with their type. *)
-  types : trait_item_name list;
-      (** The associated types declared in the trait. *)
-  required_methods : (trait_item_name * fun_decl_id) list;
-      (** The *required* methods.
+and call = { func : fn_operand; args : operand list; dest : place }
 
-        The required methods are the methods declared by the trait but with no default
-        implementation. The corresponding `FunDecl`s don't have a body.
-     *)
-  provided_methods : (trait_item_name * fun_decl_id) list;
-      (** The *provided* methods.
-
-        The provided methods are the methods with a default implementation. The corresponding
-        `FunDecl`s may have a body, according to the usual rules for extracting function bodies.
-     *)
-}
-
-(** A trait **implementation**.
-
-    For instance:
-    ```text
-    impl Foo for List {
-      type Bar = ...
-
-      fn baz(...) { ... }
-    }
-    ```
+(** Asserts are special constructs introduced by Rust to perform dynamic
+    checks, to detect out-of-bounds accesses or divisions by zero for
+    instance. We eliminate the assertions in [crate::remove_dynamic_checks],
+    then introduce other dynamic checks in [crate::reconstruct_asserts].
  *)
-and trait_impl = {
-  def_id : trait_impl_id;
-  item_meta : item_meta;
-  impl_trait : trait_decl_ref;
-      (** The information about the implemented trait.
-        Note that this contains the instantiation of the "parent"
-        clauses.
-     *)
-  generics : generic_params;
-  parent_trait_refs : trait_ref list;
-      (** The trait references for the parent clauses (see [TraitDecl]). *)
-  consts : (trait_item_name * global_decl_ref) list;
-      (** The associated constants declared in the trait. *)
-  types : (trait_item_name * ty) list;
-      (** The associated types declared in the trait. *)
-  required_methods : (trait_item_name * fun_decl_id) list;
-      (** The implemented required methods *)
-  provided_methods : (trait_item_name * fun_decl_id) list;
-      (** The re-implemented provided methods *)
-}
+and assertion = { cond : operand; expected : bool }
+
+(** The id of a translated item. *)
+and any_decl_id =
+  | IdType of type_decl_id
+  | IdFun of fun_decl_id
+  | IdGlobal of global_decl_id
+  | IdTraitDecl of trait_decl_id
+  | IdTraitImpl of trait_impl_id
 
 (** We use this to store information about the parameters in parent blocks.
     This is necessary because in the definitions we store *all* the generics,
@@ -357,6 +216,197 @@ and fun_sig = {
       (** Optional fields, for trait methods only (see the comments in [ParamsInfo]). *)
   inputs : ty list;
   output : ty;
+}
+[@@deriving
+  show,
+    ord,
+    visitors
+      {
+        name = "iter_fun_sig";
+        variety = "iter";
+        ancestors = [ "iter_rvalue" ];
+        nude = true (* Don't inherit VisitorsRuntime *);
+      },
+    visitors
+      {
+        name = "map_fun_sig";
+        variety = "map";
+        ancestors = [ "map_rvalue" ];
+        nude = true (* Don't inherit VisitorsRuntime *);
+      }]
+
+(** A global variable definition (constant or static). *)
+type global_decl = {
+  def_id : global_decl_id;
+  item_meta : item_meta;  (** The meta data associated with the declaration. *)
+  generics : generic_params;
+  ty : ty;
+  kind : item_kind;
+      (** The global kind: "regular" function, trait const declaration, etc. *)
+  body : fun_decl_id;
+      (** The initializer function used to compute the initial value for this constant/static. *)
+}
+[@@deriving
+  show,
+    ord,
+    visitors
+      {
+        name = "iter_global_decl";
+        variety = "iter";
+        ancestors = [ "iter_fun_sig" ];
+        nude = true (* Don't inherit VisitorsRuntime *);
+      },
+    visitors
+      {
+        name = "map_global_decl";
+        variety = "map";
+        ancestors = [ "map_fun_sig" ];
+        nude = true (* Don't inherit VisitorsRuntime *);
+      }]
+
+(** A trait **declaration**.
+
+    For instance:
+    ```text
+    trait Foo {
+      type Bar;
+
+      fn baz(...); // required method (see below)
+
+      fn test() -> bool { true } // provided method (see below)
+    }
+    ```
+
+    In case of a trait declaration, we don't include the provided methods (the methods
+    with a default implementation): they will be translated on a per-need basis. This is
+    important for two reasons:
+    - this makes the trait definitions a lot smaller (the Iterator trait
+      has *one* declared function and more than 70 provided functions)
+    - this is important for the external traits, whose provided methods
+      often use features we don't support yet
+
+    Remark:
+    In Aeneas, we still translate the provided methods on an individual basis,
+    and in such a way thay they take as input a trait instance. This means that
+    we can use default methods *but*:
+    - implementations of required methods shoudln't call default methods
+    - trait implementations shouldn't redefine required methods
+    The use case we have in mind is [std::iter::Iterator]: it declares one required
+    method (`next`) that should be implemented for every iterator, and defines many
+    helpers like `all`, `map`, etc. that shouldn't be re-implemented.
+    Of course, this forbids other useful use cases such as visitors implemented
+    by means of traits.
+ *)
+type trait_decl = {
+  def_id : trait_decl_id;
+  item_meta : item_meta;
+  generics : generic_params;
+  parent_clauses : trait_clause list;
+      (** The "parent" clauses: the supertraits.
+
+        Supertraits are actually regular where clauses, but we decided to have
+        a custom treatment.
+        ```text
+        trait Foo : Bar {
+                    ^^^
+                supertrait, that we treat as a parent predicate
+        }
+        ```
+        TODO: actually, as of today, we consider that all trait clauses of
+        trait declarations are parent clauses.
+     *)
+  consts : (trait_item_name * ty) list;
+      (** The associated constants declared in the trait, along with their type. *)
+  types : trait_item_name list;
+      (** The associated types declared in the trait. *)
+  required_methods : (trait_item_name * fun_decl_id) list;
+      (** The *required* methods.
+
+        The required methods are the methods declared by the trait but with no default
+        implementation. The corresponding `FunDecl`s don't have a body.
+     *)
+  provided_methods : (trait_item_name * fun_decl_id) list;
+      (** The *provided* methods.
+
+        The provided methods are the methods with a default implementation. The corresponding
+        `FunDecl`s may have a body, according to the usual rules for extracting function bodies.
+     *)
+}
+[@@deriving
+  show,
+    ord,
+    visitors
+      {
+        name = "iter_trait_decl";
+        variety = "iter";
+        ancestors = [ "iter_global_decl" ];
+        nude = true (* Don't inherit VisitorsRuntime *);
+      },
+    visitors
+      {
+        name = "map_trait_decl";
+        variety = "map";
+        ancestors = [ "map_global_decl" ];
+        nude = true (* Don't inherit VisitorsRuntime *);
+      }]
+
+(** A trait **implementation**.
+
+    For instance:
+    ```text
+    impl Foo for List {
+      type Bar = ...
+
+      fn baz(...) { ... }
+    }
+    ```
+ *)
+type trait_impl = {
+  def_id : trait_impl_id;
+  item_meta : item_meta;
+  impl_trait : trait_decl_ref;
+      (** The information about the implemented trait.
+        Note that this contains the instantiation of the "parent"
+        clauses.
+     *)
+  generics : generic_params;
+  parent_trait_refs : trait_ref list;
+      (** The trait references for the parent clauses (see [TraitDecl]). *)
+  consts : (trait_item_name * global_decl_ref) list;
+      (** The associated constants declared in the trait. *)
+  types : (trait_item_name * ty) list;
+      (** The associated types declared in the trait. *)
+  required_methods : (trait_item_name * fun_decl_id) list;
+      (** The implemented required methods *)
+  provided_methods : (trait_item_name * fun_decl_id) list;
+      (** The re-implemented provided methods *)
+}
+[@@deriving
+  show,
+    ord,
+    visitors
+      {
+        name = "iter_trait_impl";
+        variety = "iter";
+        ancestors = [ "iter_trait_decl" ];
+        nude = true (* Don't inherit VisitorsRuntime *);
+      },
+    visitors
+      {
+        name = "map_trait_impl";
+        variety = "map";
+        ancestors = [ "map_trait_decl" ];
+        nude = true (* Don't inherit VisitorsRuntime *);
+      }]
+
+(** An expression body.
+    TODO: arg_count should be stored in GFunDecl below. But then,
+          the print is obfuscated and Aeneas may need some refactoring.
+ *)
+type 'a0 gexpr_body = {
+  span : span;
+  locals : locals;  (** The local variables. *)
+  body : 'a0;
 }
 
 (** A (group of) top-level declaration(s), properly reordered. *)
