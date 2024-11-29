@@ -1395,9 +1395,9 @@ fn generate_ml(
                 ]),
                 (GenerationKind::TypeDecl(Some(DeriveVisitors {
                     name: "type_decl",
-                    ancestor: Some("type_decl_base"),
+                    ancestor: Some("generic_params"),
                     reduce: false,
-                    extra_types: &[],
+                    extra_types: &["attr_info", "item_meta"],
                 })), &[
                     "Field",
                     "Variant",

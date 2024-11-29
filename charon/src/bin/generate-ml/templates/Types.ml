@@ -167,20 +167,6 @@ class virtual ['self] map_ty_base_base =
 (* __REPLACE4__ *)
 [@@deriving show, ord]
 
-class ['self] iter_type_decl_base =
-  object (self : 'self)
-    inherit [_] iter_generic_params
-    method visit_attr_info : 'env -> attr_info -> unit = fun _ _ -> ()
-    method visit_item_meta : 'env -> item_meta -> unit = fun _ _ -> ()
-  end
-
-class ['self] map_type_decl_base =
-  object (self : 'self)
-    inherit [_] map_generic_params
-    method visit_attr_info : 'env -> attr_info -> attr_info = fun _ x -> x
-    method visit_item_meta : 'env -> item_meta -> item_meta = fun _ x -> x
-  end
-
 (* __REPLACE5__ *)
 
 (** A group of regions.

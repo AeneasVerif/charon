@@ -696,6 +696,7 @@ and impl_elem =
  *)
 and name = path_elem list [@@deriving show, ord]
 
+(* Ancestors for the type_decl visitors *)
 class ['self] iter_type_decl_base =
   object (self : 'self)
     inherit [_] iter_generic_params
