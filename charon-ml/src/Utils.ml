@@ -7,3 +7,6 @@ exception Unimplemented
     just throw an exception to signal we found what we were looking for.
  *)
 exception Found
+
+(** Union Find *)
+module UF = UnionFind.Make (UnionFind.StoreMap)

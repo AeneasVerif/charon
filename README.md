@@ -73,7 +73,7 @@ For Charon-ML, we use **OCaml 4.13.1**: `opam switch create 4.13.1+options`
 The dependencies can be installed with the following command:
 
 ```
-opam install ppx_deriving visitors easy_logging zarith yojson core_unix odoc menhir
+opam install ppx_deriving visitors easy_logging zarith yojson core_unix odoc menhir unionFind
 ```
 
 You can then run `make build-charon-ml` to build the ML library, or even simply
