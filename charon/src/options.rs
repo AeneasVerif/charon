@@ -19,6 +19,7 @@ pub const CHARON_ARGS: &str = "CHARON_ARGS";
 // `Deserialize` options).
 #[derive(Debug, Default, Clone, Parser, Serialize, Deserialize)]
 #[clap(name = "Charon")]
+#[charon::rename("cli_options")]
 pub struct CliOpts {
     /// Extract the unstructured LLBC (i.e., don't reconstruct the control-flow)
     #[clap(long = "ullbc")]

@@ -258,6 +258,7 @@ pub fn translate<'tcx, 'ctx>(
         errors: error_ctx,
         translated: TranslatedCrate {
             crate_name: requested_crate_name,
+            options: options.clone(),
             real_crate_name,
             ..TranslatedCrate::default()
         },

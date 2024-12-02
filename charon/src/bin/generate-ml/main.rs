@@ -1249,6 +1249,7 @@ fn generate_ml(
                     "GExprBody",
                     "GDeclarationGroup",
                     "DeclarationGroup",
+                    "CliOpts",
                 ]),
             ]),
         },

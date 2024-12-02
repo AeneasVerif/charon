@@ -104,6 +104,12 @@ pub struct TranslatedCrate {
     /// The name of the crate according to rustc.
     pub real_crate_name: String,
 
+    /// The options used when calling Charon. It is useful for the applications
+    /// which consumed the serialized code, to check that Charon was called with
+    /// the proper options.
+    #[drive(skip)]
+    pub options: crate::options::CliOpts,
+
     /// All the item ids, in the order in which we encountered them
     #[drive(skip)]
     pub all_ids: LinkedHashSet<AnyTransId>,
