@@ -140,6 +140,7 @@ pub struct CliOpts {
             items in it transparent (we will translate them if we encounter them.)
     "))]
     #[serde(default)]
+    #[charon::rename("included")]
     pub include: Vec<String>,
     /// Blacklist of items to keep opaque. These use the name-matcher syntax.
     #[clap(
