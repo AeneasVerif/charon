@@ -1247,10 +1247,10 @@ fn generate_ml(
                     "TraitImpl",
                 ]),
                 (GenerationKind::TypeDecl(None), &[
+                    "CliOpts",
                     "GExprBody",
                     "GDeclarationGroup",
                     "DeclarationGroup",
-                    "CliOpts",
                 ]),
             ]),
         },

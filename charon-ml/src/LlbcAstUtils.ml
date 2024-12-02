@@ -254,10 +254,15 @@ class ['self] iter_crate_with_span =
       let ids = g_declaration_group_to_list g in
       List.iter (self#visit_any_decl_id decl_span_info) ids
 
+    method visit_cli_options (decl_span_info : (any_decl_id * span) option)
+        (option : cli_options) : unit =
+      ()
+
     method visit_crate (decl_span_info : (any_decl_id * span) option)
         (crate : crate) : unit =
       let {
         name;
+        options;
         declarations;
         type_decls;
         fun_decls;
@@ -268,6 +273,7 @@ class ['self] iter_crate_with_span =
         crate
       in
       self#visit_string decl_span_info name;
+      self#visit_cli_options decl_span_info options;
       List.iter (self#visit_declaration_group decl_span_info) declarations;
       TypeDeclId.Map.iter
         (fun _ -> self#visit_type_decl decl_span_info)
