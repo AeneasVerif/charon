@@ -29,6 +29,9 @@
 //! them in a specific environment variable, so that charon-driver can
 //! deserialize them later and use them to guide the extraction in the
 //! callbacks.
+#![feature(register_tool)]
+// For when we use charon on itself
+#![register_tool(charon)]
 
 // We must not link with the `charon_lib` crate because that would make `charon` need to
 // dynamically link to `librustc_driver.so` etc. The `charon` binary must be runnable _before_

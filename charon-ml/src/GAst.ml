@@ -422,6 +422,65 @@ and declaration_group =
   | MixedGroup of any_decl_id g_declaration_group
       (** Anything that doesn't fit into these categories. *)
 
+and cli_options = {
+  ullbc : bool;
+      (** Extract the unstructured LLBC (i.e., don't reconstruct the control-flow) *)
+  lib : bool;  (** Compile the package's library *)
+  bin : string option;  (** Compile the specified binary *)
+  mir_promoted : bool;  (** Extract the promoted MIR instead of the built MIR *)
+  mir_optimized : bool;
+      (** Extract the optimized MIR instead of the built MIR *)
+  crate_name : string option;
+      (** Provide a custom name for the compiled crate (ignore the name computed
+        by Cargo)
+     *)
+  input_file : path_buf option;
+      (** The input file (the entry point of the crate to extract).
+        This is needed if you want to define a custom entry point (to only
+        extract part of a crate for instance).
+     *)
+  dest_dir : path_buf option;
+      (** The destination directory. Files will be generated as `<dest_dir>/<crate_name>.{u}llbc`,
+        unless `dest_file` is set. `dest_dir` defaults to the current directory.
+     *)
+  dest_file : path_buf option;
+      (** The destination file. By default `<dest_dir>/<crate_name>.llbc`. If this is set we ignore
+        `dest_dir`.
+     *)
+  use_polonius : bool;
+      (** If activated, use Polonius' non-lexical lifetimes (NLL) analysis.
+        Otherwise, use the standard borrow checker.
+     *)
+  no_code_duplication : bool;
+  extract_opaque_bodies : bool;
+      (** Usually we skip the bodies of foreign methods and structs with private fields. When this
+        flag is on, we don't.
+     *)
+  included : string list;
+      (** Whitelist of items to translate. These use the name-matcher syntax. *)
+  opaque : string list;
+      (** Blacklist of items to keep opaque. These use the name-matcher syntax. *)
+  exclude : string list;
+      (** Blacklist of items to not translate at all. These use the name-matcher syntax. *)
+  hide_marker_traits : bool;
+      (** Whether to hide the `Sized`, `Sync`, `Send` and `Unpin` marker traits anywhere they show
+        up.
+     *)
+  no_cargo : bool;  (** Do not run cargo; instead, run the driver directly. *)
+  rustc_args : string list;  (** Extra flags to pass to rustc. *)
+  cargo_args : string list;
+      (** Extra flags to pass to cargo. Incompatible with `--no-cargo`. *)
+  abort_on_error : bool;
+      (** Panic on the first error. This is useful for debugging. *)
+  error_on_warnings : bool;  (** Print the errors as warnings *)
+  no_serialize : bool;
+  print_original_ullbc : bool;
+  print_ullbc : bool;
+  print_built_llbc : bool;
+  print_llbc : bool;
+  no_merge_goto_chains : bool;
+}
+
 (** A (group of) top-level declaration(s), properly reordered.
     "G" stands for "generic"
  *)
@@ -461,6 +520,7 @@ type 'body gfun_decl = {
 (** A crate *)
 type 'fun_body gcrate = {
   name : string;
+  options : cli_options;
   declarations : declaration_group list;
   type_decls : type_decl TypeDeclId.Map.t;
   fun_decls : 'fun_body gfun_decl FunDeclId.Map.t;

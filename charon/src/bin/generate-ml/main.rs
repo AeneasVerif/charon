@@ -51,6 +51,7 @@ fn make_ocaml_ident(name: &str) -> String {
             | "assert"
             | "float"
             | "end"
+            | "include"
     ) {
         name += "_";
     }
@@ -1246,6 +1247,7 @@ fn generate_ml(
                     "TraitImpl",
                 ]),
                 (GenerationKind::TypeDecl(None), &[
+                    "CliOpts",
                     "GExprBody",
                     "GDeclarationGroup",
                     "DeclarationGroup",

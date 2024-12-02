@@ -69,6 +69,7 @@ type 'body gfun_decl = {
 (** A crate *)
 type 'fun_body gcrate = {
   name : string;
+  options : cli_options;
   declarations : declaration_group list;
   type_decls : type_decl TypeDeclId.Map.t;
   fun_decls : 'fun_body gfun_decl FunDeclId.Map.t;

@@ -11,6 +11,7 @@ include = [
     "alloc::vec::Vec",
     "core::option::Option",
     "std::path::PathBuf",
+    "crate::options::CliOpts",
     "crate::ast",
     "crate::ast::krate",
     "crate::ast::expressions",
