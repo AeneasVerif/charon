@@ -40,7 +40,7 @@ jobs:
     runs-on: [self-hosted, linux, nix]
     steps:
       - run: |
-          nix flake check --refresh -L github:aeneasverif/aeneas \
+          nix build --refresh -L 'github:aeneasverif/aeneas#checks.x86_64-linux.aeneas-tests' \
               --override-input charon github:aeneasverif/charon/${{ github.sha }} \
               --override-input charon/rust-overlay github:oxalica/rust-overlay/master
 
