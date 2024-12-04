@@ -1016,7 +1016,7 @@ fn generate_ml(
             indoc!(
                 "
                 | RStatic  (** Static region *)
-                | RBVar of region_db_id * region_var_id
+                | RBVar of region_db_id * bound_region_id
                     (** Bound region. We use those in function signatures, type definitions, etc. *)
                 | RFVar of free_region_id
                     (** Free region. We use those during the symbolic execution. *)
@@ -1026,7 +1026,7 @@ fn generate_ml(
         ),
         // Handwritten because we use `indexed_var` as a hack to be able to reuse field names.
         // TODO: remove the need for this hack.
-        ("RegionVar", "(region_var_id, string option) indexed_var"),
+        ("RegionVar", "(bound_region_id, string option) indexed_var"),
         ("TypeVar", "(type_var_id, string) indexed_var"),
     ];
     let manual_json_impls = &[
@@ -1155,7 +1155,6 @@ fn generate_ml(
     let manually_implemented: HashSet<_> = [
         "ItemOpacity",
         "DeBruijnId",
-        "RegionId",
         "PredicateOrigin",
         "Ty", // We exclude it since `TyKind` is renamed to `ty`
         "Opaque",
@@ -1338,7 +1337,7 @@ fn generate_ml(
                         "global_decl_id",
                         "region_db_id",
                         "free_region_id",
-                        "region_var_id",
+                        "bound_region_id",
                         "trait_clause_id",
                         "trait_decl_id",
                         "trait_impl_id",

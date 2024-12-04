@@ -14,7 +14,7 @@ pub type FieldName = String;
 generate_index_type!(TypeVarId, "T");
 generate_index_type!(VariantId, "Variant");
 generate_index_type!(FieldId, "Field");
-generate_index_type!(RegionId, "Region");
+generate_index_type!(BoundRegionId, "BoundRegion");
 generate_index_type!(FreeRegionId, "FreeRegion");
 generate_index_type!(ConstGenericVarId, "Const");
 
@@ -35,7 +35,7 @@ pub struct TypeVar {
 )]
 pub struct RegionVar {
     /// Unique index identifying the variable
-    pub index: RegionId,
+    pub index: BoundRegionId,
     /// Region name
     pub name: Option<String>,
 }
@@ -112,7 +112,7 @@ pub enum Region {
     ///                                De Bruijn: 1
     ///                                   Var id: 1
     /// ```
-    BVar(DeBruijnId, RegionId),
+    BVar(DeBruijnId, BoundRegionId),
     /// Erased region
     Erased,
     /// For error reporting.
@@ -301,7 +301,7 @@ pub struct TraitTypeConstraint {
 
 #[derive(Default, Clone, Eq, PartialEq, Serialize, Deserialize, Hash, Drive, DriveMut)]
 pub struct GenericArgs {
-    pub regions: Vector<RegionId, Region>,
+    pub regions: Vector<BoundRegionId, Region>,
     pub types: Vector<TypeVarId, Ty>,
     pub const_generics: Vector<ConstGenericVarId, ConstGeneric>,
     // TODO: rename to match [GenericParams]?
@@ -314,7 +314,7 @@ pub struct GenericArgs {
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Hash)]
 pub struct RegionBinder<T> {
     #[charon::rename("binder_regions")]
-    pub regions: Vector<RegionId, RegionVar>,
+    pub regions: Vector<BoundRegionId, RegionVar>,
     /// Named this way to highlight accesses to the inner value that might be handling parameters
     /// incorrectly. Prefer using helper methods.
     #[charon::rename("binder_value")]
@@ -330,7 +330,7 @@ pub struct RegionBinder<T> {
 /// be filled with witnesses/instances.
 #[derive(Debug, Default, Clone, PartialEq, Eq, Serialize, Deserialize, Drive, DriveMut)]
 pub struct GenericParams {
-    pub regions: Vector<RegionId, RegionVar>,
+    pub regions: Vector<BoundRegionId, RegionVar>,
     pub types: Vector<TypeVarId, TypeVar>,
     pub const_generics: Vector<ConstGenericVarId, ConstGenericVar>,
     // TODO: rename to match [GenericArgs]?

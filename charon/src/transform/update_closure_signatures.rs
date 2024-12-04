@@ -12,7 +12,7 @@ use super::ctx::UllbcPass;
 #[derive(VisitorMut)]
 #[visitor(Region(exit), Ty(enter, exit))]
 struct InsertRegions<'a> {
-    regions: &'a mut Vector<RegionId, RegionVar>,
+    regions: &'a mut Vector<BoundRegionId, RegionVar>,
     // The number of region groups we dived into (we don't count the regions
     // at the declaration level). We use this for the DeBruijn indices.
     depth: usize,
