@@ -1346,22 +1346,19 @@ impl<C: AstFormatter> FmtWithCtx<C> for Ty {
                 format!("{}::{name}", trait_ref.fmt_with_ctx(ctx),)
             }
             TyKind::DynTrait(pred) => format!("dyn ({})", pred.with_ctx(ctx)),
-            TyKind::Arrow(regions, inputs, output) => {
+            TyKind::Arrow(io) => {
                 // Update the bound regions
-                let ctx = &ctx.push_bound_regions(regions);
+                let ctx = &ctx.push_bound_regions(&io.regions);
 
-                let regions = if regions.is_empty() {
+                let regions = if io.regions.is_empty() {
                     "".to_string()
                 } else {
                     format!(
                         "<{}>",
-                        regions
-                            .iter()
-                            .map(|r| ctx.format_object(r))
-                            .collect::<Vec<String>>()
-                            .join(", ")
+                        io.regions.iter().map(|r| ctx.format_object(r)).join(", ")
                     )
                 };
+                let (inputs, output) = &io.skip_binder;
                 let inputs = inputs
                     .iter()
                     .map(|x| x.fmt_with_ctx(ctx))

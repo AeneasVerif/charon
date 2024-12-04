@@ -183,8 +183,9 @@ and ty_to_string (env : 'a fmt_env) (ty : ty) : string =
       match ref_kind with
       | RMut -> "*mut " ^ ty_to_string env rty
       | RShared -> "*const " ^ ty_to_string env rty)
-  | TArrow (regions, inputs, output) ->
-      let env = { env with regions = regions :: env.regions } in
+  | TArrow binder ->
+      let env = { env with regions = binder.binder_regions :: env.regions } in
+      let inputs, output = binder.binder_value in
       let inputs =
         "(" ^ String.concat ", " (List.map (ty_to_string env) inputs) ^ ") -> "
       in

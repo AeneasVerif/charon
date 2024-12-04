@@ -551,15 +551,19 @@ and match_expr_with_ty (ctx : ctx) (c : match_config) (m : maps) (pty : expr)
   | EVar v, _ -> opt_update_tmap c m v ty
   | EComp pid, TTraitType (trait_ref, type_name) ->
       match_trait_type ctx c m pid trait_ref type_name
-  | EArrow (pinputs, pout), TArrow (regions, inputs, out) -> (
+  | EArrow (pinputs, pout), TArrow binder -> begin
       (* Push a region group in the map, if necessary - TODO: make this more precise *)
-      let m = maps_push_bound_regions_group_if_nonempty m regions in
+      let m =
+        maps_push_bound_regions_group_if_nonempty m binder.binder_regions
+      in
+      let inputs, output = binder.binder_value in
       (* Match *)
       List.for_all2 (match_expr_with_ty ctx c m) pinputs inputs
       &&
       match pout with
-      | None -> out = TypesUtils.mk_unit_ty
-      | Some pout -> match_expr_with_ty ctx c m pout out)
+      | None -> output = TypesUtils.mk_unit_ty
+      | Some pout -> match_expr_with_ty ctx c m pout output
+    end
   | ERawPtr (Mut, pty), TRawPtr (ty, RMut) -> match_expr_with_ty ctx c m pty ty
   | ERawPtr (Not, pty), TRawPtr (ty, RShared) ->
       match_expr_with_ty ctx c m pty ty
@@ -969,15 +973,18 @@ and ty_to_pattern_aux (ctx : ctx) (c : to_pat_config) (m : constraints)
           TypesUtils.empty_generic_args
       in
       EComp name
-  | TArrow (regions, inputs, out) ->
+  | TArrow binder ->
       (* Push a regions map if necessary - TODO: make this more precise *)
-      let m = constraints_map_push_regions_map_if_nonempty m regions in
-      let inputs = List.map (ty_to_pattern_aux ctx c m) inputs in
-      let out =
-        if out = TypesUtils.mk_unit_ty then None
-        else Some (ty_to_pattern_aux ctx c m out)
+      let m =
+        constraints_map_push_regions_map_if_nonempty m binder.binder_regions
       in
-      EArrow (inputs, out)
+      let inputs, output = binder.binder_value in
+      let inputs = List.map (ty_to_pattern_aux ctx c m) inputs in
+      let output =
+        if output = TypesUtils.mk_unit_ty then None
+        else Some (ty_to_pattern_aux ctx c m output)
+      in
+      EArrow (inputs, output)
   | TRawPtr (ty, RMut) -> ERawPtr (Mut, ty_to_pattern_aux ctx c m ty)
   | TRawPtr (ty, RShared) -> ERawPtr (Not, ty_to_pattern_aux ctx c m ty)
   | TDynTrait _ -> raise (Failure "Unimplemented: DynTrait")

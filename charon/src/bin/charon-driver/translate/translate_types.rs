@@ -323,7 +323,10 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
                         .map(|x| ctx.translate_ty(span, x))
                         .try_collect()?;
                     let output = ctx.translate_ty(span, &sig.value.output)?;
-                    Ok(TyKind::Arrow(regions, inputs, output))
+                    Ok(TyKind::Arrow(RegionBinder {
+                        regions,
+                        skip_binder: (inputs, output),
+                    }))
                 })?
             }
             hax::TyKind::Error => {

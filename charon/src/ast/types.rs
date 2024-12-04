@@ -755,7 +755,7 @@ pub enum TyKind {
     /// This is essentially a "constrained" function signature:
     /// arrow types can only contain generic lifetime parameters
     /// (no generic types), no predicates, etc.
-    Arrow(Vector<RegionId, RegionVar>, Vec<Ty>, Ty),
+    Arrow(RegionBinder<(Vec<Ty>, Ty)>),
 }
 
 /// Builtin types identifiers.

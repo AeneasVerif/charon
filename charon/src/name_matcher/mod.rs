@@ -96,14 +96,14 @@ impl Pattern {
                 self.matches_with_generics(ctx, &name, args)
             }
             TyKind::Adt(TypeId::Tuple, _)
-            | TyKind::TypeVar(_)
-            | TyKind::Literal(_)
+            | TyKind::TypeVar(..)
+            | TyKind::Literal(..)
             | TyKind::Never
-            | TyKind::Ref(_, _, _)
-            | TyKind::RawPtr(_, _)
-            | TyKind::TraitType(_, _)
-            | TyKind::DynTrait(_)
-            | TyKind::Arrow(_, _, _) => false,
+            | TyKind::Ref(..)
+            | TyKind::RawPtr(..)
+            | TyKind::TraitType(..)
+            | TyKind::DynTrait(..)
+            | TyKind::Arrow(..) => false,
         }
     }
 

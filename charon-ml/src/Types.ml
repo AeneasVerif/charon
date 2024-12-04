@@ -494,7 +494,7 @@ and ty =
 
           TODO: we don't translate this properly yet.
        *)
-  | TArrow of region_var list * ty list * ty
+  | TArrow of (ty list * ty) region_binder
       (** Arrow type, used in particular for the local function pointers.
           This is essentially a "constrained" function signature:
           arrow types can only contain generic lifetime parameters

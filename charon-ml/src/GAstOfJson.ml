@@ -1329,13 +1329,13 @@ and ty_of_json (ctx : of_json_ctx) (js : json) : (ty, string) result =
     | `Assoc [ ("DynTrait", dyn_trait) ] ->
         let* dyn_trait = existential_predicate_of_json ctx dyn_trait in
         Ok (TDynTrait dyn_trait)
-    | `Assoc [ ("Arrow", `List [ x_0; x_1; x_2 ]) ] ->
-        let* x_0 =
-          vector_of_json region_id_of_json region_var_of_json ctx x_0
+    | `Assoc [ ("Arrow", arrow) ] ->
+        let* arrow =
+          region_binder_of_json
+            (pair_of_json (list_of_json ty_of_json) ty_of_json)
+            ctx arrow
         in
-        let* x_1 = list_of_json ty_of_json ctx x_1 in
-        let* x_2 = ty_of_json ctx x_2 in
-        Ok (TArrow (x_0, x_1, x_2))
+        Ok (TArrow arrow)
     | _ -> Error "")
 
 and builtin_ty_of_json (ctx : of_json_ctx) (js : json) :

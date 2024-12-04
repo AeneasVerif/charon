@@ -35,20 +35,6 @@ let st_substitute_visitor =
     method! visit_region (subst : subst) r = subst.r_subst r
 
     (** We need to properly handle the DeBruijn indices *)
-    method! visit_TArrow (subst : subst) regions inputs output =
-      (* Decrement the DeBruijn indices before calling the substitution *)
-      let r_subst r =
-        match r with
-        | RBVar (db, rid) -> subst.r_subst (RBVar (db - 1, rid))
-        | _ -> subst.r_subst r
-      in
-      let subst = { subst with r_subst } in
-      (* Note that we ignore the bound regions variables *)
-      let inputs = List.map (self#visit_ty subst) inputs in
-      let output = self#visit_ty subst output in
-      TArrow (regions, inputs, output)
-
-    (** We need to properly handle the DeBruijn indices *)
     method! visit_region_binder visit_value (subst : subst) x =
       (* Decrement the DeBruijn indices before calling the substitution *)
       let r_subst r =
