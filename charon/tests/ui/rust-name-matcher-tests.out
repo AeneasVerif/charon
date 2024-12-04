@@ -31,9 +31,7 @@ enum core::option::Option<T>
 
 fn test_crate::{impl test_crate::Trait<core::option::Option<T>[@TraitClause0]> for alloc::boxed::Box<T>[core::marker::Sized<alloc::alloc::Global>]}::method<T, U>()
 where
-    // Inherited clauses:
     [@TraitClause0]: core::marker::Sized<T>,
-    // Local clauses:
     [@TraitClause1]: core::marker::Sized<U>,
 {
     let @0: (); // return
@@ -55,9 +53,7 @@ where
 
 fn test_crate::{impl test_crate::Trait<T> for Slice<T>}#1::method<T, U>()
 where
-    // Inherited clauses:
     [@TraitClause0]: core::marker::Sized<T>,
-    // Local clauses:
     [@TraitClause1]: core::marker::Sized<U>,
 {
     let @0: (); // return
@@ -79,9 +75,7 @@ where
 
 fn test_crate::{impl test_crate::Trait<T> for &'_0 (Slice<T>)}#2::method<'_0, T, U>()
 where
-    // Inherited clauses:
     [@TraitClause0]: core::marker::Sized<T>,
-    // Local clauses:
     [@TraitClause1]: core::marker::Sized<U>,
 {
     let @0: (); // return

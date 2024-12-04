@@ -33,7 +33,6 @@ opaque type alloc::string::String
 
 fn alloc::string::{impl alloc::string::ToString for T}#32::to_string<'_0, T>(@1: &'_0 (T)) -> alloc::string::String
 where
-    // Inherited clauses:
     [@TraitClause0]: core::fmt::Display<T>,
 
 fn test_crate::destruct<'_0>(@1: &'_0 (dyn (exists(TODO)))) -> alloc::string::String

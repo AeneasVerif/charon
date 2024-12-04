@@ -12,7 +12,6 @@ enum core::option::Option<T>
 
 fn core::option::{core::option::Option<T>[@TraitClause0]}::is_some<'_0, T>(@1: &'_0 (core::option::Option<T>[@TraitClause0])) -> bool
 where
-    // Inherited clauses:
     [@TraitClause0]: core::marker::Sized<T>,
 {
     let @0: bool; // return

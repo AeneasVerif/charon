@@ -1252,7 +1252,6 @@ trait core::iter::adapters::zip::TrustedRandomAccessNoCoerce<Self>
 
 fn core::iter::traits::collect::{impl core::iter::traits::collect::IntoIterator for I}#1::into_iter<I>(@1: I) -> I
 where
-    // Inherited clauses:
     [@TraitClause0]: core::marker::Sized<I>,
     [@TraitClause1]: core::iter::traits::iterator::Iterator<I>,
 
@@ -1272,68 +1271,55 @@ trait core::iter::range::Step<Self>
 
 fn core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>[@TraitClause0]}#6::next<'_0, A>(@1: &'_0 mut (core::ops::range::Range<A>[@TraitClause0])) -> core::option::Option<A>[@TraitClause0]
 where
-    // Inherited clauses:
     [@TraitClause0]: core::marker::Sized<A>,
     [@TraitClause1]: core::iter::range::Step<A>,
 
 fn core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>[@TraitClause0]}#6::size_hint<'_0, A>(@1: &'_0 (core::ops::range::Range<A>[@TraitClause0])) -> (usize, core::option::Option<usize>[core::marker::Sized<usize>])
 where
-    // Inherited clauses:
     [@TraitClause0]: core::marker::Sized<A>,
     [@TraitClause1]: core::iter::range::Step<A>,
 
 fn core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>[@TraitClause0]}#6::count<A>(@1: core::ops::range::Range<A>[@TraitClause0]) -> usize
 where
-    // Inherited clauses:
     [@TraitClause0]: core::marker::Sized<A>,
     [@TraitClause1]: core::iter::range::Step<A>,
 
 fn core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>[@TraitClause0]}#6::last<A>(@1: core::ops::range::Range<A>[@TraitClause0]) -> core::option::Option<A>[@TraitClause0]
 where
-    // Inherited clauses:
     [@TraitClause0]: core::marker::Sized<A>,
     [@TraitClause1]: core::iter::range::Step<A>,
 
 fn core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>[@TraitClause0]}#6::advance_by<'_0, A>(@1: &'_0 mut (core::ops::range::Range<A>[@TraitClause0]), @2: usize) -> core::result::Result<(), core::num::nonzero::NonZero<usize>[core::marker::Sized<usize>, core::num::nonzero::{impl core::num::nonzero::ZeroablePrimitive for usize}#26]>[core::marker::Sized<()>, core::marker::Sized<core::num::nonzero::NonZero<usize>[core::marker::Sized<usize>, core::num::nonzero::{impl core::num::nonzero::ZeroablePrimitive for usize}#26]>]
 where
-    // Inherited clauses:
     [@TraitClause0]: core::marker::Sized<A>,
     [@TraitClause1]: core::iter::range::Step<A>,
 
 fn core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>[@TraitClause0]}#6::nth<'_0, A>(@1: &'_0 mut (core::ops::range::Range<A>[@TraitClause0]), @2: usize) -> core::option::Option<A>[@TraitClause0]
 where
-    // Inherited clauses:
     [@TraitClause0]: core::marker::Sized<A>,
     [@TraitClause1]: core::iter::range::Step<A>,
 
 fn core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>[@TraitClause0]}#6::max<A>(@1: core::ops::range::Range<A>[@TraitClause0]) -> core::option::Option<A>[@TraitClause0]
 where
-    // Inherited clauses:
     [@TraitClause0]: core::marker::Sized<A>,
     [@TraitClause1]: core::iter::range::Step<A>,
-    // Local clauses:
     [@TraitClause2]: core::cmp::Ord<A>,
 
 fn core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>[@TraitClause0]}#6::min<A>(@1: core::ops::range::Range<A>[@TraitClause0]) -> core::option::Option<A>[@TraitClause0]
 where
-    // Inherited clauses:
     [@TraitClause0]: core::marker::Sized<A>,
     [@TraitClause1]: core::iter::range::Step<A>,
-    // Local clauses:
     [@TraitClause2]: core::cmp::Ord<A>,
 
 fn core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>[@TraitClause0]}#6::is_sorted<A>(@1: core::ops::range::Range<A>[@TraitClause0]) -> bool
 where
-    // Inherited clauses:
     [@TraitClause0]: core::marker::Sized<A>,
     [@TraitClause1]: core::iter::range::Step<A>,
 
 unsafe fn core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>[@TraitClause0]}#6::__iterator_get_unchecked<'_0, A>(@1: &'_0 mut (core::ops::range::Range<A>[@TraitClause0]), @2: usize) -> core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>[@TraitClause0]}#6<A>[@TraitClause0, @TraitClause1]::Item
 where
-    // Inherited clauses:
     [@TraitClause0]: core::marker::Sized<A>,
     [@TraitClause1]: core::iter::range::Step<A>,
-    // Local clauses:
     [@TraitClause2]: core::iter::adapters::zip::TrustedRandomAccessNoCoerce<core::ops::range::Range<A>[@TraitClause0]>,
 
 impl<A> core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>[@TraitClause0]}#6<A> : core::iter::traits::iterator::Iterator<core::ops::range::Range<A>[@TraitClause0]>
@@ -1899,7 +1885,6 @@ struct alloc::alloc::Global = {}
 
 fn alloc::vec::{alloc::vec::Vec<T, A>[@TraitClause0, @TraitClause1]}#1::len<'_0, T, A>(@1: &'_0 (alloc::vec::Vec<T, A>[@TraitClause0, @TraitClause1])) -> usize
 where
-    // Inherited clauses:
     [@TraitClause0]: core::marker::Sized<T>,
     [@TraitClause1]: core::marker::Sized<A>,
 
@@ -1925,7 +1910,6 @@ trait core::ops::index::Index<Self, Idx>
 
 fn alloc::vec::{impl core::ops::index::Index<I> for alloc::vec::Vec<T, A>[@TraitClause0, @TraitClause2]}#13::index<'_0, T, I, A>(@1: &'_0 (alloc::vec::Vec<T, A>[@TraitClause0, @TraitClause2]), @2: I) -> &'_0 (alloc::vec::{impl core::ops::index::Index<I> for alloc::vec::Vec<T, A>[@TraitClause0, @TraitClause2]}#13<T, I, A>[@TraitClause0, @TraitClause1, @TraitClause2, @TraitClause3]::Output)
 where
-    // Inherited clauses:
     [@TraitClause0]: core::marker::Sized<T>,
     [@TraitClause1]: core::marker::Sized<I>,
     [@TraitClause2]: core::marker::Sized<A>,
@@ -1944,7 +1928,6 @@ where
 
 fn alloc::vec::{impl core::ops::index::IndexMut<I> for alloc::vec::Vec<T, A>[@TraitClause0, @TraitClause2]}#14::index_mut<'_0, T, I, A>(@1: &'_0 mut (alloc::vec::Vec<T, A>[@TraitClause0, @TraitClause2]), @2: I) -> &'_0 mut (alloc::vec::{impl core::ops::index::Index<I> for alloc::vec::Vec<T, A>[@TraitClause0, @TraitClause2]}#13<T, I, A>[@TraitClause0, @TraitClause1, @TraitClause2, @TraitClause3]::Output)
 where
-    // Inherited clauses:
     [@TraitClause0]: core::marker::Sized<T>,
     [@TraitClause1]: core::marker::Sized<I>,
     [@TraitClause2]: core::marker::Sized<A>,
@@ -1954,32 +1937,26 @@ impl core::slice::index::private_slice_index::{impl core::slice::index::private_
 
 fn core::slice::index::{impl core::slice::index::SliceIndex<Slice<T>> for usize}#2::get<'_0, T>(@1: usize, @2: &'_0 (Slice<T>)) -> core::option::Option<&'_0 (T)>[core::marker::Sized<&'_1_0 (T)>]
 where
-    // Inherited clauses:
     [@TraitClause0]: core::marker::Sized<T>,
 
 fn core::slice::index::{impl core::slice::index::SliceIndex<Slice<T>> for usize}#2::get_mut<'_0, T>(@1: usize, @2: &'_0 mut (Slice<T>)) -> core::option::Option<&'_0 mut (T)>[core::marker::Sized<&'_1_0 mut (T)>]
 where
-    // Inherited clauses:
     [@TraitClause0]: core::marker::Sized<T>,
 
 unsafe fn core::slice::index::{impl core::slice::index::SliceIndex<Slice<T>> for usize}#2::get_unchecked<T>(@1: usize, @2: *const Slice<T>) -> *const T
 where
-    // Inherited clauses:
     [@TraitClause0]: core::marker::Sized<T>,
 
 unsafe fn core::slice::index::{impl core::slice::index::SliceIndex<Slice<T>> for usize}#2::get_unchecked_mut<T>(@1: usize, @2: *mut Slice<T>) -> *mut T
 where
-    // Inherited clauses:
     [@TraitClause0]: core::marker::Sized<T>,
 
 fn core::slice::index::{impl core::slice::index::SliceIndex<Slice<T>> for usize}#2::index<'_0, T>(@1: usize, @2: &'_0 (Slice<T>)) -> &'_0 (T)
 where
-    // Inherited clauses:
     [@TraitClause0]: core::marker::Sized<T>,
 
 fn core::slice::index::{impl core::slice::index::SliceIndex<Slice<T>> for usize}#2::index_mut<'_0, T>(@1: usize, @2: &'_0 mut (Slice<T>)) -> &'_0 mut (T)
 where
-    // Inherited clauses:
     [@TraitClause0]: core::marker::Sized<T>,
 
 impl<T> core::slice::index::{impl core::slice::index::SliceIndex<Slice<T>> for usize}#2<T> : core::slice::index::SliceIndex<usize, Slice<T>>

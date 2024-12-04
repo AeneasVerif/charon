@@ -18,7 +18,6 @@ trait core::cmp::PartialEq<Self, Rhs>
 
 fn core::option::{impl core::cmp::PartialEq<core::option::Option<T>[@TraitClause0]> for core::option::Option<T>[@TraitClause0]}#14::eq<'_0, '_1, T>(@1: &'_0 (core::option::Option<T>[@TraitClause0]), @2: &'_1 (core::option::Option<T>[@TraitClause0])) -> bool
 where
-    // Inherited clauses:
     [@TraitClause0]: core::marker::Sized<T>,
     [@TraitClause1]: core::cmp::PartialEq<T, T>,
 

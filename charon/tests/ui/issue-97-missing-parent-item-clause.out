@@ -14,7 +14,6 @@ struct test_crate::AVLTree<T>
 
 fn test_crate::{test_crate::AVLTree<T>[@TraitClause0]}::insert<'_0, T>(@1: &'_0 mut (test_crate::AVLTree<T>[@TraitClause0]))
 where
-    // Inherited clauses:
     [@TraitClause0]: core::marker::Sized<T>,
     [@TraitClause1]: test_crate::Ord<T>,
 {

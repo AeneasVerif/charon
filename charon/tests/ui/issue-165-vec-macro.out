@@ -11,9 +11,7 @@ struct alloc::alloc::Global = {}
 
 fn alloc::slice::{Slice<T>}::into_vec<T, A>(@1: alloc::boxed::Box<Slice<T>>[@TraitClause1]) -> alloc::vec::Vec<T, A>[@TraitClause0, @TraitClause1]
 where
-    // Inherited clauses:
     [@TraitClause0]: core::marker::Sized<T>,
-    // Local clauses:
     [@TraitClause1]: core::marker::Sized<A>,
 
 trait core::clone::Clone<Self>

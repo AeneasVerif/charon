@@ -48,13 +48,11 @@ enum core::option::Option<T>
 
 fn core::option::{impl core::clone::Clone for core::option::Option<T>[@TraitClause0]}#5::clone<'_0, T>(@1: &'_0 (core::option::Option<T>[@TraitClause0])) -> core::option::Option<T>[@TraitClause0]
 where
-    // Inherited clauses:
     [@TraitClause0]: core::marker::Sized<T>,
     [@TraitClause1]: core::clone::Clone<T>,
 
 fn core::option::{impl core::clone::Clone for core::option::Option<T>[@TraitClause0]}#5::clone_from<'_0, '_1, T>(@1: &'_0 mut (core::option::Option<T>[@TraitClause0]), @2: &'_1 (core::option::Option<T>[@TraitClause0]))
 where
-    // Inherited clauses:
     [@TraitClause0]: core::marker::Sized<T>,
     [@TraitClause1]: core::clone::Clone<T>,
 
