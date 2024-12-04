@@ -522,18 +522,61 @@ and builtin_ty =
     ord,
     visitors
       {
-        name = "iter_ty";
+        name = "iter_ty_inner";
         variety = "iter";
         ancestors = [ "iter_ty_base_base" ];
         nude = true (* Don't inherit VisitorsRuntime *);
       },
     visitors
       {
-        name = "map_ty";
+        name = "map_ty_inner";
         variety = "map";
         ancestors = [ "map_ty_base_base" ];
         nude = true (* Don't inherit VisitorsRuntime *);
       }]
+
+(** Ancestor for iter visitor for {!type: Types.ty} *)
+class ['self] iter_ty =
+  object (self : 'self)
+    inherit [_] iter_ty_inner
+
+    method! visit_RBVar env (db_id : region_db_id) (var_id : region_var_id) =
+      self#visit_bound_region env db_id var_id
+
+    method visit_bound_region env (db_id : region_db_id)
+        (var_id : region_var_id) =
+      self#visit_region_db_id env db_id;
+      self#visit_region_var_id env var_id
+
+    method! visit_RFVar env (var_id : region_id) =
+      self#visit_free_region env var_id
+
+    method visit_free_region env (var_id : region_id) =
+      self#visit_region_id env var_id
+  end
+
+(** Ancestor for map visitor for {!type: Types.ty} *)
+class virtual ['self] map_ty =
+  object (self : 'self)
+    inherit [_] map_ty_inner
+
+    method! visit_RBVar env (db_id : region_db_id) (var_id : region_var_id) =
+      let db_id, var_id = self#visit_bound_region env db_id var_id in
+      RBVar (db_id, var_id)
+
+    method visit_bound_region env (db_id : region_db_id)
+        (var_id : region_var_id) =
+      let db_id = self#visit_region_db_id env db_id in
+      let var_id = self#visit_region_var_id env var_id in
+      (db_id, var_id)
+
+    method! visit_RFVar env (var_id : region_id) =
+      let var_id = self#visit_free_region env var_id in
+      RFVar var_id
+
+    method visit_free_region env (var_id : region_id) =
+      self#visit_region_id env var_id
+  end
 
 (* Ancestors for the generic_params visitors *)
 class ['self] iter_generic_params_base =
