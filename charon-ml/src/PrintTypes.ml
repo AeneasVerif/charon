@@ -29,8 +29,8 @@ let region_var_id_to_pretty_string (db_id : region_db_id) (id : region_var_id) :
     string =
   "'" ^ show_region_db_id db_id ^ "_" ^ RegionVarId.to_string id
 
-let region_id_to_pretty_string (id : region_id) : string =
-  "'" ^ RegionId.to_string id
+let free_region_id_to_pretty_string (id : free_region_id) : string =
+  "'" ^ FreeRegionId.to_string id
 
 let type_var_id_to_pretty_string (id : type_var_id) : string =
   "T@" ^ TypeVarId.to_string id
@@ -93,7 +93,7 @@ let region_to_string (env : 'a fmt_env) (r : region) : string =
   | RStatic -> "'static"
   | RErased -> "'_"
   | RBVar (db, rid) -> region_var_id_to_string env db rid
-  | RFVar rid -> region_id_to_pretty_string rid
+  | RFVar rid -> free_region_id_to_pretty_string rid
 
 let trait_clause_id_to_string _ id = trait_clause_id_to_pretty_string id
 

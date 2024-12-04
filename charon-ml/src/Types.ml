@@ -22,7 +22,7 @@ module TraitImplId = IdGen ()
 module TraitClauseId = IdGen ()
 module UnsolvedTraitId = IdGen ()
 module RegionVarId = IdGen ()
-module RegionId = IdGen ()
+module FreeRegionId = IdGen ()
 module RegionGroupId = IdGen ()
 module Disambiguator = IdGen ()
 module FunDeclId = IdGen ()
@@ -40,6 +40,7 @@ type region_db_id = int [@@deriving show, ord]
   *)
 type region_var_id = RegionVarId.id [@@deriving show, ord]
 
+type free_region_id = FreeRegionId.id [@@deriving show, ord]
 type region_group_id = RegionGroupId.id [@@deriving show, ord]
 
 type ('id, 'name) indexed_var = {
@@ -57,7 +58,6 @@ and disambiguator = Disambiguator.id
 and type_var_id = TypeVarId.id
 and variant_id = VariantId.id
 and field_id = FieldId.id
-and region_id = RegionId.id
 and const_generic_var_id = ConstGenericVarId.id
 and trait_clause_id = TraitClauseId.id [@@deriving show, ord]
 
@@ -82,7 +82,7 @@ class ['self] iter_const_generic_base =
     method visit_fun_decl_id : 'env -> fun_decl_id -> unit = fun _ _ -> ()
     method visit_global_decl_id : 'env -> global_decl_id -> unit = fun _ _ -> ()
     method visit_region_db_id : 'env -> region_db_id -> unit = fun _ _ -> ()
-    method visit_region_id : 'env -> region_id -> unit = fun _ _ -> ()
+    method visit_free_region_id : 'env -> free_region_id -> unit = fun _ _ -> ()
     method visit_region_var_id : 'env -> region_var_id -> unit = fun _ _ -> ()
 
     method visit_trait_clause_id : 'env -> trait_clause_id -> unit =
@@ -110,7 +110,8 @@ class ['self] map_const_generic_base =
     method visit_region_db_id : 'env -> region_db_id -> region_db_id =
       fun _ x -> x
 
-    method visit_region_id : 'env -> region_id -> region_id = fun _ x -> x
+    method visit_free_region_id : 'env -> free_region_id -> free_region_id =
+      fun _ x -> x
 
     method visit_region_var_id : 'env -> region_var_id -> region_var_id =
       fun _ x -> x
@@ -145,7 +146,8 @@ class virtual ['self] reduce_const_generic_base =
     method visit_region_db_id : 'env -> region_db_id -> 'a =
       fun _ _ -> self#zero
 
-    method visit_region_id : 'env -> region_id -> 'a = fun _ _ -> self#zero
+    method visit_free_region_id : 'env -> free_region_id -> 'a =
+      fun _ _ -> self#zero
 
     method visit_region_var_id : 'env -> region_var_id -> 'a =
       fun _ _ -> self#zero
@@ -183,7 +185,8 @@ class virtual ['self] mapreduce_const_generic_base =
     method visit_region_db_id : 'env -> region_db_id -> region_db_id * 'a =
       fun _ x -> (x, self#zero)
 
-    method visit_region_id : 'env -> region_id -> region_id * 'a =
+    method visit_free_region_id : 'env -> free_region_id -> free_region_id * 'a
+        =
       fun _ x -> (x, self#zero)
 
     method visit_region_var_id : 'env -> region_var_id -> region_var_id * 'a =
@@ -353,7 +356,7 @@ and region =
   | RStatic  (** Static region *)
   | RBVar of region_db_id * region_var_id
       (** Bound region. We use those in function signatures, type definitions, etc. *)
-  | RFVar of region_id
+  | RFVar of free_region_id
       (** Free region. We use those during the symbolic execution. *)
   | RErased  (** Erased region *)
 
@@ -548,11 +551,11 @@ class ['self] iter_ty =
       self#visit_region_db_id env db_id;
       self#visit_region_var_id env var_id
 
-    method! visit_RFVar env (var_id : region_id) =
+    method! visit_RFVar env (var_id : free_region_id) =
       self#visit_free_region env var_id
 
-    method visit_free_region env (var_id : region_id) =
-      self#visit_region_id env var_id
+    method visit_free_region env (var_id : free_region_id) =
+      self#visit_free_region_id env var_id
   end
 
 (** Ancestor for map visitor for {!type: Types.ty} *)
@@ -570,12 +573,12 @@ class virtual ['self] map_ty =
       let var_id = self#visit_region_var_id env var_id in
       (db_id, var_id)
 
-    method! visit_RFVar env (var_id : region_id) =
+    method! visit_RFVar env (var_id : free_region_id) =
       let var_id = self#visit_free_region env var_id in
       RFVar var_id
 
-    method visit_free_region env (var_id : region_id) =
-      self#visit_region_id env var_id
+    method visit_free_region env (var_id : free_region_id) =
+      self#visit_free_region_id env var_id
   end
 
 (* Ancestors for the generic_params visitors *)

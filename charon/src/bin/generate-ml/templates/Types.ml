@@ -23,7 +23,7 @@ module TraitImplId = IdGen ()
 module TraitClauseId = IdGen ()
 module UnsolvedTraitId = IdGen ()
 module RegionVarId = IdGen ()
-module RegionId = IdGen ()
+module FreeRegionId = IdGen ()
 module RegionGroupId = IdGen ()
 module Disambiguator = IdGen ()
 module FunDeclId = IdGen ()
@@ -41,6 +41,7 @@ type region_db_id = int [@@deriving show, ord]
     (see e.g., {!class:Types.iter_ty_base} and {!Types.TVar}).
   *)
 type region_var_id = RegionVarId.id [@@deriving show, ord]
+type free_region_id = FreeRegionId.id [@@deriving show, ord]
 type region_group_id = RegionGroupId.id [@@deriving show, ord]
 
 type ('id, 'name) indexed_var = {
@@ -174,11 +175,11 @@ class ['self] iter_ty =
         self#visit_region_db_id env db_id;
         self#visit_region_var_id env var_id
 
-    method! visit_RFVar env (var_id: region_id) =
+    method! visit_RFVar env (var_id: free_region_id) =
         self#visit_free_region env var_id
 
-    method visit_free_region env (var_id: region_id) =
-        self#visit_region_id env var_id
+    method visit_free_region env (var_id: free_region_id) =
+        self#visit_free_region_id env var_id
   end
 
 (** Ancestor for map visitor for {!type: Types.ty} *)
@@ -195,12 +196,12 @@ class virtual ['self] map_ty =
         let var_id = self#visit_region_var_id env var_id in
         (db_id, var_id)
 
-    method! visit_RFVar env (var_id: region_id) =
+    method! visit_RFVar env (var_id: free_region_id) =
         let var_id = self#visit_free_region env var_id in
         RFVar var_id
 
-    method visit_free_region env (var_id: region_id) =
-        self#visit_region_id env var_id
+    method visit_free_region env (var_id: free_region_id) =
+        self#visit_free_region_id env var_id
   end
 
 

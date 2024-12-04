@@ -1018,7 +1018,7 @@ fn generate_ml(
                 | RStatic  (** Static region *)
                 | RBVar of region_db_id * region_var_id
                     (** Bound region. We use those in function signatures, type definitions, etc. *)
-                | RFVar of region_id
+                | RFVar of free_region_id
                     (** Free region. We use those during the symbolic execution. *)
                 | RErased  (** Erased region *)
                 "
@@ -1321,7 +1321,6 @@ fn generate_ml(
                     "FieldId",
                     "FunDeclId",
                     "GlobalDeclId",
-                    "RegionId",
                     "TraitClauseId",
                     "TraitDeclId",
                     "TraitImplId",
@@ -1338,7 +1337,7 @@ fn generate_ml(
                         "fun_decl_id",
                         "global_decl_id",
                         "region_db_id",
-                        "region_id",
+                        "free_region_id",
                         "region_var_id",
                         "trait_clause_id",
                         "trait_decl_id",

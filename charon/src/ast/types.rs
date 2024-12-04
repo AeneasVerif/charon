@@ -15,6 +15,7 @@ generate_index_type!(TypeVarId, "T");
 generate_index_type!(VariantId, "Variant");
 generate_index_type!(FieldId, "Field");
 generate_index_type!(RegionId, "Region");
+generate_index_type!(FreeRegionId, "FreeRegion");
 generate_index_type!(ConstGenericVarId, "Const");
 
 /// Type variable.
