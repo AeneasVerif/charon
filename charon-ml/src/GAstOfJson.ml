@@ -1348,44 +1348,6 @@ and builtin_ty_of_json (ctx : of_json_ctx) (js : json) :
     | `String "Str" -> Ok TStr
     | _ -> Error "")
 
-and params_info_of_json (ctx : of_json_ctx) (js : json) :
-    (params_info, string) result =
-  combine_error_msgs js __FUNCTION__
-    (match js with
-    | `Assoc
-        [
-          ("num_region_params", num_region_params);
-          ("num_type_params", num_type_params);
-          ("num_const_generic_params", num_const_generic_params);
-          ("num_trait_clauses", num_trait_clauses);
-          ("num_regions_outlive", num_regions_outlive);
-          ("num_types_outlive", num_types_outlive);
-          ("num_trait_type_constraints", num_trait_type_constraints);
-        ] ->
-        let* num_region_params = int_of_json ctx num_region_params in
-        let* num_type_params = int_of_json ctx num_type_params in
-        let* num_const_generic_params =
-          int_of_json ctx num_const_generic_params
-        in
-        let* num_trait_clauses = int_of_json ctx num_trait_clauses in
-        let* num_regions_outlive = int_of_json ctx num_regions_outlive in
-        let* num_types_outlive = int_of_json ctx num_types_outlive in
-        let* num_trait_type_constraints =
-          int_of_json ctx num_trait_type_constraints
-        in
-        Ok
-          ({
-             num_region_params;
-             num_type_params;
-             num_const_generic_params;
-             num_trait_clauses;
-             num_regions_outlive;
-             num_types_outlive;
-             num_trait_type_constraints;
-           }
-            : params_info)
-    | _ -> Error "")
-
 and closure_kind_of_json (ctx : of_json_ctx) (js : json) :
     (closure_kind, string) result =
   combine_error_msgs js __FUNCTION__
@@ -1414,7 +1376,6 @@ and fun_sig_of_json (ctx : of_json_ctx) (js : json) : (fun_sig, string) result =
           ("is_closure", is_closure);
           ("closure_info", closure_info);
           ("generics", generics);
-          ("parent_params_info", parent_params_info);
           ("inputs", inputs);
           ("output", output);
         ] ->
@@ -1424,21 +1385,10 @@ and fun_sig_of_json (ctx : of_json_ctx) (js : json) : (fun_sig, string) result =
           option_of_json closure_info_of_json ctx closure_info
         in
         let* generics = generic_params_of_json ctx generics in
-        let* parent_params_info =
-          option_of_json params_info_of_json ctx parent_params_info
-        in
         let* inputs = list_of_json ty_of_json ctx inputs in
         let* output = ty_of_json ctx output in
         Ok
-          ({
-             is_unsafe;
-             is_closure;
-             closure_info;
-             generics;
-             parent_params_info;
-             inputs;
-             output;
-           }
+          ({ is_unsafe; is_closure; closure_info; generics; inputs; output }
             : fun_sig)
     | _ -> Error "")
 

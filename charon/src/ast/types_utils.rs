@@ -101,23 +101,6 @@ impl GenericParams {
                 .collect(),
         }
     }
-
-    /// Split these params in two, according to the provided `ParamsInfo`.
-    pub fn split(&self, info: &ParamsInfo) -> (Self, Self) {
-        let mut this = self.clone();
-        let other = GenericParams {
-            regions: this.regions.split_off(info.num_region_params),
-            types: this.types.split_off(info.num_type_params),
-            const_generics: this.const_generics.split_off(info.num_const_generic_params),
-            trait_clauses: this.trait_clauses.split_off(info.num_trait_clauses),
-            regions_outlive: this.regions_outlive.split_off(info.num_regions_outlive),
-            types_outlive: this.types_outlive.split_off(info.num_types_outlive),
-            trait_type_constraints: this
-                .trait_type_constraints
-                .split_off(info.num_trait_type_constraints),
-        };
-        (this, other)
-    }
 }
 
 impl GenericArgs {

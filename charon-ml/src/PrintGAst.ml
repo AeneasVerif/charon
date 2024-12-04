@@ -44,8 +44,7 @@ let fun_sig_with_name_to_string (env : 'a fmt_env) (indent : string)
 
   (* Generics and predicates *)
   let params, clauses =
-    predicates_and_trait_clauses_to_string env indent indent_incr
-      sg.parent_params_info sg.generics
+    predicates_and_trait_clauses_to_string env indent indent_incr sg.generics
   in
   let params =
     if params = [] then "" else "<" ^ String.concat ", " params ^ ">"
@@ -148,8 +147,7 @@ let trait_decl_to_string (env : 'a fmt_env) (indent : string)
 
   (* Generics and predicates *)
   let params, clauses =
-    predicates_and_trait_clauses_to_string env indent indent_incr None
-      def.generics
+    predicates_and_trait_clauses_to_string env indent indent_incr def.generics
   in
   let params =
     if params = [] then "" else "<" ^ String.concat ", " params ^ ">"
@@ -219,8 +217,7 @@ let trait_impl_to_string (env : 'a fmt_env) (indent : string)
 
   (* Generics and predicates *)
   let params, clauses =
-    predicates_and_trait_clauses_to_string env indent indent_incr None
-      def.generics
+    predicates_and_trait_clauses_to_string env indent indent_incr def.generics
   in
   let params =
     if params = [] then "" else "<" ^ String.concat ", " params ^ ">"

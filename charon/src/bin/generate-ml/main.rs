@@ -1215,7 +1215,6 @@ fn generate_ml(
                     "FnOperand",
                     "Call",
                     "Assert",
-                    "ParamsInfo",
                     "ClosureKind",
                     "ClosureInfo",
                     "ItemKind",
