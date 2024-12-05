@@ -122,7 +122,7 @@ module Ast = struct
     (* Locally update the generics and the predicates *)
     let env = fmt_env_update_generics_and_preds env def.generics in
     let params, clauses =
-      predicates_and_trait_clauses_to_string env "" "  " None def.generics
+      predicates_and_trait_clauses_to_string env "" "  " def.generics
     in
     let params =
       if params <> [] then "<" ^ String.concat ", " params ^ ">" else ""

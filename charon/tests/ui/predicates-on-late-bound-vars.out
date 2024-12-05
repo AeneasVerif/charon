@@ -62,7 +62,6 @@ struct core::cell::BorrowError = {}
 
 fn core::cell::{core::cell::RefCell<T>}#21::new<T>(@1: T) -> core::cell::RefCell<T>
 where
-    // Inherited clauses:
     [@TraitClause0]: core::marker::Sized<T>,
 
 fn core::cell::{core::cell::RefCell<T>}#22::try_borrow<'_0, T>(@1: &'_0 (core::cell::RefCell<T>)) -> core::result::Result<core::cell::Ref<'_0, T>, core::cell::BorrowError>[core::marker::Sized<core::cell::Ref<'_1_0, T>>, core::marker::Sized<core::cell::BorrowError>]

@@ -16,7 +16,6 @@ trait core::marker::Sized<Self>
 
 fn core::slice::{Slice<T>}::len<'_0, T>(@1: &'_0 (Slice<T>)) -> usize
 where
-    // Inherited clauses:
     [@TraitClause0]: core::marker::Sized<T>,
 
 fn test_crate::sum<'_0>(@1: &'_0 (Slice<u32>)) -> u32

@@ -12,7 +12,6 @@ opaque type alloc::string::String
 
 fn alloc::rc::{alloc::rc::Rc<T, alloc::alloc::Global>[core::marker::Sized<alloc::alloc::Global>]}#8::new<T>(@1: T) -> alloc::rc::Rc<T, alloc::alloc::Global>[core::marker::Sized<alloc::alloc::Global>]
 where
-    // Inherited clauses:
     [@TraitClause0]: core::marker::Sized<T>,
 
 fn alloc::string::{alloc::string::String}::new() -> alloc::string::String

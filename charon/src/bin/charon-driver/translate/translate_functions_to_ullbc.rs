@@ -1496,35 +1496,11 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
             _ => None,
         };
 
-        let parent_params_info = match &def.kind {
-            hax::FullDefKind::AssocFn {
-                parent,
-                associated_item,
-                ..
-            } => {
-                let parent_def = self.t_ctx.hax_def(parent)?;
-                let (parent_generics, parent_predicates) = parent_def.generics().unwrap();
-                let mut params_info = self.count_generics(parent_generics, parent_predicates)?;
-                // If this is a trait decl method, we need to adjust the number of parent clauses
-                if matches!(
-                    associated_item.container,
-                    hax::AssocItemContainer::TraitContainer { .. }
-                ) {
-                    // All the trait clauses are registered as parent (of Self) trait clauses, not
-                    // as local trait clauses.
-                    params_info.num_trait_clauses = 0;
-                }
-                Some(params_info)
-            }
-            _ => None,
-        };
-
         Ok(FunSig {
             generics,
             is_unsafe,
             is_closure: matches!(&def.kind, hax::FullDefKind::Closure { .. }),
             closure_info,
-            parent_params_info,
             inputs,
             output,
         })

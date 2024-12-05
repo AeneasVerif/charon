@@ -7,50 +7,6 @@ use charon_lib::pretty::FmtWithCtx;
 use hax_frontend_exporter as hax;
 
 impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
-    pub fn count_generics(
-        &mut self,
-        generics: &hax::TyGenerics,
-        predicates: &hax::GenericPredicates,
-    ) -> Result<ParamsInfo, Error> {
-        use hax::ClauseKind;
-        use hax::GenericParamDefKind;
-        use hax::PredicateKind;
-        let mut num_region_params = 0;
-        let mut num_type_params = 0;
-        let mut num_const_generic_params = 0;
-        let mut num_trait_clauses = 0;
-        let mut num_regions_outlive = 0;
-        let mut num_types_outlive = 0;
-        let mut num_trait_type_constraints = 0;
-
-        for param in &generics.params {
-            match param.kind {
-                GenericParamDefKind::Lifetime => num_region_params += 1,
-                GenericParamDefKind::Type { .. } => num_type_params += 1,
-                GenericParamDefKind::Const { .. } => num_const_generic_params += 1,
-            }
-        }
-        for (pred, _span) in &predicates.predicates {
-            match &pred.kind.value {
-                PredicateKind::Clause(ClauseKind::Trait(_)) => num_trait_clauses += 1,
-                PredicateKind::Clause(ClauseKind::RegionOutlives(_)) => num_regions_outlive += 1,
-                PredicateKind::Clause(ClauseKind::TypeOutlives(_)) => num_types_outlive += 1,
-                PredicateKind::Clause(ClauseKind::Projection(_)) => num_trait_type_constraints += 1,
-                _ => (),
-            }
-        }
-
-        Ok(ParamsInfo {
-            num_region_params,
-            num_type_params,
-            num_const_generic_params,
-            num_trait_clauses,
-            num_regions_outlive,
-            num_types_outlive,
-            num_trait_type_constraints,
-        })
-    }
-
     /// This function should be called **after** we translated the generics (type parameters,
     /// regions...).
     pub(crate) fn register_predicates(

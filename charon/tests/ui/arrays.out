@@ -53,7 +53,6 @@ where
 
 fn core::slice::{Slice<T>}::len<'_0, T>(@1: &'_0 (Slice<T>)) -> usize
 where
-    // Inherited clauses:
     [@TraitClause0]: core::marker::Sized<T>,
 
 fn test_crate::array_len<T>(@1: Array<T, 32 : usize>) -> usize
@@ -265,7 +264,6 @@ trait core::slice::index::SliceIndex<Self, T>
 
 fn core::slice::index::{impl core::ops::index::Index<I> for Slice<T>}::index<'_0, T, I>(@1: &'_0 (Slice<T>), @2: I) -> &'_0 (@TraitClause2::Output)
 where
-    // Inherited clauses:
     [@TraitClause0]: core::marker::Sized<T>,
     [@TraitClause1]: core::marker::Sized<I>,
     [@TraitClause2]: core::slice::index::SliceIndex<I, Slice<T>>,
@@ -274,32 +272,26 @@ impl core::slice::index::private_slice_index::{impl core::slice::index::private_
 
 fn core::slice::index::{impl core::slice::index::SliceIndex<Slice<T>> for core::ops::range::Range<usize>[core::marker::Sized<usize>]}#4::get<'_0, T>(@1: core::ops::range::Range<usize>[core::marker::Sized<usize>], @2: &'_0 (Slice<T>)) -> core::option::Option<&'_0 (Slice<T>)>[core::marker::Sized<&'_1_0 (Slice<T>)>]
 where
-    // Inherited clauses:
     [@TraitClause0]: core::marker::Sized<T>,
 
 fn core::slice::index::{impl core::slice::index::SliceIndex<Slice<T>> for core::ops::range::Range<usize>[core::marker::Sized<usize>]}#4::get_mut<'_0, T>(@1: core::ops::range::Range<usize>[core::marker::Sized<usize>], @2: &'_0 mut (Slice<T>)) -> core::option::Option<&'_0 mut (Slice<T>)>[core::marker::Sized<&'_1_0 mut (Slice<T>)>]
 where
-    // Inherited clauses:
     [@TraitClause0]: core::marker::Sized<T>,
 
 unsafe fn core::slice::index::{impl core::slice::index::SliceIndex<Slice<T>> for core::ops::range::Range<usize>[core::marker::Sized<usize>]}#4::get_unchecked<T>(@1: core::ops::range::Range<usize>[core::marker::Sized<usize>], @2: *const Slice<T>) -> *const Slice<T>
 where
-    // Inherited clauses:
     [@TraitClause0]: core::marker::Sized<T>,
 
 unsafe fn core::slice::index::{impl core::slice::index::SliceIndex<Slice<T>> for core::ops::range::Range<usize>[core::marker::Sized<usize>]}#4::get_unchecked_mut<T>(@1: core::ops::range::Range<usize>[core::marker::Sized<usize>], @2: *mut Slice<T>) -> *mut Slice<T>
 where
-    // Inherited clauses:
     [@TraitClause0]: core::marker::Sized<T>,
 
 fn core::slice::index::{impl core::slice::index::SliceIndex<Slice<T>> for core::ops::range::Range<usize>[core::marker::Sized<usize>]}#4::index<'_0, T>(@1: core::ops::range::Range<usize>[core::marker::Sized<usize>], @2: &'_0 (Slice<T>)) -> &'_0 (Slice<T>)
 where
-    // Inherited clauses:
     [@TraitClause0]: core::marker::Sized<T>,
 
 fn core::slice::index::{impl core::slice::index::SliceIndex<Slice<T>> for core::ops::range::Range<usize>[core::marker::Sized<usize>]}#4::index_mut<'_0, T>(@1: core::ops::range::Range<usize>[core::marker::Sized<usize>], @2: &'_0 mut (Slice<T>)) -> &'_0 mut (Slice<T>)
 where
-    // Inherited clauses:
     [@TraitClause0]: core::marker::Sized<T>,
 
 impl<T> core::slice::index::{impl core::slice::index::SliceIndex<Slice<T>> for core::ops::range::Range<usize>[core::marker::Sized<usize>]}#4<T> : core::slice::index::SliceIndex<core::ops::range::Range<usize>[core::marker::Sized<usize>], Slice<T>>
@@ -347,7 +339,6 @@ fn test_crate::slice_subslice_shared_<'_0>(@1: &'_0 (Slice<u32>), @2: usize, @3:
 
 fn core::slice::index::{impl core::ops::index::IndexMut<I> for Slice<T>}#1::index_mut<'_0, T, I>(@1: &'_0 mut (Slice<T>), @2: I) -> &'_0 mut (@TraitClause2::Output)
 where
-    // Inherited clauses:
     [@TraitClause0]: core::marker::Sized<T>,
     [@TraitClause1]: core::marker::Sized<I>,
     [@TraitClause2]: core::slice::index::SliceIndex<I, Slice<T>>,
@@ -419,7 +410,6 @@ trait core::ops::index::Index<Self, Idx>
 
 fn core::array::{impl core::ops::index::Index<I> for Array<T, const N : usize>}#15::index<'_0, T, I, const N : usize>(@1: &'_0 (Array<T, const N : usize>), @2: I) -> &'_0 (core::array::{impl core::ops::index::Index<I> for Array<T, const N : usize>}#15<T, I, const N : usize>[@TraitClause0, @TraitClause1, @TraitClause2]::Output)
 where
-    // Inherited clauses:
     [@TraitClause0]: core::marker::Sized<T>,
     [@TraitClause1]: core::marker::Sized<I>,
     [@TraitClause2]: core::ops::index::Index<Slice<T>, I>,
@@ -481,7 +471,6 @@ where
 
 fn core::array::{impl core::ops::index::IndexMut<I> for Array<T, const N : usize>}#16::index_mut<'_0, T, I, const N : usize>(@1: &'_0 mut (Array<T, const N : usize>), @2: I) -> &'_0 mut (core::array::{impl core::ops::index::Index<I> for Array<T, const N : usize>}#15<T, I, const N : usize>[@TraitClause0, @TraitClause1, @TraitClause2::parent_clause0]::Output)
 where
-    // Inherited clauses:
     [@TraitClause0]: core::marker::Sized<T>,
     [@TraitClause1]: core::marker::Sized<I>,
     [@TraitClause2]: core::ops::index::IndexMut<Slice<T>, I>,

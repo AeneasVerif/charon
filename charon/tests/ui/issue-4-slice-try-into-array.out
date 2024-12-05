@@ -24,7 +24,6 @@ trait core::convert::TryFrom<Self, T>
 
 fn core::convert::{impl core::convert::TryInto<U> for T}#6::try_into<T, U>(@1: T) -> core::result::Result<U, @TraitClause2::Error>[@TraitClause1, @TraitClause2::parent_clause2]
 where
-    // Inherited clauses:
     [@TraitClause0]: core::marker::Sized<T>,
     [@TraitClause1]: core::marker::Sized<U>,
     [@TraitClause2]: core::convert::TryFrom<U, T>,
@@ -43,7 +42,6 @@ trait core::marker::Copy<Self>
 
 fn core::array::{impl core::convert::TryFrom<&'_0 (Slice<T>)> for Array<T, const N : usize>}#7::try_from<'_0, '_1, T, const N : usize>(@1: &'_1 (Slice<T>)) -> core::result::Result<Array<T, const N : usize>, core::array::TryFromSliceError>[core::marker::Sized<Array<T, const N : usize>>, core::marker::Sized<core::array::TryFromSliceError>]
 where
-    // Inherited clauses:
     [@TraitClause0]: core::marker::Sized<T>,
     [@TraitClause1]: core::marker::Copy<T>,
 
@@ -85,10 +83,8 @@ trait core::fmt::Debug<Self>
 
 fn core::result::{core::result::Result<T, E>[@TraitClause0, @TraitClause1]}::unwrap<T, E>(@1: core::result::Result<T, E>[@TraitClause0, @TraitClause1]) -> T
 where
-    // Inherited clauses:
     [@TraitClause0]: core::marker::Sized<T>,
     [@TraitClause1]: core::marker::Sized<E>,
-    // Local clauses:
     [@TraitClause2]: core::fmt::Debug<E>,
 
 fn core::array::{impl core::fmt::Debug for core::array::TryFromSliceError}#26::fmt<'_0, '_1, '_2>(@1: &'_0 (core::array::TryFromSliceError), @2: &'_1 mut (core::fmt::Formatter<'_2>)) -> core::result::Result<(), core::fmt::Error>[core::marker::Sized<()>, core::marker::Sized<core::fmt::Error>]

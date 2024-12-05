@@ -376,8 +376,7 @@ let clauses_to_string (indent : string) (indent_incr : string)
 
 (** Helper to format "where" clauses *)
 let predicates_and_trait_clauses_to_string (env : 'a fmt_env) (indent : string)
-    (indent_incr : string) (params_info : params_info option)
-    (generics : generic_params) : string list * string =
+    (indent_incr : string) (generics : generic_params) : string list * string =
   let params, trait_clauses = generic_params_to_strings env generics in
   let region_to_string = region_to_string env in
   let regions_outlive =
@@ -403,28 +402,11 @@ let predicates_and_trait_clauses_to_string (env : 'a fmt_env) (indent : string)
   in
   (* Split between the inherited clauses and the local clauses *)
   let clauses =
-    match params_info with
-    | None ->
-        let clauses =
-          List.concat [ regions_outlive; types_outlive; trait_type_constraints ]
-        in
-        clauses_to_string indent indent_incr 0 clauses
-    | Some pi ->
-        let split_at = Collections.List.split_at in
-        let trait_clauses = split_at trait_clauses pi.num_trait_clauses in
-        let regions_outlive = split_at regions_outlive pi.num_regions_outlive in
-        let types_outlive = split_at types_outlive pi.num_types_outlive in
-        let ttc =
-          split_at trait_type_constraints pi.num_trait_type_constraints
-        in
-        let inherited, local =
-          List.split [ trait_clauses; regions_outlive; types_outlive; ttc ]
-        in
-        let inherited = List.concat inherited in
-        let local = List.concat local in
-        let num_inherited = List.length inherited in
-        let clauses = List.append inherited local in
-        clauses_to_string indent indent_incr num_inherited clauses
+    clauses_to_string indent indent_incr 0
+      (List.concat
+         [
+           trait_clauses; regions_outlive; types_outlive; trait_type_constraints;
+         ])
   in
   (params, clauses)
 
@@ -432,7 +414,7 @@ let type_decl_to_string (env : 'a fmt_env) (def : type_decl) : string =
   (* Locally update the generics and the predicates *)
   let env = fmt_env_update_generics_and_preds env def.generics in
   let params, clauses =
-    predicates_and_trait_clauses_to_string env "" "  " None def.generics
+    predicates_and_trait_clauses_to_string env "" "  " def.generics
   in
 
   let name = name_to_string env def.item_meta.name in

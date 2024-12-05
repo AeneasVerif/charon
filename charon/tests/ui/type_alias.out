@@ -46,7 +46,6 @@ opaque type alloc::vec::Vec<T, A>
 
 fn alloc::slice::{impl core::borrow::Borrow<Slice<T>> for alloc::vec::Vec<T, A>[@TraitClause0, @TraitClause1]}#5::borrow<'_0, T, A>(@1: &'_0 (alloc::vec::Vec<T, A>[@TraitClause0, @TraitClause1])) -> &'_0 (Slice<T>)
 where
-    // Inherited clauses:
     [@TraitClause0]: core::marker::Sized<T>,
     [@TraitClause1]: core::marker::Sized<A>,
 
@@ -62,13 +61,11 @@ struct alloc::alloc::Global = {}
 
 fn alloc::slice::{impl alloc::borrow::ToOwned for Slice<T>}#9::to_owned<'_0, T>(@1: &'_0 (Slice<T>)) -> alloc::vec::Vec<T, alloc::alloc::Global>[@TraitClause0, core::marker::Sized<alloc::alloc::Global>]
 where
-    // Inherited clauses:
     [@TraitClause0]: core::marker::Sized<T>,
     [@TraitClause1]: core::clone::Clone<T>,
 
 fn alloc::slice::{impl alloc::borrow::ToOwned for Slice<T>}#9::clone_into<'_0, '_1, T>(@1: &'_0 (Slice<T>), @2: &'_1 mut (alloc::vec::Vec<T, alloc::alloc::Global>[@TraitClause0, core::marker::Sized<alloc::alloc::Global>]))
 where
-    // Inherited clauses:
     [@TraitClause0]: core::marker::Sized<T>,
     [@TraitClause1]: core::clone::Clone<T>,
 

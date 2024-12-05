@@ -797,59 +797,6 @@ pub enum BuiltinTy {
     Str,
 }
 
-/// We use this to store information about the parameters in parent blocks.
-/// This is necessary because in the definitions we store *all* the generics,
-/// including those coming from the outer impl block.
-///
-/// For instance:
-/// ```text
-/// impl Foo<T> {
-///         ^^^
-///       outer block generics
-///   fn bar<U>(...)  { ... }
-///         ^^^
-///       generics local to the function bar
-/// }
-/// ```
-///
-/// In `bar` we store the generics: `[T, U]`.
-///
-/// We however sometimes need to make a distinction between those two kinds
-/// of generics, in particular when manipulating traits. For instance:
-///
-/// ```text
-/// impl<T> Foo for Bar<T> {
-///   fn baz<U>(...)  { ... }
-/// }
-///
-/// fn test(...) {
-///    x.baz(...); // Here, we refer to the call as:
-///                // > Foo<T>::baz<U>(...)
-///                // If baz hadn't been a method implementation of a trait,
-///                // we would have refered to it as:
-///                // > baz<T, U>(...)
-///                // The reason is that with traits, we refer to the whole
-///                // trait implementation (as if it were a structure), then
-///                // pick a specific method inside (as if projecting a field
-///                // from a structure).
-/// }
-/// ```
-///
-/// **Remark**: Rust only allows refering to the generics of the immediately
-/// outer block. For this reason, when we need to store the information about
-/// the generics of the outer block(s), we need to do it only for one level
-/// (this definitely makes things simpler).
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Drive, DriveMut)]
-pub struct ParamsInfo {
-    pub num_region_params: usize,
-    pub num_type_params: usize,
-    pub num_const_generic_params: usize,
-    pub num_trait_clauses: usize,
-    pub num_regions_outlive: usize,
-    pub num_types_outlive: usize,
-    pub num_trait_type_constraints: usize,
-}
-
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Serialize, Deserialize, Drive, DriveMut)]
 pub enum ClosureKind {
     Fn,
@@ -891,8 +838,6 @@ pub struct FunSig {
     /// Additional information if this is the signature of a closure.
     pub closure_info: Option<ClosureInfo>,
     pub generics: GenericParams,
-    /// Optional fields, for trait methods only (see the comments in [ParamsInfo]).
-    pub parent_params_info: Option<ParamsInfo>,
     pub inputs: Vec<Ty>,
     pub output: Ty,
 }

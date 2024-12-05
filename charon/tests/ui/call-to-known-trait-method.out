@@ -20,7 +20,6 @@ fn core::default::Default::default<Self>() -> Self
 
 fn test_crate::{impl core::default::Default for test_crate::Struct<A>[@TraitClause0]}#1::default<A>() -> test_crate::Struct<A>[@TraitClause0]
 where
-    // Inherited clauses:
     [@TraitClause0]: core::marker::Sized<A>,
     [@TraitClause1]: core::default::Default<A>,
 {
@@ -66,12 +65,10 @@ trait core::cmp::PartialEq<Self, Rhs>
 
 fn test_crate::{impl test_crate::Trait<B> for test_crate::Struct<A>[@TraitClause0]}::method<A, B, C>()
 where
-    // Inherited clauses:
     [@TraitClause0]: core::marker::Sized<A>,
     [@TraitClause1]: core::marker::Sized<B>,
     [@TraitClause2]: core::clone::Clone<A>,
     [@TraitClause3]: core::cmp::PartialEq<B, bool>,
-    // Local clauses:
     [@TraitClause4]: core::marker::Sized<C>,
 {
     let @0: (); // return

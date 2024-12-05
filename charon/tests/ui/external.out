@@ -106,13 +106,11 @@ enum core::option::Option<T>
 
 fn core::num::nonzero::{core::num::nonzero::NonZero<T>[@TraitClause0, @TraitClause1]}#14::new<T>(@1: T) -> core::option::Option<core::num::nonzero::NonZero<T>[@TraitClause0, @TraitClause1]>[core::marker::Sized<core::num::nonzero::NonZero<T>[@TraitClause0, @TraitClause1]>]
 where
-    // Inherited clauses:
     [@TraitClause0]: core::marker::Sized<T>,
     [@TraitClause1]: core::num::nonzero::ZeroablePrimitive<T>,
 
 fn core::option::{core::option::Option<T>[@TraitClause0]}::unwrap<T>(@1: core::option::Option<T>[@TraitClause0]) -> T
 where
-    // Inherited clauses:
     [@TraitClause0]: core::marker::Sized<T>,
 
 fn test_crate::test_new_non_zero_u32(@1: u32) -> core::num::nonzero::NonZero<u32>[core::marker::Sized<u32>, core::num::nonzero::{impl core::num::nonzero::ZeroablePrimitive for u32}#20]
@@ -139,12 +137,10 @@ struct alloc::alloc::Global = {}
 
 fn alloc::vec::{alloc::vec::Vec<T, alloc::alloc::Global>[@TraitClause0, core::marker::Sized<alloc::alloc::Global>]}::new<T>() -> alloc::vec::Vec<T, alloc::alloc::Global>[@TraitClause0, core::marker::Sized<alloc::alloc::Global>]
 where
-    // Inherited clauses:
     [@TraitClause0]: core::marker::Sized<T>,
 
 fn alloc::vec::{alloc::vec::Vec<T, A>[@TraitClause0, @TraitClause1]}#1::push<'_0, T, A>(@1: &'_0 mut (alloc::vec::Vec<T, A>[@TraitClause0, @TraitClause1]), @2: T)
 where
-    // Inherited clauses:
     [@TraitClause0]: core::marker::Sized<T>,
     [@TraitClause1]: core::marker::Sized<A>,
 
@@ -174,7 +170,6 @@ opaque type core::cell::Cell<T>
 
 fn core::cell::{core::cell::Cell<T>}#10::get<'_0, T>(@1: &'_0 (core::cell::Cell<T>)) -> T
 where
-    // Inherited clauses:
     [@TraitClause0]: core::marker::Sized<T>,
     [@TraitClause1]: core::marker::Copy<T>,
 

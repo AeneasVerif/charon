@@ -50,10 +50,8 @@ fn core::result::unwrap_failed<'_0, '_1>(@1: &'_0 (Str), @2: &'_1 (dyn (exists(T
 
 fn core::result::{core::result::Result<T, E>[@TraitClause0, @TraitClause1]}::unwrap<T, E>(@1: core::result::Result<T, E>[@TraitClause0, @TraitClause1]) -> T
 where
-    // Inherited clauses:
     [@TraitClause0]: core::marker::Sized<T>,
     [@TraitClause1]: core::marker::Sized<E>,
-    // Local clauses:
     [@TraitClause2]: core::fmt::Debug<E>,
 {
     let t@0: T; // return

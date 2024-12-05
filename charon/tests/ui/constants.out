@@ -156,7 +156,6 @@ struct test_crate::Wrap<T>
 
 fn test_crate::{test_crate::Wrap<T>[@TraitClause0]}::new<T>(@1: T) -> test_crate::Wrap<T>[@TraitClause0]
 where
-    // Inherited clauses:
     [@TraitClause0]: core::marker::Sized<T>,
 {
     let @0: test_crate::Wrap<T>[@TraitClause0]; // return

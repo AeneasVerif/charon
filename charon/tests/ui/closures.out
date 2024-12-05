@@ -627,9 +627,7 @@ fn test_crate::test_array_map::closure<'_0>(@1: &'_0 mut (()), @2: (i32)) -> i32
 
 fn core::array::{Array<T, const N : usize>}#23::map<T, F, U, const N : usize>(@1: Array<T, const N : usize>, @2: F) -> Array<U, const N : usize>
 where
-    // Inherited clauses:
     [@TraitClause0]: core::marker::Sized<T>,
-    // Local clauses:
     [@TraitClause1]: core::marker::Sized<F>,
     [@TraitClause2]: core::marker::Sized<U>,
     [@TraitClause3]: core::ops::function::FnMut<F, (T)>,
@@ -706,7 +704,6 @@ where
 
 fn test_crate::{test_crate::Foo<'a, T>[@TraitClause0]}::test_nested_closures<'a, 'b, T>(@1: &'a (&'b (T))) -> T
 where
-    // Inherited clauses:
     [@TraitClause0]: core::marker::Sized<T>,
     [@TraitClause1]: core::clone::Clone<T>,
 {

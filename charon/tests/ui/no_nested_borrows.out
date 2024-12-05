@@ -283,12 +283,10 @@ fn test_crate::test_list1()
 
 fn alloc::boxed::{impl core::ops::deref::DerefMut for alloc::boxed::Box<T>[@TraitClause0]}#39::deref_mut<'_0, T, A>(@1: &'_0 mut (alloc::boxed::Box<T>[@TraitClause0])) -> &'_0 mut (T)
 where
-    // Inherited clauses:
     [@TraitClause0]: core::marker::Sized<A>,
 
 fn alloc::boxed::{impl core::ops::deref::Deref for alloc::boxed::Box<T>[@TraitClause0]}#38::deref<'_0, T, A>(@1: &'_0 (alloc::boxed::Box<T>[@TraitClause0])) -> &'_0 (T)
 where
-    // Inherited clauses:
     [@TraitClause0]: core::marker::Sized<A>,
 
 fn test_crate::test_box1()

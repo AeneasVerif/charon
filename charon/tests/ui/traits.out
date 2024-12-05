@@ -65,7 +65,6 @@ enum core::option::Option<T>
 
 fn test_crate::{impl test_crate::BoolTrait for core::option::Option<T>[@TraitClause0]}#1::get_bool<'_0, T>(@1: &'_0 (core::option::Option<T>[@TraitClause0])) -> bool
 where
-    // Inherited clauses:
     [@TraitClause0]: core::marker::Sized<T>,
 {
     let @0: bool; // return
@@ -158,7 +157,6 @@ fn test_crate::ToU64::to_u64<Self>(@1: Self) -> u64
 
 fn test_crate::{impl test_crate::ToU64 for (A, A)}#3::to_u64<A>(@1: (A, A)) -> u64
 where
-    // Inherited clauses:
     [@TraitClause0]: core::marker::Sized<A>,
     [@TraitClause1]: test_crate::ToU64<A>,
 {
@@ -244,7 +242,6 @@ struct test_crate::Wrapper<T>
 
 fn test_crate::{impl test_crate::ToU64 for test_crate::Wrapper<T>[@TraitClause0]}#4::to_u64<T>(@1: test_crate::Wrapper<T>[@TraitClause0]) -> u64
 where
-    // Inherited clauses:
     [@TraitClause0]: core::marker::Sized<T>,
     [@TraitClause1]: test_crate::ToU64<T>,
 {
@@ -405,7 +402,6 @@ fn test_crate::{test_crate::TestType<T>[@TraitClause0]}#6::test::{impl test_crat
 
 fn test_crate::{test_crate::TestType<T>[@TraitClause0]}#6::test<'_0, T>(@1: &'_0 (test_crate::TestType<T>[@TraitClause0]), @2: T) -> bool
 where
-    // Inherited clauses:
     [@TraitClause0]: core::marker::Sized<T>,
     [@TraitClause1]: test_crate::ToU64<T>,
 {
@@ -458,7 +454,6 @@ fn test_crate::ToType::to_type<Self, T>(@1: Self) -> T
 
 fn test_crate::{impl test_crate::ToType<T> for test_crate::BoolWrapper}#7::to_type<T>(@1: test_crate::BoolWrapper) -> T
 where
-    // Inherited clauses:
     [@TraitClause0]: core::marker::Sized<T>,
     [@TraitClause1]: test_crate::ToType<bool, T>,
 {
