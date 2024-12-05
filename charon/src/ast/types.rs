@@ -66,6 +66,7 @@ pub struct ConstGenericVar {
     DriveMut,
 )]
 #[serde(transparent)]
+#[charon::rename("RegionDbId")]
 pub struct DeBruijnId {
     pub index: usize,
 }
@@ -113,11 +114,11 @@ pub enum Region {
     ///                                   Var id: 1
     /// ```
     BVar(DeBruijnId, BoundRegionId),
+    /// A variable not attached to specific. This is not present in translated code, and only
+    /// provided as a convenience for variable manipulation.
+    FVar(FreeRegionId),
     /// Erased region
     Erased,
-    /// For error reporting.
-    #[charon::opaque]
-    Unknown,
 }
 
 /// Identifier of a trait instance.

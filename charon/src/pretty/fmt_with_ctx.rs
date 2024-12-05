@@ -810,8 +810,8 @@ impl<C: AstFormatter> FmtWithCtx<C> for Region {
         match self {
             Region::Static => "'static".to_string(),
             Region::BVar(grid, id) => ctx.format_object((*grid, *id)),
+            Region::FVar(id) => format!("'free_{id}"),
             Region::Erased => "'_".to_string(),
-            Region::Unknown => "'_UNKNOWN_".to_string(),
         }
     }
 }
@@ -1661,8 +1661,8 @@ impl std::fmt::Display for Region {
         match self {
             Region::Static => write!(f, "'static"),
             Region::BVar(grid, id) => write!(f, "'_{}_{id}", grid.index),
+            Region::FVar(id) => write!(f, "'free_{id}"),
             Region::Erased => write!(f, "'_"),
-            Region::Unknown => write!(f, "'_UNKNOWN_"),
         }
     }
 }

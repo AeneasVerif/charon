@@ -37,9 +37,7 @@ type file_id = FileId.id
 type id_to_file_map = file FileId.Map.t
 type of_json_ctx = id_to_file_map
 
-let de_bruijn_id_of_json = int_of_json
 let path_buf_of_json = string_of_json
-let region_id_of_json = BoundRegionId.id_of_json
 
 (* __REPLACE0__ *)
 

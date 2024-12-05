@@ -35,13 +35,10 @@ type ('id, 'x) vector = 'x list [@@deriving show, ord]
 type integer_type = Values.integer_type [@@deriving show, ord]
 type float_type = Values.float_type [@@deriving show, ord]
 type literal_type = Values.literal_type [@@deriving show, ord]
-type region_db_id = int [@@deriving show, ord]
 
 (** We define these types to control the name of the visitor functions
     (see e.g., {!class:Types.iter_ty_base} and {!Types.TVar}).
   *)
-type bound_region_id = BoundRegionId.id [@@deriving show, ord]
-type free_region_id = FreeRegionId.id [@@deriving show, ord]
 type region_group_id = RegionGroupId.id [@@deriving show, ord]
 
 type ('id, 'name) indexed_var = {

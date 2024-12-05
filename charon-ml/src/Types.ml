@@ -33,14 +33,10 @@ type ('id, 'x) vector = 'x list [@@deriving show, ord]
 type integer_type = Values.integer_type [@@deriving show, ord]
 type float_type = Values.float_type [@@deriving show, ord]
 type literal_type = Values.literal_type [@@deriving show, ord]
-type region_db_id = int [@@deriving show, ord]
 
 (** We define these types to control the name of the visitor functions
     (see e.g., {!class:Types.iter_ty_base} and {!Types.TVar}).
   *)
-type bound_region_id = BoundRegionId.id [@@deriving show, ord]
-
-type free_region_id = FreeRegionId.id [@@deriving show, ord]
 type region_group_id = RegionGroupId.id [@@deriving show, ord]
 
 type ('id, 'name) indexed_var = {
@@ -58,6 +54,8 @@ and disambiguator = Disambiguator.id
 and type_var_id = TypeVarId.id
 and variant_id = VariantId.id
 and field_id = FieldId.id
+and bound_region_id = BoundRegionId.id
+and free_region_id = FreeRegionId.id
 and const_generic_var_id = ConstGenericVarId.id
 and trait_clause_id = TraitClauseId.id [@@deriving show, ord]
 
@@ -81,7 +79,6 @@ class ['self] iter_const_generic_base =
 
     method visit_fun_decl_id : 'env -> fun_decl_id -> unit = fun _ _ -> ()
     method visit_global_decl_id : 'env -> global_decl_id -> unit = fun _ _ -> ()
-    method visit_region_db_id : 'env -> region_db_id -> unit = fun _ _ -> ()
     method visit_free_region_id : 'env -> free_region_id -> unit = fun _ _ -> ()
 
     method visit_bound_region_id : 'env -> bound_region_id -> unit =
@@ -107,9 +104,6 @@ class ['self] map_const_generic_base =
     method visit_fun_decl_id : 'env -> fun_decl_id -> fun_decl_id = fun _ x -> x
 
     method visit_global_decl_id : 'env -> global_decl_id -> global_decl_id =
-      fun _ x -> x
-
-    method visit_region_db_id : 'env -> region_db_id -> region_db_id =
       fun _ x -> x
 
     method visit_free_region_id : 'env -> free_region_id -> free_region_id =
@@ -143,9 +137,6 @@ class virtual ['self] reduce_const_generic_base =
     method visit_fun_decl_id : 'env -> fun_decl_id -> 'a = fun _ _ -> self#zero
 
     method visit_global_decl_id : 'env -> global_decl_id -> 'a =
-      fun _ _ -> self#zero
-
-    method visit_region_db_id : 'env -> region_db_id -> 'a =
       fun _ _ -> self#zero
 
     method visit_free_region_id : 'env -> free_region_id -> 'a =
@@ -184,9 +175,6 @@ class virtual ['self] mapreduce_const_generic_base =
         =
       fun _ x -> (x, self#zero)
 
-    method visit_region_db_id : 'env -> region_db_id -> region_db_id * 'a =
-      fun _ x -> (x, self#zero)
-
     method visit_free_region_id : 'env -> free_region_id -> free_region_id * 'a
         =
       fun _ x -> (x, self#zero)
@@ -212,8 +200,10 @@ class virtual ['self] mapreduce_const_generic_base =
       fun _ x -> (x, self#zero)
   end
 
+type region_db_id = int
+
 (** Const Generic Values. Either a primitive value, or a variable corresponding to a primitve value *)
-type const_generic =
+and const_generic =
   | CgGlobal of global_decl_id  (** A global constant *)
   | CgVar of const_generic_var_id  (** A const generic variable *)
   | CgValue of literal  (** A concrete value *)
@@ -358,9 +348,33 @@ and trait_item_name = string
 and region =
   | RStatic  (** Static region *)
   | RBVar of region_db_id * bound_region_id
-      (** Bound region. We use those in function signatures, type definitions, etc. *)
+      (** Bound region variable.
+
+          **Important**:
+          ==============
+          Similarly to what the Rust compiler does, we use De Bruijn indices to
+          identify *groups* of bound variables, and variable identifiers to
+          identity the variables inside the groups.
+
+          For instance, we have the following:
+          ```text
+                              we compute the De Bruijn indices from here
+                                     VVVVVVVVVVVVVVVVVVVVVVV
+          fn f<'a, 'b>(x: for<'c> fn(&'a u8, &'b u16, &'c u32) -> u64) {}
+               ^^^^^^         ^^       ^       ^        ^
+                 |      De Bruijn: 0   |       |        |
+           De Bruijn: 1                |       |        |
+                                 De Bruijn: 1  |    De Bruijn: 0
+                                    Var id: 0  |       Var id: 0
+                                               |
+                                         De Bruijn: 1
+                                            Var id: 1
+          ```
+       *)
   | RFVar of free_region_id
-      (** Free region. We use those during the symbolic execution. *)
+      (** A variable not attached to specific. This is not present in translated code, and only
+          provided as a convenience for variable manipulation.
+       *)
   | RErased  (** Erased region *)
 
 (** Identifier of a trait instance.

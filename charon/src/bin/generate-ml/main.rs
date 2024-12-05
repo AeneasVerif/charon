@@ -1008,22 +1008,6 @@ fn generate_ml(
                 "
             ),
         ),
-        // Hand-written because we add an extra variant not present on the rust side.
-        // TODO: either add this variant to the rust side or duplicate this code on the aeneas
-        // side.
-        (
-            "Region",
-            indoc!(
-                "
-                | RStatic  (** Static region *)
-                | RBVar of region_db_id * bound_region_id
-                    (** Bound region. We use those in function signatures, type definitions, etc. *)
-                | RFVar of free_region_id
-                    (** Free region. We use those during the symbolic execution. *)
-                | RErased  (** Erased region *)
-                "
-            ),
-        ),
         // Handwritten because we use `indexed_var` as a hack to be able to reuse field names.
         // TODO: remove the need for this hack.
         ("RegionVar", "(bound_region_id, string option) indexed_var"),
@@ -1154,7 +1138,6 @@ fn generate_ml(
     // Compute the sets of types to be put in each module.
     let manually_implemented: HashSet<_> = [
         "ItemOpacity",
-        "DeBruijnId",
         "PredicateOrigin",
         "Ty", // We exclude it since `TyKind` is renamed to `ty`
         "Opaque",
@@ -1315,9 +1298,11 @@ fn generate_ml(
             target: output_dir.join("Types.ml"),
             markers: ctx.markers_from_names(&[
                 (GenerationKind::TypeDecl(None), &[
+                    "BoundRegionId",
                     "ConstGenericVarId",
                     "Disambiguator",
                     "FieldId",
+                    "FreeRegionId",
                     "FunDeclId",
                     "GlobalDeclId",
                     "TraitClauseId",
@@ -1335,7 +1320,6 @@ fn generate_ml(
                         "const_generic_var_id",
                         "fun_decl_id",
                         "global_decl_id",
-                        "region_db_id",
                         "free_region_id",
                         "bound_region_id",
                         "trait_clause_id",
@@ -1345,6 +1329,7 @@ fn generate_ml(
                         "type_var_id",
                     ],
                 })), &[
+                    "DeBruijnId",
                     "ConstGeneric",
                 ]),
                 // Can't merge into above because aeneas uses the above alongside their own partial

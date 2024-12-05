@@ -36,9 +36,7 @@ type file_id = FileId.id [@@deriving show, ord]
 type id_to_file_map = file FileId.Map.t
 type of_json_ctx = id_to_file_map
 
-let de_bruijn_id_of_json = int_of_json
 let path_buf_of_json = string_of_json
-let region_id_of_json = BoundRegionId.id_of_json
 
 let rec ___ = ()
 
@@ -880,6 +878,13 @@ and bound_region_id_of_json (ctx : of_json_ctx) (js : json) :
     | x -> BoundRegionId.id_of_json ctx x
     | _ -> Error "")
 
+and free_region_id_of_json (ctx : of_json_ctx) (js : json) :
+    (free_region_id, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with
+    | x -> FreeRegionId.id_of_json ctx x
+    | _ -> Error "")
+
 and const_generic_var_id_of_json (ctx : of_json_ctx) (js : json) :
     (const_generic_var_id, string) result =
   combine_error_msgs js __FUNCTION__
@@ -918,14 +923,24 @@ and const_generic_var_of_json (ctx : of_json_ctx) (js : json) :
         Ok ({ index; name; ty } : const_generic_var)
     | _ -> Error "")
 
+and region_db_id_of_json (ctx : of_json_ctx) (js : json) :
+    (region_db_id, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with
+    | x -> int_of_json ctx x
+    | _ -> Error "")
+
 and region_of_json (ctx : of_json_ctx) (js : json) : (region, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
     | `String "Static" -> Ok RStatic
     | `Assoc [ ("BVar", `List [ x_0; x_1 ]) ] ->
-        let* x_0 = de_bruijn_id_of_json ctx x_0 in
+        let* x_0 = region_db_id_of_json ctx x_0 in
         let* x_1 = bound_region_id_of_json ctx x_1 in
         Ok (RBVar (x_0, x_1))
+    | `Assoc [ ("FVar", f_var) ] ->
+        let* f_var = free_region_id_of_json ctx f_var in
+        Ok (RFVar f_var)
     | `String "Erased" -> Ok RErased
     | _ -> Error "")
 
