@@ -1298,11 +1298,9 @@ fn generate_ml(
             target: output_dir.join("Types.ml"),
             markers: ctx.markers_from_names(&[
                 (GenerationKind::TypeDecl(None), &[
-                    "BoundRegionId",
                     "ConstGenericVarId",
                     "Disambiguator",
                     "FieldId",
-                    "FreeRegionId",
                     "FunDeclId",
                     "GlobalDeclId",
                     "TraitClauseId",

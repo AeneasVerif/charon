@@ -923,8 +923,8 @@ and const_generic_var_of_json (ctx : of_json_ctx) (js : json) :
         Ok ({ index; name; ty } : const_generic_var)
     | _ -> Error "")
 
-and region_db_id_of_json (ctx : of_json_ctx) (js : json) :
-    (region_db_id, string) result =
+and de_bruijn_id_of_json (ctx : of_json_ctx) (js : json) :
+    (de_bruijn_id, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
     | x -> int_of_json ctx x
@@ -935,7 +935,7 @@ and region_of_json (ctx : of_json_ctx) (js : json) : (region, string) result =
     (match js with
     | `String "Static" -> Ok RStatic
     | `Assoc [ ("BVar", `List [ x_0; x_1 ]) ] ->
-        let* x_0 = region_db_id_of_json ctx x_0 in
+        let* x_0 = de_bruijn_id_of_json ctx x_0 in
         let* x_1 = bound_region_id_of_json ctx x_1 in
         Ok (RBVar (x_0, x_1))
     | `Assoc [ ("FVar", f_var) ] ->

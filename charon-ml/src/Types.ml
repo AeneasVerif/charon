@@ -37,6 +37,9 @@ type literal_type = Values.literal_type [@@deriving show, ord]
 (** We define these types to control the name of the visitor functions
     (see e.g., {!class:Types.iter_ty_base} and {!Types.TVar}).
   *)
+type bound_region_id = BoundRegionId.id [@@deriving show, ord]
+
+type free_region_id = FreeRegionId.id [@@deriving show, ord]
 type region_group_id = RegionGroupId.id [@@deriving show, ord]
 
 type ('id, 'name) indexed_var = {
@@ -54,8 +57,6 @@ and disambiguator = Disambiguator.id
 and type_var_id = TypeVarId.id
 and variant_id = VariantId.id
 and field_id = FieldId.id
-and bound_region_id = BoundRegionId.id
-and free_region_id = FreeRegionId.id
 and const_generic_var_id = ConstGenericVarId.id
 and trait_clause_id = TraitClauseId.id [@@deriving show, ord]
 
@@ -200,7 +201,7 @@ class virtual ['self] mapreduce_const_generic_base =
       fun _ x -> (x, self#zero)
   end
 
-type region_db_id = int
+type de_bruijn_id = int
 
 (** Const Generic Values. Either a primitive value, or a variable corresponding to a primitve value *)
 and const_generic =
@@ -347,7 +348,7 @@ and trait_item_name = string
 
 and region =
   | RStatic  (** Static region *)
-  | RBVar of region_db_id * bound_region_id
+  | RBVar of de_bruijn_id * bound_region_id
       (** Bound region variable.
 
           **Important**:
@@ -560,12 +561,12 @@ class ['self] iter_ty =
   object (self : 'self)
     inherit [_] iter_ty_inner
 
-    method! visit_RBVar env (db_id : region_db_id) (var_id : bound_region_id) =
+    method! visit_RBVar env (db_id : de_bruijn_id) (var_id : bound_region_id) =
       self#visit_bound_region env db_id var_id
 
-    method visit_bound_region env (db_id : region_db_id)
+    method visit_bound_region env (db_id : de_bruijn_id)
         (var_id : bound_region_id) =
-      self#visit_region_db_id env db_id;
+      self#visit_de_bruijn_id env db_id;
       self#visit_bound_region_id env var_id
 
     method! visit_RFVar env (var_id : free_region_id) =
@@ -580,13 +581,13 @@ class virtual ['self] map_ty =
   object (self : 'self)
     inherit [_] map_ty_inner
 
-    method! visit_RBVar env (db_id : region_db_id) (var_id : bound_region_id) =
+    method! visit_RBVar env (db_id : de_bruijn_id) (var_id : bound_region_id) =
       let db_id, var_id = self#visit_bound_region env db_id var_id in
       RBVar (db_id, var_id)
 
-    method visit_bound_region env (db_id : region_db_id)
+    method visit_bound_region env (db_id : de_bruijn_id)
         (var_id : bound_region_id) =
-      let db_id = self#visit_region_db_id env db_id in
+      let db_id = self#visit_de_bruijn_id env db_id in
       let var_id = self#visit_bound_region_id env var_id in
       (db_id, var_id)
 

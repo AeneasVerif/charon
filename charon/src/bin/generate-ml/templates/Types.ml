@@ -39,6 +39,8 @@ type literal_type = Values.literal_type [@@deriving show, ord]
 (** We define these types to control the name of the visitor functions
     (see e.g., {!class:Types.iter_ty_base} and {!Types.TVar}).
   *)
+type bound_region_id = BoundRegionId.id [@@deriving show, ord]
+type free_region_id = FreeRegionId.id [@@deriving show, ord]
 type region_group_id = RegionGroupId.id [@@deriving show, ord]
 
 type ('id, 'name) indexed_var = {
@@ -165,11 +167,11 @@ class ['self] iter_ty =
   object (self : 'self)
     inherit [_] iter_ty_inner
 
-    method! visit_RBVar env (db_id: region_db_id) (var_id: bound_region_id) =
+    method! visit_RBVar env (db_id: de_bruijn_id) (var_id: bound_region_id) =
         self#visit_bound_region env db_id var_id
 
-    method visit_bound_region env (db_id: region_db_id) (var_id: bound_region_id) =
-        self#visit_region_db_id env db_id;
+    method visit_bound_region env (db_id: de_bruijn_id) (var_id: bound_region_id) =
+        self#visit_de_bruijn_id env db_id;
         self#visit_bound_region_id env var_id
 
     method! visit_RFVar env (var_id: free_region_id) =
@@ -184,12 +186,12 @@ class virtual ['self] map_ty =
   object (self : 'self)
     inherit [_] map_ty_inner
 
-    method! visit_RBVar env (db_id: region_db_id) (var_id: bound_region_id) =
+    method! visit_RBVar env (db_id: de_bruijn_id) (var_id: bound_region_id) =
         let (db_id, var_id) = self#visit_bound_region env db_id var_id in
         RBVar (db_id, var_id)
 
-    method visit_bound_region env (db_id: region_db_id) (var_id: bound_region_id) =
-        let db_id = self#visit_region_db_id env db_id in
+    method visit_bound_region env (db_id: de_bruijn_id) (var_id: bound_region_id) =
+        let db_id = self#visit_de_bruijn_id env db_id in
         let var_id = self#visit_bound_region_id env var_id in
         (db_id, var_id)
 

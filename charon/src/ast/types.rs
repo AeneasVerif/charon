@@ -66,7 +66,6 @@ pub struct ConstGenericVar {
     DriveMut,
 )]
 #[serde(transparent)]
-#[charon::rename("RegionDbId")]
 pub struct DeBruijnId {
     pub index: usize,
 }
