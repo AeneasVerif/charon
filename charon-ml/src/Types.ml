@@ -58,6 +58,39 @@ and type_var_id = TypeVarId.id
 and variant_id = VariantId.id
 and field_id = FieldId.id
 and const_generic_var_id = ConstGenericVarId.id
+and de_bruijn_id = int
+
+(** Bound region variable.
+
+    **Important**:
+    ==============
+    Similarly to what the Rust compiler does, we use De Bruijn indices to
+    identify *groups* of bound variables, and variable identifiers to
+    identity the variables inside the groups.
+
+    For instance, we have the following:
+    ```text
+                        we compute the De Bruijn indices from here
+                               VVVVVVVVVVVVVVVVVVVVVVV
+    fn f<'a, 'b>(x: for<'c> fn(&'a u8, &'b u16, &'c u32) -> u64) {}
+         ^^^^^^         ^^       ^       ^        ^
+           |      De Bruijn: 0   |       |        |
+     De Bruijn: 1                |       |        |
+                           De Bruijn: 1  |    De Bruijn: 0
+                              Var id: 0  |       Var id: 0
+                                         |
+                                   De Bruijn: 1
+                                      Var id: 1
+    ```
+ *)
+and ('a0, 'a1) de_bruijn_var =
+  | Bound of de_bruijn_id * 'a0
+      (** A variable attached to the nth binder, counting from the inside. *)
+  | Free of 'a1
+      (** A variable attached to an implicit binder outside all other binders. This is not present in
+          translated code, and only provided as a convenience for convenient variable manipulation.
+       *)
+
 and trait_clause_id = TraitClauseId.id [@@deriving show, ord]
 
 let all_signed_int_types = [ Isize; I8; I16; I32; I64; I128 ]
@@ -80,6 +113,7 @@ class ['self] iter_const_generic_base =
 
     method visit_fun_decl_id : 'env -> fun_decl_id -> unit = fun _ _ -> ()
     method visit_global_decl_id : 'env -> global_decl_id -> unit = fun _ _ -> ()
+    method visit_de_bruijn_id : 'env -> de_bruijn_id -> unit = fun _ _ -> ()
     method visit_free_region_id : 'env -> free_region_id -> unit = fun _ _ -> ()
 
     method visit_bound_region_id : 'env -> bound_region_id -> unit =
@@ -105,6 +139,9 @@ class ['self] map_const_generic_base =
     method visit_fun_decl_id : 'env -> fun_decl_id -> fun_decl_id = fun _ x -> x
 
     method visit_global_decl_id : 'env -> global_decl_id -> global_decl_id =
+      fun _ x -> x
+
+    method visit_de_bruijn_id : 'env -> de_bruijn_id -> de_bruijn_id =
       fun _ x -> x
 
     method visit_free_region_id : 'env -> free_region_id -> free_region_id =
@@ -138,6 +175,9 @@ class virtual ['self] reduce_const_generic_base =
     method visit_fun_decl_id : 'env -> fun_decl_id -> 'a = fun _ _ -> self#zero
 
     method visit_global_decl_id : 'env -> global_decl_id -> 'a =
+      fun _ _ -> self#zero
+
+    method visit_de_bruijn_id : 'env -> de_bruijn_id -> 'a =
       fun _ _ -> self#zero
 
     method visit_free_region_id : 'env -> free_region_id -> 'a =
@@ -176,6 +216,9 @@ class virtual ['self] mapreduce_const_generic_base =
         =
       fun _ x -> (x, self#zero)
 
+    method visit_de_bruijn_id : 'env -> de_bruijn_id -> de_bruijn_id * 'a =
+      fun _ x -> (x, self#zero)
+
     method visit_free_region_id : 'env -> free_region_id -> free_region_id * 'a
         =
       fun _ x -> (x, self#zero)
@@ -201,10 +244,8 @@ class virtual ['self] mapreduce_const_generic_base =
       fun _ x -> (x, self#zero)
   end
 
-type de_bruijn_id = int
-
 (** Const Generic Values. Either a primitive value, or a variable corresponding to a primitve value *)
-and const_generic =
+type const_generic =
   | CgGlobal of global_decl_id  (** A global constant *)
   | CgVar of const_generic_var_id  (** A const generic variable *)
   | CgValue of literal  (** A concrete value *)
@@ -277,6 +318,20 @@ class ['self] iter_ty_base_base =
         visit_left env left;
         visit_right env right
 
+    method visit_de_bruijn_var
+        : 'l 'r.
+          ('env -> 'l -> unit) ->
+          ('env -> 'r -> unit) ->
+          'env ->
+          ('l, 'r) de_bruijn_var ->
+          unit =
+      fun visit_bound visit_free env x ->
+        match x with
+        | Bound (dbid, varid) ->
+            self#visit_de_bruijn_id env dbid;
+            visit_bound env varid
+        | Free varid -> visit_free env varid
+
     method visit_region_var env (x : region_var) =
       self#visit_indexed_var self#visit_bound_region_id
         (self#visit_option self#visit_string)
@@ -321,6 +376,23 @@ class virtual ['self] map_ty_base_base =
         let right = visit_right env right in
         (left, right)
 
+    method visit_de_bruijn_var
+        : 'l 'r.
+          ('env -> 'l -> 'l) ->
+          ('env -> 'r -> 'r) ->
+          'env ->
+          ('l, 'r) de_bruijn_var ->
+          ('l, 'r) de_bruijn_var =
+      fun visit_bound visit_free env x ->
+        match x with
+        | Bound (dbid, varid) ->
+            let dbid = self#visit_de_bruijn_id env dbid in
+            let varid = visit_bound env varid in
+            Bound (dbid, varid)
+        | Free varid ->
+            let varid = visit_free env varid in
+            Free varid
+
     method visit_region_var env (x : region_var) =
       self#visit_indexed_var self#visit_bound_region_id
         (self#visit_option self#visit_string)
@@ -346,39 +418,8 @@ type global_decl_ref = {
 
 and trait_item_name = string
 
-(** Bound region variable.
-
-    **Important**:
-    ==============
-    Similarly to what the Rust compiler does, we use De Bruijn indices to
-    identify *groups* of bound variables, and variable identifiers to
-    identity the variables inside the groups.
-
-    For instance, we have the following:
-    ```text
-                        we compute the De Bruijn indices from here
-                               VVVVVVVVVVVVVVVVVVVVVVV
-    fn f<'a, 'b>(x: for<'c> fn(&'a u8, &'b u16, &'c u32) -> u64) {}
-         ^^^^^^         ^^       ^       ^        ^
-           |      De Bruijn: 0   |       |        |
-     De Bruijn: 1                |       |        |
-                           De Bruijn: 1  |    De Bruijn: 0
-                              Var id: 0  |       Var id: 0
-                                         |
-                                   De Bruijn: 1
-                                      Var id: 1
-    ```
- *)
-and de_bruijn_var =
-  | Bound of de_bruijn_id * bound_region_id
-      (** A variable attached to the nth binder, counting from the inside. *)
-  | Free of free_region_id
-      (** A variable attached to an implicit binder outside all other binders. This is not present in
-          translated code, and only provided as a convenience for convenient variable manipulation.
-       *)
-
 and region =
-  | RVar of de_bruijn_var
+  | RVar of (bound_region_id, free_region_id) de_bruijn_var
       (** Region variable. See `DeBruijnVar` for details. *)
   | RStatic  (** Static region *)
   | RErased  (** Erased region *)
@@ -825,6 +866,9 @@ type ('rid, 'id) g_region_group = {
   regions : 'rid list;
   parents : 'id list;
 }
+[@@deriving show]
+
+type region_db_var = (bound_region_id, free_region_id) de_bruijn_var
 [@@deriving show]
 
 type region_var_group = (BoundRegionId.id, RegionGroupId.id) g_region_group

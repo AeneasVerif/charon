@@ -92,27 +92,16 @@ pub struct DeBruijnId {
 ///                                De Bruijn: 1
 ///                                   Var id: 1
 /// ```
-#[derive(
-    Debug,
-    PartialEq,
-    Eq,
-    Copy,
-    Clone,
-    Hash,
-    PartialOrd,
-    Ord,
-    Serialize,
-    Deserialize,
-    Drive,
-    DriveMut,
-)]
-pub enum DeBruijnVar {
+#[derive(Debug, PartialEq, Eq, Copy, Clone, Hash, PartialOrd, Ord, Serialize, Deserialize)]
+pub enum DeBruijnVar<Bound, Free> {
     /// A variable attached to the nth binder, counting from the inside.
-    Bound(DeBruijnId, BoundRegionId),
+    Bound(DeBruijnId, Bound),
     /// A variable attached to an implicit binder outside all other binders. This is not present in
     /// translated code, and only provided as a convenience for convenient variable manipulation.
-    Free(FreeRegionId),
+    Free(Free),
 }
+
+pub type RegionDbVar = DeBruijnVar<BoundRegionId, FreeRegionId>;
 
 #[derive(
     Debug,
@@ -133,7 +122,7 @@ pub enum DeBruijnVar {
 #[charon::variants_prefix("R")]
 pub enum Region {
     /// Region variable. See `DeBruijnVar` for details.
-    Var(DeBruijnVar),
+    Var(RegionDbVar),
     /// Static region
     Static,
     /// Erased region

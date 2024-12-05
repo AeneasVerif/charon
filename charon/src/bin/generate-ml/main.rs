@@ -1309,6 +1309,8 @@ fn generate_ml(
                     "TypeDeclId",
                     "TypeVarId",
                     "VariantId",
+                    "DeBruijnId",
+                    "DeBruijnVar",
                 ]),
                 (GenerationKind::TypeDecl(Some(DeriveVisitors {
                     name: "const_generic",
@@ -1318,6 +1320,7 @@ fn generate_ml(
                         "const_generic_var_id",
                         "fun_decl_id",
                         "global_decl_id",
+                        "de_bruijn_id",
                         "free_region_id",
                         "bound_region_id",
                         "trait_clause_id",
@@ -1327,7 +1330,6 @@ fn generate_ml(
                         "type_var_id",
                     ],
                 })), &[
-                    "DeBruijnId",
                     "ConstGeneric",
                 ]),
                 // Can't merge into above because aeneas uses the above alongside their own partial
@@ -1344,7 +1346,6 @@ fn generate_ml(
                     "ExistentialPredicate",
                     "RefKind",
                     "TyKind",
-                    "DeBruijnVar",
                     "Region",
                     "TraitRef",
                     "TraitRefKind",

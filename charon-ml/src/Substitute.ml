@@ -8,7 +8,7 @@ open Expressions
 open LlbcAst
 
 type subst = {
-  r_subst : de_bruijn_var -> region;
+  r_subst : region_db_var -> region;
       (** Remark: this might be called with bound regions with a negative
           DeBruijn index. A negative DeBruijn index means that the region
           is locally bound. *)
@@ -155,7 +155,7 @@ let erase_regions_substitute_types (ty_subst : TypeVarId.id -> ty)
 (** Create a region substitution from a list of region variable ids and a list of
     regions (with which to substitute the region variable ids *)
 let make_region_subst (var_ids : BoundRegionId.id list) (regions : region list)
-    : de_bruijn_var -> region =
+    : region_db_var -> region =
   let ls = List.combine var_ids regions in
   let mp =
     List.fold_left
@@ -169,7 +169,7 @@ let make_region_subst (var_ids : BoundRegionId.id list) (regions : region list)
       if dbid = 0 then BoundRegionId.Map.find varid mp else RVar var
 
 let make_region_subst_from_vars (vars : region_var list) (regions : region list)
-    : de_bruijn_var -> region =
+    : region_db_var -> region =
   make_region_subst (List.map (fun (x : region_var) -> x.index) vars) regions
 
 (** Create a type substitution from a list of type variable ids and a list of

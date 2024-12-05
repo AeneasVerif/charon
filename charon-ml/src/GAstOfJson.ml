@@ -930,16 +930,22 @@ and de_bruijn_id_of_json (ctx : of_json_ctx) (js : json) :
     | x -> int_of_json ctx x
     | _ -> Error "")
 
-and de_bruijn_var_of_json (ctx : of_json_ctx) (js : json) :
-    (de_bruijn_var, string) result =
+and de_bruijn_var_of_json :
+      'a0 'a1.
+      (of_json_ctx -> json -> ('a0, string) result) ->
+      (of_json_ctx -> json -> ('a1, string) result) ->
+      of_json_ctx ->
+      json ->
+      (('a0, 'a1) de_bruijn_var, string) result =
+ fun arg0_of_json arg1_of_json ctx js ->
   combine_error_msgs js __FUNCTION__
     (match js with
     | `Assoc [ ("Bound", `List [ x_0; x_1 ]) ] ->
         let* x_0 = de_bruijn_id_of_json ctx x_0 in
-        let* x_1 = bound_region_id_of_json ctx x_1 in
+        let* x_1 = arg0_of_json ctx x_1 in
         Ok (Bound (x_0, x_1))
     | `Assoc [ ("Free", free) ] ->
-        let* free = free_region_id_of_json ctx free in
+        let* free = arg1_of_json ctx free in
         Ok (Free free)
     | _ -> Error "")
 
@@ -947,7 +953,10 @@ and region_of_json (ctx : of_json_ctx) (js : json) : (region, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
     | `Assoc [ ("Var", var) ] ->
-        let* var = de_bruijn_var_of_json ctx var in
+        let* var =
+          de_bruijn_var_of_json bound_region_id_of_json free_region_id_of_json
+            ctx var
+        in
         Ok (RVar var)
     | `String "Static" -> Ok RStatic
     | `String "Erased" -> Ok RErased

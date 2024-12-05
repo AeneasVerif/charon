@@ -30,8 +30,12 @@ impl DeBruijnId {
     }
 }
 
-impl DeBruijnVar {
-    pub fn bound(index: DeBruijnId, var: BoundRegionId) -> Self {
+impl<Bound, Free> DeBruijnVar<Bound, Free>
+where
+    Bound: Copy,
+    Free: Copy,
+{
+    pub fn bound(index: DeBruijnId, var: Bound) -> Self {
         DeBruijnVar::Bound(index, var)
     }
 
@@ -42,7 +46,7 @@ impl DeBruijnVar {
         }
     }
 
-    pub fn bound_at_depth(&self, depth: DeBruijnId) -> Option<BoundRegionId> {
+    pub fn bound_at_depth(&self, depth: DeBruijnId) -> Option<Bound> {
         match *self {
             DeBruijnVar::Bound(dbid, varid) if dbid == depth => Some(varid),
             _ => None,
@@ -637,5 +641,38 @@ impl<'a> SubstVisitor<'a> {
 impl Ty {
     pub fn substitute(&mut self, generics: &GenericArgs) {
         self.drive_inner_mut(&mut SubstVisitor::new(generics));
+    }
+}
+
+// The derive macro doesn't handle generics.
+impl<B: Drive, F: Drive> Drive for DeBruijnVar<B, F> {
+    fn drive<V: Visitor>(&self, visitor: &mut V) {
+        visitor.visit(self, Event::Enter);
+        match self {
+            DeBruijnVar::Bound(x, y) => {
+                x.drive(visitor);
+                y.drive(visitor);
+            }
+            DeBruijnVar::Free(x) => {
+                x.drive(visitor);
+            }
+        }
+        visitor.visit(self, Event::Exit);
+    }
+}
+
+impl<B: DriveMut, F: DriveMut> DriveMut for DeBruijnVar<B, F> {
+    fn drive_mut<V: VisitorMut>(&mut self, visitor: &mut V) {
+        visitor.visit(self, Event::Enter);
+        match self {
+            DeBruijnVar::Bound(x, y) => {
+                x.drive_mut(visitor);
+                y.drive_mut(visitor);
+            }
+            DeBruijnVar::Free(x) => {
+                x.drive_mut(visitor);
+            }
+        }
+        visitor.visit(self, Event::Exit);
     }
 }
