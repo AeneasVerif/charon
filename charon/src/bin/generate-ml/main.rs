@@ -1344,6 +1344,7 @@ fn generate_ml(
                     "ExistentialPredicate",
                     "RefKind",
                     "TyKind",
+                    "DeBruijnVar",
                     "Region",
                     "TraitRef",
                     "TraitRefKind",

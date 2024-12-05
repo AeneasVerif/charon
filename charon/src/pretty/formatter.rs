@@ -140,7 +140,7 @@ pub trait AstFormatter = Formatter<TypeVarId>
     + Formatter<TraitImplId>
     + Formatter<AnyTransId>
     + Formatter<TraitClauseId>
-    + Formatter<(DeBruijnId, BoundRegionId)>
+    + Formatter<DeBruijnVar>
     + Formatter<VarId>
     + Formatter<(TypeDeclId, VariantId)>
     + Formatter<(TypeDeclId, Option<VariantId>, FieldId)>
@@ -263,21 +263,24 @@ impl<'a> Formatter<AnyTransId> for FmtCtx<'a> {
     }
 }
 
-impl<'a> Formatter<(DeBruijnId, BoundRegionId)> for FmtCtx<'a> {
-    fn format_object(&self, (grid, id): (DeBruijnId, BoundRegionId)) -> String {
-        match self.generics.get(grid.index) {
-            None => Region::BVar(grid, id).to_string(),
-            Some(generics) => match generics.regions.get(id) {
-                None => {
-                    let region = Region::BVar(grid, id);
-                    tracing::warn!(
-                        "Found incorrect region `{region}` while pretty-printing. Look for \
+impl<'a> Formatter<DeBruijnVar> for FmtCtx<'a> {
+    fn format_object(&self, var: DeBruijnVar) -> String {
+        match var {
+            DeBruijnVar::Bound(dbid, varid) => match self.generics.get(dbid.index) {
+                None => Region::Var(var).to_string(),
+                Some(generics) => match generics.regions.get(varid) {
+                    None => {
+                        let region = Region::Var(var);
+                        tracing::warn!(
+                            "Found incorrect region `{region}` while pretty-printing. Look for \
                         \"wrong_region\" in the pretty output"
-                    );
-                    format!("wrong_region({region})")
-                }
-                Some(v) => self.format_object(v),
+                        );
+                        format!("wrong_region({region})")
+                    }
+                    Some(v) => self.format_object(v),
+                },
             },
+            DeBruijnVar::Free(_) => Region::Var(var).to_string(),
         }
     }
 }

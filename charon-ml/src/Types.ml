@@ -346,36 +346,41 @@ type global_decl_ref = {
 
 and trait_item_name = string
 
+(** Bound region variable.
+
+    **Important**:
+    ==============
+    Similarly to what the Rust compiler does, we use De Bruijn indices to
+    identify *groups* of bound variables, and variable identifiers to
+    identity the variables inside the groups.
+
+    For instance, we have the following:
+    ```text
+                        we compute the De Bruijn indices from here
+                               VVVVVVVVVVVVVVVVVVVVVVV
+    fn f<'a, 'b>(x: for<'c> fn(&'a u8, &'b u16, &'c u32) -> u64) {}
+         ^^^^^^         ^^       ^       ^        ^
+           |      De Bruijn: 0   |       |        |
+     De Bruijn: 1                |       |        |
+                           De Bruijn: 1  |    De Bruijn: 0
+                              Var id: 0  |       Var id: 0
+                                         |
+                                   De Bruijn: 1
+                                      Var id: 1
+    ```
+ *)
+and de_bruijn_var =
+  | Bound of de_bruijn_id * bound_region_id
+      (** A variable attached to the nth binder, counting from the inside. *)
+  | Free of free_region_id
+      (** A variable attached to an implicit binder outside all other binders. This is not present in
+          translated code, and only provided as a convenience for convenient variable manipulation.
+       *)
+
 and region =
+  | RVar of de_bruijn_var
+      (** Region variable. See `DeBruijnVar` for details. *)
   | RStatic  (** Static region *)
-  | RBVar of de_bruijn_id * bound_region_id
-      (** Bound region variable.
-
-          **Important**:
-          ==============
-          Similarly to what the Rust compiler does, we use De Bruijn indices to
-          identify *groups* of bound variables, and variable identifiers to
-          identity the variables inside the groups.
-
-          For instance, we have the following:
-          ```text
-                              we compute the De Bruijn indices from here
-                                     VVVVVVVVVVVVVVVVVVVVVVV
-          fn f<'a, 'b>(x: for<'c> fn(&'a u8, &'b u16, &'c u32) -> u64) {}
-               ^^^^^^         ^^       ^       ^        ^
-                 |      De Bruijn: 0   |       |        |
-           De Bruijn: 1                |       |        |
-                                 De Bruijn: 1  |    De Bruijn: 0
-                                    Var id: 0  |       Var id: 0
-                                               |
-                                         De Bruijn: 1
-                                            Var id: 1
-          ```
-       *)
-  | RFVar of free_region_id
-      (** A variable not attached to specific. This is not present in translated code, and only
-          provided as a convenience for variable manipulation.
-       *)
   | RErased  (** Erased region *)
 
 (** Identifier of a trait instance.
@@ -561,16 +566,15 @@ class ['self] iter_ty =
   object (self : 'self)
     inherit [_] iter_ty_inner
 
-    method! visit_RBVar env (db_id : de_bruijn_id) (var_id : bound_region_id) =
-      self#visit_bound_region env db_id var_id
+    method! visit_RVar env (var : de_bruijn_var) =
+      match var with
+      | Free var_id -> self#visit_free_region env var_id
+      | Bound (db_id, var_id) -> self#visit_bound_region env db_id var_id
 
     method visit_bound_region env (db_id : de_bruijn_id)
         (var_id : bound_region_id) =
       self#visit_de_bruijn_id env db_id;
       self#visit_bound_region_id env var_id
-
-    method! visit_RFVar env (var_id : free_region_id) =
-      self#visit_free_region env var_id
 
     method visit_free_region env (var_id : free_region_id) =
       self#visit_free_region_id env var_id
@@ -581,19 +585,20 @@ class virtual ['self] map_ty =
   object (self : 'self)
     inherit [_] map_ty_inner
 
-    method! visit_RBVar env (db_id : de_bruijn_id) (var_id : bound_region_id) =
-      let db_id, var_id = self#visit_bound_region env db_id var_id in
-      RBVar (db_id, var_id)
+    method! visit_RVar env (var : de_bruijn_var) =
+      match var with
+      | Free var_id ->
+          let var_id = self#visit_free_region env var_id in
+          RVar (Free var_id)
+      | Bound (db_id, var_id) ->
+          let db_id, var_id = self#visit_bound_region env db_id var_id in
+          RVar (Bound (db_id, var_id))
 
     method visit_bound_region env (db_id : de_bruijn_id)
         (var_id : bound_region_id) =
       let db_id = self#visit_de_bruijn_id env db_id in
       let var_id = self#visit_bound_region_id env var_id in
       (db_id, var_id)
-
-    method! visit_RFVar env (var_id : free_region_id) =
-      let var_id = self#visit_free_region env var_id in
-      RFVar var_id
 
     method visit_free_region env (var_id : free_region_id) =
       self#visit_free_region_id env var_id

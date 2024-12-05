@@ -30,6 +30,26 @@ impl DeBruijnId {
     }
 }
 
+impl DeBruijnVar {
+    pub fn bound(index: DeBruijnId, var: BoundRegionId) -> Self {
+        DeBruijnVar::Bound(index, var)
+    }
+
+    pub fn decr(&self) -> Self {
+        match *self {
+            DeBruijnVar::Bound(dbid, varid) => DeBruijnVar::Bound(dbid.decr(), varid),
+            DeBruijnVar::Free(varid) => DeBruijnVar::Free(varid),
+        }
+    }
+
+    pub fn bound_at_depth(&self, depth: DeBruijnId) -> Option<BoundRegionId> {
+        match *self {
+            DeBruijnVar::Bound(dbid, varid) if dbid == depth => Some(varid),
+            _ => None,
+        }
+    }
+}
+
 impl TypeVar {
     pub fn new(index: TypeVarId, name: String) -> TypeVar {
         TypeVar { index, name }
@@ -79,7 +99,7 @@ impl GenericParams {
             regions: self
                 .regions
                 .iter_indexed()
-                .map(|(id, _)| Region::BVar(DeBruijnId::new(0), id))
+                .map(|(id, _)| Region::Var(DeBruijnVar::bound(DeBruijnId::new(0), id)))
                 .collect(),
             types: self
                 .types
@@ -583,9 +603,9 @@ impl<'a> SubstVisitor<'a> {
 
     fn exit_region(&mut self, r: &mut Region) {
         match r {
-            Region::BVar(db, id) => {
-                if *db == self.binder_depth {
-                    *r = self.generics.regions.get(*id).unwrap().clone()
+            Region::Var(var) => {
+                if let Some(varid) = var.bound_at_depth(self.binder_depth) {
+                    *r = self.generics.regions.get(varid).unwrap().clone()
                 }
             }
             _ => (),

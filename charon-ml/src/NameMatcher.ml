@@ -345,19 +345,20 @@ let update_rmap (c : match_config) (m : maps) (id : var) (v : T.region) : bool =
   (* When it comes to matching, we treat erased regions like variables. *)
   let is_var =
     match v with
-    | RBVar _ | RErased | RFVar _ -> true
-    | _ -> false
+    | RVar _ | RErased -> true
+    | RStatic -> false
   in
   if c.map_vars_to_vars && not is_var then false
   else
     match v with
-    | RBVar (db_id, rid) -> (
+    | RVar (Bound (dbid, varid)) -> begin
         (* Special treatment for the bound regions *)
-        match List.nth_opt m.rmap.bound_regions db_id with
+        match List.nth_opt m.rmap.bound_regions dbid with
         | None -> raise (Failure "Unexpected bound variable")
         | Some brmap ->
             update_map T.BoundRegionId.Map.find_opt T.BoundRegionId.Map.add
-              brmap rid v)
+              brmap varid v
+      end
     | _ -> update_map VarMap.find_opt VarMap.add m.rmap.regions id v
 
 let update_tmap (c : match_config) (m : maps) (id : var) (v : T.ty) : bool =
@@ -436,7 +437,7 @@ let match_region (c : match_config) (m : maps) (id : region) (v : T.region) :
     bool =
   match (id, v) with
   | RStatic, RStatic -> true
-  | RVar id, (RBVar _ | RFVar _ | RErased) ->
+  | RVar id, (RVar _ | RErased) ->
       (* When it comes to matching, we treat erased regions like variables *)
       opt_update_rmap c m id v
   | RVar id, _ -> if c.map_vars_to_vars then false else opt_update_rmap c m id v
@@ -797,15 +798,15 @@ let ref_kind_to_pattern (rk : T.ref_kind) : ref_kind =
 
 let region_to_pattern (m : constraints) (r : T.region) : region =
   match r with
-  | RBVar (bdid, r) ->
+  | RVar (Bound (dbid, varid)) ->
       RVar
-        (match List.nth_opt m.rmap bdid with
+        (match List.nth_opt m.rmap dbid with
         | None -> None
         | Some rmap -> (
-            match T.BoundRegionId.Map.find_opt r rmap with
+            match T.BoundRegionId.Map.find_opt varid rmap with
             | Some r -> r
             | None -> None))
-  | RFVar _ ->
+  | RVar (Free _) ->
       (* For now we don't have a precise treatment of the free region variables
          in the patterns.
          Note that they should be used only in the symbolic execution *)

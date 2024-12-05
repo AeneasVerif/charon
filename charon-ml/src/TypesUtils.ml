@@ -108,6 +108,12 @@ let trait_instance_id_as_trait_impl (id : trait_instance_id) :
   | TraitImpl (impl_id, args) -> (impl_id, args)
   | _ -> raise (Failure "Unreachable")
 
+let zero_db_var (varid : bound_region_id) : de_bruijn_var = Bound (0, varid)
+
+let decr_db_var : de_bruijn_var -> de_bruijn_var = function
+  | Free id -> Free id
+  | Bound (dbid, id) -> Bound (dbid - 1, id)
+
 let empty_generic_args : generic_args =
   { regions = []; types = []; const_generics = []; trait_refs = [] }
 
@@ -146,7 +152,9 @@ let merge_generic_args (g1 : generic_args) (g2 : generic_args) : generic_args =
 
 let generic_args_of_params span (generics : generic_params) : generic_args =
   let regions =
-    List.map (fun (v : region_var) -> RBVar (0, v.index)) generics.regions
+    List.map
+      (fun (v : region_var) -> RVar (zero_db_var v.index))
+      generics.regions
   in
   let types = List.map (fun (v : type_var) -> TVar v.index) generics.types in
   let const_generics =
@@ -199,9 +207,9 @@ let region_in_set (r : region) (rset : FreeRegionId.Set.t) : bool =
   | RStatic -> false
   | RErased ->
       raise (Failure "region_in_set shouldn't be called on erased regions")
-  | RBVar _ ->
+  | RVar (Bound _) ->
       raise (Failure "region_in_set shouldn't be called on bound regions")
-  | RFVar id -> FreeRegionId.Set.mem id rset
+  | RVar (Free id) -> FreeRegionId.Set.mem id rset
 
 (** Return the set of regions in an type - TODO: add static?
 
@@ -215,9 +223,9 @@ let ty_regions (ty : ty) : FreeRegionId.Set.t =
     | RStatic -> () (* TODO: static? *)
     | RErased ->
         raise (Failure "ty_regions shouldn't be called on erased regions")
-    | RBVar _ ->
+    | RVar (Bound _) ->
         raise (Failure "region_in_set shouldn't be called on bound regions")
-    | RFVar rid -> s := FreeRegionId.Set.add rid !s
+    | RVar (Free id) -> s := FreeRegionId.Set.add id !s
   in
   let obj =
     object

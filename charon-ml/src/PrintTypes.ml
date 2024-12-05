@@ -25,12 +25,11 @@ let builtin_ty_to_string (_ : builtin_ty) : string = "Box"
 let trait_clause_id_to_pretty_string (id : trait_clause_id) : string =
   "TraitClause@" ^ TraitClauseId.to_string id
 
-let bound_region_id_to_pretty_string (db_id : de_bruijn_id)
-    (id : bound_region_id) : string =
-  "'" ^ show_de_bruijn_id db_id ^ "_" ^ BoundRegionId.to_string id
-
-let free_region_id_to_pretty_string (id : free_region_id) : string =
-  "'" ^ FreeRegionId.to_string id
+let bound_region_var_to_pretty_string (var : de_bruijn_var) : string =
+  match var with
+  | Bound (dbid, varid) ->
+      "'" ^ show_de_bruijn_id dbid ^ "_" ^ BoundRegionId.to_string varid
+  | Free id -> "'" ^ FreeRegionId.to_string id
 
 let type_var_id_to_pretty_string (id : type_var_id) : string =
   "T@" ^ TypeVarId.to_string id
@@ -59,15 +58,22 @@ let variant_id_to_pretty_string (id : variant_id) : string =
 let field_id_to_pretty_string (id : field_id) : string =
   "Field@" ^ FieldId.to_string id
 
-let bound_region_id_to_string (env : 'a fmt_env) (db_id : de_bruijn_id)
-    (id : bound_region_id) : string =
-  match List.nth_opt env.regions db_id with
-  | None -> bound_region_id_to_pretty_string db_id id
-  | Some regions -> (
-      (* Note that the regions are not necessarily ordered following their indices *)
-      match List.find_opt (fun (r : region_var) -> r.index = id) regions with
-      | None -> bound_region_id_to_pretty_string db_id id
-      | Some r -> region_var_to_string r)
+let bound_region_var_to_string (env : 'a fmt_env) (var : de_bruijn_var) : string
+    =
+  match var with
+  | Bound (dbid, varid) -> begin
+      match List.nth_opt env.regions dbid with
+      | None -> bound_region_var_to_pretty_string var
+      | Some regions -> begin
+          (* Note that the regions are not necessarily ordered following their indices *)
+          match
+            List.find_opt (fun (r : region_var) -> r.index = varid) regions
+          with
+          | None -> bound_region_var_to_pretty_string var
+          | Some r -> region_var_to_string r
+        end
+    end
+  | Free _ -> bound_region_var_to_pretty_string var
 
 let type_var_id_to_string (env : 'a fmt_env) (id : type_var_id) : string =
   (* Note that the types are not necessarily ordered following their indices *)
@@ -92,8 +98,7 @@ let region_to_string (env : 'a fmt_env) (r : region) : string =
   match r with
   | RStatic -> "'static"
   | RErased -> "'_"
-  | RBVar (db, rid) -> bound_region_id_to_string env db rid
-  | RFVar rid -> free_region_id_to_pretty_string rid
+  | RVar var -> bound_region_var_to_string env var
 
 let trait_clause_id_to_string _ id = trait_clause_id_to_pretty_string id
 

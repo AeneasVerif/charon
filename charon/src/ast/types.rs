@@ -70,6 +70,50 @@ pub struct DeBruijnId {
     pub index: usize,
 }
 
+/// Bound region variable.
+///
+/// **Important**:
+/// ==============
+/// Similarly to what the Rust compiler does, we use De Bruijn indices to
+/// identify *groups* of bound variables, and variable identifiers to
+/// identity the variables inside the groups.
+///
+/// For instance, we have the following:
+/// ```text
+///                     we compute the De Bruijn indices from here
+///                            VVVVVVVVVVVVVVVVVVVVVVV
+/// fn f<'a, 'b>(x: for<'c> fn(&'a u8, &'b u16, &'c u32) -> u64) {}
+///      ^^^^^^         ^^       ^       ^        ^
+///        |      De Bruijn: 0   |       |        |
+///  De Bruijn: 1                |       |        |
+///                        De Bruijn: 1  |    De Bruijn: 0
+///                           Var id: 0  |       Var id: 0
+///                                      |
+///                                De Bruijn: 1
+///                                   Var id: 1
+/// ```
+#[derive(
+    Debug,
+    PartialEq,
+    Eq,
+    Copy,
+    Clone,
+    Hash,
+    PartialOrd,
+    Ord,
+    Serialize,
+    Deserialize,
+    Drive,
+    DriveMut,
+)]
+pub enum DeBruijnVar {
+    /// A variable attached to the nth binder, counting from the inside.
+    Bound(DeBruijnId, BoundRegionId),
+    /// A variable attached to an implicit binder outside all other binders. This is not present in
+    /// translated code, and only provided as a convenience for convenient variable manipulation.
+    Free(FreeRegionId),
+}
+
 #[derive(
     Debug,
     PartialEq,
@@ -88,34 +132,10 @@ pub struct DeBruijnId {
 )]
 #[charon::variants_prefix("R")]
 pub enum Region {
+    /// Region variable. See `DeBruijnVar` for details.
+    Var(DeBruijnVar),
     /// Static region
     Static,
-    /// Bound region variable.
-    ///
-    /// **Important**:
-    /// ==============
-    /// Similarly to what the Rust compiler does, we use De Bruijn indices to
-    /// identify *groups* of bound variables, and variable identifiers to
-    /// identity the variables inside the groups.
-    ///
-    /// For instance, we have the following:
-    /// ```text
-    ///                     we compute the De Bruijn indices from here
-    ///                            VVVVVVVVVVVVVVVVVVVVVVV
-    /// fn f<'a, 'b>(x: for<'c> fn(&'a u8, &'b u16, &'c u32) -> u64) {}
-    ///      ^^^^^^         ^^       ^       ^        ^
-    ///        |      De Bruijn: 0   |       |        |
-    ///  De Bruijn: 1                |       |        |
-    ///                        De Bruijn: 1  |    De Bruijn: 0
-    ///                           Var id: 0  |       Var id: 0
-    ///                                      |
-    ///                                De Bruijn: 1
-    ///                                   Var id: 1
-    /// ```
-    BVar(DeBruijnId, BoundRegionId),
-    /// A variable not attached to specific. This is not present in translated code, and only
-    /// provided as a convenience for variable manipulation.
-    FVar(FreeRegionId),
     /// Erased region
     Erased,
 }
