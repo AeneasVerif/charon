@@ -8,7 +8,7 @@ open Expressions
 open LlbcAst
 
 type subst = {
-  r_subst : region -> region;
+  r_subst : de_bruijn_var -> region;
       (** Remark: this might be called with bound regions with a negative
           DeBruijn index. A negative DeBruijn index means that the region
           is locally bound. *)
@@ -22,7 +22,7 @@ type subst = {
 
 let empty_subst : subst =
   {
-    r_subst = (fun x -> x);
+    r_subst = (fun x -> RVar x);
     ty_subst = (fun id -> TVar id);
     cg_subst = (fun id -> CgVar id);
     tr_subst = (fun id -> Clause id);
@@ -32,22 +32,18 @@ let empty_subst : subst =
 let st_substitute_visitor =
   object (self)
     inherit [_] map_statement
-    method! visit_region (subst : subst) r = subst.r_subst r
 
     (** We need to properly handle the DeBruijn indices *)
     method! visit_region_binder visit_value (subst : subst) x =
       (* Decrement the DeBruijn indices before calling the substitution *)
-      let r_subst r =
-        match r with
-        | RVar var -> subst.r_subst (RVar (decr_db_var var))
-        | _ -> subst.r_subst r
-      in
+      let r_subst var = subst.r_subst (decr_db_var var) in
       let subst = { subst with r_subst } in
       (* Note that we ignore the bound regions variables *)
       let { binder_regions; binder_value } = x in
       let binder_value = visit_value subst binder_value in
       { binder_regions; binder_value }
 
+    method! visit_RVar (subst : subst) var = subst.r_subst var
     method! visit_TVar (subst : subst) id = subst.ty_subst id
     method! visit_CgVar (subst : subst) id = subst.cg_subst id
     method! visit_Clause (subst : subst) id = subst.tr_subst id
@@ -152,30 +148,28 @@ let erase_regions_substitute_types (ty_subst : TypeVarId.id -> ty)
     (cg_subst : ConstGenericVarId.id -> const_generic)
     (tr_subst : TraitClauseId.id -> trait_instance_id)
     (tr_self : trait_instance_id) (ty : ty) : ty =
-  let r_subst (_ : region) : region = RErased in
+  let r_subst _ : region = RErased in
   let subst = { r_subst; ty_subst; cg_subst; tr_subst; tr_self } in
   ty_substitute subst ty
 
 (** Create a region substitution from a list of region variable ids and a list of
     regions (with which to substitute the region variable ids *)
 let make_region_subst (var_ids : BoundRegionId.id list) (regions : region list)
-    : region -> region =
+    : de_bruijn_var -> region =
   let ls = List.combine var_ids regions in
   let mp =
     List.fold_left
       (fun mp (k, v) -> BoundRegionId.Map.add k v mp)
       BoundRegionId.Map.empty ls
   in
-  fun r ->
-    match r with
-    | RStatic | RErased -> r
-    | RVar (Free _) -> raise (Failure "Unexpected")
-    | RVar (Bound (dbid, varid)) ->
-        (* Only substitute the bound regions with DeBruijn index equal to 0 *)
-        if dbid = 0 then BoundRegionId.Map.find varid mp else r
+  function
+  | Free _ -> raise (Failure "Unexpected")
+  | Bound (dbid, varid) as var ->
+      (* Only substitute the bound regions with DeBruijn index equal to 0 *)
+      if dbid = 0 then BoundRegionId.Map.find varid mp else RVar var
 
 let make_region_subst_from_vars (vars : region_var list) (regions : region list)
-    : region -> region =
+    : de_bruijn_var -> region =
   make_region_subst (List.map (fun (x : region_var) -> x.index) vars) regions
 
 (** Create a type substitution from a list of type variable ids and a list of
