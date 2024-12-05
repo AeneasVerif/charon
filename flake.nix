@@ -43,8 +43,7 @@
           mkdir generated
           cp ${charon}/generated-ml/* generated
           chmod u+w generated/*
-          cp ${./charon-ml/.ocamlformat} .ocamlformat
-          ${pkgs.ocamlPackages.ocamlformat}/bin/ocamlformat --inplace --enable-outside-detected-project generated/*.ml
+          ${pkgs.ocamlPackages.ocamlformat}/bin/ocamlformat --doc-comments=before --exp-grouping=preserve --inplace --enable-outside-detected-project generated/*.ml
 
           mkdir committed
           cp ${./charon-ml/src}/GAst.ml committed

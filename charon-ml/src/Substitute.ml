@@ -12,10 +12,10 @@ type subst = {
       (** Remark: this might be called with bound regions with a negative
           DeBruijn index. A negative DeBruijn index means that the region
           is locally bound. *)
-  ty_subst : TypeVarId.id -> ty;
-  cg_subst : ConstGenericVarId.id -> const_generic;
+  ty_subst : TypeVarId.id de_bruijn_var -> ty;
+  cg_subst : ConstGenericVarId.id de_bruijn_var -> const_generic;
       (** Substitution from *local* trait clause to trait instance *)
-  tr_subst : TraitClauseId.id -> trait_instance_id;
+  tr_subst : TraitClauseId.id de_bruijn_var -> trait_instance_id;
       (** Substitution for the [Self] trait instance *)
   tr_self : trait_instance_id;
 }
@@ -23,10 +23,29 @@ type subst = {
 let empty_subst : subst =
   {
     r_subst = (fun x -> x);
-    ty_subst = (fun id -> TVar id);
-    cg_subst = (fun id -> CgVar id);
+    ty_subst = (fun var -> TVar var);
+    cg_subst = (fun var -> CgVar var);
     tr_subst = (fun id -> Clause id);
     tr_self = Self;
+  }
+
+(** Decrement the debruijn index of a debruijn variable *)
+let decr_db_var (var : 'a de_bruijn_var) : 'a de_bruijn_var =
+  { dbid = var.dbid - 1; varid = var.varid }
+
+(** Shift the indices of the substitution under on binder level. *)
+let shift_subst (subst : subst) : subst =
+  let shift_region r =
+    match r with
+    | RBVar var -> RBVar (decr_db_var var)
+    | _ -> r
+  in
+  {
+    r_subst = (fun r -> subst.r_subst (shift_region r));
+    ty_subst = (fun var -> subst.ty_subst (decr_db_var var));
+    cg_subst = (fun var -> subst.cg_subst (decr_db_var var));
+    tr_subst = (fun var -> subst.tr_subst (decr_db_var var));
+    tr_self = subst.tr_self;
   }
 
 let st_substitute_visitor =
@@ -37,12 +56,7 @@ let st_substitute_visitor =
     (** We need to properly handle the DeBruijn indices *)
     method! visit_TArrow (subst : subst) regions inputs output =
       (* Decrement the DeBruijn indices before calling the substitution *)
-      let r_subst r =
-        match r with
-        | RBVar (db, rid) -> subst.r_subst (RBVar (db - 1, rid))
-        | _ -> subst.r_subst r
-      in
-      let subst = { subst with r_subst } in
+      let subst = shift_subst subst in
       (* Note that we ignore the bound regions variables *)
       let inputs = List.map (self#visit_ty subst) inputs in
       let output = self#visit_ty subst output in
@@ -51,12 +65,7 @@ let st_substitute_visitor =
     (** We need to properly handle the DeBruijn indices *)
     method! visit_region_binder visit_value (subst : subst) x =
       (* Decrement the DeBruijn indices before calling the substitution *)
-      let r_subst r =
-        match r with
-        | RBVar (db, rid) -> subst.r_subst (RBVar (db - 1, rid))
-        | _ -> subst.r_subst r
-      in
-      let subst = { subst with r_subst } in
+      let subst = shift_subst subst in
       (* Note that we ignore the bound regions variables *)
       let { binder_regions; binder_value } = x in
       let binder_value = visit_value subst binder_value in
@@ -162,9 +171,9 @@ let generic_args_erase_regions (tr : generic_args) : generic_args =
   generic_args_substitute erase_regions_subst tr
 
 (** Erase the regions in a type and perform a substitution *)
-let erase_regions_substitute_types (ty_subst : TypeVarId.id -> ty)
-    (cg_subst : ConstGenericVarId.id -> const_generic)
-    (tr_subst : TraitClauseId.id -> trait_instance_id)
+let erase_regions_substitute_types (ty_subst : TypeVarId.id de_bruijn_var -> ty)
+    (cg_subst : ConstGenericVarId.id de_bruijn_var -> const_generic)
+    (tr_subst : TraitClauseId.id de_bruijn_var -> trait_instance_id)
     (tr_self : trait_instance_id) (ty : ty) : ty =
   let r_subst (_ : region) : region = RErased in
   let subst = { r_subst; ty_subst; cg_subst; tr_subst; tr_self } in
@@ -184,9 +193,9 @@ let make_region_subst (var_ids : RegionVarId.id list) (regions : region list) :
     match r with
     | RStatic | RErased -> r
     | RFVar _ -> raise (Failure "Unexpected")
-    | RBVar (bdid, id) ->
+    | RBVar var ->
         (* Only substitute the bound regions with DeBruijn index equal to 0 *)
-        if bdid = 0 then RegionVarId.Map.find id mp else r
+        if var.dbid = 0 then RegionVarId.Map.find var.varid mp else r
 
 let make_region_subst_from_vars (vars : region_var list) (regions : region list)
     : region -> region =
@@ -195,33 +204,39 @@ let make_region_subst_from_vars (vars : region_var list) (regions : region list)
 (** Create a type substitution from a list of type variable ids and a list of
     types (with which to substitute the type variable ids) *)
 let make_type_subst (var_ids : TypeVarId.id list) (tys : ty list) :
-    TypeVarId.id -> ty =
+    TypeVarId.id de_bruijn_var -> ty =
   let ls = List.combine var_ids tys in
   let mp =
     List.fold_left
       (fun mp (k, v) -> TypeVarId.Map.add k v mp)
       TypeVarId.Map.empty ls
   in
-  fun id -> TypeVarId.Map.find id mp
+  fun var ->
+    (* Only substitute the variables with DeBruijn index equal to 0 *)
+    if var.dbid = 0 then TypeVarId.Map.find var.varid mp else TVar var
 
 let make_type_subst_from_vars (vars : type_var list) (tys : ty list) :
-    TypeVarId.id -> ty =
+    TypeVarId.id de_bruijn_var -> ty =
   make_type_subst (List.map (fun (x : type_var) -> x.index) vars) tys
 
 (** Create a const generic substitution from a list of const generic variable ids and a list of
     const generics (with which to substitute the const generic variable ids) *)
 let make_const_generic_subst (var_ids : ConstGenericVarId.id list)
-    (cgs : const_generic list) : ConstGenericVarId.id -> const_generic =
+    (cgs : const_generic list) :
+    ConstGenericVarId.id de_bruijn_var -> const_generic =
   let ls = List.combine var_ids cgs in
   let mp =
     List.fold_left
       (fun mp (k, v) -> ConstGenericVarId.Map.add k v mp)
       ConstGenericVarId.Map.empty ls
   in
-  fun id -> ConstGenericVarId.Map.find id mp
+  fun var ->
+    (* Only substitute the variables with DeBruijn index equal to 0 *)
+    if var.dbid = 0 then ConstGenericVarId.Map.find var.varid mp else CgVar var
 
 let make_const_generic_subst_from_vars (vars : const_generic_var list)
-    (cgs : const_generic list) : ConstGenericVarId.id -> const_generic =
+    (cgs : const_generic list) :
+    ConstGenericVarId.id de_bruijn_var -> const_generic =
   make_const_generic_subst
     (List.map (fun (x : const_generic_var) -> x.index) vars)
     cgs
@@ -229,17 +244,20 @@ let make_const_generic_subst_from_vars (vars : const_generic_var list)
 (** Create a trait substitution from a list of trait clause ids and a list of
     trait refs *)
 let make_trait_subst (clause_ids : TraitClauseId.id list) (trs : trait_ref list)
-    : TraitClauseId.id -> trait_instance_id =
+    : TraitClauseId.id de_bruijn_var -> trait_instance_id =
   let ls = List.combine clause_ids trs in
   let mp =
     List.fold_left
       (fun mp (k, v) -> TraitClauseId.Map.add k v.trait_id mp)
       TraitClauseId.Map.empty ls
   in
-  fun id -> TraitClauseId.Map.find id mp
+  fun var ->
+    (* Only substitute the variables with DeBruijn index equal to 0 *)
+    if var.dbid = 0 then TraitClauseId.Map.find var.varid mp else Clause var
 
 let make_trait_subst_from_clauses (clauses : trait_clause list)
-    (trs : trait_ref list) : TraitClauseId.id -> trait_instance_id =
+    (trs : trait_ref list) : TraitClauseId.id de_bruijn_var -> trait_instance_id
+    =
   make_trait_subst
     (List.map (fun (x : trait_clause) -> x.clause_id) clauses)
     trs

@@ -809,7 +809,7 @@ impl<C: AstFormatter> FmtWithCtx<C> for Region {
     fn fmt_with_ctx(&self, ctx: &C) -> String {
         match self {
             Region::Static => "'static".to_string(),
-            Region::BVar(grid, id) => ctx.format_object((*grid, *id)),
+            Region::BVar(var) => ctx.format_object(*var),
             Region::Erased => "'_".to_string(),
             Region::Unknown => "'_UNKNOWN_".to_string(),
         }
@@ -1138,7 +1138,7 @@ impl<C: AstFormatter> FmtWithCtx<C> for Terminator {
 
 impl<C: AstFormatter> FmtWithCtx<C> for TraitClause {
     fn fmt_with_ctx(&self, ctx: &C) -> String {
-        let clause_id = ctx.format_object(self.clause_id);
+        let clause_id = self.clause_id.to_pretty_string();
         let trait_ = self.trait_.fmt_with_ctx(ctx);
         format!("[{clause_id}]: {trait_}")
     }
@@ -1554,6 +1554,12 @@ impl std::fmt::Display for ConstantExpr {
     }
 }
 
+impl std::fmt::Display for DeBruijnId {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::result::Result<(), std::fmt::Error> {
+        write!(f, "{}", self.index)
+    }
+}
+
 impl std::fmt::Display for FileName {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::result::Result<(), std::fmt::Error> {
         match self {
@@ -1663,7 +1669,7 @@ impl std::fmt::Display for Region {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::result::Result<(), std::fmt::Error> {
         match self {
             Region::Static => write!(f, "'static"),
-            Region::BVar(grid, id) => write!(f, "'_{}_{id}", grid.index),
+            Region::BVar(var) => write!(f, "'_{}_{}", var.dbid.index, var.varid),
             Region::Erased => write!(f, "'_"),
             Region::Unknown => write!(f, "'_UNKNOWN_"),
         }

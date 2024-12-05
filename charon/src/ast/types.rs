@@ -18,8 +18,6 @@ generate_index_type!(RegionId, "Region");
 generate_index_type!(ConstGenericVarId, "Const");
 
 /// Type variable.
-/// We make sure not to mix variables and type variables by having two distinct
-/// definitions.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Drive, DriveMut)]
 pub struct TypeVar {
     /// Unique index identifying the variable
@@ -69,6 +67,42 @@ pub struct DeBruijnId {
     pub index: usize,
 }
 
+/// Bound variable.
+///
+/// **Important**:
+/// ==============
+/// Similarly to what the Rust compiler does, we use De Bruijn indices to identify *groups* of
+/// bound variables, and variable identifiers to identify the variables inside the groups. Each
+/// syntactic item that introduces generics counts as one group of generics; we count type, region
+/// and const generics variables together.
+///
+/// The exception is methods: we merge the generics of the impl/trait block with the generics of
+/// the function. In other words, every top-level item (as considered by charon) has a single
+/// binder for its generic parameters.
+///
+/// For instance, we have the following:
+/// ```text
+/// fn f<'a, 'b, T>(x: for<'c> fn(&'a u8, &'b u16, &'c T) -> u64) {}
+///                                 ^       ^        ^ ^
+///                                 |       |        | |
+///                                 |       |        | |
+///                           De Bruijn: 1  |        | De Bruijn: 1
+///                              Var id: 0  |        |    Var id: 0
+///                                         |        |
+///                                   De Bruijn: 1   |
+///                                      Var id: 1   |
+///                                                  |
+///                                              De Bruijn: 0
+///                                                 Var id: 0
+/// ```
+///
+/// This is generic in the variable type. Typical values for `V` are `RegionId` and `TypeVarId`.
+#[derive(Debug, PartialEq, Eq, Copy, Clone, Hash, PartialOrd, Ord, Serialize, Deserialize)]
+pub struct DeBruijnVar<V> {
+    pub dbid: DeBruijnId,
+    pub varid: V,
+}
+
 #[derive(
     Debug,
     PartialEq,
@@ -89,29 +123,8 @@ pub struct DeBruijnId {
 pub enum Region {
     /// Static region
     Static,
-    /// Bound region variable.
-    ///
-    /// **Important**:
-    /// ==============
-    /// Similarly to what the Rust compiler does, we use De Bruijn indices to
-    /// identify *groups* of bound variables, and variable identifiers to
-    /// identity the variables inside the groups.
-    ///
-    /// For instance, we have the following:
-    /// ```text
-    ///                     we compute the De Bruijn indices from here
-    ///                            VVVVVVVVVVVVVVVVVVVVVVV
-    /// fn f<'a, 'b>(x: for<'c> fn(&'a u8, &'b u16, &'c u32) -> u64) {}
-    ///      ^^^^^^         ^^       ^       ^        ^
-    ///        |      De Bruijn: 0   |       |        |
-    ///  De Bruijn: 1                |       |        |
-    ///                        De Bruijn: 1  |    De Bruijn: 0
-    ///                           Var id: 0  |       Var id: 0
-    ///                                      |
-    ///                                De Bruijn: 1
-    ///                                   Var id: 1
-    /// ```
-    BVar(DeBruijnId, RegionId),
+    /// Bound region variable. See `DeBruijnVar` for details.
+    BVar(DeBruijnVar<RegionId>),
     /// Erased region
     Erased,
     /// For error reporting.
@@ -140,7 +153,7 @@ pub enum TraitRefKind {
     ///                    ^^^^^^^
     ///                    Clause(0)
     /// ```
-    Clause(TraitClauseId),
+    Clause(DeBruijnVar<TraitClauseId>),
 
     /// A parent clause
     ///
@@ -651,7 +664,7 @@ pub enum ConstGeneric {
     /// A global constant
     Global(GlobalDeclId),
     /// A const generic variable
-    Var(ConstGenericVarId),
+    Var(DeBruijnVar<ConstGenericVarId>),
     /// A concrete value
     Value(Literal),
 }
@@ -712,7 +725,7 @@ pub enum TyKind {
     /// types.
     Adt(TypeId, GenericArgs),
     #[charon::rename("TVar")]
-    TypeVar(TypeVarId),
+    TypeVar(DeBruijnVar<TypeVarId>),
     Literal(LiteralTy),
     /// The never type, for computations which don't return. It is sometimes
     /// necessary for intermediate variables. For instance, if we do (coming

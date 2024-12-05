@@ -152,7 +152,10 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
             ConstantExprKind::ConstRef { id } => {
                 let var_id = self.const_generic_vars_map.get(&id.index);
                 if let Some(var_id) = var_id {
-                    RawConstantExpr::Var(*var_id)
+                    // Const generics are bound at the top-level binder.
+                    let db_id = self.generic_params.len() - 1;
+                    let var = DeBruijnVar::new(DeBruijnId::new(db_id), *var_id);
+                    RawConstantExpr::Var(var)
                 } else {
                     error_or_panic!(
                         self,

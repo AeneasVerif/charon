@@ -2,7 +2,8 @@
 use crate::types::*;
 use crate::{common::visitor_event::VisitEvent, ids::Vector};
 use derive_visitor::{Drive, DriveMut, Event, Visitor, VisitorMut};
-use std::{collections::HashMap, iter::Iterator};
+use std::collections::HashMap;
+use std::iter::Iterator;
 
 impl DeBruijnId {
     pub fn zero() -> Self {
@@ -26,6 +27,25 @@ impl DeBruijnId {
     pub fn decr(&self) -> Self {
         DeBruijnId {
             index: self.index - 1,
+        }
+    }
+}
+
+impl<V> DeBruijnVar<V> {
+    pub fn new(index: DeBruijnId, var: V) -> Self {
+        DeBruijnVar {
+            dbid: index,
+            varid: var,
+        }
+    }
+
+    pub fn decr(&self) -> Self
+    where
+        V: Clone,
+    {
+        DeBruijnVar {
+            dbid: self.dbid.decr(),
+            varid: self.varid.clone(),
         }
     }
 }
@@ -75,27 +95,28 @@ impl GenericParams {
     /// each required parameter with itself. E.g. given parameters for `<T, U> where U:
     /// PartialEq<T>`, the arguments would be `<T, U>[@TraitClause0]`.
     pub fn identity_args(&self) -> GenericArgs {
+        // TODO: pass a debruijn index instead of assuming `0`.
         GenericArgs {
             regions: self
                 .regions
                 .iter_indexed()
-                .map(|(id, _)| Region::BVar(DeBruijnId::new(0), id))
+                .map(|(id, _)| Region::BVar(DeBruijnVar::new(DeBruijnId::new(0), id)))
                 .collect(),
             types: self
                 .types
                 .iter_indexed()
-                .map(|(id, _)| TyKind::TypeVar(id).into_ty())
+                .map(|(id, _)| TyKind::TypeVar(DeBruijnVar::new(DeBruijnId::new(0), id)).into_ty())
                 .collect(),
             const_generics: self
                 .const_generics
                 .iter_indexed()
-                .map(|(id, _)| ConstGeneric::Var(id))
+                .map(|(id, _)| ConstGeneric::Var(DeBruijnVar::new(DeBruijnId::new(0), id)))
                 .collect(),
             trait_refs: self
                 .trait_clauses
                 .iter_indexed()
                 .map(|(id, clause)| TraitRef {
-                    kind: TraitRefKind::Clause(id),
+                    kind: TraitRefKind::Clause(DeBruijnVar::new(DeBruijnId::new(0), id)),
                     trait_decl_ref: clause.trait_.clone(),
                 })
                 .collect(),
@@ -571,9 +592,9 @@ impl<'a> SubstVisitor<'a> {
 
     fn exit_region(&mut self, r: &mut Region) {
         match r {
-            Region::BVar(db, id) => {
-                if *db == self.binder_depth {
-                    *r = self.generics.regions.get(*id).unwrap().clone()
+            Region::BVar(var) => {
+                if var.dbid == self.binder_depth {
+                    *r = self.generics.regions.get(var.varid).unwrap().clone()
                 }
             }
             _ => (),
@@ -588,7 +609,10 @@ impl<'a> SubstVisitor<'a> {
     }
     fn exit_ty(&mut self, ty: &mut Ty) {
         match ty.kind() {
-            TyKind::TypeVar(id) => *ty = self.generics.types.get(*id).unwrap().clone(),
+            TyKind::TypeVar(id) => {
+                assert_eq!(id.dbid, self.binder_depth); // the only type binder is at the top-level
+                *ty = self.generics.types.get(id.varid).unwrap().clone()
+            }
             TyKind::Arrow(_, _, _) => self.binder_depth = self.binder_depth.decr(),
             _ => (),
         }
@@ -596,14 +620,20 @@ impl<'a> SubstVisitor<'a> {
 
     fn exit_const_generic(&mut self, cg: &mut ConstGeneric) {
         match cg {
-            ConstGeneric::Var(id) => *cg = self.generics.const_generics.get(*id).unwrap().clone(),
+            ConstGeneric::Var(id) => {
+                assert_eq!(id.dbid, self.binder_depth); // the only const binder is at the top-level
+                *cg = self.generics.const_generics.get(id.varid).unwrap().clone()
+            }
             _ => (),
         }
     }
 
     fn exit_trait_ref(&mut self, tr: &mut TraitRef) {
         match &mut tr.kind {
-            TraitRefKind::Clause(id) => *tr = self.generics.trait_refs.get(*id).unwrap().clone(),
+            TraitRefKind::Clause(id) => {
+                assert_eq!(id.dbid, self.binder_depth); // the only clause binder is at the top-level
+                *tr = self.generics.trait_refs.get(id.varid).unwrap().clone()
+            }
             _ => (),
         }
     }
@@ -612,5 +642,24 @@ impl<'a> SubstVisitor<'a> {
 impl Ty {
     pub fn substitute(&mut self, generics: &GenericArgs) {
         self.drive_inner_mut(&mut SubstVisitor::new(generics));
+    }
+}
+
+// The derive macro doesn't handle generics.
+impl<T: Drive> Drive for DeBruijnVar<T> {
+    fn drive<V: Visitor>(&self, visitor: &mut V) {
+        visitor.visit(self, Event::Enter);
+        self.dbid.drive(visitor);
+        self.varid.drive(visitor);
+        visitor.visit(self, Event::Exit);
+    }
+}
+
+impl<T: DriveMut> DriveMut for DeBruijnVar<T> {
+    fn drive_mut<V: VisitorMut>(&mut self, visitor: &mut V) {
+        visitor.visit(self, Event::Enter);
+        self.dbid.drive_mut(visitor);
+        self.varid.drive_mut(visitor);
+        visitor.visit(self, Event::Exit);
     }
 }

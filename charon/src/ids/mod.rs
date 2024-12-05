@@ -29,8 +29,11 @@ macro_rules! generate_index_type {
             pub fn is_zero(&self) -> bool {
                 self.index() == 0
             }
+            pub fn pretty_name(self) -> &'static str {
+                $pretty_name
+            }
             pub fn to_pretty_string(self) -> String {
-                format!("@{}{}", $pretty_name, self)
+                format!("@{}{}", self.pretty_name(), self)
             }
         }
 

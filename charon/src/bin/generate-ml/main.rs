@@ -217,7 +217,10 @@ fn type_to_ocaml_call(ctx: &GenerateCtx, ty: &Ty) -> String {
             }
             expr.into_iter().map(|f| format!("({f})")).join(" ")
         }
-        TyKind::TypeVar(var_id) => format!("arg{}_of_json", var_id.index()),
+        TyKind::TypeVar(var) => {
+            assert!(var.dbid.is_zero());
+            format!("arg{}_of_json", var.varid.index())
+        }
         // TyKind::Ref(_, _, _) => todo!(),
         _ => unimplemented!("{ty:?}"),
     }
@@ -283,7 +286,10 @@ fn type_to_ocaml_name(ctx: &GenerateCtx, ty: &Ty) -> String {
                 _ => unimplemented!("{ty:?}"),
             }
         }
-        TyKind::TypeVar(var_id) => format!("'a{}", var_id.index()),
+        TyKind::TypeVar(var) => {
+            assert!(var.dbid.is_zero());
+            format!("'a{}", var.varid.index())
+        }
         _ => unimplemented!("{ty:?}"),
     }
 }
@@ -998,7 +1004,7 @@ fn generate_ml(
                     (** Reference to *self*, in case of trait declarations/implementations *)
                 | TraitImpl of trait_impl_id * generic_args  (** A specific implementation *)
                 | BuiltinOrAuto of trait_decl_ref region_binder
-                | Clause of trait_clause_id
+                | Clause of trait_clause_id de_bruijn_var
                 | ParentClause of trait_instance_id * trait_decl_id * trait_clause_id
                 | FnPointer of ty
                 | Closure of fun_decl_id * generic_args
@@ -1016,7 +1022,7 @@ fn generate_ml(
             indoc!(
                 "
                 | RStatic  (** Static region *)
-                | RBVar of region_db_id * region_var_id
+                | RBVar of region_var_id de_bruijn_var
                     (** Bound region. We use those in function signatures, type definitions, etc. *)
                 | RFVar of region_id
                     (** Free region. We use those during the symbolic execution. *)
@@ -1328,16 +1334,17 @@ fn generate_ml(
                     "TypeDeclId",
                     "TypeVarId",
                     "VariantId",
+                    "DeBruijnVar"
                 ]),
                 (GenerationKind::TypeDecl(Some(DeriveVisitors {
                     name: "const_generic",
-                    ancestor: Some("literal"),
+                    ancestor: Some("const_generic_base_base"),
                     reduce: true,
                     extra_types: &[
                         "const_generic_var_id",
                         "fun_decl_id",
                         "global_decl_id",
-                        "region_db_id",
+                        "de_bruijn_id",
                         "region_id",
                         "region_var_id",
                         "trait_clause_id",

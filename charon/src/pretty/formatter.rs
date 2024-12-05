@@ -130,17 +130,17 @@ impl<'a, 'b> PushBoundRegions<'a> for FmtCtx<'b> {
     }
 }
 
-pub trait AstFormatter = Formatter<TypeVarId>
-    + Formatter<TypeDeclId>
-    + Formatter<ConstGenericVarId>
+pub trait AstFormatter = Formatter<TypeDeclId>
     + Formatter<FunDeclId>
     + Formatter<GlobalDeclId>
     + Formatter<BodyId>
     + Formatter<TraitDeclId>
     + Formatter<TraitImplId>
     + Formatter<AnyTransId>
-    + Formatter<TraitClauseId>
-    + Formatter<(DeBruijnId, RegionId)>
+    + Formatter<DeBruijnVar<TypeVarId>>
+    + Formatter<DeBruijnVar<ConstGenericVarId>>
+    + Formatter<DeBruijnVar<TraitClauseId>>
+    + Formatter<DeBruijnVar<RegionId>>
     + Formatter<VarId>
     + Formatter<(TypeDeclId, VariantId)>
     + Formatter<(TypeDeclId, Option<VariantId>, FieldId)>
@@ -263,13 +263,13 @@ impl<'a> Formatter<AnyTransId> for FmtCtx<'a> {
     }
 }
 
-impl<'a> Formatter<(DeBruijnId, RegionId)> for FmtCtx<'a> {
-    fn format_object(&self, (grid, id): (DeBruijnId, RegionId)) -> String {
-        match self.generics.get(grid.index) {
-            None => Region::BVar(grid, id).to_string(),
-            Some(generics) => match generics.regions.get(id) {
+impl<'a> Formatter<DeBruijnVar<RegionId>> for FmtCtx<'a> {
+    fn format_object(&self, var: DeBruijnVar<RegionId>) -> String {
+        match self.generics.get(var.dbid.index) {
+            None => Region::BVar(var).to_string(),
+            Some(generics) => match generics.regions.get(var.varid) {
                 None => {
-                    let region = Region::BVar(grid, id);
+                    let region = Region::BVar(var);
                     tracing::warn!(
                         "Found incorrect region `{region}` while pretty-printing. Look for \
                         \"wrong_region\" in the pretty output"
@@ -298,33 +298,39 @@ impl<'a> Formatter<&RegionVar> for FmtCtx<'a> {
     }
 }
 
-impl<'a> Formatter<TypeVarId> for FmtCtx<'a> {
-    fn format_object(&self, id: TypeVarId) -> String {
-        match &self.generics.back() {
-            None => id.to_pretty_string(),
-            Some(generics) => match generics.types.get(id) {
-                None => id.to_pretty_string(),
-                Some(v) => v.to_string(),
-            },
+impl<'a> Formatter<DeBruijnVar<TypeVarId>> for FmtCtx<'a> {
+    fn format_object(&self, var: DeBruijnVar<TypeVarId>) -> String {
+        match self
+            .generics
+            .get(var.dbid.index)
+            .and_then(|generics| generics.types.get(var.varid))
+        {
+            None => format!("@{}{}_{}", var.varid.pretty_name(), var.dbid, var.varid),
+            Some(v) => v.to_string(),
         }
     }
 }
 
-impl<'a> Formatter<ConstGenericVarId> for FmtCtx<'a> {
-    fn format_object(&self, id: ConstGenericVarId) -> String {
-        match &self.generics.back() {
-            None => id.to_pretty_string(),
-            Some(generics) => match generics.const_generics.get(id) {
-                None => id.to_pretty_string(),
-                Some(v) => v.to_string(),
-            },
+impl<'a> Formatter<DeBruijnVar<ConstGenericVarId>> for FmtCtx<'a> {
+    fn format_object(&self, var: DeBruijnVar<ConstGenericVarId>) -> String {
+        match self
+            .generics
+            .get(var.dbid.index)
+            .and_then(|generics| generics.const_generics.get(var.varid))
+        {
+            None => format!("@{}{}_{}", var.varid.pretty_name(), var.dbid, var.varid),
+            Some(v) => v.to_string(),
         }
     }
 }
 
-impl<'a> Formatter<ast::TraitClauseId> for FmtCtx<'a> {
-    fn format_object(&self, id: ast::TraitClauseId) -> String {
-        id.to_pretty_string()
+impl<'a> Formatter<DeBruijnVar<TraitClauseId>> for FmtCtx<'a> {
+    fn format_object(&self, var: DeBruijnVar<TraitClauseId>) -> String {
+        if var.dbid.index + 1 == self.generics.len() {
+            format!("@{}{}", var.varid.pretty_name(), var.varid)
+        } else {
+            format!("@{}{}_{}", var.varid.pretty_name(), var.dbid, var.varid)
+        }
     }
 }
 

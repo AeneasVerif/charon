@@ -25,7 +25,7 @@ impl<'a> InsertRegions<'a> {
             let index = self
                 .regions
                 .push_with(|index| RegionVar { index, name: None });
-            *r = Region::BVar(DeBruijnId::new(self.depth), index);
+            *r = Region::BVar(DeBruijnVar::new(DeBruijnId::new(self.depth), index));
         }
     }
 

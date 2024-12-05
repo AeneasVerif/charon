@@ -35,7 +35,7 @@ type ('id, 'x) vector = 'x list [@@deriving show, ord]
 type integer_type = Values.integer_type [@@deriving show, ord]
 type float_type = Values.float_type [@@deriving show, ord]
 type literal_type = Values.literal_type [@@deriving show, ord]
-type region_db_id = int [@@deriving show, ord]
+type de_bruijn_id = int [@@deriving show, ord]
 
 (** We define these types to control the name of the visitor functions
     (see e.g., {!class:Types.iter_ty_base} and {!Types.TVar}).
@@ -61,6 +61,61 @@ let option_none_id = VariantId.of_int 0
 
 (** The variant id for [Option::Some] *)
 let option_some_id = VariantId.of_int 1
+
+(** Ancestor for iter visitor for {!Types.const_generic} *)
+class ['self] iter_const_generic_base_base =
+  object (self : 'self)
+    inherit [_] iter_literal
+    method visit_de_bruijn_var
+        : 'var. ('env -> 'var -> unit) -> 'env -> 'var de_bruijn_var -> unit =
+      fun visit_var env x ->
+       let { dbid; varid } = x in
+       visit_var env varid;
+  end
+
+class ['self] map_const_generic_base_base =
+  object (self : 'self)
+    inherit [_] map_literal
+    method visit_de_bruijn_var
+        : 'var.
+          ('env -> 'var -> 'var) ->
+          'env ->
+          'var de_bruijn_var ->
+          'var de_bruijn_var =
+      fun visit_var env x ->
+        let { dbid; varid } = x in
+        let varid = visit_var env varid in
+        { dbid; varid }
+  end
+
+class virtual ['self] reduce_const_generic_base_base =
+  object (self : 'self)
+    inherit [_] reduce_literal
+    method visit_de_bruijn_var
+        : 'var.
+          ('env -> 'var -> 'a) ->
+          'env ->
+          'var de_bruijn_var ->
+          'a =
+      fun visit_var env x ->
+        let { dbid; varid } = x in
+        visit_var env varid
+  end
+
+class virtual ['self] mapreduce_const_generic_base_base =
+  object (self : 'self)
+    inherit [_] mapreduce_literal
+    method visit_de_bruijn_var
+        : 'var.
+          ('env -> 'var -> 'var * 'a) ->
+          'env ->
+          'var de_bruijn_var ->
+          'var de_bruijn_var * 'a =
+      fun visit_var env x ->
+        let { dbid; varid } = x in
+        let (varid, acc) = visit_var env varid in
+        ({ dbid; varid }, acc)
+  end
 
 (* __REPLACE1__ *)
 
