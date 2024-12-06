@@ -966,8 +966,7 @@ fn generate_ml(
                 | Drop of place
                 | Assert of assertion
                 | Call of call
-                (* FIXME: rename to `Abort` *)
-                | Panic
+                | Abort of abort_kind
                 | Return
                 | Break of int
                     (** Break to (outer) loop. The [int] identifies the loop to break to:
@@ -1039,53 +1038,6 @@ fn generate_ml(
                     if not (check_scalar_value_in_range sv) then
                       raise (Failure ("Scalar value not in range: " ^ show_scalar_value sv));
                     Ok sv
-                "#
-            ),
-        ),
-        // Hand-written because the `Panic` aka `Abort` variant differs..
-        // TODO: fix that.
-        (
-            "charon_lib::ast::llbc_ast::RawStatement",
-            indoc!(
-                r#"
-                | `Assoc [ ("Assign", `List [ place; rvalue ]) ] ->
-                    let* place = place_of_json ctx place in
-                    let* rvalue = rvalue_of_json ctx rvalue in
-                    Ok (Assign (place, rvalue))
-                | `Assoc [ ("FakeRead", place) ] ->
-                    let* place = place_of_json ctx place in
-                    Ok (FakeRead place)
-                | `Assoc [ ("SetDiscriminant", `List [ place; variant_id ]) ] ->
-                    let* place = place_of_json ctx place in
-                    let* variant_id = VariantId.id_of_json ctx variant_id in
-                    Ok (SetDiscriminant (place, variant_id))
-                | `Assoc [ ("Drop", place) ] ->
-                    let* place = place_of_json ctx place in
-                    Ok (Drop place)
-                | `Assoc [ ("Assert", assertion) ] ->
-                    let* assertion = assertion_of_json ctx assertion in
-                    Ok (Assert assertion)
-                | `Assoc [ ("Call", call) ] ->
-                    let* call = call_of_json ctx call in
-                    Ok (Call call)
-                | `Assoc [ ("Abort", _) ] -> Ok Panic
-                | `String "Return" -> Ok Return
-                | `Assoc [ ("Break", i) ] ->
-                    let* i = int_of_json ctx i in
-                    Ok (Break i)
-                | `Assoc [ ("Continue", i) ] ->
-                    let* i = int_of_json ctx i in
-                    Ok (Continue i)
-                | `String "Nop" -> Ok Nop
-                | `Assoc [ ("Switch", tgt) ] ->
-                    let* switch = switch_of_json ctx tgt in
-                    Ok (Switch switch)
-                | `Assoc [ ("Loop", st) ] ->
-                    let* st = block_of_json ctx st in
-                    Ok (Loop st)
-                | `Assoc [ ("Error", s) ] ->
-                    let* s = string_of_json ctx s in
-                    Ok (Error s)
                 "#
             ),
         ),
@@ -1183,6 +1135,7 @@ fn generate_ml(
                     "Locals",
                     "FunSig",
                 ]),
+                // These have to be kept separate to avoid field name clashes
                 (GenerationKind::TypeDecl(Some(DeriveVisitors {
                     name: "global_decl",
                     ancestor: Some("fun_sig"),
@@ -1221,8 +1174,6 @@ fn generate_ml(
             markers: ctx.markers_from_names(&[
                 (GenerationKind::TypeDecl(None), &[
                     "VarId",
-                    // TODO: can't move because of variant name clash with `raw_statement::Panic`
-                    "AbortKind",
                 ]),
                 (GenerationKind::TypeDecl(Some(DeriveVisitors {
                     name: "rvalue",
@@ -1355,16 +1306,17 @@ fn generate_ml(
                     "ImplElem",
                     "PathElem",
                     "Name",
-                    "ItemMeta",
                 ]),
                 (GenerationKind::TypeDecl(Some(DeriveVisitors {
                     name: "type_decl",
                     ancestor: Some("generic_params"),
                     reduce: false,
-                    extra_types: &["attr_info", "item_meta"],
+                    extra_types: &["attr_info", "name"],
                 })), &[
                     "Field",
                     "Variant",
+                    "ItemMeta",
+                    "AbortKind",
                     "TypeDeclKind",
                     "TypeDecl",
                 ]),
@@ -1412,7 +1364,7 @@ fn generate_ml(
                     ancestor: Some("trait_impl"),
                     reduce: false,
                     extra_types: &[
-                        "abort_kind", "block_id",
+                        "block_id",
                     ],
                 })), &[
                     "charon_lib::ast::ullbc_ast::Statement",

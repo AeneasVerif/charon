@@ -740,19 +740,8 @@ and generic_params = {
         nude = true (* Don't inherit VisitorsRuntime *);
       }]
 
-(** Meta information about an item (function, trait decl, trait impl, type decl, global). *)
-type item_meta = {
-  name : name;
-  span : span;
-  source_text : string option;
-      (** The source code that corresponds to this item. *)
-  attr_info : attr_info;  (** Attributes and visibility. *)
-  is_local : bool;
-      (** `true` if the type decl is a local type decl, `false` if it comes from an external crate. *)
-}
-
 (** See the comments for [Name] *)
-and path_elem =
+type path_elem =
   | PeIdent of string * disambiguator
   | PeImpl of impl_elem * disambiguator
 
@@ -814,15 +803,33 @@ class ['self] iter_type_decl_base =
   object (self : 'self)
     inherit [_] iter_generic_params
     method visit_attr_info : 'env -> attr_info -> unit = fun _ _ -> ()
-    method visit_item_meta : 'env -> item_meta -> unit = fun _ _ -> ()
+    method visit_name : 'env -> name -> unit = fun _ _ -> ()
   end
 
 class ['self] map_type_decl_base =
   object (self : 'self)
     inherit [_] map_generic_params
     method visit_attr_info : 'env -> attr_info -> attr_info = fun _ x -> x
-    method visit_item_meta : 'env -> item_meta -> item_meta = fun _ x -> x
+    method visit_name : 'env -> name -> name = fun _ x -> x
   end
+
+type abort_kind =
+  | Panic of name  (** A built-in panicking function. *)
+  | UndefinedBehavior
+      (** A MIR `Unreachable` terminator corresponds to undefined behavior in the rust abstract
+          machine.
+       *)
+
+(** Meta information about an item (function, trait decl, trait impl, type decl, global). *)
+and item_meta = {
+  name : name;
+  span : span;
+  source_text : string option;
+      (** The source code that corresponds to this item. *)
+  attr_info : attr_info;  (** Attributes and visibility. *)
+  is_local : bool;
+      (** `true` if the type decl is a local type decl, `false` if it comes from an external crate. *)
+}
 
 (** A type declaration.
 
@@ -838,7 +845,7 @@ class ['self] map_type_decl_base =
     A type can only be an ADT (structure or enumeration), as type aliases are
     inlined in MIR.
  *)
-type type_decl = {
+and type_decl = {
   def_id : type_decl_id;
   item_meta : item_meta;  (** Meta information associated with the item. *)
   generics : generic_params;

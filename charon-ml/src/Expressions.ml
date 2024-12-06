@@ -15,14 +15,7 @@ module VarId = IdGen ()
 module GlobalDeclId = Types.GlobalDeclId
 module FunDeclId = Types.FunDeclId
 
-type abort_kind =
-  | Panic of name  (** A built-in panicking function. *)
-  | UndefinedBehavior
-      (** A MIR `Unreachable` terminator corresponds to undefined behavior in the rust abstract
-          machine.
-       *)
-
-and var_id = VarId.id [@@deriving show, ord]
+type var_id = VarId.id [@@deriving show, ord]
 
 (* Ancestors for the rvalue visitors *)
 class ['self] iter_rvalue_base =
