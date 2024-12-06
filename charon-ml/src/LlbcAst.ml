@@ -12,8 +12,7 @@ type raw_statement =
   | Drop of place
   | Assert of assertion
   | Call of call
-  (* FIXME: rename to `Abort` *)
-  | Panic
+  | Abort of abort_kind
   | Return
   | Break of int
       (** Break to (outer) loop. The [int] identifies the loop to break to:

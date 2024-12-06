@@ -15,14 +15,12 @@ type block_id = BlockId.id [@@deriving show, ord]
 class ['self] iter_statement_base =
   object (self : 'self)
     inherit [_] iter_trait_impl
-    method visit_abort_kind : 'env -> abort_kind -> unit = fun _ _ -> ()
     method visit_block_id : 'env -> block_id -> unit = fun _ _ -> ()
   end
 
 class ['self] map_statement_base =
   object (self : 'self)
     inherit [_] map_trait_impl
-    method visit_abort_kind : 'env -> abort_kind -> abort_kind = fun _ x -> x
     method visit_block_id : 'env -> block_id -> block_id = fun _ x -> x
   end
 

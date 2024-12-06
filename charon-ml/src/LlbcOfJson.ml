@@ -14,44 +14,46 @@ and raw_statement_of_json (ctx : of_json_ctx) (js : json) :
     (raw_statement, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
-    | `Assoc [ ("Assign", `List [ place; rvalue ]) ] ->
-        let* place = place_of_json ctx place in
-        let* rvalue = rvalue_of_json ctx rvalue in
-        Ok (Assign (place, rvalue))
-    | `Assoc [ ("FakeRead", place) ] ->
-        let* place = place_of_json ctx place in
-        Ok (FakeRead place)
-    | `Assoc [ ("SetDiscriminant", `List [ place; variant_id ]) ] ->
-        let* place = place_of_json ctx place in
-        let* variant_id = VariantId.id_of_json ctx variant_id in
-        Ok (SetDiscriminant (place, variant_id))
-    | `Assoc [ ("Drop", place) ] ->
-        let* place = place_of_json ctx place in
-        Ok (Drop place)
-    | `Assoc [ ("Assert", assertion) ] ->
-        let* assertion = assertion_of_json ctx assertion in
-        Ok (Assert assertion)
+    | `Assoc [ ("Assign", `List [ x_0; x_1 ]) ] ->
+        let* x_0 = place_of_json ctx x_0 in
+        let* x_1 = rvalue_of_json ctx x_1 in
+        Ok (Assign (x_0, x_1))
+    | `Assoc [ ("FakeRead", fake_read) ] ->
+        let* fake_read = place_of_json ctx fake_read in
+        Ok (FakeRead fake_read)
+    | `Assoc [ ("SetDiscriminant", `List [ x_0; x_1 ]) ] ->
+        let* x_0 = place_of_json ctx x_0 in
+        let* x_1 = variant_id_of_json ctx x_1 in
+        Ok (SetDiscriminant (x_0, x_1))
+    | `Assoc [ ("Drop", drop) ] ->
+        let* drop = place_of_json ctx drop in
+        Ok (Drop drop)
+    | `Assoc [ ("Assert", assert_) ] ->
+        let* assert_ = assertion_of_json ctx assert_ in
+        Ok (Assert assert_)
     | `Assoc [ ("Call", call) ] ->
         let* call = call_of_json ctx call in
         Ok (Call call)
-    | `Assoc [ ("Abort", _) ] -> Ok Panic
+    | `Assoc [ ("Abort", abort) ] ->
+        let* abort = abort_kind_of_json ctx abort in
+        Ok (Abort abort)
     | `String "Return" -> Ok Return
-    | `Assoc [ ("Break", i) ] ->
-        let* i = int_of_json ctx i in
-        Ok (Break i)
-    | `Assoc [ ("Continue", i) ] ->
-        let* i = int_of_json ctx i in
-        Ok (Continue i)
+    | `Assoc [ ("Break", break) ] ->
+        let* break = int_of_json ctx break in
+        Ok (Break break)
+    | `Assoc [ ("Continue", continue) ] ->
+        let* continue = int_of_json ctx continue in
+        Ok (Continue continue)
     | `String "Nop" -> Ok Nop
-    | `Assoc [ ("Switch", tgt) ] ->
-        let* switch = switch_of_json ctx tgt in
+    | `Assoc [ ("Switch", switch) ] ->
+        let* switch = switch_of_json ctx switch in
         Ok (Switch switch)
-    | `Assoc [ ("Loop", st) ] ->
-        let* st = block_of_json ctx st in
-        Ok (Loop st)
-    | `Assoc [ ("Error", s) ] ->
-        let* s = string_of_json ctx s in
-        Ok (Error s)
+    | `Assoc [ ("Loop", loop) ] ->
+        let* loop = block_of_json ctx loop in
+        Ok (Loop loop)
+    | `Assoc [ ("Error", error) ] ->
+        let* error = string_of_json ctx error in
+        Ok (Error error)
     | _ -> Error "")
 
 and statement_of_json (ctx : of_json_ctx) (js : json) :

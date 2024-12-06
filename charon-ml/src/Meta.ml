@@ -12,13 +12,15 @@
 
 type path_buf = string [@@deriving show, ord]
 
-type loc = {
+type file_id = file
+
+and loc = {
   line : int;  (** The (1-based) line number. *)
   col : int;  (** The (0-based) column offset. *)
 }
 
 (** Span information *)
-and raw_span = { file : file; beg_loc : loc; end_loc : loc }
+and raw_span = { file : file_id; beg_loc : loc; end_loc : loc }
 
 (** Meta information about a piece of code (block, statement, etc.) *)
 and span = {

@@ -108,9 +108,9 @@ let trait_instance_id_as_trait_impl (id : trait_instance_id) :
   | TraitImpl (impl_id, args) -> (impl_id, args)
   | _ -> raise (Failure "Unreachable")
 
-let zero_db_var (varid : bound_region_id) : de_bruijn_var = Bound (0, varid)
+let zero_db_var (varid : 'a) : ('a, 'b) de_bruijn_var = Bound (0, varid)
 
-let decr_db_var : de_bruijn_var -> de_bruijn_var = function
+let decr_db_var : ('a, 'b) de_bruijn_var -> ('a, 'b) de_bruijn_var = function
   | Free id -> Free id
   | Bound (dbid, id) -> Bound (dbid - 1, id)
 

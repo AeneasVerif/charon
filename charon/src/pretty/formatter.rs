@@ -140,7 +140,7 @@ pub trait AstFormatter = Formatter<TypeVarId>
     + Formatter<TraitImplId>
     + Formatter<AnyTransId>
     + Formatter<TraitClauseId>
-    + Formatter<DeBruijnVar>
+    + Formatter<RegionDbVar>
     + Formatter<VarId>
     + Formatter<(TypeDeclId, VariantId)>
     + Formatter<(TypeDeclId, Option<VariantId>, FieldId)>
@@ -263,8 +263,8 @@ impl<'a> Formatter<AnyTransId> for FmtCtx<'a> {
     }
 }
 
-impl<'a> Formatter<DeBruijnVar> for FmtCtx<'a> {
-    fn format_object(&self, var: DeBruijnVar) -> String {
+impl<'a> Formatter<RegionDbVar> for FmtCtx<'a> {
+    fn format_object(&self, var: RegionDbVar) -> String {
         match var {
             DeBruijnVar::Bound(dbid, varid) => match self.generics.get(dbid.index) {
                 None => Region::Var(var).to_string(),

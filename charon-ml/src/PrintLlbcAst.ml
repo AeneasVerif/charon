@@ -30,7 +30,8 @@ module Ast = struct
     | Drop p -> indent ^ "drop " ^ place_to_string env p
     | Assert a -> assertion_to_string env indent a
     | Call call -> call_to_string env indent call
-    | Panic -> indent ^ "panic"
+    | Abort (Panic _) -> indent ^ "panic"
+    | Abort UndefinedBehavior -> indent ^ "undefined_behavior"
     | Return -> indent ^ "return"
     | Break i -> indent ^ "break " ^ string_of_int i
     | Continue i -> indent ^ "continue " ^ string_of_int i

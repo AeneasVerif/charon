@@ -940,7 +940,7 @@ fn generate_ml(
 ) -> anyhow::Result<()> {
     let manual_type_impls = &[
         // Hand-written because we replace the `FileId` with the corresponding file.
-        ("RawSpan", "{ file : file; beg_loc : loc; end_loc : loc }"),
+        ("FileId", "file"),
         // Hand-written because the rust version is an enum with custom (de)serialization
         // functions.
         (
@@ -966,8 +966,7 @@ fn generate_ml(
                 | Drop of place
                 | Assert of assertion
                 | Call of call
-                (* FIXME: rename to `Abort` *)
-                | Panic
+                | Abort of abort_kind
                 | Return
                 | Break of int
                     (** Break to (outer) loop. The [int] identifies the loop to break to:
@@ -988,26 +987,6 @@ fn generate_ml(
         ),
         // Hand-written because we encode sequences differently.
         ("charon_lib::ast::llbc_ast::Block", "statement"),
-        // Hand-written because we're keeping some now-removed variants around.
-        // TODO: remove these variants.
-        (
-            "TraitRefKind",
-            indoc!(
-                "
-                | Self
-                    (** Reference to *self*, in case of trait declarations/implementations *)
-                | TraitImpl of trait_impl_id * generic_args  (** A specific implementation *)
-                | BuiltinOrAuto of trait_decl_ref region_binder
-                | Clause of trait_clause_id
-                | ParentClause of trait_instance_id * trait_decl_id * trait_clause_id
-                | FnPointer of ty
-                | Closure of fun_decl_id * generic_args
-                | Dyn of trait_decl_ref region_binder
-                | Unsolved of trait_decl_id * generic_args
-                | UnknownTrait of string
-                "
-            ),
-        ),
         // Handwritten because we use `indexed_var` as a hack to be able to reuse field names.
         // TODO: remove the need for this hack.
         ("RegionVar", "(bound_region_id, string option) indexed_var"),
@@ -1027,15 +1006,13 @@ fn generate_ml(
         ),
         // Hand-written because we replace the `FileId` with the corresponding file name.
         (
-            "RawSpan",
+            "FileId",
             indoc!(
                 r#"
-                | `Assoc [ ("file_id", file_id); ("beg", beg_loc); ("end", end_loc) ] ->
-                    let* file_id = file_id_of_json ctx file_id in
+                | json ->
+                    let* file_id = FileId.id_of_json ctx json in
                     let file = FileId.Map.find file_id ctx in
-                    let* beg_loc = loc_of_json ctx beg_loc in
-                    let* end_loc = loc_of_json ctx end_loc in
-                    Ok { file; beg_loc; end_loc }
+                    Ok file
                 "#,
             ),
         ),
@@ -1059,53 +1036,6 @@ fn generate_ml(
                     if not (check_scalar_value_in_range sv) then
                       raise (Failure ("Scalar value not in range: " ^ show_scalar_value sv));
                     Ok sv
-                "#
-            ),
-        ),
-        // Hand-written because the `Panic` aka `Abort` variant differs..
-        // TODO: fix that.
-        (
-            "charon_lib::ast::llbc_ast::RawStatement",
-            indoc!(
-                r#"
-                | `Assoc [ ("Assign", `List [ place; rvalue ]) ] ->
-                    let* place = place_of_json ctx place in
-                    let* rvalue = rvalue_of_json ctx rvalue in
-                    Ok (Assign (place, rvalue))
-                | `Assoc [ ("FakeRead", place) ] ->
-                    let* place = place_of_json ctx place in
-                    Ok (FakeRead place)
-                | `Assoc [ ("SetDiscriminant", `List [ place; variant_id ]) ] ->
-                    let* place = place_of_json ctx place in
-                    let* variant_id = VariantId.id_of_json ctx variant_id in
-                    Ok (SetDiscriminant (place, variant_id))
-                | `Assoc [ ("Drop", place) ] ->
-                    let* place = place_of_json ctx place in
-                    Ok (Drop place)
-                | `Assoc [ ("Assert", assertion) ] ->
-                    let* assertion = assertion_of_json ctx assertion in
-                    Ok (Assert assertion)
-                | `Assoc [ ("Call", call) ] ->
-                    let* call = call_of_json ctx call in
-                    Ok (Call call)
-                | `Assoc [ ("Abort", _) ] -> Ok Panic
-                | `String "Return" -> Ok Return
-                | `Assoc [ ("Break", i) ] ->
-                    let* i = int_of_json ctx i in
-                    Ok (Break i)
-                | `Assoc [ ("Continue", i) ] ->
-                    let* i = int_of_json ctx i in
-                    Ok (Continue i)
-                | `String "Nop" -> Ok Nop
-                | `Assoc [ ("Switch", tgt) ] ->
-                    let* switch = switch_of_json ctx tgt in
-                    Ok (Switch switch)
-                | `Assoc [ ("Loop", st) ] ->
-                    let* st = block_of_json ctx st in
-                    Ok (Loop st)
-                | `Assoc [ ("Error", s) ] ->
-                    let* s = string_of_json ctx s in
-                    Ok (Error s)
                 "#
             ),
         ),
@@ -1203,6 +1133,7 @@ fn generate_ml(
                     "Locals",
                     "FunSig",
                 ]),
+                // These have to be kept separate to avoid field name clashes
                 (GenerationKind::TypeDecl(Some(DeriveVisitors {
                     name: "global_decl",
                     ancestor: Some("fun_sig"),
@@ -1241,8 +1172,6 @@ fn generate_ml(
             markers: ctx.markers_from_names(&[
                 (GenerationKind::TypeDecl(None), &[
                     "VarId",
-                    // TODO: can't move because of variant name clash with `raw_statement::Panic`
-                    "AbortKind",
                 ]),
                 (GenerationKind::TypeDecl(Some(DeriveVisitors {
                     name: "rvalue",
@@ -1283,6 +1212,7 @@ fn generate_ml(
                 (GenerationKind::TypeDecl(None), &[
                     "Loc",
                     "FileName",
+                    "FileId",
                     "File",
                     "RawSpan",
                     "Span",
@@ -1309,6 +1239,8 @@ fn generate_ml(
                     "TypeDeclId",
                     "TypeVarId",
                     "VariantId",
+                    "DeBruijnId",
+                    "DeBruijnVar",
                 ]),
                 (GenerationKind::TypeDecl(Some(DeriveVisitors {
                     name: "const_generic",
@@ -1318,6 +1250,7 @@ fn generate_ml(
                         "const_generic_var_id",
                         "fun_decl_id",
                         "global_decl_id",
+                        "de_bruijn_id",
                         "free_region_id",
                         "bound_region_id",
                         "trait_clause_id",
@@ -1327,7 +1260,6 @@ fn generate_ml(
                         "type_var_id",
                     ],
                 })), &[
-                    "DeBruijnId",
                     "ConstGeneric",
                 ]),
                 // Can't merge into above because aeneas uses the above alongside their own partial
@@ -1344,7 +1276,6 @@ fn generate_ml(
                     "ExistentialPredicate",
                     "RefKind",
                     "TyKind",
-                    "DeBruijnVar",
                     "Region",
                     "TraitRef",
                     "TraitRefKind",
@@ -1374,16 +1305,17 @@ fn generate_ml(
                     "ImplElem",
                     "PathElem",
                     "Name",
-                    "ItemMeta",
                 ]),
                 (GenerationKind::TypeDecl(Some(DeriveVisitors {
                     name: "type_decl",
                     ancestor: Some("generic_params"),
                     reduce: false,
-                    extra_types: &["attr_info", "item_meta"],
+                    extra_types: &["attr_info", "name"],
                 })), &[
                     "Field",
                     "Variant",
+                    "ItemMeta",
+                    "AbortKind",
                     "TypeDeclKind",
                     "TypeDecl",
                 ]),
@@ -1431,7 +1363,7 @@ fn generate_ml(
                     ancestor: Some("trait_impl"),
                     reduce: false,
                     extra_types: &[
-                        "abort_kind", "block_id",
+                        "block_id",
                     ],
                 })), &[
                     "charon_lib::ast::ullbc_ast::Statement",

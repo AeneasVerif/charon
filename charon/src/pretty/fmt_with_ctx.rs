@@ -9,7 +9,7 @@ use crate::{
     ullbc_ast::{self as ullbc, *},
 };
 use itertools::Itertools;
-use std::fmt::Write;
+use std::fmt::{self, Display, Write};
 
 /// Format the AST type as a string.
 pub trait FmtWithCtx<C> {
@@ -1550,9 +1550,13 @@ impl std::fmt::Display for DeBruijnId {
     }
 }
 
-impl std::fmt::Display for DeBruijnVar {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::result::Result<(), std::fmt::Error> {
-        match *self {
+impl<Bound, Free> Display for DeBruijnVar<Bound, Free>
+where
+    Bound: Display,
+    Free: Display,
+{
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
             Self::Bound(dbid, varid) if dbid.is_zero() => write!(f, "{varid}"),
             Self::Bound(dbid, varid) => write!(f, "{dbid}_{varid}"),
             Self::Free(varid) => write!(f, "free_{varid}"),

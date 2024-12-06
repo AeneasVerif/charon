@@ -54,11 +54,46 @@ and global_decl_id = GlobalDeclId.id
 and trait_decl_id = TraitDeclId.id
 and trait_impl_id = TraitImplId.id
 and disambiguator = Disambiguator.id
+
+(** The index of a binder, counting from the innermost. See [`DeBruijnVar`] for details. *)
+and de_bruijn_id = int
+
+(** Bound region variable.
+
+    **Important**:
+    ==============
+    Similarly to what the Rust compiler does, we use De Bruijn indices to
+    identify *groups* of bound variables, and variable identifiers to
+    identity the variables inside the groups.
+
+    For instance, we have the following:
+    ```text
+                        we compute the De Bruijn indices from here
+                               VVVVVVVVVVVVVVVVVVVVVVV
+    fn f<'a, 'b>(x: for<'c> fn(&'a u8, &'b u16, &'c u32) -> u64) {}
+         ^^^^^^         ^^       ^       ^        ^
+           |      De Bruijn: 0   |       |        |
+     De Bruijn: 1                |       |        |
+                           De Bruijn: 1  |    De Bruijn: 0
+                              Var id: 0  |       Var id: 0
+                                         |
+                                   De Bruijn: 1
+                                      Var id: 1
+    ```
+ *)
+and ('a0, 'a1) de_bruijn_var =
+  | Bound of de_bruijn_id * 'a0
+      (** A variable attached to the nth binder, counting from the inside. *)
+  | Free of 'a1
+      (** A variable attached to an implicit binder outside all other binders. This is not present in
+          translated code, and only provided as a convenience for convenient variable manipulation.
+       *)
+
 and type_var_id = TypeVarId.id
-and variant_id = VariantId.id
-and field_id = FieldId.id
 and const_generic_var_id = ConstGenericVarId.id
-and trait_clause_id = TraitClauseId.id [@@deriving show, ord]
+and trait_clause_id = TraitClauseId.id
+and variant_id = VariantId.id
+and field_id = FieldId.id [@@deriving show, ord]
 
 let all_signed_int_types = [ Isize; I8; I16; I32; I64; I128 ]
 let all_unsigned_int_types = [ Usize; U8; U16; U32; U64; U128 ]
@@ -80,6 +115,7 @@ class ['self] iter_const_generic_base =
 
     method visit_fun_decl_id : 'env -> fun_decl_id -> unit = fun _ _ -> ()
     method visit_global_decl_id : 'env -> global_decl_id -> unit = fun _ _ -> ()
+    method visit_de_bruijn_id : 'env -> de_bruijn_id -> unit = fun _ _ -> ()
     method visit_free_region_id : 'env -> free_region_id -> unit = fun _ _ -> ()
 
     method visit_bound_region_id : 'env -> bound_region_id -> unit =
@@ -105,6 +141,9 @@ class ['self] map_const_generic_base =
     method visit_fun_decl_id : 'env -> fun_decl_id -> fun_decl_id = fun _ x -> x
 
     method visit_global_decl_id : 'env -> global_decl_id -> global_decl_id =
+      fun _ x -> x
+
+    method visit_de_bruijn_id : 'env -> de_bruijn_id -> de_bruijn_id =
       fun _ x -> x
 
     method visit_free_region_id : 'env -> free_region_id -> free_region_id =
@@ -138,6 +177,9 @@ class virtual ['self] reduce_const_generic_base =
     method visit_fun_decl_id : 'env -> fun_decl_id -> 'a = fun _ _ -> self#zero
 
     method visit_global_decl_id : 'env -> global_decl_id -> 'a =
+      fun _ _ -> self#zero
+
+    method visit_de_bruijn_id : 'env -> de_bruijn_id -> 'a =
       fun _ _ -> self#zero
 
     method visit_free_region_id : 'env -> free_region_id -> 'a =
@@ -176,6 +218,9 @@ class virtual ['self] mapreduce_const_generic_base =
         =
       fun _ x -> (x, self#zero)
 
+    method visit_de_bruijn_id : 'env -> de_bruijn_id -> de_bruijn_id * 'a =
+      fun _ x -> (x, self#zero)
+
     method visit_free_region_id : 'env -> free_region_id -> free_region_id * 'a
         =
       fun _ x -> (x, self#zero)
@@ -201,10 +246,8 @@ class virtual ['self] mapreduce_const_generic_base =
       fun _ x -> (x, self#zero)
   end
 
-type de_bruijn_id = int
-
 (** Const Generic Values. Either a primitive value, or a variable corresponding to a primitve value *)
-and const_generic =
+type const_generic =
   | CgGlobal of global_decl_id  (** A global constant *)
   | CgVar of const_generic_var_id  (** A const generic variable *)
   | CgValue of literal  (** A concrete value *)
@@ -277,6 +320,20 @@ class ['self] iter_ty_base_base =
         visit_left env left;
         visit_right env right
 
+    method visit_de_bruijn_var
+        : 'l 'r.
+          ('env -> 'l -> unit) ->
+          ('env -> 'r -> unit) ->
+          'env ->
+          ('l, 'r) de_bruijn_var ->
+          unit =
+      fun visit_bound visit_free env x ->
+        match x with
+        | Bound (dbid, varid) ->
+            self#visit_de_bruijn_id env dbid;
+            visit_bound env varid
+        | Free varid -> visit_free env varid
+
     method visit_region_var env (x : region_var) =
       self#visit_indexed_var self#visit_bound_region_id
         (self#visit_option self#visit_string)
@@ -321,6 +378,23 @@ class virtual ['self] map_ty_base_base =
         let right = visit_right env right in
         (left, right)
 
+    method visit_de_bruijn_var
+        : 'l 'r.
+          ('env -> 'l -> 'l) ->
+          ('env -> 'r -> 'r) ->
+          'env ->
+          ('l, 'r) de_bruijn_var ->
+          ('l, 'r) de_bruijn_var =
+      fun visit_bound visit_free env x ->
+        match x with
+        | Bound (dbid, varid) ->
+            let dbid = self#visit_de_bruijn_id env dbid in
+            let varid = visit_bound env varid in
+            Bound (dbid, varid)
+        | Free varid ->
+            let varid = visit_free env varid in
+            Free varid
+
     method visit_region_var env (x : region_var) =
       self#visit_indexed_var self#visit_bound_region_id
         (self#visit_option self#visit_string)
@@ -346,39 +420,8 @@ type global_decl_ref = {
 
 and trait_item_name = string
 
-(** Bound region variable.
-
-    **Important**:
-    ==============
-    Similarly to what the Rust compiler does, we use De Bruijn indices to
-    identify *groups* of bound variables, and variable identifiers to
-    identity the variables inside the groups.
-
-    For instance, we have the following:
-    ```text
-                        we compute the De Bruijn indices from here
-                               VVVVVVVVVVVVVVVVVVVVVVV
-    fn f<'a, 'b>(x: for<'c> fn(&'a u8, &'b u16, &'c u32) -> u64) {}
-         ^^^^^^         ^^       ^       ^        ^
-           |      De Bruijn: 0   |       |        |
-     De Bruijn: 1                |       |        |
-                           De Bruijn: 1  |    De Bruijn: 0
-                              Var id: 0  |       Var id: 0
-                                         |
-                                   De Bruijn: 1
-                                      Var id: 1
-    ```
- *)
-and de_bruijn_var =
-  | Bound of de_bruijn_id * bound_region_id
-      (** A variable attached to the nth binder, counting from the inside. *)
-  | Free of free_region_id
-      (** A variable attached to an implicit binder outside all other binders. This is not present in
-          translated code, and only provided as a convenience for convenient variable manipulation.
-       *)
-
 and region =
-  | RVar of de_bruijn_var
+  | RVar of (bound_region_id, free_region_id) de_bruijn_var
       (** Region variable. See `DeBruijnVar` for details. *)
   | RStatic  (** Static region *)
   | RErased  (** Erased region *)
@@ -392,17 +435,64 @@ and region =
     with some of the other variants.
  *)
 and trait_instance_id =
-  | Self
-      (** Reference to *self*, in case of trait declarations/implementations *)
-  | TraitImpl of trait_impl_id * generic_args  (** A specific implementation *)
-  | BuiltinOrAuto of trait_decl_ref region_binder
+  | TraitImpl of trait_impl_id * generic_args
+      (** A specific top-level implementation item. *)
   | Clause of trait_clause_id
+      (** One of the local clauses.
+
+          Example:
+          ```text
+          fn f<T>(...) where T : Foo
+                             ^^^^^^^
+                             Clause(0)
+          ```
+       *)
   | ParentClause of trait_instance_id * trait_decl_id * trait_clause_id
-  | FnPointer of ty
-  | Closure of fun_decl_id * generic_args
+      (** A parent clause
+
+          Remark: the [TraitDeclId] gives the trait declaration which is
+          implemented by the instance id from which we take the parent clause
+          (see example below). It is not necessary and included for convenience.
+
+          Remark: Ideally we should store a full `TraitRef` instead, but hax does not give us enough
+          information to get the right generic args.
+
+          Example:
+          ```text
+          trait Foo1 {}
+          trait Foo2 { fn f(); }
+
+          trait Bar : Foo1 + Foo2 {}
+                      ^^^^   ^^^^
+                             parent clause 1
+              parent clause 0
+
+          fn g<T : Bar>(x : T) {
+            x.f()
+            ^^^^^
+            Parent(Clause(0), Bar, 1)::f(x)
+                                   ^
+                                   parent clause 1 of clause 0
+                              ^^^
+                       clause 0 implements Bar
+          }
+          ```
+       *)
+  | Self
+      (** Self, in case of trait declarations/implementations.
+
+          Putting [Self] at the end on purpose, so that when ordering the clauses
+          we start with the other clauses (in particular, the local clauses). It
+          is useful to give priority to the local clauses when solving the trait
+          obligations which are fullfilled by the trait parameters.
+       *)
+  | BuiltinOrAuto of trait_decl_ref region_binder
+      (** A specific builtin trait implementation like [core::marker::Sized] or
+          auto trait implementation like [core::marker::Syn].
+       *)
   | Dyn of trait_decl_ref region_binder
-  | Unsolved of trait_decl_id * generic_args
-  | UnknownTrait of string
+      (** The automatically-generated implementation for `dyn Trait`. *)
+  | UnknownTrait of string  (** For error reporting. *)
 
 (** A reference to a trait *)
 and trait_ref = {
@@ -574,17 +664,25 @@ class ['self] map_generic_params_base =
     method visit_span : 'env -> span -> span = fun _ x -> x
   end
 
-(** Type variable.
-    We make sure not to mix variables and type variables by having two distinct
-    definitions.
- *)
+(** A type variable in a signature or binder. *)
 type type_var = (type_var_id, string) indexed_var
 
-(** Const Generic Variable *)
+(** A const generic variable in a signature or binder. *)
 and const_generic_var = {
-  index : const_generic_var_id;  (** Unique index identifying the variable *)
+  index : const_generic_var_id;
+      (** Index identifying the variable among other variables bound at the same level. *)
   name : string;  (** Const generic name *)
   ty : literal_type;  (** Type of the const generic *)
+}
+
+(** A trait predicate in a signature, of the form `Type: Trait<Args>`. This functions like a
+    variable binder, to which variables of the form `TraitRefKind::Clause` can refer to.
+ *)
+and trait_clause = {
+  clause_id : trait_clause_id;
+      (** Index identifying the clause among other clauses bound at the same level. *)
+  span : span option;
+  trait : trait_decl_ref region_binder;  (** The trait that is implemented. *)
 }
 
 and region_outlives = (region, region) outlives_pred
@@ -624,17 +722,6 @@ and generic_params = {
   trait_type_constraints : trait_type_constraint region_binder list;
       (** Constraints over trait associated types *)
 }
-
-(** A predicate of the form `Type: Trait<Args>`. *)
-and trait_clause = {
-  clause_id : trait_clause_id;
-      (** We use this id when solving trait constraints, to be able to refer
-        to specific where clauses when the selected trait actually is linked
-        to a parameter.
-     *)
-  span : span option;
-  trait : trait_decl_ref region_binder;  (** The trait that is implemented. *)
-}
 [@@deriving
   show,
     ord,
@@ -653,19 +740,8 @@ and trait_clause = {
         nude = true (* Don't inherit VisitorsRuntime *);
       }]
 
-(** Meta information about an item (function, trait decl, trait impl, type decl, global). *)
-type item_meta = {
-  name : name;
-  span : span;
-  source_text : string option;
-      (** The source code that corresponds to this item. *)
-  attr_info : attr_info;  (** Attributes and visibility. *)
-  is_local : bool;
-      (** `true` if the type decl is a local type decl, `false` if it comes from an external crate. *)
-}
-
 (** See the comments for [Name] *)
-and path_elem =
+type path_elem =
   | PeIdent of string * disambiguator
   | PeImpl of impl_elem * disambiguator
 
@@ -727,15 +803,33 @@ class ['self] iter_type_decl_base =
   object (self : 'self)
     inherit [_] iter_generic_params
     method visit_attr_info : 'env -> attr_info -> unit = fun _ _ -> ()
-    method visit_item_meta : 'env -> item_meta -> unit = fun _ _ -> ()
+    method visit_name : 'env -> name -> unit = fun _ _ -> ()
   end
 
 class ['self] map_type_decl_base =
   object (self : 'self)
     inherit [_] map_generic_params
     method visit_attr_info : 'env -> attr_info -> attr_info = fun _ x -> x
-    method visit_item_meta : 'env -> item_meta -> item_meta = fun _ x -> x
+    method visit_name : 'env -> name -> name = fun _ x -> x
   end
+
+type abort_kind =
+  | Panic of name  (** A built-in panicking function. *)
+  | UndefinedBehavior
+      (** A MIR `Unreachable` terminator corresponds to undefined behavior in the rust abstract
+          machine.
+       *)
+
+(** Meta information about an item (function, trait decl, trait impl, type decl, global). *)
+and item_meta = {
+  name : name;
+  span : span;
+  source_text : string option;
+      (** The source code that corresponds to this item. *)
+  attr_info : attr_info;  (** Attributes and visibility. *)
+  is_local : bool;
+      (** `true` if the type decl is a local type decl, `false` if it comes from an external crate. *)
+}
 
 (** A type declaration.
 
@@ -751,7 +845,7 @@ class ['self] map_type_decl_base =
     A type can only be an ADT (structure or enumeration), as type aliases are
     inlined in MIR.
  *)
-type type_decl = {
+and type_decl = {
   def_id : type_decl_id;
   item_meta : item_meta;  (** Meta information associated with the item. *)
   generics : generic_params;
@@ -825,6 +919,9 @@ type ('rid, 'id) g_region_group = {
   regions : 'rid list;
   parents : 'id list;
 }
+[@@deriving show]
+
+type region_db_var = (bound_region_id, free_region_id) de_bruijn_var
 [@@deriving show]
 
 type region_var_group = (BoundRegionId.id, RegionGroupId.id) g_region_group

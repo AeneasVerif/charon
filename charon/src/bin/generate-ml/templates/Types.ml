@@ -101,6 +101,21 @@ class ['self] iter_ty_base_base =
         visit_left env left;
         visit_right env right
 
+    method visit_de_bruijn_var
+        : 'l 'r.
+          ('env -> 'l -> unit) ->
+          ('env -> 'r -> unit) ->
+          'env ->
+          ('l, 'r) de_bruijn_var ->
+          unit =
+      fun visit_bound visit_free env x ->
+        match x with
+        | Bound (dbid, varid) ->
+            self#visit_de_bruijn_id env dbid;
+            visit_bound env varid
+        | Free varid -> visit_free env varid
+
+
     method visit_region_var env (x : region_var) =
       self#visit_indexed_var self#visit_bound_region_id
         (self#visit_option self#visit_string)
@@ -145,6 +160,23 @@ class virtual ['self] map_ty_base_base =
         let right = visit_right env right in
         (left, right)
 
+    method visit_de_bruijn_var
+        : 'l 'r.
+          ('env -> 'l -> 'l) ->
+          ('env -> 'r -> 'r) ->
+          'env ->
+          ('l, 'r) de_bruijn_var ->
+          ('l, 'r) de_bruijn_var =
+      fun visit_bound visit_free env x ->
+        match x with
+        | Bound (dbid, varid) ->
+            let dbid = self#visit_de_bruijn_id env dbid in
+            let varid = visit_bound env varid in
+            Bound (dbid, varid)
+        | Free varid ->
+            let varid = visit_free env varid in
+            Free varid
+
     method visit_region_var env (x : region_var) =
       self#visit_indexed_var self#visit_bound_region_id
         (self#visit_option self#visit_string)
@@ -183,6 +215,8 @@ type ('rid, 'id) g_region_group = {
   parents : 'id list;
 }
 [@@deriving show]
+
+type region_db_var = (bound_region_id, free_region_id) de_bruijn_var [@@deriving show]
 
 type region_var_group = (BoundRegionId.id, RegionGroupId.id) g_region_group
 [@@deriving show]

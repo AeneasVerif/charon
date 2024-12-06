@@ -4,58 +4,6 @@ use crate::{common::visitor_event::VisitEvent, ids::Vector};
 use derive_visitor::{Drive, DriveMut, Event, Visitor, VisitorMut};
 use std::{collections::HashMap, iter::Iterator};
 
-impl DeBruijnId {
-    pub fn zero() -> Self {
-        DeBruijnId { index: 0 }
-    }
-
-    pub fn new(index: usize) -> Self {
-        DeBruijnId { index }
-    }
-
-    pub fn is_zero(&self) -> bool {
-        self.index == 0
-    }
-
-    pub fn incr(&self) -> Self {
-        DeBruijnId {
-            index: self.index + 1,
-        }
-    }
-
-    pub fn decr(&self) -> Self {
-        DeBruijnId {
-            index: self.index - 1,
-        }
-    }
-}
-
-impl DeBruijnVar {
-    pub fn bound(index: DeBruijnId, var: BoundRegionId) -> Self {
-        DeBruijnVar::Bound(index, var)
-    }
-
-    pub fn decr(&self) -> Self {
-        match *self {
-            DeBruijnVar::Bound(dbid, varid) => DeBruijnVar::Bound(dbid.decr(), varid),
-            DeBruijnVar::Free(varid) => DeBruijnVar::Free(varid),
-        }
-    }
-
-    pub fn bound_at_depth(&self, depth: DeBruijnId) -> Option<BoundRegionId> {
-        match *self {
-            DeBruijnVar::Bound(dbid, varid) if dbid == depth => Some(varid),
-            _ => None,
-        }
-    }
-}
-
-impl TypeVar {
-    pub fn new(index: TypeVarId, name: String) -> TypeVar {
-        TypeVar { index, name }
-    }
-}
-
 impl GenericParams {
     pub fn empty() -> Self {
         Self::default()
@@ -639,3 +587,45 @@ impl Ty {
         self.drive_inner_mut(&mut SubstVisitor::new(generics));
     }
 }
+
+// The derive macro doesn't handle generics.
+impl<B: Drive, F: Drive> Drive for DeBruijnVar<B, F> {
+    fn drive<V: Visitor>(&self, visitor: &mut V) {
+        visitor.visit(self, Event::Enter);
+        match self {
+            DeBruijnVar::Bound(x, y) => {
+                x.drive(visitor);
+                y.drive(visitor);
+            }
+            DeBruijnVar::Free(x) => {
+                x.drive(visitor);
+            }
+        }
+        visitor.visit(self, Event::Exit);
+    }
+}
+
+impl<B: DriveMut, F: DriveMut> DriveMut for DeBruijnVar<B, F> {
+    fn drive_mut<V: VisitorMut>(&mut self, visitor: &mut V) {
+        visitor.visit(self, Event::Enter);
+        match self {
+            DeBruijnVar::Bound(x, y) => {
+                x.drive_mut(visitor);
+                y.drive_mut(visitor);
+            }
+            DeBruijnVar::Free(x) => {
+                x.drive_mut(visitor);
+            }
+        }
+        visitor.visit(self, Event::Exit);
+    }
+}
+
+impl PartialEq for TraitClause {
+    fn eq(&self, other: &Self) -> bool {
+        // Skip `span` and `origin`
+        self.clause_id == other.clause_id && self.trait_ == other.trait_
+    }
+}
+
+impl Eq for TraitClause {}
