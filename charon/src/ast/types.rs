@@ -601,7 +601,7 @@ pub enum TyKind {
     /// types.
     Adt(TypeId, GenericArgs),
     #[charon::rename("TVar")]
-    TypeVar(TypeVarId),
+    TypeVar(TypeDbVar),
     Literal(LiteralTy),
     /// The never type, for computations which don't return. It is sometimes
     /// necessary for intermediate variables. For instance, if we do (coming

@@ -571,7 +571,7 @@ and ty =
           Note: this is incorrectly named: this can refer to any valid `TypeDecl` including extern
           types.
        *)
-  | TVar of type_var_id
+  | TVar of (type_var_id, type_var_id) de_bruijn_var
   | TLiteral of literal_type
   | TNever
       (** The never type, for computations which don't return. It is sometimes
@@ -923,6 +923,8 @@ type ('rid, 'id) g_region_group = {
 
 type region_db_var = (bound_region_id, free_region_id) de_bruijn_var
 [@@deriving show]
+
+type type_db_var = (type_var_id, type_var_id) de_bruijn_var [@@deriving show]
 
 type region_var_group = (BoundRegionId.id, RegionGroupId.id) g_region_group
 [@@deriving show]

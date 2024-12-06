@@ -3,6 +3,7 @@ use crate::types::*;
 use crate::{common::visitor_event::VisitEvent, ids::Vector};
 use derive_visitor::{Drive, DriveMut, Event, Visitor, VisitorMut};
 use std::{collections::HashMap, iter::Iterator};
+use DeBruijnVar::Free;
 
 impl GenericParams {
     pub fn empty() -> Self {
@@ -47,12 +48,12 @@ impl GenericParams {
             regions: self
                 .regions
                 .iter_indexed()
-                .map(|(id, _)| Region::Var(DeBruijnVar::bound(DeBruijnId::new(0), id)))
+                .map(|(id, _)| Region::Var(DeBruijnVar::new_at_zero(id)))
                 .collect(),
             types: self
                 .types
                 .iter_indexed()
-                .map(|(id, _)| TyKind::TypeVar(id).into_ty())
+                .map(|(id, _)| TyKind::TypeVar(DeBruijnVar::free(id)).into_ty())
                 .collect(),
             const_generics: self
                 .const_generics
@@ -562,7 +563,10 @@ impl<'a> SubstVisitor<'a> {
 
     fn exit_ty(&mut self, ty: &mut Ty) {
         match ty.kind() {
-            TyKind::TypeVar(id) => *ty = self.generics.types.get(*id).unwrap().clone(),
+            TyKind::TypeVar(Free(id)) => {
+                {}
+                *ty = self.generics.types.get(*id).unwrap().clone()
+            }
             _ => (),
         }
     }

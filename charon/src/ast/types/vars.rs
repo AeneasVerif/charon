@@ -60,9 +60,9 @@ pub enum DeBruijnVar<Bound, Free> {
 // to confuse them, we define an index type for every one of them (which is just a struct with a
 // unique usize field), together with some utilities like a fresh index generator, using the
 // `generate_index_type` macro.
-generate_index_type!(TypeVarId, "T");
 generate_index_type!(BoundRegionId, "BoundRegion");
 generate_index_type!(FreeRegionId, "FreeRegion");
+generate_index_type!(TypeVarId, "T");
 generate_index_type!(ConstGenericVarId, "Const");
 generate_index_type!(TraitClauseId, "TraitClause");
 
@@ -114,6 +114,7 @@ pub struct TraitClause {
 }
 
 pub type RegionDbVar = DeBruijnVar<BoundRegionId, FreeRegionId>;
+pub type TypeDbVar = DeBruijnVar<TypeVarId, TypeVarId>;
 
 impl DeBruijnId {
     pub fn zero() -> Self {
@@ -146,8 +147,16 @@ where
     Bound: Copy,
     Free: Copy,
 {
-    pub fn bound(index: DeBruijnId, var: Bound) -> Self {
-        DeBruijnVar::Bound(index, var)
+    pub fn new_at_zero(id: Bound) -> Self {
+        DeBruijnVar::Bound(DeBruijnId::new(0), id)
+    }
+
+    pub fn free(id: Free) -> Self {
+        DeBruijnVar::Free(id)
+    }
+
+    pub fn bound(index: DeBruijnId, id: Bound) -> Self {
+        DeBruijnVar::Bound(index, id)
     }
 
     pub fn decr(&self) -> Self {

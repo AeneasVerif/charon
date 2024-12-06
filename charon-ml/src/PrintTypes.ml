@@ -78,13 +78,17 @@ let region_db_var_to_string (env : 'a fmt_env) (var : region_db_var) : string =
     end
   | Free _ -> region_db_var_to_pretty_string var
 
-let type_var_id_to_string (env : 'a fmt_env) (id : type_var_id) : string =
-  (* Note that the types are not necessarily ordered following their indices *)
-  match
-    List.find_opt (fun (x : type_var) -> x.index = id) env.generics.types
-  with
-  | None -> type_var_id_to_pretty_string id
-  | Some x -> type_var_to_string x
+let type_db_var_to_string (env : 'a fmt_env) (var : type_db_var) : string =
+  match var with
+  | Bound _ -> failwith "bound type variable"
+  | Free id -> begin
+      (* Note that the types are not necessarily ordered following their indices *)
+      match
+        List.find_opt (fun (x : type_var) -> x.index = id) env.generics.types
+      with
+      | None -> type_var_id_to_pretty_string id
+      | Some x -> type_var_to_string x
+    end
 
 let const_generic_var_id_to_string (env : 'a fmt_env)
     (id : const_generic_var_id) : string =
@@ -175,7 +179,7 @@ and ty_to_string (env : 'a fmt_env) (ty : ty) : string =
       in
       let params = params_to_string env is_tuple generics in
       type_id_to_string env id ^ params
-  | TVar tv -> type_var_id_to_string env tv
+  | TVar tv -> type_db_var_to_string env tv
   | TNever -> "!"
   | TLiteral lit_ty -> literal_type_to_string lit_ty
   | TTraitType (trait_ref, type_name) ->

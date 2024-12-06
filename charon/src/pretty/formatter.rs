@@ -130,8 +130,7 @@ impl<'a, 'b> PushBoundRegions<'a> for FmtCtx<'b> {
     }
 }
 
-pub trait AstFormatter = Formatter<TypeVarId>
-    + Formatter<TypeDeclId>
+pub trait AstFormatter = Formatter<TypeDeclId>
     + Formatter<ConstGenericVarId>
     + Formatter<FunDeclId>
     + Formatter<GlobalDeclId>
@@ -141,6 +140,7 @@ pub trait AstFormatter = Formatter<TypeVarId>
     + Formatter<AnyTransId>
     + Formatter<TraitClauseId>
     + Formatter<RegionDbVar>
+    + Formatter<TypeDbVar>
     + Formatter<VarId>
     + Formatter<(TypeDeclId, VariantId)>
     + Formatter<(TypeDeclId, Option<VariantId>, FieldId)>
@@ -301,13 +301,16 @@ impl<'a> Formatter<&RegionVar> for FmtCtx<'a> {
     }
 }
 
-impl<'a> Formatter<TypeVarId> for FmtCtx<'a> {
-    fn format_object(&self, id: TypeVarId) -> String {
-        match &self.generics.back() {
-            None => id.to_pretty_string(),
-            Some(generics) => match generics.types.get(id) {
+impl<'a> Formatter<TypeDbVar> for FmtCtx<'a> {
+    fn format_object(&self, var: TypeDbVar) -> String {
+        match var {
+            DeBruijnVar::Bound(..) => format!("missing_type_var({var})"),
+            DeBruijnVar::Free(id) => match &self.generics.back() {
                 None => id.to_pretty_string(),
-                Some(v) => v.to_string(),
+                Some(generics) => match generics.types.get(id) {
+                    None => id.to_pretty_string(),
+                    Some(v) => v.to_string(),
+                },
             },
         }
     }
@@ -325,8 +328,8 @@ impl<'a> Formatter<ConstGenericVarId> for FmtCtx<'a> {
     }
 }
 
-impl<'a> Formatter<ast::TraitClauseId> for FmtCtx<'a> {
-    fn format_object(&self, id: ast::TraitClauseId) -> String {
+impl<'a> Formatter<TraitClauseId> for FmtCtx<'a> {
+    fn format_object(&self, id: TraitClauseId) -> String {
         id.to_pretty_string()
     }
 }

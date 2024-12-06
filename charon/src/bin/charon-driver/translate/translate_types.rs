@@ -276,7 +276,7 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
                             param.name, param.index
                         )
                     ),
-                    Some(var_id) => TyKind::TypeVar(*var_id),
+                    Some(var_id) => TyKind::TypeVar(DeBruijnVar::Free(*var_id)),
                 }
             }
 
