@@ -4,62 +4,6 @@ use crate::{common::visitor_event::VisitEvent, ids::Vector};
 use derive_visitor::{Drive, DriveMut, Event, Visitor, VisitorMut};
 use std::{collections::HashMap, iter::Iterator};
 
-impl DeBruijnId {
-    pub fn zero() -> Self {
-        DeBruijnId { index: 0 }
-    }
-
-    pub fn new(index: usize) -> Self {
-        DeBruijnId { index }
-    }
-
-    pub fn is_zero(&self) -> bool {
-        self.index == 0
-    }
-
-    pub fn incr(&self) -> Self {
-        DeBruijnId {
-            index: self.index + 1,
-        }
-    }
-
-    pub fn decr(&self) -> Self {
-        DeBruijnId {
-            index: self.index - 1,
-        }
-    }
-}
-
-impl<Bound, Free> DeBruijnVar<Bound, Free>
-where
-    Bound: Copy,
-    Free: Copy,
-{
-    pub fn bound(index: DeBruijnId, var: Bound) -> Self {
-        DeBruijnVar::Bound(index, var)
-    }
-
-    pub fn decr(&self) -> Self {
-        match *self {
-            DeBruijnVar::Bound(dbid, varid) => DeBruijnVar::Bound(dbid.decr(), varid),
-            DeBruijnVar::Free(varid) => DeBruijnVar::Free(varid),
-        }
-    }
-
-    pub fn bound_at_depth(&self, depth: DeBruijnId) -> Option<Bound> {
-        match *self {
-            DeBruijnVar::Bound(dbid, varid) if dbid == depth => Some(varid),
-            _ => None,
-        }
-    }
-}
-
-impl TypeVar {
-    pub fn new(index: TypeVarId, name: String) -> TypeVar {
-        TypeVar { index, name }
-    }
-}
-
 impl GenericParams {
     pub fn empty() -> Self {
         Self::default()

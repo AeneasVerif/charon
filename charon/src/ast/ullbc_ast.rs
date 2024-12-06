@@ -2,7 +2,6 @@
 //! reconstruction. In effect, this is a cleaned up version of MIR.
 pub use super::ullbc_ast_utils::*;
 pub use crate::ast::*;
-use crate::ids::Vector;
 use derive_visitor::{Drive, DriveMut};
 use macros::{EnumAsGetters, EnumIsA, VariantIndexArity, VariantName};
 use serde::{Deserialize, Serialize};
