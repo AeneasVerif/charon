@@ -988,26 +988,6 @@ fn generate_ml(
         ),
         // Hand-written because we encode sequences differently.
         ("charon_lib::ast::llbc_ast::Block", "statement"),
-        // Hand-written because we're keeping some now-removed variants around.
-        // TODO: remove these variants.
-        (
-            "TraitRefKind",
-            indoc!(
-                "
-                | Self
-                    (** Reference to *self*, in case of trait declarations/implementations *)
-                | TraitImpl of trait_impl_id * generic_args  (** A specific implementation *)
-                | BuiltinOrAuto of trait_decl_ref region_binder
-                | Clause of trait_clause_id
-                | ParentClause of trait_instance_id * trait_decl_id * trait_clause_id
-                | FnPointer of ty
-                | Closure of fun_decl_id * generic_args
-                | Dyn of trait_decl_ref region_binder
-                | Unsolved of trait_decl_id * generic_args
-                | UnknownTrait of string
-                "
-            ),
-        ),
         // Handwritten because we use `indexed_var` as a hack to be able to reuse field names.
         // TODO: remove the need for this hack.
         ("RegionVar", "(bound_region_id, string option) indexed_var"),

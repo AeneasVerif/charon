@@ -435,17 +435,64 @@ and region =
     with some of the other variants.
  *)
 and trait_instance_id =
-  | Self
-      (** Reference to *self*, in case of trait declarations/implementations *)
-  | TraitImpl of trait_impl_id * generic_args  (** A specific implementation *)
-  | BuiltinOrAuto of trait_decl_ref region_binder
+  | TraitImpl of trait_impl_id * generic_args
+      (** A specific top-level implementation item. *)
   | Clause of trait_clause_id
+      (** One of the local clauses.
+
+          Example:
+          ```text
+          fn f<T>(...) where T : Foo
+                             ^^^^^^^
+                             Clause(0)
+          ```
+       *)
   | ParentClause of trait_instance_id * trait_decl_id * trait_clause_id
-  | FnPointer of ty
-  | Closure of fun_decl_id * generic_args
+      (** A parent clause
+
+          Remark: the [TraitDeclId] gives the trait declaration which is
+          implemented by the instance id from which we take the parent clause
+          (see example below). It is not necessary and included for convenience.
+
+          Remark: Ideally we should store a full `TraitRef` instead, but hax does not give us enough
+          information to get the right generic args.
+
+          Example:
+          ```text
+          trait Foo1 {}
+          trait Foo2 { fn f(); }
+
+          trait Bar : Foo1 + Foo2 {}
+                      ^^^^   ^^^^
+                             parent clause 1
+              parent clause 0
+
+          fn g<T : Bar>(x : T) {
+            x.f()
+            ^^^^^
+            Parent(Clause(0), Bar, 1)::f(x)
+                                   ^
+                                   parent clause 1 of clause 0
+                              ^^^
+                       clause 0 implements Bar
+          }
+          ```
+       *)
+  | Self
+      (** Self, in case of trait declarations/implementations.
+
+          Putting [Self] at the end on purpose, so that when ordering the clauses
+          we start with the other clauses (in particular, the local clauses). It
+          is useful to give priority to the local clauses when solving the trait
+          obligations which are fullfilled by the trait parameters.
+       *)
+  | BuiltinOrAuto of trait_decl_ref region_binder
+      (** A specific builtin trait implementation like [core::marker::Sized] or
+          auto trait implementation like [core::marker::Syn].
+       *)
   | Dyn of trait_decl_ref region_binder
-  | Unsolved of trait_decl_id * generic_args
-  | UnknownTrait of string
+      (** The automatically-generated implementation for `dyn Trait`. *)
+  | UnknownTrait of string  (** For error reporting. *)
 
 (** A reference to a trait *)
 and trait_ref = {

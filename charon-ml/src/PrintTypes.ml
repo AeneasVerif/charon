@@ -261,20 +261,9 @@ and trait_instance_id_to_string (env : 'a fmt_env) (id : trait_instance_id) :
       let inst_id = trait_instance_id_to_string env inst_id in
       let clause_id = trait_clause_id_to_string env clause_id in
       "parent(" ^ inst_id ^ ")::" ^ clause_id
-  | FnPointer ty -> "fn_ptr(" ^ ty_to_string env ty ^ ")"
-  | Closure (fid, generics) ->
-      "closure("
-      ^ fun_decl_id_to_string env fid
-      ^ generic_args_to_string env generics
-      ^ ")"
   | Dyn trait ->
       let trait = region_binder_to_string trait_decl_ref_to_string env trait in
       "dyn(" ^ trait ^ ")"
-  | Unsolved (decl_id, generics) ->
-      "unsolved("
-      ^ trait_decl_id_to_string env decl_id
-      ^ generic_args_to_string env generics
-      ^ ")"
   | UnknownTrait msg -> "UNKNOWN(" ^ msg ^ ")"
 
 and impl_elem_to_string (env : 'a fmt_env) (elem : impl_elem) : string =
