@@ -30,6 +30,26 @@ impl DeBruijnId {
     }
 }
 
+impl DeBruijnVar {
+    pub fn bound(index: DeBruijnId, var: BoundRegionId) -> Self {
+        DeBruijnVar::Bound(index, var)
+    }
+
+    pub fn decr(&self) -> Self {
+        match *self {
+            DeBruijnVar::Bound(dbid, varid) => DeBruijnVar::Bound(dbid.decr(), varid),
+            DeBruijnVar::Free(varid) => DeBruijnVar::Free(varid),
+        }
+    }
+
+    pub fn bound_at_depth(&self, depth: DeBruijnId) -> Option<BoundRegionId> {
+        match *self {
+            DeBruijnVar::Bound(dbid, varid) if dbid == depth => Some(varid),
+            _ => None,
+        }
+    }
+}
+
 impl TypeVar {
     pub fn new(index: TypeVarId, name: String) -> TypeVar {
         TypeVar { index, name }
@@ -79,7 +99,7 @@ impl GenericParams {
             regions: self
                 .regions
                 .iter_indexed()
-                .map(|(id, _)| Region::BVar(DeBruijnId::new(0), id))
+                .map(|(id, _)| Region::Var(DeBruijnVar::bound(DeBruijnId::new(0), id)))
                 .collect(),
             types: self
                 .types
@@ -130,7 +150,7 @@ impl GenericArgs {
     }
 
     pub fn new(
-        regions: Vector<RegionId, Region>,
+        regions: Vector<BoundRegionId, Region>,
         types: Vector<TypeVarId, Ty>,
         const_generics: Vector<ConstGenericVarId, ConstGeneric>,
         trait_refs: Vector<TraitClauseId, TraitRef>,
@@ -535,12 +555,15 @@ impl<V> std::ops::DerefMut for VisitInsideTy<V> {
     }
 }
 
+type FnTys = (Vec<Ty>, Ty);
+
 /// Visitor for the [Ty::substitute] function.
 #[derive(VisitorMut)]
 #[visitor(
     PolyTraitDeclRef(enter, exit),
+    FnTys(enter, exit),
     Region(exit),
-    Ty(enter, exit),
+    Ty(exit),
     ConstGeneric(exit),
     TraitRef(exit)
 )]
@@ -548,8 +571,9 @@ struct SubstVisitor<'a> {
     generics: &'a GenericArgs,
     // Tracks the depth of binders we're inside of.
     // Important: we must update it whenever we go inside a binder. Visitors are not generic so we
-    // must handle all the specific cases by hand. So far there's only `PolyTraitDeclRef` but there
-    // may be more in the future.
+    // must handle all the specific cases by hand. So far there's:
+    // - `PolyTraitDeclRef`
+    // - The contents of `TyKind::Arrow`
     binder_depth: DeBruijnId,
 }
 
@@ -569,27 +593,28 @@ impl<'a> SubstVisitor<'a> {
         self.binder_depth = self.binder_depth.decr();
     }
 
+    fn enter_fn_tys(&mut self, _: &mut FnTys) {
+        self.binder_depth = self.binder_depth.incr();
+    }
+
+    fn exit_fn_tys(&mut self, _: &mut FnTys) {
+        self.binder_depth = self.binder_depth.decr();
+    }
+
     fn exit_region(&mut self, r: &mut Region) {
         match r {
-            Region::BVar(db, id) => {
-                if *db == self.binder_depth {
-                    *r = self.generics.regions.get(*id).unwrap().clone()
+            Region::Var(var) => {
+                if let Some(varid) = var.bound_at_depth(self.binder_depth) {
+                    *r = self.generics.regions.get(varid).unwrap().clone()
                 }
             }
             _ => (),
         }
     }
 
-    fn enter_ty(&mut self, ty: &mut Ty) {
-        match ty.kind() {
-            TyKind::Arrow(_, _, _) => self.binder_depth = self.binder_depth.incr(),
-            _ => {}
-        }
-    }
     fn exit_ty(&mut self, ty: &mut Ty) {
         match ty.kind() {
             TyKind::TypeVar(id) => *ty = self.generics.types.get(*id).unwrap().clone(),
-            TyKind::Arrow(_, _, _) => self.binder_depth = self.binder_depth.decr(),
             _ => (),
         }
     }

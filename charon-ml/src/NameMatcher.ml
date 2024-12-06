@@ -287,7 +287,7 @@ type mexpr = MTy of T.ty | MCg of T.const_generic | MRegion of T.region
 
 type region_map = {
   regions : T.region VarMap.t ref;  (** The map for "regular" regions *)
-  bound_regions : T.region T.RegionVarId.Map.t ref list;
+  bound_regions : T.region T.BoundRegionId.Map.t ref list;
       (** The stack of maps for bound regions.
 
           Note that the stack itself is not inside a reference: this allows us
@@ -305,7 +305,7 @@ type maps = {
 let mk_empty_region_map () =
   {
     regions = ref VarMap.empty;
-    bound_regions = [ ref T.RegionVarId.Map.empty ];
+    bound_regions = [ ref T.BoundRegionId.Map.empty ];
   }
 
 let mk_empty_maps () =
@@ -315,7 +315,7 @@ let maps_push_bound_regions_group (m : maps) : maps =
   let rmap =
     {
       m.rmap with
-      bound_regions = ref T.RegionVarId.Map.empty :: m.rmap.bound_regions;
+      bound_regions = ref T.BoundRegionId.Map.empty :: m.rmap.bound_regions;
     }
   in
   { m with rmap }
@@ -345,19 +345,20 @@ let update_rmap (c : match_config) (m : maps) (id : var) (v : T.region) : bool =
   (* When it comes to matching, we treat erased regions like variables. *)
   let is_var =
     match v with
-    | RBVar _ | RErased | RFVar _ -> true
-    | _ -> false
+    | RVar _ | RErased -> true
+    | RStatic -> false
   in
   if c.map_vars_to_vars && not is_var then false
   else
     match v with
-    | RBVar (db_id, rid) -> (
+    | RVar (Bound (dbid, varid)) -> begin
         (* Special treatment for the bound regions *)
-        match List.nth_opt m.rmap.bound_regions db_id with
+        match List.nth_opt m.rmap.bound_regions dbid with
         | None -> raise (Failure "Unexpected bound variable")
         | Some brmap ->
-            update_map T.RegionVarId.Map.find_opt T.RegionVarId.Map.add brmap
-              rid v)
+            update_map T.BoundRegionId.Map.find_opt T.BoundRegionId.Map.add
+              brmap varid v
+      end
     | _ -> update_map VarMap.find_opt VarMap.add m.rmap.regions id v
 
 let update_tmap (c : match_config) (m : maps) (id : var) (v : T.ty) : bool =
@@ -436,7 +437,7 @@ let match_region (c : match_config) (m : maps) (id : region) (v : T.region) :
     bool =
   match (id, v) with
   | RStatic, RStatic -> true
-  | RVar id, (RBVar _ | RFVar _ | RErased) ->
+  | RVar id, (RVar _ | RErased) ->
       (* When it comes to matching, we treat erased regions like variables *)
       opt_update_rmap c m id v
   | RVar id, _ -> if c.map_vars_to_vars then false else opt_update_rmap c m id v
@@ -551,15 +552,19 @@ and match_expr_with_ty (ctx : ctx) (c : match_config) (m : maps) (pty : expr)
   | EVar v, _ -> opt_update_tmap c m v ty
   | EComp pid, TTraitType (trait_ref, type_name) ->
       match_trait_type ctx c m pid trait_ref type_name
-  | EArrow (pinputs, pout), TArrow (regions, inputs, out) -> (
+  | EArrow (pinputs, pout), TArrow binder -> begin
       (* Push a region group in the map, if necessary - TODO: make this more precise *)
-      let m = maps_push_bound_regions_group_if_nonempty m regions in
+      let m =
+        maps_push_bound_regions_group_if_nonempty m binder.binder_regions
+      in
+      let inputs, output = binder.binder_value in
       (* Match *)
       List.for_all2 (match_expr_with_ty ctx c m) pinputs inputs
       &&
       match pout with
-      | None -> out = TypesUtils.mk_unit_ty
-      | Some pout -> match_expr_with_ty ctx c m pout out)
+      | None -> output = TypesUtils.mk_unit_ty
+      | Some pout -> match_expr_with_ty ctx c m pout output
+    end
   | ERawPtr (Mut, pty), TRawPtr (ty, RMut) -> match_expr_with_ty ctx c m pty ty
   | ERawPtr (Not, pty), TRawPtr (ty, RShared) ->
       match_expr_with_ty ctx c m pty ty
@@ -773,7 +778,7 @@ let mk_name_matcher (ctx : ctx) (c : match_config) (pat : string) :
 (* We use this to store the constraints maps (the map from variable
    ids to option pattern variable ids) *)
 type constraints = {
-  rmap : var option T.RegionVarId.Map.t list;
+  rmap : var option T.BoundRegionId.Map.t list;
       (** Note that we have a stack of maps for the regions *)
   tmap : var option T.TypeVarId.Map.t;
   cmap : var option T.ConstGenericVarId.Map.t;
@@ -781,7 +786,7 @@ type constraints = {
 
 let empty_constraints =
   {
-    rmap = [ T.RegionVarId.Map.empty ];
+    rmap = [ T.BoundRegionId.Map.empty ];
     tmap = T.TypeVarId.Map.empty;
     cmap = T.ConstGenericVarId.Map.empty;
   }
@@ -793,15 +798,15 @@ let ref_kind_to_pattern (rk : T.ref_kind) : ref_kind =
 
 let region_to_pattern (m : constraints) (r : T.region) : region =
   match r with
-  | RBVar (bdid, r) ->
+  | RVar (Bound (dbid, varid)) ->
       RVar
-        (match List.nth_opt m.rmap bdid with
+        (match List.nth_opt m.rmap dbid with
         | None -> None
         | Some rmap -> (
-            match T.RegionVarId.Map.find_opt r rmap with
+            match T.BoundRegionId.Map.find_opt varid rmap with
             | Some r -> r
             | None -> None))
-  | RFVar _ ->
+  | RVar (Free _) ->
       (* For now we don't have a precise treatment of the free region variables
          in the patterns.
          Note that they should be used only in the symbolic execution *)
@@ -828,14 +833,14 @@ let const_generic_var_to_pattern (m : constraints) (v : T.ConstGenericVarId.id)
       None
 
 let constraints_map_compute_regions_map (regions : T.region_var list) :
-    var option T.RegionVarId.Map.t =
+    var option T.BoundRegionId.Map.t =
   let fresh_id (gen : int ref) : int =
     let id = !gen in
     gen := id + 1;
     id
   in
   let rid_gen = ref 0 in
-  T.RegionVarId.Map.of_list
+  T.BoundRegionId.Map.of_list
     (List.map
        (fun (r : T.region_var) ->
          let v =
@@ -969,15 +974,18 @@ and ty_to_pattern_aux (ctx : ctx) (c : to_pat_config) (m : constraints)
           TypesUtils.empty_generic_args
       in
       EComp name
-  | TArrow (regions, inputs, out) ->
+  | TArrow binder ->
       (* Push a regions map if necessary - TODO: make this more precise *)
-      let m = constraints_map_push_regions_map_if_nonempty m regions in
-      let inputs = List.map (ty_to_pattern_aux ctx c m) inputs in
-      let out =
-        if out = TypesUtils.mk_unit_ty then None
-        else Some (ty_to_pattern_aux ctx c m out)
+      let m =
+        constraints_map_push_regions_map_if_nonempty m binder.binder_regions
       in
-      EArrow (inputs, out)
+      let inputs, output = binder.binder_value in
+      let inputs = List.map (ty_to_pattern_aux ctx c m) inputs in
+      let output =
+        if output = TypesUtils.mk_unit_ty then None
+        else Some (ty_to_pattern_aux ctx c m output)
+      in
+      EArrow (inputs, output)
   | TRawPtr (ty, RMut) -> ERawPtr (Mut, ty_to_pattern_aux ctx c m ty)
   | TRawPtr (ty, RShared) -> ERawPtr (Not, ty_to_pattern_aux ctx c m ty)
   | TDynTrait _ -> raise (Failure "Unimplemented: DynTrait")

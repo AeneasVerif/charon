@@ -14,7 +14,8 @@ pub type FieldName = String;
 generate_index_type!(TypeVarId, "T");
 generate_index_type!(VariantId, "Variant");
 generate_index_type!(FieldId, "Field");
-generate_index_type!(RegionId, "Region");
+generate_index_type!(BoundRegionId, "BoundRegion");
+generate_index_type!(FreeRegionId, "FreeRegion");
 generate_index_type!(ConstGenericVarId, "Const");
 
 /// Type variable.
@@ -34,7 +35,7 @@ pub struct TypeVar {
 )]
 pub struct RegionVar {
     /// Unique index identifying the variable
-    pub index: RegionId,
+    pub index: BoundRegionId,
     /// Region name
     pub name: Option<String>,
 }
@@ -69,6 +70,50 @@ pub struct DeBruijnId {
     pub index: usize,
 }
 
+/// Bound region variable.
+///
+/// **Important**:
+/// ==============
+/// Similarly to what the Rust compiler does, we use De Bruijn indices to
+/// identify *groups* of bound variables, and variable identifiers to
+/// identity the variables inside the groups.
+///
+/// For instance, we have the following:
+/// ```text
+///                     we compute the De Bruijn indices from here
+///                            VVVVVVVVVVVVVVVVVVVVVVV
+/// fn f<'a, 'b>(x: for<'c> fn(&'a u8, &'b u16, &'c u32) -> u64) {}
+///      ^^^^^^         ^^       ^       ^        ^
+///        |      De Bruijn: 0   |       |        |
+///  De Bruijn: 1                |       |        |
+///                        De Bruijn: 1  |    De Bruijn: 0
+///                           Var id: 0  |       Var id: 0
+///                                      |
+///                                De Bruijn: 1
+///                                   Var id: 1
+/// ```
+#[derive(
+    Debug,
+    PartialEq,
+    Eq,
+    Copy,
+    Clone,
+    Hash,
+    PartialOrd,
+    Ord,
+    Serialize,
+    Deserialize,
+    Drive,
+    DriveMut,
+)]
+pub enum DeBruijnVar {
+    /// A variable attached to the nth binder, counting from the inside.
+    Bound(DeBruijnId, BoundRegionId),
+    /// A variable attached to an implicit binder outside all other binders. This is not present in
+    /// translated code, and only provided as a convenience for convenient variable manipulation.
+    Free(FreeRegionId),
+}
+
 #[derive(
     Debug,
     PartialEq,
@@ -87,36 +132,12 @@ pub struct DeBruijnId {
 )]
 #[charon::variants_prefix("R")]
 pub enum Region {
+    /// Region variable. See `DeBruijnVar` for details.
+    Var(DeBruijnVar),
     /// Static region
     Static,
-    /// Bound region variable.
-    ///
-    /// **Important**:
-    /// ==============
-    /// Similarly to what the Rust compiler does, we use De Bruijn indices to
-    /// identify *groups* of bound variables, and variable identifiers to
-    /// identity the variables inside the groups.
-    ///
-    /// For instance, we have the following:
-    /// ```text
-    ///                     we compute the De Bruijn indices from here
-    ///                            VVVVVVVVVVVVVVVVVVVVVVV
-    /// fn f<'a, 'b>(x: for<'c> fn(&'a u8, &'b u16, &'c u32) -> u64) {}
-    ///      ^^^^^^         ^^       ^       ^        ^
-    ///        |      De Bruijn: 0   |       |        |
-    ///  De Bruijn: 1                |       |        |
-    ///                        De Bruijn: 1  |    De Bruijn: 0
-    ///                           Var id: 0  |       Var id: 0
-    ///                                      |
-    ///                                De Bruijn: 1
-    ///                                   Var id: 1
-    /// ```
-    BVar(DeBruijnId, RegionId),
     /// Erased region
     Erased,
-    /// For error reporting.
-    #[charon::opaque]
-    Unknown,
 }
 
 /// Identifier of a trait instance.
@@ -300,7 +321,7 @@ pub struct TraitTypeConstraint {
 
 #[derive(Default, Clone, Eq, PartialEq, Serialize, Deserialize, Hash, Drive, DriveMut)]
 pub struct GenericArgs {
-    pub regions: Vector<RegionId, Region>,
+    pub regions: Vector<BoundRegionId, Region>,
     pub types: Vector<TypeVarId, Ty>,
     pub const_generics: Vector<ConstGenericVarId, ConstGeneric>,
     // TODO: rename to match [GenericParams]?
@@ -313,7 +334,7 @@ pub struct GenericArgs {
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Hash)]
 pub struct RegionBinder<T> {
     #[charon::rename("binder_regions")]
-    pub regions: Vector<RegionId, RegionVar>,
+    pub regions: Vector<BoundRegionId, RegionVar>,
     /// Named this way to highlight accesses to the inner value that might be handling parameters
     /// incorrectly. Prefer using helper methods.
     #[charon::rename("binder_value")]
@@ -329,7 +350,7 @@ pub struct RegionBinder<T> {
 /// be filled with witnesses/instances.
 #[derive(Debug, Default, Clone, PartialEq, Eq, Serialize, Deserialize, Drive, DriveMut)]
 pub struct GenericParams {
-    pub regions: Vector<RegionId, RegionVar>,
+    pub regions: Vector<BoundRegionId, RegionVar>,
     pub types: Vector<TypeVarId, TypeVar>,
     pub const_generics: Vector<ConstGenericVarId, ConstGenericVar>,
     // TODO: rename to match [GenericArgs]?
@@ -755,7 +776,7 @@ pub enum TyKind {
     /// This is essentially a "constrained" function signature:
     /// arrow types can only contain generic lifetime parameters
     /// (no generic types), no predicates, etc.
-    Arrow(Vector<RegionId, RegionVar>, Vec<Ty>, Ty),
+    Arrow(RegionBinder<(Vec<Ty>, Ty)>),
 }
 
 /// Builtin types identifiers.

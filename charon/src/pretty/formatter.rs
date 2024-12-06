@@ -110,13 +110,13 @@ impl<'a, 'b> SetLocals<'a> for FmtCtx<'b> {
 pub trait PushBoundRegions<'a> {
     type C: 'a + AstFormatter;
 
-    fn push_bound_regions(&'a self, regions: &'a Vector<RegionId, RegionVar>) -> Self::C;
+    fn push_bound_regions(&'a self, regions: &'a Vector<BoundRegionId, RegionVar>) -> Self::C;
 }
 
 impl<'a, 'b> PushBoundRegions<'a> for FmtCtx<'b> {
     type C = FmtCtx<'a>;
 
-    fn push_bound_regions(&'a self, regions: &'a Vector<RegionId, RegionVar>) -> Self::C {
+    fn push_bound_regions(&'a self, regions: &'a Vector<BoundRegionId, RegionVar>) -> Self::C {
         let mut generics = self.generics.clone();
         generics.push_front(Cow::Owned(GenericParams {
             regions: regions.clone(),
@@ -140,7 +140,7 @@ pub trait AstFormatter = Formatter<TypeVarId>
     + Formatter<TraitImplId>
     + Formatter<AnyTransId>
     + Formatter<TraitClauseId>
-    + Formatter<(DeBruijnId, RegionId)>
+    + Formatter<DeBruijnVar>
     + Formatter<VarId>
     + Formatter<(TypeDeclId, VariantId)>
     + Formatter<(TypeDeclId, Option<VariantId>, FieldId)>
@@ -263,21 +263,24 @@ impl<'a> Formatter<AnyTransId> for FmtCtx<'a> {
     }
 }
 
-impl<'a> Formatter<(DeBruijnId, RegionId)> for FmtCtx<'a> {
-    fn format_object(&self, (grid, id): (DeBruijnId, RegionId)) -> String {
-        match self.generics.get(grid.index) {
-            None => Region::BVar(grid, id).to_string(),
-            Some(generics) => match generics.regions.get(id) {
-                None => {
-                    let region = Region::BVar(grid, id);
-                    tracing::warn!(
-                        "Found incorrect region `{region}` while pretty-printing. Look for \
+impl<'a> Formatter<DeBruijnVar> for FmtCtx<'a> {
+    fn format_object(&self, var: DeBruijnVar) -> String {
+        match var {
+            DeBruijnVar::Bound(dbid, varid) => match self.generics.get(dbid.index) {
+                None => Region::Var(var).to_string(),
+                Some(generics) => match generics.regions.get(varid) {
+                    None => {
+                        let region = Region::Var(var);
+                        tracing::warn!(
+                            "Found incorrect region `{region}` while pretty-printing. Look for \
                         \"wrong_region\" in the pretty output"
-                    );
-                    format!("wrong_region({region})")
-                }
-                Some(v) => self.format_object(v),
+                        );
+                        format!("wrong_region({region})")
+                    }
+                    Some(v) => self.format_object(v),
+                },
             },
+            DeBruijnVar::Free(_) => Region::Var(var).to_string(),
         }
     }
 }

@@ -21,8 +21,8 @@ module TraitDeclId = IdGen ()
 module TraitImplId = IdGen ()
 module TraitClauseId = IdGen ()
 module UnsolvedTraitId = IdGen ()
-module RegionVarId = IdGen ()
-module RegionId = IdGen ()
+module BoundRegionId = IdGen ()
+module FreeRegionId = IdGen ()
 module RegionGroupId = IdGen ()
 module Disambiguator = IdGen ()
 module FunDeclId = IdGen ()
@@ -33,13 +33,13 @@ type ('id, 'x) vector = 'x list [@@deriving show, ord]
 type integer_type = Values.integer_type [@@deriving show, ord]
 type float_type = Values.float_type [@@deriving show, ord]
 type literal_type = Values.literal_type [@@deriving show, ord]
-type region_db_id = int [@@deriving show, ord]
 
 (** We define these types to control the name of the visitor functions
     (see e.g., {!class:Types.iter_ty_base} and {!Types.TVar}).
   *)
-type region_var_id = RegionVarId.id [@@deriving show, ord]
+type bound_region_id = BoundRegionId.id [@@deriving show, ord]
 
+type free_region_id = FreeRegionId.id [@@deriving show, ord]
 type region_group_id = RegionGroupId.id [@@deriving show, ord]
 
 type ('id, 'name) indexed_var = {
@@ -57,7 +57,6 @@ and disambiguator = Disambiguator.id
 and type_var_id = TypeVarId.id
 and variant_id = VariantId.id
 and field_id = FieldId.id
-and region_id = RegionId.id
 and const_generic_var_id = ConstGenericVarId.id
 and trait_clause_id = TraitClauseId.id [@@deriving show, ord]
 
@@ -81,9 +80,10 @@ class ['self] iter_const_generic_base =
 
     method visit_fun_decl_id : 'env -> fun_decl_id -> unit = fun _ _ -> ()
     method visit_global_decl_id : 'env -> global_decl_id -> unit = fun _ _ -> ()
-    method visit_region_db_id : 'env -> region_db_id -> unit = fun _ _ -> ()
-    method visit_region_id : 'env -> region_id -> unit = fun _ _ -> ()
-    method visit_region_var_id : 'env -> region_var_id -> unit = fun _ _ -> ()
+    method visit_free_region_id : 'env -> free_region_id -> unit = fun _ _ -> ()
+
+    method visit_bound_region_id : 'env -> bound_region_id -> unit =
+      fun _ _ -> ()
 
     method visit_trait_clause_id : 'env -> trait_clause_id -> unit =
       fun _ _ -> ()
@@ -107,12 +107,10 @@ class ['self] map_const_generic_base =
     method visit_global_decl_id : 'env -> global_decl_id -> global_decl_id =
       fun _ x -> x
 
-    method visit_region_db_id : 'env -> region_db_id -> region_db_id =
+    method visit_free_region_id : 'env -> free_region_id -> free_region_id =
       fun _ x -> x
 
-    method visit_region_id : 'env -> region_id -> region_id = fun _ x -> x
-
-    method visit_region_var_id : 'env -> region_var_id -> region_var_id =
+    method visit_bound_region_id : 'env -> bound_region_id -> bound_region_id =
       fun _ x -> x
 
     method visit_trait_clause_id : 'env -> trait_clause_id -> trait_clause_id =
@@ -142,12 +140,10 @@ class virtual ['self] reduce_const_generic_base =
     method visit_global_decl_id : 'env -> global_decl_id -> 'a =
       fun _ _ -> self#zero
 
-    method visit_region_db_id : 'env -> region_db_id -> 'a =
+    method visit_free_region_id : 'env -> free_region_id -> 'a =
       fun _ _ -> self#zero
 
-    method visit_region_id : 'env -> region_id -> 'a = fun _ _ -> self#zero
-
-    method visit_region_var_id : 'env -> region_var_id -> 'a =
+    method visit_bound_region_id : 'env -> bound_region_id -> 'a =
       fun _ _ -> self#zero
 
     method visit_trait_clause_id : 'env -> trait_clause_id -> 'a =
@@ -180,13 +176,12 @@ class virtual ['self] mapreduce_const_generic_base =
         =
       fun _ x -> (x, self#zero)
 
-    method visit_region_db_id : 'env -> region_db_id -> region_db_id * 'a =
+    method visit_free_region_id : 'env -> free_region_id -> free_region_id * 'a
+        =
       fun _ x -> (x, self#zero)
 
-    method visit_region_id : 'env -> region_id -> region_id * 'a =
-      fun _ x -> (x, self#zero)
-
-    method visit_region_var_id : 'env -> region_var_id -> region_var_id * 'a =
+    method visit_bound_region_id
+        : 'env -> bound_region_id -> bound_region_id * 'a =
       fun _ x -> (x, self#zero)
 
     method visit_trait_clause_id
@@ -206,8 +201,10 @@ class virtual ['self] mapreduce_const_generic_base =
       fun _ x -> (x, self#zero)
   end
 
+type de_bruijn_id = int
+
 (** Const Generic Values. Either a primitive value, or a variable corresponding to a primitve value *)
-type const_generic =
+and const_generic =
   | CgGlobal of global_decl_id  (** A global constant *)
   | CgVar of const_generic_var_id  (** A const generic variable *)
   | CgValue of literal  (** A concrete value *)
@@ -244,7 +241,7 @@ type const_generic =
       }]
 
 (** Region variable. *)
-type region_var = (region_var_id, string option) indexed_var
+type region_var = (bound_region_id, string option) indexed_var
 [@@deriving show, ord]
 
 (** A value of type `'a` bound by generic parameters. *)
@@ -281,7 +278,7 @@ class ['self] iter_ty_base_base =
         visit_right env right
 
     method visit_region_var env (x : region_var) =
-      self#visit_indexed_var self#visit_region_var_id
+      self#visit_indexed_var self#visit_bound_region_id
         (self#visit_option self#visit_string)
         env x
 
@@ -325,7 +322,7 @@ class virtual ['self] map_ty_base_base =
         (left, right)
 
     method visit_region_var env (x : region_var) =
-      self#visit_indexed_var self#visit_region_var_id
+      self#visit_indexed_var self#visit_bound_region_id
         (self#visit_option self#visit_string)
         env x
 
@@ -349,12 +346,41 @@ type global_decl_ref = {
 
 and trait_item_name = string
 
+(** Bound region variable.
+
+    **Important**:
+    ==============
+    Similarly to what the Rust compiler does, we use De Bruijn indices to
+    identify *groups* of bound variables, and variable identifiers to
+    identity the variables inside the groups.
+
+    For instance, we have the following:
+    ```text
+                        we compute the De Bruijn indices from here
+                               VVVVVVVVVVVVVVVVVVVVVVV
+    fn f<'a, 'b>(x: for<'c> fn(&'a u8, &'b u16, &'c u32) -> u64) {}
+         ^^^^^^         ^^       ^       ^        ^
+           |      De Bruijn: 0   |       |        |
+     De Bruijn: 1                |       |        |
+                           De Bruijn: 1  |    De Bruijn: 0
+                              Var id: 0  |       Var id: 0
+                                         |
+                                   De Bruijn: 1
+                                      Var id: 1
+    ```
+ *)
+and de_bruijn_var =
+  | Bound of de_bruijn_id * bound_region_id
+      (** A variable attached to the nth binder, counting from the inside. *)
+  | Free of free_region_id
+      (** A variable attached to an implicit binder outside all other binders. This is not present in
+          translated code, and only provided as a convenience for convenient variable manipulation.
+       *)
+
 and region =
+  | RVar of de_bruijn_var
+      (** Region variable. See `DeBruijnVar` for details. *)
   | RStatic  (** Static region *)
-  | RBVar of region_db_id * region_var_id
-      (** Bound region. We use those in function signatures, type definitions, etc. *)
-  | RFVar of region_id
-      (** Free region. We use those during the symbolic execution. *)
   | RErased  (** Erased region *)
 
 (** Identifier of a trait instance.
@@ -494,7 +520,7 @@ and ty =
 
           TODO: we don't translate this properly yet.
        *)
-  | TArrow of region_var list * ty list * ty
+  | TArrow of (ty list * ty) region_binder
       (** Arrow type, used in particular for the local function pointers.
           This is essentially a "constrained" function signature:
           arrow types can only contain generic lifetime parameters
@@ -801,7 +827,7 @@ type ('rid, 'id) g_region_group = {
 }
 [@@deriving show]
 
-type region_var_group = (RegionVarId.id, RegionGroupId.id) g_region_group
+type region_var_group = (BoundRegionId.id, RegionGroupId.id) g_region_group
 [@@deriving show]
 
 type region_var_groups = region_var_group list [@@deriving show]

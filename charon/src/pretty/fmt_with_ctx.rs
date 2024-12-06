@@ -809,9 +809,8 @@ impl<C: AstFormatter> FmtWithCtx<C> for Region {
     fn fmt_with_ctx(&self, ctx: &C) -> String {
         match self {
             Region::Static => "'static".to_string(),
-            Region::BVar(grid, id) => ctx.format_object((*grid, *id)),
+            Region::Var(var) => ctx.format_object(*var),
             Region::Erased => "'_".to_string(),
-            Region::Unknown => "'_UNKNOWN_".to_string(),
         }
     }
 }
@@ -1346,22 +1345,19 @@ impl<C: AstFormatter> FmtWithCtx<C> for Ty {
                 format!("{}::{name}", trait_ref.fmt_with_ctx(ctx),)
             }
             TyKind::DynTrait(pred) => format!("dyn ({})", pred.with_ctx(ctx)),
-            TyKind::Arrow(regions, inputs, output) => {
+            TyKind::Arrow(io) => {
                 // Update the bound regions
-                let ctx = &ctx.push_bound_regions(regions);
+                let ctx = &ctx.push_bound_regions(&io.regions);
 
-                let regions = if regions.is_empty() {
+                let regions = if io.regions.is_empty() {
                     "".to_string()
                 } else {
                     format!(
                         "<{}>",
-                        regions
-                            .iter()
-                            .map(|r| ctx.format_object(r))
-                            .collect::<Vec<String>>()
-                            .join(", ")
+                        io.regions.iter().map(|r| ctx.format_object(r)).join(", ")
                     )
                 };
+                let (inputs, output) = &io.skip_binder;
                 let inputs = inputs
                     .iter()
                     .map(|x| x.fmt_with_ctx(ctx))
@@ -1548,6 +1544,22 @@ impl std::fmt::Display for BuiltinFunId {
     }
 }
 
+impl std::fmt::Display for DeBruijnId {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::result::Result<(), std::fmt::Error> {
+        write!(f, "{}", self.index)
+    }
+}
+
+impl std::fmt::Display for DeBruijnVar {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::result::Result<(), std::fmt::Error> {
+        match *self {
+            Self::Bound(dbid, varid) if dbid.is_zero() => write!(f, "{varid}"),
+            Self::Bound(dbid, varid) => write!(f, "{dbid}_{varid}"),
+            Self::Free(varid) => write!(f, "free_{varid}"),
+        }
+    }
+}
+
 impl std::fmt::Display for ConstantExpr {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::result::Result<(), std::fmt::Error> {
         write!(f, "{}", self.fmt_with_ctx(&FmtCtx::new()))
@@ -1663,9 +1675,8 @@ impl std::fmt::Display for Region {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::result::Result<(), std::fmt::Error> {
         match self {
             Region::Static => write!(f, "'static"),
-            Region::BVar(grid, id) => write!(f, "'_{}_{id}", grid.index),
+            Region::Var(var) => write!(f, "'_{var}"),
             Region::Erased => write!(f, "'_"),
-            Region::Unknown => write!(f, "'_UNKNOWN_"),
         }
     }
 }

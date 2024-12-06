@@ -36,9 +36,7 @@ type file_id = FileId.id [@@deriving show, ord]
 type id_to_file_map = file FileId.Map.t
 type of_json_ctx = id_to_file_map
 
-let de_bruijn_id_of_json = int_of_json
 let path_buf_of_json = string_of_json
-let region_id_of_json = RegionVarId.id_of_json
 
 let rec ___ = ()
 
@@ -873,6 +871,20 @@ and field_id_of_json (ctx : of_json_ctx) (js : json) : (field_id, string) result
     | x -> FieldId.id_of_json ctx x
     | _ -> Error "")
 
+and bound_region_id_of_json (ctx : of_json_ctx) (js : json) :
+    (bound_region_id, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with
+    | x -> BoundRegionId.id_of_json ctx x
+    | _ -> Error "")
+
+and free_region_id_of_json (ctx : of_json_ctx) (js : json) :
+    (free_region_id, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with
+    | x -> FreeRegionId.id_of_json ctx x
+    | _ -> Error "")
+
 and const_generic_var_id_of_json (ctx : of_json_ctx) (js : json) :
     (const_generic_var_id, string) result =
   combine_error_msgs js __FUNCTION__
@@ -895,7 +907,7 @@ and region_var_of_json (ctx : of_json_ctx) (js : json) :
   combine_error_msgs js __FUNCTION__
     (match js with
     | `Assoc [ ("index", index); ("name", name) ] ->
-        let* index = region_id_of_json ctx index in
+        let* index = bound_region_id_of_json ctx index in
         let* name = option_of_json string_of_json ctx name in
         Ok ({ index; name } : region_var)
     | _ -> Error "")
@@ -911,14 +923,33 @@ and const_generic_var_of_json (ctx : of_json_ctx) (js : json) :
         Ok ({ index; name; ty } : const_generic_var)
     | _ -> Error "")
 
+and de_bruijn_id_of_json (ctx : of_json_ctx) (js : json) :
+    (de_bruijn_id, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with
+    | x -> int_of_json ctx x
+    | _ -> Error "")
+
+and de_bruijn_var_of_json (ctx : of_json_ctx) (js : json) :
+    (de_bruijn_var, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with
+    | `Assoc [ ("Bound", `List [ x_0; x_1 ]) ] ->
+        let* x_0 = de_bruijn_id_of_json ctx x_0 in
+        let* x_1 = bound_region_id_of_json ctx x_1 in
+        Ok (Bound (x_0, x_1))
+    | `Assoc [ ("Free", free) ] ->
+        let* free = free_region_id_of_json ctx free in
+        Ok (Free free)
+    | _ -> Error "")
+
 and region_of_json (ctx : of_json_ctx) (js : json) : (region, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
+    | `Assoc [ ("Var", var) ] ->
+        let* var = de_bruijn_var_of_json ctx var in
+        Ok (RVar var)
     | `String "Static" -> Ok RStatic
-    | `Assoc [ ("BVar", `List [ x_0; x_1 ]) ] ->
-        let* x_0 = de_bruijn_id_of_json ctx x_0 in
-        let* x_1 = region_id_of_json ctx x_1 in
-        Ok (RBVar (x_0, x_1))
     | `String "Erased" -> Ok RErased
     | _ -> Error "")
 
@@ -1024,7 +1055,7 @@ and generic_args_of_json (ctx : of_json_ctx) (js : json) :
           ("trait_refs", trait_refs);
         ] ->
         let* regions =
-          vector_of_json region_id_of_json region_of_json ctx regions
+          vector_of_json bound_region_id_of_json region_of_json ctx regions
         in
         let* types = vector_of_json type_var_id_of_json ty_of_json ctx types in
         let* const_generics =
@@ -1049,7 +1080,7 @@ and region_binder_of_json :
     (match js with
     | `Assoc [ ("regions", regions); ("skip_binder", skip_binder) ] ->
         let* binder_regions =
-          vector_of_json region_id_of_json region_var_of_json ctx regions
+          vector_of_json bound_region_id_of_json region_var_of_json ctx regions
         in
         let* binder_value = arg0_of_json ctx skip_binder in
         Ok ({ binder_regions; binder_value } : _ region_binder)
@@ -1070,7 +1101,7 @@ and generic_params_of_json (ctx : of_json_ctx) (js : json) :
           ("trait_type_constraints", trait_type_constraints);
         ] ->
         let* regions =
-          vector_of_json region_id_of_json region_var_of_json ctx regions
+          vector_of_json bound_region_id_of_json region_var_of_json ctx regions
         in
         let* types =
           vector_of_json type_var_id_of_json type_var_of_json ctx types
@@ -1329,13 +1360,13 @@ and ty_of_json (ctx : of_json_ctx) (js : json) : (ty, string) result =
     | `Assoc [ ("DynTrait", dyn_trait) ] ->
         let* dyn_trait = existential_predicate_of_json ctx dyn_trait in
         Ok (TDynTrait dyn_trait)
-    | `Assoc [ ("Arrow", `List [ x_0; x_1; x_2 ]) ] ->
-        let* x_0 =
-          vector_of_json region_id_of_json region_var_of_json ctx x_0
+    | `Assoc [ ("Arrow", arrow) ] ->
+        let* arrow =
+          region_binder_of_json
+            (pair_of_json (list_of_json ty_of_json) ty_of_json)
+            ctx arrow
         in
-        let* x_1 = list_of_json ty_of_json ctx x_1 in
-        let* x_2 = ty_of_json ctx x_2 in
-        Ok (TArrow (x_0, x_1, x_2))
+        Ok (TArrow arrow)
     | _ -> Error "")
 
 and builtin_ty_of_json (ctx : of_json_ctx) (js : json) :
