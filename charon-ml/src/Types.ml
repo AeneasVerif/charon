@@ -54,10 +54,8 @@ and global_decl_id = GlobalDeclId.id
 and trait_decl_id = TraitDeclId.id
 and trait_impl_id = TraitImplId.id
 and disambiguator = Disambiguator.id
-and type_var_id = TypeVarId.id
-and variant_id = VariantId.id
-and field_id = FieldId.id
-and const_generic_var_id = ConstGenericVarId.id
+
+(** The index of a binder, counting from the innermost. See [`DeBruijnVar`] for details. *)
 and de_bruijn_id = int
 
 (** Bound region variable.
@@ -91,7 +89,11 @@ and ('a0, 'a1) de_bruijn_var =
           translated code, and only provided as a convenience for convenient variable manipulation.
        *)
 
-and trait_clause_id = TraitClauseId.id [@@deriving show, ord]
+and type_var_id = TypeVarId.id
+and const_generic_var_id = ConstGenericVarId.id
+and trait_clause_id = TraitClauseId.id
+and variant_id = VariantId.id
+and field_id = FieldId.id [@@deriving show, ord]
 
 let all_signed_int_types = [ Isize; I8; I16; I32; I64; I128 ]
 let all_unsigned_int_types = [ Usize; U8; U16; U32; U64; U128 ]
@@ -615,17 +617,25 @@ class ['self] map_generic_params_base =
     method visit_span : 'env -> span -> span = fun _ x -> x
   end
 
-(** Type variable.
-    We make sure not to mix variables and type variables by having two distinct
-    definitions.
- *)
+(** A type variable in a signature or binder. *)
 type type_var = (type_var_id, string) indexed_var
 
-(** Const Generic Variable *)
+(** A const generic variable in a signature or binder. *)
 and const_generic_var = {
-  index : const_generic_var_id;  (** Unique index identifying the variable *)
+  index : const_generic_var_id;
+      (** Index identifying the variable among other variables bound at the same level. *)
   name : string;  (** Const generic name *)
   ty : literal_type;  (** Type of the const generic *)
+}
+
+(** A trait predicate in a signature, of the form `Type: Trait<Args>`. This functions like a
+    variable binder, to which variables of the form `TraitRefKind::Clause` can refer to.
+ *)
+and trait_clause = {
+  clause_id : trait_clause_id;
+      (** Index identifying the clause among other clauses bound at the same level. *)
+  span : span option;
+  trait : trait_decl_ref region_binder;  (** The trait that is implemented. *)
 }
 
 and region_outlives = (region, region) outlives_pred
@@ -664,17 +674,6 @@ and generic_params = {
       (** The type outlives the region *)
   trait_type_constraints : trait_type_constraint region_binder list;
       (** Constraints over trait associated types *)
-}
-
-(** A predicate of the form `Type: Trait<Args>`. *)
-and trait_clause = {
-  clause_id : trait_clause_id;
-      (** We use this id when solving trait constraints, to be able to refer
-        to specific where clauses when the selected trait actually is linked
-        to a parameter.
-     *)
-  span : span option;
-  trait : trait_decl_ref region_binder;  (** The trait that is implemented. *)
 }
 [@@deriving
   show,

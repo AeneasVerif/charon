@@ -676,3 +676,12 @@ impl<B: DriveMut, F: DriveMut> DriveMut for DeBruijnVar<B, F> {
         visitor.visit(self, Event::Exit);
     }
 }
+
+impl PartialEq for TraitClause {
+    fn eq(&self, other: &Self) -> bool {
+        // Skip `span` and `origin`
+        self.clause_id == other.clause_id && self.trait_ == other.trait_
+    }
+}
+
+impl Eq for TraitClause {}
