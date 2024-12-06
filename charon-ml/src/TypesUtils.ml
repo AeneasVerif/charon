@@ -108,7 +108,12 @@ let trait_instance_id_as_trait_impl (id : trait_instance_id) :
   | TraitImpl (impl_id, args) -> (impl_id, args)
   | _ -> raise (Failure "Unreachable")
 
-let zero_db_var (varid : 'a) : ('a, 'b) de_bruijn_var = Bound (0, varid)
+let zero_db_var (varid : 'b) : ('b, 'f) de_bruijn_var = Bound (0, varid)
+
+let free_var_of_db_var (var : ('b, 'f) de_bruijn_var) : 'f option =
+  match var with
+  | Bound _ -> None
+  | Free id -> Some id
 
 let decr_db_var : ('a, 'b) de_bruijn_var -> ('a, 'b) de_bruijn_var = function
   | Free id -> Free id
@@ -161,7 +166,7 @@ let generic_args_of_params span (generics : generic_params) : generic_args =
   in
   let const_generics =
     List.map
-      (fun (v : const_generic_var) -> CgVar v.index)
+      (fun (v : const_generic_var) -> CgVar (Free v.index))
       generics.const_generics
   in
   let trait_refs =

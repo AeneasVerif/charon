@@ -459,7 +459,7 @@ pub enum RawConstantExpr {
     #[charon::opaque]
     MutPtr(Box<ConstantExpr>),
     /// A const generic var
-    Var(ConstGenericVarId),
+    Var(ConstGenericDbVar),
     /// Function pointer
     FnPtr(FnPtr),
 }

@@ -62,6 +62,103 @@ let option_none_id = VariantId.of_int 0
 (** The variant id for [Option::Some] *)
 let option_some_id = VariantId.of_int 1
 
+class ['self] iter_const_generic_base_base =
+  object (self : 'self)
+    inherit [_] iter_literal
+
+    method visit_de_bruijn_id : 'env -> de_bruijn_id -> unit = fun _ _ -> ()
+
+    method visit_de_bruijn_var
+        : 'b 'f.
+          ('env -> 'b -> unit) ->
+          ('env -> 'f -> unit) ->
+          'env ->
+          ('b, 'f) de_bruijn_var ->
+          unit =
+      fun visit_bound visit_free env x ->
+        match x with
+        | Bound (dbid, varid) ->
+            self#visit_de_bruijn_id env dbid;
+            visit_bound env varid
+        | Free varid -> visit_free env varid
+  end
+
+(** Ancestor for map visitor for {!type: Types.ty} *)
+class virtual ['self] map_const_generic_base_base =
+  object (self : 'self)
+    inherit [_] map_literal
+
+    method visit_de_bruijn_id : 'env -> de_bruijn_id -> de_bruijn_id =
+      fun _ x -> x
+
+    method visit_de_bruijn_var
+        : 'b 'f.
+          ('env -> 'b -> 'b) ->
+          ('env -> 'f -> 'f) ->
+          'env ->
+          ('b, 'f) de_bruijn_var ->
+          ('b, 'f) de_bruijn_var =
+      fun visit_bound visit_free env x ->
+        match x with
+        | Bound (dbid, varid) ->
+            let dbid = self#visit_de_bruijn_id env dbid in
+            let varid = visit_bound env varid in
+            Bound (dbid, varid)
+        | Free varid ->
+            let varid = visit_free env varid in
+            Free varid
+  end
+
+class virtual ['self] reduce_const_generic_base_base =
+  object (self : 'self)
+    inherit [_] reduce_literal
+
+    method visit_de_bruijn_id : 'env -> de_bruijn_id -> 'a =
+      fun _ _ -> self#zero
+
+    method visit_de_bruijn_var
+        : 'b 'f.
+          ('env -> 'b -> 'a) ->
+          ('env -> 'f -> 'a) ->
+          'env ->
+          ('b, 'f) de_bruijn_var ->
+          'a =
+      fun visit_bound visit_free env x ->
+        match x with
+        | Bound (dbid, varid) ->
+            let acc1 = self#visit_de_bruijn_id env dbid in
+            let acc2 = visit_bound env varid in
+            self#plus acc1 acc2
+        | Free varid ->
+            let acc = visit_free env varid in
+            acc
+  end
+
+class virtual ['self] mapreduce_const_generic_base_base =
+  object (self : 'self)
+    inherit [_] mapreduce_literal
+
+    method visit_de_bruijn_id : 'env -> de_bruijn_id -> de_bruijn_id * 'a =
+      fun _ x -> (x, self#zero)
+
+    method visit_de_bruijn_var
+        : 'b 'f.
+          ('env -> 'b -> 'b * 'a) ->
+          ('env -> 'f -> 'f * 'a) ->
+          'env ->
+          ('b, 'f) de_bruijn_var ->
+          ('b, 'f) de_bruijn_var * 'a =
+      fun visit_bound visit_free env x ->
+        match x with
+        | Bound (dbid, varid) ->
+            let dbid, acc1 = self#visit_de_bruijn_id env dbid in
+            let varid, acc2 = visit_bound env varid in
+            (Bound (dbid, varid), self#plus acc1 acc2)
+        | Free varid ->
+            let varid, acc = visit_free env varid in
+            (Free varid, acc)
+  end
+
 (* __REPLACE1__ *)
 
 (** Region variable. *)
@@ -100,21 +197,6 @@ class ['self] iter_ty_base_base =
         let left, right = x in
         visit_left env left;
         visit_right env right
-
-    method visit_de_bruijn_var
-        : 'l 'r.
-          ('env -> 'l -> unit) ->
-          ('env -> 'r -> unit) ->
-          'env ->
-          ('l, 'r) de_bruijn_var ->
-          unit =
-      fun visit_bound visit_free env x ->
-        match x with
-        | Bound (dbid, varid) ->
-            self#visit_de_bruijn_id env dbid;
-            visit_bound env varid
-        | Free varid -> visit_free env varid
-
 
     method visit_region_var env (x : region_var) =
       self#visit_indexed_var self#visit_bound_region_id
@@ -160,23 +242,6 @@ class virtual ['self] map_ty_base_base =
         let right = visit_right env right in
         (left, right)
 
-    method visit_de_bruijn_var
-        : 'l 'r.
-          ('env -> 'l -> 'l) ->
-          ('env -> 'r -> 'r) ->
-          'env ->
-          ('l, 'r) de_bruijn_var ->
-          ('l, 'r) de_bruijn_var =
-      fun visit_bound visit_free env x ->
-        match x with
-        | Bound (dbid, varid) ->
-            let dbid = self#visit_de_bruijn_id env dbid in
-            let varid = visit_bound env varid in
-            Bound (dbid, varid)
-        | Free varid ->
-            let varid = visit_free env varid in
-            Free varid
-
     method visit_region_var env (x : region_var) =
       self#visit_indexed_var self#visit_bound_region_id
         (self#visit_option self#visit_string)
@@ -218,6 +283,7 @@ type ('rid, 'id) g_region_group = {
 
 type region_db_var = (bound_region_id, free_region_id) de_bruijn_var [@@deriving show]
 type type_db_var = (type_var_id, type_var_id) de_bruijn_var [@@deriving show]
+type const_generic_db_var = (const_generic_var_id, const_generic_var_id) de_bruijn_var [@@deriving show]
 
 type region_var_group = (BoundRegionId.id, RegionGroupId.id) g_region_group
 [@@deriving show]

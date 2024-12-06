@@ -256,7 +256,10 @@ and raw_constant_expr_of_json (ctx : of_json_ctx) (js : json) :
         let* x_1 = trait_item_name_of_json ctx x_1 in
         Ok (CTraitConst (x_0, x_1))
     | `Assoc [ ("Var", var) ] ->
-        let* var = const_generic_var_id_of_json ctx var in
+        let* var =
+          de_bruijn_var_of_json const_generic_var_id_of_json
+            const_generic_var_id_of_json ctx var
+        in
         Ok (CVar var)
     | `Assoc [ ("FnPtr", fn_ptr) ] ->
         let* fn_ptr = fn_ptr_of_json ctx fn_ptr in
@@ -1331,7 +1334,10 @@ and const_generic_of_json (ctx : of_json_ctx) (js : json) :
         let* global = global_decl_id_of_json ctx global in
         Ok (CgGlobal global)
     | `Assoc [ ("Var", var) ] ->
-        let* var = const_generic_var_id_of_json ctx var in
+        let* var =
+          de_bruijn_var_of_json const_generic_var_id_of_json
+            const_generic_var_id_of_json ctx var
+        in
         Ok (CgVar var)
     | `Assoc [ ("Value", value) ] ->
         let* value = literal_of_json ctx value in

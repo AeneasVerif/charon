@@ -90,16 +90,20 @@ let type_db_var_to_string (env : 'a fmt_env) (var : type_db_var) : string =
       | Some x -> type_var_to_string x
     end
 
-let const_generic_var_id_to_string (env : 'a fmt_env)
-    (id : const_generic_var_id) : string =
-  (* Note that the const generics are not necessarily ordered following their indices *)
-  match
-    List.find_opt
-      (fun (x : const_generic_var) -> x.index = id)
-      env.generics.const_generics
-  with
-  | None -> const_generic_var_id_to_pretty_string id
-  | Some x -> const_generic_var_to_string x
+let const_generic_db_var_to_string (env : 'a fmt_env)
+    (var : const_generic_db_var) : string =
+  match var with
+  | Bound _ -> failwith "bound const generic variable"
+  | Free id -> begin
+      (* Note that the types are not necessarily ordered following their indices *)
+      match
+        List.find_opt
+          (fun (x : const_generic_var) -> x.index = id)
+          env.generics.const_generics
+      with
+      | None -> const_generic_var_id_to_pretty_string id
+      | Some x -> const_generic_var_to_string x
+    end
 
 let region_to_string (env : 'a fmt_env) (r : region) : string =
   match r with
@@ -166,7 +170,7 @@ and trait_impl_id_to_string env id =
 and const_generic_to_string (env : 'a fmt_env) (cg : const_generic) : string =
   match cg with
   | CgGlobal id -> global_decl_id_to_string env id
-  | CgVar id -> const_generic_var_id_to_string env id
+  | CgVar var -> const_generic_db_var_to_string env var
   | CgValue lit -> literal_to_string lit
 
 and ty_to_string (env : 'a fmt_env) (ty : ty) : string =

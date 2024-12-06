@@ -58,7 +58,7 @@ impl GenericParams {
             const_generics: self
                 .const_generics
                 .iter_indexed()
-                .map(|(id, _)| ConstGeneric::Var(id))
+                .map(|(id, _)| ConstGeneric::Var(DeBruijnVar::free(id)))
                 .collect(),
             trait_refs: self
                 .trait_clauses
@@ -573,7 +573,9 @@ impl<'a> SubstVisitor<'a> {
 
     fn exit_const_generic(&mut self, cg: &mut ConstGeneric) {
         match cg {
-            ConstGeneric::Var(id) => *cg = self.generics.const_generics.get(*id).unwrap().clone(),
+            ConstGeneric::Var(Free(id)) => {
+                *cg = self.generics.const_generics.get(*id).unwrap().clone()
+            }
             _ => (),
         }
     }

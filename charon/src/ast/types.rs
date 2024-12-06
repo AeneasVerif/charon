@@ -540,7 +540,7 @@ pub enum ConstGeneric {
     /// A global constant
     Global(GlobalDeclId),
     /// A const generic variable
-    Var(ConstGenericVarId),
+    Var(ConstGenericDbVar),
     /// A concrete value
     Value(Literal),
 }

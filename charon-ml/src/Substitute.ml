@@ -24,7 +24,7 @@ let empty_subst : subst =
   {
     r_subst = (fun x -> RVar x);
     ty_subst = (fun id -> TVar (Free id));
-    cg_subst = (fun id -> CgVar id);
+    cg_subst = (fun id -> CgVar (Free id));
     tr_subst = (fun id -> Clause id);
     tr_self = Self;
   }
@@ -50,7 +50,11 @@ let st_substitute_visitor =
       | Free id -> subst.ty_subst id
       | Bound _ -> failwith "bound type variable"
 
-    method! visit_CgVar (subst : subst) id = subst.cg_subst id
+    method! visit_CgVar (subst : subst) var =
+      match var with
+      | Free id -> subst.cg_subst id
+      | Bound _ -> failwith "bound const generic variable"
+
     method! visit_Clause (subst : subst) id = subst.tr_subst id
     method! visit_Self (subst : subst) = subst.tr_self
 
