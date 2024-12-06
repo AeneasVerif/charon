@@ -940,7 +940,7 @@ fn generate_ml(
 ) -> anyhow::Result<()> {
     let manual_type_impls = &[
         // Hand-written because we replace the `FileId` with the corresponding file.
-        ("RawSpan", "{ file : file; beg_loc : loc; end_loc : loc }"),
+        ("FileId", "file"),
         // Hand-written because the rust version is an enum with custom (de)serialization
         // functions.
         (
@@ -1006,15 +1006,13 @@ fn generate_ml(
         ),
         // Hand-written because we replace the `FileId` with the corresponding file name.
         (
-            "RawSpan",
+            "FileId",
             indoc!(
                 r#"
-                | `Assoc [ ("file_id", file_id); ("beg", beg_loc); ("end", end_loc) ] ->
-                    let* file_id = file_id_of_json ctx file_id in
+                | json ->
+                    let* file_id = FileId.id_of_json ctx json in
                     let file = FileId.Map.find file_id ctx in
-                    let* beg_loc = loc_of_json ctx beg_loc in
-                    let* end_loc = loc_of_json ctx end_loc in
-                    Ok { file; beg_loc; end_loc }
+                    Ok file
                 "#,
             ),
         ),
@@ -1214,6 +1212,7 @@ fn generate_ml(
                 (GenerationKind::TypeDecl(None), &[
                     "Loc",
                     "FileName",
+                    "FileId",
                     "File",
                     "RawSpan",
                     "Span",

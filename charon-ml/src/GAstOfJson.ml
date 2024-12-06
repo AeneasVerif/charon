@@ -30,9 +30,6 @@ module FileId = IdGen ()
 (** The default logger *)
 let log = Logging.llbc_of_json_logger
 
-(** A file identifier *)
-type file_id = FileId.id [@@deriving show, ord]
-
 type id_to_file_map = file FileId.Map.t
 type of_json_ctx = id_to_file_map
 
@@ -674,7 +671,10 @@ and any_decl_id_of_json (ctx : of_json_ctx) (js : json) :
 and file_id_of_json (ctx : of_json_ctx) (js : json) : (file_id, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
-    | x -> FileId.id_of_json ctx x
+    | json ->
+        let* file_id = FileId.id_of_json ctx json in
+        let file = FileId.Map.find file_id ctx in
+        Ok file
     | _ -> Error "")
 
 and loc_of_json (ctx : of_json_ctx) (js : json) : (loc, string) result =
@@ -690,12 +690,11 @@ and raw_span_of_json (ctx : of_json_ctx) (js : json) : (raw_span, string) result
     =
   combine_error_msgs js __FUNCTION__
     (match js with
-    | `Assoc [ ("file_id", file_id); ("beg", beg_loc); ("end", end_loc) ] ->
-        let* file_id = file_id_of_json ctx file_id in
-        let file = FileId.Map.find file_id ctx in
-        let* beg_loc = loc_of_json ctx beg_loc in
-        let* end_loc = loc_of_json ctx end_loc in
-        Ok { file; beg_loc; end_loc }
+    | `Assoc [ ("file_id", file_id); ("beg", beg); ("end", end_) ] ->
+        let* file = file_id_of_json ctx file_id in
+        let* beg_loc = loc_of_json ctx beg in
+        let* end_loc = loc_of_json ctx end_ in
+        Ok ({ file; beg_loc; end_loc } : raw_span)
     | _ -> Error "")
 
 and span_of_json (ctx : of_json_ctx) (js : json) : (span, string) result =

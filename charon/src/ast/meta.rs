@@ -33,8 +33,11 @@ pub struct Loc {
 /// Span information
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Hash, Serialize, Deserialize, Drive, DriveMut)]
 pub struct RawSpan {
+    #[charon::rename("file")]
     pub file_id: FileId,
+    #[charon::rename("beg_loc")]
     pub beg: Loc,
+    #[charon::rename("end_loc")]
     pub end: Loc,
 }
 

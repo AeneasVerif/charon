@@ -30,10 +30,6 @@ module FileId = IdGen ()
 (** The default logger *)
 let log = Logging.llbc_of_json_logger
 
-(** A file identifier *)
-type file_id = FileId.id
-[@@deriving show, ord]
-
 type id_to_file_map = file FileId.Map.t
 type of_json_ctx = id_to_file_map
 
