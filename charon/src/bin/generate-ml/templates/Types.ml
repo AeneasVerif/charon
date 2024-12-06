@@ -162,48 +162,6 @@ class virtual ['self] map_ty_base_base =
 
 (* __REPLACE2__ *)
 
-(** Ancestor for iter visitor for {!type: Types.ty} *)
-class ['self] iter_ty =
-  object (self : 'self)
-    inherit [_] iter_ty_inner
-
-    method! visit_RVar env (var: de_bruijn_var) =
-        match var with
-        | Free var_id -> self#visit_free_region env var_id
-        | Bound (db_id, var_id) -> self#visit_bound_region env db_id var_id
-
-    method visit_bound_region env (db_id: de_bruijn_id) (var_id: bound_region_id) =
-        self#visit_de_bruijn_id env db_id;
-        self#visit_bound_region_id env var_id
-
-    method visit_free_region env (var_id: free_region_id) =
-        self#visit_free_region_id env var_id
-  end
-
-(** Ancestor for map visitor for {!type: Types.ty} *)
-class virtual ['self] map_ty =
-  object (self : 'self)
-    inherit [_] map_ty_inner
-
-    method! visit_RVar env (var: de_bruijn_var) =
-        match var with
-        | Free var_id ->
-            let var_id = self#visit_free_region env var_id in
-            RVar (Free var_id)
-        | Bound (db_id, var_id) ->
-            let (db_id, var_id) = self#visit_bound_region env db_id var_id in
-            RVar (Bound (db_id, var_id))
-
-    method visit_bound_region env (db_id: de_bruijn_id) (var_id: bound_region_id) =
-        let db_id = self#visit_de_bruijn_id env db_id in
-        let var_id = self#visit_bound_region_id env var_id in
-        (db_id, var_id)
-
-    method visit_free_region env (var_id: free_region_id) =
-        self#visit_free_region_id env var_id
-  end
-
-
 (* __REPLACE3__ *)
 
 (* __REPLACE4__ *)
