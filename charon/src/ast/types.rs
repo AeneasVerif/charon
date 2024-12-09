@@ -54,7 +54,7 @@ pub enum TraitRefKind {
     ///                    ^^^^^^^
     ///                    Clause(0)
     /// ```
-    Clause(TraitClauseId),
+    Clause(ClauseDbVar),
 
     /// A parent clause
     ///

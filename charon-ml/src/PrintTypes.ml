@@ -62,6 +62,8 @@ let variant_id_to_pretty_string (id : variant_id) : string =
 let field_id_to_pretty_string (id : field_id) : string =
   "Field@" ^ FieldId.to_string id
 
+let trait_clause_id_to_string _ id = trait_clause_id_to_pretty_string id
+
 let region_db_var_to_string (env : 'a fmt_env) (var : region_db_var) : string =
   match var with
   | Bound (dbid, varid) -> begin
@@ -105,13 +107,16 @@ let const_generic_db_var_to_string (env : 'a fmt_env)
       | Some x -> const_generic_var_to_string x
     end
 
+let trait_db_var_to_string (env : 'a fmt_env) (var : trait_db_var) : string =
+  match var with
+  | Bound _ -> failwith "bound trait clause variable"
+  | Free id -> trait_clause_id_to_pretty_string id
+
 let region_to_string (env : 'a fmt_env) (r : region) : string =
   match r with
   | RStatic -> "'static"
   | RErased -> "'_"
   | RVar var -> region_db_var_to_string env var
-
-let trait_clause_id_to_string _ id = trait_clause_id_to_pretty_string id
 
 let region_binder_to_string (value_to_string : 'a fmt_env -> 'c -> string)
     (env : 'a fmt_env) (rb : 'c region_binder) : string =
@@ -264,7 +269,7 @@ and trait_instance_id_to_string (env : 'a fmt_env) (id : trait_instance_id) :
       impl ^ generics
   | BuiltinOrAuto trait ->
       region_binder_to_string trait_decl_ref_to_string env trait
-  | Clause id -> trait_clause_id_to_string env id
+  | Clause id -> trait_db_var_to_string env id
   | ParentClause (inst_id, _decl_id, clause_id) ->
       let inst_id = trait_instance_id_to_string env inst_id in
       let clause_id = trait_clause_id_to_string env clause_id in

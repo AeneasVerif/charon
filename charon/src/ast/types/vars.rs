@@ -116,6 +116,7 @@ pub struct TraitClause {
 pub type RegionDbVar = DeBruijnVar<BoundRegionId, FreeRegionId>;
 pub type TypeDbVar = DeBruijnVar<TypeVarId, TypeVarId>;
 pub type ConstGenericDbVar = DeBruijnVar<ConstGenericVarId, ConstGenericVarId>;
+pub type ClauseDbVar = DeBruijnVar<TraitClauseId, TraitClauseId>;
 
 impl DeBruijnId {
     pub fn zero() -> Self {

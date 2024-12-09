@@ -493,7 +493,7 @@ and region =
 and trait_instance_id =
   | TraitImpl of trait_impl_id * generic_args
       (** A specific top-level implementation item. *)
-  | Clause of trait_clause_id
+  | Clause of (trait_clause_id, trait_clause_id) de_bruijn_var
       (** One of the local clauses.
 
           Example:
@@ -984,6 +984,9 @@ type type_db_var = (type_var_id, type_var_id) de_bruijn_var [@@deriving show]
 
 type const_generic_db_var =
   (const_generic_var_id, const_generic_var_id) de_bruijn_var
+[@@deriving show]
+
+type trait_db_var = (trait_clause_id, trait_clause_id) de_bruijn_var
 [@@deriving show]
 
 type region_var_group = (BoundRegionId.id, RegionGroupId.id) g_region_group

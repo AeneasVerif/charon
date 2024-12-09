@@ -137,10 +137,10 @@ pub trait AstFormatter = Formatter<TypeDeclId>
     + Formatter<TraitDeclId>
     + Formatter<TraitImplId>
     + Formatter<AnyTransId>
-    + Formatter<TraitClauseId>
     + Formatter<RegionDbVar>
     + Formatter<TypeDbVar>
     + Formatter<ConstGenericDbVar>
+    + Formatter<ClauseDbVar>
     + Formatter<VarId>
     + Formatter<(TypeDeclId, VariantId)>
     + Formatter<(TypeDeclId, Option<VariantId>, FieldId)>
@@ -331,9 +331,12 @@ impl<'a> Formatter<ConstGenericDbVar> for FmtCtx<'a> {
     }
 }
 
-impl<'a> Formatter<TraitClauseId> for FmtCtx<'a> {
-    fn format_object(&self, id: TraitClauseId) -> String {
-        id.to_pretty_string()
+impl<'a> Formatter<ClauseDbVar> for FmtCtx<'a> {
+    fn format_object(&self, var: ClauseDbVar) -> String {
+        match var {
+            DeBruijnVar::Bound(..) => format!("missing_clause_var({var})"),
+            DeBruijnVar::Free(id) => id.to_pretty_string(),
+        }
     }
 }
 

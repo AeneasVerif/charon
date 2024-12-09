@@ -284,6 +284,7 @@ type ('rid, 'id) g_region_group = {
 type region_db_var = (bound_region_id, free_region_id) de_bruijn_var [@@deriving show]
 type type_db_var = (type_var_id, type_var_id) de_bruijn_var [@@deriving show]
 type const_generic_db_var = (const_generic_var_id, const_generic_var_id) de_bruijn_var [@@deriving show]
+type trait_db_var = (trait_clause_id, trait_clause_id) de_bruijn_var [@@deriving show]
 
 type region_var_group = (BoundRegionId.id, RegionGroupId.id) g_region_group
 [@@deriving show]

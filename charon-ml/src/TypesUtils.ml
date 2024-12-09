@@ -172,7 +172,7 @@ let generic_args_of_params span (generics : generic_params) : generic_args =
   let trait_refs =
     List.map
       (fun (c : trait_clause) ->
-        { trait_id = Clause c.clause_id; trait_decl_ref = c.trait })
+        { trait_id = Clause (Free c.clause_id); trait_decl_ref = c.trait })
       generics.trait_clauses
   in
   { regions; types; const_generics; trait_refs }

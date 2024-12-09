@@ -64,7 +64,7 @@ impl GenericParams {
                 .trait_clauses
                 .iter_indexed()
                 .map(|(id, clause)| TraitRef {
-                    kind: TraitRefKind::Clause(id),
+                    kind: TraitRefKind::Clause(DeBruijnVar::free(id)),
                     trait_decl_ref: clause.trait_.clone(),
                 })
                 .collect(),
@@ -582,7 +582,9 @@ impl<'a> SubstVisitor<'a> {
 
     fn exit_trait_ref(&mut self, tr: &mut TraitRef) {
         match &mut tr.kind {
-            TraitRefKind::Clause(id) => *tr = self.generics.trait_refs.get(*id).unwrap().clone(),
+            TraitRefKind::Clause(Free(id)) => {
+                *tr = self.generics.trait_refs.get(*id).unwrap().clone()
+            }
             _ => (),
         }
     }
