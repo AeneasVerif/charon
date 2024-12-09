@@ -234,7 +234,7 @@ impl<C: AstFormatter> FmtWithCtx<C> for FunSig {
         };
 
         // Generic parameters
-        let (params, clauses, _) = self.generics.fmt_with_ctx_with_trait_clauses(ctx, "");
+        let (params, clauses) = self.generics.fmt_with_ctx_with_trait_clauses(ctx, "");
 
         // Arguments
         let mut args: Vec<String> = Vec::new();
@@ -344,7 +344,7 @@ impl<C: AstFormatter> FmtWithCtx<C> for GenericArgs {
 }
 
 impl GenericParams {
-    pub fn fmt_with_ctx_with_trait_clauses<C>(&self, ctx: &C, tab: &str) -> (String, String, bool)
+    pub fn fmt_with_ctx_with_trait_clauses<C>(&self, ctx: &C, tab: &str) -> (String, String)
     where
         C: AstFormatter,
     {
@@ -365,14 +365,13 @@ impl GenericParams {
             format!("<{}>", params.join(", "))
         };
 
-        let any_clause = generics.has_predicates();
-        let preds = if !any_clause {
-            String::new()
-        } else {
+        let preds = if generics.has_predicates() {
             let clauses = generics.format_clauses(ctx, tab);
             format!("\n{tab}where{clauses}")
+        } else {
+            String::new()
         };
-        (params, preds, any_clause)
+        (params, preds)
     }
 
     fn format_clauses<C>(&self, ctx: &C, tab: &str) -> String
@@ -424,38 +423,6 @@ impl GenericParams {
         } else {
             let clauses = clauses.join("");
             format!("\n{tab}where{clauses}")
-        }
-    }
-}
-
-impl<C: AstFormatter> FmtWithCtx<C> for GenericParams {
-    fn fmt_with_ctx(&self, ctx: &C) -> String {
-        if self.is_empty() {
-            "".to_string()
-        } else {
-            let mut params = Vec::new();
-            let GenericParams {
-                regions,
-                types,
-                const_generics,
-                trait_clauses,
-                regions_outlive: _,
-                types_outlive: _,
-                trait_type_constraints: _,
-            } = self;
-            for x in regions {
-                params.push(ctx.format_object(x));
-            }
-            for x in types {
-                params.push(x.to_string());
-            }
-            for x in const_generics {
-                params.push(x.to_string());
-            }
-            for x in trait_clauses {
-                params.push(x.fmt_with_ctx(ctx));
-            }
-            format!("<{}>", params.join(", "))
         }
     }
 }
@@ -543,7 +510,7 @@ where
         let name = self.item_meta.name.fmt_with_ctx(ctx);
 
         // Generic parameters
-        let (params, preds, _) = self
+        let (params, preds) = self
             .signature
             .generics
             .fmt_with_ctx_with_trait_clauses(ctx, tab);
@@ -600,11 +567,11 @@ where
         let ctx = &ctx.set_generics(&self.generics);
 
         // Translate the parameters and the trait clauses
-        let (params, preds, any_where) = self.generics.fmt_with_ctx_with_trait_clauses(ctx, "  ");
+        let (params, preds) = self.generics.fmt_with_ctx_with_trait_clauses(ctx, "  ");
         // Type
         let ty = self.ty.fmt_with_ctx(ctx);
         // Predicates
-        let eq_space = if !any_where {
+        let eq_space = if !self.generics.has_predicates() {
             " ".to_string()
         } else {
             "\n ".to_string()
@@ -1149,7 +1116,7 @@ impl<C: AstFormatter> FmtWithCtx<C> for TraitDecl {
         let ctx = &ctx.set_generics(&self.generics);
 
         let name = self.item_meta.name.fmt_with_ctx(ctx);
-        let (generics, clauses, _) = self.generics.fmt_with_ctx_with_trait_clauses(ctx, "");
+        let (generics, clauses) = self.generics.fmt_with_ctx_with_trait_clauses(ctx, "");
 
         let items = {
             let items =
@@ -1215,7 +1182,7 @@ impl<C: AstFormatter> FmtWithCtx<C> for TraitImpl {
         let ctx = &ctx.set_generics(&self.generics);
 
         let name = self.item_meta.name.fmt_with_ctx(ctx);
-        let (generics, clauses, _) = self.generics.fmt_with_ctx_with_trait_clauses(ctx, "");
+        let (generics, clauses) = self.generics.fmt_with_ctx_with_trait_clauses(ctx, "");
 
         let items = {
             let items = self
@@ -1378,9 +1345,9 @@ impl<C: AstFormatter> FmtWithCtx<C> for TypeDecl {
     fn fmt_with_ctx(&self, ctx: &C) -> String {
         let ctx = &ctx.set_generics(&self.generics);
 
-        let (params, preds, any_where) = self.generics.fmt_with_ctx_with_trait_clauses(ctx, "  ");
+        let (params, preds) = self.generics.fmt_with_ctx_with_trait_clauses(ctx, "  ");
         // Predicates
-        let eq_space = if !any_where {
+        let eq_space = if !self.generics.has_predicates() {
             " ".to_string()
         } else {
             "\n ".to_string()
