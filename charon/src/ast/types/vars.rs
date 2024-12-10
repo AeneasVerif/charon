@@ -60,8 +60,7 @@ pub enum DeBruijnVar<Bound, Free> {
 // to confuse them, we define an index type for every one of them (which is just a struct with a
 // unique usize field), together with some utilities like a fresh index generator, using the
 // `generate_index_type` macro.
-generate_index_type!(BoundRegionId, "BoundRegion");
-generate_index_type!(FreeRegionId, "FreeRegion");
+generate_index_type!(RegionId, "Region");
 generate_index_type!(TypeVarId, "T");
 generate_index_type!(ConstGenericVarId, "Const");
 generate_index_type!(TraitClauseId, "TraitClause");
@@ -81,7 +80,7 @@ pub struct TypeVar {
 )]
 pub struct RegionVar {
     /// Index identifying the variable among other variables bound at the same level.
-    pub index: BoundRegionId,
+    pub index: RegionId,
     /// Region name
     pub name: Option<String>,
 }
@@ -113,7 +112,7 @@ pub struct TraitClause {
     pub trait_: PolyTraitDeclRef,
 }
 
-pub type RegionDbVar = DeBruijnVar<BoundRegionId, FreeRegionId>;
+pub type RegionDbVar = DeBruijnVar<RegionId, RegionId>;
 pub type TypeDbVar = DeBruijnVar<TypeVarId, TypeVarId>;
 pub type ConstGenericDbVar = DeBruijnVar<ConstGenericVarId, ConstGenericVarId>;
 pub type ClauseDbVar = DeBruijnVar<TraitClauseId, TraitClauseId>;

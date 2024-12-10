@@ -13,7 +13,7 @@ let const_generic_var_to_string (v : const_generic_var) : string = v.name
 let region_var_to_string (rv : region_var) : string =
   match rv.name with
   | Some name -> name
-  | None -> BoundRegionId.to_string rv.index
+  | None -> RegionId.to_string rv.index
 
 let ref_kind_to_string (rk : ref_kind) : string =
   match rk with
@@ -31,9 +31,7 @@ let de_bruijn_var_to_pretty_string show_bound show_free var : string =
   | Free varid -> "'" ^ show_free varid
 
 let region_db_var_to_pretty_string (var : region_db_var) : string =
-  "'"
-  ^ de_bruijn_var_to_pretty_string BoundRegionId.to_string
-      FreeRegionId.to_string var
+  "'" ^ de_bruijn_var_to_pretty_string RegionId.to_string RegionId.to_string var
 
 let type_var_id_to_pretty_string (id : type_var_id) : string =
   "T@" ^ TypeVarId.to_string id

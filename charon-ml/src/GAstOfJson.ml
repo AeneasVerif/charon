@@ -878,18 +878,11 @@ and de_bruijn_var_of_json :
         Ok (Free free)
     | _ -> Error "")
 
-and bound_region_id_of_json (ctx : of_json_ctx) (js : json) :
-    (bound_region_id, string) result =
+and region_id_of_json (ctx : of_json_ctx) (js : json) :
+    (region_id, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
-    | x -> BoundRegionId.id_of_json ctx x
-    | _ -> Error "")
-
-and free_region_id_of_json (ctx : of_json_ctx) (js : json) :
-    (free_region_id, string) result =
-  combine_error_msgs js __FUNCTION__
-    (match js with
-    | x -> FreeRegionId.id_of_json ctx x
+    | x -> RegionId.id_of_json ctx x
     | _ -> Error "")
 
 and type_var_id_of_json (ctx : of_json_ctx) (js : json) :
@@ -928,7 +921,7 @@ and region_var_of_json (ctx : of_json_ctx) (js : json) :
   combine_error_msgs js __FUNCTION__
     (match js with
     | `Assoc [ ("index", index); ("name", name) ] ->
-        let* index = bound_region_id_of_json ctx index in
+        let* index = region_id_of_json ctx index in
         let* name = option_of_json string_of_json ctx name in
         Ok ({ index; name } : region_var)
     | _ -> Error "")
@@ -966,8 +959,7 @@ and region_of_json (ctx : of_json_ctx) (js : json) : (region, string) result =
     (match js with
     | `Assoc [ ("Var", var) ] ->
         let* var =
-          de_bruijn_var_of_json bound_region_id_of_json free_region_id_of_json
-            ctx var
+          de_bruijn_var_of_json region_id_of_json region_id_of_json ctx var
         in
         Ok (RVar var)
     | `String "Static" -> Ok RStatic
@@ -1079,7 +1071,7 @@ and generic_args_of_json (ctx : of_json_ctx) (js : json) :
           ("trait_refs", trait_refs);
         ] ->
         let* regions =
-          vector_of_json bound_region_id_of_json region_of_json ctx regions
+          vector_of_json region_id_of_json region_of_json ctx regions
         in
         let* types = vector_of_json type_var_id_of_json ty_of_json ctx types in
         let* const_generics =
@@ -1104,7 +1096,7 @@ and region_binder_of_json :
     (match js with
     | `Assoc [ ("regions", regions); ("skip_binder", skip_binder) ] ->
         let* binder_regions =
-          vector_of_json bound_region_id_of_json region_var_of_json ctx regions
+          vector_of_json region_id_of_json region_var_of_json ctx regions
         in
         let* binder_value = arg0_of_json ctx skip_binder in
         Ok ({ binder_regions; binder_value } : _ region_binder)
@@ -1125,7 +1117,7 @@ and generic_params_of_json (ctx : of_json_ctx) (js : json) :
           ("trait_type_constraints", trait_type_constraints);
         ] ->
         let* regions =
-          vector_of_json bound_region_id_of_json region_var_of_json ctx regions
+          vector_of_json region_id_of_json region_var_of_json ctx regions
         in
         let* types =
           vector_of_json type_var_id_of_json type_var_of_json ctx types

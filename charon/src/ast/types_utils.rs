@@ -99,7 +99,7 @@ impl GenericArgs {
     }
 
     pub fn new(
-        regions: Vector<BoundRegionId, Region>,
+        regions: Vector<RegionId, Region>,
         types: Vector<TypeVarId, Ty>,
         const_generics: Vector<ConstGenericVarId, ConstGeneric>,
         trait_refs: Vector<TraitClauseId, TraitRef>,

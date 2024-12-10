@@ -22,8 +22,7 @@ module TraitDeclId = IdGen ()
 module TraitImplId = IdGen ()
 module TraitClauseId = IdGen ()
 module UnsolvedTraitId = IdGen ()
-module BoundRegionId = IdGen ()
-module FreeRegionId = IdGen ()
+module RegionId = IdGen ()
 module RegionGroupId = IdGen ()
 module Disambiguator = IdGen ()
 module FunDeclId = IdGen ()
@@ -39,8 +38,7 @@ type literal_type = Values.literal_type [@@deriving show, ord]
 (** We define these types to control the name of the visitor functions
     (see e.g., {!class:Types.iter_ty_base} and {!Types.TVar}).
   *)
-type bound_region_id = BoundRegionId.id [@@deriving show, ord]
-type free_region_id = FreeRegionId.id [@@deriving show, ord]
+type region_id = RegionId.id [@@deriving show, ord]
 type region_group_id = RegionGroupId.id [@@deriving show, ord]
 
 type ('id, 'name) indexed_var = {
@@ -162,7 +160,7 @@ class virtual ['self] mapreduce_const_generic_base_base =
 (* __REPLACE1__ *)
 
 (** Region variable. *)
-type region_var = (bound_region_id, string option) indexed_var
+type region_var = (region_id, string option) indexed_var
 [@@deriving show, ord]
 
 (** A value of type `'a` bound by generic parameters. *)
@@ -199,7 +197,7 @@ class ['self] iter_ty_base_base =
         visit_right env right
 
     method visit_region_var env (x : region_var) =
-      self#visit_indexed_var self#visit_bound_region_id
+      self#visit_indexed_var self#visit_region_id
         (self#visit_option self#visit_string)
         env x
 
@@ -243,7 +241,7 @@ class virtual ['self] map_ty_base_base =
         (left, right)
 
     method visit_region_var env (x : region_var) =
-      self#visit_indexed_var self#visit_bound_region_id
+      self#visit_indexed_var self#visit_region_id
         (self#visit_option self#visit_string)
         env x
 
@@ -281,12 +279,12 @@ type ('rid, 'id) g_region_group = {
 }
 [@@deriving show]
 
-type region_db_var = (bound_region_id, free_region_id) de_bruijn_var [@@deriving show]
+type region_db_var = (region_id, region_id) de_bruijn_var [@@deriving show]
 type type_db_var = (type_var_id, type_var_id) de_bruijn_var [@@deriving show]
 type const_generic_db_var = (const_generic_var_id, const_generic_var_id) de_bruijn_var [@@deriving show]
 type trait_db_var = (trait_clause_id, trait_clause_id) de_bruijn_var [@@deriving show]
 
-type region_var_group = (BoundRegionId.id, RegionGroupId.id) g_region_group
+type region_var_group = (RegionId.id, RegionGroupId.id) g_region_group
 [@@deriving show]
 
 type region_var_groups = region_var_group list [@@deriving show]

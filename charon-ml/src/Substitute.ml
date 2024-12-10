@@ -161,19 +161,19 @@ let erase_regions_substitute_types (ty_subst : TypeVarId.id -> ty)
 
 (** Create a region substitution from a list of region variable ids and a list of
     regions (with which to substitute the region variable ids *)
-let make_region_subst (var_ids : BoundRegionId.id list) (regions : region list)
-    : region_db_var -> region =
+let make_region_subst (var_ids : RegionId.id list) (regions : region list) :
+    region_db_var -> region =
   let ls = List.combine var_ids regions in
   let mp =
     List.fold_left
-      (fun mp (k, v) -> BoundRegionId.Map.add k v mp)
-      BoundRegionId.Map.empty ls
+      (fun mp (k, v) -> RegionId.Map.add k v mp)
+      RegionId.Map.empty ls
   in
   function
   | Free _ -> raise (Failure "Unexpected")
   | Bound (dbid, varid) as var ->
       (* Only substitute the bound regions with DeBruijn index equal to 0 *)
-      if dbid = 0 then BoundRegionId.Map.find varid mp else RVar var
+      if dbid = 0 then RegionId.Map.find varid mp else RVar var
 
 let make_region_subst_from_vars (vars : region_var list) (regions : region list)
     : region_db_var -> region =

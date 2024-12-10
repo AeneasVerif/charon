@@ -214,7 +214,7 @@ pub struct TraitTypeConstraint {
 
 #[derive(Default, Clone, Eq, PartialEq, Serialize, Deserialize, Hash, Drive, DriveMut)]
 pub struct GenericArgs {
-    pub regions: Vector<BoundRegionId, Region>,
+    pub regions: Vector<RegionId, Region>,
     pub types: Vector<TypeVarId, Ty>,
     pub const_generics: Vector<ConstGenericVarId, ConstGeneric>,
     // TODO: rename to match [GenericParams]?
@@ -227,7 +227,7 @@ pub struct GenericArgs {
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Hash)]
 pub struct RegionBinder<T> {
     #[charon::rename("binder_regions")]
-    pub regions: Vector<BoundRegionId, RegionVar>,
+    pub regions: Vector<RegionId, RegionVar>,
     /// Named this way to highlight accesses to the inner value that might be handling parameters
     /// incorrectly. Prefer using helper methods.
     #[charon::rename("binder_value")]
@@ -243,7 +243,7 @@ pub struct RegionBinder<T> {
 /// be filled with witnesses/instances.
 #[derive(Debug, Default, Clone, PartialEq, Eq, Serialize, Deserialize, Drive, DriveMut)]
 pub struct GenericParams {
-    pub regions: Vector<BoundRegionId, RegionVar>,
+    pub regions: Vector<RegionId, RegionVar>,
     pub types: Vector<TypeVarId, TypeVar>,
     pub const_generics: Vector<ConstGenericVarId, ConstGenericVar>,
     // TODO: rename to match [GenericArgs]?

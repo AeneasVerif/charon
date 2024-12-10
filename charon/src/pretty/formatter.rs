@@ -110,13 +110,13 @@ impl<'a, 'b> SetLocals<'a> for FmtCtx<'b> {
 pub trait PushBoundRegions<'a> {
     type C: 'a + AstFormatter;
 
-    fn push_bound_regions(&'a self, regions: &'a Vector<BoundRegionId, RegionVar>) -> Self::C;
+    fn push_bound_regions(&'a self, regions: &'a Vector<RegionId, RegionVar>) -> Self::C;
 }
 
 impl<'a, 'b> PushBoundRegions<'a> for FmtCtx<'b> {
     type C = FmtCtx<'a>;
 
-    fn push_bound_regions(&'a self, regions: &'a Vector<BoundRegionId, RegionVar>) -> Self::C {
+    fn push_bound_regions(&'a self, regions: &'a Vector<RegionId, RegionVar>) -> Self::C {
         let mut generics = self.generics.clone();
         generics.push_front(Cow::Owned(GenericParams {
             regions: regions.clone(),
