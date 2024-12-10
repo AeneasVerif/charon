@@ -266,21 +266,22 @@ impl<'a> Formatter<AnyTransId> for FmtCtx<'a> {
 impl<'a> Formatter<RegionDbVar> for FmtCtx<'a> {
     fn format_object(&self, var: RegionDbVar) -> String {
         match var {
-            DeBruijnVar::Bound(dbid, varid) => match self.generics.get(dbid.index) {
-                None => Region::Var(var).to_string(),
-                Some(generics) => match generics.regions.get(varid) {
-                    None => {
-                        let region = Region::Var(var);
-                        tracing::warn!(
-                            "Found incorrect region `{region}` while pretty-printing. Look for \
+            DeBruijnVar::Bound(dbid, varid) => match self
+                .generics
+                .get(dbid.index)
+                .and_then(|generics| generics.regions.get(varid))
+            {
+                None => {
+                    let region = Region::Var(var).fmt_without_ctx();
+                    tracing::warn!(
+                        "Found incorrect region `{region}` while pretty-printing. Look for \
                         \"wrong_region\" in the pretty output"
-                        );
-                        format!("wrong_region({region})")
-                    }
-                    Some(v) => self.format_object(v),
-                },
+                    );
+                    format!("wrong_region({region})")
+                }
+                Some(v) => self.format_object(v),
             },
-            DeBruijnVar::Free(_) => Region::Var(var).to_string(),
+            DeBruijnVar::Free(_) => Region::Var(var).fmt_without_ctx(),
         }
     }
 }

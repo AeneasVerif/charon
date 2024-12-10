@@ -782,6 +782,16 @@ impl<C: AstFormatter> FmtWithCtx<C> for Region {
     }
 }
 
+impl Region {
+    pub fn fmt_without_ctx(&self) -> String {
+        match self {
+            Region::Static => "'static".to_string(),
+            Region::Var(var) => format!("'_{var}"),
+            Region::Erased => "'_".to_string(),
+        }
+    }
+}
+
 impl<T> RegionBinder<T> {
     /// Format the parameters and contents of this binder and returns the resulting strings.
     fn fmt_split<'a, C>(&'a self, ctx: &'a C) -> (String, String)
@@ -1638,16 +1648,6 @@ impl std::fmt::Display for RawAttribute {
             write!(f, "({args})")?;
         }
         Ok(())
-    }
-}
-
-impl std::fmt::Display for Region {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::result::Result<(), std::fmt::Error> {
-        match self {
-            Region::Static => write!(f, "'static"),
-            Region::Var(var) => write!(f, "'_{var}"),
-            Region::Erased => write!(f, "'_"),
-        }
     }
 }
 
