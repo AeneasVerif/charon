@@ -279,7 +279,16 @@ impl<'a> Formatter<RegionDbVar> for FmtCtx<'a> {
                     );
                     format!("wrong_region({region})")
                 }
-                Some(v) => self.format_object(v),
+                Some(v) => match &v.name {
+                    Some(name) => name.to_string(),
+                    None => {
+                        if dbid.index == self.generics.len() - 1 {
+                            format!("'_{varid}")
+                        } else {
+                            format!("'_{var}")
+                        }
+                    }
+                },
             },
             DeBruijnVar::Free(_) => Region::Var(var).fmt_without_ctx(),
         }
@@ -290,14 +299,7 @@ impl<'a> Formatter<&RegionVar> for FmtCtx<'a> {
     fn format_object(&self, var: &RegionVar) -> String {
         match &var.name {
             Some(name) => name.to_string(),
-            None => {
-                let depth = self.generics.len() - 1;
-                if depth == 0 {
-                    format!("'_{}", var.index)
-                } else {
-                    format!("'_{depth}_{}", var.index)
-                }
-            }
+            None => format!("'_{}", var.index),
         }
     }
 }

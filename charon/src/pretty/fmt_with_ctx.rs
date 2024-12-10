@@ -1533,7 +1533,6 @@ where
 {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            Self::Bound(dbid, varid) if dbid.is_zero() => write!(f, "{varid}"),
             Self::Bound(dbid, varid) => write!(f, "{dbid}_{varid}"),
             Self::Free(varid) => write!(f, "free_{varid}"),
         }
