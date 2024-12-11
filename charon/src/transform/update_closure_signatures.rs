@@ -1,6 +1,6 @@
-//! # Micro-pass: the first local variable of closures is (a borrow to) the
-//! closure itself. This is not consistent with the closure signature,
-//! which ignores this first variable. This micro-pass updates this.
+//! # Micro-pass: the first local variable of closures is (a borrow to) the closure itself. This is
+//! not consistent with the closure signature, which represents the captured state as a tuple. This
+//! micro-pass updates this.
 use derive_visitor::{visitor_enter_fn_mut, DriveMut, VisitorMut};
 
 use crate::ids::Vector;
@@ -54,59 +54,17 @@ fn transform_function(
         ..
     } = &mut def.signature;
     if let Some(info) = closure_info {
-        // Update the signature.
-        // We add as first parameter the state of the closure, that is
-        // a borrow to a tuple (of borrows, usually).
-        // Remark: the types used in the closure state may contain erased
-        // regions. In particular, the regions coming from the parent
-        // function are often erased. TODO:
-        // However, we introduce fresh regions for the state (in particular
-        // because it is easy to do so).
-
-        // Group the types into a tuple
-        let num_fields = info.state.len();
-        let state = TyKind::Adt(
-            TypeId::Tuple,
-            GenericArgs::new_from_types(info.state.clone()),
-        )
-        .into_ty();
-        // Depending on the kind of the closure, add a reference
-        let mut state = match &info.kind {
-            ClosureKind::FnOnce => state,
-            ClosureKind::Fn | ClosureKind::FnMut => {
-                // We introduce an erased region, that we replace later
-                //let index = RegionId::new(generics.regions.len());
-                //generics.regions.push_back(RegionVar { index, name: None });
-
-                let mutability = if info.kind == ClosureKind::Fn {
-                    RefKind::Shared
-                } else {
-                    RefKind::Mut
-                };
-                //let r = Region::BVar(DeBruijnId::new(0), index);
-                TyKind::Ref(Region::Erased, state, mutability).into_ty()
-            }
-        };
-
-        // Explore the state and introduce fresh regions for the erased
-        // regions we find.
+        assert_eq!(inputs.len(), 2);
+        // Explore the state and introduce fresh regions for the erased regions we find.
         let mut visitor = Ty::visit_inside(InsertRegions {
             regions: &mut generics.regions,
             depth: 0,
         });
-        state.drive_mut(&mut visitor);
-
-        // Update the inputs (slightly annoying to push to the front of
-        // a vector...).
-        let mut original_inputs = std::mem::take(inputs);
-        let mut ninputs = vec![state.clone()];
-        ninputs.append(&mut original_inputs);
-        *inputs = ninputs;
+        inputs[0].drive_mut(&mut visitor);
 
         // Update the body.
-        // We change the type of the local variable of index 1, which is
-        // a reference to the closure itself, so that it has the type of
-        // (a reference to) the state of the closure.
+        // We change the type of the local variable of index 1, which is a reference to the closure
+        // itself, so that it has the type of (a reference to) the state of the closure.
         //
         // For instance, in the example below:
         // ```text
@@ -124,17 +82,17 @@ fn transform_function(
         // ```
         // We also update the corresponding field accesses in the body of
         // the function.
-
         if let Some(body) = body {
-            body.locals.arg_count += 1;
-
             // Update the type of the local 1 (which is the closure)
             assert!(body.locals.vars.len() > 1);
             let state_var = &mut body.locals.vars[1];
-            state_var.ty = state;
+            state_var.ty = inputs[0].clone();
             state_var.name = Some("state".to_string());
 
             // Update the body, and in particular the accesses to the states
+            // TODO: translate to ADT field access
+            // TODO: handle directly during translation
+            let num_fields = info.state.len();
             body.body
                 .drive_mut(&mut visitor_enter_fn_mut(|pe: &mut ProjectionElem| {
                     if let ProjectionElem::Field(pk @ FieldProjKind::ClosureState, _) = pe {
