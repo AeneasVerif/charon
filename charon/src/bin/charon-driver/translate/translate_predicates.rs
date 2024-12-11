@@ -298,7 +298,7 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
                 let mut trait_id = match &impl_source.r#impl {
                     ImplExprAtom::SelfImpl { .. } => TraitRefKind::SelfId,
                     ImplExprAtom::LocalBound { index, .. } => {
-                        TraitRefKind::Clause(TraitClauseId::from_usize(*index))
+                        TraitRefKind::Clause(DeBruijnVar::free(TraitClauseId::from_usize(*index)))
                     }
                     _ => unreachable!(),
                 };

@@ -123,7 +123,7 @@ let constant_expr_to_string (env : 'a fmt_env) (cv : constant_expr) : string =
   match cv.value with
   | CLiteral lit ->
       "(" ^ literal_to_string lit ^ " : " ^ ty_to_string env cv.ty ^ ")"
-  | CVar vid -> const_generic_var_id_to_string env vid
+  | CVar var -> const_generic_db_var_to_string env var
   | CTraitConst (trait_ref, const_name) ->
       let trait_ref = trait_ref_to_string env trait_ref in
       trait_ref ^ const_name

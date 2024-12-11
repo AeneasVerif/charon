@@ -54,7 +54,7 @@ pub enum TraitRefKind {
     ///                    ^^^^^^^
     ///                    Clause(0)
     /// ```
-    Clause(TraitClauseId),
+    Clause(ClauseDbVar),
 
     /// A parent clause
     ///
@@ -540,7 +540,7 @@ pub enum ConstGeneric {
     /// A global constant
     Global(GlobalDeclId),
     /// A const generic variable
-    Var(ConstGenericVarId),
+    Var(ConstGenericDbVar),
     /// A concrete value
     Value(Literal),
 }
@@ -601,7 +601,7 @@ pub enum TyKind {
     /// types.
     Adt(TypeId, GenericArgs),
     #[charon::rename("TVar")]
-    TypeVar(TypeVarId),
+    TypeVar(TypeDbVar),
     Literal(LiteralTy),
     /// The never type, for computations which don't return. It is sometimes
     /// necessary for intermediate variables. For instance, if we do (coming

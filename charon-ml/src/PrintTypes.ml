@@ -62,6 +62,8 @@ let variant_id_to_pretty_string (id : variant_id) : string =
 let field_id_to_pretty_string (id : field_id) : string =
   "Field@" ^ FieldId.to_string id
 
+let trait_clause_id_to_string _ id = trait_clause_id_to_pretty_string id
+
 let region_db_var_to_string (env : 'a fmt_env) (var : region_db_var) : string =
   match var with
   | Bound (dbid, varid) -> begin
@@ -78,32 +80,43 @@ let region_db_var_to_string (env : 'a fmt_env) (var : region_db_var) : string =
     end
   | Free _ -> region_db_var_to_pretty_string var
 
-let type_var_id_to_string (env : 'a fmt_env) (id : type_var_id) : string =
-  (* Note that the types are not necessarily ordered following their indices *)
-  match
-    List.find_opt (fun (x : type_var) -> x.index = id) env.generics.types
-  with
-  | None -> type_var_id_to_pretty_string id
-  | Some x -> type_var_to_string x
+let type_db_var_to_string (env : 'a fmt_env) (var : type_db_var) : string =
+  match var with
+  | Bound _ -> failwith "bound type variable"
+  | Free id -> begin
+      (* Note that the types are not necessarily ordered following their indices *)
+      match
+        List.find_opt (fun (x : type_var) -> x.index = id) env.generics.types
+      with
+      | None -> type_var_id_to_pretty_string id
+      | Some x -> type_var_to_string x
+    end
 
-let const_generic_var_id_to_string (env : 'a fmt_env)
-    (id : const_generic_var_id) : string =
-  (* Note that the const generics are not necessarily ordered following their indices *)
-  match
-    List.find_opt
-      (fun (x : const_generic_var) -> x.index = id)
-      env.generics.const_generics
-  with
-  | None -> const_generic_var_id_to_pretty_string id
-  | Some x -> const_generic_var_to_string x
+let const_generic_db_var_to_string (env : 'a fmt_env)
+    (var : const_generic_db_var) : string =
+  match var with
+  | Bound _ -> failwith "bound const generic variable"
+  | Free id -> begin
+      (* Note that the types are not necessarily ordered following their indices *)
+      match
+        List.find_opt
+          (fun (x : const_generic_var) -> x.index = id)
+          env.generics.const_generics
+      with
+      | None -> const_generic_var_id_to_pretty_string id
+      | Some x -> const_generic_var_to_string x
+    end
+
+let trait_db_var_to_string (env : 'a fmt_env) (var : trait_db_var) : string =
+  match var with
+  | Bound _ -> failwith "bound trait clause variable"
+  | Free id -> trait_clause_id_to_pretty_string id
 
 let region_to_string (env : 'a fmt_env) (r : region) : string =
   match r with
   | RStatic -> "'static"
   | RErased -> "'_"
   | RVar var -> region_db_var_to_string env var
-
-let trait_clause_id_to_string _ id = trait_clause_id_to_pretty_string id
 
 let region_binder_to_string (value_to_string : 'a fmt_env -> 'c -> string)
     (env : 'a fmt_env) (rb : 'c region_binder) : string =
@@ -162,7 +175,7 @@ and trait_impl_id_to_string env id =
 and const_generic_to_string (env : 'a fmt_env) (cg : const_generic) : string =
   match cg with
   | CgGlobal id -> global_decl_id_to_string env id
-  | CgVar id -> const_generic_var_id_to_string env id
+  | CgVar var -> const_generic_db_var_to_string env var
   | CgValue lit -> literal_to_string lit
 
 and ty_to_string (env : 'a fmt_env) (ty : ty) : string =
@@ -175,7 +188,7 @@ and ty_to_string (env : 'a fmt_env) (ty : ty) : string =
       in
       let params = params_to_string env is_tuple generics in
       type_id_to_string env id ^ params
-  | TVar tv -> type_var_id_to_string env tv
+  | TVar tv -> type_db_var_to_string env tv
   | TNever -> "!"
   | TLiteral lit_ty -> literal_type_to_string lit_ty
   | TTraitType (trait_ref, type_name) ->
@@ -256,7 +269,7 @@ and trait_instance_id_to_string (env : 'a fmt_env) (id : trait_instance_id) :
       impl ^ generics
   | BuiltinOrAuto trait ->
       region_binder_to_string trait_decl_ref_to_string env trait
-  | Clause id -> trait_clause_id_to_string env id
+  | Clause id -> trait_db_var_to_string env id
   | ParentClause (inst_id, _decl_id, clause_id) ->
       let inst_id = trait_instance_id_to_string env inst_id in
       let clause_id = trait_clause_id_to_string env clause_id in
