@@ -63,20 +63,22 @@ let field_id_to_pretty_string (id : field_id) : string =
 let trait_clause_id_to_string _ id = trait_clause_id_to_pretty_string id
 
 let region_db_var_to_string (env : 'a fmt_env) (var : region_db_var) : string =
-  match var with
-  | Bound (dbid, varid) -> begin
-      match List.nth_opt env.regions dbid with
+  let dbid, varid =
+    match var with
+    | Bound (dbid, varid) -> (dbid, varid)
+    | Free varid ->
+        let len = List.length env.regions in
+        let dbid = if len == 0 then 0 else len - 1 in
+        (dbid, varid)
+  in
+  match List.nth_opt env.regions dbid with
+  | None -> region_db_var_to_pretty_string var
+  | Some regions -> begin
+      (* Note that the regions are not necessarily ordered following their indices *)
+      match List.find_opt (fun (r : region_var) -> r.index = varid) regions with
       | None -> region_db_var_to_pretty_string var
-      | Some regions -> begin
-          (* Note that the regions are not necessarily ordered following their indices *)
-          match
-            List.find_opt (fun (r : region_var) -> r.index = varid) regions
-          with
-          | None -> region_db_var_to_pretty_string var
-          | Some r -> region_var_to_string r
-        end
+      | Some r -> region_var_to_string r
     end
-  | Free _ -> region_db_var_to_pretty_string var
 
 let type_db_var_to_string (env : 'a fmt_env) (var : type_db_var) : string =
   match var with

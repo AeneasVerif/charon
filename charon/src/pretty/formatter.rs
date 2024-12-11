@@ -265,32 +265,30 @@ impl<'a> Formatter<AnyTransId> for FmtCtx<'a> {
 
 impl<'a> Formatter<RegionDbVar> for FmtCtx<'a> {
     fn format_object(&self, var: RegionDbVar) -> String {
-        match var {
-            DeBruijnVar::Bound(dbid, varid) => match self
-                .generics
-                .get(dbid.index)
-                .and_then(|generics| generics.regions.get(varid))
-            {
-                None => {
-                    let region = Region::Var(var).fmt_without_ctx();
-                    tracing::warn!(
-                        "Found incorrect region `{region}` while pretty-printing. Look for \
+        if self.generics.is_empty() {
+            return format!("'_{var}");
+        }
+        let (index, varid) = match var {
+            DeBruijnVar::Bound(dbid, varid) => (dbid.index, varid),
+            DeBruijnVar::Free(varid) => (self.generics.len() - 1, varid),
+        };
+        match self
+            .generics
+            .get(index)
+            .and_then(|generics| generics.regions.get(varid))
+        {
+            None => {
+                let region = Region::Var(var).fmt_without_ctx();
+                tracing::warn!(
+                    "Found incorrect region `{region}` while pretty-printing. Look for \
                         \"wrong_region\" in the pretty output"
-                    );
-                    format!("wrong_region({region})")
-                }
-                Some(v) => match &v.name {
-                    Some(name) => name.to_string(),
-                    None => {
-                        if dbid.index == self.generics.len() - 1 {
-                            format!("'_{varid}")
-                        } else {
-                            format!("'_{var}")
-                        }
-                    }
-                },
+                );
+                format!("wrong_region({region})")
+            }
+            Some(v) => match &v.name {
+                Some(name) => name.to_string(),
+                None => format!("'_{var}"),
             },
-            DeBruijnVar::Free(_) => Region::Var(var).fmt_without_ctx(),
         }
     }
 }

@@ -348,13 +348,19 @@ let update_rmap (c : match_config) (m : maps) (id : var) (v : T.region) : bool =
   if c.map_vars_to_vars && not is_var then false
   else
     match v with
-    | RVar (Bound (dbid, varid)) -> begin
-        (* Special treatment for the bound regions *)
-        match List.nth_opt m.rmap.bound_regions dbid with
-        | None -> raise (Failure "Unexpected bound variable")
-        | Some brmap ->
-            update_map T.RegionId.Map.find_opt T.RegionId.Map.add brmap varid v
-      end
+    | RVar var ->
+        let dbid, varid =
+          match var with
+          | Bound (dbid, varid) -> (dbid, varid)
+          | Free varid -> (List.length m.rmap.bound_regions - 1, varid)
+        in
+        begin
+          match List.nth_opt m.rmap.bound_regions dbid with
+          | None -> raise (Failure "Unexpected region variable")
+          | Some brmap ->
+              update_map T.RegionId.Map.find_opt T.RegionId.Map.add brmap varid
+                v
+        end
     | _ -> update_map VarMap.find_opt VarMap.add m.rmap.regions id v
 
 let update_tmap (c : match_config) (m : maps) (id : var) (v : T.ty) : bool =
@@ -794,7 +800,12 @@ let ref_kind_to_pattern (rk : T.ref_kind) : ref_kind =
 
 let region_to_pattern (m : constraints) (r : T.region) : region =
   match r with
-  | RVar (Bound (dbid, varid)) ->
+  | RVar var ->
+      let dbid, varid =
+        match var with
+        | Bound (dbid, varid) -> (dbid, varid)
+        | Free varid -> (List.length m.rmap - 1, varid)
+      in
       RVar
         (match List.nth_opt m.rmap dbid with
         | None -> None
@@ -802,11 +813,6 @@ let region_to_pattern (m : constraints) (r : T.region) : region =
             match T.RegionId.Map.find_opt varid rmap with
             | Some r -> r
             | None -> None))
-  | RVar (Free _) ->
-      (* For now we don't have a precise treatment of the free region variables
-         in the patterns.
-         Note that they should be used only in the symbolic execution *)
-      RVar None
   | RStatic -> RStatic
   | RErased ->
       (* We do get there when converting function pointers (when we try to

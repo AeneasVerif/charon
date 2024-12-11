@@ -157,9 +157,7 @@ let merge_generic_args (g1 : generic_args) (g2 : generic_args) : generic_args =
 
 let generic_args_of_params span (generics : generic_params) : generic_args =
   let regions =
-    List.map
-      (fun (v : region_var) -> RVar (zero_db_var v.index))
-      generics.regions
+    List.map (fun (v : region_var) -> RVar (Free v.index)) generics.regions
   in
   let types =
     List.map (fun (v : type_var) -> TVar (Free v.index)) generics.types
@@ -203,6 +201,8 @@ let mk_ref_ty (r : region) (ty : ty) (ref_kind : ref_kind) : ty =
 (** Make a box type *)
 let mk_box_ty (ty : ty) : ty =
   TAdt (TBuiltin TBox, mk_generic_args_from_types [ ty ])
+
+(* TODO: move region set manipulation to aeneas *)
 
 (** Check if a region is in a set of regions.
 

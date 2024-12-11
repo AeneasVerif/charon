@@ -25,35 +25,36 @@ pub struct DeBruijnId {
     pub index: usize,
 }
 
-/// Bound region variable.
+/// Type-level variable.
 ///
-/// **Important**:
-/// ==============
-/// Similarly to what the Rust compiler does, we use De Bruijn indices to
-/// identify *groups* of bound variables, and variable identifiers to
-/// identity the variables inside the groups.
+/// Variables are bound in groups. Each item has a top-level binding group in its `generic_params`
+/// field, and then inner binders are possible using the `RegionBinder<T>` type. Each variable is
+/// linked to exactly one binder. The `Id` then identifies the specific variable among all those
+/// bound in that group.
+///
+/// We distinguish the top-level (item-level) binder from others: a `Free` variable indicates a
+/// variable bound at the item level; a `Bound` variable indicates a variable bound at an inner
+/// binder, using a de Bruijn index (i.e. counting binders from the innermost out).
+///
+/// This distinction is not necessary (we could use bound variables only) but is practical.
 ///
 /// For instance, we have the following:
 /// ```text
-///                     we compute the De Bruijn indices from here
-///                            VVVVVVVVVVVVVVVVVVVVVVV
-/// fn f<'a, 'b>(x: for<'c> fn(&'a u8, &'b u16, &'c u32) -> u64) {}
-///      ^^^^^^         ^^       ^       ^        ^
-///        |      De Bruijn: 0   |       |        |
-///  De Bruijn: 1                |       |        |
-///                        De Bruijn: 1  |    De Bruijn: 0
-///                           Var id: 0  |       Var id: 0
-///                                      |
-///                                De Bruijn: 1
-///                                   Var id: 1
+/// fn f<'a, 'b>(x: for<'c> fn(&'b u8, &'c u16, for<'d> fn(&'b u32, &'c u64, &'d u128)) -> u64) {}
+///      ^^^^^^         ^^       ^       ^          ^^       ^        ^        ^
+///        |       inner binder  |       |     inner binder  |        |        |
+///  top-level binder            |       |                   |        |        |
+///                           Free(b)    |                Free(b)     |     Bound(0, d)
+///                                      |                            |
+///                                  Bound(0, c)                 Bound(1, c)
 /// ```
+///
+/// At the moment only region variables can be bound in a non-top-level binder.
 #[derive(Debug, PartialEq, Eq, Copy, Clone, Hash, PartialOrd, Ord, Serialize, Deserialize)]
-// TODO: translate toplevel lifetimes as free vars
 pub enum DeBruijnVar<Id> {
-    /// A variable attached to the nth binder, counting from the inside.
+    /// A variable attached to the nth binder, counting from the innermost.
     Bound(DeBruijnId, Id),
-    /// A variable attached to an implicit binder outside all other binders. This is not present in
-    /// translated code, and only provided as a convenience for convenient variable manipulation.
+    /// A variable attached to the outermost binder (the one on the item).
     Free(Id),
 }
 

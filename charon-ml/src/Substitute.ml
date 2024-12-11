@@ -159,10 +159,10 @@ let erase_regions_substitute_types (ty_subst : TypeVarId.id -> ty)
   let subst = { r_subst; ty_subst; cg_subst; tr_subst; tr_self } in
   ty_substitute subst ty
 
-(** Create a region substitution from a list of region variable ids and a list of
-    regions (with which to substitute the region variable ids *)
-let make_region_subst (var_ids : RegionId.id list) (regions : region list) :
-    region_db_var -> region =
+(** Substitute the free regions corresponding to each `var_id` with the
+    corresponding provided region. *)
+let make_free_region_subst (var_ids : RegionId.id list) (regions : region list)
+    : region_db_var -> region =
   let ls = List.combine var_ids regions in
   let mp =
     List.fold_left
@@ -170,14 +170,14 @@ let make_region_subst (var_ids : RegionId.id list) (regions : region list) :
       RegionId.Map.empty ls
   in
   function
-  | Free _ -> raise (Failure "Unexpected")
-  | Bound (dbid, varid) as var ->
-      (* Only substitute the bound regions with DeBruijn index equal to 0 *)
-      if dbid = 0 then RegionId.Map.find varid mp else RVar var
+  | Free varid -> RegionId.Map.find varid mp
+  | Bound _ as var -> RVar var
 
-let make_region_subst_from_vars (vars : region_var list) (regions : region list)
-    : region_db_var -> region =
-  make_region_subst (List.map (fun (x : region_var) -> x.index) vars) regions
+let make_free_region_subst_from_vars (vars : region_var list)
+    (regions : region list) : region_db_var -> region =
+  make_free_region_subst
+    (List.map (fun (x : region_var) -> x.index) vars)
+    regions
 
 (** Create a type substitution from a list of type variable ids and a list of
     types (with which to substitute the type variable ids) *)
@@ -233,7 +233,7 @@ let make_trait_subst_from_clauses (clauses : trait_clause list)
 
 let make_subst_from_generics (params : generic_params) (args : generic_args)
     (tr_self : trait_instance_id) : subst =
-  let r_subst = make_region_subst_from_vars params.regions args.regions in
+  let r_subst = make_free_region_subst_from_vars params.regions args.regions in
   let ty_subst = make_type_subst_from_vars params.types args.types in
   let cg_subst =
     make_const_generic_subst_from_vars params.const_generics args.const_generics

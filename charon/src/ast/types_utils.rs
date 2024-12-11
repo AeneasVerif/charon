@@ -48,7 +48,7 @@ impl GenericParams {
             regions: self
                 .regions
                 .iter_indexed()
-                .map(|(id, _)| Region::Var(DeBruijnVar::new_at_zero(id)))
+                .map(|(id, _)| Region::Var(DeBruijnVar::free(id)))
                 .collect(),
             types: self
                 .types
