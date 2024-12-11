@@ -1550,10 +1550,9 @@ impl std::fmt::Display for DeBruijnId {
     }
 }
 
-impl<Bound, Free> Display for DeBruijnVar<Bound, Free>
+impl<Id> Display for DeBruijnVar<Id>
 where
-    Bound: Display,
-    Free: Display,
+    Id: Display,
 {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {

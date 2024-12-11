@@ -596,39 +596,6 @@ impl Ty {
     }
 }
 
-// The derive macro doesn't handle generics.
-impl<B: Drive, F: Drive> Drive for DeBruijnVar<B, F> {
-    fn drive<V: Visitor>(&self, visitor: &mut V) {
-        visitor.visit(self, Event::Enter);
-        match self {
-            DeBruijnVar::Bound(x, y) => {
-                x.drive(visitor);
-                y.drive(visitor);
-            }
-            DeBruijnVar::Free(x) => {
-                x.drive(visitor);
-            }
-        }
-        visitor.visit(self, Event::Exit);
-    }
-}
-
-impl<B: DriveMut, F: DriveMut> DriveMut for DeBruijnVar<B, F> {
-    fn drive_mut<V: VisitorMut>(&mut self, visitor: &mut V) {
-        visitor.visit(self, Event::Enter);
-        match self {
-            DeBruijnVar::Bound(x, y) => {
-                x.drive_mut(visitor);
-                y.drive_mut(visitor);
-            }
-            DeBruijnVar::Free(x) => {
-                x.drive_mut(visitor);
-            }
-        }
-        visitor.visit(self, Event::Exit);
-    }
-}
-
 impl PartialEq for TraitClause {
     fn eq(&self, other: &Self) -> bool {
         // Skip `span` and `origin`

@@ -256,10 +256,7 @@ and raw_constant_expr_of_json (ctx : of_json_ctx) (js : json) :
         let* x_1 = trait_item_name_of_json ctx x_1 in
         Ok (CTraitConst (x_0, x_1))
     | `Assoc [ ("Var", var) ] ->
-        let* var =
-          de_bruijn_var_of_json const_generic_var_id_of_json
-            const_generic_var_id_of_json ctx var
-        in
+        let* var = de_bruijn_var_of_json const_generic_var_id_of_json ctx var in
         Ok (CVar var)
     | `Assoc [ ("FnPtr", fn_ptr) ] ->
         let* fn_ptr = fn_ptr_of_json ctx fn_ptr in
@@ -860,13 +857,12 @@ and de_bruijn_id_of_json (ctx : of_json_ctx) (js : json) :
     | _ -> Error "")
 
 and de_bruijn_var_of_json :
-      'a0 'a1.
+      'a0.
       (of_json_ctx -> json -> ('a0, string) result) ->
-      (of_json_ctx -> json -> ('a1, string) result) ->
       of_json_ctx ->
       json ->
-      (('a0, 'a1) de_bruijn_var, string) result =
- fun arg0_of_json arg1_of_json ctx js ->
+      ('a0 de_bruijn_var, string) result =
+ fun arg0_of_json ctx js ->
   combine_error_msgs js __FUNCTION__
     (match js with
     | `Assoc [ ("Bound", `List [ x_0; x_1 ]) ] ->
@@ -874,7 +870,7 @@ and de_bruijn_var_of_json :
         let* x_1 = arg0_of_json ctx x_1 in
         Ok (Bound (x_0, x_1))
     | `Assoc [ ("Free", free) ] ->
-        let* free = arg1_of_json ctx free in
+        let* free = arg0_of_json ctx free in
         Ok (Free free)
     | _ -> Error "")
 
@@ -958,9 +954,7 @@ and region_of_json (ctx : of_json_ctx) (js : json) : (region, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
     | `Assoc [ ("Var", var) ] ->
-        let* var =
-          de_bruijn_var_of_json region_id_of_json region_id_of_json ctx var
-        in
+        let* var = de_bruijn_var_of_json region_id_of_json ctx var in
         Ok (RVar var)
     | `String "Static" -> Ok RStatic
     | `String "Erased" -> Ok RErased
@@ -976,8 +970,7 @@ and trait_instance_id_of_json (ctx : of_json_ctx) (js : json) :
         Ok (TraitImpl (x_0, x_1))
     | `Assoc [ ("Clause", clause) ] ->
         let* clause =
-          de_bruijn_var_of_json trait_clause_id_of_json trait_clause_id_of_json
-            ctx clause
+          de_bruijn_var_of_json trait_clause_id_of_json ctx clause
         in
         Ok (Clause clause)
     | `Assoc [ ("ParentClause", `List [ x_0; x_1; x_2 ]) ] ->
@@ -1329,10 +1322,7 @@ and const_generic_of_json (ctx : of_json_ctx) (js : json) :
         let* global = global_decl_id_of_json ctx global in
         Ok (CgGlobal global)
     | `Assoc [ ("Var", var) ] ->
-        let* var =
-          de_bruijn_var_of_json const_generic_var_id_of_json
-            const_generic_var_id_of_json ctx var
-        in
+        let* var = de_bruijn_var_of_json const_generic_var_id_of_json ctx var in
         Ok (CgVar var)
     | `Assoc [ ("Value", value) ] ->
         let* value = literal_of_json ctx value in
@@ -1348,8 +1338,7 @@ and ty_of_json (ctx : of_json_ctx) (js : json) : (ty, string) result =
         Ok (TAdt (x_0, x_1))
     | `Assoc [ ("TypeVar", type_var) ] ->
         let* type_var =
-          de_bruijn_var_of_json type_var_id_of_json type_var_id_of_json ctx
-            type_var
+          de_bruijn_var_of_json type_var_id_of_json ctx type_var
         in
         Ok (TVar type_var)
     | `Assoc [ ("Literal", literal) ] ->

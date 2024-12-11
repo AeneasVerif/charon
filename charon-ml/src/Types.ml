@@ -79,10 +79,10 @@ and de_bruijn_id = int
                                       Var id: 1
     ```
  *)
-and ('a0, 'a1) de_bruijn_var =
+and 'a0 de_bruijn_var =
   | Bound of de_bruijn_id * 'a0
       (** A variable attached to the nth binder, counting from the inside. *)
-  | Free of 'a1
+  | Free of 'a0
       (** A variable attached to an implicit binder outside all other binders. This is not present in
           translated code, and only provided as a convenience for convenient variable manipulation.
        *)
@@ -109,18 +109,13 @@ class ['self] iter_const_generic_base_base =
     method visit_de_bruijn_id : 'env -> de_bruijn_id -> unit = fun _ _ -> ()
 
     method visit_de_bruijn_var
-        : 'b 'f.
-          ('env -> 'b -> unit) ->
-          ('env -> 'f -> unit) ->
-          'env ->
-          ('b, 'f) de_bruijn_var ->
-          unit =
-      fun visit_bound visit_free env x ->
+        : 'id. ('env -> 'id -> unit) -> 'env -> 'id de_bruijn_var -> unit =
+      fun visit_id env x ->
         match x with
         | Bound (dbid, varid) ->
             self#visit_de_bruijn_id env dbid;
-            visit_bound env varid
-        | Free varid -> visit_free env varid
+            visit_id env varid
+        | Free varid -> visit_id env varid
   end
 
 (** Ancestor for map visitor for {!type: Types.ty} *)
@@ -132,20 +127,17 @@ class virtual ['self] map_const_generic_base_base =
       fun _ x -> x
 
     method visit_de_bruijn_var
-        : 'b 'f.
-          ('env -> 'b -> 'b) ->
-          ('env -> 'f -> 'f) ->
-          'env ->
-          ('b, 'f) de_bruijn_var ->
-          ('b, 'f) de_bruijn_var =
-      fun visit_bound visit_free env x ->
+        : 'id 'f.
+          ('env -> 'id -> 'id) -> 'env -> 'id de_bruijn_var -> 'id de_bruijn_var
+        =
+      fun visit_id env x ->
         match x with
         | Bound (dbid, varid) ->
             let dbid = self#visit_de_bruijn_id env dbid in
-            let varid = visit_bound env varid in
+            let varid = visit_id env varid in
             Bound (dbid, varid)
         | Free varid ->
-            let varid = visit_free env varid in
+            let varid = visit_id env varid in
             Free varid
   end
 
@@ -157,20 +149,15 @@ class virtual ['self] reduce_const_generic_base_base =
       fun _ _ -> self#zero
 
     method visit_de_bruijn_var
-        : 'b 'f.
-          ('env -> 'b -> 'a) ->
-          ('env -> 'f -> 'a) ->
-          'env ->
-          ('b, 'f) de_bruijn_var ->
-          'a =
-      fun visit_bound visit_free env x ->
+        : 'id 'f. ('env -> 'id -> 'a) -> 'env -> 'id de_bruijn_var -> 'a =
+      fun visit_id env x ->
         match x with
         | Bound (dbid, varid) ->
             let acc1 = self#visit_de_bruijn_id env dbid in
-            let acc2 = visit_bound env varid in
+            let acc2 = visit_id env varid in
             self#plus acc1 acc2
         | Free varid ->
-            let acc = visit_free env varid in
+            let acc = visit_id env varid in
             acc
   end
 
@@ -182,20 +169,19 @@ class virtual ['self] mapreduce_const_generic_base_base =
       fun _ x -> (x, self#zero)
 
     method visit_de_bruijn_var
-        : 'b 'f.
-          ('env -> 'b -> 'b * 'a) ->
-          ('env -> 'f -> 'f * 'a) ->
+        : 'id 'f.
+          ('env -> 'id -> 'id * 'a) ->
           'env ->
-          ('b, 'f) de_bruijn_var ->
-          ('b, 'f) de_bruijn_var * 'a =
-      fun visit_bound visit_free env x ->
+          'id de_bruijn_var ->
+          'id de_bruijn_var * 'a =
+      fun visit_id env x ->
         match x with
         | Bound (dbid, varid) ->
             let dbid, acc1 = self#visit_de_bruijn_id env dbid in
-            let varid, acc2 = visit_bound env varid in
+            let varid, acc2 = visit_id env varid in
             (Bound (dbid, varid), self#plus acc1 acc2)
         | Free varid ->
-            let varid, acc = visit_free env varid in
+            let varid, acc = visit_id env varid in
             (Free varid, acc)
   end
 
@@ -317,8 +303,7 @@ class virtual ['self] mapreduce_const_generic_base =
 (** Const Generic Values. Either a primitive value, or a variable corresponding to a primitve value *)
 type const_generic =
   | CgGlobal of global_decl_id  (** A global constant *)
-  | CgVar of (const_generic_var_id, const_generic_var_id) de_bruijn_var
-      (** A const generic variable *)
+  | CgVar of const_generic_var_id de_bruijn_var  (** A const generic variable *)
   | CgValue of literal  (** A concrete value *)
 [@@deriving
   show,
@@ -458,7 +443,7 @@ type global_decl_ref = {
 and trait_item_name = string
 
 and region =
-  | RVar of (region_id, region_id) de_bruijn_var
+  | RVar of region_id de_bruijn_var
       (** Region variable. See `DeBruijnVar` for details. *)
   | RStatic  (** Static region *)
   | RErased  (** Erased region *)
@@ -474,7 +459,7 @@ and region =
 and trait_instance_id =
   | TraitImpl of trait_impl_id * generic_args
       (** A specific top-level implementation item. *)
-  | Clause of (trait_clause_id, trait_clause_id) de_bruijn_var
+  | Clause of trait_clause_id de_bruijn_var
       (** One of the local clauses.
 
           Example:
@@ -608,7 +593,7 @@ and ty =
           Note: this is incorrectly named: this can refer to any valid `TypeDecl` including extern
           types.
        *)
-  | TVar of (type_var_id, type_var_id) de_bruijn_var
+  | TVar of type_var_id de_bruijn_var
   | TLiteral of literal_type
   | TNever
       (** The never type, for computations which don't return. It is sometimes
@@ -958,15 +943,10 @@ type ('rid, 'id) g_region_group = {
 }
 [@@deriving show]
 
-type region_db_var = (region_id, region_id) de_bruijn_var [@@deriving show]
-type type_db_var = (type_var_id, type_var_id) de_bruijn_var [@@deriving show]
-
-type const_generic_db_var =
-  (const_generic_var_id, const_generic_var_id) de_bruijn_var
-[@@deriving show]
-
-type trait_db_var = (trait_clause_id, trait_clause_id) de_bruijn_var
-[@@deriving show]
+type region_db_var = region_id de_bruijn_var [@@deriving show]
+type type_db_var = type_var_id de_bruijn_var [@@deriving show]
+type const_generic_db_var = const_generic_var_id de_bruijn_var [@@deriving show]
+type trait_db_var = trait_clause_id de_bruijn_var [@@deriving show]
 
 type region_var_group = (RegionId.id, RegionGroupId.id) g_region_group
 [@@deriving show]
