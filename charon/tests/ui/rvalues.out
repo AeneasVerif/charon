@@ -176,7 +176,7 @@ unsafe fn test_crate::fn_casts::bar()
     return
 }
 
-fn test_crate::fn_casts::closure<'_0>(@1: &'_0 (()), @2: (u8))
+fn test_crate::fn_casts::closure<'_0>(@1: &'_0 (()), @2: u8)
 {
     let @0: (); // return
     let state@1: &'_0 (()); // arg #1

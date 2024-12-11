@@ -1415,7 +1415,7 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
     ) -> Result<FunSig, Error> {
         let span = item_meta.span;
 
-        let generics = self.translate_def_generics(span, def)?;
+        let mut generics = self.translate_def_generics(span, def)?;
 
         let signature = match &def.kind {
             hax::FullDefKind::Closure { args, .. } => &args.sig,
@@ -1456,7 +1456,7 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
 
         // Translate the signature
         trace!("signature of {def_id:?}:\n{:?}", signature.value);
-        let inputs: Vec<Ty> = signature
+        let mut inputs: Vec<Ty> = signature
             .value
             .inputs
             .iter()
@@ -1486,11 +1486,46 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
                     hax::ClosureKind::FnMut => ClosureKind::FnMut,
                     hax::ClosureKind::FnOnce => ClosureKind::FnOnce,
                 };
+
+                assert_eq!(inputs.len(), 1);
+                let tuple_arg = inputs.pop().unwrap();
+
                 let state: Vector<TypeVarId, Ty> = args
                     .upvar_tys
                     .iter()
                     .map(|ty| self.translate_ty(span, &ty))
                     .try_collect()?;
+                // Add the state of the closure as first parameter.
+                let state_ty = {
+                    // Group the state types into a tuple
+                    let state_ty =
+                        TyKind::Adt(TypeId::Tuple, GenericArgs::new_from_types(state.clone()))
+                            .into_ty();
+                    // Depending on the kind of the closure, add a reference
+                    match &kind {
+                        ClosureKind::FnOnce => state_ty,
+                        ClosureKind::Fn | ClosureKind::FnMut => {
+                            let rid = generics
+                                .regions
+                                .push_with(|index| RegionVar { index, name: None });
+                            let r = Region::Var(DeBruijnVar::free(rid));
+                            let mutability = if kind == ClosureKind::Fn {
+                                RefKind::Shared
+                            } else {
+                                RefKind::Mut
+                            };
+                            TyKind::Ref(r, state_ty, mutability).into_ty()
+                        }
+                    }
+                };
+                inputs.push(state_ty);
+
+                // Unpack the tupled arguments to match the body locals.
+                let TyKind::Adt(TypeId::Tuple, tuple_args) = tuple_arg.kind() else {
+                    error_or_panic!(self, span, "Closure argument is not a tuple")
+                };
+                inputs.extend(tuple_args.types.iter().cloned());
+
                 Some(ClosureInfo { kind, state })
             }
             _ => None,

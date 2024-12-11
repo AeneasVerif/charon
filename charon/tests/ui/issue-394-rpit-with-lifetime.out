@@ -14,7 +14,7 @@ enum core::option::Option<T>
 |  Some(T)
 
 
-fn test_crate::sparse_transitions::closure<'a, '_1>(@1: &'_1 mut (()), @2: ()) -> core::option::Option<u8>[core::marker::Sized<u8>]
+fn test_crate::sparse_transitions::closure<'a, '_1>(@1: &'_1 mut (())) -> core::option::Option<u8>[core::marker::Sized<u8>]
 {
     let @0: core::option::Option<u8>[core::marker::Sized<u8>]; // return
     let state@1: &'_1 mut (()); // arg #1
