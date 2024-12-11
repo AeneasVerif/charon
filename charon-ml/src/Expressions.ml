@@ -271,7 +271,8 @@ and raw_constant_expr =
           Remark: trait constants can not be used in types, they are necessarily
           values.
        *)
-  | CVar of const_generic_var_id  (** A const generic var *)
+  | CVar of (const_generic_var_id, const_generic_var_id) de_bruijn_var
+      (** A const generic var *)
   | CFnPtr of fn_ptr  (** Function pointer *)
 
 and constant_expr = { value : raw_constant_expr; ty : ty }

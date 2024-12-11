@@ -817,20 +817,26 @@ let region_to_pattern (m : constraints) (r : T.region) : region =
          detect specific function calls) to patterns. *)
       RVar None
 
-let type_var_to_pattern (m : constraints) (v : T.TypeVarId.id) : var option =
-  match T.TypeVarId.Map.find_opt v m.tmap with
-  | Some v -> v
-  | None ->
+let type_var_to_pattern (m : constraints) (var : T.type_db_var) : var option =
+  match var with
+  | Bound _ -> failwith "bound type var"
+  | Free id -> begin
+      match T.TypeVarId.Map.find_opt id m.tmap with
+      | Some v -> v
+      | None -> None
       (* Return the empty pattern *)
-      None
+    end
 
-let const_generic_var_to_pattern (m : constraints) (v : T.ConstGenericVarId.id)
-    : var option =
-  match T.ConstGenericVarId.Map.find_opt v m.cmap with
-  | Some v -> v
-  | None ->
+let const_generic_var_to_pattern (m : constraints)
+    (var : T.const_generic_db_var) : var option =
+  match var with
+  | Bound _ -> failwith "bound const generic var"
+  | Free id -> begin
+      match T.ConstGenericVarId.Map.find_opt id m.cmap with
+      | Some v -> v
+      | None -> None
       (* Return the empty pattern *)
-      None
+    end
 
 let constraints_map_compute_regions_map (regions : T.region_var list) :
     var option T.BoundRegionId.Map.t =

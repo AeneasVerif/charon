@@ -256,7 +256,10 @@ and raw_constant_expr_of_json (ctx : of_json_ctx) (js : json) :
         let* x_1 = trait_item_name_of_json ctx x_1 in
         Ok (CTraitConst (x_0, x_1))
     | `Assoc [ ("Var", var) ] ->
-        let* var = const_generic_var_id_of_json ctx var in
+        let* var =
+          de_bruijn_var_of_json const_generic_var_id_of_json
+            const_generic_var_id_of_json ctx var
+        in
         Ok (CVar var)
     | `Assoc [ ("FnPtr", fn_ptr) ] ->
         let* fn_ptr = fn_ptr_of_json ctx fn_ptr in
@@ -875,13 +878,6 @@ and de_bruijn_var_of_json :
         Ok (Free free)
     | _ -> Error "")
 
-and type_var_id_of_json (ctx : of_json_ctx) (js : json) :
-    (type_var_id, string) result =
-  combine_error_msgs js __FUNCTION__
-    (match js with
-    | x -> TypeVarId.id_of_json ctx x
-    | _ -> Error "")
-
 and bound_region_id_of_json (ctx : of_json_ctx) (js : json) :
     (bound_region_id, string) result =
   combine_error_msgs js __FUNCTION__
@@ -894,6 +890,13 @@ and free_region_id_of_json (ctx : of_json_ctx) (js : json) :
   combine_error_msgs js __FUNCTION__
     (match js with
     | x -> FreeRegionId.id_of_json ctx x
+    | _ -> Error "")
+
+and type_var_id_of_json (ctx : of_json_ctx) (js : json) :
+    (type_var_id, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with
+    | x -> TypeVarId.id_of_json ctx x
     | _ -> Error "")
 
 and const_generic_var_id_of_json (ctx : of_json_ctx) (js : json) :
@@ -980,7 +983,10 @@ and trait_instance_id_of_json (ctx : of_json_ctx) (js : json) :
         let* x_1 = generic_args_of_json ctx x_1 in
         Ok (TraitImpl (x_0, x_1))
     | `Assoc [ ("Clause", clause) ] ->
-        let* clause = trait_clause_id_of_json ctx clause in
+        let* clause =
+          de_bruijn_var_of_json trait_clause_id_of_json trait_clause_id_of_json
+            ctx clause
+        in
         Ok (Clause clause)
     | `Assoc [ ("ParentClause", `List [ x_0; x_1; x_2 ]) ] ->
         let* x_0 = box_of_json trait_instance_id_of_json ctx x_0 in
@@ -1331,7 +1337,10 @@ and const_generic_of_json (ctx : of_json_ctx) (js : json) :
         let* global = global_decl_id_of_json ctx global in
         Ok (CgGlobal global)
     | `Assoc [ ("Var", var) ] ->
-        let* var = const_generic_var_id_of_json ctx var in
+        let* var =
+          de_bruijn_var_of_json const_generic_var_id_of_json
+            const_generic_var_id_of_json ctx var
+        in
         Ok (CgVar var)
     | `Assoc [ ("Value", value) ] ->
         let* value = literal_of_json ctx value in
@@ -1346,7 +1355,10 @@ and ty_of_json (ctx : of_json_ctx) (js : json) : (ty, string) result =
         let* x_1 = generic_args_of_json ctx x_1 in
         Ok (TAdt (x_0, x_1))
     | `Assoc [ ("TypeVar", type_var) ] ->
-        let* type_var = type_var_id_of_json ctx type_var in
+        let* type_var =
+          de_bruijn_var_of_json type_var_id_of_json type_var_id_of_json ctx
+            type_var
+        in
         Ok (TVar type_var)
     | `Assoc [ ("Literal", literal) ] ->
         let* literal = literal_type_of_json ctx literal in

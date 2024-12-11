@@ -217,8 +217,7 @@ fn type_to_ocaml_call(ctx: &GenerateCtx, ty: &Ty) -> String {
             }
             expr.into_iter().map(|f| format!("({f})")).join(" ")
         }
-        TyKind::TypeVar(var_id) => format!("arg{}_of_json", var_id.index()),
-        // TyKind::Ref(_, _, _) => todo!(),
+        TyKind::TypeVar(DeBruijnVar::Free(id)) => format!("arg{id}_of_json"),
         _ => unimplemented!("{ty:?}"),
     }
 }
@@ -283,7 +282,7 @@ fn type_to_ocaml_name(ctx: &GenerateCtx, ty: &Ty) -> String {
                 _ => unimplemented!("{ty:?}"),
             }
         }
-        TyKind::TypeVar(var_id) => format!("'a{}", var_id.index()),
+        TyKind::TypeVar(DeBruijnVar::Free(id)) => format!("'a{id}"),
         _ => unimplemented!("{ty:?}"),
     }
 }
@@ -1244,13 +1243,12 @@ fn generate_ml(
                 ]),
                 (GenerationKind::TypeDecl(Some(DeriveVisitors {
                     name: "const_generic",
-                    ancestor: Some("literal"),
+                    ancestor: Some("const_generic_base_base"),
                     reduce: true,
                     extra_types: &[
                         "const_generic_var_id",
                         "fun_decl_id",
                         "global_decl_id",
-                        "de_bruijn_id",
                         "free_region_id",
                         "bound_region_id",
                         "trait_clause_id",

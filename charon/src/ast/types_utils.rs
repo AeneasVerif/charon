@@ -3,6 +3,7 @@ use crate::types::*;
 use crate::{common::visitor_event::VisitEvent, ids::Vector};
 use derive_visitor::{Drive, DriveMut, Event, Visitor, VisitorMut};
 use std::{collections::HashMap, iter::Iterator};
+use DeBruijnVar::Free;
 
 impl GenericParams {
     pub fn empty() -> Self {
@@ -47,23 +48,23 @@ impl GenericParams {
             regions: self
                 .regions
                 .iter_indexed()
-                .map(|(id, _)| Region::Var(DeBruijnVar::bound(DeBruijnId::new(0), id)))
+                .map(|(id, _)| Region::Var(DeBruijnVar::new_at_zero(id)))
                 .collect(),
             types: self
                 .types
                 .iter_indexed()
-                .map(|(id, _)| TyKind::TypeVar(id).into_ty())
+                .map(|(id, _)| TyKind::TypeVar(DeBruijnVar::free(id)).into_ty())
                 .collect(),
             const_generics: self
                 .const_generics
                 .iter_indexed()
-                .map(|(id, _)| ConstGeneric::Var(id))
+                .map(|(id, _)| ConstGeneric::Var(DeBruijnVar::free(id)))
                 .collect(),
             trait_refs: self
                 .trait_clauses
                 .iter_indexed()
                 .map(|(id, clause)| TraitRef {
-                    kind: TraitRefKind::Clause(id),
+                    kind: TraitRefKind::Clause(DeBruijnVar::free(id)),
                     trait_decl_ref: clause.trait_.clone(),
                 })
                 .collect(),
@@ -562,21 +563,28 @@ impl<'a> SubstVisitor<'a> {
 
     fn exit_ty(&mut self, ty: &mut Ty) {
         match ty.kind() {
-            TyKind::TypeVar(id) => *ty = self.generics.types.get(*id).unwrap().clone(),
+            TyKind::TypeVar(Free(id)) => {
+                {}
+                *ty = self.generics.types.get(*id).unwrap().clone()
+            }
             _ => (),
         }
     }
 
     fn exit_const_generic(&mut self, cg: &mut ConstGeneric) {
         match cg {
-            ConstGeneric::Var(id) => *cg = self.generics.const_generics.get(*id).unwrap().clone(),
+            ConstGeneric::Var(Free(id)) => {
+                *cg = self.generics.const_generics.get(*id).unwrap().clone()
+            }
             _ => (),
         }
     }
 
     fn exit_trait_ref(&mut self, tr: &mut TraitRef) {
         match &mut tr.kind {
-            TraitRefKind::Clause(id) => *tr = self.generics.trait_refs.get(*id).unwrap().clone(),
+            TraitRefKind::Clause(Free(id)) => {
+                *tr = self.generics.trait_refs.get(*id).unwrap().clone()
+            }
             _ => (),
         }
     }
