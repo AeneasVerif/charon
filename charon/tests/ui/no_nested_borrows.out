@@ -517,41 +517,25 @@ fn test_crate::test_even_odd()
     let @13: (); // anonymous local
 
     @2 := test_crate::even(const (0 : u32))
-    if move (@2) {
-    }
-    else {
-        panic(core::panicking::panic)
-    }
+    assert(move (@2) == true)
     @9 := ()
     @1 := move (@9)
     drop @2
     drop @1
     @4 := test_crate::even(const (4 : u32))
-    if move (@4) {
-    }
-    else {
-        panic(core::panicking::panic)
-    }
+    assert(move (@4) == true)
     @10 := ()
     @3 := move (@10)
     drop @4
     drop @3
     @6 := test_crate::odd(const (1 : u32))
-    if move (@6) {
-    }
-    else {
-        panic(core::panicking::panic)
-    }
+    assert(move (@6) == true)
     @11 := ()
     @5 := move (@11)
     drop @6
     drop @5
     @8 := test_crate::odd(const (5 : u32))
-    if move (@8) {
-    }
-    else {
-        panic(core::panicking::panic)
-    }
+    assert(move (@8) == true)
     @12 := ()
     @7 := move (@12)
     drop @8

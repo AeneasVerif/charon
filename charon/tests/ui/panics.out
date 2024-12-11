@@ -67,11 +67,7 @@ fn test_crate::panic4()
     let @4: (); // anonymous local
 
     @2 := const (false)
-    if move (@2) {
-    }
-    else {
-        panic(core::panicking::panic)
-    }
+    assert(move (@2) == true)
     @3 := ()
     @1 := move (@3)
     drop @2
