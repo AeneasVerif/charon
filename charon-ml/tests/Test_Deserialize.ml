@@ -33,8 +33,9 @@ let run_tests (folder : string) : unit =
             exit 1
         | Ok m ->
             log#linfo (lazy ("Deserialized: " ^ file));
-            log#ldebug
-              (lazy ("\n" ^ PrintLlbcAst.Crate.crate_to_string m ^ "\n")))
+            (* Test that pretty-printing doesn't crash *)
+            let printed = PrintLlbcAst.Crate.crate_to_string m in
+            log#ldebug (lazy ("\n" ^ printed ^ "\n")))
       llbc_files
   in
 

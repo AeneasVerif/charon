@@ -365,25 +365,12 @@ let trait_type_constraint_to_string (env : 'a fmt_env)
 
 (** Helper to format "where" clauses *)
 let clauses_to_string (indent : string) (indent_incr : string)
-    (num_inherited_clauses : int) (clauses : string list) : string =
+    (clauses : string list) : string =
   if clauses = [] then ""
   else
     let env_clause s = indent ^ indent_incr ^ s ^ "," in
     let clauses = List.map env_clause clauses in
-    let inherited, local =
-      Collections.List.split_at clauses num_inherited_clauses
-    in
-    let delim1 =
-      if inherited <> [] then [ indent ^ "  // Inherited clauses" ] else []
-    in
-    let delim2 =
-      if inherited <> [] && local <> [] then [ indent ^ "  // Local clauses" ]
-      else []
-    in
-    let clauses =
-      List.concat [ [ indent ^ "where" ]; delim1; inherited; delim2; local ]
-    in
-    "\n" ^ String.concat "\n" clauses
+    "\n" ^ indent ^ "where\n" ^ String.concat "\n" clauses
 
 (** Helper to format "where" clauses *)
 let predicates_and_trait_clauses_to_string (env : 'a fmt_env) (indent : string)
@@ -413,7 +400,7 @@ let predicates_and_trait_clauses_to_string (env : 'a fmt_env) (indent : string)
   in
   (* Split between the inherited clauses and the local clauses *)
   let clauses =
-    clauses_to_string indent indent_incr 0
+    clauses_to_string indent indent_incr
       (List.concat
          [
            trait_clauses; regions_outlive; types_outlive; trait_type_constraints;
