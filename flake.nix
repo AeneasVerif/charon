@@ -47,16 +47,7 @@
           ${pkgs.ocamlPackages.ocamlformat}/bin/ocamlformat --inplace --enable-outside-detected-project generated/*.ml
 
           mkdir committed
-          cp ${./charon-ml/src}/GAst.ml committed
-          cp ${./charon-ml/src}/LlbcAst.ml committed
-          cp ${./charon-ml/src}/UllbcAst.ml committed
-          cp ${./charon-ml/src}/Expressions.ml committed
-          cp ${./charon-ml/src}/Meta.ml committed
-          cp ${./charon-ml/src}/Types.ml committed
-          cp ${./charon-ml/src}/Values.ml committed
-          cp ${./charon-ml/src}/GAstOfJson.ml committed
-          cp ${./charon-ml/src}/LlbcOfJson.ml committed
-          cp ${./charon-ml/src}/UllbcOfJson.ml committed
+          cp ${./charon-ml/src/generated}/*.ml committed
 
           if diff -rq committed generated; then
             echo "Ok: the regenerated ocaml files are the same as the checked out files"
