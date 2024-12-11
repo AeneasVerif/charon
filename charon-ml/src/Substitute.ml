@@ -7,26 +7,66 @@ open TypesUtils
 open Expressions
 open LlbcAst
 
+(* A substitution that takes a full variable as input *)
 type subst = {
-  r_subst : region_db_var -> region;
+  r_subst : RegionId.id de_bruijn_var -> region;
       (** Remark: this might be called with bound regions with a negative
           DeBruijn index. A negative DeBruijn index means that the region
           is locally bound. *)
-  ty_subst : TypeVarId.id -> ty;
-  cg_subst : ConstGenericVarId.id -> const_generic;
+  ty_subst : TypeVarId.id de_bruijn_var -> ty;
+  cg_subst : ConstGenericVarId.id de_bruijn_var -> const_generic;
       (** Substitution from *local* trait clause to trait instance *)
-  tr_subst : TraitClauseId.id -> trait_instance_id;
+  tr_subst : TraitClauseId.id de_bruijn_var -> trait_instance_id;
       (** Substitution for the [Self] trait instance *)
   tr_self : trait_instance_id;
 }
 
+(* A substitution that applies to a specific binder. Use it with
+   `subst_at_binder_zero` or `subst_free_vars` to get a real `subst`. *)
+type single_binder_subst = {
+  r_sb_subst : RegionId.id -> region;
+  ty_sb_subst : TypeVarId.id -> ty;
+  cg_sb_subst : ConstGenericVarId.id -> const_generic;
+  tr_sb_subst : TraitClauseId.id -> trait_instance_id;
+      (** Substitution for the [Self] trait instance *)
+  tr_sb_self : trait_instance_id;
+}
+
 let empty_subst : subst =
   {
-    r_subst = (fun x -> RVar x);
-    ty_subst = (fun id -> TVar (Free id));
-    cg_subst = (fun id -> CgVar (Free id));
-    tr_subst = (fun id -> Clause (Free id));
+    r_subst = (fun var -> RVar var);
+    ty_subst = (fun var -> TVar var);
+    cg_subst = (fun var -> CgVar var);
+    tr_subst = (fun var -> Clause var);
     tr_self = Self;
+  }
+
+(** Substitute the free variables. *)
+let subst_free_vars (subst : single_binder_subst) : subst =
+  let subst_free subst nosubst = function
+    | Free id -> subst id
+    | var -> nosubst var
+  in
+  {
+    r_subst = subst_free subst.r_sb_subst empty_subst.r_subst;
+    ty_subst = subst_free subst.ty_sb_subst empty_subst.ty_subst;
+    cg_subst = subst_free subst.cg_sb_subst empty_subst.cg_subst;
+    tr_subst = subst_free subst.tr_sb_subst empty_subst.tr_subst;
+    tr_self = subst.tr_sb_self;
+  }
+
+(** Substitute the variables bound by the currently innermost (level 0) binder. *)
+let subst_at_binder_zero (subst : single_binder_subst) : subst =
+  let subst_if_zero subst nosubst = function
+    | Bound (0, id) -> subst id
+    | var -> nosubst var
+  in
+  {
+    r_subst = subst_if_zero subst.r_sb_subst empty_subst.r_subst;
+    ty_subst = subst_if_zero subst.ty_sb_subst empty_subst.ty_subst;
+    cg_subst = subst_if_zero subst.cg_sb_subst empty_subst.cg_subst;
+    tr_subst = subst_if_zero subst.tr_sb_subst empty_subst.tr_subst;
+    tr_self = subst.tr_sb_self;
   }
 
 let st_substitute_visitor =
@@ -44,29 +84,16 @@ let st_substitute_visitor =
       { binder_regions; binder_value }
 
     method! visit_RVar (subst : subst) var = subst.r_subst var
-
-    method! visit_TVar (subst : subst) var =
-      match var with
-      | Free id -> subst.ty_subst id
-      | Bound _ -> failwith "bound type variable"
-
-    method! visit_CgVar (subst : subst) var =
-      match var with
-      | Free id -> subst.cg_subst id
-      | Bound _ -> failwith "bound const generic variable"
-
-    method! visit_Clause (subst : subst) var =
-      match var with
-      | Free id -> subst.tr_subst id
-      | Bound _ -> failwith "bound trait clause variable"
-
+    method! visit_TVar (subst : subst) var = subst.ty_subst var
+    method! visit_CgVar (subst : subst) var = subst.cg_subst var
+    method! visit_Clause (subst : subst) var = subst.tr_subst var
     method! visit_Self (subst : subst) = subst.tr_self
 
-    method! visit_type_var_id (_ : subst) _ =
+    method! visit_type_var_id _ _ =
       (* We should never get here because we reimplemented [visit_TypeVar] *)
       raise (Failure "Unexpected")
 
-    method! visit_const_generic_var_id (_ : subst) _ =
+    method! visit_const_generic_var_id _ _ =
       (* We should never get here because we reimplemented [visit_Var] *)
       raise (Failure "Unexpected")
   end
@@ -151,45 +178,27 @@ let generic_args_erase_regions (tr : generic_args) : generic_args =
   generic_args_substitute erase_regions_subst tr
 
 (** Erase the regions in a type and perform a substitution *)
-let erase_regions_substitute_types (ty_subst : TypeVarId.id -> ty)
-    (cg_subst : ConstGenericVarId.id -> const_generic)
-    (tr_subst : TraitClauseId.id -> trait_instance_id)
-    (tr_self : trait_instance_id) (ty : ty) : ty =
-  let r_subst _ : region = RErased in
-  let subst = { r_subst; ty_subst; cg_subst; tr_subst; tr_self } in
+let erase_regions_substitute_types (subst : subst) (ty : ty) : ty =
+  let subst = { subst with r_subst = (fun _ -> RErased) } in
   ty_substitute subst ty
 
 (** Substitute the free regions corresponding to each `var_id` with the
     corresponding provided region. *)
-let make_free_region_subst (var_ids : RegionId.id list) (regions : region list)
-    : region_db_var -> region =
-  let ls = List.combine var_ids regions in
-  let mp =
-    List.fold_left
-      (fun mp (k, v) -> RegionId.Map.add k v mp)
-      RegionId.Map.empty ls
-  in
-  function
-  | Free varid -> RegionId.Map.find varid mp
-  | Bound _ as var -> RVar var
+let make_region_subst (var_ids : RegionId.id list) (regions : region list) :
+    RegionId.id -> region =
+  let map = RegionId.Map.of_list (List.combine var_ids regions) in
+  fun varid -> RegionId.Map.find varid map
 
-let make_free_region_subst_from_vars (vars : region_var list)
-    (regions : region list) : region_db_var -> region =
-  make_free_region_subst
-    (List.map (fun (x : region_var) -> x.index) vars)
-    regions
+let make_region_subst_from_vars (vars : region_var list) (regions : region list)
+    : RegionId.id -> region =
+  make_region_subst (List.map (fun (x : region_var) -> x.index) vars) regions
 
 (** Create a type substitution from a list of type variable ids and a list of
     types (with which to substitute the type variable ids) *)
 let make_type_subst (var_ids : TypeVarId.id list) (tys : ty list) :
     TypeVarId.id -> ty =
-  let ls = List.combine var_ids tys in
-  let mp =
-    List.fold_left
-      (fun mp (k, v) -> TypeVarId.Map.add k v mp)
-      TypeVarId.Map.empty ls
-  in
-  fun id -> TypeVarId.Map.find id mp
+  let map = TypeVarId.Map.of_list (List.combine var_ids tys) in
+  fun varid -> TypeVarId.Map.find varid map
 
 let make_type_subst_from_vars (vars : type_var list) (tys : ty list) :
     TypeVarId.id -> ty =
@@ -199,13 +208,8 @@ let make_type_subst_from_vars (vars : type_var list) (tys : ty list) :
     const generics (with which to substitute the const generic variable ids) *)
 let make_const_generic_subst (var_ids : ConstGenericVarId.id list)
     (cgs : const_generic list) : ConstGenericVarId.id -> const_generic =
-  let ls = List.combine var_ids cgs in
-  let mp =
-    List.fold_left
-      (fun mp (k, v) -> ConstGenericVarId.Map.add k v mp)
-      ConstGenericVarId.Map.empty ls
-  in
-  fun id -> ConstGenericVarId.Map.find id mp
+  let map = ConstGenericVarId.Map.of_list (List.combine var_ids cgs) in
+  fun varid -> ConstGenericVarId.Map.find varid map
 
 let make_const_generic_subst_from_vars (vars : const_generic_var list)
     (cgs : const_generic list) : ConstGenericVarId.id -> const_generic =
@@ -215,33 +219,29 @@ let make_const_generic_subst_from_vars (vars : const_generic_var list)
 
 (** Create a trait substitution from a list of trait clause ids and a list of
     trait refs *)
-let make_trait_subst (clause_ids : TraitClauseId.id list) (trs : trait_ref list)
-    : TraitClauseId.id -> trait_instance_id =
-  let ls = List.combine clause_ids trs in
-  let mp =
-    List.fold_left
-      (fun mp (k, v) -> TraitClauseId.Map.add k v.trait_id mp)
-      TraitClauseId.Map.empty ls
-  in
-  fun id -> TraitClauseId.Map.find id mp
+let make_trait_subst (var_ids : TraitClauseId.id list)
+    (trs : trait_instance_id list) : TraitClauseId.id -> trait_instance_id =
+  let map = TraitClauseId.Map.of_list (List.combine var_ids trs) in
+  fun varid -> TraitClauseId.Map.find varid map
 
 let make_trait_subst_from_clauses (clauses : trait_clause list)
     (trs : trait_ref list) : TraitClauseId.id -> trait_instance_id =
   make_trait_subst
     (List.map (fun (x : trait_clause) -> x.clause_id) clauses)
-    trs
+    (List.map (fun (x : trait_ref) -> x.trait_id) trs)
 
 let make_subst_from_generics (params : generic_params) (args : generic_args)
-    (tr_self : trait_instance_id) : subst =
-  let r_subst = make_free_region_subst_from_vars params.regions args.regions in
-  let ty_subst = make_type_subst_from_vars params.types args.types in
-  let cg_subst =
+    (tr_sb_self : trait_instance_id) : subst =
+  let r_sb_subst = make_region_subst_from_vars params.regions args.regions in
+  let ty_sb_subst = make_type_subst_from_vars params.types args.types in
+  let cg_sb_subst =
     make_const_generic_subst_from_vars params.const_generics args.const_generics
   in
-  let tr_subst =
+  let tr_sb_subst =
     make_trait_subst_from_clauses params.trait_clauses args.trait_refs
   in
-  { r_subst; ty_subst; cg_subst; tr_subst; tr_self }
+  subst_free_vars
+    { r_sb_subst; ty_sb_subst; cg_sb_subst; tr_sb_subst; tr_sb_self }
 
 let make_subst_from_generics_erase_regions (params : generic_params)
     (generics : generic_args) (tr_self : trait_instance_id) =
