@@ -54,7 +54,6 @@ fn transform_function(
         ..
     } = &mut def.signature;
     if let Some(info) = closure_info {
-        assert_eq!(inputs.len(), 2);
         // Explore the state and introduce fresh regions for the erased regions we find.
         let mut visitor = Ty::visit_inside(InsertRegions {
             regions: &mut generics.regions,

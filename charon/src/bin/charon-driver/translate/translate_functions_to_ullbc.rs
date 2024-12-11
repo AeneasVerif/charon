@@ -1481,18 +1481,20 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
 
         let closure_info = match &def.kind {
             hax::FullDefKind::Closure { args, .. } => {
-                assert_eq!(inputs.len(), 1);
                 let kind = match args.kind {
                     hax::ClosureKind::Fn => ClosureKind::Fn,
                     hax::ClosureKind::FnMut => ClosureKind::FnMut,
                     hax::ClosureKind::FnOnce => ClosureKind::FnOnce,
                 };
+
+                assert_eq!(inputs.len(), 1);
+                let tuple_arg = inputs.pop().unwrap();
+
                 let state: Vector<TypeVarId, Ty> = args
                     .upvar_tys
                     .iter()
                     .map(|ty| self.translate_ty(span, &ty))
                     .try_collect()?;
-
                 // Add the state of the closure as first parameter.
                 let state_ty = {
                     // Group the state types into a tuple
@@ -1516,7 +1518,13 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
                         }
                     }
                 };
-                inputs.insert(0, state_ty);
+                inputs.push(state_ty);
+
+                // Unpack the tupled arguments to match the body locals.
+                let TyKind::Adt(TypeId::Tuple, tuple_args) = tuple_arg.kind() else {
+                    error_or_panic!(self, span, "Closure argument is not a tuple")
+                };
+                inputs.extend(tuple_args.types.iter().cloned());
 
                 Some(ClosureInfo { kind, state })
             }

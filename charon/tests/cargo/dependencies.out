@@ -1,6 +1,6 @@
 # Final LLBC before serialization:
 
-fn test_cargo_dependencies::silly_incr::closure(@1: (), @2: (u32)) -> u32
+fn test_cargo_dependencies::silly_incr::closure(@1: (), @2: u32) -> u32
 {
     let @0: u32; // return
     let state@1: (); // arg #1

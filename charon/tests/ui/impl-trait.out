@@ -176,7 +176,7 @@ impl<'_0, T> core::clone::impls::{impl core::clone::Clone for &'_0 (T)}#3<'_0, T
     fn clone = core::clone::impls::{impl core::clone::Clone for &'_0 (T)}#3::clone
 }
 
-fn test_crate::wrap::closure<'_0, U>(@1: (), @2: (&'_0 (U))) -> test_crate::WrapClone<&'_0 (U)>[core::marker::Sized<&'_0 (U)>, core::clone::impls::{impl core::clone::Clone for &'_0 (T)}#3<'_, U>]
+fn test_crate::wrap::closure<'_0, U>(@1: (), @2: &'_0 (U)) -> test_crate::WrapClone<&'_0 (U)>[core::marker::Sized<&'_0 (U)>, core::clone::impls::{impl core::clone::Clone for &'_0 (T)}#3<'_, U>]
 where
     [@TraitClause0]: core::marker::Sized<U>,
 {

@@ -14,11 +14,11 @@ fn test_crate::{test_crate::Rng}::next_u64<'_0>(@1: &'_0 mut (test_crate::Rng))
     return
 }
 
-fn test_crate::new::closure<'_0, '_1>(@1: &'_0 mut ((&'_1 mut (test_crate::Rng))), @2: ())
+fn test_crate::new::closure<'_0, '_1>(@1: &'_0 mut ((&'_1 mut (test_crate::Rng))))
 {
     let @0: (); // return
     let state@1: &'_0 mut ((&'_1 mut (test_crate::Rng))); // arg #1
-    let @2: (); // arg #2
+    let @2: (); // anonymous local
     let @3: &'_ mut (test_crate::Rng); // anonymous local
     let @4: (); // anonymous local
 
