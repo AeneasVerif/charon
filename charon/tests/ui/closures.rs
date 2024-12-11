@@ -38,6 +38,11 @@ pub fn test_closure_u32(x: u32) -> u32 {
     (f)(x)
 }
 
+pub fn test_closure_u32s(x: u32) -> u32 {
+    let f: fn(u32, u32) -> u32 = |x, y| x + y;
+    (f)(x, x)
+}
+
 // Local function with reference
 //
 // The lifetime 'a could be omitted, but we insert it to check that the
