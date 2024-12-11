@@ -219,7 +219,7 @@ pub(crate) struct BodyTransCtx<'tcx, 'ctx> {
     /// The regions.
     /// We use DeBruijn indices, so we have a stack of regions.
     /// See the comments for [Region::BVar].
-    pub region_vars: VecDeque<Vector<BoundRegionId, RegionVar>>,
+    pub region_vars: VecDeque<Vector<RegionId, RegionVar>>,
     /// The map from rust (free) regions to translated region indices.
     /// This contains the early bound regions.
     ///
@@ -234,7 +234,7 @@ pub(crate) struct BodyTransCtx<'tcx, 'ctx> {
     ///
     /// The [bound_region_vars] field below takes care of the regions which
     /// are bound in the Rustc representation.
-    pub free_region_vars: std::collections::BTreeMap<hax::Region, BoundRegionId>,
+    pub free_region_vars: std::collections::BTreeMap<hax::Region, RegionId>,
     ///
     /// The stack of late-bound parameters (can only be lifetimes for now), which
     /// use DeBruijn indices (the other parameters use free variables).
@@ -245,7 +245,7 @@ pub(crate) struct BodyTransCtx<'tcx, 'ctx> {
     /// **Important**:
     /// ==============
     /// We use DeBruijn indices. See the comments for [Region::Var].
-    pub bound_region_vars: VecDeque<Box<[BoundRegionId]>>,
+    pub bound_region_vars: VecDeque<Box<[RegionId]>>,
     /// The generic parameters for the item. `regions` must be empty, as regions are handled
     /// separately.
     pub generic_params: GenericParams,
@@ -995,7 +995,7 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
     ///
     /// Important: we must push *all* the free regions (which are early-bound
     /// regions) before pushing any (late-)bound region.
-    pub(crate) fn push_free_region(&mut self, r: hax::Region) -> BoundRegionId {
+    pub(crate) fn push_free_region(&mut self, r: hax::Region) -> RegionId {
         let name = super::translate_types::translate_region_name(&r);
         // Check that there are no late-bound regions
         assert!(self.bound_region_vars.is_empty());
@@ -1009,8 +1009,8 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
         &mut self,
         span: Span,
         binder: hax::Binder<()>,
-        region_vars: &mut Vector<BoundRegionId, RegionVar>,
-    ) -> Result<Box<[BoundRegionId]>, Error> {
+        region_vars: &mut Vector<RegionId, RegionVar>,
+    ) -> Result<Box<[RegionId]>, Error> {
         use hax::BoundVariableKind::*;
         binder
             .bound_vars

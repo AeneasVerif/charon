@@ -13,7 +13,7 @@ let const_generic_var_to_string (v : const_generic_var) : string = v.name
 let region_var_to_string (rv : region_var) : string =
   match rv.name with
   | Some name -> name
-  | None -> BoundRegionId.to_string rv.index
+  | None -> RegionId.to_string rv.index
 
 let ref_kind_to_string (rk : ref_kind) : string =
   match rk with
@@ -31,9 +31,7 @@ let de_bruijn_var_to_pretty_string show_bound show_free var : string =
   | Free varid -> "'" ^ show_free varid
 
 let region_db_var_to_pretty_string (var : region_db_var) : string =
-  "'"
-  ^ de_bruijn_var_to_pretty_string BoundRegionId.to_string
-      FreeRegionId.to_string var
+  "'" ^ de_bruijn_var_to_pretty_string RegionId.to_string RegionId.to_string var
 
 let type_var_id_to_pretty_string (id : type_var_id) : string =
   "T@" ^ TypeVarId.to_string id
@@ -65,20 +63,22 @@ let field_id_to_pretty_string (id : field_id) : string =
 let trait_clause_id_to_string _ id = trait_clause_id_to_pretty_string id
 
 let region_db_var_to_string (env : 'a fmt_env) (var : region_db_var) : string =
-  match var with
-  | Bound (dbid, varid) -> begin
-      match List.nth_opt env.regions dbid with
+  let dbid, varid =
+    match var with
+    | Bound (dbid, varid) -> (dbid, varid)
+    | Free varid ->
+        let len = List.length env.regions in
+        let dbid = if len == 0 then 0 else len - 1 in
+        (dbid, varid)
+  in
+  match List.nth_opt env.regions dbid with
+  | None -> region_db_var_to_pretty_string var
+  | Some regions -> begin
+      (* Note that the regions are not necessarily ordered following their indices *)
+      match List.find_opt (fun (r : region_var) -> r.index = varid) regions with
       | None -> region_db_var_to_pretty_string var
-      | Some regions -> begin
-          (* Note that the regions are not necessarily ordered following their indices *)
-          match
-            List.find_opt (fun (r : region_var) -> r.index = varid) regions
-          with
-          | None -> region_db_var_to_pretty_string var
-          | Some r -> region_var_to_string r
-        end
+      | Some r -> region_var_to_string r
     end
-  | Free _ -> region_db_var_to_pretty_string var
 
 let type_db_var_to_string (env : 'a fmt_env) (var : type_db_var) : string =
   match var with

@@ -110,13 +110,13 @@ impl<'a, 'b> SetLocals<'a> for FmtCtx<'b> {
 pub trait PushBoundRegions<'a> {
     type C: 'a + AstFormatter;
 
-    fn push_bound_regions(&'a self, regions: &'a Vector<BoundRegionId, RegionVar>) -> Self::C;
+    fn push_bound_regions(&'a self, regions: &'a Vector<RegionId, RegionVar>) -> Self::C;
 }
 
 impl<'a, 'b> PushBoundRegions<'a> for FmtCtx<'b> {
     type C = FmtCtx<'a>;
 
-    fn push_bound_regions(&'a self, regions: &'a Vector<BoundRegionId, RegionVar>) -> Self::C {
+    fn push_bound_regions(&'a self, regions: &'a Vector<RegionId, RegionVar>) -> Self::C {
         let mut generics = self.generics.clone();
         generics.push_front(Cow::Owned(GenericParams {
             regions: regions.clone(),
@@ -265,22 +265,30 @@ impl<'a> Formatter<AnyTransId> for FmtCtx<'a> {
 
 impl<'a> Formatter<RegionDbVar> for FmtCtx<'a> {
     fn format_object(&self, var: RegionDbVar) -> String {
-        match var {
-            DeBruijnVar::Bound(dbid, varid) => match self.generics.get(dbid.index) {
-                None => Region::Var(var).to_string(),
-                Some(generics) => match generics.regions.get(varid) {
-                    None => {
-                        let region = Region::Var(var);
-                        tracing::warn!(
-                            "Found incorrect region `{region}` while pretty-printing. Look for \
+        if self.generics.is_empty() {
+            return format!("'_{var}");
+        }
+        let (index, varid) = match var {
+            DeBruijnVar::Bound(dbid, varid) => (dbid.index, varid),
+            DeBruijnVar::Free(varid) => (self.generics.len() - 1, varid),
+        };
+        match self
+            .generics
+            .get(index)
+            .and_then(|generics| generics.regions.get(varid))
+        {
+            None => {
+                let region = Region::Var(var).fmt_without_ctx();
+                tracing::warn!(
+                    "Found incorrect region `{region}` while pretty-printing. Look for \
                         \"wrong_region\" in the pretty output"
-                        );
-                        format!("wrong_region({region})")
-                    }
-                    Some(v) => self.format_object(v),
-                },
+                );
+                format!("wrong_region({region})")
+            }
+            Some(v) => match &v.name {
+                Some(name) => name.to_string(),
+                None => format!("'_{var}"),
             },
-            DeBruijnVar::Free(_) => Region::Var(var).to_string(),
         }
     }
 }
@@ -289,14 +297,7 @@ impl<'a> Formatter<&RegionVar> for FmtCtx<'a> {
     fn format_object(&self, var: &RegionVar) -> String {
         match &var.name {
             Some(name) => name.to_string(),
-            None => {
-                let depth = self.generics.len() - 1;
-                if depth == 0 {
-                    format!("'_{}", var.index)
-                } else {
-                    format!("'_{depth}_{}", var.index)
-                }
-            }
+            None => format!("'_{}", var.index),
         }
     }
 }

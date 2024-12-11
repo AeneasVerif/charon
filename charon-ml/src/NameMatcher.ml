@@ -287,7 +287,7 @@ type mexpr = MTy of T.ty | MCg of T.const_generic | MRegion of T.region
 
 type region_map = {
   regions : T.region VarMap.t ref;  (** The map for "regular" regions *)
-  bound_regions : T.region T.BoundRegionId.Map.t ref list;
+  bound_regions : T.region T.RegionId.Map.t ref list;
       (** The stack of maps for bound regions.
 
           Note that the stack itself is not inside a reference: this allows us
@@ -303,10 +303,7 @@ type maps = {
 }
 
 let mk_empty_region_map () =
-  {
-    regions = ref VarMap.empty;
-    bound_regions = [ ref T.BoundRegionId.Map.empty ];
-  }
+  { regions = ref VarMap.empty; bound_regions = [ ref T.RegionId.Map.empty ] }
 
 let mk_empty_maps () =
   { rmap = mk_empty_region_map (); vmap = ref VarMap.empty }
@@ -315,7 +312,7 @@ let maps_push_bound_regions_group (m : maps) : maps =
   let rmap =
     {
       m.rmap with
-      bound_regions = ref T.BoundRegionId.Map.empty :: m.rmap.bound_regions;
+      bound_regions = ref T.RegionId.Map.empty :: m.rmap.bound_regions;
     }
   in
   { m with rmap }
@@ -351,14 +348,19 @@ let update_rmap (c : match_config) (m : maps) (id : var) (v : T.region) : bool =
   if c.map_vars_to_vars && not is_var then false
   else
     match v with
-    | RVar (Bound (dbid, varid)) -> begin
-        (* Special treatment for the bound regions *)
-        match List.nth_opt m.rmap.bound_regions dbid with
-        | None -> raise (Failure "Unexpected bound variable")
-        | Some brmap ->
-            update_map T.BoundRegionId.Map.find_opt T.BoundRegionId.Map.add
-              brmap varid v
-      end
+    | RVar var ->
+        let dbid, varid =
+          match var with
+          | Bound (dbid, varid) -> (dbid, varid)
+          | Free varid -> (List.length m.rmap.bound_regions - 1, varid)
+        in
+        begin
+          match List.nth_opt m.rmap.bound_regions dbid with
+          | None -> raise (Failure "Unexpected region variable")
+          | Some brmap ->
+              update_map T.RegionId.Map.find_opt T.RegionId.Map.add brmap varid
+                v
+        end
     | _ -> update_map VarMap.find_opt VarMap.add m.rmap.regions id v
 
 let update_tmap (c : match_config) (m : maps) (id : var) (v : T.ty) : bool =
@@ -778,7 +780,7 @@ let mk_name_matcher (ctx : ctx) (c : match_config) (pat : string) :
 (* We use this to store the constraints maps (the map from variable
    ids to option pattern variable ids) *)
 type constraints = {
-  rmap : var option T.BoundRegionId.Map.t list;
+  rmap : var option T.RegionId.Map.t list;
       (** Note that we have a stack of maps for the regions *)
   tmap : var option T.TypeVarId.Map.t;
   cmap : var option T.ConstGenericVarId.Map.t;
@@ -786,7 +788,7 @@ type constraints = {
 
 let empty_constraints =
   {
-    rmap = [ T.BoundRegionId.Map.empty ];
+    rmap = [ T.RegionId.Map.empty ];
     tmap = T.TypeVarId.Map.empty;
     cmap = T.ConstGenericVarId.Map.empty;
   }
@@ -798,19 +800,19 @@ let ref_kind_to_pattern (rk : T.ref_kind) : ref_kind =
 
 let region_to_pattern (m : constraints) (r : T.region) : region =
   match r with
-  | RVar (Bound (dbid, varid)) ->
+  | RVar var ->
+      let dbid, varid =
+        match var with
+        | Bound (dbid, varid) -> (dbid, varid)
+        | Free varid -> (List.length m.rmap - 1, varid)
+      in
       RVar
         (match List.nth_opt m.rmap dbid with
         | None -> None
         | Some rmap -> (
-            match T.BoundRegionId.Map.find_opt varid rmap with
+            match T.RegionId.Map.find_opt varid rmap with
             | Some r -> r
             | None -> None))
-  | RVar (Free _) ->
-      (* For now we don't have a precise treatment of the free region variables
-         in the patterns.
-         Note that they should be used only in the symbolic execution *)
-      RVar None
   | RStatic -> RStatic
   | RErased ->
       (* We do get there when converting function pointers (when we try to
@@ -839,14 +841,14 @@ let const_generic_var_to_pattern (m : constraints)
     end
 
 let constraints_map_compute_regions_map (regions : T.region_var list) :
-    var option T.BoundRegionId.Map.t =
+    var option T.RegionId.Map.t =
   let fresh_id (gen : int ref) : int =
     let id = !gen in
     gen := id + 1;
     id
   in
   let rid_gen = ref 0 in
-  T.BoundRegionId.Map.of_list
+  T.RegionId.Map.of_list
     (List.map
        (fun (r : T.region_var) ->
          let v =

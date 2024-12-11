@@ -72,7 +72,12 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
                     .expect("Error: missing binder when translating lifetime")
                     .get(br.var)
                     .expect("Error: lifetime not found, binders were handled incorrectly");
-                let var = DeBruijnVar::bound(DeBruijnId::new(*id), *rid);
+                let var = if *id == self.region_vars.len() - 1 {
+                    // Late-bound in the signature: we represent it as a free var.
+                    DeBruijnVar::free(*rid)
+                } else {
+                    DeBruijnVar::bound(DeBruijnId::new(*id), *rid)
+                };
                 Ok(Region::Var(var))
             }
             hax::RegionKind::ReVar(_) => {
@@ -84,13 +89,7 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
                 // For the other regions, we use the regions map, which
                 // contains the early-bound (free) regions.
                 match self.free_region_vars.get(region) {
-                    Some(rid) => {
-                        // Note that the DeBruijn index depends
-                        // on the current stack of bound region groups.
-                        let db_id = self.region_vars.len() - 1;
-                        let var = DeBruijnVar::bound(DeBruijnId::new(db_id), *rid);
-                        Ok(Region::Var(var))
-                    }
+                    Some(rid) => Ok(Region::Var(DeBruijnVar::free(*rid))),
                     None => {
                         let err = format!(
                                 "Could not find region: {:?}\n\nRegion vars map:\n{:?}\n\nBound region vars:\n{:?}",

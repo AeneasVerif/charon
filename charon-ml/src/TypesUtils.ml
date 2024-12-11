@@ -108,14 +108,14 @@ let trait_instance_id_as_trait_impl (id : trait_instance_id) :
   | TraitImpl (impl_id, args) -> (impl_id, args)
   | _ -> raise (Failure "Unreachable")
 
-let zero_db_var (varid : 'b) : ('b, 'f) de_bruijn_var = Bound (0, varid)
+let zero_db_var (varid : 'id) : 'id de_bruijn_var = Bound (0, varid)
 
-let free_var_of_db_var (var : ('b, 'f) de_bruijn_var) : 'f option =
+let free_var_of_db_var (var : 'id de_bruijn_var) : 'id option =
   match var with
   | Bound _ -> None
   | Free id -> Some id
 
-let decr_db_var : ('a, 'b) de_bruijn_var -> ('a, 'b) de_bruijn_var = function
+let decr_db_var : 'id de_bruijn_var -> 'id de_bruijn_var = function
   | Free id -> Free id
   | Bound (dbid, id) -> Bound (dbid - 1, id)
 
@@ -157,9 +157,7 @@ let merge_generic_args (g1 : generic_args) (g2 : generic_args) : generic_args =
 
 let generic_args_of_params span (generics : generic_params) : generic_args =
   let regions =
-    List.map
-      (fun (v : region_var) -> RVar (zero_db_var v.index))
-      generics.regions
+    List.map (fun (v : region_var) -> RVar (Free v.index)) generics.regions
   in
   let types =
     List.map (fun (v : type_var) -> TVar (Free v.index)) generics.types
@@ -204,27 +202,29 @@ let mk_ref_ty (r : region) (ty : ty) (ref_kind : ref_kind) : ty =
 let mk_box_ty (ty : ty) : ty =
   TAdt (TBuiltin TBox, mk_generic_args_from_types [ ty ])
 
+(* TODO: move region set manipulation to aeneas *)
+
 (** Check if a region is in a set of regions.
 
     This function should be used on non-erased and non-bound regions.
     For sanity, we raise exceptions if this is not the case.
  *)
-let region_in_set (r : region) (rset : FreeRegionId.Set.t) : bool =
+let region_in_set (r : region) (rset : RegionId.Set.t) : bool =
   match r with
   | RStatic -> false
   | RErased ->
       raise (Failure "region_in_set shouldn't be called on erased regions")
   | RVar (Bound _) ->
       raise (Failure "region_in_set shouldn't be called on bound regions")
-  | RVar (Free id) -> FreeRegionId.Set.mem id rset
+  | RVar (Free id) -> RegionId.Set.mem id rset
 
 (** Return the set of regions in an type - TODO: add static?
 
     This function should be used on non-erased and non-bound regions.
     For sanity, we raise exceptions if this is not the case.
  *)
-let ty_regions (ty : ty) : FreeRegionId.Set.t =
-  let s = ref FreeRegionId.Set.empty in
+let ty_regions (ty : ty) : RegionId.Set.t =
+  let s = ref RegionId.Set.empty in
   let add_region (r : region) =
     match r with
     | RStatic -> () (* TODO: static? *)
@@ -232,7 +232,7 @@ let ty_regions (ty : ty) : FreeRegionId.Set.t =
         raise (Failure "ty_regions shouldn't be called on erased regions")
     | RVar (Bound _) ->
         raise (Failure "region_in_set shouldn't be called on bound regions")
-    | RVar (Free id) -> s := FreeRegionId.Set.add id !s
+    | RVar (Free id) -> s := RegionId.Set.add id !s
   in
   let obj =
     object
@@ -246,9 +246,9 @@ let ty_regions (ty : ty) : FreeRegionId.Set.t =
   !s
 
 (* TODO: merge with ty_has_regions_in_set *)
-let ty_regions_intersect (ty : ty) (regions : FreeRegionId.Set.t) : bool =
+let ty_regions_intersect (ty : ty) (regions : RegionId.Set.t) : bool =
   let ty_regions = ty_regions ty in
-  not (FreeRegionId.Set.disjoint ty_regions regions)
+  not (RegionId.Set.disjoint ty_regions regions)
 
 (** Check if a {!type:Charon.Types.ty} contains regions from a given set *)
 let ty_has_regions_in_pred (pred : region -> bool) (ty : ty) : bool =
@@ -264,5 +264,5 @@ let ty_has_regions_in_pred (pred : region -> bool) (ty : ty) : bool =
   with Found -> true
 
 (** Check if a {!type:Charon.Types.ty} contains regions from a given set *)
-let ty_has_regions_in_set (rset : FreeRegionId.Set.t) (ty : ty) : bool =
+let ty_has_regions_in_set (rset : RegionId.Set.t) (ty : ty) : bool =
   ty_has_regions_in_pred (fun r -> region_in_set r rset) ty

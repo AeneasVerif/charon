@@ -48,7 +48,7 @@ impl GenericParams {
             regions: self
                 .regions
                 .iter_indexed()
-                .map(|(id, _)| Region::Var(DeBruijnVar::new_at_zero(id)))
+                .map(|(id, _)| Region::Var(DeBruijnVar::free(id)))
                 .collect(),
             types: self
                 .types
@@ -99,7 +99,7 @@ impl GenericArgs {
     }
 
     pub fn new(
-        regions: Vector<BoundRegionId, Region>,
+        regions: Vector<RegionId, Region>,
         types: Vector<TypeVarId, Ty>,
         const_generics: Vector<ConstGenericVarId, ConstGeneric>,
         trait_refs: Vector<TraitClauseId, TraitRef>,
@@ -593,39 +593,6 @@ impl<'a> SubstVisitor<'a> {
 impl Ty {
     pub fn substitute(&mut self, generics: &GenericArgs) {
         self.drive_inner_mut(&mut SubstVisitor::new(generics));
-    }
-}
-
-// The derive macro doesn't handle generics.
-impl<B: Drive, F: Drive> Drive for DeBruijnVar<B, F> {
-    fn drive<V: Visitor>(&self, visitor: &mut V) {
-        visitor.visit(self, Event::Enter);
-        match self {
-            DeBruijnVar::Bound(x, y) => {
-                x.drive(visitor);
-                y.drive(visitor);
-            }
-            DeBruijnVar::Free(x) => {
-                x.drive(visitor);
-            }
-        }
-        visitor.visit(self, Event::Exit);
-    }
-}
-
-impl<B: DriveMut, F: DriveMut> DriveMut for DeBruijnVar<B, F> {
-    fn drive_mut<V: VisitorMut>(&mut self, visitor: &mut V) {
-        visitor.visit(self, Event::Enter);
-        match self {
-            DeBruijnVar::Bound(x, y) => {
-                x.drive_mut(visitor);
-                y.drive_mut(visitor);
-            }
-            DeBruijnVar::Free(x) => {
-                x.drive_mut(visitor);
-            }
-        }
-        visitor.visit(self, Event::Exit);
     }
 }
 
