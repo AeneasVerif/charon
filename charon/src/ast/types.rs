@@ -174,7 +174,7 @@ pub struct TraitImplRef {
 }
 
 /// .0 outlives .1
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub struct OutlivesPred<T, U>(pub T, pub U);
 
 // The derive macro doesn't handle generics well.
@@ -205,7 +205,7 @@ pub type TypeOutlives = OutlivesPred<Ty, Region>;
 /// T : Foo<S = String>
 ///         ^^^^^^^^^^
 /// ```
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Drive, DriveMut)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize, Drive, DriveMut)]
 pub struct TraitTypeConstraint {
     pub trait_ref: TraitRef,
     pub type_name: TraitItemName,
@@ -221,13 +221,26 @@ pub struct GenericArgs {
     pub trait_refs: Vector<TraitClauseId, TraitRef>,
 }
 
-/// A value of type `T` bound by generic parameters. Used in any context where we're adding generic
-/// parameters that aren't on the top-level item, e.g. `for<'a>` clauses, trait methods (TODO),
-/// GATs (TODO).
+/// A value of type `T` bound by regions. We should use `binder` instead but this causes name clash
+/// issues in the derived ocaml visitors.
+/// TODO: merge with `binder`
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Hash)]
 pub struct RegionBinder<T> {
     #[charon::rename("binder_regions")]
     pub regions: Vector<RegionId, RegionVar>,
+    /// Named this way to highlight accesses to the inner value that might be handling parameters
+    /// incorrectly. Prefer using helper methods.
+    #[charon::rename("binder_value")]
+    pub skip_binder: T,
+}
+
+/// A value of type `T` bound by generic parameters. Used in any context where we're adding generic
+/// parameters that aren't on the top-level item, e.g. `for<'a>` clauses, trait methods (TODO),
+/// GATs (TODO).
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Hash)]
+pub struct Binder<T> {
+    #[charon::rename("binder_params")]
+    pub params: GenericParams,
     /// Named this way to highlight accesses to the inner value that might be handling parameters
     /// incorrectly. Prefer using helper methods.
     #[charon::rename("binder_value")]
@@ -241,7 +254,7 @@ pub struct RegionBinder<T> {
 /// be filled. We group in a different place the predicates which are not
 /// trait clauses, because those enforce constraints but do not need to
 /// be filled with witnesses/instances.
-#[derive(Debug, Default, Clone, PartialEq, Eq, Serialize, Deserialize, Drive, DriveMut)]
+#[derive(Debug, Default, Clone, PartialEq, Eq, Hash, Serialize, Deserialize, Drive, DriveMut)]
 pub struct GenericParams {
     pub regions: Vector<RegionId, RegionVar>,
     pub types: Vector<TypeVarId, TypeVar>,
@@ -263,7 +276,7 @@ pub struct GenericParams {
 pub struct ExistentialPredicate;
 
 /// Where a given predicate came from.
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Drive, DriveMut)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize, Drive, DriveMut)]
 pub enum PredicateOrigin {
     // Note: we use this for globals too, but that's only available with an unstable feature.
     // ```

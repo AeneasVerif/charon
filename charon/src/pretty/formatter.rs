@@ -107,21 +107,25 @@ impl<'a, 'b> SetLocals<'a> for FmtCtx<'b> {
 }
 
 /// We use this trait to update the context by pushing a group of bound regions.
-pub trait PushBoundRegions<'a> {
+pub trait PushBinder<'a> {
     type C: 'a + AstFormatter;
 
-    fn push_bound_regions(&'a self, regions: &'a Vector<RegionId, RegionVar>) -> Self::C;
-}
-
-impl<'a, 'b> PushBoundRegions<'a> for FmtCtx<'b> {
-    type C = FmtCtx<'a>;
+    fn push_binder(&'a self, new_params: Cow<'a, GenericParams>) -> Self::C;
 
     fn push_bound_regions(&'a self, regions: &'a Vector<RegionId, RegionVar>) -> Self::C {
-        let mut generics = self.generics.clone();
-        generics.push_front(Cow::Owned(GenericParams {
+        self.push_binder(Cow::Owned(GenericParams {
             regions: regions.clone(),
             ..Default::default()
-        }));
+        }))
+    }
+}
+
+impl<'a, 'b> PushBinder<'a> for FmtCtx<'b> {
+    type C = FmtCtx<'a>;
+
+    fn push_binder(&'a self, new_params: Cow<'a, GenericParams>) -> Self::C {
+        let mut generics = self.generics.clone();
+        generics.push_front(new_params);
         FmtCtx {
             translated: self.translated.as_deref(),
             generics,
@@ -150,7 +154,7 @@ pub trait AstFormatter = Formatter<TypeDeclId>
     + for<'a> Formatter<&'a llbc_ast::Block>
     + for<'a> SetGenerics<'a>
     + for<'a> SetLocals<'a>
-    + for<'a> PushBoundRegions<'a>;
+    + for<'a> PushBinder<'a>;
 
 /// For formatting.
 ///
@@ -344,9 +348,10 @@ impl<'a> Formatter<ClauseDbVar> for FmtCtx<'a> {
 impl<'a> Formatter<&ImplElem> for FmtCtx<'a> {
     fn format_object(&self, elem: &ImplElem) -> String {
         let inner = match elem {
-            ImplElem::Ty(generics, ty) => {
+            ImplElem::Ty(bound_ty) => {
                 // Just printing the generics (not the predicates)
-                ty.fmt_with_ctx(&self.set_generics(generics))
+                let ctx = self.set_generics(&bound_ty.params);
+                bound_ty.skip_binder.fmt_with_ctx(&ctx)
             }
             ImplElem::Trait(impl_id) => {
                 match &self.translated {

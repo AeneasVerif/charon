@@ -366,9 +366,12 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
                         // substs and bounds. In order to properly do so, we introduce
                         // a body translation context.
                         let mut bt_ctx = BodyTransCtx::new(def_id, None, self);
-                        let generics = bt_ctx.translate_def_generics(span, &full_def)?;
+                        let params = bt_ctx.translate_def_generics(span, &full_def)?;
                         let ty = bt_ctx.translate_ty(span, &ty)?;
-                        ImplElem::Ty(generics, ty)
+                        ImplElem::Ty(Binder {
+                            params,
+                            skip_binder: ty,
+                        })
                     }
                     // Trait implementation
                     hax::FullDefKind::TraitImpl { .. } => {

@@ -170,7 +170,7 @@ impl PatElem {
                     pat_ident == ident || (pat_ident == "crate" && ident == &ctx.real_crate_name);
                 same_ident && (generics.is_empty() || PatTy::matches_generics(ctx, generics, args))
             }
-            (PatElem::Impl(_pat), PathElem::Impl(ImplElem::Ty(_, _ty), _)) => {
+            (PatElem::Impl(_pat), PathElem::Impl(ImplElem::Ty(..), _)) => {
                 // TODO
                 false
             }

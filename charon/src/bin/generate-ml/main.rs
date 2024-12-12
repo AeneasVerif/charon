@@ -1299,13 +1299,14 @@ fn generate_ml(
                     "TraitTypeConstraint",
                 ]),
                 (GenerationKind::TypeDecl(None), &[
+                    "Binder",
                     "ImplElem",
                     "PathElem",
                     "Name",
                 ]),
                 (GenerationKind::TypeDecl(Some(DeriveVisitors {
                     name: "type_decl",
-                    ancestor: Some("generic_params"),
+                    ancestor: Some("type_decl_base_base"),
                     reduce: false,
                     extra_types: &["attr_info", "name"],
                 })), &[

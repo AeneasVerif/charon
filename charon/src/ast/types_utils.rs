@@ -399,6 +399,25 @@ impl<T: DriveMut> DriveMut for RegionBinder<T> {
     }
 }
 
+// The derive macro doesn't handle generics.
+impl<T: Drive> Drive for Binder<T> {
+    fn drive<V: Visitor>(&self, visitor: &mut V) {
+        visitor.visit(self, Event::Enter);
+        self.params.drive(visitor);
+        self.skip_binder.drive(visitor);
+        visitor.visit(self, Event::Exit);
+    }
+}
+
+impl<T: DriveMut> DriveMut for Binder<T> {
+    fn drive_mut<V: VisitorMut>(&mut self, visitor: &mut V) {
+        visitor.visit(self, Event::Enter);
+        self.params.drive_mut(visitor);
+        self.skip_binder.drive_mut(visitor);
+        visitor.visit(self, Event::Exit);
+    }
+}
+
 /// See comment on `Ty`: this impl doesn't recurse into the contents of the type.
 impl Drive for Ty {
     fn drive<V: Visitor>(&self, visitor: &mut V) {

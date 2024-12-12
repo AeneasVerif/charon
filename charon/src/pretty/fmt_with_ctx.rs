@@ -764,7 +764,7 @@ impl<T> RegionBinder<T> {
     fn fmt_split<'a, C>(&'a self, ctx: &'a C) -> (String, String)
     where
         C: AstFormatter,
-        T: FmtWithCtx<<C as PushBoundRegions<'a>>::C>,
+        T: FmtWithCtx<<C as PushBinder<'a>>::C>,
     {
         let ctx = &ctx.push_bound_regions(&self.regions);
         (
@@ -777,7 +777,7 @@ impl<T> RegionBinder<T> {
     fn fmt_as_for<'a, C>(&'a self, ctx: &'a C) -> String
     where
         C: AstFormatter,
-        T: FmtWithCtx<<C as PushBoundRegions<'a>>::C>,
+        T: FmtWithCtx<<C as PushBinder<'a>>::C>,
     {
         let (regions, value) = self.fmt_split(ctx);
         let regions = if regions.is_empty() {
