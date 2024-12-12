@@ -192,13 +192,8 @@ impl BodyTransCtx<'_, '_> {
         let trait_id = self.register_trait_decl_id(span, implemented_trait_id);
         let implemented_trait = {
             let implemented_trait = &trait_pred.trait_ref;
-            let generics = self.translate_generic_args(
-                span,
-                None,
-                &implemented_trait.generic_args,
-                &[],
-                None,
-            )?;
+            let generics =
+                self.translate_generic_args(span, &implemented_trait.generic_args, &[], None)?;
             TraitDeclRef { trait_id, generics }
         };
 

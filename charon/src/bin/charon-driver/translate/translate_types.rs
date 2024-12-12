@@ -144,19 +144,25 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
             } => {
                 trace!("Adt: {:?}", def_id);
 
+                // Translate the type parameters instantiation
+                let mut generics = self.translate_generic_args(span, substs, trait_refs, None)?;
+
                 // Retrieve the type identifier
                 let type_id = self.translate_type_id(span, def_id)?;
 
-                // Retrieve the list of used arguments
-                let used_params = if let TypeId::Builtin(builtin_ty) = type_id {
-                    Some(builtins::type_to_used_params(builtin_ty))
-                } else {
-                    None
-                };
-
-                // Translate the type parameters instantiation
-                let generics =
-                    self.translate_generic_args(span, used_params, substs, trait_refs, None)?;
+                // Filter the type arguments.
+                // TODO: do this in a micro-pass
+                if let TypeId::Builtin(builtin_ty) = type_id {
+                    let used_args = builtins::type_to_used_params(builtin_ty);
+                    error_assert!(self, span, generics.types.len() == used_args.len());
+                    let types = std::mem::take(&mut generics.types)
+                        .into_iter()
+                        .zip(used_args)
+                        .filter(|(_, used)| *used)
+                        .map(|(ty, _)| ty)
+                        .collect();
+                    generics.types = types;
+                }
 
                 // Return the instantiated ADT
                 TyKind::Adt(type_id, generics)
@@ -295,7 +301,6 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
     pub fn translate_generic_args(
         &mut self,
         span: Span,
-        used_params: Option<Vec<bool>>,
         substs: &[hax::GenericArg],
         trait_refs: &[hax::ImplExpr],
         late_bound: Option<hax::Binder<()>>,
@@ -303,23 +308,10 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
         use hax::GenericArg::*;
         trace!("{:?}", substs);
 
-        // Filter the parameters
-        let substs: Vec<&hax::GenericArg> = match used_params {
-            None => substs.iter().collect(),
-            Some(used_args) => {
-                error_assert!(self, span, substs.len() == used_args.len());
-                substs
-                    .iter()
-                    .zip(used_args.into_iter())
-                    .filter_map(|(param, used)| if used { Some(param) } else { None })
-                    .collect()
-            }
-        };
-
         let mut regions = Vector::new();
         let mut types = Vector::new();
         let mut const_generics = Vector::new();
-        for param in substs.iter() {
+        for param in substs {
             match param {
                 Type(param_ty) => {
                     types.push(self.translate_ty(span, param_ty)?);

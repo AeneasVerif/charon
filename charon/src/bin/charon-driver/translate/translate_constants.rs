@@ -112,9 +112,7 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
                     generics,
                     trait_refs
                 );
-                let used_params = None;
-                let generics =
-                    self.translate_generic_args(span, used_params, generics, trait_refs, None)?;
+                let generics = self.translate_generic_args(span, generics, trait_refs, None)?;
 
                 let global_id = self.register_global_decl_id(span, id);
                 RawConstantExpr::Global(GlobalDeclRef {
