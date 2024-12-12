@@ -87,6 +87,7 @@ let
         calendar
         charon-name_matcher_parser
         unionFind
+        ppx_tools # to view the output of visitor derivation
       ];
       inherit doCheck;
 
