@@ -27,3 +27,12 @@ copy-tests:
 	mkdir -p tests/serialized
 	rm -f tests/serialized/*
 	cp ../charon/tests/**/*.llbc tests/serialized
+
+# Adapted from https://gitlab.inria.fr/fpottier/visitors/blob/master/Makefile.preprocess
+PPX := `ocamlfind query ppx_deriving`/ppx_deriving `ocamlfind query ppx_deriving`/show/ppx_deriving_show.cma `ocamlfind query ppx_deriving`/ord/ppx_deriving_ord.cma `ocamlfind query visitors`/ppx/ppx_deriving_visitors.cma
+
+%.processed.ml: %.ml
+	@ echo Preprocessing $<...
+	@ ocamlfind ppx_tools/rewriter -ppx '$(PPX)' $< \
+		| sed -e '/VISITORS.BEGIN/,/VISITORS.END/!d;//d'\
+		| ocamlformat --name="$<" - > $@

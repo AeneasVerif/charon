@@ -42,59 +42,12 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
         span: Span,
         bound_trait_ref: &hax::Binder<hax::TraitRef>,
     ) -> Result<PolyTraitDeclRef, Error> {
-        let binder = bound_trait_ref.rebind(());
-        self.with_locally_bound_regions_group(span, binder, move |ctx| {
-            let trait_ref = bound_trait_ref.hax_skip_binder_ref();
+        self.translate_region_binder(span, bound_trait_ref, move |ctx, trait_ref| {
             let trait_id = ctx.register_trait_decl_id(span, &trait_ref.def_id);
-            let parent_trait_refs = Vec::new();
-            let generics = ctx.translate_generic_args(
-                span,
-                None,
-                &trait_ref.generic_args,
-                &parent_trait_refs,
-                None,
-            )?;
-
-            Ok(RegionBinder {
-                regions: ctx.region_vars[0].clone(),
-                skip_binder: TraitDeclRef { trait_id, generics },
-            })
+            let generics =
+                ctx.translate_generic_args(span, None, &trait_ref.generic_args, &[], None)?;
+            Ok(TraitDeclRef { trait_id, generics })
         })
-    }
-
-    /// Returns an [Option] because we may filter clauses about builtin or
-    /// auto traits like [core::marker::Sized] and [core::marker::Sync].
-    ///
-    /// `origin` is where this clause comes from.
-    pub(crate) fn register_trait_clause(
-        &mut self,
-        span: Span,
-        trait_pred: &hax::TraitPredicate,
-        origin: PredicateOrigin,
-        location: &PredicateLocation,
-    ) -> Result<Option<TraitClauseId>, Error> {
-        let trait_decl_ref = self.translate_trait_predicate(span, trait_pred)?;
-        let poly_trait_ref = RegionBinder {
-            // We're under the binder of `hax::Predicate`, we re-wrap it here.
-            regions: self.region_vars[0].clone(),
-            skip_binder: trait_decl_ref,
-        };
-        let vec = match location {
-            PredicateLocation::Base => &mut self.generic_params.trait_clauses,
-            PredicateLocation::Parent => &mut self.parent_trait_clauses,
-            PredicateLocation::Item(item_name) => self
-                .item_trait_clauses
-                .entry(item_name.clone())
-                .or_default(),
-        };
-        let clause_id = vec.push_with(|clause_id| TraitClause {
-            clause_id,
-            origin,
-            span: Some(span),
-            trait_: poly_trait_ref,
-        });
-
-        Ok(Some(clause_id))
     }
 
     pub(crate) fn translate_trait_predicate(
@@ -126,96 +79,93 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
         origin: PredicateOrigin,
         location: &PredicateLocation,
     ) -> Result<(), Error> {
+        use hax::{ClauseKind, PredicateKind};
         trace!("{:?}", pred);
         let span = self.translate_span_from_hax(hspan);
-
-        let binder = pred.kind.rebind(());
-        self.with_locally_bound_regions_group(span, binder, move |ctx| {
-            let pred_kind = pred.kind.hax_skip_binder_ref();
-            use hax::{ClauseKind, PredicateKind};
-            match pred_kind {
-                PredicateKind::Clause(kind) => {
-                    // We're under the binder of `hax::Predicate`, we re-wrap that binder here
-                    // except in the clause case where this is done already.
-                    let regions = ctx.region_vars[0].clone();
-                    match kind {
-                        ClauseKind::Trait(trait_pred) => {
-                            ctx.register_trait_clause(span, trait_pred, origin, location)?;
-                        }
-                        ClauseKind::RegionOutlives(p) => {
-                            // TODO: we're under a binder, we should re-bind
+        match pred.kind.hax_skip_binder_ref() {
+            PredicateKind::Clause(kind) => {
+                match kind {
+                    ClauseKind::Trait(trait_pred) => {
+                        let pred = self.translate_region_binder(span, &pred.kind, |ctx, _| {
+                            ctx.translate_trait_predicate(span, trait_pred)
+                        })?;
+                        let location = match location {
+                            PredicateLocation::Base => &mut self.generic_params.trait_clauses,
+                            PredicateLocation::Parent => &mut self.parent_trait_clauses,
+                            PredicateLocation::Item(item_name) => self
+                                .item_trait_clauses
+                                .entry(item_name.clone())
+                                .or_default(),
+                        };
+                        location.push_with(|clause_id| TraitClause {
+                            clause_id,
+                            origin,
+                            span: Some(span),
+                            trait_: pred,
+                        });
+                    }
+                    ClauseKind::RegionOutlives(p) => {
+                        let pred = self.translate_region_binder(span, &pred.kind, |ctx, _| {
                             let r0 = ctx.translate_region(span, &p.lhs)?;
                             let r1 = ctx.translate_region(span, &p.rhs)?;
-                            ctx.generic_params.regions_outlive.push(RegionBinder {
-                                regions,
-                                skip_binder: OutlivesPred(r0, r1),
-                            });
-                        }
-                        ClauseKind::TypeOutlives(p) => {
+                            Ok(OutlivesPred(r0, r1))
+                        })?;
+                        self.generic_params.regions_outlive.push(pred);
+                    }
+                    ClauseKind::TypeOutlives(p) => {
+                        let pred = self.translate_region_binder(span, &pred.kind, |ctx, _| {
                             let ty = ctx.translate_ty(span, &p.lhs)?;
                             let r = ctx.translate_region(span, &p.rhs)?;
-                            ctx.generic_params.types_outlive.push(RegionBinder {
-                                regions,
-                                skip_binder: OutlivesPred(ty, r),
-                            });
-                        }
-                        ClauseKind::Projection(p) => {
-                            // TODO: we're under a binder, we should re-bind
-                            // This is used to express constraints over associated types.
-                            // For instance:
-                            // ```
-                            // T : Foo<S = String>
-                            //         ^^^^^^^^^^
-                            // ```
-                            let hax::ProjectionPredicate {
-                                impl_expr,
-                                assoc_item,
+                            Ok(OutlivesPred(ty, r))
+                        })?;
+                        self.generic_params.types_outlive.push(pred);
+                    }
+                    ClauseKind::Projection(p) => {
+                        // This is used to express constraints over associated types.
+                        // For instance:
+                        // ```
+                        // T : Foo<S = String>
+                        //         ^^^^^^^^^^
+                        // ```
+                        let pred = self.translate_region_binder(span, &pred.kind, |ctx, _| {
+                            let trait_ref = ctx.translate_trait_impl_expr(span, &p.impl_expr)?;
+                            let ty = ctx.translate_ty(span, &p.ty)?;
+                            let type_name = TraitItemName(p.assoc_item.name.clone());
+                            Ok(TraitTypeConstraint {
+                                trait_ref,
+                                type_name,
                                 ty,
-                            } = p;
-
-                            let trait_ref = ctx.translate_trait_impl_expr(span, impl_expr)?;
-                            let ty = ctx.translate_ty(span, ty)?;
-                            let type_name = TraitItemName(assoc_item.name.clone().into());
-                            ctx.generic_params
-                                .trait_type_constraints
-                                .push(RegionBinder {
-                                    regions,
-                                    skip_binder: TraitTypeConstraint {
-                                        trait_ref,
-                                        type_name,
-                                        ty,
-                                    },
-                                });
-                        }
-                        ClauseKind::ConstArgHasType(..) => {
-                            // I don't really understand that one. Why don't they put
-                            // the type information in the const generic parameters
-                            // directly? For now we just ignore it.
-                        }
-                        ClauseKind::WellFormed(_) => {
-                            error_or_panic!(
-                                ctx,
-                                span,
-                                format!("Well-formedness clauses are unsupported")
-                            )
-                        }
-                        ClauseKind::ConstEvaluatable(_) => {
-                            error_or_panic!(ctx, span, format!("Unsupported clause: {:?}", kind))
-                        }
+                            })
+                        })?;
+                        self.generic_params.trait_type_constraints.push(pred);
+                    }
+                    ClauseKind::ConstArgHasType(..) => {
+                        // I don't really understand that one. Why don't they put
+                        // the type information in the const generic parameters
+                        // directly? For now we just ignore it.
+                    }
+                    ClauseKind::WellFormed(_) => {
+                        error_or_panic!(
+                            self,
+                            span,
+                            format!("Well-formedness clauses are unsupported")
+                        )
+                    }
+                    ClauseKind::ConstEvaluatable(_) => {
+                        error_or_panic!(self, span, format!("Unsupported clause: {:?}", kind))
                     }
                 }
-                PredicateKind::AliasRelate(..)
-                | PredicateKind::Ambiguous
-                | PredicateKind::Coerce(_)
-                | PredicateKind::ConstEquate(_, _)
-                | PredicateKind::DynCompatible(_)
-                | PredicateKind::NormalizesTo(_)
-                | PredicateKind::Subtype(_) => {
-                    error_or_panic!(ctx, span, format!("Unsupported predicate: {:?}", pred_kind))
-                }
             }
-            Ok(())
-        })?;
+            PredicateKind::AliasRelate(..)
+            | PredicateKind::Ambiguous
+            | PredicateKind::Coerce(_)
+            | PredicateKind::ConstEquate(_, _)
+            | PredicateKind::DynCompatible(_)
+            | PredicateKind::NormalizesTo(_)
+            | PredicateKind::Subtype(_) => {
+                error_or_panic!(self, span, format!("Unsupported predicate: {:?}", pred))
+            }
+        }
         Ok(())
     }
 

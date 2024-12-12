@@ -109,6 +109,7 @@ let trait_instance_id_as_trait_impl (id : trait_instance_id) :
   | TraitImpl (impl_id, args) -> (impl_id, args)
   | _ -> raise (Failure "Unreachable")
 
+(* Make a debruijn variable of index 0 *)
 let zero_db_var (varid : 'id) : 'id de_bruijn_var = Bound (0, varid)
 
 let free_var_of_db_var (var : 'id de_bruijn_var) : 'id option =
@@ -119,6 +120,10 @@ let free_var_of_db_var (var : 'id de_bruijn_var) : 'id option =
 let decr_db_var : 'id de_bruijn_var -> 'id de_bruijn_var = function
   | Free id -> Free id
   | Bound (dbid, id) -> Bound (dbid - 1, id)
+
+let incr_db_var : 'id de_bruijn_var -> 'id de_bruijn_var = function
+  | Free id -> Free id
+  | Bound (dbid, id) -> Bound (dbid + 1, id)
 
 let empty_generic_args : generic_args =
   { regions = []; types = []; const_generics = []; trait_refs = [] }

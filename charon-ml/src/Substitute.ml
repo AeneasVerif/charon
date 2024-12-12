@@ -7,6 +7,9 @@ open TypesUtils
 open Expressions
 open LlbcAst
 
+(* TODO: use Core.Fn.compose *)
+let compose f g x = f (g x)
+
 (* A substitution that takes a full variable as input *)
 type subst = {
   r_subst : RegionId.id de_bruijn_var -> region;
@@ -41,6 +44,35 @@ let empty_subst : subst =
     tr_self = Self;
   }
 
+let empty_bound_sb_subst : single_binder_subst =
+  {
+    r_sb_subst = compose empty_subst.r_subst zero_db_var;
+    ty_sb_subst = compose empty_subst.ty_subst zero_db_var;
+    cg_sb_subst = compose empty_subst.cg_subst zero_db_var;
+    tr_sb_subst = compose empty_subst.tr_subst zero_db_var;
+    tr_sb_self = empty_subst.tr_self;
+  }
+
+let empty_free_sb_subst : single_binder_subst =
+  let free x = Free x in
+  {
+    r_sb_subst = compose empty_subst.r_subst free;
+    ty_sb_subst = compose empty_subst.ty_subst free;
+    cg_sb_subst = compose empty_subst.cg_subst free;
+    tr_sb_subst = compose empty_subst.tr_subst free;
+    tr_sb_self = empty_subst.tr_self;
+  }
+
+let error_sb_subst : single_binder_subst =
+  let error _ = failwith "Unexpected bound Cariable" in
+  {
+    r_sb_subst = compose empty_subst.r_subst error;
+    ty_sb_subst = compose empty_subst.ty_subst error;
+    cg_sb_subst = compose empty_subst.cg_subst error;
+    tr_sb_subst = compose empty_subst.tr_subst error;
+    tr_sb_self = empty_subst.tr_self;
+  }
+
 (** Substitute the free variables. *)
 let subst_free_vars (subst : single_binder_subst) : subst =
   let subst_free subst nosubst = function
@@ -69,15 +101,37 @@ let subst_at_binder_zero (subst : single_binder_subst) : subst =
     tr_self = subst.tr_sb_self;
   }
 
+(** Substitute the variables bound by the current (level 0) binder, and shift variables to remove the current binder level. *)
+let subst_remove_binder_zero (subst : single_binder_subst) : subst =
+  let subst_remove_zero subst nosubst = function
+    | Bound (0, id) -> subst id
+    | Bound (dbid, varid) when dbid > 0 -> nosubst (Bound (dbid - 1, varid))
+    | var -> nosubst var
+  in
+  {
+    r_subst = subst_remove_zero subst.r_sb_subst empty_subst.r_subst;
+    ty_subst = subst_remove_zero subst.ty_sb_subst empty_subst.ty_subst;
+    cg_subst = subst_remove_zero subst.cg_sb_subst empty_subst.cg_subst;
+    tr_subst = subst_remove_zero subst.tr_sb_subst empty_subst.tr_subst;
+    tr_self = subst.tr_sb_self;
+  }
+
 let st_substitute_visitor =
   object (self)
     inherit [_] map_statement
 
-    (** We need to properly handle the DeBruijn indices *)
     method! visit_region_binder visit_value (subst : subst) x =
-      (* Decrement the DeBruijn indices before calling the substitution *)
-      let r_subst var = subst.r_subst (decr_db_var var) in
-      let subst = { subst with r_subst } in
+      (* Shift the indices of the substitution under one binder level. *)
+      let shift_subst (subst : subst) : subst =
+        {
+          r_subst = compose subst.r_subst decr_db_var;
+          ty_subst = compose subst.ty_subst decr_db_var;
+          cg_subst = compose subst.cg_subst decr_db_var;
+          tr_subst = compose subst.tr_subst decr_db_var;
+          tr_self = subst.tr_self;
+        }
+      in
+      let subst = shift_subst subst in
       (* Note that we ignore the bound regions variables *)
       let { binder_regions; binder_value } = x in
       let binder_value = visit_value subst binder_value in
@@ -181,6 +235,13 @@ let generic_args_erase_regions (tr : generic_args) : generic_args =
 let erase_regions_substitute_types (subst : subst) (ty : ty) : ty =
   let subst = { subst with r_subst = (fun _ -> RErased) } in
   ty_substitute subst ty
+
+(** Move the value out of the binder by shifting relevant binding levels.
+    Errors if a variable bound in this binder is found. *)
+let extract_from_binder (substituer : subst -> 'a -> 'a)
+    (bound_val : 'a region_binder) : 'a =
+  let subst = subst_remove_binder_zero error_sb_subst in
+  substituer subst bound_val.binder_value
 
 (** Substitute the free regions corresponding to each `var_id` with the
     corresponding provided region. *)
