@@ -121,6 +121,10 @@ let decr_db_var : 'id de_bruijn_var -> 'id de_bruijn_var = function
   | Free id -> Free id
   | Bound (dbid, id) -> Bound (dbid - 1, id)
 
+let incr_db_var : 'id de_bruijn_var -> 'id de_bruijn_var = function
+  | Free id -> Free id
+  | Bound (dbid, id) -> Bound (dbid + 1, id)
+
 let empty_generic_args : generic_args =
   { regions = []; types = []; const_generics = []; trait_refs = [] }
 
