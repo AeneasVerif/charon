@@ -1,44 +1,11 @@
+(include_subdirs unqualified)
+
 (library
  (name charon) ;; The name as used in the project
  (public_name charon) ;; The name as revealed to the projects importing this library
  (preprocess
   (pps ppx_deriving.show ppx_deriving.ord visitors.ppx))
- (libraries yojson zarith easy_logging name_matcher_parser unionFind)
- (modules
-  CharonVersion
-  Collections
-  Expressions
-  ExpressionsUtils
-  GAst
-  GAstUtils
-  GAstOfJson
-  Identifiers
-  LlbcAst
-  LlbcAstUtils
-  LlbcOfJson
-  Logging
-  Meta
-  MetaUtils
-  NameMatcher
-  OfJsonBasic
-  PrintExpressions
-  PrintGAst
-  PrintLlbcAst
-  PrintUllbcAst
-  PrintTypes
-  PrintUtils
-  PrintValues
-  Scalars
-  StringUtils
-  Substitute
-  Types
-  TypesUtils
-  UllbcAst
-  UllbcAstUtils
-  UllbcOfJson
-  Utils
-  Values
-  ValuesUtils))
+ (libraries yojson zarith easy_logging name_matcher_parser unionFind))
 
 (documentation
  (package charon))
