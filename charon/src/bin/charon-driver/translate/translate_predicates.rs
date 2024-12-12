@@ -43,22 +43,17 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
         bound_trait_ref: &hax::Binder<hax::TraitRef>,
     ) -> Result<PolyTraitDeclRef, Error> {
         let binder = bound_trait_ref.rebind(());
-        self.with_locally_bound_regions_group(span, binder, move |ctx| {
-            let trait_ref = bound_trait_ref.hax_skip_binder_ref();
-            let trait_id = ctx.register_trait_decl_id(span, &trait_ref.def_id);
-            let parent_trait_refs = Vec::new();
-            let generics = ctx.translate_generic_args(
-                span,
-                None,
-                &trait_ref.generic_args,
-                &parent_trait_refs,
-                None,
-            )?;
-
-            Ok(RegionBinder {
-                regions: ctx.region_vars[0].clone(),
-                skip_binder: TraitDeclRef { trait_id, generics },
-            })
+        let (trait_decl_ref, regions) =
+            self.with_locally_bound_regions_group(span, binder, move |ctx| {
+                let trait_ref = bound_trait_ref.hax_skip_binder_ref();
+                let trait_id = ctx.register_trait_decl_id(span, &trait_ref.def_id);
+                let generics =
+                    ctx.translate_generic_args(span, None, &trait_ref.generic_args, &[], None)?;
+                Ok(TraitDeclRef { trait_id, generics })
+            })?;
+        Ok(RegionBinder {
+            regions,
+            skip_binder: trait_decl_ref,
         })
     }
 

@@ -1064,7 +1064,7 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
         span: Span,
         binder: hax::Binder<()>,
         f: F,
-    ) -> Result<T, Error>
+    ) -> Result<(T, Vector<RegionId, RegionVar>), Error>
     where
         F: FnOnce(&mut Self) -> Result<T, Error>,
     {
@@ -1083,11 +1083,11 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
 
         // Reset
         self.bound_region_vars.pop_front();
-        self.region_vars.pop_front();
+        let regions = self.region_vars.pop_front().unwrap();
         self.type_trans_cache = old_ty_cache;
 
         // Return
-        res
+        res.map(|res| (res, regions))
     }
 
     pub(crate) fn push_type_var(&mut self, rid: u32, name: String) -> TypeVarId {
