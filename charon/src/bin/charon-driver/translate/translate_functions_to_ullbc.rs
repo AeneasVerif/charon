@@ -1506,7 +1506,7 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
                         ClosureKind::FnOnce => state_ty,
                         ClosureKind::Fn | ClosureKind::FnMut => {
                             let rid = self
-                                .top_level_generics_mut()
+                                .innermost_generics_mut()
                                 .regions
                                 .push_with(|index| RegionVar { index, name: None });
                             let r = Region::Var(DeBruijnVar::free(rid));
@@ -1533,7 +1533,7 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
         };
 
         Ok(FunSig {
-            generics: self.top_level_generics().clone(),
+            generics: self.the_only_binder().params.clone(),
             is_unsafe,
             is_closure: matches!(&def.kind, hax::FullDefKind::Closure { .. }),
             closure_info,

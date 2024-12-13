@@ -103,7 +103,7 @@ impl BodyTransCtx<'_, '_> {
                         // declares them.
                         let gref = GlobalDeclRef {
                             id: self.register_global_decl_id(item_span, rust_item_id),
-                            generics: self.top_level_generics().identity_args(),
+                            generics: self.the_only_binder().params.identity_args(),
                         };
                         const_defaults.insert(item_name.clone(), gref);
                     };
@@ -251,7 +251,7 @@ impl BodyTransCtx<'_, '_> {
                     // The parameters of the constant are the same as those of the item that
                     // declares them.
                     let generics = match &impl_item.value {
-                        Provided { .. } => self.top_level_generics().identity_args(),
+                        Provided { .. } => self.the_only_binder().params.identity_args(),
                         _ => implemented_trait.generics.clone(),
                     };
                     let gref = GlobalDeclRef { id, generics };

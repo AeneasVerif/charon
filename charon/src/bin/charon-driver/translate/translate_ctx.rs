@@ -204,10 +204,14 @@ pub struct TranslateCtx<'tcx> {
 ///
 /// At each level, we store two things: a `GenericParams` that contains the parameters bound at
 /// this level, and various maps from the rustc-internal indices to our indices.
-#[derive(Default)]
+#[derive(Debug)]
 pub(crate) struct BindingLevel {
     /// The parameters and predicates bound at this level.
     pub params: GenericParams,
+    /// Whether this binder corresponds to an item (method, type) or not (`for<..>` predicate, `fn`
+    /// pointer, etc). This indicates whether it corresponds to a rustc `ParamEnv` and therefore
+    /// whether we should resolve rustc variables there.
+    pub is_item_binder: bool,
     /// Rust makes the distinction between early and late-bound region parameters. We do not make
     /// this distinction, and merge early and late bound regions. For details, see:
     /// https://smallcultfollowing.com/babysteps/blog/2013/10/29/intermingled-parameter-lists/
@@ -226,6 +230,18 @@ pub(crate) struct BindingLevel {
 }
 
 impl BindingLevel {
+    pub(crate) fn new(is_item_binder: bool) -> Self {
+        Self {
+            params: Default::default(),
+            is_item_binder,
+            early_region_vars: Default::default(),
+            bound_region_vars: Default::default(),
+            type_vars_map: Default::default(),
+            const_generic_vars_map: Default::default(),
+            type_trans_cache: Default::default(),
+        }
+    }
+
     /// Important: we must push all the early-bound regions before pushing any other region.
     pub(crate) fn push_early_region(&mut self, region: hax::EarlyParamRegion) -> RegionId {
         let name = super::translate_types::translate_region_name(&region);
@@ -1044,74 +1060,158 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
         self.t_ctx.register_trait_impl_id(&src, id)
     }
 
+    /// Get the only binding level. Panics if there are other binding levels.
+    pub(crate) fn the_only_binder(&self) -> &BindingLevel {
+        assert_eq!(self.binding_levels.len(), 1);
+        &self.outermost_binder()
+    }
+
     pub(crate) fn outermost_binder(&self) -> &BindingLevel {
         self.binding_levels.back().unwrap()
     }
 
-    pub(crate) fn outermost_binder_mut(&mut self) -> &mut BindingLevel {
-        self.binding_levels.back_mut().unwrap()
+    pub(crate) fn innermost_binder(&self) -> &BindingLevel {
+        self.binding_levels.front().unwrap()
     }
 
-    pub(crate) fn innermost_binder(&mut self) -> &mut BindingLevel {
+    pub(crate) fn innermost_binder_mut(&mut self) -> &mut BindingLevel {
         self.binding_levels.front_mut().unwrap()
     }
 
+    pub(crate) fn innermost_generics_mut(&mut self) -> &mut GenericParams {
+        &mut self.innermost_binder_mut().params
+    }
+
+    /// Make a `DeBruijnVar`, where we use `Free` for the outermost binder and `Bound` for the
+    /// others.
+    fn bind_var<Id: Copy>(&self, dbid: usize, varid: Id) -> DeBruijnVar<Id> {
+        if dbid == self.binding_levels.len() - 1 {
+            DeBruijnVar::free(varid)
+        } else {
+            DeBruijnVar::bound(DeBruijnId::new(dbid), varid)
+        }
+    }
+
     pub(crate) fn lookup_bound_region(
-        &self,
+        &mut self,
+        span: Span,
         dbid: hax::DebruijnIndex,
         var: hax::BoundVar,
-    ) -> Option<RegionDbVar> {
-        let rid = self.binding_levels.get(dbid)?.bound_region_vars.get(var)?;
-        Some(if dbid == self.binding_levels.len() - 1 {
-            DeBruijnVar::free(*rid)
+    ) -> Result<RegionDbVar, Error> {
+        if let Some(rid) = self
+            .binding_levels
+            .get(dbid)
+            .and_then(|bl| bl.bound_region_vars.get(var))
+        {
+            Ok(self.bind_var(dbid, *rid))
         } else {
-            DeBruijnVar::bound(DeBruijnId::new(dbid), *rid)
-        })
+            error_or_panic!(
+                self,
+                span,
+                &format!("Unexpected error: could not find region '{dbid}_{var}")
+            )
+        }
+    }
+
+    fn lookup_param<Id: Copy>(
+        &mut self,
+        span: Span,
+        f: impl for<'a> Fn(&'a BindingLevel) -> Option<Id>,
+        mk_err: impl FnOnce() -> String,
+    ) -> Result<DeBruijnVar<Id>, Error> {
+        for (dbid, bl) in self.binding_levels.iter().enumerate() {
+            if let Some(id) = f(bl) {
+                return Ok(self.bind_var(dbid, id));
+            }
+        }
+        let err = mk_err();
+        error_or_panic!(
+            self,
+            span,
+            &format!("Unexpected error: could not find {}", err)
+        )
     }
 
     pub(crate) fn lookup_early_region(
-        &self,
+        &mut self,
+        span: Span,
         region: &hax::EarlyParamRegion,
-    ) -> Option<RegionDbVar> {
-        // TODO: handle non-top-level full binders.
-        let id = self.outermost_binder().early_region_vars.get(region)?;
-        Some(DeBruijnVar::free(*id))
+    ) -> Result<RegionDbVar, Error> {
+        self.lookup_param(
+            span,
+            |bl| bl.early_region_vars.get(region).copied(),
+            || format!("the region variable {region:?}"),
+        )
     }
 
-    pub(crate) fn lookup_type_var(&self, param: &hax::ParamTy) -> Option<TypeDbVar> {
-        // TODO: handle non-top-level full binders.
-        let id = self.outermost_binder().type_vars_map.get(&param.index)?;
-        Some(DeBruijnVar::free(*id))
+    pub(crate) fn lookup_type_var(
+        &mut self,
+        span: Span,
+        param: &hax::ParamTy,
+    ) -> Result<TypeDbVar, Error> {
+        self.lookup_param(
+            span,
+            |bl| bl.type_vars_map.get(&param.index).copied(),
+            || format!("the type variable {}", param.name),
+        )
     }
 
     pub(crate) fn lookup_const_generic_var(
-        &self,
+        &mut self,
+        span: Span,
         param: &hax::ParamConst,
-    ) -> Option<ConstGenericDbVar> {
-        // TODO: handle non-top-level full binders.
-        let id = self
-            .outermost_binder()
-            .const_generic_vars_map
-            .get(&param.index)?;
-        Some(DeBruijnVar::free(*id))
+    ) -> Result<ConstGenericDbVar, Error> {
+        self.lookup_param(
+            span,
+            |bl| bl.const_generic_vars_map.get(&param.index).copied(),
+            || format!("the const generic variable {}", param.name),
+        )
     }
 
-    pub(crate) fn lookup_clause_var(&self, id: usize) -> Option<ClauseDbVar> {
-        // TODO: handle non-top-level full binders.
-        let id = TraitClauseId::from_usize(id);
-        Some(DeBruijnVar::free(id))
+    pub(crate) fn lookup_clause_var(
+        &mut self,
+        span: Span,
+        mut id: usize,
+    ) -> Result<ClauseDbVar, Error> {
+        // The clause indices returned by hax count clauses in order, starting from the parentmost.
+        // While adding clauses to a binding level we already need to translate types and clauses,
+        // so the innermost item binder may not have all the clauses yet. Hence for that binder we
+        // ignore the clause count.
+        let innermost_item_binder_id = self
+            .binding_levels
+            .iter()
+            .enumerate()
+            .find(|(_, bl)| bl.is_item_binder)
+            .unwrap()
+            .0;
+        // Iterate over the binders, starting from the outermost.
+        for (dbid, bl) in self.binding_levels.iter().enumerate().rev() {
+            let num_clauses_bound_at_this_level = bl.params.trait_clauses.len();
+            if id < num_clauses_bound_at_this_level || dbid == innermost_item_binder_id {
+                let id = TraitClauseId::from_usize(id);
+                return Ok(self.bind_var(dbid, id));
+            } else {
+                id -= num_clauses_bound_at_this_level
+            }
+        }
+        // Actually unreachable
+        error_or_panic!(
+            self,
+            span,
+            &format!("Unexpected error: could not find clause variable {}", id)
+        )
     }
 
     pub(crate) fn lookup_cached_type(
         &self,
         cache_key: &HashByAddr<Arc<hax::TyKind>>,
     ) -> Option<Ty> {
-        for bl in self.binding_levels.iter().rev() {
-            if let Some(ty) = bl.type_trans_cache.get(&cache_key) {
-                return Some(ty.clone());
-            }
-        }
-        None
+        // Important: we can't reuse type caches from earlier binders as the new binder may change
+        // what a given variable resolves to.
+        self.innermost_binder()
+            .type_trans_cache
+            .get(&cache_key)
+            .cloned()
     }
 
     /// Push a group of bound regions and call the continuation.
@@ -1129,7 +1229,7 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
         assert!(!self.binding_levels.is_empty());
 
         // Register the variables
-        let mut binding_level = BindingLevel::default();
+        let mut binding_level = BindingLevel::new(false);
         binding_level.push_params_from_binder(binder.rebind(()))?;
         self.binding_levels.push_front(binding_level);
 

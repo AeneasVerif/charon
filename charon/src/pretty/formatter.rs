@@ -272,23 +272,16 @@ impl<'a> Formatter<RegionDbVar> for FmtCtx<'a> {
         if self.generics.is_empty() {
             return format!("'_{var}");
         }
-        let (index, varid) = match var {
+        let (dbid, varid) = match var {
             DeBruijnVar::Bound(dbid, varid) => (dbid.index, varid),
             DeBruijnVar::Free(varid) => (self.generics.len() - 1, varid),
         };
         match self
             .generics
-            .get(index)
+            .get(dbid)
             .and_then(|generics| generics.regions.get(varid))
         {
-            None => {
-                let region = Region::Var(var).fmt_without_ctx();
-                tracing::warn!(
-                    "Found incorrect region `{region}` while pretty-printing. Look for \
-                        \"wrong_region\" in the pretty output"
-                );
-                format!("wrong_region({region})")
-            }
+            None => format!("wrong_region('_{var})"),
             Some(v) => match &v.name {
                 Some(name) => name.to_string(),
                 None => format!("'_{var}"),
@@ -308,39 +301,60 @@ impl<'a> Formatter<&RegionVar> for FmtCtx<'a> {
 
 impl<'a> Formatter<TypeDbVar> for FmtCtx<'a> {
     fn format_object(&self, var: TypeDbVar) -> String {
-        match var {
-            DeBruijnVar::Bound(..) => format!("missing_type_var({var})"),
-            DeBruijnVar::Free(id) => match &self.generics.back() {
-                None => id.to_pretty_string(),
-                Some(generics) => match generics.types.get(id) {
-                    None => id.to_pretty_string(),
-                    Some(v) => v.to_string(),
-                },
-            },
+        if self.generics.is_empty() {
+            return format!("@Type{var}");
+        }
+        let (dbid, varid) = match var {
+            DeBruijnVar::Bound(dbid, varid) => (dbid.index, varid),
+            DeBruijnVar::Free(varid) => (self.generics.len() - 1, varid),
+        };
+        match self
+            .generics
+            .get(dbid)
+            .and_then(|generics| generics.types.get(varid))
+        {
+            None => format!("missing_type_var({var})"),
+            Some(v) => v.to_string(),
         }
     }
 }
 
 impl<'a> Formatter<ConstGenericDbVar> for FmtCtx<'a> {
     fn format_object(&self, var: ConstGenericDbVar) -> String {
-        match var {
-            DeBruijnVar::Bound(..) => format!("missing_cg_var({var})"),
-            DeBruijnVar::Free(id) => match &self.generics.back() {
-                None => id.to_pretty_string(),
-                Some(generics) => match generics.const_generics.get(id) {
-                    None => id.to_pretty_string(),
-                    Some(v) => v.to_string(),
-                },
-            },
+        if self.generics.is_empty() {
+            return format!("@ConstGeneric{var}");
+        }
+        let (dbid, varid) = match var {
+            DeBruijnVar::Bound(dbid, varid) => (dbid.index, varid),
+            DeBruijnVar::Free(varid) => (self.generics.len() - 1, varid),
+        };
+        match self
+            .generics
+            .get(dbid)
+            .and_then(|generics| generics.const_generics.get(varid))
+        {
+            None => format!("missing_cg_var({var})"),
+            Some(v) => v.to_string(),
         }
     }
 }
 
 impl<'a> Formatter<ClauseDbVar> for FmtCtx<'a> {
     fn format_object(&self, var: ClauseDbVar) -> String {
-        match var {
-            DeBruijnVar::Bound(..) => format!("missing_clause_var({var})"),
-            DeBruijnVar::Free(id) => id.to_pretty_string(),
+        if self.generics.is_empty() {
+            return format!("@TraitClause{var}");
+        }
+        let (dbid, varid) = match var {
+            DeBruijnVar::Bound(dbid, varid) => (dbid.index, varid),
+            DeBruijnVar::Free(varid) => (self.generics.len() - 1, varid),
+        };
+        match self
+            .generics
+            .get(dbid)
+            .and_then(|generics| generics.trait_clauses.get(varid))
+        {
+            None => format!("missing_clause_var({var})"),
+            Some(_) => format!("@TraitClause{var}"),
         }
     }
 }

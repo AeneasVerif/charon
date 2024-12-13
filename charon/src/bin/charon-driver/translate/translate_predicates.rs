@@ -91,7 +91,7 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
                         })?;
                         let location = match location {
                             PredicateLocation::Base => {
-                                &mut self.top_level_generics_mut().trait_clauses
+                                &mut self.innermost_generics_mut().trait_clauses
                             }
                             PredicateLocation::Parent => &mut self.parent_trait_clauses,
                             PredicateLocation::Item(item_name) => self
@@ -112,7 +112,7 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
                             let r1 = ctx.translate_region(span, &p.rhs)?;
                             Ok(OutlivesPred(r0, r1))
                         })?;
-                        self.top_level_generics_mut().regions_outlive.push(pred);
+                        self.innermost_generics_mut().regions_outlive.push(pred);
                     }
                     ClauseKind::TypeOutlives(p) => {
                         let pred = self.translate_region_binder(span, &pred.kind, |ctx, _| {
@@ -120,7 +120,7 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
                             let r = ctx.translate_region(span, &p.rhs)?;
                             Ok(OutlivesPred(ty, r))
                         })?;
-                        self.top_level_generics_mut().types_outlive.push(pred);
+                        self.innermost_generics_mut().types_outlive.push(pred);
                     }
                     ClauseKind::Projection(p) => {
                         // This is used to express constraints over associated types.
@@ -139,7 +139,7 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
                                 ty,
                             })
                         })?;
-                        self.top_level_generics_mut()
+                        self.innermost_generics_mut()
                             .trait_type_constraints
                             .push(pred);
                     }
@@ -252,7 +252,7 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
                 let mut trait_id = match &impl_source.r#impl {
                     ImplExprAtom::SelfImpl { .. } => TraitRefKind::SelfId,
                     ImplExprAtom::LocalBound { index, .. } => {
-                        let var = self.lookup_clause_var(*index).unwrap();
+                        let var = self.lookup_clause_var(span, *index)?;
                         TraitRefKind::Clause(var)
                     }
                     _ => unreachable!(),

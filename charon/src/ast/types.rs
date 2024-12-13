@@ -234,6 +234,11 @@ pub struct RegionBinder<T> {
     pub skip_binder: T,
 }
 
+// Renames useful for visitor derives
+pub type BoundTypeOutlives = RegionBinder<TypeOutlives>;
+pub type BoundRegionOutlives = RegionBinder<RegionOutlives>;
+pub type BoundTraitTypeConstraint = RegionBinder<TraitTypeConstraint>;
+
 /// A value of type `T` bound by generic parameters. Used in any context where we're adding generic
 /// parameters that aren't on the top-level item, e.g. `for<'a>` clauses, trait methods (TODO),
 /// GATs (TODO).
@@ -262,11 +267,11 @@ pub struct GenericParams {
     // TODO: rename to match [GenericArgs]?
     pub trait_clauses: Vector<TraitClauseId, TraitClause>,
     /// The first region in the pair outlives the second region
-    pub regions_outlive: Vec<RegionBinder<RegionOutlives>>,
+    pub regions_outlive: Vec<BoundRegionOutlives>,
     /// The type outlives the region
-    pub types_outlive: Vec<RegionBinder<TypeOutlives>>,
+    pub types_outlive: Vec<BoundTypeOutlives>,
     /// Constraints over trait associated types
-    pub trait_type_constraints: Vec<RegionBinder<TraitTypeConstraint>>,
+    pub trait_type_constraints: Vec<BoundTraitTypeConstraint>,
 }
 
 /// A predicate of the form `exists<T> where T: Trait`.
@@ -657,8 +662,10 @@ pub enum TyKind {
     /// This is essentially a "constrained" function signature:
     /// arrow types can only contain generic lifetime parameters
     /// (no generic types), no predicates, etc.
-    Arrow(RegionBinder<(Vec<Ty>, Ty)>),
+    Arrow(BoundArrowSig),
 }
+
+pub type BoundArrowSig = RegionBinder<(Vec<Ty>, Ty)>;
 
 /// Builtin types identifiers.
 ///
