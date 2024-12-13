@@ -344,86 +344,53 @@ impl<C: AstFormatter> FmtWithCtx<C> for GenericArgs {
 }
 
 impl GenericParams {
-    pub fn fmt_with_ctx_with_trait_clauses<C>(&self, ctx: &C, tab: &str) -> (String, String)
+    fn format_params<'a, C>(&'a self, ctx: &'a C) -> impl Iterator<Item = String> + use<'a, C>
     where
         C: AstFormatter,
     {
-        let generics = self;
-        let mut params = Vec::new();
-        for x in &generics.regions {
-            params.push(ctx.format_object(x));
-        }
-        for x in &generics.types {
-            params.push(x.to_string());
-        }
-        for x in &generics.const_generics {
-            params.push(x.to_string());
-        }
-        let params = if params.is_empty() {
-            "".to_string()
-        } else {
-            format!("<{}>", params.join(", "))
-        };
-
-        let preds = if generics.has_predicates() {
-            let clauses = generics.format_clauses(ctx, tab);
-            format!("\n{tab}where{clauses}")
-        } else {
-            String::new()
-        };
-        (params, preds)
+        let regions = self.regions.iter().map(|x| ctx.format_object(x));
+        let types = self.types.iter().map(|x| x.to_string());
+        let const_generics = self.const_generics.iter().map(|x| x.to_string());
+        regions.chain(types).chain(const_generics)
     }
 
-    fn format_clauses<C>(&self, ctx: &C, tab: &str) -> String
+    fn format_clauses<'a, C>(&'a self, ctx: &'a C) -> impl Iterator<Item = String> + use<'a, C>
     where
         C: AstFormatter,
     {
         let trait_clauses = self.trait_clauses.iter().map(|x| x.fmt_with_ctx(ctx));
-        let types_outlive = self.types_outlive.iter().map(|pred| pred.fmt_as_for(ctx));
-        let regions_outlive = self.regions_outlive.iter().map(|pred| pred.fmt_as_for(ctx));
+        let types_outlive = self.types_outlive.iter().map(|x| x.fmt_as_for(ctx));
+        let regions_outlive = self.regions_outlive.iter().map(|x| x.fmt_as_for(ctx));
         let type_constraints = self
             .trait_type_constraints
             .iter()
-            .map(|pred| pred.fmt_as_for(ctx));
+            .map(|x| x.fmt_as_for(ctx));
         trait_clauses
             .chain(types_outlive)
             .chain(regions_outlive)
             .chain(type_constraints)
-            .map(|x| format!("\n{tab}{TAB_INCR}{x},"))
-            .join("")
     }
 
-    /// [num_parent_clauses]: we store in the definitions all the clauses
-    /// they have access to, which includes the clauses inherited from the parent.
-    /// This can be confusing: we insert a delimiter between the inherited clauses
-    /// and the local clauses.
-    pub fn fmt_where_clauses(tab: &str, num_parent_clauses: usize, clauses: Vec<String>) -> String {
-        let mut clauses = clauses
-            .iter()
-            .map(|x| format!("\n{tab}{TAB_INCR}{x},"))
-            .collect::<Vec<String>>();
-        if num_parent_clauses > 0 {
-            let local_clauses = clauses.split_off(num_parent_clauses);
-
-            let delim1 = if local_clauses.is_empty() {
-                "".to_string()
-            } else {
-                format!("\n{tab}{TAB_INCR}// Local clauses:")
-            };
-
-            let delim0 = if clauses.is_empty() {
-                "".to_string()
-            } else {
-                format!("\n{tab}{TAB_INCR}// Inherited clauses:")
-            };
-
-            let clauses = clauses.join("");
-            let local_clauses = local_clauses.join("");
-            format!("\n{tab}where{delim0}{clauses}{delim1}{local_clauses}")
+    pub fn fmt_with_ctx_with_trait_clauses<C>(&self, ctx: &C, tab: &str) -> (String, String)
+    where
+        C: AstFormatter,
+    {
+        let params = self.format_params(ctx).join(", ");
+        let params = if params.is_empty() {
+            String::new()
         } else {
-            let clauses = clauses.join("");
+            format!("<{}>", params)
+        };
+        let clauses = self
+            .format_clauses(ctx)
+            .map(|x| format!("\n{tab}{TAB_INCR}{x},"))
+            .join("");
+        let clauses = if clauses.is_empty() {
+            String::new()
+        } else {
             format!("\n{tab}where{clauses}")
-        }
+        };
+        (params, clauses)
     }
 }
 
