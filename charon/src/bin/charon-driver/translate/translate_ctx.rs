@@ -1085,11 +1085,7 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
     /// Make a `DeBruijnVar`, where we use `Free` for the outermost binder and `Bound` for the
     /// others.
     fn bind_var<Id: Copy>(&self, dbid: usize, varid: Id) -> DeBruijnVar<Id> {
-        if dbid == self.binding_levels.len() - 1 {
-            DeBruijnVar::free(varid)
-        } else {
-            DeBruijnVar::bound(DeBruijnId::new(dbid), varid)
-        }
+        DeBruijnVar::bound(DeBruijnId::new(dbid), varid)
     }
 
     pub(crate) fn lookup_bound_region(
