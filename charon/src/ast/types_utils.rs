@@ -74,27 +74,36 @@ impl GenericParams {
         GenericArgs {
             regions: self
                 .regions
-                .iter_indexed()
-                .map(|(id, _)| Region::Var(DeBruijnVar::free(id)))
-                .collect(),
+                .map_ref_indexed(|id, _| Region::Var(DeBruijnVar::new_at_zero(id))),
             types: self
                 .types
-                .iter_indexed()
-                .map(|(id, _)| TyKind::TypeVar(DeBruijnVar::free(id)).into_ty())
-                .collect(),
+                .map_ref_indexed(|id, _| TyKind::TypeVar(DeBruijnVar::new_at_zero(id)).into_ty()),
             const_generics: self
                 .const_generics
-                .iter_indexed()
-                .map(|(id, _)| ConstGeneric::Var(DeBruijnVar::free(id)))
-                .collect(),
-            trait_refs: self
-                .trait_clauses
-                .iter_indexed()
-                .map(|(id, clause)| TraitRef {
-                    kind: TraitRefKind::Clause(DeBruijnVar::free(id)),
-                    trait_decl_ref: clause.trait_.clone(),
-                })
-                .collect(),
+                .map_ref_indexed(|id, _| ConstGeneric::Var(DeBruijnVar::new_at_zero(id))),
+            trait_refs: self.trait_clauses.map_ref_indexed(|id, clause| TraitRef {
+                kind: TraitRefKind::Clause(DeBruijnVar::new_at_zero(id)),
+                trait_decl_ref: clause.trait_.clone(),
+            }),
+        }
+    }
+
+    /// Like `identity_args`, but uses free variables instead of bound ones.
+    pub fn free_identity_args(&self) -> GenericArgs {
+        GenericArgs {
+            regions: self
+                .regions
+                .map_ref_indexed(|id, _| Region::Var(DeBruijnVar::free(id))),
+            types: self
+                .types
+                .map_ref_indexed(|id, _| TyKind::TypeVar(DeBruijnVar::free(id)).into_ty()),
+            const_generics: self
+                .const_generics
+                .map_ref_indexed(|id, _| ConstGeneric::Var(DeBruijnVar::free(id))),
+            trait_refs: self.trait_clauses.map_ref_indexed(|id, clause| TraitRef {
+                kind: TraitRefKind::Clause(DeBruijnVar::free(id)),
+                trait_decl_ref: clause.trait_.clone(),
+            }),
         }
     }
 }
@@ -408,10 +417,7 @@ impl<'a> SubstVisitor<'a> {
     }
 
     fn should_subst<Id: Copy>(&self, var: DeBruijnVar<Id>) -> Option<Id> {
-        match var {
-            DeBruijnVar::Free(id) => Some(id),
-            DeBruijnVar::Bound(..) => None,
-        }
+        var.bound_at_depth(self.binder_depth)
     }
 }
 

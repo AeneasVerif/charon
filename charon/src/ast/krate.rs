@@ -236,6 +236,16 @@ impl<'ctx> AnyTransItem<'ctx> {
 }
 
 impl<'ctx> AnyTransItemMut<'ctx> {
+    pub fn as_ref(&self) -> AnyTransItem<'_> {
+        match self {
+            AnyTransItemMut::Type(d) => AnyTransItem::Type(d),
+            AnyTransItemMut::Fun(d) => AnyTransItem::Fun(d),
+            AnyTransItemMut::Global(d) => AnyTransItem::Global(d),
+            AnyTransItemMut::TraitDecl(d) => AnyTransItem::TraitDecl(d),
+            AnyTransItemMut::TraitImpl(d) => AnyTransItem::TraitImpl(d),
+        }
+    }
+
     /// The generic parameters of this item.
     pub fn generic_params(&mut self) -> &mut GenericParams {
         match self {

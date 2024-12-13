@@ -23,7 +23,7 @@ impl VisitAstMut for InsertRegions<'_> {
             let index = self
                 .regions
                 .push_with(|index| RegionVar { index, name: None });
-            *r = Region::Var(DeBruijnVar::free(index));
+            *r = Region::Var(DeBruijnVar::bound(DeBruijnId::new(self.depth), index));
         }
     }
 

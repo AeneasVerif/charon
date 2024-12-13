@@ -1509,7 +1509,7 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
                                 .innermost_generics_mut()
                                 .regions
                                 .push_with(|index| RegionVar { index, name: None });
-                            let r = Region::Var(DeBruijnVar::free(rid));
+                            let r = Region::Var(DeBruijnVar::new_at_zero(rid));
                             let mutability = if kind == ClosureKind::Fn {
                                 RefKind::Shared
                             } else {

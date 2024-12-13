@@ -1021,6 +1021,22 @@ fn test_crate::flibidi()
     return
 }
 
+trait test_crate::assoc_ty_trait_ref::SliceIndex<Self>
+{
+    parent_clause0 : [@TraitClause0]: core::marker::Sized<Self::Output>
+    type Output
+}
+
+fn test_crate::assoc_ty_trait_ref::index<I>() -> @TraitClause1::Output
+where
+    [@TraitClause0]: core::marker::Sized<I>,
+    [@TraitClause1]: test_crate::assoc_ty_trait_ref::SliceIndex<I>,
+{
+    let @0: @TraitClause1::Output; // return
+
+    panic(core::panicking::panic)
+}
+
 fn test_crate::{test_crate::TestType<T>[@TraitClause0]}#6::test::TestTrait::test<'_0, Self>(@1: &'_0 (Self)) -> bool
 
 trait test_crate::{test_crate::TestType<T>[@TraitClause0]}#6::test::TestTrait<Self>
