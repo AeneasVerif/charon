@@ -6,13 +6,7 @@ error[E0261]: use of undeclared lifetime name `'a`
   |       |
   |       help: consider introducing lifetime `'a` here: `<'a>`
 
-error: Could not find region: Region { kind: ReError(ErrorGuaranteed { todo: "ErrorGuaranteed(())" }) }
-       
-       Region vars map:
-       {}
-       
-       Bound region vars:
-       [[]]
+error: Unexpected region kind: Region { kind: ReError(ErrorGuaranteed { todo: "ErrorGuaranteed(())" }) }
  --> tests/ui/unsupported/unbound-lifetime.rs:5:1
   |
 5 | fn get(_x: &'a u32) {}

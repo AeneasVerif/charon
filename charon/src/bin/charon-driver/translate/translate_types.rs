@@ -12,11 +12,11 @@ use hax::Visibility;
 use hax_frontend_exporter as hax;
 
 /// Small helper: we ignore some region names (when they are equal to "'_")
-fn check_region_name(s: Option<String>) -> Option<String> {
-    if s.is_some() && s.as_ref().unwrap() == "'_" {
+fn check_region_name(s: String) -> Option<String> {
+    if s == "'_" {
         None
     } else {
-        s
+        Some(s)
     }
 }
 
@@ -27,28 +27,11 @@ pub fn translate_bound_region_kind_name(kind: &hax::BoundRegionKind) -> Option<S
         BrNamed(_, symbol) => Some(symbol.clone()),
         BrEnv => Some("@env".to_owned()),
     };
-    check_region_name(s)
+    s.and_then(check_region_name)
 }
 
-pub fn translate_region_name(region: &hax::Region) -> Option<String> {
-    // Compute the region name
-    use hax::{BoundRegionKind::*, RegionKind::*};
-    let s = match &region.kind {
-        ReEarlyParam(r) => Some(r.name.clone()),
-        ReBound(_, br) => translate_bound_region_kind_name(&br.kind),
-        ReLateParam(r) => match &r.bound_region {
-            BrAnon => None,
-            BrNamed(_, symbol) => Some(symbol.clone()),
-            BrEnv => Some("@env".to_owned()),
-        },
-        ReErased => None,
-        ReStatic => todo!(),
-        ReVar(_) => todo!(),
-        RePlaceholder(_) => todo!(),
-        ReError(_) => todo!(),
-    };
-
-    // We check twice in the case of late bound regions, but it is ok...
+pub fn translate_region_name(region: &hax::EarlyParamRegion) -> Option<String> {
+    let s = region.name.clone();
     check_region_name(s)
 }
 
@@ -59,10 +42,11 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
         span: Span,
         region: &hax::Region,
     ) -> Result<Region, Error> {
+        use hax::RegionKind::*;
         match &region.kind {
-            hax::RegionKind::ReErased => Ok(Region::Erased),
-            hax::RegionKind::ReStatic => Ok(Region::Static),
-            hax::RegionKind::ReBound(id, br) => {
+            ReErased => Ok(Region::Erased),
+            ReStatic => Ok(Region::Static),
+            ReBound(id, br) => {
                 // See the comments in [BodyTransCtx.bound_vars]:
                 // - the De Bruijn index identifies the group of variables
                 // - the var id identifies the variable inside the group
@@ -80,24 +64,25 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
                 };
                 Ok(Region::Var(var))
             }
-            hax::RegionKind::ReVar(_) => {
+            ReEarlyParam(region) => match self.free_region_vars.get(region) {
+                Some(rid) => Ok(Region::Var(DeBruijnVar::free(*rid))),
+                None => {
+                    let err = format!(
+                        "Could not find region: {region:?}\n\n\
+                        Region vars map:\n{:?}\n\nBound region vars:\n{:?}",
+                        self.free_region_vars, self.bound_region_vars
+                    );
+                    error_or_panic!(self, span, err)
+                }
+            },
+            ReVar(..) | RePlaceholder(..) => {
                 // Shouldn't exist outside of type inference.
                 let err = format!("Should not exist outside of type inference: {region:?}");
                 error_or_panic!(self, span, err)
             }
-            _ => {
-                // For the other regions, we use the regions map, which
-                // contains the early-bound (free) regions.
-                match self.free_region_vars.get(region) {
-                    Some(rid) => Ok(Region::Var(DeBruijnVar::free(*rid))),
-                    None => {
-                        let err = format!(
-                                "Could not find region: {:?}\n\nRegion vars map:\n{:?}\n\nBound region vars:\n{:?}",
-                                region, self.free_region_vars, self.bound_region_vars
-                            );
-                        error_or_panic!(self, span, err)
-                    }
-                }
+            ReLateParam(..) | ReError(..) => {
+                let err = format!("Unexpected region kind: {region:?}");
+                error_or_panic!(self, span, err)
             }
         }
     }
@@ -749,11 +734,9 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
     pub(crate) fn push_generic_param(&mut self, param: &hax::GenericParamDef) -> Result<(), Error> {
         match &param.kind {
             hax::GenericParamDefKind::Lifetime => {
-                let region = hax::Region {
-                    kind: hax::RegionKind::ReEarlyParam(hax::EarlyParamRegion {
-                        index: param.index,
-                        name: param.name.clone(),
-                    }),
+                let region = hax::EarlyParamRegion {
+                    index: param.index,
+                    name: param.name.clone(),
                 };
                 let _ = self.push_free_region(region);
             }

@@ -234,8 +234,7 @@ pub(crate) struct BodyTransCtx<'tcx, 'ctx> {
     ///
     /// The [bound_region_vars] field below takes care of the regions which
     /// are bound in the Rustc representation.
-    pub free_region_vars: std::collections::BTreeMap<hax::Region, RegionId>,
-    ///
+    pub free_region_vars: std::collections::BTreeMap<hax::EarlyParamRegion, RegionId>,
     /// The stack of late-bound parameters (can only be lifetimes for now), which
     /// use DeBruijn indices (the other parameters use free variables).
     /// For explanations about what early-bound and late-bound parameters are, see:
@@ -998,7 +997,7 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
     ///
     /// Important: we must push *all* the free regions (which are early-bound
     /// regions) before pushing any (late-)bound region.
-    pub(crate) fn push_free_region(&mut self, r: hax::Region) -> RegionId {
+    pub(crate) fn push_free_region(&mut self, r: hax::EarlyParamRegion) -> RegionId {
         let name = super::translate_types::translate_region_name(&r);
         // Check that there are no late-bound regions
         assert!(self.bound_region_vars.is_empty());
