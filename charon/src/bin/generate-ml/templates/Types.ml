@@ -148,7 +148,9 @@ class virtual ['self] mapreduce_const_generic_base_base =
 type region_var = (region_id, string option) indexed_var
 [@@deriving show, ord]
 
-(** A value of type `'a` bound by generic parameters. *)
+(** A value of type `'a` bound by region parameters. We can't use `binder`
+    below because this would require merging the two recursive def groups below
+    which causes name clash issues in the visitor derives. *)
 type 'a region_binder = { binder_regions : region_var list; binder_value : 'a }
 [@@deriving show, ord]
 
@@ -246,5 +248,31 @@ class virtual ['self] map_ty_base_base =
 
 (* __REPLACE4__ *)
 [@@deriving show, ord]
+
+class ['self] iter_type_decl_base_base =
+  object (self : 'self)
+    inherit [_] iter_generic_params
+
+    method visit_binder
+        : 'a. ('env -> 'a -> unit) -> 'env -> 'a binder -> unit =
+      fun visit_binder_value env x ->
+        let { binder_params; binder_value } = x in
+        self#visit_generic_params env binder_params;
+        visit_binder_value env binder_value
+  end
+
+class virtual ['self] map_type_decl_base_base =
+  object (self : 'self)
+    inherit [_] map_generic_params
+
+    method visit_binder
+        : 'a. ('env -> 'a -> 'a) -> 'env -> 'a binder -> 'a binder
+        =
+      fun visit_binder_value env x ->
+        let { binder_params; binder_value } = x in
+        let binder_params = self#visit_generic_params env binder_params in
+        let binder_value = visit_binder_value env binder_value in
+        { binder_params; binder_value }
+  end
 
 (* __REPLACE5__ *)

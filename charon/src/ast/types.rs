@@ -174,7 +174,7 @@ pub struct TraitImplRef {
 }
 
 /// .0 outlives .1
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub struct OutlivesPred<T, U>(pub T, pub U);
 
 // The derive macro doesn't handle generics well.
@@ -205,7 +205,7 @@ pub type TypeOutlives = OutlivesPred<Ty, Region>;
 /// T : Foo<S = String>
 ///         ^^^^^^^^^^
 /// ```
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Drive, DriveMut)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize, Drive, DriveMut)]
 pub struct TraitTypeConstraint {
     pub trait_ref: TraitRef,
     pub type_name: TraitItemName,
@@ -221,13 +221,31 @@ pub struct GenericArgs {
     pub trait_refs: Vector<TraitClauseId, TraitRef>,
 }
 
-/// A value of type `T` bound by generic parameters. Used in any context where we're adding generic
-/// parameters that aren't on the top-level item, e.g. `for<'a>` clauses, trait methods (TODO),
-/// GATs (TODO).
+/// A value of type `T` bound by regions. We should use `binder` instead but this causes name clash
+/// issues in the derived ocaml visitors.
+/// TODO: merge with `binder`
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Hash)]
 pub struct RegionBinder<T> {
     #[charon::rename("binder_regions")]
     pub regions: Vector<RegionId, RegionVar>,
+    /// Named this way to highlight accesses to the inner value that might be handling parameters
+    /// incorrectly. Prefer using helper methods.
+    #[charon::rename("binder_value")]
+    pub skip_binder: T,
+}
+
+// Renames useful for visitor derives
+pub type BoundTypeOutlives = RegionBinder<TypeOutlives>;
+pub type BoundRegionOutlives = RegionBinder<RegionOutlives>;
+pub type BoundTraitTypeConstraint = RegionBinder<TraitTypeConstraint>;
+
+/// A value of type `T` bound by generic parameters. Used in any context where we're adding generic
+/// parameters that aren't on the top-level item, e.g. `for<'a>` clauses, trait methods (TODO),
+/// GATs (TODO).
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Hash)]
+pub struct Binder<T> {
+    #[charon::rename("binder_params")]
+    pub params: GenericParams,
     /// Named this way to highlight accesses to the inner value that might be handling parameters
     /// incorrectly. Prefer using helper methods.
     #[charon::rename("binder_value")]
@@ -241,7 +259,7 @@ pub struct RegionBinder<T> {
 /// be filled. We group in a different place the predicates which are not
 /// trait clauses, because those enforce constraints but do not need to
 /// be filled with witnesses/instances.
-#[derive(Debug, Default, Clone, PartialEq, Eq, Serialize, Deserialize, Drive, DriveMut)]
+#[derive(Debug, Default, Clone, PartialEq, Eq, Hash, Serialize, Deserialize, Drive, DriveMut)]
 pub struct GenericParams {
     pub regions: Vector<RegionId, RegionVar>,
     pub types: Vector<TypeVarId, TypeVar>,
@@ -249,11 +267,11 @@ pub struct GenericParams {
     // TODO: rename to match [GenericArgs]?
     pub trait_clauses: Vector<TraitClauseId, TraitClause>,
     /// The first region in the pair outlives the second region
-    pub regions_outlive: Vec<RegionBinder<RegionOutlives>>,
+    pub regions_outlive: Vec<BoundRegionOutlives>,
     /// The type outlives the region
-    pub types_outlive: Vec<RegionBinder<TypeOutlives>>,
+    pub types_outlive: Vec<BoundTypeOutlives>,
     /// Constraints over trait associated types
-    pub trait_type_constraints: Vec<RegionBinder<TraitTypeConstraint>>,
+    pub trait_type_constraints: Vec<BoundTraitTypeConstraint>,
 }
 
 /// A predicate of the form `exists<T> where T: Trait`.
@@ -263,7 +281,7 @@ pub struct GenericParams {
 pub struct ExistentialPredicate;
 
 /// Where a given predicate came from.
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Drive, DriveMut)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize, Drive, DriveMut)]
 pub enum PredicateOrigin {
     // Note: we use this for globals too, but that's only available with an unstable feature.
     // ```
@@ -644,8 +662,10 @@ pub enum TyKind {
     /// This is essentially a "constrained" function signature:
     /// arrow types can only contain generic lifetime parameters
     /// (no generic types), no predicates, etc.
-    Arrow(RegionBinder<(Vec<Ty>, Ty)>),
+    Arrow(BoundArrowSig),
 }
+
+pub type BoundArrowSig = RegionBinder<(Vec<Ty>, Ty)>;
 
 /// Builtin types identifiers.
 ///

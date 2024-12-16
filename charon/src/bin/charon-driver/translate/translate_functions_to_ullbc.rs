@@ -1415,7 +1415,7 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
     ) -> Result<FunSig, Error> {
         let span = item_meta.span;
 
-        let mut generics = self.translate_def_generics(span, def)?;
+        self.translate_def_generics(span, def)?;
 
         let signature = match &def.kind {
             hax::FullDefKind::Closure { args, .. } => &args.sig,
@@ -1505,7 +1505,8 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
                     match &kind {
                         ClosureKind::FnOnce => state_ty,
                         ClosureKind::Fn | ClosureKind::FnMut => {
-                            let rid = generics
+                            let rid = self
+                                .innermost_generics_mut()
                                 .regions
                                 .push_with(|index| RegionVar { index, name: None });
                             let r = Region::Var(DeBruijnVar::free(rid));
@@ -1532,7 +1533,7 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
         };
 
         Ok(FunSig {
-            generics,
+            generics: self.the_only_binder().params.clone(),
             is_unsafe,
             is_closure: matches!(&def.kind, hax::FullDefKind::Closure { .. }),
             closure_info,
@@ -1619,7 +1620,7 @@ impl BodyTransCtx<'_, '_> {
         //   const LEN : usize = N;
         // }
         // ```
-        let generics = self.translate_def_generics(span, def)?;
+        self.translate_def_generics(span, def)?;
 
         // Retrieve the kind
         let global_kind = self.get_item_kind(span, def)?;
@@ -1638,7 +1639,7 @@ impl BodyTransCtx<'_, '_> {
         Ok(GlobalDecl {
             def_id,
             item_meta,
-            generics,
+            generics: self.into_generics(),
             ty,
             kind: global_kind,
             init: initializer,

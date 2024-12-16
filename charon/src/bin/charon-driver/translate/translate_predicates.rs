@@ -90,7 +90,9 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
                             ctx.translate_trait_predicate(span, trait_pred)
                         })?;
                         let location = match location {
-                            PredicateLocation::Base => &mut self.generic_params.trait_clauses,
+                            PredicateLocation::Base => {
+                                &mut self.innermost_generics_mut().trait_clauses
+                            }
                             PredicateLocation::Parent => &mut self.parent_trait_clauses,
                             PredicateLocation::Item(item_name) => self
                                 .item_trait_clauses
@@ -110,7 +112,7 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
                             let r1 = ctx.translate_region(span, &p.rhs)?;
                             Ok(OutlivesPred(r0, r1))
                         })?;
-                        self.generic_params.regions_outlive.push(pred);
+                        self.innermost_generics_mut().regions_outlive.push(pred);
                     }
                     ClauseKind::TypeOutlives(p) => {
                         let pred = self.translate_region_binder(span, &pred.kind, |ctx, _| {
@@ -118,7 +120,7 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
                             let r = ctx.translate_region(span, &p.rhs)?;
                             Ok(OutlivesPred(ty, r))
                         })?;
-                        self.generic_params.types_outlive.push(pred);
+                        self.innermost_generics_mut().types_outlive.push(pred);
                     }
                     ClauseKind::Projection(p) => {
                         // This is used to express constraints over associated types.
@@ -137,7 +139,9 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
                                 ty,
                             })
                         })?;
-                        self.generic_params.trait_type_constraints.push(pred);
+                        self.innermost_generics_mut()
+                            .trait_type_constraints
+                            .push(pred);
                     }
                     ClauseKind::ConstArgHasType(..) => {
                         // I don't really understand that one. Why don't they put
@@ -248,7 +252,8 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
                 let mut trait_id = match &impl_source.r#impl {
                     ImplExprAtom::SelfImpl { .. } => TraitRefKind::SelfId,
                     ImplExprAtom::LocalBound { index, .. } => {
-                        TraitRefKind::Clause(DeBruijnVar::free(TraitClauseId::from_usize(*index)))
+                        let var = self.lookup_clause_var(span, *index)?;
+                        TraitRefKind::Clause(var)
                     }
                     _ => unreachable!(),
                 };

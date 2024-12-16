@@ -826,10 +826,9 @@ and impl_elem_of_json (ctx : of_json_ctx) (js : json) :
     (impl_elem, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
-    | `Assoc [ ("Ty", `List [ x_0; x_1 ]) ] ->
-        let* x_0 = generic_params_of_json ctx x_0 in
-        let* x_1 = ty_of_json ctx x_1 in
-        Ok (ImplElemTy (x_0, x_1))
+    | `Assoc [ ("Ty", ty) ] ->
+        let* ty = binder_of_json ty_of_json ctx ty in
+        Ok (ImplElemTy ty)
     | `Assoc [ ("Trait", trait) ] ->
         let* trait = trait_impl_id_of_json ctx trait in
         Ok (ImplElemTrait trait)
@@ -1085,6 +1084,21 @@ and region_binder_of_json :
         in
         let* binder_value = arg0_of_json ctx skip_binder in
         Ok ({ binder_regions; binder_value } : _ region_binder)
+    | _ -> Error "")
+
+and binder_of_json :
+      'a0.
+      (of_json_ctx -> json -> ('a0, string) result) ->
+      of_json_ctx ->
+      json ->
+      ('a0 binder, string) result =
+ fun arg0_of_json ctx js ->
+  combine_error_msgs js __FUNCTION__
+    (match js with
+    | `Assoc [ ("params", params); ("skip_binder", skip_binder) ] ->
+        let* binder_params = generic_params_of_json ctx params in
+        let* binder_value = arg0_of_json ctx skip_binder in
+        Ok ({ binder_params; binder_value } : _ binder)
     | _ -> Error "")
 
 and generic_params_of_json (ctx : of_json_ctx) (js : json) :

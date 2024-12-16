@@ -481,8 +481,8 @@ let rec match_name_with_generics (ctx : ctx) (c : match_config)
          - the impl is a trait impl
       *)
       match impl with
-      | ImplElemTy (_, ty) ->
-          match_expr_with_ty ctx c (mk_empty_maps ()) pty ty
+      | ImplElemTy bound_ty ->
+          match_expr_with_ty ctx c (mk_empty_maps ()) pty bound_ty.binder_value
           && g = TypesUtils.empty_generic_args
       | ImplElemTrait impl_id ->
           match_expr_with_trait_impl_id ctx c pty impl_id
@@ -496,8 +496,8 @@ let rec match_name_with_generics (ctx : ctx) (c : match_config)
          - the impl is a trait impl
       *)
       match impl with
-      | ImplElemTy (_, ty) ->
-          match_expr_with_ty ctx c (mk_empty_maps ()) pty ty
+      | ImplElemTy bound_ty ->
+          match_expr_with_ty ctx c (mk_empty_maps ()) pty bound_ty.binder_value
           && match_name_with_generics ctx c p n g
       | ImplElemTrait impl_id ->
           match_expr_with_trait_impl_id ctx c pty impl_id
@@ -935,7 +935,8 @@ and path_elem_with_generic_args_to_pattern (ctx : ctx) (c : to_pat_config)
 and impl_elem_to_pattern (ctx : ctx) (c : to_pat_config) (impl : T.impl_elem) :
     pattern_elem =
   match impl with
-  | ImplElemTy (generics, ty) -> PImpl (ty_to_pattern ctx c generics ty)
+  | ImplElemTy bound_ty ->
+      PImpl (ty_to_pattern ctx c bound_ty.binder_params bound_ty.binder_value)
   | ImplElemTrait impl_id ->
       let impl = T.TraitImplId.Map.find impl_id ctx.trait_impls in
       PImpl (trait_decl_ref_to_pattern ctx c impl.generics impl.impl_trait)

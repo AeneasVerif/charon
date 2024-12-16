@@ -150,19 +150,8 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
                 RawConstantExpr::MutPtr(Box::new(arg))
             }
             ConstantExprKind::ConstRef { id } => {
-                let var_id = self.const_generic_vars_map.get(&id.index);
-                if let Some(var_id) = var_id {
-                    RawConstantExpr::Var(ConstGenericDbVar::free(*var_id))
-                } else {
-                    error_or_panic!(
-                        self,
-                        span,
-                        &format!(
-                            "Unexpected error: could not find the const var generic of index {}",
-                            id.index
-                        )
-                    )
-                }
+                let var = self.lookup_const_generic_var(span, id)?;
+                RawConstantExpr::Var(var)
             }
             ConstantExprKind::FnPtr {
                 def_id: fn_id,
