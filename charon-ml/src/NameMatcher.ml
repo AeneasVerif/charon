@@ -235,8 +235,7 @@ let ctx_to_fmt_env (ctx : ctx) : PrintLlbcAst.fmt_env =
     global_decls = ctx.global_decls;
     trait_decls = ctx.trait_decls;
     trait_impls = ctx.trait_impls;
-    regions = [];
-    generics = TypesUtils.empty_generic_params;
+    generics = [];
     locals = [];
   }
 
