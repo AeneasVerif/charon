@@ -296,10 +296,10 @@ and trait_instance_id_to_string (env : 'a fmt_env) (id : trait_instance_id) :
 
 and impl_elem_to_string (env : 'a fmt_env) (elem : impl_elem) : string =
   match elem with
-  | ImplElemTy (generics, ty) ->
+  | ImplElemTy bound_ty ->
       (* Locally replace the generics and the predicates *)
-      let env = fmt_env_update_generics_and_preds env generics in
-      ty_to_string env ty
+      let env = fmt_env_update_generics_and_preds env bound_ty.binder_params in
+      ty_to_string env bound_ty.binder_value
   | ImplElemTrait impl_id -> begin
       match TraitImplId.Map.find_opt impl_id env.trait_impls with
       | None -> trait_impl_id_to_string env impl_id

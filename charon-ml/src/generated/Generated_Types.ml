@@ -328,7 +328,9 @@ type const_generic =
 (** Region variable. *)
 type region_var = (region_id, string option) indexed_var [@@deriving show, ord]
 
-(** A value of type `'a` bound by generic parameters. *)
+(** A value of type `'a` bound by region parameters. We can't use `binder`
+    below because this would require merging the two recursive def groups below
+    which causes name clash issues in the visitor derives. *)
 type 'a region_binder = { binder_regions : region_var list; binder_value : 'a }
 [@@deriving show, ord]
 
@@ -766,9 +768,7 @@ type path_elem =
       ```
     We distinguish the two.
  *)
-and impl_elem =
-  | ImplElemTy of generic_params * ty
-  | ImplElemTrait of trait_impl_id
+and impl_elem = ImplElemTy of ty binder | ImplElemTrait of trait_impl_id
 
 (** An item name/path
 
@@ -806,19 +806,57 @@ and impl_elem =
 
     Also note that the first path element in the name is always the crate name.
  *)
-and name = path_elem list [@@deriving show, ord]
+and name = path_elem list
+
+(** A value of type `T` bound by generic parameters. Used in any context where we're adding generic
+    parameters that aren't on the top-level item, e.g. `for<'a>` clauses, trait methods (TODO),
+    GATs (TODO).
+ *)
+and 'a0 binder = {
+  binder_params : generic_params;
+  binder_value : 'a0;
+      (** Named this way to highlight accesses to the inner value that might be handling parameters
+        incorrectly. Prefer using helper methods.
+     *)
+}
+[@@deriving show, ord]
+
+class ['self] iter_type_decl_base_base =
+  object (self : 'self)
+    inherit [_] iter_generic_params
+
+    method visit_binder : 'a. ('env -> 'a -> unit) -> 'env -> 'a binder -> unit
+        =
+      fun visit_binder_value env x ->
+        let { binder_params; binder_value } = x in
+        self#visit_generic_params env binder_params;
+        visit_binder_value env binder_value
+  end
+
+class virtual ['self] map_type_decl_base_base =
+  object (self : 'self)
+    inherit [_] map_generic_params
+
+    method visit_binder
+        : 'a. ('env -> 'a -> 'a) -> 'env -> 'a binder -> 'a binder =
+      fun visit_binder_value env x ->
+        let { binder_params; binder_value } = x in
+        let binder_params = self#visit_generic_params env binder_params in
+        let binder_value = visit_binder_value env binder_value in
+        { binder_params; binder_value }
+  end
 
 (* Ancestors for the type_decl visitors *)
 class ['self] iter_type_decl_base =
   object (self : 'self)
-    inherit [_] iter_generic_params
+    inherit [_] iter_type_decl_base_base
     method visit_attr_info : 'env -> attr_info -> unit = fun _ _ -> ()
     method visit_name : 'env -> name -> unit = fun _ _ -> ()
   end
 
 class ['self] map_type_decl_base =
   object (self : 'self)
-    inherit [_] map_generic_params
+    inherit [_] map_type_decl_base_base
     method visit_attr_info : 'env -> attr_info -> attr_info = fun _ x -> x
     method visit_name : 'env -> name -> name = fun _ x -> x
   end

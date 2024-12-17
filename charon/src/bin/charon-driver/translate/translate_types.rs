@@ -4,19 +4,17 @@ use super::translate_ctx::*;
 use charon_lib::ast::*;
 use charon_lib::builtins;
 use charon_lib::common::hash_by_addr::HashByAddr;
-use charon_lib::formatter::IntoFormatter;
 use charon_lib::ids::Vector;
-use charon_lib::pretty::FmtWithCtx;
 use core::convert::*;
 use hax::Visibility;
 use hax_frontend_exporter as hax;
 
 /// Small helper: we ignore some region names (when they are equal to "'_")
-fn check_region_name(s: Option<String>) -> Option<String> {
-    if s.is_some() && s.as_ref().unwrap() == "'_" {
+fn check_region_name(s: String) -> Option<String> {
+    if s == "'_" {
         None
     } else {
-        s
+        Some(s)
     }
 }
 
@@ -27,28 +25,11 @@ pub fn translate_bound_region_kind_name(kind: &hax::BoundRegionKind) -> Option<S
         BrNamed(_, symbol) => Some(symbol.clone()),
         BrEnv => Some("@env".to_owned()),
     };
-    check_region_name(s)
+    s.and_then(check_region_name)
 }
 
-pub fn translate_region_name(region: &hax::Region) -> Option<String> {
-    // Compute the region name
-    use hax::{BoundRegionKind::*, RegionKind::*};
-    let s = match &region.kind {
-        ReEarlyParam(r) => Some(r.name.clone()),
-        ReBound(_, br) => translate_bound_region_kind_name(&br.kind),
-        ReLateParam(r) => match &r.bound_region {
-            BrAnon => None,
-            BrNamed(_, symbol) => Some(symbol.clone()),
-            BrEnv => Some("@env".to_owned()),
-        },
-        ReErased => None,
-        ReStatic => todo!(),
-        ReVar(_) => todo!(),
-        RePlaceholder(_) => todo!(),
-        ReError(_) => todo!(),
-    };
-
-    // We check twice in the case of late bound regions, but it is ok...
+pub fn translate_region_name(region: &hax::EarlyParamRegion) -> Option<String> {
+    let s = region.name.clone();
     check_region_name(s)
 }
 
@@ -59,45 +40,26 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
         span: Span,
         region: &hax::Region,
     ) -> Result<Region, Error> {
+        use hax::RegionKind::*;
         match &region.kind {
-            hax::RegionKind::ReErased => Ok(Region::Erased),
-            hax::RegionKind::ReStatic => Ok(Region::Static),
-            hax::RegionKind::ReBound(id, br) => {
-                // See the comments in [BodyTransCtx.bound_vars]:
-                // - the De Bruijn index identifies the group of variables
-                // - the var id identifies the variable inside the group
-                let rid = self
-                    .bound_region_vars
-                    .get(*id)
-                    .expect("Error: missing binder when translating lifetime")
-                    .get(br.var)
-                    .expect("Error: lifetime not found, binders were handled incorrectly");
-                let var = if *id == self.region_vars.len() - 1 {
-                    // Late-bound in the signature: we represent it as a free var.
-                    DeBruijnVar::free(*rid)
-                } else {
-                    DeBruijnVar::bound(DeBruijnId::new(*id), *rid)
-                };
+            ReErased => Ok(Region::Erased),
+            ReStatic => Ok(Region::Static),
+            ReBound(id, br) => {
+                let var = self.lookup_bound_region(span, *id, br.var)?;
                 Ok(Region::Var(var))
             }
-            hax::RegionKind::ReVar(_) => {
+            ReEarlyParam(region) => {
+                let var = self.lookup_early_region(span, region)?;
+                Ok(Region::Var(var))
+            }
+            ReVar(..) | RePlaceholder(..) => {
                 // Shouldn't exist outside of type inference.
                 let err = format!("Should not exist outside of type inference: {region:?}");
                 error_or_panic!(self, span, err)
             }
-            _ => {
-                // For the other regions, we use the regions map, which
-                // contains the early-bound (free) regions.
-                match self.free_region_vars.get(region) {
-                    Some(rid) => Ok(Region::Var(DeBruijnVar::free(*rid))),
-                    None => {
-                        let err = format!(
-                                "Could not find region: {:?}\n\nRegion vars map:\n{:?}\n\nBound region vars:\n{:?}",
-                                region, self.free_region_vars, self.bound_region_vars
-                            );
-                        error_or_panic!(self, span, err)
-                    }
-                }
+            ReLateParam(..) | ReError(..) => {
+                let err = format!("Unexpected region kind: {region:?}");
+                error_or_panic!(self, span, err)
             }
         }
     }
@@ -114,7 +76,7 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
     pub(crate) fn translate_ty(&mut self, span: Span, ty: &hax::Ty) -> Result<Ty, Error> {
         trace!("{:?}", ty);
         let cache_key = HashByAddr(ty.inner().clone());
-        if let Some(ty) = self.type_trans_cache.get(&cache_key) {
+        if let Some(ty) = self.lookup_cached_type(&cache_key) {
             return Ok(ty.clone());
         }
 
@@ -266,17 +228,8 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
                 trace!("Param");
 
                 // Retrieve the translation of the substituted type:
-                match self.type_vars_map.get(&param.index) {
-                    None => error_or_panic!(
-                        self,
-                        span,
-                        format!(
-                            "Could not find the type variable {:?} (index: {:?})",
-                            param.name, param.index
-                        )
-                    ),
-                    Some(var_id) => TyKind::TypeVar(DeBruijnVar::Free(*var_id)),
-                }
+                let var = self.lookup_type_var(span, param)?;
+                TyKind::TypeVar(var)
             }
 
             hax::TyKind::Foreign(def_id) => {
@@ -333,7 +286,9 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
             }
         };
         let ty = kind.into_ty();
-        self.type_trans_cache.insert(cache_key, ty.clone());
+        self.innermost_binder_mut()
+            .type_trans_cache
+            .insert(cache_key, ty.clone());
         Ok(ty)
     }
 
@@ -573,51 +528,22 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
         Ok(ScalarValue::from_bits(int_ty, discr.val))
     }
 
-    /// Sanity check: region names are pairwise distinct (this caused trouble
-    /// when generating names for the backward functions in Aeneas): at some
-    /// point, Rustc introduced names equal to `Some("'_")` for the anonymous
-    /// regions, instead of using `None` (we now check in [translate_region_name]
-    /// and ignore names equal to "'_").
-    pub(crate) fn check_generics(&self) {
-        let mut s = std::collections::HashSet::new();
-        for r in self.region_vars.get(0).unwrap() {
-            let name = &r.name;
-            if name.is_some() {
-                let name = name.as_ref().unwrap();
-                assert!(
-                    !s.contains(name),
-                    "Name \"{}\" used for different lifetimes",
-                    name
-                );
-                s.insert(name.clone());
-            }
-        }
-    }
-
     /// Translate the generics and predicates of this item and its parents.
     pub(crate) fn translate_def_generics(
         &mut self,
         span: Span,
         def: &hax::FullDef,
-    ) -> Result<GenericParams, Error> {
+    ) -> Result<(), Error> {
+        assert!(self.binding_levels.len() == 0);
+        self.binding_levels.push_front(BindingLevel::new(true));
         self.push_generics_for_def(span, def, false)?;
-        let mut generic_params = self.generic_params.clone();
+        self.innermost_binder_mut().params.check_consistency();
+        Ok(())
+    }
 
-        // Sanity checks
-        self.check_generics();
-        assert!(generic_params
-            .trait_clauses
-            .iter()
-            .enumerate()
-            .all(|(i, c)| c.clause_id.index() == i));
-
-        // The regons were tracked separately, we add them back here.
-        assert!(generic_params.regions.is_empty());
-        assert!(self.region_vars.len() == 1);
-        generic_params.regions = self.region_vars[0].clone();
-
-        trace!("Translated generics: {generic_params:?}");
-        Ok(generic_params)
+    pub(crate) fn into_generics(mut self) -> GenericParams {
+        assert!(self.binding_levels.len() == 1);
+        self.binding_levels.pop_back().unwrap().params
     }
 
     /// Add the generics and predicates of this item and its parents to the current context.
@@ -628,8 +554,8 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
         is_parent: bool,
     ) -> Result<(), Error> {
         use hax::FullDefKind;
-        // Add generics from the parent item, recursively (recursivity is useful for closures, as
-        // they could be nested).
+        // Add generics from the parent item, recursively (recursivity is important for closures,
+        // as they could be nested).
         match &def.kind {
             FullDefKind::AssocTy { .. }
             | FullDefKind::AssocFn { .. }
@@ -643,6 +569,20 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
             }
             _ => {}
         }
+        self.push_generics_for_def_without_parents(span, def, !is_parent, !is_parent)?;
+        Ok(())
+    }
+
+    /// Add the generics and predicates of this item. This does not include the parent generics;
+    /// use `push_generics_for_def` to get the full list.
+    fn push_generics_for_def_without_parents(
+        &mut self,
+        span: Span,
+        def: &hax::FullDef,
+        include_late_bound: bool,
+        include_assoc_ty_clauses: bool,
+    ) -> Result<(), Error> {
+        use hax::FullDefKind;
         if let Some((generics, predicates)) = def.generics() {
             // Add the generic params.
             self.push_generic_params(generics)?;
@@ -691,7 +631,7 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
             self.register_predicates(predicates, origin, &location)?;
 
             if let hax::FullDefKind::Trait { items, .. } = &def.kind
-                && !is_parent
+                && include_assoc_ty_clauses
             {
                 // Also add the predicates on associated types.
                 // FIXME(gat): don't skip GATs.
@@ -728,12 +668,12 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
             hax::FullDefKind::AssocFn { sig, .. } => Some(sig),
             _ => None,
         };
-        // We don't want the late-bound parameters of the parent, only early-bound ones.
         if let Some(signature) = signature
-            && !is_parent
+            && include_late_bound
         {
-            let binder = signature.rebind(());
-            self.set_first_bound_regions_group(span, binder)?;
+            let innermost_binder = self.innermost_binder_mut();
+            assert!(innermost_binder.bound_region_vars.is_empty());
+            innermost_binder.push_params_from_binder(signature.rebind(()))?;
         }
 
         Ok(())
@@ -749,16 +689,16 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
     pub(crate) fn push_generic_param(&mut self, param: &hax::GenericParamDef) -> Result<(), Error> {
         match &param.kind {
             hax::GenericParamDefKind::Lifetime => {
-                let region = hax::Region {
-                    kind: hax::RegionKind::ReEarlyParam(hax::EarlyParamRegion {
-                        index: param.index,
-                        name: param.name.clone(),
-                    }),
+                let region = hax::EarlyParamRegion {
+                    index: param.index,
+                    name: param.name.clone(),
                 };
-                let _ = self.push_free_region(region);
+                let _ = self.innermost_binder_mut().push_early_region(region);
             }
             hax::GenericParamDefKind::Type { .. } => {
-                let _ = self.push_type_var(param.index, param.name.clone());
+                let _ = self
+                    .innermost_binder_mut()
+                    .push_type_var(param.index, param.name.clone());
             }
             hax::GenericParamDefKind::Const { ty, .. } => {
                 let span = self.def_span(&param.def_id);
@@ -766,7 +706,11 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
                 // non-primitive adts, etc. As a result, we can use an empty context.
                 let ty = self.translate_ty(span, ty)?;
                 match ty.kind().as_literal() {
-                    Some(ty) => self.push_const_generic_var(param.index, *ty, param.name.clone()),
+                    Some(ty) => self.innermost_binder_mut().push_const_generic_var(
+                        param.index,
+                        *ty,
+                        param.name.clone(),
+                    ),
                     None => error_or_panic!(
                         self,
                         span,
@@ -796,7 +740,7 @@ impl BodyTransCtx<'_, '_> {
         let span = item_meta.span;
 
         // Translate generics and predicates
-        let generics = self.translate_def_generics(span, def)?;
+        self.translate_def_generics(span, def)?;
 
         // Translate type body
         let kind = match &def.kind {
@@ -824,15 +768,9 @@ impl BodyTransCtx<'_, '_> {
         let type_def = TypeDecl {
             def_id: trans_id,
             item_meta,
-            generics,
+            generics: self.into_generics(),
             kind,
         };
-
-        trace!(
-            "{} -> {}",
-            trans_id.to_string(),
-            type_def.fmt_with_ctx(&self.into_fmt())
-        );
 
         Ok(type_def)
     }

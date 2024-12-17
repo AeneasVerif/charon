@@ -27,4 +27,5 @@ pub use krate::*;
 pub use meta::*;
 pub use names::*;
 pub use types::*;
+pub use types_utils::TyVisitable;
 pub use values::*;

@@ -1,9 +1,10 @@
 //! This file groups everything which is linked to implementations about [crate::types]
+use crate::ast::BoundTy;
 use crate::types::*;
 use crate::{common::visitor_event::VisitEvent, ids::Vector};
-use derive_visitor::{Drive, DriveMut, Event, Visitor, VisitorMut};
+use derive_visitor::{visitor_enter_fn_mut, Drive, DriveMut, Event, Visitor, VisitorMut};
+use std::collections::HashSet;
 use std::{collections::HashMap, iter::Iterator};
-use DeBruijnVar::Free;
 
 impl GenericParams {
     pub fn empty() -> Self {
@@ -19,6 +20,32 @@ impl GenericParams {
             || !self.types_outlive.is_empty()
             || !self.regions_outlive.is_empty()
             || !self.trait_type_constraints.is_empty()
+    }
+
+    /// Run some sanity checks.
+    pub fn check_consistency(&self) {
+        // Sanity check: check the clause ids are consistent.
+        assert!(self
+            .trait_clauses
+            .iter()
+            .enumerate()
+            .all(|(i, c)| c.clause_id.index() == i));
+
+        // Sanity check: region names are pairwise distinct (this caused trouble when generating
+        // names for the backward functions in Aeneas): at some point, Rustc introduced names equal
+        // to `Some("'_")` for the anonymous regions, instead of using `None` (we now check in
+        // [translate_region_name] and ignore names equal to "'_").
+        let mut s = HashSet::new();
+        for r in &self.regions {
+            if let Some(name) = &r.name {
+                assert!(
+                    !s.contains(name),
+                    "Name \"{}\" reused for two different lifetimes",
+                    name
+                );
+                s.insert(name);
+            }
+        }
     }
 
     pub fn len(&self) -> usize {
@@ -399,6 +426,25 @@ impl<T: DriveMut> DriveMut for RegionBinder<T> {
     }
 }
 
+// The derive macro doesn't handle generics.
+impl<T: Drive> Drive for Binder<T> {
+    fn drive<V: Visitor>(&self, visitor: &mut V) {
+        visitor.visit(self, Event::Enter);
+        self.params.drive(visitor);
+        self.skip_binder.drive(visitor);
+        visitor.visit(self, Event::Exit);
+    }
+}
+
+impl<T: DriveMut> DriveMut for Binder<T> {
+    fn drive_mut<V: VisitorMut>(&mut self, visitor: &mut V) {
+        visitor.visit(self, Event::Enter);
+        self.params.drive_mut(visitor);
+        self.skip_binder.drive_mut(visitor);
+        visitor.visit(self, Event::Exit);
+    }
+}
+
 /// See comment on `Ty`: this impl doesn't recurse into the contents of the type.
 impl Drive for Ty {
     fn drive<V: Visitor>(&self, visitor: &mut V) {
@@ -504,25 +550,32 @@ impl<V> std::ops::DerefMut for VisitInsideTy<V> {
     }
 }
 
-type FnTys = (Vec<Ty>, Ty);
-
 /// Visitor for the [Ty::substitute] function.
+/// This substitutes only free variables; this does not work for non-top-level binders.
 #[derive(VisitorMut)]
 #[visitor(
     PolyTraitDeclRef(enter, exit),
-    FnTys(enter, exit),
+    BoundArrowSig(enter, exit),
+    BoundRegionOutlives(enter, exit),
+    BoundTypeOutlives(enter, exit),
+    BoundTraitTypeConstraint(enter, exit),
+    BoundTy(enter, exit),
     Region(exit),
     Ty(exit),
     ConstGeneric(exit),
     TraitRef(exit)
 )]
-struct SubstVisitor<'a> {
+pub(crate) struct SubstVisitor<'a> {
     generics: &'a GenericArgs,
     // Tracks the depth of binders we're inside of.
     // Important: we must update it whenever we go inside a binder. Visitors are not generic so we
     // must handle all the specific cases by hand. So far there's:
     // - `PolyTraitDeclRef`
-    // - The contents of `TyKind::Arrow`
+    // - `TyKind::Arrow`
+    // - `BoundTypeOutlives`
+    // - `BoundRegionOutlives`
+    // - `BoundTraitTypeConstraint`
+    // - `BoundTy`
     binder_depth: DeBruijnId,
 }
 
@@ -534,27 +587,55 @@ impl<'a> SubstVisitor<'a> {
         })
     }
 
+    fn should_subst<Id: Copy>(&self, var: DeBruijnVar<Id>) -> Option<Id> {
+        match var {
+            DeBruijnVar::Free(id) => Some(id),
+            DeBruijnVar::Bound(..) => None,
+        }
+    }
+
     fn enter_poly_trait_decl_ref(&mut self, _: &mut PolyTraitDeclRef) {
         self.binder_depth = self.binder_depth.incr();
     }
-
     fn exit_poly_trait_decl_ref(&mut self, _: &mut PolyTraitDeclRef) {
         self.binder_depth = self.binder_depth.decr();
     }
-
-    fn enter_fn_tys(&mut self, _: &mut FnTys) {
+    fn enter_bound_arrow_sig(&mut self, _: &BoundArrowSig) {
         self.binder_depth = self.binder_depth.incr();
     }
-
-    fn exit_fn_tys(&mut self, _: &mut FnTys) {
+    fn exit_bound_arrow_sig(&mut self, _: &BoundArrowSig) {
+        self.binder_depth = self.binder_depth.decr();
+    }
+    fn enter_bound_ty(&mut self, _: &BoundTy) {
+        self.binder_depth = self.binder_depth.incr();
+    }
+    fn exit_bound_ty(&mut self, _: &BoundTy) {
+        self.binder_depth = self.binder_depth.decr();
+    }
+    fn enter_bound_type_outlives(&mut self, _: &BoundTypeOutlives) {
+        self.binder_depth = self.binder_depth.incr();
+    }
+    fn exit_bound_type_outlives(&mut self, _: &BoundTypeOutlives) {
+        self.binder_depth = self.binder_depth.decr();
+    }
+    fn enter_bound_region_outlives(&mut self, _: &BoundRegionOutlives) {
+        self.binder_depth = self.binder_depth.incr();
+    }
+    fn exit_bound_region_outlives(&mut self, _: &BoundRegionOutlives) {
+        self.binder_depth = self.binder_depth.decr();
+    }
+    fn enter_bound_trait_type_constraint(&mut self, _: &BoundTraitTypeConstraint) {
+        self.binder_depth = self.binder_depth.incr();
+    }
+    fn exit_bound_trait_type_constraint(&mut self, _: &BoundTraitTypeConstraint) {
         self.binder_depth = self.binder_depth.decr();
     }
 
     fn exit_region(&mut self, r: &mut Region) {
         match r {
             Region::Var(var) => {
-                if let Some(varid) = var.bound_at_depth(self.binder_depth) {
-                    *r = self.generics.regions.get(varid).unwrap().clone()
+                if let Some(varid) = self.should_subst(*var) {
+                    *r = self.generics.regions[varid].move_under_binders(self.binder_depth)
                 }
             }
             _ => (),
@@ -563,9 +644,12 @@ impl<'a> SubstVisitor<'a> {
 
     fn exit_ty(&mut self, ty: &mut Ty) {
         match ty.kind() {
-            TyKind::TypeVar(Free(id)) => {
-                {}
-                *ty = self.generics.types.get(*id).unwrap().clone()
+            TyKind::TypeVar(var) => {
+                if let Some(id) = self.should_subst(*var) {
+                    *ty = self.generics.types[id]
+                        .clone()
+                        .move_under_binders(self.binder_depth)
+                }
             }
             _ => (),
         }
@@ -573,8 +657,12 @@ impl<'a> SubstVisitor<'a> {
 
     fn exit_const_generic(&mut self, cg: &mut ConstGeneric) {
         match cg {
-            ConstGeneric::Var(Free(id)) => {
-                *cg = self.generics.const_generics.get(*id).unwrap().clone()
+            ConstGeneric::Var(var) => {
+                if let Some(id) = self.should_subst(*var) {
+                    *cg = self.generics.const_generics[id]
+                        .clone()
+                        .move_under_binders(self.binder_depth)
+                }
             }
             _ => (),
         }
@@ -582,19 +670,51 @@ impl<'a> SubstVisitor<'a> {
 
     fn exit_trait_ref(&mut self, tr: &mut TraitRef) {
         match &mut tr.kind {
-            TraitRefKind::Clause(Free(id)) => {
-                *tr = self.generics.trait_refs.get(*id).unwrap().clone()
+            TraitRefKind::Clause(var) => {
+                if let Some(id) = self.should_subst(*var) {
+                    *tr = self.generics.trait_refs[id]
+                        .clone()
+                        .move_under_binders(self.binder_depth)
+                }
             }
             _ => (),
         }
     }
 }
 
-impl Ty {
-    pub fn substitute(&mut self, generics: &GenericArgs) {
-        self.drive_inner_mut(&mut SubstVisitor::new(generics));
+/// Types that are involved at the type-level and may be substituted around.
+pub trait TyVisitable: Sized + Drive + DriveMut {
+    fn substitute(&mut self, generics: &GenericArgs) {
+        self.drive_mut(&mut SubstVisitor::new(generics));
+    }
+
+    /// Move under `depth` binders.
+    fn move_under_binders(mut self, depth: DeBruijnId) -> Self {
+        self.visit_db_id(|id| *id = id.plus(depth));
+        self
+    }
+
+    /// Move the region out of `depth` binders. Returns `None` if the variable is bound in one of
+    /// these `depth` binders.
+    fn move_from_under_binders(mut self, depth: DeBruijnId) -> Option<Self> {
+        let mut ok = true;
+        self.visit_db_id(|id| match id.sub(depth) {
+            Some(sub) => *id = sub,
+            None => ok = false,
+        });
+        ok.then_some(self)
+    }
+
+    /// Helper function.
+    fn visit_db_id(&mut self, f: impl FnMut(&mut DeBruijnId)) {
+        self.drive_mut(&mut Ty::visit_inside(visitor_enter_fn_mut(f)));
     }
 }
+
+impl TyVisitable for ConstGeneric {}
+impl TyVisitable for Region {}
+impl TyVisitable for TraitRef {}
+impl TyVisitable for Ty {}
 
 impl PartialEq for TraitClause {
     fn eq(&self, other: &Self) -> bool {

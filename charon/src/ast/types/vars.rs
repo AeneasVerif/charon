@@ -68,7 +68,7 @@ generate_index_type!(ConstGenericVarId, "Const");
 generate_index_type!(TraitClauseId, "TraitClause");
 
 /// A type variable in a signature or binder.
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Drive, DriveMut)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize, Drive, DriveMut)]
 pub struct TypeVar {
     /// Index identifying the variable among other variables bound at the same level.
     pub index: TypeVarId,
@@ -78,7 +78,7 @@ pub struct TypeVar {
 
 /// A region variable in a signature or binder.
 #[derive(
-    Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Hash, PartialOrd, Ord, Drive, DriveMut,
+    Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize, Drive, DriveMut,
 )]
 pub struct RegionVar {
     /// Index identifying the variable among other variables bound at the same level.
@@ -88,7 +88,7 @@ pub struct RegionVar {
 }
 
 /// A const generic variable in a signature or binder.
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Drive, DriveMut)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize, Drive, DriveMut)]
 pub struct ConstGenericVar {
     /// Index identifying the variable among other variables bound at the same level.
     pub index: ConstGenericVarId,
@@ -100,7 +100,7 @@ pub struct ConstGenericVar {
 
 /// A trait predicate in a signature, of the form `Type: Trait<Args>`. This functions like a
 /// variable binder, to which variables of the form `TraitRefKind::Clause` can refer to.
-#[derive(Debug, Clone, Serialize, Deserialize, Drive, DriveMut)]
+#[derive(Debug, Clone, Hash, Serialize, Deserialize, Drive, DriveMut)]
 pub struct TraitClause {
     /// Index identifying the clause among other clauses bound at the same level.
     pub clause_id: TraitClauseId,
@@ -124,6 +124,10 @@ impl DeBruijnId {
         DeBruijnId { index: 0 }
     }
 
+    pub fn one() -> Self {
+        DeBruijnId { index: 1 }
+    }
+
     pub fn new(index: usize) -> Self {
         DeBruijnId { index }
     }
@@ -143,6 +147,18 @@ impl DeBruijnId {
             index: self.index - 1,
         }
     }
+
+    pub fn plus(&self, delta: Self) -> Self {
+        DeBruijnId {
+            index: self.index + delta.index,
+        }
+    }
+
+    pub fn sub(&self, delta: Self) -> Option<Self> {
+        Some(DeBruijnId {
+            index: self.index.checked_sub(delta.index)?,
+        })
+    }
 }
 
 impl<Id> DeBruijnVar<Id>
@@ -161,6 +177,13 @@ where
         DeBruijnVar::Bound(index, id)
     }
 
+    pub fn incr(&self) -> Self {
+        match *self {
+            DeBruijnVar::Bound(dbid, varid) => DeBruijnVar::Bound(dbid.incr(), varid),
+            DeBruijnVar::Free(varid) => DeBruijnVar::Free(varid),
+        }
+    }
+
     pub fn decr(&self) -> Self {
         match *self {
             DeBruijnVar::Bound(dbid, varid) => DeBruijnVar::Bound(dbid.decr(), varid),
@@ -168,10 +191,28 @@ where
         }
     }
 
+    /// Returns the variable id if it is bound as the given depth.
     pub fn bound_at_depth(&self, depth: DeBruijnId) -> Option<Id> {
         match *self {
             DeBruijnVar::Bound(dbid, varid) if dbid == depth => Some(varid),
             _ => None,
+        }
+    }
+
+    /// Move the variable out of `depth` binders. Returns `None` if the variable is bound in one of
+    /// these `depth` binders.
+    pub fn move_out_from_depth(&self, depth: DeBruijnId) -> Option<Self> {
+        Some(match *self {
+            DeBruijnVar::Bound(dbid, varid) => DeBruijnVar::Bound(dbid.sub(depth)?, varid),
+            DeBruijnVar::Free(_) => *self,
+        })
+    }
+
+    /// Move under `depth` binders.
+    pub fn move_under_binders(&self, depth: DeBruijnId) -> Self {
+        match *self {
+            DeBruijnVar::Bound(dbid, varid) => DeBruijnVar::Bound(dbid.plus(depth), varid),
+            DeBruijnVar::Free(_) => *self,
         }
     }
 }
@@ -179,6 +220,12 @@ where
 impl TypeVar {
     pub fn new(index: TypeVarId, name: String) -> TypeVar {
         TypeVar { index, name }
+    }
+}
+
+impl Default for DeBruijnId {
+    fn default() -> Self {
+        Self::zero()
     }
 }
 
