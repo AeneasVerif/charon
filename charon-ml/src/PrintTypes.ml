@@ -15,6 +15,21 @@ let region_var_to_string (rv : region_var) : string =
   | Some name -> name
   | None -> RegionId.to_string rv.index
 
+let g_region_group_to_string (rid_to_string : 'rid -> string)
+    (id_to_string : 'id -> string) (gr : ('rid, 'id) g_region_group) : string =
+  let { id; regions; parents } = gr in
+  "{ id: " ^ id_to_string id ^ "; regions: ["
+  ^ String.concat ", " (List.map rid_to_string regions)
+  ^ "]; parents: ["
+  ^ String.concat ", " (List.map id_to_string parents)
+  ^ "] }"
+
+let region_var_group_to_string (gr : region_var_group) : string =
+  g_region_group_to_string RegionId.to_string RegionGroupId.to_string gr
+
+let region_var_groups_to_string (gl : region_var_groups) : string =
+  String.concat "\n" (List.map region_var_group_to_string gl)
+
 let ref_kind_to_string (rk : ref_kind) : string =
   match rk with
   | RMut -> "Mut"
