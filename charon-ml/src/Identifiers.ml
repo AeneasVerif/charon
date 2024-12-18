@@ -39,9 +39,11 @@ module type Id = sig
 
   val zero : id
   val generator_zero : generator
+  val generator_from_id : id -> generator
   val generator_from_incr_id : id -> generator
   val fresh_stateful_generator : unit -> generator ref * (unit -> id)
   val mk_stateful_generator : generator -> generator ref * (unit -> id)
+  val mk_stateful_generator_starting_at_id : id -> generator ref * (unit -> id)
   val incr : id -> id
 
   (** This function returns the current value of the counter, without incrementing it *)
@@ -125,6 +127,7 @@ module IdGen () : Id = struct
      * they happen *)
     if x = max_int then raise (Utils.IntegerOverflow ()) else x + 1
 
+  let generator_from_id id = id
   let generator_from_incr_id id = incr id
 
   let mk_stateful_generator g =
@@ -136,6 +139,7 @@ module IdGen () : Id = struct
     in
     (g, fresh)
 
+  let mk_stateful_generator_starting_at_id id = mk_stateful_generator id
   let get_counter_value gen = gen
   let fresh_stateful_generator () = mk_stateful_generator 0
   let fresh gen = (gen, incr gen)
