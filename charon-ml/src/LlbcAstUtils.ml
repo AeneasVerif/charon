@@ -88,25 +88,6 @@ and chain_statements_in_switch (switch : switch) (st : statement) : switch =
       let otherwise = Option.map (fun b -> chain_statements b st) otherwise in
       Match (op, branches, otherwise)
 
-(** Compute a map from function declaration ids to declaration groups. *)
-let compute_fun_decl_groups_map (c : crate) : FunDeclId.Set.t FunDeclId.Map.t =
-  FunDeclId.Map.of_list
-    (List.flatten
-       (List.filter_map
-          (function
-            | FunGroup (NonRecGroup id) ->
-                Some [ (id, FunDeclId.Set.singleton id) ]
-            | FunGroup (RecGroup ids) ->
-                let idset = FunDeclId.Set.of_list ids in
-                Some (List.map (fun id -> (id, idset)) ids)
-            | TypeGroup _ | GlobalGroup _ | TraitDeclGroup _ | TraitImplGroup _
-              -> None
-            | MixedGroup _ ->
-                raise
-                  (Failure
-                     "Mixed declaration groups cannot be indexed by declaration"))
-          c.declarations))
-
 let crate_get_item_meta (m : crate) (id : any_decl_id) : Types.item_meta option
     =
   match id with

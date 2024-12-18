@@ -65,6 +65,23 @@ macro_rules! error_assert {
 }
 pub use error_assert;
 
+/// Custom assert to report an error and optionally panic
+#[macro_export]
+macro_rules! sanity_check {
+    ($ctx:expr, $span: expr, $b: expr) => {
+        if !$b {
+            let msg = format!("assertion failure: {:?}", stringify!($b));
+            $crate::errors::register_error_or_panic!($ctx, $span, msg);
+        }
+    };
+    ($ctx:expr, $span: expr, $b: expr, $msg: expr) => {
+        if !$b {
+            $crate::errors::register_error_or_panic!($ctx, $span, $msg);
+        }
+    };
+}
+pub use sanity_check;
+
 /// Common error used during the translation.
 #[derive(Debug)]
 pub struct Error {
