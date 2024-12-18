@@ -175,6 +175,15 @@ impl TranslatedCrate {
             .iter()
             .flat_map(|id| Some((*id, self.get_item(*id)?)))
     }
+    pub fn all_items_mut(&mut self) -> impl Iterator<Item = AnyTransItemMut<'_>> {
+        self.type_decls
+            .iter_mut()
+            .map(AnyTransItemMut::Type)
+            .chain(self.fun_decls.iter_mut().map(AnyTransItemMut::Fun))
+            .chain(self.global_decls.iter_mut().map(AnyTransItemMut::Global))
+            .chain(self.trait_decls.iter_mut().map(AnyTransItemMut::TraitDecl))
+            .chain(self.trait_impls.iter_mut().map(AnyTransItemMut::TraitImpl))
+    }
 }
 
 impl<'ctx> AnyTransItem<'ctx> {
@@ -223,6 +232,16 @@ impl<'ctx> AnyTransItem<'ctx> {
 }
 
 impl<'ctx> AnyTransItemMut<'ctx> {
+    pub fn as_ref(&self) -> AnyTransItem<'_> {
+        match self {
+            AnyTransItemMut::Type(d) => AnyTransItem::Type(d),
+            AnyTransItemMut::Fun(d) => AnyTransItem::Fun(d),
+            AnyTransItemMut::Global(d) => AnyTransItem::Global(d),
+            AnyTransItemMut::TraitDecl(d) => AnyTransItem::TraitDecl(d),
+            AnyTransItemMut::TraitImpl(d) => AnyTransItem::TraitImpl(d),
+        }
+    }
+
     /// The generic parameters of this item.
     pub fn generic_params(&mut self) -> &mut GenericParams {
         match self {
