@@ -22,6 +22,7 @@
 
 use crate::ast::*;
 use crate::common::ensure_sufficient_stack;
+use crate::errors::sanity_check;
 use crate::formatter::{Formatter, IntoFormatter};
 use crate::llbc_ast as tgt;
 use crate::meta::{combine_span, Span};
@@ -626,7 +627,11 @@ fn compute_loop_exit_candidates(
 ///     s
 /// }
 /// ```
-fn compute_loop_exits(cfg: &CfgInfo) -> HashMap<src::BlockId, Option<src::BlockId>> {
+fn compute_loop_exits(
+    ctx: &mut TransformCtx,
+    body: &src::ExprBody,
+    cfg: &CfgInfo,
+) -> HashMap<src::BlockId, Option<src::BlockId>> {
     let mut explored = HashSet::new();
     let mut ordered_loops = Vec::new();
     let mut loop_exits = HashMap::new();
@@ -777,7 +782,8 @@ fn compute_loop_exits(cfg: &CfgInfo) -> HashMap<src::BlockId, Option<src::BlockI
                 //
                 // Adding this sanity check so that we can see when there are
                 // several candidates.
-                assert!(candidates.is_empty());
+                let span = body.body[loop_id].terminator.span; // Taking *a* span from the block
+                sanity_check!(ctx, span, candidates.is_empty());
                 trace!("Loop {loop_id}: did not select an exit candidate because they all lead to panics");
                 chosen_loop_exits.insert(loop_id, None);
             }
@@ -1210,7 +1216,11 @@ struct ExitInfo {
 ///
 /// The following function thus computes the "exits" for loops and switches, which
 /// are basically the points where control-flow joins.
-fn compute_loop_switch_exits(cfg_info: &CfgInfo) -> ExitInfo {
+fn compute_loop_switch_exits(
+    ctx: &mut TransformCtx,
+    body: &src::ExprBody,
+    cfg_info: &CfgInfo,
+) -> ExitInfo {
     // Use the CFG without backward edges to topologically sort the nodes.
     // Note that `toposort` returns `Err` if and only if it finds cycles (which
     // can't happen).
@@ -1224,7 +1234,7 @@ fn compute_loop_switch_exits(cfg_info: &CfgInfo) -> ExitInfo {
         .collect();
 
     // Compute the loop exits
-    let loop_exits = compute_loop_exits(cfg_info);
+    let loop_exits = compute_loop_exits(ctx, body, cfg_info);
 
     // Compute the switch exits
     let switch_exits = compute_switch_exits(cfg_info, &tsort_map);
@@ -1679,7 +1689,11 @@ fn translate_block(
     block
 }
 
-fn translate_body_aux(no_code_duplication: bool, src_body: &src::ExprBody) -> tgt::ExprBody {
+fn translate_body_aux(
+    ctx: &mut TransformCtx,
+    no_code_duplication: bool,
+    src_body: &src::ExprBody,
+) -> tgt::ExprBody {
     // Explore the function body to create the control-flow graph without backward
     // edges, and identify the loop entries (which are destinations of backward edges).
     let cfg_info = build_cfg_info(src_body);
@@ -1687,7 +1701,7 @@ fn translate_body_aux(no_code_duplication: bool, src_body: &src::ExprBody) -> tg
 
     // Find the exit block for all the loops and switches, if such an exit point
     // exists.
-    let exits_info = compute_loop_switch_exits(&cfg_info);
+    let exits_info = compute_loop_switch_exits(ctx, src_body, &cfg_info);
 
     // Debugging
     trace!("exits map:\n{:?}", exits_info);
@@ -1718,22 +1732,37 @@ fn translate_body_aux(no_code_duplication: bool, src_body: &src::ExprBody) -> tg
     }
 }
 
-fn translate_body(no_code_duplication: bool, body: &mut gast::Body) {
+fn translate_body(ctx: &mut TransformCtx, no_code_duplication: bool, body: &mut gast::Body) {
     use gast::Body::{Structured, Unstructured};
     let Unstructured(src_body) = body else {
         panic!("Called `ullbc_to_llbc` on an already restructured body")
     };
     trace!("About to translate to ullbc: {:?}", src_body.span);
-    let tgt_body = translate_body_aux(no_code_duplication, src_body);
+    let tgt_body = translate_body_aux(ctx, no_code_duplication, src_body);
     *body = Structured(tgt_body);
 }
 
 /// Translate the functions by reconstructing the control-flow.
 pub fn translate_functions(ctx: &mut TransformCtx) {
+    // Small manipulation:
+    // - we need to have a mutable access to the transformation context
+    //   for the error messages
+    // - at the same time we are updated the bodies inside the transformation
+    //   context
+    // The easiest way of achieving this without without doing useless clone
+    // operations is to move the vector of bodies outside of the context,
+    // update them, then put them back.
+    // This works because we only use the context for formating and error reporting,
+    // and none of those require accessing the bodies.
+    let mut bodies = std::mem::take(&mut ctx.translated.bodies);
+
     // Translate the bodies one at a time.
-    for body in &mut ctx.translated.bodies {
-        translate_body(ctx.options.no_code_duplication, body);
+    for body in &mut bodies {
+        translate_body(ctx, ctx.options.no_code_duplication, body);
     }
+
+    // Put the bodies back
+    ctx.translated.bodies = bodies;
 
     // Print the functions
     let fmt_ctx = ctx.into_fmt();
