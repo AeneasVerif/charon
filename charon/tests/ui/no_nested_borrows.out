@@ -354,16 +354,12 @@ fn test_crate::test_unreachable(@1: bool)
     let @3: (); // anonymous local
 
     @2 := copy (b@1)
-    if move (@2) {
-    }
-    else {
-        @3 := ()
-        @0 := move (@3)
-        drop @2
-        @0 := ()
-        return
-    }
-    panic(core::panicking::panic)
+    assert(move (@2) == false)
+    @3 := ()
+    @0 := move (@3)
+    drop @2
+    @0 := ()
+    return
 }
 
 fn test_crate::is_cons<'_0, T>(@1: &'_0 (test_crate::List<T>[@TraitClause0])) -> bool

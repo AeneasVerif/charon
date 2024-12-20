@@ -1,6 +1,7 @@
 pub mod check_generics;
 pub mod ctx;
 pub mod filter_invisible_trait_impls;
+pub mod filter_useless_blocks;
 pub mod graphs;
 pub mod hide_marker_traits;
 pub mod index_intermediate_assigns;
@@ -77,11 +78,14 @@ pub static ULLBC_PASSES: &[Pass] = &[
     UnstructuredBody(&ops_to_function_calls::Transform),
     // # Micro-pass: make sure the block ids used in the ULLBC are consecutive
     UnstructuredBody(&update_block_indices::Transform),
+    // # Micro-pass: reconstruct the asserts
+    UnstructuredBody(&reconstruct_asserts::Transform),
+    // # Micro-pass: filter the "dangling" blocks. Those might have been introduced by,
+    // for instance, [`reconstruct_asserts`].
+    UnstructuredBody(&filter_useless_blocks::Transform),
 ];
 
 pub static LLBC_PASSES: &[Pass] = &[
-    // # Micro-pass: reconstruct the asserts
-    StructuredBody(&reconstruct_asserts::Transform),
     // # Micro-pass: `panic!()` expands to a new function definition each time. This pass cleans
     // those up.
     StructuredBody(&inline_local_panic_functions::Transform),
