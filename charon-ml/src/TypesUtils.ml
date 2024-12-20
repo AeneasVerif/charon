@@ -272,3 +272,17 @@ let ty_has_regions_in_pred (pred : region -> bool) (ty : ty) : bool =
 (** Check if a {!type:Charon.Types.ty} contains regions from a given set *)
 let ty_has_regions_in_set (rset : RegionId.Set.t) (ty : ty) : bool =
   ty_has_regions_in_pred (fun r -> region_in_set r rset) ty
+
+let generic_args_lengths (args : generic_args) : int * int * int * int =
+  let { regions; types; const_generics; trait_refs } = args in
+  ( List.length regions,
+    List.length types,
+    List.length const_generics,
+    List.length trait_refs )
+
+let generic_params_lengths (args : generic_params) : int * int * int * int =
+  let { regions; types; const_generics; trait_clauses; _ } = args in
+  ( List.length regions,
+    List.length types,
+    List.length const_generics,
+    List.length trait_clauses )
