@@ -1,5 +1,6 @@
 pub mod check_generics;
 pub mod ctx;
+pub mod duplicate_return;
 pub mod filter_invisible_trait_impls;
 pub mod filter_useless_blocks;
 pub mod graphs;
@@ -80,6 +81,8 @@ pub static ULLBC_PASSES: &[Pass] = &[
     UnstructuredBody(&update_block_indices::Transform),
     // # Micro-pass: reconstruct the asserts
     UnstructuredBody(&reconstruct_asserts::Transform),
+    // # Micro-pass: duplicate the return blocks
+    UnstructuredBody(&duplicate_return::Transform),
     // # Micro-pass: filter the "dangling" blocks. Those might have been introduced by,
     // for instance, [`reconstruct_asserts`].
     UnstructuredBody(&filter_useless_blocks::Transform),

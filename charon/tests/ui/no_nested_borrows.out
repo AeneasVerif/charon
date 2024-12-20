@@ -372,12 +372,13 @@ where
     @fake_read(l@1)
     match *(l@1) {
         0 => {
-            @0 := const (true)
         },
         1 => {
             @0 := const (false)
+            return
         },
     }
+    @0 := const (true)
     return
 }
 

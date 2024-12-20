@@ -1859,15 +1859,17 @@ fn test_crate::slice_pattern_4<'_0>(@1: &'_0 (Slice<()>))
     @3 := const (1 : usize)
     @4 := move (@2) == move (@3)
     if move (@4) {
-        @6 := &*(x@1)
-        @7 := @SliceIndexShared<'_, ()>(move (@6), const (0 : usize))
-        _named@5 := &*(@7)
-        @0 := ()
-        drop _named@5
     }
     else {
         @0 := ()
+        @0 := ()
+        return
     }
+    @6 := &*(x@1)
+    @7 := @SliceIndexShared<'_, ()>(move (@6), const (0 : usize))
+    _named@5 := &*(@7)
+    @0 := ()
+    drop _named@5
     @0 := ()
     return
 }

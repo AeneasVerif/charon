@@ -73,12 +73,13 @@ where
     @fake_read(self@1)
     match *(self@1) {
         0 => {
-            @0 := const (false)
         },
         1 => {
             @0 := const (true)
+            return
         },
     }
+    @0 := const (false)
     return
 }
 
