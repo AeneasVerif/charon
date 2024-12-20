@@ -356,3 +356,13 @@ pub fn call<'a, F: Fn(&'a ()) -> Wrapper<(bool, &'a ())>>(_: F) {}
 pub fn flibidi() -> () {
     call(flabada);
 }
+
+mod assoc_ty_trait_ref {
+    //! Minimal reproducer for a binder bug
+    trait SliceIndex {
+        type Output;
+    }
+    fn index<I: SliceIndex>() -> I::Output {
+        todo!()
+    }
+}

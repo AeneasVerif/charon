@@ -26,6 +26,7 @@ pub mod reorder_decls;
 pub mod simplify_constants;
 pub mod skip_trait_refs_when_known;
 pub mod ullbc_to_llbc;
+pub mod unbind_item_vars;
 pub mod update_block_indices;
 pub mod update_closure_signatures;
 
@@ -125,6 +126,8 @@ pub static LLBC_PASSES: &[Pass] = &[
     StructuredBody(&recover_body_comments::Transform),
     // Check that all supplied generic types match the corresponding generic parameters.
     NonBody(&check_generics::Check),
+    // Use `DeBruijnVar::Free` for the variables bound in item signatures.
+    NonBody(&unbind_item_vars::Check),
 ];
 
 #[derive(Clone, Copy)]
