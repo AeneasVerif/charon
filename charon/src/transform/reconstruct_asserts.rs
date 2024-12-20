@@ -3,60 +3,60 @@
 //! introduce `if ... then { panic!(...) } else { ...}`.
 //! This pass introduces `assert` instead in order to make the code shorter.
 
-use std::mem;
+use std::collections::HashSet;
 
-use crate::llbc_ast::*;
 use crate::transform::TransformCtx;
+use crate::ullbc_ast::*;
 
-use super::ctx::LlbcPass;
-
-fn transform_st(st: &mut Statement) -> Vec<Statement> {
-    if let RawStatement::Switch(Switch::If(_, then_block, else_block)) = &mut st.content {
-        if let Some(first) = then_block.statements.first()
-            && first.content.is_abort()
-        {
-            // Replace the `if` with an `assert`.
-            let (op, then_block, else_block) = mem::replace(&mut st.content, RawStatement::Nop)
-                .to_switch()
-                .unwrap()
-                .to_if()
-                .unwrap();
-            let assert = Statement::new(
-                then_block.span,
-                RawStatement::Assert(Assert {
-                    cond: op,
-                    expected: false,
-                }),
-            );
-            [assert].into_iter().chain(else_block.statements).collect()
-        } else if let Some(first) = else_block.statements.first()
-            && first.content.is_abort()
-        {
-            // Replace the `if` with an `assert`.
-            let (op, then_block, else_block) = mem::replace(&mut st.content, RawStatement::Nop)
-                .to_switch()
-                .unwrap()
-                .to_if()
-                .unwrap();
-            let assert = Statement::new(
-                else_block.span,
-                RawStatement::Assert(Assert {
-                    cond: op,
-                    expected: true,
-                }),
-            );
-            [assert].into_iter().chain(then_block.statements).collect()
-        } else {
-            Vec::new()
-        }
-    } else {
-        Vec::new()
-    }
-}
+use super::ctx::UllbcPass;
 
 pub struct Transform;
-impl LlbcPass for Transform {
+impl UllbcPass for Transform {
     fn transform_body(&self, _ctx: &mut TransformCtx, b: &mut ExprBody) {
-        b.body.transform(&mut transform_st);
+        // Start by computing the set of blocks which are actually panics.
+        // Remark: doing this in two steps because reading the blocks at random
+        // while doing in-place updates is not natural to do in Rust.
+        let panics: HashSet<BlockId> = b
+            .body
+            .iter_indexed()
+            .filter_map(|(bid, block)| {
+                if block.statements.is_empty() && block.terminator.content.is_abort() {
+                    Some(bid)
+                } else {
+                    None
+                }
+            })
+            .collect();
+
+        for block in b.body.iter_mut() {
+            match &block.terminator.content {
+                RawTerminator::Switch {
+                    discr: _,
+                    targets: SwitchTargets::If(bid0, bid1),
+                } => {
+                    let (nbid, expected) = if panics.contains(bid0) {
+                        (*bid1, false)
+                    } else if panics.contains(bid1) {
+                        (*bid0, true)
+                    } else {
+                        continue;
+                    };
+
+                    let content = std::mem::replace(
+                        &mut block.terminator.content,
+                        RawTerminator::Goto { target: nbid },
+                    );
+                    let (discr, _) = content.as_switch().unwrap();
+                    block.statements.push(Statement {
+                        span: block.terminator.span,
+                        content: RawStatement::Assert(Assert {
+                            cond: discr.clone(),
+                            expected,
+                        }),
+                    });
+                }
+                _ => (),
+            }
+        }
     }
 }

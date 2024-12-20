@@ -110,7 +110,6 @@ where
     @fake_read(x@1)
     match *(x@1) {
         0 => {
-            @0 := core::option::Option::None {  }
         },
         1 => {
             x@3 := &(*(x@1) as variant @1).0
@@ -123,8 +122,10 @@ where
             drop @4
             drop @4
             drop x@3
+            return
         },
     }
+    @0 := core::option::Option::None {  }
     return
 }
 
