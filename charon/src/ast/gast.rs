@@ -16,6 +16,7 @@ pub struct Var {
     pub index: VarId,
     /// Variable name - may be `None` if the variable was introduced by Rust
     /// through desugaring.
+    #[drive(skip)]
     pub name: Option<String>,
     /// The variable type
     #[charon::rename("var_ty")]
@@ -30,6 +31,7 @@ pub struct Opaque;
 #[derive(Debug, Default, Clone, Serialize, Deserialize, Drive, DriveMut)]
 pub struct Locals {
     /// The number of local variables used for the input arguments.
+    #[drive(skip)]
     pub arg_count: usize,
     /// The local variables.
     /// We always have, in the following order:
@@ -117,8 +119,10 @@ pub enum ItemKind {
         /// The trait declaration this item belongs to.
         trait_ref: TraitDeclRef,
         /// The name of the item.
+        #[drive(skip)]
         item_name: TraitItemName,
         /// Whether the trait declaration provides a default implementation.
+        #[drive(skip)]
         has_default: bool,
     },
     /// Function/const that is part of a trait implementation.
@@ -128,9 +132,11 @@ pub enum ItemKind {
         /// The trait declaration that the impl block implements.
         trait_ref: TraitDeclRef,
         /// The name of the item
+        #[drive(skip)]
         item_name: TraitItemName,
         /// True if the trait decl had a default implementation for this function/const and this
         /// item is a copy of the default item.
+        #[drive(skip)]
         reuses_default: bool,
     },
 }
@@ -184,6 +190,7 @@ pub struct GlobalDeclRef {
 #[derive(
     Debug, Clone, Serialize, Deserialize, Drive, DriveMut, PartialEq, Eq, Hash, PartialOrd, Ord,
 )]
+#[drive(skip)]
 pub struct TraitItemName(pub String);
 
 /// A trait **declaration**.
@@ -338,5 +345,6 @@ pub enum AbortKind {
 #[charon::rename("Assertion")]
 pub struct Assert {
     pub cond: Operand,
+    #[drive(skip)]
     pub expected: bool,
 }

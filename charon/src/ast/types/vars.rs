@@ -21,6 +21,7 @@ use crate::ast::*;
     DriveMut,
 )]
 #[serde(transparent)]
+#[drive(skip)]
 pub struct DeBruijnId {
     pub index: usize,
 }
@@ -73,6 +74,7 @@ pub struct TypeVar {
     /// Index identifying the variable among other variables bound at the same level.
     pub index: TypeVarId,
     /// Variable name
+    #[drive(skip)]
     pub name: String,
 }
 
@@ -84,6 +86,7 @@ pub struct RegionVar {
     /// Index identifying the variable among other variables bound at the same level.
     pub index: RegionId,
     /// Region name
+    #[drive(skip)]
     pub name: Option<String>,
 }
 
@@ -93,6 +96,7 @@ pub struct ConstGenericVar {
     /// Index identifying the variable among other variables bound at the same level.
     pub index: ConstGenericVarId,
     /// Const generic name
+    #[drive(skip)]
     pub name: String,
     /// Type of the const generic
     pub ty: LiteralTy,
@@ -108,6 +112,7 @@ pub struct TraitClause {
     pub span: Option<Span>,
     /// Where the predicate was written, relative to the item that requires it.
     #[charon::opaque]
+    #[drive(skip)]
     pub origin: PredicateOrigin,
     /// The trait that is implemented.
     #[charon::rename("trait")]

@@ -37,9 +37,13 @@ generate_index_type!(VarId, "");
 pub enum Literal {
     Scalar(ScalarValue),
     Float(FloatValue),
+    #[drive(skip)]
     Bool(bool),
+    #[drive(skip)]
     Char(char),
+    #[drive(skip)]
     ByteStr(Vec<u8>),
+    #[drive(skip)]
     Str(String),
 }
 
@@ -62,6 +66,7 @@ pub enum Literal {
     Drive,
     DriveMut,
 )]
+#[drive(skip)]
 pub enum ScalarValue {
     /// Using i64 to be safe
     Isize(i64),
@@ -87,6 +92,7 @@ pub enum ScalarValue {
 )]
 pub struct FloatValue {
     #[charon::rename("float_value")]
+    #[drive(skip)]
     pub value: String,
     #[charon::rename("float_ty")]
     pub ty: FloatTy,

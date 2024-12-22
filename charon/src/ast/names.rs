@@ -12,7 +12,7 @@ generate_index_type!(Disambiguator);
 )]
 #[charon::variants_prefix("Pe")]
 pub enum PathElem {
-    Ident(String, Disambiguator),
+    Ident(#[drive(skip)] String, Disambiguator),
     Impl(ImplElem, Disambiguator),
 }
 

@@ -37,6 +37,7 @@ pub enum RawStatement {
     /// Does nothing. Useful for passes.
     Nop,
     #[charon::opaque]
+    #[drive(skip)]
     Error(String),
 }
 

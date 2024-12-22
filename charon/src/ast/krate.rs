@@ -100,8 +100,10 @@ pub enum AnyTransItemMut<'ctx> {
 pub struct TranslatedCrate {
     /// The name that the user requested for the crate. This may differ from what rustc reports as
     /// the name of the crate.
+    #[drive(skip)]
     pub crate_name: String,
     /// The name of the crate according to rustc.
+    #[drive(skip)]
     pub real_crate_name: String,
 
     /// The options used when calling Charon. It is useful for the applications

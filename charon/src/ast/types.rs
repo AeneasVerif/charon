@@ -133,6 +133,7 @@ pub enum TraitRefKind {
 
     /// For error reporting.
     #[charon::rename("UnknownTrait")]
+    #[drive(skip)]
     Unknown(String),
 }
 
@@ -366,14 +367,17 @@ pub enum TypeDeclKind {
     /// Used if an error happened during the extraction, and we don't panic
     /// on error.
     #[charon::rename("TError")]
+    #[drive(skip)]
     Error(String),
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, Drive, DriveMut)]
 pub struct Variant {
     pub span: Span,
+    #[drive(skip)]
     pub attr_info: AttrInfo,
     #[charon::rename("variant_name")]
+    #[drive(skip)]
     pub name: String,
     pub fields: Vector<FieldId, Field>,
     /// The discriminant used at runtime. This is used in `remove_read_discriminant` to match up
@@ -384,8 +388,10 @@ pub struct Variant {
 #[derive(Debug, Clone, Serialize, Deserialize, Drive, DriveMut)]
 pub struct Field {
     pub span: Span,
+    #[drive(skip)]
     pub attr_info: AttrInfo,
     #[charon::rename("field_name")]
+    #[drive(skip)]
     pub name: Option<String>,
     #[charon::rename("field_ty")]
     pub ty: Ty,
@@ -736,6 +742,7 @@ pub struct ClosureInfo {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Drive, DriveMut)]
 pub struct FunSig {
     /// Is the function unsafe or not
+    #[drive(skip)]
     pub is_unsafe: bool,
     /// `true` if the signature is for a closure.
     ///
@@ -743,6 +750,7 @@ pub struct FunSig {
     /// - the type and const generic params actually come from the parent function
     ///   (the function in which the closure is defined)
     /// - the region variables are local to the closure
+    #[drive(skip)]
     pub is_closure: bool,
     /// Additional information if this is the signature of a closure.
     pub closure_info: Option<ClosureInfo>,
