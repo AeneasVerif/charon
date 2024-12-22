@@ -2,6 +2,7 @@
 //! rid of those. We proceed in two steps. First, we remove the instructions
 //! `drop(v)` where `v` has type `Never` (it can happen - this module does the
 //! filtering). Then, we filter the unused variables ([crate::remove_unused_locals]).
+
 use crate::errors::register_error_or_panic;
 use crate::formatter::IntoFormatter;
 use crate::llbc_ast::*;
@@ -156,7 +157,7 @@ impl Transform {
 
 impl LlbcPass for Transform {
     fn transform_body(&self, ctx: &mut TransformCtx, b: &mut ExprBody) {
-        b.body.visit_blocks_fwd(|block: &mut Block| {
+        b.body.visit_blocks_bwd(|block: &mut Block| {
             Transform::update_block(ctx, block);
         });
     }

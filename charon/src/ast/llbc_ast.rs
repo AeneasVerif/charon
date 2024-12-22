@@ -8,7 +8,7 @@
 
 pub use super::llbc_ast_utils::*;
 pub use crate::ast::*;
-use derive_visitor::{Drive, DriveMut};
+use derive_generic_visitor::{Drive, DriveMut};
 use macros::{EnumAsGetters, EnumIsA, EnumToGetters, VariantIndexArity, VariantName};
 use serde::{Deserialize, Serialize};
 

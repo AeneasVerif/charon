@@ -16,6 +16,7 @@ pub mod ullbc_ast;
 pub mod ullbc_ast_utils;
 pub mod values;
 pub mod values_utils;
+pub mod visitor;
 
 // Re-export everything except llbc/ullbc, for convenience.
 pub use crate::errors::Error;
@@ -29,3 +30,4 @@ pub use names::*;
 pub use types::*;
 pub use types_utils::TyVisitable;
 pub use values::*;
+pub use visitor::*;

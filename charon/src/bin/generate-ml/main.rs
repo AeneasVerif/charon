@@ -13,7 +13,6 @@ use assert_cmd::cargo::CommandCargoExt;
 use charon_lib::ast::*;
 use charon_lib::export::CrateData;
 use convert_case::{Case, Casing};
-use derive_visitor::{visitor_enter_fn, Drive};
 use indoc::indoc;
 use itertools::Itertools;
 use std::collections::{HashMap, HashSet};
@@ -101,11 +100,9 @@ impl<'a> GenerateCtx<'a> {
             name_to_type.insert(long_name, ty);
 
             let mut contained = HashSet::new();
-            ty.drive(&mut Ty::visit_inside(visitor_enter_fn(
-                |id: &TypeDeclId| {
-                    contained.insert(*id);
-                },
-            )));
+            ty.dyn_visit(|id: &TypeDeclId| {
+                contained.insert(*id);
+            });
             type_tree.insert(ty.def_id, contained);
         }
 

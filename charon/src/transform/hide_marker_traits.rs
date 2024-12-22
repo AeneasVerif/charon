@@ -1,27 +1,20 @@
-use std::collections::HashSet;
-
-use derive_visitor::{DriveMut, VisitorMut};
+use derive_generic_visitor::*;
 use index_vec::Idx;
 use itertools::Itertools;
+use std::collections::HashSet;
 
 use crate::{ast::*, name_matcher::NamePattern};
 
 use super::{ctx::TransformPass, TransformCtx};
 
-#[derive(VisitorMut)]
-#[visitor(
-    GenericParams(enter),
-    GenericArgs(enter),
-    TraitDecl(enter),
-    TraitImpl(enter)
-)]
-struct Visitor {
+#[derive(Visitor)]
+struct RemoveMarkersVisitor {
     exclude: HashSet<TraitDeclId>,
 }
 
 // Remove clauses and trait refs that mention the offending traits. This relies on the fact that
 // `Vector::remove` does not shift indices: it simply leaves an empty slot.
-impl Visitor {
+impl VisitAstMut for RemoveMarkersVisitor {
     fn enter_generic_params(&mut self, args: &mut GenericParams) {
         let trait_clauses = &mut args.trait_clauses;
         for i in 0..trait_clauses.len() {
@@ -103,6 +96,6 @@ impl TransformPass for Transform {
         }
 
         ctx.translated
-            .drive_mut(&mut Ty::visit_inside_stateless(Visitor { exclude }));
+            .drive_mut(&mut RemoveMarkersVisitor { exclude });
     }
 }

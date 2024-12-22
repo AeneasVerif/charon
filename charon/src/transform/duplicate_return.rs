@@ -29,7 +29,6 @@
 use crate::ids::Generator;
 use crate::transform::TransformCtx;
 use crate::ullbc_ast::*;
-use derive_visitor::{visitor_enter_fn_mut, DriveMut};
 use std::collections::HashMap;
 
 use super::ctx::UllbcPass;
@@ -57,13 +56,12 @@ impl UllbcPass for Transform {
         assert!(usize::from(b.body.next_id()) == b.body.len());
         let mut generator = Generator::new_with_init_value(b.body.len());
         let mut new_spans = Vec::new();
-        b.body
-            .drive_mut(&mut visitor_enter_fn_mut(|bid: &mut BlockId| {
-                if let Some(span) = returns.get(bid) {
-                    *bid = generator.fresh_id();
-                    new_spans.push(*span);
-                }
-            }));
+        b.body.dyn_visit_in_body_mut(|bid: &mut BlockId| {
+            if let Some(span) = returns.get(bid) {
+                *bid = generator.fresh_id();
+                new_spans.push(*span);
+            }
+        });
 
         // Then introduce the new blocks
         for span in new_spans {

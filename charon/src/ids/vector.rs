@@ -7,13 +7,14 @@
 //! Note that this data structure is implemented by using persistent vectors.
 //! This makes the clone operation almost a no-op.
 
-use derive_visitor::{Drive, DriveMut, Event, Visitor, VisitorMut};
 use index_vec::{Idx, IdxSliceIndex, IndexVec};
 use serde::{Deserialize, Serialize, Serializer};
 use std::{
     iter::{FromIterator, IntoIterator},
-    ops::{Deref, Index, IndexMut},
+    ops::{ControlFlow, Deref, Index, IndexMut},
 };
+
+use derive_generic_visitor::*;
 
 /// Indexed vector.
 /// To prevent accidental id reuse, the vector supports reserving a slot to be filled later.
@@ -324,21 +325,19 @@ impl<'de, I: Idx, T: Deserialize<'de>> Deserialize<'de> for Vector<I, T> {
     }
 }
 
-impl<I: Idx, T: Drive> Drive for Vector<I, T> {
-    fn drive<V: Visitor>(&self, visitor: &mut V) {
-        visitor.visit(self, Event::Enter);
+impl<'s, I: Idx, T, V: Visit<'s, T>> Drive<'s, V> for Vector<I, T> {
+    fn drive_inner(&'s self, v: &mut V) -> ControlFlow<V::Break> {
         for x in self {
-            x.drive(visitor);
+            v.visit(x)?;
         }
-        visitor.visit(self, Event::Exit);
+        Continue(())
     }
 }
-impl<I: Idx, T: DriveMut> DriveMut for Vector<I, T> {
-    fn drive_mut<V: VisitorMut>(&mut self, visitor: &mut V) {
-        visitor.visit(self, Event::Enter);
-        for x in &mut *self {
-            x.drive_mut(visitor);
+impl<'s, I: Idx, T, V: VisitMut<'s, T>> DriveMut<'s, V> for Vector<I, T> {
+    fn drive_inner_mut(&'s mut self, v: &mut V) -> ControlFlow<V::Break> {
+        for x in self {
+            v.visit(x)?;
         }
-        visitor.visit(self, Event::Exit);
+        Continue(())
     }
 }

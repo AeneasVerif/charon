@@ -1,9 +1,7 @@
 //! Desugar array/slice index operations to function calls.
-
-use derive_visitor::{DriveMut, VisitorMut};
-
 use crate::llbc_ast::*;
 use crate::transform::TransformCtx;
+use derive_generic_visitor::*;
 
 use super::ctx::LlbcPass;
 
@@ -15,9 +13,8 @@ use super::ctx::LlbcPass;
 /// While we explore the places/operands present in a statement, We temporarily
 /// store the new statements inside the visitor. Once we've finished exploring
 /// the statement, we insert those before the statement.
-#[derive(VisitorMut)]
-#[visitor(Place(exit), Operand, Call, FnOperand, Rvalue)]
-struct Visitor<'a> {
+#[derive(Visitor)]
+struct IndexVisitor<'a> {
     locals: &'a mut Locals,
     statements: Vec<Statement>,
     // When we encounter a place, we remember when a given place is accessed mutably in this
@@ -28,7 +25,7 @@ struct Visitor<'a> {
     span: Span,
 }
 
-impl<'a> Visitor<'a> {
+impl<'a> IndexVisitor<'a> {
     fn fresh_var(&mut self, name: Option<String>, ty: Ty) -> Place {
         self.locals.new_var(name, ty)
     }
@@ -158,11 +155,16 @@ impl<'a> Visitor<'a> {
 }
 
 /// The visitor methods.
-impl<'a> Visitor<'a> {
+impl VisitBodyMut for IndexVisitor<'_> {
+    fn visit_llbc_block(&mut self, _: &mut Block) -> ControlFlow<Infallible> {
+        // Do not recurse; we only explore one statement.
+        Continue(())
+    }
+
     /// We explore places from the inside-out.
     fn exit_place(&mut self, place: &mut Place) {
-        // We intercept every traversal that would reach a place and push the correct mutability on
-        // the stack.
+        // We have intercepted every traversal that would reach a place and pushed the correct
+        // mutability on the stack.
         let mut_access = *self.place_mutability_stack.last().unwrap();
         self.transform_place(mut_access, place);
     }
@@ -320,7 +322,7 @@ pub struct Transform;
 impl LlbcPass for Transform {
     fn transform_body(&self, _ctx: &mut TransformCtx, b: &mut ExprBody) {
         b.body.transform(|st: &mut Statement| {
-            let mut visitor = Visitor {
+            let mut visitor = IndexVisitor {
                 locals: &mut b.locals,
                 statements: Vec::new(),
                 place_mutability_stack: Vec::new(),
@@ -332,22 +334,24 @@ impl LlbcPass for Transform {
             use RawStatement::*;
             match &mut st.content {
                 Loop(..) => {}
-                Switch(If(op, ..) | SwitchInt(op, ..)) => op.drive_mut(&mut visitor),
+                Switch(If(op, ..) | SwitchInt(op, ..)) => {
+                    op.drive_body_mut(&mut visitor);
+                }
                 Switch(Match(place, ..)) => {
                     visitor.place_mutability_stack.push(false); // Unsure why we do this
-                    place.drive_mut(&mut visitor)
+                    place.drive_body_mut(&mut visitor);
                 }
                 Abort(..) | Return | Break(..) | Continue(..) | Nop | Error(..) | Assert(..)
                 | Call(..) => {
-                    st.drive_mut(&mut visitor);
+                    st.drive_body_mut(&mut visitor);
                 }
                 FakeRead(place) => {
                     visitor.place_mutability_stack.push(false);
-                    place.drive_mut(&mut visitor);
+                    place.drive_body_mut(&mut visitor);
                 }
                 Assign(..) | SetDiscriminant(..) | Drop(..) => {
                     visitor.place_mutability_stack.push(true);
-                    st.drive_mut(&mut visitor);
+                    st.drive_body_mut(&mut visitor);
                 }
             }
             visitor.statements

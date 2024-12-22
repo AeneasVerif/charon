@@ -1,6 +1,6 @@
 //! Defines some utilities for the variables
 use crate::ast::*;
-use derive_visitor::{Drive, DriveMut};
+use derive_generic_visitor::{Drive, DriveMut};
 use macros::{EnumAsGetters, EnumIsA};
 use serde::{Deserialize, Serialize};
 

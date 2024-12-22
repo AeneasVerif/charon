@@ -2,8 +2,6 @@
 
 use std::mem;
 
-use derive_visitor::{visitor_enter_fn_mut, DriveMut};
-
 use crate::ids::*;
 use crate::transform::TransformCtx;
 use crate::ullbc_ast::*;
@@ -20,8 +18,6 @@ impl UllbcPass for Transform {
 
         // Update the ids.
         b.body
-            .drive_mut(&mut visitor_enter_fn_mut(|id: &mut BlockId| {
-                *id = id_map[*id]
-            }));
+            .dyn_visit_in_body_mut(|id: &mut BlockId| *id = id_map[*id]);
     }
 }

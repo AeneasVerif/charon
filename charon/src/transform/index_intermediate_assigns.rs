@@ -35,18 +35,17 @@
 
 use crate::llbc_ast::*;
 use crate::transform::TransformCtx;
-use derive_visitor::{visitor_enter_fn, Drive};
 
 use super::ctx::LlbcPass;
 
-fn contains_index_proj<T: Drive>(x: &T) -> bool {
+fn contains_index_proj<T: BodyVisitable>(x: &T) -> bool {
     let mut contains_index = false;
-    x.drive(&mut visitor_enter_fn(|proj: &ProjectionElem| {
+    x.dyn_visit_in_body(|proj: &ProjectionElem| {
         use ProjectionElem::*;
         if let Index { .. } | Subslice { .. } = proj {
             contains_index = true;
         }
-    }));
+    });
     contains_index
 }
 

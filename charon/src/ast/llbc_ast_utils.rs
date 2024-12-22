@@ -3,7 +3,7 @@
 use crate::llbc_ast::*;
 use crate::meta;
 use crate::meta::Span;
-use derive_visitor::{visitor_enter_fn_mut, visitor_fn_mut, DriveMut, Event};
+use derive_generic_visitor::*;
 
 /// Combine the span information from a [Switch]
 pub fn combine_switch_targets_span(targets: &Switch) -> Span {
@@ -117,7 +117,7 @@ impl Block {
 
     /// Apply a function to all the statements, in a top-down manner.
     pub fn visit_statements<F: FnMut(&mut Statement)>(&mut self, f: F) {
-        self.drive_mut(&mut visitor_enter_fn_mut(f))
+        BlockVisitor::new(|_| {}, f).visit(self);
     }
 
     /// Apply a transformer to all the statements, in a bottom-up manner.
@@ -150,16 +150,33 @@ impl Block {
         })
     }
 
-    /// Visit `self` and its sub-blocks in a top-down (pre-order) traversal.
-    pub fn visit_blocks_fwd<F: FnMut(&mut Block)>(&mut self, f: F) {
-        self.drive_mut(&mut visitor_enter_fn_mut(f))
-    }
     /// Visit `self` and its sub-blocks in a bottom-up (post-order) traversal.
-    pub fn visit_blocks_bwd<F: FnMut(&mut Block)>(&mut self, mut f: F) {
-        self.drive_mut(&mut visitor_fn_mut(|blk: &mut Block, e: Event| {
-            if matches!(e, Event::Exit) {
-                f(blk)
-            }
-        }))
+    pub fn visit_blocks_bwd<F: FnMut(&mut Block)>(&mut self, f: F) {
+        BlockVisitor::new(f, |_| {}).visit(self);
+    }
+}
+
+/// Small visitor to visit statements and blocks.
+#[derive(Visitor)]
+pub struct BlockVisitor<F: FnMut(&mut Block), G: FnMut(&mut Statement)> {
+    exit_blk: F,
+    enter_stmt: G,
+}
+
+impl<F: FnMut(&mut Block), G: FnMut(&mut Statement)> BlockVisitor<F, G> {
+    pub fn new(exit_blk: F, enter_stmt: G) -> Self {
+        Self {
+            exit_blk,
+            enter_stmt,
+        }
+    }
+}
+
+impl<F: FnMut(&mut Block), G: FnMut(&mut Statement)> VisitBodyMut for BlockVisitor<F, G> {
+    fn exit_llbc_block(&mut self, x: &mut Block) {
+        (self.exit_blk)(x)
+    }
+    fn enter_llbc_statement(&mut self, x: &mut Statement) {
+        (self.enter_stmt)(x)
     }
 }

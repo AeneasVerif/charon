@@ -1,16 +1,14 @@
 //! # Micro-pass: the first local variable of closures is (a borrow to) the closure itself. This is
 //! not consistent with the closure signature, which represents the captured state as a tuple. This
 //! micro-pass updates this.
-use derive_visitor::{visitor_enter_fn_mut, DriveMut, VisitorMut};
-
 use crate::ids::Vector;
 use crate::transform::TransformCtx;
 use crate::ullbc_ast::*;
+use derive_generic_visitor::{Continue, ControlFlow, Visitor};
 
 use super::ctx::UllbcPass;
 
-#[derive(VisitorMut)]
-#[visitor(Region(exit), Ty(enter, exit))]
+#[derive(Visitor)]
 struct InsertRegions<'a> {
     regions: &'a mut Vector<RegionId, RegionVar>,
     // The number of region groups we dived into (we don't count the regions
@@ -18,7 +16,7 @@ struct InsertRegions<'a> {
     depth: usize,
 }
 
-impl<'a> InsertRegions<'a> {
+impl VisitAstMut for InsertRegions<'_> {
     fn exit_region(&mut self, r: &mut Region) {
         if r == &Region::Erased {
             // Insert a fresh region
@@ -29,16 +27,14 @@ impl<'a> InsertRegions<'a> {
         }
     }
 
-    fn enter_ty(&mut self, ty: &mut Ty) {
-        if let TyKind::Arrow(..) = ty.kind() {
-            self.depth += 1;
-        }
-    }
-
-    fn exit_ty(&mut self, ty: &mut Ty) {
-        if let TyKind::Arrow(..) = ty.kind() {
-            self.depth -= 1;
-        }
+    fn visit_region_binder<T: AstVisitable>(
+        &mut self,
+        x: &mut RegionBinder<T>,
+    ) -> ControlFlow<Self::Break> {
+        self.depth += 1;
+        self.visit_inner(x)?;
+        self.depth -= 1;
+        Continue(())
     }
 }
 
@@ -55,10 +51,10 @@ fn transform_function(
     } = &mut def.signature;
     if let Some(info) = closure_info {
         // Explore the state and introduce fresh regions for the erased regions we find.
-        let mut visitor = Ty::visit_inside(InsertRegions {
+        let mut visitor = InsertRegions {
             regions: &mut generics.regions,
             depth: 0,
-        });
+        };
         inputs[0].drive_mut(&mut visitor);
 
         // Update the body.
@@ -92,12 +88,11 @@ fn transform_function(
             // TODO: translate to ADT field access
             // TODO: handle directly during translation
             let num_fields = info.state.len();
-            body.body
-                .drive_mut(&mut visitor_enter_fn_mut(|pe: &mut ProjectionElem| {
-                    if let ProjectionElem::Field(pk @ FieldProjKind::ClosureState, _) = pe {
-                        *pk = FieldProjKind::Tuple(num_fields);
-                    }
-                }));
+            body.body.dyn_visit_in_body_mut(|pe: &mut ProjectionElem| {
+                if let ProjectionElem::Field(pk @ FieldProjKind::ClosureState, _) = pe {
+                    *pk = FieldProjKind::Tuple(num_fields);
+                }
+            });
         }
 
         Ok(())

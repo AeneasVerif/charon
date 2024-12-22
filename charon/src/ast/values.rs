@@ -2,7 +2,7 @@
 
 use crate::ast::FloatTy;
 use core::hash::Hash;
-use derive_visitor::{Drive, DriveMut};
+use derive_generic_visitor::{Drive, DriveMut};
 use macros::{EnumAsGetters, EnumIsA, VariantIndexArity, VariantName};
 use serde::{Deserialize, Serialize};
 

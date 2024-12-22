@@ -2,7 +2,7 @@
 
 pub use super::meta_utils::*;
 use crate::names::Name;
-use derive_visitor::{Drive, DriveMut};
+use derive_generic_visitor::{Drive, DriveMut};
 use macros::{EnumAsGetters, EnumIsA, EnumToGetters};
 use serde::{Deserialize, Serialize};
 use std::path::PathBuf;

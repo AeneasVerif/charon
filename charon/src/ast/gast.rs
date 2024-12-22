@@ -3,9 +3,8 @@ use crate::ast::*;
 use crate::ids::Vector;
 use crate::llbc_ast;
 use crate::ullbc_ast;
-use derive_visitor::{Drive, DriveMut, Event, Visitor, VisitorMut};
-use macros::EnumIsA;
-use macros::EnumToGetters;
+use derive_generic_visitor::{Drive, DriveMut};
+use macros::{EnumIsA, EnumToGetters};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
@@ -44,7 +43,7 @@ pub struct Locals {
 /// An expression body.
 /// TODO: arg_count should be stored in GFunDecl below. But then,
 ///       the print is obfuscated and Aeneas may need some refactoring.
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, Drive, DriveMut)]
 #[charon::rename("GexprBody")]
 pub struct GExprBody<T> {
     pub span: Span,
@@ -53,28 +52,9 @@ pub struct GExprBody<T> {
     /// For each line inside the body, we record any whole-line `//` comments found before it. They
     /// are added to statements in the late `recover_body_comments` pass.
     #[charon::opaque]
+    #[drive(skip)]
     pub comments: Vec<(usize, Vec<String>)>,
     pub body: T,
-}
-
-// The derive macro doesn't handle generics well.
-impl<T: Drive> Drive for GExprBody<T> {
-    fn drive<V: Visitor>(&self, visitor: &mut V) {
-        visitor.visit(self, Event::Enter);
-        self.span.drive(visitor);
-        self.locals.drive(visitor);
-        self.body.drive(visitor);
-        visitor.visit(self, Event::Exit);
-    }
-}
-impl<T: DriveMut> DriveMut for GExprBody<T> {
-    fn drive_mut<V: VisitorMut>(&mut self, visitor: &mut V) {
-        visitor.visit(self, Event::Enter);
-        self.span.drive_mut(visitor);
-        self.locals.drive_mut(visitor);
-        self.body.drive_mut(visitor);
-        visitor.visit(self, Event::Exit);
-    }
 }
 
 /// The body of a function or a constant.

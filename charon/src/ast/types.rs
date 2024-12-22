@@ -1,6 +1,6 @@
 use crate::ids::Vector;
 use crate::{ast::*, common::hash_consing::HashConsed};
-use derive_visitor::{Drive, DriveMut, Event, Visitor, VisitorMut};
+use derive_generic_visitor::*;
 use macros::{EnumAsGetters, EnumIsA, EnumToGetters, VariantIndexArity, VariantName};
 use serde::{Deserialize, Serialize};
 
@@ -175,26 +175,8 @@ pub struct TraitImplRef {
 }
 
 /// .0 outlives .1
-#[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize, Drive, DriveMut)]
 pub struct OutlivesPred<T, U>(pub T, pub U);
-
-// The derive macro doesn't handle generics well.
-impl<T: Drive, U: Drive> Drive for OutlivesPred<T, U> {
-    fn drive<V: Visitor>(&self, visitor: &mut V) {
-        visitor.visit(self, Event::Enter);
-        self.0.drive(visitor);
-        self.1.drive(visitor);
-        visitor.visit(self, Event::Exit);
-    }
-}
-impl<T: DriveMut, U: DriveMut> DriveMut for OutlivesPred<T, U> {
-    fn drive_mut<V: VisitorMut>(&mut self, visitor: &mut V) {
-        visitor.visit(self, Event::Enter);
-        self.0.drive_mut(visitor);
-        self.1.drive_mut(visitor);
-        visitor.visit(self, Event::Exit);
-    }
-}
 
 pub type RegionOutlives = OutlivesPred<Region, Region>;
 pub type TypeOutlives = OutlivesPred<Ty, Region>;
@@ -213,7 +195,7 @@ pub struct TraitTypeConstraint {
     pub ty: Ty,
 }
 
-#[derive(Default, Clone, Eq, PartialEq, Serialize, Deserialize, Hash, Drive, DriveMut)]
+#[derive(Default, Clone, Eq, PartialEq, Hash, Serialize, Deserialize, Drive, DriveMut)]
 pub struct GenericArgs {
     pub regions: Vector<RegionId, Region>,
     pub types: Vector<TypeVarId, Ty>,
@@ -225,7 +207,7 @@ pub struct GenericArgs {
 /// A value of type `T` bound by regions. We should use `binder` instead but this causes name clash
 /// issues in the derived ocaml visitors.
 /// TODO: merge with `binder`
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize, Drive, DriveMut)]
 pub struct RegionBinder<T> {
     #[charon::rename("binder_regions")]
     pub regions: Vector<RegionId, RegionVar>,
@@ -243,7 +225,7 @@ pub type BoundTraitTypeConstraint = RegionBinder<TraitTypeConstraint>;
 /// A value of type `T` bound by generic parameters. Used in any context where we're adding generic
 /// parameters that aren't on the top-level item, e.g. `for<'a>` clauses, trait methods (TODO),
 /// GATs (TODO).
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize, Drive, DriveMut)]
 pub struct Binder<T> {
     #[charon::rename("binder_params")]
     pub params: GenericParams,
@@ -571,9 +553,8 @@ pub enum ConstGeneric {
 
 /// A type.
 ///
-/// Warning: for performance reasons, the `Drive` and `DriveMut` impls of `Ty` don't explore the
-/// contents of the type, they only yield a pointer to the type itself. To recurse into the type,
-/// use `drive_inner{_mut}` or `visit_inside`.
+/// Warning: the `DriveMut` impls of `Ty` needs to clone and re-hash the modified type to maintain
+/// the hash-consing invariant. This is expensive, avoid visiting types mutably when not needed.
 #[derive(Debug, Clone, Hash, PartialEq, Eq, Serialize, Deserialize)]
 pub struct Ty(HashConsed<TyKind>);
 
@@ -586,11 +567,23 @@ impl Ty {
         self.0.inner()
     }
 
-    pub fn drive_inner<V: Visitor>(&self, visitor: &mut V) {
-        self.0.drive(visitor)
+    pub fn with_kind_mut<R>(&mut self, f: impl FnOnce(&mut TyKind) -> R) -> R {
+        self.0.with_inner_mut(f)
     }
-    pub fn drive_inner_mut<V: VisitorMut>(&mut self, visitor: &mut V) {
-        self.0.drive_mut(visitor)
+}
+
+impl<'s, V: Visit<'s, TyKind>> Drive<'s, V> for Ty {
+    fn drive_inner(&'s self, v: &mut V) -> std::ops::ControlFlow<V::Break> {
+        self.0.drive_inner(v)
+    }
+}
+/// This explores the type mutably by cloning and re-hashing afterwards.
+impl<'s, V> DriveMut<'s, V> for Ty
+where
+    for<'a> V: VisitMut<'a, TyKind>,
+{
+    fn drive_inner_mut(&'s mut self, v: &mut V) -> std::ops::ControlFlow<V::Break> {
+        self.0.drive_inner_mut(v)
     }
 }
 
