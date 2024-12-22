@@ -43,7 +43,7 @@ let trait_clause_id_to_pretty_string (id : trait_clause_id) : string =
 let de_bruijn_var_to_pretty_string show_bound show_free var : string =
   match var with
   | Bound (dbid, varid) -> show_de_bruijn_id dbid ^ "_" ^ show_bound varid
-  | Free varid -> "'" ^ show_free varid
+  | Free varid -> show_free varid
 
 let region_db_var_to_pretty_string (var : region_db_var) : string =
   "'" ^ de_bruijn_var_to_pretty_string RegionId.to_string RegionId.to_string var
