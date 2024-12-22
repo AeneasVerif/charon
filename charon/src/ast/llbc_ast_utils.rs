@@ -3,7 +3,7 @@
 use crate::llbc_ast::*;
 use crate::meta;
 use crate::meta::Span;
-use derive_visitor::{visitor_fn_mut, DriveMut, Event};
+use derive_visitor::{visitor_enter_fn_mut, visitor_fn_mut, DriveMut, Event};
 
 /// Combine the span information from a [Switch]
 pub fn combine_switch_targets_span(targets: &Switch) -> Span {
@@ -115,13 +115,9 @@ impl Block {
         }
     }
 
-    /// Apply a function to all the statements, in a bottom-up manner.
-    pub fn visit_statements<F: FnMut(&mut Statement)>(&mut self, f: &mut F) {
-        self.drive_mut(&mut visitor_fn_mut(|st: &mut Statement, e: Event| {
-            if matches!(e, Event::Exit) {
-                f(st)
-            }
-        }))
+    /// Apply a function to all the statements, in a top-down manner.
+    pub fn visit_statements<F: FnMut(&mut Statement)>(&mut self, f: F) {
+        self.drive_mut(&mut visitor_enter_fn_mut(f))
     }
 
     /// Apply a transformer to all the statements, in a bottom-up manner.
@@ -129,19 +125,8 @@ impl Block {
     /// The transformer should:
     /// - mutate the current statement in place
     /// - return the sequence of statements to introduce before the current statement
-    pub fn transform<F: FnMut(&mut Statement) -> Vec<Statement>>(&mut self, f: &mut F) {
-        self.drive_mut(&mut visitor_fn_mut(|blk: &mut Block, e: Event| {
-            if matches!(e, Event::Exit) {
-                for i in (0..blk.statements.len()).rev() {
-                    let prefix_to_insert = f(&mut blk.statements[i]);
-                    if !prefix_to_insert.is_empty() {
-                        // Insert the new elements at index `i`. This only modifies `vec[i..]`
-                        // so we can keep iterating `i` down as if nothing happened.
-                        blk.statements.splice(i..i, prefix_to_insert);
-                    }
-                }
-            }
-        }))
+    pub fn transform<F: FnMut(&mut Statement) -> Vec<Statement>>(&mut self, mut f: F) {
+        self.transform_sequences(|slice| f(&mut slice[0]));
     }
 
     /// Apply a transformer to all the statements, in a bottom-up manner. Compared to `transform`,
@@ -152,17 +137,28 @@ impl Block {
     /// The transformer should:
     /// - mutate the current statements in place
     /// - return the sequence of statements to introduce before the current statements
-    pub fn transform_sequences<F: FnMut(&mut [Statement]) -> Vec<Statement>>(&mut self, f: &mut F) {
+    pub fn transform_sequences<F: FnMut(&mut [Statement]) -> Vec<Statement>>(&mut self, mut f: F) {
+        self.visit_blocks_bwd(|blk: &mut Block| {
+            for i in (0..blk.statements.len()).rev() {
+                let prefix_to_insert = f(&mut blk.statements[i..]);
+                if !prefix_to_insert.is_empty() {
+                    // Insert the new elements at index `i`. This only modifies `vec[i..]`
+                    // so we can keep iterating `i` down as if nothing happened.
+                    blk.statements.splice(i..i, prefix_to_insert);
+                }
+            }
+        })
+    }
+
+    /// Visit `self` and its sub-blocks in a top-down (pre-order) traversal.
+    pub fn visit_blocks_fwd<F: FnMut(&mut Block)>(&mut self, f: F) {
+        self.drive_mut(&mut visitor_enter_fn_mut(f))
+    }
+    /// Visit `self` and its sub-blocks in a bottom-up (post-order) traversal.
+    pub fn visit_blocks_bwd<F: FnMut(&mut Block)>(&mut self, mut f: F) {
         self.drive_mut(&mut visitor_fn_mut(|blk: &mut Block, e: Event| {
             if matches!(e, Event::Exit) {
-                for i in (0..blk.statements.len()).rev() {
-                    let prefix_to_insert = f(&mut blk.statements[i..]);
-                    if !prefix_to_insert.is_empty() {
-                        // Insert the new elements at index `i`. This only modifies `vec[i..]`
-                        // so we can keep iterating `i` down as if nothing happened.
-                        blk.statements.splice(i..i, prefix_to_insert);
-                    }
-                }
+                f(blk)
             }
         }))
     }

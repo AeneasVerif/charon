@@ -154,12 +154,12 @@ where
     }
 
     /// Iter over the nonempty slots.
-    pub fn iter(&self) -> impl Iterator<Item = &T> + Clone {
-        self.vector.iter().flat_map(|opt| opt.as_ref())
+    pub fn iter(&self) -> impl Iterator<Item = &T> + DoubleEndedIterator + Clone {
+        self.vector.iter().filter_map(|opt| opt.as_ref())
     }
 
-    pub fn iter_mut(&mut self) -> impl Iterator<Item = &mut T> {
-        self.vector.iter_mut().flat_map(|opt| opt.as_mut())
+    pub fn iter_mut(&mut self) -> impl Iterator<Item = &mut T> + DoubleEndedIterator {
+        self.vector.iter_mut().filter_map(|opt| opt.as_mut())
     }
 
     pub fn iter_indexed(&self) -> impl Iterator<Item = (I, &T)> {

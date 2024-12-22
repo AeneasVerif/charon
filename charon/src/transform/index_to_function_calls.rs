@@ -319,7 +319,7 @@ pub struct Transform;
 /// ```
 impl LlbcPass for Transform {
     fn transform_body(&self, _ctx: &mut TransformCtx, b: &mut ExprBody) {
-        b.body.transform(&mut |st: &mut Statement| {
+        b.body.transform(|st: &mut Statement| {
             let mut visitor = Visitor {
                 locals: &mut b.locals,
                 statements: Vec::new(),

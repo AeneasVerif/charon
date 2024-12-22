@@ -7,8 +7,6 @@
 //! ```
 //! Which defines a new function each time. This pass recognizes these functions and replaces calls
 //! to them by a `Panic` terminator.
-
-use derive_visitor::{visitor_enter_fn_mut, DriveMut};
 use std::collections::HashSet;
 
 use super::{ctx::LlbcPass, TransformCtx};
@@ -46,8 +44,8 @@ impl LlbcPass for Transform {
 
         // Replace each call to one such function with a `Panic`.
         ctx.for_each_structured_body(|_ctx, body| {
-            body.body.drive_mut(&mut visitor_enter_fn_mut(
-                |st: &mut Statement| match &mut st.content {
+            body.body
+                .visit_statements(|st: &mut Statement| match &mut st.content {
                     RawStatement::Call(Call {
                         func:
                             FnOperand::Regular(FnPtr {
@@ -59,8 +57,7 @@ impl LlbcPass for Transform {
                         st.content = panic_statement.clone();
                     }
                     _ => {}
-                },
-            ));
+                });
         });
 
         // Remove these functions from the context.

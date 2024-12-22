@@ -177,6 +177,15 @@ impl TranslatedCrate {
             .iter()
             .flat_map(|id| Some((*id, self.get_item(*id)?)))
     }
+    pub fn all_items_mut(&mut self) -> impl Iterator<Item = AnyTransItemMut<'_>> {
+        self.type_decls
+            .iter_mut()
+            .map(AnyTransItemMut::Type)
+            .chain(self.fun_decls.iter_mut().map(AnyTransItemMut::Fun))
+            .chain(self.global_decls.iter_mut().map(AnyTransItemMut::Global))
+            .chain(self.trait_decls.iter_mut().map(AnyTransItemMut::TraitDecl))
+            .chain(self.trait_impls.iter_mut().map(AnyTransItemMut::TraitImpl))
+    }
 }
 
 impl<'ctx> AnyTransItem<'ctx> {

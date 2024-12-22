@@ -2,7 +2,7 @@
 use crate::ids::Vector;
 use crate::meta::Span;
 use crate::ullbc_ast::*;
-use derive_visitor::{visitor_enter_fn_mut, visitor_fn_mut, DriveMut, Event};
+use derive_visitor::{visitor_enter_fn_mut, DriveMut};
 use take_mut::take;
 
 impl SwitchTargets {
@@ -115,11 +115,11 @@ impl ExprBody {
 
     /// Apply a function to all the statements, in a bottom-up manner.
     pub fn visit_statements<F: FnMut(&mut Statement)>(&mut self, f: &mut F) {
-        self.drive_mut(&mut visitor_fn_mut(|st: &mut Statement, e: Event| {
-            if matches!(e, Event::Exit) {
-                f(st)
+        for block in self.body.iter_mut().rev() {
+            for st in block.statements.iter_mut().rev() {
+                f(st);
             }
-        }))
+        }
     }
 }
 

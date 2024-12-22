@@ -3,7 +3,6 @@
 //! of AENEAS, it means the return variable contains ⊥ upon returning.
 //! For this reason, when the function has return type unit, we insert
 //! an extra assignment just before returning.
-
 use crate::llbc_ast::*;
 use crate::transform::TransformCtx;
 
@@ -38,7 +37,6 @@ impl LlbcPass for Transform {
         }
     }
     fn transform_body(&self, _ctx: &mut TransformCtx, body: &mut ExprBody) {
-        body.body
-            .transform(&mut |st| transform_st(&body.locals, st));
+        body.body.transform(|st| transform_st(&body.locals, st));
     }
 }
