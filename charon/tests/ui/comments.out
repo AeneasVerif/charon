@@ -141,7 +141,7 @@ struct test_crate::Foo =
 trait core::default::Default<Self>
 {
     parent_clause0 : [@TraitClause0]: core::marker::Sized<Self>
-    fn default : core::default::Default::default
+    fn default = core::default::Default::default<Self>
 }
 
 fn core::default::{impl core::default::Default for u32}#7::default() -> u32

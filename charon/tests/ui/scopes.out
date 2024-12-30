@@ -2,14 +2,14 @@
 
 trait test_crate::Trait<'a, Self>
 {
-    fn method : test_crate::Trait::method
+    fn method<'b> = test_crate::Trait::method<'a, 'b, Self>
 }
 
 fn test_crate::{impl test_crate::Trait<'a> for &'a (())}::method<'a, 'b>(@1: &'b (&'a (()))) -> &'b (())
 
 impl<'a> test_crate::{impl test_crate::Trait<'a> for &'a (())}<'a> : test_crate::Trait<'a, &'a (())>
 {
-    fn method = test_crate::{impl test_crate::Trait<'a> for &'a (())}::method
+    fn method<'b> = test_crate::{impl test_crate::Trait<'a> for &'a (())}::method<'a, 'b>
 }
 
 opaque type test_crate::Foo<'a>

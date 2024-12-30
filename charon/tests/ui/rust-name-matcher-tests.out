@@ -16,7 +16,7 @@ trait core::marker::Sized<Self>
 trait test_crate::Trait<Self, T>
 {
     parent_clause0 : [@TraitClause0]: core::marker::Sized<T>
-    fn method : test_crate::Trait::method
+    fn method<U, [@TraitClause0]: core::marker::Sized<U>> = test_crate::Trait::method<Self, T, U>[@TraitClause0_0]
 }
 
 struct alloc::alloc::Global = {}
@@ -48,7 +48,7 @@ where
     [@TraitClause0]: core::marker::Sized<T>,
 {
     parent_clause0 = core::marker::Sized<core::option::Option<T>[@TraitClause0]>
-    fn method = test_crate::{impl test_crate::Trait<core::option::Option<T>[@TraitClause0]> for alloc::boxed::Box<T>[core::marker::Sized<alloc::alloc::Global>]}::method
+    fn method<U, [@TraitClause0]: core::marker::Sized<U>> = test_crate::{impl test_crate::Trait<core::option::Option<T>[@TraitClause0]> for alloc::boxed::Box<T>[core::marker::Sized<alloc::alloc::Global>]}::method<T, U>[@TraitClause0, @TraitClause0_0]
 }
 
 fn test_crate::{impl test_crate::Trait<T> for Slice<T>}#1::method<T, U>()
@@ -70,7 +70,7 @@ where
     [@TraitClause0]: core::marker::Sized<T>,
 {
     parent_clause0 = @TraitClause0
-    fn method = test_crate::{impl test_crate::Trait<T> for Slice<T>}#1::method
+    fn method<U, [@TraitClause0]: core::marker::Sized<U>> = test_crate::{impl test_crate::Trait<T> for Slice<T>}#1::method<T, U>[@TraitClause0, @TraitClause0_0]
 }
 
 fn test_crate::{impl test_crate::Trait<T> for &'_0 (Slice<T>)}#2::method<'_0, T, U>()
@@ -92,7 +92,7 @@ where
     [@TraitClause0]: core::marker::Sized<T>,
 {
     parent_clause0 = @TraitClause0
-    fn method = test_crate::{impl test_crate::Trait<T> for &'_0 (Slice<T>)}#2::method
+    fn method<U, [@TraitClause0]: core::marker::Sized<U>> = test_crate::{impl test_crate::Trait<T> for &'_0 (Slice<T>)}#2::method<'_0, T, U>[@TraitClause0, @TraitClause0_0]
 }
 
 fn test_crate::Trait::method<Self, T, U>()

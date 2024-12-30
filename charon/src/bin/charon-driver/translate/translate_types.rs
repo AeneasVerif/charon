@@ -539,6 +539,18 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
         Ok(())
     }
 
+    /// Translate the generics and predicates of this item without its parents.
+    pub(crate) fn translate_def_generics_without_parents(
+        &mut self,
+        span: Span,
+        def: &hax::FullDef,
+    ) -> Result<(), Error> {
+        self.binding_levels.push_front(BindingLevel::new(true));
+        self.push_generics_for_def_without_parents(span, def, true, true)?;
+        self.innermost_binder().params.check_consistency();
+        Ok(())
+    }
+
     pub(crate) fn into_generics(mut self) -> GenericParams {
         assert!(self.binding_levels.len() == 1);
         self.binding_levels.pop_back().unwrap().params

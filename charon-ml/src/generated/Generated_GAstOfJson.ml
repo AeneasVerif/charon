@@ -408,6 +408,16 @@ and item_kind_of_json (ctx : of_json_ctx) (js : json) :
         Ok (TraitImplItem (impl_ref, trait_ref, item_name, reuses_default))
     | _ -> Error "")
 
+and fun_decl_ref_of_json (ctx : of_json_ctx) (js : json) :
+    (fun_decl_ref, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with
+    | `Assoc [ ("id", id); ("generics", generics) ] ->
+        let* fun_id = fun_decl_id_of_json ctx id in
+        let* fun_generics = generic_args_of_json ctx generics in
+        Ok ({ fun_id; fun_generics } : fun_decl_ref)
+    | _ -> Error "")
+
 and global_decl_of_json (ctx : of_json_ctx) (js : json) :
     (global_decl, string) result =
   combine_error_msgs js __FUNCTION__
@@ -480,12 +490,14 @@ and trait_decl_of_json (ctx : of_json_ctx) (js : json) :
         let* types = list_of_json trait_item_name_of_json ctx types in
         let* required_methods =
           list_of_json
-            (pair_of_json trait_item_name_of_json fun_decl_id_of_json)
+            (pair_of_json trait_item_name_of_json
+               (binder_of_json fun_decl_ref_of_json))
             ctx required_methods
         in
         let* provided_methods =
           list_of_json
-            (pair_of_json trait_item_name_of_json fun_decl_id_of_json)
+            (pair_of_json trait_item_name_of_json
+               (binder_of_json fun_decl_ref_of_json))
             ctx provided_methods
         in
         Ok
@@ -539,12 +551,14 @@ and trait_impl_of_json (ctx : of_json_ctx) (js : json) :
         in
         let* required_methods =
           list_of_json
-            (pair_of_json trait_item_name_of_json fun_decl_id_of_json)
+            (pair_of_json trait_item_name_of_json
+               (binder_of_json fun_decl_ref_of_json))
             ctx required_methods
         in
         let* provided_methods =
           list_of_json
-            (pair_of_json trait_item_name_of_json fun_decl_id_of_json)
+            (pair_of_json trait_item_name_of_json
+               (binder_of_json fun_decl_ref_of_json))
             ctx provided_methods
         in
         Ok

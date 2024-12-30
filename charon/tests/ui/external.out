@@ -28,8 +28,8 @@ where
 trait core::clone::Clone<Self>
 {
     parent_clause0 : [@TraitClause0]: core::marker::Sized<Self>
-    fn clone : core::clone::Clone::clone
-    fn clone_from : core::clone::Clone::clone_from
+    fn clone<'_0> = core::clone::Clone::clone<'_0_0, Self>
+    fn clone_from<'_0, '_1> = core::clone::Clone::clone_from<'_0_0, '_0_1, Self>
 }
 
 trait core::marker::Copy<Self>
@@ -60,7 +60,7 @@ fn core::clone::impls::{impl core::clone::Clone for u32}#8::clone<'_0>(@1: &'_0 
 impl core::clone::impls::{impl core::clone::Clone for u32}#8 : core::clone::Clone<u32>
 {
     parent_clause0 = core::marker::Sized<u32>
-    fn clone = core::clone::impls::{impl core::clone::Clone for u32}#8::clone
+    fn clone<'_0> = core::clone::impls::{impl core::clone::Clone for u32}#8::clone<'_0_0>
 }
 
 impl core::marker::{impl core::marker::Copy for u32}#40 : core::marker::Copy<u32>
@@ -77,7 +77,7 @@ fn core::num::nonzero::private::{impl core::clone::Clone for core::num::nonzero:
 impl core::num::nonzero::private::{impl core::clone::Clone for core::num::nonzero::private::NonZeroU32Inner}#11 : core::clone::Clone<core::num::nonzero::private::NonZeroU32Inner>
 {
     parent_clause0 = core::marker::Sized<core::num::nonzero::private::NonZeroU32Inner>
-    fn clone = core::num::nonzero::private::{impl core::clone::Clone for core::num::nonzero::private::NonZeroU32Inner}#11::clone
+    fn clone<'_0> = core::num::nonzero::private::{impl core::clone::Clone for core::num::nonzero::private::NonZeroU32Inner}#11::clone<'_0_0>
 }
 
 impl core::num::nonzero::private::{impl core::marker::Copy for core::num::nonzero::private::NonZeroU32Inner}#12 : core::marker::Copy<core::num::nonzero::private::NonZeroU32Inner>

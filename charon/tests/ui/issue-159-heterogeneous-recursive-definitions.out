@@ -2,8 +2,8 @@
 
 trait test_crate::Ops<Self>
 {
-    fn ZERO : test_crate::Ops::ZERO
-    fn ntt_multiply : test_crate::Ops::ntt_multiply
+    fn ZERO = test_crate::Ops::ZERO<Self>
+    fn ntt_multiply = test_crate::Ops::ntt_multiply<Self>
 }
 
 struct test_crate::Portable = {}

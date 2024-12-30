@@ -72,18 +72,23 @@ impl GenericParams {
     /// each required parameter with itself. E.g. given parameters for `<T, U> where U:
     /// PartialEq<T>`, the arguments would be `<T, U>[@TraitClause0]`.
     pub fn identity_args(&self) -> GenericArgs {
+        self.identity_args_at_depth(DeBruijnId::zero())
+    }
+
+    /// Like `identity_args` but uses variables bound at the given depth.
+    pub fn identity_args_at_depth(&self, depth: DeBruijnId) -> GenericArgs {
         GenericArgs {
             regions: self
                 .regions
-                .map_ref_indexed(|id, _| Region::Var(DeBruijnVar::new_at_zero(id))),
+                .map_ref_indexed(|id, _| Region::Var(DeBruijnVar::bound(depth, id))),
             types: self
                 .types
-                .map_ref_indexed(|id, _| TyKind::TypeVar(DeBruijnVar::new_at_zero(id)).into_ty()),
+                .map_ref_indexed(|id, _| TyKind::TypeVar(DeBruijnVar::bound(depth, id)).into_ty()),
             const_generics: self
                 .const_generics
-                .map_ref_indexed(|id, _| ConstGeneric::Var(DeBruijnVar::new_at_zero(id))),
+                .map_ref_indexed(|id, _| ConstGeneric::Var(DeBruijnVar::bound(depth, id))),
             trait_refs: self.trait_clauses.map_ref_indexed(|id, clause| TraitRef {
-                kind: TraitRefKind::Clause(DeBruijnVar::new_at_zero(id)),
+                kind: TraitRefKind::Clause(DeBruijnVar::bound(depth, id)),
                 trait_decl_ref: clause.trait_.clone(),
             }),
         }
@@ -105,6 +110,15 @@ impl GenericParams {
                 kind: TraitRefKind::Clause(DeBruijnVar::free(id)),
                 trait_decl_ref: clause.trait_.clone(),
             }),
+        }
+    }
+}
+
+impl<T> Binder<T> {
+    pub fn new(params: GenericParams, skip_binder: T) -> Self {
+        Self {
+            params,
+            skip_binder,
         }
     }
 }

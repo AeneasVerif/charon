@@ -17,7 +17,7 @@ fn transform_call(ctx: &TransformCtx, call: &mut Call) {
         return;
     };
     // Find the function declaration corresponding to this impl.
-    let Some((_, fun_decl_id)) = trait_impl
+    let Some((_, bound_fn)) = trait_impl
         .required_methods
         .iter()
         .chain(trait_impl.provided_methods.iter())
@@ -25,12 +25,12 @@ fn transform_call(ctx: &TransformCtx, call: &mut Call) {
     else {
         return;
     };
-    let fn_generics = &fn_ptr.generics;
+    let method_generics = &fn_ptr.generics;
     // Move the trait generics to the function call.
-    // FIXME: make a better API than `concat`.
-    fn_ptr.generics = impl_generics.clone().concat(fn_generics);
+    // TODO: substitute for real
+    fn_ptr.generics = impl_generics.clone().concat(method_generics);
     // Set the call operation to use the function directly.
-    fn_ptr.func = FunIdOrTraitMethodRef::Fun(FunId::Regular(*fun_decl_id));
+    fn_ptr.func = FunIdOrTraitMethodRef::Fun(FunId::Regular(bound_fn.skip_binder.id));
 }
 
 pub struct Transform;
