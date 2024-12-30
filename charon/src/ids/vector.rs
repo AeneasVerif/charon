@@ -154,6 +154,18 @@ where
         }
     }
 
+    /// Map each entry to a new one, keeping the same ids.
+    pub fn map_ref_indexed<'a, U>(&'a self, mut f: impl FnMut(I, &'a T) -> U) -> Vector<I, U> {
+        Vector {
+            vector: self
+                .vector
+                .iter_enumerated()
+                .map(|(i, x_opt)| x_opt.as_ref().map(|x| f(i, x)))
+                .collect(),
+            real_len: self.real_len,
+        }
+    }
+
     /// Iter over the nonempty slots.
     pub fn iter(&self) -> impl Iterator<Item = &T> + DoubleEndedIterator + Clone {
         self.vector.iter().filter_map(|opt| opt.as_ref())

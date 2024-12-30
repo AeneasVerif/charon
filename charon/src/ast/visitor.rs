@@ -64,7 +64,7 @@ use index_vec::Idx;
     override(
         DeBruijnId, Ty, Region, ConstGeneric, TraitRef,
         GlobalDeclRef, TraitDeclRef, TraitImplRef, GenericArgs, GenericParams,
-        for<T: AstVisitable> DeBruijnVar<T>,
+        for<T: AstVisitable + Idx> DeBruijnVar<T>,
         for<T: AstVisitable> RegionBinder<T>,
         for<T: AstVisitable> Binder<T>,
         AggregateKind, FnPtr, ItemKind, ItemMeta, Span,

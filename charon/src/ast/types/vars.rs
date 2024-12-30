@@ -29,17 +29,25 @@ pub struct DeBruijnId {
 /// Type-level variable.
 ///
 /// Variables are bound in groups. Each item has a top-level binding group in its `generic_params`
-/// field, and then inner binders are possible using the `RegionBinder<T>` type. Each variable is
-/// linked to exactly one binder. The `Id` then identifies the specific variable among all those
-/// bound in that group.
-///
-/// We distinguish the top-level (item-level) binder from others: a `Free` variable indicates a
-/// variable bound at the item level; a `Bound` variable indicates a variable bound at an inner
-/// binder, using a de Bruijn index (i.e. counting binders from the innermost out).
-///
-/// This distinction is not necessary (we could use bound variables only) but is practical.
+/// field, and then inner binders are possible using the `RegionBinder<T>` and `Binder<T>` types.
+/// Each variable is linked to exactly one binder. The `Id` then identifies the specific variable
+/// among all those bound in that group.
 ///
 /// For instance, we have the following:
+/// ```text
+/// fn f<'a, 'b>(x: for<'c> fn(&'b u8, &'c u16, for<'d> fn(&'b u32, &'c u64, &'d u128)) -> u64) {}
+///      ^^^^^^         ^^       ^       ^          ^^       ^        ^        ^
+///        |       inner binder  |       |     inner binder  |        |        |
+///  top-level binder            |       |                   |        |        |
+///                        Bound(1, b)   |              Bound(2, b)   |     Bound(0, d)
+///                                      |                            |
+///                                  Bound(0, c)                 Bound(1, c)
+/// ```
+///
+/// To make consumption easier for projects that don't do heavy substitution, a micro-pass at the
+/// end changes the variables bound at the top-level (i.e. in the `GenericParams` of items) to be
+/// `Free`. This is an optional pass, we may add a flag to deactivate it. The example above
+/// becomes:
 /// ```text
 /// fn f<'a, 'b>(x: for<'c> fn(&'b u8, &'c u16, for<'d> fn(&'b u32, &'c u64, &'d u128)) -> u64) {}
 ///      ^^^^^^         ^^       ^       ^          ^^       ^        ^        ^
@@ -68,7 +76,8 @@ pub struct DeBruijnId {
 pub enum DeBruijnVar<Id> {
     /// A variable attached to the nth binder, counting from the innermost.
     Bound(DeBruijnId, Id),
-    /// A variable attached to the outermost binder (the one on the item).
+    /// A variable attached to the outermost binder (the one on the item). As explained above, This
+    /// is not used in charon internals, only as a micro-pass before exporting the crate data.
     Free(Id),
 }
 
