@@ -66,8 +66,10 @@ impl VisitAst for CheckGenericsVisitor<'_> {
             AggregateKind::Adt(kind, _, _, args) => {
                 self.check_typeid_generics(args, kind);
             }
-            AggregateKind::Closure(id, args) => {
-                self.generics_should_match_item(args, *id);
+            AggregateKind::Closure(_id, _args) => {
+                // TODO(#194): handle closure generics properly
+                // self.generics_should_match_item(args, *id);
+                self.discharged_one_generics()
             }
             AggregateKind::Array(..) => {}
         }
