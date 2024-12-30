@@ -63,7 +63,8 @@ use index_vec::Idx;
     // type but can be overridden.
     override(
         DeBruijnId, Ty, Region, ConstGeneric, TraitRef,
-        GlobalDeclRef, TraitDeclRef, TraitImplRef, GenericArgs, GenericParams,
+        FunDeclRef, GlobalDeclRef, TraitDeclRef, TraitImplRef,
+        GenericArgs, GenericParams,
         for<T: AstVisitable + Idx> DeBruijnVar<T>,
         for<T: AstVisitable> RegionBinder<T>,
         for<T: AstVisitable> Binder<T>,

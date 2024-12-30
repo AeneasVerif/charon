@@ -531,6 +531,14 @@ where
     }
 }
 
+impl<C: AstFormatter> FmtWithCtx<C> for FunDeclRef {
+    fn fmt_with_ctx(&self, ctx: &C) -> String {
+        let id = ctx.format_object(self.id);
+        let generics = self.generics.fmt_with_ctx(ctx);
+        format!("{id}{generics}")
+    }
+}
+
 impl<C> FmtWithCtx<C> for GlobalDecl
 where
     C: AstFormatter,
@@ -565,9 +573,9 @@ where
 
 impl<C: AstFormatter> FmtWithCtx<C> for GlobalDeclRef {
     fn fmt_with_ctx(&self, ctx: &C) -> String {
-        let global_id = ctx.format_object(self.id);
+        let id = ctx.format_object(self.id);
         let generics = self.generics.fmt_with_ctx(ctx);
-        format!("{global_id}{generics}")
+        format!("{id}{generics}")
     }
 }
 

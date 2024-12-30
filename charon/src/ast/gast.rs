@@ -142,6 +142,16 @@ pub struct FunDecl {
     pub body: Result<Body, Opaque>,
 }
 
+/// Reference to a function declaration.
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Hash, Drive, DriveMut)]
+pub struct FunDeclRef {
+    #[charon::rename("fun_id")]
+    pub id: FunDeclId,
+    /// Generic arguments passed to the function.
+    #[charon::rename("fun_generics")]
+    pub generics: GenericArgs,
+}
+
 /// A global variable definition (constant or static).
 #[derive(Debug, Clone, Serialize, Deserialize, Drive, DriveMut)]
 pub struct GlobalDecl {
@@ -153,7 +163,8 @@ pub struct GlobalDecl {
     pub ty: Ty,
     /// The global kind: "regular" function, trait const declaration, etc.
     pub kind: ItemKind,
-    /// The initializer function used to compute the initial value for this constant/static.
+    /// The initializer function used to compute the initial value for this constant/static. It
+    /// uses the same generic parameters as the global.
     #[charon::rename("body")]
     pub init: FunDeclId,
 }
@@ -245,6 +256,7 @@ pub struct TraitDecl {
     ///
     /// The required methods are the methods declared by the trait but with no default
     /// implementation. The corresponding `FunDecl`s don't have a body.
+    // TODO: use a properly bound `FunDeclRef`
     pub required_methods: Vec<(TraitItemName, FunDeclId)>,
     /// The *provided* methods.
     ///
