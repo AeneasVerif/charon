@@ -390,19 +390,12 @@ impl RefKind {
 }
 
 /// Visitor for the [Ty::substitute] function.
-/// This substitutes only free variables; this does not work for non-top-level binders.
+/// This substitutes variables bound at the level where we start to substitute (level 0).
 #[derive(Visitor)]
 pub(crate) struct SubstVisitor<'a> {
     generics: &'a GenericArgs,
     // Tracks the depth of binders we're inside of.
-    // Important: we must update it whenever we go inside a binder. Visitors are not generic so we
-    // must handle all the specific cases by hand. So far there's:
-    // - `PolyTraitDeclRef`
-    // - `TyKind::Arrow`
-    // - `BoundTypeOutlives`
-    // - `BoundRegionOutlives`
-    // - `BoundTraitTypeConstraint`
-    // - `BoundTy`
+    // Important: we must update it whenever we go inside a binder.
     binder_depth: DeBruijnId,
 }
 
