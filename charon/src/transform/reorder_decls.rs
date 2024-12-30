@@ -3,7 +3,7 @@ use crate::formatter::{AstFormatter, IntoFormatter};
 use crate::graphs::*;
 use crate::transform::TransformCtx;
 use crate::ullbc_ast::*;
-use derive_visitor::{Drive, Visitor};
+use derive_generic_visitor::*;
 use hashlink::{LinkedHashMap, LinkedHashSet};
 use macros::{EnumAsGetters, EnumIsA, VariantIndexArity, VariantName};
 use petgraph::algo::tarjan_scc;
@@ -148,15 +148,6 @@ impl Display for DeclarationGroup {
 }
 
 #[derive(Visitor)]
-#[visitor(
-    TypeDeclId(enter),
-    FunDeclId(enter),
-    GlobalDeclId(enter),
-    TraitImplId(enter),
-    TraitDeclId(enter),
-    BodyId(enter),
-    Ty(enter)
-)]
 pub struct Deps<'tcx> {
     ctx: &'tcx TransformCtx,
     dgraph: DiGraphMap<AnyTransId, ()>,
@@ -276,7 +267,7 @@ impl<'tcx> Deps<'tcx> {
     }
 }
 
-impl Deps<'_> {
+impl VisitAst for Deps<'_> {
     fn enter_type_decl_id(&mut self, id: &TypeDeclId) {
         self.insert_edge((*id).into());
     }
@@ -321,9 +312,14 @@ impl Deps<'_> {
         }
     }
 
-    fn enter_ty(&mut self, ty: &Ty) {
-        // Recurse into the type, which doesn't happen by default.
-        ty.drive_inner(self);
+    fn visit_item_meta(&mut self, _: &ItemMeta) -> ControlFlow<Self::Break> {
+        // Don't look inside because trait impls contain their own id in their name.
+        Continue(())
+    }
+    fn visit_item_kind(&mut self, _: &ItemKind) -> ControlFlow<Self::Break> {
+        // Don't look inside to avoid recording a dependency from a method impl to the impl block
+        // it belongs to.
+        Continue(())
     }
 }
 
@@ -365,18 +361,14 @@ fn compute_declarations_graph<'tcx>(ctx: &'tcx TransformCtx) -> Deps<'tcx> {
     for (id, item) in ctx.translated.all_items_with_ids() {
         graph.set_current_id(ctx, id);
         match item {
-            AnyTransItem::Type(d) => {
-                d.drive(&mut graph);
+            AnyTransItem::Type(..) | AnyTransItem::TraitImpl(..) | AnyTransItem::Global(..) => {
+                item.drive(&mut graph);
             }
             AnyTransItem::Fun(d) => {
-                // Explore the signature
+                // Skip `d.is_global_initializer` to avoid incorrect mutual dependencies.
+                // TODO: add `is_global_initializer` to `ItemKind`.
                 d.signature.drive(&mut graph);
-                // Skip `d.kind`: we don't want to record a dependency to the impl block this
-                // belongs to.
                 d.body.drive(&mut graph);
-            }
-            AnyTransItem::Global(d) => {
-                d.drive(&mut graph);
             }
             AnyTransItem::TraitDecl(d) => {
                 let TraitDecl {
@@ -422,33 +414,11 @@ fn compute_declarations_graph<'tcx>(ctx: &'tcx TransformCtx) -> Deps<'tcx> {
                     //   fn f(x : Trait::X);
                     // }
                     // ```
+                    // TODO: we can likely remove this after #127
                     if let Some(decl) = ctx.translated.fun_decls.get(id) {
                         decl.signature.drive(&mut graph);
                     }
                 }
-            }
-            AnyTransItem::TraitImpl(d) => {
-                let TraitImpl {
-                    def_id: _,
-                    // Don't eplore because the `Name` contains this impl's own id.
-                    item_meta: _,
-                    impl_trait,
-                    generics,
-                    parent_trait_refs,
-                    consts,
-                    types,
-                    type_clauses,
-                    required_methods,
-                    provided_methods,
-                } = d;
-                impl_trait.drive(&mut graph);
-                generics.drive(&mut graph);
-                parent_trait_refs.drive(&mut graph);
-                consts.drive(&mut graph);
-                types.drive(&mut graph);
-                type_clauses.drive(&mut graph);
-                required_methods.drive(&mut graph);
-                provided_methods.drive(&mut graph);
             }
         }
         graph.unset_current_id();

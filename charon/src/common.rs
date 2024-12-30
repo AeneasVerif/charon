@@ -82,12 +82,14 @@ pub mod type_map {
 }
 
 pub mod hash_consing {
+    use derive_generic_visitor::{Drive, DriveMut, Visit, VisitMut};
+
     use super::type_map::{Mappable, Mapper, TypeMap};
-    use derive_visitor::{Drive, DriveMut, Event, Visitor, VisitorMut};
     use itertools::Either;
     use serde::{Deserialize, Serialize};
     use std::collections::HashMap;
     use std::hash::Hash;
+    use std::ops::ControlFlow;
     use std::sync::{Arc, LazyLock, RwLock};
 
     /// Hash-consed data structure: a reference-counted wrapper that guarantees that two equal
@@ -164,26 +166,19 @@ pub mod hash_consing {
         }
     }
 
-    impl<T> Drive for HashConsed<T>
-    where
-        T: Drive,
-    {
-        fn drive<V: Visitor>(&self, visitor: &mut V) {
-            visitor.visit(self, Event::Enter);
-            self.inner().drive(visitor);
-            visitor.visit(self, Event::Exit);
+    impl<'s, T, V: Visit<'s, T>> Drive<'s, V> for HashConsed<T> {
+        fn drive_inner(&'s self, v: &mut V) -> ControlFlow<V::Break> {
+            v.visit(self.inner())
         }
     }
-
-    /// Note: this explores the full tree mutably by cloning and re-hashing afterwards.
-    impl<T> DriveMut for HashConsed<T>
+    /// Note: this explores the inner value mutably by cloning and re-hashing afterwards.
+    impl<'s, T, V> DriveMut<'s, V> for HashConsed<T>
     where
-        T: DriveMut + Hash + PartialEq + Eq + Clone + Mappable,
+        T: Hash + PartialEq + Eq + Clone + Mappable,
+        V: for<'a> VisitMut<'a, T>,
     {
-        fn drive_mut<V: VisitorMut>(&mut self, visitor: &mut V) {
-            visitor.visit(self, Event::Enter);
-            self.with_inner_mut(|inner| inner.drive_mut(visitor));
-            visitor.visit(self, Event::Exit);
+        fn drive_inner_mut(&'s mut self, v: &mut V) -> ControlFlow<V::Break> {
+            self.with_inner_mut(|inner| v.visit(inner))
         }
     }
 }
@@ -216,33 +211,6 @@ pub mod hash_by_addr {
     impl<T: Hash + Deref> Hash for HashByAddr<T> {
         fn hash<H: Hasher>(&self, state: &mut H) {
             self.addr().hash(state);
-        }
-    }
-}
-
-pub mod visitor_event {
-    /// `derive_visitor::Event` doesn't derive all the useful traits so we use this instead.
-    #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-    pub enum VisitEvent {
-        Enter,
-        Exit,
-    }
-
-    impl From<&derive_visitor::Event> for VisitEvent {
-        fn from(value: &derive_visitor::Event) -> Self {
-            match value {
-                derive_visitor::Event::Enter => VisitEvent::Enter,
-                derive_visitor::Event::Exit => VisitEvent::Exit,
-            }
-        }
-    }
-
-    impl From<VisitEvent> for derive_visitor::Event {
-        fn from(value: VisitEvent) -> Self {
-            match value {
-                VisitEvent::Enter => derive_visitor::Event::Enter,
-                VisitEvent::Exit => derive_visitor::Event::Exit,
-            }
         }
     }
 }

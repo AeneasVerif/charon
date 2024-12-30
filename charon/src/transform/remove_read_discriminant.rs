@@ -8,8 +8,6 @@ use crate::formatter::IntoFormatter;
 use crate::llbc_ast::*;
 use crate::pretty::FmtWithCtx;
 use crate::transform::TransformCtx;
-use derive_visitor::visitor_enter_fn_mut;
-use derive_visitor::DriveMut;
 use itertools::Itertools;
 use std::collections::{HashMap, HashSet};
 
@@ -159,9 +157,8 @@ impl Transform {
 
 impl LlbcPass for Transform {
     fn transform_body(&self, ctx: &mut TransformCtx, b: &mut ExprBody) {
-        b.body
-            .drive_mut(&mut visitor_enter_fn_mut(|block: &mut Block| {
-                Transform::update_block(ctx, block);
-            }));
+        b.body.visit_blocks_bwd(|block: &mut Block| {
+            Transform::update_block(ctx, block);
+        });
     }
 }

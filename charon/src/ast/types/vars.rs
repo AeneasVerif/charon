@@ -1,6 +1,6 @@
 //! Type-level variables. There are 4 kinds of variables at the type-level: regions, types, const
 //! generics and trait clauses. The relevant definitions are in this module.
-use derive_visitor::{Drive, DriveMut, Event, Visitor, VisitorMut};
+use derive_generic_visitor::{Drive, DriveMut};
 use serde::{Deserialize, Serialize};
 
 use crate::ast::*;
@@ -21,6 +21,7 @@ use crate::ast::*;
     DriveMut,
 )]
 #[serde(transparent)]
+#[drive(skip)]
 pub struct DeBruijnId {
     pub index: usize,
 }
@@ -50,7 +51,20 @@ pub struct DeBruijnId {
 /// ```
 ///
 /// At the moment only region variables can be bound in a non-top-level binder.
-#[derive(Debug, PartialEq, Eq, Copy, Clone, Hash, PartialOrd, Ord, Serialize, Deserialize)]
+#[derive(
+    Debug,
+    PartialEq,
+    Eq,
+    Copy,
+    Clone,
+    Hash,
+    PartialOrd,
+    Ord,
+    Serialize,
+    Deserialize,
+    Drive,
+    DriveMut,
+)]
 pub enum DeBruijnVar<Id> {
     /// A variable attached to the nth binder, counting from the innermost.
     Bound(DeBruijnId, Id),
@@ -73,6 +87,7 @@ pub struct TypeVar {
     /// Index identifying the variable among other variables bound at the same level.
     pub index: TypeVarId,
     /// Variable name
+    #[drive(skip)]
     pub name: String,
 }
 
@@ -84,6 +99,7 @@ pub struct RegionVar {
     /// Index identifying the variable among other variables bound at the same level.
     pub index: RegionId,
     /// Region name
+    #[drive(skip)]
     pub name: Option<String>,
 }
 
@@ -93,6 +109,7 @@ pub struct ConstGenericVar {
     /// Index identifying the variable among other variables bound at the same level.
     pub index: ConstGenericVarId,
     /// Const generic name
+    #[drive(skip)]
     pub name: String,
     /// Type of the const generic
     pub ty: LiteralTy,
@@ -108,6 +125,7 @@ pub struct TraitClause {
     pub span: Option<Span>,
     /// Where the predicate was written, relative to the item that requires it.
     #[charon::opaque]
+    #[drive(skip)]
     pub origin: PredicateOrigin,
     /// The trait that is implemented.
     #[charon::rename("trait")]
@@ -226,38 +244,5 @@ impl TypeVar {
 impl Default for DeBruijnId {
     fn default() -> Self {
         Self::zero()
-    }
-}
-
-// The derive macro doesn't handle generics.
-impl<Id: Drive> Drive for DeBruijnVar<Id> {
-    fn drive<V: Visitor>(&self, visitor: &mut V) {
-        visitor.visit(self, Event::Enter);
-        match self {
-            DeBruijnVar::Bound(x, y) => {
-                x.drive(visitor);
-                y.drive(visitor);
-            }
-            DeBruijnVar::Free(x) => {
-                x.drive(visitor);
-            }
-        }
-        visitor.visit(self, Event::Exit);
-    }
-}
-
-impl<Id: DriveMut> DriveMut for DeBruijnVar<Id> {
-    fn drive_mut<V: VisitorMut>(&mut self, visitor: &mut V) {
-        visitor.visit(self, Event::Enter);
-        match self {
-            DeBruijnVar::Bound(x, y) => {
-                x.drive_mut(visitor);
-                y.drive_mut(visitor);
-            }
-            DeBruijnVar::Free(x) => {
-                x.drive_mut(visitor);
-            }
-        }
-        visitor.visit(self, Event::Exit);
     }
 }

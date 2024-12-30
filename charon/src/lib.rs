@@ -15,7 +15,6 @@
 #![recursion_limit = "256"]
 #![feature(box_patterns)]
 #![feature(deref_pure_trait)]
-#![feature(extract_if)]
 #![feature(if_let_guard)]
 #![feature(impl_trait_in_assoc_type)]
 #![feature(iterator_try_collect)]

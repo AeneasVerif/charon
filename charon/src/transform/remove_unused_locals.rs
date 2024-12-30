@@ -2,13 +2,11 @@
 //! never used in the function bodies.  This is useful to remove the locals with
 //! type `Never`. We actually check that there are no such local variables
 //! remaining afterwards.
-use crate::llbc_ast::ExprBody;
-use crate::transform::TransformCtx;
-use crate::ullbc_ast::Var;
-use crate::values::*;
-use derive_visitor::{visitor_enter_fn, visitor_enter_fn_mut, Drive, DriveMut};
 use std::collections::{HashMap, HashSet};
 use std::mem;
+
+use crate::llbc_ast::*;
+use crate::transform::TransformCtx;
 
 use super::ctx::LlbcPass;
 
@@ -20,9 +18,9 @@ impl LlbcPass for Transform {
         let mut used_locals: HashSet<VarId> = (0..(b.locals.arg_count + 1))
             .map(|i| VarId::new(i))
             .collect();
-        b.body.drive(&mut visitor_enter_fn(|vid: &VarId| {
+        b.body.dyn_visit_in_body(|vid: &VarId| {
             used_locals.insert(*vid);
-        }));
+        });
         trace!("used_locals: {:?}", used_locals);
 
         // Keep only the variables that are used and update their indices to be contiguous.
@@ -37,9 +35,8 @@ impl LlbcPass for Transform {
         trace!("vids_maps: {:?}", vids_map);
 
         // Update all `VarId`s.
-        b.body
-            .drive_mut(&mut visitor_enter_fn_mut(|vid: &mut VarId| {
-                *vid = *vids_map.get(vid).unwrap();
-            }));
+        b.body.dyn_visit_in_body_mut(|vid: &mut VarId| {
+            *vid = *vids_map.get(vid).unwrap();
+        });
     }
 }

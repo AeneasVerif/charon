@@ -1,24 +1,12 @@
 //! Check that all supplied generic types match the corresponding generic parameters.
+use derive_generic_visitor::*;
 use std::fmt::Display;
-
-use derive_visitor::Visitor;
 
 use crate::{ast::*, errors::ErrorCtx, register_error_or_panic};
 
 use super::{ctx::TransformPass, TransformCtx};
 
 #[derive(Visitor)]
-#[visitor(
-    TraitImpl(enter),
-    GenericArgs(enter),
-    AggregateKind(enter),
-    FnPtr(enter),
-    GlobalDeclRef(enter),
-    TraitDeclRef(enter),
-    TraitImplRef(enter),
-    TraitRefKind(enter),
-    Ty(enter)
-)]
 struct CheckGenericsVisitor<'a> {
     translated: &'a TranslatedCrate,
     error_ctx: &'a mut ErrorCtx,
@@ -72,7 +60,7 @@ impl CheckGenericsVisitor<'_> {
 }
 
 // Visitor functions
-impl CheckGenericsVisitor<'_> {
+impl VisitAst for CheckGenericsVisitor<'_> {
     fn enter_aggregate_kind(&mut self, agg: &AggregateKind) {
         match agg {
             AggregateKind::Adt(kind, _, _, args) => {
@@ -106,8 +94,8 @@ impl CheckGenericsVisitor<'_> {
     fn enter_trait_impl_ref(&mut self, impl_ref: &TraitImplRef) {
         self.generics_should_match_item(&impl_ref.generics, impl_ref.impl_id);
     }
-    fn enter_trait_ref_kind(&mut self, kind: &TraitRefKind) {
-        match kind {
+    fn enter_trait_ref(&mut self, tref: &TraitRef) {
+        match &tref.kind {
             TraitRefKind::TraitImpl(id, args) => self.generics_should_match_item(args, *id),
             TraitRefKind::BuiltinOrAuto(..)
             | TraitRefKind::Dyn(..)
@@ -165,12 +153,12 @@ pub struct Check;
 impl TransformPass for Check {
     fn transform_ctx(&self, ctx: &mut TransformCtx) {
         for item in ctx.translated.all_items() {
-            let mut visitor = Ty::visit_inside_stateless(CheckGenericsVisitor {
+            let mut visitor = CheckGenericsVisitor {
                 translated: &ctx.translated,
                 error_ctx: &mut ctx.errors,
                 discharged_args: 0,
                 item_span: item.item_meta().span,
-            });
+            };
             item.drive(&mut visitor);
             assert_eq!(
                 visitor.discharged_args, 0,

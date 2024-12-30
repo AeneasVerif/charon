@@ -1,7 +1,7 @@
 //! Implements expressions: paths, operands, rvalues, lvalues
 
 use crate::ast::*;
-use derive_visitor::{Drive, DriveMut};
+use derive_generic_visitor::{Drive, DriveMut};
 use macros::{EnumAsGetters, EnumIsA, EnumToGetters, VariantIndexArity, VariantName};
 use serde::{Deserialize, Serialize};
 use std::vec::Vec;
@@ -67,6 +67,7 @@ pub enum ProjectionElem {
     #[charon::opaque]
     Index {
         offset: Box<Operand>,
+        #[drive(skip)]
         from_end: bool,
     },
     /// Take a subslice of a slice or array. If `from_end` is `true` this is
@@ -76,6 +77,7 @@ pub enum ProjectionElem {
     Subslice {
         from: Box<Operand>,
         to: Box<Operand>,
+        #[drive(skip)]
         from_end: bool,
     },
 }
@@ -97,6 +99,7 @@ pub enum ProjectionElem {
 pub enum FieldProjKind {
     Adt(TypeDeclId, Option<VariantId>),
     /// If we project from a tuple, the projection kind gives the arity of the tuple.
+    #[drive(skip)]
     Tuple(usize),
     /// Access to a field in a closure state.
     /// We eliminate this in a micro-pass ([crate::update_closure_signatures]).
@@ -176,6 +179,7 @@ pub enum UnOp {
 pub enum NullOp {
     SizeOf,
     AlignOf,
+    #[drive(skip)]
     OffsetOf(Vec<(usize, FieldId)>),
     UbChecks,
 }
@@ -336,6 +340,7 @@ pub enum BuiltinFunId {
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, Drive, DriveMut)]
 pub struct BuiltinIndexOp {
     /// Whether this is a slice or array.
+    #[drive(skip)]
     pub is_array: bool,
     /// Whether we're indexing mutably or not. Determines the type ofreference of the input and
     /// output.
@@ -343,6 +348,7 @@ pub struct BuiltinIndexOp {
     /// Whether we're indexing a single element or a subrange. If `true`, the function takes
     /// two indices and the output is a slice; otherwise, the function take one index and the
     /// output is a reference to a single element.
+    #[drive(skip)]
     pub is_range: bool,
 }
 

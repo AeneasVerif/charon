@@ -1,11 +1,10 @@
 //! Some passes like [`reconstruct_assert`] lead to the apparition of "dangling" blocks,
-//! which are referenced nowhere and thus become useless. This pass filters those out.
+//! which are referenced nowhere and thus become unreachable. This pass filters those out.
 
 use std::collections::{HashMap, HashSet};
 
 use crate::transform::TransformCtx;
 use crate::ullbc_ast::*;
-use derive_visitor::{visitor_enter_fn_mut, DriveMut};
 
 use super::ctx::UllbcPass;
 
@@ -34,9 +33,8 @@ impl UllbcPass for Transform {
         }
 
         // Update all block ids
-        b.body
-            .drive_mut(&mut visitor_enter_fn_mut(|bid: &mut BlockId| {
-                *bid = *bid_map.get(bid).unwrap();
-            }));
+        b.body.dyn_visit_in_body_mut(|bid: &mut BlockId| {
+            *bid = *bid_map.get(bid).unwrap();
+        });
     }
 }

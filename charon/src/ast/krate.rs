@@ -2,7 +2,7 @@ use crate::ast::*;
 use crate::formatter::{FmtCtx, Formatter, IntoFormatter};
 use crate::ids::Vector;
 use crate::reorder_decls::DeclarationsGroups;
-use derive_visitor::{Drive, DriveMut};
+use derive_generic_visitor::{Drive, DriveMut};
 use hashlink::LinkedHashSet;
 use macros::{EnumAsGetters, EnumIsA, VariantIndexArity, VariantName};
 use serde::{Deserialize, Serialize};
@@ -10,7 +10,7 @@ use serde_map_to_array::HashMapToArray;
 use std::cmp::{Ord, PartialOrd};
 use std::collections::HashMap;
 use std::fmt;
-use std::ops::{Index, IndexMut};
+use std::ops::{ControlFlow, Index, IndexMut};
 
 generate_index_type!(FunDeclId, "Fun");
 generate_index_type!(TypeDeclId, "Adt");
@@ -76,7 +76,9 @@ wrap_unwrap_enum!(AnyTransId::TraitDecl(TraitDeclId));
 wrap_unwrap_enum!(AnyTransId::TraitImpl(TraitImplId));
 
 /// A reference to a translated item.
-#[derive(Debug, Clone, Copy, EnumIsA, EnumAsGetters, VariantName, VariantIndexArity)]
+#[derive(
+    Debug, Clone, Copy, EnumIsA, EnumAsGetters, VariantName, VariantIndexArity, Drive, DriveMut,
+)]
 pub enum AnyTransItem<'ctx> {
     Type(&'ctx TypeDecl),
     Fun(&'ctx FunDecl),
@@ -86,7 +88,7 @@ pub enum AnyTransItem<'ctx> {
 }
 
 /// A mutable reference to a translated item.
-#[derive(Debug, EnumIsA, EnumAsGetters, VariantName, VariantIndexArity)]
+#[derive(Debug, EnumIsA, EnumAsGetters, VariantName, VariantIndexArity, Drive, DriveMut)]
 pub enum AnyTransItemMut<'ctx> {
     Type(&'ctx mut TypeDecl),
     Fun(&'ctx mut FunDecl),
@@ -100,8 +102,10 @@ pub enum AnyTransItemMut<'ctx> {
 pub struct TranslatedCrate {
     /// The name that the user requested for the crate. This may differ from what rustc reports as
     /// the name of the crate.
+    #[drive(skip)]
     pub crate_name: String,
     /// The name of the crate according to rustc.
+    #[drive(skip)]
     pub real_crate_name: String,
 
     /// The options used when calling Charon. It is useful for the applications
@@ -175,6 +179,15 @@ impl TranslatedCrate {
             .iter()
             .flat_map(|id| Some((*id, self.get_item(*id)?)))
     }
+    pub fn all_items_mut(&mut self) -> impl Iterator<Item = AnyTransItemMut<'_>> {
+        self.type_decls
+            .iter_mut()
+            .map(AnyTransItemMut::Type)
+            .chain(self.fun_decls.iter_mut().map(AnyTransItemMut::Fun))
+            .chain(self.global_decls.iter_mut().map(AnyTransItemMut::Global))
+            .chain(self.trait_decls.iter_mut().map(AnyTransItemMut::TraitDecl))
+            .chain(self.trait_impls.iter_mut().map(AnyTransItemMut::TraitImpl))
+    }
 }
 
 impl<'ctx> AnyTransItem<'ctx> {
@@ -209,9 +222,9 @@ impl<'ctx> AnyTransItem<'ctx> {
         }
     }
 
-    /// We can't implement the `Drive` type because of the `'static` constraint, but it's ok
-    /// because `AnyTransItem` isn't contained in any of our types.
-    pub fn drive<V: derive_visitor::Visitor>(&self, visitor: &mut V) {
+    /// We can't implement `AstVisitable` because of the `'static` constraint, but it's ok because
+    /// `AnyTransItem` isn't contained in any of our types.
+    pub fn drive<V: VisitAst>(&self, visitor: &mut V) -> ControlFlow<V::Break> {
         match self {
             AnyTransItem::Type(d) => d.drive(visitor),
             AnyTransItem::Fun(d) => d.drive(visitor),
@@ -234,9 +247,9 @@ impl<'ctx> AnyTransItemMut<'ctx> {
         }
     }
 
-    /// We can't implement the `DriveMut` type because of the `'static` constraint, but it's ok
-    /// because `AnyTransItemMut` isn't contained in any of our types.
-    pub fn drive_mut<V: derive_visitor::VisitorMut>(&mut self, visitor: &mut V) {
+    /// We can't implement `AstVisitable` because of the `'static` constraint, but it's ok because
+    /// `AnyTransItemMut` isn't contained in any of our types.
+    pub fn drive_mut<V: VisitAstMut>(&mut self, visitor: &mut V) -> ControlFlow<V::Break> {
         match self {
             AnyTransItemMut::Type(d) => d.drive_mut(visitor),
             AnyTransItemMut::Fun(d) => d.drive_mut(visitor),
