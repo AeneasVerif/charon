@@ -177,17 +177,17 @@ let rec type_id_to_string (env : 'a fmt_env) (id : type_id) : string =
 
 and type_decl_id_to_string env def_id =
   (* We don't want the printing functions to crash if the crate is partial *)
-  match TypeDeclId.Map.find_opt def_id env.type_decls with
+  match TypeDeclId.Map.find_opt def_id env.crate.type_decls with
   | None -> type_decl_id_to_pretty_string def_id
   | Some def -> name_to_string env def.item_meta.name
 
 and fun_decl_id_to_string (env : 'a fmt_env) (id : FunDeclId.id) : string =
-  match FunDeclId.Map.find_opt id env.fun_decls with
+  match FunDeclId.Map.find_opt id env.crate.fun_decls with
   | None -> fun_decl_id_to_pretty_string id
   | Some def -> name_to_string env def.item_meta.name
 
 and global_decl_id_to_string env def_id =
-  match GlobalDeclId.Map.find_opt def_id env.global_decls with
+  match GlobalDeclId.Map.find_opt def_id env.crate.global_decls with
   | None -> global_decl_id_to_pretty_string def_id
   | Some def -> name_to_string env def.item_meta.name
 
@@ -198,12 +198,12 @@ and global_decl_ref_to_string (env : 'a fmt_env) (gr : global_decl_ref) : string
   global_id ^ generics
 
 and trait_decl_id_to_string env id =
-  match TraitDeclId.Map.find_opt id env.trait_decls with
+  match TraitDeclId.Map.find_opt id env.crate.trait_decls with
   | None -> trait_decl_id_to_pretty_string id
   | Some def -> name_to_string env def.item_meta.name
 
 and trait_impl_id_to_string env id =
-  match TraitImplId.Map.find_opt id env.trait_impls with
+  match TraitImplId.Map.find_opt id env.crate.trait_impls with
   | None -> trait_impl_id_to_pretty_string id
   | Some def -> name_to_string env def.item_meta.name
 
@@ -321,7 +321,7 @@ and impl_elem_to_string (env : 'a fmt_env) (elem : impl_elem) : string =
       let env = fmt_env_update_generics_and_preds env bound_ty.binder_params in
       ty_to_string env bound_ty.binder_value
   | ImplElemTrait impl_id -> begin
-      match TraitImplId.Map.find_opt impl_id env.trait_impls with
+      match TraitImplId.Map.find_opt impl_id env.crate.trait_impls with
       | None -> trait_impl_id_to_string env impl_id
       | Some impl ->
           (* Locally replace the generics and the predicates *)
@@ -483,7 +483,7 @@ let type_decl_to_string (env : 'a fmt_env) (def : type_decl) : string =
 
 let adt_variant_to_string (env : 'a fmt_env) (def_id : TypeDeclId.id)
     (variant_id : VariantId.id) : string =
-  match TypeDeclId.Map.find_opt def_id env.type_decls with
+  match TypeDeclId.Map.find_opt def_id env.crate.type_decls with
   | None ->
       type_decl_id_to_pretty_string def_id
       ^ "::"
@@ -498,7 +498,7 @@ let adt_variant_to_string (env : 'a fmt_env) (def_id : TypeDeclId.id)
 
 let adt_field_names (env : 'a fmt_env) (def_id : TypeDeclId.id)
     (opt_variant_id : VariantId.id option) : string list option =
-  match TypeDeclId.Map.find_opt def_id env.type_decls with
+  match TypeDeclId.Map.find_opt def_id env.crate.type_decls with
   | None -> None
   | Some def ->
       let fields = type_decl_get_fields def opt_variant_id in
@@ -515,7 +515,7 @@ let adt_field_names (env : 'a fmt_env) (def_id : TypeDeclId.id)
 let adt_field_to_string (env : 'a fmt_env) (def_id : TypeDeclId.id)
     (opt_variant_id : VariantId.id option) (field_id : FieldId.id) :
     string option =
-  match TypeDeclId.Map.find_opt def_id env.type_decls with
+  match TypeDeclId.Map.find_opt def_id env.crate.type_decls with
   | None -> None
   | Some def ->
       let fields = type_decl_get_fields def opt_variant_id in
