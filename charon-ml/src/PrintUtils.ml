@@ -14,11 +14,7 @@ let block_id_to_string (id : UllbcAst.BlockId.id) : string =
     (for instance we can't find the type variable for a given index) we print
     the id in raw format. *)
 type 'fun_body fmt_env = {
-  type_decls : type_decl TypeDeclId.Map.t;
-  fun_decls : 'fun_body gfun_decl FunDeclId.Map.t;
-  global_decls : global_decl GlobalDeclId.Map.t;
-  trait_decls : trait_decl TraitDeclId.Map.t;
-  trait_impls : trait_impl TraitImplId.Map.t;
+  crate : 'fun_body gcrate;
   generics : generic_params list;
       (** We have a stack of generic parameters, because we can dive into
           binders (for instance because of the arrow type).
