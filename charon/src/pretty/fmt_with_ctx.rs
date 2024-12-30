@@ -392,6 +392,21 @@ impl GenericParams {
         };
         (params, clauses)
     }
+
+    pub fn fmt_with_ctx_single_line<C>(&self, ctx: &C) -> String
+    where
+        C: AstFormatter,
+    {
+        let params = self
+            .format_params(ctx)
+            .chain(self.format_clauses(ctx))
+            .join(", ");
+        if params.is_empty() {
+            String::new()
+        } else {
+            format!("<{}>", params)
+        }
+    }
 }
 
 impl<T, C> FmtWithCtx<C> for GExprBody<T>
@@ -1559,7 +1574,19 @@ impl std::fmt::Display for GenericArgs {
     }
 }
 
+impl std::fmt::Display for GenericParams {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::result::Result<(), std::fmt::Error> {
+        write!(f, "{}", self.fmt_with_ctx_single_line(&FmtCtx::new()))
+    }
+}
+
 impl std::fmt::Debug for GenericArgs {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::result::Result<(), std::fmt::Error> {
+        write!(f, "{}", self)
+    }
+}
+
+impl std::fmt::Debug for GenericParams {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::result::Result<(), std::fmt::Error> {
         write!(f, "{}", self)
     }
