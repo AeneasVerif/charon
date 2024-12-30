@@ -152,6 +152,21 @@ impl<'a> IndexVisitor<'a> {
         // Update the place.
         *place = output_var.project(ProjectionElem::Deref, output_inner_ty);
     }
+
+    /// Calls `self.visit_inner()` with `mutability` pushed on the stack.
+    fn visit_inner_with_mutability<T>(
+        &mut self,
+        x: &mut T,
+        mutability: bool,
+    ) -> ControlFlow<Infallible>
+    where
+        T: for<'s> DriveMut<'s, BodyVisitableWrapper<Self>>,
+    {
+        self.place_mutability_stack.push(mutability);
+        self.visit_inner(x)?;
+        self.place_mutability_stack.pop();
+        Continue(())
+    }
 }
 
 /// The visitor methods.
@@ -169,92 +184,41 @@ impl VisitBodyMut for IndexVisitor<'_> {
         self.transform_place(mut_access, place);
     }
 
-    fn enter_operand(&mut self, op: &mut Operand) {
-        match op {
-            Operand::Move(_) => {
-                self.place_mutability_stack.push(true);
-            }
-            Operand::Copy(_) => {
-                self.place_mutability_stack.push(false);
-            }
-            Operand::Const(..) => {}
+    fn visit_operand(&mut self, x: &mut Operand) -> ControlFlow<Infallible> {
+        match x {
+            Operand::Move(_) => self.visit_inner_with_mutability(x, true),
+            Operand::Copy(_) => self.visit_inner_with_mutability(x, false),
+            Operand::Const(..) => self.visit_inner(x),
         }
     }
 
-    fn exit_operand(&mut self, op: &mut Operand) {
-        match op {
-            Operand::Move(_) | Operand::Copy(_) => {
-                self.place_mutability_stack.pop();
-            }
-            Operand::Const(..) => {}
+    fn visit_call(&mut self, x: &mut Call) -> ControlFlow<Infallible> {
+        self.visit_inner_with_mutability(x, true)
+    }
+
+    fn visit_fn_operand(&mut self, x: &mut FnOperand) -> ControlFlow<Infallible> {
+        match x {
+            FnOperand::Regular(_) => self.visit_inner(x),
+            FnOperand::Move(_) => self.visit_inner_with_mutability(x, true),
         }
     }
 
-    fn enter_call(&mut self, _c: &mut Call) {
-        self.place_mutability_stack.push(true);
-    }
-
-    fn exit_call(&mut self, _c: &mut Call) {
-        self.place_mutability_stack.pop();
-    }
-
-    fn enter_fn_operand(&mut self, fn_op: &mut FnOperand) {
-        match fn_op {
-            FnOperand::Regular(_) => {}
-            FnOperand::Move(_) => {
-                self.place_mutability_stack.push(true);
-            }
-        }
-    }
-
-    fn exit_fn_operand(&mut self, fn_op: &mut FnOperand) {
-        match fn_op {
-            FnOperand::Regular(_) => {}
-            FnOperand::Move(_) => {
-                self.place_mutability_stack.pop();
-            }
-        }
-    }
-
-    fn enter_rvalue(&mut self, rv: &mut Rvalue) {
+    fn visit_rvalue(&mut self, x: &mut Rvalue) -> ControlFlow<Infallible> {
         use Rvalue::*;
-        match rv {
-            Use(_) | NullaryOp(..) | UnaryOp(..) | BinaryOp(..) | Aggregate(..) | Global(..)
-            | GlobalRef(..) | Repeat(..) | ShallowInitBox(..) => {}
-            RawPtr(_, ptrkind) => match *ptrkind {
-                RefKind::Mut => {
-                    self.place_mutability_stack.push(true);
-                }
-                RefKind::Shared => {
-                    self.place_mutability_stack.push(false);
-                }
-            },
-            Ref(_, bkind) => match *bkind {
-                // `UniqueImmutable` de facto gives mutable access and only shows up if there is
-                // nested mutable access.
-                BorrowKind::Mut | BorrowKind::TwoPhaseMut | BorrowKind::UniqueImmutable => {
-                    self.place_mutability_stack.push(true);
-                }
-                BorrowKind::Shared | BorrowKind::Shallow => {
-                    self.place_mutability_stack.push(false);
-                }
-            },
-            Discriminant(..) | Len(..) => {
-                // We access places, but those places are used to access
-                // elements without mutating them
-                self.place_mutability_stack.push(false);
+        match x {
+            // `UniqueImmutable` de facto gives mutable access and only shows up if there is nested
+            // mutable access.
+            RawPtr(_, RefKind::Mut)
+            | Ref(_, BorrowKind::Mut | BorrowKind::TwoPhaseMut | BorrowKind::UniqueImmutable) => {
+                self.visit_inner_with_mutability(x, true)
             }
-        }
-    }
+            RawPtr(_, RefKind::Shared)
+            | Ref(_, BorrowKind::Shared | BorrowKind::Shallow)
+            | Discriminant(..)
+            | Len(..) => self.visit_inner_with_mutability(x, false),
 
-    fn exit_rvalue(&mut self, rv: &mut Rvalue) {
-        use Rvalue::*;
-        match rv {
             Use(_) | NullaryOp(..) | UnaryOp(..) | BinaryOp(..) | Aggregate(..) | Global(..)
-            | GlobalRef(..) | Repeat(..) | ShallowInitBox(..) => {}
-            RawPtr(..) | Ref(..) | Discriminant(..) | Len(..) => {
-                self.place_mutability_stack.pop();
-            }
+            | GlobalRef(..) | Repeat(..) | ShallowInitBox(..) => self.visit_inner(x),
         }
     }
 }
@@ -329,28 +293,18 @@ impl LlbcPass for Transform {
                 span: st.span,
             };
 
-            // We don't explore sub-statements.
+            // Note: the visitor doesn't explore sub-statements.
             use llbc_ast::Switch::*;
             use RawStatement::*;
             match &mut st.content {
-                Loop(..) => {}
-                Switch(If(op, ..) | SwitchInt(op, ..)) => {
-                    op.drive_body_mut(&mut visitor);
-                }
-                Switch(Match(place, ..)) => {
-                    visitor.place_mutability_stack.push(false); // Unsure why we do this
-                    place.drive_body_mut(&mut visitor);
-                }
-                Abort(..) | Return | Break(..) | Continue(..) | Nop | Error(..) | Assert(..)
-                | Call(..) => {
-                    st.drive_body_mut(&mut visitor);
-                }
-                FakeRead(place) => {
-                    visitor.place_mutability_stack.push(false);
-                    place.drive_body_mut(&mut visitor);
+                Switch(Match(..)) | FakeRead(..) => {
+                    visitor.visit_inner_with_mutability(st, false);
                 }
                 Assign(..) | SetDiscriminant(..) | Drop(..) => {
-                    visitor.place_mutability_stack.push(true);
+                    visitor.visit_inner_with_mutability(st, true);
+                }
+                Abort(..) | Return | Break(..) | Continue(..) | Nop | Error(..) | Assert(..)
+                | Call(..) | Switch(..) | Loop(..) => {
                     st.drive_body_mut(&mut visitor);
                 }
             }
