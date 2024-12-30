@@ -2,7 +2,7 @@
 use derive_generic_visitor::*;
 use std::fmt::Display;
 
-use crate::{ast::*, errors::ErrorCtx, register_error_or_panic};
+use crate::{errors::ErrorCtx, llbc_ast::*, register_error_or_panic};
 
 use super::{ctx::TransformPass, TransformCtx};
 
@@ -146,6 +146,14 @@ impl VisitAst for CheckGenericsVisitor<'_> {
         if !methods {
             self.error("The methods supplied by the trait impl don't match the trait decl.")
         }
+    }
+
+    fn visit_llbc_statement(&mut self, st: &Statement) -> ControlFlow<Self::Break> {
+        let old_span = self.item_span;
+        self.item_span = st.span;
+        self.visit_inner(st)?;
+        self.item_span = old_span;
+        Continue(())
     }
 }
 
