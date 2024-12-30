@@ -121,6 +121,18 @@ impl<T> Binder<T> {
             skip_binder,
         }
     }
+
+    /// Substitute the provided arguments for the variables bound in this binder and return the
+    /// substituted inner value.
+    pub fn apply(self, args: &GenericArgs) -> T
+    where
+        T: AstVisitable,
+    {
+        let mut val = self.skip_binder;
+        assert!(args.matches(&self.params));
+        val.drive_mut(&mut SubstVisitor::new(args));
+        val
+    }
 }
 
 impl GenericArgs {

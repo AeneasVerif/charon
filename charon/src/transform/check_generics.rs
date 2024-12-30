@@ -28,15 +28,20 @@ impl CheckGenericsVisitor<'_> {
         self.discharged_args += 1;
     }
 
-    fn generics_should_match_item(&mut self, args: &GenericArgs, item_id: impl Into<AnyTransId>) {
+    fn generics_should_match(&mut self, args: &GenericArgs, params: &GenericParams) {
         self.discharged_one_generics();
+        if !args.matches(params) {
+            self.error(format!(
+                "Mismatched generics:\nexpected: {params:?}\n     got: {args:?}"
+            ))
+        }
+    }
+    fn generics_should_match_item(&mut self, args: &GenericArgs, item_id: impl Into<AnyTransId>) {
         if let Some(item) = self.translated.get_item(item_id.into()) {
             let params = item.generic_params();
-            if !args.matches(params) {
-                self.error(format!(
-                    "Mismatched generics:\nexpected: {params:?}\n     got: {args:?}"
-                ))
-            }
+            self.generics_should_match(args, params);
+        } else {
+            self.discharged_one_generics();
         }
     }
     fn check_typeid_generics(&mut self, args: &GenericArgs, ty_kind: &TypeId) {
@@ -80,14 +85,23 @@ impl VisitAst for CheckGenericsVisitor<'_> {
                 let args = &fn_ptr.generics;
                 self.generics_should_match_item(args, *id);
             }
-            FunIdOrTraitMethodRef::Trait(tref, _, id) => {
-                let args = tref
-                    .trait_decl_ref
-                    .skip_binder
-                    .generics
-                    .clone()
-                    .concat(&fn_ptr.generics);
-                self.generics_should_match_item(&args, *id);
+            FunIdOrTraitMethodRef::Trait(tref, method, _) => {
+                let trait_id = tref.trait_decl_ref.skip_binder.trait_id;
+                if let Some(trait_decl) = self.translated.trait_decls.get(trait_id) {
+                    if let Some((_, bound_fn)) = trait_decl
+                        .required_methods
+                        .iter()
+                        .chain(trait_decl.provided_methods.iter())
+                        .find(|(n, _)| n == method)
+                    {
+                        // Function generics should match expected method generics.
+                        self.generics_should_match(&fn_ptr.generics, &bound_fn.params);
+                    } else {
+                        self.discharged_one_generics()
+                    }
+                } else {
+                    self.discharged_one_generics()
+                }
             }
             FunIdOrTraitMethodRef::Fun(FunId::Builtin(..)) => {
                 // TODO: check generics for built-in types

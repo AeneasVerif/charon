@@ -1,8 +1,8 @@
-use crate::{transform::TransformCtx, ullbc_ast::*};
+use crate::{register_error_or_panic, transform::TransformCtx, ullbc_ast::*};
 
 use super::ctx::UllbcPass;
 
-fn transform_call(ctx: &TransformCtx, call: &mut Call) {
+fn transform_call(ctx: &mut TransformCtx, span: Span, call: &mut Call) {
     // We find calls to a trait method where the impl is known; otherwise we return.
     let FnOperand::Regular(fn_ptr) = &mut call.func else {
         return;
@@ -26,11 +26,23 @@ fn transform_call(ctx: &TransformCtx, call: &mut Call) {
         return;
     };
     let method_generics = &fn_ptr.generics;
-    // Move the trait generics to the function call.
-    // TODO: substitute for real
-    fn_ptr.generics = impl_generics.clone().concat(method_generics);
-    // Set the call operation to use the function directly.
-    fn_ptr.func = FunIdOrTraitMethodRef::Fun(FunId::Regular(bound_fn.skip_binder.id));
+
+    if !method_generics.matches(&bound_fn.params) {
+        let message = format!(
+            "Mismatched method generics:\nparams:   {:?}\nsupplied: {:?}",
+            bound_fn.params, method_generics
+        );
+        register_error_or_panic!(ctx.errors, &ctx.translated, span, message);
+    }
+
+    // Make the two levels of binding explicit: outer binder for the impl block, inner binder for
+    // the method.
+    let fn_ref: Binder<Binder<FunDeclRef>> =
+        Binder::new(trait_impl.generics.clone(), bound_fn.clone());
+    // Substitute the appropriate generics into the function call.
+    let fn_ref = fn_ref.apply(impl_generics).apply(method_generics);
+    fn_ptr.generics = fn_ref.generics;
+    fn_ptr.func = FunIdOrTraitMethodRef::Fun(FunId::Regular(fn_ref.id));
 }
 
 pub struct Transform;
@@ -39,7 +51,7 @@ impl UllbcPass for Transform {
         for block in b.body.iter_mut() {
             for st in block.statements.iter_mut() {
                 if let RawStatement::Call(call) = &mut st.content {
-                    transform_call(ctx, call)
+                    transform_call(ctx, st.span, call)
                 };
             }
         }
