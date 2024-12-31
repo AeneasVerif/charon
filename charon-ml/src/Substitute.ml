@@ -44,6 +44,7 @@ let empty_subst : subst =
     tr_self = Self;
   }
 
+(** The do-nothing substitution when used with `subst_free_vars` *)
 let empty_bound_sb_subst : single_binder_subst =
   {
     r_sb_subst = compose empty_subst.r_subst zero_db_var;
@@ -53,6 +54,7 @@ let empty_bound_sb_subst : single_binder_subst =
     tr_sb_self = empty_subst.tr_self;
   }
 
+(** The do-nothing substitution when used with `subst_at_binder_zero` *)
 let empty_free_sb_subst : single_binder_subst =
   let free x = Free x in
   {
@@ -64,7 +66,7 @@ let empty_free_sb_subst : single_binder_subst =
   }
 
 let error_sb_subst : single_binder_subst =
-  let error _ = failwith "Unexpected bound Cariable" in
+  let error _ = failwith "Unexpected bound variable" in
   {
     r_sb_subst = compose empty_subst.r_subst error;
     ty_sb_subst = compose empty_subst.ty_subst error;
@@ -116,25 +118,53 @@ let subst_remove_binder_zero (subst : single_binder_subst) : subst =
     tr_self = subst.tr_sb_self;
   }
 
+(** Visitor that shifts all bound variables by the given delta *)
+let st_shift_visitor =
+  object (self)
+    inherit [_] map_statement
+    method! visit_de_bruijn_id delta dbid = dbid + delta
+  end
+
+(* Shift the the substitution under one binder. *)
+let shift_subst (subst : subst) : subst =
+  (* We decrement the input because the variables we encounter will be bound
+     deeper. We shift the output so that it's valid at the new depth we're
+     substituting it into. *)
+  {
+    r_subst =
+      compose
+        (st_shift_visitor#visit_region 1)
+        (compose subst.r_subst decr_db_var);
+    ty_subst =
+      compose (st_shift_visitor#visit_ty 1) (compose subst.ty_subst decr_db_var);
+    cg_subst =
+      compose
+        (st_shift_visitor#visit_const_generic 1)
+        (compose subst.cg_subst decr_db_var);
+    tr_subst =
+      compose
+        (st_shift_visitor#visit_trait_instance_id 1)
+        (compose subst.tr_subst decr_db_var);
+    tr_self = subst.tr_self;
+  }
+
+(** Visitor that applies the given substitution *)
 let st_substitute_visitor =
   object (self)
     inherit [_] map_statement
 
+    method! visit_binder visit_value (subst : subst) x =
+      (* Note that we don't visit the bound variables. *)
+      let { binder_params; binder_value } = x in
+      (* Crucial: we shift the substitution to be valid under this binder. *)
+      let binder_value = visit_value (shift_subst subst) binder_value in
+      { binder_params; binder_value }
+
     method! visit_region_binder visit_value (subst : subst) x =
-      (* Shift the indices of the substitution under one binder level. *)
-      let shift_subst (subst : subst) : subst =
-        {
-          r_subst = compose subst.r_subst decr_db_var;
-          ty_subst = compose subst.ty_subst decr_db_var;
-          cg_subst = compose subst.cg_subst decr_db_var;
-          tr_subst = compose subst.tr_subst decr_db_var;
-          tr_self = subst.tr_self;
-        }
-      in
-      let subst = shift_subst subst in
-      (* Note that we ignore the bound regions variables *)
+      (* Note that we don't visit the bound variables. *)
       let { binder_regions; binder_value } = x in
-      let binder_value = visit_value subst binder_value in
+      (* Crucial: we shift the substitution to be valid under this binder. *)
+      let binder_value = visit_value (shift_subst subst) binder_value in
       { binder_regions; binder_value }
 
     method! visit_RVar (subst : subst) var = subst.r_subst var
