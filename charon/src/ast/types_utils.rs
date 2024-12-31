@@ -5,6 +5,7 @@ use derive_generic_visitor::*;
 use std::collections::HashSet;
 use std::convert::Infallible;
 use std::iter::Iterator;
+use std::ops::Index;
 
 impl GenericParams {
     pub fn empty() -> Self {
@@ -416,8 +417,31 @@ impl<'a> SubstVisitor<'a> {
         }
     }
 
-    fn should_subst<Id: Copy>(&self, var: DeBruijnVar<Id>) -> Option<Id> {
-        var.bound_at_depth(self.binder_depth)
+    /// Process the variable, either modifying the variable in-place or returning the new value to
+    /// assign to the type/region/const generic/trait ref that was this variable.
+    fn process_var<Id, T>(&self, var: &mut DeBruijnVar<Id>) -> Option<T>
+    where
+        Id: Copy,
+        GenericArgs: Index<Id, Output = T>,
+        T: Clone + TyVisitable,
+    {
+        use std::cmp::Ordering::*;
+        match var {
+            DeBruijnVar::Bound(dbid, varid) => match (*dbid).cmp(&self.binder_depth) {
+                Equal => Some(
+                    self.generics[*varid]
+                        .clone()
+                        .move_under_binders(self.binder_depth),
+                ),
+                Greater => {
+                    // This is bound outside the binder we're substituting for.
+                    *dbid = dbid.decr();
+                    None
+                }
+                Less => None,
+            },
+            DeBruijnVar::Free(..) => None,
+        }
     }
 }
 
@@ -438,8 +462,8 @@ impl VisitAstMut for SubstVisitor<'_> {
     fn exit_region(&mut self, r: &mut Region) {
         match r {
             Region::Var(var) => {
-                if let Some(varid) = self.should_subst(*var) {
-                    *r = self.generics.regions[varid].move_under_binders(self.binder_depth)
+                if let Some(new_r) = self.process_var(var) {
+                    *r = new_r;
                 }
             }
             _ => (),
@@ -447,25 +471,20 @@ impl VisitAstMut for SubstVisitor<'_> {
     }
 
     fn exit_ty(&mut self, ty: &mut Ty) {
-        match ty.kind() {
-            TyKind::TypeVar(var) => {
-                if let Some(id) = self.should_subst(*var) {
-                    *ty = self.generics.types[id]
-                        .clone()
-                        .move_under_binders(self.binder_depth)
-                }
-            }
-            _ => (),
+        let new_ty = ty.with_kind_mut(|kind| match kind {
+            TyKind::TypeVar(var) => self.process_var(var),
+            _ => None,
+        });
+        if let Some(new_ty) = new_ty {
+            *ty = new_ty
         }
     }
 
     fn exit_const_generic(&mut self, cg: &mut ConstGeneric) {
         match cg {
             ConstGeneric::Var(var) => {
-                if let Some(id) = self.should_subst(*var) {
-                    *cg = self.generics.const_generics[id]
-                        .clone()
-                        .move_under_binders(self.binder_depth)
+                if let Some(new_cg) = self.process_var(var) {
+                    *cg = new_cg;
                 }
             }
             _ => (),
@@ -475,10 +494,8 @@ impl VisitAstMut for SubstVisitor<'_> {
     fn exit_trait_ref(&mut self, tr: &mut TraitRef) {
         match &mut tr.kind {
             TraitRefKind::Clause(var) => {
-                if let Some(id) = self.should_subst(*var) {
-                    *tr = self.generics.trait_refs[id]
-                        .clone()
-                        .move_under_binders(self.binder_depth)
+                if let Some(new_tr) = self.process_var(var) {
+                    *tr = new_tr;
                 }
             }
             _ => (),
