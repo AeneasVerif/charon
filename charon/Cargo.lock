@@ -816,7 +816,7 @@ dependencies = [
 [[package]]
 name = "hax-adt-into"
 version = "0.1.0-rc.1"
-source = "git+https://github.com/hacspec/hax?branch=main#de59826b832befc82905286d052c8a961c31f3cd"
+source = "git+https://github.com/Nadrieril/hax?branch=fix-call-generics#79e2da0452a0b94056becba46b98304ca230a502"
 dependencies = [
  "itertools 0.11.0",
  "proc-macro2",
@@ -827,7 +827,7 @@ dependencies = [
 [[package]]
 name = "hax-frontend-exporter"
 version = "0.1.0-rc.1"
-source = "git+https://github.com/hacspec/hax?branch=main#de59826b832befc82905286d052c8a961c31f3cd"
+source = "git+https://github.com/Nadrieril/hax?branch=fix-call-generics#79e2da0452a0b94056becba46b98304ca230a502"
 dependencies = [
  "extension-traits",
  "hax-adt-into",
@@ -844,7 +844,7 @@ dependencies = [
 [[package]]
 name = "hax-frontend-exporter-options"
 version = "0.1.0-rc.1"
-source = "git+https://github.com/hacspec/hax?branch=main#de59826b832befc82905286d052c8a961c31f3cd"
+source = "git+https://github.com/Nadrieril/hax?branch=fix-call-generics#79e2da0452a0b94056becba46b98304ca230a502"
 dependencies = [
  "hax-adt-into",
  "schemars",

@@ -268,7 +268,13 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
                 trace!("PlaceHolder");
                 error_or_panic!(self, span, "Unsupported type: placeholder")
             }
-            hax::TyKind::Arrow(box sig) => {
+            hax::TyKind::Arrow(box sig)
+            | hax::TyKind::Closure(
+                _,
+                hax::ClosureArgs {
+                    untupled_sig: sig, ..
+                },
+            ) => {
                 trace!("Arrow");
                 trace!("bound vars: {:?}", sig.bound_vars);
                 let sig = self.translate_region_binder(span, sig, |ctx, sig| {
@@ -655,7 +661,7 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
         // [TyCtxt.generics_of] gives us the early-bound parameters. We add the late-bound
         // parameters here.
         let signature = match &def.kind {
-            hax::FullDefKind::Closure { args, .. } => Some(&args.sig),
+            hax::FullDefKind::Closure { args, .. } => Some(&args.tupled_sig),
             hax::FullDefKind::Fn { sig, .. } => Some(sig),
             hax::FullDefKind::AssocFn { sig, .. } => Some(sig),
             _ => None,

@@ -687,18 +687,22 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
                         let akind = AggregateKind::Adt(type_id, variant_id, field_id, generics);
                         Ok(Rvalue::Aggregate(akind, operands_t))
                     }
-                    hax::AggregateKind::Closure(def_id, substs, trait_refs, sig) => {
-                        trace!("Closure:\n\n- def_id: {:?}\n\n- sig:\n{:?}", def_id, sig);
+                    hax::AggregateKind::Closure(def_id, closure_args) => {
+                        trace!(
+                            "Closure:\n\n- def_id: {:?}\n\n- sig:\n{:?}",
+                            def_id,
+                            closure_args.tupled_sig
+                        );
 
                         // Retrieve the late-bound variables.
-                        let binder = match self.t_ctx.hax_def(def_id)?.kind() {
-                            hax::FullDefKind::Closure { args, .. } => args.sig.as_ref().rebind(()),
-                            _ => unreachable!(),
-                        };
-
+                        let binder = closure_args.tupled_sig.as_ref().rebind(());
                         // Translate the substitution
-                        let generics =
-                            self.translate_generic_args(span, substs, trait_refs, Some(binder))?;
+                        let generics = self.translate_generic_args(
+                            span,
+                            &closure_args.parent_args,
+                            &closure_args.parent_trait_refs,
+                            Some(binder),
+                        )?;
 
                         let def_id = self.register_fun_decl_id(span, def_id);
                         let akind = AggregateKind::Closure(def_id, generics);
@@ -999,26 +1003,13 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
             }
             TerminatorKind::Call {
                 fun,
-                generics,
                 args,
                 destination,
                 target,
-                trait_refs,
-                trait_info,
                 unwind: _, // We model unwinding as an effet, we don't represent it in control flow
-                call_source: _,
                 fn_span: _,
-            } => self.translate_function_call(
-                statements,
-                span,
-                fun,
-                generics,
-                args,
-                destination,
-                target,
-                trait_refs,
-                trait_info,
-            )?,
+                ..
+            } => self.translate_function_call(statements, span, fun, args, destination, target)?,
             TerminatorKind::Assert {
                 cond,
                 expected,
@@ -1121,12 +1112,9 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
         statements: &mut Vec<Statement>,
         span: Span,
         fun: &hax::FunOperand,
-        generics: &Vec<hax::GenericArg>,
         args: &Vec<hax::Spanned<hax::Operand>>,
         destination: &hax::Place,
         target: &Option<hax::BasicBlock>,
-        trait_refs: &Vec<hax::ImplExpr>,
-        trait_info: &Option<hax::ImplExpr>,
     ) -> Result<RawTerminator, Error> {
         trace!();
         // There are two cases, depending on whether this is a "regular"
@@ -1135,7 +1123,12 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
         let lval = self.translate_place(span, destination)?;
         let next_block = target.map(|target| self.translate_basic_block_id(target));
         let (fn_operand, args) = match fun {
-            hax::FunOperand::Id(def_id) => {
+            hax::FunOperand::Static {
+                def_id,
+                generics,
+                trait_refs,
+                trait_info,
+            } => {
                 // Translate the function operand - should be a constant: we don't
                 // support closures for now
                 trace!("func: {:?}", def_id);
@@ -1165,7 +1158,7 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
                     }
                 }
             }
-            hax::FunOperand::Move(p) => {
+            hax::FunOperand::DynamicMove(p) => {
                 // Call to a local function pointer
                 // The function
                 let p = self.translate_place(span, p)?;
@@ -1412,7 +1405,7 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
         self.translate_def_generics(span, def)?;
 
         let signature = match &def.kind {
-            hax::FullDefKind::Closure { args, .. } => &args.sig,
+            hax::FullDefKind::Closure { args, .. } => &args.tupled_sig,
             hax::FullDefKind::Fn { sig, .. } => sig,
             hax::FullDefKind::AssocFn { sig, .. } => sig,
             hax::FullDefKind::Ctor {
