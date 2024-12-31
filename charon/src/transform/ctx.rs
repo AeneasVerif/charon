@@ -1,12 +1,11 @@
 use crate::ast::*;
 use crate::errors::ErrorCtx;
 use crate::formatter::{FmtCtx, IntoFormatter};
-use crate::ids::Vector;
 use crate::llbc_ast;
 use crate::name_matcher::NamePattern;
 use crate::pretty::FmtWithCtx;
 use crate::ullbc_ast;
-use std::fmt;
+use std::{fmt, mem};
 
 /// The options that control transformation.
 pub struct TransformOptions {
@@ -41,23 +40,22 @@ pub trait UllbcPass: Sync {
     fn transform_body(&self, _ctx: &mut TransformCtx, _body: &mut ullbc_ast::ExprBody) {}
 
     /// Transform a function declaration. This forwards to `transform_body` by default.
-    fn transform_function(
-        &self,
-        ctx: &mut TransformCtx,
-        _decl: &mut FunDecl,
-        body: Result<&mut ullbc_ast::ExprBody, Opaque>,
-    ) {
-        if let Ok(body) = body {
-            self.transform_body(ctx, body)
+    fn transform_function(&self, ctx: &mut TransformCtx, decl: &mut FunDecl) {
+        if let Ok(body) = &mut decl.body {
+            self.transform_body(ctx, body.as_unstructured_mut().unwrap())
         }
     }
 
     /// Transform the given context. This forwards to the other methods by default.
     fn transform_ctx(&self, ctx: &mut TransformCtx) {
-        ctx.for_each_fun_decl(|ctx, decl, body| {
-            let body = body.map(|body| body.as_unstructured_mut().unwrap());
+        ctx.for_each_fun_decl(|ctx, decl| {
+            let body = decl
+                .body
+                .as_mut()
+                .map(|body| body.as_unstructured_mut().unwrap())
+                .map_err(|opaque| *opaque);
             self.log_before_body(ctx, &decl.item_meta.name, body.as_deref());
-            self.transform_function(ctx, decl, body);
+            self.transform_function(ctx, decl);
         });
     }
 
@@ -95,23 +93,22 @@ pub trait LlbcPass: Sync {
     fn transform_body(&self, _ctx: &mut TransformCtx, _body: &mut llbc_ast::ExprBody) {}
 
     /// Transform a function declaration. This forwards to `transform_body` by default.
-    fn transform_function(
-        &self,
-        ctx: &mut TransformCtx,
-        _decl: &mut FunDecl,
-        body: Result<&mut llbc_ast::ExprBody, Opaque>,
-    ) {
-        if let Ok(body) = body {
-            self.transform_body(ctx, body)
+    fn transform_function(&self, ctx: &mut TransformCtx, decl: &mut FunDecl) {
+        if let Ok(body) = &mut decl.body {
+            self.transform_body(ctx, body.as_structured_mut().unwrap())
         }
     }
 
     /// Transform the given context. This forwards to the other methods by default.
     fn transform_ctx(&self, ctx: &mut TransformCtx) {
-        ctx.for_each_fun_decl(|ctx, decl, body| {
-            let body = body.map(|body| body.as_structured_mut().unwrap());
+        ctx.for_each_fun_decl(|ctx, decl| {
+            let body = decl
+                .body
+                .as_mut()
+                .map(|body| body.as_structured_mut().unwrap())
+                .map_err(|opaque| *opaque);
             self.log_before_body(ctx, &decl.item_meta.name, body.as_deref());
-            self.transform_function(ctx, decl, body);
+            self.transform_function(ctx, decl);
         });
     }
 
@@ -186,36 +183,21 @@ impl<'ctx> TransformCtx {
         ret
     }
 
-    /// Get mutable access to both the ctx and the bodies.
-    pub(crate) fn with_mut_bodies<R>(
-        &mut self,
-        f: impl FnOnce(&mut Self, &mut Vector<BodyId, Body>) -> R,
-    ) -> R {
-        let mut bodies = std::mem::take(&mut self.translated.bodies);
-        let ret = f(self, &mut bodies);
-        self.translated.bodies = bodies;
-        ret
-    }
-    /// Get mutable access to both the ctx and the function declarations.
-    pub(crate) fn with_mut_fun_decls<R>(
-        &mut self,
-        f: impl FnOnce(&mut Self, &mut Vector<FunDeclId, FunDecl>) -> R,
-    ) -> R {
-        let mut fun_decls = std::mem::take(&mut self.translated.fun_decls);
-        let ret = f(self, &mut fun_decls);
-        self.translated.fun_decls = fun_decls;
-        ret
-    }
-
     /// Mutably iterate over the bodies.
-    // FIXME: this does not set `with_def_id` to track error sources. That would require having a
-    // way to go from the body back to its parent declaration.
+    /// Warning: we replace each body with `Err(Opaque)` while inspecting it so we can keep access
+    /// to the rest of the crate.
     pub(crate) fn for_each_body(&mut self, mut f: impl FnMut(&mut Self, &mut Body)) {
-        self.with_mut_bodies(|ctx, bodies| {
-            for body in bodies {
-                f(ctx, body)
+        let fn_ids = self.translated.fun_decls.all_indices();
+        for id in fn_ids {
+            if let Some(decl) = self.translated.fun_decls.get_mut(id) {
+                if let Ok(mut body) = mem::replace(&mut decl.body, Err(Opaque)) {
+                    let fun_decl_id = decl.def_id;
+                    let is_local = decl.item_meta.is_local;
+                    self.with_def_id(fun_decl_id, is_local, |ctx| f(ctx, &mut body));
+                    self.translated.fun_decls[id].body = Ok(body);
+                }
             }
-        })
+        }
     }
     pub(crate) fn for_each_structured_body(
         &mut self,
@@ -224,30 +206,18 @@ impl<'ctx> TransformCtx {
         self.for_each_body(|ctx, body| f(ctx, body.as_structured_mut().unwrap()))
     }
 
-    /// Mutably iterate over the function declarations without errors.
-    pub(crate) fn for_each_fun_decl(
-        &mut self,
-        mut f: impl FnMut(&mut Self, &mut FunDecl, Result<&mut Body, Opaque>),
-    ) {
-        self.with_mut_bodies(|ctx, bodies| {
-            ctx.with_mut_fun_decls(|ctx, decls| {
-                for decl in decls.iter_mut() {
-                    let body = match decl.body {
-                        Ok(id) => {
-                            match bodies.get_mut(id) {
-                                Some(body) => Ok(body),
-                                // This body has errored, we skip the item.
-                                None => continue,
-                            }
-                        }
-                        Err(Opaque) => Err(Opaque),
-                    };
-                    ctx.with_def_id(decl.def_id, decl.item_meta.is_local, |ctx| {
-                        f(ctx, decl, body);
-                    })
-                }
-            })
-        })
+    /// Mutably iterate over the function declarations.
+    /// Warning: each inspected fundecl becomes inaccessible from `ctx` during the course of this function.
+    pub(crate) fn for_each_fun_decl(&mut self, mut f: impl FnMut(&mut Self, &mut FunDecl)) {
+        let fn_ids = self.translated.fun_decls.all_indices();
+        for id in fn_ids {
+            if let Some(mut decl) = self.translated.fun_decls.remove(id) {
+                let fun_decl_id = decl.def_id;
+                let is_local = decl.item_meta.is_local;
+                self.with_def_id(fun_decl_id, is_local, |ctx| f(ctx, &mut decl));
+                self.translated.fun_decls.set_slot(id, decl);
+            }
+        }
     }
 }
 

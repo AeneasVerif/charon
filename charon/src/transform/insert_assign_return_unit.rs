@@ -24,15 +24,10 @@ fn transform_st(locals: &Locals, st: &mut Statement) -> Vec<Statement> {
 
 pub struct Transform;
 impl LlbcPass for Transform {
-    fn transform_function(
-        &self,
-        ctx: &mut TransformCtx,
-        decl: &mut FunDecl,
-        body: Result<&mut ExprBody, Opaque>,
-    ) {
+    fn transform_function(&self, ctx: &mut TransformCtx, decl: &mut FunDecl) {
         if decl.signature.output.is_unit() {
-            if let Ok(body) = body {
-                self.transform_body(ctx, body)
+            if let Ok(body) = &mut decl.body {
+                self.transform_body(ctx, body.as_structured_mut().unwrap())
             }
         }
     }

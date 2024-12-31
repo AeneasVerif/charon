@@ -46,8 +46,5 @@ impl TransformPass for Check {
         for mut item in ctx.translated.all_items_mut() {
             item.drive_mut(&mut visitor);
         }
-        for body in &mut ctx.translated.bodies {
-            body.drive_mut(&mut visitor);
-        }
     }
 }

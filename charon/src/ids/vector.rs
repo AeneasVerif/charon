@@ -89,7 +89,7 @@ where
         if self.vector[id].is_some() {
             self.real_len -= 1;
         }
-        std::mem::replace(&mut self.vector[id], None)
+        self.vector[id].take()
     }
 
     pub fn push(&mut self, x: T) -> I {
@@ -215,6 +215,10 @@ where
     pub fn iter_indices(&self) -> impl Iterator<Item = I> + '_ {
         // Reuse `iter_indexed` to filter only the filled indices.
         self.iter_indexed().map(|(id, _)| id)
+    }
+
+    pub fn all_indices(&self) -> impl Iterator<Item = I> {
+        self.vector.indices()
     }
 
     /// Like `Vec::split_off`.

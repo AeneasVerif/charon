@@ -137,7 +137,6 @@ impl<'a, 'b> PushBinder<'a> for FmtCtx<'b> {
 pub trait AstFormatter = Formatter<TypeDeclId>
     + Formatter<FunDeclId>
     + Formatter<GlobalDeclId>
-    + Formatter<BodyId>
     + Formatter<TraitDeclId>
     + Formatter<TraitImplId>
     + Formatter<AnyTransId>
@@ -228,18 +227,6 @@ impl<'a> Formatter<GlobalDeclId> for FmtCtx<'a> {
 impl<'a> Formatter<FunDeclId> for FmtCtx<'a> {
     fn format_object(&self, id: ast::FunDeclId) -> String {
         self.format_object(AnyTransId::from(id))
-    }
-}
-
-impl<'a> Formatter<BodyId> for FmtCtx<'a> {
-    fn format_object(&self, id: BodyId) -> String {
-        match self
-            .translated
-            .and_then(|translated| translated.bodies.get(id))
-        {
-            None => "<error>".to_owned(),
-            Some(d) => d.fmt_with_ctx(self),
-        }
     }
 }
 
