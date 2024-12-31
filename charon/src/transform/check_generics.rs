@@ -2,7 +2,7 @@
 use derive_generic_visitor::*;
 use std::fmt::Display;
 
-use crate::{ast::*, errors::ErrorCtx, register_error_or_panic};
+use crate::{errors::ErrorCtx, llbc_ast::*, register_error_or_panic};
 
 use super::{ctx::TransformPass, TransformCtx};
 
@@ -66,18 +66,28 @@ impl VisitAst for CheckGenericsVisitor<'_> {
             AggregateKind::Adt(kind, _, _, args) => {
                 self.check_typeid_generics(args, kind);
             }
-            AggregateKind::Closure(id, args) => {
-                self.generics_should_match_item(args, *id);
+            AggregateKind::Closure(_id, _args) => {
+                // TODO(#194): handle closure generics properly
+                // self.generics_should_match_item(args, *id);
+                self.discharged_one_generics()
             }
             AggregateKind::Array(..) => {}
         }
     }
     fn enter_fn_ptr(&mut self, fn_ptr: &FnPtr) {
-        let args = &fn_ptr.generics;
         match &fn_ptr.func {
-            FunIdOrTraitMethodRef::Fun(FunId::Regular(id))
-            | FunIdOrTraitMethodRef::Trait(_, _, id) => {
+            FunIdOrTraitMethodRef::Fun(FunId::Regular(id)) => {
+                let args = &fn_ptr.generics;
                 self.generics_should_match_item(args, *id);
+            }
+            FunIdOrTraitMethodRef::Trait(tref, _, id) => {
+                let args = tref
+                    .trait_decl_ref
+                    .skip_binder
+                    .generics
+                    .clone()
+                    .concat(&fn_ptr.generics);
+                self.generics_should_match_item(&args, *id);
             }
             FunIdOrTraitMethodRef::Fun(FunId::Builtin(..)) => {
                 // TODO: check generics for built-in types
@@ -147,6 +157,14 @@ impl VisitAst for CheckGenericsVisitor<'_> {
             self.error("The methods supplied by the trait impl don't match the trait decl.")
         }
     }
+
+    fn visit_llbc_statement(&mut self, st: &Statement) -> ControlFlow<Self::Break> {
+        let old_span = self.item_span;
+        self.item_span = st.span;
+        self.visit_inner(st)?;
+        self.item_span = old_span;
+        Continue(())
+    }
 }
 
 pub struct Check;
@@ -164,6 +182,13 @@ impl TransformPass for Check {
                 visitor.discharged_args, 0,
                 "Got confused about `GenericArgs` locations"
             );
+            if let AnyTransItem::Fun(d) = item {
+                if let Ok(body_id) = d.body {
+                    if let Some(body) = ctx.translated.bodies.get(body_id) {
+                        body.drive(&mut visitor);
+                    }
+                }
+            }
         }
     }
 }

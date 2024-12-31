@@ -118,6 +118,14 @@ where
         self.push_all(it).for_each(|_| ())
     }
 
+    pub fn extend_from_slice(&mut self, other: &Self)
+    where
+        T: Clone,
+    {
+        self.vector.extend_from_slice(&other.vector);
+        self.real_len += other.real_len;
+    }
+
     /// Map each entry to a new one, keeping the same ids.
     pub fn map<U>(self, mut f: impl FnMut(T) -> U) -> Vector<I, U> {
         Vector {

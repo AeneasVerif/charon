@@ -688,7 +688,7 @@ where
     fn __iterator_get_unchecked = core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::Iter<'a, T>[@TraitClause0]}#182::__iterator_get_unchecked
 }
 
-fn core::ops::arith::{impl core::ops::arith::AddAssign<&'_0 (i32)> for i32}#365::add_assign<'_0, '_1, '_2>(@1: &'_1 mut (i32), @2: &'_2 (i32))
+fn core::ops::arith::{impl core::ops::arith::AddAssign<&'_0 (i32)> for i32}#365::add_assign<'_0, '_1>(@1: &'_1 mut (i32), @2: &'_0 (i32))
 
 fn core::slice::{Slice<T>}::chunks<'_0, T>(@1: &'_0 (Slice<T>), @2: usize) -> core::slice::iter::Chunks<'_0, T>[@TraitClause0]
 where
