@@ -14,7 +14,7 @@ trait GenericTrait<T: Clone> {
 struct Override<T>(T);
 impl<T: Copy> GenericTrait<Option<T>> for Override<T> {
     fn other_method() {}
-    fn provided<U: PartialEq<T>>(x: T, y: U) {
+    fn provided<U: PartialEq<Option<T>>>(x: Option<T>, y: U) {
         if y == x {
             Self::other_method()
         }

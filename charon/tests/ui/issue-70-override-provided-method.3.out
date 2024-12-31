@@ -80,19 +80,19 @@ where
 
 fn core::cmp::PartialEq::eq<'_0, '_1, Self, Rhs>(@1: &'_0 (Self), @2: &'_1 (Rhs)) -> bool
 
-fn test_crate::{impl test_crate::GenericTrait<core::option::Option<T>[@TraitClause0]> for test_crate::Override<T>[@TraitClause0]}::provided<T, U>(@1: T, @2: U)
+fn test_crate::{impl test_crate::GenericTrait<core::option::Option<T>[@TraitClause0]> for test_crate::Override<T>[@TraitClause0]}::provided<T, U>(@1: core::option::Option<T>[@TraitClause0], @2: U)
 where
     [@TraitClause0]: core::marker::Sized<T>,
     [@TraitClause1]: core::marker::Copy<T>,
     [@TraitClause2]: core::marker::Sized<U>,
-    [@TraitClause3]: core::cmp::PartialEq<U, T>,
+    [@TraitClause3]: core::cmp::PartialEq<U, core::option::Option<T>[@TraitClause0]>,
 {
     let @0: (); // return
-    let x@1: T; // arg #1
+    let x@1: core::option::Option<T>[@TraitClause0]; // arg #1
     let y@2: U; // arg #2
     let @3: bool; // anonymous local
     let @4: &'_ (U); // anonymous local
-    let @5: &'_ (T); // anonymous local
+    let @5: &'_ (core::option::Option<T>[@TraitClause0]); // anonymous local
     let @6: (); // anonymous local
 
     @4 := &y@2
