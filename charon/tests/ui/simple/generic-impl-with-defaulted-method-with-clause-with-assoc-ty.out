@@ -13,7 +13,7 @@ trait HasType<Self, Self_Type>
 // Full name: test_crate::HasMethod
 trait HasMethod<Self>
 {
-    fn method<Clause0_Type, [@TraitClause0]: HasType<Self, Clause0_Type>> = method<Self, Clause0_Type>[@TraitClause0_0]
+    fn method<Clause0_Type, [@TraitClause0]: HasType<Self, Clause0_Type>> = method<Self, Clause0_Type>[Self, @TraitClause0_0]
 }
 
 // Full name: core::option::Option
@@ -47,9 +47,10 @@ where
 }
 
 // Full name: test_crate::HasMethod::method
-fn method<Self, Clause0_Type>()
+fn method<Self, Clause1_Type>()
 where
-    [@TraitClause0]: HasType<Self, Clause0_Type>,
+    [@TraitClause0]: HasMethod<Self>,
+    [@TraitClause1]: HasType<Self, Clause1_Type>,
 {
     let @0: (); // return
 

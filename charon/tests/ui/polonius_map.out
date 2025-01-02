@@ -29,7 +29,7 @@ where
 #[lang_item("eq")]
 pub trait PartialEq<Self, Rhs>
 {
-    fn eq<'_0, '_1> = core::cmp::PartialEq::eq<'_0_0, '_0_1, Self, Rhs>
+    fn eq<'_0, '_1> = core::cmp::PartialEq::eq<'_0_0, '_0_1, Self, Rhs>[Self]
 }
 
 // Full name: core::cmp::Eq
@@ -42,15 +42,15 @@ pub trait Eq<Self>
 // Full name: core::hash::Hasher
 pub trait Hasher<Self>
 {
-    fn finish<'_0> = core::hash::Hasher::finish<'_0_0, Self>
-    fn write<'_0, '_1> = core::hash::Hasher::write<'_0_0, '_0_1, Self>
+    fn finish<'_0> = core::hash::Hasher::finish<'_0_0, Self>[Self]
+    fn write<'_0, '_1> = core::hash::Hasher::write<'_0_0, '_0_1, Self>[Self]
 }
 
 // Full name: core::hash::Hash
 #[lang_item("Hash")]
 pub trait Hash<Self>
 {
-    fn hash<'_0, '_1, H, [@TraitClause0]: Sized<H>, [@TraitClause1]: Hasher<H>> = core::hash::Hash::hash<'_0_0, '_0_1, Self, H>[@TraitClause0_0, @TraitClause0_1]
+    fn hash<'_0, '_1, H, [@TraitClause0]: Sized<H>, [@TraitClause1]: Hasher<H>> = core::hash::Hash::hash<'_0_0, '_0_1, Self, H>[Self, @TraitClause0_0, @TraitClause0_1]
 }
 
 // Full name: core::hash::BuildHasher
@@ -59,14 +59,14 @@ pub trait BuildHasher<Self>
     parent_clause0 : [@TraitClause0]: Sized<Self::Hasher>
     parent_clause1 : [@TraitClause1]: Hasher<Self::Hasher>
     type Hasher
-    fn build_hasher<'_0> = core::hash::BuildHasher::build_hasher<'_0_0, Self>
+    fn build_hasher<'_0> = core::hash::BuildHasher::build_hasher<'_0_0, Self>[Self]
 }
 
 // Full name: core::borrow::Borrow
 #[lang_item("Borrow")]
 pub trait Borrow<Self, Borrowed>
 {
-    fn borrow<'_0> = core::borrow::Borrow::borrow<'_0_0, Self, Borrowed>
+    fn borrow<'_0> = core::borrow::Borrow::borrow<'_0_0, Self, Borrowed>[Self]
 }
 
 // Full name: std::collections::hash::map::{HashMap<K, V, S>[@TraitClause0, @TraitClause1, @TraitClause2]}#2::get
@@ -252,10 +252,12 @@ pub fn get_or_insert<'_0>(@1: &'_0 mut (HashMap<u32, u32, RandomState>[Sized<u32
 pub trait Index<Self, Idx>
 {
     type Output
-    fn index<'_0> = core::ops::index::Index::index<'_0_0, Self, Idx>
+    fn index<'_0> = core::ops::index::Index::index<'_0_0, Self, Idx>[Self]
 }
 
-pub fn core::ops::index::Index::index<'_0, Self, Idx>(@1: &'_0 (Self), @2: Idx) -> &'_0 (Self::Output)
+pub fn core::ops::index::Index::index<'_0, Self, Idx>(@1: &'_0 (Self), @2: Idx) -> &'_0 (@TraitClause0::Output)
+where
+    [@TraitClause0]: Index<Self, Idx>,
 
 // Full name: std::collections::hash::map::{impl Index<&'_0 (Q)> for HashMap<K, V, S>[@TraitClause0, @TraitClause1, @TraitClause2]}#8
 impl<'_0, K, Q, V, S> Index<&'_0 (Q)> for HashMap<K, V, S>[@TraitClause0, @TraitClause1, @TraitClause2]
@@ -274,21 +276,32 @@ where
     fn index<'_0> = {impl Index<&'_0 (Q)> for HashMap<K, V, S>[@TraitClause0, @TraitClause1, @TraitClause2]}#8::index<'_0, '_0_0, K, Q, V, S>[@TraitClause0, @TraitClause1, @TraitClause2, @TraitClause3, @TraitClause4, @TraitClause5, @TraitClause6, @TraitClause7, @TraitClause8]
 }
 
-pub fn core::hash::BuildHasher::build_hasher<'_0, Self>(@1: &'_0 (Self)) -> Self::Hasher
+pub fn core::hash::BuildHasher::build_hasher<'_0, Self>(@1: &'_0 (Self)) -> @TraitClause0::Hasher
+where
+    [@TraitClause0]: BuildHasher<Self>,
 
 pub fn core::hash::Hasher::write<'_0, '_1, Self>(@1: &'_0 mut (Self), @2: &'_1 (Slice<u8>))
+where
+    [@TraitClause0]: Hasher<Self>,
 
 pub fn core::hash::Hasher::finish<'_0, Self>(@1: &'_0 (Self)) -> u64
+where
+    [@TraitClause0]: Hasher<Self>,
 
 pub fn core::borrow::Borrow::borrow<'_0, Self, Borrowed>(@1: &'_0 (Self)) -> &'_0 (Borrowed)
+where
+    [@TraitClause0]: Borrow<Self, Borrowed>,
 
 #[lang_item("cmp_partialeq_eq")]
 pub fn core::cmp::PartialEq::eq<'_0, '_1, Self, Rhs>(@1: &'_0 (Self), @2: &'_1 (Rhs)) -> bool
+where
+    [@TraitClause0]: PartialEq<Self, Rhs>,
 
 pub fn core::hash::Hash::hash<'_0, '_1, Self, H>(@1: &'_0 (Self), @2: &'_1 mut (H))
 where
-    [@TraitClause0]: Sized<H>,
-    [@TraitClause1]: Hasher<H>,
+    [@TraitClause0]: Hash<Self>,
+    [@TraitClause1]: Sized<H>,
+    [@TraitClause2]: Hasher<H>,
 
 
 

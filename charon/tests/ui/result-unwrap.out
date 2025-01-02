@@ -39,7 +39,7 @@ pub struct Error {}
 #[lang_item("Debug")]
 pub trait Debug<Self>
 {
-    fn fmt<'_0, '_1, '_2> = core::fmt::Debug::fmt<'_0_0, '_0_1, '_0_2, Self>
+    fn fmt<'_0, '_1, '_2> = core::fmt::Debug::fmt<'_0_0, '_0_1, '_0_2, Self>[Self]
 }
 
 // Full name: core::result::unwrap_failed
@@ -176,14 +176,18 @@ fn test_crate::unwrap(@1: Result<u32, u32>[Sized<u32>, Sized<u32>]) -> u32
 }
 
 pub fn core::fmt::Debug::fmt<'_0, '_1, '_2, Self>(@1: &'_0 (Self), @2: &'_1 mut (Formatter<'_2>)) -> Result<(), Error>[Sized<()>, Sized<Error>]
+where
+    [@TraitClause0]: Debug<Self>,
 
 // Full name: core::fmt::LowerHex
 pub trait LowerHex<Self>
 {
-    fn fmt<'_0, '_1, '_2> = core::fmt::LowerHex::fmt<'_0_0, '_0_1, '_0_2, Self>
+    fn fmt<'_0, '_1, '_2> = core::fmt::LowerHex::fmt<'_0_0, '_0_1, '_0_2, Self>[Self]
 }
 
 pub fn core::fmt::LowerHex::fmt<'_0, '_1, '_2, Self>(@1: &'_0 (Self), @2: &'_1 mut (Formatter<'_2>)) -> Result<(), Error>[Sized<()>, Sized<Error>]
+where
+    [@TraitClause0]: LowerHex<Self>,
 
 // Full name: core::fmt::num::{impl LowerHex for u32}#60
 impl LowerHex for u32 {
@@ -194,10 +198,12 @@ impl LowerHex for u32 {
 #[lang_item("Display")]
 pub trait Display<Self>
 {
-    fn fmt<'_0, '_1, '_2> = core::fmt::Display::fmt<'_0_0, '_0_1, '_0_2, Self>
+    fn fmt<'_0, '_1, '_2> = core::fmt::Display::fmt<'_0_0, '_0_1, '_0_2, Self>[Self]
 }
 
 pub fn core::fmt::Display::fmt<'_0, '_1, '_2, Self>(@1: &'_0 (Self), @2: &'_1 mut (Formatter<'_2>)) -> Result<(), Error>[Sized<()>, Sized<Error>]
+where
+    [@TraitClause0]: Display<Self>,
 
 // Full name: core::fmt::num::imp::{impl Display for u32}#6
 impl Display for u32 {
@@ -207,10 +213,12 @@ impl Display for u32 {
 // Full name: core::fmt::UpperHex
 pub trait UpperHex<Self>
 {
-    fn fmt<'_0, '_1, '_2> = core::fmt::UpperHex::fmt<'_0_0, '_0_1, '_0_2, Self>
+    fn fmt<'_0, '_1, '_2> = core::fmt::UpperHex::fmt<'_0_0, '_0_1, '_0_2, Self>[Self]
 }
 
 pub fn core::fmt::UpperHex::fmt<'_0, '_1, '_2, Self>(@1: &'_0 (Self), @2: &'_1 mut (Formatter<'_2>)) -> Result<(), Error>[Sized<()>, Sized<Error>]
+where
+    [@TraitClause0]: UpperHex<Self>,
 
 // Full name: core::fmt::num::{impl UpperHex for u32}#61
 impl UpperHex for u32 {

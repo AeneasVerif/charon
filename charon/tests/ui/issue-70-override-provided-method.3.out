@@ -9,14 +9,14 @@ pub trait Sized<Self>
 pub trait Clone<Self>
 {
     parent_clause0 : [@TraitClause0]: Sized<Self>
-    fn clone<'_0> = core::clone::Clone::clone<'_0_0, Self>
+    fn clone<'_0> = core::clone::Clone::clone<'_0_0, Self>[Self]
 }
 
 // Full name: core::cmp::PartialEq
 #[lang_item("eq")]
 pub trait PartialEq<Self, Rhs>
 {
-    fn eq<'_0, '_1> = eq<'_0_0, '_0_1, Self, Rhs>
+    fn eq<'_0, '_1> = eq<'_0_0, '_0_1, Self, Rhs>[Self]
 }
 
 // Full name: test_crate::GenericTrait
@@ -24,8 +24,8 @@ trait GenericTrait<Self, T>
 {
     parent_clause0 : [@TraitClause0]: Sized<T>
     parent_clause1 : [@TraitClause1]: Clone<T>
-    fn other_method = test_crate::GenericTrait::other_method<Self, T>
-    fn provided<U, [@TraitClause0]: Sized<U>, [@TraitClause1]: PartialEq<U, T>> = test_crate::GenericTrait::provided<Self, T, U>[@TraitClause0_0, @TraitClause0_1]
+    fn other_method = test_crate::GenericTrait::other_method<Self, T>[Self]
+    fn provided<U, [@TraitClause0]: Sized<U>, [@TraitClause1]: PartialEq<U, T>> = test_crate::GenericTrait::provided<Self, T, U>[Self, @TraitClause0_0, @TraitClause0_1]
 }
 
 // Full name: test_crate::Override
@@ -85,6 +85,8 @@ where
 // Full name: core::cmp::PartialEq::eq
 #[lang_item("cmp_partialeq_eq")]
 pub fn eq<'_0, '_1, Self, Rhs>(@1: &'_0 (Self), @2: &'_1 (Rhs)) -> bool
+where
+    [@TraitClause0]: PartialEq<Self, Rhs>,
 
 // Full name: test_crate::{impl GenericTrait<Option<T>[@TraitClause0]> for Override<T>[@TraitClause0]}::provided
 fn {impl GenericTrait<Option<T>[@TraitClause0]> for Override<T>[@TraitClause0]}::provided<T, U>(@1: Option<T>[@TraitClause0], @2: U)
@@ -206,11 +208,14 @@ where
 }
 
 fn test_crate::GenericTrait::other_method<Self, T>()
+where
+    [@TraitClause0]: GenericTrait<Self, T>,
 
 fn test_crate::GenericTrait::provided<Self, T, U>(@1: T, @2: U)
 where
-    [@TraitClause0]: Sized<U>,
-    [@TraitClause1]: PartialEq<U, T>,
+    [@TraitClause0]: GenericTrait<Self, T>,
+    [@TraitClause1]: Sized<U>,
+    [@TraitClause2]: PartialEq<U, T>,
 {
     let @0: (); // return
     let x@1: T; // arg #1
@@ -224,11 +229,11 @@ where
     @4 := &y@2
     storage_live(@5)
     @5 := &x@1
-    @3 := @TraitClause1::eq<'_, '_>(move (@4), move (@5))
+    @3 := @TraitClause2::eq<'_, '_>(move (@4), move (@5))
     if move (@3) {
         storage_dead(@5)
         storage_dead(@4)
-        @0 := Self::other_method()
+        @0 := @TraitClause0::other_method()
     }
     else {
         storage_dead(@5)
@@ -244,6 +249,8 @@ where
 
 #[lang_item("clone_fn")]
 pub fn core::clone::Clone::clone<'_0, Self>(@1: &'_0 (Self)) -> Self
+where
+    [@TraitClause0]: Clone<Self>,
 
 
 

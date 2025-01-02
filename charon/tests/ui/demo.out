@@ -459,7 +459,7 @@ where
 // Full name: test_crate::Counter
 pub trait Counter<Self>
 {
-    fn incr<'_0> = test_crate::Counter::incr<'_0_0, Self>
+    fn incr<'_0> = test_crate::Counter::incr<'_0_0, Self>[Self]
 }
 
 // Full name: test_crate::{impl Counter for usize}::incr
@@ -483,6 +483,8 @@ impl Counter for usize {
 }
 
 pub fn test_crate::Counter::incr<'_0, Self>(@1: &'_0 mut (Self)) -> usize
+where
+    [@TraitClause0]: Counter<Self>,
 
 // Full name: test_crate::use_counter
 pub fn use_counter<'a, T>(@1: &'a mut (T)) -> usize

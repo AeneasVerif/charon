@@ -140,11 +140,13 @@ fn foo()
 pub trait Clone<Self>
 {
     parent_clause0 : [@TraitClause0]: Sized<Self>
-    fn clone<'_0> = core::clone::Clone::clone<'_0_0, Self>
+    fn clone<'_0> = core::clone::Clone::clone<'_0_0, Self>[Self]
 }
 
 #[lang_item("clone_fn")]
 pub fn core::clone::Clone::clone<'_0, Self>(@1: &'_0 (Self)) -> Self
+where
+    [@TraitClause0]: Clone<Self>,
 
 // Full name: alloc::string::{impl Clone for String}#6
 impl Clone for String {

@@ -63,11 +63,13 @@ pub trait Add<Self, Rhs>
     parent_clause0 : [@TraitClause0]: Sized<Rhs>
     parent_clause1 : [@TraitClause1]: Sized<Self::Output>
     type Output
-    fn add = core::ops::arith::Add::add<Self, Rhs>
+    fn add = core::ops::arith::Add::add<Self, Rhs>[Self]
 }
 
 #[lang_item("add")]
-pub fn core::ops::arith::Add::add<Self, Rhs>(@1: Self, @2: Rhs) -> Self::Output
+pub fn core::ops::arith::Add::add<Self, Rhs>(@1: Self, @2: Rhs) -> @TraitClause0::Output
+where
+    [@TraitClause0]: Add<Self, Rhs>,
 
 // Full name: core::ops::arith::{impl Add<&'_0 (u32)> for &'_1 (u32)}#27
 impl<'_0, '_1> Add<&'_0 (u32)> for &'_1 (u32) {

@@ -10,13 +10,13 @@ error: Item `test_crate::LendingIterator` caused errors; ignoring.
 4 | pub trait LendingIterator {
   | ^^^^^^^^^^^^^^^^^^^^^^^^^
 
-error: Found unsupported GAT `Item` when resolving trait `core::marker::Sized<Self::Item>`
+error: Found unsupported GAT `Item` when resolving trait `core::marker::Sized<@TraitClause0::Item>`
  --> tests/ui/generic-associated-types.rs:9:5
   |
 9 |     fn next<'a>(&'a mut self) -> Option<Self::Item<'a>>;
   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-error: Error during trait resolution: Found unsupported GAT `Item` when resolving trait `core::marker::Sized<Self::Item>`
+error: Error during trait resolution: Found unsupported GAT `Item` when resolving trait `core::marker::Sized<@TraitClause0::Item>`
  --> tests/ui/generic-associated-types.rs:9:5
   |
 9 |     fn next<'a>(&'a mut self) -> Option<Self::Item<'a>>;

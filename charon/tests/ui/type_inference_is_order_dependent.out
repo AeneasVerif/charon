@@ -20,7 +20,7 @@ trait Right<Self, T>
 trait Join<Self, U>
 {
     parent_clause0 : [@TraitClause0]: Sized<U>
-    fn test = test_crate::Join::test<Self, U>
+    fn test = test_crate::Join::test<Self, U>[Self]
 }
 
 // Full name: core::default::Default
@@ -28,7 +28,7 @@ trait Join<Self, U>
 pub trait Default<Self>
 {
     parent_clause0 : [@TraitClause0]: Sized<Self>
-    fn default = core::default::Default::default<Self>
+    fn default = core::default::Default::default<Self>[Self]
 }
 
 // Full name: core::fmt::Formatter
@@ -55,7 +55,7 @@ pub struct Error {}
 #[lang_item("Debug")]
 pub trait Debug<Self>
 {
-    fn fmt<'_0, '_1, '_2> = core::fmt::Debug::fmt<'_0_0, '_0_1, '_0_2, Self>
+    fn fmt<'_0, '_1, '_2> = core::fmt::Debug::fmt<'_0_0, '_0_1, '_0_2, Self>[Self]
 }
 
 // Full name: core::fmt::Arguments
@@ -70,6 +70,8 @@ pub opaque type Argument<'a>
 
 #[lang_item("default_fn")]
 pub fn core::default::Default::default<Self>() -> Self
+where
+    [@TraitClause0]: Default<Self>,
 
 // Full name: core::fmt::rt::{Argument<'_0>}#1::new_debug
 pub fn new_debug<'_0, '_1, T>(@1: &'_1 (T)) -> Argument<'_1>
@@ -219,8 +221,12 @@ where
 }
 
 fn test_crate::Join::test<Self, U>()
+where
+    [@TraitClause0]: Join<Self, U>,
 
 pub fn core::fmt::Debug::fmt<'_0, '_1, '_2, Self>(@1: &'_0 (Self), @2: &'_1 mut (Formatter<'_2>)) -> Result<(), Error>[Sized<()>, Sized<Error>]
+where
+    [@TraitClause0]: Debug<Self>,
 
 
 

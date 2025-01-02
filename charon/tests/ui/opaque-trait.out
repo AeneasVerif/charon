@@ -6,8 +6,8 @@ trait Trait<Self>
     const CONST1 : usize
     const CONST2 : usize
     const CONST3 : usize
-    fn method1 = test_crate::Trait::method1<Self>
-    fn method2 = test_crate::Trait::method2<Self>
+    fn method1 = test_crate::Trait::method1<Self>[Self]
+    fn method2 = test_crate::Trait::method2<Self>[Self]
 }
 
 // Full name: test_crate::{impl Trait for ()}#1::CONST1
@@ -138,6 +138,8 @@ impl Trait for u8 {
 pub trait Sized<Self>
 
 fn test_crate::Trait::method1<Self>()
+where
+    [@TraitClause0]: Trait<Self>,
 {
     let @0: (); // return
 
@@ -168,6 +170,8 @@ where
 }
 
 fn test_crate::Trait::method2<Self>()
+where
+    [@TraitClause0]: Trait<Self>,
 {
     let @0: (); // return
 

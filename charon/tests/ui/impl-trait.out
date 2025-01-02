@@ -9,7 +9,7 @@ pub trait Sized<Self>
 pub trait Clone<Self>
 {
     parent_clause0 : [@TraitClause0]: Sized<Self>
-    fn clone<'_0> = core::clone::Clone::clone<'_0_0, Self>
+    fn clone<'_0> = core::clone::Clone::clone<'_0_0, Self>[Self]
 }
 
 // Full name: test_crate::Foo
@@ -18,7 +18,7 @@ pub trait Foo<Self>
     parent_clause0 : [@TraitClause0]: Sized<Self::Type>
     parent_clause1 : [@TraitClause1]: Clone<Self::Type>
     type Type
-    fn get_ty<'_0> = test_crate::Foo::get_ty<'_0_0, Self>
+    fn get_ty<'_0> = test_crate::Foo::get_ty<'_0_0, Self>[Self]
 }
 
 // Full name: core::clone::impls::{impl Clone for u32}#8::clone
@@ -104,7 +104,7 @@ pub trait RPITIT<Self>
     parent_clause0 : [@TraitClause0]: Sized<Self::>
     parent_clause1 : [@TraitClause1]: Foo<Self::>
     type 
-    fn make_foo = test_crate::RPITIT::make_foo<Self>
+    fn make_foo = test_crate::RPITIT::make_foo<Self>[Self]
 }
 
 // Full name: test_crate::{impl RPITIT for ()}#1::make_foo
@@ -125,7 +125,9 @@ impl RPITIT for () {
     fn make_foo = {impl RPITIT for ()}#1::make_foo
 }
 
-pub fn test_crate::RPITIT::make_foo<Self>() -> Self::
+pub fn test_crate::RPITIT::make_foo<Self>() -> @TraitClause0::
+where
+    [@TraitClause0]: RPITIT<Self>,
 {
     let @0: (); // return
 
@@ -133,10 +135,14 @@ pub fn test_crate::RPITIT::make_foo<Self>() -> Self::
     return
 }
 
-pub fn test_crate::Foo::get_ty<'_0, Self>(@1: &'_0 (Self)) -> &'_0 (Self::Type)
+pub fn test_crate::Foo::get_ty<'_0, Self>(@1: &'_0 (Self)) -> &'_0 (@TraitClause0::Type)
+where
+    [@TraitClause0]: Foo<Self>,
 
 #[lang_item("clone_fn")]
 pub fn core::clone::Clone::clone<'_0, Self>(@1: &'_0 (Self)) -> Self
+where
+    [@TraitClause0]: Clone<Self>,
 
 // Full name: test_crate::use_tait
 fn use_tait<T>()
@@ -221,11 +227,13 @@ pub trait FnOnce<Self, Args>
     parent_clause1 : [@TraitClause1]: Tuple<Args>
     parent_clause2 : [@TraitClause2]: Sized<Self::Output>
     type Output
-    fn call_once = call_once<Self, Args>
+    fn call_once = call_once<Self, Args>[Self]
 }
 
 // Full name: core::ops::function::FnOnce::call_once
-pub fn call_once<Self, Args>(@1: Self, @2: Args) -> Self::Output
+pub fn call_once<Self, Args>(@1: Self, @2: Args) -> @TraitClause0::Output
+where
+    [@TraitClause0]: FnOnce<Self, Args>,
 
 // Full name: test_crate::use_wrap
 pub fn use_wrap()

@@ -3,7 +3,7 @@
 // Full name: test_crate::Trait
 pub trait Trait<Self>
 {
-    fn method<'_0> = test_crate::Trait::method<'_0_0, Self>
+    fn method<'_0> = test_crate::Trait::method<'_0_0, Self>[Self]
 }
 
 // Full name: core::marker::Sized
@@ -32,6 +32,8 @@ where
 }
 
 pub fn test_crate::Trait::method<'_0, Self>(@1: &'_0 (Self))
+where
+    [@TraitClause0]: Trait<Self>,
 
 
 

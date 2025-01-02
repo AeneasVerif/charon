@@ -1,7 +1,4 @@
-//@ known-failure
 //@ charon-args=--remove-associated-types=*
-// Fails because of bad handling of `Self` clauses. Should be fixed by
-// https://github.com/AeneasVerif/charon/pull/514.
 #![feature(unboxed_closures)]
 
 pub trait Trait {

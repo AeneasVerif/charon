@@ -18,7 +18,7 @@ pub trait Sized<Self>
 trait Trait<Self, T>
 {
     parent_clause0 : [@TraitClause0]: Sized<T>
-    fn method<U, [@TraitClause0]: Sized<U>> = test_crate::Trait::method<Self, T, U>[@TraitClause0_0]
+    fn method<U, [@TraitClause0]: Sized<U>> = test_crate::Trait::method<Self, T, U>[Self, @TraitClause0_0]
 }
 
 // Full name: alloc::alloc::Global
@@ -104,12 +104,12 @@ pub trait SliceIndex<Self, T>
 {
     parent_clause0 : [@TraitClause0]: Sealed<Self>
     type Output
-    fn get<'_0> = core::slice::index::SliceIndex::get<'_0_0, Self, T>
-    fn get_mut<'_0> = core::slice::index::SliceIndex::get_mut<'_0_0, Self, T>
-    fn get_unchecked = core::slice::index::SliceIndex::get_unchecked<Self, T>
-    fn get_unchecked_mut = core::slice::index::SliceIndex::get_unchecked_mut<Self, T>
-    fn index<'_0> = core::slice::index::SliceIndex::index<'_0_0, Self, T>
-    fn index_mut<'_0> = core::slice::index::SliceIndex::index_mut<'_0_0, Self, T>
+    fn get<'_0> = core::slice::index::SliceIndex::get<'_0_0, Self, T>[Self]
+    fn get_mut<'_0> = core::slice::index::SliceIndex::get_mut<'_0_0, Self, T>[Self]
+    fn get_unchecked = core::slice::index::SliceIndex::get_unchecked<Self, T>[Self]
+    fn get_unchecked_mut = core::slice::index::SliceIndex::get_unchecked_mut<Self, T>[Self]
+    fn index<'_0> = core::slice::index::SliceIndex::index<'_0_0, Self, T>[Self]
+    fn index_mut<'_0> = core::slice::index::SliceIndex::index_mut<'_0_0, Self, T>[Self]
 }
 
 // Full name: core::slice::index::{impl Index<I> for Slice<T>}::index
@@ -258,17 +258,20 @@ fn funs_with_disambiguator(@1: bool) -> u32
 
 fn test_crate::Trait::method<Self, T, U>()
 where
-    [@TraitClause0]: Sized<U>,
+    [@TraitClause0]: Trait<Self, T>,
+    [@TraitClause1]: Sized<U>,
 
 // Full name: core::ops::index::Index
 #[lang_item("index")]
 pub trait Index<Self, Idx>
 {
     type Output
-    fn index<'_0> = core::ops::index::Index::index<'_0_0, Self, Idx>
+    fn index<'_0> = core::ops::index::Index::index<'_0_0, Self, Idx>[Self]
 }
 
-pub fn core::ops::index::Index::index<'_0, Self, Idx>(@1: &'_0 (Self), @2: Idx) -> &'_0 (Self::Output)
+pub fn core::ops::index::Index::index<'_0, Self, Idx>(@1: &'_0 (Self), @2: Idx) -> &'_0 (@TraitClause0::Output)
+where
+    [@TraitClause0]: Index<Self, Idx>,
 
 // Full name: core::slice::index::{impl Index<I> for Slice<T>}
 impl<T, I> Index<I> for Slice<T>
@@ -281,17 +284,29 @@ where
     fn index<'_0> = {impl Index<I> for Slice<T>}::index<'_0_0, T, I>[@TraitClause0, @TraitClause1, @TraitClause2]
 }
 
-pub fn core::slice::index::SliceIndex::get<'_0, Self, T>(@1: Self, @2: &'_0 (T)) -> Option<&'_0 (Self::Output)>[Sized<&'_0 (Self::Output)>]
+pub fn core::slice::index::SliceIndex::get<'_0, Self, T>(@1: Self, @2: &'_0 (T)) -> Option<&'_0 (@TraitClause0::Output)>[Sized<&'_0 (@TraitClause0::Output)>]
+where
+    [@TraitClause0]: SliceIndex<Self, T>,
 
-pub fn core::slice::index::SliceIndex::get_mut<'_0, Self, T>(@1: Self, @2: &'_0 mut (T)) -> Option<&'_0 mut (Self::Output)>[Sized<&'_0 mut (Self::Output)>]
+pub fn core::slice::index::SliceIndex::get_mut<'_0, Self, T>(@1: Self, @2: &'_0 mut (T)) -> Option<&'_0 mut (@TraitClause0::Output)>[Sized<&'_0 mut (@TraitClause0::Output)>]
+where
+    [@TraitClause0]: SliceIndex<Self, T>,
 
-pub unsafe fn core::slice::index::SliceIndex::get_unchecked<Self, T>(@1: Self, @2: *const T) -> *const Self::Output
+pub unsafe fn core::slice::index::SliceIndex::get_unchecked<Self, T>(@1: Self, @2: *const T) -> *const @TraitClause0::Output
+where
+    [@TraitClause0]: SliceIndex<Self, T>,
 
-pub unsafe fn core::slice::index::SliceIndex::get_unchecked_mut<Self, T>(@1: Self, @2: *mut T) -> *mut Self::Output
+pub unsafe fn core::slice::index::SliceIndex::get_unchecked_mut<Self, T>(@1: Self, @2: *mut T) -> *mut @TraitClause0::Output
+where
+    [@TraitClause0]: SliceIndex<Self, T>,
 
-pub fn core::slice::index::SliceIndex::index<'_0, Self, T>(@1: Self, @2: &'_0 (T)) -> &'_0 (Self::Output)
+pub fn core::slice::index::SliceIndex::index<'_0, Self, T>(@1: Self, @2: &'_0 (T)) -> &'_0 (@TraitClause0::Output)
+where
+    [@TraitClause0]: SliceIndex<Self, T>,
 
-pub fn core::slice::index::SliceIndex::index_mut<'_0, Self, T>(@1: Self, @2: &'_0 mut (T)) -> &'_0 mut (Self::Output)
+pub fn core::slice::index::SliceIndex::index_mut<'_0, Self, T>(@1: Self, @2: &'_0 mut (T)) -> &'_0 mut (@TraitClause0::Output)
+where
+    [@TraitClause0]: SliceIndex<Self, T>,
 
 
 

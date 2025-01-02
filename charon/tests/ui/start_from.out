@@ -38,12 +38,14 @@ where
 pub trait Clone<Self>
 {
     parent_clause0 : [@TraitClause0]: Sized<Self>
-    fn clone<'_0> = clone<'_0_0, Self>
-    fn clone_from<'_0, '_1> = clone_from<'_0_0, '_0_1, Self>
+    fn clone<'_0> = clone<'_0_0, Self>[Self]
+    fn clone_from<'_0, '_1> = clone_from<'_0_0, '_0_1, Self>[Self]
 }
 
 // Full name: core::clone::Clone::clone_from
 pub fn clone_from<'_0, '_1, Self>(@1: &'_0 mut (Self), @2: &'_1 (Self))
+where
+    [@TraitClause0]: Clone<Self>,
 
 // Full name: core::slice::iter::Iter
 #[lang_item("SliceIter")]
@@ -64,6 +66,8 @@ pub fn wrapping_add(@1: u32, @2: u32) -> u32
 // Full name: core::clone::Clone::clone
 #[lang_item("clone_fn")]
 pub fn clone<'_0, Self>(@1: &'_0 (Self)) -> Self
+where
+    [@TraitClause0]: Clone<Self>,
 
 
 

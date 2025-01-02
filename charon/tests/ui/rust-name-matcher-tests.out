@@ -18,7 +18,7 @@ pub trait Sized<Self>
 trait Trait<Self, T>
 {
     parent_clause0 : [@TraitClause0]: Sized<T>
-    fn method<U, [@TraitClause0]: Sized<U>> = test_crate::Trait::method<Self, T, U>[@TraitClause0_0]
+    fn method<U, [@TraitClause0]: Sized<U>> = test_crate::Trait::method<Self, T, U>[Self, @TraitClause0_0]
 }
 
 // Full name: alloc::alloc::Global
@@ -103,7 +103,8 @@ where
 
 fn test_crate::Trait::method<Self, T, U>()
 where
-    [@TraitClause0]: Sized<U>,
+    [@TraitClause0]: Trait<Self, T>,
+    [@TraitClause1]: Sized<U>,
 
 
 

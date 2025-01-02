@@ -79,10 +79,12 @@ fn into_inner(@1: alloc::boxed::Box<String>[Sized<Global>])
 #[lang_item("drop")]
 pub trait Drop<Self>
 {
-    fn drop<'_0> = core::ops::drop::Drop::drop<'_0_0, Self>
+    fn drop<'_0> = core::ops::drop::Drop::drop<'_0_0, Self>[Self]
 }
 
 pub fn core::ops::drop::Drop::drop<'_0, Self>(@1: &'_0 mut (Self))
+where
+    [@TraitClause0]: Drop<Self>,
 
 // Full name: alloc::boxed::{impl Drop for alloc::boxed::Box<T>[@TraitClause0]}#8
 impl<T, A> Drop for alloc::boxed::Box<T>[@TraitClause0]
