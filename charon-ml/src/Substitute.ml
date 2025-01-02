@@ -321,8 +321,8 @@ let make_trait_subst_from_clauses (clauses : trait_clause list)
     (List.map (fun (x : trait_clause) -> x.clause_id) clauses)
     (List.map (fun (x : trait_ref) -> x.trait_id) trs)
 
-let make_subst_from_generics (params : generic_params) (args : generic_args)
-    (tr_sb_self : trait_instance_id) : subst =
+let make_sb_subst_from_generics (params : generic_params) (args : generic_args)
+    : single_binder_subst =
   let r_sb_subst = make_region_subst_from_vars params.regions args.regions in
   let ty_sb_subst = make_type_subst_from_vars params.types args.types in
   let cg_sb_subst =
@@ -331,14 +331,16 @@ let make_subst_from_generics (params : generic_params) (args : generic_args)
   let tr_sb_subst =
     make_trait_subst_from_clauses params.trait_clauses args.trait_refs
   in
-  subst_free_vars
-    { r_sb_subst; ty_sb_subst; cg_sb_subst; tr_sb_subst; tr_sb_self }
+  { r_sb_subst; ty_sb_subst; cg_sb_subst; tr_sb_subst; tr_sb_self = Self }
+
+let make_subst_from_generics (params : generic_params) (args : generic_args) :
+    subst =
+  subst_free_vars (make_sb_subst_from_generics params args)
 
 let make_subst_from_generics_erase_regions (params : generic_params)
-    (generics : generic_args) (tr_self : trait_instance_id) =
+    (generics : generic_args) : subst =
   let generics = generic_args_erase_regions generics in
-  let tr_self = trait_instance_id_erase_regions tr_self in
-  let subst = make_subst_from_generics params generics tr_self in
+  let subst = make_subst_from_generics params generics in
   { subst with r_subst = (fun _ -> RErased) }
 
 (** Instantiate the type variables in an ADT definition, and return, for
@@ -349,9 +351,7 @@ let make_subst_from_generics_erase_regions (params : generic_params)
 *)
 let type_decl_get_instantiated_variants_fields_types (def : type_decl)
     (generics : generic_args) : (VariantId.id option * ty list) list =
-  (* There shouldn't be any reference to Self *)
-  let tr_self = UnknownTrait __FUNCTION__ in
-  let subst = make_subst_from_generics def.generics generics tr_self in
+  let subst = make_subst_from_generics def.generics generics in
   let (variants_fields : (VariantId.id option * field list) list) =
     match def.kind with
     | Enum variants ->
@@ -379,9 +379,7 @@ let type_decl_get_instantiated_field_types (def : type_decl)
   (* For now, check that there are no clauses - otherwise we might need
      to normalize the types *)
   assert (def.generics.trait_clauses = []);
-  (* There shouldn't be any reference to Self *)
-  let tr_self = UnknownTrait __FUNCTION__ in
-  let subst = make_subst_from_generics def.generics generics tr_self in
+  let subst = make_subst_from_generics def.generics generics in
   let fields = type_decl_get_fields def opt_variant_id in
   List.map (fun f -> ty_substitute subst f.field_ty) fields
 
