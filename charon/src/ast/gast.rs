@@ -99,6 +99,7 @@ pub enum ItemKind {
         /// The trait declaration this item belongs to.
         trait_ref: TraitDeclRef,
         /// The name of the item.
+        // TODO: also include method generics so we can recover a full `FnPtr::TraitMethod`
         #[drive(skip)]
         item_name: TraitItemName,
         /// Whether the trait declaration provides a default implementation.
@@ -112,6 +113,7 @@ pub enum ItemKind {
         /// The trait declaration that the impl block implements.
         trait_ref: TraitDeclRef,
         /// The name of the item
+        // TODO: also include method generics so we can recover a full `FnPtr::TraitMethod`
         #[drive(skip)]
         item_name: TraitItemName,
         /// True if the trait decl had a default implementation for this function/const and this
@@ -142,6 +144,16 @@ pub struct FunDecl {
     pub body: Result<Body, Opaque>,
 }
 
+/// Reference to a function declaration.
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Hash, Drive, DriveMut)]
+pub struct FunDeclRef {
+    #[charon::rename("fun_id")]
+    pub id: FunDeclId,
+    /// Generic arguments passed to the function.
+    #[charon::rename("fun_generics")]
+    pub generics: GenericArgs,
+}
+
 /// A global variable definition (constant or static).
 #[derive(Debug, Clone, Serialize, Deserialize, Drive, DriveMut)]
 pub struct GlobalDecl {
@@ -153,7 +165,8 @@ pub struct GlobalDecl {
     pub ty: Ty,
     /// The global kind: "regular" function, trait const declaration, etc.
     pub kind: ItemKind,
-    /// The initializer function used to compute the initial value for this constant/static.
+    /// The initializer function used to compute the initial value for this constant/static. It
+    /// uses the same generic parameters as the global.
     #[charon::rename("body")]
     pub init: FunDeclId,
 }
@@ -241,16 +254,18 @@ pub struct TraitDecl {
     /// TODO: Do this as we translate to avoid the need to store this vector.
     #[charon::opaque]
     pub type_clauses: Vec<(TraitItemName, Vector<TraitClauseId, TraitClause>)>,
-    /// The *required* methods.
-    ///
-    /// The required methods are the methods declared by the trait but with no default
+    /// The *required* methods: the methods declared by the trait but with no default
     /// implementation. The corresponding `FunDecl`s don't have a body.
-    pub required_methods: Vec<(TraitItemName, FunDeclId)>,
-    /// The *provided* methods.
     ///
-    /// The provided methods are the methods with a default implementation. The corresponding
+    /// The binder contains the type parameters specific to the method. The `FunDeclRef` then
+    /// provides a full list of arguments to the pointed-to function.
+    pub required_methods: Vec<(TraitItemName, Binder<FunDeclRef>)>,
+    /// The *provided* methods: the methods with a default implementation. The corresponding
     /// `FunDecl`s may have a body, according to the usual rules for extracting function bodies.
-    pub provided_methods: Vec<(TraitItemName, FunDeclId)>,
+    ///
+    /// The binder contains the type parameters specific to the method. The `FunDeclRef` then
+    /// provides a full list of arguments to the pointed-to function.
+    pub provided_methods: Vec<(TraitItemName, Binder<FunDeclRef>)>,
 }
 
 /// A trait **implementation**.
@@ -284,9 +299,15 @@ pub struct TraitImpl {
     #[charon::opaque]
     pub type_clauses: Vec<(TraitItemName, Vector<TraitClauseId, TraitRef>)>,
     /// The implemented required methods
-    pub required_methods: Vec<(TraitItemName, FunDeclId)>,
+    ///
+    /// The binder contains the type parameters specific to the method. The `FunDeclRef` then
+    /// provides a full list of arguments to the pointed-to function.
+    pub required_methods: Vec<(TraitItemName, Binder<FunDeclRef>)>,
     /// The re-implemented provided methods
-    pub provided_methods: Vec<(TraitItemName, FunDeclId)>,
+    ///
+    /// The binder contains the type parameters specific to the method. The `FunDeclRef` then
+    /// provides a full list of arguments to the pointed-to function.
+    pub provided_methods: Vec<(TraitItemName, Binder<FunDeclRef>)>,
 }
 
 /// A function operand is used in function calls.

@@ -1274,6 +1274,7 @@ fn generate_ml(
                     "TraitRefKind",
                     "TraitDeclRef",
                     "TraitImplRef",
+                    "FunDeclRef",
                     "GlobalDeclRef",
                     "GenericArgs",
                 ]),

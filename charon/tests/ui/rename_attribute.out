@@ -2,8 +2,8 @@
 
 trait test_crate::BoolTrait<Self>
 {
-    fn get_bool : test_crate::BoolTrait::get_bool
-    fn ret_true : test_crate::BoolTrait::ret_true
+    fn get_bool<'_0> = test_crate::BoolTrait::get_bool<'_0_0, Self>
+    fn ret_true<'_0> = test_crate::BoolTrait::ret_true<'_0_0, Self>
 }
 
 fn test_crate::{impl test_crate::BoolTrait for bool}::get_bool<'_0>(@1: &'_0 (bool)) -> bool
@@ -17,7 +17,7 @@ fn test_crate::{impl test_crate::BoolTrait for bool}::get_bool<'_0>(@1: &'_0 (bo
 
 impl test_crate::{impl test_crate::BoolTrait for bool} : test_crate::BoolTrait<bool>
 {
-    fn get_bool = test_crate::{impl test_crate::BoolTrait for bool}::get_bool
+    fn get_bool<'_0> = test_crate::{impl test_crate::BoolTrait for bool}::get_bool<'_0_0>
 }
 
 trait core::marker::Sized<Self>

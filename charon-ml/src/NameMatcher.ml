@@ -729,7 +729,7 @@ let match_fn_ptr (ctx : ctx) (c : match_config) (p : pattern) (func : E.fn_ptr)
             then
               let subst =
                 Substitute.make_subst_from_generics d.signature.generics
-                  func.generics Self
+                  func.generics
               in
               let trait_ref =
                 Substitute.trait_decl_ref_substitute subst trait_ref

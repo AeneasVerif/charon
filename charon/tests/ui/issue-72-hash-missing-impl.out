@@ -10,7 +10,7 @@ trait core::marker::Sized<Self>
 
 trait test_crate::Hash<Self>
 {
-    fn hash : test_crate::Hash::hash
+    fn hash<'_0, '_1, H, [@TraitClause0]: core::marker::Sized<H>, [@TraitClause1]: test_crate::Hasher<H>> = test_crate::Hash::hash<'_0_0, '_0_1, Self, H>[@TraitClause0_0, @TraitClause0_1]
 }
 
 fn test_crate::{impl test_crate::Hash for u32}#1::hash<'_0, '_1, H>(@1: &'_0 (u32), @2: &'_1 mut (H))
@@ -31,7 +31,7 @@ where
 
 impl test_crate::{impl test_crate::Hash for u32}#1 : test_crate::Hash<u32>
 {
-    fn hash = test_crate::{impl test_crate::Hash for u32}#1::hash
+    fn hash<'_0, '_1, H, [@TraitClause0]: core::marker::Sized<H>, [@TraitClause1]: test_crate::Hasher<H>> = test_crate::{impl test_crate::Hash for u32}#1::hash<'_0_0, '_0_1, H>[@TraitClause0_0, @TraitClause0_1]
 }
 
 fn test_crate::main()

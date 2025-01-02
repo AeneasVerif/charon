@@ -12,8 +12,8 @@ enum core::option::Option<T>
 
 trait core::cmp::PartialEq<Self, Rhs>
 {
-    fn eq : core::cmp::PartialEq::eq
-    fn ne : core::cmp::PartialEq::ne
+    fn eq<'_0, '_1> = core::cmp::PartialEq::eq<'_0_0, '_0_1, Self, Rhs>
+    fn ne<'_0, '_1> = core::cmp::PartialEq::ne<'_0_0, '_0_1, Self, Rhs>
 }
 
 fn core::option::{impl core::cmp::PartialEq<core::option::Option<T>[@TraitClause0]> for core::option::Option<T>[@TraitClause0]}#14::eq<'_0, '_1, T>(@1: &'_0 (core::option::Option<T>[@TraitClause0]), @2: &'_1 (core::option::Option<T>[@TraitClause0])) -> bool
@@ -27,8 +27,8 @@ fn core::cmp::impls::{impl core::cmp::PartialEq<i32> for i32}#30::ne<'_0, '_1>(@
 
 impl core::cmp::impls::{impl core::cmp::PartialEq<i32> for i32}#30 : core::cmp::PartialEq<i32, i32>
 {
-    fn eq = core::cmp::impls::{impl core::cmp::PartialEq<i32> for i32}#30::eq
-    fn ne = core::cmp::impls::{impl core::cmp::PartialEq<i32> for i32}#30::ne
+    fn eq<'_0, '_1> = core::cmp::impls::{impl core::cmp::PartialEq<i32> for i32}#30::eq<'_0_0, '_0_1>
+    fn ne<'_0, '_1> = core::cmp::impls::{impl core::cmp::PartialEq<i32> for i32}#30::ne<'_0_0, '_0_1>
 }
 
 fn test_crate::main()
@@ -85,7 +85,7 @@ fn test_crate::{impl core::cmp::PartialEq<test_crate::Foo> for test_crate::Foo}#
 
 impl test_crate::{impl core::cmp::PartialEq<test_crate::Foo> for test_crate::Foo}#1 : core::cmp::PartialEq<test_crate::Foo, test_crate::Foo>
 {
-    fn eq = test_crate::{impl core::cmp::PartialEq<test_crate::Foo> for test_crate::Foo}#1::eq
+    fn eq<'_0, '_1> = test_crate::{impl core::cmp::PartialEq<test_crate::Foo> for test_crate::Foo}#1::eq<'_0_0, '_0_1>
 }
 
 enum core::cmp::Ordering =
@@ -97,11 +97,11 @@ enum core::cmp::Ordering =
 trait core::cmp::PartialOrd<Self, Rhs>
 {
     parent_clause0 : [@TraitClause0]: core::cmp::PartialEq<Self, Rhs>
-    fn partial_cmp : core::cmp::PartialOrd::partial_cmp
-    fn lt : core::cmp::PartialOrd::lt
-    fn le : core::cmp::PartialOrd::le
-    fn gt : core::cmp::PartialOrd::gt
-    fn ge : core::cmp::PartialOrd::ge
+    fn partial_cmp<'_0, '_1> = core::cmp::PartialOrd::partial_cmp<'_0_0, '_0_1, Self, Rhs>
+    fn lt<'_0, '_1> = core::cmp::PartialOrd::lt<'_0_0, '_0_1, Self, Rhs>
+    fn le<'_0, '_1> = core::cmp::PartialOrd::le<'_0_0, '_0_1, Self, Rhs>
+    fn gt<'_0, '_1> = core::cmp::PartialOrd::gt<'_0_0, '_0_1, Self, Rhs>
+    fn ge<'_0, '_1> = core::cmp::PartialOrd::ge<'_0_0, '_0_1, Self, Rhs>
 }
 
 fn core::cmp::impls::{impl core::cmp::PartialOrd<u32> for u32}#64::partial_cmp<'_0, '_1>(@1: &'_0 (u32), @2: &'_1 (u32)) -> core::option::Option<core::cmp::Ordering>[core::marker::Sized<core::cmp::Ordering>]
@@ -131,7 +131,7 @@ fn test_crate::{impl core::cmp::PartialOrd<test_crate::Foo> for test_crate::Foo}
 impl test_crate::{impl core::cmp::PartialOrd<test_crate::Foo> for test_crate::Foo}#2 : core::cmp::PartialOrd<test_crate::Foo, test_crate::Foo>
 {
     parent_clause0 = test_crate::{impl core::cmp::PartialEq<test_crate::Foo> for test_crate::Foo}#1
-    fn partial_cmp = test_crate::{impl core::cmp::PartialOrd<test_crate::Foo> for test_crate::Foo}#2::partial_cmp
+    fn partial_cmp<'_0, '_1> = test_crate::{impl core::cmp::PartialOrd<test_crate::Foo> for test_crate::Foo}#2::partial_cmp<'_0_0, '_0_1>
 }
 
 fn core::cmp::PartialEq::eq<'_0, '_1, Self, Rhs>(@1: &'_0 (Self), @2: &'_1 (Rhs)) -> bool
@@ -141,7 +141,7 @@ where
     [@TraitClause0]: core::marker::Sized<T>,
     [@TraitClause1]: core::cmp::PartialEq<T, T>,
 {
-    fn eq = core::option::{impl core::cmp::PartialEq<core::option::Option<T>[@TraitClause0]> for core::option::Option<T>[@TraitClause0]}#14::eq
+    fn eq<'_0, '_1> = core::option::{impl core::cmp::PartialEq<core::option::Option<T>[@TraitClause0]> for core::option::Option<T>[@TraitClause0]}#14::eq<'_0_0, '_0_1, T>[@TraitClause0, @TraitClause1]
 }
 
 fn core::cmp::PartialEq::ne<'_0, '_1, Self, Rhs>(@1: &'_0 (Self), @2: &'_1 (Rhs)) -> bool
@@ -162,8 +162,8 @@ fn core::cmp::impls::{impl core::cmp::PartialEq<u32> for u32}#24::ne<'_0, '_1>(@
 
 impl core::cmp::impls::{impl core::cmp::PartialEq<u32> for u32}#24 : core::cmp::PartialEq<u32, u32>
 {
-    fn eq = core::cmp::impls::{impl core::cmp::PartialEq<u32> for u32}#24::eq
-    fn ne = core::cmp::impls::{impl core::cmp::PartialEq<u32> for u32}#24::ne
+    fn eq<'_0, '_1> = core::cmp::impls::{impl core::cmp::PartialEq<u32> for u32}#24::eq<'_0_0, '_0_1>
+    fn ne<'_0, '_1> = core::cmp::impls::{impl core::cmp::PartialEq<u32> for u32}#24::ne<'_0_0, '_0_1>
 }
 
 fn core::cmp::impls::{impl core::cmp::PartialOrd<u32> for u32}#64::lt<'_0, '_1>(@1: &'_0 (u32), @2: &'_1 (u32)) -> bool
@@ -177,11 +177,11 @@ fn core::cmp::impls::{impl core::cmp::PartialOrd<u32> for u32}#64::ge<'_0, '_1>(
 impl core::cmp::impls::{impl core::cmp::PartialOrd<u32> for u32}#64 : core::cmp::PartialOrd<u32, u32>
 {
     parent_clause0 = core::cmp::impls::{impl core::cmp::PartialEq<u32> for u32}#24
-    fn partial_cmp = core::cmp::impls::{impl core::cmp::PartialOrd<u32> for u32}#64::partial_cmp
-    fn lt = core::cmp::impls::{impl core::cmp::PartialOrd<u32> for u32}#64::lt
-    fn le = core::cmp::impls::{impl core::cmp::PartialOrd<u32> for u32}#64::le
-    fn gt = core::cmp::impls::{impl core::cmp::PartialOrd<u32> for u32}#64::gt
-    fn ge = core::cmp::impls::{impl core::cmp::PartialOrd<u32> for u32}#64::ge
+    fn partial_cmp<'_0, '_1> = core::cmp::impls::{impl core::cmp::PartialOrd<u32> for u32}#64::partial_cmp<'_0_0, '_0_1>
+    fn lt<'_0, '_1> = core::cmp::impls::{impl core::cmp::PartialOrd<u32> for u32}#64::lt<'_0_0, '_0_1>
+    fn le<'_0, '_1> = core::cmp::impls::{impl core::cmp::PartialOrd<u32> for u32}#64::le<'_0_0, '_0_1>
+    fn gt<'_0, '_1> = core::cmp::impls::{impl core::cmp::PartialOrd<u32> for u32}#64::gt<'_0_0, '_0_1>
+    fn ge<'_0, '_1> = core::cmp::impls::{impl core::cmp::PartialOrd<u32> for u32}#64::ge<'_0_0, '_0_1>
 }
 
 

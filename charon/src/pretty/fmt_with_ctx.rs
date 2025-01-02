@@ -9,7 +9,10 @@ use crate::{
     ullbc_ast::{self as ullbc, *},
 };
 use itertools::Itertools;
-use std::fmt::{self, Display, Write};
+use std::{
+    borrow::Cow,
+    fmt::{self, Display, Write},
+};
 
 /// Format the AST type as a string.
 pub trait FmtWithCtx<C> {
@@ -73,6 +76,22 @@ impl<C: AstFormatter> FmtWithCtx<C> for Assert {
             "assert({} == {})",
             self.cond.fmt_with_ctx(ctx),
             self.expected,
+        )
+    }
+}
+
+impl<T> Binder<T> {
+    /// Format the parameters and contents of this binder and returns the resulting strings. Note:
+    /// this assumes the binder fully replaces the existing generics.
+    fn fmt_split<'a, C>(&'a self, ctx: &'a C) -> (String, String)
+    where
+        C: AstFormatter,
+        T: FmtWithCtx<<C as PushBinder<'a>>::C>,
+    {
+        let ctx = &ctx.push_binder(Cow::Borrowed(&self.params));
+        (
+            self.params.fmt_with_ctx_single_line(ctx),
+            self.skip_binder.fmt_with_ctx(ctx),
         )
     }
 }
@@ -531,6 +550,14 @@ where
     }
 }
 
+impl<C: AstFormatter> FmtWithCtx<C> for FunDeclRef {
+    fn fmt_with_ctx(&self, ctx: &C) -> String {
+        let id = ctx.format_object(self.id);
+        let generics = self.generics.fmt_with_ctx(ctx);
+        format!("{id}{generics}")
+    }
+}
+
 impl<C> FmtWithCtx<C> for GlobalDecl
 where
     C: AstFormatter,
@@ -565,9 +592,9 @@ where
 
 impl<C: AstFormatter> FmtWithCtx<C> for GlobalDeclRef {
     fn fmt_with_ctx(&self, ctx: &C) -> String {
-        let global_id = ctx.format_object(self.id);
+        let id = ctx.format_object(self.id);
         let generics = self.generics.fmt_with_ctx(ctx);
-        format!("{global_id}{generics}")
+        format!("{id}{generics}")
     }
 }
 
@@ -1106,44 +1133,47 @@ impl<C: AstFormatter> FmtWithCtx<C> for TraitDecl {
         let (generics, clauses) = self.generics.fmt_with_ctx_with_trait_clauses(ctx, "");
 
         let items = {
-            let items =
-                self.parent_clauses
-                    .iter()
-                    .map(|c| {
-                        format!(
-                            "{TAB_INCR}parent_clause{} : {}\n",
-                            c.clause_id,
-                            c.fmt_with_ctx(ctx)
-                        )
-                    })
-                    .chain(self.type_clauses.iter().map(|(name, clauses)| {
-                        clauses
-                            .iter()
-                            .map(|c| {
-                                format!(
-                                    "{TAB_INCR}item_clause_{name}_{} : {}\n",
-                                    c.clause_id.to_string(),
-                                    c.fmt_with_ctx(ctx)
-                                )
-                            })
-                            .collect()
-                    }))
-                    .chain(self.consts.iter().map(|(name, ty)| {
-                        let ty = ty.fmt_with_ctx(ctx);
-                        format!("{TAB_INCR}const {name} : {ty}\n")
-                    }))
-                    .chain(
-                        self.types
-                            .iter()
-                            .map(|name| format!("{TAB_INCR}type {name}\n")),
+            let items = self
+                .parent_clauses
+                .iter()
+                .map(|c| {
+                    format!(
+                        "{TAB_INCR}parent_clause{} : {}\n",
+                        c.clause_id,
+                        c.fmt_with_ctx(ctx)
                     )
-                    .chain(self.required_methods.iter().map(|(name, f)| {
-                        format!("{TAB_INCR}fn {name} : {}\n", ctx.format_object(*f))
-                    }))
-                    .chain(self.provided_methods.iter().map(|(name, f)| {
-                        format!("{TAB_INCR}fn {name} : {}\n", ctx.format_object(*f))
-                    }))
-                    .collect::<Vec<String>>();
+                })
+                .chain(self.type_clauses.iter().map(|(name, clauses)| {
+                    clauses
+                        .iter()
+                        .map(|c| {
+                            format!(
+                                "{TAB_INCR}item_clause_{name}_{} : {}\n",
+                                c.clause_id.to_string(),
+                                c.fmt_with_ctx(ctx)
+                            )
+                        })
+                        .collect()
+                }))
+                .chain(self.consts.iter().map(|(name, ty)| {
+                    let ty = ty.fmt_with_ctx(ctx);
+                    format!("{TAB_INCR}const {name} : {ty}\n")
+                }))
+                .chain(
+                    self.types
+                        .iter()
+                        .map(|name| format!("{TAB_INCR}type {name}\n")),
+                )
+                .chain(
+                    self.required_methods
+                        .iter()
+                        .chain(self.provided_methods.iter())
+                        .map(|(name, bound_fn)| {
+                            let (params, fn_ref) = bound_fn.fmt_split(ctx);
+                            format!("{TAB_INCR}fn {name}{params} = {fn_ref}\n",)
+                        }),
+                )
+                .collect::<Vec<String>>();
             if items.is_empty() {
                 "".to_string()
             } else {
@@ -1206,8 +1236,9 @@ impl<C: AstFormatter> FmtWithCtx<C> for TraitImpl {
                     self.required_methods
                         .iter()
                         .chain(self.provided_methods.iter())
-                        .map(|(name, f)| {
-                            format!("{TAB_INCR}fn {name} = {}\n", ctx.format_object(*f))
+                        .map(|(name, bound_fn)| {
+                            let (params, fn_ref) = bound_fn.fmt_split(ctx);
+                            format!("{TAB_INCR}fn {name}{params} = {fn_ref}\n",)
                         }),
                 )
                 .collect::<Vec<String>>();

@@ -2,7 +2,7 @@ use crate::ast::*;
 use crate::formatter::{FmtCtx, Formatter, IntoFormatter};
 use crate::ids::Vector;
 use crate::reorder_decls::DeclarationsGroups;
-use derive_generic_visitor::{Drive, DriveMut};
+use derive_generic_visitor::{ControlFlow, Drive, DriveMut};
 use hashlink::LinkedHashSet;
 use macros::{EnumAsGetters, EnumIsA, VariantIndexArity, VariantName};
 use serde::{Deserialize, Serialize};
@@ -10,7 +10,6 @@ use serde_map_to_array::HashMapToArray;
 use std::cmp::{Ord, PartialOrd};
 use std::collections::HashMap;
 use std::fmt;
-use std::ops::{ControlFlow, Index, IndexMut};
 
 generate_index_type!(FunDeclId, "Fun");
 generate_index_type!(TypeDeclId, "Adt");
@@ -315,19 +314,21 @@ impl<'tcx, 'ctx, 'a> IntoFormatter for &'a TranslatedCrate {
 /// Delegate `Index` implementations to subfields.
 macro_rules! mk_index_impls {
     ($ty:ident.$field:ident[$idx:ty]: $output:ty) => {
-        impl Index<$idx> for $ty {
+        impl std::ops::Index<$idx> for $ty {
             type Output = $output;
             fn index(&self, index: $idx) -> &Self::Output {
                 &self.$field[index]
             }
         }
-        impl IndexMut<$idx> for $ty {
+        impl std::ops::IndexMut<$idx> for $ty {
             fn index_mut(&mut self, index: $idx) -> &mut Self::Output {
                 &mut self.$field[index]
             }
         }
     };
 }
+pub(crate) use mk_index_impls;
+
 mk_index_impls!(TranslatedCrate.type_decls[TypeDeclId]: TypeDecl);
 mk_index_impls!(TranslatedCrate.fun_decls[FunDeclId]: FunDecl);
 mk_index_impls!(TranslatedCrate.global_decls[GlobalDeclId]: GlobalDecl);

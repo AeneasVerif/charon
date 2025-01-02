@@ -1242,6 +1242,35 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
         })
     }
 
+    /// Push a new binding level corresponding to the provided `def` for the duration of the inner
+    /// function call.
+    pub(crate) fn translate_binder_for_def<F, U>(
+        &mut self,
+        span: Span,
+        def: &hax::FullDef,
+        f: F,
+    ) -> Result<Binder<U>, Error>
+    where
+        F: FnOnce(&mut Self) -> Result<U, Error>,
+    {
+        assert!(!self.binding_levels.is_empty());
+
+        // Register the type-level parameters. This pushes a new binding level.
+        self.translate_def_generics_without_parents(span, def)?;
+
+        // Call the continuation. Important: do not short-circuit on error here.
+        let res = f(self);
+
+        // Reset
+        let params = self.binding_levels.pop_front().unwrap().params;
+
+        // Return
+        res.map(|skip_binder| Binder {
+            params,
+            skip_binder,
+        })
+    }
+
     pub(crate) fn push_var(&mut self, rid: usize, ty: Ty, name: Option<String>) {
         let var_id = self.locals.vars.push_with(|index| Var { index, name, ty });
         self.vars_map.insert(rid, var_id);

@@ -5,8 +5,8 @@ trait core::marker::Sized<Self>
 trait core::clone::Clone<Self>
 {
     parent_clause0 : [@TraitClause0]: core::marker::Sized<Self>
-    fn clone : core::clone::Clone::clone
-    fn clone_from : core::clone::Clone::clone_from
+    fn clone<'_0> = core::clone::Clone::clone<'_0_0, Self>
+    fn clone_from<'_0, '_1> = core::clone::Clone::clone_from<'_0_0, '_0_1, Self>
 }
 
 trait core::marker::Copy<Self>
@@ -17,8 +17,8 @@ trait core::marker::Copy<Self>
 trait test_crate::Trait<Self>
 {
     parent_clause0 : [@TraitClause0]: core::marker::Sized<Self>
-    fn method1 : test_crate::Trait::method1
-    fn method2 : test_crate::Trait::method2
+    fn method1 = test_crate::Trait::method1<Self>
+    fn method2<T, [@TraitClause0]: core::marker::Sized<T>, [@TraitClause1]: core::marker::Copy<T>> = test_crate::Trait::method2<Self, T>[@TraitClause0_0, @TraitClause0_1]
 }
 
 fn test_crate::{impl test_crate::Trait for ()}::method1(@1: (), @2: &'static (u32)) -> bool
@@ -51,14 +51,14 @@ impl test_crate::{impl test_crate::Trait for ()} : test_crate::Trait<()>
 {
     parent_clause0 = core::marker::Sized<()>
     fn method1 = test_crate::{impl test_crate::Trait for ()}::method1
-    fn method2 = test_crate::{impl test_crate::Trait for ()}::method2
+    fn method2<T, [@TraitClause0]: core::marker::Sized<T>> = test_crate::{impl test_crate::Trait for ()}::method2<T>[@TraitClause0_0]
 }
 
 trait test_crate::MyCompare<Self, Other>
 {
     parent_clause0 : [@TraitClause0]: core::marker::Sized<Self>
     parent_clause1 : [@TraitClause1]: core::marker::Sized<Other>
-    fn compare : test_crate::MyCompare::compare
+    fn compare = test_crate::MyCompare::compare<Self, Other>
 }
 
 fn test_crate::{impl test_crate::MyCompare<&'a (())> for &'a (())}#1::compare<'a>(@1: &'a (()), @2: &'a (())) -> bool
@@ -75,7 +75,7 @@ impl<'a> test_crate::{impl test_crate::MyCompare<&'a (())> for &'a (())}#1<'a> :
 {
     parent_clause0 = core::marker::Sized<&'_ (())>
     parent_clause1 = core::marker::Sized<&'_ (())>
-    fn compare = test_crate::{impl test_crate::MyCompare<&'a (())> for &'a (())}#1::compare
+    fn compare = test_crate::{impl test_crate::MyCompare<&'a (())> for &'a (())}#1::compare<'a>
 }
 
 fn test_crate::main()
@@ -130,7 +130,7 @@ fn test_crate::main()
 
 trait test_crate::Foo<Self>
 {
-    fn foo : test_crate::Foo::foo
+    fn foo<'a, 'b> = test_crate::Foo::foo<'a, 'b, Self>
 }
 
 fn test_crate::{impl test_crate::Foo for ()}#2::foo<'a, 'b>(@1: &'b (()), @2: &'a (())) -> &'b (())
@@ -145,7 +145,7 @@ fn test_crate::{impl test_crate::Foo for ()}#2::foo<'a, 'b>(@1: &'b (()), @2: &'
 
 impl test_crate::{impl test_crate::Foo for ()}#2 : test_crate::Foo<()>
 {
-    fn foo = test_crate::{impl test_crate::Foo for ()}#2::foo
+    fn foo<'a, 'b> = test_crate::{impl test_crate::Foo for ()}#2::foo<'a, 'b>
 }
 
 fn test_crate::call_foo<'e>(@1: &'e (())) -> &'e (())

@@ -53,13 +53,13 @@ trait test_crate::T6<Self, T>
 {
     parent_clause0 : [@TraitClause0]: core::marker::Sized<T>
     parent_clause1 : [@TraitClause1]: test_crate::T7<T>
-    fn f : test_crate::T6::f
+    fn f = test_crate::T6::f<Self, T>
 }
 
 trait test_crate::T7<Self>
 {
     parent_clause0 : [@TraitClause0]: test_crate::T6<Self, Self>
-    fn g : test_crate::T7::g
+    fn g = test_crate::T7::g<Self>
 }
 
 fn test_crate::T7::g<Self>(@1: u64)

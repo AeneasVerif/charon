@@ -16,7 +16,7 @@ trait core::marker::Sized<Self>
 trait test_crate::Trait<Self, T>
 {
     parent_clause0 : [@TraitClause0]: core::marker::Sized<T>
-    fn method : test_crate::Trait::method
+    fn method<U, [@TraitClause0]: core::marker::Sized<U>> = test_crate::Trait::method<Self, T, U>[@TraitClause0_0]
 }
 
 struct alloc::alloc::Global = {}
@@ -48,7 +48,7 @@ where
     [@TraitClause0]: core::marker::Sized<T>,
 {
     parent_clause0 = core::marker::Sized<core::option::Option<T>[@TraitClause0]>
-    fn method = test_crate::{impl test_crate::Trait<core::option::Option<T>[@TraitClause0]> for alloc::boxed::Box<T>[core::marker::Sized<alloc::alloc::Global>]}::method
+    fn method<U, [@TraitClause0]: core::marker::Sized<U>> = test_crate::{impl test_crate::Trait<core::option::Option<T>[@TraitClause0]> for alloc::boxed::Box<T>[core::marker::Sized<alloc::alloc::Global>]}::method<T, U>[@TraitClause0, @TraitClause0_0]
 }
 
 fn test_crate::{impl test_crate::Trait<alloc::boxed::Box<T>[core::marker::Sized<alloc::alloc::Global>]> for core::option::Option<U>[@TraitClause1]}#1::method<T, U, V>()
@@ -72,7 +72,7 @@ where
     [@TraitClause1]: core::marker::Sized<U>,
 {
     parent_clause0 = core::marker::Sized<alloc::boxed::Box<T>[core::marker::Sized<alloc::alloc::Global>]>
-    fn method = test_crate::{impl test_crate::Trait<alloc::boxed::Box<T>[core::marker::Sized<alloc::alloc::Global>]> for core::option::Option<U>[@TraitClause1]}#1::method
+    fn method<V, [@TraitClause0]: core::marker::Sized<V>> = test_crate::{impl test_crate::Trait<alloc::boxed::Box<T>[core::marker::Sized<alloc::alloc::Global>]> for core::option::Option<U>[@TraitClause1]}#1::method<T, U, V>[@TraitClause0, @TraitClause1, @TraitClause0_0]
 }
 
 struct core::ops::range::RangeFrom<Idx>
@@ -93,12 +93,12 @@ trait core::slice::index::SliceIndex<Self, T>
 {
     parent_clause0 : [@TraitClause0]: core::slice::index::private_slice_index::Sealed<Self>
     type Output
-    fn get : core::slice::index::SliceIndex::get
-    fn get_mut : core::slice::index::SliceIndex::get_mut
-    fn get_unchecked : core::slice::index::SliceIndex::get_unchecked
-    fn get_unchecked_mut : core::slice::index::SliceIndex::get_unchecked_mut
-    fn index : core::slice::index::SliceIndex::index
-    fn index_mut : core::slice::index::SliceIndex::index_mut
+    fn get<'_0> = core::slice::index::SliceIndex::get<'_0_0, Self, T>
+    fn get_mut<'_0> = core::slice::index::SliceIndex::get_mut<'_0_0, Self, T>
+    fn get_unchecked = core::slice::index::SliceIndex::get_unchecked<Self, T>
+    fn get_unchecked_mut = core::slice::index::SliceIndex::get_unchecked_mut<Self, T>
+    fn index<'_0> = core::slice::index::SliceIndex::index<'_0_0, Self, T>
+    fn index_mut<'_0> = core::slice::index::SliceIndex::index_mut<'_0_0, Self, T>
 }
 
 fn core::slice::index::{impl core::ops::index::Index<I> for Slice<T>}::index<'_0, T, I>(@1: &'_0 (Slice<T>), @2: I) -> &'_0 (@TraitClause2::Output)
@@ -139,12 +139,12 @@ where
 {
     parent_clause0 = core::slice::index::private_slice_index::{impl core::slice::index::private_slice_index::Sealed for core::ops::range::RangeFrom<usize>[core::marker::Sized<usize>]}#3
     type Output = Slice<T>
-    fn get = core::slice::index::{impl core::slice::index::SliceIndex<Slice<T>> for core::ops::range::RangeFrom<usize>[core::marker::Sized<usize>]}#7::get
-    fn get_mut = core::slice::index::{impl core::slice::index::SliceIndex<Slice<T>> for core::ops::range::RangeFrom<usize>[core::marker::Sized<usize>]}#7::get_mut
-    fn get_unchecked = core::slice::index::{impl core::slice::index::SliceIndex<Slice<T>> for core::ops::range::RangeFrom<usize>[core::marker::Sized<usize>]}#7::get_unchecked
-    fn get_unchecked_mut = core::slice::index::{impl core::slice::index::SliceIndex<Slice<T>> for core::ops::range::RangeFrom<usize>[core::marker::Sized<usize>]}#7::get_unchecked_mut
-    fn index = core::slice::index::{impl core::slice::index::SliceIndex<Slice<T>> for core::ops::range::RangeFrom<usize>[core::marker::Sized<usize>]}#7::index
-    fn index_mut = core::slice::index::{impl core::slice::index::SliceIndex<Slice<T>> for core::ops::range::RangeFrom<usize>[core::marker::Sized<usize>]}#7::index_mut
+    fn get<'_0> = core::slice::index::{impl core::slice::index::SliceIndex<Slice<T>> for core::ops::range::RangeFrom<usize>[core::marker::Sized<usize>]}#7::get<'_0_0, T>[@TraitClause0]
+    fn get_mut<'_0> = core::slice::index::{impl core::slice::index::SliceIndex<Slice<T>> for core::ops::range::RangeFrom<usize>[core::marker::Sized<usize>]}#7::get_mut<'_0_0, T>[@TraitClause0]
+    fn get_unchecked = core::slice::index::{impl core::slice::index::SliceIndex<Slice<T>> for core::ops::range::RangeFrom<usize>[core::marker::Sized<usize>]}#7::get_unchecked<T>[@TraitClause0]
+    fn get_unchecked_mut = core::slice::index::{impl core::slice::index::SliceIndex<Slice<T>> for core::ops::range::RangeFrom<usize>[core::marker::Sized<usize>]}#7::get_unchecked_mut<T>[@TraitClause0]
+    fn index<'_0> = core::slice::index::{impl core::slice::index::SliceIndex<Slice<T>> for core::ops::range::RangeFrom<usize>[core::marker::Sized<usize>]}#7::index<'_0_0, T>[@TraitClause0]
+    fn index_mut<'_0> = core::slice::index::{impl core::slice::index::SliceIndex<Slice<T>> for core::ops::range::RangeFrom<usize>[core::marker::Sized<usize>]}#7::index_mut<'_0_0, T>[@TraitClause0]
 }
 
 fn test_crate::foo()
@@ -203,7 +203,7 @@ fn core::ops::index::Index::index<'_0, Self, Idx>(@1: &'_0 (Self), @2: Idx) -> &
 trait core::ops::index::Index<Self, Idx>
 {
     type Output
-    fn index : core::ops::index::Index::index
+    fn index<'_0> = core::ops::index::Index::index<'_0_0, Self, Idx>
 }
 
 impl<T, I> core::slice::index::{impl core::ops::index::Index<I> for Slice<T>}<T, I> : core::ops::index::Index<Slice<T>, I>
@@ -213,7 +213,7 @@ where
     [@TraitClause2]: core::slice::index::SliceIndex<I, Slice<T>>,
 {
     type Output = @TraitClause2::Output
-    fn index = core::slice::index::{impl core::ops::index::Index<I> for Slice<T>}::index
+    fn index<'_0> = core::slice::index::{impl core::ops::index::Index<I> for Slice<T>}::index<'_0_0, T, I>[@TraitClause0, @TraitClause1, @TraitClause2]
 }
 
 fn core::slice::index::SliceIndex::get<'_0, Self, T>(@1: Self, @2: &'_0 (T)) -> core::option::Option<&'_0 (Self::Output)>[core::marker::Sized<&'_0 (Self::Output)>]

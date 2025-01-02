@@ -434,8 +434,14 @@ class virtual ['self] map_ty_base_base =
         { binder_regions; binder_value }
   end
 
+(** Reference to a function declaration. *)
+type fun_decl_ref = {
+  fun_id : fun_decl_id;
+  fun_generics : generic_args;  (** Generic arguments passed to the function. *)
+}
+
 (** Reference to a global declaration. *)
-type global_decl_ref = {
+and global_decl_ref = {
   global_id : global_decl_id;
   global_generics : generic_args;
 }

@@ -2,9 +2,9 @@
 
 trait test_crate::Trait<Self>
 {
-    fn required : test_crate::Trait::required
-    fn provided1 : test_crate::Trait::provided1
-    fn provided2 : test_crate::Trait::provided2
+    fn required<'_0> = test_crate::Trait::required<'_0_0, Self>
+    fn provided1<'_0> = test_crate::Trait::provided1<'_0_0, Self>
+    fn provided2<'_0> = test_crate::Trait::provided2<'_0_0, Self>
 }
 
 struct test_crate::Foo = {}
@@ -79,7 +79,7 @@ fn test_crate::{impl test_crate::Trait for test_crate::Foo}::required<'_0>(@1: &
 
 impl test_crate::{impl test_crate::Trait for test_crate::Foo} : test_crate::Trait<test_crate::Foo>
 {
-    fn required = test_crate::{impl test_crate::Trait for test_crate::Foo}::required
+    fn required<'_0> = test_crate::{impl test_crate::Trait for test_crate::Foo}::required<'_0_0>
 }
 
 struct test_crate::Bar = {}
@@ -122,8 +122,8 @@ fn test_crate::{impl test_crate::Trait for test_crate::Bar}#1::provided1<'_0>(@1
 
 impl test_crate::{impl test_crate::Trait for test_crate::Bar}#1 : test_crate::Trait<test_crate::Bar>
 {
-    fn required = test_crate::{impl test_crate::Trait for test_crate::Bar}#1::required
-    fn provided1 = test_crate::{impl test_crate::Trait for test_crate::Bar}#1::provided1
+    fn required<'_0> = test_crate::{impl test_crate::Trait for test_crate::Bar}#1::required<'_0_0>
+    fn provided1<'_0> = test_crate::{impl test_crate::Trait for test_crate::Bar}#1::provided1<'_0_0>
 }
 
 

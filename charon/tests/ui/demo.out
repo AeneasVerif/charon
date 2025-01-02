@@ -381,7 +381,7 @@ where
 
 trait test_crate::Counter<Self>
 {
-    fn incr : test_crate::Counter::incr
+    fn incr<'_0> = test_crate::Counter::incr<'_0_0, Self>
 }
 
 fn test_crate::{impl test_crate::Counter for usize}::incr<'_0>(@1: &'_0 mut (usize)) -> usize
@@ -400,7 +400,7 @@ fn test_crate::{impl test_crate::Counter for usize}::incr<'_0>(@1: &'_0 mut (usi
 
 impl test_crate::{impl test_crate::Counter for usize} : test_crate::Counter<usize>
 {
-    fn incr = test_crate::{impl test_crate::Counter for usize}::incr
+    fn incr<'_0> = test_crate::{impl test_crate::Counter for usize}::incr<'_0_0>
 }
 
 fn test_crate::Counter::incr<'_0, Self>(@1: &'_0 mut (Self)) -> usize

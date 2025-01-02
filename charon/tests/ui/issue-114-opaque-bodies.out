@@ -207,8 +207,8 @@ fn test_crate::max() -> usize
 
 trait core::cmp::PartialEq<Self, Rhs>
 {
-    fn eq : core::cmp::PartialEq::eq
-    fn ne : core::cmp::PartialEq::ne
+    fn eq<'_0, '_1> = core::cmp::PartialEq::eq<'_0_0, '_0_1, Self, Rhs>
+    fn ne<'_0, '_1> = core::cmp::PartialEq::ne<'_0_0, '_0_1, Self, Rhs>
 }
 
 fn test_crate::partial_eq<T>(@1: T)
@@ -233,7 +233,7 @@ trait core::convert::From<Self, T>
 {
     parent_clause0 : [@TraitClause0]: core::marker::Sized<Self>
     parent_clause1 : [@TraitClause1]: core::marker::Sized<T>
-    fn from : core::convert::From::from
+    fn from = core::convert::From::from<Self, T>
 }
 
 impl core::convert::num::{impl core::convert::From<i32> for i64}#83 : core::convert::From<i64, i32>

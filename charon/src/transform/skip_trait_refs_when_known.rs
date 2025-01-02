@@ -1,8 +1,8 @@
-use crate::{transform::TransformCtx, ullbc_ast::*};
+use crate::{register_error_or_panic, transform::TransformCtx, ullbc_ast::*};
 
 use super::ctx::UllbcPass;
 
-fn transform_call(ctx: &TransformCtx, call: &mut Call) {
+fn transform_call(ctx: &mut TransformCtx, span: Span, call: &mut Call) {
     // We find calls to a trait method where the impl is known; otherwise we return.
     let FnOperand::Regular(fn_ptr) = &mut call.func else {
         return;
@@ -17,7 +17,7 @@ fn transform_call(ctx: &TransformCtx, call: &mut Call) {
         return;
     };
     // Find the function declaration corresponding to this impl.
-    let Some((_, fun_decl_id)) = trait_impl
+    let Some((_, bound_fn)) = trait_impl
         .required_methods
         .iter()
         .chain(trait_impl.provided_methods.iter())
@@ -25,12 +25,24 @@ fn transform_call(ctx: &TransformCtx, call: &mut Call) {
     else {
         return;
     };
-    let fn_generics = &fn_ptr.generics;
-    // Move the trait generics to the function call.
-    // FIXME: make a better API than `concat`.
-    fn_ptr.generics = impl_generics.clone().concat(fn_generics);
-    // Set the call operation to use the function directly.
-    fn_ptr.func = FunIdOrTraitMethodRef::Fun(FunId::Regular(*fun_decl_id));
+    let method_generics = &fn_ptr.generics;
+
+    if !method_generics.matches(&bound_fn.params) {
+        let message = format!(
+            "Mismatched method generics:\nparams:   {:?}\nsupplied: {:?}",
+            bound_fn.params, method_generics
+        );
+        register_error_or_panic!(ctx.errors, &ctx.translated, span, message);
+    }
+
+    // Make the two levels of binding explicit: outer binder for the impl block, inner binder for
+    // the method.
+    let fn_ref: Binder<Binder<FunDeclRef>> =
+        Binder::new(trait_impl.generics.clone(), bound_fn.clone());
+    // Substitute the appropriate generics into the function call.
+    let fn_ref = fn_ref.apply(impl_generics).apply(method_generics);
+    fn_ptr.generics = fn_ref.generics;
+    fn_ptr.func = FunIdOrTraitMethodRef::Fun(FunId::Regular(fn_ref.id));
 }
 
 pub struct Transform;
@@ -39,7 +51,7 @@ impl UllbcPass for Transform {
         for block in b.body.iter_mut() {
             for st in block.statements.iter_mut() {
                 if let RawStatement::Call(call) = &mut st.content {
-                    transform_call(ctx, call)
+                    transform_call(ctx, st.span, call)
                 };
             }
         }
