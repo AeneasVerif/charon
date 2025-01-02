@@ -222,6 +222,7 @@ fn predicate_origins() -> anyhow::Result<()> {
         (
             "test_crate::Trait::trait_method",
             vec![
+                (TraitSelf, "Trait"),
                 (WhereClauseOnFn, "Sized"),
                 (WhereClauseOnFn, "From"),
                 (WhereClauseOnFn, "From"),

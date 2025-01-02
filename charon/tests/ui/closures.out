@@ -22,7 +22,7 @@ trait core::ops::function::FnOnce<Self, Args>
     parent_clause1 : [@TraitClause1]: core::marker::Tuple<Args>
     parent_clause2 : [@TraitClause2]: core::marker::Sized<Self::Output>
     type Output
-    fn call_once = core::ops::function::FnOnce::call_once<Self, Args>
+    fn call_once = core::ops::function::FnOnce::call_once<Self, Args>[Self]
 }
 
 trait core::ops::function::FnMut<Self, Args>
@@ -30,7 +30,7 @@ trait core::ops::function::FnMut<Self, Args>
     parent_clause0 : [@TraitClause0]: core::ops::function::FnOnce<Self, Args>
     parent_clause1 : [@TraitClause1]: core::marker::Sized<Args>
     parent_clause2 : [@TraitClause2]: core::marker::Tuple<Args>
-    fn call_mut<'_0> = core::ops::function::FnMut::call_mut<'_0_0, Self, Args>
+    fn call_mut<'_0> = core::ops::function::FnMut::call_mut<'_0_0, Self, Args>[Self]
 }
 
 trait core::ops::function::Fn<Self, Args>
@@ -38,7 +38,7 @@ trait core::ops::function::Fn<Self, Args>
     parent_clause0 : [@TraitClause0]: core::ops::function::FnMut<Self, Args>
     parent_clause1 : [@TraitClause1]: core::marker::Sized<Args>
     parent_clause2 : [@TraitClause2]: core::marker::Tuple<Args>
-    fn call<'_0> = core::ops::function::Fn::call<'_0_0, Self, Args>
+    fn call<'_0> = core::ops::function::Fn::call<'_0_0, Self, Args>[Self]
 }
 
 enum core::option::Option<T>
@@ -49,7 +49,9 @@ enum core::option::Option<T>
 |  Some(T)
 
 
-fn core::ops::function::Fn::call<'_0, Self, Args>(@1: &'_0 (Self), @2: Args) -> Self::parent_clause0::parent_clause0::Output
+fn core::ops::function::Fn::call<'_0, Self, Args>(@1: &'_0 (Self), @2: Args) -> @TraitClause0::parent_clause0::parent_clause0::Output
+where
+    [@TraitClause0]: core::ops::function::Fn<Self, Args>,
 
 fn test_crate::map_option<T, F>(@1: core::option::Option<T>[@TraitClause0], @2: F) -> core::option::Option<T>[@TraitClause0]
 where
@@ -413,11 +415,13 @@ fn test_crate::test_map_option_id2(@1: core::option::Option<u32>[core::marker::S
 trait core::clone::Clone<Self>
 {
     parent_clause0 : [@TraitClause0]: core::marker::Sized<Self>
-    fn clone<'_0> = core::clone::Clone::clone<'_0_0, Self>
-    fn clone_from<'_0, '_1> = core::clone::Clone::clone_from<'_0_0, '_0_1, Self>
+    fn clone<'_0> = core::clone::Clone::clone<'_0_0, Self>[Self]
+    fn clone_from<'_0, '_1> = core::clone::Clone::clone_from<'_0_0, '_0_1, Self>[Self]
 }
 
 fn core::clone::Clone::clone<'_0, Self>(@1: &'_0 (Self)) -> Self
+where
+    [@TraitClause0]: core::clone::Clone<Self>,
 
 fn test_crate::id_clone<T>(@1: T) -> T
 where
@@ -818,10 +822,16 @@ fn test_crate::BLAH() -> u32
 global test_crate::BLAH: u32 = test_crate::BLAH()
 
 fn core::clone::Clone::clone_from<'_0, '_1, Self>(@1: &'_0 mut (Self), @2: &'_1 (Self))
+where
+    [@TraitClause0]: core::clone::Clone<Self>,
 
-fn core::ops::function::FnMut::call_mut<'_0, Self, Args>(@1: &'_0 mut (Self), @2: Args) -> Self::parent_clause0::Output
+fn core::ops::function::FnMut::call_mut<'_0, Self, Args>(@1: &'_0 mut (Self), @2: Args) -> @TraitClause0::parent_clause0::Output
+where
+    [@TraitClause0]: core::ops::function::FnMut<Self, Args>,
 
-fn core::ops::function::FnOnce::call_once<Self, Args>(@1: Self, @2: Args) -> Self::Output
+fn core::ops::function::FnOnce::call_once<Self, Args>(@1: Self, @2: Args) -> @TraitClause0::Output
+where
+    [@TraitClause0]: core::ops::function::FnOnce<Self, Args>,
 
 
 

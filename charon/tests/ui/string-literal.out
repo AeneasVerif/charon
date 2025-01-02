@@ -57,10 +57,12 @@ fn test_crate::main()
 }
 
 fn alloc::string::ToString::to_string<'_0, Self>(@1: &'_0 (Self)) -> alloc::string::String
+where
+    [@TraitClause0]: alloc::string::ToString<Self>,
 
 trait alloc::string::ToString<Self>
 {
-    fn to_string<'_0> = alloc::string::ToString::to_string<'_0_0, Self>
+    fn to_string<'_0> = alloc::string::ToString::to_string<'_0_0, Self>[Self]
 }
 
 impl alloc::string::{impl alloc::string::ToString for Str}#102 : alloc::string::ToString<Str>
