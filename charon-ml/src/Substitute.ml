@@ -465,11 +465,14 @@ let apply_args_to_item_binder (args : generic_args)
 (** Helper *)
 let instantiate_method item_generics method_generics
     (bound_fn : fun_decl_ref binder item_binder) : fun_decl_ref =
+  let bound_fn =
+    apply_args_to_item_binder item_generics
+      (st_substitute_visitor#visit_binder
+         st_substitute_visitor#visit_fun_decl_ref)
+      bound_fn
+  in
   apply_args_to_binder method_generics st_substitute_visitor#visit_fun_decl_ref
-    (apply_args_to_item_binder item_generics
-       (st_substitute_visitor#visit_binder
-          st_substitute_visitor#visit_fun_decl_ref)
-       bound_fn)
+    bound_fn
 
 (** Like lookup_trait_decl_provided_method, but also correctly substitutes the generics. *)
 let lookup_and_subst_trait_decl_method (tdecl : trait_decl)

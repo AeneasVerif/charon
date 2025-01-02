@@ -19,7 +19,7 @@ struct core::fmt::Error = {}
 
 trait core::fmt::Display<Self>
 {
-    fn fmt<'_0, '_1, '_2> = core::fmt::Display::fmt<'_0_0, '_0_1, '_0_2, Self>
+    fn fmt<'_0, '_1, '_2> = core::fmt::Display::fmt<'_0_0, '_0_1, '_0_2, Self>[Self]
 }
 
 struct alloc::alloc::Global = {}
@@ -77,10 +77,12 @@ fn test_crate::bar<'_0>(@1: &'_0 (dyn (exists(TODO))))
 }
 
 fn alloc::string::ToString::to_string<'_0, Self>(@1: &'_0 (Self)) -> alloc::string::String
+where
+    [@TraitClause0]: alloc::string::ToString<Self>,
 
 trait alloc::string::ToString<Self>
 {
-    fn to_string<'_0> = alloc::string::ToString::to_string<'_0_0, Self>
+    fn to_string<'_0> = alloc::string::ToString::to_string<'_0_0, Self>[Self]
 }
 
 impl<T> alloc::string::{impl alloc::string::ToString for T}#32<T> : alloc::string::ToString<T>
@@ -91,6 +93,8 @@ where
 }
 
 fn core::fmt::Display::fmt<'_0, '_1, '_2, Self>(@1: &'_0 (Self), @2: &'_1 mut (core::fmt::Formatter<'_2>)) -> core::result::Result<(), core::fmt::Error>[core::marker::Sized<()>, core::marker::Sized<core::fmt::Error>]
+where
+    [@TraitClause0]: core::fmt::Display<Self>,
 
 
 

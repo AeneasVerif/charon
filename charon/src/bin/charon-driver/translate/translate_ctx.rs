@@ -333,6 +333,9 @@ pub(crate) struct BodyTransCtx<'tcx, 'ctx> {
     pub parent_trait_clauses: Vector<TraitClauseId, TraitClause>,
     /// (For traits only) accumulated trait clauses on associated types.
     pub item_trait_clauses: HashMap<TraitItemName, Vector<TraitClauseId, TraitClause>>,
+    /// (For method declarations only) the clause id corresponding to the explicit `Self` clause.
+    /// If `None`, use `TraitRefKind::Self` instead.
+    pub self_clause_id: Option<TraitClauseId>,
 
     /// The (regular) variables in the current function body.
     pub locals: Locals,
@@ -985,6 +988,7 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
             binding_levels: Default::default(),
             parent_trait_clauses: Default::default(),
             item_trait_clauses: Default::default(),
+            self_clause_id: Default::default(),
             locals: Default::default(),
             vars_map: Default::default(),
             blocks: Default::default(),
@@ -1169,6 +1173,12 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
         span: Span,
         mut id: usize,
     ) -> Result<ClauseDbVar, Error> {
+        if self.self_clause_id.is_some() {
+            // We added an extra first clause which hax doesn't know about, so we adapt the index
+            // accordingly.
+            // TODO: more robust tracking of clause ids between hax and charon.
+            id += 1;
+        }
         // The clause indices returned by hax count clauses in order, starting from the parentmost.
         // While adding clauses to a binding level we already need to translate types and clauses,
         // so the innermost item binder may not have all the clauses yet. Hence for that binder we

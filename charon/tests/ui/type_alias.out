@@ -11,13 +11,13 @@ type test_crate::Generic<'a, T>
 trait core::clone::Clone<Self>
 {
     parent_clause0 : [@TraitClause0]: core::marker::Sized<Self>
-    fn clone<'_0> = core::clone::Clone::clone<'_0_0, Self>
-    fn clone_from<'_0, '_1> = core::clone::Clone::clone_from<'_0_0, '_0_1, Self>
+    fn clone<'_0> = core::clone::Clone::clone<'_0_0, Self>[Self]
+    fn clone_from<'_0, '_1> = core::clone::Clone::clone_from<'_0_0, '_0_1, Self>[Self]
 }
 
 trait core::borrow::Borrow<Self, Borrowed>
 {
-    fn borrow<'_0> = core::borrow::Borrow::borrow<'_0_0, Self, Borrowed>
+    fn borrow<'_0> = core::borrow::Borrow::borrow<'_0_0, Self, Borrowed>[Self]
 }
 
 trait alloc::borrow::ToOwned<Self>
@@ -25,8 +25,8 @@ trait alloc::borrow::ToOwned<Self>
     parent_clause0 : [@TraitClause0]: core::borrow::Borrow<Self::Owned, Self>
     parent_clause1 : [@TraitClause1]: core::marker::Sized<Self::Owned>
     type Owned
-    fn to_owned<'_0> = alloc::borrow::ToOwned::to_owned<'_0_0, Self>
-    fn clone_into<'_0, '_1> = alloc::borrow::ToOwned::clone_into<'_0_0, '_0_1, Self>
+    fn to_owned<'_0> = alloc::borrow::ToOwned::to_owned<'_0_0, Self>[Self]
+    fn clone_into<'_0, '_1> = alloc::borrow::ToOwned::clone_into<'_0_0, '_0_1, Self>[Self]
 }
 
 enum alloc::borrow::Cow<'a, B>
@@ -91,14 +91,24 @@ type test_crate::GenericWithoutBound<'a, T>
       [@TraitClause0]: core::marker::Sized<T>, = alloc::borrow::Cow<'a, Slice<T>>[UNKNOWN(Could not find a clause for `Binder { value: <[T] as std::borrow::ToOwned>, bound_vars: [] }` in the current context: `Unimplemented`)]
 
 fn core::clone::Clone::clone<'_0, Self>(@1: &'_0 (Self)) -> Self
+where
+    [@TraitClause0]: core::clone::Clone<Self>,
 
 fn core::clone::Clone::clone_from<'_0, '_1, Self>(@1: &'_0 mut (Self), @2: &'_1 (Self))
+where
+    [@TraitClause0]: core::clone::Clone<Self>,
 
-fn alloc::borrow::ToOwned::to_owned<'_0, Self>(@1: &'_0 (Self)) -> Self::Owned
+fn alloc::borrow::ToOwned::to_owned<'_0, Self>(@1: &'_0 (Self)) -> @TraitClause0::Owned
+where
+    [@TraitClause0]: alloc::borrow::ToOwned<Self>,
 
-fn alloc::borrow::ToOwned::clone_into<'_0, '_1, Self>(@1: &'_0 (Self), @2: &'_1 mut (Self::Owned))
+fn alloc::borrow::ToOwned::clone_into<'_0, '_1, Self>(@1: &'_0 (Self), @2: &'_1 mut (@TraitClause0::Owned))
+where
+    [@TraitClause0]: alloc::borrow::ToOwned<Self>,
 
 fn core::borrow::Borrow::borrow<'_0, Self, Borrowed>(@1: &'_0 (Self)) -> &'_0 (Borrowed)
+where
+    [@TraitClause0]: core::borrow::Borrow<Self, Borrowed>,
 
 
 

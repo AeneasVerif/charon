@@ -13,10 +13,12 @@ struct test_crate::Struct<A>
 trait core::default::Default<Self>
 {
     parent_clause0 : [@TraitClause0]: core::marker::Sized<Self>
-    fn default = core::default::Default::default<Self>
+    fn default = core::default::Default::default<Self>[Self]
 }
 
 fn core::default::Default::default<Self>() -> Self
+where
+    [@TraitClause0]: core::default::Default<Self>,
 
 fn test_crate::{impl core::default::Default for test_crate::Struct<A>[@TraitClause0]}#1::default<A>() -> test_crate::Struct<A>[@TraitClause0]
 where
@@ -47,20 +49,20 @@ trait test_crate::Trait<Self, B>
     parent_clause0 : [@TraitClause0]: core::marker::Sized<B>
     parent_clause1 : [@TraitClause1]: core::marker::Sized<Self::Item>
     type Item
-    fn method<C, [@TraitClause0]: core::marker::Sized<C>> = test_crate::Trait::method<Self, B, C>[@TraitClause0_0]
+    fn method<C, [@TraitClause0]: core::marker::Sized<C>> = test_crate::Trait::method<Self, B, C>[Self, @TraitClause0_0]
 }
 
 trait core::clone::Clone<Self>
 {
     parent_clause0 : [@TraitClause0]: core::marker::Sized<Self>
-    fn clone<'_0> = core::clone::Clone::clone<'_0_0, Self>
-    fn clone_from<'_0, '_1> = core::clone::Clone::clone_from<'_0_0, '_0_1, Self>
+    fn clone<'_0> = core::clone::Clone::clone<'_0_0, Self>[Self]
+    fn clone_from<'_0, '_1> = core::clone::Clone::clone_from<'_0_0, '_0_1, Self>[Self]
 }
 
 trait core::cmp::PartialEq<Self, Rhs>
 {
-    fn eq<'_0, '_1> = core::cmp::PartialEq::eq<'_0_0, '_0_1, Self, Rhs>
-    fn ne<'_0, '_1> = core::cmp::PartialEq::ne<'_0_0, '_0_1, Self, Rhs>
+    fn eq<'_0, '_1> = core::cmp::PartialEq::eq<'_0_0, '_0_1, Self, Rhs>[Self]
+    fn ne<'_0, '_1> = core::cmp::PartialEq::ne<'_0_0, '_0_1, Self, Rhs>[Self]
 }
 
 fn test_crate::{impl test_crate::Trait<B> for test_crate::Struct<A>[@TraitClause0]}::method<A, B, C>()
@@ -145,15 +147,24 @@ fn test_crate::main()
 
 fn test_crate::Trait::method<Self, B, C>()
 where
-    [@TraitClause0]: core::marker::Sized<C>,
+    [@TraitClause0]: test_crate::Trait<Self, B>,
+    [@TraitClause1]: core::marker::Sized<C>,
 
 fn core::clone::Clone::clone<'_0, Self>(@1: &'_0 (Self)) -> Self
+where
+    [@TraitClause0]: core::clone::Clone<Self>,
 
 fn core::clone::Clone::clone_from<'_0, '_1, Self>(@1: &'_0 mut (Self), @2: &'_1 (Self))
+where
+    [@TraitClause0]: core::clone::Clone<Self>,
 
 fn core::cmp::PartialEq::eq<'_0, '_1, Self, Rhs>(@1: &'_0 (Self), @2: &'_1 (Rhs)) -> bool
+where
+    [@TraitClause0]: core::cmp::PartialEq<Self, Rhs>,
 
 fn core::cmp::PartialEq::ne<'_0, '_1, Self, Rhs>(@1: &'_0 (Self), @2: &'_1 (Rhs)) -> bool
+where
+    [@TraitClause0]: core::cmp::PartialEq<Self, Rhs>,
 
 
 

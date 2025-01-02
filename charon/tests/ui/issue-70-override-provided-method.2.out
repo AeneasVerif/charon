@@ -2,16 +2,20 @@
 
 trait test_crate::Trait<Self>
 {
-    fn required<'_0> = test_crate::Trait::required<'_0_0, Self>
-    fn provided1<'_0> = test_crate::Trait::provided1<'_0_0, Self>
-    fn provided2<'_0> = test_crate::Trait::provided2<'_0_0, Self>
+    fn required<'_0> = test_crate::Trait::required<'_0_0, Self>[Self]
+    fn provided1<'_0> = test_crate::Trait::provided1<'_0_0, Self>[Self]
+    fn provided2<'_0> = test_crate::Trait::provided2<'_0_0, Self>[Self]
 }
 
 struct test_crate::Foo = {}
 
 fn test_crate::Trait::required<'_0, Self>(@1: &'_0 (Self))
+where
+    [@TraitClause0]: test_crate::Trait<Self>,
 
 fn test_crate::Trait::provided1<'_0, Self>(@1: &'_0 (Self))
+where
+    [@TraitClause0]: test_crate::Trait<Self>,
 {
     let @0: (); // return
     let self@1: &'_ (Self); // arg #1
@@ -22,11 +26,11 @@ fn test_crate::Trait::provided1<'_0, Self>(@1: &'_0 (Self))
     let @6: (); // anonymous local
 
     @3 := &*(self@1)
-    @2 := Self::required<'_>(move (@3))
+    @2 := @TraitClause0::required<'_>(move (@3))
     drop @3
     drop @2
     @5 := &*(self@1)
-    @4 := Self::provided2<'_>(move (@5))
+    @4 := @TraitClause0::provided2<'_>(move (@5))
     drop @5
     drop @4
     @6 := ()
@@ -36,6 +40,8 @@ fn test_crate::Trait::provided1<'_0, Self>(@1: &'_0 (Self))
 }
 
 fn test_crate::Trait::provided2<'_0, Self>(@1: &'_0 (Self))
+where
+    [@TraitClause0]: test_crate::Trait<Self>,
 {
     let @0: (); // return
     let self@1: &'_ (Self); // arg #1
@@ -46,11 +52,11 @@ fn test_crate::Trait::provided2<'_0, Self>(@1: &'_0 (Self))
     let @6: (); // anonymous local
 
     @3 := &*(self@1)
-    @2 := Self::required<'_>(move (@3))
+    @2 := @TraitClause0::required<'_>(move (@3))
     drop @3
     drop @2
     @5 := &*(self@1)
-    @4 := Self::provided1<'_>(move (@5))
+    @4 := @TraitClause0::provided1<'_>(move (@5))
     drop @5
     drop @4
     @6 := ()

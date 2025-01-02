@@ -2,8 +2,8 @@
 
 trait test_crate::Ops<Self>
 {
-    fn ZERO = test_crate::Ops::ZERO<Self>
-    fn ntt_multiply = test_crate::Ops::ntt_multiply<Self>
+    fn ZERO = test_crate::Ops::ZERO<Self>[Self]
+    fn ntt_multiply = test_crate::Ops::ntt_multiply<Self>[Self]
 }
 
 struct test_crate::Portable = {}
@@ -39,8 +39,12 @@ impl test_crate::{impl test_crate::Ops for test_crate::Portable} : test_crate::O
 }
 
 fn test_crate::Ops::ZERO<Self>() -> Self
+where
+    [@TraitClause0]: test_crate::Ops<Self>,
 
 fn test_crate::Ops::ntt_multiply<Self>() -> Self
+where
+    [@TraitClause0]: test_crate::Ops<Self>,
 
 
 

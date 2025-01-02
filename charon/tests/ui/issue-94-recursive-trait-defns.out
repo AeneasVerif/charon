@@ -53,25 +53,29 @@ trait test_crate::T6<Self, T>
 {
     parent_clause0 : [@TraitClause0]: core::marker::Sized<T>
     parent_clause1 : [@TraitClause1]: test_crate::T7<T>
-    fn f = test_crate::T6::f<Self, T>
+    fn f = test_crate::T6::f<Self, T>[Self]
 }
 
 trait test_crate::T7<Self>
 {
     parent_clause0 : [@TraitClause0]: test_crate::T6<Self, Self>
-    fn g = test_crate::T7::g<Self>
+    fn g = test_crate::T7::g<Self>[Self]
 }
 
 fn test_crate::T7::g<Self>(@1: u64)
+where
+    [@TraitClause0]: test_crate::T7<Self>,
 
 fn test_crate::T6::f<Self, T>(@1: u64)
+where
+    [@TraitClause0]: test_crate::T6<Self, T>,
 {
     let @0: (); // return
     let x@1: u64; // arg #1
     let @2: u64; // anonymous local
 
     @2 := copy (x@1)
-    @0 := Self::parent_clause1::g(move (@2))
+    @0 := @TraitClause0::parent_clause1::g(move (@2))
     drop @2
     @0 := ()
     return
