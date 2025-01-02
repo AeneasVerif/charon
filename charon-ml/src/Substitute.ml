@@ -4,6 +4,7 @@
 
 open Types
 open TypesUtils
+open GAstUtils
 open Expressions
 open LlbcAst
 
@@ -439,5 +440,73 @@ let statement_substitute_ids (ty_subst : TypeVarId.id -> TypeVarId.id)
       method! visit_const_generic_var_id _ id = cg_subst id
     end
   in
-
   visitor#visit_ty () ty
+
+(** Remove this binder by substituting the provided arguments for each bound
+    variable. The `substitutor` argument must be the appropriate
+    `st_substitute_visitor` method. *)
+let apply_args_to_binder (args : generic_args) (substitutor : subst -> 'a -> 'a)
+    (binder : 'a binder) : 'a =
+  substitutor
+    (subst_remove_binder_zero
+       (make_sb_subst_from_generics binder.binder_params args))
+    binder.binder_value
+
+(** Remove this binder by substituting the provided arguments for each bound
+    variable. The `substitutor` argument must be the appropriate
+    `st_substitute_visitor` method. *)
+let apply_args_to_item_binder (args : generic_args)
+    (substitutor : subst -> 'a -> 'a) (binder : 'a item_binder) : 'a =
+  substitutor
+    (subst_free_vars
+       (make_sb_subst_from_generics binder.item_binder_params args))
+    binder.item_binder_value
+
+(** Helper *)
+let instantiate_method item_generics method_generics
+    (bound_fn : fun_decl_ref binder item_binder) : fun_decl_ref =
+  apply_args_to_binder method_generics st_substitute_visitor#visit_fun_decl_ref
+    (apply_args_to_item_binder item_generics
+       (st_substitute_visitor#visit_binder
+          st_substitute_visitor#visit_fun_decl_ref)
+       bound_fn)
+
+(** Like lookup_trait_decl_provided_method, but also correctly substitutes the generics. *)
+let lookup_and_subst_trait_decl_method (tdecl : trait_decl)
+    (name : trait_item_name) decl_generics method_generics : fun_decl_ref option
+    =
+  Option.map
+    (instantiate_method decl_generics method_generics)
+    (lookup_trait_decl_method tdecl name)
+
+(** Like lookup_trait_decl_provided_method, but also correctly substitutes the generics. *)
+let lookup_and_subst_trait_decl_provided_method (tdecl : trait_decl)
+    (name : trait_item_name) decl_generics method_generics : fun_decl_ref option
+    =
+  Option.map
+    (instantiate_method decl_generics method_generics)
+    (lookup_trait_decl_provided_method tdecl name)
+
+(** Like lookup_trait_decl_required_method, but also correctly substitutes the generics. *)
+let lookup_and_subst_trait_decl_required_method (tdecl : trait_decl)
+    (name : trait_item_name) decl_generics method_generics : fun_decl_ref option
+    =
+  Option.map
+    (instantiate_method decl_generics method_generics)
+    (lookup_trait_decl_required_method tdecl name)
+
+(** Like lookup_trait_impl_provided_method, but also correctly substitutes the generics. *)
+let lookup_and_subst_trait_impl_provided_method (timpl : trait_impl)
+    (name : trait_item_name) impl_generics method_generics : fun_decl_ref option
+    =
+  Option.map
+    (instantiate_method impl_generics method_generics)
+    (lookup_trait_impl_provided_method timpl name)
+
+(** Like lookup_trait_impl_required_method, but also correctly substitutes the generics. *)
+let lookup_and_subst_trait_impl_required_method (timpl : trait_impl)
+    (name : trait_item_name) impl_generics method_generics : fun_decl_ref option
+    =
+  Option.map
+    (instantiate_method impl_generics method_generics)
+    (lookup_trait_impl_required_method timpl name)
