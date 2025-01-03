@@ -20,40 +20,40 @@ enum core::option::Option<T>
 
 trait core::cmp::PartialEq<Self, Rhs>
 {
-    fn eq<'_0, '_1> = core::cmp::PartialEq::eq<'_0_0, '_0_1, Self, Rhs>
-    fn ne<'_0, '_1> = core::cmp::PartialEq::ne<'_0_0, '_0_1, Self, Rhs>
+    fn eq<'_0, '_1> = core::cmp::PartialEq::eq<'_0_0, '_0_1, Self, Rhs>[Self]
+    fn ne<'_0, '_1> = core::cmp::PartialEq::ne<'_0_0, '_0_1, Self, Rhs>[Self]
 }
 
 trait core::cmp::Eq<Self>
 {
     parent_clause0 : [@TraitClause0]: core::cmp::PartialEq<Self, Self>
-    fn assert_receiver_is_total_eq<'_0> = core::cmp::Eq::assert_receiver_is_total_eq<'_0_0, Self>
+    fn assert_receiver_is_total_eq<'_0> = core::cmp::Eq::assert_receiver_is_total_eq<'_0_0, Self>[Self]
 }
 
 trait core::hash::Hasher<Self>
 {
-    fn finish<'_0> = core::hash::Hasher::finish<'_0_0, Self>
-    fn write<'_0, '_1> = core::hash::Hasher::write<'_0_0, '_0_1, Self>
-    fn write_u8<'_0> = core::hash::Hasher::write_u8<'_0_0, Self>
-    fn write_u16<'_0> = core::hash::Hasher::write_u16<'_0_0, Self>
-    fn write_u32<'_0> = core::hash::Hasher::write_u32<'_0_0, Self>
-    fn write_u64<'_0> = core::hash::Hasher::write_u64<'_0_0, Self>
-    fn write_u128<'_0> = core::hash::Hasher::write_u128<'_0_0, Self>
-    fn write_usize<'_0> = core::hash::Hasher::write_usize<'_0_0, Self>
-    fn write_i8<'_0> = core::hash::Hasher::write_i8<'_0_0, Self>
-    fn write_i16<'_0> = core::hash::Hasher::write_i16<'_0_0, Self>
-    fn write_i32<'_0> = core::hash::Hasher::write_i32<'_0_0, Self>
-    fn write_i64<'_0> = core::hash::Hasher::write_i64<'_0_0, Self>
-    fn write_i128<'_0> = core::hash::Hasher::write_i128<'_0_0, Self>
-    fn write_isize<'_0> = core::hash::Hasher::write_isize<'_0_0, Self>
-    fn write_length_prefix<'_0> = core::hash::Hasher::write_length_prefix<'_0_0, Self>
-    fn write_str<'_0, '_1> = core::hash::Hasher::write_str<'_0_0, '_0_1, Self>
+    fn finish<'_0> = core::hash::Hasher::finish<'_0_0, Self>[Self]
+    fn write<'_0, '_1> = core::hash::Hasher::write<'_0_0, '_0_1, Self>[Self]
+    fn write_u8<'_0> = core::hash::Hasher::write_u8<'_0_0, Self>[Self]
+    fn write_u16<'_0> = core::hash::Hasher::write_u16<'_0_0, Self>[Self]
+    fn write_u32<'_0> = core::hash::Hasher::write_u32<'_0_0, Self>[Self]
+    fn write_u64<'_0> = core::hash::Hasher::write_u64<'_0_0, Self>[Self]
+    fn write_u128<'_0> = core::hash::Hasher::write_u128<'_0_0, Self>[Self]
+    fn write_usize<'_0> = core::hash::Hasher::write_usize<'_0_0, Self>[Self]
+    fn write_i8<'_0> = core::hash::Hasher::write_i8<'_0_0, Self>[Self]
+    fn write_i16<'_0> = core::hash::Hasher::write_i16<'_0_0, Self>[Self]
+    fn write_i32<'_0> = core::hash::Hasher::write_i32<'_0_0, Self>[Self]
+    fn write_i64<'_0> = core::hash::Hasher::write_i64<'_0_0, Self>[Self]
+    fn write_i128<'_0> = core::hash::Hasher::write_i128<'_0_0, Self>[Self]
+    fn write_isize<'_0> = core::hash::Hasher::write_isize<'_0_0, Self>[Self]
+    fn write_length_prefix<'_0> = core::hash::Hasher::write_length_prefix<'_0_0, Self>[Self]
+    fn write_str<'_0, '_1> = core::hash::Hasher::write_str<'_0_0, '_0_1, Self>[Self]
 }
 
 trait core::hash::Hash<Self>
 {
-    fn hash<'_0, '_1, H, [@TraitClause0]: core::marker::Sized<H>, [@TraitClause1]: core::hash::Hasher<H>> = core::hash::Hash::hash<'_0_0, '_0_1, Self, H>[@TraitClause0_0, @TraitClause0_1]
-    fn hash_slice<'_0, '_1, H, [@TraitClause0]: core::marker::Sized<H>, [@TraitClause1]: core::hash::Hasher<H>, [@TraitClause2]: core::marker::Sized<Self>> = core::hash::Hash::hash_slice<'_0_0, '_0_1, Self, H>[@TraitClause0_0, @TraitClause0_1, @TraitClause0_2]
+    fn hash<'_0, '_1, H, [@TraitClause0]: core::marker::Sized<H>, [@TraitClause1]: core::hash::Hasher<H>> = core::hash::Hash::hash<'_0_0, '_0_1, Self, H>[Self, @TraitClause0_0, @TraitClause0_1]
+    fn hash_slice<'_0, '_1, H, [@TraitClause0]: core::marker::Sized<H>, [@TraitClause1]: core::hash::Hasher<H>, [@TraitClause2]: core::marker::Sized<Self>> = core::hash::Hash::hash_slice<'_0_0, '_0_1, Self, H>[Self, @TraitClause0_0, @TraitClause0_1, @TraitClause0_2]
 }
 
 trait core::hash::BuildHasher<Self>
@@ -61,13 +61,13 @@ trait core::hash::BuildHasher<Self>
     parent_clause0 : [@TraitClause0]: core::hash::Hasher<Self::Hasher>
     parent_clause1 : [@TraitClause1]: core::marker::Sized<Self::Hasher>
     type Hasher
-    fn build_hasher<'_0> = core::hash::BuildHasher::build_hasher<'_0_0, Self>
-    fn hash_one<'_0, T, [@TraitClause0]: core::marker::Sized<T>, [@TraitClause1]: core::hash::Hash<T>, [@TraitClause2]: core::marker::Sized<Self>, [@TraitClause3]: core::hash::Hasher<Self::Hasher>> = core::hash::BuildHasher::hash_one<'_0_0, Self, T>[@TraitClause0_0, @TraitClause0_1, @TraitClause0_2, @TraitClause0_3]
+    fn build_hasher<'_0> = core::hash::BuildHasher::build_hasher<'_0_0, Self>[Self]
+    fn hash_one<'_0, T, [@TraitClause0]: core::marker::Sized<T>, [@TraitClause1]: core::hash::Hash<T>, [@TraitClause2]: core::marker::Sized<Self>, [@TraitClause3]: core::hash::Hasher<Self::Hasher>> = core::hash::BuildHasher::hash_one<'_0_0, Self, T>[Self, @TraitClause0_0, @TraitClause0_1, @TraitClause0_2, @TraitClause0_3]
 }
 
 trait core::borrow::Borrow<Self, Borrowed>
 {
-    fn borrow<'_0> = core::borrow::Borrow::borrow<'_0_0, Self, Borrowed>
+    fn borrow<'_0> = core::borrow::Borrow::borrow<'_0_0, Self, Borrowed>[Self]
 }
 
 fn std::collections::hash::map::{std::collections::hash::map::HashMap<K, V, S>[@TraitClause0, @TraitClause1, @TraitClause2]}#2::get<'_0, '_1, K, V, S, Q>(@1: &'_0 (std::collections::hash::map::HashMap<K, V, S>[@TraitClause0, @TraitClause1, @TraitClause2]), @2: &'_1 (Q)) -> core::option::Option<&'_0 (V)>[core::marker::Sized<&'_0 (V)>]
@@ -157,7 +157,7 @@ where
 trait core::ops::index::Index<Self, Idx>
 {
     type Output
-    fn index<'_0> = core::ops::index::Index::index<'_0_0, Self, Idx>
+    fn index<'_0> = core::ops::index::Index::index<'_0_0, Self, Idx>[Self]
 }
 
 fn std::collections::hash::map::{impl core::ops::index::Index<&'_0 (Q)> for std::collections::hash::map::HashMap<K, V, S>[@TraitClause0, @TraitClause1, @TraitClause2]}#9::index<'_0, '_1, K, Q, V, S>(@1: &'_1 (std::collections::hash::map::HashMap<K, V, S>[@TraitClause0, @TraitClause1, @TraitClause2]), @2: &'_0 (Q)) -> &'_1 (std::collections::hash::map::{impl core::ops::index::Index<&'_0 (Q)> for std::collections::hash::map::HashMap<K, V, S>[@TraitClause0, @TraitClause1, @TraitClause2]}#9<'_, K, Q, V, S>[@TraitClause0, @TraitClause1, @TraitClause2, @TraitClause3, @TraitClause4, @TraitClause5, @TraitClause6, @TraitClause7, @TraitClause8]::Output)
@@ -231,7 +231,9 @@ fn test_crate::get_or_insert<'_0>(@1: &'_0 mut (std::collections::hash::map::Has
     return
 }
 
-fn core::ops::index::Index::index<'_0, Self, Idx>(@1: &'_0 (Self), @2: Idx) -> &'_0 (Self::Output)
+fn core::ops::index::Index::index<'_0, Self, Idx>(@1: &'_0 (Self), @2: Idx) -> &'_0 (@TraitClause0::Output)
+where
+    [@TraitClause0]: core::ops::index::Index<Self, Idx>,
 
 impl<'_0, K, Q, V, S> std::collections::hash::map::{impl core::ops::index::Index<&'_0 (Q)> for std::collections::hash::map::HashMap<K, V, S>[@TraitClause0, @TraitClause1, @TraitClause2]}#9<'_0, K, Q, V, S> : core::ops::index::Index<std::collections::hash::map::HashMap<K, V, S>[@TraitClause0, @TraitClause1, @TraitClause2], &'_0 (Q)>
 where
@@ -251,63 +253,108 @@ where
 
 fn core::hash::BuildHasher::hash_one<'_0, Self, T>(@1: &'_0 (Self), @2: T) -> u64
 where
-    [@TraitClause0]: core::marker::Sized<T>,
-    [@TraitClause1]: core::hash::Hash<T>,
-    [@TraitClause2]: core::marker::Sized<Self>,
-    [@TraitClause3]: core::hash::Hasher<Self::Hasher>,
+    [@TraitClause0]: core::hash::BuildHasher<Self>,
+    [@TraitClause1]: core::marker::Sized<T>,
+    [@TraitClause2]: core::hash::Hash<T>,
+    [@TraitClause3]: core::marker::Sized<Self>,
+    [@TraitClause4]: core::hash::Hasher<@TraitClause0::Hasher>,
 
 fn core::hash::Hasher::write_u8<'_0, Self>(@1: &'_0 mut (Self), @2: u8)
+where
+    [@TraitClause0]: core::hash::Hasher<Self>,
 
 fn core::hash::Hasher::write_u16<'_0, Self>(@1: &'_0 mut (Self), @2: u16)
+where
+    [@TraitClause0]: core::hash::Hasher<Self>,
 
 fn core::hash::Hasher::write_u32<'_0, Self>(@1: &'_0 mut (Self), @2: u32)
+where
+    [@TraitClause0]: core::hash::Hasher<Self>,
 
 fn core::hash::Hasher::write_u64<'_0, Self>(@1: &'_0 mut (Self), @2: u64)
+where
+    [@TraitClause0]: core::hash::Hasher<Self>,
 
 fn core::hash::Hasher::write_u128<'_0, Self>(@1: &'_0 mut (Self), @2: u128)
+where
+    [@TraitClause0]: core::hash::Hasher<Self>,
 
 fn core::hash::Hasher::write_usize<'_0, Self>(@1: &'_0 mut (Self), @2: usize)
+where
+    [@TraitClause0]: core::hash::Hasher<Self>,
 
 fn core::hash::Hasher::write_i8<'_0, Self>(@1: &'_0 mut (Self), @2: i8)
+where
+    [@TraitClause0]: core::hash::Hasher<Self>,
 
 fn core::hash::Hasher::write_i16<'_0, Self>(@1: &'_0 mut (Self), @2: i16)
+where
+    [@TraitClause0]: core::hash::Hasher<Self>,
 
 fn core::hash::Hasher::write_i32<'_0, Self>(@1: &'_0 mut (Self), @2: i32)
+where
+    [@TraitClause0]: core::hash::Hasher<Self>,
 
 fn core::hash::Hasher::write_i64<'_0, Self>(@1: &'_0 mut (Self), @2: i64)
+where
+    [@TraitClause0]: core::hash::Hasher<Self>,
 
 fn core::hash::Hasher::write_i128<'_0, Self>(@1: &'_0 mut (Self), @2: i128)
+where
+    [@TraitClause0]: core::hash::Hasher<Self>,
 
 fn core::hash::Hasher::write_isize<'_0, Self>(@1: &'_0 mut (Self), @2: isize)
+where
+    [@TraitClause0]: core::hash::Hasher<Self>,
 
 fn core::hash::Hasher::write_length_prefix<'_0, Self>(@1: &'_0 mut (Self), @2: usize)
+where
+    [@TraitClause0]: core::hash::Hasher<Self>,
 
 fn core::borrow::Borrow::borrow<'_0, Self, Borrowed>(@1: &'_0 (Self)) -> &'_0 (Borrowed)
+where
+    [@TraitClause0]: core::borrow::Borrow<Self, Borrowed>,
 
 fn core::cmp::Eq::assert_receiver_is_total_eq<'_0, Self>(@1: &'_0 (Self))
+where
+    [@TraitClause0]: core::cmp::Eq<Self>,
 
 fn core::cmp::PartialEq::eq<'_0, '_1, Self, Rhs>(@1: &'_0 (Self), @2: &'_1 (Rhs)) -> bool
+where
+    [@TraitClause0]: core::cmp::PartialEq<Self, Rhs>,
 
 fn core::cmp::PartialEq::ne<'_0, '_1, Self, Rhs>(@1: &'_0 (Self), @2: &'_1 (Rhs)) -> bool
+where
+    [@TraitClause0]: core::cmp::PartialEq<Self, Rhs>,
 
 fn core::hash::Hash::hash<'_0, '_1, Self, H>(@1: &'_0 (Self), @2: &'_1 mut (H))
 where
-    [@TraitClause0]: core::marker::Sized<H>,
-    [@TraitClause1]: core::hash::Hasher<H>,
+    [@TraitClause0]: core::hash::Hash<Self>,
+    [@TraitClause1]: core::marker::Sized<H>,
+    [@TraitClause2]: core::hash::Hasher<H>,
 
 fn core::hash::Hash::hash_slice<'_0, '_1, Self, H>(@1: &'_0 (Slice<Self>), @2: &'_1 mut (H))
 where
-    [@TraitClause0]: core::marker::Sized<H>,
-    [@TraitClause1]: core::hash::Hasher<H>,
-    [@TraitClause2]: core::marker::Sized<Self>,
+    [@TraitClause0]: core::hash::Hash<Self>,
+    [@TraitClause1]: core::marker::Sized<H>,
+    [@TraitClause2]: core::hash::Hasher<H>,
+    [@TraitClause3]: core::marker::Sized<Self>,
 
 fn core::hash::Hasher::finish<'_0, Self>(@1: &'_0 (Self)) -> u64
+where
+    [@TraitClause0]: core::hash::Hasher<Self>,
 
 fn core::hash::Hasher::write<'_0, '_1, Self>(@1: &'_0 mut (Self), @2: &'_1 (Slice<u8>))
+where
+    [@TraitClause0]: core::hash::Hasher<Self>,
 
 fn core::hash::Hasher::write_str<'_0, '_1, Self>(@1: &'_0 mut (Self), @2: &'_1 (Str))
+where
+    [@TraitClause0]: core::hash::Hasher<Self>,
 
-fn core::hash::BuildHasher::build_hasher<'_0, Self>(@1: &'_0 (Self)) -> Self::Hasher
+fn core::hash::BuildHasher::build_hasher<'_0, Self>(@1: &'_0 (Self)) -> @TraitClause0::Hasher
+where
+    [@TraitClause0]: core::hash::BuildHasher<Self>,
 
 
 

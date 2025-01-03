@@ -126,6 +126,12 @@ where
         self.real_len += other.real_len;
     }
 
+    /// Insert a value at that index, shifting all the values with equal or larger indices.
+    pub fn insert(&mut self, id: I, x: T) {
+        self.real_len += 1;
+        self.vector.insert(id, Some(x))
+    }
+
     /// Map each entry to a new one, keeping the same ids.
     pub fn map<U>(self, mut f: impl FnMut(T) -> U) -> Vector<I, U> {
         Vector {

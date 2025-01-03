@@ -245,10 +245,17 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
                     trait_ref,
                     path,
                 );
-                // If we are refering to a trait clause, we need to find the
-                // relevant one.
+                // If we are refering to a trait clause, we need to find the relevant one.
                 let mut trait_id = match &impl_source.r#impl {
-                    ImplExprAtom::SelfImpl { .. } => TraitRefKind::SelfId,
+                    ImplExprAtom::SelfImpl { .. } => match self.self_clause_id {
+                        None => TraitRefKind::SelfId,
+                        // An explicit `Self` clause is bound at the top-level; we use it instead
+                        // of the implicit `TraitRefKind::SelfId` one.
+                        Some(id) => TraitRefKind::Clause(DeBruijnVar::bound(
+                            DeBruijnId::new(self.binding_levels.len() - 1),
+                            id,
+                        )),
+                    },
                     ImplExprAtom::LocalBound { index, .. } => {
                         let var = self.lookup_clause_var(span, *index)?;
                         TraitRefKind::Clause(var)

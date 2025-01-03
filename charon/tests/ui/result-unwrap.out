@@ -43,7 +43,7 @@ struct core::fmt::Error = {}
 
 trait core::fmt::Debug<Self>
 {
-    fn fmt<'_0, '_1, '_2> = core::fmt::Debug::fmt<'_0_0, '_0_1, '_0_2, Self>
+    fn fmt<'_0, '_1, '_2> = core::fmt::Debug::fmt<'_0_0, '_0_1, '_0_2, Self>[Self]
 }
 
 fn core::result::unwrap_failed<'_0, '_1>(@1: &'_0 (Str), @2: &'_1 (dyn (exists(TODO)))) -> !
@@ -138,12 +138,16 @@ fn test_crate::unwrap(@1: core::result::Result<u32, u32>[core::marker::Sized<u32
 }
 
 fn core::fmt::Debug::fmt<'_0, '_1, '_2, Self>(@1: &'_0 (Self), @2: &'_1 mut (core::fmt::Formatter<'_2>)) -> core::result::Result<(), core::fmt::Error>[core::marker::Sized<()>, core::marker::Sized<core::fmt::Error>]
+where
+    [@TraitClause0]: core::fmt::Debug<Self>,
 
 fn core::fmt::LowerHex::fmt<'_0, '_1, '_2, Self>(@1: &'_0 (Self), @2: &'_1 mut (core::fmt::Formatter<'_2>)) -> core::result::Result<(), core::fmt::Error>[core::marker::Sized<()>, core::marker::Sized<core::fmt::Error>]
+where
+    [@TraitClause0]: core::fmt::LowerHex<Self>,
 
 trait core::fmt::LowerHex<Self>
 {
-    fn fmt<'_0, '_1, '_2> = core::fmt::LowerHex::fmt<'_0_0, '_0_1, '_0_2, Self>
+    fn fmt<'_0, '_1, '_2> = core::fmt::LowerHex::fmt<'_0_0, '_0_1, '_0_2, Self>[Self]
 }
 
 impl core::fmt::num::{impl core::fmt::LowerHex for u32}#60 : core::fmt::LowerHex<u32>
@@ -152,10 +156,12 @@ impl core::fmt::num::{impl core::fmt::LowerHex for u32}#60 : core::fmt::LowerHex
 }
 
 fn core::fmt::Display::fmt<'_0, '_1, '_2, Self>(@1: &'_0 (Self), @2: &'_1 mut (core::fmt::Formatter<'_2>)) -> core::result::Result<(), core::fmt::Error>[core::marker::Sized<()>, core::marker::Sized<core::fmt::Error>]
+where
+    [@TraitClause0]: core::fmt::Display<Self>,
 
 trait core::fmt::Display<Self>
 {
-    fn fmt<'_0, '_1, '_2> = core::fmt::Display::fmt<'_0_0, '_0_1, '_0_2, Self>
+    fn fmt<'_0, '_1, '_2> = core::fmt::Display::fmt<'_0_0, '_0_1, '_0_2, Self>[Self]
 }
 
 impl core::fmt::num::imp::{impl core::fmt::Display for u32}#10 : core::fmt::Display<u32>
@@ -164,10 +170,12 @@ impl core::fmt::num::imp::{impl core::fmt::Display for u32}#10 : core::fmt::Disp
 }
 
 fn core::fmt::UpperHex::fmt<'_0, '_1, '_2, Self>(@1: &'_0 (Self), @2: &'_1 mut (core::fmt::Formatter<'_2>)) -> core::result::Result<(), core::fmt::Error>[core::marker::Sized<()>, core::marker::Sized<core::fmt::Error>]
+where
+    [@TraitClause0]: core::fmt::UpperHex<Self>,
 
 trait core::fmt::UpperHex<Self>
 {
-    fn fmt<'_0, '_1, '_2> = core::fmt::UpperHex::fmt<'_0_0, '_0_1, '_0_2, Self>
+    fn fmt<'_0, '_1, '_2> = core::fmt::UpperHex::fmt<'_0_0, '_0_1, '_0_2, Self>[Self]
 }
 
 impl core::fmt::num::{impl core::fmt::UpperHex for u32}#61 : core::fmt::UpperHex<u32>
