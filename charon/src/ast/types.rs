@@ -195,13 +195,29 @@ pub struct TraitTypeConstraint {
     pub ty: Ty,
 }
 
-#[derive(Default, Clone, Eq, PartialEq, Hash, Serialize, Deserialize, Drive, DriveMut)]
+/// Each `GenericArgs` is meant for a corresponding `GenericParams`; this describes which one.
+#[derive(Debug, Clone, Eq, PartialEq, Hash, Serialize, Deserialize, Drive, DriveMut)]
+pub enum GenericsSource {
+    /// A top-level item.
+    Item(AnyTransId),
+    /// A trait method.
+    Method(TraitDeclId, TraitItemName),
+    /// A builtin item like `Box`.
+    Builtin,
+}
+
+/// A set of generic arguments.
+#[derive(Clone, Eq, PartialEq, Hash, Serialize, Deserialize, Drive, DriveMut)]
 pub struct GenericArgs {
     pub regions: Vector<RegionId, Region>,
     pub types: Vector<TypeVarId, Ty>,
     pub const_generics: Vector<ConstGenericVarId, ConstGeneric>,
     // TODO: rename to match [GenericParams]?
     pub trait_refs: Vector<TraitClauseId, TraitRef>,
+    #[charon::opaque]
+    #[drive(skip)]
+    /// Each `GenericArgs` is meant for a corresponding `GenericParams`; this records which one.
+    pub target: GenericsSource,
 }
 
 /// A value of type `T` bound by regions. We should use `binder` instead but this causes name clash

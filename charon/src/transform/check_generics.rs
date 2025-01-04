@@ -37,7 +37,9 @@ impl CheckGenericsVisitor<'_> {
         }
     }
     fn generics_should_match_item(&mut self, args: &GenericArgs, item_id: impl Into<AnyTransId>) {
-        if let Some(item) = self.translated.get_item(item_id.into()) {
+        let item_id = item_id.into();
+        assert_eq!(args.target, GenericsSource::item(item_id));
+        if let Some(item) = self.translated.get_item(item_id) {
             let params = item.generic_params();
             self.generics_should_match(args, params);
         } else {

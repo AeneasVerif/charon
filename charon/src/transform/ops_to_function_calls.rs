@@ -23,6 +23,7 @@ fn transform_st(s: &mut Statement) {
                 vec![ty.clone()].into(),
                 vec![cg.clone()].into(),
                 vec![].into(),
+                GenericsSource::Builtin,
             );
             let func = FnOperand::Regular(FnPtr { func, generics });
             s.content = RawStatement::Call(Call {
@@ -42,6 +43,7 @@ fn transform_st(s: &mut Statement) {
                 vec![ty.clone()].into(),
                 vec![cg.clone()].into(),
                 vec![].into(),
+                GenericsSource::Builtin,
             );
             let func = FnOperand::Regular(FnPtr { func, generics });
             s.content = RawStatement::Call(Call {

@@ -113,14 +113,6 @@ and call = { func : fn_operand; args : operand list; dest : place }
  *)
 and assertion = { cond : operand; expected : bool }
 
-(** The id of a translated item. *)
-and any_decl_id =
-  | IdType of type_decl_id
-  | IdFun of fun_decl_id
-  | IdGlobal of global_decl_id
-  | IdTraitDecl of trait_decl_id
-  | IdTraitImpl of trait_impl_id
-
 and closure_kind = Fn | FnMut | FnOnce
 
 (** Additional information for closures.

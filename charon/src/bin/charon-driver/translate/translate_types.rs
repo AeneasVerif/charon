@@ -144,11 +144,17 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
             } => {
                 trace!("Adt: {:?}", def_id);
 
-                // Translate the type parameters instantiation
-                let mut generics = self.translate_generic_args(span, substs, trait_refs, None)?;
-
                 // Retrieve the type identifier
                 let type_id = self.translate_type_id(span, def_id)?;
+
+                // Translate the type parameters instantiation
+                let mut generics = self.translate_generic_args(
+                    span,
+                    substs,
+                    trait_refs,
+                    None,
+                    type_id.generics_target(),
+                )?;
 
                 // Filter the type arguments.
                 // TODO: do this in a micro-pass
@@ -171,7 +177,7 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
                 trace!("Str");
 
                 let id = TypeId::Builtin(BuiltinTy::Str);
-                TyKind::Adt(id, GenericArgs::empty())
+                TyKind::Adt(id, GenericArgs::empty(GenericsSource::Builtin))
             }
             hax::TyKind::Array(ty, const_param) => {
                 trace!("Array");
@@ -180,14 +186,23 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
                 let tys = vec![self.translate_ty(span, ty)?].into();
                 let cgs = vec![c].into();
                 let id = TypeId::Builtin(BuiltinTy::Array);
-                TyKind::Adt(id, GenericArgs::new(Vector::new(), tys, cgs, Vector::new()))
+                TyKind::Adt(
+                    id,
+                    GenericArgs::new(
+                        Vector::new(),
+                        tys,
+                        cgs,
+                        Vector::new(),
+                        GenericsSource::Builtin,
+                    ),
+                )
             }
             hax::TyKind::Slice(ty) => {
                 trace!("Slice");
 
                 let tys = vec![self.translate_ty(span, ty)?].into();
                 let id = TypeId::Builtin(BuiltinTy::Slice);
-                TyKind::Adt(id, GenericArgs::new_from_types(tys))
+                TyKind::Adt(id, GenericArgs::new_for_builtin(tys))
             }
             hax::TyKind::Ref(region, ty, mutability) => {
                 trace!("Ref");
@@ -220,7 +235,7 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
                     params.push(param_ty);
                 }
 
-                TyKind::Adt(TypeId::Tuple, GenericArgs::new_from_types(params))
+                TyKind::Adt(TypeId::Tuple, GenericArgs::new_for_builtin(params))
             }
 
             hax::TyKind::Param(param) => {
@@ -240,8 +255,8 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
 
             hax::TyKind::Foreign(def_id) => {
                 trace!("Foreign");
-                let def_id = self.translate_type_id(span, def_id)?;
-                TyKind::Adt(def_id, GenericArgs::empty())
+                let adt_id = self.translate_type_id(span, def_id)?;
+                TyKind::Adt(adt_id, GenericArgs::empty(adt_id.generics_target()))
             }
             hax::TyKind::Infer(_) => {
                 trace!("Infer");
@@ -310,6 +325,7 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
         substs: &[hax::GenericArg],
         trait_refs: &[hax::ImplExpr],
         late_bound: Option<hax::Binder<()>>,
+        target: GenericsSource,
     ) -> Result<GenericArgs, Error> {
         use hax::GenericArg::*;
         trace!("{:?}", substs);
@@ -353,6 +369,7 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
             types,
             const_generics,
             trait_refs,
+            target,
         })
     }
 

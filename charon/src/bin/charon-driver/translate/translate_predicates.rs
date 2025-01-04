@@ -37,15 +37,13 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
         Ok(())
     }
 
-    pub(crate) fn translate_trait_decl_ref(
+    pub(crate) fn translate_poly_trait_ref(
         &mut self,
         span: Span,
         bound_trait_ref: &hax::Binder<hax::TraitRef>,
     ) -> Result<PolyTraitDeclRef, Error> {
         self.translate_region_binder(span, bound_trait_ref, move |ctx, trait_ref| {
-            let trait_id = ctx.register_trait_decl_id(span, &trait_ref.def_id);
-            let generics = ctx.translate_generic_args(span, &trait_ref.generic_args, &[], None)?;
-            Ok(TraitDeclRef { trait_id, generics })
+            ctx.translate_trait_ref(span, trait_ref)
         })
     }
 
@@ -66,7 +64,13 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
     ) -> Result<TraitDeclRef, Error> {
         let trait_id = self.register_trait_decl_id(span, &trait_ref.def_id);
         // For now a trait has no required bounds, so we pass an empty list.
-        let generics = self.translate_generic_args(span, &trait_ref.generic_args, &[], None)?;
+        let generics = self.translate_generic_args(
+            span,
+            &trait_ref.generic_args,
+            &[],
+            None,
+            GenericsSource::item(trait_id),
+        )?;
         Ok(TraitDeclRef { trait_id, generics })
     }
 
@@ -188,7 +192,7 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
         span: Span,
         impl_expr: &hax::ImplExpr,
     ) -> Result<TraitRef, Error> {
-        let trait_decl_ref = self.translate_trait_decl_ref(span, &impl_expr.r#trait)?;
+        let trait_decl_ref = self.translate_poly_trait_ref(span, &impl_expr.r#trait)?;
 
         match self.translate_trait_impl_expr_aux(span, impl_expr, trait_decl_ref.clone()) {
             Ok(res) => Ok(res),
@@ -223,7 +227,13 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
                 generics,
             } => {
                 let impl_id = self.register_trait_impl_id(span, impl_def_id);
-                let generics = self.translate_generic_args(span, generics, nested, None)?;
+                let generics = self.translate_generic_args(
+                    span,
+                    generics,
+                    nested,
+                    None,
+                    GenericsSource::item(impl_id),
+                )?;
                 TraitRef {
                     kind: TraitRefKind::TraitImpl(impl_id, generics),
                     trait_decl_ref,

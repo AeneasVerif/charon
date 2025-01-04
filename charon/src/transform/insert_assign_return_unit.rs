@@ -12,7 +12,12 @@ fn transform_st(locals: &Locals, st: &mut Statement) -> Vec<Statement> {
     if let RawStatement::Return = &mut st.content {
         let ret_place = locals.return_place();
         let unit_value = Rvalue::Aggregate(
-            AggregateKind::Adt(TypeId::Tuple, None, None, GenericArgs::empty()),
+            AggregateKind::Adt(
+                TypeId::Tuple,
+                None,
+                None,
+                GenericArgs::empty(GenericsSource::Builtin),
+            ),
             Vec::new(),
         );
         let assign_st = Statement::new(st.span, RawStatement::Assign(ret_place, unit_value));

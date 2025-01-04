@@ -70,7 +70,7 @@ impl<'a> IndexVisitor<'a> {
         } else {
             TyKind::Adt(
                 TypeId::Builtin(BuiltinTy::Slice),
-                GenericArgs::new_from_types(vec![elem_ty].into()),
+                GenericArgs::new_for_builtin(vec![elem_ty].into()),
             )
             .into_ty()
         };

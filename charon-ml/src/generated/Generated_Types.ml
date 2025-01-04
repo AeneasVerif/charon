@@ -298,8 +298,16 @@ class virtual ['self] mapreduce_const_generic_base =
       fun _ x -> (x, self#zero)
   end
 
+(** The id of a translated item. *)
+type any_decl_id =
+  | IdType of type_decl_id
+  | IdFun of fun_decl_id
+  | IdGlobal of global_decl_id
+  | IdTraitDecl of trait_decl_id
+  | IdTraitImpl of trait_impl_id
+
 (** Const Generic Values. Either a primitive value, or a variable corresponding to a primitve value *)
-type const_generic =
+and const_generic =
   | CgGlobal of global_decl_id  (** A global constant *)
   | CgVar of const_generic_var_id de_bruijn_var  (** A const generic variable *)
   | CgValue of literal  (** A concrete value *)
@@ -549,6 +557,13 @@ and trait_impl_ref = {
   impl_generics : generic_args;
 }
 
+(** Each `GenericArgs` is meant for a corresponding `GenericParams`; this describes which one. *)
+and generics_source =
+  | Item of any_decl_id  (** A top-level item. *)
+  | Method of trait_decl_id * trait_item_name  (** A trait method. *)
+  | Builtin  (** A builtin item like `Box`. *)
+
+(** A set of generic arguments. *)
 and generic_args = {
   regions : region list;
   types : ty list;

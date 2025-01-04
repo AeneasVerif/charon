@@ -5,6 +5,7 @@ use derive_generic_visitor::*;
 use std::collections::HashSet;
 use std::convert::Infallible;
 use std::iter::Iterator;
+use std::mem;
 use std::ops::Index;
 
 impl GenericParams {
@@ -71,12 +72,12 @@ impl GenericParams {
     /// Construct a set of generic arguments in the scope of `self` that matches `self` and feeds
     /// each required parameter with itself. E.g. given parameters for `<T, U> where U:
     /// PartialEq<T>`, the arguments would be `<T, U>[@TraitClause0]`.
-    pub fn identity_args(&self) -> GenericArgs {
-        self.identity_args_at_depth(DeBruijnId::zero())
+    pub fn identity_args(&self, target: GenericsSource) -> GenericArgs {
+        self.identity_args_at_depth(target, DeBruijnId::zero())
     }
 
     /// Like `identity_args` but uses variables bound at the given depth.
-    pub fn identity_args_at_depth(&self, depth: DeBruijnId) -> GenericArgs {
+    pub fn identity_args_at_depth(&self, target: GenericsSource, depth: DeBruijnId) -> GenericArgs {
         GenericArgs {
             regions: self
                 .regions
@@ -91,25 +92,7 @@ impl GenericParams {
                 kind: TraitRefKind::Clause(DeBruijnVar::bound(depth, id)),
                 trait_decl_ref: clause.trait_.clone(),
             }),
-        }
-    }
-
-    /// Like `identity_args`, but uses free variables instead of bound ones.
-    pub fn free_identity_args(&self) -> GenericArgs {
-        GenericArgs {
-            regions: self
-                .regions
-                .map_ref_indexed(|id, _| Region::Var(DeBruijnVar::free(id))),
-            types: self
-                .types
-                .map_ref_indexed(|id, _| TyKind::TypeVar(DeBruijnVar::free(id)).into_ty()),
-            const_generics: self
-                .const_generics
-                .map_ref_indexed(|id, _| ConstGeneric::Var(DeBruijnVar::free(id))),
-            trait_refs: self.trait_clauses.map_ref_indexed(|id, clause| TraitRef {
-                kind: TraitRefKind::Clause(DeBruijnVar::free(id)),
-                trait_decl_ref: clause.trait_.clone(),
-            }),
+            target,
         }
     }
 }
@@ -142,6 +125,7 @@ impl GenericArgs {
             types,
             const_generics,
             trait_refs,
+            target: _,
         } = self;
         regions.len() + types.len() + const_generics.len() + trait_refs.len()
     }
@@ -150,14 +134,20 @@ impl GenericArgs {
         self.len() == 0
     }
 
-    pub fn empty() -> Self {
-        GenericArgs::default()
+    pub fn empty(target: GenericsSource) -> Self {
+        GenericArgs {
+            regions: Default::default(),
+            types: Default::default(),
+            const_generics: Default::default(),
+            trait_refs: Default::default(),
+            target,
+        }
     }
 
-    pub fn new_from_types(types: Vector<TypeVarId, Ty>) -> Self {
+    pub fn new_for_builtin(types: Vector<TypeVarId, Ty>) -> Self {
         GenericArgs {
             types,
-            ..Self::default()
+            ..Self::empty(GenericsSource::Builtin)
         }
     }
 
@@ -166,13 +156,21 @@ impl GenericArgs {
         types: Vector<TypeVarId, Ty>,
         const_generics: Vector<ConstGenericVarId, ConstGeneric>,
         trait_refs: Vector<TraitClauseId, TraitRef>,
+        target: GenericsSource,
     ) -> Self {
         Self {
             regions,
             types,
             const_generics,
             trait_refs,
+            target,
         }
+    }
+
+    /// Changes the target.
+    pub fn with_target(mut self, target: GenericsSource) -> Self {
+        self.target = target;
+        self
     }
 
     /// Check whether this matches the given `GenericParams`.
@@ -189,40 +187,35 @@ impl GenericArgs {
     /// because the first type argument is the type for which the trait is
     /// implemented.
     pub fn pop_first_type_arg(&self) -> (Ty, Self) {
-        let GenericArgs {
-            regions,
-            types,
-            const_generics,
-            trait_refs,
-        } = self;
-        let mut it = types.iter();
-        let ty = it.next().unwrap().clone();
-        let types = it.cloned().collect();
-        (
-            ty,
-            GenericArgs {
-                regions: regions.clone(),
-                types,
-                const_generics: const_generics.clone(),
-                trait_refs: trait_refs.clone(),
-            },
-        )
+        let mut generics = self.clone();
+        let mut it = mem::take(&mut generics.types).into_iter();
+        let ty = it.next().unwrap();
+        generics.types = it.collect();
+        (ty, generics)
     }
 
     /// Concatenate this set of arguments with another one. Use with care, you must manage the
     /// order of arguments correctly.
-    pub fn concat(mut self, other: &Self) -> Self {
+    pub fn concat(mut self, target: GenericsSource, other: &Self) -> Self {
         let Self {
             regions,
             types,
             const_generics,
             trait_refs,
+            target: _,
         } = other;
         self.regions.extend_from_slice(regions);
         self.types.extend_from_slice(types);
         self.const_generics.extend_from_slice(const_generics);
         self.trait_refs.extend_from_slice(trait_refs);
+        self.target = target;
         self
+    }
+}
+
+impl GenericsSource {
+    pub fn item<I: Into<AnyTransId>>(id: I) -> Self {
+        Self::Item(id.into())
     }
 }
 
@@ -278,7 +271,7 @@ impl Ty {
 
     /// Return the unit type
     pub fn mk_unit() -> Ty {
-        TyKind::Adt(TypeId::Tuple, GenericArgs::empty()).into_ty()
+        TyKind::Adt(TypeId::Tuple, GenericArgs::empty(GenericsSource::Builtin)).into_ty()
     }
 
     /// Return true if this is a scalar type
@@ -380,6 +373,35 @@ impl std::ops::Deref for Ty {
 }
 /// For deref patterns.
 unsafe impl std::ops::DerefPure for Ty {}
+
+impl TypeId {
+    pub fn generics_target(&self) -> GenericsSource {
+        match *self {
+            TypeId::Adt(decl_id) => GenericsSource::item(decl_id),
+            TypeId::Tuple | TypeId::Builtin(..) => GenericsSource::Builtin,
+        }
+    }
+}
+
+impl FunId {
+    pub fn generics_target(&self) -> GenericsSource {
+        match *self {
+            FunId::Regular(fun_id) => GenericsSource::item(fun_id),
+            FunId::Builtin(..) => GenericsSource::Builtin,
+        }
+    }
+}
+
+impl FunIdOrTraitMethodRef {
+    pub fn generics_target(&self) -> GenericsSource {
+        match self {
+            FunIdOrTraitMethodRef::Fun(fun_id) => fun_id.generics_target(),
+            FunIdOrTraitMethodRef::Trait(trait_ref, name, _) => {
+                GenericsSource::Method(trait_ref.trait_decl_ref.skip_binder.trait_id, name.clone())
+            }
+        }
+    }
+}
 
 impl Field {
     /// The new name for this field, as suggested by the `#[charon::rename]` attribute.

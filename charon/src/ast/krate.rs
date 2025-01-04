@@ -218,6 +218,12 @@ impl<'ctx> AnyTransItem<'ctx> {
         }
     }
 
+    /// See [`GenericParams::identity_args`].
+    pub fn identity_args(&self) -> GenericArgs {
+        self.generic_params()
+            .identity_args(GenericsSource::Item(self.id()))
+    }
+
     /// We can't implement `AstVisitable` because of the `'static` constraint, but it's ok because
     /// `AnyTransItem` isn't contained in any of our types.
     pub fn drive<V: VisitAst>(&self, visitor: &mut V) -> ControlFlow<V::Break> {

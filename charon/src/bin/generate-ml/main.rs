@@ -1118,7 +1118,6 @@ fn generate_ml(
                     extra_types: &[],
                 })), &[
                     "Var",
-                    "AnyTransId",
                     "FnOperand",
                     "Call",
                     "Assert",
@@ -1253,6 +1252,7 @@ fn generate_ml(
                         "type_var_id",
                     ],
                 })), &[
+                    "AnyTransId",
                     "ConstGeneric",
                 ]),
                 // Can't merge into above because aeneas uses the above alongside their own partial
@@ -1276,6 +1276,7 @@ fn generate_ml(
                     "TraitImplRef",
                     "FunDeclRef",
                     "GlobalDeclRef",
+                    "GenericsSource",
                     "GenericArgs",
                 ]),
                 // TODO: can't merge into above because of field name clashes (`types`, `regions` etc).
