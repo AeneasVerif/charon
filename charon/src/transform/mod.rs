@@ -37,6 +37,8 @@ use Pass::*;
 pub static ULLBC_PASSES: &[Pass] = &[
     // Move clauses on associated types to be parent clauses
     NonBody(&lift_associated_item_clauses::Transform),
+    // Check that all supplied generic types match the corresponding generic parameters.
+    NonBody(&check_generics::Check("after translation")),
     // # Micro-pass: hide some overly-common traits we don't need: Sized, Sync, Allocator, etc..
     NonBody(&hide_marker_traits::Transform),
     // # Micro-pass: filter the trait impls that were marked invisible since we couldn't filter
@@ -125,7 +127,7 @@ pub static LLBC_PASSES: &[Pass] = &[
     // comments.
     StructuredBody(&recover_body_comments::Transform),
     // Check that all supplied generic types match the corresponding generic parameters.
-    NonBody(&check_generics::Check),
+    NonBody(&check_generics::Check("after transformations")),
     // Use `DeBruijnVar::Free` for the variables bound in item signatures.
     NonBody(&unbind_item_vars::Check),
 ];

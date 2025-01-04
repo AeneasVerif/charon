@@ -9,6 +9,7 @@ use super::{ctx::TransformPass, TransformCtx};
 #[derive(Visitor)]
 struct CheckGenericsVisitor<'a> {
     translated: &'a TranslatedCrate,
+    phase: &'static str,
     error_ctx: &'a mut ErrorCtx,
     // Tracks an enclosing span to make errors useful.
     span: Span,
@@ -16,7 +17,7 @@ struct CheckGenericsVisitor<'a> {
 
 impl CheckGenericsVisitor<'_> {
     fn error(&mut self, message: impl Display) {
-        let message = message.to_string();
+        let message = format!("Found inconsistent generics {}:\n{message}", self.phase);
         register_error_or_panic!(self.error_ctx, self.translated, self.span, message);
     }
 }
@@ -105,13 +106,15 @@ impl VisitAst for CheckGenericsVisitor<'_> {
     }
 }
 
-pub struct Check;
+// The argument is a name to disambiguate the two times we run this check.
+pub struct Check(pub &'static str);
 impl TransformPass for Check {
     fn transform_ctx(&self, ctx: &mut TransformCtx) {
         for item in ctx.translated.all_items() {
             let mut visitor = CheckGenericsVisitor {
                 translated: &ctx.translated,
                 error_ctx: &mut ctx.errors,
+                phase: self.0,
                 span: item.item_meta().span,
             };
             item.drive(&mut visitor);
