@@ -45,7 +45,7 @@ fn test_name_matcher() -> anyhow::Result<()> {
             .filter_map(|a| parse_pattern_attr(a))
             .collect_vec();
         for (pass, pat) in patterns {
-            let passes = pat.matches(&crate_data, name);
+            let passes = pat.matches_item(&crate_data, item);
             if passes != pass {
                 if passes {
                     panic!(
