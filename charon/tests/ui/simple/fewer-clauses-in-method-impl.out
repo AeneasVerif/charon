@@ -15,9 +15,9 @@ error: Found inconsistent generics after transformations:
          charon_lib::ast::gast::Body
          core::result::Result<charon_lib::ast::gast::Body, charon_lib::ast::gast::Opaque>
          charon_lib::ast::gast::FunDecl
-  --> tests/ui/simple/fewer-clauses-in-method-impl.rs:11:5
+  --> tests/ui/simple/fewer-clauses-in-method-impl.rs:12:5
    |
-11 |     <() as Trait>::method::<()>()
+12 |     <() as Trait>::method::<()>()
    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
    |
 

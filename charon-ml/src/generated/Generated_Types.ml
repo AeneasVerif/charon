@@ -20,6 +20,7 @@ module ConstGenericVarId = IdGen ()
 module TraitDeclId = IdGen ()
 module TraitImplId = IdGen ()
 module TraitClauseId = IdGen ()
+module TraitTypeConstraintId = IdGen ()
 module UnsolvedTraitId = IdGen ()
 module RegionId = IdGen ()
 module Disambiguator = IdGen ()
@@ -30,6 +31,11 @@ type ('id, 'x) vector = 'x list [@@deriving show, ord]
 type integer_type = Values.integer_type [@@deriving show, ord]
 type float_type = Values.float_type [@@deriving show, ord]
 type literal_type = Values.literal_type [@@deriving show, ord]
+
+(* Manually implemented because no type uses it (we use plain lists instead of
+   vectors in generic_params), which causes visitor inference problems if we
+   declare it within a visitor group. *)
+type trait_type_constraint_id = TraitTypeConstraintId.id [@@deriving show, ord]
 
 (** We define these types to control the name of the visitor functions *)
 type ('id, 'name) indexed_var = {
@@ -256,12 +262,8 @@ and trait_instance_id =
           ```
        *)
   | Self
-      (** Self, in case of trait declarations/implementations.
-
-          Putting [Self] at the end on purpose, so that when ordering the clauses
-          we start with the other clauses (in particular, the local clauses). It
-          is useful to give priority to the local clauses when solving the trait
-          obligations which are fullfilled by the trait parameters.
+      (** The implicit `Self: Trait` clause. Present inside trait declarations, including trait
+          method declarations. Not present in trait implementations as we can use `TraitImpl` intead.
        *)
   | BuiltinOrAuto of
       trait_decl_ref region_binder

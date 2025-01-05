@@ -417,6 +417,8 @@ and cli_options = {
       (** Blacklist of items to keep opaque. These use the name-matcher syntax. *)
   exclude : string list;
       (** Blacklist of items to not translate at all. These use the name-matcher syntax. *)
+  remove_associated_types : string list;
+      (** List of traits for which we transform associated types to type parameters. *)
   hide_marker_traits : bool;
       (** Whether to hide the `Sized`, `Sync`, `Send` and `Unpin` marker traits anywhere they show
         up.

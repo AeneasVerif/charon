@@ -13,36 +13,34 @@ trait core::marker::Sized<Self>
 
 trait core::marker::Tuple<Self>
 
-trait core::ops::function::FnOnce<Self, Args>
+trait core::ops::function::FnOnce<Self, Args, Self_Output>
 {
     parent_clause0 : [@TraitClause0]: core::marker::Sized<Args>
     parent_clause1 : [@TraitClause1]: core::marker::Tuple<Args>
-    parent_clause2 : [@TraitClause2]: core::marker::Sized<Self::Output>
-    type Output
-    fn call_once = core::ops::function::FnOnce::call_once<Self, Args>
+    parent_clause2 : [@TraitClause2]: core::marker::Sized<Self_Output>
+    fn call_once = core::ops::function::FnOnce::call_once<Self, Args, Self_Output>
 }
 
-trait core::ops::function::FnMut<Self, Args>
+trait core::ops::function::FnMut<Self, Args, Self_Clause0_Output>
 {
-    parent_clause0 : [@TraitClause0]: core::ops::function::FnOnce<Self, Args>
+    parent_clause0 : [@TraitClause0]: core::ops::function::FnOnce<Self, Args, Self_Clause0_Output>
     parent_clause1 : [@TraitClause1]: core::marker::Sized<Args>
     parent_clause2 : [@TraitClause2]: core::marker::Tuple<Args>
-    fn call_mut<'_0> = core::ops::function::FnMut::call_mut<'_0_0, Self, Args>
+    fn call_mut<'_0> = core::ops::function::FnMut::call_mut<'_0_0, Self, Args, Self_Clause0_Output>
 }
 
-trait core::ops::function::Fn<Self, Args>
+trait core::ops::function::Fn<Self, Args, Self_Clause0_Clause0_Output>
 {
-    parent_clause0 : [@TraitClause0]: core::ops::function::FnMut<Self, Args>
+    parent_clause0 : [@TraitClause0]: core::ops::function::FnMut<Self, Args, Self_Clause0_Clause0_Output>
     parent_clause1 : [@TraitClause1]: core::marker::Sized<Args>
     parent_clause2 : [@TraitClause2]: core::marker::Tuple<Args>
-    fn call<'_0> = core::ops::function::Fn::call<'_0_0, Self, Args>
+    fn call<'_0> = core::ops::function::Fn::call<'_0_0, Self, Args, Self_Clause0_Clause0_Output>
 }
 
 fn test_crate::call<'b, F>(@1: F)
 where
     [@TraitClause0]: core::marker::Sized<F>,
-    [@TraitClause1]: core::ops::function::Fn<F, (&'_ (()))>,
-    @TraitClause1::parent_clause0::parent_clause0::Output = &'b (()),
+    [@TraitClause1]: core::ops::function::Fn<F, (&'_ (())), &'b (())>,
 {
     let @0: (); // return
     let @1: F; // arg #1
@@ -61,7 +59,7 @@ fn test_crate::flibidi()
     let @1: (); // anonymous local
     let @2: (); // anonymous local
 
-    @1 := test_crate::call<'_, fn<'a>(&'a (())) -> &'a (())>[core::marker::Sized<fn<'a>(&'a (())) -> &'a (())>, core::ops::function::Fn<fn<'a>(&'a (())) -> &'a (()), (&'_ (()))>](const (test_crate::flabada<'_>))
+    @1 := test_crate::call<'_, fn<'a>(&'a (())) -> &'a (())>[core::marker::Sized<fn<'a>(&'a (())) -> &'a (())>, core::ops::function::Fn<fn<'a>(&'a (())) -> &'a (()), (&'_ (())), &'_ (())>](const (test_crate::flabada<'_>))
     drop @1
     @2 := ()
     @0 := move (@2)
@@ -69,11 +67,11 @@ fn test_crate::flibidi()
     return
 }
 
-fn core::ops::function::Fn::call<'_0, Self, Args>(@1: &'_0 (Self), @2: Args) -> Self::parent_clause0::parent_clause0::Output
+fn core::ops::function::Fn::call<'_0, Self, Args, Self_Clause0_Clause0_Output>(@1: &'_0 (Self), @2: Args) -> Self_Clause0_Clause0_Output
 
-fn core::ops::function::FnMut::call_mut<'_0, Self, Args>(@1: &'_0 mut (Self), @2: Args) -> Self::parent_clause0::Output
+fn core::ops::function::FnMut::call_mut<'_0, Self, Args, Self_Clause0_Output>(@1: &'_0 mut (Self), @2: Args) -> Self_Clause0_Output
 
-fn core::ops::function::FnOnce::call_once<Self, Args>(@1: Self, @2: Args) -> Self::Output
+fn core::ops::function::FnOnce::call_once<Self, Args, Self_Output>(@1: Self, @2: Args) -> Self_Output
 
 
 

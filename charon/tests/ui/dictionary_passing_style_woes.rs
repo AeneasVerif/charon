@@ -1,3 +1,4 @@
+//@ charon-args=--remove-associated-types=*
 trait Iterator {
     type Item;
 }

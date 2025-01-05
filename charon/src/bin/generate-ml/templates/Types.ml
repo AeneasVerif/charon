@@ -22,6 +22,7 @@ module ConstGenericVarId = IdGen ()
 module TraitDeclId = IdGen ()
 module TraitImplId = IdGen ()
 module TraitClauseId = IdGen ()
+module TraitTypeConstraintId = IdGen ()
 module UnsolvedTraitId = IdGen ()
 module RegionId = IdGen ()
 module Disambiguator = IdGen ()
@@ -33,6 +34,11 @@ type ('id, 'x) vector = 'x list [@@deriving show, ord]
 type integer_type = Values.integer_type [@@deriving show, ord]
 type float_type = Values.float_type [@@deriving show, ord]
 type literal_type = Values.literal_type [@@deriving show, ord]
+
+(* Manually implemented because no type uses it (we use plain lists instead of
+   vectors in generic_params), which causes visitor inference problems if we
+   declare it within a visitor group. *)
+type trait_type_constraint_id = TraitTypeConstraintId.id [@@deriving show, ord]
 
 (** We define these types to control the name of the visitor functions *)
 type ('id, 'name) indexed_var = {

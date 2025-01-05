@@ -1313,7 +1313,7 @@ where
     [@TraitClause0]: core::marker::Sized<A>,
     [@TraitClause1]: core::iter::range::Step<A>,
 
-unsafe fn core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>[@TraitClause0]}#6::__iterator_get_unchecked<'_0, A>(@1: &'_0 mut (core::ops::range::Range<A>[@TraitClause0]), @2: usize) -> core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>[@TraitClause0]}#6<A>[@TraitClause0, @TraitClause1]::Item
+unsafe fn core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>[@TraitClause0]}#6::__iterator_get_unchecked<'_0, A>(@1: &'_0 mut (core::ops::range::Range<A>[@TraitClause0]), @2: usize) -> A
 where
     [@TraitClause0]: core::marker::Sized<A>,
     [@TraitClause1]: core::iter::range::Step<A>,
@@ -1899,31 +1899,7 @@ trait core::slice::index::SliceIndex<Self, T>
     fn index_mut<'_0> = core::slice::index::SliceIndex::index_mut<'_0_0, Self, T>
 }
 
-trait core::ops::index::Index<Self, Idx>
-{
-    type Output
-    fn index<'_0> = core::ops::index::Index::index<'_0_0, Self, Idx>
-}
-
-fn alloc::vec::{impl core::ops::index::Index<I> for alloc::vec::Vec<T, A>[@TraitClause0, @TraitClause2]}#13::index<'_0, T, I, A>(@1: &'_0 (alloc::vec::Vec<T, A>[@TraitClause0, @TraitClause2]), @2: I) -> &'_0 (alloc::vec::{impl core::ops::index::Index<I> for alloc::vec::Vec<T, A>[@TraitClause0, @TraitClause2]}#13<T, I, A>[@TraitClause0, @TraitClause1, @TraitClause2, @TraitClause3]::Output)
-where
-    [@TraitClause0]: core::marker::Sized<T>,
-    [@TraitClause1]: core::marker::Sized<I>,
-    [@TraitClause2]: core::marker::Sized<A>,
-    [@TraitClause3]: core::slice::index::SliceIndex<I, Slice<T>>,
-
-impl<T, I, A> alloc::vec::{impl core::ops::index::Index<I> for alloc::vec::Vec<T, A>[@TraitClause0, @TraitClause2]}#13<T, I, A> : core::ops::index::Index<alloc::vec::Vec<T, A>[@TraitClause0, @TraitClause2], I>
-where
-    [@TraitClause0]: core::marker::Sized<T>,
-    [@TraitClause1]: core::marker::Sized<I>,
-    [@TraitClause2]: core::marker::Sized<A>,
-    [@TraitClause3]: core::slice::index::SliceIndex<I, Slice<T>>,
-{
-    type Output = @TraitClause3::Output
-    fn index<'_0> = alloc::vec::{impl core::ops::index::Index<I> for alloc::vec::Vec<T, A>[@TraitClause0, @TraitClause2]}#13::index<'_0_0, T, I, A>[@TraitClause0, @TraitClause1, @TraitClause2, @TraitClause3]
-}
-
-fn alloc::vec::{impl core::ops::index::IndexMut<I> for alloc::vec::Vec<T, A>[@TraitClause0, @TraitClause2]}#14::index_mut<'_0, T, I, A>(@1: &'_0 mut (alloc::vec::Vec<T, A>[@TraitClause0, @TraitClause2]), @2: I) -> &'_0 mut (alloc::vec::{impl core::ops::index::Index<I> for alloc::vec::Vec<T, A>[@TraitClause0, @TraitClause2]}#13<T, I, A>[@TraitClause0, @TraitClause1, @TraitClause2, @TraitClause3]::Output)
+fn alloc::vec::{impl core::ops::index::IndexMut<I> for alloc::vec::Vec<T, A>[@TraitClause0, @TraitClause2]}#14::index_mut<'_0, T, I, A>(@1: &'_0 mut (alloc::vec::Vec<T, A>[@TraitClause0, @TraitClause2]), @2: I) -> &'_0 mut (@TraitClause3::Output)
 where
     [@TraitClause0]: core::marker::Sized<T>,
     [@TraitClause1]: core::marker::Sized<I>,
@@ -2164,12 +2140,36 @@ where
 
 fn core::iter::traits::iterator::Iterator::next<'_0, Self>(@1: &'_0 mut (Self)) -> core::option::Option<Self::Item>[Self::parent_clause0]
 
+trait core::ops::index::Index<Self, Idx>
+{
+    type Output
+    fn index<'_0> = core::ops::index::Index::index<'_0_0, Self, Idx>
+}
+
 fn core::ops::index::IndexMut::index_mut<'_0, Self, Idx>(@1: &'_0 mut (Self), @2: Idx) -> &'_0 mut (Self::parent_clause0::Output)
 
 trait core::ops::index::IndexMut<Self, Idx>
 {
     parent_clause0 : [@TraitClause0]: core::ops::index::Index<Self, Idx>
     fn index_mut<'_0> = core::ops::index::IndexMut::index_mut<'_0_0, Self, Idx>
+}
+
+fn alloc::vec::{impl core::ops::index::Index<I> for alloc::vec::Vec<T, A>[@TraitClause0, @TraitClause2]}#13::index<'_0, T, I, A>(@1: &'_0 (alloc::vec::Vec<T, A>[@TraitClause0, @TraitClause2]), @2: I) -> &'_0 (@TraitClause3::Output)
+where
+    [@TraitClause0]: core::marker::Sized<T>,
+    [@TraitClause1]: core::marker::Sized<I>,
+    [@TraitClause2]: core::marker::Sized<A>,
+    [@TraitClause3]: core::slice::index::SliceIndex<I, Slice<T>>,
+
+impl<T, I, A> alloc::vec::{impl core::ops::index::Index<I> for alloc::vec::Vec<T, A>[@TraitClause0, @TraitClause2]}#13<T, I, A> : core::ops::index::Index<alloc::vec::Vec<T, A>[@TraitClause0, @TraitClause2], I>
+where
+    [@TraitClause0]: core::marker::Sized<T>,
+    [@TraitClause1]: core::marker::Sized<I>,
+    [@TraitClause2]: core::marker::Sized<A>,
+    [@TraitClause3]: core::slice::index::SliceIndex<I, Slice<T>>,
+{
+    type Output = @TraitClause3::Output
+    fn index<'_0> = alloc::vec::{impl core::ops::index::Index<I> for alloc::vec::Vec<T, A>[@TraitClause0, @TraitClause2]}#13::index<'_0_0, T, I, A>[@TraitClause0, @TraitClause1, @TraitClause2, @TraitClause3]
 }
 
 impl<T, I, A> alloc::vec::{impl core::ops::index::IndexMut<I> for alloc::vec::Vec<T, A>[@TraitClause0, @TraitClause2]}#14<T, I, A> : core::ops::index::IndexMut<alloc::vec::Vec<T, A>[@TraitClause0, @TraitClause2], I>

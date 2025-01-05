@@ -1,3 +1,4 @@
+//@ charon-args=--remove-associated-types=*
 //@ output=pretty-llbc
 pub fn incr_u32(x: u32) -> u32 {
     x + 1

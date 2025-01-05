@@ -1,9 +1,9 @@
 error: Mismatched method generics:
        params:   
        supplied: [@TraitDecl1<()>]
-  --> tests/ui/simple/fewer-clauses-in-method-impl.2.rs:13:5
+  --> tests/ui/simple/fewer-clauses-in-method-impl.2.rs:14:5
    |
-13 |     <() as Trait>::method()
+14 |     <() as Trait>::method()
    |     ^^^^^^^^^^^^^^^^^^^^^^^
    |
 

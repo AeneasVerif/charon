@@ -46,8 +46,8 @@ use index_vec::Idx;
         FnOperand, FunId, FunIdOrTraitMethodRef, FunSig, ImplElem, IntegerTy, Literal, LiteralTy,
         llbc_ast::Block, llbc_ast::ExprBody, llbc_ast::RawStatement, llbc_ast::Switch,
         Locals, Name, NullOp, Opaque, Operand, PathElem, Place, PlaceKind, ProjectionElem, RawConstantExpr,
-        RefKind, RegionId, RegionVar, Rvalue, ScalarValue, TraitClause, TraitClauseId, TraitItemName,
-        TraitRefKind, TraitTypeConstraint, TranslatedCrate, TyKind, TypeDeclKind, TypeId, TypeVar, TypeVarId,
+        RefKind, RegionId, RegionVar, Rvalue, ScalarValue, TraitClauseId, TraitItemName,
+        TranslatedCrate, TypeDeclKind, TypeId, TypeVar, TypeVarId,
         ullbc_ast::BlockData, ullbc_ast::BlockId, ullbc_ast::ExprBody, ullbc_ast::RawStatement,
         ullbc_ast::RawTerminator, ullbc_ast::SwitchTargets, ullbc_ast::Terminator,
         UnOp, Var, Variant, VariantId, VarId,
@@ -62,9 +62,9 @@ use index_vec::Idx;
     // Types for which we call the corresponding `visit_$ty` method, which by default explores the
     // type but can be overridden.
     override(
-        DeBruijnId, Ty, Region, ConstGeneric, TraitRef,
+        DeBruijnId, Ty, TyKind, Region, ConstGeneric, TraitRef, TraitRefKind,
         FunDeclRef, GlobalDeclRef, TraitDeclRef, TraitImplRef,
-        GenericArgs, GenericParams,
+        GenericArgs, GenericParams, TraitClause, TraitTypeConstraint,
         for<T: AstVisitable + Idx> DeBruijnVar<T>,
         for<T: AstVisitable> RegionBinder<T>,
         for<T: AstVisitable> Binder<T>,

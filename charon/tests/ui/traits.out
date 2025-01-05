@@ -509,7 +509,7 @@ fn test_crate::{impl test_crate::WithConstTy<32 : usize> for bool}#8::LEN1() -> 
 
 global test_crate::{impl test_crate::WithConstTy<32 : usize> for bool}#8::LEN1: usize = test_crate::{impl test_crate::WithConstTy<32 : usize> for bool}#8::LEN1()
 
-fn test_crate::{impl test_crate::WithConstTy<32 : usize> for bool}#8::f<'_0, '_1>(@1: &'_0 mut (test_crate::{impl test_crate::WithConstTy<32 : usize> for bool}#8::W), @2: &'_1 (Array<u8, 32 : usize>))
+fn test_crate::{impl test_crate::WithConstTy<32 : usize> for bool}#8::f<'_0, '_1>(@1: &'_0 mut (u64), @2: &'_1 (Array<u8, 32 : usize>))
 {
     let @0: (); // return
     let @1: &'_ mut (u64); // arg #1
@@ -592,7 +592,7 @@ where
     return
 }
 
-fn test_crate::test_where2<T>(@1: @TraitClause1::V)
+fn test_crate::test_where2<T>(@1: u32)
 where
     [@TraitClause0]: core::marker::Sized<T>,
     [@TraitClause1]: test_crate::WithConstTy<T, 32 : usize>,

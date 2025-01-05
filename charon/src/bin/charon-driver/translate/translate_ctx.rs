@@ -6,6 +6,7 @@ use charon_lib::formatter::{FmtCtx, IntoFormatter};
 use charon_lib::ids::{MapGenerator, Vector};
 use charon_lib::name_matcher::NamePattern;
 use charon_lib::options::CliOpts;
+use charon_lib::transform::ctx::TransformOptions;
 use charon_lib::ullbc_ast as ast;
 use hax_frontend_exporter::SInto;
 use hax_frontend_exporter::{self as hax, DefPathItem};
@@ -49,6 +50,8 @@ pub struct TranslateOptions {
     /// matches determines the opacity of the item. When no options are provided this is initialized
     /// to treat items in the crate as transparent and items in other crates as foreign.
     pub item_opacities: Vec<(NamePattern, ItemOpacity)>,
+    /// List of traits for which we transform associated types to type parameters.
+    pub remove_associated_types: Vec<NamePattern>,
 }
 
 impl TranslateOptions {
@@ -110,9 +113,31 @@ impl TranslateOptions {
                 .collect()
         };
 
+        let remove_associated_types = options
+            .remove_associated_types
+            .iter()
+            .filter_map(|s| parse_pattern(&s).ok())
+            .collect();
+
         TranslateOptions {
             mir_level,
             item_opacities,
+            remove_associated_types,
+        }
+    }
+
+    pub(crate) fn into_transform_options(
+        self,
+        _error_ctx: &mut ErrorCtx,
+        options: &CliOpts,
+    ) -> TransformOptions {
+        TransformOptions {
+            no_code_duplication: options.no_code_duplication,
+            hide_marker_traits: options.hide_marker_traits,
+            no_merge_goto_chains: options.no_merge_goto_chains,
+            print_built_llbc: options.print_built_llbc,
+            item_opacities: self.item_opacities,
+            remove_associated_types: self.remove_associated_types,
         }
     }
 }

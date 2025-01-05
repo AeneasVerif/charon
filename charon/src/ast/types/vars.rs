@@ -91,6 +91,7 @@ generate_index_type!(RegionId, "Region");
 generate_index_type!(TypeVarId, "T");
 generate_index_type!(ConstGenericVarId, "Const");
 generate_index_type!(TraitClauseId, "TraitClause");
+generate_index_type!(TraitTypeConstraintId, "TraitTypeConstraint");
 
 /// A type variable in a signature or binder.
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize, Drive, DriveMut)]

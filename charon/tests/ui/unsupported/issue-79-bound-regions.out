@@ -575,7 +575,7 @@ where
     [@TraitClause3]: core::ops::function::FnMut<F, (&'_ (T))>,
     @TraitClause3::parent_clause0::Output = bool,
 
-fn core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::Iter<'a, T>[@TraitClause0]}#182::find<'a, '_1, T, P>(@1: &'_1 mut (core::slice::iter::Iter<'a, T>[@TraitClause0]), @2: P) -> core::option::Option<core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::Iter<'a, T>[@TraitClause0]}#182<'_, T>[@TraitClause0]::Item>[core::marker::Sized<&'_ (T)>]
+fn core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::Iter<'a, T>[@TraitClause0]}#182::find<'a, '_1, T, P>(@1: &'_1 mut (core::slice::iter::Iter<'a, T>[@TraitClause0]), @2: P) -> core::option::Option<&'_ (T)>[core::marker::Sized<&'_ (T)>]
 where
     [@TraitClause0]: core::marker::Sized<T>,
     [@TraitClause1]: core::marker::Sized<P>,
@@ -618,7 +618,7 @@ where
     [@TraitClause3]: for<'_0, '_1> core::ops::function::FnMut<F, (&'_0_0 (&'_ (T)), &'_0_1 (&'_ (T)))>,
     for<'_0, '_1> @TraitClause3::parent_clause0::Output = bool,
 
-unsafe fn core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::Iter<'a, T>[@TraitClause0]}#182::__iterator_get_unchecked<'a, '_1, T>(@1: &'_1 mut (core::slice::iter::Iter<'a, T>[@TraitClause0]), @2: usize) -> core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::Iter<'a, T>[@TraitClause0]}#182<'_, T>[@TraitClause0]::Item
+unsafe fn core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::Iter<'a, T>[@TraitClause0]}#182::__iterator_get_unchecked<'a, '_1, T>(@1: &'_1 mut (core::slice::iter::Iter<'a, T>[@TraitClause0]), @2: usize) -> &'_ (T)
 where
     [@TraitClause0]: core::marker::Sized<T>,
 

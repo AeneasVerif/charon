@@ -2,17 +2,15 @@
 
 trait core::marker::Sized<Self>
 
-trait test_crate::Trait<'a, Self>
+trait test_crate::Trait<'a, Self, Self_Type>
 {
-    parent_clause0 : [@TraitClause0]: core::marker::Sized<Self::Type>
-    type Type
+    parent_clause0 : [@TraitClause0]: core::marker::Sized<Self_Type>
 }
 
 fn test_crate::foo<T>()
 where
     [@TraitClause0]: core::marker::Sized<T>,
-    [@TraitClause1]: for<'_0> test_crate::Trait<'_0_0, T>,
-    for<'a> @TraitClause1::Type = &'a (()),
+    [@TraitClause1]: for<'_0> test_crate::Trait<'_0_0, T, &'_ (())>,
 {
     let @0: (); // return
     let @1: (); // anonymous local

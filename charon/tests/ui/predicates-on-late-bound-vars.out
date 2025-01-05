@@ -96,7 +96,7 @@ trait test_crate::Foo<Self>
     type S
 }
 
-fn test_crate::f<T, U>() -> core::option::Option<@TraitClause2::S>[@TraitClause3::parent_clause0]
+fn test_crate::f<T, U>() -> core::option::Option<@TraitClause3::S>[@TraitClause3::parent_clause0]
 where
     [@TraitClause0]: core::marker::Sized<T>,
     [@TraitClause1]: core::marker::Sized<U>,

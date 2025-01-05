@@ -907,6 +907,13 @@ and trait_clause_id_of_json (ctx : of_json_ctx) (js : json) :
     | x -> TraitClauseId.id_of_json ctx x
     | _ -> Error "")
 
+and trait_type_constraint_id_of_json (ctx : of_json_ctx) (js : json) :
+    (trait_type_constraint_id, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with
+    | x -> TraitTypeConstraintId.id_of_json ctx x
+    | _ -> Error "")
+
 and type_var_of_json (ctx : of_json_ctx) (js : json) : (type_var, string) result
     =
   combine_error_msgs js __FUNCTION__
@@ -1202,7 +1209,7 @@ and generic_params_of_json (ctx : of_json_ctx) (js : json) :
             ctx types_outlive
         in
         let* trait_type_constraints =
-          list_of_json
+          vector_of_json trait_type_constraint_id_of_json
             (region_binder_of_json trait_type_constraint_of_json)
             ctx trait_type_constraints
         in
@@ -1619,6 +1626,7 @@ and cli_options_of_json (ctx : of_json_ctx) (js : json) :
           ("include", include_);
           ("opaque", opaque);
           ("exclude", exclude);
+          ("remove_associated_types", remove_associated_types);
           ("hide_marker_traits", hide_marker_traits);
           ("no_cargo", no_cargo);
           ("rustc_args", rustc_args);
@@ -1647,6 +1655,9 @@ and cli_options_of_json (ctx : of_json_ctx) (js : json) :
         let* included = list_of_json string_of_json ctx include_ in
         let* opaque = list_of_json string_of_json ctx opaque in
         let* exclude = list_of_json string_of_json ctx exclude in
+        let* remove_associated_types =
+          list_of_json string_of_json ctx remove_associated_types
+        in
         let* hide_marker_traits = bool_of_json ctx hide_marker_traits in
         let* no_cargo = bool_of_json ctx no_cargo in
         let* rustc_args = list_of_json string_of_json ctx rustc_args in
@@ -1676,6 +1687,7 @@ and cli_options_of_json (ctx : of_json_ctx) (js : json) :
              included;
              opaque;
              exclude;
+             remove_associated_types;
              hide_marker_traits;
              no_cargo;
              rustc_args;

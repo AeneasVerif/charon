@@ -115,12 +115,8 @@ pub enum TraitRefKind {
     #[charon::opaque]
     ItemClause(Box<TraitRefKind>, TraitDeclId, TraitItemName, TraitClauseId),
 
-    /// Self, in case of trait declarations/implementations.
-    ///
-    /// Putting [Self] at the end on purpose, so that when ordering the clauses
-    /// we start with the other clauses (in particular, the local clauses). It
-    /// is useful to give priority to the local clauses when solving the trait
-    /// obligations which are fullfilled by the trait parameters.
+    /// The implicit `Self: Trait` clause. Present inside trait declarations, including trait
+    /// method declarations. Not present in trait implementations as we can use `TraitImpl` intead.
     #[charon::rename("Self")]
     SelfId,
 
@@ -291,7 +287,7 @@ pub struct GenericParams {
     /// The type outlives the region
     pub types_outlive: Vec<RegionBinder<TypeOutlives>>,
     /// Constraints over trait associated types
-    pub trait_type_constraints: Vec<RegionBinder<TraitTypeConstraint>>,
+    pub trait_type_constraints: Vector<TraitTypeConstraintId, RegionBinder<TraitTypeConstraint>>,
 }
 
 /// A predicate of the form `exists<T> where T: Trait`.
@@ -329,7 +325,7 @@ pub enum PredicateOrigin {
     // trait Trait {}
     // ```
     TraitSelf,
-    // Note: this also includes supertrait constraings.
+    // Note: this also includes supertrait constraints.
     // ```
     // trait Trait<T: Clone> {}
     // trait Trait<T> where T: Clone {}

@@ -1,0 +1,10 @@
+error: Could not compute the value of Self::Clause1::Clause0::Clause0::Output needed to update generics <Self::Foo, ()> for item Item(TraitDecl(3)).
+       Constraints in scope:
+         - Self::Foo = @Type0_1
+ --> tests/ui/simple/assoc-type-with-fn-bound.rs:9:5
+  |
+9 |     fn call(&self) -> <Self::Foo as FnOnce<()>>::Output;
+  |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  |
+
+ERROR The extraction generated 1 errors
