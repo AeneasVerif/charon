@@ -118,6 +118,19 @@ impl<T> Binder<T> {
     }
 }
 
+impl<T> RegionBinder<T> {
+    /// Wrap the value in an empty region binder, shifting variables appropriately.
+    pub fn empty(x: T) -> Self
+    where
+        T: TyVisitable,
+    {
+        RegionBinder {
+            regions: Default::default(),
+            skip_binder: x.move_under_binder(),
+        }
+    }
+}
+
 impl GenericArgs {
     pub fn len(&self) -> usize {
         let GenericArgs {
@@ -555,6 +568,11 @@ impl VisitAstMut for SubstVisitor<'_> {
 pub trait TyVisitable: Sized + AstVisitable {
     fn substitute(&mut self, generics: &GenericArgs) {
         self.drive_mut(&mut SubstVisitor::new(generics));
+    }
+
+    /// Move under one binder.
+    fn move_under_binder(self) -> Self {
+        self.move_under_binders(DeBruijnId::one())
     }
 
     /// Move under `depth` binders.
