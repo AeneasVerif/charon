@@ -2,7 +2,9 @@ use crate::translate::translate_crate_to_ullbc;
 use charon_lib::export;
 use charon_lib::options;
 use charon_lib::reorder_decls::compute_reordered_decls;
-use charon_lib::transform::{LLBC_PASSES, ULLBC_PASSES};
+use charon_lib::transform::{
+    FINAL_CLEANUP_PASSES, INITIAL_CLEANUP_PASSES, LLBC_PASSES, ULLBC_PASSES,
+};
 use charon_lib::ullbc_to_llbc;
 use rustc_driver::{Callbacks, Compilation};
 use rustc_interface::{interface::Compiler, Queries};
@@ -231,6 +233,10 @@ pub fn translate(tcx: TyCtxt, internal: &mut CharonCallbacks) -> export::CrateDa
     // serializing the result.
 
     // Run the micro-passes that clean up bodies.
+    for pass in INITIAL_CLEANUP_PASSES.iter() {
+        trace!("# Starting pass {}", pass.name());
+        pass.run(&mut ctx)
+    }
     for pass in ULLBC_PASSES.iter() {
         trace!("# Starting pass {}", pass.name());
         pass.run(&mut ctx)
@@ -265,7 +271,6 @@ pub fn translate(tcx: TyCtxt, internal: &mut CharonCallbacks) -> export::CrateDa
             trace!("# Starting pass {}", pass.name());
             pass.run(&mut ctx)
         }
-
         // # Reorder the graph of dependencies and compute the strictly
         // connex components to:
         // - compute the order in which to extract the definitions
@@ -281,7 +286,11 @@ pub fn translate(tcx: TyCtxt, internal: &mut CharonCallbacks) -> export::CrateDa
         }
     }
 
-    trace!("Done");
+    // Final passes before serialization.
+    for pass in FINAL_CLEANUP_PASSES.iter() {
+        trace!("# Starting pass {}", pass.name());
+        pass.run(&mut ctx)
+    }
 
     // Update the error count
     internal.error_count = ctx.errors.error_count;

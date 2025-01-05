@@ -34,7 +34,8 @@ pub use ctx::TransformCtx;
 use ctx::{LlbcPass, TransformPass, UllbcPass};
 use Pass::*;
 
-pub static ULLBC_PASSES: &[Pass] = &[
+/// Item and type cleanup passes.
+pub static INITIAL_CLEANUP_PASSES: &[Pass] = &[
     // Move clauses on associated types to be parent clauses
     NonBody(&lift_associated_item_clauses::Transform),
     // Check that all supplied generic types match the corresponding generic parameters.
@@ -44,6 +45,14 @@ pub static ULLBC_PASSES: &[Pass] = &[
     // # Micro-pass: filter the trait impls that were marked invisible since we couldn't filter
     // them out earlier.
     NonBody(&filter_invisible_trait_impls::Transform),
+    // # Micro-pass: whenever we call a trait method on a known type, refer to the method `FunDecl`
+    // directly instead of going via a `TraitRef`. This is done before `reorder_decls` to remove
+    // some sources of mutual recursion.
+    UnstructuredBody(&skip_trait_refs_when_known::Transform),
+];
+
+/// Body cleanup passes on the ullbc.
+pub static ULLBC_PASSES: &[Pass] = &[
     // # Micro-pass: merge single-origin gotos into their parent. This drastically reduces the
     // graph size of the CFG.
     UnstructuredBody(&merge_goto_chains::Transform),
@@ -64,10 +73,6 @@ pub static ULLBC_PASSES: &[Pass] = &[
     // # Micro-pass: desugar the constants to other values/operands as much
     // as possible.
     UnstructuredBody(&simplify_constants::Transform),
-    // # Micro-pass: whenever we call a trait method on a known type, refer to the method `FunDecl`
-    // directly instead of going via a `TraitRef`. This is done before `reorder_decls` to remove
-    // some sources of mutual recursion.
-    UnstructuredBody(&skip_trait_refs_when_known::Transform),
     // # Micro-pass: the first local variable of closures is the
     // closure itself. This is not consistent with the closure signature,
     // which ignores this first variable. This micro-pass updates this.
@@ -91,6 +96,7 @@ pub static ULLBC_PASSES: &[Pass] = &[
     UnstructuredBody(&filter_unreachable_blocks::Transform),
 ];
 
+/// Body cleanup passes after control flow reconstruction.
 pub static LLBC_PASSES: &[Pass] = &[
     // # Micro-pass: `panic!()` expands to a new function definition each time. This pass cleans
     // those up.
@@ -126,6 +132,10 @@ pub static LLBC_PASSES: &[Pass] = &[
     // statements. This must be last after all the statement-affecting passes to avoid losing
     // comments.
     StructuredBody(&recover_body_comments::Transform),
+];
+
+/// Final passes to run at the end.
+pub static FINAL_CLEANUP_PASSES: &[Pass] = &[
     // Check that all supplied generic types match the corresponding generic parameters.
     NonBody(&check_generics::Check("after transformations")),
     // Use `DeBruijnVar::Free` for the variables bound in item signatures.
