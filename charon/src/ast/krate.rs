@@ -227,12 +227,12 @@ impl<'ctx> AnyTransItem<'ctx> {
     /// We can't implement `AstVisitable` because of the `'static` constraint, but it's ok because
     /// `AnyTransItem` isn't contained in any of our types.
     pub fn drive<V: VisitAst>(&self, visitor: &mut V) -> ControlFlow<V::Break> {
-        match self {
-            AnyTransItem::Type(d) => d.drive(visitor),
-            AnyTransItem::Fun(d) => d.drive(visitor),
-            AnyTransItem::Global(d) => d.drive(visitor),
-            AnyTransItem::TraitDecl(d) => d.drive(visitor),
-            AnyTransItem::TraitImpl(d) => d.drive(visitor),
+        match *self {
+            AnyTransItem::Type(d) => visitor.visit(d),
+            AnyTransItem::Fun(d) => visitor.visit(d),
+            AnyTransItem::Global(d) => visitor.visit(d),
+            AnyTransItem::TraitDecl(d) => visitor.visit(d),
+            AnyTransItem::TraitImpl(d) => visitor.visit(d),
         }
     }
 }
@@ -263,11 +263,11 @@ impl<'ctx> AnyTransItemMut<'ctx> {
     /// `AnyTransItemMut` isn't contained in any of our types.
     pub fn drive_mut<V: VisitAstMut>(&mut self, visitor: &mut V) -> ControlFlow<V::Break> {
         match self {
-            AnyTransItemMut::Type(d) => d.drive_mut(visitor),
-            AnyTransItemMut::Fun(d) => d.drive_mut(visitor),
-            AnyTransItemMut::Global(d) => d.drive_mut(visitor),
-            AnyTransItemMut::TraitDecl(d) => d.drive_mut(visitor),
-            AnyTransItemMut::TraitImpl(d) => d.drive_mut(visitor),
+            AnyTransItemMut::Type(d) => visitor.visit(*d),
+            AnyTransItemMut::Fun(d) => visitor.visit(*d),
+            AnyTransItemMut::Global(d) => visitor.visit(*d),
+            AnyTransItemMut::TraitDecl(d) => visitor.visit(*d),
+            AnyTransItemMut::TraitImpl(d) => visitor.visit(*d),
         }
     }
 }

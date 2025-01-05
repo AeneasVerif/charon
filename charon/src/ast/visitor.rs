@@ -75,6 +75,10 @@ use index_vec::Idx;
     )
 )]
 pub trait AstVisitable: Any {
+    /// The name of the type, used for debug logging.
+    fn name(&self) -> &'static str {
+        std::any::type_name::<Self>()
+    }
     /// Visit all occurrences of that type inside `self`, in pre-order traversal.
     fn dyn_visit<T: AstVisitable>(&self, f: impl FnMut(&T)) {
         self.drive(&mut DynVisitor::new_shared::<T>(f));

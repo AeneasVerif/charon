@@ -1,5 +1,6 @@
 //! Check that all supplied generic types match the corresponding generic parameters.
 use derive_generic_visitor::*;
+use itertools::Itertools;
 use std::fmt::Display;
 
 use crate::{errors::ErrorCtx, llbc_ast::*, register_error_or_panic};
@@ -13,16 +14,29 @@ struct CheckGenericsVisitor<'a> {
     error_ctx: &'a mut ErrorCtx,
     // Tracks an enclosing span to make errors useful.
     span: Span,
+    /// Remember the names of the types visited up to here.
+    visit_stack: Vec<&'static str>,
 }
 
 impl CheckGenericsVisitor<'_> {
     fn error(&mut self, message: impl Display) {
-        let message = format!("Found inconsistent generics {}:\n{message}", self.phase);
+        let message = format!(
+            "Found inconsistent generics {}:\n{message}\nVisitor stack:\n  {}",
+            self.phase,
+            self.visit_stack.iter().rev().join("\n  ")
+        );
         register_error_or_panic!(self.error_ctx, self.translated, self.span, message);
     }
 }
 
 impl VisitAst for CheckGenericsVisitor<'_> {
+    fn visit<'a, T: AstVisitable>(&'a mut self, x: &T) -> ControlFlow<Self::Break> {
+        self.visit_stack.push(x.name());
+        x.drive(self)?; // default behavior
+        self.visit_stack.pop();
+        Continue(())
+    }
+
     fn visit_aggregate_kind(&mut self, agg: &AggregateKind) -> ControlFlow<Self::Break> {
         match agg {
             AggregateKind::Adt(..) => self.visit_inner(agg)?,
@@ -116,6 +130,7 @@ impl TransformPass for Check {
                 error_ctx: &mut ctx.errors,
                 phase: self.0,
                 span: item.item_meta().span,
+                visit_stack: Default::default(),
             };
             item.drive(&mut visitor);
         }
