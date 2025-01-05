@@ -234,11 +234,6 @@ pub struct RegionBinder<T> {
     pub skip_binder: T,
 }
 
-// Renames useful for visitor derives
-pub type BoundTypeOutlives = RegionBinder<TypeOutlives>;
-pub type BoundRegionOutlives = RegionBinder<RegionOutlives>;
-pub type BoundTraitTypeConstraint = RegionBinder<TraitTypeConstraint>;
-
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize, Drive, DriveMut)]
 #[charon::variants_prefix("BK")]
 pub enum BinderKind {
@@ -283,11 +278,11 @@ pub struct GenericParams {
     // TODO: rename to match [GenericArgs]?
     pub trait_clauses: Vector<TraitClauseId, TraitClause>,
     /// The first region in the pair outlives the second region
-    pub regions_outlive: Vec<BoundRegionOutlives>,
+    pub regions_outlive: Vec<RegionBinder<RegionOutlives>>,
     /// The type outlives the region
-    pub types_outlive: Vec<BoundTypeOutlives>,
+    pub types_outlive: Vec<RegionBinder<TypeOutlives>>,
     /// Constraints over trait associated types
-    pub trait_type_constraints: Vec<BoundTraitTypeConstraint>,
+    pub trait_type_constraints: Vec<RegionBinder<TraitTypeConstraint>>,
 }
 
 /// A predicate of the form `exists<T> where T: Trait`.
@@ -694,10 +689,8 @@ pub enum TyKind {
     /// This is essentially a "constrained" function signature:
     /// arrow types can only contain generic lifetime parameters
     /// (no generic types), no predicates, etc.
-    Arrow(BoundArrowSig),
+    Arrow(RegionBinder<(Vec<Ty>, Ty)>),
 }
-
-pub type BoundArrowSig = RegionBinder<(Vec<Ty>, Ty)>;
 
 /// Builtin types identifiers.
 ///
