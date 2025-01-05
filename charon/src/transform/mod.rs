@@ -98,6 +98,8 @@ pub static ULLBC_PASSES: &[Pass] = &[
 
 /// Body cleanup passes after control flow reconstruction.
 pub static LLBC_PASSES: &[Pass] = &[
+    // # Go from ULLBC to LLBC (Low-Level Borrow Calculus) by reconstructing the control flow.
+    NonBody(&ullbc_to_llbc::Transform),
     // # Micro-pass: `panic!()` expands to a new function definition each time. This pass cleans
     // those up.
     StructuredBody(&inline_local_panic_functions::Transform),
@@ -132,6 +134,11 @@ pub static LLBC_PASSES: &[Pass] = &[
     // statements. This must be last after all the statement-affecting passes to avoid losing
     // comments.
     StructuredBody(&recover_body_comments::Transform),
+    // # Reorder the graph of dependencies and compute the strictly connex components to:
+    // - compute the order in which to extract the definitions
+    // - find the recursive definitions
+    // - group the mutually recursive definitions
+    NonBody(&reorder_decls::Transform),
 ];
 
 /// Final passes to run at the end.

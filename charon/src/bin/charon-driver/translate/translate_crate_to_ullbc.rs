@@ -301,6 +301,7 @@ pub fn translate<'tcx, 'ctx>(
         no_code_duplication: options.no_code_duplication,
         hide_marker_traits: options.hide_marker_traits,
         no_merge_goto_chains: options.no_merge_goto_chains,
+        print_built_llbc: options.print_built_llbc,
         item_opacities: ctx.options.item_opacities,
     };
 

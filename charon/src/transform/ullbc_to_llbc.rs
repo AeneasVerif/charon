@@ -36,6 +36,8 @@ use petgraph::Direction;
 use std::cmp::Ordering;
 use std::collections::{BTreeSet, HashMap, HashSet, VecDeque};
 
+use super::ctx::TransformPass;
+
 /// Control-Flow Graph
 type Cfg = DiGraphMap<src::BlockId, ()>;
 
@@ -1742,28 +1744,34 @@ fn translate_body(ctx: &mut TransformCtx, no_code_duplication: bool, body: &mut 
     *body = Structured(tgt_body);
 }
 
-/// Translate the functions by reconstructing the control-flow.
-pub fn translate_functions(ctx: &mut TransformCtx) {
-    // Translate the bodies one at a time.
-    ctx.for_each_body(|ctx, body| {
-        translate_body(ctx, ctx.options.no_code_duplication, body);
-    });
+pub struct Transform;
+impl TransformPass for Transform {
+    fn transform_ctx(&self, ctx: &mut TransformCtx) {
+        // Translate the bodies one at a time.
+        ctx.for_each_body(|ctx, body| {
+            translate_body(ctx, ctx.options.no_code_duplication, body);
+        });
 
-    // Print the functions
-    let fmt_ctx = ctx.into_fmt();
-    for fun in &ctx.translated.fun_decls {
-        trace!(
-            "# Signature:\n{}\n\n# Function definition:\n{}\n",
-            fmt_ctx.format_object(&fun.signature),
-            fmt_ctx.format_object(fun),
-        );
-    }
-    // Print the global variables
-    for global in &ctx.translated.global_decls {
-        trace!(
-            "# Type:\n{}\n\n# Global definition:\n{}\n",
-            fmt_ctx.format_object(&global.ty),
-            fmt_ctx.format_object(global)
-        );
+        // Print the functions
+        let fmt_ctx = ctx.into_fmt();
+        for fun in &ctx.translated.fun_decls {
+            trace!(
+                "# Signature:\n{}\n\n# Function definition:\n{}\n",
+                fmt_ctx.format_object(&fun.signature),
+                fmt_ctx.format_object(fun),
+            );
+        }
+        // Print the global variables
+        for global in &ctx.translated.global_decls {
+            trace!(
+                "# Type:\n{}\n\n# Global definition:\n{}\n",
+                fmt_ctx.format_object(&global.ty),
+                fmt_ctx.format_object(global)
+            );
+        }
+
+        if ctx.options.print_built_llbc {
+            info!("# LLBC resulting from control-flow reconstruction:\n\n{ctx}\n",);
+        }
     }
 }
