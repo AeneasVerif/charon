@@ -88,26 +88,35 @@ impl BodyTransCtx<'_, '_> {
             match &hax_def.kind {
                 hax::FullDefKind::AssocFn { .. } => {
                     let fun_def = self.t_ctx.hax_def(item_def_id)?;
-                    let fn_ref = self.translate_binder_for_def(item_span, &fun_def, |bt_ctx| {
-                        let fun_id = bt_ctx.register_fun_decl_id(item_span, item_def_id);
-                        // TODO: there's probably a cleaner way to write this
-                        assert_eq!(bt_ctx.binding_levels.len(), 2);
-                        let fun_generics = bt_ctx
-                            .outermost_binder()
-                            .params
-                            .identity_args_at_depth(GenericsSource::item(def_id), DeBruijnId::one())
-                            .concat(
-                                GenericsSource::item(fun_id),
-                                &bt_ctx.innermost_binder().params.identity_args_at_depth(
-                                    GenericsSource::Method(def_id.into(), item_name.clone()),
-                                    DeBruijnId::zero(),
-                                ),
-                            );
-                        Ok(FunDeclRef {
-                            id: fun_id,
-                            generics: fun_generics,
-                        })
-                    })?;
+                    let binder_kind = BinderKind::TraitMethod(def_id, item_name.clone());
+                    let fn_ref = self.translate_binder_for_def(
+                        item_span,
+                        binder_kind,
+                        &fun_def,
+                        |bt_ctx| {
+                            let fun_id = bt_ctx.register_fun_decl_id(item_span, item_def_id);
+                            // TODO: there's probably a cleaner way to write this
+                            assert_eq!(bt_ctx.binding_levels.len(), 2);
+                            let fun_generics = bt_ctx
+                                .outermost_binder()
+                                .params
+                                .identity_args_at_depth(
+                                    GenericsSource::item(def_id),
+                                    DeBruijnId::one(),
+                                )
+                                .concat(
+                                    GenericsSource::item(fun_id),
+                                    &bt_ctx.innermost_binder().params.identity_args_at_depth(
+                                        GenericsSource::Method(def_id.into(), item_name.clone()),
+                                        DeBruijnId::zero(),
+                                    ),
+                                );
+                            Ok(FunDeclRef {
+                                id: fun_id,
+                                generics: fun_generics,
+                            })
+                        },
+                    )?;
                     if hax_item.has_value {
                         // This is a provided method,
                         provided_methods.push((item_name.clone(), fn_ref));
@@ -257,8 +266,12 @@ impl BodyTransCtx<'_, '_> {
                     match &impl_item.value {
                         Provided { is_override, .. } => {
                             let fun_def = self.t_ctx.hax_def(item_def_id)?;
-                            let fn_ref =
-                                self.translate_binder_for_def(item_span, &fun_def, |bt_ctx| {
+                            let binder_kind = BinderKind::TraitMethod(trait_id, name.clone());
+                            let fn_ref = self.translate_binder_for_def(
+                                item_span,
+                                binder_kind,
+                                &fun_def,
+                                |bt_ctx| {
                                     // TODO: there's probably a cleaner way to write this
                                     assert_eq!(bt_ctx.binding_levels.len(), 2);
                                     let fun_generics = bt_ctx
@@ -285,7 +298,8 @@ impl BodyTransCtx<'_, '_> {
                                         id: fun_id,
                                         generics: fun_generics,
                                     })
-                                })?;
+                                },
+                            )?;
                             if *is_override {
                                 provided_methods.push((name, fn_ref));
                             } else {

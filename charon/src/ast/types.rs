@@ -197,6 +197,7 @@ pub struct TraitTypeConstraint {
 
 /// Each `GenericArgs` is meant for a corresponding `GenericParams`; this describes which one.
 #[derive(Debug, Clone, Eq, PartialEq, Hash, Serialize, Deserialize, Drive, DriveMut)]
+#[charon::variants_prefix("GS")]
 pub enum GenericsSource {
     /// A top-level item.
     Item(AnyTransId),
@@ -238,9 +239,21 @@ pub type BoundTypeOutlives = RegionBinder<TypeOutlives>;
 pub type BoundRegionOutlives = RegionBinder<RegionOutlives>;
 pub type BoundTraitTypeConstraint = RegionBinder<TraitTypeConstraint>;
 
+#[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize, Drive, DriveMut)]
+#[charon::variants_prefix("BK")]
+pub enum BinderKind {
+    /// The parameters of a trait method. Used in the `methods` lists in trait decls and trait
+    /// impls.
+    TraitMethod(TraitDeclId, TraitItemName),
+    /// The parameters bound in a non-trait `impl` block. Used in the `Name`s of inherent methods.
+    InherentImplBlock,
+    /// Some other use of a binder outside the main Charon ast.
+    Other,
+}
+
 /// A value of type `T` bound by generic parameters. Used in any context where we're adding generic
-/// parameters that aren't on the top-level item, e.g. `for<'a>` clauses, trait methods (TODO),
-/// GATs (TODO).
+/// parameters that aren't on the top-level item, e.g. `for<'a>` clauses (uses `RegionBinder` for
+/// now), trait methods, GATs (TODO).
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize, Drive, DriveMut)]
 pub struct Binder<T> {
     #[charon::rename("binder_params")]
@@ -249,6 +262,10 @@ pub struct Binder<T> {
     /// incorrectly. Prefer using helper methods.
     #[charon::rename("binder_value")]
     pub skip_binder: T,
+    /// The kind of binder this is.
+    #[charon::opaque]
+    #[drive(skip)]
+    pub kind: BinderKind,
 }
 
 /// Generic parameters for a declaration.

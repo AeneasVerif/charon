@@ -98,10 +98,11 @@ impl GenericParams {
 }
 
 impl<T> Binder<T> {
-    pub fn new(params: GenericParams, skip_binder: T) -> Self {
+    pub fn new(kind: BinderKind, params: GenericParams, skip_binder: T) -> Self {
         Self {
             params,
             skip_binder,
+            kind,
         }
     }
 

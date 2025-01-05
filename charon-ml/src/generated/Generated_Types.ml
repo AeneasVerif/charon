@@ -300,9 +300,9 @@ and trait_impl_ref = {
 
 (** Each `GenericArgs` is meant for a corresponding `GenericParams`; this describes which one. *)
 and generics_source =
-  | Item of any_decl_id  (** A top-level item. *)
-  | Method of trait_decl_id * trait_item_name  (** A trait method. *)
-  | Builtin  (** A builtin item like `Box`. *)
+  | GSItem of any_decl_id  (** A top-level item. *)
+  | GSMethod of trait_decl_id * trait_item_name  (** A trait method. *)
+  | GSBuiltin  (** A builtin item like `Box`. *)
 
 (** A set of generic arguments. *)
 and generic_args = {
@@ -578,9 +578,18 @@ and trait_type_constraint = {
   ty : ty;
 }
 
+and binder_kind =
+  | BKTraitMethod of trait_decl_id * trait_item_name
+      (** The parameters of a trait method. Used in the `methods` lists in trait decls and trait
+          impls.
+       *)
+  | BKInherentImplBlock
+      (** The parameters bound in a non-trait `impl` block. Used in the `Name`s of inherent methods. *)
+  | BKOther  (** Some other use of a binder outside the main Charon ast. *)
+
 (** A value of type `T` bound by generic parameters. Used in any context where we're adding generic
-    parameters that aren't on the top-level item, e.g. `for<'a>` clauses, trait methods (TODO),
-    GATs (TODO).
+    parameters that aren't on the top-level item, e.g. `for<'a>` clauses (uses `RegionBinder` for
+    now), trait methods, GATs (TODO).
  *)
 and 'a0 binder = {
   binder_params : generic_params;

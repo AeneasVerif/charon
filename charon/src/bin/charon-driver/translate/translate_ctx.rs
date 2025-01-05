@@ -441,6 +441,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
                         bt_ctx.translate_def_generics(span, &full_def)?;
                         let ty = bt_ctx.translate_ty(span, &ty)?;
                         ImplElem::Ty(Binder {
+                            kind: BinderKind::InherentImplBlock,
                             params: bt_ctx.into_generics(),
                             skip_binder: ty,
                         })
@@ -1247,6 +1248,7 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
     pub(crate) fn translate_binder_for_def<F, U>(
         &mut self,
         span: Span,
+        kind: BinderKind,
         def: &hax::FullDef,
         f: F,
     ) -> Result<Binder<U>, Error>
@@ -1266,6 +1268,7 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
 
         // Return
         res.map(|skip_binder| Binder {
+            kind,
             params,
             skip_binder,
         })
