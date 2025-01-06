@@ -12,6 +12,8 @@ use serde::{Deserialize, Serialize};
 use std::fmt::{Debug, Display, Error};
 use std::vec::Vec;
 
+use super::ctx::TransformPass;
+
 /// A (group of) top-level declaration(s), properly reordered.
 /// "G" stands for "generic"
 #[derive(
@@ -483,7 +485,7 @@ fn group_declarations_from_scc(
     reordered_decls
 }
 
-pub fn compute_reordered_decls(ctx: &TransformCtx) -> DeclarationsGroups {
+fn compute_reordered_decls(ctx: &TransformCtx) -> DeclarationsGroups {
     trace!();
 
     // Step 1: explore the declarations to build the graph
@@ -514,6 +516,14 @@ pub fn compute_reordered_decls(ctx: &TransformCtx) -> DeclarationsGroups {
 
     trace!("{:?}", reordered_decls);
     reordered_decls
+}
+
+pub struct Transform;
+impl TransformPass for Transform {
+    fn transform_ctx(&self, ctx: &mut TransformCtx) {
+        let reordered_decls = compute_reordered_decls(&ctx);
+        ctx.translated.ordered_decls = Some(reordered_decls);
+    }
 }
 
 #[cfg(test)]

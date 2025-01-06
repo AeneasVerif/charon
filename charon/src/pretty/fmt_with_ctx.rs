@@ -304,6 +304,7 @@ impl GenericArgs {
             types,
             const_generics,
             trait_refs: _,
+            target: _,
         } = self;
         for x in regions {
             params.push(x.fmt_with_ctx(ctx));
@@ -327,6 +328,7 @@ impl GenericArgs {
             types,
             const_generics,
             trait_refs,
+            target: _,
         } = self;
         for x in regions {
             params.push(x.fmt_with_ctx(ctx));

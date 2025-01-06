@@ -1,9 +1,9 @@
 use crate::translate::translate_crate_to_ullbc;
 use charon_lib::export;
 use charon_lib::options;
-use charon_lib::reorder_decls::compute_reordered_decls;
-use charon_lib::transform::{LLBC_PASSES, ULLBC_PASSES};
-use charon_lib::ullbc_to_llbc;
+use charon_lib::transform::{
+    FINAL_CLEANUP_PASSES, INITIAL_CLEANUP_PASSES, LLBC_PASSES, ULLBC_PASSES,
+};
 use rustc_driver::{Callbacks, Compilation};
 use rustc_interface::{interface::Compiler, Queries};
 use rustc_middle::ty::TyCtxt;
@@ -231,6 +231,10 @@ pub fn translate(tcx: TyCtxt, internal: &mut CharonCallbacks) -> export::CrateDa
     // serializing the result.
 
     // Run the micro-passes that clean up bodies.
+    for pass in INITIAL_CLEANUP_PASSES.iter() {
+        trace!("# Starting pass {}", pass.name());
+        pass.run(&mut ctx)
+    }
     for pass in ULLBC_PASSES.iter() {
         trace!("# Starting pass {}", pass.name());
         pass.run(&mut ctx)
@@ -252,27 +256,11 @@ pub fn translate(tcx: TyCtxt, internal: &mut CharonCallbacks) -> export::CrateDa
     // - or they want the structured LLBC, in which case we reconstruct the
     //   control-flow and apply micro-passes
     if !options.ullbc {
-        // # Go from ULLBC to LLBC (Low-Level Borrow Calculus) by reconstructing
-        // the control flow.
-        ullbc_to_llbc::translate_functions(&mut ctx);
-
-        if options.print_built_llbc {
-            info!("# LLBC resulting from control-flow reconstruction:\n\n{ctx}\n",);
-        }
-
         // Run the micro-passes that clean up bodies.
         for pass in LLBC_PASSES.iter() {
             trace!("# Starting pass {}", pass.name());
             pass.run(&mut ctx)
         }
-
-        // # Reorder the graph of dependencies and compute the strictly
-        // connex components to:
-        // - compute the order in which to extract the definitions
-        // - find the recursive definitions
-        // - group the mutually recursive definitions
-        let reordered_decls = compute_reordered_decls(&ctx);
-        ctx.translated.ordered_decls = Some(reordered_decls);
 
         if options.print_llbc {
             println!("# Final LLBC before serialization:\n\n{ctx}\n");
@@ -281,7 +269,11 @@ pub fn translate(tcx: TyCtxt, internal: &mut CharonCallbacks) -> export::CrateDa
         }
     }
 
-    trace!("Done");
+    // Final passes before serialization.
+    for pass in FINAL_CLEANUP_PASSES.iter() {
+        trace!("# Starting pass {}", pass.name());
+        pass.run(&mut ctx)
+    }
 
     // Update the error count
     internal.error_count = ctx.errors.error_count;

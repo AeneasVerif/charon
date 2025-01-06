@@ -1057,6 +1057,20 @@ and trait_type_constraint_of_json (ctx : of_json_ctx) (js : json) :
         Ok ({ trait_ref; type_name; ty } : trait_type_constraint)
     | _ -> Error "")
 
+and generics_source_of_json (ctx : of_json_ctx) (js : json) :
+    (generics_source, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with
+    | `Assoc [ ("Item", item) ] ->
+        let* item = any_decl_id_of_json ctx item in
+        Ok (Item item)
+    | `Assoc [ ("Method", `List [ x_0; x_1 ]) ] ->
+        let* x_0 = trait_decl_id_of_json ctx x_0 in
+        let* x_1 = trait_item_name_of_json ctx x_1 in
+        Ok (Method (x_0, x_1))
+    | `String "Builtin" -> Ok Builtin
+    | _ -> Error "")
+
 and generic_args_of_json (ctx : of_json_ctx) (js : json) :
     (generic_args, string) result =
   combine_error_msgs js __FUNCTION__
@@ -1067,6 +1081,7 @@ and generic_args_of_json (ctx : of_json_ctx) (js : json) :
           ("types", types);
           ("const_generics", const_generics);
           ("trait_refs", trait_refs);
+          ("target", _);
         ] ->
         let* regions =
           vector_of_json region_id_of_json region_of_json ctx regions

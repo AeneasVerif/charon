@@ -95,12 +95,13 @@ impl BodyTransCtx<'_, '_> {
                         let fun_generics = bt_ctx
                             .outermost_binder()
                             .params
-                            .identity_args_at_depth(DeBruijnId::one())
+                            .identity_args_at_depth(GenericsSource::item(def_id), DeBruijnId::one())
                             .concat(
-                                &bt_ctx
-                                    .innermost_binder()
-                                    .params
-                                    .identity_args_at_depth(DeBruijnId::zero()),
+                                GenericsSource::item(fun_id),
+                                &bt_ctx.innermost_binder().params.identity_args_at_depth(
+                                    GenericsSource::Method(def_id.into(), item_name.clone()),
+                                    DeBruijnId::zero(),
+                                ),
                             );
                         Ok(FunDeclRef {
                             id: fun_id,
@@ -120,9 +121,11 @@ impl BodyTransCtx<'_, '_> {
                     if hax_item.has_value {
                         // The parameters of the constant are the same as those of the item that
                         // declares them.
+                        let id = self.register_global_decl_id(item_span, item_def_id);
+                        let generics_target = GenericsSource::item(id);
                         let gref = GlobalDeclRef {
-                            id: self.register_global_decl_id(item_span, item_def_id),
-                            generics: self.the_only_binder().params.identity_args(),
+                            id,
+                            generics: self.the_only_binder().params.identity_args(generics_target),
                         };
                         const_defaults.insert(item_name.clone(), gref);
                     };
@@ -211,8 +214,13 @@ impl BodyTransCtx<'_, '_> {
         let trait_id = self.register_trait_decl_id(span, implemented_trait_id);
         let implemented_trait = {
             let implemented_trait = &trait_pred.trait_ref;
-            let generics =
-                self.translate_generic_args(span, &implemented_trait.generic_args, &[], None)?;
+            let generics = self.translate_generic_args(
+                span,
+                &implemented_trait.generic_args,
+                &[],
+                None,
+                GenericsSource::item(trait_id),
+            )?;
             TraitDeclRef { trait_id, generics }
         };
 
@@ -256,12 +264,22 @@ impl BodyTransCtx<'_, '_> {
                                     let fun_generics = bt_ctx
                                         .outermost_binder()
                                         .params
-                                        .identity_args_at_depth(DeBruijnId::one())
+                                        .identity_args_at_depth(
+                                            GenericsSource::item(def_id),
+                                            DeBruijnId::one(),
+                                        )
                                         .concat(
+                                            GenericsSource::item(fun_id),
                                             &bt_ctx
                                                 .innermost_binder()
                                                 .params
-                                                .identity_args_at_depth(DeBruijnId::zero()),
+                                                .identity_args_at_depth(
+                                                    GenericsSource::Method(
+                                                        trait_id.into(),
+                                                        name.clone(),
+                                                    ),
+                                                    DeBruijnId::zero(),
+                                                ),
                                         );
                                     Ok(FunDeclRef {
                                         id: fun_id,
@@ -282,11 +300,17 @@ impl BodyTransCtx<'_, '_> {
                 }
                 hax::FullDefKind::AssocConst { .. } => {
                     let id = self.register_global_decl_id(item_span, item_def_id);
+                    let generics_target = GenericsSource::item(id);
                     // The parameters of the constant are the same as those of the item that
                     // declares them.
                     let generics = match &impl_item.value {
-                        Provided { .. } => self.the_only_binder().params.identity_args(),
-                        _ => implemented_trait.generics.clone(),
+                        Provided { .. } => {
+                            self.the_only_binder().params.identity_args(generics_target)
+                        }
+                        _ => implemented_trait
+                            .generics
+                            .clone()
+                            .with_target(generics_target),
                     };
                     let gref = GlobalDeclRef { id, generics };
                     consts.push((name, gref));

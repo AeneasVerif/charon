@@ -1,5 +1,6 @@
 //! Check that all supplied generic types match the corresponding generic parameters.
 use derive_generic_visitor::*;
+use itertools::Itertools;
 use std::fmt::Display;
 
 use crate::{errors::ErrorCtx, llbc_ast::*, register_error_or_panic};
@@ -9,142 +10,76 @@ use super::{ctx::TransformPass, TransformCtx};
 #[derive(Visitor)]
 struct CheckGenericsVisitor<'a> {
     translated: &'a TranslatedCrate,
+    phase: &'static str,
     error_ctx: &'a mut ErrorCtx,
-    // Count how many `GenericArgs` we handled. This is to make sure we don't miss one.
-    discharged_args: u32,
     // Tracks an enclosing span to make errors useful.
-    item_span: Span,
+    span: Span,
+    /// Remember the names of the types visited up to here.
+    visit_stack: Vec<&'static str>,
 }
 
 impl CheckGenericsVisitor<'_> {
     fn error(&mut self, message: impl Display) {
-        let span = self.item_span;
-        let message = message.to_string();
-        register_error_or_panic!(self.error_ctx, self.translated, span, message);
+        let message = format!(
+            "Found inconsistent generics {}:\n{message}\nVisitor stack:\n  {}",
+            self.phase,
+            self.visit_stack.iter().rev().join("\n  ")
+        );
+        register_error_or_panic!(self.error_ctx, self.translated, self.span, message);
+    }
+}
+
+impl VisitAst for CheckGenericsVisitor<'_> {
+    fn visit<'a, T: AstVisitable>(&'a mut self, x: &T) -> ControlFlow<Self::Break> {
+        self.visit_stack.push(x.name());
+        x.drive(self)?; // default behavior
+        self.visit_stack.pop();
+        Continue(())
     }
 
-    /// Count that we just discharged one instance of `GenericArgs`.
-    fn discharged_one_generics(&mut self) {
-        self.discharged_args += 1;
+    fn visit_aggregate_kind(&mut self, agg: &AggregateKind) -> ControlFlow<Self::Break> {
+        match agg {
+            AggregateKind::Adt(..) => self.visit_inner(agg)?,
+            AggregateKind::Closure(_id, args) => {
+                // TODO(#194): handle closure generics properly
+                // This does not visit the args themselves, only their contents, because we mess up
+                // closure generics for now.
+                self.visit_inner(args)?
+            }
+            AggregateKind::Array(..) => self.visit_inner(agg)?,
+        }
+        Continue(())
     }
 
-    fn generics_should_match(&mut self, args: &GenericArgs, params: &GenericParams) {
-        self.discharged_one_generics();
+    fn enter_generic_args(&mut self, args: &GenericArgs) {
+        let params = match &args.target {
+            GenericsSource::Item(item_id) => {
+                let Some(item) = self.translated.get_item(*item_id) else {
+                    return;
+                };
+                item.generic_params()
+            }
+            GenericsSource::Method(trait_id, method_name) => {
+                let Some(trait_decl) = self.translated.trait_decls.get(*trait_id) else {
+                    return;
+                };
+                let Some((_, bound_fn)) = trait_decl
+                    .required_methods
+                    .iter()
+                    .chain(trait_decl.provided_methods.iter())
+                    .find(|(n, _)| n == method_name)
+                else {
+                    return;
+                };
+                &bound_fn.params
+            }
+            GenericsSource::Builtin => return,
+        };
         if !args.matches(params) {
             self.error(format!(
                 "Mismatched generics:\nexpected: {params:?}\n     got: {args:?}"
             ))
         }
-    }
-    fn generics_should_match_item(&mut self, args: &GenericArgs, item_id: impl Into<AnyTransId>) {
-        if let Some(item) = self.translated.get_item(item_id.into()) {
-            let params = item.generic_params();
-            self.generics_should_match(args, params);
-        } else {
-            self.discharged_one_generics();
-        }
-    }
-    fn check_typeid_generics(&mut self, args: &GenericArgs, ty_kind: &TypeId) {
-        match ty_kind {
-            TypeId::Adt(id) => self.generics_should_match_item(args, *id),
-            TypeId::Tuple => {
-                self.discharged_one_generics();
-                if !(args.regions.is_empty()
-                    && args.const_generics.is_empty()
-                    && args.trait_refs.is_empty())
-                {
-                    self.error("Mismatched generics: generics for a tuple should be only types")
-                }
-            }
-            TypeId::Builtin(..) => {
-                // TODO: check generics for built-in types
-                self.discharged_one_generics()
-            }
-        }
-    }
-}
-
-// Visitor functions
-impl VisitAst for CheckGenericsVisitor<'_> {
-    fn enter_aggregate_kind(&mut self, agg: &AggregateKind) {
-        match agg {
-            AggregateKind::Adt(kind, _, _, args) => {
-                self.check_typeid_generics(args, kind);
-            }
-            AggregateKind::Closure(_id, _args) => {
-                // TODO(#194): handle closure generics properly
-                // self.generics_should_match_item(args, *id);
-                self.discharged_one_generics()
-            }
-            AggregateKind::Array(..) => {}
-        }
-    }
-    fn enter_fn_ptr(&mut self, fn_ptr: &FnPtr) {
-        match &fn_ptr.func {
-            FunIdOrTraitMethodRef::Fun(FunId::Regular(id)) => {
-                let args = &fn_ptr.generics;
-                self.generics_should_match_item(args, *id);
-            }
-            FunIdOrTraitMethodRef::Trait(tref, method, _) => {
-                let trait_id = tref.trait_decl_ref.skip_binder.trait_id;
-                if let Some(trait_decl) = self.translated.trait_decls.get(trait_id) {
-                    if let Some((_, bound_fn)) = trait_decl
-                        .required_methods
-                        .iter()
-                        .chain(trait_decl.provided_methods.iter())
-                        .find(|(n, _)| n == method)
-                    {
-                        // Function generics should match expected method generics.
-                        self.generics_should_match(&fn_ptr.generics, &bound_fn.params);
-                    } else {
-                        self.discharged_one_generics()
-                    }
-                } else {
-                    self.discharged_one_generics()
-                }
-            }
-            FunIdOrTraitMethodRef::Fun(FunId::Builtin(..)) => {
-                // TODO: check generics for built-in types
-                self.discharged_one_generics()
-            }
-        }
-    }
-    fn enter_fun_decl_ref(&mut self, fun_ref: &FunDeclRef) {
-        self.generics_should_match_item(&fun_ref.generics, fun_ref.id);
-    }
-    fn enter_global_decl_ref(&mut self, global_ref: &GlobalDeclRef) {
-        self.generics_should_match_item(&global_ref.generics, global_ref.id);
-    }
-    fn enter_trait_decl_ref(&mut self, tref: &TraitDeclRef) {
-        self.generics_should_match_item(&tref.generics, tref.trait_id);
-    }
-    fn enter_trait_impl_ref(&mut self, impl_ref: &TraitImplRef) {
-        self.generics_should_match_item(&impl_ref.generics, impl_ref.impl_id);
-    }
-    fn enter_trait_ref(&mut self, tref: &TraitRef) {
-        match &tref.kind {
-            TraitRefKind::TraitImpl(id, args) => self.generics_should_match_item(args, *id),
-            TraitRefKind::BuiltinOrAuto(..)
-            | TraitRefKind::Dyn(..)
-            | TraitRefKind::Clause(..)
-            | TraitRefKind::ParentClause(..)
-            | TraitRefKind::ItemClause(..)
-            | TraitRefKind::SelfId
-            | TraitRefKind::Unknown(_) => {}
-        }
-    }
-    fn enter_ty(&mut self, ty: &Ty) {
-        if let TyKind::Adt(kind, args) = ty.kind() {
-            self.check_typeid_generics(args, kind);
-        }
-    }
-
-    fn enter_generic_args(&mut self, args: &GenericArgs) {
-        if self.discharged_args == 0 {
-            // Ensure we counted all `GenericArgs`
-            panic!("Unexpected `GenericArgs` in the AST! {args:?}")
-        }
-        self.discharged_args -= 1;
     }
 
     // Special case that is not represented as a `GenericArgs`.
@@ -176,29 +111,28 @@ impl VisitAst for CheckGenericsVisitor<'_> {
     }
 
     fn visit_llbc_statement(&mut self, st: &Statement) -> ControlFlow<Self::Break> {
-        let old_span = self.item_span;
-        self.item_span = st.span;
+        // Track span for more precise error messages.
+        let old_span = self.span;
+        self.span = st.span;
         self.visit_inner(st)?;
-        self.item_span = old_span;
+        self.span = old_span;
         Continue(())
     }
 }
 
-pub struct Check;
+// The argument is a name to disambiguate the two times we run this check.
+pub struct Check(pub &'static str);
 impl TransformPass for Check {
     fn transform_ctx(&self, ctx: &mut TransformCtx) {
         for item in ctx.translated.all_items() {
             let mut visitor = CheckGenericsVisitor {
                 translated: &ctx.translated,
                 error_ctx: &mut ctx.errors,
-                discharged_args: 0,
-                item_span: item.item_meta().span,
+                phase: self.0,
+                span: item.item_meta().span,
+                visit_stack: Default::default(),
             };
             item.drive(&mut visitor);
-            assert_eq!(
-                visitor.discharged_args, 0,
-                "Got confused about `GenericArgs` locations"
-            );
         }
     }
 }
