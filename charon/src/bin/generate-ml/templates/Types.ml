@@ -34,11 +34,7 @@ type integer_type = Values.integer_type [@@deriving show, ord]
 type float_type = Values.float_type [@@deriving show, ord]
 type literal_type = Values.literal_type [@@deriving show, ord]
 
-(** We define these types to control the name of the visitor functions
-    (see e.g., {!class:Types.iter_ty_base} and {!Types.TVar}).
-  *)
-type region_id = RegionId.id [@@deriving show, ord]
-
+(** We define these types to control the name of the visitor functions *)
 type ('id, 'name) indexed_var = {
   index : 'id;  (** Unique index identifying the variable *)
   name : 'name;  (** Variable name *)
@@ -46,9 +42,6 @@ type ('id, 'name) indexed_var = {
 [@@deriving show, ord]
 
 (* __REPLACE0__ *)
-[@@deriving show, ord]
-
-(* __REPLACE1__ *)
 
 (** Ancestor for iter visitor for {!type: Types.ty} *)
 class ['self] iter_ty_base_base =
@@ -87,11 +80,6 @@ class virtual ['self] map_ty_base_base =
         { index; name }
   end
 
+(* __REPLACE1__ *)
+
 (* __REPLACE2__ *)
-
-(* __REPLACE3__ *)
-
-(* __REPLACE4__ *)
-[@@deriving show, ord]
-
-(* __REPLACE5__ *)

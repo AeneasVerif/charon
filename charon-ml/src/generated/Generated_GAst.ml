@@ -24,7 +24,7 @@ type fun_id = Expressions.fun_id [@@deriving show, ord]
 type fun_id_or_trait_method_ref = Expressions.fun_id_or_trait_method_ref
 [@@deriving show, ord]
 
-type fun_decl_id = FunDeclId.id [@@deriving show, ord]
+type fun_decl_id = Types.fun_decl_id [@@deriving show, ord]
 
 (** A variable *)
 type var = {

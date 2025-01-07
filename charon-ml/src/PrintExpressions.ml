@@ -9,6 +9,12 @@ open PrintTypes
 let fun_decl_id_to_string = PrintTypes.fun_decl_id_to_string
 let var_id_to_pretty_string (id : var_id) : string = "v@" ^ VarId.to_string id
 
+let variant_id_to_pretty_string (id : variant_id) : string =
+  "Variant@" ^ VariantId.to_string id
+
+let field_id_to_pretty_string (id : field_id) : string =
+  "Field@" ^ FieldId.to_string id
+
 let var_to_string (v : var) : string =
   match v.name with
   | None -> var_id_to_pretty_string v.index
@@ -21,6 +27,21 @@ let var_id_to_string (env : 'a fmt_env) (id : VarId.id) : string =
       match name with
       | None -> var_id_to_pretty_string id
       | Some name -> name ^ "^" ^ VarId.to_string id)
+
+let adt_variant_to_string (env : 'a fmt_env) (def_id : TypeDeclId.id)
+    (variant_id : VariantId.id) : string =
+  match TypeDeclId.Map.find_opt def_id env.crate.type_decls with
+  | None ->
+      type_decl_id_to_pretty_string def_id
+      ^ "::"
+      ^ variant_id_to_pretty_string variant_id
+  | Some def -> begin
+      match def.kind with
+      | Enum variants ->
+          let variant = VariantId.nth variants variant_id in
+          name_to_string env def.item_meta.name ^ "::" ^ variant.variant_name
+      | _ -> raise (Failure "Unreachable")
+    end
 
 let projection_elem_to_string (env : 'a fmt_env) (sub : string)
     (pe : projection_elem) : string =

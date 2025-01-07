@@ -72,6 +72,7 @@ struct GenerateCtx<'a> {
     type_tree: HashMap<TypeDeclId, HashSet<TypeDeclId>>,
     manual_type_impls: HashMap<TypeDeclId, String>,
     manual_json_impls: HashMap<TypeDeclId, String>,
+    opaque_for_visitor: HashSet<TypeDeclId>,
 }
 
 impl<'a> GenerateCtx<'a> {
@@ -79,6 +80,7 @@ impl<'a> GenerateCtx<'a> {
         crate_data: &'a TranslatedCrate,
         manual_type_impls: &[(&str, &str)],
         manual_json_impls: &[(&str, &str)],
+        opaque_for_visitor: &[&str],
     ) -> Self {
         let mut name_to_type: HashMap<String, &TypeDecl> = Default::default();
         let mut type_tree = HashMap::default();
@@ -112,6 +114,7 @@ impl<'a> GenerateCtx<'a> {
             type_tree,
             manual_type_impls: Default::default(),
             manual_json_impls: Default::default(),
+            opaque_for_visitor: Default::default(),
         };
         ctx.manual_type_impls = manual_type_impls
             .iter()
@@ -120,6 +123,10 @@ impl<'a> GenerateCtx<'a> {
         ctx.manual_json_impls = manual_json_impls
             .iter()
             .map(|(name, def)| (ctx.id_from_name(name), def.to_string()))
+            .collect();
+        ctx.opaque_for_visitor = opaque_for_visitor
+            .iter()
+            .map(|name| ctx.id_from_name(name))
             .collect();
         ctx
     }
@@ -576,9 +583,17 @@ fn build_type(_ctx: &GenerateCtx, decl: &TypeDecl, co_rec: bool, body: &str) -> 
 /// `co_rec` indicates whether this definition is co-recursive with the ones that come before (i.e.
 /// should be declared with `and` instead of `type`).
 fn type_decl_to_ocaml_decl(ctx: &GenerateCtx, decl: &TypeDecl, co_rec: bool) -> String {
+    let opaque = if ctx.opaque_for_visitor.contains(&decl.def_id) {
+        "[@opaque]"
+    } else {
+        ""
+    };
     let body = match &decl.kind {
         _ if let Some(def) = ctx.manual_type_impls.get(&decl.def_id) => def.clone(),
-        TypeDeclKind::Alias(ty) => type_to_ocaml_name(ctx, ty),
+        TypeDeclKind::Alias(ty) => {
+            let ty = type_to_ocaml_name(ctx, ty);
+            format!("{ty} {opaque}")
+        }
         TypeDeclKind::Struct(fields) if fields.is_empty() => "unit".to_string(),
         TypeDeclKind::Struct(fields)
             if fields.len() == 1 && fields[0].name.as_ref().is_some_and(|name| name == "_raw") =>
@@ -594,7 +609,7 @@ fn type_decl_to_ocaml_decl(ctx: &GenerateCtx, decl: &TypeDecl, co_rec: bool) -> 
                 .unwrap()
                 .0
                 .clone();
-            format!("{short_name}.id")
+            format!("{short_name}.id [@opaque]")
         }
         TypeDeclKind::Struct(fields)
             if fields.len() == 1
@@ -607,14 +622,15 @@ fn type_decl_to_ocaml_decl(ctx: &GenerateCtx, decl: &TypeDecl, co_rec: bool) -> 
                         .filter_map(|a| a.as_unknown())
                         .any(|a| a.to_string() == "serde(transparent)")) =>
         {
-            type_to_ocaml_name(ctx, &fields[0].ty)
+            let ty = type_to_ocaml_name(ctx, &fields[0].ty);
+            format!("{ty} {opaque}")
         }
         TypeDeclKind::Struct(fields) if fields.iter().all(|f| f.name.is_none()) => fields
             .iter()
             .filter(|f| !f.is_opaque())
             .map(|f| {
                 let ty = type_to_ocaml_name(ctx, &f.ty);
-                format!("{ty}")
+                format!("{ty} {opaque}")
             })
             .join("*"),
         TypeDeclKind::Struct(fields) => {
@@ -626,7 +642,7 @@ fn type_decl_to_ocaml_decl(ctx: &GenerateCtx, decl: &TypeDecl, co_rec: bool) -> 
                     let ty = type_to_ocaml_name(ctx, &f.ty);
                     let comment = extract_doc_comments(&f.attr_info);
                     let comment = build_doc_comment(comment, 2);
-                    format!("{name} : {ty} {comment}")
+                    format!("{name} : {ty} {opaque} {comment}")
                 })
                 .join(";");
             format!("{{ {fields} }}")
@@ -665,7 +681,10 @@ fn type_decl_to_ocaml_decl(ctx: &GenerateCtx, decl: &TypeDecl, co_rec: bool) -> 
                         let fields = variant
                             .fields
                             .iter()
-                            .map(|f| type_to_ocaml_name(ctx, &f.ty))
+                            .map(|f| {
+                                let ty = type_to_ocaml_name(ctx, &f.ty);
+                                format!("{ty} {opaque}")
+                            })
                             .join("*");
                         format!(" of {fields}")
                     };
@@ -1060,7 +1079,14 @@ fn generate_ml(
             ),
         ),
     ];
-    let ctx = GenerateCtx::new(&crate_data, manual_type_impls, manual_json_impls);
+    // Types that we don't want visitors to go into.
+    let opaque_for_visitor = &["Name"];
+    let ctx = GenerateCtx::new(
+        &crate_data,
+        manual_type_impls,
+        manual_json_impls,
+        opaque_for_visitor,
+    );
 
     // Compute the sets of types to be put in each module.
     let manually_implemented: HashSet<_> = [
@@ -1111,7 +1137,6 @@ fn generate_ml(
             template: template_dir.join("GAst.ml"),
             target: output_dir.join("Generated_GAst.ml"),
             markers: ctx.markers_from_names(&[
-                (GenerationKind::TypeDecl(None), &["FunDeclId"]),
                 (GenerationKind::TypeDecl(Some(DeriveVisitors {
                     name: "fun_sig",
                     ancestor: Some("rvalue"),
@@ -1165,19 +1190,15 @@ fn generate_ml(
             template: template_dir.join("Expressions.ml"),
             target: output_dir.join("Generated_Expressions.ml"),
             markers: ctx.markers_from_names(&[
-                (GenerationKind::TypeDecl(None), &[
-                    "VarId",
-                ]),
                 (GenerationKind::TypeDecl(Some(DeriveVisitors {
                     name: "rvalue",
                     ancestor: Some("type_decl"),
                     reduce: false,
-                    extra_types: &[
-                        "var_id",
-                        "variant_id",
-                        "field_id",
-                    ],
+                    extra_types: &[],
                 })), &[
+                    "VarId",
+                    "VariantId",
+                    "FieldId",
                     "BuiltinIndexOp",
                     "BuiltinFunId",
                     "BorrowKind",
@@ -1222,10 +1243,14 @@ fn generate_ml(
             template: template_dir.join("Types.ml"),
             target: output_dir.join("Generated_Types.ml"),
             markers: ctx.markers_from_names(&[
-                (GenerationKind::TypeDecl(None), &[
+                (GenerationKind::TypeDecl(Some(DeriveVisitors {
+                    name: "const_generic",
+                    ancestor: Some("literal"),
+                    reduce: true,
+                    extra_types: &[],
+                })), &[
+                    "RegionId",
                     "ConstGenericVarId",
-                    "Disambiguator",
-                    "FieldId",
                     "FunDeclId",
                     "GlobalDeclId",
                     "TraitClauseId",
@@ -1233,24 +1258,6 @@ fn generate_ml(
                     "TraitImplId",
                     "TypeDeclId",
                     "TypeVarId",
-                    "VariantId",
-                ]),
-                (GenerationKind::TypeDecl(Some(DeriveVisitors {
-                    name: "const_generic",
-                    ancestor: Some("literal"),
-                    reduce: true,
-                    extra_types: &[
-                        "const_generic_var_id",
-                        "fun_decl_id",
-                        "global_decl_id",
-                        "region_id",
-                        "trait_clause_id",
-                        "trait_decl_id",
-                        "trait_impl_id",
-                        "type_decl_id",
-                        "type_var_id",
-                    ],
-                })), &[
                     "DeBruijnId",
                     "DeBruijnVar",
                     "AnyTransId",
@@ -1284,11 +1291,11 @@ fn generate_ml(
                 ]),
                 // TODO: can't merge into above because of field name clashes (`types`, `regions` etc).
                 (GenerationKind::TypeDecl(Some(DeriveVisitors {
-                    name: "generic_params",
+                    name: "type_decl",
                     ancestor: Some("ty"),
                     reduce: false,
                     extra_types: &[
-                        "span",
+                        "span","attr_info"
                     ],
                 })), &[
                     "TraitClause",
@@ -1300,18 +1307,10 @@ fn generate_ml(
                     "ConstGenericVar",
                     "TraitTypeConstraint",
                     "Binder",
-                ]),
-                (GenerationKind::TypeDecl(None), &[
+                    "Disambiguator",
                     "ImplElem",
                     "PathElem",
                     "Name",
-                ]),
-                (GenerationKind::TypeDecl(Some(DeriveVisitors {
-                    name: "type_decl",
-                    ancestor: Some("generic_params"),
-                    reduce: false,
-                    extra_types: &["attr_info", "name"],
-                })), &[
                     "Field",
                     "Variant",
                     "ItemMeta",
@@ -1362,10 +1361,9 @@ fn generate_ml(
                     name: "statement",
                     ancestor: Some("trait_impl"),
                     reduce: false,
-                    extra_types: &[
-                        "block_id",
-                    ],
+                    extra_types: &[],
                 })), &[
+                    "charon_lib::ast::ullbc_ast::BlockId",
                     "charon_lib::ast::ullbc_ast::Statement",
                     "charon_lib::ast::ullbc_ast::RawStatement",
                     "charon_lib::ast::ullbc_ast::SwitchTargets",

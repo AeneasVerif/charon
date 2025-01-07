@@ -82,12 +82,6 @@ let trait_decl_id_to_pretty_string (id : trait_decl_id) : string =
 let trait_impl_id_to_pretty_string (id : trait_impl_id) : string =
   "TraitImpl@" ^ TraitImplId.to_string id
 
-let variant_id_to_pretty_string (id : variant_id) : string =
-  "Variant@" ^ VariantId.to_string id
-
-let field_id_to_pretty_string (id : field_id) : string =
-  "Field@" ^ FieldId.to_string id
-
 let lookup_var_in_env (env : 'a fmt_env)
     (find_in : generic_params -> 'id -> 'b option) (var : 'id de_bruijn_var) :
     'b option =
@@ -480,21 +474,6 @@ let type_decl_to_string (env : 'a fmt_env) (def : type_decl) : string =
   | Alias ty -> "type " ^ name ^ params ^ clauses ^ " = " ^ ty_to_string env ty
   | Opaque -> "opaque type " ^ name ^ params ^ clauses
   | TError err -> "error(\"" ^ err ^ "\")"
-
-let adt_variant_to_string (env : 'a fmt_env) (def_id : TypeDeclId.id)
-    (variant_id : VariantId.id) : string =
-  match TypeDeclId.Map.find_opt def_id env.crate.type_decls with
-  | None ->
-      type_decl_id_to_pretty_string def_id
-      ^ "::"
-      ^ variant_id_to_pretty_string variant_id
-  | Some def -> begin
-      match def.kind with
-      | Enum variants ->
-          let variant = VariantId.nth variants variant_id in
-          name_to_string env def.item_meta.name ^ "::" ^ variant.variant_name
-      | _ -> raise (Failure "Unreachable")
-    end
 
 let adt_field_names (env : 'a fmt_env) (def_id : TypeDeclId.id)
     (opt_variant_id : VariantId.id option) : string list option =

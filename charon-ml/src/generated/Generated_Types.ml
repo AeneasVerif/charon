@@ -31,146 +31,21 @@ type integer_type = Values.integer_type [@@deriving show, ord]
 type float_type = Values.float_type [@@deriving show, ord]
 type literal_type = Values.literal_type [@@deriving show, ord]
 
-(** We define these types to control the name of the visitor functions
-    (see e.g., {!class:Types.iter_ty_base} and {!Types.TVar}).
-  *)
-type region_id = RegionId.id [@@deriving show, ord]
-
+(** We define these types to control the name of the visitor functions *)
 type ('id, 'name) indexed_var = {
   index : 'id;  (** Unique index identifying the variable *)
   name : 'name;  (** Variable name *)
 }
 [@@deriving show, ord]
 
-type fun_decl_id = FunDeclId.id
-and type_decl_id = TypeDeclId.id
-and global_decl_id = GlobalDeclId.id
-and trait_decl_id = TraitDeclId.id
-and trait_impl_id = TraitImplId.id
-and disambiguator = Disambiguator.id
-and type_var_id = TypeVarId.id
-and const_generic_var_id = ConstGenericVarId.id
-and trait_clause_id = TraitClauseId.id
-and variant_id = VariantId.id
-and field_id = FieldId.id [@@deriving show, ord]
-
-(* Ancestors for the const_generic visitors *)
-class ['self] iter_const_generic_base =
-  object (self : 'self)
-    inherit [_] iter_literal
-
-    method visit_const_generic_var_id : 'env -> const_generic_var_id -> unit =
-      fun _ _ -> ()
-
-    method visit_fun_decl_id : 'env -> fun_decl_id -> unit = fun _ _ -> ()
-    method visit_global_decl_id : 'env -> global_decl_id -> unit = fun _ _ -> ()
-    method visit_region_id : 'env -> region_id -> unit = fun _ _ -> ()
-
-    method visit_trait_clause_id : 'env -> trait_clause_id -> unit =
-      fun _ _ -> ()
-
-    method visit_trait_decl_id : 'env -> trait_decl_id -> unit = fun _ _ -> ()
-    method visit_trait_impl_id : 'env -> trait_impl_id -> unit = fun _ _ -> ()
-    method visit_type_decl_id : 'env -> type_decl_id -> unit = fun _ _ -> ()
-    method visit_type_var_id : 'env -> type_var_id -> unit = fun _ _ -> ()
-  end
-
-class ['self] map_const_generic_base =
-  object (self : 'self)
-    inherit [_] map_literal
-
-    method visit_const_generic_var_id
-        : 'env -> const_generic_var_id -> const_generic_var_id =
-      fun _ x -> x
-
-    method visit_fun_decl_id : 'env -> fun_decl_id -> fun_decl_id = fun _ x -> x
-
-    method visit_global_decl_id : 'env -> global_decl_id -> global_decl_id =
-      fun _ x -> x
-
-    method visit_region_id : 'env -> region_id -> region_id = fun _ x -> x
-
-    method visit_trait_clause_id : 'env -> trait_clause_id -> trait_clause_id =
-      fun _ x -> x
-
-    method visit_trait_decl_id : 'env -> trait_decl_id -> trait_decl_id =
-      fun _ x -> x
-
-    method visit_trait_impl_id : 'env -> trait_impl_id -> trait_impl_id =
-      fun _ x -> x
-
-    method visit_type_decl_id : 'env -> type_decl_id -> type_decl_id =
-      fun _ x -> x
-
-    method visit_type_var_id : 'env -> type_var_id -> type_var_id = fun _ x -> x
-  end
-
-class virtual ['self] reduce_const_generic_base =
-  object (self : 'self)
-    inherit [_] reduce_literal
-
-    method visit_const_generic_var_id : 'env -> const_generic_var_id -> 'a =
-      fun _ _ -> self#zero
-
-    method visit_fun_decl_id : 'env -> fun_decl_id -> 'a = fun _ _ -> self#zero
-
-    method visit_global_decl_id : 'env -> global_decl_id -> 'a =
-      fun _ _ -> self#zero
-
-    method visit_region_id : 'env -> region_id -> 'a = fun _ _ -> self#zero
-
-    method visit_trait_clause_id : 'env -> trait_clause_id -> 'a =
-      fun _ _ -> self#zero
-
-    method visit_trait_decl_id : 'env -> trait_decl_id -> 'a =
-      fun _ _ -> self#zero
-
-    method visit_trait_impl_id : 'env -> trait_impl_id -> 'a =
-      fun _ _ -> self#zero
-
-    method visit_type_decl_id : 'env -> type_decl_id -> 'a =
-      fun _ _ -> self#zero
-
-    method visit_type_var_id : 'env -> type_var_id -> 'a = fun _ _ -> self#zero
-  end
-
-class virtual ['self] mapreduce_const_generic_base =
-  object (self : 'self)
-    inherit [_] mapreduce_literal
-
-    method visit_const_generic_var_id
-        : 'env -> const_generic_var_id -> const_generic_var_id * 'a =
-      fun _ x -> (x, self#zero)
-
-    method visit_fun_decl_id : 'env -> fun_decl_id -> fun_decl_id * 'a =
-      fun _ x -> (x, self#zero)
-
-    method visit_global_decl_id : 'env -> global_decl_id -> global_decl_id * 'a
-        =
-      fun _ x -> (x, self#zero)
-
-    method visit_region_id : 'env -> region_id -> region_id * 'a =
-      fun _ x -> (x, self#zero)
-
-    method visit_trait_clause_id
-        : 'env -> trait_clause_id -> trait_clause_id * 'a =
-      fun _ x -> (x, self#zero)
-
-    method visit_trait_decl_id : 'env -> trait_decl_id -> trait_decl_id * 'a =
-      fun _ x -> (x, self#zero)
-
-    method visit_trait_impl_id : 'env -> trait_impl_id -> trait_impl_id * 'a =
-      fun _ x -> (x, self#zero)
-
-    method visit_type_decl_id : 'env -> type_decl_id -> type_decl_id * 'a =
-      fun _ x -> (x, self#zero)
-
-    method visit_type_var_id : 'env -> type_var_id -> type_var_id * 'a =
-      fun _ x -> (x, self#zero)
-  end
+type fun_decl_id = (FunDeclId.id[@opaque])
+and type_decl_id = (TypeDeclId.id[@opaque])
+and global_decl_id = (GlobalDeclId.id[@opaque])
+and trait_decl_id = (TraitDeclId.id[@opaque])
+and trait_impl_id = (TraitImplId.id[@opaque])
 
 (** The id of a translated item. *)
-type any_decl_id =
+and any_decl_id =
   | IdType of type_decl_id
   | IdFun of fun_decl_id
   | IdGlobal of global_decl_id
@@ -222,6 +97,11 @@ and 'a0 de_bruijn_var =
           is not used in charon internals, only as a micro-pass before exporting the crate data.
        *)
 
+and region_id = (RegionId.id[@opaque])
+and type_var_id = (TypeVarId.id[@opaque])
+and const_generic_var_id = (ConstGenericVarId.id[@opaque])
+and trait_clause_id = (TraitClauseId.id[@opaque])
+
 (** Const Generic Values. Either a primitive value, or a variable corresponding to a primitve value *)
 and const_generic =
   | CgGlobal of global_decl_id  (** A global constant *)
@@ -235,7 +115,7 @@ and const_generic =
         name = "iter_const_generic";
         monomorphic = [ "env" ];
         variety = "iter";
-        ancestors = [ "iter_const_generic_base" ];
+        ancestors = [ "iter_literal" ];
         nude = true (* Don't inherit VisitorsRuntime *);
       },
     visitors
@@ -243,7 +123,7 @@ and const_generic =
         name = "map_const_generic";
         monomorphic = [ "env" ];
         variety = "map";
-        ancestors = [ "map_const_generic_base" ];
+        ancestors = [ "map_literal" ];
         nude = true (* Don't inherit VisitorsRuntime *);
       },
     visitors
@@ -251,7 +131,7 @@ and const_generic =
         name = "reduce_const_generic";
         monomorphic = [ "env" ];
         variety = "reduce";
-        ancestors = [ "reduce_const_generic_base" ];
+        ancestors = [ "reduce_literal" ];
         nude = true (* Don't inherit VisitorsRuntime *);
       },
     visitors
@@ -259,7 +139,7 @@ and const_generic =
         name = "mapreduce_const_generic";
         monomorphic = [ "env" ];
         variety = "mapreduce";
-        ancestors = [ "mapreduce_const_generic_base" ];
+        ancestors = [ "mapreduce_literal" ];
         nude = true (* Don't inherit VisitorsRuntime *);
       }]
 
@@ -569,21 +449,99 @@ and builtin_ty =
         nude = true (* Don't inherit VisitorsRuntime *);
       }]
 
-(* Ancestors for the generic_params visitors *)
-class ['self] iter_generic_params_base =
+(* Ancestors for the type_decl visitors *)
+class ['self] iter_type_decl_base =
   object (self : 'self)
     inherit [_] iter_ty
     method visit_span : 'env -> span -> unit = fun _ _ -> ()
+    method visit_attr_info : 'env -> attr_info -> unit = fun _ _ -> ()
   end
 
-class ['self] map_generic_params_base =
+class ['self] map_type_decl_base =
   object (self : 'self)
     inherit [_] map_ty
     method visit_span : 'env -> span -> span = fun _ x -> x
+    method visit_attr_info : 'env -> attr_info -> attr_info = fun _ x -> x
   end
 
+type abort_kind =
+  | Panic of name  (** A built-in panicking function. *)
+  | UndefinedBehavior
+      (** A MIR `Unreachable` terminator corresponds to undefined behavior in the rust abstract
+          machine.
+       *)
+
+(** Meta information about an item (function, trait decl, trait impl, type decl, global). *)
+and item_meta = {
+  name : name;
+  span : span;
+  source_text : string option;
+      (** The source code that corresponds to this item. *)
+  attr_info : attr_info;  (** Attributes and visibility. *)
+  is_local : bool;
+      (** `true` if the type decl is a local type decl, `false` if it comes from an external crate. *)
+}
+
+and disambiguator = (Disambiguator.id[@opaque])
+
+(** See the comments for [Name] *)
+and path_elem =
+  | PeIdent of string * disambiguator
+  | PeImpl of impl_elem * disambiguator
+
+(** There are two kinds of `impl` blocks:
+    - impl blocks linked to a type ("inherent" impl blocks following Rust terminology):
+      ```text
+      impl<T> List<T> { ...}
+      ```
+    - trait impl blocks:
+      ```text
+      impl<T> PartialEq for List<T> { ...}
+      ```
+    We distinguish the two.
+ *)
+and impl_elem = ImplElemTy of ty binder | ImplElemTrait of trait_impl_id
+
+(** An item name/path
+
+    A name really is a list of strings. However, we sometimes need to
+    introduce unique indices to disambiguate. This mostly happens because
+    of "impl" blocks:
+      ```text
+      impl<T> List<T> {
+        ...
+      }
+      ```
+
+    A type in Rust can have several "impl" blocks, and  those blocks can
+    contain items with similar names. For this reason, we need to disambiguate
+    them with unique indices. Rustc calls those "disambiguators". In rustc, this
+    gives names like this:
+    - `betree_main::betree::NodeIdCounter{impl#0}::new`
+    - note that impl blocks can be nested, and macros sometimes generate
+      weird names (which require disambiguation):
+      `betree_main::betree_utils::_#1::{impl#0}::deserialize::{impl#0}`
+
+    Finally, the paths used by rustc are a lot more precise and explicit than
+    those we expose in LLBC: for instance, every identifier belongs to a specific
+    namespace (value namespace, type namespace, etc.), and is coupled with a
+    disambiguator.
+
+    On our side, we want to stay high-level and simple: we use string identifiers
+    as much as possible, insert disambiguators only when necessary (whenever
+    we find an "impl" block, typically) and check that the disambiguator is useless
+    in the other situations (i.e., the disambiguator is always equal to 0).
+
+    Moreover, the items are uniquely disambiguated by their (integer) ids
+    (`TypeDeclId`, etc.), and when extracting the code we have to deal with
+    name clashes anyway. Still, we might want to be more precise in the future.
+
+    Also note that the first path element in the name is always the crate name.
+ *)
+and name = (path_elem list[@opaque])
+
 (** A type variable in a signature or binder. *)
-type type_var = (type_var_id, string) indexed_var
+and type_var = (type_var_id, string) indexed_var
 
 (** A const generic variable in a signature or binder. *)
 and const_generic_var = {
@@ -654,114 +612,6 @@ and generic_params = {
       (** The type outlives the region *)
   trait_type_constraints : trait_type_constraint region_binder list;
       (** Constraints over trait associated types *)
-}
-[@@deriving
-  show,
-    ord,
-    visitors
-      {
-        name = "iter_generic_params";
-        monomorphic = [ "env" ];
-        variety = "iter";
-        ancestors = [ "iter_generic_params_base" ];
-        nude = true (* Don't inherit VisitorsRuntime *);
-      },
-    visitors
-      {
-        name = "map_generic_params";
-        monomorphic = [ "env" ];
-        variety = "map";
-        ancestors = [ "map_generic_params_base" ];
-        nude = true (* Don't inherit VisitorsRuntime *);
-      }]
-
-(** See the comments for [Name] *)
-type path_elem =
-  | PeIdent of string * disambiguator
-  | PeImpl of impl_elem * disambiguator
-
-(** There are two kinds of `impl` blocks:
-    - impl blocks linked to a type ("inherent" impl blocks following Rust terminology):
-      ```text
-      impl<T> List<T> { ...}
-      ```
-    - trait impl blocks:
-      ```text
-      impl<T> PartialEq for List<T> { ...}
-      ```
-    We distinguish the two.
- *)
-and impl_elem = ImplElemTy of ty binder | ImplElemTrait of trait_impl_id
-
-(** An item name/path
-
-    A name really is a list of strings. However, we sometimes need to
-    introduce unique indices to disambiguate. This mostly happens because
-    of "impl" blocks:
-      ```text
-      impl<T> List<T> {
-        ...
-      }
-      ```
-
-    A type in Rust can have several "impl" blocks, and  those blocks can
-    contain items with similar names. For this reason, we need to disambiguate
-    them with unique indices. Rustc calls those "disambiguators". In rustc, this
-    gives names like this:
-    - `betree_main::betree::NodeIdCounter{impl#0}::new`
-    - note that impl blocks can be nested, and macros sometimes generate
-      weird names (which require disambiguation):
-      `betree_main::betree_utils::_#1::{impl#0}::deserialize::{impl#0}`
-
-    Finally, the paths used by rustc are a lot more precise and explicit than
-    those we expose in LLBC: for instance, every identifier belongs to a specific
-    namespace (value namespace, type namespace, etc.), and is coupled with a
-    disambiguator.
-
-    On our side, we want to stay high-level and simple: we use string identifiers
-    as much as possible, insert disambiguators only when necessary (whenever
-    we find an "impl" block, typically) and check that the disambiguator is useless
-    in the other situations (i.e., the disambiguator is always equal to 0).
-
-    Moreover, the items are uniquely disambiguated by their (integer) ids
-    (`TypeDeclId`, etc.), and when extracting the code we have to deal with
-    name clashes anyway. Still, we might want to be more precise in the future.
-
-    Also note that the first path element in the name is always the crate name.
- *)
-and name = path_elem list [@@deriving show, ord]
-
-(* Ancestors for the type_decl visitors *)
-class ['self] iter_type_decl_base =
-  object (self : 'self)
-    inherit [_] iter_generic_params
-    method visit_attr_info : 'env -> attr_info -> unit = fun _ _ -> ()
-    method visit_name : 'env -> name -> unit = fun _ _ -> ()
-  end
-
-class ['self] map_type_decl_base =
-  object (self : 'self)
-    inherit [_] map_generic_params
-    method visit_attr_info : 'env -> attr_info -> attr_info = fun _ x -> x
-    method visit_name : 'env -> name -> name = fun _ x -> x
-  end
-
-type abort_kind =
-  | Panic of name  (** A built-in panicking function. *)
-  | UndefinedBehavior
-      (** A MIR `Unreachable` terminator corresponds to undefined behavior in the rust abstract
-          machine.
-       *)
-
-(** Meta information about an item (function, trait decl, trait impl, type decl, global). *)
-and item_meta = {
-  name : name;
-  span : span;
-  source_text : string option;
-      (** The source code that corresponds to this item. *)
-  attr_info : attr_info;  (** Attributes and visibility. *)
-  is_local : bool;
-      (** `true` if the type decl is a local type decl, `false` if it comes from an external crate. *)
 }
 
 (** A type declaration.

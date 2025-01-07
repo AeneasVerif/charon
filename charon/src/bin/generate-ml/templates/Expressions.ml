@@ -15,6 +15,3 @@ module GlobalDeclId = Types.GlobalDeclId
 module FunDeclId = Types.FunDeclId
 
 (* __REPLACE0__ *)
-[@@deriving show, ord]
-
-(* __REPLACE1__ *)
