@@ -74,6 +74,8 @@ impl Trait for () {
 }
 
 fn test_crate::Trait::CONST1<Self>() -> usize
+where
+    [@TraitClause0]: Trait<Self>,
 {
     let @0: usize; // return
 
@@ -81,7 +83,10 @@ fn test_crate::Trait::CONST1<Self>() -> usize
     return
 }
 
-const test_crate::Trait::CONST1<Self>: usize = test_crate::Trait::CONST1()
+const test_crate::Trait::CONST1<Self>: usize
+where
+    [@TraitClause0]: Trait<Self>,
+ = test_crate::Trait::CONST1()
 
 // Full name: test_crate::{impl Trait for u8}::CONST2
 fn {impl Trait for u8}::CONST2() -> usize
@@ -96,6 +101,8 @@ fn {impl Trait for u8}::CONST2() -> usize
 const {impl Trait for u8}::CONST2: usize = {impl Trait for u8}::CONST2()
 
 fn test_crate::Trait::CONST3<Self>() -> usize
+where
+    [@TraitClause0]: Trait<Self>,
 {
     let @0: usize; // return
 
@@ -103,7 +110,10 @@ fn test_crate::Trait::CONST3<Self>() -> usize
     return
 }
 
-const test_crate::Trait::CONST3<Self>: usize = test_crate::Trait::CONST3()
+const test_crate::Trait::CONST3<Self>: usize
+where
+    [@TraitClause0]: Trait<Self>,
+ = test_crate::Trait::CONST3()
 
 fn test_crate::{impl Trait for u8}::method1()
 {
@@ -126,9 +136,9 @@ fn {impl Trait for u8}::method2()
 
 // Full name: test_crate::{impl Trait for u8}
 impl Trait for u8 {
-    const CONST1 = test_crate::Trait::CONST1<u8>
+    const CONST1 = test_crate::Trait::CONST1<u8>[{impl Trait for u8}]
     const CONST2 = {impl Trait for u8}::CONST2
-    const CONST3 = test_crate::Trait::CONST3<u8>
+    const CONST3 = test_crate::Trait::CONST3<u8>[{impl Trait for u8}]
     fn method1 = test_crate::{impl Trait for u8}::method1
     fn method2 = {impl Trait for u8}::method2
 }
@@ -181,6 +191,8 @@ where
 }
 
 fn test_crate::Trait::CONST2<Self>() -> usize
+where
+    [@TraitClause0]: Trait<Self>,
 {
     let @0: usize; // return
 
@@ -188,7 +200,10 @@ fn test_crate::Trait::CONST2<Self>() -> usize
     return
 }
 
-const test_crate::Trait::CONST2<Self>: usize = test_crate::Trait::CONST2()
+const test_crate::Trait::CONST2<Self>: usize
+where
+    [@TraitClause0]: Trait<Self>,
+ = test_crate::Trait::CONST2()
 
 
 

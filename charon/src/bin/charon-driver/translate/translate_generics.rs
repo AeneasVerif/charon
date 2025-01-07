@@ -357,9 +357,8 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
             | Variant { .. } => {
                 let parent_def_id = def.parent.as_ref().unwrap();
                 let parent_def = self.t_ctx.hax_def(parent_def_id)?;
-                let explicit_self_clause = matches!(def.kind(), AssocFn { .. })
-                    && matches!(parent_def.kind(), Trait { .. });
-                // Add an explicit `Self` clause to trait method declarations.
+                // Add an explicit `Self` clause to trait item declarations.
+                let explicit_self_clause = matches!(parent_def.kind(), Trait { .. });
                 self.push_generics_for_def(span, &parent_def, true, explicit_self_clause)?;
             }
             _ => {}

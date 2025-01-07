@@ -11,6 +11,8 @@ trait Trait<Self>
 pub trait Sized<Self>
 
 fn test_crate::Trait::FOO<Self>() -> usize
+where
+    [@TraitClause0]: Trait<Self>,
 {
     let @0: usize; // return
 
@@ -18,14 +20,17 @@ fn test_crate::Trait::FOO<Self>() -> usize
     return
 }
 
-const test_crate::Trait::FOO<Self>: usize = test_crate::Trait::FOO()
+const test_crate::Trait::FOO<Self>: usize
+where
+    [@TraitClause0]: Trait<Self>,
+ = test_crate::Trait::FOO()
 
 // Full name: test_crate::{impl Trait for T}
 impl<T> Trait for T
 where
     [@TraitClause0]: Sized<T>,
 {
-    const FOO = test_crate::Trait::FOO<T>
+    const FOO = test_crate::Trait::FOO<T>[{impl Trait for T}<T>[@TraitClause0]]
 }
 
 // Full name: test_crate::foo

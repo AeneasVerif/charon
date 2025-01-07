@@ -110,6 +110,8 @@ pub trait HasDefaultLen<Self, const M : usize>
 }
 
 pub fn test_crate::HasDefaultLen::LEN<Self, const M : usize>() -> usize
+where
+    [@TraitClause0]: HasDefaultLen<Self, const M : usize>,
 {
     let @0: usize; // return
 
@@ -117,11 +119,14 @@ pub fn test_crate::HasDefaultLen::LEN<Self, const M : usize>() -> usize
     return
 }
 
-pub const test_crate::HasDefaultLen::LEN<Self, const M : usize>: usize = test_crate::HasDefaultLen::LEN()
+pub const test_crate::HasDefaultLen::LEN<Self, const M : usize>: usize
+where
+    [@TraitClause0]: HasDefaultLen<Self, const M : usize>,
+ = test_crate::HasDefaultLen::LEN()
 
 // Full name: test_crate::{impl HasDefaultLen<const N : usize> for Array<(), const N : usize>}#4
 impl<const N : usize> HasDefaultLen<const N : usize> for Array<(), const N : usize> {
-    const LEN = test_crate::HasDefaultLen::LEN<Array<(), const N : usize>, const N : usize>
+    const LEN = test_crate::HasDefaultLen::LEN<Array<(), const N : usize>, const N : usize>[{impl HasDefaultLen<const N : usize> for Array<(), const N : usize>}#4<const N : usize>]
 }
 
 // Full name: test_crate::{impl HasDefaultLen<const N : usize> for Array<bool, const N : usize>}#5::LEN
@@ -158,19 +163,24 @@ trait AlsoHasLen<Self>
 }
 
 fn test_crate::AlsoHasLen::ALSO_LEN<Self>() -> usize
+where
+    [@TraitClause0]: AlsoHasLen<Self>,
 {
     let @0: usize; // return
 
-    @0 := const (Self::parent_clause0::LEN) + const (1 : usize)
+    @0 := const (@TraitClause0::parent_clause0::LEN) + const (1 : usize)
     return
 }
 
-const test_crate::AlsoHasLen::ALSO_LEN<Self>: usize = test_crate::AlsoHasLen::ALSO_LEN()
+const test_crate::AlsoHasLen::ALSO_LEN<Self>: usize
+where
+    [@TraitClause0]: AlsoHasLen<Self>,
+ = test_crate::AlsoHasLen::ALSO_LEN()
 
 // Full name: test_crate::{impl AlsoHasLen for Array<(), const N : usize>}#6
 impl<const N : usize> AlsoHasLen for Array<(), const N : usize> {
     parent_clause0 = {impl HasLen for Array<(), const N : usize>}#1<const N : usize>
-    const ALSO_LEN = test_crate::AlsoHasLen::ALSO_LEN<Array<(), const N : usize>>
+    const ALSO_LEN = test_crate::AlsoHasLen::ALSO_LEN<Array<(), const N : usize>>[{impl AlsoHasLen for Array<(), const N : usize>}#6<const N : usize>]
 }
 
 

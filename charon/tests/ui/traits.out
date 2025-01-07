@@ -582,6 +582,8 @@ pub fn {impl WithConstTy<32 : usize> for bool}#8::LEN1() -> usize
 pub const {impl WithConstTy<32 : usize> for bool}#8::LEN1: usize = {impl WithConstTy<32 : usize> for bool}#8::LEN1()
 
 pub fn test_crate::WithConstTy::LEN2<Self, const LEN : usize>() -> usize
+where
+    [@TraitClause0]: WithConstTy<Self, const LEN : usize>,
 {
     let @0: usize; // return
 
@@ -589,7 +591,10 @@ pub fn test_crate::WithConstTy::LEN2<Self, const LEN : usize>() -> usize
     return
 }
 
-pub const test_crate::WithConstTy::LEN2<Self, const LEN : usize>: usize = test_crate::WithConstTy::LEN2()
+pub const test_crate::WithConstTy::LEN2<Self, const LEN : usize>: usize
+where
+    [@TraitClause0]: WithConstTy<Self, const LEN : usize>,
+ = test_crate::WithConstTy::LEN2()
 
 // Full name: test_crate::{impl WithConstTy<32 : usize> for bool}#8::f
 pub fn {impl WithConstTy<32 : usize> for bool}#8::f<'_0, '_1>(@1: &'_0 mut (u64), @2: &'_1 (Array<u8, 32 : usize>))
@@ -609,7 +614,7 @@ impl WithConstTy<32 : usize> for bool {
     parent_clause1 = Sized<u64>
     parent_clause2 = {impl ToU64 for u64}#2
     const LEN1 = {impl WithConstTy<32 : usize> for bool}#8::LEN1
-    const LEN2 = test_crate::WithConstTy::LEN2<bool, 32 : usize>
+    const LEN2 = test_crate::WithConstTy::LEN2<bool, 32 : usize>[{impl WithConstTy<32 : usize> for bool}#8]
     type V = u8
     type W = u64
     fn f<'_0, '_1> = {impl WithConstTy<32 : usize> for bool}#8::f<'_0_0, '_0_1>

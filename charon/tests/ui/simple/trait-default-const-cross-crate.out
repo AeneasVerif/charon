@@ -11,6 +11,8 @@ trait Trait<Self>
 }
 
 fn trait_default_const::Trait::FOO<Self>() -> usize
+where
+    [@TraitClause0]: Trait<Self>,
 {
     let @0: usize; // return
 
@@ -18,14 +20,17 @@ fn trait_default_const::Trait::FOO<Self>() -> usize
     return
 }
 
-const trait_default_const::Trait::FOO<Self>: usize = trait_default_const::Trait::FOO()
+const trait_default_const::Trait::FOO<Self>: usize
+where
+    [@TraitClause0]: Trait<Self>,
+ = trait_default_const::Trait::FOO()
 
 // Full name: trait_default_const::{impl Trait for T}
 impl<T> Trait for T
 where
     [@TraitClause0]: Sized<T>,
 {
-    const FOO = trait_default_const::Trait::FOO<T>
+    const FOO = trait_default_const::Trait::FOO<T>[{impl Trait for T}<T>[@TraitClause0]]
 }
 
 // Full name: trait_default_const::foo
