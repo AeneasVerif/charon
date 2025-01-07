@@ -60,6 +60,39 @@ impl<const N : usize> test_crate::{impl test_crate::HasLen for Array<bool, const
     const LEN = test_crate::{impl test_crate::HasLen for Array<bool, const N : usize>}#2::LEN<const N : usize>
 }
 
+struct test_crate::Wrapper<T>
+  where
+      [@TraitClause0]: core::marker::Sized<T>,
+ =
+{
+  T,
+}
+
+fn test_crate::{impl test_crate::HasLen for test_crate::Wrapper<T>[@TraitClause0]}#3::LEN<T>() -> usize
+where
+    [@TraitClause0]: core::marker::Sized<T>,
+    [@TraitClause1]: test_crate::HasLen<T>,
+{
+    let @0: usize; // return
+
+    @0 := const (@TraitClause1::LEN)
+    return
+}
+
+global test_crate::{impl test_crate::HasLen for test_crate::Wrapper<T>[@TraitClause0]}#3::LEN<T>: usize
+  where
+      [@TraitClause0]: core::marker::Sized<T>,
+      [@TraitClause1]: test_crate::HasLen<T>,
+ = test_crate::{impl test_crate::HasLen for test_crate::Wrapper<T>[@TraitClause0]}#3::LEN()
+
+impl<T> test_crate::{impl test_crate::HasLen for test_crate::Wrapper<T>[@TraitClause0]}#3<T> : test_crate::HasLen<test_crate::Wrapper<T>[@TraitClause0]>
+where
+    [@TraitClause0]: core::marker::Sized<T>,
+    [@TraitClause1]: test_crate::HasLen<T>,
+{
+    const LEN = test_crate::{impl test_crate::HasLen for test_crate::Wrapper<T>[@TraitClause0]}#3::LEN<T>[@TraitClause0, @TraitClause1]
+}
+
 fn test_crate::HasDefaultLen::LEN<Self, const M : usize>() -> usize
 {
     let @0: usize; // return
@@ -75,12 +108,12 @@ trait test_crate::HasDefaultLen<Self, const M : usize>
     const LEN : usize
 }
 
-impl<const N : usize> test_crate::{impl test_crate::HasDefaultLen<const N : usize> for Array<(), const N : usize>}#3<const N : usize> : test_crate::HasDefaultLen<Array<(), const N : usize>, const N : usize>
+impl<const N : usize> test_crate::{impl test_crate::HasDefaultLen<const N : usize> for Array<(), const N : usize>}#4<const N : usize> : test_crate::HasDefaultLen<Array<(), const N : usize>, const N : usize>
 {
     const LEN = test_crate::HasDefaultLen::LEN<Array<(), const N : usize>, const N : usize>
 }
 
-fn test_crate::{impl test_crate::HasDefaultLen<const N : usize> for Array<bool, const N : usize>}#4::LEN<const N : usize>() -> usize
+fn test_crate::{impl test_crate::HasDefaultLen<const N : usize> for Array<bool, const N : usize>}#5::LEN<const N : usize>() -> usize
 {
     let @0: usize; // return
     let @1: bool; // anonymous local
@@ -90,17 +123,39 @@ fn test_crate::{impl test_crate::HasDefaultLen<const N : usize> for Array<bool, 
         @0 := const (const N : usize)
     }
     else {
-        @0 := const (test_crate::{impl test_crate::HasDefaultLen<const N : usize> for Array<bool, const N : usize>}#4<const N : usize>::LEN)
+        @0 := const (test_crate::{impl test_crate::HasDefaultLen<const N : usize> for Array<bool, const N : usize>}#5<const N : usize>::LEN)
     }
     drop @1
     return
 }
 
-global test_crate::{impl test_crate::HasDefaultLen<const N : usize> for Array<bool, const N : usize>}#4::LEN<const N : usize>: usize = test_crate::{impl test_crate::HasDefaultLen<const N : usize> for Array<bool, const N : usize>}#4::LEN()
+global test_crate::{impl test_crate::HasDefaultLen<const N : usize> for Array<bool, const N : usize>}#5::LEN<const N : usize>: usize = test_crate::{impl test_crate::HasDefaultLen<const N : usize> for Array<bool, const N : usize>}#5::LEN()
 
-impl<const N : usize> test_crate::{impl test_crate::HasDefaultLen<const N : usize> for Array<bool, const N : usize>}#4<const N : usize> : test_crate::HasDefaultLen<Array<bool, const N : usize>, const N : usize>
+impl<const N : usize> test_crate::{impl test_crate::HasDefaultLen<const N : usize> for Array<bool, const N : usize>}#5<const N : usize> : test_crate::HasDefaultLen<Array<bool, const N : usize>, const N : usize>
 {
-    const LEN = test_crate::{impl test_crate::HasDefaultLen<const N : usize> for Array<bool, const N : usize>}#4::LEN<const N : usize>
+    const LEN = test_crate::{impl test_crate::HasDefaultLen<const N : usize> for Array<bool, const N : usize>}#5::LEN<const N : usize>
+}
+
+fn test_crate::AlsoHasLen::ALSO_LEN<Self>() -> usize
+{
+    let @0: usize; // return
+
+    @0 := const (Self::parent_clause0::LEN) + const (1 : usize)
+    return
+}
+
+global test_crate::AlsoHasLen::ALSO_LEN<Self>: usize = test_crate::AlsoHasLen::ALSO_LEN()
+
+trait test_crate::AlsoHasLen<Self>
+{
+    parent_clause0 : [@TraitClause0]: test_crate::HasLen<Self>
+    const ALSO_LEN : usize
+}
+
+impl<const N : usize> test_crate::{impl test_crate::AlsoHasLen for Array<(), const N : usize>}#6<const N : usize> : test_crate::AlsoHasLen<Array<(), const N : usize>>
+{
+    parent_clause0 = test_crate::{impl test_crate::HasLen for Array<(), const N : usize>}#1<const N : usize>
+    const ALSO_LEN = test_crate::AlsoHasLen::ALSO_LEN<Array<(), const N : usize>>
 }
 
 
