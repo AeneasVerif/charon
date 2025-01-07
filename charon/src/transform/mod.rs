@@ -173,3 +173,27 @@ impl Pass {
         }
     }
 }
+
+pub struct PrintCtxPass {
+    pub message: String,
+    /// Whether we're printing to stdout or only logging.
+    pub to_stdout: bool,
+}
+
+impl PrintCtxPass {
+    pub fn new(to_stdout: bool, message: String) -> &'static Self {
+        let ret = Self { message, to_stdout };
+        Box::leak(Box::new(ret))
+    }
+}
+
+impl TransformPass for PrintCtxPass {
+    fn transform_ctx(&self, ctx: &mut TransformCtx) {
+        let message = &self.message;
+        if self.to_stdout {
+            println!("{message}:\n\n{ctx}\n");
+        } else {
+            trace!("{message}:\n\n{ctx}\n");
+        }
+    }
+}

@@ -1,8 +1,9 @@
 use crate::translate::translate_crate_to_ullbc;
 use charon_lib::export;
 use charon_lib::options;
+use charon_lib::options::CliOpts;
 use charon_lib::transform::{
-    FINAL_CLEANUP_PASSES, INITIAL_CLEANUP_PASSES, LLBC_PASSES, ULLBC_PASSES,
+    Pass, PrintCtxPass, FINAL_CLEANUP_PASSES, INITIAL_CLEANUP_PASSES, LLBC_PASSES, ULLBC_PASSES,
 };
 use rustc_driver::{Callbacks, Compilation};
 use rustc_interface::{interface::Compiler, Queries};
@@ -197,86 +198,65 @@ pub fn get_args_crate_index<T: Deref<Target = str>>(args: &[T]) -> Option<usize>
         })
 }
 
+/// Calculate the list of passes we will run on the crate before outputting it.
+pub fn transformation_passes(options: &CliOpts) -> Vec<Pass> {
+    let print_original_ullbc = PrintCtxPass::new(
+        options.print_original_ullbc,
+        format!("# ULLBC after translation from MIR"),
+    );
+    let print_ullbc = PrintCtxPass::new(options.print_ullbc, {
+        let next_phase = if options.ullbc {
+            "serialization"
+        } else {
+            "control-flow reconstruction"
+        };
+        format!("# Final ULLBC before {next_phase}")
+    });
+    let print_llbc = PrintCtxPass::new(
+        options.print_llbc,
+        format!("# Final LLBC before serialization"),
+    );
+
+    let mut passes: Vec<Pass> = vec![];
+    passes.push(Pass::NonBody(print_original_ullbc));
+    passes.extend(INITIAL_CLEANUP_PASSES);
+    passes.extend(ULLBC_PASSES);
+    passes.push(Pass::NonBody(print_ullbc));
+
+    // # There are two options:
+    // - either the user wants the unstructured LLBC, in which case we stop there
+    // - or they want the structured LLBC, in which case we reconstruct the control-flow and apply
+    // more micro-passes
+    if !options.ullbc {
+        passes.extend(LLBC_PASSES);
+        passes.push(Pass::NonBody(print_llbc));
+    }
+
+    passes.extend(FINAL_CLEANUP_PASSES);
+    passes
+}
+
 /// Translate a crate to LLBC (Low-Level Borrow Calculus).
 ///
-/// This function is a callback function for the Rust compiler.
+/// This function is a callback function for the Rust compiler. The `tcx` parameter allows us to
+/// interact with compiler internals to explore the crates and translate relevant items.
 pub fn translate(tcx: TyCtxt, internal: &mut CharonCallbacks) -> export::CrateData {
     trace!();
     let options = &internal.options;
 
-    // Some important notes about crates and how to interact with rustc:
-    // - when calling rustc, we should give it the root of the crate, for
-    //   instance the "main.rs" file. From there, rustc will load all the
-    //   *modules* (i.e., files) in the crate
-    // - whenever there is a `mod MODULE` in a file (for instance, in the
-    //   "main.rs" file), it becomes a Module HIR item
+    // Translate the contents of the crate.
+    let mut transform_ctx =
+        translate_crate_to_ullbc::translate(options, tcx, internal.sysroot.clone());
 
-    // # Translate the declarations in the crate.
-    // We translate the declarations in an ad-hoc order, and do not group
-    // the mutually recursive groups - we do this in the next step.
-    let mut ctx = translate_crate_to_ullbc::translate(options, tcx, internal.sysroot.clone());
-
-    if options.print_original_ullbc {
-        println!("# ULLBC after translation from MIR:\n\n{ctx}\n");
-    } else {
-        trace!("# ULLBC after translation from MIR:\n\n{ctx}\n");
-    }
-
-    //
-    // =================
-    // **Micro-passes**:
-    // =================
-    // At this point, the bulk of the translation is done. From now onwards,
-    // we simply apply some micro-passes to make the code cleaner, before
-    // serializing the result.
-
-    // Run the micro-passes that clean up bodies.
-    for pass in INITIAL_CLEANUP_PASSES.iter() {
+    // The bulk of the translation is done, we no longer need to interact with rustc internals. We
+    // run several passes that simplify the items and cleanup the bodies.
+    for pass in transformation_passes(options) {
         trace!("# Starting pass {}", pass.name());
-        pass.run(&mut ctx)
-    }
-    for pass in ULLBC_PASSES.iter() {
-        trace!("# Starting pass {}", pass.name());
-        pass.run(&mut ctx)
-    }
-
-    let next_phase = if options.ullbc {
-        "serialization"
-    } else {
-        "control-flow reconstruction"
-    };
-    if options.print_ullbc {
-        println!("# Final ULLBC before {next_phase}:\n\n{ctx}\n");
-    } else {
-        trace!("# Final ULLBC before {next_phase}:\n\n{ctx}\n");
-    }
-
-    // # There are two options:
-    // - either the user wants the unstructured LLBC, in which case we stop there
-    // - or they want the structured LLBC, in which case we reconstruct the
-    //   control-flow and apply micro-passes
-    if !options.ullbc {
-        // Run the micro-passes that clean up bodies.
-        for pass in LLBC_PASSES.iter() {
-            trace!("# Starting pass {}", pass.name());
-            pass.run(&mut ctx)
-        }
-
-        if options.print_llbc {
-            println!("# Final LLBC before serialization:\n\n{ctx}\n");
-        } else {
-            trace!("# Final LLBC before serialization:\n\n{ctx}\n");
-        }
-    }
-
-    // Final passes before serialization.
-    for pass in FINAL_CLEANUP_PASSES.iter() {
-        trace!("# Starting pass {}", pass.name());
-        pass.run(&mut ctx)
+        pass.run(&mut transform_ctx)
     }
 
     // Update the error count
-    internal.error_count = ctx.errors.error_count;
+    internal.error_count = transform_ctx.errors.error_count;
 
-    export::CrateData::new(&ctx)
+    export::CrateData::new(&transform_ctx)
 }
