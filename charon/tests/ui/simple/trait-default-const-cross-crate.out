@@ -1,0 +1,59 @@
+# Final LLBC before serialization:
+
+// Full name: core::marker::Sized
+#[lang_item("sized")]
+pub trait Sized<Self>
+
+// Full name: trait_default_const::Trait
+trait Trait<Self>
+{
+    const FOO : usize
+}
+
+fn trait_default_const::Trait::FOO<Self>() -> usize
+{
+    let @0: usize; // return
+
+    @0 := const (42 : usize)
+    return
+}
+
+const trait_default_const::Trait::FOO<Self>: usize = trait_default_const::Trait::FOO()
+
+// Full name: trait_default_const::{impl Trait for T}
+impl<T> Trait for T
+where
+    [@TraitClause0]: Sized<T>,
+{
+    const FOO = trait_default_const::Trait::FOO<T>
+}
+
+// Full name: trait_default_const::foo
+pub fn foo<T>() -> usize
+where
+    [@TraitClause0]: Sized<T>,
+{
+    let @0: usize; // return
+
+    @0 := const ({impl Trait for T}<T>[@TraitClause0]::FOO)
+    return
+}
+
+// Full name: test_crate::bar
+fn bar<T>()
+where
+    [@TraitClause0]: Sized<T>,
+{
+    let @0: (); // return
+    let @1: usize; // anonymous local
+
+    storage_live(@1)
+    @1 := foo<T>[@TraitClause0]()
+    storage_dead(@1)
+    @0 := ()
+    @0 := ()
+    return
+}
+
+
+
