@@ -396,6 +396,7 @@ and aggregate_kind =
     visitors
       {
         name = "iter_rvalue";
+        monomorphic = [ "env" ];
         variety = "iter";
         ancestors = [ "iter_rvalue_base" ];
         nude = true (* Don't inherit VisitorsRuntime *);
@@ -403,6 +404,7 @@ and aggregate_kind =
     visitors
       {
         name = "map_rvalue";
+        monomorphic = [ "env" ];
         variety = "map";
         ancestors = [ "map_rvalue_base" ];
         nude = true (* Don't inherit VisitorsRuntime *);

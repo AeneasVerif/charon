@@ -102,6 +102,7 @@ and float_value = { float_value : string; float_ty : float_type }
     visitors
       {
         name = "iter_literal";
+        monomorphic = [ "env" ];
         variety = "iter";
         ancestors = [ "iter_literal_base" ];
         nude = true (* Don't inherit VisitorsRuntime *);
@@ -109,6 +110,7 @@ and float_value = { float_value : string; float_ty : float_type }
     visitors
       {
         name = "map_literal";
+        monomorphic = [ "env" ];
         variety = "map";
         ancestors = [ "map_literal_base" ];
         nude = true (* Don't inherit VisitorsRuntime *);
@@ -116,6 +118,7 @@ and float_value = { float_value : string; float_ty : float_type }
     visitors
       {
         name = "reduce_literal";
+        monomorphic = [ "env" ];
         variety = "reduce";
         ancestors = [ "reduce_literal_base" ];
         nude = true (* Don't inherit VisitorsRuntime *);
@@ -123,6 +126,7 @@ and float_value = { float_value : string; float_ty : float_type }
     visitors
       {
         name = "mapreduce_literal";
+        monomorphic = [ "env" ];
         variety = "mapreduce";
         ancestors = [ "mapreduce_literal_base" ];
         nude = true (* Don't inherit VisitorsRuntime *);

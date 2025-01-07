@@ -57,6 +57,7 @@ and switch =
     visitors
       {
         name = "iter_statement";
+        monomorphic = [ "env" ];
         variety = "iter";
         ancestors = [ "iter_statement_base" ];
         nude = true (* Don't inherit VisitorsRuntime *);
@@ -64,6 +65,7 @@ and switch =
     visitors
       {
         name = "map_statement";
+        monomorphic = [ "env" ];
         variety = "map";
         ancestors = [ "map_statement_base" ];
         nude = true (* Don't inherit VisitorsRuntime *);
@@ -95,6 +97,7 @@ and block = { statements : statement list; terminator : terminator }
     visitors
       {
         name = "iter_ullbc_ast";
+        monomorphic = [ "env" ];
         variety = "iter";
         ancestors = [ "iter_statement" ];
         nude = true (* Don't inherit VisitorsRuntime *);
@@ -102,6 +105,7 @@ and block = { statements : statement list; terminator : terminator }
     visitors
       {
         name = "map_ullbc_ast";
+        monomorphic = [ "env" ];
         variety = "map";
         ancestors = [ "map_statement" ];
         nude = true (* Don't inherit VisitorsRuntime *);

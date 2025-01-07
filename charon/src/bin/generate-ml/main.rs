@@ -867,6 +867,7 @@ impl GenerateCodeFor {
                                     r#"
                                     visitors {{
                                         name = "{variety}_{name}";
+                                        monomorphic = ["env"];
                                         variety = "{variety}";
                                         {ancestors}
                                     }}
@@ -985,7 +986,7 @@ fn generate_ml(
         ("charon_lib::ast::llbc_ast::Block", "statement"),
         // Handwritten because we use `indexed_var` as a hack to be able to reuse field names.
         // TODO: remove the need for this hack.
-        ("RegionVar", "(bound_region_id, string option) indexed_var"),
+        ("RegionVar", "(region_id, string option) indexed_var"),
         ("TypeVar", "(type_var_id, string) indexed_var"),
     ];
     let manual_json_impls = &[
@@ -1233,12 +1234,10 @@ fn generate_ml(
                     "TypeDeclId",
                     "TypeVarId",
                     "VariantId",
-                    "DeBruijnId",
-                    "DeBruijnVar",
                 ]),
                 (GenerationKind::TypeDecl(Some(DeriveVisitors {
                     name: "const_generic",
-                    ancestor: Some("const_generic_base_base"),
+                    ancestor: Some("literal"),
                     reduce: true,
                     extra_types: &[
                         "const_generic_var_id",
@@ -1252,6 +1251,8 @@ fn generate_ml(
                         "type_var_id",
                     ],
                 })), &[
+                    "DeBruijnId",
+                    "DeBruijnVar",
                     "AnyTransId",
                     "ConstGeneric",
                 ]),
@@ -1270,6 +1271,7 @@ fn generate_ml(
                     "RefKind",
                     "TyKind",
                     "Region",
+                    "RegionVar",
                     "TraitRef",
                     "TraitRefKind",
                     "TraitDeclRef",
@@ -1278,6 +1280,7 @@ fn generate_ml(
                     "GlobalDeclRef",
                     "GenericsSource",
                     "GenericArgs",
+                    "RegionBinder",
                 ]),
                 // TODO: can't merge into above because of field name clashes (`types`, `regions` etc).
                 (GenerationKind::TypeDecl(Some(DeriveVisitors {
@@ -1290,21 +1293,22 @@ fn generate_ml(
                 })), &[
                     "TraitClause",
                     "TypeVar",
+                    "OutlivesPred",
                     "RegionOutlives",
                     "TypeOutlives",
                     "GenericParams",
                     "ConstGenericVar",
                     "TraitTypeConstraint",
+                    "Binder",
                 ]),
                 (GenerationKind::TypeDecl(None), &[
-                    "Binder",
                     "ImplElem",
                     "PathElem",
                     "Name",
                 ]),
                 (GenerationKind::TypeDecl(Some(DeriveVisitors {
                     name: "type_decl",
-                    ancestor: Some("type_decl_base_base"),
+                    ancestor: Some("generic_params"),
                     reduce: false,
                     extra_types: &["attr_info", "name"],
                 })), &[
