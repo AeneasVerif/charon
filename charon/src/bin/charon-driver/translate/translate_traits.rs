@@ -144,10 +144,10 @@ impl BodyTransCtx<'_, '_> {
                         // declares them.
                         let id = self.register_global_decl_id(item_span, item_def_id);
                         let generics_target = GenericsSource::item(id);
-                        let gref = GlobalDeclRef {
-                            id,
-                            generics: self.the_only_binder().params.identity_args(generics_target),
-                        };
+                        let mut generics =
+                            self.the_only_binder().params.identity_args(generics_target);
+                        generics.trait_refs.push(self_trait_ref.clone());
+                        let gref = GlobalDeclRef { id, generics };
                         const_defaults.insert(item_name.clone(), gref);
                     };
                     let ty = self.translate_ty(item_span, ty)?;
@@ -244,6 +244,16 @@ impl BodyTransCtx<'_, '_> {
             )?;
             TraitDeclRef { trait_id, generics }
         };
+        // A `TraitRef` that points to this impl with the correct generics.
+        let self_predicate = TraitRef {
+            kind: TraitRefKind::TraitImpl(
+                def_id,
+                self.the_only_binder()
+                    .params
+                    .identity_args(GenericsSource::item(def_id)),
+            ),
+            trait_decl_ref: RegionBinder::empty(implemented_trait.clone()),
+        };
 
         // The trait refs which implement the parent clauses of the implemented trait decl.
         let parent_trait_refs = self.translate_trait_impl_exprs(span, &required_impl_exprs)?;
@@ -333,10 +343,14 @@ impl BodyTransCtx<'_, '_> {
                         Provided { .. } => {
                             self.the_only_binder().params.identity_args(generics_target)
                         }
-                        _ => implemented_trait
-                            .generics
-                            .clone()
-                            .with_target(generics_target),
+                        _ => {
+                            let mut generics = implemented_trait
+                                .generics
+                                .clone()
+                                .with_target(generics_target);
+                            generics.trait_refs.push(self_predicate.clone());
+                            generics
+                        }
                     };
                     let gref = GlobalDeclRef { id, generics };
                     consts.push((name, gref));
