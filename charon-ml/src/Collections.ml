@@ -227,7 +227,7 @@ module MakeMap (Ord : OrderedType) : Map with type key = Ord.t = struct
     in
     match ls with
     | [] -> "{}"
-    | _ -> "{" ^ break ^ String.concat sep (List.rev ls) ^ break ^ "}"
+    | _ -> "{" ^ break ^ String.concat sep (List.rev ls) ^ " }"
 
   let pp (pp_a : Format.formatter -> 'a -> unit) (fmt : Format.formatter)
       (m : 'a t) : unit =
@@ -326,7 +326,7 @@ module MakeSet (Ord : OrderedType) : Set with type elt = Ord.t = struct
     let ls = Set.fold (fun v ls -> (indent ^ Ord.to_string v) :: ls) m [] in
     match ls with
     | [] -> "{}"
-    | _ -> "{" ^ break ^ String.concat sep (List.rev ls) ^ break ^ "}"
+    | _ -> "{" ^ break ^ String.concat sep (List.rev ls) ^ " }"
 
   let pp (fmt : Format.formatter) (m : t) : unit =
     let pp_string = F.pp_print_string fmt in
