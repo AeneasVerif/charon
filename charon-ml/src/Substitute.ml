@@ -158,14 +158,20 @@ let st_substitute_visitor =
       (* Note that we don't visit the bound variables. *)
       let { binder_params; binder_value } = x in
       (* Crucial: we shift the substitution to be valid under this binder. *)
-      let binder_value = visit_value (shift_subst subst) binder_value in
+      let subst = shift_subst subst in
+      let binder_params = self#visit_generic_params subst binder_params in
+      let binder_value = visit_value subst binder_value in
       { binder_params; binder_value }
 
     method! visit_region_binder visit_value (subst : subst) x =
       (* Note that we don't visit the bound variables. *)
       let { binder_regions; binder_value } = x in
       (* Crucial: we shift the substitution to be valid under this binder. *)
-      let binder_value = visit_value (shift_subst subst) binder_value in
+      let subst = shift_subst subst in
+      let binder_regions =
+        self#visit_list self#visit_region_var subst binder_regions
+      in
+      let binder_value = visit_value subst binder_value in
       { binder_regions; binder_value }
 
     method! visit_RVar (subst : subst) var = subst.r_subst var
@@ -173,14 +179,6 @@ let st_substitute_visitor =
     method! visit_CgVar (subst : subst) var = subst.cg_subst var
     method! visit_Clause (subst : subst) var = subst.tr_subst var
     method! visit_Self (subst : subst) = subst.tr_self
-
-    method! visit_type_var_id _ _ =
-      (* We should never get here because we reimplemented [visit_TypeVar] *)
-      raise (Failure "Unexpected")
-
-    method! visit_const_generic_var_id _ _ =
-      (* We should never get here because we reimplemented [visit_Var] *)
-      raise (Failure "Unexpected")
   end
 
 (** Substitute types variables and regions in a type.
