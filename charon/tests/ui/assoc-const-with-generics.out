@@ -94,8 +94,6 @@ where
 }
 
 fn test_crate::HasDefaultLen::LEN<Self, const M : usize>() -> usize
-where
-    [@TraitClause0]: test_crate::HasDefaultLen<Self, const M : usize>,
 {
     let @0: usize; // return
 
@@ -103,10 +101,7 @@ where
     return
 }
 
-global test_crate::HasDefaultLen::LEN<Self, const M : usize>: usize
-  where
-      [@TraitClause0]: test_crate::HasDefaultLen<Self, const M : usize>,
- = test_crate::HasDefaultLen::LEN()
+global test_crate::HasDefaultLen::LEN<Self, const M : usize>: usize = test_crate::HasDefaultLen::LEN()
 
 trait test_crate::HasDefaultLen<Self, const M : usize>
 {
@@ -115,7 +110,7 @@ trait test_crate::HasDefaultLen<Self, const M : usize>
 
 impl<const N : usize> test_crate::{impl test_crate::HasDefaultLen<const N : usize> for Array<(), const N : usize>}#4<const N : usize> : test_crate::HasDefaultLen<Array<(), const N : usize>, const N : usize>
 {
-    const LEN = test_crate::HasDefaultLen::LEN<Array<(), const N : usize>, const N : usize>[test_crate::{impl test_crate::HasDefaultLen<const N : usize> for Array<(), const N : usize>}#4<const N : usize>]
+    const LEN = test_crate::HasDefaultLen::LEN<Array<(), const N : usize>, const N : usize>
 }
 
 fn test_crate::{impl test_crate::HasDefaultLen<const N : usize> for Array<bool, const N : usize>}#5::LEN<const N : usize>() -> usize

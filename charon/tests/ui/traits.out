@@ -3,7 +3,7 @@
 trait test_crate::BoolTrait<Self>
 {
     fn get_bool<'_0> = test_crate::BoolTrait::get_bool<'_0_0, Self>[Self]
-    fn ret_true<'_0> = test_crate::BoolTrait::ret_true<'_0_0, Self>[Self]
+    fn ret_true<'_0> = test_crate::BoolTrait::ret_true<'_0_0, Self>
 }
 
 fn test_crate::{impl test_crate::BoolTrait for bool}::get_bool<'_0>(@1: &'_0 (bool)) -> bool
@@ -21,8 +21,6 @@ impl test_crate::{impl test_crate::BoolTrait for bool} : test_crate::BoolTrait<b
 }
 
 fn test_crate::BoolTrait::ret_true<'_0, Self>(@1: &'_0 (Self)) -> bool
-where
-    [@TraitClause0]: test_crate::BoolTrait<Self>,
 {
     let @0: bool; // return
     let self@1: &'_ (Self); // arg #1
@@ -488,8 +486,6 @@ where
 }
 
 fn test_crate::WithConstTy::LEN2<Self, const LEN : usize>() -> usize
-where
-    [@TraitClause0]: test_crate::WithConstTy<Self, const LEN : usize>,
 {
     let @0: usize; // return
 
@@ -497,10 +493,7 @@ where
     return
 }
 
-global test_crate::WithConstTy::LEN2<Self, const LEN : usize>: usize
-  where
-      [@TraitClause0]: test_crate::WithConstTy<Self, const LEN : usize>,
- = test_crate::WithConstTy::LEN2()
+global test_crate::WithConstTy::LEN2<Self, const LEN : usize>: usize = test_crate::WithConstTy::LEN2()
 
 trait test_crate::WithConstTy<Self, const LEN : usize>
 {
@@ -543,7 +536,7 @@ impl test_crate::{impl test_crate::WithConstTy<32 : usize> for bool}#8 : test_cr
     parent_clause1 = test_crate::{impl test_crate::ToU64 for u64}#2
     parent_clause2 = core::marker::Sized<u64>
     const LEN1 = test_crate::{impl test_crate::WithConstTy<32 : usize> for bool}#8::LEN1
-    const LEN2 = test_crate::WithConstTy::LEN2<bool, 32 : usize>[test_crate::{impl test_crate::WithConstTy<32 : usize> for bool}#8]
+    const LEN2 = test_crate::WithConstTy::LEN2<bool, 32 : usize>
     type V = u8
     type W = u64
     fn f<'_0, '_1> = test_crate::{impl test_crate::WithConstTy<32 : usize> for bool}#8::f<'_0_0, '_0_1>

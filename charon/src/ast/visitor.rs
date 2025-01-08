@@ -46,7 +46,7 @@ use index_vec::Idx;
         FnOperand, FunId, FunIdOrTraitMethodRef, FunSig, ImplElem, IntegerTy, Literal, LiteralTy,
         llbc_ast::Block, llbc_ast::ExprBody, llbc_ast::RawStatement, llbc_ast::Switch,
         Locals, Name, NullOp, Opaque, Operand, PathElem, Place, PlaceKind, ProjectionElem, RawConstantExpr,
-        RefKind, RegionId, RegionVar, Rvalue, ScalarValue, TraitClause, TraitClauseId, TraitItemName,
+        RefKind, RegionId, RegionVar, Rvalue, ScalarValue, TraitItemName,
         TraitRefKind, TraitTypeConstraint, TranslatedCrate, TyKind, TypeDeclKind, TypeId, TypeVar, TypeVarId,
         ullbc_ast::BlockData, ullbc_ast::BlockId, ullbc_ast::ExprBody, ullbc_ast::RawStatement,
         ullbc_ast::RawTerminator, ullbc_ast::SwitchTargets, ullbc_ast::Terminator,
@@ -64,7 +64,7 @@ use index_vec::Idx;
     override(
         DeBruijnId, Ty, Region, ConstGeneric, TraitRef,
         FunDeclRef, GlobalDeclRef, TraitDeclRef, TraitImplRef,
-        GenericArgs, GenericParams,
+        GenericArgs, GenericParams, TraitClause, TraitClauseId,
         for<T: AstVisitable + Idx> DeBruijnVar<T>,
         for<T: AstVisitable> RegionBinder<T>,
         for<T: AstVisitable> Binder<T>,
