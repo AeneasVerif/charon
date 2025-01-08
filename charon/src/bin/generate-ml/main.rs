@@ -1336,10 +1336,9 @@ fn generate_ml(
             markers: ctx.markers_from_names(&[
                 (GenerationKind::TypeDecl(Some(DeriveVisitors {
                     name: "literal",
-                    ancestors: &[],
+                    ancestors: &["big_int"],
                     reduce: true,
                     extra_types: &[
-                        "big_int",
                     ],
                 })), &[
                     "IntegerTy",

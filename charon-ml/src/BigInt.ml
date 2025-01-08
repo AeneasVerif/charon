@@ -2,7 +2,12 @@
     to think about the bounds, nor architecture issues - Rust allows to
     manipulate 128-bit integers for instance).
  *)
-type big_int = Z.t
+type big_int = (Z.t[@opaque])
+[@@deriving
+  visitors { name = "iter_big_int"; variety = "iter" },
+    visitors { name = "map_big_int"; variety = "map" },
+    visitors { name = "reduce_big_int"; variety = "reduce" },
+    visitors { name = "mapreduce_big_int"; variety = "mapreduce" }]
 
 let big_int_of_yojson (json : Yojson.Safe.t) : (big_int, string) result =
   match json with

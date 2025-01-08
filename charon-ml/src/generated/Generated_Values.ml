@@ -1,33 +1,6 @@
 (** The primitive values. *)
 include BigInt
 
-(* Ancestors for the literal visitors *)
-class ['self] iter_literal_base =
-  object (self : 'self)
-    inherit [_] VisitorsRuntime.iter
-    method visit_big_int : 'env -> big_int -> unit = fun _ _ -> ()
-  end
-
-class ['self] map_literal_base =
-  object (self : 'self)
-    inherit [_] VisitorsRuntime.map
-    method visit_big_int : 'env -> big_int -> big_int = fun _ x -> x
-  end
-
-class virtual ['self] reduce_literal_base =
-  object (self : 'self)
-    inherit [_] VisitorsRuntime.reduce
-    method visit_big_int : 'env -> big_int -> 'a = fun _ _ -> self#zero
-  end
-
-class virtual ['self] mapreduce_literal_base =
-  object (self : 'self)
-    inherit [_] VisitorsRuntime.mapreduce
-
-    method visit_big_int : 'env -> big_int -> big_int * 'a =
-      fun _ x -> (x, self#zero)
-  end
-
 type integer_type =
   | Isize
   | I8
@@ -85,7 +58,7 @@ and float_value = { float_value : string; float_ty : float_type }
         name = "iter_literal";
         monomorphic = [ "env" ];
         variety = "iter";
-        ancestors = [ "iter_literal_base" ];
+        ancestors = [ "iter_big_int" ];
         nude = true (* Don't inherit VisitorsRuntime *);
       },
     visitors
@@ -93,7 +66,7 @@ and float_value = { float_value : string; float_ty : float_type }
         name = "map_literal";
         monomorphic = [ "env" ];
         variety = "map";
-        ancestors = [ "map_literal_base" ];
+        ancestors = [ "map_big_int" ];
         nude = true (* Don't inherit VisitorsRuntime *);
       },
     visitors
@@ -101,7 +74,7 @@ and float_value = { float_value : string; float_ty : float_type }
         name = "reduce_literal";
         monomorphic = [ "env" ];
         variety = "reduce";
-        ancestors = [ "reduce_literal_base" ];
+        ancestors = [ "reduce_big_int" ];
         nude = true (* Don't inherit VisitorsRuntime *);
       },
     visitors
@@ -109,6 +82,6 @@ and float_value = { float_value : string; float_ty : float_type }
         name = "mapreduce_literal";
         monomorphic = [ "env" ];
         variety = "mapreduce";
-        ancestors = [ "mapreduce_literal_base" ];
+        ancestors = [ "mapreduce_big_int" ];
         nude = true (* Don't inherit VisitorsRuntime *);
       }]
