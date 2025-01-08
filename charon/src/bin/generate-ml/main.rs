@@ -704,20 +704,25 @@ fn type_decl_to_ocaml_decl(ctx: &GenerateCtx, decl: &TypeDecl, co_rec: bool) -> 
 fn generate_visitor_bases(
     _ctx: &GenerateCtx,
     name: &str,
-    inherits: Option<&str>,
+    inherits: &[&str],
     reduce: bool,
     ty_names: &[String],
 ) -> String {
     let mut out = String::new();
     let make_inherit = |variety| {
-        if let Some(ancestor) = inherits {
-            if let [module, name] = ancestor.split(".").collect_vec().as_slice() {
-                format!("{module}.{variety}_{name}")
-            } else {
-                format!("{variety}_{ancestor}")
-            }
+        if !inherits.is_empty() {
+            inherits
+                .iter()
+                .map(|ancestor| {
+                    if let [module, name] = ancestor.split(".").collect_vec().as_slice() {
+                        format!("inherit [_] {module}.{variety}_{name}")
+                    } else {
+                        format!("inherit [_] {variety}_{ancestor}")
+                    }
+                })
+                .join("\n")
         } else {
-            format!("VisitorsRuntime.{variety}")
+            format!("inherit [_] VisitorsRuntime.{variety}")
         }
     };
 
@@ -730,7 +735,7 @@ fn generate_visitor_bases(
         "
         class ['self] iter_{name} =
           object (self : 'self)
-            inherit [_] {}
+            {}
             {iter_methods}
           end
         ",
@@ -746,7 +751,7 @@ fn generate_visitor_bases(
         "
         class ['self] map_{name} =
           object (self : 'self)
-            inherit [_] {}
+            {}
             {map_methods}
           end
         ",
@@ -763,7 +768,7 @@ fn generate_visitor_bases(
             "
             class virtual ['self] reduce_{name} =
               object (self : 'self)
-                inherit [_] {}
+                {}
                 {reduce_methods}
               end
             ",
@@ -781,7 +786,7 @@ fn generate_visitor_bases(
             "
             class virtual ['self] mapreduce_{name} =
               object (self : 'self)
-                inherit [_] {}
+                {}
                 {mapreduce_methods}
               end
             ",
@@ -795,7 +800,7 @@ fn generate_visitor_bases(
 #[derive(Clone, Copy)]
 struct DeriveVisitors {
     name: &'static str,
-    ancestor: Option<&'static str>,
+    ancestors: &'static [&'static str],
     reduce: bool,
     extra_types: &'static [&'static str],
 }
@@ -843,7 +848,7 @@ impl GenerateCodeFor {
                     if let Some(visitors) = visitors {
                         let DeriveVisitors {
                             name,
-                            mut ancestor,
+                            mut ancestors,
                             reduce,
                             extra_types,
                         } = visitors;
@@ -853,12 +858,13 @@ impl GenerateCodeFor {
                             &["iter", "map"]
                         };
                         let intermediate_visitor_name;
+                        let intermediate_visitor_name_slice;
                         if !extra_types.is_empty() {
                             intermediate_visitor_name = format!("{name}_base");
                             let intermediate_visitor = generate_visitor_bases(
                                 ctx,
                                 &intermediate_visitor_name,
-                                ancestor,
+                                ancestors,
                                 *reduce,
                                 extra_types
                                     .iter()
@@ -866,22 +872,25 @@ impl GenerateCodeFor {
                                     .collect_vec()
                                     .as_slice(),
                             );
-                            ancestor = Some(&intermediate_visitor_name);
+                            intermediate_visitor_name_slice = [intermediate_visitor_name.as_str()];
+                            ancestors = &intermediate_visitor_name_slice;
                             decls = format!("(* Ancestors for the {name} visitors *){intermediate_visitor}\n{decls}");
                         }
                         let visitors = varieties
                             .iter()
                             .map(|variety| {
-                                let ancestors = if let Some(ancestor) = ancestor {
-                                    format!(
-                                        r#"
-                                        ancestors = [ "{variety}_{ancestor}" ];
-                                        nude = true (* Don't inherit VisitorsRuntime *);
-                                    "#
-                                    )
+                                let nude = if !ancestors.is_empty() {
+                                    format!("nude = true (* Don't inherit VisitorsRuntime *);")
                                 } else {
                                     String::new()
                                 };
+                                let ancestors = format!(
+                                    "ancestors = [ {} ];",
+                                    ancestors
+                                        .iter()
+                                        .map(|a| format!("\"{variety}_{a}\""))
+                                        .join(";")
+                                );
                                 format!(
                                     r#"
                                     visitors {{
@@ -889,6 +898,7 @@ impl GenerateCodeFor {
                                         monomorphic = ["env"];
                                         variety = "{variety}";
                                         {ancestors}
+                                        {nude}
                                     }}
                                 "#
                                 )
@@ -1139,7 +1149,7 @@ fn generate_ml(
             markers: ctx.markers_from_names(&[
                 (GenerationKind::TypeDecl(Some(DeriveVisitors {
                     name: "fun_sig",
-                    ancestor: Some("rvalue"),
+                    ancestors: &["rvalue"],
                     reduce: false,
                     extra_types: &[],
                 })), &[
@@ -1156,7 +1166,7 @@ fn generate_ml(
                 // These have to be kept separate to avoid field name clashes
                 (GenerationKind::TypeDecl(Some(DeriveVisitors {
                     name: "global_decl",
-                    ancestor: Some("fun_sig"),
+                    ancestors: &["fun_sig"],
                     reduce: false,
                     extra_types: &[],
                 })), &[
@@ -1164,7 +1174,7 @@ fn generate_ml(
                 ]),
                 (GenerationKind::TypeDecl(Some(DeriveVisitors {
                     name: "trait_decl",
-                    ancestor: Some("global_decl"),
+                    ancestors: &["global_decl"],
                     reduce: false,
                     extra_types: &[],
                 })), &[
@@ -1172,7 +1182,7 @@ fn generate_ml(
                 ]),
                 (GenerationKind::TypeDecl(Some(DeriveVisitors {
                     name: "trait_impl",
-                    ancestor: Some("trait_decl"),
+                    ancestors: &["trait_decl"],
                     reduce: false,
                     extra_types: &[],
                 })), &[
@@ -1192,7 +1202,7 @@ fn generate_ml(
             markers: ctx.markers_from_names(&[
                 (GenerationKind::TypeDecl(Some(DeriveVisitors {
                     name: "rvalue",
-                    ancestor: Some("type_decl"),
+                    ancestors: &["type_decl"],
                     reduce: false,
                     extra_types: &[],
                 })), &[
@@ -1245,7 +1255,7 @@ fn generate_ml(
             markers: ctx.markers_from_names(&[
                 (GenerationKind::TypeDecl(Some(DeriveVisitors {
                     name: "const_generic",
-                    ancestor: Some("literal"),
+                    ancestors: &["literal"],
                     reduce: true,
                     extra_types: &[],
                 })), &[
@@ -1267,7 +1277,7 @@ fn generate_ml(
                 // copy of `ty`, which causes method type clashes.
                 (GenerationKind::TypeDecl(Some(DeriveVisitors {
                     name: "ty",
-                    ancestor: Some("ty_base_base"),
+                    ancestors: &["ty_base_base"],
                     reduce: false,
                     extra_types: &[],
                 })), &[
@@ -1292,7 +1302,7 @@ fn generate_ml(
                 // TODO: can't merge into above because of field name clashes (`types`, `regions` etc).
                 (GenerationKind::TypeDecl(Some(DeriveVisitors {
                     name: "type_decl",
-                    ancestor: Some("ty"),
+                    ancestors: &["ty"],
                     reduce: false,
                     extra_types: &[
                         "span","attr_info"
@@ -1326,7 +1336,7 @@ fn generate_ml(
             markers: ctx.markers_from_names(&[
                 (GenerationKind::TypeDecl(Some(DeriveVisitors {
                     name: "literal",
-                    ancestor: None,
+                    ancestors: &[],
                     reduce: true,
                     extra_types: &[
                         "big_int",
@@ -1347,7 +1357,7 @@ fn generate_ml(
             markers: vec![
                 (GenerationKind::TypeDecl(Some(DeriveVisitors {
                     name: "statement",
-                    ancestor: Some("trait_impl"),
+                    ancestors: &["trait_impl"],
                     reduce: false,
                     extra_types: &[],
                 })), llbc_types.clone()),
@@ -1359,7 +1369,7 @@ fn generate_ml(
             markers: ctx.markers_from_names(&[
                 (GenerationKind::TypeDecl(Some(DeriveVisitors {
                     name: "statement",
-                    ancestor: Some("trait_impl"),
+                    ancestors: &["trait_impl"],
                     reduce: false,
                     extra_types: &[],
                 })), &[
@@ -1371,7 +1381,7 @@ fn generate_ml(
                 // TODO: Can't merge with above because of field name clashes (`content` and `span`).
                 (GenerationKind::TypeDecl(Some(DeriveVisitors {
                     name: "ullbc_ast",
-                    ancestor: Some("statement"),
+                    ancestors: &["statement"],
                     reduce: false,
                     extra_types: &[],
                 })), &[
