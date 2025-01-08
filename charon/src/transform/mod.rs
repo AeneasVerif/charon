@@ -29,6 +29,7 @@ pub mod remove_read_discriminant;
 pub mod remove_unit_locals;
 pub mod remove_unused_locals;
 pub mod remove_unused_methods;
+pub mod remove_unused_self_clause;
 pub mod reorder_decls;
 pub mod simplify_constants;
 pub mod skip_trait_refs_when_known;
@@ -56,6 +57,9 @@ pub static INITIAL_CLEANUP_PASSES: &[Pass] = &[
     // # Micro-pass: filter the trait impls that were marked invisible since we couldn't filter
     // them out earlier.
     NonBody(&filter_invisible_trait_impls::Transform),
+    // # Micro-pass: remove the explicit `Self: Trait` clause of methods/assoc const declaration
+    // items if they're not used. This simplifies the graph of dependencies between definitions.
+    NonBody(&remove_unused_self_clause::Transform),
     // Add missing methods to trait impls by duplicating the default method.
     NonBody(&duplicate_defaulted_methods::Transform),
     // # Micro-pass: whenever we call a trait method on a known type, refer to the method `FunDecl`

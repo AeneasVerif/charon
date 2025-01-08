@@ -98,12 +98,20 @@ where
         self.elem_count += 1;
     }
 
-    /// Remove the value from this slot.
+    /// Remove the value from this slot, leaving other ids unchanged.
     pub fn remove(&mut self, id: I) -> Option<T> {
         if self.vector[id].is_some() {
             self.elem_count -= 1;
         }
         self.vector[id].take()
+    }
+
+    /// Remove the value from this slot, shifting other ids as needed.
+    pub fn remove_and_shift_ids(&mut self, id: I) -> Option<T> {
+        if self.vector[id].is_some() {
+            self.elem_count -= 1;
+        }
+        self.vector.remove(id)
     }
 
     pub fn push(&mut self, x: T) -> I {

@@ -1690,6 +1690,7 @@ and cli_options_of_json (ctx : of_json_ctx) (js : json) :
           ("exclude", exclude);
           ("remove_associated_types", remove_associated_types);
           ("hide_marker_traits", hide_marker_traits);
+          ("remove_unused_self_clauses", remove_unused_self_clauses);
           ("start_from", start_from);
           ("no_cargo", no_cargo);
           ("rustc_args", rustc_args);
@@ -1727,6 +1728,9 @@ and cli_options_of_json (ctx : of_json_ctx) (js : json) :
           list_of_json string_of_json ctx remove_associated_types
         in
         let* hide_marker_traits = bool_of_json ctx hide_marker_traits in
+        let* remove_unused_self_clauses =
+          bool_of_json ctx remove_unused_self_clauses
+        in
         let* start_from = list_of_json string_of_json ctx start_from in
         let* no_cargo = bool_of_json ctx no_cargo in
         let* rustc_args = list_of_json string_of_json ctx rustc_args in
@@ -1765,6 +1769,7 @@ and cli_options_of_json (ctx : of_json_ctx) (js : json) :
              exclude;
              remove_associated_types;
              hide_marker_traits;
+             remove_unused_self_clauses;
              start_from;
              no_cargo;
              rustc_args;

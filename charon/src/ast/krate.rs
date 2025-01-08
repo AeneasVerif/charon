@@ -226,6 +226,17 @@ impl<'ctx> AnyTransItem<'ctx> {
         }
     }
 
+    /// Get information about the parent of this item, if any.
+    pub fn parent_info(&self) -> &'ctx ItemKind {
+        match self {
+            AnyTransItem::Fun(d) => &d.kind,
+            AnyTransItem::Global(d) => &d.kind,
+            AnyTransItem::Type(_) | AnyTransItem::TraitDecl(_) | AnyTransItem::TraitImpl(_) => {
+                &ItemKind::TopLevel
+            }
+        }
+    }
+
     /// See [`GenericParams::identity_args`].
     pub fn identity_args(&self) -> GenericArgs {
         self.generic_params()
@@ -241,6 +252,17 @@ impl<'ctx> AnyTransItem<'ctx> {
             AnyTransItem::Global(d) => visitor.visit(d),
             AnyTransItem::TraitDecl(d) => visitor.visit(d),
             AnyTransItem::TraitImpl(d) => visitor.visit(d),
+        }
+    }
+
+    /// Visit all occurrences of that type inside `self`, in pre-order traversal.
+    pub fn dyn_visit<T: AstVisitable>(&self, f: impl FnMut(&T)) {
+        match *self {
+            AnyTransItem::Type(d) => d.dyn_visit(f),
+            AnyTransItem::Fun(d) => d.dyn_visit(f),
+            AnyTransItem::Global(d) => d.dyn_visit(f),
+            AnyTransItem::TraitDecl(d) => d.dyn_visit(f),
+            AnyTransItem::TraitImpl(d) => d.dyn_visit(f),
         }
     }
 }
@@ -276,6 +298,17 @@ impl<'ctx> AnyTransItemMut<'ctx> {
             AnyTransItemMut::Global(d) => visitor.visit(*d),
             AnyTransItemMut::TraitDecl(d) => visitor.visit(*d),
             AnyTransItemMut::TraitImpl(d) => visitor.visit(*d),
+        }
+    }
+
+    /// Visit all occurrences of that type inside `self`, in pre-order traversal.
+    pub fn dyn_visit_mut<T: AstVisitable>(&mut self, f: impl FnMut(&mut T)) {
+        match self {
+            AnyTransItemMut::Type(d) => d.dyn_visit_mut(f),
+            AnyTransItemMut::Fun(d) => d.dyn_visit_mut(f),
+            AnyTransItemMut::Global(d) => d.dyn_visit_mut(f),
+            AnyTransItemMut::TraitDecl(d) => d.dyn_visit_mut(f),
+            AnyTransItemMut::TraitImpl(d) => d.dyn_visit_mut(f),
         }
     }
 }
