@@ -1144,55 +1144,121 @@ fn generate_ml(
     #[rustfmt::skip]
     let generate_code_for = vec![
         GenerateCodeFor {
-            template: template_dir.join("GAst.ml"),
-            target: output_dir.join("Generated_GAst.ml"),
+            template: template_dir.join("Meta.ml"),
+            target: output_dir.join("Generated_Meta.ml"),
+            markers: ctx.markers_from_names(&[
+                (GenerationKind::TypeDecl(None), &[
+                    "Loc",
+                    "FileName",
+                    "FileId",
+                    "File",
+                    "RawSpan",
+                    "Span",
+                    "InlineAttr",
+                    "Attribute",
+                    "RawAttribute",
+                    "AttrInfo",
+                ]),
+            ]),
+        },
+        GenerateCodeFor {
+            template: template_dir.join("Values.ml"),
+            target: output_dir.join("Generated_Values.ml"),
             markers: ctx.markers_from_names(&[
                 (GenerationKind::TypeDecl(Some(DeriveVisitors {
-                    name: "fun_sig",
-                    ancestors: &["rvalue"],
-                    reduce: false,
-                    extra_types: &[],
+                    ancestors: &["big_int"],
+                    name: "literal",
+                    reduce: true,
+                    extra_types: &[
+                    ],
                 })), &[
-                    "Var",
-                    "FnOperand",
-                    "Call",
-                    "Assert",
-                    "ClosureKind",
-                    "ClosureInfo",
-                    "ItemKind",
-                    "Locals",
-                    "FunSig",
+                    "IntegerTy",
+                    "FloatTy",
+                    "FloatValue",
+                    "LiteralTy",
+                    "ScalarValue",
+                    "Literal",
                 ]),
-                // These have to be kept separate to avoid field name clashes
+            ]),
+        },
+        GenerateCodeFor {
+            template: template_dir.join("Types.ml"),
+            target: output_dir.join("Generated_Types.ml"),
+            markers: ctx.markers_from_names(&[
                 (GenerationKind::TypeDecl(Some(DeriveVisitors {
-                    name: "global_decl",
-                    ancestors: &["fun_sig"],
-                    reduce: false,
+                    ancestors: &["literal"],
+                    name: "const_generic",
+                    reduce: true,
                     extra_types: &[],
                 })), &[
-                    "GlobalDecl",
+                    "RegionId",
+                    "ConstGenericVarId",
+                    "FunDeclId",
+                    "GlobalDeclId",
+                    "TraitClauseId",
+                    "TraitDeclId",
+                    "TraitImplId",
+                    "TypeDeclId",
+                    "TypeVarId",
+                    "DeBruijnId",
+                    "DeBruijnVar",
+                    "AnyTransId",
+                    "ConstGeneric",
                 ]),
+                // Can't merge into above because aeneas uses the above alongside their own partial
+                // copy of `ty`, which causes method type clashes.
                 (GenerationKind::TypeDecl(Some(DeriveVisitors {
-                    name: "trait_decl",
-                    ancestors: &["global_decl"],
+                    ancestors: &["ty_base_base"],
+                    name: "ty",
                     reduce: false,
                     extra_types: &[],
                 })), &[
-                    "TraitDecl",
+                    "TraitItemName",
+                    "BuiltinTy",
+                    "TypeId",
+                    "ExistentialPredicate",
+                    "RefKind",
+                    "TyKind",
+                    "Region",
+                    "RegionVar",
+                    "TraitRef",
+                    "TraitRefKind",
+                    "TraitDeclRef",
+                    "TraitImplRef",
+                    "FunDeclRef",
+                    "GlobalDeclRef",
+                    "GenericsSource",
+                    "GenericArgs",
+                    "RegionBinder",
                 ]),
+                // TODO: can't merge into above because of field name clashes (`types`, `regions` etc).
                 (GenerationKind::TypeDecl(Some(DeriveVisitors {
-                    name: "trait_impl",
-                    ancestors: &["trait_decl"],
+                    ancestors: &["ty"],
+                    name: "type_decl",
                     reduce: false,
-                    extra_types: &[],
+                    extra_types: &[
+                        "span","attr_info"
+                    ],
                 })), &[
-                    "TraitImpl",
-                ]),
-                (GenerationKind::TypeDecl(None), &[
-                    "CliOpts",
-                    "GExprBody",
-                    "GDeclarationGroup",
-                    "DeclarationGroup",
+                    "TraitClause",
+                    "TypeVar",
+                    "OutlivesPred",
+                    "RegionOutlives",
+                    "TypeOutlives",
+                    "GenericParams",
+                    "ConstGenericVar",
+                    "TraitTypeConstraint",
+                    "Binder",
+                    "Disambiguator",
+                    "ImplElem",
+                    "PathElem",
+                    "Name",
+                    "Field",
+                    "Variant",
+                    "ItemMeta",
+                    "AbortKind",
+                    "TypeDeclKind",
+                    "TypeDecl",
                 ]),
             ]),
         },
@@ -1201,8 +1267,8 @@ fn generate_ml(
             target: output_dir.join("Generated_Expressions.ml"),
             markers: ctx.markers_from_names(&[
                 (GenerationKind::TypeDecl(Some(DeriveVisitors {
-                    name: "rvalue",
                     ancestors: &["type_decl"],
+                    name: "rvalue",
                     reduce: false,
                     extra_types: &[],
                 })), &[
@@ -1232,121 +1298,55 @@ fn generate_ml(
             ]),
         },
         GenerateCodeFor {
-            template: template_dir.join("Meta.ml"),
-            target: output_dir.join("Generated_Meta.ml"),
+            template: template_dir.join("GAst.ml"),
+            target: output_dir.join("Generated_GAst.ml"),
             markers: ctx.markers_from_names(&[
+                (GenerationKind::TypeDecl(Some(DeriveVisitors {
+                    ancestors: &["rvalue"],
+                    name: "fun_sig",
+                    reduce: false,
+                    extra_types: &[],
+                })), &[
+                    "Var",
+                    "FnOperand",
+                    "Call",
+                    "Assert",
+                    "ClosureKind",
+                    "ClosureInfo",
+                    "ItemKind",
+                    "Locals",
+                    "FunSig",
+                ]),
+                // These have to be kept separate to avoid field name clashes
+                (GenerationKind::TypeDecl(Some(DeriveVisitors {
+                    ancestors: &["fun_sig"],
+                    name: "global_decl",
+                    reduce: false,
+                    extra_types: &[],
+                })), &[
+                    "GlobalDecl",
+                ]),
+                (GenerationKind::TypeDecl(Some(DeriveVisitors {
+                    ancestors: &["global_decl"],
+                    name: "trait_decl",
+                    reduce: false,
+                    extra_types: &[],
+                })), &[
+                    "TraitDecl",
+                ]),
+                (GenerationKind::TypeDecl(Some(DeriveVisitors {
+                    ancestors: &["trait_decl"],
+                    name: "trait_impl",
+                    reduce: false,
+                    extra_types: &[],
+                })), &[
+                    "TraitImpl",
+                ]),
                 (GenerationKind::TypeDecl(None), &[
-                    "Loc",
-                    "FileName",
-                    "FileId",
-                    "File",
-                    "RawSpan",
-                    "Span",
-                    "InlineAttr",
-                    "Attribute",
-                    "RawAttribute",
-                    "AttrInfo",
-                ]),
-            ]),
-        },
-        GenerateCodeFor {
-            template: template_dir.join("Types.ml"),
-            target: output_dir.join("Generated_Types.ml"),
-            markers: ctx.markers_from_names(&[
-                (GenerationKind::TypeDecl(Some(DeriveVisitors {
-                    name: "const_generic",
-                    ancestors: &["literal"],
-                    reduce: true,
-                    extra_types: &[],
-                })), &[
-                    "RegionId",
-                    "ConstGenericVarId",
-                    "FunDeclId",
-                    "GlobalDeclId",
-                    "TraitClauseId",
-                    "TraitDeclId",
-                    "TraitImplId",
-                    "TypeDeclId",
-                    "TypeVarId",
-                    "DeBruijnId",
-                    "DeBruijnVar",
-                    "AnyTransId",
-                    "ConstGeneric",
-                ]),
-                // Can't merge into above because aeneas uses the above alongside their own partial
-                // copy of `ty`, which causes method type clashes.
-                (GenerationKind::TypeDecl(Some(DeriveVisitors {
-                    name: "ty",
-                    ancestors: &["ty_base_base"],
-                    reduce: false,
-                    extra_types: &[],
-                })), &[
-                    "TraitItemName",
-                    "BuiltinTy",
-                    "TypeId",
-                    "ExistentialPredicate",
-                    "RefKind",
-                    "TyKind",
-                    "Region",
-                    "RegionVar",
-                    "TraitRef",
-                    "TraitRefKind",
-                    "TraitDeclRef",
-                    "TraitImplRef",
-                    "FunDeclRef",
-                    "GlobalDeclRef",
-                    "GenericsSource",
-                    "GenericArgs",
-                    "RegionBinder",
-                ]),
-                // TODO: can't merge into above because of field name clashes (`types`, `regions` etc).
-                (GenerationKind::TypeDecl(Some(DeriveVisitors {
-                    name: "type_decl",
-                    ancestors: &["ty"],
-                    reduce: false,
-                    extra_types: &[
-                        "span","attr_info"
-                    ],
-                })), &[
-                    "TraitClause",
-                    "TypeVar",
-                    "OutlivesPred",
-                    "RegionOutlives",
-                    "TypeOutlives",
-                    "GenericParams",
-                    "ConstGenericVar",
-                    "TraitTypeConstraint",
-                    "Binder",
-                    "Disambiguator",
-                    "ImplElem",
-                    "PathElem",
-                    "Name",
-                    "Field",
-                    "Variant",
-                    "ItemMeta",
-                    "AbortKind",
-                    "TypeDeclKind",
-                    "TypeDecl",
-                ]),
-            ]),
-        },
-        GenerateCodeFor {
-            template: template_dir.join("Values.ml"),
-            target: output_dir.join("Generated_Values.ml"),
-            markers: ctx.markers_from_names(&[
-                (GenerationKind::TypeDecl(Some(DeriveVisitors {
-                    name: "literal",
-                    ancestors: &["big_int"],
-                    reduce: true,
-                    extra_types: &[
-                    ],
-                })), &[
-                    "IntegerTy",
-                    "FloatTy",
-                    "FloatValue",
-                    "LiteralTy",
-                    "ScalarValue",
-                    "Literal",
+                    "CliOpts",
+                    "GExprBody",
+                    "GDeclarationGroup",
+                    "DeclarationGroup",
                 ]),
             ]),
         },
@@ -1355,8 +1355,8 @@ fn generate_ml(
             target: output_dir.join("Generated_LlbcAst.ml"),
             markers: vec![
                 (GenerationKind::TypeDecl(Some(DeriveVisitors {
-                    name: "statement",
                     ancestors: &["trait_impl"],
+                    name: "statement",
                     reduce: false,
                     extra_types: &[],
                 })), llbc_types.clone()),
@@ -1367,8 +1367,8 @@ fn generate_ml(
             target: output_dir.join("Generated_UllbcAst.ml"),
             markers: ctx.markers_from_names(&[
                 (GenerationKind::TypeDecl(Some(DeriveVisitors {
-                    name: "statement",
                     ancestors: &["trait_impl"],
+                    name: "statement",
                     reduce: false,
                     extra_types: &[],
                 })), &[
@@ -1379,8 +1379,8 @@ fn generate_ml(
                 ]),
                 // TODO: Can't merge with above because of field name clashes (`content` and `span`).
                 (GenerationKind::TypeDecl(Some(DeriveVisitors {
-                    name: "ullbc_ast",
                     ancestors: &["statement"],
+                    name: "ullbc_ast",
                     reduce: false,
                     extra_types: &[],
                 })), &[
