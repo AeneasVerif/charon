@@ -37,11 +37,30 @@ module type Id = sig
   (** Id generator - simply a counter *)
   type generator
 
+  module Ord : C.OrderedType with type t = id
+  module Set : C.Set with type elt = id
+  module Map : C.Map with type key = id
+  module InjSubst : C.InjMap with type key = id and type elem = id
+
   val zero : id
   val generator_zero : generator
   val generator_from_id : id -> generator
   val generator_from_incr_id : id -> generator
   val fresh_stateful_generator : unit -> generator ref * (unit -> id)
+
+  exception FoundMarked of id
+
+  (** A stateful generator with "marked" ids throws a [FoundMarked] exception
+      when it generates an id belonging to a set which is controled by the user.
+      This is useful for debugging (it allows to insert the equivalent of
+      breakpoints in the program).
+
+      We also return a function to insert marked identifiers, by converting them
+      from integers.
+   *)
+  val fresh_marked_stateful_generator :
+    unit -> generator ref * Set.t ref * (int -> unit) * (unit -> id)
+
   val mk_stateful_generator : generator -> generator ref * (unit -> id)
   val mk_stateful_generator_starting_at_id : id -> generator ref * (unit -> id)
   val incr : id -> id
@@ -102,11 +121,6 @@ module type Id = sig
 
   (** See the comments for {!nth} *)
   val iteri : (id -> 'a -> unit) -> 'a list -> unit
-
-  module Ord : C.OrderedType with type t = id
-  module Set : C.Set with type elt = id
-  module Map : C.Map with type key = id
-  module InjSubst : C.InjMap with type key = id and type elem = id
 end
 
 (** Generative functor for identifiers.
@@ -117,6 +131,21 @@ module IdGen () : Id = struct
   (* TODO: use Z.t *)
   type id = int [@@deriving show]
   type generator = id [@@deriving show]
+
+  let to_string = string_of_int
+
+  module Ord = struct
+    type t = id
+
+    let compare = compare
+    let to_string = to_string
+    let pp_t = pp_id
+    let show_t = show_id
+  end
+
+  module Set = C.MakeSet (Ord)
+  module Map = C.MakeMap (Ord)
+  module InjSubst = C.MakeInjMap (Ord) (Ord)
 
   let zero = 0
   let generator_zero = 0
@@ -142,8 +171,20 @@ module IdGen () : Id = struct
   let mk_stateful_generator_starting_at_id id = mk_stateful_generator id
   let get_counter_value gen = gen
   let fresh_stateful_generator () = mk_stateful_generator 0
+
+  exception FoundMarked of id
+
+  let fresh_marked_stateful_generator () =
+    let counter, fresh = fresh_stateful_generator () in
+    let marked = ref Set.empty in
+    let fresh () =
+      let id = fresh () in
+      if Set.mem id !marked then raise (FoundMarked id) else id
+    in
+    let insert_from_int i = marked := Set.add i !marked in
+    (counter, marked, insert_from_int, fresh)
+
   let fresh gen = (gen, incr gen)
-  let to_string = string_of_int
   let to_int x = x
   let of_int x = x
   let id_of_json = OfJsonBasic.int_of_json
@@ -170,17 +211,4 @@ module IdGen () : Id = struct
     aux 1 ls
 
   let iteri = List.iteri
-
-  module Ord = struct
-    type t = id
-
-    let compare = compare
-    let to_string = to_string
-    let pp_t = pp_id
-    let show_t = show_id
-  end
-
-  module Set = C.MakeSet (Ord)
-  module Map = C.MakeMap (Ord)
-  module InjSubst = C.MakeInjMap (Ord) (Ord)
 end
