@@ -5,22 +5,22 @@ trait core::marker::Sized<Self>
 trait core::clone::Clone<Self>
 {
     parent_clause0 : [@TraitClause0]: core::marker::Sized<Self>
-    fn clone : core::clone::Clone::clone
-    fn clone_from : core::clone::Clone::clone_from
+    fn clone<'_0> = core::clone::Clone::clone<'_0_0, Self>
+    fn clone_from<'_0, '_1> = core::clone::Clone::clone_from<'_0_0, '_0_1, Self>
 }
 
 trait core::cmp::PartialEq<Self, Rhs>
 {
-    fn eq : core::cmp::PartialEq::eq
-    fn ne : core::cmp::PartialEq::ne
+    fn eq<'_0, '_1> = core::cmp::PartialEq::eq<'_0_0, '_0_1, Self, Rhs>
+    fn ne<'_0, '_1> = core::cmp::PartialEq::ne<'_0_0, '_0_1, Self, Rhs>
 }
 
 trait test_crate::GenericTrait<Self, T>
 {
     parent_clause0 : [@TraitClause0]: core::marker::Sized<T>
     parent_clause1 : [@TraitClause1]: core::clone::Clone<T>
-    fn other_method : test_crate::GenericTrait::other_method
-    fn provided : test_crate::GenericTrait::provided
+    fn other_method = test_crate::GenericTrait::other_method<Self, T>
+    fn provided<U, [@TraitClause0]: core::marker::Sized<U>, [@TraitClause1]: core::cmp::PartialEq<U, T>> = test_crate::GenericTrait::provided<Self, T, U>[@TraitClause0_0, @TraitClause0_1]
 }
 
 struct test_crate::Override<T>
@@ -60,8 +60,8 @@ where
     [@TraitClause1]: core::clone::Clone<T>,
 {
     parent_clause0 = core::marker::Sized<core::option::Option<T>[@TraitClause0]>
-    fn clone = core::option::{impl core::clone::Clone for core::option::Option<T>[@TraitClause0]}#5::clone
-    fn clone_from = core::option::{impl core::clone::Clone for core::option::Option<T>[@TraitClause0]}#5::clone_from
+    fn clone<'_0> = core::option::{impl core::clone::Clone for core::option::Option<T>[@TraitClause0]}#5::clone<'_0_0, T>[@TraitClause0, @TraitClause1]
+    fn clone_from<'_0, '_1> = core::option::{impl core::clone::Clone for core::option::Option<T>[@TraitClause0]}#5::clone_from<'_0_0, '_0_1, T>[@TraitClause0, @TraitClause1]
 }
 
 fn test_crate::{impl test_crate::GenericTrait<core::option::Option<T>[@TraitClause0]> for test_crate::Override<T>[@TraitClause0]}::other_method<T>()
@@ -80,19 +80,19 @@ where
 
 fn core::cmp::PartialEq::eq<'_0, '_1, Self, Rhs>(@1: &'_0 (Self), @2: &'_1 (Rhs)) -> bool
 
-fn test_crate::{impl test_crate::GenericTrait<core::option::Option<T>[@TraitClause0]> for test_crate::Override<T>[@TraitClause0]}::provided<T, U>(@1: T, @2: U)
+fn test_crate::{impl test_crate::GenericTrait<core::option::Option<T>[@TraitClause0]> for test_crate::Override<T>[@TraitClause0]}::provided<T, U>(@1: core::option::Option<T>[@TraitClause0], @2: U)
 where
     [@TraitClause0]: core::marker::Sized<T>,
     [@TraitClause1]: core::marker::Copy<T>,
     [@TraitClause2]: core::marker::Sized<U>,
-    [@TraitClause3]: core::cmp::PartialEq<U, T>,
+    [@TraitClause3]: core::cmp::PartialEq<U, core::option::Option<T>[@TraitClause0]>,
 {
     let @0: (); // return
-    let x@1: T; // arg #1
+    let x@1: core::option::Option<T>[@TraitClause0]; // arg #1
     let y@2: U; // arg #2
     let @3: bool; // anonymous local
     let @4: &'_ (U); // anonymous local
-    let @5: &'_ (T); // anonymous local
+    let @5: &'_ (core::option::Option<T>[@TraitClause0]); // anonymous local
     let @6: (); // anonymous local
 
     @4 := &y@2
@@ -122,8 +122,8 @@ where
 {
     parent_clause0 = core::marker::Sized<core::option::Option<T>[@TraitClause0]>
     parent_clause1 = core::option::{impl core::clone::Clone for core::option::Option<T>[@TraitClause0]}#5<T>[@TraitClause0, @TraitClause1::parent_clause0]
-    fn other_method = test_crate::{impl test_crate::GenericTrait<core::option::Option<T>[@TraitClause0]> for test_crate::Override<T>[@TraitClause0]}::other_method
-    fn provided = test_crate::{impl test_crate::GenericTrait<core::option::Option<T>[@TraitClause0]> for test_crate::Override<T>[@TraitClause0]}::provided
+    fn other_method = test_crate::{impl test_crate::GenericTrait<core::option::Option<T>[@TraitClause0]> for test_crate::Override<T>[@TraitClause0]}::other_method<T>[@TraitClause0, @TraitClause1]
+    fn provided<U, [@TraitClause0]: core::marker::Sized<U>, [@TraitClause1]: core::cmp::PartialEq<U, core::option::Option<T>[@TraitClause0]>> = test_crate::{impl test_crate::GenericTrait<core::option::Option<T>[@TraitClause0]> for test_crate::Override<T>[@TraitClause0]}::provided<T, U>[@TraitClause0, @TraitClause1, @TraitClause0_0, @TraitClause0_1]
 }
 
 struct test_crate::NoOverride<T>
@@ -155,7 +155,7 @@ where
 {
     parent_clause0 = core::marker::Sized<core::option::Option<T>[@TraitClause0]>
     parent_clause1 = core::option::{impl core::clone::Clone for core::option::Option<T>[@TraitClause0]}#5<T>[@TraitClause0, @TraitClause1::parent_clause0]
-    fn other_method = test_crate::{impl test_crate::GenericTrait<core::option::Option<T>[@TraitClause0]> for test_crate::NoOverride<T>[@TraitClause0]}#1::other_method
+    fn other_method = test_crate::{impl test_crate::GenericTrait<core::option::Option<T>[@TraitClause0]> for test_crate::NoOverride<T>[@TraitClause0]}#1::other_method<T>[@TraitClause0, @TraitClause1]
 }
 
 fn test_crate::GenericTrait::other_method<Self, T>()

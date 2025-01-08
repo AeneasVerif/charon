@@ -8,6 +8,7 @@ use anyhow::{anyhow, bail};
 use assert_cmd::prelude::{CommandCargoExt, OutputAssertExt};
 use indoc::indoc as unindent;
 use libtest_mimic::Trial;
+use snapbox::filter::Filter as _;
 use std::{
     error::Error,
     fs::read_to_string,
@@ -233,6 +234,12 @@ fn perform_test(test_case: &Case, action: Action) -> anyhow::Result<()> {
         }
         TestKind::PrettyLlbc => {
             if !output.status.success() {
+                if output.status.code() != Some(101) {
+                    // Write output file anyway to make debugging easier.
+                    let actual = snapbox::Data::text(stdout);
+                    let actual = snapbox::filter::FilterNewlines.filter(actual);
+                    actual.write_to_path(&test_case.expected)?;
+                }
                 bail!("Compilation failed: {stderr}")
             }
             stdout

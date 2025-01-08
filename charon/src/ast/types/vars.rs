@@ -1,6 +1,6 @@
 //! Type-level variables. There are 4 kinds of variables at the type-level: regions, types, const
 //! generics and trait clauses. The relevant definitions are in this module.
-use derive_visitor::{Drive, DriveMut, Event, Visitor, VisitorMut};
+use derive_generic_visitor::{Drive, DriveMut};
 use serde::{Deserialize, Serialize};
 
 use crate::ast::*;
@@ -21,6 +21,7 @@ use crate::ast::*;
     DriveMut,
 )]
 #[serde(transparent)]
+#[drive(skip)]
 pub struct DeBruijnId {
     pub index: usize,
 }
@@ -28,17 +29,25 @@ pub struct DeBruijnId {
 /// Type-level variable.
 ///
 /// Variables are bound in groups. Each item has a top-level binding group in its `generic_params`
-/// field, and then inner binders are possible using the `RegionBinder<T>` type. Each variable is
-/// linked to exactly one binder. The `Id` then identifies the specific variable among all those
-/// bound in that group.
-///
-/// We distinguish the top-level (item-level) binder from others: a `Free` variable indicates a
-/// variable bound at the item level; a `Bound` variable indicates a variable bound at an inner
-/// binder, using a de Bruijn index (i.e. counting binders from the innermost out).
-///
-/// This distinction is not necessary (we could use bound variables only) but is practical.
+/// field, and then inner binders are possible using the `RegionBinder<T>` and `Binder<T>` types.
+/// Each variable is linked to exactly one binder. The `Id` then identifies the specific variable
+/// among all those bound in that group.
 ///
 /// For instance, we have the following:
+/// ```text
+/// fn f<'a, 'b>(x: for<'c> fn(&'b u8, &'c u16, for<'d> fn(&'b u32, &'c u64, &'d u128)) -> u64) {}
+///      ^^^^^^         ^^       ^       ^          ^^       ^        ^        ^
+///        |       inner binder  |       |     inner binder  |        |        |
+///  top-level binder            |       |                   |        |        |
+///                        Bound(1, b)   |              Bound(2, b)   |     Bound(0, d)
+///                                      |                            |
+///                                  Bound(0, c)                 Bound(1, c)
+/// ```
+///
+/// To make consumption easier for projects that don't do heavy substitution, a micro-pass at the
+/// end changes the variables bound at the top-level (i.e. in the `GenericParams` of items) to be
+/// `Free`. This is an optional pass, we may add a flag to deactivate it. The example above
+/// becomes:
 /// ```text
 /// fn f<'a, 'b>(x: for<'c> fn(&'b u8, &'c u16, for<'d> fn(&'b u32, &'c u64, &'d u128)) -> u64) {}
 ///      ^^^^^^         ^^       ^       ^          ^^       ^        ^        ^
@@ -50,11 +59,25 @@ pub struct DeBruijnId {
 /// ```
 ///
 /// At the moment only region variables can be bound in a non-top-level binder.
-#[derive(Debug, PartialEq, Eq, Copy, Clone, Hash, PartialOrd, Ord, Serialize, Deserialize)]
+#[derive(
+    Debug,
+    PartialEq,
+    Eq,
+    Copy,
+    Clone,
+    Hash,
+    PartialOrd,
+    Ord,
+    Serialize,
+    Deserialize,
+    Drive,
+    DriveMut,
+)]
 pub enum DeBruijnVar<Id> {
     /// A variable attached to the nth binder, counting from the innermost.
     Bound(DeBruijnId, Id),
-    /// A variable attached to the outermost binder (the one on the item).
+    /// A variable attached to the outermost binder (the one on the item). As explained above, This
+    /// is not used in charon internals, only as a micro-pass before exporting the crate data.
     Free(Id),
 }
 
@@ -73,6 +96,7 @@ pub struct TypeVar {
     /// Index identifying the variable among other variables bound at the same level.
     pub index: TypeVarId,
     /// Variable name
+    #[drive(skip)]
     pub name: String,
 }
 
@@ -84,6 +108,7 @@ pub struct RegionVar {
     /// Index identifying the variable among other variables bound at the same level.
     pub index: RegionId,
     /// Region name
+    #[drive(skip)]
     pub name: Option<String>,
 }
 
@@ -93,6 +118,7 @@ pub struct ConstGenericVar {
     /// Index identifying the variable among other variables bound at the same level.
     pub index: ConstGenericVarId,
     /// Const generic name
+    #[drive(skip)]
     pub name: String,
     /// Type of the const generic
     pub ty: LiteralTy,
@@ -108,6 +134,7 @@ pub struct TraitClause {
     pub span: Option<Span>,
     /// Where the predicate was written, relative to the item that requires it.
     #[charon::opaque]
+    #[drive(skip)]
     pub origin: PredicateOrigin,
     /// The trait that is implemented.
     #[charon::rename("trait")]
@@ -226,38 +253,5 @@ impl TypeVar {
 impl Default for DeBruijnId {
     fn default() -> Self {
         Self::zero()
-    }
-}
-
-// The derive macro doesn't handle generics.
-impl<Id: Drive> Drive for DeBruijnVar<Id> {
-    fn drive<V: Visitor>(&self, visitor: &mut V) {
-        visitor.visit(self, Event::Enter);
-        match self {
-            DeBruijnVar::Bound(x, y) => {
-                x.drive(visitor);
-                y.drive(visitor);
-            }
-            DeBruijnVar::Free(x) => {
-                x.drive(visitor);
-            }
-        }
-        visitor.visit(self, Event::Exit);
-    }
-}
-
-impl<Id: DriveMut> DriveMut for DeBruijnVar<Id> {
-    fn drive_mut<V: VisitorMut>(&mut self, visitor: &mut V) {
-        visitor.visit(self, Event::Enter);
-        match self {
-            DeBruijnVar::Bound(x, y) => {
-                x.drive_mut(visitor);
-                y.drive_mut(visitor);
-            }
-            DeBruijnVar::Free(x) => {
-                x.drive_mut(visitor);
-            }
-        }
-        visitor.visit(self, Event::Exit);
     }
 }

@@ -1,10 +1,12 @@
 //! This file groups everything which is linked to implementations about [crate::types]
-use crate::ast::BoundTy;
-use crate::types::*;
-use crate::{common::visitor_event::VisitEvent, ids::Vector};
-use derive_visitor::{visitor_enter_fn_mut, Drive, DriveMut, Event, Visitor, VisitorMut};
+use crate::ast::*;
+use crate::ids::Vector;
+use derive_generic_visitor::*;
 use std::collections::HashSet;
-use std::{collections::HashMap, iter::Iterator};
+use std::convert::Infallible;
+use std::iter::Iterator;
+use std::mem;
+use std::ops::Index;
 
 impl GenericParams {
     pub fn empty() -> Self {
@@ -70,31 +72,62 @@ impl GenericParams {
     /// Construct a set of generic arguments in the scope of `self` that matches `self` and feeds
     /// each required parameter with itself. E.g. given parameters for `<T, U> where U:
     /// PartialEq<T>`, the arguments would be `<T, U>[@TraitClause0]`.
-    pub fn identity_args(&self) -> GenericArgs {
+    pub fn identity_args(&self, target: GenericsSource) -> GenericArgs {
+        self.identity_args_at_depth(target, DeBruijnId::zero())
+    }
+
+    /// Like `identity_args` but uses variables bound at the given depth.
+    pub fn identity_args_at_depth(&self, target: GenericsSource, depth: DeBruijnId) -> GenericArgs {
         GenericArgs {
             regions: self
                 .regions
-                .iter_indexed()
-                .map(|(id, _)| Region::Var(DeBruijnVar::free(id)))
-                .collect(),
+                .map_ref_indexed(|id, _| Region::Var(DeBruijnVar::bound(depth, id))),
             types: self
                 .types
-                .iter_indexed()
-                .map(|(id, _)| TyKind::TypeVar(DeBruijnVar::free(id)).into_ty())
-                .collect(),
+                .map_ref_indexed(|id, _| TyKind::TypeVar(DeBruijnVar::bound(depth, id)).into_ty()),
             const_generics: self
                 .const_generics
-                .iter_indexed()
-                .map(|(id, _)| ConstGeneric::Var(DeBruijnVar::free(id)))
-                .collect(),
-            trait_refs: self
-                .trait_clauses
-                .iter_indexed()
-                .map(|(id, clause)| TraitRef {
-                    kind: TraitRefKind::Clause(DeBruijnVar::free(id)),
-                    trait_decl_ref: clause.trait_.clone(),
-                })
-                .collect(),
+                .map_ref_indexed(|id, _| ConstGeneric::Var(DeBruijnVar::bound(depth, id))),
+            trait_refs: self.trait_clauses.map_ref_indexed(|id, clause| TraitRef {
+                kind: TraitRefKind::Clause(DeBruijnVar::bound(depth, id)),
+                trait_decl_ref: clause.trait_.clone(),
+            }),
+            target,
+        }
+    }
+}
+
+impl<T> Binder<T> {
+    pub fn new(kind: BinderKind, params: GenericParams, skip_binder: T) -> Self {
+        Self {
+            params,
+            skip_binder,
+            kind,
+        }
+    }
+
+    /// Substitute the provided arguments for the variables bound in this binder and return the
+    /// substituted inner value.
+    pub fn apply(self, args: &GenericArgs) -> T
+    where
+        T: AstVisitable,
+    {
+        let mut val = self.skip_binder;
+        assert!(args.matches(&self.params));
+        val.drive_mut(&mut SubstVisitor::new(args));
+        val
+    }
+}
+
+impl<T> RegionBinder<T> {
+    /// Wrap the value in an empty region binder, shifting variables appropriately.
+    pub fn empty(x: T) -> Self
+    where
+        T: TyVisitable,
+    {
+        RegionBinder {
+            regions: Default::default(),
+            skip_binder: x.move_under_binder(),
         }
     }
 }
@@ -106,6 +139,7 @@ impl GenericArgs {
             types,
             const_generics,
             trait_refs,
+            target: _,
         } = self;
         regions.len() + types.len() + const_generics.len() + trait_refs.len()
     }
@@ -114,14 +148,20 @@ impl GenericArgs {
         self.len() == 0
     }
 
-    pub fn empty() -> Self {
-        GenericArgs::default()
+    pub fn empty(target: GenericsSource) -> Self {
+        GenericArgs {
+            regions: Default::default(),
+            types: Default::default(),
+            const_generics: Default::default(),
+            trait_refs: Default::default(),
+            target,
+        }
     }
 
-    pub fn new_from_types(types: Vector<TypeVarId, Ty>) -> Self {
+    pub fn new_for_builtin(types: Vector<TypeVarId, Ty>) -> Self {
         GenericArgs {
             types,
-            ..Self::default()
+            ..Self::empty(GenericsSource::Builtin)
         }
     }
 
@@ -130,13 +170,21 @@ impl GenericArgs {
         types: Vector<TypeVarId, Ty>,
         const_generics: Vector<ConstGenericVarId, ConstGeneric>,
         trait_refs: Vector<TraitClauseId, TraitRef>,
+        target: GenericsSource,
     ) -> Self {
         Self {
             regions,
             types,
             const_generics,
             trait_refs,
+            target,
         }
+    }
+
+    /// Changes the target.
+    pub fn with_target(mut self, target: GenericsSource) -> Self {
+        self.target = target;
+        self
     }
 
     /// Check whether this matches the given `GenericParams`.
@@ -153,40 +201,35 @@ impl GenericArgs {
     /// because the first type argument is the type for which the trait is
     /// implemented.
     pub fn pop_first_type_arg(&self) -> (Ty, Self) {
-        let GenericArgs {
-            regions,
-            types,
-            const_generics,
-            trait_refs,
-        } = self;
-        let mut it = types.iter();
-        let ty = it.next().unwrap().clone();
-        let types = it.cloned().collect();
-        (
-            ty,
-            GenericArgs {
-                regions: regions.clone(),
-                types,
-                const_generics: const_generics.clone(),
-                trait_refs: trait_refs.clone(),
-            },
-        )
+        let mut generics = self.clone();
+        let mut it = mem::take(&mut generics.types).into_iter();
+        let ty = it.next().unwrap();
+        generics.types = it.collect();
+        (ty, generics)
     }
 
     /// Concatenate this set of arguments with another one. Use with care, you must manage the
     /// order of arguments correctly.
-    pub fn concat(mut self, other: &Self) -> Self {
+    pub fn concat(mut self, target: GenericsSource, other: &Self) -> Self {
         let Self {
             regions,
             types,
             const_generics,
             trait_refs,
-        } = &mut self;
-        regions.extend(other.regions.iter().cloned());
-        types.extend(other.types.iter().cloned());
-        const_generics.extend(other.const_generics.iter().cloned());
-        trait_refs.extend(other.trait_refs.iter().cloned());
+            target: _,
+        } = other;
+        self.regions.extend_from_slice(regions);
+        self.types.extend_from_slice(types);
+        self.const_generics.extend_from_slice(const_generics);
+        self.trait_refs.extend_from_slice(trait_refs);
+        self.target = target;
         self
+    }
+}
+
+impl GenericsSource {
+    pub fn item<I: Into<AnyTransId>>(id: I) -> Self {
+        Self::Item(id.into())
     }
 }
 
@@ -242,7 +285,7 @@ impl Ty {
 
     /// Return the unit type
     pub fn mk_unit() -> Ty {
-        TyKind::Adt(TypeId::Tuple, GenericArgs::empty()).into_ty()
+        TyKind::Adt(TypeId::Tuple, GenericArgs::empty(GenericsSource::Builtin)).into_ty()
     }
 
     /// Return true if this is a scalar type
@@ -320,24 +363,6 @@ impl Ty {
             _ => None,
         }
     }
-
-    /// Wrap a visitor to make it visit the contents of types it encounters.
-    pub fn visit_inside<V>(visitor: V) -> VisitInsideTy<V> {
-        VisitInsideTy {
-            visitor,
-            cache: None,
-        }
-    }
-    /// Wrap a stateless visitor to make it visit the contents of types it encounters. This will
-    /// only visit each type once and cache the results. For this to behave as expecte, the visitor
-    /// must be stateless.
-    /// The performance impact does not appear to be significant.
-    pub fn visit_inside_stateless<V>(visitor: V) -> VisitInsideTy<V> {
-        VisitInsideTy {
-            visitor,
-            cache: Some(Default::default()),
-        }
-    }
 }
 
 impl TyKind {
@@ -362,6 +387,35 @@ impl std::ops::Deref for Ty {
 }
 /// For deref patterns.
 unsafe impl std::ops::DerefPure for Ty {}
+
+impl TypeId {
+    pub fn generics_target(&self) -> GenericsSource {
+        match *self {
+            TypeId::Adt(decl_id) => GenericsSource::item(decl_id),
+            TypeId::Tuple | TypeId::Builtin(..) => GenericsSource::Builtin,
+        }
+    }
+}
+
+impl FunId {
+    pub fn generics_target(&self) -> GenericsSource {
+        match *self {
+            FunId::Regular(fun_id) => GenericsSource::item(fun_id),
+            FunId::Builtin(..) => GenericsSource::Builtin,
+        }
+    }
+}
+
+impl FunIdOrTraitMethodRef {
+    pub fn generics_target(&self) -> GenericsSource {
+        match self {
+            FunIdOrTraitMethodRef::Fun(fun_id) => fun_id.generics_target(),
+            FunIdOrTraitMethodRef::Trait(trait_ref, name, _) => {
+                GenericsSource::Method(trait_ref.trait_decl_ref.skip_binder.trait_id, name.clone())
+            }
+        }
+    }
+}
 
 impl Field {
     /// The new name for this field, as suggested by the `#[charon::rename]` attribute.
@@ -407,235 +461,71 @@ impl RefKind {
     }
 }
 
-// The derive macro doesn't handle generics.
-impl<T: Drive> Drive for RegionBinder<T> {
-    fn drive<V: Visitor>(&self, visitor: &mut V) {
-        visitor.visit(self, Event::Enter);
-        self.regions.drive(visitor);
-        self.skip_binder.drive(visitor);
-        visitor.visit(self, Event::Exit);
-    }
-}
-
-impl<T: DriveMut> DriveMut for RegionBinder<T> {
-    fn drive_mut<V: VisitorMut>(&mut self, visitor: &mut V) {
-        visitor.visit(self, Event::Enter);
-        self.regions.drive_mut(visitor);
-        self.skip_binder.drive_mut(visitor);
-        visitor.visit(self, Event::Exit);
-    }
-}
-
-// The derive macro doesn't handle generics.
-impl<T: Drive> Drive for Binder<T> {
-    fn drive<V: Visitor>(&self, visitor: &mut V) {
-        visitor.visit(self, Event::Enter);
-        self.params.drive(visitor);
-        self.skip_binder.drive(visitor);
-        visitor.visit(self, Event::Exit);
-    }
-}
-
-impl<T: DriveMut> DriveMut for Binder<T> {
-    fn drive_mut<V: VisitorMut>(&mut self, visitor: &mut V) {
-        visitor.visit(self, Event::Enter);
-        self.params.drive_mut(visitor);
-        self.skip_binder.drive_mut(visitor);
-        visitor.visit(self, Event::Exit);
-    }
-}
-
-/// See comment on `Ty`: this impl doesn't recurse into the contents of the type.
-impl Drive for Ty {
-    fn drive<V: Visitor>(&self, visitor: &mut V) {
-        visitor.visit(self, Event::Enter);
-        visitor.visit(self, Event::Exit);
-    }
-}
-
-/// See comment on `Ty`: this impl doesn't recurse into the contents of the type.
-impl DriveMut for Ty {
-    fn drive_mut<V: VisitorMut>(&mut self, visitor: &mut V) {
-        visitor.visit(self, Event::Enter);
-        visitor.visit(self, Event::Exit);
-    }
-}
-
-pub struct VisitInsideTy<V> {
-    visitor: V,
-    /// If `Some`, record the effected visits and don't do them again. Only valid if the wrapped
-    /// visitor is stateless.
-    cache: Option<HashMap<(Ty, VisitEvent), Ty>>,
-}
-
-impl<V> VisitInsideTy<V> {
-    pub fn into_inner(self) -> V {
-        self.visitor
-    }
-}
-
-impl<V: Visitor> Visitor for VisitInsideTy<V> {
-    fn visit(&mut self, item: &dyn std::any::Any, event: Event) {
-        match item.downcast_ref::<Ty>() {
-            Some(ty) => {
-                let visit_event: VisitEvent = (&event).into();
-
-                // Shortcut if we already visited this.
-                if let Some(cache) = &self.cache
-                    && cache.contains_key(&(ty.clone(), visit_event))
-                {
-                    return;
-                }
-
-                // Recursively visit the type.
-                self.visitor.visit(ty, event);
-                if matches!(visit_event, VisitEvent::Enter) {
-                    ty.drive_inner(self);
-                }
-
-                // Remember we just visited that.
-                if let Some(cache) = &mut self.cache {
-                    cache.insert((ty.clone(), visit_event), ty.clone());
-                }
-            }
-            None => {
-                self.visitor.visit(item, event);
-            }
-        }
-    }
-}
-impl<V: VisitorMut> VisitorMut for VisitInsideTy<V> {
-    fn visit(&mut self, item: &mut dyn std::any::Any, event: Event) {
-        match item.downcast_mut::<Ty>() {
-            Some(ty) => {
-                let visit_event: VisitEvent = (&event).into();
-
-                // Shortcut if we already visited this.
-                if let Some(cache) = &self.cache
-                    && let Some(new_ty) = cache.get(&(ty.clone(), visit_event))
-                {
-                    *ty = new_ty.clone();
-                    return;
-                }
-
-                // Recursively visit the type.
-                let pre_visit = ty.clone();
-                self.visitor.visit(ty, event);
-                if matches!(visit_event, VisitEvent::Enter) {
-                    ty.drive_inner_mut(self);
-                }
-
-                // Cache the visit we just did.
-                if let Some(cache) = &mut self.cache {
-                    let post_visit = ty.clone();
-                    cache.insert((pre_visit, visit_event), post_visit);
-                }
-            }
-            None => {
-                self.visitor.visit(item, event);
-            }
-        }
-    }
-}
-
-impl<V> std::ops::Deref for VisitInsideTy<V> {
-    type Target = V;
-    fn deref(&self) -> &Self::Target {
-        &self.visitor
-    }
-}
-impl<V> std::ops::DerefMut for VisitInsideTy<V> {
-    fn deref_mut(&mut self) -> &mut Self::Target {
-        &mut self.visitor
-    }
-}
-
 /// Visitor for the [Ty::substitute] function.
-/// This substitutes only free variables; this does not work for non-top-level binders.
-#[derive(VisitorMut)]
-#[visitor(
-    PolyTraitDeclRef(enter, exit),
-    BoundArrowSig(enter, exit),
-    BoundRegionOutlives(enter, exit),
-    BoundTypeOutlives(enter, exit),
-    BoundTraitTypeConstraint(enter, exit),
-    BoundTy(enter, exit),
-    Region(exit),
-    Ty(exit),
-    ConstGeneric(exit),
-    TraitRef(exit)
-)]
+/// This substitutes variables bound at the level where we start to substitute (level 0).
+#[derive(Visitor)]
 pub(crate) struct SubstVisitor<'a> {
     generics: &'a GenericArgs,
     // Tracks the depth of binders we're inside of.
-    // Important: we must update it whenever we go inside a binder. Visitors are not generic so we
-    // must handle all the specific cases by hand. So far there's:
-    // - `PolyTraitDeclRef`
-    // - `TyKind::Arrow`
-    // - `BoundTypeOutlives`
-    // - `BoundRegionOutlives`
-    // - `BoundTraitTypeConstraint`
-    // - `BoundTy`
+    // Important: we must update it whenever we go inside a binder.
     binder_depth: DeBruijnId,
 }
 
 impl<'a> SubstVisitor<'a> {
-    pub(crate) fn new(generics: &'a GenericArgs) -> VisitInsideTy<Self> {
-        Ty::visit_inside(Self {
+    pub(crate) fn new(generics: &'a GenericArgs) -> Self {
+        Self {
             generics,
             binder_depth: DeBruijnId::zero(),
-        })
-    }
-
-    fn should_subst<Id: Copy>(&self, var: DeBruijnVar<Id>) -> Option<Id> {
-        match var {
-            DeBruijnVar::Free(id) => Some(id),
-            DeBruijnVar::Bound(..) => None,
         }
     }
 
-    fn enter_poly_trait_decl_ref(&mut self, _: &mut PolyTraitDeclRef) {
-        self.binder_depth = self.binder_depth.incr();
+    /// Process the variable, either modifying the variable in-place or returning the new value to
+    /// assign to the type/region/const generic/trait ref that was this variable.
+    fn process_var<Id, T>(&self, var: &mut DeBruijnVar<Id>) -> Option<T>
+    where
+        Id: Copy,
+        GenericArgs: Index<Id, Output = T>,
+        T: Clone + TyVisitable,
+    {
+        use std::cmp::Ordering::*;
+        match var {
+            DeBruijnVar::Bound(dbid, varid) => match (*dbid).cmp(&self.binder_depth) {
+                Equal => Some(
+                    self.generics[*varid]
+                        .clone()
+                        .move_under_binders(self.binder_depth),
+                ),
+                Greater => {
+                    // This is bound outside the binder we're substituting for.
+                    *dbid = dbid.decr();
+                    None
+                }
+                Less => None,
+            },
+            DeBruijnVar::Free(..) => None,
+        }
     }
-    fn exit_poly_trait_decl_ref(&mut self, _: &mut PolyTraitDeclRef) {
-        self.binder_depth = self.binder_depth.decr();
+}
+
+impl VisitAstMut for SubstVisitor<'_> {
+    fn enter_region_binder<T: AstVisitable>(&mut self, _: &mut RegionBinder<T>) {
+        self.binder_depth = self.binder_depth.incr()
     }
-    fn enter_bound_arrow_sig(&mut self, _: &BoundArrowSig) {
-        self.binder_depth = self.binder_depth.incr();
+    fn exit_region_binder<T: AstVisitable>(&mut self, _: &mut RegionBinder<T>) {
+        self.binder_depth = self.binder_depth.decr()
     }
-    fn exit_bound_arrow_sig(&mut self, _: &BoundArrowSig) {
-        self.binder_depth = self.binder_depth.decr();
+    fn enter_binder<T: AstVisitable>(&mut self, _: &mut Binder<T>) {
+        self.binder_depth = self.binder_depth.incr()
     }
-    fn enter_bound_ty(&mut self, _: &BoundTy) {
-        self.binder_depth = self.binder_depth.incr();
-    }
-    fn exit_bound_ty(&mut self, _: &BoundTy) {
-        self.binder_depth = self.binder_depth.decr();
-    }
-    fn enter_bound_type_outlives(&mut self, _: &BoundTypeOutlives) {
-        self.binder_depth = self.binder_depth.incr();
-    }
-    fn exit_bound_type_outlives(&mut self, _: &BoundTypeOutlives) {
-        self.binder_depth = self.binder_depth.decr();
-    }
-    fn enter_bound_region_outlives(&mut self, _: &BoundRegionOutlives) {
-        self.binder_depth = self.binder_depth.incr();
-    }
-    fn exit_bound_region_outlives(&mut self, _: &BoundRegionOutlives) {
-        self.binder_depth = self.binder_depth.decr();
-    }
-    fn enter_bound_trait_type_constraint(&mut self, _: &BoundTraitTypeConstraint) {
-        self.binder_depth = self.binder_depth.incr();
-    }
-    fn exit_bound_trait_type_constraint(&mut self, _: &BoundTraitTypeConstraint) {
-        self.binder_depth = self.binder_depth.decr();
+    fn exit_binder<T: AstVisitable>(&mut self, _: &mut Binder<T>) {
+        self.binder_depth = self.binder_depth.decr()
     }
 
     fn exit_region(&mut self, r: &mut Region) {
         match r {
             Region::Var(var) => {
-                if let Some(varid) = self.should_subst(*var) {
-                    *r = self.generics.regions[varid].move_under_binders(self.binder_depth)
+                if let Some(new_r) = self.process_var(var) {
+                    *r = new_r;
                 }
             }
             _ => (),
@@ -643,25 +533,20 @@ impl<'a> SubstVisitor<'a> {
     }
 
     fn exit_ty(&mut self, ty: &mut Ty) {
-        match ty.kind() {
-            TyKind::TypeVar(var) => {
-                if let Some(id) = self.should_subst(*var) {
-                    *ty = self.generics.types[id]
-                        .clone()
-                        .move_under_binders(self.binder_depth)
-                }
-            }
-            _ => (),
+        let new_ty = ty.with_kind_mut(|kind| match kind {
+            TyKind::TypeVar(var) => self.process_var(var),
+            _ => None,
+        });
+        if let Some(new_ty) = new_ty {
+            *ty = new_ty
         }
     }
 
     fn exit_const_generic(&mut self, cg: &mut ConstGeneric) {
         match cg {
             ConstGeneric::Var(var) => {
-                if let Some(id) = self.should_subst(*var) {
-                    *cg = self.generics.const_generics[id]
-                        .clone()
-                        .move_under_binders(self.binder_depth)
+                if let Some(new_cg) = self.process_var(var) {
+                    *cg = new_cg;
                 }
             }
             _ => (),
@@ -671,10 +556,8 @@ impl<'a> SubstVisitor<'a> {
     fn exit_trait_ref(&mut self, tr: &mut TraitRef) {
         match &mut tr.kind {
             TraitRefKind::Clause(var) => {
-                if let Some(id) = self.should_subst(*var) {
-                    *tr = self.generics.trait_refs[id]
-                        .clone()
-                        .move_under_binders(self.binder_depth)
+                if let Some(new_tr) = self.process_var(var) {
+                    *tr = new_tr;
                 }
             }
             _ => (),
@@ -683,38 +566,89 @@ impl<'a> SubstVisitor<'a> {
 }
 
 /// Types that are involved at the type-level and may be substituted around.
-pub trait TyVisitable: Sized + Drive + DriveMut {
+pub trait TyVisitable: Sized + AstVisitable {
     fn substitute(&mut self, generics: &GenericArgs) {
         self.drive_mut(&mut SubstVisitor::new(generics));
     }
 
+    /// Move under one binder.
+    fn move_under_binder(self) -> Self {
+        self.move_under_binders(DeBruijnId::one())
+    }
+
     /// Move under `depth` binders.
     fn move_under_binders(mut self, depth: DeBruijnId) -> Self {
-        self.visit_db_id(|id| *id = id.plus(depth));
+        let Continue(()) = self.visit_db_id::<Infallible>(|id| {
+            *id = id.plus(depth);
+            Continue(())
+        });
         self
     }
 
-    /// Move the region out of `depth` binders. Returns `None` if the variable is bound in one of
-    /// these `depth` binders.
+    /// Move the value out of `depth` binders. Returns `None` if it contains a variable bound in
+    /// one of these `depth` binders.
     fn move_from_under_binders(mut self, depth: DeBruijnId) -> Option<Self> {
-        let mut ok = true;
-        self.visit_db_id(|id| match id.sub(depth) {
-            Some(sub) => *id = sub,
-            None => ok = false,
-        });
-        ok.then_some(self)
+        self.visit_db_id::<()>(|id| match id.sub(depth) {
+            Some(sub) => {
+                *id = sub;
+                Continue(())
+            }
+            None => Break(()),
+        })
+        .is_continue()
+        .then_some(self)
     }
 
-    /// Helper function.
-    fn visit_db_id(&mut self, f: impl FnMut(&mut DeBruijnId)) {
-        self.drive_mut(&mut Ty::visit_inside(visitor_enter_fn_mut(f)));
+    /// Visit the de Bruijn ids contained in `self`, as seen from the outside of `self`. This means
+    /// that any variable bound inside `self` will be skipped, and all the seen indices will count
+    /// from the outside of self.
+    fn visit_db_id<B>(
+        &mut self,
+        f: impl FnMut(&mut DeBruijnId) -> ControlFlow<B>,
+    ) -> ControlFlow<B> {
+        struct Wrap<F> {
+            f: F,
+            depth: DeBruijnId,
+        }
+        impl<B, F> Visitor for Wrap<F>
+        where
+            F: FnMut(&mut DeBruijnId) -> ControlFlow<B>,
+        {
+            type Break = B;
+        }
+        impl<B, F> VisitAstMut for Wrap<F>
+        where
+            F: FnMut(&mut DeBruijnId) -> ControlFlow<B>,
+        {
+            fn enter_region_binder<T: AstVisitable>(&mut self, _: &mut RegionBinder<T>) {
+                self.depth = self.depth.incr()
+            }
+            fn exit_region_binder<T: AstVisitable>(&mut self, _: &mut RegionBinder<T>) {
+                self.depth = self.depth.decr()
+            }
+            fn enter_binder<T: AstVisitable>(&mut self, _: &mut Binder<T>) {
+                self.depth = self.depth.incr()
+            }
+            fn exit_binder<T: AstVisitable>(&mut self, _: &mut Binder<T>) {
+                self.depth = self.depth.decr()
+            }
+
+            fn visit_de_bruijn_id(&mut self, x: &mut DeBruijnId) -> ControlFlow<Self::Break> {
+                if let Some(mut shifted) = x.sub(self.depth) {
+                    (self.f)(&mut shifted)?;
+                    *x = shifted.plus(self.depth)
+                }
+                Continue(())
+            }
+        }
+        self.drive_mut(&mut Wrap {
+            f,
+            depth: DeBruijnId::zero(),
+        })
     }
 }
 
-impl TyVisitable for ConstGeneric {}
-impl TyVisitable for Region {}
-impl TyVisitable for TraitRef {}
-impl TyVisitable for Ty {}
+impl<T: AstVisitable> TyVisitable for T {}
 
 impl PartialEq for TraitClause {
     fn eq(&self, other: &Self) -> bool {
@@ -724,3 +658,12 @@ impl PartialEq for TraitClause {
 }
 
 impl Eq for TraitClause {}
+
+mk_index_impls!(GenericArgs.regions[RegionId]: Region);
+mk_index_impls!(GenericArgs.types[TypeVarId]: Ty);
+mk_index_impls!(GenericArgs.const_generics[ConstGenericVarId]: ConstGeneric);
+mk_index_impls!(GenericArgs.trait_refs[TraitClauseId]: TraitRef);
+mk_index_impls!(GenericParams.regions[RegionId]: RegionVar);
+mk_index_impls!(GenericParams.types[TypeVarId]: TypeVar);
+mk_index_impls!(GenericParams.const_generics[ConstGenericVarId]: ConstGenericVar);
+mk_index_impls!(GenericParams.trait_clauses[TraitClauseId]: TraitClause);

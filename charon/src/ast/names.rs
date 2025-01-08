@@ -1,6 +1,6 @@
 //! Defines some utilities for the variables
 use crate::ast::*;
-use derive_visitor::{Drive, DriveMut};
+use derive_generic_visitor::{Drive, DriveMut};
 use macros::{EnumAsGetters, EnumIsA};
 use serde::{Deserialize, Serialize};
 
@@ -12,7 +12,7 @@ generate_index_type!(Disambiguator);
 )]
 #[charon::variants_prefix("Pe")]
 pub enum PathElem {
-    Ident(String, Disambiguator),
+    Ident(#[drive(skip)] String, Disambiguator),
     Impl(ImplElem, Disambiguator),
 }
 
@@ -29,12 +29,9 @@ pub enum PathElem {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Drive, DriveMut)]
 #[charon::variants_prefix("ImplElem")]
 pub enum ImplElem {
-    Ty(BoundTy),
+    Ty(Binder<Ty>),
     Trait(TraitImplId),
 }
-
-/// Alias used for visitors.
-pub type BoundTy = Binder<Ty>;
 
 /// An item name/path
 ///

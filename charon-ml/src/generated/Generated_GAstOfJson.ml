@@ -408,6 +408,16 @@ and item_kind_of_json (ctx : of_json_ctx) (js : json) :
         Ok (TraitImplItem (impl_ref, trait_ref, item_name, reuses_default))
     | _ -> Error "")
 
+and fun_decl_ref_of_json (ctx : of_json_ctx) (js : json) :
+    (fun_decl_ref, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with
+    | `Assoc [ ("id", id); ("generics", generics) ] ->
+        let* fun_id = fun_decl_id_of_json ctx id in
+        let* fun_generics = generic_args_of_json ctx generics in
+        Ok ({ fun_id; fun_generics } : fun_decl_ref)
+    | _ -> Error "")
+
 and global_decl_of_json (ctx : of_json_ctx) (js : json) :
     (global_decl, string) result =
   combine_error_msgs js __FUNCTION__
@@ -480,12 +490,14 @@ and trait_decl_of_json (ctx : of_json_ctx) (js : json) :
         let* types = list_of_json trait_item_name_of_json ctx types in
         let* required_methods =
           list_of_json
-            (pair_of_json trait_item_name_of_json fun_decl_id_of_json)
+            (pair_of_json trait_item_name_of_json
+               (binder_of_json fun_decl_ref_of_json))
             ctx required_methods
         in
         let* provided_methods =
           list_of_json
-            (pair_of_json trait_item_name_of_json fun_decl_id_of_json)
+            (pair_of_json trait_item_name_of_json
+               (binder_of_json fun_decl_ref_of_json))
             ctx provided_methods
         in
         Ok
@@ -539,12 +551,14 @@ and trait_impl_of_json (ctx : of_json_ctx) (js : json) :
         in
         let* required_methods =
           list_of_json
-            (pair_of_json trait_item_name_of_json fun_decl_id_of_json)
+            (pair_of_json trait_item_name_of_json
+               (binder_of_json fun_decl_ref_of_json))
             ctx required_methods
         in
         let* provided_methods =
           list_of_json
-            (pair_of_json trait_item_name_of_json fun_decl_id_of_json)
+            (pair_of_json trait_item_name_of_json
+               (binder_of_json fun_decl_ref_of_json))
             ctx provided_methods
         in
         Ok
@@ -1043,6 +1057,20 @@ and trait_type_constraint_of_json (ctx : of_json_ctx) (js : json) :
         Ok ({ trait_ref; type_name; ty } : trait_type_constraint)
     | _ -> Error "")
 
+and generics_source_of_json (ctx : of_json_ctx) (js : json) :
+    (generics_source, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with
+    | `Assoc [ ("Item", item) ] ->
+        let* item = any_decl_id_of_json ctx item in
+        Ok (GSItem item)
+    | `Assoc [ ("Method", `List [ x_0; x_1 ]) ] ->
+        let* x_0 = trait_decl_id_of_json ctx x_0 in
+        let* x_1 = trait_item_name_of_json ctx x_1 in
+        Ok (GSMethod (x_0, x_1))
+    | `String "Builtin" -> Ok GSBuiltin
+    | _ -> Error "")
+
 and generic_args_of_json (ctx : of_json_ctx) (js : json) :
     (generic_args, string) result =
   combine_error_msgs js __FUNCTION__
@@ -1053,6 +1081,7 @@ and generic_args_of_json (ctx : of_json_ctx) (js : json) :
           ("types", types);
           ("const_generics", const_generics);
           ("trait_refs", trait_refs);
+          ("target", _);
         ] ->
         let* regions =
           vector_of_json region_id_of_json region_of_json ctx regions
@@ -1086,6 +1115,18 @@ and region_binder_of_json :
         Ok ({ binder_regions; binder_value } : _ region_binder)
     | _ -> Error "")
 
+and binder_kind_of_json (ctx : of_json_ctx) (js : json) :
+    (binder_kind, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with
+    | `Assoc [ ("TraitMethod", `List [ x_0; x_1 ]) ] ->
+        let* x_0 = trait_decl_id_of_json ctx x_0 in
+        let* x_1 = trait_item_name_of_json ctx x_1 in
+        Ok (BKTraitMethod (x_0, x_1))
+    | `String "InherentImplBlock" -> Ok BKInherentImplBlock
+    | `String "Other" -> Ok BKOther
+    | _ -> Error "")
+
 and binder_of_json :
       'a0.
       (of_json_ctx -> json -> ('a0, string) result) ->
@@ -1095,7 +1136,8 @@ and binder_of_json :
  fun arg0_of_json ctx js ->
   combine_error_msgs js __FUNCTION__
     (match js with
-    | `Assoc [ ("params", params); ("skip_binder", skip_binder) ] ->
+    | `Assoc [ ("params", params); ("skip_binder", skip_binder); ("kind", _) ]
+      ->
         let* binder_params = generic_params_of_json ctx params in
         let* binder_value = arg0_of_json ctx skip_binder in
         Ok ({ binder_params; binder_value } : _ binder)

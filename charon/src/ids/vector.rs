@@ -7,13 +7,14 @@
 //! Note that this data structure is implemented by using persistent vectors.
 //! This makes the clone operation almost a no-op.
 
-use derive_visitor::{Drive, DriveMut, Event, Visitor, VisitorMut};
 use index_vec::{Idx, IdxSliceIndex, IndexVec};
 use serde::{Deserialize, Serialize, Serializer};
 use std::{
     iter::{FromIterator, IntoIterator},
-    ops::{Deref, Index, IndexMut},
+    ops::{ControlFlow, Deref, Index, IndexMut},
 };
+
+use derive_generic_visitor::*;
 
 /// Indexed vector.
 /// To prevent accidental id reuse, the vector supports reserving a slot to be filled later.
@@ -88,7 +89,7 @@ where
         if self.vector[id].is_some() {
             self.real_len -= 1;
         }
-        std::mem::replace(&mut self.vector[id], None)
+        self.vector[id].take()
     }
 
     pub fn push(&mut self, x: T) -> I {
@@ -115,6 +116,14 @@ where
         It: Iterator<Item = T>,
     {
         self.push_all(it).for_each(|_| ())
+    }
+
+    pub fn extend_from_slice(&mut self, other: &Self)
+    where
+        T: Clone,
+    {
+        self.vector.extend_from_slice(&other.vector);
+        self.real_len += other.real_len;
     }
 
     /// Map each entry to a new one, keeping the same ids.
@@ -153,13 +162,25 @@ where
         }
     }
 
-    /// Iter over the nonempty slots.
-    pub fn iter(&self) -> impl Iterator<Item = &T> + Clone {
-        self.vector.iter().flat_map(|opt| opt.as_ref())
+    /// Map each entry to a new one, keeping the same ids.
+    pub fn map_ref_indexed<'a, U>(&'a self, mut f: impl FnMut(I, &'a T) -> U) -> Vector<I, U> {
+        Vector {
+            vector: self
+                .vector
+                .iter_enumerated()
+                .map(|(i, x_opt)| x_opt.as_ref().map(|x| f(i, x)))
+                .collect(),
+            real_len: self.real_len,
+        }
     }
 
-    pub fn iter_mut(&mut self) -> impl Iterator<Item = &mut T> {
-        self.vector.iter_mut().flat_map(|opt| opt.as_mut())
+    /// Iter over the nonempty slots.
+    pub fn iter(&self) -> impl Iterator<Item = &T> + DoubleEndedIterator + Clone {
+        self.vector.iter().filter_map(|opt| opt.as_ref())
+    }
+
+    pub fn iter_mut(&mut self) -> impl Iterator<Item = &mut T> + DoubleEndedIterator {
+        self.vector.iter_mut().filter_map(|opt| opt.as_mut())
     }
 
     pub fn iter_indexed(&self) -> impl Iterator<Item = (I, &T)> {
@@ -194,6 +215,10 @@ where
     pub fn iter_indices(&self) -> impl Iterator<Item = I> + '_ {
         // Reuse `iter_indexed` to filter only the filled indices.
         self.iter_indexed().map(|(id, _)| id)
+    }
+
+    pub fn all_indices(&self) -> impl Iterator<Item = I> {
+        self.vector.indices()
     }
 
     /// Like `Vec::split_off`.
@@ -324,21 +349,19 @@ impl<'de, I: Idx, T: Deserialize<'de>> Deserialize<'de> for Vector<I, T> {
     }
 }
 
-impl<I: Idx, T: Drive> Drive for Vector<I, T> {
-    fn drive<V: Visitor>(&self, visitor: &mut V) {
-        visitor.visit(self, Event::Enter);
+impl<'s, I: Idx, T, V: Visit<'s, T>> Drive<'s, V> for Vector<I, T> {
+    fn drive_inner(&'s self, v: &mut V) -> ControlFlow<V::Break> {
         for x in self {
-            x.drive(visitor);
+            v.visit(x)?;
         }
-        visitor.visit(self, Event::Exit);
+        Continue(())
     }
 }
-impl<I: Idx, T: DriveMut> DriveMut for Vector<I, T> {
-    fn drive_mut<V: VisitorMut>(&mut self, visitor: &mut V) {
-        visitor.visit(self, Event::Enter);
-        for x in &mut *self {
-            x.drive_mut(visitor);
+impl<'s, I: Idx, T, V: VisitMut<'s, T>> DriveMut<'s, V> for Vector<I, T> {
+    fn drive_inner_mut(&'s mut self, v: &mut V) -> ControlFlow<V::Break> {
+        for x in self {
+            v.visit(x)?;
         }
-        visitor.visit(self, Event::Exit);
+        Continue(())
     }
 }

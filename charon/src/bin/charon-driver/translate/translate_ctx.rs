@@ -441,6 +441,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
                         bt_ctx.translate_def_generics(span, &full_def)?;
                         let ty = bt_ctx.translate_ty(span, &ty)?;
                         ImplElem::Ty(Binder {
+                            kind: BinderKind::InherentImplBlock,
                             params: bt_ctx.into_generics(),
                             skip_binder: ty,
                         })
@@ -1085,11 +1086,7 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
     /// Make a `DeBruijnVar`, where we use `Free` for the outermost binder and `Bound` for the
     /// others.
     fn bind_var<Id: Copy>(&self, dbid: usize, varid: Id) -> DeBruijnVar<Id> {
-        if dbid == self.binding_levels.len() - 1 {
-            DeBruijnVar::free(varid)
-        } else {
-            DeBruijnVar::bound(DeBruijnId::new(dbid), varid)
-        }
+        DeBruijnVar::bound(DeBruijnId::new(dbid), varid)
     }
 
     pub(crate) fn lookup_bound_region(
@@ -1242,6 +1239,37 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
         // Return
         res.map(|skip_binder| RegionBinder {
             regions,
+            skip_binder,
+        })
+    }
+
+    /// Push a new binding level corresponding to the provided `def` for the duration of the inner
+    /// function call.
+    pub(crate) fn translate_binder_for_def<F, U>(
+        &mut self,
+        span: Span,
+        kind: BinderKind,
+        def: &hax::FullDef,
+        f: F,
+    ) -> Result<Binder<U>, Error>
+    where
+        F: FnOnce(&mut Self) -> Result<U, Error>,
+    {
+        assert!(!self.binding_levels.is_empty());
+
+        // Register the type-level parameters. This pushes a new binding level.
+        self.translate_def_generics_without_parents(span, def)?;
+
+        // Call the continuation. Important: do not short-circuit on error here.
+        let res = f(self);
+
+        // Reset
+        let params = self.binding_levels.pop_front().unwrap().params;
+
+        // Return
+        res.map(|skip_binder| Binder {
+            kind,
+            params,
             skip_binder,
         })
     }

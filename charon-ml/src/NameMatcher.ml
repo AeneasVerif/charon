@@ -220,38 +220,12 @@ end
 module VarMap = Collections.MakeMap (VarOrderedType)
 
 (** Context to lookup definitions *)
-type ctx = {
-  type_decls : T.type_decl T.TypeDeclId.Map.t;
-  global_decls : LlbcAst.global_decl T.GlobalDeclId.Map.t;
-  fun_decls : A.fun_decl A.FunDeclId.Map.t;
-  trait_decls : A.trait_decl T.TraitDeclId.Map.t;
-  trait_impls : A.trait_impl T.TraitImplId.Map.t;
-}
+type ctx = { crate : A.crate }
 
 let ctx_to_fmt_env (ctx : ctx) : PrintLlbcAst.fmt_env =
-  {
-    type_decls = ctx.type_decls;
-    fun_decls = ctx.fun_decls;
-    global_decls = ctx.global_decls;
-    trait_decls = ctx.trait_decls;
-    trait_impls = ctx.trait_impls;
-    regions = [];
-    generics = TypesUtils.empty_generic_params;
-    locals = [];
-  }
+  { crate = ctx.crate; generics = []; locals = [] }
 
-let ctx_from_crate (crate : LlbcAst.crate) : ctx =
-  let {
-    LlbcAst.type_decls;
-    fun_decls;
-    global_decls;
-    trait_decls;
-    trait_impls;
-    _;
-  } =
-    crate
-  in
-  { type_decls; global_decls; trait_decls; fun_decls; trait_impls }
+let ctx_from_crate (crate : LlbcAst.crate) : ctx = { crate }
 
 (** Match configuration *)
 type match_config = {
@@ -513,7 +487,7 @@ and match_pattern_with_type_id (ctx : ctx) (c : match_config) (m : maps)
   match id with
   | TAdtId id ->
       (* Lookup the type decl and match the name *)
-      let d = T.TypeDeclId.Map.find id ctx.type_decls in
+      let d = T.TypeDeclId.Map.find id ctx.crate.type_decls in
       match_name_with_generics ctx c ~m pid d.item_meta.name generics
   | TTuple -> false
   | TBuiltin id -> (
@@ -575,10 +549,10 @@ and match_expr_with_ty (ctx : ctx) (c : match_config) (m : maps) (pty : expr)
 and match_expr_with_trait_impl_id (ctx : ctx) (c : match_config) (ptr : expr)
     (impl_id : T.TraitImplId.id) : bool =
   (* Lookup the trait implementation *)
-  let impl = T.TraitImplId.Map.find impl_id ctx.trait_impls in
+  let impl = T.TraitImplId.Map.find impl_id ctx.crate.trait_impls in
   (* Lookup the trait declaration *)
   let d =
-    T.TraitDeclId.Map.find impl.impl_trait.trait_decl_id ctx.trait_decls
+    T.TraitDeclId.Map.find impl.impl_trait.trait_decl_id ctx.crate.trait_decls
   in
   (* Match *)
   match ptr with
@@ -591,7 +565,7 @@ and match_trait_decl_ref (ctx : ctx) (c : match_config) (m : maps)
     (pid : pattern) (tr : T.trait_decl_ref T.region_binder) : bool =
   (* Lookup the trait declaration *)
   let d =
-    T.TraitDeclId.Map.find tr.binder_value.trait_decl_id ctx.trait_decls
+    T.TraitDeclId.Map.find tr.binder_value.trait_decl_id ctx.crate.trait_decls
   in
   (* Push a region group in the map, if necessary - TODO: make this more precise *)
   let m = maps_push_bound_regions_group_if_nonempty m tr.binder_regions in
@@ -681,7 +655,7 @@ and match_expr_with_const_generic (ctx : ctx) (c : match_config) (m : maps)
   | EVar pv, _ -> opt_update_cmap c m pv cg
   | EComp pat, CgGlobal gid ->
       (* Lookup the decl and match the name *)
-      let d = T.GlobalDeclId.Map.find gid ctx.global_decls in
+      let d = T.GlobalDeclId.Map.find gid ctx.crate.global_decls in
       match_name ctx c pat d.item_meta.name
   | _ -> false
 
@@ -734,7 +708,7 @@ let match_fn_ptr (ctx : ctx) (c : match_config) (p : pattern) (func : E.fn_ptr)
           let name = builtin_fun_id_to_string fid in
           match_name_with_generics ctx c p (to_name [ name ]) func.generics)
   | FunId (FRegular fid) ->
-      let d = A.FunDeclId.Map.find fid ctx.fun_decls in
+      let d = A.FunDeclId.Map.find fid ctx.crate.fun_decls in
       (* Match the pattern on the name of the function. *)
       let match_function_name =
         match_name_with_generics ctx c p d.item_meta.name func.generics
@@ -755,7 +729,7 @@ let match_fn_ptr (ctx : ctx) (c : match_config) (p : pattern) (func : E.fn_ptr)
             then
               let subst =
                 Substitute.make_subst_from_generics d.signature.generics
-                  func.generics Self
+                  func.generics
               in
               let trait_ref =
                 Substitute.trait_decl_ref_substitute subst trait_ref
@@ -787,42 +761,53 @@ let mk_name_matcher (ctx : ctx) (c : match_config) (pat : string) :
  * Helpers to convert names to patterns
  *)
 
-(* We use this to store the constraints maps (the map from variable
-   ids to option pattern variable ids) *)
-type constraints = {
-  rmap : var option T.RegionId.Map.t list;
-      (** Note that we have a stack of maps for the regions *)
+(* Maps from variable ids to option pattern variable ids *)
+type vars_map = {
+  rmap : var option T.RegionId.Map.t;
   tmap : var option T.TypeVarId.Map.t;
   cmap : var option T.ConstGenericVarId.Map.t;
 }
 
-let empty_constraints =
+let empty_vars_map =
   {
-    rmap = [ T.RegionId.Map.empty ];
+    rmap = T.RegionId.Map.empty;
     tmap = T.TypeVarId.Map.empty;
     cmap = T.ConstGenericVarId.Map.empty;
   }
+
+(* We use this to store the constraints maps. Note that we have a stack of
+   maps, with one level per binder. *)
+type constraints = vars_map list
+
+let empty_constraints = [ empty_vars_map ]
 
 let ref_kind_to_pattern (rk : T.ref_kind) : ref_kind =
   match rk with
   | RMut -> RMut
   | RShared -> RShared
 
+let lookup_var_in_maps (m : constraints)
+    (lookup : 'id -> vars_map -> 'a option option) (var : 'id T.de_bruijn_var) :
+    'a option =
+  let dbid, varid =
+    match var with
+    | Bound (dbid, varid) -> (dbid, varid)
+    | Free varid -> (List.length m - 1, varid)
+  in
+  match List.nth_opt m dbid with
+  | None -> None
+  | Some map -> (
+      match lookup varid map with
+      | Some r -> r
+      | None -> None)
+
 let region_to_pattern (m : constraints) (r : T.region) : region =
   match r with
   | RVar var ->
-      let dbid, varid =
-        match var with
-        | Bound (dbid, varid) -> (dbid, varid)
-        | Free varid -> (List.length m.rmap - 1, varid)
-      in
       RVar
-        (match List.nth_opt m.rmap dbid with
-        | None -> None
-        | Some rmap -> (
-            match T.RegionId.Map.find_opt varid rmap with
-            | Some r -> r
-            | None -> None))
+        (lookup_var_in_maps m
+           (fun varid map -> T.RegionId.Map.find_opt varid map.rmap)
+           var)
   | RStatic -> RStatic
   | RErased ->
       (* We do get there when converting function pointers (when we try to
@@ -830,25 +815,15 @@ let region_to_pattern (m : constraints) (r : T.region) : region =
       RVar None
 
 let type_var_to_pattern (m : constraints) (var : T.type_db_var) : var option =
-  match var with
-  | Bound _ -> failwith "bound type var"
-  | Free id -> begin
-      match T.TypeVarId.Map.find_opt id m.tmap with
-      | Some v -> v
-      | None -> None
-      (* Return the empty pattern *)
-    end
+  lookup_var_in_maps m
+    (fun varid map -> T.TypeVarId.Map.find_opt varid map.tmap)
+    var
 
 let const_generic_var_to_pattern (m : constraints)
     (var : T.const_generic_db_var) : var option =
-  match var with
-  | Bound _ -> failwith "bound const generic var"
-  | Free id -> begin
-      match T.ConstGenericVarId.Map.find_opt id m.cmap with
-      | Some v -> v
-      | None -> None
-      (* Return the empty pattern *)
-    end
+  lookup_var_in_maps m
+    (fun varid map -> T.ConstGenericVarId.Map.find_opt varid map.cmap)
+    var
 
 let constraints_map_compute_regions_map (regions : T.region_var list) :
     var option T.RegionId.Map.t =
@@ -870,7 +845,7 @@ let constraints_map_compute_regions_map (regions : T.region_var list) :
        regions)
 
 let compute_constraints_map (generics : T.generic_params) : constraints =
-  let rmap = [ constraints_map_compute_regions_map generics.regions ] in
+  let rmap = constraints_map_compute_regions_map generics.regions in
   let tmap =
     T.TypeVarId.Map.of_list
       (List.map
@@ -883,12 +858,12 @@ let compute_constraints_map (generics : T.generic_params) : constraints =
          (fun (x : T.const_generic_var) -> (x.index, Some (VarName x.name)))
          generics.const_generics)
   in
-  { rmap; tmap; cmap }
+  [ { rmap; tmap; cmap } ]
 
 let constraints_map_push_regions_map (m : constraints)
     (regions : T.region_var list) : constraints =
   let rmap = constraints_map_compute_regions_map regions in
-  { m with rmap = rmap :: m.rmap }
+  { empty_vars_map with rmap } :: m
 
 (** Push a regions map to the constraints map, if the group of regions
     is non-empty - TODO: do something more precise *)
@@ -948,7 +923,7 @@ and impl_elem_to_pattern (ctx : ctx) (c : to_pat_config) (impl : T.impl_elem) :
   | ImplElemTy bound_ty ->
       PImpl (ty_to_pattern ctx c bound_ty.binder_params bound_ty.binder_value)
   | ImplElemTrait impl_id ->
-      let impl = T.TraitImplId.Map.find impl_id ctx.trait_impls in
+      let impl = T.TraitImplId.Map.find impl_id ctx.crate.trait_impls in
       PImpl (trait_decl_ref_to_pattern ctx c impl.generics impl.impl_trait)
 
 and trait_decl_ref_to_pattern (ctx : ctx) (c : to_pat_config)
@@ -958,7 +933,7 @@ and trait_decl_ref_to_pattern (ctx : ctx) (c : to_pat_config)
   let { T.trait_decl_id; decl_generics } = tr in
   let generics = generic_args_to_pattern ctx c m decl_generics in
   (* Lookup the declaration *)
-  let d = T.TraitDeclId.Map.find trait_decl_id ctx.trait_decls in
+  let d = T.TraitDeclId.Map.find trait_decl_id ctx.crate.trait_decls in
   EComp
     (name_with_generic_args_to_pattern_aux ctx c d.item_meta.name
        (Some generics))
@@ -971,7 +946,7 @@ and ty_to_pattern_aux (ctx : ctx) (c : to_pat_config) (m : constraints)
       match id with
       | TAdtId id ->
           (* Lookup the declaration *)
-          let d = T.TypeDeclId.Map.find id ctx.type_decls in
+          let d = T.TypeDeclId.Map.find id ctx.crate.type_decls in
           EComp
             (name_with_generic_args_to_pattern_aux ctx c d.item_meta.name
                (Some generics))
@@ -1017,7 +992,7 @@ and trait_ref_item_with_generics_to_pattern (ctx : ctx) (c : to_pat_config)
     let trait_decl_ref = trait_ref.trait_decl_ref in
     let d =
       T.TraitDeclId.Map.find trait_decl_ref.binder_value.trait_decl_id
-        ctx.trait_decls
+        ctx.crate.trait_decls
     in
     (* Push a regions map if necessary - TODO: make this more precise *)
     let m =
@@ -1048,7 +1023,7 @@ and const_generic_to_pattern (ctx : ctx) (c : to_pat_config) (m : constraints)
   | CgVar v -> GExpr (EVar (const_generic_var_to_pattern m v))
   | CgValue v -> GValue (literal_to_pattern c v)
   | CgGlobal gid ->
-      let d = T.GlobalDeclId.Map.find gid ctx.global_decls in
+      let d = T.GlobalDeclId.Map.find gid ctx.crate.global_decls in
       let n = name_to_pattern_aux ctx c d.item_meta.name in
       GExpr (EComp n)
 
@@ -1138,7 +1113,7 @@ let fn_ptr_to_pattern (ctx : ctx) (c : to_pat_config)
             let fid = builtin_fun_id_to_string fid in
             [ PIdent (fid, args) ])
     | FunId (FRegular fid) ->
-        let d = A.FunDeclId.Map.find fid ctx.fun_decls in
+        let d = A.FunDeclId.Map.find fid ctx.crate.fun_decls in
         name_with_generic_args_to_pattern_aux ctx c d.item_meta.name (Some args)
     | TraitMethod (tr, method_name, _) ->
         trait_ref_item_with_generics_to_pattern ctx c m tr method_name

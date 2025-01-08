@@ -3,7 +3,6 @@
 //! of AENEAS, it means the return variable contains ⊥ upon returning.
 //! For this reason, when the function has return type unit, we insert
 //! an extra assignment just before returning.
-
 use crate::llbc_ast::*;
 use crate::transform::TransformCtx;
 
@@ -13,7 +12,12 @@ fn transform_st(locals: &Locals, st: &mut Statement) -> Vec<Statement> {
     if let RawStatement::Return = &mut st.content {
         let ret_place = locals.return_place();
         let unit_value = Rvalue::Aggregate(
-            AggregateKind::Adt(TypeId::Tuple, None, None, GenericArgs::empty()),
+            AggregateKind::Adt(
+                TypeId::Tuple,
+                None,
+                None,
+                GenericArgs::empty(GenericsSource::Builtin),
+            ),
             Vec::new(),
         );
         let assign_st = Statement::new(st.span, RawStatement::Assign(ret_place, unit_value));
@@ -25,20 +29,14 @@ fn transform_st(locals: &Locals, st: &mut Statement) -> Vec<Statement> {
 
 pub struct Transform;
 impl LlbcPass for Transform {
-    fn transform_function(
-        &self,
-        ctx: &mut TransformCtx,
-        decl: &mut FunDecl,
-        body: Result<&mut ExprBody, Opaque>,
-    ) {
+    fn transform_function(&self, ctx: &mut TransformCtx, decl: &mut FunDecl) {
         if decl.signature.output.is_unit() {
-            if let Ok(body) = body {
-                self.transform_body(ctx, body)
+            if let Ok(body) = &mut decl.body {
+                self.transform_body(ctx, body.as_structured_mut().unwrap())
             }
         }
     }
     fn transform_body(&self, _ctx: &mut TransformCtx, body: &mut ExprBody) {
-        body.body
-            .transform(&mut |st| transform_st(&body.locals, st));
+        body.body.transform(|st| transform_st(&body.locals, st));
     }
 }

@@ -26,29 +26,31 @@ module Disambiguator = IdGen ()
 module FunDeclId = IdGen ()
 module BodyId = IdGen ()
 
-type ('a, 'b) outlives_pred = 'a * 'b [@@deriving show, ord]
 type ('id, 'x) vector = 'x list [@@deriving show, ord]
 type integer_type = Values.integer_type [@@deriving show, ord]
 type float_type = Values.float_type [@@deriving show, ord]
 type literal_type = Values.literal_type [@@deriving show, ord]
 
-(** We define these types to control the name of the visitor functions
-    (see e.g., {!class:Types.iter_ty_base} and {!Types.TVar}).
-  *)
-type region_id = RegionId.id [@@deriving show, ord]
-
+(** We define these types to control the name of the visitor functions *)
 type ('id, 'name) indexed_var = {
   index : 'id;  (** Unique index identifying the variable *)
   name : 'name;  (** Variable name *)
 }
 [@@deriving show, ord]
 
-type fun_decl_id = FunDeclId.id
-and type_decl_id = TypeDeclId.id
-and global_decl_id = GlobalDeclId.id
-and trait_decl_id = TraitDeclId.id
-and trait_impl_id = TraitImplId.id
-and disambiguator = Disambiguator.id
+type fun_decl_id = (FunDeclId.id[@opaque])
+and type_decl_id = (TypeDeclId.id[@opaque])
+and global_decl_id = (GlobalDeclId.id[@opaque])
+and trait_decl_id = (TraitDeclId.id[@opaque])
+and trait_impl_id = (TraitImplId.id[@opaque])
+
+(** The id of a translated item. *)
+and any_decl_id =
+  | IdType of type_decl_id
+  | IdFun of fun_decl_id
+  | IdGlobal of global_decl_id
+  | IdTraitDecl of trait_decl_id
+  | IdTraitImpl of trait_impl_id
 
 (** The index of a binder, counting from the innermost. See [`DeBruijnVar`] for details. *)
 and de_bruijn_id = int
@@ -56,17 +58,25 @@ and de_bruijn_id = int
 (** Type-level variable.
 
     Variables are bound in groups. Each item has a top-level binding group in its `generic_params`
-    field, and then inner binders are possible using the `RegionBinder<T>` type. Each variable is
-    linked to exactly one binder. The `Id` then identifies the specific variable among all those
-    bound in that group.
-
-    We distinguish the top-level (item-level) binder from others: a `Free` variable indicates a
-    variable bound at the item level; a `Bound` variable indicates a variable bound at an inner
-    binder, using a de Bruijn index (i.e. counting binders from the innermost out).
-
-    This distinction is not necessary (we could use bound variables only) but is practical.
+    field, and then inner binders are possible using the `RegionBinder<T>` and `Binder<T>` types.
+    Each variable is linked to exactly one binder. The `Id` then identifies the specific variable
+    among all those bound in that group.
 
     For instance, we have the following:
+    ```text
+    fn f<'a, 'b>(x: for<'c> fn(&'b u8, &'c u16, for<'d> fn(&'b u32, &'c u64, &'d u128)) -> u64) {}
+         ^^^^^^         ^^       ^       ^          ^^       ^        ^        ^
+           |       inner binder  |       |     inner binder  |        |        |
+     top-level binder            |       |                   |        |        |
+                           Bound(1, b)   |              Bound(2, b)   |     Bound(0, d)
+                                         |                            |
+                                     Bound(0, c)                 Bound(1, c)
+    ```
+
+    To make consumption easier for projects that don't do heavy substitution, a micro-pass at the
+    end changes the variables bound at the top-level (i.e. in the `GenericParams` of items) to be
+    `Free`. This is an optional pass, we may add a flag to deactivate it. The example above
+    becomes:
     ```text
     fn f<'a, 'b>(x: for<'c> fn(&'b u8, &'c u16, for<'d> fn(&'b u32, &'c u64, &'d u128)) -> u64) {}
          ^^^^^^         ^^       ^       ^          ^^       ^        ^        ^
@@ -83,213 +93,17 @@ and 'a0 de_bruijn_var =
   | Bound of de_bruijn_id * 'a0
       (** A variable attached to the nth binder, counting from the innermost. *)
   | Free of 'a0
-      (** A variable attached to the outermost binder (the one on the item). *)
+      (** A variable attached to the outermost binder (the one on the item). As explained above, This
+          is not used in charon internals, only as a micro-pass before exporting the crate data.
+       *)
 
-and type_var_id = TypeVarId.id
-and const_generic_var_id = ConstGenericVarId.id
-and trait_clause_id = TraitClauseId.id
-and variant_id = VariantId.id
-and field_id = FieldId.id [@@deriving show, ord]
-
-class ['self] iter_const_generic_base_base =
-  object (self : 'self)
-    inherit [_] iter_literal
-    method visit_de_bruijn_id : 'env -> de_bruijn_id -> unit = fun _ _ -> ()
-
-    method visit_de_bruijn_var
-        : 'id. ('env -> 'id -> unit) -> 'env -> 'id de_bruijn_var -> unit =
-      fun visit_id env x ->
-        match x with
-        | Bound (dbid, varid) ->
-            self#visit_de_bruijn_id env dbid;
-            visit_id env varid
-        | Free varid -> visit_id env varid
-  end
-
-(** Ancestor for map visitor for {!type: Types.ty} *)
-class virtual ['self] map_const_generic_base_base =
-  object (self : 'self)
-    inherit [_] map_literal
-
-    method visit_de_bruijn_id : 'env -> de_bruijn_id -> de_bruijn_id =
-      fun _ x -> x
-
-    method visit_de_bruijn_var
-        : 'id 'f.
-          ('env -> 'id -> 'id) -> 'env -> 'id de_bruijn_var -> 'id de_bruijn_var
-        =
-      fun visit_id env x ->
-        match x with
-        | Bound (dbid, varid) ->
-            let dbid = self#visit_de_bruijn_id env dbid in
-            let varid = visit_id env varid in
-            Bound (dbid, varid)
-        | Free varid ->
-            let varid = visit_id env varid in
-            Free varid
-  end
-
-class virtual ['self] reduce_const_generic_base_base =
-  object (self : 'self)
-    inherit [_] reduce_literal
-
-    method visit_de_bruijn_id : 'env -> de_bruijn_id -> 'a =
-      fun _ _ -> self#zero
-
-    method visit_de_bruijn_var
-        : 'id 'f. ('env -> 'id -> 'a) -> 'env -> 'id de_bruijn_var -> 'a =
-      fun visit_id env x ->
-        match x with
-        | Bound (dbid, varid) ->
-            let acc1 = self#visit_de_bruijn_id env dbid in
-            let acc2 = visit_id env varid in
-            self#plus acc1 acc2
-        | Free varid ->
-            let acc = visit_id env varid in
-            acc
-  end
-
-class virtual ['self] mapreduce_const_generic_base_base =
-  object (self : 'self)
-    inherit [_] mapreduce_literal
-
-    method visit_de_bruijn_id : 'env -> de_bruijn_id -> de_bruijn_id * 'a =
-      fun _ x -> (x, self#zero)
-
-    method visit_de_bruijn_var
-        : 'id 'f.
-          ('env -> 'id -> 'id * 'a) ->
-          'env ->
-          'id de_bruijn_var ->
-          'id de_bruijn_var * 'a =
-      fun visit_id env x ->
-        match x with
-        | Bound (dbid, varid) ->
-            let dbid, acc1 = self#visit_de_bruijn_id env dbid in
-            let varid, acc2 = visit_id env varid in
-            (Bound (dbid, varid), self#plus acc1 acc2)
-        | Free varid ->
-            let varid, acc = visit_id env varid in
-            (Free varid, acc)
-  end
-
-(* Ancestors for the const_generic visitors *)
-class ['self] iter_const_generic_base =
-  object (self : 'self)
-    inherit [_] iter_const_generic_base_base
-
-    method visit_const_generic_var_id : 'env -> const_generic_var_id -> unit =
-      fun _ _ -> ()
-
-    method visit_fun_decl_id : 'env -> fun_decl_id -> unit = fun _ _ -> ()
-    method visit_global_decl_id : 'env -> global_decl_id -> unit = fun _ _ -> ()
-    method visit_region_id : 'env -> region_id -> unit = fun _ _ -> ()
-
-    method visit_trait_clause_id : 'env -> trait_clause_id -> unit =
-      fun _ _ -> ()
-
-    method visit_trait_decl_id : 'env -> trait_decl_id -> unit = fun _ _ -> ()
-    method visit_trait_impl_id : 'env -> trait_impl_id -> unit = fun _ _ -> ()
-    method visit_type_decl_id : 'env -> type_decl_id -> unit = fun _ _ -> ()
-    method visit_type_var_id : 'env -> type_var_id -> unit = fun _ _ -> ()
-  end
-
-class ['self] map_const_generic_base =
-  object (self : 'self)
-    inherit [_] map_const_generic_base_base
-
-    method visit_const_generic_var_id
-        : 'env -> const_generic_var_id -> const_generic_var_id =
-      fun _ x -> x
-
-    method visit_fun_decl_id : 'env -> fun_decl_id -> fun_decl_id = fun _ x -> x
-
-    method visit_global_decl_id : 'env -> global_decl_id -> global_decl_id =
-      fun _ x -> x
-
-    method visit_region_id : 'env -> region_id -> region_id = fun _ x -> x
-
-    method visit_trait_clause_id : 'env -> trait_clause_id -> trait_clause_id =
-      fun _ x -> x
-
-    method visit_trait_decl_id : 'env -> trait_decl_id -> trait_decl_id =
-      fun _ x -> x
-
-    method visit_trait_impl_id : 'env -> trait_impl_id -> trait_impl_id =
-      fun _ x -> x
-
-    method visit_type_decl_id : 'env -> type_decl_id -> type_decl_id =
-      fun _ x -> x
-
-    method visit_type_var_id : 'env -> type_var_id -> type_var_id = fun _ x -> x
-  end
-
-class virtual ['self] reduce_const_generic_base =
-  object (self : 'self)
-    inherit [_] reduce_const_generic_base_base
-
-    method visit_const_generic_var_id : 'env -> const_generic_var_id -> 'a =
-      fun _ _ -> self#zero
-
-    method visit_fun_decl_id : 'env -> fun_decl_id -> 'a = fun _ _ -> self#zero
-
-    method visit_global_decl_id : 'env -> global_decl_id -> 'a =
-      fun _ _ -> self#zero
-
-    method visit_region_id : 'env -> region_id -> 'a = fun _ _ -> self#zero
-
-    method visit_trait_clause_id : 'env -> trait_clause_id -> 'a =
-      fun _ _ -> self#zero
-
-    method visit_trait_decl_id : 'env -> trait_decl_id -> 'a =
-      fun _ _ -> self#zero
-
-    method visit_trait_impl_id : 'env -> trait_impl_id -> 'a =
-      fun _ _ -> self#zero
-
-    method visit_type_decl_id : 'env -> type_decl_id -> 'a =
-      fun _ _ -> self#zero
-
-    method visit_type_var_id : 'env -> type_var_id -> 'a = fun _ _ -> self#zero
-  end
-
-class virtual ['self] mapreduce_const_generic_base =
-  object (self : 'self)
-    inherit [_] mapreduce_const_generic_base_base
-
-    method visit_const_generic_var_id
-        : 'env -> const_generic_var_id -> const_generic_var_id * 'a =
-      fun _ x -> (x, self#zero)
-
-    method visit_fun_decl_id : 'env -> fun_decl_id -> fun_decl_id * 'a =
-      fun _ x -> (x, self#zero)
-
-    method visit_global_decl_id : 'env -> global_decl_id -> global_decl_id * 'a
-        =
-      fun _ x -> (x, self#zero)
-
-    method visit_region_id : 'env -> region_id -> region_id * 'a =
-      fun _ x -> (x, self#zero)
-
-    method visit_trait_clause_id
-        : 'env -> trait_clause_id -> trait_clause_id * 'a =
-      fun _ x -> (x, self#zero)
-
-    method visit_trait_decl_id : 'env -> trait_decl_id -> trait_decl_id * 'a =
-      fun _ x -> (x, self#zero)
-
-    method visit_trait_impl_id : 'env -> trait_impl_id -> trait_impl_id * 'a =
-      fun _ x -> (x, self#zero)
-
-    method visit_type_decl_id : 'env -> type_decl_id -> type_decl_id * 'a =
-      fun _ x -> (x, self#zero)
-
-    method visit_type_var_id : 'env -> type_var_id -> type_var_id * 'a =
-      fun _ x -> (x, self#zero)
-  end
+and region_id = (RegionId.id[@opaque])
+and type_var_id = (TypeVarId.id[@opaque])
+and const_generic_var_id = (ConstGenericVarId.id[@opaque])
+and trait_clause_id = (TraitClauseId.id[@opaque])
 
 (** Const Generic Values. Either a primitive value, or a variable corresponding to a primitve value *)
-type const_generic =
+and const_generic =
   | CgGlobal of global_decl_id  (** A global constant *)
   | CgVar of const_generic_var_id de_bruijn_var  (** A const generic variable *)
   | CgValue of literal  (** A concrete value *)
@@ -299,40 +113,35 @@ type const_generic =
     visitors
       {
         name = "iter_const_generic";
+        monomorphic = [ "env" ];
         variety = "iter";
-        ancestors = [ "iter_const_generic_base" ];
+        ancestors = [ "iter_literal" ];
         nude = true (* Don't inherit VisitorsRuntime *);
       },
     visitors
       {
         name = "map_const_generic";
+        monomorphic = [ "env" ];
         variety = "map";
-        ancestors = [ "map_const_generic_base" ];
+        ancestors = [ "map_literal" ];
         nude = true (* Don't inherit VisitorsRuntime *);
       },
     visitors
       {
         name = "reduce_const_generic";
+        monomorphic = [ "env" ];
         variety = "reduce";
-        ancestors = [ "reduce_const_generic_base" ];
+        ancestors = [ "reduce_literal" ];
         nude = true (* Don't inherit VisitorsRuntime *);
       },
     visitors
       {
         name = "mapreduce_const_generic";
+        monomorphic = [ "env" ];
         variety = "mapreduce";
-        ancestors = [ "mapreduce_const_generic_base" ];
+        ancestors = [ "mapreduce_literal" ];
         nude = true (* Don't inherit VisitorsRuntime *);
       }]
-
-(** Region variable. *)
-type region_var = (region_id, string option) indexed_var [@@deriving show, ord]
-
-(** A value of type `'a` bound by region parameters. We can't use `binder`
-    below because this would require merging the two recursive def groups below
-    which causes name clash issues in the visitor derives. *)
-type 'a region_binder = { binder_regions : region_var list; binder_value : 'a }
-[@@deriving show, ord]
 
 (** Ancestor for iter visitor for {!type: Types.ty} *)
 class ['self] iter_ty_base_base =
@@ -350,30 +159,6 @@ class ['self] iter_ty_base_base =
         let { index; name } = x in
         visit_index env index;
         visit_name env name
-
-    method visit_outlives_pred
-        : 'l 'r.
-          ('env -> 'l -> unit) ->
-          ('env -> 'r -> unit) ->
-          'env ->
-          ('l, 'r) outlives_pred ->
-          unit =
-      fun visit_left visit_right env x ->
-        let left, right = x in
-        visit_left env left;
-        visit_right env right
-
-    method visit_region_var env (x : region_var) =
-      self#visit_indexed_var self#visit_region_id
-        (self#visit_option self#visit_string)
-        env x
-
-    method visit_region_binder
-        : 'a. ('env -> 'a -> unit) -> 'env -> 'a region_binder -> unit =
-      fun visit_binder_value env x ->
-        let { binder_regions; binder_value } = x in
-        self#visit_list self#visit_region_var env binder_regions;
-        visit_binder_value env binder_value
   end
 
 (** Ancestor for map visitor for {!type: Types.ty} *)
@@ -393,44 +178,24 @@ class virtual ['self] map_ty_base_base =
         let index = visit_index env index in
         let name = visit_name env name in
         { index; name }
-
-    method visit_outlives_pred
-        : 'l 'r.
-          ('env -> 'l -> 'l) ->
-          ('env -> 'r -> 'r) ->
-          'env ->
-          ('l, 'r) outlives_pred ->
-          ('l, 'r) outlives_pred =
-      fun visit_left visit_right env x ->
-        let left, right = x in
-        let left = visit_left env left in
-        let right = visit_right env right in
-        (left, right)
-
-    method visit_region_var env (x : region_var) =
-      self#visit_indexed_var self#visit_region_id
-        (self#visit_option self#visit_string)
-        env x
-
-    method visit_region_binder
-        : 'a. ('env -> 'a -> 'a) -> 'env -> 'a region_binder -> 'a region_binder
-        =
-      fun visit_binder_value env x ->
-        let { binder_regions; binder_value } = x in
-        let binder_regions =
-          self#visit_list self#visit_region_var env binder_regions
-        in
-        let binder_value = visit_binder_value env binder_value in
-        { binder_regions; binder_value }
   end
 
+(** Reference to a function declaration. *)
+type fun_decl_ref = {
+  fun_id : fun_decl_id;
+  fun_generics : generic_args;  (** Generic arguments passed to the function. *)
+}
+
 (** Reference to a global declaration. *)
-type global_decl_ref = {
+and global_decl_ref = {
   global_id : global_decl_id;
   global_generics : generic_args;
 }
 
 and trait_item_name = string
+
+(** A region variable in a signature or binder. *)
+and region_var = (region_id, string option) indexed_var
 
 and region =
   | RVar of region_id de_bruijn_var
@@ -533,11 +298,30 @@ and trait_impl_ref = {
   impl_generics : generic_args;
 }
 
+(** Each `GenericArgs` is meant for a corresponding `GenericParams`; this describes which one. *)
+and generics_source =
+  | GSItem of any_decl_id  (** A top-level item. *)
+  | GSMethod of trait_decl_id * trait_item_name  (** A trait method. *)
+  | GSBuiltin  (** A builtin item like `Box`. *)
+
+(** A set of generic arguments. *)
 and generic_args = {
   regions : region list;
   types : ty list;
   const_generics : const_generic list;
   trait_refs : trait_ref list;
+}
+
+(** A value of type `T` bound by regions. We should use `binder` instead but this causes name clash
+    issues in the derived ocaml visitors.
+    TODO: merge with `binder`
+ *)
+and 'a0 region_binder = {
+  binder_regions : region_var list;
+  binder_value : 'a0;
+      (** Named this way to highlight accesses to the inner value that might be handling parameters
+        incorrectly. Prefer using helper methods.
+     *)
 }
 
 (** A predicate of the form `exists<T> where T: Trait`.
@@ -651,6 +435,7 @@ and builtin_ty =
     visitors
       {
         name = "iter_ty";
+        monomorphic = [ "env" ];
         variety = "iter";
         ancestors = [ "iter_ty_base_base" ];
         nude = true (* Don't inherit VisitorsRuntime *);
@@ -658,102 +443,49 @@ and builtin_ty =
     visitors
       {
         name = "map_ty";
+        monomorphic = [ "env" ];
         variety = "map";
         ancestors = [ "map_ty_base_base" ];
         nude = true (* Don't inherit VisitorsRuntime *);
       }]
 
-(* Ancestors for the generic_params visitors *)
-class ['self] iter_generic_params_base =
+(* Ancestors for the type_decl visitors *)
+class ['self] iter_type_decl_base =
   object (self : 'self)
     inherit [_] iter_ty
     method visit_span : 'env -> span -> unit = fun _ _ -> ()
+    method visit_attr_info : 'env -> attr_info -> unit = fun _ _ -> ()
   end
 
-class ['self] map_generic_params_base =
+class ['self] map_type_decl_base =
   object (self : 'self)
     inherit [_] map_ty
     method visit_span : 'env -> span -> span = fun _ x -> x
+    method visit_attr_info : 'env -> attr_info -> attr_info = fun _ x -> x
   end
 
-(** A type variable in a signature or binder. *)
-type type_var = (type_var_id, string) indexed_var
+type abort_kind =
+  | Panic of name  (** A built-in panicking function. *)
+  | UndefinedBehavior
+      (** A MIR `Unreachable` terminator corresponds to undefined behavior in the rust abstract
+          machine.
+       *)
 
-(** A const generic variable in a signature or binder. *)
-and const_generic_var = {
-  index : const_generic_var_id;
-      (** Index identifying the variable among other variables bound at the same level. *)
-  name : string;  (** Const generic name *)
-  ty : literal_type;  (** Type of the const generic *)
+(** Meta information about an item (function, trait decl, trait impl, type decl, global). *)
+and item_meta = {
+  name : name;
+  span : span;
+  source_text : string option;
+      (** The source code that corresponds to this item. *)
+  attr_info : attr_info;  (** Attributes and visibility. *)
+  is_local : bool;
+      (** `true` if the type decl is a local type decl, `false` if it comes from an external crate. *)
 }
 
-(** A trait predicate in a signature, of the form `Type: Trait<Args>`. This functions like a
-    variable binder, to which variables of the form `TraitRefKind::Clause` can refer to.
- *)
-and trait_clause = {
-  clause_id : trait_clause_id;
-      (** Index identifying the clause among other clauses bound at the same level. *)
-  span : span option;
-  trait : trait_decl_ref region_binder;  (** The trait that is implemented. *)
-}
-
-and region_outlives = (region, region) outlives_pred
-and type_outlives = (ty, region) outlives_pred
-
-(** A constraint over a trait associated type.
-
-    Example:
-    ```text
-    T : Foo<S = String>
-            ^^^^^^^^^^
-    ```
- *)
-and trait_type_constraint = {
-  trait_ref : trait_ref;
-  type_name : trait_item_name;
-  ty : ty;
-}
-
-(** Generic parameters for a declaration.
-    We group the generics which come from the Rust compiler substitutions
-    (the regions, types and const generics) as well as the trait clauses.
-    The reason is that we consider that those are parameters that need to
-    be filled. We group in a different place the predicates which are not
-    trait clauses, because those enforce constraints but do not need to
-    be filled with witnesses/instances.
- *)
-and generic_params = {
-  regions : region_var list;
-  types : type_var list;
-  const_generics : const_generic_var list;
-  trait_clauses : trait_clause list;
-  regions_outlive : (region, region) outlives_pred region_binder list;
-      (** The first region in the pair outlives the second region *)
-  types_outlive : (ty, region) outlives_pred region_binder list;
-      (** The type outlives the region *)
-  trait_type_constraints : trait_type_constraint region_binder list;
-      (** Constraints over trait associated types *)
-}
-[@@deriving
-  show,
-    ord,
-    visitors
-      {
-        name = "iter_generic_params";
-        variety = "iter";
-        ancestors = [ "iter_generic_params_base" ];
-        nude = true (* Don't inherit VisitorsRuntime *);
-      },
-    visitors
-      {
-        name = "map_generic_params";
-        variety = "map";
-        ancestors = [ "map_generic_params_base" ];
-        nude = true (* Don't inherit VisitorsRuntime *);
-      }]
+and disambiguator = (Disambiguator.id[@opaque])
 
 (** See the comments for [Name] *)
-type path_elem =
+and path_elem =
   | PeIdent of string * disambiguator
   | PeImpl of impl_elem * disambiguator
 
@@ -806,11 +538,58 @@ and impl_elem = ImplElemTy of ty binder | ImplElemTrait of trait_impl_id
 
     Also note that the first path element in the name is always the crate name.
  *)
-and name = path_elem list
+and name = (path_elem list[@opaque])
+
+(** A type variable in a signature or binder. *)
+and type_var = (type_var_id, string) indexed_var
+
+(** A const generic variable in a signature or binder. *)
+and const_generic_var = {
+  index : const_generic_var_id;
+      (** Index identifying the variable among other variables bound at the same level. *)
+  name : string;  (** Const generic name *)
+  ty : literal_type;  (** Type of the const generic *)
+}
+
+(** A trait predicate in a signature, of the form `Type: Trait<Args>`. This functions like a
+    variable binder, to which variables of the form `TraitRefKind::Clause` can refer to.
+ *)
+and trait_clause = {
+  clause_id : trait_clause_id;
+      (** Index identifying the clause among other clauses bound at the same level. *)
+  span : span option;
+  trait : trait_decl_ref region_binder;  (** The trait that is implemented. *)
+}
+
+(** .0 outlives .1 *)
+and ('a0, 'a1) outlives_pred = 'a0 * 'a1
+
+(** A constraint over a trait associated type.
+
+    Example:
+    ```text
+    T : Foo<S = String>
+            ^^^^^^^^^^
+    ```
+ *)
+and trait_type_constraint = {
+  trait_ref : trait_ref;
+  type_name : trait_item_name;
+  ty : ty;
+}
+
+and binder_kind =
+  | BKTraitMethod of trait_decl_id * trait_item_name
+      (** The parameters of a trait method. Used in the `methods` lists in trait decls and trait
+          impls.
+       *)
+  | BKInherentImplBlock
+      (** The parameters bound in a non-trait `impl` block. Used in the `Name`s of inherent methods. *)
+  | BKOther  (** Some other use of a binder outside the main Charon ast. *)
 
 (** A value of type `T` bound by generic parameters. Used in any context where we're adding generic
-    parameters that aren't on the top-level item, e.g. `for<'a>` clauses, trait methods (TODO),
-    GATs (TODO).
+    parameters that aren't on the top-level item, e.g. `for<'a>` clauses (uses `RegionBinder` for
+    now), trait methods, GATs (TODO).
  *)
 and 'a0 binder = {
   binder_params : generic_params;
@@ -819,64 +598,26 @@ and 'a0 binder = {
         incorrectly. Prefer using helper methods.
      *)
 }
-[@@deriving show, ord]
 
-class ['self] iter_type_decl_base_base =
-  object (self : 'self)
-    inherit [_] iter_generic_params
-
-    method visit_binder : 'a. ('env -> 'a -> unit) -> 'env -> 'a binder -> unit
-        =
-      fun visit_binder_value env x ->
-        let { binder_params; binder_value } = x in
-        self#visit_generic_params env binder_params;
-        visit_binder_value env binder_value
-  end
-
-class virtual ['self] map_type_decl_base_base =
-  object (self : 'self)
-    inherit [_] map_generic_params
-
-    method visit_binder
-        : 'a. ('env -> 'a -> 'a) -> 'env -> 'a binder -> 'a binder =
-      fun visit_binder_value env x ->
-        let { binder_params; binder_value } = x in
-        let binder_params = self#visit_generic_params env binder_params in
-        let binder_value = visit_binder_value env binder_value in
-        { binder_params; binder_value }
-  end
-
-(* Ancestors for the type_decl visitors *)
-class ['self] iter_type_decl_base =
-  object (self : 'self)
-    inherit [_] iter_type_decl_base_base
-    method visit_attr_info : 'env -> attr_info -> unit = fun _ _ -> ()
-    method visit_name : 'env -> name -> unit = fun _ _ -> ()
-  end
-
-class ['self] map_type_decl_base =
-  object (self : 'self)
-    inherit [_] map_type_decl_base_base
-    method visit_attr_info : 'env -> attr_info -> attr_info = fun _ x -> x
-    method visit_name : 'env -> name -> name = fun _ x -> x
-  end
-
-type abort_kind =
-  | Panic of name  (** A built-in panicking function. *)
-  | UndefinedBehavior
-      (** A MIR `Unreachable` terminator corresponds to undefined behavior in the rust abstract
-          machine.
-       *)
-
-(** Meta information about an item (function, trait decl, trait impl, type decl, global). *)
-and item_meta = {
-  name : name;
-  span : span;
-  source_text : string option;
-      (** The source code that corresponds to this item. *)
-  attr_info : attr_info;  (** Attributes and visibility. *)
-  is_local : bool;
-      (** `true` if the type decl is a local type decl, `false` if it comes from an external crate. *)
+(** Generic parameters for a declaration.
+    We group the generics which come from the Rust compiler substitutions
+    (the regions, types and const generics) as well as the trait clauses.
+    The reason is that we consider that those are parameters that need to
+    be filled. We group in a different place the predicates which are not
+    trait clauses, because those enforce constraints but do not need to
+    be filled with witnesses/instances.
+ *)
+and generic_params = {
+  regions : region_var list;
+  types : type_var list;
+  const_generics : const_generic_var list;
+  trait_clauses : trait_clause list;
+  regions_outlive : (region, region) outlives_pred region_binder list;
+      (** The first region in the pair outlives the second region *)
+  types_outlive : (ty, region) outlives_pred region_binder list;
+      (** The type outlives the region *)
+  trait_type_constraints : trait_type_constraint region_binder list;
+      (** Constraints over trait associated types *)
 }
 
 (** A type declaration.
@@ -899,6 +640,9 @@ and type_decl = {
   generics : generic_params;
   kind : type_decl_kind;  (** The type kind: enum, struct, or opaque. *)
 }
+
+and variant_id = (VariantId.id[@opaque])
+and field_id = (FieldId.id[@opaque])
 
 and type_decl_kind =
   | Struct of field list
@@ -941,6 +685,7 @@ and field = {
     visitors
       {
         name = "iter_type_decl";
+        monomorphic = [ "env" ];
         variety = "iter";
         ancestors = [ "iter_type_decl_base" ];
         nude = true (* Don't inherit VisitorsRuntime *);
@@ -948,6 +693,7 @@ and field = {
     visitors
       {
         name = "map_type_decl";
+        monomorphic = [ "env" ];
         variety = "map";
         ancestors = [ "map_type_decl_base" ];
         nude = true (* Don't inherit VisitorsRuntime *);

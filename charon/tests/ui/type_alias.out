@@ -11,13 +11,13 @@ type test_crate::Generic<'a, T>
 trait core::clone::Clone<Self>
 {
     parent_clause0 : [@TraitClause0]: core::marker::Sized<Self>
-    fn clone : core::clone::Clone::clone
-    fn clone_from : core::clone::Clone::clone_from
+    fn clone<'_0> = core::clone::Clone::clone<'_0_0, Self>
+    fn clone_from<'_0, '_1> = core::clone::Clone::clone_from<'_0_0, '_0_1, Self>
 }
 
 trait core::borrow::Borrow<Self, Borrowed>
 {
-    fn borrow : core::borrow::Borrow::borrow
+    fn borrow<'_0> = core::borrow::Borrow::borrow<'_0_0, Self, Borrowed>
 }
 
 trait alloc::borrow::ToOwned<Self>
@@ -25,8 +25,8 @@ trait alloc::borrow::ToOwned<Self>
     parent_clause0 : [@TraitClause0]: core::borrow::Borrow<Self::Owned, Self>
     parent_clause1 : [@TraitClause1]: core::marker::Sized<Self::Owned>
     type Owned
-    fn to_owned : alloc::borrow::ToOwned::to_owned
-    fn clone_into : alloc::borrow::ToOwned::clone_into
+    fn to_owned<'_0> = alloc::borrow::ToOwned::to_owned<'_0_0, Self>
+    fn clone_into<'_0, '_1> = alloc::borrow::ToOwned::clone_into<'_0_0, '_0_1, Self>
 }
 
 enum alloc::borrow::Cow<'a, B>
@@ -54,7 +54,7 @@ where
     [@TraitClause0]: core::marker::Sized<T>,
     [@TraitClause1]: core::marker::Sized<A>,
 {
-    fn borrow = alloc::slice::{impl core::borrow::Borrow<Slice<T>> for alloc::vec::Vec<T, A>[@TraitClause0, @TraitClause1]}#5::borrow
+    fn borrow<'_0> = alloc::slice::{impl core::borrow::Borrow<Slice<T>> for alloc::vec::Vec<T, A>[@TraitClause0, @TraitClause1]}#5::borrow<'_0_0, T, A>[@TraitClause0, @TraitClause1]
 }
 
 struct alloc::alloc::Global = {}
@@ -77,8 +77,8 @@ where
     parent_clause0 = alloc::slice::{impl core::borrow::Borrow<Slice<T>> for alloc::vec::Vec<T, A>[@TraitClause0, @TraitClause1]}#5<T, alloc::alloc::Global>[@TraitClause0, core::marker::Sized<alloc::alloc::Global>]
     parent_clause1 = core::marker::Sized<alloc::vec::Vec<T, alloc::alloc::Global>[@TraitClause0, core::marker::Sized<alloc::alloc::Global>]>
     type Owned = alloc::vec::Vec<T, alloc::alloc::Global>[@TraitClause0, core::marker::Sized<alloc::alloc::Global>]
-    fn to_owned = alloc::slice::{impl alloc::borrow::ToOwned for Slice<T>}#9::to_owned
-    fn clone_into = alloc::slice::{impl alloc::borrow::ToOwned for Slice<T>}#9::clone_into
+    fn to_owned<'_0> = alloc::slice::{impl alloc::borrow::ToOwned for Slice<T>}#9::to_owned<'_0_0, T>[@TraitClause0, @TraitClause1]
+    fn clone_into<'_0, '_1> = alloc::slice::{impl alloc::borrow::ToOwned for Slice<T>}#9::clone_into<'_0_0, '_0_1, T>[@TraitClause0, @TraitClause1]
 }
 
 type test_crate::Generic2<'a, T>

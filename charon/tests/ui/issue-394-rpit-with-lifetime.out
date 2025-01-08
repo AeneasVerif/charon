@@ -31,7 +31,7 @@ trait core::ops::function::FnOnce<Self, Args>
     parent_clause1 : [@TraitClause1]: core::marker::Tuple<Args>
     parent_clause2 : [@TraitClause2]: core::marker::Sized<Self::Output>
     type Output
-    fn call_once : core::ops::function::FnOnce::call_once
+    fn call_once = core::ops::function::FnOnce::call_once<Self, Args>
 }
 
 trait core::ops::function::FnMut<Self, Args>
@@ -39,7 +39,7 @@ trait core::ops::function::FnMut<Self, Args>
     parent_clause0 : [@TraitClause0]: core::ops::function::FnOnce<Self, Args>
     parent_clause1 : [@TraitClause1]: core::marker::Sized<Args>
     parent_clause2 : [@TraitClause2]: core::marker::Tuple<Args>
-    fn call_mut : core::ops::function::FnMut::call_mut
+    fn call_mut<'_0> = core::ops::function::FnMut::call_mut<'_0_0, Self, Args>
 }
 
 fn core::iter::sources::from_fn::from_fn<T, F>(@1: F) -> core::iter::sources::from_fn::FromFn<F>[@TraitClause1]

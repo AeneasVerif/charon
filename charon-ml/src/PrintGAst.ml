@@ -179,13 +179,17 @@ let trait_decl_to_string (env : 'a fmt_env) (indent : string)
     let required_methods =
       List.map
         (fun (name, f) ->
-          indent1 ^ "fn " ^ name ^ " : " ^ fun_decl_id_to_string env f ^ "\n")
+          indent1 ^ "fn " ^ name ^ " : "
+          ^ fun_decl_id_to_string env f.binder_value.fun_id
+          ^ "\n")
         def.required_methods
     in
     let provided_methods =
       List.map
         (fun (name, f) ->
-          indent1 ^ "fn " ^ name ^ " : " ^ fun_decl_id_to_string env f ^ "\n")
+          indent1 ^ "fn " ^ name ^ " : "
+          ^ fun_decl_id_to_string env f.binder_value.fun_id
+          ^ "\n")
         def.provided_methods
     in
     let items =
@@ -249,7 +253,9 @@ let trait_impl_to_string (env : 'a fmt_env) (indent : string)
         def.types
     in
     let env_method (name, f) =
-      indent1 ^ "fn " ^ name ^ " : " ^ fun_decl_id_to_string env f ^ "\n"
+      indent1 ^ "fn " ^ name ^ " : "
+      ^ fun_decl_id_to_string env f.binder_value.fun_id
+      ^ "\n"
     in
     let required_methods = List.map env_method def.required_methods in
     let provided_methods = List.map env_method def.provided_methods in

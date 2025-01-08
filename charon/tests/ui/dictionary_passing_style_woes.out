@@ -65,7 +65,7 @@ trait test_crate::X<Self>
 {
     parent_clause0 : [@TraitClause0]: core::marker::Sized<Self::Assoc>
     type Assoc
-    fn method : test_crate::X::method
+    fn method<'_0> = test_crate::X::method<'_0_0, Self>
 }
 
 trait test_crate::A<Self>

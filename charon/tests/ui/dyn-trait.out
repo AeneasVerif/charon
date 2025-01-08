@@ -19,7 +19,7 @@ struct core::fmt::Error = {}
 
 trait core::fmt::Display<Self>
 {
-    fn fmt : core::fmt::Display::fmt
+    fn fmt<'_0, '_1, '_2> = core::fmt::Display::fmt<'_0_0, '_0_1, '_0_2, Self>
 }
 
 struct alloc::alloc::Global = {}
@@ -80,14 +80,14 @@ fn alloc::string::ToString::to_string<'_0, Self>(@1: &'_0 (Self)) -> alloc::stri
 
 trait alloc::string::ToString<Self>
 {
-    fn to_string : alloc::string::ToString::to_string
+    fn to_string<'_0> = alloc::string::ToString::to_string<'_0_0, Self>
 }
 
 impl<T> alloc::string::{impl alloc::string::ToString for T}#32<T> : alloc::string::ToString<T>
 where
     [@TraitClause0]: core::fmt::Display<T>,
 {
-    fn to_string = alloc::string::{impl alloc::string::ToString for T}#32::to_string
+    fn to_string<'_0> = alloc::string::{impl alloc::string::ToString for T}#32::to_string<'_0_0, T>[@TraitClause0]
 }
 
 fn core::fmt::Display::fmt<'_0, '_1, '_2, Self>(@1: &'_0 (Self), @2: &'_1 mut (core::fmt::Formatter<'_2>)) -> core::result::Result<(), core::fmt::Error>[core::marker::Sized<()>, core::marker::Sized<core::fmt::Error>]

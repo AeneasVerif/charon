@@ -24,7 +24,7 @@ type fun_id = Expressions.fun_id [@@deriving show, ord]
 type fun_id_or_trait_method_ref = Expressions.fun_id_or_trait_method_ref
 [@@deriving show, ord]
 
-type fun_decl_id = FunDeclId.id [@@deriving show, ord]
+type fun_decl_id = Types.fun_decl_id [@@deriving show, ord]
 
 (** A variable *)
 type var = {
@@ -113,14 +113,6 @@ and call = { func : fn_operand; args : operand list; dest : place }
  *)
 and assertion = { cond : operand; expected : bool }
 
-(** The id of a translated item. *)
-and any_decl_id =
-  | IdType of type_decl_id
-  | IdFun of fun_decl_id
-  | IdGlobal of global_decl_id
-  | IdTraitDecl of trait_decl_id
-  | IdTraitImpl of trait_impl_id
-
 and closure_kind = Fn | FnMut | FnOnce
 
 (** Additional information for closures.
@@ -166,6 +158,7 @@ and fun_sig = {
     visitors
       {
         name = "iter_fun_sig";
+        monomorphic = [ "env" ];
         variety = "iter";
         ancestors = [ "iter_rvalue" ];
         nude = true (* Don't inherit VisitorsRuntime *);
@@ -173,6 +166,7 @@ and fun_sig = {
     visitors
       {
         name = "map_fun_sig";
+        monomorphic = [ "env" ];
         variety = "map";
         ancestors = [ "map_rvalue" ];
         nude = true (* Don't inherit VisitorsRuntime *);
@@ -187,7 +181,9 @@ type global_decl = {
   kind : item_kind;
       (** The global kind: "regular" function, trait const declaration, etc. *)
   body : fun_decl_id;
-      (** The initializer function used to compute the initial value for this constant/static. *)
+      (** The initializer function used to compute the initial value for this constant/static. It
+        uses the same generic parameters as the global.
+     *)
 }
 [@@deriving
   show,
@@ -195,6 +191,7 @@ type global_decl = {
     visitors
       {
         name = "iter_global_decl";
+        monomorphic = [ "env" ];
         variety = "iter";
         ancestors = [ "iter_fun_sig" ];
         nude = true (* Don't inherit VisitorsRuntime *);
@@ -202,6 +199,7 @@ type global_decl = {
     visitors
       {
         name = "map_global_decl";
+        monomorphic = [ "env" ];
         variety = "map";
         ancestors = [ "map_fun_sig" ];
         nude = true (* Don't inherit VisitorsRuntime *);
@@ -262,17 +260,19 @@ type trait_decl = {
       (** The associated constants declared in the trait, along with their type. *)
   types : trait_item_name list;
       (** The associated types declared in the trait. *)
-  required_methods : (trait_item_name * fun_decl_id) list;
-      (** The *required* methods.
-
-        The required methods are the methods declared by the trait but with no default
+  required_methods : (trait_item_name * fun_decl_ref binder) list;
+      (** The *required* methods: the methods declared by the trait but with no default
         implementation. The corresponding `FunDecl`s don't have a body.
-     *)
-  provided_methods : (trait_item_name * fun_decl_id) list;
-      (** The *provided* methods.
 
-        The provided methods are the methods with a default implementation. The corresponding
+        The binder contains the type parameters specific to the method. The `FunDeclRef` then
+        provides a full list of arguments to the pointed-to function.
+     *)
+  provided_methods : (trait_item_name * fun_decl_ref binder) list;
+      (** The *provided* methods: the methods with a default implementation. The corresponding
         `FunDecl`s may have a body, according to the usual rules for extracting function bodies.
+
+        The binder contains the type parameters specific to the method. The `FunDeclRef` then
+        provides a full list of arguments to the pointed-to function.
      *)
 }
 [@@deriving
@@ -281,6 +281,7 @@ type trait_decl = {
     visitors
       {
         name = "iter_trait_decl";
+        monomorphic = [ "env" ];
         variety = "iter";
         ancestors = [ "iter_global_decl" ];
         nude = true (* Don't inherit VisitorsRuntime *);
@@ -288,6 +289,7 @@ type trait_decl = {
     visitors
       {
         name = "map_trait_decl";
+        monomorphic = [ "env" ];
         variety = "map";
         ancestors = [ "map_global_decl" ];
         nude = true (* Don't inherit VisitorsRuntime *);
@@ -319,10 +321,18 @@ type trait_impl = {
       (** The associated constants declared in the trait. *)
   types : (trait_item_name * ty) list;
       (** The associated types declared in the trait. *)
-  required_methods : (trait_item_name * fun_decl_id) list;
-      (** The implemented required methods *)
-  provided_methods : (trait_item_name * fun_decl_id) list;
-      (** The re-implemented provided methods *)
+  required_methods : (trait_item_name * fun_decl_ref binder) list;
+      (** The implemented required methods
+
+        The binder contains the type parameters specific to the method. The `FunDeclRef` then
+        provides a full list of arguments to the pointed-to function.
+     *)
+  provided_methods : (trait_item_name * fun_decl_ref binder) list;
+      (** The re-implemented provided methods
+
+        The binder contains the type parameters specific to the method. The `FunDeclRef` then
+        provides a full list of arguments to the pointed-to function.
+     *)
 }
 [@@deriving
   show,
@@ -330,6 +340,7 @@ type trait_impl = {
     visitors
       {
         name = "iter_trait_impl";
+        monomorphic = [ "env" ];
         variety = "iter";
         ancestors = [ "iter_trait_decl" ];
         nude = true (* Don't inherit VisitorsRuntime *);
@@ -337,6 +348,7 @@ type trait_impl = {
     visitors
       {
         name = "map_trait_impl";
+        monomorphic = [ "env" ];
         variety = "map";
         ancestors = [ "map_trait_decl" ];
         nude = true (* Don't inherit VisitorsRuntime *);

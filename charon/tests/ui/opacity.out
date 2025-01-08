@@ -19,12 +19,13 @@ where
 
     match *(self@1) {
         1 => {
-            @0 := const (true)
         },
         0 => {
             @0 := const (false)
+            return
         },
     }
+    @0 := const (true)
     return
 }
 
@@ -32,7 +33,7 @@ trait core::convert::From<Self, T>
 {
     parent_clause0 : [@TraitClause0]: core::marker::Sized<Self>
     parent_clause1 : [@TraitClause1]: core::marker::Sized<T>
-    fn from : core::convert::From::from
+    fn from = core::convert::From::from<Self, T>
 }
 
 fn core::convert::From::from<Self, T>(@1: T) -> Self
@@ -118,7 +119,7 @@ trait core::convert::Into<Self, T>
 {
     parent_clause0 : [@TraitClause0]: core::marker::Sized<Self>
     parent_clause1 : [@TraitClause1]: core::marker::Sized<T>
-    fn into : core::convert::Into::into
+    fn into = core::convert::Into::into<Self, T>
 }
 
 impl<T, U> core::convert::{impl core::convert::Into<U> for T}#3<T, U> : core::convert::Into<T, U>
@@ -129,7 +130,7 @@ where
 {
     parent_clause0 = @TraitClause0
     parent_clause1 = @TraitClause1
-    fn into = core::convert::{impl core::convert::Into<U> for T}#3::into
+    fn into = core::convert::{impl core::convert::Into<U> for T}#3::into<T, U>[@TraitClause0, @TraitClause1, @TraitClause2]
 }
 
 

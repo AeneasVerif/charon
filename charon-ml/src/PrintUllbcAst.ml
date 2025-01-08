@@ -111,19 +111,11 @@ end
 module Crate = struct
   open Ast
 
+  let crate_to_fmt_env (crate : crate) : fmt_env =
+    { crate; generics = []; locals = [] }
+
   let crate_to_string (m : crate) : string =
-    let env : fmt_env =
-      {
-        type_decls = m.type_decls;
-        fun_decls = m.fun_decls;
-        global_decls = m.global_decls;
-        trait_decls = m.trait_decls;
-        trait_impls = m.trait_impls;
-        regions = [];
-        generics = empty_generic_params;
-        locals = [];
-      }
-    in
+    let env : fmt_env = crate_to_fmt_env m in
 
     (* The types *)
     let type_decls =

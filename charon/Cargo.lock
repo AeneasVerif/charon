@@ -213,7 +213,7 @@ checksum = "baf1de4339761588bc0619e3cbc0120ee582ebb74b53b4efbf79117bd2da40fd"
 
 [[package]]
 name = "charon"
-version = "0.1.58"
+version = "0.1.62"
 dependencies = [
  "annotate-snippets",
  "anstream",
@@ -221,9 +221,9 @@ dependencies = [
  "assert_cmd",
  "clap",
  "colored",
- "convert_case 0.6.0",
+ "convert_case",
  "crates_io_api",
- "derive-visitor",
+ "derive_generic_visitor",
  "env_logger",
  "flate2",
  "hashlink",
@@ -327,12 +327,6 @@ dependencies = [
 
 [[package]]
 name = "convert_case"
-version = "0.4.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6245d59a3e82a7fc217c5828a6692dbc6dfb63a0c8c90495621f7b9d79704a0e"
-
-[[package]]
-name = "convert_case"
 version = "0.6.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ec182b0ca2f35d8fc196cf3404988fd8b8c739a4d270ff118a398feb0cbec1ca"
@@ -408,6 +402,41 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "22ec99545bb0ed0ea7bb9b8e1e9122ea386ff8a48c0922e43f36d45ab09e0e80"
 
 [[package]]
+name = "darling"
+version = "0.20.10"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "6f63b86c8a8826a49b8c21f08a2d07338eec8d900540f8630dc76284be802989"
+dependencies = [
+ "darling_core",
+ "darling_macro",
+]
+
+[[package]]
+name = "darling_core"
+version = "0.20.10"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "95133861a8032aaea082871032f5815eb9e98cef03fa916ab4500513994df9e5"
+dependencies = [
+ "fnv",
+ "ident_case",
+ "proc-macro2",
+ "quote",
+ "strsim",
+ "syn 2.0.90",
+]
+
+[[package]]
+name = "darling_macro"
+version = "0.20.10"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d336a2a514f6ccccaa3e09b02d41d35330c07ddf03a62165fcec10bb561c7806"
+dependencies = [
+ "darling_core",
+ "quote",
+ "syn 2.0.90",
+]
+
+[[package]]
 name = "deranged"
 version = "0.3.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -417,25 +446,26 @@ dependencies = [
 ]
 
 [[package]]
-name = "derive-visitor"
-version = "0.4.0"
+name = "derive_generic_visitor"
+version = "0.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d47165df83b9707cbada3216607a5d66125b6a66906de0bc1216c0669767ca9e"
+checksum = "e0729a8f5d509da0c280502837a56a9d05c16866ae5b608ef34bd687e9f21af8"
 dependencies = [
- "derive-visitor-macros",
+ "derive_generic_visitor_macros",
 ]
 
 [[package]]
-name = "derive-visitor-macros"
-version = "0.4.0"
+name = "derive_generic_visitor_macros"
+version = "0.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "427b39a85fecafea16b1a5f3f50437151022e35eb4fe038107f08adbf7f8def6"
+checksum = "3c2b7f15bf93ca0d978ecb96792c71a43c629a1e18b2a5de7a35a5d218e6c85e"
 dependencies = [
- "convert_case 0.4.0",
- "itertools 0.10.5",
+ "convert_case",
+ "darling",
+ "itertools 0.13.0",
  "proc-macro2",
  "quote",
- "syn 1.0.109",
+ "syn 2.0.90",
 ]
 
 [[package]]
@@ -786,7 +816,7 @@ dependencies = [
 [[package]]
 name = "hax-adt-into"
 version = "0.1.0-rc.1"
-source = "git+https://github.com/hacspec/hax?branch=main#de59826b832befc82905286d052c8a961c31f3cd"
+source = "git+https://github.com/hacspec/hax?branch=main#98ded931baf06ffb5802d1b55cd42ef39177beb6"
 dependencies = [
  "itertools 0.11.0",
  "proc-macro2",
@@ -797,7 +827,7 @@ dependencies = [
 [[package]]
 name = "hax-frontend-exporter"
 version = "0.1.0-rc.1"
-source = "git+https://github.com/hacspec/hax?branch=main#de59826b832befc82905286d052c8a961c31f3cd"
+source = "git+https://github.com/hacspec/hax?branch=main#98ded931baf06ffb5802d1b55cd42ef39177beb6"
 dependencies = [
  "extension-traits",
  "hax-adt-into",
@@ -814,7 +844,7 @@ dependencies = [
 [[package]]
 name = "hax-frontend-exporter-options"
 version = "0.1.0-rc.1"
-source = "git+https://github.com/hacspec/hax?branch=main#de59826b832befc82905286d052c8a961c31f3cd"
+source = "git+https://github.com/hacspec/hax?branch=main#98ded931baf06ffb5802d1b55cd42ef39177beb6"
 dependencies = [
  "hax-adt-into",
  "schemars",
@@ -1074,6 +1104,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "ident_case"
+version = "1.0.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b9e0384b61958566e926dc50660321d12159025e767c18e043daf26b70104c39"
+
+[[package]]
 name = "idna"
 version = "1.0.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1152,15 +1188,6 @@ name = "is_terminal_polyfill"
 version = "1.70.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7943c866cc5cd64cbc25b2e01621d07fa8eb2a1a23160ee81ce38704e97b8ecf"
-
-[[package]]
-name = "itertools"
-version = "0.10.5"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b0fd2260e829bddf4cb6ea802289de2f86d6a7a690192fbe91b3f46e0f2c8473"
-dependencies = [
- "either",
-]
 
 [[package]]
 name = "itertools"

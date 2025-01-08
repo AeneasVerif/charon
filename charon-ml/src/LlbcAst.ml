@@ -10,4 +10,4 @@ type fun_body = expr_body [@@deriving show]
 type fun_decl = statement gfun_decl [@@deriving show]
 
 (** LLBC crate *)
-type crate = statement gcrate
+type crate = statement gcrate [@@deriving show]

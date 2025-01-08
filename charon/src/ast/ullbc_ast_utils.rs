@@ -2,7 +2,6 @@
 use crate::ids::Vector;
 use crate::meta::Span;
 use crate::ullbc_ast::*;
-use derive_visitor::{visitor_enter_fn_mut, visitor_fn_mut, DriveMut, Event};
 use take_mut::take;
 
 impl SwitchTargets {
@@ -59,9 +58,7 @@ impl BlockData {
         // Explore the operands in the statements
         for mut st in self.statements {
             st.content
-                .drive_mut(&mut visitor_enter_fn_mut(|op: &mut Operand| {
-                    f(&st.span, &mut nst, op)
-                }));
+                .dyn_visit_in_body_mut(|op: &mut Operand| f(&st.span, &mut nst, op));
             // Add the statement to the vector of statements
             nst.push(st)
         }
@@ -69,9 +66,7 @@ impl BlockData {
         // Explore the terminator
         self.terminator
             .content
-            .drive_mut(&mut visitor_enter_fn_mut(|op: &mut Operand| {
-                f(&self.terminator.span, &mut nst, op)
-            }));
+            .dyn_visit_in_body_mut(|op: &mut Operand| f(&self.terminator.span, &mut nst, op));
 
         // Update the vector of statements
         self.statements = nst;
@@ -115,11 +110,11 @@ impl ExprBody {
 
     /// Apply a function to all the statements, in a bottom-up manner.
     pub fn visit_statements<F: FnMut(&mut Statement)>(&mut self, f: &mut F) {
-        self.drive_mut(&mut visitor_fn_mut(|st: &mut Statement, e: Event| {
-            if matches!(e, Event::Exit) {
-                f(st)
+        for block in self.body.iter_mut().rev() {
+            for st in block.statements.iter_mut().rev() {
+                f(st);
             }
-        }))
+        }
     }
 }
 

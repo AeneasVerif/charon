@@ -17,19 +17,20 @@ open Expressions
 open GAst
 include Generated_GAstOfJson
 
-let rec maybe_opaque_body_of_json (bodies : 'body gexpr_body option list)
+let rec maybe_opaque_body_of_json
+    (body_of_json : of_json_ctx -> json -> ('body gexpr_body, string) result)
     (ctx : of_json_ctx) (js : json) : ('body gexpr_body option, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
     | `Assoc [ ("Ok", body) ] ->
-        let* body_id = BodyId.id_of_json ctx body in
-        let body = List.nth bodies (BodyId.to_int body_id) in
-        Ok body
+        let* body = body_of_json ctx body in
+        Ok (Some body)
     | `Assoc [ ("Err", `Null) ] -> Ok None
     | _ -> Error "")
 
 (* This is written by hand because the corresponding rust type is not type-generic. *)
-and gfun_decl_of_json (bodies : 'body gexpr_body option list)
+and gfun_decl_of_json
+    (body_of_json : of_json_ctx -> json -> ('body gexpr_body, string) result)
     (ctx : of_json_ctx) (js : json) : ('body gfun_decl, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
@@ -49,7 +50,7 @@ and gfun_decl_of_json (bodies : 'body gexpr_body option list)
         let* is_global_initializer =
           option_of_json global_decl_id_of_json ctx is_global_initializer
         in
-        let* body = maybe_opaque_body_of_json bodies ctx body in
+        let* body = maybe_opaque_body_of_json body_of_json ctx body in
         Ok { def_id; item_meta; signature; kind; is_global_initializer; body }
     | _ -> Error "")
 
@@ -95,7 +96,6 @@ and gtranslated_crate_of_json
           ("type_decls", types);
           ("fun_decls", functions);
           ("global_decls", globals);
-          ("bodies", bodies);
           ("trait_decls", trait_decls);
           ("trait_impls", trait_impls);
           ("ordered_decls", declarations);
@@ -108,13 +108,13 @@ and gtranslated_crate_of_json
           list_of_json declaration_group_of_json ctx declarations
         in
 
-        let* bodies = list_of_json (option_of_json body_of_json) ctx bodies in
         let* types =
           vector_of_json type_id_of_json type_decl_of_json ctx types
         in
         let* functions =
-          vector_of_json fun_decl_id_of_json (gfun_decl_of_json bodies) ctx
-            functions
+          vector_of_json fun_decl_id_of_json
+            (gfun_decl_of_json body_of_json)
+            ctx functions
         in
         let* globals =
           vector_of_json global_decl_id_of_json global_decl_of_json ctx globals

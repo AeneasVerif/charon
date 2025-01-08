@@ -354,16 +354,12 @@ fn test_crate::test_unreachable(@1: bool)
     let @3: (); // anonymous local
 
     @2 := copy (b@1)
-    if move (@2) {
-    }
-    else {
-        @3 := ()
-        @0 := move (@3)
-        drop @2
-        @0 := ()
-        return
-    }
-    panic(core::panicking::panic)
+    assert(move (@2) == false)
+    @3 := ()
+    @0 := move (@3)
+    drop @2
+    @0 := ()
+    return
 }
 
 fn test_crate::is_cons<'_0, T>(@1: &'_0 (test_crate::List<T>[@TraitClause0])) -> bool
@@ -376,12 +372,13 @@ where
     @fake_read(l@1)
     match *(l@1) {
         0 => {
-            @0 := const (true)
         },
         1 => {
             @0 := const (false)
+            return
         },
     }
+    @0 := const (true)
     return
 }
 
@@ -640,7 +637,7 @@ fn test_crate::read_then_incr<'_0>(@1: &'_0 mut (u32)) -> u32
 trait core::ops::deref::Deref<Self>
 {
     type Target
-    fn deref : core::ops::deref::Deref::deref
+    fn deref<'_0> = core::ops::deref::Deref::deref<'_0_0, Self>
 }
 
 fn core::ops::deref::DerefMut::deref_mut<'_0, Self>(@1: &'_0 mut (Self)) -> &'_0 mut (Self::parent_clause0::Target)
@@ -648,7 +645,7 @@ fn core::ops::deref::DerefMut::deref_mut<'_0, Self>(@1: &'_0 mut (Self)) -> &'_0
 trait core::ops::deref::DerefMut<Self>
 {
     parent_clause0 : [@TraitClause0]: core::ops::deref::Deref<Self>
-    fn deref_mut : core::ops::deref::DerefMut::deref_mut
+    fn deref_mut<'_0> = core::ops::deref::DerefMut::deref_mut<'_0_0, Self>
 }
 
 impl<T, A> alloc::boxed::{impl core::ops::deref::Deref for alloc::boxed::Box<T>[@TraitClause0]}#38<T, A> : core::ops::deref::Deref<alloc::boxed::Box<T>[@TraitClause0]>
@@ -656,7 +653,7 @@ where
     [@TraitClause0]: core::marker::Sized<A>,
 {
     type Target = T
-    fn deref = alloc::boxed::{impl core::ops::deref::Deref for alloc::boxed::Box<T>[@TraitClause0]}#38::deref
+    fn deref<'_0> = alloc::boxed::{impl core::ops::deref::Deref for alloc::boxed::Box<T>[@TraitClause0]}#38::deref<'_0_0, T, A>[@TraitClause0]
 }
 
 impl<T, A> alloc::boxed::{impl core::ops::deref::DerefMut for alloc::boxed::Box<T>[@TraitClause0]}#39<T, A> : core::ops::deref::DerefMut<alloc::boxed::Box<T>[@TraitClause0]>
@@ -664,7 +661,7 @@ where
     [@TraitClause0]: core::marker::Sized<A>,
 {
     parent_clause0 = alloc::boxed::{impl core::ops::deref::Deref for alloc::boxed::Box<T>[@TraitClause0]}#38<T, A>[@TraitClause0]
-    fn deref_mut = alloc::boxed::{impl core::ops::deref::DerefMut for alloc::boxed::Box<T>[@TraitClause0]}#39::deref_mut
+    fn deref_mut<'_0> = alloc::boxed::{impl core::ops::deref::DerefMut for alloc::boxed::Box<T>[@TraitClause0]}#39::deref_mut<'_0_0, T, A>[@TraitClause0]
 }
 
 fn core::ops::deref::Deref::deref<'_0, Self>(@1: &'_0 (Self)) -> &'_0 (Self::Target)

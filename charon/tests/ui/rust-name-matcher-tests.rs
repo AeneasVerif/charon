@@ -16,15 +16,16 @@ mod foo {
 
 #[pattern::pass("test_crate::Trait")]
 #[pattern::fail("test_crate::Trait<_>")]
-#[pattern::fail("test_crate::Trait<_, _>")]
+#[pattern::pass("test_crate::Trait<_, _>")]
 trait Trait<T> {
     #[pattern::pass("test_crate::Trait::method")]
-    #[pattern::fail("test_crate::Trait<_>::method")]
+    #[pattern::pass("test_crate::Trait<_>::method")]
     fn method<U>();
 }
 
 #[pattern::pass("test_crate::{impl test_crate::Trait<_> for _}")]
 #[pattern::pass("test_crate::{impl test_crate::Trait<_, _>}")]
+#[pattern::fail("test_crate::{impl test_crate::Trait<_>}")]
 #[pattern::fail("test_crate::{impl test_crate::Trait<_, _> for _}")]
 #[pattern::pass(
     "test_crate::{impl test_crate::Trait<core::option::Option<_>> for alloc::boxed::Box<_>}"

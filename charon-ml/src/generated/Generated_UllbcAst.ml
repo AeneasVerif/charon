@@ -6,26 +6,10 @@ open Identifiers
 open GAst
 module BlockId = IdGen ()
 
-(** We define this type to control the name of the visitor functions
-    (see e.g., {!UllbcAst.iter_statement_base} and {!switch}).
-  *)
-type block_id = BlockId.id [@@deriving show, ord]
-
-(* Ancestors for the statement visitors *)
-class ['self] iter_statement_base =
-  object (self : 'self)
-    inherit [_] iter_trait_impl
-    method visit_block_id : 'env -> block_id -> unit = fun _ _ -> ()
-  end
-
-class ['self] map_statement_base =
-  object (self : 'self)
-    inherit [_] map_trait_impl
-    method visit_block_id : 'env -> block_id -> block_id = fun _ x -> x
-  end
+type block_id = (BlockId.id[@opaque])
 
 (** A raw statement: a statement without meta data. *)
-type raw_statement =
+and raw_statement =
   | Assign of place * rvalue
   | Call of call
       (** A call. For now, we don't support dynamic calls (i.e. to a function pointer in memory). *)
@@ -57,15 +41,17 @@ and switch =
     visitors
       {
         name = "iter_statement";
+        monomorphic = [ "env" ];
         variety = "iter";
-        ancestors = [ "iter_statement_base" ];
+        ancestors = [ "iter_trait_impl" ];
         nude = true (* Don't inherit VisitorsRuntime *);
       },
     visitors
       {
         name = "map_statement";
+        monomorphic = [ "env" ];
         variety = "map";
-        ancestors = [ "map_statement_base" ];
+        ancestors = [ "map_trait_impl" ];
         nude = true (* Don't inherit VisitorsRuntime *);
       }]
 
@@ -95,6 +81,7 @@ and block = { statements : statement list; terminator : terminator }
     visitors
       {
         name = "iter_ullbc_ast";
+        monomorphic = [ "env" ];
         variety = "iter";
         ancestors = [ "iter_statement" ];
         nude = true (* Don't inherit VisitorsRuntime *);
@@ -102,6 +89,7 @@ and block = { statements : statement list; terminator : terminator }
     visitors
       {
         name = "map_ullbc_ast";
+        monomorphic = [ "env" ];
         variety = "map";
         ancestors = [ "map_statement" ];
         nude = true (* Don't inherit VisitorsRuntime *);

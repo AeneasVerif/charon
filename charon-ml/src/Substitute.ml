@@ -4,6 +4,7 @@
 
 open Types
 open TypesUtils
+open GAstUtils
 open Expressions
 open LlbcAst
 
@@ -44,6 +45,7 @@ let empty_subst : subst =
     tr_self = Self;
   }
 
+(** The do-nothing substitution when used with `subst_free_vars` *)
 let empty_bound_sb_subst : single_binder_subst =
   {
     r_sb_subst = compose empty_subst.r_subst zero_db_var;
@@ -53,6 +55,7 @@ let empty_bound_sb_subst : single_binder_subst =
     tr_sb_self = empty_subst.tr_self;
   }
 
+(** The do-nothing substitution when used with `subst_at_binder_zero` *)
 let empty_free_sb_subst : single_binder_subst =
   let free x = Free x in
   {
@@ -64,7 +67,7 @@ let empty_free_sb_subst : single_binder_subst =
   }
 
 let error_sb_subst : single_binder_subst =
-  let error _ = failwith "Unexpected bound Cariable" in
+  let error _ = failwith "Unexpected bound variable" in
   {
     r_sb_subst = compose empty_subst.r_subst error;
     ty_sb_subst = compose empty_subst.ty_subst error;
@@ -116,24 +119,58 @@ let subst_remove_binder_zero (subst : single_binder_subst) : subst =
     tr_self = subst.tr_sb_self;
   }
 
+(** Visitor that shifts all bound variables by the given delta *)
+let st_shift_visitor =
+  object (self)
+    inherit [_] map_statement
+    method! visit_de_bruijn_id delta dbid = dbid + delta
+  end
+
+(* Shift the the substitution under one binder. *)
+let shift_subst (subst : subst) : subst =
+  (* We decrement the input because the variables we encounter will be bound
+     deeper. We shift the output so that it's valid at the new depth we're
+     substituting it into. *)
+  {
+    r_subst =
+      compose
+        (st_shift_visitor#visit_region 1)
+        (compose subst.r_subst decr_db_var);
+    ty_subst =
+      compose (st_shift_visitor#visit_ty 1) (compose subst.ty_subst decr_db_var);
+    cg_subst =
+      compose
+        (st_shift_visitor#visit_const_generic 1)
+        (compose subst.cg_subst decr_db_var);
+    tr_subst =
+      compose
+        (st_shift_visitor#visit_trait_instance_id 1)
+        (compose subst.tr_subst decr_db_var);
+    tr_self = subst.tr_self;
+  }
+
+(** Visitor that applies the given substitution *)
 let st_substitute_visitor =
   object (self)
     inherit [_] map_statement
 
-    method! visit_region_binder visit_value (subst : subst) x =
-      (* Shift the indices of the substitution under one binder level. *)
-      let shift_subst (subst : subst) : subst =
-        {
-          r_subst = compose subst.r_subst decr_db_var;
-          ty_subst = compose subst.ty_subst decr_db_var;
-          cg_subst = compose subst.cg_subst decr_db_var;
-          tr_subst = compose subst.tr_subst decr_db_var;
-          tr_self = subst.tr_self;
-        }
-      in
+    method! visit_binder visit_value (subst : subst) x =
+      (* Note that we don't visit the bound variables. *)
+      let { binder_params; binder_value } = x in
+      (* Crucial: we shift the substitution to be valid under this binder. *)
       let subst = shift_subst subst in
-      (* Note that we ignore the bound regions variables *)
+      let binder_params = self#visit_generic_params subst binder_params in
+      let binder_value = visit_value subst binder_value in
+      { binder_params; binder_value }
+
+    method! visit_region_binder visit_value (subst : subst) x =
+      (* Note that we don't visit the bound variables. *)
       let { binder_regions; binder_value } = x in
+      (* Crucial: we shift the substitution to be valid under this binder. *)
+      let subst = shift_subst subst in
+      let binder_regions =
+        self#visit_list self#visit_region_var subst binder_regions
+      in
       let binder_value = visit_value subst binder_value in
       { binder_regions; binder_value }
 
@@ -142,14 +179,6 @@ let st_substitute_visitor =
     method! visit_CgVar (subst : subst) var = subst.cg_subst var
     method! visit_Clause (subst : subst) var = subst.tr_subst var
     method! visit_Self (subst : subst) = subst.tr_self
-
-    method! visit_type_var_id _ _ =
-      (* We should never get here because we reimplemented [visit_TypeVar] *)
-      raise (Failure "Unexpected")
-
-    method! visit_const_generic_var_id _ _ =
-      (* We should never get here because we reimplemented [visit_Var] *)
-      raise (Failure "Unexpected")
   end
 
 (** Substitute types variables and regions in a type.
@@ -203,11 +232,16 @@ let predicates_substitute (subst : subst) (p : generic_params) : generic_params
     trait_clauses = List.map (visitor#visit_trait_clause subst) trait_clauses;
     regions_outlive =
       List.map
-        (visitor#visit_region_binder visitor#visit_region_outlives subst)
+        (visitor#visit_region_binder
+           (visitor#visit_outlives_pred visitor#visit_region
+              visitor#visit_region)
+           subst)
         regions_outlive;
     types_outlive =
       List.map
-        (visitor#visit_region_binder visitor#visit_type_outlives subst)
+        (visitor#visit_region_binder
+           (visitor#visit_outlives_pred visitor#visit_ty visitor#visit_region)
+           subst)
         types_outlive;
     trait_type_constraints =
       List.map
@@ -291,8 +325,8 @@ let make_trait_subst_from_clauses (clauses : trait_clause list)
     (List.map (fun (x : trait_clause) -> x.clause_id) clauses)
     (List.map (fun (x : trait_ref) -> x.trait_id) trs)
 
-let make_subst_from_generics (params : generic_params) (args : generic_args)
-    (tr_sb_self : trait_instance_id) : subst =
+let make_sb_subst_from_generics (params : generic_params) (args : generic_args)
+    : single_binder_subst =
   let r_sb_subst = make_region_subst_from_vars params.regions args.regions in
   let ty_sb_subst = make_type_subst_from_vars params.types args.types in
   let cg_sb_subst =
@@ -301,14 +335,16 @@ let make_subst_from_generics (params : generic_params) (args : generic_args)
   let tr_sb_subst =
     make_trait_subst_from_clauses params.trait_clauses args.trait_refs
   in
-  subst_free_vars
-    { r_sb_subst; ty_sb_subst; cg_sb_subst; tr_sb_subst; tr_sb_self }
+  { r_sb_subst; ty_sb_subst; cg_sb_subst; tr_sb_subst; tr_sb_self = Self }
+
+let make_subst_from_generics (params : generic_params) (args : generic_args) :
+    subst =
+  subst_free_vars (make_sb_subst_from_generics params args)
 
 let make_subst_from_generics_erase_regions (params : generic_params)
-    (generics : generic_args) (tr_self : trait_instance_id) =
+    (generics : generic_args) : subst =
   let generics = generic_args_erase_regions generics in
-  let tr_self = trait_instance_id_erase_regions tr_self in
-  let subst = make_subst_from_generics params generics tr_self in
+  let subst = make_subst_from_generics params generics in
   { subst with r_subst = (fun _ -> RErased) }
 
 (** Instantiate the type variables in an ADT definition, and return, for
@@ -319,9 +355,7 @@ let make_subst_from_generics_erase_regions (params : generic_params)
 *)
 let type_decl_get_instantiated_variants_fields_types (def : type_decl)
     (generics : generic_args) : (VariantId.id option * ty list) list =
-  (* There shouldn't be any reference to Self *)
-  let tr_self = UnknownTrait __FUNCTION__ in
-  let subst = make_subst_from_generics def.generics generics tr_self in
+  let subst = make_subst_from_generics def.generics generics in
   let (variants_fields : (VariantId.id option * field list) list) =
     match def.kind with
     | Enum variants ->
@@ -349,9 +383,7 @@ let type_decl_get_instantiated_field_types (def : type_decl)
   (* For now, check that there are no clauses - otherwise we might need
      to normalize the types *)
   assert (def.generics.trait_clauses = []);
-  (* There shouldn't be any reference to Self *)
-  let tr_self = UnknownTrait __FUNCTION__ in
-  let subst = make_subst_from_generics def.generics generics tr_self in
+  let subst = make_subst_from_generics def.generics generics in
   let fields = type_decl_get_fields def opt_variant_id in
   List.map (fun f -> ty_substitute subst f.field_ty) fields
 
@@ -411,5 +443,83 @@ let statement_substitute_ids (ty_subst : TypeVarId.id -> TypeVarId.id)
       method! visit_const_generic_var_id _ id = cg_subst id
     end
   in
-
   visitor#visit_ty () ty
+
+(** Remove this binder by substituting the provided arguments for each bound
+    variable. The `substitutor` argument must be the appropriate
+    `st_substitute_visitor` method. *)
+let apply_args_to_binder (args : generic_args) (substitutor : subst -> 'a -> 'a)
+    (binder : 'a binder) : 'a =
+  substitutor
+    (subst_remove_binder_zero
+       (make_sb_subst_from_generics binder.binder_params args))
+    binder.binder_value
+
+(** Remove this binder by substituting the provided arguments for each bound
+    variable. The `substitutor` argument must be the appropriate
+    `st_substitute_visitor` method. *)
+let apply_args_to_item_binder (tr_self : trait_instance_id)
+    (args : generic_args) (substitutor : subst -> 'a -> 'a)
+    (binder : 'a item_binder) : 'a =
+  let subst = make_sb_subst_from_generics binder.item_binder_params args in
+  let subst = { subst with tr_sb_self = tr_self } in
+  substitutor (subst_free_vars subst) binder.item_binder_value
+
+(** Helper *)
+let instantiate_method (trait_self : trait_instance_id)
+    (item_generics : generic_args) (method_generics : generic_args)
+    (bound_fn : fun_decl_ref binder item_binder) : fun_decl_ref =
+  let bound_fn =
+    apply_args_to_item_binder trait_self item_generics
+      (st_substitute_visitor#visit_binder
+         st_substitute_visitor#visit_fun_decl_ref)
+      bound_fn
+  in
+  apply_args_to_binder method_generics st_substitute_visitor#visit_fun_decl_ref
+    bound_fn
+
+(** Helper *)
+let instantiate_trait_method (trait_ref : trait_ref) =
+  let trait_generics = trait_ref.trait_decl_ref.binder_value.decl_generics in
+  let trait_self = trait_ref.trait_id in
+  instantiate_method trait_self trait_generics
+
+(** Like lookup_trait_decl_provided_method, but also correctly substitutes the generics. *)
+let lookup_and_subst_trait_decl_method (tdecl : trait_decl)
+    (name : trait_item_name) (trait_ref : trait_ref)
+    (method_generics : generic_args) : fun_decl_ref option =
+  Option.map
+    (instantiate_trait_method trait_ref method_generics)
+    (lookup_trait_decl_method tdecl name)
+
+(** Like lookup_trait_decl_provided_method, but also correctly substitutes the generics. *)
+let lookup_and_subst_trait_decl_provided_method (tdecl : trait_decl)
+    (name : trait_item_name) (trait_ref : trait_ref)
+    (method_generics : generic_args) : fun_decl_ref option =
+  Option.map
+    (instantiate_trait_method trait_ref method_generics)
+    (lookup_trait_decl_provided_method tdecl name)
+
+(** Like lookup_trait_decl_required_method, but also correctly substitutes the generics. *)
+let lookup_and_subst_trait_decl_required_method (tdecl : trait_decl)
+    (name : trait_item_name) (trait_ref : trait_ref)
+    (method_generics : generic_args) : fun_decl_ref option =
+  Option.map
+    (instantiate_trait_method trait_ref method_generics)
+    (lookup_trait_decl_required_method tdecl name)
+
+(** Like lookup_trait_impl_provided_method, but also correctly substitutes the generics. *)
+let lookup_and_subst_trait_impl_provided_method (timpl : trait_impl)
+    (name : trait_item_name) (impl_generics : generic_args)
+    (method_generics : generic_args) : fun_decl_ref option =
+  Option.map
+    (instantiate_method Self impl_generics method_generics)
+    (lookup_trait_impl_provided_method timpl name)
+
+(** Like lookup_trait_impl_required_method, but also correctly substitutes the generics. *)
+let lookup_and_subst_trait_impl_required_method (timpl : trait_impl)
+    (name : trait_item_name) (impl_generics : generic_args)
+    (method_generics : generic_args) : fun_decl_ref option =
+  Option.map
+    (instantiate_method Self impl_generics method_generics)
+    (lookup_trait_impl_required_method timpl name)

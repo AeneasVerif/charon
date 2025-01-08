@@ -2,7 +2,7 @@
 //! reconstruction. In effect, this is a cleaned up version of MIR.
 pub use super::ullbc_ast_utils::*;
 pub use crate::ast::*;
-use derive_visitor::{Drive, DriveMut};
+use derive_generic_visitor::{Drive, DriveMut};
 use macros::{EnumAsGetters, EnumIsA, VariantIndexArity, VariantName};
 use serde::{Deserialize, Serialize};
 
@@ -37,6 +37,7 @@ pub enum RawStatement {
     /// Does nothing. Useful for passes.
     Nop,
     #[charon::opaque]
+    #[drive(skip)]
     Error(String),
 }
 

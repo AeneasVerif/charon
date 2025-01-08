@@ -16,10 +16,10 @@ trait test_crate::MyTryFrom<Self, T>
     parent_clause0 : [@TraitClause0]: core::marker::Sized<T>
     parent_clause1 : [@TraitClause1]: core::marker::Sized<Self::Error>
     type Error
-    fn from : test_crate::MyTryFrom::from
+    fn from<[@TraitClause0]: core::marker::Sized<Self>> = test_crate::MyTryFrom::from<Self, T>[@TraitClause0_0]
 }
 
-fn test_crate::{impl test_crate::MyTryFrom<&'_0 (bool)> for bool}::from<'_0, '_1>(@1: &'_1 (bool)) -> core::result::Result<bool, test_crate::{impl test_crate::MyTryFrom<&'_0 (bool)> for bool}<'_>::Error>[core::marker::Sized<bool>, core::marker::Sized<()>]
+fn test_crate::{impl test_crate::MyTryFrom<&'_0 (bool)> for bool}::from<'_0>(@1: &'_0 (bool)) -> core::result::Result<bool, test_crate::{impl test_crate::MyTryFrom<&'_0 (bool)> for bool}<'_>::Error>[core::marker::Sized<bool>, core::marker::Sized<()>]
 {
     let @0: core::result::Result<bool, ()>[core::marker::Sized<bool>, core::marker::Sized<()>]; // return
     let v@1: &'_ (bool); // arg #1
@@ -36,7 +36,7 @@ impl<'_0> test_crate::{impl test_crate::MyTryFrom<&'_0 (bool)> for bool}<'_0> : 
     parent_clause0 = core::marker::Sized<&'_ (bool)>
     parent_clause1 = core::marker::Sized<()>
     type Error = ()
-    fn from = test_crate::{impl test_crate::MyTryFrom<&'_0 (bool)> for bool}::from
+    fn from = test_crate::{impl test_crate::MyTryFrom<&'_0 (bool)> for bool}::from<'_0>
 }
 
 fn test_crate::MyTryFrom::from<Self, T>(@1: T) -> core::result::Result<Self, Self::Error>[@TraitClause0, Self::parent_clause1]

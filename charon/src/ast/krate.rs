@@ -2,7 +2,7 @@ use crate::ast::*;
 use crate::formatter::{FmtCtx, Formatter, IntoFormatter};
 use crate::ids::Vector;
 use crate::reorder_decls::DeclarationsGroups;
-use derive_visitor::{Drive, DriveMut};
+use derive_generic_visitor::{ControlFlow, Drive, DriveMut};
 use hashlink::LinkedHashSet;
 use macros::{EnumAsGetters, EnumIsA, VariantIndexArity, VariantName};
 use serde::{Deserialize, Serialize};
@@ -10,14 +10,12 @@ use serde_map_to_array::HashMapToArray;
 use std::cmp::{Ord, PartialOrd};
 use std::collections::HashMap;
 use std::fmt;
-use std::ops::{Index, IndexMut};
 
 generate_index_type!(FunDeclId, "Fun");
 generate_index_type!(TypeDeclId, "Adt");
 generate_index_type!(GlobalDeclId, "Global");
 generate_index_type!(TraitDeclId, "TraitDecl");
 generate_index_type!(TraitImplId, "TraitImpl");
-generate_index_type!(BodyId, "Body");
 
 /// The id of a translated item.
 #[derive(
@@ -76,7 +74,9 @@ wrap_unwrap_enum!(AnyTransId::TraitDecl(TraitDeclId));
 wrap_unwrap_enum!(AnyTransId::TraitImpl(TraitImplId));
 
 /// A reference to a translated item.
-#[derive(Debug, Clone, Copy, EnumIsA, EnumAsGetters, VariantName, VariantIndexArity)]
+#[derive(
+    Debug, Clone, Copy, EnumIsA, EnumAsGetters, VariantName, VariantIndexArity, Drive, DriveMut,
+)]
 pub enum AnyTransItem<'ctx> {
     Type(&'ctx TypeDecl),
     Fun(&'ctx FunDecl),
@@ -86,7 +86,7 @@ pub enum AnyTransItem<'ctx> {
 }
 
 /// A mutable reference to a translated item.
-#[derive(Debug, EnumIsA, EnumAsGetters, VariantName, VariantIndexArity)]
+#[derive(Debug, EnumIsA, EnumAsGetters, VariantName, VariantIndexArity, Drive, DriveMut)]
 pub enum AnyTransItemMut<'ctx> {
     Type(&'ctx mut TypeDecl),
     Fun(&'ctx mut FunDecl),
@@ -100,8 +100,10 @@ pub enum AnyTransItemMut<'ctx> {
 pub struct TranslatedCrate {
     /// The name that the user requested for the crate. This may differ from what rustc reports as
     /// the name of the crate.
+    #[drive(skip)]
     pub crate_name: String,
     /// The name of the crate according to rustc.
+    #[drive(skip)]
     pub real_crate_name: String,
 
     /// The options used when calling Charon. It is useful for the applications
@@ -127,8 +129,6 @@ pub struct TranslatedCrate {
     pub fun_decls: Vector<FunDeclId, FunDecl>,
     /// The translated global definitions
     pub global_decls: Vector<GlobalDeclId, GlobalDecl>,
-    /// The bodies of functions
-    pub bodies: Vector<BodyId, Body>,
     /// The translated trait declarations
     pub trait_decls: Vector<TraitDeclId, TraitDecl>,
     /// The translated trait declarations
@@ -175,6 +175,15 @@ impl TranslatedCrate {
             .iter()
             .flat_map(|id| Some((*id, self.get_item(*id)?)))
     }
+    pub fn all_items_mut(&mut self) -> impl Iterator<Item = AnyTransItemMut<'_>> {
+        self.type_decls
+            .iter_mut()
+            .map(AnyTransItemMut::Type)
+            .chain(self.fun_decls.iter_mut().map(AnyTransItemMut::Fun))
+            .chain(self.global_decls.iter_mut().map(AnyTransItemMut::Global))
+            .chain(self.trait_decls.iter_mut().map(AnyTransItemMut::TraitDecl))
+            .chain(self.trait_impls.iter_mut().map(AnyTransItemMut::TraitImpl))
+    }
 }
 
 impl<'ctx> AnyTransItem<'ctx> {
@@ -209,20 +218,36 @@ impl<'ctx> AnyTransItem<'ctx> {
         }
     }
 
-    /// We can't implement the `Drive` type because of the `'static` constraint, but it's ok
-    /// because `AnyTransItem` isn't contained in any of our types.
-    pub fn drive<V: derive_visitor::Visitor>(&self, visitor: &mut V) {
-        match self {
-            AnyTransItem::Type(d) => d.drive(visitor),
-            AnyTransItem::Fun(d) => d.drive(visitor),
-            AnyTransItem::Global(d) => d.drive(visitor),
-            AnyTransItem::TraitDecl(d) => d.drive(visitor),
-            AnyTransItem::TraitImpl(d) => d.drive(visitor),
+    /// See [`GenericParams::identity_args`].
+    pub fn identity_args(&self) -> GenericArgs {
+        self.generic_params()
+            .identity_args(GenericsSource::Item(self.id()))
+    }
+
+    /// We can't implement `AstVisitable` because of the `'static` constraint, but it's ok because
+    /// `AnyTransItem` isn't contained in any of our types.
+    pub fn drive<V: VisitAst>(&self, visitor: &mut V) -> ControlFlow<V::Break> {
+        match *self {
+            AnyTransItem::Type(d) => visitor.visit(d),
+            AnyTransItem::Fun(d) => visitor.visit(d),
+            AnyTransItem::Global(d) => visitor.visit(d),
+            AnyTransItem::TraitDecl(d) => visitor.visit(d),
+            AnyTransItem::TraitImpl(d) => visitor.visit(d),
         }
     }
 }
 
 impl<'ctx> AnyTransItemMut<'ctx> {
+    pub fn as_ref(&self) -> AnyTransItem<'_> {
+        match self {
+            AnyTransItemMut::Type(d) => AnyTransItem::Type(d),
+            AnyTransItemMut::Fun(d) => AnyTransItem::Fun(d),
+            AnyTransItemMut::Global(d) => AnyTransItem::Global(d),
+            AnyTransItemMut::TraitDecl(d) => AnyTransItem::TraitDecl(d),
+            AnyTransItemMut::TraitImpl(d) => AnyTransItem::TraitImpl(d),
+        }
+    }
+
     /// The generic parameters of this item.
     pub fn generic_params(&mut self) -> &mut GenericParams {
         match self {
@@ -234,15 +259,15 @@ impl<'ctx> AnyTransItemMut<'ctx> {
         }
     }
 
-    /// We can't implement the `DriveMut` type because of the `'static` constraint, but it's ok
-    /// because `AnyTransItemMut` isn't contained in any of our types.
-    pub fn drive_mut<V: derive_visitor::VisitorMut>(&mut self, visitor: &mut V) {
+    /// We can't implement `AstVisitable` because of the `'static` constraint, but it's ok because
+    /// `AnyTransItemMut` isn't contained in any of our types.
+    pub fn drive_mut<V: VisitAstMut>(&mut self, visitor: &mut V) -> ControlFlow<V::Break> {
         match self {
-            AnyTransItemMut::Type(d) => d.drive_mut(visitor),
-            AnyTransItemMut::Fun(d) => d.drive_mut(visitor),
-            AnyTransItemMut::Global(d) => d.drive_mut(visitor),
-            AnyTransItemMut::TraitDecl(d) => d.drive_mut(visitor),
-            AnyTransItemMut::TraitImpl(d) => d.drive_mut(visitor),
+            AnyTransItemMut::Type(d) => visitor.visit(*d),
+            AnyTransItemMut::Fun(d) => visitor.visit(*d),
+            AnyTransItemMut::Global(d) => visitor.visit(*d),
+            AnyTransItemMut::TraitDecl(d) => visitor.visit(*d),
+            AnyTransItemMut::TraitImpl(d) => visitor.visit(*d),
         }
     }
 }
@@ -295,22 +320,23 @@ impl<'tcx, 'ctx, 'a> IntoFormatter for &'a TranslatedCrate {
 /// Delegate `Index` implementations to subfields.
 macro_rules! mk_index_impls {
     ($ty:ident.$field:ident[$idx:ty]: $output:ty) => {
-        impl Index<$idx> for $ty {
+        impl std::ops::Index<$idx> for $ty {
             type Output = $output;
             fn index(&self, index: $idx) -> &Self::Output {
                 &self.$field[index]
             }
         }
-        impl IndexMut<$idx> for $ty {
+        impl std::ops::IndexMut<$idx> for $ty {
             fn index_mut(&mut self, index: $idx) -> &mut Self::Output {
                 &mut self.$field[index]
             }
         }
     };
 }
+pub(crate) use mk_index_impls;
+
 mk_index_impls!(TranslatedCrate.type_decls[TypeDeclId]: TypeDecl);
 mk_index_impls!(TranslatedCrate.fun_decls[FunDeclId]: FunDecl);
 mk_index_impls!(TranslatedCrate.global_decls[GlobalDeclId]: GlobalDecl);
-mk_index_impls!(TranslatedCrate.bodies[BodyId]: Body);
 mk_index_impls!(TranslatedCrate.trait_decls[TraitDeclId]: TraitDecl);
 mk_index_impls!(TranslatedCrate.trait_impls[TraitImplId]: TraitImpl);

@@ -15,25 +15,6 @@ module VarId = IdGen ()
 module GlobalDeclId = Types.GlobalDeclId
 module FunDeclId = Types.FunDeclId
 
-type var_id = VarId.id [@@deriving show, ord]
-
-(* Ancestors for the rvalue visitors *)
-class ['self] iter_rvalue_base =
-  object (self : 'self)
-    inherit [_] iter_type_decl
-    method visit_var_id : 'env -> var_id -> unit = fun _ _ -> ()
-    method visit_variant_id : 'env -> variant_id -> unit = fun _ _ -> ()
-    method visit_field_id : 'env -> field_id -> unit = fun _ _ -> ()
-  end
-
-class ['self] map_rvalue_base =
-  object (self : 'self)
-    inherit [_] map_type_decl
-    method visit_var_id : 'env -> var_id -> var_id = fun _ x -> x
-    method visit_variant_id : 'env -> variant_id -> variant_id = fun _ x -> x
-    method visit_field_id : 'env -> field_id -> field_id = fun _ x -> x
-  end
-
 type place = { kind : place_kind; ty : ty }
 
 and place_kind =
@@ -390,20 +371,24 @@ and aggregate_kind =
       (** Aggregated values for closures group the function id together with its
           state.
        *)
+
+and var_id = (VarId.id[@opaque])
 [@@deriving
   show,
     ord,
     visitors
       {
         name = "iter_rvalue";
+        monomorphic = [ "env" ];
         variety = "iter";
-        ancestors = [ "iter_rvalue_base" ];
+        ancestors = [ "iter_type_decl" ];
         nude = true (* Don't inherit VisitorsRuntime *);
       },
     visitors
       {
         name = "map_rvalue";
+        monomorphic = [ "env" ];
         variety = "map";
-        ancestors = [ "map_rvalue_base" ];
+        ancestors = [ "map_type_decl" ];
         nude = true (* Don't inherit VisitorsRuntime *);
       }]

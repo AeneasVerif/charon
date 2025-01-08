@@ -18,7 +18,7 @@ fn test_crate::F() -> fn(u8) -> core::option::Option<u8>[core::marker::Sized<u8>
 {
     let @0: fn(u8) -> core::option::Option<u8>[core::marker::Sized<u8>]; // return
 
-    @0 := cast<fn(u8) -> core::option::Option<u8>[core::marker::Sized<u8>], fn(u8) -> core::option::Option<u8>[core::marker::Sized<u8>]>(const (core::option::Option::Some<u8>))
+    @0 := cast<fn(u8) -> core::option::Option<u8>[core::marker::Sized<u8>], fn(u8) -> core::option::Option<u8>[core::marker::Sized<u8>]>(const (core::option::Option::Some<u8>[core::marker::Sized<u8>]))
     return
 }
 
@@ -86,10 +86,10 @@ fn test_crate::main()
     let @17: i32; // anonymous local
     let @18: (); // anonymous local
 
-    f@1 := const (core::option::Option::Some<u8>)
+    f@1 := const (core::option::Option::Some<u8>[core::marker::Sized<u8>])
     @fake_read(f@1)
     @3 := copy (f@1)
-    @2 := core::option::Option::Some<u8>(const (42 : u8))
+    @2 := core::option::Option::Some<u8>[core::marker::Sized<u8>](const (42 : u8))
     drop @3
     @fake_read(@2)
     drop @2
@@ -112,13 +112,13 @@ fn test_crate::main()
     @fake_read(@9)
     drop @9
     drop @9
-    f@12 := const (test_crate::Bar::Variant<'_, i32>)
+    f@12 := const (test_crate::Bar::Variant<'_, i32>[core::marker::Sized<i32>])
     @fake_read(f@12)
     @14 := copy (f@12)
     @17 := const (42 : i32)
     @16 := &@17
     @15 := &*(@16)
-    @13 := test_crate::Bar::Variant<'_, i32>(move (@15))
+    @13 := test_crate::Bar::Variant<'_, i32>[core::marker::Sized<i32>](move (@15))
     drop @15
     drop @14
     @fake_read(@13)

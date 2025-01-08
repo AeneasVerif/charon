@@ -1,6 +1,5 @@
 //! Take all the comments found in the original body and assign them to statements.
-
-use derive_visitor::{visitor_enter_fn_mut, DriveMut};
+use std::mem;
 
 use crate::llbc_ast::*;
 use crate::transform::TransformCtx;
@@ -17,13 +16,19 @@ impl LlbcPass for Transform {
 
         // This is a pretty simple heuristic which is good enough for now.
         let mut comments: Vec<(usize, Vec<String>)> = b.comments.clone();
-        b.body
-            .drive_mut(&mut visitor_enter_fn_mut(|st: &mut Statement| {
-                let st_line = st.span.span.beg.line;
-                st.comments_before = comments
-                    .extract_if(|(i, _)| *i <= st_line)
-                    .flat_map(|(_, comments)| comments)
-                    .collect();
-            }));
+        b.body.visit_statements(|st: &mut Statement| {
+            let st_line = st.span.span.beg.line;
+            comments = mem::take(&mut comments)
+                .into_iter()
+                .filter_map(|(line, comments)| {
+                    if line <= st_line {
+                        st.comments_before.extend(comments);
+                        None
+                    } else {
+                        Some((line, comments))
+                    }
+                })
+                .collect();
+        });
     }
 }

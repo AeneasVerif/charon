@@ -1,0 +1,192 @@
+# Final LLBC before serialization:
+
+trait core::marker::Sized<Self>
+
+trait core::clone::Clone<Self>
+{
+    parent_clause0 : [@TraitClause0]: core::marker::Sized<Self>
+    fn clone<'_0> = core::clone::Clone::clone<'_0_0, Self>
+    fn clone_from<'_0, '_1> = core::clone::Clone::clone_from<'_0_0, '_0_1, Self>
+}
+
+trait core::marker::Copy<Self>
+{
+    parent_clause0 : [@TraitClause0]: core::clone::Clone<Self>
+}
+
+trait test_crate::Trait<Self>
+{
+    parent_clause0 : [@TraitClause0]: core::marker::Sized<Self>
+    fn method1 = test_crate::Trait::method1<Self>
+    fn method2<T, [@TraitClause0]: core::marker::Sized<T>, [@TraitClause1]: core::marker::Copy<T>> = test_crate::Trait::method2<Self, T>[@TraitClause0_0, @TraitClause0_1]
+}
+
+fn test_crate::{impl test_crate::Trait for ()}::method1(@1: (), @2: &'static (u32)) -> bool
+{
+    let @0: bool; // return
+    let self@1: (); // arg #1
+    let _other@2: &'_ (u32); // arg #2
+
+    @0 := const (true)
+    return
+}
+
+fn test_crate::{impl test_crate::Trait for ()}::method2<T>(@1: (), @2: T)
+where
+    [@TraitClause0]: core::marker::Sized<T>,
+{
+    let @0: (); // return
+    let self@1: (); // arg #1
+    let _other@2: T; // arg #2
+    let @3: (); // anonymous local
+
+    @3 := ()
+    @0 := move (@3)
+    drop _other@2
+    @0 := ()
+    return
+}
+
+impl test_crate::{impl test_crate::Trait for ()} : test_crate::Trait<()>
+{
+    parent_clause0 = core::marker::Sized<()>
+    fn method1 = test_crate::{impl test_crate::Trait for ()}::method1
+    fn method2<T, [@TraitClause0]: core::marker::Sized<T>> = test_crate::{impl test_crate::Trait for ()}::method2<T>[@TraitClause0_0]
+}
+
+trait test_crate::MyCompare<Self, Other>
+{
+    parent_clause0 : [@TraitClause0]: core::marker::Sized<Self>
+    parent_clause1 : [@TraitClause1]: core::marker::Sized<Other>
+    fn compare = test_crate::MyCompare::compare<Self, Other>
+}
+
+fn test_crate::{impl test_crate::MyCompare<&'a (())> for &'a (())}#1::compare<'a>(@1: &'a (()), @2: &'a (())) -> bool
+{
+    let @0: bool; // return
+    let self@1: &'_ (()); // arg #1
+    let _other@2: &'_ (()); // arg #2
+
+    @0 := const (true)
+    return
+}
+
+impl<'a> test_crate::{impl test_crate::MyCompare<&'a (())> for &'a (())}#1<'a> : test_crate::MyCompare<&'a (()), &'a (())>
+{
+    parent_clause0 = core::marker::Sized<&'_ (())>
+    parent_clause1 = core::marker::Sized<&'_ (())>
+    fn compare = test_crate::{impl test_crate::MyCompare<&'a (())> for &'a (())}#1::compare<'a>
+}
+
+fn test_crate::main()
+{
+    let @0: (); // return
+    let @1: bool; // anonymous local
+    let @2: (); // anonymous local
+    let @3: &'_ (u32); // anonymous local
+    let @4: &'_ (u32); // anonymous local
+    let @5: u32; // anonymous local
+    let @6: bool; // anonymous local
+    let @7: &'_ (()); // anonymous local
+    let @8: (); // anonymous local
+    let @9: &'_ (()); // anonymous local
+    let @10: &'_ (()); // anonymous local
+    let @11: (); // anonymous local
+    let @12: (); // anonymous local
+
+    @2 := ()
+    @5 := const (1 : u32)
+    @4 := &@5
+    @3 := &*(@4)
+    @1 := test_crate::{impl test_crate::Trait for ()}::method1(move (@2), move (@3))
+    drop @3
+    drop @2
+    @fake_read(@1)
+    drop @5
+    drop @4
+    drop @1
+    // TODO: this gives incorrect predicates
+    // let _ = ().method2(false);
+    // Not allowed to use the more precise signature.
+    // let _ = ().method2(String::new());
+    @8 := ()
+    @7 := &@8
+    @11 := ()
+    @10 := &@11
+    @9 := &*(@10)
+    @6 := test_crate::{impl test_crate::MyCompare<&'a (())> for &'a (())}#1::compare<'_>(move (@7), move (@9))
+    drop @9
+    drop @7
+    @fake_read(@6)
+    drop @11
+    drop @10
+    drop @8
+    drop @6
+    @12 := ()
+    @0 := move (@12)
+    @0 := ()
+    return
+}
+
+trait test_crate::Foo<Self>
+{
+    fn foo<'a, 'b> = test_crate::Foo::foo<'a, 'b, Self>
+}
+
+fn test_crate::{impl test_crate::Foo for ()}#2::foo<'a, 'b>(@1: &'b (()), @2: &'a (())) -> &'b (())
+{
+    let @0: &'_ (()); // return
+    let x@1: &'_ (()); // arg #1
+    let y@2: &'_ (()); // arg #2
+
+    @0 := copy (x@1)
+    return
+}
+
+impl test_crate::{impl test_crate::Foo for ()}#2 : test_crate::Foo<()>
+{
+    fn foo<'a, 'b> = test_crate::{impl test_crate::Foo for ()}#2::foo<'a, 'b>
+}
+
+fn test_crate::call_foo<'e>(@1: &'e (())) -> &'e (())
+{
+    let @0: &'_ (()); // return
+    let x@1: &'_ (()); // arg #1
+    let @2: &'_ (()); // anonymous local
+    let @3: &'_ (()); // anonymous local
+    let @4: &'_ (()); // anonymous local
+    let @5: &'_ (()); // anonymous local
+    let @6: (); // anonymous local
+
+    // Calls have erased lifetimes so we can't notice the discrepancy if there is one.
+    @3 := &*(x@1)
+    @6 := ()
+    @5 := &@6
+    @4 := &*(@5)
+    @2 := test_crate::{impl test_crate::Foo for ()}#2::foo<'_, '_>(move (@3), move (@4))
+    @0 := &*(@2)
+    drop @4
+    drop @3
+    drop @6
+    drop @5
+    drop @2
+    return
+}
+
+fn test_crate::Trait::method1<Self>(@1: Self, @2: &'static (u32)) -> bool
+
+fn test_crate::Trait::method2<Self, T>(@1: Self, @2: T)
+where
+    [@TraitClause0]: core::marker::Sized<T>,
+    [@TraitClause1]: core::marker::Copy<T>,
+
+fn test_crate::MyCompare::compare<Self, Other>(@1: Self, @2: Other) -> bool
+
+fn test_crate::Foo::foo<'a, 'b, Self>(@1: &'a (()), @2: &'b (())) -> &'a (())
+
+fn core::clone::Clone::clone<'_0, Self>(@1: &'_0 (Self)) -> Self
+
+fn core::clone::Clone::clone_from<'_0, '_1, Self>(@1: &'_0 mut (Self), @2: &'_1 (Self))
+
+
+

@@ -129,8 +129,8 @@ fn spans() -> anyhow::Result<()> {
     // Span of the whole function.
     assert_eq!(repr_span(function.item_meta.span), "2:8-10:9");
 
-    let body_id = function.body.unwrap();
-    let body = &crate_data.bodies[body_id].as_structured().unwrap().body;
+    let body = function.body.as_ref().unwrap();
+    let body = &body.as_structured().unwrap().body;
     // Span of the function body
     assert_eq!(repr_span(body.span), "3:16-10:9");
 
@@ -678,8 +678,8 @@ fn known_trait_method_call() -> Result<(), Box<dyn Error>> {
         repr_name(&crate_data, &function.item_meta.name),
         "test_crate::use_default"
     );
-    let body_id = function.body.unwrap();
-    let body = &crate_data.bodies[body_id].as_structured().unwrap().body;
+    let body = function.body.as_ref().unwrap();
+    let body = &body.as_structured().unwrap().body;
     let [first_stmt, ..] = body.statements.as_slice() else {
         panic!()
     };

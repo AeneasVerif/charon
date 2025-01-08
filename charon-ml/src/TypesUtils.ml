@@ -147,20 +147,6 @@ let empty_generic_params : generic_params =
     trait_type_constraints = [];
   }
 
-let merge_generic_args (g1 : generic_args) (g2 : generic_args) : generic_args =
-  let { regions = r1; types = tys1; const_generics = cgs1; trait_refs = tr1 } =
-    g1
-  in
-  let { regions = r2; types = tys2; const_generics = cgs2; trait_refs = tr2 } =
-    g2
-  in
-  {
-    regions = r1 @ r2;
-    types = tys1 @ tys2;
-    const_generics = cgs1 @ cgs2;
-    trait_refs = tr1 @ tr2;
-  }
-
 let generic_args_of_params span (generics : generic_params) : generic_args =
   let regions =
     List.map (fun (v : region_var) -> RVar (Free v.index)) generics.regions

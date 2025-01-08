@@ -46,3 +46,6 @@ type ety = ty
 
 (** Type with non-erased regions (this only has an informative purpose) *)
 and rty = ty [@@deriving show, ord]
+
+and region_outlives = (region, region) outlives_pred
+and type_outlives = (ty, region) outlives_pred

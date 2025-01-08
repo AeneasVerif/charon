@@ -127,14 +127,15 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
                 overrides_default,
                 ..
             } => {
+                let impl_id = self.register_trait_impl_id(span, impl_id);
                 let impl_ref = TraitImplRef {
-                    impl_id: self.register_trait_impl_id(span, impl_id),
+                    impl_id,
                     generics: self.translate_generic_args(
                         span,
-                        None,
                         impl_generics,
                         impl_required_impl_exprs,
                         None,
+                        GenericsSource::item(impl_id),
                     )?,
                 };
                 let trait_ref = self.translate_trait_ref(span, implemented_trait_ref)?;
@@ -649,7 +650,12 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
                         ))
                     }
                     hax::AggregateKind::Tuple => Ok(Rvalue::Aggregate(
-                        AggregateKind::Adt(TypeId::Tuple, None, None, GenericArgs::empty()),
+                        AggregateKind::Adt(
+                            TypeId::Tuple,
+                            None,
+                            None,
+                            GenericArgs::empty(GenericsSource::Builtin),
+                        ),
                         operands_t,
                     )),
                     hax::AggregateKind::Adt(
@@ -667,13 +673,18 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
                         // types we need.
                         let _ = user_annotation;
 
-                        // Translate the substitution
-                        let generics =
-                            self.translate_generic_args(span, None, substs, trait_refs, None)?;
-
                         let type_id = self.translate_type_id(span, adt_id)?;
                         // Sanity check
-                        matches!(&type_id, TypeId::Adt(_));
+                        assert!(matches!(&type_id, TypeId::Adt(_)));
+
+                        // Translate the substitution
+                        let generics = self.translate_generic_args(
+                            span,
+                            substs,
+                            trait_refs,
+                            None,
+                            type_id.generics_target(),
+                        )?;
 
                         use hax::AdtKind;
                         let variant_id = match kind {
@@ -688,26 +699,27 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
                         let akind = AggregateKind::Adt(type_id, variant_id, field_id, generics);
                         Ok(Rvalue::Aggregate(akind, operands_t))
                     }
-                    hax::AggregateKind::Closure(def_id, substs, trait_refs, sig) => {
-                        trace!("Closure:\n\n- def_id: {:?}\n\n- sig:\n{:?}", def_id, sig);
+                    hax::AggregateKind::Closure(def_id, closure_args) => {
+                        trace!(
+                            "Closure:\n\n- def_id: {:?}\n\n- sig:\n{:?}",
+                            def_id,
+                            closure_args.tupled_sig
+                        );
+
+                        let fun_id = self.register_fun_decl_id(span, def_id);
 
                         // Retrieve the late-bound variables.
-                        let binder = match self.t_ctx.hax_def(def_id)?.kind() {
-                            hax::FullDefKind::Closure { args, .. } => args.sig.as_ref().rebind(()),
-                            _ => unreachable!(),
-                        };
-
+                        let binder = closure_args.tupled_sig.as_ref().rebind(());
                         // Translate the substitution
                         let generics = self.translate_generic_args(
                             span,
-                            None,
-                            substs,
-                            trait_refs,
+                            &closure_args.parent_args,
+                            &closure_args.parent_trait_refs,
                             Some(binder),
+                            GenericsSource::item(fun_id),
                         )?;
 
-                        let def_id = self.register_fun_decl_id(span, def_id);
-                        let akind = AggregateKind::Closure(def_id, generics);
+                        let akind = AggregateKind::Closure(fun_id, generics);
 
                         Ok(Rvalue::Aggregate(akind, operands_t))
                     }
@@ -784,14 +796,6 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
             _ => None,
         };
 
-        // Translate the type parameters
-        let generics = self.translate_generic_args(span, None, substs, trait_refs, binder)?;
-
-        // Translate the arguments
-        let args = args
-            .map(|args| self.translate_arguments(span, args))
-            .transpose()?;
-
         // Trait information
         trace!(
             "Trait information:\n- def_id: {:?}\n- impl source:\n{:?}",
@@ -806,7 +810,7 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
 
         // Check if the function is considered primitive: primitive
         // functions benefit from special treatment.
-        let func = if let Some(builtin_fun) = builtin_fun {
+        let fun_id = if let Some(builtin_fun) = builtin_fun {
             // Primitive function.
             //
             // Note that there are subtleties with regards to the way types parameters
@@ -861,8 +865,26 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
                 }
             }
         };
+
+        // Translate the type parameters
+        let generics = self.translate_generic_args(
+            span,
+            substs,
+            trait_refs,
+            binder,
+            fun_id.generics_target(),
+        )?;
+
+        // Translate the arguments
+        let args = args
+            .map(|args| self.translate_arguments(span, args))
+            .transpose()?;
+
         let sfid = SubstFunId {
-            func: FnPtr { func, generics },
+            func: FnPtr {
+                func: fun_id,
+                generics,
+            },
             args,
         };
         Ok(SubstFunIdOrPanic::Fun(sfid))
@@ -1005,26 +1027,13 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
             }
             TerminatorKind::Call {
                 fun,
-                generics,
                 args,
                 destination,
                 target,
-                trait_refs,
-                trait_info,
                 unwind: _, // We model unwinding as an effet, we don't represent it in control flow
-                call_source: _,
                 fn_span: _,
-            } => self.translate_function_call(
-                statements,
-                span,
-                fun,
-                generics,
-                args,
-                destination,
-                target,
-                trait_refs,
-                trait_info,
-            )?,
+                ..
+            } => self.translate_function_call(statements, span, fun, args, destination, target)?,
             TerminatorKind::Assert {
                 cond,
                 expected,
@@ -1127,12 +1136,9 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
         statements: &mut Vec<Statement>,
         span: Span,
         fun: &hax::FunOperand,
-        generics: &Vec<hax::GenericArg>,
         args: &Vec<hax::Spanned<hax::Operand>>,
         destination: &hax::Place,
         target: &Option<hax::BasicBlock>,
-        trait_refs: &Vec<hax::ImplExpr>,
-        trait_info: &Option<hax::ImplExpr>,
     ) -> Result<RawTerminator, Error> {
         trace!();
         // There are two cases, depending on whether this is a "regular"
@@ -1141,7 +1147,12 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
         let lval = self.translate_place(span, destination)?;
         let next_block = target.map(|target| self.translate_basic_block_id(target));
         let (fn_operand, args) = match fun {
-            hax::FunOperand::Id(def_id) => {
+            hax::FunOperand::Static {
+                def_id,
+                generics,
+                trait_refs,
+                trait_info,
+            } => {
                 // Translate the function operand - should be a constant: we don't
                 // support closures for now
                 trace!("func: {:?}", def_id);
@@ -1171,7 +1182,7 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
                     }
                 }
             }
-            hax::FunOperand::Move(p) => {
+            hax::FunOperand::DynamicMove(p) => {
                 // Call to a local function pointer
                 // The function
                 let p = self.translate_place(span, p)?;
@@ -1334,7 +1345,8 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
                             TypeId::Adt(adt_decl_id),
                             variant,
                             None,
-                            sig.generics.identity_args(),
+                            sig.generics
+                                .identity_args(GenericsSource::item(adt_decl_id)),
                         ),
                         args,
                     ),
@@ -1418,7 +1430,7 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
         self.translate_def_generics(span, def)?;
 
         let signature = match &def.kind {
-            hax::FullDefKind::Closure { args, .. } => &args.sig,
+            hax::FullDefKind::Closure { args, .. } => &args.tupled_sig,
             hax::FullDefKind::Fn { sig, .. } => sig,
             hax::FullDefKind::AssocFn { sig, .. } => sig,
             hax::FullDefKind::Ctor {
@@ -1499,7 +1511,7 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
                 let state_ty = {
                     // Group the state types into a tuple
                     let state_ty =
-                        TyKind::Adt(TypeId::Tuple, GenericArgs::new_from_types(state.clone()))
+                        TyKind::Adt(TypeId::Tuple, GenericArgs::new_for_builtin(state.clone()))
                             .into_ty();
                     // Depending on the kind of the closure, add a reference
                     match &kind {
@@ -1509,7 +1521,7 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
                                 .innermost_generics_mut()
                                 .regions
                                 .push_with(|index| RegionVar { index, name: None });
-                            let r = Region::Var(DeBruijnVar::free(rid));
+                            let r = Region::Var(DeBruijnVar::new_at_zero(rid));
                             let mutability = if kind == ClosureKind::Fn {
                                 RefKind::Shared
                             } else {
@@ -1581,12 +1593,12 @@ impl BodyTransCtx<'_, '_> {
             // Translate the body. This doesn't store anything if we can't/decide not to translate
             // this body.
             match self.translate_body(def, &signature, &item_meta) {
-                Ok(Ok(body)) => Ok(self.t_ctx.translated.bodies.push(body)),
+                Ok(Ok(body)) => Ok(body),
                 // Opaque declaration
                 Ok(Err(Opaque)) => Err(Opaque),
-                // Translation error. We reserve a slot and leave it empty.
+                // Translation error.
                 // FIXME: handle error cases more explicitly.
-                Err(_) => Ok(self.t_ctx.translated.bodies.reserve_slot()),
+                Err(_) => Err(Opaque),
             }
         } else {
             Err(Opaque)

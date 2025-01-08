@@ -1,6 +1,6 @@
 use crate::ids::Vector;
 use crate::{ast::*, common::hash_consing::HashConsed};
-use derive_visitor::{Drive, DriveMut, Event, Visitor, VisitorMut};
+use derive_generic_visitor::*;
 use macros::{EnumAsGetters, EnumIsA, EnumToGetters, VariantIndexArity, VariantName};
 use serde::{Deserialize, Serialize};
 
@@ -133,6 +133,7 @@ pub enum TraitRefKind {
 
     /// For error reporting.
     #[charon::rename("UnknownTrait")]
+    #[drive(skip)]
     Unknown(String),
 }
 
@@ -174,26 +175,8 @@ pub struct TraitImplRef {
 }
 
 /// .0 outlives .1
-#[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize, Drive, DriveMut)]
 pub struct OutlivesPred<T, U>(pub T, pub U);
-
-// The derive macro doesn't handle generics well.
-impl<T: Drive, U: Drive> Drive for OutlivesPred<T, U> {
-    fn drive<V: Visitor>(&self, visitor: &mut V) {
-        visitor.visit(self, Event::Enter);
-        self.0.drive(visitor);
-        self.1.drive(visitor);
-        visitor.visit(self, Event::Exit);
-    }
-}
-impl<T: DriveMut, U: DriveMut> DriveMut for OutlivesPred<T, U> {
-    fn drive_mut<V: VisitorMut>(&mut self, visitor: &mut V) {
-        visitor.visit(self, Event::Enter);
-        self.0.drive_mut(visitor);
-        self.1.drive_mut(visitor);
-        visitor.visit(self, Event::Exit);
-    }
-}
 
 pub type RegionOutlives = OutlivesPred<Region, Region>;
 pub type TypeOutlives = OutlivesPred<Ty, Region>;
@@ -212,19 +195,36 @@ pub struct TraitTypeConstraint {
     pub ty: Ty,
 }
 
-#[derive(Default, Clone, Eq, PartialEq, Serialize, Deserialize, Hash, Drive, DriveMut)]
+/// Each `GenericArgs` is meant for a corresponding `GenericParams`; this describes which one.
+#[derive(Debug, Clone, Eq, PartialEq, Hash, Serialize, Deserialize, Drive, DriveMut)]
+#[charon::variants_prefix("GS")]
+pub enum GenericsSource {
+    /// A top-level item.
+    Item(AnyTransId),
+    /// A trait method.
+    Method(TraitDeclId, TraitItemName),
+    /// A builtin item like `Box`.
+    Builtin,
+}
+
+/// A set of generic arguments.
+#[derive(Clone, Eq, PartialEq, Hash, Serialize, Deserialize, Drive, DriveMut)]
 pub struct GenericArgs {
     pub regions: Vector<RegionId, Region>,
     pub types: Vector<TypeVarId, Ty>,
     pub const_generics: Vector<ConstGenericVarId, ConstGeneric>,
     // TODO: rename to match [GenericParams]?
     pub trait_refs: Vector<TraitClauseId, TraitRef>,
+    #[charon::opaque]
+    #[drive(skip)]
+    /// Each `GenericArgs` is meant for a corresponding `GenericParams`; this records which one.
+    pub target: GenericsSource,
 }
 
 /// A value of type `T` bound by regions. We should use `binder` instead but this causes name clash
 /// issues in the derived ocaml visitors.
 /// TODO: merge with `binder`
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize, Drive, DriveMut)]
 pub struct RegionBinder<T> {
     #[charon::rename("binder_regions")]
     pub regions: Vector<RegionId, RegionVar>,
@@ -234,15 +234,22 @@ pub struct RegionBinder<T> {
     pub skip_binder: T,
 }
 
-// Renames useful for visitor derives
-pub type BoundTypeOutlives = RegionBinder<TypeOutlives>;
-pub type BoundRegionOutlives = RegionBinder<RegionOutlives>;
-pub type BoundTraitTypeConstraint = RegionBinder<TraitTypeConstraint>;
+#[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize, Drive, DriveMut)]
+#[charon::variants_prefix("BK")]
+pub enum BinderKind {
+    /// The parameters of a trait method. Used in the `methods` lists in trait decls and trait
+    /// impls.
+    TraitMethod(TraitDeclId, TraitItemName),
+    /// The parameters bound in a non-trait `impl` block. Used in the `Name`s of inherent methods.
+    InherentImplBlock,
+    /// Some other use of a binder outside the main Charon ast.
+    Other,
+}
 
 /// A value of type `T` bound by generic parameters. Used in any context where we're adding generic
-/// parameters that aren't on the top-level item, e.g. `for<'a>` clauses, trait methods (TODO),
-/// GATs (TODO).
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Hash)]
+/// parameters that aren't on the top-level item, e.g. `for<'a>` clauses (uses `RegionBinder` for
+/// now), trait methods, GATs (TODO).
+#[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize, Drive, DriveMut)]
 pub struct Binder<T> {
     #[charon::rename("binder_params")]
     pub params: GenericParams,
@@ -250,6 +257,10 @@ pub struct Binder<T> {
     /// incorrectly. Prefer using helper methods.
     #[charon::rename("binder_value")]
     pub skip_binder: T,
+    /// The kind of binder this is.
+    #[charon::opaque]
+    #[drive(skip)]
+    pub kind: BinderKind,
 }
 
 /// Generic parameters for a declaration.
@@ -259,7 +270,7 @@ pub struct Binder<T> {
 /// be filled. We group in a different place the predicates which are not
 /// trait clauses, because those enforce constraints but do not need to
 /// be filled with witnesses/instances.
-#[derive(Debug, Default, Clone, PartialEq, Eq, Hash, Serialize, Deserialize, Drive, DriveMut)]
+#[derive(Default, Clone, PartialEq, Eq, Hash, Serialize, Deserialize, Drive, DriveMut)]
 pub struct GenericParams {
     pub regions: Vector<RegionId, RegionVar>,
     pub types: Vector<TypeVarId, TypeVar>,
@@ -267,11 +278,11 @@ pub struct GenericParams {
     // TODO: rename to match [GenericArgs]?
     pub trait_clauses: Vector<TraitClauseId, TraitClause>,
     /// The first region in the pair outlives the second region
-    pub regions_outlive: Vec<BoundRegionOutlives>,
+    pub regions_outlive: Vec<RegionBinder<RegionOutlives>>,
     /// The type outlives the region
-    pub types_outlive: Vec<BoundTypeOutlives>,
+    pub types_outlive: Vec<RegionBinder<TypeOutlives>>,
     /// Constraints over trait associated types
-    pub trait_type_constraints: Vec<BoundTraitTypeConstraint>,
+    pub trait_type_constraints: Vec<RegionBinder<TraitTypeConstraint>>,
 }
 
 /// A predicate of the form `exists<T> where T: Trait`.
@@ -366,14 +377,17 @@ pub enum TypeDeclKind {
     /// Used if an error happened during the extraction, and we don't panic
     /// on error.
     #[charon::rename("TError")]
+    #[drive(skip)]
     Error(String),
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, Drive, DriveMut)]
 pub struct Variant {
     pub span: Span,
+    #[drive(skip)]
     pub attr_info: AttrInfo,
     #[charon::rename("variant_name")]
+    #[drive(skip)]
     pub name: String,
     pub fields: Vector<FieldId, Field>,
     /// The discriminant used at runtime. This is used in `remove_read_discriminant` to match up
@@ -384,8 +398,10 @@ pub struct Variant {
 #[derive(Debug, Clone, Serialize, Deserialize, Drive, DriveMut)]
 pub struct Field {
     pub span: Span,
+    #[drive(skip)]
     pub attr_info: AttrInfo,
     #[charon::rename("field_name")]
+    #[drive(skip)]
     pub name: Option<String>,
     #[charon::rename("field_ty")]
     pub ty: Ty,
@@ -565,9 +581,8 @@ pub enum ConstGeneric {
 
 /// A type.
 ///
-/// Warning: for performance reasons, the `Drive` and `DriveMut` impls of `Ty` don't explore the
-/// contents of the type, they only yield a pointer to the type itself. To recurse into the type,
-/// use `drive_inner{_mut}` or `visit_inside`.
+/// Warning: the `DriveMut` impls of `Ty` needs to clone and re-hash the modified type to maintain
+/// the hash-consing invariant. This is expensive, avoid visiting types mutably when not needed.
 #[derive(Debug, Clone, Hash, PartialEq, Eq, Serialize, Deserialize)]
 pub struct Ty(HashConsed<TyKind>);
 
@@ -580,11 +595,23 @@ impl Ty {
         self.0.inner()
     }
 
-    pub fn drive_inner<V: Visitor>(&self, visitor: &mut V) {
-        self.0.drive(visitor)
+    pub fn with_kind_mut<R>(&mut self, f: impl FnOnce(&mut TyKind) -> R) -> R {
+        self.0.with_inner_mut(f)
     }
-    pub fn drive_inner_mut<V: VisitorMut>(&mut self, visitor: &mut V) {
-        self.0.drive_mut(visitor)
+}
+
+impl<'s, V: Visit<'s, TyKind>> Drive<'s, V> for Ty {
+    fn drive_inner(&'s self, v: &mut V) -> std::ops::ControlFlow<V::Break> {
+        self.0.drive_inner(v)
+    }
+}
+/// This explores the type mutably by cloning and re-hashing afterwards.
+impl<'s, V> DriveMut<'s, V> for Ty
+where
+    for<'a> V: VisitMut<'a, TyKind>,
+{
+    fn drive_inner_mut(&'s mut self, v: &mut V) -> std::ops::ControlFlow<V::Break> {
+        self.0.drive_inner_mut(v)
     }
 }
 
@@ -662,10 +689,8 @@ pub enum TyKind {
     /// This is essentially a "constrained" function signature:
     /// arrow types can only contain generic lifetime parameters
     /// (no generic types), no predicates, etc.
-    Arrow(BoundArrowSig),
+    Arrow(RegionBinder<(Vec<Ty>, Ty)>),
 }
-
-pub type BoundArrowSig = RegionBinder<(Vec<Ty>, Ty)>;
 
 /// Builtin types identifiers.
 ///
@@ -736,6 +761,7 @@ pub struct ClosureInfo {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Drive, DriveMut)]
 pub struct FunSig {
     /// Is the function unsafe or not
+    #[drive(skip)]
     pub is_unsafe: bool,
     /// `true` if the signature is for a closure.
     ///
@@ -743,6 +769,7 @@ pub struct FunSig {
     /// - the type and const generic params actually come from the parent function
     ///   (the function in which the closure is defined)
     /// - the region variables are local to the closure
+    #[drive(skip)]
     pub is_closure: bool,
     /// Additional information if this is the signature of a closure.
     pub closure_info: Option<ClosureInfo>,

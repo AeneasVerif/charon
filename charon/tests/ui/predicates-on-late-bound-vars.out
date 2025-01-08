@@ -25,8 +25,8 @@ fn test_crate::wrap<'a>(@1: &'a (u32)) -> core::option::Option<&'a (u32)>[core::
 trait core::clone::Clone<Self>
 {
     parent_clause0 : [@TraitClause0]: core::marker::Sized<Self>
-    fn clone : core::clone::Clone::clone
-    fn clone_from : core::clone::Clone::clone_from
+    fn clone<'_0> = core::clone::Clone::clone<'_0_0, Self>
+    fn clone_from<'_0, '_1> = core::clone::Clone::clone_from<'_0_0, '_0_1, Self>
 }
 
 fn test_crate::wrap2<'a>(@1: &'a (u32)) -> core::option::Option<&'a (u32)>[core::marker::Sized<&'_ (u32)>]

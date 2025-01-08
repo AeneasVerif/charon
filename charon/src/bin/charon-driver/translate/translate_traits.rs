@@ -83,17 +83,46 @@ impl BodyTransCtx<'_, '_> {
         let mut required_methods = Vec::new();
         let mut provided_methods = Vec::new();
         for (item_name, hax_item, hax_def) in &items {
-            let rust_item_id = DefId::from(&hax_item.def_id);
-            let item_span = self.def_span(rust_item_id);
+            let item_def_id = DefId::from(&hax_item.def_id);
+            let item_span = self.def_span(item_def_id);
             match &hax_def.kind {
                 hax::FullDefKind::AssocFn { .. } => {
-                    let fun_id = self.register_fun_decl_id(item_span, rust_item_id);
+                    let fun_def = self.t_ctx.hax_def(item_def_id)?;
+                    let binder_kind = BinderKind::TraitMethod(def_id, item_name.clone());
+                    let fn_ref = self.translate_binder_for_def(
+                        item_span,
+                        binder_kind,
+                        &fun_def,
+                        |bt_ctx| {
+                            let fun_id = bt_ctx.register_fun_decl_id(item_span, item_def_id);
+                            // TODO: there's probably a cleaner way to write this
+                            assert_eq!(bt_ctx.binding_levels.len(), 2);
+                            let fun_generics = bt_ctx
+                                .outermost_binder()
+                                .params
+                                .identity_args_at_depth(
+                                    GenericsSource::item(def_id),
+                                    DeBruijnId::one(),
+                                )
+                                .concat(
+                                    GenericsSource::item(fun_id),
+                                    &bt_ctx.innermost_binder().params.identity_args_at_depth(
+                                        GenericsSource::Method(def_id.into(), item_name.clone()),
+                                        DeBruijnId::zero(),
+                                    ),
+                                );
+                            Ok(FunDeclRef {
+                                id: fun_id,
+                                generics: fun_generics,
+                            })
+                        },
+                    )?;
                     if hax_item.has_value {
                         // This is a provided method,
-                        provided_methods.push((item_name.clone(), fun_id));
+                        provided_methods.push((item_name.clone(), fn_ref));
                     } else {
                         // This is a required method (no default implementation)
-                        required_methods.push((item_name.clone(), fun_id));
+                        required_methods.push((item_name.clone(), fn_ref));
                     }
                 }
                 hax::FullDefKind::AssocConst { ty, .. } => {
@@ -101,9 +130,11 @@ impl BodyTransCtx<'_, '_> {
                     if hax_item.has_value {
                         // The parameters of the constant are the same as those of the item that
                         // declares them.
+                        let id = self.register_global_decl_id(item_span, item_def_id);
+                        let generics_target = GenericsSource::item(id);
                         let gref = GlobalDeclRef {
-                            id: self.register_global_decl_id(item_span, rust_item_id),
-                            generics: self.the_only_binder().params.identity_args(),
+                            id,
+                            generics: self.the_only_binder().params.identity_args(generics_target),
                         };
                         const_defaults.insert(item_name.clone(), gref);
                     };
@@ -194,10 +225,10 @@ impl BodyTransCtx<'_, '_> {
             let implemented_trait = &trait_pred.trait_ref;
             let generics = self.translate_generic_args(
                 span,
-                None,
                 &implemented_trait.generic_args,
                 &[],
                 None,
+                GenericsSource::item(trait_id),
             )?;
             TraitDeclRef { trait_id, generics }
         };
@@ -234,10 +265,45 @@ impl BodyTransCtx<'_, '_> {
                     let fun_id = self.register_fun_decl_id(item_span, item_def_id);
                     match &impl_item.value {
                         Provided { is_override, .. } => {
+                            let fun_def = self.t_ctx.hax_def(item_def_id)?;
+                            let binder_kind = BinderKind::TraitMethod(trait_id, name.clone());
+                            let fn_ref = self.translate_binder_for_def(
+                                item_span,
+                                binder_kind,
+                                &fun_def,
+                                |bt_ctx| {
+                                    // TODO: there's probably a cleaner way to write this
+                                    assert_eq!(bt_ctx.binding_levels.len(), 2);
+                                    let fun_generics = bt_ctx
+                                        .outermost_binder()
+                                        .params
+                                        .identity_args_at_depth(
+                                            GenericsSource::item(def_id),
+                                            DeBruijnId::one(),
+                                        )
+                                        .concat(
+                                            GenericsSource::item(fun_id),
+                                            &bt_ctx
+                                                .innermost_binder()
+                                                .params
+                                                .identity_args_at_depth(
+                                                    GenericsSource::Method(
+                                                        trait_id.into(),
+                                                        name.clone(),
+                                                    ),
+                                                    DeBruijnId::zero(),
+                                                ),
+                                        );
+                                    Ok(FunDeclRef {
+                                        id: fun_id,
+                                        generics: fun_generics,
+                                    })
+                                },
+                            )?;
                             if *is_override {
-                                provided_methods.push((name, fun_id));
+                                provided_methods.push((name, fn_ref));
                             } else {
-                                required_methods.push((name, fun_id));
+                                required_methods.push((name, fn_ref));
                             }
                         }
                         DefaultedFn { .. } => {
@@ -248,11 +314,17 @@ impl BodyTransCtx<'_, '_> {
                 }
                 hax::FullDefKind::AssocConst { .. } => {
                     let id = self.register_global_decl_id(item_span, item_def_id);
+                    let generics_target = GenericsSource::item(id);
                     // The parameters of the constant are the same as those of the item that
                     // declares them.
                     let generics = match &impl_item.value {
-                        Provided { .. } => self.the_only_binder().params.identity_args(),
-                        _ => implemented_trait.generics.clone(),
+                        Provided { .. } => {
+                            self.the_only_binder().params.identity_args(generics_target)
+                        }
+                        _ => implemented_trait
+                            .generics
+                            .clone()
+                            .with_target(generics_target),
                     };
                     let gref = GlobalDeclRef { id, generics };
                     consts.push((name, gref));

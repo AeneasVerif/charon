@@ -137,7 +137,6 @@ impl<'a, 'b> PushBinder<'a> for FmtCtx<'b> {
 pub trait AstFormatter = Formatter<TypeDeclId>
     + Formatter<FunDeclId>
     + Formatter<GlobalDeclId>
-    + Formatter<BodyId>
     + Formatter<TraitDeclId>
     + Formatter<TraitImplId>
     + Formatter<AnyTransId>
@@ -231,18 +230,6 @@ impl<'a> Formatter<FunDeclId> for FmtCtx<'a> {
     }
 }
 
-impl<'a> Formatter<BodyId> for FmtCtx<'a> {
-    fn format_object(&self, id: BodyId) -> String {
-        match self
-            .translated
-            .and_then(|translated| translated.bodies.get(id))
-        {
-            None => "<error>".to_owned(),
-            Some(d) => d.fmt_with_ctx(self),
-        }
-    }
-}
-
 impl<'a> Formatter<TraitDeclId> for FmtCtx<'a> {
     fn format_object(&self, id: ast::TraitDeclId) -> String {
         self.format_object(AnyTransId::from(id))
@@ -284,6 +271,7 @@ impl<'a> Formatter<RegionDbVar> for FmtCtx<'a> {
             None => format!("wrong_region('_{var})"),
             Some(v) => match &v.name {
                 Some(name) => name.to_string(),
+                None if dbid == self.generics.len() - 1 => format!("'_{varid}"),
                 None => format!("'_{var}"),
             },
         }
@@ -354,6 +342,7 @@ impl<'a> Formatter<ClauseDbVar> for FmtCtx<'a> {
             .and_then(|generics| generics.trait_clauses.get(varid))
         {
             None => format!("missing_clause_var({var})"),
+            Some(_) if dbid == self.generics.len() - 1 => format!("@TraitClause{varid}"),
             Some(_) => format!("@TraitClause{var}"),
         }
     }

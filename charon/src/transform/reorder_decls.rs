@@ -3,7 +3,7 @@ use crate::formatter::{AstFormatter, IntoFormatter};
 use crate::graphs::*;
 use crate::transform::TransformCtx;
 use crate::ullbc_ast::*;
-use derive_visitor::{Drive, Visitor};
+use derive_generic_visitor::*;
 use hashlink::{LinkedHashMap, LinkedHashSet};
 use macros::{EnumAsGetters, EnumIsA, VariantIndexArity, VariantName};
 use petgraph::algo::tarjan_scc;
@@ -11,6 +11,8 @@ use petgraph::graphmap::DiGraphMap;
 use serde::{Deserialize, Serialize};
 use std::fmt::{Debug, Display, Error};
 use std::vec::Vec;
+
+use super::ctx::TransformPass;
 
 /// A (group of) top-level declaration(s), properly reordered.
 /// "G" stands for "generic"
@@ -148,17 +150,7 @@ impl Display for DeclarationGroup {
 }
 
 #[derive(Visitor)]
-#[visitor(
-    TypeDeclId(enter),
-    FunDeclId(enter),
-    GlobalDeclId(enter),
-    TraitImplId(enter),
-    TraitDeclId(enter),
-    BodyId(enter),
-    Ty(enter)
-)]
-pub struct Deps<'tcx> {
-    ctx: &'tcx TransformCtx,
+pub struct Deps {
     dgraph: DiGraphMap<AnyTransId, ()>,
     // Want to make sure we remember the order of insertion
     graph: LinkedHashMap<AnyTransId, LinkedHashSet<AnyTransId>>,
@@ -209,10 +201,9 @@ pub struct Deps<'tcx> {
     parent_trait_decl: Option<TraitDeclId>,
 }
 
-impl<'tcx> Deps<'tcx> {
-    fn new(ctx: &'tcx TransformCtx) -> Self {
+impl Deps {
+    fn new() -> Self {
         Deps {
-            ctx,
             dgraph: DiGraphMap::new(),
             graph: LinkedHashMap::new(),
             current_id: None,
@@ -276,7 +267,7 @@ impl<'tcx> Deps<'tcx> {
     }
 }
 
-impl Deps<'_> {
+impl VisitAst for Deps {
     fn enter_type_decl_id(&mut self, id: &TypeDeclId) {
         self.insert_edge((*id).into());
     }
@@ -315,15 +306,14 @@ impl Deps<'_> {
         self.insert_edge((*id).into());
     }
 
-    fn enter_body_id(&mut self, id: &BodyId) {
-        if let Some(body) = self.ctx.translated.bodies.get(*id) {
-            body.drive(self);
-        }
+    fn visit_item_meta(&mut self, _: &ItemMeta) -> ControlFlow<Self::Break> {
+        // Don't look inside because trait impls contain their own id in their name.
+        Continue(())
     }
-
-    fn enter_ty(&mut self, ty: &Ty) {
-        // Recurse into the type, which doesn't happen by default.
-        ty.drive_inner(self);
+    fn visit_item_kind(&mut self, _: &ItemKind) -> ControlFlow<Self::Break> {
+        // Don't look inside to avoid recording a dependency from a method impl to the impl block
+        // it belongs to.
+        Continue(())
     }
 }
 
@@ -341,7 +331,7 @@ impl AnyTransId {
     }
 }
 
-impl Deps<'_> {
+impl Deps {
     fn fmt_with_ctx(&self, ctx: &TransformCtx) -> String {
         self.dgraph
             .nodes()
@@ -360,23 +350,19 @@ impl Deps<'_> {
     }
 }
 
-fn compute_declarations_graph<'tcx>(ctx: &'tcx TransformCtx) -> Deps<'tcx> {
-    let mut graph = Deps::new(ctx);
+fn compute_declarations_graph<'tcx>(ctx: &'tcx TransformCtx) -> Deps {
+    let mut graph = Deps::new();
     for (id, item) in ctx.translated.all_items_with_ids() {
         graph.set_current_id(ctx, id);
         match item {
-            AnyTransItem::Type(d) => {
-                d.drive(&mut graph);
+            AnyTransItem::Type(..) | AnyTransItem::TraitImpl(..) | AnyTransItem::Global(..) => {
+                item.drive(&mut graph);
             }
             AnyTransItem::Fun(d) => {
-                // Explore the signature
+                // Skip `d.is_global_initializer` to avoid incorrect mutual dependencies.
+                // TODO: add `is_global_initializer` to `ItemKind`.
                 d.signature.drive(&mut graph);
-                // Skip `d.kind`: we don't want to record a dependency to the impl block this
-                // belongs to.
                 d.body.drive(&mut graph);
-            }
-            AnyTransItem::Global(d) => {
-                d.drive(&mut graph);
             }
             AnyTransItem::TraitDecl(d) => {
                 let TraitDecl {
@@ -408,8 +394,7 @@ fn compute_declarations_graph<'tcx>(ctx: &'tcx TransformCtx) -> Deps<'tcx> {
                 let method_ids = required_methods
                     .iter()
                     .chain(provided_methods.iter())
-                    .map(|(_, id)| id)
-                    .copied();
+                    .map(|(_, bound_fun)| bound_fun.skip_binder.id);
                 for id in method_ids {
                     // Important: we must ignore the function id, because
                     // otherwise in the presence of associated types we may
@@ -422,33 +407,11 @@ fn compute_declarations_graph<'tcx>(ctx: &'tcx TransformCtx) -> Deps<'tcx> {
                     //   fn f(x : Trait::X);
                     // }
                     // ```
+                    // TODO: we can likely remove this after #127
                     if let Some(decl) = ctx.translated.fun_decls.get(id) {
                         decl.signature.drive(&mut graph);
                     }
                 }
-            }
-            AnyTransItem::TraitImpl(d) => {
-                let TraitImpl {
-                    def_id: _,
-                    // Don't eplore because the `Name` contains this impl's own id.
-                    item_meta: _,
-                    impl_trait,
-                    generics,
-                    parent_trait_refs,
-                    consts,
-                    types,
-                    type_clauses,
-                    required_methods,
-                    provided_methods,
-                } = d;
-                impl_trait.drive(&mut graph);
-                generics.drive(&mut graph);
-                parent_trait_refs.drive(&mut graph);
-                consts.drive(&mut graph);
-                types.drive(&mut graph);
-                type_clauses.drive(&mut graph);
-                required_methods.drive(&mut graph);
-                provided_methods.drive(&mut graph);
             }
         }
         graph.unset_current_id();
@@ -458,7 +421,7 @@ fn compute_declarations_graph<'tcx>(ctx: &'tcx TransformCtx) -> Deps<'tcx> {
 
 fn group_declarations_from_scc(
     _ctx: &TransformCtx,
-    graph: Deps<'_>,
+    graph: Deps,
     reordered_sccs: SCCs<AnyTransId>,
 ) -> DeclarationsGroups {
     let reordered_sccs = &reordered_sccs.sccs;
@@ -522,7 +485,7 @@ fn group_declarations_from_scc(
     reordered_decls
 }
 
-pub fn compute_reordered_decls(ctx: &TransformCtx) -> DeclarationsGroups {
+fn compute_reordered_decls(ctx: &TransformCtx) -> DeclarationsGroups {
     trace!();
 
     // Step 1: explore the declarations to build the graph
@@ -553,6 +516,14 @@ pub fn compute_reordered_decls(ctx: &TransformCtx) -> DeclarationsGroups {
 
     trace!("{:?}", reordered_decls);
     reordered_decls
+}
+
+pub struct Transform;
+impl TransformPass for Transform {
+    fn transform_ctx(&self, ctx: &mut TransformCtx) {
+        let reordered_decls = compute_reordered_decls(&ctx);
+        ctx.translated.ordered_decls = Some(reordered_decls);
+    }
 }
 
 #[cfg(test)]

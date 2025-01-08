@@ -3,9 +3,8 @@ use crate::ast::*;
 use crate::ids::Vector;
 use crate::llbc_ast;
 use crate::ullbc_ast;
-use derive_visitor::{Drive, DriveMut, Event, Visitor, VisitorMut};
-use macros::EnumIsA;
-use macros::EnumToGetters;
+use derive_generic_visitor::{Drive, DriveMut};
+use macros::{EnumIsA, EnumToGetters};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
@@ -16,6 +15,7 @@ pub struct Var {
     pub index: VarId,
     /// Variable name - may be `None` if the variable was introduced by Rust
     /// through desugaring.
+    #[drive(skip)]
     pub name: Option<String>,
     /// The variable type
     #[charon::rename("var_ty")]
@@ -30,6 +30,7 @@ pub struct Opaque;
 #[derive(Debug, Default, Clone, Serialize, Deserialize, Drive, DriveMut)]
 pub struct Locals {
     /// The number of local variables used for the input arguments.
+    #[drive(skip)]
     pub arg_count: usize,
     /// The local variables.
     /// We always have, in the following order:
@@ -42,7 +43,7 @@ pub struct Locals {
 /// An expression body.
 /// TODO: arg_count should be stored in GFunDecl below. But then,
 ///       the print is obfuscated and Aeneas may need some refactoring.
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, Drive, DriveMut)]
 #[charon::rename("GexprBody")]
 pub struct GExprBody<T> {
     pub span: Span,
@@ -51,28 +52,9 @@ pub struct GExprBody<T> {
     /// For each line inside the body, we record any whole-line `//` comments found before it. They
     /// are added to statements in the late `recover_body_comments` pass.
     #[charon::opaque]
+    #[drive(skip)]
     pub comments: Vec<(usize, Vec<String>)>,
     pub body: T,
-}
-
-// The derive macro doesn't handle generics well.
-impl<T: Drive> Drive for GExprBody<T> {
-    fn drive<V: Visitor>(&self, visitor: &mut V) {
-        visitor.visit(self, Event::Enter);
-        self.span.drive(visitor);
-        self.locals.drive(visitor);
-        self.body.drive(visitor);
-        visitor.visit(self, Event::Exit);
-    }
-}
-impl<T: DriveMut> DriveMut for GExprBody<T> {
-    fn drive_mut<V: VisitorMut>(&mut self, visitor: &mut V) {
-        visitor.visit(self, Event::Enter);
-        self.span.drive_mut(visitor);
-        self.locals.drive_mut(visitor);
-        self.body.drive_mut(visitor);
-        visitor.visit(self, Event::Exit);
-    }
 }
 
 /// The body of a function or a constant.
@@ -117,8 +99,11 @@ pub enum ItemKind {
         /// The trait declaration this item belongs to.
         trait_ref: TraitDeclRef,
         /// The name of the item.
+        // TODO: also include method generics so we can recover a full `FnPtr::TraitMethod`
+        #[drive(skip)]
         item_name: TraitItemName,
         /// Whether the trait declaration provides a default implementation.
+        #[drive(skip)]
         has_default: bool,
     },
     /// Function/const that is part of a trait implementation.
@@ -128,9 +113,12 @@ pub enum ItemKind {
         /// The trait declaration that the impl block implements.
         trait_ref: TraitDeclRef,
         /// The name of the item
+        // TODO: also include method generics so we can recover a full `FnPtr::TraitMethod`
+        #[drive(skip)]
         item_name: TraitItemName,
         /// True if the trait decl had a default implementation for this function/const and this
         /// item is a copy of the default item.
+        #[drive(skip)]
         reuses_default: bool,
     },
 }
@@ -153,7 +141,17 @@ pub struct FunDecl {
     /// The function body, unless the function is opaque.
     /// Opaque functions are: external functions, or local functions tagged
     /// as opaque.
-    pub body: Result<BodyId, Opaque>,
+    pub body: Result<Body, Opaque>,
+}
+
+/// Reference to a function declaration.
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Hash, Drive, DriveMut)]
+pub struct FunDeclRef {
+    #[charon::rename("fun_id")]
+    pub id: FunDeclId,
+    /// Generic arguments passed to the function.
+    #[charon::rename("fun_generics")]
+    pub generics: GenericArgs,
 }
 
 /// A global variable definition (constant or static).
@@ -167,7 +165,8 @@ pub struct GlobalDecl {
     pub ty: Ty,
     /// The global kind: "regular" function, trait const declaration, etc.
     pub kind: ItemKind,
-    /// The initializer function used to compute the initial value for this constant/static.
+    /// The initializer function used to compute the initial value for this constant/static. It
+    /// uses the same generic parameters as the global.
     #[charon::rename("body")]
     pub init: FunDeclId,
 }
@@ -184,6 +183,7 @@ pub struct GlobalDeclRef {
 #[derive(
     Debug, Clone, Serialize, Deserialize, Drive, DriveMut, PartialEq, Eq, Hash, PartialOrd, Ord,
 )]
+#[drive(skip)]
 pub struct TraitItemName(pub String);
 
 /// A trait **declaration**.
@@ -254,16 +254,18 @@ pub struct TraitDecl {
     /// TODO: Do this as we translate to avoid the need to store this vector.
     #[charon::opaque]
     pub type_clauses: Vec<(TraitItemName, Vector<TraitClauseId, TraitClause>)>,
-    /// The *required* methods.
-    ///
-    /// The required methods are the methods declared by the trait but with no default
+    /// The *required* methods: the methods declared by the trait but with no default
     /// implementation. The corresponding `FunDecl`s don't have a body.
-    pub required_methods: Vec<(TraitItemName, FunDeclId)>,
-    /// The *provided* methods.
     ///
-    /// The provided methods are the methods with a default implementation. The corresponding
+    /// The binder contains the type parameters specific to the method. The `FunDeclRef` then
+    /// provides a full list of arguments to the pointed-to function.
+    pub required_methods: Vec<(TraitItemName, Binder<FunDeclRef>)>,
+    /// The *provided* methods: the methods with a default implementation. The corresponding
     /// `FunDecl`s may have a body, according to the usual rules for extracting function bodies.
-    pub provided_methods: Vec<(TraitItemName, FunDeclId)>,
+    ///
+    /// The binder contains the type parameters specific to the method. The `FunDeclRef` then
+    /// provides a full list of arguments to the pointed-to function.
+    pub provided_methods: Vec<(TraitItemName, Binder<FunDeclRef>)>,
 }
 
 /// A trait **implementation**.
@@ -297,9 +299,15 @@ pub struct TraitImpl {
     #[charon::opaque]
     pub type_clauses: Vec<(TraitItemName, Vector<TraitClauseId, TraitRef>)>,
     /// The implemented required methods
-    pub required_methods: Vec<(TraitItemName, FunDeclId)>,
+    ///
+    /// The binder contains the type parameters specific to the method. The `FunDeclRef` then
+    /// provides a full list of arguments to the pointed-to function.
+    pub required_methods: Vec<(TraitItemName, Binder<FunDeclRef>)>,
     /// The re-implemented provided methods
-    pub provided_methods: Vec<(TraitItemName, FunDeclId)>,
+    ///
+    /// The binder contains the type parameters specific to the method. The `FunDeclRef` then
+    /// provides a full list of arguments to the pointed-to function.
+    pub provided_methods: Vec<(TraitItemName, Binder<FunDeclRef>)>,
 }
 
 /// A function operand is used in function calls.
@@ -338,5 +346,6 @@ pub enum AbortKind {
 #[charon::rename("Assertion")]
 pub struct Assert {
     pub cond: Operand,
+    #[drive(skip)]
     pub expected: bool,
 }
