@@ -24,7 +24,7 @@ type fun_id = Expressions.fun_id [@@deriving show, ord]
 type fun_id_or_trait_method_ref = Expressions.fun_id_or_trait_method_ref
 [@@deriving show, ord]
 
-type fun_decl_id = FunDeclId.id [@@deriving show, ord]
+type fun_decl_id = Types.fun_decl_id [@@deriving show, ord]
 
 (** A variable *)
 type var = {
@@ -158,6 +158,7 @@ and fun_sig = {
     visitors
       {
         name = "iter_fun_sig";
+        monomorphic = [ "env" ];
         variety = "iter";
         ancestors = [ "iter_rvalue" ];
         nude = true (* Don't inherit VisitorsRuntime *);
@@ -165,6 +166,7 @@ and fun_sig = {
     visitors
       {
         name = "map_fun_sig";
+        monomorphic = [ "env" ];
         variety = "map";
         ancestors = [ "map_rvalue" ];
         nude = true (* Don't inherit VisitorsRuntime *);
@@ -189,6 +191,7 @@ type global_decl = {
     visitors
       {
         name = "iter_global_decl";
+        monomorphic = [ "env" ];
         variety = "iter";
         ancestors = [ "iter_fun_sig" ];
         nude = true (* Don't inherit VisitorsRuntime *);
@@ -196,6 +199,7 @@ type global_decl = {
     visitors
       {
         name = "map_global_decl";
+        monomorphic = [ "env" ];
         variety = "map";
         ancestors = [ "map_fun_sig" ];
         nude = true (* Don't inherit VisitorsRuntime *);
@@ -277,6 +281,7 @@ type trait_decl = {
     visitors
       {
         name = "iter_trait_decl";
+        monomorphic = [ "env" ];
         variety = "iter";
         ancestors = [ "iter_global_decl" ];
         nude = true (* Don't inherit VisitorsRuntime *);
@@ -284,6 +289,7 @@ type trait_decl = {
     visitors
       {
         name = "map_trait_decl";
+        monomorphic = [ "env" ];
         variety = "map";
         ancestors = [ "map_global_decl" ];
         nude = true (* Don't inherit VisitorsRuntime *);
@@ -334,6 +340,7 @@ type trait_impl = {
     visitors
       {
         name = "iter_trait_impl";
+        monomorphic = [ "env" ];
         variety = "iter";
         ancestors = [ "iter_trait_decl" ];
         nude = true (* Don't inherit VisitorsRuntime *);
@@ -341,6 +348,7 @@ type trait_impl = {
     visitors
       {
         name = "map_trait_impl";
+        monomorphic = [ "env" ];
         variety = "map";
         ancestors = [ "map_trait_decl" ];
         nude = true (* Don't inherit VisitorsRuntime *);

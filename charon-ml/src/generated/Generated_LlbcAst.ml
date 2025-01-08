@@ -76,6 +76,7 @@ and switch =
     visitors
       {
         name = "iter_statement";
+        monomorphic = [ "env" ];
         variety = "iter";
         ancestors = [ "iter_trait_impl" ];
         nude = true (* Don't inherit VisitorsRuntime *);
@@ -83,6 +84,7 @@ and switch =
     visitors
       {
         name = "map_statement";
+        monomorphic = [ "env" ];
         variety = "map";
         ancestors = [ "map_trait_impl" ];
         nude = true (* Don't inherit VisitorsRuntime *);

@@ -234,11 +234,16 @@ let predicates_substitute (subst : subst) (p : generic_params) : generic_params
     trait_clauses = List.map (visitor#visit_trait_clause subst) trait_clauses;
     regions_outlive =
       List.map
-        (visitor#visit_region_binder visitor#visit_region_outlives subst)
+        (visitor#visit_region_binder
+           (visitor#visit_outlives_pred visitor#visit_region
+              visitor#visit_region)
+           subst)
         regions_outlive;
     types_outlive =
       List.map
-        (visitor#visit_region_binder visitor#visit_type_outlives subst)
+        (visitor#visit_region_binder
+           (visitor#visit_outlives_pred visitor#visit_ty visitor#visit_region)
+           subst)
         types_outlive;
     trait_type_constraints =
       List.map
