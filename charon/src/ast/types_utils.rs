@@ -110,12 +110,10 @@ impl<T> Binder<T> {
     /// substituted inner value.
     pub fn apply(self, args: &GenericArgs) -> T
     where
-        T: AstVisitable,
+        T: TyVisitable,
     {
-        let mut val = self.skip_binder;
         assert!(args.matches(&self.params));
-        val.drive_mut(&mut SubstVisitor::new(args));
-        val
+        self.skip_binder.substitute(args)
     }
 }
 
@@ -567,8 +565,9 @@ impl VisitAstMut for SubstVisitor<'_> {
 
 /// Types that are involved at the type-level and may be substituted around.
 pub trait TyVisitable: Sized + AstVisitable {
-    fn substitute(&mut self, generics: &GenericArgs) {
+    fn substitute(mut self, generics: &GenericArgs) -> Self {
         self.drive_mut(&mut SubstVisitor::new(generics));
+        self
     }
 
     /// Move under one binder.
