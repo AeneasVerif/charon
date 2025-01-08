@@ -564,9 +564,6 @@ and trait_clause = {
 (** .0 outlives .1 *)
 and ('a0, 'a1) outlives_pred = 'a0 * 'a1
 
-and region_outlives = (region, region) outlives_pred
-and type_outlives = (ty, region) outlives_pred
-
 (** A constraint over a trait associated type.
 
     Example:
@@ -634,6 +631,9 @@ and type_decl = {
   generics : generic_params;
   kind : type_decl_kind;  (** The type kind: enum, struct, or opaque. *)
 }
+
+and variant_id = (VariantId.id[@opaque])
+and field_id = (FieldId.id[@opaque])
 
 and type_decl_kind =
   | Struct of field list

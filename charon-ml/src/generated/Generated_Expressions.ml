@@ -372,9 +372,6 @@ and aggregate_kind =
           state.
        *)
 
-and variant_id = (VariantId.id[@opaque])
-and field_id = (FieldId.id[@opaque])
-
 and var_id = (VarId.id[@opaque])
 [@@deriving
   show,

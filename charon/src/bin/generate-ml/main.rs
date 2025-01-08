@@ -144,6 +144,11 @@ impl<'a> GenerateCtx<'a> {
         self.children_of_inner(vec![start_id])
     }
 
+    /// List the (recursive) children of these types.
+    fn children_of_many(&self, names: &[&str]) -> HashSet<TypeDeclId> {
+        self.children_of_inner(names.iter().map(|name| self.id_from_name(name)).collect())
+    }
+
     fn children_of_inner(&self, ty: Vec<TypeDeclId>) -> HashSet<TypeDeclId> {
         let mut children = HashSet::new();
         let mut stack = ty.to_vec();
@@ -162,23 +167,6 @@ impl<'a> GenerateCtx<'a> {
             }
         }
         children
-    }
-
-    fn markers_from_names(
-        &self,
-        markers: &'a [(GenerationKind, &'a [&'a str])],
-    ) -> Vec<(GenerationKind, HashSet<TypeDeclId>)> {
-        markers
-            .iter()
-            .copied()
-            .map(|(kind, type_names)| {
-                let types = type_names
-                    .iter()
-                    .map(|name| self.id_from_name(*name))
-                    .collect();
-                (kind, types)
-            })
-            .collect()
     }
 }
 
@@ -1089,6 +1077,8 @@ fn generate_ml(
             ),
         ),
     ];
+    // Types for which we don't want to generate a type at all.
+    let dont_generate_ty = &["ItemOpacity", "PredicateOrigin", "Ty", "Vector"];
     // Types that we don't want visitors to go into.
     let opaque_for_visitor = &["Name"];
     let ctx = GenerateCtx::new(
@@ -1112,6 +1102,7 @@ fn generate_ml(
     .map(|name| ctx.id_from_name(name))
     .collect();
 
+    // Compute type sets for json deserializers.
     let (gast_types, llbc_types, ullbc_types) = {
         let llbc_types: HashSet<_> = ctx.children_of("charon_lib::ast::llbc_ast::Statement");
         let ullbc_types: HashSet<_> = ctx.children_of("charon_lib::ast::ullbc_ast::BodyContents");
@@ -1141,22 +1132,36 @@ fn generate_ml(
         (gast_types, llbc_types, ullbc_types)
     };
 
+    let mut processed_tys: HashSet<TypeDeclId> = dont_generate_ty
+        .iter()
+        .map(|name| ctx.id_from_name(name))
+        .collect();
+    // Each call to this will return the children of the listed types that haven't been returned
+    // yet. By calling it in dependency order, this allows to organize types into files without
+    // having to list them all.
+    let mut markers_from_children = |ctx: &GenerateCtx, markers: &[_]| {
+        markers
+            .iter()
+            .copied()
+            .map(|(kind, type_names)| {
+                let types: HashSet<_> = ctx.children_of_many(type_names);
+                let unprocessed_types: HashSet<_> =
+                    types.difference(&processed_tys).copied().collect();
+                processed_tys.extend(unprocessed_types.iter().copied());
+                (kind, unprocessed_types)
+            })
+            .collect()
+    };
+
     #[rustfmt::skip]
     let generate_code_for = vec![
         GenerateCodeFor {
             template: template_dir.join("Meta.ml"),
             target: output_dir.join("Generated_Meta.ml"),
-            markers: ctx.markers_from_names(&[
+            markers: markers_from_children(&ctx, &[
                 (GenerationKind::TypeDecl(None), &[
-                    "Loc",
-                    "FileName",
-                    "FileId",
                     "File",
-                    "RawSpan",
                     "Span",
-                    "InlineAttr",
-                    "Attribute",
-                    "RawAttribute",
                     "AttrInfo",
                 ]),
             ]),
@@ -1164,27 +1169,23 @@ fn generate_ml(
         GenerateCodeFor {
             template: template_dir.join("Values.ml"),
             target: output_dir.join("Generated_Values.ml"),
-            markers: ctx.markers_from_names(&[
+            markers: markers_from_children(&ctx, &[
                 (GenerationKind::TypeDecl(Some(DeriveVisitors {
                     ancestors: &["big_int"],
                     name: "literal",
                     reduce: true,
-                    extra_types: &[
-                    ],
+                    extra_types: &[],
                 })), &[
-                    "IntegerTy",
-                    "FloatTy",
-                    "FloatValue",
-                    "LiteralTy",
-                    "ScalarValue",
                     "Literal",
+                    "IntegerTy",
+                    "LiteralTy",
                 ]),
             ]),
         },
         GenerateCodeFor {
             template: template_dir.join("Types.ml"),
             target: output_dir.join("Generated_Types.ml"),
-            markers: ctx.markers_from_names(&[
+            markers: markers_from_children(&ctx, &[
                 (GenerationKind::TypeDecl(Some(DeriveVisitors {
                     ancestors: &["literal"],
                     name: "const_generic",
@@ -1192,18 +1193,11 @@ fn generate_ml(
                     extra_types: &[],
                 })), &[
                     "RegionId",
-                    "ConstGenericVarId",
-                    "FunDeclId",
-                    "GlobalDeclId",
-                    "TraitClauseId",
-                    "TraitDeclId",
-                    "TraitImplId",
-                    "TypeDeclId",
                     "TypeVarId",
-                    "DeBruijnId",
+                    "ConstGeneric",
+                    "TraitClauseId",
                     "DeBruijnVar",
                     "AnyTransId",
-                    "ConstGeneric",
                 ]),
                 // Can't merge into above because aeneas uses the above alongside their own partial
                 // copy of `ty`, which causes method type clashes.
@@ -1213,23 +1207,10 @@ fn generate_ml(
                     reduce: false,
                     extra_types: &[],
                 })), &[
-                    "TraitItemName",
-                    "BuiltinTy",
-                    "TypeId",
-                    "ExistentialPredicate",
-                    "RefKind",
                     "TyKind",
-                    "Region",
-                    "RegionVar",
-                    "TraitRef",
-                    "TraitRefKind",
-                    "TraitDeclRef",
                     "TraitImplRef",
                     "FunDeclRef",
                     "GlobalDeclRef",
-                    "GenericsSource",
-                    "GenericArgs",
-                    "RegionBinder",
                 ]),
                 // TODO: can't merge into above because of field name clashes (`types`, `regions` etc).
                 (GenerationKind::TypeDecl(Some(DeriveVisitors {
@@ -1237,27 +1218,11 @@ fn generate_ml(
                     name: "type_decl",
                     reduce: false,
                     extra_types: &[
-                        "span","attr_info"
+                        "span", "attr_info"
                     ],
                 })), &[
-                    "TraitClause",
-                    "TypeVar",
-                    "OutlivesPred",
-                    "RegionOutlives",
-                    "TypeOutlives",
-                    "GenericParams",
-                    "ConstGenericVar",
-                    "TraitTypeConstraint",
                     "Binder",
-                    "Disambiguator",
-                    "ImplElem",
-                    "PathElem",
-                    "Name",
-                    "Field",
-                    "Variant",
-                    "ItemMeta",
                     "AbortKind",
-                    "TypeDeclKind",
                     "TypeDecl",
                 ]),
             ]),
@@ -1265,34 +1230,13 @@ fn generate_ml(
         GenerateCodeFor {
             template: template_dir.join("Expressions.ml"),
             target: output_dir.join("Generated_Expressions.ml"),
-            markers: ctx.markers_from_names(&[
+            markers: markers_from_children(&ctx, &[
                 (GenerationKind::TypeDecl(Some(DeriveVisitors {
                     ancestors: &["type_decl"],
                     name: "rvalue",
                     reduce: false,
                     extra_types: &[],
                 })), &[
-                    "VarId",
-                    "VariantId",
-                    "FieldId",
-                    "BuiltinIndexOp",
-                    "BuiltinFunId",
-                    "BorrowKind",
-                    "BinOp",
-                    "FieldProjKind",
-                    "ProjectionElem",
-                    "PlaceKind",
-                    "Place",
-                    "CastKind",
-                    "UnOp",
-                    "NullOp",
-                    "RawConstantExpr",
-                    "ConstantExpr",
-                    "FnPtr",
-                    "FunIdOrTraitMethodRef",
-                    "FunId",
-                    "Operand",
-                    "AggregateKind",
                     "Rvalue",
                 ]),
             ]),
@@ -1300,19 +1244,15 @@ fn generate_ml(
         GenerateCodeFor {
             template: template_dir.join("GAst.ml"),
             target: output_dir.join("Generated_GAst.ml"),
-            markers: ctx.markers_from_names(&[
+            markers: markers_from_children(&ctx, &[
                 (GenerationKind::TypeDecl(Some(DeriveVisitors {
                     ancestors: &["rvalue"],
                     name: "fun_sig",
                     reduce: false,
                     extra_types: &[],
                 })), &[
-                    "Var",
-                    "FnOperand",
                     "Call",
                     "Assert",
-                    "ClosureKind",
-                    "ClosureInfo",
                     "ItemKind",
                     "Locals",
                     "FunSig",
@@ -1345,7 +1285,6 @@ fn generate_ml(
                 (GenerationKind::TypeDecl(None), &[
                     "CliOpts",
                     "GExprBody",
-                    "GDeclarationGroup",
                     "DeclarationGroup",
                 ]),
             ]),
@@ -1353,28 +1292,28 @@ fn generate_ml(
         GenerateCodeFor {
             template: template_dir.join("LlbcAst.ml"),
             target: output_dir.join("Generated_LlbcAst.ml"),
-            markers: vec![
+            markers: markers_from_children(&ctx, &[
                 (GenerationKind::TypeDecl(Some(DeriveVisitors {
-                    ancestors: &["trait_impl"],
                     name: "statement",
+                    ancestors: &["trait_impl"],
                     reduce: false,
                     extra_types: &[],
-                })), llbc_types.clone()),
-            ],
+                })), &[
+                    "charon_lib::ast::llbc_ast::Statement",
+                ]),
+            ]),
         },
         GenerateCodeFor {
             template: template_dir.join("UllbcAst.ml"),
             target: output_dir.join("Generated_UllbcAst.ml"),
-            markers: ctx.markers_from_names(&[
+            markers: markers_from_children(&ctx, &[
                 (GenerationKind::TypeDecl(Some(DeriveVisitors {
                     ancestors: &["trait_impl"],
                     name: "statement",
                     reduce: false,
                     extra_types: &[],
                 })), &[
-                    "charon_lib::ast::ullbc_ast::BlockId",
                     "charon_lib::ast::ullbc_ast::Statement",
-                    "charon_lib::ast::ullbc_ast::RawStatement",
                     "charon_lib::ast::ullbc_ast::SwitchTargets",
                 ]),
                 // TODO: Can't merge with above because of field name clashes (`content` and `span`).
@@ -1384,9 +1323,6 @@ fn generate_ml(
                     reduce: false,
                     extra_types: &[],
                 })), &[
-                    "charon_lib::ast::ullbc_ast::Terminator",
-                    "charon_lib::ast::ullbc_ast::RawTerminator",
-                    "charon_lib::ast::ullbc_ast::BlockData",
                     "charon_lib::ast::ullbc_ast::BodyContents",
                 ]),
             ]),
