@@ -37,8 +37,11 @@ fn transform_call(ctx: &mut TransformCtx, span: Span, call: &mut Call) {
 
     // Make the two levels of binding explicit: outer binder for the impl block, inner binder for
     // the method.
-    let fn_ref: Binder<Binder<FunDeclRef>> =
-        Binder::new(trait_impl.generics.clone(), bound_fn.clone());
+    let fn_ref: Binder<Binder<FunDeclRef>> = Binder::new(
+        BinderKind::Other,
+        trait_impl.generics.clone(),
+        bound_fn.clone(),
+    );
     // Substitute the appropriate generics into the function call.
     let fn_ref = fn_ref.apply(impl_generics).apply(method_generics);
     fn_ptr.generics = fn_ref.generics;

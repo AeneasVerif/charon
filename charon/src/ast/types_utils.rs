@@ -98,10 +98,11 @@ impl GenericParams {
 }
 
 impl<T> Binder<T> {
-    pub fn new(params: GenericParams, skip_binder: T) -> Self {
+    pub fn new(kind: BinderKind, params: GenericParams, skip_binder: T) -> Self {
         Self {
             params,
             skip_binder,
+            kind,
         }
     }
 
@@ -115,6 +116,19 @@ impl<T> Binder<T> {
         assert!(args.matches(&self.params));
         val.drive_mut(&mut SubstVisitor::new(args));
         val
+    }
+}
+
+impl<T> RegionBinder<T> {
+    /// Wrap the value in an empty region binder, shifting variables appropriately.
+    pub fn empty(x: T) -> Self
+    where
+        T: TyVisitable,
+    {
+        RegionBinder {
+            regions: Default::default(),
+            skip_binder: x.move_under_binder(),
+        }
     }
 }
 
@@ -555,6 +569,11 @@ impl VisitAstMut for SubstVisitor<'_> {
 pub trait TyVisitable: Sized + AstVisitable {
     fn substitute(&mut self, generics: &GenericArgs) {
         self.drive_mut(&mut SubstVisitor::new(generics));
+    }
+
+    /// Move under one binder.
+    fn move_under_binder(self) -> Self {
+        self.move_under_binders(DeBruijnId::one())
     }
 
     /// Move under `depth` binders.
