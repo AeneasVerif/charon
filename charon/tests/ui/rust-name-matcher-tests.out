@@ -16,7 +16,7 @@ trait core::marker::Sized<Self>
 trait test_crate::Trait<Self, T>
 {
     parent_clause0 : [@TraitClause0]: core::marker::Sized<T>
-    fn method<U, [@TraitClause0]: core::marker::Sized<U>> = test_crate::Trait::method<Self, T, U>[@TraitClause0_0]
+    fn method<U, [@TraitClause0]: core::marker::Sized<U>> = test_crate::Trait::method<Self, T, U>[Self, @TraitClause0_0]
 }
 
 struct alloc::alloc::Global = {}
@@ -97,7 +97,8 @@ where
 
 fn test_crate::Trait::method<Self, T, U>()
 where
-    [@TraitClause0]: core::marker::Sized<U>,
+    [@TraitClause0]: test_crate::Trait<Self, T>,
+    [@TraitClause1]: core::marker::Sized<U>,
 
 
 

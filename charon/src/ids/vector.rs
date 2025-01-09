@@ -84,12 +84,20 @@ where
         self.real_len += 1;
     }
 
-    /// Remove the value from this slot.
+    /// Remove the value from this slot, leaving other ids unchanged.
     pub fn remove(&mut self, id: I) -> Option<T> {
         if self.vector[id].is_some() {
             self.real_len -= 1;
         }
         self.vector[id].take()
+    }
+
+    /// Remove the value from this slot, shifting other ids as needed.
+    pub fn remove_and_shift_ids(&mut self, id: I) -> Option<T> {
+        if self.vector[id].is_some() {
+            self.real_len -= 1;
+        }
+        self.vector.remove(id)
     }
 
     pub fn push(&mut self, x: T) -> I {
@@ -124,6 +132,12 @@ where
     {
         self.vector.extend_from_slice(&other.vector);
         self.real_len += other.real_len;
+    }
+
+    /// Insert a value at that index, shifting all the values with equal or larger indices.
+    pub fn insert(&mut self, id: I, x: T) {
+        self.real_len += 1;
+        self.vector.insert(id, Some(x))
     }
 
     /// Map each entry to a new one, keeping the same ids.

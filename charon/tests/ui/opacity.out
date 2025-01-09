@@ -33,10 +33,12 @@ trait core::convert::From<Self, T>
 {
     parent_clause0 : [@TraitClause0]: core::marker::Sized<Self>
     parent_clause1 : [@TraitClause1]: core::marker::Sized<T>
-    fn from = core::convert::From::from<Self, T>
+    fn from = core::convert::From::from<Self, T>[Self]
 }
 
 fn core::convert::From::from<Self, T>(@1: T) -> Self
+where
+    [@TraitClause0]: core::convert::From<Self, T>,
 
 fn core::convert::{impl core::convert::Into<U> for T}#3::into<T, U>(@1: T) -> U
 where
@@ -114,12 +116,14 @@ struct test_crate::Struct = {}
 unsafe fn test_crate::extern_fn(@1: i32)
 
 fn core::convert::Into::into<Self, T>(@1: Self) -> T
+where
+    [@TraitClause0]: core::convert::Into<Self, T>,
 
 trait core::convert::Into<Self, T>
 {
     parent_clause0 : [@TraitClause0]: core::marker::Sized<Self>
     parent_clause1 : [@TraitClause1]: core::marker::Sized<T>
-    fn into = core::convert::Into::into<Self, T>
+    fn into = core::convert::Into::into<Self, T>[Self]
 }
 
 impl<T, U> core::convert::{impl core::convert::Into<U> for T}#3<T, U> : core::convert::Into<T, U>

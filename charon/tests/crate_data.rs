@@ -222,6 +222,7 @@ fn predicate_origins() -> anyhow::Result<()> {
         (
             "test_crate::Trait::trait_method",
             vec![
+                (TraitSelf, "Trait"),
                 (WhereClauseOnFn, "Sized"),
                 (WhereClauseOnFn, "From"),
                 (WhereClauseOnFn, "From"),
@@ -611,14 +612,10 @@ fn declaration_groups() -> anyhow::Result<()> {
         "#,
     )?;
 
-    // There are two function ids registered, but only one is nonempty. `functions.len() == 2` as
-    // `len()` counts the empty slots too.
-    let decl_groups = crate_data.ordered_decls.unwrap();
+    // There are two function items: one for `foo`, one for the initializer of `Trait::FOO`.
     assert_eq!(crate_data.fun_decls.iter().count(), 2);
+    let decl_groups = crate_data.ordered_decls.unwrap();
     assert_eq!(decl_groups.len(), 5);
-    assert!(decl_groups
-        .iter()
-        .all(|group| group.to_mixed_group().is_non_rec()));
 
     Ok(())
 }
