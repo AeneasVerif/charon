@@ -814,19 +814,6 @@ fn test_crate::select<'_0, '_1>(@1: &'_0 (Slice<u8>), @2: &'_1 (Slice<u8>))
         @17 := copy (*(right_val@14))
         @15 := move (@16) == move (@17)
         if move (@15) {
-            drop @17
-            drop @16
-            @27 := ()
-            @5 := move (@27)
-            drop @15
-            drop right_val@14
-            drop left_val@13
-            drop @11
-            drop @8
-            drop @6
-            drop @5
-            @28 := ()
-            @3 := move (@28)
         }
         else {
             drop @17
@@ -841,6 +828,19 @@ fn test_crate::select<'_0, '_1>(@1: &'_0 (Slice<u8>), @2: &'_1 (Slice<u8>))
             @24 := core::option::Option::None {  }
             panic(core::panicking::assert_failed)
         }
+        drop @17
+        drop @16
+        @27 := ()
+        @5 := move (@27)
+        drop @15
+        drop right_val@14
+        drop left_val@13
+        drop @11
+        drop @8
+        drop @6
+        drop @5
+        @28 := ()
+        @3 := move (@28)
     }
     else {
         @25 := ()
