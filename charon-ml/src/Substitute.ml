@@ -523,3 +523,33 @@ let lookup_and_subst_trait_impl_required_method (timpl : trait_impl)
   Option.map
     (instantiate_method Self impl_generics method_generics)
     (lookup_trait_impl_required_method timpl name)
+
+(* Construct a set of generic arguments in the scope of `params` that matches
+   `params` and feeds each required parameter with itself. E.g. given
+   parameters for `<T, U> where U: PartialEq<T>`, the arguments would be `<T,
+   U>[@TraitClause0]`. This uses `Bound` variables; we could define the same
+   for `Free` variables if needed.
+*)
+let bound_identity_args (params : generic_params) : generic_args =
+  (* Reuse the basic id->val mappings *)
+  let s = empty_bound_sb_subst in
+  {
+    regions =
+      List.map
+        (fun (var : _ indexed_var) -> s.r_sb_subst var.index)
+        params.regions;
+    types =
+      List.map
+        (fun (var : _ indexed_var) -> s.ty_sb_subst var.index)
+        params.types;
+    const_generics =
+      List.map
+        (fun (var : const_generic_var) -> s.cg_sb_subst var.index)
+        params.const_generics;
+    trait_refs =
+      List.map
+        (fun (clause : trait_clause) ->
+          let trait_id = s.tr_sb_subst clause.clause_id in
+          { trait_id; trait_decl_ref = clause.trait })
+        params.trait_clauses;
+  }
