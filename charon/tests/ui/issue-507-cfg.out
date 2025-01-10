@@ -10,7 +10,7 @@ fn test_crate::CONST() -> u8
 
 global test_crate::CONST: u8 = test_crate::CONST()
 
-fn test_crate::f()
+fn test_crate::f0()
 {
     let @0: (); // return
     let @1: bool; // anonymous local
@@ -48,6 +48,103 @@ fn test_crate::f()
         @0 := move (@5)
     }
     drop @1
+    @0 := ()
+    return
+}
+
+fn test_crate::f1<'_0>(@1: &'_0 (Array<u8, 1 : usize>))
+{
+    let @0: (); // return
+    let serialized@1: &'_ (Array<u8, 1 : usize>); // arg #1
+    let previous_true_hints_seen@2: usize; // local
+    let i@3: i32; // local
+    let @4: (); // anonymous local
+    let @5: bool; // anonymous local
+    let @6: i32; // anonymous local
+    let @7: (); // anonymous local
+    let @8: bool; // anonymous local
+    let @9: bool; // anonymous local
+    let j@10: i32; // local
+    let @11: bool; // anonymous local
+    let @12: i32; // anonymous local
+    let x@13: u8; // local
+    let @14: (); // anonymous local
+    let @15: (); // anonymous local
+    let @16: (); // anonymous local
+    let @17: (); // anonymous local
+    let @18: (); // anonymous local
+    let @19: u8; // anonymous local
+    let @20: (); // anonymous local
+    let @21: (); // anonymous local
+
+    previous_true_hints_seen@2 := const (0 : usize)
+    @fake_read(previous_true_hints_seen@2)
+    i@3 := const (0 : i32)
+    @fake_read(i@3)
+    loop {
+        @6 := copy (i@3)
+        @5 := move (@6) < const (1 : i32)
+        if move (@5) {
+            drop @6
+            @8 := const (0 : i32) < const (1 : i32)
+            if move (@8) {
+                @17 := ()
+                @7 := move (@17)
+            }
+            else {
+                @9 := const (1 : i32) > const (1 : i32)
+                if move (@9) {
+                    @17 := ()
+                    @7 := move (@17)
+                }
+                else {
+                    @18 := ()
+                    @7 := move (@18)
+                }
+            }
+            drop @9
+            drop @8
+            drop @7
+            j@10 := const (0 : i32)
+            @fake_read(j@10)
+            loop {
+                @12 := copy (j@10)
+                @11 := move (@12) < const (1 : i32)
+                if move (@11) {
+                    drop @12
+                    @19 := test_crate::CONST
+                    x@13 := move (@19)
+                    @fake_read(x@13)
+                    @20 := ()
+                    @4 := move (@20)
+                    drop x@13
+                    drop @11
+                    continue 0
+                }
+                else {
+                    break 0
+                }
+            }
+            drop @12
+            @21 := ()
+            @4 := move (@21)
+            drop @14
+            drop @11
+            drop j@10
+            drop @5
+            continue 0
+        }
+        else {
+            break 0
+        }
+    }
+    drop @6
+    @16 := ()
+    @0 := move (@16)
+    drop @15
+    drop @5
+    drop i@3
+    drop previous_true_hints_seen@2
     @0 := ()
     return
 }
