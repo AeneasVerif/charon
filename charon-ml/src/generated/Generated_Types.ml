@@ -38,11 +38,11 @@ type ('id, 'name) indexed_var = {
 }
 [@@deriving show, ord]
 
-type fun_decl_id = (FunDeclId.id[@opaque])
-and type_decl_id = (TypeDeclId.id[@opaque])
-and global_decl_id = (GlobalDeclId.id[@opaque])
-and trait_decl_id = (TraitDeclId.id[@opaque])
-and trait_impl_id = (TraitImplId.id[@opaque])
+type fun_decl_id = (FunDeclId.id[@visitors.opaque])
+and type_decl_id = (TypeDeclId.id[@visitors.opaque])
+and global_decl_id = (GlobalDeclId.id[@visitors.opaque])
+and trait_decl_id = (TraitDeclId.id[@visitors.opaque])
+and trait_impl_id = (TraitImplId.id[@visitors.opaque])
 
 (** The id of a translated item. *)
 and any_decl_id =
@@ -97,10 +97,10 @@ and 'a0 de_bruijn_var =
           is not used in charon internals, only as a micro-pass before exporting the crate data.
        *)
 
-and region_id = (RegionId.id[@opaque])
-and type_var_id = (TypeVarId.id[@opaque])
-and const_generic_var_id = (ConstGenericVarId.id[@opaque])
-and trait_clause_id = (TraitClauseId.id[@opaque])
+and region_id = (RegionId.id[@visitors.opaque])
+and type_var_id = (TypeVarId.id[@visitors.opaque])
+and const_generic_var_id = (ConstGenericVarId.id[@visitors.opaque])
+and trait_clause_id = (TraitClauseId.id[@visitors.opaque])
 
 (** Const Generic Values. Either a primitive value, or a variable corresponding to a primitve value *)
 and const_generic =
@@ -482,7 +482,7 @@ and item_meta = {
       (** `true` if the type decl is a local type decl, `false` if it comes from an external crate. *)
 }
 
-and disambiguator = (Disambiguator.id[@opaque])
+and disambiguator = (Disambiguator.id[@visitors.opaque])
 
 (** See the comments for [Name] *)
 and path_elem =
@@ -538,7 +538,7 @@ and impl_elem = ImplElemTy of ty binder | ImplElemTrait of trait_impl_id
 
     Also note that the first path element in the name is always the crate name.
  *)
-and name = (path_elem list[@opaque])
+and name = (path_elem list[@visitors.opaque])
 
 (** A type variable in a signature or binder. *)
 and type_var = (type_var_id, string) indexed_var
@@ -641,8 +641,8 @@ and type_decl = {
   kind : type_decl_kind;  (** The type kind: enum, struct, or opaque. *)
 }
 
-and variant_id = (VariantId.id[@opaque])
-and field_id = (FieldId.id[@opaque])
+and variant_id = (VariantId.id[@visitors.opaque])
+and field_id = (FieldId.id[@visitors.opaque])
 
 and type_decl_kind =
   | Struct of field list
