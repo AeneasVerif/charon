@@ -969,6 +969,48 @@ fn compute_switch_exits_explore(
     info
 }
 
+/// Auxiliary helper
+///
+/// Check if it is possible to reach the exit of an outer switch from [bid]
+/// without going through the [exit_candidate]. We use the graph without
+/// backward edges.
+fn can_reach_outer_exit(
+    cfg: &CfgInfo,
+    outer_exits: &HashSet<src::BlockId>,
+    start_bid: src::BlockId,
+    exit_candidate: src::BlockId,
+) -> bool {
+    // The stack of blocks
+    let mut stack: Vec<src::BlockId> = vec![start_bid];
+    let mut explored: HashSet<src::BlockId> = HashSet::new();
+
+    while let Some(bid) = stack.pop() {
+        // Check if already explored
+        if explored.contains(&bid) {
+            break;
+        }
+        explored.insert(bid);
+
+        // Check if this is the exit candidate
+        if bid == exit_candidate {
+            // Stop exploring
+            break;
+        }
+
+        // Check if this is an outer exit
+        if outer_exits.contains(&bid) {
+            return true;
+        }
+
+        // Add the children to the stack
+        for child in cfg.cfg_no_be.neighbors(bid) {
+            stack.push(child);
+        }
+    }
+
+    false
+}
+
 /// See [`compute_loop_switch_exits`](compute_loop_switch_exits) for
 /// explanations about what "exits" are.
 ///
@@ -997,6 +1039,12 @@ fn compute_switch_exits(
 ) -> HashMap<src::BlockId, Option<src::BlockId>> {
     // Compute the successors info map, starting at the root node
     let mut succs_info_map = HashMap::new();
+    trace!(
+        "- cfg.cfg:\n{:?}\n- cfg.cfg_no_be:\n{:?}\n- cfg.switch_blocks:\n{:?}",
+        cfg.cfg,
+        cfg.cfg_no_be,
+        cfg.switch_blocks
+    );
     let _ = compute_switch_exits_explore(cfg, tsort_map, &mut succs_info_map, src::BlockId::ZERO);
 
     // We need to give precedence to the outer switches: we thus iterate
@@ -1005,6 +1053,7 @@ fn compute_switch_exits(
     for bid in cfg.switch_blocks.iter() {
         sorted_switch_blocks.insert(make_ord_block_id(*bid, tsort_map));
     }
+    trace!("sorted_switch_blocks: {:?}", sorted_switch_blocks);
 
     // Debugging: print all the successors
     {
@@ -1032,27 +1081,32 @@ fn compute_switch_exits(
     let mut ord_exits_set = BTreeSet::new();
     let mut exits = HashMap::new();
     for bid in sorted_switch_blocks {
+        trace!("Finding exit candidate for: {bid:?}");
         let bid = bid.id;
         let info = succs_info_map.get(&bid).unwrap();
         let succs = &info.best_inter_succs;
         // Check if there are successors: if there are no successors shared
         // by the branches, there are no exits.
         if succs.is_empty() {
+            trace!("{bid:?} has no successors");
             exits.insert(bid, None);
         } else {
             // We have an exit candidate: check that it was not already
             // taken by an external switch
             let exit = succs.iter().next().unwrap();
+            trace!("{bid:?} has an exit candidate: {exit:?}");
             if exits_set.contains(&exit.id) {
+                trace!("Ignoring the exit candidate because already taken by an external switch");
                 exits.insert(bid, None);
             } else {
                 // It was not taken by an external switch.
                 //
                 // We must check that we can't reach the exit of an external
-                // switch from one of the branches. We do this by simply
-                // checking that we can't reach any exits (and use the fact
-                // that we explore the switch by using a topological order
-                // to not discard valid exit candidates).
+                // switch from one of the branches, without going through the
+                // exit candidate.
+                // We do this by simply checking that we can't reach any exits
+                // (and use the fact that we explore the switch by using a
+                // topological order to not discard valid exit candidates).
                 //
                 // The reason is that it can lead to code like the following:
                 // ```
@@ -1077,12 +1131,21 @@ fn compute_switch_exits(
                 //   ...
                 // }
                 // ```
-                if info.succs.intersection(&ord_exits_set).next().is_none() {
+
+                // First: we do a quick check (does the set of all successors
+                // intersect the set of exits for outer blocks?). If yes, we do
+                // a more precise analysis: we check if we can reach the exit
+                // *without going through* the exit candidate.
+                if info.succs.intersection(&ord_exits_set).next().is_none()
+                    || !can_reach_outer_exit(cfg, &exits_set, bid, exit.id)
+                {
+                    trace!("Keeping the exit candidate");
                     // No intersection: ok
                     exits_set.insert(exit.id);
                     ord_exits_set.insert(*exit);
                     exits.insert(bid, Some(exit.id));
                 } else {
+                    trace!("Ignoring the exit candidate because of an intersection with external switches");
                     exits.insert(bid, None);
                 }
             }
@@ -1234,12 +1297,15 @@ fn compute_loop_switch_exits(
         .enumerate()
         .map(|(i, block_id)| (block_id, i))
         .collect();
+    trace!("tsort_map:\n{:?}", tsort_map);
 
     // Compute the loop exits
     let loop_exits = compute_loop_exits(ctx, body, cfg_info);
+    trace!("loop_exits:\n{:?}", loop_exits);
 
     // Compute the switch exits
     let switch_exits = compute_switch_exits(cfg_info, &tsort_map);
+    trace!("switch_exits:\n{:?}", switch_exits);
 
     // Compute the exit info
     let mut exit_info = ExitInfo {
@@ -1706,7 +1772,7 @@ fn translate_body_aux(
     let exits_info = compute_loop_switch_exits(ctx, src_body, &cfg_info);
 
     // Debugging
-    trace!("exits map:\n{:?}", exits_info);
+    trace!("exits_info:\n{:?}", exits_info);
 
     // Translate the body by reconstructing the loops and the
     // conditional branchings.
