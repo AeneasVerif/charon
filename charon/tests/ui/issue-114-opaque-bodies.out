@@ -207,8 +207,8 @@ fn test_crate::max() -> usize
 
 trait core::cmp::PartialEq<Self, Rhs>
 {
-    fn eq<'_0, '_1> = core::cmp::PartialEq::eq<'_0_0, '_0_1, Self, Rhs>
-    fn ne<'_0, '_1> = core::cmp::PartialEq::ne<'_0_0, '_0_1, Self, Rhs>
+    fn eq<'_0, '_1> = core::cmp::PartialEq::eq<'_0_0, '_0_1, Self, Rhs>[Self]
+    fn ne<'_0, '_1> = core::cmp::PartialEq::ne<'_0_0, '_0_1, Self, Rhs>[Self]
 }
 
 fn test_crate::partial_eq<T>(@1: T)
@@ -228,12 +228,14 @@ where
 }
 
 fn core::convert::From::from<Self, T>(@1: T) -> Self
+where
+    [@TraitClause0]: core::convert::From<Self, T>,
 
 trait core::convert::From<Self, T>
 {
     parent_clause0 : [@TraitClause0]: core::marker::Sized<Self>
     parent_clause1 : [@TraitClause1]: core::marker::Sized<T>
-    fn from = core::convert::From::from<Self, T>
+    fn from = core::convert::From::from<Self, T>[Self]
 }
 
 impl core::convert::num::{impl core::convert::From<i32> for i64}#83 : core::convert::From<i64, i32>
@@ -244,15 +246,19 @@ impl core::convert::num::{impl core::convert::From<i32> for i64}#83 : core::conv
 }
 
 fn core::cmp::PartialEq::eq<'_0, '_1, Self, Rhs>(@1: &'_0 (Self), @2: &'_1 (Rhs)) -> bool
+where
+    [@TraitClause0]: core::cmp::PartialEq<Self, Rhs>,
 
 fn core::cmp::PartialEq::ne<'_0, '_1, Self, Rhs>(@1: &'_0 (Self), @2: &'_1 (Rhs)) -> bool
+where
+    [@TraitClause0]: core::cmp::PartialEq<Self, Rhs>,
 {
     let @0: bool; // return
     let self@1: &'_ (Self); // arg #1
     let other@2: &'_ (Rhs); // arg #2
     let @3: bool; // anonymous local
 
-    @3 := Self::eq<'_, '_>(move (self@1), move (other@2))
+    @3 := @TraitClause0::eq<'_, '_>(move (self@1), move (other@2))
     @0 := ~(move (@3))
     drop @3
     return

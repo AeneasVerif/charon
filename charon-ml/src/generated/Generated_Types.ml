@@ -97,7 +97,6 @@ and 'a0 de_bruijn_var =
           is not used in charon internals, only as a micro-pass before exporting the crate data.
        *)
 
-and region_id = (RegionId.id[@opaque])
 and type_var_id = (TypeVarId.id[@opaque])
 and const_generic_var_id = (ConstGenericVarId.id[@opaque])
 and trait_clause_id = (TraitClauseId.id[@opaque])
@@ -193,6 +192,7 @@ and global_decl_ref = {
 }
 
 and trait_item_name = string
+and region_id = (RegionId.id[@opaque])
 
 (** A region variable in a signature or binder. *)
 and region_var = (region_id, string option) indexed_var

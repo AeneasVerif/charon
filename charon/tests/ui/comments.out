@@ -141,7 +141,7 @@ struct test_crate::Foo =
 trait core::default::Default<Self>
 {
     parent_clause0 : [@TraitClause0]: core::marker::Sized<Self>
-    fn default = core::default::Default::default<Self>
+    fn default = core::default::Default::default<Self>[Self]
 }
 
 fn core::default::{impl core::default::Default for u32}#7::default() -> u32
@@ -421,6 +421,8 @@ fn test_crate::fool()
 }
 
 fn core::default::Default::default<Self>() -> Self
+where
+    [@TraitClause0]: core::default::Default<Self>,
 
 impl core::default::{impl core::default::Default for u32}#7 : core::default::Default<u32>
 {

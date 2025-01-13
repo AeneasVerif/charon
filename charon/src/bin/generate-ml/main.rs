@@ -1192,7 +1192,6 @@ fn generate_ml(
                     reduce: true,
                     extra_types: &[],
                 })), &[
-                    "RegionId",
                     "TypeVarId",
                     "ConstGeneric",
                     "TraitClauseId",
