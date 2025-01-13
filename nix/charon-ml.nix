@@ -1,6 +1,7 @@
 { lib
 , charon
 , fetchFromGitHub
+, ocaml-ng
 , ocamlPackages
 , runCommand
 , stdenv
@@ -87,7 +88,7 @@ let
         calendar
         charon-name_matcher_parser
         unionFind
-        ppx_tools # to view the output of visitor derivation
+        ocaml-ng.ocamlPackages_4_14.ppx_tools # to view the output of visitor derivation
       ];
       inherit doCheck;
 
