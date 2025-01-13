@@ -89,12 +89,6 @@ fn test_crate::test_loop2(@1: u32) -> u32
             @11 := copy (i@2)
             @10 := move (@11) == const (17 : u32)
             if move (@10) {
-                drop @11
-                @15 := ()
-                @4 := move (@15)
-                drop @10
-                drop @9
-                break 0
             }
             else {
                 drop @11
@@ -111,6 +105,12 @@ fn test_crate::test_loop2(@1: u32) -> u32
                 drop @6
                 continue 0
             }
+            drop @11
+            @15 := ()
+            @4 := move (@15)
+            drop @10
+            drop @9
+            break 0
         }
         else {
             drop @8
@@ -494,12 +494,6 @@ fn test_crate::test_loop6(@1: u32) -> u32
             @11 := copy (i@2)
             @10 := move (@11) > const (3 : u32)
             if move (@10) {
-                drop @11
-                @15 := ()
-                @4 := move (@15)
-                drop @10
-                drop @9
-                break 0
             }
             else {
                 drop @11
@@ -516,6 +510,12 @@ fn test_crate::test_loop6(@1: u32) -> u32
                 drop @6
                 continue 0
             }
+            drop @11
+            @15 := ()
+            @4 := move (@15)
+            drop @10
+            drop @9
+            break 0
         }
         else {
             drop @8
@@ -581,12 +581,6 @@ fn test_crate::test_loop7(@1: u32) -> u32
                 @14 := copy (i@2)
                 @13 := move (@14) > const (3 : u32)
                 if move (@13) {
-                    drop @14
-                    @19 := ()
-                    @4 := move (@19)
-                    drop @13
-                    drop @12
-                    break 0
                 }
                 else {
                     drop @14
@@ -603,6 +597,12 @@ fn test_crate::test_loop7(@1: u32) -> u32
                     drop @9
                     continue 0
                 }
+                drop @14
+                @19 := ()
+                @4 := move (@19)
+                drop @13
+                drop @12
+                break 0
             }
             else {
                 drop @11

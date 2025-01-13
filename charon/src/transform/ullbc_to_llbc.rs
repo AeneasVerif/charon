@@ -30,10 +30,11 @@ use crate::transform::TransformCtx;
 use crate::ullbc_ast::{self as src};
 use hashlink::linked_hash_map::LinkedHashMap;
 use itertools::Itertools;
+use num_bigint::BigInt;
+use num_rational::BigRational;
 use petgraph::algo::toposort;
 use petgraph::graphmap::DiGraphMap;
 use petgraph::Direction;
-use std::cmp::Ordering;
 use std::collections::{BTreeSet, HashMap, HashSet, VecDeque};
 
 use super::ctx::TransformPass;
@@ -182,24 +183,21 @@ fn build_cfg_partial_info_edges(
     }
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-struct OrdBlockId {
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
+struct BlockWithRank<T> {
+    /// A "rank" quantity that we use to order the nodes.
+    /// By placing the `rank` field before the `id`, we make sure that
+    /// we use the rank first in the lexicographic order.
+    rank: T,
     id: src::BlockId,
-    /// The rank in the topological order
-    rank: usize,
 }
 
-impl Ord for OrdBlockId {
-    fn cmp(&self, other: &Self) -> Ordering {
-        self.rank.cmp(&other.rank)
-    }
-}
+type OrdBlockId = BlockWithRank<usize>;
 
-impl PartialOrd for OrdBlockId {
-    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
-        Some(self.cmp(other))
-    }
-}
+/// For the rank we use:
+/// - a "flow" quantity (see [BlocksInfo])
+/// - the *inverse* rank in the topological sort (i.e., `- topo_rank`)
+type FlowBlockId = BlockWithRank<(BigRational, isize)>;
 
 #[derive(Debug, Clone)]
 struct LoopExitCandidateInfo {
@@ -817,26 +815,44 @@ fn compute_loop_exits(
 /// on cloning.
 #[derive(Debug, Clone)]
 struct BlocksInfo {
+    id: src::BlockId,
     /// All the successors of the block
     succs: BTreeSet<OrdBlockId>,
-    /// The "best" intersection between the successors of the different
-    /// direct children of the block. We use this to find switch exits
-    /// candidates: if the intersection is non-empty and because the
-    /// elements are topologically sorted, the first block in the set
-    /// should be the exit.
-    /// Note that we can ignore children when computing the intersection,
-    /// which is why we call it the "best" intersection. For instance, in
-    /// the following:
+    /// Let's say we put a quantity of water equal to 1 on the block, and the
+    /// water flows downards. Whenever there is a branching, the quantity of
+    /// water gets equally divided between the branches. When the control flows
+    /// join, we put the water back together. The set below computes the amount
+    /// of water received by each descendant of the node.
+    ///
+    /// TODO: there must be a known algorithm which computes this, right?...
+    /// This is exactly this problems:
+    /// https://stackoverflow.com/questions/78221666/algorithm-for-total-flow-through-weighted-directed-acyclic-graph
+    /// TODO: the way I compute this is not efficient.
+    ///
+    /// Remark: in order to rank the nodes, we also use the negation of the
+    /// rank given by the topological order. The last elements of the set
+    /// have the highest flow, that is they are the nodes to which the maximum
+    /// number of paths converge. If several nodes have the same flow, we want
+    /// to take the highest one in the hierarchy: hence the use of the inverse
+    /// of the topological rank.
+    ///
+    /// Ex.:
     /// ```text
-    /// switch i {
-    ///   0 => x = 1,
-    ///   1 => x = 2,
-    ///   _ => panic,
-    /// }
+    /// A  -- we start here
+    /// |
+    /// |---------------------------------------
+    /// |            |            |            |
+    /// B:(0.25,-1)  C:(0.25,-2)  D:(0.25,-3)  E:(0.25,-4)
+    /// |            |            |
+    /// |--------------------------
+    /// |
+    /// F:(0.75,-5)
+    /// |
+    /// |
+    /// G:(0.75,-6)
     /// ```
-    /// The branches 0 and 1 have successors which intersect, but the branch 2
-    /// doesn't because it terminates: we thus ignore it.
-    best_inter_succs: BTreeSet<OrdBlockId>,
+    /// The "best" node (with the highest (flow, rank) in the graph above is F.
+    flow: BTreeSet<FlowBlockId>,
 }
 
 /// Create an [OrdBlockId] from a block id and a rank given by a map giving
@@ -856,117 +872,128 @@ fn compute_switch_exits_explore(
     tsort_map: &HashMap<src::BlockId, usize>,
     memoized: &mut HashMap<src::BlockId, BlocksInfo>,
     block_id: src::BlockId,
-) -> BlocksInfo {
-    // Shortcut
-    if let Some(res) = memoized.get(&block_id) {
-        return res.clone();
+) {
+    // Check if we already computer the info
+    if memoized.get(&block_id).is_some() {
+        return;
     }
 
-    // Find the next blocks, and their successors
-    let children: Vec<src::BlockId> = cfg.cfg_no_be.neighbors(block_id).collect_vec();
-    let mut children_succs: Vec<BTreeSet<OrdBlockId>> = ensure_sufficient_stack(|| {
-        children
-            .iter()
-            .map(|bid| compute_switch_exits_explore(cfg, tsort_map, memoized, *bid).succs)
-            .collect_vec()
-    });
-    trace!("block: {}, children: {:?}", block_id, children);
-
-    // Add the children themselves in their sets of successors
-    for i in 0..children.len() {
-        children_succs[i].insert(make_ord_block_id(children[i], tsort_map));
-    }
-
-    // Compute the full sets of successors of the children
-    let all_succs: BTreeSet<OrdBlockId> = children_succs
+    // Compute the block information for the children
+    let children_ids: Vec<src::BlockId> = cfg.cfg_no_be.neighbors(block_id).collect_vec();
+    children_ids
         .iter()
-        .fold(BTreeSet::new(), |acc, s| acc.union(s).copied().collect());
+        .for_each(|bid| compute_switch_exits_explore(cfg, tsort_map, memoized, *bid));
 
-    // Then, compute the "best" intersection of the successors
-    // If there is exactly one child or less, it is trivial
-    let best_inter_succs = if children.len() <= 1 {
-        all_succs.clone()
-    }
-    // Otherwise, there is a branching: we need to find the "best" intersection
-    // of successors, which allows to factorize the code as much as possible.
-    // We do it in a very "brutal" manner:
-    // 1. we look for the biggest set of children such that the intersection
-    //   of their successors is non empty.
-    // 2. in this intersection, we take the first block id (remember we use
-    //   topological sort), which will be our exit node.
-    //
-    // The reason behind 1 is that some branches of a match can join themselves,
-    // before joining other branches. For example:
-    // ```
-    // let y = match x {
-    //   | E1 | E2 => 0, // Those 2 branches lead to the same node
-    //   | E3 => 1,
-    // };
-    // // But the 3 branches join this point: this is the proper exit
-    // return y;
-    // ```
-    //
-    // Note that we're definitely not looking for performance here (and that
-    // there shouldn't be too many blocks in a function body), but rather
-    // quality of the generated code. If the following works well but proves
-    // to be too slow, we'll think of a way of making it faster.
-    // Note: actually, we could look only for *any* two pair of children
-    // whose successors intersection is non empty: I think it works in the
-    // general case.
-    else {
-        let mut max_number_inter: u32 = 0;
-        let mut max_inter_succs: BTreeSet<OrdBlockId> = BTreeSet::new();
+    // Retrieve the information
+    let children: Vec<&BlocksInfo> = children_ids
+        .iter()
+        .map(|bid| memoized.get(bid).unwrap())
+        .collect();
 
-        // For every child
-        for (i, mut i_succs) in children_succs.iter().cloned().enumerate() {
-            let mut current_number_inter = 1;
-            // Note that we need to add the children themselves to the
-            // sets of successors
-            i_succs.insert(make_ord_block_id(children[i], tsort_map));
-            let mut current_inter_succs: BTreeSet<OrdBlockId> = i_succs;
+    // Compute the successors
+    // Add the children themselves in their sets of successors
+    let all_succs: BTreeSet<OrdBlockId> = children.iter().fold(BTreeSet::new(), |acc, s| {
+        // Add the successors to the accumulator
+        let mut acc: BTreeSet<_> = acc.union(&s.succs).copied().collect();
+        // Add the child itself
+        acc.insert(make_ord_block_id(s.id, tsort_map));
+        acc
+    });
 
-            // Compute the "best" intersection with all the other children
-            for (j, mut j_succs) in children_succs.iter().cloned().enumerate() {
-                j_succs.insert(make_ord_block_id(children[j], tsort_map));
+    // Compute the "flows" (if there are children)
+    // TODO: this is computationally expensive...
+    let mut flow: HashMap<src::BlockId, (BigRational, isize)> = HashMap::new();
 
-                // Annoying that we have to clone the current intersection set...
-                let inter: BTreeSet<OrdBlockId> = current_inter_succs
-                    .intersection(&j_succs)
-                    .copied()
-                    .collect();
+    if children.len() > 0 {
+        // We need to divide the initial flow equally between the children
+        let factor = BigRational::new(BigInt::from(1), BigInt::from(children.len()));
 
-                if !inter.is_empty() {
-                    current_number_inter += 1;
-                    current_inter_succs = inter;
-                }
+        // Small helper
+        let mut add_to_flow = |(id, f0): (src::BlockId, (BigRational, isize))| match flow.get(&id) {
+            None => flow.insert(id, f0),
+            Some(f1) => {
+                let f = f0.0 + f1.0.clone();
+                assert!(f0.1 == f1.1);
+                flow.insert(id, (f, f0.1))
             }
+        };
 
-            // Update the best intersection, if necessary
-            if current_number_inter > max_number_inter {
-                max_number_inter = current_number_inter;
-                max_inter_succs = current_inter_succs;
+        // For each child, multiply the flows of its own children by the ratio,
+        // and add.
+        for child in children {
+            // First, add the child itself
+            let rank = isize::try_from(*tsort_map.get(&child.id).unwrap()).unwrap();
+            add_to_flow((child.id, (factor.clone(), -rank)));
+
+            // Then add its successors
+            for child1 in &child.flow {
+                add_to_flow((
+                    child1.id,
+                    (factor.clone() * child1.rank.0.clone(), child1.rank.1),
+                ));
             }
         }
+    }
 
-        max_inter_succs
-    };
+    // Put everything in an ordered set: the first block id will be the one with
+    // the highest flow, and in case of equality it will be the one with the
+    // smallest block id.
+    let flow: BTreeSet<FlowBlockId> = flow
+        .into_iter()
+        .map(|(id, rank)| BlockWithRank { rank, id })
+        .collect();
 
-    trace!(
-        "block: {}, all successors: {:?}, best intersection: {:?}",
-        block_id,
-        all_succs,
-        best_inter_succs
-    );
+    trace!("block: {block_id}, all successors: {all_succs:?}, flow: {flow:?}");
 
     // Memoize
     let info = BlocksInfo {
+        id: block_id,
         succs: all_succs,
-        best_inter_succs,
+        flow,
     };
     memoized.insert(block_id, info.clone());
+}
 
-    // Return
-    info
+/// Auxiliary helper
+///
+/// Check if it is possible to reach the exit of an outer switch from [bid]
+/// without going through the [exit_candidate]. We use the graph without
+/// backward edges.
+fn can_reach_outer_exit(
+    cfg: &CfgInfo,
+    outer_exits: &HashSet<src::BlockId>,
+    start_bid: src::BlockId,
+    exit_candidate: src::BlockId,
+) -> bool {
+    // The stack of blocks
+    let mut stack: Vec<src::BlockId> = vec![start_bid];
+    let mut explored: HashSet<src::BlockId> = HashSet::new();
+
+    while let Some(bid) = stack.pop() {
+        // Check if already explored
+        if explored.contains(&bid) {
+            break;
+        }
+        explored.insert(bid);
+
+        // Check if this is the exit candidate
+        if bid == exit_candidate {
+            // Stop exploring
+            break;
+        }
+
+        // Check if this is an outer exit
+        if outer_exits.contains(&bid) {
+            return true;
+        }
+
+        // Add the children to the stack
+        for child in cfg.cfg_no_be.neighbors(bid) {
+            stack.push(child);
+        }
+    }
+
+    false
 }
 
 /// See [`compute_loop_switch_exits`](compute_loop_switch_exits) for
@@ -997,6 +1024,12 @@ fn compute_switch_exits(
 ) -> HashMap<src::BlockId, Option<src::BlockId>> {
     // Compute the successors info map, starting at the root node
     let mut succs_info_map = HashMap::new();
+    trace!(
+        "- cfg.cfg:\n{:?}\n- cfg.cfg_no_be:\n{:?}\n- cfg.switch_blocks:\n{:?}",
+        cfg.cfg,
+        cfg.cfg_no_be,
+        cfg.switch_blocks
+    );
     let _ = compute_switch_exits_explore(cfg, tsort_map, &mut succs_info_map, src::BlockId::ZERO);
 
     // We need to give precedence to the outer switches: we thus iterate
@@ -1005,6 +1038,7 @@ fn compute_switch_exits(
     for bid in cfg.switch_blocks.iter() {
         sorted_switch_blocks.insert(make_ord_block_id(*bid, tsort_map));
     }
+    trace!("sorted_switch_blocks: {:?}", sorted_switch_blocks);
 
     // Debugging: print all the successors
     {
@@ -1013,8 +1047,8 @@ fn compute_switch_exits(
             for (bid, info) in &succs_info_map {
                 out.push(
                     format!(
-                        "{} -> {{succs: {:?}, best inter: {:?}}}",
-                        bid, &info.succs, &info.best_inter_succs
+                        "{} -> {{succs: {:?}, flow: {:?}}}",
+                        bid, &info.succs, &info.flow
                     )
                     .to_string(),
                 );
@@ -1032,27 +1066,32 @@ fn compute_switch_exits(
     let mut ord_exits_set = BTreeSet::new();
     let mut exits = HashMap::new();
     for bid in sorted_switch_blocks {
+        trace!("Finding exit candidate for: {bid:?}");
         let bid = bid.id;
         let info = succs_info_map.get(&bid).unwrap();
-        let succs = &info.best_inter_succs;
-        // Check if there are successors: if there are no successors shared
-        // by the branches, there are no exits.
+        let succs = &info.flow;
+        // Find the best successor: this is the last one (with the highest flow,
+        // and the highest reverse topological rank).
         if succs.is_empty() {
+            trace!("{bid:?} has no successors");
             exits.insert(bid, None);
         } else {
             // We have an exit candidate: check that it was not already
             // taken by an external switch
-            let exit = succs.iter().next().unwrap();
+            let exit = succs.last().unwrap();
+            trace!("{bid:?} has an exit candidate: {exit:?}");
             if exits_set.contains(&exit.id) {
+                trace!("Ignoring the exit candidate because already taken by an external switch");
                 exits.insert(bid, None);
             } else {
                 // It was not taken by an external switch.
                 //
                 // We must check that we can't reach the exit of an external
-                // switch from one of the branches. We do this by simply
-                // checking that we can't reach any exits (and use the fact
-                // that we explore the switch by using a topological order
-                // to not discard valid exit candidates).
+                // switch from one of the branches, without going through the
+                // exit candidate.
+                // We do this by simply checking that we can't reach any exits
+                // (and use the fact that we explore the switch by using a
+                // topological order to not discard valid exit candidates).
                 //
                 // The reason is that it can lead to code like the following:
                 // ```
@@ -1077,12 +1116,21 @@ fn compute_switch_exits(
                 //   ...
                 // }
                 // ```
-                if info.succs.intersection(&ord_exits_set).next().is_none() {
+
+                // First: we do a quick check (does the set of all successors
+                // intersect the set of exits for outer blocks?). If yes, we do
+                // a more precise analysis: we check if we can reach the exit
+                // *without going through* the exit candidate.
+                if info.succs.intersection(&ord_exits_set).next().is_none()
+                    || !can_reach_outer_exit(cfg, &exits_set, bid, exit.id)
+                {
+                    trace!("Keeping the exit candidate");
                     // No intersection: ok
                     exits_set.insert(exit.id);
-                    ord_exits_set.insert(*exit);
+                    ord_exits_set.insert(make_ord_block_id(exit.id, tsort_map));
                     exits.insert(bid, Some(exit.id));
                 } else {
+                    trace!("Ignoring the exit candidate because of an intersection with external switches");
                     exits.insert(bid, None);
                 }
             }
@@ -1234,12 +1282,15 @@ fn compute_loop_switch_exits(
         .enumerate()
         .map(|(i, block_id)| (block_id, i))
         .collect();
+    trace!("tsort_map:\n{:?}", tsort_map);
 
     // Compute the loop exits
     let loop_exits = compute_loop_exits(ctx, body, cfg_info);
+    trace!("loop_exits:\n{:?}", loop_exits);
 
     // Compute the switch exits
     let switch_exits = compute_switch_exits(cfg_info, &tsort_map);
+    trace!("switch_exits:\n{:?}", switch_exits);
 
     // Compute the exit info
     let mut exit_info = ExitInfo {
@@ -1706,7 +1757,7 @@ fn translate_body_aux(
     let exits_info = compute_loop_switch_exits(ctx, src_body, &cfg_info);
 
     // Debugging
-    trace!("exits map:\n{:?}", exits_info);
+    trace!("exits_info:\n{:?}", exits_info);
 
     // Translate the body by reconstructing the loops and the
     // conditional branchings.
