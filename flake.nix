@@ -3,7 +3,6 @@
 
   inputs = {
     flake-utils.url = "github:numtide/flake-utils";
-    flake-compat.url = "github:nix-community/flake-compat";
     nixpkgs.url = "nixpkgs/nixos-unstable";
     rust-overlay = {
       url = "github:oxalica/rust-overlay";
@@ -12,7 +11,7 @@
     crane.url = "github:ipetkov/crane";
   };
 
-  outputs = { self, flake-utils, nixpkgs, rust-overlay, crane, flake-compat }:
+  outputs = { self, flake-utils, nixpkgs, rust-overlay, crane }:
     flake-utils.lib.eachDefaultSystem (system:
       let
         pkgs = import nixpkgs {
