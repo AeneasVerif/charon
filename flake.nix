@@ -4,6 +4,10 @@
   inputs = {
     flake-utils.url = "github:numtide/flake-utils";
     nixpkgs.url = "nixpkgs/nixos-unstable";
+    # This makes it possible for downstream flakes to use a different nixpkgs
+    # for our ocaml package, since we use `ocamlPackages` which points to a
+    # different ocaml version depending on the nixpkgs version.
+    nixpkgs-ocaml.follows = "nixpkgs";
     rust-overlay = {
       url = "github:oxalica/rust-overlay";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -11,19 +15,22 @@
     crane.url = "github:ipetkov/crane";
   };
 
-  outputs = { self, flake-utils, nixpkgs, rust-overlay, crane }:
+  outputs = { self, flake-utils, nixpkgs, nixpkgs-ocaml, rust-overlay, crane }:
     flake-utils.lib.eachDefaultSystem (system:
       let
         pkgs = import nixpkgs {
           inherit system;
           overlays = [ (import rust-overlay) ];
         };
+        pkgs-ocaml = import nixpkgs-ocaml {
+          inherit system;
+        };
 
         rustToolchain = pkgs.rust-bin.fromRustupToolchainFile ./rust-toolchain;
         craneLib = (crane.mkLib pkgs).overrideToolchain rustToolchain;
 
         charon = pkgs.callPackage ./nix/charon.nix { inherit craneLib rustToolchain; };
-        charon-ml = pkgs.callPackage ./nix/charon-ml.nix { inherit charon; };
+        charon-ml = pkgs-ocaml.callPackage ./nix/charon-ml.nix { inherit charon; };
 
         # Check rust files are correctly formatted.
         charon-check-fmt = charon.passthru.check-fmt;
@@ -43,7 +50,7 @@
           cp ${charon}/generated-ml/* generated
           chmod u+w generated/*
           cp ${./charon-ml/.ocamlformat} .ocamlformat
-          ${pkgs.ocamlPackages.ocamlformat}/bin/ocamlformat --inplace --enable-outside-detected-project generated/*.ml
+          ${pkgs-ocaml.ocamlPackages.ocamlformat}/bin/ocamlformat --inplace --enable-outside-detected-project generated/*.ml
 
           mkdir committed
           cp ${./charon-ml/src/generated}/*.ml committed
@@ -88,13 +95,13 @@
             pkgs.lib.makeLibraryPath [ pkgs.stdenv.cc.cc.lib pkgs.openssl pkgs.curl pkgs.zlib ];
 
           packages = [
-            pkgs.ocamlPackages.ocaml
-            pkgs.ocamlPackages.ocamlformat
-            pkgs.ocamlPackages.menhir
-            pkgs.ocamlPackages.odoc
+            pkgs-ocaml.ocamlPackages.ocaml
+            pkgs-ocaml.ocamlPackages.ocamlformat
+            pkgs-ocaml.ocamlPackages.menhir
+            pkgs-ocaml.ocamlPackages.odoc
             # ocamllsp's version must match the ocaml version used, hence we
             # can't an use externally-provided ocamllsp.
-            pkgs.ocamlPackages.ocaml-lsp
+            pkgs-ocaml.ocamlPackages.ocaml-lsp
           ];
 
           nativeBuildInputs = [
