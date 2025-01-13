@@ -572,7 +572,7 @@ fn build_type(_ctx: &GenerateCtx, decl: &TypeDecl, co_rec: bool, body: &str) -> 
 /// should be declared with `and` instead of `type`).
 fn type_decl_to_ocaml_decl(ctx: &GenerateCtx, decl: &TypeDecl, co_rec: bool) -> String {
     let opaque = if ctx.opaque_for_visitor.contains(&decl.def_id) {
-        "[@opaque]"
+        "[@visitors.opaque]"
     } else {
         ""
     };
@@ -597,7 +597,7 @@ fn type_decl_to_ocaml_decl(ctx: &GenerateCtx, decl: &TypeDecl, co_rec: bool) -> 
                 .unwrap()
                 .0
                 .clone();
-            format!("{short_name}.id [@opaque]")
+            format!("{short_name}.id [@visitors.opaque]")
         }
         TypeDeclKind::Struct(fields)
             if fields.len() == 1

@@ -372,7 +372,7 @@ and aggregate_kind =
           state.
        *)
 
-and var_id = (VarId.id[@opaque])
+and var_id = (VarId.id[@visitors.opaque])
 [@@deriving
   show,
     ord,

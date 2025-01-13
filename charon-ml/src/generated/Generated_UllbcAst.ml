@@ -6,7 +6,7 @@ open Identifiers
 open GAst
 module BlockId = IdGen ()
 
-type block_id = (BlockId.id[@opaque])
+type block_id = (BlockId.id[@visitors.opaque])
 
 (** A raw statement: a statement without meta data. *)
 and raw_statement =
