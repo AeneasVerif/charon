@@ -98,12 +98,11 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
             | FullDefKind::TyParam { .. }
             | FullDefKind::Variant { .. } => {
                 let span = self.def_span(def_id);
-                self.span_err(
+                register_error!(
+                    self,
                     span,
-                    &format!(
-                        "Cannot register this item: `{def_id:?}` with kind `{:?}`",
-                        def.kind()
-                    ),
+                    "Cannot register this item: `{def_id:?}` with kind `{:?}`",
+                    def.kind()
                 );
             }
         }
@@ -124,12 +123,11 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
             let span = ctx.def_span(rust_id);
             // Catch cycles
             let res = if ctx.translate_stack.contains(&trans_id) {
-                ctx.span_err(
+                register_error!(
+                    ctx,
                     span,
-                    &format!(
-                        "Cycle detected while translating {rust_id:?}! Stack: {:?}",
-                        &ctx.translate_stack
-                    ),
+                    "Cycle detected while translating {rust_id:?}! Stack: {:?}",
+                    &ctx.translate_stack
                 );
                 Err(())
             } else {
@@ -160,10 +158,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
             };
 
             if res.is_err() {
-                ctx.span_err(
-                    span,
-                    &format!("Item `{rust_id:?}` caused errors; ignoring."),
-                );
+                register_error!(ctx, span, "Item `{rust_id:?}` caused errors; ignoring.");
                 ctx.errors.borrow_mut().ignore_failed_decl(trans_id);
             }
         })

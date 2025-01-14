@@ -588,7 +588,8 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
             let rename = renames.next();
             if renames.next().is_some() {
                 let span = self.translate_span_from_hax(&def.span);
-                self.span_err(
+                register_error!(
+                    self,
                     span,
                     "There should be at most one `charon::rename(\"...\")` \
                     or `aeneas::rename(\"...\")` attribute per declaration",
@@ -798,7 +799,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
                     Ok(a) => Some(a),
                     Err(msg) => {
                         let span = self.translate_span_from_hax(&attr.span);
-                        self.span_err(span, &format!("Error parsing attribute: {msg}"));
+                        register_error!(self, span, "Error parsing attribute: {msg}");
                         None
                     }
                 }
