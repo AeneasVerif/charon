@@ -3,7 +3,7 @@
 //! `drop(v)` where `v` has type `Never` (it can happen - this module does the
 //! filtering). Then, we filter the unused variables ([crate::remove_unused_locals]).
 
-use crate::errors::register_error_or_panic;
+use crate::errors::register_error;
 use crate::formatter::IntoFormatter;
 use crate::llbc_ast::*;
 use crate::pretty::FmtWithCtx;
@@ -41,13 +41,14 @@ impl Transform {
                         ..
                     }) => {
                         let name = ctx.translated.item_name(*adt_id).unwrap();
-                        let msg = format!(
+                        register_error!(
+                            ctx,
+                            block.span,
                             "reading the discriminant of an opaque enum. \
                             Add `--include {}` to the `charon` arguments \
                             to translate this enum.",
                             name.fmt_with_ctx(&ctx.into_fmt())
                         );
-                        register_error_or_panic!(ctx, block.span, msg);
                         None
                     }
                     Some(TypeDecl {
@@ -55,7 +56,7 @@ impl Transform {
                             TypeDeclKind::Struct(..) | TypeDeclKind::Union(..) | TypeDeclKind::Alias(..),
                         ..
                     }) => {
-                        register_error_or_panic!(
+                        register_error!(
                             ctx,
                             block.span,
                             "reading the discriminant of a non-enum type"
@@ -106,7 +107,7 @@ impl Transform {
                                             .filter_map(|discr| {
                                                 covered_discriminants.insert(discr);
                                                 discr_to_id.get(&discr).or_else(|| {
-                                                    register_error_or_panic!(
+                                                    register_error!(
                                                         ctx,
                                                         block.span,
                                                         "Found incorrect discriminant {discr} for enum {adt_id}"

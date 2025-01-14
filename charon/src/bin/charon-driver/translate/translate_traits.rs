@@ -52,11 +52,11 @@ impl BodyTransCtx<'_, '_> {
         let span = item_meta.span;
 
         if let hax::FullDefKind::TraitAlias { .. } = def.kind() {
-            error_or_panic!(self, span, &format!("Trait aliases are not supported"));
+            raise_error!(self, span, "Trait aliases are not supported");
         }
 
         let hax::FullDefKind::Trait { items, .. } = &def.kind else {
-            error_or_panic!(self, span, &format!("Unexpected definition: {def:?}"));
+            raise_error!(self, span, "Unexpected definition: {def:?}");
         };
         let items: Vec<(TraitItemName, &hax::AssocItem, Arc<hax::FullDef>)> = items
             .iter()
@@ -142,10 +142,10 @@ impl BodyTransCtx<'_, '_> {
                     consts.push((item_name.clone(), ty));
                 }
                 hax::FullDefKind::AssocTy { generics, .. } if !generics.params.is_empty() => {
-                    error_or_panic!(
+                    raise_error!(
                         self,
                         item_span,
-                        &format!("Generic associated types are not supported")
+                        "Generic associated types are not supported"
                     );
                 }
                 hax::FullDefKind::AssocTy { value, .. } => {
@@ -165,7 +165,7 @@ impl BodyTransCtx<'_, '_> {
 
         if item_meta.opacity.is_opaque() {
             let ctx = self.into_fmt();
-            self.t_ctx.errors.display_error(
+            self.t_ctx.errors.borrow_mut().display_error(
                 &self.t_ctx.translated,
                 item_meta.span,
                 Level::Warning,
@@ -173,7 +173,7 @@ impl BodyTransCtx<'_, '_> {
                     "Trait declarations cannot be \"opaque\"; the trait `{}` will be translated as normal.",
                     item_meta.name.fmt_with_ctx(&ctx)
                 ),
-            )
+            );
         }
         // In case of a trait implementation, some values may not have been
         // provided, in case the declaration provided default values. We
@@ -351,7 +351,7 @@ impl BodyTransCtx<'_, '_> {
 
         if item_meta.opacity.is_opaque() {
             let ctx = self.into_fmt();
-            self.t_ctx.errors.display_error(
+            self.t_ctx.errors.borrow_mut().display_error(
                 &self.t_ctx.translated,
                 item_meta.span,
                 Level::Warning,
@@ -359,7 +359,7 @@ impl BodyTransCtx<'_, '_> {
                     "Trait implementations cannot be \"opaque\"; the impl `{}` will be translated as normal.",
                     item_meta.name.fmt_with_ctx(&ctx)
                 ),
-            )
+            );
         }
 
         Ok(ast::TraitImpl {

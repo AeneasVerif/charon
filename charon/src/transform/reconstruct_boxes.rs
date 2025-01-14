@@ -1,5 +1,5 @@
 //! # Micro-pass: reconstruct piecewise box allocations using `malloc` and `ShallowInitBox`.
-use crate::register_error_or_panic;
+use crate::register_error;
 use crate::transform::TransformCtx;
 use crate::ullbc_ast::*;
 
@@ -112,7 +112,7 @@ impl UllbcPass for Transform {
         // Make sure we got all the `ShallowInitBox`es.
         b.body.dyn_visit_in_body(|rvalue: &Rvalue| {
             if rvalue.is_shallow_init_box() {
-                register_error_or_panic!(
+                register_error!(
                     ctx,
                     b.span,
                     "Could not reconstruct `Box` initialization; \

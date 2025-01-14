@@ -14,17 +14,18 @@ use macros::VariantIndexArity;
 use rustc_hir::def_id::DefId;
 use rustc_middle::ty::TyCtxt;
 use std::borrow::Cow;
+use std::cell::RefCell;
 use std::cmp::Ord;
 use std::collections::HashMap;
 use std::collections::{BTreeMap, VecDeque};
-use std::fmt;
 use std::fmt::Debug;
 use std::path::{Component, PathBuf};
 use std::sync::Arc;
+use std::{fmt, mem};
 
 // Re-export to avoid having to fix imports.
 pub(crate) use charon_lib::errors::{
-    error_assert, error_or_panic, register_error_or_panic, DepSource, ErrorCtx,
+    error_assert, raise_error, register_error, DepSource, ErrorCtx,
 };
 
 /// TODO: maybe we should always target MIR Built, this would make things
@@ -55,8 +56,12 @@ impl TranslateOptions {
         let mut parse_pattern = |s: &str| match NamePattern::parse(s) {
             Ok(p) => Ok(p),
             Err(e) => {
-                let msg = format!("failed to parse pattern `{s}` ({e})");
-                error_or_panic!(error_ctx, &TranslatedCrate::default(), Span::dummy(), msg)
+                raise_error!(
+                    error_ctx,
+                    crate(&TranslatedCrate::default()),
+                    Span::dummy(),
+                    "failed to parse pattern `{s}` ({e})"
+                )
             }
         };
 
@@ -179,7 +184,7 @@ pub struct TranslateCtx<'tcx> {
     pub file_to_id: HashMap<FileName, FileId>,
 
     /// Context for tracking and reporting errors.
-    pub errors: ErrorCtx,
+    pub errors: RefCell<ErrorCtx>,
     /// The declarations we came accross and which we haven't translated yet. We keep them sorted
     /// to make the output order a bit more stable.
     pub items_to_translate: BTreeMap<TransItemSource, AnyTransId>,
@@ -366,23 +371,21 @@ where
     let unwind_safe_s = std::panic::AssertUnwindSafe(s);
     let unwind_safe_x = std::panic::AssertUnwindSafe(x);
     std::panic::catch_unwind(move || unwind_safe_x.sinto(*unwind_safe_s)).or_else(|_| {
-        error_or_panic!(
+        raise_error!(
             err,
-            krate,
+            crate(krate),
             span,
-            format!("Hax panicked when translating `{x:?}`.")
+            "Hax panicked when translating `{x:?}`."
         )
     })
 }
 
 impl<'tcx, 'ctx> TranslateCtx<'tcx> {
-    pub fn continue_on_failure(&self) -> bool {
-        self.errors.continue_on_failure()
-    }
-
     /// Span an error and register the error.
-    pub fn span_err(&mut self, span: Span, msg: &str) {
-        self.errors.span_err(&self.translated, span, msg)
+    pub fn span_err(&self, span: Span, msg: &str) -> Error {
+        self.errors
+            .borrow_mut()
+            .span_err(&self.translated, span, msg)
     }
 
     /// Register a file if it is a "real" file and was not already registered
@@ -471,10 +474,10 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
             DefPathItem::Use => Some(PathElem::Ident("<use>".to_string(), disambiguator)),
             _ => {
                 let def_id = def.to_rust_def_id();
-                error_or_panic!(
+                raise_error!(
                     self,
                     span,
-                    format!("Unexpected DefPathItem for `{def_id:?}`: {path_elem:?}")
+                    "Unexpected DefPathItem for `{def_id:?}`: {path_elem:?}"
                 );
             }
         };
@@ -554,7 +557,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
     where
         T: Debug + SInto<S, U>,
     {
-        catch_sinto(s, &mut self.errors, &self.translated, span, x)
+        catch_sinto(s, &mut *self.errors.borrow_mut(), &self.translated, span, x)
     }
 
     pub fn hax_def(&mut self, def_id: impl Into<DefId>) -> Result<Arc<hax::FullDef>, Error> {
@@ -563,7 +566,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
         // Hax takes care of caching the translation.
         catch_sinto(
             &self.hax_state,
-            &mut self.errors,
+            &mut *self.errors.borrow_mut(),
             &self.translated,
             span,
             &def_id,
@@ -585,7 +588,8 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
             let rename = renames.next();
             if renames.next().is_some() {
                 let span = self.translate_span_from_hax(&def.span);
-                self.span_err(
+                register_error!(
+                    self,
                     span,
                     "There should be at most one `charon::rename(\"...\")` \
                     or `aeneas::rename(\"...\")` attribute per declaration",
@@ -795,7 +799,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
                     Ok(a) => Some(a),
                     Err(msg) => {
                         let span = self.translate_span_from_hax(&attr.span);
-                        self.span_err(span, &format!("Error parsing attribute: {msg}"));
+                        register_error!(self, span, "Error parsing attribute: {msg}");
                         None
                     }
                 }
@@ -884,6 +888,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
             }
         };
         self.errors
+            .borrow_mut()
             .register_dep_source(src, item_id, id.to_def_id().is_local());
         item_id
     }
@@ -958,13 +963,14 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
     where
         F: FnOnce(&mut Self) -> T,
     {
-        let current_def_id = self.errors.def_id;
-        let current_def_id_is_local = self.errors.def_id_is_local;
-        self.errors.def_id = Some(item_id);
-        self.errors.def_id_is_local = def_id.is_local();
+        let mut errors = self.errors.borrow_mut();
+        let current_def_id = mem::replace(&mut errors.def_id, Some(item_id));
+        let current_def_id_is_local = mem::replace(&mut errors.def_id_is_local, def_id.is_local());
+        drop(errors); // important: release the refcell "lock"
         let ret = f(self);
-        self.errors.def_id = current_def_id;
-        self.errors.def_id_is_local = current_def_id_is_local;
+        let mut errors = self.errors.borrow_mut();
+        errors.def_id = current_def_id;
+        errors.def_id_is_local = current_def_id_is_local;
         ret
     }
 }
@@ -994,11 +1000,7 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
         }
     }
 
-    pub fn continue_on_failure(&self) -> bool {
-        self.t_ctx.continue_on_failure()
-    }
-
-    pub fn span_err(&mut self, span: Span, msg: &str) {
+    pub fn span_err(&self, span: Span, msg: &str) -> Error {
         self.t_ctx.span_err(span, msg)
     }
 
@@ -1102,10 +1104,10 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
         {
             Ok(self.bind_var(dbid, *rid))
         } else {
-            error_or_panic!(
+            raise_error!(
                 self,
                 span,
-                &format!("Unexpected error: could not find region '{dbid}_{var}")
+                "Unexpected error: could not find region '{dbid}_{var}"
             )
         }
     }
@@ -1122,11 +1124,7 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
             }
         }
         let err = mk_err();
-        error_or_panic!(
-            self,
-            span,
-            &format!("Unexpected error: could not find {}", err)
-        )
+        raise_error!(self, span, "Unexpected error: could not find {}", err)
     }
 
     pub(crate) fn lookup_early_region(
@@ -1192,10 +1190,11 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
             }
         }
         // Actually unreachable
-        error_or_panic!(
+        raise_error!(
             self,
             span,
-            &format!("Unexpected error: could not find clause variable {}", id)
+            "Unexpected error: could not find clause variable {}",
+            id
         )
     }
 

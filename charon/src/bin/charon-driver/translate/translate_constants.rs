@@ -86,7 +86,7 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
                 RawConstantExpr::Adt(vid, fields)
             }
             ConstantExprKind::Array { .. } => {
-                error_or_panic!(self, span, "array constants are not supported yet")
+                raise_error!(self, span, "array constants are not supported yet")
             }
             ConstantExprKind::Tuple { fields } => {
                 let fields: Vec<ConstantExpr> = fields
@@ -130,19 +130,19 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
                 RawConstantExpr::Ref(Box::new(be))
             }
             ConstantExprKind::Cast { .. } => {
-                error_or_panic!(
+                raise_error!(
                     self,
                     span,
-                    &format!("Unsupported constant: `ConstantExprKind::Cast {{..}}`",)
+                    "Unsupported constant: `ConstantExprKind::Cast {{..}}`",
                 )
             }
             ConstantExprKind::RawBorrow {
                 mutability: false, ..
             } => {
-                error_or_panic!(
+                raise_error!(
                     self,
                     span,
-                    &format!("Unsupported constant: `ConstantExprKind::RawBorrow {{mutability: false, ..}}`",)
+                    "Unsupported constant: `ConstantExprKind::RawBorrow {{mutability: false, ..}}`",
                 )
             }
             ConstantExprKind::RawBorrow {
@@ -173,7 +173,7 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
             }
             ConstantExprKind::Todo(msg) => {
                 // Case not yet handled by hax
-                error_or_panic!(self, span, format!("Unsupported constant: {:?}", msg))
+                raise_error!(self, span, "Unsupported constant: {:?}", msg)
             }
         };
 
@@ -206,11 +206,7 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
             | RawConstantExpr::Ref(_)
             | RawConstantExpr::MutPtr(_)
             | RawConstantExpr::FnPtr { .. } => {
-                error_or_panic!(
-                    self,
-                    span,
-                    format!("Unexpected constant generic: {:?}", value)
-                )
+                raise_error!(self, span, "Unexpected constant generic: {:?}", value)
             }
             RawConstantExpr::Var(v) => Ok(ConstGeneric::Var(v)),
         }

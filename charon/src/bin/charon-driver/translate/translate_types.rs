@@ -54,12 +54,14 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
             }
             ReVar(..) | RePlaceholder(..) => {
                 // Shouldn't exist outside of type inference.
-                let err = format!("Should not exist outside of type inference: {region:?}");
-                error_or_panic!(self, span, err)
+                raise_error!(
+                    self,
+                    span,
+                    "Should not exist outside of type inference: {region:?}"
+                )
             }
             ReLateParam(..) | ReError(..) => {
-                let err = format!("Unexpected region kind: {region:?}");
-                error_or_panic!(self, span, err)
+                raise_error!(self, span, "Unexpected region kind: {region:?}")
             }
         }
     }
@@ -129,11 +131,7 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
                     return self.translate_ty(span, hidden_ty)
                 }
                 _ => {
-                    error_or_panic!(
-                        self,
-                        span,
-                        format!("Unsupported alias type: {:?}", alias.kind)
-                    )
+                    raise_error!(self, span, "Unsupported alias type: {:?}", alias.kind)
                 }
             },
 
@@ -260,7 +258,7 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
             }
             hax::TyKind::Infer(_) => {
                 trace!("Infer");
-                error_or_panic!(self, span, "Unsupported type: infer type")
+                raise_error!(self, span, "Unsupported type: infer type")
             }
 
             hax::TyKind::Dynamic(_existential_preds, _region, _) => {
@@ -272,16 +270,16 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
 
             hax::TyKind::Coroutine(..) => {
                 trace!("Coroutine");
-                error_or_panic!(self, span, "Coroutine types are not supported yet")
+                raise_error!(self, span, "Coroutine types are not supported yet")
             }
 
             hax::TyKind::Bound(_, _) => {
                 trace!("Bound");
-                error_or_panic!(self, span, "Unexpected type kind: bound")
+                raise_error!(self, span, "Unexpected type kind: bound")
             }
             hax::TyKind::Placeholder(_) => {
                 trace!("PlaceHolder");
-                error_or_panic!(self, span, "Unsupported type: placeholder")
+                raise_error!(self, span, "Unsupported type: placeholder")
             }
             hax::TyKind::Arrow(box sig)
             | hax::TyKind::Closure(
@@ -305,11 +303,11 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
             }
             hax::TyKind::Error => {
                 trace!("Error");
-                error_or_panic!(self, span, "Type checking error")
+                raise_error!(self, span, "Type checking error")
             }
             hax::TyKind::Todo(s) => {
                 trace!("Todo: {s}");
-                error_or_panic!(self, span, format!("Unsupported type: {:?}", s))
+                raise_error!(self, span, "Unsupported type: {:?}", s)
             }
         };
         let ty = kind.into_ty();
@@ -354,10 +352,10 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
                         regions.push(Region::Erased);
                     }
                     hax::BoundVariableKind::Ty(_) => {
-                        error_or_panic!(self, span, "Unexpected locally bound type variable")
+                        raise_error!(self, span, "Unexpected locally bound type variable")
                     }
                     hax::BoundVariableKind::Const => {
-                        error_or_panic!(self, span, "Unexpected locally bound const generic")
+                        raise_error!(self, span, "Unexpected locally bound const generic")
                     }
                 }
             }
@@ -738,7 +736,7 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
                         *ty,
                         param.name.clone(),
                     ),
-                    None => error_or_panic!(
+                    None => raise_error!(
                         self,
                         span,
                         "Constant parameters of non-literal type are not supported"

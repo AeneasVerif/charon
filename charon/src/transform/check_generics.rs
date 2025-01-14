@@ -3,15 +3,14 @@ use derive_generic_visitor::*;
 use itertools::Itertools;
 use std::fmt::Display;
 
-use crate::{errors::ErrorCtx, llbc_ast::*, register_error_or_panic};
+use crate::{llbc_ast::*, register_error};
 
 use super::{ctx::TransformPass, TransformCtx};
 
 #[derive(Visitor)]
 struct CheckGenericsVisitor<'a> {
-    translated: &'a TranslatedCrate,
+    ctx: &'a TransformCtx,
     phase: &'static str,
-    error_ctx: &'a mut ErrorCtx,
     // Tracks an enclosing span to make errors useful.
     span: Span,
     /// Remember the names of the types visited up to here.
@@ -19,13 +18,14 @@ struct CheckGenericsVisitor<'a> {
 }
 
 impl CheckGenericsVisitor<'_> {
-    fn error(&mut self, message: impl Display) {
-        let message = format!(
+    fn error(&self, message: impl Display) {
+        register_error!(
+            self.ctx,
+            self.span,
             "Found inconsistent generics {}:\n{message}\nVisitor stack:\n  {}",
             self.phase,
             self.visit_stack.iter().rev().join("\n  ")
         );
-        register_error_or_panic!(self.error_ctx, self.translated, self.span, message);
     }
 }
 
@@ -54,13 +54,13 @@ impl VisitAst for CheckGenericsVisitor<'_> {
     fn enter_generic_args(&mut self, args: &GenericArgs) {
         let params = match &args.target {
             GenericsSource::Item(item_id) => {
-                let Some(item) = self.translated.get_item(*item_id) else {
+                let Some(item) = self.ctx.translated.get_item(*item_id) else {
                     return;
                 };
                 item.generic_params()
             }
             GenericsSource::Method(trait_id, method_name) => {
-                let Some(trait_decl) = self.translated.trait_decls.get(*trait_id) else {
+                let Some(trait_decl) = self.ctx.translated.trait_decls.get(*trait_id) else {
                     return;
                 };
                 let Some((_, bound_fn)) = trait_decl
@@ -84,7 +84,12 @@ impl VisitAst for CheckGenericsVisitor<'_> {
 
     // Special case that is not represented as a `GenericArgs`.
     fn enter_trait_impl(&mut self, timpl: &TraitImpl) {
-        let Some(tdecl) = self.translated.trait_decls.get(timpl.impl_trait.trait_id) else {
+        let Some(tdecl) = self
+            .ctx
+            .translated
+            .trait_decls
+            .get(timpl.impl_trait.trait_id)
+        else {
             return;
         };
         // See `lift_associated_item_clauses`
@@ -126,8 +131,7 @@ impl TransformPass for Check {
     fn transform_ctx(&self, ctx: &mut TransformCtx) {
         for item in ctx.translated.all_items() {
             let mut visitor = CheckGenericsVisitor {
-                translated: &ctx.translated,
-                error_ctx: &mut ctx.errors,
+                ctx,
                 phase: self.0,
                 span: item.item_meta().span,
                 visit_stack: Default::default(),

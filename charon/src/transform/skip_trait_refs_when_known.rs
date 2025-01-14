@@ -1,4 +1,4 @@
-use crate::{register_error_or_panic, transform::TransformCtx, ullbc_ast::*};
+use crate::{register_error, transform::TransformCtx, ullbc_ast::*};
 
 use super::ctx::UllbcPass;
 
@@ -28,11 +28,13 @@ fn transform_call(ctx: &mut TransformCtx, span: Span, call: &mut Call) {
     let method_generics = &fn_ptr.generics;
 
     if !method_generics.matches(&bound_fn.params) {
-        let message = format!(
+        register_error!(
+            ctx,
+            span,
             "Mismatched method generics:\nparams:   {:?}\nsupplied: {:?}",
-            bound_fn.params, method_generics
+            bound_fn.params,
+            method_generics
         );
-        register_error_or_panic!(ctx.errors, &ctx.translated, span, message);
     }
 
     // Make the two levels of binding explicit: outer binder for the impl block, inner binder for

@@ -78,10 +78,10 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
             hax::BinOp::Shl => BinOp::Shl,
             hax::BinOp::Shr => BinOp::Shr,
             hax::BinOp::Cmp => {
-                error_or_panic!(self, span, "Unsupported binary operation: Cmp")
+                raise_error!(self, span, "Unsupported binary operation: Cmp")
             }
             hax::BinOp::Offset => {
-                error_or_panic!(self, span, "Unsupported binary operation: offset")
+                raise_error!(self, span, "Unsupported binary operation: offset")
             }
         })
     }
@@ -339,7 +339,7 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
                                         ProjectionElem::Deref
                                     }
                                     _ => {
-                                        error_or_panic!(self, span, "Unexpected field projection");
+                                        raise_error!(self, span, "Unexpected field projection");
                                     }
                                 }
                             }
@@ -396,7 +396,7 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
                     }
                     hax::ProjectionElem::OpaqueCast => {
                         // Don't know what that is
-                        error_or_panic!(self, span, "Unexpected ProjectionElem::OpaqueCast");
+                        raise_error!(self, span, "Unexpected ProjectionElem::OpaqueCast");
                     }
                 };
 
@@ -460,7 +460,7 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
                 Ok(Rvalue::Ref(place, borrow_kind))
             }
             hax::Rvalue::ThreadLocalRef(_) => {
-                error_or_panic!(
+                raise_error!(
                     self,
                     span,
                     "charon does not support thread local references"
@@ -594,7 +594,7 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
                     hax::UnOp::Not => UnOp::Not,
                     hax::UnOp::Neg => UnOp::Neg,
                     hax::UnOp::PtrMetadata => {
-                        error_or_panic!(self, span, "Unsupported operation: PtrMetadata")
+                        raise_error!(self, span, "Unsupported operation: PtrMetadata")
                     }
                 };
                 Ok(Rvalue::UnaryOp(
@@ -607,13 +607,11 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
                 if let TyKind::Adt(TypeId::Adt(adt_id), _) = *place.ty().kind() {
                     Ok(Rvalue::Discriminant(place, adt_id))
                 } else {
-                    error_or_panic!(
+                    raise_error!(
                         self,
                         span,
-                        format!(
-                            "Unexpected scrutinee type for ReadDiscriminant: {}",
-                            place.ty().fmt_with_ctx(&self.into_fmt())
-                        )
+                        "Unexpected scrutinee type for ReadDiscriminant: {}",
+                        place.ty().fmt_with_ctx(&self.into_fmt())
                     )
                 }
             }
@@ -725,11 +723,11 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
                     }
                     hax::AggregateKind::RawPtr(..) => {
                         // TODO: replace with a call to `ptr::from_raw_parts`.
-                        error_or_panic!(self, span, "Wide raw pointers are not supported");
+                        raise_error!(self, span, "Wide raw pointers are not supported");
                     }
                     hax::AggregateKind::Coroutine(..)
                     | hax::AggregateKind::CoroutineClosure(..) => {
-                        error_or_panic!(self, span, "Coroutines are not supported");
+                        raise_error!(self, span, "Coroutines are not supported");
                     }
                 }
             }
@@ -949,7 +947,7 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
                 }))
             }
             StatementKind::Intrinsic(hax::NonDivergingIntrinsic::CopyNonOverlapping(..)) => {
-                error_or_panic!(self, span, "Unsupported statement kind: CopyNonOverlapping");
+                raise_error!(self, span, "Unsupported statement kind: CopyNonOverlapping");
             }
             // This is for the stacked borrows memory model.
             StatementKind::Retag(_, _) => None,
@@ -1002,10 +1000,10 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
             TerminatorKind::UnwindResume => {
                 // This is used to correctly unwind. We shouldn't get there: if
                 // we panic, the state gets stuck.
-                error_or_panic!(self, span, "Unexpected terminator: UnwindResume");
+                raise_error!(self, span, "Unexpected terminator: UnwindResume");
             }
             TerminatorKind::UnwindTerminate { .. } => {
-                error_or_panic!(self, span, "Unexpected terminator: UnwindTerminate")
+                raise_error!(self, span, "Unexpected terminator: UnwindTerminate")
             }
             TerminatorKind::Return => RawTerminator::Return,
             // A MIR `Unreachable` terminator indicates undefined behavior of the rust abstract
@@ -1080,16 +1078,12 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
                 RawTerminator::Goto { target }
             }
             TerminatorKind::InlineAsm { .. } => {
-                error_or_panic!(self, span, "Inline assembly is not supported");
+                raise_error!(self, span, "Inline assembly is not supported");
             }
             TerminatorKind::CoroutineDrop
             | TerminatorKind::TailCall { .. }
             | TerminatorKind::Yield { .. } => {
-                error_or_panic!(
-                    self,
-                    span,
-                    format!("Unsupported terminator: {:?}", terminator.kind)
-                );
+                raise_error!(self, span, "Unsupported terminator: {:?}", terminator.kind);
             }
         };
 
@@ -1287,7 +1281,7 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
             // Translation error
             Ok(Err(e)) => Err(e),
             Err(_) => {
-                error_or_panic!(
+                raise_error!(
                     self,
                     item_meta.span,
                     "Thread panicked when extracting body."
@@ -1535,7 +1529,7 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
 
                 // Unpack the tupled arguments to match the body locals.
                 let TyKind::Adt(TypeId::Tuple, tuple_args) = tuple_arg.kind() else {
-                    error_or_panic!(self, span, "Closure argument is not a tuple")
+                    raise_error!(self, span, "Closure argument is not a tuple")
                 };
                 inputs.extend(tuple_args.types.iter().cloned());
 

@@ -151,14 +151,10 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
                         // directly? For now we just ignore it.
                     }
                     ClauseKind::WellFormed(_) => {
-                        error_or_panic!(
-                            self,
-                            span,
-                            format!("Well-formedness clauses are unsupported")
-                        )
+                        raise_error!(self, span, "Well-formedness clauses are unsupported")
                     }
                     ClauseKind::ConstEvaluatable(_) => {
-                        error_or_panic!(self, span, format!("Unsupported clause: {:?}", kind))
+                        raise_error!(self, span, "Unsupported clause: {:?}", kind)
                     }
                 }
             }
@@ -169,7 +165,7 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
             | PredicateKind::DynCompatible(_)
             | PredicateKind::NormalizesTo(_)
             | PredicateKind::Subtype(_) => {
-                error_or_panic!(self, span, format!("Unsupported predicate: {:?}", pred))
+                raise_error!(self, span, "Unsupported predicate: {:?}", pred)
             }
         }
         Ok(())
@@ -197,16 +193,11 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
         match self.translate_trait_impl_expr_aux(span, impl_expr, trait_decl_ref.clone()) {
             Ok(res) => Ok(res),
             Err(err) => {
-                if !self.t_ctx.continue_on_failure() {
-                    panic!("Error during trait resolution: {}", err.msg)
-                } else {
-                    let msg = format!("Error during trait resolution: {}", &err.msg);
-                    self.span_err(span, &msg);
-                    Ok(TraitRef {
-                        kind: TraitRefKind::Unknown(err.msg),
-                        trait_decl_ref,
-                    })
-                }
+                register_error!(self, span, "Error during trait resolution: {}", &err.msg);
+                Ok(TraitRef {
+                    kind: TraitRefKind::Unknown(err.msg),
+                    trait_decl_ref,
+                })
             }
         }
     }
@@ -281,14 +272,12 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
                             ..
                         } => {
                             if !generic_args.is_empty() {
-                                error_or_panic!(
+                                raise_error!(
                                     self,
                                     span,
-                                    format!(
-                                        "Found unsupported GAT `{}` when resolving trait `{}`",
-                                        item.name,
-                                        trait_decl_ref.fmt_with_ctx(&self.into_fmt())
-                                    )
+                                    "Found unsupported GAT `{}` when resolving trait `{}`",
+                                    item.name,
+                                    trait_decl_ref.fmt_with_ctx(&self.into_fmt())
                                 )
                             }
                             trait_id = TraitRefKind::ItemClause(
@@ -339,11 +328,7 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
                     trait_decl_ref,
                 };
                 if self.error_on_impl_expr_error {
-                    let error = format!("Error during trait resolution: {}", msg);
-                    self.span_err(span, &error);
-                    if !self.t_ctx.continue_on_failure() {
-                        panic!("{}", error)
-                    }
+                    register_error!(self, span, "Error during trait resolution: {}", msg);
                 }
                 trait_ref
             }
