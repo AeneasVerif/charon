@@ -376,12 +376,8 @@ where
 }
 
 impl<'tcx, 'ctx> TranslateCtx<'tcx> {
-    pub fn continue_on_failure(&self) -> bool {
-        self.errors.continue_on_failure()
-    }
-
     /// Span an error and register the error.
-    pub fn span_err(&mut self, span: Span, msg: &str) {
+    pub fn span_err(&mut self, span: Span, msg: &str) -> Error {
         self.errors.span_err(&self.translated, span, msg)
     }
 
@@ -994,11 +990,7 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
         }
     }
 
-    pub fn continue_on_failure(&self) -> bool {
-        self.t_ctx.continue_on_failure()
-    }
-
-    pub fn span_err(&mut self, span: Span, msg: &str) {
+    pub fn span_err(&mut self, span: Span, msg: &str) -> Error {
         self.t_ctx.span_err(span, msg)
     }
 

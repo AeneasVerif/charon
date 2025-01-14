@@ -173,7 +173,7 @@ impl BodyTransCtx<'_, '_> {
                     "Trait declarations cannot be \"opaque\"; the trait `{}` will be translated as normal.",
                     item_meta.name.fmt_with_ctx(&ctx)
                 ),
-            )
+            );
         }
         // In case of a trait implementation, some values may not have been
         // provided, in case the declaration provided default values. We
@@ -359,7 +359,7 @@ impl BodyTransCtx<'_, '_> {
                     "Trait implementations cannot be \"opaque\"; the impl `{}` will be translated as normal.",
                     item_meta.name.fmt_with_ctx(&ctx)
                 ),
-            )
+            );
         }
 
         Ok(ast::TraitImpl {

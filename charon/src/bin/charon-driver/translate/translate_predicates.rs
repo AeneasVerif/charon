@@ -197,16 +197,12 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
         match self.translate_trait_impl_expr_aux(span, impl_expr, trait_decl_ref.clone()) {
             Ok(res) => Ok(res),
             Err(err) => {
-                if !self.t_ctx.continue_on_failure() {
-                    panic!("Error during trait resolution: {}", err.msg)
-                } else {
-                    let msg = format!("Error during trait resolution: {}", &err.msg);
-                    self.span_err(span, &msg);
-                    Ok(TraitRef {
-                        kind: TraitRefKind::Unknown(err.msg),
-                        trait_decl_ref,
-                    })
-                }
+                let msg = format!("Error during trait resolution: {}", &err.msg);
+                self.span_err(span, &msg);
+                Ok(TraitRef {
+                    kind: TraitRefKind::Unknown(err.msg),
+                    trait_decl_ref,
+                })
             }
         }
     }
@@ -341,9 +337,6 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
                 if self.error_on_impl_expr_error {
                     let error = format!("Error during trait resolution: {}", msg);
                     self.span_err(span, &error);
-                    if !self.t_ctx.continue_on_failure() {
-                        panic!("{}", error)
-                    }
                 }
                 trait_ref
             }

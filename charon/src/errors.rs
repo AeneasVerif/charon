@@ -11,39 +11,20 @@ use std::collections::{HashMap, HashSet};
 
 #[macro_export]
 macro_rules! register_error_or_panic {
-    ($ctx:expr, $span: expr, $msg: expr) => {{
-        $ctx.span_err($span, &$msg);
-        if !$ctx.continue_on_failure() {
-            panic!("{}", $msg);
-        }
-    }};
-    ($ctx:expr, $krate:expr, $span: expr, $msg: expr) => {{
-        $ctx.span_err($krate, $span, &$msg);
-        if !$ctx.continue_on_failure() {
-            panic!("{}", $msg);
-        }
-    }};
+    ($ctx:expr, $span: expr, $msg: expr) => {
+        $ctx.span_err($span, &$msg)
+    };
+    ($ctx:expr, $krate:expr, $span: expr, $msg: expr) => {
+        $ctx.span_err($krate, $span, &$msg)
+    };
 }
 pub use register_error_or_panic;
 
 /// Macro to either panic or return on error, depending on the CLI options
 #[macro_export]
 macro_rules! error_or_panic {
-    ($ctx:expr, $span:expr, $msg:expr) => {{
-        $crate::errors::register_error_or_panic!($ctx, $span, $msg);
-        let e = $crate::errors::Error {
-            span: $span,
-            msg: $msg.to_string(),
-        };
-        return Err(e);
-    }};
-    ($ctx:expr, $krate:expr, $span:expr, $msg:expr) => {{
-        $crate::errors::register_error_or_panic!($ctx, $krate, $span, $msg);
-        let e = $crate::errors::Error {
-            span: $span,
-            msg: $msg.to_string(),
-        };
-        return Err(e);
+    ($($tokens:tt)*) => {{
+        return Err(register_error_or_panic!($($tokens)*));
     }};
 }
 pub use error_or_panic;
@@ -229,25 +210,31 @@ impl ErrorCtx {
     }
 
     /// Report an error without registering anything.
-    pub fn display_error(&self, krate: &TranslatedCrate, span: Span, level: Level, msg: String) {
-        // TODO: `Error` is redundantly constructed in two places
+    pub fn display_error(
+        &self,
+        krate: &TranslatedCrate,
+        span: Span,
+        level: Level,
+        msg: String,
+    ) -> Error {
         let error = Error { span, msg };
         anstream::eprintln!("{}\n", error.render(krate, level));
+        error
     }
 
     /// Report an error without registering anything.
-    pub fn span_err_no_register(&self, krate: &TranslatedCrate, span: Span, msg: &str) {
+    pub fn span_err_no_register(&self, krate: &TranslatedCrate, span: Span, msg: String) -> Error {
         let level = if self.error_on_warnings {
             Level::Error
         } else {
             Level::Warning
         };
-        self.display_error(krate, span, level, msg.to_string());
+        self.display_error(krate, span, level, msg)
     }
 
     /// Report and register an error.
-    pub fn span_err(&mut self, krate: &TranslatedCrate, span: Span, msg: &str) {
-        self.span_err_no_register(krate, span, msg);
+    pub fn span_err(&mut self, krate: &TranslatedCrate, span: Span, msg: &str) -> Error {
+        let err = self.span_err_no_register(krate, span, msg.to_string());
         self.error_count += 1;
         // If this item comes from an external crate, after the first error for that item we
         // display where in the local crate that item was reached from.
@@ -257,6 +244,10 @@ impl ErrorCtx {
         {
             self.report_external_dep_error(krate, id);
         }
+        if !self.continue_on_failure() {
+            panic!("{msg}");
+        }
+        err
     }
 
     pub fn ignore_failed_decl(&mut self, id: AnyTransId) {

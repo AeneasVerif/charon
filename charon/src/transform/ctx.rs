@@ -154,15 +154,12 @@ pub trait TransformPass: Sync {
 }
 
 impl<'ctx> TransformCtx {
-    pub(crate) fn continue_on_failure(&self) -> bool {
-        self.errors.continue_on_failure()
-    }
     pub(crate) fn has_errors(&self) -> bool {
         self.errors.has_errors()
     }
 
     /// Span an error and register the error.
-    pub(crate) fn span_err(&mut self, span: Span, msg: &str) {
+    pub(crate) fn span_err(&mut self, span: Span, msg: &str) -> Error {
         self.errors.span_err(&self.translated, span, msg)
     }
 
