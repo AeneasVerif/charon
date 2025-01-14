@@ -256,7 +256,7 @@ pub fn translate(tcx: TyCtxt, internal: &mut CharonCallbacks) -> export::CrateDa
     }
 
     // Update the error count
-    internal.error_count = transform_ctx.errors.error_count;
+    internal.error_count = transform_ctx.errors.borrow().error_count;
 
     export::CrateData::new(&transform_ctx)
 }

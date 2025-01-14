@@ -165,7 +165,7 @@ impl BodyTransCtx<'_, '_> {
 
         if item_meta.opacity.is_opaque() {
             let ctx = self.into_fmt();
-            self.t_ctx.errors.display_error(
+            self.t_ctx.errors.borrow_mut().display_error(
                 &self.t_ctx.translated,
                 item_meta.span,
                 Level::Warning,
@@ -351,7 +351,7 @@ impl BodyTransCtx<'_, '_> {
 
         if item_meta.opacity.is_opaque() {
             let ctx = self.into_fmt();
-            self.t_ctx.errors.display_error(
+            self.t_ctx.errors.borrow_mut().display_error(
                 &self.t_ctx.translated,
                 item_meta.span,
                 Level::Warning,

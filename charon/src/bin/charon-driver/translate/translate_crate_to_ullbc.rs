@@ -6,6 +6,7 @@ use charon_lib::transform::TransformCtx;
 use hax_frontend_exporter as hax;
 use rustc_hir::def_id::DefId;
 use rustc_middle::ty::TyCtxt;
+use std::cell::RefCell;
 use std::path::PathBuf;
 
 impl<'tcx, 'ctx> TranslateCtx<'tcx> {
@@ -109,7 +110,11 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
     }
 
     pub(crate) fn translate_item(&mut self, item_src: TransItemSource, trans_id: AnyTransId) {
-        if self.errors.ignored_failed_decls.contains(&trans_id)
+        if self
+            .errors
+            .borrow()
+            .ignored_failed_decls
+            .contains(&trans_id)
             || self.translated.get_item(trans_id).is_some()
         {
             return;
@@ -159,7 +164,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
                     span,
                     &format!("Item `{rust_id:?}` caused errors; ignoring."),
                 );
-                ctx.errors.ignore_failed_decl(trans_id);
+                ctx.errors.borrow_mut().ignore_failed_decl(trans_id);
             }
         })
     }
@@ -215,7 +220,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
         // Translate if not already translated.
         self.translate_item(item_source, id);
 
-        if self.errors.ignored_failed_decls.contains(&id) {
+        if self.errors.borrow().ignored_failed_decls.contains(&id) {
             let span = self.def_span(item_source.to_def_id());
             error_or_panic!(self, span, format!("Failed to translate item {id:?}."))
         }
@@ -255,7 +260,7 @@ pub fn translate<'tcx, 'ctx>(
         sysroot,
         hax_state,
         options: translate_options,
-        errors: error_ctx,
+        errors: RefCell::new(error_ctx),
         translated: TranslatedCrate {
             crate_name: requested_crate_name,
             options: options.clone(),

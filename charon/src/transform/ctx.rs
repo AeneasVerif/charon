@@ -5,6 +5,7 @@ use crate::llbc_ast;
 use crate::name_matcher::NamePattern;
 use crate::pretty::FmtWithCtx;
 use crate::ullbc_ast;
+use std::cell::RefCell;
 use std::{fmt, mem};
 
 /// The options that control transformation.
@@ -33,7 +34,7 @@ pub struct TransformCtx {
     /// The translated data.
     pub translated: TranslatedCrate,
     /// Context for tracking and reporting errors.
-    pub errors: ErrorCtx,
+    pub errors: RefCell<ErrorCtx>,
 }
 
 /// A pass that modifies ullbc bodies.
@@ -155,12 +156,14 @@ pub trait TransformPass: Sync {
 
 impl<'ctx> TransformCtx {
     pub(crate) fn has_errors(&self) -> bool {
-        self.errors.has_errors()
+        self.errors.borrow().has_errors()
     }
 
     /// Span an error and register the error.
-    pub(crate) fn span_err(&mut self, span: Span, msg: &str) -> Error {
-        self.errors.span_err(&self.translated, span, msg)
+    pub(crate) fn span_err(&self, span: Span, msg: &str) -> Error {
+        self.errors
+            .borrow_mut()
+            .span_err(&self.translated, span, msg)
     }
 
     pub(crate) fn with_def_id<F, T>(
@@ -172,13 +175,14 @@ impl<'ctx> TransformCtx {
     where
         F: FnOnce(&mut Self) -> T,
     {
-        let current_def_id = self.errors.def_id;
-        let current_def_id_is_local = self.errors.def_id_is_local;
-        self.errors.def_id = Some(def_id.into());
-        self.errors.def_id_is_local = def_id_is_local;
+        let mut errors = self.errors.borrow_mut();
+        let current_def_id = mem::replace(&mut errors.def_id, Some(def_id.into()));
+        let current_def_id_is_local = mem::replace(&mut errors.def_id_is_local, def_id_is_local);
+        drop(errors); // important: release the refcell "lock"
         let ret = f(self);
-        self.errors.def_id = current_def_id;
-        self.errors.def_id_is_local = current_def_id_is_local;
+        let mut errors = self.errors.borrow_mut();
+        errors.def_id = current_def_id;
+        errors.def_id_is_local = current_def_id_is_local;
         ret
     }
 

@@ -14,13 +14,14 @@ use macros::VariantIndexArity;
 use rustc_hir::def_id::DefId;
 use rustc_middle::ty::TyCtxt;
 use std::borrow::Cow;
+use std::cell::RefCell;
 use std::cmp::Ord;
 use std::collections::HashMap;
 use std::collections::{BTreeMap, VecDeque};
-use std::fmt;
 use std::fmt::Debug;
 use std::path::{Component, PathBuf};
 use std::sync::Arc;
+use std::{fmt, mem};
 
 // Re-export to avoid having to fix imports.
 pub(crate) use charon_lib::errors::{
@@ -179,7 +180,7 @@ pub struct TranslateCtx<'tcx> {
     pub file_to_id: HashMap<FileName, FileId>,
 
     /// Context for tracking and reporting errors.
-    pub errors: ErrorCtx,
+    pub errors: RefCell<ErrorCtx>,
     /// The declarations we came accross and which we haven't translated yet. We keep them sorted
     /// to make the output order a bit more stable.
     pub items_to_translate: BTreeMap<TransItemSource, AnyTransId>,
@@ -377,8 +378,10 @@ where
 
 impl<'tcx, 'ctx> TranslateCtx<'tcx> {
     /// Span an error and register the error.
-    pub fn span_err(&mut self, span: Span, msg: &str) -> Error {
-        self.errors.span_err(&self.translated, span, msg)
+    pub fn span_err(&self, span: Span, msg: &str) -> Error {
+        self.errors
+            .borrow_mut()
+            .span_err(&self.translated, span, msg)
     }
 
     /// Register a file if it is a "real" file and was not already registered
@@ -550,7 +553,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
     where
         T: Debug + SInto<S, U>,
     {
-        catch_sinto(s, &mut self.errors, &self.translated, span, x)
+        catch_sinto(s, &mut *self.errors.borrow_mut(), &self.translated, span, x)
     }
 
     pub fn hax_def(&mut self, def_id: impl Into<DefId>) -> Result<Arc<hax::FullDef>, Error> {
@@ -559,7 +562,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
         // Hax takes care of caching the translation.
         catch_sinto(
             &self.hax_state,
-            &mut self.errors,
+            &mut *self.errors.borrow_mut(),
             &self.translated,
             span,
             &def_id,
@@ -880,6 +883,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
             }
         };
         self.errors
+            .borrow_mut()
             .register_dep_source(src, item_id, id.to_def_id().is_local());
         item_id
     }
@@ -954,13 +958,14 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
     where
         F: FnOnce(&mut Self) -> T,
     {
-        let current_def_id = self.errors.def_id;
-        let current_def_id_is_local = self.errors.def_id_is_local;
-        self.errors.def_id = Some(item_id);
-        self.errors.def_id_is_local = def_id.is_local();
+        let mut errors = self.errors.borrow_mut();
+        let current_def_id = mem::replace(&mut errors.def_id, Some(item_id));
+        let current_def_id_is_local = mem::replace(&mut errors.def_id_is_local, def_id.is_local());
+        drop(errors); // important: release the refcell "lock"
         let ret = f(self);
-        self.errors.def_id = current_def_id;
-        self.errors.def_id_is_local = current_def_id_is_local;
+        let mut errors = self.errors.borrow_mut();
+        errors.def_id = current_def_id;
+        errors.def_id_is_local = current_def_id_is_local;
         ret
     }
 }
@@ -990,7 +995,7 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
         }
     }
 
-    pub fn span_err(&mut self, span: Span, msg: &str) -> Error {
+    pub fn span_err(&self, span: Span, msg: &str) -> Error {
         self.t_ctx.span_err(span, msg)
     }
 

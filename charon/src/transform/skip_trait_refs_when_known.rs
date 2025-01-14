@@ -32,7 +32,7 @@ fn transform_call(ctx: &mut TransformCtx, span: Span, call: &mut Call) {
             "Mismatched method generics:\nparams:   {:?}\nsupplied: {:?}",
             bound_fn.params, method_generics
         );
-        register_error_or_panic!(ctx.errors, &ctx.translated, span, message);
+        register_error_or_panic!(ctx, span, message);
     }
 
     // Make the two levels of binding explicit: outer binder for the impl block, inner binder for
