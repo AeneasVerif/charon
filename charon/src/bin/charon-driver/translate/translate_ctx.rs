@@ -56,8 +56,12 @@ impl TranslateOptions {
         let mut parse_pattern = |s: &str| match NamePattern::parse(s) {
             Ok(p) => Ok(p),
             Err(e) => {
-                let msg = format!("failed to parse pattern `{s}` ({e})");
-                error_or_panic!(error_ctx, &TranslatedCrate::default(), Span::dummy(), msg)
+                error_or_panic!(
+                    error_ctx,
+                    crate(&TranslatedCrate::default()),
+                    Span::dummy(),
+                    "failed to parse pattern `{s}` ({e})"
+                )
             }
         };
 
@@ -369,9 +373,9 @@ where
     std::panic::catch_unwind(move || unwind_safe_x.sinto(*unwind_safe_s)).or_else(|_| {
         error_or_panic!(
             err,
-            krate,
+            crate(krate),
             span,
-            format!("Hax panicked when translating `{x:?}`.")
+            "Hax panicked when translating `{x:?}`."
         )
     })
 }
@@ -473,7 +477,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
                 error_or_panic!(
                     self,
                     span,
-                    format!("Unexpected DefPathItem for `{def_id:?}`: {path_elem:?}")
+                    "Unexpected DefPathItem for `{def_id:?}`: {path_elem:?}"
                 );
             }
         };
@@ -1102,7 +1106,7 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
             error_or_panic!(
                 self,
                 span,
-                &format!("Unexpected error: could not find region '{dbid}_{var}")
+                "Unexpected error: could not find region '{dbid}_{var}"
             )
         }
     }
@@ -1119,11 +1123,7 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
             }
         }
         let err = mk_err();
-        error_or_panic!(
-            self,
-            span,
-            &format!("Unexpected error: could not find {}", err)
-        )
+        error_or_panic!(self, span, "Unexpected error: could not find {}", err)
     }
 
     pub(crate) fn lookup_early_region(
@@ -1192,7 +1192,8 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
         error_or_panic!(
             self,
             span,
-            &format!("Unexpected error: could not find clause variable {}", id)
+            "Unexpected error: could not find clause variable {}",
+            id
         )
     }
 

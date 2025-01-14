@@ -149,7 +149,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
                         register_error_or_panic!(
                             ctx,
                             span,
-                            format!("Thread panicked when extracting item `{rust_id:?}`.")
+                            "Thread panicked when extracting item `{rust_id:?}`."
                         );
                         Err(())
                     }
@@ -222,7 +222,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
 
         if self.errors.borrow().ignored_failed_decls.contains(&id) {
             let span = self.def_span(item_source.to_def_id());
-            error_or_panic!(self, span, format!("Failed to translate item {id:?}."))
+            error_or_panic!(self, span, "Failed to translate item {id:?}.")
         }
         Ok(self.translated.get_item(id).unwrap())
     }

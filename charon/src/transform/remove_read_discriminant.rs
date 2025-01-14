@@ -41,13 +41,14 @@ impl Transform {
                         ..
                     }) => {
                         let name = ctx.translated.item_name(*adt_id).unwrap();
-                        let msg = format!(
+                        register_error_or_panic!(
+                            ctx,
+                            block.span,
                             "reading the discriminant of an opaque enum. \
                             Add `--include {}` to the `charon` arguments \
                             to translate this enum.",
                             name.fmt_with_ctx(&ctx.into_fmt())
                         );
-                        register_error_or_panic!(ctx, block.span, msg);
                         None
                     }
                     Some(TypeDecl {

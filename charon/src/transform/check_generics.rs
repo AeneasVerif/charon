@@ -19,12 +19,13 @@ struct CheckGenericsVisitor<'a> {
 
 impl CheckGenericsVisitor<'_> {
     fn error(&self, message: impl Display) {
-        let message = format!(
+        register_error_or_panic!(
+            self.ctx,
+            self.span,
             "Found inconsistent generics {}:\n{message}\nVisitor stack:\n  {}",
             self.phase,
             self.visit_stack.iter().rev().join("\n  ")
         );
-        register_error_or_panic!(self.ctx, self.span, message);
     }
 }
 

@@ -151,14 +151,10 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
                         // directly? For now we just ignore it.
                     }
                     ClauseKind::WellFormed(_) => {
-                        error_or_panic!(
-                            self,
-                            span,
-                            format!("Well-formedness clauses are unsupported")
-                        )
+                        error_or_panic!(self, span, "Well-formedness clauses are unsupported")
                     }
                     ClauseKind::ConstEvaluatable(_) => {
-                        error_or_panic!(self, span, format!("Unsupported clause: {:?}", kind))
+                        error_or_panic!(self, span, "Unsupported clause: {:?}", kind)
                     }
                 }
             }
@@ -169,7 +165,7 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
             | PredicateKind::DynCompatible(_)
             | PredicateKind::NormalizesTo(_)
             | PredicateKind::Subtype(_) => {
-                error_or_panic!(self, span, format!("Unsupported predicate: {:?}", pred))
+                error_or_panic!(self, span, "Unsupported predicate: {:?}", pred)
             }
         }
         Ok(())
@@ -280,11 +276,9 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
                                 error_or_panic!(
                                     self,
                                     span,
-                                    format!(
-                                        "Found unsupported GAT `{}` when resolving trait `{}`",
-                                        item.name,
-                                        trait_decl_ref.fmt_with_ctx(&self.into_fmt())
-                                    )
+                                    "Found unsupported GAT `{}` when resolving trait `{}`",
+                                    item.name,
+                                    trait_decl_ref.fmt_with_ctx(&self.into_fmt())
                                 )
                             }
                             trait_id = TraitRefKind::ItemClause(

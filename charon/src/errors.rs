@@ -11,12 +11,14 @@ use std::collections::{HashMap, HashSet};
 
 #[macro_export]
 macro_rules! register_error_or_panic {
-    ($ctx:expr, $span: expr, $msg: expr) => {
-        $ctx.span_err($span, &$msg)
-    };
-    ($ctx:expr, $krate:expr, $span: expr, $msg: expr) => {
-        $ctx.span_err($krate, $span, &$msg)
-    };
+    ($ctx:expr, crate($krate:expr), $span: expr, $($fmt:tt)*) => {{
+        let msg = format!($($fmt)*);
+        $ctx.span_err($krate, $span, &msg)
+    }};
+    ($ctx:expr, $span: expr, $($fmt:tt)*) => {{
+        let msg = format!($($fmt)*);
+        $ctx.span_err($span, &msg)
+    }};
 }
 pub use register_error_or_panic;
 
@@ -34,13 +36,12 @@ pub use error_or_panic;
 macro_rules! error_assert {
     ($ctx:expr, $span: expr, $b: expr) => {
         if !$b {
-            let msg = format!("assertion failure: {:?}", stringify!($b));
-            $crate::errors::error_or_panic!($ctx, $span, msg);
+            $crate::errors::error_or_panic!($ctx, $span, "assertion failure: {:?}", stringify!($b));
         }
     };
-    ($ctx:expr, $span: expr, $b: expr, $msg: expr) => {
+    ($ctx:expr, $span: expr, $b: expr, $($fmt:tt)*) => {
         if !$b {
-            $crate::errors::error_or_panic!($ctx, $span, $msg);
+            $crate::errors::error_or_panic!($ctx, $span, $($fmt)*);
         }
     };
 }
@@ -51,13 +52,17 @@ pub use error_assert;
 macro_rules! sanity_check {
     ($ctx:expr, $span: expr, $b: expr) => {
         if !$b {
-            let msg = format!("assertion failure: {:?}", stringify!($b));
-            $crate::errors::register_error_or_panic!($ctx, $span, msg);
+            $crate::errors::register_error_or_panic!(
+                $ctx,
+                $span,
+                "assertion failure: {:?}",
+                stringify!($b)
+            );
         }
     };
-    ($ctx:expr, $span: expr, $b: expr, $msg: expr) => {
+    ($ctx:expr, $span: expr, $b: expr, $($fmt:tt)*) => {
         if !$b {
-            $crate::errors::register_error_or_panic!($ctx, $span, $msg);
+            $crate::errors::register_error_or_panic!($ctx, $span, $($fmt)*);
         }
     };
 }

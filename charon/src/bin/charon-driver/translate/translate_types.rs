@@ -54,12 +54,14 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
             }
             ReVar(..) | RePlaceholder(..) => {
                 // Shouldn't exist outside of type inference.
-                let err = format!("Should not exist outside of type inference: {region:?}");
-                error_or_panic!(self, span, err)
+                error_or_panic!(
+                    self,
+                    span,
+                    "Should not exist outside of type inference: {region:?}"
+                )
             }
             ReLateParam(..) | ReError(..) => {
-                let err = format!("Unexpected region kind: {region:?}");
-                error_or_panic!(self, span, err)
+                error_or_panic!(self, span, "Unexpected region kind: {region:?}")
             }
         }
     }
@@ -129,11 +131,7 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
                     return self.translate_ty(span, hidden_ty)
                 }
                 _ => {
-                    error_or_panic!(
-                        self,
-                        span,
-                        format!("Unsupported alias type: {:?}", alias.kind)
-                    )
+                    error_or_panic!(self, span, "Unsupported alias type: {:?}", alias.kind)
                 }
             },
 
@@ -309,7 +307,7 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
             }
             hax::TyKind::Todo(s) => {
                 trace!("Todo: {s}");
-                error_or_panic!(self, span, format!("Unsupported type: {:?}", s))
+                error_or_panic!(self, span, "Unsupported type: {:?}", s)
             }
         };
         let ty = kind.into_ty();

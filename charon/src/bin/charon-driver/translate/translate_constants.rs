@@ -133,7 +133,7 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
                 error_or_panic!(
                     self,
                     span,
-                    &format!("Unsupported constant: `ConstantExprKind::Cast {{..}}`",)
+                    "Unsupported constant: `ConstantExprKind::Cast {{..}}`",
                 )
             }
             ConstantExprKind::RawBorrow {
@@ -142,7 +142,7 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
                 error_or_panic!(
                     self,
                     span,
-                    &format!("Unsupported constant: `ConstantExprKind::RawBorrow {{mutability: false, ..}}`",)
+                    "Unsupported constant: `ConstantExprKind::RawBorrow {{mutability: false, ..}}`",
                 )
             }
             ConstantExprKind::RawBorrow {
@@ -173,7 +173,7 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
             }
             ConstantExprKind::Todo(msg) => {
                 // Case not yet handled by hax
-                error_or_panic!(self, span, format!("Unsupported constant: {:?}", msg))
+                error_or_panic!(self, span, "Unsupported constant: {:?}", msg)
             }
         };
 
@@ -206,11 +206,7 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
             | RawConstantExpr::Ref(_)
             | RawConstantExpr::MutPtr(_)
             | RawConstantExpr::FnPtr { .. } => {
-                error_or_panic!(
-                    self,
-                    span,
-                    format!("Unexpected constant generic: {:?}", value)
-                )
+                error_or_panic!(self, span, "Unexpected constant generic: {:?}", value)
             }
             RawConstantExpr::Var(v) => Ok(ConstGeneric::Var(v)),
         }

@@ -610,10 +610,8 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
                     error_or_panic!(
                         self,
                         span,
-                        format!(
-                            "Unexpected scrutinee type for ReadDiscriminant: {}",
-                            place.ty().fmt_with_ctx(&self.into_fmt())
-                        )
+                        "Unexpected scrutinee type for ReadDiscriminant: {}",
+                        place.ty().fmt_with_ctx(&self.into_fmt())
                     )
                 }
             }
@@ -1085,11 +1083,7 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
             TerminatorKind::CoroutineDrop
             | TerminatorKind::TailCall { .. }
             | TerminatorKind::Yield { .. } => {
-                error_or_panic!(
-                    self,
-                    span,
-                    format!("Unsupported terminator: {:?}", terminator.kind)
-                );
+                error_or_panic!(self, span, "Unsupported terminator: {:?}", terminator.kind);
             }
         };
 
