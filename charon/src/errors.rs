@@ -10,7 +10,7 @@ use std::cmp::{Ord, PartialOrd};
 use std::collections::{HashMap, HashSet};
 
 #[macro_export]
-macro_rules! register_error_or_panic {
+macro_rules! register_error {
     ($ctx:expr, crate($krate:expr), $span: expr, $($fmt:tt)*) => {{
         let msg = format!($($fmt)*);
         $ctx.span_err($krate, $span, &msg)
@@ -20,28 +20,28 @@ macro_rules! register_error_or_panic {
         $ctx.span_err($span, &msg)
     }};
 }
-pub use register_error_or_panic;
+pub use register_error;
 
 /// Macro to either panic or return on error, depending on the CLI options
 #[macro_export]
-macro_rules! error_or_panic {
+macro_rules! raise_error {
     ($($tokens:tt)*) => {{
-        return Err(register_error_or_panic!($($tokens)*));
+        return Err(register_error!($($tokens)*));
     }};
 }
-pub use error_or_panic;
+pub use raise_error;
 
 /// Custom assert to either panic or return an error
 #[macro_export]
 macro_rules! error_assert {
     ($ctx:expr, $span: expr, $b: expr) => {
         if !$b {
-            $crate::errors::error_or_panic!($ctx, $span, "assertion failure: {:?}", stringify!($b));
+            $crate::errors::raise_error!($ctx, $span, "assertion failure: {:?}", stringify!($b));
         }
     };
     ($ctx:expr, $span: expr, $b: expr, $($fmt:tt)*) => {
         if !$b {
-            $crate::errors::error_or_panic!($ctx, $span, $($fmt)*);
+            $crate::errors::raise_error!($ctx, $span, $($fmt)*);
         }
     };
 }
@@ -52,7 +52,7 @@ pub use error_assert;
 macro_rules! sanity_check {
     ($ctx:expr, $span: expr, $b: expr) => {
         if !$b {
-            $crate::errors::register_error_or_panic!(
+            $crate::errors::register_error!(
                 $ctx,
                 $span,
                 "assertion failure: {:?}",
@@ -62,7 +62,7 @@ macro_rules! sanity_check {
     };
     ($ctx:expr, $span: expr, $b: expr, $($fmt:tt)*) => {
         if !$b {
-            $crate::errors::register_error_or_panic!($ctx, $span, $($fmt)*);
+            $crate::errors::register_error!($ctx, $span, $($fmt)*);
         }
     };
 }

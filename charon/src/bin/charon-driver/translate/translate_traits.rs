@@ -52,11 +52,11 @@ impl BodyTransCtx<'_, '_> {
         let span = item_meta.span;
 
         if let hax::FullDefKind::TraitAlias { .. } = def.kind() {
-            error_or_panic!(self, span, "Trait aliases are not supported");
+            raise_error!(self, span, "Trait aliases are not supported");
         }
 
         let hax::FullDefKind::Trait { items, .. } = &def.kind else {
-            error_or_panic!(self, span, "Unexpected definition: {def:?}");
+            raise_error!(self, span, "Unexpected definition: {def:?}");
         };
         let items: Vec<(TraitItemName, &hax::AssocItem, Arc<hax::FullDef>)> = items
             .iter()
@@ -142,7 +142,7 @@ impl BodyTransCtx<'_, '_> {
                     consts.push((item_name.clone(), ty));
                 }
                 hax::FullDefKind::AssocTy { generics, .. } if !generics.params.is_empty() => {
-                    error_or_panic!(
+                    raise_error!(
                         self,
                         item_span,
                         "Generic associated types are not supported"

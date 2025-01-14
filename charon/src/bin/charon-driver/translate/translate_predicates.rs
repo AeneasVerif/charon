@@ -151,10 +151,10 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
                         // directly? For now we just ignore it.
                     }
                     ClauseKind::WellFormed(_) => {
-                        error_or_panic!(self, span, "Well-formedness clauses are unsupported")
+                        raise_error!(self, span, "Well-formedness clauses are unsupported")
                     }
                     ClauseKind::ConstEvaluatable(_) => {
-                        error_or_panic!(self, span, "Unsupported clause: {:?}", kind)
+                        raise_error!(self, span, "Unsupported clause: {:?}", kind)
                     }
                 }
             }
@@ -165,7 +165,7 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
             | PredicateKind::DynCompatible(_)
             | PredicateKind::NormalizesTo(_)
             | PredicateKind::Subtype(_) => {
-                error_or_panic!(self, span, "Unsupported predicate: {:?}", pred)
+                raise_error!(self, span, "Unsupported predicate: {:?}", pred)
             }
         }
         Ok(())
@@ -273,7 +273,7 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
                             ..
                         } => {
                             if !generic_args.is_empty() {
-                                error_or_panic!(
+                                raise_error!(
                                     self,
                                     span,
                                     "Found unsupported GAT `{}` when resolving trait `{}`",

@@ -25,7 +25,7 @@ use std::{fmt, mem};
 
 // Re-export to avoid having to fix imports.
 pub(crate) use charon_lib::errors::{
-    error_assert, error_or_panic, register_error_or_panic, DepSource, ErrorCtx,
+    error_assert, raise_error, register_error, DepSource, ErrorCtx,
 };
 
 /// TODO: maybe we should always target MIR Built, this would make things
@@ -56,7 +56,7 @@ impl TranslateOptions {
         let mut parse_pattern = |s: &str| match NamePattern::parse(s) {
             Ok(p) => Ok(p),
             Err(e) => {
-                error_or_panic!(
+                raise_error!(
                     error_ctx,
                     crate(&TranslatedCrate::default()),
                     Span::dummy(),
@@ -371,7 +371,7 @@ where
     let unwind_safe_s = std::panic::AssertUnwindSafe(s);
     let unwind_safe_x = std::panic::AssertUnwindSafe(x);
     std::panic::catch_unwind(move || unwind_safe_x.sinto(*unwind_safe_s)).or_else(|_| {
-        error_or_panic!(
+        raise_error!(
             err,
             crate(krate),
             span,
@@ -474,7 +474,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
             DefPathItem::Use => Some(PathElem::Ident("<use>".to_string(), disambiguator)),
             _ => {
                 let def_id = def.to_rust_def_id();
-                error_or_panic!(
+                raise_error!(
                     self,
                     span,
                     "Unexpected DefPathItem for `{def_id:?}`: {path_elem:?}"
@@ -1103,7 +1103,7 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
         {
             Ok(self.bind_var(dbid, *rid))
         } else {
-            error_or_panic!(
+            raise_error!(
                 self,
                 span,
                 "Unexpected error: could not find region '{dbid}_{var}"
@@ -1123,7 +1123,7 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
             }
         }
         let err = mk_err();
-        error_or_panic!(self, span, "Unexpected error: could not find {}", err)
+        raise_error!(self, span, "Unexpected error: could not find {}", err)
     }
 
     pub(crate) fn lookup_early_region(
@@ -1189,7 +1189,7 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
             }
         }
         // Actually unreachable
-        error_or_panic!(
+        raise_error!(
             self,
             span,
             "Unexpected error: could not find clause variable {}",

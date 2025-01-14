@@ -3,7 +3,7 @@ use derive_generic_visitor::*;
 use itertools::Itertools;
 use std::fmt::Display;
 
-use crate::{llbc_ast::*, register_error_or_panic};
+use crate::{llbc_ast::*, register_error};
 
 use super::{ctx::TransformPass, TransformCtx};
 
@@ -19,7 +19,7 @@ struct CheckGenericsVisitor<'a> {
 
 impl CheckGenericsVisitor<'_> {
     fn error(&self, message: impl Display) {
-        register_error_or_panic!(
+        register_error!(
             self.ctx,
             self.span,
             "Found inconsistent generics {}:\n{message}\nVisitor stack:\n  {}",
