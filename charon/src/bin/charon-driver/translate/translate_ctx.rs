@@ -1008,6 +1008,10 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
         self.t_ctx.translate_span_from_hax(rspan)
     }
 
+    pub(crate) fn hax_def(&mut self, def_id: impl Into<DefId>) -> Result<Arc<hax::FullDef>, Error> {
+        self.t_ctx.hax_def(def_id.into())
+    }
+
     pub(crate) fn def_span(&mut self, def_id: impl Into<DefId>) -> Span {
         self.t_ctx.def_span(def_id)
     }

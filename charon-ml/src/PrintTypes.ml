@@ -302,7 +302,7 @@ and trait_instance_id_to_string (env : 'a fmt_env) (id : trait_instance_id) :
       let impl = trait_impl_id_to_string env id in
       let generics = generic_args_to_string env generics in
       impl ^ generics
-  | BuiltinOrAuto trait ->
+  | BuiltinOrAuto (trait, _, _) ->
       region_binder_to_string trait_decl_ref_to_string env trait
   | Clause id -> trait_db_var_to_string env id
   | ParentClause (inst_id, _decl_id, clause_id) ->

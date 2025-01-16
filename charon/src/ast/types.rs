@@ -124,9 +124,18 @@ pub enum TraitRefKind {
     #[charon::rename("Self")]
     SelfId,
 
-    /// A specific builtin trait implementation like [core::marker::Sized] or
-    /// auto trait implementation like [core::marker::Syn].
-    BuiltinOrAuto(PolyTraitDeclRef),
+    /// A trait implementation that is computed by the compiler, such as for built-in traits
+    /// `Sized` or `FnMut`. This morally points to an invisible `impl` block; as such it contains
+    /// the information we may need from one.
+    BuiltinOrAuto {
+        trait_decl_ref: PolyTraitDeclRef,
+        /// The `ImplExpr`s required to satisfy the implied predicates on the trait declaration.
+        /// E.g. since `FnMut: FnOnce`, a built-in `T: FnMut` impl would have an `ImplExpr` for `T:
+        /// FnOnce`.
+        parent_trait_refs: Vector<TraitClauseId, TraitRef>,
+        /// The values of the associated types for this trait.
+        types: Vec<(TraitItemName, Ty)>,
+    },
 
     /// The automatically-generated implementation for `dyn Trait`.
     Dyn(PolyTraitDeclRef),

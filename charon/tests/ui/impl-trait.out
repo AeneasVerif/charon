@@ -233,7 +233,7 @@ fn test_crate::use_wrap()
     @6 := &@7
     @5 := &*(@6)
     @4 := (move (@5))
-    @2 := core::ops::function::FnOnce<fn<'_0>(&'_0_0 (u32)) -> test_crate::WrapClone<&'_0_0 (u32)>[core::marker::Sized<&'_1_0 (u32)>, core::clone::impls::{impl core::clone::Clone for &'_0 (T)}#3<'_, u32>], (&'_ (u32))>::call_once(move (@3), move (@4))
+    @2 := core::ops::function::FnOnce<fn<'_0>(&'_0_0 (u32)) -> test_crate::WrapClone<&'_0_0 (u32)>[core::marker::Sized<&'_1_0 (u32)>, core::clone::impls::{impl core::clone::Clone for &'_0 (T)}#3<'_, u32>], (&'_ (u32))> where Output  = test_crate::WrapClone<&'_ (u32)>[core::marker::Sized<&'_ (u32)>, core::clone::impls::{impl core::clone::Clone for &'_0 (T)}#3<'_, u32>]::call_once(move (@3), move (@4))
     drop @5
     drop @4
     drop @3
