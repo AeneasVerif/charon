@@ -58,8 +58,8 @@ trait core::hash::Hash<Self>
 
 trait core::hash::BuildHasher<Self>
 {
-    parent_clause0 : [@TraitClause0]: core::hash::Hasher<Self::Hasher>
-    parent_clause1 : [@TraitClause1]: core::marker::Sized<Self::Hasher>
+    parent_clause0 : [@TraitClause0]: core::marker::Sized<Self::Hasher>
+    parent_clause1 : [@TraitClause1]: core::hash::Hasher<Self::Hasher>
     type Hasher
     fn build_hasher<'_0> = core::hash::BuildHasher::build_hasher<'_0_0, Self>
     fn hash_one<'_0, T, [@TraitClause0]: core::marker::Sized<T>, [@TraitClause1]: core::hash::Hash<T>, [@TraitClause2]: core::marker::Sized<Self>, [@TraitClause3]: core::hash::Hasher<Self::Hasher>> = core::hash::BuildHasher::hash_one<'_0_0, Self, T>[@TraitClause0_0, @TraitClause0_1, @TraitClause0_2, @TraitClause0_3]
@@ -139,8 +139,8 @@ fn std::hash::random::{impl core::hash::BuildHasher for std::hash::random::Rando
 
 impl std::hash::random::{impl core::hash::BuildHasher for std::hash::random::RandomState}#1 : core::hash::BuildHasher<std::hash::random::RandomState>
 {
-    parent_clause0 = std::hash::random::{impl core::hash::Hasher for std::hash::random::DefaultHasher}#4
-    parent_clause1 = core::marker::Sized<std::hash::random::DefaultHasher>
+    parent_clause0 = core::marker::Sized<std::hash::random::DefaultHasher>
+    parent_clause1 = std::hash::random::{impl core::hash::Hasher for std::hash::random::DefaultHasher}#4
     type Hasher = std::hash::random::DefaultHasher
     fn build_hasher<'_0> = std::hash::random::{impl core::hash::BuildHasher for std::hash::random::RandomState}#1::build_hasher<'_0_0>
 }

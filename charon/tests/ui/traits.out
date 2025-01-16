@@ -490,8 +490,8 @@ global test_crate::WithConstTy::LEN2<Self, const LEN : usize>: usize = test_crat
 trait test_crate::WithConstTy<Self, const LEN : usize>
 {
     parent_clause0 : [@TraitClause0]: core::marker::Sized<Self::V>
-    parent_clause1 : [@TraitClause1]: test_crate::ToU64<Self::W>
-    parent_clause2 : [@TraitClause2]: core::marker::Sized<Self::W>
+    parent_clause1 : [@TraitClause1]: core::marker::Sized<Self::W>
+    parent_clause2 : [@TraitClause2]: test_crate::ToU64<Self::W>
     const LEN1 : usize
     const LEN2 : usize
     type V
@@ -525,8 +525,8 @@ fn test_crate::{impl test_crate::WithConstTy<32 : usize> for bool}#8::f<'_0, '_1
 impl test_crate::{impl test_crate::WithConstTy<32 : usize> for bool}#8 : test_crate::WithConstTy<bool, 32 : usize>
 {
     parent_clause0 = core::marker::Sized<u8>
-    parent_clause1 = test_crate::{impl test_crate::ToU64 for u64}#2
-    parent_clause2 = core::marker::Sized<u64>
+    parent_clause1 = core::marker::Sized<u64>
+    parent_clause2 = test_crate::{impl test_crate::ToU64 for u64}#2
     const LEN1 = test_crate::{impl test_crate::WithConstTy<32 : usize> for bool}#8::LEN1
     const LEN2 = test_crate::WithConstTy::LEN2<bool, 32 : usize>
     type V = u8
@@ -571,7 +571,7 @@ where
     let @2: @TraitClause1::W; // anonymous local
 
     @2 := move (x@1)
-    @0 := @TraitClause1::parent_clause1::to_u64(move (@2))
+    @0 := @TraitClause1::parent_clause2::to_u64(move (@2))
     drop @2
     drop x@1
     return
@@ -697,11 +697,11 @@ trait test_crate::Iterator<Self>
 
 trait test_crate::IntoIterator<Self>
 where
-    Self::parent_clause1::Item = Self::Item,
+    Self::parent_clause2::Item = Self::Item,
 {
     parent_clause0 : [@TraitClause0]: core::marker::Sized<Self::Item>
-    parent_clause1 : [@TraitClause1]: test_crate::Iterator<Self::IntoIter>
-    parent_clause2 : [@TraitClause2]: core::marker::Sized<Self::IntoIter>
+    parent_clause1 : [@TraitClause1]: core::marker::Sized<Self::IntoIter>
+    parent_clause2 : [@TraitClause2]: test_crate::Iterator<Self::IntoIter>
     type Item
     type IntoIter
     fn into_iter = test_crate::IntoIterator::into_iter<Self>
@@ -727,8 +727,8 @@ trait test_crate::WithTarget<Self>
 
 trait test_crate::ParentTrait2<Self>
 {
-    parent_clause0 : [@TraitClause0]: test_crate::WithTarget<Self::U>
-    parent_clause1 : [@TraitClause1]: core::marker::Sized<Self::U>
+    parent_clause0 : [@TraitClause0]: core::marker::Sized<Self::U>
+    parent_clause1 : [@TraitClause1]: test_crate::WithTarget<Self::U>
     type U
 }
 
@@ -746,8 +746,8 @@ impl test_crate::{impl test_crate::WithTarget for u32}#11 : test_crate::WithTarg
 
 impl test_crate::{impl test_crate::ParentTrait2 for u32}#12 : test_crate::ParentTrait2<u32>
 {
-    parent_clause0 = test_crate::{impl test_crate::WithTarget for u32}#11
-    parent_clause1 = core::marker::Sized<u32>
+    parent_clause0 = core::marker::Sized<u32>
+    parent_clause1 = test_crate::{impl test_crate::WithTarget for u32}#11
     type U = u32
 }
 
@@ -943,15 +943,15 @@ where
 
 trait test_crate::RecursiveImpl<Self>
 {
-    parent_clause0 : [@TraitClause0]: test_crate::RecursiveImpl<Self::Item>
-    parent_clause1 : [@TraitClause1]: core::marker::Sized<Self::Item>
+    parent_clause0 : [@TraitClause0]: core::marker::Sized<Self::Item>
+    parent_clause1 : [@TraitClause1]: test_crate::RecursiveImpl<Self::Item>
     type Item
 }
 
 impl test_crate::{impl test_crate::RecursiveImpl for ()}#17 : test_crate::RecursiveImpl<()>
 {
-    parent_clause0 = test_crate::{impl test_crate::RecursiveImpl for ()}#17
-    parent_clause1 = core::marker::Sized<()>
+    parent_clause0 = core::marker::Sized<()>
+    parent_clause1 = test_crate::{impl test_crate::RecursiveImpl for ()}#17
     type Item = ()
 }
 
@@ -1053,7 +1053,7 @@ fn test_crate::WithConstTy::f<'_0, '_1, Self, const LEN : usize>(@1: &'_0 mut (S
 
 fn test_crate::IntoIterator::into_iter<Self>(@1: Self) -> Self::IntoIter
 
-fn test_crate::ChildTrait2::convert<Self>(@1: Self::parent_clause0::U) -> Self::parent_clause0::parent_clause0::Target
+fn test_crate::ChildTrait2::convert<Self>(@1: Self::parent_clause0::U) -> Self::parent_clause0::parent_clause1::Target
 
 fn test_crate::CFnOnce::call_once<Self, Args>(@1: Self, @2: Args) -> Self::Output
 

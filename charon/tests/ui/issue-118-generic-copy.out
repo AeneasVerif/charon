@@ -81,9 +81,8 @@ where
 
 trait test_crate::Trait<Self>
 {
-    parent_clause0 : [@TraitClause0]: core::marker::Copy<Self::Ty>
-    parent_clause1 : [@TraitClause1]: core::clone::Clone<Self::Ty>
-    parent_clause2 : [@TraitClause2]: core::marker::Sized<Self::Ty>
+    parent_clause0 : [@TraitClause0]: core::marker::Sized<Self::Ty>
+    parent_clause1 : [@TraitClause1]: core::marker::Copy<Self::Ty>
     type Ty
 }
 
