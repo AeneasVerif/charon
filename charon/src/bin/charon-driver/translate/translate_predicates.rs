@@ -211,17 +211,17 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
         trace!("impl_expr: {:#?}", impl_source);
         use hax::ImplExprAtom;
 
-        let nested = &impl_source.args;
         let trait_ref = match &impl_source.r#impl {
             ImplExprAtom::Concrete {
                 id: impl_def_id,
                 generics,
+                impl_exprs,
             } => {
                 let impl_id = self.register_trait_impl_id(span, impl_def_id);
                 let generics = self.translate_generic_args(
                     span,
                     generics,
-                    nested,
+                    impl_exprs,
                     None,
                     GenericsSource::item(impl_id),
                 )?;
@@ -240,7 +240,6 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
                 path,
                 ..
             } => {
-                assert!(nested.is_empty());
                 trace!(
                     "impl source (self or clause): param:\n- trait_ref: {:?}\n- path: {:?}",
                     trait_ref,
