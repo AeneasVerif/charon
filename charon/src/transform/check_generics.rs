@@ -66,11 +66,22 @@ impl CheckGenericsVisitor<'_> {
 
     fn assert_clause_matches(
         &self,
-        _params_fmt: &FmtCtx<'_>,
-        _tclause: &TraitClause,
-        _tref: &TraitRef,
+        params_fmt: &FmtCtx<'_>,
+        tclause: &TraitClause,
+        tref: &TraitRef,
     ) {
-        // TODO
+        let clause_trait_id = tclause.trait_.skip_binder.trait_id;
+        let ref_trait_id = tref.trait_decl_ref.skip_binder.trait_id;
+        if clause_trait_id != ref_trait_id {
+            let tclause = tclause.fmt_with_ctx(params_fmt);
+            let tref_pred = tref.trait_decl_ref.fmt_with_ctx(&self.val_fmt_ctx);
+            let tref = tref.fmt_with_ctx(&self.val_fmt_ctx);
+            self.error(format!(
+                "Mismatched trait clause:\
+                \nexpected: {tclause}\
+                \n     got: {tref}: {tref_pred}"
+            ));
+        }
     }
 
     fn assert_matches(&self, params_fmt: &FmtCtx<'_>, params: &GenericParams, args: &GenericArgs) {
