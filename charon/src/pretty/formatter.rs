@@ -322,7 +322,7 @@ impl<'a> Formatter<ConstGenericDbVar> for FmtCtx<'a> {
             .and_then(|generics| generics.const_generics.get(varid))
         {
             None => format!("missing_cg_var({var})"),
-            Some(v) => v.to_string(),
+            Some(v) => v.fmt_with_ctx(self),
         }
     }
 }

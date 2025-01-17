@@ -7,10 +7,12 @@
 use anyhow::{anyhow, bail};
 use assert_cmd::prelude::{CommandCargoExt, OutputAssertExt};
 use indoc::indoc as unindent;
+use itertools::Itertools;
 use libtest_mimic::Trial;
 use snapbox::filter::Filter as _;
 use std::{
     error::Error,
+    ffi::OsStr,
     fs::read_to_string,
     path::{Path, PathBuf},
     process::Command,
@@ -204,6 +206,10 @@ fn perform_test(test_case: &Case, action: Action) -> anyhow::Result<()> {
     for arg in &test_case.magic_comments.charon_opts {
         cmd.arg(arg);
     }
+    let cmd_str = format!(
+        "charon {}",
+        cmd.get_args().map(OsStr::to_string_lossy).join(" ")
+    );
 
     let output = cmd.output()?;
     let stderr = String::from_utf8(output.stderr.clone())?;
@@ -217,7 +223,7 @@ fn perform_test(test_case: &Case, action: Action) -> anyhow::Result<()> {
                 } else {
                     "errored"
                 };
-                bail!("Compilation was expected to panic but instead {status}: {stderr}");
+                bail!("Command: `{cmd_str}`\nCompilation was expected to panic but instead {status}:\n{stderr}");
             }
             stderr
         }
@@ -228,7 +234,7 @@ fn perform_test(test_case: &Case, action: Action) -> anyhow::Result<()> {
                 } else {
                     "panicked"
                 };
-                bail!("Compilation was expected to fail but instead {status}: {stderr}");
+                bail!("Command: `{cmd_str}`\nCompilation was expected to fail but instead {status}:\n{stderr}");
             }
             stderr
         }
@@ -240,7 +246,7 @@ fn perform_test(test_case: &Case, action: Action) -> anyhow::Result<()> {
                     let actual = snapbox::filter::FilterNewlines.filter(actual);
                     actual.write_to_path(&test_case.expected)?;
                 }
-                bail!("Compilation failed: {stderr}")
+                bail!("Command: `{cmd_str}`\nCompilation failed:\n{stderr}")
             }
             stdout
         }

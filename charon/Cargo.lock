@@ -818,7 +818,7 @@ dependencies = [
 [[package]]
 name = "hax-adt-into"
 version = "0.1.0-rc.1"
-source = "git+https://github.com/cryspen/hax?branch=main#54a4159b0e7ccc8dd4fdd811a239bc271145efcb"
+source = "git+https://github.com/Nadrieril/hax?branch=fix-clause-order#591da2b985d7c2e1388c5e1ad595f225c90ab90e"
 dependencies = [
  "itertools 0.11.0",
  "proc-macro2",
@@ -829,7 +829,7 @@ dependencies = [
 [[package]]
 name = "hax-frontend-exporter"
 version = "0.1.0-rc.1"
-source = "git+https://github.com/cryspen/hax?branch=main#54a4159b0e7ccc8dd4fdd811a239bc271145efcb"
+source = "git+https://github.com/Nadrieril/hax?branch=fix-clause-order#591da2b985d7c2e1388c5e1ad595f225c90ab90e"
 dependencies = [
  "extension-traits",
  "hax-adt-into",
@@ -846,7 +846,7 @@ dependencies = [
 [[package]]
 name = "hax-frontend-exporter-options"
 version = "0.1.0-rc.1"
-source = "git+https://github.com/cryspen/hax?branch=main#54a4159b0e7ccc8dd4fdd811a239bc271145efcb"
+source = "git+https://github.com/Nadrieril/hax?branch=fix-clause-order#591da2b985d7c2e1388c5e1ad595f225c90ab90e"
 dependencies = [
  "hax-adt-into",
  "schemars",

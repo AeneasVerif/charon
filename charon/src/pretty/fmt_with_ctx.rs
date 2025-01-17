@@ -11,7 +11,7 @@ use crate::{
 use itertools::Itertools;
 use std::{
     borrow::Cow,
-    fmt::{self, Display, Write},
+    fmt::{self, Debug, Display, Write},
 };
 
 /// Format the AST type as a string.
@@ -182,6 +182,13 @@ impl<C: AstFormatter> FmtWithCtx<C> for ConstGeneric {
             ConstGeneric::Value(v) => v.to_string(),
             ConstGeneric::Global(id) => ctx.format_object(*id),
         }
+    }
+}
+
+impl<C: AstFormatter> FmtWithCtx<C> for ConstGenericVar {
+    fn fmt_with_ctx(&self, ctx: &C) -> String {
+        let ty = self.ty.fmt_with_ctx(ctx);
+        format!("const {} : {}", self.name, ty)
     }
 }
 
@@ -369,9 +376,9 @@ impl GenericParams {
     where
         C: AstFormatter,
     {
-        let regions = self.regions.iter().map(|x| ctx.format_object(x));
-        let types = self.types.iter().map(|x| x.to_string());
-        let const_generics = self.const_generics.iter().map(|x| x.to_string());
+        let regions = self.regions.iter().map(|x| x.fmt_with_ctx(ctx));
+        let types = self.types.iter().map(|x| x.fmt_with_ctx(ctx));
+        let const_generics = self.const_generics.iter().map(|x| x.fmt_with_ctx(ctx));
         regions.chain(types).chain(const_generics)
     }
 
@@ -606,6 +613,17 @@ impl<C: AstFormatter> FmtWithCtx<C> for ImplElem {
     }
 }
 
+impl<C: AstFormatter> FmtWithCtx<C> for LiteralTy {
+    fn fmt_with_ctx(&self, _ctx: &C) -> String {
+        match self {
+            LiteralTy::Integer(ty) => ty.to_string(),
+            LiteralTy::Float(ty) => ty.to_string(),
+            LiteralTy::Char => "char".to_owned(),
+            LiteralTy::Bool => "bool".to_owned(),
+        }
+    }
+}
+
 impl<C: AstFormatter> FmtWithCtx<C> for Name {
     fn fmt_with_ctx(&self, ctx: &C) -> String {
         let name = self
@@ -825,6 +843,12 @@ impl<T> RegionBinder<T> {
             format!("for<{regions}> ",)
         };
         format!("{regions}{value}",)
+    }
+}
+
+impl<C: AstFormatter> FmtWithCtx<C> for RegionVar {
+    fn fmt_with_ctx(&self, ctx: &C) -> String {
+        ctx.format_object(self)
     }
 }
 
@@ -1444,6 +1468,12 @@ impl<C: AstFormatter> FmtWithCtx<C> for TypeId {
     }
 }
 
+impl<C: AstFormatter> FmtWithCtx<C> for TypeVar {
+    fn fmt_with_ctx(&self, _ctx: &C) -> String {
+        self.name.to_string()
+    }
+}
+
 impl<C: AstFormatter> FmtWithCtx<C> for UnOp {
     fn fmt_with_ctx(&self, ctx: &C) -> String {
         match self {
@@ -1596,27 +1626,9 @@ impl std::fmt::Display for IntegerTy {
     }
 }
 
-impl std::fmt::Display for GenericArgs {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::result::Result<(), std::fmt::Error> {
-        write!(f, "{}", self.fmt_with_ctx(&FmtCtx::new()))
-    }
-}
-
 impl std::fmt::Display for GenericParams {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::result::Result<(), std::fmt::Error> {
         write!(f, "{}", self.fmt_with_ctx_single_line(&FmtCtx::new()))
-    }
-}
-
-impl std::fmt::Debug for GenericArgs {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::result::Result<(), std::fmt::Error> {
-        write!(f, "{}", self)
-    }
-}
-
-impl std::fmt::Debug for GenericParams {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::result::Result<(), std::fmt::Error> {
-        write!(f, "{}", self)
     }
 }
 
@@ -1633,32 +1645,9 @@ impl std::fmt::Display for Literal {
     }
 }
 
-impl std::fmt::Display for LiteralTy {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::result::Result<(), std::fmt::Error> {
-        match self {
-            LiteralTy::Integer(ty) => ty.fmt(f),
-            LiteralTy::Float(ty) => ty.fmt(f),
-            LiteralTy::Char => write!(f, "char"),
-            LiteralTy::Bool => write!(f, "bool"),
-        }
-    }
-}
-
 impl std::fmt::Display for Loc {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::result::Result<(), std::fmt::Error> {
         write!(f, "{}:{}", self.line, self.col)
-    }
-}
-
-impl std::fmt::Display for Operand {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::result::Result<(), std::fmt::Error> {
-        write!(f, "{}", self.fmt_with_ctx(&FmtCtx::new()))
-    }
-}
-
-impl std::fmt::Display for Place {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::result::Result<(), std::fmt::Error> {
-        write!(f, "{}", self.fmt_with_ctx(&FmtCtx::new()))
     }
 }
 
@@ -1669,12 +1658,6 @@ impl std::fmt::Display for RawAttribute {
             write!(f, "({args})")?;
         }
         Ok(())
-    }
-}
-
-impl std::fmt::Display for Rvalue {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::result::Result<(), std::fmt::Error> {
-        write!(f, "{}", self.fmt_with_ctx(&FmtCtx::new()))
     }
 }
 
@@ -1715,21 +1698,9 @@ impl std::fmt::Display for TraitItemName {
     }
 }
 
-impl std::string::ToString for ConstGenericVar {
-    fn to_string(&self) -> String {
-        format!("const {} : {}", self.name, self.ty.to_string())
-    }
-}
-
-impl std::string::ToString for Field {
-    fn to_string(&self) -> String {
-        self.fmt_with_ctx(&FmtCtx::new())
-    }
-}
-
-impl std::string::ToString for TypeVar {
-    fn to_string(&self) -> String {
-        self.name.to_string()
+impl std::fmt::Display for TypeVar {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}", self.name)
     }
 }
 
@@ -1745,11 +1716,34 @@ impl std::string::ToString for Var {
     }
 }
 
-impl std::string::ToString for Variant {
-    fn to_string(&self) -> String {
-        self.fmt_with_ctx(&FmtCtx::new())
-    }
+macro_rules! impl_display_via_ctx {
+    ($ty:ty) => {
+        impl Display for $ty {
+            fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+                f.write_str(&self.fmt_with_ctx(&FmtCtx::new()))
+            }
+        }
+    };
 }
+macro_rules! impl_debug_via_display {
+    ($ty:ty) => {
+        impl Debug for $ty {
+            fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+                <_ as Display>::fmt(self, f)
+            }
+        }
+    };
+}
+
+impl_display_via_ctx!(Field);
+impl_display_via_ctx!(GenericArgs);
+impl_display_via_ctx!(LiteralTy);
+impl_display_via_ctx!(Operand);
+impl_display_via_ctx!(Place);
+impl_display_via_ctx!(Rvalue);
+impl_display_via_ctx!(Variant);
+impl_debug_via_display!(GenericArgs);
+impl_debug_via_display!(GenericParams);
 
 /// Format a function call.
 /// We return the pair: (function call, comment)
