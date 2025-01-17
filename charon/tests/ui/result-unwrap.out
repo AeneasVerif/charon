@@ -132,7 +132,7 @@ fn test_crate::unwrap(@1: core::result::Result<u32, u32>[core::marker::Sized<u32
     let @2: core::result::Result<u32, u32>[core::marker::Sized<u32>, core::marker::Sized<u32>]; // anonymous local
 
     @2 := copy (res@1)
-    @0 := core::result::{core::result::Result<T, E>[@TraitClause0, @TraitClause1]}::unwrap<u32, u32>[core::fmt::num::{impl core::fmt::Debug for u32}#86, core::marker::Sized<u32>, core::marker::Sized<u32>](move (@2))
+    @0 := core::result::{core::result::Result<T, E>[@TraitClause0, @TraitClause1]}::unwrap<u32, u32>[core::marker::Sized<u32>, core::marker::Sized<u32>, core::fmt::num::{impl core::fmt::Debug for u32}#86](move (@2))
     drop @2
     return
 }

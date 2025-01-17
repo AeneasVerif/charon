@@ -80,7 +80,7 @@ fn test_crate::test(@1: test_crate::HashMap<()>[core::marker::Sized<()>])
     drop @2
     @6 := move (map@1)
     @7 := ()
-    @5 := test_crate::{test_crate::HashMap<S>[@TraitClause0]}#1::get<(), ()>[core::marker::Sized<()>, test_crate::{impl test_crate::Trait for ()}, core::marker::Sized<()>](move (@6), move (@7))
+    @5 := test_crate::{test_crate::HashMap<S>[@TraitClause0]}#1::get<(), ()>[core::marker::Sized<()>, core::marker::Sized<()>, test_crate::{impl test_crate::Trait for ()}](move (@6), move (@7))
     drop @7
     drop @6
     drop @5

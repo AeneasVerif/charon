@@ -685,7 +685,7 @@ fn test_crate::test_array_map(@1: Array<i32, 256 : usize>) -> Array<i32, 256 : u
 
     @2 := copy (x@1)
     @3 := {test_crate::test_array_map::closure} {}
-    @0 := core::array::{Array<T, const N : usize>}#23::map<i32, fn(i32) -> i32, i32, 256 : usize>[core::marker::Sized<fn(i32) -> i32>, core::marker::Sized<i32>, core::ops::function::FnMut<fn(i32) -> i32, (i32)>, core::marker::Sized<i32>](move (@2), move (@3))
+    @0 := core::array::{Array<T, const N : usize>}#23::map<i32, fn(i32) -> i32, i32, 256 : usize>[core::marker::Sized<i32>, core::marker::Sized<fn(i32) -> i32>, core::marker::Sized<i32>, core::ops::function::FnMut<fn(i32) -> i32, (i32)>](move (@2), move (@3))
     drop @3
     drop @2
     return

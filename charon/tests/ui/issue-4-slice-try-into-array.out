@@ -106,7 +106,7 @@ fn test_crate::trait_error<'_0>(@1: &'_0 (Slice<u8>))
     @4 := &*(s@1)
     @3 := core::convert::{impl core::convert::TryInto<U> for T}#6::try_into<&'_ (Slice<u8>), Array<u8, 4 : usize>>[core::marker::Sized<&'_ (Slice<u8>)>, core::marker::Sized<Array<u8, 4 : usize>>, core::array::{impl core::convert::TryFrom<&'_0 (Slice<T>)> for Array<T, const N : usize>}#7<'_, u8, 4 : usize>[core::marker::Sized<u8>, core::marker::{impl core::marker::Copy for u8}#38]](move (@4))
     drop @4
-    _array@2 := core::result::{core::result::Result<T, E>[@TraitClause0, @TraitClause1]}::unwrap<Array<u8, 4 : usize>, core::array::TryFromSliceError>[core::array::{impl core::fmt::Debug for core::array::TryFromSliceError}#26, core::marker::Sized<Array<u8, 4 : usize>>, core::marker::Sized<core::array::TryFromSliceError>](move (@3))
+    _array@2 := core::result::{core::result::Result<T, E>[@TraitClause0, @TraitClause1]}::unwrap<Array<u8, 4 : usize>, core::array::TryFromSliceError>[core::marker::Sized<Array<u8, 4 : usize>>, core::marker::Sized<core::array::TryFromSliceError>, core::array::{impl core::fmt::Debug for core::array::TryFromSliceError}#26](move (@3))
     drop @3
     @fake_read(_array@2)
     @5 := ()
