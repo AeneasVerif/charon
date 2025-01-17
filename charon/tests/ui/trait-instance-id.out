@@ -70,9 +70,8 @@ trait core::num::nonzero::ZeroablePrimitive<Self>
     parent_clause0 : [@TraitClause0]: core::marker::Sized<Self>
     parent_clause1 : [@TraitClause1]: core::marker::Copy<Self>
     parent_clause2 : [@TraitClause2]: core::num::nonzero::private::Sealed<Self>
-    parent_clause3 : [@TraitClause3]: core::marker::Copy<Self::NonZeroInner>
-    parent_clause4 : [@TraitClause4]: core::clone::Clone<Self::NonZeroInner>
-    parent_clause5 : [@TraitClause5]: core::marker::Sized<Self::NonZeroInner>
+    parent_clause3 : [@TraitClause3]: core::marker::Sized<Self::NonZeroInner>
+    parent_clause4 : [@TraitClause4]: core::marker::Copy<Self::NonZeroInner>
     type NonZeroInner
 }
 
@@ -116,9 +115,8 @@ impl core::num::nonzero::{impl core::num::nonzero::ZeroablePrimitive for usize}#
     parent_clause0 = core::marker::Sized<usize>
     parent_clause1 = core::marker::{impl core::marker::Copy for usize}#37
     parent_clause2 = core::num::nonzero::{impl core::num::nonzero::private::Sealed for usize}#25
-    parent_clause3 = core::num::nonzero::private::{impl core::marker::Copy for core::num::nonzero::private::NonZeroUsizeInner}#27
-    parent_clause4 = core::num::nonzero::private::{impl core::clone::Clone for core::num::nonzero::private::NonZeroUsizeInner}#26
-    parent_clause5 = core::marker::Sized<core::num::nonzero::private::NonZeroUsizeInner>
+    parent_clause3 = core::marker::Sized<core::num::nonzero::private::NonZeroUsizeInner>
+    parent_clause4 = core::num::nonzero::private::{impl core::marker::Copy for core::num::nonzero::private::NonZeroUsizeInner}#27
     type NonZeroInner = core::num::nonzero::private::NonZeroUsizeInner
 }
 
@@ -240,13 +238,12 @@ trait core::ops::try_trait::Try<Self>
 
 trait core::ops::try_trait::Residual<Self, O>
 where
-    Self::parent_clause1::Residual = Self,
-    Self::parent_clause1::Output = O,
+    Self::parent_clause2::Output = O,
+    Self::parent_clause2::Residual = Self,
 {
     parent_clause0 : [@TraitClause0]: core::marker::Sized<O>
-    parent_clause1 : [@TraitClause1]: core::ops::try_trait::Try<Self::TryType>
-    parent_clause2 : [@TraitClause2]: core::ops::try_trait::FromResidual<Self::TryType, Self>
-    parent_clause3 : [@TraitClause3]: core::marker::Sized<Self::TryType>
+    parent_clause1 : [@TraitClause1]: core::marker::Sized<Self::TryType>
+    parent_clause2 : [@TraitClause2]: core::ops::try_trait::Try<Self::TryType>
     type TryType
 }
 
@@ -395,11 +392,11 @@ trait core::iter::traits::iterator::Iterator<Self>
 
 trait core::iter::traits::collect::IntoIterator<Self>
 where
-    Self::parent_clause1::Item = Self::Item,
+    Self::parent_clause2::Item = Self::Item,
 {
     parent_clause0 : [@TraitClause0]: core::marker::Sized<Self::Item>
-    parent_clause1 : [@TraitClause1]: core::iter::traits::iterator::Iterator<Self::IntoIter>
-    parent_clause2 : [@TraitClause2]: core::marker::Sized<Self::IntoIter>
+    parent_clause1 : [@TraitClause1]: core::marker::Sized<Self::IntoIter>
+    parent_clause2 : [@TraitClause2]: core::iter::traits::iterator::Iterator<Self::IntoIter>
     type Item
     type IntoIter
     fn into_iter = core::iter::traits::collect::IntoIterator::into_iter<Self>
@@ -1085,8 +1082,8 @@ where
     [@TraitClause0]: core::marker::Sized<T>,
 {
     parent_clause0 = @TraitClause0
-    parent_clause1 = core::array::iter::{impl core::iter::traits::iterator::Iterator for core::array::iter::IntoIter<T, const N : usize>[@TraitClause0]}#2<T, const N : usize>[@TraitClause0]
-    parent_clause2 = core::marker::Sized<core::array::iter::IntoIter<T, const N : usize>[@TraitClause0]>
+    parent_clause1 = core::marker::Sized<core::array::iter::IntoIter<T, const N : usize>[@TraitClause0]>
+    parent_clause2 = core::array::iter::{impl core::iter::traits::iterator::Iterator for core::array::iter::IntoIter<T, const N : usize>[@TraitClause0]}#2<T, const N : usize>[@TraitClause0]
     type Item = T
     type IntoIter = core::array::iter::IntoIter<T, const N : usize>[@TraitClause0]
     fn into_iter = core::array::iter::{impl core::iter::traits::collect::IntoIterator for Array<T, const N : usize>}::into_iter<T, const N : usize>[@TraitClause0]
@@ -1098,8 +1095,8 @@ where
     [@TraitClause1]: core::iter::traits::iterator::Iterator<I>,
 {
     parent_clause0 = @TraitClause1::parent_clause0
-    parent_clause1 = @TraitClause1
-    parent_clause2 = @TraitClause0
+    parent_clause1 = @TraitClause0
+    parent_clause2 = @TraitClause1
     type Item = @TraitClause1::Item
     type IntoIter = I
     fn into_iter = core::iter::traits::collect::{impl core::iter::traits::collect::IntoIterator for I}#1::into_iter<I>[@TraitClause0, @TraitClause1]
@@ -1131,14 +1128,14 @@ fn core::iter::traits::iterator::Iterator::step_by<Self>(@1: Self, @2: usize) ->
 where
     [@TraitClause0]: core::marker::Sized<Self>,
 
-fn core::iter::traits::iterator::Iterator::chain<Self, U>(@1: Self, @2: U) -> core::iter::adapters::chain::Chain<Self, @TraitClause2::IntoIter>[@TraitClause1, @TraitClause2::parent_clause2]
+fn core::iter::traits::iterator::Iterator::chain<Self, U>(@1: Self, @2: U) -> core::iter::adapters::chain::Chain<Self, @TraitClause2::IntoIter>[@TraitClause1, @TraitClause2::parent_clause1]
 where
     [@TraitClause0]: core::marker::Sized<U>,
     [@TraitClause1]: core::marker::Sized<Self>,
     [@TraitClause2]: core::iter::traits::collect::IntoIterator<U>,
     @TraitClause2::Item = Self::Item,
 
-fn core::iter::traits::iterator::Iterator::zip<Self, U>(@1: Self, @2: U) -> core::iter::adapters::zip::Zip<Self, @TraitClause2::IntoIter>[@TraitClause1, @TraitClause2::parent_clause2]
+fn core::iter::traits::iterator::Iterator::zip<Self, U>(@1: Self, @2: U) -> core::iter::adapters::zip::Zip<Self, @TraitClause2::IntoIter>[@TraitClause1, @TraitClause2::parent_clause1]
 where
     [@TraitClause0]: core::marker::Sized<U>,
     [@TraitClause1]: core::marker::Sized<Self>,

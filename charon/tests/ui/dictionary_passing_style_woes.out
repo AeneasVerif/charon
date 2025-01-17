@@ -10,11 +10,11 @@ trait test_crate::Iterator<Self>
 
 trait test_crate::IntoIterator<Self>
 where
-    Self::parent_clause1::Item = Self::Item,
+    Self::parent_clause2::Item = Self::Item,
 {
     parent_clause0 : [@TraitClause0]: core::marker::Sized<Self::Item>
-    parent_clause1 : [@TraitClause1]: test_crate::Iterator<Self::IntoIter>
-    parent_clause2 : [@TraitClause2]: core::marker::Sized<Self::IntoIter>
+    parent_clause1 : [@TraitClause1]: core::marker::Sized<Self::IntoIter>
+    parent_clause2 : [@TraitClause2]: test_crate::Iterator<Self::IntoIter>
     type Item
     type IntoIter
 }
@@ -25,8 +25,8 @@ where
     [@TraitClause1]: test_crate::Iterator<I>,
 {
     parent_clause0 = @TraitClause1::parent_clause0
-    parent_clause1 = @TraitClause1
-    parent_clause2 = @TraitClause0
+    parent_clause1 = @TraitClause0
+    parent_clause2 = @TraitClause1
     type Item = @TraitClause1::Item
     type IntoIter = I
 }

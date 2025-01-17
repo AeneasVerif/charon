@@ -44,9 +44,8 @@ trait core::num::nonzero::ZeroablePrimitive<Self>
     parent_clause0 : [@TraitClause0]: core::marker::Sized<Self>
     parent_clause1 : [@TraitClause1]: core::marker::Copy<Self>
     parent_clause2 : [@TraitClause2]: core::num::nonzero::private::Sealed<Self>
-    parent_clause3 : [@TraitClause3]: core::marker::Copy<Self::NonZeroInner>
-    parent_clause4 : [@TraitClause4]: core::clone::Clone<Self::NonZeroInner>
-    parent_clause5 : [@TraitClause5]: core::marker::Sized<Self::NonZeroInner>
+    parent_clause3 : [@TraitClause3]: core::marker::Sized<Self::NonZeroInner>
+    parent_clause4 : [@TraitClause4]: core::marker::Copy<Self::NonZeroInner>
     type NonZeroInner
 }
 
@@ -90,9 +89,8 @@ impl core::num::nonzero::{impl core::num::nonzero::ZeroablePrimitive for u32}#20
     parent_clause0 = core::marker::Sized<u32>
     parent_clause1 = core::marker::{impl core::marker::Copy for u32}#40
     parent_clause2 = core::num::nonzero::{impl core::num::nonzero::private::Sealed for u32}#19
-    parent_clause3 = core::num::nonzero::private::{impl core::marker::Copy for core::num::nonzero::private::NonZeroU32Inner}#12
-    parent_clause4 = core::num::nonzero::private::{impl core::clone::Clone for core::num::nonzero::private::NonZeroU32Inner}#11
-    parent_clause5 = core::marker::Sized<core::num::nonzero::private::NonZeroU32Inner>
+    parent_clause3 = core::marker::Sized<core::num::nonzero::private::NonZeroU32Inner>
+    parent_clause4 = core::num::nonzero::private::{impl core::marker::Copy for core::num::nonzero::private::NonZeroU32Inner}#12
     type NonZeroInner = core::num::nonzero::private::NonZeroU32Inner
 }
 
