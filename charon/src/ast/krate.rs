@@ -3,7 +3,7 @@ use crate::formatter::{FmtCtx, Formatter, IntoFormatter};
 use crate::ids::Vector;
 use crate::reorder_decls::DeclarationsGroups;
 use derive_generic_visitor::{ControlFlow, Drive, DriveMut};
-use hashlink::LinkedHashSet;
+use indexmap::IndexSet;
 use macros::{EnumAsGetters, EnumIsA, VariantIndexArity, VariantName};
 use serde::{Deserialize, Serialize};
 use serde_map_to_array::HashMapToArray;
@@ -114,7 +114,7 @@ pub struct TranslatedCrate {
 
     /// All the item ids, in the order in which we encountered them
     #[drive(skip)]
-    pub all_ids: LinkedHashSet<AnyTransId>,
+    pub all_ids: IndexSet<AnyTransId>,
     /// The names of all registered items. Available so we can know the names even of items that
     /// failed to translate.
     #[serde(with = "HashMapToArray::<AnyTransId, Name>")]

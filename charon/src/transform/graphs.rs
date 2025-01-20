@@ -1,4 +1,4 @@
-use hashlink::LinkedHashSet;
+use indexmap::IndexSet;
 use std::collections::BTreeSet as OrdSet;
 use std::collections::HashMap;
 use std::iter::FromIterator;
@@ -23,7 +23,7 @@ pub struct SCCs<Id> {
 /// We also compute the SCC dependencies while performing this exploration.
 fn insert_scc_with_deps<Id: Copy + std::hash::Hash + Eq>(
     get_id_dependencies: &dyn Fn(Id) -> Vec<Id>,
-    reordered_sccs: &mut LinkedHashSet<usize>,
+    reordered_sccs: &mut IndexSet<usize>,
     scc_deps: &mut Vec<OrdSet<usize>>,
     sccs: &Vec<Vec<Id>>,
     id_to_scc: &HashMap<Id, usize>,
@@ -131,7 +131,7 @@ pub fn reorder_sccs<Id: std::fmt::Debug + Copy + std::hash::Hash + Eq>(
 
     // Reorder the SCCs themselves - just do a depth first search. Iterate over
     // the def ids, and add the corresponding SCCs (with their dependencies).
-    let mut reordered_sccs_ids = LinkedHashSet::<usize>::new();
+    let mut reordered_sccs_ids = IndexSet::<usize>::new();
     let mut scc_deps: Vec<OrdSet<usize>> = reordered_sccs.iter().map(|_| OrdSet::new()).collect();
     for id in ids {
         let scc_id = id_to_scc.get(id).unwrap();
