@@ -1,0 +1,24 @@
+error: Found inconsistent generics after transformations:
+       Mismatched trait clause:
+       expected: [@TraitClause1]: core::clone::Clone<T>
+            got: core::marker::Copy<()>: core::marker::Copy<()>
+       Visitor stack:
+         charon_lib::ast::types::GenericArgs
+         charon_lib::ast::expressions::FnPtr
+         charon_lib::ast::gast::FnOperand
+         charon_lib::ast::gast::Call
+         charon_lib::ast::llbc_ast::RawStatement
+         charon_lib::ast::llbc_ast::Statement
+         alloc::vec::Vec<charon_lib::ast::llbc_ast::Statement>
+         charon_lib::ast::llbc_ast::Block
+         charon_lib::ast::gast::GExprBody<charon_lib::ast::llbc_ast::Block>
+         charon_lib::ast::gast::Body
+         core::result::Result<charon_lib::ast::gast::Body, charon_lib::ast::gast::Opaque>
+         charon_lib::ast::gast::FunDecl
+  --> tests/ui/simple/fewer-clauses-in-method-impl.rs:11:5
+   |
+11 |     <() as Trait>::method::<()>()
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+
+ERROR The extraction generated 1 errors

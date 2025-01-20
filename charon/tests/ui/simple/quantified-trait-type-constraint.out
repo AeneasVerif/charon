@@ -1,0 +1,27 @@
+# Final LLBC before serialization:
+
+trait core::marker::Sized<Self>
+
+trait test_crate::Trait<'a, Self>
+{
+    parent_clause0 : [@TraitClause0]: core::marker::Sized<Self::Type>
+    type Type
+}
+
+fn test_crate::foo<T>()
+where
+    [@TraitClause0]: core::marker::Sized<T>,
+    [@TraitClause1]: for<'_0> test_crate::Trait<'_0_0, T>,
+    for<'a> @TraitClause1::Type = &'a (()),
+{
+    let @0: (); // return
+    let @1: (); // anonymous local
+
+    @1 := ()
+    @0 := move (@1)
+    @0 := ()
+    return
+}
+
+
+
