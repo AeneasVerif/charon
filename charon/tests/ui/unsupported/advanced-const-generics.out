@@ -43,6 +43,20 @@ error: Item `test_crate::foo` caused errors; ignoring.
    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
    |
 
-error: aborting due to 1 previous error
+disabled backtrace
+warning[E9999]: Failed to compute associated type <T as std::marker::DiscriminantKind>::Discriminant
+ --> /rustc/86d69c705a552236a622eee3fdea94bf13c5f102/library/core/src/intrinsics.rs:2556:5
+  |
+  = note: ⚠️ This is a bug in Hax's frontend.
+          Please report this error to https://github.com/hacspec/hax/issues with some context (e.g. the current crate)!
+
+disabled backtrace
+warning[E9999]: Failed to compute associated type <Self as std::marker::DiscriminantKind>::Discriminant
+ --> /rustc/86d69c705a552236a622eee3fdea94bf13c5f102/library/core/src/marker.rs:823:5
+  |
+  = note: ⚠️ This is a bug in Hax's frontend.
+          Please report this error to https://github.com/hacspec/hax/issues with some context (e.g. the current crate)!
+
+error: aborting due to 1 previous error; 2 warnings emitted
 
 ERROR Compilation encountered 3 errors

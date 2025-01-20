@@ -263,9 +263,20 @@ and trait_instance_id =
           is useful to give priority to the local clauses when solving the trait
           obligations which are fullfilled by the trait parameters.
        *)
-  | BuiltinOrAuto of trait_decl_ref region_binder
-      (** A specific builtin trait implementation like [core::marker::Sized] or
-          auto trait implementation like [core::marker::Syn].
+  | BuiltinOrAuto of
+      trait_decl_ref region_binder
+      * trait_ref list
+      * (trait_item_name * ty) list
+      (** A trait implementation that is computed by the compiler, such as for built-in traits
+          `Sized` or `FnMut`. This morally points to an invisible `impl` block; as such it contains
+          the information we may need from one.
+
+          Fields:
+          - [trait_decl_ref]
+          - [parent_trait_refs]:  The `ImplExpr`s required to satisfy the implied predicates on the trait declaration.
+          E.g. since `FnMut: FnOnce`, a built-in `T: FnMut` impl would have an `ImplExpr` for `T:
+          FnOnce`.
+          - [types]:  The values of the associated types for this trait.
        *)
   | Dyn of trait_decl_ref region_binder
       (** The automatically-generated implementation for `dyn Trait`. *)

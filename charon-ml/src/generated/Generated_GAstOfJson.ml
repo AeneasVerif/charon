@@ -984,11 +984,29 @@ and trait_instance_id_of_json (ctx : of_json_ctx) (js : json) :
         let* x_2 = trait_clause_id_of_json ctx x_2 in
         Ok (ParentClause (x_0, x_1, x_2))
     | `String "SelfId" -> Ok Self
-    | `Assoc [ ("BuiltinOrAuto", builtin_or_auto) ] ->
-        let* builtin_or_auto =
-          region_binder_of_json trait_decl_ref_of_json ctx builtin_or_auto
+    | `Assoc
+        [
+          ( "BuiltinOrAuto",
+            `Assoc
+              [
+                ("trait_decl_ref", trait_decl_ref);
+                ("parent_trait_refs", parent_trait_refs);
+                ("types", types);
+              ] );
+        ] ->
+        let* trait_decl_ref =
+          region_binder_of_json trait_decl_ref_of_json ctx trait_decl_ref
         in
-        Ok (BuiltinOrAuto builtin_or_auto)
+        let* parent_trait_refs =
+          vector_of_json trait_clause_id_of_json trait_ref_of_json ctx
+            parent_trait_refs
+        in
+        let* types =
+          list_of_json
+            (pair_of_json trait_item_name_of_json ty_of_json)
+            ctx types
+        in
+        Ok (BuiltinOrAuto (trait_decl_ref, parent_trait_refs, types))
     | `Assoc [ ("Dyn", dyn) ] ->
         let* dyn = region_binder_of_json trait_decl_ref_of_json ctx dyn in
         Ok (Dyn dyn)

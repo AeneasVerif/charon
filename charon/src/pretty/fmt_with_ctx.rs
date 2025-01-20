@@ -1302,7 +1302,27 @@ impl<C: AstFormatter> FmtWithCtx<C> for TraitRefKind {
                 format!("{impl_}{args}")
             }
             TraitRefKind::Clause(id) => ctx.format_object(*id),
-            TraitRefKind::BuiltinOrAuto(tr) | TraitRefKind::Dyn(tr) => tr.fmt_with_ctx(ctx),
+            TraitRefKind::BuiltinOrAuto {
+                trait_decl_ref: tr,
+                types,
+                ..
+            } => {
+                let tr = tr.fmt_with_ctx(ctx);
+                let types = if types.is_empty() {
+                    String::new()
+                } else {
+                    let types = types
+                        .iter()
+                        .map(|(name, ty)| {
+                            let ty = ty.fmt_with_ctx(ctx);
+                            format!("{name}  = {ty}")
+                        })
+                        .join(", ");
+                    format!(" where {types}")
+                };
+                format!("{tr}{types}")
+            }
+            TraitRefKind::Dyn(tr) => tr.fmt_with_ctx(ctx),
             TraitRefKind::Unknown(msg) => format!("UNKNOWN({msg})"),
         }
     }

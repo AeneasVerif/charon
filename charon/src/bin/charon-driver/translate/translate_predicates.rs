@@ -211,17 +211,17 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
         trace!("impl_expr: {:#?}", impl_source);
         use hax::ImplExprAtom;
 
-        let nested = &impl_source.args;
         let trait_ref = match &impl_source.r#impl {
             ImplExprAtom::Concrete {
                 id: impl_def_id,
                 generics,
+                impl_exprs,
             } => {
                 let impl_id = self.register_trait_impl_id(span, impl_def_id);
                 let generics = self.translate_generic_args(
                     span,
                     generics,
-                    nested,
+                    impl_exprs,
                     None,
                     GenericsSource::item(impl_id),
                 )?;
@@ -240,7 +240,6 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
                 path,
                 ..
             } => {
-                assert!(nested.is_empty());
                 trace!(
                     "impl source (self or clause): param:\n- trait_ref: {:?}\n- path: {:?}",
                     trait_ref,
@@ -318,10 +317,34 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
                 kind: TraitRefKind::Dyn(trait_decl_ref.clone()),
                 trait_decl_ref,
             },
-            ImplExprAtom::Builtin { .. } => TraitRef {
-                kind: TraitRefKind::BuiltinOrAuto(trait_decl_ref.clone()),
-                trait_decl_ref,
-            },
+            ImplExprAtom::Builtin {
+                impl_exprs, types, ..
+            } => {
+                let parent_trait_refs = self.translate_trait_impl_exprs(span, &impl_exprs)?;
+                let types = types
+                    .iter()
+                    .map(|(def_id, ty)| {
+                        let item_def = self.hax_def(def_id)?;
+                        let ty = self.translate_ty(span, ty)?;
+                        let hax::FullDefKind::AssocTy {
+                            associated_item, ..
+                        } = item_def.kind()
+                        else {
+                            unreachable!()
+                        };
+                        let name = TraitItemName(associated_item.name.clone());
+                        Ok((name, ty))
+                    })
+                    .try_collect()?;
+                TraitRef {
+                    kind: TraitRefKind::BuiltinOrAuto {
+                        trait_decl_ref: trait_decl_ref.clone(),
+                        parent_trait_refs,
+                        types,
+                    },
+                    trait_decl_ref,
+                }
+            }
             ImplExprAtom::Error(msg) => {
                 let trait_ref = TraitRef {
                     kind: TraitRefKind::Unknown(msg.clone()),
