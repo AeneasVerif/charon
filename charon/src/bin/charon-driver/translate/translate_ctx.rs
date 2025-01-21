@@ -333,7 +333,7 @@ pub(crate) struct BodyTransCtx<'tcx, 'ctx> {
     /// The stack of generic parameter binders for the current context. Each binder introduces an
     /// entry in this stack, with the entry as index `0` being the innermost binder. These
     /// parameters are referenced using [`DeBruijnVar`]; see there for details.
-    pub binding_levels: VecDeque<BindingLevel>,
+    pub binding_levels: BindingStack<BindingLevel>,
     /// (For traits only) accumulated implied trait clauses.
     pub parent_trait_clauses: Vector<TraitClauseId, TraitClause>,
     /// (For traits only) accumulated trait clauses on associated types.
@@ -1074,25 +1074,19 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
     }
 
     pub(crate) fn outermost_binder(&self) -> &BindingLevel {
-        self.binding_levels.back().unwrap()
+        self.binding_levels.outermost()
     }
 
     pub(crate) fn innermost_binder(&self) -> &BindingLevel {
-        self.binding_levels.front().unwrap()
+        self.binding_levels.innermost()
     }
 
     pub(crate) fn innermost_binder_mut(&mut self) -> &mut BindingLevel {
-        self.binding_levels.front_mut().unwrap()
+        self.binding_levels.innermost_mut()
     }
 
     pub(crate) fn innermost_generics_mut(&mut self) -> &mut GenericParams {
         &mut self.innermost_binder_mut().params
-    }
-
-    /// Make a `DeBruijnVar`, where we use `Free` for the outermost binder and `Bound` for the
-    /// others.
-    fn bind_var<Id: Copy>(&self, dbid: usize, varid: Id) -> DeBruijnVar<Id> {
-        DeBruijnVar::bound(DeBruijnId::new(dbid), varid)
     }
 
     pub(crate) fn lookup_bound_region(
@@ -1101,12 +1095,13 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
         dbid: hax::DebruijnIndex,
         var: hax::BoundVar,
     ) -> Result<RegionDbVar, Error> {
+        let dbid = DeBruijnId::new(dbid);
         if let Some(rid) = self
             .binding_levels
             .get(dbid)
             .and_then(|bl| bl.bound_region_vars.get(var))
         {
-            Ok(self.bind_var(dbid, *rid))
+            Ok(DeBruijnVar::bound(dbid, *rid))
         } else {
             raise_error!(
                 self,
@@ -1122,9 +1117,9 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
         f: impl for<'a> Fn(&'a BindingLevel) -> Option<Id>,
         mk_err: impl FnOnce() -> String,
     ) -> Result<DeBruijnVar<Id>, Error> {
-        for (dbid, bl) in self.binding_levels.iter().enumerate() {
+        for (dbid, bl) in self.binding_levels.iter_enumerated() {
             if let Some(id) = f(bl) {
-                return Ok(self.bind_var(dbid, id));
+                return Ok(DeBruijnVar::bound(dbid, id));
             }
         }
         let err = mk_err();
@@ -1178,17 +1173,16 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
         // ignore the clause count.
         let innermost_item_binder_id = self
             .binding_levels
-            .iter()
-            .enumerate()
+            .iter_enumerated()
             .find(|(_, bl)| bl.is_item_binder)
             .unwrap()
             .0;
         // Iterate over the binders, starting from the outermost.
-        for (dbid, bl) in self.binding_levels.iter().enumerate().rev() {
+        for (dbid, bl) in self.binding_levels.iter_enumerated().rev() {
             let num_clauses_bound_at_this_level = bl.params.trait_clauses.len();
             if id < num_clauses_bound_at_this_level || dbid == innermost_item_binder_id {
                 let id = TraitClauseId::from_usize(id);
-                return Ok(self.bind_var(dbid, id));
+                return Ok(DeBruijnVar::bound(dbid, id));
             } else {
                 id -= num_clauses_bound_at_this_level
             }
@@ -1231,13 +1225,13 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
         // Register the variables
         let mut binding_level = BindingLevel::new(false);
         binding_level.push_params_from_binder(binder.rebind(()))?;
-        self.binding_levels.push_front(binding_level);
+        self.binding_levels.push(binding_level);
 
         // Call the continuation. Important: do not short-circuit on error here.
         let res = f(self, binder.hax_skip_binder_ref());
 
         // Reset
-        let regions = self.binding_levels.pop_front().unwrap().params.regions;
+        let regions = self.binding_levels.pop().unwrap().params.regions;
 
         // Return
         res.map(|skip_binder| RegionBinder {
@@ -1267,7 +1261,7 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
         let res = f(self);
 
         // Reset
-        let params = self.binding_levels.pop_front().unwrap().params;
+        let params = self.binding_levels.pop().unwrap().params;
 
         // Return
         res.map(|skip_binder| Binder {

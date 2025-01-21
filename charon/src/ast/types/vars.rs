@@ -1,5 +1,10 @@
 //! Type-level variables. There are 4 kinds of variables at the type-level: regions, types, const
 //! generics and trait clauses. The relevant definitions are in this module.
+use std::{
+    collections::VecDeque,
+    ops::{Index, IndexMut},
+};
+
 use derive_generic_visitor::{Drive, DriveMut};
 use serde::{Deserialize, Serialize};
 
@@ -253,5 +258,94 @@ impl TypeVar {
 impl Default for DeBruijnId {
     fn default() -> Self {
         Self::zero()
+    }
+}
+
+/// A stack of values corresponding to nested binders. Each binder introduces an entry in this
+/// stack, with the entry as index `0` being the innermost binder. This is indexed by
+/// `DeBruijnId`s.
+/// Most methods assume that the stack is non-empty and panic if not.
+#[derive(Clone, Hash)]
+pub struct BindingStack<T> {
+    stack: VecDeque<T>,
+}
+
+impl<T> BindingStack<T> {
+    pub fn new(x: T) -> Self {
+        Self {
+            stack: vec![x].into(),
+        }
+    }
+
+    pub fn is_empty(&self) -> bool {
+        self.stack.is_empty()
+    }
+    pub fn len(&self) -> usize {
+        self.stack.len()
+    }
+    pub fn depth(&self) -> DeBruijnId {
+        DeBruijnId::new(self.stack.len() - 1)
+    }
+    pub fn push(&mut self, x: T) {
+        self.stack.push_front(x);
+    }
+    pub fn pop(&mut self) -> Option<T> {
+        self.stack.pop_front()
+    }
+    pub fn get(&self, id: DeBruijnId) -> Option<&T> {
+        self.stack.get(id.index)
+    }
+    pub fn get_mut(&mut self, id: DeBruijnId) -> Option<&mut T> {
+        self.stack.get_mut(id.index)
+    }
+    /// Iterate over the binding levels, from the innermost (0) out.
+    pub fn iter(&self) -> impl Iterator<Item = &T> + DoubleEndedIterator {
+        self.stack.iter()
+    }
+    /// Iterate over the binding levels, from the innermost (0) out.
+    pub fn iter_enumerated(&self) -> impl Iterator<Item = (DeBruijnId, &T)> + DoubleEndedIterator {
+        self.stack
+            .iter()
+            .enumerate()
+            .map(|(i, x)| (DeBruijnId::new(i), x))
+    }
+
+    pub fn innermost(&self) -> &T {
+        self.stack.front().unwrap()
+    }
+    pub fn innermost_mut(&mut self) -> &mut T {
+        self.stack.front_mut().unwrap()
+    }
+    pub fn outermost(&self) -> &T {
+        self.stack.back().unwrap()
+    }
+    pub fn outermost_mut(&mut self) -> &mut T {
+        self.stack.back_mut().unwrap()
+    }
+}
+
+impl<T> Default for BindingStack<T> {
+    fn default() -> Self {
+        Self {
+            stack: Default::default(),
+        }
+    }
+}
+
+impl<T: std::fmt::Debug> std::fmt::Debug for BindingStack<T> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{:?}", self.stack)
+    }
+}
+
+impl<T> Index<DeBruijnId> for BindingStack<T> {
+    type Output = T;
+    fn index(&self, id: DeBruijnId) -> &Self::Output {
+        &self.stack[id.index]
+    }
+}
+impl<T> IndexMut<DeBruijnId> for BindingStack<T> {
+    fn index_mut(&mut self, id: DeBruijnId) -> &mut Self::Output {
+        &mut self.stack[id.index]
     }
 }
