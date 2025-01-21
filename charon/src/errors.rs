@@ -210,7 +210,7 @@ impl ErrorCtx {
     pub fn continue_on_failure(&self) -> bool {
         self.continue_on_failure
     }
-    pub(crate) fn has_errors(&self) -> bool {
+    pub fn has_errors(&self) -> bool {
         self.error_count > 0
     }
 

@@ -252,7 +252,10 @@ pub fn translate(tcx: TyCtxt, internal: &mut CharonCallbacks) -> export::CrateDa
     // run several passes that simplify the items and cleanup the bodies.
     for pass in transformation_passes(options) {
         trace!("# Starting pass {}", pass.name());
-        pass.run(&mut transform_ctx)
+        pass.run(&mut transform_ctx);
+        if transform_ctx.errors.borrow().has_errors() {
+            break;
+        }
     }
 
     // Update the error count
