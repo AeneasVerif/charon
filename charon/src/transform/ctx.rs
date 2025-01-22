@@ -24,6 +24,8 @@ pub struct TransformOptions {
     /// List of patterns to assign a given opacity to. Same as the corresponding `TranslateOptions`
     /// field.
     pub item_opacities: Vec<(NamePattern, ItemOpacity)>,
+    /// List of traits for which we transform associated types to type parameters.
+    pub remove_associated_types: Vec<NamePattern>,
 }
 
 /// Simpler context used for rustc-independent code transformation. This only depends on rustc for
@@ -221,6 +223,29 @@ impl<'ctx> TransformCtx {
                 self.translated.fun_decls.set_slot(id, decl);
             }
         }
+    }
+
+    /// Iterate mutably over all items, keeping access to `self`. To make this work, we move out
+    /// each item before iterating over it.
+    pub fn for_each_item_mut(
+        &mut self,
+        mut f: impl for<'a> FnMut(&'a mut Self, AnyTransItemMut<'a>),
+    ) {
+        macro_rules! for_each {
+            ($vector:ident, $kind:ident) => {
+                for id in self.translated.$vector.all_indices() {
+                    if let Some(mut decl) = self.translated.$vector.remove(id) {
+                        f(self, AnyTransItemMut::$kind(&mut decl));
+                        self.translated.$vector.set_slot(id, decl);
+                    }
+                }
+            };
+        }
+        for_each!(type_decls, Type);
+        for_each!(fun_decls, Fun);
+        for_each!(global_decls, Global);
+        for_each!(trait_decls, TraitDecl);
+        for_each!(trait_impls, TraitImpl);
     }
 }
 

@@ -42,12 +42,11 @@ where
     fn default = test_crate::{impl core::default::Default for test_crate::Struct<A>[@TraitClause0]}#1::default<A>[@TraitClause0, @TraitClause1]
 }
 
-trait test_crate::Trait<Self, B>
+trait test_crate::Trait<Self, B, Self_Item>
 {
     parent_clause0 : [@TraitClause0]: core::marker::Sized<B>
-    parent_clause1 : [@TraitClause1]: core::marker::Sized<Self::Item>
-    type Item
-    fn method<C, [@TraitClause0]: core::marker::Sized<C>> = test_crate::Trait::method<Self, B, C>[@TraitClause0_0]
+    parent_clause1 : [@TraitClause1]: core::marker::Sized<Self_Item>
+    fn method<C, [@TraitClause0]: core::marker::Sized<C>> = test_crate::Trait::method<Self, B, C, Self_Item>[@TraitClause0_0]
 }
 
 trait core::clone::Clone<Self>
@@ -63,7 +62,7 @@ trait core::cmp::PartialEq<Self, Rhs>
     fn ne<'_0, '_1> = core::cmp::PartialEq::ne<'_0_0, '_0_1, Self, Rhs>
 }
 
-fn test_crate::{impl test_crate::Trait<B> for test_crate::Struct<A>[@TraitClause0]}::method<A, B, C>()
+fn test_crate::{impl test_crate::Trait<B, (A, B)> for test_crate::Struct<A>[@TraitClause0]}::method<A, B, C>()
 where
     [@TraitClause0]: core::marker::Sized<A>,
     [@TraitClause1]: core::marker::Sized<B>,
@@ -80,7 +79,7 @@ where
     return
 }
 
-impl<A, B> test_crate::{impl test_crate::Trait<B> for test_crate::Struct<A>[@TraitClause0]}<A, B> : test_crate::Trait<test_crate::Struct<A>[@TraitClause0], B>
+impl<A, B> test_crate::{impl test_crate::Trait<B, (A, B)> for test_crate::Struct<A>[@TraitClause0]}<A, B> : test_crate::Trait<test_crate::Struct<A>[@TraitClause0], B, (A, B)>
 where
     [@TraitClause0]: core::marker::Sized<A>,
     [@TraitClause1]: core::marker::Sized<B>,
@@ -89,8 +88,7 @@ where
 {
     parent_clause0 = @TraitClause1
     parent_clause1 = core::marker::Sized<(A, B)>
-    type Item = (A, B)
-    fn method<C, [@TraitClause0]: core::marker::Sized<C>> = test_crate::{impl test_crate::Trait<B> for test_crate::Struct<A>[@TraitClause0]}::method<A, B, C>[@TraitClause0, @TraitClause1, @TraitClause2, @TraitClause3, @TraitClause0_0]
+    fn method<C, [@TraitClause0]: core::marker::Sized<C>> = test_crate::{impl test_crate::Trait<B, (A, B)> for test_crate::Struct<A>[@TraitClause0]}::method<A, B, C>[@TraitClause0, @TraitClause1, @TraitClause2, @TraitClause3, @TraitClause0_0]
 }
 
 fn core::default::{impl core::default::Default for bool}#1::default() -> bool
@@ -133,7 +131,7 @@ fn test_crate::main()
     @fake_read(_x@1)
     _y@2 := test_crate::{impl core::default::Default for test_crate::Struct<A>[@TraitClause0]}#1::default<bool>[core::marker::Sized<bool>, core::default::{impl core::default::Default for bool}#1]()
     @fake_read(_y@2)
-    @3 := test_crate::{impl test_crate::Trait<B> for test_crate::Struct<A>[@TraitClause0]}::method<u8, bool, alloc::string::String>[core::marker::Sized<u8>, core::marker::Sized<bool>, core::clone::impls::{impl core::clone::Clone for u8}#6, core::cmp::impls::{impl core::cmp::PartialEq<bool> for bool}#19, core::marker::Sized<alloc::string::String>]()
+    @3 := test_crate::{impl test_crate::Trait<B, (A, B)> for test_crate::Struct<A>[@TraitClause0]}::method<u8, bool, alloc::string::String>[core::marker::Sized<u8>, core::marker::Sized<bool>, core::clone::impls::{impl core::clone::Clone for u8}#6, core::cmp::impls::{impl core::cmp::PartialEq<bool> for bool}#19, core::marker::Sized<alloc::string::String>]()
     drop @3
     @4 := ()
     @0 := move (@4)
@@ -143,7 +141,7 @@ fn test_crate::main()
     return
 }
 
-fn test_crate::Trait::method<Self, B, C>()
+fn test_crate::Trait::method<Self, B, C, Self_Item>()
 where
     [@TraitClause0]: core::marker::Sized<C>,
 

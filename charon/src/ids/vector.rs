@@ -126,6 +126,16 @@ where
         self.real_len += other.real_len;
     }
 
+    /// Get a mutable reference into the ith element. If the vector is too short, extend it until
+    /// it has enough elements. If the element doesn't exist, use the provided function to
+    /// initialize it.
+    pub fn get_or_extend_and_insert(&mut self, id: I, f: impl FnOnce() -> T) -> &mut T {
+        if id.index() >= self.vector.len() {
+            self.vector.resize_with(id.index() + 1, || None);
+        }
+        self.vector[id].get_or_insert_with(f)
+    }
+
     /// Map each entry to a new one, keeping the same ids.
     pub fn map<U>(self, mut f: impl FnMut(T) -> U) -> Vector<I, U> {
         Vector {
@@ -174,6 +184,27 @@ where
         }
     }
 
+    /// Map each entry to a new one, keeping the same ids. Includes empty slots.
+    pub fn map_opt<U>(self, f: impl FnMut(Option<T>) -> Option<U>) -> Vector<I, U> {
+        Vector {
+            vector: self.vector.into_iter().map(f).collect(),
+            real_len: self.real_len,
+        }
+    }
+
+    /// Map each entry to a new one, keeping the same ids. Includes empty slots.
+    pub fn map_ref_opt<'a, U>(
+        &'a self,
+        mut f: impl FnMut(Option<&'a T>) -> Option<U>,
+    ) -> Vector<I, U> {
+        let mut ret = Vector {
+            vector: self.vector.iter().map(|x_opt| f(x_opt.as_ref())).collect(),
+            real_len: self.real_len,
+        };
+        ret.real_len = ret.iter().count();
+        ret
+    }
+
     /// Iter over the nonempty slots.
     pub fn iter(&self) -> impl Iterator<Item = &T> + DoubleEndedIterator + Clone {
         self.vector.iter().filter_map(|opt| opt.as_ref())
@@ -187,6 +218,12 @@ where
         self.vector
             .iter_enumerated()
             .flat_map(|(i, opt)| Some((i, opt.as_ref()?)))
+    }
+
+    pub fn iter_mut_indexed(&mut self) -> impl Iterator<Item = (I, &mut T)> {
+        self.vector
+            .iter_mut_enumerated()
+            .flat_map(|(i, opt)| Some((i, opt.as_mut()?)))
     }
 
     pub fn into_iter_indexed(self) -> impl Iterator<Item = (I, T)> {

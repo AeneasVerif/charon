@@ -28,7 +28,7 @@ use crate::llbc_ast as tgt;
 use crate::meta::{combine_span, Span};
 use crate::transform::TransformCtx;
 use crate::ullbc_ast::{self as src};
-use hashlink::linked_hash_map::LinkedHashMap;
+use indexmap::IndexMap;
 use itertools::Itertools;
 use num_bigint::BigInt;
 use num_rational::BigRational;
@@ -365,7 +365,7 @@ fn list_reachable(cfg: &Cfg, start: src::BlockId) -> HashMap<src::BlockId, usize
 /// parent loops.
 fn register_children_as_loop_exit_candidates(
     cfg: &CfgInfo,
-    loop_exits: &mut HashMap<src::BlockId, LinkedHashMap<src::BlockId, LoopExitCandidateInfo>>,
+    loop_exits: &mut HashMap<src::BlockId, IndexMap<src::BlockId, LoopExitCandidateInfo>>,
     removed_parent_loops: &Vec<(src::BlockId, usize)>,
     block_id: src::BlockId,
 ) {
@@ -412,7 +412,7 @@ fn compute_loop_exit_candidates(
     cfg: &CfgInfo,
     explored: &mut HashSet<src::BlockId>,
     ordered_loops: &mut Vec<src::BlockId>,
-    loop_exits: &mut HashMap<src::BlockId, LinkedHashMap<src::BlockId, LoopExitCandidateInfo>>,
+    loop_exits: &mut HashMap<src::BlockId, IndexMap<src::BlockId, LoopExitCandidateInfo>>,
     // List of parent loops, with the distance to the entry of the loop (the distance
     // is the distance between the current node and the loop entry for the last parent,
     // and the distance between the parents for the others).
@@ -638,7 +638,7 @@ fn compute_loop_exits(
 
     // Initialize the loop exits candidates
     for loop_id in &cfg.loop_entries {
-        loop_exits.insert(*loop_id, LinkedHashMap::new());
+        loop_exits.insert(*loop_id, IndexMap::new());
     }
 
     // Compute the candidates
@@ -1543,8 +1543,8 @@ fn translate_terminator(
                     // We link block ids to:
                     // - vector of matched integer values
                     // - translated blocks
-                    let mut branches: LinkedHashMap<src::BlockId, (Vec<ScalarValue>, tgt::Block)> =
-                        LinkedHashMap::new();
+                    let mut branches: IndexMap<src::BlockId, (Vec<ScalarValue>, tgt::Block)> =
+                        IndexMap::new();
 
                     // Translate the children expressions
                     for (v, bid) in targets.iter() {

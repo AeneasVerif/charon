@@ -2,16 +2,14 @@
 
 trait core::marker::Sized<Self>
 
-trait test_crate::Trait<Self>
+trait test_crate::Trait<Self, Self_Type>
 {
-    parent_clause0 : [@TraitClause0]: core::marker::Sized<Self::Type>
-    type Type
+    parent_clause0 : [@TraitClause0]: core::marker::Sized<Self_Type>
 }
 
-impl test_crate::{impl test_crate::Trait for ()} : test_crate::Trait<()>
+impl test_crate::{impl test_crate::Trait<()> for ()} : test_crate::Trait<(), ()>
 {
     parent_clause0 = core::marker::Sized<()>
-    type Type = ()
 }
 
 struct test_crate::HashMap<S>
@@ -22,11 +20,11 @@ struct test_crate::HashMap<S>
   S,
 }
 
-fn test_crate::{test_crate::HashMap<S>[@TraitClause0]}#1::get<S, Q>(@1: test_crate::HashMap<S>[@TraitClause0], @2: Q)
+fn test_crate::{test_crate::HashMap<S>[@TraitClause0]}#1::get<S, Q, Clause2_Type>(@1: test_crate::HashMap<S>[@TraitClause0], @2: Q)
 where
     [@TraitClause0]: core::marker::Sized<S>,
     [@TraitClause1]: core::marker::Sized<Q>,
-    [@TraitClause2]: test_crate::Trait<Q>,
+    [@TraitClause2]: test_crate::Trait<Q, Clause2_Type>,
 {
     let @0: (); // return
     let _x@1: test_crate::HashMap<S>[@TraitClause0]; // arg #1
@@ -41,11 +39,11 @@ where
     return
 }
 
-fn test_crate::top_level_get<S, Q>(@1: test_crate::HashMap<S>[@TraitClause0], @2: Q)
+fn test_crate::top_level_get<S, Q, Clause2_Type>(@1: test_crate::HashMap<S>[@TraitClause0], @2: Q)
 where
     [@TraitClause0]: core::marker::Sized<S>,
     [@TraitClause1]: core::marker::Sized<Q>,
-    [@TraitClause2]: test_crate::Trait<Q>,
+    [@TraitClause2]: test_crate::Trait<Q, Clause2_Type>,
 {
     let @0: (); // return
     let _x@1: test_crate::HashMap<S>[@TraitClause0]; // arg #1
@@ -74,13 +72,13 @@ fn test_crate::test(@1: test_crate::HashMap<()>[core::marker::Sized<()>])
 
     @3 := move (map@1)
     @4 := ()
-    @2 := test_crate::top_level_get<(), ()>[core::marker::Sized<()>, core::marker::Sized<()>, test_crate::{impl test_crate::Trait for ()}](move (@3), move (@4))
+    @2 := test_crate::top_level_get<(), (), ()>[core::marker::Sized<()>, core::marker::Sized<()>, test_crate::{impl test_crate::Trait<()> for ()}](move (@3), move (@4))
     drop @4
     drop @3
     drop @2
     @6 := move (map@1)
     @7 := ()
-    @5 := test_crate::{test_crate::HashMap<S>[@TraitClause0]}#1::get<(), ()>[core::marker::Sized<()>, core::marker::Sized<()>, test_crate::{impl test_crate::Trait for ()}](move (@6), move (@7))
+    @5 := test_crate::{test_crate::HashMap<S>[@TraitClause0]}#1::get<(), (), ()>[core::marker::Sized<()>, core::marker::Sized<()>, test_crate::{impl test_crate::Trait<()> for ()}](move (@6), move (@7))
     drop @7
     drop @6
     drop @5

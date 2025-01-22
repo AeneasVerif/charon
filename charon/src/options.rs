@@ -156,6 +156,14 @@ pub struct CliOpts {
     )]
     #[serde(default)]
     pub exclude: Vec<String>,
+    /// List of traits for which we transform associated types to type parameters.
+    #[clap(
+        long = "remove-associated-types",
+        help = "List of traits for which we transform associated types to type parameters. \
+        The syntax is like `--include`, see the doc there."
+    )]
+    #[serde(default)]
+    pub remove_associated_types: Vec<String>,
     /// Whether to hide the `Sized`, `Sync`, `Send` and `Unpin` marker traits anywhere they show
     /// up.
     #[clap(long = "hide-marker-traits")]

@@ -1,19 +1,37 @@
+//@ charon-args=--remove-associated-types=*
 #![feature(associated_type_defaults)]
 trait Foo<'a>: Copy {
-    // FIXME: the `+ 'a` appears to be completely ignored.
     type Item: Clone + 'a;
 
-    fn use_item(x: &Self::Item) -> &Self::Item {
+    fn use_item_required(x: Self::Item) -> Self::Item;
+    fn use_item_provided(x: Self::Item) -> Self::Item
+    where
+        Self::Item: Foo<'a>,
+    {
         x
     }
 }
 
 impl<'a, T> Foo<'a> for &'a T {
     type Item = Option<&'a T>;
+
+    fn use_item_required(x: Self::Item) -> Self::Item {
+        x
+    }
 }
 
-fn external_use_item<'a, T: Foo<'a>>(x: T::Item) -> T::Item {
-    x.clone()
+impl<'a, T: Copy> Foo<'a> for Option<T> {
+    type Item = T;
+    fn use_item_required(x: Self::Item) -> Self::Item {
+        x
+    }
+}
+
+fn external_use_item<'a, T: Foo<'a>>(x: T::Item) -> T::Item
+where
+    T::Item: Foo<'a>,
+{
+    T::use_item_provided(x).clone()
 }
 
 fn call_fn() {

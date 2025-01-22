@@ -42,6 +42,10 @@ opaque type core::fmt::Arguments<'a>
   where
       'a : 'a,
 
+fn core::array::iter::{impl core::iter::traits::collect::IntoIterator for Array<T, const N : usize>}::into_iter<T, const N : usize>(@1: Array<T, const N : usize>) -> core::array::iter::IntoIter<T, const N : usize>[@TraitClause0]
+where
+    [@TraitClause0]: core::marker::Sized<T>,
+
 enum core::result::Result<T, E>
   where
       [@TraitClause0]: core::marker::Sized<T>,
@@ -498,16 +502,12 @@ trait core::iter::adapters::zip::TrustedRandomAccessNoCoerce<Self>
     fn size<'_0, [@TraitClause0]: core::iter::traits::iterator::Iterator<Self>> = core::iter::adapters::zip::TrustedRandomAccessNoCoerce::size<'_0_0, Self>[@TraitClause0_0]
 }
 
-fn core::array::iter::{impl core::iter::traits::collect::IntoIterator for Array<T, const N : usize>}::into_iter<T, const N : usize>(@1: Array<T, const N : usize>) -> core::array::iter::{impl core::iter::traits::collect::IntoIterator for Array<T, const N : usize>}<T, const N : usize>[@TraitClause0]::IntoIter
-where
-    [@TraitClause0]: core::marker::Sized<T>,
-
 fn core::iter::traits::collect::{impl core::iter::traits::collect::IntoIterator for I}#1::into_iter<I>(@1: I) -> I
 where
     [@TraitClause0]: core::marker::Sized<I>,
     [@TraitClause1]: core::iter::traits::iterator::Iterator<I>,
 
-fn core::array::iter::{impl core::iter::traits::iterator::Iterator for core::array::iter::IntoIter<T, const N : usize>[@TraitClause0]}#2::next<'_0, T, const N : usize>(@1: &'_0 mut (core::array::iter::IntoIter<T, const N : usize>[@TraitClause0])) -> core::option::Option<core::array::iter::{impl core::iter::traits::iterator::Iterator for core::array::iter::IntoIter<T, const N : usize>[@TraitClause0]}#2<T, const N : usize>[@TraitClause0]::Item>[@TraitClause0]
+fn core::array::iter::{impl core::iter::traits::iterator::Iterator for core::array::iter::IntoIter<T, const N : usize>[@TraitClause0]}#2::next<'_0, T, const N : usize>(@1: &'_0 mut (core::array::iter::IntoIter<T, const N : usize>[@TraitClause0])) -> core::option::Option<T>[@TraitClause0]
 where
     [@TraitClause0]: core::marker::Sized<T>,
 
@@ -519,7 +519,7 @@ fn core::array::iter::{impl core::iter::traits::iterator::Iterator for core::arr
 where
     [@TraitClause0]: core::marker::Sized<T>,
 
-fn core::array::iter::{impl core::iter::traits::iterator::Iterator for core::array::iter::IntoIter<T, const N : usize>[@TraitClause0]}#2::last<T, const N : usize>(@1: core::array::iter::IntoIter<T, const N : usize>[@TraitClause0]) -> core::option::Option<core::array::iter::{impl core::iter::traits::iterator::Iterator for core::array::iter::IntoIter<T, const N : usize>[@TraitClause0]}#2<T, const N : usize>[@TraitClause0]::Item>[@TraitClause0]
+fn core::array::iter::{impl core::iter::traits::iterator::Iterator for core::array::iter::IntoIter<T, const N : usize>[@TraitClause0]}#2::last<T, const N : usize>(@1: core::array::iter::IntoIter<T, const N : usize>[@TraitClause0]) -> core::option::Option<T>[@TraitClause0]
 where
     [@TraitClause0]: core::marker::Sized<T>,
 
@@ -535,7 +535,7 @@ where
     [@TraitClause3]: core::ops::function::FnMut<Fold, (Acc, T)>,
     @TraitClause3::parent_clause0::Output = Acc,
 
-unsafe fn core::array::iter::{impl core::iter::traits::iterator::Iterator for core::array::iter::IntoIter<T, const N : usize>[@TraitClause0]}#2::__iterator_get_unchecked<'_0, T, const N : usize>(@1: &'_0 mut (core::array::iter::IntoIter<T, const N : usize>[@TraitClause0]), @2: usize) -> core::array::iter::{impl core::iter::traits::iterator::Iterator for core::array::iter::IntoIter<T, const N : usize>[@TraitClause0]}#2<T, const N : usize>[@TraitClause0]::Item
+unsafe fn core::array::iter::{impl core::iter::traits::iterator::Iterator for core::array::iter::IntoIter<T, const N : usize>[@TraitClause0]}#2::__iterator_get_unchecked<'_0, T, const N : usize>(@1: &'_0 mut (core::array::iter::IntoIter<T, const N : usize>[@TraitClause0]), @2: usize) -> T
 where
     [@TraitClause0]: core::marker::Sized<T>,
 
@@ -614,7 +614,7 @@ where
     [@TraitClause3]: core::ops::function::FnMut<F, (&'_ (T))>,
     @TraitClause3::parent_clause0::Output = bool,
 
-fn core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::Iter<'a, T>[@TraitClause0]}#182::find<'a, '_1, T, P>(@1: &'_1 mut (core::slice::iter::Iter<'a, T>[@TraitClause0]), @2: P) -> core::option::Option<core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::Iter<'a, T>[@TraitClause0]}#182<'_, T>[@TraitClause0]::Item>[core::marker::Sized<&'_ (T)>]
+fn core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::Iter<'a, T>[@TraitClause0]}#182::find<'a, '_1, T, P>(@1: &'_1 mut (core::slice::iter::Iter<'a, T>[@TraitClause0]), @2: P) -> core::option::Option<&'_ (T)>[core::marker::Sized<&'_ (T)>]
 where
     [@TraitClause0]: core::marker::Sized<T>,
     [@TraitClause1]: core::marker::Sized<P>,
@@ -657,7 +657,7 @@ where
     [@TraitClause3]: for<'_0, '_1> core::ops::function::FnMut<F, (&'_0_0 (&'_ (T)), &'_0_1 (&'_ (T)))>,
     for<'_0, '_1> @TraitClause3::parent_clause0::Output = bool,
 
-unsafe fn core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::Iter<'a, T>[@TraitClause0]}#182::__iterator_get_unchecked<'a, '_1, T>(@1: &'_1 mut (core::slice::iter::Iter<'a, T>[@TraitClause0]), @2: usize) -> core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::Iter<'a, T>[@TraitClause0]}#182<'_, T>[@TraitClause0]::Item
+unsafe fn core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::Iter<'a, T>[@TraitClause0]}#182::__iterator_get_unchecked<'a, '_1, T>(@1: &'_1 mut (core::slice::iter::Iter<'a, T>[@TraitClause0]), @2: usize) -> &'_ (T)
 where
     [@TraitClause0]: core::marker::Sized<T>,
 
@@ -703,15 +703,15 @@ fn core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::sli
 where
     [@TraitClause0]: core::marker::Sized<T>,
 
-fn core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::Chunks<'a, T>[@TraitClause0]}#71::last<'a, T>(@1: core::slice::iter::Chunks<'a, T>[@TraitClause0]) -> core::option::Option<core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::Chunks<'a, T>[@TraitClause0]}#71<'_, T>[@TraitClause0]::Item>[core::marker::Sized<&'_ (Slice<T>)>]
+fn core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::Chunks<'a, T>[@TraitClause0]}#71::last<'a, T>(@1: core::slice::iter::Chunks<'a, T>[@TraitClause0]) -> core::option::Option<&'_ (Slice<T>)>[core::marker::Sized<&'_ (Slice<T>)>]
 where
     [@TraitClause0]: core::marker::Sized<T>,
 
-fn core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::Chunks<'a, T>[@TraitClause0]}#71::nth<'a, '_1, T>(@1: &'_1 mut (core::slice::iter::Chunks<'a, T>[@TraitClause0]), @2: usize) -> core::option::Option<core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::Chunks<'a, T>[@TraitClause0]}#71<'_, T>[@TraitClause0]::Item>[core::marker::Sized<&'_ (Slice<T>)>]
+fn core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::Chunks<'a, T>[@TraitClause0]}#71::nth<'a, '_1, T>(@1: &'_1 mut (core::slice::iter::Chunks<'a, T>[@TraitClause0]), @2: usize) -> core::option::Option<&'_ (Slice<T>)>[core::marker::Sized<&'_ (Slice<T>)>]
 where
     [@TraitClause0]: core::marker::Sized<T>,
 
-unsafe fn core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::Chunks<'a, T>[@TraitClause0]}#71::__iterator_get_unchecked<'a, '_1, T>(@1: &'_1 mut (core::slice::iter::Chunks<'a, T>[@TraitClause0]), @2: usize) -> core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::Chunks<'a, T>[@TraitClause0]}#71<'_, T>[@TraitClause0]::Item
+unsafe fn core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::Chunks<'a, T>[@TraitClause0]}#71::__iterator_get_unchecked<'a, '_1, T>(@1: &'_1 mut (core::slice::iter::Chunks<'a, T>[@TraitClause0]), @2: usize) -> &'_ (Slice<T>)
 where
     [@TraitClause0]: core::marker::Sized<T>,
 
@@ -745,15 +745,15 @@ fn core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::sli
 where
     [@TraitClause0]: core::marker::Sized<T>,
 
-fn core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::ChunksExact<'a, T>[@TraitClause0]}#90::last<'a, T>(@1: core::slice::iter::ChunksExact<'a, T>[@TraitClause0]) -> core::option::Option<core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::ChunksExact<'a, T>[@TraitClause0]}#90<'_, T>[@TraitClause0]::Item>[core::marker::Sized<&'_ (Slice<T>)>]
+fn core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::ChunksExact<'a, T>[@TraitClause0]}#90::last<'a, T>(@1: core::slice::iter::ChunksExact<'a, T>[@TraitClause0]) -> core::option::Option<&'_ (Slice<T>)>[core::marker::Sized<&'_ (Slice<T>)>]
 where
     [@TraitClause0]: core::marker::Sized<T>,
 
-fn core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::ChunksExact<'a, T>[@TraitClause0]}#90::nth<'a, '_1, T>(@1: &'_1 mut (core::slice::iter::ChunksExact<'a, T>[@TraitClause0]), @2: usize) -> core::option::Option<core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::ChunksExact<'a, T>[@TraitClause0]}#90<'_, T>[@TraitClause0]::Item>[core::marker::Sized<&'_ (Slice<T>)>]
+fn core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::ChunksExact<'a, T>[@TraitClause0]}#90::nth<'a, '_1, T>(@1: &'_1 mut (core::slice::iter::ChunksExact<'a, T>[@TraitClause0]), @2: usize) -> core::option::Option<&'_ (Slice<T>)>[core::marker::Sized<&'_ (Slice<T>)>]
 where
     [@TraitClause0]: core::marker::Sized<T>,
 
-unsafe fn core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::ChunksExact<'a, T>[@TraitClause0]}#90::__iterator_get_unchecked<'a, '_1, T>(@1: &'_1 mut (core::slice::iter::ChunksExact<'a, T>[@TraitClause0]), @2: usize) -> core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::ChunksExact<'a, T>[@TraitClause0]}#90<'_, T>[@TraitClause0]::Item
+unsafe fn core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::ChunksExact<'a, T>[@TraitClause0]}#90::__iterator_get_unchecked<'a, '_1, T>(@1: &'_1 mut (core::slice::iter::ChunksExact<'a, T>[@TraitClause0]), @2: usize) -> &'_ (Slice<T>)
 where
     [@TraitClause0]: core::marker::Sized<T>,
 

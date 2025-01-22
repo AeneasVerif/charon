@@ -1,12 +1,6 @@
 # Final LLBC before serialization:
 
-type test_crate::Foo = usize
-
 trait core::marker::Sized<Self>
-
-type test_crate::Generic<'a, T>
-  where
-      [@TraitClause0]: core::marker::Sized<T>, = &'a (T)
 
 trait core::clone::Clone<Self>
 {
@@ -81,14 +75,15 @@ where
     fn clone_into<'_0, '_1> = alloc::slice::{impl alloc::borrow::ToOwned for Slice<T>}#9::clone_into<'_0_0, '_0_1, T>[@TraitClause0, @TraitClause1]
 }
 
-type test_crate::Generic2<'a, T>
+struct test_crate::Generic2<'a, T>
   where
       [@TraitClause0]: core::marker::Sized<T>,
-      [@TraitClause1]: core::clone::Clone<T>, = alloc::borrow::Cow<'a, Slice<T>>[alloc::slice::{impl alloc::borrow::ToOwned for Slice<T>}#9<T>[@TraitClause0, @TraitClause1]]
-
-type test_crate::GenericWithoutBound<'a, T>
-  where
-      [@TraitClause0]: core::marker::Sized<T>, = alloc::borrow::Cow<'a, Slice<T>>[UNKNOWN(Could not find a clause for `Binder { value: <[T] as std::borrow::ToOwned>, bound_vars: [] }` in the current context: `Unimplemented`)]
+      [@TraitClause1]: core::clone::Clone<T>,
+      T : 'a,
+ =
+{
+  alloc::borrow::Cow<'a, Slice<T>>[alloc::slice::{impl alloc::borrow::ToOwned for Slice<T>}#9<T>[@TraitClause0, @TraitClause1]],
+}
 
 fn core::clone::Clone::clone<'_0, Self>(@1: &'_0 (Self)) -> Self
 

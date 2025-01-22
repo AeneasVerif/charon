@@ -100,16 +100,23 @@ impl ProjectionElem {
                                 if variant_id.is_some() {
                                     return Err(());
                                 };
-                                let mut ty = fields.get(*field_id).ok_or(())?.ty.clone();
-                                ty.substitute(generics);
-                                ty
+                                fields
+                                    .get(*field_id)
+                                    .ok_or(())?
+                                    .ty
+                                    .clone()
+                                    .substitute(generics)
                             }
                             Enum(variants) => {
                                 let variant_id = variant_id.ok_or(())?;
                                 let variant = variants.get(variant_id).ok_or(())?;
-                                let mut ty = variant.fields.get(*field_id).ok_or(())?.ty.clone();
-                                ty.substitute(generics);
-                                ty
+                                variant
+                                    .fields
+                                    .get(*field_id)
+                                    .ok_or(())?
+                                    .ty
+                                    .clone()
+                                    .substitute(generics)
                             }
                             Opaque | Alias(_) | Error(_) => return Err(()),
                         }

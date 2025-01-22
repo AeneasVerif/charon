@@ -19,7 +19,7 @@ trait test_crate::From<Self, T>
     fn from<[@TraitClause0]: core::marker::Sized<Self>> = test_crate::From::from<Self, T>[@TraitClause0_0]
 }
 
-fn test_crate::{impl test_crate::From<&'_0 (bool)> for bool}::from<'_0>(@1: &'_0 (bool)) -> core::result::Result<bool, test_crate::{impl test_crate::From<&'_0 (bool)> for bool}<'_>::Error>[core::marker::Sized<bool>, core::marker::Sized<()>]
+fn test_crate::{impl test_crate::From<&'_0 (bool)> for bool}::from<'_0>(@1: &'_0 (bool)) -> core::result::Result<bool, ()>[core::marker::Sized<bool>, core::marker::Sized<()>]
 {
     let @0: core::result::Result<bool, ()>[core::marker::Sized<bool>, core::marker::Sized<()>]; // return
     let v@1: &'_ (bool); // arg #1

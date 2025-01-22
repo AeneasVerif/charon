@@ -1078,7 +1078,13 @@ fn generate_ml(
         ),
     ];
     // Types for which we don't want to generate a type at all.
-    let dont_generate_ty = &["ItemOpacity", "PredicateOrigin", "Ty", "Vector"];
+    let dont_generate_ty = &[
+        "ItemOpacity",
+        "PredicateOrigin",
+        "TraitTypeConstraintId",
+        "Ty",
+        "Vector",
+    ];
     // Types that we don't want visitors to go into.
     let opaque_for_visitor = &["Name"];
     let ctx = GenerateCtx::new(

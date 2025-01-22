@@ -4,6 +4,7 @@ use crate::ids::Vector;
 use derive_generic_visitor::*;
 use std::collections::HashSet;
 use std::convert::Infallible;
+use std::fmt::Debug;
 use std::iter::Iterator;
 use std::mem;
 use std::ops::Index;
@@ -110,12 +111,10 @@ impl<T> Binder<T> {
     /// substituted inner value.
     pub fn apply(self, args: &GenericArgs) -> T
     where
-        T: AstVisitable,
+        T: TyVisitable,
     {
-        let mut val = self.skip_binder;
         assert!(args.matches(&self.params));
-        val.drive_mut(&mut SubstVisitor::new(args));
-        val
+        self.skip_binder.substitute(args)
     }
 }
 
@@ -129,6 +128,27 @@ impl<T> RegionBinder<T> {
             regions: Default::default(),
             skip_binder: x.move_under_binder(),
         }
+    }
+
+    pub fn map_ref<U>(&self, f: impl FnOnce(&T) -> U) -> RegionBinder<U> {
+        RegionBinder {
+            regions: self.regions.clone(),
+            skip_binder: f(&self.skip_binder),
+        }
+    }
+
+    /// Substitute the bound variables with erased lifetimes.
+    pub fn erase(self) -> T
+    where
+        T: AstVisitable,
+    {
+        let mut val = self.skip_binder;
+        let args = GenericArgs {
+            regions: self.regions.map_ref_indexed(|_, _| Region::Erased),
+            ..GenericArgs::empty(GenericsSource::Builtin)
+        };
+        val.drive_mut(&mut SubstVisitor::new(&args));
+        val
     }
 }
 
@@ -267,6 +287,88 @@ impl IntegerTy {
             IntegerTy::U64 => size_of::<u64>(),
             IntegerTy::U128 => size_of::<u128>(),
         }
+    }
+}
+
+/// A value of type `T` bound by the generic parameters of item
+/// `item`. Used when dealing with multiple items at a time, to
+/// ensure we don't mix up generics.
+///
+/// To get the value, use `under_binder_of` or `subst_for`.
+#[derive(Debug, Clone, Copy)]
+pub struct ItemBinder<ItemId, T> {
+    pub item_id: ItemId,
+    val: T,
+}
+
+impl<ItemId, T> ItemBinder<ItemId, T>
+where
+    ItemId: Debug + Copy + PartialEq,
+{
+    pub fn new(item_id: ItemId, val: T) -> Self {
+        Self { item_id, val }
+    }
+
+    pub fn as_ref(&self) -> ItemBinder<ItemId, &T> {
+        ItemBinder {
+            item_id: self.item_id,
+            val: &self.val,
+        }
+    }
+
+    pub fn map_bound<U>(self, f: impl FnOnce(T) -> U) -> ItemBinder<ItemId, U> {
+        ItemBinder {
+            item_id: self.item_id,
+            val: f(self.val),
+        }
+    }
+
+    fn assert_item_id(&self, item_id: ItemId) {
+        assert_eq!(
+            self.item_id, item_id,
+            "Trying to use item bound for {:?} as if it belonged to {:?}",
+            self.item_id, item_id
+        );
+    }
+
+    /// Assert that the value is bound for item `item_id`, and returns it. This is used when we
+    /// plan to store the returned value inside that item.
+    pub fn under_binder_of(self, item_id: ItemId) -> T {
+        self.assert_item_id(item_id);
+        self.val
+    }
+
+    /// Given generic args for `item_id`, assert that the value is bound for `item_id` and
+    /// substitute it with the provided generic arguments. Because the arguments are bound in the
+    /// context of another item, so it the resulting substituted value.
+    pub fn substitute<OtherItem: Debug + Copy + PartialEq>(
+        self,
+        args: ItemBinder<OtherItem, &GenericArgs>,
+    ) -> ItemBinder<OtherItem, T>
+    where
+        ItemId: Into<AnyTransId>,
+        T: TyVisitable,
+    {
+        args.map_bound(|args| {
+            assert_eq!(
+                args.target,
+                GenericsSource::item(self.item_id),
+                "These `GenericArgs` are meant for {:?} but were used on {:?}",
+                args.target,
+                self.item_id
+            );
+            self.val.substitute(args)
+        })
+    }
+}
+
+/// Dummy item identifier that represents the current item when not ambiguous.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct CurrentItem;
+
+impl<T> ItemBinder<CurrentItem, T> {
+    pub fn under_current_binder(self) -> T {
+        self.val
     }
 }
 
@@ -567,8 +669,9 @@ impl VisitAstMut for SubstVisitor<'_> {
 
 /// Types that are involved at the type-level and may be substituted around.
 pub trait TyVisitable: Sized + AstVisitable {
-    fn substitute(&mut self, generics: &GenericArgs) {
+    fn substitute(mut self, generics: &GenericArgs) -> Self {
         self.drive_mut(&mut SubstVisitor::new(generics));
+        self
     }
 
     /// Move under one binder.

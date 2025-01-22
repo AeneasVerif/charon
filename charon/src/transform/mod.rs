@@ -1,6 +1,7 @@
 pub mod check_generics;
 pub mod ctx;
 pub mod duplicate_return;
+pub mod expand_associated_types;
 pub mod filter_invisible_trait_impls;
 pub mod filter_unreachable_blocks;
 pub mod graphs;
@@ -39,6 +40,7 @@ pub static INITIAL_CLEANUP_PASSES: &[Pass] = &[
     // Move clauses on associated types to be parent clauses
     NonBody(&lift_associated_item_clauses::Transform),
     // Check that all supplied generic types match the corresponding generic parameters.
+    // Needs `lift_associated_item_clauses`.
     NonBody(&check_generics::Check("after translation")),
     // # Micro-pass: hide some overly-common traits we don't need: Sized, Sync, Allocator, etc..
     NonBody(&hide_marker_traits::Transform),
@@ -49,6 +51,8 @@ pub static INITIAL_CLEANUP_PASSES: &[Pass] = &[
     // directly instead of going via a `TraitRef`. This is done before `reorder_decls` to remove
     // some sources of mutual recursion.
     UnstructuredBody(&skip_trait_refs_when_known::Transform),
+    // Change trait associated types to be type parameters instead. See the module for details.
+    NonBody(&expand_associated_types::Transform),
 ];
 
 /// Body cleanup passes on the ullbc.

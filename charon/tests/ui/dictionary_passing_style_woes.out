@@ -2,90 +2,82 @@
 
 trait core::marker::Sized<Self>
 
-trait test_crate::Iterator<Self>
+trait test_crate::Iterator<Self, Self_Item>
 {
-    parent_clause0 : [@TraitClause0]: core::marker::Sized<Self::Item>
-    type Item
+    parent_clause0 : [@TraitClause0]: core::marker::Sized<Self_Item>
 }
 
-trait test_crate::IntoIterator<Self>
-where
-    Self::parent_clause2::Item = Self::Item,
+trait test_crate::IntoIterator<Self, Self_Item, Self_IntoIter>
 {
-    parent_clause0 : [@TraitClause0]: core::marker::Sized<Self::Item>
-    parent_clause1 : [@TraitClause1]: core::marker::Sized<Self::IntoIter>
-    parent_clause2 : [@TraitClause2]: test_crate::Iterator<Self::IntoIter>
-    type Item
-    type IntoIter
+    parent_clause0 : [@TraitClause0]: core::marker::Sized<Self_Item>
+    parent_clause1 : [@TraitClause1]: core::marker::Sized<Self_IntoIter>
+    parent_clause2 : [@TraitClause2]: test_crate::Iterator<Self_IntoIter, Self_Item>
 }
 
-impl<I> test_crate::{impl test_crate::IntoIterator for I}<I> : test_crate::IntoIterator<I>
+impl<I, Clause1_Item> test_crate::{impl test_crate::IntoIterator<Clause1_Item, I> for I}<I, Clause1_Item> : test_crate::IntoIterator<I, Clause1_Item, I>
 where
     [@TraitClause0]: core::marker::Sized<I>,
-    [@TraitClause1]: test_crate::Iterator<I>,
+    [@TraitClause1]: test_crate::Iterator<I, Clause1_Item>,
 {
     parent_clause0 = @TraitClause1::parent_clause0
     parent_clause1 = @TraitClause0
     parent_clause2 = @TraitClause1
-    type Item = @TraitClause1::Item
-    type IntoIter = I
 }
 
-fn test_crate::callee<T>(@1: @TraitClause1::Item) -> test_crate::{impl test_crate::IntoIterator for I}<T>[@TraitClause0, @TraitClause1]::Item
+fn test_crate::callee<T, Clause1_Item>(@1: Clause1_Item) -> Clause1_Item
 where
     [@TraitClause0]: core::marker::Sized<T>,
-    [@TraitClause1]: test_crate::Iterator<T>,
+    [@TraitClause1]: test_crate::Iterator<T, Clause1_Item>,
 {
-    let @0: @TraitClause1::Item; // return
-    let t@1: @TraitClause1::Item; // arg #1
+    let @0: Clause1_Item; // return
+    let t@1: Clause1_Item; // arg #1
 
     @0 := move (t@1)
     drop t@1
     return
 }
 
-fn test_crate::caller<T>(@1: @TraitClause1::Item) -> @TraitClause2::Item
+fn test_crate::caller<T, Clause1_Item, Clause2_Item, Clause2_IntoIter>(@1: Clause1_Item) -> Clause2_Item
 where
     [@TraitClause0]: core::marker::Sized<T>,
-    [@TraitClause1]: test_crate::Iterator<T>,
-    [@TraitClause2]: test_crate::IntoIterator<T>,
+    [@TraitClause1]: test_crate::Iterator<T, Clause1_Item>,
+    [@TraitClause2]: test_crate::IntoIterator<T, Clause2_Item, Clause2_IntoIter>,
 {
-    let @0: @TraitClause2::Item; // return
-    let t@1: @TraitClause1::Item; // arg #1
-    let @2: @TraitClause1::Item; // anonymous local
+    let @0: Clause2_Item; // return
+    let t@1: Clause1_Item; // arg #1
+    let @2: Clause1_Item; // anonymous local
 
     @2 := move (t@1)
-    @0 := test_crate::callee<T>[@TraitClause0, @TraitClause1](move (@2))
+    @0 := test_crate::callee<T, Clause1_Item>[@TraitClause0, @TraitClause1](move (@2))
     drop @2
     drop t@1
     return
 }
 
-trait test_crate::X<Self>
+trait test_crate::X<Self, Self_Assoc>
 {
-    parent_clause0 : [@TraitClause0]: core::marker::Sized<Self::Assoc>
-    type Assoc
-    fn method<'_0> = test_crate::X::method<'_0_0, Self>
+    parent_clause0 : [@TraitClause0]: core::marker::Sized<Self_Assoc>
+    fn method<'_0> = test_crate::X::method<'_0_0, Self, Self_Assoc>
 }
 
-trait test_crate::A<Self>
+trait test_crate::A<Self, Self_Clause0_Assoc>
 {
-    parent_clause0 : [@TraitClause0]: test_crate::X<Self>
+    parent_clause0 : [@TraitClause0]: test_crate::X<Self, Self_Clause0_Assoc>
 }
 
-trait test_crate::B<Self>
+trait test_crate::B<Self, Self_Clause0_Assoc>
 {
-    parent_clause0 : [@TraitClause0]: test_crate::X<Self>
+    parent_clause0 : [@TraitClause0]: test_crate::X<Self, Self_Clause0_Assoc>
 }
 
-fn test_crate::X::method<'_0, Self>(@1: &'_0 (Self)) -> Self::Assoc
+fn test_crate::X::method<'_0, Self, Self_Assoc>(@1: &'_0 (Self)) -> Self_Assoc
 
-fn test_crate::a<T>(@1: T) -> @TraitClause1::parent_clause0::Assoc
+fn test_crate::a<T, Clause1_Clause0_Assoc>(@1: T) -> Clause1_Clause0_Assoc
 where
     [@TraitClause0]: core::marker::Sized<T>,
-    [@TraitClause1]: test_crate::A<T>,
+    [@TraitClause1]: test_crate::A<T, Clause1_Clause0_Assoc>,
 {
-    let @0: @TraitClause1::parent_clause0::Assoc; // return
+    let @0: Clause1_Clause0_Assoc; // return
     let x@1: T; // arg #1
     let @2: &'_ (T); // anonymous local
 
@@ -96,12 +88,12 @@ where
     return
 }
 
-fn test_crate::b<T>(@1: T) -> @TraitClause1::parent_clause0::Assoc
+fn test_crate::b<T, Clause1_Clause0_Assoc>(@1: T) -> Clause1_Clause0_Assoc
 where
     [@TraitClause0]: core::marker::Sized<T>,
-    [@TraitClause1]: test_crate::B<T>,
+    [@TraitClause1]: test_crate::B<T, Clause1_Clause0_Assoc>,
 {
-    let @0: @TraitClause1::parent_clause0::Assoc; // return
+    let @0: Clause1_Clause0_Assoc; // return
     let x@1: T; // arg #1
     let @2: &'_ (T); // anonymous local
 
@@ -112,24 +104,24 @@ where
     return
 }
 
-fn test_crate::x<T>(@1: T) -> (@TraitClause1::parent_clause0::Assoc, @TraitClause1::parent_clause0::Assoc)
+fn test_crate::x<T, Clause1_Clause0_Assoc, Clause2_Clause0_Assoc>(@1: T) -> (Clause1_Clause0_Assoc, Clause1_Clause0_Assoc)
 where
     [@TraitClause0]: core::marker::Sized<T>,
-    [@TraitClause1]: test_crate::A<T>,
-    [@TraitClause2]: test_crate::B<T>,
+    [@TraitClause1]: test_crate::A<T, Clause1_Clause0_Assoc>,
+    [@TraitClause2]: test_crate::B<T, Clause2_Clause0_Assoc>,
 {
-    let @0: (@TraitClause1::parent_clause0::Assoc, @TraitClause1::parent_clause0::Assoc); // return
+    let @0: (Clause1_Clause0_Assoc, Clause1_Clause0_Assoc); // return
     let x@1: T; // arg #1
-    let @2: @TraitClause1::parent_clause0::Assoc; // anonymous local
+    let @2: Clause1_Clause0_Assoc; // anonymous local
     let @3: T; // anonymous local
-    let @4: @TraitClause1::parent_clause0::Assoc; // anonymous local
+    let @4: Clause1_Clause0_Assoc; // anonymous local
     let @5: T; // anonymous local
 
     @3 := move (x@1)
-    @2 := test_crate::a<T>[@TraitClause0, @TraitClause1](move (@3))
+    @2 := test_crate::a<T, Clause1_Clause0_Assoc>[@TraitClause0, @TraitClause1](move (@3))
     drop @3
     @5 := move (x@1)
-    @4 := test_crate::b<T>[@TraitClause0, @TraitClause2](move (@5))
+    @4 := test_crate::b<T, Clause2_Clause0_Assoc>[@TraitClause0, @TraitClause2](move (@5))
     drop @5
     @0 := (move (@2), move (@4))
     drop @4
