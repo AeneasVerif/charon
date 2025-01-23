@@ -35,8 +35,8 @@ fn test_crate::f() -> usize
             if move (@8) {
                 drop @9
                 j@2 := copy (j@2) / const (2 : i32)
-                @14 := ()
-                @7 := move (@14)
+                @15 := ()
+                @7 := move (@15)
             }
             else {
                 drop @9
@@ -56,8 +56,8 @@ fn test_crate::f() -> usize
                 }
                 else {
                     drop @11
-                    @15 := ()
-                    @7 := move (@15)
+                    @14 := ()
+                    @7 := move (@14)
                     drop @10
                 }
             }

@@ -880,20 +880,20 @@ fn test_crate::main()
                 @14 := copy (v@13)
                 i@2 := copy (i@2) + move (@14)
                 drop @14
-                @67 := ()
-                @9 := move (@67)
+                @66 := ()
+                @9 := move (@66)
                 drop v@13
                 drop @12
                 drop @10
                 drop @9
-                @68 := ()
-                @8 := move (@68)
+                @67 := ()
+                @8 := move (@67)
                 continue 0
             },
         }
     }
-    @66 := ()
-    @3 := move (@66)
+    @68 := ()
+    @3 := move (@68)
     drop @12
     drop @10
     drop @9
@@ -970,19 +970,19 @@ fn test_crate::main()
             },
             1 => {
                 i@2 := copy (i@2) + const (1 : i32)
-                @73 := ()
-                @35 := move (@73)
+                @72 := ()
+                @35 := move (@72)
                 drop @38
                 drop @36
                 drop @35
-                @74 := ()
-                @8 := move (@74)
+                @73 := ()
+                @8 := move (@73)
                 continue 0
             },
         }
     }
-    @72 := ()
-    @29 := move (@72)
+    @74 := ()
+    @29 := move (@74)
     drop @38
     drop @36
     drop @35
@@ -1010,19 +1010,19 @@ fn test_crate::main()
             },
             1 => {
                 i@2 := copy (i@2) + const (1 : i32)
-                @76 := ()
-                @45 := move (@76)
+                @75 := ()
+                @45 := move (@75)
                 drop @48
                 drop @46
                 drop @45
-                @77 := ()
-                @8 := move (@77)
+                @76 := ()
+                @8 := move (@76)
                 continue 0
             },
         }
     }
-    @75 := ()
-    @39 := move (@75)
+    @77 := ()
+    @39 := move (@77)
     drop @48
     drop @46
     drop @45
