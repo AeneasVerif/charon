@@ -1,6 +1,4 @@
 //! # Micro-pass: merge single-origin gotos into their parent to reduce CFG graph size.
-use itertools::Itertools;
-
 use crate::ids::Vector;
 use crate::transform::TransformCtx;
 use crate::ullbc_ast::*;
@@ -23,23 +21,16 @@ impl UllbcPass for Transform {
             }
         }
         // Merge blocks with a single antecedent into their antecedent.
-        let mut to_process = body.body.iter_indices().collect_vec();
-        while let Some(id) = to_process.pop() {
-            let Some(block) = body.body.get(id) else {
-                continue;
-            };
-            let RawTerminator::Goto { target } = block.terminator.content else {
-                continue;
-            };
-            if antecedents[target] != 1 {
-                continue;
-            };
-            let target = body.body.remove(target).unwrap();
-            let source = &mut body.body[id];
-            source.statements.extend(target.statements);
-            source.terminator = target.terminator;
-            // We updated the terminator so we may need to process this again.
-            to_process.push(id);
+        for id in body.body.all_indices() {
+            while let Some(source) = body.body.get(id)
+                && let RawTerminator::Goto { target } = source.terminator.content
+                && antecedents[target] == 1
+            {
+                let mut target = body.body.remove(target).unwrap();
+                let source = &mut body.body[id];
+                source.statements.append(&mut target.statements);
+                source.terminator = target.terminator;
+            }
         }
     }
 }
