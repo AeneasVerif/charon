@@ -4,6 +4,7 @@ use crate::llbc_ast::*;
 use crate::meta;
 use crate::meta::Span;
 use derive_generic_visitor::*;
+use std::mem;
 
 /// Combine the span information from a [Switch]
 pub fn combine_switch_targets_span(targets: &Switch) -> Span {
@@ -139,12 +140,24 @@ impl Block {
     /// - return the sequence of statements to introduce before the current statements
     pub fn transform_sequences<F: FnMut(&mut [Statement]) -> Vec<Statement>>(&mut self, mut f: F) {
         self.visit_blocks_bwd(|blk: &mut Block| {
+            let mut to_insert = vec![];
             for i in (0..blk.statements.len()).rev() {
-                let prefix_to_insert = f(&mut blk.statements[i..]);
-                if !prefix_to_insert.is_empty() {
-                    // Insert the new elements at index `i`. This only modifies `vec[i..]`
-                    // so we can keep iterating `i` down as if nothing happened.
-                    blk.statements.splice(i..i, prefix_to_insert);
+                let new_to_insert = f(&mut blk.statements[i..]);
+                to_insert.push((i, new_to_insert));
+            }
+            if !to_insert.is_empty() {
+                to_insert.sort_by_key(|(i, _)| *i);
+                // Make it so the first element is always at the end so we can pop it.
+                to_insert.reverse();
+                // Construct the merged list of statements.
+                for (i, stmt) in mem::take(&mut blk.statements).into_iter().enumerate() {
+                    while let Some((j, _)) = to_insert.last()
+                        && *j == i
+                    {
+                        let (_, mut stmts) = to_insert.pop().unwrap();
+                        blk.statements.append(&mut stmts);
+                    }
+                    blk.statements.push(stmt);
                 }
             }
         })
