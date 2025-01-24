@@ -130,8 +130,6 @@ pub static LLBC_PASSES: &[Pass] = &[
     StructuredBody(&remove_read_discriminant::Transform),
     // Cleanup the cfg.
     StructuredBody(&prettify_cfg::Transform),
-    // # Micro-pass: remove the locals which are never used.
-    StructuredBody(&remove_unused_locals::Transform),
     // # Micro-pass: take all the comments found in the original body and assign them to
     // statements. This must be last after all the statement-affecting passes to avoid losing
     // comments.
@@ -140,6 +138,8 @@ pub static LLBC_PASSES: &[Pass] = &[
 
 /// Cleanup passes useful for both llbc and ullbc.
 pub static SHARED_FINALIZING_PASSES: &[Pass] = &[
+    // # Micro-pass: remove the locals which are never used.
+    NonBody(&remove_unused_locals::Transform),
     // # Micro-pass: remove the useless `StatementKind::Nop`s.
     NonBody(&remove_nops::Transform),
     // # Reorder the graph of dependencies and compute the strictly connex components to:

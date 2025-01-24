@@ -710,41 +710,37 @@ fn test_crate::nested_loops_enum(@1: usize, @2: usize) -> usize
     let @11: &'_ mut (core::ops::range::Range<i32>[core::marker::Sized<i32>]); // anonymous local
     let @12: &'_ mut (core::ops::range::Range<i32>[core::marker::Sized<i32>]); // anonymous local
     let @13: isize; // anonymous local
-    let @14: !; // anonymous local
-    let @15: (); // anonymous local
+    let @14: (); // anonymous local
+    let @15: core::ops::range::Range<usize>[core::marker::Sized<usize>]; // anonymous local
     let @16: core::ops::range::Range<usize>[core::marker::Sized<usize>]; // anonymous local
-    let @17: core::ops::range::Range<usize>[core::marker::Sized<usize>]; // anonymous local
-    let @18: usize; // anonymous local
-    let iter@19: core::ops::range::Range<usize>[core::marker::Sized<usize>]; // local
-    let @20: (); // anonymous local
-    let @21: core::option::Option<usize>[core::marker::Sized<usize>]; // anonymous local
+    let @17: usize; // anonymous local
+    let iter@18: core::ops::range::Range<usize>[core::marker::Sized<usize>]; // local
+    let @19: (); // anonymous local
+    let @20: core::option::Option<usize>[core::marker::Sized<usize>]; // anonymous local
+    let @21: &'_ mut (core::ops::range::Range<usize>[core::marker::Sized<usize>]); // anonymous local
     let @22: &'_ mut (core::ops::range::Range<usize>[core::marker::Sized<usize>]); // anonymous local
-    let @23: &'_ mut (core::ops::range::Range<usize>[core::marker::Sized<usize>]); // anonymous local
-    let @24: isize; // anonymous local
-    let @25: !; // anonymous local
-    let @26: core::ops::range::Range<usize>[core::marker::Sized<usize>]; // anonymous local
-    let @27: core::ops::range::Range<usize>[core::marker::Sized<usize>]; // anonymous local
-    let @28: usize; // anonymous local
-    let iter@29: core::ops::range::Range<usize>[core::marker::Sized<usize>]; // local
-    let @30: (); // anonymous local
-    let @31: core::option::Option<usize>[core::marker::Sized<usize>]; // anonymous local
-    let @32: &'_ mut (core::ops::range::Range<usize>[core::marker::Sized<usize>]); // anonymous local
-    let @33: &'_ mut (core::ops::range::Range<usize>[core::marker::Sized<usize>]); // anonymous local
-    let @34: isize; // anonymous local
-    let @35: !; // anonymous local
+    let @23: isize; // anonymous local
+    let @24: core::ops::range::Range<usize>[core::marker::Sized<usize>]; // anonymous local
+    let @25: core::ops::range::Range<usize>[core::marker::Sized<usize>]; // anonymous local
+    let @26: usize; // anonymous local
+    let iter@27: core::ops::range::Range<usize>[core::marker::Sized<usize>]; // local
+    let @28: (); // anonymous local
+    let @29: core::option::Option<usize>[core::marker::Sized<usize>]; // anonymous local
+    let @30: &'_ mut (core::ops::range::Range<usize>[core::marker::Sized<usize>]); // anonymous local
+    let @31: &'_ mut (core::ops::range::Range<usize>[core::marker::Sized<usize>]); // anonymous local
+    let @32: isize; // anonymous local
+    let @33: (); // anonymous local
+    let @34: bool; // anonymous local
+    let @35: usize; // anonymous local
     let @36: (); // anonymous local
-    let @37: bool; // anonymous local
-    let @38: usize; // anonymous local
-    let @39: !; // anonymous local
+    let @37: (); // anonymous local
+    let @38: (); // anonymous local
+    let @39: (); // anonymous local
     let @40: (); // anonymous local
     let @41: (); // anonymous local
     let @42: (); // anonymous local
     let @43: (); // anonymous local
     let @44: (); // anonymous local
-    let @45: (); // anonymous local
-    let @46: (); // anonymous local
-    let @47: (); // anonymous local
-    let @48: (); // anonymous local
 
     bb0: {
         s@3 := const (0 : usize);
@@ -768,33 +764,33 @@ fn test_crate::nested_loops_enum(@1: usize, @2: usize) -> usize
     }
 
     bb2: {
-        @40 := ();
-        @4 := move (@40);
+        @36 := ();
+        @4 := move (@36);
         @storage_dead(@12);
         @storage_dead(@10);
         @storage_dead(@9);
         @storage_dead(@7);
         @storage_dead(@5);
         @storage_dead(@4);
-        @18 := copy (step_out@1);
-        @17 := core::ops::range::Range { start: const (0 : usize), end: move (@18) };
-        @storage_dead(@18);
-        @16 := core::iter::traits::collect::{impl core::iter::traits::collect::IntoIterator for I}#1::into_iter<core::ops::range::Range<usize>[core::marker::Sized<usize>]>[core::marker::Sized<core::ops::range::Range<usize>[core::marker::Sized<usize>]>, core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>[@TraitClause0]}#6<usize>[core::marker::Sized<usize>, core::iter::range::{impl core::iter::range::Step for usize}#43]](move (@17));
+        @17 := copy (step_out@1);
+        @16 := core::ops::range::Range { start: const (0 : usize), end: move (@17) };
         @storage_dead(@17);
-        @fake_read(@16);
-        iter@19 := move (@16);
+        @15 := core::iter::traits::collect::{impl core::iter::traits::collect::IntoIterator for I}#1::into_iter<core::ops::range::Range<usize>[core::marker::Sized<usize>]>[core::marker::Sized<core::ops::range::Range<usize>[core::marker::Sized<usize>]>, core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>[@TraitClause0]}#6<usize>[core::marker::Sized<usize>, core::iter::range::{impl core::iter::range::Step for usize}#43]](move (@16));
+        @storage_dead(@16);
+        @fake_read(@15);
+        iter@18 := move (@15);
         goto bb5;
     }
 
     bb3: {
         s@3 := copy (s@3) + const (1 : usize);
-        @41 := ();
-        @9 := move (@41);
+        @37 := ();
+        @9 := move (@37);
         @storage_dead(@12);
         @storage_dead(@10);
         @storage_dead(@9);
-        @42 := ();
-        @8 := move (@42);
+        @38 := ();
+        @8 := move (@38);
         goto bb1;
     }
 
@@ -804,101 +800,101 @@ fn test_crate::nested_loops_enum(@1: usize, @2: usize) -> usize
     }
 
     bb5: {
-        @23 := &mut iter@19;
-        @22 := &two-phase-mut *(@23);
-        @21 := core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>[@TraitClause0]}#6::next<'_, usize>[core::marker::Sized<usize>, core::iter::range::{impl core::iter::range::Step for usize}#43](move (@22));
-        @storage_dead(@22);
-        @fake_read(@21);
-        @24 := @discriminant(@21);
-        switch move (@24) -> 0 : isize: bb6, 1 : isize: bb7, otherwise: bb8;
+        @22 := &mut iter@18;
+        @21 := &two-phase-mut *(@22);
+        @20 := core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>[@TraitClause0]}#6::next<'_, usize>[core::marker::Sized<usize>, core::iter::range::{impl core::iter::range::Step for usize}#43](move (@21));
+        @storage_dead(@21);
+        @fake_read(@20);
+        @23 := @discriminant(@20);
+        switch move (@23) -> 0 : isize: bb6, 1 : isize: bb7, otherwise: bb8;
     }
 
     bb6: {
-        @43 := ();
-        @15 := move (@43);
-        @storage_dead(@23);
-        @storage_dead(@21);
+        @39 := ();
+        @14 := move (@39);
+        @storage_dead(@22);
         @storage_dead(@20);
         @storage_dead(@19);
-        @storage_dead(@16);
+        @storage_dead(@18);
         @storage_dead(@15);
+        @storage_dead(@14);
         @0 := copy (s@3);
         @storage_dead(@3);
         return;
     }
 
     bb7: {
-        @28 := copy (step_in@2);
-        @27 := core::ops::range::Range { start: const (0 : usize), end: move (@28) };
-        @storage_dead(@28);
-        @26 := core::iter::traits::collect::{impl core::iter::traits::collect::IntoIterator for I}#1::into_iter<core::ops::range::Range<usize>[core::marker::Sized<usize>]>[core::marker::Sized<core::ops::range::Range<usize>[core::marker::Sized<usize>]>, core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>[@TraitClause0]}#6<usize>[core::marker::Sized<usize>, core::iter::range::{impl core::iter::range::Step for usize}#43]](move (@27));
-        @storage_dead(@27);
-        @fake_read(@26);
-        iter@29 := move (@26);
+        @26 := copy (step_in@2);
+        @25 := core::ops::range::Range { start: const (0 : usize), end: move (@26) };
+        @storage_dead(@26);
+        @24 := core::iter::traits::collect::{impl core::iter::traits::collect::IntoIterator for I}#1::into_iter<core::ops::range::Range<usize>[core::marker::Sized<usize>]>[core::marker::Sized<core::ops::range::Range<usize>[core::marker::Sized<usize>]>, core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>[@TraitClause0]}#6<usize>[core::marker::Sized<usize>, core::iter::range::{impl core::iter::range::Step for usize}#43]](move (@25));
+        @storage_dead(@25);
+        @fake_read(@24);
+        iter@27 := move (@24);
         goto bb9;
     }
 
     bb8: {
-        @fake_read(@21);
+        @fake_read(@20);
         undefined_behavior;
     }
 
     bb9: {
-        @33 := &mut iter@29;
-        @32 := &two-phase-mut *(@33);
-        @31 := core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>[@TraitClause0]}#6::next<'_, usize>[core::marker::Sized<usize>, core::iter::range::{impl core::iter::range::Step for usize}#43](move (@32));
-        @storage_dead(@32);
-        @fake_read(@31);
-        @34 := @discriminant(@31);
-        switch move (@34) -> 0 : isize: bb10, 1 : isize: bb11, otherwise: bb12;
+        @31 := &mut iter@27;
+        @30 := &two-phase-mut *(@31);
+        @29 := core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>[@TraitClause0]}#6::next<'_, usize>[core::marker::Sized<usize>, core::iter::range::{impl core::iter::range::Step for usize}#43](move (@30));
+        @storage_dead(@30);
+        @fake_read(@29);
+        @32 := @discriminant(@29);
+        switch move (@32) -> 0 : isize: bb10, 1 : isize: bb11, otherwise: bb12;
     }
 
     bb10: {
-        @44 := ();
-        @20 := move (@44);
-        @storage_dead(@33);
+        @40 := ();
+        @19 := move (@40);
         @storage_dead(@31);
-        @storage_dead(@30);
         @storage_dead(@29);
-        @storage_dead(@26);
-        @storage_dead(@23);
-        @storage_dead(@21);
+        @storage_dead(@28);
+        @storage_dead(@27);
+        @storage_dead(@24);
+        @storage_dead(@22);
         @storage_dead(@20);
-        @45 := ();
-        @8 := move (@45);
+        @storage_dead(@19);
+        @41 := ();
+        @8 := move (@41);
         goto bb5;
     }
 
     bb11: {
         s@3 := copy (s@3) + const (1 : usize);
-        @38 := copy (s@3);
-        @37 := move (@38) >= const (1 : usize);
-        if move (@37) -> bb13 else -> bb14;
+        @35 := copy (s@3);
+        @34 := move (@35) >= const (1 : usize);
+        if move (@34) -> bb13 else -> bb14;
     }
 
     bb12: {
-        @fake_read(@31);
+        @fake_read(@29);
         undefined_behavior;
     }
 
     bb13: {
-        @storage_dead(@38);
-        @46 := ();
-        @36 := move (@46);
-        @storage_dead(@37);
-        @storage_dead(@36);
-        @47 := ();
-        @30 := move (@47);
+        @storage_dead(@35);
+        @42 := ();
+        @33 := move (@42);
+        @storage_dead(@34);
         @storage_dead(@33);
+        @43 := ();
+        @28 := move (@43);
         @storage_dead(@31);
-        @storage_dead(@30);
-        @48 := ();
-        @8 := move (@48);
+        @storage_dead(@29);
+        @storage_dead(@28);
+        @44 := ();
+        @8 := move (@44);
         goto bb9;
     }
 
     bb14: {
-        @storage_dead(@38);
+        @storage_dead(@35);
         panic(core::panicking::panic);
     }
 }
