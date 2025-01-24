@@ -83,8 +83,8 @@ fn test_crate::sum<'_0>(@1: &'_0 (Slice<u32>)) -> u32
             drop @14
             // Increment `i`
             i@3 := copy (i@3) + const (1 : usize)
-            @24 := ()
-            @8 := move (@24)
+            @23 := ()
+            @8 := move (@23)
             // Before end of loop
             drop @9
             continue 0
@@ -95,8 +95,8 @@ fn test_crate::sum<'_0>(@1: &'_0 (Slice<u32>)) -> u32
     }
     drop @11
     drop @10
-    @23 := ()
-    @7 := move (@23)
+    @24 := ()
+    @7 := move (@24)
     drop @15
     drop @9
     drop @7

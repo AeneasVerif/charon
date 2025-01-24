@@ -746,19 +746,19 @@ fn test_crate::f2<'_0, '_1>(@1: &'_0 (Slice<u8>), @2: &'_1 mut (Slice<i16>)) -> 
                         drop @39
                         drop @40
                         sampled@3 := copy (sampled@3) + const (1 : usize)
-                        @50 := ()
-                        @34 := move (@50)
+                        @49 := ()
+                        @34 := move (@49)
                     }
                     else {
                         drop @38
-                        @49 := ()
-                        @34 := move (@49)
+                        @50 := ()
+                        @34 := move (@50)
                     }
                 }
                 else {
                     drop @36
-                    @49 := ()
-                    @34 := move (@49)
+                    @50 := ()
+                    @34 := move (@50)
                 }
                 drop @37
                 drop @35
@@ -780,19 +780,19 @@ fn test_crate::f2<'_0, '_1>(@1: &'_0 (Slice<u8>), @2: &'_1 mut (Slice<i16>)) -> 
                         drop @45
                         drop @46
                         sampled@3 := copy (sampled@3) + const (1 : usize)
-                        @53 := ()
-                        @10 := move (@53)
+                        @52 := ()
+                        @10 := move (@52)
                     }
                     else {
                         drop @44
-                        @52 := ()
-                        @10 := move (@52)
+                        @53 := ()
+                        @10 := move (@53)
                     }
                 }
                 else {
                     drop @42
-                    @52 := ()
-                    @10 := move (@52)
+                    @53 := ()
+                    @10 := move (@53)
                 }
                 drop @43
                 drop @41
