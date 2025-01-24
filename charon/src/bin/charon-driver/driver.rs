@@ -1,30 +1,28 @@
 use crate::translate::translate_crate_to_ullbc;
-use charon_lib::export;
-use charon_lib::options;
 use charon_lib::options::CliOpts;
+use charon_lib::transform::TransformCtx;
 use charon_lib::transform::{
     Pass, PrintCtxPass, FINAL_CLEANUP_PASSES, INITIAL_CLEANUP_PASSES, LLBC_PASSES, ULLBC_PASSES,
 };
+use charon_lib::{export, options};
 use rustc_driver::{Callbacks, Compilation};
 use rustc_interface::{interface::Compiler, Queries};
-use rustc_middle::ty::TyCtxt;
 use std::fmt;
 use std::ops::Deref;
-use std::panic::{self, AssertUnwindSafe};
 use std::path::PathBuf;
 
 /// The callbacks for Charon
 pub struct CharonCallbacks {
     pub options: options::CliOpts,
-    /// This is to be filled during the extraction
-    pub crate_data: Option<export::CrateData>,
     /// The root of the toolchain.
     pub sysroot: PathBuf,
+    /// This is to be filled during the extraction; it contains the translated crate.
+    transform_ctx: Option<TransformCtx>,
     pub error_count: usize,
 }
 
 pub enum CharonFailure {
-    RustcError(usize),
+    RustcError,
     Panic,
     Serialize,
 }
@@ -32,9 +30,7 @@ pub enum CharonFailure {
 impl fmt::Display for CharonFailure {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            CharonFailure::RustcError(error_count) => {
-                write!(f, "Compilation encountered {} errors", error_count)?
-            }
+            CharonFailure::RustcError => write!(f, "Code failed to compile")?,
             CharonFailure::Panic => write!(f, "Compilation panicked")?,
             CharonFailure::Serialize => write!(f, "Could not serialize output file")?,
         }
@@ -46,25 +42,35 @@ impl CharonCallbacks {
     pub fn new(options: options::CliOpts, sysroot: PathBuf) -> Self {
         Self {
             options,
-            crate_data: None,
             sysroot,
+            transform_ctx: None,
             error_count: 0,
         }
     }
 
     /// Run rustc with our custom callbacks. `args` is the arguments passed to `rustc`'s
     /// command-line.
-    pub fn run_compiler(&mut self, mut args: Vec<String>) -> Result<(), CharonFailure> {
+    pub fn run_compiler(
+        &mut self,
+        mut args: Vec<String>,
+    ) -> Result<export::CrateData, CharonFailure> {
         // Arguments list always start with the executable name. We put a silly value to ensure
         // it's not used for anything.
         args.insert(0, "__CHARON_MYSTERIOUS_FIRST_ARG__".to_string());
-        let mut this = AssertUnwindSafe(self);
-        panic::catch_unwind(move || {
-            let res = rustc_driver::RunCompiler::new(&args, *this).run();
-            res.map_err(|_| CharonFailure::RustcError(this.error_count))
+        rustc_driver::catch_fatal_errors(|| {
+            let res = rustc_driver::RunCompiler::new(&args, self).run();
+            res.map_err(|_| CharonFailure::RustcError)
         })
-        .map_err(|_| CharonFailure::Panic)??;
-        Ok(())
+        .map_err(|_| CharonFailure::RustcError)??;
+        // `ctx` is set by our callbacks when there is no fatal error.
+        let ctx = self
+            .transform_ctx
+            .as_mut()
+            .ok_or(CharonFailure::RustcError)?;
+
+        let crate_data = transform(ctx, &self.options);
+        self.error_count = ctx.errors.borrow().error_count;
+        Ok(crate_data)
     }
 }
 
@@ -111,8 +117,8 @@ impl Callbacks for CharonCallbacks {
             .swap(&(def_id_debug as fn(_, &mut fmt::Formatter<'_>) -> _));
 
         queries.global_ctxt().unwrap().get_mut().enter(|tcx| {
-            let crate_data = translate(tcx, self);
-            self.crate_data = Some(crate_data);
+            let ctx = translate_crate_to_ullbc::translate(&self.options, tcx, self.sysroot.clone());
+            self.transform_ctx = Some(ctx);
         });
         Compilation::Stop
     }
@@ -236,30 +242,17 @@ pub fn transformation_passes(options: &CliOpts) -> Vec<Pass> {
     passes
 }
 
-/// Translate a crate to LLBC (Low-Level Borrow Calculus).
-///
-/// This function is a callback function for the Rust compiler. The `tcx` parameter allows us to
-/// interact with compiler internals to explore the crates and translate relevant items.
-pub fn translate(tcx: TyCtxt, internal: &mut CharonCallbacks) -> export::CrateData {
-    trace!();
-    let options = &internal.options;
-
-    // Translate the contents of the crate.
-    let mut transform_ctx =
-        translate_crate_to_ullbc::translate(options, tcx, internal.sysroot.clone());
-
+/// Apply the transformation passes to a translated crate.
+pub fn transform(ctx: &mut TransformCtx, options: &CliOpts) -> export::CrateData {
     // The bulk of the translation is done, we no longer need to interact with rustc internals. We
     // run several passes that simplify the items and cleanup the bodies.
     for pass in transformation_passes(options) {
         trace!("# Starting pass {}", pass.name());
-        pass.run(&mut transform_ctx);
-        if transform_ctx.errors.borrow().has_errors() {
+        pass.run(ctx);
+        if ctx.errors.borrow().has_errors() {
             break;
         }
     }
 
-    // Update the error count
-    internal.error_count = transform_ctx.errors.borrow().error_count;
-
-    export::CrateData::new(&transform_ctx)
+    export::CrateData::new(&ctx)
 }

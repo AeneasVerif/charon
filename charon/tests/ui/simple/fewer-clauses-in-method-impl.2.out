@@ -7,7 +7,4 @@ error: Mismatched method generics:
    |     ^^^^^^^^^^^^^^^^^^^^^^^
    |
 
-thread 'rustc' panicked at src/ast/types_utils.rs:116:9:
-assertion failed: args.matches(&self.params)
-note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
-ERROR Compilation encountered 0 errors
+ERROR The extraction generated 1 errors

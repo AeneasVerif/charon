@@ -35,6 +35,7 @@ use charon_lib::logger;
 use charon_lib::options;
 use charon_lib::trace;
 use itertools::Itertools;
+use std::panic;
 
 fn main() {
     // Initialize the logger
@@ -242,45 +243,37 @@ fn main() {
 
     // Call the Rust compiler with our custom callback.
     let mut callback = CharonCallbacks::new(options, sysroot.into());
-    let mut res = callback.run_compiler(compiler_args);
+    let mut callback_ = panic::AssertUnwindSafe(&mut callback);
+    let res = panic::catch_unwind(move || callback_.run_compiler(compiler_args))
+        .map_err(|_| CharonFailure::Panic)
+        .and_then(|x| x);
     let CharonCallbacks {
         options,
-        crate_data,
         error_count,
         ..
     } = callback;
 
-    if !options.no_serialize {
-        // # Final step: generate the files.
-        if res.is_ok() || !options.error_on_warnings {
-            // `crate_data` is set by our callbacks when there is no fatal error.
-            if let Some(crate_data) = crate_data {
-                let dest_file = match options.dest_file.clone() {
-                    Some(f) => f,
-                    None => {
-                        let mut target_filename = options.dest_dir.clone().unwrap_or_default();
-                        let crate_name = &crate_data.translated.crate_name;
-                        let extension = if options.ullbc { "ullbc" } else { "llbc" };
-                        target_filename.push(format!("{crate_name}.{extension}"));
-                        target_filename
-                    }
-                };
-                trace!("Target file: {:?}", dest_file);
-                res = res.and(
-                    crate_data
-                        .serialize_to_file(&dest_file)
-                        .map_err(|()| CharonFailure::Serialize),
-                );
-            }
+    // # Final step: generate the files.
+    let res = match res {
+        Ok(_) if options.no_serialize => Ok(()),
+        Ok(crate_data) => {
+            let dest_file = match options.dest_file.clone() {
+                Some(f) => f,
+                None => {
+                    let mut target_filename = options.dest_dir.clone().unwrap_or_default();
+                    let crate_name = &crate_data.translated.crate_name;
+                    let extension = if options.ullbc { "ullbc" } else { "llbc" };
+                    target_filename.push(format!("{crate_name}.{extension}"));
+                    target_filename
+                }
+            };
+            trace!("Target file: {:?}", dest_file);
+            crate_data
+                .serialize_to_file(&dest_file)
+                .map_err(|()| CharonFailure::Serialize)
         }
-    }
-
-    if options.error_on_warnings && matches!(res, Err(CharonFailure::Panic)) {
-        // If we emitted any error, the call into rustc will panic. Hence we assume this is
-        // just a normal failure.
-        // TODO: emit errors ourselves to avoid this (#409).
-        res = Err(CharonFailure::RustcError(error_count));
-    }
+        Err(e) => Err(e),
+    };
 
     match res {
         Ok(()) if error_count == 0 => {}
