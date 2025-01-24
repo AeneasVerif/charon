@@ -812,6 +812,7 @@ fn test_crate::nested_loops_enum(@1: usize, @2: usize) -> usize
     bb6: {
         @39 := ();
         @14 := move (@39);
+        // Test comment
         @storage_dead(@22);
         @storage_dead(@20);
         @storage_dead(@19);
