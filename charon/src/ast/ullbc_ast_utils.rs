@@ -78,6 +78,22 @@ impl BlockData {
     /// Apply a transformer to all the statements, in a bottom-up manner.
     ///
     /// The transformer should:
+    /// - mutate the current statement in place
+    /// - return the sequence of statements to introduce before the current statement
+    pub fn transform<F: FnMut(&mut Statement) -> Vec<Statement>>(&mut self, mut f: F) {
+        self.transform_sequences(|slice| {
+            let new_statements = f(&mut slice[0]);
+            if new_statements.is_empty() {
+                vec![]
+            } else {
+                vec![(0, new_statements)]
+            }
+        });
+    }
+
+    /// Apply a transformer to all the statements, in a bottom-up manner.
+    ///
+    /// The transformer should:
     /// - mutate the current statements in place
     /// - return a list of `(i, statements)` where `statements` will be inserted before index `i`.
     pub fn transform_sequences<F>(&mut self, mut f: F)

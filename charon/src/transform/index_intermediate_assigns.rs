@@ -33,10 +33,10 @@
 //! *dest = move tmp;
 //! ```
 
-use crate::llbc_ast::*;
 use crate::transform::TransformCtx;
+use crate::ullbc_ast::*;
 
-use super::ctx::LlbcPass;
+use super::ctx::UllbcPass;
 
 fn contains_index_proj<T: BodyVisitable>(x: &T) -> bool {
     let mut contains_index = false;
@@ -63,28 +63,30 @@ impl Rvalue {
 
 pub struct Transform;
 
-impl LlbcPass for Transform {
+impl UllbcPass for Transform {
     fn transform_body(&self, _ctx: &mut TransformCtx, b: &mut ExprBody) {
-        b.body.transform(|st: &mut Statement| {
-            match &mut st.content {
-                // Introduce an intermediate statement if both the rhs and the lhs contain an
-                // "index" projection element (to avoid introducing too many intermediate
-                // assignments).
-                RawStatement::Assign(lhs, rhs)
-                    if lhs.contains_index_proj() && rhs.contains_index_proj() =>
-                {
-                    // Fresh local variable for the temporary assignment
-                    let tmp_var = b.locals.new_var(None, lhs.ty().clone());
-                    let tmp_rhs =
-                        std::mem::replace(rhs, Rvalue::Use(Operand::Move(tmp_var.clone())));
-                    // Introduce the intermediate let-binding
-                    vec![Statement::new(
-                        st.span,
-                        RawStatement::Assign(tmp_var, tmp_rhs),
-                    )]
+        for block in &mut b.body {
+            block.transform(|st: &mut Statement| {
+                match &mut st.content {
+                    // Introduce an intermediate statement if both the rhs and the lhs contain an
+                    // "index" projection element (to avoid introducing too many intermediate
+                    // assignments).
+                    RawStatement::Assign(lhs, rhs)
+                        if lhs.contains_index_proj() && rhs.contains_index_proj() =>
+                    {
+                        // Fresh local variable for the temporary assignment
+                        let tmp_var = b.locals.new_var(None, lhs.ty().clone());
+                        let tmp_rhs =
+                            std::mem::replace(rhs, Rvalue::Use(Operand::Move(tmp_var.clone())));
+                        // Introduce the intermediate let-binding
+                        vec![Statement::new(
+                            st.span,
+                            RawStatement::Assign(tmp_var, tmp_rhs),
+                        )]
+                    }
+                    _ => vec![],
                 }
-                _ => vec![],
-            }
-        });
+            });
+        }
     }
 }

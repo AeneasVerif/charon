@@ -101,15 +101,15 @@ pub static ULLBC_PASSES: &[Pass] = &[
     // # Micro-pass: `panic!()` expands to a new function definition each time. This pass cleans
     // those up.
     UnstructuredBody(&inline_local_panic_functions::Transform),
+    // # Micro-pass: introduce intermediate assignments in preparation of the
+    // [`index_to_function_calls`] pass.
+    UnstructuredBody(&index_intermediate_assigns::Transform),
 ];
 
 /// Body cleanup passes after control flow reconstruction.
 pub static LLBC_PASSES: &[Pass] = &[
     // # Go from ULLBC to LLBC (Low-Level Borrow Calculus) by reconstructing the control flow.
     NonBody(&ullbc_to_llbc::Transform),
-    // # Micro-pass: introduce intermediate assignments in preparation of the
-    // [`index_to_function_calls`] pass.
-    StructuredBody(&index_intermediate_assigns::Transform),
     // # Micro-pass: replace the arrays/slices index operations with function
     // calls.
     // (introduces: ArrayIndexShared, ArrayIndexMut, etc.)
