@@ -3,40 +3,37 @@
 //! of AENEAS, it means the return variable contains ⊥ upon returning.
 //! For this reason, when the function has return type unit, we insert
 //! an extra assignment just before returning.
-use crate::llbc_ast::*;
 use crate::transform::TransformCtx;
+use crate::ullbc_ast::*;
 
-use super::ctx::LlbcPass;
-
-fn transform_st(locals: &Locals, st: &mut Statement) -> Vec<Statement> {
-    if let RawStatement::Return = &mut st.content {
-        let ret_place = locals.return_place();
-        let unit_value = Rvalue::Aggregate(
-            AggregateKind::Adt(
-                TypeId::Tuple,
-                None,
-                None,
-                GenericArgs::empty(GenericsSource::Builtin),
-            ),
-            Vec::new(),
-        );
-        let assign_st = Statement::new(st.span, RawStatement::Assign(ret_place, unit_value));
-        vec![assign_st]
-    } else {
-        Vec::new()
-    }
-}
+use super::ctx::UllbcPass;
 
 pub struct Transform;
-impl LlbcPass for Transform {
-    fn transform_function(&self, ctx: &mut TransformCtx, decl: &mut FunDecl) {
+impl UllbcPass for Transform {
+    fn transform_function(&self, _ctx: &mut TransformCtx, decl: &mut FunDecl) {
         if decl.signature.output.is_unit() {
             if let Ok(body) = &mut decl.body {
-                self.transform_body(ctx, body.as_structured_mut().unwrap())
+                let body = body.as_unstructured_mut().unwrap();
+                for block in &mut body.body {
+                    if let RawTerminator::Return = block.terminator.content {
+                        let return_place = body.locals.return_place();
+                        let unit_value = Rvalue::Aggregate(
+                            AggregateKind::Adt(
+                                TypeId::Tuple,
+                                None,
+                                None,
+                                GenericArgs::empty(GenericsSource::Builtin),
+                            ),
+                            Vec::new(),
+                        );
+                        let assign_st = Statement::new(
+                            block.terminator.span,
+                            RawStatement::Assign(return_place, unit_value),
+                        );
+                        block.statements.push(assign_st)
+                    }
+                }
             }
         }
-    }
-    fn transform_body(&self, _ctx: &mut TransformCtx, body: &mut ExprBody) {
-        body.body.transform(|st| transform_st(&body.locals, st));
     }
 }

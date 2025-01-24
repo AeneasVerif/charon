@@ -108,6 +108,15 @@ pub static ULLBC_PASSES: &[Pass] = &[
     // calls.
     // (introduces: ArrayIndexShared, ArrayIndexMut, etc.)
     UnstructuredBody(&index_to_function_calls::Transform),
+    // # Micro-pass: add the missing assignments to the return value.
+    // When the function return type is unit, the generated MIR doesn't
+    // set the return value to `()`. This can be a concern: in the case
+    // of Aeneas, it means the return variable contains ⊥ upon returning.
+    // For this reason, when the function has return type unit, we insert
+    // an extra assignment just before returning.
+    // This also applies to globals (for checking or executing code before
+    // the main or at compile-time).
+    UnstructuredBody(&insert_assign_return_unit::Transform),
 ];
 
 /// Body cleanup passes after control flow reconstruction.
@@ -118,15 +127,6 @@ pub static LLBC_PASSES: &[Pass] = &[
     StructuredBody(&remove_read_discriminant::Transform),
     // Cleanup the cfg.
     StructuredBody(&prettify_cfg::Transform),
-    // # Micro-pass: add the missing assignments to the return value.
-    // When the function return type is unit, the generated MIR doesn't
-    // set the return value to `()`. This can be a concern: in the case
-    // of Aeneas, it means the return variable contains ⊥ upon returning.
-    // For this reason, when the function has return type unit, we insert
-    // an extra assignment just before returning.
-    // This also applies to globals (for checking or executing code before
-    // the main or at compile-time).
-    StructuredBody(&insert_assign_return_unit::Transform),
     // # Micro-pass: remove the drops of locals whose type is `Never` (`!`). This
     // is in preparation of the next transformation.
     StructuredBody(&remove_drop_never::Transform),
