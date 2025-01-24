@@ -59,4 +59,4 @@ warning[E9999]: Failed to compute associated type <Self as std::marker::Discrimi
 
 error: aborting due to 1 previous error; 2 warnings emitted
 
-ERROR Compilation encountered 3 errors
+ERROR Code failed to compile

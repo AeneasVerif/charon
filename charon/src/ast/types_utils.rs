@@ -113,7 +113,6 @@ impl<T> Binder<T> {
     where
         T: TyVisitable,
     {
-        assert!(args.matches(&self.params));
         self.skip_binder.substitute(args)
     }
 }
