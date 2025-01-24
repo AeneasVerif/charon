@@ -110,16 +110,21 @@ impl BlockData {
         F: FnMut(&mut [Statement]) -> Vec<(usize, Vec<Statement>)>,
     {
         let mut to_insert = vec![];
+        let mut final_len = self.statements.len();
         for i in (0..self.statements.len()).rev() {
             let new_to_insert = f(&mut self.statements[i..]);
-            to_insert.extend(new_to_insert.into_iter().map(|(j, stmts)| (i + j, stmts)));
+            to_insert.extend(new_to_insert.into_iter().map(|(j, stmts)| {
+                final_len += stmts.len();
+                (i + j, stmts)
+            }));
         }
         if !to_insert.is_empty() {
             to_insert.sort_by_key(|(i, _)| *i);
             // Make it so the first element is always at the end so we can pop it.
             to_insert.reverse();
             // Construct the merged list of statements.
-            for (i, stmt) in mem::take(&mut self.statements).into_iter().enumerate() {
+            let old_statements = mem::replace(&mut self.statements, Vec::with_capacity(final_len));
+            for (i, stmt) in old_statements.into_iter().enumerate() {
                 while let Some((j, _)) = to_insert.last()
                     && *j == i
                 {
