@@ -206,38 +206,44 @@ pub fn get_args_crate_index<T: Deref<Target = str>>(args: &[T]) -> Option<usize>
 
 /// Calculate the list of passes we will run on the crate before outputting it.
 pub fn transformation_passes(options: &CliOpts) -> Vec<Pass> {
-    let print_original_ullbc = PrintCtxPass::new(
+    let mut passes: Vec<Pass> = vec![];
+
+    passes.push(Pass::NonBody(PrintCtxPass::new(
         options.print_original_ullbc,
         format!("# ULLBC after translation from MIR"),
-    );
-    let print_ullbc = PrintCtxPass::new(options.print_ullbc, {
-        let next_phase = if options.ullbc {
-            "serialization"
-        } else {
-            "control-flow reconstruction"
-        };
-        format!("# Final ULLBC before {next_phase}")
-    });
-    let print_llbc = PrintCtxPass::new(
-        options.print_llbc,
-        format!("# Final LLBC before serialization"),
-    );
+    )));
 
-    let mut passes: Vec<Pass> = vec![];
-    passes.push(Pass::NonBody(print_original_ullbc));
     passes.extend(INITIAL_CLEANUP_PASSES);
     passes.extend(ULLBC_PASSES);
 
     if !options.ullbc {
-        passes.extend(LLBC_PASSES);
+        // If we're reconstructing control-flow, print the ullbc here.
+        passes.push(Pass::NonBody(PrintCtxPass::new(
+            options.print_ullbc,
+            format!("# Final ULLBC before control-flow reconstruction"),
+        )));
     }
 
-    passes.extend(SHARED_FINALIZING_PASSES);
-    if options.ullbc {
-        passes.push(Pass::NonBody(print_ullbc));
-    } else {
-        passes.push(Pass::NonBody(print_llbc));
+    if !options.ullbc {
+        passes.extend(LLBC_PASSES);
     }
+    passes.extend(SHARED_FINALIZING_PASSES);
+
+    if options.ullbc {
+        // If we're not reconstructing control-flow, print the ullbc after finalizing passes.
+        passes.push(Pass::NonBody(PrintCtxPass::new(
+            options.print_ullbc,
+            format!("# Final ULLBC before serialization"),
+        )));
+    } else {
+        passes.push(Pass::NonBody(PrintCtxPass::new(
+            options.print_llbc,
+            format!("# Final LLBC before serialization"),
+        )));
+    }
+
+    // Run the final passes after pretty-printing so that we get some output even if check_generics
+    // fails.
     passes.extend(FINAL_CLEANUP_PASSES);
     passes
 }
