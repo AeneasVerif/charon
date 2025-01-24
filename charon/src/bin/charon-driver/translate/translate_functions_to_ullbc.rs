@@ -1016,10 +1016,7 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
                 replace: _,
             } => {
                 let place = self.translate_place(span, place)?;
-                statements.push(Statement {
-                    span,
-                    content: RawStatement::Drop(place),
-                });
+                statements.push(Statement::new(span, RawStatement::Drop(place)));
                 let target = self.translate_basic_block_id(*target);
                 RawTerminator::Goto { target }
             }
@@ -1043,10 +1040,7 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
                     cond: self.translate_operand(span, cond)?,
                     expected: *expected,
                 };
-                statements.push(Statement {
-                    span,
-                    content: RawStatement::Assert(assert),
-                });
+                statements.push(Statement::new(span, RawStatement::Assert(assert)));
                 let target = self.translate_basic_block_id(*target);
                 RawTerminator::Goto { target }
             }
@@ -1197,10 +1191,7 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
             args,
             dest: lval,
         };
-        statements.push(Statement {
-            span,
-            content: RawStatement::Call(call),
-        });
+        statements.push(Statement::new(span, RawStatement::Call(call)));
         Ok(match next_block {
             Some(target) => RawTerminator::Goto { target },
             None => RawTerminator::Abort(AbortKind::UndefinedBehavior),
@@ -1330,28 +1321,23 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
                 hax::CtorOf::Struct => None,
                 hax::CtorOf::Variant => Some(VariantId::from(*variant_id)),
             };
-            let statement = Statement {
-                span,
-                content: RawStatement::Assign(
-                    locals.return_place(),
-                    Rvalue::Aggregate(
-                        AggregateKind::Adt(
-                            TypeId::Adt(adt_decl_id),
-                            variant,
-                            None,
-                            sig.generics
-                                .identity_args(GenericsSource::item(adt_decl_id)),
-                        ),
-                        args,
+            let st_kind = RawStatement::Assign(
+                locals.return_place(),
+                Rvalue::Aggregate(
+                    AggregateKind::Adt(
+                        TypeId::Adt(adt_decl_id),
+                        variant,
+                        None,
+                        sig.generics
+                            .identity_args(GenericsSource::item(adt_decl_id)),
                     ),
+                    args,
                 ),
-            };
+            );
+            let statement = Statement::new(span, st_kind);
             let block = BlockData {
                 statements: vec![statement],
-                terminator: Terminator {
-                    span,
-                    content: RawTerminator::Return,
-                },
+                terminator: Terminator::new(span, RawTerminator::Return),
             };
             let body = Body::Unstructured(GExprBody {
                 span,

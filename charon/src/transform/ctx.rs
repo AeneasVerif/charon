@@ -204,12 +204,6 @@ impl<'ctx> TransformCtx {
             }
         }
     }
-    pub(crate) fn for_each_structured_body(
-        &mut self,
-        mut f: impl FnMut(&mut Self, &mut llbc_ast::ExprBody),
-    ) {
-        self.for_each_body(|ctx, body| f(ctx, body.as_structured_mut().unwrap()))
-    }
 
     /// Mutably iterate over the function declarations.
     /// Warning: each inspected fundecl becomes inaccessible from `ctx` during the course of this function.

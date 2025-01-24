@@ -47,13 +47,13 @@ impl UllbcPass for Transform {
                         RawTerminator::Goto { target: nbid },
                     );
                     let (discr, _) = content.as_switch().unwrap();
-                    block.statements.push(Statement {
-                        span: block.terminator.span,
-                        content: RawStatement::Assert(Assert {
+                    block.statements.push(Statement::new(
+                        block.terminator.span,
+                        RawStatement::Assert(Assert {
                             cond: discr.clone(),
                             expected,
                         }),
-                    });
+                    ));
                 }
                 _ => (),
             }

@@ -76,10 +76,10 @@ impl Transform {
                                 let name = locals[var_id].name.clone();
                                 let ty = generics.types[0].clone();
                                 let var = locals.new_var(name, ty);
-                                let st = Statement {
-                                    span: seq[real_i].span,
-                                    content: RawStatement::Assign(var.clone(), val),
-                                };
+                                let st = Statement::new(
+                                    seq[real_i].span,
+                                    RawStatement::Assign(var.clone(), val),
+                                );
                                 to_insert.push((real_i, vec![st]));
                                 Operand::Move(var)
                             }
@@ -106,7 +106,7 @@ impl Transform {
 impl UllbcPass for Transform {
     fn transform_body(&self, ctx: &mut TransformCtx, b: &mut ExprBody) {
         for block in &mut b.body {
-            block.transform_sequences(&mut |seq| Transform::update_statements(&mut b.locals, seq));
+            block.transform_sequences(|seq| Transform::update_statements(&mut b.locals, seq));
         }
 
         // Make sure we got all the `ShallowInitBox`es.

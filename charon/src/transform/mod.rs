@@ -98,26 +98,16 @@ pub static ULLBC_PASSES: &[Pass] = &[
     // # Micro-pass: filter the "dangling" blocks. Those might have been introduced by,
     // for instance, [`reconstruct_asserts`].
     UnstructuredBody(&filter_unreachable_blocks::Transform),
-];
-
-/// Body cleanup passes after control flow reconstruction.
-pub static LLBC_PASSES: &[Pass] = &[
-    // # Go from ULLBC to LLBC (Low-Level Borrow Calculus) by reconstructing the control flow.
-    NonBody(&ullbc_to_llbc::Transform),
     // # Micro-pass: `panic!()` expands to a new function definition each time. This pass cleans
     // those up.
-    StructuredBody(&inline_local_panic_functions::Transform),
+    UnstructuredBody(&inline_local_panic_functions::Transform),
     // # Micro-pass: introduce intermediate assignments in preparation of the
     // [`index_to_function_calls`] pass.
-    StructuredBody(&index_intermediate_assigns::Transform),
+    UnstructuredBody(&index_intermediate_assigns::Transform),
     // # Micro-pass: replace the arrays/slices index operations with function
     // calls.
     // (introduces: ArrayIndexShared, ArrayIndexMut, etc.)
-    StructuredBody(&index_to_function_calls::Transform),
-    // # Micro-pass: Remove the discriminant reads (merge them with the switches)
-    StructuredBody(&remove_read_discriminant::Transform),
-    // Cleanup the cfg.
-    StructuredBody(&prettify_cfg::Transform),
+    UnstructuredBody(&index_to_function_calls::Transform),
     // # Micro-pass: add the missing assignments to the return value.
     // When the function return type is unit, the generated MIR doesn't
     // set the return value to `()`. This can be a concern: in the case
@@ -126,18 +116,32 @@ pub static LLBC_PASSES: &[Pass] = &[
     // an extra assignment just before returning.
     // This also applies to globals (for checking or executing code before
     // the main or at compile-time).
-    StructuredBody(&insert_assign_return_unit::Transform),
+    UnstructuredBody(&insert_assign_return_unit::Transform),
     // # Micro-pass: remove the drops of locals whose type is `Never` (`!`). This
     // is in preparation of the next transformation.
-    StructuredBody(&remove_drop_never::Transform),
+    UnstructuredBody(&remove_drop_never::Transform),
+];
+
+/// Body cleanup passes after control flow reconstruction.
+pub static LLBC_PASSES: &[Pass] = &[
+    // # Go from ULLBC to LLBC (Low-Level Borrow Calculus) by reconstructing the control flow.
+    NonBody(&ullbc_to_llbc::Transform),
+    // # Micro-pass: Remove the discriminant reads (merge them with the switches)
+    StructuredBody(&remove_read_discriminant::Transform),
+    // Cleanup the cfg.
+    StructuredBody(&prettify_cfg::Transform),
+];
+
+/// Cleanup passes useful for both llbc and ullbc.
+pub static SHARED_FINALIZING_PASSES: &[Pass] = &[
     // # Micro-pass: remove the locals which are never used.
-    StructuredBody(&remove_unused_locals::Transform),
+    NonBody(&remove_unused_locals::Transform),
     // # Micro-pass: remove the useless `StatementKind::Nop`s.
-    StructuredBody(&remove_nops::Transform),
+    NonBody(&remove_nops::Transform),
     // # Micro-pass: take all the comments found in the original body and assign them to
     // statements. This must be last after all the statement-affecting passes to avoid losing
     // comments.
-    StructuredBody(&recover_body_comments::Transform),
+    NonBody(&recover_body_comments::Transform),
     // # Reorder the graph of dependencies and compute the strictly connex components to:
     // - compute the order in which to extract the definitions
     // - find the recursive definitions
@@ -145,7 +149,8 @@ pub static LLBC_PASSES: &[Pass] = &[
     NonBody(&reorder_decls::Transform),
 ];
 
-/// Final passes to run at the end.
+/// Final passes to run at the end, after pretty-printing the llbc if applicable. These are only
+/// split from the above list to get test outputs even when generics fail to match.
 pub static FINAL_CLEANUP_PASSES: &[Pass] = &[
     // Check that all supplied generic types match the corresponding generic parameters.
     NonBody(&check_generics::Check("after transformations")),

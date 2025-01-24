@@ -45,6 +45,10 @@ pub enum RawStatement {
 pub struct Statement {
     pub span: Span,
     pub content: RawStatement,
+    /// Comments that precede this statement.
+    // This is filled in a late pass after all the control-flow manipulation.
+    #[drive(skip)]
+    pub comments_before: Vec<String>,
 }
 
 #[derive(
@@ -88,6 +92,10 @@ pub enum RawTerminator {
 pub struct Terminator {
     pub span: Span,
     pub content: RawTerminator,
+    /// Comments that precede this terminator.
+    // This is filled in a late pass after all the control-flow manipulation.
+    #[drive(skip)]
+    pub comments_before: Vec<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, Drive, DriveMut)]

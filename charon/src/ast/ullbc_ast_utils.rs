@@ -24,13 +24,21 @@ impl SwitchTargets {
 
 impl Statement {
     pub fn new(span: Span, content: RawStatement) -> Self {
-        Statement { span, content }
+        Statement {
+            span,
+            content,
+            comments_before: vec![],
+        }
     }
 }
 
 impl Terminator {
     pub fn new(span: Span, content: RawTerminator) -> Self {
-        Terminator { span, content }
+        Terminator {
+            span,
+            content,
+            comments_before: vec![],
+        }
     }
 }
 
@@ -50,7 +58,7 @@ impl BlockData {
     /// See [body_transform_operands]
     pub fn transform_operands<F: FnMut(&Span, &mut Vec<Statement>, &mut Operand)>(
         mut self,
-        f: &mut F,
+        mut f: F,
     ) -> Self {
         // The new vector of statements
         let mut nst = vec![];
@@ -78,9 +86,25 @@ impl BlockData {
     /// Apply a transformer to all the statements, in a bottom-up manner.
     ///
     /// The transformer should:
+    /// - mutate the current statement in place
+    /// - return the sequence of statements to introduce before the current statement
+    pub fn transform<F: FnMut(&mut Statement) -> Vec<Statement>>(&mut self, mut f: F) {
+        self.transform_sequences(|slice| {
+            let new_statements = f(&mut slice[0]);
+            if new_statements.is_empty() {
+                vec![]
+            } else {
+                vec![(0, new_statements)]
+            }
+        });
+    }
+
+    /// Apply a transformer to all the statements, in a bottom-up manner.
+    ///
+    /// The transformer should:
     /// - mutate the current statements in place
     /// - return a list of `(i, statements)` where `statements` will be inserted before index `i`.
-    pub fn transform_sequences<F>(&mut self, f: &mut F)
+    pub fn transform_sequences<F>(&mut self, mut f: F)
     where
         F: FnMut(&mut [Statement]) -> Vec<(usize, Vec<Statement>)>,
     {
@@ -99,17 +123,17 @@ impl BlockData {
 }
 
 impl ExprBody {
-    pub fn transform_sequences<F>(&mut self, f: &mut F)
+    pub fn transform_sequences<F>(&mut self, mut f: F)
     where
         F: FnMut(&mut Locals, &mut [Statement]) -> Vec<(usize, Vec<Statement>)>,
     {
         for block in &mut self.body {
-            block.transform_sequences(&mut |seq| f(&mut self.locals, seq));
+            block.transform_sequences(|seq| f(&mut self.locals, seq));
         }
     }
 
     /// Apply a function to all the statements, in a bottom-up manner.
-    pub fn visit_statements<F: FnMut(&mut Statement)>(&mut self, f: &mut F) {
+    pub fn visit_statements<F: FnMut(&mut Statement)>(&mut self, mut f: F) {
         for block in self.body.iter_mut().rev() {
             for st in block.statements.iter_mut().rev() {
                 f(st);
@@ -128,9 +152,9 @@ impl ExprBody {
 /// push statements to the vector it receives as input.
 pub fn body_transform_operands<F: FnMut(&Span, &mut Vec<Statement>, &mut Operand)>(
     blocks: &mut Vector<BlockId, BlockData>,
-    f: &mut F,
+    mut f: F,
 ) {
     for block in blocks.iter_mut() {
-        take(block, |b| b.transform_operands(f));
+        take(block, |b| b.transform_operands(&mut f));
     }
 }
