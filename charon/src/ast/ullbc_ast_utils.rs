@@ -24,13 +24,21 @@ impl SwitchTargets {
 
 impl Statement {
     pub fn new(span: Span, content: RawStatement) -> Self {
-        Statement { span, content }
+        Statement {
+            span,
+            content,
+            comments_before: vec![],
+        }
     }
 }
 
 impl Terminator {
     pub fn new(span: Span, content: RawTerminator) -> Self {
-        Terminator { span, content }
+        Terminator {
+            span,
+            content,
+            comments_before: vec![],
+        }
     }
 }
 

@@ -56,10 +56,18 @@ and statement_of_json (ctx : of_json_ctx) (js : json) :
     (statement, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
-    | `Assoc [ ("span", span); ("content", content) ] ->
+    | `Assoc
+        [
+          ("span", span);
+          ("content", content);
+          ("comments_before", comments_before);
+        ] ->
         let* span = span_of_json ctx span in
         let* content = raw_statement_of_json ctx content in
-        Ok ({ span; content } : statement)
+        let* comments_before =
+          list_of_json string_of_json ctx comments_before
+        in
+        Ok ({ span; content; comments_before } : statement)
     | _ -> Error "")
 
 and switch_of_json (ctx : of_json_ctx) (js : json) : (switch, string) result =
@@ -102,10 +110,18 @@ and terminator_of_json (ctx : of_json_ctx) (js : json) :
     (terminator, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
-    | `Assoc [ ("span", span); ("content", content) ] ->
+    | `Assoc
+        [
+          ("span", span);
+          ("content", content);
+          ("comments_before", comments_before);
+        ] ->
         let* span = span_of_json ctx span in
         let* content = raw_terminator_of_json ctx content in
-        Ok ({ span; content } : terminator)
+        let* comments_before =
+          list_of_json string_of_json ctx comments_before
+        in
+        Ok ({ span; content; comments_before } : terminator)
     | _ -> Error "")
 
 and block_of_json (ctx : of_json_ctx) (js : json) : (block, string) result =

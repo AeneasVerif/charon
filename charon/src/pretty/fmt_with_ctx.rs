@@ -111,17 +111,20 @@ impl<C: AstFormatter> FmtWithCtx<C> for llbc::Block {
     }
 }
 
-impl<C: AstFormatter> FmtWithCtx<C> for BlockData {
+impl<C: AstFormatter> FmtWithCtx<C> for ullbc::BlockData {
     fn fmt_with_ctx_and_indent(&self, tab: &str, ctx: &C) -> String {
         let mut out: Vec<String> = Vec::new();
 
         // Format the statements
         for statement in &self.statements {
-            out.push(format!("{}{};\n", tab, statement.fmt_with_ctx(ctx)).to_string());
+            out.push(format!("{};\n", statement.fmt_with_ctx_and_indent(tab, ctx)).to_string());
         }
 
         // Format the terminator
-        out.push(format!("{}{};", tab, self.terminator.fmt_with_ctx(ctx)));
+        out.push(format!(
+            "{};",
+            self.terminator.fmt_with_ctx_and_indent(tab, ctx)
+        ));
 
         // Join the strings
         out.join("")
@@ -958,30 +961,50 @@ impl<C: AstFormatter> FmtWithCtx<C> for Rvalue {
 
 impl<C: AstFormatter> FmtWithCtx<C> for ullbc::Statement {
     fn fmt_with_ctx(&self, ctx: &C) -> String {
+        // By default use a tab.
+        self.fmt_with_ctx_and_indent(TAB_INCR, ctx)
+    }
+
+    fn fmt_with_ctx_and_indent(&self, tab: &str, ctx: &C) -> String {
         use ullbc::RawStatement;
-        match &self.content {
-            RawStatement::Assign(place, rvalue) => format!(
-                "{} := {}",
+        let mut out = String::new();
+        for line in &self.comments_before {
+            let _ = writeln!(&mut out, "{tab}// {line}");
+        }
+        let _ = match &self.content {
+            RawStatement::Assign(place, rvalue) => write!(
+                &mut out,
+                "{tab}{} := {}",
                 place.fmt_with_ctx(ctx),
                 rvalue.fmt_with_ctx(ctx),
             ),
             RawStatement::Call(call) => {
                 let (call_s, _) = fmt_call(ctx, call);
-                format!("{} := {call_s}", call.dest.fmt_with_ctx(ctx))
+                write!(&mut out, "{tab}{} := {call_s}", call.dest.fmt_with_ctx(ctx))
             }
-            RawStatement::FakeRead(place) => format!("@fake_read({})", place.fmt_with_ctx(ctx)),
-            RawStatement::SetDiscriminant(place, variant_id) => format!(
-                "@discriminant({}) := {}",
+            RawStatement::FakeRead(place) => {
+                write!(&mut out, "{tab}@fake_read({})", place.fmt_with_ctx(ctx))
+            }
+            RawStatement::SetDiscriminant(place, variant_id) => write!(
+                &mut out,
+                "{tab}@discriminant({}) := {}",
                 place.fmt_with_ctx(ctx),
                 variant_id
             ),
-            RawStatement::StorageDead(vid) => format!("@storage_dead({})", vid.to_pretty_string()),
-            RawStatement::Deinit(place) => format!("@deinit({})", place.fmt_with_ctx(ctx)),
-            RawStatement::Drop(place) => format!("drop {}", place.fmt_with_ctx(ctx)),
-            RawStatement::Assert(assert) => format!("{}", assert.fmt_with_ctx(ctx)),
-            RawStatement::Nop => format!("nop"),
-            RawStatement::Error(s) => format!("@Error({})", s),
-        }
+            RawStatement::StorageDead(vid) => {
+                write!(&mut out, "{tab}@storage_dead({})", vid.to_pretty_string())
+            }
+            RawStatement::Deinit(place) => {
+                write!(&mut out, "{tab}@deinit({})", place.fmt_with_ctx(ctx))
+            }
+            RawStatement::Drop(place) => {
+                write!(&mut out, "{tab}drop {}", place.fmt_with_ctx(ctx))
+            }
+            RawStatement::Assert(assert) => write!(&mut out, "{tab}{}", assert.fmt_with_ctx(ctx)),
+            RawStatement::Nop => write!(&mut out, "{tab}nop"),
+            RawStatement::Error(s) => write!(&mut out, "{tab}@Error({})", s),
+        };
+        out
     }
 }
 
@@ -1116,11 +1139,21 @@ impl<C: AstFormatter> FmtWithCtx<C> for llbc::Statement {
 
 impl<C: AstFormatter> FmtWithCtx<C> for Terminator {
     fn fmt_with_ctx(&self, ctx: &C) -> String {
-        match &self.content {
-            RawTerminator::Goto { target } => format!("goto bb{target}"),
+        // By default use a tab.
+        self.fmt_with_ctx_and_indent(TAB_INCR, ctx)
+    }
+
+    fn fmt_with_ctx_and_indent(&self, tab: &str, ctx: &C) -> String {
+        let mut out = String::new();
+        for line in &self.comments_before {
+            let _ = writeln!(&mut out, "{tab}// {line}");
+        }
+        let _ = match &self.content {
+            RawTerminator::Goto { target } => write!(&mut out, "{tab}goto bb{target}"),
             RawTerminator::Switch { discr, targets } => match targets {
-                SwitchTargets::If(true_block, false_block) => format!(
-                    "if {} -> bb{} else -> bb{}",
+                SwitchTargets::If(true_block, false_block) => write!(
+                    &mut out,
+                    "{tab}if {} -> bb{} else -> bb{}",
                     discr.fmt_with_ctx(ctx),
                     true_block,
                     false_block
@@ -1133,12 +1166,18 @@ impl<C: AstFormatter> FmtWithCtx<C> for Terminator {
                     maps.push(format!("otherwise: bb{otherwise}"));
                     let maps = maps.join(", ");
 
-                    format!("switch {} -> {}", discr.fmt_with_ctx(ctx), maps)
+                    write!(
+                        &mut out,
+                        "{tab}switch {} -> {}",
+                        discr.fmt_with_ctx(ctx),
+                        maps
+                    )
                 }
             },
-            RawTerminator::Abort(kind) => kind.fmt_with_ctx(ctx),
-            RawTerminator::Return => "return".to_string(),
-        }
+            RawTerminator::Abort(kind) => write!(&mut out, "{tab}{}", kind.fmt_with_ctx(ctx)),
+            RawTerminator::Return => write!(&mut out, "{tab}return"),
+        };
+        out
     }
 }
 

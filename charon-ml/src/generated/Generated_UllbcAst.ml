@@ -26,7 +26,11 @@ and raw_statement =
        *)
   | Nop  (** Does nothing. Useful for passes. *)
 
-and statement = { span : span; content : raw_statement }
+and statement = {
+  span : span;
+  content : raw_statement;
+  comments_before : string list;  (** Comments that precede this statement. *)
+}
 
 and switch =
   | If of block_id * block_id  (** Gives the `if` block and the `else` block *)
@@ -72,7 +76,11 @@ and raw_terminator =
   | Abort of abort_kind  (** Handles panics and impossible cases. *)
   | Return
 
-and terminator = { span : span; content : raw_terminator }
+and terminator = {
+  span : span;
+  content : raw_terminator;
+  comments_before : string list;  (** Comments that precede this terminator. *)
+}
 
 and block = { statements : statement list; terminator : terminator }
 [@@deriving
