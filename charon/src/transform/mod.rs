@@ -117,6 +117,9 @@ pub static ULLBC_PASSES: &[Pass] = &[
     // This also applies to globals (for checking or executing code before
     // the main or at compile-time).
     UnstructuredBody(&insert_assign_return_unit::Transform),
+    // # Micro-pass: remove the drops of locals whose type is `Never` (`!`). This
+    // is in preparation of the next transformation.
+    UnstructuredBody(&remove_drop_never::Transform),
 ];
 
 /// Body cleanup passes after control flow reconstruction.
@@ -127,9 +130,6 @@ pub static LLBC_PASSES: &[Pass] = &[
     StructuredBody(&remove_read_discriminant::Transform),
     // Cleanup the cfg.
     StructuredBody(&prettify_cfg::Transform),
-    // # Micro-pass: remove the drops of locals whose type is `Never` (`!`). This
-    // is in preparation of the next transformation.
-    StructuredBody(&remove_drop_never::Transform),
     // # Micro-pass: remove the locals which are never used.
     StructuredBody(&remove_unused_locals::Transform),
     // # Micro-pass: remove the useless `StatementKind::Nop`s.
