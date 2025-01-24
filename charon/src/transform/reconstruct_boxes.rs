@@ -106,7 +106,7 @@ impl Transform {
 impl UllbcPass for Transform {
     fn transform_body(&self, ctx: &mut TransformCtx, b: &mut ExprBody) {
         for block in &mut b.body {
-            block.transform_sequences(&mut |seq| Transform::update_statements(&mut b.locals, seq));
+            block.transform_sequences(|seq| Transform::update_statements(&mut b.locals, seq));
         }
 
         // Make sure we got all the `ShallowInitBox`es.

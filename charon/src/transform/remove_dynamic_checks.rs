@@ -192,7 +192,7 @@ pub struct Transform;
 impl UllbcPass for Transform {
     fn transform_body(&self, ctx: &mut TransformCtx, b: &mut ExprBody) {
         for block in b.body.iter_mut() {
-            block.transform_sequences(&mut |seq| {
+            block.transform_sequences(|seq| {
                 remove_dynamic_checks(ctx, seq);
                 Vec::new()
             });

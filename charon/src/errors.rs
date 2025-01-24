@@ -290,7 +290,7 @@ impl ErrorCtx {
         // Use `Dijkstra's` algorithm to find the local items reachable from the current non-local
         // item.
         let graph = &self.external_dep_graph;
-        let reachable = dijkstra(&graph.dgraph, DepNode::External(id), None, &mut |_| 1);
+        let reachable = dijkstra(&graph.dgraph, DepNode::External(id), None, |_| 1);
         trace!("id: {:?}\nreachable:\n{:?}", id, reachable);
 
         // Collect reachable local spans.
