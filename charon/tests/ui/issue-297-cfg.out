@@ -22,17 +22,17 @@ fn test_crate::f1<'_0>(@1: &'_0 (Slice<u8>)) -> usize
     sampled@2 := const (0 : usize)
     @fake_read(sampled@2)
     @6 := const (0 : usize)
-    @14 := &*(a@1)
-    @15 := @SliceIndexShared<'_, u8>(move (@14), copy (@6))
-    @5 := copy (*(@15))
+    @12 := &*(a@1)
+    @13 := @SliceIndexShared<'_, u8>(move (@12), copy (@6))
+    @5 := copy (*(@13))
     @4 := move (@5) < const (42 : u8)
     if move (@4) {
         drop @6
         drop @5
         @9 := const (1 : usize)
-        @12 := &*(a@1)
-        @13 := @SliceIndexShared<'_, u8>(move (@12), copy (@9))
-        @8 := copy (*(@13))
+        @14 := &*(a@1)
+        @15 := @SliceIndexShared<'_, u8>(move (@14), copy (@9))
+        @8 := copy (*(@15))
         @7 := move (@8) < const (16 : u8)
         if move (@7) {
             drop @9
@@ -653,16 +653,16 @@ fn test_crate::f2<'_0, '_1>(@1: &'_0 (Slice<u8>), @2: &'_1 mut (Slice<i16>)) -> 
     let @52: (); // anonymous local
     let @53: (); // anonymous local
     let @54: (); // anonymous local
-    let @55: &'_ mut (Slice<i16>); // anonymous local
-    let @56: &'_ mut (i16); // anonymous local
-    let @57: &'_ mut (Slice<i16>); // anonymous local
-    let @58: &'_ mut (i16); // anonymous local
+    let @55: &'_ (Slice<u8>); // anonymous local
+    let @56: &'_ (u8); // anonymous local
+    let @57: &'_ (Slice<u8>); // anonymous local
+    let @58: &'_ (u8); // anonymous local
     let @59: &'_ (Slice<u8>); // anonymous local
     let @60: &'_ (u8); // anonymous local
-    let @61: &'_ (Slice<u8>); // anonymous local
-    let @62: &'_ (u8); // anonymous local
-    let @63: &'_ (Slice<u8>); // anonymous local
-    let @64: &'_ (u8); // anonymous local
+    let @61: &'_ mut (Slice<i16>); // anonymous local
+    let @62: &'_ mut (i16); // anonymous local
+    let @63: &'_ mut (Slice<i16>); // anonymous local
+    let @64: &'_ mut (i16); // anonymous local
 
     sampled@3 := const (0 : usize)
     @fake_read(sampled@3)
@@ -686,25 +686,25 @@ fn test_crate::f2<'_0, '_1>(@1: &'_0 (Slice<u8>), @2: &'_1 mut (Slice<i16>)) -> 
             1 => {
                 bytes@14 := copy ((@11 as variant @1).0)
                 @17 := const (0 : usize)
-                @63 := &*(bytes@14)
-                @64 := @SliceIndexShared<'_, u8>(move (@63), copy (@17))
-                @16 := copy (*(@64))
+                @59 := &*(bytes@14)
+                @60 := @SliceIndexShared<'_, u8>(move (@59), copy (@17))
+                @16 := copy (*(@60))
                 b1@15 := cast<u8, i16>(move (@16))
                 drop @16
                 @fake_read(b1@15)
                 drop @17
                 @20 := const (1 : usize)
-                @61 := &*(bytes@14)
-                @62 := @SliceIndexShared<'_, u8>(move (@61), copy (@20))
-                @19 := copy (*(@62))
+                @57 := &*(bytes@14)
+                @58 := @SliceIndexShared<'_, u8>(move (@57), copy (@20))
+                @19 := copy (*(@58))
                 b2@18 := cast<u8, i16>(move (@19))
                 drop @19
                 @fake_read(b2@18)
                 drop @20
                 @23 := const (2 : usize)
-                @59 := &*(bytes@14)
-                @60 := @SliceIndexShared<'_, u8>(move (@59), copy (@23))
-                @22 := copy (*(@60))
+                @55 := &*(bytes@14)
+                @56 := @SliceIndexShared<'_, u8>(move (@55), copy (@23))
+                @22 := copy (*(@56))
                 b3@21 := cast<u8, i16>(move (@22))
                 drop @22
                 @fake_read(b3@21)
@@ -740,9 +740,9 @@ fn test_crate::f2<'_0, '_1>(@1: &'_0 (Slice<u8>), @2: &'_1 mut (Slice<i16>)) -> 
                         drop @38
                         @39 := copy (d1@24)
                         @40 := copy (sampled@3)
-                        @55 := &mut *(result@2)
-                        @56 := @SliceIndexMut<'_, i16>(move (@55), copy (@40))
-                        *(@56) := move (@39)
+                        @61 := &mut *(result@2)
+                        @62 := @SliceIndexMut<'_, i16>(move (@61), copy (@40))
+                        *(@62) := move (@39)
                         drop @39
                         drop @40
                         sampled@3 := copy (sampled@3) + const (1 : usize)
@@ -774,9 +774,9 @@ fn test_crate::f2<'_0, '_1>(@1: &'_0 (Slice<u8>), @2: &'_1 mut (Slice<i16>)) -> 
                         drop @44
                         @45 := copy (d2@29)
                         @46 := copy (sampled@3)
-                        @57 := &mut *(result@2)
-                        @58 := @SliceIndexMut<'_, i16>(move (@57), copy (@46))
-                        *(@58) := move (@45)
+                        @63 := &mut *(result@2)
+                        @64 := @SliceIndexMut<'_, i16>(move (@63), copy (@46))
+                        *(@64) := move (@45)
                         drop @45
                         drop @46
                         sampled@3 := copy (sampled@3) + const (1 : usize)

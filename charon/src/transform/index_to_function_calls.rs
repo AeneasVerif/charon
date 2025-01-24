@@ -1,27 +1,26 @@
 //! Desugar array/slice index operations to function calls.
-use crate::llbc_ast::*;
 use crate::transform::TransformCtx;
+use crate::ullbc_ast::*;
 use derive_generic_visitor::*;
 
-use super::ctx::LlbcPass;
+use super::ctx::UllbcPass;
 
-/// Visitor to transform the operands by introducing intermediate let
-/// statements.
+/// We replace some place constructors with function calls. To do that, we explore all the places
+/// in a body and deconstruct a given place access into intermediate assignments.
 ///
-/// We explore the statements without diving into substatements, and in particular explore
-/// the places and operands. Places always appear as destinations we are writing to.
-/// While we explore the places/operands present in a statement, We temporarily
-/// store the new statements inside the visitor. Once we've finished exploring
-/// the statement, we insert those before the statement.
+/// We accumulate the new assignments as statements in the visitor, and at the end we insert these
+/// statements before the one that was just explored.
 #[derive(Visitor)]
 struct IndexVisitor<'a> {
     locals: &'a mut Locals,
+    /// Statements to prepend to the statement currently being explored.
     statements: Vec<Statement>,
-    // When we encounter a place, we remember when a given place is accessed mutably in this
-    // stack. Unfortunately this requires us to be very careful to catch all the cases where we
-    // see places.
+    // When we visit a place, we need to know if it is being accessed mutably or not. Whenever we
+    // visit something that contains a place we push the relevant mutability on this stack.
+    // Unfortunately this requires us to be very careful to catch all the cases where we see
+    // places.
     place_mutability_stack: Vec<bool>,
-    // Span information of the statement
+    // Span of the statement.
     span: Span,
 }
 
@@ -171,11 +170,6 @@ impl<'a> IndexVisitor<'a> {
 
 /// The visitor methods.
 impl VisitBodyMut for IndexVisitor<'_> {
-    fn visit_llbc_block(&mut self, _: &mut Block) -> ControlFlow<Infallible> {
-        // Do not recurse; we only explore one statement.
-        Continue(())
-    }
-
     /// We explore places from the inside-out.
     fn exit_place(&mut self, place: &mut Place) {
         // We have intercepted every traversal that would reach a place and pushed the correct
@@ -283,32 +277,49 @@ pub struct Transform;
 ///   tmp1 : &mut T = ArrayIndexMut(move y, i)
 ///   *tmp1 = x
 /// ```
-impl LlbcPass for Transform {
+impl UllbcPass for Transform {
     fn transform_body(&self, _ctx: &mut TransformCtx, b: &mut ExprBody) {
-        b.body.transform(|st: &mut Statement| {
+        for block in &mut b.body {
+            // Process statements.
+            block.transform(|st: &mut Statement| {
+                let mut visitor = IndexVisitor {
+                    locals: &mut b.locals,
+                    statements: Vec::new(),
+                    place_mutability_stack: Vec::new(),
+                    span: st.span,
+                };
+
+                use RawStatement::*;
+                match &mut st.content {
+                    FakeRead(..) => {
+                        visitor.visit_inner_with_mutability(st, false);
+                    }
+                    Assign(..) | SetDiscriminant(..) | Drop(..) | Deinit(..) => {
+                        visitor.visit_inner_with_mutability(st, true);
+                    }
+                    Nop | Error(..) | Assert(..) | Call(..) | StorageDead(..) => {
+                        st.drive_body_mut(&mut visitor);
+                    }
+                }
+                visitor.statements
+            });
+
+            // Process the terminator.
+            let terminator = &mut block.terminator;
             let mut visitor = IndexVisitor {
                 locals: &mut b.locals,
                 statements: Vec::new(),
                 place_mutability_stack: Vec::new(),
-                span: st.span,
+                span: terminator.span,
             };
-
-            // Note: the visitor doesn't explore sub-statements.
-            use llbc_ast::Switch::*;
-            use RawStatement::*;
-            match &mut st.content {
-                Switch(Match(..)) | FakeRead(..) => {
-                    visitor.visit_inner_with_mutability(st, false);
+            use RawTerminator::*;
+            match &mut terminator.content {
+                Switch { .. } => {
+                    visitor.visit_inner_with_mutability(terminator, false);
                 }
-                Assign(..) | SetDiscriminant(..) | Drop(..) => {
-                    visitor.visit_inner_with_mutability(st, true);
-                }
-                Abort(..) | Return | Break(..) | Continue(..) | Nop | Error(..) | Assert(..)
-                | Call(..) | Switch(..) | Loop(..) => {
-                    st.drive_body_mut(&mut visitor);
-                }
+                Abort { .. } | Return | Goto { .. } => {}
             }
-            visitor.statements
-        });
+            block.statements.append(&mut visitor.statements);
+        }
     }
 }
