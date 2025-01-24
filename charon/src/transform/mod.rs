@@ -138,6 +138,10 @@ pub static LLBC_PASSES: &[Pass] = &[
     // statements. This must be last after all the statement-affecting passes to avoid losing
     // comments.
     StructuredBody(&recover_body_comments::Transform),
+];
+
+/// Cleanup passes useful for both llbc and ullbc.
+pub static SHARED_FINALIZING_PASSES: &[Pass] = &[
     // # Reorder the graph of dependencies and compute the strictly connex components to:
     // - compute the order in which to extract the definitions
     // - find the recursive definitions
@@ -145,7 +149,8 @@ pub static LLBC_PASSES: &[Pass] = &[
     NonBody(&reorder_decls::Transform),
 ];
 
-/// Final passes to run at the end.
+/// Final passes to run at the end, after pretty-printing the llbc if applicable. These are only
+/// split from the above list to get test outputs even when generics fail to match.
 pub static FINAL_CLEANUP_PASSES: &[Pass] = &[
     // Check that all supplied generic types match the corresponding generic parameters.
     NonBody(&check_generics::Check("after transformations")),

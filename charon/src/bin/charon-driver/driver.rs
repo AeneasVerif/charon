@@ -1,9 +1,9 @@
 use crate::translate::translate_crate_to_ullbc;
 use charon_lib::options::CliOpts;
-use charon_lib::transform::TransformCtx;
 use charon_lib::transform::{
     Pass, PrintCtxPass, FINAL_CLEANUP_PASSES, INITIAL_CLEANUP_PASSES, LLBC_PASSES, ULLBC_PASSES,
 };
+use charon_lib::transform::{TransformCtx, SHARED_FINALIZING_PASSES};
 use charon_lib::{export, options};
 use rustc_driver::{Callbacks, Compilation};
 use rustc_interface::{interface::Compiler, Queries};
@@ -227,17 +227,17 @@ pub fn transformation_passes(options: &CliOpts) -> Vec<Pass> {
     passes.push(Pass::NonBody(print_original_ullbc));
     passes.extend(INITIAL_CLEANUP_PASSES);
     passes.extend(ULLBC_PASSES);
-    passes.push(Pass::NonBody(print_ullbc));
 
-    // # There are two options:
-    // - either the user wants the unstructured LLBC, in which case we stop there
-    // - or they want the structured LLBC, in which case we reconstruct the control-flow and apply
-    // more micro-passes
     if !options.ullbc {
         passes.extend(LLBC_PASSES);
-        passes.push(Pass::NonBody(print_llbc));
     }
 
+    passes.extend(SHARED_FINALIZING_PASSES);
+    if options.ullbc {
+        passes.push(Pass::NonBody(print_ullbc));
+    } else {
+        passes.push(Pass::NonBody(print_llbc));
+    }
     passes.extend(FINAL_CLEANUP_PASSES);
     passes
 }
