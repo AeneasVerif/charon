@@ -2,6 +2,7 @@
 use crate::ids::Vector;
 use crate::meta::Span;
 use crate::ullbc_ast::*;
+use std::mem;
 use take_mut::take;
 
 impl SwitchTargets {
@@ -83,7 +84,7 @@ impl BlockData {
         self
     }
 
-    /// Apply a transformer to all the statements, in a bottom-up manner.
+    /// Apply a transformer to all the statements.
     ///
     /// The transformer should:
     /// - mutate the current statement in place
@@ -99,7 +100,7 @@ impl BlockData {
         });
     }
 
-    /// Apply a transformer to all the statements, in a bottom-up manner.
+    /// Apply a transformer to all the statements.
     ///
     /// The transformer should:
     /// - mutate the current statements in place
@@ -108,15 +109,29 @@ impl BlockData {
     where
         F: FnMut(&mut [Statement]) -> Vec<(usize, Vec<Statement>)>,
     {
+        let mut to_insert = vec![];
+        let mut final_len = self.statements.len();
         for i in (0..self.statements.len()).rev() {
-            let mut to_insert = f(&mut self.statements[i..]);
-            if !to_insert.is_empty() {
-                to_insert.sort_by_key(|(i, _)| *i);
-                for (j, statements) in to_insert.into_iter().rev() {
-                    // Insert the new elements at index `j`. This only modifies `statements[j..]`
-                    // so we can keep iterating `j` (and `i`) down as if nothing happened.
-                    self.statements.splice(i + j..i + j, statements);
+            let new_to_insert = f(&mut self.statements[i..]);
+            to_insert.extend(new_to_insert.into_iter().map(|(j, stmts)| {
+                final_len += stmts.len();
+                (i + j, stmts)
+            }));
+        }
+        if !to_insert.is_empty() {
+            to_insert.sort_by_key(|(i, _)| *i);
+            // Make it so the first element is always at the end so we can pop it.
+            to_insert.reverse();
+            // Construct the merged list of statements.
+            let old_statements = mem::replace(&mut self.statements, Vec::with_capacity(final_len));
+            for (i, stmt) in old_statements.into_iter().enumerate() {
+                while let Some((j, _)) = to_insert.last()
+                    && *j == i
+                {
+                    let (_, mut stmts) = to_insert.pop().unwrap();
+                    self.statements.append(&mut stmts);
                 }
+                self.statements.push(stmt);
             }
         }
     }
