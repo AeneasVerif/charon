@@ -94,7 +94,20 @@ impl BodyTransCtx<'_, '_> {
                         binder_kind,
                         &fun_def,
                         |bt_ctx| {
-                            let fun_id = bt_ctx.register_fun_decl_id(item_span, item_def_id);
+                            // If the trait is opaque, we only translate the signature of a method
+                            // with default body if it's overridden or used somewhere else.
+                            // We insert the `Binder<FunDeclRef>` unconditionally here, and remove
+                            // the ones that correspond to untranslated functions in the
+                            // `remove_unused_methods` pass.
+                            // FIXME: this triggers the translation of traits used in the method
+                            // clauses, despite the fact that we may end up not needing them.
+                            let fun_id =
+                                if hax_item.has_value && !item_meta.opacity.is_transparent() {
+                                    bt_ctx.register_fun_decl_id_no_enqueue(item_span, item_def_id)
+                                } else {
+                                    bt_ctx.register_fun_decl_id(item_span, item_def_id)
+                                };
+
                             // TODO: there's probably a cleaner way to write this
                             assert_eq!(bt_ctx.binding_levels.len(), 2);
                             let fun_generics = bt_ctx
@@ -250,9 +263,9 @@ impl BodyTransCtx<'_, '_> {
             let item_def_id = item_def.rust_def_id();
             match item_def.kind() {
                 hax::FullDefKind::AssocFn { .. } => {
-                    let fun_id = self.register_fun_decl_id(item_span, item_def_id);
                     match &impl_item.value {
                         Provided { is_override, .. } => {
+                            let fun_id = self.register_fun_decl_id(item_span, item_def_id);
                             let fun_def = self.t_ctx.hax_def(item_def_id)?;
                             let binder_kind = BinderKind::TraitMethod(trait_id, name.clone());
                             let fn_ref = self.translate_binder_for_def(

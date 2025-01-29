@@ -175,7 +175,7 @@ where
     return
 }
 
-fn test_crate::Trait::method3<Self>()
+fn test_crate::Trait::method2<Self>()
 {
     let @0: (); // return
     let @1: (); // anonymous local
@@ -186,7 +186,7 @@ fn test_crate::Trait::method3<Self>()
     return
 }
 
-fn test_crate::Trait::method2<Self>()
+fn test_crate::Trait::method3<Self>()
 {
     let @0: (); // return
     let @1: (); // anonymous local

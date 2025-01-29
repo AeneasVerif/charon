@@ -23,6 +23,7 @@ pub mod remove_dynamic_checks;
 pub mod remove_nops;
 pub mod remove_read_discriminant;
 pub mod remove_unused_locals;
+pub mod remove_unused_methods;
 pub mod reorder_decls;
 pub mod simplify_constants;
 pub mod skip_trait_refs_when_known;
@@ -37,6 +38,8 @@ use Pass::*;
 
 /// Item and type cleanup passes.
 pub static INITIAL_CLEANUP_PASSES: &[Pass] = &[
+    // Remove the trait/impl methods that were not translated (because not used).
+    NonBody(&remove_unused_methods::Transform),
     // Move clauses on associated types to be parent clauses
     NonBody(&lift_associated_item_clauses::Transform),
     // Check that all supplied generic types match the corresponding generic parameters.

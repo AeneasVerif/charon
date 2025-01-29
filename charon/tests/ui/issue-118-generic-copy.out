@@ -8,7 +8,6 @@ trait core::clone::Clone<Self>
 {
     parent_clause0 : [@TraitClause0]: core::marker::Sized<Self>
     fn clone<'_0> = core::clone::Clone::clone<'_0_0, Self>
-    fn clone_from<'_0, '_1> = core::clone::Clone::clone_from<'_0_0, '_0_1, Self>
 }
 
 fn test_crate::{impl core::clone::Clone for test_crate::Foo}::clone<'_0>(@1: &'_0 (test_crate::Foo)) -> test_crate::Foo
@@ -108,8 +107,6 @@ where
     @0 := ()
     return
 }
-
-fn core::clone::Clone::clone_from<'_0, '_1, Self>(@1: &'_0 mut (Self), @2: &'_1 (Self))
 
 fn core::clone::Clone::clone<'_0, Self>(@1: &'_0 (Self)) -> Self
 

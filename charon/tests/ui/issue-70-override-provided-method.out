@@ -144,16 +144,6 @@ where
     fn eq<'_0, '_1> = core::option::{impl core::cmp::PartialEq<core::option::Option<T>[@TraitClause0]> for core::option::Option<T>[@TraitClause0]}#14::eq<'_0_0, '_0_1, T>[@TraitClause0, @TraitClause1]
 }
 
-fn core::cmp::PartialEq::ne<'_0, '_1, Self, Rhs>(@1: &'_0 (Self), @2: &'_1 (Rhs)) -> bool
-
-fn core::cmp::PartialOrd::lt<'_0, '_1, Self, Rhs>(@1: &'_0 (Self), @2: &'_1 (Rhs)) -> bool
-
-fn core::cmp::PartialOrd::le<'_0, '_1, Self, Rhs>(@1: &'_0 (Self), @2: &'_1 (Rhs)) -> bool
-
-fn core::cmp::PartialOrd::gt<'_0, '_1, Self, Rhs>(@1: &'_0 (Self), @2: &'_1 (Rhs)) -> bool
-
-fn core::cmp::PartialOrd::ge<'_0, '_1, Self, Rhs>(@1: &'_0 (Self), @2: &'_1 (Rhs)) -> bool
-
 fn core::cmp::PartialOrd::partial_cmp<'_0, '_1, Self, Rhs>(@1: &'_0 (Self), @2: &'_1 (Rhs)) -> core::option::Option<core::cmp::Ordering>[core::marker::Sized<core::cmp::Ordering>]
 
 fn core::cmp::impls::{impl core::cmp::PartialEq<u32> for u32}#24::eq<'_0, '_1>(@1: &'_0 (u32), @2: &'_1 (u32)) -> bool
@@ -183,6 +173,16 @@ impl core::cmp::impls::{impl core::cmp::PartialOrd<u32> for u32}#64 : core::cmp:
     fn gt<'_0, '_1> = core::cmp::impls::{impl core::cmp::PartialOrd<u32> for u32}#64::gt<'_0_0, '_0_1>
     fn ge<'_0, '_1> = core::cmp::impls::{impl core::cmp::PartialOrd<u32> for u32}#64::ge<'_0_0, '_0_1>
 }
+
+fn core::cmp::PartialEq::ne<'_0, '_1, Self, Rhs>(@1: &'_0 (Self), @2: &'_1 (Rhs)) -> bool
+
+fn core::cmp::PartialOrd::lt<'_0, '_1, Self, Rhs>(@1: &'_0 (Self), @2: &'_1 (Rhs)) -> bool
+
+fn core::cmp::PartialOrd::le<'_0, '_1, Self, Rhs>(@1: &'_0 (Self), @2: &'_1 (Rhs)) -> bool
+
+fn core::cmp::PartialOrd::gt<'_0, '_1, Self, Rhs>(@1: &'_0 (Self), @2: &'_1 (Rhs)) -> bool
+
+fn core::cmp::PartialOrd::ge<'_0, '_1, Self, Rhs>(@1: &'_0 (Self), @2: &'_1 (Rhs)) -> bool
 
 
 

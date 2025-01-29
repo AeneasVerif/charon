@@ -1067,6 +1067,11 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
         self.blocks_map.get(&rid)
     }
 
+    pub(crate) fn register_id_no_enqueue(&mut self, span: Span, id: TransItemSource) -> AnyTransId {
+        let src = self.make_dep_source(span);
+        self.t_ctx.register_id_no_enqueue(&src, id)
+    }
+
     pub(crate) fn register_type_decl_id(&mut self, span: Span, id: impl Into<DefId>) -> TypeDeclId {
         let src = self.make_dep_source(span);
         self.t_ctx.register_type_decl_id(&src, id)
@@ -1075,6 +1080,17 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
     pub(crate) fn register_fun_decl_id(&mut self, span: Span, id: impl Into<DefId>) -> FunDeclId {
         let src = self.make_dep_source(span);
         self.t_ctx.register_fun_decl_id(&src, id)
+    }
+
+    pub(crate) fn register_fun_decl_id_no_enqueue(
+        &mut self,
+        span: Span,
+        id: impl Into<DefId>,
+    ) -> FunDeclId {
+        self.register_id_no_enqueue(span, TransItemSource::Fun(id.into()))
+            .as_fun()
+            .copied()
+            .unwrap()
     }
 
     pub(crate) fn register_global_decl_id(
