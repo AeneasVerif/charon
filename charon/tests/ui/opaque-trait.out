@@ -1,0 +1,201 @@
+# Final LLBC before serialization:
+
+fn test_crate::Trait::CONST1<Self>() -> usize
+{
+    let @0: usize; // return
+
+    @0 := const (0 : usize)
+    return
+}
+
+global test_crate::Trait::CONST1<Self>: usize = test_crate::Trait::CONST1()
+
+fn test_crate::Trait::CONST2<Self>() -> usize
+{
+    let @0: usize; // return
+
+    @0 := const (0 : usize)
+    return
+}
+
+global test_crate::Trait::CONST2<Self>: usize = test_crate::Trait::CONST2()
+
+fn test_crate::Trait::CONST3<Self>() -> usize
+{
+    let @0: usize; // return
+
+    @0 := const (0 : usize)
+    return
+}
+
+global test_crate::Trait::CONST3<Self>: usize = test_crate::Trait::CONST3()
+
+trait test_crate::Trait<Self>
+{
+    const CONST1 : usize
+    const CONST2 : usize
+    const CONST3 : usize
+    fn method1 = test_crate::Trait::method1<Self>
+    fn method2 = test_crate::Trait::method2<Self>
+    fn method3 = test_crate::Trait::method3<Self>
+}
+
+fn test_crate::{impl test_crate::Trait for ()}#1::CONST1() -> usize
+{
+    let @0: usize; // return
+
+    @0 := const (1 : usize)
+    return
+}
+
+global test_crate::{impl test_crate::Trait for ()}#1::CONST1: usize = test_crate::{impl test_crate::Trait for ()}#1::CONST1()
+
+fn test_crate::{impl test_crate::Trait for ()}#1::CONST2() -> usize
+{
+    let @0: usize; // return
+
+    @0 := const (1 : usize)
+    return
+}
+
+global test_crate::{impl test_crate::Trait for ()}#1::CONST2: usize = test_crate::{impl test_crate::Trait for ()}#1::CONST2()
+
+fn test_crate::{impl test_crate::Trait for ()}#1::CONST3() -> usize
+{
+    let @0: usize; // return
+
+    @0 := const (1 : usize)
+    return
+}
+
+global test_crate::{impl test_crate::Trait for ()}#1::CONST3: usize = test_crate::{impl test_crate::Trait for ()}#1::CONST3()
+
+fn test_crate::{impl test_crate::Trait for ()}#1::method1()
+{
+    let @0: (); // return
+    let @1: (); // anonymous local
+
+    @1 := ()
+    @0 := move (@1)
+    @0 := ()
+    return
+}
+
+fn test_crate::{impl test_crate::Trait for ()}#1::method2()
+{
+    let @0: (); // return
+    let @1: (); // anonymous local
+
+    @1 := ()
+    @0 := move (@1)
+    @0 := ()
+    return
+}
+
+fn test_crate::{impl test_crate::Trait for ()}#1::method3()
+{
+    let @0: (); // return
+    let @1: (); // anonymous local
+
+    @1 := ()
+    @0 := move (@1)
+    @0 := ()
+    return
+}
+
+impl test_crate::{impl test_crate::Trait for ()}#1 : test_crate::Trait<()>
+{
+    const CONST1 = test_crate::{impl test_crate::Trait for ()}#1::CONST1
+    const CONST2 = test_crate::{impl test_crate::Trait for ()}#1::CONST2
+    const CONST3 = test_crate::{impl test_crate::Trait for ()}#1::CONST3
+    fn method1 = test_crate::{impl test_crate::Trait for ()}#1::method1
+    fn method2 = test_crate::{impl test_crate::Trait for ()}#1::method2
+    fn method3 = test_crate::{impl test_crate::Trait for ()}#1::method3
+}
+
+fn test_crate::{impl test_crate::Trait for u8}::CONST2() -> usize
+{
+    let @0: usize; // return
+
+    @0 := const (2 : usize)
+    return
+}
+
+global test_crate::{impl test_crate::Trait for u8}::CONST2: usize = test_crate::{impl test_crate::Trait for u8}::CONST2()
+
+fn test_crate::{impl test_crate::Trait for u8}::method2()
+{
+    let @0: (); // return
+    let @1: (); // anonymous local
+
+    @1 := ()
+    @0 := move (@1)
+    @0 := ()
+    return
+}
+
+impl test_crate::{impl test_crate::Trait for u8} : test_crate::Trait<u8>
+{
+    const CONST1 = test_crate::Trait::CONST1<u8>
+    const CONST2 = test_crate::{impl test_crate::Trait for u8}::CONST2
+    const CONST3 = test_crate::Trait::CONST3<u8>
+    fn method2 = test_crate::{impl test_crate::Trait for u8}::method2
+}
+
+trait core::marker::Sized<Self>
+
+fn test_crate::Trait::method1<Self>()
+{
+    let @0: (); // return
+    let @1: (); // anonymous local
+
+    @1 := ()
+    @0 := move (@1)
+    @0 := ()
+    return
+}
+
+fn test_crate::use_method<T>()
+where
+    [@TraitClause0]: core::marker::Sized<T>,
+    [@TraitClause1]: test_crate::Trait<T>,
+{
+    let @0: (); // return
+    let @1: (); // anonymous local
+    let @2: usize; // anonymous local
+    let @3: (); // anonymous local
+
+    @1 := @TraitClause1::method1()
+    drop @1
+    @2 := const (@TraitClause1::CONST1)
+    drop @2
+    @3 := ()
+    @0 := move (@3)
+    @0 := ()
+    return
+}
+
+fn test_crate::Trait::method3<Self>()
+{
+    let @0: (); // return
+    let @1: (); // anonymous local
+
+    @1 := ()
+    @0 := move (@1)
+    @0 := ()
+    return
+}
+
+fn test_crate::Trait::method2<Self>()
+{
+    let @0: (); // return
+    let @1: (); // anonymous local
+
+    @1 := ()
+    @0 := move (@1)
+    @0 := ()
+    return
+}
+
+
+
