@@ -1,5 +1,4 @@
 use super::translate_ctx::*;
-use annotate_snippets::Level;
 use charon_lib::ast::*;
 use charon_lib::formatter::IntoFormatter;
 use charon_lib::meta::ItemMeta;
@@ -164,18 +163,6 @@ impl BodyTransCtx<'_, '_> {
             }
         }
 
-        if item_meta.opacity.is_opaque() {
-            let ctx = self.into_fmt();
-            self.t_ctx.errors.borrow_mut().display_error(
-                &self.t_ctx.translated,
-                item_meta.span,
-                Level::Warning,
-                format!(
-                    "Trait declarations cannot be \"opaque\"; the trait `{}` will be translated as normal.",
-                    item_meta.name.fmt_with_ctx(&ctx)
-                ),
-            );
-        }
         // In case of a trait implementation, some values may not have been
         // provided, in case the declaration provided default values. We
         // check those, and lookup the relevant values.
@@ -348,19 +335,6 @@ impl BodyTransCtx<'_, '_> {
                 }
                 _ => panic!("Unexpected definition for trait item: {item_def:?}"),
             }
-        }
-
-        if item_meta.opacity.is_opaque() {
-            let ctx = self.into_fmt();
-            self.t_ctx.errors.borrow_mut().display_error(
-                &self.t_ctx.translated,
-                item_meta.span,
-                Level::Warning,
-                format!(
-                    "Trait implementations cannot be \"opaque\"; the impl `{}` will be translated as normal.",
-                    item_meta.name.fmt_with_ctx(&ctx)
-                ),
-            );
         }
 
         Ok(ast::TraitImpl {
