@@ -872,7 +872,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
         *opacity
     }
 
-    pub(crate) fn register_id(
+    pub(crate) fn register_id_no_enqueue(
         &mut self,
         src: &Option<DepSource>,
         id: TransItemSource,
@@ -898,7 +898,6 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
                     }
                 };
                 // Add the id to the queue of declarations to translate
-                self.items_to_translate.insert(id, trans_id);
                 self.id_map.insert(id, trans_id);
                 self.reverse_id_map.insert(trans_id, id);
                 self.translated.all_ids.insert(trans_id);
@@ -918,13 +917,30 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
         item_id
     }
 
+    pub(crate) fn enqueue_id(&mut self, id: impl Into<AnyTransId>) {
+        let id = id.into();
+        let src_id = self.reverse_id_map[&id];
+        self.items_to_translate.insert(src_id, id);
+    }
+
+    /// Register this id and enqueue it for translation.
+    pub(crate) fn register_and_enqueue_id(
+        &mut self,
+        src: &Option<DepSource>,
+        id: TransItemSource,
+    ) -> AnyTransId {
+        let item_id = self.register_id_no_enqueue(src, id);
+        self.enqueue_id(item_id);
+        item_id
+    }
+
     pub(crate) fn register_type_decl_id(
         &mut self,
         src: &Option<DepSource>,
         id: impl Into<DefId>,
     ) -> TypeDeclId {
         *self
-            .register_id(src, TransItemSource::Type(id.into()))
+            .register_and_enqueue_id(src, TransItemSource::Type(id.into()))
             .as_type()
             .unwrap()
     }
@@ -935,7 +951,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
         id: impl Into<DefId>,
     ) -> FunDeclId {
         *self
-            .register_id(src, TransItemSource::Fun(id.into()))
+            .register_and_enqueue_id(src, TransItemSource::Fun(id.into()))
             .as_fun()
             .unwrap()
     }
@@ -946,7 +962,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
         id: impl Into<DefId>,
     ) -> TraitDeclId {
         *self
-            .register_id(src, TransItemSource::TraitDecl(id.into()))
+            .register_and_enqueue_id(src, TransItemSource::TraitDecl(id.into()))
             .as_trait_decl()
             .unwrap()
     }
@@ -968,7 +984,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
         }
 
         *self
-            .register_id(src, TransItemSource::TraitImpl(id))
+            .register_and_enqueue_id(src, TransItemSource::TraitImpl(id))
             .as_trait_impl()
             .unwrap()
     }
@@ -979,7 +995,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
         id: impl Into<DefId>,
     ) -> GlobalDeclId {
         *self
-            .register_id(src, TransItemSource::Global(id.into()))
+            .register_and_enqueue_id(src, TransItemSource::Global(id.into()))
             .as_global()
             .unwrap()
     }
