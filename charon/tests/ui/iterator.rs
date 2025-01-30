@@ -1,5 +1,6 @@
-// This (for now) produces `TraitRefKind::Unknown`; it's a regression test because we used to
-// not parse this in `charon-ml`.
+//@ charon-args=--translate-all-methods
+//! Translate the full iterator trait and a few of standard impls. This is a great testing ground
+//! for type-system features.
 fn main() {
     let a = [0, 1, 2, 3, 4, 5, 6];
     let mut i = 0;

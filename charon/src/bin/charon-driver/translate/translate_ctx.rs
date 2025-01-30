@@ -52,6 +52,9 @@ pub struct TranslateOptions {
     pub item_opacities: Vec<(NamePattern, ItemOpacity)>,
     /// List of traits for which we transform associated types to type parameters.
     pub remove_associated_types: Vec<NamePattern>,
+    /// Usually we skip the provided methods that aren't used. When this flag is on, we translate
+    /// them all.
+    pub translate_all_methods: bool,
 }
 
 impl TranslateOptions {
@@ -123,6 +126,7 @@ impl TranslateOptions {
             mir_level,
             item_opacities,
             remove_associated_types,
+            translate_all_methods: options.translate_all_methods,
         }
     }
 

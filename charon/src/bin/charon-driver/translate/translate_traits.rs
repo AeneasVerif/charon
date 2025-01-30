@@ -8,7 +8,6 @@ use hax_frontend_exporter as hax;
 use indexmap::IndexMap;
 use itertools::Itertools;
 use rustc_hir::def_id::DefId;
-use std::collections::HashMap;
 use std::mem;
 use std::sync::Arc;
 
@@ -101,12 +100,14 @@ impl BodyTransCtx<'_, '_> {
                             // `remove_unused_methods` pass.
                             // FIXME: this triggers the translation of traits used in the method
                             // clauses, despite the fact that we may end up not needing them.
-                            let fun_id =
-                                if hax_item.has_value && !item_meta.opacity.is_transparent() {
-                                    bt_ctx.register_fun_decl_id_no_enqueue(item_span, item_def_id)
-                                } else {
-                                    bt_ctx.register_fun_decl_id(item_span, item_def_id)
-                                };
+                            let fun_id = if bt_ctx.t_ctx.options.translate_all_methods
+                                || item_meta.opacity.is_transparent()
+                                || !hax_item.has_value
+                            {
+                                bt_ctx.register_fun_decl_id(item_span, item_def_id)
+                            } else {
+                                bt_ctx.register_fun_decl_id_no_enqueue(item_span, item_def_id)
+                            };
 
                             // TODO: there's probably a cleaner way to write this
                             assert_eq!(bt_ctx.binding_levels.len(), 2);
@@ -278,13 +279,14 @@ impl BodyTransCtx<'_, '_> {
                                     // We insert the `Binder<FunDeclRef>` unconditionally here, and
                                     // remove the ones that correspond to untranslated functions in
                                     // the `remove_unused_methods` pass.
-                                    let fun_id = if *is_override
-                                        && !item_meta.opacity.is_transparent()
+                                    let fun_id = if bt_ctx.t_ctx.options.translate_all_methods
+                                        || item_meta.opacity.is_transparent()
+                                        || !*is_override
                                     {
+                                        bt_ctx.register_fun_decl_id(item_span, item_def_id)
+                                    } else {
                                         bt_ctx
                                             .register_fun_decl_id_no_enqueue(item_span, item_def_id)
-                                    } else {
-                                        bt_ctx.register_fun_decl_id(item_span, item_def_id)
                                     };
 
                                     // TODO: there's probably a cleaner way to write this

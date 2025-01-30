@@ -120,6 +120,11 @@ pub struct CliOpts {
     #[clap(long = "extract-opaque-bodies")]
     #[serde(default)]
     pub extract_opaque_bodies: bool,
+    /// Usually we skip the provided methods that aren't used. When this flag is on, we translate
+    /// them all.
+    #[clap(long = "translate-all-methods")]
+    #[serde(default)]
+    pub translate_all_methods: bool,
     /// Whitelist of items to translate. These use the name-matcher syntax.
     #[clap(
         long = "include",

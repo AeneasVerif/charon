@@ -413,6 +413,10 @@ and cli_options = {
       (** Usually we skip the bodies of foreign methods and structs with private fields. When this
         flag is on, we don't.
      *)
+  translate_all_methods : bool;
+      (** Usually we skip the provided methods that aren't used. When this flag is on, we translate
+        them all.
+     *)
   included : string list;
       (** Whitelist of items to translate. These use the name-matcher syntax. *)
   opaque : string list;
