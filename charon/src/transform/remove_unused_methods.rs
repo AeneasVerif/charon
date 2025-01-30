@@ -1,4 +1,4 @@
-//! Remove the trait methods that were not translated.
+//! Remove the trait/impl methods that were not translated.
 use crate::ast::*;
 
 use super::{ctx::TransformPass, TransformCtx};
@@ -13,9 +13,12 @@ impl TransformPass for Transform {
                 .is_some()
         };
         // Keep only the methods for which we translated the corresponding `FunDecl`. We ensured
-        // that this would be translated if the method is used or implemented.
+        // that this would be translated if the method is used or transparently implemented.
         for tdecl in ctx.translated.trait_decls.iter_mut() {
             tdecl.provided_methods.retain(method_is_translated);
+        }
+        for timpl in ctx.translated.trait_impls.iter_mut() {
+            timpl.provided_methods.retain(method_is_translated);
         }
     }
 }

@@ -37,7 +37,6 @@ trait test_crate::Trait<Self>
     const CONST3 : usize
     fn method1 = test_crate::Trait::method1<Self>
     fn method2 = test_crate::Trait::method2<Self>
-    fn method3 = test_crate::Trait::method3<Self>
 }
 
 fn test_crate::{impl test_crate::Trait for ()}#1::CONST1() -> usize
@@ -70,47 +69,11 @@ fn test_crate::{impl test_crate::Trait for ()}#1::CONST3() -> usize
 
 global test_crate::{impl test_crate::Trait for ()}#1::CONST3: usize = test_crate::{impl test_crate::Trait for ()}#1::CONST3()
 
-fn test_crate::{impl test_crate::Trait for ()}#1::method1()
-{
-    let @0: (); // return
-    let @1: (); // anonymous local
-
-    @1 := ()
-    @0 := move (@1)
-    @0 := ()
-    return
-}
-
-fn test_crate::{impl test_crate::Trait for ()}#1::method2()
-{
-    let @0: (); // return
-    let @1: (); // anonymous local
-
-    @1 := ()
-    @0 := move (@1)
-    @0 := ()
-    return
-}
-
-fn test_crate::{impl test_crate::Trait for ()}#1::method3()
-{
-    let @0: (); // return
-    let @1: (); // anonymous local
-
-    @1 := ()
-    @0 := move (@1)
-    @0 := ()
-    return
-}
-
 impl test_crate::{impl test_crate::Trait for ()}#1 : test_crate::Trait<()>
 {
     const CONST1 = test_crate::{impl test_crate::Trait for ()}#1::CONST1
     const CONST2 = test_crate::{impl test_crate::Trait for ()}#1::CONST2
     const CONST3 = test_crate::{impl test_crate::Trait for ()}#1::CONST3
-    fn method1 = test_crate::{impl test_crate::Trait for ()}#1::method1
-    fn method2 = test_crate::{impl test_crate::Trait for ()}#1::method2
-    fn method3 = test_crate::{impl test_crate::Trait for ()}#1::method3
 }
 
 fn test_crate::{impl test_crate::Trait for u8}::CONST2() -> usize
@@ -176,17 +139,6 @@ where
 }
 
 fn test_crate::Trait::method2<Self>()
-{
-    let @0: (); // return
-    let @1: (); // anonymous local
-
-    @1 := ()
-    @0 := move (@1)
-    @0 := ()
-    return
-}
-
-fn test_crate::Trait::method3<Self>()
 {
     let @0: (); // return
     let @1: (); // anonymous local

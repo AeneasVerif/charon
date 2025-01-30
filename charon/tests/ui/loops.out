@@ -787,14 +787,17 @@ enum core::option::Option<T>
 |  Some(T)
 
 
-enum core::result::Result<T, E>
-  where
-      [@TraitClause0]: core::marker::Sized<T>,
-      [@TraitClause1]: core::marker::Sized<E>,
- =
-|  Ok(T)
-|  Err(E)
+trait core::iter::traits::iterator::Iterator<Self>
+{
+    parent_clause0 : [@TraitClause0]: core::marker::Sized<Self::Item>
+    type Item
+    fn next<'_0> = core::iter::traits::iterator::Iterator::next<'_0_0, Self>
+}
 
+fn core::iter::traits::collect::{impl core::iter::traits::collect::IntoIterator for I}#1::into_iter<I>(@1: I) -> I
+where
+    [@TraitClause0]: core::marker::Sized<I>,
+    [@TraitClause1]: core::iter::traits::iterator::Iterator<I>,
 
 trait core::clone::Clone<Self>
 {
@@ -802,77 +805,9 @@ trait core::clone::Clone<Self>
     fn clone<'_0> = core::clone::Clone::clone<'_0_0, Self>
 }
 
-trait core::marker::Copy<Self>
-{
-    parent_clause0 : [@TraitClause0]: core::clone::Clone<Self>
-}
-
-trait core::num::nonzero::private::Sealed<Self>
-
-trait core::num::nonzero::ZeroablePrimitive<Self>
-{
-    parent_clause0 : [@TraitClause0]: core::marker::Sized<Self>
-    parent_clause1 : [@TraitClause1]: core::marker::Copy<Self>
-    parent_clause2 : [@TraitClause2]: core::num::nonzero::private::Sealed<Self>
-    parent_clause3 : [@TraitClause3]: core::marker::Sized<Self::NonZeroInner>
-    parent_clause4 : [@TraitClause4]: core::marker::Copy<Self::NonZeroInner>
-    type NonZeroInner
-}
-
-opaque type core::num::nonzero::NonZero<T>
-  where
-      [@TraitClause0]: core::marker::Sized<T>,
-      [@TraitClause1]: core::num::nonzero::ZeroablePrimitive<T>,
-
-fn core::clone::impls::{impl core::clone::Clone for usize}#5::clone<'_0>(@1: &'_0 (usize)) -> usize
-
-impl core::clone::impls::{impl core::clone::Clone for usize}#5 : core::clone::Clone<usize>
-{
-    parent_clause0 = core::marker::Sized<usize>
-    fn clone<'_0> = core::clone::impls::{impl core::clone::Clone for usize}#5::clone<'_0_0>
-}
-
-impl core::marker::{impl core::marker::Copy for usize}#37 : core::marker::Copy<usize>
-{
-    parent_clause0 = core::clone::impls::{impl core::clone::Clone for usize}#5
-}
-
-impl core::num::nonzero::{impl core::num::nonzero::private::Sealed for usize}#25 : core::num::nonzero::private::Sealed<usize>
-
-opaque type core::num::nonzero::private::NonZeroUsizeInner
-
-fn core::num::nonzero::private::{impl core::clone::Clone for core::num::nonzero::private::NonZeroUsizeInner}#26::clone<'_0>(@1: &'_0 (core::num::nonzero::private::NonZeroUsizeInner)) -> core::num::nonzero::private::NonZeroUsizeInner
-
-impl core::num::nonzero::private::{impl core::clone::Clone for core::num::nonzero::private::NonZeroUsizeInner}#26 : core::clone::Clone<core::num::nonzero::private::NonZeroUsizeInner>
-{
-    parent_clause0 = core::marker::Sized<core::num::nonzero::private::NonZeroUsizeInner>
-    fn clone<'_0> = core::num::nonzero::private::{impl core::clone::Clone for core::num::nonzero::private::NonZeroUsizeInner}#26::clone<'_0_0>
-}
-
-impl core::num::nonzero::private::{impl core::marker::Copy for core::num::nonzero::private::NonZeroUsizeInner}#27 : core::marker::Copy<core::num::nonzero::private::NonZeroUsizeInner>
-{
-    parent_clause0 = core::num::nonzero::private::{impl core::clone::Clone for core::num::nonzero::private::NonZeroUsizeInner}#26
-}
-
-impl core::num::nonzero::{impl core::num::nonzero::ZeroablePrimitive for usize}#26 : core::num::nonzero::ZeroablePrimitive<usize>
-{
-    parent_clause0 = core::marker::Sized<usize>
-    parent_clause1 = core::marker::{impl core::marker::Copy for usize}#37
-    parent_clause2 = core::num::nonzero::{impl core::num::nonzero::private::Sealed for usize}#25
-    parent_clause3 = core::marker::Sized<core::num::nonzero::private::NonZeroUsizeInner>
-    parent_clause4 = core::num::nonzero::private::{impl core::marker::Copy for core::num::nonzero::private::NonZeroUsizeInner}#27
-    type NonZeroInner = core::num::nonzero::private::NonZeroUsizeInner
-}
-
 trait core::cmp::PartialEq<Self, Rhs>
 {
     fn eq<'_0, '_1> = core::cmp::PartialEq::eq<'_0_0, '_0_1, Self, Rhs>
-    fn ne<'_0, '_1> = core::cmp::PartialEq::ne<'_0_0, '_0_1, Self, Rhs>
-}
-
-trait core::cmp::Eq<Self>
-{
-    parent_clause0 : [@TraitClause0]: core::cmp::PartialEq<Self, Self>
 }
 
 enum core::cmp::Ordering =
@@ -885,45 +820,7 @@ trait core::cmp::PartialOrd<Self, Rhs>
 {
     parent_clause0 : [@TraitClause0]: core::cmp::PartialEq<Self, Rhs>
     fn partial_cmp<'_0, '_1> = core::cmp::PartialOrd::partial_cmp<'_0_0, '_0_1, Self, Rhs>
-    fn lt<'_0, '_1> = core::cmp::PartialOrd::lt<'_0_0, '_0_1, Self, Rhs>
-    fn le<'_0, '_1> = core::cmp::PartialOrd::le<'_0_0, '_0_1, Self, Rhs>
-    fn gt<'_0, '_1> = core::cmp::PartialOrd::gt<'_0_0, '_0_1, Self, Rhs>
-    fn ge<'_0, '_1> = core::cmp::PartialOrd::ge<'_0_0, '_0_1, Self, Rhs>
 }
-
-trait core::cmp::Ord<Self>
-{
-    parent_clause0 : [@TraitClause0]: core::cmp::Eq<Self>
-    parent_clause1 : [@TraitClause1]: core::cmp::PartialOrd<Self, Self>
-    fn cmp<'_0, '_1> = core::cmp::Ord::cmp<'_0_0, '_0_1, Self>
-}
-
-trait core::iter::adapters::zip::TrustedRandomAccessNoCoerce<Self>
-{
-    parent_clause0 : [@TraitClause0]: core::marker::Sized<Self>
-    const MAY_HAVE_SIDE_EFFECT : bool
-}
-
-trait core::iter::traits::iterator::Iterator<Self>
-{
-    parent_clause0 : [@TraitClause0]: core::marker::Sized<Self::Item>
-    type Item
-    fn next<'_0> = core::iter::traits::iterator::Iterator::next<'_0_0, Self>
-    fn size_hint<'_0> = core::iter::traits::iterator::Iterator::size_hint<'_0_0, Self>
-    fn count<[@TraitClause0]: core::marker::Sized<Self>> = core::iter::traits::iterator::Iterator::count<Self>[@TraitClause0_0]
-    fn last<[@TraitClause0]: core::marker::Sized<Self>> = core::iter::traits::iterator::Iterator::last<Self>[@TraitClause0_0]
-    fn advance_by<'_0> = core::iter::traits::iterator::Iterator::advance_by<'_0_0, Self>
-    fn nth<'_0> = core::iter::traits::iterator::Iterator::nth<'_0_0, Self>
-    fn max<[@TraitClause0]: core::marker::Sized<Self>, [@TraitClause1]: core::cmp::Ord<Self::Item>> = core::iter::traits::iterator::Iterator::max<Self>[@TraitClause0_0, @TraitClause0_1]
-    fn min<[@TraitClause0]: core::marker::Sized<Self>, [@TraitClause1]: core::cmp::Ord<Self::Item>> = core::iter::traits::iterator::Iterator::min<Self>[@TraitClause0_0, @TraitClause0_1]
-    fn is_sorted<[@TraitClause0]: core::marker::Sized<Self>, [@TraitClause1]: core::cmp::PartialOrd<Self::Item, Self::Item>> = core::iter::traits::iterator::Iterator::is_sorted<Self>[@TraitClause0_0, @TraitClause0_1]
-    fn __iterator_get_unchecked<'_0, [@TraitClause0]: core::iter::adapters::zip::TrustedRandomAccessNoCoerce<Self>> = core::iter::traits::iterator::Iterator::__iterator_get_unchecked<'_0_0, Self>[@TraitClause0_0]
-}
-
-fn core::iter::traits::collect::{impl core::iter::traits::collect::IntoIterator for I}#1::into_iter<I>(@1: I) -> I
-where
-    [@TraitClause0]: core::marker::Sized<I>,
-    [@TraitClause1]: core::iter::traits::iterator::Iterator<I>,
 
 trait core::iter::range::Step<Self>
 {
@@ -933,64 +830,12 @@ trait core::iter::range::Step<Self>
     fn steps_between<'_0, '_1> = core::iter::range::Step::steps_between<'_0_0, '_0_1, Self>
     fn forward_checked = core::iter::range::Step::forward_checked<Self>
     fn backward_checked = core::iter::range::Step::backward_checked<Self>
-    fn forward = core::iter::range::Step::forward<Self>
-    fn forward_unchecked = core::iter::range::Step::forward_unchecked<Self>
-    fn backward = core::iter::range::Step::backward<Self>
-    fn backward_unchecked = core::iter::range::Step::backward_unchecked<Self>
 }
 
 fn core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>[@TraitClause0]}#6::next<'_0, A>(@1: &'_0 mut (core::ops::range::Range<A>[@TraitClause0])) -> core::option::Option<A>[@TraitClause0]
 where
     [@TraitClause0]: core::marker::Sized<A>,
     [@TraitClause1]: core::iter::range::Step<A>,
-
-fn core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>[@TraitClause0]}#6::size_hint<'_0, A>(@1: &'_0 (core::ops::range::Range<A>[@TraitClause0])) -> (usize, core::option::Option<usize>[core::marker::Sized<usize>])
-where
-    [@TraitClause0]: core::marker::Sized<A>,
-    [@TraitClause1]: core::iter::range::Step<A>,
-
-fn core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>[@TraitClause0]}#6::count<A>(@1: core::ops::range::Range<A>[@TraitClause0]) -> usize
-where
-    [@TraitClause0]: core::marker::Sized<A>,
-    [@TraitClause1]: core::iter::range::Step<A>,
-
-fn core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>[@TraitClause0]}#6::last<A>(@1: core::ops::range::Range<A>[@TraitClause0]) -> core::option::Option<A>[@TraitClause0]
-where
-    [@TraitClause0]: core::marker::Sized<A>,
-    [@TraitClause1]: core::iter::range::Step<A>,
-
-fn core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>[@TraitClause0]}#6::advance_by<'_0, A>(@1: &'_0 mut (core::ops::range::Range<A>[@TraitClause0]), @2: usize) -> core::result::Result<(), core::num::nonzero::NonZero<usize>[core::marker::Sized<usize>, core::num::nonzero::{impl core::num::nonzero::ZeroablePrimitive for usize}#26]>[core::marker::Sized<()>, core::marker::Sized<core::num::nonzero::NonZero<usize>[core::marker::Sized<usize>, core::num::nonzero::{impl core::num::nonzero::ZeroablePrimitive for usize}#26]>]
-where
-    [@TraitClause0]: core::marker::Sized<A>,
-    [@TraitClause1]: core::iter::range::Step<A>,
-
-fn core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>[@TraitClause0]}#6::nth<'_0, A>(@1: &'_0 mut (core::ops::range::Range<A>[@TraitClause0]), @2: usize) -> core::option::Option<A>[@TraitClause0]
-where
-    [@TraitClause0]: core::marker::Sized<A>,
-    [@TraitClause1]: core::iter::range::Step<A>,
-
-fn core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>[@TraitClause0]}#6::max<A>(@1: core::ops::range::Range<A>[@TraitClause0]) -> core::option::Option<A>[@TraitClause0]
-where
-    [@TraitClause0]: core::marker::Sized<A>,
-    [@TraitClause1]: core::iter::range::Step<A>,
-    [@TraitClause2]: core::cmp::Ord<A>,
-
-fn core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>[@TraitClause0]}#6::min<A>(@1: core::ops::range::Range<A>[@TraitClause0]) -> core::option::Option<A>[@TraitClause0]
-where
-    [@TraitClause0]: core::marker::Sized<A>,
-    [@TraitClause1]: core::iter::range::Step<A>,
-    [@TraitClause2]: core::cmp::Ord<A>,
-
-fn core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>[@TraitClause0]}#6::is_sorted<A>(@1: core::ops::range::Range<A>[@TraitClause0]) -> bool
-where
-    [@TraitClause0]: core::marker::Sized<A>,
-    [@TraitClause1]: core::iter::range::Step<A>,
-
-unsafe fn core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>[@TraitClause0]}#6::__iterator_get_unchecked<'_0, A>(@1: &'_0 mut (core::ops::range::Range<A>[@TraitClause0]), @2: usize) -> A
-where
-    [@TraitClause0]: core::marker::Sized<A>,
-    [@TraitClause1]: core::iter::range::Step<A>,
-    [@TraitClause2]: core::iter::adapters::zip::TrustedRandomAccessNoCoerce<core::ops::range::Range<A>[@TraitClause0]>,
 
 impl<A> core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>[@TraitClause0]}#6<A> : core::iter::traits::iterator::Iterator<core::ops::range::Range<A>[@TraitClause0]>
 where
@@ -1000,15 +845,6 @@ where
     parent_clause0 = @TraitClause0
     type Item = A
     fn next<'_0> = core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>[@TraitClause0]}#6::next<'_0_0, A>[@TraitClause0, @TraitClause1]
-    fn size_hint<'_0> = core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>[@TraitClause0]}#6::size_hint<'_0_0, A>[@TraitClause0, @TraitClause1]
-    fn count = core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>[@TraitClause0]}#6::count<A>[@TraitClause0, @TraitClause1]
-    fn last = core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>[@TraitClause0]}#6::last<A>[@TraitClause0, @TraitClause1]
-    fn advance_by<'_0> = core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>[@TraitClause0]}#6::advance_by<'_0_0, A>[@TraitClause0, @TraitClause1]
-    fn nth<'_0> = core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>[@TraitClause0]}#6::nth<'_0_0, A>[@TraitClause0, @TraitClause1]
-    fn max<[@TraitClause0]: core::cmp::Ord<A>> = core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>[@TraitClause0]}#6::max<A>[@TraitClause0, @TraitClause1, @TraitClause0_0]
-    fn min<[@TraitClause0]: core::cmp::Ord<A>> = core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>[@TraitClause0]}#6::min<A>[@TraitClause0, @TraitClause1, @TraitClause0_0]
-    fn is_sorted = core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>[@TraitClause0]}#6::is_sorted<A>[@TraitClause0, @TraitClause1]
-    fn __iterator_get_unchecked<'_0, [@TraitClause0]: core::iter::adapters::zip::TrustedRandomAccessNoCoerce<core::ops::range::Range<A>[@TraitClause0]>> = core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>[@TraitClause0]}#6::__iterator_get_unchecked<'_0_0, A>[@TraitClause0, @TraitClause1, @TraitClause0_0]
 }
 
 fn core::clone::impls::{impl core::clone::Clone for i32}#14::clone<'_0>(@1: &'_0 (i32)) -> i32
@@ -1021,32 +857,17 @@ impl core::clone::impls::{impl core::clone::Clone for i32}#14 : core::clone::Clo
 
 fn core::cmp::impls::{impl core::cmp::PartialEq<i32> for i32}#30::eq<'_0, '_1>(@1: &'_0 (i32), @2: &'_1 (i32)) -> bool
 
-fn core::cmp::impls::{impl core::cmp::PartialEq<i32> for i32}#30::ne<'_0, '_1>(@1: &'_0 (i32), @2: &'_1 (i32)) -> bool
-
 impl core::cmp::impls::{impl core::cmp::PartialEq<i32> for i32}#30 : core::cmp::PartialEq<i32, i32>
 {
     fn eq<'_0, '_1> = core::cmp::impls::{impl core::cmp::PartialEq<i32> for i32}#30::eq<'_0_0, '_0_1>
-    fn ne<'_0, '_1> = core::cmp::impls::{impl core::cmp::PartialEq<i32> for i32}#30::ne<'_0_0, '_0_1>
 }
 
 fn core::cmp::impls::{impl core::cmp::PartialOrd<i32> for i32}#76::partial_cmp<'_0, '_1>(@1: &'_0 (i32), @2: &'_1 (i32)) -> core::option::Option<core::cmp::Ordering>[core::marker::Sized<core::cmp::Ordering>]
-
-fn core::cmp::impls::{impl core::cmp::PartialOrd<i32> for i32}#76::lt<'_0, '_1>(@1: &'_0 (i32), @2: &'_1 (i32)) -> bool
-
-fn core::cmp::impls::{impl core::cmp::PartialOrd<i32> for i32}#76::le<'_0, '_1>(@1: &'_0 (i32), @2: &'_1 (i32)) -> bool
-
-fn core::cmp::impls::{impl core::cmp::PartialOrd<i32> for i32}#76::gt<'_0, '_1>(@1: &'_0 (i32), @2: &'_1 (i32)) -> bool
-
-fn core::cmp::impls::{impl core::cmp::PartialOrd<i32> for i32}#76::ge<'_0, '_1>(@1: &'_0 (i32), @2: &'_1 (i32)) -> bool
 
 impl core::cmp::impls::{impl core::cmp::PartialOrd<i32> for i32}#76 : core::cmp::PartialOrd<i32, i32>
 {
     parent_clause0 = core::cmp::impls::{impl core::cmp::PartialEq<i32> for i32}#30
     fn partial_cmp<'_0, '_1> = core::cmp::impls::{impl core::cmp::PartialOrd<i32> for i32}#76::partial_cmp<'_0_0, '_0_1>
-    fn lt<'_0, '_1> = core::cmp::impls::{impl core::cmp::PartialOrd<i32> for i32}#76::lt<'_0_0, '_0_1>
-    fn le<'_0, '_1> = core::cmp::impls::{impl core::cmp::PartialOrd<i32> for i32}#76::le<'_0_0, '_0_1>
-    fn gt<'_0, '_1> = core::cmp::impls::{impl core::cmp::PartialOrd<i32> for i32}#76::gt<'_0_0, '_0_1>
-    fn ge<'_0, '_1> = core::cmp::impls::{impl core::cmp::PartialOrd<i32> for i32}#76::ge<'_0_0, '_0_1>
 }
 
 fn core::iter::range::{impl core::iter::range::Step for i32}#40::steps_between<'_0, '_1>(@1: &'_0 (i32), @2: &'_1 (i32)) -> core::option::Option<usize>[core::marker::Sized<usize>]
@@ -1054,14 +875,6 @@ fn core::iter::range::{impl core::iter::range::Step for i32}#40::steps_between<'
 fn core::iter::range::{impl core::iter::range::Step for i32}#40::forward_checked(@1: i32, @2: usize) -> core::option::Option<i32>[core::marker::Sized<i32>]
 
 fn core::iter::range::{impl core::iter::range::Step for i32}#40::backward_checked(@1: i32, @2: usize) -> core::option::Option<i32>[core::marker::Sized<i32>]
-
-fn core::iter::range::{impl core::iter::range::Step for i32}#40::forward(@1: i32, @2: usize) -> i32
-
-unsafe fn core::iter::range::{impl core::iter::range::Step for i32}#40::forward_unchecked(@1: i32, @2: usize) -> i32
-
-fn core::iter::range::{impl core::iter::range::Step for i32}#40::backward(@1: i32, @2: usize) -> i32
-
-unsafe fn core::iter::range::{impl core::iter::range::Step for i32}#40::backward_unchecked(@1: i32, @2: usize) -> i32
 
 impl core::iter::range::{impl core::iter::range::Step for i32}#40 : core::iter::range::Step<i32>
 {
@@ -1071,40 +884,29 @@ impl core::iter::range::{impl core::iter::range::Step for i32}#40 : core::iter::
     fn steps_between<'_0, '_1> = core::iter::range::{impl core::iter::range::Step for i32}#40::steps_between<'_0_0, '_0_1>
     fn forward_checked = core::iter::range::{impl core::iter::range::Step for i32}#40::forward_checked
     fn backward_checked = core::iter::range::{impl core::iter::range::Step for i32}#40::backward_checked
-    fn forward = core::iter::range::{impl core::iter::range::Step for i32}#40::forward
-    fn forward_unchecked = core::iter::range::{impl core::iter::range::Step for i32}#40::forward_unchecked
-    fn backward = core::iter::range::{impl core::iter::range::Step for i32}#40::backward
-    fn backward_unchecked = core::iter::range::{impl core::iter::range::Step for i32}#40::backward_unchecked
+}
+
+fn core::clone::impls::{impl core::clone::Clone for usize}#5::clone<'_0>(@1: &'_0 (usize)) -> usize
+
+impl core::clone::impls::{impl core::clone::Clone for usize}#5 : core::clone::Clone<usize>
+{
+    parent_clause0 = core::marker::Sized<usize>
+    fn clone<'_0> = core::clone::impls::{impl core::clone::Clone for usize}#5::clone<'_0_0>
 }
 
 fn core::cmp::impls::{impl core::cmp::PartialEq<usize> for usize}#21::eq<'_0, '_1>(@1: &'_0 (usize), @2: &'_1 (usize)) -> bool
 
-fn core::cmp::impls::{impl core::cmp::PartialEq<usize> for usize}#21::ne<'_0, '_1>(@1: &'_0 (usize), @2: &'_1 (usize)) -> bool
-
 impl core::cmp::impls::{impl core::cmp::PartialEq<usize> for usize}#21 : core::cmp::PartialEq<usize, usize>
 {
     fn eq<'_0, '_1> = core::cmp::impls::{impl core::cmp::PartialEq<usize> for usize}#21::eq<'_0_0, '_0_1>
-    fn ne<'_0, '_1> = core::cmp::impls::{impl core::cmp::PartialEq<usize> for usize}#21::ne<'_0_0, '_0_1>
 }
 
 fn core::cmp::impls::{impl core::cmp::PartialOrd<usize> for usize}#58::partial_cmp<'_0, '_1>(@1: &'_0 (usize), @2: &'_1 (usize)) -> core::option::Option<core::cmp::Ordering>[core::marker::Sized<core::cmp::Ordering>]
-
-fn core::cmp::impls::{impl core::cmp::PartialOrd<usize> for usize}#58::lt<'_0, '_1>(@1: &'_0 (usize), @2: &'_1 (usize)) -> bool
-
-fn core::cmp::impls::{impl core::cmp::PartialOrd<usize> for usize}#58::le<'_0, '_1>(@1: &'_0 (usize), @2: &'_1 (usize)) -> bool
-
-fn core::cmp::impls::{impl core::cmp::PartialOrd<usize> for usize}#58::gt<'_0, '_1>(@1: &'_0 (usize), @2: &'_1 (usize)) -> bool
-
-fn core::cmp::impls::{impl core::cmp::PartialOrd<usize> for usize}#58::ge<'_0, '_1>(@1: &'_0 (usize), @2: &'_1 (usize)) -> bool
 
 impl core::cmp::impls::{impl core::cmp::PartialOrd<usize> for usize}#58 : core::cmp::PartialOrd<usize, usize>
 {
     parent_clause0 = core::cmp::impls::{impl core::cmp::PartialEq<usize> for usize}#21
     fn partial_cmp<'_0, '_1> = core::cmp::impls::{impl core::cmp::PartialOrd<usize> for usize}#58::partial_cmp<'_0_0, '_0_1>
-    fn lt<'_0, '_1> = core::cmp::impls::{impl core::cmp::PartialOrd<usize> for usize}#58::lt<'_0_0, '_0_1>
-    fn le<'_0, '_1> = core::cmp::impls::{impl core::cmp::PartialOrd<usize> for usize}#58::le<'_0_0, '_0_1>
-    fn gt<'_0, '_1> = core::cmp::impls::{impl core::cmp::PartialOrd<usize> for usize}#58::gt<'_0_0, '_0_1>
-    fn ge<'_0, '_1> = core::cmp::impls::{impl core::cmp::PartialOrd<usize> for usize}#58::ge<'_0_0, '_0_1>
 }
 
 fn core::iter::range::{impl core::iter::range::Step for usize}#43::steps_between<'_0, '_1>(@1: &'_0 (usize), @2: &'_1 (usize)) -> core::option::Option<usize>[core::marker::Sized<usize>]
@@ -1112,14 +914,6 @@ fn core::iter::range::{impl core::iter::range::Step for usize}#43::steps_between
 fn core::iter::range::{impl core::iter::range::Step for usize}#43::forward_checked(@1: usize, @2: usize) -> core::option::Option<usize>[core::marker::Sized<usize>]
 
 fn core::iter::range::{impl core::iter::range::Step for usize}#43::backward_checked(@1: usize, @2: usize) -> core::option::Option<usize>[core::marker::Sized<usize>]
-
-fn core::iter::range::{impl core::iter::range::Step for usize}#43::forward(@1: usize, @2: usize) -> usize
-
-unsafe fn core::iter::range::{impl core::iter::range::Step for usize}#43::forward_unchecked(@1: usize, @2: usize) -> usize
-
-fn core::iter::range::{impl core::iter::range::Step for usize}#43::backward(@1: usize, @2: usize) -> usize
-
-unsafe fn core::iter::range::{impl core::iter::range::Step for usize}#43::backward_unchecked(@1: usize, @2: usize) -> usize
 
 impl core::iter::range::{impl core::iter::range::Step for usize}#43 : core::iter::range::Step<usize>
 {
@@ -1129,10 +923,6 @@ impl core::iter::range::{impl core::iter::range::Step for usize}#43 : core::iter
     fn steps_between<'_0, '_1> = core::iter::range::{impl core::iter::range::Step for usize}#43::steps_between<'_0_0, '_0_1>
     fn forward_checked = core::iter::range::{impl core::iter::range::Step for usize}#43::forward_checked
     fn backward_checked = core::iter::range::{impl core::iter::range::Step for usize}#43::backward_checked
-    fn forward = core::iter::range::{impl core::iter::range::Step for usize}#43::forward
-    fn forward_unchecked = core::iter::range::{impl core::iter::range::Step for usize}#43::forward_unchecked
-    fn backward = core::iter::range::{impl core::iter::range::Step for usize}#43::backward
-    fn backward_unchecked = core::iter::range::{impl core::iter::range::Step for usize}#43::backward_unchecked
 }
 
 fn test_crate::nested_loops_enum(@1: usize, @2: usize) -> usize
@@ -1301,32 +1091,17 @@ impl core::clone::impls::{impl core::clone::Clone for u32}#8 : core::clone::Clon
 
 fn core::cmp::impls::{impl core::cmp::PartialEq<u32> for u32}#24::eq<'_0, '_1>(@1: &'_0 (u32), @2: &'_1 (u32)) -> bool
 
-fn core::cmp::impls::{impl core::cmp::PartialEq<u32> for u32}#24::ne<'_0, '_1>(@1: &'_0 (u32), @2: &'_1 (u32)) -> bool
-
 impl core::cmp::impls::{impl core::cmp::PartialEq<u32> for u32}#24 : core::cmp::PartialEq<u32, u32>
 {
     fn eq<'_0, '_1> = core::cmp::impls::{impl core::cmp::PartialEq<u32> for u32}#24::eq<'_0_0, '_0_1>
-    fn ne<'_0, '_1> = core::cmp::impls::{impl core::cmp::PartialEq<u32> for u32}#24::ne<'_0_0, '_0_1>
 }
 
 fn core::cmp::impls::{impl core::cmp::PartialOrd<u32> for u32}#64::partial_cmp<'_0, '_1>(@1: &'_0 (u32), @2: &'_1 (u32)) -> core::option::Option<core::cmp::Ordering>[core::marker::Sized<core::cmp::Ordering>]
-
-fn core::cmp::impls::{impl core::cmp::PartialOrd<u32> for u32}#64::lt<'_0, '_1>(@1: &'_0 (u32), @2: &'_1 (u32)) -> bool
-
-fn core::cmp::impls::{impl core::cmp::PartialOrd<u32> for u32}#64::le<'_0, '_1>(@1: &'_0 (u32), @2: &'_1 (u32)) -> bool
-
-fn core::cmp::impls::{impl core::cmp::PartialOrd<u32> for u32}#64::gt<'_0, '_1>(@1: &'_0 (u32), @2: &'_1 (u32)) -> bool
-
-fn core::cmp::impls::{impl core::cmp::PartialOrd<u32> for u32}#64::ge<'_0, '_1>(@1: &'_0 (u32), @2: &'_1 (u32)) -> bool
 
 impl core::cmp::impls::{impl core::cmp::PartialOrd<u32> for u32}#64 : core::cmp::PartialOrd<u32, u32>
 {
     parent_clause0 = core::cmp::impls::{impl core::cmp::PartialEq<u32> for u32}#24
     fn partial_cmp<'_0, '_1> = core::cmp::impls::{impl core::cmp::PartialOrd<u32> for u32}#64::partial_cmp<'_0_0, '_0_1>
-    fn lt<'_0, '_1> = core::cmp::impls::{impl core::cmp::PartialOrd<u32> for u32}#64::lt<'_0_0, '_0_1>
-    fn le<'_0, '_1> = core::cmp::impls::{impl core::cmp::PartialOrd<u32> for u32}#64::le<'_0_0, '_0_1>
-    fn gt<'_0, '_1> = core::cmp::impls::{impl core::cmp::PartialOrd<u32> for u32}#64::gt<'_0_0, '_0_1>
-    fn ge<'_0, '_1> = core::cmp::impls::{impl core::cmp::PartialOrd<u32> for u32}#64::ge<'_0_0, '_0_1>
 }
 
 fn core::iter::range::{impl core::iter::range::Step for u32}#39::steps_between<'_0, '_1>(@1: &'_0 (u32), @2: &'_1 (u32)) -> core::option::Option<usize>[core::marker::Sized<usize>]
@@ -1334,14 +1109,6 @@ fn core::iter::range::{impl core::iter::range::Step for u32}#39::steps_between<'
 fn core::iter::range::{impl core::iter::range::Step for u32}#39::forward_checked(@1: u32, @2: usize) -> core::option::Option<u32>[core::marker::Sized<u32>]
 
 fn core::iter::range::{impl core::iter::range::Step for u32}#39::backward_checked(@1: u32, @2: usize) -> core::option::Option<u32>[core::marker::Sized<u32>]
-
-fn core::iter::range::{impl core::iter::range::Step for u32}#39::forward(@1: u32, @2: usize) -> u32
-
-unsafe fn core::iter::range::{impl core::iter::range::Step for u32}#39::forward_unchecked(@1: u32, @2: usize) -> u32
-
-fn core::iter::range::{impl core::iter::range::Step for u32}#39::backward(@1: u32, @2: usize) -> u32
-
-unsafe fn core::iter::range::{impl core::iter::range::Step for u32}#39::backward_unchecked(@1: u32, @2: usize) -> u32
 
 impl core::iter::range::{impl core::iter::range::Step for u32}#39 : core::iter::range::Step<u32>
 {
@@ -1351,10 +1118,6 @@ impl core::iter::range::{impl core::iter::range::Step for u32}#39 : core::iter::
     fn steps_between<'_0, '_1> = core::iter::range::{impl core::iter::range::Step for u32}#39::steps_between<'_0_0, '_0_1>
     fn forward_checked = core::iter::range::{impl core::iter::range::Step for u32}#39::forward_checked
     fn backward_checked = core::iter::range::{impl core::iter::range::Step for u32}#39::backward_checked
-    fn forward = core::iter::range::{impl core::iter::range::Step for u32}#39::forward
-    fn forward_unchecked = core::iter::range::{impl core::iter::range::Step for u32}#39::forward_unchecked
-    fn backward = core::iter::range::{impl core::iter::range::Step for u32}#39::backward
-    fn backward_unchecked = core::iter::range::{impl core::iter::range::Step for u32}#39::backward_unchecked
 }
 
 fn test_crate::loop_inside_if(@1: bool, @2: u32) -> u32
@@ -1872,66 +1635,33 @@ fn core::iter::range::Step::steps_between<'_0, '_1, Self>(@1: &'_0 (Self), @2: &
 
 fn core::iter::range::Step::forward_checked<Self>(@1: Self, @2: usize) -> core::option::Option<Self>[Self::parent_clause0]
 
-fn core::iter::range::Step::forward<Self>(@1: Self, @2: usize) -> Self
-
-unsafe fn core::iter::range::Step::forward_unchecked<Self>(@1: Self, @2: usize) -> Self
-
 fn core::iter::range::Step::backward_checked<Self>(@1: Self, @2: usize) -> core::option::Option<Self>[Self::parent_clause0]
-
-fn core::iter::range::Step::backward<Self>(@1: Self, @2: usize) -> Self
-
-unsafe fn core::iter::range::Step::backward_unchecked<Self>(@1: Self, @2: usize) -> Self
 
 fn core::clone::Clone::clone<'_0, Self>(@1: &'_0 (Self)) -> Self
 
 fn core::cmp::PartialOrd::partial_cmp<'_0, '_1, Self, Rhs>(@1: &'_0 (Self), @2: &'_1 (Rhs)) -> core::option::Option<core::cmp::Ordering>[core::marker::Sized<core::cmp::Ordering>]
 
-fn core::cmp::PartialOrd::lt<'_0, '_1, Self, Rhs>(@1: &'_0 (Self), @2: &'_1 (Rhs)) -> bool
-
-fn core::cmp::PartialOrd::le<'_0, '_1, Self, Rhs>(@1: &'_0 (Self), @2: &'_1 (Rhs)) -> bool
-
-fn core::cmp::PartialOrd::gt<'_0, '_1, Self, Rhs>(@1: &'_0 (Self), @2: &'_1 (Rhs)) -> bool
-
-fn core::cmp::PartialOrd::ge<'_0, '_1, Self, Rhs>(@1: &'_0 (Self), @2: &'_1 (Rhs)) -> bool
-
 fn core::cmp::PartialEq::eq<'_0, '_1, Self, Rhs>(@1: &'_0 (Self), @2: &'_1 (Rhs)) -> bool
 
-fn core::cmp::PartialEq::ne<'_0, '_1, Self, Rhs>(@1: &'_0 (Self), @2: &'_1 (Rhs)) -> bool
+trait core::cmp::Eq<Self>
+{
+    parent_clause0 : [@TraitClause0]: core::cmp::PartialEq<Self, Self>
+}
+
+trait core::cmp::Ord<Self>
+{
+    parent_clause0 : [@TraitClause0]: core::cmp::Eq<Self>
+    parent_clause1 : [@TraitClause1]: core::cmp::PartialOrd<Self, Self>
+    fn cmp<'_0, '_1> = core::cmp::Ord::cmp<'_0_0, '_0_1, Self>
+}
+
+trait core::iter::adapters::zip::TrustedRandomAccessNoCoerce<Self>
+{
+    parent_clause0 : [@TraitClause0]: core::marker::Sized<Self>
+    const MAY_HAVE_SIDE_EFFECT : bool
+}
 
 fn core::cmp::Ord::cmp<'_0, '_1, Self>(@1: &'_0 (Self), @2: &'_1 (Self)) -> core::cmp::Ordering
-
-fn core::iter::traits::iterator::Iterator::size_hint<'_0, Self>(@1: &'_0 (Self)) -> (usize, core::option::Option<usize>[core::marker::Sized<usize>])
-
-fn core::iter::traits::iterator::Iterator::count<Self>(@1: Self) -> usize
-where
-    [@TraitClause0]: core::marker::Sized<Self>,
-
-fn core::iter::traits::iterator::Iterator::nth<'_0, Self>(@1: &'_0 mut (Self), @2: usize) -> core::option::Option<Self::Item>[Self::parent_clause0]
-
-fn core::iter::traits::iterator::Iterator::last<Self>(@1: Self) -> core::option::Option<Self::Item>[Self::parent_clause0]
-where
-    [@TraitClause0]: core::marker::Sized<Self>,
-
-fn core::iter::traits::iterator::Iterator::min<Self>(@1: Self) -> core::option::Option<Self::Item>[Self::parent_clause0]
-where
-    [@TraitClause0]: core::marker::Sized<Self>,
-    [@TraitClause1]: core::cmp::Ord<Self::Item>,
-
-fn core::iter::traits::iterator::Iterator::max<Self>(@1: Self) -> core::option::Option<Self::Item>[Self::parent_clause0]
-where
-    [@TraitClause0]: core::marker::Sized<Self>,
-    [@TraitClause1]: core::cmp::Ord<Self::Item>,
-
-fn core::iter::traits::iterator::Iterator::is_sorted<Self>(@1: Self) -> bool
-where
-    [@TraitClause0]: core::marker::Sized<Self>,
-    [@TraitClause1]: core::cmp::PartialOrd<Self::Item, Self::Item>,
-
-fn core::iter::traits::iterator::Iterator::advance_by<'_0, Self>(@1: &'_0 mut (Self), @2: usize) -> core::result::Result<(), core::num::nonzero::NonZero<usize>[core::marker::Sized<usize>, core::num::nonzero::{impl core::num::nonzero::ZeroablePrimitive for usize}#26]>[core::marker::Sized<()>, core::marker::Sized<core::num::nonzero::NonZero<usize>[core::marker::Sized<usize>, core::num::nonzero::{impl core::num::nonzero::ZeroablePrimitive for usize}#26]>]
-
-unsafe fn core::iter::traits::iterator::Iterator::__iterator_get_unchecked<'_0, Self>(@1: &'_0 mut (Self), @2: usize) -> Self::Item
-where
-    [@TraitClause0]: core::iter::adapters::zip::TrustedRandomAccessNoCoerce<Self>,
 
 trait core::marker::Tuple<Self>
 
@@ -2017,6 +1747,11 @@ trait core::iter::traits::double_ended::DoubleEndedIterator<Self>
 trait core::iter::traits::exact_size::ExactSizeIterator<Self>
 {
     parent_clause0 : [@TraitClause0]: core::iter::traits::iterator::Iterator<Self>
+}
+
+trait core::marker::Copy<Self>
+{
+    parent_clause0 : [@TraitClause0]: core::clone::Clone<Self>
 }
 
 trait core::iter::traits::accum::Sum<Self, A>

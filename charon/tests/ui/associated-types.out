@@ -6,7 +6,6 @@ trait core::clone::Clone<Self>
 {
     parent_clause0 : [@TraitClause0]: core::marker::Sized<Self>
     fn clone<'_0> = core::clone::Clone::clone<'_0_0, Self>
-    fn clone_from<'_0, '_1> = core::clone::Clone::clone_from<'_0_0, '_0_1, Self>
 }
 
 trait core::marker::Copy<Self>
@@ -51,11 +50,6 @@ where
     [@TraitClause0]: core::marker::Sized<T>,
     [@TraitClause1]: core::clone::Clone<T>,
 
-fn core::option::{impl core::clone::Clone for core::option::Option<T>[@TraitClause0]}#5::clone_from<'_0, '_1, T>(@1: &'_0 mut (core::option::Option<T>[@TraitClause0]), @2: &'_1 (core::option::Option<T>[@TraitClause0]))
-where
-    [@TraitClause0]: core::marker::Sized<T>,
-    [@TraitClause1]: core::clone::Clone<T>,
-
 impl<T> core::option::{impl core::clone::Clone for core::option::Option<T>[@TraitClause0]}#5<T> : core::clone::Clone<core::option::Option<T>[@TraitClause0]>
 where
     [@TraitClause0]: core::marker::Sized<T>,
@@ -63,7 +57,6 @@ where
 {
     parent_clause0 = core::marker::Sized<core::option::Option<T>[@TraitClause0]>
     fn clone<'_0> = core::option::{impl core::clone::Clone for core::option::Option<T>[@TraitClause0]}#5::clone<'_0_0, T>[@TraitClause0, @TraitClause1]
-    fn clone_from<'_0, '_1> = core::option::{impl core::clone::Clone for core::option::Option<T>[@TraitClause0]}#5::clone_from<'_0_0, '_0_1, T>[@TraitClause0, @TraitClause1]
 }
 
 fn test_crate::{impl test_crate::Foo<'a, core::option::Option<&'a (T)>[core::marker::Sized<&'_ (T)>]> for &'a (T)}::use_item_required<'a, T>(@1: core::option::Option<&'_ (T)>[core::marker::Sized<&'_ (T)>]) -> core::option::Option<&'_ (T)>[core::marker::Sized<&'_ (T)>]
@@ -309,8 +302,6 @@ where
 }
 
 fn test_crate::Foo::use_item_required<'a, Self, Self_Item>(@1: Self_Item) -> Self_Item
-
-fn core::clone::Clone::clone_from<'_0, '_1, Self>(@1: &'_0 mut (Self), @2: &'_1 (Self))
 
 fn alloc::borrow::ToOwned::to_owned<'_0, Self, Self_Owned>(@1: &'_0 (Self)) -> Self_Owned
 
