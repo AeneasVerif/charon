@@ -565,15 +565,17 @@ impl RefKind {
 #[derive(Visitor)]
 pub(crate) struct SubstVisitor<'a> {
     generics: &'a GenericArgs,
+    self_ref: &'a TraitRefKind,
     // Tracks the depth of binders we're inside of.
     // Important: we must update it whenever we go inside a binder.
     binder_depth: DeBruijnId,
 }
 
 impl<'a> SubstVisitor<'a> {
-    pub(crate) fn new(generics: &'a GenericArgs) -> Self {
+    pub(crate) fn new(generics: &'a GenericArgs, self_ref: &'a TraitRefKind) -> Self {
         Self {
             generics,
+            self_ref,
             binder_depth: DeBruijnId::zero(),
         }
     }
@@ -654,6 +656,9 @@ impl VisitAstMut for SubstVisitor<'_> {
 
     fn exit_trait_ref_kind(&mut self, kind: &mut TraitRefKind) {
         match kind {
+            TraitRefKind::SelfId => {
+                *kind = self.self_ref.clone().move_under_binders(self.binder_depth);
+            }
             TraitRefKind::Clause(var) => {
                 if let Some(new_tr) = self.process_var(var) {
                     *kind = new_tr.kind;
@@ -666,8 +671,12 @@ impl VisitAstMut for SubstVisitor<'_> {
 
 /// Types that are involved at the type-level and may be substituted around.
 pub trait TyVisitable: Sized + AstVisitable {
-    fn substitute(mut self, generics: &GenericArgs) -> Self {
-        self.drive_mut(&mut SubstVisitor::new(generics));
+    fn substitute(self, generics: &GenericArgs) -> Self {
+        self.substitute_with_self(generics, &TraitRefKind::SelfId)
+    }
+
+    fn substitute_with_self(mut self, generics: &GenericArgs, self_ref: &TraitRefKind) -> Self {
+        self.drive_mut(&mut SubstVisitor::new(generics, self_ref));
         self
     }
 
