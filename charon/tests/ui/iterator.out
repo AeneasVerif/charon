@@ -1118,6 +1118,38 @@ impl<'_0> core::ops::arith::{impl core::ops::arith::AddAssign<&'_0 (i32)> for i3
     fn add_assign<'_0> = core::ops::arith::{impl core::ops::arith::AddAssign<&'_0 (i32)> for i32}#365::add_assign<'_0, '_0_0>
 }
 
+fn core::ops::function::FnMut::call_mut<'_0, Self, Args>(@1: &'_0 mut (Self), @2: Args) -> Self::parent_clause0::Output
+
+fn core::ops::function::FnOnce::call_once<Self, Args>(@1: Self, @2: Args) -> Self::Output
+
+fn core::iter::traits::iterator::Iterator::size_hint<'_0, Self>(@1: &'_0 (Self)) -> (usize, core::option::Option<usize>[core::marker::Sized<usize>])
+
+fn core::iter::traits::iterator::Iterator::fold<Self, B, F>(@1: Self, @2: B, @3: F) -> B
+where
+    [@TraitClause0]: core::marker::Sized<B>,
+    [@TraitClause1]: core::marker::Sized<F>,
+    [@TraitClause2]: core::marker::Sized<Self>,
+    [@TraitClause3]: core::ops::function::FnMut<F, (B, Self::Item)>,
+    @TraitClause3::parent_clause0::Output = B,
+
+fn core::iter::traits::iterator::Iterator::count<Self>(@1: Self) -> usize
+where
+    [@TraitClause0]: core::marker::Sized<Self>,
+
+fn core::iter::traits::iterator::Iterator::last<Self>(@1: Self) -> core::option::Option<Self::Item>[Self::parent_clause0]
+where
+    [@TraitClause0]: core::marker::Sized<Self>,
+
+fn core::iter::traits::iterator::Iterator::advance_by<'_0, Self>(@1: &'_0 mut (Self), @2: usize) -> core::result::Result<(), core::num::nonzero::NonZero<usize>[core::marker::Sized<usize>, core::num::nonzero::{impl core::num::nonzero::ZeroablePrimitive for usize}#26]>[core::marker::Sized<()>, core::marker::Sized<core::num::nonzero::NonZero<usize>[core::marker::Sized<usize>, core::num::nonzero::{impl core::num::nonzero::ZeroablePrimitive for usize}#26]>]
+
+fn core::clone::Clone::clone<'_0, Self>(@1: &'_0 (Self)) -> Self
+
+fn core::clone::Clone::clone_from<'_0, '_1, Self>(@1: &'_0 mut (Self), @2: &'_1 (Self))
+
+unsafe fn core::iter::traits::iterator::Iterator::__iterator_get_unchecked<'_0, Self>(@1: &'_0 mut (Self), @2: usize) -> Self::Item
+where
+    [@TraitClause0]: core::iter::adapters::zip::TrustedRandomAccessNoCoerce<Self>,
+
 fn core::iter::traits::iterator::Iterator::next_chunk<'_0, Self, const N : usize>(@1: &'_0 mut (Self)) -> core::result::Result<Array<Self::Item, const N : usize>, core::array::iter::IntoIter<Self::Item, const N : usize>[Self::parent_clause0]>[core::marker::Sized<Array<Self::Item, const N : usize>>, core::marker::Sized<core::array::iter::IntoIter<Self::Item, const N : usize>[Self::parent_clause0]>]
 where
     [@TraitClause0]: core::marker::Sized<Self>,
@@ -1614,38 +1646,6 @@ where
     [@TraitClause3]: core::ops::function::FnMut<F, (Self::Item)>,
     [@TraitClause4]: core::cmp::PartialOrd<K, K>,
     @TraitClause3::parent_clause0::Output = K,
-
-fn core::ops::function::FnMut::call_mut<'_0, Self, Args>(@1: &'_0 mut (Self), @2: Args) -> Self::parent_clause0::Output
-
-fn core::ops::function::FnOnce::call_once<Self, Args>(@1: Self, @2: Args) -> Self::Output
-
-fn core::clone::Clone::clone<'_0, Self>(@1: &'_0 (Self)) -> Self
-
-fn core::clone::Clone::clone_from<'_0, '_1, Self>(@1: &'_0 mut (Self), @2: &'_1 (Self))
-
-fn core::iter::traits::iterator::Iterator::size_hint<'_0, Self>(@1: &'_0 (Self)) -> (usize, core::option::Option<usize>[core::marker::Sized<usize>])
-
-fn core::iter::traits::iterator::Iterator::count<Self>(@1: Self) -> usize
-where
-    [@TraitClause0]: core::marker::Sized<Self>,
-
-fn core::iter::traits::iterator::Iterator::last<Self>(@1: Self) -> core::option::Option<Self::Item>[Self::parent_clause0]
-where
-    [@TraitClause0]: core::marker::Sized<Self>,
-
-fn core::iter::traits::iterator::Iterator::advance_by<'_0, Self>(@1: &'_0 mut (Self), @2: usize) -> core::result::Result<(), core::num::nonzero::NonZero<usize>[core::marker::Sized<usize>, core::num::nonzero::{impl core::num::nonzero::ZeroablePrimitive for usize}#26]>[core::marker::Sized<()>, core::marker::Sized<core::num::nonzero::NonZero<usize>[core::marker::Sized<usize>, core::num::nonzero::{impl core::num::nonzero::ZeroablePrimitive for usize}#26]>]
-
-fn core::iter::traits::iterator::Iterator::fold<Self, B, F>(@1: Self, @2: B, @3: F) -> B
-where
-    [@TraitClause0]: core::marker::Sized<B>,
-    [@TraitClause1]: core::marker::Sized<F>,
-    [@TraitClause2]: core::marker::Sized<Self>,
-    [@TraitClause3]: core::ops::function::FnMut<F, (B, Self::Item)>,
-    @TraitClause3::parent_clause0::Output = B,
-
-unsafe fn core::iter::traits::iterator::Iterator::__iterator_get_unchecked<'_0, Self>(@1: &'_0 mut (Self), @2: usize) -> Self::Item
-where
-    [@TraitClause0]: core::iter::adapters::zip::TrustedRandomAccessNoCoerce<Self>,
 
 fn core::cmp::PartialEq::eq<'_0, '_1, Self, Rhs>(@1: &'_0 (Self), @2: &'_1 (Rhs)) -> bool
 

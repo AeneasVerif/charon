@@ -93,7 +93,7 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
         span: Span,
         def: &hax::FullDef,
     ) -> Result<ItemKind, Error> {
-        let assoc = match &def.kind {
+        let assoc = match def.kind() {
             hax::FullDefKind::AssocTy {
                 associated_item, ..
             }
@@ -124,6 +124,7 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
                 impl_generics,
                 impl_required_impl_exprs,
                 implemented_trait_ref,
+                implemented_trait_item,
                 overrides_default,
                 ..
             } => {
@@ -139,6 +140,12 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
                     )?,
                 };
                 let trait_ref = self.translate_trait_ref(span, implemented_trait_ref)?;
+                if matches!(def.kind(), hax::FullDefKind::AssocFn { .. }) {
+                    // Ensure we translate the corresponding decl signature.
+                    // FIXME(self_clause): also ensure we translate associated globals
+                    // consistently; to do once we have clearer `Self` clause handling.
+                    let _ = self.register_fun_decl_id(span, implemented_trait_item);
+                }
                 ItemKind::TraitImpl {
                     impl_ref,
                     trait_ref,

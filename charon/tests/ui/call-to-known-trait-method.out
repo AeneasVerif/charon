@@ -53,13 +53,11 @@ trait core::clone::Clone<Self>
 {
     parent_clause0 : [@TraitClause0]: core::marker::Sized<Self>
     fn clone<'_0> = core::clone::Clone::clone<'_0_0, Self>
-    fn clone_from<'_0, '_1> = core::clone::Clone::clone_from<'_0_0, '_0_1, Self>
 }
 
 trait core::cmp::PartialEq<Self, Rhs>
 {
     fn eq<'_0, '_1> = core::cmp::PartialEq::eq<'_0_0, '_0_1, Self, Rhs>
-    fn ne<'_0, '_1> = core::cmp::PartialEq::ne<'_0_0, '_0_1, Self, Rhs>
 }
 
 fn test_crate::{impl test_crate::Trait<B, (A, B)> for test_crate::Struct<A>[@TraitClause0]}::method<A, B, C>()
@@ -111,12 +109,9 @@ impl core::clone::impls::{impl core::clone::Clone for u8}#6 : core::clone::Clone
 
 fn core::cmp::impls::{impl core::cmp::PartialEq<bool> for bool}#19::eq<'_0, '_1>(@1: &'_0 (bool), @2: &'_1 (bool)) -> bool
 
-fn core::cmp::impls::{impl core::cmp::PartialEq<bool> for bool}#19::ne<'_0, '_1>(@1: &'_0 (bool), @2: &'_1 (bool)) -> bool
-
 impl core::cmp::impls::{impl core::cmp::PartialEq<bool> for bool}#19 : core::cmp::PartialEq<bool, bool>
 {
     fn eq<'_0, '_1> = core::cmp::impls::{impl core::cmp::PartialEq<bool> for bool}#19::eq<'_0_0, '_0_1>
-    fn ne<'_0, '_1> = core::cmp::impls::{impl core::cmp::PartialEq<bool> for bool}#19::ne<'_0_0, '_0_1>
 }
 
 fn test_crate::main()
@@ -147,11 +142,7 @@ where
 
 fn core::clone::Clone::clone<'_0, Self>(@1: &'_0 (Self)) -> Self
 
-fn core::clone::Clone::clone_from<'_0, '_1, Self>(@1: &'_0 mut (Self), @2: &'_1 (Self))
-
 fn core::cmp::PartialEq::eq<'_0, '_1, Self, Rhs>(@1: &'_0 (Self), @2: &'_1 (Rhs)) -> bool
-
-fn core::cmp::PartialEq::ne<'_0, '_1, Self, Rhs>(@1: &'_0 (Self), @2: &'_1 (Rhs)) -> bool
 
 
 

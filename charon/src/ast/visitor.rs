@@ -15,6 +15,7 @@ use std::{any::Any, collections::HashMap};
 use crate::ast::*;
 use derive_generic_visitor::*;
 use index_vec::Idx;
+use indexmap::IndexMap;
 
 /// An overrideable visitor trait that can be used to conveniently traverse the whole contents of
 /// an item. This is useful when e.g. dealing with types, which show up pretty much everywhere in
@@ -105,6 +106,22 @@ impl<K: Any, T: AstVisitable> AstVisitable for HashMap<K, T> {
     }
 }
 
+/// Manual impl that only visits the values
+impl<K: Any, T: AstVisitable> AstVisitable for IndexMap<K, T> {
+    fn drive<V: VisitAst>(&self, v: &mut V) -> ControlFlow<V::Break> {
+        for x in self.values() {
+            v.visit(x)?;
+        }
+        Continue(())
+    }
+    fn drive_mut<V: VisitAstMut>(&mut self, v: &mut V) -> ControlFlow<V::Break> {
+        for x in self.values_mut() {
+            v.visit(x)?;
+        }
+        Continue(())
+    }
+}
+
 /// A smaller visitor group just for function bodies. This explores statements, places and
 /// operands, but does not recurse into types.
 ///
@@ -133,8 +150,10 @@ impl<K: Any, T: AstVisitable> AstVisitable for HashMap<K, T> {
         llbc_ast::ExprBody, llbc_ast::RawStatement, llbc_ast::Switch,
         ullbc_ast::BlockData, ullbc_ast::ExprBody, ullbc_ast::RawStatement,
         ullbc_ast::RawTerminator, ullbc_ast::SwitchTargets,
+        Body, Opaque,
         for<T: BodyVisitable> Box<T>,
         for<T: BodyVisitable> Option<T>,
+        for<T: BodyVisitable, E: BodyVisitable> Result<T, E>,
         for<A: BodyVisitable, B: BodyVisitable> (A, B),
         for<T: BodyVisitable> Vec<T>,
         for<I: Idx, T: BodyVisitable> Vector<I, T>,

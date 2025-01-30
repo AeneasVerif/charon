@@ -52,6 +52,9 @@ pub struct TranslateOptions {
     pub item_opacities: Vec<(NamePattern, ItemOpacity)>,
     /// List of traits for which we transform associated types to type parameters.
     pub remove_associated_types: Vec<NamePattern>,
+    /// Usually we skip the provided methods that aren't used. When this flag is on, we translate
+    /// them all.
+    pub translate_all_methods: bool,
 }
 
 impl TranslateOptions {
@@ -123,6 +126,7 @@ impl TranslateOptions {
             mir_level,
             item_opacities,
             remove_associated_types,
+            translate_all_methods: options.translate_all_methods,
         }
     }
 
@@ -872,7 +876,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
         *opacity
     }
 
-    pub(crate) fn register_id(
+    pub(crate) fn register_id_no_enqueue(
         &mut self,
         src: &Option<DepSource>,
         id: TransItemSource,
@@ -898,7 +902,6 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
                     }
                 };
                 // Add the id to the queue of declarations to translate
-                self.items_to_translate.insert(id, trans_id);
                 self.id_map.insert(id, trans_id);
                 self.reverse_id_map.insert(trans_id, id);
                 self.translated.all_ids.insert(trans_id);
@@ -918,13 +921,30 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
         item_id
     }
 
+    pub(crate) fn enqueue_id(&mut self, id: impl Into<AnyTransId>) {
+        let id = id.into();
+        let src_id = self.reverse_id_map[&id];
+        self.items_to_translate.insert(src_id, id);
+    }
+
+    /// Register this id and enqueue it for translation.
+    pub(crate) fn register_and_enqueue_id(
+        &mut self,
+        src: &Option<DepSource>,
+        id: TransItemSource,
+    ) -> AnyTransId {
+        let item_id = self.register_id_no_enqueue(src, id);
+        self.enqueue_id(item_id);
+        item_id
+    }
+
     pub(crate) fn register_type_decl_id(
         &mut self,
         src: &Option<DepSource>,
         id: impl Into<DefId>,
     ) -> TypeDeclId {
         *self
-            .register_id(src, TransItemSource::Type(id.into()))
+            .register_and_enqueue_id(src, TransItemSource::Type(id.into()))
             .as_type()
             .unwrap()
     }
@@ -935,7 +955,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
         id: impl Into<DefId>,
     ) -> FunDeclId {
         *self
-            .register_id(src, TransItemSource::Fun(id.into()))
+            .register_and_enqueue_id(src, TransItemSource::Fun(id.into()))
             .as_fun()
             .unwrap()
     }
@@ -946,7 +966,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
         id: impl Into<DefId>,
     ) -> TraitDeclId {
         *self
-            .register_id(src, TransItemSource::TraitDecl(id.into()))
+            .register_and_enqueue_id(src, TransItemSource::TraitDecl(id.into()))
             .as_trait_decl()
             .unwrap()
     }
@@ -968,7 +988,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
         }
 
         *self
-            .register_id(src, TransItemSource::TraitImpl(id))
+            .register_and_enqueue_id(src, TransItemSource::TraitImpl(id))
             .as_trait_impl()
             .unwrap()
     }
@@ -979,7 +999,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
         id: impl Into<DefId>,
     ) -> GlobalDeclId {
         *self
-            .register_id(src, TransItemSource::Global(id.into()))
+            .register_and_enqueue_id(src, TransItemSource::Global(id.into()))
             .as_global()
             .unwrap()
     }
@@ -1051,6 +1071,11 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
         self.blocks_map.get(&rid)
     }
 
+    pub(crate) fn register_id_no_enqueue(&mut self, span: Span, id: TransItemSource) -> AnyTransId {
+        let src = self.make_dep_source(span);
+        self.t_ctx.register_id_no_enqueue(&src, id)
+    }
+
     pub(crate) fn register_type_decl_id(&mut self, span: Span, id: impl Into<DefId>) -> TypeDeclId {
         let src = self.make_dep_source(span);
         self.t_ctx.register_type_decl_id(&src, id)
@@ -1059,6 +1084,17 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
     pub(crate) fn register_fun_decl_id(&mut self, span: Span, id: impl Into<DefId>) -> FunDeclId {
         let src = self.make_dep_source(span);
         self.t_ctx.register_fun_decl_id(&src, id)
+    }
+
+    pub(crate) fn register_fun_decl_id_no_enqueue(
+        &mut self,
+        span: Span,
+        id: impl Into<DefId>,
+    ) -> FunDeclId {
+        self.register_id_no_enqueue(span, TransItemSource::Fun(id.into()))
+            .as_fun()
+            .copied()
+            .unwrap()
     }
 
     pub(crate) fn register_global_decl_id(

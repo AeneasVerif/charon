@@ -185,9 +185,8 @@ pub enum ItemOpacity {
     /// Translate the item fully.
     Transparent,
     /// Translate the item depending on the normal rust visibility of its contents: for types, we
-    /// translate fully if it is a struct with public fields or an enum; for functions and globals
-    /// this is equivalent to `Opaque`; for trait decls and impls this is equivalent to
-    /// `Transparent`.
+    /// translate fully if it is a struct with public fields or an enum; for other items this is
+    /// equivalent to `Opaque`.
     Foreign,
     /// Translate the item name and signature, but not its contents. For function and globals, this
     /// means we don't translate the body (the code); for ADTs, this means we don't translate the

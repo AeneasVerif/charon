@@ -12,20 +12,6 @@ error: Item `test_crate::LendingIterator` caused errors; ignoring.
   | ^^^^^^^^^^^^^^^^^^^^^
   |
 
-error: Found unsupported GAT `Item` when resolving trait `core::marker::Sized<@TraitClause2::Item>`
-  --> tests/ui/generic-associated-types.rs:27:28
-   |
-27 |     while let Some(item) = iter.next() {
-   |                            ^^^^^^^^^^^
-   |
-
-error: Error during trait resolution: Found unsupported GAT `Item` when resolving trait `core::marker::Sized<@TraitClause2::Item>`
-  --> tests/ui/generic-associated-types.rs:27:28
-   |
-27 |     while let Some(item) = iter.next() {
-   |                            ^^^^^^^^^^^
-   |
-
 error: Found unsupported GAT `Item` when resolving trait `core::marker::Sized<Self::Item>`
  --> tests/ui/generic-associated-types.rs:9:5
   |
@@ -39,6 +25,20 @@ error: Error during trait resolution: Found unsupported GAT `Item` when resolvin
 9 |     fn next<'a>(&'a mut self) -> Option<Self::Item<'a>>;
   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
   |
+
+error: Found unsupported GAT `Item` when resolving trait `core::marker::Sized<@TraitClause2::Item>`
+  --> tests/ui/generic-associated-types.rs:27:28
+   |
+27 |     while let Some(item) = iter.next() {
+   |                            ^^^^^^^^^^^
+   |
+
+error: Error during trait resolution: Found unsupported GAT `Item` when resolving trait `core::marker::Sized<@TraitClause2::Item>`
+  --> tests/ui/generic-associated-types.rs:27:28
+   |
+27 |     while let Some(item) = iter.next() {
+   |                            ^^^^^^^^^^^
+   |
 
 warning: unused variable: `x`
   --> tests/ui/generic-associated-types.rs:33:9
