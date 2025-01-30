@@ -6,6 +6,7 @@ use charon_lib::meta::ItemMeta;
 use charon_lib::pretty::FmtWithCtx;
 use charon_lib::ullbc_ast as ast;
 use hax_frontend_exporter as hax;
+use indexmap::IndexMap;
 use itertools::Itertools;
 use rustc_hir::def_id::DefId;
 use std::collections::HashMap;
@@ -76,10 +77,10 @@ impl BodyTransCtx<'_, '_> {
         // Translate the associated items
         // We do something subtle here: TODO: explain
         let mut consts = Vec::new();
-        let mut const_defaults = HashMap::new();
+        let mut const_defaults = IndexMap::new();
         let mut types = Vec::new();
         let mut type_clauses = Vec::new();
-        let mut type_defaults = HashMap::new();
+        let mut type_defaults = IndexMap::new();
         let mut required_methods = Vec::new();
         let mut provided_methods = Vec::new();
         for (item_name, hax_item, hax_def) in &items {

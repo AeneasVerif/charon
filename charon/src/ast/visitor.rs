@@ -15,6 +15,7 @@ use std::{any::Any, collections::HashMap};
 use crate::ast::*;
 use derive_generic_visitor::*;
 use index_vec::Idx;
+use indexmap::IndexMap;
 
 /// An overrideable visitor trait that can be used to conveniently traverse the whole contents of
 /// an item. This is useful when e.g. dealing with types, which show up pretty much everywhere in
@@ -91,6 +92,22 @@ pub trait AstVisitable: Any {
 
 /// Manual impl that only visits the values
 impl<K: Any, T: AstVisitable> AstVisitable for HashMap<K, T> {
+    fn drive<V: VisitAst>(&self, v: &mut V) -> ControlFlow<V::Break> {
+        for x in self.values() {
+            v.visit(x)?;
+        }
+        Continue(())
+    }
+    fn drive_mut<V: VisitAstMut>(&mut self, v: &mut V) -> ControlFlow<V::Break> {
+        for x in self.values_mut() {
+            v.visit(x)?;
+        }
+        Continue(())
+    }
+}
+
+/// Manual impl that only visits the values
+impl<K: Any, T: AstVisitable> AstVisitable for IndexMap<K, T> {
     fn drive<V: VisitAst>(&self, v: &mut V) -> ControlFlow<V::Break> {
         for x in self.values() {
             v.visit(x)?;

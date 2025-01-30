@@ -4,9 +4,9 @@ use crate::ids::Vector;
 use crate::llbc_ast;
 use crate::ullbc_ast;
 use derive_generic_visitor::{Drive, DriveMut};
+use indexmap::IndexMap;
 use macros::{EnumIsA, EnumToGetters};
 use serde::{Deserialize, Serialize};
-use std::collections::HashMap;
 
 /// A variable
 #[derive(Debug, Clone, Serialize, Deserialize, Drive, DriveMut)]
@@ -242,12 +242,12 @@ pub struct TraitDecl {
     pub consts: Vec<(TraitItemName, Ty)>,
     /// Records associated constants that have a default value.
     #[charon::opaque]
-    pub const_defaults: HashMap<TraitItemName, GlobalDeclRef>,
+    pub const_defaults: IndexMap<TraitItemName, GlobalDeclRef>,
     /// The associated types declared in the trait.
     pub types: Vec<TraitItemName>,
     /// Records associated types that have a default value.
     #[charon::opaque]
-    pub type_defaults: HashMap<TraitItemName, Ty>,
+    pub type_defaults: IndexMap<TraitItemName, Ty>,
     /// List of trait clauses that apply to each associated type. This is used during translation,
     /// but the `lift_associated_item_clauses` pass moves them to be parent clauses later. Hence
     /// this is empty after that pass.
