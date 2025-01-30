@@ -1618,6 +1618,7 @@ and cli_options_of_json (ctx : of_json_ctx) (js : json) :
           ("mir_optimized", mir_optimized);
           ("crate_name", crate_name);
           ("input_file", input_file);
+          ("read_llbc", read_llbc);
           ("dest_dir", dest_dir);
           ("dest_file", dest_file);
           ("use_polonius", use_polonius);
@@ -1647,6 +1648,7 @@ and cli_options_of_json (ctx : of_json_ctx) (js : json) :
         let* mir_optimized = bool_of_json ctx mir_optimized in
         let* crate_name = option_of_json string_of_json ctx crate_name in
         let* input_file = option_of_json path_buf_of_json ctx input_file in
+        let* read_llbc = option_of_json path_buf_of_json ctx read_llbc in
         let* dest_dir = option_of_json path_buf_of_json ctx dest_dir in
         let* dest_file = option_of_json path_buf_of_json ctx dest_file in
         let* use_polonius = bool_of_json ctx use_polonius in
@@ -1679,6 +1681,7 @@ and cli_options_of_json (ctx : of_json_ctx) (js : json) :
              mir_optimized;
              crate_name;
              input_file;
+             read_llbc;
              dest_dir;
              dest_file;
              use_polonius;

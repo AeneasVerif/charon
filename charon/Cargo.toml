@@ -1,6 +1,6 @@
 [package]
 name = "charon"
-version = "0.1.65"
+version = "0.1.66"
 authors = ["Son Ho <hosonmarc@gmail.com>"]
 edition = "2021"
 license = "Apache-2.0"
@@ -23,9 +23,6 @@ name = "charon-driver"
 path = "src/bin/charon-driver/main.rs"
 
 [[bin]]
-# The rustc driver. The resulting binary dynamically links to rust dylibs
-# including `librustc_driver.so`. Do not call directly, call charon instead to
-# let it set up the right paths.
 name = "generate-ml"
 path = "src/bin/generate-ml/main.rs"
 

@@ -33,15 +33,6 @@
 // For when we use charon on itself
 #![register_tool(charon)]
 
-// We must not link with the `charon_lib` crate because that would make `charon` need to
-// dynamically link to `librustc_driver.so` etc. The `charon` binary must be runnable _before_
-// setting up the correct toolchain paths.
-#[path = "../../logger.rs"]
-mod logger;
-#[path = "../../options.rs"]
-mod options;
-mod toml_config;
-
 use anyhow::bail;
 use clap::Parser;
 use options::{CliOpts, CHARON_ARGS};
@@ -50,6 +41,13 @@ use std::env;
 use std::ffi::OsStr;
 use std::path::PathBuf;
 use std::process::Command;
+use std::process::ExitStatus;
+
+use charon_lib::logger;
+use charon_lib::options;
+use charon_lib::trace;
+
+mod toml_config;
 
 // Store the toolchain details directly in the binary.
 static PINNED_TOOLCHAIN: &str = include_str!("../../../rust-toolchain");
@@ -177,7 +175,11 @@ pub fn main() -> anyhow::Result<()> {
         });
     let host = &rustc_version.host;
 
-    let exit_status = if options.no_cargo {
+    let exit_status = if let Some(llbc_file) = options.read_llbc {
+        let krate = charon_lib::deserialize_llbc(&llbc_file)?;
+        println!("{krate}");
+        ExitStatus::default()
+    } else if options.no_cargo {
         if !options.cargo_args.is_empty() {
             bail!("Option `--cargo-arg` is not compatible with `--no-cargo`")
         }

@@ -394,6 +394,8 @@ and cli_options = {
         This is needed if you want to define a custom entry point (to only
         extract part of a crate for instance).
      *)
+  read_llbc : path_buf option;
+      (** Read an llbc file and pretty-print it. This is a terrible API, we should use subcommands. *)
   dest_dir : path_buf option;
       (** The destination directory. Files will be generated as `<dest_dir>/<crate_name>.{u}llbc`,
         unless `dest_file` is set. `dest_dir` defaults to the current directory.

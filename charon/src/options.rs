@@ -52,6 +52,10 @@ pub struct CliOpts {
     #[clap(long = "input", value_parser)]
     #[serde(default)]
     pub input_file: Option<PathBuf>,
+    /// Read an llbc file and pretty-print it. This is a terrible API, we should use subcommands.
+    #[clap(long = "read-llbc", value_parser)]
+    #[serde(default)]
+    pub read_llbc: Option<PathBuf>,
     /// The destination directory. Files will be generated as `<dest_dir>/<crate_name>.{u}llbc`,
     /// unless `dest_file` is set. `dest_dir` defaults to the current directory.
     #[clap(long = "dest", value_parser)]
