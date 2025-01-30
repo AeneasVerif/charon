@@ -11,15 +11,12 @@
 use anyhow::{bail, Context, Result};
 use assert_cmd::cargo::CommandCargoExt;
 use charon_lib::ast::*;
-use charon_lib::export::CrateData;
 use convert_case::{Case, Casing};
 use indoc::indoc;
 use itertools::Itertools;
 use std::collections::{HashMap, HashSet};
 use std::fmt::Write;
 use std::fs;
-use std::fs::File;
-use std::io::BufReader;
 use std::path::PathBuf;
 use std::process::Command;
 
@@ -926,19 +923,7 @@ fn main() -> Result<()> {
         }
     }
 
-    let crate_data: TranslatedCrate = {
-        use serde::Deserialize;
-        let file = File::open(&charon_llbc)
-            .with_context(|| format!("Failed to read llbc file {}", charon_llbc.display()))?;
-        let reader = BufReader::new(file);
-        let mut deserializer = serde_json::Deserializer::from_reader(reader);
-        // Deserialize without recursion limit.
-        deserializer.disable_recursion_limit();
-        // Grow stack space as needed.
-        let deserializer = serde_stacker::Deserializer::new(&mut deserializer);
-        CrateData::deserialize(deserializer)?.translated
-    };
-
+    let crate_data: TranslatedCrate = charon_lib::deserialize_llbc(&charon_llbc)?;
     let output_dir = if std::env::var("IN_CI").as_deref() == Ok("1") {
         dir.join("generated")
     } else {

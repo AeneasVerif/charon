@@ -41,6 +41,7 @@ use std::env;
 use std::ffi::OsStr;
 use std::path::PathBuf;
 use std::process::Command;
+use std::process::ExitStatus;
 
 use charon_lib::logger;
 use charon_lib::options;
@@ -174,7 +175,11 @@ pub fn main() -> anyhow::Result<()> {
         });
     let host = &rustc_version.host;
 
-    let exit_status = if options.no_cargo {
+    let exit_status = if let Some(llbc_file) = options.read_llbc {
+        let krate = charon_lib::deserialize_llbc(&llbc_file)?;
+        println!("{krate}");
+        ExitStatus::default()
+    } else if options.no_cargo {
         if !options.cargo_args.is_empty() {
             bail!("Option `--cargo-arg` is not compatible with `--no-cargo`")
         }
