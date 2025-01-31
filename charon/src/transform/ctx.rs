@@ -148,6 +148,10 @@ impl<'ctx> TransformCtx {
             .span_err(&self.translated, span, msg)
     }
 
+    pub(crate) fn opacity_for_name(&self, name: &Name) -> ItemOpacity {
+        self.options.opacity_for_name(&self.translated, name)
+    }
+
     pub(crate) fn with_def_id<F, T>(
         &mut self,
         def_id: impl Into<AnyTransId>,

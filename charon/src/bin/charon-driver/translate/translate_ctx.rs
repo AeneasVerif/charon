@@ -744,17 +744,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
     }
 
     pub(crate) fn opacity_for_name(&self, name: &Name) -> ItemOpacity {
-        // Find the most precise pattern that matches this name. There is always one since
-        // the list contains the `_` pattern. If there are conflicting settings for this item, we
-        // err on the side of being more opaque.
-        let (_, opacity) = self
-            .options
-            .item_opacities
-            .iter()
-            .filter(|(pat, _)| pat.matches(&self.translated, name))
-            .max()
-            .unwrap();
-        *opacity
+        self.options.opacity_for_name(&self.translated, name)
     }
 
     pub(crate) fn register_id_no_enqueue(

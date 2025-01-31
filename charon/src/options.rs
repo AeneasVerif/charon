@@ -368,4 +368,19 @@ impl TranslateOptions {
             translate_all_methods: options.translate_all_methods,
         }
     }
+
+    /// Find the opacity requested for the given name. This does not take into account
+    /// `#[charon::opaque]` annotations, only cli parameters.
+    pub fn opacity_for_name(&self, krate: &TranslatedCrate, name: &Name) -> ItemOpacity {
+        // Find the most precise pattern that matches this name. There is always one since
+        // the list contains the `_` pattern. If there are conflicting settings for this item, we
+        // err on the side of being more opaque.
+        let (_, opacity) = self
+            .item_opacities
+            .iter()
+            .filter(|(pat, _)| pat.matches(krate, name))
+            .max()
+            .unwrap();
+        *opacity
+    }
 }
