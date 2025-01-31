@@ -1,0 +1,188 @@
+# Final LLBC before serialization:
+
+trait core::marker::Sized<Self>
+
+trait test_crate::Left<Self, T>
+{
+    parent_clause0 : [@TraitClause0]: core::marker::Sized<T>
+}
+
+trait test_crate::Right<Self, T>
+{
+    parent_clause0 : [@TraitClause0]: core::marker::Sized<T>
+}
+
+trait test_crate::Join<Self, U>
+{
+    parent_clause0 : [@TraitClause0]: core::marker::Sized<U>
+    fn test = test_crate::Join::test<Self, U>
+}
+
+trait core::default::Default<Self>
+{
+    parent_clause0 : [@TraitClause0]: core::marker::Sized<Self>
+    fn default = core::default::Default::default<Self>
+}
+
+opaque type core::fmt::Formatter<'a>
+  where
+      'a : 'a,
+
+enum core::result::Result<T, E>
+  where
+      [@TraitClause0]: core::marker::Sized<T>,
+      [@TraitClause1]: core::marker::Sized<E>,
+ =
+|  Ok(T)
+|  Err(E)
+
+
+struct core::fmt::Error = {}
+
+trait core::fmt::Debug<Self>
+{
+    fn fmt<'_0, '_1, '_2> = core::fmt::Debug::fmt<'_0_0, '_0_1, '_0_2, Self>
+}
+
+opaque type core::fmt::Arguments<'a>
+  where
+      'a : 'a,
+
+opaque type core::fmt::rt::Argument<'a>
+
+fn core::default::Default::default<Self>() -> Self
+
+fn core::fmt::rt::{core::fmt::rt::Argument<'_0>}#1::new_debug<'_0, '_1, T>(@1: &'_1 (T)) -> core::fmt::rt::Argument<'_1>
+where
+    [@TraitClause0]: core::marker::Sized<T>,
+    [@TraitClause1]: core::fmt::Debug<T>,
+
+fn core::fmt::{core::fmt::Arguments<'a>}#2::new_v1<'a, const P : usize, const A : usize>(@1: &'a (Array<&'static (Str), const P : usize>), @2: &'a (Array<core::fmt::rt::Argument<'a>, const A : usize>)) -> core::fmt::Arguments<'a>
+
+fn std::io::stdio::_print<'_0>(@1: core::fmt::Arguments<'_0>)
+
+fn test_crate::{impl test_crate::Join<U> for T}::test<T, U>()
+where
+    [@TraitClause0]: core::marker::Sized<T>,
+    [@TraitClause1]: core::marker::Sized<U>,
+    [@TraitClause2]: test_crate::Left<T, U>,
+    [@TraitClause3]: test_crate::Right<T, U>,
+    [@TraitClause4]: core::default::Default<U>,
+    [@TraitClause5]: core::fmt::Debug<U>,
+{
+    let @0: (); // return
+    let @1: (); // anonymous local
+    let @2: core::fmt::Arguments<'_>; // anonymous local
+    let @3: &'_ (Array<&'_ (Str), 2 : usize>); // anonymous local
+    let @4: &'_ (Array<&'_ (Str), 2 : usize>); // anonymous local
+    let @5: Array<&'_ (Str), 2 : usize>; // anonymous local
+    let @6: &'_ (Array<core::fmt::rt::Argument<'_>, 1 : usize>); // anonymous local
+    let @7: &'_ (Array<core::fmt::rt::Argument<'_>, 1 : usize>); // anonymous local
+    let @8: Array<core::fmt::rt::Argument<'_>, 1 : usize>; // anonymous local
+    let @9: core::fmt::rt::Argument<'_>; // anonymous local
+    let @10: &'_ (U); // anonymous local
+    let @11: &'_ (U); // anonymous local
+    let @12: U; // anonymous local
+    let @13: (); // anonymous local
+
+    @5 := [const (""), const ("
+"); 2 : usize]
+    @4 := &@5
+    @3 := &*(@4)
+    @12 := @TraitClause4::default()
+    @11 := &@12
+    @10 := &*(@11)
+    @9 := core::fmt::rt::{core::fmt::rt::Argument<'_0>}#1::new_debug<'_, '_, U>[@TraitClause1, @TraitClause5](move (@10))
+    drop @10
+    @8 := [move (@9); 1 : usize]
+    drop @9
+    @7 := &@8
+    @6 := &*(@7)
+    @2 := core::fmt::{core::fmt::Arguments<'a>}#2::new_v1<'_, 2 : usize, 1 : usize>(move (@3), move (@6))
+    drop @6
+    drop @3
+    @1 := std::io::stdio::_print<'_>(move (@2))
+    drop @2
+    drop @12
+    drop @12
+    drop @11
+    drop @8
+    drop @7
+    drop @5
+    drop @4
+    drop @1
+    @13 := ()
+    @0 := move (@13)
+    @0 := ()
+    return
+}
+
+impl<T, U> test_crate::{impl test_crate::Join<U> for T}<T, U> : test_crate::Join<T, U>
+where
+    [@TraitClause0]: core::marker::Sized<T>,
+    [@TraitClause1]: core::marker::Sized<U>,
+    [@TraitClause2]: test_crate::Left<T, U>,
+    [@TraitClause3]: test_crate::Right<T, U>,
+    [@TraitClause4]: core::default::Default<U>,
+    [@TraitClause5]: core::fmt::Debug<U>,
+{
+    parent_clause0 = @TraitClause1
+    fn test = test_crate::{impl test_crate::Join<U> for T}::test<T, U>[@TraitClause0, @TraitClause1, @TraitClause2, @TraitClause3, @TraitClause4, @TraitClause5]
+}
+
+impl<T, U> test_crate::{impl test_crate::Left<U> for T}#1<T, U> : test_crate::Left<T, U>
+where
+    [@TraitClause0]: core::marker::Sized<T>,
+    [@TraitClause1]: core::marker::Sized<U>,
+    [@TraitClause2]: core::default::Default<U>,
+    [@TraitClause3]: core::fmt::Debug<U>,
+{
+    parent_clause0 = @TraitClause1
+}
+
+impl<T, U> test_crate::{impl test_crate::Right<U> for T}#2<T, U> : test_crate::Right<T, U>
+where
+    [@TraitClause0]: core::marker::Sized<T>,
+    [@TraitClause1]: core::marker::Sized<U>,
+    [@TraitClause2]: core::default::Default<U>,
+    [@TraitClause3]: core::fmt::Debug<U>,
+{
+    parent_clause0 = @TraitClause1
+}
+
+fn core::default::{impl core::default::Default for bool}#1::default() -> bool
+
+impl core::default::{impl core::default::Default for bool}#1 : core::default::Default<bool>
+{
+    parent_clause0 = core::marker::Sized<bool>
+    fn default = core::default::{impl core::default::Default for bool}#1::default
+}
+
+fn core::fmt::{impl core::fmt::Debug for bool}#14::fmt<'_0, '_1, '_2>(@1: &'_0 (bool), @2: &'_1 mut (core::fmt::Formatter<'_2>)) -> core::result::Result<(), core::fmt::Error>[core::marker::Sized<()>, core::marker::Sized<core::fmt::Error>]
+
+impl core::fmt::{impl core::fmt::Debug for bool}#14 : core::fmt::Debug<bool>
+{
+    fn fmt<'_0, '_1, '_2> = core::fmt::{impl core::fmt::Debug for bool}#14::fmt<'_0_0, '_0_1, '_0_2>
+}
+
+fn test_crate::try_it<T>()
+where
+    [@TraitClause0]: core::marker::Sized<T>,
+    [@TraitClause1]: core::default::Default<T>,
+    [@TraitClause2]: core::fmt::Debug<T>,
+    [@TraitClause3]: test_crate::Left<T, bool>,
+    [@TraitClause4]: test_crate::Right<T, ()>,
+{
+    let @0: (); // return
+
+    @0 := test_crate::{impl test_crate::Join<U> for T}::test<T, bool>[@TraitClause0, core::marker::Sized<bool>, @TraitClause3, test_crate::{impl test_crate::Right<U> for T}#2<T, bool>[@TraitClause0, core::marker::Sized<bool>, core::default::{impl core::default::Default for bool}#1, core::fmt::{impl core::fmt::Debug for bool}#14], core::default::{impl core::default::Default for bool}#1, core::fmt::{impl core::fmt::Debug for bool}#14]()
+    @0 := ()
+    return
+}
+
+fn test_crate::Join::test<Self, U>()
+
+fn core::fmt::Debug::fmt<'_0, '_1, '_2, Self>(@1: &'_0 (Self), @2: &'_1 mut (core::fmt::Formatter<'_2>)) -> core::result::Result<(), core::fmt::Error>[core::marker::Sized<()>, core::marker::Sized<core::fmt::Error>]
+
+
+
