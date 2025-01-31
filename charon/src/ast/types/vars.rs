@@ -232,6 +232,13 @@ where
             _ => None,
         }
     }
+    /// Returns the variable id if it is bound as the given depth.
+    pub fn bound_at_depth_mut(&mut self, depth: DeBruijnId) -> Option<&mut Id> {
+        match self {
+            DeBruijnVar::Bound(dbid, varid) if *dbid == depth => Some(varid),
+            _ => None,
+        }
+    }
 
     /// Move the variable out of `depth` binders. Returns `None` if the variable is bound in one of
     /// these `depth` binders.

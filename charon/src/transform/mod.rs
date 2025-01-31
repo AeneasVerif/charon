@@ -1,5 +1,6 @@
 pub mod check_generics;
 pub mod ctx;
+pub mod duplicate_defaulted_methods;
 pub mod duplicate_return;
 pub mod expand_associated_types;
 pub mod filter_invisible_trait_impls;
@@ -50,6 +51,8 @@ pub static INITIAL_CLEANUP_PASSES: &[Pass] = &[
     // # Micro-pass: filter the trait impls that were marked invisible since we couldn't filter
     // them out earlier.
     NonBody(&filter_invisible_trait_impls::Transform),
+    // Add missing methods to trait impls by duplicating the default method.
+    NonBody(&duplicate_defaulted_methods::Transform),
     // # Micro-pass: whenever we call a trait method on a known type, refer to the method `FunDecl`
     // directly instead of going via a `TraitRef`. This is done before `reorder_decls` to remove
     // some sources of mutual recursion.

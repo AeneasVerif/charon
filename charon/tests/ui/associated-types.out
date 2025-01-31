@@ -70,6 +70,18 @@ where
     return
 }
 
+fn test_crate::{impl test_crate::Foo<'a, core::option::Option<&'a (T)>[core::marker::Sized<&'_ (T)>]> for &'a (T)}::use_item_provided<'a, T, Clause1_Item>(@1: core::option::Option<&'a (T)>[core::marker::Sized<&'_ (T)>]) -> core::option::Option<&'a (T)>[core::marker::Sized<&'_ (T)>]
+where
+    [@TraitClause0]: core::marker::Sized<T>,
+    [@TraitClause1]: test_crate::Foo<'_, core::option::Option<&'a (T)>[core::marker::Sized<&'_ (T)>], Clause1_Item>,
+{
+    let @0: core::option::Option<&'a (T)>[core::marker::Sized<&'_ (T)>]; // return
+    let x@1: core::option::Option<&'a (T)>[core::marker::Sized<&'_ (T)>]; // arg #1
+
+    @0 := copy (x@1)
+    return
+}
+
 impl<'a, T> test_crate::{impl test_crate::Foo<'a, core::option::Option<&'a (T)>[core::marker::Sized<&'_ (T)>]> for &'a (T)}<'a, T> : test_crate::Foo<'a, &'a (T), core::option::Option<&'a (T)>[core::marker::Sized<&'_ (T)>]>
 where
     [@TraitClause0]: core::marker::Sized<T>,
@@ -78,6 +90,7 @@ where
     parent_clause1 = core::marker::Sized<core::option::Option<&'_ (T)>[core::marker::Sized<&'_ (T)>]>
     parent_clause2 = core::option::{impl core::clone::Clone for core::option::Option<T>[@TraitClause0]}#5<&'_ (T)>[core::marker::Sized<&'_ (T)>, core::clone::impls::{impl core::clone::Clone for &'_0 (T)}#3<'_, T>]
     fn use_item_required = test_crate::{impl test_crate::Foo<'a, core::option::Option<&'a (T)>[core::marker::Sized<&'_ (T)>]> for &'a (T)}::use_item_required<'a, T>[@TraitClause0]
+    fn use_item_provided<Clause0_Item, [@TraitClause0]: test_crate::Foo<'_, core::option::Option<&'a (T)>[core::marker::Sized<&'_ (T)>], Clause0_Item>> = test_crate::{impl test_crate::Foo<'a, core::option::Option<&'a (T)>[core::marker::Sized<&'_ (T)>]> for &'a (T)}::use_item_provided<'a, T, Clause0_Item>[@TraitClause0, @TraitClause0_0]
 }
 
 impl<T> core::option::{impl core::marker::Copy for core::option::Option<T>[@TraitClause0]}#44<T> : core::marker::Copy<core::option::Option<T>[@TraitClause0]>
@@ -100,6 +113,19 @@ where
     return
 }
 
+fn test_crate::{impl test_crate::Foo<'a, T> for core::option::Option<T>[@TraitClause0]}#1::use_item_provided<'a, T, Clause2_Item>(@1: T) -> T
+where
+    [@TraitClause0]: core::marker::Sized<T>,
+    [@TraitClause1]: core::marker::Copy<T>,
+    [@TraitClause2]: test_crate::Foo<'_, T, Clause2_Item>,
+{
+    let @0: T; // return
+    let x@1: T; // arg #1
+
+    @0 := copy (x@1)
+    return
+}
+
 impl<'a, T> test_crate::{impl test_crate::Foo<'a, T> for core::option::Option<T>[@TraitClause0]}#1<'a, T> : test_crate::Foo<'a, core::option::Option<T>[@TraitClause0], T>
 where
     [@TraitClause0]: core::marker::Sized<T>,
@@ -109,6 +135,7 @@ where
     parent_clause1 = @TraitClause0
     parent_clause2 = @TraitClause1::parent_clause0
     fn use_item_required = test_crate::{impl test_crate::Foo<'a, T> for core::option::Option<T>[@TraitClause0]}#1::use_item_required<'a, T>[@TraitClause0, @TraitClause1]
+    fn use_item_provided<Clause0_Item, [@TraitClause0]: test_crate::Foo<'_, T, Clause0_Item>> = test_crate::{impl test_crate::Foo<'a, T> for core::option::Option<T>[@TraitClause0]}#1::use_item_provided<'a, T, Clause0_Item>[@TraitClause0, @TraitClause1, @TraitClause0_0]
 }
 
 fn test_crate::Foo::use_item_provided<'a, Self, Clause0_Item, Self_Item>(@1: Self_Item) -> Self_Item

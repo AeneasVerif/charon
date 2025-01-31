@@ -118,6 +118,8 @@ pub struct TranslatedCrate {
     pub all_ids: IndexSet<AnyTransId>,
     /// The names of all registered items. Available so we can know the names even of items that
     /// failed to translate.
+    /// Invariant: after translation, any existing `AnyTransId` must have an associated name, even
+    /// if the corresponding item wasn't translated.
     #[serde(with = "HashMapToArray::<AnyTransId, Name>")]
     pub item_names: HashMap<AnyTransId, Name>,
 
