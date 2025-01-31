@@ -1,0 +1,19 @@
+error: Could not compute the value of Clause1_1::Clause0::Output needed to update generics <()> for item test_crate::HasOutput.
+       Constraints in scope:
+       
+  --> tests/ui/simple/assoc-ty-via-supertrait-and-bounds.rs:21:5
+   |
+21 |     take::<Wrapper<()>>()
+   |     ^^^^^^^^^^^^^^^^^^^^^
+   |
+
+error: Could not compute the value of Clause1_1::Clause0::Output needed to update generics <()> for item test_crate::HasOutput.
+       Constraints in scope:
+       
+  --> tests/ui/simple/assoc-ty-via-supertrait-and-bounds.rs:21:5
+   |
+21 |     take::<Wrapper<()>>()
+   |     ^^^^^^^^^^^^^^^^^^^^^
+   |
+
+ERROR The extraction generated 2 errors
