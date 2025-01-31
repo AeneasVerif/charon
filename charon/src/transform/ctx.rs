@@ -2,37 +2,17 @@ use crate::ast::*;
 use crate::errors::ErrorCtx;
 use crate::formatter::{FmtCtx, IntoFormatter};
 use crate::llbc_ast;
-use crate::name_matcher::NamePattern;
+use crate::options::TranslateOptions;
 use crate::pretty::FmtWithCtx;
 use crate::ullbc_ast;
 use std::cell::RefCell;
 use std::{fmt, mem};
 
-/// The options that control transformation.
-pub struct TransformOptions {
-    /// Error out if some code ends up being duplicated by the control-flow
-    /// reconstruction (note that because several patterns in a match may lead
-    /// to the same branch, it is node always possible not to duplicate code).
-    pub no_code_duplication: bool,
-    /// Whether to hide the `Sized`, `Sync`, `Send` and `Unpin` marker traits anywhere they show
-    /// up.
-    pub hide_marker_traits: bool,
-    /// Do not merge the chains of gotos.
-    pub no_merge_goto_chains: bool,
-    /// Print the llbc just after control-flow reconstruction.
-    pub print_built_llbc: bool,
-    /// List of patterns to assign a given opacity to. Same as the corresponding `TranslateOptions`
-    /// field.
-    pub item_opacities: Vec<(NamePattern, ItemOpacity)>,
-    /// List of traits for which we transform associated types to type parameters.
-    pub remove_associated_types: Vec<NamePattern>,
-}
-
 /// Simpler context used for rustc-independent code transformation. This only depends on rustc for
 /// its error reporting machinery.
 pub struct TransformCtx {
     /// The options that control transformation.
-    pub options: TransformOptions,
+    pub options: TranslateOptions,
     /// The translated data.
     pub translated: TranslatedCrate,
     /// Context for tracking and reporting errors.

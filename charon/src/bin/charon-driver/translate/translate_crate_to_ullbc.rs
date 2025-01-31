@@ -1,6 +1,6 @@
 use super::translate_ctx::*;
 use charon_lib::ast::*;
-use charon_lib::options::CliOpts;
+use charon_lib::options::{CliOpts, TranslateOptions};
 use charon_lib::transform::TransformCtx;
 use hax_frontend_exporter as hax;
 use rustc_hir::def_id::DefId;
@@ -296,12 +296,8 @@ pub fn translate<'tcx, 'ctx>(
     }
 
     // Return the context, dropping the hax state and rustc `tcx`.
-    let transform_options = ctx
-        .options
-        .into_transform_options(&mut *ctx.errors.borrow_mut(), options);
-
     TransformCtx {
-        options: transform_options,
+        options: ctx.options,
         translated: ctx.translated,
         errors: ctx.errors,
     }

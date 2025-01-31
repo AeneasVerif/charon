@@ -1,9 +1,10 @@
-//! The options received as input by cargo-charon
-#![allow(dead_code)]
+//! The options that control charon behavior.
 use clap::Parser;
 use indoc::indoc;
 use serde::{Deserialize, Serialize};
 use std::path::PathBuf;
+
+use crate::{ast::*, errors::ErrorCtx, name_matcher::NamePattern, raise_error, register_error};
 
 /// The name of the environment variable we use to save the serialized Cli options
 /// when calling charon-driver from cargo-charon.
@@ -250,5 +251,121 @@ impl CliOpts {
             !self.mir_promoted || !self.mir_optimized,
             "Can't use --mir_promoted and --mir_optimized at the same time"
         );
+    }
+}
+
+/// TODO: maybe we should always target MIR Built, this would make things
+/// simpler. In particular, the MIR optimized is very low level and
+/// reveals too many types and data-structures that we don't want to manipulate.
+#[derive(Clone, Copy, PartialEq, Eq)]
+pub enum MirLevel {
+    /// Original MIR, directly translated from HIR.
+    Built,
+    /// Not sure what this is. Not well tested.
+    Promoted,
+    /// MIR after optimization passes. The last one before codegen.
+    Optimized,
+}
+
+/// The options that control translation and transformation.
+pub struct TranslateOptions {
+    /// The level at which to extract the MIR
+    pub mir_level: MirLevel,
+    /// Usually we skip the provided methods that aren't used. When this flag is on, we translate
+    /// them all.
+    pub translate_all_methods: bool,
+    /// Error out if some code ends up being duplicated by the control-flow
+    /// reconstruction (note that because several patterns in a match may lead
+    /// to the same branch, it is node always possible not to duplicate code).
+    pub no_code_duplication: bool,
+    /// Whether to hide the `Sized`, `Sync`, `Send` and `Unpin` marker traits anywhere they show
+    /// up.
+    pub hide_marker_traits: bool,
+    /// Do not merge the chains of gotos.
+    pub no_merge_goto_chains: bool,
+    /// Print the llbc just after control-flow reconstruction.
+    pub print_built_llbc: bool,
+    /// List of patterns to assign a given opacity to. Same as the corresponding `TranslateOptions`
+    /// field.
+    pub item_opacities: Vec<(NamePattern, ItemOpacity)>,
+    /// List of traits for which we transform associated types to type parameters.
+    pub remove_associated_types: Vec<NamePattern>,
+}
+
+impl TranslateOptions {
+    pub fn new(error_ctx: &mut ErrorCtx, options: &CliOpts) -> Self {
+        let mut parse_pattern = |s: &str| match NamePattern::parse(s) {
+            Ok(p) => Ok(p),
+            Err(e) => {
+                raise_error!(
+                    error_ctx,
+                    crate(&TranslatedCrate::default()),
+                    Span::dummy(),
+                    "failed to parse pattern `{s}` ({e})"
+                )
+            }
+        };
+
+        let mir_level = if options.mir_optimized {
+            MirLevel::Optimized
+        } else if options.mir_promoted {
+            MirLevel::Promoted
+        } else {
+            MirLevel::Built
+        };
+
+        let item_opacities = {
+            use ItemOpacity::*;
+            let mut opacities = vec![];
+
+            // This is how to treat items that don't match any other pattern.
+            if options.extract_opaque_bodies {
+                opacities.push(("_".to_string(), Transparent));
+            } else {
+                opacities.push(("_".to_string(), Foreign));
+            }
+
+            // We always include the items from the crate.
+            opacities.push(("crate".to_owned(), Transparent));
+
+            for pat in options.include.iter() {
+                opacities.push((pat.to_string(), Transparent));
+            }
+            for pat in options.opaque.iter() {
+                opacities.push((pat.to_string(), Opaque));
+            }
+            for pat in options.exclude.iter() {
+                opacities.push((pat.to_string(), Invisible));
+            }
+
+            // We always hide this trait.
+            opacities.push((format!("core::alloc::Allocator"), Invisible));
+            opacities.push((
+                format!("alloc::alloc::{{impl core::alloc::Allocator for _}}"),
+                Invisible,
+            ));
+
+            opacities
+                .into_iter()
+                .filter_map(|(s, opacity)| parse_pattern(&s).ok().map(|pat| (pat, opacity)))
+                .collect()
+        };
+
+        let remove_associated_types = options
+            .remove_associated_types
+            .iter()
+            .filter_map(|s| parse_pattern(&s).ok())
+            .collect();
+
+        TranslateOptions {
+            mir_level,
+            no_code_duplication: options.no_code_duplication,
+            hide_marker_traits: options.hide_marker_traits,
+            no_merge_goto_chains: options.no_merge_goto_chains,
+            print_built_llbc: options.print_built_llbc,
+            item_opacities,
+            remove_associated_types,
+            translate_all_methods: options.translate_all_methods,
+        }
     }
 }
