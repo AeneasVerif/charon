@@ -1004,6 +1004,7 @@ impl UpdateItemBody<'_> {
                             .fmt_with_ctx(fmt_ctx),
                     ),
                     GenericsSource::Builtin => format!("<built-in>"),
+                    GenericsSource::Other => format!("<unknown>"),
                 };
                 register_error!(
                     self.ctx,

@@ -143,7 +143,7 @@ impl<T> RegionBinder<T> {
     {
         let args = GenericArgs {
             regions: self.regions.map_ref_indexed(|_, _| Region::Erased),
-            ..GenericArgs::empty(GenericsSource::Builtin)
+            ..GenericArgs::empty(GenericsSource::Other)
         };
         self.skip_binder.substitute(&args)
     }
