@@ -291,14 +291,14 @@ impl<T> BindingStack<T> {
         self.stack.pop()
     }
     /// Helper that computes the real index into `self.stack`.
-    fn real_index(&self, id: DeBruijnId) -> usize {
-        self.stack.len() - 1 - id.index
+    fn real_index(&self, id: DeBruijnId) -> Option<usize> {
+        (self.stack.len() - 1).checked_sub(id.index)
     }
     pub fn get(&self, id: DeBruijnId) -> Option<&T> {
-        self.stack.get(self.real_index(id))
+        self.stack.get(self.real_index(id)?)
     }
     pub fn get_mut(&mut self, id: DeBruijnId) -> Option<&mut T> {
-        let index = self.real_index(id);
+        let index = self.real_index(id)?;
         self.stack.get_mut(index)
     }
     /// Iterate over the binding levels, from the innermost (0) out.
@@ -312,6 +312,11 @@ impl<T> BindingStack<T> {
         self.iter()
             .enumerate()
             .map(|(i, x)| (DeBruijnId::new(i), x))
+    }
+    pub fn map_ref<'a, U>(&'a self, f: impl FnMut(&'a T) -> U) -> BindingStack<U> {
+        BindingStack {
+            stack: self.stack.iter().map(f).collect(),
+        }
     }
 
     pub fn innermost(&self) -> &T {
