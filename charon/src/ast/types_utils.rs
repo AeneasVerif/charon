@@ -91,7 +91,7 @@ impl GenericParams {
                 .map_ref_indexed(|id, _| ConstGeneric::Var(DeBruijnVar::bound(depth, id))),
             trait_refs: self.trait_clauses.map_ref_indexed(|id, clause| TraitRef {
                 kind: TraitRefKind::Clause(DeBruijnVar::bound(depth, id)),
-                trait_decl_ref: clause.trait_.clone(),
+                trait_decl_ref: clause.trait_.clone().move_under_binders(depth),
             }),
             target,
         }
@@ -680,10 +680,12 @@ pub trait TyVisitable: Sized + AstVisitable {
 
     /// Move under `depth` binders.
     fn move_under_binders(mut self, depth: DeBruijnId) -> Self {
-        let Continue(()) = self.visit_db_id::<Infallible>(|id| {
-            *id = id.plus(depth);
-            Continue(())
-        });
+        if !depth.is_zero() {
+            let Continue(()) = self.visit_db_id::<Infallible>(|id| {
+                *id = id.plus(depth);
+                Continue(())
+            });
+        }
         self
     }
 
