@@ -1,6 +1,8 @@
 use std::borrow::Cow;
 use std::fmt::Display;
 
+use index_vec::Idx;
+
 use crate::ast::*;
 use crate::common::TAB_INCR;
 use crate::gast;
@@ -255,30 +257,30 @@ impl<'a> Formatter<AnyTransId> for FmtCtx<'a> {
 }
 
 impl<'a> FmtCtx<'a> {
-    fn format_bound_var<Id: Display + Copy>(
+    fn format_bound_var<Id: Idx + Display, T>(
         &self,
         var: DeBruijnVar<Id>,
         var_prefix: &str,
-        get: impl Fn(&GenericParams, Id) -> Result<Option<String>, ()>,
-    ) -> String {
+        f: impl Fn(&T) -> Option<String>,
+    ) -> String
+    where
+        GenericParams: HasVectorOf<Id, Output = T>,
+    {
         if self.generics.is_empty() {
             return format!("{var_prefix}{var}");
         }
-        let (dbid, varid) = match var {
-            DeBruijnVar::Bound(dbid, varid) => (dbid, varid),
-            DeBruijnVar::Free(varid) => (self.generics.depth(), varid),
-        };
-        match self
-            .generics
-            .get(dbid)
-            .ok_or(())
-            .and_then(|generics| get(generics, varid))
-        {
-            Err(()) => format!("missing({var_prefix}{var})"),
-            Ok(v) => match v {
+        match self.generics.get_var::<_, GenericParams>(var) {
+            None => format!("missing({var_prefix}{var})"),
+            Some(v) => match f(v) {
                 Some(name) => name,
-                None if dbid == self.generics.depth() => format!("{var_prefix}{varid}"),
-                None => format!("{var_prefix}{var}"),
+                None => {
+                    let (dbid, varid) = self.generics.as_bound_var(var);
+                    if dbid == self.generics.depth() {
+                        format!("{var_prefix}{varid}")
+                    } else {
+                        format!("{var_prefix}{var}")
+                    }
+                }
             },
         }
     }
@@ -286,13 +288,7 @@ impl<'a> FmtCtx<'a> {
 
 impl<'a> Formatter<RegionDbVar> for FmtCtx<'a> {
     fn format_object(&self, var: RegionDbVar) -> String {
-        self.format_bound_var(var, "'_", |generics, varid| {
-            generics
-                .regions
-                .get(varid)
-                .ok_or(())
-                .map(|v| v.name.as_ref().map(|name| name.to_string()))
-        })
+        self.format_bound_var(var, "'_", |v| v.name.as_ref().map(|name| name.to_string()))
     }
 }
 
@@ -307,33 +303,19 @@ impl<'a> Formatter<&RegionVar> for FmtCtx<'a> {
 
 impl<'a> Formatter<TypeDbVar> for FmtCtx<'a> {
     fn format_object(&self, var: TypeDbVar) -> String {
-        self.format_bound_var(var, "@Type", |generics, varid| {
-            generics
-                .types
-                .get(varid)
-                .ok_or(())
-                .map(|v| Some(v.to_string()))
-        })
+        self.format_bound_var(var, "@Type", |v| Some(v.to_string()))
     }
 }
 
 impl<'a> Formatter<ConstGenericDbVar> for FmtCtx<'a> {
     fn format_object(&self, var: ConstGenericDbVar) -> String {
-        self.format_bound_var(var, "@ConstGeneric", |generics, varid| {
-            generics
-                .const_generics
-                .get(varid)
-                .ok_or(())
-                .map(|v| Some(v.fmt_with_ctx(self)))
-        })
+        self.format_bound_var(var, "@ConstGeneric", |v| Some(v.fmt_with_ctx(self)))
     }
 }
 
 impl<'a> Formatter<ClauseDbVar> for FmtCtx<'a> {
     fn format_object(&self, var: ClauseDbVar) -> String {
-        self.format_bound_var(var, "@TraitClause", |generics, varid| {
-            generics.trait_clauses.get(varid).ok_or(()).map(|_| None)
-        })
+        self.format_bound_var(var, "@TraitClause", |_| None)
     }
 }
 
