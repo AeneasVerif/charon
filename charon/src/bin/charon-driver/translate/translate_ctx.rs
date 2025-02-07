@@ -1370,11 +1370,7 @@ impl<'tcx, 'ctx, 'a> IntoFormatter for &'a BodyTransCtx<'tcx, 'ctx> {
     fn into_fmt(self) -> Self::C {
         FmtCtx {
             translated: Some(&self.t_ctx.translated),
-            generics: self
-                .binding_levels
-                .iter()
-                .map(|bl| Cow::Borrowed(&bl.params))
-                .collect(),
+            generics: self.binding_levels.map_ref(|bl| Cow::Borrowed(&bl.params)),
             locals: Some(&self.locals),
         }
     }

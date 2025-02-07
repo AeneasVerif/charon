@@ -2,7 +2,7 @@
 use derive_generic_visitor::*;
 use index_vec::Idx;
 use itertools::Itertools;
-use std::{borrow::Cow, fmt::Display, mem};
+use std::{borrow::Cow, fmt::Display};
 
 use crate::{
     ast::*,
@@ -16,13 +16,13 @@ use super::{ctx::TransformPass, TransformCtx};
 #[derive(Visitor)]
 struct CheckGenericsVisitor<'a> {
     ctx: &'a TransformCtx,
-    // For pretty error printing. This can print values that we encounter because we track binders
-    // properly. This doesn't have the right binders to print values we get from somewhere else
-    // (namely `GenericParam`s).
-    val_fmt_ctx: FmtCtx<'a>,
     phase: &'static str,
-    // Tracks an enclosing span to make errors useful.
+    /// Tracks an enclosing span for error reporting.
     span: Span,
+    /// Track the binders seen so far.
+    // We can't keep the params by reference because the visitors don't tell us that everything
+    // we're visiting has lifetime `'a`.
+    binder_stack: BindingStack<GenericParams>,
     /// Remember the names of the types visited up to here.
     visit_stack: Vec<&'static str>,
 }
@@ -32,10 +32,26 @@ impl CheckGenericsVisitor<'_> {
         register_error!(
             self.ctx,
             self.span,
-            "Found inconsistent generics {}:\n{message}\nVisitor stack:\n  {}",
+            "Found inconsistent generics {}:\n{message}\n\
+            Visitor stack:\n  {}\n\
+            Binding stack (depth {}):\n  {}",
             self.phase,
-            self.visit_stack.iter().rev().join("\n  ")
+            self.visit_stack.iter().rev().join("\n  "),
+            self.binder_stack.len(),
+            self.binder_stack
+                .iter_enumerated()
+                .map(|(i, params)| format!("{i}: {params}"))
+                .join("\n  "),
         );
+    }
+
+    /// For pretty error printing. This can print values that we encounter because we track binders
+    /// properly. This doesn't have the right binders to print values we get from somewhere else
+    /// (namely the `GenericParam`s we get from elsewhere in the crate).
+    fn val_fmt_ctx(&self) -> FmtCtx<'_> {
+        let mut fmt = self.ctx.into_fmt();
+        fmt.generics = self.binder_stack.map_ref(Cow::Borrowed);
+        fmt
     }
 
     fn zip_assert_match<I, A, B, FmtA, FmtB>(
@@ -73,9 +89,10 @@ impl CheckGenericsVisitor<'_> {
         let clause_trait_id = tclause.trait_.skip_binder.trait_id;
         let ref_trait_id = tref.trait_decl_ref.skip_binder.trait_id;
         if clause_trait_id != ref_trait_id {
+            let args_fmt = &self.val_fmt_ctx();
             let tclause = tclause.fmt_with_ctx(params_fmt);
-            let tref_pred = tref.trait_decl_ref.fmt_with_ctx(&self.val_fmt_ctx);
-            let tref = tref.fmt_with_ctx(&self.val_fmt_ctx);
+            let tref_pred = tref.trait_decl_ref.fmt_with_ctx(args_fmt);
+            let tref = tref.fmt_with_ctx(args_fmt);
             self.error(format!(
                 "Mismatched trait clause:\
                 \nexpected: {tclause}\
@@ -85,11 +102,12 @@ impl CheckGenericsVisitor<'_> {
     }
 
     fn assert_matches(&self, params_fmt: &FmtCtx<'_>, params: &GenericParams, args: &GenericArgs) {
+        let args_fmt = &self.val_fmt_ctx();
         self.zip_assert_match(
             &params.regions,
             &args.regions,
             params_fmt,
-            &self.val_fmt_ctx,
+            args_fmt,
             "regions",
             |_, _| {},
         );
@@ -97,7 +115,7 @@ impl CheckGenericsVisitor<'_> {
             &params.types,
             &args.types,
             params_fmt,
-            &self.val_fmt_ctx,
+            args_fmt,
             "type generics",
             |_, _| {},
         );
@@ -105,7 +123,7 @@ impl CheckGenericsVisitor<'_> {
             &params.const_generics,
             &args.const_generics,
             params_fmt,
-            &self.val_fmt_ctx,
+            args_fmt,
             "const generics",
             |_, _| {},
         );
@@ -113,7 +131,7 @@ impl CheckGenericsVisitor<'_> {
             &params.trait_clauses,
             &args.trait_refs,
             params_fmt,
-            &self.val_fmt_ctx,
+            args_fmt,
             "trait clauses",
             |tclause, tref| self.assert_clause_matches(params_fmt, tclause, tref),
         );
@@ -129,36 +147,51 @@ impl VisitAst for CheckGenericsVisitor<'_> {
     }
 
     fn visit_binder<T: AstVisitable>(&mut self, binder: &Binder<T>) -> ControlFlow<Self::Break> {
-        let new_fmt_ctx = self.val_fmt_ctx.push_binder(Cow::Borrowed(&binder.params));
-        // Build a new `self` with a shorter `'a` because the new `'a` borrows from `binder`.
-        let mut new_this = CheckGenericsVisitor {
-            ctx: self.ctx,
-            val_fmt_ctx: new_fmt_ctx,
-            phase: self.phase,
-            span: self.span,
-            visit_stack: mem::take(&mut self.visit_stack),
-        };
-        new_this.visit_inner(binder)?;
-        self.visit_stack = new_this.visit_stack;
+        self.binder_stack.push(binder.params.clone());
+        self.visit_inner(binder)?;
+        self.binder_stack.pop();
         Continue(())
     }
-
     fn visit_region_binder<T: AstVisitable>(
         &mut self,
         binder: &RegionBinder<T>,
     ) -> ControlFlow<Self::Break> {
-        let new_fmt_ctx = self.val_fmt_ctx.push_bound_regions(&binder.regions);
-        // Build a new `self` with a shorter `'a` because the new `'a` borrows from `binder`.
-        let mut new_this = CheckGenericsVisitor {
-            ctx: self.ctx,
-            val_fmt_ctx: new_fmt_ctx,
-            phase: self.phase,
-            span: self.span,
-            visit_stack: mem::take(&mut self.visit_stack),
-        };
-        new_this.visit_inner(binder)?;
-        self.visit_stack = new_this.visit_stack;
+        self.binder_stack.push(GenericParams {
+            regions: binder.regions.clone(),
+            ..Default::default()
+        });
+        self.visit_inner(binder)?;
+        self.binder_stack.pop();
         Continue(())
+    }
+
+    fn enter_region(&mut self, x: &Region) {
+        if let Region::Var(var) = x {
+            if self.binder_stack.get_var(*var).is_none() {
+                self.error(format!("Found incorrect region var: {var}"));
+            }
+        }
+    }
+    fn enter_ty_kind(&mut self, x: &TyKind) {
+        if let TyKind::TypeVar(var) = x {
+            if self.binder_stack.get_var(*var).is_none() {
+                self.error(format!("Found incorrect type var: {var}"));
+            }
+        }
+    }
+    fn enter_const_generic(&mut self, x: &ConstGeneric) {
+        if let ConstGeneric::Var(var) = x {
+            if self.binder_stack.get_var(*var).is_none() {
+                self.error(format!("Found incorrect const-generic var: {var}"));
+            }
+        }
+    }
+    fn enter_trait_ref_kind(&mut self, x: &TraitRefKind) {
+        if let TraitRefKind::Clause(var) = x {
+            if self.binder_stack.get_var(*var).is_none() {
+                self.error(format!("Found incorrect clause var: {var}"));
+            }
+        }
     }
 
     fn visit_aggregate_kind(&mut self, agg: &AggregateKind) -> ControlFlow<Self::Break> {
@@ -227,11 +260,12 @@ impl VisitAst for CheckGenericsVisitor<'_> {
 
         let fmt1 = self.ctx.into_fmt();
         let tdecl_fmt = fmt1.push_binder(Cow::Borrowed(&tdecl.generics));
+        let args_fmt = &self.val_fmt_ctx();
         self.zip_assert_match(
             &tdecl.parent_clauses,
             &timpl.parent_trait_refs,
             &tdecl_fmt,
-            &self.val_fmt_ctx,
+            args_fmt,
             "trait parent clauses",
             |tclause, tref| self.assert_clause_matches(&tdecl_fmt, tclause, tref),
         );
@@ -289,9 +323,9 @@ impl TransformPass for Check {
         for item in ctx.translated.all_items() {
             let mut visitor = CheckGenericsVisitor {
                 ctx,
-                val_fmt_ctx: ctx.into_fmt(),
                 phase: self.0,
                 span: item.item_meta().span,
+                binder_stack: BindingStack::new(item.generic_params().clone()),
                 visit_stack: Default::default(),
             };
             item.drive(&mut visitor);
