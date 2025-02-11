@@ -225,11 +225,7 @@ impl VisitAst for CheckGenericsVisitor<'_> {
                 let Some(trait_decl) = self.ctx.translated.trait_decls.get(*trait_id) else {
                     return;
                 };
-                let Some((_, bound_fn)) = trait_decl
-                    .required_methods
-                    .iter()
-                    .chain(trait_decl.provided_methods.iter())
-                    .find(|(n, _)| n == method_name)
+                let Some((_, bound_fn)) = trait_decl.methods().find(|(n, _)| n == method_name)
                 else {
                     return;
                 };

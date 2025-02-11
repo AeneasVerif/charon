@@ -17,12 +17,7 @@ fn transform_call(ctx: &mut TransformCtx, span: Span, call: &mut Call) {
         return;
     };
     // Find the function declaration corresponding to this impl.
-    let Some((_, bound_fn)) = trait_impl
-        .required_methods
-        .iter()
-        .chain(trait_impl.provided_methods.iter())
-        .find(|(n, _)| n == name)
-    else {
+    let Some((_, bound_fn)) = trait_impl.methods().find(|(n, _)| n == name) else {
         return;
     };
     let method_generics = &fn_ptr.generics;
