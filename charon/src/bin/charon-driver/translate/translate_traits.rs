@@ -79,8 +79,7 @@ impl BodyTransCtx<'_, '_> {
         let mut types = Vec::new();
         let mut type_clauses = Vec::new();
         let mut type_defaults = IndexMap::new();
-        let mut required_methods = Vec::new();
-        let mut provided_methods = Vec::new();
+        let mut methods = Vec::new();
         for (item_name, hax_item, hax_def) in &items {
             let item_def_id = DefId::from(&hax_item.def_id);
             let item_span = self.def_span(item_def_id);
@@ -131,13 +130,7 @@ impl BodyTransCtx<'_, '_> {
                             })
                         },
                     )?;
-                    if hax_item.has_value {
-                        // This is a provided method,
-                        provided_methods.push((item_name.clone(), fn_ref));
-                    } else {
-                        // This is a required method (no default implementation)
-                        required_methods.push((item_name.clone(), fn_ref));
-                    }
+                    methods.push((item_name.clone(), fn_ref));
                 }
                 hax::FullDefKind::AssocConst { ty, .. } => {
                     // Check if the constant has a value (i.e., a body).
@@ -176,10 +169,6 @@ impl BodyTransCtx<'_, '_> {
                 _ => panic!("Unexpected definition for trait item: {hax_def:?}"),
             }
         }
-
-        // TODO: merge
-        required_methods.append(&mut provided_methods);
-        let methods = required_methods;
 
         // In case of a trait implementation, some values may not have been
         // provided, in case the declaration provided default values. We
@@ -255,8 +244,7 @@ impl BodyTransCtx<'_, '_> {
         // Explore the associated items
         let mut consts = Vec::new();
         let mut types: Vec<(TraitItemName, Ty)> = Vec::new();
-        let mut required_methods = Vec::new();
-        let mut provided_methods = Vec::new();
+        let mut methods = Vec::new();
         let mut type_clauses = Vec::new();
 
         for impl_item in impl_items {
@@ -320,11 +308,7 @@ impl BodyTransCtx<'_, '_> {
                                     })
                                 },
                             )?;
-                            if *is_override {
-                                provided_methods.push((name, fn_ref));
-                            } else {
-                                required_methods.push((name, fn_ref));
-                            }
+                            methods.push((name, fn_ref));
                         }
                         DefaultedFn { .. } => {
                             // TODO: handle defaulted methods
@@ -368,10 +352,6 @@ impl BodyTransCtx<'_, '_> {
                 _ => panic!("Unexpected definition for trait item: {item_def:?}"),
             }
         }
-
-        // TODO: merge
-        required_methods.append(&mut provided_methods);
-        let methods = required_methods;
 
         Ok(ast::TraitImpl {
             def_id,
