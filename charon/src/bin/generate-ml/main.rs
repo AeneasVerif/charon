@@ -889,7 +889,7 @@ impl GenerateCodeFor {
                                 )
                             })
                             .format(", ");
-                        let _ = write!(&mut decls, "\n[@@deriving show, ord, {visitors}]");
+                        let _ = write!(&mut decls, "\n[@@deriving show, eq, ord, {visitors}]");
                     };
                     decls
                 }

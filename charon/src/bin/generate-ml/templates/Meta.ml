@@ -9,7 +9,7 @@
  *)
 
 type path_buf = string
-[@@deriving show, ord]
+[@@deriving show, ord, eq]
 
 (* __REPLACE0__ *)
-[@@deriving show, ord]
+[@@deriving show, ord, eq]

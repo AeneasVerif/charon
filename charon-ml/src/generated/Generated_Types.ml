@@ -27,22 +27,23 @@ module Disambiguator = IdGen ()
 module FunDeclId = IdGen ()
 module BodyId = IdGen ()
 
-type ('id, 'x) vector = 'x list [@@deriving show, ord]
-type integer_type = Values.integer_type [@@deriving show, ord]
-type float_type = Values.float_type [@@deriving show, ord]
-type literal_type = Values.literal_type [@@deriving show, ord]
+type ('id, 'x) vector = 'x list [@@deriving show, ord, eq]
+type integer_type = Values.integer_type [@@deriving show, ord, eq]
+type float_type = Values.float_type [@@deriving show, ord, eq]
+type literal_type = Values.literal_type [@@deriving show, ord, eq]
 
 (* Manually implemented because no type uses it (we use plain lists instead of
    vectors in generic_params), which causes visitor inference problems if we
    declare it within a visitor group. *)
-type trait_type_constraint_id = TraitTypeConstraintId.id [@@deriving show, ord]
+type trait_type_constraint_id = TraitTypeConstraintId.id
+[@@deriving show, ord, eq]
 
 (** We define these types to control the name of the visitor functions *)
 type ('id, 'name) indexed_var = {
   index : 'id;  (** Unique index identifying the variable *)
   name : 'name;  (** Variable name *)
 }
-[@@deriving show, ord]
+[@@deriving show, ord, eq]
 
 type fun_decl_id = (FunDeclId.id[@visitors.opaque])
 and type_decl_id = (TypeDeclId.id[@visitors.opaque])
@@ -115,6 +116,7 @@ and const_generic =
   | CgValue of literal  (** A concrete value *)
 [@@deriving
   show,
+    eq,
     ord,
     visitors
       {
@@ -444,6 +446,7 @@ and builtin_ty =
   | TStr  (** Primitive type *)
 [@@deriving
   show,
+    eq,
     ord,
     visitors
       {
@@ -694,6 +697,7 @@ and field = {
 }
 [@@deriving
   show,
+    eq,
     ord,
     visitors
       {

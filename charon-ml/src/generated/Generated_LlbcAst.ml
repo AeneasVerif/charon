@@ -72,6 +72,7 @@ and switch =
        *)
 [@@deriving
   show,
+    eq,
     ord,
     visitors
       {
