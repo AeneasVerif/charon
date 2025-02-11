@@ -141,13 +141,11 @@ impl<T> RegionBinder<T> {
     where
         T: AstVisitable,
     {
-        let mut val = self.skip_binder;
         let args = GenericArgs {
             regions: self.regions.map_ref_indexed(|_, _| Region::Erased),
             ..GenericArgs::empty(GenericsSource::Builtin)
         };
-        val.drive_mut(&mut SubstVisitor::new(&args));
-        val
+        self.skip_binder.substitute(&args)
     }
 }
 
@@ -654,11 +652,11 @@ impl VisitAstMut for SubstVisitor<'_> {
         }
     }
 
-    fn exit_trait_ref(&mut self, tr: &mut TraitRef) {
-        match &mut tr.kind {
+    fn exit_trait_ref_kind(&mut self, kind: &mut TraitRefKind) {
+        match kind {
             TraitRefKind::Clause(var) => {
                 if let Some(new_tr) = self.process_var(var) {
-                    *tr = new_tr;
+                    *kind = new_tr.kind;
                 }
             }
             _ => (),

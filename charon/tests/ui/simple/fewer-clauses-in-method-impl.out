@@ -1,24 +1,57 @@
-error: Found inconsistent generics after transformations:
-       Mismatched trait clause:
-       expected: [@TraitClause1]: core::clone::Clone<T>
-            got: core::marker::Copy<()>: core::marker::Copy<()>
-       Visitor stack:
-         charon_lib::ast::types::GenericArgs
-         charon_lib::ast::expressions::FnPtr
-         charon_lib::ast::gast::FnOperand
-         charon_lib::ast::gast::Call
-         charon_lib::ast::llbc_ast::RawStatement
-         charon_lib::ast::llbc_ast::Statement
-         alloc::vec::Vec<charon_lib::ast::llbc_ast::Statement>
-         charon_lib::ast::llbc_ast::Block
-         charon_lib::ast::gast::GExprBody<charon_lib::ast::llbc_ast::Block>
-         charon_lib::ast::gast::Body
-         core::result::Result<charon_lib::ast::gast::Body, charon_lib::ast::gast::Opaque>
-         charon_lib::ast::gast::FunDecl
-  --> tests/ui/simple/fewer-clauses-in-method-impl.rs:12:5
-   |
-12 |     <() as Trait>::method::<()>()
-   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-   |
+# Final LLBC before serialization:
 
-ERROR The extraction generated 1 errors
+trait core::marker::Sized<Self>
+
+trait core::clone::Clone<Self>
+{
+    parent_clause0 : [@TraitClause0]: core::marker::Sized<Self>
+    fn clone<'_0> = core::clone::Clone::clone<'_0_0, Self>
+}
+
+trait core::marker::Copy<Self>
+{
+    parent_clause0 : [@TraitClause0]: core::clone::Clone<Self>
+}
+
+trait test_crate::Trait<Self>
+{
+    fn method<T, [@TraitClause0]: core::marker::Sized<T>, [@TraitClause1]: core::marker::Copy<T>> = test_crate::Trait::method<Self, T>[@TraitClause0_0, @TraitClause0_1]
+}
+
+fn test_crate::{impl test_crate::Trait for ()}::method<T>()
+where
+    [@TraitClause0]: core::marker::Sized<T>,
+    [@TraitClause1]: core::clone::Clone<T>,
+{
+    let @0: (); // return
+    let @1: (); // anonymous local
+
+    @1 := ()
+    @0 := move (@1)
+    @0 := ()
+    return
+}
+
+impl test_crate::{impl test_crate::Trait for ()} : test_crate::Trait<()>
+{
+    fn method<T, [@TraitClause0]: core::marker::Sized<T>, [@TraitClause1]: core::clone::Clone<T>> = test_crate::{impl test_crate::Trait for ()}::method<T>[@TraitClause0_0, @TraitClause0_1]
+}
+
+fn test_crate::main()
+{
+    let @0: (); // return
+
+    @0 := test_crate::{impl test_crate::Trait for ()}::method<()>[core::marker::Sized<()>, core::marker::Copy<()>]()
+    @0 := ()
+    return
+}
+
+fn test_crate::Trait::method<Self, T>()
+where
+    [@TraitClause0]: core::marker::Sized<T>,
+    [@TraitClause1]: core::marker::Copy<T>,
+
+fn core::clone::Clone::clone<'_0, Self>(@1: &'_0 (Self)) -> Self
+
+
+
