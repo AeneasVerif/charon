@@ -86,6 +86,17 @@ fn test_crate::{impl test_crate::Trait for u8}::CONST2() -> usize
 
 global test_crate::{impl test_crate::Trait for u8}::CONST2: usize = test_crate::{impl test_crate::Trait for u8}::CONST2()
 
+fn test_crate::{impl test_crate::Trait for u8}::method1()
+{
+    let @0: (); // return
+    let @1: (); // anonymous local
+
+    @1 := ()
+    @0 := move (@1)
+    @0 := ()
+    return
+}
+
 fn test_crate::{impl test_crate::Trait for u8}::method2()
 {
     let @0: (); // return
@@ -102,6 +113,7 @@ impl test_crate::{impl test_crate::Trait for u8} : test_crate::Trait<u8>
     const CONST1 = test_crate::Trait::CONST1<u8>
     const CONST2 = test_crate::{impl test_crate::Trait for u8}::CONST2
     const CONST3 = test_crate::Trait::CONST3<u8>
+    fn method1 = test_crate::{impl test_crate::Trait for u8}::method1
     fn method2 = test_crate::{impl test_crate::Trait for u8}::method2
 }
 

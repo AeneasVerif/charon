@@ -117,6 +117,133 @@ impl<T> Binder<T> {
     }
 }
 
+impl<T: AstVisitable> Binder<Binder<T>> {
+    /// Flatten two levels of binders into a single one.
+    pub fn flatten(self) -> Binder<T> {
+        #[derive(Visitor)]
+        struct FlattenVisitor<'a> {
+            shift_by: &'a GenericParams,
+            binder_depth: DeBruijnId,
+        }
+        impl VisitAstMut for FlattenVisitor<'_> {
+            fn enter_region_binder<T: AstVisitable>(&mut self, _: &mut RegionBinder<T>) {
+                self.binder_depth = self.binder_depth.incr()
+            }
+            fn exit_region_binder<T: AstVisitable>(&mut self, _: &mut RegionBinder<T>) {
+                self.binder_depth = self.binder_depth.decr()
+            }
+            fn enter_binder<T: AstVisitable>(&mut self, _: &mut Binder<T>) {
+                self.binder_depth = self.binder_depth.incr()
+            }
+            fn exit_binder<T: AstVisitable>(&mut self, _: &mut Binder<T>) {
+                self.binder_depth = self.binder_depth.decr()
+            }
+            fn enter_de_bruijn_id(&mut self, db_id: &mut DeBruijnId) {
+                if *db_id > self.binder_depth {
+                    // We started visiting at the inner binder, so in this branch we're either
+                    // mentioning the outer binder or a binder further beyond. Either way we
+                    // decrease the depth; variables that point to the outer binder don't have to
+                    // be shifted.
+                    *db_id = db_id.decr();
+                }
+            }
+            fn enter_region(&mut self, x: &mut Region) {
+                if let Region::Var(var) = x
+                    && let Some(id) = var.bound_at_depth_mut(self.binder_depth)
+                {
+                    *id += self.shift_by.regions.len();
+                }
+            }
+            fn enter_ty_kind(&mut self, x: &mut TyKind) {
+                if let TyKind::TypeVar(var) = x
+                    && let Some(id) = var.bound_at_depth_mut(self.binder_depth)
+                {
+                    *id += self.shift_by.types.len();
+                }
+            }
+            fn enter_const_generic(&mut self, x: &mut ConstGeneric) {
+                if let ConstGeneric::Var(var) = x
+                    && let Some(id) = var.bound_at_depth_mut(self.binder_depth)
+                {
+                    *id += self.shift_by.const_generics.len();
+                }
+            }
+            fn enter_trait_ref_kind(&mut self, x: &mut TraitRefKind) {
+                if let TraitRefKind::Clause(var) = x
+                    && let Some(id) = var.bound_at_depth_mut(self.binder_depth)
+                {
+                    *id += self.shift_by.trait_clauses.len();
+                }
+            }
+        }
+
+        // We will concatenate both sets of params.
+        let mut outer_params = self.params;
+
+        // The inner value needs to change:
+        // - at binder level 0 we shift all variable ids to match the concatenated params;
+        // - at binder level > 0 we decrease binding level because there's one fewer binder.
+        let mut bound_value = self.skip_binder.skip_binder;
+        bound_value.drive_mut(&mut FlattenVisitor {
+            shift_by: &outer_params,
+            binder_depth: Default::default(),
+        });
+
+        // The inner params must also be updated, as they can refer to themselves and the outer
+        // one.
+        let mut inner_params = self.skip_binder.params;
+        inner_params.drive_mut(&mut FlattenVisitor {
+            shift_by: &outer_params,
+            binder_depth: Default::default(),
+        });
+        inner_params
+            .regions
+            .iter_mut()
+            .for_each(|v| v.index += outer_params.regions.len());
+        inner_params
+            .types
+            .iter_mut()
+            .for_each(|v| v.index += outer_params.types.len());
+        inner_params
+            .const_generics
+            .iter_mut()
+            .for_each(|v| v.index += outer_params.const_generics.len());
+        inner_params
+            .trait_clauses
+            .iter_mut()
+            .for_each(|v| v.clause_id += outer_params.trait_clauses.len());
+
+        let GenericParams {
+            regions,
+            types,
+            const_generics,
+            trait_clauses,
+            regions_outlive,
+            types_outlive,
+            trait_type_constraints,
+        } = &inner_params;
+        outer_params.regions.extend_from_slice(regions);
+        outer_params.types.extend_from_slice(types);
+        outer_params
+            .const_generics
+            .extend_from_slice(const_generics);
+        outer_params.trait_clauses.extend_from_slice(trait_clauses);
+        outer_params
+            .regions_outlive
+            .extend_from_slice(regions_outlive);
+        outer_params.types_outlive.extend_from_slice(types_outlive);
+        outer_params
+            .trait_type_constraints
+            .extend_from_slice(trait_type_constraints);
+
+        Binder {
+            params: outer_params,
+            skip_binder: bound_value,
+            kind: BinderKind::Other,
+        }
+    }
+}
+
 impl<T> RegionBinder<T> {
     /// Wrap the value in an empty region binder, shifting variables appropriately.
     pub fn empty(x: T) -> Self
@@ -143,7 +270,7 @@ impl<T> RegionBinder<T> {
     {
         let args = GenericArgs {
             regions: self.regions.map_ref_indexed(|_, _| Region::Erased),
-            ..GenericArgs::empty(GenericsSource::Builtin)
+            ..GenericArgs::empty(GenericsSource::Other)
         };
         self.skip_binder.substitute(&args)
     }
@@ -565,15 +692,17 @@ impl RefKind {
 #[derive(Visitor)]
 pub(crate) struct SubstVisitor<'a> {
     generics: &'a GenericArgs,
+    self_ref: &'a TraitRefKind,
     // Tracks the depth of binders we're inside of.
     // Important: we must update it whenever we go inside a binder.
     binder_depth: DeBruijnId,
 }
 
 impl<'a> SubstVisitor<'a> {
-    pub(crate) fn new(generics: &'a GenericArgs) -> Self {
+    pub(crate) fn new(generics: &'a GenericArgs, self_ref: &'a TraitRefKind) -> Self {
         Self {
             generics,
+            self_ref,
             binder_depth: DeBruijnId::zero(),
         }
     }
@@ -654,6 +783,9 @@ impl VisitAstMut for SubstVisitor<'_> {
 
     fn exit_trait_ref_kind(&mut self, kind: &mut TraitRefKind) {
         match kind {
+            TraitRefKind::SelfId => {
+                *kind = self.self_ref.clone().move_under_binders(self.binder_depth);
+            }
             TraitRefKind::Clause(var) => {
                 if let Some(new_tr) = self.process_var(var) {
                     *kind = new_tr.kind;
@@ -666,8 +798,12 @@ impl VisitAstMut for SubstVisitor<'_> {
 
 /// Types that are involved at the type-level and may be substituted around.
 pub trait TyVisitable: Sized + AstVisitable {
-    fn substitute(mut self, generics: &GenericArgs) -> Self {
-        self.drive_mut(&mut SubstVisitor::new(generics));
+    fn substitute(self, generics: &GenericArgs) -> Self {
+        self.substitute_with_self(generics, &TraitRefKind::SelfId)
+    }
+
+    fn substitute_with_self(mut self, generics: &GenericArgs, self_ref: &TraitRefKind) -> Self {
+        self.drive_mut(&mut SubstVisitor::new(generics, self_ref));
         self
     }
 

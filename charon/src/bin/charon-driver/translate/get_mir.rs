@@ -4,7 +4,7 @@ use rustc_hir::def_id::DefId;
 use rustc_middle::mir::Body;
 use rustc_middle::ty::TyCtxt;
 
-use crate::translate::translate_ctx::MirLevel;
+use charon_lib::options::MirLevel;
 
 /// Are box manipulations desugared to very low-level code using raw pointers,
 /// unique and non-null pointers? See [crate::types::TyKind::RawPtr] for detailed explanations.

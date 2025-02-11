@@ -15,18 +15,19 @@ fn test_crate::{impl test_crate::BoolTrait for bool}::get_bool<'_0>(@1: &'_0 (bo
     return
 }
 
-impl test_crate::{impl test_crate::BoolTrait for bool} : test_crate::BoolTrait<bool>
-{
-    fn get_bool<'_0> = test_crate::{impl test_crate::BoolTrait for bool}::get_bool<'_0_0>
-}
-
-fn test_crate::BoolTrait::ret_true<'_0, Self>(@1: &'_0 (Self)) -> bool
+fn test_crate::{impl test_crate::BoolTrait for bool}::ret_true<'_0>(@1: &'_0 (bool)) -> bool
 {
     let @0: bool; // return
-    let self@1: &'_ (Self); // arg #1
+    let self@1: &'_ (bool); // arg #1
 
     @0 := const (true)
     return
+}
+
+impl test_crate::{impl test_crate::BoolTrait for bool} : test_crate::BoolTrait<bool>
+{
+    fn get_bool<'_0> = test_crate::{impl test_crate::BoolTrait for bool}::get_bool<'_0_0>
+    fn ret_true<'_0> = test_crate::{impl test_crate::BoolTrait for bool}::ret_true<'_0_0>
 }
 
 fn test_crate::test_bool_trait_bool(@1: bool) -> bool
@@ -83,11 +84,23 @@ where
     return
 }
 
+fn test_crate::{impl test_crate::BoolTrait for core::option::Option<T>[@TraitClause0]}#1::ret_true<'_0, T>(@1: &'_0 (core::option::Option<T>[@TraitClause0])) -> bool
+where
+    [@TraitClause0]: core::marker::Sized<T>,
+{
+    let @0: bool; // return
+    let self@1: &'_ (core::option::Option<T>[@TraitClause0]); // arg #1
+
+    @0 := const (true)
+    return
+}
+
 impl<T> test_crate::{impl test_crate::BoolTrait for core::option::Option<T>[@TraitClause0]}#1<T> : test_crate::BoolTrait<core::option::Option<T>[@TraitClause0]>
 where
     [@TraitClause0]: core::marker::Sized<T>,
 {
     fn get_bool<'_0> = test_crate::{impl test_crate::BoolTrait for core::option::Option<T>[@TraitClause0]}#1::get_bool<'_0_0, T>[@TraitClause0]
+    fn ret_true<'_0> = test_crate::{impl test_crate::BoolTrait for core::option::Option<T>[@TraitClause0]}#1::ret_true<'_0_0, T>[@TraitClause0]
 }
 
 fn test_crate::test_bool_trait_option<T>(@1: core::option::Option<T>[@TraitClause0]) -> bool
@@ -105,7 +118,7 @@ where
     if move (@2) {
         drop @3
         @4 := &x@1
-        @0 := test_crate::{impl test_crate::BoolTrait for core::option::Option<T>[@TraitClause0]}#1<T>[@TraitClause0]::ret_true<'_>(move (@4))
+        @0 := test_crate::{impl test_crate::BoolTrait for core::option::Option<T>[@TraitClause0]}#1::ret_true<'_, T>[@TraitClause0](move (@4))
         drop @4
     }
     else {
@@ -1035,6 +1048,15 @@ where
     let @0: @TraitClause1::Output; // return
 
     panic(core::panicking::panic)
+}
+
+fn test_crate::BoolTrait::ret_true<'_0, Self>(@1: &'_0 (Self)) -> bool
+{
+    let @0: bool; // return
+    let self@1: &'_ (Self); // arg #1
+
+    @0 := const (true)
+    return
 }
 
 fn test_crate::{test_crate::TestType<T>[@TraitClause0]}#6::test::TestTrait::test<'_0, Self>(@1: &'_0 (Self)) -> bool

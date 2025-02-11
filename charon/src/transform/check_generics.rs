@@ -240,6 +240,10 @@ impl VisitAst for CheckGenericsVisitor<'_> {
                 (params, fmt)
             }
             GenericsSource::Builtin => return,
+            GenericsSource::Other => {
+                self.error("`GenericsSource::Other` should now exist in the charon AST");
+                return;
+            }
         };
         self.assert_matches(&params_fmt, params, args);
     }

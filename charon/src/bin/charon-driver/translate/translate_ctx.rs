@@ -4,9 +4,7 @@ use charon_lib::ast::*;
 use charon_lib::common::hash_by_addr::HashByAddr;
 use charon_lib::formatter::{FmtCtx, IntoFormatter};
 use charon_lib::ids::{MapGenerator, Vector};
-use charon_lib::name_matcher::NamePattern;
-use charon_lib::options::CliOpts;
-use charon_lib::transform::ctx::TransformOptions;
+use charon_lib::options::TranslateOptions;
 use charon_lib::ullbc_ast as ast;
 use hax_frontend_exporter::SInto;
 use hax_frontend_exporter::{self as hax, DefPathItem};
@@ -28,123 +26,6 @@ use std::{fmt, mem};
 pub(crate) use charon_lib::errors::{
     error_assert, raise_error, register_error, DepSource, ErrorCtx,
 };
-
-/// TODO: maybe we should always target MIR Built, this would make things
-/// simpler. In particular, the MIR optimized is very low level and
-/// reveals too many types and data-structures that we don't want to manipulate.
-#[derive(Clone, Copy, PartialEq, Eq)]
-pub enum MirLevel {
-    /// Original MIR, directly translated from HIR.
-    Built,
-    /// Not sure what this is. Not well tested.
-    Promoted,
-    /// MIR after optimization passes. The last one before codegen.
-    Optimized,
-}
-
-/// The options that control translation.
-pub struct TranslateOptions {
-    /// The level at which to extract the MIR
-    pub mir_level: MirLevel,
-    /// List of patterns to assign a given opacity to. For each name, the most specific pattern that
-    /// matches determines the opacity of the item. When no options are provided this is initialized
-    /// to treat items in the crate as transparent and items in other crates as foreign.
-    pub item_opacities: Vec<(NamePattern, ItemOpacity)>,
-    /// List of traits for which we transform associated types to type parameters.
-    pub remove_associated_types: Vec<NamePattern>,
-    /// Usually we skip the provided methods that aren't used. When this flag is on, we translate
-    /// them all.
-    pub translate_all_methods: bool,
-}
-
-impl TranslateOptions {
-    pub(crate) fn new(error_ctx: &mut ErrorCtx, options: &CliOpts) -> Self {
-        let mut parse_pattern = |s: &str| match NamePattern::parse(s) {
-            Ok(p) => Ok(p),
-            Err(e) => {
-                raise_error!(
-                    error_ctx,
-                    crate(&TranslatedCrate::default()),
-                    Span::dummy(),
-                    "failed to parse pattern `{s}` ({e})"
-                )
-            }
-        };
-
-        let mir_level = if options.mir_optimized {
-            MirLevel::Optimized
-        } else if options.mir_promoted {
-            MirLevel::Promoted
-        } else {
-            MirLevel::Built
-        };
-
-        let item_opacities = {
-            use ItemOpacity::*;
-            let mut opacities = vec![];
-
-            // This is how to treat items that don't match any other pattern.
-            if options.extract_opaque_bodies {
-                opacities.push(("_".to_string(), Transparent));
-            } else {
-                opacities.push(("_".to_string(), Foreign));
-            }
-
-            // We always include the items from the crate.
-            opacities.push(("crate".to_owned(), Transparent));
-
-            for pat in options.include.iter() {
-                opacities.push((pat.to_string(), Transparent));
-            }
-            for pat in options.opaque.iter() {
-                opacities.push((pat.to_string(), Opaque));
-            }
-            for pat in options.exclude.iter() {
-                opacities.push((pat.to_string(), Invisible));
-            }
-
-            // We always hide this trait.
-            opacities.push((format!("core::alloc::Allocator"), Invisible));
-            opacities.push((
-                format!("alloc::alloc::{{impl core::alloc::Allocator for _}}"),
-                Invisible,
-            ));
-
-            opacities
-                .into_iter()
-                .filter_map(|(s, opacity)| parse_pattern(&s).ok().map(|pat| (pat, opacity)))
-                .collect()
-        };
-
-        let remove_associated_types = options
-            .remove_associated_types
-            .iter()
-            .filter_map(|s| parse_pattern(&s).ok())
-            .collect();
-
-        TranslateOptions {
-            mir_level,
-            item_opacities,
-            remove_associated_types,
-            translate_all_methods: options.translate_all_methods,
-        }
-    }
-
-    pub(crate) fn into_transform_options(
-        self,
-        _error_ctx: &mut ErrorCtx,
-        options: &CliOpts,
-    ) -> TransformOptions {
-        TransformOptions {
-            no_code_duplication: options.no_code_duplication,
-            hide_marker_traits: options.hide_marker_traits,
-            no_merge_goto_chains: options.no_merge_goto_chains,
-            print_built_llbc: options.print_built_llbc,
-            item_opacities: self.item_opacities,
-            remove_associated_types: self.remove_associated_types,
-        }
-    }
-}
 
 /// The id of an untranslated item. Note that a given `DefId` may show up as multiple different
 /// item sources, e.g. a constant will have both a `Global` version (for the constant itself) and a
@@ -863,17 +744,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
     }
 
     pub(crate) fn opacity_for_name(&self, name: &Name) -> ItemOpacity {
-        // Find the most precise pattern that matches this name. There is always one since
-        // the list contains the `_` pattern. If there are conflicting settings for this item, we
-        // err on the side of being more opaque.
-        let (_, opacity) = self
-            .options
-            .item_opacities
-            .iter()
-            .filter(|(pat, _)| pat.matches(&self.translated, name))
-            .max()
-            .unwrap();
-        *opacity
+        self.options.opacity_for_name(&self.translated, name)
     }
 
     pub(crate) fn register_id_no_enqueue(

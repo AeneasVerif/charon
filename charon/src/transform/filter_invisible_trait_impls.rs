@@ -13,16 +13,7 @@ impl TransformPass for Transform {
             .translated
             .trait_impls
             .iter()
-            .filter(|timpl| {
-                let (_, opacity) = ctx
-                    .options
-                    .item_opacities
-                    .iter()
-                    .filter(|(pat, _)| pat.matches(&ctx.translated, &timpl.item_meta.name))
-                    .max()
-                    .unwrap();
-                opacity.is_invisible()
-            })
+            .filter(|timpl| ctx.opacity_for_name(&timpl.item_meta.name).is_invisible())
             .map(|timpl| timpl.def_id)
             .collect();
 

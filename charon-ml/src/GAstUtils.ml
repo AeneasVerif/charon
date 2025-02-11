@@ -103,6 +103,18 @@ let lookup_trait_impl_required_method (timpl : trait_impl)
       { item_binder_params = timpl.generics; item_binder_value = bound_fn })
     (List.find_opt (fun (s, _) -> s = name) timpl.required_methods)
 
+(** Lookup a method in this trait impl. The two levels of binders in the output
+    reflect that there are two binding levels: the impl generics and the method
+    generics. *)
+let lookup_trait_impl_method (timpl : trait_impl) (name : trait_item_name) :
+    fun_decl_ref binder item_binder option =
+  Option.map
+    (fun (_, bound_fn) ->
+      { item_binder_params = timpl.generics; item_binder_value = bound_fn })
+    (List.find_opt
+       (fun (s, _) -> s = name)
+       (timpl.required_methods @ timpl.provided_methods))
+
 let g_declaration_group_to_list (g : 'a g_declaration_group) : 'a list =
   match g with
   | RecGroup ids -> ids

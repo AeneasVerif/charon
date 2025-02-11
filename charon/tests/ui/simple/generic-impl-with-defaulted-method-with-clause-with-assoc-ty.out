@@ -1,0 +1,58 @@
+# Final LLBC before serialization:
+
+trait core::marker::Sized<Self>
+
+trait test_crate::HasType<Self, Self_Type>
+{
+    parent_clause0 : [@TraitClause0]: core::marker::Sized<Self_Type>
+}
+
+trait test_crate::HasMethod<Self>
+{
+    fn method<Clause0_Type, [@TraitClause0]: test_crate::HasType<Self, Clause0_Type>> = test_crate::HasMethod::method<Self, Clause0_Type>[@TraitClause0_0]
+}
+
+enum core::option::Option<T>
+  where
+      [@TraitClause0]: core::marker::Sized<T>,
+ =
+|  None()
+|  Some(T)
+
+
+fn test_crate::{impl test_crate::HasMethod for core::option::Option<T>[@TraitClause0]}::method<T, Clause1_Type>()
+where
+    [@TraitClause0]: core::marker::Sized<T>,
+    [@TraitClause1]: test_crate::HasType<core::option::Option<T>[@TraitClause0], Clause1_Type>,
+{
+    let @0: (); // return
+    let @1: (); // anonymous local
+
+    @1 := ()
+    @0 := move (@1)
+    @0 := ()
+    return
+}
+
+impl<T> test_crate::{impl test_crate::HasMethod for core::option::Option<T>[@TraitClause0]}<T> : test_crate::HasMethod<core::option::Option<T>[@TraitClause0]>
+where
+    [@TraitClause0]: core::marker::Sized<T>,
+{
+    fn method<Clause0_Type, [@TraitClause0]: test_crate::HasType<core::option::Option<T>[@TraitClause0], Clause0_Type>> = test_crate::{impl test_crate::HasMethod for core::option::Option<T>[@TraitClause0]}::method<T, Clause0_Type>[@TraitClause0, @TraitClause0_0]
+}
+
+fn test_crate::HasMethod::method<Self, Clause0_Type>()
+where
+    [@TraitClause0]: test_crate::HasType<Self, Clause0_Type>,
+{
+    let @0: (); // return
+    let @1: (); // anonymous local
+
+    @1 := ()
+    @0 := move (@1)
+    @0 := ()
+    return
+}
+
+
+

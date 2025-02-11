@@ -210,6 +210,9 @@ pub enum GenericsSource {
     Method(TraitDeclId, TraitItemName),
     /// A builtin item like `Box`.
     Builtin,
+    /// Some other use of generics outside the main Charon ast.
+    #[charon::opaque]
+    Other,
 }
 
 /// A set of generic arguments.
