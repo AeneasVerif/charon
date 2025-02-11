@@ -913,12 +913,16 @@ impl UpdateItemBody<'_> {
                         .under_current_binder(),
                 )
             }
-            TraitRefKind::Clause(..)
-            | TraitRefKind::ParentClause(..)
-            | TraitRefKind::ItemClause(..)
-            | TraitRefKind::SelfId => {
+            TraitRefKind::Clause(..) | TraitRefKind::SelfId => {
                 let path = path.on_tref(&tref.to_path().unwrap());
                 self.lookup_type_replacement(&path)
+            }
+            TraitRefKind::ParentClause(parent, _, clause_id) => {
+                let path = path.on_tref(&TraitRefPath::parent_clause(*clause_id));
+                self.lookup_path_on_trait_ref(&path, parent)
+            }
+            TraitRefKind::ItemClause(..) => {
+                unreachable!("item clause should have been removed in a previous pass")
             }
             TraitRefKind::BuiltinOrAuto {
                 parent_trait_refs,
