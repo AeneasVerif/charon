@@ -1,0 +1,66 @@
+# Final LLBC before serialization:
+
+trait test_crate::OtherTrait<Self>
+
+trait test_crate::ImpliesOtherTrait<Self>
+{
+    parent_clause0 : [@TraitClause0]: test_crate::OtherTrait<Self>
+}
+
+trait test_crate::HasMethod<Self>
+{
+    fn method<'_0> = test_crate::HasMethod::method<'_0_0, Self>
+}
+
+trait core::marker::Sized<Self>
+
+fn test_crate::{impl test_crate::HasMethod for T}::method<'_0, T>(@1: &'_0 (T))
+where
+    [@TraitClause0]: core::marker::Sized<T>,
+    [@TraitClause1]: test_crate::OtherTrait<T>,
+{
+    let @0: (); // return
+    let self@1: &'_ (T); // arg #1
+    let @2: (); // anonymous local
+
+    @2 := ()
+    @0 := move (@2)
+    @0 := ()
+    return
+}
+
+impl<T> test_crate::{impl test_crate::HasMethod for T}<T> : test_crate::HasMethod<T>
+where
+    [@TraitClause0]: core::marker::Sized<T>,
+    [@TraitClause1]: test_crate::OtherTrait<T>,
+{
+    fn method<'_0> = test_crate::{impl test_crate::HasMethod for T}::method<'_0_0, T>[@TraitClause0, @TraitClause1]
+}
+
+fn test_crate::call_method<T>(@1: T)
+where
+    [@TraitClause0]: core::marker::Sized<T>,
+    [@TraitClause1]: test_crate::ImpliesOtherTrait<T>,
+{
+    let @0: (); // return
+    let x@1: T; // arg #1
+    let @2: (); // anonymous local
+    let @3: &'_ (T); // anonymous local
+    let @4: (); // anonymous local
+
+    @3 := &x@1
+    @2 := test_crate::{impl test_crate::HasMethod for T}::method<'_, T>[@TraitClause0, @TraitClause1::parent_clause0](move (@3))
+    drop @3
+    @fake_read(@2)
+    drop @2
+    @4 := ()
+    @0 := move (@4)
+    drop x@1
+    @0 := ()
+    return
+}
+
+fn test_crate::HasMethod::method<'_0, Self>(@1: &'_0 (Self))
+
+
+

@@ -1,8 +1,12 @@
 //! Type-level variables. There are 4 kinds of variables at the type-level: regions, types, const
 //! generics and trait clauses. The relevant definitions are in this module.
-use std::ops::{Index, IndexMut};
+use std::{
+    borrow::Borrow,
+    ops::{Index, IndexMut},
+};
 
 use derive_generic_visitor::{Drive, DriveMut};
+use index_vec::Idx;
 use serde::{Deserialize, Serialize};
 
 use crate::ast::*;
@@ -284,6 +288,13 @@ impl<T> BindingStack<T> {
     pub fn depth(&self) -> DeBruijnId {
         DeBruijnId::new(self.stack.len() - 1)
     }
+    /// Map a bound variable to ids binding depth.
+    pub fn as_bound_var<Id>(&self, var: DeBruijnVar<Id>) -> (DeBruijnId, Id) {
+        match var {
+            DeBruijnVar::Bound(dbid, varid) => (dbid, varid),
+            DeBruijnVar::Free(varid) => (self.depth(), varid),
+        }
+    }
     pub fn push(&mut self, x: T) {
         self.stack.push(x);
     }
@@ -291,14 +302,23 @@ impl<T> BindingStack<T> {
         self.stack.pop()
     }
     /// Helper that computes the real index into `self.stack`.
-    fn real_index(&self, id: DeBruijnId) -> usize {
-        self.stack.len() - 1 - id.index
+    fn real_index(&self, id: DeBruijnId) -> Option<usize> {
+        self.stack.len().checked_sub(id.index + 1)
     }
     pub fn get(&self, id: DeBruijnId) -> Option<&T> {
-        self.stack.get(self.real_index(id))
+        self.stack.get(self.real_index(id)?)
+    }
+    pub fn get_var<'a, Id: Idx, Inner>(&'a self, var: DeBruijnVar<Id>) -> Option<&'a Inner::Output>
+    where
+        T: Borrow<Inner>,
+        Inner: HasVectorOf<Id> + 'a,
+    {
+        let (dbid, varid) = self.as_bound_var(var);
+        self.get(dbid)
+            .and_then(|x| x.borrow().get_vector().get(varid))
     }
     pub fn get_mut(&mut self, id: DeBruijnId) -> Option<&mut T> {
-        let index = self.real_index(id);
+        let index = self.real_index(id)?;
         self.stack.get_mut(index)
     }
     /// Iterate over the binding levels, from the innermost (0) out.
@@ -312,6 +332,11 @@ impl<T> BindingStack<T> {
         self.iter()
             .enumerate()
             .map(|(i, x)| (DeBruijnId::new(i), x))
+    }
+    pub fn map_ref<'a, U>(&'a self, f: impl FnMut(&'a T) -> U) -> BindingStack<U> {
+        BindingStack {
+            stack: self.stack.iter().map(f).collect(),
+        }
     }
 
     pub fn innermost(&self) -> &T {

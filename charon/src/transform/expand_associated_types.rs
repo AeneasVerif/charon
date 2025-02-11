@@ -80,7 +80,7 @@ use std::{
 
 use macros::EnumAsGetters;
 
-use crate::{ast::*, formatter::FmtCtx, ids::Vector, pretty::FmtWithCtx, register_error};
+use crate::{ast::*, formatter::IntoFormatter, ids::Vector, pretty::FmtWithCtx, register_error};
 
 use super::{ctx::TransformPass, TransformCtx};
 
@@ -983,20 +983,34 @@ impl UpdateItemBody<'_> {
                 if let Some(tref) = base_tref.to_path() {
                     path = path.on_tref(&tref);
                 }
+                let fmt_ctx = &self.ctx.into_fmt();
+                let item_name = match &args.target {
+                    GenericsSource::Item(id) => self
+                        .ctx
+                        .translated
+                        .item_name(*id)
+                        .unwrap()
+                        .fmt_with_ctx(fmt_ctx),
+                    GenericsSource::Method(trait_id, method_name) => format!(
+                        "{}::{method_name}",
+                        self.ctx
+                            .translated
+                            .item_name(*trait_id)
+                            .unwrap()
+                            .fmt_with_ctx(fmt_ctx),
+                    ),
+                    GenericsSource::Builtin => format!("<built-in>"),
+                };
                 register_error!(
                     self.ctx,
                     self.span,
                     "Could not compute the value of {path} needed to update \
-                    generics {args:?} for item {:?}.\
+                    generics {args:?} for item {item_name}.\
                     \nConstraints in scope:\n{}",
-                    args.target,
                     self.type_replacements
                         .iter()
                         .flat_map(|x| x.iter())
-                        .map(|(path, ty)| format!(
-                            "  - {path} = {}",
-                            ty.fmt_with_ctx(&FmtCtx::new())
-                        ))
+                        .map(|(path, ty)| format!("  - {path} = {}", ty.fmt_with_ctx(fmt_ctx)))
                         .join("\n"),
                 );
             }

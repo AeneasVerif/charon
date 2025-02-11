@@ -91,7 +91,7 @@ impl GenericParams {
                 .map_ref_indexed(|id, _| ConstGeneric::Var(DeBruijnVar::bound(depth, id))),
             trait_refs: self.trait_clauses.map_ref_indexed(|id, clause| TraitRef {
                 kind: TraitRefKind::Clause(DeBruijnVar::bound(depth, id)),
-                trait_decl_ref: clause.trait_.clone(),
+                trait_decl_ref: clause.trait_.clone().move_under_binders(depth),
             }),
             target,
         }
@@ -141,13 +141,11 @@ impl<T> RegionBinder<T> {
     where
         T: AstVisitable,
     {
-        let mut val = self.skip_binder;
         let args = GenericArgs {
             regions: self.regions.map_ref_indexed(|_, _| Region::Erased),
             ..GenericArgs::empty(GenericsSource::Builtin)
         };
-        val.drive_mut(&mut SubstVisitor::new(&args));
-        val
+        self.skip_binder.substitute(&args)
     }
 }
 
@@ -654,11 +652,11 @@ impl VisitAstMut for SubstVisitor<'_> {
         }
     }
 
-    fn exit_trait_ref(&mut self, tr: &mut TraitRef) {
-        match &mut tr.kind {
+    fn exit_trait_ref_kind(&mut self, kind: &mut TraitRefKind) {
+        match kind {
             TraitRefKind::Clause(var) => {
                 if let Some(new_tr) = self.process_var(var) {
-                    *tr = new_tr;
+                    *kind = new_tr.kind;
                 }
             }
             _ => (),
@@ -680,10 +678,12 @@ pub trait TyVisitable: Sized + AstVisitable {
 
     /// Move under `depth` binders.
     fn move_under_binders(mut self, depth: DeBruijnId) -> Self {
-        let Continue(()) = self.visit_db_id::<Infallible>(|id| {
-            *id = id.plus(depth);
-            Continue(())
-        });
+        if !depth.is_zero() {
+            let Continue(()) = self.visit_db_id::<Infallible>(|id| {
+                *id = id.plus(depth);
+                Continue(())
+            });
+        }
         self
     }
 

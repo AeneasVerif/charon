@@ -3,6 +3,7 @@ use crate::formatter::{FmtCtx, Formatter, IntoFormatter};
 use crate::ids::Vector;
 use crate::reorder_decls::DeclarationsGroups;
 use derive_generic_visitor::{ControlFlow, Drive, DriveMut};
+use index_vec::Idx;
 use indexmap::IndexSet;
 use macros::{EnumAsGetters, EnumIsA, VariantIndexArity, VariantName};
 use serde::{Deserialize, Serialize};
@@ -317,6 +318,11 @@ impl<'tcx, 'ctx, 'a> IntoFormatter for &'a TranslatedCrate {
     }
 }
 
+pub trait HasVectorOf<Id: Idx>: std::ops::Index<Id, Output: Sized> {
+    fn get_vector(&self) -> &Vector<Id, Self::Output>;
+    fn get_vector_mut(&mut self) -> &mut Vector<Id, Self::Output>;
+}
+
 /// Delegate `Index` implementations to subfields.
 macro_rules! mk_index_impls {
     ($ty:ident.$field:ident[$idx:ty]: $output:ty) => {
@@ -329,6 +335,14 @@ macro_rules! mk_index_impls {
         impl std::ops::IndexMut<$idx> for $ty {
             fn index_mut(&mut self, index: $idx) -> &mut Self::Output {
                 &mut self.$field[index]
+            }
+        }
+        impl HasVectorOf<$idx> for $ty {
+            fn get_vector(&self) -> &Vector<$idx, Self::Output> {
+                &self.$field
+            }
+            fn get_vector_mut(&mut self) -> &mut Vector<$idx, Self::Output> {
+                &mut self.$field
             }
         }
     };

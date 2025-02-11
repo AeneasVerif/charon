@@ -1,5 +1,7 @@
 use std::borrow::Cow;
-use std::collections::VecDeque;
+use std::fmt::Display;
+
+use index_vec::Idx;
 
 use crate::ast::*;
 use crate::common::TAB_INCR;
@@ -80,7 +82,7 @@ impl<'a, 'b> SetGenerics<'a> for FmtCtx<'b> {
     fn set_generics(&'a self, generics: &'a GenericParams) -> Self::C {
         FmtCtx {
             translated: self.translated.as_deref(),
-            generics: [Cow::Borrowed(generics)].into(),
+            generics: BindingStack::new(Cow::Borrowed(generics)),
             locals: self.locals.as_deref(),
         }
     }
@@ -125,7 +127,7 @@ impl<'a, 'b> PushBinder<'a> for FmtCtx<'b> {
 
     fn push_binder(&'a self, new_params: Cow<'a, GenericParams>) -> Self::C {
         let mut generics = self.generics.clone();
-        generics.push_front(new_params);
+        generics.push(new_params);
         FmtCtx {
             translated: self.translated.as_deref(),
             generics,
@@ -170,7 +172,7 @@ pub struct FmtCtx<'a> {
     pub translated: Option<&'a TranslatedCrate>,
     /// Generics form a stack, where each binder introduces a new level. For DeBruijn indices to
     /// work, we keep the innermost parameters at the start of the vector.
-    pub generics: VecDeque<Cow<'a, GenericParams>>,
+    pub generics: BindingStack<Cow<'a, GenericParams>>,
     pub locals: Option<&'a Locals>,
 }
 
@@ -254,27 +256,39 @@ impl<'a> Formatter<AnyTransId> for FmtCtx<'a> {
     }
 }
 
-impl<'a> Formatter<RegionDbVar> for FmtCtx<'a> {
-    fn format_object(&self, var: RegionDbVar) -> String {
+impl<'a> FmtCtx<'a> {
+    fn format_bound_var<Id: Idx + Display, T>(
+        &self,
+        var: DeBruijnVar<Id>,
+        var_prefix: &str,
+        f: impl Fn(&T) -> Option<String>,
+    ) -> String
+    where
+        GenericParams: HasVectorOf<Id, Output = T>,
+    {
         if self.generics.is_empty() {
-            return format!("'_{var}");
+            return format!("{var_prefix}{var}");
         }
-        let (dbid, varid) = match var {
-            DeBruijnVar::Bound(dbid, varid) => (dbid.index, varid),
-            DeBruijnVar::Free(varid) => (self.generics.len() - 1, varid),
-        };
-        match self
-            .generics
-            .get(dbid)
-            .and_then(|generics| generics.regions.get(varid))
-        {
-            None => format!("wrong_region('_{var})"),
-            Some(v) => match &v.name {
-                Some(name) => name.to_string(),
-                None if dbid == self.generics.len() - 1 => format!("'_{varid}"),
-                None => format!("'_{var}"),
+        match self.generics.get_var::<_, GenericParams>(var) {
+            None => format!("missing({var_prefix}{var})"),
+            Some(v) => match f(v) {
+                Some(name) => name,
+                None => {
+                    let (dbid, varid) = self.generics.as_bound_var(var);
+                    if dbid == self.generics.depth() {
+                        format!("{var_prefix}{varid}")
+                    } else {
+                        format!("{var_prefix}{var}")
+                    }
+                }
             },
         }
+    }
+}
+
+impl<'a> Formatter<RegionDbVar> for FmtCtx<'a> {
+    fn format_object(&self, var: RegionDbVar) -> String {
+        self.format_bound_var(var, "'_", |v| v.name.as_ref().map(|name| name.to_string()))
     }
 }
 
@@ -289,62 +303,19 @@ impl<'a> Formatter<&RegionVar> for FmtCtx<'a> {
 
 impl<'a> Formatter<TypeDbVar> for FmtCtx<'a> {
     fn format_object(&self, var: TypeDbVar) -> String {
-        if self.generics.is_empty() {
-            return format!("@Type{var}");
-        }
-        let (dbid, varid) = match var {
-            DeBruijnVar::Bound(dbid, varid) => (dbid.index, varid),
-            DeBruijnVar::Free(varid) => (self.generics.len() - 1, varid),
-        };
-        match self
-            .generics
-            .get(dbid)
-            .and_then(|generics| generics.types.get(varid))
-        {
-            None => format!("missing_type_var({var})"),
-            Some(v) => v.to_string(),
-        }
+        self.format_bound_var(var, "@Type", |v| Some(v.to_string()))
     }
 }
 
 impl<'a> Formatter<ConstGenericDbVar> for FmtCtx<'a> {
     fn format_object(&self, var: ConstGenericDbVar) -> String {
-        if self.generics.is_empty() {
-            return format!("@ConstGeneric{var}");
-        }
-        let (dbid, varid) = match var {
-            DeBruijnVar::Bound(dbid, varid) => (dbid.index, varid),
-            DeBruijnVar::Free(varid) => (self.generics.len() - 1, varid),
-        };
-        match self
-            .generics
-            .get(dbid)
-            .and_then(|generics| generics.const_generics.get(varid))
-        {
-            None => format!("missing_cg_var({var})"),
-            Some(v) => v.fmt_with_ctx(self),
-        }
+        self.format_bound_var(var, "@ConstGeneric", |v| Some(v.fmt_with_ctx(self)))
     }
 }
 
 impl<'a> Formatter<ClauseDbVar> for FmtCtx<'a> {
     fn format_object(&self, var: ClauseDbVar) -> String {
-        if self.generics.is_empty() {
-            return format!("@TraitClause{var}");
-        }
-        let (dbid, varid) = match var {
-            DeBruijnVar::Bound(dbid, varid) => (dbid.index, varid),
-            DeBruijnVar::Free(varid) => (self.generics.len() - 1, varid),
-        };
-        match self
-            .generics
-            .get(dbid)
-            .and_then(|generics| generics.trait_clauses.get(varid))
-        {
-            None => format!("missing_clause_var({var})"),
-            Some(_) if dbid == self.generics.len() - 1 => format!("@TraitClause{varid}"),
-            Some(_) => format!("@TraitClause{var}"),
-        }
+        self.format_bound_var(var, "@TraitClause", |_| None)
     }
 }
 

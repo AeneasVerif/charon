@@ -187,6 +187,10 @@ pub fn main() -> anyhow::Result<()> {
         // Run just the driver.
         let mut cmd = driver_cmd()?;
 
+        for arg in std::mem::take(&mut options.rustc_args) {
+            cmd.arg(arg);
+        }
+
         cmd.env(CHARON_ARGS, serde_json::to_string(&options).unwrap());
 
         // Make sure the build target is explicitly set. This is needed to detect which crates are
