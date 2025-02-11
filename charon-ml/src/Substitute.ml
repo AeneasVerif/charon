@@ -524,6 +524,14 @@ let lookup_and_subst_trait_impl_required_method (timpl : trait_impl)
     (instantiate_method Self impl_generics method_generics)
     (lookup_trait_impl_required_method timpl name)
 
+(** Like lookup_trait_impl_method, but also correctly substitutes the generics. *)
+let lookup_and_subst_trait_impl_method (timpl : trait_impl)
+    (name : trait_item_name) (impl_generics : generic_args)
+    (method_generics : generic_args) : fun_decl_ref option =
+  Option.map
+    (instantiate_method Self impl_generics method_generics)
+    (lookup_trait_impl_method timpl name)
+
 (* Construct a set of generic arguments in the scope of `params` that matches
    `params` and feeds each required parameter with itself. E.g. given
    parameters for `<T, U> where U: PartialEq<T>`, the arguments would be `<T,
