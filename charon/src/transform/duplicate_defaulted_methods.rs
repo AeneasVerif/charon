@@ -12,9 +12,6 @@ impl TransformPass for Transform {
             let Some(timpl) = ctx.translated.trait_impls.get_mut(impl_id) else {
                 continue;
             };
-            if !timpl.item_meta.opacity.is_transparent() {
-                continue;
-            }
             let Some(tdecl) = ctx.translated.trait_decls.get(timpl.impl_trait.trait_id) else {
                 continue;
             };
