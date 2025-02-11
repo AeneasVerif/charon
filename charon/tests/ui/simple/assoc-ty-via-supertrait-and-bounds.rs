@@ -1,4 +1,3 @@
-//@ known-panic
 //@ charon-args=--remove-associated-types=*
 pub trait HasOutput {
     type Output;

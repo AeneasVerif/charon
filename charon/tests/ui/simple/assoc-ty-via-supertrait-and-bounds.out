@@ -1,4 +1,73 @@
-thread 'main' panicked at src/transform/expand_associated_types.rs:920:57:
-called `Option::unwrap()` on a `None` value
-note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
-ERROR Compilation panicked
+# Final LLBC before serialization:
+
+trait core::marker::Sized<Self>
+
+trait test_crate::HasOutput<Self, Self_Output>
+{
+    parent_clause0 : [@TraitClause0]: core::marker::Sized<Self_Output>
+}
+
+impl test_crate::{impl test_crate::HasOutput<()> for ()} : test_crate::HasOutput<(), ()>
+{
+    parent_clause0 = core::marker::Sized<()>
+}
+
+trait test_crate::HasOutput2<Self, Self_Clause0_Output>
+{
+    parent_clause0 : [@TraitClause0]: test_crate::HasOutput<Self, Self_Clause0_Output>
+}
+
+impl test_crate::{impl test_crate::HasOutput2<()> for ()}#1 : test_crate::HasOutput2<(), ()>
+{
+    parent_clause0 = test_crate::{impl test_crate::HasOutput<()> for ()}
+}
+
+struct test_crate::Wrapper<T>
+  where
+      [@TraitClause0]: core::marker::Sized<T>,
+ =
+{
+  T,
+}
+
+impl<T, Clause1_Output> test_crate::{impl test_crate::HasOutput<Clause1_Output> for test_crate::Wrapper<T>[@TraitClause0]}#2<T, Clause1_Output> : test_crate::HasOutput<test_crate::Wrapper<T>[@TraitClause0], Clause1_Output>
+where
+    [@TraitClause0]: core::marker::Sized<T>,
+    [@TraitClause1]: test_crate::HasOutput<T, Clause1_Output>,
+{
+    parent_clause0 = @TraitClause1::parent_clause0
+}
+
+impl<T, Clause1_Clause0_Output> test_crate::{impl test_crate::HasOutput2<Clause1_Clause0_Output> for test_crate::Wrapper<T>[@TraitClause0]}#3<T, Clause1_Clause0_Output> : test_crate::HasOutput2<test_crate::Wrapper<T>[@TraitClause0], Clause1_Clause0_Output>
+where
+    [@TraitClause0]: core::marker::Sized<T>,
+    [@TraitClause1]: test_crate::HasOutput2<T, Clause1_Clause0_Output>,
+{
+    parent_clause0 = test_crate::{impl test_crate::HasOutput<Clause1_Output> for test_crate::Wrapper<T>[@TraitClause0]}#2<T, Clause1_Clause0_Output>[@TraitClause0, @TraitClause1::parent_clause0]
+}
+
+fn test_crate::take<T, Clause1_Clause0_Output>()
+where
+    [@TraitClause0]: core::marker::Sized<T>,
+    [@TraitClause1]: test_crate::HasOutput2<T, Clause1_Clause0_Output>,
+{
+    let @0: (); // return
+    let @1: (); // anonymous local
+
+    @1 := ()
+    @0 := move (@1)
+    @0 := ()
+    return
+}
+
+fn test_crate::main()
+{
+    let @0: (); // return
+
+    @0 := test_crate::take<test_crate::Wrapper<()>[core::marker::Sized<()>], ()>[core::marker::Sized<test_crate::Wrapper<()>[core::marker::Sized<()>]>, test_crate::{impl test_crate::HasOutput2<Clause1_Clause0_Output> for test_crate::Wrapper<T>[@TraitClause0]}#3<(), ()>[core::marker::Sized<()>, test_crate::{impl test_crate::HasOutput2<()> for ()}#1]]()
+    @0 := ()
+    return
+}
+
+
+
