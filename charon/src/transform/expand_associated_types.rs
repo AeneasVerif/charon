@@ -1212,9 +1212,7 @@ impl TransformPass for Transform {
                 let modifications = computer.compute_item_modifications(item);
                 item_modifications.insert(GenericsSource::Item(id), modifications);
                 if let AnyTransItem::TraitDecl(tdecl) = item {
-                    for (name, bound_fn) in
-                        tdecl.required_methods.iter().chain(&tdecl.provided_methods)
-                    {
+                    for (name, bound_fn) in &tdecl.methods {
                         let modifications =
                             computer.compute_non_trait_modifications(&bound_fn.params);
                         item_modifications.insert(

@@ -291,8 +291,7 @@ impl VisitAst for CheckGenericsVisitor<'_> {
                 "The associated consts supplied by the trait impl don't match the trait decl.",
             )
         }
-        let methods_match = timpl.required_methods.len() == tdecl.required_methods.len()
-            && timpl.provided_methods.len() == tdecl.provided_methods.len();
+        let methods_match = timpl.methods.len() == tdecl.methods.len();
         if !methods_match && self.phase != "after translation" {
             let decl_methods = tdecl
                 .methods()

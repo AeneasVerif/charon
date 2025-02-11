@@ -15,7 +15,7 @@ impl TransformPass for Transform {
             let Some(tdecl) = ctx.translated.trait_decls.get(timpl.impl_trait.trait_id) else {
                 continue;
             };
-            if tdecl.provided_methods.len() == timpl.provided_methods.len() {
+            if tdecl.methods.len() == timpl.methods.len() {
                 continue;
             }
 
@@ -35,11 +35,11 @@ impl TransformPass for Transform {
             };
             // Map of methods we already have in the impl.
             let mut methods_map: HashMap<TraitItemName, _> =
-                mem::take(&mut timpl.provided_methods).into_iter().collect();
+                mem::take(&mut timpl.methods).into_iter().collect();
             // Borrow shared to get access to the rest of the crate.
             let timpl = ctx.translated.trait_impls.get(impl_id).unwrap();
             let mut methods = vec![];
-            for (name, decl_fn_ref) in &tdecl.provided_methods {
+            for (name, decl_fn_ref) in &tdecl.methods {
                 if let Some(kv) = methods_map.remove_entry(name) {
                     methods.push(kv);
                     continue;
@@ -171,7 +171,7 @@ impl TransformPass for Transform {
                 }
             }
             let timpl = ctx.translated.trait_impls.get_mut(impl_id).unwrap();
-            timpl.provided_methods = methods;
+            timpl.methods = methods;
         }
     }
 }

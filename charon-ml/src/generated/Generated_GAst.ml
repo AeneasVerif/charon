@@ -260,16 +260,10 @@ type trait_decl = {
       (** The associated constants declared in the trait, along with their type. *)
   types : trait_item_name list;
       (** The associated types declared in the trait. *)
-  required_methods : (trait_item_name * fun_decl_ref binder) list;
-      (** The *required* methods: the methods declared by the trait but with no default
-        implementation. The corresponding `FunDecl`s don't have a body.
-
-        The binder contains the type parameters specific to the method. The `FunDeclRef` then
-        provides a full list of arguments to the pointed-to function.
-     *)
-  provided_methods : (trait_item_name * fun_decl_ref binder) list;
-      (** The *provided* methods: the methods with a default implementation. The corresponding
-        `FunDecl`s may have a body, according to the usual rules for extracting function bodies.
+  methods : (trait_item_name * fun_decl_ref binder) list;
+      (** The methods declared by the trait. The signature of the methods can be found in each
+        corresponding `FunDecl`. These `FunDecl` may have a body if the trait provided a default
+        implementation for that method; otherwise it has an `Opaque` body.
 
         The binder contains the type parameters specific to the method. The `FunDeclRef` then
         provides a full list of arguments to the pointed-to function.
@@ -321,18 +315,8 @@ type trait_impl = {
       (** The associated constants declared in the trait. *)
   types : (trait_item_name * ty) list;
       (** The associated types declared in the trait. *)
-  required_methods : (trait_item_name * fun_decl_ref binder) list;
-      (** The implemented required methods
-
-        The binder contains the type parameters specific to the method. The `FunDeclRef` then
-        provides a full list of arguments to the pointed-to function.
-     *)
-  provided_methods : (trait_item_name * fun_decl_ref binder) list;
-      (** The re-implemented provided methods
-
-        The binder contains the type parameters specific to the method. The `FunDeclRef` then
-        provides a full list of arguments to the pointed-to function.
-     *)
+  methods : (trait_item_name * fun_decl_ref binder) list;
+      (** The implemented methods *)
 }
 [@@deriving
   show,

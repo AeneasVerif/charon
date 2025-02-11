@@ -177,6 +177,10 @@ impl BodyTransCtx<'_, '_> {
             }
         }
 
+        // TODO: merge
+        required_methods.append(&mut provided_methods);
+        let methods = required_methods;
+
         // In case of a trait implementation, some values may not have been
         // provided, in case the declaration provided default values. We
         // check those, and lookup the relevant values.
@@ -190,8 +194,7 @@ impl BodyTransCtx<'_, '_> {
             const_defaults,
             types,
             type_defaults,
-            required_methods,
-            provided_methods,
+            methods,
         })
     }
 
@@ -366,6 +369,10 @@ impl BodyTransCtx<'_, '_> {
             }
         }
 
+        // TODO: merge
+        required_methods.append(&mut provided_methods);
+        let methods = required_methods;
+
         Ok(ast::TraitImpl {
             def_id,
             item_meta,
@@ -375,8 +382,7 @@ impl BodyTransCtx<'_, '_> {
             type_clauses,
             consts,
             types,
-            required_methods,
-            provided_methods,
+            methods,
         })
     }
 }

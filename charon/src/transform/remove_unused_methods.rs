@@ -15,10 +15,10 @@ impl TransformPass for Transform {
         // Keep only the methods for which we translated the corresponding `FunDecl`. We ensured
         // that this would be translated if the method is used or transparently implemented.
         for tdecl in ctx.translated.trait_decls.iter_mut() {
-            tdecl.provided_methods.retain(method_is_translated);
+            tdecl.methods.retain(method_is_translated);
         }
         for timpl in ctx.translated.trait_impls.iter_mut() {
-            timpl.provided_methods.retain(method_is_translated);
+            timpl.methods.retain(method_is_translated);
         }
     }
 }
