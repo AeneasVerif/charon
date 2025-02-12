@@ -1,5 +1,4 @@
 //@ charon-args=--remove-associated-types=*
-//@ output=pretty-llbc
 pub fn incr_u32(x: u32) -> u32 {
     x + 1
 }
@@ -164,8 +163,3 @@ where
         clo()()()
     }
 }
-
-const BLAH: u32 = {
-    let clo = || 42;
-    clo()
-};

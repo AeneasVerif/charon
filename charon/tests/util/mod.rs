@@ -79,6 +79,7 @@ pub fn translate_rust_text(code: impl Display) -> anyhow::Result<TranslatedCrate
     Command::cargo_bin("charon")?
         .arg("--no-cargo")
         .arg("--rustc-flag=--edition=2021")
+        .arg("--rustc-flag=--crate-type=rlib")
         .arg("--input")
         .arg(input_path)
         .arg("--dest-file")

@@ -1,4 +1,7 @@
-#[allow(unreachable_code)]
+#![feature(libstd_sys_internals)]
+#![feature(rt)]
+#![allow(internal_features)]
+#![allow(unreachable_code)]
 fn panic1() {
     panic!();
 }

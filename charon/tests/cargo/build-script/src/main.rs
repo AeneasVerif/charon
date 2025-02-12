@@ -1,6 +1,6 @@
 #![allow(unexpected_cfgs)]
 #[cfg(abc)]
-const FOO: u8 = 42;
+pub const FOO: u8 = 42;
 
 // Ensure compilation fails if the build script is not used correctly.
 #[cfg(not(abc))]

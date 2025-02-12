@@ -4,7 +4,7 @@ use std::fmt::Display;
 
 // Opaque because we don't support unsize coercions.
 #[charon::opaque]
-fn construct<T: Display>(x: T) -> Box<dyn Display> {
+fn construct<T: Display + 'static>(x: T) -> Box<dyn Display> {
     Box::new(x)
 }
 

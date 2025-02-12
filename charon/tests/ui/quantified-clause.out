@@ -41,6 +41,7 @@ where
 fn test_crate::bar<'b, T>()
 where
     [@TraitClause0]: core::marker::Sized<T>,
+    T : 'b,
     for<'a> &'b (T) : 'a,
 {
     let @0: (); // return

@@ -4,7 +4,7 @@
 // https://github.com/AeneasVerif/charon/pull/514.
 #![feature(unboxed_closures)]
 
-trait Trait {
+pub trait Trait {
     type Foo: Fn();
     fn call(&self) -> <Self::Foo as FnOnce<()>>::Output;
 }
@@ -16,4 +16,4 @@ impl<F: Fn()> Trait for F {
     }
 }
 
-fn use_foo() -> <<fn() as Trait>::Foo as FnOnce<()>>::Output {}
+pub fn use_foo() -> <<fn() as Trait>::Foo as FnOnce<()>>::Output {}

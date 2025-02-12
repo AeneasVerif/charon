@@ -1,11 +1,11 @@
 //@ known-failure
 //@ charon-args=--opaque crate::Enum
-enum Enum {
+pub enum Enum {
     A,
     B,
 }
 
-fn is_a(x: &Enum) -> bool {
+pub fn is_a(x: &Enum) -> bool {
     match x {
         Enum::A => true,
         Enum::B => false,
