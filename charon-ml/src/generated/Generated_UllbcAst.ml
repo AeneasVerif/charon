@@ -41,6 +41,7 @@ and switch =
        *)
 [@@deriving
   show,
+    eq,
     ord,
     visitors
       {
@@ -85,6 +86,7 @@ and terminator = {
 and block = { statements : statement list; terminator : terminator }
 [@@deriving
   show,
+    eq,
     ord,
     visitors
       {

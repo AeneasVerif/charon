@@ -30,6 +30,7 @@
 
         rustToolchain = pkgs.rust-bin.fromRustupToolchainFile ./rust-toolchain;
         craneLib = (crane.mkLib pkgs).overrideToolchain rustToolchain;
+        ocamlformat = pkgs-ocaml.ocamlPackages.ocamlformat_0_26_2;
 
         charon = pkgs.callPackage ./nix/charon.nix { inherit craneLib rustToolchain; };
         charon-ml = pkgs-ocaml.callPackage ./nix/charon-ml.nix { inherit charon; };
@@ -52,7 +53,7 @@
           cp ${charon}/generated-ml/* generated
           chmod u+w generated/*
           cp ${./charon-ml/.ocamlformat} .ocamlformat
-          ${pkgs-ocaml.ocamlPackages.ocamlformat}/bin/ocamlformat --inplace --enable-outside-detected-project generated/*.ml
+          ${ocamlformat}/bin/ocamlformat --inplace --enable-outside-detected-project generated/*.ml
 
           mkdir committed
           cp ${./charon-ml/src/generated}/*.ml committed
@@ -98,7 +99,7 @@
 
           packages = [
             pkgs-ocaml.ocamlPackages.ocaml
-            pkgs-ocaml.ocamlPackages.ocamlformat
+            ocamlformat
             pkgs-ocaml.ocamlPackages.menhir
             pkgs-ocaml.ocamlPackages.odoc
             # ocamllsp's version must match the ocaml version used, hence we

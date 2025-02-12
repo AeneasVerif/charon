@@ -22,3 +22,4 @@ let pp_big_int (fmt : Format.formatter) (bi : big_int) : unit =
 
 let compare_big_int (bi0 : big_int) (bi1 : big_int) : int = Z.compare bi0 bi1
 let show_big_int (bi : big_int) : string = Z.to_string bi
+let equal_big_int (bi0 : big_int) (bi1 : big_int) : bool = Z.equal bi0 bi1

@@ -375,6 +375,7 @@ and aggregate_kind =
 and var_id = (VarId.id[@visitors.opaque])
 [@@deriving
   show,
+    eq,
     ord,
     visitors
       {

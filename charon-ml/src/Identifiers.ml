@@ -79,6 +79,7 @@ module type Id = sig
   val show_id : id -> string
   val id_of_json : 'ctx -> Yojson.Basic.t -> (id, string) result
   val compare_id : id -> id -> int
+  val equal_id : id -> id -> bool
   val max : id -> id -> id
   val min : id -> id -> id
   val pp_generator : Format.formatter -> generator -> unit
@@ -189,6 +190,7 @@ module IdGen () : Id = struct
   let of_int x = x
   let id_of_json = OfJsonBasic.int_of_json
   let compare_id = compare
+  let equal_id = ( = )
   let max id0 id1 = if id0 > id1 then id0 else id1
   let min id0 id1 = if id0 < id1 then id0 else id1
   let nth v id = List.nth v id
