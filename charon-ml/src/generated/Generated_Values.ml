@@ -52,6 +52,7 @@ and scalar_value = {
 and float_value = { float_value : string; float_ty : float_type }
 [@@deriving
   show,
+    eq,
     ord,
     visitors
       {

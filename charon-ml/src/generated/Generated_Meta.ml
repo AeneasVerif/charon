@@ -8,7 +8,7 @@
     code-generation code is in `charon/src/bin/generate-ml`.
  *)
 
-type path_buf = string [@@deriving show, ord]
+type path_buf = string [@@deriving show, ord, eq]
 
 type file_id = file
 
@@ -125,4 +125,4 @@ and file = {
         Some files don't have contents.
      *)
 }
-[@@deriving show, ord]
+[@@deriving show, ord, eq]

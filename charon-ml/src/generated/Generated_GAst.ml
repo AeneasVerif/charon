@@ -154,6 +154,7 @@ and fun_sig = {
 }
 [@@deriving
   show,
+    eq,
     ord,
     visitors
       {
@@ -187,6 +188,7 @@ type global_decl = {
 }
 [@@deriving
   show,
+    eq,
     ord,
     visitors
       {
@@ -277,6 +279,7 @@ type trait_decl = {
 }
 [@@deriving
   show,
+    eq,
     ord,
     visitors
       {
@@ -336,6 +339,7 @@ type trait_impl = {
 }
 [@@deriving
   show,
+    eq,
     ord,
     visitors
       {
