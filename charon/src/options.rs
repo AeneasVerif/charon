@@ -72,6 +72,10 @@ pub struct CliOpts {
     #[clap(long = "polonius")]
     #[serde(default)]
     pub use_polonius: bool,
+    /// If activated, this skips borrow-checking of the crate.
+    #[clap(long = "skip-borrowck")]
+    #[serde(default)]
+    pub skip_borrowck: bool,
     #[clap(
         long = "no-code-duplication",
         help = indoc!("

@@ -10,6 +10,7 @@ use rustc_interface::{interface::Compiler, Queries};
 use std::fmt;
 use std::ops::Deref;
 use std::path::PathBuf;
+use std::sync::atomic::{AtomicBool, Ordering};
 
 /// The callbacks for Charon
 pub struct CharonCallbacks {
@@ -97,6 +98,39 @@ fn def_id_debug(def_id: rustc_hir::def_id::DefId, f: &mut fmt::Formatter<'_>) ->
 }
 
 impl Callbacks for CharonCallbacks {
+    fn config(&mut self, config: &mut rustc_interface::Config) {
+        // We use a static to be able to pass data to `override_queries`.
+        static SKIP_BORROWCK: AtomicBool = AtomicBool::new(false);
+        if self.options.skip_borrowck {
+            SKIP_BORROWCK.store(true, Ordering::SeqCst);
+        }
+
+        config.override_queries = Some(|_sess, providers| {
+            // TODO: catch the MIR in-flight to avoid stealing issues.
+            // providers.mir_built = |tcx, def_id| {
+            //     let mir = (rustc_interface::DEFAULT_QUERY_PROVIDERS.mir_built)(tcx, def_id);
+            //     let mut mir = mir.steal();
+            //     // use the mir
+            //     tcx.alloc_steal_mir(mir)
+            // };
+
+            if SKIP_BORROWCK.load(Ordering::SeqCst) {
+                providers.mir_borrowck = |tcx, def_id| {
+                    let (input_body, _promoted) = tcx.mir_promoted(def_id);
+                    let input_body = &input_body.borrow();
+                    // Empty result, which is what is used for tainted or custom_mir bodies.
+                    let result = rustc_middle::mir::BorrowCheckResult {
+                        concrete_opaque_types: Default::default(),
+                        closure_requirements: None,
+                        used_mut_upvars: Default::default(),
+                        tainted_by_errors: input_body.tainted_by_errors,
+                    };
+                    tcx.arena.alloc(result)
+                }
+            }
+        });
+    }
+
     /// The MIR is modified in place: borrow-checking requires the "promoted" MIR, which causes the
     /// "built" MIR (which results from the conversion to HIR to MIR) to become unaccessible.
     /// Because we require built MIR at the moment, we hook ourselves before MIR-based analysis
