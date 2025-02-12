@@ -1229,15 +1229,10 @@ impl<C: AstFormatter> FmtWithCtx<C> for TraitDecl {
                         .iter()
                         .map(|name| format!("{TAB_INCR}type {name}\n")),
                 )
-                .chain(
-                    self.required_methods
-                        .iter()
-                        .chain(self.provided_methods.iter())
-                        .map(|(name, bound_fn)| {
-                            let (params, fn_ref) = bound_fn.fmt_split(ctx);
-                            format!("{TAB_INCR}fn {name}{params} = {fn_ref}\n",)
-                        }),
-                )
+                .chain(self.methods().map(|(name, bound_fn)| {
+                    let (params, fn_ref) = bound_fn.fmt_split(ctx);
+                    format!("{TAB_INCR}fn {name}{params} = {fn_ref}\n",)
+                }))
                 .collect::<Vec<String>>();
             if items.is_empty() {
                 "".to_string()
@@ -1297,15 +1292,10 @@ impl<C: AstFormatter> FmtWithCtx<C> for TraitImpl {
                 .chain(self.types.iter().map(|(name, ty)| {
                     format!("{TAB_INCR}type {name} = {}\n", ty.fmt_with_ctx(ctx),)
                 }))
-                .chain(
-                    self.required_methods
-                        .iter()
-                        .chain(self.provided_methods.iter())
-                        .map(|(name, bound_fn)| {
-                            let (params, fn_ref) = bound_fn.fmt_split(ctx);
-                            format!("{TAB_INCR}fn {name}{params} = {fn_ref}\n",)
-                        }),
-                )
+                .chain(self.methods().map(|(name, bound_fn)| {
+                    let (params, fn_ref) = bound_fn.fmt_split(ctx);
+                    format!("{TAB_INCR}fn {name}{params} = {fn_ref}\n",)
+                }))
                 .collect::<Vec<String>>();
             if items.is_empty() {
                 "".to_string()

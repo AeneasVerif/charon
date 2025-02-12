@@ -225,11 +225,7 @@ impl VisitAst for CheckGenericsVisitor<'_> {
                 let Some(trait_decl) = self.ctx.translated.trait_decls.get(*trait_id) else {
                     return;
                 };
-                let Some((_, bound_fn)) = trait_decl
-                    .required_methods
-                    .iter()
-                    .chain(trait_decl.provided_methods.iter())
-                    .find(|(n, _)| n == method_name)
+                let Some((_, bound_fn)) = trait_decl.methods().find(|(n, _)| n == method_name)
                 else {
                     return;
                 };
@@ -295,9 +291,21 @@ impl VisitAst for CheckGenericsVisitor<'_> {
                 "The associated consts supplied by the trait impl don't match the trait decl.",
             )
         }
-        let methods = timpl.required_methods.len() == tdecl.required_methods.len();
-        if !methods {
-            self.error("The methods supplied by the trait impl don't match the trait decl.")
+        let methods_match = timpl.methods.len() == tdecl.methods.len();
+        if !methods_match && self.phase != "after translation" {
+            let decl_methods = tdecl
+                .methods()
+                .map(|(name, _)| format!("- {name}"))
+                .join("\n");
+            let impl_methods = timpl
+                .methods()
+                .map(|(name, _)| format!("- {name}"))
+                .join("\n");
+            self.error(format!(
+                "The methods supplied by the trait impl don't match the trait decl.\n\
+                Trait methods:\n{decl_methods}\n\
+                Impl methods:\n{impl_methods}"
+            ))
         }
     }
 

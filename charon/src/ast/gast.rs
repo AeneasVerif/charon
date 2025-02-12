@@ -254,18 +254,13 @@ pub struct TraitDecl {
     /// TODO: Do this as we translate to avoid the need to store this vector.
     #[charon::opaque]
     pub type_clauses: Vec<(TraitItemName, Vector<TraitClauseId, TraitClause>)>,
-    /// The *required* methods: the methods declared by the trait but with no default
-    /// implementation. The corresponding `FunDecl`s don't have a body.
+    /// The methods declared by the trait. The signature of the methods can be found in each
+    /// corresponding `FunDecl`. These `FunDecl` may have a body if the trait provided a default
+    /// implementation for that method; otherwise it has an `Opaque` body.
     ///
     /// The binder contains the type parameters specific to the method. The `FunDeclRef` then
     /// provides a full list of arguments to the pointed-to function.
-    pub required_methods: Vec<(TraitItemName, Binder<FunDeclRef>)>,
-    /// The *provided* methods: the methods with a default implementation. The corresponding
-    /// `FunDecl`s may have a body, according to the usual rules for extracting function bodies.
-    ///
-    /// The binder contains the type parameters specific to the method. The `FunDeclRef` then
-    /// provides a full list of arguments to the pointed-to function.
-    pub provided_methods: Vec<(TraitItemName, Binder<FunDeclRef>)>,
+    pub methods: Vec<(TraitItemName, Binder<FunDeclRef>)>,
 }
 
 /// A trait **implementation**.
@@ -298,16 +293,8 @@ pub struct TraitImpl {
     /// empty after the `lift_associated_item_clauses` pass.
     #[charon::opaque]
     pub type_clauses: Vec<(TraitItemName, Vector<TraitClauseId, TraitRef>)>,
-    /// The implemented required methods
-    ///
-    /// The binder contains the type parameters specific to the method. The `FunDeclRef` then
-    /// provides a full list of arguments to the pointed-to function.
-    pub required_methods: Vec<(TraitItemName, Binder<FunDeclRef>)>,
-    /// The re-implemented provided methods
-    ///
-    /// The binder contains the type parameters specific to the method. The `FunDeclRef` then
-    /// provides a full list of arguments to the pointed-to function.
-    pub provided_methods: Vec<(TraitItemName, Binder<FunDeclRef>)>,
+    /// The implemented methods
+    pub methods: Vec<(TraitItemName, Binder<FunDeclRef>)>,
 }
 
 /// A function operand is used in function calls.

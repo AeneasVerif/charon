@@ -375,8 +375,7 @@ fn compute_declarations_graph<'tcx>(ctx: &'tcx TransformCtx) -> Deps {
                     types,
                     type_defaults,
                     type_clauses,
-                    required_methods,
-                    provided_methods,
+                    methods,
                 } = d;
                 // Visit the traits referenced in the generics
                 generics.drive(&mut graph);
@@ -391,11 +390,8 @@ fn compute_declarations_graph<'tcx>(ctx: &'tcx TransformCtx) -> Deps {
                 const_defaults.drive(&mut graph);
                 type_defaults.drive(&mut graph);
 
-                let method_ids = required_methods
-                    .iter()
-                    .chain(provided_methods.iter())
-                    .map(|(_, bound_fun)| bound_fun.skip_binder.id);
-                for id in method_ids {
+                for (_, bound_fn) in methods {
+                    let id = bound_fn.skip_binder.id;
                     // Important: we must ignore the function id, because
                     // otherwise in the presence of associated types we may
                     // get a mutual recursion between the function and the

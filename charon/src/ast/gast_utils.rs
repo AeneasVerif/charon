@@ -71,3 +71,14 @@ impl std::ops::Index<VarId> for Locals {
         &self.vars[var_id]
     }
 }
+
+impl TraitDecl {
+    pub fn methods(&self) -> impl Iterator<Item = &(TraitItemName, Binder<FunDeclRef>)> {
+        self.methods.iter()
+    }
+}
+impl TraitImpl {
+    pub fn methods(&self) -> impl Iterator<Item = &(TraitItemName, Binder<FunDeclRef>)> {
+        self.methods.iter()
+    }
+}

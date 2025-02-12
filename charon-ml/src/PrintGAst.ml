@@ -176,34 +176,15 @@ let trait_decl_to_string (env : 'a fmt_env) (indent : string)
     let types =
       List.map (fun name -> indent1 ^ "type " ^ name ^ "\n") def.types
     in
-    let required_methods =
+    let methods =
       List.map
         (fun (name, f) ->
           indent1 ^ "fn " ^ name ^ " : "
           ^ fun_decl_id_to_string env f.binder_value.fun_id
           ^ "\n")
-        def.required_methods
+        def.methods
     in
-    let provided_methods =
-      List.map
-        (fun (name, f) ->
-          indent1 ^ "fn " ^ name ^ " : "
-          ^ fun_decl_id_to_string env f.binder_value.fun_id
-          ^ "\n")
-        def.provided_methods
-    in
-    let items =
-      List.concat
-        [
-          parent_clauses;
-          consts;
-          types;
-          [ indent1 ^ "// Required methods\n" ];
-          required_methods;
-          [ indent1 ^ "// Provided methods\n" ];
-          provided_methods;
-        ]
-    in
+    let items = List.concat [ parent_clauses; consts; types; methods ] in
     if items = [] then "" else "\n{\n" ^ String.concat "" items ^ "}"
   in
 
@@ -257,19 +238,7 @@ let trait_impl_to_string (env : 'a fmt_env) (indent : string)
       ^ fun_decl_id_to_string env f.binder_value.fun_id
       ^ "\n"
     in
-    let required_methods = List.map env_method def.required_methods in
-    let provided_methods = List.map env_method def.provided_methods in
-    let methods =
-      if required_methods <> [] || provided_methods <> [] then
-        List.concat
-          [
-            [ indent1 ^ "// Required methods\n" ];
-            required_methods;
-            [ indent1 ^ "// Provided methods\n" ];
-            provided_methods;
-          ]
-      else []
-    in
+    let methods = List.map env_method def.methods in
     let items = List.concat [ parent_clauses; consts; types; methods ] in
     if items = [] then "" else "\n{\n" ^ String.concat "" items ^ "}"
   in

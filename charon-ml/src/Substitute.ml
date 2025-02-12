@@ -484,45 +484,13 @@ let instantiate_trait_method (trait_ref : trait_ref) =
   let trait_self = trait_ref.trait_id in
   instantiate_method trait_self trait_generics
 
-(** Like lookup_trait_decl_provided_method, but also correctly substitutes the generics. *)
+(** Like lookup_trait_decl_method, but also correctly substitutes the generics. *)
 let lookup_and_subst_trait_decl_method (tdecl : trait_decl)
     (name : trait_item_name) (trait_ref : trait_ref)
     (method_generics : generic_args) : fun_decl_ref option =
   Option.map
     (instantiate_trait_method trait_ref method_generics)
     (lookup_trait_decl_method tdecl name)
-
-(** Like lookup_trait_decl_provided_method, but also correctly substitutes the generics. *)
-let lookup_and_subst_trait_decl_provided_method (tdecl : trait_decl)
-    (name : trait_item_name) (trait_ref : trait_ref)
-    (method_generics : generic_args) : fun_decl_ref option =
-  Option.map
-    (instantiate_trait_method trait_ref method_generics)
-    (lookup_trait_decl_provided_method tdecl name)
-
-(** Like lookup_trait_decl_required_method, but also correctly substitutes the generics. *)
-let lookup_and_subst_trait_decl_required_method (tdecl : trait_decl)
-    (name : trait_item_name) (trait_ref : trait_ref)
-    (method_generics : generic_args) : fun_decl_ref option =
-  Option.map
-    (instantiate_trait_method trait_ref method_generics)
-    (lookup_trait_decl_required_method tdecl name)
-
-(** Like lookup_trait_impl_provided_method, but also correctly substitutes the generics. *)
-let lookup_and_subst_trait_impl_provided_method (timpl : trait_impl)
-    (name : trait_item_name) (impl_generics : generic_args)
-    (method_generics : generic_args) : fun_decl_ref option =
-  Option.map
-    (instantiate_method Self impl_generics method_generics)
-    (lookup_trait_impl_provided_method timpl name)
-
-(** Like lookup_trait_impl_required_method, but also correctly substitutes the generics. *)
-let lookup_and_subst_trait_impl_required_method (timpl : trait_impl)
-    (name : trait_item_name) (impl_generics : generic_args)
-    (method_generics : generic_args) : fun_decl_ref option =
-  Option.map
-    (instantiate_method Self impl_generics method_generics)
-    (lookup_trait_impl_required_method timpl name)
 
 (** Like lookup_trait_impl_method, but also correctly substitutes the generics. *)
 let lookup_and_subst_trait_impl_method (timpl : trait_impl)

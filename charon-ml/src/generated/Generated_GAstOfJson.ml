@@ -472,8 +472,7 @@ and trait_decl_of_json (ctx : of_json_ctx) (js : json) :
           ("types", types);
           ("type_defaults", _);
           ("type_clauses", _);
-          ("required_methods", required_methods);
-          ("provided_methods", provided_methods);
+          ("methods", methods);
         ] ->
         let* def_id = trait_decl_id_of_json ctx def_id in
         let* item_meta = item_meta_of_json ctx item_meta in
@@ -488,17 +487,11 @@ and trait_decl_of_json (ctx : of_json_ctx) (js : json) :
             ctx consts
         in
         let* types = list_of_json trait_item_name_of_json ctx types in
-        let* required_methods =
+        let* methods =
           list_of_json
             (pair_of_json trait_item_name_of_json
                (binder_of_json fun_decl_ref_of_json))
-            ctx required_methods
-        in
-        let* provided_methods =
-          list_of_json
-            (pair_of_json trait_item_name_of_json
-               (binder_of_json fun_decl_ref_of_json))
-            ctx provided_methods
+            ctx methods
         in
         Ok
           ({
@@ -508,8 +501,7 @@ and trait_decl_of_json (ctx : of_json_ctx) (js : json) :
              parent_clauses;
              consts;
              types;
-             required_methods;
-             provided_methods;
+             methods;
            }
             : trait_decl)
     | _ -> Error "")
@@ -528,8 +520,7 @@ and trait_impl_of_json (ctx : of_json_ctx) (js : json) :
           ("consts", consts);
           ("types", types);
           ("type_clauses", _);
-          ("required_methods", required_methods);
-          ("provided_methods", provided_methods);
+          ("methods", methods);
         ] ->
         let* def_id = trait_impl_id_of_json ctx def_id in
         let* item_meta = item_meta_of_json ctx item_meta in
@@ -549,17 +540,11 @@ and trait_impl_of_json (ctx : of_json_ctx) (js : json) :
             (pair_of_json trait_item_name_of_json ty_of_json)
             ctx types
         in
-        let* required_methods =
+        let* methods =
           list_of_json
             (pair_of_json trait_item_name_of_json
                (binder_of_json fun_decl_ref_of_json))
-            ctx required_methods
-        in
-        let* provided_methods =
-          list_of_json
-            (pair_of_json trait_item_name_of_json
-               (binder_of_json fun_decl_ref_of_json))
-            ctx provided_methods
+            ctx methods
         in
         Ok
           ({
@@ -570,8 +555,7 @@ and trait_impl_of_json (ctx : of_json_ctx) (js : json) :
              parent_trait_refs;
              consts;
              types;
-             required_methods;
-             provided_methods;
+             methods;
            }
             : trait_impl)
     | _ -> Error "")
