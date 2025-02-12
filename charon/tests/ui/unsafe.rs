@@ -1,7 +1,8 @@
 //@ charon-args=--exclude=core::ptr::metadata::Thin
 
 //! The 5 "unsafe superpowers" (https://doc.rust-lang.org/book/ch19-01-unsafe-rust.html#unsafe-superpowers).
-#![feature(raw_ref_op)]
+#![feature(core_intrinsics)]
+#![allow(internal_features)]
 
 fn call_unsafe_fn() {
     let x: *const _ = std::ptr::null::<u32>();
@@ -36,5 +37,5 @@ fn access_union_field() {
 }
 
 fn assume() {
-    std::intrinsics::assume(true)
+    unsafe { std::intrinsics::assume(true) }
 }

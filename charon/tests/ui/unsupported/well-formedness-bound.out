@@ -8,7 +8,7 @@ error: Well-formedness clauses are unsupported
 error: Item `test_crate::get` caused errors; ignoring.
  --> tests/ui/unsupported/well-formedness-bound.rs:2:1
   |
-2 | / fn get<'a>(x: &'a u32) -> Option<&'a u32>
+2 | / pub fn get<'a>(x: &'a u32) -> Option<&'a u32>
 3 | | where
 4 | |     &'a ():,
   | |____________^

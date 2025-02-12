@@ -38,7 +38,11 @@ struct test_crate::S<I, F>
       [@TraitClause1]: core::marker::Sized<F>,
       [@TraitClause2]: core::iter::traits::iterator::Iterator<I>,
       [@TraitClause3]: test_crate::C<F, @TraitClause2::Item>,
- = {}
+ =
+{
+  I,
+  F,
+}
 
 type test_crate::S2<I, F>
   where

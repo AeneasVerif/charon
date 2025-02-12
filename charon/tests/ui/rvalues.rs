@@ -1,5 +1,5 @@
-#![feature(raw_ref_op)]
 #![feature(const_ub_checks)]
+#![feature(core_intrinsics)]
 #![feature(rustc_attrs)]
 #![allow(internal_features)]
 

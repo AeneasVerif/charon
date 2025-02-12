@@ -1,7 +1,7 @@
 //@ known-failure
 // See also `non-lifetime-gats.rs`
 
-trait LendingIterator {
+pub trait LendingIterator {
     type Item<'a>
     where
         Self: 'a;
@@ -10,11 +10,13 @@ trait LendingIterator {
 }
 
 impl<'a, T> LendingIterator for Option<&'a T> {
-    type Item<'b> = &'b T;
+    type Item<'b>
+        = &'b T
+    where
+        Self: 'b;
 
     fn next<'b>(&'b mut self) -> Option<Self::Item<'b>> {
         if let Some(item) = self {
-            *self = None;
             let item = &**item;
             Some(item)
         } else {
@@ -23,13 +25,13 @@ impl<'a, T> LendingIterator for Option<&'a T> {
     }
 }
 
-fn for_each<I: LendingIterator>(mut iter: I, f: impl for<'a> FnMut(I::Item<'a>)) {
+pub fn for_each<I: LendingIterator>(mut iter: I, mut f: impl for<'a> FnMut(I::Item<'a>)) {
     while let Some(item) = iter.next() {
         f(item)
     }
 }
 
-fn main() {
+pub fn main() {
     let x = 42;
     let iter = Some(&42);
     let mut sum = 0;
@@ -37,16 +39,16 @@ fn main() {
     assert_eq!(sum, 42);
 }
 
-mod lifetimes {
-    trait Foo<T> {
+pub mod lifetimes {
+    pub trait Foo<T> {
         fn foo(self) -> T;
     }
 
-    trait Bar<'a> {
+    pub trait Bar<'a> {
         type Type<'b>: for<'c> Foo<&'a &'b &'c ()>;
     }
 
-    fn bar<'x, 'y, 'z, T>(x: <T as Bar<'x>>::Type<'y>) -> &'x &'y &'z ()
+    pub fn bar<'x, 'y, 'z, T>(x: <T as Bar<'x>>::Type<'y>) -> &'x &'y &'z ()
     where
         T: Bar<'x>,
     {

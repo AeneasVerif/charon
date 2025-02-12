@@ -95,7 +95,3 @@ impl<const N: usize, T> V<N, T> {
 pub fn use_v<const N: usize, T>() -> usize {
     V::<N, T>::LEN
 }
-
-// Mutual recursion
-const REC1: usize = if true { 0 } else { REC2 };
-const REC2: usize = if true { 0 } else { REC1 };

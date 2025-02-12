@@ -8,8 +8,8 @@ error: Generic associated types are not supported
 error: Item `test_crate::LendingIterator` caused errors; ignoring.
  --> tests/ui/generic-associated-types.rs:4:1
   |
-4 | trait LendingIterator {
-  | ^^^^^^^^^^^^^^^^^^^^^
+4 | pub trait LendingIterator {
+  | ^^^^^^^^^^^^^^^^^^^^^^^^^
   |
 
 error: Found unsupported GAT `Item` when resolving trait `core::marker::Sized<Self::Item>`
@@ -27,52 +27,52 @@ error: Error during trait resolution: Found unsupported GAT `Item` when resolvin
   |
 
 error: Found unsupported GAT `Item` when resolving trait `core::marker::Sized<@TraitClause2::Item>`
-  --> tests/ui/generic-associated-types.rs:27:28
+  --> tests/ui/generic-associated-types.rs:29:28
    |
-27 |     while let Some(item) = iter.next() {
+29 |     while let Some(item) = iter.next() {
    |                            ^^^^^^^^^^^
    |
 
 error: Error during trait resolution: Found unsupported GAT `Item` when resolving trait `core::marker::Sized<@TraitClause2::Item>`
-  --> tests/ui/generic-associated-types.rs:27:28
+  --> tests/ui/generic-associated-types.rs:29:28
    |
-27 |     while let Some(item) = iter.next() {
+29 |     while let Some(item) = iter.next() {
    |                            ^^^^^^^^^^^
    |
 
 warning: unused variable: `x`
-  --> tests/ui/generic-associated-types.rs:33:9
+  --> tests/ui/generic-associated-types.rs:35:9
    |
-33 |     let x = 42;
+35 |     let x = 42;
    |         ^ help: if this is intentional, prefix it with an underscore: `_x`
    |
    = note: `#[warn(unused_variables)]` on by default
 
 error: Generic associated types are not supported
-  --> tests/ui/generic-associated-types.rs:46:9
+  --> tests/ui/generic-associated-types.rs:48:9
    |
-46 |         type Type<'b>: for<'c> Foo<&'a &'b &'c ()>;
+48 |         type Type<'b>: for<'c> Foo<&'a &'b &'c ()>;
    |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
    |
 
 error: Item `test_crate::lifetimes::Bar` caused errors; ignoring.
-  --> tests/ui/generic-associated-types.rs:45:5
+  --> tests/ui/generic-associated-types.rs:47:5
    |
-45 |     trait Bar<'a> {
-   |     ^^^^^^^^^^^^^
+47 |     pub trait Bar<'a> {
+   |     ^^^^^^^^^^^^^^^^^
    |
 
 error: Found unsupported GAT `Type` when resolving trait `test_crate::lifetimes::Foo<@TraitClause1::Type, &'_ (&'_ (&'_ (())))>`
-  --> tests/ui/generic-associated-types.rs:53:9
+  --> tests/ui/generic-associated-types.rs:55:9
    |
-53 |         x.foo()
+55 |         x.foo()
    |         ^^^^^^^
    |
 
 error: Error during trait resolution: Found unsupported GAT `Type` when resolving trait `test_crate::lifetimes::Foo<@TraitClause1::Type, &'_ (&'_ (&'_ (())))>`
-  --> tests/ui/generic-associated-types.rs:53:9
+  --> tests/ui/generic-associated-types.rs:55:9
    |
-53 |         x.foo()
+55 |         x.foo()
    |         ^^^^^^^
    |
 

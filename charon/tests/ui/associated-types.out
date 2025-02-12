@@ -105,6 +105,7 @@ fn test_crate::{impl test_crate::Foo<'a, T> for core::option::Option<T>[@TraitCl
 where
     [@TraitClause0]: core::marker::Sized<T>,
     [@TraitClause1]: core::marker::Copy<T>,
+    T : 'a,
 {
     let @0: T; // return
     let x@1: T; // arg #1
@@ -118,6 +119,7 @@ where
     [@TraitClause0]: core::marker::Sized<T>,
     [@TraitClause1]: core::marker::Copy<T>,
     [@TraitClause2]: test_crate::Foo<'_, T, Clause2_Item>,
+    T : 'a,
 {
     let @0: T; // return
     let x@1: T; // arg #1
@@ -130,6 +132,7 @@ impl<'a, T> test_crate::{impl test_crate::Foo<'a, T> for core::option::Option<T>
 where
     [@TraitClause0]: core::marker::Sized<T>,
     [@TraitClause1]: core::marker::Copy<T>,
+    T : 'a,
 {
     parent_clause0 = core::option::{impl core::marker::Copy for core::option::Option<T>[@TraitClause0]}#44<T>[@TraitClause0, @TraitClause1]
     parent_clause1 = @TraitClause0
@@ -264,6 +267,7 @@ trait test_crate::loopy_with_generics::Bar<'a, Self, T, U, Self_BarTy>
 impl<'a, T> test_crate::loopy_with_generics::{impl test_crate::loopy_with_generics::Bar<'a, u8, T, &'a (T)> for ()}<'a, T> : test_crate::loopy_with_generics::Bar<'a, (), u8, T, &'a (T)>
 where
     [@TraitClause0]: core::marker::Sized<T>,
+    T : 'a,
 {
     parent_clause0 = core::marker::Sized<u8>
     parent_clause1 = @TraitClause0
@@ -313,6 +317,9 @@ enum test_crate::cow::Cow<'a, B, Clause0_Owned>
 
 
 trait test_crate::params::Foo<'a, Self, T, Self_X, Self_Item>
+where
+    T : 'a,
+    Self_X : 'a,
 {
     parent_clause0 : [@TraitClause0]: core::marker::Sized<T>
     parent_clause1 : [@TraitClause1]: core::marker::Sized<Self_X>
@@ -322,6 +329,7 @@ trait test_crate::params::Foo<'a, Self, T, Self_X, Self_Item>
 impl<'a, T> test_crate::params::{impl test_crate::params::Foo<'a, core::option::Option<T>[@TraitClause0], &'a (()), &'a ((core::option::Option<T>[@TraitClause0], &'_ (())))> for ()}<'a, T> : test_crate::params::Foo<'a, (), core::option::Option<T>[@TraitClause0], &'a (()), &'a ((core::option::Option<T>[@TraitClause0], &'_ (())))>
 where
     [@TraitClause0]: core::marker::Sized<T>,
+    T : 'a,
 {
     parent_clause0 = core::marker::Sized<core::option::Option<T>[@TraitClause0]>
     parent_clause1 = core::marker::Sized<&'_ (())>

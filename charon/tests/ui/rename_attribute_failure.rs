@@ -4,20 +4,20 @@
 #![register_tool(aeneas)]
 
 #[charon::rename("")]
-type TestEmpty = ();
+pub type TestEmpty = ();
 
 #[charon::rename("Test!976?")]
-type TestNonAlphanumeric = ();
+pub type TestNonAlphanumeric = ();
 
 #[charon::rename("75Test")]
-type TestNotStartingWithLetter = ();
+pub type TestNotStartingWithLetter = ();
 
 #[charon::rename(aaaa)]
-type TestNotQuoted = ();
+pub type TestNotQuoted = ();
 
 #[charon::rename("_Type36")]
 #[aeneas::rename("_Type37")]
-type TestMultiple = ();
+pub type TestMultiple = ();
 
 #[charon::something_else("_Type36")]
-type TestUnrecognizedArg = ();
+pub type TestUnrecognizedArg = ();

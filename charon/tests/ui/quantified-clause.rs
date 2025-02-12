@@ -6,6 +6,7 @@ where
 
 fn bar<'b, T>()
 where
+    T: 'b,
     for<'a> &'b T: 'a,
 {
 }

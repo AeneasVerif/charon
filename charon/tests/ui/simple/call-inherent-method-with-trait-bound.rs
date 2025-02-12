@@ -15,7 +15,9 @@ impl<S> HashMap<S> {
 
 pub fn top_level_get<S, Q: Trait>(_x: HashMap<S>, _k: Q) {}
 
-pub fn test(map: HashMap<()>) {
+pub fn test1(map: HashMap<()>) {
     top_level_get(map, ());
+}
+pub fn test2(map: HashMap<()>) {
     HashMap::get(map, ());
 }

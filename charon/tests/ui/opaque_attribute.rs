@@ -23,7 +23,17 @@ impl BoolTrait for bool {
 }
 
 #[charon::opaque]
-pub fn test_bool_trait_option<T>(x: Option<T>) -> bool {
+impl<T: BoolTrait> BoolTrait for Option<T> {
+    fn get_bool(&self) -> bool {
+        match self {
+            Some(x) => x.get_bool(),
+            None => false,
+        }
+    }
+}
+
+#[charon::opaque]
+pub fn test_bool_trait_option<T: BoolTrait>(x: Option<T>) -> bool {
     x.get_bool() && x.ret_true()
 }
 

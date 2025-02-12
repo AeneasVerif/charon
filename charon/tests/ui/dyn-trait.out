@@ -28,6 +28,7 @@ fn test_crate::construct<T>(@1: T) -> alloc::boxed::Box<dyn (exists(TODO))>[core
 where
     [@TraitClause0]: core::marker::Sized<T>,
     [@TraitClause1]: core::fmt::Display<T>,
+    T : 'static,
 
 opaque type alloc::string::String
 

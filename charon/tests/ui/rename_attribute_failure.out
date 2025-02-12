@@ -29,8 +29,8 @@ error: Error parsing attribute: the new name should be between quotes: `rename("
 error: There should be at most one `charon::rename("...")` or `aeneas::rename("...")` attribute per declaration
   --> tests/ui/rename_attribute_failure.rs:20:1
    |
-20 | type TestMultiple = ();
-   | ^^^^^^^^^^^^^^^^^
+20 | pub type TestMultiple = ();
+   | ^^^^^^^^^^^^^^^^^^^^^
    |
 
 error: Error parsing attribute: Unrecognized attribute: `charon::something_else("_Type36")`
