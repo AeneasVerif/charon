@@ -1,13 +1,13 @@
 //@ known-failure
 use std::ops::Deref;
 
-trait PointerFamily {
+pub trait PointerFamily {
     type Pointer<T>: Deref<Target = T>;
 
     fn new<T>(value: T) -> Self::Pointer<T>;
 }
 
-struct BoxFamily;
+pub struct BoxFamily;
 
 impl PointerFamily for BoxFamily {
     type Pointer<U> = Box<U>;
@@ -17,24 +17,24 @@ impl PointerFamily for BoxFamily {
     }
 }
 
-fn make_pointer<F: PointerFamily, T>(x: T) -> F::Pointer<T> {
+pub fn make_pointer<F: PointerFamily, T>(x: T) -> F::Pointer<T> {
     F::new(x)
 }
 
-fn main() {
+pub fn main() {
     let _: Box<_> = make_pointer::<BoxFamily, _>(42);
 }
 
-mod moar_variables {
+pub mod moar_variables {
     // Dummy trait to check we handle variables in clauses correctly.
-    trait Link<T> {}
+    pub trait Link<T> {}
     impl<T, U> Link<T> for U {}
 
-    trait Trait<T> {
+    pub trait Trait<T> {
         type Type<U>: Link<T>;
     }
 
-    struct Foo;
+    pub struct Foo;
     impl<T> Trait<Option<T>> for Foo {
         type Type<U> = (T, U);
     }

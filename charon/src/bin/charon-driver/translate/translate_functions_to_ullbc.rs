@@ -5,9 +5,8 @@
 
 use std::mem;
 use std::panic;
-use std::rc::Rc;
 
-use super::get_mir::{boxes_are_desugared, get_mir_for_def_id_and_level};
+use super::get_mir::boxes_are_desugared;
 use super::translate_ctx::*;
 use charon_lib::ast::*;
 use charon_lib::common::*;
@@ -16,7 +15,6 @@ use charon_lib::ids::Vector;
 use charon_lib::pretty::FmtWithCtx;
 use charon_lib::ullbc_ast::*;
 use hax_frontend_exporter as hax;
-use hax_frontend_exporter::{HasMirSetter, HasOwnerIdSetter};
 use itertools::Itertools;
 use rustc_hir::def_id::DefId;
 use rustc_middle::mir::START_BLOCK;
@@ -1357,25 +1355,13 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
 
         // Retrieve the body
         let rust_id = def.rust_def_id();
-        let Some(body) =
-            get_mir_for_def_id_and_level(self.t_ctx.tcx, rust_id, self.t_ctx.options.mir_level)
-        else {
+        let Some(body) = self.t_ctx.get_mir(rust_id, item_meta.span)? else {
             return Ok(Err(Opaque));
         };
 
-        self.locals.arg_count = sig.inputs.len();
-        // Here, we have to create a MIR state, which contains the body
-        // Yes, we have to clone, this is annoying: we end up cloning the body twice
-        let state = self
-            .hax_state
-            .clone()
-            .with_owner_id(rust_id)
-            .with_mir(Rc::new(body.clone()));
-        // Translate
-        let body: hax::MirBody<()> = self.t_ctx.catch_sinto(&state, item_meta.span, &body)?;
-
         // Initialize the local variables
         trace!("Translating the body locals");
+        self.locals.arg_count = sig.inputs.len();
         self.translate_body_locals(&body)?;
 
         // Translate the expression body

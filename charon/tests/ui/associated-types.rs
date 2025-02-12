@@ -20,7 +20,7 @@ impl<'a, T> Foo<'a> for &'a T {
     }
 }
 
-impl<'a, T: Copy> Foo<'a> for Option<T> {
+impl<'a, T: Copy + 'a> Foo<'a> for Option<T> {
     type Item = T;
     fn use_item_required(x: Self::Item) -> Self::Item {
         x
@@ -75,7 +75,7 @@ mod loopy_with_generics {
     trait Bar<'a, T, U> {
         type BarTy;
     }
-    impl<'a, T> Bar<'a, u8, T> for () {
+    impl<'a, T: 'a> Bar<'a, u8, T> for () {
         type BarTy = &'a T;
     }
 
@@ -98,11 +98,11 @@ mod cow {
 }
 
 mod params {
-    trait Foo<'a, T> {
-        type X;
+    trait Foo<'a, T: 'a> {
+        type X: 'a;
         type Item = &'a (T, Self::X);
     }
-    impl<'a, T> Foo<'a, Option<T>> for () {
+    impl<'a, T: 'a> Foo<'a, Option<T>> for () {
         type X = &'a ();
     }
 }

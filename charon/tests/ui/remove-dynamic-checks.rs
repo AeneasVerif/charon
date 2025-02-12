@@ -101,7 +101,7 @@ pub const _: isize = 2 / 2;
 // pass. I used `u32` here because other types use a `cast` and thus aren't inlined.
 pub const FOO: u32 = 10;
 pub const _: u32 = 1 + FOO;
-pub const _: u32 = 1 - FOO;
+pub const _: u32 = 10 - FOO;
 pub const _: u32 = 2 * FOO;
 pub const _: u32 = 2 >> FOO;
 pub const _: u32 = 2 << FOO;

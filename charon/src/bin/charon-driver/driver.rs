@@ -10,6 +10,7 @@ use rustc_interface::{interface::Compiler, Queries};
 use std::fmt;
 use std::ops::Deref;
 use std::path::PathBuf;
+use std::sync::atomic::{AtomicBool, Ordering};
 
 /// The callbacks for Charon
 pub struct CharonCallbacks {
@@ -97,29 +98,60 @@ fn def_id_debug(def_id: rustc_hir::def_id::DefId, f: &mut fmt::Formatter<'_>) ->
 }
 
 impl Callbacks for CharonCallbacks {
-    /// We have to be careful here: we can plug ourselves at several places
-    /// (after parsing, after expansion, after analysis). However, the MIR is
-    /// modified in place: this means that if we at some point we compute, say,
-    /// the promoted MIR, it is possible to query the optimized MIR (because
-    /// optimized MIR is further down in the compilation process). However,
-    /// it is not possible to query, say, the built MIR (which results from
-    /// the conversion to HIR to MIR) because it has been lost.
-    /// For this reason, and as we may want to plug ourselves at different
-    /// phases of the compilation process, we query the context as early as
-    /// possible (i.e., after parsing). See [charon_lib::get_mir].
-    fn after_expansion<'tcx>(
-        &mut self,
-        _c: &Compiler,
-        queries: &'tcx Queries<'tcx>,
-    ) -> Compilation {
+    fn config(&mut self, config: &mut rustc_interface::Config) {
+        // We use a static to be able to pass data to `override_queries`.
+        static SKIP_BORROWCK: AtomicBool = AtomicBool::new(false);
+        if self.options.skip_borrowck {
+            SKIP_BORROWCK.store(true, Ordering::SeqCst);
+        }
+
+        config.override_queries = Some(|_sess, providers| {
+            // TODO: catch the MIR in-flight to avoid stealing issues.
+            // providers.mir_built = |tcx, def_id| {
+            //     let mir = (rustc_interface::DEFAULT_QUERY_PROVIDERS.mir_built)(tcx, def_id);
+            //     let mut mir = mir.steal();
+            //     // use the mir
+            //     tcx.alloc_steal_mir(mir)
+            // };
+
+            if SKIP_BORROWCK.load(Ordering::SeqCst) {
+                providers.mir_borrowck = |tcx, def_id| {
+                    let (input_body, _promoted) = tcx.mir_promoted(def_id);
+                    let input_body = &input_body.borrow();
+                    // Empty result, which is what is used for tainted or custom_mir bodies.
+                    let result = rustc_middle::mir::BorrowCheckResult {
+                        concrete_opaque_types: Default::default(),
+                        closure_requirements: None,
+                        used_mut_upvars: Default::default(),
+                        tainted_by_errors: input_body.tainted_by_errors,
+                    };
+                    tcx.arena.alloc(result)
+                }
+            }
+        });
+    }
+
+    /// The MIR is modified in place: borrow-checking requires the "promoted" MIR, which causes the
+    /// "built" MIR (which results from the conversion to HIR to MIR) to become unaccessible.
+    /// Because we require built MIR at the moment, we hook ourselves before MIR-based analysis
+    /// passes.
+    fn after_expansion<'tcx>(&mut self, _: &Compiler, queries: &'tcx Queries<'tcx>) -> Compilation {
         // Set up our own `DefId` debug routine.
         rustc_hir::def_id::DEF_ID_DEBUG
             .swap(&(def_id_debug as fn(_, &mut fmt::Formatter<'_>) -> _));
 
-        queries.global_ctxt().unwrap().get_mut().enter(|tcx| {
-            let ctx = translate_crate_to_ullbc::translate(&self.options, tcx, self.sysroot.clone());
-            self.transform_ctx = Some(ctx);
+        let tranform_ctx = queries.global_ctxt().unwrap().get_mut().enter(|tcx| {
+            translate_crate_to_ullbc::translate(&self.options, tcx, self.sysroot.clone())
         });
+        self.transform_ctx = Some(tranform_ctx);
+        Compilation::Continue
+    }
+    fn after_analysis<'tcx>(
+        &mut self,
+        _: &rustc_interface::interface::Compiler,
+        _: &'tcx Queries<'tcx>,
+    ) -> Compilation {
+        // Don't continue to codegen etc.
         Compilation::Stop
     }
 }

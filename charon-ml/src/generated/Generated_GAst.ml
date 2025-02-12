@@ -396,6 +396,8 @@ and cli_options = {
       (** If activated, use Polonius' non-lexical lifetimes (NLL) analysis.
         Otherwise, use the standard borrow checker.
      *)
+  skip_borrowck : bool;
+      (** If activated, this skips borrow-checking of the crate. *)
   no_code_duplication : bool;
   extract_opaque_bodies : bool;
       (** Usually we skip the bodies of foreign methods and structs with private fields. When this

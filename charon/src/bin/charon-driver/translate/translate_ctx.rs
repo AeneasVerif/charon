@@ -234,8 +234,6 @@ pub(crate) struct BodyTransCtx<'tcx, 'ctx> {
     pub item_id: Option<AnyTransId>,
     /// The translation context containing the top-level definitions/ids.
     pub t_ctx: &'ctx mut TranslateCtx<'tcx>,
-    /// A hax state with an owner id
-    pub hax_state: hax::StateWithOwner<'tcx>,
     /// Whether to consider a `ImplExprAtom::Error` as an error for us. True except inside type
     /// aliases, because rust does not enforce correct trait bounds on type aliases.
     pub error_on_impl_expr_error: bool,
@@ -898,12 +896,10 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
         item_id: Option<AnyTransId>,
         t_ctx: &'ctx mut TranslateCtx<'tcx>,
     ) -> Self {
-        let hax_state = hax::State::new_from_state_and_id(&t_ctx.hax_state, def_id);
         BodyTransCtx {
             def_id,
             item_id,
             t_ctx,
-            hax_state,
             error_on_impl_expr_error: true,
             binding_levels: Default::default(),
             parent_trait_clauses: Default::default(),

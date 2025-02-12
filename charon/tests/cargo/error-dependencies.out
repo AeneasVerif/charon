@@ -2,9 +2,9 @@ error: Trait aliases are not supported
  --> /rustc/library/core/src/ptr/metadata.rs:81:1
 
 note: the error occurred when translating `core::ptr::metadata::Thin`, which is (transitively) used at the following location(s):
-  --> src/main.rs:15:27
+  --> src/main.rs:16:27
    |
-15 |     pub fn custom_null<T: core::ptr::Thin>() {}
+16 |     pub fn custom_null<T: core::ptr::Thin>() {}
    |                           ---------------
    |
   ::: src/module.rs:6:13

@@ -479,7 +479,7 @@ fn test_crate::_#9() -> u32
     let @1: u32; // anonymous local
 
     @1 := test_crate::FOO
-    @0 := const (1 : u32) - move (@1)
+    @0 := const (10 : u32) - move (@1)
     return
 }
 

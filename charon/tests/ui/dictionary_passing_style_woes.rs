@@ -44,6 +44,6 @@ fn b<T: B>(x: T) -> T::Assoc {
 
 /// This will pick one of the two parent clauses to resolve `T::Assoc` within this body, which is
 /// guaranteed to make one of the two calls fail to typecheck.
-fn x<T: A + B>(x: T) -> (T::Assoc, T::Assoc) {
+fn x<T: A + B + Copy>(x: T) -> (T::Assoc, T::Assoc) {
     (a(x), b(x))
 }

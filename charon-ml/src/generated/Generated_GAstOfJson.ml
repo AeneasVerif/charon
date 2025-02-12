@@ -1606,6 +1606,7 @@ and cli_options_of_json (ctx : of_json_ctx) (js : json) :
           ("dest_dir", dest_dir);
           ("dest_file", dest_file);
           ("use_polonius", use_polonius);
+          ("skip_borrowck", skip_borrowck);
           ("no_code_duplication", no_code_duplication);
           ("extract_opaque_bodies", extract_opaque_bodies);
           ("translate_all_methods", translate_all_methods);
@@ -1637,6 +1638,7 @@ and cli_options_of_json (ctx : of_json_ctx) (js : json) :
         let* dest_dir = option_of_json path_buf_of_json ctx dest_dir in
         let* dest_file = option_of_json path_buf_of_json ctx dest_file in
         let* use_polonius = bool_of_json ctx use_polonius in
+        let* skip_borrowck = bool_of_json ctx skip_borrowck in
         let* no_code_duplication = bool_of_json ctx no_code_duplication in
         let* extract_opaque_bodies = bool_of_json ctx extract_opaque_bodies in
         let* translate_all_methods = bool_of_json ctx translate_all_methods in
@@ -1671,6 +1673,7 @@ and cli_options_of_json (ctx : of_json_ctx) (js : json) :
              dest_dir;
              dest_file;
              use_polonius;
+             skip_borrowck;
              no_code_duplication;
              extract_opaque_bodies;
              translate_all_methods;

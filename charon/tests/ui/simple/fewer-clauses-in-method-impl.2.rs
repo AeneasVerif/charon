@@ -10,6 +10,6 @@ impl Trait for () {
     fn method() {}
 }
 
-fn main() {
+pub fn main() {
     <() as Trait>::method()
 }

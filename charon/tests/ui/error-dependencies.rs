@@ -1,10 +1,11 @@
 //@ known-failure
 //! This file tests the error messages that indicates why we attempt to translate a given
 //! definition.
+#![feature(ptr_metadata)]
 #![feature(register_tool)]
 #![register_tool(charon)]
 
-fn main() {
+pub fn main() {
     let _ = core::ptr::null::<u8>();
     let _ = opaque::other_error();
 }
