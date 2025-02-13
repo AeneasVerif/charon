@@ -82,6 +82,9 @@ let
         | $PARALLEL ${analyze_test_file} \
         | $PV -l -s "$SIZE" \
         > charon-results
+
+    echo "Summary of the results:" > charon-summary
+    cat charon-results | cut -d':' -f 2 | sort | uniq -c >> charon-summary
   '';
 
   # Runs charon on the whole rustc ui test suite. This returns the tests
