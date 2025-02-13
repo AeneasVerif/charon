@@ -10,4 +10,4 @@ error: reading the discriminant of an opaque enum. Add `--include test_crate::En
    | |_^
    |
 
-ERROR The extraction generated 1 errors
+ERROR Charon failed to translate this code (1 errors)

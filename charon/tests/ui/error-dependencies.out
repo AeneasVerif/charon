@@ -18,4 +18,4 @@ note: the error occurred when translating `core::ptr::metadata::Thin`, which is 
 error: Item `core::ptr::metadata::Thin` caused errors; ignoring.
  --> /rustc/library/core/src/ptr/metadata.rs:81:1
 
-ERROR The extraction generated 2 errors
+ERROR Charon failed to translate this code (2 errors)

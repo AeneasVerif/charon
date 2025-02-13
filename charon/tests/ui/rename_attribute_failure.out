@@ -40,4 +40,4 @@ error: Error parsing attribute: Unrecognized attribute: `charon::something_else(
    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
    |
 
-ERROR The extraction generated 6 errors
+ERROR Charon failed to translate this code (6 errors)

@@ -14,4 +14,4 @@ error: Item `test_crate::get` caused errors; ignoring.
   | |____________^
   |
 
-ERROR The extraction generated 2 errors
+ERROR Charon failed to translate this code (2 errors)

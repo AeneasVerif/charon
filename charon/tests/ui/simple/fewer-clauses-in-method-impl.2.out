@@ -7,4 +7,4 @@ error: Mismatched method generics:
    |     ^^^^^^^^^^^^^^^^^^^^^^^
    |
 
-ERROR The extraction generated 1 errors
+ERROR Charon failed to translate this code (1 errors)

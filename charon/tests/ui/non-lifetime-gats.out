@@ -26,4 +26,4 @@ error: Item `test_crate::moar_variables::Trait` caused errors; ignoring.
    |     ^^^^^^^^^^^^^^^^^^
    |
 
-ERROR The extraction generated 4 errors
+ERROR Charon failed to translate this code (4 errors)

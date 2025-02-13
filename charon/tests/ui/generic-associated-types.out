@@ -78,4 +78,4 @@ error: Error during trait resolution: Found unsupported GAT `Type` when resolvin
 
 warning: 1 warning emitted
 
-ERROR The extraction generated 10 errors
+ERROR Charon failed to translate this code (10 errors)

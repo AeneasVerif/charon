@@ -33,28 +33,72 @@ let
       > $out
   '';
 
-  analyze_test_file = writeScript "charon-analyze-test-file" ''
+  # Run charon on a single test file. This writes the charon output to
+  # `<file>.rs.charon-output` and the exit status to `<file>.rs.charon-status`.
+  run_rustc_test = writeScript "charon-run-rustc-test" ''
     #!${bash}/bin/bash
     FILE="$1"
-    echo -n "$FILE: "
 
     has_magic_comment() {
       # Checks for `// magic-comment` and `//@ magic-comment` instructions in files.
       grep -q "^// \?@\? \?$1:" "$2"
     }
 
-    ${coreutils}/bin/timeout 5s ${charon}/bin/charon --no-cargo --input "$FILE" --no-serialize > "$FILE.charon-output" 2>&1
-    status=$?
+    has_feature() {
+      # Checks for `#![feature(...)]`.
+      grep -q "^#!.feature(.*$1.*)" "$2"
+    }
+
     if has_magic_comment 'aux-build' "$FILE" \
       || has_magic_comment 'compile-flags' "$FILE" \
       || has_magic_comment 'revisions' "$FILE" \
       || has_magic_comment 'known-bug' "$FILE" \
-      || has_magic_comment 'edition' "$FILE"; then
-        # We can't handle these for now
-        result="⊘ ⃠unsupported-build-settings"
+      || has_magic_comment 'edition' "$FILE"\
+      ; then
+        result="unsupported-build-settings"
+    elif has_feature 'generic_const_exprs' "$FILE" \
+      || has_feature 'adt_const_params' "$FILE" \
+      ; then
+        result="unsupported-feature"
+    else
+        ${coreutils}/bin/timeout 10s ${charon}/bin/charon --no-cargo --input "$FILE" --dest-file "$FILE.llbc" > "$FILE.charon-output" 2>&1
+        result=$?
+    fi
+    echo -n $result > "$FILE.charon-status"
+  '';
+
+  # Runs charon on the whole rustc ui test suite. This returns the tests
+  # directory with a bunch of `<file>.rs.charon-output` and
+  # `<file>.rs.charon-status` files, see `run_rustc_test`.
+  run_rustc_tests = runCommand "charon-run-rustc-tests"
+    {
+      src = rustc-test-suite;
+      buildInputs = [ rustToolchain parallel pv fd ];
+    } ''
+    mkdir $out
+    cp -r $src/tests/ui/* $out
+    chmod -R u+w $out
+    cd $out
+
+    SIZE="$(fd -e rs | wc -l)"
+    echo "Running $SIZE tests..."
+    fd -e rs \
+        | parallel ${run_rustc_test} \
+        | pv -l -s "$SIZE"
+  '';
+
+  # Report the status of a single file.
+  analyze_test_output = writeScript "charon-analyze-test-output" ''
+    #!${bash}/bin/bash
+    FILE="$1"
+    echo -n "$FILE: "
+
+    status="$(cat "$FILE.charon-status")"
+    if echo "$status" | grep -q '^unsupported'; then
+        result="⊘ $status"
     elif [ $status -eq 124 ]; then
         result="❌ timeout"
-    elif [ $status -eq 101 ]; then
+    elif [ $status -eq 101 ] || [ $status -eq 255 ]; then
         result="❌ charon-panic"
     elif [ -f ${"$"}{FILE%.rs}.stderr ]; then
         # This is a test that should fail
@@ -64,47 +108,49 @@ let
             result="✅ expected-failure"
         fi
     elif [ $status -eq 0 ]; then
-        result="✅ expected-success"
+        if [ -e "$FILE.llbc" ]; then
+            result="✅ expected-success"
+        else
+            result="❌ success-but-no-llbc-output"
+        fi
     else
-        result="❌ failure-when-success-expected"
+        if grep -q 'error.E9999' "$FILE.charon-output"; then
+            result="❌ failure-when-success-expected (in hax frontend)"
+        elif [ -e "$FILE.llbc" ]; then
+            result="❌ failure-when-success-expected (in charon, with llbc output)"
+        else
+            result="❌ failure-when-success-expected (in charon, without llbc output)"
+        fi
     fi
 
     echo "$result"
   '';
-  run_ui_tests = writeScript "charon-analyze-test-file" ''
-    PARALLEL="${parallel}/bin/parallel"
-    PV="${pv}/bin/pv"
-    FD="${fd}/bin/fd"
 
-    SIZE="$($FD -e rs | wc -l)"
-    echo "Running $SIZE tests..."
-    $FD -e rs \
-        | $PARALLEL ${analyze_test_file} \
-        | $PV -l -s "$SIZE" \
-        > charon-results
-
-    echo "Summary of the results:" > charon-summary
-    cat charon-results | cut -d':' -f 2 | sort | uniq -c >> charon-summary
-  '';
-
-  # Runs charon on the whole rustc ui test suite. This returns the tests
-  # directory with a bunch of `<file>.rs.charon-output` files that store
-  # the charon output when it failed. It also adds a `charon-results`
-  # file that records `success|expected-failure|failure|panic|timeout`
-  # for each file we processed.
-  rustc-tests = runCommand "charon-rustc-tests"
+  # Adds a `charon-results` file that records
+  # `success|expected-failure|failure|panic|timeout` for each file we
+  # processed.
+  analyze_test_outputs = runCommand "charon-analyze-test-outputs"
     {
-      src = rustc-test-suite;
-      buildInputs = [ rustToolchain ];
+      src = run_rustc_tests;
+      buildInputs = [ parallel pv fd ];
     } ''
     mkdir $out
-    cp -r $src/tests/ui/* $out
     chmod -R u+w $out
     cd $out
-    ${run_ui_tests}
+    ln -s $src test-results
+
+    SIZE="$(fd --follow -e rs | wc -l)"
+    echo "Running $SIZE tests..."
+    fd --follow -e rs \
+        | parallel ${analyze_test_output} \
+        | pv -l -s "$SIZE" \
+        > charon-results
+
+    cat charon-results | cut -d':' -f 2 | sort | uniq -c > charon-summary
   '';
 
 in
 {
-  inherit toolchain_commit rustc-test-suite rustc-tests;
+  inherit toolchain_commit rustc-test-suite;
+  rustc-tests = analyze_test_outputs;
 }

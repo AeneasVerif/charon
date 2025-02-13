@@ -8,4 +8,4 @@ error: Could not reconstruct `Box` initialization; branching during `Box` initia
   | |_^
   |
 
-ERROR The extraction generated 1 errors
+ERROR Charon failed to translate this code (1 errors)
