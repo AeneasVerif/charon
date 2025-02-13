@@ -148,7 +148,9 @@ impl BodyTransCtx<'_, '_> {
                     let ty = self.translate_ty(item_span, ty)?;
                     consts.push((item_name.clone(), ty));
                 }
-                hax::FullDefKind::AssocTy { generics, .. } if !generics.params.is_empty() => {
+                hax::FullDefKind::AssocTy { param_env, .. }
+                    if !param_env.generics.params.is_empty() =>
+                {
                     raise_error!(
                         self,
                         item_span,
@@ -204,7 +206,7 @@ impl BodyTransCtx<'_, '_> {
 
         let hax::FullDefKind::TraitImpl {
             trait_pred,
-            required_impl_exprs,
+            implied_impl_exprs,
             items: impl_items,
             ..
         } = &def.kind
@@ -228,7 +230,7 @@ impl BodyTransCtx<'_, '_> {
         };
 
         // The trait refs which implement the parent clauses of the implemented trait decl.
-        let parent_trait_refs = self.translate_trait_impl_exprs(span, &required_impl_exprs)?;
+        let parent_trait_refs = self.translate_trait_impl_exprs(span, &implied_impl_exprs)?;
 
         {
             // Debugging
@@ -333,7 +335,9 @@ impl BodyTransCtx<'_, '_> {
                     let gref = GlobalDeclRef { id, generics };
                     consts.push((name, gref));
                 }
-                hax::FullDefKind::AssocTy { generics, .. } if !generics.params.is_empty() => {
+                hax::FullDefKind::AssocTy { param_env, .. }
+                    if !param_env.generics.params.is_empty() =>
+                {
                     // We don't support GATs; the error was already reported in the trait declaration.
                 }
                 hax::FullDefKind::AssocTy { value, .. } => {

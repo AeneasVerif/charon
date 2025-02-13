@@ -608,9 +608,9 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
         include_assoc_ty_clauses: bool,
     ) -> Result<(), Error> {
         use hax::FullDefKind;
-        if let Some((generics, predicates)) = def.generics() {
+        if let Some(param_env) = def.param_env() {
             // Add the generic params.
-            self.push_generic_params(generics)?;
+            self.push_generic_params(&param_env.generics)?;
             // Add the self trait clause.
             match &def.kind {
                 FullDefKind::TraitImpl {
@@ -624,6 +624,13 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
                 _ => {}
             }
             // Add the predicates.
+            // FIXME: clarify traitimplied predicates
+            let predicates = match &def.kind {
+                FullDefKind::Trait {
+                    implied_predicates, ..
+                } => implied_predicates,
+                _ => &param_env.predicates,
+            };
             let (origin, location) = match &def.kind {
                 FullDefKind::Struct { .. }
                 | FullDefKind::Union { .. }
@@ -660,17 +667,18 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
             {
                 // Also add the predicates on associated types.
                 // FIXME(gat): don't skip GATs.
+                // FIXME: don't mix up implied and required predicates.
                 for (item, item_def) in items {
                     if let hax::FullDefKind::AssocTy {
-                        generics,
-                        predicates,
+                        param_env,
+                        implied_predicates,
                         ..
                     } = &item_def.kind
-                        && generics.params.is_empty()
+                        && param_env.generics.params.is_empty()
                     {
                         let name = TraitItemName(item.name.clone());
                         self.register_predicates(
-                            &predicates,
+                            &implied_predicates,
                             PredicateOrigin::TraitItem(name.clone()),
                             &PredicateLocation::Item(name),
                         )?;
