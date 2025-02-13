@@ -33,10 +33,11 @@ let
       > $out
   '';
 
-  analyze_test_file = writeScript "charon-analyze-test-file" ''
+  # Run charon on a single test file. This writes the charon output to
+  # `<file>.rs.charon-output` and the exit status to `<file>.rs.charon-status`.
+  run_rustc_test = writeScript "charon-run-rustc-test" ''
     #!${bash}/bin/bash
     FILE="$1"
-    echo -n "$FILE: "
 
     has_magic_comment() {
       # Checks for `// magic-comment` and `//@ magic-comment` instructions in files.
@@ -48,18 +49,52 @@ let
       grep -q "^#!.feature($1)" "$2"
     }
 
-    ${coreutils}/bin/timeout 10s ${charon}/bin/charon --no-cargo --input "$FILE" --dest-file "$FILE.llbc" > "$FILE.charon-output" 2>&1
-    status=$?
     if has_magic_comment 'aux-build' "$FILE" \
       || has_magic_comment 'compile-flags' "$FILE" \
       || has_magic_comment 'revisions' "$FILE" \
       || has_magic_comment 'known-bug' "$FILE" \
       || has_magic_comment 'edition' "$FILE"\
       ; then
-        result="⊘ unsupported-build-settings"
+        result="unsupported-build-settings"
     elif has_feature 'generic_const_exprs' "$FILE" \
       ; then
-        result="⊘ unsupported-feature"
+        result="unsupported-feature"
+    else
+        ${coreutils}/bin/timeout 10s ${charon}/bin/charon --no-cargo --input "$FILE" --dest-file "$FILE.llbc" > "$FILE.charon-output" 2>&1
+        result=$?
+    fi
+    echo -n $result > "$FILE.charon-status"
+  '';
+
+  # Runs charon on the whole rustc ui test suite. This returns the tests
+  # directory with a bunch of `<file>.rs.charon-output` and
+  # `<file>.rs.charon-status` files, see `run_rustc_test`.
+  run_rustc_tests = runCommand "charon-run-rustc-tests"
+    {
+      src = rustc-test-suite;
+      buildInputs = [ rustToolchain parallel pv fd ];
+    } ''
+    mkdir $out
+    cp -r $src/tests/ui/* $out
+    chmod -R u+w $out
+    cd $out
+
+    SIZE="$(fd -e rs | wc -l)"
+    echo "Running $SIZE tests..."
+    fd -e rs \
+        | parallel ${run_rustc_test} \
+        | pv -l -s "$SIZE"
+  '';
+
+  # Report the status of a single file.
+  analyze_test_output = writeScript "charon-analyze-test-output" ''
+    #!${bash}/bin/bash
+    FILE="$1"
+    echo -n "$FILE: "
+
+    status="$(cat "$FILE.charon-status")"
+    if echo "$status" | grep -q '^unsupported'; then
+        result="⊘ $status"
     elif [ $status -eq 124 ]; then
         result="❌ timeout"
     elif [ $status -eq 101 ] || [ $status -eq 255 ]; then
@@ -89,39 +124,32 @@ let
 
     echo "$result"
   '';
-  run_ui_tests = writeScript "charon-analyze-test-file" ''
-    PARALLEL="${parallel}/bin/parallel"
-    PV="${pv}/bin/pv"
-    FD="${fd}/bin/fd"
 
-    SIZE="$($FD -e rs | wc -l)"
+  # Adds a `charon-results` file that records
+  # `success|expected-failure|failure|panic|timeout` for each file we
+  # processed.
+  analyze_test_outputs = runCommand "charon-analyze-test-outputs"
+    {
+      src = run_rustc_tests;
+      buildInputs = [ parallel pv fd ];
+    } ''
+    mkdir $out
+    chmod -R u+w $out
+    cd $out
+    ln -s $src test-results
+
+    SIZE="$(fd --follow -e rs | wc -l)"
     echo "Running $SIZE tests..."
-    $FD -e rs \
-        | $PARALLEL ${analyze_test_file} \
-        | $PV -l -s "$SIZE" \
+    fd --follow -e rs \
+        | parallel ${analyze_test_output} \
+        | pv -l -s "$SIZE" \
         > charon-results
 
     cat charon-results | cut -d':' -f 2 | sort | uniq -c > charon-summary
   '';
 
-  # Runs charon on the whole rustc ui test suite. This returns the tests
-  # directory with a bunch of `<file>.rs.charon-output` files that store
-  # the charon output when it failed. It also adds a `charon-results`
-  # file that records `success|expected-failure|failure|panic|timeout`
-  # for each file we processed.
-  rustc-tests = runCommand "charon-rustc-tests"
-    {
-      src = rustc-test-suite;
-      buildInputs = [ rustToolchain ];
-    } ''
-    mkdir $out
-    cp -r $src/tests/ui/* $out
-    chmod -R u+w $out
-    cd $out
-    ${run_ui_tests}
-  '';
-
 in
 {
-  inherit toolchain_commit rustc-test-suite rustc-tests;
+  inherit toolchain_commit rustc-test-suite;
+  rustc-tests = analyze_test_outputs;
 }
