@@ -70,7 +70,9 @@ let
             result="❌ success-but-no-llbc-output"
         fi
     else
-        if [ -e "$FILE.llbc" ]; then
+        if grep -q 'error.E9999' "$FILE.charon-output"; then
+            result="❌ hax-failure-when-success-expected"
+        elif [ -e "$FILE.llbc" ]; then
             result="❌ failure-when-success-expected (with llbc output)"
         else
             result="❌ failure-when-success-expected (without llbc output)"
