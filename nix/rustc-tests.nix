@@ -41,7 +41,7 @@ let
 
     has_magic_comment() {
       # Checks for `// magic-comment` and `//@ magic-comment` instructions in files.
-      grep -q "^// \?@\? \?$1:" "$2"
+      grep -q "^//@\? \?$1" "$2"
     }
 
     has_feature() {
@@ -49,15 +49,28 @@ let
       grep -q "^#!.feature(.*$1.*)" "$2"
     }
 
-    if has_magic_comment 'aux-build' "$FILE" \
-      || has_magic_comment 'compile-flags' "$FILE" \
-      || has_magic_comment 'revisions' "$FILE" \
+    # TODO: revisions and edition would be good to support.
+    if [ -e "$(dirname "$FILE")/compiletest-ignore-dir" ] \
+      || has_magic_comment 'ignore-test' "$FILE" \
       || has_magic_comment 'known-bug' "$FILE" \
+      || has_magic_comment 'only-' "$FILE"\
+      || has_magic_comment 'needs-asm-support' "$FILE"\
+      || has_magic_comment 'revisions' "$FILE" \
+      || has_magic_comment 'dont-check-compiler-stderr' "$FILE"\
+      || has_magic_comment 'stderr-per-bitwidth' "$FILE"\
+      || has_magic_comment 'aux-build' "$FILE" \
+      || has_magic_comment 'aux-crate' "$FILE" \
+      || has_magic_comment 'rustc-env' "$FILE"\
+      || has_magic_comment 'compile-flags' "$FILE" \
       || has_magic_comment 'edition' "$FILE"\
+      || [[ "$FILE" == "test-results/meta/no_std-extern-libc.rs" ]]\
       ; then
         result="unsupported-build-settings"
     elif has_feature 'generic_const_exprs' "$FILE" \
       || has_feature 'adt_const_params' "$FILE" \
+      || has_feature 'effects' "$FILE" \
+      || has_feature 'transmutability' "$FILE" \
+      || has_feature 'default_type_parameter_fallback' "$FILE" \
       ; then
         result="unsupported-feature"
     else
@@ -99,6 +112,15 @@ let
         result="❌ timeout"
     elif [ $status -eq 101 ] || [ $status -eq 255 ]; then
         result="❌ panic"
+    elif grep -q 'error.E0601' "$FILE.charon-output"; then
+        # That's the "`main` not found" error we get on auxiliary files.
+        result="⊘ unsupported-build-settings"
+    elif grep -q 'error.E0463' "$FILE.charon-output"; then
+        # "Can't find crate" error.
+        result="⊘ unsupported-build-settings"
+    elif grep -q 'error: the generated executable.*conflicts' "$FILE.charon-output"; then
+        # Annoying filename conflicts, should try to avoid somehow.
+        result="⊘ unsupported-build-settings"
     else
         if [ -f ${"$"}{FILE%.rs}.stderr ]; then
             expected="failure in rustc"
