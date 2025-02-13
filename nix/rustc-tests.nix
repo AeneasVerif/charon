@@ -91,7 +91,6 @@ let
   analyze_test_output = writeScript "charon-analyze-test-output" ''
     #!${bash}/bin/bash
     FILE="$1"
-    echo -n "$FILE: "
 
     status="$(cat "$FILE.charon-status")"
     if echo "$status" | grep -q '^unsupported'; then
@@ -99,31 +98,47 @@ let
     elif [ $status -eq 124 ]; then
         result="❌ timeout"
     elif [ $status -eq 101 ] || [ $status -eq 255 ]; then
-        result="❌ charon-panic"
-    elif [ -f ${"$"}{FILE%.rs}.stderr ]; then
-        # This is a test that should fail
-        if [ $status -eq 0 ]; then
-            result="❌ success-when-failure-expected"
-        else
-            result="✅ expected-failure"
-        fi
-    elif [ $status -eq 0 ]; then
-        if [ -e "$FILE.llbc" ]; then
-            result="✅ expected-success"
-        else
-            result="❌ success-but-no-llbc-output"
-        fi
+        result="❌ panic"
     else
-        if grep -q 'error.E9999' "$FILE.charon-output"; then
-            result="❌ failure-when-success-expected (in hax frontend)"
-        elif [ -e "$FILE.llbc" ]; then
-            result="❌ failure-when-success-expected (in charon, with llbc output)"
+        if [ -f ${"$"}{FILE%.rs}.stderr ]; then
+            expected=failure
         else
-            result="❌ failure-when-success-expected (in charon, without llbc output)"
+            expected=success
         fi
+        if [ $status -eq 0 ]; then
+            got="success"
+        else
+            got="failure"
+        fi
+
+        extras=""
+        if [[ $expected == $got ]]; then
+            status="✅"
+        else
+            status="❌"
+            if [[ $expected == "success" ]]; then
+                if grep -q 'error.E9999' "$FILE.charon-output"; then
+                    got="$got in hax frontend"
+                else
+                    got="$got in charon"
+                fi
+            fi
+        fi
+        if [[ $expected == "success" ]]; then
+            if [ -e "$FILE.llbc" ]; then
+                extras="with llbc output"
+            else
+                extras="without llbc output"
+                status="❌"
+            fi
+        fi
+        if ! [[ $extras == "" ]]; then
+            extras=" ($extras)"
+        fi
+        result="$status expected: $expected, got: $got$extras"
     fi
 
-    echo "$result"
+    echo "$FILE: $result"
   '';
 
   # Adds a `charon-results` file that records
@@ -146,7 +161,7 @@ let
         | pv -l -s "$SIZE" \
         > charon-results
 
-    cat charon-results | cut -d':' -f 2 | sort | uniq -c > charon-summary
+    cat charon-results | cut -d':' -f 2- | sort | uniq -c > charon-summary
   '';
 
 in
