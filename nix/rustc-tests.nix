@@ -118,9 +118,6 @@ let
     elif grep -q 'error.E0463' "$FILE.charon-output"; then
         # "Can't find crate" error.
         result="⊘ unsupported-build-settings"
-    elif grep -q 'error: the generated executable.*conflicts' "$FILE.charon-output"; then
-        # Annoying filename conflicts, should try to avoid somehow.
-        result="⊘ unsupported-build-settings"
     else
         if [ -f ${"$"}{FILE%.rs}.stderr ]; then
             expected="failure in rustc"
