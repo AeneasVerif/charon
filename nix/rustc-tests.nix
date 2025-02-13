@@ -43,7 +43,7 @@ let
       grep -q "^// \?@\? \?$1:" "$2"
     }
 
-    ${coreutils}/bin/timeout 5s ${charon}/bin/charon --no-cargo --input "$FILE" --no-serialize > "$FILE.charon-output" 2>&1
+    ${coreutils}/bin/timeout 10s ${charon}/bin/charon --no-cargo --input "$FILE" --dest-file "$FILE.llbc" > "$FILE.charon-output" 2>&1
     status=$?
     if has_magic_comment 'aux-build' "$FILE" \
       || has_magic_comment 'compile-flags' "$FILE" \
@@ -64,9 +64,17 @@ let
             result="✅ expected-failure"
         fi
     elif [ $status -eq 0 ]; then
-        result="✅ expected-success"
+        if [ -e "$FILE.llbc" ]; then
+            result="✅ expected-success"
+        else
+            result="❌ success-but-no-llbc-output"
+        fi
     else
-        result="❌ failure-when-success-expected"
+        if [ -e "$FILE.llbc" ]; then
+            result="❌ failure-when-success-expected (with llbc output)"
+        else
+            result="❌ failure-when-success-expected (without llbc output)"
+        fi
     fi
 
     echo "$result"
