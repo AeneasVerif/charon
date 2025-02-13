@@ -46,7 +46,7 @@ let
 
     has_feature() {
       # Checks for `#![feature(...)]`.
-      grep -q "^#!.feature($1)" "$2"
+      grep -q "^#!.feature(.*$1.*)" "$2"
     }
 
     if has_magic_comment 'aux-build' "$FILE" \
@@ -57,6 +57,7 @@ let
       ; then
         result="unsupported-build-settings"
     elif has_feature 'generic_const_exprs' "$FILE" \
+      || has_feature 'adt_const_params' "$FILE" \
       ; then
         result="unsupported-feature"
     else
@@ -114,7 +115,7 @@ let
         fi
     else
         if grep -q 'error.E9999' "$FILE.charon-output"; then
-            result="❌ hax-failure-when-success-expected"
+            result="❌ failure-when-success-expected (in hax frontend)"
         elif [ -e "$FILE.llbc" ]; then
             result="❌ failure-when-success-expected (with llbc output)"
         else
