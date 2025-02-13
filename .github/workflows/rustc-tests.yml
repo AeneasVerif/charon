@@ -13,7 +13,7 @@ jobs:
           echo "Summary of the results:" > message.txt
           echo '```text' >> message.txt
           cat result/charon-summary >> message.txt
-          echo '```text' >> message.txt
+          echo '```' >> message.txt
       - uses: actions/github-script@v7
         with:
           script: |
