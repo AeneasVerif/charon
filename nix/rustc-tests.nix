@@ -117,9 +117,9 @@ let
         if grep -q 'error.E9999' "$FILE.charon-output"; then
             result="❌ failure-when-success-expected (in hax frontend)"
         elif [ -e "$FILE.llbc" ]; then
-            result="❌ failure-when-success-expected (with llbc output)"
+            result="❌ failure-when-success-expected (in charon, with llbc output)"
         else
-            result="❌ failure-when-success-expected (without llbc output)"
+            result="❌ failure-when-success-expected (in charon, without llbc output)"
         fi
     fi
 
