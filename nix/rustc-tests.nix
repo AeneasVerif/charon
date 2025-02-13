@@ -101,7 +101,7 @@ let
         result="❌ panic"
     else
         if [ -f ${"$"}{FILE%.rs}.stderr ]; then
-            expected=failure
+            expected="failure in rustc"
         else
             expected=success
         fi
@@ -109,21 +109,22 @@ let
             got="success"
         else
             got="failure"
+            if grep -q 'error.E9999' "$FILE.charon-output"; then
+                got="$got in hax frontend"
+            elif [ $status -eq 2 ]; then
+                got="$got in rustc"
+            else
+                # This won't happen since we don't pass `--error-on-warnings`.
+                got="$got in charon"
+            fi
         fi
 
-        extras=""
         if [[ $expected == $got ]]; then
             status="✅"
         else
             status="❌"
-            if [[ $expected == "success" ]]; then
-                if grep -q 'error.E9999' "$FILE.charon-output"; then
-                    got="$got in hax frontend"
-                else
-                    got="$got in charon"
-                fi
-            fi
         fi
+        extras=""
         if [[ $expected == "success" ]]; then
             if [ -e "$FILE.llbc" ]; then
                 extras="with llbc output"

@@ -289,9 +289,8 @@ fn main() {
         Err(err) => {
             log::error!("{err}");
             let exit_code = match err {
-                CharonFailure::CharonError(_)
-                | CharonFailure::RustcError
-                | CharonFailure::Serialize => 1,
+                CharonFailure::CharonError(_) | CharonFailure::Serialize => 1,
+                CharonFailure::RustcError => 2,
                 // This is a real panic, exit with the standard rust panic error code.
                 CharonFailure::Panic => 101,
             };
