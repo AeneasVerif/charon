@@ -7,4 +7,4 @@ error: Could not compute the value of Self::Clause1::Clause0::Clause0::Output ne
   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
   |
 
-ERROR The extraction generated 1 errors
+ERROR Charon failed to translate this code (1 errors)

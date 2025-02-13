@@ -23,6 +23,8 @@ pub struct CharonCallbacks {
 }
 
 pub enum CharonFailure {
+    /// The usize is the number of errors.
+    CharonError(usize),
     RustcError,
     Panic,
     Serialize,
@@ -32,6 +34,10 @@ impl fmt::Display for CharonFailure {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             CharonFailure::RustcError => write!(f, "Code failed to compile")?,
+            CharonFailure::CharonError(err_count) => write!(
+                f,
+                "Charon failed to translate this code ({err_count} errors)"
+            )?,
             CharonFailure::Panic => write!(f, "Compilation panicked")?,
             CharonFailure::Serialize => write!(f, "Could not serialize output file")?,
         }

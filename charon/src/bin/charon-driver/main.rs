@@ -254,7 +254,7 @@ fn main() {
     } = callback;
 
     // # Final step: generate the files.
-    let res = match res {
+    let mut res = match res {
         Ok(_) if options.no_serialize => Ok(()),
         Ok(crate_data) => {
             let dest_file = match options.dest_file.clone() {
@@ -275,26 +275,27 @@ fn main() {
         Err(e) => Err(e),
     };
 
+    if res.is_ok() && options.error_on_warnings && error_count != 0 {
+        res = Err(CharonFailure::CharonError(error_count));
+    }
+
     match res {
-        Ok(()) if error_count == 0 => {}
         Ok(()) => {
-            if options.error_on_warnings {
-                let msg = format!("The extraction generated {} errors", error_count);
-                log::error!("{}", msg);
-                std::process::exit(1);
-            } else {
+            if error_count != 0 {
                 let msg = format!("The extraction generated {} warnings", error_count);
                 log::warn!("{}", msg);
             }
         }
         Err(err) => {
             log::error!("{err}");
-            if matches!(err, CharonFailure::Panic) {
+            let exit_code = match err {
+                CharonFailure::CharonError(_)
+                | CharonFailure::RustcError
+                | CharonFailure::Serialize => 1,
                 // This is a real panic, exit with the standard rust panic error code.
-                std::process::exit(101);
-            } else if options.error_on_warnings {
-                std::process::exit(1);
-            }
+                CharonFailure::Panic => 101,
+            };
+            std::process::exit(exit_code);
         }
     }
 }
