@@ -45,32 +45,31 @@ let
 
     ${coreutils}/bin/timeout 5s ${charon}/bin/charon --no-cargo --input "$FILE" --no-serialize > "$FILE.charon-output" 2>&1
     status=$?
-    if [ $status -eq 124 ]; then
-        result=timeout
-    elif has_magic_comment 'aux-build' "$FILE" \
+    if has_magic_comment 'aux-build' "$FILE" \
       || has_magic_comment 'compile-flags' "$FILE" \
       || has_magic_comment 'revisions' "$FILE" \
       || has_magic_comment 'known-bug' "$FILE" \
       || has_magic_comment 'edition' "$FILE"; then
         # We can't handle these for now
-        result=unsupported-build-settings
+        result="⊘ ⃠unsupported-build-settings"
+    elif [ $status -eq 124 ]; then
+        result="❌ timeout"
     elif [ $status -eq 101 ]; then
-        result=panic
-    elif [ $status -eq 0 ]; then
-        result=success
+        result="❌ charon-panic"
     elif [ -f ${"$"}{FILE%.rs}.stderr ]; then
         # This is a test that should fail
-        result=expected-failure
+        if [ $status -eq 0 ]; then
+            result="❌ success-when-failure-expected"
+        else
+            result="✅ expected-failure"
+        fi
+    elif [ $status -eq 0 ]; then
+        result="✅ expected-success"
     else
-        result=failure
+        result="❌ failure-when-success-expected"
     fi
 
-    # Only keep the informative outputs.
-    if [[ $result != "panic" ]] && [[ $result != "failure" ]]; then
-        rm "$FILE.charon-output"
-    fi
-
-    echo $result
+    echo "$result"
   '';
   run_ui_tests = writeScript "charon-analyze-test-file" ''
     PARALLEL="${parallel}/bin/parallel"
