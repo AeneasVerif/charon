@@ -54,7 +54,7 @@ let
         result="⊘ unsupported-build-settings"
     elif [ $status -eq 124 ]; then
         result="❌ timeout"
-    elif [ $status -eq 101 ]; then
+    elif [ $status -eq 101 ] || [ $status -eq 255 ]; then
         result="❌ charon-panic"
     elif [ -f ${"$"}{FILE%.rs}.stderr ]; then
         # This is a test that should fail
