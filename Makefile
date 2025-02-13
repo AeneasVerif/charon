@@ -88,6 +88,7 @@ generate-ml-keep-llbc:
 .PHONY: rustc-tests
 rustc-tests:
 	nix build -L '.#rustc-tests'
+	@echo "Summary of the results:"
 	@cat result/charon-summary
 
 # Prints a summary of the most common test errors.

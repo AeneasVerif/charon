@@ -51,7 +51,7 @@ let
       || has_magic_comment 'known-bug' "$FILE" \
       || has_magic_comment 'edition' "$FILE"; then
         # We can't handle these for now
-        result="⊘ ⃠unsupported-build-settings"
+        result="⊘ unsupported-build-settings"
     elif [ $status -eq 124 ]; then
         result="❌ timeout"
     elif [ $status -eq 101 ]; then
@@ -83,8 +83,7 @@ let
         | $PV -l -s "$SIZE" \
         > charon-results
 
-    echo "Summary of the results:" > charon-summary
-    cat charon-results | cut -d':' -f 2 | sort | uniq -c >> charon-summary
+    cat charon-results | cut -d':' -f 2 | sort | uniq -c > charon-summary
   '';
 
   # Runs charon on the whole rustc ui test suite. This returns the tests
