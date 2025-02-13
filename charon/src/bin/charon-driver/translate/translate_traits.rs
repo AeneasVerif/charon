@@ -69,7 +69,6 @@ impl BodyTransCtx<'_, '_> {
         // Note that in the generics returned by [translate_def_generics], the trait refs only
         // contain the local trait clauses. The parent clauses are stored in
         // `self.parent_trait_clauses`.
-        // TODO: Distinguish between required and implied trait clauses?
         self.translate_def_generics(span, def)?;
 
         // Translate the associated items
