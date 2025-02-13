@@ -43,15 +43,23 @@ let
       grep -q "^// \?@\? \?$1:" "$2"
     }
 
+    has_feature() {
+      # Checks for `#![feature(...)]`.
+      grep -q "^#!.feature($1)" "$2"
+    }
+
     ${coreutils}/bin/timeout 10s ${charon}/bin/charon --no-cargo --input "$FILE" --dest-file "$FILE.llbc" > "$FILE.charon-output" 2>&1
     status=$?
     if has_magic_comment 'aux-build' "$FILE" \
       || has_magic_comment 'compile-flags' "$FILE" \
       || has_magic_comment 'revisions' "$FILE" \
       || has_magic_comment 'known-bug' "$FILE" \
-      || has_magic_comment 'edition' "$FILE"; then
-        # We can't handle these for now
+      || has_magic_comment 'edition' "$FILE"\
+      ; then
         result="⊘ unsupported-build-settings"
+    elif has_feature 'generic_const_exprs' "$FILE" \
+      ; then
+        result="⊘ unsupported-feature"
     elif [ $status -eq 124 ]; then
         result="❌ timeout"
     elif [ $status -eq 101 ] || [ $status -eq 255 ]; then
