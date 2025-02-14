@@ -184,6 +184,7 @@ fn perform_test(test_case: &Case, action: Action) -> anyhow::Result<()> {
     cmd.arg("--print-llbc");
     cmd.arg("--crate=test_crate");
     cmd.arg("--rustc-flag=--crate-type=rlib");
+    cmd.arg("--rustc-flag=--allow=unused"); // Removes noise
     cmd.arg("--input");
     cmd.arg(&test_case.input_path);
 
