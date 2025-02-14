@@ -1107,7 +1107,7 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
             .0;
         // Iterate over the binders, starting from the outermost.
         for (dbid, bl) in self.binding_levels.iter_enumerated().rev() {
-            let num_clauses_bound_at_this_level = bl.params.trait_clauses.len();
+            let num_clauses_bound_at_this_level = bl.params.trait_clauses.elem_count();
             if id < num_clauses_bound_at_this_level || dbid == innermost_item_binder_id {
                 let id = TraitClauseId::from_usize(id);
                 return Ok(DeBruijnVar::bound(dbid, id));

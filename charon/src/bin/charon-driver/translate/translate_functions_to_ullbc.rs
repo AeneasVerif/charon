@@ -289,7 +289,7 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
                                 // This case only happens in some MIR levels
                                 assert!(!boxes_are_desugared(self.t_ctx.options.mir_level));
                                 assert!(generics.regions.is_empty());
-                                assert!(generics.types.len() == 1);
+                                assert!(generics.types.elem_count() == 1);
                                 assert!(generics.const_generics.is_empty());
                             }
                             _ => {
@@ -308,7 +308,7 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
                             Tuple(id) => {
                                 let (_, generics) = subplace.ty().kind().as_adt().unwrap();
                                 let field_id = translate_field_id(*id);
-                                let proj_kind = FieldProjKind::Tuple(generics.types.len());
+                                let proj_kind = FieldProjKind::Tuple(generics.types.elem_count());
                                 ProjectionElem::Field(proj_kind, field_id)
                             }
                             Adt {
@@ -327,7 +327,8 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
                                         assert!(generics.regions.is_empty());
                                         assert!(variant.is_none());
                                         assert!(generics.const_generics.is_empty());
-                                        let proj_kind = FieldProjKind::Tuple(generics.types.len());
+                                        let proj_kind =
+                                            FieldProjKind::Tuple(generics.types.elem_count());
 
                                         ProjectionElem::Field(proj_kind, field_id)
                                     }
@@ -336,7 +337,7 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
 
                                         // Some more sanity checks
                                         assert!(generics.regions.is_empty());
-                                        assert!(generics.types.len() == 1);
+                                        assert!(generics.types.elem_count() == 1);
                                         assert!(generics.const_generics.is_empty());
                                         assert!(variant_id.is_none());
                                         assert!(field_id == FieldId::ZERO);
@@ -556,7 +557,8 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
                             // destination type. At runtime, the converse happens: the length
                             // materializes into the fat pointer.
                             assert!(
-                                generics.types.len() == 1 && generics.const_generics.len() == 1
+                                generics.types.elem_count() == 1
+                                    && generics.const_generics.elem_count() == 1
                             );
                             assert!(generics.types[0] == generics1.types[0]);
                             assert!(kind1 == kind2);

@@ -21,7 +21,7 @@ impl UllbcPass for Transform {
             if let Ok(body) = &mut decl.body {
                 let body = body.as_unstructured().unwrap();
                 // If the whole body is only a call to this specific panic function.
-                if body.body.len() == 1
+                if body.body.elem_count() == 1
                     && let Some(block) = body.body.iter().next()
                     && block.statements.is_empty()
                     && let RawTerminator::Abort(AbortKind::Panic(name)) = &block.terminator.content

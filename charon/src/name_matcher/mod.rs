@@ -209,10 +209,10 @@ impl PatTy {
             return true;
         }
         // We don't include regions in patterns.
-        if pats.len() != generics.types.len() + generics.const_generics.len() {
+        if pats.len() != generics.types.elem_count() + generics.const_generics.elem_count() {
             return false;
         }
-        let (type_pats, const_pats) = pats.split_at(generics.types.len());
+        let (type_pats, const_pats) = pats.split_at(generics.types.elem_count());
         let types_match = generics
             .types
             .iter()

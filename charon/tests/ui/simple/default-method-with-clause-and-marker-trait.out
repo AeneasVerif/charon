@@ -1,0 +1,48 @@
+# Final LLBC before serialization:
+
+trait test_crate::HasAssoc<Self>
+{
+    type Assoc
+}
+
+trait test_crate::Trait<Self>
+{
+    fn default_method<T, [@TraitClause1]: test_crate::HasAssoc<T>> = test_crate::Trait::default_method<Self, T>[@TraitClause0_1]
+}
+
+fn test_crate::{impl test_crate::Trait for T}::default_method<T, T>() -> @TraitClause2::Assoc
+where
+    [@TraitClause2]: test_crate::HasAssoc<T>,
+{
+    let @0: @TraitClause2::Assoc; // return
+
+    panic(core::panicking::panic)
+}
+
+impl<T> test_crate::{impl test_crate::Trait for T}<T> : test_crate::Trait<T>
+{
+    fn default_method<T, [@TraitClause1]: test_crate::HasAssoc<T>> = test_crate::{impl test_crate::Trait for T}::default_method<T, T>[@TraitClause0_1]
+}
+
+fn test_crate::main()
+{
+    let @0: (); // return
+    let @1: (); // anonymous local
+
+    @1 := ()
+    @0 := move (@1)
+    @0 := ()
+    return
+}
+
+fn test_crate::Trait::default_method<Self, T>() -> @TraitClause1::Assoc
+where
+    [@TraitClause1]: test_crate::HasAssoc<T>,
+{
+    let @0: @TraitClause1::Assoc; // return
+
+    panic(core::panicking::panic)
+}
+
+
+

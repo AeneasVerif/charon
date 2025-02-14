@@ -158,7 +158,7 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
                 // TODO: do this in a micro-pass
                 if let TypeId::Builtin(builtin_ty) = type_id {
                     let used_args = builtins::type_to_used_params(builtin_ty);
-                    error_assert!(self, span, generics.types.len() == used_args.len());
+                    error_assert!(self, span, generics.types.elem_count() == used_args.len());
                     let types = std::mem::take(&mut generics.types)
                         .into_iter()
                         .zip(used_args)

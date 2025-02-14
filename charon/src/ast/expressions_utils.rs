@@ -85,14 +85,20 @@ impl ProjectionElem {
                         let type_decl = type_decls.get(*type_decl_id).ok_or(())?;
                         let (type_id, generics) = ty.as_adt().ok_or(())?;
                         assert!(TypeId::Adt(*type_decl_id) == type_id);
-                        assert!(generics.regions.len() == type_decl.generics.regions.len());
-                        assert!(generics.types.len() == type_decl.generics.types.len());
                         assert!(
-                            generics.const_generics.len()
-                                == type_decl.generics.const_generics.len()
+                            generics.regions.elem_count()
+                                == type_decl.generics.regions.elem_count()
                         );
                         assert!(
-                            generics.trait_refs.len() == type_decl.generics.trait_clauses.len()
+                            generics.types.elem_count() == type_decl.generics.types.elem_count()
+                        );
+                        assert!(
+                            generics.const_generics.elem_count()
+                                == type_decl.generics.const_generics.elem_count()
+                        );
+                        assert!(
+                            generics.trait_refs.elem_count()
+                                == type_decl.generics.trait_clauses.elem_count()
                         );
                         use TypeDeclKind::*;
                         match &type_decl.kind {
