@@ -122,7 +122,7 @@ let
         if [ -f ${"$"}{FILE%.rs}.stderr ]; then
             expected="failure in rustc"
         else
-            expected=success
+            expected="success"
         fi
         if [ $status -eq 0 ]; then
             got="success"
@@ -155,7 +155,7 @@ let
         if ! [[ $extras == "" ]]; then
             extras=" ($extras)"
         fi
-        result="$status expected: $expected, got: $got$extras"
+        result="$(printf "$status expected: %-18s  got: $got$extras" "$expected")"
     fi
 
     echo "$FILE: $result"
