@@ -40,14 +40,6 @@ error: Error during trait resolution: Found unsupported GAT `Item` when resolvin
    |                            ^^^^^^^^^^^
    |
 
-warning: unused variable: `x`
-  --> tests/ui/generic-associated-types.rs:35:9
-   |
-35 |     let x = 42;
-   |         ^ help: if this is intentional, prefix it with an underscore: `_x`
-   |
-   = note: `#[warn(unused_variables)]` on by default
-
 error: Generic associated types are not supported
   --> tests/ui/generic-associated-types.rs:48:9
    |
@@ -75,7 +67,5 @@ error: Error during trait resolution: Found unsupported GAT `Type` when resolvin
 55 |         x.foo()
    |         ^^^^^^^
    |
-
-warning: 1 warning emitted
 
 ERROR Charon failed to translate this code (10 errors)

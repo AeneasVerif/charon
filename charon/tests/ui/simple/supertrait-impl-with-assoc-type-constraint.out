@@ -1,0 +1,45 @@
+# Final LLBC before serialization:
+
+trait core::marker::Sized<Self>
+
+trait test_crate::HasAssoc<Self>
+{
+    parent_clause0 : [@TraitClause0]: core::marker::Sized<Self::Assoc>
+    type Assoc
+}
+
+trait test_crate::SuperTrait<Self>
+
+trait test_crate::Trait<Self>
+{
+    parent_clause0 : [@TraitClause0]: test_crate::SuperTrait<Self>
+}
+
+impl<T> test_crate::{impl test_crate::SuperTrait for T}<T> : test_crate::SuperTrait<T>
+where
+    [@TraitClause0]: test_crate::HasAssoc<T>,
+    [@TraitClause1]: core::marker::Sized<T>,
+    @TraitClause0::Assoc = (),
+
+impl<T> test_crate::{impl test_crate::Trait for T}#1<T> : test_crate::Trait<T>
+where
+    [@TraitClause0]: test_crate::HasAssoc<T>,
+    [@TraitClause1]: core::marker::Sized<T>,
+    @TraitClause0::Assoc = (),
+{
+    parent_clause0 = test_crate::{impl test_crate::SuperTrait for T}<T>[@TraitClause0, @TraitClause1]
+}
+
+fn test_crate::main()
+{
+    let @0: (); // return
+    let @1: (); // anonymous local
+
+    @1 := ()
+    @0 := move (@1)
+    @0 := ()
+    return
+}
+
+
+

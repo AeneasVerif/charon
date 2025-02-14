@@ -819,10 +819,14 @@ impl<'a> ComputeItemModifications<'a> {
                 let generics = ItemBinder::new(CurrentItem, generics);
                 if let Some(set_for_clause) = self.compute_assoc_tys_for_impl(*clause_impl_id) {
                     for (path, ty) in set_for_clause.iter() {
-                        let ty = ItemBinder::new(*clause_impl_id, ty)
-                            .substitute(generics)
-                            .under_current_binder();
-                        out.push((path, ty));
+                        // Keep only the paths that apply to the current trait ref, i.e. ignore
+                        // paths on the local clauses of the impl.
+                        if matches!(path.tref.base, BaseClause::SelfClause) {
+                            let ty = ItemBinder::new(*clause_impl_id, ty)
+                                .substitute(generics)
+                                .under_current_binder();
+                            out.push((path, ty));
+                        }
                     }
                 }
             }
