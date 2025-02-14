@@ -153,6 +153,11 @@ let
         if [[ $expected == "success" ]]; then
             if [ -e "$FILE.llbc" ]; then
                 extras="with llbc output"
+                if grep -q 'The extraction generated .* warnings' "$FILE.charon-output"; then
+                    extras="$extras and warnings"
+                else
+                    extras="$extras and no warnings"
+                fi
             else
                 extras="without llbc output"
                 status="❌"

@@ -288,7 +288,7 @@ fn main() {
         Ok(()) => {
             if error_count != 0 {
                 let msg = format!("The extraction generated {} warnings", error_count);
-                log::warn!("{}", msg);
+                eprintln!("warning: {}", msg);
             }
         }
         Err(err) => {
