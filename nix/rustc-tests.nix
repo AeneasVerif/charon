@@ -117,7 +117,11 @@ let
     elif [ $status -eq 124 ]; then
         result="❌ timeout"
     elif [ $status -eq 101 ] || [ $status -eq 255 ]; then
-        result="❌ panic"
+        if grep -q 'fatal runtime error: stack overflow' "$FILE.charon-output"; then
+            result="❌ stack overflow"
+        else
+            result="❌ panic"
+        fi
     elif grep -q 'error.E0601' "$FILE.charon-output"; then
         # That's the "`main` not found" error we get on auxiliary files.
         result="⊘ unsupported-build-settings"
