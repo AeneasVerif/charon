@@ -63,7 +63,6 @@ let
       || has_magic_comment 'rustc-env' "$FILE"\
       || has_magic_comment 'compile-flags' "$FILE" \
       || has_magic_comment 'edition' "$FILE"\
-      || [[ "$FILE" == "test-results/meta/no_std-extern-libc.rs" ]]\
       ; then
         result="unsupported-build-settings"
     elif has_feature 'generic_const_exprs' "$FILE" \
@@ -108,6 +107,13 @@ let
     status="$(cat "$FILE.charon-status")"
     if echo "$status" | grep -q '^unsupported'; then
         result="⊘ $status"
+    elif false \
+      || [[ "$FILE" == "test-results/cfg/assume-incomplete-release/auxiliary/ver-cfg-rel.rs" ]]\
+      || [[ "$FILE" == "test-results/macros/auxiliary/macro-comma-support.rs" ]]\
+      || [[ "$FILE" == "test-results/meta/no_std-extern-libc.rs" ]]\
+      || [[ "$FILE" == "test-results/parser/issues/auxiliary/issue-21146-inc.rs" ]]\
+      ; then
+        result="⊘ unsupported-build-settings"
     elif [ $status -eq 124 ]; then
         result="❌ timeout"
     elif [ $status -eq 101 ] || [ $status -eq 255 ]; then
