@@ -129,6 +129,11 @@ fn main() {
         return;
     }
 
+    // Don't even try to codegen. This avoids errors due to checking if the output filename is
+    // available (despite the fact that we won't emit it because we stop compilation early).
+    compiler_args.push("-Zno-codegen".to_string());
+    compiler_args.push("--emit=metadata".to_string());
+
     // Always compile in release mode: in effect, we want to analyze the released
     // code. Also, rustc inserts a lot of dynamic checks in debug mode, that we
     // have to clean. Full list of `--release` flags:
@@ -283,15 +288,14 @@ fn main() {
         Ok(()) => {
             if error_count != 0 {
                 let msg = format!("The extraction generated {} warnings", error_count);
-                log::warn!("{}", msg);
+                eprintln!("warning: {}", msg);
             }
         }
         Err(err) => {
             log::error!("{err}");
             let exit_code = match err {
-                CharonFailure::CharonError(_)
-                | CharonFailure::RustcError
-                | CharonFailure::Serialize => 1,
+                CharonFailure::CharonError(_) | CharonFailure::Serialize => 1,
+                CharonFailure::RustcError => 2,
                 // This is a real panic, exit with the standard rust panic error code.
                 CharonFailure::Panic => 101,
             };

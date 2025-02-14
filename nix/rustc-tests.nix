@@ -14,8 +14,8 @@
 let
   # The rustc commit we use to get the tests. We should update it every now and
   # then to match the version of rustc we're using.
-  tests_commit = "65ea825f4021eaf77f1b25139969712d65b435a4";
-  tests_hash = "sha256-0dsWuGcWjQpj/N4iG6clCzM8kjrDjE+dQfyL3iuBGiY=";
+  tests_commit = "86d69c705a552236a622eee3fdea94bf13c5f102";
+  tests_hash = "sha256-1TMO4+rdOCYF1QWs5FDqQ1magzx8lmkOajlvuEh0Moc=";
 
   rustc-test-suite = fetchFromGitHub {
     owner = "rust-lang";
@@ -41,7 +41,7 @@ let
 
     has_magic_comment() {
       # Checks for `// magic-comment` and `//@ magic-comment` instructions in files.
-      grep -q "^// \?@\? \?$1:" "$2"
+      grep -q "^//@\? \?$1" "$2"
     }
 
     has_feature() {
@@ -49,15 +49,27 @@ let
       grep -q "^#!.feature(.*$1.*)" "$2"
     }
 
-    if has_magic_comment 'aux-build' "$FILE" \
-      || has_magic_comment 'compile-flags' "$FILE" \
-      || has_magic_comment 'revisions' "$FILE" \
+    # TODO: revisions and edition would be good to support.
+    if [ -e "$(dirname "$FILE")/compiletest-ignore-dir" ] \
+      || has_magic_comment 'ignore-test' "$FILE" \
       || has_magic_comment 'known-bug' "$FILE" \
+      || has_magic_comment 'only-' "$FILE"\
+      || has_magic_comment 'needs-asm-support' "$FILE"\
+      || has_magic_comment 'revisions' "$FILE" \
+      || has_magic_comment 'dont-check-compiler-stderr' "$FILE"\
+      || has_magic_comment 'stderr-per-bitwidth' "$FILE"\
+      || has_magic_comment 'aux-build' "$FILE" \
+      || has_magic_comment 'aux-crate' "$FILE" \
+      || has_magic_comment 'rustc-env' "$FILE"\
+      || has_magic_comment 'compile-flags' "$FILE" \
       || has_magic_comment 'edition' "$FILE"\
       ; then
         result="unsupported-build-settings"
     elif has_feature 'generic_const_exprs' "$FILE" \
       || has_feature 'adt_const_params' "$FILE" \
+      || has_feature 'effects' "$FILE" \
+      || has_feature 'transmutability' "$FILE" \
+      || has_feature 'default_type_parameter_fallback' "$FILE" \
       ; then
         result="unsupported-feature"
     else
@@ -95,38 +107,61 @@ let
     status="$(cat "$FILE.charon-status")"
     if echo "$status" | grep -q '^unsupported'; then
         result="⊘ $status"
+    elif false \
+      || [[ "$FILE" == "test-results/cfg/assume-incomplete-release/auxiliary/ver-cfg-rel.rs" ]]\
+      || [[ "$FILE" == "test-results/macros/auxiliary/macro-comma-support.rs" ]]\
+      || [[ "$FILE" == "test-results/meta/no_std-extern-libc.rs" ]]\
+      || [[ "$FILE" == "test-results/parser/issues/auxiliary/issue-21146-inc.rs" ]]\
+      ; then
+        result="⊘ unsupported-build-settings"
     elif [ $status -eq 124 ]; then
         result="❌ timeout"
     elif [ $status -eq 101 ] || [ $status -eq 255 ]; then
-        result="❌ panic"
+        if grep -q 'fatal runtime error: stack overflow' "$FILE.charon-output"; then
+            result="❌ stack overflow"
+        else
+            result="❌ panic"
+        fi
+    elif grep -q 'error.E0601' "$FILE.charon-output"; then
+        # That's the "`main` not found" error we get on auxiliary files.
+        result="⊘ unsupported-build-settings"
+    elif grep -q 'error.E0463' "$FILE.charon-output"; then
+        # "Can't find crate" error.
+        result="⊘ unsupported-build-settings"
     else
         if [ -f ${"$"}{FILE%.rs}.stderr ]; then
-            expected=failure
+            expected="failure in rustc"
         else
-            expected=success
+            expected="success"
         fi
         if [ $status -eq 0 ]; then
             got="success"
         else
             got="failure"
+            if grep -q 'error.E9999' "$FILE.charon-output"; then
+                got="$got in hax frontend"
+            elif [ $status -eq 2 ]; then
+                got="$got in rustc"
+            else
+                # This won't happen since we don't pass `--error-on-warnings`.
+                got="$got in charon"
+            fi
         fi
 
-        extras=""
         if [[ $expected == $got ]]; then
             status="✅"
         else
             status="❌"
-            if [[ $expected == "success" ]]; then
-                if grep -q 'error.E9999' "$FILE.charon-output"; then
-                    got="$got in hax frontend"
-                else
-                    got="$got in charon"
-                fi
-            fi
         fi
+        extras=""
         if [[ $expected == "success" ]]; then
             if [ -e "$FILE.llbc" ]; then
                 extras="with llbc output"
+                if grep -q 'The extraction generated .* warnings' "$FILE.charon-output"; then
+                    extras="$extras and warnings"
+                else
+                    extras="$extras and no warnings"
+                fi
             else
                 extras="without llbc output"
                 status="❌"
@@ -135,7 +170,7 @@ let
         if ! [[ $extras == "" ]]; then
             extras=" ($extras)"
         fi
-        result="$status expected: $expected, got: $got$extras"
+        result="$(printf "$status expected: %-18s  got: $got$extras" "$expected")"
     fi
 
     echo "$FILE: $result"
