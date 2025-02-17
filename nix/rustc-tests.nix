@@ -114,14 +114,6 @@ let
       || [[ "$FILE" == "test-results/parser/issues/auxiliary/issue-21146-inc.rs" ]]\
       ; then
         result="⊘ unsupported-build-settings"
-    elif [ $status -eq 124 ]; then
-        result="❌ timeout"
-    elif [ $status -eq 101 ] || [ $status -eq 255 ]; then
-        if grep -q 'fatal runtime error: stack overflow' "$FILE.charon-output"; then
-            result="❌ stack overflow"
-        else
-            result="❌ panic"
-        fi
     elif grep -q 'error.E0601' "$FILE.charon-output"; then
         # That's the "`main` not found" error we get on auxiliary files.
         result="⊘ unsupported-build-settings"
@@ -136,6 +128,14 @@ let
         fi
         if [ $status -eq 0 ]; then
             got="success"
+        elif [ $status -eq 124 ]; then
+            got="timeout"
+        elif [ $status -eq 101 ] || [ $status -eq 255 ]; then
+            if grep -q 'fatal runtime error: stack overflow' "$FILE.charon-output"; then
+                got="stack overflow"
+            else
+                got="panic"
+            fi
         else
             got="failure"
             if grep -q 'error.E9999' "$FILE.charon-output"; then
@@ -156,11 +156,16 @@ let
         extras=""
         if [[ $expected == "success" ]]; then
             if [ -e "$FILE.llbc" ]; then
-                extras="with llbc output"
-                if grep -q 'The extraction generated .* warnings' "$FILE.charon-output"; then
-                    extras="$extras and warnings"
+                if ! [[ $got == "success" ]]; then
+                    # If we have a failure and an llbc file, the failure happened while serializing.
+                    got="$got while serializing"
                 else
-                    extras="$extras and no warnings"
+                    extras="with llbc output and "
+                fi
+                if grep -q 'The extraction generated .* warnings' "$FILE.charon-output"; then
+                    extras="$extras""warnings"
+                else
+                    extras="$extras""no warnings"
                 fi
             else
                 extras="without llbc output"
