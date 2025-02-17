@@ -18,20 +18,14 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
         // Translate the trait predicates first, because associated type constraints may refer to
         // them. E.g. in `fn foo<I: Iterator<Item=usize>>()`, the `I: Iterator` clause must be
         // translated before the `<I as Iterator>::Item = usize` predicate.
-        for (pred, span) in &preds.predicates {
-            if matches!(
-                pred.kind.value,
-                hax::PredicateKind::Clause(hax::ClauseKind::Trait(_))
-            ) {
-                self.register_predicate(pred, span, origin.clone(), location)?;
+        for (clause, span) in &preds.predicates {
+            if matches!(clause.kind.value, hax::ClauseKind::Trait(_)) {
+                self.register_predicate(clause, span, origin.clone(), location)?;
             }
         }
-        for (pred, span) in &preds.predicates {
-            if !matches!(
-                pred.kind.value,
-                hax::PredicateKind::Clause(hax::ClauseKind::Trait(_))
-            ) {
-                self.register_predicate(pred, span, origin.clone(), location)?;
+        for (clause, span) in &preds.predicates {
+            if !matches!(clause.kind.value, hax::ClauseKind::Trait(_)) {
+                self.register_predicate(clause, span, origin.clone(), location)?;
             }
         }
         Ok(())
@@ -76,96 +70,81 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
 
     pub(crate) fn register_predicate(
         &mut self,
-        pred: &hax::Predicate,
+        clause: &hax::Clause,
         hspan: &hax::Span,
         origin: PredicateOrigin,
         location: &PredicateLocation,
     ) -> Result<(), Error> {
-        use hax::{ClauseKind, PredicateKind};
-        trace!("{:?}", pred);
+        use hax::ClauseKind;
+        trace!("{:?}", clause);
         let span = self.translate_span_from_hax(hspan);
-        match pred.kind.hax_skip_binder_ref() {
-            PredicateKind::Clause(kind) => {
-                match kind {
-                    ClauseKind::Trait(trait_pred) => {
-                        let pred = self.translate_region_binder(span, &pred.kind, |ctx, _| {
-                            ctx.translate_trait_predicate(span, trait_pred)
-                        })?;
-                        let location = match location {
-                            PredicateLocation::Base => {
-                                &mut self.innermost_generics_mut().trait_clauses
-                            }
-                            PredicateLocation::Parent => &mut self.parent_trait_clauses,
-                            PredicateLocation::Item(item_name) => self
-                                .item_trait_clauses
-                                .entry(item_name.clone())
-                                .or_default(),
-                        };
-                        location.push_with(|clause_id| TraitClause {
-                            clause_id,
-                            origin,
-                            span: Some(span),
-                            trait_: pred,
-                        });
-                    }
-                    ClauseKind::RegionOutlives(p) => {
-                        let pred = self.translate_region_binder(span, &pred.kind, |ctx, _| {
-                            let r0 = ctx.translate_region(span, &p.lhs)?;
-                            let r1 = ctx.translate_region(span, &p.rhs)?;
-                            Ok(OutlivesPred(r0, r1))
-                        })?;
-                        self.innermost_generics_mut().regions_outlive.push(pred);
-                    }
-                    ClauseKind::TypeOutlives(p) => {
-                        let pred = self.translate_region_binder(span, &pred.kind, |ctx, _| {
-                            let ty = ctx.translate_ty(span, &p.lhs)?;
-                            let r = ctx.translate_region(span, &p.rhs)?;
-                            Ok(OutlivesPred(ty, r))
-                        })?;
-                        self.innermost_generics_mut().types_outlive.push(pred);
-                    }
-                    ClauseKind::Projection(p) => {
-                        // This is used to express constraints over associated types.
-                        // For instance:
-                        // ```
-                        // T : Foo<S = String>
-                        //         ^^^^^^^^^^
-                        // ```
-                        let pred = self.translate_region_binder(span, &pred.kind, |ctx, _| {
-                            let trait_ref = ctx.translate_trait_impl_expr(span, &p.impl_expr)?;
-                            let ty = ctx.translate_ty(span, &p.ty)?;
-                            let type_name = TraitItemName(p.assoc_item.name.clone());
-                            Ok(TraitTypeConstraint {
-                                trait_ref,
-                                type_name,
-                                ty,
-                            })
-                        })?;
-                        self.innermost_generics_mut()
-                            .trait_type_constraints
-                            .push(pred);
-                    }
-                    ClauseKind::ConstArgHasType(..) => {
-                        // I don't really understand that one. Why don't they put
-                        // the type information in the const generic parameters
-                        // directly? For now we just ignore it.
-                    }
-                    ClauseKind::WellFormed(_) => {
-                        raise_error!(self, span, "Well-formedness clauses are unsupported")
-                    }
-                    ClauseKind::ConstEvaluatable(_) => {
-                        raise_error!(self, span, "Unsupported clause: {:?}", kind)
-                    }
-                }
+        match clause.kind.hax_skip_binder_ref() {
+            ClauseKind::Trait(trait_pred) => {
+                let pred = self.translate_region_binder(span, &clause.kind, |ctx, _| {
+                    ctx.translate_trait_predicate(span, trait_pred)
+                })?;
+                let location = match location {
+                    PredicateLocation::Base => &mut self.innermost_generics_mut().trait_clauses,
+                    PredicateLocation::Parent => &mut self.parent_trait_clauses,
+                    PredicateLocation::Item(item_name) => self
+                        .item_trait_clauses
+                        .entry(item_name.clone())
+                        .or_default(),
+                };
+                location.push_with(|clause_id| TraitClause {
+                    clause_id,
+                    origin,
+                    span: Some(span),
+                    trait_: pred,
+                });
             }
-            PredicateKind::AliasRelate(..)
-            | PredicateKind::Ambiguous
-            | PredicateKind::Coerce(_)
-            | PredicateKind::ConstEquate(_, _)
-            | PredicateKind::DynCompatible(_)
-            | PredicateKind::NormalizesTo(_)
-            | PredicateKind::Subtype(_) => {
-                raise_error!(self, span, "Unsupported predicate: {:?}", pred)
+            ClauseKind::RegionOutlives(p) => {
+                let pred = self.translate_region_binder(span, &clause.kind, |ctx, _| {
+                    let r0 = ctx.translate_region(span, &p.lhs)?;
+                    let r1 = ctx.translate_region(span, &p.rhs)?;
+                    Ok(OutlivesPred(r0, r1))
+                })?;
+                self.innermost_generics_mut().regions_outlive.push(pred);
+            }
+            ClauseKind::TypeOutlives(p) => {
+                let pred = self.translate_region_binder(span, &clause.kind, |ctx, _| {
+                    let ty = ctx.translate_ty(span, &p.lhs)?;
+                    let r = ctx.translate_region(span, &p.rhs)?;
+                    Ok(OutlivesPred(ty, r))
+                })?;
+                self.innermost_generics_mut().types_outlive.push(pred);
+            }
+            ClauseKind::Projection(p) => {
+                // This is used to express constraints over associated types.
+                // For instance:
+                // ```
+                // T : Foo<S = String>
+                //         ^^^^^^^^^^
+                // ```
+                let pred = self.translate_region_binder(span, &clause.kind, |ctx, _| {
+                    let trait_ref = ctx.translate_trait_impl_expr(span, &p.impl_expr)?;
+                    let ty = ctx.translate_ty(span, &p.ty)?;
+                    let type_name = TraitItemName(p.assoc_item.name.clone());
+                    Ok(TraitTypeConstraint {
+                        trait_ref,
+                        type_name,
+                        ty,
+                    })
+                })?;
+                self.innermost_generics_mut()
+                    .trait_type_constraints
+                    .push(pred);
+            }
+            ClauseKind::ConstArgHasType(..) => {
+                // I don't really understand that one. Why don't they put
+                // the type information in the const generic parameters
+                // directly? For now we just ignore it.
+            }
+            ClauseKind::WellFormed(_) => {
+                raise_error!(self, span, "Well-formedness clauses are unsupported")
+            }
+            kind @ ClauseKind::ConstEvaluatable(_) => {
+                raise_error!(self, span, "Unsupported clause: {:?}", kind)
             }
         }
         Ok(())

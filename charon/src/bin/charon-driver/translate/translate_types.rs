@@ -608,9 +608,9 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
         include_assoc_ty_clauses: bool,
     ) -> Result<(), Error> {
         use hax::FullDefKind;
-        if let Some((generics, predicates)) = def.generics() {
+        if let Some(param_env) = def.param_env() {
             // Add the generic params.
-            self.push_generic_params(generics)?;
+            self.push_generic_params(&param_env.generics)?;
             // Add the self trait clause.
             match &def.kind {
                 FullDefKind::TraitImpl {
@@ -624,53 +624,59 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
                 _ => {}
             }
             // Add the predicates.
-            let (origin, location) = match &def.kind {
+            let origin = match &def.kind {
                 FullDefKind::Struct { .. }
                 | FullDefKind::Union { .. }
                 | FullDefKind::Enum { .. }
                 | FullDefKind::TyAlias { .. }
-                | FullDefKind::AssocTy { .. } => {
-                    (PredicateOrigin::WhereClauseOnType, PredicateLocation::Base)
-                }
+                | FullDefKind::AssocTy { .. } => PredicateOrigin::WhereClauseOnType,
                 FullDefKind::Fn { .. }
                 | FullDefKind::AssocFn { .. }
                 | FullDefKind::Const { .. }
                 | FullDefKind::AssocConst { .. }
-                | FullDefKind::Static { .. } => {
-                    (PredicateOrigin::WhereClauseOnFn, PredicateLocation::Base)
-                }
+                | FullDefKind::Static { .. } => PredicateOrigin::WhereClauseOnFn,
                 FullDefKind::TraitImpl { .. } | FullDefKind::InherentImpl { .. } => {
-                    (PredicateOrigin::WhereClauseOnImpl, PredicateLocation::Base)
+                    PredicateOrigin::WhereClauseOnImpl
                 }
-                // TODO: distinguish trait where clauses from trait supertraits. Currently we
-                // consider them all as parent clauses.
                 FullDefKind::Trait { .. } => {
                     let _ = self.register_trait_decl_id(span, &def.def_id);
-                    (
-                        PredicateOrigin::WhereClauseOnTrait,
-                        PredicateLocation::Parent,
-                    )
+                    PredicateOrigin::WhereClauseOnTrait
                 }
                 _ => panic!("Unexpected def: {def:?}"),
             };
-            self.register_predicates(predicates, origin, &location)?;
+            self.register_predicates(
+                &param_env.predicates,
+                origin.clone(),
+                &PredicateLocation::Base,
+            )?;
+            // Also register implied predicates.
+            if let FullDefKind::Trait {
+                implied_predicates, ..
+            }
+            | FullDefKind::AssocTy {
+                implied_predicates, ..
+            } = &def.kind
+            {
+                self.register_predicates(implied_predicates, origin, &PredicateLocation::Parent)?;
+            }
 
             if let hax::FullDefKind::Trait { items, .. } = &def.kind
                 && include_assoc_ty_clauses
             {
                 // Also add the predicates on associated types.
                 // FIXME(gat): don't skip GATs.
+                // FIXME: don't mix up implied and required predicates.
                 for (item, item_def) in items {
                     if let hax::FullDefKind::AssocTy {
-                        generics,
-                        predicates,
+                        param_env,
+                        implied_predicates,
                         ..
                     } = &item_def.kind
-                        && generics.params.is_empty()
+                        && param_env.generics.params.is_empty()
                     {
                         let name = TraitItemName(item.name.clone());
                         self.register_predicates(
-                            &predicates,
+                            &implied_predicates,
                             PredicateOrigin::TraitItem(name.clone()),
                             &PredicateLocation::Item(name),
                         )?;
