@@ -78,7 +78,7 @@ fn transform_function(_ctx: &TransformCtx, def: &mut FunDecl) -> Result<(), Erro
             let body = body.as_unstructured_mut().unwrap();
 
             // Update the type of the local 1 (which is the closure)
-            assert!(body.locals.vars.len() > 1);
+            assert!(body.locals.vars.elem_count() > 1);
             let state_var = &mut body.locals.vars[1];
             state_var.ty = inputs[0].clone();
             state_var.name = Some("state".to_string());
@@ -86,7 +86,7 @@ fn transform_function(_ctx: &TransformCtx, def: &mut FunDecl) -> Result<(), Erro
             // Update the body, and in particular the accesses to the states
             // TODO: translate to ADT field access
             // TODO: handle directly during translation
-            let num_fields = info.state.len();
+            let num_fields = info.state.elem_count();
             body.body.dyn_visit_in_body_mut(|pe: &mut ProjectionElem| {
                 if let ProjectionElem::Field(pk @ FieldProjKind::ClosureState, _) = pe {
                     *pk = FieldProjKind::Tuple(num_fields);

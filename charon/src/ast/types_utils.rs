@@ -61,13 +61,13 @@ impl GenericParams {
             types_outlive,
             trait_type_constraints,
         } = self;
-        regions.len()
-            + types.len()
-            + const_generics.len()
-            + trait_clauses.len()
+        regions.elem_count()
+            + types.elem_count()
+            + const_generics.elem_count()
+            + trait_clauses.elem_count()
             + regions_outlive.len()
             + types_outlive.len()
-            + trait_type_constraints.len()
+            + trait_type_constraints.elem_count()
     }
 
     /// Construct a set of generic arguments in the scope of `self` that matches `self` and feeds
@@ -151,28 +151,28 @@ impl<T: AstVisitable> Binder<Binder<T>> {
                 if let Region::Var(var) = x
                     && let Some(id) = var.bound_at_depth_mut(self.binder_depth)
                 {
-                    *id += self.shift_by.regions.len();
+                    *id += self.shift_by.regions.slot_count();
                 }
             }
             fn enter_ty_kind(&mut self, x: &mut TyKind) {
                 if let TyKind::TypeVar(var) = x
                     && let Some(id) = var.bound_at_depth_mut(self.binder_depth)
                 {
-                    *id += self.shift_by.types.len();
+                    *id += self.shift_by.types.slot_count();
                 }
             }
             fn enter_const_generic(&mut self, x: &mut ConstGeneric) {
                 if let ConstGeneric::Var(var) = x
                     && let Some(id) = var.bound_at_depth_mut(self.binder_depth)
                 {
-                    *id += self.shift_by.const_generics.len();
+                    *id += self.shift_by.const_generics.slot_count();
                 }
             }
             fn enter_trait_ref_kind(&mut self, x: &mut TraitRefKind) {
                 if let TraitRefKind::Clause(var) = x
                     && let Some(id) = var.bound_at_depth_mut(self.binder_depth)
                 {
-                    *id += self.shift_by.trait_clauses.len();
+                    *id += self.shift_by.trait_clauses.slot_count();
                 }
             }
         }
@@ -199,19 +199,19 @@ impl<T: AstVisitable> Binder<Binder<T>> {
         inner_params
             .regions
             .iter_mut()
-            .for_each(|v| v.index += outer_params.regions.len());
+            .for_each(|v| v.index += outer_params.regions.slot_count());
         inner_params
             .types
             .iter_mut()
-            .for_each(|v| v.index += outer_params.types.len());
+            .for_each(|v| v.index += outer_params.types.slot_count());
         inner_params
             .const_generics
             .iter_mut()
-            .for_each(|v| v.index += outer_params.const_generics.len());
+            .for_each(|v| v.index += outer_params.const_generics.slot_count());
         inner_params
             .trait_clauses
             .iter_mut()
-            .for_each(|v| v.clause_id += outer_params.trait_clauses.len());
+            .for_each(|v| v.clause_id += outer_params.trait_clauses.slot_count());
 
         let GenericParams {
             regions,
@@ -285,7 +285,10 @@ impl GenericArgs {
             trait_refs,
             target: _,
         } = self;
-        regions.len() + types.len() + const_generics.len() + trait_refs.len()
+        regions.elem_count()
+            + types.elem_count()
+            + const_generics.elem_count()
+            + trait_refs.elem_count()
     }
 
     pub fn is_empty(&self) -> bool {
@@ -334,10 +337,10 @@ impl GenericArgs {
     /// Check whether this matches the given `GenericParams`.
     /// TODO: check more things, e.g. that the trait refs use the correct trait and generics.
     pub fn matches(&self, params: &GenericParams) -> bool {
-        params.regions.len() == self.regions.len()
-            && params.types.len() == self.types.len()
-            && params.const_generics.len() == self.const_generics.len()
-            && params.trait_clauses.len() == self.trait_refs.len()
+        params.regions.elem_count() == self.regions.elem_count()
+            && params.types.elem_count() == self.types.elem_count()
+            && params.const_generics.elem_count() == self.const_generics.elem_count()
+            && params.trait_clauses.elem_count() == self.trait_refs.elem_count()
     }
 
     /// Return the same generics, but where we pop the first type arguments.
@@ -541,7 +544,7 @@ impl Ty {
         match self.kind() {
             TyKind::Adt(TypeId::Builtin(BuiltinTy::Box), generics) => {
                 assert!(generics.regions.is_empty());
-                assert!(generics.types.len() == 1);
+                assert!(generics.types.elem_count() == 1);
                 assert!(generics.const_generics.is_empty());
                 true
             }
@@ -553,7 +556,7 @@ impl Ty {
         match self.kind() {
             TyKind::Adt(TypeId::Builtin(BuiltinTy::Box), generics) => {
                 assert!(generics.regions.is_empty());
-                assert!(generics.types.len() == 1);
+                assert!(generics.types.elem_count() == 1);
                 assert!(generics.const_generics.is_empty());
                 Some(&generics.types[0])
             }
@@ -565,7 +568,7 @@ impl Ty {
         match self.kind() {
             TyKind::Adt(TypeId::Builtin(BuiltinTy::Array | BuiltinTy::Slice), generics) => {
                 assert!(generics.regions.is_empty());
-                assert!(generics.types.len() == 1);
+                assert!(generics.types.elem_count() == 1);
                 Some(&generics.types[0])
             }
             _ => None,

@@ -258,7 +258,11 @@ fn predicate_origins() -> anyhow::Result<()> {
             panic!("Item `{item_name}` not found. Available items: \n{keys}")
         };
         let clauses = &item.generics.trait_clauses;
-        assert_eq!(origins.len(), clauses.len(), "failed for {item_name}");
+        assert_eq!(
+            origins.len(),
+            clauses.elem_count(),
+            "failed for {item_name}"
+        );
         for (clause, (expected_origin, expected_trait_name)) in clauses.iter().zip(origins) {
             let trait_name = trait_name(&crate_data, clause.trait_.skip_binder.trait_id);
             assert_eq!(trait_name, expected_trait_name, "failed for {item_name}");

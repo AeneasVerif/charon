@@ -25,7 +25,7 @@ where
 {
     vector: IndexVec<I, Option<T>>,
     /// The number of non-`None` elements.
-    real_len: usize,
+    elem_count: usize,
 }
 
 impl<I: std::fmt::Debug, T: std::fmt::Debug> std::fmt::Debug for Vector<I, T>
@@ -46,7 +46,7 @@ where
     pub fn new() -> Self {
         Vector {
             vector: IndexVec::new(),
-            real_len: 0,
+            elem_count: 0,
         }
     }
 
@@ -59,11 +59,17 @@ where
     }
 
     pub fn is_empty(&self) -> bool {
-        self.real_len == 0
+        self.elem_count == 0
     }
 
-    pub fn len(&self) -> usize {
-        self.real_len
+    /// The number of elements stored in the vector.
+    pub fn elem_count(&self) -> usize {
+        self.elem_count
+    }
+
+    /// The number of slots allocated in the vector (empty or not).
+    pub fn slot_count(&self) -> usize {
+        self.vector.len()
     }
 
     /// Gets the value of the next available id. Avoid if possible; use `reserve_slot` instead.
@@ -81,19 +87,19 @@ where
     pub fn set_slot(&mut self, id: I, x: T) {
         assert!(self.vector[id].is_none());
         self.vector[id] = Some(x);
-        self.real_len += 1;
+        self.elem_count += 1;
     }
 
     /// Remove the value from this slot.
     pub fn remove(&mut self, id: I) -> Option<T> {
         if self.vector[id].is_some() {
-            self.real_len -= 1;
+            self.elem_count -= 1;
         }
         self.vector[id].take()
     }
 
     pub fn push(&mut self, x: T) -> I {
-        self.real_len += 1;
+        self.elem_count += 1;
         self.vector.push(Some(x))
     }
 
@@ -123,7 +129,7 @@ where
         T: Clone,
     {
         self.vector.extend_from_slice(&other.vector);
-        self.real_len += other.real_len;
+        self.elem_count += other.elem_count;
     }
 
     /// Get a mutable reference into the ith element. If the vector is too short, extend it until
@@ -144,7 +150,7 @@ where
                 .into_iter()
                 .map(|x_opt| x_opt.map(&mut f))
                 .collect(),
-            real_len: self.real_len,
+            elem_count: self.elem_count,
         }
     }
 
@@ -156,7 +162,7 @@ where
                 .iter()
                 .map(|x_opt| x_opt.as_ref().map(&mut f))
                 .collect(),
-            real_len: self.real_len,
+            elem_count: self.elem_count,
         }
     }
 
@@ -168,7 +174,7 @@ where
                 .iter_mut()
                 .map(|x_opt| x_opt.as_mut().map(&mut f))
                 .collect(),
-            real_len: self.real_len,
+            elem_count: self.elem_count,
         }
     }
 
@@ -180,7 +186,7 @@ where
                 .iter_enumerated()
                 .map(|(i, x_opt)| x_opt.as_ref().map(|x| f(i, x)))
                 .collect(),
-            real_len: self.real_len,
+            elem_count: self.elem_count,
         }
     }
 
@@ -188,7 +194,7 @@ where
     pub fn map_opt<U>(self, f: impl FnMut(Option<T>) -> Option<U>) -> Vector<I, U> {
         Vector {
             vector: self.vector.into_iter().map(f).collect(),
-            real_len: self.real_len,
+            elem_count: self.elem_count,
         }
     }
 
@@ -199,9 +205,9 @@ where
     ) -> Vector<I, U> {
         let mut ret = Vector {
             vector: self.vector.iter().map(|x_opt| f(x_opt.as_ref())).collect(),
-            real_len: self.real_len,
+            elem_count: self.elem_count,
         };
-        ret.real_len = ret.iter().count();
+        ret.elem_count = ret.iter().count();
         ret
     }
 
@@ -262,10 +268,10 @@ where
     pub fn split_off(&mut self, at: usize) -> Self {
         let mut ret = Self {
             vector: self.vector.split_off(I::from_usize(at)),
-            real_len: 0,
+            elem_count: 0,
         };
-        self.real_len = self.iter().count();
-        ret.real_len = ret.iter().count();
+        self.elem_count = self.iter().count();
+        ret.elem_count = ret.iter().count();
         ret
     }
 }
@@ -347,9 +353,9 @@ where
 {
     #[inline]
     fn from_iter<It: IntoIterator<Item = T>>(iter: It) -> Vector<I, T> {
-        let mut real_len = 0;
-        let vector = IndexVec::from_iter(iter.into_iter().inspect(|_| real_len += 1).map(Some));
-        Vector { vector, real_len }
+        let mut elem_count = 0;
+        let vector = IndexVec::from_iter(iter.into_iter().inspect(|_| elem_count += 1).map(Some));
+        Vector { vector, elem_count }
     }
 }
 
@@ -379,9 +385,9 @@ impl<'de, I: Idx, T: Deserialize<'de>> Deserialize<'de> for Vector<I, T> {
     {
         let mut ret = Self {
             vector: Deserialize::deserialize(deserializer)?,
-            real_len: 0,
+            elem_count: 0,
         };
-        ret.real_len = ret.iter().count();
+        ret.elem_count = ret.iter().count();
         Ok(ret)
     }
 }

@@ -67,7 +67,7 @@ impl CheckGenericsVisitor<'_> {
         A: for<'a> FmtWithCtx<FmtA>,
         B: for<'a> FmtWithCtx<FmtB>,
     {
-        if a.len() == b.len() {
+        if a.elem_count() == b.elem_count() {
             a.iter().zip(b.iter()).for_each(|(x, y)| check_inner(x, y));
         } else {
             let a = a.iter().map(|x| x.fmt_with_ctx(a_fmt)).join(", ");
