@@ -3,10 +3,8 @@
 fn test_crate::nonzero_disambiguator::my_function()
 {
     let @0: (); // return
-    let @1: (); // anonymous local
 
-    @1 := ()
-    @0 := move (@1)
+    @0 := ()
     @0 := ()
     return
 }
@@ -14,10 +12,8 @@ fn test_crate::nonzero_disambiguator::my_function()
 fn test_crate::nonzero_disambiguator::my_function#1()
 {
     let @0: (); // return
-    let @1: (); // anonymous local
 
-    @1 := ()
-    @0 := move (@1)
+    @0 := ()
     @0 := ()
     return
 }

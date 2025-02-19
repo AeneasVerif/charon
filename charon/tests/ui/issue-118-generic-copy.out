@@ -41,14 +41,12 @@ fn test_crate::copy_foo(@1: test_crate::Foo)
     let x@1: test_crate::Foo; // arg #1
     let y@2: test_crate::Foo; // local
     let z@3: test_crate::Foo; // local
-    let @4: (); // anonymous local
 
     y@2 := copy (x@1)
     @fake_read(y@2)
     z@3 := copy (x@1)
     @fake_read(z@3)
-    @4 := ()
-    @0 := move (@4)
+    @0 := ()
     drop z@3
     drop y@2
     @0 := ()
@@ -64,14 +62,12 @@ where
     let x@1: T; // arg #1
     let y@2: T; // local
     let z@3: T; // local
-    let @4: (); // anonymous local
 
     y@2 := copy (x@1)
     @fake_read(y@2)
     z@3 := copy (x@1)
     @fake_read(z@3)
-    @4 := ()
-    @0 := move (@4)
+    @0 := ()
     drop z@3
     drop y@2
     @0 := ()
@@ -94,14 +90,12 @@ where
     let x@1: @TraitClause1::Ty; // arg #1
     let y@2: @TraitClause1::Ty; // local
     let z@3: @TraitClause1::Ty; // local
-    let @4: (); // anonymous local
 
     y@2 := copy (x@1)
     @fake_read(y@2)
     z@3 := copy (x@1)
     @fake_read(z@3)
-    @4 := ()
-    @0 := move (@4)
+    @0 := ()
     drop z@3
     drop y@2
     @0 := ()

@@ -176,10 +176,8 @@ fn test_crate::vec(@1: alloc::vec::Vec<u32, alloc::alloc::Global>[core::marker::
 {
     let @0: (); // return
     let _x@1: alloc::vec::Vec<u32, alloc::alloc::Global>[core::marker::Sized<u32>, core::marker::Sized<alloc::alloc::Global>]; // arg #1
-    let @2: (); // anonymous local
 
-    @2 := ()
-    @0 := move (@2)
+    @0 := ()
     drop _x@1
     @0 := ()
     return
@@ -218,10 +216,8 @@ where
 {
     let @0: (); // return
     let _x@1: T; // arg #1
-    let @2: (); // anonymous local
 
-    @2 := ()
-    @0 := move (@2)
+    @0 := ()
     drop _x@1
     @0 := ()
     return

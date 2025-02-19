@@ -527,10 +527,8 @@ fn test_crate::{impl test_crate::WithConstTy<32 : usize> for bool}#8::f<'_0, '_1
     let @0: (); // return
     let @1: &'_ mut (u64); // arg #1
     let @2: &'_ (Array<u8, 32 : usize>); // arg #2
-    let @3: (); // anonymous local
 
-    @3 := ()
-    @0 := move (@3)
+    @0 := ()
     @0 := ()
     return
 }
@@ -565,10 +563,8 @@ where
 {
     let @0: (); // return
     let @1: @TraitClause1::W; // arg #1
-    let @2: (); // anonymous local
 
-    @2 := ()
-    @0 := move (@2)
+    @0 := ()
     drop @1
     @0 := ()
     return
@@ -597,10 +593,8 @@ where
 {
     let @0: (); // return
     let _x@1: &'_ (T); // arg #1
-    let @2: (); // anonymous local
 
-    @2 := ()
-    @0 := move (@2)
+    @0 := ()
     @0 := ()
     return
 }
@@ -613,10 +607,8 @@ where
 {
     let @0: (); // return
     let _x@1: u32; // arg #1
-    let @2: (); // anonymous local
 
-    @2 := ()
-    @0 := move (@2)
+    @0 := ()
     @0 := ()
     return
 }
@@ -682,10 +674,8 @@ where
     @TraitClause2::W = @TraitClause3::W,
 {
     let @0: (); // return
-    let @1: (); // anonymous local
 
-    @1 := ()
-    @0 := move (@1)
+    @0 := ()
     @0 := ()
     return
 }
@@ -1011,10 +1001,8 @@ where
 {
     let @0: (); // return
     let @1: F; // arg #1
-    let @2: (); // anonymous local
 
-    @2 := ()
-    @0 := move (@2)
+    @0 := ()
     drop @1
     @0 := ()
     return
@@ -1024,12 +1012,10 @@ fn test_crate::flibidi()
 {
     let @0: (); // return
     let @1: (); // anonymous local
-    let @2: (); // anonymous local
 
     @1 := test_crate::call<'_, fn<'a>(&'a (())) -> test_crate::Wrapper<(bool, &'a (()))>[core::marker::Sized<(bool, &'a (()))>]>[core::marker::Sized<fn<'a>(&'a (())) -> test_crate::Wrapper<(bool, &'a (()))>[core::marker::Sized<(bool, &'a (()))>]>, core::ops::function::Fn<fn<'a>(&'a (())) -> test_crate::Wrapper<(bool, &'a (()))>[core::marker::Sized<(bool, &'a (()))>], (&'_ (()))>](const (test_crate::flabada<'_>))
     drop @1
-    @2 := ()
-    @0 := move (@2)
+    @0 := ()
     @0 := ()
     return
 }

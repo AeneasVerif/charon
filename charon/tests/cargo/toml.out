@@ -35,7 +35,6 @@ fn test_cargo_toml::main()
     let @1: bool; // anonymous local
     let @2: &'_ (core::option::Option<bool>[core::marker::Sized<bool>]); // anonymous local
     let @3: core::option::Option<bool>[core::marker::Sized<bool>]; // anonymous local
-    let @4: (); // anonymous local
 
     @3 := core::option::Option::Some { 0: const (false) }
     @2 := &@3
@@ -44,8 +43,7 @@ fn test_cargo_toml::main()
     @fake_read(@1)
     drop @3
     drop @1
-    @4 := ()
-    @0 := move (@4)
+    @0 := ()
     @0 := ()
     return
 }

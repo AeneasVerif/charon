@@ -21,10 +21,8 @@ where
 {
     let @0: (); // return
     let self@1: &'_ (T); // arg #1
-    let @2: (); // anonymous local
 
-    @2 := ()
-    @0 := move (@2)
+    @0 := ()
     @0 := ()
     return
 }
@@ -46,15 +44,13 @@ where
     let x@1: T; // arg #1
     let @2: (); // anonymous local
     let @3: &'_ (T); // anonymous local
-    let @4: (); // anonymous local
 
     @3 := &x@1
     @2 := test_crate::{impl test_crate::HasMethod for T}::method<'_, T>[@TraitClause0, @TraitClause1::parent_clause0](move (@3))
     drop @3
     @fake_read(@2)
     drop @2
-    @4 := ()
-    @0 := move (@4)
+    @0 := ()
     drop x@1
     @0 := ()
     return

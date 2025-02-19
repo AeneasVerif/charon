@@ -3,10 +3,8 @@
 fn test_crate::foo::bar()
 {
     let @0: (); // return
-    let @1: (); // anonymous local
 
-    @1 := ()
-    @0 := move (@1)
+    @0 := ()
     @0 := ()
     return
 }
@@ -35,10 +33,8 @@ where
     [@TraitClause1]: core::marker::Sized<U>,
 {
     let @0: (); // return
-    let @1: (); // anonymous local
 
-    @1 := ()
-    @0 := move (@1)
+    @0 := ()
     @0 := ()
     return
 }
@@ -58,10 +54,8 @@ where
     [@TraitClause2]: core::marker::Sized<V>,
 {
     let @0: (); // return
-    let @1: (); // anonymous local
 
-    @1 := ()
-    @0 := move (@1)
+    @0 := ()
     @0 := ()
     return
 }
@@ -161,7 +155,6 @@ fn test_crate::foo()
     let @9: &'_ (Slice<bool>); // anonymous local
     let @10: &'_ (Slice<bool>); // anonymous local
     let @11: core::ops::range::RangeFrom<usize>[core::marker::Sized<usize>]; // anonymous local
-    let @12: (); // anonymous local
 
     @3 := core::option::Option::Some { 0: const (0 : i32) }
     @2 := &@3
@@ -185,8 +178,7 @@ fn test_crate::foo()
     @8 := &*(@9)
     @fake_read(@8)
     drop @8
-    @12 := ()
-    @0 := move (@12)
+    @0 := ()
     drop @9
     drop @7
     drop slice@4

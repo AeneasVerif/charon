@@ -12,47 +12,39 @@ fn test_crate::f1<'_0>(@1: &'_0 (Slice<u8>)) -> usize
     let @7: bool; // anonymous local
     let @8: u8; // anonymous local
     let @9: usize; // anonymous local
-    let @10: (); // anonymous local
-    let @11: (); // anonymous local
+    let @10: &'_ (Slice<u8>); // anonymous local
+    let @11: &'_ (u8); // anonymous local
     let @12: &'_ (Slice<u8>); // anonymous local
     let @13: &'_ (u8); // anonymous local
-    let @14: &'_ (Slice<u8>); // anonymous local
-    let @15: &'_ (u8); // anonymous local
 
     sampled@2 := const (0 : usize)
     @fake_read(sampled@2)
     @6 := const (0 : usize)
-    @12 := &*(a@1)
-    @13 := @SliceIndexShared<'_, u8>(move (@12), copy (@6))
-    @5 := copy (*(@13))
+    @10 := &*(a@1)
+    @11 := @SliceIndexShared<'_, u8>(move (@10), copy (@6))
+    @5 := copy (*(@11))
     @4 := move (@5) < const (42 : u8)
     if move (@4) {
         drop @6
         drop @5
         @9 := const (1 : usize)
-        @14 := &*(a@1)
-        @15 := @SliceIndexShared<'_, u8>(move (@14), copy (@9))
-        @8 := copy (*(@15))
+        @12 := &*(a@1)
+        @13 := @SliceIndexShared<'_, u8>(move (@12), copy (@9))
+        @8 := copy (*(@13))
         @7 := move (@8) < const (16 : u8)
         if move (@7) {
             drop @9
             drop @8
             sampled@2 := copy (sampled@2) + const (100 : usize)
-            @11 := ()
-            @3 := move (@11)
         }
         else {
             drop @9
             drop @8
-            @10 := ()
-            @3 := move (@10)
         }
     }
     else {
         drop @6
         drop @5
-        @10 := ()
-        @3 := move (@10)
     }
     drop @7
     drop @4
@@ -130,61 +122,54 @@ fn test_crate::f2<'_0, '_1>(@1: &'_0 (Slice<u8>), @2: &'_1 mut (Slice<i16>)) -> 
     let @7: &'_ (Slice<u8>); // anonymous local
     let iter@8: core::slice::iter::Chunks<'_, u8>[core::marker::Sized<u8>]; // local
     let @9: (); // anonymous local
-    let @10: (); // anonymous local
-    let @11: core::option::Option<&'_ (Slice<u8>)>[core::marker::Sized<&'_ (Slice<u8>)>]; // anonymous local
+    let @10: core::option::Option<&'_ (Slice<u8>)>[core::marker::Sized<&'_ (Slice<u8>)>]; // anonymous local
+    let @11: &'_ mut (core::slice::iter::Chunks<'_, u8>[core::marker::Sized<u8>]); // anonymous local
     let @12: &'_ mut (core::slice::iter::Chunks<'_, u8>[core::marker::Sized<u8>]); // anonymous local
-    let @13: &'_ mut (core::slice::iter::Chunks<'_, u8>[core::marker::Sized<u8>]); // anonymous local
-    let bytes@14: &'_ (Slice<u8>); // local
-    let b1@15: i16; // local
-    let @16: u8; // anonymous local
-    let @17: usize; // anonymous local
-    let b2@18: i16; // local
-    let @19: u8; // anonymous local
-    let @20: usize; // anonymous local
-    let b3@21: i16; // local
-    let @22: u8; // anonymous local
-    let @23: usize; // anonymous local
-    let d1@24: i16; // local
+    let bytes@13: &'_ (Slice<u8>); // local
+    let b1@14: i16; // local
+    let @15: u8; // anonymous local
+    let @16: usize; // anonymous local
+    let b2@17: i16; // local
+    let @18: u8; // anonymous local
+    let @19: usize; // anonymous local
+    let b3@20: i16; // local
+    let @21: u8; // anonymous local
+    let @22: usize; // anonymous local
+    let d1@23: i16; // local
+    let @24: i16; // anonymous local
     let @25: i16; // anonymous local
     let @26: i16; // anonymous local
     let @27: i16; // anonymous local
-    let @28: i16; // anonymous local
-    let d2@29: i16; // local
+    let d2@28: i16; // local
+    let @29: i16; // anonymous local
     let @30: i16; // anonymous local
     let @31: i16; // anonymous local
     let @32: i16; // anonymous local
-    let @33: i16; // anonymous local
-    let @34: (); // anonymous local
-    let @35: bool; // anonymous local
-    let @36: i16; // anonymous local
-    let @37: bool; // anonymous local
-    let @38: usize; // anonymous local
-    let @39: i16; // anonymous local
-    let @40: usize; // anonymous local
-    let @41: bool; // anonymous local
-    let @42: i16; // anonymous local
-    let @43: bool; // anonymous local
-    let @44: usize; // anonymous local
-    let @45: i16; // anonymous local
-    let @46: usize; // anonymous local
-    let @47: (); // anonymous local
-    let @48: i16; // anonymous local
-    let @49: (); // anonymous local
-    let @50: (); // anonymous local
-    let @51: i16; // anonymous local
-    let @52: (); // anonymous local
-    let @53: (); // anonymous local
-    let @54: (); // anonymous local
-    let @55: &'_ (Slice<u8>); // anonymous local
-    let @56: &'_ (u8); // anonymous local
-    let @57: &'_ (Slice<u8>); // anonymous local
-    let @58: &'_ (u8); // anonymous local
-    let @59: &'_ (Slice<u8>); // anonymous local
-    let @60: &'_ (u8); // anonymous local
-    let @61: &'_ mut (Slice<i16>); // anonymous local
-    let @62: &'_ mut (i16); // anonymous local
-    let @63: &'_ mut (Slice<i16>); // anonymous local
-    let @64: &'_ mut (i16); // anonymous local
+    let @33: (); // anonymous local
+    let @34: bool; // anonymous local
+    let @35: i16; // anonymous local
+    let @36: bool; // anonymous local
+    let @37: usize; // anonymous local
+    let @38: i16; // anonymous local
+    let @39: usize; // anonymous local
+    let @40: bool; // anonymous local
+    let @41: i16; // anonymous local
+    let @42: bool; // anonymous local
+    let @43: usize; // anonymous local
+    let @44: i16; // anonymous local
+    let @45: usize; // anonymous local
+    let @46: i16; // anonymous local
+    let @47: i16; // anonymous local
+    let @48: &'_ (Slice<u8>); // anonymous local
+    let @49: &'_ (u8); // anonymous local
+    let @50: &'_ (Slice<u8>); // anonymous local
+    let @51: &'_ (u8); // anonymous local
+    let @52: &'_ (Slice<u8>); // anonymous local
+    let @53: &'_ (u8); // anonymous local
+    let @54: &'_ mut (Slice<i16>); // anonymous local
+    let @55: &'_ mut (i16); // anonymous local
+    let @56: &'_ mut (Slice<i16>); // anonymous local
+    let @57: &'_ mut (i16); // anonymous local
 
     sampled@3 := const (0 : usize)
     @fake_read(sampled@3)
@@ -196,148 +181,132 @@ fn test_crate::f2<'_0, '_1>(@1: &'_0 (Slice<u8>), @2: &'_1 mut (Slice<i16>)) -> 
     @fake_read(@5)
     iter@8 := move (@5)
     loop {
-        @13 := &mut iter@8
-        @12 := &two-phase-mut *(@13)
-        @11 := core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::Chunks<'a, T>[@TraitClause0]}#71::next<'_, '_, u8>[core::marker::Sized<u8>](move (@12))
-        drop @12
-        @fake_read(@11)
-        match @11 {
+        @12 := &mut iter@8
+        @11 := &two-phase-mut *(@12)
+        @10 := core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::Chunks<'a, T>[@TraitClause0]}#71::next<'_, '_, u8>[core::marker::Sized<u8>](move (@11))
+        drop @11
+        @fake_read(@10)
+        match @10 {
             0 => {
                 break 0
             },
             1 => {
-                bytes@14 := copy ((@11 as variant @1).0)
-                @17 := const (0 : usize)
-                @59 := &*(bytes@14)
-                @60 := @SliceIndexShared<'_, u8>(move (@59), copy (@17))
-                @16 := copy (*(@60))
-                b1@15 := cast<u8, i16>(move (@16))
+                bytes@13 := copy ((@10 as variant @1).0)
+                @16 := const (0 : usize)
+                @52 := &*(bytes@13)
+                @53 := @SliceIndexShared<'_, u8>(move (@52), copy (@16))
+                @15 := copy (*(@53))
+                b1@14 := cast<u8, i16>(move (@15))
+                drop @15
+                @fake_read(b1@14)
                 drop @16
-                @fake_read(b1@15)
-                drop @17
-                @20 := const (1 : usize)
-                @57 := &*(bytes@14)
-                @58 := @SliceIndexShared<'_, u8>(move (@57), copy (@20))
-                @19 := copy (*(@58))
-                b2@18 := cast<u8, i16>(move (@19))
+                @19 := const (1 : usize)
+                @50 := &*(bytes@13)
+                @51 := @SliceIndexShared<'_, u8>(move (@50), copy (@19))
+                @18 := copy (*(@51))
+                b2@17 := cast<u8, i16>(move (@18))
+                drop @18
+                @fake_read(b2@17)
                 drop @19
-                @fake_read(b2@18)
-                drop @20
-                @23 := const (2 : usize)
-                @55 := &*(bytes@14)
-                @56 := @SliceIndexShared<'_, u8>(move (@55), copy (@23))
-                @22 := copy (*(@56))
-                b3@21 := cast<u8, i16>(move (@22))
+                @22 := const (2 : usize)
+                @48 := &*(bytes@13)
+                @49 := @SliceIndexShared<'_, u8>(move (@48), copy (@22))
+                @21 := copy (*(@49))
+                b3@20 := cast<u8, i16>(move (@21))
+                drop @21
+                @fake_read(b3@20)
                 drop @22
-                @fake_read(b3@21)
-                drop @23
-                @27 := copy (b2@18)
-                @26 := move (@27) & const (15 : i16)
-                drop @27
-                @25 := move (@26) << const (8 : i32)
+                @26 := copy (b2@17)
+                @25 := move (@26) & const (15 : i16)
                 drop @26
-                @28 := copy (b1@15)
-                d1@24 := move (@25) | move (@28)
-                drop @28
+                @24 := move (@25) << const (8 : i32)
                 drop @25
-                @fake_read(d1@24)
-                @31 := copy (b3@21)
-                @30 := move (@31) << const (4 : i32)
-                drop @31
-                @33 := copy (b2@18)
-                @32 := move (@33) >> const (4 : i32)
-                drop @33
-                d2@29 := move (@30) | move (@32)
-                drop @32
+                @27 := copy (b1@14)
+                d1@23 := move (@24) | move (@27)
+                drop @27
+                drop @24
+                @fake_read(d1@23)
+                @30 := copy (b3@20)
+                @29 := move (@30) << const (4 : i32)
                 drop @30
-                @fake_read(d2@29)
-                @36 := copy (d1@24)
-                @48 := test_crate::FIELD_MODULUS
-                @35 := move (@36) < move (@48)
-                if move (@35) {
-                    drop @36
-                    @38 := copy (sampled@3)
-                    @37 := move (@38) < const (16 : usize)
-                    if move (@37) {
+                @32 := copy (b2@17)
+                @31 := move (@32) >> const (4 : i32)
+                drop @32
+                d2@28 := move (@29) | move (@31)
+                drop @31
+                drop @29
+                @fake_read(d2@28)
+                @35 := copy (d1@23)
+                @46 := test_crate::FIELD_MODULUS
+                @34 := move (@35) < move (@46)
+                if move (@34) {
+                    drop @35
+                    @37 := copy (sampled@3)
+                    @36 := move (@37) < const (16 : usize)
+                    if move (@36) {
+                        drop @37
+                        @38 := copy (d1@23)
+                        @39 := copy (sampled@3)
+                        @54 := &mut *(result@2)
+                        @55 := @SliceIndexMut<'_, i16>(move (@54), copy (@39))
+                        *(@55) := move (@38)
                         drop @38
-                        @39 := copy (d1@24)
-                        @40 := copy (sampled@3)
-                        @61 := &mut *(result@2)
-                        @62 := @SliceIndexMut<'_, i16>(move (@61), copy (@40))
-                        *(@62) := move (@39)
                         drop @39
-                        drop @40
                         sampled@3 := copy (sampled@3) + const (1 : usize)
-                        @49 := ()
-                        @34 := move (@49)
                     }
                     else {
-                        drop @38
-                        @50 := ()
-                        @34 := move (@50)
+                        drop @37
                     }
                 }
                 else {
-                    drop @36
-                    @50 := ()
-                    @34 := move (@50)
+                    drop @35
                 }
-                drop @37
-                drop @35
+                drop @36
                 drop @34
-                @42 := copy (d2@29)
-                @51 := test_crate::FIELD_MODULUS
-                @41 := move (@42) < move (@51)
-                if move (@41) {
-                    drop @42
-                    @44 := copy (sampled@3)
-                    @43 := move (@44) < const (16 : usize)
-                    if move (@43) {
+                drop @33
+                @41 := copy (d2@28)
+                @47 := test_crate::FIELD_MODULUS
+                @40 := move (@41) < move (@47)
+                if move (@40) {
+                    drop @41
+                    @43 := copy (sampled@3)
+                    @42 := move (@43) < const (16 : usize)
+                    if move (@42) {
+                        drop @43
+                        @44 := copy (d2@28)
+                        @45 := copy (sampled@3)
+                        @56 := &mut *(result@2)
+                        @57 := @SliceIndexMut<'_, i16>(move (@56), copy (@45))
+                        *(@57) := move (@44)
                         drop @44
-                        @45 := copy (d2@29)
-                        @46 := copy (sampled@3)
-                        @63 := &mut *(result@2)
-                        @64 := @SliceIndexMut<'_, i16>(move (@63), copy (@46))
-                        *(@64) := move (@45)
                         drop @45
-                        drop @46
                         sampled@3 := copy (sampled@3) + const (1 : usize)
-                        @52 := ()
-                        @10 := move (@52)
                     }
                     else {
-                        drop @44
-                        @53 := ()
-                        @10 := move (@53)
+                        drop @43
                     }
                 }
                 else {
-                    drop @42
-                    @53 := ()
-                    @10 := move (@53)
+                    drop @41
                 }
-                drop @43
-                drop @41
-                drop d2@29
-                drop d1@24
-                drop b3@21
-                drop b2@18
-                drop b1@15
-                drop bytes@14
-                drop @13
-                drop @11
+                drop @42
+                drop @40
+                drop d2@28
+                drop d1@23
+                drop b3@20
+                drop b2@17
+                drop b1@14
+                drop bytes@13
+                drop @12
                 drop @10
-                @54 := ()
-                @9 := move (@54)
+                drop @9
                 continue 0
             },
         }
     }
-    @47 := ()
-    @4 := move (@47)
-    drop @13
-    drop @11
+    drop @12
     drop @10
+    drop @9
     drop iter@8
     drop @5
     drop @4

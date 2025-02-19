@@ -12,19 +12,14 @@ fn test_crate::use_union()
     let one@1: test_crate::Foo; // local
     let @2: (); // anonymous local
     let _two@3: Array<u32, 2 : usize>; // local
-    let @4: (); // anonymous local
-    let @5: (); // anonymous local
 
     one@1 := test_crate::Foo { one: const (42 : u64) }
     @fake_read(one@1)
     (one@1).one := const (43 : u64)
-    @4 := ()
-    @2 := move (@4)
     drop @2
     _two@3 := copy ((one@1).two)
     @fake_read(_two@3)
-    @5 := ()
-    @0 := move (@5)
+    @0 := ()
     drop _two@3
     drop one@1
     @0 := ()

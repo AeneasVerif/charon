@@ -23,6 +23,7 @@ pub mod remove_drop_never;
 pub mod remove_dynamic_checks;
 pub mod remove_nops;
 pub mod remove_read_discriminant;
+pub mod remove_unit_locals;
 pub mod remove_unused_locals;
 pub mod remove_unused_methods;
 pub mod reorder_decls;
@@ -120,9 +121,9 @@ pub static ULLBC_PASSES: &[Pass] = &[
     // of Aeneas, it means the return variable contains ⊥ upon returning.
     // For this reason, when the function has return type unit, we insert
     // an extra assignment just before returning.
-    // This also applies to globals (for checking or executing code before
-    // the main or at compile-time).
     UnstructuredBody(&insert_assign_return_unit::Transform),
+    // # Micro-pass: remove locals of type `()` which show up a lot.
+    UnstructuredBody(&remove_unit_locals::Transform),
     // # Micro-pass: remove the drops of locals whose type is `Never` (`!`). This
     // is in preparation of the next transformation.
     UnstructuredBody(&remove_drop_never::Transform),

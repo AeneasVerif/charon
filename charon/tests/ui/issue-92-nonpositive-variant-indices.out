@@ -10,24 +10,18 @@ fn test_crate::main()
 {
     let @0: (); // return
     let @1: test_crate::Ordering; // anonymous local
-    let @2: (); // anonymous local
-    let @3: (); // anonymous local
-    let @4: (); // anonymous local
 
     @1 := test_crate::Ordering::Less {  }
     @fake_read(@1)
     match @1 {
         0 => {
-            @2 := ()
-            @0 := move (@2)
+            @0 := ()
         },
         1 => {
-            @3 := ()
-            @0 := move (@3)
+            @0 := ()
         },
         2 => {
-            @4 := ()
-            @0 := move (@4)
+            @0 := ()
         },
     }
     drop @1

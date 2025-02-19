@@ -16,7 +16,6 @@ fn test_crate::call_unsafe_fn()
     let x@1: *const u32; // local
     let @2: u32; // anonymous local
     let @3: *const u32; // anonymous local
-    let @4: (); // anonymous local
 
     x@1 := core::ptr::null<u32>[core::ptr::metadata::Thin<u32>]()
     @fake_read(x@1)
@@ -25,8 +24,7 @@ fn test_crate::call_unsafe_fn()
     drop @3
     @fake_read(@2)
     drop @2
-    @4 := ()
-    @0 := move (@4)
+    @0 := ()
     drop x@1
     @0 := ()
     return
@@ -37,15 +35,13 @@ fn test_crate::deref_raw_ptr()
     let @0: (); // return
     let x@1: *const u32; // local
     let @2: u32; // anonymous local
-    let @3: (); // anonymous local
 
     x@1 := core::ptr::null<u32>[core::ptr::metadata::Thin<u32>]()
     @fake_read(x@1)
     @2 := copy (*(x@1))
     @fake_read(@2)
     drop @2
-    @3 := ()
-    @0 := move (@3)
+    @0 := ()
     drop x@1
     @0 := ()
     return
@@ -70,14 +66,12 @@ fn test_crate::access_mutable_static()
     let @0: (); // return
     let @1: *mut usize; // anonymous local
     let @2: *mut usize; // anonymous local
-    let @3: (); // anonymous local
 
     @2 := &raw mut test_crate::COUNTER
     @1 := move (@2)
     *(@1) := copy (*(@1)) + const (1 : usize)
     drop @1
-    @3 := ()
-    @0 := move (@3)
+    @0 := ()
     @0 := ()
     return
 }
@@ -93,14 +87,12 @@ fn test_crate::access_union_field()
     let @0: (); // return
     let one@1: test_crate::Foo; // local
     let _two@2: Array<u32, 2 : usize>; // local
-    let @3: (); // anonymous local
 
     one@1 := test_crate::Foo { one: const (42 : u64) }
     @fake_read(one@1)
     _two@2 := copy ((one@1).two)
     @fake_read(_two@2)
-    @3 := ()
-    @0 := move (@3)
+    @0 := ()
     drop _two@2
     drop one@1
     @0 := ()

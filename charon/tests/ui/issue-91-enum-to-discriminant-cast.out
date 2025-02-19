@@ -66,7 +66,6 @@ fn test_crate::main()
     let @17: bool; // anonymous local
     let @18: bool; // anonymous local
     let @19: bool; // anonymous local
-    let @20: (); // anonymous local
 
     x@1 := test_crate::Foo::A {  }
     @fake_read(x@1)
@@ -125,8 +124,7 @@ fn test_crate::main()
     drop @14
     @fake_read(@13)
     drop @13
-    @20 := ()
-    @0 := move (@20)
+    @0 := ()
     drop x@12
     drop x@1
     @0 := ()

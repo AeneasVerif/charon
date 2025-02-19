@@ -13,10 +13,8 @@ where
     [@TraitClause1]: for<'_0> test_crate::Trait<'_0_0, T, &'_ (())>,
 {
     let @0: (); // return
-    let @1: (); // anonymous local
 
-    @1 := ()
-    @0 := move (@1)
+    @0 := ()
     @0 := ()
     return
 }

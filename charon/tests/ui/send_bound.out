@@ -11,10 +11,8 @@ where
 {
     let @0: (); // return
     let _msg@1: M; // arg #1
-    let @2: (); // anonymous local
 
-    @2 := ()
-    @0 := move (@2)
+    @0 := ()
     drop _msg@1
     @0 := ()
     return
@@ -25,14 +23,12 @@ fn test_crate::main()
     let @0: (); // return
     let @1: (); // anonymous local
     let @2: (); // anonymous local
-    let @3: (); // anonymous local
 
     @2 := ()
     @1 := test_crate::foo<()>[core::marker::Sized<()>, core::marker::Send<()>](move (@2))
     drop @2
     drop @1
-    @3 := ()
-    @0 := move (@3)
+    @0 := ()
     @0 := ()
     return
 }

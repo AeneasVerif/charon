@@ -71,7 +71,6 @@ fn test_crate::foo()
     let ref_b@1: core::cell::RefCell<bool>; // local
     let @2: core::result::Result<core::cell::Ref<'_, bool>, core::cell::BorrowError>[core::marker::Sized<core::cell::Ref<'_, bool>>, core::marker::Sized<core::cell::BorrowError>]; // anonymous local
     let @3: &'_ (core::cell::RefCell<bool>); // anonymous local
-    let @4: (); // anonymous local
 
     ref_b@1 := core::cell::{core::cell::RefCell<T>}#21::new<bool>[core::marker::Sized<bool>](const (false))
     @fake_read(ref_b@1)
@@ -82,8 +81,7 @@ fn test_crate::foo()
     @fake_read(@2)
     drop @2
     drop @2
-    @4 := ()
-    @0 := move (@4)
+    @0 := ()
     drop ref_b@1
     @0 := ()
     return

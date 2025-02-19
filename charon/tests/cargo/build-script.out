@@ -13,10 +13,8 @@ global test_cargo_build_script::FOO: u8 = test_cargo_build_script::FOO()
 fn test_cargo_build_script::main()
 {
     let @0: (); // return
-    let @1: (); // anonymous local
 
-    @1 := ()
-    @0 := move (@1)
+    @0 := ()
     @0 := ()
     return
 }

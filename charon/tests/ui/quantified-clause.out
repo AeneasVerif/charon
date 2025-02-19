@@ -29,10 +29,8 @@ where
 {
     let @0: (); // return
     let _f@1: F; // arg #1
-    let @2: (); // anonymous local
 
-    @2 := ()
-    @0 := move (@2)
+    @0 := ()
     drop _f@1
     @0 := ()
     return
@@ -45,10 +43,8 @@ where
     for<'a> &'b (T) : 'a,
 {
     let @0: (); // return
-    let @1: (); // anonymous local
 
-    @1 := ()
-    @0 := move (@1)
+    @0 := ()
     @0 := ()
     return
 }
