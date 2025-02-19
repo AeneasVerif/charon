@@ -17,18 +17,9 @@ impl UllbcPass for Transform {
                 for block in &mut body.body {
                     if let RawTerminator::Return = block.terminator.content {
                         let return_place = body.locals.return_place();
-                        let unit_value = Rvalue::Aggregate(
-                            AggregateKind::Adt(
-                                TypeId::Tuple,
-                                None,
-                                None,
-                                GenericArgs::empty(GenericsSource::Builtin),
-                            ),
-                            Vec::new(),
-                        );
                         let assign_st = Statement::new(
                             block.terminator.span,
-                            RawStatement::Assign(return_place, unit_value),
+                            RawStatement::Assign(return_place, Rvalue::unit_value()),
                         );
                         block.statements.push(assign_st)
                     }

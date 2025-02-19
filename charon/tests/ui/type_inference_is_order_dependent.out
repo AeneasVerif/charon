@@ -83,7 +83,6 @@ where
     let @10: &'_ (U); // anonymous local
     let @11: &'_ (U); // anonymous local
     let @12: U; // anonymous local
-    let @13: (); // anonymous local
 
     @5 := [const (""), const ("
 "); 2 : usize]
@@ -111,8 +110,7 @@ where
     drop @5
     drop @4
     drop @1
-    @13 := ()
-    @0 := move (@13)
+    @0 := ()
     @0 := ()
     return
 }

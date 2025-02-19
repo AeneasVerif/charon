@@ -43,6 +43,20 @@ impl Place {
     }
 }
 
+impl Rvalue {
+    pub fn unit_value() -> Self {
+        Rvalue::Aggregate(
+            AggregateKind::Adt(
+                TypeId::Tuple,
+                None,
+                None,
+                GenericArgs::empty(GenericsSource::Builtin),
+            ),
+            Vec::new(),
+        )
+    }
+}
+
 impl BorrowKind {
     pub fn mutable(x: bool) -> Self {
         if x {

@@ -12,10 +12,8 @@ fn test_crate::use_type<'_0>(@1: &'_0 (test_crate::Type))
 {
     let @0: (); // return
     let _x@1: &'_ (test_crate::Type); // arg #1
-    let @2: (); // anonymous local
 
-    @2 := ()
-    @0 := move (@2)
+    @0 := ()
     @0 := ()
     return
 }

@@ -57,10 +57,8 @@ where
     let @0: (); // return
     let @1: &'_ (dyn (exists(TODO))); // arg #1
     let @2: &'_ (dyn (exists(TODO))); // arg #2
-    let @3: (); // anonymous local
 
-    @3 := ()
-    @0 := move (@3)
+    @0 := ()
     @0 := ()
     return
 }
@@ -69,10 +67,8 @@ fn test_crate::bar<'_0>(@1: &'_0 (dyn (exists(TODO))))
 {
     let @0: (); // return
     let @1: &'_ (dyn (exists(TODO))); // arg #1
-    let @2: (); // anonymous local
 
-    @2 := ()
-    @0 := move (@2)
+    @0 := ()
     @0 := ()
     return
 }

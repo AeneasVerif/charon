@@ -40,7 +40,6 @@ fn test_cargo_dependencies::silly_incr<'_0>(@1: &'_0 mut (u32))
     let @2: (); // anonymous local
     let @3: &'_ mut (u32); // anonymous local
     let @4: fn(u32) -> u32; // anonymous local
-    let @5: (); // anonymous local
 
     @3 := &two-phase-mut *(x@1)
     @4 := {test_cargo_dependencies::silly_incr::closure} {}
@@ -48,8 +47,7 @@ fn test_cargo_dependencies::silly_incr<'_0>(@1: &'_0 mut (u32))
     drop @4
     drop @3
     drop @2
-    @5 := ()
-    @0 := move (@5)
+    @0 := ()
     @0 := ()
     return
 }
@@ -96,8 +94,6 @@ fn test_cargo_dependencies::main()
     let @19: &'_ (u32); // anonymous local
     let @20: &'_ (u32); // anonymous local
     let @21: core::option::Option<core::fmt::Arguments<'_>>[core::marker::Sized<core::fmt::Arguments<'_>>]; // anonymous local
-    let @22: (); // anonymous local
-    let @23: (); // anonymous local
 
     x@1 := const (0 : u32)
     @fake_read(x@1)
@@ -136,16 +132,13 @@ fn test_cargo_dependencies::main()
     }
     drop @14
     drop @13
-    @22 := ()
-    @5 := move (@22)
     drop @12
     drop right_val@11
     drop left_val@10
     drop @9
     drop @6
     drop @5
-    @23 := ()
-    @0 := move (@23)
+    @0 := ()
     drop x@1
     @0 := ()
     return

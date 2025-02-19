@@ -73,11 +73,9 @@ fn test_crate::incr<'a>(@1: &'a mut (u32))
 {
     let @0: (); // return
     let x@1: &'_ mut (u32); // arg #1
-    let @2: (); // anonymous local
 
     *(x@1) := copy (*(x@1)) + const (1 : u32)
-    @2 := ()
-    @0 := move (@2)
+    @0 := ()
     @0 := ()
     return
 }
@@ -95,7 +93,6 @@ fn test_crate::use_incr()
     let @8: (); // anonymous local
     let @9: &'_ mut (u32); // anonymous local
     let @10: &'_ mut (u32); // anonymous local
-    let @11: (); // anonymous local
 
     x@1 := const (0 : u32)
     @fake_read(x@1)
@@ -117,8 +114,7 @@ fn test_crate::use_incr()
     drop @9
     drop @10
     drop @8
-    @11 := ()
-    @0 := move (@11)
+    @0 := ()
     drop x@1
     @0 := ()
     return
@@ -257,57 +253,47 @@ where
     let l@1: &'_ mut (test_crate::CList<T>[@TraitClause0]); // arg #1
     let i@2: u32; // arg #2
     let @3: (); // anonymous local
-    let @4: (); // anonymous local
-    let x@5: &'_ mut (T); // local
-    let tl@6: &'_ mut (alloc::boxed::Box<test_crate::CList<T>[@TraitClause0]>[core::marker::Sized<alloc::alloc::Global>]); // local
-    let @7: (); // anonymous local
-    let @8: bool; // anonymous local
-    let @9: u32; // anonymous local
-    let @10: &'_ mut (test_crate::CList<T>[@TraitClause0]); // anonymous local
-    let @11: (); // anonymous local
-    let @12: (); // anonymous local
-    let @13: (); // anonymous local
-    let @14: (); // anonymous local
+    let x@4: &'_ mut (T); // local
+    let tl@5: &'_ mut (alloc::boxed::Box<test_crate::CList<T>[@TraitClause0]>[core::marker::Sized<alloc::alloc::Global>]); // local
+    let @6: (); // anonymous local
+    let @7: bool; // anonymous local
+    let @8: u32; // anonymous local
+    let @9: &'_ mut (test_crate::CList<T>[@TraitClause0]); // anonymous local
+    let @10: (); // anonymous local
 
     loop {
         @fake_read(l@1)
         match *(l@1) {
             0 => {
-                x@5 := &mut (*(l@1) as variant @0).0
-                tl@6 := &mut (*(l@1) as variant @0).1
-                @9 := copy (i@2)
-                @8 := move (@9) == const (0 : u32)
-                if move (@8) {
+                x@4 := &mut (*(l@1) as variant @0).0
+                tl@5 := &mut (*(l@1) as variant @0).1
+                @8 := copy (i@2)
+                @7 := move (@8) == const (0 : u32)
+                if move (@7) {
                 }
                 else {
-                    drop @9
-                    @13 := ()
-                    @7 := move (@13)
                     drop @8
                     drop @7
+                    drop @6
                     i@2 := copy (i@2) - const (1 : u32)
-                    @10 := &mut *(*(tl@6))
-                    l@1 := move (@10)
-                    drop @10
-                    @14 := ()
-                    @4 := move (@14)
-                    drop tl@6
-                    drop x@5
+                    @9 := &mut *(*(tl@5))
+                    l@1 := move (@9)
+                    drop @9
+                    drop tl@5
+                    drop x@4
                     continue 0
                 }
-                drop @9
-                @0 := &mut *(x@5)
                 drop @8
+                @0 := &mut *(x@4)
                 drop @7
-                drop tl@6
-                drop x@5
+                drop @6
+                drop tl@5
+                drop x@4
                 drop @3
                 return
             },
             _ => {
-                @12 := ()
-                @3 := move (@12)
-                drop @11
+                drop @10
                 drop @3
                 panic(core::panicking::panic_explicit)
             },

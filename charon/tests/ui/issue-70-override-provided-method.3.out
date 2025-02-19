@@ -62,10 +62,8 @@ where
     [@TraitClause1]: core::marker::Copy<T>,
 {
     let @0: (); // return
-    let @1: (); // anonymous local
 
-    @1 := ()
-    @0 := move (@1)
+    @0 := ()
     @0 := ()
     return
 }
@@ -85,7 +83,6 @@ where
     let @3: bool; // anonymous local
     let @4: &'_ (U); // anonymous local
     let @5: &'_ (core::option::Option<T>[@TraitClause0]); // anonymous local
-    let @6: (); // anonymous local
 
     @4 := &y@2
     @5 := &x@1
@@ -98,8 +95,7 @@ where
     else {
         drop @5
         drop @4
-        @6 := ()
-        @0 := move (@6)
+        @0 := ()
     }
     drop @3
     drop y@2
@@ -132,10 +128,8 @@ where
     [@TraitClause1]: core::marker::Copy<T>,
 {
     let @0: (); // return
-    let @1: (); // anonymous local
 
-    @1 := ()
-    @0 := move (@1)
+    @0 := ()
     @0 := ()
     return
 }
@@ -153,7 +147,6 @@ where
     let @3: bool; // anonymous local
     let @4: &'_ (U); // anonymous local
     let @5: &'_ (core::option::Option<T>[@TraitClause0]); // anonymous local
-    let @6: (); // anonymous local
 
     @4 := &y@2
     @5 := &x@1
@@ -166,8 +159,7 @@ where
     else {
         drop @5
         drop @4
-        @6 := ()
-        @0 := move (@6)
+        @0 := ()
     }
     drop @3
     drop y@2
@@ -200,7 +192,6 @@ where
     let @3: bool; // anonymous local
     let @4: &'_ (U); // anonymous local
     let @5: &'_ (T); // anonymous local
-    let @6: (); // anonymous local
 
     @4 := &y@2
     @5 := &x@1
@@ -213,8 +204,7 @@ where
     else {
         drop @5
         drop @4
-        @6 := ()
-        @0 := move (@6)
+        @0 := ()
     }
     drop @3
     drop y@2

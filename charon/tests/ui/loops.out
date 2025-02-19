@@ -7,45 +7,38 @@ fn test_crate::test_loop1(@1: u32) -> u32
     let i@2: u32; // local
     let s@3: u32; // local
     let @4: (); // anonymous local
-    let @5: (); // anonymous local
-    let @6: bool; // anonymous local
+    let @5: bool; // anonymous local
+    let @6: u32; // anonymous local
     let @7: u32; // anonymous local
     let @8: u32; // anonymous local
-    let @9: u32; // anonymous local
-    let @10: (); // anonymous local
-    let @11: (); // anonymous local
-    let @12: (); // anonymous local
+    let @9: (); // anonymous local
 
     i@2 := const (0 : u32)
     @fake_read(i@2)
     s@3 := const (0 : u32)
     @fake_read(s@3)
     loop {
-        @7 := copy (i@2)
-        @8 := copy (max@1)
-        @6 := move (@7) < move (@8)
-        if move (@6) {
-            drop @8
+        @6 := copy (i@2)
+        @7 := copy (max@1)
+        @5 := move (@6) < move (@7)
+        if move (@5) {
             drop @7
-            @9 := copy (i@2)
-            s@3 := copy (s@3) + move (@9)
-            drop @9
-            i@2 := copy (i@2) + const (1 : u32)
-            @11 := ()
-            @5 := move (@11)
             drop @6
+            @8 := copy (i@2)
+            s@3 := copy (s@3) + move (@8)
+            drop @8
+            i@2 := copy (i@2) + const (1 : u32)
+            drop @5
             continue 0
         }
         else {
             break 0
         }
     }
-    drop @8
     drop @7
-    @12 := ()
-    @4 := move (@12)
-    drop @10
     drop @6
+    drop @9
+    drop @5
     drop @4
     s@3 := copy (s@3) * const (2 : u32)
     @0 := copy (s@3)
@@ -61,67 +54,54 @@ fn test_crate::test_loop2(@1: u32) -> u32
     let i@2: u32; // local
     let s@3: u32; // local
     let @4: (); // anonymous local
-    let @5: (); // anonymous local
-    let @6: bool; // anonymous local
+    let @5: bool; // anonymous local
+    let @6: u32; // anonymous local
     let @7: u32; // anonymous local
-    let @8: u32; // anonymous local
-    let @9: (); // anonymous local
-    let @10: bool; // anonymous local
+    let @8: (); // anonymous local
+    let @9: bool; // anonymous local
+    let @10: u32; // anonymous local
     let @11: u32; // anonymous local
-    let @12: u32; // anonymous local
-    let @13: (); // anonymous local
-    let @14: (); // anonymous local
-    let @15: (); // anonymous local
-    let @16: (); // anonymous local
-    let @17: (); // anonymous local
+    let @12: (); // anonymous local
 
     i@2 := const (0 : u32)
     @fake_read(i@2)
     s@3 := const (0 : u32)
     @fake_read(s@3)
     loop {
-        @7 := copy (i@2)
-        @8 := copy (max@1)
-        @6 := move (@7) < move (@8)
-        if move (@6) {
-            drop @8
+        @6 := copy (i@2)
+        @7 := copy (max@1)
+        @5 := move (@6) < move (@7)
+        if move (@5) {
             drop @7
-            @11 := copy (i@2)
-            @10 := move (@11) == const (17 : u32)
-            if move (@10) {
+            drop @6
+            @10 := copy (i@2)
+            @9 := move (@10) == const (17 : u32)
+            if move (@9) {
             }
             else {
-                drop @11
-                @16 := ()
-                @9 := move (@16)
                 drop @10
                 drop @9
-                @12 := copy (i@2)
-                s@3 := copy (s@3) + move (@12)
-                drop @12
+                drop @8
+                @11 := copy (i@2)
+                s@3 := copy (s@3) + move (@11)
+                drop @11
                 i@2 := copy (i@2) + const (1 : u32)
-                @17 := ()
-                @5 := move (@17)
-                drop @6
+                drop @5
                 continue 0
             }
-            drop @11
-            @15 := ()
-            @4 := move (@15)
             drop @10
             drop @9
+            drop @8
             break 0
         }
         else {
-            drop @8
             drop @7
-            @14 := ()
-            @4 := move (@14)
-            drop @13
+            drop @6
+            drop @12
             break 0
         }
     }
-    drop @6
+    drop @5
     drop @4
     @0 := copy (s@3)
     drop s@3
@@ -137,27 +117,22 @@ fn test_crate::test_loop3(@1: u32) -> u32
     let j@3: u32; // local
     let s@4: u32; // local
     let @5: (); // anonymous local
-    let @6: (); // anonymous local
-    let @7: bool; // anonymous local
+    let @6: bool; // anonymous local
+    let @7: u32; // anonymous local
     let @8: u32; // anonymous local
-    let @9: u32; // anonymous local
-    let @10: (); // anonymous local
-    let @11: bool; // anonymous local
+    let @9: (); // anonymous local
+    let @10: bool; // anonymous local
+    let @11: u32; // anonymous local
     let @12: u32; // anonymous local
-    let @13: u32; // anonymous local
-    let @14: (); // anonymous local
-    let @15: bool; // anonymous local
+    let @13: (); // anonymous local
+    let @14: bool; // anonymous local
+    let @15: u32; // anonymous local
     let @16: u32; // anonymous local
     let @17: u32; // anonymous local
     let @18: u32; // anonymous local
-    let @19: u32; // anonymous local
-    let @20: (); // anonymous local
-    let @21: u32; // anonymous local
-    let @22: (); // anonymous local
-    let @23: (); // anonymous local
-    let @24: (); // anonymous local
-    let @25: (); // anonymous local
-    let @26: (); // anonymous local
+    let @19: (); // anonymous local
+    let @20: u32; // anonymous local
+    let @21: (); // anonymous local
 
     i@2 := const (0 : u32)
     @fake_read(i@2)
@@ -166,79 +141,71 @@ fn test_crate::test_loop3(@1: u32) -> u32
     s@4 := const (0 : u32)
     @fake_read(s@4)
     loop {
-        @8 := copy (i@2)
-        @9 := copy (max@1)
-        @7 := move (@8) < move (@9)
-        if move (@7) {
-            drop @9
+        @7 := copy (i@2)
+        @8 := copy (max@1)
+        @6 := move (@7) < move (@8)
+        if move (@6) {
             drop @8
+            drop @7
             loop {
-                @12 := copy (j@3)
-                @13 := copy (max@1)
-                @11 := move (@12) < move (@13)
-                if move (@11) {
-                    drop @13
+                @11 := copy (j@3)
+                @12 := copy (max@1)
+                @10 := move (@11) < move (@12)
+                if move (@10) {
                     drop @12
-                    @17 := copy (i@2)
-                    @18 := copy (j@3)
-                    @16 := move (@17) + move (@18)
-                    drop @18
+                    drop @11
+                    @16 := copy (i@2)
+                    @17 := copy (j@3)
+                    @15 := move (@16) + move (@17)
                     drop @17
-                    @15 := move (@16) == const (17 : u32)
-                    if move (@15) {
+                    drop @16
+                    @14 := move (@15) == const (17 : u32)
+                    if move (@14) {
                     }
                     else {
-                        drop @16
-                        @26 := ()
-                        @14 := move (@26)
                         drop @15
                         drop @14
-                        @19 := copy (i@2)
-                        s@4 := copy (s@4) + move (@19)
-                        drop @19
+                        drop @13
+                        @18 := copy (i@2)
+                        s@4 := copy (s@4) + move (@18)
+                        drop @18
                         j@3 := copy (j@3) + const (1 : u32)
-                        drop @11
                         drop @10
-                        drop @7
+                        drop @9
+                        drop @6
                         continue 1
                     }
-                    drop @16
                     drop @15
                     drop @14
-                    drop @11
+                    drop @13
+                    drop @10
                     continue 0
                 }
                 else {
                     break 0
                 }
             }
-            drop @13
             drop @12
-            @24 := ()
-            @10 := move (@24)
-            drop @20
             drop @11
+            drop @19
             drop @10
+            drop @9
             j@3 := const (0 : u32)
-            @21 := copy (i@2)
-            s@4 := copy (s@4) + move (@21)
-            drop @21
+            @20 := copy (i@2)
+            s@4 := copy (s@4) + move (@20)
+            drop @20
             i@2 := copy (i@2) + const (1 : u32)
-            @25 := ()
-            @6 := move (@25)
-            drop @7
+            drop @6
             continue 0
         }
         else {
             break 0
         }
     }
-    drop @9
     drop @8
-    @23 := ()
-    @5 := move (@23)
-    drop @22
     drop @7
+    drop @21
+    drop @6
     drop @5
     @0 := copy (s@4)
     drop s@4
@@ -255,28 +222,22 @@ fn test_crate::test_loop4(@1: u32) -> u32
     let j@3: u32; // local
     let s@4: u32; // local
     let @5: (); // anonymous local
-    let @6: (); // anonymous local
-    let @7: bool; // anonymous local
+    let @6: bool; // anonymous local
+    let @7: u32; // anonymous local
     let @8: u32; // anonymous local
-    let @9: u32; // anonymous local
-    let @10: (); // anonymous local
-    let @11: bool; // anonymous local
+    let @9: (); // anonymous local
+    let @10: bool; // anonymous local
+    let @11: u32; // anonymous local
     let @12: u32; // anonymous local
-    let @13: u32; // anonymous local
-    let @14: (); // anonymous local
-    let @15: bool; // anonymous local
+    let @13: (); // anonymous local
+    let @14: bool; // anonymous local
+    let @15: u32; // anonymous local
     let @16: u32; // anonymous local
     let @17: u32; // anonymous local
     let @18: u32; // anonymous local
-    let @19: u32; // anonymous local
-    let @20: (); // anonymous local
-    let @21: u32; // anonymous local
-    let @22: (); // anonymous local
-    let @23: (); // anonymous local
-    let @24: (); // anonymous local
-    let @25: (); // anonymous local
-    let @26: (); // anonymous local
-    let @27: (); // anonymous local
+    let @19: (); // anonymous local
+    let @20: u32; // anonymous local
+    let @21: (); // anonymous local
 
     i@2 := const (1 : u32)
     @fake_read(i@2)
@@ -285,46 +246,42 @@ fn test_crate::test_loop4(@1: u32) -> u32
     s@4 := const (0 : u32)
     @fake_read(s@4)
     loop {
-        @8 := copy (i@2)
-        @9 := copy (max@1)
-        @7 := move (@8) < move (@9)
-        if move (@7) {
-            drop @9
+        @7 := copy (i@2)
+        @8 := copy (max@1)
+        @6 := move (@7) < move (@8)
+        if move (@6) {
             drop @8
+            drop @7
             loop {
-                @12 := copy (j@3)
-                @13 := copy (max@1)
-                @11 := move (@12) < move (@13)
-                if move (@11) {
-                    drop @13
+                @11 := copy (j@3)
+                @12 := copy (max@1)
+                @10 := move (@11) < move (@12)
+                if move (@10) {
                     drop @12
-                    @17 := copy (i@2)
-                    @18 := copy (j@3)
-                    @16 := move (@17) + move (@18)
-                    drop @18
+                    drop @11
+                    @16 := copy (i@2)
+                    @17 := copy (j@3)
+                    @15 := move (@16) + move (@17)
                     drop @17
-                    @15 := move (@16) == const (17 : u32)
-                    if move (@15) {
-                        drop @16
+                    drop @16
+                    @14 := move (@15) == const (17 : u32)
+                    if move (@14) {
                         drop @15
                         drop @14
-                        drop @11
+                        drop @13
+                        drop @10
                         continue 0
                     }
                     else {
-                        drop @16
-                        @26 := ()
-                        @14 := move (@26)
                         drop @15
                         drop @14
-                        @19 := copy (i@2)
-                        s@4 := copy (s@4) + move (@19)
-                        drop @19
+                        drop @13
+                        @18 := copy (i@2)
+                        s@4 := copy (s@4) + move (@18)
+                        drop @18
                         j@3 := copy (j@3) + const (1 : u32)
-                        @27 := ()
-                        @5 := move (@27)
-                        drop @11
                         drop @10
+                        drop @9
                         break 1
                     }
                 }
@@ -332,33 +289,27 @@ fn test_crate::test_loop4(@1: u32) -> u32
                     break 0
                 }
             }
-            drop @13
             drop @12
-            @24 := ()
-            @10 := move (@24)
-            drop @20
             drop @11
+            drop @19
             drop @10
+            drop @9
             j@3 := const (0 : u32)
-            @21 := copy (i@2)
-            s@4 := copy (s@4) + move (@21)
-            drop @21
+            @20 := copy (i@2)
+            s@4 := copy (s@4) + move (@20)
+            drop @20
             i@2 := copy (i@2) + const (1 : u32)
-            @25 := ()
-            @6 := move (@25)
-            drop @7
+            drop @6
             continue 0
         }
         else {
-            drop @9
             drop @8
-            @23 := ()
-            @5 := move (@23)
-            drop @22
+            drop @7
+            drop @21
             break 0
         }
     }
-    drop @7
+    drop @6
     drop @5
     @0 := copy (s@4)
     drop s@4
@@ -375,22 +326,17 @@ fn test_crate::test_loop5(@1: u32) -> u32
     let j@3: u32; // local
     let s@4: u32; // local
     let @5: (); // anonymous local
-    let @6: (); // anonymous local
-    let @7: bool; // anonymous local
+    let @6: bool; // anonymous local
+    let @7: u32; // anonymous local
     let @8: u32; // anonymous local
-    let @9: u32; // anonymous local
-    let @10: (); // anonymous local
-    let @11: bool; // anonymous local
+    let @9: (); // anonymous local
+    let @10: bool; // anonymous local
+    let @11: u32; // anonymous local
     let @12: u32; // anonymous local
     let @13: u32; // anonymous local
-    let @14: u32; // anonymous local
-    let @15: (); // anonymous local
-    let @16: u32; // anonymous local
-    let @17: (); // anonymous local
-    let @18: (); // anonymous local
-    let @19: (); // anonymous local
-    let @20: (); // anonymous local
-    let @21: (); // anonymous local
+    let @14: (); // anonymous local
+    let @15: u32; // anonymous local
+    let @16: (); // anonymous local
 
     i@2 := const (0 : u32)
     @fake_read(i@2)
@@ -399,58 +345,50 @@ fn test_crate::test_loop5(@1: u32) -> u32
     s@4 := const (0 : u32)
     @fake_read(s@4)
     loop {
-        @8 := copy (i@2)
-        @9 := copy (max@1)
-        @7 := move (@8) < move (@9)
-        if move (@7) {
-            drop @9
+        @7 := copy (i@2)
+        @8 := copy (max@1)
+        @6 := move (@7) < move (@8)
+        if move (@6) {
             drop @8
+            drop @7
             loop {
-                @12 := copy (j@3)
-                @13 := copy (max@1)
-                @11 := move (@12) < move (@13)
-                if move (@11) {
-                    drop @13
+                @11 := copy (j@3)
+                @12 := copy (max@1)
+                @10 := move (@11) < move (@12)
+                if move (@10) {
                     drop @12
-                    @14 := copy (j@3)
-                    s@4 := copy (s@4) + move (@14)
-                    drop @14
-                    j@3 := copy (j@3) + const (1 : u32)
-                    @19 := ()
-                    @6 := move (@19)
                     drop @11
+                    @13 := copy (j@3)
+                    s@4 := copy (s@4) + move (@13)
+                    drop @13
+                    j@3 := copy (j@3) + const (1 : u32)
+                    drop @10
                     continue 0
                 }
                 else {
                     break 0
                 }
             }
-            drop @13
             drop @12
-            @20 := ()
-            @10 := move (@20)
-            drop @15
             drop @11
+            drop @14
             drop @10
-            @16 := copy (i@2)
-            s@4 := copy (s@4) + move (@16)
-            drop @16
+            drop @9
+            @15 := copy (i@2)
+            s@4 := copy (s@4) + move (@15)
+            drop @15
             i@2 := copy (i@2) + const (1 : u32)
-            @21 := ()
-            @6 := move (@21)
-            drop @7
+            drop @6
             continue 0
         }
         else {
             break 0
         }
     }
-    drop @9
     drop @8
-    @18 := ()
-    @5 := move (@18)
-    drop @17
     drop @7
+    drop @16
+    drop @6
     drop @5
     @0 := copy (s@4)
     drop s@4
@@ -466,67 +404,54 @@ fn test_crate::test_loop6(@1: u32) -> u32
     let i@2: u32; // local
     let s@3: u32; // local
     let @4: (); // anonymous local
-    let @5: (); // anonymous local
-    let @6: bool; // anonymous local
+    let @5: bool; // anonymous local
+    let @6: u32; // anonymous local
     let @7: u32; // anonymous local
-    let @8: u32; // anonymous local
-    let @9: (); // anonymous local
-    let @10: bool; // anonymous local
+    let @8: (); // anonymous local
+    let @9: bool; // anonymous local
+    let @10: u32; // anonymous local
     let @11: u32; // anonymous local
-    let @12: u32; // anonymous local
-    let @13: (); // anonymous local
-    let @14: (); // anonymous local
-    let @15: (); // anonymous local
-    let @16: (); // anonymous local
-    let @17: (); // anonymous local
+    let @12: (); // anonymous local
 
     i@2 := const (0 : u32)
     @fake_read(i@2)
     s@3 := const (0 : u32)
     @fake_read(s@3)
     loop {
-        @7 := copy (i@2)
-        @8 := copy (max@1)
-        @6 := move (@7) < move (@8)
-        if move (@6) {
-            drop @8
+        @6 := copy (i@2)
+        @7 := copy (max@1)
+        @5 := move (@6) < move (@7)
+        if move (@5) {
             drop @7
-            @11 := copy (i@2)
-            @10 := move (@11) > const (3 : u32)
-            if move (@10) {
+            drop @6
+            @10 := copy (i@2)
+            @9 := move (@10) > const (3 : u32)
+            if move (@9) {
             }
             else {
-                drop @11
-                @16 := ()
-                @9 := move (@16)
                 drop @10
                 drop @9
-                @12 := copy (i@2)
-                s@3 := copy (s@3) + move (@12)
-                drop @12
+                drop @8
+                @11 := copy (i@2)
+                s@3 := copy (s@3) + move (@11)
+                drop @11
                 i@2 := copy (i@2) + const (1 : u32)
-                @17 := ()
-                @5 := move (@17)
-                drop @6
+                drop @5
                 continue 0
             }
-            drop @11
-            @15 := ()
-            @4 := move (@15)
             drop @10
             drop @9
+            drop @8
             break 0
         }
         else {
-            drop @8
             drop @7
-            @14 := ()
-            @4 := move (@14)
-            drop @13
+            drop @6
+            drop @12
             break 0
         }
     }
-    drop @6
+    drop @5
     drop @4
     // All the below nodes are exit candidates (each of them is referenced twice)
     s@3 := copy (s@3) + const (1 : u32)
@@ -546,20 +471,14 @@ fn test_crate::test_loop7(@1: u32) -> u32
     let @5: bool; // anonymous local
     let @6: u32; // anonymous local
     let @7: u32; // anonymous local
-    let @8: (); // anonymous local
-    let @9: bool; // anonymous local
+    let @8: bool; // anonymous local
+    let @9: u32; // anonymous local
     let @10: u32; // anonymous local
-    let @11: u32; // anonymous local
-    let @12: (); // anonymous local
-    let @13: bool; // anonymous local
+    let @11: (); // anonymous local
+    let @12: bool; // anonymous local
+    let @13: u32; // anonymous local
     let @14: u32; // anonymous local
-    let @15: u32; // anonymous local
-    let @16: (); // anonymous local
-    let @17: (); // anonymous local
-    let @18: (); // anonymous local
-    let @19: (); // anonymous local
-    let @20: (); // anonymous local
-    let @21: (); // anonymous local
+    let @15: (); // anonymous local
 
     i@2 := const (0 : u32)
     @fake_read(i@2)
@@ -572,55 +491,45 @@ fn test_crate::test_loop7(@1: u32) -> u32
         drop @7
         drop @6
         loop {
-            @10 := copy (i@2)
-            @11 := copy (max@1)
-            @9 := move (@10) < move (@11)
-            if move (@9) {
-                drop @11
+            @9 := copy (i@2)
+            @10 := copy (max@1)
+            @8 := move (@9) < move (@10)
+            if move (@8) {
                 drop @10
-                @14 := copy (i@2)
-                @13 := move (@14) > const (3 : u32)
-                if move (@13) {
+                drop @9
+                @13 := copy (i@2)
+                @12 := move (@13) > const (3 : u32)
+                if move (@12) {
                 }
                 else {
-                    drop @14
-                    @20 := ()
-                    @12 := move (@20)
                     drop @13
                     drop @12
-                    @15 := copy (i@2)
-                    s@3 := copy (s@3) + move (@15)
-                    drop @15
+                    drop @11
+                    @14 := copy (i@2)
+                    s@3 := copy (s@3) + move (@14)
+                    drop @14
                     i@2 := copy (i@2) + const (1 : u32)
-                    @21 := ()
-                    @8 := move (@21)
-                    drop @9
+                    drop @8
                     continue 0
                 }
-                drop @14
-                @19 := ()
-                @4 := move (@19)
                 drop @13
                 drop @12
+                drop @11
                 break 0
             }
             else {
-                drop @11
                 drop @10
-                @18 := ()
-                @4 := move (@18)
-                drop @16
+                drop @9
+                drop @15
                 break 0
             }
         }
-        drop @9
+        drop @8
     }
     else {
         drop @7
         drop @6
         s@3 := const (2 : u32)
-        @17 := ()
-        @4 := move (@17)
     }
     drop @5
     drop @4
@@ -658,13 +567,6 @@ fn test_crate::test_loops()
     let @22: (); // anonymous local
     let @23: bool; // anonymous local
     let @24: u32; // anonymous local
-    let @25: (); // anonymous local
-    let @26: (); // anonymous local
-    let @27: (); // anonymous local
-    let @28: (); // anonymous local
-    let @29: (); // anonymous local
-    let @30: (); // anonymous local
-    let @31: (); // anonymous local
 
     x@1 := test_crate::test_loop1(const (2 : u32))
     @fake_read(x@1)
@@ -677,8 +579,6 @@ fn test_crate::test_loops()
         panic(core::panicking::panic)
     }
     drop @4
-    @25 := ()
-    @2 := move (@25)
     drop @3
     drop @2
     x@5 := test_crate::test_loop2(const (2 : u32))
@@ -692,8 +592,6 @@ fn test_crate::test_loops()
         panic(core::panicking::panic)
     }
     drop @8
-    @26 := ()
-    @6 := move (@26)
     drop @7
     drop @6
     x@9 := test_crate::test_loop3(const (2 : u32))
@@ -707,8 +605,6 @@ fn test_crate::test_loops()
         panic(core::panicking::panic)
     }
     drop @12
-    @27 := ()
-    @10 := move (@27)
     drop @11
     drop @10
     x@13 := test_crate::test_loop4(const (20 : u32))
@@ -722,8 +618,6 @@ fn test_crate::test_loops()
         panic(core::panicking::panic)
     }
     drop @16
-    @28 := ()
-    @14 := move (@28)
     drop @15
     drop @14
     x@17 := test_crate::test_loop5(const (2 : u32))
@@ -737,8 +631,6 @@ fn test_crate::test_loops()
         panic(core::panicking::panic)
     }
     drop @20
-    @29 := ()
-    @18 := move (@29)
     drop @19
     drop @18
     x@21 := test_crate::test_loop6(const (2 : u32))
@@ -752,12 +644,9 @@ fn test_crate::test_loops()
         panic(core::panicking::panic)
     }
     drop @24
-    @30 := ()
-    @22 := move (@30)
     drop @23
     drop @22
-    @31 := ()
-    @0 := move (@31)
+    @0 := ()
     drop x@21
     drop x@17
     drop x@13
@@ -936,35 +825,26 @@ fn test_crate::nested_loops_enum(@1: usize, @2: usize) -> usize
     let @6: core::ops::range::Range<i32>[core::marker::Sized<i32>]; // anonymous local
     let iter@7: core::ops::range::Range<i32>[core::marker::Sized<i32>]; // local
     let @8: (); // anonymous local
-    let @9: (); // anonymous local
-    let @10: core::option::Option<i32>[core::marker::Sized<i32>]; // anonymous local
+    let @9: core::option::Option<i32>[core::marker::Sized<i32>]; // anonymous local
+    let @10: &'_ mut (core::ops::range::Range<i32>[core::marker::Sized<i32>]); // anonymous local
     let @11: &'_ mut (core::ops::range::Range<i32>[core::marker::Sized<i32>]); // anonymous local
-    let @12: &'_ mut (core::ops::range::Range<i32>[core::marker::Sized<i32>]); // anonymous local
-    let @13: (); // anonymous local
+    let @12: (); // anonymous local
+    let @13: core::ops::range::Range<usize>[core::marker::Sized<usize>]; // anonymous local
     let @14: core::ops::range::Range<usize>[core::marker::Sized<usize>]; // anonymous local
-    let @15: core::ops::range::Range<usize>[core::marker::Sized<usize>]; // anonymous local
-    let @16: usize; // anonymous local
-    let iter@17: core::ops::range::Range<usize>[core::marker::Sized<usize>]; // local
-    let @18: (); // anonymous local
-    let @19: core::option::Option<usize>[core::marker::Sized<usize>]; // anonymous local
+    let @15: usize; // anonymous local
+    let iter@16: core::ops::range::Range<usize>[core::marker::Sized<usize>]; // local
+    let @17: (); // anonymous local
+    let @18: core::option::Option<usize>[core::marker::Sized<usize>]; // anonymous local
+    let @19: &'_ mut (core::ops::range::Range<usize>[core::marker::Sized<usize>]); // anonymous local
     let @20: &'_ mut (core::ops::range::Range<usize>[core::marker::Sized<usize>]); // anonymous local
-    let @21: &'_ mut (core::ops::range::Range<usize>[core::marker::Sized<usize>]); // anonymous local
+    let @21: core::ops::range::Range<usize>[core::marker::Sized<usize>]; // anonymous local
     let @22: core::ops::range::Range<usize>[core::marker::Sized<usize>]; // anonymous local
-    let @23: core::ops::range::Range<usize>[core::marker::Sized<usize>]; // anonymous local
-    let @24: usize; // anonymous local
-    let iter@25: core::ops::range::Range<usize>[core::marker::Sized<usize>]; // local
-    let @26: (); // anonymous local
-    let @27: core::option::Option<usize>[core::marker::Sized<usize>]; // anonymous local
+    let @23: usize; // anonymous local
+    let iter@24: core::ops::range::Range<usize>[core::marker::Sized<usize>]; // local
+    let @25: (); // anonymous local
+    let @26: core::option::Option<usize>[core::marker::Sized<usize>]; // anonymous local
+    let @27: &'_ mut (core::ops::range::Range<usize>[core::marker::Sized<usize>]); // anonymous local
     let @28: &'_ mut (core::ops::range::Range<usize>[core::marker::Sized<usize>]); // anonymous local
-    let @29: &'_ mut (core::ops::range::Range<usize>[core::marker::Sized<usize>]); // anonymous local
-    let @30: (); // anonymous local
-    let @31: (); // anonymous local
-    let @32: (); // anonymous local
-    let @33: (); // anonymous local
-    let @34: (); // anonymous local
-    let @35: (); // anonymous local
-    let @36: (); // anonymous local
-    let @37: (); // anonymous local
 
     s@3 := const (0 : usize)
     @fake_read(s@3)
@@ -974,108 +854,92 @@ fn test_crate::nested_loops_enum(@1: usize, @2: usize) -> usize
     @fake_read(@5)
     iter@7 := move (@5)
     loop {
-        @12 := &mut iter@7
-        @11 := &two-phase-mut *(@12)
-        @10 := core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>[@TraitClause0]}#6::next<'_, i32>[core::marker::Sized<i32>, core::iter::range::{impl core::iter::range::Step for i32}#40](move (@11))
-        drop @11
-        @fake_read(@10)
-        match @10 {
+        @11 := &mut iter@7
+        @10 := &two-phase-mut *(@11)
+        @9 := core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>[@TraitClause0]}#6::next<'_, i32>[core::marker::Sized<i32>, core::iter::range::{impl core::iter::range::Step for i32}#40](move (@10))
+        drop @10
+        @fake_read(@9)
+        match @9 {
             0 => {
                 break 0
             },
             1 => {
                 s@3 := copy (s@3) + const (1 : usize)
-                @31 := ()
-                @9 := move (@31)
-                drop @12
-                drop @10
+                drop @11
                 drop @9
-                @32 := ()
-                @8 := move (@32)
+                drop @8
                 continue 0
             },
         }
     }
-    @30 := ()
-    @4 := move (@30)
-    drop @12
-    drop @10
+    drop @11
     drop @9
+    drop @8
     drop iter@7
     drop @5
     drop @4
-    @16 := copy (step_out@1)
-    @15 := core::ops::range::Range { start: const (0 : usize), end: move (@16) }
-    drop @16
-    @14 := core::iter::traits::collect::{impl core::iter::traits::collect::IntoIterator for I}#1::into_iter<core::ops::range::Range<usize>[core::marker::Sized<usize>]>[core::marker::Sized<core::ops::range::Range<usize>[core::marker::Sized<usize>]>, core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>[@TraitClause0]}#6<usize>[core::marker::Sized<usize>, core::iter::range::{impl core::iter::range::Step for usize}#43]](move (@15))
+    @15 := copy (step_out@1)
+    @14 := core::ops::range::Range { start: const (0 : usize), end: move (@15) }
     drop @15
-    @fake_read(@14)
-    iter@17 := move (@14)
+    @13 := core::iter::traits::collect::{impl core::iter::traits::collect::IntoIterator for I}#1::into_iter<core::ops::range::Range<usize>[core::marker::Sized<usize>]>[core::marker::Sized<core::ops::range::Range<usize>[core::marker::Sized<usize>]>, core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>[@TraitClause0]}#6<usize>[core::marker::Sized<usize>, core::iter::range::{impl core::iter::range::Step for usize}#43]](move (@14))
+    drop @14
+    @fake_read(@13)
+    iter@16 := move (@13)
     loop {
-        @21 := &mut iter@17
-        @20 := &two-phase-mut *(@21)
-        @19 := core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>[@TraitClause0]}#6::next<'_, usize>[core::marker::Sized<usize>, core::iter::range::{impl core::iter::range::Step for usize}#43](move (@20))
-        drop @20
-        @fake_read(@19)
-        match @19 {
+        @20 := &mut iter@16
+        @19 := &two-phase-mut *(@20)
+        @18 := core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>[@TraitClause0]}#6::next<'_, usize>[core::marker::Sized<usize>, core::iter::range::{impl core::iter::range::Step for usize}#43](move (@19))
+        drop @19
+        @fake_read(@18)
+        match @18 {
             0 => {
                 break 0
             },
             1 => {
-                @24 := copy (step_in@2)
-                @23 := core::ops::range::Range { start: const (0 : usize), end: move (@24) }
-                drop @24
-                @22 := core::iter::traits::collect::{impl core::iter::traits::collect::IntoIterator for I}#1::into_iter<core::ops::range::Range<usize>[core::marker::Sized<usize>]>[core::marker::Sized<core::ops::range::Range<usize>[core::marker::Sized<usize>]>, core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>[@TraitClause0]}#6<usize>[core::marker::Sized<usize>, core::iter::range::{impl core::iter::range::Step for usize}#43]](move (@23))
+                @23 := copy (step_in@2)
+                @22 := core::ops::range::Range { start: const (0 : usize), end: move (@23) }
                 drop @23
-                @fake_read(@22)
-                iter@25 := move (@22)
+                @21 := core::iter::traits::collect::{impl core::iter::traits::collect::IntoIterator for I}#1::into_iter<core::ops::range::Range<usize>[core::marker::Sized<usize>]>[core::marker::Sized<core::ops::range::Range<usize>[core::marker::Sized<usize>]>, core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>[@TraitClause0]}#6<usize>[core::marker::Sized<usize>, core::iter::range::{impl core::iter::range::Step for usize}#43]](move (@22))
+                drop @22
+                @fake_read(@21)
+                iter@24 := move (@21)
                 loop {
-                    @29 := &mut iter@25
-                    @28 := &two-phase-mut *(@29)
-                    @27 := core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>[@TraitClause0]}#6::next<'_, usize>[core::marker::Sized<usize>, core::iter::range::{impl core::iter::range::Step for usize}#43](move (@28))
-                    drop @28
-                    @fake_read(@27)
-                    match @27 {
+                    @28 := &mut iter@24
+                    @27 := &two-phase-mut *(@28)
+                    @26 := core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>[@TraitClause0]}#6::next<'_, usize>[core::marker::Sized<usize>, core::iter::range::{impl core::iter::range::Step for usize}#43](move (@27))
+                    drop @27
+                    @fake_read(@26)
+                    match @26 {
                         0 => {
                             break 0
                         },
                         1 => {
                             s@3 := copy (s@3) + const (1 : usize)
-                            @36 := ()
-                            @26 := move (@36)
-                            drop @29
-                            drop @27
+                            drop @28
                             drop @26
-                            @37 := ()
-                            @8 := move (@37)
+                            drop @25
                             continue 0
                         },
                     }
                 }
-                @34 := ()
-                @18 := move (@34)
-                drop @29
-                drop @27
+                drop @28
                 drop @26
-                drop iter@25
-                drop @22
+                drop @25
+                drop iter@24
                 drop @21
-                drop @19
+                drop @20
                 drop @18
-                @35 := ()
-                @8 := move (@35)
+                drop @17
                 continue 0
             },
         }
     }
-    @33 := ()
-    @13 := move (@33)
-    drop @21
-    drop @19
+    drop @20
     drop @18
-    drop iter@17
-    drop @14
+    drop @17
+    drop iter@16
     drop @13
+    drop @12
     @0 := copy (s@3)
     drop s@3
     return
@@ -1133,15 +997,11 @@ fn test_crate::loop_inside_if(@1: bool, @2: u32) -> u32
     let @8: u32; // anonymous local
     let iter@9: core::ops::range::Range<u32>[core::marker::Sized<u32>]; // local
     let @10: (); // anonymous local
-    let @11: (); // anonymous local
-    let @12: core::option::Option<u32>[core::marker::Sized<u32>]; // anonymous local
+    let @11: core::option::Option<u32>[core::marker::Sized<u32>]; // anonymous local
+    let @12: &'_ mut (core::ops::range::Range<u32>[core::marker::Sized<u32>]); // anonymous local
     let @13: &'_ mut (core::ops::range::Range<u32>[core::marker::Sized<u32>]); // anonymous local
-    let @14: &'_ mut (core::ops::range::Range<u32>[core::marker::Sized<u32>]); // anonymous local
-    let i@15: u32; // local
-    let @16: u32; // anonymous local
-    let @17: (); // anonymous local
-    let @18: (); // anonymous local
-    let @19: (); // anonymous local
+    let i@14: u32; // local
+    let @15: u32; // anonymous local
 
     @3 := copy (b@1)
     if move (@3) {
@@ -1155,37 +1015,31 @@ fn test_crate::loop_inside_if(@1: bool, @2: u32) -> u32
         @fake_read(@6)
         iter@9 := move (@6)
         loop {
-            @14 := &mut iter@9
-            @13 := &two-phase-mut *(@14)
-            @12 := core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>[@TraitClause0]}#6::next<'_, u32>[core::marker::Sized<u32>, core::iter::range::{impl core::iter::range::Step for u32}#39](move (@13))
-            drop @13
-            @fake_read(@12)
-            match @12 {
+            @13 := &mut iter@9
+            @12 := &two-phase-mut *(@13)
+            @11 := core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>[@TraitClause0]}#6::next<'_, u32>[core::marker::Sized<u32>, core::iter::range::{impl core::iter::range::Step for u32}#39](move (@12))
+            drop @12
+            @fake_read(@11)
+            match @11 {
                 0 => {
                     break 0
                 },
                 1 => {
-                    i@15 := copy ((@12 as variant @1).0)
-                    @16 := copy (i@15)
-                    s@4 := copy (s@4) + move (@16)
-                    drop @16
-                    @18 := ()
-                    @11 := move (@18)
-                    drop i@15
-                    drop @14
-                    drop @12
+                    i@14 := copy ((@11 as variant @1).0)
+                    @15 := copy (i@14)
+                    s@4 := copy (s@4) + move (@15)
+                    drop @15
+                    drop i@14
+                    drop @13
                     drop @11
-                    @19 := ()
-                    @10 := move (@19)
+                    drop @10
                     continue 0
                 },
             }
         }
-        @17 := ()
-        @5 := move (@17)
-        drop @14
-        drop @12
+        drop @13
         drop @11
+        drop @10
         drop iter@9
         drop @6
         drop @5
@@ -1206,45 +1060,38 @@ fn test_crate::sum(@1: u32) -> u32
     let i@2: u32; // local
     let s@3: u32; // local
     let @4: (); // anonymous local
-    let @5: (); // anonymous local
-    let @6: bool; // anonymous local
+    let @5: bool; // anonymous local
+    let @6: u32; // anonymous local
     let @7: u32; // anonymous local
     let @8: u32; // anonymous local
-    let @9: u32; // anonymous local
-    let @10: (); // anonymous local
-    let @11: (); // anonymous local
-    let @12: (); // anonymous local
+    let @9: (); // anonymous local
 
     i@2 := const (0 : u32)
     @fake_read(i@2)
     s@3 := const (0 : u32)
     @fake_read(s@3)
     loop {
-        @7 := copy (i@2)
-        @8 := copy (max@1)
-        @6 := move (@7) < move (@8)
-        if move (@6) {
-            drop @8
+        @6 := copy (i@2)
+        @7 := copy (max@1)
+        @5 := move (@6) < move (@7)
+        if move (@5) {
             drop @7
-            @9 := copy (i@2)
-            s@3 := copy (s@3) + move (@9)
-            drop @9
-            i@2 := copy (i@2) + const (1 : u32)
-            @11 := ()
-            @5 := move (@11)
             drop @6
+            @8 := copy (i@2)
+            s@3 := copy (s@3) + move (@8)
+            drop @8
+            i@2 := copy (i@2) + const (1 : u32)
+            drop @5
             continue 0
         }
         else {
             break 0
         }
     }
-    drop @8
     drop @7
-    @12 := ()
-    @4 := move (@12)
-    drop @10
     drop @6
+    drop @9
+    drop @5
     drop @4
     s@3 := copy (s@3) * const (2 : u32)
     @0 := copy (s@3)
@@ -1260,48 +1107,41 @@ fn test_crate::sum_array<const N : usize>(@1: Array<u32, const N : usize>) -> u3
     let i@2: usize; // local
     let s@3: u32; // local
     let @4: (); // anonymous local
-    let @5: (); // anonymous local
-    let @6: bool; // anonymous local
-    let @7: usize; // anonymous local
-    let @8: u32; // anonymous local
-    let @9: usize; // anonymous local
-    let @10: (); // anonymous local
-    let @11: (); // anonymous local
-    let @12: (); // anonymous local
-    let @13: &'_ (Array<u32, const N : usize>); // anonymous local
-    let @14: &'_ (u32); // anonymous local
+    let @5: bool; // anonymous local
+    let @6: usize; // anonymous local
+    let @7: u32; // anonymous local
+    let @8: usize; // anonymous local
+    let @9: (); // anonymous local
+    let @10: &'_ (Array<u32, const N : usize>); // anonymous local
+    let @11: &'_ (u32); // anonymous local
 
     i@2 := const (0 : usize)
     @fake_read(i@2)
     s@3 := const (0 : u32)
     @fake_read(s@3)
     loop {
-        @7 := copy (i@2)
-        @6 := move (@7) < const (const N : usize)
-        if move (@6) {
-            drop @7
-            @9 := copy (i@2)
-            @13 := &a@1
-            @14 := @ArrayIndexShared<'_, u32, const N : usize>(move (@13), copy (@9))
-            @8 := copy (*(@14))
-            s@3 := copy (s@3) + move (@8)
-            drop @8
-            drop @9
-            i@2 := copy (i@2) + const (1 : usize)
-            @11 := ()
-            @5 := move (@11)
+        @6 := copy (i@2)
+        @5 := move (@6) < const (const N : usize)
+        if move (@5) {
             drop @6
+            @8 := copy (i@2)
+            @10 := &a@1
+            @11 := @ArrayIndexShared<'_, u32, const N : usize>(move (@10), copy (@8))
+            @7 := copy (*(@11))
+            s@3 := copy (s@3) + move (@7)
+            drop @7
+            drop @8
+            i@2 := copy (i@2) + const (1 : usize)
+            drop @5
             continue 0
         }
         else {
             break 0
         }
     }
-    drop @7
-    @12 := ()
-    @4 := move (@12)
-    drop @10
     drop @6
+    drop @9
+    drop @5
     drop @4
     @0 := copy (s@3)
     drop s@3
@@ -1387,52 +1227,46 @@ fn test_crate::clear<'_0>(@1: &'_0 mut (alloc::vec::Vec<u32, alloc::alloc::Globa
     let @0: (); // return
     let v@1: &'_ mut (alloc::vec::Vec<u32, alloc::alloc::Global>[core::marker::Sized<u32>, core::marker::Sized<alloc::alloc::Global>]); // arg #1
     let i@2: usize; // local
-    let @3: (); // anonymous local
-    let @4: bool; // anonymous local
+    let @3: bool; // anonymous local
+    let @4: usize; // anonymous local
     let @5: usize; // anonymous local
-    let @6: usize; // anonymous local
-    let @7: &'_ (alloc::vec::Vec<u32, alloc::alloc::Global>[core::marker::Sized<u32>, core::marker::Sized<alloc::alloc::Global>]); // anonymous local
-    let @8: &'_ mut (u32); // anonymous local
-    let @9: &'_ mut (alloc::vec::Vec<u32, alloc::alloc::Global>[core::marker::Sized<u32>, core::marker::Sized<alloc::alloc::Global>]); // anonymous local
-    let @10: usize; // anonymous local
-    let @11: (); // anonymous local
-    let @12: (); // anonymous local
-    let @13: (); // anonymous local
+    let @6: &'_ (alloc::vec::Vec<u32, alloc::alloc::Global>[core::marker::Sized<u32>, core::marker::Sized<alloc::alloc::Global>]); // anonymous local
+    let @7: &'_ mut (u32); // anonymous local
+    let @8: &'_ mut (alloc::vec::Vec<u32, alloc::alloc::Global>[core::marker::Sized<u32>, core::marker::Sized<alloc::alloc::Global>]); // anonymous local
+    let @9: usize; // anonymous local
+    let @10: (); // anonymous local
 
     i@2 := const (0 : usize)
     @fake_read(i@2)
     loop {
-        @5 := copy (i@2)
-        @7 := &*(v@1)
-        @6 := alloc::vec::{alloc::vec::Vec<T, A>[@TraitClause0, @TraitClause1]}#1::len<'_, u32, alloc::alloc::Global>[core::marker::Sized<u32>, core::marker::Sized<alloc::alloc::Global>](move (@7))
-        drop @7
-        @4 := move (@5) < move (@6)
-        if move (@4) {
-            drop @6
+        @4 := copy (i@2)
+        @6 := &*(v@1)
+        @5 := alloc::vec::{alloc::vec::Vec<T, A>[@TraitClause0, @TraitClause1]}#1::len<'_, u32, alloc::alloc::Global>[core::marker::Sized<u32>, core::marker::Sized<alloc::alloc::Global>](move (@6))
+        drop @6
+        @3 := move (@4) < move (@5)
+        if move (@3) {
             drop @5
-            @9 := &mut *(v@1)
-            @10 := copy (i@2)
-            @8 := alloc::vec::{impl core::ops::index::IndexMut<I> for alloc::vec::Vec<T, A>[@TraitClause0, @TraitClause2]}#14::index_mut<'_, u32, usize, alloc::alloc::Global>[core::marker::Sized<u32>, core::marker::Sized<usize>, core::marker::Sized<alloc::alloc::Global>, core::slice::index::{impl core::slice::index::SliceIndex<Slice<T>> for usize}#2<u32>[core::marker::Sized<u32>]](move (@9), move (@10))
-            drop @10
-            drop @9
-            *(@8) := const (0 : u32)
-            drop @8
-            i@2 := copy (i@2) + const (1 : usize)
-            @12 := ()
-            @3 := move (@12)
             drop @4
+            @8 := &mut *(v@1)
+            @9 := copy (i@2)
+            @7 := alloc::vec::{impl core::ops::index::IndexMut<I> for alloc::vec::Vec<T, A>[@TraitClause0, @TraitClause2]}#14::index_mut<'_, u32, usize, alloc::alloc::Global>[core::marker::Sized<u32>, core::marker::Sized<usize>, core::marker::Sized<alloc::alloc::Global>, core::slice::index::{impl core::slice::index::SliceIndex<Slice<T>> for usize}#2<u32>[core::marker::Sized<u32>]](move (@8), move (@9))
+            drop @9
+            drop @8
+            *(@7) := const (0 : u32)
+            drop @7
+            i@2 := copy (i@2) + const (1 : usize)
+            drop @3
             continue 0
         }
         else {
             break 0
         }
     }
-    drop @6
     drop @5
-    @13 := ()
-    @0 := move (@13)
-    drop @11
     drop @4
+    @0 := ()
+    drop @10
+    drop @3
     drop i@2
     @0 := ()
     return
@@ -1451,45 +1285,41 @@ fn test_crate::get_elem_mut<'_0>(@1: &'_0 mut (test_crate::List<usize>[core::mar
     let @0: &'_ mut (usize); // return
     let ls@1: &'_ mut (test_crate::List<usize>[core::marker::Sized<usize>]); // arg #1
     let x@2: usize; // arg #2
-    let @3: (); // anonymous local
-    let y@4: &'_ mut (usize); // local
-    let tl@5: &'_ mut (alloc::boxed::Box<test_crate::List<usize>[core::marker::Sized<usize>]>[core::marker::Sized<alloc::alloc::Global>]); // local
-    let @6: bool; // anonymous local
+    let y@3: &'_ mut (usize); // local
+    let tl@4: &'_ mut (alloc::boxed::Box<test_crate::List<usize>[core::marker::Sized<usize>]>[core::marker::Sized<alloc::alloc::Global>]); // local
+    let @5: bool; // anonymous local
+    let @6: usize; // anonymous local
     let @7: usize; // anonymous local
-    let @8: usize; // anonymous local
-    let @9: &'_ mut (test_crate::List<usize>[core::marker::Sized<usize>]); // anonymous local
-    let @10: (); // anonymous local
+    let @8: &'_ mut (test_crate::List<usize>[core::marker::Sized<usize>]); // anonymous local
 
     loop {
         @fake_read(ls@1)
         match *(ls@1) {
             0 => {
-                y@4 := &mut (*(ls@1) as variant @0).0
-                tl@5 := &mut (*(ls@1) as variant @0).1
-                @7 := copy (*(y@4))
-                @8 := copy (x@2)
-                @6 := move (@7) == move (@8)
-                if move (@6) {
+                y@3 := &mut (*(ls@1) as variant @0).0
+                tl@4 := &mut (*(ls@1) as variant @0).1
+                @6 := copy (*(y@3))
+                @7 := copy (x@2)
+                @5 := move (@6) == move (@7)
+                if move (@5) {
                 }
                 else {
-                    drop @8
                     drop @7
-                    @9 := &mut *(*(tl@5))
-                    ls@1 := move (@9)
-                    drop @9
-                    @10 := ()
-                    @3 := move (@10)
                     drop @6
-                    drop tl@5
-                    drop y@4
+                    @8 := &mut *(*(tl@4))
+                    ls@1 := move (@8)
+                    drop @8
+                    drop @5
+                    drop tl@4
+                    drop y@3
                     continue 0
                 }
-                drop @8
                 drop @7
-                @0 := &mut *(y@4)
                 drop @6
-                drop tl@5
-                drop y@4
+                @0 := &mut *(y@3)
+                drop @5
+                drop tl@4
+                drop y@3
                 return
             },
             1 => {
@@ -1507,51 +1337,44 @@ where
     let ls@1: &'_ mut (test_crate::List<T>[@TraitClause0]); // arg #1
     let i@2: u32; // arg #2
     let @3: (); // anonymous local
-    let @4: (); // anonymous local
-    let x@5: &'_ mut (T); // local
-    let tl@6: &'_ mut (alloc::boxed::Box<test_crate::List<T>[@TraitClause0]>[core::marker::Sized<alloc::alloc::Global>]); // local
-    let @7: bool; // anonymous local
-    let @8: u32; // anonymous local
-    let @9: &'_ mut (test_crate::List<T>[@TraitClause0]); // anonymous local
-    let @10: (); // anonymous local
-    let @11: (); // anonymous local
-    let @12: (); // anonymous local
+    let x@4: &'_ mut (T); // local
+    let tl@5: &'_ mut (alloc::boxed::Box<test_crate::List<T>[@TraitClause0]>[core::marker::Sized<alloc::alloc::Global>]); // local
+    let @6: bool; // anonymous local
+    let @7: u32; // anonymous local
+    let @8: &'_ mut (test_crate::List<T>[@TraitClause0]); // anonymous local
+    let @9: (); // anonymous local
 
     loop {
         @fake_read(ls@1)
         match *(ls@1) {
             0 => {
-                x@5 := &mut (*(ls@1) as variant @0).0
-                tl@6 := &mut (*(ls@1) as variant @0).1
-                @8 := copy (i@2)
-                @7 := move (@8) == const (0 : u32)
-                if move (@7) {
+                x@4 := &mut (*(ls@1) as variant @0).0
+                tl@5 := &mut (*(ls@1) as variant @0).1
+                @7 := copy (i@2)
+                @6 := move (@7) == const (0 : u32)
+                if move (@6) {
                 }
                 else {
-                    drop @8
-                    @9 := &mut *(*(tl@6))
-                    ls@1 := move (@9)
-                    drop @9
-                    i@2 := copy (i@2) - const (1 : u32)
-                    @12 := ()
-                    @4 := move (@12)
                     drop @7
-                    drop tl@6
-                    drop x@5
+                    @8 := &mut *(*(tl@5))
+                    ls@1 := move (@8)
+                    drop @8
+                    i@2 := copy (i@2) - const (1 : u32)
+                    drop @6
+                    drop tl@5
+                    drop x@4
                     continue 0
                 }
-                drop @8
-                @0 := &mut *(x@5)
                 drop @7
-                drop tl@6
-                drop x@5
+                @0 := &mut *(x@4)
+                drop @6
+                drop tl@5
+                drop x@4
                 drop @3
                 return
             },
             _ => {
-                @11 := ()
-                @3 := move (@11)
-                drop @10
+                drop @9
                 drop @3
                 panic(core::panicking::panic_explicit)
             },

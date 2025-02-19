@@ -42,7 +42,6 @@ fn test_crate::foo()
     let @4: alloc::boxed::Box<Array<i32, 1 : usize>>[core::marker::Sized<alloc::alloc::Global>]; // anonymous local
     let _v2@5: alloc::vec::Vec<i32, alloc::alloc::Global>[core::marker::Sized<i32>, core::marker::Sized<alloc::alloc::Global>]; // local
     let @6: Array<i32, 1 : usize>; // anonymous local
-    let @7: (); // anonymous local
 
     @6 := [const (1 : i32); 1 : usize]
     @4 := @BoxNew<Array<i32, 1 : usize>>[core::marker::Sized<alloc::alloc::Global>](move (@6))
@@ -57,8 +56,7 @@ fn test_crate::foo()
     @fake_read(_v@1)
     _v2@5 := alloc::vec::from_elem<i32>[core::marker::Sized<i32>, core::clone::impls::{impl core::clone::Clone for i32}#14](const (1 : i32), const (10 : usize))
     @fake_read(_v2@5)
-    @7 := ()
-    @0 := move (@7)
+    @0 := ()
     drop _v2@5
     drop _v2@5
     drop _v@1
@@ -78,7 +76,6 @@ fn test_crate::bar()
     let @4: alloc::boxed::Box<Array<test_crate::Foo, 1 : usize>>[core::marker::Sized<alloc::alloc::Global>]; // anonymous local
     let @5: test_crate::Foo; // anonymous local
     let @6: Array<test_crate::Foo, 1 : usize>; // anonymous local
-    let @7: (); // anonymous local
 
     @5 := test_crate::Foo {  }
     @6 := [move (@5); 1 : usize]
@@ -95,8 +92,7 @@ fn test_crate::bar()
     @fake_read(@1)
     drop @1
     drop @1
-    @7 := ()
-    @0 := move (@7)
+    @0 := ()
     @0 := ()
     return
 }

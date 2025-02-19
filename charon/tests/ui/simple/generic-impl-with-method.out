@@ -13,10 +13,8 @@ where
 {
     let @0: (); // return
     let self@1: &'_ (T); // arg #1
-    let @2: (); // anonymous local
 
-    @2 := ()
-    @0 := move (@2)
+    @0 := ()
     @0 := ()
     return
 }

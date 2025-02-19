@@ -21,7 +21,6 @@ fn test_crate::constant()
     let @6: usize; // anonymous local
     let @7: usize; // anonymous local
     let @8: usize; // anonymous local
-    let @9: (); // anonymous local
 
     @6 := test_crate::constant::CONST
     _val@1 := move (@6)
@@ -34,8 +33,7 @@ fn test_crate::constant()
     @5 := move (@8)
     _ref_mut@4 := &mut @5
     @fake_read(_ref_mut@4)
-    @9 := ()
-    @0 := move (@9)
+    @0 := ()
     drop @5
     drop _ref_mut@4
     drop @3
@@ -67,7 +65,6 @@ fn test_crate::shared_static()
     let @7: &'_ (usize); // anonymous local
     let @8: &'_ (usize); // anonymous local
     let @9: &'_ (usize); // anonymous local
-    let @10: (); // anonymous local
 
     @7 := &test_crate::shared_static::SHARED_STATIC
     @2 := move (@7)
@@ -82,8 +79,7 @@ fn test_crate::shared_static()
     @6 := move (@9)
     _ptr@5 := &raw const *(@6)
     @fake_read(_ptr@5)
-    @10 := ()
-    @0 := move (@10)
+    @0 := ()
     drop @6
     drop _ptr@5
     drop @4
@@ -121,7 +117,6 @@ fn test_crate::mut_static()
     let @13: *mut usize; // anonymous local
     let @14: *mut usize; // anonymous local
     let @15: *mut usize; // anonymous local
-    let @16: (); // anonymous local
 
     @11 := &raw mut test_crate::mut_static::MUT_STATIC
     @2 := move (@11)
@@ -144,8 +139,7 @@ fn test_crate::mut_static()
     @10 := move (@15)
     _ptr_mut@9 := &raw mut *(@10)
     @fake_read(_ptr_mut@9)
-    @16 := ()
-    @0 := move (@16)
+    @0 := ()
     drop @10
     drop _ptr_mut@9
     drop @8
@@ -175,10 +169,8 @@ fn test_crate::non_copy_static::{test_crate::non_copy_static::Foo}::method<'_0>(
 {
     let @0: (); // return
     let self@1: &'_ (test_crate::non_copy_static::Foo); // arg #1
-    let @2: (); // anonymous local
 
-    @2 := ()
-    @0 := move (@2)
+    @0 := ()
     @0 := ()
     return
 }

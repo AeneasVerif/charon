@@ -91,13 +91,11 @@ fn test_crate::call_fn_in_opaque_module()
 {
     let @0: (); // return
     let @1: u32; // anonymous local
-    let @2: (); // anonymous local
 
     @1 := test_crate::opaque::fn_in_opaque_module()
     @fake_read(@1)
     drop @1
-    @2 := ()
-    @0 := move (@2)
+    @0 := ()
     @0 := ()
     return
 }

@@ -4,10 +4,8 @@ fn test_crate::function_call(@1: u32)
 {
     let @0: (); // return
     let @1: u32; // arg #1
-    let @2: (); // anonymous local
 
-    @2 := ()
-    @0 := move (@2)
+    @0 := ()
     @0 := ()
     return
 }
@@ -28,25 +26,22 @@ fn test_crate::sum<'_0>(@1: &'_0 (Slice<u32>)) -> u32
     let @5: u32; // anonymous local
     let @6: u32; // anonymous local
     let @7: (); // anonymous local
-    let @8: (); // anonymous local
-    let @9: bool; // anonymous local
+    let @8: bool; // anonymous local
+    let @9: usize; // anonymous local
     let @10: usize; // anonymous local
-    let @11: usize; // anonymous local
-    let @12: &'_ (Slice<u32>); // anonymous local
-    let @13: u32; // anonymous local
-    let @14: usize; // anonymous local
-    let @15: (); // anonymous local
-    let @16: u32; // anonymous local
-    let @17: bool; // anonymous local
+    let @11: &'_ (Slice<u32>); // anonymous local
+    let @12: u32; // anonymous local
+    let @13: usize; // anonymous local
+    let @14: (); // anonymous local
+    let @15: u32; // anonymous local
+    let @16: bool; // anonymous local
+    let @17: u32; // anonymous local
     let @18: u32; // anonymous local
-    let @19: u32; // anonymous local
-    let @20: (); // anonymous local
+    let @19: (); // anonymous local
+    let @20: u32; // anonymous local
     let @21: u32; // anonymous local
-    let @22: u32; // anonymous local
-    let @23: (); // anonymous local
-    let @24: (); // anonymous local
-    let @25: &'_ (Slice<u32>); // anonymous local
-    let @26: &'_ (u32); // anonymous local
+    let @22: &'_ (Slice<u32>); // anonymous local
+    let @23: &'_ (u32); // anonymous local
 
     // `let sum`
     sum@2 := const (0 : u32)
@@ -65,66 +60,62 @@ fn test_crate::sum<'_0>(@1: &'_0 (Slice<u32>)) -> u32
     drop @4
     // Start of loop
     loop {
-        @10 := copy (i@3)
-        @12 := &*(s@1)
-        @11 := core::slice::{Slice<T>}::len<'_, u32>[core::marker::Sized<u32>](move (@12))
-        drop @12
-        @9 := move (@10) < move (@11)
-        if move (@9) {
-            drop @11
+        @9 := copy (i@3)
+        @11 := &*(s@1)
+        @10 := core::slice::{Slice<T>}::len<'_, u32>[core::marker::Sized<u32>](move (@11))
+        drop @11
+        @8 := move (@9) < move (@10)
+        if move (@8) {
             drop @10
+            drop @9
             // Add to running sum
-            @14 := copy (i@3)
-            @25 := &*(s@1)
-            @26 := @SliceIndexShared<'_, u32>(move (@25), copy (@14))
-            @13 := copy (*(@26))
-            sum@2 := copy (sum@2) + move (@13)
+            @13 := copy (i@3)
+            @22 := &*(s@1)
+            @23 := @SliceIndexShared<'_, u32>(move (@22), copy (@13))
+            @12 := copy (*(@23))
+            sum@2 := copy (sum@2) + move (@12)
+            drop @12
             drop @13
-            drop @14
             // Increment `i`
             i@3 := copy (i@3) + const (1 : usize)
-            @23 := ()
-            @8 := move (@23)
             // Before end of loop
-            drop @9
+            drop @8
             continue 0
         }
         else {
             break 0
         }
     }
-    drop @11
     drop @10
-    @24 := ()
-    @7 := move (@24)
-    drop @15
     drop @9
+    drop @14
+    drop @8
     drop @7
     // Assign the result of an `if`.
-    @18 := copy (sum@2)
-    @17 := move (@18) > const (10 : u32)
-    if move (@17) {
-        drop @18
+    @17 := copy (sum@2)
+    @16 := move (@17) > const (10 : u32)
+    if move (@16) {
+        drop @17
         // sum + 100
-        @19 := copy (sum@2)
-        @16 := move (@19) + const (100 : u32)
-        drop @19
+        @18 := copy (sum@2)
+        @15 := move (@18) + const (100 : u32)
+        drop @18
     }
     else {
-        drop @18
+        drop @17
         // let sum untouched
-        @16 := copy (sum@2)
+        @15 := copy (sum@2)
     }
-    drop @17
-    sum@2 := move (@16)
     drop @16
+    sum@2 := move (@15)
+    drop @15
     // Function call
-    @22 := copy (sum@2)
-    @21 := move (@22) + const (2 : u32)
-    drop @22
-    @20 := test_crate::function_call(move (@21))
+    @21 := copy (sum@2)
+    @20 := move (@21) + const (2 : u32)
     drop @21
+    @19 := test_crate::function_call(move (@20))
     drop @20
+    drop @19
     // Return final value
     @0 := copy (sum@2)
     drop i@3
@@ -198,10 +189,8 @@ where
 {
     let @0: (); // return
     let @1: T; // arg #1
-    let @2: (); // anonymous local
 
-    @2 := ()
-    @0 := move (@2)
+    @0 := ()
     drop @1
     @0 := ()
     return
@@ -261,10 +250,8 @@ fn test_crate::foo()
     let @31: &'_ (u32); // anonymous local
     let @32: &'_ (u32); // anonymous local
     let @33: core::option::Option<core::fmt::Arguments<'_>>[core::marker::Sized<core::fmt::Arguments<'_>>]; // anonymous local
-    let @34: (); // anonymous local
-    let @35: (); // anonymous local
-    let @36: &'_ (Array<u32, 10 : usize>); // anonymous local
-    let @37: &'_ (u32); // anonymous local
+    let @34: &'_ (Array<u32, 10 : usize>); // anonymous local
+    let @35: &'_ (u32); // anonymous local
 
     // Call `default` and destructure the result
     @3 := test_crate::{impl core::default::Default for test_crate::Foo}::default()
@@ -303,9 +290,9 @@ fn test_crate::foo()
     @fake_read(a@15)
     // `assert_eq`
     @19 := const (9 : usize)
-    @36 := &a@15
-    @37 := @ArrayIndexShared<'_, u32, 10 : usize>(move (@36), copy (@19))
-    @18 := &*(@37)
+    @34 := &a@15
+    @35 := @ArrayIndexShared<'_, u32, 10 : usize>(move (@34), copy (@19))
+    @18 := &*(@35)
     @21 := const (9 : u32)
     @20 := &@21
     @17 := (move (@18), move (@20))
@@ -334,8 +321,6 @@ fn test_crate::foo()
     }
     drop @26
     drop @25
-    @34 := ()
-    @16 := move (@34)
     drop @24
     drop right_val@23
     drop left_val@22
@@ -343,8 +328,7 @@ fn test_crate::foo()
     drop @19
     drop @17
     drop @16
-    @35 := ()
-    @0 := move (@35)
+    @0 := ()
     drop a@15
     drop super_long_field_name@9
     drop x@8
@@ -372,7 +356,6 @@ fn test_crate::thing()
     let @3: (); // anonymous local
     let @4: u32; // anonymous local
     let @5: u32; // anonymous local
-    let @6: (); // anonymous local
 
     // This comment belongs above the assignment to `x` and not above intermediate computations.
     @5 := test_crate::CONSTANT
@@ -384,8 +367,7 @@ fn test_crate::thing()
     @3 := test_crate::function_call(move (@4))
     drop @4
     drop @3
-    @6 := ()
-    @0 := move (@6)
+    @0 := ()
     drop x@1
     @0 := ()
     return
@@ -395,12 +377,10 @@ fn test_crate::fake_read(@1: u32)
 {
     let @0: (); // return
     let x@1: u32; // arg #1
-    let @2: (); // anonymous local
 
     // This statement is translated to a `fake_read`.
     @fake_read(x@1)
-    @2 := ()
-    @0 := move (@2)
+    @0 := ()
     @0 := ()
     return
 }

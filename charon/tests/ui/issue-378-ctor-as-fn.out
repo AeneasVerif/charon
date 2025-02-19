@@ -84,7 +84,6 @@ fn test_crate::main()
     let @15: &'_ (i32); // anonymous local
     let @16: &'_ (i32); // anonymous local
     let @17: i32; // anonymous local
-    let @18: (); // anonymous local
 
     f@1 := const (core::option::Option::Some<u8>[core::marker::Sized<u8>])
     @fake_read(f@1)
@@ -125,8 +124,7 @@ fn test_crate::main()
     drop @17
     drop @16
     drop @13
-    @18 := ()
-    @0 := move (@18)
+    @0 := ()
     drop f@12
     drop f@8
     drop f@4

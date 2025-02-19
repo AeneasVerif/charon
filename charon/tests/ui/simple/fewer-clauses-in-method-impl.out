@@ -24,10 +24,8 @@ where
     [@TraitClause1]: core::clone::Clone<T>,
 {
     let @0: (); // return
-    let @1: (); // anonymous local
 
-    @1 := ()
-    @0 := move (@1)
+    @0 := ()
     @0 := ()
     return
 }

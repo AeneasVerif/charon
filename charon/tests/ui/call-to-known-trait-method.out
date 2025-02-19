@@ -69,10 +69,8 @@ where
     [@TraitClause4]: core::marker::Sized<C>,
 {
     let @0: (); // return
-    let @1: (); // anonymous local
 
-    @1 := ()
-    @0 := move (@1)
+    @0 := ()
     @0 := ()
     return
 }
@@ -120,7 +118,6 @@ fn test_crate::main()
     let _x@1: (u8, bool); // local
     let _y@2: test_crate::Struct<bool>[core::marker::Sized<bool>]; // local
     let @3: (); // anonymous local
-    let @4: (); // anonymous local
 
     _x@1 := (const (0 : u8), const (false))
     @fake_read(_x@1)
@@ -128,8 +125,7 @@ fn test_crate::main()
     @fake_read(_y@2)
     @3 := test_crate::{impl test_crate::Trait<B, (A, B)> for test_crate::Struct<A>[@TraitClause0]}::method<u8, bool, alloc::string::String>[core::marker::Sized<u8>, core::marker::Sized<bool>, core::clone::impls::{impl core::clone::Clone for u8}#6, core::cmp::impls::{impl core::cmp::PartialEq<bool> for bool}#19, core::marker::Sized<alloc::string::String>]()
     drop @3
-    @4 := ()
-    @0 := move (@4)
+    @0 := ()
     drop _y@2
     drop _x@1
     @0 := ()

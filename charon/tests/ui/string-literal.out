@@ -40,7 +40,6 @@ fn test_crate::main()
     let _s@1: alloc::string::String; // local
     let @2: &'_ (Str); // anonymous local
     let @3: &'_ (Str); // anonymous local
-    let @4: (); // anonymous local
 
     @3 := const ("Hello")
     @2 := &*(@3)
@@ -48,8 +47,7 @@ fn test_crate::main()
     drop @2
     @fake_read(_s@1)
     drop @3
-    @4 := ()
-    @0 := move (@4)
+    @0 := ()
     drop _s@1
     drop _s@1
     @0 := ()

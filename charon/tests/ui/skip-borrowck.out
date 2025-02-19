@@ -54,11 +54,6 @@ fn test_crate::choose_test()
     let @17: (); // anonymous local
     let @18: bool; // anonymous local
     let @19: i32; // anonymous local
-    let @20: (); // anonymous local
-    let @21: (); // anonymous local
-    let @22: (); // anonymous local
-    let @23: (); // anonymous local
-    let @24: (); // anonymous local
 
     x@1 := const (0 : i32)
     @fake_read(x@1)
@@ -84,8 +79,6 @@ fn test_crate::choose_test()
         panic(core::panicking::panic)
     }
     drop @10
-    @20 := ()
-    @8 := move (@20)
     drop @9
     drop @8
     // drop(z)
@@ -98,8 +91,6 @@ fn test_crate::choose_test()
         panic(core::panicking::panic)
     }
     drop @13
-    @21 := ()
-    @11 := move (@21)
     drop @12
     drop @11
     @16 := copy (y@2)
@@ -111,8 +102,6 @@ fn test_crate::choose_test()
         panic(core::panicking::panic)
     }
     drop @16
-    @22 := ()
-    @14 := move (@22)
     drop @15
     drop @14
     @19 := copy (*(z@3))
@@ -124,12 +113,9 @@ fn test_crate::choose_test()
         panic(core::panicking::panic)
     }
     drop @19
-    @23 := ()
-    @17 := move (@23)
     drop @18
     drop @17
-    @24 := ()
-    @0 := move (@24)
+    @0 := ()
     drop z@3
     drop y@2
     drop x@1

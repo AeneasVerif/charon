@@ -44,10 +44,8 @@ where
 {
     let @0: (); // return
     let @1: F; // arg #1
-    let @2: (); // anonymous local
 
-    @2 := ()
-    @0 := move (@2)
+    @0 := ()
     drop @1
     @0 := ()
     return
@@ -57,12 +55,10 @@ fn test_crate::flibidi()
 {
     let @0: (); // return
     let @1: (); // anonymous local
-    let @2: (); // anonymous local
 
     @1 := test_crate::call<'_, fn<'a>(&'a (())) -> &'a (())>[core::marker::Sized<fn<'a>(&'a (())) -> &'a (())>, core::ops::function::Fn<fn<'a>(&'a (())) -> &'a (()), (&'_ (())), &'_ (())>](const (test_crate::flabada<'_>))
     drop @1
-    @2 := ()
-    @0 := move (@2)
+    @0 := ()
     @0 := ()
     return
 }

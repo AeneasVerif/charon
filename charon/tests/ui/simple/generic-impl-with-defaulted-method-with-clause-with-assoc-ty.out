@@ -26,10 +26,8 @@ where
     [@TraitClause1]: test_crate::HasType<core::option::Option<T>[@TraitClause0], Clause1_Type>,
 {
     let @0: (); // return
-    let @1: (); // anonymous local
 
-    @1 := ()
-    @0 := move (@1)
+    @0 := ()
     @0 := ()
     return
 }
@@ -46,10 +44,8 @@ where
     [@TraitClause0]: test_crate::HasType<Self, Clause0_Type>,
 {
     let @0: (); // return
-    let @1: (); // anonymous local
 
-    @1 := ()
-    @0 := move (@1)
+    @0 := ()
     @0 := ()
     return
 }

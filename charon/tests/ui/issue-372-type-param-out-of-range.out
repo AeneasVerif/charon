@@ -38,10 +38,8 @@ where
     for<'_0> @TraitClause2::parent_clause0::Output = (),
 {
     let @0: (); // return
-    let @1: (); // anonymous local
 
-    @1 := ()
-    @0 := move (@1)
+    @0 := ()
     @0 := ()
     return
 }
@@ -54,10 +52,8 @@ where
     for<'b> @TraitClause2::parent_clause0::Output = (),
 {
     let @0: (); // return
-    let @1: (); // anonymous local
 
-    @1 := ()
-    @0 := move (@1)
+    @0 := ()
     @0 := ()
     return
 }
@@ -71,10 +67,8 @@ where
     for<'_0> @TraitClause1::parent_clause0::Output = (),
 {
     let @0: (); // return
-    let @1: (); // anonymous local
 
-    @1 := ()
-    @0 := move (@1)
+    @0 := ()
     @0 := ()
     return
 }

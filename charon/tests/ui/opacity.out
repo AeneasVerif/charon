@@ -78,7 +78,6 @@ fn test_crate::foo()
     let @6: &'_ (i32); // anonymous local
     let @7: &'_ (i32); // anonymous local
     let @8: i32; // anonymous local
-    let @9: (); // anonymous local
 
     @3 := core::option::Option::Some { 0: const (0 : i32) }
     @2 := &@3
@@ -99,8 +98,7 @@ fn test_crate::foo()
     drop @8
     drop @7
     drop @5
-    @9 := ()
-    @0 := move (@9)
+    @0 := ()
     @0 := ()
     return
 }

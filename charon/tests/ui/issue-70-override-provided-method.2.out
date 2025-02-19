@@ -15,14 +15,12 @@ fn test_crate::{impl test_crate::Trait for test_crate::Foo}::required<'_0>(@1: &
     let self@1: &'_ (test_crate::Foo); // arg #1
     let @2: (); // anonymous local
     let @3: &'_ (test_crate::Foo); // anonymous local
-    let @4: (); // anonymous local
 
     @3 := &*(self@1)
     @2 := test_crate::{impl test_crate::Trait for test_crate::Foo}::provided1<'_>(move (@3))
     drop @3
     drop @2
-    @4 := ()
-    @0 := move (@4)
+    @0 := ()
     @0 := ()
     return
 }
@@ -35,7 +33,6 @@ fn test_crate::{impl test_crate::Trait for test_crate::Foo}::provided1<'_0>(@1: 
     let @3: &'_ (test_crate::Foo); // anonymous local
     let @4: (); // anonymous local
     let @5: &'_ (test_crate::Foo); // anonymous local
-    let @6: (); // anonymous local
 
     @3 := &*(self@1)
     @2 := test_crate::{impl test_crate::Trait for test_crate::Foo}::required<'_>(move (@3))
@@ -45,8 +42,7 @@ fn test_crate::{impl test_crate::Trait for test_crate::Foo}::provided1<'_0>(@1: 
     @4 := test_crate::{impl test_crate::Trait for test_crate::Foo}::provided2<'_>(move (@5))
     drop @5
     drop @4
-    @6 := ()
-    @0 := move (@6)
+    @0 := ()
     @0 := ()
     return
 }
@@ -59,7 +55,6 @@ fn test_crate::{impl test_crate::Trait for test_crate::Foo}::provided2<'_0>(@1: 
     let @3: &'_ (test_crate::Foo); // anonymous local
     let @4: (); // anonymous local
     let @5: &'_ (test_crate::Foo); // anonymous local
-    let @6: (); // anonymous local
 
     @3 := &*(self@1)
     @2 := test_crate::{impl test_crate::Trait for test_crate::Foo}::required<'_>(move (@3))
@@ -69,8 +64,7 @@ fn test_crate::{impl test_crate::Trait for test_crate::Foo}::provided2<'_0>(@1: 
     @4 := test_crate::{impl test_crate::Trait for test_crate::Foo}::provided1<'_>(move (@5))
     drop @5
     drop @4
-    @6 := ()
-    @0 := move (@6)
+    @0 := ()
     @0 := ()
     return
 }
@@ -90,14 +84,12 @@ fn test_crate::{impl test_crate::Trait for test_crate::Bar}#1::required<'_0>(@1:
     let self@1: &'_ (test_crate::Bar); // arg #1
     let @2: (); // anonymous local
     let @3: &'_ (test_crate::Bar); // anonymous local
-    let @4: (); // anonymous local
 
     @3 := &*(self@1)
     @2 := test_crate::{impl test_crate::Trait for test_crate::Bar}#1::provided2<'_>(move (@3))
     drop @3
     drop @2
-    @4 := ()
-    @0 := move (@4)
+    @0 := ()
     @0 := ()
     return
 }
@@ -108,14 +100,12 @@ fn test_crate::{impl test_crate::Trait for test_crate::Bar}#1::provided1<'_0>(@1
     let self@1: &'_ (test_crate::Bar); // arg #1
     let @2: (); // anonymous local
     let @3: &'_ (test_crate::Bar); // anonymous local
-    let @4: (); // anonymous local
 
     @3 := &*(self@1)
     @2 := test_crate::{impl test_crate::Trait for test_crate::Bar}#1::provided2<'_>(move (@3))
     drop @3
     drop @2
-    @4 := ()
-    @0 := move (@4)
+    @0 := ()
     @0 := ()
     return
 }
@@ -128,7 +118,6 @@ fn test_crate::{impl test_crate::Trait for test_crate::Bar}#1::provided2<'_0>(@1
     let @3: &'_ (test_crate::Bar); // anonymous local
     let @4: (); // anonymous local
     let @5: &'_ (test_crate::Bar); // anonymous local
-    let @6: (); // anonymous local
 
     @3 := &*(self@1)
     @2 := test_crate::{impl test_crate::Trait for test_crate::Bar}#1::required<'_>(move (@3))
@@ -138,8 +127,7 @@ fn test_crate::{impl test_crate::Trait for test_crate::Bar}#1::provided2<'_0>(@1
     @4 := test_crate::{impl test_crate::Trait for test_crate::Bar}#1::provided1<'_>(move (@5))
     drop @5
     drop @4
-    @6 := ()
-    @0 := move (@6)
+    @0 := ()
     @0 := ()
     return
 }
@@ -161,7 +149,6 @@ fn test_crate::Trait::provided1<'_0, Self>(@1: &'_0 (Self))
     let @3: &'_ (Self); // anonymous local
     let @4: (); // anonymous local
     let @5: &'_ (Self); // anonymous local
-    let @6: (); // anonymous local
 
     @3 := &*(self@1)
     @2 := Self::required<'_>(move (@3))
@@ -171,8 +158,7 @@ fn test_crate::Trait::provided1<'_0, Self>(@1: &'_0 (Self))
     @4 := Self::provided2<'_>(move (@5))
     drop @5
     drop @4
-    @6 := ()
-    @0 := move (@6)
+    @0 := ()
     @0 := ()
     return
 }
@@ -185,7 +171,6 @@ fn test_crate::Trait::provided2<'_0, Self>(@1: &'_0 (Self))
     let @3: &'_ (Self); // anonymous local
     let @4: (); // anonymous local
     let @5: &'_ (Self); // anonymous local
-    let @6: (); // anonymous local
 
     @3 := &*(self@1)
     @2 := Self::required<'_>(move (@3))
@@ -195,8 +180,7 @@ fn test_crate::Trait::provided2<'_0, Self>(@1: &'_0 (Self))
     @4 := Self::provided1<'_>(move (@5))
     drop @5
     drop @4
-    @6 := ()
-    @0 := move (@6)
+    @0 := ()
     @0 := ()
     return
 }

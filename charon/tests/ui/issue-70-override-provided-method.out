@@ -35,7 +35,6 @@ fn test_crate::main()
     let @3: core::option::Option<i32>[core::marker::Sized<i32>]; // anonymous local
     let @4: &'_ (core::option::Option<i32>[core::marker::Sized<i32>]); // anonymous local
     let @5: core::option::Option<i32>[core::marker::Sized<i32>]; // anonymous local
-    let @6: (); // anonymous local
 
     @3 := core::option::Option::Some { 0: const (1 : i32) }
     @2 := &@3
@@ -48,8 +47,7 @@ fn test_crate::main()
     drop @5
     drop @3
     drop @1
-    @6 := ()
-    @0 := move (@6)
+    @0 := ()
     @0 := ()
     return
 }

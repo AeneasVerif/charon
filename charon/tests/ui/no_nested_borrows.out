@@ -63,11 +63,9 @@ fn test_crate::use_tuple_struct<'_0>(@1: &'_0 mut (test_crate::Tuple<u32, u32>[c
 {
     let @0: (); // return
     let x@1: &'_ mut (test_crate::Tuple<u32, u32>[core::marker::Sized<u32>, core::marker::Sized<u32>]); // arg #1
-    let @2: (); // anonymous local
 
     (*(x@1)).0 := const (1 : u32)
-    @2 := ()
-    @0 := move (@2)
+    @0 := ()
     @0 := ()
     return
 }
@@ -189,7 +187,6 @@ fn test_crate::test2()
     let e0@11: test_crate::EmptyEnum; // local
     let e1@12: test_crate::EmptyEnum; // local
     let enum0@13: test_crate::Enum; // local
-    let @14: (); // anonymous local
 
     x@1 := const (23 : u32)
     @fake_read(x@1)
@@ -217,8 +214,7 @@ fn test_crate::test2()
     @fake_read(e1@12)
     enum0@13 := test_crate::Enum::Variant1 {  }
     @fake_read(enum0@13)
-    @14 := ()
-    @0 := move (@14)
+    @0 := ()
     drop enum0@13
     drop e1@12
     drop e0@11
@@ -264,7 +260,6 @@ fn test_crate::test_list1()
     let l@1: test_crate::List<i32>[core::marker::Sized<i32>]; // local
     let @2: alloc::boxed::Box<test_crate::List<i32>[core::marker::Sized<i32>]>[core::marker::Sized<alloc::alloc::Global>]; // anonymous local
     let @3: test_crate::List<i32>[core::marker::Sized<i32>]; // anonymous local
-    let @4: (); // anonymous local
 
     @3 := test_crate::List::Nil {  }
     @2 := @BoxNew<test_crate::List<i32>[core::marker::Sized<i32>]>[core::marker::Sized<test_crate::List<i32>[core::marker::Sized<i32>]>](move (@3))
@@ -273,8 +268,7 @@ fn test_crate::test_list1()
     drop @2
     drop @2
     @fake_read(l@1)
-    @4 := ()
-    @0 := move (@4)
+    @0 := ()
     drop l@1
     drop l@1
     @0 := ()
@@ -300,8 +294,6 @@ fn test_crate::test_box1()
     let @6: (); // anonymous local
     let @7: bool; // anonymous local
     let @8: i32; // anonymous local
-    let @9: (); // anonymous local
-    let @10: (); // anonymous local
 
     b@1 := @BoxNew<i32>[core::marker::Sized<i32>](const (0 : i32))
     @fake_read(b@1)
@@ -323,12 +315,9 @@ fn test_crate::test_box1()
         panic(core::panicking::panic)
     }
     drop @8
-    @9 := ()
-    @6 := move (@9)
     drop @7
     drop @6
-    @10 := ()
-    @0 := move (@10)
+    @0 := ()
     drop x@4
     drop x@2
     drop b@1
@@ -351,12 +340,10 @@ fn test_crate::test_unreachable(@1: bool)
     let @0: (); // return
     let b@1: bool; // arg #1
     let @2: bool; // anonymous local
-    let @3: (); // anonymous local
 
     @2 := copy (b@1)
     assert(move (@2) == false)
-    @3 := ()
-    @0 := move (@3)
+    @0 := ()
     drop @2
     @0 := ()
     return
@@ -507,38 +494,24 @@ fn test_crate::test_even_odd()
     let @6: bool; // anonymous local
     let @7: (); // anonymous local
     let @8: bool; // anonymous local
-    let @9: (); // anonymous local
-    let @10: (); // anonymous local
-    let @11: (); // anonymous local
-    let @12: (); // anonymous local
-    let @13: (); // anonymous local
 
     @2 := test_crate::even(const (0 : u32))
     assert(move (@2) == true)
-    @9 := ()
-    @1 := move (@9)
     drop @2
     drop @1
     @4 := test_crate::even(const (4 : u32))
     assert(move (@4) == true)
-    @10 := ()
-    @3 := move (@10)
     drop @4
     drop @3
     @6 := test_crate::odd(const (1 : u32))
     assert(move (@6) == true)
-    @11 := ()
-    @5 := move (@11)
     drop @6
     drop @5
     @8 := test_crate::odd(const (5 : u32))
     assert(move (@8) == true)
-    @12 := ()
-    @7 := move (@12)
     drop @8
     drop @7
-    @13 := ()
-    @0 := move (@13)
+    @0 := ()
     @0 := ()
     return
 }
@@ -611,11 +584,9 @@ fn test_crate::incr<'_0>(@1: &'_0 mut (u32))
 {
     let @0: (); // return
     let x@1: &'_ mut (u32); // arg #1
-    let @2: (); // anonymous local
 
     *(x@1) := copy (*(x@1)) + const (1 : u32)
-    @2 := ()
-    @0 := move (@2)
+    @0 := ()
     @0 := ()
     return
 }

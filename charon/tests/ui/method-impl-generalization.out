@@ -37,10 +37,8 @@ where
     let @0: (); // return
     let self@1: (); // arg #1
     let _other@2: T; // arg #2
-    let @3: (); // anonymous local
 
-    @3 := ()
-    @0 := move (@3)
+    @0 := ()
     drop _other@2
     @0 := ()
     return
@@ -91,7 +89,6 @@ fn test_crate::main()
     let @9: &'_ (()); // anonymous local
     let @10: &'_ (()); // anonymous local
     let @11: (); // anonymous local
-    let @12: (); // anonymous local
 
     @2 := ()
     @5 := const (1 : u32)
@@ -121,8 +118,7 @@ fn test_crate::main()
     drop @10
     drop @8
     drop @6
-    @12 := ()
-    @0 := move (@12)
+    @0 := ()
     @0 := ()
     return
 }

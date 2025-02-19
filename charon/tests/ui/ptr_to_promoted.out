@@ -10,7 +10,6 @@ fn test_crate::main()
     let @5: &'_ (u8); // anonymous local
     let @6: u8; // anonymous local
     let @7: &'_ (u8); // anonymous local
-    let @8: (); // anonymous local
 
     @6 := const ([0])
     @7 := &@6
@@ -22,8 +21,7 @@ fn test_crate::main()
     @3 := cast<*const u8, usize>(move (@4))
     drop @4
     drop @3
-    @8 := ()
-    @0 := move (@8)
+    @0 := ()
     drop x@1
     @0 := ()
     return

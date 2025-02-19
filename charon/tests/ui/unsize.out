@@ -43,7 +43,6 @@ fn test_crate::foo()
     let @20: alloc::rc::Rc<alloc::string::String, alloc::alloc::Global>[core::marker::Sized<alloc::alloc::Global>]; // anonymous local
     let @21: alloc::string::String; // anonymous local
     let @22: &'_ (alloc::string::String); // anonymous local
-    let @23: (); // anonymous local
 
     array@1 := [const (0 : i32), const (0 : i32); 2 : usize]
     @fake_read(array@1)
@@ -103,8 +102,7 @@ fn test_crate::foo()
     @fake_read(@19)
     drop @19
     drop @19
-    @23 := ()
-    @0 := move (@23)
+    @0 := ()
     drop string@11
     drop string@11
     drop array@1

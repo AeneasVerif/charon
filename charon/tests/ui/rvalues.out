@@ -8,7 +8,6 @@ fn test_crate::addr_of()
     let @3: &'_ (u32); // anonymous local
     let @4: *const u32; // anonymous local
     let @5: *mut u32; // anonymous local
-    let @6: (); // anonymous local
 
     x@1 := const (0 : u32)
     @fake_read(x@1)
@@ -23,8 +22,7 @@ fn test_crate::addr_of()
     @5 := &raw mut x@1
     @fake_read(@5)
     drop @5
-    @6 := ()
-    @0 := move (@6)
+    @0 := ()
     drop x@1
     @0 := ()
     return
@@ -48,7 +46,6 @@ fn test_crate::literal_casts()
     let @5: f64; // anonymous local
     let @6: f64; // anonymous local
     let @7: f32; // anonymous local
-    let @8: (); // anonymous local
 
     @1 := cast<u64, u8>(const (0 : u64))
     @fake_read(@1)
@@ -67,8 +64,7 @@ fn test_crate::literal_casts()
     @5 := cast<f32, f64>(move (@7))
     @fake_read(@5)
     drop @5
-    @8 := ()
-    @0 := move (@8)
+    @0 := ()
     @0 := ()
     return
 }
@@ -76,10 +72,8 @@ fn test_crate::literal_casts()
 fn test_crate::ptr_casts::foo()
 {
     let @0: (); // return
-    let @1: (); // anonymous local
 
-    @1 := ()
-    @0 := move (@1)
+    @0 := ()
     @0 := ()
     return
 }
@@ -104,7 +98,6 @@ fn test_crate::ptr_casts()
     let @15: *const u8; // anonymous local
     let @16: *const u8; // anonymous local
     let @17: fn(); // anonymous local
-    let @18: (); // anonymous local
 
     @3 := @ArrayRepeat<'_, u32, 64 : usize>(const (0 : u32))
     @2 := &@3
@@ -144,8 +137,7 @@ fn test_crate::ptr_casts()
     drop @17
     @fake_read(@16)
     drop @16
-    @18 := ()
-    @0 := move (@18)
+    @0 := ()
     drop x@7
     drop x@6
     drop @3
@@ -157,10 +149,8 @@ fn test_crate::ptr_casts()
 fn test_crate::fn_casts::foo()
 {
     let @0: (); // return
-    let @1: (); // anonymous local
 
-    @1 := ()
-    @0 := move (@1)
+    @0 := ()
     @0 := ()
     return
 }
@@ -168,10 +158,8 @@ fn test_crate::fn_casts::foo()
 unsafe fn test_crate::fn_casts::bar()
 {
     let @0: (); // return
-    let @1: (); // anonymous local
 
-    @1 := ()
-    @0 := move (@1)
+    @0 := ()
     @0 := ()
     return
 }
@@ -197,7 +185,6 @@ fn test_crate::fn_casts()
     let @5: fn(u8); // anonymous local
     let @6: fn(u8); // anonymous local
     let @7: fn(u8); // anonymous local
-    let @8: (); // anonymous local
 
     @1 := cast<fn(), fn()>(const (test_crate::fn_casts::foo))
     @fake_read(@1)
@@ -217,8 +204,7 @@ fn test_crate::fn_casts()
     drop @7
     @fake_read(@6)
     drop @6
-    @8 := ()
-    @0 := move (@8)
+    @0 := ()
     drop closure@3
     @0 := ()
     return
@@ -233,7 +219,6 @@ fn test_crate::boxes()
     let @0: (); // return
     let @1: alloc::boxed::Box<i32>[core::marker::Sized<alloc::alloc::Global>]; // anonymous local
     let @2: alloc::boxed::Box<i32>[core::marker::Sized<alloc::alloc::Global>]; // anonymous local
-    let @3: (); // anonymous local
 
     @2 := @BoxNew<i32>[core::marker::Sized<alloc::alloc::Global>](const (42 : i32))
     @1 := move (@2)
@@ -242,8 +227,7 @@ fn test_crate::boxes()
     @fake_read(@1)
     drop @1
     drop @1
-    @3 := ()
-    @0 := move (@3)
+    @0 := ()
     @0 := ()
     return
 }
