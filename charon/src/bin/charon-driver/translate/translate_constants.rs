@@ -171,10 +171,7 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
                 };
                 RawConstantExpr::FnPtr(fn_id.func)
             }
-            // TODO: add a proper variant
-            ConstantExprKind::Memory(bytes) => {
-                RawConstantExpr::Literal(Literal::ByteStr(bytes.clone()))
-            }
+            ConstantExprKind::Memory(bytes) => RawConstantExpr::RawMemory(bytes.clone()),
             ConstantExprKind::Todo(msg) => {
                 // Case not yet handled by hax
                 raise_error!(self, span, "Unsupported constant: {:?}", msg)
@@ -198,6 +195,7 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
             .translate_constant_expr_to_constant_expr(span, v)?
             .value;
         match value {
+            RawConstantExpr::Var(v) => Ok(ConstGeneric::Var(v)),
             RawConstantExpr::Literal(v) => Ok(ConstGeneric::Value(v)),
             RawConstantExpr::Global(global_ref) => {
                 // TODO: handle constant arguments with generics (this can likely only happen with
@@ -206,13 +204,13 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
                 Ok(ConstGeneric::Global(global_ref.id))
             }
             RawConstantExpr::Adt(..)
+            | RawConstantExpr::RawMemory { .. }
             | RawConstantExpr::TraitConst { .. }
             | RawConstantExpr::Ref(_)
             | RawConstantExpr::MutPtr(_)
             | RawConstantExpr::FnPtr { .. } => {
                 raise_error!(self, span, "Unexpected constant generic: {:?}", value)
             }
-            RawConstantExpr::Var(v) => Ok(ConstGeneric::Var(v)),
         }
     }
 }

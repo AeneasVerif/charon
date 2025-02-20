@@ -254,6 +254,10 @@ and raw_constant_expr =
        *)
   | CVar of const_generic_var_id de_bruijn_var  (** A const generic var *)
   | CFnPtr of fn_ptr  (** Function pointer *)
+  | CRawMemory of int list
+      (** Raw memory value obtained from constant evaluation. Used when a more structured
+          representation isn't possible (e.g. for unions) or just isn't implemented yet.
+       *)
 
 and constant_expr = { value : raw_constant_expr; ty : ty }
 

@@ -30,6 +30,7 @@ fn transform_constant_expr<F: FnMut(Ty) -> Place>(
     match val.value {
         RawConstantExpr::Literal(_)
         | RawConstantExpr::Var(_)
+        | RawConstantExpr::RawMemory(..)
         | RawConstantExpr::TraitConst(..)
         | RawConstantExpr::FnPtr(..) => {
             // Nothing to do

@@ -253,6 +253,9 @@ and raw_constant_expr_of_json (ctx : of_json_ctx) (js : json) :
     | `Assoc [ ("FnPtr", fn_ptr) ] ->
         let* fn_ptr = fn_ptr_of_json ctx fn_ptr in
         Ok (CFnPtr fn_ptr)
+    | `Assoc [ ("RawMemory", raw_memory) ] ->
+        let* raw_memory = list_of_json int_of_json ctx raw_memory in
+        Ok (CRawMemory raw_memory)
     | _ -> Error "")
 
 and constant_expr_of_json (ctx : of_json_ctx) (js : json) :

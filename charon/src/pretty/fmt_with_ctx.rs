@@ -793,8 +793,9 @@ impl<C: AstFormatter> FmtWithCtx<C> for RawConstantExpr {
             }
             RawConstantExpr::Var(id) => format!("{}", ctx.format_object(*id)),
             RawConstantExpr::FnPtr(f) => {
-                format!("{}", f.fmt_with_ctx(ctx),)
+                format!("{}", f.fmt_with_ctx(ctx))
             }
+            RawConstantExpr::RawMemory(bytes) => format!("RawMemory({bytes:?})"),
         }
     }
 }

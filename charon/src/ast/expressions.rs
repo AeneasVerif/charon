@@ -468,6 +468,10 @@ pub enum RawConstantExpr {
     Var(ConstGenericDbVar),
     /// Function pointer
     FnPtr(FnPtr),
+    /// Raw memory value obtained from constant evaluation. Used when a more structured
+    /// representation isn't possible (e.g. for unions) or just isn't implemented yet.
+    #[drive(skip)]
+    RawMemory(Vec<u8>),
 }
 
 #[derive(Debug, PartialEq, Eq, Clone, Serialize, Deserialize, Drive, DriveMut)]
