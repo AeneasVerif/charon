@@ -10,7 +10,7 @@ trait test_crate::Trait<'a, Self, Self_Type>
 fn test_crate::foo<T>()
 where
     [@TraitClause0]: core::marker::Sized<T>,
-    [@TraitClause1]: for<'_0> test_crate::Trait<'_0_0, T, &'_ (())>,
+    [@TraitClause1]: for<'a> test_crate::Trait<'a, T, &'_ (())>,
 {
     let @0: (); // return
 

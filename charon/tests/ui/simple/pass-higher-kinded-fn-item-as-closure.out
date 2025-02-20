@@ -40,7 +40,7 @@ trait core::ops::function::Fn<Self, Args, Self_Clause0_Clause0_Output>
 fn test_crate::call<'b, F>(@1: F)
 where
     [@TraitClause0]: core::marker::Sized<F>,
-    [@TraitClause1]: core::ops::function::Fn<F, (&'_ (())), &'b (())>,
+    [@TraitClause1]: core::ops::function::Fn<F, (&'b (())), &'b (())>,
 {
     let @0: (); // return
     let @1: F; // arg #1

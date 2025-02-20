@@ -48,7 +48,7 @@ fn test_crate::{test_crate::S<'a, K>[@TraitClause0]}::g<'a, K, F>()
 where
     [@TraitClause0]: core::marker::Sized<K>,
     [@TraitClause1]: core::marker::Sized<F>,
-    [@TraitClause2]: for<'_0> core::ops::function::FnMut<F, (&'_0_0 (u32))>,
+    [@TraitClause2]: for<'b> core::ops::function::FnMut<F, (&'b (u32))>,
     for<'b> @TraitClause2::parent_clause0::Output = (),
 {
     let @0: (); // return

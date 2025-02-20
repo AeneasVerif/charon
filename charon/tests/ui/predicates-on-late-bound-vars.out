@@ -30,7 +30,7 @@ trait core::clone::Clone<Self>
 
 fn test_crate::wrap2<'a>(@1: &'a (u32)) -> core::option::Option<&'a (u32)>[core::marker::Sized<&'_ (u32)>]
 where
-    [@TraitClause0]: core::clone::Clone<&'_ (())>,
+    [@TraitClause0]: core::clone::Clone<&'a (())>,
 {
     let @0: core::option::Option<&'_ (u32)>[core::marker::Sized<&'_ (u32)>]; // return
     let x@1: &'_ (u32); // arg #1

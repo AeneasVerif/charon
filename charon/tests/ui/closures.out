@@ -292,7 +292,7 @@ trait test_crate::Trait<'a, Self>
 fn test_crate::test_closure_ref_early_bound::closure<'a, '_1, '_2, T>(@1: &'_2 (()), @2: &'_1 (T)) -> &'_1 (T)
 where
     [@TraitClause0]: core::marker::Sized<T>,
-    [@TraitClause1]: test_crate::Trait<'_, T>,
+    [@TraitClause1]: test_crate::Trait<'a, T>,
 {
     let @0: &'_ (T); // return
     let state@1: &'_2 (()); // arg #1
@@ -305,7 +305,7 @@ where
 fn test_crate::test_closure_ref_early_bound<'a, T>(@1: &'a (T)) -> &'a (T)
 where
     [@TraitClause0]: core::marker::Sized<T>,
-    [@TraitClause1]: test_crate::Trait<'_, T>,
+    [@TraitClause1]: test_crate::Trait<'a, T>,
 {
     let @0: &'_ (T); // return
     let x@1: &'_ (T); // arg #1
