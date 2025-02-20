@@ -996,7 +996,7 @@ trait core::ops::function::Fn<Self, Args>
 fn test_crate::call<'a, F>(@1: F)
 where
     [@TraitClause0]: core::marker::Sized<F>,
-    [@TraitClause1]: core::ops::function::Fn<F, (&'_ (()))>,
+    [@TraitClause1]: core::ops::function::Fn<F, (&'a (()))>,
     @TraitClause1::parent_clause0::parent_clause0::Output = test_crate::Wrapper<(bool, &'a (()))>[core::marker::Sized<(bool, &'_ (()))>],
 {
     let @0: (); // return

@@ -24,7 +24,7 @@ trait core::ops::function::FnMut<Self, Args>
 fn test_crate::foo<F>(@1: F)
 where
     [@TraitClause0]: core::marker::Sized<F>,
-    [@TraitClause1]: for<'_0> core::ops::function::FnMut<F, (&'_0_0 (()))>,
+    [@TraitClause1]: for<'a> core::ops::function::FnMut<F, (&'a (()))>,
     for<'a> @TraitClause1::parent_clause0::Output = (),
 {
     let @0: (); // return
@@ -111,8 +111,8 @@ impl<T, U> test_crate::{impl test_crate::Trait for core::result::Result<T, U>[@T
 where
     [@TraitClause0]: core::marker::Sized<T>,
     [@TraitClause1]: core::marker::Sized<U>,
-    [@TraitClause2]: for<'_0> core::iter::traits::collect::IntoIterator<&'_0_0 (core::result::Result<T, U>[@TraitClause0, @TraitClause1])>,
-    [@TraitClause3]: for<'_0> core::marker::Copy<@TraitClause2::Item>,
+    [@TraitClause2]: for<'a> core::iter::traits::collect::IntoIterator<&'a (core::result::Result<T, U>[@TraitClause0, @TraitClause1])>,
+    [@TraitClause3]: for<'a> core::marker::Copy<@TraitClause2::Item>,
 
 fn core::clone::Clone::clone<'_0, Self>(@1: &'_0 (Self)) -> Self
 

@@ -9,8 +9,8 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
         v: &hax::ConstantLiteral,
     ) -> Result<RawConstantExpr, Error> {
         let lit = match v {
-            hax::ConstantLiteral::ByteStr(bs, _) => Literal::ByteStr(bs.clone()),
-            hax::ConstantLiteral::Str(s, _) => Literal::Str(s.clone()),
+            hax::ConstantLiteral::ByteStr(bs) => Literal::ByteStr(bs.clone()),
+            hax::ConstantLiteral::Str(s) => Literal::Str(s.clone()),
             hax::ConstantLiteral::Char(c) => Literal::Char(*c),
             hax::ConstantLiteral::Bool(b) => Literal::Bool(*b),
             hax::ConstantLiteral::Int(i) => {
@@ -67,7 +67,7 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
     ) -> Result<ConstantExpr, Error> {
         use hax::ConstantExprKind;
         let ty = &v.ty;
-        let value = match &(*v.contents) {
+        let value = match v.contents.as_ref() {
             ConstantExprKind::Literal(lit) => {
                 self.translate_constant_literal_to_raw_constant_expr(lit)?
             }
@@ -171,6 +171,7 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
                 };
                 RawConstantExpr::FnPtr(fn_id.func)
             }
+            ConstantExprKind::Memory(bytes) => RawConstantExpr::RawMemory(bytes.clone()),
             ConstantExprKind::Todo(msg) => {
                 // Case not yet handled by hax
                 raise_error!(self, span, "Unsupported constant: {:?}", msg)
@@ -194,6 +195,7 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
             .translate_constant_expr_to_constant_expr(span, v)?
             .value;
         match value {
+            RawConstantExpr::Var(v) => Ok(ConstGeneric::Var(v)),
             RawConstantExpr::Literal(v) => Ok(ConstGeneric::Value(v)),
             RawConstantExpr::Global(global_ref) => {
                 // TODO: handle constant arguments with generics (this can likely only happen with
@@ -202,23 +204,13 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
                 Ok(ConstGeneric::Global(global_ref.id))
             }
             RawConstantExpr::Adt(..)
+            | RawConstantExpr::RawMemory { .. }
             | RawConstantExpr::TraitConst { .. }
             | RawConstantExpr::Ref(_)
             | RawConstantExpr::MutPtr(_)
             | RawConstantExpr::FnPtr { .. } => {
                 raise_error!(self, span, "Unexpected constant generic: {:?}", value)
             }
-            RawConstantExpr::Var(v) => Ok(ConstGeneric::Var(v)),
         }
-    }
-
-    /// Remark: [hax::ConstantExpr] contains span information, but it is often
-    /// the default span (i.e., it is useless), hence the additional span argument.
-    pub(crate) fn translate_constant_to_constant_expr(
-        &mut self,
-        span: Span,
-        v: &hax::Constant,
-    ) -> Result<ConstantExpr, Error> {
-        self.translate_constant_expr_to_constant_expr(span, &v.const_.constant_kind)
     }
 }
