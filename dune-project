@@ -21,6 +21,13 @@
   "Aymeric Fromherz"
   "Sidney Congard")
 
+
+(maintainers
+  "Son Ho"
+  "Jonathan Protzenko"
+  "Aymeric Fromherz"
+  "Sidney Congard")
+
 (license Apache-2.0)
 
 (package
