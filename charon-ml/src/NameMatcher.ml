@@ -1029,7 +1029,7 @@ and const_generic_to_pattern (ctx : ctx) (c : to_pat_config) (m : constraints)
 
 and generic_args_to_pattern (ctx : ctx) (c : to_pat_config) (m : constraints)
     (generics : T.generic_args) : generic_args =
-  let { regions; types; const_generics; trait_refs = _ } : T.generic_args =
+  let ({ regions; types; const_generics; trait_refs = _ } : T.generic_args) =
     generics
   in
   let regions = List.map (region_to_pattern m) regions in

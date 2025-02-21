@@ -13,6 +13,7 @@ pub mod inline_local_panic_functions;
 pub mod insert_assign_return_unit;
 pub mod lift_associated_item_clauses;
 pub mod merge_goto_chains;
+pub mod monomorphize;
 pub mod ops_to_function_calls;
 pub mod prettify_cfg;
 pub mod reconstruct_asserts;
@@ -127,6 +128,8 @@ pub static ULLBC_PASSES: &[Pass] = &[
     // # Micro-pass: remove the drops of locals whose type is `Never` (`!`). This
     // is in preparation of the next transformation.
     UnstructuredBody(&remove_drop_never::Transform),
+    // Monomorphize the functions and types.
+    UnstructuredBody(&monomorphize::Transform),
 ];
 
 /// Body cleanup passes after control flow reconstruction.

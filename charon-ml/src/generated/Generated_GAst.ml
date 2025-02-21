@@ -399,6 +399,7 @@ and cli_options = {
   skip_borrowck : bool;
       (** If activated, this skips borrow-checking of the crate. *)
   no_code_duplication : bool;
+  monomorphize : bool;
   extract_opaque_bodies : bool;
       (** Usually we skip the bodies of foreign methods and structs with private fields. When this
         flag is on, we don't.
