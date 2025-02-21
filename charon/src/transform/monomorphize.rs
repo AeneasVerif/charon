@@ -27,10 +27,6 @@ impl PassData {
 fn find_uses_in_body(data: &mut PassData, body: &ExprBody) {
     body.locals.vars.iter().for_each(|var| match var.ty.kind() {
         TyKind::Adt(TypeId::Adt(id), gargs) => {
-            if gargs.is_empty() {
-                return;
-            }
-
             let key = (AnyTransId::Type(*id), gargs.clone());
             data.items.entry(key).or_insert(None);
         }
@@ -64,6 +60,68 @@ fn find_uses_in_body(data: &mut PassData, body: &ExprBody) {
 }
 
 fn find_uses_in_type(_data: &mut PassData, _ty: &TypeDeclKind) {}
+
+// Akin to find_uses_in_body, but substitutes all uses of generics with the monomorphized versions
+// This is a two-step process, because we can't mutate the translation context with new definitions
+// while also mutating the existing definitions.
+fn subst_uses_in_body(data: &PassData, body: &mut ExprBody) {
+    body.locals.vars.iter_mut().for_each(|var| {
+        subst_uses_in_type(data, &mut var.ty);
+    });
+
+    body.body.iter_mut().for_each(|block| {
+        block
+            .statements
+            .iter_mut()
+            .for_each(|stmt| match &mut stmt.content {
+                RawStatement::Call(Call {
+                    func: FnOperand::Regular(FnPtr { func, generics }),
+                    ..
+                }) => match func {
+                    FunIdOrTraitMethodRef::Fun(FunId::Regular(fun_id)) => {
+                        let key = (AnyTransId::Fun(*fun_id), generics.clone());
+                        let subst = data.items.get(&key).unwrap();
+                        let Some(AnyTransId::Fun(subst_id)) = subst else {
+                            panic!("Substitution missing for {:?}", key);
+                        };
+                        *fun_id = *subst_id;
+                        *generics = GenericArgs::empty(GenericsSource::Other);
+                    }
+                    FunIdOrTraitMethodRef::Trait(..) => {
+                        warn!("Monomorphization doesn't reach traits yet.")
+                    }
+                    // These can't be monomorphized, since they're builtins
+                    FunIdOrTraitMethodRef::Fun(FunId::Builtin(..)) => {}
+                },
+                _ => {}
+            });
+    });
+}
+
+fn subst_uses_in_fn_sig(data: &PassData, sig: &mut FunSig) {
+    sig.inputs.iter_mut().for_each(|arg| {
+        subst_uses_in_type(data, arg);
+    })
+}
+
+fn subst_uses_in_type(data: &PassData, ty: &mut Ty) {
+    ty.with_kind_mut(|k| match k {
+        TyKind::Adt(TypeId::Adt(id), gargs) => {
+            let key = (AnyTransId::Type(*id), gargs.clone());
+            let subst = data.items.get(&key).unwrap();
+            let Some(AnyTransId::Type(subst_id)) = subst else {
+                panic!("Substitution missing for {:?}", key);
+            };
+            *id = *subst_id;
+            *gargs = GenericArgs::empty(GenericsSource::Other);
+        }
+        TyKind::Adt(TypeId::Tuple, _) => {}
+        TyKind::Literal(_) => {}
+        ty => warn!("Unhandled type kind {:?}", ty),
+    })
+}
+
+fn subst_uses_in_type_decl(_data: &PassData, _ty: &mut TypeDeclKind) {}
 
 fn path_for_generics(gargs: &GenericArgs) -> PathElem {
     PathElem::Ident(gargs.to_string(), Disambiguator::ZERO)
@@ -204,7 +262,37 @@ impl UllbcPass for Transform {
             }
 
             // 3. Substitute all generics with the monomorphized versions
+            let Some(item) = ctx.translated.get_item_mut(id) else {
+                continue;
+            };
+            match item {
+                AnyTransItemMut::Fun(f) => {
+                    let Ok(body) = f
+                        .body
+                        .as_mut()
+                        .map(|body| body.as_unstructured_mut().unwrap())
+                        .map_err(|opaque| *opaque)
+                    else {
+                        continue;
+                    };
+
+                    subst_uses_in_body(&data, body);
+                    subst_uses_in_fn_sig(&data, &mut f.signature)
+                }
+                AnyTransItemMut::Type(t) => {
+                    // assert!(t.generics.is_empty(), "Non-monomorphic item in worklist");
+                    subst_uses_in_type_decl(&data, &mut t.kind)
+                }
+                item => todo!("Unhandled monomorphisation target: {:?}", item),
+            };
         }
+
+        // Now, remove all polymorphic items from the translation context, as all their
+        // uses have been monomorphized and substituted
+        ctx.translated
+            .fun_decls
+            .retain(|f| f.signature.generics.is_empty());
+        ctx.translated.type_decls.retain(|t| t.generics.is_empty());
     }
 
     fn name(&self) -> &str {
