@@ -1,5 +1,7 @@
 //! # Micro-pass: monomorphize all functions and types; at the end of this pass, all functions and types are monomorphic.
+use derive_generic_visitor::*;
 use std::collections::{HashMap, HashSet};
+use std::ops::ControlFlow::Continue;
 
 use crate::transform::TransformCtx;
 use crate::ullbc_ast::*;
@@ -61,67 +63,89 @@ fn find_uses_in_body(data: &mut PassData, body: &ExprBody) {
 
 fn find_uses_in_type(_data: &mut PassData, _ty: &TypeDeclKind) {}
 
-// Akin to find_uses_in_body, but substitutes all uses of generics with the monomorphized versions
+// Akin to find_uses_in_*, but substitutes all uses of generics with the monomorphized versions
 // This is a two-step process, because we can't mutate the translation context with new definitions
 // while also mutating the existing definitions.
-fn subst_uses_in_body(data: &PassData, body: &mut ExprBody) {
-    body.locals.vars.iter_mut().for_each(|var| {
-        subst_uses_in_type(data, &mut var.ty);
-    });
-
-    body.body.iter_mut().for_each(|block| {
-        block
-            .statements
-            .iter_mut()
-            .for_each(|stmt| match &mut stmt.content {
-                RawStatement::Call(Call {
-                    func: FnOperand::Regular(FnPtr { func, generics }),
-                    ..
-                }) => match func {
-                    FunIdOrTraitMethodRef::Fun(FunId::Regular(fun_id)) => {
-                        let key = (AnyTransId::Fun(*fun_id), generics.clone());
-                        let subst = data.items.get(&key).unwrap();
-                        let Some(AnyTransId::Fun(subst_id)) = subst else {
-                            panic!("Substitution missing for {:?}", key);
-                        };
-                        *fun_id = *subst_id;
-                        *generics = GenericArgs::empty(GenericsSource::Other);
-                    }
-                    FunIdOrTraitMethodRef::Trait(..) => {
-                        warn!("Monomorphization doesn't reach traits yet.")
-                    }
-                    // These can't be monomorphized, since they're builtins
-                    FunIdOrTraitMethodRef::Fun(FunId::Builtin(..)) => {}
-                },
-                _ => {}
-            });
-    });
+#[derive(Visitor)]
+struct SubstVisitor<'a> {
+    data: &'a PassData,
 }
+impl VisitAstMut for SubstVisitor<'_> {
+    // fn visit<'a, T: AstVisitable>(&'a mut self, x: &mut T) -> ControlFlow<Self::Break> {
+    //     x.drive(self)?;
+    //     Continue(())
+    // }
+    //
 
-fn subst_uses_in_fn_sig(data: &PassData, sig: &mut FunSig) {
-    sig.inputs.iter_mut().for_each(|arg| {
-        subst_uses_in_type(data, arg);
-    })
-}
-
-fn subst_uses_in_type(data: &PassData, ty: &mut Ty) {
-    ty.with_kind_mut(|k| match k {
-        TyKind::Adt(TypeId::Adt(id), gargs) => {
-            let key = (AnyTransId::Type(*id), gargs.clone());
-            let subst = data.items.get(&key).unwrap();
-            let Some(AnyTransId::Type(subst_id)) = subst else {
-                panic!("Substitution missing for {:?}", key);
-            };
-            *id = *subst_id;
-            *gargs = GenericArgs::empty(GenericsSource::Other);
+    fn visit_aggregate_kind(&mut self, kind: &mut AggregateKind) -> ControlFlow<Infallible> {
+        match kind {
+            AggregateKind::Adt(TypeId::Adt(id), _, _, gargs) => {
+                let key = (AnyTransId::Type(*id), gargs.clone());
+                let subst = self.data.items.get(&key).unwrap();
+                let Some(AnyTransId::Type(subst_id)) = subst else {
+                    panic!("Substitution missing for {:?}", key);
+                };
+                *id = *subst_id;
+                *gargs = GenericArgs::empty(GenericsSource::Builtin);
+            }
+            AggregateKind::Closure(fun_id, gargs) => {
+                let key = (AnyTransId::Fun(*fun_id), gargs.clone());
+                let subst = self.data.items.get(&key).unwrap();
+                let Some(AnyTransId::Fun(subst_id)) = subst else {
+                    panic!("Substitution missing for {:?}", key);
+                };
+                *fun_id = *subst_id;
+                *gargs = GenericArgs::empty(GenericsSource::Builtin);
+            }
+            _ => {}
         }
-        TyKind::Adt(TypeId::Tuple, _) => {}
-        TyKind::Literal(_) => {}
-        ty => warn!("Unhandled type kind {:?}", ty),
-    })
+
+        Continue(())
+    }
+
+    fn visit_ty_kind(&mut self, kind: &mut TyKind) -> ControlFlow<Infallible> {
+        match kind {
+            TyKind::Adt(TypeId::Adt(id), gargs) => {
+                let key = (AnyTransId::Type(*id), gargs.clone());
+                let subst = self.data.items.get(&key).unwrap();
+                let Some(AnyTransId::Type(subst_id)) = subst else {
+                    panic!("Substitution missing for {:?}", key);
+                };
+                *id = *subst_id;
+                *gargs = GenericArgs::empty(GenericsSource::Builtin);
+            }
+            TyKind::Adt(TypeId::Tuple, _) => {}
+            TyKind::Literal(_) => {}
+            ty => warn!("Unhandled type kind {:?}", ty),
+        }
+        Continue(())
+    }
+
+    fn visit_fn_ptr(&mut self, fn_ptr: &mut FnPtr) -> ControlFlow<Infallible> {
+        match &mut fn_ptr.func {
+            FunIdOrTraitMethodRef::Fun(FunId::Regular(fun_id)) => {
+                let key = (AnyTransId::Fun(*fun_id), fn_ptr.generics.clone());
+                let subst = self.data.items.get(&key).unwrap();
+                let Some(AnyTransId::Fun(subst_id)) = subst else {
+                    panic!("Substitution missing for {:?}", key);
+                };
+                *fun_id = *subst_id;
+                fn_ptr.generics = GenericArgs::empty(GenericsSource::Builtin);
+            }
+            FunIdOrTraitMethodRef::Trait(..) => {
+                warn!("Monomorphization doesn't reach traits yet.")
+            }
+            // These can't be monomorphized, since they're builtins
+            FunIdOrTraitMethodRef::Fun(FunId::Builtin(..)) => {}
+        }
+        Continue(())
+    }
 }
 
-fn subst_uses_in_type_decl(_data: &PassData, _ty: &mut TypeDeclKind) {}
+fn subst_uses<T: AstVisitable>(data: &PassData, item: &mut T) {
+    let mut visitor = SubstVisitor { data };
+    item.drive_mut(&mut visitor);
+}
 
 fn path_for_generics(gargs: &GenericArgs) -> PathElem {
     PathElem::Ident(gargs.to_string(), Disambiguator::ZERO)
@@ -166,7 +190,7 @@ impl UllbcPass for Transform {
         // Final list of monomorphized items: { (poly item, generic args) -> mono item }
         let mut data = PassData::new();
 
-        let empty_gargs = GenericArgs::empty(GenericsSource::Other);
+        let empty_gargs = GenericArgs::empty(GenericsSource::Builtin);
 
         // Find the roots of the mono item graph
         for (id, item) in ctx.translated.all_items_with_ids() {
@@ -266,23 +290,8 @@ impl UllbcPass for Transform {
                 continue;
             };
             match item {
-                AnyTransItemMut::Fun(f) => {
-                    let Ok(body) = f
-                        .body
-                        .as_mut()
-                        .map(|body| body.as_unstructured_mut().unwrap())
-                        .map_err(|opaque| *opaque)
-                    else {
-                        continue;
-                    };
-
-                    subst_uses_in_body(&data, body);
-                    subst_uses_in_fn_sig(&data, &mut f.signature)
-                }
-                AnyTransItemMut::Type(t) => {
-                    // assert!(t.generics.is_empty(), "Non-monomorphic item in worklist");
-                    subst_uses_in_type_decl(&data, &mut t.kind)
-                }
+                AnyTransItemMut::Fun(f) => subst_uses(&data, f),
+                AnyTransItemMut::Type(t) => subst_uses(&data, t),
                 item => todo!("Unhandled monomorphisation target: {:?}", item),
             };
         }

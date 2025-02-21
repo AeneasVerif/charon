@@ -237,7 +237,7 @@ impl VisitAst for CheckGenericsVisitor<'_> {
             }
             GenericsSource::Builtin => return,
             GenericsSource::Other => {
-                self.error("`GenericsSource::Other` should now exist in the charon AST");
+                self.error("`GenericsSource::Other` should not exist in the charon AST");
                 return;
             }
         };
