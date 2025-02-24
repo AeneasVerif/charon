@@ -77,6 +77,27 @@ impl VisitAstMut for SubstVisitor<'_> {
     // }
     //
 
+    fn visit_ullbc_statement(&mut self, stt: &mut Statement) -> ControlFlow<Infallible> {
+        stt.content.drive_mut(self);
+        match &mut stt.content {
+            RawStatement::Assign(_, Rvalue::Discriminant(Place { ty, .. }, id)) => {
+                match ty.as_adt() {
+                    Some((TypeId::Adt(new_enum_id), _)) => {
+                        // Small trick; the discriminant doesn't carry the information on the
+                        // generics of the enum, since it's irrelevant, but we need it to do
+                        // the substitution, so we look at the type of the place we read from
+                        *id = new_enum_id;
+                    }
+                    _ => {}
+                }
+                ()
+            }
+            _ => (),
+        }
+
+        Continue(())
+    }
+
     fn visit_aggregate_kind(&mut self, kind: &mut AggregateKind) -> ControlFlow<Infallible> {
         match kind {
             AggregateKind::Adt(TypeId::Adt(id), _, _, gargs) => {
