@@ -202,7 +202,7 @@ pub struct CliOpts {
     pub cargo_args: Vec<String>,
     /// Do nothing! Just run cargo, don't do any translation.
     #[clap(long = "only-cargo")]
-    #[serde(skip)]
+    #[serde(default)]
     pub only_cargo: bool,
     /// Panic on the first error. This is useful for debugging.
     #[clap(long = "abort-on-error")]
