@@ -69,14 +69,14 @@ module PatternTest = struct
   type t = { pattern : pattern; call_idx : int option; success : bool }
 
   type env = {
-    ctx : ctx;
+    ctx : LlbcAst.statement ctx;
     match_config : match_config;
     fmt_env : PrintLlbcAst.fmt_env;
     print_config : print_config;
     to_pat_config : to_pat_config;
   }
 
-  let mk_env (ctx : ctx) : env =
+  let mk_env (ctx : LlbcAst.statement ctx) : env =
     let tgt = TkPattern in
     let match_with_trait_decl_refs = true in
     {

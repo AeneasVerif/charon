@@ -23,6 +23,9 @@ type 'fun_body fmt_env = {
       (** The local variables don't need to be ordered (same as the generics) *)
 }
 
+let of_crate (crate : 'fun_body gcrate) : 'fun_body fmt_env =
+  { crate; generics = []; locals = [] }
+
 let fmt_env_update_generics_and_preds (env : 'a fmt_env)
     (generics : generic_params) : 'a fmt_env =
   { env with generics = generics :: env.generics }
