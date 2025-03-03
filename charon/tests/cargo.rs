@@ -115,6 +115,7 @@ fn main() -> Result<(), Box<dyn Error>> {
             Failure,
         ),
         mktest("toml", root.join("toml"), &[], Success),
+        mktest("unsafe_", root.join("unsafe_"), &[], Success),
         mktest(
             "workspace",
             root.join("workspace"),
