@@ -5,6 +5,7 @@ use std::ops::ControlFlow::Continue;
 
 use crate::transform::TransformCtx;
 use crate::ullbc_ast::*;
+use std::fmt::Debug;
 
 use super::ctx::UllbcPass;
 
@@ -26,42 +27,66 @@ impl PassData {
     }
 }
 
-fn find_uses_in_body(data: &mut PassData, body: &ExprBody) {
-    body.locals.vars.iter().for_each(|var| match var.ty.kind() {
-        TyKind::Adt(TypeId::Adt(id), gargs) => {
-            let key = (AnyTransId::Type(*id), gargs.clone());
-            data.items.entry(key).or_insert(None);
+#[derive(Visitor)]
+struct UsageVisitor<'a> {
+    data: &'a mut PassData,
+}
+impl UsageVisitor<'_> {
+    fn found_use(&mut self, id: &AnyTransId, gargs: &GenericArgs) {
+        self.data.items.entry((*id, gargs.clone())).or_insert(None);
+    }
+    fn found_use_ty(&mut self, id: &TypeDeclId, gargs: &GenericArgs) {
+        self.found_use(&AnyTransId::Type(*id), gargs);
+    }
+    fn found_use_fn(&mut self, id: &FunDeclId, gargs: &GenericArgs) {
+        self.found_use(&AnyTransId::Fun(*id), gargs);
+    }
+}
+impl VisitAst for UsageVisitor<'_> {
+    fn visit_aggregate_kind(&mut self, kind: &AggregateKind) -> ControlFlow<Infallible> {
+        match kind {
+            AggregateKind::Adt(TypeId::Adt(id), _, _, gargs) => self.found_use_ty(id, gargs),
+            AggregateKind::Closure(fun_id, gargs) => self.found_use_fn(fun_id, gargs),
+            _ => {}
         }
-        TyKind::Adt(TypeId::Tuple, _) => {}
-        TyKind::Literal(_) => {}
-        ty => warn!("Unhandled type kind {:?}", ty),
-    });
 
-    body.body.iter().for_each(|block| {
-        block
-            .statements
-            .iter()
-            .for_each(|stmt| match &stmt.content {
-                RawStatement::Call(Call {
-                    func: FnOperand::Regular(FnPtr { func, generics }),
-                    ..
-                }) => match func {
-                    FunIdOrTraitMethodRef::Fun(FunId::Regular(fun_id)) => {
-                        let key = (AnyTransId::Fun(*fun_id), generics.clone());
-                        data.items.entry(key).or_insert(None);
-                    }
-                    FunIdOrTraitMethodRef::Trait(..) => {
-                        warn!("Monomorphization doesn't reach traits yet.")
-                    }
-                    // These can't be monomorphized, since they're builtins
-                    FunIdOrTraitMethodRef::Fun(FunId::Builtin(..)) => {}
-                },
-                _ => {}
-            });
-    });
+        Continue(())
+    }
+
+    fn visit_ty_kind(&mut self, kind: &TyKind) -> ControlFlow<Infallible> {
+        match kind {
+            TyKind::Adt(TypeId::Adt(id), gargs) => self.found_use_ty(id, gargs),
+            TyKind::Adt(TypeId::Tuple, garg) => {
+                garg.drive(self);
+            }
+            TyKind::Literal(_) => {}
+            TyKind::Ref(_, ty, _) => {
+                ty.drive(self);
+            }
+            ty => warn!("Unhandled type kind {:?}", ty),
+        }
+        Continue(())
+    }
+
+    fn visit_fn_ptr(&mut self, fn_ptr: &FnPtr) -> ControlFlow<Infallible> {
+        match &fn_ptr.func {
+            FunIdOrTraitMethodRef::Fun(FunId::Regular(id)) => {
+                self.found_use_fn(id, &fn_ptr.generics)
+            }
+            FunIdOrTraitMethodRef::Trait(..) => {
+                warn!("Monomorphization doesn't reach traits yet.")
+            }
+            // These can't be monomorphized, since they're builtins
+            FunIdOrTraitMethodRef::Fun(FunId::Builtin(..)) => {}
+        }
+        Continue(())
+    }
 }
 
-fn find_uses_in_type(_data: &mut PassData, _ty: &TypeDeclKind) {}
+fn find_uses(data: &mut PassData, item: &AnyTransItem) {
+    let mut visitor = UsageVisitor { data };
+    item.drive(&mut visitor);
+}
 
 // Akin to find_uses_in_*, but substitutes all uses of generics with the monomorphized versions
 // This is a two-step process, because we can't mutate the translation context with new definitions
@@ -71,12 +96,6 @@ struct SubstVisitor<'a> {
     data: &'a PassData,
 }
 impl VisitAstMut for SubstVisitor<'_> {
-    // fn visit<'a, T: AstVisitable>(&'a mut self, x: &mut T) -> ControlFlow<Self::Break> {
-    //     x.drive(self)?;
-    //     Continue(())
-    // }
-    //
-
     fn visit_ullbc_statement(&mut self, stt: &mut Statement) -> ControlFlow<Infallible> {
         stt.content.drive_mut(self);
         match &mut stt.content {
@@ -135,8 +154,13 @@ impl VisitAstMut for SubstVisitor<'_> {
                 *id = *subst_id;
                 *gargs = GenericArgs::empty(GenericsSource::Builtin);
             }
-            TyKind::Adt(TypeId::Tuple, _) => {}
+            TyKind::Adt(TypeId::Tuple, garg) => {
+                garg.drive_mut(self);
+            }
             TyKind::Literal(_) => {}
+            TyKind::Ref(_, ty, _) => {
+                ty.drive_mut(self);
+            }
             ty => warn!("Unhandled type kind {:?}", ty),
         }
         Continue(())
@@ -163,7 +187,7 @@ impl VisitAstMut for SubstVisitor<'_> {
     }
 }
 
-fn subst_uses<T: AstVisitable>(data: &PassData, item: &mut T) {
+fn subst_uses<T: AstVisitable + Debug>(data: &PassData, item: &mut T) {
     let mut visitor = SubstVisitor { data };
     item.drive_mut(&mut visitor);
 }
@@ -233,31 +257,9 @@ impl UllbcPass for Transform {
 
             // 1. Find new uses
             let Some(item) = ctx.translated.get_item(id) else {
-                continue;
+                panic!("Couldn't find item {:} in translated items.", id)
             };
-            match item {
-                AnyTransItem::Fun(f) => {
-                    // assert!(
-                    //     f.signature.generics.is_empty(),
-                    //     "Non-monomorphic item in worklist"
-                    // );
-                    let Ok(body) = f
-                        .body
-                        .as_ref()
-                        .map(|body| body.as_unstructured().unwrap())
-                        .map_err(|opaque| *opaque)
-                    else {
-                        continue;
-                    };
-
-                    find_uses_in_body(&mut data, body)
-                }
-                AnyTransItem::Type(t) => {
-                    // assert!(t.generics.is_empty(), "Non-monomorphic item in worklist");
-                    find_uses_in_type(&mut data, &t.kind)
-                }
-                item => todo!("Unhandled monomorphisation target: {:?}", item),
-            };
+            find_uses(&mut data, &item);
 
             // 2. Iterate through all newly discovered uses
             for ((id, gargs), mono) in data.items.iter_mut() {
@@ -308,12 +310,14 @@ impl UllbcPass for Transform {
 
             // 3. Substitute all generics with the monomorphized versions
             let Some(item) = ctx.translated.get_item_mut(id) else {
-                continue;
+                panic!("Couldn't find item {:} in translated items.", id)
             };
             match item {
                 AnyTransItemMut::Fun(f) => subst_uses(&data, f),
                 AnyTransItemMut::Type(t) => subst_uses(&data, t),
-                item => todo!("Unhandled monomorphisation target: {:?}", item),
+                AnyTransItemMut::TraitImpl(t) => subst_uses(&data, t),
+                AnyTransItemMut::Global(g) => subst_uses(&data, g),
+                AnyTransItemMut::TraitDecl(t) => subst_uses(&data, t),
             };
         }
 
