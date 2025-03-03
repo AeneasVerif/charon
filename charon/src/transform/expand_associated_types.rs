@@ -1057,40 +1057,29 @@ impl VisitAstMut for UpdateItemBody<'_> {
         binder: &mut Binder<T>,
     ) -> ControlFlow<Self::Break> {
         let generics = &mut binder.params;
-        let mut modifications;
-        let modifications = match &binder.kind {
-            BinderKind::TraitMethod(trait_id, method_name) => self
-                .item_modifications
-                .get(&GenericsSource::Method(*trait_id, method_name.clone())),
-            BinderKind::InherentImplBlock => {
-                // An inner binder. Because it's not a globally-addressable item, we haven't computed
-                // appropriate modifications yet, so we compute them.
-                modifications = ItemModifications::new(&generics.trait_type_constraints, true);
-                for clause in &generics.trait_clauses {
-                    let trait_id = clause.trait_.skip_binder.trait_id;
-                    if let Some(tmods) =
-                        self.item_modifications.get(&GenericsSource::item(trait_id))
-                    {
-                        for path in tmods.required_extra_params() {
-                            let path = path.on_local_clause(clause.clause_id);
-                            modifications.replace_path(path);
-                        }
-                    }
+        // An inner binder. Apart from the case of trait method declarations, this is not a
+        // globally-addressable item, so we haven't computed appropriate modifications yet. Hence
+        // we compute them here.
+        let mut modifications = ItemModifications::new(&generics.trait_type_constraints, true);
+        for clause in &generics.trait_clauses {
+            let trait_id = clause.trait_.skip_binder.trait_id;
+            if let Some(tmods) = self.item_modifications.get(&GenericsSource::item(trait_id)) {
+                for path in tmods.required_extra_params() {
+                    let path = path.on_local_clause(clause.clause_id);
+                    modifications.replace_path(path);
                 }
-                Some(&modifications)
             }
-            BinderKind::Other => unreachable!("no `BinderKind::Other` in the AST"),
-        };
-        let replacements = modifications
-            .map(|mods| {
-                mods.compute_replacements(|path| {
-                    let var_id = generics
-                        .types
-                        .push_with(|id| TypeVar::new(id, path.to_name()));
-                    TyKind::TypeVar(DeBruijnVar::new_at_zero(var_id)).into_ty()
-                })
-            })
-            .unwrap_or_default();
+        }
+        // Remove used constraints.
+        for cid in &modifications.remove_constraints {
+            generics.trait_type_constraints.remove(*cid);
+        }
+        let replacements = modifications.compute_replacements(|path| {
+            let var_id = generics
+                .types
+                .push_with(|id| TypeVar::new(id, path.to_name()));
+            TyKind::TypeVar(DeBruijnVar::new_at_zero(var_id)).into_ty()
+        });
         self.under_binder(replacements, |this| {
             this.visit_inner(binder);
         });
