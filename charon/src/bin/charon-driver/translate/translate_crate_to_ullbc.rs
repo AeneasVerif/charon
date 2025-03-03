@@ -2,7 +2,7 @@ use super::translate_ctx::*;
 use charon_lib::ast::*;
 use charon_lib::options::{CliOpts, TranslateOptions};
 use charon_lib::transform::TransformCtx;
-use hax_frontend_exporter as hax;
+use hax_frontend_exporter::{self as hax, SInto};
 use rustc_hir::def_id::DefId;
 use rustc_middle::ty::TyCtxt;
 use std::cell::RefCell;
@@ -235,11 +235,12 @@ pub fn translate<'tcx, 'ctx>(
         },
     );
 
-    // Retrieve the crate name: if the user specified a custom name, use
-    // it, otherwise retrieve it from rustc.
-    let real_crate_name = tcx
-        .crate_name(rustc_span::def_id::LOCAL_CRATE)
-        .to_ident_string();
+    // Retrieve the crate name: if the user specified a custom name, use it, otherwise retrieve it
+    // from hax.
+    let crate_def_id: hax::DefId = rustc_span::def_id::CRATE_DEF_ID
+        .to_def_id()
+        .sinto(&hax_state);
+    let real_crate_name = crate_def_id.krate.clone();
     let requested_crate_name: String = options
         .crate_name
         .as_ref()
@@ -273,8 +274,7 @@ pub fn translate<'tcx, 'ctx>(
     // Recursively register all the items in the crate, starting from the crate root. We could
     // instead ask rustc for the plain list of all items in the crate, but we wouldn't be able to
     // skip items inside modules annotated with `#[charon::opaque]`.
-    let crate_def_id = rustc_span::def_id::CRATE_DEF_ID.to_def_id();
-    ctx.register_local_item(crate_def_id);
+    ctx.register_local_item(crate_def_id.to_rust_def_id());
 
     trace!(
         "Queue after we explored the crate:\n{:?}",
