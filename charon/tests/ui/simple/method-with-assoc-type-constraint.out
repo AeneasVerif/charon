@@ -1,0 +1,44 @@
+# Final LLBC before serialization:
+
+trait core::marker::Sized<Self>
+
+trait test_crate::IntoIterator<Self, Self_Item>
+{
+    parent_clause0 : [@TraitClause0]: core::marker::Sized<Self_Item>
+}
+
+trait test_crate::FromIterator<Self, A>
+{
+    parent_clause0 : [@TraitClause0]: core::marker::Sized<Self>
+    parent_clause1 : [@TraitClause1]: core::marker::Sized<A>
+    fn from_iter<T, [@TraitClause0]: core::marker::Sized<T>, [@TraitClause1]: test_crate::IntoIterator<T, A>> = test_crate::FromIterator::from_iter<Self, A, T>[@TraitClause0_0, @TraitClause0_1]
+}
+
+fn test_crate::{impl test_crate::FromIterator<()> for ()}::from_iter<I>(@1: I)
+where
+    [@TraitClause0]: core::marker::Sized<I>,
+    [@TraitClause1]: test_crate::IntoIterator<I, ()>,
+{
+    let @0: (); // return
+    let iter@1: I; // arg #1
+
+    @0 := ()
+    drop iter@1
+    @0 := ()
+    return
+}
+
+impl test_crate::{impl test_crate::FromIterator<()> for ()} : test_crate::FromIterator<(), ()>
+{
+    parent_clause0 = core::marker::Sized<()>
+    parent_clause1 = core::marker::Sized<()>
+    fn from_iter<I, [@TraitClause0]: core::marker::Sized<I>, [@TraitClause1]: test_crate::IntoIterator<I, ()>> = test_crate::{impl test_crate::FromIterator<()> for ()}::from_iter<I>[@TraitClause0_0, @TraitClause0_1]
+}
+
+fn test_crate::FromIterator::from_iter<Self, A, T>(@1: T) -> Self
+where
+    [@TraitClause0]: core::marker::Sized<T>,
+    [@TraitClause1]: test_crate::IntoIterator<T, A>,
+
+
+
