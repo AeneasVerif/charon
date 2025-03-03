@@ -120,7 +120,7 @@ fn main() {
     // always invoking cargo itself with `--target`, which `charon` ensures.
     let is_target = arg_values(&origin_args, "--target").next().is_some();
 
-    if is_dry_run || is_workspace_dependency || !is_target {
+    if is_dry_run || is_workspace_dependency || !is_target || options.only_cargo {
         trace!("Skipping charon; running compiler normally instead.");
         // In this case we run the compiler normally.
         RunCompilerNormallyCallbacks

@@ -371,7 +371,7 @@ let trait_clause_to_string (env : 'a fmt_env) (clause : trait_clause) : string =
 
 let generic_params_to_strings (env : 'a fmt_env) (generics : generic_params) :
     string list * string list =
-  let { regions; types; const_generics; trait_clauses; _ } : generic_params =
+  let ({ regions; types; const_generics; trait_clauses; _ } : generic_params) =
     generics
   in
   let regions = List.map region_var_to_string regions in

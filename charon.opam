@@ -9,6 +9,9 @@ description: """
    Charon. Charon acts as an interface between the rustc compiler and program
    verification projects.  Its purpose is to process Rust .rs files and convert
    them into files easy to handle by program verifiers."""
+maintainer: [
+  "Son Ho" "Jonathan Protzenko" "Aymeric Fromherz" "Sidney Congard"
+]
 authors: ["Son Ho" "Jonathan Protzenko" "Aymeric Fromherz" "Sidney Congard"]
 license: "Apache-2.0"
 homepage: "https://github.com/AeneasVerif/charon"

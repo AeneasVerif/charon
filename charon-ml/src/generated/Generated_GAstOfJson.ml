@@ -1611,6 +1611,7 @@ and cli_options_of_json (ctx : of_json_ctx) (js : json) :
           ("use_polonius", use_polonius);
           ("skip_borrowck", skip_borrowck);
           ("no_code_duplication", no_code_duplication);
+          ("monomorphize", monomorphize);
           ("extract_opaque_bodies", extract_opaque_bodies);
           ("translate_all_methods", translate_all_methods);
           ("include", include_);
@@ -1621,6 +1622,7 @@ and cli_options_of_json (ctx : of_json_ctx) (js : json) :
           ("no_cargo", no_cargo);
           ("rustc_args", rustc_args);
           ("cargo_args", cargo_args);
+          ("only_cargo", only_cargo);
           ("abort_on_error", abort_on_error);
           ("error_on_warnings", error_on_warnings);
           ("no_serialize", no_serialize);
@@ -1643,6 +1645,7 @@ and cli_options_of_json (ctx : of_json_ctx) (js : json) :
         let* use_polonius = bool_of_json ctx use_polonius in
         let* skip_borrowck = bool_of_json ctx skip_borrowck in
         let* no_code_duplication = bool_of_json ctx no_code_duplication in
+        let* monomorphize = bool_of_json ctx monomorphize in
         let* extract_opaque_bodies = bool_of_json ctx extract_opaque_bodies in
         let* translate_all_methods = bool_of_json ctx translate_all_methods in
         let* included = list_of_json string_of_json ctx include_ in
@@ -1655,6 +1658,7 @@ and cli_options_of_json (ctx : of_json_ctx) (js : json) :
         let* no_cargo = bool_of_json ctx no_cargo in
         let* rustc_args = list_of_json string_of_json ctx rustc_args in
         let* cargo_args = list_of_json string_of_json ctx cargo_args in
+        let* only_cargo = bool_of_json ctx only_cargo in
         let* abort_on_error = bool_of_json ctx abort_on_error in
         let* error_on_warnings = bool_of_json ctx error_on_warnings in
         let* no_serialize = bool_of_json ctx no_serialize in
@@ -1678,6 +1682,7 @@ and cli_options_of_json (ctx : of_json_ctx) (js : json) :
              use_polonius;
              skip_borrowck;
              no_code_duplication;
+             monomorphize;
              extract_opaque_bodies;
              translate_all_methods;
              included;
@@ -1688,6 +1693,7 @@ and cli_options_of_json (ctx : of_json_ctx) (js : json) :
              no_cargo;
              rustc_args;
              cargo_args;
+             only_cargo;
              abort_on_error;
              error_on_warnings;
              no_serialize;
