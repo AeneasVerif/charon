@@ -185,6 +185,21 @@ impl VisitAstMut for SubstVisitor<'_> {
         }
         Continue(())
     }
+
+    fn visit_place(&mut self, place: &mut Place) -> ControlFlow<Infallible> {
+        place.ty.drive_mut(self);
+        match &mut place.kind {
+            PlaceKind::Projection(inner, ProjectionElem::Field(FieldProjKind::Adt(id, _), _)) => {
+                // Trick, we don't know the generics but the projected place does, so
+                // we substitute it there, then update our current id.
+                inner.drive_mut(self);
+                let (inner_id, _) = inner.ty.as_adt().unwrap();
+                *id = *inner_id.as_adt().unwrap()
+            }
+            _ => {}
+        }
+        Continue(())
+    }
 }
 
 fn subst_uses<T: AstVisitable + Debug>(data: &PassData, item: &mut T) {

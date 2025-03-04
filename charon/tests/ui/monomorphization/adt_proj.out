@@ -1,0 +1,36 @@
+# Final LLBC before serialization:
+
+enum core::result::Result::<u32, u32>[@TraitDecl0<u32>, @TraitDecl0<u32>] =
+|  Ok(u32)
+|  Err(u32)
+
+
+fn test_crate::main()
+{
+    let @0: (); // return
+    let res@1: @Adt1; // local
+    let n@2: u32; // local
+
+    res@1 := core::result::Result::<u32, u32>[@TraitDecl0<u32>, @TraitDecl0<u32>]::Ok { 0: const (0 : u32) }
+    @fake_read(res@1)
+    @fake_read(res@1)
+    match res@1 {
+        0 => {
+        },
+        _ => {
+            drop n@2
+            panic(core::panicking::panic_explicit)
+        },
+    }
+    n@2 := copy ((res@1 as variant @0).0)
+    @0 := ()
+    drop n@2
+    drop res@1
+    @0 := ()
+    return
+}
+
+trait core::marker::Sized<Self>
+
+
+
