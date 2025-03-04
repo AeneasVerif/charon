@@ -29,48 +29,34 @@ impl Transform {
                 assert!(dest.is_local());
 
                 // Lookup the type of the scrutinee
-                let variants = match ctx.translated.type_decls.get(*adt_id) {
-                    Some(TypeDecl {
-                        kind: TypeDeclKind::Enum(variants),
-                        ..
-                    }) => Some(variants),
-                    // This can happen if the type was declared as invisible or opaque.
-                    None
-                    | Some(TypeDecl {
-                        kind: TypeDeclKind::Opaque,
-                        ..
-                    }) => {
-                        let name = ctx.translated.item_name(*adt_id).unwrap();
-                        register_error!(
-                            ctx,
-                            block.span,
-                            "reading the discriminant of an opaque enum. \
-                            Add `--include {}` to the `charon` arguments \
-                            to translate this enum.",
-                            name.fmt_with_ctx(&ctx.into_fmt())
-                        );
-                        None
+                let tkind = ctx.translated.type_decls.get(*adt_id).map(|x| &x.kind);
+                let Some(TypeDeclKind::Enum(variants)) = tkind else {
+                    match tkind {
+                        // This can happen if the type was declared as invisible or opaque.
+                        None | Some(TypeDeclKind::Opaque) => {
+                            let name = ctx.translated.item_name(*adt_id).unwrap();
+                            register_error!(
+                                ctx,
+                                block.span,
+                                "reading the discriminant of an opaque enum. \
+                                    Add `--include {}` to the `charon` arguments \
+                                    to translate this enum.",
+                                name.fmt_with_ctx(&ctx.into_fmt())
+                            );
+                        }
+                        // Don't double-error
+                        Some(TypeDeclKind::Error(..)) => {}
+                        Some(_) => {
+                            register_error!(
+                                ctx,
+                                block.span,
+                                "reading the discriminant of a non-enum type"
+                            );
+                        }
                     }
-                    Some(TypeDecl {
-                        kind:
-                            TypeDeclKind::Struct(..) | TypeDeclKind::Union(..) | TypeDeclKind::Alias(..),
-                        ..
-                    }) => {
-                        register_error!(
-                            ctx,
-                            block.span,
-                            "reading the discriminant of a non-enum type"
-                        );
-                        None
-                    }
-                    Some(TypeDecl {
-                        kind: TypeDeclKind::Error(..),
-                        ..
-                    }) => None,
-                };
-                let Some(variants) = variants else {
-                    block.statements[i].content =
-                        RawStatement::Error("unsupported raw discriminant read".to_owned());
+                    block.statements[i].content = RawStatement::Error(
+                        "error reading the discriminant of this type".to_owned(),
+                    );
                     return;
                 };
 
