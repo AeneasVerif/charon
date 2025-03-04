@@ -34,11 +34,11 @@
  *)
 
 (* The "raw" name matcher patterns *)
+
 include Name_matcher_parser.Ast
 include Name_matcher_parser.Interface
 module T = Types
 module E = Expressions
-module A = LlbcAst
 
 let log = Logging.name_matcher_logger
 
@@ -220,12 +220,10 @@ end
 module VarMap = Collections.MakeMap (VarOrderedType)
 
 (** Context to lookup definitions *)
-type ctx = { crate : A.crate }
+type 'fun_body ctx = { crate : 'fun_body GAst.gcrate }
 
-let ctx_to_fmt_env (ctx : ctx) : PrintLlbcAst.fmt_env =
-  { crate = ctx.crate; generics = []; locals = [] }
-
-let ctx_from_crate (crate : LlbcAst.crate) : ctx = { crate }
+let ctx_from_crate crate = { crate }
+let ctx_to_fmt_env { crate } = PrintUtils.of_crate crate
 
 (** Match configuration *)
 type match_config = {
@@ -431,7 +429,7 @@ let match_literal (pl : literal) (l : Values.literal) : bool =
   | LChar pv, VChar v -> pv = v
   | _ -> false
 
-let rec match_name_with_generics (ctx : ctx) (c : match_config)
+let rec match_name_with_generics (ctx : 'fun_body ctx) (c : match_config)
     ?(m : maps = mk_empty_maps ()) (p : pattern) (n : T.name)
     (g : T.generic_args) : bool =
   match (p, n) with
@@ -478,12 +476,13 @@ let rec match_name_with_generics (ctx : ctx) (c : match_config)
           && match_name_with_generics ctx c p n g)
   | _ -> false
 
-and match_name (ctx : ctx) (c : match_config) (p : pattern) (n : T.name) : bool
-    =
+and match_name (ctx : 'fun_body ctx) (c : match_config) (p : pattern)
+    (n : T.name) : bool =
   match_name_with_generics ctx c p n TypesUtils.empty_generic_args
 
-and match_pattern_with_type_id (ctx : ctx) (c : match_config) (m : maps)
-    (pid : pattern) (id : T.type_id) (generics : T.generic_args) : bool =
+and match_pattern_with_type_id (ctx : 'fun_body ctx) (c : match_config)
+    (m : maps) (pid : pattern) (id : T.type_id) (generics : T.generic_args) :
+    bool =
   match id with
   | TAdtId id ->
       (* Lookup the type decl and match the name *)
@@ -512,8 +511,8 @@ and match_primitive_adt (pid : primitive_adt) (id : T.type_id) : bool =
   | TTuple, TTuple | TArray, TBuiltin TArray | TSlice, TBuiltin TSlice -> true
   | _ -> false
 
-and match_expr_with_ty (ctx : ctx) (c : match_config) (m : maps) (pty : expr)
-    (ty : T.ty) : bool =
+and match_expr_with_ty (ctx : 'fun_body ctx) (c : match_config) (m : maps)
+    (pty : expr) (ty : T.ty) : bool =
   match (pty, ty) with
   | EComp pid, TAdt (id, generics) ->
       match_pattern_with_type_id ctx c m pid id generics
@@ -546,8 +545,8 @@ and match_expr_with_ty (ctx : ctx) (c : match_config) (m : maps) (pty : expr)
       match_expr_with_ty ctx c m pty ty
   | _ -> false
 
-and match_expr_with_trait_impl_id (ctx : ctx) (c : match_config) (ptr : expr)
-    (impl_id : T.TraitImplId.id) : bool =
+and match_expr_with_trait_impl_id (ctx : 'fun_body ctx) (c : match_config)
+    (ptr : expr) (impl_id : T.TraitImplId.id) : bool =
   (* Lookup the trait implementation *)
   let impl = T.TraitImplId.Map.find impl_id ctx.crate.trait_impls in
   (* Lookup the trait declaration *)
@@ -561,7 +560,7 @@ and match_expr_with_trait_impl_id (ctx : ctx) (c : match_config) (ptr : expr)
         impl.impl_trait.decl_generics
   | EPrimAdt _ | ERef _ | EVar _ | EArrow _ | ERawPtr _ -> false
 
-and match_trait_decl_ref (ctx : ctx) (c : match_config) (m : maps)
+and match_trait_decl_ref (ctx : 'fun_body ctx) (c : match_config) (m : maps)
     (pid : pattern) (tr : T.trait_decl_ref T.region_binder) : bool =
   (* Lookup the trait declaration *)
   let d =
@@ -573,9 +572,9 @@ and match_trait_decl_ref (ctx : ctx) (c : match_config) (m : maps)
   match_name_with_generics ctx c ~m pid d.item_meta.name
     tr.binder_value.decl_generics
 
-and match_trait_decl_ref_item (ctx : ctx) (c : match_config) (m : maps)
-    (pid : pattern) (tr : T.trait_decl_ref T.region_binder) (item_name : string)
-    (generics : T.generic_args) : bool =
+and match_trait_decl_ref_item (ctx : 'fun_body ctx) (c : match_config)
+    (m : maps) (pid : pattern) (tr : T.trait_decl_ref T.region_binder)
+    (item_name : string) (generics : T.generic_args) : bool =
   if c.match_with_trait_decl_refs then
     (* We match the trait decl ref *)
     (* We split the pattern between the trait decl ref and the associated item name *)
@@ -591,12 +590,12 @@ and match_trait_decl_ref_item (ctx : ctx) (c : match_config) (m : maps)
     | _ -> false
   else raise (Failure "Unimplemented")
 
-and match_trait_type (ctx : ctx) (c : match_config) (m : maps) (pid : pattern)
-    (tr : T.trait_ref) (type_name : string) : bool =
+and match_trait_type (ctx : 'fun_body ctx) (c : match_config) (m : maps)
+    (pid : pattern) (tr : T.trait_ref) (type_name : string) : bool =
   match_trait_decl_ref_item ctx c m pid tr.trait_decl_ref type_name
     TypesUtils.empty_generic_args
 
-and match_generic_args (ctx : ctx) (c : match_config) (m : maps)
+and match_generic_args (ctx : 'fun_body ctx) (c : match_config) (m : maps)
     (pgenerics : generic_args) (generics : T.generic_args) : bool =
   log#ldebug
     (lazy
@@ -635,7 +634,7 @@ and match_generic_args (ctx : ctx) (c : match_config) (m : maps)
     else false
   end
 
-and match_generic_arg (ctx : ctx) (c : match_config) (m : maps)
+and match_generic_arg (ctx : 'fun_body ctx) (c : match_config) (m : maps)
     (pg : generic_arg) (g : mexpr) : bool =
   log#ldebug
     (lazy
@@ -649,8 +648,8 @@ and match_generic_arg (ctx : ctx) (c : match_config) (m : maps)
   | GValue v, MCg (CgValue cg) -> match_literal v cg
   | _ -> false
 
-and match_expr_with_const_generic (ctx : ctx) (c : match_config) (m : maps)
-    (pcg : expr) (cg : T.const_generic) : bool =
+and match_expr_with_const_generic (ctx : 'fun_body ctx) (c : match_config)
+    (m : maps) (pcg : expr) (cg : T.const_generic) : bool =
   match (pcg, cg) with
   | EVar pv, _ -> opt_update_cmap c m pv cg
   | EComp pat, CgGlobal gid ->
@@ -671,8 +670,8 @@ let builtin_fun_id_to_string (fid : E.builtin_fun_id) : string =
       let mutability = PrintTypes.ref_kind_to_string mutability in
       ty ^ op ^ mutability
 
-let match_fn_ptr (ctx : ctx) (c : match_config) (p : pattern) (func : E.fn_ptr)
-    : bool =
+let match_fn_ptr (ctx : 'fun_body ctx) (c : match_config) (p : pattern)
+    (func : E.fn_ptr) : bool =
   match func.func with
   | FunId (FBuiltin fid) -> (
       let to_name (s : string list) : T.name =
@@ -708,7 +707,7 @@ let match_fn_ptr (ctx : ctx) (c : match_config) (p : pattern) (func : E.fn_ptr)
           let name = builtin_fun_id_to_string fid in
           match_name_with_generics ctx c p (to_name [ name ]) func.generics)
   | FunId (FRegular fid) ->
-      let d = A.FunDeclId.Map.find fid ctx.crate.fun_decls in
+      let d = Types.FunDeclId.Map.find fid ctx.crate.fun_decls in
       (* Match the pattern on the name of the function. *)
       let match_function_name =
         match_name_with_generics ctx c p d.item_meta.name func.generics
@@ -747,12 +746,12 @@ let match_fn_ptr (ctx : ctx) (c : match_config) (p : pattern) (func : E.fn_ptr)
       match_trait_decl_ref_item ctx c (mk_empty_maps ()) p tr.trait_decl_ref
         method_name func.generics
 
-let mk_name_with_generics_matcher (ctx : ctx) (c : match_config) (pat : string)
-    : T.name -> T.generic_args -> bool =
+let mk_name_with_generics_matcher (ctx : 'fun_body ctx) (c : match_config)
+    (pat : string) : T.name -> T.generic_args -> bool =
   let pat = parse_pattern pat in
   match_name_with_generics ctx c pat
 
-let mk_name_matcher (ctx : ctx) (c : match_config) (pat : string) :
+let mk_name_matcher (ctx : 'fun_body ctx) (c : match_config) (pat : string) :
     T.name -> bool =
   let pat = parse_pattern pat in
   match_name ctx c pat
@@ -896,8 +895,9 @@ let literal_to_pattern (_c : to_pat_config) (lit : Values.literal) : literal =
       raise
         (Failure "Float, string and byte string literals are not valid in names")
 
-let rec name_with_generic_args_to_pattern_aux (ctx : ctx) (c : to_pat_config)
-    (n : T.name) (generics : generic_args option) : pattern =
+let rec name_with_generic_args_to_pattern_aux (ctx : 'fun_body ctx)
+    (c : to_pat_config) (n : T.name) (generics : generic_args option) : pattern
+    =
   match n with
   | [] -> raise (Failure "Empty names are not valid")
   | [ e ] -> [ path_elem_with_generic_args_to_pattern ctx c e generics ]
@@ -905,11 +905,13 @@ let rec name_with_generic_args_to_pattern_aux (ctx : ctx) (c : to_pat_config)
       path_elem_with_generic_args_to_pattern ctx c e None
       :: name_with_generic_args_to_pattern_aux ctx c n generics
 
-and name_to_pattern_aux (ctx : ctx) (c : to_pat_config) (n : T.name) : pattern =
+and name_to_pattern_aux (ctx : 'fun_body ctx) (c : to_pat_config) (n : T.name) :
+    pattern =
   name_with_generic_args_to_pattern_aux ctx c n None
 
-and path_elem_with_generic_args_to_pattern (ctx : ctx) (c : to_pat_config)
-    (e : T.path_elem) (generics : generic_args option) : pattern_elem =
+and path_elem_with_generic_args_to_pattern (ctx : 'fun_body ctx)
+    (c : to_pat_config) (e : T.path_elem) (generics : generic_args option) :
+    pattern_elem =
   match e with
   | PeIdent (s, _) -> (
       match generics with
@@ -917,8 +919,8 @@ and path_elem_with_generic_args_to_pattern (ctx : ctx) (c : to_pat_config)
       | Some args -> PIdent (s, args))
   | PeImpl (impl, _) -> impl_elem_to_pattern ctx c impl
 
-and impl_elem_to_pattern (ctx : ctx) (c : to_pat_config) (impl : T.impl_elem) :
-    pattern_elem =
+and impl_elem_to_pattern (ctx : 'fun_body ctx) (c : to_pat_config)
+    (impl : T.impl_elem) : pattern_elem =
   match impl with
   | ImplElemTy bound_ty ->
       PImpl (ty_to_pattern ctx c bound_ty.binder_params bound_ty.binder_value)
@@ -926,7 +928,7 @@ and impl_elem_to_pattern (ctx : ctx) (c : to_pat_config) (impl : T.impl_elem) :
       let impl = T.TraitImplId.Map.find impl_id ctx.crate.trait_impls in
       PImpl (trait_decl_ref_to_pattern ctx c impl.generics impl.impl_trait)
 
-and trait_decl_ref_to_pattern (ctx : ctx) (c : to_pat_config)
+and trait_decl_ref_to_pattern (ctx : 'fun_body ctx) (c : to_pat_config)
     (params : T.generic_params) (tr : T.trait_decl_ref) : expr =
   (* Compute the constraints map *)
   let m = compute_constraints_map params in
@@ -938,8 +940,8 @@ and trait_decl_ref_to_pattern (ctx : ctx) (c : to_pat_config)
     (name_with_generic_args_to_pattern_aux ctx c d.item_meta.name
        (Some generics))
 
-and ty_to_pattern_aux (ctx : ctx) (c : to_pat_config) (m : constraints)
-    (ty : T.ty) : expr =
+and ty_to_pattern_aux (ctx : 'fun_body ctx) (c : to_pat_config)
+    (m : constraints) (ty : T.ty) : expr =
   match ty with
   | TAdt (id, generics) -> (
       let generics = generic_args_to_pattern ctx c m generics in
@@ -985,9 +987,9 @@ and ty_to_pattern_aux (ctx : ctx) (c : to_pat_config) (m : constraints)
   | TDynTrait _ -> raise (Failure "Unimplemented: DynTrait")
   | TNever -> raise (Failure "Unimplemented: Never")
 
-and trait_ref_item_with_generics_to_pattern (ctx : ctx) (c : to_pat_config)
-    (m : constraints) (trait_ref : T.trait_ref) (item_name : string)
-    (item_generics : T.generic_args) : pattern =
+and trait_ref_item_with_generics_to_pattern (ctx : 'fun_body ctx)
+    (c : to_pat_config) (m : constraints) (trait_ref : T.trait_ref)
+    (item_name : string) (item_generics : T.generic_args) : pattern =
   if c.use_trait_decl_refs then
     let trait_decl_ref = trait_ref.trait_decl_ref in
     let d =
@@ -1010,15 +1012,15 @@ and trait_ref_item_with_generics_to_pattern (ctx : ctx) (c : to_pat_config)
     name
   else raise (Failure "TODO")
 
-and ty_to_pattern (ctx : ctx) (c : to_pat_config) (params : T.generic_params)
-    (ty : T.ty) : expr =
+and ty_to_pattern (ctx : 'fun_body ctx) (c : to_pat_config)
+    (params : T.generic_params) (ty : T.ty) : expr =
   (* Compute the constraints map *)
   let m = compute_constraints_map params in
   (* Convert the type *)
   ty_to_pattern_aux ctx c m ty
 
-and const_generic_to_pattern (ctx : ctx) (c : to_pat_config) (m : constraints)
-    (cg : T.const_generic) : generic_arg =
+and const_generic_to_pattern (ctx : 'fun_body ctx) (c : to_pat_config)
+    (m : constraints) (cg : T.const_generic) : generic_arg =
   match cg with
   | CgVar v -> GExpr (EVar (const_generic_var_to_pattern m v))
   | CgValue v -> GValue (literal_to_pattern c v)
@@ -1027,9 +1029,9 @@ and const_generic_to_pattern (ctx : ctx) (c : to_pat_config) (m : constraints)
       let n = name_to_pattern_aux ctx c d.item_meta.name in
       GExpr (EComp n)
 
-and generic_args_to_pattern (ctx : ctx) (c : to_pat_config) (m : constraints)
-    (generics : T.generic_args) : generic_args =
-  let { regions; types; const_generics; trait_refs = _ } : T.generic_args =
+and generic_args_to_pattern (ctx : 'fun_body ctx) (c : to_pat_config)
+    (m : constraints) (generics : T.generic_args) : generic_args =
+  let ({ regions; types; const_generics; trait_refs = _ } : T.generic_args) =
     generics
   in
   let regions = List.map (region_to_pattern m) regions in
@@ -1044,7 +1046,8 @@ and generic_args_to_pattern (ctx : ctx) (c : to_pat_config) (m : constraints)
       const_generics;
     ]
 
-let name_to_pattern (ctx : ctx) (c : to_pat_config) (n : T.name) : pattern =
+let name_to_pattern (ctx : 'fun_body ctx) (c : to_pat_config) (n : T.name) :
+    pattern =
   (* Convert the name to a pattern *)
   let pat = name_to_pattern_aux ctx c n in
   (* Sanity check: the name should match the pattern *)
@@ -1062,7 +1065,7 @@ let name_to_pattern (ctx : ctx) (c : to_pat_config) (n : T.name) : pattern =
 (** We use the [params] to compute proper names for the variables.
     Note that it is safe to provide empty generic parameters.
  *)
-let name_with_generics_to_pattern (ctx : ctx) (c : to_pat_config)
+let name_with_generics_to_pattern (ctx : 'fun_body ctx) (c : to_pat_config)
     (params : T.generic_params) (n : T.name) (args : T.generic_args) : pattern =
   (* Convert the name to a pattern *)
   let pat =
@@ -1085,7 +1088,7 @@ let name_with_generics_to_pattern (ctx : ctx) (c : to_pat_config)
 (** We use the [params] to compute proper names for the variables.
     Note that it is safe to provide empty generic parameters.
  *)
-let fn_ptr_to_pattern (ctx : ctx) (c : to_pat_config)
+let fn_ptr_to_pattern (ctx : 'fun_body ctx) (c : to_pat_config)
     (params : T.generic_params) (func : E.fn_ptr) : pattern =
   (* Convert the function pointer to a pattern *)
   let m = compute_constraints_map params in
@@ -1113,7 +1116,7 @@ let fn_ptr_to_pattern (ctx : ctx) (c : to_pat_config)
             let fid = builtin_fun_id_to_string fid in
             [ PIdent (fid, args) ])
     | FunId (FRegular fid) ->
-        let d = A.FunDeclId.Map.find fid ctx.crate.fun_decls in
+        let d = Types.FunDeclId.Map.find fid ctx.crate.fun_decls in
         name_with_generic_args_to_pattern_aux ctx c d.item_meta.name (Some args)
     | TraitMethod (tr, method_name, _) ->
         trait_ref_item_with_generics_to_pattern ctx c m tr method_name
@@ -1406,7 +1409,7 @@ module NameMatcherMap = struct
     assert (replaced = None);
     nm
 
-  let match_name_with_generics_prefix (ctx : ctx) (c : match_config)
+  let match_name_with_generics_prefix (ctx : 'fun_body ctx) (c : match_config)
       (p : pattern) (n : T.name) (g : T.generic_args) :
       (T.name * T.generic_args) option =
     if List.length p = List.length n then
@@ -1418,7 +1421,7 @@ module NameMatcherMap = struct
       if match_name ctx c p npre then Some (nend, g) else None
     else None
 
-  let rec find_with_generics_opt (ctx : ctx) (c : match_config)
+  let rec find_with_generics_opt (ctx : 'fun_body ctx) (c : match_config)
       (name : Types.name) (g : Types.generic_args) (m : 'a t) : 'a option =
     let (Node (node_v, children)) = m in
     (* Check if we reached the destination *)
@@ -1427,8 +1430,8 @@ module NameMatcherMap = struct
       (* Explore the children *)
       find_with_generics_in_children_opt ctx c name g children
 
-  and find_with_generics_in_children_opt (ctx : ctx) (c : match_config)
-      (name : Types.name) (g : Types.generic_args)
+  and find_with_generics_in_children_opt (ctx : 'fun_body ctx)
+      (c : match_config) (name : Types.name) (g : Types.generic_args)
       (children : (pattern * 'a t) list) : 'a option =
     match children with
     | [] -> None
@@ -1447,11 +1450,12 @@ module NameMatcherMap = struct
             (* Dive into the child *)
             find_with_generics_opt ctx c nend g child_tree)
 
-  let find_opt (ctx : ctx) (c : match_config) (name : Types.name) (m : 'a t) :
-      'a option =
+  let find_opt (ctx : 'fun_body ctx) (c : match_config) (name : Types.name)
+      (m : 'a t) : 'a option =
     find_with_generics_opt ctx c name TypesUtils.empty_generic_args m
 
-  let mem (ctx : ctx) (c : match_config) (name : Types.name) (m : 'a t) : bool =
+  let mem (ctx : 'fun_body ctx) (c : match_config) (name : Types.name)
+      (m : 'a t) : bool =
     find_opt ctx c name m <> None
 
   let of_list (ls : (pattern * 'a) list) : 'a t =
