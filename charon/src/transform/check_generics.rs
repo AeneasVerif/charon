@@ -6,9 +6,9 @@ use std::{borrow::Cow, fmt::Display};
 
 use crate::{
     ast::*,
+    errors::Level,
     formatter::{FmtCtx, IntoFormatter, PushBinder},
     pretty::FmtWithCtx,
-    register_error,
 };
 
 use super::{ctx::TransformPass, TransformCtx};
@@ -29,9 +29,7 @@ struct CheckGenericsVisitor<'a> {
 
 impl CheckGenericsVisitor<'_> {
     fn error(&self, message: impl Display) {
-        register_error!(
-            self.ctx,
-            self.span,
+        let msg = format!(
             "Found inconsistent generics {}:\n{message}\n\
             Visitor stack:\n  {}\n\
             Binding stack (depth {}):\n  {}",
@@ -43,6 +41,8 @@ impl CheckGenericsVisitor<'_> {
                 .map(|(i, params)| format!("{i}: {params}"))
                 .join("\n  "),
         );
+        // This is a fatal error: the output llbc is inconsistent and should not be used.
+        self.ctx.span_err(self.span, &msg, Level::Error);
     }
 
     /// For pretty error printing. This can print values that we encounter because we track binders
