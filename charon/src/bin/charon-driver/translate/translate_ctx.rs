@@ -24,7 +24,7 @@ use std::{fmt, mem};
 
 // Re-export to avoid having to fix imports.
 pub(crate) use charon_lib::errors::{
-    error_assert, raise_error, register_error, DepSource, ErrorCtx,
+    error_assert, raise_error, register_error, DepSource, ErrorCtx, Level,
 };
 
 /// The id of an untranslated item. Note that a given `DefId` may show up as multiple different
@@ -290,10 +290,10 @@ where
 
 impl<'tcx, 'ctx> TranslateCtx<'tcx> {
     /// Span an error and register the error.
-    pub fn span_err(&self, span: Span, msg: &str) -> Error {
+    pub fn span_err(&self, span: Span, msg: &str, level: Level) -> Error {
         self.errors
             .borrow_mut()
-            .span_err(&self.translated, span, msg)
+            .span_err(&self.translated, span, msg, level)
     }
 
     /// Register a file if it is a "real" file and was not already registered
@@ -912,8 +912,8 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
         }
     }
 
-    pub fn span_err(&self, span: Span, msg: &str) -> Error {
-        self.t_ctx.span_err(span, msg)
+    pub fn span_err(&self, span: Span, msg: &str, level: Level) -> Error {
+        self.t_ctx.span_err(span, msg, level)
     }
 
     pub(crate) fn translate_span_from_hax(&mut self, rspan: &hax::Span) -> Span {

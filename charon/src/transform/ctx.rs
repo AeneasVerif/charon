@@ -1,5 +1,5 @@
 use crate::ast::*;
-use crate::errors::ErrorCtx;
+use crate::errors::{ErrorCtx, Level};
 use crate::formatter::{FmtCtx, IntoFormatter};
 use crate::llbc_ast;
 use crate::options::TranslateOptions;
@@ -142,10 +142,10 @@ impl<'ctx> TransformCtx {
     }
 
     /// Span an error and register the error.
-    pub(crate) fn span_err(&self, span: Span, msg: &str) -> Error {
+    pub(crate) fn span_err(&self, span: Span, msg: &str, level: Level) -> Error {
         self.errors
             .borrow_mut()
-            .span_err(&self.translated, span, msg)
+            .span_err(&self.translated, span, msg, level)
     }
 
     pub(crate) fn opacity_for_name(&self, name: &Name) -> ItemOpacity {
