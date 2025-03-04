@@ -7,4 +7,26 @@ error: Could not compute the value of Self::Clause1::Clause0::Clause0::Output ne
   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
   |
 
-ERROR Charon failed to translate this code (1 errors)
+error: Found inconsistent generics after transformations:
+       Mismatched type generics:
+       expected: [Self, Args, Self_Output]
+            got: [Self_Foo, ()]
+       Visitor stack:
+         charon_lib::ast::types::GenericArgs
+         charon_lib::ast::types::TraitDeclRef
+         charon_lib::ast::types::RegionBinder<charon_lib::ast::types::TraitDeclRef>
+         charon_lib::ast::types::TraitRef
+         charon_lib::ast::types::TyKind
+         charon_lib::ast::types::Ty
+         charon_lib::ast::types::FunSig
+         charon_lib::ast::gast::FunDecl
+       Binding stack (depth 2):
+         0: 
+         1: <'_0, Self, Self_Foo>
+ --> tests/ui/simple/assoc-type-with-fn-bound.rs:9:5
+  |
+9 |     fn call(&self) -> <Self::Foo as FnOnce<()>>::Output;
+  |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  |
+
+ERROR Charon failed to translate this code (2 errors)

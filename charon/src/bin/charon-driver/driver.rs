@@ -293,9 +293,6 @@ pub fn transform(ctx: &mut TransformCtx, options: &CliOpts) -> export::CrateData
     for pass in transformation_passes(options) {
         trace!("# Starting pass {}", pass.name());
         pass.run(ctx);
-        if ctx.errors.borrow().has_errors() {
-            break;
-        }
     }
 
     export::CrateData::new(&ctx)
