@@ -69,9 +69,8 @@ impl Transform {
                     }) => None,
                 };
                 let Some(variants) = variants else {
-                    // An error occurred. We can't keep the `Rvalue::Discriminant` around so we
-                    // `Nop` the discriminant read.
-                    block.statements[i].content = RawStatement::Nop;
+                    block.statements[i].content =
+                        RawStatement::Error("unsupported raw discriminant read".to_owned());
                     return;
                 };
 
