@@ -12,6 +12,7 @@ trait test_crate::HasMethod<Self>
     fn method<'_0> = test_crate::HasMethod::method<'_0_0, Self>
 }
 
+#[lang_item("sized")]
 pub trait core::marker::Sized<Self>
 
 fn test_crate::{impl test_crate::HasMethod for T}::method<'_0, T>(@1: &'_0 (T))

@@ -5,8 +5,10 @@ pub trait test_crate::BoolTrait<Self>
     fn foo<'_0> = test_crate::BoolTrait::foo<'_0_0, Self>
 }
 
+#[lang_item("sized")]
 pub trait core::marker::Sized<Self>
 
+#[lang_item("Option")]
 pub enum core::option::Option<T>
   where
       [@TraitClause0]: core::marker::Sized<T>,

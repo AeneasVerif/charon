@@ -9,6 +9,7 @@ fn test_crate::foo::bar()
     return
 }
 
+#[lang_item("sized")]
 pub trait core::marker::Sized<Self>
 
 trait test_crate::Trait<Self, T>
@@ -17,8 +18,10 @@ trait test_crate::Trait<Self, T>
     fn method<U, [@TraitClause0]: core::marker::Sized<U>> = test_crate::Trait::method<Self, T, U>[@TraitClause0_0]
 }
 
+#[lang_item("global_alloc_ty")]
 pub struct alloc::alloc::Global = {}
 
+#[lang_item("Option")]
 pub enum core::option::Option<T>
   where
       [@TraitClause0]: core::marker::Sized<T>,
@@ -69,6 +72,7 @@ where
     fn method<V, [@TraitClause0]: core::marker::Sized<V>> = test_crate::{impl test_crate::Trait<alloc::boxed::Box<T>[core::marker::Sized<alloc::alloc::Global>]> for core::option::Option<U>[@TraitClause1]}#1::method<T, U, V>[@TraitClause0, @TraitClause1, @TraitClause0_0]
 }
 
+#[lang_item("RangeFrom")]
 pub struct core::ops::range::RangeFrom<Idx>
   where
       [@TraitClause0]: core::marker::Sized<Idx>,
@@ -83,6 +87,7 @@ where
 
 pub trait core::slice::index::private_slice_index::Sealed<Self>
 
+#[lang_item("SliceIndex")]
 pub trait core::slice::index::SliceIndex<Self, T>
 {
     parent_clause0 : [@TraitClause0]: core::slice::index::private_slice_index::Sealed<Self>
@@ -192,6 +197,7 @@ where
 
 pub fn core::ops::index::Index::index<'_0, Self, Idx>(@1: &'_0 (Self), @2: Idx) -> &'_0 (Self::Output)
 
+#[lang_item("index")]
 pub trait core::ops::index::Index<Self, Idx>
 {
     type Output

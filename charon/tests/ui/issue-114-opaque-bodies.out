@@ -18,6 +18,7 @@ pub fn issue_114_opaque_bodies_aux::inline_sometimes() -> u32
 
 pub fn issue_114_opaque_bodies_aux::inline_never() -> u32
 
+#[lang_item("sized")]
 pub trait core::marker::Sized<Self>
 
 pub fn issue_114_opaque_bodies_aux::inline_generic<T>() -> u32
@@ -56,6 +57,7 @@ fn test_crate::use_inlines() -> u32
     return
 }
 
+#[lang_item("Option")]
 pub enum core::option::Option<T>
   where
       [@TraitClause0]: core::marker::Sized<T>,
@@ -122,13 +124,16 @@ fn test_crate::convert(@1: i32) -> i64
     return
 }
 
+#[lang_item("NonNull")]
 pub struct core::ptr::non_null::NonNull<T> =
 {
   pointer: *const T,
 }
 
+#[lang_item("phantom_data")]
 pub struct core::marker::PhantomData<T> = {}
 
+#[lang_item("ptr_unique")]
 pub struct core::ptr::unique::Unique<T> =
 {
   pointer: core::ptr::non_null::NonNull<T>,
@@ -160,6 +165,7 @@ struct alloc::raw_vec::RawVec<T, A>
   _marker: core::marker::PhantomData<T>,
 }
 
+#[lang_item("Vec")]
 pub struct alloc::vec::Vec<T, A>
   where
       [@TraitClause0]: core::marker::Sized<T>,
@@ -170,6 +176,7 @@ pub struct alloc::vec::Vec<T, A>
   len: usize,
 }
 
+#[lang_item("global_alloc_ty")]
 pub struct alloc::alloc::Global = {}
 
 fn test_crate::vec(@1: alloc::vec::Vec<u32, alloc::alloc::Global>[core::marker::Sized<u32>, core::marker::Sized<alloc::alloc::Global>])
@@ -203,6 +210,7 @@ fn test_crate::max() -> usize
     return
 }
 
+#[lang_item("eq")]
 pub trait core::cmp::PartialEq<Self, Rhs>
 {
     fn eq<'_0, '_1> = core::cmp::PartialEq::eq<'_0_0, '_0_1, Self, Rhs>
@@ -223,8 +231,10 @@ where
     return
 }
 
+#[lang_item("from_fn")]
 pub fn core::convert::From::from<Self, T>(@1: T) -> Self
 
+#[lang_item("From")]
 pub trait core::convert::From<Self, T>
 {
     parent_clause0 : [@TraitClause0]: core::marker::Sized<Self>
@@ -239,8 +249,10 @@ impl core::convert::num::{impl core::convert::From<i32> for i64}#83 : core::conv
     fn from = core::convert::num::{impl core::convert::From<i32> for i64}#83::from
 }
 
+#[lang_item("cmp_partialeq_eq")]
 pub fn core::cmp::PartialEq::eq<'_0, '_1, Self, Rhs>(@1: &'_0 (Self), @2: &'_1 (Rhs)) -> bool
 
+#[lang_item("cmp_partialeq_ne")]
 pub fn core::cmp::PartialEq::ne<'_0, '_1, Self, Rhs>(@1: &'_0 (Self), @2: &'_1 (Rhs)) -> bool
 {
     let @0: bool; // return

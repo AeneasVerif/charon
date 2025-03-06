@@ -623,7 +623,12 @@ impl ItemMeta {
     {
         let name = self.name.fmt_with_ctx(ctx);
         let vis = if self.attr_info.public { "pub " } else { "" };
-        format!("{tab}{vis}{keyword} {name}")
+        let lang_item = self
+            .lang_item
+            .as_ref()
+            .map(|id| format!("{tab}#[lang_item(\"{id}\")]\n"))
+            .unwrap_or_default();
+        format!("{lang_item}{tab}{vis}{keyword} {name}")
     }
 }
 

@@ -133,6 +133,7 @@ impl test_crate::{impl test_crate::Trait for u8} : test_crate::Trait<u8>
     fn method2 = test_crate::{impl test_crate::Trait for u8}::method2
 }
 
+#[lang_item("sized")]
 pub trait core::marker::Sized<Self>
 
 fn test_crate::Trait::method1<Self>()

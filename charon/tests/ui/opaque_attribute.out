@@ -19,8 +19,10 @@ impl test_crate::{impl test_crate::BoolTrait for bool} : test_crate::BoolTrait<b
     fn get_bool<'_0> = test_crate::{impl test_crate::BoolTrait for bool}::get_bool<'_0_0>
 }
 
+#[lang_item("sized")]
 pub trait core::marker::Sized<Self>
 
+#[lang_item("Option")]
 pub enum core::option::Option<T>
   where
       [@TraitClause0]: core::marker::Sized<T>,

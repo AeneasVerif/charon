@@ -1,5 +1,6 @@
 # Final LLBC before serialization:
 
+#[lang_item("sized")]
 pub trait core::marker::Sized<Self>
 
 pub fn test_crate::choose<'a, T>(@1: bool, @2: &'a mut (T), @3: &'a mut (T)) -> &'a mut (T)
@@ -120,6 +121,7 @@ pub fn test_crate::use_incr()
     return
 }
 
+#[lang_item("global_alloc_ty")]
 pub struct alloc::alloc::Global = {}
 
 pub enum test_crate::CList<T>

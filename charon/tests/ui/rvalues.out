@@ -210,8 +210,10 @@ fn test_crate::fn_casts()
     return
 }
 
+#[lang_item("sized")]
 pub trait core::marker::Sized<Self>
 
+#[lang_item("global_alloc_ty")]
 pub struct alloc::alloc::Global = {}
 
 fn test_crate::boxes()
@@ -271,6 +273,7 @@ fn test_crate::STEAL2() -> Array<(), 13 : usize>
 
 global test_crate::STEAL2: Array<(), 13 : usize> = test_crate::STEAL2()
 
+#[lang_item("mem_size_of")]
 pub fn core::mem::size_of<T>() -> usize
 where
     [@TraitClause0]: core::marker::Sized<T>,
@@ -332,6 +335,7 @@ where
     return
 }
 
+#[lang_item("exchange_malloc")]
 unsafe fn alloc::alloc::exchange_malloc(@1: usize, @2: usize) -> *mut u8
 
 

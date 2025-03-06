@@ -2,6 +2,7 @@
 
 pub trait test_crate::Ord<Self>
 
+#[lang_item("sized")]
 pub trait core::marker::Sized<Self>
 
 pub struct test_crate::AVLTree<T>

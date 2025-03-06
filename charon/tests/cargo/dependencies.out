@@ -13,10 +13,13 @@ fn test_cargo_dependencies::silly_incr::closure(@1: (), @2: u32) -> u32
     return
 }
 
+#[lang_item("sized")]
 pub trait core::marker::Sized<Self>
 
+#[lang_item("tuple_trait")]
 pub trait core::marker::Tuple<Self>
 
+#[lang_item("fn_once")]
 pub trait core::ops::function::FnOnce<Self, Args>
 {
     parent_clause0 : [@TraitClause0]: core::marker::Sized<Args>
@@ -58,6 +61,7 @@ pub enum core::panicking::AssertKind =
 |  Match()
 
 
+#[lang_item("Option")]
 pub enum core::option::Option<T>
   where
       [@TraitClause0]: core::marker::Sized<T>,
@@ -66,6 +70,7 @@ pub enum core::option::Option<T>
 |  Some(T)
 
 
+#[lang_item("format_arguments")]
 pub opaque type core::fmt::Arguments<'a>
   where
       'a : 'a,

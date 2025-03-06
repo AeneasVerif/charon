@@ -1,9 +1,11 @@
 # Final LLBC before serialization:
 
+#[lang_item("ptr_null")]
 pub fn core::ptr::null<T>() -> *const T
 where
     [@TraitClause0]: core::ptr::metadata::Thin<T>,
 
+#[lang_item("sized")]
 pub trait core::marker::Sized<Self>
 
 pub unsafe fn core::ptr::const_ptr::{*const T}::read<T>(@1: *const T) -> T

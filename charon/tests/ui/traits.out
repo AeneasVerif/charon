@@ -54,8 +54,10 @@ pub fn test_crate::test_bool_trait_bool(@1: bool) -> bool
     return
 }
 
+#[lang_item("sized")]
 pub trait core::marker::Sized<Self>
 
+#[lang_item("Option")]
 pub enum core::option::Option<T>
   where
       [@TraitClause0]: core::marker::Sized<T>,
@@ -613,6 +615,7 @@ where
     return
 }
 
+#[lang_item("String")]
 pub opaque type alloc::string::String
 
 pub trait test_crate::ParentTrait0<Self>
@@ -888,6 +891,7 @@ pub struct test_crate::Foo<T, U>
   y: U,
 }
 
+#[lang_item("Result")]
 pub enum core::result::Result<T, E>
   where
       [@TraitClause0]: core::marker::Sized<T>,
@@ -966,8 +970,10 @@ pub fn test_crate::flabada<'a>(@1: &'a (())) -> test_crate::Wrapper<(bool, &'a (
     panic(core::panicking::panic)
 }
 
+#[lang_item("tuple_trait")]
 pub trait core::marker::Tuple<Self>
 
+#[lang_item("fn_once")]
 pub trait core::ops::function::FnOnce<Self, Args>
 {
     parent_clause0 : [@TraitClause0]: core::marker::Sized<Args>
@@ -977,6 +983,7 @@ pub trait core::ops::function::FnOnce<Self, Args>
     fn call_once = core::ops::function::FnOnce::call_once<Self, Args>
 }
 
+#[lang_item("fn_mut")]
 pub trait core::ops::function::FnMut<Self, Args>
 {
     parent_clause0 : [@TraitClause0]: core::ops::function::FnOnce<Self, Args>
@@ -985,6 +992,7 @@ pub trait core::ops::function::FnMut<Self, Args>
     fn call_mut<'_0> = core::ops::function::FnMut::call_mut<'_0_0, Self, Args>
 }
 
+#[lang_item("r#fn")]
 pub trait core::ops::function::Fn<Self, Args>
 {
     parent_clause0 : [@TraitClause0]: core::ops::function::FnMut<Self, Args>

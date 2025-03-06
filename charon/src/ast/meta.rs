@@ -226,6 +226,9 @@ pub struct ItemMeta {
     #[charon::opaque]
     #[drive(skip)]
     pub opacity: ItemOpacity,
+    /// If the item is built-in, record its internal builtin identifier.
+    #[drive(skip)]
+    pub lang_item: Option<String>,
 }
 
 /// A filename.

@@ -1,25 +1,31 @@
 # Final LLBC before serialization:
 
+#[lang_item("sized")]
 pub trait core::marker::Sized<Self>
 
+#[lang_item("Vec")]
 pub opaque type alloc::vec::Vec<T, A>
   where
       [@TraitClause0]: core::marker::Sized<T>,
       [@TraitClause1]: core::marker::Sized<A>,
 
+#[lang_item("global_alloc_ty")]
 pub struct alloc::alloc::Global = {}
 
+#[lang_item("slice_into_vec")]
 pub fn alloc::slice::{Slice<T>}::into_vec<T, A>(@1: alloc::boxed::Box<Slice<T>>[@TraitClause1]) -> alloc::vec::Vec<T, A>[@TraitClause0, @TraitClause1]
 where
     [@TraitClause0]: core::marker::Sized<T>,
     [@TraitClause1]: core::marker::Sized<A>,
 
+#[lang_item("clone")]
 pub trait core::clone::Clone<Self>
 {
     parent_clause0 : [@TraitClause0]: core::marker::Sized<Self>
     fn clone<'_0> = core::clone::Clone::clone<'_0_0, Self>
 }
 
+#[lang_item("vec_from_elem")]
 pub fn alloc::vec::from_elem<T>(@1: T, @2: usize) -> alloc::vec::Vec<T, alloc::alloc::Global>[@TraitClause0, core::marker::Sized<alloc::alloc::Global>]
 where
     [@TraitClause0]: core::marker::Sized<T>,
@@ -97,8 +103,10 @@ pub fn test_crate::bar()
     return
 }
 
+#[lang_item("exchange_malloc")]
 unsafe fn alloc::alloc::exchange_malloc(@1: usize, @2: usize) -> *mut u8
 
+#[lang_item("clone_fn")]
 pub fn core::clone::Clone::clone<'_0, Self>(@1: &'_0 (Self)) -> Self
 
 

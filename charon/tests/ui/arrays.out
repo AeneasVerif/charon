@@ -16,6 +16,7 @@ pub fn test_crate::incr<'_0>(@1: &'_0 mut (u32))
     return
 }
 
+#[lang_item("sized")]
 pub trait core::marker::Sized<Self>
 
 pub fn test_crate::array_to_shared_slice_<'_0, T>(@1: &'_0 (Array<T, 32 : usize>)) -> &'_0 (Slice<T>)
@@ -49,6 +50,7 @@ where
     return
 }
 
+#[lang_item("slice_len_fn")]
 pub fn core::slice::{Slice<T>}::len<'_0, T>(@1: &'_0 (Slice<T>)) -> usize
 where
     [@TraitClause0]: core::marker::Sized<T>,
@@ -229,6 +231,7 @@ where
     return
 }
 
+#[lang_item("Range")]
 pub struct core::ops::range::Range<Idx>
   where
       [@TraitClause0]: core::marker::Sized<Idx>,
@@ -240,6 +243,7 @@ pub struct core::ops::range::Range<Idx>
 
 pub trait core::slice::index::private_slice_index::Sealed<Self>
 
+#[lang_item("Option")]
 pub enum core::option::Option<T>
   where
       [@TraitClause0]: core::marker::Sized<T>,
@@ -248,6 +252,7 @@ pub enum core::option::Option<T>
 |  Some(T)
 
 
+#[lang_item("SliceIndex")]
 pub trait core::slice::index::SliceIndex<Self, T, Self_Output>
 {
     parent_clause0 : [@TraitClause0]: core::slice::index::private_slice_index::Sealed<Self>
@@ -398,6 +403,7 @@ pub fn test_crate::array_to_slice_mut_<'_0>(@1: &'_0 mut (Array<u32, 32 : usize>
     return
 }
 
+#[lang_item("index")]
 pub trait core::ops::index::Index<Self, Idx, Self_Output>
 {
     fn index<'_0> = core::ops::index::Index::index<'_0_0, Self, Idx, Self_Output>
@@ -447,6 +453,7 @@ pub fn test_crate::array_subslice_shared_<'_0>(@1: &'_0 (Array<u32, 32 : usize>)
     return
 }
 
+#[lang_item("index_mut")]
 pub trait core::ops::index::IndexMut<Self, Idx, Self_Clause0_Output>
 {
     parent_clause0 : [@TraitClause0]: core::ops::index::Index<Self, Idx, Self_Clause0_Output>

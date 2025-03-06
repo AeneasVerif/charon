@@ -1,19 +1,24 @@
 # Final LLBC before serialization:
 
+#[lang_item("sized")]
 pub trait core::marker::Sized<Self>
 
+#[lang_item("global_alloc_ty")]
 pub struct alloc::alloc::Global = {}
 
+#[lang_item("Rc")]
 pub opaque type alloc::rc::Rc<T, A>
   where
       [@TraitClause0]: core::marker::Sized<A>,
 
+#[lang_item("String")]
 pub opaque type alloc::string::String
 
 pub fn alloc::rc::{alloc::rc::Rc<T, alloc::alloc::Global>[core::marker::Sized<alloc::alloc::Global>]}#8::new<T>(@1: T) -> alloc::rc::Rc<T, alloc::alloc::Global>[core::marker::Sized<alloc::alloc::Global>]
 where
     [@TraitClause0]: core::marker::Sized<T>,
 
+#[lang_item("string_new")]
 pub fn alloc::string::{alloc::string::String}::new() -> alloc::string::String
 
 pub fn alloc::string::{impl core::clone::Clone for alloc::string::String}#6::clone<'_0>(@1: &'_0 (alloc::string::String)) -> alloc::string::String
@@ -110,8 +115,10 @@ fn test_crate::foo()
     return
 }
 
+#[lang_item("clone_fn")]
 pub fn core::clone::Clone::clone<'_0, Self>(@1: &'_0 (Self)) -> Self
 
+#[lang_item("clone")]
 pub trait core::clone::Clone<Self>
 {
     parent_clause0 : [@TraitClause0]: core::marker::Sized<Self>

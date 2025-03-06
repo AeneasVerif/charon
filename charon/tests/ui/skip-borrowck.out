@@ -1,5 +1,6 @@
 # Final LLBC before serialization:
 
+#[lang_item("sized")]
 pub trait core::marker::Sized<Self>
 
 fn test_crate::choose<'a, T>(@1: bool, @2: &'a mut (T), @3: &'a mut (T)) -> &'a mut (T)

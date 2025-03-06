@@ -5,6 +5,7 @@ pub trait test_crate::Trait<Self>
     fn method<'_0> = test_crate::Trait::method<'_0_0, Self>
 }
 
+#[lang_item("sized")]
 pub trait core::marker::Sized<Self>
 
 pub fn test_crate::{impl test_crate::Trait for T}::method<'_0, T>(@1: &'_0 (T))

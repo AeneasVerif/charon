@@ -7,6 +7,7 @@ fn test_crate::panic1()
     panic(core::panicking::panic_explicit)
 }
 
+#[lang_item("format_arguments")]
 pub opaque type core::fmt::Arguments<'a>
   where
       'a : 'a,
@@ -29,6 +30,7 @@ fn test_crate::panic2()
     panic(core::panicking::panic_fmt)
 }
 
+#[lang_item("format_argument")]
 pub opaque type core::fmt::rt::Argument<'a>
 
 pub fn core::fmt::rt::{core::fmt::rt::Argument<'_0>}#1::none<'_0>() -> Array<core::fmt::rt::Argument<'_0>, 0 : usize>

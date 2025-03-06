@@ -10,8 +10,10 @@ fn test_crate::function_call(@1: u32)
     return
 }
 
+#[lang_item("sized")]
 pub trait core::marker::Sized<Self>
 
+#[lang_item("slice_len_fn")]
 pub fn core::slice::{Slice<T>}::len<'_0, T>(@1: &'_0 (Slice<T>)) -> usize
 where
     [@TraitClause0]: core::marker::Sized<T>,
@@ -129,6 +131,7 @@ struct test_crate::Foo =
   y: u32,
 }
 
+#[lang_item("Default")]
 pub trait core::default::Default<Self>
 {
     parent_clause0 : [@TraitClause0]: core::marker::Sized<Self>
@@ -202,6 +205,7 @@ pub enum core::panicking::AssertKind =
 |  Match()
 
 
+#[lang_item("Option")]
 pub enum core::option::Option<T>
   where
       [@TraitClause0]: core::marker::Sized<T>,
@@ -210,6 +214,7 @@ pub enum core::option::Option<T>
 |  Some(T)
 
 
+#[lang_item("format_arguments")]
 pub opaque type core::fmt::Arguments<'a>
   where
       'a : 'a,
@@ -400,6 +405,7 @@ fn test_crate::fool()
     return
 }
 
+#[lang_item("default_fn")]
 pub fn core::default::Default::default<Self>() -> Self
 
 impl core::default::{impl core::default::Default for u32}#7 : core::default::Default<u32>

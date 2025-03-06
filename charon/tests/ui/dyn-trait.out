@@ -1,11 +1,14 @@
 # Final LLBC before serialization:
 
+#[lang_item("sized")]
 pub trait core::marker::Sized<Self>
 
+#[lang_item("Formatter")]
 pub opaque type core::fmt::Formatter<'a>
   where
       'a : 'a,
 
+#[lang_item("Result")]
 pub enum core::result::Result<T, E>
   where
       [@TraitClause0]: core::marker::Sized<T>,
@@ -17,11 +20,13 @@ pub enum core::result::Result<T, E>
 
 pub struct core::fmt::Error = {}
 
+#[lang_item("Display")]
 pub trait core::fmt::Display<Self>
 {
     fn fmt<'_0, '_1, '_2> = core::fmt::Display::fmt<'_0_0, '_0_1, '_0_2, Self>
 }
 
+#[lang_item("global_alloc_ty")]
 pub struct alloc::alloc::Global = {}
 
 fn test_crate::construct<T>(@1: T) -> alloc::boxed::Box<dyn (exists(TODO))>[core::marker::Sized<alloc::alloc::Global>]
@@ -30,6 +35,7 @@ where
     [@TraitClause1]: core::fmt::Display<T>,
     T : 'static,
 
+#[lang_item("String")]
 pub opaque type alloc::string::String
 
 pub fn alloc::string::{impl alloc::string::ToString for T}#32::to_string<'_0, T>(@1: &'_0 (T)) -> alloc::string::String
@@ -73,8 +79,10 @@ fn test_crate::bar<'_0>(@1: &'_0 (dyn (exists(TODO))))
     return
 }
 
+#[lang_item("to_string_method")]
 pub fn alloc::string::ToString::to_string<'_0, Self>(@1: &'_0 (Self)) -> alloc::string::String
 
+#[lang_item("ToString")]
 pub trait alloc::string::ToString<Self>
 {
     fn to_string<'_0> = alloc::string::ToString::to_string<'_0_0, Self>
