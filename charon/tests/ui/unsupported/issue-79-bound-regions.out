@@ -68,7 +68,7 @@ trait core::iter::traits::iterator::Iterator<Self>
     fn next<'_0> = core::iter::traits::iterator::Iterator::next<'_0_0, Self>
 }
 
-impl<'a, T> core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::Iter<'a, T>[@TraitClause0]}#182<'a, T> : core::iter::traits::iterator::Iterator<core::slice::iter::Iter<'a, T>[@TraitClause0]>
+impl core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::Iter<'a, T>[@TraitClause0]}#182<'a, T> : core::iter::traits::iterator::Iterator<core::slice::iter::Iter<'a, T>[@TraitClause0]>
 where
     [@TraitClause0]: core::marker::Sized<T>,
 {

@@ -32,7 +32,7 @@ where
     return
 }
 
-impl<T> test_crate::{impl test_crate::HasMethod for core::option::Option<T>[@TraitClause0]}<T> : test_crate::HasMethod<core::option::Option<T>[@TraitClause0]>
+impl test_crate::{impl test_crate::HasMethod for core::option::Option<T>[@TraitClause0]}<T> : test_crate::HasMethod<core::option::Option<T>[@TraitClause0]>
 where
     [@TraitClause0]: core::marker::Sized<T>,
 {

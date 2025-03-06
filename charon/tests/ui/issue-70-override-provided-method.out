@@ -126,7 +126,7 @@ impl test_crate::{impl core::cmp::PartialOrd<test_crate::Foo> for test_crate::Fo
 
 fn core::cmp::PartialEq::eq<'_0, '_1, Self, Rhs>(@1: &'_0 (Self), @2: &'_1 (Rhs)) -> bool
 
-impl<T> core::option::{impl core::cmp::PartialEq<core::option::Option<T>[@TraitClause0]> for core::option::Option<T>[@TraitClause0]}#14<T> : core::cmp::PartialEq<core::option::Option<T>[@TraitClause0], core::option::Option<T>[@TraitClause0]>
+impl core::option::{impl core::cmp::PartialEq<core::option::Option<T>[@TraitClause0]> for core::option::Option<T>[@TraitClause0]}#14<T> : core::cmp::PartialEq<core::option::Option<T>[@TraitClause0], core::option::Option<T>[@TraitClause0]>
 where
     [@TraitClause0]: core::marker::Sized<T>,
     [@TraitClause1]: core::cmp::PartialEq<T, T>,

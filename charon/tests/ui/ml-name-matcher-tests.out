@@ -39,7 +39,7 @@ where
     return
 }
 
-impl<T> test_crate::{impl test_crate::Trait<core::option::Option<T>[@TraitClause0]> for alloc::boxed::Box<T>[core::marker::Sized<alloc::alloc::Global>]}<T> : test_crate::Trait<alloc::boxed::Box<T>[core::marker::Sized<alloc::alloc::Global>], core::option::Option<T>[@TraitClause0]>
+impl test_crate::{impl test_crate::Trait<core::option::Option<T>[@TraitClause0]> for alloc::boxed::Box<T>[core::marker::Sized<alloc::alloc::Global>]}<T> : test_crate::Trait<alloc::boxed::Box<T>[core::marker::Sized<alloc::alloc::Global>], core::option::Option<T>[@TraitClause0]>
 where
     [@TraitClause0]: core::marker::Sized<T>,
 {
@@ -60,7 +60,7 @@ where
     return
 }
 
-impl<T, U> test_crate::{impl test_crate::Trait<alloc::boxed::Box<T>[core::marker::Sized<alloc::alloc::Global>]> for core::option::Option<U>[@TraitClause1]}#1<T, U> : test_crate::Trait<core::option::Option<U>[@TraitClause1], alloc::boxed::Box<T>[core::marker::Sized<alloc::alloc::Global>]>
+impl test_crate::{impl test_crate::Trait<alloc::boxed::Box<T>[core::marker::Sized<alloc::alloc::Global>]> for core::option::Option<U>[@TraitClause1]}#1<T, U> : test_crate::Trait<core::option::Option<U>[@TraitClause1], alloc::boxed::Box<T>[core::marker::Sized<alloc::alloc::Global>]>
 where
     [@TraitClause0]: core::marker::Sized<T>,
     [@TraitClause1]: core::marker::Sized<U>,
@@ -127,7 +127,7 @@ fn core::slice::index::{impl core::slice::index::SliceIndex<Slice<T>> for core::
 where
     [@TraitClause0]: core::marker::Sized<T>,
 
-impl<T> core::slice::index::{impl core::slice::index::SliceIndex<Slice<T>> for core::ops::range::RangeFrom<usize>[core::marker::Sized<usize>]}#7<T> : core::slice::index::SliceIndex<core::ops::range::RangeFrom<usize>[core::marker::Sized<usize>], Slice<T>>
+impl core::slice::index::{impl core::slice::index::SliceIndex<Slice<T>> for core::ops::range::RangeFrom<usize>[core::marker::Sized<usize>]}#7<T> : core::slice::index::SliceIndex<core::ops::range::RangeFrom<usize>[core::marker::Sized<usize>], Slice<T>>
 where
     [@TraitClause0]: core::marker::Sized<T>,
 {
@@ -198,7 +198,7 @@ trait core::ops::index::Index<Self, Idx>
     fn index<'_0> = core::ops::index::Index::index<'_0_0, Self, Idx>
 }
 
-impl<T, I> core::slice::index::{impl core::ops::index::Index<I> for Slice<T>}<T, I> : core::ops::index::Index<Slice<T>, I>
+impl core::slice::index::{impl core::ops::index::Index<I> for Slice<T>}<T, I> : core::ops::index::Index<Slice<T>, I>
 where
     [@TraitClause0]: core::marker::Sized<T>,
     [@TraitClause1]: core::marker::Sized<I>,

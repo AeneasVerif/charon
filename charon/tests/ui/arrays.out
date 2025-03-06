@@ -291,7 +291,7 @@ fn core::slice::index::{impl core::slice::index::SliceIndex<Slice<T>, Slice<T>> 
 where
     [@TraitClause0]: core::marker::Sized<T>,
 
-impl<T> core::slice::index::{impl core::slice::index::SliceIndex<Slice<T>, Slice<T>> for core::ops::range::Range<usize>[core::marker::Sized<usize>]}#4<T> : core::slice::index::SliceIndex<core::ops::range::Range<usize>[core::marker::Sized<usize>], Slice<T>, Slice<T>>
+impl core::slice::index::{impl core::slice::index::SliceIndex<Slice<T>, Slice<T>> for core::ops::range::Range<usize>[core::marker::Sized<usize>]}#4<T> : core::slice::index::SliceIndex<core::ops::range::Range<usize>[core::marker::Sized<usize>], Slice<T>, Slice<T>>
 where
     [@TraitClause0]: core::marker::Sized<T>,
 {
@@ -409,7 +409,7 @@ where
     [@TraitClause1]: core::marker::Sized<I>,
     [@TraitClause2]: core::ops::index::Index<Slice<T>, I, Clause2_Output>,
 
-impl<T, I, Clause2_Output> core::slice::index::{impl core::ops::index::Index<I, Clause2_Output> for Slice<T>}<T, I, Clause2_Output> : core::ops::index::Index<Slice<T>, I, Clause2_Output>
+impl core::slice::index::{impl core::ops::index::Index<I, Clause2_Output> for Slice<T>}<T, I, Clause2_Output> : core::ops::index::Index<Slice<T>, I, Clause2_Output>
 where
     [@TraitClause0]: core::marker::Sized<T>,
     [@TraitClause1]: core::marker::Sized<I>,
@@ -459,7 +459,7 @@ where
     [@TraitClause1]: core::marker::Sized<I>,
     [@TraitClause2]: core::ops::index::IndexMut<Slice<T>, I, Clause2_Clause0_Output>,
 
-impl<T, I, Clause2_Output> core::slice::index::{impl core::ops::index::IndexMut<I, Clause2_Output> for Slice<T>}#1<T, I, Clause2_Output> : core::ops::index::IndexMut<Slice<T>, I, Clause2_Output>
+impl core::slice::index::{impl core::ops::index::IndexMut<I, Clause2_Output> for Slice<T>}#1<T, I, Clause2_Output> : core::ops::index::IndexMut<Slice<T>, I, Clause2_Output>
 where
     [@TraitClause0]: core::marker::Sized<T>,
     [@TraitClause1]: core::marker::Sized<I>,
@@ -1770,7 +1770,7 @@ fn core::ops::index::Index::index<'_0, Self, Idx, Self_Output>(@1: &'_0 (Self), 
 
 fn core::ops::index::IndexMut::index_mut<'_0, Self, Idx, Self_Clause0_Output>(@1: &'_0 mut (Self), @2: Idx) -> &'_0 mut (Self_Clause0_Output)
 
-impl<T, I, Clause2_Output, const N : usize> core::array::{impl core::ops::index::Index<I, Clause2_Output> for Array<T, const N : usize>}#15<T, I, Clause2_Output, const N : usize> : core::ops::index::Index<Array<T, const N : usize>, I, Clause2_Output>
+impl core::array::{impl core::ops::index::Index<I, Clause2_Output> for Array<T, const N : usize>}#15<T, I, Clause2_Output, const N : usize> : core::ops::index::Index<Array<T, const N : usize>, I, Clause2_Output>
 where
     [@TraitClause0]: core::marker::Sized<T>,
     [@TraitClause1]: core::marker::Sized<I>,
@@ -1779,7 +1779,7 @@ where
     fn index<'_0> = core::array::{impl core::ops::index::Index<I, Clause2_Output> for Array<T, const N : usize>}#15::index<'_0_0, T, I, Clause2_Output, const N : usize>[@TraitClause0, @TraitClause1, @TraitClause2]
 }
 
-impl<T, I, Clause2_Clause0_Output, const N : usize> core::array::{impl core::ops::index::IndexMut<I, Clause2_Clause0_Output> for Array<T, const N : usize>}#16<T, I, Clause2_Clause0_Output, const N : usize> : core::ops::index::IndexMut<Array<T, const N : usize>, I, Clause2_Clause0_Output>
+impl core::array::{impl core::ops::index::IndexMut<I, Clause2_Clause0_Output> for Array<T, const N : usize>}#16<T, I, Clause2_Clause0_Output, const N : usize> : core::ops::index::IndexMut<Array<T, const N : usize>, I, Clause2_Clause0_Output>
 where
     [@TraitClause0]: core::marker::Sized<T>,
     [@TraitClause1]: core::marker::Sized<I>,

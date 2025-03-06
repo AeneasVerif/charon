@@ -101,7 +101,7 @@ fn core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::sli
 where
     [@TraitClause0]: core::marker::Sized<T>,
 
-impl<'a, T> core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::Chunks<'a, T>[@TraitClause0]}#71<'a, T> : core::iter::traits::iterator::Iterator<core::slice::iter::Chunks<'a, T>[@TraitClause0]>
+impl core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::Chunks<'a, T>[@TraitClause0]}#71<'a, T> : core::iter::traits::iterator::Iterator<core::slice::iter::Chunks<'a, T>[@TraitClause0]>
 where
     [@TraitClause0]: core::marker::Sized<T>,
 {
@@ -329,7 +329,7 @@ where
     fn into_iter = core::iter::traits::collect::IntoIterator::into_iter<Self>
 }
 
-impl<I> core::iter::traits::collect::{impl core::iter::traits::collect::IntoIterator for I}#1<I> : core::iter::traits::collect::IntoIterator<I>
+impl core::iter::traits::collect::{impl core::iter::traits::collect::IntoIterator for I}#1<I> : core::iter::traits::collect::IntoIterator<I>
 where
     [@TraitClause0]: core::marker::Sized<I>,
     [@TraitClause1]: core::iter::traits::iterator::Iterator<I>,

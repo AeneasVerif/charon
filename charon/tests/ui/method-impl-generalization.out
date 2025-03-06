@@ -68,7 +68,7 @@ fn test_crate::{impl test_crate::MyCompare<&'a (())> for &'a (())}#1::compare<'a
     return
 }
 
-impl<'a> test_crate::{impl test_crate::MyCompare<&'a (())> for &'a (())}#1<'a> : test_crate::MyCompare<&'a (()), &'a (())>
+impl test_crate::{impl test_crate::MyCompare<&'a (())> for &'a (())}#1<'a> : test_crate::MyCompare<&'a (()), &'a (())>
 {
     parent_clause0 = core::marker::Sized<&'_ (())>
     parent_clause1 = core::marker::Sized<&'_ (())>

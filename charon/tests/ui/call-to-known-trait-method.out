@@ -33,7 +33,7 @@ where
     return
 }
 
-impl<A> test_crate::{impl core::default::Default for test_crate::Struct<A>[@TraitClause0]}#1<A> : core::default::Default<test_crate::Struct<A>[@TraitClause0]>
+impl test_crate::{impl core::default::Default for test_crate::Struct<A>[@TraitClause0]}#1<A> : core::default::Default<test_crate::Struct<A>[@TraitClause0]>
 where
     [@TraitClause0]: core::marker::Sized<A>,
     [@TraitClause1]: core::default::Default<A>,
@@ -75,7 +75,7 @@ where
     return
 }
 
-impl<A, B> test_crate::{impl test_crate::Trait<B, (A, B)> for test_crate::Struct<A>[@TraitClause0]}<A, B> : test_crate::Trait<test_crate::Struct<A>[@TraitClause0], B, (A, B)>
+impl test_crate::{impl test_crate::Trait<B, (A, B)> for test_crate::Struct<A>[@TraitClause0]}<A, B> : test_crate::Trait<test_crate::Struct<A>[@TraitClause0], B, (A, B)>
 where
     [@TraitClause0]: core::marker::Sized<A>,
     [@TraitClause1]: core::marker::Sized<B>,

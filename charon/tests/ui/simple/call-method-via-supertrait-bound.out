@@ -27,7 +27,7 @@ where
     return
 }
 
-impl<T> test_crate::{impl test_crate::HasMethod for T}<T> : test_crate::HasMethod<T>
+impl test_crate::{impl test_crate::HasMethod for T}<T> : test_crate::HasMethod<T>
 where
     [@TraitClause0]: core::marker::Sized<T>,
     [@TraitClause1]: test_crate::OtherTrait<T>,

@@ -120,7 +120,7 @@ trait core::convert::Into<Self, T>
     fn into = core::convert::Into::into<Self, T>
 }
 
-impl<T, U> core::convert::{impl core::convert::Into<U> for T}#3<T, U> : core::convert::Into<T, U>
+impl core::convert::{impl core::convert::Into<U> for T}#3<T, U> : core::convert::Into<T, U>
 where
     [@TraitClause0]: core::marker::Sized<T>,
     [@TraitClause1]: core::marker::Sized<U>,

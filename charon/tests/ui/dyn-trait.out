@@ -80,7 +80,7 @@ trait alloc::string::ToString<Self>
     fn to_string<'_0> = alloc::string::ToString::to_string<'_0_0, Self>
 }
 
-impl<T> alloc::string::{impl alloc::string::ToString for T}#32<T> : alloc::string::ToString<T>
+impl alloc::string::{impl alloc::string::ToString for T}#32<T> : alloc::string::ToString<T>
 where
     [@TraitClause0]: core::fmt::Display<T>,
 {

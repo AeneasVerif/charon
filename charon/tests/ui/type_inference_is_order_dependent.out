@@ -115,7 +115,7 @@ where
     return
 }
 
-impl<T, U> test_crate::{impl test_crate::Join<U> for T}<T, U> : test_crate::Join<T, U>
+impl test_crate::{impl test_crate::Join<U> for T}<T, U> : test_crate::Join<T, U>
 where
     [@TraitClause0]: core::marker::Sized<T>,
     [@TraitClause1]: core::marker::Sized<U>,
@@ -128,7 +128,7 @@ where
     fn test = test_crate::{impl test_crate::Join<U> for T}::test<T, U>[@TraitClause0, @TraitClause1, @TraitClause2, @TraitClause3, @TraitClause4, @TraitClause5]
 }
 
-impl<T, U> test_crate::{impl test_crate::Left<U> for T}#1<T, U> : test_crate::Left<T, U>
+impl test_crate::{impl test_crate::Left<U> for T}#1<T, U> : test_crate::Left<T, U>
 where
     [@TraitClause0]: core::marker::Sized<T>,
     [@TraitClause1]: core::marker::Sized<U>,
@@ -138,7 +138,7 @@ where
     parent_clause0 = @TraitClause1
 }
 
-impl<T, U> test_crate::{impl test_crate::Right<U> for T}#2<T, U> : test_crate::Right<T, U>
+impl test_crate::{impl test_crate::Right<U> for T}#2<T, U> : test_crate::Right<T, U>
 where
     [@TraitClause0]: core::marker::Sized<T>,
     [@TraitClause1]: core::marker::Sized<U>,

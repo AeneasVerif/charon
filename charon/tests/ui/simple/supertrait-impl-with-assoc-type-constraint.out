@@ -15,13 +15,13 @@ trait test_crate::Trait<Self>
     parent_clause0 : [@TraitClause0]: test_crate::SuperTrait<Self>
 }
 
-impl<T> test_crate::{impl test_crate::SuperTrait for T}<T> : test_crate::SuperTrait<T>
+impl test_crate::{impl test_crate::SuperTrait for T}<T> : test_crate::SuperTrait<T>
 where
     [@TraitClause0]: test_crate::HasAssoc<T>,
     [@TraitClause1]: core::marker::Sized<T>,
     @TraitClause0::Assoc = (),
 
-impl<T> test_crate::{impl test_crate::Trait for T}#1<T> : test_crate::Trait<T>
+impl test_crate::{impl test_crate::Trait for T}#1<T> : test_crate::Trait<T>
 where
     [@TraitClause0]: test_crate::HasAssoc<T>,
     [@TraitClause1]: core::marker::Sized<T>,

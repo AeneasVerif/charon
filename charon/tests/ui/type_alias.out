@@ -43,7 +43,7 @@ where
     [@TraitClause0]: core::marker::Sized<T>,
     [@TraitClause1]: core::marker::Sized<A>,
 
-impl<T, A> alloc::slice::{impl core::borrow::Borrow<Slice<T>> for alloc::vec::Vec<T, A>[@TraitClause0, @TraitClause1]}#5<T, A> : core::borrow::Borrow<alloc::vec::Vec<T, A>[@TraitClause0, @TraitClause1], Slice<T>>
+impl alloc::slice::{impl core::borrow::Borrow<Slice<T>> for alloc::vec::Vec<T, A>[@TraitClause0, @TraitClause1]}#5<T, A> : core::borrow::Borrow<alloc::vec::Vec<T, A>[@TraitClause0, @TraitClause1], Slice<T>>
 where
     [@TraitClause0]: core::marker::Sized<T>,
     [@TraitClause1]: core::marker::Sized<A>,
@@ -56,7 +56,7 @@ where
     [@TraitClause0]: core::marker::Sized<T>,
     [@TraitClause1]: core::clone::Clone<T>,
 
-impl<T> alloc::slice::{impl alloc::borrow::ToOwned for Slice<T>}#9<T> : alloc::borrow::ToOwned<Slice<T>>
+impl alloc::slice::{impl alloc::borrow::ToOwned for Slice<T>}#9<T> : alloc::borrow::ToOwned<Slice<T>>
 where
     [@TraitClause0]: core::marker::Sized<T>,
     [@TraitClause1]: core::clone::Clone<T>,

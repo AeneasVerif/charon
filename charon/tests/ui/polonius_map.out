@@ -110,7 +110,7 @@ impl std::hash::random::{impl core::hash::BuildHasher for std::hash::random::Ran
 
 fn core::borrow::{impl core::borrow::Borrow<T> for T}::borrow<'_0, T>(@1: &'_0 (T)) -> &'_0 (T)
 
-impl<T> core::borrow::{impl core::borrow::Borrow<T> for T}<T> : core::borrow::Borrow<T, T>
+impl core::borrow::{impl core::borrow::Borrow<T> for T}<T> : core::borrow::Borrow<T, T>
 {
     fn borrow<'_0> = core::borrow::{impl core::borrow::Borrow<T> for T}::borrow<'_0_0, T>
 }
@@ -203,7 +203,7 @@ trait core::ops::index::Index<Self, Idx>
     fn index<'_0> = core::ops::index::Index::index<'_0_0, Self, Idx>
 }
 
-impl<'_0, K, Q, V, S> std::collections::hash::map::{impl core::ops::index::Index<&'_0 (Q)> for std::collections::hash::map::HashMap<K, V, S>[@TraitClause0, @TraitClause1, @TraitClause2]}#9<'_0, K, Q, V, S> : core::ops::index::Index<std::collections::hash::map::HashMap<K, V, S>[@TraitClause0, @TraitClause1, @TraitClause2], &'_0 (Q)>
+impl std::collections::hash::map::{impl core::ops::index::Index<&'_0 (Q)> for std::collections::hash::map::HashMap<K, V, S>[@TraitClause0, @TraitClause1, @TraitClause2]}#9<'_0, K, Q, V, S> : core::ops::index::Index<std::collections::hash::map::HashMap<K, V, S>[@TraitClause0, @TraitClause1, @TraitClause2], &'_0 (Q)>
 where
     [@TraitClause0]: core::marker::Sized<K>,
     [@TraitClause1]: core::marker::Sized<V>,

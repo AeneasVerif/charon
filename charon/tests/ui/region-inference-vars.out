@@ -31,7 +31,7 @@ fn test_crate::{impl test_crate::MyTryFrom<&'_0 (bool)> for bool}::from<'_0>(@1:
     return
 }
 
-impl<'_0> test_crate::{impl test_crate::MyTryFrom<&'_0 (bool)> for bool}<'_0> : test_crate::MyTryFrom<bool, &'_0 (bool)>
+impl test_crate::{impl test_crate::MyTryFrom<&'_0 (bool)> for bool}<'_0> : test_crate::MyTryFrom<bool, &'_0 (bool)>
 {
     parent_clause0 = core::marker::Sized<&'_ (bool)>
     parent_clause1 = core::marker::Sized<()>

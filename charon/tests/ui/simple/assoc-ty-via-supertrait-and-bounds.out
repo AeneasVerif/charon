@@ -30,7 +30,7 @@ struct test_crate::Wrapper<T>
   T,
 }
 
-impl<T, Clause1_Output> test_crate::{impl test_crate::HasOutput<Clause1_Output> for test_crate::Wrapper<T>[@TraitClause0]}#2<T, Clause1_Output> : test_crate::HasOutput<test_crate::Wrapper<T>[@TraitClause0], Clause1_Output>
+impl test_crate::{impl test_crate::HasOutput<Clause1_Output> for test_crate::Wrapper<T>[@TraitClause0]}#2<T, Clause1_Output> : test_crate::HasOutput<test_crate::Wrapper<T>[@TraitClause0], Clause1_Output>
 where
     [@TraitClause0]: core::marker::Sized<T>,
     [@TraitClause1]: test_crate::HasOutput<T, Clause1_Output>,
@@ -38,7 +38,7 @@ where
     parent_clause0 = @TraitClause1::parent_clause0
 }
 
-impl<T, Clause1_Clause0_Output> test_crate::{impl test_crate::HasOutput2<Clause1_Clause0_Output> for test_crate::Wrapper<T>[@TraitClause0]}#3<T, Clause1_Clause0_Output> : test_crate::HasOutput2<test_crate::Wrapper<T>[@TraitClause0], Clause1_Clause0_Output>
+impl test_crate::{impl test_crate::HasOutput2<Clause1_Clause0_Output> for test_crate::Wrapper<T>[@TraitClause0]}#3<T, Clause1_Clause0_Output> : test_crate::HasOutput2<test_crate::Wrapper<T>[@TraitClause0], Clause1_Clause0_Output>
 where
     [@TraitClause0]: core::marker::Sized<T>,
     [@TraitClause1]: test_crate::HasOutput2<T, Clause1_Clause0_Output>,

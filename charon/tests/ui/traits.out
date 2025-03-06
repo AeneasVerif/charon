@@ -95,7 +95,7 @@ where
     return
 }
 
-impl<T> test_crate::{impl test_crate::BoolTrait for core::option::Option<T>[@TraitClause0]}#1<T> : test_crate::BoolTrait<core::option::Option<T>[@TraitClause0]>
+impl test_crate::{impl test_crate::BoolTrait for core::option::Option<T>[@TraitClause0]}#1<T> : test_crate::BoolTrait<core::option::Option<T>[@TraitClause0]>
 where
     [@TraitClause0]: core::marker::Sized<T>,
 {
@@ -194,7 +194,7 @@ where
     return
 }
 
-impl<A> test_crate::{impl test_crate::ToU64 for (A, A)}#3<A> : test_crate::ToU64<(A, A)>
+impl test_crate::{impl test_crate::ToU64 for (A, A)}#3<A> : test_crate::ToU64<(A, A)>
 where
     [@TraitClause0]: core::marker::Sized<A>,
     [@TraitClause1]: test_crate::ToU64<A>,
@@ -270,7 +270,7 @@ where
     return
 }
 
-impl<T> test_crate::{impl test_crate::ToU64 for test_crate::Wrapper<T>[@TraitClause0]}#4<T> : test_crate::ToU64<test_crate::Wrapper<T>[@TraitClause0]>
+impl test_crate::{impl test_crate::ToU64 for test_crate::Wrapper<T>[@TraitClause0]}#4<T> : test_crate::ToU64<test_crate::Wrapper<T>[@TraitClause0]>
 where
     [@TraitClause0]: core::marker::Sized<T>,
     [@TraitClause1]: test_crate::ToU64<T>,
@@ -481,7 +481,7 @@ where
     return
 }
 
-impl<T> test_crate::{impl test_crate::ToType<T> for test_crate::BoolWrapper}#7<T> : test_crate::ToType<test_crate::BoolWrapper, T>
+impl test_crate::{impl test_crate::ToType<T> for test_crate::BoolWrapper}#7<T> : test_crate::ToType<test_crate::BoolWrapper, T>
 where
     [@TraitClause0]: core::marker::Sized<T>,
     [@TraitClause1]: test_crate::ToType<bool, T>,
@@ -835,7 +835,7 @@ global test_crate::{impl test_crate::Trait for Array<T, const N : usize>}#14::LE
       [@TraitClause0]: core::marker::Sized<T>,
  = test_crate::{impl test_crate::Trait for Array<T, const N : usize>}#14::LEN()
 
-impl<T, const N : usize> test_crate::{impl test_crate::Trait for Array<T, const N : usize>}#14<T, const N : usize> : test_crate::Trait<Array<T, const N : usize>>
+impl test_crate::{impl test_crate::Trait for Array<T, const N : usize>}#14<T, const N : usize> : test_crate::Trait<Array<T, const N : usize>>
 where
     [@TraitClause0]: core::marker::Sized<T>,
 {
@@ -859,7 +859,7 @@ global test_crate::{impl test_crate::Trait for test_crate::Wrapper<T>[@TraitClau
       [@TraitClause1]: test_crate::Trait<T>,
  = test_crate::{impl test_crate::Trait for test_crate::Wrapper<T>[@TraitClause0]}#15::LEN()
 
-impl<T> test_crate::{impl test_crate::Trait for test_crate::Wrapper<T>[@TraitClause0]}#15<T> : test_crate::Trait<test_crate::Wrapper<T>[@TraitClause0]>
+impl test_crate::{impl test_crate::Trait for test_crate::Wrapper<T>[@TraitClause0]}#15<T> : test_crate::Trait<test_crate::Wrapper<T>[@TraitClause0]>
 where
     [@TraitClause0]: core::marker::Sized<T>,
     [@TraitClause1]: test_crate::Trait<T>,

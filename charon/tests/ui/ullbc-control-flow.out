@@ -69,7 +69,7 @@ where
     [@TraitClause0]: core::marker::Sized<A>,
     [@TraitClause1]: core::iter::range::Step<A>,
 
-impl<A> core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>[@TraitClause0]}#6<A> : core::iter::traits::iterator::Iterator<core::ops::range::Range<A>[@TraitClause0]>
+impl core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>[@TraitClause0]}#6<A> : core::iter::traits::iterator::Iterator<core::ops::range::Range<A>[@TraitClause0]>
 where
     [@TraitClause0]: core::marker::Sized<A>,
     [@TraitClause1]: core::iter::range::Step<A>,
@@ -349,7 +349,7 @@ where
     fn into_iter = core::iter::traits::collect::IntoIterator::into_iter<Self>
 }
 
-impl<I> core::iter::traits::collect::{impl core::iter::traits::collect::IntoIterator for I}#1<I> : core::iter::traits::collect::IntoIterator<I>
+impl core::iter::traits::collect::{impl core::iter::traits::collect::IntoIterator for I}#1<I> : core::iter::traits::collect::IntoIterator<I>
 where
     [@TraitClause0]: core::marker::Sized<I>,
     [@TraitClause1]: core::iter::traits::iterator::Iterator<I>,

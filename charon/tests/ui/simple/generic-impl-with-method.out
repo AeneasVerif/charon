@@ -19,7 +19,7 @@ where
     return
 }
 
-impl<T> test_crate::{impl test_crate::Trait for T}<T> : test_crate::Trait<T>
+impl test_crate::{impl test_crate::Trait for T}<T> : test_crate::Trait<T>
 where
     [@TraitClause0]: core::marker::Sized<T>,
 {

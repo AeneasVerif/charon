@@ -107,7 +107,7 @@ trait core::marker::Copy<Self>
     parent_clause0 : [@TraitClause0]: core::clone::Clone<Self>
 }
 
-impl<T, U> test_crate::{impl test_crate::Trait for core::result::Result<T, U>[@TraitClause0, @TraitClause1]}<T, U> : test_crate::Trait<core::result::Result<T, U>[@TraitClause0, @TraitClause1]>
+impl test_crate::{impl test_crate::Trait for core::result::Result<T, U>[@TraitClause0, @TraitClause1]}<T, U> : test_crate::Trait<core::result::Result<T, U>[@TraitClause0, @TraitClause1]>
 where
     [@TraitClause0]: core::marker::Sized<T>,
     [@TraitClause1]: core::marker::Sized<U>,

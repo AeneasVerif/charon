@@ -40,7 +40,7 @@ fn test_crate::{impl test_crate::HasLen for Array<(), const N : usize>}#1::LEN<c
 
 global test_crate::{impl test_crate::HasLen for Array<(), const N : usize>}#1::LEN<const N : usize>: usize = test_crate::{impl test_crate::HasLen for Array<(), const N : usize>}#1::LEN()
 
-impl<const N : usize> test_crate::{impl test_crate::HasLen for Array<(), const N : usize>}#1<const N : usize> : test_crate::HasLen<Array<(), const N : usize>>
+impl test_crate::{impl test_crate::HasLen for Array<(), const N : usize>}#1<const N : usize> : test_crate::HasLen<Array<(), const N : usize>>
 {
     const LEN = test_crate::{impl test_crate::HasLen for Array<(), const N : usize>}#1::LEN<const N : usize>
 }
@@ -55,7 +55,7 @@ fn test_crate::{impl test_crate::HasLen for Array<bool, const N : usize>}#2::LEN
 
 global test_crate::{impl test_crate::HasLen for Array<bool, const N : usize>}#2::LEN<const N : usize>: usize = test_crate::{impl test_crate::HasLen for Array<bool, const N : usize>}#2::LEN()
 
-impl<const N : usize> test_crate::{impl test_crate::HasLen for Array<bool, const N : usize>}#2<const N : usize> : test_crate::HasLen<Array<bool, const N : usize>>
+impl test_crate::{impl test_crate::HasLen for Array<bool, const N : usize>}#2<const N : usize> : test_crate::HasLen<Array<bool, const N : usize>>
 {
     const LEN = test_crate::{impl test_crate::HasLen for Array<bool, const N : usize>}#2::LEN<const N : usize>
 }
@@ -75,7 +75,7 @@ trait test_crate::HasDefaultLen<Self, const M : usize>
     const LEN : usize
 }
 
-impl<const N : usize> test_crate::{impl test_crate::HasDefaultLen<const N : usize> for Array<(), const N : usize>}#3<const N : usize> : test_crate::HasDefaultLen<Array<(), const N : usize>, const N : usize>
+impl test_crate::{impl test_crate::HasDefaultLen<const N : usize> for Array<(), const N : usize>}#3<const N : usize> : test_crate::HasDefaultLen<Array<(), const N : usize>, const N : usize>
 {
     const LEN = test_crate::HasDefaultLen::LEN<Array<(), const N : usize>, const N : usize>
 }
@@ -98,7 +98,7 @@ fn test_crate::{impl test_crate::HasDefaultLen<const N : usize> for Array<bool, 
 
 global test_crate::{impl test_crate::HasDefaultLen<const N : usize> for Array<bool, const N : usize>}#4::LEN<const N : usize>: usize = test_crate::{impl test_crate::HasDefaultLen<const N : usize> for Array<bool, const N : usize>}#4::LEN()
 
-impl<const N : usize> test_crate::{impl test_crate::HasDefaultLen<const N : usize> for Array<bool, const N : usize>}#4<const N : usize> : test_crate::HasDefaultLen<Array<bool, const N : usize>, const N : usize>
+impl test_crate::{impl test_crate::HasDefaultLen<const N : usize> for Array<bool, const N : usize>}#4<const N : usize> : test_crate::HasDefaultLen<Array<bool, const N : usize>, const N : usize>
 {
     const LEN = test_crate::{impl test_crate::HasDefaultLen<const N : usize> for Array<bool, const N : usize>}#4::LEN<const N : usize>
 }
