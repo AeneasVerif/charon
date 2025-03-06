@@ -261,6 +261,7 @@ impl VisitAstMut for SubstVisitor<'_> {
 }
 
 #[derive(Visitor)]
+#[allow(dead_code)]
 struct MissingIndexChecker<'a> {
     krate: &'a TranslatedCrate,
     current_item: Option<AnyTransItem<'a>>,
@@ -461,8 +462,13 @@ impl UllbcPass for Transform {
         ctx.translated
             .fun_decls
             .retain(|f| f.signature.generics.is_empty());
-        ctx.translated.trait_impls.retain(|f| f.generics.is_empty());
         ctx.translated.type_decls.retain(|t| t.generics.is_empty());
+        // ctx.translated.trait_impls.retain(|t| t.generics.is_empty());
+
+        // TODO: Currently we don't update all TraitImpls/TraitDecls with the monomorphized versions
+        //       and removing the polymorphic ones, so this fails.
+        // Finally, ensure we didn't leave any IDs un-replaced
+        // check_missing_indices(&ctx.translated);
     }
 
     fn name(&self) -> &str {
