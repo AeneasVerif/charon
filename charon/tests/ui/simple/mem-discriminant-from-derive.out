@@ -1,0 +1,713 @@
+disabled backtrace
+warning[E9999]: Failed to compute associated type <T as std::marker::DiscriminantKind>::Discriminant
+ --> /rustc/86d69c705a552236a622eee3fdea94bf13c5f102/library/core/src/intrinsics.rs:2556:5
+  |
+  = note: ⚠️ This is a bug in Hax's frontend.
+          Please report this error to https://github.com/hacspec/hax/issues with some context (e.g. the current crate)!
+
+disabled backtrace
+warning[E9999]: Failed to compute associated type <Self as std::marker::DiscriminantKind>::Discriminant
+ --> /rustc/86d69c705a552236a622eee3fdea94bf13c5f102/library/core/src/marker.rs:823:5
+  |
+  = note: ⚠️ This is a bug in Hax's frontend.
+          Please report this error to https://github.com/hacspec/hax/issues with some context (e.g. the current crate)!
+
+warning: 2 warnings emitted
+
+error: Could not compute the value of Self::Discriminant needed to update generics <@Type1_0> for item core::marker::DiscriminantKind.
+       Constraints in scope:
+       
+ --> /rustc/library/core/src/intrinsics.rs:2556:5
+
+error: Could not compute the value of Self::Discriminant needed to update generics <@Type1_0> for item core::marker::DiscriminantKind.
+       Constraints in scope:
+       
+ --> /rustc/library/core/src/intrinsics.rs:2556:5
+
+error: Could not compute the value of Self::Discriminant needed to update generics <@Type2_0> for item core::marker::DiscriminantKind.
+       Constraints in scope:
+         - Self::Discriminant = @Type0_1
+ --> /rustc/library/core/src/marker.rs:819:1
+
+error: Could not compute the value of Self::Discriminant needed to update generics <@Type2_0> for item core::marker::DiscriminantKind.
+       Constraints in scope:
+         - Self::Discriminant = @Type0_1
+ --> /rustc/library/core/src/marker.rs:819:1
+
+error: Could not compute the value of Self::Discriminant needed to update generics <@Type2_0> for item core::marker::DiscriminantKind.
+       Constraints in scope:
+         - Self::Discriminant = @Type0_1
+ --> /rustc/library/core/src/marker.rs:819:1
+
+error: Could not compute the value of Self::Discriminant needed to update generics <@Type2_0> for item core::marker::DiscriminantKind.
+       Constraints in scope:
+         - Self::Discriminant = @Type0_1
+ --> /rustc/library/core/src/marker.rs:819:1
+
+error: Could not compute the value of Self::Discriminant needed to update generics <@Type2_0> for item core::marker::DiscriminantKind.
+       Constraints in scope:
+         - Self::Discriminant = @Type0_1
+ --> /rustc/library/core/src/marker.rs:819:1
+
+error: Could not compute the value of Self::Discriminant needed to update generics <@Type2_0> for item core::marker::DiscriminantKind.
+       Constraints in scope:
+         - Self::Discriminant = @Type0_1
+ --> /rustc/library/core/src/marker.rs:819:1
+
+error: Could not compute the value of Self::Discriminant needed to update generics <@Type2_0> for item core::marker::DiscriminantKind.
+       Constraints in scope:
+         - Self::Discriminant = @Type0_1
+ --> /rustc/library/core/src/marker.rs:819:1
+
+error: Could not compute the value of Self::Discriminant needed to update generics <@Type2_0> for item core::marker::DiscriminantKind.
+       Constraints in scope:
+         - Self::Discriminant = @Type0_1
+ --> /rustc/library/core/src/marker.rs:819:1
+
+error: Could not compute the value of Self::Discriminant needed to update generics <@Type2_0> for item core::marker::DiscriminantKind.
+       Constraints in scope:
+         - Self::Discriminant = @Type0_1
+ --> /rustc/library/core/src/marker.rs:819:1
+
+error: Could not compute the value of Self::Discriminant needed to update generics <@Type2_0> for item core::marker::DiscriminantKind.
+       Constraints in scope:
+         - Self::Discriminant = @Type0_1
+ --> /rustc/library/core/src/marker.rs:819:1
+
+error: Could not compute the value of Self::Discriminant needed to update generics <@Type2_0> for item core::marker::DiscriminantKind.
+       Constraints in scope:
+         - Self::Discriminant = @Type0_1
+ --> /rustc/library/core/src/marker.rs:819:1
+
+error: Could not compute the value of Self::Discriminant needed to update generics <@Type2_0> for item core::marker::DiscriminantKind.
+       Constraints in scope:
+         - Self::Discriminant = @Type0_1
+ --> /rustc/library/core/src/marker.rs:819:1
+
+error: Could not compute the value of Self::Discriminant needed to update generics <@Type2_0> for item core::marker::DiscriminantKind.
+       Constraints in scope:
+         - Self::Discriminant = @Type0_1
+ --> /rustc/library/core/src/marker.rs:819:1
+
+error: Could not compute the value of Self::Discriminant needed to update generics <@Type2_0> for item core::marker::DiscriminantKind.
+       Constraints in scope:
+         - Self::Discriminant = @Type0_1
+ --> /rustc/library/core/src/marker.rs:819:1
+
+error: Could not compute the value of Self::Discriminant needed to update generics <@Type2_0> for item core::marker::DiscriminantKind.
+       Constraints in scope:
+         - Self::Discriminant = @Type0_1
+ --> /rustc/library/core/src/marker.rs:819:1
+
+error: Could not compute the value of Self::Discriminant needed to update generics <@Type2_0> for item core::marker::DiscriminantKind.
+       Constraints in scope:
+         - Self::Discriminant = @Type0_1
+ --> /rustc/library/core/src/marker.rs:819:1
+
+error: Could not compute the value of Self::Discriminant needed to update generics <@Type2_0> for item core::marker::DiscriminantKind.
+       Constraints in scope:
+         - Self::Discriminant = @Type0_1
+ --> /rustc/library/core/src/marker.rs:819:1
+
+error: Could not compute the value of Self::Discriminant needed to update generics <@Type2_0> for item core::marker::DiscriminantKind.
+       Constraints in scope:
+         - Self::Discriminant = @Type0_1
+ --> /rustc/library/core/src/marker.rs:819:1
+
+error: Could not compute the value of Self::Discriminant needed to update generics <@Type2_0> for item core::marker::DiscriminantKind.
+       Constraints in scope:
+         - Self::Discriminant = @Type0_1
+ --> /rustc/library/core/src/marker.rs:819:1
+
+error: Could not compute the value of Self::Discriminant needed to update generics <@Type2_0> for item core::marker::DiscriminantKind.
+       Constraints in scope:
+         - Self::Discriminant = @Type0_1
+ --> /rustc/library/core/src/marker.rs:819:1
+
+error: Could not compute the value of Self::Discriminant needed to update generics <@Type2_0> for item core::marker::DiscriminantKind.
+       Constraints in scope:
+         - Self::Discriminant = @Type0_1
+ --> /rustc/library/core/src/marker.rs:819:1
+
+error: Could not compute the value of Self::Discriminant needed to update generics <@Type2_0> for item core::marker::DiscriminantKind.
+       Constraints in scope:
+         - Self::Discriminant = @Type0_1
+ --> /rustc/library/core/src/marker.rs:819:1
+
+error: Found inconsistent generics after transformations:
+       Mismatched type generics:
+       expected: [Self, Self_Discriminant]
+            got: [T]
+       Visitor stack:
+         charon_lib::ast::types::GenericArgs
+         charon_lib::ast::types::TraitDeclRef
+         charon_lib::ast::types::RegionBinder<charon_lib::ast::types::TraitDeclRef>
+         charon_lib::ast::types::TraitRefKind
+         charon_lib::ast::types::TraitRef
+         charon_lib::ast::types::TyKind
+         charon_lib::ast::types::Ty
+         charon_lib::ast::types::FunSig
+         charon_lib::ast::gast::FunDecl
+       Binding stack (depth 2):
+         0: 
+         1: <'_0, T, [@TraitClause0]: @TraitDecl2<missing(@Type1_0)>>
+ --> /rustc/library/core/src/intrinsics.rs:2556:5
+
+error: Found inconsistent generics after transformations:
+       Mismatched type generics:
+       expected: [Self, Self_Discriminant]
+            got: [T]
+       Visitor stack:
+         charon_lib::ast::types::GenericArgs
+         charon_lib::ast::types::TraitDeclRef
+         charon_lib::ast::types::RegionBinder<charon_lib::ast::types::TraitDeclRef>
+         charon_lib::ast::types::TraitRef
+         charon_lib::ast::types::TyKind
+         charon_lib::ast::types::Ty
+         charon_lib::ast::types::FunSig
+         charon_lib::ast::gast::FunDecl
+       Binding stack (depth 2):
+         0: 
+         1: <'_0, T, [@TraitClause0]: @TraitDecl2<missing(@Type1_0)>>
+ --> /rustc/library/core/src/intrinsics.rs:2556:5
+
+error: Found inconsistent generics after transformations:
+       Mismatched type generics:
+       expected: [Self, Self_Discriminant]
+            got: [Self]
+       Visitor stack:
+         charon_lib::ast::types::GenericArgs
+         charon_lib::ast::types::TraitDeclRef
+         charon_lib::ast::types::RegionBinder<charon_lib::ast::types::TraitDeclRef>
+         charon_lib::ast::types::TraitRefKind
+         charon_lib::ast::types::TraitRef
+         charon_lib::ast::types::TyKind
+         charon_lib::ast::types::Ty
+         charon_lib::ids::vector::Vector<charon_lib::ast::types::vars::TypeVarId, charon_lib::ast::types::Ty>
+         charon_lib::ast::types::GenericArgs
+         charon_lib::ast::types::TraitDeclRef
+         charon_lib::ast::types::RegionBinder<charon_lib::ast::types::TraitDeclRef>
+         charon_lib::ast::types::vars::TraitClause
+         charon_lib::ids::vector::Vector<charon_lib::ast::types::vars::TraitClauseId, charon_lib::ast::types::vars::TraitClause>
+         charon_lib::ast::gast::TraitDecl
+       Binding stack (depth 3):
+         0: 
+         1: 
+         2: <Self, Self_Discriminant>
+ --> /rustc/library/core/src/marker.rs:819:1
+
+error: Found inconsistent generics after transformations:
+       Mismatched type generics:
+       expected: [Self, Self_Discriminant]
+            got: [Self]
+       Visitor stack:
+         charon_lib::ast::types::GenericArgs
+         charon_lib::ast::types::TraitDeclRef
+         charon_lib::ast::types::RegionBinder<charon_lib::ast::types::TraitDeclRef>
+         charon_lib::ast::types::TraitRef
+         charon_lib::ast::types::TyKind
+         charon_lib::ast::types::Ty
+         charon_lib::ids::vector::Vector<charon_lib::ast::types::vars::TypeVarId, charon_lib::ast::types::Ty>
+         charon_lib::ast::types::GenericArgs
+         charon_lib::ast::types::TraitDeclRef
+         charon_lib::ast::types::RegionBinder<charon_lib::ast::types::TraitDeclRef>
+         charon_lib::ast::types::vars::TraitClause
+         charon_lib::ids::vector::Vector<charon_lib::ast::types::vars::TraitClauseId, charon_lib::ast::types::vars::TraitClause>
+         charon_lib::ast::gast::TraitDecl
+       Binding stack (depth 3):
+         0: 
+         1: 
+         2: <Self, Self_Discriminant>
+ --> /rustc/library/core/src/marker.rs:819:1
+
+error: Found inconsistent generics after transformations:
+       Mismatched type generics:
+       expected: [Self, Self_Discriminant]
+            got: [Self]
+       Visitor stack:
+         charon_lib::ast::types::GenericArgs
+         charon_lib::ast::types::TraitDeclRef
+         charon_lib::ast::types::RegionBinder<charon_lib::ast::types::TraitDeclRef>
+         charon_lib::ast::types::TraitRefKind
+         charon_lib::ast::types::TraitRef
+         charon_lib::ast::types::TyKind
+         charon_lib::ast::types::Ty
+         charon_lib::ids::vector::Vector<charon_lib::ast::types::vars::TypeVarId, charon_lib::ast::types::Ty>
+         charon_lib::ast::types::GenericArgs
+         charon_lib::ast::types::TraitDeclRef
+         charon_lib::ast::types::RegionBinder<charon_lib::ast::types::TraitDeclRef>
+         charon_lib::ast::types::vars::TraitClause
+         charon_lib::ids::vector::Vector<charon_lib::ast::types::vars::TraitClauseId, charon_lib::ast::types::vars::TraitClause>
+         charon_lib::ast::gast::TraitDecl
+       Binding stack (depth 3):
+         0: 
+         1: 
+         2: <Self, Self_Discriminant>
+ --> /rustc/library/core/src/marker.rs:819:1
+
+error: Found inconsistent generics after transformations:
+       Mismatched type generics:
+       expected: [Self, Self_Discriminant]
+            got: [Self]
+       Visitor stack:
+         charon_lib::ast::types::GenericArgs
+         charon_lib::ast::types::TraitDeclRef
+         charon_lib::ast::types::RegionBinder<charon_lib::ast::types::TraitDeclRef>
+         charon_lib::ast::types::TraitRef
+         charon_lib::ast::types::TyKind
+         charon_lib::ast::types::Ty
+         charon_lib::ids::vector::Vector<charon_lib::ast::types::vars::TypeVarId, charon_lib::ast::types::Ty>
+         charon_lib::ast::types::GenericArgs
+         charon_lib::ast::types::TraitDeclRef
+         charon_lib::ast::types::RegionBinder<charon_lib::ast::types::TraitDeclRef>
+         charon_lib::ast::types::vars::TraitClause
+         charon_lib::ids::vector::Vector<charon_lib::ast::types::vars::TraitClauseId, charon_lib::ast::types::vars::TraitClause>
+         charon_lib::ast::gast::TraitDecl
+       Binding stack (depth 3):
+         0: 
+         1: 
+         2: <Self, Self_Discriminant>
+ --> /rustc/library/core/src/marker.rs:819:1
+
+error: Found inconsistent generics after transformations:
+       Mismatched type generics:
+       expected: [Self, Self_Discriminant]
+            got: [Self]
+       Visitor stack:
+         charon_lib::ast::types::GenericArgs
+         charon_lib::ast::types::TraitDeclRef
+         charon_lib::ast::types::RegionBinder<charon_lib::ast::types::TraitDeclRef>
+         charon_lib::ast::types::TraitRefKind
+         charon_lib::ast::types::TraitRef
+         charon_lib::ast::types::TyKind
+         charon_lib::ast::types::Ty
+         charon_lib::ids::vector::Vector<charon_lib::ast::types::vars::TypeVarId, charon_lib::ast::types::Ty>
+         charon_lib::ast::types::GenericArgs
+         charon_lib::ast::types::TraitDeclRef
+         charon_lib::ast::types::RegionBinder<charon_lib::ast::types::TraitDeclRef>
+         charon_lib::ast::types::vars::TraitClause
+         charon_lib::ids::vector::Vector<charon_lib::ast::types::vars::TraitClauseId, charon_lib::ast::types::vars::TraitClause>
+         charon_lib::ast::gast::TraitDecl
+       Binding stack (depth 3):
+         0: 
+         1: 
+         2: <Self, Self_Discriminant>
+ --> /rustc/library/core/src/marker.rs:819:1
+
+error: Found inconsistent generics after transformations:
+       Mismatched type generics:
+       expected: [Self, Self_Discriminant]
+            got: [Self]
+       Visitor stack:
+         charon_lib::ast::types::GenericArgs
+         charon_lib::ast::types::TraitDeclRef
+         charon_lib::ast::types::RegionBinder<charon_lib::ast::types::TraitDeclRef>
+         charon_lib::ast::types::TraitRef
+         charon_lib::ast::types::TyKind
+         charon_lib::ast::types::Ty
+         charon_lib::ids::vector::Vector<charon_lib::ast::types::vars::TypeVarId, charon_lib::ast::types::Ty>
+         charon_lib::ast::types::GenericArgs
+         charon_lib::ast::types::TraitDeclRef
+         charon_lib::ast::types::RegionBinder<charon_lib::ast::types::TraitDeclRef>
+         charon_lib::ast::types::vars::TraitClause
+         charon_lib::ids::vector::Vector<charon_lib::ast::types::vars::TraitClauseId, charon_lib::ast::types::vars::TraitClause>
+         charon_lib::ast::gast::TraitDecl
+       Binding stack (depth 3):
+         0: 
+         1: 
+         2: <Self, Self_Discriminant>
+ --> /rustc/library/core/src/marker.rs:819:1
+
+error: Found inconsistent generics after transformations:
+       Mismatched type generics:
+       expected: [Self, Self_Discriminant]
+            got: [Self]
+       Visitor stack:
+         charon_lib::ast::types::GenericArgs
+         charon_lib::ast::types::TraitDeclRef
+         charon_lib::ast::types::RegionBinder<charon_lib::ast::types::TraitDeclRef>
+         charon_lib::ast::types::TraitRefKind
+         charon_lib::ast::types::TraitRef
+         charon_lib::ast::types::TyKind
+         charon_lib::ast::types::Ty
+         charon_lib::ids::vector::Vector<charon_lib::ast::types::vars::TypeVarId, charon_lib::ast::types::Ty>
+         charon_lib::ast::types::GenericArgs
+         charon_lib::ast::types::TraitDeclRef
+         charon_lib::ast::types::RegionBinder<charon_lib::ast::types::TraitDeclRef>
+         charon_lib::ast::types::vars::TraitClause
+         charon_lib::ids::vector::Vector<charon_lib::ast::types::vars::TraitClauseId, charon_lib::ast::types::vars::TraitClause>
+         charon_lib::ast::gast::TraitDecl
+       Binding stack (depth 3):
+         0: 
+         1: 
+         2: <Self, Self_Discriminant>
+ --> /rustc/library/core/src/marker.rs:819:1
+
+error: Found inconsistent generics after transformations:
+       Mismatched type generics:
+       expected: [Self, Self_Discriminant]
+            got: [Self]
+       Visitor stack:
+         charon_lib::ast::types::GenericArgs
+         charon_lib::ast::types::TraitDeclRef
+         charon_lib::ast::types::RegionBinder<charon_lib::ast::types::TraitDeclRef>
+         charon_lib::ast::types::TraitRef
+         charon_lib::ast::types::TyKind
+         charon_lib::ast::types::Ty
+         charon_lib::ids::vector::Vector<charon_lib::ast::types::vars::TypeVarId, charon_lib::ast::types::Ty>
+         charon_lib::ast::types::GenericArgs
+         charon_lib::ast::types::TraitDeclRef
+         charon_lib::ast::types::RegionBinder<charon_lib::ast::types::TraitDeclRef>
+         charon_lib::ast::types::vars::TraitClause
+         charon_lib::ids::vector::Vector<charon_lib::ast::types::vars::TraitClauseId, charon_lib::ast::types::vars::TraitClause>
+         charon_lib::ast::gast::TraitDecl
+       Binding stack (depth 3):
+         0: 
+         1: 
+         2: <Self, Self_Discriminant>
+ --> /rustc/library/core/src/marker.rs:819:1
+
+error: Found inconsistent generics after transformations:
+       Mismatched type generics:
+       expected: [Self, Self_Discriminant]
+            got: [Self]
+       Visitor stack:
+         charon_lib::ast::types::GenericArgs
+         charon_lib::ast::types::TraitDeclRef
+         charon_lib::ast::types::RegionBinder<charon_lib::ast::types::TraitDeclRef>
+         charon_lib::ast::types::TraitRefKind
+         charon_lib::ast::types::TraitRef
+         charon_lib::ast::types::TyKind
+         charon_lib::ast::types::Ty
+         charon_lib::ids::vector::Vector<charon_lib::ast::types::vars::TypeVarId, charon_lib::ast::types::Ty>
+         charon_lib::ast::types::GenericArgs
+         charon_lib::ast::types::TraitDeclRef
+         charon_lib::ast::types::RegionBinder<charon_lib::ast::types::TraitDeclRef>
+         charon_lib::ast::types::vars::TraitClause
+         charon_lib::ids::vector::Vector<charon_lib::ast::types::vars::TraitClauseId, charon_lib::ast::types::vars::TraitClause>
+         charon_lib::ast::gast::TraitDecl
+       Binding stack (depth 3):
+         0: 
+         1: 
+         2: <Self, Self_Discriminant>
+ --> /rustc/library/core/src/marker.rs:819:1
+
+error: Found inconsistent generics after transformations:
+       Mismatched type generics:
+       expected: [Self, Self_Discriminant]
+            got: [Self]
+       Visitor stack:
+         charon_lib::ast::types::GenericArgs
+         charon_lib::ast::types::TraitDeclRef
+         charon_lib::ast::types::RegionBinder<charon_lib::ast::types::TraitDeclRef>
+         charon_lib::ast::types::TraitRef
+         charon_lib::ast::types::TyKind
+         charon_lib::ast::types::Ty
+         charon_lib::ids::vector::Vector<charon_lib::ast::types::vars::TypeVarId, charon_lib::ast::types::Ty>
+         charon_lib::ast::types::GenericArgs
+         charon_lib::ast::types::TraitDeclRef
+         charon_lib::ast::types::RegionBinder<charon_lib::ast::types::TraitDeclRef>
+         charon_lib::ast::types::vars::TraitClause
+         charon_lib::ids::vector::Vector<charon_lib::ast::types::vars::TraitClauseId, charon_lib::ast::types::vars::TraitClause>
+         charon_lib::ast::gast::TraitDecl
+       Binding stack (depth 3):
+         0: 
+         1: 
+         2: <Self, Self_Discriminant>
+ --> /rustc/library/core/src/marker.rs:819:1
+
+error: Found inconsistent generics after transformations:
+       Mismatched type generics:
+       expected: [Self, Self_Discriminant]
+            got: [Self]
+       Visitor stack:
+         charon_lib::ast::types::GenericArgs
+         charon_lib::ast::types::TraitDeclRef
+         charon_lib::ast::types::RegionBinder<charon_lib::ast::types::TraitDeclRef>
+         charon_lib::ast::types::TraitRefKind
+         charon_lib::ast::types::TraitRef
+         charon_lib::ast::types::TyKind
+         charon_lib::ast::types::Ty
+         charon_lib::ids::vector::Vector<charon_lib::ast::types::vars::TypeVarId, charon_lib::ast::types::Ty>
+         charon_lib::ast::types::GenericArgs
+         charon_lib::ast::types::TraitDeclRef
+         charon_lib::ast::types::RegionBinder<charon_lib::ast::types::TraitDeclRef>
+         charon_lib::ast::types::vars::TraitClause
+         charon_lib::ids::vector::Vector<charon_lib::ast::types::vars::TraitClauseId, charon_lib::ast::types::vars::TraitClause>
+         charon_lib::ast::gast::TraitDecl
+       Binding stack (depth 3):
+         0: 
+         1: 
+         2: <Self, Self_Discriminant>
+ --> /rustc/library/core/src/marker.rs:819:1
+
+error: Found inconsistent generics after transformations:
+       Mismatched type generics:
+       expected: [Self, Self_Discriminant]
+            got: [Self]
+       Visitor stack:
+         charon_lib::ast::types::GenericArgs
+         charon_lib::ast::types::TraitDeclRef
+         charon_lib::ast::types::RegionBinder<charon_lib::ast::types::TraitDeclRef>
+         charon_lib::ast::types::TraitRef
+         charon_lib::ast::types::TyKind
+         charon_lib::ast::types::Ty
+         charon_lib::ids::vector::Vector<charon_lib::ast::types::vars::TypeVarId, charon_lib::ast::types::Ty>
+         charon_lib::ast::types::GenericArgs
+         charon_lib::ast::types::TraitDeclRef
+         charon_lib::ast::types::RegionBinder<charon_lib::ast::types::TraitDeclRef>
+         charon_lib::ast::types::vars::TraitClause
+         charon_lib::ids::vector::Vector<charon_lib::ast::types::vars::TraitClauseId, charon_lib::ast::types::vars::TraitClause>
+         charon_lib::ast::gast::TraitDecl
+       Binding stack (depth 3):
+         0: 
+         1: 
+         2: <Self, Self_Discriminant>
+ --> /rustc/library/core/src/marker.rs:819:1
+
+error: Found inconsistent generics after transformations:
+       Mismatched type generics:
+       expected: [Self, Self_Discriminant]
+            got: [Self]
+       Visitor stack:
+         charon_lib::ast::types::GenericArgs
+         charon_lib::ast::types::TraitDeclRef
+         charon_lib::ast::types::RegionBinder<charon_lib::ast::types::TraitDeclRef>
+         charon_lib::ast::types::TraitRefKind
+         charon_lib::ast::types::TraitRef
+         charon_lib::ast::types::TyKind
+         charon_lib::ast::types::Ty
+         charon_lib::ids::vector::Vector<charon_lib::ast::types::vars::TypeVarId, charon_lib::ast::types::Ty>
+         charon_lib::ast::types::GenericArgs
+         charon_lib::ast::types::TraitDeclRef
+         charon_lib::ast::types::RegionBinder<charon_lib::ast::types::TraitDeclRef>
+         charon_lib::ast::types::vars::TraitClause
+         charon_lib::ids::vector::Vector<charon_lib::ast::types::vars::TraitClauseId, charon_lib::ast::types::vars::TraitClause>
+         charon_lib::ast::gast::TraitDecl
+       Binding stack (depth 3):
+         0: 
+         1: 
+         2: <Self, Self_Discriminant>
+ --> /rustc/library/core/src/marker.rs:819:1
+
+error: Found inconsistent generics after transformations:
+       Mismatched type generics:
+       expected: [Self, Self_Discriminant]
+            got: [Self]
+       Visitor stack:
+         charon_lib::ast::types::GenericArgs
+         charon_lib::ast::types::TraitDeclRef
+         charon_lib::ast::types::RegionBinder<charon_lib::ast::types::TraitDeclRef>
+         charon_lib::ast::types::TraitRef
+         charon_lib::ast::types::TyKind
+         charon_lib::ast::types::Ty
+         charon_lib::ids::vector::Vector<charon_lib::ast::types::vars::TypeVarId, charon_lib::ast::types::Ty>
+         charon_lib::ast::types::GenericArgs
+         charon_lib::ast::types::TraitDeclRef
+         charon_lib::ast::types::RegionBinder<charon_lib::ast::types::TraitDeclRef>
+         charon_lib::ast::types::vars::TraitClause
+         charon_lib::ids::vector::Vector<charon_lib::ast::types::vars::TraitClauseId, charon_lib::ast::types::vars::TraitClause>
+         charon_lib::ast::gast::TraitDecl
+       Binding stack (depth 3):
+         0: 
+         1: 
+         2: <Self, Self_Discriminant>
+ --> /rustc/library/core/src/marker.rs:819:1
+
+error: Found inconsistent generics after transformations:
+       Mismatched type generics:
+       expected: [Self, Self_Discriminant]
+            got: [Self]
+       Visitor stack:
+         charon_lib::ast::types::GenericArgs
+         charon_lib::ast::types::TraitDeclRef
+         charon_lib::ast::types::RegionBinder<charon_lib::ast::types::TraitDeclRef>
+         charon_lib::ast::types::TraitRefKind
+         charon_lib::ast::types::TraitRef
+         charon_lib::ast::types::TyKind
+         charon_lib::ast::types::Ty
+         charon_lib::ids::vector::Vector<charon_lib::ast::types::vars::TypeVarId, charon_lib::ast::types::Ty>
+         charon_lib::ast::types::GenericArgs
+         charon_lib::ast::types::TraitDeclRef
+         charon_lib::ast::types::RegionBinder<charon_lib::ast::types::TraitDeclRef>
+         charon_lib::ast::types::vars::TraitClause
+         charon_lib::ids::vector::Vector<charon_lib::ast::types::vars::TraitClauseId, charon_lib::ast::types::vars::TraitClause>
+         charon_lib::ast::gast::TraitDecl
+       Binding stack (depth 3):
+         0: 
+         1: 
+         2: <Self, Self_Discriminant>
+ --> /rustc/library/core/src/marker.rs:819:1
+
+error: Found inconsistent generics after transformations:
+       Mismatched type generics:
+       expected: [Self, Self_Discriminant]
+            got: [Self]
+       Visitor stack:
+         charon_lib::ast::types::GenericArgs
+         charon_lib::ast::types::TraitDeclRef
+         charon_lib::ast::types::RegionBinder<charon_lib::ast::types::TraitDeclRef>
+         charon_lib::ast::types::TraitRef
+         charon_lib::ast::types::TyKind
+         charon_lib::ast::types::Ty
+         charon_lib::ids::vector::Vector<charon_lib::ast::types::vars::TypeVarId, charon_lib::ast::types::Ty>
+         charon_lib::ast::types::GenericArgs
+         charon_lib::ast::types::TraitDeclRef
+         charon_lib::ast::types::RegionBinder<charon_lib::ast::types::TraitDeclRef>
+         charon_lib::ast::types::vars::TraitClause
+         charon_lib::ids::vector::Vector<charon_lib::ast::types::vars::TraitClauseId, charon_lib::ast::types::vars::TraitClause>
+         charon_lib::ast::gast::TraitDecl
+       Binding stack (depth 3):
+         0: 
+         1: 
+         2: <Self, Self_Discriminant>
+ --> /rustc/library/core/src/marker.rs:819:1
+
+error: Found inconsistent generics after transformations:
+       Mismatched type generics:
+       expected: [Self, Self_Discriminant]
+            got: [Self]
+       Visitor stack:
+         charon_lib::ast::types::GenericArgs
+         charon_lib::ast::types::TraitDeclRef
+         charon_lib::ast::types::RegionBinder<charon_lib::ast::types::TraitDeclRef>
+         charon_lib::ast::types::TraitRefKind
+         charon_lib::ast::types::TraitRef
+         charon_lib::ast::types::TyKind
+         charon_lib::ast::types::Ty
+         charon_lib::ids::vector::Vector<charon_lib::ast::types::vars::TypeVarId, charon_lib::ast::types::Ty>
+         charon_lib::ast::types::GenericArgs
+         charon_lib::ast::types::TraitDeclRef
+         charon_lib::ast::types::RegionBinder<charon_lib::ast::types::TraitDeclRef>
+         charon_lib::ast::types::vars::TraitClause
+         charon_lib::ids::vector::Vector<charon_lib::ast::types::vars::TraitClauseId, charon_lib::ast::types::vars::TraitClause>
+         charon_lib::ast::gast::TraitDecl
+       Binding stack (depth 3):
+         0: 
+         1: 
+         2: <Self, Self_Discriminant>
+ --> /rustc/library/core/src/marker.rs:819:1
+
+error: Found inconsistent generics after transformations:
+       Mismatched type generics:
+       expected: [Self, Self_Discriminant]
+            got: [Self]
+       Visitor stack:
+         charon_lib::ast::types::GenericArgs
+         charon_lib::ast::types::TraitDeclRef
+         charon_lib::ast::types::RegionBinder<charon_lib::ast::types::TraitDeclRef>
+         charon_lib::ast::types::TraitRef
+         charon_lib::ast::types::TyKind
+         charon_lib::ast::types::Ty
+         charon_lib::ids::vector::Vector<charon_lib::ast::types::vars::TypeVarId, charon_lib::ast::types::Ty>
+         charon_lib::ast::types::GenericArgs
+         charon_lib::ast::types::TraitDeclRef
+         charon_lib::ast::types::RegionBinder<charon_lib::ast::types::TraitDeclRef>
+         charon_lib::ast::types::vars::TraitClause
+         charon_lib::ids::vector::Vector<charon_lib::ast::types::vars::TraitClauseId, charon_lib::ast::types::vars::TraitClause>
+         charon_lib::ast::gast::TraitDecl
+       Binding stack (depth 3):
+         0: 
+         1: 
+         2: <Self, Self_Discriminant>
+ --> /rustc/library/core/src/marker.rs:819:1
+
+error: Found inconsistent generics after transformations:
+       Mismatched type generics:
+       expected: [Self, Self_Discriminant]
+            got: [Self]
+       Visitor stack:
+         charon_lib::ast::types::GenericArgs
+         charon_lib::ast::types::TraitDeclRef
+         charon_lib::ast::types::RegionBinder<charon_lib::ast::types::TraitDeclRef>
+         charon_lib::ast::types::TraitRefKind
+         charon_lib::ast::types::TraitRef
+         charon_lib::ast::types::TyKind
+         charon_lib::ast::types::Ty
+         charon_lib::ids::vector::Vector<charon_lib::ast::types::vars::TypeVarId, charon_lib::ast::types::Ty>
+         charon_lib::ast::types::GenericArgs
+         charon_lib::ast::types::TraitDeclRef
+         charon_lib::ast::types::RegionBinder<charon_lib::ast::types::TraitDeclRef>
+         charon_lib::ast::types::vars::TraitClause
+         charon_lib::ids::vector::Vector<charon_lib::ast::types::vars::TraitClauseId, charon_lib::ast::types::vars::TraitClause>
+         charon_lib::ast::gast::TraitDecl
+       Binding stack (depth 3):
+         0: 
+         1: 
+         2: <Self, Self_Discriminant>
+ --> /rustc/library/core/src/marker.rs:819:1
+
+error: Found inconsistent generics after transformations:
+       Mismatched type generics:
+       expected: [Self, Self_Discriminant]
+            got: [Self]
+       Visitor stack:
+         charon_lib::ast::types::GenericArgs
+         charon_lib::ast::types::TraitDeclRef
+         charon_lib::ast::types::RegionBinder<charon_lib::ast::types::TraitDeclRef>
+         charon_lib::ast::types::TraitRef
+         charon_lib::ast::types::TyKind
+         charon_lib::ast::types::Ty
+         charon_lib::ids::vector::Vector<charon_lib::ast::types::vars::TypeVarId, charon_lib::ast::types::Ty>
+         charon_lib::ast::types::GenericArgs
+         charon_lib::ast::types::TraitDeclRef
+         charon_lib::ast::types::RegionBinder<charon_lib::ast::types::TraitDeclRef>
+         charon_lib::ast::types::vars::TraitClause
+         charon_lib::ids::vector::Vector<charon_lib::ast::types::vars::TraitClauseId, charon_lib::ast::types::vars::TraitClause>
+         charon_lib::ast::gast::TraitDecl
+       Binding stack (depth 3):
+         0: 
+         1: 
+         2: <Self, Self_Discriminant>
+ --> /rustc/library/core/src/marker.rs:819:1
+
+error: Found inconsistent generics after transformations:
+       Mismatched type generics:
+       expected: [Self, Self_Discriminant]
+            got: [Self]
+       Visitor stack:
+         charon_lib::ast::types::GenericArgs
+         charon_lib::ast::types::TraitDeclRef
+         charon_lib::ast::types::RegionBinder<charon_lib::ast::types::TraitDeclRef>
+         charon_lib::ast::types::TraitRefKind
+         charon_lib::ast::types::TraitRef
+         charon_lib::ast::types::TyKind
+         charon_lib::ast::types::Ty
+         charon_lib::ids::vector::Vector<charon_lib::ast::types::vars::TypeVarId, charon_lib::ast::types::Ty>
+         charon_lib::ast::types::GenericArgs
+         charon_lib::ast::types::TraitDeclRef
+         charon_lib::ast::types::RegionBinder<charon_lib::ast::types::TraitDeclRef>
+         charon_lib::ast::types::vars::TraitClause
+         charon_lib::ids::vector::Vector<charon_lib::ast::types::vars::TraitClauseId, charon_lib::ast::types::vars::TraitClause>
+         charon_lib::ast::gast::TraitDecl
+       Binding stack (depth 3):
+         0: 
+         1: 
+         2: <Self, Self_Discriminant>
+ --> /rustc/library/core/src/marker.rs:819:1
+
+error: Found inconsistent generics after transformations:
+       Mismatched type generics:
+       expected: [Self, Self_Discriminant]
+            got: [Self]
+       Visitor stack:
+         charon_lib::ast::types::GenericArgs
+         charon_lib::ast::types::TraitDeclRef
+         charon_lib::ast::types::RegionBinder<charon_lib::ast::types::TraitDeclRef>
+         charon_lib::ast::types::TraitRef
+         charon_lib::ast::types::TyKind
+         charon_lib::ast::types::Ty
+         charon_lib::ids::vector::Vector<charon_lib::ast::types::vars::TypeVarId, charon_lib::ast::types::Ty>
+         charon_lib::ast::types::GenericArgs
+         charon_lib::ast::types::TraitDeclRef
+         charon_lib::ast::types::RegionBinder<charon_lib::ast::types::TraitDeclRef>
+         charon_lib::ast::types::vars::TraitClause
+         charon_lib::ids::vector::Vector<charon_lib::ast::types::vars::TraitClauseId, charon_lib::ast::types::vars::TraitClause>
+         charon_lib::ast::gast::TraitDecl
+       Binding stack (depth 3):
+         0: 
+         1: 
+         2: <Self, Self_Discriminant>
+ --> /rustc/library/core/src/marker.rs:819:1
+
+ERROR Charon failed to translate this code (48 errors)
