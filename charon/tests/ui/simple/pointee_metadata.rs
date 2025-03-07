@@ -1,5 +1,4 @@
 //@ charon-args=--remove-associated-types=*
-//@ known-failure
 #![feature(ptr_metadata)]
 
 fn empty_metadata() {

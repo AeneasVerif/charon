@@ -1,603 +1,197 @@
-disabled backtrace
-warning[E9999]: Failed to compute associated type <T as std::ptr::Pointee>::Metadata
- --> /rustc/86d69c705a552236a622eee3fdea94bf13c5f102/library/core/src/ptr/const_ptr.rs:244:5
-  |
-  = note: ⚠️ This is a bug in Hax's frontend.
-          Please report this error to https://github.com/hacspec/hax/issues with some context (e.g. the current crate)!
+# Final LLBC before serialization:
 
-disabled backtrace
-warning[E9999]: Failed to compute associated type <Self as std::ptr::Pointee>::Metadata
- --> /rustc/86d69c705a552236a622eee3fdea94bf13c5f102/library/core/src/ptr/metadata.rs:63:5
-  |
-  = note: ⚠️ This is a bug in Hax's frontend.
-          Please report this error to https://github.com/hacspec/hax/issues with some context (e.g. the current crate)!
+#[lang_item("sized")]
+pub trait core::marker::Sized<Self>
 
-warning: 2 warnings emitted
+#[lang_item("Formatter")]
+pub opaque type core::fmt::Formatter<'a>
+  where
+      'a : 'a,
 
-error: Could not compute the value of Self::Metadata needed to update generics <@Type1_0> for item core::ptr::metadata::Pointee.
-       Constraints in scope:
-       
- --> /rustc/library/core/src/ptr/const_ptr.rs:244:5
+#[lang_item("Result")]
+pub enum core::result::Result<T, E>
+  where
+      [@TraitClause0]: core::marker::Sized<T>,
+      [@TraitClause1]: core::marker::Sized<E>,
+ =
+|  Ok(T)
+|  Err(E)
 
-error: Could not compute the value of Self::Metadata needed to update generics <@Type1_0> for item core::ptr::metadata::Pointee.
-       Constraints in scope:
-       
- --> /rustc/library/core/src/ptr/const_ptr.rs:244:5
 
-error: Could not compute the value of Self::Metadata needed to update generics <@Type2_0> for item core::ptr::metadata::Pointee.
-       Constraints in scope:
-         - Self::Metadata = @Type0_1
- --> /rustc/library/core/src/ptr/metadata.rs:57:1
+pub struct core::fmt::Error = {}
 
-error: Could not compute the value of Self::Metadata needed to update generics <@Type2_0> for item core::ptr::metadata::Pointee.
-       Constraints in scope:
-         - Self::Metadata = @Type0_1
- --> /rustc/library/core/src/ptr/metadata.rs:57:1
+#[lang_item("Debug")]
+pub trait core::fmt::Debug<Self>
+{
+    fn fmt<'_0, '_1, '_2> = core::fmt::Debug::fmt<'_0_0, '_0_1, '_0_2, Self>
+}
 
-error: Could not compute the value of Self::Metadata needed to update generics <@Type2_0> for item core::ptr::metadata::Pointee.
-       Constraints in scope:
-         - Self::Metadata = @Type0_1
- --> /rustc/library/core/src/ptr/metadata.rs:57:1
+#[lang_item("clone")]
+pub trait core::clone::Clone<Self>
+{
+    parent_clause0 : [@TraitClause0]: core::marker::Sized<Self>
+    fn clone<'_0> = core::clone::Clone::clone<'_0_0, Self>
+}
 
-error: Could not compute the value of Self::Metadata needed to update generics <@Type2_0> for item core::ptr::metadata::Pointee.
-       Constraints in scope:
-         - Self::Metadata = @Type0_1
- --> /rustc/library/core/src/ptr/metadata.rs:57:1
+#[lang_item("copy")]
+pub trait core::marker::Copy<Self>
+{
+    parent_clause0 : [@TraitClause0]: core::clone::Clone<Self>
+}
 
-error: Could not compute the value of Self::Metadata needed to update generics <@Type2_0> for item core::ptr::metadata::Pointee.
-       Constraints in scope:
-         - Self::Metadata = @Type0_1
- --> /rustc/library/core/src/ptr/metadata.rs:57:1
+#[lang_item("Send")]
+pub trait core::marker::Send<Self>
 
-error: Could not compute the value of Self::Metadata needed to update generics <@Type2_0> for item core::ptr::metadata::Pointee.
-       Constraints in scope:
-         - Self::Metadata = @Type0_1
- --> /rustc/library/core/src/ptr/metadata.rs:57:1
+#[lang_item("sync")]
+pub trait core::marker::Sync<Self>
 
-error: Could not compute the value of Self::Metadata needed to update generics <@Type2_0> for item core::ptr::metadata::Pointee.
-       Constraints in scope:
-         - Self::Metadata = @Type0_1
- --> /rustc/library/core/src/ptr/metadata.rs:57:1
+#[lang_item("eq")]
+pub trait core::cmp::PartialEq<Self, Rhs>
+{
+    fn eq<'_0, '_1> = core::cmp::PartialEq::eq<'_0_0, '_0_1, Self, Rhs>
+}
 
-error: Could not compute the value of Self::Metadata needed to update generics <@Type2_0> for item core::ptr::metadata::Pointee.
-       Constraints in scope:
-         - Self::Metadata = @Type0_1
- --> /rustc/library/core/src/ptr/metadata.rs:57:1
+#[lang_item("Eq")]
+pub trait core::cmp::Eq<Self>
+{
+    parent_clause0 : [@TraitClause0]: core::cmp::PartialEq<Self, Self>
+}
 
-error: Could not compute the value of Self::Metadata needed to update generics <@Type2_0> for item core::ptr::metadata::Pointee.
-       Constraints in scope:
-         - Self::Metadata = @Type0_1
- --> /rustc/library/core/src/ptr/metadata.rs:57:1
+#[lang_item("Option")]
+pub enum core::option::Option<T>
+  where
+      [@TraitClause0]: core::marker::Sized<T>,
+ =
+|  None()
+|  Some(T)
 
-error: Could not compute the value of Self::Metadata needed to update generics <@Type2_0> for item core::ptr::metadata::Pointee.
-       Constraints in scope:
-         - Self::Metadata = @Type0_1
- --> /rustc/library/core/src/ptr/metadata.rs:57:1
 
-error: Could not compute the value of Self::Metadata needed to update generics <@Type2_0> for item core::ptr::metadata::Pointee.
-       Constraints in scope:
-         - Self::Metadata = @Type0_1
- --> /rustc/library/core/src/ptr/metadata.rs:57:1
+#[lang_item("Ordering")]
+pub enum core::cmp::Ordering =
+|  Less()
+|  Equal()
+|  Greater()
 
-error: Could not compute the value of Self::Metadata needed to update generics <@Type2_0> for item core::ptr::metadata::Pointee.
-       Constraints in scope:
-         - Self::Metadata = @Type0_1
- --> /rustc/library/core/src/ptr/metadata.rs:57:1
 
-error: Could not compute the value of Self::Metadata needed to update generics <@Type2_0> for item core::ptr::metadata::Pointee.
-       Constraints in scope:
-         - Self::Metadata = @Type0_1
- --> /rustc/library/core/src/ptr/metadata.rs:57:1
+#[lang_item("partial_ord")]
+pub trait core::cmp::PartialOrd<Self, Rhs>
+{
+    parent_clause0 : [@TraitClause0]: core::cmp::PartialEq<Self, Rhs>
+    fn partial_cmp<'_0, '_1> = core::cmp::PartialOrd::partial_cmp<'_0_0, '_0_1, Self, Rhs>
+}
 
-error: Could not compute the value of Self::Metadata needed to update generics <@Type2_0> for item core::ptr::metadata::Pointee.
-       Constraints in scope:
-         - Self::Metadata = @Type0_1
- --> /rustc/library/core/src/ptr/metadata.rs:57:1
+#[lang_item("Ord")]
+pub trait core::cmp::Ord<Self>
+{
+    parent_clause0 : [@TraitClause0]: core::cmp::Eq<Self>
+    parent_clause1 : [@TraitClause1]: core::cmp::PartialOrd<Self, Self>
+    fn cmp<'_0, '_1> = core::cmp::Ord::cmp<'_0_0, '_0_1, Self>
+}
 
-error: Could not compute the value of Self::Metadata needed to update generics <@Type2_0> for item core::ptr::metadata::Pointee.
-       Constraints in scope:
-         - Self::Metadata = @Type0_1
- --> /rustc/library/core/src/ptr/metadata.rs:57:1
+pub trait core::hash::Hasher<Self>
+{
+    fn finish<'_0> = core::hash::Hasher::finish<'_0_0, Self>
+    fn write<'_0, '_1> = core::hash::Hasher::write<'_0_0, '_0_1, Self>
+}
 
-error: Could not compute the value of Self::Metadata needed to update generics <@Type2_0> for item core::ptr::metadata::Pointee.
-       Constraints in scope:
-         - Self::Metadata = @Type0_1
- --> /rustc/library/core/src/ptr/metadata.rs:57:1
+#[lang_item("Hash")]
+pub trait core::hash::Hash<Self>
+{
+    fn hash<'_0, '_1, H, [@TraitClause0]: core::marker::Sized<H>, [@TraitClause1]: core::hash::Hasher<H>> = core::hash::Hash::hash<'_0_0, '_0_1, Self, H>[@TraitClause0_0, @TraitClause0_1]
+}
 
-error: Could not compute the value of Self::Metadata needed to update generics <@Type2_0> for item core::ptr::metadata::Pointee.
-       Constraints in scope:
-         - Self::Metadata = @Type0_1
- --> /rustc/library/core/src/ptr/metadata.rs:57:1
+#[lang_item("unpin")]
+pub trait core::marker::Unpin<Self>
 
-error: Could not compute the value of Self::Metadata needed to update generics <@Type2_0> for item core::ptr::metadata::Pointee.
-       Constraints in scope:
-         - Self::Metadata = @Type0_1
- --> /rustc/library/core/src/ptr/metadata.rs:57:1
+#[lang_item("freeze")]
+pub trait core::marker::Freeze<Self>
 
-error: Found inconsistent generics after transformations:
-       Mismatched type generics:
-       expected: [Self, Self_Metadata]
-            got: [T]
-       Visitor stack:
-         charon_lib::ast::types::GenericArgs
-         charon_lib::ast::types::TraitDeclRef
-         charon_lib::ast::types::RegionBinder<charon_lib::ast::types::TraitDeclRef>
-         charon_lib::ast::types::TraitRefKind
-         charon_lib::ast::types::TraitRef
-         charon_lib::ast::types::TyKind
-         charon_lib::ast::types::Ty
-         charon_lib::ids::vector::Vector<charon_lib::ast::types::vars::TypeVarId, charon_lib::ast::types::Ty>
-         charon_lib::ast::types::GenericArgs
-         charon_lib::ast::types::TyKind
-         charon_lib::ast::types::Ty
-         charon_lib::ast::types::FunSig
-         charon_lib::ast::gast::FunDecl
-       Binding stack (depth 2):
-         0: 
-         1: <T>
- --> /rustc/library/core/src/ptr/const_ptr.rs:244:5
+#[lang_item("pointee_trait")]
+pub trait core::ptr::metadata::Pointee<Self>
+{
+    parent_clause0 : [@TraitClause0]: core::marker::Sized<core::ptr::metadata::Pointee<Self>::Metadata>
+    parent_clause1 : [@TraitClause1]: core::fmt::Debug<core::ptr::metadata::Pointee<Self>::Metadata>
+    parent_clause2 : [@TraitClause2]: core::marker::Copy<core::ptr::metadata::Pointee<Self>::Metadata>
+    parent_clause3 : [@TraitClause3]: core::marker::Send<core::ptr::metadata::Pointee<Self>::Metadata>
+    parent_clause4 : [@TraitClause4]: core::marker::Sync<core::ptr::metadata::Pointee<Self>::Metadata>
+    parent_clause5 : [@TraitClause5]: core::cmp::Ord<core::ptr::metadata::Pointee<Self>::Metadata>
+    parent_clause6 : [@TraitClause6]: core::hash::Hash<core::ptr::metadata::Pointee<Self>::Metadata>
+    parent_clause7 : [@TraitClause7]: core::marker::Unpin<core::ptr::metadata::Pointee<Self>::Metadata>
+    parent_clause8 : [@TraitClause8]: core::marker::Freeze<core::ptr::metadata::Pointee<Self>::Metadata>
+    type Metadata
+}
 
-error: Found inconsistent generics after transformations:
-       Mismatched type generics:
-       expected: [Self, Self_Metadata]
-            got: [T]
-       Visitor stack:
-         charon_lib::ast::types::GenericArgs
-         charon_lib::ast::types::TraitDeclRef
-         charon_lib::ast::types::RegionBinder<charon_lib::ast::types::TraitDeclRef>
-         charon_lib::ast::types::TraitRef
-         charon_lib::ast::types::TyKind
-         charon_lib::ast::types::Ty
-         charon_lib::ids::vector::Vector<charon_lib::ast::types::vars::TypeVarId, charon_lib::ast::types::Ty>
-         charon_lib::ast::types::GenericArgs
-         charon_lib::ast::types::TyKind
-         charon_lib::ast::types::Ty
-         charon_lib::ast::types::FunSig
-         charon_lib::ast::gast::FunDecl
-       Binding stack (depth 2):
-         0: 
-         1: <T>
- --> /rustc/library/core/src/ptr/const_ptr.rs:244:5
+pub fn core::ptr::const_ptr::{*const T}::to_raw_parts<T>(@1: *const T) -> (*const (), core::ptr::metadata::Pointee<T>::Metadata)
 
-error: Found inconsistent generics after transformations:
-       Mismatched type generics:
-       expected: [Self, Self_Metadata]
-            got: [Self]
-       Visitor stack:
-         charon_lib::ast::types::GenericArgs
-         charon_lib::ast::types::TraitDeclRef
-         charon_lib::ast::types::RegionBinder<charon_lib::ast::types::TraitDeclRef>
-         charon_lib::ast::types::TraitRefKind
-         charon_lib::ast::types::TraitRef
-         charon_lib::ast::types::TyKind
-         charon_lib::ast::types::Ty
-         charon_lib::ids::vector::Vector<charon_lib::ast::types::vars::TypeVarId, charon_lib::ast::types::Ty>
-         charon_lib::ast::types::GenericArgs
-         charon_lib::ast::types::TraitDeclRef
-         charon_lib::ast::types::RegionBinder<charon_lib::ast::types::TraitDeclRef>
-         charon_lib::ast::types::vars::TraitClause
-         charon_lib::ids::vector::Vector<charon_lib::ast::types::vars::TraitClauseId, charon_lib::ast::types::vars::TraitClause>
-         charon_lib::ast::gast::TraitDecl
-       Binding stack (depth 3):
-         0: 
-         1: 
-         2: <Self, Self_Metadata>
- --> /rustc/library/core/src/ptr/metadata.rs:57:1
+fn test_crate::empty_metadata()
+{
+    let @0: (); // return
+    let @1: (*const (), ()); // anonymous local
+    let @2: *const u32; // anonymous local
+    let @3: &'_ (u32); // anonymous local
+    let @4: u32; // anonymous local
 
-error: Found inconsistent generics after transformations:
-       Mismatched type generics:
-       expected: [Self, Self_Metadata]
-            got: [Self]
-       Visitor stack:
-         charon_lib::ast::types::GenericArgs
-         charon_lib::ast::types::TraitDeclRef
-         charon_lib::ast::types::RegionBinder<charon_lib::ast::types::TraitDeclRef>
-         charon_lib::ast::types::TraitRef
-         charon_lib::ast::types::TyKind
-         charon_lib::ast::types::Ty
-         charon_lib::ids::vector::Vector<charon_lib::ast::types::vars::TypeVarId, charon_lib::ast::types::Ty>
-         charon_lib::ast::types::GenericArgs
-         charon_lib::ast::types::TraitDeclRef
-         charon_lib::ast::types::RegionBinder<charon_lib::ast::types::TraitDeclRef>
-         charon_lib::ast::types::vars::TraitClause
-         charon_lib::ids::vector::Vector<charon_lib::ast::types::vars::TraitClauseId, charon_lib::ast::types::vars::TraitClause>
-         charon_lib::ast::gast::TraitDecl
-       Binding stack (depth 3):
-         0: 
-         1: 
-         2: <Self, Self_Metadata>
- --> /rustc/library/core/src/ptr/metadata.rs:57:1
+    @4 := const (0 : u32)
+    @3 := &@4
+    @2 := &raw const *(@3)
+    @1 := core::ptr::const_ptr::{*const T}::to_raw_parts<u32>(move (@2))
+    drop @2
+    @fake_read(@1)
+    drop @4
+    drop @3
+    drop @1
+    @0 := ()
+    @0 := ()
+    return
+}
 
-error: Found inconsistent generics after transformations:
-       Mismatched type generics:
-       expected: [Self, Self_Metadata]
-            got: [Self]
-       Visitor stack:
-         charon_lib::ast::types::GenericArgs
-         charon_lib::ast::types::TraitDeclRef
-         charon_lib::ast::types::RegionBinder<charon_lib::ast::types::TraitDeclRef>
-         charon_lib::ast::types::TraitRefKind
-         charon_lib::ast::types::TraitRef
-         charon_lib::ast::types::TyKind
-         charon_lib::ast::types::Ty
-         charon_lib::ids::vector::Vector<charon_lib::ast::types::vars::TypeVarId, charon_lib::ast::types::Ty>
-         charon_lib::ast::types::GenericArgs
-         charon_lib::ast::types::TraitDeclRef
-         charon_lib::ast::types::RegionBinder<charon_lib::ast::types::TraitDeclRef>
-         charon_lib::ast::types::vars::TraitClause
-         charon_lib::ids::vector::Vector<charon_lib::ast::types::vars::TraitClauseId, charon_lib::ast::types::vars::TraitClause>
-         charon_lib::ast::gast::TraitDecl
-       Binding stack (depth 3):
-         0: 
-         1: 
-         2: <Self, Self_Metadata>
- --> /rustc/library/core/src/ptr/metadata.rs:57:1
+fn test_crate::slice_metadata()
+{
+    let @0: (); // return
+    let @1: (*const (), usize); // anonymous local
+    let @2: *const Slice<u32>; // anonymous local
+    let @3: *const Array<u32, 2 : usize>; // anonymous local
+    let @4: &'_ (Array<u32, 2 : usize>); // anonymous local
+    let @5: Array<u32, 2 : usize>; // anonymous local
 
-error: Found inconsistent generics after transformations:
-       Mismatched type generics:
-       expected: [Self, Self_Metadata]
-            got: [Self]
-       Visitor stack:
-         charon_lib::ast::types::GenericArgs
-         charon_lib::ast::types::TraitDeclRef
-         charon_lib::ast::types::RegionBinder<charon_lib::ast::types::TraitDeclRef>
-         charon_lib::ast::types::TraitRef
-         charon_lib::ast::types::TyKind
-         charon_lib::ast::types::Ty
-         charon_lib::ids::vector::Vector<charon_lib::ast::types::vars::TypeVarId, charon_lib::ast::types::Ty>
-         charon_lib::ast::types::GenericArgs
-         charon_lib::ast::types::TraitDeclRef
-         charon_lib::ast::types::RegionBinder<charon_lib::ast::types::TraitDeclRef>
-         charon_lib::ast::types::vars::TraitClause
-         charon_lib::ids::vector::Vector<charon_lib::ast::types::vars::TraitClauseId, charon_lib::ast::types::vars::TraitClause>
-         charon_lib::ast::gast::TraitDecl
-       Binding stack (depth 3):
-         0: 
-         1: 
-         2: <Self, Self_Metadata>
- --> /rustc/library/core/src/ptr/metadata.rs:57:1
+    @5 := [const (0 : u32), const (1 : u32); 2 : usize]
+    @4 := &@5
+    @3 := &raw const *(@4)
+    @2 := unsize_cast<*const Array<u32, 2 : usize>, *const Slice<u32>>(move (@3))
+    drop @3
+    @1 := core::ptr::const_ptr::{*const T}::to_raw_parts<Slice<u32>>(move (@2))
+    drop @2
+    @fake_read(@1)
+    drop @5
+    drop @4
+    drop @1
+    @0 := ()
+    @0 := ()
+    return
+}
 
-error: Found inconsistent generics after transformations:
-       Mismatched type generics:
-       expected: [Self, Self_Metadata]
-            got: [Self]
-       Visitor stack:
-         charon_lib::ast::types::GenericArgs
-         charon_lib::ast::types::TraitDeclRef
-         charon_lib::ast::types::RegionBinder<charon_lib::ast::types::TraitDeclRef>
-         charon_lib::ast::types::TraitRefKind
-         charon_lib::ast::types::TraitRef
-         charon_lib::ast::types::TyKind
-         charon_lib::ast::types::Ty
-         charon_lib::ids::vector::Vector<charon_lib::ast::types::vars::TypeVarId, charon_lib::ast::types::Ty>
-         charon_lib::ast::types::GenericArgs
-         charon_lib::ast::types::TraitDeclRef
-         charon_lib::ast::types::RegionBinder<charon_lib::ast::types::TraitDeclRef>
-         charon_lib::ast::types::vars::TraitClause
-         charon_lib::ids::vector::Vector<charon_lib::ast::types::vars::TraitClauseId, charon_lib::ast::types::vars::TraitClause>
-         charon_lib::ast::gast::TraitDecl
-       Binding stack (depth 3):
-         0: 
-         1: 
-         2: <Self, Self_Metadata>
- --> /rustc/library/core/src/ptr/metadata.rs:57:1
+#[lang_item("ord_cmp_method")]
+pub fn core::cmp::Ord::cmp<'_0, '_1, Self>(@1: &'_0 (Self), @2: &'_1 (Self)) -> core::cmp::Ordering
 
-error: Found inconsistent generics after transformations:
-       Mismatched type generics:
-       expected: [Self, Self_Metadata]
-            got: [Self]
-       Visitor stack:
-         charon_lib::ast::types::GenericArgs
-         charon_lib::ast::types::TraitDeclRef
-         charon_lib::ast::types::RegionBinder<charon_lib::ast::types::TraitDeclRef>
-         charon_lib::ast::types::TraitRef
-         charon_lib::ast::types::TyKind
-         charon_lib::ast::types::Ty
-         charon_lib::ids::vector::Vector<charon_lib::ast::types::vars::TypeVarId, charon_lib::ast::types::Ty>
-         charon_lib::ast::types::GenericArgs
-         charon_lib::ast::types::TraitDeclRef
-         charon_lib::ast::types::RegionBinder<charon_lib::ast::types::TraitDeclRef>
-         charon_lib::ast::types::vars::TraitClause
-         charon_lib::ids::vector::Vector<charon_lib::ast::types::vars::TraitClauseId, charon_lib::ast::types::vars::TraitClause>
-         charon_lib::ast::gast::TraitDecl
-       Binding stack (depth 3):
-         0: 
-         1: 
-         2: <Self, Self_Metadata>
- --> /rustc/library/core/src/ptr/metadata.rs:57:1
+#[lang_item("cmp_partialeq_eq")]
+pub fn core::cmp::PartialEq::eq<'_0, '_1, Self, Rhs>(@1: &'_0 (Self), @2: &'_1 (Rhs)) -> bool
 
-error: Found inconsistent generics after transformations:
-       Mismatched type generics:
-       expected: [Self, Self_Metadata]
-            got: [Self]
-       Visitor stack:
-         charon_lib::ast::types::GenericArgs
-         charon_lib::ast::types::TraitDeclRef
-         charon_lib::ast::types::RegionBinder<charon_lib::ast::types::TraitDeclRef>
-         charon_lib::ast::types::TraitRefKind
-         charon_lib::ast::types::TraitRef
-         charon_lib::ast::types::TyKind
-         charon_lib::ast::types::Ty
-         charon_lib::ids::vector::Vector<charon_lib::ast::types::vars::TypeVarId, charon_lib::ast::types::Ty>
-         charon_lib::ast::types::GenericArgs
-         charon_lib::ast::types::TraitDeclRef
-         charon_lib::ast::types::RegionBinder<charon_lib::ast::types::TraitDeclRef>
-         charon_lib::ast::types::vars::TraitClause
-         charon_lib::ids::vector::Vector<charon_lib::ast::types::vars::TraitClauseId, charon_lib::ast::types::vars::TraitClause>
-         charon_lib::ast::gast::TraitDecl
-       Binding stack (depth 3):
-         0: 
-         1: 
-         2: <Self, Self_Metadata>
- --> /rustc/library/core/src/ptr/metadata.rs:57:1
+#[lang_item("cmp_partialord_cmp")]
+pub fn core::cmp::PartialOrd::partial_cmp<'_0, '_1, Self, Rhs>(@1: &'_0 (Self), @2: &'_1 (Rhs)) -> core::option::Option<core::cmp::Ordering>[core::marker::Sized<core::cmp::Ordering>]
 
-error: Found inconsistent generics after transformations:
-       Mismatched type generics:
-       expected: [Self, Self_Metadata]
-            got: [Self]
-       Visitor stack:
-         charon_lib::ast::types::GenericArgs
-         charon_lib::ast::types::TraitDeclRef
-         charon_lib::ast::types::RegionBinder<charon_lib::ast::types::TraitDeclRef>
-         charon_lib::ast::types::TraitRef
-         charon_lib::ast::types::TyKind
-         charon_lib::ast::types::Ty
-         charon_lib::ids::vector::Vector<charon_lib::ast::types::vars::TypeVarId, charon_lib::ast::types::Ty>
-         charon_lib::ast::types::GenericArgs
-         charon_lib::ast::types::TraitDeclRef
-         charon_lib::ast::types::RegionBinder<charon_lib::ast::types::TraitDeclRef>
-         charon_lib::ast::types::vars::TraitClause
-         charon_lib::ids::vector::Vector<charon_lib::ast::types::vars::TraitClauseId, charon_lib::ast::types::vars::TraitClause>
-         charon_lib::ast::gast::TraitDecl
-       Binding stack (depth 3):
-         0: 
-         1: 
-         2: <Self, Self_Metadata>
- --> /rustc/library/core/src/ptr/metadata.rs:57:1
+#[lang_item("clone_fn")]
+pub fn core::clone::Clone::clone<'_0, Self>(@1: &'_0 (Self)) -> Self
 
-error: Found inconsistent generics after transformations:
-       Mismatched type generics:
-       expected: [Self, Self_Metadata]
-            got: [Self]
-       Visitor stack:
-         charon_lib::ast::types::GenericArgs
-         charon_lib::ast::types::TraitDeclRef
-         charon_lib::ast::types::RegionBinder<charon_lib::ast::types::TraitDeclRef>
-         charon_lib::ast::types::TraitRefKind
-         charon_lib::ast::types::TraitRef
-         charon_lib::ast::types::TyKind
-         charon_lib::ast::types::Ty
-         charon_lib::ids::vector::Vector<charon_lib::ast::types::vars::TypeVarId, charon_lib::ast::types::Ty>
-         charon_lib::ast::types::GenericArgs
-         charon_lib::ast::types::TraitDeclRef
-         charon_lib::ast::types::RegionBinder<charon_lib::ast::types::TraitDeclRef>
-         charon_lib::ast::types::vars::TraitClause
-         charon_lib::ids::vector::Vector<charon_lib::ast::types::vars::TraitClauseId, charon_lib::ast::types::vars::TraitClause>
-         charon_lib::ast::gast::TraitDecl
-       Binding stack (depth 3):
-         0: 
-         1: 
-         2: <Self, Self_Metadata>
- --> /rustc/library/core/src/ptr/metadata.rs:57:1
+pub fn core::fmt::Debug::fmt<'_0, '_1, '_2, Self>(@1: &'_0 (Self), @2: &'_1 mut (core::fmt::Formatter<'_2>)) -> core::result::Result<(), core::fmt::Error>[core::marker::Sized<()>, core::marker::Sized<core::fmt::Error>]
 
-error: Found inconsistent generics after transformations:
-       Mismatched type generics:
-       expected: [Self, Self_Metadata]
-            got: [Self]
-       Visitor stack:
-         charon_lib::ast::types::GenericArgs
-         charon_lib::ast::types::TraitDeclRef
-         charon_lib::ast::types::RegionBinder<charon_lib::ast::types::TraitDeclRef>
-         charon_lib::ast::types::TraitRef
-         charon_lib::ast::types::TyKind
-         charon_lib::ast::types::Ty
-         charon_lib::ids::vector::Vector<charon_lib::ast::types::vars::TypeVarId, charon_lib::ast::types::Ty>
-         charon_lib::ast::types::GenericArgs
-         charon_lib::ast::types::TraitDeclRef
-         charon_lib::ast::types::RegionBinder<charon_lib::ast::types::TraitDeclRef>
-         charon_lib::ast::types::vars::TraitClause
-         charon_lib::ids::vector::Vector<charon_lib::ast::types::vars::TraitClauseId, charon_lib::ast::types::vars::TraitClause>
-         charon_lib::ast::gast::TraitDecl
-       Binding stack (depth 3):
-         0: 
-         1: 
-         2: <Self, Self_Metadata>
- --> /rustc/library/core/src/ptr/metadata.rs:57:1
+pub fn core::hash::Hash::hash<'_0, '_1, Self, H>(@1: &'_0 (Self), @2: &'_1 mut (H))
+where
+    [@TraitClause0]: core::marker::Sized<H>,
+    [@TraitClause1]: core::hash::Hasher<H>,
 
-error: Found inconsistent generics after transformations:
-       Mismatched type generics:
-       expected: [Self, Self_Metadata]
-            got: [Self]
-       Visitor stack:
-         charon_lib::ast::types::GenericArgs
-         charon_lib::ast::types::TraitDeclRef
-         charon_lib::ast::types::RegionBinder<charon_lib::ast::types::TraitDeclRef>
-         charon_lib::ast::types::TraitRefKind
-         charon_lib::ast::types::TraitRef
-         charon_lib::ast::types::TyKind
-         charon_lib::ast::types::Ty
-         charon_lib::ids::vector::Vector<charon_lib::ast::types::vars::TypeVarId, charon_lib::ast::types::Ty>
-         charon_lib::ast::types::GenericArgs
-         charon_lib::ast::types::TraitDeclRef
-         charon_lib::ast::types::RegionBinder<charon_lib::ast::types::TraitDeclRef>
-         charon_lib::ast::types::vars::TraitClause
-         charon_lib::ids::vector::Vector<charon_lib::ast::types::vars::TraitClauseId, charon_lib::ast::types::vars::TraitClause>
-         charon_lib::ast::gast::TraitDecl
-       Binding stack (depth 3):
-         0: 
-         1: 
-         2: <Self, Self_Metadata>
- --> /rustc/library/core/src/ptr/metadata.rs:57:1
+pub fn core::hash::Hasher::finish<'_0, Self>(@1: &'_0 (Self)) -> u64
 
-error: Found inconsistent generics after transformations:
-       Mismatched type generics:
-       expected: [Self, Self_Metadata]
-            got: [Self]
-       Visitor stack:
-         charon_lib::ast::types::GenericArgs
-         charon_lib::ast::types::TraitDeclRef
-         charon_lib::ast::types::RegionBinder<charon_lib::ast::types::TraitDeclRef>
-         charon_lib::ast::types::TraitRef
-         charon_lib::ast::types::TyKind
-         charon_lib::ast::types::Ty
-         charon_lib::ids::vector::Vector<charon_lib::ast::types::vars::TypeVarId, charon_lib::ast::types::Ty>
-         charon_lib::ast::types::GenericArgs
-         charon_lib::ast::types::TraitDeclRef
-         charon_lib::ast::types::RegionBinder<charon_lib::ast::types::TraitDeclRef>
-         charon_lib::ast::types::vars::TraitClause
-         charon_lib::ids::vector::Vector<charon_lib::ast::types::vars::TraitClauseId, charon_lib::ast::types::vars::TraitClause>
-         charon_lib::ast::gast::TraitDecl
-       Binding stack (depth 3):
-         0: 
-         1: 
-         2: <Self, Self_Metadata>
- --> /rustc/library/core/src/ptr/metadata.rs:57:1
+pub fn core::hash::Hasher::write<'_0, '_1, Self>(@1: &'_0 mut (Self), @2: &'_1 (Slice<u8>))
 
-error: Found inconsistent generics after transformations:
-       Mismatched type generics:
-       expected: [Self, Self_Metadata]
-            got: [Self]
-       Visitor stack:
-         charon_lib::ast::types::GenericArgs
-         charon_lib::ast::types::TraitDeclRef
-         charon_lib::ast::types::RegionBinder<charon_lib::ast::types::TraitDeclRef>
-         charon_lib::ast::types::TraitRefKind
-         charon_lib::ast::types::TraitRef
-         charon_lib::ast::types::TyKind
-         charon_lib::ast::types::Ty
-         charon_lib::ids::vector::Vector<charon_lib::ast::types::vars::TypeVarId, charon_lib::ast::types::Ty>
-         charon_lib::ast::types::GenericArgs
-         charon_lib::ast::types::TraitDeclRef
-         charon_lib::ast::types::RegionBinder<charon_lib::ast::types::TraitDeclRef>
-         charon_lib::ast::types::vars::TraitClause
-         charon_lib::ids::vector::Vector<charon_lib::ast::types::vars::TraitClauseId, charon_lib::ast::types::vars::TraitClause>
-         charon_lib::ast::gast::TraitDecl
-       Binding stack (depth 3):
-         0: 
-         1: 
-         2: <Self, Self_Metadata>
- --> /rustc/library/core/src/ptr/metadata.rs:57:1
 
-error: Found inconsistent generics after transformations:
-       Mismatched type generics:
-       expected: [Self, Self_Metadata]
-            got: [Self]
-       Visitor stack:
-         charon_lib::ast::types::GenericArgs
-         charon_lib::ast::types::TraitDeclRef
-         charon_lib::ast::types::RegionBinder<charon_lib::ast::types::TraitDeclRef>
-         charon_lib::ast::types::TraitRef
-         charon_lib::ast::types::TyKind
-         charon_lib::ast::types::Ty
-         charon_lib::ids::vector::Vector<charon_lib::ast::types::vars::TypeVarId, charon_lib::ast::types::Ty>
-         charon_lib::ast::types::GenericArgs
-         charon_lib::ast::types::TraitDeclRef
-         charon_lib::ast::types::RegionBinder<charon_lib::ast::types::TraitDeclRef>
-         charon_lib::ast::types::vars::TraitClause
-         charon_lib::ids::vector::Vector<charon_lib::ast::types::vars::TraitClauseId, charon_lib::ast::types::vars::TraitClause>
-         charon_lib::ast::gast::TraitDecl
-       Binding stack (depth 3):
-         0: 
-         1: 
-         2: <Self, Self_Metadata>
- --> /rustc/library/core/src/ptr/metadata.rs:57:1
 
-error: Found inconsistent generics after transformations:
-       Mismatched type generics:
-       expected: [Self, Self_Metadata]
-            got: [Self]
-       Visitor stack:
-         charon_lib::ast::types::GenericArgs
-         charon_lib::ast::types::TraitDeclRef
-         charon_lib::ast::types::RegionBinder<charon_lib::ast::types::TraitDeclRef>
-         charon_lib::ast::types::TraitRefKind
-         charon_lib::ast::types::TraitRef
-         charon_lib::ast::types::TyKind
-         charon_lib::ast::types::Ty
-         charon_lib::ids::vector::Vector<charon_lib::ast::types::vars::TypeVarId, charon_lib::ast::types::Ty>
-         charon_lib::ast::types::GenericArgs
-         charon_lib::ast::types::TraitDeclRef
-         charon_lib::ast::types::RegionBinder<charon_lib::ast::types::TraitDeclRef>
-         charon_lib::ast::types::vars::TraitClause
-         charon_lib::ids::vector::Vector<charon_lib::ast::types::vars::TraitClauseId, charon_lib::ast::types::vars::TraitClause>
-         charon_lib::ast::gast::TraitDecl
-       Binding stack (depth 3):
-         0: 
-         1: 
-         2: <Self, Self_Metadata>
- --> /rustc/library/core/src/ptr/metadata.rs:57:1
-
-error: Found inconsistent generics after transformations:
-       Mismatched type generics:
-       expected: [Self, Self_Metadata]
-            got: [Self]
-       Visitor stack:
-         charon_lib::ast::types::GenericArgs
-         charon_lib::ast::types::TraitDeclRef
-         charon_lib::ast::types::RegionBinder<charon_lib::ast::types::TraitDeclRef>
-         charon_lib::ast::types::TraitRef
-         charon_lib::ast::types::TyKind
-         charon_lib::ast::types::Ty
-         charon_lib::ids::vector::Vector<charon_lib::ast::types::vars::TypeVarId, charon_lib::ast::types::Ty>
-         charon_lib::ast::types::GenericArgs
-         charon_lib::ast::types::TraitDeclRef
-         charon_lib::ast::types::RegionBinder<charon_lib::ast::types::TraitDeclRef>
-         charon_lib::ast::types::vars::TraitClause
-         charon_lib::ids::vector::Vector<charon_lib::ast::types::vars::TraitClauseId, charon_lib::ast::types::vars::TraitClause>
-         charon_lib::ast::gast::TraitDecl
-       Binding stack (depth 3):
-         0: 
-         1: 
-         2: <Self, Self_Metadata>
- --> /rustc/library/core/src/ptr/metadata.rs:57:1
-
-error: Found inconsistent generics after transformations:
-       Mismatched type generics:
-       expected: [Self, Self_Metadata]
-            got: [Self]
-       Visitor stack:
-         charon_lib::ast::types::GenericArgs
-         charon_lib::ast::types::TraitDeclRef
-         charon_lib::ast::types::RegionBinder<charon_lib::ast::types::TraitDeclRef>
-         charon_lib::ast::types::TraitRefKind
-         charon_lib::ast::types::TraitRef
-         charon_lib::ast::types::TyKind
-         charon_lib::ast::types::Ty
-         charon_lib::ids::vector::Vector<charon_lib::ast::types::vars::TypeVarId, charon_lib::ast::types::Ty>
-         charon_lib::ast::types::GenericArgs
-         charon_lib::ast::types::TraitDeclRef
-         charon_lib::ast::types::RegionBinder<charon_lib::ast::types::TraitDeclRef>
-         charon_lib::ast::types::vars::TraitClause
-         charon_lib::ids::vector::Vector<charon_lib::ast::types::vars::TraitClauseId, charon_lib::ast::types::vars::TraitClause>
-         charon_lib::ast::gast::TraitDecl
-       Binding stack (depth 3):
-         0: 
-         1: 
-         2: <Self, Self_Metadata>
- --> /rustc/library/core/src/ptr/metadata.rs:57:1
-
-error: Found inconsistent generics after transformations:
-       Mismatched type generics:
-       expected: [Self, Self_Metadata]
-            got: [Self]
-       Visitor stack:
-         charon_lib::ast::types::GenericArgs
-         charon_lib::ast::types::TraitDeclRef
-         charon_lib::ast::types::RegionBinder<charon_lib::ast::types::TraitDeclRef>
-         charon_lib::ast::types::TraitRef
-         charon_lib::ast::types::TyKind
-         charon_lib::ast::types::Ty
-         charon_lib::ids::vector::Vector<charon_lib::ast::types::vars::TypeVarId, charon_lib::ast::types::Ty>
-         charon_lib::ast::types::GenericArgs
-         charon_lib::ast::types::TraitDeclRef
-         charon_lib::ast::types::RegionBinder<charon_lib::ast::types::TraitDeclRef>
-         charon_lib::ast::types::vars::TraitClause
-         charon_lib::ids::vector::Vector<charon_lib::ast::types::vars::TraitClauseId, charon_lib::ast::types::vars::TraitClause>
-         charon_lib::ast::gast::TraitDecl
-       Binding stack (depth 3):
-         0: 
-         1: 
-         2: <Self, Self_Metadata>
- --> /rustc/library/core/src/ptr/metadata.rs:57:1
-
-ERROR Charon failed to translate this code (40 errors)

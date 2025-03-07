@@ -715,12 +715,19 @@ impl<'a> ComputeItemModifications<'a> {
                     Processing::Processing => false,
                     Processing::Cyclic => true,
                 };
-                let remove_assoc_type = self
-                    .ctx
-                    .options
-                    .remove_associated_types
-                    .iter()
-                    .any(|pat| pat.matches(&self.ctx.translated, &tr.item_meta.name));
+                // These traits carry a built-in associated type that we can't replace with
+                // anything else than itself, so we keep it as an associated type.
+                let has_builtin_assoc_ty = matches!(
+                    tr.item_meta.lang_item.as_deref(),
+                    Some("discriminant_kind" | "pointee_trait")
+                );
+                let remove_assoc_type = !has_builtin_assoc_ty
+                    && self
+                        .ctx
+                        .options
+                        .remove_associated_types
+                        .iter()
+                        .any(|pat| pat.matches(&self.ctx.translated, &tr.item_meta.name));
                 let remove_assoc_types = !is_self_referential && remove_assoc_type;
                 let mut modifications =
                     ItemModifications::new(&tr.generics.trait_type_constraints, remove_assoc_types);
@@ -871,6 +878,8 @@ impl<'a> ComputeItemModifications<'a> {
 /// `visit_generic_args` will skip `GenericArgs` meant for traits, and we must manually catch
 #[derive(Visitor)]
 struct UpdateItemBody<'a> {
+    /// Warning: we keep the ctx around but we can't meaningfully use it for inspecting items as we
+    /// remporarily remove them for in-place modification.
     ctx: &'a TransformCtx,
     span: Span,
     item_modifications: &'a HashMap<GenericsSource, ItemModifications>,
