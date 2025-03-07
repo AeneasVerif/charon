@@ -1,19 +1,19 @@
 # Final LLBC before serialization:
 
-trait core::marker::Sized<Self>
+pub trait core::marker::Sized<Self>
 
-trait core::clone::Clone<Self>
+pub trait core::clone::Clone<Self>
 {
     parent_clause0 : [@TraitClause0]: core::marker::Sized<Self>
     fn clone<'_0> = core::clone::Clone::clone<'_0_0, Self>
 }
 
-trait core::borrow::Borrow<Self, Borrowed>
+pub trait core::borrow::Borrow<Self, Borrowed>
 {
     fn borrow<'_0> = core::borrow::Borrow::borrow<'_0_0, Self, Borrowed>
 }
 
-trait alloc::borrow::ToOwned<Self>
+pub trait alloc::borrow::ToOwned<Self>
 {
     parent_clause0 : [@TraitClause0]: core::marker::Sized<Self::Owned>
     parent_clause1 : [@TraitClause1]: core::borrow::Borrow<Self::Owned, Self>
@@ -21,7 +21,7 @@ trait alloc::borrow::ToOwned<Self>
     fn to_owned<'_0> = alloc::borrow::ToOwned::to_owned<'_0_0, Self>
 }
 
-enum alloc::borrow::Cow<'a, B>
+pub enum alloc::borrow::Cow<'a, B>
   where
       [@TraitClause0]: alloc::borrow::ToOwned<B>,
       B : 'a,
@@ -31,14 +31,14 @@ enum alloc::borrow::Cow<'a, B>
 |  Owned(@TraitClause0::Owned)
 
 
-opaque type alloc::vec::Vec<T, A>
+pub opaque type alloc::vec::Vec<T, A>
   where
       [@TraitClause0]: core::marker::Sized<T>,
       [@TraitClause1]: core::marker::Sized<A>,
 
-struct alloc::alloc::Global = {}
+pub struct alloc::alloc::Global = {}
 
-fn alloc::slice::{impl core::borrow::Borrow<Slice<T>> for alloc::vec::Vec<T, A>[@TraitClause0, @TraitClause1]}#5::borrow<'_0, T, A>(@1: &'_0 (alloc::vec::Vec<T, A>[@TraitClause0, @TraitClause1])) -> &'_0 (Slice<T>)
+pub fn alloc::slice::{impl core::borrow::Borrow<Slice<T>> for alloc::vec::Vec<T, A>[@TraitClause0, @TraitClause1]}#5::borrow<'_0, T, A>(@1: &'_0 (alloc::vec::Vec<T, A>[@TraitClause0, @TraitClause1])) -> &'_0 (Slice<T>)
 where
     [@TraitClause0]: core::marker::Sized<T>,
     [@TraitClause1]: core::marker::Sized<A>,
@@ -51,7 +51,7 @@ where
     fn borrow<'_0> = alloc::slice::{impl core::borrow::Borrow<Slice<T>> for alloc::vec::Vec<T, A>[@TraitClause0, @TraitClause1]}#5::borrow<'_0_0, T, A>[@TraitClause0, @TraitClause1]
 }
 
-fn alloc::slice::{impl alloc::borrow::ToOwned for Slice<T>}#9::to_owned<'_0, T>(@1: &'_0 (Slice<T>)) -> alloc::vec::Vec<T, alloc::alloc::Global>[@TraitClause0, core::marker::Sized<alloc::alloc::Global>]
+pub fn alloc::slice::{impl alloc::borrow::ToOwned for Slice<T>}#9::to_owned<'_0, T>(@1: &'_0 (Slice<T>)) -> alloc::vec::Vec<T, alloc::alloc::Global>[@TraitClause0, core::marker::Sized<alloc::alloc::Global>]
 where
     [@TraitClause0]: core::marker::Sized<T>,
     [@TraitClause1]: core::clone::Clone<T>,
@@ -77,11 +77,11 @@ struct test_crate::Generic2<'a, T>
   alloc::borrow::Cow<'a, Slice<T>>[alloc::slice::{impl alloc::borrow::ToOwned for Slice<T>}#9<T>[@TraitClause0, @TraitClause1]],
 }
 
-fn core::clone::Clone::clone<'_0, Self>(@1: &'_0 (Self)) -> Self
+pub fn core::clone::Clone::clone<'_0, Self>(@1: &'_0 (Self)) -> Self
 
-fn alloc::borrow::ToOwned::to_owned<'_0, Self>(@1: &'_0 (Self)) -> Self::Owned
+pub fn alloc::borrow::ToOwned::to_owned<'_0, Self>(@1: &'_0 (Self)) -> Self::Owned
 
-fn core::borrow::Borrow::borrow<'_0, Self, Borrowed>(@1: &'_0 (Self)) -> &'_0 (Borrowed)
+pub fn core::borrow::Borrow::borrow<'_0, Self, Borrowed>(@1: &'_0 (Self)) -> &'_0 (Borrowed)
 
 
 

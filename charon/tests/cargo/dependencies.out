@@ -13,11 +13,11 @@ fn test_cargo_dependencies::silly_incr::closure(@1: (), @2: u32) -> u32
     return
 }
 
-trait core::marker::Sized<Self>
+pub trait core::marker::Sized<Self>
 
-trait core::marker::Tuple<Self>
+pub trait core::marker::Tuple<Self>
 
-trait core::ops::function::FnOnce<Self, Args>
+pub trait core::ops::function::FnOnce<Self, Args>
 {
     parent_clause0 : [@TraitClause0]: core::marker::Sized<Args>
     parent_clause1 : [@TraitClause1]: core::marker::Tuple<Args>
@@ -26,7 +26,7 @@ trait core::ops::function::FnOnce<Self, Args>
     fn call_once = core::ops::function::FnOnce::call_once<Self, Args>
 }
 
-fn take_mut::take<'_0, T, F>(@1: &'_0 mut (T), @2: F)
+pub fn take_mut::take<'_0, T, F>(@1: &'_0 mut (T), @2: F)
 where
     [@TraitClause0]: core::marker::Sized<T>,
     [@TraitClause1]: core::marker::Sized<F>,
@@ -52,13 +52,13 @@ fn test_cargo_dependencies::silly_incr<'_0>(@1: &'_0 mut (u32))
     return
 }
 
-enum core::panicking::AssertKind =
+pub enum core::panicking::AssertKind =
 |  Eq()
 |  Ne()
 |  Match()
 
 
-enum core::option::Option<T>
+pub enum core::option::Option<T>
   where
       [@TraitClause0]: core::marker::Sized<T>,
  =
@@ -66,7 +66,7 @@ enum core::option::Option<T>
 |  Some(T)
 
 
-opaque type core::fmt::Arguments<'a>
+pub opaque type core::fmt::Arguments<'a>
   where
       'a : 'a,
 
@@ -144,7 +144,7 @@ fn test_cargo_dependencies::main()
     return
 }
 
-fn core::ops::function::FnOnce::call_once<Self, Args>(@1: Self, @2: Args) -> Self::Output
+pub fn core::ops::function::FnOnce::call_once<Self, Args>(@1: Self, @2: Args) -> Self::Output
 
 
 

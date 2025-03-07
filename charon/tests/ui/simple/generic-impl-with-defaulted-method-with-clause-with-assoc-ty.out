@@ -1,6 +1,6 @@
 # Final LLBC before serialization:
 
-trait core::marker::Sized<Self>
+pub trait core::marker::Sized<Self>
 
 trait test_crate::HasType<Self, Self_Type>
 {
@@ -12,7 +12,7 @@ trait test_crate::HasMethod<Self>
     fn method<Clause0_Type, [@TraitClause0]: test_crate::HasType<Self, Clause0_Type>> = test_crate::HasMethod::method<Self, Clause0_Type>[@TraitClause0_0]
 }
 
-enum core::option::Option<T>
+pub enum core::option::Option<T>
   where
       [@TraitClause0]: core::marker::Sized<T>,
  =

@@ -28,13 +28,13 @@ fn test_crate::addr_of()
     return
 }
 
-fn core::f64::{f64}::MIN() -> f64
+pub fn core::f64::{f64}::MIN() -> f64
 
-global core::f64::{f64}::MIN: f64 = core::f64::{f64}::MIN()
+pub global core::f64::{f64}::MIN: f64 = core::f64::{f64}::MIN()
 
-fn core::f32::{f32}::MAX() -> f32
+pub fn core::f32::{f32}::MAX() -> f32
 
-global core::f32::{f32}::MAX: f32 = core::f32::{f32}::MAX()
+pub global core::f32::{f32}::MAX: f32 = core::f32::{f32}::MAX()
 
 fn test_crate::literal_casts()
 {
@@ -210,9 +210,9 @@ fn test_crate::fn_casts()
     return
 }
 
-trait core::marker::Sized<Self>
+pub trait core::marker::Sized<Self>
 
-struct alloc::alloc::Global = {}
+pub struct alloc::alloc::Global = {}
 
 fn test_crate::boxes()
 {
@@ -271,11 +271,11 @@ fn test_crate::STEAL2() -> Array<(), 13 : usize>
 
 global test_crate::STEAL2: Array<(), 13 : usize> = test_crate::STEAL2()
 
-fn core::mem::size_of<T>() -> usize
+pub fn core::mem::size_of<T>() -> usize
 where
     [@TraitClause0]: core::marker::Sized<T>,
 
-fn core::mem::align_of<T>() -> usize
+pub fn core::mem::align_of<T>() -> usize
 where
     [@TraitClause0]: core::marker::Sized<T>,
 

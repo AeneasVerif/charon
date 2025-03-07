@@ -1,12 +1,12 @@
 # Final LLBC before serialization:
 
-trait test_crate::BoolTrait<Self>
+pub trait test_crate::BoolTrait<Self>
 {
     fn get_bool<'_0> = test_crate::BoolTrait::get_bool<'_0_0, Self>
     fn ret_true<'_0> = test_crate::BoolTrait::ret_true<'_0_0, Self>
 }
 
-fn test_crate::{impl test_crate::BoolTrait for bool}::get_bool<'_0>(@1: &'_0 (bool)) -> bool
+pub fn test_crate::{impl test_crate::BoolTrait for bool}::get_bool<'_0>(@1: &'_0 (bool)) -> bool
 {
     let @0: bool; // return
     let self@1: &'_ (bool); // arg #1
@@ -15,7 +15,7 @@ fn test_crate::{impl test_crate::BoolTrait for bool}::get_bool<'_0>(@1: &'_0 (bo
     return
 }
 
-fn test_crate::{impl test_crate::BoolTrait for bool}::ret_true<'_0>(@1: &'_0 (bool)) -> bool
+pub fn test_crate::{impl test_crate::BoolTrait for bool}::ret_true<'_0>(@1: &'_0 (bool)) -> bool
 {
     let @0: bool; // return
     let self@1: &'_ (bool); // arg #1
@@ -30,9 +30,9 @@ impl test_crate::{impl test_crate::BoolTrait for bool} : test_crate::BoolTrait<b
     fn ret_true<'_0> = test_crate::{impl test_crate::BoolTrait for bool}::ret_true<'_0_0>
 }
 
-trait core::marker::Sized<Self>
+pub trait core::marker::Sized<Self>
 
-fn test_crate::test_bool_trait<T>(@1: bool) -> bool
+pub fn test_crate::test_bool_trait<T>(@1: bool) -> bool
 where
     [@TraitClause0]: core::marker::Sized<T>,
 {
@@ -86,9 +86,9 @@ global test_crate::C: u32 = test_crate::C()
 
 type test_crate::Test2 = u32
 
-fn test_crate::BoolTrait::get_bool<'_0, Self>(@1: &'_0 (Self)) -> bool
+pub fn test_crate::BoolTrait::get_bool<'_0, Self>(@1: &'_0 (Self)) -> bool
 
-fn test_crate::BoolTrait::ret_true<'_0, Self>(@1: &'_0 (Self)) -> bool
+pub fn test_crate::BoolTrait::ret_true<'_0, Self>(@1: &'_0 (Self)) -> bool
 {
     let @0: bool; // return
     let self@1: &'_ (Self); // arg #1

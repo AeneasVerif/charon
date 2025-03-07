@@ -1,14 +1,14 @@
 # Final LLBC before serialization:
 
-trait core::marker::Sized<Self>
+pub trait core::marker::Sized<Self>
 
-trait core::clone::Clone<Self>
+pub trait core::clone::Clone<Self>
 {
     parent_clause0 : [@TraitClause0]: core::marker::Sized<Self>
     fn clone<'_0> = core::clone::Clone::clone<'_0_0, Self>
 }
 
-trait core::cmp::PartialEq<Self, Rhs>
+pub trait core::cmp::PartialEq<Self, Rhs>
 {
     fn eq<'_0, '_1> = core::cmp::PartialEq::eq<'_0_0, '_0_1, Self, Rhs>
 }
@@ -29,7 +29,7 @@ struct test_crate::Override<T>
   T,
 }
 
-enum core::option::Option<T>
+pub enum core::option::Option<T>
   where
       [@TraitClause0]: core::marker::Sized<T>,
  =
@@ -37,12 +37,12 @@ enum core::option::Option<T>
 |  Some(T)
 
 
-trait core::marker::Copy<Self>
+pub trait core::marker::Copy<Self>
 {
     parent_clause0 : [@TraitClause0]: core::clone::Clone<Self>
 }
 
-fn core::option::{impl core::clone::Clone for core::option::Option<T>[@TraitClause0]}#5::clone<'_0, T>(@1: &'_0 (core::option::Option<T>[@TraitClause0])) -> core::option::Option<T>[@TraitClause0]
+pub fn core::option::{impl core::clone::Clone for core::option::Option<T>[@TraitClause0]}#5::clone<'_0, T>(@1: &'_0 (core::option::Option<T>[@TraitClause0])) -> core::option::Option<T>[@TraitClause0]
 where
     [@TraitClause0]: core::marker::Sized<T>,
     [@TraitClause1]: core::clone::Clone<T>,
@@ -68,7 +68,7 @@ where
     return
 }
 
-fn core::cmp::PartialEq::eq<'_0, '_1, Self, Rhs>(@1: &'_0 (Self), @2: &'_1 (Rhs)) -> bool
+pub fn core::cmp::PartialEq::eq<'_0, '_1, Self, Rhs>(@1: &'_0 (Self), @2: &'_1 (Rhs)) -> bool
 
 fn test_crate::{impl test_crate::GenericTrait<core::option::Option<T>[@TraitClause0]> for test_crate::Override<T>[@TraitClause0]}::provided<T, U>(@1: core::option::Option<T>[@TraitClause0], @2: U)
 where
@@ -213,7 +213,7 @@ where
     return
 }
 
-fn core::clone::Clone::clone<'_0, Self>(@1: &'_0 (Self)) -> Self
+pub fn core::clone::Clone::clone<'_0, Self>(@1: &'_0 (Self)) -> Self
 
 
 

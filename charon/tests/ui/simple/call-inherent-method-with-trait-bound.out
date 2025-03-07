@@ -1,8 +1,8 @@
 # Final LLBC before serialization:
 
-trait core::marker::Sized<Self>
+pub trait core::marker::Sized<Self>
 
-trait test_crate::Trait<Self, Self_Type>
+pub trait test_crate::Trait<Self, Self_Type>
 {
     parent_clause0 : [@TraitClause0]: core::marker::Sized<Self_Type>
 }
@@ -12,7 +12,7 @@ impl test_crate::{impl test_crate::Trait<()> for ()} : test_crate::Trait<(), ()>
     parent_clause0 = core::marker::Sized<()>
 }
 
-struct test_crate::HashMap<S>
+pub struct test_crate::HashMap<S>
   where
       [@TraitClause0]: core::marker::Sized<S>,
  =
@@ -20,7 +20,7 @@ struct test_crate::HashMap<S>
   S,
 }
 
-fn test_crate::{test_crate::HashMap<S>[@TraitClause0]}#1::get<S, Q, Clause2_Type>(@1: test_crate::HashMap<S>[@TraitClause0], @2: Q)
+pub fn test_crate::{test_crate::HashMap<S>[@TraitClause0]}#1::get<S, Q, Clause2_Type>(@1: test_crate::HashMap<S>[@TraitClause0], @2: Q)
 where
     [@TraitClause0]: core::marker::Sized<S>,
     [@TraitClause1]: core::marker::Sized<Q>,
@@ -37,7 +37,7 @@ where
     return
 }
 
-fn test_crate::top_level_get<S, Q, Clause2_Type>(@1: test_crate::HashMap<S>[@TraitClause0], @2: Q)
+pub fn test_crate::top_level_get<S, Q, Clause2_Type>(@1: test_crate::HashMap<S>[@TraitClause0], @2: Q)
 where
     [@TraitClause0]: core::marker::Sized<S>,
     [@TraitClause1]: core::marker::Sized<Q>,
@@ -54,7 +54,7 @@ where
     return
 }
 
-fn test_crate::test1(@1: test_crate::HashMap<()>[core::marker::Sized<()>])
+pub fn test_crate::test1(@1: test_crate::HashMap<()>[core::marker::Sized<()>])
 {
     let @0: (); // return
     let map@1: test_crate::HashMap<()>[core::marker::Sized<()>]; // arg #1
@@ -73,7 +73,7 @@ fn test_crate::test1(@1: test_crate::HashMap<()>[core::marker::Sized<()>])
     return
 }
 
-fn test_crate::test2(@1: test_crate::HashMap<()>[core::marker::Sized<()>])
+pub fn test_crate::test2(@1: test_crate::HashMap<()>[core::marker::Sized<()>])
 {
     let @0: (); // return
     let map@1: test_crate::HashMap<()>[core::marker::Sized<()>]; // arg #1

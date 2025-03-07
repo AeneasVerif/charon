@@ -1,8 +1,8 @@
 # Final LLBC before serialization:
 
-trait core::marker::Sized<Self>
+pub trait core::marker::Sized<Self>
 
-trait test_crate::HasOutput<Self, Self_Output>
+pub trait test_crate::HasOutput<Self, Self_Output>
 {
     parent_clause0 : [@TraitClause0]: core::marker::Sized<Self_Output>
 }
@@ -12,7 +12,7 @@ impl test_crate::{impl test_crate::HasOutput<()> for ()} : test_crate::HasOutput
     parent_clause0 = core::marker::Sized<()>
 }
 
-trait test_crate::HasOutput2<Self, Self_Clause0_Output>
+pub trait test_crate::HasOutput2<Self, Self_Clause0_Output>
 {
     parent_clause0 : [@TraitClause0]: test_crate::HasOutput<Self, Self_Clause0_Output>
 }

@@ -1,20 +1,20 @@
 # Final LLBC before serialization:
 
-trait core::marker::Sized<Self>
+pub trait core::marker::Sized<Self>
 
-trait test_crate::FromResidual<Self, R>
+pub trait test_crate::FromResidual<Self, R>
 {
     parent_clause0 : [@TraitClause0]: core::marker::Sized<R>
 }
 
-trait test_crate::Try<Self>
+pub trait test_crate::Try<Self>
 {
     parent_clause0 : [@TraitClause0]: test_crate::FromResidual<Self, ()>
     parent_clause1 : [@TraitClause1]: core::marker::Sized<Self::Residual>
     type Residual
 }
 
-enum core::option::Option<T>
+pub enum core::option::Option<T>
   where
       [@TraitClause0]: core::marker::Sized<T>,
  =

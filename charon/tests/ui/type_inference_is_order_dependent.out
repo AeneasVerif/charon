@@ -1,6 +1,6 @@
 # Final LLBC before serialization:
 
-trait core::marker::Sized<Self>
+pub trait core::marker::Sized<Self>
 
 trait test_crate::Left<Self, T>
 {
@@ -18,17 +18,17 @@ trait test_crate::Join<Self, U>
     fn test = test_crate::Join::test<Self, U>
 }
 
-trait core::default::Default<Self>
+pub trait core::default::Default<Self>
 {
     parent_clause0 : [@TraitClause0]: core::marker::Sized<Self>
     fn default = core::default::Default::default<Self>
 }
 
-opaque type core::fmt::Formatter<'a>
+pub opaque type core::fmt::Formatter<'a>
   where
       'a : 'a,
 
-enum core::result::Result<T, E>
+pub enum core::result::Result<T, E>
   where
       [@TraitClause0]: core::marker::Sized<T>,
       [@TraitClause1]: core::marker::Sized<E>,
@@ -37,29 +37,29 @@ enum core::result::Result<T, E>
 |  Err(E)
 
 
-struct core::fmt::Error = {}
+pub struct core::fmt::Error = {}
 
-trait core::fmt::Debug<Self>
+pub trait core::fmt::Debug<Self>
 {
     fn fmt<'_0, '_1, '_2> = core::fmt::Debug::fmt<'_0_0, '_0_1, '_0_2, Self>
 }
 
-opaque type core::fmt::Arguments<'a>
+pub opaque type core::fmt::Arguments<'a>
   where
       'a : 'a,
 
-opaque type core::fmt::rt::Argument<'a>
+pub opaque type core::fmt::rt::Argument<'a>
 
-fn core::default::Default::default<Self>() -> Self
+pub fn core::default::Default::default<Self>() -> Self
 
-fn core::fmt::rt::{core::fmt::rt::Argument<'_0>}#1::new_debug<'_0, '_1, T>(@1: &'_1 (T)) -> core::fmt::rt::Argument<'_1>
+pub fn core::fmt::rt::{core::fmt::rt::Argument<'_0>}#1::new_debug<'_0, '_1, T>(@1: &'_1 (T)) -> core::fmt::rt::Argument<'_1>
 where
     [@TraitClause0]: core::marker::Sized<T>,
     [@TraitClause1]: core::fmt::Debug<T>,
 
-fn core::fmt::{core::fmt::Arguments<'a>}#2::new_v1<'a, const P : usize, const A : usize>(@1: &'a (Array<&'static (Str), const P : usize>), @2: &'a (Array<core::fmt::rt::Argument<'a>, const A : usize>)) -> core::fmt::Arguments<'a>
+pub fn core::fmt::{core::fmt::Arguments<'a>}#2::new_v1<'a, const P : usize, const A : usize>(@1: &'a (Array<&'static (Str), const P : usize>), @2: &'a (Array<core::fmt::rt::Argument<'a>, const A : usize>)) -> core::fmt::Arguments<'a>
 
-fn std::io::stdio::_print<'_0>(@1: core::fmt::Arguments<'_0>)
+pub fn std::io::stdio::_print<'_0>(@1: core::fmt::Arguments<'_0>)
 
 fn test_crate::{impl test_crate::Join<U> for T}::test<T, U>()
 where
@@ -148,7 +148,7 @@ where
     parent_clause0 = @TraitClause1
 }
 
-fn core::default::{impl core::default::Default for bool}#1::default() -> bool
+pub fn core::default::{impl core::default::Default for bool}#1::default() -> bool
 
 impl core::default::{impl core::default::Default for bool}#1 : core::default::Default<bool>
 {
@@ -156,7 +156,7 @@ impl core::default::{impl core::default::Default for bool}#1 : core::default::De
     fn default = core::default::{impl core::default::Default for bool}#1::default
 }
 
-fn core::fmt::{impl core::fmt::Debug for bool}#14::fmt<'_0, '_1, '_2>(@1: &'_0 (bool), @2: &'_1 mut (core::fmt::Formatter<'_2>)) -> core::result::Result<(), core::fmt::Error>[core::marker::Sized<()>, core::marker::Sized<core::fmt::Error>]
+pub fn core::fmt::{impl core::fmt::Debug for bool}#14::fmt<'_0, '_1, '_2>(@1: &'_0 (bool), @2: &'_1 mut (core::fmt::Formatter<'_2>)) -> core::result::Result<(), core::fmt::Error>[core::marker::Sized<()>, core::marker::Sized<core::fmt::Error>]
 
 impl core::fmt::{impl core::fmt::Debug for bool}#14 : core::fmt::Debug<bool>
 {
@@ -180,7 +180,7 @@ where
 
 fn test_crate::Join::test<Self, U>()
 
-fn core::fmt::Debug::fmt<'_0, '_1, '_2, Self>(@1: &'_0 (Self), @2: &'_1 mut (core::fmt::Formatter<'_2>)) -> core::result::Result<(), core::fmt::Error>[core::marker::Sized<()>, core::marker::Sized<core::fmt::Error>]
+pub fn core::fmt::Debug::fmt<'_0, '_1, '_2, Self>(@1: &'_0 (Self), @2: &'_1 mut (core::fmt::Formatter<'_2>)) -> core::result::Result<(), core::fmt::Error>[core::marker::Sized<()>, core::marker::Sized<core::fmt::Error>]
 
 
 

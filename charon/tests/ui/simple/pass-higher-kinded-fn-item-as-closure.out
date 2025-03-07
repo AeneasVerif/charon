@@ -1,6 +1,6 @@
 # Final LLBC before serialization:
 
-fn test_crate::flabada<'a>(@1: &'a (())) -> &'a (())
+pub fn test_crate::flabada<'a>(@1: &'a (())) -> &'a (())
 {
     let @0: &'_ (()); // return
     let x@1: &'_ (()); // arg #1
@@ -9,11 +9,11 @@ fn test_crate::flabada<'a>(@1: &'a (())) -> &'a (())
     return
 }
 
-trait core::marker::Sized<Self>
+pub trait core::marker::Sized<Self>
 
-trait core::marker::Tuple<Self>
+pub trait core::marker::Tuple<Self>
 
-trait core::ops::function::FnOnce<Self, Args, Self_Output>
+pub trait core::ops::function::FnOnce<Self, Args, Self_Output>
 {
     parent_clause0 : [@TraitClause0]: core::marker::Sized<Args>
     parent_clause1 : [@TraitClause1]: core::marker::Tuple<Args>
@@ -21,7 +21,7 @@ trait core::ops::function::FnOnce<Self, Args, Self_Output>
     fn call_once = core::ops::function::FnOnce::call_once<Self, Args, Self_Output>
 }
 
-trait core::ops::function::FnMut<Self, Args, Self_Clause0_Output>
+pub trait core::ops::function::FnMut<Self, Args, Self_Clause0_Output>
 {
     parent_clause0 : [@TraitClause0]: core::ops::function::FnOnce<Self, Args, Self_Clause0_Output>
     parent_clause1 : [@TraitClause1]: core::marker::Sized<Args>
@@ -29,7 +29,7 @@ trait core::ops::function::FnMut<Self, Args, Self_Clause0_Output>
     fn call_mut<'_0> = core::ops::function::FnMut::call_mut<'_0_0, Self, Args, Self_Clause0_Output>
 }
 
-trait core::ops::function::Fn<Self, Args, Self_Clause0_Clause0_Output>
+pub trait core::ops::function::Fn<Self, Args, Self_Clause0_Clause0_Output>
 {
     parent_clause0 : [@TraitClause0]: core::ops::function::FnMut<Self, Args, Self_Clause0_Clause0_Output>
     parent_clause1 : [@TraitClause1]: core::marker::Sized<Args>
@@ -37,7 +37,7 @@ trait core::ops::function::Fn<Self, Args, Self_Clause0_Clause0_Output>
     fn call<'_0> = core::ops::function::Fn::call<'_0_0, Self, Args, Self_Clause0_Clause0_Output>
 }
 
-fn test_crate::call<'b, F>(@1: F)
+pub fn test_crate::call<'b, F>(@1: F)
 where
     [@TraitClause0]: core::marker::Sized<F>,
     [@TraitClause1]: core::ops::function::Fn<F, (&'b (())), &'b (())>,
@@ -51,7 +51,7 @@ where
     return
 }
 
-fn test_crate::flibidi()
+pub fn test_crate::flibidi()
 {
     let @0: (); // return
     let @1: (); // anonymous local
@@ -63,11 +63,11 @@ fn test_crate::flibidi()
     return
 }
 
-fn core::ops::function::Fn::call<'_0, Self, Args, Self_Clause0_Clause0_Output>(@1: &'_0 (Self), @2: Args) -> Self_Clause0_Clause0_Output
+pub fn core::ops::function::Fn::call<'_0, Self, Args, Self_Clause0_Clause0_Output>(@1: &'_0 (Self), @2: Args) -> Self_Clause0_Clause0_Output
 
-fn core::ops::function::FnMut::call_mut<'_0, Self, Args, Self_Clause0_Output>(@1: &'_0 mut (Self), @2: Args) -> Self_Clause0_Output
+pub fn core::ops::function::FnMut::call_mut<'_0, Self, Args, Self_Clause0_Output>(@1: &'_0 mut (Self), @2: Args) -> Self_Clause0_Output
 
-fn core::ops::function::FnOnce::call_once<Self, Args, Self_Output>(@1: Self, @2: Args) -> Self_Output
+pub fn core::ops::function::FnOnce::call_once<Self, Args, Self_Output>(@1: Self, @2: Args) -> Self_Output
 
 
 

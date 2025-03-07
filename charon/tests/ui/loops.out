@@ -1,6 +1,6 @@
 # Final LLBC before serialization:
 
-fn test_crate::test_loop1(@1: u32) -> u32
+pub fn test_crate::test_loop1(@1: u32) -> u32
 {
     let @0: u32; // return
     let max@1: u32; // arg #1
@@ -47,7 +47,7 @@ fn test_crate::test_loop1(@1: u32) -> u32
     return
 }
 
-fn test_crate::test_loop2(@1: u32) -> u32
+pub fn test_crate::test_loop2(@1: u32) -> u32
 {
     let @0: u32; // return
     let max@1: u32; // arg #1
@@ -109,7 +109,7 @@ fn test_crate::test_loop2(@1: u32) -> u32
     return
 }
 
-fn test_crate::test_loop3(@1: u32) -> u32
+pub fn test_crate::test_loop3(@1: u32) -> u32
 {
     let @0: u32; // return
     let max@1: u32; // arg #1
@@ -214,7 +214,7 @@ fn test_crate::test_loop3(@1: u32) -> u32
     return
 }
 
-fn test_crate::test_loop4(@1: u32) -> u32
+pub fn test_crate::test_loop4(@1: u32) -> u32
 {
     let @0: u32; // return
     let max@1: u32; // arg #1
@@ -318,7 +318,7 @@ fn test_crate::test_loop4(@1: u32) -> u32
     return
 }
 
-fn test_crate::test_loop5(@1: u32) -> u32
+pub fn test_crate::test_loop5(@1: u32) -> u32
 {
     let @0: u32; // return
     let max@1: u32; // arg #1
@@ -397,7 +397,7 @@ fn test_crate::test_loop5(@1: u32) -> u32
     return
 }
 
-fn test_crate::test_loop6(@1: u32) -> u32
+pub fn test_crate::test_loop6(@1: u32) -> u32
 {
     let @0: u32; // return
     let max@1: u32; // arg #1
@@ -461,7 +461,7 @@ fn test_crate::test_loop6(@1: u32) -> u32
     return
 }
 
-fn test_crate::test_loop7(@1: u32) -> u32
+pub fn test_crate::test_loop7(@1: u32) -> u32
 {
     let @0: u32; // return
     let max@1: u32; // arg #1
@@ -540,7 +540,7 @@ fn test_crate::test_loop7(@1: u32) -> u32
     return
 }
 
-fn test_crate::test_loops()
+pub fn test_crate::test_loops()
 {
     let @0: (); // return
     let x@1: u32; // local
@@ -657,9 +657,9 @@ fn test_crate::test_loops()
     return
 }
 
-trait core::marker::Sized<Self>
+pub trait core::marker::Sized<Self>
 
-struct core::ops::range::Range<Idx>
+pub struct core::ops::range::Range<Idx>
   where
       [@TraitClause0]: core::marker::Sized<Idx>,
  =
@@ -668,7 +668,7 @@ struct core::ops::range::Range<Idx>
   end: Idx,
 }
 
-enum core::option::Option<T>
+pub enum core::option::Option<T>
   where
       [@TraitClause0]: core::marker::Sized<T>,
  =
@@ -676,42 +676,42 @@ enum core::option::Option<T>
 |  Some(T)
 
 
-trait core::iter::traits::iterator::Iterator<Self>
+pub trait core::iter::traits::iterator::Iterator<Self>
 {
     parent_clause0 : [@TraitClause0]: core::marker::Sized<Self::Item>
     type Item
     fn next<'_0> = core::iter::traits::iterator::Iterator::next<'_0_0, Self>
 }
 
-fn core::iter::traits::collect::{impl core::iter::traits::collect::IntoIterator for I}#1::into_iter<I>(@1: I) -> I
+pub fn core::iter::traits::collect::{impl core::iter::traits::collect::IntoIterator for I}#1::into_iter<I>(@1: I) -> I
 where
     [@TraitClause0]: core::marker::Sized<I>,
     [@TraitClause1]: core::iter::traits::iterator::Iterator<I>,
 
-trait core::clone::Clone<Self>
+pub trait core::clone::Clone<Self>
 {
     parent_clause0 : [@TraitClause0]: core::marker::Sized<Self>
     fn clone<'_0> = core::clone::Clone::clone<'_0_0, Self>
 }
 
-trait core::cmp::PartialEq<Self, Rhs>
+pub trait core::cmp::PartialEq<Self, Rhs>
 {
     fn eq<'_0, '_1> = core::cmp::PartialEq::eq<'_0_0, '_0_1, Self, Rhs>
 }
 
-enum core::cmp::Ordering =
+pub enum core::cmp::Ordering =
 |  Less()
 |  Equal()
 |  Greater()
 
 
-trait core::cmp::PartialOrd<Self, Rhs>
+pub trait core::cmp::PartialOrd<Self, Rhs>
 {
     parent_clause0 : [@TraitClause0]: core::cmp::PartialEq<Self, Rhs>
     fn partial_cmp<'_0, '_1> = core::cmp::PartialOrd::partial_cmp<'_0_0, '_0_1, Self, Rhs>
 }
 
-trait core::iter::range::Step<Self>
+pub trait core::iter::range::Step<Self>
 {
     parent_clause0 : [@TraitClause0]: core::marker::Sized<Self>
     parent_clause1 : [@TraitClause1]: core::clone::Clone<Self>
@@ -721,7 +721,7 @@ trait core::iter::range::Step<Self>
     fn backward_checked = core::iter::range::Step::backward_checked<Self>
 }
 
-fn core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>[@TraitClause0]}#6::next<'_0, A>(@1: &'_0 mut (core::ops::range::Range<A>[@TraitClause0])) -> core::option::Option<A>[@TraitClause0]
+pub fn core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>[@TraitClause0]}#6::next<'_0, A>(@1: &'_0 mut (core::ops::range::Range<A>[@TraitClause0])) -> core::option::Option<A>[@TraitClause0]
 where
     [@TraitClause0]: core::marker::Sized<A>,
     [@TraitClause1]: core::iter::range::Step<A>,
@@ -736,7 +736,7 @@ where
     fn next<'_0> = core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>[@TraitClause0]}#6::next<'_0_0, A>[@TraitClause0, @TraitClause1]
 }
 
-fn core::clone::impls::{impl core::clone::Clone for i32}#14::clone<'_0>(@1: &'_0 (i32)) -> i32
+pub fn core::clone::impls::{impl core::clone::Clone for i32}#14::clone<'_0>(@1: &'_0 (i32)) -> i32
 
 impl core::clone::impls::{impl core::clone::Clone for i32}#14 : core::clone::Clone<i32>
 {
@@ -744,14 +744,14 @@ impl core::clone::impls::{impl core::clone::Clone for i32}#14 : core::clone::Clo
     fn clone<'_0> = core::clone::impls::{impl core::clone::Clone for i32}#14::clone<'_0_0>
 }
 
-fn core::cmp::impls::{impl core::cmp::PartialEq<i32> for i32}#30::eq<'_0, '_1>(@1: &'_0 (i32), @2: &'_1 (i32)) -> bool
+pub fn core::cmp::impls::{impl core::cmp::PartialEq<i32> for i32}#30::eq<'_0, '_1>(@1: &'_0 (i32), @2: &'_1 (i32)) -> bool
 
 impl core::cmp::impls::{impl core::cmp::PartialEq<i32> for i32}#30 : core::cmp::PartialEq<i32, i32>
 {
     fn eq<'_0, '_1> = core::cmp::impls::{impl core::cmp::PartialEq<i32> for i32}#30::eq<'_0_0, '_0_1>
 }
 
-fn core::cmp::impls::{impl core::cmp::PartialOrd<i32> for i32}#76::partial_cmp<'_0, '_1>(@1: &'_0 (i32), @2: &'_1 (i32)) -> core::option::Option<core::cmp::Ordering>[core::marker::Sized<core::cmp::Ordering>]
+pub fn core::cmp::impls::{impl core::cmp::PartialOrd<i32> for i32}#76::partial_cmp<'_0, '_1>(@1: &'_0 (i32), @2: &'_1 (i32)) -> core::option::Option<core::cmp::Ordering>[core::marker::Sized<core::cmp::Ordering>]
 
 impl core::cmp::impls::{impl core::cmp::PartialOrd<i32> for i32}#76 : core::cmp::PartialOrd<i32, i32>
 {
@@ -759,11 +759,11 @@ impl core::cmp::impls::{impl core::cmp::PartialOrd<i32> for i32}#76 : core::cmp:
     fn partial_cmp<'_0, '_1> = core::cmp::impls::{impl core::cmp::PartialOrd<i32> for i32}#76::partial_cmp<'_0_0, '_0_1>
 }
 
-fn core::iter::range::{impl core::iter::range::Step for i32}#40::steps_between<'_0, '_1>(@1: &'_0 (i32), @2: &'_1 (i32)) -> core::option::Option<usize>[core::marker::Sized<usize>]
+pub fn core::iter::range::{impl core::iter::range::Step for i32}#40::steps_between<'_0, '_1>(@1: &'_0 (i32), @2: &'_1 (i32)) -> core::option::Option<usize>[core::marker::Sized<usize>]
 
-fn core::iter::range::{impl core::iter::range::Step for i32}#40::forward_checked(@1: i32, @2: usize) -> core::option::Option<i32>[core::marker::Sized<i32>]
+pub fn core::iter::range::{impl core::iter::range::Step for i32}#40::forward_checked(@1: i32, @2: usize) -> core::option::Option<i32>[core::marker::Sized<i32>]
 
-fn core::iter::range::{impl core::iter::range::Step for i32}#40::backward_checked(@1: i32, @2: usize) -> core::option::Option<i32>[core::marker::Sized<i32>]
+pub fn core::iter::range::{impl core::iter::range::Step for i32}#40::backward_checked(@1: i32, @2: usize) -> core::option::Option<i32>[core::marker::Sized<i32>]
 
 impl core::iter::range::{impl core::iter::range::Step for i32}#40 : core::iter::range::Step<i32>
 {
@@ -775,7 +775,7 @@ impl core::iter::range::{impl core::iter::range::Step for i32}#40 : core::iter::
     fn backward_checked = core::iter::range::{impl core::iter::range::Step for i32}#40::backward_checked
 }
 
-fn core::clone::impls::{impl core::clone::Clone for usize}#5::clone<'_0>(@1: &'_0 (usize)) -> usize
+pub fn core::clone::impls::{impl core::clone::Clone for usize}#5::clone<'_0>(@1: &'_0 (usize)) -> usize
 
 impl core::clone::impls::{impl core::clone::Clone for usize}#5 : core::clone::Clone<usize>
 {
@@ -783,14 +783,14 @@ impl core::clone::impls::{impl core::clone::Clone for usize}#5 : core::clone::Cl
     fn clone<'_0> = core::clone::impls::{impl core::clone::Clone for usize}#5::clone<'_0_0>
 }
 
-fn core::cmp::impls::{impl core::cmp::PartialEq<usize> for usize}#21::eq<'_0, '_1>(@1: &'_0 (usize), @2: &'_1 (usize)) -> bool
+pub fn core::cmp::impls::{impl core::cmp::PartialEq<usize> for usize}#21::eq<'_0, '_1>(@1: &'_0 (usize), @2: &'_1 (usize)) -> bool
 
 impl core::cmp::impls::{impl core::cmp::PartialEq<usize> for usize}#21 : core::cmp::PartialEq<usize, usize>
 {
     fn eq<'_0, '_1> = core::cmp::impls::{impl core::cmp::PartialEq<usize> for usize}#21::eq<'_0_0, '_0_1>
 }
 
-fn core::cmp::impls::{impl core::cmp::PartialOrd<usize> for usize}#58::partial_cmp<'_0, '_1>(@1: &'_0 (usize), @2: &'_1 (usize)) -> core::option::Option<core::cmp::Ordering>[core::marker::Sized<core::cmp::Ordering>]
+pub fn core::cmp::impls::{impl core::cmp::PartialOrd<usize> for usize}#58::partial_cmp<'_0, '_1>(@1: &'_0 (usize), @2: &'_1 (usize)) -> core::option::Option<core::cmp::Ordering>[core::marker::Sized<core::cmp::Ordering>]
 
 impl core::cmp::impls::{impl core::cmp::PartialOrd<usize> for usize}#58 : core::cmp::PartialOrd<usize, usize>
 {
@@ -798,11 +798,11 @@ impl core::cmp::impls::{impl core::cmp::PartialOrd<usize> for usize}#58 : core::
     fn partial_cmp<'_0, '_1> = core::cmp::impls::{impl core::cmp::PartialOrd<usize> for usize}#58::partial_cmp<'_0_0, '_0_1>
 }
 
-fn core::iter::range::{impl core::iter::range::Step for usize}#43::steps_between<'_0, '_1>(@1: &'_0 (usize), @2: &'_1 (usize)) -> core::option::Option<usize>[core::marker::Sized<usize>]
+pub fn core::iter::range::{impl core::iter::range::Step for usize}#43::steps_between<'_0, '_1>(@1: &'_0 (usize), @2: &'_1 (usize)) -> core::option::Option<usize>[core::marker::Sized<usize>]
 
-fn core::iter::range::{impl core::iter::range::Step for usize}#43::forward_checked(@1: usize, @2: usize) -> core::option::Option<usize>[core::marker::Sized<usize>]
+pub fn core::iter::range::{impl core::iter::range::Step for usize}#43::forward_checked(@1: usize, @2: usize) -> core::option::Option<usize>[core::marker::Sized<usize>]
 
-fn core::iter::range::{impl core::iter::range::Step for usize}#43::backward_checked(@1: usize, @2: usize) -> core::option::Option<usize>[core::marker::Sized<usize>]
+pub fn core::iter::range::{impl core::iter::range::Step for usize}#43::backward_checked(@1: usize, @2: usize) -> core::option::Option<usize>[core::marker::Sized<usize>]
 
 impl core::iter::range::{impl core::iter::range::Step for usize}#43 : core::iter::range::Step<usize>
 {
@@ -814,7 +814,7 @@ impl core::iter::range::{impl core::iter::range::Step for usize}#43 : core::iter
     fn backward_checked = core::iter::range::{impl core::iter::range::Step for usize}#43::backward_checked
 }
 
-fn test_crate::nested_loops_enum(@1: usize, @2: usize) -> usize
+pub fn test_crate::nested_loops_enum(@1: usize, @2: usize) -> usize
 {
     let @0: usize; // return
     let step_out@1: usize; // arg #1
@@ -945,7 +945,7 @@ fn test_crate::nested_loops_enum(@1: usize, @2: usize) -> usize
     return
 }
 
-fn core::clone::impls::{impl core::clone::Clone for u32}#8::clone<'_0>(@1: &'_0 (u32)) -> u32
+pub fn core::clone::impls::{impl core::clone::Clone for u32}#8::clone<'_0>(@1: &'_0 (u32)) -> u32
 
 impl core::clone::impls::{impl core::clone::Clone for u32}#8 : core::clone::Clone<u32>
 {
@@ -953,14 +953,14 @@ impl core::clone::impls::{impl core::clone::Clone for u32}#8 : core::clone::Clon
     fn clone<'_0> = core::clone::impls::{impl core::clone::Clone for u32}#8::clone<'_0_0>
 }
 
-fn core::cmp::impls::{impl core::cmp::PartialEq<u32> for u32}#24::eq<'_0, '_1>(@1: &'_0 (u32), @2: &'_1 (u32)) -> bool
+pub fn core::cmp::impls::{impl core::cmp::PartialEq<u32> for u32}#24::eq<'_0, '_1>(@1: &'_0 (u32), @2: &'_1 (u32)) -> bool
 
 impl core::cmp::impls::{impl core::cmp::PartialEq<u32> for u32}#24 : core::cmp::PartialEq<u32, u32>
 {
     fn eq<'_0, '_1> = core::cmp::impls::{impl core::cmp::PartialEq<u32> for u32}#24::eq<'_0_0, '_0_1>
 }
 
-fn core::cmp::impls::{impl core::cmp::PartialOrd<u32> for u32}#64::partial_cmp<'_0, '_1>(@1: &'_0 (u32), @2: &'_1 (u32)) -> core::option::Option<core::cmp::Ordering>[core::marker::Sized<core::cmp::Ordering>]
+pub fn core::cmp::impls::{impl core::cmp::PartialOrd<u32> for u32}#64::partial_cmp<'_0, '_1>(@1: &'_0 (u32), @2: &'_1 (u32)) -> core::option::Option<core::cmp::Ordering>[core::marker::Sized<core::cmp::Ordering>]
 
 impl core::cmp::impls::{impl core::cmp::PartialOrd<u32> for u32}#64 : core::cmp::PartialOrd<u32, u32>
 {
@@ -968,11 +968,11 @@ impl core::cmp::impls::{impl core::cmp::PartialOrd<u32> for u32}#64 : core::cmp:
     fn partial_cmp<'_0, '_1> = core::cmp::impls::{impl core::cmp::PartialOrd<u32> for u32}#64::partial_cmp<'_0_0, '_0_1>
 }
 
-fn core::iter::range::{impl core::iter::range::Step for u32}#39::steps_between<'_0, '_1>(@1: &'_0 (u32), @2: &'_1 (u32)) -> core::option::Option<usize>[core::marker::Sized<usize>]
+pub fn core::iter::range::{impl core::iter::range::Step for u32}#39::steps_between<'_0, '_1>(@1: &'_0 (u32), @2: &'_1 (u32)) -> core::option::Option<usize>[core::marker::Sized<usize>]
 
-fn core::iter::range::{impl core::iter::range::Step for u32}#39::forward_checked(@1: u32, @2: usize) -> core::option::Option<u32>[core::marker::Sized<u32>]
+pub fn core::iter::range::{impl core::iter::range::Step for u32}#39::forward_checked(@1: u32, @2: usize) -> core::option::Option<u32>[core::marker::Sized<u32>]
 
-fn core::iter::range::{impl core::iter::range::Step for u32}#39::backward_checked(@1: u32, @2: usize) -> core::option::Option<u32>[core::marker::Sized<u32>]
+pub fn core::iter::range::{impl core::iter::range::Step for u32}#39::backward_checked(@1: u32, @2: usize) -> core::option::Option<u32>[core::marker::Sized<u32>]
 
 impl core::iter::range::{impl core::iter::range::Step for u32}#39 : core::iter::range::Step<u32>
 {
@@ -984,7 +984,7 @@ impl core::iter::range::{impl core::iter::range::Step for u32}#39 : core::iter::
     fn backward_checked = core::iter::range::{impl core::iter::range::Step for u32}#39::backward_checked
 }
 
-fn test_crate::loop_inside_if(@1: bool, @2: u32) -> u32
+pub fn test_crate::loop_inside_if(@1: bool, @2: u32) -> u32
 {
     let @0: u32; // return
     let b@1: bool; // arg #1
@@ -1053,7 +1053,7 @@ fn test_crate::loop_inside_if(@1: bool, @2: u32) -> u32
     return
 }
 
-fn test_crate::sum(@1: u32) -> u32
+pub fn test_crate::sum(@1: u32) -> u32
 {
     let @0: u32; // return
     let max@1: u32; // arg #1
@@ -1100,7 +1100,7 @@ fn test_crate::sum(@1: u32) -> u32
     return
 }
 
-fn test_crate::sum_array<const N : usize>(@1: Array<u32, const N : usize>) -> u32
+pub fn test_crate::sum_array<const N : usize>(@1: Array<u32, const N : usize>) -> u32
 {
     let @0: u32; // return
     let a@1: Array<u32, const N : usize>; // arg #1
@@ -1149,21 +1149,21 @@ fn test_crate::sum_array<const N : usize>(@1: Array<u32, const N : usize>) -> u3
     return
 }
 
-opaque type alloc::vec::Vec<T, A>
+pub opaque type alloc::vec::Vec<T, A>
   where
       [@TraitClause0]: core::marker::Sized<T>,
       [@TraitClause1]: core::marker::Sized<A>,
 
-struct alloc::alloc::Global = {}
+pub struct alloc::alloc::Global = {}
 
-fn alloc::vec::{alloc::vec::Vec<T, A>[@TraitClause0, @TraitClause1]}#1::len<'_0, T, A>(@1: &'_0 (alloc::vec::Vec<T, A>[@TraitClause0, @TraitClause1])) -> usize
+pub fn alloc::vec::{alloc::vec::Vec<T, A>[@TraitClause0, @TraitClause1]}#1::len<'_0, T, A>(@1: &'_0 (alloc::vec::Vec<T, A>[@TraitClause0, @TraitClause1])) -> usize
 where
     [@TraitClause0]: core::marker::Sized<T>,
     [@TraitClause1]: core::marker::Sized<A>,
 
-trait core::slice::index::private_slice_index::Sealed<Self>
+pub trait core::slice::index::private_slice_index::Sealed<Self>
 
-trait core::slice::index::SliceIndex<Self, T>
+pub trait core::slice::index::SliceIndex<Self, T>
 {
     parent_clause0 : [@TraitClause0]: core::slice::index::private_slice_index::Sealed<Self>
     type Output
@@ -1175,7 +1175,7 @@ trait core::slice::index::SliceIndex<Self, T>
     fn index_mut<'_0> = core::slice::index::SliceIndex::index_mut<'_0_0, Self, T>
 }
 
-fn alloc::vec::{impl core::ops::index::IndexMut<I> for alloc::vec::Vec<T, A>[@TraitClause0, @TraitClause2]}#14::index_mut<'_0, T, I, A>(@1: &'_0 mut (alloc::vec::Vec<T, A>[@TraitClause0, @TraitClause2]), @2: I) -> &'_0 mut (@TraitClause3::Output)
+pub fn alloc::vec::{impl core::ops::index::IndexMut<I> for alloc::vec::Vec<T, A>[@TraitClause0, @TraitClause2]}#14::index_mut<'_0, T, I, A>(@1: &'_0 mut (alloc::vec::Vec<T, A>[@TraitClause0, @TraitClause2]), @2: I) -> &'_0 mut (@TraitClause3::Output)
 where
     [@TraitClause0]: core::marker::Sized<T>,
     [@TraitClause1]: core::marker::Sized<I>,
@@ -1184,27 +1184,27 @@ where
 
 impl core::slice::index::private_slice_index::{impl core::slice::index::private_slice_index::Sealed for usize} : core::slice::index::private_slice_index::Sealed<usize>
 
-fn core::slice::index::{impl core::slice::index::SliceIndex<Slice<T>> for usize}#2::get<'_0, T>(@1: usize, @2: &'_0 (Slice<T>)) -> core::option::Option<&'_0 (T)>[core::marker::Sized<&'_0 (T)>]
+pub fn core::slice::index::{impl core::slice::index::SliceIndex<Slice<T>> for usize}#2::get<'_0, T>(@1: usize, @2: &'_0 (Slice<T>)) -> core::option::Option<&'_0 (T)>[core::marker::Sized<&'_0 (T)>]
 where
     [@TraitClause0]: core::marker::Sized<T>,
 
-fn core::slice::index::{impl core::slice::index::SliceIndex<Slice<T>> for usize}#2::get_mut<'_0, T>(@1: usize, @2: &'_0 mut (Slice<T>)) -> core::option::Option<&'_0 mut (T)>[core::marker::Sized<&'_0 mut (T)>]
+pub fn core::slice::index::{impl core::slice::index::SliceIndex<Slice<T>> for usize}#2::get_mut<'_0, T>(@1: usize, @2: &'_0 mut (Slice<T>)) -> core::option::Option<&'_0 mut (T)>[core::marker::Sized<&'_0 mut (T)>]
 where
     [@TraitClause0]: core::marker::Sized<T>,
 
-unsafe fn core::slice::index::{impl core::slice::index::SliceIndex<Slice<T>> for usize}#2::get_unchecked<T>(@1: usize, @2: *const Slice<T>) -> *const T
+pub unsafe fn core::slice::index::{impl core::slice::index::SliceIndex<Slice<T>> for usize}#2::get_unchecked<T>(@1: usize, @2: *const Slice<T>) -> *const T
 where
     [@TraitClause0]: core::marker::Sized<T>,
 
-unsafe fn core::slice::index::{impl core::slice::index::SliceIndex<Slice<T>> for usize}#2::get_unchecked_mut<T>(@1: usize, @2: *mut Slice<T>) -> *mut T
+pub unsafe fn core::slice::index::{impl core::slice::index::SliceIndex<Slice<T>> for usize}#2::get_unchecked_mut<T>(@1: usize, @2: *mut Slice<T>) -> *mut T
 where
     [@TraitClause0]: core::marker::Sized<T>,
 
-fn core::slice::index::{impl core::slice::index::SliceIndex<Slice<T>> for usize}#2::index<'_0, T>(@1: usize, @2: &'_0 (Slice<T>)) -> &'_0 (T)
+pub fn core::slice::index::{impl core::slice::index::SliceIndex<Slice<T>> for usize}#2::index<'_0, T>(@1: usize, @2: &'_0 (Slice<T>)) -> &'_0 (T)
 where
     [@TraitClause0]: core::marker::Sized<T>,
 
-fn core::slice::index::{impl core::slice::index::SliceIndex<Slice<T>> for usize}#2::index_mut<'_0, T>(@1: usize, @2: &'_0 mut (Slice<T>)) -> &'_0 mut (T)
+pub fn core::slice::index::{impl core::slice::index::SliceIndex<Slice<T>> for usize}#2::index_mut<'_0, T>(@1: usize, @2: &'_0 mut (Slice<T>)) -> &'_0 mut (T)
 where
     [@TraitClause0]: core::marker::Sized<T>,
 
@@ -1222,7 +1222,7 @@ where
     fn index_mut<'_0> = core::slice::index::{impl core::slice::index::SliceIndex<Slice<T>> for usize}#2::index_mut<'_0_0, T>[@TraitClause0]
 }
 
-fn test_crate::clear<'_0>(@1: &'_0 mut (alloc::vec::Vec<u32, alloc::alloc::Global>[core::marker::Sized<u32>, core::marker::Sized<alloc::alloc::Global>]))
+pub fn test_crate::clear<'_0>(@1: &'_0 mut (alloc::vec::Vec<u32, alloc::alloc::Global>[core::marker::Sized<u32>, core::marker::Sized<alloc::alloc::Global>]))
 {
     let @0: (); // return
     let v@1: &'_ mut (alloc::vec::Vec<u32, alloc::alloc::Global>[core::marker::Sized<u32>, core::marker::Sized<alloc::alloc::Global>]); // arg #1
@@ -1272,7 +1272,7 @@ fn test_crate::clear<'_0>(@1: &'_0 mut (alloc::vec::Vec<u32, alloc::alloc::Globa
     return
 }
 
-enum test_crate::List<T>
+pub enum test_crate::List<T>
   where
       [@TraitClause0]: core::marker::Sized<T>,
  =
@@ -1280,7 +1280,7 @@ enum test_crate::List<T>
 |  Nil()
 
 
-fn test_crate::get_elem_mut<'_0>(@1: &'_0 mut (test_crate::List<usize>[core::marker::Sized<usize>]), @2: usize) -> &'_0 mut (usize)
+pub fn test_crate::get_elem_mut<'_0>(@1: &'_0 mut (test_crate::List<usize>[core::marker::Sized<usize>]), @2: usize) -> &'_0 mut (usize)
 {
     let @0: &'_ mut (usize); // return
     let ls@1: &'_ mut (test_crate::List<usize>[core::marker::Sized<usize>]); // arg #1
@@ -1329,7 +1329,7 @@ fn test_crate::get_elem_mut<'_0>(@1: &'_0 mut (test_crate::List<usize>[core::mar
     }
 }
 
-fn test_crate::list_nth_mut_loop_with_id<'_0, T>(@1: &'_0 mut (test_crate::List<T>[@TraitClause0]), @2: u32) -> &'_0 mut (T)
+pub fn test_crate::list_nth_mut_loop_with_id<'_0, T>(@1: &'_0 mut (test_crate::List<T>[@TraitClause0]), @2: u32) -> &'_0 mut (T)
 where
     [@TraitClause0]: core::marker::Sized<T>,
 {
@@ -1382,9 +1382,9 @@ where
     }
 }
 
-fn core::iter::traits::collect::IntoIterator::into_iter<Self>(@1: Self) -> Self::IntoIter
+pub fn core::iter::traits::collect::IntoIterator::into_iter<Self>(@1: Self) -> Self::IntoIter
 
-trait core::iter::traits::collect::IntoIterator<Self>
+pub trait core::iter::traits::collect::IntoIterator<Self>
 where
     Self::parent_clause2::Item = Self::Item,
 {
@@ -1409,23 +1409,23 @@ where
     fn into_iter = core::iter::traits::collect::{impl core::iter::traits::collect::IntoIterator for I}#1::into_iter<I>[@TraitClause0, @TraitClause1]
 }
 
-fn core::iter::traits::iterator::Iterator::next<'_0, Self>(@1: &'_0 mut (Self)) -> core::option::Option<Self::Item>[Self::parent_clause0]
+pub fn core::iter::traits::iterator::Iterator::next<'_0, Self>(@1: &'_0 mut (Self)) -> core::option::Option<Self::Item>[Self::parent_clause0]
 
-trait core::ops::index::Index<Self, Idx>
+pub trait core::ops::index::Index<Self, Idx>
 {
     type Output
     fn index<'_0> = core::ops::index::Index::index<'_0_0, Self, Idx>
 }
 
-fn core::ops::index::IndexMut::index_mut<'_0, Self, Idx>(@1: &'_0 mut (Self), @2: Idx) -> &'_0 mut (Self::parent_clause0::Output)
+pub fn core::ops::index::IndexMut::index_mut<'_0, Self, Idx>(@1: &'_0 mut (Self), @2: Idx) -> &'_0 mut (Self::parent_clause0::Output)
 
-trait core::ops::index::IndexMut<Self, Idx>
+pub trait core::ops::index::IndexMut<Self, Idx>
 {
     parent_clause0 : [@TraitClause0]: core::ops::index::Index<Self, Idx>
     fn index_mut<'_0> = core::ops::index::IndexMut::index_mut<'_0_0, Self, Idx>
 }
 
-fn alloc::vec::{impl core::ops::index::Index<I> for alloc::vec::Vec<T, A>[@TraitClause0, @TraitClause2]}#13::index<'_0, T, I, A>(@1: &'_0 (alloc::vec::Vec<T, A>[@TraitClause0, @TraitClause2]), @2: I) -> &'_0 (@TraitClause3::Output)
+pub fn alloc::vec::{impl core::ops::index::Index<I> for alloc::vec::Vec<T, A>[@TraitClause0, @TraitClause2]}#13::index<'_0, T, I, A>(@1: &'_0 (alloc::vec::Vec<T, A>[@TraitClause0, @TraitClause2]), @2: I) -> &'_0 (@TraitClause3::Output)
 where
     [@TraitClause0]: core::marker::Sized<T>,
     [@TraitClause1]: core::marker::Sized<I>,
@@ -1454,41 +1454,41 @@ where
     fn index_mut<'_0> = alloc::vec::{impl core::ops::index::IndexMut<I> for alloc::vec::Vec<T, A>[@TraitClause0, @TraitClause2]}#14::index_mut<'_0_0, T, I, A>[@TraitClause0, @TraitClause1, @TraitClause2, @TraitClause3]
 }
 
-fn core::iter::range::Step::steps_between<'_0, '_1, Self>(@1: &'_0 (Self), @2: &'_1 (Self)) -> core::option::Option<usize>[core::marker::Sized<usize>]
+pub fn core::iter::range::Step::steps_between<'_0, '_1, Self>(@1: &'_0 (Self), @2: &'_1 (Self)) -> core::option::Option<usize>[core::marker::Sized<usize>]
 
-fn core::iter::range::Step::forward_checked<Self>(@1: Self, @2: usize) -> core::option::Option<Self>[Self::parent_clause0]
+pub fn core::iter::range::Step::forward_checked<Self>(@1: Self, @2: usize) -> core::option::Option<Self>[Self::parent_clause0]
 
-fn core::iter::range::Step::backward_checked<Self>(@1: Self, @2: usize) -> core::option::Option<Self>[Self::parent_clause0]
+pub fn core::iter::range::Step::backward_checked<Self>(@1: Self, @2: usize) -> core::option::Option<Self>[Self::parent_clause0]
 
-fn core::clone::Clone::clone<'_0, Self>(@1: &'_0 (Self)) -> Self
+pub fn core::clone::Clone::clone<'_0, Self>(@1: &'_0 (Self)) -> Self
 
-fn core::cmp::PartialOrd::partial_cmp<'_0, '_1, Self, Rhs>(@1: &'_0 (Self), @2: &'_1 (Rhs)) -> core::option::Option<core::cmp::Ordering>[core::marker::Sized<core::cmp::Ordering>]
+pub fn core::cmp::PartialOrd::partial_cmp<'_0, '_1, Self, Rhs>(@1: &'_0 (Self), @2: &'_1 (Rhs)) -> core::option::Option<core::cmp::Ordering>[core::marker::Sized<core::cmp::Ordering>]
 
-fn core::cmp::PartialEq::eq<'_0, '_1, Self, Rhs>(@1: &'_0 (Self), @2: &'_1 (Rhs)) -> bool
+pub fn core::cmp::PartialEq::eq<'_0, '_1, Self, Rhs>(@1: &'_0 (Self), @2: &'_1 (Rhs)) -> bool
 
-trait core::cmp::Eq<Self>
+pub trait core::cmp::Eq<Self>
 {
     parent_clause0 : [@TraitClause0]: core::cmp::PartialEq<Self, Self>
 }
 
-trait core::cmp::Ord<Self>
+pub trait core::cmp::Ord<Self>
 {
     parent_clause0 : [@TraitClause0]: core::cmp::Eq<Self>
     parent_clause1 : [@TraitClause1]: core::cmp::PartialOrd<Self, Self>
     fn cmp<'_0, '_1> = core::cmp::Ord::cmp<'_0_0, '_0_1, Self>
 }
 
-trait core::iter::adapters::zip::TrustedRandomAccessNoCoerce<Self>
+pub trait core::iter::adapters::zip::TrustedRandomAccessNoCoerce<Self>
 {
     parent_clause0 : [@TraitClause0]: core::marker::Sized<Self>
     const MAY_HAVE_SIDE_EFFECT : bool
 }
 
-fn core::cmp::Ord::cmp<'_0, '_1, Self>(@1: &'_0 (Self), @2: &'_1 (Self)) -> core::cmp::Ordering
+pub fn core::cmp::Ord::cmp<'_0, '_1, Self>(@1: &'_0 (Self), @2: &'_1 (Self)) -> core::cmp::Ordering
 
-trait core::marker::Tuple<Self>
+pub trait core::marker::Tuple<Self>
 
-trait core::ops::function::FnOnce<Self, Args>
+pub trait core::ops::function::FnOnce<Self, Args>
 {
     parent_clause0 : [@TraitClause0]: core::marker::Sized<Args>
     parent_clause1 : [@TraitClause1]: core::marker::Tuple<Args>
@@ -1497,7 +1497,7 @@ trait core::ops::function::FnOnce<Self, Args>
     fn call_once = core::ops::function::FnOnce::call_once<Self, Args>
 }
 
-trait core::ops::function::FnMut<Self, Args>
+pub trait core::ops::function::FnMut<Self, Args>
 {
     parent_clause0 : [@TraitClause0]: core::ops::function::FnOnce<Self, Args>
     parent_clause1 : [@TraitClause1]: core::marker::Sized<Args>
@@ -1505,20 +1505,20 @@ trait core::ops::function::FnMut<Self, Args>
     fn call_mut<'_0> = core::ops::function::FnMut::call_mut<'_0_0, Self, Args>
 }
 
-trait core::iter::traits::collect::FromIterator<Self, A>
+pub trait core::iter::traits::collect::FromIterator<Self, A>
 {
     parent_clause0 : [@TraitClause0]: core::marker::Sized<Self>
     parent_clause1 : [@TraitClause1]: core::marker::Sized<A>
     fn from_iter<T, [@TraitClause0]: core::marker::Sized<T>, [@TraitClause1]: core::iter::traits::collect::IntoIterator<T>, @TraitClause1_1::Item = A> = core::iter::traits::collect::FromIterator::from_iter<Self, A, T>[@TraitClause0_0, @TraitClause0_1]
 }
 
-trait core::ops::try_trait::FromResidual<Self, R>
+pub trait core::ops::try_trait::FromResidual<Self, R>
 {
     parent_clause0 : [@TraitClause0]: core::marker::Sized<R>
     fn from_residual = core::ops::try_trait::FromResidual::from_residual<Self, R>
 }
 
-enum core::ops::control_flow::ControlFlow<B, C>
+pub enum core::ops::control_flow::ControlFlow<B, C>
   where
       [@TraitClause0]: core::marker::Sized<B>,
       [@TraitClause1]: core::marker::Sized<C>,
@@ -1527,7 +1527,7 @@ enum core::ops::control_flow::ControlFlow<B, C>
 |  Break(B)
 
 
-trait core::ops::try_trait::Try<Self>
+pub trait core::ops::try_trait::Try<Self>
 {
     parent_clause0 : [@TraitClause0]: core::ops::try_trait::FromResidual<Self, Self::Residual>
     parent_clause1 : [@TraitClause1]: core::marker::Sized<Self::Output>
@@ -1538,7 +1538,7 @@ trait core::ops::try_trait::Try<Self>
     fn branch = core::ops::try_trait::Try::branch<Self>
 }
 
-trait core::ops::try_trait::Residual<Self, O>
+pub trait core::ops::try_trait::Residual<Self, O>
 where
     Self::parent_clause2::Output = O,
     Self::parent_clause2::Residual = Self,
@@ -1549,99 +1549,99 @@ where
     type TryType
 }
 
-trait core::iter::traits::collect::Extend<Self, A>
+pub trait core::iter::traits::collect::Extend<Self, A>
 {
     parent_clause0 : [@TraitClause0]: core::marker::Sized<A>
     fn extend<'_0, T, [@TraitClause0]: core::marker::Sized<T>, [@TraitClause1]: core::iter::traits::collect::IntoIterator<T>, @TraitClause1_1::Item = A> = core::iter::traits::collect::Extend::extend<'_0_0, Self, A, T>[@TraitClause0_0, @TraitClause0_1]
 }
 
-trait core::default::Default<Self>
+pub trait core::default::Default<Self>
 {
     parent_clause0 : [@TraitClause0]: core::marker::Sized<Self>
     fn default = core::default::Default::default<Self>
 }
 
-trait core::iter::traits::double_ended::DoubleEndedIterator<Self>
+pub trait core::iter::traits::double_ended::DoubleEndedIterator<Self>
 {
     parent_clause0 : [@TraitClause0]: core::iter::traits::iterator::Iterator<Self>
     fn next_back<'_0> = core::iter::traits::double_ended::DoubleEndedIterator::next_back<'_0_0, Self>
 }
 
-trait core::iter::traits::exact_size::ExactSizeIterator<Self>
+pub trait core::iter::traits::exact_size::ExactSizeIterator<Self>
 {
     parent_clause0 : [@TraitClause0]: core::iter::traits::iterator::Iterator<Self>
 }
 
-trait core::marker::Copy<Self>
+pub trait core::marker::Copy<Self>
 {
     parent_clause0 : [@TraitClause0]: core::clone::Clone<Self>
 }
 
-trait core::iter::traits::accum::Sum<Self, A>
+pub trait core::iter::traits::accum::Sum<Self, A>
 {
     parent_clause0 : [@TraitClause0]: core::marker::Sized<Self>
     parent_clause1 : [@TraitClause1]: core::marker::Sized<A>
     fn sum<I, [@TraitClause0]: core::marker::Sized<I>, [@TraitClause1]: core::iter::traits::iterator::Iterator<I>, @TraitClause1_1::Item = A> = core::iter::traits::accum::Sum::sum<Self, A, I>[@TraitClause0_0, @TraitClause0_1]
 }
 
-trait core::iter::traits::accum::Product<Self, A>
+pub trait core::iter::traits::accum::Product<Self, A>
 {
     parent_clause0 : [@TraitClause0]: core::marker::Sized<Self>
     parent_clause1 : [@TraitClause1]: core::marker::Sized<A>
     fn product<I, [@TraitClause0]: core::marker::Sized<I>, [@TraitClause1]: core::iter::traits::iterator::Iterator<I>, @TraitClause1_1::Item = A> = core::iter::traits::accum::Product::product<Self, A, I>[@TraitClause0_0, @TraitClause0_1]
 }
 
-fn core::default::Default::default<Self>() -> Self
+pub fn core::default::Default::default<Self>() -> Self
 
-fn core::ops::function::FnMut::call_mut<'_0, Self, Args>(@1: &'_0 mut (Self), @2: Args) -> Self::parent_clause0::Output
+pub fn core::ops::function::FnMut::call_mut<'_0, Self, Args>(@1: &'_0 mut (Self), @2: Args) -> Self::parent_clause0::Output
 
-fn core::ops::function::FnOnce::call_once<Self, Args>(@1: Self, @2: Args) -> Self::Output
+pub fn core::ops::function::FnOnce::call_once<Self, Args>(@1: Self, @2: Args) -> Self::Output
 
-fn core::ops::try_trait::Try::from_output<Self>(@1: Self::Output) -> Self
+pub fn core::ops::try_trait::Try::from_output<Self>(@1: Self::Output) -> Self
 
-fn core::ops::try_trait::Try::branch<Self>(@1: Self) -> core::ops::control_flow::ControlFlow<Self::Residual, Self::Output>[Self::parent_clause0::parent_clause0, Self::parent_clause1]
+pub fn core::ops::try_trait::Try::branch<Self>(@1: Self) -> core::ops::control_flow::ControlFlow<Self::Residual, Self::Output>[Self::parent_clause0::parent_clause0, Self::parent_clause1]
 
-fn core::ops::try_trait::FromResidual::from_residual<Self, R>(@1: R) -> Self
+pub fn core::ops::try_trait::FromResidual::from_residual<Self, R>(@1: R) -> Self
 
-fn core::iter::traits::accum::Sum::sum<Self, A, I>(@1: I) -> Self
+pub fn core::iter::traits::accum::Sum::sum<Self, A, I>(@1: I) -> Self
 where
     [@TraitClause0]: core::marker::Sized<I>,
     [@TraitClause1]: core::iter::traits::iterator::Iterator<I>,
     @TraitClause1::Item = A,
 
-fn core::iter::traits::accum::Product::product<Self, A, I>(@1: I) -> Self
+pub fn core::iter::traits::accum::Product::product<Self, A, I>(@1: I) -> Self
 where
     [@TraitClause0]: core::marker::Sized<I>,
     [@TraitClause1]: core::iter::traits::iterator::Iterator<I>,
     @TraitClause1::Item = A,
 
-fn core::iter::traits::collect::FromIterator::from_iter<Self, A, T>(@1: T) -> Self
+pub fn core::iter::traits::collect::FromIterator::from_iter<Self, A, T>(@1: T) -> Self
 where
     [@TraitClause0]: core::marker::Sized<T>,
     [@TraitClause1]: core::iter::traits::collect::IntoIterator<T>,
     @TraitClause1::Item = A,
 
-fn core::iter::traits::collect::Extend::extend<'_0, Self, A, T>(@1: &'_0 mut (Self), @2: T)
+pub fn core::iter::traits::collect::Extend::extend<'_0, Self, A, T>(@1: &'_0 mut (Self), @2: T)
 where
     [@TraitClause0]: core::marker::Sized<T>,
     [@TraitClause1]: core::iter::traits::collect::IntoIterator<T>,
     @TraitClause1::Item = A,
 
-fn core::iter::traits::double_ended::DoubleEndedIterator::next_back<'_0, Self>(@1: &'_0 mut (Self)) -> core::option::Option<Self::parent_clause0::Item>[Self::parent_clause0::parent_clause0]
+pub fn core::iter::traits::double_ended::DoubleEndedIterator::next_back<'_0, Self>(@1: &'_0 mut (Self)) -> core::option::Option<Self::parent_clause0::Item>[Self::parent_clause0::parent_clause0]
 
-fn core::slice::index::SliceIndex::get<'_0, Self, T>(@1: Self, @2: &'_0 (T)) -> core::option::Option<&'_0 (Self::Output)>[core::marker::Sized<&'_0 (Self::Output)>]
+pub fn core::slice::index::SliceIndex::get<'_0, Self, T>(@1: Self, @2: &'_0 (T)) -> core::option::Option<&'_0 (Self::Output)>[core::marker::Sized<&'_0 (Self::Output)>]
 
-fn core::slice::index::SliceIndex::get_mut<'_0, Self, T>(@1: Self, @2: &'_0 mut (T)) -> core::option::Option<&'_0 mut (Self::Output)>[core::marker::Sized<&'_0 mut (Self::Output)>]
+pub fn core::slice::index::SliceIndex::get_mut<'_0, Self, T>(@1: Self, @2: &'_0 mut (T)) -> core::option::Option<&'_0 mut (Self::Output)>[core::marker::Sized<&'_0 mut (Self::Output)>]
 
-unsafe fn core::slice::index::SliceIndex::get_unchecked<Self, T>(@1: Self, @2: *const T) -> *const Self::Output
+pub unsafe fn core::slice::index::SliceIndex::get_unchecked<Self, T>(@1: Self, @2: *const T) -> *const Self::Output
 
-unsafe fn core::slice::index::SliceIndex::get_unchecked_mut<Self, T>(@1: Self, @2: *mut T) -> *mut Self::Output
+pub unsafe fn core::slice::index::SliceIndex::get_unchecked_mut<Self, T>(@1: Self, @2: *mut T) -> *mut Self::Output
 
-fn core::slice::index::SliceIndex::index<'_0, Self, T>(@1: Self, @2: &'_0 (T)) -> &'_0 (Self::Output)
+pub fn core::slice::index::SliceIndex::index<'_0, Self, T>(@1: Self, @2: &'_0 (T)) -> &'_0 (Self::Output)
 
-fn core::slice::index::SliceIndex::index_mut<'_0, Self, T>(@1: Self, @2: &'_0 mut (T)) -> &'_0 mut (Self::Output)
+pub fn core::slice::index::SliceIndex::index_mut<'_0, Self, T>(@1: Self, @2: &'_0 mut (T)) -> &'_0 mut (Self::Output)
 
-fn core::ops::index::Index::index<'_0, Self, Idx>(@1: &'_0 (Self), @2: Idx) -> &'_0 (Self::Output)
+pub fn core::ops::index::Index::index<'_0, Self, Idx>(@1: &'_0 (Self), @2: Idx) -> &'_0 (Self::Output)
 
 
 

@@ -1,31 +1,31 @@
 # Final LLBC before serialization:
 
-trait core::marker::Sized<Self>
+pub trait core::marker::Sized<Self>
 
-opaque type alloc::vec::Vec<T, A>
+pub opaque type alloc::vec::Vec<T, A>
   where
       [@TraitClause0]: core::marker::Sized<T>,
       [@TraitClause1]: core::marker::Sized<A>,
 
-struct alloc::alloc::Global = {}
+pub struct alloc::alloc::Global = {}
 
-fn alloc::slice::{Slice<T>}::into_vec<T, A>(@1: alloc::boxed::Box<Slice<T>>[@TraitClause1]) -> alloc::vec::Vec<T, A>[@TraitClause0, @TraitClause1]
+pub fn alloc::slice::{Slice<T>}::into_vec<T, A>(@1: alloc::boxed::Box<Slice<T>>[@TraitClause1]) -> alloc::vec::Vec<T, A>[@TraitClause0, @TraitClause1]
 where
     [@TraitClause0]: core::marker::Sized<T>,
     [@TraitClause1]: core::marker::Sized<A>,
 
-trait core::clone::Clone<Self>
+pub trait core::clone::Clone<Self>
 {
     parent_clause0 : [@TraitClause0]: core::marker::Sized<Self>
     fn clone<'_0> = core::clone::Clone::clone<'_0_0, Self>
 }
 
-fn alloc::vec::from_elem<T>(@1: T, @2: usize) -> alloc::vec::Vec<T, alloc::alloc::Global>[@TraitClause0, core::marker::Sized<alloc::alloc::Global>]
+pub fn alloc::vec::from_elem<T>(@1: T, @2: usize) -> alloc::vec::Vec<T, alloc::alloc::Global>[@TraitClause0, core::marker::Sized<alloc::alloc::Global>]
 where
     [@TraitClause0]: core::marker::Sized<T>,
     [@TraitClause1]: core::clone::Clone<T>,
 
-fn core::clone::impls::{impl core::clone::Clone for i32}#14::clone<'_0>(@1: &'_0 (i32)) -> i32
+pub fn core::clone::impls::{impl core::clone::Clone for i32}#14::clone<'_0>(@1: &'_0 (i32)) -> i32
 
 impl core::clone::impls::{impl core::clone::Clone for i32}#14 : core::clone::Clone<i32>
 {
@@ -65,9 +65,9 @@ fn test_crate::foo()
     return
 }
 
-struct test_crate::Foo = {}
+pub struct test_crate::Foo = {}
 
-fn test_crate::bar()
+pub fn test_crate::bar()
 {
     let @0: (); // return
     let @1: alloc::vec::Vec<test_crate::Foo, alloc::alloc::Global>[core::marker::Sized<test_crate::Foo>, core::marker::Sized<alloc::alloc::Global>]; // anonymous local
@@ -99,7 +99,7 @@ fn test_crate::bar()
 
 unsafe fn alloc::alloc::exchange_malloc(@1: usize, @2: usize) -> *mut u8
 
-fn core::clone::Clone::clone<'_0, Self>(@1: &'_0 (Self)) -> Self
+pub fn core::clone::Clone::clone<'_0, Self>(@1: &'_0 (Self)) -> Self
 
 
 

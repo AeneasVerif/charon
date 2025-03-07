@@ -1,6 +1,6 @@
 # Final LLBC before serialization:
 
-trait core::marker::Sized<Self>
+pub trait core::marker::Sized<Self>
 
 struct test_crate::V<T, const N : usize>
   where
@@ -60,7 +60,7 @@ impl test_crate::{impl test_crate::HasLen for Array<bool, const N : usize>}#2<co
     const LEN = test_crate::{impl test_crate::HasLen for Array<bool, const N : usize>}#2::LEN<const N : usize>
 }
 
-fn test_crate::HasDefaultLen::LEN<Self, const M : usize>() -> usize
+pub fn test_crate::HasDefaultLen::LEN<Self, const M : usize>() -> usize
 {
     let @0: usize; // return
 
@@ -68,9 +68,9 @@ fn test_crate::HasDefaultLen::LEN<Self, const M : usize>() -> usize
     return
 }
 
-global test_crate::HasDefaultLen::LEN<Self, const M : usize>: usize = test_crate::HasDefaultLen::LEN()
+pub global test_crate::HasDefaultLen::LEN<Self, const M : usize>: usize = test_crate::HasDefaultLen::LEN()
 
-trait test_crate::HasDefaultLen<Self, const M : usize>
+pub trait test_crate::HasDefaultLen<Self, const M : usize>
 {
     const LEN : usize
 }
@@ -80,7 +80,7 @@ impl test_crate::{impl test_crate::HasDefaultLen<const N : usize> for Array<(), 
     const LEN = test_crate::HasDefaultLen::LEN<Array<(), const N : usize>, const N : usize>
 }
 
-fn test_crate::{impl test_crate::HasDefaultLen<const N : usize> for Array<bool, const N : usize>}#4::LEN<const N : usize>() -> usize
+pub fn test_crate::{impl test_crate::HasDefaultLen<const N : usize> for Array<bool, const N : usize>}#4::LEN<const N : usize>() -> usize
 {
     let @0: usize; // return
     let @1: bool; // anonymous local
@@ -96,7 +96,7 @@ fn test_crate::{impl test_crate::HasDefaultLen<const N : usize> for Array<bool, 
     return
 }
 
-global test_crate::{impl test_crate::HasDefaultLen<const N : usize> for Array<bool, const N : usize>}#4::LEN<const N : usize>: usize = test_crate::{impl test_crate::HasDefaultLen<const N : usize> for Array<bool, const N : usize>}#4::LEN()
+pub global test_crate::{impl test_crate::HasDefaultLen<const N : usize> for Array<bool, const N : usize>}#4::LEN<const N : usize>: usize = test_crate::{impl test_crate::HasDefaultLen<const N : usize> for Array<bool, const N : usize>}#4::LEN()
 
 impl test_crate::{impl test_crate::HasDefaultLen<const N : usize> for Array<bool, const N : usize>}#4<const N : usize> : test_crate::HasDefaultLen<Array<bool, const N : usize>, const N : usize>
 {

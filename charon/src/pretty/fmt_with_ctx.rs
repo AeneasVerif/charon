@@ -622,7 +622,8 @@ impl ItemMeta {
         C: AstFormatter,
     {
         let name = self.name.fmt_with_ctx(ctx);
-        format!("{tab}{keyword} {name}")
+        let vis = if self.attr_info.public { "pub " } else { "" };
+        format!("{tab}{vis}{keyword} {name}")
     }
 }
 

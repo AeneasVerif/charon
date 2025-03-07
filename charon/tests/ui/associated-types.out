@@ -1,14 +1,14 @@
 # Final LLBC before serialization:
 
-trait core::marker::Sized<Self>
+pub trait core::marker::Sized<Self>
 
-trait core::clone::Clone<Self>
+pub trait core::clone::Clone<Self>
 {
     parent_clause0 : [@TraitClause0]: core::marker::Sized<Self>
     fn clone<'_0> = core::clone::Clone::clone<'_0_0, Self>
 }
 
-trait core::marker::Copy<Self>
+pub trait core::marker::Copy<Self>
 {
     parent_clause0 : [@TraitClause0]: core::clone::Clone<Self>
 }
@@ -24,7 +24,7 @@ where
     fn use_item_provided<Clause0_Item, [@TraitClause0]: test_crate::Foo<'a, Self_Item, Clause0_Item>> = test_crate::Foo::use_item_provided<'a, Self, Clause0_Item, Self_Item>[@TraitClause0_0]
 }
 
-enum core::option::Option<T>
+pub enum core::option::Option<T>
   where
       [@TraitClause0]: core::marker::Sized<T>,
  =
@@ -32,7 +32,7 @@ enum core::option::Option<T>
 |  Some(T)
 
 
-fn core::clone::impls::{impl core::clone::Clone for &'_0 (T)}#3::clone<'_0, '_1, T>(@1: &'_1 (&'_0 (T))) -> &'_0 (T)
+pub fn core::clone::impls::{impl core::clone::Clone for &'_0 (T)}#3::clone<'_0, '_1, T>(@1: &'_1 (&'_0 (T))) -> &'_0 (T)
 
 impl core::clone::impls::{impl core::clone::Clone for &'_0 (T)}#3<'_0, T> : core::clone::Clone<&'_0 (T)>
 {
@@ -45,7 +45,7 @@ impl core::marker::{impl core::marker::Copy for &'_0 (T)}#4<'_0, T> : core::mark
     parent_clause0 = core::clone::impls::{impl core::clone::Clone for &'_0 (T)}#3<'_, T>
 }
 
-fn core::option::{impl core::clone::Clone for core::option::Option<T>[@TraitClause0]}#5::clone<'_0, T>(@1: &'_0 (core::option::Option<T>[@TraitClause0])) -> core::option::Option<T>[@TraitClause0]
+pub fn core::option::{impl core::clone::Clone for core::option::Option<T>[@TraitClause0]}#5::clone<'_0, T>(@1: &'_0 (core::option::Option<T>[@TraitClause0])) -> core::option::Option<T>[@TraitClause0]
 where
     [@TraitClause0]: core::marker::Sized<T>,
     [@TraitClause1]: core::clone::Clone<T>,
@@ -152,7 +152,7 @@ where
     return
 }
 
-fn core::clone::Clone::clone<'_0, Self>(@1: &'_0 (Self)) -> Self
+pub fn core::clone::Clone::clone<'_0, Self>(@1: &'_0 (Self)) -> Self
 
 fn test_crate::external_use_item<'a, T, Clause1_Item, Clause2_Item>(@1: Clause1_Item) -> Clause1_Item
 where
@@ -292,12 +292,12 @@ impl test_crate::loopy_with_generics::{impl test_crate::loopy_with_generics::Foo
     type Self_Clause3_BarTy = &'_ (core::option::Option<u16>[core::marker::Sized<u16>])
 }
 
-trait core::borrow::Borrow<Self, Borrowed>
+pub trait core::borrow::Borrow<Self, Borrowed>
 {
     fn borrow<'_0> = core::borrow::Borrow::borrow<'_0_0, Self, Borrowed>
 }
 
-trait alloc::borrow::ToOwned<Self, Self_Owned>
+pub trait alloc::borrow::ToOwned<Self, Self_Owned>
 {
     parent_clause0 : [@TraitClause0]: core::marker::Sized<Self_Owned>
     parent_clause1 : [@TraitClause1]: core::borrow::Borrow<Self_Owned, Self>
@@ -336,9 +336,9 @@ where
 
 fn test_crate::Foo::use_item_required<'a, Self, Self_Item>(@1: Self_Item) -> Self_Item
 
-fn alloc::borrow::ToOwned::to_owned<'_0, Self, Self_Owned>(@1: &'_0 (Self)) -> Self_Owned
+pub fn alloc::borrow::ToOwned::to_owned<'_0, Self, Self_Owned>(@1: &'_0 (Self)) -> Self_Owned
 
-fn core::borrow::Borrow::borrow<'_0, Self, Borrowed>(@1: &'_0 (Self)) -> &'_0 (Borrowed)
+pub fn core::borrow::Borrow::borrow<'_0, Self, Borrowed>(@1: &'_0 (Self)) -> &'_0 (Borrowed)
 
 
 

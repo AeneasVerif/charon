@@ -1,13 +1,13 @@
 # Final LLBC before serialization:
 
-trait test_crate::BoolTrait<Self>
+pub trait test_crate::BoolTrait<Self>
 {
     fn foo<'_0> = test_crate::BoolTrait::foo<'_0_0, Self>
 }
 
-trait core::marker::Sized<Self>
+pub trait core::marker::Sized<Self>
 
-enum core::option::Option<T>
+pub enum core::option::Option<T>
   where
       [@TraitClause0]: core::marker::Sized<T>,
  =
@@ -15,7 +15,7 @@ enum core::option::Option<T>
 |  Some(T)
 
 
-fn test_crate::{impl test_crate::BoolTrait for core::option::Option<T>[@TraitClause0]}::foo<'_0, T>(@1: &'_0 (core::option::Option<T>[@TraitClause0]))
+pub fn test_crate::{impl test_crate::BoolTrait for core::option::Option<T>[@TraitClause0]}::foo<'_0, T>(@1: &'_0 (core::option::Option<T>[@TraitClause0]))
 where
     [@TraitClause0]: core::marker::Sized<T>,
 {
@@ -34,7 +34,7 @@ where
     fn foo<'_0> = test_crate::{impl test_crate::BoolTrait for core::option::Option<T>[@TraitClause0]}::foo<'_0_0, T>[@TraitClause0]
 }
 
-fn test_crate::BoolTrait::foo<'_0, Self>(@1: &'_0 (Self))
+pub fn test_crate::BoolTrait::foo<'_0, Self>(@1: &'_0 (Self))
 {
     let @0: (); // return
     let self@1: &'_ (Self); // arg #1

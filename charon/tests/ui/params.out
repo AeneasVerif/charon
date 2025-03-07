@@ -14,7 +14,7 @@ struct test_crate::SStatic =
   x: &'static (u32),
 }
 
-trait core::marker::Sized<Self>
+pub trait core::marker::Sized<Self>
 
 enum test_crate::E0<'a, 'b, T1, T2>
   where
@@ -26,7 +26,7 @@ enum test_crate::E0<'a, 'b, T1, T2>
 |  V1(&'a mut (T1), &'b mut (T2))
 
 
-struct alloc::alloc::Global = {}
+pub struct alloc::alloc::Global = {}
 
 enum test_crate::E1<'a, 'b, T1, T2>
   where

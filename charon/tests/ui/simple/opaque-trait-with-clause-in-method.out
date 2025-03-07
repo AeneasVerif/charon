@@ -1,8 +1,8 @@
 # Final LLBC before serialization:
 
-trait core::marker::Sized<Self>
+pub trait core::marker::Sized<Self>
 
-trait test_crate::opaque::Iterator<Self>
+pub trait test_crate::opaque::Iterator<Self>
 
 fn test_crate::foo<T>()
 where
@@ -16,7 +16,7 @@ where
     return
 }
 
-trait test_crate::opaque::Product<Self>
+pub trait test_crate::opaque::Product<Self>
 
 
 
