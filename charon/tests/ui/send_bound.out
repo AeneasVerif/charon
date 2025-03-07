@@ -1,8 +1,8 @@
 # Final LLBC before serialization:
 
-trait core::marker::Sized<Self>
+pub trait core::marker::Sized<Self>
 
-trait core::marker::Send<Self>
+pub trait core::marker::Send<Self>
 
 fn test_crate::foo<M>(@1: M)
 where

@@ -1,8 +1,8 @@
 # Final LLBC before serialization:
 
-trait core::marker::Sized<Self>
+pub trait core::marker::Sized<Self>
 
-enum core::option::Option<T>
+pub enum core::option::Option<T>
   where
       [@TraitClause0]: core::marker::Sized<T>,
  =

@@ -1,19 +1,19 @@
 # Final LLBC before serialization:
 
-trait test_crate::Hasher<Self>
+pub trait test_crate::Hasher<Self>
 
-struct test_crate::DefaultHasher = {}
+pub struct test_crate::DefaultHasher = {}
 
 impl test_crate::{impl test_crate::Hasher for test_crate::DefaultHasher} : test_crate::Hasher<test_crate::DefaultHasher>
 
-trait core::marker::Sized<Self>
+pub trait core::marker::Sized<Self>
 
-trait test_crate::Hash<Self>
+pub trait test_crate::Hash<Self>
 {
     fn hash<'_0, '_1, H, [@TraitClause0]: core::marker::Sized<H>, [@TraitClause1]: test_crate::Hasher<H>> = test_crate::Hash::hash<'_0_0, '_0_1, Self, H>[@TraitClause0_0, @TraitClause0_1]
 }
 
-fn test_crate::{impl test_crate::Hash for u32}#1::hash<'_0, '_1, H>(@1: &'_0 (u32), @2: &'_1 mut (H))
+pub fn test_crate::{impl test_crate::Hash for u32}#1::hash<'_0, '_1, H>(@1: &'_0 (u32), @2: &'_1 mut (H))
 where
     [@TraitClause0]: core::marker::Sized<H>,
     [@TraitClause1]: test_crate::Hasher<H>,
@@ -60,7 +60,7 @@ fn test_crate::main()
     return
 }
 
-fn test_crate::Hash::hash<'_0, '_1, Self, H>(@1: &'_0 (Self), @2: &'_1 mut (H))
+pub fn test_crate::Hash::hash<'_0, '_1, Self, H>(@1: &'_0 (Self), @2: &'_1 mut (H))
 where
     [@TraitClause0]: core::marker::Sized<H>,
     [@TraitClause1]: test_crate::Hasher<H>,

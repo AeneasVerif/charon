@@ -1,6 +1,6 @@
 # Final LLBC before serialization:
 
-trait core::marker::Sized<Self>
+pub trait core::marker::Sized<Self>
 
 fn test_crate::choose<'a, T>(@1: bool, @2: &'a mut (T), @3: &'a mut (T)) -> &'a mut (T)
 where
@@ -32,7 +32,7 @@ where
     return
 }
 
-fn test_crate::choose_test()
+pub fn test_crate::choose_test()
 {
     let @0: (); // return
     let x@1: i32; // local

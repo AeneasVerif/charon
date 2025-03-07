@@ -1,8 +1,8 @@
 # Final LLBC before serialization:
 
-trait core::marker::Sized<Self>
+pub trait core::marker::Sized<Self>
 
-enum core::option::Option<T>
+pub enum core::option::Option<T>
   where
       [@TraitClause0]: core::marker::Sized<T>,
  =
@@ -24,7 +24,7 @@ fn test_crate::F() -> fn(u8) -> core::option::Option<u8>[core::marker::Sized<u8>
 
 global test_crate::F: fn(u8) -> core::option::Option<u8>[core::marker::Sized<u8>] = test_crate::F()
 
-opaque type alloc::string::String
+pub opaque type alloc::string::String
 
 struct test_crate::Foo =
 {
@@ -50,7 +50,7 @@ fn test_crate::Foo(@1: u32, @2: alloc::string::String) -> test_crate::Foo
     return
 }
 
-fn alloc::string::{alloc::string::String}::new() -> alloc::string::String
+pub fn alloc::string::{alloc::string::String}::new() -> alloc::string::String
 
 fn test_crate::Bar::Variant<'a, T>(@1: &'a (T)) -> test_crate::Bar<'a, T>[@TraitClause0]
 where

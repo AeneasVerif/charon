@@ -10,13 +10,13 @@ fn test_crate::function_call(@1: u32)
     return
 }
 
-trait core::marker::Sized<Self>
+pub trait core::marker::Sized<Self>
 
-fn core::slice::{Slice<T>}::len<'_0, T>(@1: &'_0 (Slice<T>)) -> usize
+pub fn core::slice::{Slice<T>}::len<'_0, T>(@1: &'_0 (Slice<T>)) -> usize
 where
     [@TraitClause0]: core::marker::Sized<T>,
 
-fn test_crate::sum<'_0>(@1: &'_0 (Slice<u32>)) -> u32
+pub fn test_crate::sum<'_0>(@1: &'_0 (Slice<u32>)) -> u32
 {
     let @0: u32; // return
     let s@1: &'_ (Slice<u32>); // arg #1
@@ -129,15 +129,15 @@ struct test_crate::Foo =
   y: u32,
 }
 
-trait core::default::Default<Self>
+pub trait core::default::Default<Self>
 {
     parent_clause0 : [@TraitClause0]: core::marker::Sized<Self>
     fn default = core::default::Default::default<Self>
 }
 
-fn core::default::{impl core::default::Default for u32}#7::default() -> u32
+pub fn core::default::{impl core::default::Default for u32}#7::default() -> u32
 
-fn test_crate::{impl core::default::Default for test_crate::Foo}::default() -> test_crate::Foo
+pub fn test_crate::{impl core::default::Default for test_crate::Foo}::default() -> test_crate::Foo
 {
     let @0: test_crate::Foo; // return
     let @1: u32; // anonymous local
@@ -163,7 +163,7 @@ struct test_crate::Bar =
   super_long_field_name: u32,
 }
 
-fn test_crate::{impl core::default::Default for test_crate::Bar}#1::default() -> test_crate::Bar
+pub fn test_crate::{impl core::default::Default for test_crate::Bar}#1::default() -> test_crate::Bar
 {
     let @0: test_crate::Bar; // return
     let @1: u32; // anonymous local
@@ -196,13 +196,13 @@ where
     return
 }
 
-enum core::panicking::AssertKind =
+pub enum core::panicking::AssertKind =
 |  Eq()
 |  Ne()
 |  Match()
 
 
-enum core::option::Option<T>
+pub enum core::option::Option<T>
   where
       [@TraitClause0]: core::marker::Sized<T>,
  =
@@ -210,7 +210,7 @@ enum core::option::Option<T>
 |  Some(T)
 
 
-opaque type core::fmt::Arguments<'a>
+pub opaque type core::fmt::Arguments<'a>
   where
       'a : 'a,
 
@@ -348,7 +348,7 @@ fn test_crate::CONSTANT() -> u32
 
 global test_crate::CONSTANT: u32 = test_crate::CONSTANT()
 
-fn test_crate::thing()
+pub fn test_crate::thing()
 {
     let @0: (); // return
     let x@1: u32; // local
@@ -373,7 +373,7 @@ fn test_crate::thing()
     return
 }
 
-fn test_crate::fake_read(@1: u32)
+pub fn test_crate::fake_read(@1: u32)
 {
     let @0: (); // return
     let x@1: u32; // arg #1
@@ -400,7 +400,7 @@ fn test_crate::fool()
     return
 }
 
-fn core::default::Default::default<Self>() -> Self
+pub fn core::default::Default::default<Self>() -> Self
 
 impl core::default::{impl core::default::Default for u32}#7 : core::default::Default<u32>
 {

@@ -1,6 +1,6 @@
 # Final LLBC before serialization:
 
-trait core::marker::Sized<Self>
+pub trait core::marker::Sized<Self>
 
 trait test_crate::Iterator<Self, Self_Item>
 {
@@ -14,7 +14,7 @@ trait test_crate::IntoIterator<Self, Self_Item, Self_IntoIter>
     parent_clause2 : [@TraitClause2]: test_crate::Iterator<Self_IntoIter, Self_Item>
 }
 
-impl<I, Clause1_Item> test_crate::{impl test_crate::IntoIterator<Clause1_Item, I> for I}<I, Clause1_Item> : test_crate::IntoIterator<I, Clause1_Item, I>
+impl test_crate::{impl test_crate::IntoIterator<Clause1_Item, I> for I}<I, Clause1_Item> : test_crate::IntoIterator<I, Clause1_Item, I>
 where
     [@TraitClause0]: core::marker::Sized<I>,
     [@TraitClause1]: test_crate::Iterator<I, Clause1_Item>,
@@ -104,13 +104,13 @@ where
     return
 }
 
-trait core::clone::Clone<Self>
+pub trait core::clone::Clone<Self>
 {
     parent_clause0 : [@TraitClause0]: core::marker::Sized<Self>
     fn clone<'_0> = core::clone::Clone::clone<'_0_0, Self>
 }
 
-trait core::marker::Copy<Self>
+pub trait core::marker::Copy<Self>
 {
     parent_clause0 : [@TraitClause0]: core::clone::Clone<Self>
 }
@@ -143,7 +143,7 @@ where
     return
 }
 
-fn core::clone::Clone::clone<'_0, Self>(@1: &'_0 (Self)) -> Self
+pub fn core::clone::Clone::clone<'_0, Self>(@1: &'_0 (Self)) -> Self
 
 
 

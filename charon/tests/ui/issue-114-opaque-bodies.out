@@ -1,6 +1,6 @@
 # Final LLBC before serialization:
 
-fn issue_114_opaque_bodies_aux::inline_always() -> u32
+pub fn issue_114_opaque_bodies_aux::inline_always() -> u32
 {
     let @0: u32; // return
 
@@ -8,7 +8,7 @@ fn issue_114_opaque_bodies_aux::inline_always() -> u32
     return
 }
 
-fn issue_114_opaque_bodies_aux::inline_sometimes() -> u32
+pub fn issue_114_opaque_bodies_aux::inline_sometimes() -> u32
 {
     let @0: u32; // return
 
@@ -16,11 +16,11 @@ fn issue_114_opaque_bodies_aux::inline_sometimes() -> u32
     return
 }
 
-fn issue_114_opaque_bodies_aux::inline_never() -> u32
+pub fn issue_114_opaque_bodies_aux::inline_never() -> u32
 
-trait core::marker::Sized<Self>
+pub trait core::marker::Sized<Self>
 
-fn issue_114_opaque_bodies_aux::inline_generic<T>() -> u32
+pub fn issue_114_opaque_bodies_aux::inline_generic<T>() -> u32
 where
     [@TraitClause0]: core::marker::Sized<T>,
 {
@@ -56,7 +56,7 @@ fn test_crate::use_inlines() -> u32
     return
 }
 
-enum core::option::Option<T>
+pub enum core::option::Option<T>
   where
       [@TraitClause0]: core::marker::Sized<T>,
  =
@@ -64,7 +64,7 @@ enum core::option::Option<T>
 |  Some(T)
 
 
-fn core::bool::{bool}::then_some<T>(@1: bool, @2: T) -> core::option::Option<T>[@TraitClause0]
+pub fn core::bool::{bool}::then_some<T>(@1: bool, @2: T) -> core::option::Option<T>[@TraitClause0]
 where
     [@TraitClause0]: core::marker::Sized<T>,
 {
@@ -101,7 +101,7 @@ fn test_crate::bool_to_opt(@1: bool) -> core::option::Option<()>[core::marker::S
     return
 }
 
-fn core::convert::num::{impl core::convert::From<i32> for i64}#83::from(@1: i32) -> i64
+pub fn core::convert::num::{impl core::convert::From<i32> for i64}#83::from(@1: i32) -> i64
 {
     let @0: i64; // return
     let small@1: i32; // arg #1
@@ -122,14 +122,14 @@ fn test_crate::convert(@1: i32) -> i64
     return
 }
 
-struct core::ptr::non_null::NonNull<T> =
+pub struct core::ptr::non_null::NonNull<T> =
 {
   pointer: *const T,
 }
 
-struct core::marker::PhantomData<T> = {}
+pub struct core::marker::PhantomData<T> = {}
 
-struct core::ptr::unique::Unique<T> =
+pub struct core::ptr::unique::Unique<T> =
 {
   pointer: core::ptr::non_null::NonNull<T>,
   _marker: core::marker::PhantomData<T>,
@@ -160,7 +160,7 @@ struct alloc::raw_vec::RawVec<T, A>
   _marker: core::marker::PhantomData<T>,
 }
 
-struct alloc::vec::Vec<T, A>
+pub struct alloc::vec::Vec<T, A>
   where
       [@TraitClause0]: core::marker::Sized<T>,
       [@TraitClause1]: core::marker::Sized<A>,
@@ -170,7 +170,7 @@ struct alloc::vec::Vec<T, A>
   len: usize,
 }
 
-struct alloc::alloc::Global = {}
+pub struct alloc::alloc::Global = {}
 
 fn test_crate::vec(@1: alloc::vec::Vec<u32, alloc::alloc::Global>[core::marker::Sized<u32>, core::marker::Sized<alloc::alloc::Global>])
 {
@@ -183,7 +183,7 @@ fn test_crate::vec(@1: alloc::vec::Vec<u32, alloc::alloc::Global>[core::marker::
     return
 }
 
-fn core::num::{usize}#11::MAX() -> usize
+pub fn core::num::{usize}#11::MAX() -> usize
 {
     let @0: usize; // return
 
@@ -191,7 +191,7 @@ fn core::num::{usize}#11::MAX() -> usize
     return
 }
 
-global core::num::{usize}#11::MAX: usize = core::num::{usize}#11::MAX()
+pub global core::num::{usize}#11::MAX: usize = core::num::{usize}#11::MAX()
 
 fn test_crate::max() -> usize
 {
@@ -203,7 +203,7 @@ fn test_crate::max() -> usize
     return
 }
 
-trait core::cmp::PartialEq<Self, Rhs>
+pub trait core::cmp::PartialEq<Self, Rhs>
 {
     fn eq<'_0, '_1> = core::cmp::PartialEq::eq<'_0_0, '_0_1, Self, Rhs>
     fn ne<'_0, '_1> = core::cmp::PartialEq::ne<'_0_0, '_0_1, Self, Rhs>
@@ -223,9 +223,9 @@ where
     return
 }
 
-fn core::convert::From::from<Self, T>(@1: T) -> Self
+pub fn core::convert::From::from<Self, T>(@1: T) -> Self
 
-trait core::convert::From<Self, T>
+pub trait core::convert::From<Self, T>
 {
     parent_clause0 : [@TraitClause0]: core::marker::Sized<Self>
     parent_clause1 : [@TraitClause1]: core::marker::Sized<T>
@@ -239,9 +239,9 @@ impl core::convert::num::{impl core::convert::From<i32> for i64}#83 : core::conv
     fn from = core::convert::num::{impl core::convert::From<i32> for i64}#83::from
 }
 
-fn core::cmp::PartialEq::eq<'_0, '_1, Self, Rhs>(@1: &'_0 (Self), @2: &'_1 (Rhs)) -> bool
+pub fn core::cmp::PartialEq::eq<'_0, '_1, Self, Rhs>(@1: &'_0 (Self), @2: &'_1 (Rhs)) -> bool
 
-fn core::cmp::PartialEq::ne<'_0, '_1, Self, Rhs>(@1: &'_0 (Self), @2: &'_1 (Rhs)) -> bool
+pub fn core::cmp::PartialEq::ne<'_0, '_1, Self, Rhs>(@1: &'_0 (Self), @2: &'_1 (Rhs)) -> bool
 {
     let @0: bool; // return
     let self@1: &'_ (Self); // arg #1

@@ -1,8 +1,8 @@
 # Final LLBC before serialization:
 
-trait core::marker::Sized<Self>
+pub trait core::marker::Sized<Self>
 
-enum core::option::Option<T>
+pub enum core::option::Option<T>
   where
       [@TraitClause0]: core::marker::Sized<T>,
  =
@@ -22,7 +22,7 @@ fn test_crate::wrap<'a>(@1: &'a (u32)) -> core::option::Option<&'a (u32)>[core::
     return
 }
 
-trait core::clone::Clone<Self>
+pub trait core::clone::Clone<Self>
 {
     parent_clause0 : [@TraitClause0]: core::marker::Sized<Self>
     fn clone<'_0> = core::clone::Clone::clone<'_0_0, Self>
@@ -42,9 +42,9 @@ where
     return
 }
 
-opaque type core::cell::RefCell<T>
+pub opaque type core::cell::RefCell<T>
 
-enum core::result::Result<T, E>
+pub enum core::result::Result<T, E>
   where
       [@TraitClause0]: core::marker::Sized<T>,
       [@TraitClause1]: core::marker::Sized<E>,
@@ -53,17 +53,17 @@ enum core::result::Result<T, E>
 |  Err(E)
 
 
-opaque type core::cell::Ref<'b, T>
+pub opaque type core::cell::Ref<'b, T>
   where
       T : 'b,
 
-struct core::cell::BorrowError = {}
+pub struct core::cell::BorrowError = {}
 
-fn core::cell::{core::cell::RefCell<T>}#21::new<T>(@1: T) -> core::cell::RefCell<T>
+pub fn core::cell::{core::cell::RefCell<T>}#21::new<T>(@1: T) -> core::cell::RefCell<T>
 where
     [@TraitClause0]: core::marker::Sized<T>,
 
-fn core::cell::{core::cell::RefCell<T>}#22::try_borrow<'_0, T>(@1: &'_0 (core::cell::RefCell<T>)) -> core::result::Result<core::cell::Ref<'_0, T>, core::cell::BorrowError>[core::marker::Sized<core::cell::Ref<'_0, T>>, core::marker::Sized<core::cell::BorrowError>]
+pub fn core::cell::{core::cell::RefCell<T>}#22::try_borrow<'_0, T>(@1: &'_0 (core::cell::RefCell<T>)) -> core::result::Result<core::cell::Ref<'_0, T>, core::cell::BorrowError>[core::marker::Sized<core::cell::Ref<'_0, T>>, core::marker::Sized<core::cell::BorrowError>]
 
 fn test_crate::foo()
 {
@@ -106,7 +106,7 @@ where
     panic(core::panicking::panic)
 }
 
-fn core::clone::Clone::clone<'_0, Self>(@1: &'_0 (Self)) -> Self
+pub fn core::clone::Clone::clone<'_0, Self>(@1: &'_0 (Self)) -> Self
 
 
 

@@ -2,9 +2,9 @@
 
 trait test_crate::Trait<Self>
 
-trait core::marker::Sized<Self>
+pub trait core::marker::Sized<Self>
 
-enum core::option::Option<T>
+pub enum core::option::Option<T>
   where
       [@TraitClause0]: core::marker::Sized<T>,
  =
@@ -12,7 +12,7 @@ enum core::option::Option<T>
 |  Some(T)
 
 
-impl<T> test_crate::{impl test_crate::Trait for core::option::Option<T>[@TraitClause0]}<T> : test_crate::Trait<core::option::Option<T>[@TraitClause0]>
+impl test_crate::{impl test_crate::Trait for core::option::Option<T>[@TraitClause0]}<T> : test_crate::Trait<core::option::Option<T>[@TraitClause0]>
 where
     [@TraitClause0]: core::marker::Sized<T>,
 

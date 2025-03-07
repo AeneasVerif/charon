@@ -1,8 +1,8 @@
 # Final LLBC before serialization:
 
-trait core::marker::Sized<Self>
+pub trait core::marker::Sized<Self>
 
-enum core::option::Option<T>
+pub enum core::option::Option<T>
   where
       [@TraitClause0]: core::marker::Sized<T>,
  =
@@ -10,7 +10,7 @@ enum core::option::Option<T>
 |  Some(T)
 
 
-fn core::option::{core::option::Option<T>[@TraitClause0]}::is_some<'_0, T>(@1: &'_0 (core::option::Option<T>[@TraitClause0])) -> bool
+pub fn core::option::{core::option::Option<T>[@TraitClause0]}::is_some<'_0, T>(@1: &'_0 (core::option::Option<T>[@TraitClause0])) -> bool
 where
     [@TraitClause0]: core::marker::Sized<T>,
 {

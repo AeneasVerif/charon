@@ -2,7 +2,7 @@
 
 trait test_crate::Idx<Self>
 
-struct test_crate::IndexVec<I>
+pub struct test_crate::IndexVec<I>
   where
       [@TraitClause1]: test_crate::Idx<I>,
  =
@@ -10,7 +10,7 @@ struct test_crate::IndexVec<I>
   i: I,
 }
 
-struct test_crate::Vector<I>
+pub struct test_crate::Vector<I>
   where
       [@TraitClause1]: test_crate::Idx<I>,
  =

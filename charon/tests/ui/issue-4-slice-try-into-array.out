@@ -1,8 +1,8 @@
 # Final LLBC before serialization:
 
-trait core::marker::Sized<Self>
+pub trait core::marker::Sized<Self>
 
-enum core::result::Result<T, E>
+pub enum core::result::Result<T, E>
   where
       [@TraitClause0]: core::marker::Sized<T>,
       [@TraitClause1]: core::marker::Sized<E>,
@@ -11,9 +11,9 @@ enum core::result::Result<T, E>
 |  Err(E)
 
 
-opaque type core::array::TryFromSliceError
+pub opaque type core::array::TryFromSliceError
 
-trait core::convert::TryFrom<Self, T>
+pub trait core::convert::TryFrom<Self, T>
 {
     parent_clause0 : [@TraitClause0]: core::marker::Sized<Self>
     parent_clause1 : [@TraitClause1]: core::marker::Sized<T>
@@ -22,29 +22,29 @@ trait core::convert::TryFrom<Self, T>
     fn try_from = core::convert::TryFrom::try_from<Self, T>
 }
 
-fn core::convert::{impl core::convert::TryInto<U> for T}#6::try_into<T, U>(@1: T) -> core::result::Result<U, @TraitClause2::Error>[@TraitClause1, @TraitClause2::parent_clause2]
+pub fn core::convert::{impl core::convert::TryInto<U> for T}#6::try_into<T, U>(@1: T) -> core::result::Result<U, @TraitClause2::Error>[@TraitClause1, @TraitClause2::parent_clause2]
 where
     [@TraitClause0]: core::marker::Sized<T>,
     [@TraitClause1]: core::marker::Sized<U>,
     [@TraitClause2]: core::convert::TryFrom<U, T>,
 
-trait core::clone::Clone<Self>
+pub trait core::clone::Clone<Self>
 {
     parent_clause0 : [@TraitClause0]: core::marker::Sized<Self>
     fn clone<'_0> = core::clone::Clone::clone<'_0_0, Self>
 }
 
-trait core::marker::Copy<Self>
+pub trait core::marker::Copy<Self>
 {
     parent_clause0 : [@TraitClause0]: core::clone::Clone<Self>
 }
 
-fn core::array::{impl core::convert::TryFrom<&'_0 (Slice<T>)> for Array<T, const N : usize>}#7::try_from<'_0, T, const N : usize>(@1: &'_0 (Slice<T>)) -> core::result::Result<Array<T, const N : usize>, core::array::TryFromSliceError>[core::marker::Sized<Array<T, const N : usize>>, core::marker::Sized<core::array::TryFromSliceError>]
+pub fn core::array::{impl core::convert::TryFrom<&'_0 (Slice<T>)> for Array<T, const N : usize>}#7::try_from<'_0, T, const N : usize>(@1: &'_0 (Slice<T>)) -> core::result::Result<Array<T, const N : usize>, core::array::TryFromSliceError>[core::marker::Sized<Array<T, const N : usize>>, core::marker::Sized<core::array::TryFromSliceError>]
 where
     [@TraitClause0]: core::marker::Sized<T>,
     [@TraitClause1]: core::marker::Copy<T>,
 
-impl<'_0, T, const N : usize> core::array::{impl core::convert::TryFrom<&'_0 (Slice<T>)> for Array<T, const N : usize>}#7<'_0, T, const N : usize> : core::convert::TryFrom<Array<T, const N : usize>, &'_0 (Slice<T>)>
+impl core::array::{impl core::convert::TryFrom<&'_0 (Slice<T>)> for Array<T, const N : usize>}#7<'_0, T, const N : usize> : core::convert::TryFrom<Array<T, const N : usize>, &'_0 (Slice<T>)>
 where
     [@TraitClause0]: core::marker::Sized<T>,
     [@TraitClause1]: core::marker::Copy<T>,
@@ -56,7 +56,7 @@ where
     fn try_from = core::array::{impl core::convert::TryFrom<&'_0 (Slice<T>)> for Array<T, const N : usize>}#7::try_from<'_0, T, const N : usize>[@TraitClause0, @TraitClause1]
 }
 
-fn core::clone::impls::{impl core::clone::Clone for u8}#6::clone<'_0>(@1: &'_0 (u8)) -> u8
+pub fn core::clone::impls::{impl core::clone::Clone for u8}#6::clone<'_0>(@1: &'_0 (u8)) -> u8
 
 impl core::clone::impls::{impl core::clone::Clone for u8}#6 : core::clone::Clone<u8>
 {
@@ -69,31 +69,31 @@ impl core::marker::{impl core::marker::Copy for u8}#38 : core::marker::Copy<u8>
     parent_clause0 = core::clone::impls::{impl core::clone::Clone for u8}#6
 }
 
-opaque type core::fmt::Formatter<'a>
+pub opaque type core::fmt::Formatter<'a>
   where
       'a : 'a,
 
-struct core::fmt::Error = {}
+pub struct core::fmt::Error = {}
 
-trait core::fmt::Debug<Self>
+pub trait core::fmt::Debug<Self>
 {
     fn fmt<'_0, '_1, '_2> = core::fmt::Debug::fmt<'_0_0, '_0_1, '_0_2, Self>
 }
 
-fn core::result::{core::result::Result<T, E>[@TraitClause0, @TraitClause1]}::unwrap<T, E>(@1: core::result::Result<T, E>[@TraitClause0, @TraitClause1]) -> T
+pub fn core::result::{core::result::Result<T, E>[@TraitClause0, @TraitClause1]}::unwrap<T, E>(@1: core::result::Result<T, E>[@TraitClause0, @TraitClause1]) -> T
 where
     [@TraitClause0]: core::marker::Sized<T>,
     [@TraitClause1]: core::marker::Sized<E>,
     [@TraitClause2]: core::fmt::Debug<E>,
 
-fn core::array::{impl core::fmt::Debug for core::array::TryFromSliceError}#26::fmt<'_0, '_1, '_2>(@1: &'_0 (core::array::TryFromSliceError), @2: &'_1 mut (core::fmt::Formatter<'_2>)) -> core::result::Result<(), core::fmt::Error>[core::marker::Sized<()>, core::marker::Sized<core::fmt::Error>]
+pub fn core::array::{impl core::fmt::Debug for core::array::TryFromSliceError}#26::fmt<'_0, '_1, '_2>(@1: &'_0 (core::array::TryFromSliceError), @2: &'_1 mut (core::fmt::Formatter<'_2>)) -> core::result::Result<(), core::fmt::Error>[core::marker::Sized<()>, core::marker::Sized<core::fmt::Error>]
 
 impl core::array::{impl core::fmt::Debug for core::array::TryFromSliceError}#26 : core::fmt::Debug<core::array::TryFromSliceError>
 {
     fn fmt<'_0, '_1, '_2> = core::array::{impl core::fmt::Debug for core::array::TryFromSliceError}#26::fmt<'_0_0, '_0_1, '_0_2>
 }
 
-fn test_crate::trait_error<'_0>(@1: &'_0 (Slice<u8>))
+pub fn test_crate::trait_error<'_0>(@1: &'_0 (Slice<u8>))
 {
     let @0: (); // return
     let s@1: &'_ (Slice<u8>); // arg #1
@@ -113,9 +113,9 @@ fn test_crate::trait_error<'_0>(@1: &'_0 (Slice<u8>))
     return
 }
 
-fn core::convert::TryInto::try_into<Self, T>(@1: Self) -> core::result::Result<T, Self::Error>[Self::parent_clause1, Self::parent_clause2]
+pub fn core::convert::TryInto::try_into<Self, T>(@1: Self) -> core::result::Result<T, Self::Error>[Self::parent_clause1, Self::parent_clause2]
 
-trait core::convert::TryInto<Self, T>
+pub trait core::convert::TryInto<Self, T>
 {
     parent_clause0 : [@TraitClause0]: core::marker::Sized<Self>
     parent_clause1 : [@TraitClause1]: core::marker::Sized<T>
@@ -124,7 +124,7 @@ trait core::convert::TryInto<Self, T>
     fn try_into = core::convert::TryInto::try_into<Self, T>
 }
 
-impl<T, U> core::convert::{impl core::convert::TryInto<U> for T}#6<T, U> : core::convert::TryInto<T, U>
+impl core::convert::{impl core::convert::TryInto<U> for T}#6<T, U> : core::convert::TryInto<T, U>
 where
     [@TraitClause0]: core::marker::Sized<T>,
     [@TraitClause1]: core::marker::Sized<U>,
@@ -137,11 +137,11 @@ where
     fn try_into = core::convert::{impl core::convert::TryInto<U> for T}#6::try_into<T, U>[@TraitClause0, @TraitClause1, @TraitClause2]
 }
 
-fn core::convert::TryFrom::try_from<Self, T>(@1: T) -> core::result::Result<Self, Self::Error>[Self::parent_clause0, Self::parent_clause2]
+pub fn core::convert::TryFrom::try_from<Self, T>(@1: T) -> core::result::Result<Self, Self::Error>[Self::parent_clause0, Self::parent_clause2]
 
-fn core::clone::Clone::clone<'_0, Self>(@1: &'_0 (Self)) -> Self
+pub fn core::clone::Clone::clone<'_0, Self>(@1: &'_0 (Self)) -> Self
 
-fn core::fmt::Debug::fmt<'_0, '_1, '_2, Self>(@1: &'_0 (Self), @2: &'_1 mut (core::fmt::Formatter<'_2>)) -> core::result::Result<(), core::fmt::Error>[core::marker::Sized<()>, core::marker::Sized<core::fmt::Error>]
+pub fn core::fmt::Debug::fmt<'_0, '_1, '_2, Self>(@1: &'_0 (Self), @2: &'_1 mut (core::fmt::Formatter<'_2>)) -> core::result::Result<(), core::fmt::Error>[core::marker::Sized<()>, core::marker::Sized<core::fmt::Error>]
 
 
 

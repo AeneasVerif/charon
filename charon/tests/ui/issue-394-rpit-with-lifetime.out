@@ -1,12 +1,12 @@
 # Final LLBC before serialization:
 
-trait core::marker::Sized<Self>
+pub trait core::marker::Sized<Self>
 
-opaque type core::iter::sources::from_fn::FromFn<F>
+pub opaque type core::iter::sources::from_fn::FromFn<F>
   where
       [@TraitClause0]: core::marker::Sized<F>,
 
-enum core::option::Option<T>
+pub enum core::option::Option<T>
   where
       [@TraitClause0]: core::marker::Sized<T>,
  =
@@ -23,9 +23,9 @@ fn test_crate::sparse_transitions::closure<'a, '_1>(@1: &'_1 mut (())) -> core::
     return
 }
 
-trait core::marker::Tuple<Self>
+pub trait core::marker::Tuple<Self>
 
-trait core::ops::function::FnOnce<Self, Args>
+pub trait core::ops::function::FnOnce<Self, Args>
 {
     parent_clause0 : [@TraitClause0]: core::marker::Sized<Args>
     parent_clause1 : [@TraitClause1]: core::marker::Tuple<Args>
@@ -34,7 +34,7 @@ trait core::ops::function::FnOnce<Self, Args>
     fn call_once = core::ops::function::FnOnce::call_once<Self, Args>
 }
 
-trait core::ops::function::FnMut<Self, Args>
+pub trait core::ops::function::FnMut<Self, Args>
 {
     parent_clause0 : [@TraitClause0]: core::ops::function::FnOnce<Self, Args>
     parent_clause1 : [@TraitClause1]: core::marker::Sized<Args>
@@ -42,7 +42,7 @@ trait core::ops::function::FnMut<Self, Args>
     fn call_mut<'_0> = core::ops::function::FnMut::call_mut<'_0_0, Self, Args>
 }
 
-fn core::iter::sources::from_fn::from_fn<T, F>(@1: F) -> core::iter::sources::from_fn::FromFn<F>[@TraitClause1]
+pub fn core::iter::sources::from_fn::from_fn<T, F>(@1: F) -> core::iter::sources::from_fn::FromFn<F>[@TraitClause1]
 where
     [@TraitClause0]: core::marker::Sized<T>,
     [@TraitClause1]: core::marker::Sized<F>,
@@ -60,9 +60,9 @@ fn test_crate::sparse_transitions<'a>() -> core::iter::sources::from_fn::FromFn<
     return
 }
 
-fn core::ops::function::FnMut::call_mut<'_0, Self, Args>(@1: &'_0 mut (Self), @2: Args) -> Self::parent_clause0::Output
+pub fn core::ops::function::FnMut::call_mut<'_0, Self, Args>(@1: &'_0 mut (Self), @2: Args) -> Self::parent_clause0::Output
 
-fn core::ops::function::FnOnce::call_once<Self, Args>(@1: Self, @2: Args) -> Self::Output
+pub fn core::ops::function::FnOnce::call_once<Self, Args>(@1: Self, @2: Args) -> Self::Output
 
 
 

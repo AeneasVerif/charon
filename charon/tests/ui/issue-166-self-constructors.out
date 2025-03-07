@@ -5,7 +5,7 @@ enum test_crate::Foo =
 |  B(usize)
 
 
-fn test_crate::{test_crate::Foo}::b() -> test_crate::Foo
+pub fn test_crate::{test_crate::Foo}::b() -> test_crate::Foo
 {
     let @0: test_crate::Foo; // return
 

@@ -1,12 +1,12 @@
 # Final LLBC before serialization:
 
-opaque type core::fmt::Arguments<'a>
+pub opaque type core::fmt::Arguments<'a>
   where
       'a : 'a,
 
-fn core::fmt::{core::fmt::Arguments<'a>}#2::new_const<'a, const N : usize>(@1: &'a (Array<&'static (Str), const N : usize>)) -> core::fmt::Arguments<'a>
+pub fn core::fmt::{core::fmt::Arguments<'a>}#2::new_const<'a, const N : usize>(@1: &'a (Array<&'static (Str), const N : usize>)) -> core::fmt::Arguments<'a>
 
-fn std::io::stdio::_print<'_0>(@1: core::fmt::Arguments<'_0>)
+pub fn std::io::stdio::_print<'_0>(@1: core::fmt::Arguments<'_0>)
 
 fn unsafe::main()
 {

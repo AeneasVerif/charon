@@ -1,14 +1,14 @@
 # Final LLBC before serialization:
 
-trait core::marker::Sized<Self>
+pub trait core::marker::Sized<Self>
 
-trait core::clone::Clone<Self>
+pub trait core::clone::Clone<Self>
 {
     parent_clause0 : [@TraitClause0]: core::marker::Sized<Self>
     fn clone<'_0> = core::clone::Clone::clone<'_0_0, Self>
 }
 
-trait core::marker::Copy<Self>
+pub trait core::marker::Copy<Self>
 {
     parent_clause0 : [@TraitClause0]: core::clone::Clone<Self>
 }
@@ -68,7 +68,7 @@ fn test_crate::{impl test_crate::MyCompare<&'a (())> for &'a (())}#1::compare<'a
     return
 }
 
-impl<'a> test_crate::{impl test_crate::MyCompare<&'a (())> for &'a (())}#1<'a> : test_crate::MyCompare<&'a (()), &'a (())>
+impl test_crate::{impl test_crate::MyCompare<&'a (())> for &'a (())}#1<'a> : test_crate::MyCompare<&'a (()), &'a (())>
 {
     parent_clause0 = core::marker::Sized<&'_ (())>
     parent_clause1 = core::marker::Sized<&'_ (())>
@@ -179,7 +179,7 @@ fn test_crate::MyCompare::compare<Self, Other>(@1: Self, @2: Other) -> bool
 
 fn test_crate::Foo::foo<'a, 'b, Self>(@1: &'a (()), @2: &'b (())) -> &'a (())
 
-fn core::clone::Clone::clone<'_0, Self>(@1: &'_0 (Self)) -> Self
+pub fn core::clone::Clone::clone<'_0, Self>(@1: &'_0 (Self)) -> Self
 
 
 
