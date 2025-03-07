@@ -24,6 +24,7 @@ pub fn test_crate::test1(@1: test_crate::E1) -> bool
     return
 }
 
+#[lang_item("sized")]
 pub trait core::marker::Sized<Self>
 
 pub fn test_crate::id<T>(@1: T) -> T

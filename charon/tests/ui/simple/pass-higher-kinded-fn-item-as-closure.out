@@ -9,10 +9,13 @@ pub fn test_crate::flabada<'a>(@1: &'a (())) -> &'a (())
     return
 }
 
+#[lang_item("sized")]
 pub trait core::marker::Sized<Self>
 
+#[lang_item("tuple_trait")]
 pub trait core::marker::Tuple<Self>
 
+#[lang_item("fn_once")]
 pub trait core::ops::function::FnOnce<Self, Args, Self_Output>
 {
     parent_clause0 : [@TraitClause0]: core::marker::Sized<Args>
@@ -21,6 +24,7 @@ pub trait core::ops::function::FnOnce<Self, Args, Self_Output>
     fn call_once = core::ops::function::FnOnce::call_once<Self, Args, Self_Output>
 }
 
+#[lang_item("fn_mut")]
 pub trait core::ops::function::FnMut<Self, Args, Self_Clause0_Output>
 {
     parent_clause0 : [@TraitClause0]: core::ops::function::FnOnce<Self, Args, Self_Clause0_Output>
@@ -29,6 +33,7 @@ pub trait core::ops::function::FnMut<Self, Args, Self_Clause0_Output>
     fn call_mut<'_0> = core::ops::function::FnMut::call_mut<'_0_0, Self, Args, Self_Clause0_Output>
 }
 
+#[lang_item("r#fn")]
 pub trait core::ops::function::Fn<Self, Args, Self_Clause0_Clause0_Output>
 {
     parent_clause0 : [@TraitClause0]: core::ops::function::FnMut<Self, Args, Self_Clause0_Clause0_Output>

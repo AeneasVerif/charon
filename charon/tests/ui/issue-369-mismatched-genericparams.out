@@ -1,5 +1,6 @@
 # Final LLBC before serialization:
 
+#[lang_item("sized")]
 pub trait core::marker::Sized<Self>
 
 pub trait test_crate::FromResidual<Self, R>
@@ -14,6 +15,7 @@ pub trait test_crate::Try<Self>
     type Residual
 }
 
+#[lang_item("Option")]
 pub enum core::option::Option<T>
   where
       [@TraitClause0]: core::marker::Sized<T>,

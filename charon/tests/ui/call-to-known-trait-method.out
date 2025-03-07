@@ -1,5 +1,6 @@
 # Final LLBC before serialization:
 
+#[lang_item("sized")]
 pub trait core::marker::Sized<Self>
 
 struct test_crate::Struct<A>
@@ -10,12 +11,14 @@ struct test_crate::Struct<A>
   A,
 }
 
+#[lang_item("Default")]
 pub trait core::default::Default<Self>
 {
     parent_clause0 : [@TraitClause0]: core::marker::Sized<Self>
     fn default = core::default::Default::default<Self>
 }
 
+#[lang_item("default_fn")]
 pub fn core::default::Default::default<Self>() -> Self
 
 pub fn test_crate::{impl core::default::Default for test_crate::Struct<A>[@TraitClause0]}#1::default<A>() -> test_crate::Struct<A>[@TraitClause0]
@@ -49,12 +52,14 @@ trait test_crate::Trait<Self, B, Self_Item>
     fn method<C, [@TraitClause0]: core::marker::Sized<C>> = test_crate::Trait::method<Self, B, C, Self_Item>[@TraitClause0_0]
 }
 
+#[lang_item("clone")]
 pub trait core::clone::Clone<Self>
 {
     parent_clause0 : [@TraitClause0]: core::marker::Sized<Self>
     fn clone<'_0> = core::clone::Clone::clone<'_0_0, Self>
 }
 
+#[lang_item("eq")]
 pub trait core::cmp::PartialEq<Self, Rhs>
 {
     fn eq<'_0, '_1> = core::cmp::PartialEq::eq<'_0_0, '_0_1, Self, Rhs>
@@ -95,6 +100,7 @@ impl core::default::{impl core::default::Default for bool}#1 : core::default::De
     fn default = core::default::{impl core::default::Default for bool}#1::default
 }
 
+#[lang_item("String")]
 pub opaque type alloc::string::String
 
 pub fn core::clone::impls::{impl core::clone::Clone for u8}#6::clone<'_0>(@1: &'_0 (u8)) -> u8
@@ -136,8 +142,10 @@ fn test_crate::Trait::method<Self, B, C, Self_Item>()
 where
     [@TraitClause0]: core::marker::Sized<C>,
 
+#[lang_item("clone_fn")]
 pub fn core::clone::Clone::clone<'_0, Self>(@1: &'_0 (Self)) -> Self
 
+#[lang_item("cmp_partialeq_eq")]
 pub fn core::cmp::PartialEq::eq<'_0, '_1, Self, Rhs>(@1: &'_0 (Self), @2: &'_1 (Rhs)) -> bool
 
 

@@ -772,13 +772,17 @@ and item_meta_of_json (ctx : of_json_ctx) (js : json) :
           ("attr_info", attr_info);
           ("is_local", is_local);
           ("opacity", _);
+          ("lang_item", lang_item);
         ] ->
         let* name = name_of_json ctx name in
         let* span = span_of_json ctx span in
         let* source_text = option_of_json string_of_json ctx source_text in
         let* attr_info = attr_info_of_json ctx attr_info in
         let* is_local = bool_of_json ctx is_local in
-        Ok ({ name; span; source_text; attr_info; is_local } : item_meta)
+        let* lang_item = option_of_json string_of_json ctx lang_item in
+        Ok
+          ({ name; span; source_text; attr_info; is_local; lang_item }
+            : item_meta)
     | _ -> Error "")
 
 and file_name_of_json (ctx : of_json_ctx) (js : json) :

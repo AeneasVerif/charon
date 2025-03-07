@@ -1,5 +1,6 @@
 # Final LLBC before serialization:
 
+#[lang_item("sized")]
 pub trait core::marker::Sized<Self>
 
 pub trait test_crate::HasOutput<Self, Self_Output>

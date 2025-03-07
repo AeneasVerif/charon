@@ -14,6 +14,7 @@ struct test_crate::SStatic =
   x: &'static (u32),
 }
 
+#[lang_item("sized")]
 pub trait core::marker::Sized<Self>
 
 enum test_crate::E0<'a, 'b, T1, T2>
@@ -26,6 +27,7 @@ enum test_crate::E0<'a, 'b, T1, T2>
 |  V1(&'a mut (T1), &'b mut (T2))
 
 
+#[lang_item("global_alloc_ty")]
 pub struct alloc::alloc::Global = {}
 
 enum test_crate::E1<'a, 'b, T1, T2>

@@ -1,7 +1,9 @@
 # Final LLBC before serialization:
 
+#[lang_item("sized")]
 pub trait core::marker::Sized<Self>
 
+#[lang_item("clone")]
 pub trait core::clone::Clone<Self>
 {
     parent_clause0 : [@TraitClause0]: core::marker::Sized<Self>
@@ -119,6 +121,7 @@ pub fn test_crate::RPITIT::make_foo<Self>() -> Self::
 
 pub fn test_crate::Foo::get_ty<'_0, Self>(@1: &'_0 (Self)) -> &'_0 (Self::Type)
 
+#[lang_item("clone_fn")]
 pub fn core::clone::Clone::clone<'_0, Self>(@1: &'_0 (Self)) -> Self
 
 fn test_crate::use_tait<T>()
@@ -161,6 +164,7 @@ pub struct test_crate::WrapClone<T>
   T,
 }
 
+#[lang_item("noop_method_clone")]
 pub fn core::clone::impls::{impl core::clone::Clone for &'_0 (T)}#3::clone<'_0, '_1, T>(@1: &'_1 (&'_0 (T))) -> &'_0 (T)
 
 impl core::clone::impls::{impl core::clone::Clone for &'_0 (T)}#3<'_0, T> : core::clone::Clone<&'_0 (T)>
@@ -194,8 +198,10 @@ where
     return
 }
 
+#[lang_item("tuple_trait")]
 pub trait core::marker::Tuple<Self>
 
+#[lang_item("fn_once")]
 pub trait core::ops::function::FnOnce<Self, Args>
 {
     parent_clause0 : [@TraitClause0]: core::marker::Sized<Args>

@@ -1,7 +1,9 @@
 # Final LLBC before serialization:
 
+#[lang_item("sized")]
 pub trait core::marker::Sized<Self>
 
+#[lang_item("mem_swap")]
 pub fn core::mem::swap<'_0, '_1, T>(@1: &'_0 mut (T), @2: &'_1 mut (T))
 where
     [@TraitClause0]: core::marker::Sized<T>,
@@ -25,12 +27,14 @@ where
     return
 }
 
+#[lang_item("clone")]
 pub trait core::clone::Clone<Self>
 {
     parent_clause0 : [@TraitClause0]: core::marker::Sized<Self>
     fn clone<'_0> = core::clone::Clone::clone<'_0_0, Self>
 }
 
+#[lang_item("copy")]
 pub trait core::marker::Copy<Self>
 {
     parent_clause0 : [@TraitClause0]: core::clone::Clone<Self>
@@ -48,6 +52,7 @@ pub trait core::num::nonzero::ZeroablePrimitive<Self>
     type NonZeroInner
 }
 
+#[lang_item("NonZero")]
 pub opaque type core::num::nonzero::NonZero<T>
   where
       [@TraitClause0]: core::marker::Sized<T>,
@@ -93,6 +98,7 @@ impl core::num::nonzero::{impl core::num::nonzero::ZeroablePrimitive for u32}#20
     type NonZeroInner = core::num::nonzero::private::NonZeroU32Inner
 }
 
+#[lang_item("Option")]
 pub enum core::option::Option<T>
   where
       [@TraitClause0]: core::marker::Sized<T>,
@@ -106,6 +112,7 @@ where
     [@TraitClause0]: core::marker::Sized<T>,
     [@TraitClause1]: core::num::nonzero::ZeroablePrimitive<T>,
 
+#[lang_item("option_unwrap")]
 pub fn core::option::{core::option::Option<T>[@TraitClause0]}::unwrap<T>(@1: core::option::Option<T>[@TraitClause0]) -> T
 where
     [@TraitClause0]: core::marker::Sized<T>,
@@ -125,13 +132,16 @@ pub fn test_crate::test_new_non_zero_u32(@1: u32) -> core::num::nonzero::NonZero
     return
 }
 
+#[lang_item("Vec")]
 pub opaque type alloc::vec::Vec<T, A>
   where
       [@TraitClause0]: core::marker::Sized<T>,
       [@TraitClause1]: core::marker::Sized<A>,
 
+#[lang_item("global_alloc_ty")]
 pub struct alloc::alloc::Global = {}
 
+#[lang_item("vec_new")]
 pub fn alloc::vec::{alloc::vec::Vec<T, alloc::alloc::Global>[@TraitClause0, core::marker::Sized<alloc::alloc::Global>]}::new<T>() -> alloc::vec::Vec<T, alloc::alloc::Global>[@TraitClause0, core::marker::Sized<alloc::alloc::Global>]
 where
     [@TraitClause0]: core::marker::Sized<T>,
@@ -199,6 +209,7 @@ pub fn test_crate::incr<'_0>(@1: &'_0 mut (core::cell::Cell<u32>))
     return
 }
 
+#[lang_item("clone_fn")]
 pub fn core::clone::Clone::clone<'_0, Self>(@1: &'_0 (Self)) -> Self
 
 

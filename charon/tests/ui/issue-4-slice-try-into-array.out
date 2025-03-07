@@ -1,7 +1,9 @@
 # Final LLBC before serialization:
 
+#[lang_item("sized")]
 pub trait core::marker::Sized<Self>
 
+#[lang_item("Result")]
 pub enum core::result::Result<T, E>
   where
       [@TraitClause0]: core::marker::Sized<T>,
@@ -13,6 +15,7 @@ pub enum core::result::Result<T, E>
 
 pub opaque type core::array::TryFromSliceError
 
+#[lang_item("TryFrom")]
 pub trait core::convert::TryFrom<Self, T>
 {
     parent_clause0 : [@TraitClause0]: core::marker::Sized<Self>
@@ -28,12 +31,14 @@ where
     [@TraitClause1]: core::marker::Sized<U>,
     [@TraitClause2]: core::convert::TryFrom<U, T>,
 
+#[lang_item("clone")]
 pub trait core::clone::Clone<Self>
 {
     parent_clause0 : [@TraitClause0]: core::marker::Sized<Self>
     fn clone<'_0> = core::clone::Clone::clone<'_0_0, Self>
 }
 
+#[lang_item("copy")]
 pub trait core::marker::Copy<Self>
 {
     parent_clause0 : [@TraitClause0]: core::clone::Clone<Self>
@@ -69,12 +74,14 @@ impl core::marker::{impl core::marker::Copy for u8}#38 : core::marker::Copy<u8>
     parent_clause0 = core::clone::impls::{impl core::clone::Clone for u8}#6
 }
 
+#[lang_item("Formatter")]
 pub opaque type core::fmt::Formatter<'a>
   where
       'a : 'a,
 
 pub struct core::fmt::Error = {}
 
+#[lang_item("Debug")]
 pub trait core::fmt::Debug<Self>
 {
     fn fmt<'_0, '_1, '_2> = core::fmt::Debug::fmt<'_0_0, '_0_1, '_0_2, Self>
@@ -115,6 +122,7 @@ pub fn test_crate::trait_error<'_0>(@1: &'_0 (Slice<u8>))
 
 pub fn core::convert::TryInto::try_into<Self, T>(@1: Self) -> core::result::Result<T, Self::Error>[Self::parent_clause1, Self::parent_clause2]
 
+#[lang_item("TryInto")]
 pub trait core::convert::TryInto<Self, T>
 {
     parent_clause0 : [@TraitClause0]: core::marker::Sized<Self>
@@ -137,8 +145,10 @@ where
     fn try_into = core::convert::{impl core::convert::TryInto<U> for T}#6::try_into<T, U>[@TraitClause0, @TraitClause1, @TraitClause2]
 }
 
+#[lang_item("try_from_fn")]
 pub fn core::convert::TryFrom::try_from<Self, T>(@1: T) -> core::result::Result<Self, Self::Error>[Self::parent_clause0, Self::parent_clause2]
 
+#[lang_item("clone_fn")]
 pub fn core::clone::Clone::clone<'_0, Self>(@1: &'_0 (Self)) -> Self
 
 pub fn core::fmt::Debug::fmt<'_0, '_1, '_2, Self>(@1: &'_0 (Self), @2: &'_1 mut (core::fmt::Formatter<'_2>)) -> core::result::Result<(), core::fmt::Error>[core::marker::Sized<()>, core::marker::Sized<core::fmt::Error>]

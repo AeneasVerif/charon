@@ -1,13 +1,16 @@
 # Final LLBC before serialization:
 
+#[lang_item("sized")]
 pub trait core::marker::Sized<Self>
 
+#[lang_item("clone")]
 pub trait core::clone::Clone<Self>
 {
     parent_clause0 : [@TraitClause0]: core::marker::Sized<Self>
     fn clone<'_0> = core::clone::Clone::clone<'_0_0, Self>
 }
 
+#[lang_item("copy")]
 pub trait core::marker::Copy<Self>
 {
     parent_clause0 : [@TraitClause0]: core::clone::Clone<Self>
@@ -24,6 +27,7 @@ where
     fn use_item_provided<Clause0_Item, [@TraitClause0]: test_crate::Foo<'a, Self_Item, Clause0_Item>> = test_crate::Foo::use_item_provided<'a, Self, Clause0_Item, Self_Item>[@TraitClause0_0]
 }
 
+#[lang_item("Option")]
 pub enum core::option::Option<T>
   where
       [@TraitClause0]: core::marker::Sized<T>,
@@ -32,6 +36,7 @@ pub enum core::option::Option<T>
 |  Some(T)
 
 
+#[lang_item("noop_method_clone")]
 pub fn core::clone::impls::{impl core::clone::Clone for &'_0 (T)}#3::clone<'_0, '_1, T>(@1: &'_1 (&'_0 (T))) -> &'_0 (T)
 
 impl core::clone::impls::{impl core::clone::Clone for &'_0 (T)}#3<'_0, T> : core::clone::Clone<&'_0 (T)>
@@ -152,6 +157,7 @@ where
     return
 }
 
+#[lang_item("clone_fn")]
 pub fn core::clone::Clone::clone<'_0, Self>(@1: &'_0 (Self)) -> Self
 
 fn test_crate::external_use_item<'a, T, Clause1_Item, Clause2_Item>(@1: Clause1_Item) -> Clause1_Item
@@ -292,11 +298,13 @@ impl test_crate::loopy_with_generics::{impl test_crate::loopy_with_generics::Foo
     type Self_Clause3_BarTy = &'_ (core::option::Option<u16>[core::marker::Sized<u16>])
 }
 
+#[lang_item("Borrow")]
 pub trait core::borrow::Borrow<Self, Borrowed>
 {
     fn borrow<'_0> = core::borrow::Borrow::borrow<'_0_0, Self, Borrowed>
 }
 
+#[lang_item("ToOwned")]
 pub trait alloc::borrow::ToOwned<Self, Self_Owned>
 {
     parent_clause0 : [@TraitClause0]: core::marker::Sized<Self_Owned>
@@ -336,6 +344,7 @@ where
 
 fn test_crate::Foo::use_item_required<'a, Self, Self_Item>(@1: Self_Item) -> Self_Item
 
+#[lang_item("to_owned_method")]
 pub fn alloc::borrow::ToOwned::to_owned<'_0, Self, Self_Owned>(@1: &'_0 (Self)) -> Self_Owned
 
 pub fn core::borrow::Borrow::borrow<'_0, Self, Borrowed>(@1: &'_0 (Self)) -> &'_0 (Borrowed)

@@ -6,6 +6,7 @@ pub struct test_crate::DefaultHasher = {}
 
 impl test_crate::{impl test_crate::Hasher for test_crate::DefaultHasher} : test_crate::Hasher<test_crate::DefaultHasher>
 
+#[lang_item("sized")]
 pub trait core::marker::Sized<Self>
 
 pub trait test_crate::Hash<Self>

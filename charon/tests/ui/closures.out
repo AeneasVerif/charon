@@ -12,10 +12,13 @@ pub fn test_crate::incr_u32(@1: u32) -> u32
     return
 }
 
+#[lang_item("sized")]
 pub trait core::marker::Sized<Self>
 
+#[lang_item("tuple_trait")]
 pub trait core::marker::Tuple<Self>
 
+#[lang_item("fn_once")]
 pub trait core::ops::function::FnOnce<Self, Args, Self_Output>
 {
     parent_clause0 : [@TraitClause0]: core::marker::Sized<Args>
@@ -24,6 +27,7 @@ pub trait core::ops::function::FnOnce<Self, Args, Self_Output>
     fn call_once = core::ops::function::FnOnce::call_once<Self, Args, Self_Output>
 }
 
+#[lang_item("fn_mut")]
 pub trait core::ops::function::FnMut<Self, Args, Self_Clause0_Output>
 {
     parent_clause0 : [@TraitClause0]: core::ops::function::FnOnce<Self, Args, Self_Clause0_Output>
@@ -32,6 +36,7 @@ pub trait core::ops::function::FnMut<Self, Args, Self_Clause0_Output>
     fn call_mut<'_0> = core::ops::function::FnMut::call_mut<'_0_0, Self, Args, Self_Clause0_Output>
 }
 
+#[lang_item("r#fn")]
 pub trait core::ops::function::Fn<Self, Args, Self_Clause0_Clause0_Output>
 {
     parent_clause0 : [@TraitClause0]: core::ops::function::FnMut<Self, Args, Self_Clause0_Clause0_Output>
@@ -40,6 +45,7 @@ pub trait core::ops::function::Fn<Self, Args, Self_Clause0_Clause0_Output>
     fn call<'_0> = core::ops::function::Fn::call<'_0_0, Self, Args, Self_Clause0_Clause0_Output>
 }
 
+#[lang_item("Option")]
 pub enum core::option::Option<T>
   where
       [@TraitClause0]: core::marker::Sized<T>,
@@ -408,12 +414,14 @@ pub fn test_crate::test_map_option_id2(@1: core::option::Option<u32>[core::marke
     return
 }
 
+#[lang_item("clone")]
 pub trait core::clone::Clone<Self>
 {
     parent_clause0 : [@TraitClause0]: core::marker::Sized<Self>
     fn clone<'_0> = core::clone::Clone::clone<'_0_0, Self>
 }
 
+#[lang_item("clone_fn")]
 pub fn core::clone::Clone::clone<'_0, Self>(@1: &'_0 (Self)) -> Self
 
 pub fn test_crate::id_clone<T>(@1: T) -> T

@@ -9,6 +9,7 @@ fn test_crate::foo::bar()
     return
 }
 
+#[lang_item("sized")]
 pub trait core::marker::Sized<Self>
 
 trait test_crate::Trait<Self, T>
@@ -17,8 +18,10 @@ trait test_crate::Trait<Self, T>
     fn method<U, [@TraitClause0]: core::marker::Sized<U>> = test_crate::Trait::method<Self, T, U>[@TraitClause0_0]
 }
 
+#[lang_item("global_alloc_ty")]
 pub struct alloc::alloc::Global = {}
 
+#[lang_item("Option")]
 pub enum core::option::Option<T>
   where
       [@TraitClause0]: core::marker::Sized<T>,

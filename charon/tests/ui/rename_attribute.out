@@ -30,6 +30,7 @@ impl test_crate::{impl test_crate::BoolTrait for bool} : test_crate::BoolTrait<b
     fn ret_true<'_0> = test_crate::{impl test_crate::BoolTrait for bool}::ret_true<'_0_0>
 }
 
+#[lang_item("sized")]
 pub trait core::marker::Sized<Self>
 
 pub fn test_crate::test_bool_trait<T>(@1: bool) -> bool

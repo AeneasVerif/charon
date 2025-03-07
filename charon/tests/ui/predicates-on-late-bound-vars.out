@@ -1,7 +1,9 @@
 # Final LLBC before serialization:
 
+#[lang_item("sized")]
 pub trait core::marker::Sized<Self>
 
+#[lang_item("Option")]
 pub enum core::option::Option<T>
   where
       [@TraitClause0]: core::marker::Sized<T>,
@@ -22,6 +24,7 @@ fn test_crate::wrap<'a>(@1: &'a (u32)) -> core::option::Option<&'a (u32)>[core::
     return
 }
 
+#[lang_item("clone")]
 pub trait core::clone::Clone<Self>
 {
     parent_clause0 : [@TraitClause0]: core::marker::Sized<Self>
@@ -42,8 +45,10 @@ where
     return
 }
 
+#[lang_item("RefCell")]
 pub opaque type core::cell::RefCell<T>
 
+#[lang_item("Result")]
 pub enum core::result::Result<T, E>
   where
       [@TraitClause0]: core::marker::Sized<T>,
@@ -53,6 +58,7 @@ pub enum core::result::Result<T, E>
 |  Err(E)
 
 
+#[lang_item("RefCellRef")]
 pub opaque type core::cell::Ref<'b, T>
   where
       T : 'b,
@@ -106,6 +112,7 @@ where
     panic(core::panicking::panic)
 }
 
+#[lang_item("clone_fn")]
 pub fn core::clone::Clone::clone<'_0, Self>(@1: &'_0 (Self)) -> Self
 
 

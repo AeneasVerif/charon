@@ -1,7 +1,9 @@
 # Final LLBC before serialization:
 
+#[lang_item("sized")]
 pub trait core::marker::Sized<Self>
 
+#[lang_item("Option")]
 pub enum core::option::Option<T>
   where
       [@TraitClause0]: core::marker::Sized<T>,
@@ -10,6 +12,7 @@ pub enum core::option::Option<T>
 |  Some(T)
 
 
+#[lang_item("eq")]
 pub trait core::cmp::PartialEq<Self, Rhs>
 {
     fn eq<'_0, '_1> = core::cmp::PartialEq::eq<'_0_0, '_0_1, Self, Rhs>
@@ -57,6 +60,7 @@ struct test_crate::Foo =
   u32,
 }
 
+#[lang_item("structural_peq")]
 pub trait core::marker::StructuralPartialEq<Self>
 
 impl test_crate::{impl core::marker::StructuralPartialEq for test_crate::Foo} : core::marker::StructuralPartialEq<test_crate::Foo>
@@ -82,12 +86,14 @@ impl test_crate::{impl core::cmp::PartialEq<test_crate::Foo> for test_crate::Foo
     fn eq<'_0, '_1> = test_crate::{impl core::cmp::PartialEq<test_crate::Foo> for test_crate::Foo}#1::eq<'_0_0, '_0_1>
 }
 
+#[lang_item("Ordering")]
 pub enum core::cmp::Ordering =
 |  Less()
 |  Equal()
 |  Greater()
 
 
+#[lang_item("partial_ord")]
 pub trait core::cmp::PartialOrd<Self, Rhs>
 {
     parent_clause0 : [@TraitClause0]: core::cmp::PartialEq<Self, Rhs>
@@ -124,6 +130,7 @@ impl test_crate::{impl core::cmp::PartialOrd<test_crate::Foo> for test_crate::Fo
     fn partial_cmp<'_0, '_1> = test_crate::{impl core::cmp::PartialOrd<test_crate::Foo> for test_crate::Foo}#2::partial_cmp<'_0_0, '_0_1>
 }
 
+#[lang_item("cmp_partialeq_eq")]
 pub fn core::cmp::PartialEq::eq<'_0, '_1, Self, Rhs>(@1: &'_0 (Self), @2: &'_1 (Rhs)) -> bool
 
 impl core::option::{impl core::cmp::PartialEq<core::option::Option<T>[@TraitClause0]> for core::option::Option<T>[@TraitClause0]}#14<T> : core::cmp::PartialEq<core::option::Option<T>[@TraitClause0], core::option::Option<T>[@TraitClause0]>
@@ -134,6 +141,7 @@ where
     fn eq<'_0, '_1> = core::option::{impl core::cmp::PartialEq<core::option::Option<T>[@TraitClause0]> for core::option::Option<T>[@TraitClause0]}#14::eq<'_0_0, '_0_1, T>[@TraitClause0, @TraitClause1]
 }
 
+#[lang_item("cmp_partialord_cmp")]
 pub fn core::cmp::PartialOrd::partial_cmp<'_0, '_1, Self, Rhs>(@1: &'_0 (Self), @2: &'_1 (Rhs)) -> core::option::Option<core::cmp::Ordering>[core::marker::Sized<core::cmp::Ordering>]
 
 pub fn core::cmp::impls::{impl core::cmp::PartialEq<u32> for u32}#24::eq<'_0, '_1>(@1: &'_0 (u32), @2: &'_1 (u32)) -> bool

@@ -1,5 +1,6 @@
 # Final LLBC before serialization:
 
+#[lang_item("sized")]
 pub trait core::marker::Sized<Self>
 
 trait test_crate::Left<Self, T>
@@ -18,16 +19,19 @@ trait test_crate::Join<Self, U>
     fn test = test_crate::Join::test<Self, U>
 }
 
+#[lang_item("Default")]
 pub trait core::default::Default<Self>
 {
     parent_clause0 : [@TraitClause0]: core::marker::Sized<Self>
     fn default = core::default::Default::default<Self>
 }
 
+#[lang_item("Formatter")]
 pub opaque type core::fmt::Formatter<'a>
   where
       'a : 'a,
 
+#[lang_item("Result")]
 pub enum core::result::Result<T, E>
   where
       [@TraitClause0]: core::marker::Sized<T>,
@@ -39,17 +43,21 @@ pub enum core::result::Result<T, E>
 
 pub struct core::fmt::Error = {}
 
+#[lang_item("Debug")]
 pub trait core::fmt::Debug<Self>
 {
     fn fmt<'_0, '_1, '_2> = core::fmt::Debug::fmt<'_0_0, '_0_1, '_0_2, Self>
 }
 
+#[lang_item("format_arguments")]
 pub opaque type core::fmt::Arguments<'a>
   where
       'a : 'a,
 
+#[lang_item("format_argument")]
 pub opaque type core::fmt::rt::Argument<'a>
 
+#[lang_item("default_fn")]
 pub fn core::default::Default::default<Self>() -> Self
 
 pub fn core::fmt::rt::{core::fmt::rt::Argument<'_0>}#1::new_debug<'_0, '_1, T>(@1: &'_1 (T)) -> core::fmt::rt::Argument<'_1>

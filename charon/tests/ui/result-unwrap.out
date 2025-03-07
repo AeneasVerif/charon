@@ -1,7 +1,9 @@
 # Final LLBC before serialization:
 
+#[lang_item("sized")]
 pub trait core::marker::Sized<Self>
 
+#[lang_item("Result")]
 pub enum core::result::Result<T, E>
   where
       [@TraitClause0]: core::marker::Sized<T>,
@@ -11,6 +13,7 @@ pub enum core::result::Result<T, E>
 |  Err(E)
 
 
+#[lang_item("format_alignment")]
 pub enum core::fmt::rt::Alignment =
 |  Left()
 |  Right()
@@ -18,6 +21,7 @@ pub enum core::fmt::rt::Alignment =
 |  Unknown()
 
 
+#[lang_item("Option")]
 pub enum core::option::Option<T>
   where
       [@TraitClause0]: core::marker::Sized<T>,
@@ -26,6 +30,7 @@ pub enum core::option::Option<T>
 |  Some(T)
 
 
+#[lang_item("Formatter")]
 pub struct core::fmt::Formatter<'a>
   where
       'a : 'a,
@@ -41,6 +46,7 @@ pub struct core::fmt::Formatter<'a>
 
 pub struct core::fmt::Error = {}
 
+#[lang_item("Debug")]
 pub trait core::fmt::Debug<Self>
 {
     fn fmt<'_0, '_1, '_2> = core::fmt::Debug::fmt<'_0_0, '_0_1, '_0_2, Self>
@@ -153,6 +159,7 @@ impl core::fmt::num::{impl core::fmt::LowerHex for u32}#60 : core::fmt::LowerHex
 
 pub fn core::fmt::Display::fmt<'_0, '_1, '_2, Self>(@1: &'_0 (Self), @2: &'_1 mut (core::fmt::Formatter<'_2>)) -> core::result::Result<(), core::fmt::Error>[core::marker::Sized<()>, core::marker::Sized<core::fmt::Error>]
 
+#[lang_item("Display")]
 pub trait core::fmt::Display<Self>
 {
     fn fmt<'_0, '_1, '_2> = core::fmt::Display::fmt<'_0_0, '_0_1, '_0_2, Self>

@@ -1,5 +1,6 @@
 # Final LLBC before serialization:
 
+#[lang_item("sized")]
 pub trait core::marker::Sized<Self>
 
 pub trait test_crate::Trait<Self>
@@ -8,6 +9,7 @@ pub trait test_crate::Trait<Self>
     type AssocType
 }
 
+#[lang_item("Option")]
 pub enum core::option::Option<T>
   where
       [@TraitClause0]: core::marker::Sized<T>,
@@ -25,6 +27,7 @@ pub trait test_crate::C<Self, T>
     parent_clause0 : [@TraitClause0]: core::marker::Sized<T>
 }
 
+#[lang_item("iterator")]
 pub trait core::iter::traits::iterator::Iterator<Self>
 {
     parent_clause0 : [@TraitClause0]: core::marker::Sized<Self::Item>
@@ -49,8 +52,10 @@ pub type test_crate::S2<I, F>
       [@TraitClause0]: core::marker::Sized<I>,
       [@TraitClause1]: core::marker::Sized<F>, = test_crate::S<I, F>[@TraitClause0, @TraitClause1, UNKNOWN(Could not find a clause for `Binder { value: <I as std::iter::Iterator>, bound_vars: [] }` in the current context: `Unimplemented`), UNKNOWN(Could not find a clause for `Binder { value: <F as C<<I as std::iter::Iterator>::Item>>, bound_vars: [] }` in the current context: `Unimplemented`)]
 
+#[lang_item("next")]
 pub fn core::iter::traits::iterator::Iterator::next<'_0, Self>(@1: &'_0 mut (Self)) -> core::option::Option<Self::Item>[Self::parent_clause0]
 
+#[lang_item("IntoIterator")]
 pub trait core::iter::traits::collect::IntoIterator<Self>
 where
     Self::parent_clause2::Item = Self::Item,
@@ -63,14 +68,17 @@ where
     fn into_iter = core::iter::traits::collect::IntoIterator::into_iter<Self>
 }
 
+#[lang_item("clone")]
 pub trait core::clone::Clone<Self>
 {
     parent_clause0 : [@TraitClause0]: core::marker::Sized<Self>
     fn clone<'_0> = core::clone::Clone::clone<'_0_0, Self>
 }
 
+#[lang_item("tuple_trait")]
 pub trait core::marker::Tuple<Self>
 
+#[lang_item("fn_once")]
 pub trait core::ops::function::FnOnce<Self, Args>
 {
     parent_clause0 : [@TraitClause0]: core::marker::Sized<Args>
@@ -80,6 +88,7 @@ pub trait core::ops::function::FnOnce<Self, Args>
     fn call_once = core::ops::function::FnOnce::call_once<Self, Args>
 }
 
+#[lang_item("fn_mut")]
 pub trait core::ops::function::FnMut<Self, Args>
 {
     parent_clause0 : [@TraitClause0]: core::ops::function::FnOnce<Self, Args>
@@ -88,6 +97,7 @@ pub trait core::ops::function::FnMut<Self, Args>
     fn call_mut<'_0> = core::ops::function::FnMut::call_mut<'_0_0, Self, Args>
 }
 
+#[lang_item("FromIterator")]
 pub trait core::iter::traits::collect::FromIterator<Self, A>
 {
     parent_clause0 : [@TraitClause0]: core::marker::Sized<Self>
@@ -95,6 +105,7 @@ pub trait core::iter::traits::collect::FromIterator<Self, A>
     fn from_iter<T, [@TraitClause0]: core::marker::Sized<T>, [@TraitClause1]: core::iter::traits::collect::IntoIterator<T>, @TraitClause1_1::Item = A> = core::iter::traits::collect::FromIterator::from_iter<Self, A, T>[@TraitClause0_0, @TraitClause0_1]
 }
 
+#[lang_item("FromResidual")]
 pub trait core::ops::try_trait::FromResidual<Self, R>
 {
     parent_clause0 : [@TraitClause0]: core::marker::Sized<R>
@@ -110,6 +121,7 @@ pub enum core::ops::control_flow::ControlFlow<B, C>
 |  Break(B)
 
 
+#[lang_item("Try")]
 pub trait core::ops::try_trait::Try<Self>
 {
     parent_clause0 : [@TraitClause0]: core::ops::try_trait::FromResidual<Self, Self::Residual>
@@ -138,12 +150,14 @@ pub trait core::iter::traits::collect::Extend<Self, A>
     fn extend<'_0, T, [@TraitClause0]: core::marker::Sized<T>, [@TraitClause1]: core::iter::traits::collect::IntoIterator<T>, @TraitClause1_1::Item = A> = core::iter::traits::collect::Extend::extend<'_0_0, Self, A, T>[@TraitClause0_0, @TraitClause0_1]
 }
 
+#[lang_item("Default")]
 pub trait core::default::Default<Self>
 {
     parent_clause0 : [@TraitClause0]: core::marker::Sized<Self>
     fn default = core::default::Default::default<Self>
 }
 
+#[lang_item("DoubleEndedIterator")]
 pub trait core::iter::traits::double_ended::DoubleEndedIterator<Self>
 {
     parent_clause0 : [@TraitClause0]: core::iter::traits::iterator::Iterator<Self>
@@ -155,28 +169,33 @@ pub trait core::iter::traits::exact_size::ExactSizeIterator<Self>
     parent_clause0 : [@TraitClause0]: core::iter::traits::iterator::Iterator<Self>
 }
 
+#[lang_item("eq")]
 pub trait core::cmp::PartialEq<Self, Rhs>
 {
     fn eq<'_0, '_1> = core::cmp::PartialEq::eq<'_0_0, '_0_1, Self, Rhs>
 }
 
+#[lang_item("Eq")]
 pub trait core::cmp::Eq<Self>
 {
     parent_clause0 : [@TraitClause0]: core::cmp::PartialEq<Self, Self>
 }
 
+#[lang_item("Ordering")]
 pub enum core::cmp::Ordering =
 |  Less()
 |  Equal()
 |  Greater()
 
 
+#[lang_item("partial_ord")]
 pub trait core::cmp::PartialOrd<Self, Rhs>
 {
     parent_clause0 : [@TraitClause0]: core::cmp::PartialEq<Self, Rhs>
     fn partial_cmp<'_0, '_1> = core::cmp::PartialOrd::partial_cmp<'_0_0, '_0_1, Self, Rhs>
 }
 
+#[lang_item("Ord")]
 pub trait core::cmp::Ord<Self>
 {
     parent_clause0 : [@TraitClause0]: core::cmp::Eq<Self>
@@ -184,6 +203,7 @@ pub trait core::cmp::Ord<Self>
     fn cmp<'_0, '_1> = core::cmp::Ord::cmp<'_0_0, '_0_1, Self>
 }
 
+#[lang_item("copy")]
 pub trait core::marker::Copy<Self>
 {
     parent_clause0 : [@TraitClause0]: core::clone::Clone<Self>
@@ -209,24 +229,32 @@ pub trait core::iter::adapters::zip::TrustedRandomAccessNoCoerce<Self>
     const MAY_HAVE_SIDE_EFFECT : bool
 }
 
+#[lang_item("clone_fn")]
 pub fn core::clone::Clone::clone<'_0, Self>(@1: &'_0 (Self)) -> Self
 
+#[lang_item("cmp_partialeq_eq")]
 pub fn core::cmp::PartialEq::eq<'_0, '_1, Self, Rhs>(@1: &'_0 (Self), @2: &'_1 (Rhs)) -> bool
 
+#[lang_item("ord_cmp_method")]
 pub fn core::cmp::Ord::cmp<'_0, '_1, Self>(@1: &'_0 (Self), @2: &'_1 (Self)) -> core::cmp::Ordering
 
+#[lang_item("cmp_partialord_cmp")]
 pub fn core::cmp::PartialOrd::partial_cmp<'_0, '_1, Self, Rhs>(@1: &'_0 (Self), @2: &'_1 (Rhs)) -> core::option::Option<core::cmp::Ordering>[core::marker::Sized<core::cmp::Ordering>]
 
+#[lang_item("default_fn")]
 pub fn core::default::Default::default<Self>() -> Self
 
 pub fn core::ops::function::FnMut::call_mut<'_0, Self, Args>(@1: &'_0 mut (Self), @2: Args) -> Self::parent_clause0::Output
 
 pub fn core::ops::function::FnOnce::call_once<Self, Args>(@1: Self, @2: Args) -> Self::Output
 
+#[lang_item("from_output")]
 pub fn core::ops::try_trait::Try::from_output<Self>(@1: Self::Output) -> Self
 
+#[lang_item("branch")]
 pub fn core::ops::try_trait::Try::branch<Self>(@1: Self) -> core::ops::control_flow::ControlFlow<Self::Residual, Self::Output>[Self::parent_clause0::parent_clause0, Self::parent_clause1]
 
+#[lang_item("from_residual")]
 pub fn core::ops::try_trait::FromResidual::from_residual<Self, R>(@1: R) -> Self
 
 pub fn core::iter::traits::accum::Sum::sum<Self, A, I>(@1: I) -> Self
@@ -241,12 +269,14 @@ where
     [@TraitClause1]: core::iter::traits::iterator::Iterator<I>,
     @TraitClause1::Item = A,
 
+#[lang_item("from_iter_fn")]
 pub fn core::iter::traits::collect::FromIterator::from_iter<Self, A, T>(@1: T) -> Self
 where
     [@TraitClause0]: core::marker::Sized<T>,
     [@TraitClause1]: core::iter::traits::collect::IntoIterator<T>,
     @TraitClause1::Item = A,
 
+#[lang_item("into_iter")]
 pub fn core::iter::traits::collect::IntoIterator::into_iter<Self>(@1: Self) -> Self::IntoIter
 
 pub fn core::iter::traits::collect::Extend::extend<'_0, Self, A, T>(@1: &'_0 mut (Self), @2: T)

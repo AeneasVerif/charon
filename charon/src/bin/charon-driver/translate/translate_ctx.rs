@@ -528,6 +528,10 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
         let span = self.translate_span_from_hax(span);
         let attr_info = self.translate_attr_info(def);
         let is_local = def.def_id.is_local;
+        let lang_item = def
+            .lang_item
+            .clone()
+            .or_else(|| def.diagnostic_item.clone());
 
         let opacity = if self.is_extern_item(def)
             || attr_info.attributes.iter().any(|attr| attr.is_opaque())
@@ -545,6 +549,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
             attr_info,
             is_local,
             opacity,
+            lang_item,
         };
         self.cached_item_metas
             .insert(def.rust_def_id(), item_meta.clone());

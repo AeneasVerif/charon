@@ -1,11 +1,13 @@
 # Final LLBC before serialization:
 
+#[lang_item("sized")]
 pub trait core::marker::Sized<Self>
 
 pub opaque type core::iter::sources::from_fn::FromFn<F>
   where
       [@TraitClause0]: core::marker::Sized<F>,
 
+#[lang_item("Option")]
 pub enum core::option::Option<T>
   where
       [@TraitClause0]: core::marker::Sized<T>,
@@ -23,8 +25,10 @@ fn test_crate::sparse_transitions::closure<'a, '_1>(@1: &'_1 mut (())) -> core::
     return
 }
 
+#[lang_item("tuple_trait")]
 pub trait core::marker::Tuple<Self>
 
+#[lang_item("fn_once")]
 pub trait core::ops::function::FnOnce<Self, Args>
 {
     parent_clause0 : [@TraitClause0]: core::marker::Sized<Args>
@@ -34,6 +38,7 @@ pub trait core::ops::function::FnOnce<Self, Args>
     fn call_once = core::ops::function::FnOnce::call_once<Self, Args>
 }
 
+#[lang_item("fn_mut")]
 pub trait core::ops::function::FnMut<Self, Args>
 {
     parent_clause0 : [@TraitClause0]: core::ops::function::FnOnce<Self, Args>

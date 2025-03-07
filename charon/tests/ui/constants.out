@@ -78,6 +78,7 @@ pub fn test_crate::mk_pair0(@1: u32, @2: u32) -> (u32, u32)
     return
 }
 
+#[lang_item("sized")]
 pub trait core::marker::Sized<Self>
 
 pub struct test_crate::Pair<T1, T2>
