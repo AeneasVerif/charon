@@ -146,7 +146,11 @@ impl VisitAst for UsageVisitor<'_> {
                 // This is the actual function we need to call!
                 // Whereas id is the trait method reference(?)
                 let fn_ref = fn_ref.apply(&impl_gargs).apply(&fn_ptr.generics);
-                self.found_use_fn_hinted(id, &fn_ptr.generics, (fn_ref.id, fn_ref.generics))
+                let gargs_key = fn_ptr.generics.clone().concat(
+                    GenericsSource::Builtin,
+                    &t_ref.trait_decl_ref.skip_binder.generics,
+                );
+                self.found_use_fn_hinted(id, &gargs_key, (fn_ref.id, fn_ref.generics))
             }
             // These can't be monomorphized, since they're builtins
             FunIdOrTraitMethodRef::Fun(FunId::Builtin(..)) => {}
@@ -235,8 +239,13 @@ impl VisitAstMut for SubstVisitor<'_> {
             FunIdOrTraitMethodRef::Fun(FunId::Regular(fun_id)) => {
                 self.subst_use_fun(fun_id, &mut fn_ptr.generics)
             }
-            FunIdOrTraitMethodRef::Trait(_, _, fun_id) => {
-                self.subst_use_fun(fun_id, &mut fn_ptr.generics)
+            FunIdOrTraitMethodRef::Trait(t_ref, _, fun_id) => {
+                let mut gargs_key = fn_ptr.generics.clone().concat(
+                    GenericsSource::Builtin,
+                    &t_ref.trait_decl_ref.skip_binder.generics,
+                );
+                self.subst_use_fun(fun_id, &mut gargs_key);
+                fn_ptr.generics = gargs_key;
             }
             // These can't be monomorphized, since they're builtins
             FunIdOrTraitMethodRef::Fun(FunId::Builtin(..)) => {}
