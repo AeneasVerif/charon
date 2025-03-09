@@ -1438,7 +1438,7 @@ impl<C: AstFormatter> FmtWithCtx<C> for Ty {
 impl<C: AstFormatter> FmtWithCtx<C> for TypeDecl {
     fn fmt_with_ctx(&self, ctx: &C) -> String {
         let ctx = &ctx.set_generics(&self.generics);
-
+        let id = self.def_id;
         let (params, preds) = self.generics.fmt_with_ctx_with_trait_clauses(ctx, "  ");
         // Predicates
         let eq_space = if !self.generics.has_predicates() {
@@ -1455,12 +1455,12 @@ impl<C: AstFormatter> FmtWithCtx<C> for TypeDecl {
                         .map(|f| format!("\n  {},", f.fmt_with_ctx(ctx)))
                         .format("");
                     format!(
-                        "struct {}{params}{preds}{eq_space}=\n{{{fields}\n}}",
+                        "struct {}{params}{preds}{eq_space}= // #{id}\n{{{fields}\n}}",
                         self.item_meta.name.fmt_with_ctx(ctx)
                     )
                 } else {
                     format!(
-                        "struct {}{params}{preds}{eq_space}= {{}}",
+                        "struct {}{params}{preds}{eq_space}= {{}} // #{id}",
                         self.item_meta.name.fmt_with_ctx(ctx)
                     )
                 }
@@ -1471,7 +1471,7 @@ impl<C: AstFormatter> FmtWithCtx<C> for TypeDecl {
                     .map(|f| format!("\n  {},", f.fmt_with_ctx(ctx)))
                     .format("");
                 format!(
-                    "union {}{params}{preds}{eq_space}=\n{{{fields}\n}}",
+                    "union {}{params}{preds}{eq_space}= // #{id}\n{{{fields}\n}}",
                     self.item_meta.name.fmt_with_ctx(ctx)
                 )
             }
@@ -1481,26 +1481,26 @@ impl<C: AstFormatter> FmtWithCtx<C> for TypeDecl {
                     .map(|v| format!("|  {}", v.fmt_with_ctx(ctx)))
                     .format("\n");
                 format!(
-                    "enum {}{params}{preds}{eq_space}=\n{variants}\n",
+                    "enum {}{params}{preds}{eq_space}= // #{id}\n{variants}\n",
                     self.item_meta.name.fmt_with_ctx(ctx)
                 )
             }
             TypeDeclKind::Alias(ty) => {
                 format!(
-                    "type {}{params}{preds} = {}",
+                    "type {}{params}{preds} = {} // #{id}",
                     self.item_meta.name.fmt_with_ctx(ctx),
                     ty.fmt_with_ctx(ctx),
                 )
             }
             TypeDeclKind::Opaque => {
                 format!(
-                    "opaque type {}{params}{preds}",
+                    "opaque type {}{params}{preds} // #{id}",
                     self.item_meta.name.fmt_with_ctx(ctx)
                 )
             }
             TypeDeclKind::Error(msg) => {
                 format!(
-                    "opaque type {}{params}{preds} = ERROR({msg})",
+                    "opaque type {}{params}{preds} = ERROR({msg}) // #{id}",
                     self.item_meta.name.fmt_with_ctx(ctx),
                 )
             }
