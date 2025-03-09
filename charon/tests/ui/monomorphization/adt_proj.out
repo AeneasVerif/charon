@@ -1,6 +1,6 @@
 # Final ULLBC before serialization:
 
-enum core::result::Result::<u32, u32>[@TraitDecl0<u32>, @TraitDecl0<u32>] =
+enum core::result::Result = // #1
 |  Ok(u32)
 |  Err(u32)
 
@@ -13,7 +13,7 @@ fn test_crate::main()
     let @3: isize; // anonymous local
 
     bb0: {
-        res@1 := core::result::Result::<u32, u32>[@TraitDecl0<u32>, @TraitDecl0<u32>]::Ok { 0: const (0 : u32) };
+        res@1 := core::result::Result::Ok { 0: const (0 : u32) };
         @fake_read(res@1);
         @fake_read(res@1);
         @3 := @discriminant(res@1);

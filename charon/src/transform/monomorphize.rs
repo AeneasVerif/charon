@@ -80,6 +80,7 @@ impl UsageVisitor<'_> {
         gargs: &GenericArgs,
         default: OptionHint<AnyTransId, (AnyTransId, GenericArgs)>,
     ) {
+        trace!("Mono: Found use: {:?} / {:?}", id, gargs);
         self.data
             .items
             .entry((*id, gargs.clone()))
@@ -117,9 +118,12 @@ impl VisitAst for UsageVisitor<'_> {
 
     fn visit_ty_kind(&mut self, kind: &TyKind) -> ControlFlow<Infallible> {
         match kind {
-            TyKind::Adt(TypeId::Adt(id), gargs) => self.found_use_ty(id, gargs),
-            TyKind::Adt(TypeId::Tuple, garg) => {
-                garg.drive(self);
+            TyKind::Adt(TypeId::Adt(id), gargs) => {
+                self.found_use_ty(id, gargs);
+                gargs.drive(self);
+            }
+            TyKind::Adt(_, gargs) => {
+                gargs.drive(self);
             }
             TyKind::Literal(_) => {}
             TyKind::Ref(_, ty, _) => {
@@ -131,6 +135,7 @@ impl VisitAst for UsageVisitor<'_> {
     }
 
     fn visit_fn_ptr(&mut self, fn_ptr: &FnPtr) -> ControlFlow<Infallible> {
+        fn_ptr.generics.drive(self);
         match &fn_ptr.func {
             FunIdOrTraitMethodRef::Fun(FunId::Regular(id)) => {
                 self.found_use_fn(id, &fn_ptr.generics)
@@ -168,6 +173,7 @@ struct SubstVisitor<'a> {
 }
 impl SubstVisitor<'_> {
     fn subst_use_ty(&mut self, id: &mut TypeDeclId, gargs: &mut GenericArgs) {
+        trace!("Mono: Subst use: {:?} / {:?}", id, gargs);
         let key = (AnyTransId::Type(*id), gargs.clone());
         let subst = self.data.items.get(&key);
         let Some(OptionHint::Some(AnyTransId::Type(subst_id))) = subst else {
@@ -177,6 +183,7 @@ impl SubstVisitor<'_> {
         *gargs = GenericArgs::empty(GenericsSource::Builtin);
     }
     fn subst_use_fun(&mut self, id: &mut FunDeclId, gargs: &mut GenericArgs) {
+        trace!("Mono: Subst use: {:?} / {:?}", id, gargs);
         let key = (AnyTransId::Fun(*id), gargs.clone());
         let subst = self.data.items.get(&key);
         let Some(OptionHint::Some(AnyTransId::Fun(subst_id))) = subst else {
@@ -221,9 +228,12 @@ impl VisitAstMut for SubstVisitor<'_> {
 
     fn visit_ty_kind(&mut self, kind: &mut TyKind) -> ControlFlow<Infallible> {
         match kind {
-            TyKind::Adt(TypeId::Adt(id), gargs) => self.subst_use_ty(id, gargs),
-            TyKind::Adt(TypeId::Tuple, garg) => {
-                garg.drive_mut(self);
+            TyKind::Adt(TypeId::Adt(id), gargs) => {
+                self.subst_use_ty(id, gargs);
+                gargs.drive_mut(self);
+            }
+            TyKind::Adt(_, gargs) => {
+                gargs.drive_mut(self);
             }
             TyKind::Literal(_) => {}
             TyKind::Ref(_, ty, _) => {
@@ -235,6 +245,7 @@ impl VisitAstMut for SubstVisitor<'_> {
     }
 
     fn visit_fn_ptr(&mut self, fn_ptr: &mut FnPtr) -> ControlFlow<Infallible> {
+        fn_ptr.generics.drive_mut(self);
         match &mut fn_ptr.func {
             FunIdOrTraitMethodRef::Fun(FunId::Regular(fun_id)) => {
                 self.subst_use_fun(fun_id, &mut fn_ptr.generics)
@@ -342,6 +353,40 @@ fn path_for_generics(gargs: &GenericArgs) -> PathElem {
     PathElem::Ident(gargs.to_string(), Disambiguator::ZERO)
 }
 
+impl GenericArgs {
+    fn is_empty_ignoring_regions(&self) -> bool {
+        let GenericArgs {
+            types,
+            const_generics,
+            trait_refs,
+            regions: _,
+            target: _,
+        } = self;
+        let len = types.elem_count() + const_generics.elem_count() + trait_refs.elem_count();
+        len == 0
+    }
+}
+
+impl GenericParams {
+    fn is_empty_ignoring_regions(&self) -> bool {
+        let GenericParams {
+            regions: _,
+            types,
+            const_generics,
+            trait_clauses,
+            regions_outlive: _,
+            types_outlive,
+            trait_type_constraints,
+        } = self;
+        let len = types.elem_count()
+            + const_generics.elem_count()
+            + trait_clauses.elem_count()
+            + trait_type_constraints.elem_count()
+            + types_outlive.len();
+        len == 0
+    }
+}
+
 pub struct Transform;
 impl UllbcPass for Transform {
     fn transform_ctx(&self, ctx: &mut TransformCtx) {
@@ -415,7 +460,7 @@ impl UllbcPass for Transform {
                 }
 
                 // a. Monomorphize the items if they're polymorphic, add them to the worklist
-                let new_mono = if gargs.is_empty() {
+                let new_mono = if gargs.is_empty_ignoring_regions() {
                     *id
                 } else {
                     match id {
@@ -438,7 +483,7 @@ impl UllbcPass for Transform {
                             let typ = ctx.translated.type_decls.get(*typ_id).unwrap();
                             let mut typ_sub = typ.clone().substitute(gargs);
                             typ_sub.generics = GenericParams::empty();
-                            typ_sub.item_meta.name.name.push(path_for_generics(gargs));
+                            // typ_sub.item_meta.name.name.push(path_for_generics(gargs));
 
                             let typ_id_sub = ctx.translated.type_decls.reserve_slot();
                             typ_sub.def_id = typ_id_sub;
@@ -449,6 +494,16 @@ impl UllbcPass for Transform {
                         _ => todo!("Unhandled monomorphization target ID {:?}", id),
                     }
                 };
+                trace!(
+                    "Mono: Monomorphized {:?} with {:?} to {:?}",
+                    id,
+                    gargs,
+                    new_mono
+                );
+                if id != &new_mono {
+                    trace!(" - From {:?}", ctx.translated.get_item(id.clone()));
+                    trace!(" - To {:?}", ctx.translated.get_item(new_mono.clone()));
+                }
                 *mono = OptionHint::Some(new_mono);
                 data.worklist.push(new_mono);
             }
@@ -470,8 +525,10 @@ impl UllbcPass for Transform {
         // uses have been monomorphized and substituted
         ctx.translated
             .fun_decls
-            .retain(|f| f.signature.generics.is_empty());
-        ctx.translated.type_decls.retain(|t| t.generics.is_empty());
+            .retain(|f| f.signature.generics.is_empty_ignoring_regions());
+        ctx.translated
+            .type_decls
+            .retain(|t| t.generics.is_empty_ignoring_regions());
         // ctx.translated.trait_impls.retain(|t| t.generics.is_empty());
 
         // TODO: Currently we don't update all TraitImpls/TraitDecls with the monomorphized versions

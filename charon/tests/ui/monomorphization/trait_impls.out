@@ -64,11 +64,17 @@ trait core::cmp::Eq<Self>
     fn assert_receiver_is_total_eq<'_0> = core::cmp::Eq::assert_receiver_is_total_eq<'_0_0, Self>
 }
 
+fn core::cmp::impls::{impl core::cmp::PartialEq<bool> for bool}#19::eq<'_0, '_1>(@1: &'_0 (bool), @2: &'_1 (bool)) -> bool
+
+fn core::cmp::impls::{impl core::cmp::PartialEq<bool> for bool}#19::ne<'_0, '_1>(@1: &'_0 (bool), @2: &'_1 (bool)) -> bool
+
 impl core::cmp::impls::{impl core::cmp::PartialEq<bool> for bool}#19 : core::cmp::PartialEq<bool, bool>
 {
     fn eq<'_0, '_1> = core::cmp::impls::{impl core::cmp::PartialEq<bool> for bool}#19::eq<'_0_0, '_0_1>
     fn ne<'_0, '_1> = core::cmp::impls::{impl core::cmp::PartialEq<bool> for bool}#19::ne<'_0_0, '_0_1>
 }
+
+fn core::cmp::impls::{impl core::cmp::Eq for bool}#38::assert_receiver_is_total_eq<'_0>(@1: &'_0 (bool))
 
 impl core::cmp::impls::{impl core::cmp::Eq for bool}#38 : core::cmp::Eq<bool>
 {
