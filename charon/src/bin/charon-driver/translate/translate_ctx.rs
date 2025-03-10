@@ -852,8 +852,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
     ) -> TraitImplId {
         let id = id.into();
         // Register the corresponding trait early so we can filter on its name.
-        {
-            let def = self.hax_def(id).expect("hax failed when translating item");
+        if let Ok(def) = self.hax_def(id) {
             let hax::FullDefKind::TraitImpl { trait_pred, .. } = def.kind() else {
                 unreachable!()
             };

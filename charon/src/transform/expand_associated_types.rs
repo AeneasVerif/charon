@@ -935,7 +935,13 @@ impl UpdateItemBody<'_> {
                 self.lookup_path_on_trait_ref(&path, parent)
             }
             TraitRefKind::ItemClause(..) => {
-                unreachable!("item clause should have been removed in a previous pass")
+                register_error!(
+                    self.ctx,
+                    self.span,
+                    "Found unhandled item clause; \
+                    this is a bug unless the clause is coming from a GAT."
+                );
+                None
             }
             TraitRefKind::BuiltinOrAuto {
                 parent_trait_refs,
