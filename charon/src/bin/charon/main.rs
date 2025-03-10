@@ -67,7 +67,7 @@ struct Toolchain {
 impl Toolchain {
     fn is_installed(&self) -> anyhow::Result<bool> {
         // FIXME: check if the right components are installed.
-        let output = self.run("echo").output()?;
+        let output = self.run("rustc").arg("--version").output()?;
         Ok(output.status.success())
     }
 
