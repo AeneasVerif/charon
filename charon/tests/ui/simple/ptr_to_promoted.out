@@ -11,7 +11,7 @@ fn test_crate::main()
     let @6: u8; // anonymous local
     let @7: &'_ (u8); // anonymous local
 
-    @6 := const (RawMemory([0]))
+    @6 := const (0 : u8)
     @7 := &@6
     @5 := move (@7)
     @2 := copy (@5)

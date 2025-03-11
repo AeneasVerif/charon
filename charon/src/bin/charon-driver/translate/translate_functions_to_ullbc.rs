@@ -432,7 +432,7 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
             }
             hax::Operand::Constant(const_op) => {
                 let constant =
-                    self.translate_constant_expr_to_constant_expr(span, &const_op.const_)?;
+                    self.translate_constant_expr_to_constant_expr(span, &const_op.evaluated)?;
                 let ty = constant.ty.clone();
                 Ok((Operand::Const(constant), ty))
             }
