@@ -35,7 +35,7 @@
 
 use anyhow::bail;
 use clap::Parser;
-use options::{CliOpts, CHARON_ARGS};
+use options::{OldCliOpts, CHARON_ARGS};
 use serde::Deserialize;
 use std::env;
 use std::ffi::OsStr;
@@ -159,7 +159,7 @@ pub fn main() -> anyhow::Result<()> {
     logger::initialize_logger();
 
     // Parse the command-line
-    let mut options = CliOpts::parse();
+    let mut options = OldCliOpts::parse().opts;
     trace!("Arguments: {:?}", std::env::args());
     options.validate();
 

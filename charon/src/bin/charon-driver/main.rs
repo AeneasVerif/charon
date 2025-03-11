@@ -90,7 +90,7 @@ fn main() {
                 use clap::Parser;
                 let mut charon_args = compiler_args.split_off(i);
                 charon_args[0] = origin_args[0].clone(); // Replace `--` with the name of the binary
-                options::CliOpts::parse_from(charon_args)
+                options::OldCliOpts::parse_from(charon_args).opts
             } else {
                 Default::default()
             }
