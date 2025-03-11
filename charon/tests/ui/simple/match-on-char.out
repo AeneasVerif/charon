@@ -1,20 +1,8 @@
-disabled backtrace
-error[E9999]: Unexpected switch_ty: Ty { kind: Node { id: Id { id: 5 }, value: Char } }
+error: Can't match on type char
+ --> tests/ui/simple/match-on-char.rs:3:5
   |
-  = note: ⚠️ This is a bug in Hax's frontend.
-          Please report this error to https://github.com/hacspec/hax/issues with some context (e.g. the current crate)!
-
-error: Hax panicked when translating `Body { basic_blocks: BasicBlocks { basic_blocks: [BasicBlockData { statements: [StorageLive(_1), _1 = const 'x', PlaceMention(_1)], terminator: Some(Terminator { source_info: SourceInfo { span: tests/ui/simple/match-on-char.rs:3:5: 3:14 (#0), scope: scope[0] }, kind: switchInt(copy _1) -> [97: bb2, otherwise: bb1] }), is_cleanup: false }, BasicBlockData { statements: [_0 = const ()], terminator: Some(Terminator { source_info: SourceInfo { span: tests/ui/simple/match-on-char.rs:5:14: 5:16 (#0), scope: scope[0] }, kind: goto -> bb4 }), is_cleanup: false }, BasicBlockData { statements: [], terminator: Some(Terminator { source_info: SourceInfo { span: tests/ui/simple/match-on-char.rs:4:9: 4:12 (#0), scope: scope[0] }, kind: falseEdge -> [real: bb3, imaginary: bb1] }), is_cleanup: false }, BasicBlockData { statements: [_0 = const ()], terminator: Some(Terminator { source_info: SourceInfo { span: tests/ui/simple/match-on-char.rs:4:16: 4:18 (#0), scope: scope[0] }, kind: goto -> bb4 }), is_cleanup: false }, BasicBlockData { statements: [StorageDead(_1)], terminator: Some(Terminator { source_info: SourceInfo { span: tests/ui/simple/match-on-char.rs:7:2: 7:2 (#0), scope: scope[0] }, kind: return }), is_cleanup: false }], cache: Cache { predecessors: OnceLock(<uninit>), switch_sources: OnceLock(<uninit>), reverse_postorder: OnceLock(<uninit>), dominators: OnceLock(<uninit>) } }, phase: Built, pass_count: 6, source: MirSource { instance: Item(test_crate::main), promoted: None }, source_scopes: [SourceScopeData { span: tests/ui/simple/match-on-char.rs:2:1: 7:2 (#0), parent_scope: None, inlined: None, inlined_parent_scope: None, local_data: Set(SourceScopeLocalData { lint_root: HirId(test_crate::main.0) }) }], coroutine: None, local_decls: [LocalDecl { mutability: Mut, local_info: Set(Boring), ty: (), user_ty: None, source_info: SourceInfo { span: tests/ui/simple/match-on-char.rs:2:10: 2:10 (#0), scope: scope[0] } }, LocalDecl { mutability: Mut, local_info: Set(BlockTailTemp(BlockTailInfo { tail_result_is_ignored: true, span: tests/ui/simple/match-on-char.rs:3:5: 6:6 (#0) })), ty: char, user_ty: None, source_info: SourceInfo { span: tests/ui/simple/match-on-char.rs:3:11: 3:14 (#0), scope: scope[0] } }], user_type_annotations: [], arg_count: 0, spread_arg: None, var_debug_info: [], span: tests/ui/simple/match-on-char.rs:2:1: 7:2 (#0), required_consts: None, mentioned_items: None, is_polymorphic: false, injection_phase: None, tainted_by_errors: None, coverage_info_hi: None, function_coverage_info: None }`.
- --> tests/ui/simple/match-on-char.rs:2:1
-  |
-2 | / fn main() {
-3 | |     match 'x' {
-... |
-6 | |     }
-7 | | }
-  | |_^
+3 |     match 'x' {
+  |     ^^^^^^^^^
   |
 
-error: aborting due to 1 previous error
-
-ERROR Code failed to compile
+ERROR Charon failed to translate this code (1 errors)
