@@ -7,7 +7,7 @@ Charon executable is located at `bin/charon`.
 Charon will build the crate and its dependencies, then extract the AST. Charon
 provides various options and flags to tweak its behaviour: you can display a
 detailed documentation with `--help`.
-In particular, you can pretty-print the translated crate with `--print-llbc`.
+In particular, you can pretty-print the translated crate with both `--print-ullbc` and `--print-llbc`, depending on the Charon intermediate representation you wish to use.
 
 If there is a `Charon.toml` file at the root of your project, `charon` will also take options from it.
 The file supports the same options at the cli interface, except for the options that relate to
@@ -25,11 +25,11 @@ Charon in [`rust-toolchain.template`](rust-toolchain.template).
 
 ## Names
 
-Each item (function, trait decl, type decl etc) in Charon has a unique name, that looks like a rust
-path (e.g. `std::boxed::Box`). This name can be used to uniquely identify items using patterns.
+Each item (function, trait decl, type decl etc) in Charon has a unique name, that looks like a Rust
+path (e.g., `std::boxed::Box`). This name can be used to uniquely identify items using patterns.
 
 These patterns are used most notably for the `--include`/`--exclude` cli options, and made available
-in Rust and OCaml with NameMatcher. Caveat: the rust and ocaml name matchers differ in input syntax
+in Rust and OCaml with NameMatcher. Caveat: the Rust and OCaml name matchers differ in input syntax
 and behavior; this is tracked in https://github.com/AeneasVerif/charon/issues/319.
 
 TODO: explain syntax and behavior.
@@ -44,7 +44,7 @@ TODO: explain the main options, and LLBC vs ULLBC
 
 In short: LLBC is the name we give to the output of Charon. It stands for Low-Level Borrow Calculus
 and is the name used in the formalisations of the Aeneas project. Charon was initially created as
-part of the Aeneas project, and therefore inherits that name. ULLBC means Unstructured LLBC, i.e.
+part of the Aeneas project, and therefore inherits that name. ULLBC means Unstructured LLBC, i.e.,
 LLBC without the control-flow reconstruction.
 
 ULLBC is a slightly simplified MIR, where we try to remove as much redundancies

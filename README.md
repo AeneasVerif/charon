@@ -11,7 +11,7 @@ Museo del Prado, Madrid.
 
 # Charon
 
-Charon extracts the complete contents of a Rust crate (and its dependencies) into a JSON file:
+Charon (pronounced "Ka-ron") extracts the complete contents of a Rust crate (and its dependencies) into a JSON file:
 
 ```json
 {
@@ -25,7 +25,7 @@ Charon extracts the complete contents of a Rust crate (and its dependencies) int
 ```
 
 The output contains the types, functions and traits of the crate and its dependencies, the
-simplified MIR bodies of functions, source information for each item, .
+simplified MIR bodies of functions, source information for each item, and other semantic information described below.
 
 We are **open to contributions**! Please contact us so that we can coordinate ourselves, if you are
 willing to contribute. Discussions happen on [Zulip](https://aeneas-verif.zulipchat.com/).
@@ -39,13 +39,13 @@ The `charon-lib` crate can read this file and let you manipulate its contents. P
 `serde_json::from_reader::<charon_lib::export::CrateData>(file)`. OCaml bindings are also available
 in the `charon-ml` folder.
 
-For more detailed usage instructions, see [./docs/usage.md].
+For more detailed usage instructions, see the [documentation](./docs/usage.md).
 
 ## Why Charon?
 
 The output of Charon looks simple but constructing the relevant information is hard. The purpose of
 Charon is to centralize the efforts of extracting information from rustc internals and turning them
-into a uniform and usable shape. See [./docs/what_charon_does_for_you.md] for an overview of what
+into a uniform and usable shape. See the [documentation](./docs/what_charon_does_for_you.md) for an overview of what
 Charon has to do today.
 
 If you're writing a rustc driver, chances are you could use Charon instead. Charon is however geared
@@ -60,17 +60,17 @@ the world of code analysis and verification.
 
 Charon is alpha software. While it works quite well for a large number of crates, it has not reached
 the full set of features we intend, incorrectly translates code in some edge cases, and a number of
-breaking changes in its API are planned. See [./docs/limitations.md] for details.
+breaking changes in its API are planned. See the [limitations](./docs/limitations.md) for details.
 
 ## Installation & Build
 
-If you have nix, you can directly run `nix run github:AeneasVerif/charon`. Otherwise, read on.
+If you use nix, you can directly run `nix run github:AeneasVerif/charon`. Otherwise, read on.
 
 You first need to install [`rustup`](https://www.rust-lang.org/tools/install).
 
 As Charon is set up with cargo, rustup will automatically download and install the proper packages
 upon building the project. If you only want to build the Rust project (in `./charon`), run `make
-build-charon-rust` in the top directory. The resulting `charon` binary can be found in `bin/charon`,
+build-charon-rust` in the root directory. The resulting `charon` binary can be found in `bin/charon`,
 from where you can use it.
 
 If you also want to build the ML library (in `./charon-ml`), you will need to
@@ -95,11 +95,8 @@ Alternatively, you can use Nix and do `nix develop` and all dependencies should 
 
 ## Documentation
 
-You can access the Rust documentation
+You can access the (work-in-progress) Rust documentation
 [online](https://aeneasverif.github.io/charon/charon_lib/index.html).
-
-As mentioned in [./docs/limitations.md], the project is currently poorly documented; we intend to
-fix this in the coming months.
 
 You can also run `make` to generate the documentation locally.
 It will generate a documentation accessible from

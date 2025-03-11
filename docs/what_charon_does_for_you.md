@@ -1,7 +1,7 @@
 # What Charon Does For You
 
 The purpose of Charon is to centralize the efforts of extracting information from rustc internals
-and turning them into a uniform and usable shape. Here are some things that CHaron does once so you
+and turning them into a uniform and usable shape. Here are some things that Charon does once so you
 don't have to do it yourself:
 
 TODO: explain each item

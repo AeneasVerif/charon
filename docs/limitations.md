@@ -1,7 +1,7 @@
 # Current limitations of Charon
 
 Charon is alpha software. In particular, it is currently poorly documented, doesn't support all the
-rust features we'd like, and will suffer breaking changes in the coming future.
+Rust features we'd like, and has several breaking changes planned in the near future.
 
 ## Planned breaking changes
 
