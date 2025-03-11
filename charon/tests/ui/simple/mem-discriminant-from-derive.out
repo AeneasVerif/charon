@@ -16,6 +16,115 @@ pub trait core::cmp::PartialEq<Self, Rhs>
     fn eq<'_0, '_1> = core::cmp::PartialEq::eq<'_0_0, '_0_1, Self, Rhs>
 }
 
+pub fn core::cmp::impls::{impl core::cmp::PartialEq<&'_0 (B)> for &'_1 (A)}#9::eq<'_0, '_1, '_2, '_3, A, B>(@1: &'_2 (&'_1 (A)), @2: &'_3 (&'_0 (B))) -> bool
+where
+    [@TraitClause0]: core::cmp::PartialEq<A, B>,
+
+pub fn core::cmp::impls::{impl core::cmp::PartialEq<u8> for u8}#22::eq<'_0, '_1>(@1: &'_0 (u8), @2: &'_1 (u8)) -> bool
+
+impl core::cmp::impls::{impl core::cmp::PartialEq<u8> for u8}#22 : core::cmp::PartialEq<u8, u8>
+{
+    fn eq<'_0, '_1> = core::cmp::impls::{impl core::cmp::PartialEq<u8> for u8}#22::eq<'_0_0, '_0_1>
+}
+
+pub fn test_crate::{impl core::cmp::PartialEq<test_crate::Enum> for test_crate::Enum}#1::eq<'_0, '_1>(@1: &'_0 (test_crate::Enum), @2: &'_1 (test_crate::Enum)) -> bool
+{
+    let @0: bool; // return
+    let self@1: &'_ (test_crate::Enum); // arg #1
+    let other@2: &'_ (test_crate::Enum); // arg #2
+    let __self_discr@3: isize; // local
+    let @4: &'_ (test_crate::Enum); // anonymous local
+    let __arg1_discr@5: isize; // local
+    let @6: &'_ (test_crate::Enum); // anonymous local
+    let @7: bool; // anonymous local
+    let @8: isize; // anonymous local
+    let @9: isize; // anonymous local
+    let @10: (&'_ (test_crate::Enum), &'_ (test_crate::Enum)); // anonymous local
+    let @11: &'_ (test_crate::Enum); // anonymous local
+    let @12: &'_ (test_crate::Enum); // anonymous local
+    let __self_0@13: &'_ (u8); // local
+    let __arg1_0@14: &'_ (u8); // local
+    let @15: &'_ (&'_ (u8)); // anonymous local
+    let @16: &'_ (&'_ (u8)); // anonymous local
+
+    @4 := &*(self@1)
+    match *(@4) {
+        0 => {
+            __self_discr@3 := const (0 : isize)
+        },
+        1 => {
+            __self_discr@3 := const (1 : isize)
+        },
+    }
+    drop @4
+    @fake_read(__self_discr@3)
+    @6 := &*(other@2)
+    match *(@6) {
+        0 => {
+            __arg1_discr@5 := const (0 : isize)
+        },
+        1 => {
+            __arg1_discr@5 := const (1 : isize)
+        },
+    }
+    drop @6
+    @fake_read(__arg1_discr@5)
+    @8 := copy (__self_discr@3)
+    @9 := copy (__arg1_discr@5)
+    @7 := move (@8) == move (@9)
+    if move (@7) {
+        drop @9
+        drop @8
+        @11 := copy (self@1)
+        @12 := copy (other@2)
+        @10 := (move (@11), move (@12))
+        drop @12
+        drop @11
+        @fake_read(@10)
+        match *((@10).0) {
+            0 => {
+                match *((@10).1) {
+                    0 => {
+                        __self_0@13 := &(*((@10).0) as variant @0).0
+                        __arg1_0@14 := &(*((@10).1) as variant @0).0
+                        @15 := &__self_0@13
+                        @16 := &__arg1_0@14
+                        @0 := core::cmp::impls::{impl core::cmp::PartialEq<&'_0 (B)> for &'_1 (A)}#9::eq<'_, '_, '_, '_, u8, u8>[core::cmp::impls::{impl core::cmp::PartialEq<u8> for u8}#22](move (@15), move (@16))
+                        drop @16
+                        drop @15
+                        drop __arg1_0@14
+                        drop __self_0@13
+                    },
+                    _ => {
+                        @0 := const (true)
+                    },
+                }
+            },
+            _ => {
+                @0 := const (true)
+            },
+        }
+        drop @10
+    }
+    else {
+        drop @9
+        drop @8
+        @0 := const (false)
+    }
+    drop @7
+    drop __arg1_discr@5
+    drop __self_discr@3
+    return
+}
+
+impl test_crate::{impl core::cmp::PartialEq<test_crate::Enum> for test_crate::Enum}#1 : core::cmp::PartialEq<test_crate::Enum, test_crate::Enum>
+{
+    fn eq<'_0, '_1> = test_crate::{impl core::cmp::PartialEq<test_crate::Enum> for test_crate::Enum}#1::eq<'_0_0, '_0_1>
+}
+
+#[lang_item("cmp_partialeq_eq")]
+pub fn core::cmp::PartialEq::eq<'_0, '_1, Self, Rhs>(@1: &'_0 (Self), @2: &'_1 (Rhs)) -> bool
+
 #[lang_item("sized")]
 pub trait core::marker::Sized<Self>
 
@@ -101,101 +210,6 @@ pub trait core::marker::DiscriminantKind<Self>
 pub fn core::intrinsics::discriminant_value<'_0, T>(@1: &'_0 (T)) -> core::marker::DiscriminantKind<T>::Discriminant
 where
     [@TraitClause0]: core::marker::Sized<T>,
-
-pub fn core::cmp::impls::{impl core::cmp::PartialEq<&'_0 (B)> for &'_1 (A)}#9::eq<'_0, '_1, '_2, '_3, A, B>(@1: &'_2 (&'_1 (A)), @2: &'_3 (&'_0 (B))) -> bool
-where
-    [@TraitClause0]: core::cmp::PartialEq<A, B>,
-
-pub fn core::cmp::impls::{impl core::cmp::PartialEq<u8> for u8}#22::eq<'_0, '_1>(@1: &'_0 (u8), @2: &'_1 (u8)) -> bool
-
-impl core::cmp::impls::{impl core::cmp::PartialEq<u8> for u8}#22 : core::cmp::PartialEq<u8, u8>
-{
-    fn eq<'_0, '_1> = core::cmp::impls::{impl core::cmp::PartialEq<u8> for u8}#22::eq<'_0_0, '_0_1>
-}
-
-pub fn test_crate::{impl core::cmp::PartialEq<test_crate::Enum> for test_crate::Enum}#1::eq<'_0, '_1>(@1: &'_0 (test_crate::Enum), @2: &'_1 (test_crate::Enum)) -> bool
-{
-    let @0: bool; // return
-    let self@1: &'_ (test_crate::Enum); // arg #1
-    let other@2: &'_ (test_crate::Enum); // arg #2
-    let __self_discr@3: isize; // local
-    let @4: &'_ (test_crate::Enum); // anonymous local
-    let __arg1_discr@5: isize; // local
-    let @6: &'_ (test_crate::Enum); // anonymous local
-    let @7: bool; // anonymous local
-    let @8: isize; // anonymous local
-    let @9: isize; // anonymous local
-    let @10: (&'_ (test_crate::Enum), &'_ (test_crate::Enum)); // anonymous local
-    let @11: &'_ (test_crate::Enum); // anonymous local
-    let @12: &'_ (test_crate::Enum); // anonymous local
-    let __self_0@13: &'_ (u8); // local
-    let __arg1_0@14: &'_ (u8); // local
-    let @15: &'_ (&'_ (u8)); // anonymous local
-    let @16: &'_ (&'_ (u8)); // anonymous local
-
-    @4 := &*(self@1)
-    __self_discr@3 := core::intrinsics::discriminant_value<'_, test_crate::Enum>[core::marker::Sized<test_crate::Enum>](move (@4))
-    drop @4
-    @fake_read(__self_discr@3)
-    @6 := &*(other@2)
-    __arg1_discr@5 := core::intrinsics::discriminant_value<'_, test_crate::Enum>[core::marker::Sized<test_crate::Enum>](move (@6))
-    drop @6
-    @fake_read(__arg1_discr@5)
-    @8 := copy (__self_discr@3)
-    @9 := copy (__arg1_discr@5)
-    @7 := move (@8) == move (@9)
-    if move (@7) {
-        drop @9
-        drop @8
-        @11 := copy (self@1)
-        @12 := copy (other@2)
-        @10 := (move (@11), move (@12))
-        drop @12
-        drop @11
-        @fake_read(@10)
-        match *((@10).0) {
-            0 => {
-                match *((@10).1) {
-                    0 => {
-                        __self_0@13 := &(*((@10).0) as variant @0).0
-                        __arg1_0@14 := &(*((@10).1) as variant @0).0
-                        @15 := &__self_0@13
-                        @16 := &__arg1_0@14
-                        @0 := core::cmp::impls::{impl core::cmp::PartialEq<&'_0 (B)> for &'_1 (A)}#9::eq<'_, '_, '_, '_, u8, u8>[core::cmp::impls::{impl core::cmp::PartialEq<u8> for u8}#22](move (@15), move (@16))
-                        drop @16
-                        drop @15
-                        drop __arg1_0@14
-                        drop __self_0@13
-                    },
-                    _ => {
-                        @0 := const (true)
-                    },
-                }
-            },
-            _ => {
-                @0 := const (true)
-            },
-        }
-        drop @10
-    }
-    else {
-        drop @9
-        drop @8
-        @0 := const (false)
-    }
-    drop @7
-    drop __arg1_discr@5
-    drop __self_discr@3
-    return
-}
-
-impl test_crate::{impl core::cmp::PartialEq<test_crate::Enum> for test_crate::Enum}#1 : core::cmp::PartialEq<test_crate::Enum, test_crate::Enum>
-{
-    fn eq<'_0, '_1> = test_crate::{impl core::cmp::PartialEq<test_crate::Enum> for test_crate::Enum}#1::eq<'_0_0, '_0_1>
-}
-
-#[lang_item("cmp_partialeq_eq")]
-pub fn core::cmp::PartialEq::eq<'_0, '_1, Self, Rhs>(@1: &'_0 (Self), @2: &'_1 (Rhs)) -> bool
 
 impl core::cmp::impls::{impl core::cmp::PartialEq<&'_0 (B)> for &'_1 (A)}#9<'_0, '_1, A, B> : core::cmp::PartialEq<&'_1 (A), &'_0 (B)>
 where
