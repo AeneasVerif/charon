@@ -71,7 +71,11 @@ fn main() {
     // We first use all the arguments received by charon-driver, except the first two.
     // Rem.: the first argument is the path to the charon-driver executable.
     // Rem.: the second argument is "rustc" (passed by Cargo because RUSTC_WRAPPER is set).
-    assert!(origin_args[1].ends_with("rustc"));
+    assert_eq!(
+        std::path::Path::new(&origin_args[1]).file_stem(),
+        Some("rustc".as_ref()),
+        "The second argument for charon-driver must be a path to rustc."
+    );
     let mut compiler_args: Vec<String> = origin_args[2..].to_vec();
 
     // Retrieve the Charon options by deserializing them from the environment variable
