@@ -1,0 +1,31 @@
+# Final LLBC before serialization:
+
+fn test_crate::main()
+{
+    let @0: (); // return
+    let @1: f64; // anonymous local
+    let @2: bool; // anonymous local
+    let @3: bool; // anonymous local
+
+    @1 := const (0.5 : f64)
+    @fake_read(@1)
+    @3 := const (0.10000000000000001 : f64) == copy (@1)
+    if move (@3) {
+        @0 := ()
+    }
+    else {
+        @2 := const (0.20000000000000001 : f64) == copy (@1)
+        if move (@2) {
+            @0 := ()
+        }
+        else {
+            @0 := ()
+        }
+    }
+    drop @1
+    @0 := ()
+    return
+}
+
+
+
