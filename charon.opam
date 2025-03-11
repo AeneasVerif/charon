@@ -15,8 +15,10 @@ homepage: "https://github.com/AeneasVerif/charon"
 bug-reports: "https://github.com/AeneasVerif/charon/issues"
 depends: [
   "dune" {>= "3.7"}
+  "core_unix"
   "easy_logging"
   "ppx_deriving"
+  "unionFind"
   "visitors"
   "yojson"
   "zarith"
