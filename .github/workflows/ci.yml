@@ -1,3 +1,5 @@
+name: "Build and test"
+
 on:
   # Run the checks on the latest commit from `main`
   push:
@@ -8,7 +10,7 @@ on:
   pull_request:
   # Runs the check when a PR is added to the merge queue.
   merge_group:
-  # Makes it possible to run the forkflow by hand from GItHub's interface.
+  # Makes it possible to run the forkflow by hand from GitHub's interface.
   workflow_dispatch:
 
 # Cancel previous versions of this job that are still running.
@@ -33,7 +35,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0 # deep clone in order to get access to other commits
-      - run: nix develop --command ./scripts/ci-check-version-number.sh
+      - run: nix develop '.#ci' --command ./scripts/ci-check-version-number.sh
 
   aeneas:
     needs: [nix]
