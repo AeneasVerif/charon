@@ -6,11 +6,16 @@ use hax_frontend_exporter as hax;
 impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
     fn translate_constant_literal_to_raw_constant_expr(
         &mut self,
+        span: Span,
         v: &hax::ConstantLiteral,
     ) -> Result<RawConstantExpr, Error> {
         let lit = match v {
             hax::ConstantLiteral::ByteStr(bs) => Literal::ByteStr(bs.clone()),
-            hax::ConstantLiteral::Str(s) => Literal::Str(s.clone()),
+            hax::ConstantLiteral::Str(..) => {
+                // This should have been handled in the `&str` case. If we get here, there's a
+                // `str` value not behind a reference.
+                raise_error!(self, span, "found a `str` constants not behind a reference")
+            }
             hax::ConstantLiteral::Char(c) => Literal::Char(*c),
             hax::ConstantLiteral::Bool(b) => Literal::Bool(*b),
             hax::ConstantLiteral::Int(i) => {
@@ -66,15 +71,14 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
         v: &hax::ConstantExpr,
     ) -> Result<ConstantExpr, Error> {
         use hax::ConstantExprKind;
-        let ty = &v.ty;
+        let ty = self.translate_ty(span, &v.ty)?;
         let value = match v.contents.as_ref() {
             ConstantExprKind::Literal(lit) => {
-                self.translate_constant_literal_to_raw_constant_expr(lit)?
+                self.translate_constant_literal_to_raw_constant_expr(span, lit)?
             }
             ConstantExprKind::Adt { info, fields } => {
                 let fields: Vec<ConstantExpr> = fields
                     .iter()
-                    // TODO: the user_ty is not always None
                     .map(|f| self.translate_constant_expr_to_constant_expr(span, &f.value))
                     .try_collect()?;
                 use hax::VariantKind;
@@ -85,8 +89,25 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
                 };
                 RawConstantExpr::Adt(vid, fields)
             }
-            ConstantExprKind::Array { .. } => {
-                raise_error!(self, span, "array constants are not supported yet")
+            ConstantExprKind::Array { fields } => {
+                let fields: Vec<ConstantExpr> = fields
+                    .iter()
+                    .map(|x| self.translate_constant_expr_to_constant_expr(span, x))
+                    .try_collect()?;
+                if let TyKind::Adt(TypeId::Builtin(BuiltinTy::Array), args) = ty.kind()
+                    && let TyKind::Literal(LiteralTy::Integer(IntegerTy::U8)) = args.types[0].kind()
+                {
+                    RawConstantExpr::Literal(Literal::ByteStr(
+                        fields
+                            .iter()
+                            .map(|konst| konst.value.as_literal().unwrap())
+                            .map(|x| x.as_scalar().unwrap().as_u8().unwrap())
+                            .copied()
+                            .collect(),
+                    ))
+                } else {
+                    raise_error!(self, span, "array constants are not supported yet")
+                }
             }
             ConstantExprKind::Tuple { fields } => {
                 let fields: Vec<ConstantExpr> = fields
@@ -125,9 +146,15 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
                     generics,
                 })
             }
-            ConstantExprKind::Borrow(be) => {
-                let be = self.translate_constant_expr_to_constant_expr(span, be)?;
-                RawConstantExpr::Ref(Box::new(be))
+            ConstantExprKind::Borrow(v)
+                if let ConstantExprKind::Literal(hax::ConstantLiteral::Str(s)) =
+                    v.contents.as_ref() =>
+            {
+                RawConstantExpr::Literal(Literal::Str(s.clone()))
+            }
+            ConstantExprKind::Borrow(v) => {
+                let val = self.translate_constant_expr_to_constant_expr(span, v)?;
+                RawConstantExpr::Ref(Box::new(val))
             }
             ConstantExprKind::Cast { .. } => {
                 raise_error!(
@@ -178,7 +205,6 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
             }
         };
 
-        let ty = self.translate_ty(span, ty)?;
         Ok(ConstantExpr { value, ty })
     }
 

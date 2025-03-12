@@ -787,7 +787,7 @@ checksum = "bf151400ff0baff5465007dd2f3e717f3fe502074ca563069ce3a6629d07b289"
 [[package]]
 name = "hax-adt-into"
 version = "0.2.0"
-source = "git+https://github.com/cryspen/hax?branch=main#d3a6fe82cd18df58d5897505be702512b0948b9d"
+source = "git+https://github.com/cryspen/hax?branch=main#1d195b88f2b7cadbc45307010e18282c6c761427"
 dependencies = [
  "itertools 0.11.0",
  "proc-macro2",
@@ -798,7 +798,7 @@ dependencies = [
 [[package]]
 name = "hax-frontend-exporter"
 version = "0.2.0"
-source = "git+https://github.com/cryspen/hax?branch=main#d3a6fe82cd18df58d5897505be702512b0948b9d"
+source = "git+https://github.com/cryspen/hax?branch=main#1d195b88f2b7cadbc45307010e18282c6c761427"
 dependencies = [
  "extension-traits",
  "hax-adt-into",
@@ -815,7 +815,7 @@ dependencies = [
 [[package]]
 name = "hax-frontend-exporter-options"
 version = "0.2.0"
-source = "git+https://github.com/cryspen/hax?branch=main#d3a6fe82cd18df58d5897505be702512b0948b9d"
+source = "git+https://github.com/cryspen/hax?branch=main#1d195b88f2b7cadbc45307010e18282c6c761427"
 dependencies = [
  "hax-adt-into",
  "schemars",
