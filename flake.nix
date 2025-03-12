@@ -124,6 +124,12 @@
             self.packages.${system}.charon-ml
           ];
         };
+        devShells.ci = pkgs.mkShell {
+          packages = [
+            pkgs.jq
+            pkgs.gitAndTools.gh
+          ];
+        };
         checks = {
           default = charon-ml-tests;
           inherit charon-ml-tests charon-check-fmt charon-check-no-rustc
