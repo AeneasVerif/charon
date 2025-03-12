@@ -35,7 +35,7 @@
 
 use anyhow::bail;
 use clap::Parser;
-use options::{CliOpts, CHARON_ARGS};
+use options::CHARON_ARGS;
 use serde::Deserialize;
 use std::env;
 use std::ffi::OsStr;
@@ -47,6 +47,8 @@ use charon_lib::logger;
 use charon_lib::options;
 use charon_lib::trace;
 
+/// Rename this module once subcommand migration finishes.
+mod cli_rework;
 mod toml_config;
 
 // Store the toolchain details directly in the binary.
@@ -158,8 +160,21 @@ pub fn main() -> anyhow::Result<()> {
     // Initialize the logger
     logger::initialize_logger();
 
+    let cli = cli_rework::Cli::parse();
+
+    match cli.command {
+        Some(cli_rework::Charon::PrettyPrint(pretty_print)) => {
+            let krate = charon_lib::deserialize_llbc(&pretty_print.file)?;
+            println!("{krate}");
+            return Ok(());
+        }
+        _ => (),
+    }
+
+    // ******* Old cli args parsing *******
+
     // Parse the command-line
-    let mut options = CliOpts::parse();
+    let mut options = cli.opts;
     trace!("Arguments: {:?}", std::env::args());
     options.validate();
 
