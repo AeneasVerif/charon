@@ -9,14 +9,11 @@ use rustc_driver::{Callbacks, Compilation};
 use rustc_interface::{interface::Compiler, Queries};
 use std::fmt;
 use std::ops::Deref;
-use std::path::PathBuf;
 use std::sync::atomic::{AtomicBool, Ordering};
 
 /// The callbacks for Charon
 pub struct CharonCallbacks {
     pub options: options::CliOpts,
-    /// The root of the toolchain.
-    pub sysroot: PathBuf,
     /// This is to be filled during the extraction; it contains the translated crate.
     transform_ctx: Option<TransformCtx>,
     pub error_count: usize,
@@ -46,10 +43,9 @@ impl fmt::Display for CharonFailure {
 }
 
 impl CharonCallbacks {
-    pub fn new(options: options::CliOpts, sysroot: PathBuf) -> Self {
+    pub fn new(options: options::CliOpts) -> Self {
         Self {
             options,
-            sysroot,
             transform_ctx: None,
             error_count: 0,
         }
@@ -141,15 +137,19 @@ impl Callbacks for CharonCallbacks {
     /// "built" MIR (which results from the conversion to HIR to MIR) to become unaccessible.
     /// Because we require built MIR at the moment, we hook ourselves before MIR-based analysis
     /// passes.
-    fn after_expansion<'tcx>(&mut self, _: &Compiler, queries: &'tcx Queries<'tcx>) -> Compilation {
+    fn after_expansion<'tcx>(
+        &mut self,
+        compiler: &Compiler,
+        queries: &'tcx Queries<'tcx>,
+    ) -> Compilation {
         // Set up our own `DefId` debug routine.
         rustc_hir::def_id::DEF_ID_DEBUG
             .swap(&(def_id_debug as fn(_, &mut fmt::Formatter<'_>) -> _));
 
-        let tranform_ctx = queries.global_ctxt().unwrap().get_mut().enter(|tcx| {
-            translate_crate_to_ullbc::translate(&self.options, tcx, self.sysroot.clone())
+        let transform_ctx = queries.global_ctxt().unwrap().get_mut().enter(|tcx| {
+            translate_crate_to_ullbc::translate(&self.options, tcx, compiler.sess.sysroot.clone())
         });
-        self.transform_ctx = Some(tranform_ctx);
+        self.transform_ctx = Some(transform_ctx);
         Compilation::Continue
     }
     fn after_analysis<'tcx>(

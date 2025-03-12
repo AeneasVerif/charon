@@ -51,23 +51,6 @@ fn main() {
     );
     trace!("original arguments (computed by cargo): {:?}", origin_args);
 
-    // Compute the sysroot (the path to the executable of the compiler):
-    // - if it is already in the command line arguments, just retrieve it from there
-    // - otherwise retrieve the sysroot from a call to rustc
-    let sysroot_arg = arg_values(&origin_args, "--sysroot").next();
-    let has_sysroot_arg = sysroot_arg.is_some();
-    let sysroot = if has_sysroot_arg {
-        sysroot_arg.unwrap().to_string()
-    } else {
-        let out = std::process::Command::new("rustc")
-            .arg("--print=sysroot")
-            .current_dir(".")
-            .output()
-            .unwrap();
-        let sysroot = std::str::from_utf8(&out.stdout).unwrap().trim();
-        sysroot.to_string()
-    };
-
     // Compute the compiler arguments for Rustc.
     // We first use all the arguments received by charon-driver, except the first two.
     // Rem.: the first argument is the path to the charon-driver executable.
@@ -97,9 +80,6 @@ fn main() {
         }
     };
 
-    if !has_sysroot_arg {
-        compiler_args.extend(vec!["--sysroot".to_string(), sysroot.clone()]);
-    }
     if options.use_polonius {
         compiler_args.push("-Zpolonius".to_string());
     }
@@ -252,7 +232,7 @@ fn main() {
     trace!("Compiler arguments: {:?}", compiler_args);
 
     // Call the Rust compiler with our custom callback.
-    let mut callback = CharonCallbacks::new(options, sysroot.into());
+    let mut callback = CharonCallbacks::new(options);
     let mut callback_ = panic::AssertUnwindSafe(&mut callback);
     let res = panic::catch_unwind(move || callback_.run_compiler(compiler_args))
         .map_err(|_| CharonFailure::Panic)
