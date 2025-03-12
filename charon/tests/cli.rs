@@ -69,3 +69,45 @@ fn charon_cargo_p_crate2() -> Result<()> {
         },
     )
 }
+
+#[test]
+fn charon_cargo_features() -> Result<()> {
+    let dir = "tests/cargo/dependencies";
+    let main = "fn test_cargo_dependencies::main";
+    let take_mut = "pub fn take_mut::take";
+
+    charon(
+        &["cargo", "--print-llbc", "--", "-F", "test_feature"],
+        dir,
+        |stdout, cmd| {
+            ensure!(
+                stdout.contains(main),
+                "Output of `{cmd}` is:\n{stdout:?}\nIt doesn't contain {main:?}."
+            );
+            ensure!(
+                stdout.contains(take_mut),
+                "Output of `{cmd}` is:\n{stdout:?}\nIt doesn't contain {take_mut:?}."
+            );
+            Ok(())
+        },
+    )?;
+
+    charon(&["cargo", "--print-llbc"], dir, |stdout, cmd| {
+        ensure!(
+            stdout.contains(main),
+            "Output of `{cmd}` is:\n{stdout:?}\nIt doesn't contain {main:?}."
+        );
+
+        let count_fn = stdout.matches("fn").count();
+        ensure!(
+            count_fn == 1,
+            "Output of `{cmd}` is:\n{stdout:?}\nThe count of `fn` should only be one."
+        );
+
+        ensure!(
+            !stdout.contains(take_mut),
+            "Output of `{cmd}` is:\n{stdout:?}\nIt shouldn't contain {take_mut:?}."
+        );
+        Ok(())
+    })
+}
