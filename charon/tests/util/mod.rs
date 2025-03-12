@@ -28,6 +28,7 @@ pub fn compare_or_overwrite(
     output: String,
     path: &Path,
 ) -> snapbox::assert::Result<()> {
+    let output = strip_ansi_escapes::strip_str(output);
     let actual = snapbox::Data::text(output);
     let actual = snapbox::filter::FilterNewlines.filter(actual);
     match action {

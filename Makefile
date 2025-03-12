@@ -3,11 +3,8 @@ ifeq (3.81,$(MAKE_VERSION))
     install make, then invoke gmake instead of make)
 endif
 
-.PHONY: default
-default: build-charon-rust
-
 .PHONY: all
-all: build test nix
+all: build
 
 .PHONY: format
 format:
