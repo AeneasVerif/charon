@@ -23,6 +23,8 @@ Tracked here: https://github.com/AeneasVerif/charon/issues/142
 
 ## Missing information in the translated output
 
+- Bodies of functions in foreign crates often cause errors (https://github.com/AeneasVerif/charon/issues/543);
+- Bodies of std functions (https://github.com/AeneasVerif/charon/issues/545);
 - Drops (https://github.com/AeneasVerif/charon/issues/152);
 - Layout information (https://github.com/AeneasVerif/charon/issues/581);
 - Lifetime information inside function bodies (not planned).
