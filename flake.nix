@@ -2,6 +2,7 @@
   description = "Charon";
 
   inputs = {
+    flake-compat.url = "github:edolstra/flake-compat"; # For ./shell.nix
     flake-utils.url = "github:numtide/flake-utils";
     nixpkgs.url = "nixpkgs/nixos-unstable";
     # This makes it possible for downstream flakes to use a different nixpkgs
@@ -17,7 +18,7 @@
     crane.url = "github:ipetkov/crane";
   };
 
-  outputs = { self, flake-utils, nixpkgs, nixpkgs-ocaml, rust-overlay, crane }:
+  outputs = { self, flake-utils, nixpkgs, nixpkgs-ocaml, rust-overlay, crane, ... }:
     flake-utils.lib.eachDefaultSystem (system:
       let
         pkgs = import nixpkgs {
