@@ -93,6 +93,15 @@ impl Toolchain {
         cmd.arg("run");
         cmd.arg(&self.channel);
         cmd.arg(program);
+
+        // Add rust driver dll to `PATH` in rustup.
+        // cc
+        // * https://github.com/AeneasVerif/charon/issues/588
+        // * https://github.com/rust-lang/rustup/issues/3825
+        if cfg!(windows) {
+            cmd.env("RUSTUP_WINDOWS_PATH_ADD_BIN", "1");
+        }
+
         cmd
     }
 }
