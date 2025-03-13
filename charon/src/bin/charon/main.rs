@@ -241,9 +241,7 @@ pub fn main() -> anyhow::Result<()> {
         cmd.env(CHARON_ARGS, serde_json::to_string(&options).unwrap());
 
         // Compute the arguments of the command to call cargo
-        //let cargo_subcommand = "build";
-        let cargo_subcommand = "rustc";
-        cmd.arg(cargo_subcommand);
+        cmd.arg("build");
 
         // Make sure the build target is explicitly set. This is needed to detect which crates are
         // proc-macro/build-script in `charon-driver`.
