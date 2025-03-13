@@ -107,18 +107,21 @@ fn transform_constant_expr(
                 .map(|x| transform_constant_expr(span, x, new_var))
                 .collect_vec();
 
-            // Build an `Aggregate` rvalue.
-            let rval = {
-                let (adt_kind, generics) = val.ty.kind().as_adt().unwrap();
-                assert_matches!(
-                    *adt_kind.as_builtin().unwrap(),
-                    BuiltinTy::Array | BuiltinTy::Slice
-                );
-                let ty = generics.types[0].clone();
-                let len =
-                    ConstGeneric::Value(Literal::Scalar(ScalarValue::Usize(fields.len() as u64)));
-                let aggregate_kind = AggregateKind::Array(ty, len);
-                Rvalue::Aggregate(aggregate_kind, fields)
+            let len = ConstGeneric::Value(Literal::Scalar(ScalarValue::Usize(fields.len() as u64)));
+            let (adt_kind, generics) = val.ty.kind().as_adt().unwrap();
+            assert_matches!(
+                *adt_kind.as_builtin().unwrap(),
+                BuiltinTy::Array | BuiltinTy::Slice
+            );
+            let ty = generics.types[0].clone();
+            let rval = if fields.len() >= 2
+                && let Ok(op) = fields.iter().dedup().exactly_one()
+            {
+                // If all the values are the same one, use an array repeat expression.
+                Rvalue::Repeat(op.clone(), ty.clone(), len)
+            } else {
+                // Build an `Aggregate` rvalue.
+                Rvalue::Aggregate(AggregateKind::Array(ty, len), fields)
             };
             let var = new_var(rval, val.ty);
 
