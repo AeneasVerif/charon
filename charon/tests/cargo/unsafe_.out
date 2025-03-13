@@ -20,7 +20,7 @@ fn unsafe::main()
     let @6: Array<&'_ (Str), 1 : usize>; // anonymous local
 
     @6 := [const ("Hello, world!
-"); 1 : usize]
+")]
     @5 := &@6
     @4 := &*(@5)
     @3 := core::fmt::{core::fmt::Arguments<'a>}#2::new_const<'_, 1 : usize>(move (@4))

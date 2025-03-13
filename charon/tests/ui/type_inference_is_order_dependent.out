@@ -93,7 +93,7 @@ where
     let @12: U; // anonymous local
 
     @5 := [const (""), const ("
-"); 2 : usize]
+")]
     @4 := &@5
     @3 := &*(@4)
     @12 := @TraitClause4::default()
@@ -101,7 +101,7 @@ where
     @10 := &*(@11)
     @9 := core::fmt::rt::{core::fmt::rt::Argument<'_0>}#1::new_debug<'_, '_, U>[@TraitClause1, @TraitClause5](move (@10))
     drop @10
-    @8 := [move (@9); 1 : usize]
+    @8 := [move (@9)]
     drop @9
     @7 := &@8
     @6 := &*(@7)

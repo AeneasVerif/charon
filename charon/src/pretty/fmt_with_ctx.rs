@@ -941,8 +941,8 @@ impl<C: AstFormatter> FmtWithCtx<C> for Rvalue {
                             }
                         }
                     }
-                    AggregateKind::Array(_, len) => {
-                        format!("[{}; {}]", ops_s.join(", "), len.fmt_with_ctx(ctx))
+                    AggregateKind::Array(..) => {
+                        format!("[{}]", ops_s.join(", "))
                     }
                     AggregateKind::Closure(fn_id, generics) => {
                         format!(

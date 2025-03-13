@@ -22,7 +22,7 @@ fn test_crate::panic2()
     let @3: &'_ (Array<&'_ (Str), 1 : usize>); // anonymous local
     let @4: Array<&'_ (Str), 1 : usize>; // anonymous local
 
-    @4 := [const ("O no!"); 1 : usize]
+    @4 := [const ("O no!")]
     @3 := &@4
     @2 := &*(@3)
     @1 := core::fmt::{core::fmt::Arguments<'a>}#2::new_const<'_, 1 : usize>(move (@2))
@@ -48,7 +48,7 @@ fn test_crate::panic3()
     let @6: &'_ (Array<core::fmt::rt::Argument<'_>, 0 : usize>); // anonymous local
     let @7: Array<core::fmt::rt::Argument<'_>, 0 : usize>; // anonymous local
 
-    @4 := [const ("O no!"); 1 : usize]
+    @4 := [const ("O no!")]
     @3 := &@4
     @2 := &*(@3)
     @7 := core::fmt::rt::{core::fmt::rt::Argument<'_0>}#1::none<'_>()
@@ -89,7 +89,7 @@ fn test_crate::panic5()
     if move (@2) {
     }
     else {
-        @6 := [const ("assert failed"); 1 : usize]
+        @6 := [const ("assert failed")]
         @5 := &@6
         @4 := &*(@5)
         @3 := core::fmt::{core::fmt::Arguments<'a>}#2::new_const<'_, 1 : usize>(move (@4))
@@ -121,7 +121,7 @@ fn test_crate::panic7()
     let @6: &'_ (Array<core::fmt::rt::Argument<'_>, 0 : usize>); // anonymous local
     let @7: Array<core::fmt::rt::Argument<'_>, 0 : usize>; // anonymous local
 
-    @4 := [const ("internal error: entered unreachable code: can't reach this"); 1 : usize]
+    @4 := [const ("internal error: entered unreachable code: can't reach this")]
     @3 := &@4
     @2 := &*(@3)
     @7 := core::fmt::rt::{core::fmt::rt::Argument<'_0>}#1::none<'_>()

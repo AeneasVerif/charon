@@ -40,7 +40,7 @@ fn test_crate::main()
     let @7: core::slice::iter::Iter<'_, i32>[core::marker::Sized<i32>]; // anonymous local
     let @8: &'_ (Slice<i32>); // anonymous local
 
-    @4 := [const (0 : i32); 1 : usize]
+    @4 := [const (0 : i32)]
     @3 := &@4
     @2 := &*(@3)
     slice@1 := @ArrayToSliceShared<'_, i32, 1 : usize>(move (@2))
