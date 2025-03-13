@@ -35,20 +35,26 @@ fn test_crate::main()
     let @0: (); // return
     let @1: bool; // anonymous local
     let @2: &'_ (core::option::Option<i32>[core::marker::Sized<i32>]); // anonymous local
-    let @3: core::option::Option<i32>[core::marker::Sized<i32>]; // anonymous local
+    let @3: &'_ (core::option::Option<i32>[core::marker::Sized<i32>]); // anonymous local
     let @4: &'_ (core::option::Option<i32>[core::marker::Sized<i32>]); // anonymous local
-    let @5: core::option::Option<i32>[core::marker::Sized<i32>]; // anonymous local
+    let @5: &'_ (core::option::Option<i32>[core::marker::Sized<i32>]); // anonymous local
+    let @6: core::option::Option<i32>[core::marker::Sized<i32>]; // anonymous local
+    let @7: &'_ (core::option::Option<i32>[core::marker::Sized<i32>]); // anonymous local
+    let @8: core::option::Option<i32>[core::marker::Sized<i32>]; // anonymous local
+    let @9: &'_ (core::option::Option<i32>[core::marker::Sized<i32>]); // anonymous local
 
-    @3 := core::option::Option::Some { 0: const (1 : i32) }
-    @2 := &@3
-    @5 := core::option::Option::Some { 0: const (1 : i32) }
-    @4 := &@5
-    @1 := core::option::{impl core::cmp::PartialEq<core::option::Option<T>[@TraitClause0]> for core::option::Option<T>[@TraitClause0]}#14::eq<'_, '_, i32>[core::marker::Sized<i32>, core::cmp::impls::{impl core::cmp::PartialEq<i32> for i32}#30](move (@2), move (@4))
-    drop @4
+    @6 := core::option::Option::Some { 0: const (1 : i32) }
+    @7 := &@6
+    @5 := move (@7)
+    @2 := &*(@5)
+    @8 := core::option::Option::Some { 0: const (1 : i32) }
+    @9 := &@8
+    @4 := move (@9)
+    @3 := &*(@4)
+    @1 := core::option::{impl core::cmp::PartialEq<core::option::Option<T>[@TraitClause0]> for core::option::Option<T>[@TraitClause0]}#14::eq<'_, '_, i32>[core::marker::Sized<i32>, core::cmp::impls::{impl core::cmp::PartialEq<i32> for i32}#30](move (@2), move (@3))
+    drop @3
     drop @2
     @fake_read(@1)
-    drop @5
-    drop @3
     drop @1
     @0 := ()
     @0 := ()
