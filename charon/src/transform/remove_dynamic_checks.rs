@@ -35,6 +35,7 @@ fn remove_dynamic_checks(_ctx: &mut TransformCtx, statements: &mut [Statement]) 
                 RawStatement::Assert(Assert {
                     cond: Operand::Move(cond),
                     expected: true,
+                    ..
                 }),
             ..
         }, rest @ ..]
@@ -66,6 +67,7 @@ fn remove_dynamic_checks(_ctx: &mut TransformCtx, statements: &mut [Statement]) 
                 RawStatement::Assert(Assert {
                     cond: Operand::Move(cond),
                     expected: true,
+                    ..
                 }),
             ..
         }, rest @ ..]
@@ -86,6 +88,7 @@ fn remove_dynamic_checks(_ctx: &mut TransformCtx, statements: &mut [Statement]) 
                 RawStatement::Assert(Assert {
                     cond: Operand::Move(cond),
                     expected: true,
+                    ..
                 }),
             ..
         }, rest @ ..]
@@ -106,6 +109,7 @@ fn remove_dynamic_checks(_ctx: &mut TransformCtx, statements: &mut [Statement]) 
                 RawStatement::Assert(Assert {
                     cond: Operand::Move(cond),
                     expected,
+                    ..
                 }),
             ..
         }, rest @ ..]
@@ -137,6 +141,7 @@ fn remove_dynamic_checks(_ctx: &mut TransformCtx, statements: &mut [Statement]) 
                 RawStatement::Assert(Assert {
                     cond: Operand::Move(cond),
                     expected,
+                    ..
                 }),
             ..
         }, rest @ ..]
@@ -167,6 +172,7 @@ fn remove_dynamic_checks(_ctx: &mut TransformCtx, statements: &mut [Statement]) 
                 RawStatement::Assert(Assert {
                     cond: Operand::Move(cond),
                     expected,
+                    ..
                 }),
             ..
         }, rest @ ..]
@@ -189,6 +195,7 @@ fn remove_dynamic_checks(_ctx: &mut TransformCtx, statements: &mut [Statement]) 
                 RawStatement::Assert(Assert {
                     cond: Operand::Move(cond),
                     expected,
+                    ..
                 }),
             ..
         }, rest @ ..]
@@ -214,6 +221,7 @@ fn remove_dynamic_checks(_ctx: &mut TransformCtx, statements: &mut [Statement]) 
                 RawStatement::Assert(Assert {
                     cond: Operand::Move(cond),
                     expected,
+                    ..
                 }),
             ..
         }, ..]

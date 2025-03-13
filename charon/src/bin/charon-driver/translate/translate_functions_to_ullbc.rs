@@ -954,6 +954,7 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
                 Some(RawStatement::Assert(Assert {
                     cond: op,
                     expected: true,
+                    on_failure: AbortKind::UndefinedBehavior,
                 }))
             }
             StatementKind::Intrinsic(hax::NonDivergingIntrinsic::CopyNonOverlapping(..)) => {
@@ -1059,6 +1060,7 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
                 let assert = Assert {
                     cond: self.translate_operand(span, cond)?,
                     expected: *expected,
+                    on_failure: AbortKind::Panic(None),
                 };
                 statements.push(Statement::new(span, RawStatement::Assert(assert)));
                 let target = self.translate_basic_block_id(*target);
@@ -1188,7 +1190,7 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
                         // I don't know in which other cases it can be `None`.
                         assert!(target.is_none());
                         // We ignore the arguments
-                        return Ok(RawTerminator::Abort(AbortKind::Panic(name)));
+                        return Ok(RawTerminator::Abort(AbortKind::Panic(Some(name))));
                     }
                     SubstFunIdOrPanic::Fun(fid) => {
                         let fn_operand = FnOperand::Regular(fid.func);

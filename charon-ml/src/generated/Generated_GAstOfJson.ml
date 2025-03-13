@@ -598,7 +598,7 @@ and abort_kind_of_json (ctx : of_json_ctx) (js : json) :
   combine_error_msgs js __FUNCTION__
     (match js with
     | `Assoc [ ("Panic", panic) ] ->
-        let* panic = name_of_json ctx panic in
+        let* panic = option_of_json name_of_json ctx panic in
         Ok (Panic panic)
     | `String "UndefinedBehavior" -> Ok UndefinedBehavior
     | _ -> Error "")
@@ -607,10 +607,13 @@ and assertion_of_json (ctx : of_json_ctx) (js : json) :
     (assertion, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
-    | `Assoc [ ("cond", cond); ("expected", expected) ] ->
+    | `Assoc
+        [ ("cond", cond); ("expected", expected); ("on_failure", on_failure) ]
+      ->
         let* cond = operand_of_json ctx cond in
         let* expected = bool_of_json ctx expected in
-        Ok ({ cond; expected } : assertion)
+        let* on_failure = abort_kind_of_json ctx on_failure in
+        Ok ({ cond; expected; on_failure } : assertion)
     | _ -> Error "")
 
 and fun_decl_id_of_json (ctx : of_json_ctx) (js : json) :

@@ -38,6 +38,7 @@ impl Transform {
                 RawStatement::Assert(Assert {
                     cond: Operand::Move(assert_cond),
                     expected: false,
+                    ..
                 }),
             ..
         }, Statement {

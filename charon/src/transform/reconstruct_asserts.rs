@@ -3,7 +3,7 @@
 //! introduce `if ... then { panic!(...) } else { ...}`.
 //! This pass introduces `assert` instead in order to make the code shorter.
 
-use std::collections::HashSet;
+use std::collections::HashMap;
 
 use crate::transform::TransformCtx;
 use crate::ullbc_ast::*;
@@ -16,7 +16,7 @@ impl UllbcPass for Transform {
         // Start by computing the set of blocks which are actually panics.
         // Remark: doing this in two steps because reading the blocks at random
         // while doing in-place updates is not natural to do in Rust.
-        let panics: HashSet<BlockId> = b
+        let panics: HashMap<BlockId, AbortKind> = b
             .body
             .iter_indexed()
             .filter_map(|(bid, block)| {
@@ -24,9 +24,9 @@ impl UllbcPass for Transform {
                     .statements
                     .iter()
                     .all(|st| st.content.is_storage_live())
-                    && block.terminator.content.is_abort()
+                    && let RawTerminator::Abort(abort) = &block.terminator.content
                 {
-                    Some(bid)
+                    Some((bid, abort.clone()))
                 } else {
                     None
                 }
@@ -39,10 +39,10 @@ impl UllbcPass for Transform {
                     discr: _,
                     targets: SwitchTargets::If(bid0, bid1),
                 } => {
-                    let (nbid, expected) = if panics.contains(bid0) {
-                        (*bid1, false)
-                    } else if panics.contains(bid1) {
-                        (*bid0, true)
+                    let (nbid, expected, abort) = if let Some(abort) = panics.get(bid0) {
+                        (*bid1, false, abort)
+                    } else if let Some(abort) = panics.get(bid1) {
+                        (*bid0, true, abort)
                     } else {
                         continue;
                     };
@@ -57,6 +57,7 @@ impl UllbcPass for Transform {
                         RawStatement::Assert(Assert {
                             cond: discr.clone(),
                             expected,
+                            on_failure: abort.clone(),
                         }),
                     ));
                 }
