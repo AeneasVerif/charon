@@ -23,7 +23,6 @@ pub enum RawStatement {
     Assign(Place, Rvalue),
     /// A call. For now, we don't support dynamic calls (i.e. to a function pointer in memory).
     Call(Call),
-    FakeRead(Place),
     SetDiscriminant(Place, VariantId),
     StorageLive(LocalId),
     StorageDead(LocalId),

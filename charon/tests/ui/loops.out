@@ -15,10 +15,8 @@ pub fn test_crate::test_loop1(@1: u32) -> u32
 
     storage_live(i@2)
     i@2 := const (0 : u32)
-    @fake_read(i@2)
     storage_live(s@3)
     s@3 := const (0 : u32)
-    @fake_read(s@3)
     storage_live(@4)
     loop {
         storage_live(@5)
@@ -73,10 +71,8 @@ pub fn test_crate::test_loop2(@1: u32) -> u32
 
     storage_live(i@2)
     i@2 := const (0 : u32)
-    @fake_read(i@2)
     storage_live(s@3)
     s@3 := const (0 : u32)
-    @fake_read(s@3)
     storage_live(@4)
     loop {
         storage_live(@5)
@@ -155,13 +151,10 @@ pub fn test_crate::test_loop3(@1: u32) -> u32
 
     storage_live(i@2)
     i@2 := const (0 : u32)
-    @fake_read(i@2)
     storage_live(j@3)
     j@3 := const (0 : u32)
-    @fake_read(j@3)
     storage_live(s@4)
     s@4 := const (0 : u32)
-    @fake_read(s@4)
     storage_live(@5)
     loop {
         storage_live(@6)
@@ -280,13 +273,10 @@ pub fn test_crate::test_loop4(@1: u32) -> u32
 
     storage_live(i@2)
     i@2 := const (1 : u32)
-    @fake_read(i@2)
     storage_live(j@3)
     j@3 := const (0 : u32)
-    @fake_read(j@3)
     storage_live(s@4)
     s@4 := const (0 : u32)
-    @fake_read(s@4)
     storage_live(@5)
     loop {
         storage_live(@6)
@@ -399,13 +389,10 @@ pub fn test_crate::test_loop5(@1: u32) -> u32
 
     storage_live(i@2)
     i@2 := const (0 : u32)
-    @fake_read(i@2)
     storage_live(j@3)
     j@3 := const (0 : u32)
-    @fake_read(j@3)
     storage_live(s@4)
     s@4 := const (0 : u32)
-    @fake_read(s@4)
     storage_live(@5)
     loop {
         storage_live(@6)
@@ -489,10 +476,8 @@ pub fn test_crate::test_loop6(@1: u32) -> u32
 
     storage_live(i@2)
     i@2 := const (0 : u32)
-    @fake_read(i@2)
     storage_live(s@3)
     s@3 := const (0 : u32)
-    @fake_read(s@3)
     storage_live(@4)
     loop {
         storage_live(@5)
@@ -567,10 +552,8 @@ pub fn test_crate::test_loop7(@1: u32) -> u32
 
     storage_live(i@2)
     i@2 := const (0 : u32)
-    @fake_read(i@2)
     storage_live(s@3)
     s@3 := const (0 : u32)
-    @fake_read(s@3)
     storage_live(@4)
     storage_live(@5)
     storage_live(@6)
@@ -669,7 +652,6 @@ pub fn test_crate::test_loops()
 
     storage_live(x@1)
     x@1 := test_crate::test_loop1(const (2 : u32))
-    @fake_read(x@1)
     storage_live(@2)
     storage_live(@3)
     storage_live(@4)
@@ -686,7 +668,6 @@ pub fn test_crate::test_loops()
     storage_dead(@2)
     storage_live(x@5)
     x@5 := test_crate::test_loop2(const (2 : u32))
-    @fake_read(x@5)
     storage_live(@6)
     storage_live(@7)
     storage_live(@8)
@@ -703,7 +684,6 @@ pub fn test_crate::test_loops()
     storage_dead(@6)
     storage_live(x@9)
     x@9 := test_crate::test_loop3(const (2 : u32))
-    @fake_read(x@9)
     storage_live(@10)
     storage_live(@11)
     storage_live(@12)
@@ -720,7 +700,6 @@ pub fn test_crate::test_loops()
     storage_dead(@10)
     storage_live(x@13)
     x@13 := test_crate::test_loop4(const (20 : u32))
-    @fake_read(x@13)
     storage_live(@14)
     storage_live(@15)
     storage_live(@16)
@@ -737,7 +716,6 @@ pub fn test_crate::test_loops()
     storage_dead(@14)
     storage_live(x@17)
     x@17 := test_crate::test_loop5(const (2 : u32))
-    @fake_read(x@17)
     storage_live(@18)
     storage_live(@19)
     storage_live(@20)
@@ -754,7 +732,6 @@ pub fn test_crate::test_loops()
     storage_dead(@18)
     storage_live(x@21)
     x@21 := test_crate::test_loop6(const (2 : u32))
-    @fake_read(x@21)
     storage_live(@22)
     storage_live(@23)
     storage_live(@24)
@@ -979,14 +956,12 @@ pub fn test_crate::nested_loops_enum(@1: usize, @2: usize) -> usize
 
     storage_live(s@3)
     s@3 := const (0 : usize)
-    @fake_read(s@3)
     storage_live(@4)
     storage_live(@5)
     storage_live(@6)
     @6 := core::ops::range::Range { start: const (0 : i32), end: const (128 : i32) }
     @5 := core::iter::traits::collect::{impl core::iter::traits::collect::IntoIterator for I}::into_iter<core::ops::range::Range<i32>[core::marker::Sized<i32>]>[core::marker::Sized<core::ops::range::Range<i32>[core::marker::Sized<i32>]>, core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>[@TraitClause0]}#6<i32>[core::marker::Sized<i32>, core::iter::range::{impl core::iter::range::Step for i32}#40]](move (@6))
     storage_dead(@6)
-    @fake_read(@5)
     storage_live(iter@7)
     iter@7 := move (@5)
     loop {
@@ -998,7 +973,6 @@ pub fn test_crate::nested_loops_enum(@1: usize, @2: usize) -> usize
         @10 := &two-phase-mut *(@11)
         @9 := core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>[@TraitClause0]}#6::next<'_, i32>[core::marker::Sized<i32>, core::iter::range::{impl core::iter::range::Step for i32}#40](move (@10))
         storage_dead(@10)
-        @fake_read(@9)
         match @9 {
             0 => {
                 break 0
@@ -1027,7 +1001,6 @@ pub fn test_crate::nested_loops_enum(@1: usize, @2: usize) -> usize
     storage_dead(@15)
     @13 := core::iter::traits::collect::{impl core::iter::traits::collect::IntoIterator for I}::into_iter<core::ops::range::Range<usize>[core::marker::Sized<usize>]>[core::marker::Sized<core::ops::range::Range<usize>[core::marker::Sized<usize>]>, core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>[@TraitClause0]}#6<usize>[core::marker::Sized<usize>, core::iter::range::{impl core::iter::range::Step for usize}#43]](move (@14))
     storage_dead(@14)
-    @fake_read(@13)
     storage_live(iter@16)
     iter@16 := move (@13)
     loop {
@@ -1039,7 +1012,6 @@ pub fn test_crate::nested_loops_enum(@1: usize, @2: usize) -> usize
         @19 := &two-phase-mut *(@20)
         @18 := core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>[@TraitClause0]}#6::next<'_, usize>[core::marker::Sized<usize>, core::iter::range::{impl core::iter::range::Step for usize}#43](move (@19))
         storage_dead(@19)
-        @fake_read(@18)
         match @18 {
             0 => {
                 break 0
@@ -1053,7 +1025,6 @@ pub fn test_crate::nested_loops_enum(@1: usize, @2: usize) -> usize
                 storage_dead(@23)
                 @21 := core::iter::traits::collect::{impl core::iter::traits::collect::IntoIterator for I}::into_iter<core::ops::range::Range<usize>[core::marker::Sized<usize>]>[core::marker::Sized<core::ops::range::Range<usize>[core::marker::Sized<usize>]>, core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>[@TraitClause0]}#6<usize>[core::marker::Sized<usize>, core::iter::range::{impl core::iter::range::Step for usize}#43]](move (@22))
                 storage_dead(@22)
-                @fake_read(@21)
                 storage_live(iter@24)
                 iter@24 := move (@21)
                 loop {
@@ -1065,7 +1036,6 @@ pub fn test_crate::nested_loops_enum(@1: usize, @2: usize) -> usize
                     @27 := &two-phase-mut *(@28)
                     @26 := core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>[@TraitClause0]}#6::next<'_, usize>[core::marker::Sized<usize>, core::iter::range::{impl core::iter::range::Step for usize}#43](move (@27))
                     storage_dead(@27)
-                    @fake_read(@26)
                     match @26 {
                         0 => {
                             break 0
@@ -1165,7 +1135,6 @@ pub fn test_crate::loop_inside_if(@1: bool, @2: u32) -> u32
     if move (@3) {
         storage_live(s@4)
         s@4 := const (0 : u32)
-        @fake_read(s@4)
         storage_live(@5)
         storage_live(@6)
         storage_live(@7)
@@ -1175,7 +1144,6 @@ pub fn test_crate::loop_inside_if(@1: bool, @2: u32) -> u32
         storage_dead(@8)
         @6 := core::iter::traits::collect::{impl core::iter::traits::collect::IntoIterator for I}::into_iter<core::ops::range::Range<u32>[core::marker::Sized<u32>]>[core::marker::Sized<core::ops::range::Range<u32>[core::marker::Sized<u32>]>, core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>[@TraitClause0]}#6<u32>[core::marker::Sized<u32>, core::iter::range::{impl core::iter::range::Step for u32}#39]](move (@7))
         storage_dead(@7)
-        @fake_read(@6)
         storage_live(iter@9)
         iter@9 := move (@6)
         loop {
@@ -1187,7 +1155,6 @@ pub fn test_crate::loop_inside_if(@1: bool, @2: u32) -> u32
             @12 := &two-phase-mut *(@13)
             @11 := core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>[@TraitClause0]}#6::next<'_, u32>[core::marker::Sized<u32>, core::iter::range::{impl core::iter::range::Step for u32}#39](move (@12))
             storage_dead(@12)
-            @fake_read(@11)
             match @11 {
                 0 => {
                     break 0
@@ -1238,10 +1205,8 @@ pub fn test_crate::sum(@1: u32) -> u32
 
     storage_live(i@2)
     i@2 := const (0 : u32)
-    @fake_read(i@2)
     storage_live(s@3)
     s@3 := const (0 : u32)
-    @fake_read(s@3)
     storage_live(@4)
     loop {
         storage_live(@5)
@@ -1295,10 +1260,8 @@ pub fn test_crate::sum_array<const N : usize>(@1: Array<u32, const N : usize>) -
 
     storage_live(i@2)
     i@2 := const (0 : usize)
-    @fake_read(i@2)
     storage_live(s@3)
     s@3 := const (0 : u32)
-    @fake_read(s@3)
     storage_live(@4)
     loop {
         storage_live(@5)
@@ -1427,7 +1390,6 @@ pub fn test_crate::clear<'_0>(@1: &'_0 mut (alloc::vec::Vec<u32, alloc::alloc::G
 
     storage_live(i@2)
     i@2 := const (0 : usize)
-    @fake_read(i@2)
     loop {
         storage_live(@3)
         storage_live(@4)
@@ -1491,7 +1453,6 @@ pub fn test_crate::get_elem_mut<'_0>(@1: &'_0 mut (test_crate::List<usize>[core:
     let @8: &'_ mut (test_crate::List<usize>[core::marker::Sized<usize>]); // anonymous local
 
     loop {
-        @fake_read(ls@1)
         match *(ls@1) {
             0 => {
                 storage_live(y@3)
@@ -1550,7 +1511,6 @@ where
 
     storage_live(@3)
     loop {
-        @fake_read(ls@1)
         match *(ls@1) {
             0 => {
                 storage_live(x@4)

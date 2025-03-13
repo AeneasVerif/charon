@@ -20,8 +20,6 @@ pub enum RawStatement {
     /// Assigns an `Rvalue` to a `Place`. e.g. `let y = x;` could become
     /// `y := move x` which is represented as `Assign(y, Rvalue::Use(Operand::Move(x)))`.
     Assign(Place, Rvalue),
-    /// Only used for borrow-checking
-    FakeRead(Place),
     /// Not used today because we take MIR built.
     SetDiscriminant(Place, VariantId),
     StorageLive(LocalId),

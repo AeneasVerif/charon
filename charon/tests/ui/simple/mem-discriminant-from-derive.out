@@ -59,7 +59,6 @@ pub fn test_crate::{impl core::cmp::PartialEq<test_crate::Enum> for test_crate::
         },
     }
     storage_dead(@4)
-    @fake_read(__self_discr@3)
     storage_live(__arg1_discr@5)
     storage_live(@6)
     @6 := &*(other@2)
@@ -72,7 +71,6 @@ pub fn test_crate::{impl core::cmp::PartialEq<test_crate::Enum> for test_crate::
         },
     }
     storage_dead(@6)
-    @fake_read(__arg1_discr@5)
     storage_live(@7)
     storage_live(@8)
     @8 := copy (__self_discr@3)
@@ -90,7 +88,6 @@ pub fn test_crate::{impl core::cmp::PartialEq<test_crate::Enum> for test_crate::
         @10 := (move (@11), move (@12))
         storage_dead(@12)
         storage_dead(@11)
-        @fake_read(@10)
         match *((@10).0) {
             0 => {
                 match *((@10).1) {

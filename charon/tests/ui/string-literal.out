@@ -86,7 +86,6 @@ fn test_crate::main()
     @2 := &*(@3)
     _s@1 := alloc::string::{impl alloc::string::ToString for T}#34::to_string<'_, Str>[core::fmt::{impl core::fmt::Display for Str}#19](move (@2))
     storage_dead(@2)
-    @fake_read(_s@1)
     storage_dead(@3)
     @0 := ()
     drop _s@1

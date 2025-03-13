@@ -13,9 +13,6 @@ and raw_statement_of_json (ctx : of_json_ctx) (js : json) :
         let* x_0 = place_of_json ctx x_0 in
         let* x_1 = rvalue_of_json ctx x_1 in
         Ok (Assign (x_0, x_1))
-    | `Assoc [ ("FakeRead", fake_read) ] ->
-        let* fake_read = place_of_json ctx fake_read in
-        Ok (FakeRead fake_read)
     | `Assoc [ ("SetDiscriminant", `List [ x_0; x_1 ]) ] ->
         let* x_0 = place_of_json ctx x_0 in
         let* x_1 = variant_id_of_json ctx x_1 in

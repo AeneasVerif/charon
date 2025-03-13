@@ -1452,7 +1452,6 @@ fn translate_statement(st: &src::Statement) -> Option<tgt::Statement> {
     let st = match st.content.clone() {
         src::RawStatement::Assign(place, rvalue) => tgt::RawStatement::Assign(place, rvalue),
         src::RawStatement::Call(s) => tgt::RawStatement::Call(s),
-        src::RawStatement::FakeRead(place) => tgt::RawStatement::FakeRead(place),
         src::RawStatement::SetDiscriminant(place, variant_id) => {
             tgt::RawStatement::SetDiscriminant(place, variant_id)
         }
@@ -1607,7 +1606,6 @@ fn is_terminal(block: &tgt::Block) -> bool {
 fn is_terminal_explore(num_loops: usize, st: &tgt::Statement) -> bool {
     match &st.content {
         tgt::RawStatement::Assign(_, _)
-        | tgt::RawStatement::FakeRead(_)
         | tgt::RawStatement::SetDiscriminant(_, _)
         | tgt::RawStatement::StorageLive(_)
         | tgt::RawStatement::StorageDead(_)

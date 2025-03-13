@@ -37,10 +37,8 @@ fn test_crate::literal_float() -> f64
 
     storage_live(x@1)
     x@1 := const (1 : f64)
-    @fake_read(x@1)
     storage_live(y@2)
     y@2 := const (1.5 : f64)
-    @fake_read(y@2)
     storage_live(@3)
     @3 := copy (x@1)
     storage_live(@4)

@@ -15,13 +15,11 @@ fn test_crate::use_union()
 
     storage_live(one@1)
     one@1 := test_crate::Foo { one: const (42 : u64) }
-    @fake_read(one@1)
     storage_live(@2)
     (one@1).one := const (43 : u64)
     storage_dead(@2)
     storage_live(_two@3)
     _two@3 := copy ((one@1).two)
-    @fake_read(_two@3)
     @0 := ()
     storage_dead(_two@3)
     storage_dead(one@1)

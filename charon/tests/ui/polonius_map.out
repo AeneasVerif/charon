@@ -176,7 +176,6 @@ pub fn test_crate::get_or_insert<'_0>(@1: &'_0 mut (std::collections::hash::map:
     @2 := std::collections::hash::map::{std::collections::hash::map::HashMap<K, V, S>[@TraitClause0, @TraitClause1, @TraitClause2]}#2::get<'_, '_, u32, u32, std::hash::random::RandomState, u32>[core::marker::Sized<u32>, core::marker::Sized<u32>, core::marker::Sized<std::hash::random::RandomState>, core::cmp::impls::{impl core::cmp::Eq for u32}#43, core::hash::impls::{impl core::hash::Hash for u32}#11, std::hash::random::{impl core::hash::BuildHasher for std::hash::random::RandomState}#1, core::borrow::{impl core::borrow::Borrow<T> for T}<u32>, core::hash::impls::{impl core::hash::Hash for u32}#11, core::cmp::impls::{impl core::cmp::Eq for u32}#43](move (@3), move (@4))
     storage_dead(@4)
     storage_dead(@3)
-    @fake_read(@2)
     match @2 {
         0 => {
             storage_live(@8)

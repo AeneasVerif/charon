@@ -75,13 +75,9 @@ fn remove_dynamic_checks(_ctx: &mut TransformCtx, statements: &mut [Statement]) 
         }
 
         // Bounds checks for arrays. They look like:
-        //   fake_read(a)
         //   b := copy x < const _
         //   assert(move b == true)
         [Statement {
-            content: RawStatement::FakeRead(_),
-            ..
-        }, Statement {
             content:
                 RawStatement::Assign(is_in_bounds, Rvalue::BinaryOp(BinOp::Lt, _, Operand::Const(_))),
             ..

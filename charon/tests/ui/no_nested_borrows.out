@@ -199,10 +199,8 @@ pub fn test_crate::test2()
 
     storage_live(x@1)
     x@1 := const (23 : u32)
-    @fake_read(x@1)
     storage_live(y@2)
     y@2 := const (44 : u32)
-    @fake_read(y@2)
     storage_live(z@3)
     storage_live(@4)
     @4 := copy (x@1)
@@ -211,7 +209,6 @@ pub fn test_crate::test2()
     z@3 := move (@4) + move (@5)
     storage_dead(@5)
     storage_dead(@4)
-    @fake_read(z@3)
     storage_live(p@6)
     storage_live(@7)
     @7 := copy (x@1)
@@ -220,22 +217,16 @@ pub fn test_crate::test2()
     p@6 := test_crate::Pair { x: move (@7), y: move (@8) }
     storage_dead(@8)
     storage_dead(@7)
-    @fake_read(p@6)
     storage_live(s@9)
     s@9 := test_crate::Sum::Right { 0: const (true) }
-    @fake_read(s@9)
     storage_live(o@10)
     o@10 := test_crate::One::One { 0: const (3 : u64) }
-    @fake_read(o@10)
     storage_live(e0@11)
     e0@11 := test_crate::EmptyEnum::Empty {  }
-    @fake_read(e0@11)
     storage_live(e1@12)
     e1@12 := move (e0@11)
-    @fake_read(e1@12)
     storage_live(enum0@13)
     enum0@13 := test_crate::Enum::Variant1 {  }
-    @fake_read(enum0@13)
     @0 := ()
     storage_dead(enum0@13)
     storage_dead(e1@12)
@@ -295,7 +286,6 @@ pub fn test_crate::test_list1()
     l@1 := test_crate::List::Cons { 0: const (0 : i32), 1: move (@2) }
     drop @2
     storage_dead(@2)
-    @fake_read(l@1)
     @0 := ()
     drop l@1
     storage_dead(l@1)
@@ -325,20 +315,17 @@ pub fn test_crate::test_box1()
 
     storage_live(b@1)
     b@1 := @BoxNew<i32>[core::marker::Sized<i32>](const (0 : i32))
-    @fake_read(b@1)
     storage_live(x@2)
     storage_live(@3)
     @3 := &two-phase-mut b@1
     x@2 := alloc::boxed::{impl core::ops::deref::DerefMut for alloc::boxed::Box<T>[@TraitClause0]}#25::deref_mut<'_, i32, alloc::alloc::Global>[core::marker::Sized<alloc::alloc::Global>](move (@3))
     storage_dead(@3)
-    @fake_read(x@2)
     *(x@2) := const (1 : i32)
     storage_live(x@4)
     storage_live(@5)
     @5 := &b@1
     x@4 := alloc::boxed::{impl core::ops::deref::Deref for alloc::boxed::Box<T>[@TraitClause0]}#24::deref<'_, i32, alloc::alloc::Global>[core::marker::Sized<alloc::alloc::Global>](move (@5))
     storage_dead(@5)
-    @fake_read(x@4)
     storage_live(@6)
     storage_live(@7)
     storage_live(@8)
@@ -393,7 +380,6 @@ where
     let @0: bool; // return
     let l@1: &'_ (test_crate::List<T>[@TraitClause0]); // arg #1
 
-    @fake_read(l@1)
     match *(l@1) {
         0 => {
         },
@@ -417,7 +403,6 @@ where
     let @4: T; // anonymous local
     let @5: test_crate::List<T>[@TraitClause0]; // anonymous local
 
-    @fake_read(l@1)
     match l@1 {
         0 => {
         },
@@ -660,7 +645,6 @@ pub fn test_crate::read_then_incr<'_0>(@1: &'_0 mut (u32)) -> u32
 
     storage_live(r@2)
     r@2 := copy (*(x@1))
-    @fake_read(r@2)
     *(x@1) := copy (*(x@1)) + const (1 : u32)
     @0 := copy (r@2)
     storage_dead(r@2)

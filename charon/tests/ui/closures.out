@@ -72,7 +72,6 @@ where
     let @6: (T); // anonymous local
     let @7: T; // anonymous local
 
-    @fake_read(x@1)
     match x@1 {
         0 => {
             @0 := core::option::Option::None {  }
@@ -117,7 +116,6 @@ where
     let @5: fn<'_0>(&'_0_0 (T)) -> T; // anonymous local
     let @6: &'_ (T); // anonymous local
 
-    @fake_read(x@1)
     match *(x@1) {
         0 => {
         },
@@ -180,7 +178,6 @@ pub fn test_crate::test_closure_u32(@1: u32) -> u32
     @3 := {test_crate::test_closure_u32::closure} {}
     f@2 := cast<fn(u32) -> u32, fn(u32) -> u32>(move (@3))
     storage_dead(@3)
-    @fake_read(f@2)
     storage_live(@4)
     @4 := copy (f@2)
     storage_live(@5)
@@ -226,7 +223,6 @@ pub fn test_crate::test_closure_u32s(@1: u32) -> u32
     @3 := {test_crate::test_closure_u32s::closure} {}
     f@2 := cast<fn(u32, u32) -> u32, fn(u32, u32) -> u32>(move (@3))
     storage_dead(@3)
-    @fake_read(f@2)
     storage_live(@4)
     @4 := copy (f@2)
     storage_live(@5)
@@ -266,7 +262,6 @@ pub fn test_crate::test_closure_ref_u32<'a>(@1: &'a (u32)) -> &'a (u32)
     @3 := {test_crate::test_closure_ref_u32::closure<'_>} {}
     f@2 := cast<fn<'_0>(&'_0_0 (u32)) -> &'_0_0 (u32), fn<'_0>(&'_0_0 (u32)) -> &'_0_0 (u32)>(move (@3))
     storage_dead(@3)
-    @fake_read(f@2)
     storage_live(@4)
     storage_live(@5)
     @5 := copy (f@2)
@@ -310,7 +305,6 @@ where
     @3 := {test_crate::test_closure_ref_param::closure<'_, T>[@TraitClause0]} {}
     f@2 := cast<fn<'_0>(&'_0_0 (T)) -> &'_0_0 (T), fn<'_0>(&'_0_0 (T)) -> &'_0_0 (T)>(move (@3))
     storage_dead(@3)
-    @fake_read(f@2)
     storage_live(@4)
     storage_live(@5)
     @5 := copy (f@2)
@@ -358,7 +352,6 @@ where
     @3 := {test_crate::test_closure_ref_early_bound::closure<'_, '_, T>[@TraitClause0, @TraitClause1]} {}
     f@2 := cast<fn<'_0>(&'_0_0 (T)) -> &'_0_0 (T), fn<'_0>(&'_0_0 (T)) -> &'_0_0 (T)>(move (@3))
     storage_dead(@3)
-    @fake_read(f@2)
     storage_live(@4)
     storage_live(@5)
     @5 := copy (f@2)
@@ -401,7 +394,6 @@ pub fn test_crate::test_map_option2(@1: core::option::Option<u32>[core::marker::
     @3 := {test_crate::test_map_option2::closure} {}
     f@2 := cast<fn(u32) -> u32, fn(u32) -> u32>(move (@3))
     storage_dead(@3)
-    @fake_read(f@2)
     storage_live(@4)
     @4 := copy (x@1)
     storage_live(@5)
@@ -448,7 +440,6 @@ pub fn test_crate::test_map_option_id2(@1: core::option::Option<u32>[core::marke
 
     storage_live(f@2)
     f@2 := const (test_crate::id<u32>[core::marker::Sized<u32>])
-    @fake_read(f@2)
     storage_live(@3)
     @3 := copy (x@1)
     storage_live(@4)
@@ -505,7 +496,6 @@ pub fn test_crate::test_id_clone(@1: u32) -> u32
 
     storage_live(f@2)
     f@2 := cast<fn(u32) -> u32, fn(u32) -> u32>(const (test_crate::id_clone<u32>[core::marker::Sized<u32>, core::clone::impls::{impl core::clone::Clone for u32}#8]))
-    @fake_read(f@2)
     storage_live(@3)
     @3 := copy (f@2)
     storage_live(@4)
@@ -530,7 +520,6 @@ where
 
     storage_live(f@2)
     f@2 := cast<fn(T) -> T, fn(T) -> T>(const (test_crate::id_clone<T>[@TraitClause0, @TraitClause1]))
-    @fake_read(f@2)
     storage_live(@3)
     @3 := copy (f@2)
     storage_live(@4)
@@ -612,7 +601,6 @@ pub fn test_crate::test_regions<'a>(@1: &'a (u32)) -> u32
     @3 := {test_crate::test_regions::closure<'_>} {}
     f@2 := cast<fn<'_0>(&'_0_0 (&'_ (u32))) -> u32, fn<'_0>(&'_0_0 (&'_ (u32))) -> u32>(move (@3))
     storage_dead(@3)
-    @fake_read(f@2)
     storage_live(@4)
     @4 := copy (f@2)
     storage_live(@5)
@@ -675,7 +663,6 @@ pub fn test_crate::test_closure_capture(@1: u32, @2: u32) -> u32
     storage_dead(@6)
     storage_dead(@5)
     f@3 := &@4
-    @fake_read(f@3)
     storage_live(@7)
     @7 := &*(f@3)
     storage_live(@8)
@@ -721,7 +708,6 @@ where
 
     storage_live(f@2)
     f@2 := {test_crate::test_closure_clone::closure<T>[@TraitClause0, @TraitClause1]} {}
-    @fake_read(f@2)
     storage_live(@3)
     storage_live(@4)
     @4 := &f@2
@@ -855,7 +841,6 @@ where
     @3 := &*(*(x@1))
     clo@2 := {test_crate::{test_crate::Foo<'a, T>[@TraitClause0]}::test_nested_closures::closure<'_, T>[@TraitClause0, @TraitClause1]} {move (@3)}
     storage_dead(@3)
-    @fake_read(clo@2)
     storage_live(@4)
     storage_live(@5)
     storage_live(@6)

@@ -962,7 +962,6 @@ fn generate_ml(
             indoc!(
                 "
                 | Assign of place * rvalue
-                | FakeRead of place
                 | SetDiscriminant of place * variant_id
                 | StorageLive of local_id
                 | StorageDead of local_id

@@ -33,7 +33,6 @@ fn test_crate::main()
     @3 := &test_crate::FooBool
     @2 := move (@3)
     _b@1 := copy ((*(@2)).value)
-    @fake_read(_b@1)
     storage_dead(@2)
     @0 := ()
     storage_dead(_b@1)

@@ -19,7 +19,6 @@ fn test_crate::f1<'_0>(@1: &'_0 (Slice<u8>)) -> usize
 
     storage_live(sampled@2)
     sampled@2 := const (0 : usize)
-    @fake_read(sampled@2)
     storage_live(@3)
     storage_live(@4)
     storage_live(@5)
@@ -184,7 +183,6 @@ fn test_crate::f2<'_0, '_1>(@1: &'_0 (Slice<u8>), @2: &'_1 mut (Slice<i16>)) -> 
 
     storage_live(sampled@3)
     sampled@3 := const (0 : usize)
-    @fake_read(sampled@3)
     storage_live(@4)
     storage_live(@5)
     storage_live(@6)
@@ -194,7 +192,6 @@ fn test_crate::f2<'_0, '_1>(@1: &'_0 (Slice<u8>), @2: &'_1 mut (Slice<i16>)) -> 
     storage_dead(@7)
     @5 := core::iter::traits::collect::{impl core::iter::traits::collect::IntoIterator for I}::into_iter<core::slice::iter::Chunks<'_, u8>[core::marker::Sized<u8>]>[core::marker::Sized<core::slice::iter::Chunks<'_, u8>[core::marker::Sized<u8>]>, core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::Chunks<'a, T>[@TraitClause0]}#71<'_, u8>[core::marker::Sized<u8>]](move (@6))
     storage_dead(@6)
-    @fake_read(@5)
     storage_live(iter@8)
     iter@8 := move (@5)
     loop {
@@ -206,7 +203,6 @@ fn test_crate::f2<'_0, '_1>(@1: &'_0 (Slice<u8>), @2: &'_1 mut (Slice<i16>)) -> 
         @11 := &two-phase-mut *(@12)
         @10 := core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::Chunks<'a, T>[@TraitClause0]}#71::next<'_, '_, u8>[core::marker::Sized<u8>](move (@11))
         storage_dead(@11)
-        @fake_read(@10)
         match @10 {
             0 => {
                 break 0
@@ -223,7 +219,6 @@ fn test_crate::f2<'_0, '_1>(@1: &'_0 (Slice<u8>), @2: &'_1 mut (Slice<i16>)) -> 
                 @15 := copy (*(@53))
                 b1@14 := cast<u8, i16>(move (@15))
                 storage_dead(@15)
-                @fake_read(b1@14)
                 storage_dead(@16)
                 storage_live(b2@17)
                 storage_live(@18)
@@ -234,7 +229,6 @@ fn test_crate::f2<'_0, '_1>(@1: &'_0 (Slice<u8>), @2: &'_1 mut (Slice<i16>)) -> 
                 @18 := copy (*(@51))
                 b2@17 := cast<u8, i16>(move (@18))
                 storage_dead(@18)
-                @fake_read(b2@17)
                 storage_dead(@19)
                 storage_live(b3@20)
                 storage_live(@21)
@@ -245,7 +239,6 @@ fn test_crate::f2<'_0, '_1>(@1: &'_0 (Slice<u8>), @2: &'_1 mut (Slice<i16>)) -> 
                 @21 := copy (*(@49))
                 b3@20 := cast<u8, i16>(move (@21))
                 storage_dead(@21)
-                @fake_read(b3@20)
                 storage_dead(@22)
                 storage_live(d1@23)
                 storage_live(@24)
@@ -261,7 +254,6 @@ fn test_crate::f2<'_0, '_1>(@1: &'_0 (Slice<u8>), @2: &'_1 mut (Slice<i16>)) -> 
                 d1@23 := move (@24) | move (@27)
                 storage_dead(@27)
                 storage_dead(@24)
-                @fake_read(d1@23)
                 storage_live(d2@28)
                 storage_live(@29)
                 storage_live(@30)
@@ -276,7 +268,6 @@ fn test_crate::f2<'_0, '_1>(@1: &'_0 (Slice<u8>), @2: &'_1 mut (Slice<i16>)) -> 
                 d2@28 := move (@29) | move (@31)
                 storage_dead(@31)
                 storage_dead(@29)
-                @fake_read(d2@28)
                 storage_live(@33)
                 storage_live(@34)
                 storage_live(@35)

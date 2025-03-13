@@ -1010,9 +1010,6 @@ impl<C: AstFormatter> FmtWithCtx<C> for ullbc::Statement {
                 let (call_s, _) = fmt_call(ctx, call);
                 write!(&mut out, "{tab}{} := {call_s}", call.dest.fmt_with_ctx(ctx))
             }
-            RawStatement::FakeRead(place) => {
-                write!(&mut out, "{tab}@fake_read({})", place.fmt_with_ctx(ctx))
-            }
             RawStatement::SetDiscriminant(place, variant_id) => write!(
                 &mut out,
                 "{tab}@discriminant({}) := {}",
@@ -1067,9 +1064,6 @@ impl<C: AstFormatter> FmtWithCtx<C> for llbc::Statement {
                 place.fmt_with_ctx(ctx),
                 rvalue.fmt_with_ctx(ctx),
             ),
-            RawStatement::FakeRead(place) => {
-                write!(&mut out, "{}@fake_read({})", tab, place.fmt_with_ctx(ctx))
-            }
             RawStatement::SetDiscriminant(place, variant_id) => write!(
                 &mut out,
                 "{}@discriminant({}) := {}",

@@ -164,7 +164,6 @@ pub fn test_crate::test_vec_push()
 
     storage_live(v@1)
     v@1 := alloc::vec::{alloc::vec::Vec<T, alloc::alloc::Global>[@TraitClause0, core::marker::Sized<alloc::alloc::Global>]}::new<u32>[core::marker::Sized<u32>]()
-    @fake_read(v@1)
     storage_live(@2)
     storage_live(@3)
     @3 := &two-phase-mut v@1

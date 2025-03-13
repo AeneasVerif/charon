@@ -76,7 +76,6 @@ where
     let @0: bool; // return
     let self@1: &'_ (core::option::Option<T>[@TraitClause0]); // arg #1
 
-    @fake_read(self@1)
     match *(self@1) {
         0 => {
         },
@@ -462,10 +461,8 @@ where
     @4 := move (x@2)
     x@3 := @TraitClause1::to_u64(move (@4))
     storage_dead(@4)
-    @fake_read(x@3)
     storage_live(y@5)
     y@5 := test_crate::{test_crate::TestType<T>[@TraitClause0]}#6::test::TestType1 { 0: const (0 : u64) }
-    @fake_read(y@5)
     storage_live(@6)
     storage_live(@7)
     @7 := copy (x@3)

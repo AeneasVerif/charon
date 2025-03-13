@@ -33,7 +33,6 @@ pub fn test_crate::X2() -> u32
 
     storage_live(x@1)
     x@1 := const (3 : u32)
-    @fake_read(x@1)
     @0 := copy (x@1)
     storage_dead(x@1)
     return

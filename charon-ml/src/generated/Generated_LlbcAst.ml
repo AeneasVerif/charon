@@ -7,7 +7,6 @@ open Meta
 (** A raw statement: a statement without meta data. *)
 type raw_statement =
   | Assign of place * rvalue
-  | FakeRead of place
   | SetDiscriminant of place * variant_id
   | StorageLive of local_id
   | StorageDead of local_id

@@ -42,7 +42,6 @@ fn test_crate::new<'_0>(@1: &'_0 mut (test_crate::Rng))
     @3 := &uniq *(rng@1)
     @2 := {test_crate::new::closure} {move (@3)}
     storage_dead(@3)
-    @fake_read(@2)
     storage_dead(@2)
     @0 := ()
     @0 := ()

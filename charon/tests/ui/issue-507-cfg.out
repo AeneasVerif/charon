@@ -34,7 +34,6 @@ fn test_crate::f0()
         storage_live(x@4)
         @5 := test_crate::CONST
         x@4 := move (@5)
-        @fake_read(x@4)
         @0 := ()
         storage_dead(x@4)
     }
@@ -67,10 +66,8 @@ fn test_crate::f1<'_0>(@1: &'_0 (Array<u8, 1 : usize>))
 
     storage_live(previous_true_hints_seen@2)
     previous_true_hints_seen@2 := const (0 : usize)
-    @fake_read(previous_true_hints_seen@2)
     storage_live(i@3)
     i@3 := const (0 : i32)
-    @fake_read(i@3)
     loop {
         storage_live(@4)
         storage_live(@5)
@@ -96,7 +93,6 @@ fn test_crate::f1<'_0>(@1: &'_0 (Array<u8, 1 : usize>))
             storage_dead(@6)
             storage_live(j@9)
             j@9 := const (0 : i32)
-            @fake_read(j@9)
             loop {
                 storage_live(@10)
                 storage_live(@11)
@@ -107,7 +103,6 @@ fn test_crate::f1<'_0>(@1: &'_0 (Array<u8, 1 : usize>))
                     storage_live(x@12)
                     @15 := test_crate::CONST
                     x@12 := move (@15)
-                    @fake_read(x@12)
                     storage_dead(x@12)
                     storage_dead(@10)
                     continue 0

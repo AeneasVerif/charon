@@ -17,10 +17,8 @@ fn test_crate::f() -> usize
 
     storage_live(i@1)
     i@1 := const (0 : i32)
-    @fake_read(i@1)
     storage_live(j@2)
     j@2 := const (0 : i32)
-    @fake_read(j@2)
     storage_live(@3)
     loop {
         storage_live(@4)

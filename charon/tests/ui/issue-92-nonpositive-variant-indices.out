@@ -13,7 +13,6 @@ fn test_crate::main()
 
     storage_live(@1)
     @1 := test_crate::Ordering::Less {  }
-    @fake_read(@1)
     match @1 {
         0 => {
             @0 := ()

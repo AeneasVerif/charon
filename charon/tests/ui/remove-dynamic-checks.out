@@ -475,7 +475,9 @@ pub global test_crate::_#3: isize = test_crate::_#3()
 pub fn test_crate::_#4() -> isize
 {
     let @0: isize; // return
+    let @1: u32; // anonymous local
 
+    @1 := cast<i32, u32>(const (2 : i32))
     @0 := const (2 : isize) >> const (2 : i32)
     return
 }
@@ -485,7 +487,9 @@ pub global test_crate::_#4: isize = test_crate::_#4()
 pub fn test_crate::_#5() -> isize
 {
     let @0: isize; // return
+    let @1: u32; // anonymous local
 
+    @1 := cast<i32, u32>(const (2 : i32))
     @0 := const (2 : isize) << const (2 : i32)
     return
 }

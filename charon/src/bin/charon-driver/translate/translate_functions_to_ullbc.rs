@@ -928,16 +928,6 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
                 let t_rvalue = self.translate_rvalue(span, rvalue)?;
                 Some(RawStatement::Assign(t_place, t_rvalue))
             }
-            StatementKind::FakeRead((_read_cause, place)) => {
-                let t_place = self.translate_place(span, place)?;
-                Some(RawStatement::FakeRead(t_place))
-            }
-            StatementKind::PlaceMention(place) => {
-                // Simply accesses a place, for use of the borrow checker. Introduced for instance
-                // in place of `let _ = ...`. We desugar it to a fake read.
-                let t_place = self.translate_place(span, place)?;
-                Some(RawStatement::FakeRead(t_place))
-            }
             StatementKind::SetDiscriminant {
                 place,
                 variant_index,
@@ -971,6 +961,9 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
             }
             // This is for the stacked borrows memory model.
             StatementKind::Retag(_, _) => None,
+            // These two are only there to make borrow-checking accept less code, and are removed
+            // in later MIRs.
+            StatementKind::FakeRead(..) | StatementKind::PlaceMention(..) => None,
             // There are user-provided type annotations with no semantic effect (since we get a
             // fully-typechecked MIR (TODO: this isn't quite true with opaque types, we should
             // really use promoted MIR)).

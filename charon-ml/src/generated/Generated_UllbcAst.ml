@@ -13,7 +13,6 @@ and raw_statement =
   | Assign of place * rvalue
   | Call of call
       (** A call. For now, we don't support dynamic calls (i.e. to a function pointer in memory). *)
-  | FakeRead of place
   | SetDiscriminant of place * variant_id
   | StorageLive of local_id
   | StorageDead of local_id

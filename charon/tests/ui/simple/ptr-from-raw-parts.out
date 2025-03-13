@@ -25,13 +25,11 @@ fn test_crate::main()
 
     storage_live(a@1)
     a@1 := @ArrayRepeat<'_, u32, 2 : usize>(const (1 : u32))
-    @fake_read(a@1)
     storage_live(@2)
     storage_live(@3)
     @3 := &raw const a@1
     @2 := core::ptr::metadata::from_raw_parts<Slice<u32>, Array<u32, 2 : usize>>[core::marker::Sized<Array<u32, 2 : usize>>, core::ptr::metadata::Thin<Array<u32, 2 : usize>>](move (@3), const (2 : usize))
     storage_dead(@3)
-    @fake_read(@2)
     storage_dead(@2)
     @0 := ()
     storage_dead(a@1)

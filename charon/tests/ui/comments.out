@@ -48,13 +48,11 @@ pub fn test_crate::sum<'_0>(@1: &'_0 (Slice<u32>)) -> u32
     storage_live(sum@2)
     // `let sum`
     sum@2 := const (0 : u32)
-    @fake_read(sum@2)
     storage_live(i@3)
     // `let i`
     //  indented sub-comment
     // unindented sub-comment
     i@3 := const (0 : usize)
-    @fake_read(i@3)
     storage_live(@4)
     storage_live(@5)
     storage_live(@6)
@@ -285,7 +283,6 @@ fn test_crate::foo()
     storage_live(@3)
     // Call `default` and destructure the result
     @3 := test_crate::{impl core::default::Default for test_crate::Foo}::default()
-    @fake_read(@3)
     storage_live(x@1)
     x@1 := copy ((@3).x)
     storage_live(y@2)
@@ -308,7 +305,6 @@ fn test_crate::foo()
     // Call `default` and destructure the result
     // This is the long field
     @10 := test_crate::{impl core::default::Default for test_crate::Bar}#1::default()
-    @fake_read(@10)
     storage_live(x@8)
     x@8 := copy ((@10).x)
     storage_live(super_long_field_name@9)
@@ -331,7 +327,6 @@ fn test_crate::foo()
     storage_live(a@15)
     // Build an array
     a@15 := @ArrayRepeat<'_, u32, 10 : usize>(const (0 : u32))
-    @fake_read(a@15)
     storage_live(@16)
     storage_live(@17)
     storage_live(@18)
@@ -348,7 +343,6 @@ fn test_crate::foo()
     @17 := (move (@18), move (@20))
     storage_dead(@20)
     storage_dead(@18)
-    @fake_read(@17)
     storage_live(left_val@22)
     left_val@22 := copy ((@17).0)
     storage_live(right_val@23)
@@ -366,7 +360,6 @@ fn test_crate::foo()
         storage_dead(@25)
         storage_live(kind@27)
         kind@27 := core::panicking::AssertKind::Eq {  }
-        @fake_read(kind@27)
         storage_live(@28)
         @28 := move (kind@27)
         storage_live(@29)
@@ -426,7 +419,6 @@ pub fn test_crate::thing()
     @2 := move (@5) >> const (3 : i32)
     x@1 := move (@2) + const (12 : u32)
     storage_dead(@2)
-    @fake_read(x@1)
     storage_live(@3)
     storage_live(@4)
     @4 := copy (x@1)
@@ -444,9 +436,8 @@ pub fn test_crate::fake_read(@1: u32)
     let @0: (); // return
     let x@1: u32; // arg #1
 
-    // This statement is translated to a `fake_read`.
-    @fake_read(x@1)
     @0 := ()
+    // This statement is translated to a `fake_read`.
     @0 := ()
     return
 }
@@ -458,7 +449,6 @@ fn test_crate::fool()
 
     storage_live(@1)
     @1 := const ("\n    // Fooled ya")
-    @fake_read(@1)
     storage_dead(@1)
     // Fooled ya";
     @0 := ()

@@ -196,7 +196,6 @@ fn test_crate::call_fn()
     @2 := core::option::Option::None {  }
     @1 := test_crate::external_use_item<'_, &'_ (bool), core::option::Option<&'_ (bool)>[core::marker::Sized<&'_ (bool)>], &'_ (bool)>[core::marker::Sized<&'_ (bool)>, test_crate::{impl test_crate::Foo<'a, core::option::Option<&'a (T)>[core::marker::Sized<&'_ (T)>]> for &'a (T)}<'_, bool>[core::marker::Sized<bool>], test_crate::{impl test_crate::Foo<'a, T> for core::option::Option<T>[@TraitClause0]}#1<'_, &'_ (bool)>[core::marker::Sized<&'_ (bool)>, core::marker::{impl core::marker::Copy for &'_0 (T)}#4<'_, bool>]](move (@2))
     storage_dead(@2)
-    @fake_read(@1)
     storage_dead(@1)
     @0 := ()
     @0 := ()

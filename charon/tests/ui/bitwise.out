@@ -12,7 +12,6 @@ pub fn test_crate::shift_u32(@1: u32) -> u32
 
     storage_live(i@2)
     i@2 := const (16 : usize)
-    @fake_read(i@2)
     storage_live(t@3)
     storage_live(@4)
     @4 := copy (a@1)
@@ -21,7 +20,6 @@ pub fn test_crate::shift_u32(@1: u32) -> u32
     t@3 := move (@4) >> move (@5)
     storage_dead(@5)
     storage_dead(@4)
-    @fake_read(t@3)
     storage_live(@6)
     @6 := copy (i@2)
     t@3 := copy (t@3) << move (@6)
@@ -44,7 +42,6 @@ pub fn test_crate::shift_i32(@1: i32) -> i32
 
     storage_live(i@2)
     i@2 := const (16 : isize)
-    @fake_read(i@2)
     storage_live(t@3)
     storage_live(@4)
     @4 := copy (a@1)
@@ -53,7 +50,6 @@ pub fn test_crate::shift_i32(@1: i32) -> i32
     t@3 := move (@4) >> move (@5)
     storage_dead(@5)
     storage_dead(@4)
-    @fake_read(t@3)
     storage_live(@6)
     @6 := copy (i@2)
     t@3 := copy (t@3) << move (@6)

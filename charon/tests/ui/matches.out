@@ -11,7 +11,6 @@ pub fn test_crate::test1(@1: test_crate::E1) -> bool
     let @0: bool; // return
     let x@1: test_crate::E1; // arg #1
 
-    @fake_read(x@1)
     match x@1 {
         0 | 1 => {
         },
@@ -51,7 +50,6 @@ pub fn test_crate::test2(@1: test_crate::E2) -> u32
     let x@1: test_crate::E2; // arg #1
     let n@2: u32; // local
 
-    @fake_read(x@1)
     match x@1 {
         0 => {
             storage_live(n@2)
@@ -83,11 +81,8 @@ pub fn test_crate::test3(@1: test_crate::E2) -> u32
     let @7: u32; // anonymous local
 
     storage_live(@2)
-    @2 := ()
-    @fake_read(@2)
     storage_dead(@2)
     storage_live(y@3)
-    @fake_read(x@1)
     match x@1 {
         0 => {
             storage_live(n@4)
@@ -105,10 +100,8 @@ pub fn test_crate::test3(@1: test_crate::E2) -> u32
             y@3 := const (0 : u32)
         },
     }
-    @fake_read(y@3)
     storage_live(z@5)
     z@5 := test_crate::id<u32>[core::marker::Sized<u32>](const (3 : u32))
-    @fake_read(z@5)
     storage_live(@6)
     @6 := copy (y@3)
     storage_live(@7)
