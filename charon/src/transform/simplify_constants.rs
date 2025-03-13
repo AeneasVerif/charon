@@ -106,12 +106,16 @@ fn transform_operand(span: &Span, locals: &mut Locals, nst: &mut Vec<Statement>,
     take_mut::take(op, |op| {
         if let Operand::Const(val) = op {
             let mut new_var = |rvalue, ty| {
-                let var = locals.new_var(None, ty);
-                nst.push(Statement::new(
-                    *span,
-                    RawStatement::Assign(var.clone(), rvalue),
-                ));
-                var
+                if let Rvalue::Use(Operand::Move(place)) = rvalue {
+                    place
+                } else {
+                    let var = locals.new_var(None, ty);
+                    nst.push(Statement::new(
+                        *span,
+                        RawStatement::Assign(var.clone(), rvalue),
+                    ));
+                    var
+                }
             };
             transform_constant_expr(span, val, &mut new_var)
         } else {
