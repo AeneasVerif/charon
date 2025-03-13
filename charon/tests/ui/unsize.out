@@ -49,7 +49,7 @@ fn test_crate::foo()
     let @21: alloc::string::String; // anonymous local
     let @22: &'_ (alloc::string::String); // anonymous local
 
-    array@1 := [const (0 : i32), const (0 : i32); 2 : usize]
+    array@1 := [const (0 : i32), const (0 : i32)]
     @fake_read(array@1)
     @4 := &array@1
     @3 := &*(@4)

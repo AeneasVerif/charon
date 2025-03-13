@@ -151,42 +151,48 @@ fn test_crate::foo()
     let @0: (); // return
     let @1: bool; // anonymous local
     let @2: &'_ (core::option::Option<i32>[core::marker::Sized<i32>]); // anonymous local
-    let @3: core::option::Option<i32>[core::marker::Sized<i32>]; // anonymous local
-    let slice@4: &'_ (Slice<bool>); // local
+    let slice@3: &'_ (Slice<bool>); // local
+    let @4: &'_ (Array<bool, 1 : usize>); // anonymous local
     let @5: &'_ (Array<bool, 1 : usize>); // anonymous local
-    let @6: &'_ (Array<bool, 1 : usize>); // anonymous local
-    let @7: Array<bool, 1 : usize>; // anonymous local
+    let @6: &'_ (Slice<bool>); // anonymous local
+    let @7: &'_ (Slice<bool>); // anonymous local
     let @8: &'_ (Slice<bool>); // anonymous local
-    let @9: &'_ (Slice<bool>); // anonymous local
-    let @10: &'_ (Slice<bool>); // anonymous local
-    let @11: core::ops::range::RangeFrom<usize>[core::marker::Sized<usize>]; // anonymous local
+    let @9: core::ops::range::RangeFrom<usize>[core::marker::Sized<usize>]; // anonymous local
+    let @10: &'_ (Array<bool, 1 : usize>); // anonymous local
+    let @11: &'_ (core::option::Option<i32>[core::marker::Sized<i32>]); // anonymous local
+    let @12: core::option::Option<i32>[core::marker::Sized<i32>]; // anonymous local
+    let @13: &'_ (core::option::Option<i32>[core::marker::Sized<i32>]); // anonymous local
+    let @14: Array<bool, 1 : usize>; // anonymous local
+    let @15: &'_ (Array<bool, 1 : usize>); // anonymous local
 
-    @3 := core::option::Option::Some { 0: const (0 : i32) }
-    @2 := &@3
+    @12 := core::option::Option::Some { 0: const (0 : i32) }
+    @13 := &@12
+    @11 := move (@13)
+    @2 := &*(@11)
     @1 := core::option::{core::option::Option<T>[@TraitClause0]}::is_some<'_, i32>[core::marker::Sized<i32>](move (@2))
     drop @2
     @fake_read(@1)
-    drop @3
     drop @1
-    @7 := [const (false); 1 : usize]
-    @6 := &@7
-    @5 := &*(@6)
-    slice@4 := @ArrayToSliceShared<'_, bool, 1 : usize>(move (@5))
+    @14 := [const (false)]
+    @15 := &@14
+    @10 := move (@15)
+    @5 := &*(@10)
+    @4 := &*(@5)
+    slice@3 := @ArrayToSliceShared<'_, bool, 1 : usize>(move (@4))
+    drop @4
+    @fake_read(slice@3)
     drop @5
-    @fake_read(slice@4)
-    drop @6
-    @10 := &*(slice@4)
-    @11 := core::ops::range::RangeFrom { start: const (1 : usize) }
-    @9 := core::slice::index::{impl core::ops::index::Index<I> for Slice<T>}::index<'_, bool, core::ops::range::RangeFrom<usize>[core::marker::Sized<usize>]>[core::marker::Sized<bool>, core::marker::Sized<core::ops::range::RangeFrom<usize>[core::marker::Sized<usize>]>, core::slice::index::{impl core::slice::index::SliceIndex<Slice<T>> for core::ops::range::RangeFrom<usize>[core::marker::Sized<usize>]}#7<bool>[core::marker::Sized<bool>]](move (@10), move (@11))
-    drop @11
-    drop @10
-    @8 := &*(@9)
-    @fake_read(@8)
-    drop @8
-    @0 := ()
+    @8 := &*(slice@3)
+    @9 := core::ops::range::RangeFrom { start: const (1 : usize) }
+    @7 := core::slice::index::{impl core::ops::index::Index<I> for Slice<T>}::index<'_, bool, core::ops::range::RangeFrom<usize>[core::marker::Sized<usize>]>[core::marker::Sized<bool>, core::marker::Sized<core::ops::range::RangeFrom<usize>[core::marker::Sized<usize>]>, core::slice::index::{impl core::slice::index::SliceIndex<Slice<T>> for core::ops::range::RangeFrom<usize>[core::marker::Sized<usize>]}#7<bool>[core::marker::Sized<bool>]](move (@8), move (@9))
     drop @9
+    drop @8
+    @6 := &*(@7)
+    @fake_read(@6)
+    drop @6
+    @0 := ()
     drop @7
-    drop slice@4
+    drop slice@3
     @0 := ()
     return
 }

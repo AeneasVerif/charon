@@ -13,10 +13,14 @@ fn test_crate::main()
     let @1: core::fmt::Arguments<'_>; // anonymous local
     let @2: &'_ (Array<&'_ (Str), 1 : usize>); // anonymous local
     let @3: &'_ (Array<&'_ (Str), 1 : usize>); // anonymous local
-    let @4: Array<&'_ (Str), 1 : usize>; // anonymous local
+    let @4: &'_ (Array<&'_ (Str), 1 : usize>); // anonymous local
+    let @5: Array<&'_ (Str), 1 : usize>; // anonymous local
+    let @6: &'_ (Array<&'_ (Str), 1 : usize>); // anonymous local
 
-    @4 := [const ("O no"); 1 : usize]
-    @3 := &@4
+    @5 := [const ("O no")]
+    @6 := &@5
+    @4 := move (@6)
+    @3 := &*(@4)
     @2 := &*(@3)
     @1 := core::fmt::{core::fmt::Arguments<'a>}#2::new_const<'_, 1 : usize>(move (@2))
     drop @2

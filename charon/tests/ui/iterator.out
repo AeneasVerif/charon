@@ -3388,7 +3388,7 @@ fn test_crate::main()
     let @63: &'_ (i32); // anonymous local
     let @64: core::option::Option<core::fmt::Arguments<'_>>[core::marker::Sized<core::fmt::Arguments<'_>>]; // anonymous local
 
-    a@1 := [const (0 : i32), const (1 : i32), const (2 : i32), const (3 : i32), const (4 : i32), const (5 : i32), const (6 : i32); 7 : usize]
+    a@1 := [const (0 : i32), const (1 : i32), const (2 : i32), const (3 : i32), const (4 : i32), const (5 : i32), const (6 : i32)]
     @fake_read(a@1)
     i@2 := const (0 : i32)
     @fake_read(i@2)

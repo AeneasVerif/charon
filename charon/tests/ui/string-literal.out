@@ -18,7 +18,7 @@ fn test_crate::BAR() -> &'static (Slice<u8>)
     let @3: Array<u8, 5 : usize>; // anonymous local
     let @4: &'_ (Array<u8, 5 : usize>); // anonymous local
 
-    @3 := const ([104, 101, 108, 108, 111])
+    @3 := [const (104 : u8), const (101 : u8), const (108 : u8), const (108 : u8), const (111 : u8)]
     @4 := &@3
     @2 := move (@4)
     @1 := &*(@2)

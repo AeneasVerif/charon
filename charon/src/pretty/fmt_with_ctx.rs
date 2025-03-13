@@ -797,6 +797,10 @@ impl<C: AstFormatter> FmtWithCtx<C> for RawConstantExpr {
                 let values: Vec<String> = values.iter().map(|v| v.fmt_with_ctx(ctx)).collect();
                 format!("ConstAdt {} [{}]", variant_id, values.join(", "))
             }
+            RawConstantExpr::Array(values) => {
+                let values = values.iter().map(|v| v.fmt_with_ctx(ctx)).format(", ");
+                format!("[{}]", values)
+            }
             RawConstantExpr::Global(global_ref) => global_ref.fmt_with_ctx(ctx),
             RawConstantExpr::TraitConst(trait_ref, name) => {
                 format!("{}::{name}", trait_ref.fmt_with_ctx(ctx),)
@@ -941,8 +945,8 @@ impl<C: AstFormatter> FmtWithCtx<C> for Rvalue {
                             }
                         }
                     }
-                    AggregateKind::Array(_, len) => {
-                        format!("[{}; {}]", ops_s.join(", "), len.fmt_with_ctx(ctx))
+                    AggregateKind::Array(..) => {
+                        format!("[{}]", ops_s.join(", "))
                     }
                     AggregateKind::Closure(fn_id, generics) => {
                         format!(
@@ -1689,7 +1693,7 @@ impl std::fmt::Display for Literal {
             Literal::Float(v) => write!(f, "{v}"),
             Literal::Bool(v) => write!(f, "{v}"),
             Literal::Char(v) => write!(f, "{v}"),
-            Literal::Str(v) => write!(f, "\"{v}\""),
+            Literal::Str(v) => write!(f, "\"{}\"", v.replace("\\", "\\\\").replace("\n", "\\n")),
             Literal::ByteStr(v) => write!(f, "{v:?}"),
         }
     }

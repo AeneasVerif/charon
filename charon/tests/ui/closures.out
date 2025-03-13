@@ -640,25 +640,25 @@ where
 {
     let @0: T; // return
     let x@1: T; // arg #1
-    let f@2: &'_ (fn(T) -> T); // local
-    let @3: fn(T) -> T; // anonymous local
+    let f@2: fn(T) -> T; // local
+    let @3: &'_ (fn(T) -> T); // anonymous local
     let @4: &'_ (fn(T) -> T); // anonymous local
     let @5: (T); // anonymous local
     let @6: T; // anonymous local
 
-    @3 := {test_crate::test_closure_clone::closure<T>[@TraitClause0, @TraitClause1]} {}
-    f@2 := &@3
+    f@2 := {test_crate::test_closure_clone::closure<T>[@TraitClause0, @TraitClause1]} {}
     @fake_read(f@2)
-    @4 := &*(f@2)
+    @4 := &f@2
+    @3 := &*(@4)
     @6 := move (x@1)
     @5 := (move (@6))
-    @0 := core::ops::function::Fn<fn(T) -> T, (T), T>::call<'_>(move (@4), move (@5))
+    @0 := core::ops::function::Fn<fn(T) -> T, (T), T>::call<'_>(move (@3), move (@5))
     drop @6
     drop @6
     drop @5
-    drop @4
     drop @3
     drop f@2
+    drop @4
     drop x@1
     return
 }

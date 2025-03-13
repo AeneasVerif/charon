@@ -2,5 +2,3 @@
 fn two() -> &'static u32 {
     &(1 + 1)
 }
-
-fn main() {}

@@ -17,14 +17,5 @@ fn test_crate::two() -> &'static (u32)
     return
 }
 
-fn test_crate::main()
-{
-    let @0: (); // return
-
-    @0 := ()
-    @0 := ()
-    return
-}
-
 
 

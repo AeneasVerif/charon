@@ -49,7 +49,7 @@ fn test_crate::foo()
     let _v2@5: alloc::vec::Vec<i32, alloc::alloc::Global>[core::marker::Sized<i32>, core::marker::Sized<alloc::alloc::Global>]; // local
     let @6: Array<i32, 1 : usize>; // anonymous local
 
-    @6 := [const (1 : i32); 1 : usize]
+    @6 := [const (1 : i32)]
     @4 := @BoxNew<Array<i32, 1 : usize>>[core::marker::Sized<alloc::alloc::Global>](move (@6))
     @3 := move (@4)
     @2 := unsize_cast<alloc::boxed::Box<Array<i32, 1 : usize>>[core::marker::Sized<alloc::alloc::Global>], alloc::boxed::Box<Slice<i32>>[core::marker::Sized<alloc::alloc::Global>]>(move (@3))
@@ -84,7 +84,7 @@ pub fn test_crate::bar()
     let @6: Array<test_crate::Foo, 1 : usize>; // anonymous local
 
     @5 := test_crate::Foo {  }
-    @6 := [move (@5); 1 : usize]
+    @6 := [move (@5)]
     @4 := @BoxNew<Array<test_crate::Foo, 1 : usize>>[core::marker::Sized<alloc::alloc::Global>](move (@6))
     drop @5
     @3 := move (@4)

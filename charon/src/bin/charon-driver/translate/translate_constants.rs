@@ -94,20 +94,7 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
                     .iter()
                     .map(|x| self.translate_constant_expr_to_constant_expr(span, x))
                     .try_collect()?;
-                if let TyKind::Adt(TypeId::Builtin(BuiltinTy::Array), args) = ty.kind()
-                    && let TyKind::Literal(LiteralTy::Integer(IntegerTy::U8)) = args.types[0].kind()
-                {
-                    RawConstantExpr::Literal(Literal::ByteStr(
-                        fields
-                            .iter()
-                            .map(|konst| konst.value.as_literal().unwrap())
-                            .map(|x| x.as_scalar().unwrap().as_u8().unwrap())
-                            .copied()
-                            .collect(),
-                    ))
-                } else {
-                    raise_error!(self, span, "array constants are not supported yet")
-                }
+                RawConstantExpr::Array(fields)
             }
             ConstantExprKind::Tuple { fields } => {
                 let fields: Vec<ConstantExpr> = fields
@@ -230,6 +217,7 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
                 Ok(ConstGeneric::Global(global_ref.id))
             }
             RawConstantExpr::Adt(..)
+            | RawConstantExpr::Array { .. }
             | RawConstantExpr::RawMemory { .. }
             | RawConstantExpr::TraitConst { .. }
             | RawConstantExpr::Ref(_)
