@@ -34,7 +34,6 @@
 #![register_tool(charon)]
 
 use anyhow::bail;
-use clap::Parser;
 use options::CHARON_ARGS;
 use serde::Deserialize;
 use std::env;
@@ -160,22 +159,15 @@ pub fn main() -> anyhow::Result<()> {
     // Initialize the logger
     logger::initialize_logger();
 
-    let cli = cli_rework::Cli::parse();
+    // Parse the command-line
+    trace!("Arguments: {:?}", env::args());
 
-    match cli.command {
-        Some(cli_rework::Charon::PrettyPrint(pretty_print)) => {
-            let krate = charon_lib::deserialize_llbc(&pretty_print.file)?;
-            println!("{krate}");
-            return Ok(());
-        }
-        _ => (),
-    }
+    let mut options = match cli_rework::run()? {
+        Some(options) => options,
+        None => return Ok(()),
+    };
 
     // ******* Old cli args parsing *******
-
-    // Parse the command-line
-    let mut options = cli.opts;
-    trace!("Arguments: {:?}", std::env::args());
     options.validate();
 
     // FIXME: when using rustup, ensure the toolchain has the right components installed.
