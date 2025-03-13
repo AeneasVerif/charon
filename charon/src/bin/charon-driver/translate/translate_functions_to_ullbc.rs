@@ -6,7 +6,6 @@
 use std::mem;
 use std::panic;
 
-use super::get_mir::boxes_are_desugared;
 use super::translate_ctx::*;
 use charon_lib::ast::*;
 use charon_lib::common::*;
@@ -281,8 +280,6 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
                         match subplace.ty().kind() {
                             TyKind::Ref(_, _, _) | TyKind::RawPtr(_, _) => {}
                             TyKind::Adt(TypeId::Builtin(BuiltinTy::Box), generics) => {
-                                // This case only happens in some MIR levels
-                                assert!(!boxes_are_desugared(self.t_ctx.options.mir_level));
                                 assert!(generics.regions.is_empty());
                                 assert!(generics.types.elem_count() == 1);
                                 assert!(generics.const_generics.is_empty());
@@ -328,8 +325,6 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
                                         ProjectionElem::Field(proj_kind, field_id)
                                     }
                                     TyKind::Adt(TypeId::Builtin(BuiltinTy::Box), generics) => {
-                                        assert!(!boxes_are_desugared(self.t_ctx.options.mir_level));
-
                                         // Some more sanity checks
                                         assert!(generics.regions.is_empty());
                                         assert!(generics.types.elem_count() == 1);

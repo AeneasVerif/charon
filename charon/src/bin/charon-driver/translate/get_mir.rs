@@ -13,16 +13,6 @@ use charon_lib::options::MirLevel;
 
 use super::translate_ctx::TranslateCtx;
 
-/// Are box manipulations desugared to very low-level code using raw pointers,
-/// unique and non-null pointers? See [crate::types::TyKind::RawPtr] for detailed explanations.
-pub fn boxes_are_desugared(level: MirLevel) -> bool {
-    match level {
-        MirLevel::Built => false,
-        MirLevel::Promoted => false,
-        MirLevel::Optimized => true,
-    }
-}
-
 impl TranslateCtx<'_> {
     pub fn get_mir(
         &mut self,
