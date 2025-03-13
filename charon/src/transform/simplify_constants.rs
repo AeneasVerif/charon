@@ -10,6 +10,9 @@
 //! we do so because, when evaluating the code in "concrete" mode, it allows to
 //! handle the globals like function calls.
 
+use itertools::Itertools;
+use std::assert_matches::assert_matches;
+
 use crate::transform::TransformCtx;
 use crate::ullbc_ast::*;
 
@@ -92,6 +95,29 @@ fn transform_constant_expr(
             let rval = {
                 let (adt_kind, generics) = val.ty.kind().as_adt().unwrap();
                 let aggregate_kind = AggregateKind::Adt(*adt_kind, variant, None, generics.clone());
+                Rvalue::Aggregate(aggregate_kind, fields)
+            };
+            let var = new_var(rval, val.ty);
+
+            Operand::Move(var)
+        }
+        RawConstantExpr::Array(fields) => {
+            let fields = fields
+                .into_iter()
+                .map(|x| transform_constant_expr(span, x, new_var))
+                .collect_vec();
+
+            // Build an `Aggregate` rvalue.
+            let rval = {
+                let (adt_kind, generics) = val.ty.kind().as_adt().unwrap();
+                assert_matches!(
+                    *adt_kind.as_builtin().unwrap(),
+                    BuiltinTy::Array | BuiltinTy::Slice
+                );
+                let ty = generics.types[0].clone();
+                let len =
+                    ConstGeneric::Value(Literal::Scalar(ScalarValue::Usize(fields.len() as u64)));
+                let aggregate_kind = AggregateKind::Array(ty, len);
                 Rvalue::Aggregate(aggregate_kind, fields)
             };
             let var = new_var(rval, val.ty);

@@ -13,6 +13,7 @@
 
 // For rustdoc: prevents overflows
 #![recursion_limit = "256"]
+#![feature(assert_matches)]
 #![feature(box_patterns)]
 #![feature(deref_pure_trait)]
 #![feature(if_let_guard)]

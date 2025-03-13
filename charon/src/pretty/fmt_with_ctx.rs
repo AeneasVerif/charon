@@ -797,6 +797,10 @@ impl<C: AstFormatter> FmtWithCtx<C> for RawConstantExpr {
                 let values: Vec<String> = values.iter().map(|v| v.fmt_with_ctx(ctx)).collect();
                 format!("ConstAdt {} [{}]", variant_id, values.join(", "))
             }
+            RawConstantExpr::Array(values) => {
+                let values = values.iter().map(|v| v.fmt_with_ctx(ctx)).format(", ");
+                format!("[{}]", values)
+            }
             RawConstantExpr::Global(global_ref) => global_ref.fmt_with_ctx(ctx),
             RawConstantExpr::TraitConst(trait_ref, name) => {
                 format!("{}::{name}", trait_ref.fmt_with_ctx(ctx),)
