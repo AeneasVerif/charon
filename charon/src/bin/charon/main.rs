@@ -135,23 +135,32 @@ pub fn main() -> Result<()> {
         // Compute the arguments of the command to call cargo
         cmd.arg("build");
 
-        // Make sure the build target is explicitly set. This is needed to detect which crates are
-        // proc-macro/build-script in `charon-driver`.
-        cmd.arg("--target");
-        cmd.arg(host);
+        // Detect if an arg if specified in cargo_args, like in `-- arg` or `--cargo-args=arg`.
+        let is_specified = |arg| {
+            let mut iter = options.cargo_args.iter();
+            iter.any(|input| input.starts_with(arg))
+        };
 
-        if options.lib {
+        // Don't set target if `-- --target` is specified by user.
+        if !is_specified("--target") {
+            // Make sure the build target is explicitly set. This is needed to detect which crates are
+            // proc-macro/build-script in `charon-driver`.
+            cmd.arg("--target");
+            cmd.arg(host);
+        }
+
+        if !is_specified("--lib") && options.lib {
             cmd.arg("--lib");
         }
 
-        if options.bin.is_some() {
-            cmd.arg("--bin");
-            cmd.arg(options.bin.as_ref().unwrap().clone());
+        if !is_specified("--bin") {
+            if let Some(bin) = &options.bin {
+                cmd.arg("--bin");
+                cmd.arg(bin);
+            }
         }
 
-        for arg in &options.cargo_args {
-            cmd.arg(arg);
-        }
+        cmd.args(options.cargo_args);
 
         cmd.spawn()
             .expect("could not run cargo")

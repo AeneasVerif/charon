@@ -174,11 +174,8 @@ fn charon_cargo_target() -> Result<()> {
         );
 
         let count_fn = stdout.matches(fn_).count();
-        // FIXME: charon passes a host target, and user passes another,
-        // and cargo supports multiple target args by compiling them saparatly,
-        // so stdout will print two `pub fn multi_targets`. Will fix this soon.
         ensure!(
-            count_fn == 2,
+            count_fn == 1,
             "Output of `{cmd}` is:\n{stdout:?}\nThe count of {fn_:?} should only be one."
         );
         Ok(())
