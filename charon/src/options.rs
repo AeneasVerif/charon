@@ -9,15 +9,6 @@ use crate::{ast::*, errors::ErrorCtx, name_matcher::NamePattern, raise_error, re
 /// when calling charon-driver from cargo-charon.
 pub const CHARON_ARGS: &str = "CHARON_ARGS";
 
-// Makes CliOpts parsable. This should be removed once subcommands are fully implemented.
-#[derive(Debug, clap::Parser)]
-#[clap(name = "Charon")]
-#[charon::rename("cli_options")]
-pub struct OldCliOpts {
-    #[command(flatten)]
-    pub opts: CliOpts,
-}
-
 // This structure is used to store the command-line instructions.
 // We automatically derive a command-line parser based on this structure.
 // Note that the doc comments are used to generate the help message when using

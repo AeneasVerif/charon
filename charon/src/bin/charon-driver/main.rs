@@ -32,11 +32,9 @@ use crate::driver::{
     arg_values, get_args_crate_index, get_args_source_index, CharonCallbacks, CharonFailure,
     RunCompilerNormallyCallbacks,
 };
-use charon_lib::logger;
-use charon_lib::options;
-use charon_lib::trace;
+use charon_lib::{logger, options};
 use itertools::Itertools;
-use std::panic;
+use std::{env, panic};
 
 fn main() {
     // Initialize the logger
@@ -44,7 +42,7 @@ fn main() {
 
     // Retrieve the executable path - this is not considered an argument,
     // and won't be parsed by CliOpts
-    let origin_args: Vec<String> = std::env::args().collect();
+    let origin_args: Vec<String> = env::args().collect();
     assert!(
         !origin_args.is_empty(),
         "Impossible: zero arguments on the command-line!"
@@ -65,19 +63,9 @@ fn main() {
     // Retrieve the Charon options by deserializing them from the environment variable
     // (cargo-charon serialized the arguments and stored them in a specific environment
     // variable before calling cargo with RUSTC_WORKSPACE_WRAPPER=charon-driver).
-    let options: options::CliOpts = match std::env::var(options::CHARON_ARGS) {
+    let options: options::CliOpts = match env::var(options::CHARON_ARGS) {
         Ok(opts) => serde_json::from_str(opts.as_str()).unwrap(),
-        Err(_) => {
-            // Parse any arguments after `--` as charon arguments.
-            if let Some((i, _)) = compiler_args.iter().enumerate().find(|(_, s)| *s == "--") {
-                use clap::Parser;
-                let mut charon_args = compiler_args.split_off(i);
-                charon_args[0] = origin_args[0].clone(); // Replace `--` with the name of the binary
-                options::OldCliOpts::parse_from(charon_args).opts
-            } else {
-                Default::default()
-            }
-        }
+        Err(_) => Default::default(),
     };
 
     if options.use_polonius {
@@ -94,8 +82,8 @@ fn main() {
     // workspace. We may however not want to be calling charon on all crates;
     // `CARGO_PRIMARY_PACKAGE` tells us whether the crate was specifically selected or is a
     // dependency.
-    let is_workspace_dependency = std::env::var("CHARON_USING_CARGO").is_ok()
-        && !std::env::var("CARGO_PRIMARY_PACKAGE").is_ok();
+    let is_workspace_dependency =
+        env::var("CHARON_USING_CARGO").is_ok() && !env::var("CARGO_PRIMARY_PACKAGE").is_ok();
     // Determines if we are being invoked to build a crate for the "target" architecture, in
     // contrast to the "host" architecture. Host crates are for build scripts and proc macros and
     // still need to be built like normal; target crates need to be processed by Charon.
