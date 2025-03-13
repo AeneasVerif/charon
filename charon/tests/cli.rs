@@ -111,3 +111,76 @@ fn charon_cargo_features() -> Result<()> {
         Ok(())
     })
 }
+
+fn rustup_install_target(target: &str) -> Result<()> {
+    // e.g. rustup target add riscv64gc-unknown-none-elf
+    let mut cmd = Command::new("rustup");
+    let output = cmd.args(["target", "add", target]).output()?;
+    ensure!(
+        output.status.success(),
+        "`rustup target add {target}` failed: {}",
+        String::from_utf8_lossy(&output.stderr)
+    );
+    Ok(())
+}
+
+#[test]
+#[ignore = "Network is inaccessible in nix"]
+fn charon_cargo_target() -> Result<()> {
+    let target = "riscv64gc-unknown-none-elf";
+    rustup_install_target(target)?;
+
+    let dir = "tests/cargo/multi-targets";
+    let fn_ = "pub fn multi_targets::";
+
+    #[cfg(target_family = "unix")]
+    charon(&["cargo", "--print-llbc"], dir, |stdout, cmd| {
+        let main = "pub fn multi_targets::on_unix";
+        ensure!(
+            stdout.contains(main),
+            "Output of `{cmd}` is:\n{stdout:?}\nIt doesn't contain {main:?}."
+        );
+
+        let count_fn = stdout.matches(fn_).count();
+        ensure!(
+            count_fn == 1,
+            "Output of `{cmd}` is:\n{stdout:?}\nThe count of {fn_:?} should only be one."
+        );
+        Ok(())
+    })?;
+
+    #[cfg(target_os = "windows")]
+    charon(&["cargo", "--print-llbc"], dir, |stdout, cmd| {
+        let main = "pub fn multi_targets::on_windows";
+        ensure!(
+            stdout.contains(main),
+            "Output of `{cmd}` is:\n{stdout:?}\nIt doesn't contain {main:?}."
+        );
+
+        let count_fn = stdout.matches(fn_).count();
+        ensure!(
+            count_fn == 1,
+            "Output of `{cmd}` is:\n{stdout:?}\nThe count of {fn_:?} should only be one."
+        );
+        Ok(())
+    })?;
+
+    let args = &["cargo", "--print-llbc", "--", "--target", target];
+    charon(args, dir, |stdout, cmd| {
+        let main = "pub fn multi_targets::no_os";
+        ensure!(
+            stdout.contains(main),
+            "Output of `{cmd}` is:\n{stdout:?}\nIt doesn't contain {main:?}."
+        );
+
+        let count_fn = stdout.matches(fn_).count();
+        // FIXME: charon passes a host target, and user passes another,
+        // and cargo supports multiple target args by compiling them saparatly,
+        // so stdout will print two `pub fn multi_targets`. Will fix this soon.
+        ensure!(
+            count_fn == 2,
+            "Output of `{cmd}` is:\n{stdout:?}\nThe count of {fn_:?} should only be one."
+        );
+        Ok(())
+    })
+}
