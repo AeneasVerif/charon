@@ -1,0 +1,12 @@
+error: array constants are not supported yet
+ --> tests/ui/simple/const-subslice.rs:4:20
+  |
+4 |       let y: &[u8] = const {
+  |  ____________________^
+5 | |         let x: &[u8] = &[0, 1, 2, 3, 4];
+6 | |         unsafe { std::slice::from_raw_parts(x as *const [u8] as *const u8, 3) }
+7 | |     };
+  | |_____^
+  |
+
+ERROR Charon failed to translate this code (1 errors)

@@ -1,0 +1,8 @@
+error: array constants are not supported yet
+ --> tests/ui/simple/promoted-u32-slice.rs:4:5
+  |
+4 |     &[0, 1, 2, 3]
+  |     ^^^^^^^^^^^^^
+  |
+
+ERROR Charon failed to translate this code (1 errors)

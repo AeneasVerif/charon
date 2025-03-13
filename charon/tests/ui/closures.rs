@@ -138,8 +138,8 @@ pub fn test_closure_capture(x: u32, y: u32) -> u32 {
 
 pub fn test_closure_clone<T: Clone>(x: T) -> T {
     #[allow(clippy::redundant_clone)]
-    let f = &|x: T| x.clone();
-    (f)(x)
+    let f = |x: T| x.clone();
+    (&f)(x)
 }
 
 /*// With a `dyn`
