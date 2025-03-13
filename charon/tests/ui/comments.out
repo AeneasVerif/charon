@@ -395,8 +395,7 @@ fn test_crate::fool()
     let @0: (); // return
     let @1: &'_ (Str); // anonymous local
 
-    @1 := const ("
-    // Fooled ya")
+    @1 := const ("\n    // Fooled ya")
     @fake_read(@1)
     drop @1
     // Fooled ya";

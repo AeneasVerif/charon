@@ -92,8 +92,7 @@ where
     let @11: &'_ (U); // anonymous local
     let @12: U; // anonymous local
 
-    @5 := [const (""), const ("
-")]
+    @5 := [const (""), const ("\n")]
     @4 := &@5
     @3 := &*(@4)
     @12 := @TraitClause4::default()

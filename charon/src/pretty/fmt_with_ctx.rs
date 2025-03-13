@@ -1689,7 +1689,7 @@ impl std::fmt::Display for Literal {
             Literal::Float(v) => write!(f, "{v}"),
             Literal::Bool(v) => write!(f, "{v}"),
             Literal::Char(v) => write!(f, "{v}"),
-            Literal::Str(v) => write!(f, "\"{v}\""),
+            Literal::Str(v) => write!(f, "\"{}\"", v.replace("\\", "\\\\").replace("\n", "\\n")),
             Literal::ByteStr(v) => write!(f, "{v:?}"),
         }
     }
