@@ -1,8 +1,7 @@
 //! Processing of the contents of a `Charon.toml` file.
+use charon_lib::options::CliOpts;
 use serde::Deserialize;
 use std::path::PathBuf;
-
-use crate::{options::CliOpts, trace};
 
 /// The struct used to define the options available in `Charon.toml` files.
 #[derive(Debug, Deserialize)]
