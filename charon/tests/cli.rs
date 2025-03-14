@@ -3,7 +3,7 @@ use assert_cmd::prelude::CommandCargoExt;
 use itertools::Itertools;
 use std::process::Command;
 
-fn charon<T>(args: &[&str], dir: &str, f: impl FnOnce(&str, &str) -> Result<T>) -> Result<T> {
+fn charon<T>(args: &[&str], dir: &str, f: impl FnOnce(String, String) -> Result<T>) -> Result<T> {
     let cmd_str = std::iter::once("charon")
         .chain(args.iter().copied())
         .join(" ");
@@ -23,7 +23,7 @@ fn charon<T>(args: &[&str], dir: &str, f: impl FnOnce(&str, &str) -> Result<T>) 
         "Error when executing `{cmd_str}`:\nstderr={stderr:?}\nstdout={stdout:?}",
     );
 
-    f(&stdout, &cmd_str)
+    f(stdout, cmd_str)
 }
 
 #[test]
@@ -200,6 +200,41 @@ fn charon_rustc() -> Result<()> {
         ensure!(
             count_fn == 1,
             "Output of `{cmd}` is:\n{stdout:?}\nThe count of `fn` should only be one."
+        );
+        Ok(())
+    })
+}
+
+#[test]
+#[ignore = "Network is inaccessible in nix"]
+fn charon_rust_target() -> Result<()> {
+    let target = "riscv64gc-unknown-none-elf";
+    rustup_install_target(target)?;
+
+    let path = "tests/cargo/multi-targets/src/lib.rs";
+    let args = &[
+        "rustc",
+        "--print-llbc",
+        "--",
+        "--crate-type=lib",
+        path,
+        "--crate-name",
+        "multi_targets",
+        "--target",
+        target,
+    ];
+    // FIXME: due to charon passes target anyway, it conflicts with `-- --target`.
+    // error: Option 'target' given more than once. ERROR Code failed to compile
+    let [stdout, rustc_cmd] = charon(args, ".", |stdout, cmd| Ok([stdout, cmd]))?;
+
+    let dir = "tests/cargo/multi-targets";
+    let args = &["cargo", "--print-llbc", "--", "--target", target];
+    charon(args, dir, |desired, cargo_cmd| {
+        ensure!(
+            desired == stdout,
+            "LLBC output differs between `charon cargo` and `charon rustc`\n\
+            `{cargo_cmd}` emits:\n{desired:?}\n\
+            `{rustc_cmd}` emits:\n{stdout:?}"
         );
         Ok(())
     })
