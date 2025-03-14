@@ -95,17 +95,26 @@ pub fn main() -> Result<()> {
         // Run just the driver.
         let mut cmd = toolchain::driver_cmd()?;
 
+        // Detect if an arg if specified in cargo_args, like in `-- arg` or `--rustc-args=arg`.
+        let is_specified = |arg| {
+            let mut iter = options.rustc_args.iter();
+            iter.any(|input| input.starts_with(arg))
+        };
+
+        // Don't set target if it is specified by user.
+        if !is_specified("--target") {
+            // Make sure the build target is explicitly set. This is needed to detect which crates are
+            // proc-macro/build-script in `charon-driver`.
+            cmd.arg("--target");
+            cmd.arg(host);
+        }
+
         // Extract rustc args and pass as cli args to charon-driver.
         // `Take` is needed, because charon-driver add options.rustc_args to compiled_args.
         cmd.args(std::mem::take(&mut options.rustc_args));
 
         // Pass CHARON_ARGS to charon-driver.
         cmd.env(CHARON_ARGS, serde_json::to_string(&options).unwrap());
-
-        // Make sure the build target is explicitly set. This is needed to detect which crates are
-        // proc-macro/build-script in `charon-driver`.
-        cmd.arg("--target");
-        cmd.arg(host);
 
         if let Some(input_file) = &options.input_file {
             cmd.arg(input_file);

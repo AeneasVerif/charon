@@ -223,12 +223,11 @@ fn charon_rust_target() -> Result<()> {
         "--target",
         target,
     ];
-    // FIXME: due to charon passes target anyway, it conflicts with `-- --target`.
-    // error: Option 'target' given more than once. ERROR Code failed to compile
     let [stdout, rustc_cmd] = charon(args, ".", |stdout, cmd| Ok([stdout, cmd]))?;
 
     let dir = "tests/cargo/multi-targets";
     let args = &["cargo", "--print-llbc", "--", "--target", target];
+    // Suppose outputs from cargo and rustc queries are the same...
     charon(args, dir, |desired, cargo_cmd| {
         ensure!(
             desired == stdout,
