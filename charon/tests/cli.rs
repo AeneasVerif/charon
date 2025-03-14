@@ -181,3 +181,26 @@ fn charon_cargo_target() -> Result<()> {
         Ok(())
     })
 }
+
+#[test]
+fn charon_rustc() -> Result<()> {
+    let path = "tests/cargo/workspace/crate1/src/lib.rs";
+    let args = &["rustc", "--print-llbc", "--", "--crate-type=lib", path];
+
+    // Call rustc without specifying --crate-name, so default to lib as the name.
+    let fn_ = "pub fn lib::random_number";
+
+    charon(args, ".", |stdout, cmd| {
+        ensure!(
+            stdout.contains(fn_),
+            "Output of `{cmd}` is:\n{stdout:?}\nIt doesn't contain {fn_:?}."
+        );
+
+        let count_fn = stdout.matches("fn").count();
+        ensure!(
+            count_fn == 1,
+            "Output of `{cmd}` is:\n{stdout:?}\nThe count of `fn` should only be one."
+        );
+        Ok(())
+    })
+}
