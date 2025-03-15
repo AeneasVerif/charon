@@ -106,36 +106,24 @@ impl UsageVisitor<'_> {
     }
 }
 impl VisitAst for UsageVisitor<'_> {
-    fn visit_aggregate_kind(&mut self, kind: &AggregateKind) -> ControlFlow<Infallible> {
+    fn enter_aggregate_kind(&mut self, kind: &AggregateKind) {
         match kind {
             AggregateKind::Adt(TypeId::Adt(id), _, _, gargs) => self.found_use_ty(id, gargs),
             AggregateKind::Closure(fun_id, gargs) => self.found_use_fn(fun_id, gargs),
             _ => {}
         }
-
-        Continue(())
     }
 
-    fn visit_ty_kind(&mut self, kind: &TyKind) -> ControlFlow<Infallible> {
+    fn enter_ty_kind(&mut self, kind: &TyKind) {
         match kind {
             TyKind::Adt(TypeId::Adt(id), gargs) => {
                 self.found_use_ty(id, gargs);
-                gargs.drive(self);
             }
-            TyKind::Adt(_, gargs) => {
-                gargs.drive(self);
-            }
-            TyKind::Literal(_) => {}
-            TyKind::Ref(_, ty, _) => {
-                ty.drive(self);
-            }
-            ty => warn!("Unhandled type kind {:?}", ty),
+            _ => {}
         }
-        Continue(())
     }
 
-    fn visit_fn_ptr(&mut self, fn_ptr: &FnPtr) -> ControlFlow<Infallible> {
-        fn_ptr.generics.drive(self);
+    fn enter_fn_ptr(&mut self, fn_ptr: &FnPtr) {
         match &fn_ptr.func {
             FunIdOrTraitMethodRef::Fun(FunId::Regular(id)) => {
                 self.found_use_fn(id, &fn_ptr.generics)
@@ -160,7 +148,6 @@ impl VisitAst for UsageVisitor<'_> {
             // These can't be monomorphized, since they're builtins
             FunIdOrTraitMethodRef::Fun(FunId::Builtin(..)) => {}
         }
-        Continue(())
     }
 }
 
@@ -195,8 +182,7 @@ impl SubstVisitor<'_> {
 }
 
 impl VisitAstMut for SubstVisitor<'_> {
-    fn visit_ullbc_statement(&mut self, stt: &mut Statement) -> ControlFlow<Infallible> {
-        stt.content.drive_mut(self);
+    fn exit_ullbc_statement(&mut self, stt: &mut Statement) {
         match &mut stt.content {
             RawStatement::Assign(_, Rvalue::Discriminant(Place { ty, .. }, id)) => {
                 match ty.as_adt() {
@@ -204,6 +190,10 @@ impl VisitAstMut for SubstVisitor<'_> {
                         // Small trick; the discriminant doesn't carry the information on the
                         // generics of the enum, since it's irrelevant, but we need it to do
                         // the substitution, so we look at the type of the place we read from
+                        println!(
+                            "Substituted in discriminant: {:?} -> {:?}",
+                            *id, new_enum_id
+                        );
                         *id = new_enum_id;
                     }
                     _ => {}
@@ -212,40 +202,26 @@ impl VisitAstMut for SubstVisitor<'_> {
             }
             _ => (),
         }
-
-        Continue(())
     }
 
-    fn visit_aggregate_kind(&mut self, kind: &mut AggregateKind) -> ControlFlow<Infallible> {
+    fn enter_aggregate_kind(&mut self, kind: &mut AggregateKind) {
         match kind {
             AggregateKind::Adt(TypeId::Adt(id), _, _, gargs) => self.subst_use_ty(id, gargs),
             AggregateKind::Closure(fun_id, gargs) => self.subst_use_fun(fun_id, gargs),
             _ => {}
         }
-
-        Continue(())
     }
 
-    fn visit_ty_kind(&mut self, kind: &mut TyKind) -> ControlFlow<Infallible> {
+    fn enter_ty_kind(&mut self, kind: &mut TyKind) {
         match kind {
             TyKind::Adt(TypeId::Adt(id), gargs) => {
                 self.subst_use_ty(id, gargs);
-                gargs.drive_mut(self);
             }
-            TyKind::Adt(_, gargs) => {
-                gargs.drive_mut(self);
-            }
-            TyKind::Literal(_) => {}
-            TyKind::Ref(_, ty, _) => {
-                ty.drive_mut(self);
-            }
-            ty => warn!("Unhandled type kind {:?}", ty),
+            _ => {}
         }
-        Continue(())
     }
 
-    fn visit_fn_ptr(&mut self, fn_ptr: &mut FnPtr) -> ControlFlow<Infallible> {
-        fn_ptr.generics.drive_mut(self);
+    fn enter_fn_ptr(&mut self, fn_ptr: &mut FnPtr) {
         match &mut fn_ptr.func {
             FunIdOrTraitMethodRef::Fun(FunId::Regular(fun_id)) => {
                 self.subst_use_fun(fun_id, &mut fn_ptr.generics)
@@ -261,22 +237,18 @@ impl VisitAstMut for SubstVisitor<'_> {
             // These can't be monomorphized, since they're builtins
             FunIdOrTraitMethodRef::Fun(FunId::Builtin(..)) => {}
         }
-        Continue(())
     }
 
-    fn visit_place(&mut self, place: &mut Place) -> ControlFlow<Infallible> {
-        place.ty.drive_mut(self);
+    fn exit_place(&mut self, place: &mut Place) {
         match &mut place.kind {
             PlaceKind::Projection(inner, ProjectionElem::Field(FieldProjKind::Adt(id, _), _)) => {
                 // Trick, we don't know the generics but the projected place does, so
                 // we substitute it there, then update our current id.
-                inner.drive_mut(self);
                 let (inner_id, _) = inner.ty.as_adt().unwrap();
                 *id = *inner_id.as_adt().unwrap()
             }
             _ => {}
         }
-        Continue(())
     }
 }
 
@@ -287,44 +259,40 @@ struct MissingIndexChecker<'a> {
     current_item: Option<AnyTransItem<'a>>,
 }
 impl VisitAst for MissingIndexChecker<'_> {
-    fn visit_fun_decl_id(&mut self, id: &FunDeclId) -> ControlFlow<Infallible> {
+    fn enter_fun_decl_id(&mut self, id: &FunDeclId) {
         if self.krate.fun_decls.get(*id).is_none() {
             panic!(
                 "Missing function declaration for id: {:?}, in {:?}",
                 id, self.current_item
             );
         }
-        Continue(())
     }
 
-    fn visit_trait_impl_id(&mut self, id: &TraitImplId) -> ControlFlow<Infallible> {
+    fn enter_trait_impl_id(&mut self, id: &TraitImplId) {
         if self.krate.trait_impls.get(*id).is_none() {
             panic!(
                 "Missing trait implementation for id: {:?}, in {:?}",
                 id, self.current_item
             );
         }
-        Continue(())
     }
 
-    fn visit_trait_decl_id(&mut self, id: &TraitDeclId) -> ControlFlow<Infallible> {
+    fn enter_trait_decl_id(&mut self, id: &TraitDeclId) {
         if self.krate.trait_decls.get(*id).is_none() {
             panic!(
                 "Missing trait declaration for id: {:?}, in {:?}",
                 id, self.current_item
             );
         }
-        Continue(())
     }
 
-    fn visit_type_decl_id(&mut self, id: &TypeDeclId) -> ControlFlow<Infallible> {
+    fn enter_type_decl_id(&mut self, id: &TypeDeclId) {
         if self.krate.type_decls.get(*id).is_none() {
             panic!(
                 "Missing type declaration for id: {:?}, in {:?}",
                 id, self.current_item
             );
         }
-        Continue(())
     }
 }
 
