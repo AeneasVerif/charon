@@ -39,7 +39,6 @@
    verification projects.  Its purpose is to process Rust .rs files and convert
    them into files easy to handle by program verifiers.")
  (depends
-   core_unix
    easy_logging
    ppx_deriving
    unionFind
