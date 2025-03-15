@@ -399,6 +399,8 @@ and cli_options = {
   skip_borrowck : bool;
       (** If activated, this skips borrow-checking of the crate. *)
   no_code_duplication : bool;
+  monomorphize : bool;
+      (** Monomorphize the code, replacing generics with their concrete types. *)
   extract_opaque_bodies : bool;
       (** Usually we skip the bodies of foreign methods and structs with private fields. When this
         flag is on, we don't.
@@ -423,6 +425,8 @@ and cli_options = {
   rustc_args : string list;  (** Extra flags to pass to rustc. *)
   cargo_args : string list;
       (** Extra flags to pass to cargo. Incompatible with `--no-cargo`. *)
+  only_cargo : bool;
+      (** Do nothing! Just run cargo, don't do any translation. *)
   abort_on_error : bool;
       (** Panic on the first error. This is useful for debugging. *)
   error_on_warnings : bool;  (** Print the errors as warnings *)

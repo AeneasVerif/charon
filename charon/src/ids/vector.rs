@@ -264,6 +264,17 @@ where
         self.vector.indices()
     }
 
+    pub fn retain(&mut self, mut f: impl FnMut(&mut T) -> bool) {
+        self.vector.iter_mut().for_each(|opt| {
+            if let Some(x) = opt {
+                if !f(x) {
+                    *opt = None;
+                    self.elem_count -= 1;
+                }
+            }
+        });
+    }
+
     /// Like `Vec::split_off`.
     pub fn split_off(&mut self, at: usize) -> Self {
         let mut ret = Self {
