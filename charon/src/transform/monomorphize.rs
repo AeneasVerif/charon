@@ -1,7 +1,6 @@
 //! # Micro-pass: monomorphize all functions and types; at the end of this pass, all functions and types are monomorphic.
 use derive_generic_visitor::*;
 use std::collections::{HashMap, HashSet};
-use std::ops::ControlFlow::Continue;
 
 use crate::transform::TransformCtx;
 use crate::ullbc_ast::*;
@@ -439,7 +438,7 @@ impl UllbcPass for Transform {
                             };
                             let fun = ctx.translated.fun_decls.get(*fun_id).unwrap();
                             let mut fun_sub = fun.clone().substitute(gargs);
-                            fun_sub.signature.generics = GenericParams::empty();
+                            // fun_sub.signature.generics = GenericParams::empty();
 
                             let fun_id_sub = ctx.translated.fun_decls.reserve_slot();
                             fun_sub.def_id = fun_id_sub;
@@ -450,7 +449,7 @@ impl UllbcPass for Transform {
                         AnyTransId::Type(typ_id) => {
                             let typ = ctx.translated.type_decls.get(*typ_id).unwrap();
                             let mut typ_sub = typ.clone().substitute(gargs);
-                            typ_sub.generics = GenericParams::empty();
+                            // typ_sub.generics = GenericParams::empty();
                             // typ_sub.item_meta.name.name.push(path_for_generics(gargs));
 
                             let typ_id_sub = ctx.translated.type_decls.reserve_slot();
@@ -493,10 +492,10 @@ impl UllbcPass for Transform {
         // uses have been monomorphized and substituted
         ctx.translated
             .fun_decls
-            .retain(|f| f.signature.generics.is_empty_ignoring_regions());
+            .retain(|f| data.visited.contains(&AnyTransId::Fun(f.def_id)));
         ctx.translated
             .type_decls
-            .retain(|t| t.generics.is_empty_ignoring_regions());
+            .retain(|t| data.visited.contains(&AnyTransId::Type(t.def_id)));
         // ctx.translated.trait_impls.retain(|t| t.generics.is_empty());
 
         // TODO: Currently we don't update all TraitImpls/TraitDecls with the monomorphized versions
