@@ -715,12 +715,19 @@ impl<'a> ComputeItemModifications<'a> {
                     Processing::Processing => false,
                     Processing::Cyclic => true,
                 };
-                let remove_assoc_type = self
-                    .ctx
-                    .options
-                    .remove_associated_types
-                    .iter()
-                    .any(|pat| pat.matches(&self.ctx.translated, &tr.item_meta.name));
+                // These traits carry a built-in associated type that we can't replace with
+                // anything else than itself, so we keep it as an associated type.
+                let has_builtin_assoc_ty = matches!(
+                    tr.item_meta.lang_item.as_deref(),
+                    Some("discriminant_kind" | "pointee_trait")
+                );
+                let remove_assoc_type = !has_builtin_assoc_ty
+                    && self
+                        .ctx
+                        .options
+                        .remove_associated_types
+                        .iter()
+                        .any(|pat| pat.matches(&self.ctx.translated, &tr.item_meta.name));
                 let remove_assoc_types = !is_self_referential && remove_assoc_type;
                 let mut modifications =
                     ItemModifications::new(&tr.generics.trait_type_constraints, remove_assoc_types);
@@ -871,6 +878,8 @@ impl<'a> ComputeItemModifications<'a> {
 /// `visit_generic_args` will skip `GenericArgs` meant for traits, and we must manually catch
 #[derive(Visitor)]
 struct UpdateItemBody<'a> {
+    /// Warning: we keep the ctx around but we can't meaningfully use it for inspecting items as we
+    /// remporarily remove them for in-place modification.
     ctx: &'a TransformCtx,
     span: Span,
     item_modifications: &'a HashMap<GenericsSource, ItemModifications>,
@@ -926,7 +935,13 @@ impl UpdateItemBody<'_> {
                 self.lookup_path_on_trait_ref(&path, parent)
             }
             TraitRefKind::ItemClause(..) => {
-                unreachable!("item clause should have been removed in a previous pass")
+                register_error!(
+                    self.ctx,
+                    self.span,
+                    "Found unhandled item clause; \
+                    this is a bug unless the clause is coming from a GAT."
+                );
+                None
             }
             TraitRefKind::BuiltinOrAuto {
                 parent_trait_refs,
@@ -1057,40 +1072,29 @@ impl VisitAstMut for UpdateItemBody<'_> {
         binder: &mut Binder<T>,
     ) -> ControlFlow<Self::Break> {
         let generics = &mut binder.params;
-        let mut modifications;
-        let modifications = match &binder.kind {
-            BinderKind::TraitMethod(trait_id, method_name) => self
-                .item_modifications
-                .get(&GenericsSource::Method(*trait_id, method_name.clone())),
-            BinderKind::InherentImplBlock => {
-                // An inner binder. Because it's not a globally-addressable item, we haven't computed
-                // appropriate modifications yet, so we compute them.
-                modifications = ItemModifications::new(&generics.trait_type_constraints, true);
-                for clause in &generics.trait_clauses {
-                    let trait_id = clause.trait_.skip_binder.trait_id;
-                    if let Some(tmods) =
-                        self.item_modifications.get(&GenericsSource::item(trait_id))
-                    {
-                        for path in tmods.required_extra_params() {
-                            let path = path.on_local_clause(clause.clause_id);
-                            modifications.replace_path(path);
-                        }
-                    }
+        // An inner binder. Apart from the case of trait method declarations, this is not a
+        // globally-addressable item, so we haven't computed appropriate modifications yet. Hence
+        // we compute them here.
+        let mut modifications = ItemModifications::new(&generics.trait_type_constraints, true);
+        for clause in &generics.trait_clauses {
+            let trait_id = clause.trait_.skip_binder.trait_id;
+            if let Some(tmods) = self.item_modifications.get(&GenericsSource::item(trait_id)) {
+                for path in tmods.required_extra_params() {
+                    let path = path.on_local_clause(clause.clause_id);
+                    modifications.replace_path(path);
                 }
-                Some(&modifications)
             }
-            BinderKind::Other => unreachable!("no `BinderKind::Other` in the AST"),
-        };
-        let replacements = modifications
-            .map(|mods| {
-                mods.compute_replacements(|path| {
-                    let var_id = generics
-                        .types
-                        .push_with(|id| TypeVar::new(id, path.to_name()));
-                    TyKind::TypeVar(DeBruijnVar::new_at_zero(var_id)).into_ty()
-                })
-            })
-            .unwrap_or_default();
+        }
+        // Remove used constraints.
+        for cid in &modifications.remove_constraints {
+            generics.trait_type_constraints.remove(*cid);
+        }
+        let replacements = modifications.compute_replacements(|path| {
+            let var_id = generics
+                .types
+                .push_with(|id| TypeVar::new(id, path.to_name()));
+            TyKind::TypeVar(DeBruijnVar::new_at_zero(var_id)).into_ty()
+        });
         self.under_binder(replacements, |this| {
             this.visit_inner(binder);
         });

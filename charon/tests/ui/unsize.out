@@ -1,22 +1,27 @@
 # Final LLBC before serialization:
 
-trait core::marker::Sized<Self>
+#[lang_item("sized")]
+pub trait core::marker::Sized<Self>
 
-struct alloc::alloc::Global = {}
+#[lang_item("global_alloc_ty")]
+pub struct alloc::alloc::Global = {}
 
-opaque type alloc::rc::Rc<T, A>
+#[lang_item("Rc")]
+pub opaque type alloc::rc::Rc<T, A>
   where
       [@TraitClause0]: core::marker::Sized<A>,
 
-opaque type alloc::string::String
+#[lang_item("String")]
+pub opaque type alloc::string::String
 
-fn alloc::rc::{alloc::rc::Rc<T, alloc::alloc::Global>[core::marker::Sized<alloc::alloc::Global>]}#8::new<T>(@1: T) -> alloc::rc::Rc<T, alloc::alloc::Global>[core::marker::Sized<alloc::alloc::Global>]
+pub fn alloc::rc::{alloc::rc::Rc<T, alloc::alloc::Global>[core::marker::Sized<alloc::alloc::Global>]}#8::new<T>(@1: T) -> alloc::rc::Rc<T, alloc::alloc::Global>[core::marker::Sized<alloc::alloc::Global>]
 where
     [@TraitClause0]: core::marker::Sized<T>,
 
-fn alloc::string::{alloc::string::String}::new() -> alloc::string::String
+#[lang_item("string_new")]
+pub fn alloc::string::{alloc::string::String}::new() -> alloc::string::String
 
-fn alloc::string::{impl core::clone::Clone for alloc::string::String}#6::clone<'_0>(@1: &'_0 (alloc::string::String)) -> alloc::string::String
+pub fn alloc::string::{impl core::clone::Clone for alloc::string::String}#6::clone<'_0>(@1: &'_0 (alloc::string::String)) -> alloc::string::String
 
 fn test_crate::foo()
 {
@@ -44,7 +49,7 @@ fn test_crate::foo()
     let @21: alloc::string::String; // anonymous local
     let @22: &'_ (alloc::string::String); // anonymous local
 
-    array@1 := [const (0 : i32), const (0 : i32); 2 : usize]
+    array@1 := [const (0 : i32), const (0 : i32)]
     @fake_read(array@1)
     @4 := &array@1
     @3 := &*(@4)
@@ -110,9 +115,11 @@ fn test_crate::foo()
     return
 }
 
-fn core::clone::Clone::clone<'_0, Self>(@1: &'_0 (Self)) -> Self
+#[lang_item("clone_fn")]
+pub fn core::clone::Clone::clone<'_0, Self>(@1: &'_0 (Self)) -> Self
 
-trait core::clone::Clone<Self>
+#[lang_item("clone")]
+pub trait core::clone::Clone<Self>
 {
     parent_clause0 : [@TraitClause0]: core::marker::Sized<Self>
     fn clone<'_0> = core::clone::Clone::clone<'_0_0, Self>

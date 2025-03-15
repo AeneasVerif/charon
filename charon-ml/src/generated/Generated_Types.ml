@@ -496,6 +496,8 @@ and item_meta = {
   attr_info : attr_info;  (** Attributes and visibility. *)
   is_local : bool;
       (** `true` if the type decl is a local type decl, `false` if it comes from an external crate. *)
+  lang_item : string option;
+      (** If the item is built-in, record its internal builtin identifier. *)
 }
 
 and disambiguator = (Disambiguator.id[@visitors.opaque])

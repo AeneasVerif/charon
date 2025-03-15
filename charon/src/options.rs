@@ -1,5 +1,4 @@
 //! The options that control charon behavior.
-use clap::Parser;
 use indoc::indoc;
 use serde::{Deserialize, Serialize};
 use std::path::PathBuf;
@@ -18,7 +17,7 @@ pub const CHARON_ARGS: &str = "CHARON_ARGS";
 // Note that because we need to transmit the options to the charon driver,
 // we store them in a file before calling this driver (hence the `Serialize`,
 // `Deserialize` options).
-#[derive(Debug, Default, Clone, Parser, Serialize, Deserialize)]
+#[derive(Debug, Default, Clone, clap::Args, Serialize, Deserialize)]
 #[clap(name = "Charon")]
 #[charon::rename("cli_options")]
 pub struct CliOpts {
@@ -322,10 +321,8 @@ impl TranslateOptions {
 
         let mir_level = if options.mir_optimized {
             MirLevel::Optimized
-        } else if options.mir_promoted {
-            MirLevel::Promoted
         } else {
-            MirLevel::Built
+            MirLevel::Promoted
         };
 
         let item_opacities = {

@@ -1,6 +1,6 @@
 # Final LLBC before serialization:
 
-fn test_crate::neg_test(@1: i32) -> i32
+pub fn test_crate::neg_test(@1: i32) -> i32
 {
     let @0: i32; // return
     let x@1: i32; // arg #1
@@ -12,7 +12,7 @@ fn test_crate::neg_test(@1: i32) -> i32
     return
 }
 
-fn test_crate::add_u32(@1: u32, @2: u32) -> u32
+pub fn test_crate::add_u32(@1: u32, @2: u32) -> u32
 {
     let @0: u32; // return
     let x@1: u32; // arg #1
@@ -28,7 +28,7 @@ fn test_crate::add_u32(@1: u32, @2: u32) -> u32
     return
 }
 
-fn test_crate::incr<'_0>(@1: &'_0 mut (u32))
+pub fn test_crate::incr<'_0>(@1: &'_0 mut (u32))
 {
     let @0: (); // return
     let x@1: &'_ mut (u32); // arg #1
@@ -39,7 +39,7 @@ fn test_crate::incr<'_0>(@1: &'_0 mut (u32))
     return
 }
 
-fn test_crate::subs_u32(@1: u32, @2: u32) -> u32
+pub fn test_crate::subs_u32(@1: u32, @2: u32) -> u32
 {
     let @0: u32; // return
     let x@1: u32; // arg #1
@@ -55,7 +55,7 @@ fn test_crate::subs_u32(@1: u32, @2: u32) -> u32
     return
 }
 
-fn test_crate::div_u32(@1: u32, @2: u32) -> u32
+pub fn test_crate::div_u32(@1: u32, @2: u32) -> u32
 {
     let @0: u32; // return
     let x@1: u32; // arg #1
@@ -71,7 +71,7 @@ fn test_crate::div_u32(@1: u32, @2: u32) -> u32
     return
 }
 
-fn test_crate::div_u32_const(@1: u32) -> u32
+pub fn test_crate::div_u32_const(@1: u32) -> u32
 {
     let @0: u32; // return
     let x@1: u32; // arg #1
@@ -83,7 +83,7 @@ fn test_crate::div_u32_const(@1: u32) -> u32
     return
 }
 
-fn test_crate::rem_u32(@1: u32, @2: u32) -> u32
+pub fn test_crate::rem_u32(@1: u32, @2: u32) -> u32
 {
     let @0: u32; // return
     let x@1: u32; // arg #1
@@ -99,7 +99,7 @@ fn test_crate::rem_u32(@1: u32, @2: u32) -> u32
     return
 }
 
-fn test_crate::mul_u32(@1: u32, @2: u32) -> u32
+pub fn test_crate::mul_u32(@1: u32, @2: u32) -> u32
 {
     let @0: u32; // return
     let x@1: u32; // arg #1
@@ -115,7 +115,7 @@ fn test_crate::mul_u32(@1: u32, @2: u32) -> u32
     return
 }
 
-fn test_crate::add_i32(@1: i32, @2: i32) -> i32
+pub fn test_crate::add_i32(@1: i32, @2: i32) -> i32
 {
     let @0: i32; // return
     let x@1: i32; // arg #1
@@ -131,7 +131,7 @@ fn test_crate::add_i32(@1: i32, @2: i32) -> i32
     return
 }
 
-fn test_crate::subs_i32(@1: i32, @2: i32) -> i32
+pub fn test_crate::subs_i32(@1: i32, @2: i32) -> i32
 {
     let @0: i32; // return
     let x@1: i32; // arg #1
@@ -147,7 +147,7 @@ fn test_crate::subs_i32(@1: i32, @2: i32) -> i32
     return
 }
 
-fn test_crate::div_i32(@1: i32, @2: i32) -> i32
+pub fn test_crate::div_i32(@1: i32, @2: i32) -> i32
 {
     let @0: i32; // return
     let x@1: i32; // arg #1
@@ -163,7 +163,7 @@ fn test_crate::div_i32(@1: i32, @2: i32) -> i32
     return
 }
 
-fn test_crate::div_i32_const(@1: i32) -> i32
+pub fn test_crate::div_i32_const(@1: i32) -> i32
 {
     let @0: i32; // return
     let x@1: i32; // arg #1
@@ -175,7 +175,7 @@ fn test_crate::div_i32_const(@1: i32) -> i32
     return
 }
 
-fn test_crate::rem_i32(@1: i32, @2: i32) -> i32
+pub fn test_crate::rem_i32(@1: i32, @2: i32) -> i32
 {
     let @0: i32; // return
     let x@1: i32; // arg #1
@@ -191,7 +191,7 @@ fn test_crate::rem_i32(@1: i32, @2: i32) -> i32
     return
 }
 
-fn test_crate::mul_i32(@1: i32, @2: i32) -> i32
+pub fn test_crate::mul_i32(@1: i32, @2: i32) -> i32
 {
     let @0: i32; // return
     let x@1: i32; // arg #1
@@ -207,7 +207,7 @@ fn test_crate::mul_i32(@1: i32, @2: i32) -> i32
     return
 }
 
-fn test_crate::mix_arith_u32(@1: u32, @2: u32, @3: u32) -> u32
+pub fn test_crate::mix_arith_u32(@1: u32, @2: u32, @3: u32) -> u32
 {
     let @0: u32; // return
     let x@1: u32; // arg #1
@@ -272,7 +272,7 @@ fn test_crate::mix_arith_u32(@1: u32, @2: u32, @3: u32) -> u32
     return
 }
 
-fn test_crate::mix_arith_i32(@1: i32, @2: i32, @3: i32) -> i32
+pub fn test_crate::mix_arith_i32(@1: i32, @2: i32, @3: i32) -> i32
 {
     let @0: i32; // return
     let x@1: i32; // arg #1
@@ -369,7 +369,7 @@ fn test_crate::shr(@1: u32, @2: u32) -> u32
     return
 }
 
-fn test_crate::_() -> isize
+pub fn test_crate::_() -> isize
 {
     let @0: isize; // return
 
@@ -377,9 +377,9 @@ fn test_crate::_() -> isize
     return
 }
 
-global test_crate::_: isize = test_crate::_()
+pub global test_crate::_: isize = test_crate::_()
 
-fn test_crate::_#1() -> isize
+pub fn test_crate::_#1() -> isize
 {
     let @0: isize; // return
 
@@ -387,9 +387,9 @@ fn test_crate::_#1() -> isize
     return
 }
 
-global test_crate::_#1: isize = test_crate::_#1()
+pub global test_crate::_#1: isize = test_crate::_#1()
 
-fn test_crate::_#2() -> isize
+pub fn test_crate::_#2() -> isize
 {
     let @0: isize; // return
 
@@ -397,9 +397,9 @@ fn test_crate::_#2() -> isize
     return
 }
 
-global test_crate::_#2: isize = test_crate::_#2()
+pub global test_crate::_#2: isize = test_crate::_#2()
 
-fn test_crate::_#3() -> isize
+pub fn test_crate::_#3() -> isize
 {
     let @0: isize; // return
 
@@ -407,9 +407,9 @@ fn test_crate::_#3() -> isize
     return
 }
 
-global test_crate::_#3: isize = test_crate::_#3()
+pub global test_crate::_#3: isize = test_crate::_#3()
 
-fn test_crate::_#4() -> isize
+pub fn test_crate::_#4() -> isize
 {
     let @0: isize; // return
 
@@ -417,9 +417,9 @@ fn test_crate::_#4() -> isize
     return
 }
 
-global test_crate::_#4: isize = test_crate::_#4()
+pub global test_crate::_#4: isize = test_crate::_#4()
 
-fn test_crate::_#5() -> isize
+pub fn test_crate::_#5() -> isize
 {
     let @0: isize; // return
 
@@ -427,9 +427,9 @@ fn test_crate::_#5() -> isize
     return
 }
 
-global test_crate::_#5: isize = test_crate::_#5()
+pub global test_crate::_#5: isize = test_crate::_#5()
 
-fn test_crate::_#6() -> isize
+pub fn test_crate::_#6() -> isize
 {
     let @0: isize; // return
 
@@ -437,9 +437,9 @@ fn test_crate::_#6() -> isize
     return
 }
 
-global test_crate::_#6: isize = test_crate::_#6()
+pub global test_crate::_#6: isize = test_crate::_#6()
 
-fn test_crate::_#7() -> isize
+pub fn test_crate::_#7() -> isize
 {
     let @0: isize; // return
 
@@ -447,9 +447,9 @@ fn test_crate::_#7() -> isize
     return
 }
 
-global test_crate::_#7: isize = test_crate::_#7()
+pub global test_crate::_#7: isize = test_crate::_#7()
 
-fn test_crate::FOO() -> u32
+pub fn test_crate::FOO() -> u32
 {
     let @0: u32; // return
 
@@ -457,9 +457,9 @@ fn test_crate::FOO() -> u32
     return
 }
 
-global test_crate::FOO: u32 = test_crate::FOO()
+pub global test_crate::FOO: u32 = test_crate::FOO()
 
-fn test_crate::_#8() -> u32
+pub fn test_crate::_#8() -> u32
 {
     let @0: u32; // return
     let @1: u32; // anonymous local
@@ -469,9 +469,9 @@ fn test_crate::_#8() -> u32
     return
 }
 
-global test_crate::_#8: u32 = test_crate::_#8()
+pub global test_crate::_#8: u32 = test_crate::_#8()
 
-fn test_crate::_#9() -> u32
+pub fn test_crate::_#9() -> u32
 {
     let @0: u32; // return
     let @1: u32; // anonymous local
@@ -481,9 +481,9 @@ fn test_crate::_#9() -> u32
     return
 }
 
-global test_crate::_#9: u32 = test_crate::_#9()
+pub global test_crate::_#9: u32 = test_crate::_#9()
 
-fn test_crate::_#10() -> u32
+pub fn test_crate::_#10() -> u32
 {
     let @0: u32; // return
     let @1: u32; // anonymous local
@@ -493,9 +493,9 @@ fn test_crate::_#10() -> u32
     return
 }
 
-global test_crate::_#10: u32 = test_crate::_#10()
+pub global test_crate::_#10: u32 = test_crate::_#10()
 
-fn test_crate::_#11() -> u32
+pub fn test_crate::_#11() -> u32
 {
     let @0: u32; // return
     let @1: u32; // anonymous local
@@ -505,9 +505,9 @@ fn test_crate::_#11() -> u32
     return
 }
 
-global test_crate::_#11: u32 = test_crate::_#11()
+pub global test_crate::_#11: u32 = test_crate::_#11()
 
-fn test_crate::_#12() -> u32
+pub fn test_crate::_#12() -> u32
 {
     let @0: u32; // return
     let @1: u32; // anonymous local
@@ -517,9 +517,9 @@ fn test_crate::_#12() -> u32
     return
 }
 
-global test_crate::_#12: u32 = test_crate::_#12()
+pub global test_crate::_#12: u32 = test_crate::_#12()
 
-fn test_crate::_#13() -> u32
+pub fn test_crate::_#13() -> u32
 {
     let @0: u32; // return
     let @1: u32; // anonymous local
@@ -529,9 +529,9 @@ fn test_crate::_#13() -> u32
     return
 }
 
-global test_crate::_#13: u32 = test_crate::_#13()
+pub global test_crate::_#13: u32 = test_crate::_#13()
 
-fn test_crate::_#14() -> u32
+pub fn test_crate::_#14() -> u32
 {
     let @0: u32; // return
     let @1: u32; // anonymous local
@@ -541,7 +541,7 @@ fn test_crate::_#14() -> u32
     return
 }
 
-global test_crate::_#14: u32 = test_crate::_#14()
+pub global test_crate::_#14: u32 = test_crate::_#14()
 
 fn test_crate::div_signed_with_constant::FOO() -> i32
 {

@@ -34,8 +34,7 @@
 #![register_tool(charon)]
 
 use anyhow::bail;
-use clap::Parser;
-use options::{CliOpts, CHARON_ARGS};
+use options::CHARON_ARGS;
 use serde::Deserialize;
 use std::env;
 use std::ffi::OsStr;
@@ -47,6 +46,8 @@ use charon_lib::logger;
 use charon_lib::options;
 use charon_lib::trace;
 
+/// Rename this module once subcommand migration finishes.
+mod cli_rework;
 mod toml_config;
 
 // Store the toolchain details directly in the binary.
@@ -67,7 +68,7 @@ struct Toolchain {
 impl Toolchain {
     fn is_installed(&self) -> anyhow::Result<bool> {
         // FIXME: check if the right components are installed.
-        let output = self.run("echo").output()?;
+        let output = self.run("rustc").arg("--version").output()?;
         Ok(output.status.success())
     }
 
@@ -93,6 +94,15 @@ impl Toolchain {
         cmd.arg("run");
         cmd.arg(&self.channel);
         cmd.arg(program);
+
+        // Add rust driver dll to `PATH` in rustup.
+        // cc
+        // * https://github.com/AeneasVerif/charon/issues/588
+        // * https://github.com/rust-lang/rustup/issues/3825
+        if cfg!(windows) {
+            cmd.env("RUSTUP_WINDOWS_PATH_ADD_BIN", "1");
+        }
+
         cmd
     }
 }
@@ -150,8 +160,14 @@ pub fn main() -> anyhow::Result<()> {
     logger::initialize_logger();
 
     // Parse the command-line
-    let mut options = CliOpts::parse();
-    trace!("Arguments: {:?}", std::env::args());
+    trace!("Arguments: {:?}", env::args());
+
+    let mut options = match cli_rework::run()? {
+        Some(options) => options,
+        None => return Ok(()),
+    };
+
+    // ******* Old cli args parsing *******
     options.validate();
 
     // FIXME: when using rustup, ensure the toolchain has the right components installed.
@@ -227,9 +243,7 @@ pub fn main() -> anyhow::Result<()> {
         cmd.env(CHARON_ARGS, serde_json::to_string(&options).unwrap());
 
         // Compute the arguments of the command to call cargo
-        //let cargo_subcommand = "build";
-        let cargo_subcommand = "rustc";
-        cmd.arg(cargo_subcommand);
+        cmd.arg("build");
 
         // Make sure the build target is explicitly set. This is needed to detect which crates are
         // proc-macro/build-script in `charon-driver`.

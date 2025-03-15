@@ -24,7 +24,7 @@ use std::{fmt, mem};
 
 // Re-export to avoid having to fix imports.
 pub(crate) use charon_lib::errors::{
-    error_assert, raise_error, register_error, DepSource, ErrorCtx,
+    error_assert, raise_error, register_error, DepSource, ErrorCtx, Level,
 };
 
 /// The id of an untranslated item. Note that a given `DefId` may show up as multiple different
@@ -290,10 +290,10 @@ where
 
 impl<'tcx, 'ctx> TranslateCtx<'tcx> {
     /// Span an error and register the error.
-    pub fn span_err(&self, span: Span, msg: &str) -> Error {
+    pub fn span_err(&self, span: Span, msg: &str, level: Level) -> Error {
         self.errors
             .borrow_mut()
-            .span_err(&self.translated, span, msg)
+            .span_err(&self.translated, span, msg, level)
     }
 
     /// Register a file if it is a "real" file and was not already registered
@@ -528,6 +528,10 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
         let span = self.translate_span_from_hax(span);
         let attr_info = self.translate_attr_info(def);
         let is_local = def.def_id.is_local;
+        let lang_item = def
+            .lang_item
+            .clone()
+            .or_else(|| def.diagnostic_item.clone());
 
         let opacity = if self.is_extern_item(def)
             || attr_info.attributes.iter().any(|attr| attr.is_opaque())
@@ -545,6 +549,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
             attr_info,
             is_local,
             opacity,
+            lang_item,
         };
         self.cached_item_metas
             .insert(def.rust_def_id(), item_meta.clone());
@@ -847,8 +852,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
     ) -> TraitImplId {
         let id = id.into();
         // Register the corresponding trait early so we can filter on its name.
-        {
-            let def = self.hax_def(id).expect("hax failed when translating item");
+        if let Ok(def) = self.hax_def(id) {
             let hax::FullDefKind::TraitImpl { trait_pred, .. } = def.kind() else {
                 unreachable!()
             };
@@ -912,8 +916,8 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
         }
     }
 
-    pub fn span_err(&self, span: Span, msg: &str) -> Error {
-        self.t_ctx.span_err(span, msg)
+    pub fn span_err(&self, span: Span, msg: &str, level: Level) -> Error {
+        self.t_ctx.span_err(span, msg, level)
     }
 
     pub(crate) fn translate_span_from_hax(&mut self, rspan: &hax::Span) -> Span {

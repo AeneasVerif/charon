@@ -1,11 +1,11 @@
 # Final LLBC before serialization:
 
-trait test_crate::BoolTrait<Self>
+pub trait test_crate::BoolTrait<Self>
 {
     fn get_bool<'_0> = test_crate::BoolTrait::get_bool<'_0_0, Self>
 }
 
-fn test_crate::{impl test_crate::BoolTrait for bool}::get_bool<'_0>(@1: &'_0 (bool)) -> bool
+pub fn test_crate::{impl test_crate::BoolTrait for bool}::get_bool<'_0>(@1: &'_0 (bool)) -> bool
 {
     let @0: bool; // return
     let self@1: &'_ (bool); // arg #1
@@ -19,9 +19,11 @@ impl test_crate::{impl test_crate::BoolTrait for bool} : test_crate::BoolTrait<b
     fn get_bool<'_0> = test_crate::{impl test_crate::BoolTrait for bool}::get_bool<'_0_0>
 }
 
-trait core::marker::Sized<Self>
+#[lang_item("sized")]
+pub trait core::marker::Sized<Self>
 
-enum core::option::Option<T>
+#[lang_item("Option")]
+pub enum core::option::Option<T>
   where
       [@TraitClause0]: core::marker::Sized<T>,
  =
@@ -29,9 +31,9 @@ enum core::option::Option<T>
 |  Some(T)
 
 
-fn test_crate::BoolTrait::get_bool<'_0, Self>(@1: &'_0 (Self)) -> bool
+pub fn test_crate::BoolTrait::get_bool<'_0, Self>(@1: &'_0 (Self)) -> bool
 
-fn test_crate::{impl test_crate::BoolTrait for core::option::Option<T>[@TraitClause0]}#1::get_bool<'_0, T>(@1: &'_0 (core::option::Option<T>[@TraitClause0])) -> bool
+pub fn test_crate::{impl test_crate::BoolTrait for core::option::Option<T>[@TraitClause0]}#1::get_bool<'_0, T>(@1: &'_0 (core::option::Option<T>[@TraitClause0])) -> bool
 where
     [@TraitClause0]: core::marker::Sized<T>,
     [@TraitClause1]: test_crate::BoolTrait<T>,
@@ -58,7 +60,7 @@ where
     return
 }
 
-impl<T> test_crate::{impl test_crate::BoolTrait for core::option::Option<T>[@TraitClause0]}#1<T> : test_crate::BoolTrait<core::option::Option<T>[@TraitClause0]>
+impl test_crate::{impl test_crate::BoolTrait for core::option::Option<T>[@TraitClause0]}#1<T> : test_crate::BoolTrait<core::option::Option<T>[@TraitClause0]>
 where
     [@TraitClause0]: core::marker::Sized<T>,
     [@TraitClause1]: test_crate::BoolTrait<T>,
@@ -66,7 +68,7 @@ where
     fn get_bool<'_0> = test_crate::{impl test_crate::BoolTrait for core::option::Option<T>[@TraitClause0]}#1::get_bool<'_0_0, T>[@TraitClause0, @TraitClause1]
 }
 
-fn test_crate::test_bool_trait_option<T>(@1: core::option::Option<T>[@TraitClause0]) -> bool
+pub fn test_crate::test_bool_trait_option<T>(@1: core::option::Option<T>[@TraitClause0]) -> bool
 where
     [@TraitClause0]: core::marker::Sized<T>,
     [@TraitClause1]: test_crate::BoolTrait<T>,
@@ -79,7 +81,7 @@ global test_crate::SIX_SIX_SIX: u32 = test_crate::SIX_SIX_SIX()
 
 opaque type test_crate::Test2
 
-fn test_crate::opaque::fn_in_opaque_module() -> u32
+pub fn test_crate::opaque::fn_in_opaque_module() -> u32
 {
     let @0: u32; // return
 

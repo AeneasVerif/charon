@@ -18,7 +18,7 @@ fn test_crate::BAR() -> &'static (Slice<u8>)
     let @3: Array<u8, 5 : usize>; // anonymous local
     let @4: &'_ (Array<u8, 5 : usize>); // anonymous local
 
-    @3 := const ([104, 101, 108, 108, 111])
+    @3 := [const (104 : u8), const (101 : u8), const (108 : u8), const (108 : u8), const (111 : u8)]
     @4 := &@3
     @2 := move (@4)
     @1 := &*(@2)
@@ -30,9 +30,10 @@ fn test_crate::BAR() -> &'static (Slice<u8>)
 
 global test_crate::BAR: &'static (Slice<u8>) = test_crate::BAR()
 
-opaque type alloc::string::String
+#[lang_item("String")]
+pub opaque type alloc::string::String
 
-fn alloc::string::{impl alloc::string::ToString for Str}#102::to_string<'_0>(@1: &'_0 (Str)) -> alloc::string::String
+pub fn alloc::string::{impl alloc::string::ToString for Str}#102::to_string<'_0>(@1: &'_0 (Str)) -> alloc::string::String
 
 fn test_crate::main()
 {
@@ -54,9 +55,11 @@ fn test_crate::main()
     return
 }
 
-fn alloc::string::ToString::to_string<'_0, Self>(@1: &'_0 (Self)) -> alloc::string::String
+#[lang_item("to_string_method")]
+pub fn alloc::string::ToString::to_string<'_0, Self>(@1: &'_0 (Self)) -> alloc::string::String
 
-trait alloc::string::ToString<Self>
+#[lang_item("ToString")]
+pub trait alloc::string::ToString<Self>
 {
     fn to_string<'_0> = alloc::string::ToString::to_string<'_0_0, Self>
 }

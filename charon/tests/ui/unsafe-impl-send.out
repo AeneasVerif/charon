@@ -5,7 +5,8 @@ struct test_crate::Foo =
   *const (),
 }
 
-trait core::marker::Send<Self>
+#[lang_item("Send")]
+pub trait core::marker::Send<Self>
 
 impl test_crate::{impl core::marker::Send for test_crate::Foo} : core::marker::Send<test_crate::Foo>
 

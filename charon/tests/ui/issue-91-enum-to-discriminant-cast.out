@@ -5,20 +5,23 @@ enum test_crate::Foo =
 |  B()
 
 
-trait core::marker::Sized<Self>
+#[lang_item("sized")]
+pub trait core::marker::Sized<Self>
 
-trait core::clone::Clone<Self>
+#[lang_item("clone")]
+pub trait core::clone::Clone<Self>
 {
     parent_clause0 : [@TraitClause0]: core::marker::Sized<Self>
     fn clone<'_0> = core::clone::Clone::clone<'_0_0, Self>
 }
 
-trait core::marker::Copy<Self>
+#[lang_item("copy")]
+pub trait core::marker::Copy<Self>
 {
     parent_clause0 : [@TraitClause0]: core::clone::Clone<Self>
 }
 
-fn test_crate::{impl core::clone::Clone for test_crate::Foo}#1::clone<'_0>(@1: &'_0 (test_crate::Foo)) -> test_crate::Foo
+pub fn test_crate::{impl core::clone::Clone for test_crate::Foo}#1::clone<'_0>(@1: &'_0 (test_crate::Foo)) -> test_crate::Foo
 {
     let @0: test_crate::Foo; // return
     let self@1: &'_ (test_crate::Foo); // arg #1
@@ -131,7 +134,8 @@ fn test_crate::main()
     return
 }
 
-fn core::clone::Clone::clone<'_0, Self>(@1: &'_0 (Self)) -> Self
+#[lang_item("clone_fn")]
+pub fn core::clone::Clone::clone<'_0, Self>(@1: &'_0 (Self)) -> Self
 
 
 

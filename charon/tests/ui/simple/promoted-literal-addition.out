@@ -8,21 +8,12 @@ fn test_crate::two() -> &'static (u32)
     let @3: u32; // anonymous local
     let @4: &'_ (u32); // anonymous local
 
-    @3 := const (RawMemory([2, 0, 0, 0]))
+    @3 := const (2 : u32)
     @4 := &@3
     @2 := move (@4)
     @1 := copy (@2)
     @0 := copy (@1)
     drop @1
-    return
-}
-
-fn test_crate::main()
-{
-    let @0: (); // return
-
-    @0 := ()
-    @0 := ()
     return
 }
 

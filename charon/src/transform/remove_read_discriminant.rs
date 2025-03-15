@@ -6,6 +6,7 @@
 use crate::errors::register_error;
 use crate::formatter::IntoFormatter;
 use crate::llbc_ast::*;
+use crate::name_matcher::NamePattern;
 use crate::pretty::FmtWithCtx;
 use crate::transform::TransformCtx;
 use itertools::Itertools;
@@ -13,153 +14,192 @@ use std::collections::{HashMap, HashSet};
 
 use super::ctx::LlbcPass;
 
+/// Generate `match _y { 0 => { _x = 0 }, 1 => { _x = 1; }, .. }`.
+fn generate_discr_assignment(
+    span: Span,
+    variants: &Vector<VariantId, Variant>,
+    scrutinee: &Place,
+    dest: &Place,
+) -> RawStatement {
+    let targets = variants
+        .iter_indexed_values()
+        .map(|(id, variant)| {
+            let discr_value = Rvalue::Use(Operand::Const(variant.discriminant.to_constant()));
+            let statement = Statement::new(span, RawStatement::Assign(dest.clone(), discr_value));
+            (vec![id], statement.into_block())
+        })
+        .collect();
+    RawStatement::Switch(Switch::Match(scrutinee.clone(), targets, None))
+}
+
 pub struct Transform;
 impl Transform {
-    fn update_block(ctx: &mut TransformCtx, block: &mut Block) {
+    fn update_block(
+        ctx: &mut TransformCtx,
+        block: &mut Block,
+        discriminant_intrinsic: Option<FunDeclId>,
+    ) {
         // Iterate through the statements.
         for i in 0..block.statements.len() {
             let suffix = &mut block.statements[i..];
-            if let [Statement {
-                content: RawStatement::Assign(dest, Rvalue::Discriminant(p, adt_id)),
-                span: span1,
-                ..
-            }, rest @ ..] = suffix
-            {
-                // The destination should be a variable
-                assert!(dest.is_local());
+            match suffix {
+                [Statement {
+                    content: RawStatement::Assign(dest, Rvalue::Discriminant(p, adt_id)),
+                    span: span1,
+                    ..
+                }, rest @ ..] => {
+                    // The destination should be a variable
+                    assert!(dest.is_local());
 
-                // Lookup the type of the scrutinee
-                let variants = match ctx.translated.type_decls.get(*adt_id) {
-                    Some(TypeDecl {
-                        kind: TypeDeclKind::Enum(variants),
-                        ..
-                    }) => Some(variants),
-                    // This can happen if the type was declared as invisible or opaque.
-                    None
-                    | Some(TypeDecl {
-                        kind: TypeDeclKind::Opaque,
-                        ..
-                    }) => {
-                        let name = ctx.translated.item_name(*adt_id).unwrap();
-                        register_error!(
-                            ctx,
-                            block.span,
-                            "reading the discriminant of an opaque enum. \
-                            Add `--include {}` to the `charon` arguments \
-                            to translate this enum.",
-                            name.fmt_with_ctx(&ctx.into_fmt())
+                    // Lookup the type of the scrutinee
+                    let tkind = ctx.translated.type_decls.get(*adt_id).map(|x| &x.kind);
+                    let Some(TypeDeclKind::Enum(variants)) = tkind else {
+                        match tkind {
+                            // This can happen if the type was declared as invisible or opaque.
+                            None | Some(TypeDeclKind::Opaque) => {
+                                let name = ctx.translated.item_name(*adt_id).unwrap();
+                                register_error!(
+                                    ctx,
+                                    block.span,
+                                    "reading the discriminant of an opaque enum. \
+                                    Add `--include {}` to the `charon` arguments \
+                                    to translate this enum.",
+                                    name.fmt_with_ctx(&ctx.into_fmt())
+                                );
+                            }
+                            // Don't double-error
+                            Some(TypeDeclKind::Error(..)) => {}
+                            Some(_) => {
+                                register_error!(
+                                    ctx,
+                                    block.span,
+                                    "reading the discriminant of a non-enum type"
+                                );
+                            }
+                        }
+                        block.statements[i].content = RawStatement::Error(
+                            "error reading the discriminant of this type".to_owned(),
                         );
-                        None
-                    }
-                    Some(TypeDecl {
-                        kind:
-                            TypeDeclKind::Struct(..) | TypeDeclKind::Union(..) | TypeDeclKind::Alias(..),
-                        ..
-                    }) => {
-                        register_error!(
-                            ctx,
-                            block.span,
-                            "reading the discriminant of a non-enum type"
-                        );
-                        None
-                    }
-                    Some(TypeDecl {
-                        kind: TypeDeclKind::Error(..),
-                        ..
-                    }) => None,
-                };
-                let Some(variants) = variants else {
-                    // An error occurred. We can't keep the `Rvalue::Discriminant` around so we
-                    // `Nop` the discriminant read.
-                    block.statements[i].content = RawStatement::Nop;
-                    return;
-                };
+                        return;
+                    };
 
-                // We look for a `SwitchInt` just after the discriminant read.
-                match rest {
-                    [Statement {
-                        content:
-                            RawStatement::Switch(switch @ Switch::SwitchInt(Operand::Move(_), ..)),
-                        ..
-                    }, ..] => {
-                        // Convert between discriminants and variant indices. Remark: the discriminant can
-                        // be of any *signed* integer type (`isize`, `i8`, etc.).
-                        let discr_to_id: HashMap<ScalarValue, VariantId> = variants
-                            .iter_indexed_values()
-                            .map(|(id, variant)| (variant.discriminant, id))
-                            .collect();
+                    // We look for a `SwitchInt` just after the discriminant read.
+                    match rest {
+                        [Statement {
+                            content:
+                                RawStatement::Switch(switch @ Switch::SwitchInt(Operand::Move(_), ..)),
+                            ..
+                        }, ..] => {
+                            // Convert between discriminants and variant indices. Remark: the discriminant can
+                            // be of any *signed* integer type (`isize`, `i8`, etc.).
+                            let discr_to_id: HashMap<ScalarValue, VariantId> = variants
+                                .iter_indexed_values()
+                                .map(|(id, variant)| (variant.discriminant, id))
+                                .collect();
 
-                        take_mut::take(switch, |switch| {
-                            let (Operand::Move(op_p), _, targets, otherwise) =
-                                switch.to_switch_int().unwrap()
-                            else {
-                                unreachable!()
-                            };
-                            assert!(op_p.is_local() && op_p.var_id() == dest.var_id());
+                            take_mut::take(switch, |switch| {
+                                let (Operand::Move(op_p), _, targets, otherwise) =
+                                    switch.to_switch_int().unwrap()
+                                else {
+                                    unreachable!()
+                                };
+                                assert!(op_p.is_local() && op_p.var_id() == dest.var_id());
 
-                            let mut covered_discriminants: HashSet<ScalarValue> =
-                                HashSet::default();
-                            let targets = targets
-                                .into_iter()
-                                .map(|(v, e)| {
-                                    (
-                                        v.into_iter()
+                                let mut covered_discriminants: HashSet<ScalarValue> =
+                                    HashSet::default();
+                                let targets = targets
+                                    .into_iter()
+                                    .map(|(v, e)| {
+                                        let targets = v
+                                            .into_iter()
                                             .filter_map(|discr| {
                                                 covered_discriminants.insert(discr);
                                                 discr_to_id.get(&discr).or_else(|| {
                                                     register_error!(
                                                         ctx,
                                                         block.span,
-                                                        "Found incorrect discriminant {discr} for enum {adt_id}"
+                                                        "Found incorrect discriminant \
+                                                        {discr} for enum {adt_id}"
                                                     );
                                                     None
                                                 })
                                             })
                                             .copied()
-                                            .collect_vec(),
-                                        e,
-                                    )
-                                })
-                                .collect_vec();
-                            // Filter the otherwise branch if it is not necessary.
-                            let covers_all = covered_discriminants.len() == discr_to_id.len();
-                            let otherwise = if covers_all { None } else { Some(otherwise) };
+                                            .collect_vec();
+                                        (targets, e)
+                                    })
+                                    .collect_vec();
+                                // Filter the otherwise branch if it is not necessary.
+                                let covers_all = covered_discriminants.len() == discr_to_id.len();
+                                let otherwise = if covers_all { None } else { Some(otherwise) };
 
-                            // Replace the old switch with a match.
-                            Switch::Match(p.clone(), targets, otherwise)
-                        });
-                        // `Nop` the discriminant read.
-                        block.statements[i].content = RawStatement::Nop;
-                    }
-                    _ => {
-                        // The discriminant read is not followed by a `SwitchInt`. This can happen
-                        // in optimized MIR. We replace `_x = Discr(_y)` with `match _y { 0 => { _x
-                        // = 0 }, 1 => { _x = 1; }, .. }`.
-                        let targets = variants
-                            .iter_indexed_values()
-                            .map(|(id, variant)| {
-                                let discr_value =
-                                    Rvalue::Use(Operand::Const(variant.discriminant.to_constant()));
-                                let statement = Statement::new(
-                                    *span1,
-                                    RawStatement::Assign(dest.clone(), discr_value),
-                                );
-                                (vec![id], statement.into_block())
-                            })
-                            .collect();
-                        block.statements[i].content =
-                            RawStatement::Switch(Switch::Match(p.clone(), targets, None))
+                                // Replace the old switch with a match.
+                                Switch::Match(p.clone(), targets, otherwise)
+                            });
+                            // `Nop` the discriminant read.
+                            block.statements[i].content = RawStatement::Nop;
+                        }
+                        _ => {
+                            // The discriminant read is not followed by a `SwitchInt`. This can happen
+                            // in optimized MIR. We replace `_x = Discr(_y)` with `match _y { 0 => { _x
+                            // = 0 }, 1 => { _x = 1; }, .. }`.
+                            block.statements[i].content =
+                                generate_discr_assignment(*span1, variants, p, dest)
+                        }
                     }
                 }
+                // Replace calls of `core::intrinsics::discriminant_value` on a known enum with the
+                // appropriate MIR.
+                [Statement {
+                    content: RawStatement::Call(call),
+                    span: span1,
+                    ..
+                }, ..]
+                    if let Some(discriminant_intrinsic) = discriminant_intrinsic
+                        // Detect a call to the intrinsic...
+                        && let FnOperand::Regular(fn_ptr) = &call.func
+                        && let FunIdOrTraitMethodRef::Fun(FunId::Regular(fun_id)) = fn_ptr.func
+                        && fun_id == discriminant_intrinsic
+                        // on a known enum...
+                        && let ty = &fn_ptr.generics.types[0]
+                        && let TyKind::Adt(TypeId::Adt(type_id), _) = *ty.kind()
+                        && let Some(TypeDeclKind::Enum(variants)) =
+                            ctx.translated.type_decls.get(type_id).map(|x| &x.kind)
+                        // passing it a reference.
+                        && let Operand::Move(p) = &call.args[0]
+                        && let TyKind::Ref(_, sub_ty, _) = p.ty().kind() =>
+                {
+                    let p = p.clone().project(ProjectionElem::Deref, sub_ty.clone());
+                    block.statements[i].content =
+                        generate_discr_assignment(*span1, variants, &p, &call.dest)
+                }
+                _ => {}
             }
         }
     }
 }
 
+const DISCRIMINANT_INTRINSIC: &str = "core::intrinsics::discriminant_value";
+
 impl LlbcPass for Transform {
-    fn transform_body(&self, ctx: &mut TransformCtx, b: &mut ExprBody) {
-        b.body.visit_blocks_bwd(|block: &mut Block| {
-            Transform::update_block(ctx, block);
+    fn transform_ctx(&self, ctx: &mut TransformCtx) {
+        let pat = NamePattern::parse(DISCRIMINANT_INTRINSIC).unwrap();
+        let discriminant_intrinsic: Option<FunDeclId> = ctx
+            .translated
+            .item_names
+            .iter()
+            .find(|(_, name)| pat.matches(&ctx.translated, name))
+            .and_then(|(id, _)| id.as_fun())
+            .copied();
+
+        ctx.for_each_fun_decl(|ctx, decl| {
+            if let Ok(body) = &mut decl.body {
+                let body = body.as_structured_mut().unwrap();
+                self.log_before_body(ctx, &decl.item_meta.name, Ok(&*body));
+                body.body.visit_blocks_bwd(|block: &mut Block| {
+                    Transform::update_block(ctx, block, discriminant_intrinsic);
+                });
+            };
         });
     }
 }

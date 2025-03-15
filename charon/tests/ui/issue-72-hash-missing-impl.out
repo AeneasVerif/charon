@@ -1,19 +1,20 @@
 # Final LLBC before serialization:
 
-trait test_crate::Hasher<Self>
+pub trait test_crate::Hasher<Self>
 
-struct test_crate::DefaultHasher = {}
+pub struct test_crate::DefaultHasher = {}
 
 impl test_crate::{impl test_crate::Hasher for test_crate::DefaultHasher} : test_crate::Hasher<test_crate::DefaultHasher>
 
-trait core::marker::Sized<Self>
+#[lang_item("sized")]
+pub trait core::marker::Sized<Self>
 
-trait test_crate::Hash<Self>
+pub trait test_crate::Hash<Self>
 {
     fn hash<'_0, '_1, H, [@TraitClause0]: core::marker::Sized<H>, [@TraitClause1]: test_crate::Hasher<H>> = test_crate::Hash::hash<'_0_0, '_0_1, Self, H>[@TraitClause0_0, @TraitClause0_1]
 }
 
-fn test_crate::{impl test_crate::Hash for u32}#1::hash<'_0, '_1, H>(@1: &'_0 (u32), @2: &'_1 mut (H))
+pub fn test_crate::{impl test_crate::Hash for u32}#1::hash<'_0, '_1, H>(@1: &'_0 (u32), @2: &'_1 mut (H))
 where
     [@TraitClause0]: core::marker::Sized<H>,
     [@TraitClause1]: test_crate::Hasher<H>,
@@ -38,21 +39,24 @@ fn test_crate::main()
     let hasher@1: test_crate::DefaultHasher; // local
     let @2: (); // anonymous local
     let @3: &'_ (u32); // anonymous local
-    let @4: u32; // anonymous local
+    let @4: &'_ mut (test_crate::DefaultHasher); // anonymous local
     let @5: &'_ mut (test_crate::DefaultHasher); // anonymous local
-    let @6: &'_ mut (test_crate::DefaultHasher); // anonymous local
+    let @6: &'_ (u32); // anonymous local
+    let @7: u32; // anonymous local
+    let @8: &'_ (u32); // anonymous local
 
     hasher@1 := test_crate::DefaultHasher {  }
     @fake_read(hasher@1)
-    @4 := const (0 : u32)
-    @3 := &@4
-    @6 := &mut hasher@1
-    @5 := &two-phase-mut *(@6)
-    @2 := test_crate::{impl test_crate::Hash for u32}#1::hash<'_, '_, test_crate::DefaultHasher>[core::marker::Sized<test_crate::DefaultHasher>, test_crate::{impl test_crate::Hasher for test_crate::DefaultHasher}](move (@3), move (@5))
-    drop @5
-    drop @3
-    drop @6
+    @7 := const (0 : u32)
+    @8 := &@7
+    @6 := move (@8)
+    @3 := &*(@6)
+    @5 := &mut hasher@1
+    @4 := &two-phase-mut *(@5)
+    @2 := test_crate::{impl test_crate::Hash for u32}#1::hash<'_, '_, test_crate::DefaultHasher>[core::marker::Sized<test_crate::DefaultHasher>, test_crate::{impl test_crate::Hasher for test_crate::DefaultHasher}](move (@3), move (@4))
     drop @4
+    drop @3
+    drop @5
     drop @2
     @0 := ()
     drop hasher@1
@@ -60,7 +64,7 @@ fn test_crate::main()
     return
 }
 
-fn test_crate::Hash::hash<'_0, '_1, Self, H>(@1: &'_0 (Self), @2: &'_1 mut (H))
+pub fn test_crate::Hash::hash<'_0, '_1, Self, H>(@1: &'_0 (Self), @2: &'_1 mut (H))
 where
     [@TraitClause0]: core::marker::Sized<H>,
     [@TraitClause1]: test_crate::Hasher<H>,

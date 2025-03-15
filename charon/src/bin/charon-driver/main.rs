@@ -4,6 +4,7 @@
 #![expect(incomplete_features)]
 #![feature(box_patterns)]
 #![feature(deref_patterns)]
+#![feature(if_let_guard)]
 #![feature(iter_array_chunks)]
 #![feature(iterator_try_collect)]
 #![feature(let_chains)]
@@ -31,11 +32,9 @@ use crate::driver::{
     arg_values, get_args_crate_index, get_args_source_index, CharonCallbacks, CharonFailure,
     RunCompilerNormallyCallbacks,
 };
-use charon_lib::logger;
-use charon_lib::options;
-use charon_lib::trace;
+use charon_lib::{logger, options};
 use itertools::Itertools;
-use std::panic;
+use std::{env, panic};
 
 fn main() {
     // Initialize the logger
@@ -43,58 +42,32 @@ fn main() {
 
     // Retrieve the executable path - this is not considered an argument,
     // and won't be parsed by CliOpts
-    let origin_args: Vec<String> = std::env::args().collect();
+    let origin_args: Vec<String> = env::args().collect();
     assert!(
         !origin_args.is_empty(),
         "Impossible: zero arguments on the command-line!"
     );
     trace!("original arguments (computed by cargo): {:?}", origin_args);
 
-    // Compute the sysroot (the path to the executable of the compiler):
-    // - if it is already in the command line arguments, just retrieve it from there
-    // - otherwise retrieve the sysroot from a call to rustc
-    let sysroot_arg = arg_values(&origin_args, "--sysroot").next();
-    let has_sysroot_arg = sysroot_arg.is_some();
-    let sysroot = if has_sysroot_arg {
-        sysroot_arg.unwrap().to_string()
-    } else {
-        let out = std::process::Command::new("rustc")
-            .arg("--print=sysroot")
-            .current_dir(".")
-            .output()
-            .unwrap();
-        let sysroot = std::str::from_utf8(&out.stdout).unwrap().trim();
-        sysroot.to_string()
-    };
-
     // Compute the compiler arguments for Rustc.
     // We first use all the arguments received by charon-driver, except the first two.
     // Rem.: the first argument is the path to the charon-driver executable.
     // Rem.: the second argument is "rustc" (passed by Cargo because RUSTC_WRAPPER is set).
-    assert!(origin_args[1].ends_with("rustc"));
+    assert_eq!(
+        std::path::Path::new(&origin_args[1]).file_stem(),
+        Some("rustc".as_ref()),
+        "The second argument for charon-driver must be a path to rustc."
+    );
     let mut compiler_args: Vec<String> = origin_args[2..].to_vec();
 
     // Retrieve the Charon options by deserializing them from the environment variable
     // (cargo-charon serialized the arguments and stored them in a specific environment
     // variable before calling cargo with RUSTC_WORKSPACE_WRAPPER=charon-driver).
-    let options: options::CliOpts = match std::env::var(options::CHARON_ARGS) {
+    let options: options::CliOpts = match env::var(options::CHARON_ARGS) {
         Ok(opts) => serde_json::from_str(opts.as_str()).unwrap(),
-        Err(_) => {
-            // Parse any arguments after `--` as charon arguments.
-            if let Some((i, _)) = compiler_args.iter().enumerate().find(|(_, s)| *s == "--") {
-                use clap::Parser;
-                let mut charon_args = compiler_args.split_off(i);
-                charon_args[0] = origin_args[0].clone(); // Replace `--` with the name of the binary
-                options::CliOpts::parse_from(charon_args)
-            } else {
-                Default::default()
-            }
-        }
+        Err(_) => Default::default(),
     };
 
-    if !has_sysroot_arg {
-        compiler_args.extend(vec!["--sysroot".to_string(), sysroot.clone()]);
-    }
     if options.use_polonius {
         compiler_args.push("-Zpolonius".to_string());
     }
@@ -109,8 +82,8 @@ fn main() {
     // workspace. We may however not want to be calling charon on all crates;
     // `CARGO_PRIMARY_PACKAGE` tells us whether the crate was specifically selected or is a
     // dependency.
-    let is_workspace_dependency = std::env::var("CHARON_USING_CARGO").is_ok()
-        && !std::env::var("CARGO_PRIMARY_PACKAGE").is_ok();
+    let is_workspace_dependency =
+        env::var("CHARON_USING_CARGO").is_ok() && !env::var("CARGO_PRIMARY_PACKAGE").is_ok();
     // Determines if we are being invoked to build a crate for the "target" architecture, in
     // contrast to the "host" architecture. Host crates are for build scripts and proc macros and
     // still need to be built like normal; target crates need to be processed by Charon.
@@ -247,7 +220,7 @@ fn main() {
     trace!("Compiler arguments: {:?}", compiler_args);
 
     // Call the Rust compiler with our custom callback.
-    let mut callback = CharonCallbacks::new(options, sysroot.into());
+    let mut callback = CharonCallbacks::new(options);
     let mut callback_ = panic::AssertUnwindSafe(&mut callback);
     let res = panic::catch_unwind(move || callback_.run_compiler(compiler_args))
         .map_err(|_| CharonFailure::Panic)

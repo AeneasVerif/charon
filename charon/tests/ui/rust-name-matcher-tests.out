@@ -9,7 +9,8 @@ fn test_crate::foo::bar()
     return
 }
 
-trait core::marker::Sized<Self>
+#[lang_item("sized")]
+pub trait core::marker::Sized<Self>
 
 trait test_crate::Trait<Self, T>
 {
@@ -17,9 +18,11 @@ trait test_crate::Trait<Self, T>
     fn method<U, [@TraitClause0]: core::marker::Sized<U>> = test_crate::Trait::method<Self, T, U>[@TraitClause0_0]
 }
 
-struct alloc::alloc::Global = {}
+#[lang_item("global_alloc_ty")]
+pub struct alloc::alloc::Global = {}
 
-enum core::option::Option<T>
+#[lang_item("Option")]
+pub enum core::option::Option<T>
   where
       [@TraitClause0]: core::marker::Sized<T>,
  =
@@ -39,7 +42,7 @@ where
     return
 }
 
-impl<T> test_crate::{impl test_crate::Trait<core::option::Option<T>[@TraitClause0]> for alloc::boxed::Box<T>[core::marker::Sized<alloc::alloc::Global>]}<T> : test_crate::Trait<alloc::boxed::Box<T>[core::marker::Sized<alloc::alloc::Global>], core::option::Option<T>[@TraitClause0]>
+impl test_crate::{impl test_crate::Trait<core::option::Option<T>[@TraitClause0]> for alloc::boxed::Box<T>[core::marker::Sized<alloc::alloc::Global>]}<T> : test_crate::Trait<alloc::boxed::Box<T>[core::marker::Sized<alloc::alloc::Global>], core::option::Option<T>[@TraitClause0]>
 where
     [@TraitClause0]: core::marker::Sized<T>,
 {
@@ -59,7 +62,7 @@ where
     return
 }
 
-impl<T> test_crate::{impl test_crate::Trait<T> for Slice<T>}#1<T> : test_crate::Trait<Slice<T>, T>
+impl test_crate::{impl test_crate::Trait<T> for Slice<T>}#1<T> : test_crate::Trait<Slice<T>, T>
 where
     [@TraitClause0]: core::marker::Sized<T>,
 {
@@ -79,7 +82,7 @@ where
     return
 }
 
-impl<'_0, T> test_crate::{impl test_crate::Trait<T> for &'_0 (Slice<T>)}#2<'_0, T> : test_crate::Trait<&'_0 (Slice<T>), T>
+impl test_crate::{impl test_crate::Trait<T> for &'_0 (Slice<T>)}#2<'_0, T> : test_crate::Trait<&'_0 (Slice<T>), T>
 where
     [@TraitClause0]: core::marker::Sized<T>,
 {

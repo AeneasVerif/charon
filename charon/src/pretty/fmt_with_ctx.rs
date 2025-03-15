@@ -501,6 +501,7 @@ where
 
 impl<C> FmtWithCtx<C> for FunDecl
 where
+    C: AstFormatter,
     // For the signature
     C: for<'a> SetGenerics<'a>,
     for<'a> <C as SetGenerics<'a>>::C: AstFormatter,
@@ -509,18 +510,15 @@ where
     for<'a, 'b> <<C as SetGenerics<'a>>::C as SetLocals<'b>>::C: AstFormatter,
 {
     fn fmt_with_ctx_and_indent(&self, tab: &str, ctx: &C) -> String {
+        let keyword = if self.signature.is_unsafe {
+            "unsafe fn"
+        } else {
+            "fn"
+        };
+        let intro = self.item_meta.fmt_item_intro(ctx, tab, keyword);
+
         // Update the context
         let ctx = &ctx.set_generics(&self.signature.generics);
-
-        // Unsafe keyword
-        let unsafe_kw = if self.signature.is_unsafe {
-            "unsafe ".to_string()
-        } else {
-            "".to_string()
-        };
-
-        // Function name
-        let name = self.item_meta.name.fmt_with_ctx(ctx);
 
         // Generic parameters
         let (params, preds) = self
@@ -558,7 +556,7 @@ where
         };
 
         // Put everything together
-        format!("{tab}{unsafe_kw}fn {name}{params}({args}){ret_ty}{preds}{body}",)
+        format!("{intro}{params}({args}){ret_ty}{preds}{body}",)
     }
 }
 
@@ -579,6 +577,8 @@ where
     for<'a, 'b, 'c> <<C as SetGenerics<'a>>::C as SetLocals<'b>>::C: AstFormatter,
 {
     fn fmt_with_ctx_and_indent(&self, tab: &str, ctx: &C) -> String {
+        let intro = self.item_meta.fmt_item_intro(ctx, tab, "global");
+
         // Update the context with the generics
         let ctx = &ctx.set_generics(&self.generics);
 
@@ -594,11 +594,10 @@ where
         };
 
         // Decl name
-        let name = self.item_meta.name.fmt_with_ctx(ctx);
         let initializer = ctx.format_object(self.init);
 
         // Put everything together
-        format!("{tab}global {name}{params}: {ty}{preds}{eq_space}= {initializer}()")
+        format!("{intro}{params}: {ty}{preds}{eq_space}= {initializer}()")
     }
 }
 
@@ -613,6 +612,23 @@ impl<C: AstFormatter> FmtWithCtx<C> for GlobalDeclRef {
 impl<C: AstFormatter> FmtWithCtx<C> for ImplElem {
     fn fmt_with_ctx(&self, ctx: &C) -> String {
         ctx.format_object(self)
+    }
+}
+
+impl ItemMeta {
+    /// Format the start of an item definition, up to the name.
+    pub fn fmt_item_intro<C>(&self, ctx: &C, tab: &str, keyword: &str) -> String
+    where
+        C: AstFormatter,
+    {
+        let name = self.name.fmt_with_ctx(ctx);
+        let vis = if self.attr_info.public { "pub " } else { "" };
+        let lang_item = self
+            .lang_item
+            .as_ref()
+            .map(|id| format!("{tab}#[lang_item(\"{id}\")]\n"))
+            .unwrap_or_default();
+        format!("{lang_item}{tab}{vis}{keyword} {name}")
     }
 }
 
@@ -781,6 +797,10 @@ impl<C: AstFormatter> FmtWithCtx<C> for RawConstantExpr {
                 let values: Vec<String> = values.iter().map(|v| v.fmt_with_ctx(ctx)).collect();
                 format!("ConstAdt {} [{}]", variant_id, values.join(", "))
             }
+            RawConstantExpr::Array(values) => {
+                let values = values.iter().map(|v| v.fmt_with_ctx(ctx)).format(", ");
+                format!("[{}]", values)
+            }
             RawConstantExpr::Global(global_ref) => global_ref.fmt_with_ctx(ctx),
             RawConstantExpr::TraitConst(trait_ref, name) => {
                 format!("{}::{name}", trait_ref.fmt_with_ctx(ctx),)
@@ -925,8 +945,8 @@ impl<C: AstFormatter> FmtWithCtx<C> for Rvalue {
                             }
                         }
                     }
-                    AggregateKind::Array(_, len) => {
-                        format!("[{}; {}]", ops_s.join(", "), len.fmt_with_ctx(ctx))
+                    AggregateKind::Array(..) => {
+                        format!("[{}]", ops_s.join(", "))
                     }
                     AggregateKind::Closure(fn_id, generics) => {
                         format!(
@@ -1192,10 +1212,11 @@ impl<C: AstFormatter> FmtWithCtx<C> for TraitClause {
 
 impl<C: AstFormatter> FmtWithCtx<C> for TraitDecl {
     fn fmt_with_ctx(&self, ctx: &C) -> String {
+        let intro = self.item_meta.fmt_item_intro(ctx, "", "trait");
+
         // Update the context
         let ctx = &ctx.set_generics(&self.generics);
 
-        let name = self.item_meta.name.fmt_with_ctx(ctx);
         let (generics, clauses) = self.generics.fmt_with_ctx_with_trait_clauses(ctx, "");
 
         let items = {
@@ -1242,7 +1263,7 @@ impl<C: AstFormatter> FmtWithCtx<C> for TraitDecl {
             }
         };
 
-        format!("trait {name}{generics}{clauses}{items}")
+        format!("{intro}{generics}{clauses}{items}")
     }
 }
 
@@ -1256,10 +1277,11 @@ impl<C: AstFormatter> FmtWithCtx<C> for TraitDeclRef {
 
 impl<C: AstFormatter> FmtWithCtx<C> for TraitImpl {
     fn fmt_with_ctx(&self, ctx: &C) -> String {
+        let intro = self.item_meta.fmt_item_intro(ctx, "", "impl");
+
         // Update the context
         let ctx = &ctx.set_generics(&self.generics);
 
-        let name = self.item_meta.name.fmt_with_ctx(ctx);
         let (generics, clauses) = self.generics.fmt_with_ctx_with_trait_clauses(ctx, "");
 
         let items = {
@@ -1306,7 +1328,7 @@ impl<C: AstFormatter> FmtWithCtx<C> for TraitImpl {
         };
 
         let impl_trait = self.impl_trait.fmt_with_ctx(ctx);
-        format!("impl{generics} {name}{generics} : {impl_trait}{clauses}{items}")
+        format!("{intro}{generics} : {impl_trait}{clauses}{items}")
     }
 }
 
@@ -1437,32 +1459,35 @@ impl<C: AstFormatter> FmtWithCtx<C> for Ty {
 
 impl<C: AstFormatter> FmtWithCtx<C> for TypeDecl {
     fn fmt_with_ctx(&self, ctx: &C) -> String {
+        let keyword = match &self.kind {
+            TypeDeclKind::Struct(..) => "struct",
+            TypeDeclKind::Union(..) => "union",
+            TypeDeclKind::Enum(..) => "enum",
+            TypeDeclKind::Alias(..) => "type",
+            TypeDeclKind::Opaque | TypeDeclKind::Error(..) => "opaque type",
+        };
+        let intro = self.item_meta.fmt_item_intro(ctx, "", keyword);
+
         let ctx = &ctx.set_generics(&self.generics);
         let id = self.def_id;
         let (params, preds) = self.generics.fmt_with_ctx_with_trait_clauses(ctx, "  ");
         // Predicates
-        let eq_space = if !self.generics.has_predicates() {
+        let nl_or_space = if !self.generics.has_predicates() {
             " ".to_string()
         } else {
             "\n ".to_string()
         };
 
-        match &self.kind {
+        let contents = match &self.kind {
             TypeDeclKind::Struct(fields) => {
                 if !fields.is_empty() {
                     let fields = fields
                         .iter()
                         .map(|f| format!("\n  {},", f.fmt_with_ctx(ctx)))
                         .format("");
-                    format!(
-                        "struct {}{params}{preds}{eq_space}= // #{id}\n{{{fields}\n}}",
-                        self.item_meta.name.fmt_with_ctx(ctx)
-                    )
+                    format!("{nl_or_space}=\n{{{fields}\n}}")
                 } else {
-                    format!(
-                        "struct {}{params}{preds}{eq_space}= {{}} // #{id}",
-                        self.item_meta.name.fmt_with_ctx(ctx)
-                    )
+                    format!("{nl_or_space}= {{}}")
                 }
             }
             TypeDeclKind::Union(fields) => {
@@ -1470,41 +1495,20 @@ impl<C: AstFormatter> FmtWithCtx<C> for TypeDecl {
                     .iter()
                     .map(|f| format!("\n  {},", f.fmt_with_ctx(ctx)))
                     .format("");
-                format!(
-                    "union {}{params}{preds}{eq_space}= // #{id}\n{{{fields}\n}}",
-                    self.item_meta.name.fmt_with_ctx(ctx)
-                )
+                format!("{nl_or_space}=\n{{{fields}\n}}")
             }
             TypeDeclKind::Enum(variants) => {
                 let variants = variants
                     .iter()
                     .map(|v| format!("|  {}", v.fmt_with_ctx(ctx)))
                     .format("\n");
-                format!(
-                    "enum {}{params}{preds}{eq_space}= // #{id}\n{variants}\n",
-                    self.item_meta.name.fmt_with_ctx(ctx)
-                )
+                format!("{nl_or_space}=\n{variants}\n")
             }
-            TypeDeclKind::Alias(ty) => {
-                format!(
-                    "type {}{params}{preds} = {} // #{id}",
-                    self.item_meta.name.fmt_with_ctx(ctx),
-                    ty.fmt_with_ctx(ctx),
-                )
-            }
-            TypeDeclKind::Opaque => {
-                format!(
-                    "opaque type {}{params}{preds} // #{id}",
-                    self.item_meta.name.fmt_with_ctx(ctx)
-                )
-            }
-            TypeDeclKind::Error(msg) => {
-                format!(
-                    "opaque type {}{params}{preds} = ERROR({msg}) // #{id}",
-                    self.item_meta.name.fmt_with_ctx(ctx),
-                )
-            }
-        }
+            TypeDeclKind::Alias(ty) => format!(" = {}", ty.fmt_with_ctx(ctx)),
+            TypeDeclKind::Opaque => format!(""),
+            TypeDeclKind::Error(msg) => format!(" = ERROR({msg})"),
+        };
+        format!("{intro}{params}{preds}{contents}")
     }
 }
 
@@ -1689,7 +1693,7 @@ impl std::fmt::Display for Literal {
             Literal::Float(v) => write!(f, "{v}"),
             Literal::Bool(v) => write!(f, "{v}"),
             Literal::Char(v) => write!(f, "{v}"),
-            Literal::Str(v) => write!(f, "\"{v}\""),
+            Literal::Str(v) => write!(f, "\"{}\"", v.replace("\\", "\\\\").replace("\n", "\\n")),
             Literal::ByteStr(v) => write!(f, "{v:?}"),
         }
     }

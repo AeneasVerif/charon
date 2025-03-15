@@ -1,15 +1,16 @@
 # Final LLBC before serialization:
 
-trait core::marker::Sized<Self>
+#[lang_item("sized")]
+pub trait core::marker::Sized<Self>
 
-trait test_crate::Trait1<Self>
+pub trait test_crate::Trait1<Self>
 {
     parent_clause0 : [@TraitClause0]: core::marker::Sized<Self::T>
     parent_clause1 : [@TraitClause1]: test_crate::Trait2<Self::T>
     type T
 }
 
-trait test_crate::Trait2<Self>
+pub trait test_crate::Trait2<Self>
 {
     parent_clause0 : [@TraitClause0]: test_crate::Trait1<Self>
     parent_clause1 : [@TraitClause1]: core::marker::Sized<Self::U>

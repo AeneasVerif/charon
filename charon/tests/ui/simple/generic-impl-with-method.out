@@ -1,13 +1,14 @@
 # Final LLBC before serialization:
 
-trait test_crate::Trait<Self>
+pub trait test_crate::Trait<Self>
 {
     fn method<'_0> = test_crate::Trait::method<'_0_0, Self>
 }
 
-trait core::marker::Sized<Self>
+#[lang_item("sized")]
+pub trait core::marker::Sized<Self>
 
-fn test_crate::{impl test_crate::Trait for T}::method<'_0, T>(@1: &'_0 (T))
+pub fn test_crate::{impl test_crate::Trait for T}::method<'_0, T>(@1: &'_0 (T))
 where
     [@TraitClause0]: core::marker::Sized<T>,
 {
@@ -19,14 +20,14 @@ where
     return
 }
 
-impl<T> test_crate::{impl test_crate::Trait for T}<T> : test_crate::Trait<T>
+impl test_crate::{impl test_crate::Trait for T}<T> : test_crate::Trait<T>
 where
     [@TraitClause0]: core::marker::Sized<T>,
 {
     fn method<'_0> = test_crate::{impl test_crate::Trait for T}::method<'_0_0, T>[@TraitClause0]
 }
 
-fn test_crate::Trait::method<'_0, Self>(@1: &'_0 (Self))
+pub fn test_crate::Trait::method<'_0, Self>(@1: &'_0 (Self))
 
 
 

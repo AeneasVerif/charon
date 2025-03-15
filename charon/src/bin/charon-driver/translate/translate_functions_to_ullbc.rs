@@ -432,7 +432,7 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
             }
             hax::Operand::Constant(const_op) => {
                 let constant =
-                    self.translate_constant_expr_to_constant_expr(span, &const_op.const_)?;
+                    self.translate_constant_expr_to_constant_expr(span, &const_op.evaluated)?;
                 let ty = constant.ty.clone();
                 Ok((Operand::Const(constant), ty))
             }
@@ -996,12 +996,17 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
                 let target = self.translate_basic_block_id(*target);
                 RawTerminator::Goto { target }
             }
-            TerminatorKind::SwitchInt { discr, targets } => {
+            TerminatorKind::SwitchInt {
+                discr,
+                targets,
+                otherwise,
+                ..
+            } => {
                 // Translate the operand which gives the discriminant
                 let (discr, discr_ty) = self.translate_operand_with_type(span, discr)?;
 
                 // Translate the switch targets
-                let targets = self.translate_switch_targets(&discr_ty, targets)?;
+                let targets = self.translate_switch_targets(span, &discr_ty, targets, otherwise)?;
 
                 RawTerminator::Switch { discr, targets }
             }
@@ -1096,19 +1101,25 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
     /// Translate switch targets
     fn translate_switch_targets(
         &mut self,
+        span: Span,
         switch_ty: &Ty,
-        targets: &hax::SwitchTargets,
+        targets: &[(hax::ScalarInt, hax::BasicBlock)],
+        otherwise: &hax::BasicBlock,
     ) -> Result<SwitchTargets, Error> {
         trace!("targets: {:?}", targets);
-        match targets {
-            hax::SwitchTargets::If(if_block, then_block) => {
-                let if_block = self.translate_basic_block_id(*if_block);
-                let then_block = self.translate_basic_block_id(*then_block);
+        let switch_ty = *switch_ty.kind().as_literal().unwrap();
+        match switch_ty {
+            LiteralTy::Bool => {
+                assert_eq!(targets.len(), 1);
+                let (val, target) = targets.first().unwrap();
+                // It seems the block targets are inverted
+                assert_eq!(val.data_le_bytes, [0; 16]);
+                let if_block = self.translate_basic_block_id(*otherwise);
+                let then_block = self.translate_basic_block_id(*target);
                 Ok(SwitchTargets::If(if_block, then_block))
             }
-            hax::SwitchTargets::SwitchInt(_, targets_map, otherwise) => {
-                let int_ty = *switch_ty.kind().as_literal().unwrap().as_integer().unwrap();
-                let targets_map: Vec<(ScalarValue, BlockId)> = targets_map
+            LiteralTy::Integer(int_ty) => {
+                let targets: Vec<(ScalarValue, BlockId)> = targets
                     .iter()
                     .map(|(v, tgt)| {
                         let v = ScalarValue::from_le_bytes(int_ty, v.data_le_bytes);
@@ -1117,8 +1128,9 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
                     })
                     .try_collect()?;
                 let otherwise = self.translate_basic_block_id(*otherwise);
-                Ok(SwitchTargets::SwitchInt(int_ty, targets_map, otherwise))
+                Ok(SwitchTargets::SwitchInt(int_ty, targets, otherwise))
             }
+            _ => raise_error!(self, span, "Can't match on type {switch_ty}"),
         }
     }
 

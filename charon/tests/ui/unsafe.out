@@ -1,12 +1,14 @@
 # Final LLBC before serialization:
 
-fn core::ptr::null<T>() -> *const T
+#[lang_item("ptr_null")]
+pub fn core::ptr::null<T>() -> *const T
 where
     [@TraitClause0]: core::ptr::metadata::Thin<T>,
 
-trait core::marker::Sized<Self>
+#[lang_item("sized")]
+pub trait core::marker::Sized<Self>
 
-unsafe fn core::ptr::const_ptr::{*const T}::read<T>(@1: *const T) -> T
+pub unsafe fn core::ptr::const_ptr::{*const T}::read<T>(@1: *const T) -> T
 where
     [@TraitClause0]: core::marker::Sized<T>,
 
@@ -99,7 +101,7 @@ fn test_crate::access_union_field()
     return
 }
 
-unsafe fn core::intrinsics::assume(@1: bool)
+pub unsafe fn core::intrinsics::assume(@1: bool)
 
 fn test_crate::assume()
 {

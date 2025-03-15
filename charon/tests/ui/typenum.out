@@ -1,18 +1,18 @@
 # Final LLBC before serialization:
 
-struct test_crate::UInt<U, B> =
+pub struct test_crate::UInt<U, B> =
 {
   U,
   B,
 }
 
-struct test_crate::UTerm = {}
+pub struct test_crate::UTerm = {}
 
-struct test_crate::B0 = {}
+pub struct test_crate::B0 = {}
 
-type test_crate::LongType = test_crate::UInt<test_crate::UInt<test_crate::UInt<test_crate::UInt<test_crate::UInt<test_crate::UInt<test_crate::UInt<test_crate::UInt<test_crate::UInt<test_crate::UTerm, test_crate::B0>, test_crate::B0>, test_crate::B0>, test_crate::B0>, test_crate::B0>, test_crate::B0>, test_crate::B0>, test_crate::B0>, test_crate::B0>
+pub type test_crate::LongType = test_crate::UInt<test_crate::UInt<test_crate::UInt<test_crate::UInt<test_crate::UInt<test_crate::UInt<test_crate::UInt<test_crate::UInt<test_crate::UInt<test_crate::UTerm, test_crate::B0>, test_crate::B0>, test_crate::B0>, test_crate::B0>, test_crate::B0>, test_crate::B0>, test_crate::B0>, test_crate::B0>, test_crate::B0>
 
-fn test_crate::foo<T>()
+pub fn test_crate::foo<T>()
 {
     let @0: (); // return
 
@@ -21,7 +21,7 @@ fn test_crate::foo<T>()
     return
 }
 
-fn test_crate::main()
+pub fn test_crate::main()
 {
     let @0: (); // return
     let @1: (); // anonymous local

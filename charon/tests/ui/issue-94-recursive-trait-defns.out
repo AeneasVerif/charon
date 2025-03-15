@@ -1,8 +1,9 @@
 # Final LLBC before serialization:
 
-trait core::marker::Sized<Self>
+#[lang_item("sized")]
+pub trait core::marker::Sized<Self>
 
-trait test_crate::Trait1<Self>
+pub trait test_crate::Trait1<Self>
 {
     parent_clause0 : [@TraitClause0]: core::marker::Sized<Self>
     parent_clause1 : [@TraitClause1]: core::marker::Sized<Self::T>
@@ -10,45 +11,45 @@ trait test_crate::Trait1<Self>
     type T
 }
 
-trait test_crate::Trait2<Self>
+pub trait test_crate::Trait2<Self>
 {
     parent_clause0 : [@TraitClause0]: test_crate::Trait1<Self>
 }
 
-trait test_crate::T1<Self, T>
+pub trait test_crate::T1<Self, T>
 {
     parent_clause0 : [@TraitClause0]: core::marker::Sized<Self>
     parent_clause1 : [@TraitClause1]: core::marker::Sized<T>
     parent_clause2 : [@TraitClause2]: test_crate::T2<T, Self>
 }
 
-trait test_crate::T2<Self, T>
+pub trait test_crate::T2<Self, T>
 {
     parent_clause0 : [@TraitClause0]: core::marker::Sized<Self>
     parent_clause1 : [@TraitClause1]: core::marker::Sized<T>
     parent_clause2 : [@TraitClause2]: test_crate::T1<T, Self>
 }
 
-trait test_crate::T3<Self>
+pub trait test_crate::T3<Self>
 {
     parent_clause0 : [@TraitClause0]: core::marker::Sized<Self::T>
     parent_clause1 : [@TraitClause1]: test_crate::T5<Self::T>
     type T
 }
 
-trait test_crate::T5<Self>
+pub trait test_crate::T5<Self>
 {
     parent_clause0 : [@TraitClause0]: core::marker::Sized<Self::T>
     parent_clause1 : [@TraitClause1]: test_crate::T4<Self::T>
     type T
 }
 
-trait test_crate::T4<Self>
+pub trait test_crate::T4<Self>
 {
     parent_clause0 : [@TraitClause0]: test_crate::T3<Self>
 }
 
-trait test_crate::T6<Self, T>
+pub trait test_crate::T6<Self, T>
 {
     parent_clause0 : [@TraitClause0]: core::marker::Sized<Self>
     parent_clause1 : [@TraitClause1]: core::marker::Sized<T>
@@ -56,15 +57,15 @@ trait test_crate::T6<Self, T>
     fn f = test_crate::T6::f<Self, T>
 }
 
-trait test_crate::T7<Self>
+pub trait test_crate::T7<Self>
 {
     parent_clause0 : [@TraitClause0]: test_crate::T6<Self, Self>
     fn g = test_crate::T7::g<Self>
 }
 
-fn test_crate::T7::g<Self>(@1: u64)
+pub fn test_crate::T7::g<Self>(@1: u64)
 
-fn test_crate::T6::f<Self, T>(@1: u64)
+pub fn test_crate::T6::f<Self, T>(@1: u64)
 {
     let @0: (); // return
     let x@1: u64; // arg #1

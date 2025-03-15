@@ -1,8 +1,8 @@
 # Final LLBC before serialization:
 
-fn foreign_constant_aux::CONSTANT() -> u8
+pub fn foreign_constant_aux::CONSTANT() -> u8
 
-global foreign_constant_aux::CONSTANT: u8 = foreign_constant_aux::CONSTANT()
+pub global foreign_constant_aux::CONSTANT: u8 = foreign_constant_aux::CONSTANT()
 
 fn test_crate::foo() -> u8
 {

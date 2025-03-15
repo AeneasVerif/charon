@@ -13,11 +13,11 @@ use std::collections::{HashMap, HashSet};
 macro_rules! register_error {
     ($ctx:expr, crate($krate:expr), $span: expr, $($fmt:tt)*) => {{
         let msg = format!($($fmt)*);
-        $ctx.span_err($krate, $span, &msg)
+        $ctx.span_err($krate, $span, &msg, $crate::errors::Level::Warning)
     }};
     ($ctx:expr, $span: expr, $($fmt:tt)*) => {{
         let msg = format!($($fmt)*);
-        $ctx.span_err($span, &msg)
+        $ctx.span_err($span, &msg, $crate::errors::Level::Warning)
     }};
 }
 pub use register_error;
@@ -227,19 +227,20 @@ impl ErrorCtx {
         error
     }
 
-    /// Report an error without registering anything.
-    pub fn span_err_no_register(&self, krate: &TranslatedCrate, span: Span, msg: String) -> Error {
-        let level = if self.error_on_warnings {
+    /// Report and register an error.
+    pub fn span_err(
+        &mut self,
+        krate: &TranslatedCrate,
+        span: Span,
+        msg: &str,
+        level: Level,
+    ) -> Error {
+        let level = if level == Level::Warning && self.error_on_warnings {
             Level::Error
         } else {
-            Level::Warning
+            level
         };
-        self.display_error(krate, span, level, msg)
-    }
-
-    /// Report and register an error.
-    pub fn span_err(&mut self, krate: &TranslatedCrate, span: Span, msg: &str) -> Error {
-        let err = self.span_err_no_register(krate, span, msg.to_string());
+        let err = self.display_error(krate, span, level, msg.to_string());
         self.error_count += 1;
         // If this item comes from an external crate, after the first error for that item we
         // display where in the local crate that item was reached from.

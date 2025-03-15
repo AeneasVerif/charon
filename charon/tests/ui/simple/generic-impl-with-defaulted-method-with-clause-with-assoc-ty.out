@@ -1,6 +1,7 @@
 # Final LLBC before serialization:
 
-trait core::marker::Sized<Self>
+#[lang_item("sized")]
+pub trait core::marker::Sized<Self>
 
 trait test_crate::HasType<Self, Self_Type>
 {
@@ -12,7 +13,8 @@ trait test_crate::HasMethod<Self>
     fn method<Clause0_Type, [@TraitClause0]: test_crate::HasType<Self, Clause0_Type>> = test_crate::HasMethod::method<Self, Clause0_Type>[@TraitClause0_0]
 }
 
-enum core::option::Option<T>
+#[lang_item("Option")]
+pub enum core::option::Option<T>
   where
       [@TraitClause0]: core::marker::Sized<T>,
  =
@@ -32,7 +34,7 @@ where
     return
 }
 
-impl<T> test_crate::{impl test_crate::HasMethod for core::option::Option<T>[@TraitClause0]}<T> : test_crate::HasMethod<core::option::Option<T>[@TraitClause0]>
+impl test_crate::{impl test_crate::HasMethod for core::option::Option<T>[@TraitClause0]}<T> : test_crate::HasMethod<core::option::Option<T>[@TraitClause0]>
 where
     [@TraitClause0]: core::marker::Sized<T>,
 {

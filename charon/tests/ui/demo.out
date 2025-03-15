@@ -1,8 +1,9 @@
 # Final LLBC before serialization:
 
-trait core::marker::Sized<Self>
+#[lang_item("sized")]
+pub trait core::marker::Sized<Self>
 
-fn test_crate::choose<'a, T>(@1: bool, @2: &'a mut (T), @3: &'a mut (T)) -> &'a mut (T)
+pub fn test_crate::choose<'a, T>(@1: bool, @2: &'a mut (T), @3: &'a mut (T)) -> &'a mut (T)
 where
     [@TraitClause0]: core::marker::Sized<T>,
 {
@@ -32,7 +33,7 @@ where
     return
 }
 
-fn test_crate::mul2_add1(@1: u32) -> u32
+pub fn test_crate::mul2_add1(@1: u32) -> u32
 {
     let @0: u32; // return
     let x@1: u32; // arg #1
@@ -50,7 +51,7 @@ fn test_crate::mul2_add1(@1: u32) -> u32
     return
 }
 
-fn test_crate::use_mul2_add1(@1: u32, @2: u32) -> u32
+pub fn test_crate::use_mul2_add1(@1: u32, @2: u32) -> u32
 {
     let @0: u32; // return
     let x@1: u32; // arg #1
@@ -69,7 +70,7 @@ fn test_crate::use_mul2_add1(@1: u32, @2: u32) -> u32
     return
 }
 
-fn test_crate::incr<'a>(@1: &'a mut (u32))
+pub fn test_crate::incr<'a>(@1: &'a mut (u32))
 {
     let @0: (); // return
     let x@1: &'_ mut (u32); // arg #1
@@ -80,7 +81,7 @@ fn test_crate::incr<'a>(@1: &'a mut (u32))
     return
 }
 
-fn test_crate::use_incr()
+pub fn test_crate::use_incr()
 {
     let @0: (); // return
     let x@1: u32; // local
@@ -120,9 +121,10 @@ fn test_crate::use_incr()
     return
 }
 
-struct alloc::alloc::Global = {}
+#[lang_item("global_alloc_ty")]
+pub struct alloc::alloc::Global = {}
 
-enum test_crate::CList<T>
+pub enum test_crate::CList<T>
   where
       [@TraitClause0]: core::marker::Sized<T>,
  =
@@ -130,7 +132,7 @@ enum test_crate::CList<T>
 |  CNil()
 
 
-fn test_crate::list_nth<'a, T>(@1: &'a (test_crate::CList<T>[@TraitClause0]), @2: u32) -> &'a (T)
+pub fn test_crate::list_nth<'a, T>(@1: &'a (test_crate::CList<T>[@TraitClause0]), @2: u32) -> &'a (T)
 where
     [@TraitClause0]: core::marker::Sized<T>,
 {
@@ -180,7 +182,7 @@ where
     return
 }
 
-fn test_crate::list_nth_mut<'a, T>(@1: &'a mut (test_crate::CList<T>[@TraitClause0]), @2: u32) -> &'a mut (T)
+pub fn test_crate::list_nth_mut<'a, T>(@1: &'a mut (test_crate::CList<T>[@TraitClause0]), @2: u32) -> &'a mut (T)
 where
     [@TraitClause0]: core::marker::Sized<T>,
 {
@@ -245,7 +247,7 @@ where
     return
 }
 
-fn test_crate::list_nth_mut1<'a, T>(@1: &'a mut (test_crate::CList<T>[@TraitClause0]), @2: u32) -> &'a mut (T)
+pub fn test_crate::list_nth_mut1<'a, T>(@1: &'a mut (test_crate::CList<T>[@TraitClause0]), @2: u32) -> &'a mut (T)
 where
     [@TraitClause0]: core::marker::Sized<T>,
 {
@@ -301,7 +303,7 @@ where
     }
 }
 
-fn test_crate::i32_id(@1: i32) -> i32
+pub fn test_crate::i32_id(@1: i32) -> i32
 {
     let @0: i32; // return
     let i@1: i32; // arg #1
@@ -331,7 +333,7 @@ fn test_crate::i32_id(@1: i32) -> i32
     return
 }
 
-fn test_crate::list_tail<'a, T>(@1: &'a mut (test_crate::CList<T>[@TraitClause0])) -> &'a mut (test_crate::CList<T>[@TraitClause0])
+pub fn test_crate::list_tail<'a, T>(@1: &'a mut (test_crate::CList<T>[@TraitClause0])) -> &'a mut (test_crate::CList<T>[@TraitClause0])
 where
     [@TraitClause0]: core::marker::Sized<T>,
 {
@@ -365,12 +367,12 @@ where
     return
 }
 
-trait test_crate::Counter<Self>
+pub trait test_crate::Counter<Self>
 {
     fn incr<'_0> = test_crate::Counter::incr<'_0_0, Self>
 }
 
-fn test_crate::{impl test_crate::Counter for usize}::incr<'_0>(@1: &'_0 mut (usize)) -> usize
+pub fn test_crate::{impl test_crate::Counter for usize}::incr<'_0>(@1: &'_0 mut (usize)) -> usize
 {
     let @0: usize; // return
     let self@1: &'_ mut (usize); // arg #1
@@ -389,9 +391,9 @@ impl test_crate::{impl test_crate::Counter for usize} : test_crate::Counter<usiz
     fn incr<'_0> = test_crate::{impl test_crate::Counter for usize}::incr<'_0_0>
 }
 
-fn test_crate::Counter::incr<'_0, Self>(@1: &'_0 mut (Self)) -> usize
+pub fn test_crate::Counter::incr<'_0, Self>(@1: &'_0 mut (Self)) -> usize
 
-fn test_crate::use_counter<'a, T>(@1: &'a mut (T)) -> usize
+pub fn test_crate::use_counter<'a, T>(@1: &'a mut (T)) -> usize
 where
     [@TraitClause0]: core::marker::Sized<T>,
     [@TraitClause1]: test_crate::Counter<T>,

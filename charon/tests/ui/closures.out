@@ -1,6 +1,6 @@
 # Final LLBC before serialization:
 
-fn test_crate::incr_u32(@1: u32) -> u32
+pub fn test_crate::incr_u32(@1: u32) -> u32
 {
     let @0: u32; // return
     let x@1: u32; // arg #1
@@ -12,11 +12,14 @@ fn test_crate::incr_u32(@1: u32) -> u32
     return
 }
 
-trait core::marker::Sized<Self>
+#[lang_item("sized")]
+pub trait core::marker::Sized<Self>
 
-trait core::marker::Tuple<Self>
+#[lang_item("tuple_trait")]
+pub trait core::marker::Tuple<Self>
 
-trait core::ops::function::FnOnce<Self, Args, Self_Output>
+#[lang_item("fn_once")]
+pub trait core::ops::function::FnOnce<Self, Args, Self_Output>
 {
     parent_clause0 : [@TraitClause0]: core::marker::Sized<Args>
     parent_clause1 : [@TraitClause1]: core::marker::Tuple<Args>
@@ -24,7 +27,8 @@ trait core::ops::function::FnOnce<Self, Args, Self_Output>
     fn call_once = core::ops::function::FnOnce::call_once<Self, Args, Self_Output>
 }
 
-trait core::ops::function::FnMut<Self, Args, Self_Clause0_Output>
+#[lang_item("fn_mut")]
+pub trait core::ops::function::FnMut<Self, Args, Self_Clause0_Output>
 {
     parent_clause0 : [@TraitClause0]: core::ops::function::FnOnce<Self, Args, Self_Clause0_Output>
     parent_clause1 : [@TraitClause1]: core::marker::Sized<Args>
@@ -32,7 +36,8 @@ trait core::ops::function::FnMut<Self, Args, Self_Clause0_Output>
     fn call_mut<'_0> = core::ops::function::FnMut::call_mut<'_0_0, Self, Args, Self_Clause0_Output>
 }
 
-trait core::ops::function::Fn<Self, Args, Self_Clause0_Clause0_Output>
+#[lang_item("r#fn")]
+pub trait core::ops::function::Fn<Self, Args, Self_Clause0_Clause0_Output>
 {
     parent_clause0 : [@TraitClause0]: core::ops::function::FnMut<Self, Args, Self_Clause0_Clause0_Output>
     parent_clause1 : [@TraitClause1]: core::marker::Sized<Args>
@@ -40,7 +45,8 @@ trait core::ops::function::Fn<Self, Args, Self_Clause0_Clause0_Output>
     fn call<'_0> = core::ops::function::Fn::call<'_0_0, Self, Args, Self_Clause0_Clause0_Output>
 }
 
-enum core::option::Option<T>
+#[lang_item("Option")]
+pub enum core::option::Option<T>
   where
       [@TraitClause0]: core::marker::Sized<T>,
  =
@@ -48,9 +54,9 @@ enum core::option::Option<T>
 |  Some(T)
 
 
-fn core::ops::function::Fn::call<'_0, Self, Args, Self_Clause0_Clause0_Output>(@1: &'_0 (Self), @2: Args) -> Self_Clause0_Clause0_Output
+pub fn core::ops::function::Fn::call<'_0, Self, Args, Self_Clause0_Clause0_Output>(@1: &'_0 (Self), @2: Args) -> Self_Clause0_Clause0_Output
 
-fn test_crate::map_option<T, F>(@1: core::option::Option<T>[@TraitClause0], @2: F) -> core::option::Option<T>[@TraitClause0]
+pub fn test_crate::map_option<T, F>(@1: core::option::Option<T>[@TraitClause0], @2: F) -> core::option::Option<T>[@TraitClause0]
 where
     [@TraitClause0]: core::marker::Sized<T>,
     [@TraitClause1]: core::marker::Sized<F>,
@@ -92,7 +98,7 @@ where
     return
 }
 
-fn test_crate::map_option_pointer_ref<'a, T, F>(@1: &'a (core::option::Option<T>[@TraitClause0]), @2: fn<'_0>(&'_0_0 (T)) -> T) -> core::option::Option<T>[@TraitClause0]
+pub fn test_crate::map_option_pointer_ref<'a, T, F>(@1: &'a (core::option::Option<T>[@TraitClause0]), @2: fn<'_0>(&'_0_0 (T)) -> T) -> core::option::Option<T>[@TraitClause0]
 where
     [@TraitClause0]: core::marker::Sized<T>,
     [@TraitClause1]: core::marker::Sized<F>,
@@ -127,7 +133,7 @@ where
     return
 }
 
-fn test_crate::test_map_option1(@1: core::option::Option<u32>[core::marker::Sized<u32>]) -> core::option::Option<u32>[core::marker::Sized<u32>]
+pub fn test_crate::test_map_option1(@1: core::option::Option<u32>[core::marker::Sized<u32>]) -> core::option::Option<u32>[core::marker::Sized<u32>]
 {
     let @0: core::option::Option<u32>[core::marker::Sized<u32>]; // return
     let x@1: core::option::Option<u32>[core::marker::Sized<u32>]; // arg #1
@@ -149,7 +155,7 @@ fn test_crate::test_closure_u32::closure<'_0>(@1: &'_0 (()), @2: u32) -> u32
     return
 }
 
-fn test_crate::test_closure_u32(@1: u32) -> u32
+pub fn test_crate::test_closure_u32(@1: u32) -> u32
 {
     let @0: u32; // return
     let x@1: u32; // arg #1
@@ -188,7 +194,7 @@ fn test_crate::test_closure_u32s::closure<'_0>(@1: &'_0 (()), @2: u32, @3: u32) 
     return
 }
 
-fn test_crate::test_closure_u32s(@1: u32) -> u32
+pub fn test_crate::test_closure_u32s(@1: u32) -> u32
 {
     let @0: u32; // return
     let x@1: u32; // arg #1
@@ -223,7 +229,7 @@ fn test_crate::test_closure_ref_u32::closure<'_0, '_1>(@1: &'_1 (()), @2: &'_0 (
     return
 }
 
-fn test_crate::test_closure_ref_u32<'a>(@1: &'a (u32)) -> &'a (u32)
+pub fn test_crate::test_closure_ref_u32<'a>(@1: &'a (u32)) -> &'a (u32)
 {
     let @0: &'_ (u32); // return
     let x@1: &'_ (u32); // arg #1
@@ -260,7 +266,7 @@ where
     return
 }
 
-fn test_crate::test_closure_ref_param<'_0, T>(@1: &'_0 (T)) -> &'_0 (T)
+pub fn test_crate::test_closure_ref_param<'_0, T>(@1: &'_0 (T)) -> &'_0 (T)
 where
     [@TraitClause0]: core::marker::Sized<T>,
 {
@@ -302,7 +308,7 @@ where
     return
 }
 
-fn test_crate::test_closure_ref_early_bound<'a, T>(@1: &'a (T)) -> &'a (T)
+pub fn test_crate::test_closure_ref_early_bound<'a, T>(@1: &'a (T)) -> &'a (T)
 where
     [@TraitClause0]: core::marker::Sized<T>,
     [@TraitClause1]: test_crate::Trait<'a, T>,
@@ -343,7 +349,7 @@ fn test_crate::test_map_option2::closure<'_0>(@1: &'_0 (()), @2: u32) -> u32
     return
 }
 
-fn test_crate::test_map_option2(@1: core::option::Option<u32>[core::marker::Sized<u32>]) -> core::option::Option<u32>[core::marker::Sized<u32>]
+pub fn test_crate::test_map_option2(@1: core::option::Option<u32>[core::marker::Sized<u32>]) -> core::option::Option<u32>[core::marker::Sized<u32>]
 {
     let @0: core::option::Option<u32>[core::marker::Sized<u32>]; // return
     let x@1: core::option::Option<u32>[core::marker::Sized<u32>]; // arg #1
@@ -365,7 +371,7 @@ fn test_crate::test_map_option2(@1: core::option::Option<u32>[core::marker::Size
     return
 }
 
-fn test_crate::id<T>(@1: T) -> T
+pub fn test_crate::id<T>(@1: T) -> T
 where
     [@TraitClause0]: core::marker::Sized<T>,
 {
@@ -377,7 +383,7 @@ where
     return
 }
 
-fn test_crate::test_map_option_id1(@1: core::option::Option<u32>[core::marker::Sized<u32>]) -> core::option::Option<u32>[core::marker::Sized<u32>]
+pub fn test_crate::test_map_option_id1(@1: core::option::Option<u32>[core::marker::Sized<u32>]) -> core::option::Option<u32>[core::marker::Sized<u32>]
 {
     let @0: core::option::Option<u32>[core::marker::Sized<u32>]; // return
     let x@1: core::option::Option<u32>[core::marker::Sized<u32>]; // arg #1
@@ -389,7 +395,7 @@ fn test_crate::test_map_option_id1(@1: core::option::Option<u32>[core::marker::S
     return
 }
 
-fn test_crate::test_map_option_id2(@1: core::option::Option<u32>[core::marker::Sized<u32>]) -> core::option::Option<u32>[core::marker::Sized<u32>]
+pub fn test_crate::test_map_option_id2(@1: core::option::Option<u32>[core::marker::Sized<u32>]) -> core::option::Option<u32>[core::marker::Sized<u32>]
 {
     let @0: core::option::Option<u32>[core::marker::Sized<u32>]; // return
     let x@1: core::option::Option<u32>[core::marker::Sized<u32>]; // arg #1
@@ -408,15 +414,17 @@ fn test_crate::test_map_option_id2(@1: core::option::Option<u32>[core::marker::S
     return
 }
 
-trait core::clone::Clone<Self>
+#[lang_item("clone")]
+pub trait core::clone::Clone<Self>
 {
     parent_clause0 : [@TraitClause0]: core::marker::Sized<Self>
     fn clone<'_0> = core::clone::Clone::clone<'_0_0, Self>
 }
 
-fn core::clone::Clone::clone<'_0, Self>(@1: &'_0 (Self)) -> Self
+#[lang_item("clone_fn")]
+pub fn core::clone::Clone::clone<'_0, Self>(@1: &'_0 (Self)) -> Self
 
-fn test_crate::id_clone<T>(@1: T) -> T
+pub fn test_crate::id_clone<T>(@1: T) -> T
 where
     [@TraitClause0]: core::marker::Sized<T>,
     [@TraitClause1]: core::clone::Clone<T>,
@@ -432,7 +440,7 @@ where
     return
 }
 
-fn core::clone::impls::{impl core::clone::Clone for u32}#8::clone<'_0>(@1: &'_0 (u32)) -> u32
+pub fn core::clone::impls::{impl core::clone::Clone for u32}#8::clone<'_0>(@1: &'_0 (u32)) -> u32
 
 impl core::clone::impls::{impl core::clone::Clone for u32}#8 : core::clone::Clone<u32>
 {
@@ -440,7 +448,7 @@ impl core::clone::impls::{impl core::clone::Clone for u32}#8 : core::clone::Clon
     fn clone<'_0> = core::clone::impls::{impl core::clone::Clone for u32}#8::clone<'_0_0>
 }
 
-fn test_crate::test_id_clone(@1: u32) -> u32
+pub fn test_crate::test_id_clone(@1: u32) -> u32
 {
     let @0: u32; // return
     let x@1: u32; // arg #1
@@ -459,7 +467,7 @@ fn test_crate::test_id_clone(@1: u32) -> u32
     return
 }
 
-fn test_crate::test_id_clone_param<T>(@1: T) -> T
+pub fn test_crate::test_id_clone_param<T>(@1: T) -> T
 where
     [@TraitClause0]: core::marker::Sized<T>,
     [@TraitClause1]: core::clone::Clone<T>,
@@ -482,7 +490,7 @@ where
     return
 }
 
-fn test_crate::test_map_option_id_clone(@1: core::option::Option<u32>[core::marker::Sized<u32>]) -> core::option::Option<u32>[core::marker::Sized<u32>]
+pub fn test_crate::test_map_option_id_clone(@1: core::option::Option<u32>[core::marker::Sized<u32>]) -> core::option::Option<u32>[core::marker::Sized<u32>]
 {
     let @0: core::option::Option<u32>[core::marker::Sized<u32>]; // return
     let x@1: core::option::Option<u32>[core::marker::Sized<u32>]; // arg #1
@@ -507,7 +515,7 @@ fn test_crate::test_map_option3::closure<'_0>(@1: &'_0 (()), @2: u32) -> u32
     return
 }
 
-fn test_crate::test_map_option3(@1: core::option::Option<u32>[core::marker::Sized<u32>]) -> core::option::Option<u32>[core::marker::Sized<u32>]
+pub fn test_crate::test_map_option3(@1: core::option::Option<u32>[core::marker::Sized<u32>]) -> core::option::Option<u32>[core::marker::Sized<u32>]
 {
     let @0: core::option::Option<u32>[core::marker::Sized<u32>]; // return
     let x@1: core::option::Option<u32>[core::marker::Sized<u32>]; // arg #1
@@ -532,7 +540,7 @@ fn test_crate::test_regions::closure<'_0, '_1>(@1: &'_1 (()), @2: &'_0 (&'_ (u32
     return
 }
 
-fn test_crate::test_regions<'a>(@1: &'a (u32)) -> u32
+pub fn test_crate::test_regions<'a>(@1: &'a (u32)) -> u32
 {
     let @0: u32; // return
     let x@1: &'_ (u32); // arg #1
@@ -579,7 +587,7 @@ fn test_crate::test_closure_capture::closure<'_0, '_1, '_2>(@1: &'_0 ((&'_1 (u32
     return
 }
 
-fn test_crate::test_closure_capture(@1: u32, @2: u32) -> u32
+pub fn test_crate::test_closure_capture(@1: u32, @2: u32) -> u32
 {
     let @0: u32; // return
     let x@1: u32; // arg #1
@@ -625,32 +633,32 @@ where
     return
 }
 
-fn test_crate::test_closure_clone<T>(@1: T) -> T
+pub fn test_crate::test_closure_clone<T>(@1: T) -> T
 where
     [@TraitClause0]: core::marker::Sized<T>,
     [@TraitClause1]: core::clone::Clone<T>,
 {
     let @0: T; // return
     let x@1: T; // arg #1
-    let f@2: &'_ (fn(T) -> T); // local
-    let @3: fn(T) -> T; // anonymous local
+    let f@2: fn(T) -> T; // local
+    let @3: &'_ (fn(T) -> T); // anonymous local
     let @4: &'_ (fn(T) -> T); // anonymous local
     let @5: (T); // anonymous local
     let @6: T; // anonymous local
 
-    @3 := {test_crate::test_closure_clone::closure<T>[@TraitClause0, @TraitClause1]} {}
-    f@2 := &@3
+    f@2 := {test_crate::test_closure_clone::closure<T>[@TraitClause0, @TraitClause1]} {}
     @fake_read(f@2)
-    @4 := &*(f@2)
+    @4 := &f@2
+    @3 := &*(@4)
     @6 := move (x@1)
     @5 := (move (@6))
-    @0 := core::ops::function::Fn<fn(T) -> T, (T), T>::call<'_>(move (@4), move (@5))
+    @0 := core::ops::function::Fn<fn(T) -> T, (T), T>::call<'_>(move (@3), move (@5))
     drop @6
     drop @6
     drop @5
-    drop @4
     drop @3
     drop f@2
+    drop @4
     drop x@1
     return
 }
@@ -665,14 +673,14 @@ fn test_crate::test_array_map::closure<'_0>(@1: &'_0 mut (()), @2: i32) -> i32
     return
 }
 
-fn core::array::{Array<T, const N : usize>}#23::map<T, F, U, const N : usize>(@1: Array<T, const N : usize>, @2: F) -> Array<U, const N : usize>
+pub fn core::array::{Array<T, const N : usize>}#23::map<T, F, U, const N : usize>(@1: Array<T, const N : usize>, @2: F) -> Array<U, const N : usize>
 where
     [@TraitClause0]: core::marker::Sized<T>,
     [@TraitClause1]: core::marker::Sized<F>,
     [@TraitClause2]: core::marker::Sized<U>,
     [@TraitClause3]: core::ops::function::FnMut<F, (T), U>,
 
-fn test_crate::test_array_map(@1: Array<i32, 256 : usize>) -> Array<i32, 256 : usize>
+pub fn test_crate::test_array_map(@1: Array<i32, 256 : usize>) -> Array<i32, 256 : usize>
 {
     let @0: Array<i32, 256 : usize>; // return
     let x@1: Array<i32, 256 : usize>; // arg #1
@@ -741,7 +749,7 @@ where
     return
 }
 
-fn test_crate::{test_crate::Foo<'a, T>[@TraitClause0]}::test_nested_closures<'a, 'b, T>(@1: &'a (&'b (T))) -> T
+pub fn test_crate::{test_crate::Foo<'a, T>[@TraitClause0]}::test_nested_closures<'a, 'b, T>(@1: &'a (&'b (T))) -> T
 where
     [@TraitClause0]: core::marker::Sized<T>,
     [@TraitClause1]: core::clone::Clone<T>,
@@ -784,9 +792,9 @@ where
     return
 }
 
-fn core::ops::function::FnMut::call_mut<'_0, Self, Args, Self_Clause0_Output>(@1: &'_0 mut (Self), @2: Args) -> Self_Clause0_Output
+pub fn core::ops::function::FnMut::call_mut<'_0, Self, Args, Self_Clause0_Output>(@1: &'_0 mut (Self), @2: Args) -> Self_Clause0_Output
 
-fn core::ops::function::FnOnce::call_once<Self, Args, Self_Output>(@1: Self, @2: Args) -> Self_Output
+pub fn core::ops::function::FnOnce::call_once<Self, Args, Self_Output>(@1: Self, @2: Args) -> Self_Output
 
 
 

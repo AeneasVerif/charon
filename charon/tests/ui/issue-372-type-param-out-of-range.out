@@ -1,8 +1,9 @@
 # Final LLBC before serialization:
 
-trait core::marker::Sized<Self>
+#[lang_item("sized")]
+pub trait core::marker::Sized<Self>
 
-struct test_crate::S<'a, K>
+pub struct test_crate::S<'a, K>
   where
       [@TraitClause0]: core::marker::Sized<K>,
       K : 'a,
@@ -11,9 +12,11 @@ struct test_crate::S<'a, K>
   x: &'a (K),
 }
 
-trait core::marker::Tuple<Self>
+#[lang_item("tuple_trait")]
+pub trait core::marker::Tuple<Self>
 
-trait core::ops::function::FnOnce<Self, Args>
+#[lang_item("fn_once")]
+pub trait core::ops::function::FnOnce<Self, Args>
 {
     parent_clause0 : [@TraitClause0]: core::marker::Sized<Args>
     parent_clause1 : [@TraitClause1]: core::marker::Tuple<Args>
@@ -22,7 +25,8 @@ trait core::ops::function::FnOnce<Self, Args>
     fn call_once = core::ops::function::FnOnce::call_once<Self, Args>
 }
 
-trait core::ops::function::FnMut<Self, Args>
+#[lang_item("fn_mut")]
+pub trait core::ops::function::FnMut<Self, Args>
 {
     parent_clause0 : [@TraitClause0]: core::ops::function::FnOnce<Self, Args>
     parent_clause1 : [@TraitClause1]: core::marker::Sized<Args>
@@ -30,7 +34,7 @@ trait core::ops::function::FnMut<Self, Args>
     fn call_mut<'_0> = core::ops::function::FnMut::call_mut<'_0_0, Self, Args>
 }
 
-fn test_crate::{test_crate::S<'a, K>[@TraitClause0]}::f<'a, K, F>()
+pub fn test_crate::{test_crate::S<'a, K>[@TraitClause0]}::f<'a, K, F>()
 where
     [@TraitClause0]: core::marker::Sized<K>,
     [@TraitClause1]: core::marker::Sized<F>,
@@ -44,7 +48,7 @@ where
     return
 }
 
-fn test_crate::{test_crate::S<'a, K>[@TraitClause0]}::g<'a, K, F>()
+pub fn test_crate::{test_crate::S<'a, K>[@TraitClause0]}::g<'a, K, F>()
 where
     [@TraitClause0]: core::marker::Sized<K>,
     [@TraitClause1]: core::marker::Sized<F>,
@@ -58,9 +62,9 @@ where
     return
 }
 
-struct test_crate::T = {}
+pub struct test_crate::T = {}
 
-fn test_crate::{test_crate::T}#1::f<F>()
+pub fn test_crate::{test_crate::T}#1::f<F>()
 where
     [@TraitClause0]: core::marker::Sized<F>,
     [@TraitClause1]: for<'_0> core::ops::function::FnMut<F, (&'_0_0 (u32))>,
@@ -73,9 +77,9 @@ where
     return
 }
 
-fn core::ops::function::FnMut::call_mut<'_0, Self, Args>(@1: &'_0 mut (Self), @2: Args) -> Self::parent_clause0::Output
+pub fn core::ops::function::FnMut::call_mut<'_0, Self, Args>(@1: &'_0 mut (Self), @2: Args) -> Self::parent_clause0::Output
 
-fn core::ops::function::FnOnce::call_once<Self, Args>(@1: Self, @2: Args) -> Self::Output
+pub fn core::ops::function::FnOnce::call_once<Self, Args>(@1: Self, @2: Args) -> Self::Output
 
 
 

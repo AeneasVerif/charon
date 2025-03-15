@@ -1,8 +1,10 @@
 # Final LLBC before serialization:
 
-trait core::marker::Sized<Self>
+#[lang_item("sized")]
+pub trait core::marker::Sized<Self>
 
-enum core::option::Option<T>
+#[lang_item("Option")]
+pub enum core::option::Option<T>
   where
       [@TraitClause0]: core::marker::Sized<T>,
  =
@@ -24,7 +26,8 @@ fn test_crate::F() -> fn(u8) -> core::option::Option<u8>[core::marker::Sized<u8>
 
 global test_crate::F: fn(u8) -> core::option::Option<u8>[core::marker::Sized<u8>] = test_crate::F()
 
-opaque type alloc::string::String
+#[lang_item("String")]
+pub opaque type alloc::string::String
 
 struct test_crate::Foo =
 {
@@ -50,7 +53,8 @@ fn test_crate::Foo(@1: u32, @2: alloc::string::String) -> test_crate::Foo
     return
 }
 
-fn alloc::string::{alloc::string::String}::new() -> alloc::string::String
+#[lang_item("string_new")]
+pub fn alloc::string::{alloc::string::String}::new() -> alloc::string::String
 
 fn test_crate::Bar::Variant<'a, T>(@1: &'a (T)) -> test_crate::Bar<'a, T>[@TraitClause0]
 where
@@ -83,7 +87,9 @@ fn test_crate::main()
     let @14: fn(&'_ (i32)) -> test_crate::Bar<'_, i32>[core::marker::Sized<i32>]; // anonymous local
     let @15: &'_ (i32); // anonymous local
     let @16: &'_ (i32); // anonymous local
-    let @17: i32; // anonymous local
+    let @17: &'_ (i32); // anonymous local
+    let @18: i32; // anonymous local
+    let @19: &'_ (i32); // anonymous local
 
     f@1 := const (core::option::Option::Some<u8>[core::marker::Sized<u8>])
     @fake_read(f@1)
@@ -114,14 +120,15 @@ fn test_crate::main()
     f@12 := const (test_crate::Bar::Variant<'_, i32>[core::marker::Sized<i32>])
     @fake_read(f@12)
     @14 := copy (f@12)
-    @17 := const (42 : i32)
-    @16 := &@17
+    @18 := const (42 : i32)
+    @19 := &@18
+    @17 := move (@19)
+    @16 := &*(@17)
     @15 := &*(@16)
     @13 := test_crate::Bar::Variant<'_, i32>[core::marker::Sized<i32>](move (@15))
     drop @15
     drop @14
     @fake_read(@13)
-    drop @17
     drop @16
     drop @13
     @0 := ()
