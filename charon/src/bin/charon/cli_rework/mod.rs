@@ -41,7 +41,7 @@ pub fn run() -> anyhow::Result<Option<CliOpts>> {
         Some(Charon::PrettyPrint(pretty_print)) => {
             let krate = charon_lib::deserialize_llbc(&pretty_print.file)?;
             println!("{krate}");
-            return Ok(None);
+            Ok(None)
         }
         Some(Charon::Cargo(subcmd_cargo)) => {
             let mut options = subcmd_cargo.opts;
