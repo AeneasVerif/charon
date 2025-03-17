@@ -155,9 +155,11 @@ fn transform_operand(span: &Span, locals: &mut Locals, nst: &mut Vec<Statement>,
 
 pub struct Transform;
 impl UllbcPass for Transform {
-    fn transform_body(&self, _ctx: &mut TransformCtx, b: &mut ExprBody) {
-        body_transform_operands(&mut b.body, |span, nst, op| {
-            transform_operand(span, &mut b.locals, nst, op)
-        });
+    fn transform_body(&self, _ctx: &mut TransformCtx, body: &mut ExprBody) {
+        for block in body.body.iter_mut() {
+            block.transform_operands(|span, nst, op| {
+                transform_operand(span, &mut body.locals, nst, op)
+            })
+        }
     }
 }

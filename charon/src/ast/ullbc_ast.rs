@@ -1,6 +1,5 @@
 //! "Unstructured LLBC" ast (ULLBC). This is LLBC before the control-flow
 //! reconstruction. In effect, this is a cleaned up version of MIR.
-pub use super::ullbc_ast_utils::*;
 pub use crate::ast::*;
 use derive_generic_visitor::{Drive, DriveMut};
 use macros::{EnumAsGetters, EnumIsA, VariantIndexArity, VariantName};
