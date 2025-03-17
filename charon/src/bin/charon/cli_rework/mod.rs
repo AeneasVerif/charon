@@ -4,6 +4,8 @@ use std::path::PathBuf;
 
 /// `charon cargo`
 mod cargo;
+/// `charon rustc`
+mod rustc;
 
 #[derive(Debug, Parser)]
 #[clap(name = "Charon")]
@@ -21,6 +23,7 @@ struct Cli {
 enum Charon {
     PrettyPrint(PrettyPrintArgs),
     Cargo(cargo::CargoArgs),
+    Rustc(rustc::RustcArgs),
 }
 
 /// Read a llbc or ullbc file and pretty print it.
@@ -46,6 +49,13 @@ pub fn run() -> anyhow::Result<Option<CliOpts>> {
         Some(Charon::Cargo(subcmd_cargo)) => {
             let mut options = subcmd_cargo.opts;
             options.cargo_args = subcmd_cargo.cargo;
+            Ok(Some(options))
+        }
+        Some(Charon::Rustc(subcmd_rustc)) => {
+            let mut options = subcmd_rustc.opts;
+            options.rustc_args = subcmd_rustc.rustc;
+            // invoke charon-driver without cargo
+            options.no_cargo = true;
             Ok(Some(options))
         }
         _ => Ok(Some(cli.opts)),
