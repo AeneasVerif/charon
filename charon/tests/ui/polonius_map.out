@@ -153,26 +153,20 @@ pub fn test_crate::get_or_insert<'_0>(@1: &'_0 mut (std::collections::hash::map:
     let @3: &'_ (std::collections::hash::map::HashMap<u32, u32, std::hash::random::RandomState>[core::marker::Sized<u32>, core::marker::Sized<u32>, core::marker::Sized<std::hash::random::RandomState>]); // anonymous local
     let @4: &'_ (u32); // anonymous local
     let @5: &'_ (u32); // anonymous local
-    let v@6: &'_ (u32); // local
-    let @7: core::option::Option<u32>[core::marker::Sized<u32>]; // anonymous local
-    let @8: &'_ mut (std::collections::hash::map::HashMap<u32, u32, std::hash::random::RandomState>[core::marker::Sized<u32>, core::marker::Sized<u32>, core::marker::Sized<std::hash::random::RandomState>]); // anonymous local
-    let @9: &'_ (u32); // anonymous local
+    let @6: u32; // anonymous local
+    let v@7: &'_ (u32); // local
+    let @8: core::option::Option<u32>[core::marker::Sized<u32>]; // anonymous local
+    let @9: &'_ mut (std::collections::hash::map::HashMap<u32, u32, std::hash::random::RandomState>[core::marker::Sized<u32>, core::marker::Sized<u32>, core::marker::Sized<std::hash::random::RandomState>]); // anonymous local
     let @10: &'_ (u32); // anonymous local
-    let @11: &'_ (std::collections::hash::map::HashMap<u32, u32, std::hash::random::RandomState>[core::marker::Sized<u32>, core::marker::Sized<u32>, core::marker::Sized<std::hash::random::RandomState>]); // anonymous local
-    let @12: &'_ (u32); // anonymous local
+    let @11: &'_ (u32); // anonymous local
+    let @12: &'_ (std::collections::hash::map::HashMap<u32, u32, std::hash::random::RandomState>[core::marker::Sized<u32>, core::marker::Sized<u32>, core::marker::Sized<std::hash::random::RandomState>]); // anonymous local
     let @13: &'_ (u32); // anonymous local
     let @14: &'_ (u32); // anonymous local
-    let @15: &'_ (u32); // anonymous local
-    let @16: u32; // anonymous local
-    let @17: &'_ (u32); // anonymous local
-    let @18: u32; // anonymous local
-    let @19: &'_ (u32); // anonymous local
+    let @15: u32; // anonymous local
 
     @3 := &*(map@1)
-    @16 := const (22 : u32)
-    @17 := &@16
-    @15 := move (@17)
-    @5 := &*(@15)
+    @6 := const (22 : u32)
+    @5 := &@6
     @4 := &*(@5)
     @2 := std::collections::hash::map::{std::collections::hash::map::HashMap<K, V, S>[@TraitClause0, @TraitClause1, @TraitClause2]}#2::get<'_, '_, u32, u32, std::hash::random::RandomState, u32>[core::marker::Sized<u32>, core::marker::Sized<u32>, core::marker::Sized<std::hash::random::RandomState>, core::cmp::impls::{impl core::cmp::Eq for u32}#43, core::hash::impls::{impl core::hash::Hash for u32}#11, std::hash::random::{impl core::hash::BuildHasher for std::hash::random::RandomState}#1, core::borrow::{impl core::borrow::Borrow<T> for T}<u32>, core::hash::impls::{impl core::hash::Hash for u32}#11, core::cmp::impls::{impl core::cmp::Eq for u32}#43](move (@3), move (@4))
     drop @4
@@ -180,31 +174,31 @@ pub fn test_crate::get_or_insert<'_0>(@1: &'_0 mut (std::collections::hash::map:
     @fake_read(@2)
     match @2 {
         0 => {
-            @8 := &two-phase-mut *(map@1)
-            @7 := std::collections::hash::map::{std::collections::hash::map::HashMap<K, V, S>[@TraitClause0, @TraitClause1, @TraitClause2]}#2::insert<'_, u32, u32, std::hash::random::RandomState>[core::marker::Sized<u32>, core::marker::Sized<u32>, core::marker::Sized<std::hash::random::RandomState>, core::cmp::impls::{impl core::cmp::Eq for u32}#43, core::hash::impls::{impl core::hash::Hash for u32}#11, std::hash::random::{impl core::hash::BuildHasher for std::hash::random::RandomState}#1](move (@8), const (22 : u32), const (33 : u32))
-            drop @8
-            drop @7
-            @11 := &*(map@1)
-            @18 := const (22 : u32)
-            @19 := &@18
-            @14 := move (@19)
-            @13 := &*(@14)
-            @12 := &*(@13)
-            @10 := std::collections::hash::map::{impl core::ops::index::Index<&'_0 (Q)> for std::collections::hash::map::HashMap<K, V, S>[@TraitClause0, @TraitClause1, @TraitClause2]}#9::index<'_, '_, u32, u32, u32, std::hash::random::RandomState>[core::marker::Sized<u32>, core::marker::Sized<u32>, core::marker::Sized<std::hash::random::RandomState>, core::cmp::impls::{impl core::cmp::Eq for u32}#43, core::hash::impls::{impl core::hash::Hash for u32}#11, core::borrow::{impl core::borrow::Borrow<T> for T}<u32>, core::cmp::impls::{impl core::cmp::Eq for u32}#43, core::hash::impls::{impl core::hash::Hash for u32}#11, std::hash::random::{impl core::hash::BuildHasher for std::hash::random::RandomState}#1](move (@11), move (@12))
-            drop @12
-            drop @11
-            @9 := &*(@10)
-            @0 := &*(@9)
-            drop @13
-            drop @10
+            @9 := &two-phase-mut *(map@1)
+            @8 := std::collections::hash::map::{std::collections::hash::map::HashMap<K, V, S>[@TraitClause0, @TraitClause1, @TraitClause2]}#2::insert<'_, u32, u32, std::hash::random::RandomState>[core::marker::Sized<u32>, core::marker::Sized<u32>, core::marker::Sized<std::hash::random::RandomState>, core::cmp::impls::{impl core::cmp::Eq for u32}#43, core::hash::impls::{impl core::hash::Hash for u32}#11, std::hash::random::{impl core::hash::BuildHasher for std::hash::random::RandomState}#1](move (@9), const (22 : u32), const (33 : u32))
             drop @9
+            drop @8
+            @12 := &*(map@1)
+            @15 := const (22 : u32)
+            @14 := &@15
+            @13 := &*(@14)
+            @11 := std::collections::hash::map::{impl core::ops::index::Index<&'_0 (Q)> for std::collections::hash::map::HashMap<K, V, S>[@TraitClause0, @TraitClause1, @TraitClause2]}#9::index<'_, '_, u32, u32, u32, std::hash::random::RandomState>[core::marker::Sized<u32>, core::marker::Sized<u32>, core::marker::Sized<std::hash::random::RandomState>, core::cmp::impls::{impl core::cmp::Eq for u32}#43, core::hash::impls::{impl core::hash::Hash for u32}#11, core::borrow::{impl core::borrow::Borrow<T> for T}<u32>, core::cmp::impls::{impl core::cmp::Eq for u32}#43, core::hash::impls::{impl core::hash::Hash for u32}#11, std::hash::random::{impl core::hash::BuildHasher for std::hash::random::RandomState}#1](move (@12), move (@13))
+            drop @13
+            drop @12
+            @10 := &*(@11)
+            @0 := &*(@10)
+            drop @15
+            drop @14
+            drop @11
+            drop @10
         },
         1 => {
-            v@6 := copy ((@2 as variant @1).0)
-            @0 := &*(v@6)
-            drop v@6
+            v@7 := copy ((@2 as variant @1).0)
+            @0 := &*(v@7)
+            drop v@7
         },
     }
+    drop @6
     drop @5
     drop @2
     return

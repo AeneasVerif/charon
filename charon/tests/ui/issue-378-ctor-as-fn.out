@@ -87,9 +87,7 @@ fn test_crate::main()
     let @14: fn(&'_ (i32)) -> test_crate::Bar<'_, i32>[core::marker::Sized<i32>]; // anonymous local
     let @15: &'_ (i32); // anonymous local
     let @16: &'_ (i32); // anonymous local
-    let @17: &'_ (i32); // anonymous local
-    let @18: i32; // anonymous local
-    let @19: &'_ (i32); // anonymous local
+    let @17: i32; // anonymous local
 
     f@1 := const (core::option::Option::Some<u8>[core::marker::Sized<u8>])
     @fake_read(f@1)
@@ -120,15 +118,14 @@ fn test_crate::main()
     f@12 := const (test_crate::Bar::Variant<'_, i32>[core::marker::Sized<i32>])
     @fake_read(f@12)
     @14 := copy (f@12)
-    @18 := const (42 : i32)
-    @19 := &@18
-    @17 := move (@19)
-    @16 := &*(@17)
+    @17 := const (42 : i32)
+    @16 := &@17
     @15 := &*(@16)
     @13 := test_crate::Bar::Variant<'_, i32>[core::marker::Sized<i32>](move (@15))
     drop @15
     drop @14
     @fake_read(@13)
+    drop @17
     drop @16
     drop @13
     @0 := ()

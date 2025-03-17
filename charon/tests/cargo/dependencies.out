@@ -86,21 +86,19 @@ fn test_cargo_dependencies::main()
     let @6: (&'_ (u32), &'_ (u32)); // anonymous local
     let @7: &'_ (u32); // anonymous local
     let @8: &'_ (u32); // anonymous local
-    let left_val@9: &'_ (u32); // local
-    let right_val@10: &'_ (u32); // local
-    let @11: bool; // anonymous local
-    let @12: u32; // anonymous local
+    let @9: u32; // anonymous local
+    let left_val@10: &'_ (u32); // local
+    let right_val@11: &'_ (u32); // local
+    let @12: bool; // anonymous local
     let @13: u32; // anonymous local
-    let kind@14: core::panicking::AssertKind; // local
-    let @15: core::panicking::AssertKind; // anonymous local
-    let @16: &'_ (u32); // anonymous local
+    let @14: u32; // anonymous local
+    let kind@15: core::panicking::AssertKind; // local
+    let @16: core::panicking::AssertKind; // anonymous local
     let @17: &'_ (u32); // anonymous local
     let @18: &'_ (u32); // anonymous local
     let @19: &'_ (u32); // anonymous local
-    let @20: core::option::Option<core::fmt::Arguments<'_>>[core::marker::Sized<core::fmt::Arguments<'_>>]; // anonymous local
-    let @21: &'_ (u32); // anonymous local
-    let @22: u32; // anonymous local
-    let @23: &'_ (u32); // anonymous local
+    let @20: &'_ (u32); // anonymous local
+    let @21: core::option::Option<core::fmt::Arguments<'_>>[core::marker::Sized<core::fmt::Arguments<'_>>]; // anonymous local
 
     x@1 := const (0 : u32)
     @fake_read(x@1)
@@ -111,39 +109,38 @@ fn test_cargo_dependencies::main()
     drop @4
     drop @2
     @7 := &x@1
-    @22 := const (1 : u32)
-    @23 := &@22
-    @21 := move (@23)
-    @8 := &*(@21)
+    @9 := const (1 : u32)
+    @8 := &@9
     @6 := (move (@7), move (@8))
     drop @8
     drop @7
     @fake_read(@6)
-    left_val@9 := copy ((@6).0)
-    right_val@10 := copy ((@6).1)
-    @12 := copy (*(left_val@9))
-    @13 := copy (*(right_val@10))
-    @11 := move (@12) == move (@13)
-    if move (@11) {
+    left_val@10 := copy ((@6).0)
+    right_val@11 := copy ((@6).1)
+    @13 := copy (*(left_val@10))
+    @14 := copy (*(right_val@11))
+    @12 := move (@13) == move (@14)
+    if move (@12) {
     }
     else {
+        drop @14
         drop @13
-        drop @12
-        kind@14 := core::panicking::AssertKind::Eq {  }
-        @fake_read(kind@14)
-        @15 := move (kind@14)
-        @17 := &*(left_val@9)
-        @16 := &*(@17)
-        @19 := &*(right_val@10)
-        @18 := &*(@19)
-        @20 := core::option::Option::None {  }
+        kind@15 := core::panicking::AssertKind::Eq {  }
+        @fake_read(kind@15)
+        @16 := move (kind@15)
+        @18 := &*(left_val@10)
+        @17 := &*(@18)
+        @20 := &*(right_val@11)
+        @19 := &*(@20)
+        @21 := core::option::Option::None {  }
         panic(core::panicking::assert_failed)
     }
+    drop @14
     drop @13
     drop @12
-    drop @11
-    drop right_val@10
-    drop left_val@9
+    drop right_val@11
+    drop left_val@10
+    drop @9
     drop @6
     drop @5
     @0 := ()

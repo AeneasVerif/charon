@@ -114,15 +114,7 @@ fn transform_constant_expr(
                 BuiltinTy::Array | BuiltinTy::Slice
             );
             let ty = generics.types[0].clone();
-            let rval = if fields.len() >= 2
-                && let Ok(op) = fields.iter().dedup().exactly_one()
-            {
-                // If all the values are the same one, use an array repeat expression.
-                Rvalue::Repeat(op.clone(), ty.clone(), len)
-            } else {
-                // Build an `Aggregate` rvalue.
-                Rvalue::Aggregate(AggregateKind::Array(ty, len), fields)
-            };
+            let rval = Rvalue::Aggregate(AggregateKind::Array(ty, len), fields);
             let var = new_var(rval, val.ty);
 
             Operand::Move(var)
@@ -155,9 +147,26 @@ fn transform_operand(span: &Span, locals: &mut Locals, nst: &mut Vec<Statement>,
 
 pub struct Transform;
 impl UllbcPass for Transform {
-    fn transform_body(&self, _ctx: &mut TransformCtx, b: &mut ExprBody) {
-        body_transform_operands(&mut b.body, |span, nst, op| {
-            transform_operand(span, &mut b.locals, nst, op)
-        });
+    fn transform_body(&self, _ctx: &mut TransformCtx, body: &mut ExprBody) {
+        for block in body.body.iter_mut() {
+            // Deconstruct some constants into series of MIR assignments.
+            block.transform_operands(|span, nst, op| {
+                transform_operand(span, &mut body.locals, nst, op)
+            });
+
+            // Simplify array with repeated constants into array repeats.
+            block.dyn_visit_in_body_mut(|rvalue: &mut Rvalue| {
+                take_mut::take(rvalue, |rvalue| match rvalue {
+                    Rvalue::Aggregate(AggregateKind::Array(ty, len), ref fields)
+                        if fields.len() >= 2
+                            && fields.iter().all(|x| x.is_const())
+                            && let Ok(op) = fields.iter().dedup().exactly_one() =>
+                    {
+                        Rvalue::Repeat(op.clone(), ty.clone(), len)
+                    }
+                    _ => rvalue,
+                });
+            });
+        }
     }
 }

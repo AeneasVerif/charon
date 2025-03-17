@@ -311,8 +311,10 @@ impl TranslateOptions {
 
         let mir_level = if options.mir_optimized {
             MirLevel::Optimized
-        } else {
+        } else if options.mir_promoted {
             MirLevel::Promoted
+        } else {
+            MirLevel::Built
         };
 
         let item_opacities = {
