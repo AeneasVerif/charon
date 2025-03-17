@@ -22,7 +22,7 @@ jobs:
         run: |
           rustup toolchain list -v
           # Find toolchain path
-          export TOOLCHAIN=$(rustup toolchain list -v | grep active | awk '{print $NF}')
+          export TOOLCHAIN=$(rustc --print sysroot)
           echo "toolchain=\"$TOOLCHAIN\""
           # Remove rustc book
           rm $TOOLCHAIN/share/doc/rust/html/rustc -rf
@@ -34,7 +34,7 @@ jobs:
       - name: Prepare index.html
         run: |
           # Find toolchain name
-          export toolchain=$(rustup toolchain list | grep active | grep -oP "nightly-\d{4}-\d{2}-\d{2}")
+          export toolchain=$(rustc --print sysroot | grep -oP "nightly-\d{4}-\d{2}-\d{2}")
           echo "toolchain=\"$toolchain\""
           # Fill in toolchain placeholder in index.html
           sed "s/nightly-xxxx-xx-xx/$toolchain/" .github/index.html > charon/target/doc/index.html
