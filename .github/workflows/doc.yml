@@ -14,13 +14,24 @@ jobs:
       - name: Build static files
         env:
           CARGO_TERM_COLOR: always
-        id: build
         run: |
           cd charon
           make doc
 
+      - name: Install rustc internal docs
+        run: |
+          rustup toolchain list -v
+          # Find toolchain path
+          export TOOLCHAIN=$(rustup toolchain list -v | grep active | awk '{print $NF}')
+          echo "toolchain=$TOOLCHAIN"
+          # Remove rustc book
+          rm $TOOLCHAIN/share/doc/rust/html/rustc -rf
+          # Download rustc API docs
+          rustup component add rustc-docs
+          # Move the docs to deployment path
+          mv $TOOLCHAIN/share/doc/rust/html/rustc charon/target/doc/rustc
+
       - name: Upload static files as artifact
-        id: deployment
         uses: actions/upload-pages-artifact@v3 # or specific "vX.X.X" version tag for this action
         with:
           path: charon/target/doc/
