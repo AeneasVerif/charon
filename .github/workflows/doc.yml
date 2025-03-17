@@ -23,13 +23,21 @@ jobs:
           rustup toolchain list -v
           # Find toolchain path
           export TOOLCHAIN=$(rustup toolchain list -v | grep active | awk '{print $NF}')
-          echo "toolchain=$TOOLCHAIN"
+          echo "toolchain=\"$TOOLCHAIN\""
           # Remove rustc book
           rm $TOOLCHAIN/share/doc/rust/html/rustc -rf
           # Download rustc API docs
           rustup component add rustc-docs
           # Move the docs to deployment path
           mv $TOOLCHAIN/share/doc/rust/html/rustc charon/target/doc/rustc
+
+      - name: Prepare index.html
+        run: |
+          # Find toolchain name
+          export toolchain=$(rustup toolchain list | grep active | grep -oP "nightly-\d{4}-\d{2}-\d{2}")
+          echo "toolchain=\"$toolchain\""
+          # Fill in toolchain placeholder in index.html
+          sed "s/nightly-xxxx-xx-xx/$toolchain/" .github/index.html > charon/target/doc/index.html
 
       - name: Upload static files as artifact
         uses: actions/upload-pages-artifact@v3 # or specific "vX.X.X" version tag for this action
