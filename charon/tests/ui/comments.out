@@ -242,23 +242,21 @@ fn test_crate::foo()
     let @18: &'_ (u32); // anonymous local
     let @19: usize; // anonymous local
     let @20: &'_ (u32); // anonymous local
-    let left_val@21: &'_ (u32); // local
-    let right_val@22: &'_ (u32); // local
-    let @23: bool; // anonymous local
-    let @24: u32; // anonymous local
+    let @21: u32; // anonymous local
+    let left_val@22: &'_ (u32); // local
+    let right_val@23: &'_ (u32); // local
+    let @24: bool; // anonymous local
     let @25: u32; // anonymous local
-    let kind@26: core::panicking::AssertKind; // local
-    let @27: core::panicking::AssertKind; // anonymous local
-    let @28: &'_ (u32); // anonymous local
+    let @26: u32; // anonymous local
+    let kind@27: core::panicking::AssertKind; // local
+    let @28: core::panicking::AssertKind; // anonymous local
     let @29: &'_ (u32); // anonymous local
     let @30: &'_ (u32); // anonymous local
     let @31: &'_ (u32); // anonymous local
-    let @32: core::option::Option<core::fmt::Arguments<'_>>[core::marker::Sized<core::fmt::Arguments<'_>>]; // anonymous local
-    let @33: &'_ (u32); // anonymous local
-    let @34: u32; // anonymous local
+    let @32: &'_ (u32); // anonymous local
+    let @33: core::option::Option<core::fmt::Arguments<'_>>[core::marker::Sized<core::fmt::Arguments<'_>>]; // anonymous local
+    let @34: &'_ (Array<u32, 10 : usize>); // anonymous local
     let @35: &'_ (u32); // anonymous local
-    let @36: &'_ (Array<u32, 10 : usize>); // anonymous local
-    let @37: &'_ (u32); // anonymous local
 
     // Call `default` and destructure the result
     @3 := test_crate::{impl core::default::Default for test_crate::Foo}::default()
@@ -297,42 +295,41 @@ fn test_crate::foo()
     @fake_read(a@15)
     // `assert_eq`
     @19 := const (9 : usize)
-    @36 := &a@15
-    @37 := @ArrayIndexShared<'_, u32, 10 : usize>(move (@36), copy (@19))
-    @18 := &*(@37)
-    @34 := const (9 : u32)
-    @35 := &@34
-    @33 := move (@35)
-    @20 := &*(@33)
+    @34 := &a@15
+    @35 := @ArrayIndexShared<'_, u32, 10 : usize>(move (@34), copy (@19))
+    @18 := &*(@35)
+    @21 := const (9 : u32)
+    @20 := &@21
     @17 := (move (@18), move (@20))
     drop @20
     drop @18
     @fake_read(@17)
-    left_val@21 := copy ((@17).0)
-    right_val@22 := copy ((@17).1)
-    @24 := copy (*(left_val@21))
-    @25 := copy (*(right_val@22))
-    @23 := move (@24) == move (@25)
-    if move (@23) {
+    left_val@22 := copy ((@17).0)
+    right_val@23 := copy ((@17).1)
+    @25 := copy (*(left_val@22))
+    @26 := copy (*(right_val@23))
+    @24 := move (@25) == move (@26)
+    if move (@24) {
     }
     else {
+        drop @26
         drop @25
-        drop @24
-        kind@26 := core::panicking::AssertKind::Eq {  }
-        @fake_read(kind@26)
-        @27 := move (kind@26)
-        @29 := &*(left_val@21)
-        @28 := &*(@29)
-        @31 := &*(right_val@22)
-        @30 := &*(@31)
-        @32 := core::option::Option::None {  }
+        kind@27 := core::panicking::AssertKind::Eq {  }
+        @fake_read(kind@27)
+        @28 := move (kind@27)
+        @30 := &*(left_val@22)
+        @29 := &*(@30)
+        @32 := &*(right_val@23)
+        @31 := &*(@32)
+        @33 := core::option::Option::None {  }
         panic(core::panicking::assert_failed)
     }
+    drop @26
     drop @25
     drop @24
-    drop @23
-    drop right_val@22
-    drop left_val@21
+    drop right_val@23
+    drop left_val@22
+    drop @21
     drop @19
     drop @17
     drop @16

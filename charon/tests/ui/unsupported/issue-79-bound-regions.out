@@ -34,33 +34,30 @@ fn test_crate::main()
     let slice@1: &'_ (Slice<i32>); // local
     let @2: &'_ (Array<i32, 1 : usize>); // anonymous local
     let @3: &'_ (Array<i32, 1 : usize>); // anonymous local
-    let @4: core::option::Option<&'_ (i32)>[core::marker::Sized<&'_ (i32)>]; // anonymous local
-    let @5: &'_ mut (core::slice::iter::Iter<'_, i32>[core::marker::Sized<i32>]); // anonymous local
-    let @6: core::slice::iter::Iter<'_, i32>[core::marker::Sized<i32>]; // anonymous local
-    let @7: &'_ (Slice<i32>); // anonymous local
-    let @8: &'_ (Array<i32, 1 : usize>); // anonymous local
-    let @9: Array<i32, 1 : usize>; // anonymous local
-    let @10: &'_ (Array<i32, 1 : usize>); // anonymous local
+    let @4: Array<i32, 1 : usize>; // anonymous local
+    let @5: core::option::Option<&'_ (i32)>[core::marker::Sized<&'_ (i32)>]; // anonymous local
+    let @6: &'_ mut (core::slice::iter::Iter<'_, i32>[core::marker::Sized<i32>]); // anonymous local
+    let @7: core::slice::iter::Iter<'_, i32>[core::marker::Sized<i32>]; // anonymous local
+    let @8: &'_ (Slice<i32>); // anonymous local
 
-    @9 := [const (0 : i32)]
-    @10 := &@9
-    @8 := move (@10)
-    @3 := &*(@8)
+    @4 := [const (0 : i32)]
+    @3 := &@4
     @2 := &*(@3)
     slice@1 := @ArrayToSliceShared<'_, i32, 1 : usize>(move (@2))
     drop @2
     @fake_read(slice@1)
     drop @3
-    @7 := &*(slice@1)
-    @6 := core::slice::{Slice<T>}::iter<'_, i32>[core::marker::Sized<i32>](move (@7))
-    @5 := &two-phase-mut @6
-    drop @7
-    @4 := core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::Iter<'a, T>[@TraitClause0]}#182::next<'_, '_, i32>[core::marker::Sized<i32>](move (@5))
-    drop @5
-    @fake_read(@4)
+    @8 := &*(slice@1)
+    @7 := core::slice::{Slice<T>}::iter<'_, i32>[core::marker::Sized<i32>](move (@8))
+    @6 := &two-phase-mut @7
+    drop @8
+    @5 := core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::Iter<'a, T>[@TraitClause0]}#182::next<'_, '_, i32>[core::marker::Sized<i32>](move (@6))
     drop @6
-    drop @4
+    @fake_read(@5)
+    drop @7
+    drop @5
     @0 := ()
+    drop @4
     drop slice@1
     @0 := ()
     return
