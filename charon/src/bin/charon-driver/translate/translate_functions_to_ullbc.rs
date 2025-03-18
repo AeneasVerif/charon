@@ -420,12 +420,26 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
                 let ty = p.ty().clone();
                 Ok((Operand::Move(p), ty))
             }
-            hax::Operand::Constant(const_op) => {
-                let constant =
-                    self.translate_constant_expr_to_constant_expr(span, &const_op.evaluated)?;
-                let ty = constant.ty.clone();
-                Ok((Operand::Const(constant), ty))
-            }
+            hax::Operand::Constant(const_op) => match &const_op.kind {
+                hax::ConstOperandKind::Value(constant)
+                | hax::ConstOperandKind::Promoted(_, Some(constant)) => {
+                    let constant = self.translate_constant_expr_to_constant_expr(span, constant)?;
+                    let ty = constant.ty.clone();
+                    Ok((Operand::Const(constant), ty))
+                }
+                hax::ConstOperandKind::Promoted(promoted, None) => {
+                    // A promoted constant that could not be evaluated.
+                    // TODO: translate as a Global, then inline in a pass. will need to shift
+                    // locals and block ids.
+                    // TODO: disable hax's `inline_anon_const` so we also get that for inline
+                    // consts too.
+                    raise_error!(
+                        self,
+                        span,
+                        "Cannot translate unevaluated constant: {promoted:?}"
+                    )
+                }
+            },
         }
     }
 

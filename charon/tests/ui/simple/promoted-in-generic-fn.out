@@ -1,42 +1,7 @@
-disabled backtrace
-error[E9999]: Supposely unreachable place in the Rust AST. The label is "UnevalPromotedConstant".
-              This error report happend because some assumption about the Rust AST was broken.
-              
-              Context:
-               - konst: Unevaluated(
-                  UnevaluatedConst {
-                      def: test_crate::f,
-                      args: [
-                          T/#0,
-                      ],
-                      promoted: Some(
-                          promoted[0],
-                      ),
-                  },
-                  &'{erased} usize,
-              )
-               - ucv: UnevaluatedConst {
-                  def: test_crate::f,
-                  args: [
-                      T/#0,
-                  ],
-                  promoted: Some(
-                      promoted[0],
-                  ),
-              }
+error: Cannot translate unevaluated constant: PromotedConstant { def_id: test_crate::f, promoted_id: PromotedId { id: 0 }, args: [Type(Ty { kind: Node { id: Id { id: 8 }, value: Param(ParamTy { index: 0, name: "T" }) } })], mir: MirBody { span: Span { lo: Loc { line: 5, col: 12 }, hi: Loc { line: 5, col: 27 }, filename: Real(LocalPath("tests/ui/simple/promoted-in-generic-fn.rs")), rust_span_data: Some(tests/ui/simple/promoted-in-generic-fn.rs:5:13: 5:28 (#0)) }, local_decls: IndexVec { raw: [LocalDecl { mutability: true, ty: Ty { kind: Node { id: Id { id: 11 }, value: Ref(Region { kind: ReErased }, Ty { kind: Node { id: Id { id: 10 }, value: Uint(Usize) } }, false) } }, source_info: SourceInfo { span: Span { lo: Loc { line: 5, col: 12 }, hi: Loc { line: 5, col: 27 }, filename: Real(LocalPath("tests/ui/simple/promoted-in-generic-fn.rs")), rust_span_data: Some(tests/ui/simple/promoted-in-generic-fn.rs:5:13: 5:28 (#0)) }, scope: SourceScope(0) }, name: None }, LocalDecl { mutability: true, ty: Ty { kind: Node { id: Id { id: 10 }, value: Uint(Usize) } }, source_info: SourceInfo { span: Span { lo: Loc { line: 5, col: 13 }, hi: Loc { line: 5, col: 27 }, filename: Real(LocalPath("tests/ui/simple/promoted-in-generic-fn.rs")), rust_span_data: Some(tests/ui/simple/promoted-in-generic-fn.rs:5:14: 5:28 (#0)) }, scope: SourceScope(0) }, name: None }], _marker: PhantomData<fn(&hax_frontend_exporter::types::mir::Local)> }, basic_blocks: IndexVec { raw: [BasicBlockData { statements: [], terminator: Some(Terminator { source_info: SourceInfo { span: Span { lo: Loc { line: 5, col: 13 }, hi: Loc { line: 5, col: 27 }, filename: Real(LocalPath("tests/ui/simple/promoted-in-generic-fn.rs")), rust_span_data: Some(tests/ui/simple/promoted-in-generic-fn.rs:5:14: 5:28 (#0)) }, scope: SourceScope(0) }, kind: Call { fun: Static { def_id: core::mem::size_of, trait_info: None, generics: [Type(Ty { kind: Node { id: Id { id: 8 }, value: Param(ParamTy { index: 0, name: "T" }) } })], trait_refs: [ImplExpr { trait: Binder { value: TraitRef { def_id: core::marker::Sized, generic_args: [Type(Ty { kind: Node { id: Id { id: 8 }, value: Param(ParamTy { index: 0, name: "T" }) } })] }, bound_vars: [] }, impl: LocalBound { predicate_id: PredicateId(14649509712428509623), index: 0, trait: Binder { value: TraitRef { def_id: core::marker::Sized, generic_args: [Type(Ty { kind: Node { id: Id { id: 8 }, value: Param(ParamTy { index: 0, name: "T" }) } })] }, bound_vars: [] }, path: [] } }] }, late_bound_generics: [], args: [], destination: Place { ty: Ty { kind: Node { id: Id { id: 10 }, value: Uint(Usize) } }, kind: Local(Local(1)) }, target: Some(BasicBlock(1)), unwind: UnwindAction { todo: "Continue" }, fn_span: Span { lo: Loc { line: 5, col: 13 }, hi: Loc { line: 5, col: 27 }, filename: Real(LocalPath("tests/ui/simple/promoted-in-generic-fn.rs")), rust_span_data: Some(tests/ui/simple/promoted-in-generic-fn.rs:5:14: 5:28 (#0)) } } }), is_cleanup: false }, BasicBlockData { statements: [Statement { source_info: SourceInfo { span: Span { lo: Loc { line: 5, col: 12 }, hi: Loc { line: 5, col: 27 }, filename: Real(LocalPath("tests/ui/simple/promoted-in-generic-fn.rs")), rust_span_data: Some(tests/ui/simple/promoted-in-generic-fn.rs:5:13: 5:28 (#0)) }, scope: SourceScope(0) }, kind: Assign((Place { ty: Ty { kind: Node { id: Id { id: 11 }, value: Ref(Region { kind: ReErased }, Ty { kind: Node { id: Id { id: 10 }, value: Uint(Usize) } }, false) } }, kind: Local(Local(0)) }, Ref(Region { kind: ReErased }, Shared, Place { ty: Ty { kind: Node { id: Id { id: 10 }, value: Uint(Usize) } }, kind: Local(Local(1)) }))) }], terminator: Some(Terminator { source_info: SourceInfo { span: Span { lo: Loc { line: 5, col: 12 }, hi: Loc { line: 5, col: 27 }, filename: Real(LocalPath("tests/ui/simple/promoted-in-generic-fn.rs")), rust_span_data: Some(tests/ui/simple/promoted-in-generic-fn.rs:5:13: 5:28 (#0)) }, scope: SourceScope(0) }, kind: Return }), is_cleanup: false }], _marker: PhantomData<fn(&hax_frontend_exporter::types::mir::BasicBlock)> }, source_scopes: IndexVec { raw: [SourceScopeData { span: Span { lo: Loc { line: 3, col: 0 }, hi: Loc { line: 6, col: 1 }, filename: Real(LocalPath("tests/ui/simple/promoted-in-generic-fn.rs")), rust_span_data: Some(tests/ui/simple/promoted-in-generic-fn.rs:3:1: 6:2 (#0)) }, parent_scope: None, inlined_parent_scope: None }], _marker: PhantomData<fn(&hax_frontend_exporter::types::mir::SourceScope)> }, tainted_by_errors: None, _kind: PhantomData<()> } }
+ --> tests/ui/simple/promoted-in-generic-fn.rs:5:13
   |
-  = note: ⚠️ This is a bug in Hax's frontend.
-          Please report this error to https://github.com/hacspec/hax/issues with some context (e.g. the current crate)!
+5 |     let _ = &size_of::<T>();
+  |             ^^^^^^^^^^^^^^^
 
-error: Hax panicked when translating `Body { basic_blocks: BasicBlocks { basic_blocks: [BasicBlockData { statements: [StorageLive(_1), _3 = const f::<T>::promoted[0], _1 = &(*_3), PlaceMention(_1), StorageDead(_1), _0 = const ()], terminator: Some(Terminator { source_info: SourceInfo { span: tests/ui/simple/promoted-in-generic-fn.rs:6:2: 6:2 (#0), scope: scope[0] }, kind: return }), is_cleanup: false }], cache: Cache { predecessors: OnceLock(<uninit>), switch_sources: OnceLock(<uninit>), reverse_postorder: OnceLock(<uninit>), dominators: OnceLock(<uninit>) } }, phase: Analysis(Initial), pass_count: 1, source: MirSource { instance: Item(test_crate::f), promoted: None }, source_scopes: [SourceScopeData { span: tests/ui/simple/promoted-in-generic-fn.rs:3:1: 6:2 (#0), parent_scope: None, inlined: None, inlined_parent_scope: None, local_data: Set(SourceScopeLocalData { lint_root: HirId(test_crate::f.0) }) }, SourceScopeData { span: tests/ui/simple/promoted-in-generic-fn.rs:5:5: 6:2 (#0), parent_scope: Some(scope[0]), inlined: None, inlined_parent_scope: None, local_data: Set(SourceScopeLocalData { lint_root: HirId(test_crate::f.0) }) }], coroutine: None, local_decls: [LocalDecl { mutability: Mut, local_info: Set(Boring), ty: (), user_ty: None, source_info: SourceInfo { span: tests/ui/simple/promoted-in-generic-fn.rs:3:10: 3:10 (#0), scope: scope[0] } }, LocalDecl { mutability: Mut, local_info: Set(Boring), ty: &'{erased} usize, user_ty: None, source_info: SourceInfo { span: tests/ui/simple/promoted-in-generic-fn.rs:5:13: 5:28 (#0), scope: scope[0] } }, LocalDecl { mutability: Not, local_info: Set(Boring), ty: usize, user_ty: None, source_info: SourceInfo { span: tests/ui/simple/promoted-in-generic-fn.rs:5:14: 5:28 (#0), scope: scope[0] } }, LocalDecl { mutability: Mut, local_info: Set(Boring), ty: &'{erased} usize, user_ty: None, source_info: SourceInfo { span: tests/ui/simple/promoted-in-generic-fn.rs:5:13: 5:28 (#0), scope: scope[0] } }], user_type_annotations: [], arg_count: 0, spread_arg: None, var_debug_info: [], span: tests/ui/simple/promoted-in-generic-fn.rs:3:1: 6:2 (#0), required_consts: Some([const f::<T>::promoted[0]]), mentioned_items: None, is_polymorphic: true, injection_phase: None, tainted_by_errors: None, coverage_info_hi: None, function_coverage_info: None }`.
- --> tests/ui/simple/promoted-in-generic-fn.rs:3:1
-  |
-3 | / fn f<T>() {
-4 | |     // This can't be evaluated generically.
-5 | |     let _ = &size_of::<T>();
-6 | | }
-  | |_^
-
-error: aborting due to 1 previous error
-
-ERROR Code failed to compile
+ERROR Charon failed to translate this code (1 errors)
