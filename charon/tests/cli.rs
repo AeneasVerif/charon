@@ -238,3 +238,28 @@ fn charon_rust_target() -> Result<()> {
         Ok(())
     })
 }
+
+#[test]
+fn handle_multi_trailing_rs_args() {
+    let file = "arrays.rs";
+    // FIXME: charon fails to handle multiple rustc args that trail with .rs
+    // cc https://github.com/AeneasVerif/charon/issues/403#issuecomment-2729549999
+    // But it will be fixed soon.
+    let args = &[
+        "rustc",
+        "--print-llbc",
+        "--",
+        "--crate-name=arrays.rs",
+        file,
+    ];
+    let err = charon(args, "tests/ui", |stdout, _| {
+        println!("stdout={stdout}");
+        Ok(())
+    })
+    .unwrap_err();
+    let err = format!("{err:?}");
+    assert!(
+        err.contains("driver.rs:225:5:\\nassertion failed: indices.len() <= 1"),
+        "{err}"
+    );
+}
