@@ -121,44 +121,25 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
         self.with_def_id(rust_id, trans_id, |mut ctx| {
             let span = ctx.def_span(rust_id);
             // Catch cycles
-            let res = if ctx.translate_stack.contains(&trans_id) {
-                register_error!(
+            let res = {
+                // Stopgap measure because there are still many panics in charon and hax.
+                let mut ctx = std::panic::AssertUnwindSafe(&mut ctx);
+                std::panic::catch_unwind(move || ctx.translate_item_aux(rust_id, trans_id))
+            };
+            match res {
+                Ok(Ok(())) => return,
+                // Translation error
+                Ok(Err(_)) => {
+                    register_error!(ctx, span, "Item `{rust_id:?}` caused errors; ignoring.")
+                }
+                // Panic
+                Err(_) => register_error!(
                     ctx,
                     span,
-                    "Cycle detected while translating {rust_id:?}! Stack: {:?}",
-                    &ctx.translate_stack
-                );
-                Err(())
-            } else {
-                ctx.translate_stack.push(trans_id);
-
-                let res = {
-                    // Stopgap measure because there are still many panics in charon and hax.
-                    let mut ctx = std::panic::AssertUnwindSafe(&mut ctx);
-                    std::panic::catch_unwind(move || ctx.translate_item_aux(rust_id, trans_id))
-                };
-                let res = match res {
-                    Ok(Ok(())) => Ok(()),
-                    // Translation error
-                    Ok(Err(_)) => Err(()),
-                    // Panic
-                    Err(_) => {
-                        register_error!(
-                            ctx,
-                            span,
-                            "Thread panicked when extracting item `{rust_id:?}`."
-                        );
-                        Err(())
-                    }
-                };
-                ctx.translate_stack.pop();
-                res
+                    "Thread panicked when extracting item `{rust_id:?}`."
+                ),
             };
-
-            if res.is_err() {
-                register_error!(ctx, span, "Item `{rust_id:?}` caused errors; ignoring.");
-                ctx.errors.borrow_mut().ignore_failed_decl(trans_id);
-            }
+            ctx.errors.borrow_mut().ignore_failed_decl(trans_id);
         })
     }
 
@@ -204,21 +185,6 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
         }
         Ok(())
     }
-
-    /// While translating an item you may need the contents of another. Use this to retreive the
-    /// translated version of this item.
-    #[allow(dead_code)]
-    pub(crate) fn get_or_translate(&mut self, id: AnyTransId) -> Result<AnyTransItem<'_>, Error> {
-        let item_source = *self.reverse_id_map.get(&id).unwrap();
-        // Translate if not already translated.
-        self.translate_item(item_source, id);
-
-        if self.errors.borrow().ignored_failed_decls.contains(&id) {
-            let span = self.def_span(item_source.to_def_id());
-            raise_error!(self, span, "Failed to translate item {id:?}.")
-        }
-        Ok(self.translated.get_item(id).unwrap())
-    }
 }
 
 #[tracing::instrument(skip(tcx))]
@@ -259,7 +225,6 @@ pub fn translate<'tcx, 'ctx>(
         reverse_id_map: Default::default(),
         file_to_id: Default::default(),
         items_to_translate: Default::default(),
-        translate_stack: Default::default(),
         cached_item_metas: Default::default(),
         cached_names: Default::default(),
     };

@@ -98,10 +98,6 @@ pub struct TranslateCtx<'tcx> {
     /// The declarations we came accross and which we haven't translated yet. We keep them sorted
     /// to make the output order a bit more stable.
     pub items_to_translate: BTreeMap<TransItemSource, AnyTransId>,
-    /// Stack of the translations currently happening. Used to avoid cycles where items need to
-    /// translate themselves transitively.
-    // FIXME: we don't use recursive item translation anywhere.
-    pub translate_stack: Vec<AnyTransId>,
     /// Cache the names to compute them only once each.
     pub cached_names: HashMap<DefId, Name>,
     /// Cache the `ItemMeta`s to compute them only once each.
