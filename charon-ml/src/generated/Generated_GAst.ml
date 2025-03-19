@@ -373,10 +373,6 @@ and cli_options = {
   mir_promoted : bool;  (** Extract the promoted MIR instead of the built MIR *)
   mir_optimized : bool;
       (** Extract the optimized MIR instead of the built MIR *)
-  crate_name : string option;
-      (** Provide a custom name for the compiled crate (ignore the name computed
-        by Cargo)
-     *)
   input_file : path_buf option;
       (** The input file (the entry point of the crate to extract).
         This is needed if you want to define a custom entry point (to only

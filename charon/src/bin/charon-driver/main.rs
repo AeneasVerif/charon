@@ -19,6 +19,7 @@ extern crate rustc_hir;
 extern crate rustc_index;
 extern crate rustc_interface;
 extern crate rustc_middle;
+extern crate rustc_session;
 extern crate rustc_span;
 extern crate rustc_target;
 
@@ -28,10 +29,7 @@ extern crate charon_lib;
 mod driver;
 mod translate;
 
-use crate::driver::{
-    arg_values, get_args_crate_index, get_args_source_index, CharonCallbacks, CharonFailure,
-    RunCompilerNormallyCallbacks,
-};
+use crate::driver::{arg_values, CharonCallbacks, CharonFailure, RunCompilerNormallyCallbacks};
 use charon_lib::{logger, options};
 use itertools::Itertools;
 use std::{env, panic};
@@ -114,58 +112,6 @@ fn main() {
     compiler_args.push("-Copt-level=3".to_string());
     compiler_args.push("-Coverflow-checks=false".to_string());
     compiler_args.push("-Cdebug-assertions=false".to_string());
-
-    // In order to have some flexibility in our tests, we give the possibility
-    // of specifying the source (the input file which gives the entry to the
-    // crate), and of changing the crate name. This allows us to group multiple
-    // tests in one crate and call Charon on subsets of this crate (which makes
-    // things a lot easier from a maintenance point of view). For instance,
-    // we don't extract the whole Charon `tests` (`charon/tests`) crate at once,
-    // but rather: `no_nested_borrows`, `hasmap`, `hashmap_main`... Note that
-    // this is very specific to the test suite for Charon, so we might remove
-    // this in the future. Also, we wouldn't need to do this if we could define
-    // several libraries in a single `Cargo.toml` file.
-    //
-    // If such options are present, we need to update the arguments giving
-    // the crate name and the source file.
-
-    // First replace the source name
-    let source_index = get_args_source_index(&compiler_args);
-    if let Some(source_index) = source_index {
-        trace!("source ({}): {}", source_index, compiler_args[source_index]);
-
-        if options.input_file.is_some() {
-            compiler_args[source_index] = options
-                .input_file
-                .as_ref()
-                .unwrap()
-                .to_str()
-                .unwrap()
-                .to_string();
-        }
-
-        // We replace the crate name only if there is a source name *in the arguments*:
-        // we do so because sometimes the driver is called with a crate name but no
-        // source. This happens when Cargo needs to retrieve information about
-        // the crate.
-        if options.crate_name.is_some() {
-            let crate_name_index = get_args_crate_index(&compiler_args);
-            if let Some(crate_name_index) = crate_name_index {
-                trace!(
-                    "crate name ({}): {}",
-                    crate_name_index,
-                    compiler_args[crate_name_index]
-                );
-
-                compiler_args[crate_name_index] = options.crate_name.as_ref().unwrap().clone();
-            }
-            // If there was no crate name given as parameter, introduce one
-            else {
-                compiler_args.push("--crate-name".to_string());
-                compiler_args.push(options.crate_name.as_ref().unwrap().clone());
-            }
-        }
-    }
 
     for extra_flag in options.rustc_args.iter().cloned() {
         compiler_args.push(extra_flag);

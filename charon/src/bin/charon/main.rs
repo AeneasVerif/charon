@@ -129,6 +129,9 @@ pub fn main() -> Result<()> {
             options = toml.apply(options);
             options.validate();
         }
+        if options.input_file.is_some() {
+            panic!("Option `--input` is only available for `charon rustc`");
+        }
         let mut cmd = toolchain::in_toolchain("cargo")?;
 
         // Tell cargo to use the driver for all the crates in the workspace. There's no option for

@@ -210,38 +210,6 @@ pub fn arg_values<'a, T: Deref<Target = str>>(
     }
 }
 
-/// Given a list of arguments, return the index of the source rust file.
-/// This works by looking for the first argument matching *.rs, while
-/// checking there is at most one such argument.
-///
-/// Note that the driver is sometimes called without a source, for Cargo to
-/// retrieve information about the crate for instance.
-pub fn get_args_source_index<T: Deref<Target = str>>(args: &[T]) -> Option<usize> {
-    let indices: Vec<usize> = args
-        .iter()
-        .enumerate()
-        .filter_map(|(i, s)| if s.ends_with(".rs") { Some(i) } else { None })
-        .collect();
-    assert!(indices.len() <= 1);
-    if indices.len() == 1 {
-        Some(indices[0])
-    } else {
-        None
-    }
-}
-
-/// Given a list of arguments, return the index of the crate name
-pub fn get_args_crate_index<T: Deref<Target = str>>(args: &[T]) -> Option<usize> {
-    args.iter()
-        .enumerate()
-        .find(|(_i, s)| Deref::deref(*s) == "--crate-name")
-        .map(|(i, _)| {
-            assert!(i + 1 < args.len()); // Sanity check
-                                         // The argument giving the crate name is the next one
-            i + 1
-        })
-}
-
 /// Calculate the list of passes we will run on the crate before outputting it.
 pub fn transformation_passes(options: &CliOpts) -> Vec<Pass> {
     let mut passes: Vec<Pass> = vec![];
