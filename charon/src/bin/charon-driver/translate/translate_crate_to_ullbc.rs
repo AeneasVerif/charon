@@ -2,6 +2,7 @@ use super::translate_ctx::*;
 use charon_lib::ast::*;
 use charon_lib::options::{CliOpts, TranslateOptions};
 use charon_lib::transform::TransformCtx;
+use hax::FullDefKind;
 use hax_frontend_exporter::{self as hax, SInto};
 use rustc_hir::def_id::DefId;
 use rustc_middle::ty::TyCtxt;
@@ -11,21 +12,13 @@ use std::path::PathBuf;
 impl<'tcx, 'ctx> TranslateCtx<'tcx> {
     /// Register a HIR item and all its children. We call this on the crate root items and end up
     /// exploring the whole crate.
-    fn register_local_item(&mut self, def_id: DefId) {
-        use hax::FullDefKind;
+    fn register_module_item(&mut self, def_id: DefId) {
         trace!("Registering {def_id:?}");
 
+        // TODO: use simple `DefKind` here
         let Ok(def) = self.hax_def(def_id) else {
             return; // Error has already been emitted
         };
-
-        let Ok(name) = self.hax_def_id_to_name(&def.def_id) else {
-            return; // Error has already been emitted
-        };
-        let opacity = self.opacity_for_name(&name);
-        // Use `item_meta` to take into account the `charon::opaque` attribute.
-        let opacity = self.translate_item_meta(&def, name, opacity).opacity;
-        let explore_inside = !(opacity.is_opaque() || opacity.is_invisible());
 
         match def.kind() {
             FullDefKind::Enum { .. }
@@ -36,7 +29,6 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
             | FullDefKind::ForeignTy => {
                 let _ = self.register_type_decl_id(&None, def_id);
             }
-
             FullDefKind::Fn { .. } | FullDefKind::AssocFn { .. } => {
                 let _ = self.register_fun_decl_id(&None, def_id);
             }
@@ -55,28 +47,15 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
             // TODO: trait aliases (https://github.com/AeneasVerif/charon/issues/366)
             FullDefKind::TraitAlias { .. } => {}
 
-            FullDefKind::InherentImpl { items, .. } => {
-                if explore_inside {
-                    for (_, item_def) in items {
-                        self.register_local_item(item_def.rust_def_id());
-                    }
-                }
-            }
-            FullDefKind::Mod { items, .. } => {
-                // Explore the module, only if it was not marked as "opaque"
-                // TODO: we may want to accumulate the set of modules we found, to check that all
-                // the opaque modules given as arguments actually exist
-                if explore_inside {
-                    for def_id in items {
-                        self.register_local_item(def_id.into());
-                    }
-                }
-            }
-            FullDefKind::ForeignMod { items, .. } => {
-                // Foreign modules can't be named or have attributes, so we can't mark them opaque.
-                for def_id in items {
-                    self.register_local_item(def_id.into());
-                }
+            FullDefKind::InherentImpl { .. }
+            | FullDefKind::Mod { .. }
+            | FullDefKind::ForeignMod { .. } => {
+                let Ok(name) = self.hax_def_id_to_name(&def.def_id) else {
+                    return; // Error has already been emitted
+                };
+                let opacity = self.opacity_for_name(&name);
+                let item_meta = self.translate_item_meta(&def, name, opacity);
+                let _ = self.register_module(item_meta, &def);
             }
 
             // We skip these
@@ -105,6 +84,38 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
                 );
             }
         }
+    }
+
+    /// Register the items inside this module.
+    // TODO: we may want to accumulate the set of modules we found, to check that all
+    // the opaque modules given as arguments actually exist
+    fn register_module(&mut self, item_meta: ItemMeta, def: &hax::FullDef) -> Result<(), Error> {
+        let opacity = item_meta.opacity;
+        let explore_inside = !(opacity.is_opaque() || opacity.is_invisible());
+        match def.kind() {
+            FullDefKind::InherentImpl { items, .. } => {
+                if explore_inside {
+                    for (_, item_def) in items {
+                        self.register_module_item(item_def.rust_def_id());
+                    }
+                }
+            }
+            FullDefKind::Mod { items, .. } => {
+                if explore_inside {
+                    for def_id in items {
+                        self.register_module_item(def_id.into());
+                    }
+                }
+            }
+            FullDefKind::ForeignMod { items, .. } => {
+                // Foreign modules can't be named or have attributes, so we can't mark them opaque.
+                for def_id in items {
+                    self.register_module_item(def_id.into());
+                }
+            }
+            _ => panic!("Item should be a module but isn't: {def:?}"),
+        }
+        Ok(())
     }
 
     pub(crate) fn translate_item(&mut self, item_src: TransItemSource) {
@@ -239,7 +250,7 @@ pub fn translate<'tcx, 'ctx>(
     // Recursively register all the items in the crate, starting from the crate root. We could
     // instead ask rustc for the plain list of all items in the crate, but we wouldn't be able to
     // skip items inside modules annotated with `#[charon::opaque]`.
-    ctx.register_local_item(crate_def_id.to_rust_def_id());
+    ctx.register_module_item(crate_def_id.to_rust_def_id());
 
     trace!(
         "Queue after we explored the crate:\n{:?}",
