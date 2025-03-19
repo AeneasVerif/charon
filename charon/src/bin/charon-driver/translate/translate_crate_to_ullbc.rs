@@ -151,7 +151,6 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
                         Err(())
                     }
                 };
-                // let res = ctx.translate_item_aux(rust_id, trans_id);
                 ctx.translate_stack.pop();
                 res
             };
@@ -187,19 +186,19 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
                 self.translated.type_decls.set_slot(id, ty);
             }
             AnyTransId::Fun(id) => {
-                let fun_decl = bt_ctx.translate_function(id, rust_id, item_meta, &def)?;
+                let fun_decl = bt_ctx.translate_function(id, item_meta, &def)?;
                 self.translated.fun_decls.set_slot(id, fun_decl);
             }
             AnyTransId::Global(id) => {
-                let global_decl = bt_ctx.translate_global(id, rust_id, item_meta, &def)?;
+                let global_decl = bt_ctx.translate_global(id, item_meta, &def)?;
                 self.translated.global_decls.set_slot(id, global_decl);
             }
             AnyTransId::TraitDecl(id) => {
-                let trait_decl = bt_ctx.translate_trait_decl(id, rust_id, item_meta, &def)?;
+                let trait_decl = bt_ctx.translate_trait_decl(id, item_meta, &def)?;
                 self.translated.trait_decls.set_slot(id, trait_decl);
             }
             AnyTransId::TraitImpl(id) => {
-                let trait_impl = bt_ctx.translate_trait_impl(id, rust_id, item_meta, &def)?;
+                let trait_impl = bt_ctx.translate_trait_impl(id, item_meta, &def)?;
                 self.translated.trait_impls.set_slot(id, trait_impl);
             }
         }

@@ -16,7 +16,6 @@ use charon_lib::pretty::FmtWithCtx;
 use charon_lib::ullbc_ast::*;
 use hax_frontend_exporter as hax;
 use itertools::Itertools;
-use rustc_hir::def_id::DefId;
 use rustc_middle::mir::START_BLOCK;
 
 pub(crate) struct SubstFunId {
@@ -1409,9 +1408,8 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
     /// type parameters, that we put in the translation context.
     fn translate_function_signature(
         &mut self,
-        def_id: DefId,
-        item_meta: &ItemMeta,
         def: &hax::FullDef,
+        item_meta: &ItemMeta,
     ) -> Result<FunSig, Error> {
         let span = item_meta.span;
 
@@ -1455,7 +1453,7 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
         };
 
         // Translate the signature
-        trace!("signature of {def_id:?}:\n{:?}", signature.value);
+        trace!("signature of {:?}:\n{:?}", def.def_id, signature.value);
         let mut inputs: Vec<Ty> = signature
             .value
             .inputs
@@ -1545,20 +1543,19 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
 
 impl BodyTransCtx<'_, '_> {
     /// Translate one function.
-    #[tracing::instrument(skip(self, rust_id, item_meta))]
+    #[tracing::instrument(skip(self, item_meta))]
     pub fn translate_function(
         mut self,
         def_id: FunDeclId,
-        rust_id: DefId,
         item_meta: ItemMeta,
         def: &hax::FullDef,
     ) -> Result<FunDecl, Error> {
-        trace!("About to translate function:\n{:?}", rust_id);
+        trace!("About to translate function:\n{:?}", def.def_id);
         let def_span = item_meta.span;
 
         // Translate the function signature
         trace!("Translating function signature");
-        let signature = self.translate_function_signature(rust_id, &item_meta, def)?;
+        let signature = self.translate_function_signature(def, &item_meta)?;
 
         // Check whether this function is a method declaration for a trait definition.
         // If this is the case, it shouldn't contain a body.
@@ -1574,8 +1571,8 @@ impl BodyTransCtx<'_, '_> {
                 | hax::FullDefKind::AssocConst { .. }
                 | hax::FullDefKind::Static { .. }
         );
-        let is_global_initializer =
-            is_global_initializer.then(|| self.register_global_decl_id(item_meta.span, rust_id));
+        let is_global_initializer = is_global_initializer
+            .then(|| self.register_global_decl_id(item_meta.span, &def.def_id));
 
         let body_id = if !is_trait_method_decl_without_default {
             // Translate the body. This doesn't store anything if we can't/decide not to translate
@@ -1602,15 +1599,14 @@ impl BodyTransCtx<'_, '_> {
     }
 
     /// Translate one global.
-    #[tracing::instrument(skip(self, rust_id, item_meta))]
+    #[tracing::instrument(skip(self, item_meta))]
     pub fn translate_global(
         mut self,
         def_id: GlobalDeclId,
-        rust_id: DefId,
         item_meta: ItemMeta,
         def: &hax::FullDef,
     ) -> Result<GlobalDecl, Error> {
-        trace!("About to translate global:\n{:?}", rust_id);
+        trace!("About to translate global:\n{:?}", def.def_id);
         let span = item_meta.span;
 
         // Translate the generics and predicates - globals *can* have generics
@@ -1634,7 +1630,7 @@ impl BodyTransCtx<'_, '_> {
         };
         let ty = self.translate_ty(span, ty)?;
 
-        let initializer = self.register_fun_decl_id(span, rust_id);
+        let initializer = self.register_fun_decl_id(span, &def.def_id);
 
         Ok(GlobalDecl {
             def_id,
