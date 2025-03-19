@@ -15,8 +15,8 @@ use rustc_middle::ty::TyCtxt;
 use std::borrow::Cow;
 use std::cell::RefCell;
 use std::cmp::Ord;
-use std::collections::HashMap;
 use std::collections::{BTreeMap, VecDeque};
+use std::collections::{BTreeSet, HashMap};
 use std::fmt::Debug;
 use std::path::{Component, PathBuf};
 use std::sync::Arc;
@@ -97,7 +97,7 @@ pub struct TranslateCtx<'tcx> {
     pub errors: RefCell<ErrorCtx>,
     /// The declarations we came accross and which we haven't translated yet. We keep them sorted
     /// to make the output order a bit more stable.
-    pub items_to_translate: BTreeMap<TransItemSource, AnyTransId>,
+    pub items_to_translate: BTreeSet<TransItemSource>,
     /// Cache the names to compute them only once each.
     pub cached_names: HashMap<DefId, Name>,
     /// Cache the `ItemMeta`s to compute them only once each.
@@ -791,21 +791,14 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
         item_id
     }
 
-    pub(crate) fn enqueue_id(&mut self, id: impl Into<AnyTransId>) {
-        let id = id.into();
-        let src_id = self.reverse_id_map[&id];
-        self.items_to_translate.insert(src_id, id);
-    }
-
     /// Register this id and enqueue it for translation.
     pub(crate) fn register_and_enqueue_id(
         &mut self,
         src: &Option<DepSource>,
         id: TransItemSource,
     ) -> AnyTransId {
-        let item_id = self.register_id_no_enqueue(src, id);
-        self.enqueue_id(item_id);
-        item_id
+        self.items_to_translate.insert(id);
+        self.register_id_no_enqueue(src, id)
     }
 
     pub(crate) fn register_type_decl_id(
@@ -873,12 +866,17 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
             .unwrap()
     }
 
-    pub(crate) fn with_def_id<F, T>(&mut self, def_id: DefId, item_id: AnyTransId, f: F) -> T
+    pub(crate) fn with_def_id<F, T>(
+        &mut self,
+        def_id: DefId,
+        item_id: Option<AnyTransId>,
+        f: F,
+    ) -> T
     where
         F: FnOnce(&mut Self) -> T,
     {
         let mut errors = self.errors.borrow_mut();
-        let current_def_id = mem::replace(&mut errors.def_id, Some(item_id));
+        let current_def_id = mem::replace(&mut errors.def_id, item_id);
         let current_def_id_is_local = mem::replace(&mut errors.def_id_is_local, def_id.is_local());
         drop(errors); // important: release the refcell "lock"
         let ret = f(self);

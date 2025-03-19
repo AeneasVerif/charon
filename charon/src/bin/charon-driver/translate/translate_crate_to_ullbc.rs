@@ -107,13 +107,15 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
         }
     }
 
-    pub(crate) fn translate_item(&mut self, item_src: TransItemSource, trans_id: AnyTransId) {
-        if self
-            .errors
-            .borrow()
-            .ignored_failed_decls
-            .contains(&trans_id)
-            || self.translated.get_item(trans_id).is_some()
+    pub(crate) fn translate_item(&mut self, item_src: TransItemSource) {
+        let trans_id = self.id_map.get(&item_src).copied();
+        if let Some(trans_id) = trans_id
+            && (self
+                .errors
+                .borrow()
+                .ignored_failed_decls
+                .contains(&trans_id)
+                || self.translated.get_item(trans_id).is_some())
         {
             return;
         }
@@ -139,18 +141,22 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
                     "Thread panicked when extracting item `{rust_id:?}`."
                 ),
             };
-            ctx.errors.borrow_mut().ignore_failed_decl(trans_id);
+            if let Some(trans_id) = trans_id {
+                ctx.errors.borrow_mut().ignore_failed_decl(trans_id);
+            }
         })
     }
 
     pub(crate) fn translate_item_aux(
         &mut self,
         rust_id: DefId,
-        trans_id: AnyTransId,
+        trans_id: Option<AnyTransId>,
     ) -> Result<(), Error> {
         // Translate the meta information
         let name = self.def_id_to_name(rust_id)?;
-        self.translated.item_names.insert(trans_id, name.clone());
+        if let Some(trans_id) = trans_id {
+            self.translated.item_names.insert(trans_id, name.clone());
+        }
         let opacity = self.opacity_for_name(&name);
         if opacity.is_invisible() {
             // Don't even start translating the item. In particular don't call `hax_def` on it.
@@ -160,28 +166,29 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
         let item_meta = self.translate_item_meta(&def, name, opacity);
 
         // Initialize the body translation context
-        let bt_ctx = BodyTransCtx::new(rust_id, Some(trans_id), self);
+        let bt_ctx = BodyTransCtx::new(rust_id, trans_id, self);
         match trans_id {
-            AnyTransId::Type(id) => {
+            Some(AnyTransId::Type(id)) => {
                 let ty = bt_ctx.translate_type(id, item_meta, &def)?;
                 self.translated.type_decls.set_slot(id, ty);
             }
-            AnyTransId::Fun(id) => {
+            Some(AnyTransId::Fun(id)) => {
                 let fun_decl = bt_ctx.translate_function(id, item_meta, &def)?;
                 self.translated.fun_decls.set_slot(id, fun_decl);
             }
-            AnyTransId::Global(id) => {
+            Some(AnyTransId::Global(id)) => {
                 let global_decl = bt_ctx.translate_global(id, item_meta, &def)?;
                 self.translated.global_decls.set_slot(id, global_decl);
             }
-            AnyTransId::TraitDecl(id) => {
+            Some(AnyTransId::TraitDecl(id)) => {
                 let trait_decl = bt_ctx.translate_trait_decl(id, item_meta, &def)?;
                 self.translated.trait_decls.set_slot(id, trait_decl);
             }
-            AnyTransId::TraitImpl(id) => {
+            Some(AnyTransId::TraitImpl(id)) => {
                 let trait_impl = bt_ctx.translate_trait_impl(id, item_meta, &def)?;
                 self.translated.trait_impls.set_slot(id, trait_impl);
             }
+            None => unimplemented!(),
         }
         Ok(())
     }
@@ -248,9 +255,9 @@ pub fn translate<'tcx, 'ctx>(
     // Note that the order in which we translate the definitions doesn't matter:
     // we never need to lookup a translated definition, and only use the map
     // from Rust ids to translated ids.
-    while let Some((item_src, trans_id)) = ctx.items_to_translate.pop_first() {
+    while let Some(item_src) = ctx.items_to_translate.pop_first() {
         trace!("About to translate item: {:?}", item_src);
-        ctx.translate_item(item_src, trans_id);
+        ctx.translate_item(item_src);
     }
 
     // Return the context, dropping the hax state and rustc `tcx`.
