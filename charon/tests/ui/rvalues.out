@@ -311,7 +311,7 @@ where
     size@1 := core::mem::size_of<T>[@TraitClause0]()
     align@2 := core::mem::align_of<T>[@TraitClause0]()
     // This is `const (false)` in the MIR we get, but `true` in const evaluation.
-    ub@3 := const (false)
+    ub@3 := ub_checks<bool>
     offset@4 := offset_of(?)<test_crate::nullary_ops::Struct<T>[@TraitClause0]>
     @7 := copy (size@1)
     @8 := copy (align@2)

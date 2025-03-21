@@ -12,8 +12,8 @@ pub fn test_crate::foo() -> &'static (Slice<u32>)
     @4 := [const (0 : u32), const (1 : u32), const (2 : u32), const (3 : u32)]
     @5 := &@4
     @3 := move (@5)
-    @2 := copy (@3)
-    @1 := copy (@2)
+    @2 := &*(@3)
+    @1 := &*(@2)
     @0 := @ArrayToSliceShared<'_, u32, 4 : usize>(move (@1))
     drop @1
     drop @2

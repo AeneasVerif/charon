@@ -11,8 +11,8 @@ fn test_crate::two() -> &'static (u32)
     @3 := const (2 : u32)
     @4 := &@3
     @2 := move (@4)
-    @1 := copy (@2)
-    @0 := copy (@1)
+    @1 := &*(@2)
+    @0 := &*(@1)
     drop @1
     return
 }
