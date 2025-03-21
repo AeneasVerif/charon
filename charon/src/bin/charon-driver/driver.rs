@@ -100,29 +100,13 @@ pub struct DriverOutput {
 /// Run the rustc driver with our custom hooks. Returns `None` if the crate was not compiled with
 /// charon (e.g. because it was a dependency).
 pub fn run_rustc_driver(options: CliOpts) -> Result<Option<DriverOutput>, CharonFailure> {
-    // Retrieve the executable path - this is not considered an argument,
-    // and won't be parsed by CliOpts
-    let origin_args: Vec<String> = env::args().collect();
-    assert!(
-        !origin_args.is_empty(),
-        "Impossible: zero arguments on the command-line!"
-    );
-    trace!("original arguments (computed by cargo): {:?}", origin_args);
-
-    // Compute the compiler arguments for Rustc.
-    // We first use all the arguments received by charon-driver, except the first two.
-    // Rem.: the first argument is the path to the charon-driver executable.
-    // Rem.: the second argument is "rustc" (passed by Cargo because RUSTC_WRAPPER is set).
-    assert_eq!(
-        std::path::Path::new(&origin_args[1]).file_stem(),
-        Some("rustc".as_ref()),
-        "The second argument for charon-driver must be a path to rustc."
-    );
-    let mut compiler_args: Vec<String> = origin_args[2..].to_vec();
+    // Retreive the command-line arguments pased to `charon_driver`. The first arg is the path to
+    // the current executable, we skip it.
+    let compiler_args: Vec<String> = env::args().skip(1).collect();
 
     // Cargo calls the driver twice. The first call to the driver is with "--crate-name ___" and no
     // source file, for Cargo to retrieve some information about the crate.
-    let is_dry_run = arg_values(&origin_args, "--crate-name")
+    let is_dry_run = arg_values(&compiler_args, "--crate-name")
         .find(|s| *s == "___")
         .is_some();
     // When called using cargo, we tell cargo to use `charon-driver` by setting the
@@ -139,19 +123,16 @@ pub fn run_rustc_driver(options: CliOpts) -> Result<Option<DriverOutput>, Charon
     // Currently, we detect this by checking for "--target=", which is never set for host crates.
     // This matches what Miri does, which hopefully makes it reliable enough. This relies on us
     // always invoking cargo itself with `--target`, which `charon` ensures.
-    let is_target = arg_values(&origin_args, "--target").next().is_some();
+    let is_target = arg_values(&compiler_args, "--target").next().is_some();
 
-    if is_dry_run || is_workspace_dependency || !is_target {
+    let no_translate = is_dry_run || is_workspace_dependency || !is_target;
+    if no_translate {
         trace!("Skipping charon; running compiler normally instead.");
         // In this case we run the compiler normally.
         RunCompilerNormallyCallbacks::new(options)
             .run_compiler(compiler_args)
             .unwrap();
         return Ok(None);
-    }
-
-    for extra_flag in options.rustc_args.iter().cloned() {
-        compiler_args.push(extra_flag);
     }
 
     trace!("Compiler arguments: {:?}", compiler_args);
@@ -196,9 +177,10 @@ impl CharonCallbacks {
         &mut self,
         mut args: Vec<String>,
     ) -> Result<export::CrateData, CharonFailure> {
-        // Arguments list always start with the executable name. We put a silly value to ensure
-        // it's not used for anything.
-        args.insert(0, "__CHARON_MYSTERIOUS_FIRST_ARG__".to_string());
+        for extra_flag in self.options.rustc_args.iter().cloned() {
+            args.push(extra_flag);
+        }
+
         rustc_driver::catch_fatal_errors(|| {
             let res = rustc_driver::RunCompiler::new(&args, self).run();
             res.map_err(|_| CharonFailure::RustcError)
@@ -321,10 +303,7 @@ impl RunCompilerNormallyCallbacks {
         Self { options }
     }
     /// Run rustc normally. `args` is the arguments passed to `rustc`'s command-line.
-    pub fn run_compiler(&mut self, mut args: Vec<String>) -> Result<(), ()> {
-        // Arguments list always start with the executable name. We put a silly value to ensure
-        // it's not used for anything.
-        args.insert(0, "__CHARON_MYSTERIOUS_FIRST_ARG__".to_string());
+    pub fn run_compiler(&mut self, args: Vec<String>) -> Result<(), ()> {
         rustc_driver::RunCompiler::new(&args, self)
             .run()
             .map_err(|_| ())
