@@ -182,7 +182,7 @@ where
     let x@2: &'_ (U); // arg #2
     let @3: &'_ (U); // anonymous local
 
-    @3 := copy (x@2)
+    @3 := &*(x@2)
     @0 := test_crate::WrapClone { 0: move (@3) }
     drop @3
     return

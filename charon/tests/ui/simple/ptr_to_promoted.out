@@ -14,7 +14,7 @@ fn test_crate::main()
     @6 := const (0 : u8)
     @7 := &@6
     @5 := move (@7)
-    @2 := copy (@5)
+    @2 := &*(@5)
     x@1 := &raw const *(@2)
     drop @2
     @4 := copy (x@1)
