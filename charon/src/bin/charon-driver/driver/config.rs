@@ -67,3 +67,14 @@ pub fn no_codegen(config: &mut Config) {
     out_types.push((OutputType::Metadata, None));
     *opt_output_types = OutputTypes::new(&out_types);
 }
+
+/// Always compile in release mode: in effect, we want to analyze the released
+/// code. Also, rustc inserts a lot of dynamic checks in debug mode, that we
+/// have to clean. Full list of `--release` flags:
+/// https://doc.rust-lang.org/cargo/reference/profiles.html#release
+pub fn release_mode(config: &mut Config) {
+    let cg = &mut config.opts.cg;
+    cg.opt_level = "3".into();
+    cg.overflow_checks = Some(false);
+    config.opts.debug_assertions = false;
+}

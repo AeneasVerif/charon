@@ -99,14 +99,6 @@ fn main() {
         return;
     }
 
-    // Always compile in release mode: in effect, we want to analyze the released
-    // code. Also, rustc inserts a lot of dynamic checks in debug mode, that we
-    // have to clean. Full list of `--release` flags:
-    // https://doc.rust-lang.org/cargo/reference/profiles.html#release
-    compiler_args.push("-Copt-level=3".to_string());
-    compiler_args.push("-Coverflow-checks=false".to_string());
-    compiler_args.push("-Cdebug-assertions=false".to_string());
-
     for extra_flag in options.rustc_args.iter().cloned() {
         compiler_args.push(extra_flag);
     }

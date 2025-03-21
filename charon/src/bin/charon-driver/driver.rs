@@ -136,6 +136,7 @@ impl Callbacks for CharonCallbacks {
 
         // Mutate other fields in Config
         config::disabled_mir_passes(config);
+        config::release_mode(config);
         config::no_codegen(config);
     }
 
