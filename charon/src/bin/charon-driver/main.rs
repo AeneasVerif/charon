@@ -29,33 +29,131 @@ extern crate charon_lib;
 mod driver;
 mod translate;
 
-use crate::driver::{arg_values, CharonCallbacks, CharonFailure, RunCompilerNormallyCallbacks};
-use charon_lib::{logger, options};
-use std::{env, panic};
+use charon_lib::{
+    export, logger,
+    options::{self, CliOpts},
+    transform::{
+        Pass, PrintCtxPass, TransformCtx, FINAL_CLEANUP_PASSES, INITIAL_CLEANUP_PASSES,
+        LLBC_PASSES, SHARED_FINALIZING_PASSES, ULLBC_PASSES,
+    },
+};
+use std::{env, fmt, ops::Deref};
+
+pub enum CharonFailure {
+    /// The usize is the number of errors.
+    CharonError(usize),
+    RustcError,
+    Panic,
+    Serialize,
+}
+
+impl fmt::Display for CharonFailure {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            CharonFailure::RustcError => write!(f, "Code failed to compile")?,
+            CharonFailure::CharonError(err_count) => write!(
+                f,
+                "Charon failed to translate this code ({err_count} errors)"
+            )?,
+            CharonFailure::Panic => write!(f, "Compilation panicked")?,
+            CharonFailure::Serialize => write!(f, "Could not serialize output file")?,
+        }
+        Ok(())
+    }
+}
+
+/// Returns the values of the command-line options that match `find_arg`. The options are built-in
+/// to be of the form `--arg=value` or `--arg value`.
+pub fn arg_values<'a, T: Deref<Target = str>>(
+    args: &'a [T],
+    needle: &'a str,
+) -> impl Iterator<Item = &'a str> {
+    struct ArgFilter<'a, T> {
+        args: std::slice::Iter<'a, T>,
+        needle: &'a str,
+    }
+    impl<'a, T: Deref<Target = str>> Iterator for ArgFilter<'a, T> {
+        type Item = &'a str;
+        fn next(&mut self) -> Option<Self::Item> {
+            while let Some(arg) = self.args.next() {
+                let mut split_arg = arg.splitn(2, '=');
+                if split_arg.next() == Some(self.needle) {
+                    return match split_arg.next() {
+                        // `--arg=value` form
+                        arg @ Some(_) => arg,
+                        // `--arg value` form
+                        None => self.args.next().map(|x| x.deref()),
+                    };
+                }
+            }
+            None
+        }
+    }
+    ArgFilter {
+        args: args.iter(),
+        needle,
+    }
+}
+
+/// Calculate the list of passes we will run on the crate before outputting it.
+pub fn transformation_passes(options: &CliOpts) -> Vec<Pass> {
+    let mut passes: Vec<Pass> = vec![];
+
+    passes.push(Pass::NonBody(PrintCtxPass::new(
+        options.print_original_ullbc,
+        format!("# ULLBC after translation from MIR"),
+    )));
+
+    passes.extend(INITIAL_CLEANUP_PASSES);
+    passes.extend(ULLBC_PASSES);
+
+    if !options.ullbc {
+        // If we're reconstructing control-flow, print the ullbc here.
+        passes.push(Pass::NonBody(PrintCtxPass::new(
+            options.print_ullbc,
+            format!("# Final ULLBC before control-flow reconstruction"),
+        )));
+    }
+
+    if !options.ullbc {
+        passes.extend(LLBC_PASSES);
+    }
+    passes.extend(SHARED_FINALIZING_PASSES);
+
+    if options.ullbc {
+        // If we're not reconstructing control-flow, print the ullbc after finalizing passes.
+        passes.push(Pass::NonBody(PrintCtxPass::new(
+            options.print_ullbc,
+            format!("# Final ULLBC before serialization"),
+        )));
+    } else {
+        passes.push(Pass::NonBody(PrintCtxPass::new(
+            options.print_llbc,
+            format!("# Final LLBC before serialization"),
+        )));
+    }
+
+    // Run the final passes after pretty-printing so that we get some output even if check_generics
+    // fails.
+    passes.extend(FINAL_CLEANUP_PASSES);
+    passes
+}
+
+/// Apply the transformation passes to a translated crate.
+pub fn transform(ctx: &mut TransformCtx, options: &CliOpts) -> export::CrateData {
+    // The bulk of the translation is done, we no longer need to interact with rustc internals. We
+    // run several passes that simplify the items and cleanup the bodies.
+    for pass in transformation_passes(options) {
+        trace!("# Starting pass {}", pass.name());
+        pass.run(ctx);
+    }
+
+    export::CrateData::new(&ctx)
+}
 
 fn main() {
     // Initialize the logger
     logger::initialize_logger();
-
-    // Retrieve the executable path - this is not considered an argument,
-    // and won't be parsed by CliOpts
-    let origin_args: Vec<String> = env::args().collect();
-    assert!(
-        !origin_args.is_empty(),
-        "Impossible: zero arguments on the command-line!"
-    );
-    trace!("original arguments (computed by cargo): {:?}", origin_args);
-
-    // Compute the compiler arguments for Rustc.
-    // We first use all the arguments received by charon-driver, except the first two.
-    // Rem.: the first argument is the path to the charon-driver executable.
-    // Rem.: the second argument is "rustc" (passed by Cargo because RUSTC_WRAPPER is set).
-    assert_eq!(
-        std::path::Path::new(&origin_args[1]).file_stem(),
-        Some("rustc".as_ref()),
-        "The second argument for charon-driver must be a path to rustc."
-    );
-    let mut compiler_args: Vec<String> = origin_args[2..].to_vec();
 
     // Retrieve the Charon options by deserializing them from the environment variable
     // (cargo-charon serialized the arguments and stored them in a specific environment
@@ -65,84 +163,50 @@ fn main() {
         Err(_) => Default::default(),
     };
 
-    // Cargo calls the driver twice. The first call to the driver is with "--crate-name ___" and no
-    // source file, for Cargo to retrieve some information about the crate.
-    let is_dry_run = arg_values(&origin_args, "--crate-name")
-        .find(|s| *s == "___")
-        .is_some();
-    // When called using cargo, we tell cargo to use `charon-driver` by setting the
-    // `RUSTC_WORKSPACE_WRAPPER` env var. This uses `charon-driver` for all the crates in the
-    // workspace. We may however not want to be calling charon on all crates;
-    // `CARGO_PRIMARY_PACKAGE` tells us whether the crate was specifically selected or is a
-    // dependency.
-    let is_workspace_dependency =
-        env::var("CHARON_USING_CARGO").is_ok() && !env::var("CARGO_PRIMARY_PACKAGE").is_ok();
-    // Determines if we are being invoked to build a crate for the "target" architecture, in
-    // contrast to the "host" architecture. Host crates are for build scripts and proc macros and
-    // still need to be built like normal; target crates need to be processed by Charon.
-    //
-    // Currently, we detect this by checking for "--target=", which is never set for host crates.
-    // This matches what Miri does, which hopefully makes it reliable enough. This relies on us
-    // always invoking cargo itself with `--target`, which `charon` ensures.
-    let is_target = arg_values(&origin_args, "--target").next().is_some();
-
-    if is_dry_run || is_workspace_dependency || !is_target {
-        trace!("Skipping charon; running compiler normally instead.");
-        // In this case we run the compiler normally.
-        RunCompilerNormallyCallbacks::new(options)
-            .run_compiler(compiler_args)
-            .unwrap();
-        return;
-    }
-
-    for extra_flag in options.rustc_args.iter().cloned() {
-        compiler_args.push(extra_flag);
-    }
-
-    trace!("Compiler arguments: {:?}", compiler_args);
-
-    // Call the Rust compiler with our custom callback.
-    let mut callback = CharonCallbacks::new(options);
-    let mut callback_ = panic::AssertUnwindSafe(&mut callback);
-    let res = panic::catch_unwind(move || callback_.run_compiler(compiler_args))
-        .map_err(|_| CharonFailure::Panic)
-        .and_then(|x| x);
-    let CharonCallbacks {
-        options,
-        error_count,
-        ..
-    } = callback;
+    // Run the driver machinery.
+    let res = driver::run_rustc_driver(options);
 
     // # Final step: generate the files.
     let mut res = match res {
-        Ok(_) if options.no_serialize => Ok(()),
-        Ok(crate_data) => {
-            let dest_file = match options.dest_file.clone() {
+        // We didn't run charon.
+        Ok(None) => return,
+        Ok(Some(output)) if output.options.no_serialize => Ok(output),
+        Ok(Some(output)) => {
+            let dest_file = match output.options.dest_file.clone() {
                 Some(f) => f,
                 None => {
-                    let mut target_filename = options.dest_dir.clone().unwrap_or_default();
-                    let crate_name = &crate_data.translated.crate_name;
-                    let extension = if options.ullbc { "ullbc" } else { "llbc" };
+                    let mut target_filename = output.options.dest_dir.clone().unwrap_or_default();
+                    let crate_name = &output.crate_data.translated.crate_name;
+                    let extension = if output.options.ullbc {
+                        "ullbc"
+                    } else {
+                        "llbc"
+                    };
                     target_filename.push(format!("{crate_name}.{extension}"));
                     target_filename
                 }
             };
             trace!("Target file: {:?}", dest_file);
-            crate_data
+            output
+                .crate_data
                 .serialize_to_file(&dest_file)
+                .map(|()| output)
                 .map_err(|()| CharonFailure::Serialize)
         }
         Err(e) => Err(e),
     };
 
-    if res.is_ok() && options.error_on_warnings && error_count != 0 {
-        res = Err(CharonFailure::CharonError(error_count));
+    if let Ok(output) = &res
+        && output.options.error_on_warnings
+        && output.error_count != 0
+    {
+        res = Err(CharonFailure::CharonError(output.error_count));
     }
 
     match res {
-        Ok(()) => {
-            if error_count != 0 {
-                let msg = format!("The extraction generated {} warnings", error_count);
+        Ok(output) => {
+            if output.error_count != 0 {
+                let msg = format!("The extraction generated {} warnings", output.error_count);
                 eprintln!("warning: {}", msg);
             }
         }

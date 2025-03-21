@@ -1,20 +1,177 @@
+//! Run the rustc compiler with our custom options and hooks.
 use crate::translate::translate_crate_to_ullbc;
+use crate::{arg_values, CharonFailure};
+use charon_lib::export::CrateData;
 use charon_lib::options::CliOpts;
-use charon_lib::transform::{
-    Pass, PrintCtxPass, FINAL_CLEANUP_PASSES, INITIAL_CLEANUP_PASSES, LLBC_PASSES, ULLBC_PASSES,
-};
-use charon_lib::transform::{TransformCtx, SHARED_FINALIZING_PASSES};
+use charon_lib::transform::TransformCtx;
 use charon_lib::{export, options};
 use rustc_driver::{Callbacks, Compilation};
-use rustc_interface::{
-    interface::{Compiler, Config},
-    Queries,
-};
-use std::fmt;
-use std::ops::Deref;
+use rustc_interface::Config;
+use rustc_interface::{interface::Compiler, Queries};
+use rustc_session::config::{OutputType, OutputTypes, Polonius};
 use std::sync::atomic::{AtomicBool, Ordering};
+use std::{env, fmt, panic};
 
-mod config;
+/// Disable all these mir passes.
+fn disabled_mir_passes(config: &mut Config) {
+    let disabled_mir_passes = [
+        "AfterConstProp",
+        "AfterGVN",
+        "AfterUnreachableEnumBranching)",
+        "BeforeConstProp",
+        "CheckAlignment",
+        "CopyProp",
+        "CriticalCallEdges",
+        "DataflowConstProp",
+        "DeduplicateBlocks",
+        "DestinationPropagation",
+        "EarlyOtherwiseBranch",
+        "EnumSizeOpt",
+        "GVN",
+        "Initial",
+        "Inline",
+        "InstSimplify",
+        "JumpThreading",
+        "LowerSliceLenCalls",
+        "MatchBranchSimplification",
+        "MentionedItems",
+        "MultipleReturnTerminators",
+        "ReferencePropagation",
+        "RemoveNoopLandingPads",
+        "RemoveStorageMarkers",
+        "RemoveUnneededDrops",
+        "RemoveZsts",
+        "RenameReturnPlace",
+        "ReorderBasicBlocks",
+        "ReorderLocals",
+        "ScalarReplacementOfAggregates",
+        "SimplifyComparisonIntegral",
+        "SimplifyLocals",
+        "SingleUseConsts",
+        "UnreachableEnumBranching",
+        "UnreachablePropagation",
+    ];
+    for pass in disabled_mir_passes {
+        config
+            .opts
+            .unstable_opts
+            .mir_enable_passes
+            .push((pass.to_owned(), false));
+    }
+}
+
+/// Don't even try to codegen. This avoids errors due to checking if the output filename is
+/// available (despite the fact that we won't emit it because we stop compilation early).
+fn no_codegen(config: &mut Config) {
+    config.opts.unstable_opts.no_codegen = true;
+
+    // i.e. --emit=metadata
+    let opt_output_types = &mut config.opts.output_types;
+    let mut out_types = vec![];
+    out_types.extend(opt_output_types.iter().map(|(&k, v)| (k, v.clone())));
+    out_types.push((OutputType::Metadata, None));
+    *opt_output_types = OutputTypes::new(&out_types);
+}
+
+/// Always compile in release mode: in effect, we want to analyze the released
+/// code. Also, rustc inserts a lot of dynamic checks in debug mode, that we
+/// have to clean. Full list of `--release` flags:
+/// https://doc.rust-lang.org/cargo/reference/profiles.html#release
+fn release_mode(config: &mut Config) {
+    let cg = &mut config.opts.cg;
+    cg.opt_level = "3".into();
+    cg.overflow_checks = Some(false);
+    config.opts.debug_assertions = false;
+}
+
+/// -Zpolonius
+fn polonius(config: &mut Config, enable: bool) {
+    if enable {
+        config.opts.unstable_opts.polonius = Polonius::Legacy;
+    }
+}
+
+pub struct DriverOutput {
+    pub options: CliOpts,
+    pub error_count: usize,
+    pub crate_data: CrateData,
+}
+
+/// Run the rustc driver with our custom hooks. Returns `None` if the crate was not compiled with
+/// charon (e.g. because it was a dependency).
+pub fn run_rustc_driver(options: CliOpts) -> Result<Option<DriverOutput>, CharonFailure> {
+    // Retrieve the executable path - this is not considered an argument,
+    // and won't be parsed by CliOpts
+    let origin_args: Vec<String> = env::args().collect();
+    assert!(
+        !origin_args.is_empty(),
+        "Impossible: zero arguments on the command-line!"
+    );
+    trace!("original arguments (computed by cargo): {:?}", origin_args);
+
+    // Compute the compiler arguments for Rustc.
+    // We first use all the arguments received by charon-driver, except the first two.
+    // Rem.: the first argument is the path to the charon-driver executable.
+    // Rem.: the second argument is "rustc" (passed by Cargo because RUSTC_WRAPPER is set).
+    assert_eq!(
+        std::path::Path::new(&origin_args[1]).file_stem(),
+        Some("rustc".as_ref()),
+        "The second argument for charon-driver must be a path to rustc."
+    );
+    let mut compiler_args: Vec<String> = origin_args[2..].to_vec();
+
+    // Cargo calls the driver twice. The first call to the driver is with "--crate-name ___" and no
+    // source file, for Cargo to retrieve some information about the crate.
+    let is_dry_run = arg_values(&origin_args, "--crate-name")
+        .find(|s| *s == "___")
+        .is_some();
+    // When called using cargo, we tell cargo to use `charon-driver` by setting the
+    // `RUSTC_WORKSPACE_WRAPPER` env var. This uses `charon-driver` for all the crates in the
+    // workspace. We may however not want to be calling charon on all crates;
+    // `CARGO_PRIMARY_PACKAGE` tells us whether the crate was specifically selected or is a
+    // dependency.
+    let is_workspace_dependency =
+        env::var("CHARON_USING_CARGO").is_ok() && !env::var("CARGO_PRIMARY_PACKAGE").is_ok();
+    // Determines if we are being invoked to build a crate for the "target" architecture, in
+    // contrast to the "host" architecture. Host crates are for build scripts and proc macros and
+    // still need to be built like normal; target crates need to be processed by Charon.
+    //
+    // Currently, we detect this by checking for "--target=", which is never set for host crates.
+    // This matches what Miri does, which hopefully makes it reliable enough. This relies on us
+    // always invoking cargo itself with `--target`, which `charon` ensures.
+    let is_target = arg_values(&origin_args, "--target").next().is_some();
+
+    if is_dry_run || is_workspace_dependency || !is_target {
+        trace!("Skipping charon; running compiler normally instead.");
+        // In this case we run the compiler normally.
+        RunCompilerNormallyCallbacks::new(options)
+            .run_compiler(compiler_args)
+            .unwrap();
+        return Ok(None);
+    }
+
+    for extra_flag in options.rustc_args.iter().cloned() {
+        compiler_args.push(extra_flag);
+    }
+
+    trace!("Compiler arguments: {:?}", compiler_args);
+
+    // Call the Rust compiler with our custom callback.
+    let mut callback = CharonCallbacks::new(options);
+    let mut callback_ = panic::AssertUnwindSafe(&mut callback);
+    let crate_data = panic::catch_unwind(move || callback_.run_compiler(compiler_args))
+        .map_err(|_| CharonFailure::Panic)??;
+    let CharonCallbacks {
+        options,
+        error_count,
+        ..
+    } = callback;
+    Ok(Some(DriverOutput {
+        options,
+        error_count,
+        crate_data,
+    }))
+}
 
 /// The callbacks for Charon
 pub struct CharonCallbacks {
@@ -22,29 +179,6 @@ pub struct CharonCallbacks {
     /// This is to be filled during the extraction; it contains the translated crate.
     transform_ctx: Option<TransformCtx>,
     pub error_count: usize,
-}
-
-pub enum CharonFailure {
-    /// The usize is the number of errors.
-    CharonError(usize),
-    RustcError,
-    Panic,
-    Serialize,
-}
-
-impl fmt::Display for CharonFailure {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match self {
-            CharonFailure::RustcError => write!(f, "Code failed to compile")?,
-            CharonFailure::CharonError(err_count) => write!(
-                f,
-                "Charon failed to translate this code ({err_count} errors)"
-            )?,
-            CharonFailure::Panic => write!(f, "Compilation panicked")?,
-            CharonFailure::Serialize => write!(f, "Could not serialize output file")?,
-        }
-        Ok(())
-    }
 }
 
 impl CharonCallbacks {
@@ -76,7 +210,7 @@ impl CharonCallbacks {
             .as_mut()
             .ok_or(CharonFailure::RustcError)?;
 
-        let crate_data = transform(ctx, &self.options);
+        let crate_data = super::transform(ctx, &self.options);
         self.error_count = ctx.errors.borrow().error_count;
         Ok(crate_data)
     }
@@ -138,10 +272,10 @@ impl Callbacks for CharonCallbacks {
         });
 
         // Mutate other fields in Config
-        config::disabled_mir_passes(config);
-        config::release_mode(config);
-        config::no_codegen(config);
-        config::polonius(config, self.options.use_polonius);
+        disabled_mir_passes(config);
+        release_mode(config);
+        no_codegen(config);
+        polonius(config, self.options.use_polonius);
     }
 
     /// The MIR is modified in place: borrow-checking requires the "promoted" MIR, which causes the
@@ -179,7 +313,7 @@ pub struct RunCompilerNormallyCallbacks {
 }
 impl Callbacks for RunCompilerNormallyCallbacks {
     fn config(&mut self, config: &mut Config) {
-        config::polonius(config, self.options.use_polonius);
+        polonius(config, self.options.use_polonius);
     }
 }
 impl RunCompilerNormallyCallbacks {
@@ -195,93 +329,4 @@ impl RunCompilerNormallyCallbacks {
             .run()
             .map_err(|_| ())
     }
-}
-
-/// Returns the values of the command-line options that match `find_arg`. The options are built-in
-/// to be of the form `--arg=value` or `--arg value`.
-pub fn arg_values<'a, T: Deref<Target = str>>(
-    args: &'a [T],
-    needle: &'a str,
-) -> impl Iterator<Item = &'a str> {
-    struct ArgFilter<'a, T> {
-        args: std::slice::Iter<'a, T>,
-        needle: &'a str,
-    }
-    impl<'a, T: Deref<Target = str>> Iterator for ArgFilter<'a, T> {
-        type Item = &'a str;
-        fn next(&mut self) -> Option<Self::Item> {
-            while let Some(arg) = self.args.next() {
-                let mut split_arg = arg.splitn(2, '=');
-                if split_arg.next() == Some(self.needle) {
-                    return match split_arg.next() {
-                        // `--arg=value` form
-                        arg @ Some(_) => arg,
-                        // `--arg value` form
-                        None => self.args.next().map(|x| x.deref()),
-                    };
-                }
-            }
-            None
-        }
-    }
-    ArgFilter {
-        args: args.iter(),
-        needle,
-    }
-}
-
-/// Calculate the list of passes we will run on the crate before outputting it.
-pub fn transformation_passes(options: &CliOpts) -> Vec<Pass> {
-    let mut passes: Vec<Pass> = vec![];
-
-    passes.push(Pass::NonBody(PrintCtxPass::new(
-        options.print_original_ullbc,
-        format!("# ULLBC after translation from MIR"),
-    )));
-
-    passes.extend(INITIAL_CLEANUP_PASSES);
-    passes.extend(ULLBC_PASSES);
-
-    if !options.ullbc {
-        // If we're reconstructing control-flow, print the ullbc here.
-        passes.push(Pass::NonBody(PrintCtxPass::new(
-            options.print_ullbc,
-            format!("# Final ULLBC before control-flow reconstruction"),
-        )));
-    }
-
-    if !options.ullbc {
-        passes.extend(LLBC_PASSES);
-    }
-    passes.extend(SHARED_FINALIZING_PASSES);
-
-    if options.ullbc {
-        // If we're not reconstructing control-flow, print the ullbc after finalizing passes.
-        passes.push(Pass::NonBody(PrintCtxPass::new(
-            options.print_ullbc,
-            format!("# Final ULLBC before serialization"),
-        )));
-    } else {
-        passes.push(Pass::NonBody(PrintCtxPass::new(
-            options.print_llbc,
-            format!("# Final LLBC before serialization"),
-        )));
-    }
-
-    // Run the final passes after pretty-printing so that we get some output even if check_generics
-    // fails.
-    passes.extend(FINAL_CLEANUP_PASSES);
-    passes
-}
-
-/// Apply the transformation passes to a translated crate.
-pub fn transform(ctx: &mut TransformCtx, options: &CliOpts) -> export::CrateData {
-    // The bulk of the translation is done, we no longer need to interact with rustc internals. We
-    // run several passes that simplify the items and cleanup the bodies.
-    for pass in transformation_passes(options) {
-        trace!("# Starting pass {}", pass.name());
-        pass.run(ctx);
-    }
-
-    export::CrateData::new(&ctx)
 }
