@@ -37,6 +37,7 @@ use charon_lib::{
         LLBC_PASSES, SHARED_FINALIZING_PASSES, ULLBC_PASSES,
     },
 };
+use driver::DriverOutput;
 use std::{env, fmt, ops::Deref};
 
 pub enum CharonFailure {
@@ -151,6 +152,44 @@ pub fn transform(ctx: &mut TransformCtx, options: &CliOpts) -> export::CrateData
     export::CrateData::new(&ctx)
 }
 
+/// Run charon. Returns the number of warnings generated.
+fn run_charon(options: CliOpts) -> Result<usize, CharonFailure> {
+    // Run the driver machinery.
+    let Some(output) = driver::run_rustc_driver(options)? else {
+        // We didn't run charon.
+        return Ok(0);
+    };
+    let DriverOutput {
+        options,
+        crate_data,
+        error_count,
+    } = output;
+
+    // # Final step: generate the files.
+    if !options.no_serialize {
+        let dest_file = match options.dest_file.clone() {
+            Some(f) => f,
+            None => {
+                let mut target_filename = options.dest_dir.clone().unwrap_or_default();
+                let crate_name = &crate_data.translated.crate_name;
+                let extension = if options.ullbc { "ullbc" } else { "llbc" };
+                target_filename.push(format!("{crate_name}.{extension}"));
+                target_filename
+            }
+        };
+        trace!("Target file: {:?}", dest_file);
+        crate_data
+            .serialize_to_file(&dest_file)
+            .map_err(|()| CharonFailure::Serialize)?;
+    }
+
+    if options.error_on_warnings && error_count != 0 {
+        return Err(CharonFailure::CharonError(error_count));
+    }
+
+    Ok(error_count)
+}
+
 fn main() {
     // Initialize the logger
     logger::initialize_logger();
@@ -163,50 +202,10 @@ fn main() {
         Err(_) => Default::default(),
     };
 
-    // Run the driver machinery.
-    let res = driver::run_rustc_driver(options);
-
-    // # Final step: generate the files.
-    let mut res = match res {
-        // We didn't run charon.
-        Ok(None) => return,
-        Ok(Some(output)) if output.options.no_serialize => Ok(output),
-        Ok(Some(output)) => {
-            let dest_file = match output.options.dest_file.clone() {
-                Some(f) => f,
-                None => {
-                    let mut target_filename = output.options.dest_dir.clone().unwrap_or_default();
-                    let crate_name = &output.crate_data.translated.crate_name;
-                    let extension = if output.options.ullbc {
-                        "ullbc"
-                    } else {
-                        "llbc"
-                    };
-                    target_filename.push(format!("{crate_name}.{extension}"));
-                    target_filename
-                }
-            };
-            trace!("Target file: {:?}", dest_file);
-            output
-                .crate_data
-                .serialize_to_file(&dest_file)
-                .map(|()| output)
-                .map_err(|()| CharonFailure::Serialize)
-        }
-        Err(e) => Err(e),
-    };
-
-    if let Ok(output) = &res
-        && output.options.error_on_warnings
-        && output.error_count != 0
-    {
-        res = Err(CharonFailure::CharonError(output.error_count));
-    }
-
-    match res {
-        Ok(output) => {
-            if output.error_count != 0 {
-                let msg = format!("The extraction generated {} warnings", output.error_count);
+    match run_charon(options) {
+        Ok(warn_count) => {
+            if warn_count != 0 {
+                let msg = format!("The extraction generated {} warnings", warn_count);
                 eprintln!("warning: {}", msg);
             }
         }
