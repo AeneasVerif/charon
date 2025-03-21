@@ -88,7 +88,6 @@ and gtranslated_crate_of_json
     | `Assoc
         [
           ("crate_name", name);
-          ("real_crate_name", _);
           ("options", options);
           ("all_ids", _);
           ("item_names", _);

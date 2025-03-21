@@ -240,13 +240,8 @@ pub fn translate<'tcx, 'ctx>(
     let crate_def_id: hax::DefId = rustc_span::def_id::CRATE_DEF_ID
         .to_def_id()
         .sinto(&hax_state);
-    let real_crate_name = crate_def_id.krate.clone();
-    let requested_crate_name: String = options
-        .crate_name
-        .as_ref()
-        .unwrap_or(&real_crate_name)
-        .clone();
-    trace!("# Crate: {}", requested_crate_name);
+    let crate_name = crate_def_id.krate.clone();
+    trace!("# Crate: {}", crate_name);
 
     let mut error_ctx = ErrorCtx::new(!options.abort_on_error, options.error_on_warnings);
     let translate_options = TranslateOptions::new(&mut error_ctx, options);
@@ -257,9 +252,8 @@ pub fn translate<'tcx, 'ctx>(
         options: translate_options,
         errors: RefCell::new(error_ctx),
         translated: TranslatedCrate {
-            crate_name: requested_crate_name,
+            crate_name,
             options: options.clone(),
-            real_crate_name,
             ..TranslatedCrate::default()
         },
         id_map: Default::default(),

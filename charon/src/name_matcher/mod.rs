@@ -173,7 +173,7 @@ impl PatElem {
             ) => {
                 // `crate` is a special keyword that referes to the current crate.
                 let same_ident =
-                    pat_ident == ident || (pat_ident == "crate" && ident == &ctx.real_crate_name);
+                    pat_ident == ident || (pat_ident == "crate" && ident == &ctx.crate_name);
                 same_ident && PatTy::matches_generics(ctx, generics, args)
             }
             (PatElem::Impl(_pat), PathElem::Impl(ImplElem::Ty(..), _)) => {

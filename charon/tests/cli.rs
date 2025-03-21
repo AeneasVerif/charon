@@ -238,3 +238,25 @@ fn charon_rust_target() -> Result<()> {
         Ok(())
     })
 }
+
+#[test]
+fn handle_multi_trailing_rs_args() {
+    let file = "arrays.rs";
+    let args = &[
+        "rustc",
+        "--print-llbc",
+        "--",
+        "--crate-name=arrays.rs",
+        file,
+    ];
+    let err = charon(args, "tests/ui", |stdout, _| {
+        println!("stdout={stdout}");
+        Ok(())
+    })
+    .unwrap_err();
+    let err = format!("{err:?}");
+    assert!(
+        err.contains("invalid character `'.'` in crate name"),
+        "{err}"
+    );
+}
