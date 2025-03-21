@@ -159,11 +159,9 @@ fn run_charon(options: CliOpts) -> Result<usize, CharonFailure> {
         // We didn't run charon.
         return Ok(0);
     };
-    let DriverOutput {
-        options,
-        crate_data,
-        error_count,
-    } = output;
+    let DriverOutput { options, mut ctx } = output;
+    let crate_data = transform(&mut ctx, &options);
+    let error_count = ctx.errors.borrow().error_count;
 
     // # Final step: generate the files.
     if !options.no_serialize {

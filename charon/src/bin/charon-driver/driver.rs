@@ -1,10 +1,9 @@
 //! Run the rustc compiler with our custom options and hooks.
 use crate::translate::translate_crate_to_ullbc;
 use crate::{arg_values, CharonFailure};
-use charon_lib::export::CrateData;
+use charon_lib::options;
 use charon_lib::options::CliOpts;
 use charon_lib::transform::TransformCtx;
-use charon_lib::{export, options};
 use rustc_driver::{Callbacks, Compilation};
 use rustc_interface::Config;
 use rustc_interface::{interface::Compiler, Queries};
@@ -93,8 +92,8 @@ fn polonius(config: &mut Config, enable: bool) {
 
 pub struct DriverOutput {
     pub options: CliOpts,
-    pub error_count: usize,
-    pub crate_data: CrateData,
+    /// The translated crate, ready for post-processing transformations.
+    pub ctx: TransformCtx,
 }
 
 /// Run the rustc driver with our custom hooks. Returns `None` if the crate was not compiled with
@@ -139,17 +138,14 @@ pub fn run_rustc_driver(options: CliOpts) -> Result<Option<DriverOutput>, Charon
 
     // Call the Rust compiler with our custom callback.
     let mut callback = CharonCallbacks::new(options);
-    let crate_data = callback.run_compiler(compiler_args)?;
+    callback.run_compiler(compiler_args)?;
     let CharonCallbacks {
         options,
-        error_count,
-        ..
+        transform_ctx,
     } = callback;
-    Ok(Some(DriverOutput {
-        options,
-        error_count,
-        crate_data,
-    }))
+    // `transform_ctx` is set by our callbacks when there is no fatal error.
+    let ctx = transform_ctx.ok_or(CharonFailure::RustcError)?;
+    Ok(Some(DriverOutput { options, ctx }))
 }
 
 /// The callbacks for Charon
@@ -157,7 +153,6 @@ pub struct CharonCallbacks {
     pub options: CliOpts,
     /// This is to be filled during the extraction; it contains the translated crate.
     transform_ctx: Option<TransformCtx>,
-    pub error_count: usize,
 }
 
 impl CharonCallbacks {
@@ -165,34 +160,23 @@ impl CharonCallbacks {
         Self {
             options,
             transform_ctx: None,
-            error_count: 0,
         }
     }
 
     /// Run rustc with our custom callbacks. `args` is the arguments passed to `rustc`'s
     /// command-line.
-    pub fn run_compiler(
-        &mut self,
-        mut args: Vec<String>,
-    ) -> Result<export::CrateData, CharonFailure> {
+    pub fn run_compiler(&mut self, mut args: Vec<String>) -> Result<(), CharonFailure> {
         for extra_flag in self.options.rustc_args.iter().cloned() {
             args.push(extra_flag);
         }
 
         rustc_driver::catch_fatal_errors(|| {
-            let res = rustc_driver::RunCompiler::new(&args, self).run();
-            res.map_err(|_| CharonFailure::RustcError)
+            rustc_driver::RunCompiler::new(&args, self)
+                .run()
+                .map_err(|_| CharonFailure::RustcError)
         })
         .map_err(|_| CharonFailure::RustcError)??;
-        // `ctx` is set by our callbacks when there is no fatal error.
-        let ctx = self
-            .transform_ctx
-            .as_mut()
-            .ok_or(CharonFailure::RustcError)?;
-
-        let crate_data = super::transform(ctx, &self.options);
-        self.error_count = ctx.errors.borrow().error_count;
-        Ok(crate_data)
+        Ok(())
     }
 }
 
