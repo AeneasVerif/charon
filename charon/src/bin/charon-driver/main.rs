@@ -38,7 +38,7 @@ use charon_lib::{
     },
 };
 use driver::DriverOutput;
-use std::{env, fmt, ops::Deref};
+use std::{env, fmt, ops::Deref, panic};
 
 pub enum CharonFailure {
     /// The usize is the number of errors.
@@ -202,7 +202,12 @@ fn main() {
         Err(_) => Default::default(),
     };
 
-    match run_charon(options) {
+    // Catch any and all panics coming from charon to display a clear error.
+    let res = panic::catch_unwind(move || run_charon(options))
+        .map_err(|_| CharonFailure::Panic)
+        .and_then(|x| x);
+
+    match res {
         Ok(warn_count) => {
             if warn_count != 0 {
                 let msg = format!("The extraction generated {} warnings", warn_count);

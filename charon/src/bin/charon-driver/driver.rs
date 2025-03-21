@@ -10,7 +10,7 @@ use rustc_interface::Config;
 use rustc_interface::{interface::Compiler, Queries};
 use rustc_session::config::{OutputType, OutputTypes, Polonius};
 use std::sync::atomic::{AtomicBool, Ordering};
-use std::{env, fmt, panic};
+use std::{env, fmt};
 
 /// Disable all these mir passes.
 fn disabled_mir_passes(config: &mut Config) {
@@ -139,9 +139,7 @@ pub fn run_rustc_driver(options: CliOpts) -> Result<Option<DriverOutput>, Charon
 
     // Call the Rust compiler with our custom callback.
     let mut callback = CharonCallbacks::new(options);
-    let mut callback_ = panic::AssertUnwindSafe(&mut callback);
-    let crate_data = panic::catch_unwind(move || callback_.run_compiler(compiler_args))
-        .map_err(|_| CharonFailure::Panic)??;
+    let crate_data = callback.run_compiler(compiler_args)?;
     let CharonCallbacks {
         options,
         error_count,
