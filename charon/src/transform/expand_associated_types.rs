@@ -999,32 +999,15 @@ impl UpdateItemBody<'_> {
                     &args.trait_refs[clause_id].kind
                 }
             };
-            if let Some(ty) = self.lookup_path_on_trait_ref(&path, &base_tref) {
-                args.types.push(ty.clone());
+            let ty = if let Some(ty) = self.lookup_path_on_trait_ref(&path, &base_tref) {
+                ty.clone()
             } else {
                 let mut path = path;
                 if let Some(tref) = base_tref.to_path() {
                     path = path.on_tref(&tref);
                 }
                 let fmt_ctx = &self.ctx.into_fmt();
-                let item_name = match &args.target {
-                    GenericsSource::Item(id) => self
-                        .ctx
-                        .translated
-                        .item_name(*id)
-                        .unwrap()
-                        .fmt_with_ctx(fmt_ctx),
-                    GenericsSource::Method(trait_id, method_name) => format!(
-                        "{}::{method_name}",
-                        self.ctx
-                            .translated
-                            .item_name(*trait_id)
-                            .unwrap()
-                            .fmt_with_ctx(fmt_ctx),
-                    ),
-                    GenericsSource::Builtin => format!("<built-in>"),
-                    GenericsSource::Other => format!("<unknown>"),
-                };
+                let item_name = args.target.item_name(&self.ctx.translated, fmt_ctx);
                 register_error!(
                     self.ctx,
                     self.span,
@@ -1037,7 +1020,9 @@ impl UpdateItemBody<'_> {
                         .map(|(path, ty)| format!("  - {path} = {}", ty.fmt_with_ctx(fmt_ctx)))
                         .join("\n"),
                 );
-            }
+                TyKind::Error(format!("Can't compute {path}")).into_ty()
+            };
+            args.types.push(ty);
         }
     }
 

@@ -109,7 +109,8 @@ impl Pattern {
             | TyKind::RawPtr(..)
             | TyKind::TraitType(..)
             | TyKind::DynTrait(..)
-            | TyKind::Arrow(..) => false,
+            | TyKind::Arrow(..)
+            | TyKind::Error(..) => false,
         }
     }
 

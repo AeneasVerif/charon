@@ -1279,7 +1279,7 @@ and type_decl_kind_of_json (ctx : of_json_ctx) (js : json) :
         Ok (Alias alias)
     | `Assoc [ ("Error", error) ] ->
         let* error = string_of_json ctx error in
-        Ok (TError error)
+        Ok (TDeclError error)
     | _ -> Error "")
 
 and variant_of_json (ctx : of_json_ctx) (js : json) : (variant, string) result =
@@ -1432,6 +1432,9 @@ and ty_of_json (ctx : of_json_ctx) (js : json) : (ty, string) result =
             ctx arrow
         in
         Ok (TArrow arrow)
+    | `Assoc [ ("Error", error) ] ->
+        let* error = string_of_json ctx error in
+        Ok (TError error)
     | _ -> Error "")
 
 and builtin_ty_of_json (ctx : of_json_ctx) (js : json) :

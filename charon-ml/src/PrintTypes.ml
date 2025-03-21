@@ -247,6 +247,7 @@ and ty_to_string (env : 'a fmt_env) (ty : ty) : string =
       in
       inputs ^ ty_to_string env output
   | TDynTrait _ -> "dyn (TODO)"
+  | TError msg -> "type_error (\"" ^ msg ^ "\")"
 
 and params_to_string (env : 'a fmt_env) (is_tuple : bool)
     (generics : generic_args) : string =
@@ -479,7 +480,7 @@ let type_decl_to_string (env : 'a fmt_env) (def : type_decl) : string =
       else "union " ^ name ^ params ^ clauses ^ "{}"
   | Alias ty -> "type " ^ name ^ params ^ clauses ^ " = " ^ ty_to_string env ty
   | Opaque -> "opaque type " ^ name ^ params ^ clauses
-  | TError err -> "error(\"" ^ err ^ "\")"
+  | TDeclError err -> "error(\"" ^ err ^ "\")"
 
 let adt_variant_to_string (env : 'a fmt_env) (def_id : TypeDeclId.id)
     (variant_id : VariantId.id) : string =
