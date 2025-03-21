@@ -33,8 +33,8 @@ use charon_lib::{
     export, logger,
     options::{self, CliOpts},
     transform::{
-        Pass, PrintCtxPass, TransformCtx, FINAL_CLEANUP_PASSES, INITIAL_CLEANUP_PASSES,
-        LLBC_PASSES, SHARED_FINALIZING_PASSES, ULLBC_PASSES,
+        Pass, PrintCtxPass, FINAL_CLEANUP_PASSES, INITIAL_CLEANUP_PASSES, LLBC_PASSES,
+        SHARED_FINALIZING_PASSES, ULLBC_PASSES,
     },
 };
 use std::{env, fmt, ops::Deref, panic};
@@ -139,18 +139,6 @@ pub fn transformation_passes(options: &CliOpts) -> Vec<Pass> {
     passes
 }
 
-/// Apply the transformation passes to a translated crate.
-pub fn transform(ctx: &mut TransformCtx, options: &CliOpts) -> export::CrateData {
-    // The bulk of the translation is done, we no longer need to interact with rustc internals. We
-    // run several passes that simplify the items and cleanup the bodies.
-    for pass in transformation_passes(options) {
-        trace!("# Starting pass {}", pass.name());
-        pass.run(ctx);
-    }
-
-    export::CrateData::new(&ctx)
-}
-
 /// Run charon. Returns the number of warnings generated.
 fn run_charon(options: CliOpts) -> Result<usize, CharonFailure> {
     // Run the driver machinery.
@@ -158,11 +146,19 @@ fn run_charon(options: CliOpts) -> Result<usize, CharonFailure> {
         // We didn't run charon.
         return Ok(0);
     };
-    let crate_data = transform(&mut ctx, &options);
+
+    // The bulk of the translation is done, we no longer need to interact with rustc internals. We
+    // run several passes that simplify the items and cleanup the bodies.
+    for pass in transformation_passes(&options) {
+        trace!("# Starting pass {}", pass.name());
+        pass.run(&mut ctx);
+    }
+
     let error_count = ctx.errors.borrow().error_count;
 
     // # Final step: generate the files.
     if !options.no_serialize {
+        let crate_data = export::CrateData::new(ctx);
         let dest_file = match options.dest_file.clone() {
             Some(f) => f,
             None => {
