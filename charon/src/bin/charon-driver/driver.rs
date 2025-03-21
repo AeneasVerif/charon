@@ -1,7 +1,6 @@
 //! Run the rustc compiler with our custom options and hooks.
 use crate::translate::translate_crate_to_ullbc;
 use crate::{arg_values, CharonFailure};
-use charon_lib::options;
 use charon_lib::options::CliOpts;
 use charon_lib::transform::TransformCtx;
 use rustc_driver::{Callbacks, Compilation};
@@ -90,15 +89,10 @@ fn polonius(config: &mut Config, enable: bool) {
     }
 }
 
-pub struct DriverOutput {
-    pub options: CliOpts,
-    /// The translated crate, ready for post-processing transformations.
-    pub ctx: TransformCtx,
-}
-
 /// Run the rustc driver with our custom hooks. Returns `None` if the crate was not compiled with
-/// charon (e.g. because it was a dependency).
-pub fn run_rustc_driver(options: CliOpts) -> Result<Option<DriverOutput>, CharonFailure> {
+/// charon (e.g. because it was a dependency). Otherwise returns the translated crate, ready for
+/// post-processing transformations.
+pub fn run_rustc_driver(options: &CliOpts) -> Result<Option<TransformCtx>, CharonFailure> {
     // Retreive the command-line arguments pased to `charon_driver`. The first arg is the path to
     // the current executable, we skip it.
     let compiler_args: Vec<String> = env::args().skip(1).collect();
@@ -139,24 +133,20 @@ pub fn run_rustc_driver(options: CliOpts) -> Result<Option<DriverOutput>, Charon
     // Call the Rust compiler with our custom callback.
     let mut callback = CharonCallbacks::new(options);
     callback.run_compiler(compiler_args)?;
-    let CharonCallbacks {
-        options,
-        transform_ctx,
-    } = callback;
-    // `transform_ctx` is set by our callbacks when there is no fatal error.
-    let ctx = transform_ctx.ok_or(CharonFailure::RustcError)?;
-    Ok(Some(DriverOutput { options, ctx }))
+    // If `transform_ctx` is not set here, there was a fatal error.
+    let ctx = callback.transform_ctx.ok_or(CharonFailure::RustcError)?;
+    Ok(Some(ctx))
 }
 
 /// The callbacks for Charon
-pub struct CharonCallbacks {
-    pub options: CliOpts,
+pub struct CharonCallbacks<'a> {
+    pub options: &'a CliOpts,
     /// This is to be filled during the extraction; it contains the translated crate.
     transform_ctx: Option<TransformCtx>,
 }
 
-impl CharonCallbacks {
-    pub fn new(options: options::CliOpts) -> Self {
+impl<'a> CharonCallbacks<'a> {
+    pub fn new(options: &'a CliOpts) -> Self {
         Self {
             options,
             transform_ctx: None,
@@ -202,7 +192,7 @@ fn def_id_debug(def_id: rustc_hir::def_id::DefId, f: &mut fmt::Formatter<'_>) ->
     })
 }
 
-impl Callbacks for CharonCallbacks {
+impl<'a> Callbacks for CharonCallbacks<'a> {
     fn config(&mut self, config: &mut Config) {
         // We use a static to be able to pass data to `override_queries`.
         static SKIP_BORROWCK: AtomicBool = AtomicBool::new(false);
@@ -272,16 +262,16 @@ impl Callbacks for CharonCallbacks {
 }
 
 /// Dummy callbacks used to run the compiler normally when we shouldn't be analyzing the crate.
-pub struct RunCompilerNormallyCallbacks {
-    options: CliOpts,
+pub struct RunCompilerNormallyCallbacks<'a> {
+    options: &'a CliOpts,
 }
-impl Callbacks for RunCompilerNormallyCallbacks {
+impl<'a> Callbacks for RunCompilerNormallyCallbacks<'a> {
     fn config(&mut self, config: &mut Config) {
         polonius(config, self.options.use_polonius);
     }
 }
-impl RunCompilerNormallyCallbacks {
-    pub fn new(options: CliOpts) -> Self {
+impl<'a> RunCompilerNormallyCallbacks<'a> {
+    pub fn new(options: &'a CliOpts) -> Self {
         Self { options }
     }
     /// Run rustc normally. `args` is the arguments passed to `rustc`'s command-line.

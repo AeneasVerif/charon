@@ -37,7 +37,6 @@ use charon_lib::{
         LLBC_PASSES, SHARED_FINALIZING_PASSES, ULLBC_PASSES,
     },
 };
-use driver::DriverOutput;
 use std::{env, fmt, ops::Deref, panic};
 
 pub enum CharonFailure {
@@ -155,11 +154,10 @@ pub fn transform(ctx: &mut TransformCtx, options: &CliOpts) -> export::CrateData
 /// Run charon. Returns the number of warnings generated.
 fn run_charon(options: CliOpts) -> Result<usize, CharonFailure> {
     // Run the driver machinery.
-    let Some(output) = driver::run_rustc_driver(options)? else {
+    let Some(mut ctx) = driver::run_rustc_driver(&options)? else {
         // We didn't run charon.
         return Ok(0);
     };
-    let DriverOutput { options, mut ctx } = output;
     let crate_data = transform(&mut ctx, &options);
     let error_count = ctx.errors.borrow().error_count;
 
