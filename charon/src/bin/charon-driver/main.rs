@@ -155,7 +155,7 @@ fn main() {
 
     // Retrieve the Charon options by deserializing them from the environment variable
     // (cargo-charon serialized the arguments and stored them in a specific environment
-    // variable before calling cargo with RUSTC_WORKSPACE_WRAPPER=charon-driver).
+    // variable before calling cargo with RUSTC_WRAPPER=charon-driver).
     let options: options::CliOpts = match env::var(options::CHARON_ARGS) {
         Ok(opts) => serde_json::from_str(opts.as_str()).unwrap(),
         Err(_) => Default::default(),

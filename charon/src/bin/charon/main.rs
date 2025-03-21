@@ -17,8 +17,8 @@
 //! Computing those arguments is, however, Cargo's responsability. As a
 //! consequence, we follow Clippy's approach by piggy-backing on Cargo.  We
 //! call Cargo as if we were building the project, but set up the environment
-//! variable `RUSTC_WORKSPACE_WRAPPER` so that Cargo calls `charon-driver`
-//! instead of Rustc upon building the target project. More specifically:
+//! variable `RUSTC_WRAPPER` so that Cargo calls `charon-driver` instead of
+//! Rustc upon building the target project. More specifically:
 //! Cargo will call Rustc to build the dependencies, *then* will call
 //! charon-driver with the arguments it would have given to Rustc to build
 //! the target project.
@@ -134,10 +134,8 @@ pub fn main() -> Result<()> {
         }
         let mut cmd = toolchain::in_toolchain("cargo")?;
 
-        // Tell cargo to use the driver for all the crates in the workspace. There's no option for
-        // "run only on the selected crate" so the driver might be called on a crate dependency
-        // within the workspace. The driver will detect that case and run rustc normally then.
-        cmd.env("RUSTC_WORKSPACE_WRAPPER", toolchain::driver_path());
+        // Tell cargo to use the driver for all the crates.
+        cmd.env("RUSTC_WRAPPER", toolchain::driver_path());
         // Tell the driver that we're being called by cargo.
         cmd.env("CHARON_USING_CARGO", "1");
         // Make sure we don't inherit this variable from the outside. Cargo sets this itself.
