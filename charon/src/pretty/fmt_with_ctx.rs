@@ -1453,6 +1453,7 @@ impl<C: AstFormatter> FmtWithCtx<C> for Ty {
                     format!("fn{regions}({inputs}) -> {output}")
                 }
             }
+            TyKind::Error(msg) => format!("type_error(\"{msg}\")"),
         }
     }
 }

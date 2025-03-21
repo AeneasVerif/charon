@@ -999,8 +999,8 @@ impl UpdateItemBody<'_> {
                     &args.trait_refs[clause_id].kind
                 }
             };
-            if let Some(ty) = self.lookup_path_on_trait_ref(&path, &base_tref) {
-                args.types.push(ty.clone());
+            let ty = if let Some(ty) = self.lookup_path_on_trait_ref(&path, &base_tref) {
+                ty.clone()
             } else {
                 let mut path = path;
                 if let Some(tref) = base_tref.to_path() {
@@ -1020,7 +1020,9 @@ impl UpdateItemBody<'_> {
                         .map(|(path, ty)| format!("  - {path} = {}", ty.fmt_with_ctx(fmt_ctx)))
                         .join("\n"),
                 );
-            }
+                TyKind::Error(format!("Can't compute {path}")).into_ty()
+            };
+            args.types.push(ty);
         }
     }
 

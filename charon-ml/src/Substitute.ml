@@ -361,7 +361,7 @@ let type_decl_get_instantiated_variants_fields_types (def : type_decl)
     | Enum variants ->
         List.mapi (fun i v -> (Some (VariantId.of_int i), v.fields)) variants
     | Struct fields | Union fields -> [ (None, fields) ]
-    | Alias _ | Opaque | TError _ ->
+    | Alias _ | Opaque | TDeclError _ ->
         raise
           (Failure
              ("Can't retrieve the variants of non-adt type: "
