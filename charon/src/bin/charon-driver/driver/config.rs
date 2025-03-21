@@ -5,6 +5,7 @@
 //! [`Config`]: https://aeneasverif.github.io/charon/rustc/rustc_interface/interface/struct.Config.html
 
 use rustc_interface::Config;
+use rustc_session::config::{OutputType, OutputTypes};
 
 /// Disable all these mir passes.
 pub fn disabled_mir_passes(config: &mut Config) {
@@ -52,4 +53,17 @@ pub fn disabled_mir_passes(config: &mut Config) {
             .mir_enable_passes
             .push((pass.to_owned(), false));
     }
+}
+
+/// Don't even try to codegen. This avoids errors due to checking if the output filename is
+/// available (despite the fact that we won't emit it because we stop compilation early).
+pub fn no_codegen(config: &mut Config) {
+    config.opts.unstable_opts.no_codegen = true;
+
+    // i.e. --emit=metadata
+    let opt_output_types = &mut config.opts.output_types;
+    let mut out_types = vec![];
+    out_types.extend(opt_output_types.iter().map(|(&k, v)| (k, v.clone())));
+    out_types.push((OutputType::Metadata, None));
+    *opt_output_types = OutputTypes::new(&out_types);
 }

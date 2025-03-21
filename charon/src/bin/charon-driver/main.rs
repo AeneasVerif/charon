@@ -99,11 +99,6 @@ fn main() {
         return;
     }
 
-    // Don't even try to codegen. This avoids errors due to checking if the output filename is
-    // available (despite the fact that we won't emit it because we stop compilation early).
-    compiler_args.push("-Zno-codegen".to_string());
-    compiler_args.push("--emit=metadata".to_string());
-
     // Always compile in release mode: in effect, we want to analyze the released
     // code. Also, rustc inserts a lot of dynamic checks in debug mode, that we
     // have to clean. Full list of `--release` flags:

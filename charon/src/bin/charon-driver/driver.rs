@@ -136,6 +136,7 @@ impl Callbacks for CharonCallbacks {
 
         // Mutate other fields in Config
         config::disabled_mir_passes(config);
+        config::no_codegen(config);
     }
 
     /// The MIR is modified in place: borrow-checking requires the "promoted" MIR, which causes the
