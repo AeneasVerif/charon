@@ -11,6 +11,8 @@ use std::fmt;
 use std::ops::Deref;
 use std::sync::atomic::{AtomicBool, Ordering};
 
+mod config;
+
 /// The callbacks for Charon
 pub struct CharonCallbacks {
     pub options: options::CliOpts,
@@ -131,6 +133,9 @@ impl Callbacks for CharonCallbacks {
                 }
             }
         });
+
+        // Mutate other fields in Config
+        config::disabled_mir_passes(config);
     }
 
     /// The MIR is modified in place: borrow-checking requires the "promoted" MIR, which causes the
