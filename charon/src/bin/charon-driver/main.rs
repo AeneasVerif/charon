@@ -31,7 +31,6 @@ mod translate;
 
 use crate::driver::{arg_values, CharonCallbacks, CharonFailure, RunCompilerNormallyCallbacks};
 use charon_lib::{logger, options};
-use itertools::Itertools;
 use std::{env, panic};
 
 fn main() {
@@ -66,10 +65,6 @@ fn main() {
         Err(_) => Default::default(),
     };
 
-    if options.use_polonius {
-        compiler_args.push("-Zpolonius".to_string());
-    }
-
     // Cargo calls the driver twice. The first call to the driver is with "--crate-name ___" and no
     // source file, for Cargo to retrieve some information about the crate.
     let is_dry_run = arg_values(&origin_args, "--crate-name")
@@ -94,74 +89,15 @@ fn main() {
     if is_dry_run || is_workspace_dependency || !is_target {
         trace!("Skipping charon; running compiler normally instead.");
         // In this case we run the compiler normally.
-        RunCompilerNormallyCallbacks
+        RunCompilerNormallyCallbacks::new(options)
             .run_compiler(compiler_args)
             .unwrap();
         return;
     }
 
-    // Don't even try to codegen. This avoids errors due to checking if the output filename is
-    // available (despite the fact that we won't emit it because we stop compilation early).
-    compiler_args.push("-Zno-codegen".to_string());
-    compiler_args.push("--emit=metadata".to_string());
-
-    // Always compile in release mode: in effect, we want to analyze the released
-    // code. Also, rustc inserts a lot of dynamic checks in debug mode, that we
-    // have to clean. Full list of `--release` flags:
-    // https://doc.rust-lang.org/cargo/reference/profiles.html#release
-    compiler_args.push("-Copt-level=3".to_string());
-    compiler_args.push("-Coverflow-checks=false".to_string());
-    compiler_args.push("-Cdebug-assertions=false".to_string());
-
     for extra_flag in options.rustc_args.iter().cloned() {
         compiler_args.push(extra_flag);
     }
-
-    let disabled_mir_passes = [
-        "AfterConstProp",
-        "AfterGVN",
-        "AfterUnreachableEnumBranching)",
-        "BeforeConstProp",
-        "CheckAlignment",
-        "CopyProp",
-        "CriticalCallEdges",
-        "DataflowConstProp",
-        "DeduplicateBlocks",
-        "DestinationPropagation",
-        "EarlyOtherwiseBranch",
-        "EnumSizeOpt",
-        "GVN",
-        "Initial",
-        "Inline",
-        "InstSimplify",
-        "JumpThreading",
-        "LowerSliceLenCalls",
-        "MatchBranchSimplification",
-        "MentionedItems",
-        "MultipleReturnTerminators",
-        "ReferencePropagation",
-        "RemoveNoopLandingPads",
-        "RemoveStorageMarkers",
-        "RemoveUnneededDrops",
-        "RemoveZsts",
-        "RenameReturnPlace",
-        "ReorderBasicBlocks",
-        "ReorderLocals",
-        "ScalarReplacementOfAggregates",
-        "SimplifyComparisonIntegral",
-        "SimplifyLocals",
-        "SingleUseConsts",
-        "UnreachableEnumBranching",
-        "UnreachablePropagation",
-    ];
-    // Disable all these mir passes.
-    compiler_args.push(format!(
-        "-Zmir-enable-passes={}",
-        disabled_mir_passes
-            .iter()
-            .map(|p| format!("-{p}"))
-            .format(",")
-    ));
 
     trace!("Compiler arguments: {:?}", compiler_args);
 
