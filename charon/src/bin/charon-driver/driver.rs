@@ -152,11 +152,6 @@ pub fn run_rustc_driver(options: &CliOpts) -> Result<Option<TransformCtx>, Charo
     // the current executable, we skip it.
     let mut compiler_args: Vec<String> = env::args().skip(1).collect();
 
-    // Cargo calls the driver twice. The first call to the driver is with "--crate-name ___" and no
-    // source file, for Cargo to retrieve some information about the crate.
-    let is_dry_run = arg_values(&compiler_args, "--crate-name")
-        .find(|s| *s == "___")
-        .is_some();
     // When called using cargo, we tell cargo to use `charon-driver` by setting the
     // `RUSTC_WORKSPACE_WRAPPER` env var. This uses `charon-driver` for all the crates in the
     // workspace. We may however not want to be calling charon on all crates;
@@ -172,9 +167,10 @@ pub fn run_rustc_driver(options: &CliOpts) -> Result<Option<TransformCtx>, Charo
     // This matches what Miri does, which hopefully makes it reliable enough. This relies on us
     // always invoking cargo itself with `--target`, which `charon` ensures.
     let is_target = arg_values(&compiler_args, "--target").next().is_some();
+    // Whether this is the crate we want to translate.
+    let is_selected_crate = !is_workspace_dependency && is_target;
 
-    let no_translate = is_dry_run || is_workspace_dependency || !is_target;
-    let output = if no_translate {
+    let output = if !is_selected_crate {
         trace!("Skipping charon; running compiler normally instead.");
         // Run the compiler normally.
         run_compiler_with_callbacks(compiler_args, &mut RunCompilerNormallyCallbacks { options })?;
@@ -199,7 +195,7 @@ pub fn run_rustc_driver(options: &CliOpts) -> Result<Option<TransformCtx>, Charo
 
 /// The callbacks for Charon
 pub struct CharonCallbacks<'a> {
-    pub options: &'a CliOpts,
+    options: &'a CliOpts,
     /// This is to be filled during the extraction; it contains the translated crate.
     transform_ctx: Option<TransformCtx>,
 }
