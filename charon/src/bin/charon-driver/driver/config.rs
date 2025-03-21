@@ -5,7 +5,7 @@
 //! [`Config`]: https://aeneasverif.github.io/charon/rustc/rustc_interface/interface/struct.Config.html
 
 use rustc_interface::Config;
-use rustc_session::config::{OutputType, OutputTypes};
+use rustc_session::config::{OutputType, OutputTypes, Polonius};
 
 /// Disable all these mir passes.
 pub fn disabled_mir_passes(config: &mut Config) {
@@ -77,4 +77,11 @@ pub fn release_mode(config: &mut Config) {
     cg.opt_level = "3".into();
     cg.overflow_checks = Some(false);
     config.opts.debug_assertions = false;
+}
+
+/// -Zpolonius
+pub fn polonius(config: &mut Config, enable: bool) {
+    if enable {
+        config.opts.unstable_opts.polonius = Polonius::Legacy;
+    }
 }

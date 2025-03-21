@@ -65,10 +65,6 @@ fn main() {
         Err(_) => Default::default(),
     };
 
-    if options.use_polonius {
-        compiler_args.push("-Zpolonius".to_string());
-    }
-
     // Cargo calls the driver twice. The first call to the driver is with "--crate-name ___" and no
     // source file, for Cargo to retrieve some information about the crate.
     let is_dry_run = arg_values(&origin_args, "--crate-name")
@@ -93,7 +89,7 @@ fn main() {
     if is_dry_run || is_workspace_dependency || !is_target {
         trace!("Skipping charon; running compiler normally instead.");
         // In this case we run the compiler normally.
-        RunCompilerNormallyCallbacks
+        RunCompilerNormallyCallbacks::new(options)
             .run_compiler(compiler_args)
             .unwrap();
         return;

@@ -6,7 +6,10 @@ use charon_lib::transform::{
 use charon_lib::transform::{TransformCtx, SHARED_FINALIZING_PASSES};
 use charon_lib::{export, options};
 use rustc_driver::{Callbacks, Compilation};
-use rustc_interface::{interface::Compiler, Queries};
+use rustc_interface::{
+    interface::{Compiler, Config},
+    Queries,
+};
 use std::fmt;
 use std::ops::Deref;
 use std::sync::atomic::{AtomicBool, Ordering};
@@ -15,7 +18,7 @@ mod config;
 
 /// The callbacks for Charon
 pub struct CharonCallbacks {
-    pub options: options::CliOpts,
+    pub options: CliOpts,
     /// This is to be filled during the extraction; it contains the translated crate.
     transform_ctx: Option<TransformCtx>,
     pub error_count: usize,
@@ -102,7 +105,7 @@ fn def_id_debug(def_id: rustc_hir::def_id::DefId, f: &mut fmt::Formatter<'_>) ->
 }
 
 impl Callbacks for CharonCallbacks {
-    fn config(&mut self, config: &mut rustc_interface::Config) {
+    fn config(&mut self, config: &mut Config) {
         // We use a static to be able to pass data to `override_queries`.
         static SKIP_BORROWCK: AtomicBool = AtomicBool::new(false);
         if self.options.skip_borrowck {
@@ -138,6 +141,7 @@ impl Callbacks for CharonCallbacks {
         config::disabled_mir_passes(config);
         config::release_mode(config);
         config::no_codegen(config);
+        config::polonius(config, self.options.use_polonius);
     }
 
     /// The MIR is modified in place: borrow-checking requires the "promoted" MIR, which causes the
@@ -170,9 +174,18 @@ impl Callbacks for CharonCallbacks {
 }
 
 /// Dummy callbacks used to run the compiler normally when we shouldn't be analyzing the crate.
-pub struct RunCompilerNormallyCallbacks;
-impl Callbacks for RunCompilerNormallyCallbacks {}
+pub struct RunCompilerNormallyCallbacks {
+    options: CliOpts,
+}
+impl Callbacks for RunCompilerNormallyCallbacks {
+    fn config(&mut self, config: &mut Config) {
+        config::polonius(config, self.options.use_polonius);
+    }
+}
 impl RunCompilerNormallyCallbacks {
+    pub fn new(options: CliOpts) -> Self {
+        Self { options }
+    }
     /// Run rustc normally. `args` is the arguments passed to `rustc`'s command-line.
     pub fn run_compiler(&mut self, mut args: Vec<String>) -> Result<(), ()> {
         // Arguments list always start with the executable name. We put a silly value to ensure
