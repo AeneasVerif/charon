@@ -1,6 +1,6 @@
 //! Run the rustc compiler with our custom options and hooks.
 use crate::translate::translate_crate_to_ullbc;
-use crate::{arg_values, CharonFailure};
+use crate::CharonFailure;
 use charon_lib::options::CliOpts;
 use charon_lib::transform::TransformCtx;
 use rustc_driver::{Callbacks, Compilation};
@@ -8,6 +8,7 @@ use rustc_interface::Config;
 use rustc_interface::{interface::Compiler, Queries};
 use rustc_middle::util::Providers;
 use rustc_session::config::{OutputType, OutputTypes, Polonius};
+use std::ops::Deref;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::{env, fmt};
 
@@ -240,6 +241,39 @@ pub struct RunCompilerNormallyCallbacks<'a> {
 impl<'a> Callbacks for RunCompilerNormallyCallbacks<'a> {
     fn config(&mut self, config: &mut Config) {
         setup_compiler(config, self.options, false);
+    }
+}
+
+/// Returns the values of the command-line options that match `find_arg`. The options are built-in
+/// to be of the form `--arg=value` or `--arg value`.
+fn arg_values<'a, T: Deref<Target = str>>(
+    args: &'a [T],
+    needle: &'a str,
+) -> impl Iterator<Item = &'a str> {
+    struct ArgFilter<'a, T> {
+        args: std::slice::Iter<'a, T>,
+        needle: &'a str,
+    }
+    impl<'a, T: Deref<Target = str>> Iterator for ArgFilter<'a, T> {
+        type Item = &'a str;
+        fn next(&mut self) -> Option<Self::Item> {
+            while let Some(arg) = self.args.next() {
+                let mut split_arg = arg.splitn(2, '=');
+                if split_arg.next() == Some(self.needle) {
+                    return match split_arg.next() {
+                        // `--arg=value` form
+                        arg @ Some(_) => arg,
+                        // `--arg value` form
+                        None => self.args.next().map(|x| x.deref()),
+                    };
+                }
+            }
+            None
+        }
+    }
+    ArgFilter {
+        args: args.iter(),
+        needle,
     }
 }
 

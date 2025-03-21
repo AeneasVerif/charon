@@ -37,7 +37,7 @@ use charon_lib::{
         SHARED_FINALIZING_PASSES, ULLBC_PASSES,
     },
 };
-use std::{env, fmt, ops::Deref, panic};
+use std::{env, fmt, panic};
 
 pub enum CharonFailure {
     /// The usize is the number of errors.
@@ -59,39 +59,6 @@ impl fmt::Display for CharonFailure {
             CharonFailure::Serialize => write!(f, "Could not serialize output file")?,
         }
         Ok(())
-    }
-}
-
-/// Returns the values of the command-line options that match `find_arg`. The options are built-in
-/// to be of the form `--arg=value` or `--arg value`.
-pub fn arg_values<'a, T: Deref<Target = str>>(
-    args: &'a [T],
-    needle: &'a str,
-) -> impl Iterator<Item = &'a str> {
-    struct ArgFilter<'a, T> {
-        args: std::slice::Iter<'a, T>,
-        needle: &'a str,
-    }
-    impl<'a, T: Deref<Target = str>> Iterator for ArgFilter<'a, T> {
-        type Item = &'a str;
-        fn next(&mut self) -> Option<Self::Item> {
-            while let Some(arg) = self.args.next() {
-                let mut split_arg = arg.splitn(2, '=');
-                if split_arg.next() == Some(self.needle) {
-                    return match split_arg.next() {
-                        // `--arg=value` form
-                        arg @ Some(_) => arg,
-                        // `--arg value` form
-                        None => self.args.next().map(|x| x.deref()),
-                    };
-                }
-            }
-            None
-        }
-    }
-    ArgFilter {
-        args: args.iter(),
-        needle,
     }
 }
 
