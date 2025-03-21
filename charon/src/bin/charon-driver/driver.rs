@@ -197,28 +197,6 @@ pub fn run_rustc_driver(options: &CliOpts) -> Result<Option<TransformCtx>, Charo
     Ok(output)
 }
 
-/// Custom `DefId` debug routine that doesn't print unstable values like ids and hashes.
-fn def_id_debug(def_id: rustc_hir::def_id::DefId, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-    rustc_middle::ty::tls::with_opt(|opt_tcx| {
-        if let Some(tcx) = opt_tcx {
-            let crate_name = if def_id.is_local() {
-                tcx.crate_name(rustc_hir::def_id::LOCAL_CRATE)
-            } else {
-                tcx.cstore_untracked().crate_name(def_id.krate)
-            };
-            write!(
-                f,
-                "{}{}",
-                crate_name,
-                tcx.def_path(def_id).to_string_no_crate_verbose()
-            )?;
-        } else {
-            write!(f, "<can't access `tcx` to print `DefId` path>")?;
-        }
-        Ok(())
-    })
-}
-
 /// The callbacks for Charon
 pub struct CharonCallbacks<'a> {
     pub options: &'a CliOpts,
@@ -267,4 +245,26 @@ impl<'a> Callbacks for RunCompilerNormallyCallbacks<'a> {
     fn config(&mut self, config: &mut Config) {
         setup_compiler(config, self.options, false);
     }
+}
+
+/// Custom `DefId` debug routine that doesn't print unstable values like ids and hashes.
+fn def_id_debug(def_id: rustc_hir::def_id::DefId, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+    rustc_middle::ty::tls::with_opt(|opt_tcx| {
+        if let Some(tcx) = opt_tcx {
+            let crate_name = if def_id.is_local() {
+                tcx.crate_name(rustc_hir::def_id::LOCAL_CRATE)
+            } else {
+                tcx.cstore_untracked().crate_name(def_id.krate)
+            };
+            write!(
+                f,
+                "{}{}",
+                crate_name,
+                tcx.def_path(def_id).to_string_no_crate_verbose()
+            )?;
+        } else {
+            write!(f, "<can't access `tcx` to print `DefId` path>")?;
+        }
+        Ok(())
+    })
 }
