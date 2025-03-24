@@ -280,3 +280,12 @@ fn charon_input() -> Result<()> {
     ];
     charon(args, "tests/ui", |_, _| Ok(()))
 }
+
+#[test]
+/// Ensure we don't error if the path where the binary file would go in a normal rustc invocation
+/// is taken. Charon doesn't emit a binary so doesn't care.
+fn filename_conflict() -> Result<()> {
+    let input = "./ui/simple/match-on-float.rs";
+    let args = &["rustc", "--no-serialize", "--", input, "--crate-name=ui"];
+    charon(args, "tests", |_, _| Ok(()))
+}
