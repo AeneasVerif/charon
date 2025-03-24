@@ -42,13 +42,8 @@ fn set_mir_options(config: &mut Config) {
 /// available (despite the fact that we won't emit it because we stop compilation early).
 fn set_no_codegen(config: &mut Config) {
     config.opts.unstable_opts.no_codegen = true;
-
-    // i.e. --emit=metadata
-    let opt_output_types = &mut config.opts.output_types;
-    let mut out_types = vec![];
-    out_types.extend(opt_output_types.iter().map(|(&k, v)| (k, v.clone())));
-    out_types.push((OutputType::Metadata, None));
-    *opt_output_types = OutputTypes::new(&out_types);
+    // Only emit metadata.
+    config.opts.output_types = OutputTypes::new(&[(OutputType::Metadata, None)]);
 }
 
 /// Always compile in release mode: in effect, we want to analyze the released

@@ -287,6 +287,5 @@ fn charon_input() -> Result<()> {
 fn filename_conflict() -> Result<()> {
     let input = "./ui/simple/match-on-float.rs";
     let args = &["rustc", "--no-serialize", "--", input, "--crate-name=ui"];
-    charon(args, "tests", |_, _| Ok(())).unwrap_err();
-    Ok(())
+    charon(args, "tests", |_, _| Ok(()))
 }
