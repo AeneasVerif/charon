@@ -23,45 +23,12 @@ fn run_compiler_with_callbacks(
     Ok(())
 }
 
-/// Disable all the mir passes we can disable without causing ICEs.
-fn disable_mir_opt_passes(config: &mut Config) {
-    let disabled_mir_passes = [
-        "AfterConstProp",
-        "AfterGVN",
-        "AfterUnreachableEnumBranching)",
-        "BeforeConstProp",
-        "CheckAlignment",
-        "CopyProp",
-        "CriticalCallEdges",
-        "DataflowConstProp",
-        "DeduplicateBlocks",
-        "DestinationPropagation",
-        "EarlyOtherwiseBranch",
-        "EnumSizeOpt",
-        "GVN",
-        "Initial",
-        "Inline",
-        "InstSimplify",
-        "JumpThreading",
-        "LowerSliceLenCalls",
-        "MatchBranchSimplification",
-        "MentionedItems",
-        "MultipleReturnTerminators",
-        "ReferencePropagation",
-        "RemoveNoopLandingPads",
-        "RemoveStorageMarkers",
-        "RemoveUnneededDrops",
-        "RemoveZsts",
-        "RenameReturnPlace",
-        "ReorderBasicBlocks",
-        "ReorderLocals",
-        "ScalarReplacementOfAggregates",
-        "SimplifyComparisonIntegral",
-        "SimplifyLocals",
-        "SingleUseConsts",
-        "UnreachableEnumBranching",
-        "UnreachablePropagation",
-    ];
+/// Tweak options to get usable MIR even for foreign crates.
+fn set_mir_options(config: &mut Config) {
+    config.opts.unstable_opts.always_encode_mir = true;
+    config.opts.unstable_opts.mir_opt_level = Some(0);
+    config.opts.unstable_opts.mir_emit_retag = true;
+    let disabled_mir_passes = ["CheckAlignment"];
     for pass in disabled_mir_passes {
         config
             .opts
@@ -136,10 +103,10 @@ fn setup_compiler(config: &mut Config, options: &CliOpts, do_translate: bool) {
             // };
         });
 
-        disable_mir_opt_passes(config);
         set_release_mode(config);
         set_no_codegen(config);
     }
+    set_mir_options(config);
     if options.use_polonius {
         config.opts.unstable_opts.polonius = Polonius::Legacy;
     }
