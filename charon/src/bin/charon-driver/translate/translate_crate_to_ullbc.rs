@@ -102,16 +102,6 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
 
     pub(crate) fn translate_item(&mut self, item_src: TransItemSource) {
         let trans_id = self.id_map.get(&item_src).copied();
-        if let Some(trans_id) = trans_id
-            && (self
-                .errors
-                .borrow()
-                .ignored_failed_decls
-                .contains(&trans_id)
-                || self.translated.get_item(trans_id).is_some())
-        {
-            return;
-        }
         let rust_id = item_src.to_def_id();
         self.with_def_id(rust_id, trans_id, |mut ctx| {
             let span = ctx.def_span(rust_id);
@@ -134,9 +124,6 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
                     "Thread panicked when extracting item `{rust_id:?}`."
                 ),
             };
-            if let Some(trans_id) = trans_id {
-                ctx.errors.borrow_mut().ignore_failed_decl(trans_id);
-            }
         })
     }
 
@@ -231,6 +218,7 @@ pub fn translate<'tcx, 'ctx>(
         reverse_id_map: Default::default(),
         file_to_id: Default::default(),
         items_to_translate: Default::default(),
+        processed: Default::default(),
         cached_item_metas: Default::default(),
         cached_names: Default::default(),
     };
@@ -256,7 +244,9 @@ pub fn translate<'tcx, 'ctx>(
     // from Rust ids to translated ids.
     while let Some(item_src) = ctx.items_to_translate.pop_first() {
         trace!("About to translate item: {:?}", item_src);
-        ctx.translate_item(item_src);
+        if ctx.processed.insert(item_src) {
+            ctx.translate_item(item_src);
+        }
     }
 
     // Return the context, dropping the hax state and rustc `tcx`.
