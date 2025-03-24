@@ -91,20 +91,18 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
     // the opaque modules given as arguments actually exist
     fn register_module(&mut self, item_meta: ItemMeta, def: &hax::FullDef) -> Result<(), Error> {
         let opacity = item_meta.opacity;
-        let explore_inside = !(opacity.is_opaque() || opacity.is_invisible());
+        if !opacity.is_transparent() {
+            return Ok(());
+        }
         match def.kind() {
             FullDefKind::InherentImpl { items, .. } => {
-                if explore_inside {
-                    for (_, item_def) in items {
-                        self.register_module_item(item_def.rust_def_id());
-                    }
+                for (_, item_def) in items {
+                    self.register_module_item(item_def.rust_def_id());
                 }
             }
             FullDefKind::Mod { items, .. } => {
-                if explore_inside {
-                    for def_id in items {
-                        self.register_module_item(def_id.into());
-                    }
+                for def_id in items {
+                    self.register_module_item(def_id.into());
                 }
             }
             FullDefKind::ForeignMod { items, .. } => {
