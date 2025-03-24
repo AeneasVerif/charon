@@ -5,17 +5,17 @@ enum test_crate::Foo =
 |  B(usize)
 
 
+struct test_crate::Bar<'a> =
+{
+  r: &'a (i32),
+}
+
 pub fn test_crate::{test_crate::Foo}::b() -> test_crate::Foo
 {
     let @0: test_crate::Foo; // return
 
     @0 := test_crate::Foo::B { 0: const (0 : usize) }
     return
-}
-
-struct test_crate::Bar<'a> =
-{
-  r: &'a (i32),
 }
 
 fn test_crate::{test_crate::Bar<'a>}#1::new<'a>(@1: &'a (i32)) -> test_crate::Bar<'a>

@@ -4,7 +4,6 @@ use charon_lib::options::{CliOpts, TranslateOptions};
 use charon_lib::transform::TransformCtx;
 use hax::FullDefKind;
 use hax_frontend_exporter::{self as hax, SInto};
-use rustc_hir::def_id::DefId;
 use rustc_middle::ty::TyCtxt;
 use std::cell::RefCell;
 use std::path::PathBuf;
@@ -42,15 +41,8 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
             TraitAlias { .. } => {}
 
             Impl { of_trait: false } | Mod { .. } | ForeignMod { .. } => {
-                let Ok(def) = self.hax_def(def_id) else {
-                    return; // Error has already been emitted
-                };
-                let Ok(name) = self.hax_def_id_to_name(&def.def_id) else {
-                    return; // Error has already been emitted
-                };
-                let opacity = self.opacity_for_name(&name);
-                let item_meta = self.translate_item_meta(&def, name, opacity);
-                let _ = self.register_module(item_meta, &def);
+                self.items_to_translate
+                    .insert(TransItemSource::Module(def_id.to_rust_def_id()));
             }
 
             // We skip these
@@ -127,7 +119,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
             let res = {
                 // Stopgap measure because there are still many panics in charon and hax.
                 let mut ctx = std::panic::AssertUnwindSafe(&mut ctx);
-                std::panic::catch_unwind(move || ctx.translate_item_aux(rust_id, trans_id))
+                std::panic::catch_unwind(move || ctx.translate_item_aux(item_src, trans_id))
             };
             match res {
                 Ok(Ok(())) => return,
@@ -150,9 +142,10 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
 
     pub(crate) fn translate_item_aux(
         &mut self,
-        rust_id: DefId,
+        item_src: TransItemSource,
         trans_id: Option<AnyTransId>,
     ) -> Result<(), Error> {
+        let rust_id = item_src.to_def_id();
         // Translate the meta information
         let name = self.def_id_to_name(rust_id)?;
         if let Some(trans_id) = trans_id {
@@ -168,28 +161,33 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
 
         // Initialize the body translation context
         let bt_ctx = BodyTransCtx::new(rust_id, trans_id, self);
-        match trans_id {
-            Some(AnyTransId::Type(id)) => {
+        match item_src {
+            TransItemSource::Type(_) => {
+                let id = trans_id.unwrap().as_type().copied().unwrap();
                 let ty = bt_ctx.translate_type(id, item_meta, &def)?;
                 self.translated.type_decls.set_slot(id, ty);
             }
-            Some(AnyTransId::Fun(id)) => {
+            TransItemSource::Fun(_) => {
+                let id = trans_id.unwrap().as_fun().copied().unwrap();
                 let fun_decl = bt_ctx.translate_function(id, item_meta, &def)?;
                 self.translated.fun_decls.set_slot(id, fun_decl);
             }
-            Some(AnyTransId::Global(id)) => {
+            TransItemSource::Global(_) => {
+                let id = trans_id.unwrap().as_global().copied().unwrap();
                 let global_decl = bt_ctx.translate_global(id, item_meta, &def)?;
                 self.translated.global_decls.set_slot(id, global_decl);
             }
-            Some(AnyTransId::TraitDecl(id)) => {
+            TransItemSource::TraitDecl(_) => {
+                let id = trans_id.unwrap().as_trait_decl().copied().unwrap();
                 let trait_decl = bt_ctx.translate_trait_decl(id, item_meta, &def)?;
                 self.translated.trait_decls.set_slot(id, trait_decl);
             }
-            Some(AnyTransId::TraitImpl(id)) => {
+            TransItemSource::TraitImpl(_) => {
+                let id = trans_id.unwrap().as_trait_impl().copied().unwrap();
                 let trait_impl = bt_ctx.translate_trait_impl(id, item_meta, &def)?;
                 self.translated.trait_impls.set_slot(id, trait_impl);
             }
-            None => unimplemented!(),
+            TransItemSource::Module(_) => self.register_module(item_meta, &def)?,
         }
         Ok(())
     }
@@ -237,10 +235,10 @@ pub fn translate<'tcx, 'ctx>(
         cached_names: Default::default(),
     };
 
-    // Recursively register all the items in the crate, starting from the crate root. We could
-    // instead ask rustc for the plain list of all items in the crate, but we wouldn't be able to
-    // skip items inside modules annotated with `#[charon::opaque]`.
-    ctx.register_module_item(&crate_def_id);
+    // Translate the crate root, which will recursively explore modules and items in the crate
+    // while respecting opacity annotations/options.
+    ctx.items_to_translate
+        .insert(TransItemSource::Module(crate_def_id.to_rust_def_id()));
 
     trace!(
         "Queue after we explored the crate:\n{:?}",

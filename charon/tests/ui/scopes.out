@@ -14,8 +14,6 @@ impl test_crate::{impl test_crate::Trait<'a> for &'a (())}<'a> : test_crate::Tra
 
 opaque type test_crate::Foo<'a>
 
-fn test_crate::{test_crate::Foo<'_0>}#1::bar<'_0, '_1>(@1: &'_1 (test_crate::Foo<'_0>)) -> &'_1 (())
-
 fn test_crate::foo<'_0>(@1: &'_0 (fn<'_0>(&'_0_0 (u32)) -> u32))
 
 fn test_crate::bar<'_0>(@1: &'_0 (fn<'_0>(&'_0_0 (fn<'_0>(&'_0_0 (u32)) -> u32))))
@@ -23,6 +21,8 @@ fn test_crate::bar<'_0>(@1: &'_0 (fn<'_0>(&'_0_0 (fn<'_0>(&'_0_0 (u32)) -> u32))
 fn test_crate::baz<'a>(@1: &'a (fn<'b>(&'a (u32), &'b (fn<'c>(&'a (u32), &'b (u32), &'c (u32)) -> u32))))
 
 fn test_crate::Trait::method<'a, 'b, Self>(@1: &'b (Self)) -> &'b (())
+
+fn test_crate::{test_crate::Foo<'_0>}#1::bar<'_0, '_1>(@1: &'_1 (test_crate::Foo<'_0>)) -> &'_1 (())
 
 
 

@@ -399,68 +399,6 @@ pub struct test_crate::TestType<T>
   T,
 }
 
-struct test_crate::{test_crate::TestType<T>[@TraitClause0]}#6::test::TestType1 =
-{
-  u64,
-}
-
-fn test_crate::{test_crate::TestType<T>[@TraitClause0]}#6::test::{impl test_crate::{test_crate::TestType<T>[@TraitClause0]}#6::test::TestTrait for test_crate::{test_crate::TestType<T>[@TraitClause0]}#6::test::TestType1}::test<'_0>(@1: &'_0 (test_crate::{test_crate::TestType<T>[@TraitClause0]}#6::test::TestType1)) -> bool
-{
-    let @0: bool; // return
-    let self@1: &'_ (test_crate::{test_crate::TestType<T>[@TraitClause0]}#6::test::TestType1); // arg #1
-    let @2: u64; // anonymous local
-
-    @2 := copy ((*(self@1)).0)
-    @0 := move (@2) > const (1 : u64)
-    drop @2
-    return
-}
-
-pub fn test_crate::{test_crate::TestType<T>[@TraitClause0]}#6::test<'_0, T>(@1: &'_0 (test_crate::TestType<T>[@TraitClause0]), @2: T) -> bool
-where
-    [@TraitClause0]: core::marker::Sized<T>,
-    [@TraitClause1]: test_crate::ToU64<T>,
-{
-    let @0: bool; // return
-    let self@1: &'_ (test_crate::TestType<T>[@TraitClause0]); // arg #1
-    let x@2: T; // arg #2
-    let x@3: u64; // local
-    let @4: T; // anonymous local
-    let y@5: test_crate::{test_crate::TestType<T>[@TraitClause0]}#6::test::TestType1; // local
-    let @6: bool; // anonymous local
-    let @7: u64; // anonymous local
-    let @8: &'_ (test_crate::{test_crate::TestType<T>[@TraitClause0]}#6::test::TestType1); // anonymous local
-
-    // Remark: we can't write: impl TestTrait for TestType<T>,
-    // we have to use a *local* parameter (can't use the outer T).
-    // In other words: the parameters used in the items inside
-    // an impl must be bound by the impl block (can't come from outer
-    // blocks).
-    @4 := move (x@2)
-    x@3 := @TraitClause1::to_u64(move (@4))
-    drop @4
-    @fake_read(x@3)
-    y@5 := test_crate::{test_crate::TestType<T>[@TraitClause0]}#6::test::TestType1 { 0: const (0 : u64) }
-    @fake_read(y@5)
-    @7 := copy (x@3)
-    @6 := move (@7) > const (0 : u64)
-    if move (@6) {
-        drop @7
-        @8 := &y@5
-        @0 := test_crate::{test_crate::TestType<T>[@TraitClause0]}#6::test::{impl test_crate::{test_crate::TestType<T>[@TraitClause0]}#6::test::TestTrait for test_crate::{test_crate::TestType<T>[@TraitClause0]}#6::test::TestType1}::test<'_>(move (@8))
-        drop @8
-    }
-    else {
-        drop @7
-        @0 := const (false)
-    }
-    drop @6
-    drop y@5
-    drop x@3
-    drop x@2
-    return
-}
-
 pub struct test_crate::BoolWrapper =
 {
   bool,
@@ -1028,28 +966,74 @@ pub fn test_crate::flibidi()
     return
 }
 
-trait test_crate::assoc_ty_trait_ref::SliceIndex<Self>
-{
-    parent_clause0 : [@TraitClause0]: core::marker::Sized<Self::Output>
-    type Output
-}
-
-fn test_crate::assoc_ty_trait_ref::index<I>() -> @TraitClause1::Output
-where
-    [@TraitClause0]: core::marker::Sized<I>,
-    [@TraitClause1]: test_crate::assoc_ty_trait_ref::SliceIndex<I>,
-{
-    let @0: @TraitClause1::Output; // return
-
-    panic(core::panicking::panic)
-}
-
 pub fn test_crate::BoolTrait::ret_true<'_0, Self>(@1: &'_0 (Self)) -> bool
 {
     let @0: bool; // return
     let self@1: &'_ (Self); // arg #1
 
     @0 := const (true)
+    return
+}
+
+struct test_crate::{test_crate::TestType<T>[@TraitClause0]}#6::test::TestType1 =
+{
+  u64,
+}
+
+fn test_crate::{test_crate::TestType<T>[@TraitClause0]}#6::test::{impl test_crate::{test_crate::TestType<T>[@TraitClause0]}#6::test::TestTrait for test_crate::{test_crate::TestType<T>[@TraitClause0]}#6::test::TestType1}::test<'_0>(@1: &'_0 (test_crate::{test_crate::TestType<T>[@TraitClause0]}#6::test::TestType1)) -> bool
+{
+    let @0: bool; // return
+    let self@1: &'_ (test_crate::{test_crate::TestType<T>[@TraitClause0]}#6::test::TestType1); // arg #1
+    let @2: u64; // anonymous local
+
+    @2 := copy ((*(self@1)).0)
+    @0 := move (@2) > const (1 : u64)
+    drop @2
+    return
+}
+
+pub fn test_crate::{test_crate::TestType<T>[@TraitClause0]}#6::test<'_0, T>(@1: &'_0 (test_crate::TestType<T>[@TraitClause0]), @2: T) -> bool
+where
+    [@TraitClause0]: core::marker::Sized<T>,
+    [@TraitClause1]: test_crate::ToU64<T>,
+{
+    let @0: bool; // return
+    let self@1: &'_ (test_crate::TestType<T>[@TraitClause0]); // arg #1
+    let x@2: T; // arg #2
+    let x@3: u64; // local
+    let @4: T; // anonymous local
+    let y@5: test_crate::{test_crate::TestType<T>[@TraitClause0]}#6::test::TestType1; // local
+    let @6: bool; // anonymous local
+    let @7: u64; // anonymous local
+    let @8: &'_ (test_crate::{test_crate::TestType<T>[@TraitClause0]}#6::test::TestType1); // anonymous local
+
+    // Remark: we can't write: impl TestTrait for TestType<T>,
+    // we have to use a *local* parameter (can't use the outer T).
+    // In other words: the parameters used in the items inside
+    // an impl must be bound by the impl block (can't come from outer
+    // blocks).
+    @4 := move (x@2)
+    x@3 := @TraitClause1::to_u64(move (@4))
+    drop @4
+    @fake_read(x@3)
+    y@5 := test_crate::{test_crate::TestType<T>[@TraitClause0]}#6::test::TestType1 { 0: const (0 : u64) }
+    @fake_read(y@5)
+    @7 := copy (x@3)
+    @6 := move (@7) > const (0 : u64)
+    if move (@6) {
+        drop @7
+        @8 := &y@5
+        @0 := test_crate::{test_crate::TestType<T>[@TraitClause0]}#6::test::{impl test_crate::{test_crate::TestType<T>[@TraitClause0]}#6::test::TestTrait for test_crate::{test_crate::TestType<T>[@TraitClause0]}#6::test::TestType1}::test<'_>(move (@8))
+        drop @8
+    }
+    else {
+        drop @7
+        @0 := const (false)
+    }
+    drop @6
+    drop y@5
+    drop x@3
+    drop x@2
     return
 }
 
@@ -1076,6 +1060,22 @@ pub fn test_crate::CFnOnce::call_once<Self, Args>(@1: Self, @2: Args) -> Self::O
 pub fn test_crate::CFnMut::call_mut<'_0, Self, Args>(@1: &'_0 mut (Self), @2: Args) -> Self::parent_clause0::Output
 
 pub fn test_crate::CFn::call<'_0, Self, Args>(@1: &'_0 (Self), @2: Args) -> Self::parent_clause0::parent_clause0::Output
+
+trait test_crate::assoc_ty_trait_ref::SliceIndex<Self>
+{
+    parent_clause0 : [@TraitClause0]: core::marker::Sized<Self::Output>
+    type Output
+}
+
+fn test_crate::assoc_ty_trait_ref::index<I>() -> @TraitClause1::Output
+where
+    [@TraitClause0]: core::marker::Sized<I>,
+    [@TraitClause1]: test_crate::assoc_ty_trait_ref::SliceIndex<I>,
+{
+    let @0: @TraitClause1::Output; // return
+
+    panic(core::panicking::panic)
+}
 
 pub fn core::ops::function::Fn::call<'_0, Self, Args>(@1: &'_0 (Self), @2: Args) -> Self::parent_clause0::parent_clause0::Output
 

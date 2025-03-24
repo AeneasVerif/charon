@@ -213,6 +213,8 @@ where
     return
 }
 
+fn test_crate::Foo::use_item_required<'a, Self, Self_Item>(@1: Self_Item) -> Self_Item
+
 trait test_crate::loopy::Bar<Self, Self_BarTy>
 {
     parent_clause0 : [@TraitClause0]: core::marker::Sized<Self_BarTy>
@@ -341,8 +343,6 @@ where
     parent_clause1 = core::marker::Sized<&'_ (())>
     parent_clause2 = core::marker::Sized<&'_ ((core::option::Option<T>[@TraitClause0], &'_ (())))>
 }
-
-fn test_crate::Foo::use_item_required<'a, Self, Self_Item>(@1: Self_Item) -> Self_Item
 
 #[lang_item("to_owned_method")]
 pub fn alloc::borrow::ToOwned::to_owned<'_0, Self, Self_Owned>(@1: &'_0 (Self)) -> Self_Owned

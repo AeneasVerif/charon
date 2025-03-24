@@ -12,6 +12,8 @@ pub struct test_crate::S<'a, K>
   x: &'a (K),
 }
 
+pub struct test_crate::T = {}
+
 #[lang_item("tuple_trait")]
 pub trait core::marker::Tuple<Self>
 
@@ -61,8 +63,6 @@ where
     @0 := ()
     return
 }
-
-pub struct test_crate::T = {}
 
 pub fn test_crate::{test_crate::T}#1::f<F>()
 where

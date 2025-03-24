@@ -13,6 +13,8 @@ pub struct test_crate::AVLTree<T>
   x: T,
 }
 
+impl test_crate::{impl test_crate::Ord for u32}#1 : test_crate::Ord<u32>
+
 pub fn test_crate::{test_crate::AVLTree<T>[@TraitClause0]}::insert<'_0, T>(@1: &'_0 mut (test_crate::AVLTree<T>[@TraitClause0]))
 where
     [@TraitClause0]: core::marker::Sized<T>,
@@ -23,8 +25,6 @@ where
 
     panic(core::panicking::panic)
 }
-
-impl test_crate::{impl test_crate::Ord for u32}#1 : test_crate::Ord<u32>
 
 pub fn test_crate::test(@1: test_crate::AVLTree<u32>[core::marker::Sized<u32>])
 {

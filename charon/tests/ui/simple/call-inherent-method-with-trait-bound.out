@@ -21,23 +21,6 @@ pub struct test_crate::HashMap<S>
   S,
 }
 
-pub fn test_crate::{test_crate::HashMap<S>[@TraitClause0]}#1::get<S, Q, Clause2_Type>(@1: test_crate::HashMap<S>[@TraitClause0], @2: Q)
-where
-    [@TraitClause0]: core::marker::Sized<S>,
-    [@TraitClause1]: core::marker::Sized<Q>,
-    [@TraitClause2]: test_crate::Trait<Q, Clause2_Type>,
-{
-    let @0: (); // return
-    let _x@1: test_crate::HashMap<S>[@TraitClause0]; // arg #1
-    let _k@2: Q; // arg #2
-
-    @0 := ()
-    drop _k@2
-    drop _x@1
-    @0 := ()
-    return
-}
-
 pub fn test_crate::top_level_get<S, Q, Clause2_Type>(@1: test_crate::HashMap<S>[@TraitClause0], @2: Q)
 where
     [@TraitClause0]: core::marker::Sized<S>,
@@ -70,6 +53,23 @@ pub fn test_crate::test1(@1: test_crate::HashMap<()>[core::marker::Sized<()>])
     drop @3
     drop @2
     @0 := ()
+    @0 := ()
+    return
+}
+
+pub fn test_crate::{test_crate::HashMap<S>[@TraitClause0]}#1::get<S, Q, Clause2_Type>(@1: test_crate::HashMap<S>[@TraitClause0], @2: Q)
+where
+    [@TraitClause0]: core::marker::Sized<S>,
+    [@TraitClause1]: core::marker::Sized<Q>,
+    [@TraitClause2]: test_crate::Trait<Q, Clause2_Type>,
+{
+    let @0: (); // return
+    let _x@1: test_crate::HashMap<S>[@TraitClause0]; // arg #1
+    let _k@2: Q; // arg #2
+
+    @0 := ()
+    drop _k@2
+    drop _x@1
     @0 := ()
     return
 }

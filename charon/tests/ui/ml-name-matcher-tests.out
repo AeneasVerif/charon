@@ -1,14 +1,5 @@
 # Final LLBC before serialization:
 
-fn test_crate::foo::bar()
-{
-    let @0: (); // return
-
-    @0 := ()
-    @0 := ()
-    return
-}
-
 #[lang_item("sized")]
 pub trait core::marker::Sized<Self>
 
@@ -187,6 +178,15 @@ fn test_crate::foo()
     drop @9
     drop @7
     drop slice@4
+    @0 := ()
+    return
+}
+
+fn test_crate::foo::bar()
+{
+    let @0: (); // return
+
+    @0 := ()
     @0 := ()
     return
 }

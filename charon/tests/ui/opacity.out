@@ -107,13 +107,9 @@ fn test_crate::foo()
     return
 }
 
-fn test_crate::module::dont_translate_body()
-
 fn test_crate::exclude_me()
 
 struct test_crate::Struct = {}
-
-unsafe fn test_crate::extern_fn(@1: i32)
 
 pub fn core::convert::Into::into<Self, T>(@1: Self) -> T
 
@@ -135,6 +131,10 @@ where
     parent_clause1 = @TraitClause1
     fn into = core::convert::{impl core::convert::Into<U> for T}#3::into<T, U>[@TraitClause0, @TraitClause1, @TraitClause2]
 }
+
+fn test_crate::module::dont_translate_body()
+
+unsafe fn test_crate::extern_fn(@1: i32)
 
 
 

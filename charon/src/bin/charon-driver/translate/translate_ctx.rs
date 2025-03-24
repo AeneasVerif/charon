@@ -32,6 +32,7 @@ pub(crate) use charon_lib::errors::{
 /// `FunDecl` one (for its initializer function).
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, VariantIndexArity)]
 pub enum TransItemSource {
+    Module(DefId),
     Global(DefId),
     TraitDecl(DefId),
     TraitImpl(DefId),
@@ -42,7 +43,8 @@ pub enum TransItemSource {
 impl TransItemSource {
     pub(crate) fn to_def_id(&self) -> DefId {
         match self {
-            TransItemSource::Global(id)
+            TransItemSource::Module(id)
+            | TransItemSource::Global(id)
             | TransItemSource::TraitDecl(id)
             | TransItemSource::TraitImpl(id)
             | TransItemSource::Fun(id)
@@ -769,6 +771,10 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
                     }
                     TransItemSource::Fun(_) => {
                         AnyTransId::Fun(self.translated.fun_decls.reserve_slot())
+                    }
+                    // Modules don't have a `AnyTransId`.
+                    TransItemSource::Module(_) => {
+                        panic!("Don't pass a module id to `register_id_no_enqueue`")
                     }
                 };
                 // Add the id to the queue of declarations to translate
