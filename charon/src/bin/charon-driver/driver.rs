@@ -100,11 +100,11 @@ fn setup_compiler(config: &mut Config, options: &CliOpts, do_translate: bool) {
 
         set_release_mode(config);
         set_no_codegen(config);
+        if options.use_polonius {
+            config.opts.unstable_opts.polonius = Polonius::Legacy;
+        }
     }
     set_mir_options(config);
-    if options.use_polonius {
-        config.opts.unstable_opts.polonius = Polonius::Legacy;
-    }
 }
 
 /// Run the rustc driver with our custom hooks. Returns `None` if the crate was not compiled with
