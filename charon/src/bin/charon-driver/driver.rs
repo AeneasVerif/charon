@@ -153,11 +153,10 @@ pub fn run_rustc_driver(options: &CliOpts) -> Result<Option<TransformCtx>, Charo
     // the current executable, we skip it.
     let mut compiler_args: Vec<String> = env::args().skip(1).collect();
 
-    // When called using cargo, we tell cargo to use `charon-driver` by setting the
-    // `RUSTC_WORKSPACE_WRAPPER` env var. This uses `charon-driver` for all the crates in the
-    // workspace. We may however not want to be calling charon on all crates;
-    // `CARGO_PRIMARY_PACKAGE` tells us whether the crate was specifically selected or is a
-    // dependency.
+    // When called using cargo, we tell cargo to use `charon-driver` by setting the `RUSTC_WRAPPER`
+    // env var. This uses `charon-driver` for all the crates being compiled.
+    // We may however not want to be calling charon on all crates; `CARGO_PRIMARY_PACKAGE` tells us
+    // whether the crate was specifically selected or is a dependency.
     let is_workspace_dependency =
         env::var("CHARON_USING_CARGO").is_ok() && !env::var("CARGO_PRIMARY_PACKAGE").is_ok();
     // Determines if we are being invoked to build a crate for the "target" architecture, in
