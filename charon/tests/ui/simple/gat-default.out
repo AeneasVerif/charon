@@ -22,4 +22,20 @@ error: Item `test_crate::Collection` caused errors; ignoring.
   | ^^^^^^^^^^^^^^^^
   |
 
-ERROR Charon failed to translate this code (3 errors)
+thread 'rustc' panicked at /rustc/86d69c705a552236a622eee3fdea94bf13c5f102/compiler/rustc_type_ir/src/binder.rs:697:9:
+type parameter `U/#1` (U/#1/1) out of range when instantiating, args=[()]
+error: Hax panicked when translating `test_crate::{impl#0}`.
+ --> tests/ui/simple/gat-default.rs:9:1
+  |
+9 | impl Collection for () {}
+  | ^^^^^^^^^^^^^^^^^^^^^^
+  |
+
+error: Item `test_crate::{impl#0}` caused errors; ignoring.
+ --> tests/ui/simple/gat-default.rs:9:1
+  |
+9 | impl Collection for () {}
+  | ^^^^^^^^^^^^^^^^^^^^^^
+  |
+
+ERROR Charon failed to translate this code (5 errors)

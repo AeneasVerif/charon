@@ -12,44 +12,39 @@ use std::path::PathBuf;
 impl<'tcx, 'ctx> TranslateCtx<'tcx> {
     /// Register a HIR item and all its children. We call this on the crate root items and end up
     /// exploring the whole crate.
-    fn register_module_item(&mut self, def_id: DefId) {
+    fn register_module_item(&mut self, def_id: &hax::DefId) {
+        use hax::DefKind::*;
         trace!("Registering {def_id:?}");
 
-        // TODO: use simple `DefKind` here
-        let Ok(def) = self.hax_def(def_id) else {
-            return; // Error has already been emitted
-        };
-
-        match def.kind() {
-            FullDefKind::Enum { .. }
-            | FullDefKind::Struct { .. }
-            | FullDefKind::Union { .. }
-            | FullDefKind::TyAlias { .. }
-            | FullDefKind::AssocTy { .. }
-            | FullDefKind::ForeignTy => {
+        match &def_id.kind {
+            Enum { .. }
+            | Struct { .. }
+            | Union { .. }
+            | TyAlias { .. }
+            | AssocTy { .. }
+            | ForeignTy => {
                 let _ = self.register_type_decl_id(&None, def_id);
             }
-            FullDefKind::Fn { .. } | FullDefKind::AssocFn { .. } => {
+            Fn { .. } | AssocFn { .. } => {
                 let _ = self.register_fun_decl_id(&None, def_id);
             }
-            FullDefKind::Const { .. }
-            | FullDefKind::Static { .. }
-            | FullDefKind::AssocConst { .. } => {
+            Const { .. } | Static { .. } | AssocConst { .. } => {
                 let _ = self.register_global_decl_id(&None, def_id);
             }
 
-            FullDefKind::Trait { .. } => {
+            Trait { .. } => {
                 let _ = self.register_trait_decl_id(&None, def_id);
             }
-            FullDefKind::TraitImpl { .. } => {
+            Impl { of_trait: true } => {
                 let _ = self.register_trait_impl_id(&None, def_id);
             }
             // TODO: trait aliases (https://github.com/AeneasVerif/charon/issues/366)
-            FullDefKind::TraitAlias { .. } => {}
+            TraitAlias { .. } => {}
 
-            FullDefKind::InherentImpl { .. }
-            | FullDefKind::Mod { .. }
-            | FullDefKind::ForeignMod { .. } => {
+            Impl { of_trait: false } | Mod { .. } | ForeignMod { .. } => {
+                let Ok(def) = self.hax_def(def_id) else {
+                    return; // Error has already been emitted
+                };
                 let Ok(name) = self.hax_def_id_to_name(&def.def_id) else {
                     return; // Error has already been emitted
                 };
@@ -59,28 +54,25 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
             }
 
             // We skip these
-            FullDefKind::ExternCrate { .. }
-            | FullDefKind::GlobalAsm { .. }
-            | FullDefKind::Macro { .. }
-            | FullDefKind::Use { .. } => {}
+            ExternCrate { .. } | GlobalAsm { .. } | Macro { .. } | Use { .. } => {}
             // We cannot encounter these since they're not top-level items.
-            FullDefKind::AnonConst { .. }
-            | FullDefKind::Closure { .. }
-            | FullDefKind::ConstParam { .. }
-            | FullDefKind::Ctor { .. }
-            | FullDefKind::Field { .. }
-            | FullDefKind::InlineConst { .. }
-            | FullDefKind::LifetimeParam { .. }
-            | FullDefKind::OpaqueTy { .. }
-            | FullDefKind::SyntheticCoroutineBody { .. }
-            | FullDefKind::TyParam { .. }
-            | FullDefKind::Variant { .. } => {
+            AnonConst { .. }
+            | Closure { .. }
+            | ConstParam { .. }
+            | Ctor { .. }
+            | Field { .. }
+            | InlineConst { .. }
+            | LifetimeParam { .. }
+            | OpaqueTy { .. }
+            | SyntheticCoroutineBody { .. }
+            | TyParam { .. }
+            | Variant { .. } => {
                 let span = self.def_span(def_id);
                 register_error!(
                     self,
                     span,
-                    "Cannot register this item: `{def_id:?}` with kind `{:?}`",
-                    def.kind()
+                    "Cannot register item `{def_id:?}` with kind `{:?}`",
+                    def_id.kind
                 );
             }
         }
@@ -97,18 +89,18 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
         match def.kind() {
             FullDefKind::InherentImpl { items, .. } => {
                 for (_, item_def) in items {
-                    self.register_module_item(item_def.rust_def_id());
+                    self.register_module_item(&item_def.def_id);
                 }
             }
             FullDefKind::Mod { items, .. } => {
                 for def_id in items {
-                    self.register_module_item(def_id.into());
+                    self.register_module_item(def_id);
                 }
             }
             FullDefKind::ForeignMod { items, .. } => {
                 // Foreign modules can't be named or have attributes, so we can't mark them opaque.
                 for def_id in items {
-                    self.register_module_item(def_id.into());
+                    self.register_module_item(def_id);
                 }
             }
             _ => panic!("Item should be a module but isn't: {def:?}"),
@@ -248,7 +240,7 @@ pub fn translate<'tcx, 'ctx>(
     // Recursively register all the items in the crate, starting from the crate root. We could
     // instead ask rustc for the plain list of all items in the crate, but we wouldn't be able to
     // skip items inside modules annotated with `#[charon::opaque]`.
-    ctx.register_module_item(crate_def_id.to_rust_def_id());
+    ctx.register_module_item(&crate_def_id);
 
     trace!(
         "Queue after we explored the crate:\n{:?}",
