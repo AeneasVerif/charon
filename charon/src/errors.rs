@@ -179,8 +179,6 @@ pub struct ErrorCtx {
 
     /// The ids of the external_declarations for which extraction we encountered errors.
     pub external_decls_with_errors: HashSet<AnyTransId>,
-    /// The ids of the declarations we completely failed to extract and had to ignore.
-    pub ignored_failed_decls: HashSet<AnyTransId>,
     /// Graph of dependencies between items: there is an edge from item `a` to item `b` if `b`
     /// registered the id for `a` during its translation. Because we only use this to report errors
     /// on external items, we only record edges where `a` is an external item.
@@ -199,7 +197,6 @@ impl ErrorCtx {
             continue_on_failure,
             error_on_warnings,
             external_decls_with_errors: HashSet::new(),
-            ignored_failed_decls: HashSet::new(),
             external_dep_graph: DepGraph::new(),
             def_id: None,
             def_id_is_local: false,
@@ -254,10 +251,6 @@ impl ErrorCtx {
             panic!("{msg}");
         }
         err
-    }
-
-    pub fn ignore_failed_decl(&mut self, id: AnyTransId) {
-        self.ignored_failed_decls.insert(id);
     }
 
     /// Register the fact that `id` is a dependency of `src` (if `src` is not `None`).

@@ -15,7 +15,7 @@ use rustc_middle::ty::TyCtxt;
 use std::borrow::Cow;
 use std::cell::RefCell;
 use std::cmp::Ord;
-use std::collections::{BTreeMap, VecDeque};
+use std::collections::{BTreeMap, HashSet, VecDeque};
 use std::collections::{BTreeSet, HashMap};
 use std::fmt::Debug;
 use std::path::{Component, PathBuf};
@@ -98,6 +98,8 @@ pub struct TranslateCtx<'tcx> {
     /// The declarations we came accross and which we haven't translated yet. We keep them sorted
     /// to make the output order a bit more stable.
     pub items_to_translate: BTreeSet<TransItemSource>,
+    /// The declaration we've already processed (successfully or not).
+    pub processed: HashSet<TransItemSource>,
     /// Cache the names to compute them only once each.
     pub cached_names: HashMap<DefId, Name>,
     /// Cache the `ItemMeta`s to compute them only once each.
