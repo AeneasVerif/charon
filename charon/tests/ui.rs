@@ -178,16 +178,11 @@ fn perform_test(test_case: &Case, action: Action) -> anyhow::Result<()> {
 
     // Run Charon.
     let mut cmd = Command::cargo_bin("charon")?;
-    cmd.arg("--no-cargo");
+    cmd.arg("rustc");
 
+    // Charon args
     cmd.arg("--error-on-warnings");
     cmd.arg("--print-llbc");
-    cmd.arg("--rustc-flag=--crate-name=test_crate");
-    cmd.arg("--rustc-flag=--crate-type=rlib");
-    cmd.arg("--rustc-flag=--allow=unused"); // Removes noise
-    cmd.arg("--input");
-    cmd.arg(&test_case.input_path);
-
     if matches!(
         test_case.magic_comments.test_kind,
         TestKind::KnownPanic | TestKind::KnownFailure
@@ -197,22 +192,24 @@ fn perform_test(test_case: &Case, action: Action) -> anyhow::Result<()> {
         cmd.arg("--dest-file");
         cmd.arg(test_case.input_path.with_extension("llbc"));
     }
+    cmd.args(&test_case.magic_comments.charon_opts);
 
-    cmd.arg("--rustc-flag=--edition=2021");
+    // Rustc args
+    cmd.arg("--");
+    cmd.arg(&test_case.input_path);
+    cmd.arg("--crate-name=test_crate");
+    cmd.arg("--crate-type=rlib");
+    cmd.arg("--allow=unused"); // Removes noise
+    cmd.arg("--edition=2021");
     for (crate_name, _, rlib_path) in deps {
-        cmd.arg(format!("--rustc-flag=--extern={crate_name}={rlib_path}"));
+        cmd.arg(format!("--extern={crate_name}={rlib_path}"));
     }
-    for arg in &test_case.magic_comments.rustc_opts {
-        cmd.arg(format!("--rustc-flag={arg}"));
-    }
-    for arg in &test_case.magic_comments.charon_opts {
-        cmd.arg(arg);
-    }
+    cmd.args(&test_case.magic_comments.rustc_opts);
+
     let cmd_str = format!(
         "charon {}",
         cmd.get_args().map(OsStr::to_string_lossy).join(" ")
     );
-
     let output = cmd.output()?;
     let stderr = String::from_utf8(output.stderr.clone())?;
     let stdout = String::from_utf8(output.stdout.clone())?;
