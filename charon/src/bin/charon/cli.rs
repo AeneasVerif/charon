@@ -2,11 +2,6 @@ use charon_lib::options::CliOpts;
 use clap::{Args, Parser, Subcommand};
 use std::path::PathBuf;
 
-/// `charon cargo`
-mod cargo;
-/// `charon rustc`
-mod rustc;
-
 #[derive(Debug, Parser)]
 #[clap(name = "Charon")]
 struct Cli {
@@ -22,8 +17,8 @@ struct Cli {
 #[derive(Debug, Subcommand)]
 enum Charon {
     PrettyPrint(PrettyPrintArgs),
-    Cargo(cargo::CargoArgs),
-    Rustc(rustc::RustcArgs),
+    Rustc(RustcArgs),
+    Cargo(CargoArgs),
 }
 
 /// Read a llbc or ullbc file and pretty print it.
@@ -31,6 +26,28 @@ enum Charon {
 struct PrettyPrintArgs {
     /// Single file path to llbc or ullbc
     file: PathBuf,
+}
+
+/// Usage: `charon cargo [charon options] -- [rustc options]`
+#[derive(clap::Args, Debug)]
+pub struct RustcArgs {
+    #[command(flatten)]
+    pub opts: CliOpts,
+
+    /// Args that `rustc` accepts.
+    #[arg(last = true)]
+    pub rustc: Vec<String>,
+}
+
+/// Usage: `charon cargo [charon options] -- [cargo build options]`
+#[derive(clap::Args, Debug)]
+pub struct CargoArgs {
+    #[command(flatten)]
+    pub opts: CliOpts,
+
+    /// Args that `cargo build` accepts.
+    #[arg(last = true)]
+    pub cargo: Vec<String>,
 }
 
 /// The meaning of return value:

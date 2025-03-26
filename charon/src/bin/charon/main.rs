@@ -45,8 +45,7 @@ extern crate anyhow;
 #[macro_use]
 extern crate charon_lib;
 
-/// Rename this module once subcommand migration finishes.
-mod cli_rework;
+mod cli;
 mod toml_config;
 mod toolchain;
 
@@ -57,7 +56,7 @@ pub fn main() -> Result<()> {
     // Parse the command-line
     trace!("Arguments: {:?}", env::args());
 
-    let options = match cli_rework::run()? {
+    let options = match cli::run()? {
         Some(options) => options,
         None => return Ok(()),
     };
