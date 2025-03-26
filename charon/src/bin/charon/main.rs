@@ -38,6 +38,8 @@ use charon_lib::{
     logger,
     options::{CliOpts, CHARON_ARGS},
 };
+use clap::Parser;
+use cli::{Charon, Cli};
 use std::{env, process::ExitStatus};
 
 #[macro_use]
@@ -54,30 +56,43 @@ pub fn main() -> Result<()> {
     logger::initialize_logger();
 
     // Parse the command-line
-    trace!("Arguments: {:?}", env::args());
-
-    let options = match cli::run()? {
-        Some(options) => options,
-        None => return Ok(()),
-    };
-
-    ensure_rustup();
-    let exit_status = if let Some(llbc_file) = options.read_llbc {
-        let krate = charon_lib::deserialize_llbc(&llbc_file)?;
-        println!("{krate}");
-        ExitStatus::default()
-    } else if options.no_cargo {
-        translate_without_cargo(options)?
-    } else {
-        translate_with_cargo(options)?
+    let cli = Cli::parse();
+    let exit_status = match cli.command {
+        Some(Charon::PrettyPrint(pretty_print)) => {
+            let krate = charon_lib::deserialize_llbc(&pretty_print.file)?;
+            println!("{krate}");
+            ExitStatus::default()
+        }
+        Some(Charon::Cargo(mut subcmd_cargo)) => {
+            let mut options = subcmd_cargo.opts;
+            options.cargo_args.append(&mut subcmd_cargo.cargo);
+            translate_with_cargo(options)?
+        }
+        Some(Charon::Rustc(mut subcmd_rustc)) => {
+            let mut options = subcmd_rustc.opts;
+            options.rustc_args.append(&mut subcmd_rustc.rustc);
+            translate_without_cargo(options)?
+        }
+        // Legacy calling syntax.
+        None => {
+            let options = cli.opts;
+            if let Some(llbc_file) = options.read_llbc {
+                let krate = charon_lib::deserialize_llbc(&llbc_file)?;
+                println!("{krate}");
+                ExitStatus::default()
+            } else if options.no_cargo {
+                translate_without_cargo(options)?
+            } else {
+                translate_with_cargo(options)?
+            }
+        }
     };
 
     handle_exit_status(exit_status)
 }
 
 fn translate_with_cargo(mut options: CliOpts) -> anyhow::Result<ExitStatus> {
-    let rustc_version = get_rustc_version()?;
-    let host = &rustc_version.host;
+    ensure_rustup();
     if let Some(toml) = toml_config::read_toml() {
         options = toml.apply(options);
     }
@@ -99,7 +114,7 @@ fn translate_with_cargo(mut options: CliOpts) -> anyhow::Result<ExitStatus> {
         // Make sure the build target is explicitly set. This is needed to detect which crates are
         // proc-macro/build-script in `charon-driver`.
         cmd.arg("--target");
-        cmd.arg(host);
+        cmd.arg(&get_rustc_version()?.host);
     }
     if !is_specified("--lib") && options.lib {
         cmd.arg("--lib");
@@ -119,8 +134,7 @@ fn translate_with_cargo(mut options: CliOpts) -> anyhow::Result<ExitStatus> {
 }
 
 fn translate_without_cargo(mut options: CliOpts) -> anyhow::Result<ExitStatus> {
-    let rustc_version = get_rustc_version()?;
-    let host = &rustc_version.host;
+    ensure_rustup();
     options.validate();
     if !options.cargo_args.is_empty() {
         bail!("Option `--cargo-arg` is not compatible with `--no-cargo` or `charon rustc`")
@@ -134,7 +148,7 @@ fn translate_without_cargo(mut options: CliOpts) -> anyhow::Result<ExitStatus> {
         // Make sure the build target is explicitly set. This is needed to detect which crates are
         // proc-macro/build-script in `charon-driver`.
         cmd.arg("--target");
-        cmd.arg(host);
+        cmd.arg(&get_rustc_version()?.host);
     }
     cmd.args(std::mem::take(&mut options.rustc_args));
     cmd.env(CHARON_ARGS, serde_json::to_string(&options).unwrap());
