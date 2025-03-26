@@ -38,6 +38,7 @@ fn perform_test(test_case: &Case, action: Action) -> anyhow::Result<()> {
     // Call charon
     let mut cmd = Command::cargo_bin("charon")?;
     cmd.current_dir(&test_case.dir);
+    cmd.arg("cargo");
     cmd.arg("--error-on-warnings");
     cmd.arg("--print-llbc");
     if matches!(test_case.expect, Failure) {
