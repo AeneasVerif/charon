@@ -59,28 +59,8 @@ pub fn main() -> Result<()> {
         None => return Ok(()),
     };
 
-    // ******* Old cli args parsing *******
-    options.validate();
-
-    // FIXME: when using rustup, ensure the toolchain has the right components installed.
-    let use_rustup = which::which("rustup").is_ok();
-    // This is set by the nix develop environment and the nix builder; in both cases the toolchain
-    // is set up in `$PATH` and the driver should be correctly dynamically linked.
-    let correct_toolchain_is_in_path = env::var("CHARON_TOOLCHAIN_IS_IN_PATH").is_ok();
-
-    if !use_rustup && !correct_toolchain_is_in_path {
-        panic!(
-            "Can't find `rustup`; please install it with your system package manager \
-            or from https://rustup.rs . \
-            If you are using nix, make sure to be in the flake-defined environment \
-            using `nix develop`.",
-        )
-    }
-
-    let cmd = toolchain::driver_cmd()?;
-    let rustc_version = rustc_version::VersionMeta::for_command(cmd).unwrap_or_else(|err| {
-        panic!("failed to determine underlying rustc version of Charon:\n{err:?}",)
-    });
+    ensure_rustup();
+    let rustc_version = get_rustc_version()?;
     let host = &rustc_version.host;
 
     let exit_status = if let Some(llbc_file) = options.read_llbc {
@@ -88,6 +68,7 @@ pub fn main() -> Result<()> {
         println!("{krate}");
         ExitStatus::default()
     } else if options.no_cargo {
+        options.validate();
         if !options.cargo_args.is_empty() {
             bail!("Option `--cargo-arg` is not compatible with `--no-cargo` or `charon rustc`")
         }
@@ -127,8 +108,8 @@ pub fn main() -> Result<()> {
     } else {
         if let Some(toml) = toml_config::read_toml() {
             options = toml.apply(options);
-            options.validate();
         }
+        options.validate();
         if options.input_file.is_some() {
             panic!("Option `--input` is only available for `charon rustc`");
         }
@@ -180,6 +161,31 @@ pub fn main() -> Result<()> {
     };
 
     handle_exit_status(exit_status)
+}
+
+fn get_rustc_version() -> anyhow::Result<rustc_version::VersionMeta> {
+    let cmd = toolchain::driver_cmd()?;
+    let rustc_version = rustc_version::VersionMeta::for_command(cmd).unwrap_or_else(|err| {
+        panic!("failed to determine underlying rustc version of Charon:\\n{err:?}",)
+    });
+    Ok(rustc_version)
+}
+
+fn ensure_rustup() {
+    // FIXME: when using rustup, ensure the toolchain has the right components installed.
+    let use_rustup = which::which("rustup").is_ok();
+    // This is set by the nix develop environment and the nix builder; in both cases the toolchain
+    // is set up in `\$PATH` and the driver should be correctly dynamically linked.
+    let correct_toolchain_is_in_path = env::var("CHARON_TOOLCHAIN_IS_IN_PATH").is_ok();
+
+    if !use_rustup && !correct_toolchain_is_in_path {
+        panic!(
+            "Can't find `rustup`; please install it with your system package manager \\
+            or from https://rustup.rs . \\
+            If you are using nix, make sure to be in the flake-defined environment \\
+            using `nix develop`.",
+        )
+    }
 }
 
 fn handle_exit_status(exit_status: ExitStatus) -> Result<()> {
