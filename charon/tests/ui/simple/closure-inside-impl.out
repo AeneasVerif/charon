@@ -33,7 +33,7 @@ where
     let @0: (); // return
     let _closure@1: fn(()); // local
 
-    _closure@1 := {test_crate::{test_crate::Foo<F>[@TraitClause0]}::method::closure<F, T>[@TraitClause1]} {}
+    _closure@1 := {test_crate::{test_crate::Foo<F>[@TraitClause0]}::method::closure<F, T>[@TraitClause0, @TraitClause1]} {}
     @fake_read(_closure@1)
     @0 := ()
     drop _closure@1

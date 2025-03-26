@@ -1,4 +1,50 @@
-thread 'main' panicked at /home/nadrieril/.cargo/registry/src/index.crates.io-6f17d22bba15001f/index_vec-0.1.4/src/indexing.rs:37:10:
-index out of bounds: the len is 1 but the index is 1
-note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
-ERROR Compilation panicked
+# Final LLBC before serialization:
+
+#[lang_item("sized")]
+pub trait core::marker::Sized<Self>
+
+pub trait test_crate::PrimeField<Self, Self_Repr>
+{
+    parent_clause0 : [@TraitClause0]: core::marker::Sized<Self_Repr>
+}
+
+pub struct test_crate::SqrtTables<F>
+  where
+      [@TraitClause0]: core::marker::Sized<F>,
+ =
+{
+  F,
+}
+
+fn test_crate::{test_crate::SqrtTables<F>[@TraitClause0]}::sqrt_common::closure<'_0, F, Clause1_Repr>(@1: &'_0 (()), @2: ())
+where
+    [@TraitClause0]: core::marker::Sized<F>,
+    [@TraitClause1]: test_crate::PrimeField<F, Clause1_Repr>,
+{
+    let @0: (); // return
+    let state@1: &'_0 (()); // arg #1
+    let _x@2: (); // arg #2
+
+    @0 := ()
+    @0 := ()
+    return
+}
+
+pub fn test_crate::{test_crate::SqrtTables<F>[@TraitClause0]}::sqrt_common<F, Clause1_Repr>()
+where
+    [@TraitClause0]: core::marker::Sized<F>,
+    [@TraitClause1]: test_crate::PrimeField<F, Clause1_Repr>,
+{
+    let @0: (); // return
+    let _closure@1: fn(()); // local
+
+    _closure@1 := {test_crate::{test_crate::SqrtTables<F>[@TraitClause0]}::sqrt_common::closure<F, Clause1_Repr>[@TraitClause0, @TraitClause1]} {}
+    @fake_read(_closure@1)
+    @0 := ()
+    drop _closure@1
+    @0 := ()
+    return
+}
+
+
+

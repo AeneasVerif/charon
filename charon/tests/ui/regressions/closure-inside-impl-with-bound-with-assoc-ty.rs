@@ -1,5 +1,4 @@
 //@ charon-args=--remove-associated-types=*
-//@ known-panic
 //! Regression test for issue https://github.com/AeneasVerif/charon/issues/627
 pub trait PrimeField {
     type Repr;
