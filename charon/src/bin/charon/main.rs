@@ -34,7 +34,10 @@
 #![register_tool(charon)]
 
 use anyhow::Result;
-use charon_lib::{logger, options::CHARON_ARGS};
+use charon_lib::{
+    logger,
+    options::{CliOpts, CHARON_ARGS},
+};
 use std::{env, process::ExitStatus};
 
 #[macro_use]
@@ -54,113 +57,96 @@ pub fn main() -> Result<()> {
     // Parse the command-line
     trace!("Arguments: {:?}", env::args());
 
-    let mut options = match cli_rework::run()? {
+    let options = match cli_rework::run()? {
         Some(options) => options,
         None => return Ok(()),
     };
 
     ensure_rustup();
-    let rustc_version = get_rustc_version()?;
-    let host = &rustc_version.host;
-
     let exit_status = if let Some(llbc_file) = options.read_llbc {
         let krate = charon_lib::deserialize_llbc(&llbc_file)?;
         println!("{krate}");
         ExitStatus::default()
     } else if options.no_cargo {
-        options.validate();
-        if !options.cargo_args.is_empty() {
-            bail!("Option `--cargo-arg` is not compatible with `--no-cargo` or `charon rustc`")
-        }
-
-        // Run just the driver.
-        let mut cmd = toolchain::driver_cmd()?;
-
-        // Detect if an arg if specified in cargo_args, like in `-- arg` or `--rustc-args=arg`.
-        let is_specified = |arg| {
-            let mut iter = options.rustc_args.iter();
-            iter.any(|input| input.starts_with(arg))
-        };
-
-        // Don't set target if it is specified by user.
-        if !is_specified("--target") {
-            // Make sure the build target is explicitly set. This is needed to detect which crates are
-            // proc-macro/build-script in `charon-driver`.
-            cmd.arg("--target");
-            cmd.arg(host);
-        }
-
-        // Extract rustc args and pass as cli args to charon-driver.
-        // `Take` is needed, because charon-driver add options.rustc_args to compiled_args.
-        cmd.args(std::mem::take(&mut options.rustc_args));
-
-        // Pass CHARON_ARGS to charon-driver.
-        cmd.env(CHARON_ARGS, serde_json::to_string(&options).unwrap());
-
-        if let Some(input_file) = &options.input_file {
-            cmd.arg(input_file);
-        }
-
-        cmd.spawn()
-            .expect("could not run charon-driver")
-            .wait()
-            .expect("failed to wait for charon-driver?")
+        translate_without_cargo(options)?
     } else {
-        if let Some(toml) = toml_config::read_toml() {
-            options = toml.apply(options);
-        }
-        options.validate();
-        if options.input_file.is_some() {
-            panic!("Option `--input` is only available for `charon rustc`");
-        }
-        let mut cmd = toolchain::in_toolchain("cargo")?;
-
-        // Tell cargo to use the driver for all the crates.
-        cmd.env("RUSTC_WRAPPER", toolchain::driver_path());
-        // Tell the driver that we're being called by cargo.
-        cmd.env("CHARON_USING_CARGO", "1");
-        // Make sure we don't inherit this variable from the outside. Cargo sets this itself.
-        cmd.env_remove("CARGO_PRIMARY_PACKAGE");
-
-        cmd.env(CHARON_ARGS, serde_json::to_string(&options).unwrap());
-
-        // Compute the arguments of the command to call cargo
-        cmd.arg("build");
-
-        // Detect if an arg if specified in cargo_args, like in `-- arg` or `--cargo-args=arg`.
-        let is_specified = |arg| {
-            let mut iter = options.cargo_args.iter();
-            iter.any(|input| input.starts_with(arg))
-        };
-
-        // Don't set target if `-- --target` is specified by user.
-        if !is_specified("--target") {
-            // Make sure the build target is explicitly set. This is needed to detect which crates are
-            // proc-macro/build-script in `charon-driver`.
-            cmd.arg("--target");
-            cmd.arg(host);
-        }
-
-        if !is_specified("--lib") && options.lib {
-            cmd.arg("--lib");
-        }
-
-        if !is_specified("--bin") {
-            if let Some(bin) = &options.bin {
-                cmd.arg("--bin");
-                cmd.arg(bin);
-            }
-        }
-
-        cmd.args(options.cargo_args);
-
-        cmd.spawn()
-            .expect("could not run cargo")
-            .wait()
-            .expect("failed to wait for cargo?")
+        translate_with_cargo(options)?
     };
 
     handle_exit_status(exit_status)
+}
+
+fn translate_with_cargo(mut options: CliOpts) -> anyhow::Result<ExitStatus> {
+    let rustc_version = get_rustc_version()?;
+    let host = &rustc_version.host;
+    if let Some(toml) = toml_config::read_toml() {
+        options = toml.apply(options);
+    }
+    options.validate();
+    if options.input_file.is_some() {
+        panic!("Option `--input` is only available for `charon rustc`");
+    }
+    let mut cmd = toolchain::in_toolchain("cargo")?;
+    cmd.env("RUSTC_WRAPPER", toolchain::driver_path());
+    cmd.env("CHARON_USING_CARGO", "1");
+    cmd.env_remove("CARGO_PRIMARY_PACKAGE");
+    cmd.env(CHARON_ARGS, serde_json::to_string(&options).unwrap());
+    cmd.arg("build");
+    let is_specified = |arg| {
+        let mut iter = options.cargo_args.iter();
+        iter.any(|input| input.starts_with(arg))
+    };
+    if !is_specified("--target") {
+        // Make sure the build target is explicitly set. This is needed to detect which crates are
+        // proc-macro/build-script in `charon-driver`.
+        cmd.arg("--target");
+        cmd.arg(host);
+    }
+    if !is_specified("--lib") && options.lib {
+        cmd.arg("--lib");
+    }
+    if !is_specified("--bin") {
+        if let Some(bin) = &options.bin {
+            cmd.arg("--bin");
+            cmd.arg(bin);
+        }
+    }
+    cmd.args(options.cargo_args);
+    Ok(cmd
+        .spawn()
+        .expect("could not run cargo")
+        .wait()
+        .expect("failed to wait for cargo?"))
+}
+
+fn translate_without_cargo(mut options: CliOpts) -> anyhow::Result<ExitStatus> {
+    let rustc_version = get_rustc_version()?;
+    let host = &rustc_version.host;
+    options.validate();
+    if !options.cargo_args.is_empty() {
+        bail!("Option `--cargo-arg` is not compatible with `--no-cargo` or `charon rustc`")
+    }
+    let mut cmd = toolchain::driver_cmd()?;
+    let is_specified = |arg| {
+        let mut iter = options.rustc_args.iter();
+        iter.any(|input| input.starts_with(arg))
+    };
+    if !is_specified("--target") {
+        // Make sure the build target is explicitly set. This is needed to detect which crates are
+        // proc-macro/build-script in `charon-driver`.
+        cmd.arg("--target");
+        cmd.arg(host);
+    }
+    cmd.args(std::mem::take(&mut options.rustc_args));
+    cmd.env(CHARON_ARGS, serde_json::to_string(&options).unwrap());
+    if let Some(input_file) = &options.input_file {
+        cmd.arg(input_file);
+    }
+    Ok(cmd
+        .spawn()
+        .expect("could not run charon-driver")
+        .wait()
+        .expect("failed to wait for charon-driver?"))
 }
 
 fn get_rustc_version() -> anyhow::Result<rustc_version::VersionMeta> {
