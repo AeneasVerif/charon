@@ -1,0 +1,45 @@
+# Final LLBC before serialization:
+
+#[lang_item("sized")]
+pub trait core::marker::Sized<Self>
+
+pub struct test_crate::Foo<F>
+  where
+      [@TraitClause0]: core::marker::Sized<F>,
+ =
+{
+  F,
+}
+
+fn test_crate::{test_crate::Foo<F>[@TraitClause0]}::method::closure<'_0, F, T>(@1: &'_0 (()), @2: ())
+where
+    [@TraitClause0]: core::marker::Sized<F>,
+    [@TraitClause1]: core::marker::Sized<T>,
+{
+    let @0: (); // return
+    let state@1: &'_0 (()); // arg #1
+    let _x@2: (); // arg #2
+
+    @0 := ()
+    @0 := ()
+    return
+}
+
+pub fn test_crate::{test_crate::Foo<F>[@TraitClause0]}::method<F, T>()
+where
+    [@TraitClause0]: core::marker::Sized<F>,
+    [@TraitClause1]: core::marker::Sized<T>,
+{
+    let @0: (); // return
+    let _closure@1: fn(()); // local
+
+    _closure@1 := {test_crate::{test_crate::Foo<F>[@TraitClause0]}::method::closure<F, T>[@TraitClause1]} {}
+    @fake_read(_closure@1)
+    @0 := ()
+    drop _closure@1
+    @0 := ()
+    return
+}
+
+
+
