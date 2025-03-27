@@ -1,0 +1,53 @@
+# Final LLBC before serialization:
+
+pub fn test_crate::foo::{impl test_crate::foo::Trait for ()}::defaulted<'_0>(@1: &'_0 (()))
+{
+    let @0: (); // return
+    let self@1: &'_ (()); // arg #1
+
+    @0 := ()
+    @0 := ()
+    return
+}
+
+fn test_crate::main()
+{
+    let @0: (); // return
+    let @1: (); // anonymous local
+    let @2: &'_ (()); // anonymous local
+    let @3: (); // anonymous local
+
+    @3 := ()
+    @2 := &@3
+    @1 := test_crate::foo::{impl test_crate::foo::Trait for ()}::defaulted<'_>(move (@2))
+    drop @2
+    @fake_read(@1)
+    drop @3
+    drop @1
+    @0 := ()
+    @0 := ()
+    return
+}
+
+pub fn test_crate::foo::Trait::defaulted<'_0, Self>(@1: &'_0 (Self))
+{
+    let @0: (); // return
+    let self@1: &'_ (Self); // arg #1
+
+    @0 := ()
+    @0 := ()
+    return
+}
+
+pub trait test_crate::foo::Trait<Self>
+{
+    fn defaulted<'_0> = test_crate::foo::Trait::defaulted<'_0_0, Self>
+}
+
+impl test_crate::foo::{impl test_crate::foo::Trait for ()} : test_crate::foo::Trait<()>
+{
+    fn defaulted<'_0> = test_crate::foo::{impl test_crate::foo::Trait for ()}::defaulted<'_0_0>
+}
+
+
+
