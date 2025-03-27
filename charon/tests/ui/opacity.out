@@ -115,8 +115,6 @@ struct test_crate::Struct = {}
 
 unsafe fn test_crate::extern_fn(@1: i32)
 
-pub fn core::convert::Into::into<Self, T>(@1: Self) -> T
-
 #[lang_item("Into")]
 pub trait core::convert::Into<Self, T>
 {
@@ -124,6 +122,8 @@ pub trait core::convert::Into<Self, T>
     parent_clause1 : [@TraitClause1]: core::marker::Sized<T>
     fn into = core::convert::Into::into<Self, T>
 }
+
+pub fn core::convert::Into::into<Self, T>(@1: Self) -> T
 
 impl core::convert::{impl core::convert::Into<U> for T}#3<T, U> : core::convert::Into<T, U>
 where

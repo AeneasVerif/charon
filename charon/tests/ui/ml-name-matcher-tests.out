@@ -195,14 +195,14 @@ fn test_crate::Trait::method<Self, T, U>()
 where
     [@TraitClause0]: core::marker::Sized<U>,
 
-pub fn core::ops::index::Index::index<'_0, Self, Idx>(@1: &'_0 (Self), @2: Idx) -> &'_0 (Self::Output)
-
 #[lang_item("index")]
 pub trait core::ops::index::Index<Self, Idx>
 {
     type Output
     fn index<'_0> = core::ops::index::Index::index<'_0_0, Self, Idx>
 }
+
+pub fn core::ops::index::Index::index<'_0, Self, Idx>(@1: &'_0 (Self), @2: Idx) -> &'_0 (Self::Output)
 
 impl core::slice::index::{impl core::ops::index::Index<I> for Slice<T>}<T, I> : core::ops::index::Index<Slice<T>, I>
 where

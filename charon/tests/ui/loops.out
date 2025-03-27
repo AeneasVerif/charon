@@ -1393,9 +1393,6 @@ where
     }
 }
 
-#[lang_item("into_iter")]
-pub fn core::iter::traits::collect::IntoIterator::into_iter<Self>(@1: Self) -> Self::IntoIter
-
 #[lang_item("IntoIterator")]
 pub trait core::iter::traits::collect::IntoIterator<Self>
 where
@@ -1408,6 +1405,9 @@ where
     type IntoIter
     fn into_iter = core::iter::traits::collect::IntoIterator::into_iter<Self>
 }
+
+#[lang_item("into_iter")]
+pub fn core::iter::traits::collect::IntoIterator::into_iter<Self>(@1: Self) -> Self::IntoIter
 
 impl core::iter::traits::collect::{impl core::iter::traits::collect::IntoIterator for I}#1<I> : core::iter::traits::collect::IntoIterator<I>
 where
@@ -1432,14 +1432,14 @@ pub trait core::ops::index::Index<Self, Idx>
     fn index<'_0> = core::ops::index::Index::index<'_0_0, Self, Idx>
 }
 
-pub fn core::ops::index::IndexMut::index_mut<'_0, Self, Idx>(@1: &'_0 mut (Self), @2: Idx) -> &'_0 mut (Self::parent_clause0::Output)
-
 #[lang_item("index_mut")]
 pub trait core::ops::index::IndexMut<Self, Idx>
 {
     parent_clause0 : [@TraitClause0]: core::ops::index::Index<Self, Idx>
     fn index_mut<'_0> = core::ops::index::IndexMut::index_mut<'_0_0, Self, Idx>
 }
+
+pub fn core::ops::index::IndexMut::index_mut<'_0, Self, Idx>(@1: &'_0 mut (Self), @2: Idx) -> &'_0 mut (Self::parent_clause0::Output)
 
 pub fn alloc::vec::{impl core::ops::index::Index<I> for alloc::vec::Vec<T, A>[@TraitClause0, @TraitClause2]}#13::index<'_0, T, I, A>(@1: &'_0 (alloc::vec::Vec<T, A>[@TraitClause0, @TraitClause2]), @2: I) -> &'_0 (@TraitClause3::Output)
 where

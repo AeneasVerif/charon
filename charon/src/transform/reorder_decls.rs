@@ -1,3 +1,11 @@
+//! Compute an ordering on declarations that:
+//! - Detects mutually-recursive groups;
+//! - Always orders an item before any of its uses (except for recursive cases);
+//! - Otherwise keeps a stable order.
+//!
+//! Aeneas needs this because proof assistant languages are sensitive to declaration order and need
+//! to be explicit about mutual recursion. This should come useful for translation to any other
+//! language with these properties.
 use crate::common::*;
 use crate::formatter::{AstFormatter, IntoFormatter};
 use crate::graphs::*;
@@ -290,10 +298,9 @@ impl VisitAst for Deps {
     }
 
     fn enter_trait_decl_id(&mut self, id: &TraitDeclId) {
-        // If the trait is the trait this item belongs to, we ignore it
-        // TODO: this is not very satisfying but this is the only way we have of preventing
-        // mutually recursive groups between methods and trait decls in the presence of associated
-        // types...
+        // If the trait is the trait this item belongs to, we ignore it. This is to avoid mutually
+        // recursive groups between e.g. traits decls and their globals. We treat methods
+        // specifically.
         if let Some(trait_id) = &self.parent_trait_decl
             && trait_id == id
         {
@@ -363,6 +370,12 @@ fn compute_declarations_graph<'tcx>(ctx: &'tcx TransformCtx) -> Deps {
                 // TODO: add `is_global_initializer` to `ItemKind`.
                 d.signature.drive(&mut graph);
                 d.body.drive(&mut graph);
+                // FIXME(#514): A method declaration depends on its declaring trait because of its
+                // `Self` clause. While the clause is implicit, we make sure to record the
+                // dependency manually.
+                if let ItemKind::TraitDecl { trait_ref, .. } = &d.kind {
+                    graph.insert_edge(trait_ref.trait_id.into());
+                }
             }
             AnyTransItem::TraitDecl(d) => {
                 let TraitDecl {
@@ -387,23 +400,16 @@ fn compute_declarations_graph<'tcx>(ctx: &'tcx TransformCtx) -> Deps {
                 // Visit the items
                 consts.drive(&mut graph);
                 types.drive(&mut graph);
-                const_defaults.drive(&mut graph);
                 type_defaults.drive(&mut graph);
 
+                // We consider that a trait decl only contains the function/constant signatures.
+                // Therefore we don't explore the default const/method ids.
+                for (_name, gref) in const_defaults {
+                    gref.generics.drive(&mut graph);
+                }
                 for (_, bound_fn) in methods {
                     let id = bound_fn.skip_binder.id;
-                    // Important: we must ignore the function id, because
-                    // otherwise in the presence of associated types we may
-                    // get a mutual recursion between the function and the
-                    // trait.
-                    // Ex:
-                    // ```
-                    // trait Trait {
-                    //   type X;
-                    //   fn f(x : Trait::X);
-                    // }
-                    // ```
-                    // TODO: we can likely remove this after #127
+                    bound_fn.params.drive(&mut graph);
                     if let Some(decl) = ctx.translated.fun_decls.get(id) {
                         decl.signature.drive(&mut graph);
                     }

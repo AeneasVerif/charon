@@ -231,9 +231,6 @@ where
     return
 }
 
-#[lang_item("from_fn")]
-pub fn core::convert::From::from<Self, T>(@1: T) -> Self
-
 #[lang_item("From")]
 pub trait core::convert::From<Self, T>
 {
@@ -241,6 +238,9 @@ pub trait core::convert::From<Self, T>
     parent_clause1 : [@TraitClause1]: core::marker::Sized<T>
     fn from = core::convert::From::from<Self, T>
 }
+
+#[lang_item("from_fn")]
+pub fn core::convert::From::from<Self, T>(@1: T) -> Self
 
 impl core::convert::num::{impl core::convert::From<i32> for i64}#83 : core::convert::From<i64, i32>
 {

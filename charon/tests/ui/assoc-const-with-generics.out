@@ -61,6 +61,11 @@ impl test_crate::{impl test_crate::HasLen for Array<bool, const N : usize>}#2<co
     const LEN = test_crate::{impl test_crate::HasLen for Array<bool, const N : usize>}#2::LEN<const N : usize>
 }
 
+pub trait test_crate::HasDefaultLen<Self, const M : usize>
+{
+    const LEN : usize
+}
+
 pub fn test_crate::HasDefaultLen::LEN<Self, const M : usize>() -> usize
 {
     let @0: usize; // return
@@ -70,11 +75,6 @@ pub fn test_crate::HasDefaultLen::LEN<Self, const M : usize>() -> usize
 }
 
 pub global test_crate::HasDefaultLen::LEN<Self, const M : usize>: usize = test_crate::HasDefaultLen::LEN()
-
-pub trait test_crate::HasDefaultLen<Self, const M : usize>
-{
-    const LEN : usize
-}
 
 impl test_crate::{impl test_crate::HasDefaultLen<const N : usize> for Array<(), const N : usize>}#3<const N : usize> : test_crate::HasDefaultLen<Array<(), const N : usize>, const N : usize>
 {
