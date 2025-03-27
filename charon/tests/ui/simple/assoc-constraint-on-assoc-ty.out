@@ -1,0 +1,19 @@
+error: Could not compute the value of Clause0_1::Clause1::Assoc needed to update generics <@TraitClause0_1::IntoIter>[@TraitClause0_1::parent_clause0, @TraitClause0_1::parent_clause1] for item test_crate::takes_trait.
+       Constraints in scope:
+         - Clause0_1::IntoIter = @Type0_1
+  --> tests/ui/simple/assoc-constraint-on-assoc-ty.rs:13:5
+   |
+13 |     takes_trait(it)
+   |     ^^^^^^^^^^^^^^^
+   |
+
+error: Could not compute the value of Clause1_1::Clause1::Assoc needed to update generics <@TraitClause1_1::IntoIter> for item test_crate::Trait.
+       Constraints in scope:
+         - Clause0_1::IntoIter = @Type0_1
+  --> tests/ui/simple/assoc-constraint-on-assoc-ty.rs:13:5
+   |
+13 |     takes_trait(it)
+   |     ^^^^^^^^^^^^^^^
+   |
+
+ERROR Charon failed to translate this code (2 errors)

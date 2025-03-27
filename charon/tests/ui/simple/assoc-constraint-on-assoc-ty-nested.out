@@ -1,0 +1,37 @@
+# Final LLBC before serialization:
+
+#[lang_item("sized")]
+pub trait core::marker::Sized<Self>
+
+trait test_crate::Trait<Self, Self_Assoc>
+{
+    parent_clause0 : [@TraitClause0]: core::marker::Sized<Self_Assoc>
+}
+
+trait test_crate::IntoIterator<Self, Self_IntoIter>
+{
+    parent_clause0 : [@TraitClause0]: core::marker::Sized<Self_IntoIter>
+    parent_clause1 : [@TraitClause1]: test_crate::Trait<Self_IntoIter, ()>
+}
+
+trait test_crate::IntoIntoIterator<Self, Self_IntoIntoIter, Self_Clause1_IntoIter>
+{
+    parent_clause0 : [@TraitClause0]: core::marker::Sized<Self_IntoIntoIter>
+    parent_clause1 : [@TraitClause1]: test_crate::IntoIterator<Self_IntoIntoIter, Self_Clause1_IntoIter>
+}
+
+fn test_crate::foo<I, Clause1_IntoIntoIter, Clause1_Clause1_IntoIter, Clause2_Assoc>()
+where
+    [@TraitClause0]: core::marker::Sized<I>,
+    [@TraitClause1]: test_crate::IntoIntoIterator<I, Clause1_IntoIntoIter, Clause1_Clause1_IntoIter>,
+    [@TraitClause2]: test_crate::Trait<Clause1_Clause1_IntoIter, Clause2_Assoc>,
+{
+    let @0: (); // return
+
+    @0 := ()
+    @0 := ()
+    return
+}
+
+
+
