@@ -318,9 +318,6 @@ fn test_crate::f2<'_0, '_1>(@1: &'_0 (Slice<u8>), @2: &'_1 mut (Slice<i16>)) -> 
     return
 }
 
-#[lang_item("into_iter")]
-pub fn core::iter::traits::collect::IntoIterator::into_iter<Self>(@1: Self) -> Self::IntoIter
-
 #[lang_item("IntoIterator")]
 pub trait core::iter::traits::collect::IntoIterator<Self>
 where
@@ -333,6 +330,9 @@ where
     type IntoIter
     fn into_iter = core::iter::traits::collect::IntoIterator::into_iter<Self>
 }
+
+#[lang_item("into_iter")]
+pub fn core::iter::traits::collect::IntoIterator::into_iter<Self>(@1: Self) -> Self::IntoIter
 
 impl core::iter::traits::collect::{impl core::iter::traits::collect::IntoIterator for I}#1<I> : core::iter::traits::collect::IntoIterator<I>
 where

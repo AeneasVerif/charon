@@ -29,6 +29,11 @@ fn test_crate::main()
     return
 }
 
+pub trait test_crate::foo::Trait<Self>
+{
+    fn defaulted<'_0> = test_crate::foo::Trait::defaulted<'_0_0, Self>
+}
+
 pub fn test_crate::foo::Trait::defaulted<'_0, Self>(@1: &'_0 (Self))
 {
     let @0: (); // return
@@ -37,11 +42,6 @@ pub fn test_crate::foo::Trait::defaulted<'_0, Self>(@1: &'_0 (Self))
     @0 := ()
     @0 := ()
     return
-}
-
-pub trait test_crate::foo::Trait<Self>
-{
-    fn defaulted<'_0> = test_crate::foo::Trait::defaulted<'_0_0, Self>
 }
 
 impl test_crate::foo::{impl test_crate::foo::Trait for ()} : test_crate::foo::Trait<()>

@@ -120,8 +120,6 @@ fn test_crate::trait_error<'_0>(@1: &'_0 (Slice<u8>))
     return
 }
 
-pub fn core::convert::TryInto::try_into<Self, T>(@1: Self) -> core::result::Result<T, Self::Error>[Self::parent_clause1, Self::parent_clause2]
-
 #[lang_item("TryInto")]
 pub trait core::convert::TryInto<Self, T>
 {
@@ -131,6 +129,8 @@ pub trait core::convert::TryInto<Self, T>
     type Error
     fn try_into = core::convert::TryInto::try_into<Self, T>
 }
+
+pub fn core::convert::TryInto::try_into<Self, T>(@1: Self) -> core::result::Result<T, Self::Error>[Self::parent_clause1, Self::parent_clause2]
 
 impl core::convert::{impl core::convert::TryInto<U> for T}#6<T, U> : core::convert::TryInto<T, U>
 where

@@ -614,15 +614,15 @@ pub trait core::ops::deref::Deref<Self>
     fn deref<'_0> = core::ops::deref::Deref::deref<'_0_0, Self>
 }
 
-#[lang_item("deref_mut_method")]
-pub fn core::ops::deref::DerefMut::deref_mut<'_0, Self>(@1: &'_0 mut (Self)) -> &'_0 mut (Self::parent_clause0::Target)
-
 #[lang_item("deref_mut")]
 pub trait core::ops::deref::DerefMut<Self>
 {
     parent_clause0 : [@TraitClause0]: core::ops::deref::Deref<Self>
     fn deref_mut<'_0> = core::ops::deref::DerefMut::deref_mut<'_0_0, Self>
 }
+
+#[lang_item("deref_mut_method")]
+pub fn core::ops::deref::DerefMut::deref_mut<'_0, Self>(@1: &'_0 mut (Self)) -> &'_0 mut (Self::parent_clause0::Target)
 
 impl alloc::boxed::{impl core::ops::deref::Deref for alloc::boxed::Box<T>[@TraitClause0]}#38<T, A> : core::ops::deref::Deref<alloc::boxed::Box<T>[@TraitClause0]>
 where
