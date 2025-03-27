@@ -857,6 +857,11 @@ pub trait TyVisitable: Sized + AstVisitable {
         self
     }
 
+    /// Move from under one binder.
+    fn move_from_under_binder(self) -> Option<Self> {
+        self.move_from_under_binders(DeBruijnId::one())
+    }
+
     /// Move the value out of `depth` binders. Returns `None` if it contains a variable bound in
     /// one of these `depth` binders.
     fn move_from_under_binders(mut self, depth: DeBruijnId) -> Option<Self> {

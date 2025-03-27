@@ -250,3 +250,9 @@ impl ItemMeta {
         name
     }
 }
+
+impl Default for Span {
+    fn default() -> Self {
+        Self::dummy()
+    }
+}
