@@ -433,6 +433,25 @@ mod type_constraint_set {
             }
             vec.into_iter()
         }
+
+        /// List the constraints that start with `Self::`.
+        pub fn iter_self_paths(&self) -> impl Iterator<Item = (AssocTypePath, Ty)> {
+            self.iter()
+                .filter(|(path, _ty)| matches!(path.tref.base, BaseClause::SelfClause))
+        }
+
+        /// Apply a substitution to the output of `iter_self_paths`.
+        ///
+        /// We only provide this method for `Self::` paths (i.e. implied clauses) because
+        /// constraints on local clauses must always be proven from the environment already hence
+        /// they would be redundant outside of the defining trait/impl.
+        pub fn iter_self_paths_subst<'a>(
+            &'a self,
+            args: &'a GenericArgs,
+        ) -> impl Iterator<Item = (AssocTypePath, Ty)> + use<'a> {
+            self.iter_self_paths()
+                .map(move |(path, ty)| (path, ty.substitute(args)))
+        }
     }
 
     impl TypeConstraintSetInner {
@@ -503,16 +522,6 @@ struct ItemModifications {
 }
 
 impl ItemModifications {
-    fn new(
-        type_constraints: &Vector<TraitTypeConstraintId, RegionBinder<TraitTypeConstraint>>,
-        add_type_params: bool,
-    ) -> Self {
-        Self::from_constraint_set(
-            TypeConstraintSet::from_constraints(type_constraints),
-            add_type_params,
-        )
-    }
-
     fn from_constraint_set(type_constraints: TypeConstraintSet, add_type_params: bool) -> Self {
         Self {
             type_constraints,
@@ -640,8 +649,8 @@ impl<'a> ComputeItemModifications<'a> {
             modifications
         } else {
             let mut modifications = self.compute_non_trait_modifications(item.generic_params());
-            // Trait method declarations have an implicit `Self` clause. We process it like a real
-            // clause.
+            // FIXME(#618): Trait method declarations have an implicit `Self` clause. We process it
+            // like a real clause.
             if let AnyTransItem::Fun(FunDecl {
                 kind: ItemKind::TraitDecl { trait_ref, .. },
                 ..
@@ -662,10 +671,27 @@ impl<'a> ComputeItemModifications<'a> {
         }
     }
 
+    /// Compute the initial constraint set for this item.
+    fn compute_constraint_set(&mut self, params: &GenericParams) -> TypeConstraintSet {
+        let mut type_constraints =
+            TypeConstraintSet::from_constraints(&params.trait_type_constraints);
+        // Clauses may provide more type constraints.
+        for clause in &params.trait_clauses {
+            let tref = clause.identity_tref();
+            for (path, ty) in
+                self.compute_assoc_tys_for_tref(clause.span.unwrap_or_default(), &tref)
+            {
+                type_constraints.insert_path(&path, ty);
+            }
+        }
+        type_constraints
+    }
+
     fn compute_non_trait_modifications(&mut self, params: &GenericParams) -> ItemModifications {
         // For non-traits, we simply iterate through the clauses of the item and
         // collect new paths to replace.
-        let mut modifications = ItemModifications::new(&params.trait_type_constraints, true);
+        let type_constraints = self.compute_constraint_set(params);
+        let mut modifications = ItemModifications::from_constraint_set(type_constraints, true);
         // For each clause, we need to supply types for the new parameters. `replace_path` either
         // finds the right type in the type constraints, or records that we need to add new
         // parameters to this trait's signature.
@@ -729,12 +755,12 @@ impl<'a> ComputeItemModifications<'a> {
                         .iter()
                         .any(|pat| pat.matches(&self.ctx.translated, &tr.item_meta.name));
                 let remove_assoc_types = !is_self_referential && remove_assoc_type;
+                let type_constraints = self.compute_constraint_set(&tr.generics);
                 let mut modifications =
-                    ItemModifications::new(&tr.generics.trait_type_constraints, remove_assoc_types);
+                    ItemModifications::from_constraint_set(type_constraints, remove_assoc_types);
                 if modifications.add_type_params {
                     // Remove all associated types and turn them into new parameters. We add these
-                    // before the paths in `replace` because it's more logical to do the local
-                    // types first.
+                    // before the paths in `replace` because this gives a better output.
                     for type_name in &tr.types {
                         let path = TraitRefPath::self_ref().with_assoc_type(type_name.clone());
                         modifications.replace_path(path);
@@ -764,18 +790,40 @@ impl<'a> ComputeItemModifications<'a> {
         .flatten()
     }
 
-    fn compute_extra_params_for_clause<'b, F>(
+    fn compute_extra_params_for_clause<'b>(
         &'b mut self,
         clause: &TraitClause,
-        clause_to_path: F,
-    ) -> impl Iterator<Item = AssocTypePath> + use<'b, F>
-    where
-        F: Fn(TraitClauseId) -> TraitRefPath,
-    {
+        clause_to_path: fn(TraitClauseId) -> TraitRefPath,
+    ) -> impl Iterator<Item = AssocTypePath> + use<'b> {
         let trait_id = clause.trait_.skip_binder.trait_id;
         let clause_path = clause_to_path(clause.clause_id);
         self.compute_extra_params_for_trait(trait_id)
             .map(move |path| path.on_tref(&clause_path))
+    }
+
+    /// Returns any extra constraints implied by this predicate. If the trait is cyclic, the set
+    /// will not be exhaustive.
+    fn compute_implied_constraints_for_predicate<'b>(
+        &'b mut self,
+        pred: &'b TraitDeclRef,
+    ) -> impl Iterator<Item = (AssocTypePath, Ty)> + use<'b> {
+        let _ = self.compute_extra_params_for_trait(pred.trait_id);
+        self.trait_modifications[pred.trait_id]
+            .as_processed()
+            .into_iter()
+            .flat_map(|mods| mods.type_constraints.iter_self_paths_subst(&pred.generics))
+    }
+
+    fn compute_implied_constraints_for_poly_predicate<'b>(
+        &'b mut self,
+        poly_pred: &'b PolyTraitDeclRef,
+    ) -> Vec<(AssocTypePath, Ty)> {
+        if let Some(pred) = poly_pred.skip_binder.clone().move_from_under_binder() {
+            self.compute_implied_constraints_for_predicate(&pred)
+                .collect()
+        } else {
+            vec![]
+        }
     }
 
     /// Returns the associated types values known for the given impl. If the impl is cyclic, the
@@ -786,17 +834,14 @@ impl<'a> ComputeItemModifications<'a> {
                 // Put the sentinel value to detect loops.
                 self.impl_assoc_tys[id] = Processing::Processing;
 
-                let mut set =
-                    TypeConstraintSet::from_constraints(&timpl.generics.trait_type_constraints);
+                let mut set = self.compute_constraint_set(&timpl.generics);
                 for (name, ty) in &timpl.types {
                     let path = TraitRefPath::self_ref().with_assoc_type(name.clone());
                     set.insert_path(&path, ty.clone());
                 }
                 for (clause_id, tref) in timpl.parent_trait_refs.iter_indexed() {
                     let clause_path = TraitRefPath::parent_clause(clause_id);
-                    for (path, ty) in
-                        self.compute_assoc_tys_for_tref(timpl.item_meta.span, &tref.kind)
-                    {
+                    for (path, ty) in self.compute_assoc_tys_for_tref(timpl.item_meta.span, tref) {
                         let path = path.on_tref(&clause_path);
                         set.insert_path(&path, ty);
                     }
@@ -810,7 +855,7 @@ impl<'a> ComputeItemModifications<'a> {
 
     /// Returns the associated types values known for the given trait ref.
     // TODO: also extract refs from `dyn Trait` refs.
-    fn compute_assoc_tys_for_tref(
+    fn compute_assoc_tys_for_tref_kind(
         &mut self,
         span: Span,
         tref: &TraitRefKind,
@@ -823,18 +868,8 @@ impl<'a> ComputeItemModifications<'a> {
             | TraitRefKind::SelfId
             | TraitRefKind::Unknown(_) => {}
             TraitRefKind::TraitImpl(clause_impl_id, generics) => {
-                let generics = ItemBinder::new(CurrentItem, generics);
                 if let Some(set_for_clause) = self.compute_assoc_tys_for_impl(*clause_impl_id) {
-                    for (path, ty) in set_for_clause.iter() {
-                        // Keep only the paths that apply to the current trait ref, i.e. ignore
-                        // paths on the local clauses of the impl.
-                        if matches!(path.tref.base, BaseClause::SelfClause) {
-                            let ty = ItemBinder::new(*clause_impl_id, ty)
-                                .substitute(generics)
-                                .under_current_binder();
-                            out.push((path, ty));
-                        }
-                    }
+                    out.extend(set_for_clause.iter_self_paths_subst(generics));
                 }
             }
             TraitRefKind::BuiltinOrAuto {
@@ -849,7 +884,7 @@ impl<'a> ComputeItemModifications<'a> {
                 for (parent_clause_id, parent_ref) in parent_trait_refs.iter_indexed() {
                     let clause_path = TraitRefPath::parent_clause(parent_clause_id);
                     out.extend(
-                        self.compute_assoc_tys_for_tref(span, &parent_ref.kind)
+                        self.compute_assoc_tys_for_tref(span, parent_ref)
                             .into_iter()
                             .map(|(path, ty)| {
                                 let path = path.on_tref(&clause_path);
@@ -867,6 +902,22 @@ impl<'a> ComputeItemModifications<'a> {
             }
         }
         out
+    }
+
+    fn compute_assoc_tys_for_tref(
+        &mut self,
+        span: Span,
+        tref: &TraitRef,
+    ) -> Vec<(AssocTypePath, Ty)> {
+        let mut tys = self.compute_assoc_tys_for_tref_kind(span, &tref.kind);
+        if let Some(base_path) = tref.to_path() {
+            for (path, ty) in
+                self.compute_implied_constraints_for_poly_predicate(&tref.trait_decl_ref)
+            {
+                tys.push((path.on_tref(&base_path), ty));
+            }
+        }
+        tys
     }
 }
 
@@ -1060,7 +1111,23 @@ impl VisitAstMut for UpdateItemBody<'_> {
         // An inner binder. Apart from the case of trait method declarations, this is not a
         // globally-addressable item, so we haven't computed appropriate modifications yet. Hence
         // we compute them here.
-        let mut modifications = ItemModifications::new(&generics.trait_type_constraints, true);
+        let mut type_constraints =
+            TypeConstraintSet::from_constraints(&generics.trait_type_constraints);
+        // Clauses may provide more type constraints.
+        for clause in &generics.trait_clauses {
+            if let Some(pred) = clause.trait_.skip_binder.clone().move_from_under_binder() {
+                if let Some(tmods) = self
+                    .item_modifications
+                    .get(&GenericsSource::item(pred.trait_id))
+                {
+                    for (path, ty) in tmods.type_constraints.iter_self_paths_subst(&pred.generics) {
+                        let path = path.on_local_clause(clause.clause_id);
+                        type_constraints.insert_path(&path, ty);
+                    }
+                }
+            }
+        }
+        let mut modifications = ItemModifications::from_constraint_set(type_constraints, true);
         for clause in &generics.trait_clauses {
             let trait_id = clause.trait_.skip_binder.trait_id;
             if let Some(tmods) = self.item_modifications.get(&GenericsSource::item(trait_id)) {
