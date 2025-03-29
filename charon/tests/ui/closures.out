@@ -729,7 +729,7 @@ where
     let @2: &'_ (T); // anonymous local
 
     @2 := &*((*(state@1)).0)
-    @0 := {test_crate::{test_crate::Foo<'a, T>[@TraitClause0]}::test_nested_closures::closure::closure::closure<'_, T>} {move (@2)}
+    @0 := {test_crate::{test_crate::Foo<'a, T>[@TraitClause0]}::test_nested_closures::closure::closure::closure<'_, T>[@TraitClause0, @TraitClause1]} {move (@2)}
     drop @2
     return
 }
@@ -744,7 +744,7 @@ where
     let @2: &'_ (T); // anonymous local
 
     @2 := &*((*(state@1)).0)
-    @0 := {test_crate::{test_crate::Foo<'a, T>[@TraitClause0]}::test_nested_closures::closure::closure<'_, T>} {move (@2)}
+    @0 := {test_crate::{test_crate::Foo<'a, T>[@TraitClause0]}::test_nested_closures::closure::closure<'_, T>[@TraitClause0, @TraitClause1]} {move (@2)}
     drop @2
     return
 }
@@ -768,7 +768,7 @@ where
     let @11: (); // anonymous local
 
     @3 := &*(*(x@1))
-    clo@2 := {test_crate::{test_crate::Foo<'a, T>[@TraitClause0]}::test_nested_closures::closure<'_, T>} {move (@3)}
+    clo@2 := {test_crate::{test_crate::Foo<'a, T>[@TraitClause0]}::test_nested_closures::closure<'_, T>[@TraitClause0, @TraitClause1]} {move (@3)}
     drop @3
     @fake_read(clo@2)
     @8 := &clo@2
