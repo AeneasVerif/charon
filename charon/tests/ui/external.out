@@ -171,6 +171,7 @@ pub fn test_crate::test_vec_push()
     return
 }
 
+#[lang_item("Cell")]
 pub opaque type core::cell::Cell<T>
 
 pub fn core::cell::{core::cell::Cell<T>}#10::get<'_0, T>(@1: &'_0 (core::cell::Cell<T>)) -> T

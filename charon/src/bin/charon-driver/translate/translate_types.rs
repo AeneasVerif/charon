@@ -21,9 +21,9 @@ fn check_region_name(s: String) -> Option<String> {
 pub fn translate_bound_region_kind_name(kind: &hax::BoundRegionKind) -> Option<String> {
     use hax::BoundRegionKind::*;
     let s = match kind {
-        BrAnon => None,
-        BrNamed(_, symbol) => Some(symbol.clone()),
-        BrEnv => Some("@env".to_owned()),
+        Anon => None,
+        Named(_, symbol) => Some(symbol.clone()),
+        ClosureEnv => Some("@env".to_owned()),
     };
     s.and_then(check_region_name)
 }
