@@ -967,6 +967,8 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
             // Used in the interpreter to check that const code doesn't run for too long or even
             // indefinitely.
             StatementKind::ConstEvalCounter => None,
+            // Semantically equivalent to `Nop`, used only for rustc lints.
+            StatementKind::BackwardIncompatibleDropHint { .. } => None,
             StatementKind::Nop => None,
         };
 

@@ -767,7 +767,7 @@ impl core::cmp::impls::{impl core::cmp::PartialOrd<i32> for i32}#76 : core::cmp:
     fn partial_cmp<'_0, '_1> = core::cmp::impls::{impl core::cmp::PartialOrd<i32> for i32}#76::partial_cmp<'_0_0, '_0_1>
 }
 
-pub fn core::iter::range::{impl core::iter::range::Step for i32}#40::steps_between<'_0, '_1>(@1: &'_0 (i32), @2: &'_1 (i32)) -> core::option::Option<usize>[core::marker::Sized<usize>]
+pub fn core::iter::range::{impl core::iter::range::Step for i32}#40::steps_between<'_0, '_1>(@1: &'_0 (i32), @2: &'_1 (i32)) -> (usize, core::option::Option<usize>[core::marker::Sized<usize>])
 
 pub fn core::iter::range::{impl core::iter::range::Step for i32}#40::forward_checked(@1: i32, @2: usize) -> core::option::Option<i32>[core::marker::Sized<i32>]
 
@@ -806,7 +806,7 @@ impl core::cmp::impls::{impl core::cmp::PartialOrd<usize> for usize}#58 : core::
     fn partial_cmp<'_0, '_1> = core::cmp::impls::{impl core::cmp::PartialOrd<usize> for usize}#58::partial_cmp<'_0_0, '_0_1>
 }
 
-pub fn core::iter::range::{impl core::iter::range::Step for usize}#43::steps_between<'_0, '_1>(@1: &'_0 (usize), @2: &'_1 (usize)) -> core::option::Option<usize>[core::marker::Sized<usize>]
+pub fn core::iter::range::{impl core::iter::range::Step for usize}#43::steps_between<'_0, '_1>(@1: &'_0 (usize), @2: &'_1 (usize)) -> (usize, core::option::Option<usize>[core::marker::Sized<usize>])
 
 pub fn core::iter::range::{impl core::iter::range::Step for usize}#43::forward_checked(@1: usize, @2: usize) -> core::option::Option<usize>[core::marker::Sized<usize>]
 
@@ -976,7 +976,7 @@ impl core::cmp::impls::{impl core::cmp::PartialOrd<u32> for u32}#64 : core::cmp:
     fn partial_cmp<'_0, '_1> = core::cmp::impls::{impl core::cmp::PartialOrd<u32> for u32}#64::partial_cmp<'_0_0, '_0_1>
 }
 
-pub fn core::iter::range::{impl core::iter::range::Step for u32}#39::steps_between<'_0, '_1>(@1: &'_0 (u32), @2: &'_1 (u32)) -> core::option::Option<usize>[core::marker::Sized<usize>]
+pub fn core::iter::range::{impl core::iter::range::Step for u32}#39::steps_between<'_0, '_1>(@1: &'_0 (u32), @2: &'_1 (u32)) -> (usize, core::option::Option<usize>[core::marker::Sized<usize>])
 
 pub fn core::iter::range::{impl core::iter::range::Step for u32}#39::forward_checked(@1: u32, @2: usize) -> core::option::Option<u32>[core::marker::Sized<u32>]
 
@@ -1470,7 +1470,7 @@ where
     fn index_mut<'_0> = alloc::vec::{impl core::ops::index::IndexMut<I> for alloc::vec::Vec<T, A>[@TraitClause0, @TraitClause2]}#14::index_mut<'_0_0, T, I, A>[@TraitClause0, @TraitClause1, @TraitClause2, @TraitClause3]
 }
 
-pub fn core::iter::range::Step::steps_between<'_0, '_1, Self>(@1: &'_0 (Self), @2: &'_1 (Self)) -> core::option::Option<usize>[core::marker::Sized<usize>]
+pub fn core::iter::range::Step::steps_between<'_0, '_1, Self>(@1: &'_0 (Self), @2: &'_1 (Self)) -> (usize, core::option::Option<usize>[core::marker::Sized<usize>])
 
 pub fn core::iter::range::Step::forward_checked<Self>(@1: Self, @2: usize) -> core::option::Option<Self>[Self::parent_clause0]
 

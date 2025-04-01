@@ -143,7 +143,7 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
             ClauseKind::WellFormed(_) => {
                 raise_error!(self, span, "Well-formedness clauses are unsupported")
             }
-            kind @ ClauseKind::ConstEvaluatable(_) => {
+            kind => {
                 raise_error!(self, span, "Unsupported clause: {:?}", kind)
             }
         }

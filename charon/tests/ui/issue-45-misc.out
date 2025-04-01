@@ -173,7 +173,7 @@ impl core::cmp::impls::{impl core::cmp::PartialOrd<u8> for u8}#60 : core::cmp::P
     fn partial_cmp<'_0, '_1> = core::cmp::impls::{impl core::cmp::PartialOrd<u8> for u8}#60::partial_cmp<'_0_0, '_0_1>
 }
 
-pub fn core::iter::range::{impl core::iter::range::Step for u8}#35::steps_between<'_0, '_1>(@1: &'_0 (u8), @2: &'_1 (u8)) -> core::option::Option<usize>[core::marker::Sized<usize>]
+pub fn core::iter::range::{impl core::iter::range::Step for u8}#35::steps_between<'_0, '_1>(@1: &'_0 (u8), @2: &'_1 (u8)) -> (usize, core::option::Option<usize>[core::marker::Sized<usize>])
 
 pub fn core::iter::range::{impl core::iter::range::Step for u8}#35::forward_checked(@1: u8, @2: usize) -> core::option::Option<u8>[core::marker::Sized<u8>]
 
@@ -381,7 +381,7 @@ pub fn core::ops::function::FnMut::call_mut<'_0, Self, Args>(@1: &'_0 mut (Self)
 
 pub fn core::ops::function::FnOnce::call_once<Self, Args>(@1: Self, @2: Args) -> Self::Output
 
-pub fn core::iter::range::Step::steps_between<'_0, '_1, Self>(@1: &'_0 (Self), @2: &'_1 (Self)) -> core::option::Option<usize>[core::marker::Sized<usize>]
+pub fn core::iter::range::Step::steps_between<'_0, '_1, Self>(@1: &'_0 (Self), @2: &'_1 (Self)) -> (usize, core::option::Option<usize>[core::marker::Sized<usize>])
 
 pub fn core::iter::range::Step::forward_checked<Self>(@1: Self, @2: usize) -> core::option::Option<Self>[Self::parent_clause0]
 
