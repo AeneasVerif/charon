@@ -9,6 +9,7 @@ trait IntoIterator {
 
 // We should be able to deduce that `Clause2_Assoc = ()`, but this requires unification of
 // identical trait clauses.
+// TODO: open an issue to track this
 fn foo<I>()
 where
     I: IntoIterator,

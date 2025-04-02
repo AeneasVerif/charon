@@ -67,6 +67,7 @@ let unop_to_string (env : 'a fmt_env) (unop : unop) : string =
   match unop with
   | Not -> "¬"
   | Neg -> "-"
+  | PtrMetadata -> "ptr_metadata"
   | Cast cast_kind -> cast_kind_to_string env cast_kind
 
 let binop_to_string (binop : binop) : string =

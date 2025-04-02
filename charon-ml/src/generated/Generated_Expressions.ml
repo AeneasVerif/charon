@@ -81,6 +81,8 @@ and unop =
           (in debug mode) to check that it is not equal to the minimum integer
           value (for the proper type).
        *)
+  | PtrMetadata
+      (** Retreive the metadata part of a fat pointer. For slices, this retreives their length. *)
   | Cast of cast_kind
       (** Casts are rvalues in MIR, but we treat them as unops. *)
 

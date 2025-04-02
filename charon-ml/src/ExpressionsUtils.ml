@@ -2,7 +2,7 @@ open Expressions
 
 let unop_can_fail (unop : unop) : bool =
   match unop with
-  | Neg | Cast _ -> true
+  | Neg | Cast _ | PtrMetadata -> true
   | Not -> false
 
 let binop_can_fail (binop : binop) : bool =

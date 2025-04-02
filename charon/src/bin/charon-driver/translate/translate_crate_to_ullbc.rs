@@ -188,12 +188,7 @@ pub fn translate<'tcx, 'ctx>(
     tcx: TyCtxt<'tcx>,
     sysroot: PathBuf,
 ) -> TransformCtx {
-    let hax_state = hax::state::State::new(
-        tcx,
-        hax::options::Options {
-            inline_macro_calls: Vec::new(),
-        },
-    );
+    let hax_state = hax::state::State::new(tcx, hax::options::Options {});
 
     // Retrieve the crate name: if the user specified a custom name, use it, otherwise retrieve it
     // from hax.

@@ -1534,6 +1534,7 @@ impl<C: AstFormatter> FmtWithCtx<C> for UnOp {
         match self {
             UnOp::Not => "~".to_string(),
             UnOp::Neg => "-".to_string(),
+            UnOp::PtrMetadata => "ptr_metadata".to_string(),
             UnOp::Cast(kind) => kind.fmt_with_ctx(ctx),
             UnOp::ArrayToSlice(..) => "array_to_slice".to_string(),
         }

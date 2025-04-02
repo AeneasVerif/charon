@@ -1,5 +1,5 @@
 #![feature(core_intrinsics)]
-#![feature(rustc_attrs)]
+#![feature(liballoc_internals)]
 #![allow(internal_features)]
 
 use std::ptr::addr_of;
@@ -47,10 +47,7 @@ fn fn_casts() {
 }
 
 fn boxes() {
-    let _ = {
-        #[rustc_box]
-        Box::new(42)
-    };
+    let _ = std::boxed::box_new(42);
 }
 
 // We force stealing to get the optimized_mir of the function. Optimizing the whole file would

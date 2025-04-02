@@ -158,6 +158,8 @@ pub enum UnOp {
     /// (in debug mode) to check that it is not equal to the minimum integer
     /// value (for the proper type).
     Neg,
+    /// Retreive the metadata part of a fat pointer. For slices, this retreives their length.
+    PtrMetadata,
     /// Casts are rvalues in MIR, but we treat them as unops.
     Cast(CastKind),
     /// Coercion from array (i.e., [T; N]) to slice.
