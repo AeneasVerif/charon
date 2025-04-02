@@ -65,11 +65,11 @@ pub opaque type core::cell::Ref<'b, T>
 
 pub struct core::cell::BorrowError = {}
 
-pub fn core::cell::{core::cell::RefCell<T>}#21::new<T>(@1: T) -> core::cell::RefCell<T>
+pub fn core::cell::{core::cell::RefCell<T>}#22::new<T>(@1: T) -> core::cell::RefCell<T>
 where
     [@TraitClause0]: core::marker::Sized<T>,
 
-pub fn core::cell::{core::cell::RefCell<T>}#22::try_borrow<'_0, T>(@1: &'_0 (core::cell::RefCell<T>)) -> core::result::Result<core::cell::Ref<'_0, T>, core::cell::BorrowError>[core::marker::Sized<core::cell::Ref<'_0, T>>, core::marker::Sized<core::cell::BorrowError>]
+pub fn core::cell::{core::cell::RefCell<T>}#23::try_borrow<'_0, T>(@1: &'_0 (core::cell::RefCell<T>)) -> core::result::Result<core::cell::Ref<'_0, T>, core::cell::BorrowError>[core::marker::Sized<core::cell::Ref<'_0, T>>, core::marker::Sized<core::cell::BorrowError>]
 
 fn test_crate::foo()
 {
@@ -78,11 +78,11 @@ fn test_crate::foo()
     let @2: core::result::Result<core::cell::Ref<'_, bool>, core::cell::BorrowError>[core::marker::Sized<core::cell::Ref<'_, bool>>, core::marker::Sized<core::cell::BorrowError>]; // anonymous local
     let @3: &'_ (core::cell::RefCell<bool>); // anonymous local
 
-    ref_b@1 := core::cell::{core::cell::RefCell<T>}#21::new<bool>[core::marker::Sized<bool>](const (false))
+    ref_b@1 := core::cell::{core::cell::RefCell<T>}#22::new<bool>[core::marker::Sized<bool>](const (false))
     @fake_read(ref_b@1)
     // `try_borrow` has a type that includes predicates on late bound regions.
     @3 := &ref_b@1
-    @2 := core::cell::{core::cell::RefCell<T>}#22::try_borrow<'_, bool>(move (@3))
+    @2 := core::cell::{core::cell::RefCell<T>}#23::try_borrow<'_, bool>(move (@3))
     drop @3
     @fake_read(@2)
     drop @2

@@ -65,7 +65,7 @@ where
     [@TraitClause0]: core::marker::Sized<T>,
     [@TraitClause1]: core::fmt::Debug<T>,
 
-pub fn core::fmt::{core::fmt::Arguments<'a>}#2::new_v1<'a, const P : usize, const A : usize>(@1: &'a (Array<&'static (Str), const P : usize>), @2: &'a (Array<core::fmt::rt::Argument<'a>, const A : usize>)) -> core::fmt::Arguments<'a>
+pub fn core::fmt::{core::fmt::Arguments<'a>}#4::new_v1<'a, const P : usize, const A : usize>(@1: &'a (Array<&'static (Str), const P : usize>), @2: &'a (Array<core::fmt::rt::Argument<'a>, const A : usize>)) -> core::fmt::Arguments<'a>
 
 pub fn std::io::stdio::_print<'_0>(@1: core::fmt::Arguments<'_0>)
 
@@ -104,7 +104,7 @@ where
     drop @9
     @7 := &@8
     @6 := &*(@7)
-    @2 := core::fmt::{core::fmt::Arguments<'a>}#2::new_v1<'_, 2 : usize, 1 : usize>(move (@3), move (@6))
+    @2 := core::fmt::{core::fmt::Arguments<'a>}#4::new_v1<'_, 2 : usize, 1 : usize>(move (@3), move (@6))
     drop @6
     drop @3
     @1 := std::io::stdio::_print<'_>(move (@2))
@@ -163,11 +163,11 @@ impl core::default::{impl core::default::Default for bool}#1 : core::default::De
     fn default = core::default::{impl core::default::Default for bool}#1::default
 }
 
-pub fn core::fmt::{impl core::fmt::Debug for bool}#14::fmt<'_0, '_1, '_2>(@1: &'_0 (bool), @2: &'_1 mut (core::fmt::Formatter<'_2>)) -> core::result::Result<(), core::fmt::Error>[core::marker::Sized<()>, core::marker::Sized<core::fmt::Error>]
+pub fn core::fmt::{impl core::fmt::Debug for bool}#16::fmt<'_0, '_1, '_2>(@1: &'_0 (bool), @2: &'_1 mut (core::fmt::Formatter<'_2>)) -> core::result::Result<(), core::fmt::Error>[core::marker::Sized<()>, core::marker::Sized<core::fmt::Error>]
 
-impl core::fmt::{impl core::fmt::Debug for bool}#14 : core::fmt::Debug<bool>
+impl core::fmt::{impl core::fmt::Debug for bool}#16 : core::fmt::Debug<bool>
 {
-    fn fmt<'_0, '_1, '_2> = core::fmt::{impl core::fmt::Debug for bool}#14::fmt<'_0_0, '_0_1, '_0_2>
+    fn fmt<'_0, '_1, '_2> = core::fmt::{impl core::fmt::Debug for bool}#16::fmt<'_0_0, '_0_1, '_0_2>
 }
 
 fn test_crate::try_it<T>()
@@ -180,7 +180,7 @@ where
 {
     let @0: (); // return
 
-    @0 := test_crate::{impl test_crate::Join<U> for T}::test<T, bool>[@TraitClause0, core::marker::Sized<bool>, @TraitClause3, test_crate::{impl test_crate::Right<U> for T}#2<T, bool>[@TraitClause0, core::marker::Sized<bool>, core::default::{impl core::default::Default for bool}#1, core::fmt::{impl core::fmt::Debug for bool}#14], core::default::{impl core::default::Default for bool}#1, core::fmt::{impl core::fmt::Debug for bool}#14]()
+    @0 := test_crate::{impl test_crate::Join<U> for T}::test<T, bool>[@TraitClause0, core::marker::Sized<bool>, @TraitClause3, test_crate::{impl test_crate::Right<U> for T}#2<T, bool>[@TraitClause0, core::marker::Sized<bool>, core::default::{impl core::default::Default for bool}#1, core::fmt::{impl core::fmt::Debug for bool}#16], core::default::{impl core::default::Default for bool}#1, core::fmt::{impl core::fmt::Debug for bool}#16]()
     @0 := ()
     return
 }

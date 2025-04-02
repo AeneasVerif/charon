@@ -83,7 +83,7 @@ fn get_mir_for_def_id_and_level(
     let body = if tcx.is_mir_available(def_id) {
         if let Some(local_def_id) = def_id.as_local()
             && !matches!(
-                tcx.hir().body_const_context(local_def_id),
+                tcx.hir_body_const_context(local_def_id),
                 None | Some(rustc_hir::ConstContext::ConstFn)
             )
         {

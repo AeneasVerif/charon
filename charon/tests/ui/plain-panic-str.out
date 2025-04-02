@@ -5,7 +5,7 @@ pub opaque type core::fmt::Arguments<'a>
   where
       'a : 'a,
 
-pub fn core::fmt::{core::fmt::Arguments<'a>}#2::new_const<'a, const N : usize>(@1: &'a (Array<&'static (Str), const N : usize>)) -> core::fmt::Arguments<'a>
+pub fn core::fmt::{core::fmt::Arguments<'a>}#4::new_const<'a, const N : usize>(@1: &'a (Array<&'static (Str), const N : usize>)) -> core::fmt::Arguments<'a>
 
 fn test_crate::main()
 {
@@ -18,7 +18,7 @@ fn test_crate::main()
     @4 := [const ("O no")]
     @3 := &@4
     @2 := &*(@3)
-    @1 := core::fmt::{core::fmt::Arguments<'a>}#2::new_const<'_, 1 : usize>(move (@2))
+    @1 := core::fmt::{core::fmt::Arguments<'a>}#4::new_const<'_, 1 : usize>(move (@2))
     drop @2
     panic(core::panicking::panic_fmt)
 }

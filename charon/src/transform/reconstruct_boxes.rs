@@ -8,7 +8,7 @@ use super::ctx::UllbcPass;
 pub struct Transform;
 
 impl Transform {
-    /// The special `#[rustc_box] Box::new(x)` construct becomes the following:
+    /// The special `alloc::boxed::box_new(x)` intrinsic becomes the following:
     ///
     /// ```text
     /// @2 := size_of<i32>

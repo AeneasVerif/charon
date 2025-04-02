@@ -201,7 +201,7 @@ checksum = "baf1de4339761588bc0619e3cbc0120ee582ebb74b53b4efbf79117bd2da40fd"
 
 [[package]]
 name = "charon"
-version = "0.1.73"
+version = "0.1.74"
 dependencies = [
  "annotate-snippets",
  "anstream",
@@ -788,7 +788,7 @@ checksum = "bf151400ff0baff5465007dd2f3e717f3fe502074ca563069ce3a6629d07b289"
 [[package]]
 name = "hax-adt-into"
 version = "0.2.0"
-source = "git+https://github.com/cryspen/hax?branch=main#834f37c1f579d2373b4b6675f90346a5d6771c06"
+source = "git+https://github.com/Nadrieril/hax?branch=update-rustc#d89c6e6d00530dd919eb0c79d18b2f8aa821df09"
 dependencies = [
  "itertools 0.11.0",
  "proc-macro2",
@@ -799,7 +799,7 @@ dependencies = [
 [[package]]
 name = "hax-frontend-exporter"
 version = "0.2.0"
-source = "git+https://github.com/cryspen/hax?branch=main#834f37c1f579d2373b4b6675f90346a5d6771c06"
+source = "git+https://github.com/Nadrieril/hax?branch=update-rustc#d89c6e6d00530dd919eb0c79d18b2f8aa821df09"
 dependencies = [
  "extension-traits",
  "hax-adt-into",
@@ -816,7 +816,7 @@ dependencies = [
 [[package]]
 name = "hax-frontend-exporter-options"
 version = "0.2.0"
-source = "git+https://github.com/cryspen/hax?branch=main#834f37c1f579d2373b4b6675f90346a5d6771c06"
+source = "git+https://github.com/Nadrieril/hax?branch=update-rustc#d89c6e6d00530dd919eb0c79d18b2f8aa821df09"
 dependencies = [
  "hax-adt-into",
  "schemars",
