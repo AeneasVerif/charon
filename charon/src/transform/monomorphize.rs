@@ -189,10 +189,6 @@ impl VisitAstMut for SubstVisitor<'_> {
                         // Small trick; the discriminant doesn't carry the information on the
                         // generics of the enum, since it's irrelevant, but we need it to do
                         // the substitution, so we look at the type of the place we read from
-                        println!(
-                            "Substituted in discriminant: {:?} -> {:?}",
-                            *id, new_enum_id
-                        );
                         *id = new_enum_id;
                     }
                     _ => {}
@@ -305,20 +301,20 @@ fn subst_uses<T: AstVisitable + Debug>(data: &PassData, item: &mut T) {
     item.drive_mut(&mut visitor);
 }
 
-fn check_missing_indices(krate: &TranslatedCrate) {
-    let mut visitor = MissingIndexChecker {
-        krate,
-        current_item: None,
-    };
-    for item in krate.all_items() {
-        visitor.current_item = Some(item);
-        item.drive(&mut visitor);
-    }
-}
+// fn check_missing_indices(krate: &TranslatedCrate) {
+//     let mut visitor = MissingIndexChecker {
+//         krate,
+//         current_item: None,
+//     };
+//     for item in krate.all_items() {
+//         visitor.current_item = Some(item);
+//         item.drive(&mut visitor);
+//     }
+// }
 
-fn path_for_generics(gargs: &GenericArgs) -> PathElem {
-    PathElem::Ident(gargs.to_string(), Disambiguator::ZERO)
-}
+// fn path_for_generics(gargs: &GenericArgs) -> PathElem {
+//     PathElem::Ident(gargs.to_string(), Disambiguator::ZERO)
+// }
 
 impl GenericArgs {
     fn is_empty_ignoring_regions(&self) -> bool {
@@ -334,25 +330,25 @@ impl GenericArgs {
     }
 }
 
-impl GenericParams {
-    fn is_empty_ignoring_regions(&self) -> bool {
-        let GenericParams {
-            regions: _,
-            types,
-            const_generics,
-            trait_clauses,
-            regions_outlive: _,
-            types_outlive,
-            trait_type_constraints,
-        } = self;
-        let len = types.elem_count()
-            + const_generics.elem_count()
-            + trait_clauses.elem_count()
-            + trait_type_constraints.elem_count()
-            + types_outlive.len();
-        len == 0
-    }
-}
+// impl GenericParams {
+//     fn is_empty_ignoring_regions(&self) -> bool {
+//         let GenericParams {
+//             regions: _,
+//             types,
+//             const_generics,
+//             trait_clauses,
+//             regions_outlive: _,
+//             types_outlive,
+//             trait_type_constraints,
+//         } = self;
+//         let len = types.elem_count()
+//             + const_generics.elem_count()
+//             + trait_clauses.elem_count()
+//             + trait_type_constraints.elem_count()
+//             + types_outlive.len();
+//         len == 0
+//     }
+// }
 
 pub struct Transform;
 impl UllbcPass for Transform {
