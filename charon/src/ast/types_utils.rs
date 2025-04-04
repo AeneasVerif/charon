@@ -199,7 +199,7 @@ impl<T: AstVisitable> Binder<Binder<T>> {
         // - at binder level 0 we shift all variable ids to match the concatenated params;
         // - at binder level > 0 we decrease binding level because there's one fewer binder.
         let mut bound_value = self.skip_binder.skip_binder;
-        bound_value.drive_mut(&mut FlattenVisitor {
+        let _ = bound_value.drive_mut(&mut FlattenVisitor {
             shift_by: &outer_params,
             binder_depth: Default::default(),
         });
@@ -207,7 +207,7 @@ impl<T: AstVisitable> Binder<Binder<T>> {
         // The inner params must also be updated, as they can refer to themselves and the outer
         // one.
         let mut inner_params = self.skip_binder.params;
-        inner_params.drive_mut(&mut FlattenVisitor {
+        let _ = inner_params.drive_mut(&mut FlattenVisitor {
             shift_by: &outer_params,
             binder_depth: Default::default(),
         });
@@ -837,7 +837,7 @@ pub trait TyVisitable: Sized + AstVisitable {
     }
 
     fn substitute_with_self(mut self, generics: &GenericArgs, self_ref: &TraitRefKind) -> Self {
-        self.drive_mut(&mut SubstVisitor::new(generics, self_ref));
+        let _ = self.drive_mut(&mut SubstVisitor::new(generics, self_ref));
         self
     }
 

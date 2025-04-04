@@ -109,34 +109,34 @@ impl core::marker::{impl core::marker::Copy for usize}#37 : core::marker::Copy<u
     parent_clause0 = core::clone::impls::{impl core::clone::Clone for usize}#5
 }
 
-impl core::num::nonzero::{impl core::num::nonzero::private::Sealed for usize}#25 : core::num::nonzero::private::Sealed<usize>
+impl core::num::nonzero::{impl core::num::nonzero::private::Sealed for usize}#26 : core::num::nonzero::private::Sealed<usize>
 
-pub opaque type core::num::nonzero::private::NonZeroUsizeInner
+pub opaque type core::num::niche_types::NonZeroUsizeInner
 
-pub fn core::num::nonzero::private::{impl core::clone::Clone for core::num::nonzero::private::NonZeroUsizeInner}#26::clone<'_0>(@1: &'_0 (core::num::nonzero::private::NonZeroUsizeInner)) -> core::num::nonzero::private::NonZeroUsizeInner
+pub fn core::num::niche_types::{impl core::clone::Clone for core::num::niche_types::NonZeroUsizeInner}#140::clone<'_0>(@1: &'_0 (core::num::niche_types::NonZeroUsizeInner)) -> core::num::niche_types::NonZeroUsizeInner
 
-pub fn core::num::nonzero::private::{impl core::clone::Clone for core::num::nonzero::private::NonZeroUsizeInner}#26::clone_from<'_0, '_1>(@1: &'_0 mut (core::num::nonzero::private::NonZeroUsizeInner), @2: &'_1 (core::num::nonzero::private::NonZeroUsizeInner))
+pub fn core::num::niche_types::{impl core::clone::Clone for core::num::niche_types::NonZeroUsizeInner}#140::clone_from<'_0, '_1>(@1: &'_0 mut (core::num::niche_types::NonZeroUsizeInner), @2: &'_1 (core::num::niche_types::NonZeroUsizeInner))
 
-impl core::num::nonzero::private::{impl core::clone::Clone for core::num::nonzero::private::NonZeroUsizeInner}#26 : core::clone::Clone<core::num::nonzero::private::NonZeroUsizeInner>
+impl core::num::niche_types::{impl core::clone::Clone for core::num::niche_types::NonZeroUsizeInner}#140 : core::clone::Clone<core::num::niche_types::NonZeroUsizeInner>
 {
-    parent_clause0 = core::marker::Sized<core::num::nonzero::private::NonZeroUsizeInner>
-    fn clone<'_0> = core::num::nonzero::private::{impl core::clone::Clone for core::num::nonzero::private::NonZeroUsizeInner}#26::clone<'_0_0>
-    fn clone_from<'_0, '_1> = core::num::nonzero::private::{impl core::clone::Clone for core::num::nonzero::private::NonZeroUsizeInner}#26::clone_from<'_0_0, '_0_1>
+    parent_clause0 = core::marker::Sized<core::num::niche_types::NonZeroUsizeInner>
+    fn clone<'_0> = core::num::niche_types::{impl core::clone::Clone for core::num::niche_types::NonZeroUsizeInner}#140::clone<'_0_0>
+    fn clone_from<'_0, '_1> = core::num::niche_types::{impl core::clone::Clone for core::num::niche_types::NonZeroUsizeInner}#140::clone_from<'_0_0, '_0_1>
 }
 
-impl core::num::nonzero::private::{impl core::marker::Copy for core::num::nonzero::private::NonZeroUsizeInner}#27 : core::marker::Copy<core::num::nonzero::private::NonZeroUsizeInner>
+impl core::num::niche_types::{impl core::marker::Copy for core::num::niche_types::NonZeroUsizeInner}#141 : core::marker::Copy<core::num::niche_types::NonZeroUsizeInner>
 {
-    parent_clause0 = core::num::nonzero::private::{impl core::clone::Clone for core::num::nonzero::private::NonZeroUsizeInner}#26
+    parent_clause0 = core::num::niche_types::{impl core::clone::Clone for core::num::niche_types::NonZeroUsizeInner}#140
 }
 
-impl core::num::nonzero::{impl core::num::nonzero::ZeroablePrimitive for usize}#26 : core::num::nonzero::ZeroablePrimitive<usize>
+impl core::num::nonzero::{impl core::num::nonzero::ZeroablePrimitive for usize}#27 : core::num::nonzero::ZeroablePrimitive<usize>
 {
     parent_clause0 = core::marker::Sized<usize>
     parent_clause1 = core::marker::{impl core::marker::Copy for usize}#37
-    parent_clause2 = core::num::nonzero::{impl core::num::nonzero::private::Sealed for usize}#25
-    parent_clause3 = core::marker::Sized<core::num::nonzero::private::NonZeroUsizeInner>
-    parent_clause4 = core::num::nonzero::private::{impl core::marker::Copy for core::num::nonzero::private::NonZeroUsizeInner}#27
-    type NonZeroInner = core::num::nonzero::private::NonZeroUsizeInner
+    parent_clause2 = core::num::nonzero::{impl core::num::nonzero::private::Sealed for usize}#26
+    parent_clause3 = core::marker::Sized<core::num::niche_types::NonZeroUsizeInner>
+    parent_clause4 = core::num::niche_types::{impl core::marker::Copy for core::num::niche_types::NonZeroUsizeInner}#141
+    type NonZeroInner = core::num::niche_types::NonZeroUsizeInner
 }
 
 pub opaque type core::iter::adapters::step_by::StepBy<I>
@@ -240,6 +240,7 @@ pub trait core::ops::try_trait::FromResidual<Self, R>
     fn from_residual = core::ops::try_trait::FromResidual::from_residual<Self, R>
 }
 
+#[lang_item("ControlFlow")]
 pub enum core::ops::control_flow::ControlFlow<B, C>
   where
       [@TraitClause0]: core::marker::Sized<B>,
@@ -309,6 +310,10 @@ pub trait core::cmp::PartialOrd<Self, Rhs>
     fn le<'_0, '_1> = core::cmp::PartialOrd::le<'_0_0, '_0_1, Self, Rhs>
     fn gt<'_0, '_1> = core::cmp::PartialOrd::gt<'_0_0, '_0_1, Self, Rhs>
     fn ge<'_0, '_1> = core::cmp::PartialOrd::ge<'_0_0, '_0_1, Self, Rhs>
+    fn __chaining_lt<'_0, '_1> = core::cmp::PartialOrd::__chaining_lt<'_0_0, '_0_1, Self, Rhs>
+    fn __chaining_le<'_0, '_1> = core::cmp::PartialOrd::__chaining_le<'_0_0, '_0_1, Self, Rhs>
+    fn __chaining_gt<'_0, '_1> = core::cmp::PartialOrd::__chaining_gt<'_0_0, '_0_1, Self, Rhs>
+    fn __chaining_ge<'_0, '_1> = core::cmp::PartialOrd::__chaining_ge<'_0_0, '_0_1, Self, Rhs>
 }
 
 #[lang_item("Ord")]
@@ -534,7 +539,7 @@ pub trait core::iter::adapters::zip::TrustedRandomAccessNoCoerce<Self>
     fn size<'_0, [@TraitClause0]: core::iter::traits::iterator::Iterator<Self>> = core::iter::adapters::zip::TrustedRandomAccessNoCoerce::size<'_0_0, Self>[@TraitClause0_0]
 }
 
-pub fn core::iter::traits::collect::{impl core::iter::traits::collect::IntoIterator for I}#1::into_iter<I>(@1: I) -> I
+pub fn core::iter::traits::collect::{impl core::iter::traits::collect::IntoIterator for I}::into_iter<I>(@1: I) -> I
 where
     [@TraitClause0]: core::marker::Sized<I>,
     [@TraitClause1]: core::iter::traits::iterator::Iterator<I>,
@@ -560,7 +565,7 @@ pub fn core::array::iter::{impl core::iter::traits::iterator::Iterator for core:
 where
     [@TraitClause0]: core::marker::Sized<T>,
 
-pub fn core::array::iter::{impl core::iter::traits::iterator::Iterator for core::array::iter::IntoIter<T, const N : usize>[@TraitClause0]}#2::advance_by<'_0, T, const N : usize>(@1: &'_0 mut (core::array::iter::IntoIter<T, const N : usize>[@TraitClause0]), @2: usize) -> core::result::Result<(), core::num::nonzero::NonZero<usize>[core::marker::Sized<usize>, core::num::nonzero::{impl core::num::nonzero::ZeroablePrimitive for usize}#26]>[core::marker::Sized<()>, core::marker::Sized<core::num::nonzero::NonZero<usize>[core::marker::Sized<usize>, core::num::nonzero::{impl core::num::nonzero::ZeroablePrimitive for usize}#26]>]
+pub fn core::array::iter::{impl core::iter::traits::iterator::Iterator for core::array::iter::IntoIter<T, const N : usize>[@TraitClause0]}#2::advance_by<'_0, T, const N : usize>(@1: &'_0 mut (core::array::iter::IntoIter<T, const N : usize>[@TraitClause0]), @2: usize) -> core::result::Result<(), core::num::nonzero::NonZero<usize>[core::marker::Sized<usize>, core::num::nonzero::{impl core::num::nonzero::ZeroablePrimitive for usize}#27]>[core::marker::Sized<()>, core::marker::Sized<core::num::nonzero::NonZero<usize>[core::marker::Sized<usize>, core::num::nonzero::{impl core::num::nonzero::ZeroablePrimitive for usize}#27]>]
 where
     [@TraitClause0]: core::marker::Sized<T>,
 
@@ -1256,7 +1261,7 @@ pub fn core::slice::iter::{impl core::iter::traits::iterator::Iterator for core:
 where
     [@TraitClause0]: core::marker::Sized<T>,
 
-pub fn core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::Iter<'a, T>[@TraitClause0]}#182::advance_by<'a, '_1, T>(@1: &'_1 mut (core::slice::iter::Iter<'a, T>[@TraitClause0]), @2: usize) -> core::result::Result<(), core::num::nonzero::NonZero<usize>[core::marker::Sized<usize>, core::num::nonzero::{impl core::num::nonzero::ZeroablePrimitive for usize}#26]>[core::marker::Sized<()>, core::marker::Sized<core::num::nonzero::NonZero<usize>[core::marker::Sized<usize>, core::num::nonzero::{impl core::num::nonzero::ZeroablePrimitive for usize}#26]>]
+pub fn core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::Iter<'a, T>[@TraitClause0]}#182::advance_by<'a, '_1, T>(@1: &'_1 mut (core::slice::iter::Iter<'a, T>[@TraitClause0]), @2: usize) -> core::result::Result<(), core::num::nonzero::NonZero<usize>[core::marker::Sized<usize>, core::num::nonzero::{impl core::num::nonzero::ZeroablePrimitive for usize}#27]>[core::marker::Sized<()>, core::marker::Sized<core::num::nonzero::NonZero<usize>[core::marker::Sized<usize>, core::num::nonzero::{impl core::num::nonzero::ZeroablePrimitive for usize}#27]>]
 where
     [@TraitClause0]: core::marker::Sized<T>,
 
@@ -1953,7 +1958,7 @@ pub fn core::slice::iter::{impl core::iter::traits::iterator::Iterator for core:
 where
     [@TraitClause0]: core::marker::Sized<T>,
 
-pub fn core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::Chunks<'a, T>[@TraitClause0]}#71::advance_by<'a, '_1, T>(@1: &'_1 mut (core::slice::iter::Chunks<'a, T>[@TraitClause0]), @2: usize) -> core::result::Result<(), core::num::nonzero::NonZero<usize>[core::marker::Sized<usize>, core::num::nonzero::{impl core::num::nonzero::ZeroablePrimitive for usize}#26]>[core::marker::Sized<()>, core::marker::Sized<core::num::nonzero::NonZero<usize>[core::marker::Sized<usize>, core::num::nonzero::{impl core::num::nonzero::ZeroablePrimitive for usize}#26]>]
+pub fn core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::Chunks<'a, T>[@TraitClause0]}#71::advance_by<'a, '_1, T>(@1: &'_1 mut (core::slice::iter::Chunks<'a, T>[@TraitClause0]), @2: usize) -> core::result::Result<(), core::num::nonzero::NonZero<usize>[core::marker::Sized<usize>, core::num::nonzero::{impl core::num::nonzero::ZeroablePrimitive for usize}#27]>[core::marker::Sized<()>, core::marker::Sized<core::num::nonzero::NonZero<usize>[core::marker::Sized<usize>, core::num::nonzero::{impl core::num::nonzero::ZeroablePrimitive for usize}#27]>]
 where
     [@TraitClause0]: core::marker::Sized<T>,
 
@@ -2649,7 +2654,7 @@ pub fn core::slice::iter::{impl core::iter::traits::iterator::Iterator for core:
 where
     [@TraitClause0]: core::marker::Sized<T>,
 
-pub fn core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::ChunksExact<'a, T>[@TraitClause0]}#90::advance_by<'a, '_1, T>(@1: &'_1 mut (core::slice::iter::ChunksExact<'a, T>[@TraitClause0]), @2: usize) -> core::result::Result<(), core::num::nonzero::NonZero<usize>[core::marker::Sized<usize>, core::num::nonzero::{impl core::num::nonzero::ZeroablePrimitive for usize}#26]>[core::marker::Sized<()>, core::marker::Sized<core::num::nonzero::NonZero<usize>[core::marker::Sized<usize>, core::num::nonzero::{impl core::num::nonzero::ZeroablePrimitive for usize}#26]>]
+pub fn core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::ChunksExact<'a, T>[@TraitClause0]}#90::advance_by<'a, '_1, T>(@1: &'_1 mut (core::slice::iter::ChunksExact<'a, T>[@TraitClause0]), @2: usize) -> core::result::Result<(), core::num::nonzero::NonZero<usize>[core::marker::Sized<usize>, core::num::nonzero::{impl core::num::nonzero::ZeroablePrimitive for usize}#27]>[core::marker::Sized<()>, core::marker::Sized<core::num::nonzero::NonZero<usize>[core::marker::Sized<usize>, core::num::nonzero::{impl core::num::nonzero::ZeroablePrimitive for usize}#27]>]
 where
     [@TraitClause0]: core::marker::Sized<T>,
 
@@ -3395,7 +3400,7 @@ fn test_crate::main()
     @6 := copy (a@1)
     @5 := core::array::iter::{impl core::iter::traits::collect::IntoIterator for Array<T, const N : usize>}::into_iter<i32, 7 : usize>[core::marker::Sized<i32>](move (@6))
     drop @6
-    @4 := core::iter::traits::collect::{impl core::iter::traits::collect::IntoIterator for I}#1::into_iter<core::array::iter::IntoIter<i32, 7 : usize>[core::marker::Sized<i32>]>[core::marker::Sized<core::array::iter::IntoIter<i32, 7 : usize>[core::marker::Sized<i32>]>, core::array::iter::{impl core::iter::traits::iterator::Iterator for core::array::iter::IntoIter<T, const N : usize>[@TraitClause0]}#2<i32, 7 : usize>[core::marker::Sized<i32>]](move (@5))
+    @4 := core::iter::traits::collect::{impl core::iter::traits::collect::IntoIterator for I}::into_iter<core::array::iter::IntoIter<i32, 7 : usize>[core::marker::Sized<i32>]>[core::marker::Sized<core::array::iter::IntoIter<i32, 7 : usize>[core::marker::Sized<i32>]>, core::array::iter::{impl core::iter::traits::iterator::Iterator for core::array::iter::IntoIter<T, const N : usize>[@TraitClause0]}#2<i32, 7 : usize>[core::marker::Sized<i32>]](move (@5))
     drop @5
     @fake_read(@4)
     iter@7 := move (@4)
@@ -3435,7 +3440,7 @@ fn test_crate::main()
     drop @18
     @16 := core::slice::{Slice<T>}::iter<'_, i32>[core::marker::Sized<i32>](move (@17))
     drop @17
-    @15 := core::iter::traits::collect::{impl core::iter::traits::collect::IntoIterator for I}#1::into_iter<core::slice::iter::Iter<'_, i32>[core::marker::Sized<i32>]>[core::marker::Sized<core::slice::iter::Iter<'_, i32>[core::marker::Sized<i32>]>, core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::Iter<'a, T>[@TraitClause0]}#182<'_, i32>[core::marker::Sized<i32>]](move (@16))
+    @15 := core::iter::traits::collect::{impl core::iter::traits::collect::IntoIterator for I}::into_iter<core::slice::iter::Iter<'_, i32>[core::marker::Sized<i32>]>[core::marker::Sized<core::slice::iter::Iter<'_, i32>[core::marker::Sized<i32>]>, core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::Iter<'a, T>[@TraitClause0]}#182<'_, i32>[core::marker::Sized<i32>]](move (@16))
     drop @16
     @fake_read(@15)
     iter@19 := move (@15)
@@ -3476,7 +3481,7 @@ fn test_crate::main()
     drop @32
     @30 := core::slice::{Slice<T>}::chunks<'_, i32>[core::marker::Sized<i32>](move (@31), const (2 : usize))
     drop @31
-    @29 := core::iter::traits::collect::{impl core::iter::traits::collect::IntoIterator for I}#1::into_iter<core::slice::iter::Chunks<'_, i32>[core::marker::Sized<i32>]>[core::marker::Sized<core::slice::iter::Chunks<'_, i32>[core::marker::Sized<i32>]>, core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::Chunks<'a, T>[@TraitClause0]}#71<'_, i32>[core::marker::Sized<i32>]](move (@30))
+    @29 := core::iter::traits::collect::{impl core::iter::traits::collect::IntoIterator for I}::into_iter<core::slice::iter::Chunks<'_, i32>[core::marker::Sized<i32>]>[core::marker::Sized<core::slice::iter::Chunks<'_, i32>[core::marker::Sized<i32>]>, core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::Chunks<'a, T>[@TraitClause0]}#71<'_, i32>[core::marker::Sized<i32>]](move (@30))
     drop @30
     @fake_read(@29)
     iter@33 := move (@29)
@@ -3510,7 +3515,7 @@ fn test_crate::main()
     drop @42
     @40 := core::slice::{Slice<T>}::chunks_exact<'_, i32>[core::marker::Sized<i32>](move (@41), const (2 : usize))
     drop @41
-    @39 := core::iter::traits::collect::{impl core::iter::traits::collect::IntoIterator for I}#1::into_iter<core::slice::iter::ChunksExact<'_, i32>[core::marker::Sized<i32>]>[core::marker::Sized<core::slice::iter::ChunksExact<'_, i32>[core::marker::Sized<i32>]>, core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::ChunksExact<'a, T>[@TraitClause0]}#90<'_, i32>[core::marker::Sized<i32>]](move (@40))
+    @39 := core::iter::traits::collect::{impl core::iter::traits::collect::IntoIterator for I}::into_iter<core::slice::iter::ChunksExact<'_, i32>[core::marker::Sized<i32>]>[core::marker::Sized<core::slice::iter::ChunksExact<'_, i32>[core::marker::Sized<i32>]>, core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::ChunksExact<'a, T>[@TraitClause0]}#90<'_, i32>[core::marker::Sized<i32>]](move (@40))
     drop @40
     @fake_read(@39)
     iter@43 := move (@39)
@@ -3597,7 +3602,7 @@ where
     fn into_iter = core::array::iter::{impl core::iter::traits::collect::IntoIterator for Array<T, const N : usize>}::into_iter<T, const N : usize>[@TraitClause0]
 }
 
-impl core::iter::traits::collect::{impl core::iter::traits::collect::IntoIterator for I}#1<I> : core::iter::traits::collect::IntoIterator<I>
+impl core::iter::traits::collect::{impl core::iter::traits::collect::IntoIterator for I}<I> : core::iter::traits::collect::IntoIterator<I>
 where
     [@TraitClause0]: core::marker::Sized<I>,
     [@TraitClause1]: core::iter::traits::iterator::Iterator<I>,
@@ -3607,7 +3612,7 @@ where
     parent_clause2 = @TraitClause1
     type Item = @TraitClause1::Item
     type IntoIter = I
-    fn into_iter = core::iter::traits::collect::{impl core::iter::traits::collect::IntoIterator for I}#1::into_iter<I>[@TraitClause0, @TraitClause1]
+    fn into_iter = core::iter::traits::collect::{impl core::iter::traits::collect::IntoIterator for I}::into_iter<I>[@TraitClause0, @TraitClause1]
 }
 
 #[lang_item("next")]
@@ -3650,7 +3655,7 @@ pub fn core::iter::traits::iterator::Iterator::last<Self>(@1: Self) -> core::opt
 where
     [@TraitClause0]: core::marker::Sized<Self>,
 
-pub fn core::iter::traits::iterator::Iterator::advance_by<'_0, Self>(@1: &'_0 mut (Self), @2: usize) -> core::result::Result<(), core::num::nonzero::NonZero<usize>[core::marker::Sized<usize>, core::num::nonzero::{impl core::num::nonzero::ZeroablePrimitive for usize}#26]>[core::marker::Sized<()>, core::marker::Sized<core::num::nonzero::NonZero<usize>[core::marker::Sized<usize>, core::num::nonzero::{impl core::num::nonzero::ZeroablePrimitive for usize}#26]>]
+pub fn core::iter::traits::iterator::Iterator::advance_by<'_0, Self>(@1: &'_0 mut (Self), @2: usize) -> core::result::Result<(), core::num::nonzero::NonZero<usize>[core::marker::Sized<usize>, core::num::nonzero::{impl core::num::nonzero::ZeroablePrimitive for usize}#27]>[core::marker::Sized<()>, core::marker::Sized<core::num::nonzero::NonZero<usize>[core::marker::Sized<usize>, core::num::nonzero::{impl core::num::nonzero::ZeroablePrimitive for usize}#27]>]
 
 #[lang_item("clone_fn")]
 pub fn core::clone::Clone::clone<'_0, Self>(@1: &'_0 (Self)) -> Self
@@ -4204,6 +4209,14 @@ pub fn core::cmp::PartialOrd::gt<'_0, '_1, Self, Rhs>(@1: &'_0 (Self), @2: &'_1 
 #[lang_item("cmp_partialord_ge")]
 pub fn core::cmp::PartialOrd::ge<'_0, '_1, Self, Rhs>(@1: &'_0 (Self), @2: &'_1 (Rhs)) -> bool
 
+pub fn core::cmp::PartialOrd::__chaining_lt<'_0, '_1, Self, Rhs>(@1: &'_0 (Self), @2: &'_1 (Rhs)) -> core::ops::control_flow::ControlFlow<bool, ()>[core::marker::Sized<bool>, core::marker::Sized<()>]
+
+pub fn core::cmp::PartialOrd::__chaining_le<'_0, '_1, Self, Rhs>(@1: &'_0 (Self), @2: &'_1 (Rhs)) -> core::ops::control_flow::ControlFlow<bool, ()>[core::marker::Sized<bool>, core::marker::Sized<()>]
+
+pub fn core::cmp::PartialOrd::__chaining_gt<'_0, '_1, Self, Rhs>(@1: &'_0 (Self), @2: &'_1 (Rhs)) -> core::ops::control_flow::ControlFlow<bool, ()>[core::marker::Sized<bool>, core::marker::Sized<()>]
+
+pub fn core::cmp::PartialOrd::__chaining_ge<'_0, '_1, Self, Rhs>(@1: &'_0 (Self), @2: &'_1 (Rhs)) -> core::ops::control_flow::ControlFlow<bool, ()>[core::marker::Sized<bool>, core::marker::Sized<()>]
+
 #[lang_item("default_fn")]
 pub fn core::default::Default::default<Self>() -> Self
 
@@ -4255,7 +4268,7 @@ where
 
 pub fn core::iter::traits::double_ended::DoubleEndedIterator::next_back<'_0, Self>(@1: &'_0 mut (Self)) -> core::option::Option<Self::parent_clause0::Item>[Self::parent_clause0::parent_clause0]
 
-pub fn core::iter::traits::double_ended::DoubleEndedIterator::advance_back_by<'_0, Self>(@1: &'_0 mut (Self), @2: usize) -> core::result::Result<(), core::num::nonzero::NonZero<usize>[core::marker::Sized<usize>, core::num::nonzero::{impl core::num::nonzero::ZeroablePrimitive for usize}#26]>[core::marker::Sized<()>, core::marker::Sized<core::num::nonzero::NonZero<usize>[core::marker::Sized<usize>, core::num::nonzero::{impl core::num::nonzero::ZeroablePrimitive for usize}#26]>]
+pub fn core::iter::traits::double_ended::DoubleEndedIterator::advance_back_by<'_0, Self>(@1: &'_0 mut (Self), @2: usize) -> core::result::Result<(), core::num::nonzero::NonZero<usize>[core::marker::Sized<usize>, core::num::nonzero::{impl core::num::nonzero::ZeroablePrimitive for usize}#27]>[core::marker::Sized<()>, core::marker::Sized<core::num::nonzero::NonZero<usize>[core::marker::Sized<usize>, core::num::nonzero::{impl core::num::nonzero::ZeroablePrimitive for usize}#27]>]
 
 pub fn core::iter::traits::double_ended::DoubleEndedIterator::nth_back<'_0, Self>(@1: &'_0 mut (Self), @2: usize) -> core::option::Option<Self::parent_clause0::Item>[Self::parent_clause0::parent_clause0]
 

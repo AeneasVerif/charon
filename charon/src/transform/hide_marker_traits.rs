@@ -95,7 +95,8 @@ impl TransformPass for Transform {
             ctx.translated.trait_decls.remove(id);
         }
 
-        ctx.translated
+        let _ = ctx
+            .translated
             .drive_mut(&mut RemoveMarkersVisitor { exclude });
     }
 }

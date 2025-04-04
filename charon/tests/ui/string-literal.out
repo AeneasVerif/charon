@@ -33,7 +33,42 @@ global test_crate::BAR: &'static (Slice<u8>) = test_crate::BAR()
 #[lang_item("String")]
 pub opaque type alloc::string::String
 
-pub fn alloc::string::{impl alloc::string::ToString for Str}#102::to_string<'_0>(@1: &'_0 (Str)) -> alloc::string::String
+#[lang_item("Formatter")]
+pub opaque type core::fmt::Formatter<'a>
+  where
+      'a : 'a,
+
+#[lang_item("sized")]
+pub trait core::marker::Sized<Self>
+
+#[lang_item("Result")]
+pub enum core::result::Result<T, E>
+  where
+      [@TraitClause0]: core::marker::Sized<T>,
+      [@TraitClause1]: core::marker::Sized<E>,
+ =
+|  Ok(T)
+|  Err(E)
+
+
+pub struct core::fmt::Error = {}
+
+#[lang_item("Display")]
+pub trait core::fmt::Display<Self>
+{
+    fn fmt<'_0, '_1, '_2> = core::fmt::Display::fmt<'_0_0, '_0_1, '_0_2, Self>
+}
+
+pub fn alloc::string::{impl alloc::string::ToString for T}#34::to_string<'_0, T>(@1: &'_0 (T)) -> alloc::string::String
+where
+    [@TraitClause0]: core::fmt::Display<T>,
+
+pub fn core::fmt::{impl core::fmt::Display for Str}#19::fmt<'_0, '_1, '_2>(@1: &'_0 (Str), @2: &'_1 mut (core::fmt::Formatter<'_2>)) -> core::result::Result<(), core::fmt::Error>[core::marker::Sized<()>, core::marker::Sized<core::fmt::Error>]
+
+impl core::fmt::{impl core::fmt::Display for Str}#19 : core::fmt::Display<Str>
+{
+    fn fmt<'_0, '_1, '_2> = core::fmt::{impl core::fmt::Display for Str}#19::fmt<'_0_0, '_0_1, '_0_2>
+}
 
 fn test_crate::main()
 {
@@ -44,7 +79,7 @@ fn test_crate::main()
 
     @3 := const ("Hello")
     @2 := &*(@3)
-    _s@1 := alloc::string::{impl alloc::string::ToString for Str}#102::to_string<'_>(move (@2))
+    _s@1 := alloc::string::{impl alloc::string::ToString for T}#34::to_string<'_, Str>[core::fmt::{impl core::fmt::Display for Str}#19](move (@2))
     drop @2
     @fake_read(_s@1)
     drop @3
@@ -64,10 +99,14 @@ pub trait alloc::string::ToString<Self>
 #[lang_item("to_string_method")]
 pub fn alloc::string::ToString::to_string<'_0, Self>(@1: &'_0 (Self)) -> alloc::string::String
 
-impl alloc::string::{impl alloc::string::ToString for Str}#102 : alloc::string::ToString<Str>
+impl alloc::string::{impl alloc::string::ToString for T}#34<T> : alloc::string::ToString<T>
+where
+    [@TraitClause0]: core::fmt::Display<T>,
 {
-    fn to_string<'_0> = alloc::string::{impl alloc::string::ToString for Str}#102::to_string<'_0_0>
+    fn to_string<'_0> = alloc::string::{impl alloc::string::ToString for T}#34::to_string<'_0_0, T>[@TraitClause0]
 }
+
+pub fn core::fmt::Display::fmt<'_0, '_1, '_2, Self>(@1: &'_0 (Self), @2: &'_1 mut (core::fmt::Formatter<'_2>)) -> core::result::Result<(), core::fmt::Error>[core::marker::Sized<()>, core::marker::Sized<core::fmt::Error>]
 
 
 

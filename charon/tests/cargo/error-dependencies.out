@@ -1,5 +1,5 @@
 error: Trait aliases are not supported
- --> /rustc/library/core/src/ptr/metadata.rs:81:1
+ --> /rustc/library/core/src/ptr/metadata.rs:84:1
 
 note: the error occurred when translating `core::ptr::metadata::Thin`, which is (transitively) used at the following location(s):
   --> src/main.rs:16:27
@@ -15,7 +15,7 @@ note: the error occurred when translating `core::ptr::metadata::Thin`, which is 
    |             ----------------------------------
    |
 error: Item `core::ptr::metadata::Thin` caused errors; ignoring.
- --> /rustc/library/core/src/ptr/metadata.rs:81:1
+ --> /rustc/library/core/src/ptr/metadata.rs:84:1
 
 ERROR Charon failed to translate this code (2 errors)
 error: could not compile `test-cargo` (bin "test-cargo")

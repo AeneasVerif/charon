@@ -4,8 +4,9 @@ use crate::CharonFailure;
 use charon_lib::options::CliOpts;
 use charon_lib::transform::TransformCtx;
 use rustc_driver::{Callbacks, Compilation};
+use rustc_interface::interface::Compiler;
 use rustc_interface::Config;
-use rustc_interface::{interface::Compiler, Queries};
+use rustc_middle::ty::TyCtxt;
 use rustc_middle::util::Providers;
 use rustc_session::config::{OutputType, OutputTypes, Polonius};
 use std::ops::Deref;
@@ -17,10 +18,8 @@ fn run_compiler_with_callbacks(
     args: Vec<String>,
     callbacks: &mut (dyn Callbacks + Send),
 ) -> Result<(), CharonFailure> {
-    rustc_driver::catch_fatal_errors(|| rustc_driver::RunCompiler::new(&args, callbacks).run())
-        .map_err(|_| CharonFailure::RustcError)?
-        .map_err(|_| CharonFailure::RustcError)?;
-    Ok(())
+    rustc_driver::catch_fatal_errors(|| rustc_driver::run_compiler(&args, callbacks))
+        .map_err(|_| CharonFailure::RustcError)
 }
 
 /// Tweak options to get usable MIR even for foreign crates.
@@ -170,26 +169,17 @@ impl<'a> Callbacks for CharonCallbacks<'a> {
     /// "built" MIR (which results from the conversion to HIR to MIR) to become unaccessible.
     /// Because we require built MIR at the moment, we hook ourselves before MIR-based analysis
     /// passes.
-    fn after_expansion<'tcx>(
-        &mut self,
-        compiler: &Compiler,
-        queries: &'tcx Queries<'tcx>,
-    ) -> Compilation {
+    fn after_expansion<'tcx>(&mut self, compiler: &Compiler, tcx: TyCtxt<'tcx>) -> Compilation {
         // Set up our own `DefId` debug routine.
         rustc_hir::def_id::DEF_ID_DEBUG
             .swap(&(def_id_debug as fn(_, &mut fmt::Formatter<'_>) -> _));
 
-        let transform_ctx = queries.global_ctxt().unwrap().get_mut().enter(|tcx| {
-            translate_crate_to_ullbc::translate(&self.options, tcx, compiler.sess.sysroot.clone())
-        });
+        let transform_ctx =
+            translate_crate_to_ullbc::translate(&self.options, tcx, compiler.sess.sysroot.clone());
         self.transform_ctx = Some(transform_ctx);
         Compilation::Continue
     }
-    fn after_analysis<'tcx>(
-        &mut self,
-        _: &rustc_interface::interface::Compiler,
-        _: &'tcx Queries<'tcx>,
-    ) -> Compilation {
+    fn after_analysis<'tcx>(&mut self, _: &Compiler, _: TyCtxt<'tcx>) -> Compilation {
         // Don't continue to codegen etc.
         Compilation::Stop
     }

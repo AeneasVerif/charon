@@ -18,16 +18,17 @@ where
 {
     let @0: bool; // return
     let self@1: &'_ (core::option::Option<T>[@TraitClause0]); // arg #1
+    let @2: isize; // anonymous local
 
     match *(self@1) {
-        1 => {
-        },
         0 => {
-            @0 := const (false)
-            return
+            @2 := const (0 : isize)
+        },
+        1 => {
+            @2 := const (1 : isize)
         },
     }
-    @0 := const (true)
+    @0 := copy (@2) == const (1 : isize)
     return
 }
 

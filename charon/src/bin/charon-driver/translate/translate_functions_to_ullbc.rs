@@ -465,15 +465,12 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
                 let borrow_kind = translate_borrow_kind(*borrow_kind);
                 Ok(Rvalue::Ref(place, borrow_kind))
             }
-            hax::Rvalue::ThreadLocalRef(_) => {
-                raise_error!(
-                    self,
-                    span,
-                    "charon does not support thread local references"
-                );
-            }
             hax::Rvalue::RawPtr(mtbl, place) => {
-                let mtbl = if *mtbl { RefKind::Mut } else { RefKind::Shared };
+                let mtbl = match mtbl {
+                    hax::RawPtrKind::Mut => RefKind::Mut,
+                    hax::RawPtrKind::Const => RefKind::Shared,
+                    hax::RawPtrKind::FakeForPtrMetadata => RefKind::Shared,
+                };
                 let place = self.translate_place(span, place)?;
                 Ok(Rvalue::RawPtr(place, mtbl))
             }
@@ -593,6 +590,9 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
                             .collect(),
                     ),
                     hax::NullOp::UbChecks => NullOp::UbChecks,
+                    hax::NullOp::ContractChecks => {
+                        raise_error!(self, span, "charon does not support contracts");
+                    }
                 };
                 Ok(Rvalue::NullaryOp(op, ty))
             }
@@ -600,9 +600,7 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
                 let unop = match unop {
                     hax::UnOp::Not => UnOp::Not,
                     hax::UnOp::Neg => UnOp::Neg,
-                    hax::UnOp::PtrMetadata => {
-                        raise_error!(self, span, "Unsupported operation: PtrMetadata")
-                    }
+                    hax::UnOp::PtrMetadata => UnOp::PtrMetadata,
                 };
                 Ok(Rvalue::UnaryOp(
                     unop,
@@ -742,6 +740,20 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
                 let op = self.translate_operand(span, op)?;
                 let ty = self.translate_ty(span, ty)?;
                 Ok(Rvalue::ShallowInitBox(op, ty))
+            }
+            hax::Rvalue::ThreadLocalRef(_) => {
+                raise_error!(
+                    self,
+                    span,
+                    "charon does not support thread local references"
+                );
+            }
+            hax::Rvalue::WrapUnsafeBinder { .. } => {
+                raise_error!(
+                    self,
+                    span,
+                    "charon does not support unsafe lifetime binders"
+                );
             }
         }
     }
@@ -1429,7 +1441,7 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
                     output: output_ty.clone(),
                     c_variadic: false,
                     safety: hax::Safety::Safe,
-                    abi: hax::Abi::Rust,
+                    abi: hax::ExternAbi::Rust,
                 };
                 &hax::Binder {
                     value: sig,
@@ -1444,7 +1456,7 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
                     output: ty.clone(),
                     c_variadic: false,
                     safety: hax::Safety::Safe,
-                    abi: hax::Abi::Rust,
+                    abi: hax::ExternAbi::Rust,
                 };
                 &hax::Binder {
                     value: sig,

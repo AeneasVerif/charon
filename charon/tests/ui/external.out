@@ -71,31 +71,31 @@ impl core::marker::{impl core::marker::Copy for u32}#40 : core::marker::Copy<u32
     parent_clause0 = core::clone::impls::{impl core::clone::Clone for u32}#8
 }
 
-impl core::num::nonzero::{impl core::num::nonzero::private::Sealed for u32}#19 : core::num::nonzero::private::Sealed<u32>
+impl core::num::nonzero::{impl core::num::nonzero::private::Sealed for u32}#20 : core::num::nonzero::private::Sealed<u32>
 
-pub opaque type core::num::nonzero::private::NonZeroU32Inner
+pub opaque type core::num::niche_types::NonZeroU32Inner
 
-pub fn core::num::nonzero::private::{impl core::clone::Clone for core::num::nonzero::private::NonZeroU32Inner}#11::clone<'_0>(@1: &'_0 (core::num::nonzero::private::NonZeroU32Inner)) -> core::num::nonzero::private::NonZeroU32Inner
+pub fn core::num::niche_types::{impl core::clone::Clone for core::num::niche_types::NonZeroU32Inner}#92::clone<'_0>(@1: &'_0 (core::num::niche_types::NonZeroU32Inner)) -> core::num::niche_types::NonZeroU32Inner
 
-impl core::num::nonzero::private::{impl core::clone::Clone for core::num::nonzero::private::NonZeroU32Inner}#11 : core::clone::Clone<core::num::nonzero::private::NonZeroU32Inner>
+impl core::num::niche_types::{impl core::clone::Clone for core::num::niche_types::NonZeroU32Inner}#92 : core::clone::Clone<core::num::niche_types::NonZeroU32Inner>
 {
-    parent_clause0 = core::marker::Sized<core::num::nonzero::private::NonZeroU32Inner>
-    fn clone<'_0> = core::num::nonzero::private::{impl core::clone::Clone for core::num::nonzero::private::NonZeroU32Inner}#11::clone<'_0_0>
+    parent_clause0 = core::marker::Sized<core::num::niche_types::NonZeroU32Inner>
+    fn clone<'_0> = core::num::niche_types::{impl core::clone::Clone for core::num::niche_types::NonZeroU32Inner}#92::clone<'_0_0>
 }
 
-impl core::num::nonzero::private::{impl core::marker::Copy for core::num::nonzero::private::NonZeroU32Inner}#12 : core::marker::Copy<core::num::nonzero::private::NonZeroU32Inner>
+impl core::num::niche_types::{impl core::marker::Copy for core::num::niche_types::NonZeroU32Inner}#93 : core::marker::Copy<core::num::niche_types::NonZeroU32Inner>
 {
-    parent_clause0 = core::num::nonzero::private::{impl core::clone::Clone for core::num::nonzero::private::NonZeroU32Inner}#11
+    parent_clause0 = core::num::niche_types::{impl core::clone::Clone for core::num::niche_types::NonZeroU32Inner}#92
 }
 
-impl core::num::nonzero::{impl core::num::nonzero::ZeroablePrimitive for u32}#20 : core::num::nonzero::ZeroablePrimitive<u32>
+impl core::num::nonzero::{impl core::num::nonzero::ZeroablePrimitive for u32}#21 : core::num::nonzero::ZeroablePrimitive<u32>
 {
     parent_clause0 = core::marker::Sized<u32>
     parent_clause1 = core::marker::{impl core::marker::Copy for u32}#40
-    parent_clause2 = core::num::nonzero::{impl core::num::nonzero::private::Sealed for u32}#19
-    parent_clause3 = core::marker::Sized<core::num::nonzero::private::NonZeroU32Inner>
-    parent_clause4 = core::num::nonzero::private::{impl core::marker::Copy for core::num::nonzero::private::NonZeroU32Inner}#12
-    type NonZeroInner = core::num::nonzero::private::NonZeroU32Inner
+    parent_clause2 = core::num::nonzero::{impl core::num::nonzero::private::Sealed for u32}#20
+    parent_clause3 = core::marker::Sized<core::num::niche_types::NonZeroU32Inner>
+    parent_clause4 = core::num::niche_types::{impl core::marker::Copy for core::num::niche_types::NonZeroU32Inner}#93
+    type NonZeroInner = core::num::niche_types::NonZeroU32Inner
 }
 
 #[lang_item("Option")]
@@ -107,7 +107,7 @@ pub enum core::option::Option<T>
 |  Some(T)
 
 
-pub fn core::num::nonzero::{core::num::nonzero::NonZero<T>[@TraitClause0, @TraitClause1]}#14::new<T>(@1: T) -> core::option::Option<core::num::nonzero::NonZero<T>[@TraitClause0, @TraitClause1]>[core::marker::Sized<core::num::nonzero::NonZero<T>[@TraitClause0, @TraitClause1]>]
+pub fn core::num::nonzero::{core::num::nonzero::NonZero<T>[@TraitClause0, @TraitClause1]}#15::new<T>(@1: T) -> core::option::Option<core::num::nonzero::NonZero<T>[@TraitClause0, @TraitClause1]>[core::marker::Sized<core::num::nonzero::NonZero<T>[@TraitClause0, @TraitClause1]>]
 where
     [@TraitClause0]: core::marker::Sized<T>,
     [@TraitClause1]: core::num::nonzero::ZeroablePrimitive<T>,
@@ -117,17 +117,17 @@ pub fn core::option::{core::option::Option<T>[@TraitClause0]}::unwrap<T>(@1: cor
 where
     [@TraitClause0]: core::marker::Sized<T>,
 
-pub fn test_crate::test_new_non_zero_u32(@1: u32) -> core::num::nonzero::NonZero<u32>[core::marker::Sized<u32>, core::num::nonzero::{impl core::num::nonzero::ZeroablePrimitive for u32}#20]
+pub fn test_crate::test_new_non_zero_u32(@1: u32) -> core::num::nonzero::NonZero<u32>[core::marker::Sized<u32>, core::num::nonzero::{impl core::num::nonzero::ZeroablePrimitive for u32}#21]
 {
-    let @0: core::num::nonzero::NonZero<u32>[core::marker::Sized<u32>, core::num::nonzero::{impl core::num::nonzero::ZeroablePrimitive for u32}#20]; // return
+    let @0: core::num::nonzero::NonZero<u32>[core::marker::Sized<u32>, core::num::nonzero::{impl core::num::nonzero::ZeroablePrimitive for u32}#21]; // return
     let x@1: u32; // arg #1
-    let @2: core::option::Option<core::num::nonzero::NonZero<u32>[core::marker::Sized<u32>, core::num::nonzero::{impl core::num::nonzero::ZeroablePrimitive for u32}#20]>[core::marker::Sized<core::num::nonzero::NonZero<u32>[core::marker::Sized<u32>, core::num::nonzero::{impl core::num::nonzero::ZeroablePrimitive for u32}#20]>]; // anonymous local
+    let @2: core::option::Option<core::num::nonzero::NonZero<u32>[core::marker::Sized<u32>, core::num::nonzero::{impl core::num::nonzero::ZeroablePrimitive for u32}#21]>[core::marker::Sized<core::num::nonzero::NonZero<u32>[core::marker::Sized<u32>, core::num::nonzero::{impl core::num::nonzero::ZeroablePrimitive for u32}#21]>]; // anonymous local
     let @3: u32; // anonymous local
 
     @3 := copy (x@1)
-    @2 := core::num::nonzero::{core::num::nonzero::NonZero<T>[@TraitClause0, @TraitClause1]}#14::new<u32>[core::marker::Sized<u32>, core::num::nonzero::{impl core::num::nonzero::ZeroablePrimitive for u32}#20](move (@3))
+    @2 := core::num::nonzero::{core::num::nonzero::NonZero<T>[@TraitClause0, @TraitClause1]}#15::new<u32>[core::marker::Sized<u32>, core::num::nonzero::{impl core::num::nonzero::ZeroablePrimitive for u32}#21](move (@3))
     drop @3
-    @0 := core::option::{core::option::Option<T>[@TraitClause0]}::unwrap<core::num::nonzero::NonZero<u32>[core::marker::Sized<u32>, core::num::nonzero::{impl core::num::nonzero::ZeroablePrimitive for u32}#20]>[core::marker::Sized<core::num::nonzero::NonZero<u32>[core::marker::Sized<u32>, core::num::nonzero::{impl core::num::nonzero::ZeroablePrimitive for u32}#20]>](move (@2))
+    @0 := core::option::{core::option::Option<T>[@TraitClause0]}::unwrap<core::num::nonzero::NonZero<u32>[core::marker::Sized<u32>, core::num::nonzero::{impl core::num::nonzero::ZeroablePrimitive for u32}#21]>[core::marker::Sized<core::num::nonzero::NonZero<u32>[core::marker::Sized<u32>, core::num::nonzero::{impl core::num::nonzero::ZeroablePrimitive for u32}#21]>](move (@2))
     drop @2
     return
 }
