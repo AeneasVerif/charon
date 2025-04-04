@@ -118,7 +118,7 @@ impl Block {
 
     /// Apply a function to all the statements, in a top-down manner.
     pub fn visit_statements<F: FnMut(&mut Statement)>(&mut self, f: F) {
-        BlockVisitor::new(|_| {}, f).visit(self);
+        let _ = BlockVisitor::new(|_| {}, f).visit(self);
     }
 
     /// Apply a transformer to all the statements, in a bottom-up manner.
@@ -169,7 +169,7 @@ impl Block {
 
     /// Visit `self` and its sub-blocks in a bottom-up (post-order) traversal.
     pub fn visit_blocks_bwd<F: FnMut(&mut Block)>(&mut self, f: F) {
-        BlockVisitor::new(f, |_| {}).visit(self);
+        let _ = BlockVisitor::new(f, |_| {}).visit(self);
     }
 }
 

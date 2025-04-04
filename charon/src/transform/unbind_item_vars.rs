@@ -44,7 +44,7 @@ impl TransformPass for Check {
     fn transform_ctx(&self, ctx: &mut TransformCtx) {
         let mut visitor = UnbindVarVisitor::default();
         for mut item in ctx.translated.all_items_mut() {
-            item.drive_mut(&mut visitor);
+            let _ = item.drive_mut(&mut visitor);
         }
     }
 }

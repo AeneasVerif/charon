@@ -51,7 +51,7 @@ fn transform_function(_ctx: &TransformCtx, def: &mut FunDecl) -> Result<(), Erro
             regions: &mut generics.regions,
             depth: 0,
         };
-        inputs[0].drive_mut(&mut visitor);
+        let _ = visitor.visit(&mut inputs[0]);
 
         // Update the body.
         // We change the type of the local variable of index 1, which is a reference to the closure

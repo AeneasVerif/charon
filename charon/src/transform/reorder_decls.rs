@@ -363,13 +363,13 @@ fn compute_declarations_graph<'tcx>(ctx: &'tcx TransformCtx) -> Deps {
         graph.set_current_id(ctx, id);
         match item {
             AnyTransItem::Type(..) | AnyTransItem::TraitImpl(..) | AnyTransItem::Global(..) => {
-                item.drive(&mut graph);
+                let _ = item.drive(&mut graph);
             }
             AnyTransItem::Fun(d) => {
                 // Skip `d.is_global_initializer` to avoid incorrect mutual dependencies.
                 // TODO: add `is_global_initializer` to `ItemKind`.
-                d.signature.drive(&mut graph);
-                d.body.drive(&mut graph);
+                let _ = d.signature.drive(&mut graph);
+                let _ = d.body.drive(&mut graph);
                 // FIXME(#514): A method declaration depends on its declaring trait because of its
                 // `Self` clause. While the clause is implicit, we make sure to record the
                 // dependency manually.
@@ -391,27 +391,27 @@ fn compute_declarations_graph<'tcx>(ctx: &'tcx TransformCtx) -> Deps {
                     methods,
                 } = d;
                 // Visit the traits referenced in the generics
-                generics.drive(&mut graph);
+                let _ = generics.drive(&mut graph);
 
                 // Visit the parent clauses
-                parent_clauses.drive(&mut graph);
+                let _ = parent_clauses.drive(&mut graph);
                 assert!(type_clauses.is_empty());
 
                 // Visit the items
-                consts.drive(&mut graph);
-                types.drive(&mut graph);
-                type_defaults.drive(&mut graph);
+                let _ = consts.drive(&mut graph);
+                let _ = types.drive(&mut graph);
+                let _ = type_defaults.drive(&mut graph);
 
                 // We consider that a trait decl only contains the function/constant signatures.
                 // Therefore we don't explore the default const/method ids.
                 for (_name, gref) in const_defaults {
-                    gref.generics.drive(&mut graph);
+                    let _ = gref.generics.drive(&mut graph);
                 }
                 for (_, bound_fn) in methods {
                     let id = bound_fn.skip_binder.id;
-                    bound_fn.params.drive(&mut graph);
+                    let _ = bound_fn.params.drive(&mut graph);
                     if let Some(decl) = ctx.translated.fun_decls.get(id) {
-                        decl.signature.drive(&mut graph);
+                        let _ = decl.signature.drive(&mut graph);
                     }
                 }
             }
