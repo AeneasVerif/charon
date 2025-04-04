@@ -6,7 +6,6 @@
 , rustToolchain
 , stdenv
 , zlib
-,
 }:
 
 let
@@ -48,6 +47,7 @@ craneLib.buildPackage (
       ''
         wrapProgram $out/bin/charon \
           --set CHARON_TOOLCHAIN_IS_IN_PATH 1 \
+          --prefix LD_LIBRARY_PATH : "${lib.makeLibraryPath [ rustToolchain ]}" \
           --prefix PATH : "${lib.makeBinPath [ rustToolchain ]}"
       ''
       + (lib.optionalString stdenv.isDarwin ''

@@ -11,7 +11,7 @@
     nixpkgs-ocaml.follows = "nixpkgs";
     rust-overlay = {
       # We pin a specific commit because we require a relatively recent version
-      # and flake dependents don't look at flake.lock.
+      # and flake dependents don't look at our flake.lock.
       url = "github:oxalica/rust-overlay/275c824ed9e90e7fd4f96d187bde3670062e721f";
       inputs.nixpkgs.follows = "nixpkgs";
     };
