@@ -28,7 +28,32 @@ and region = RVar of var option | RStatic
 and primitive_adt = TTuple | TArray | TSlice
 and mutability = Mut | Not
 and pattern = pattern_elem list
-and pattern_elem = PIdent of string * generic_args | PImpl of expr
+
+and pattern_elem =
+  | PIdent of string * int * generic_args
+      (** The integer is a disambiguator
+
+          Generally speaking, we need to preserve the disambiguator if it is non zero.
+
+          For instance, it is possible to define const values with the same
+          names in different branches of a match. In this case, we have to use
+          the disambiguator to generate unique names for each const:
+          {[
+            match ... {
+              Variant1 => {
+                const N_ROWS:usize = 4;
+                ...
+              }
+              Variant2 => {
+                const N_ROWS:usize = 4;
+                ...
+              }
+            }
+          ]}
+
+          In order to not use disambiguators everywhere in patterns, we
+          allow omitting the disambiguator when it is equal to 0. *)
+  | PImpl of expr
 
 (** An expression can be a type or a trait ref.
 
