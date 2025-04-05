@@ -12,7 +12,7 @@ open Ast
 %token LEFT_CURLY RIGHT_CURLY
 %token LEFT_SQUARE RIGHT_SQUARE
 %token LEFT_ANGLE RIGHT_ANGLE
-%token SEMICOL AMPERSAND MUT CONST COMMA EOF FN ARROW STAR
+%token SEMICOL AMPERSAND MUT CONST COMMA EOF FN ARROW STAR HASH
 
 /* Types */
 
@@ -39,8 +39,10 @@ pattern:
 
 pattern_elem:
   // (Instantiated) identifier
-  | id=IDENT { PIdent (id, []) }
-  | id=IDENT; LEFT_ANGLE; g=generic_args; RIGHT_ANGLE { PIdent (id, g) }
+  | id=IDENT { PIdent (id, 0, []) }
+  | id=IDENT; HASH; disamb=INT { PIdent (id, Z.to_int disamb, []) }
+  | id=IDENT; LEFT_ANGLE; g=generic_args; RIGHT_ANGLE { PIdent (id, 0, g) }
+  | id=IDENT; HASH; disamb=INT; LEFT_ANGLE; g=generic_args; RIGHT_ANGLE { PIdent (id, Z.to_int disamb, g) }
   // Impl path elem
   | LEFT_CURLY; ty=expr; RIGHT_CURLY { PImpl ty }
 
