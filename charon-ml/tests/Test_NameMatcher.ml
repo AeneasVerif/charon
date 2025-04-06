@@ -130,9 +130,12 @@ module PatternTest = struct
             match statement.content with
             | Call call -> [ call ]
             | Sequence (st1, st2) -> list_calls st1 @ list_calls st2
-            | Switch _ | Loop _ ->
+            | Switch (If (_, st1, st2)) -> list_calls st1 @ list_calls st2
+            | Switch _ ->
                 failwith
-                  "Switches and loops are unsupported in name matcher tests"
+                  "Only `if then else` are supported in name matcher tests, \
+                   `switch` and `match` statements are not"
+            | Loop _ -> failwith "Loops are unsupported in name matcher tests"
             | _ -> []
           in
           let calls = list_calls (Option.get decl.body).body in
