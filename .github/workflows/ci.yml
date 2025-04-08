@@ -53,8 +53,8 @@ jobs:
         with:
           repository: Inria-Prosecco/circus-green
       - run: |
-          nix flake lock --refresh --update-input eurydice
-          nix flake lock --override-input charon github:aeneasverif/charon/${{ github.sha }}
+          nix flake update charon --override-input charon github:aeneasverif/charon/${{ github.sha }}
+          nix flake update --refresh eurydice
           ./check.sh eurydice
 
   kyber:
@@ -65,6 +65,6 @@ jobs:
         with:
           repository: Inria-Prosecco/circus-green
       - run: |
-          nix flake lock --refresh --update-input eurydice
-          nix flake lock --override-input charon github:aeneasverif/charon/${{ github.sha }}
+          nix flake update charon --override-input charon github:aeneasverif/charon/${{ github.sha }}
+          nix flake update --refresh eurydice
           ./check.sh ml-kem-small
