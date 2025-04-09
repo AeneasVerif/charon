@@ -1,4 +1,4 @@
-use anyhow::Result;
+use anyhow::{Context, Result};
 use serde::Deserialize;
 use std::{env, ffi::OsStr, path::PathBuf, process::Command};
 
@@ -105,4 +105,13 @@ pub fn driver_cmd() -> Result<Command> {
     // The driver expects the first arg to be "rustc" because that's how cargo calls it.
     cmd.arg("rustc");
     Ok(cmd)
+}
+
+/// Get the path to the sysroot, where the `cargo` and `rustc` binaries can be found. Prefer using
+/// [`in_toolchain`] instead of this as much as possible.
+pub fn toolchain_path() -> Result<PathBuf> {
+    let output = in_toolchain("rustc")?.arg("--print=sysroot").output()?;
+    let stdout = String::from_utf8(output.stdout)
+        .with_context(|| format!("the output of `rustc --print=sysroot` is not UTF8 encoded"))?;
+    Ok(PathBuf::from(stdout.trim_end()))
 }
