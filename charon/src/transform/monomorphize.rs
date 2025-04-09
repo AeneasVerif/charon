@@ -91,6 +91,9 @@ impl UsageVisitor<'_> {
     fn found_use_fn(&mut self, id: &FunDeclId, gargs: &GenericArgs) {
         self.found_use(&AnyTransId::Fun(*id), gargs, OptionHint::None);
     }
+    fn found_use_global_decl_ref(&mut self, id: &GlobalDeclId, gargs: &GenericArgs) {
+        self.found_use(&AnyTransId::Global(*id), gargs, OptionHint::None);
+    }
     fn found_use_fn_hinted(
         &mut self,
         id: &FunDeclId,
@@ -148,6 +151,10 @@ impl VisitAst for UsageVisitor<'_> {
             FunIdOrTraitMethodRef::Fun(FunId::Builtin(..)) => {}
         }
     }
+
+    fn enter_global_decl_ref(&mut self, glob: &GlobalDeclRef) {
+        self.found_use_global_decl_ref(&glob.id, &glob.generics);
+    }
 }
 
 // Akin to UsageVisitor, but substitutes all uses of generics with the monomorphized versions
@@ -166,7 +173,7 @@ impl SubstVisitor<'_> {
             panic!("Substitution missing for {:?}", key);
         };
         *id = *subst_id;
-        *gargs = GenericArgs::empty(GenericsSource::Builtin);
+        // *gargs = GenericArgs::empty(GenericsSource::Builtin);
     }
     fn subst_use_fun(&mut self, id: &mut FunDeclId, gargs: &mut GenericArgs) {
         trace!("Mono: Subst use: {:?} / {:?}", id, gargs);
@@ -176,7 +183,17 @@ impl SubstVisitor<'_> {
             panic!("Substitution missing for {:?}", key);
         };
         *id = *subst_id;
-        *gargs = GenericArgs::empty(GenericsSource::Builtin);
+        // *gargs = GenericArgs::empty(GenericsSource::Builtin);
+    }
+    fn subst_use_glob(&mut self, id: &mut GlobalDeclId, gargs: &mut GenericArgs) {
+        trace!("Mono: Subst use: {:?} / {:?}", id, gargs);
+        let key = (AnyTransId::Global(*id), gargs.clone());
+        let subst = self.data.items.get(&key);
+        let Some(OptionHint::Some(AnyTransId::Global(subst_id))) = subst else {
+            panic!("Substitution missing for {:?}", key);
+        };
+        *id = *subst_id;
+        // *gargs = GenericArgs::empty(GenericsSource::Builtin);
     }
 }
 
@@ -244,6 +261,10 @@ impl VisitAstMut for SubstVisitor<'_> {
             }
             _ => {}
         }
+    }
+
+    fn enter_global_decl_ref(&mut self, glob: &mut GlobalDeclRef) {
+        self.subst_use_glob(&mut glob.id, &mut glob.generics);
     }
 }
 
@@ -445,14 +466,34 @@ impl UllbcPass for Transform {
                         AnyTransId::Type(typ_id) => {
                             let typ = ctx.translated.type_decls.get(*typ_id).unwrap();
                             let mut typ_sub = typ.clone().substitute(gargs);
-                            // typ_sub.generics = GenericParams::empty();
-                            // typ_sub.item_meta.name.name.push(path_for_generics(gargs));
 
                             let typ_id_sub = ctx.translated.type_decls.reserve_slot();
                             typ_sub.def_id = typ_id_sub;
                             ctx.translated.type_decls.set_slot(typ_id_sub, typ_sub);
 
                             AnyTransId::Type(typ_id_sub)
+                        }
+                        AnyTransId::Global(g_id) => {
+                            let glob = ctx.translated.global_decls.get(*g_id).unwrap();
+                            let mut glob_sub = glob.clone().substitute(gargs);
+
+                            let init = ctx.translated.fun_decls.get(glob.init).unwrap();
+                            let mut init_sub = init.clone().substitute(gargs);
+
+                            let init_id_sub = ctx.translated.fun_decls.reserve_slot();
+                            init_sub.def_id = init_id_sub;
+                            ctx.translated.fun_decls.set_slot(init_id_sub, init_sub);
+
+                            let g_id_sub = ctx.translated.global_decls.reserve_slot();
+                            glob_sub.def_id = g_id_sub;
+                            glob_sub.init = init_id_sub;
+                            ctx.translated
+                                .global_decls
+                                .set_slot(g_id_sub.clone(), glob_sub);
+
+                            data.worklist.push(AnyTransId::Fun(init_id_sub));
+
+                            AnyTransId::Global(g_id_sub)
                         }
                         _ => todo!("Unhandled monomorphization target ID {:?}", id),
                     }
@@ -492,6 +533,9 @@ impl UllbcPass for Transform {
         ctx.translated
             .type_decls
             .retain(|t| data.visited.contains(&AnyTransId::Type(t.def_id)));
+        ctx.translated
+            .global_decls
+            .retain(|g| data.visited.contains(&AnyTransId::Global(g.def_id)));
         // ctx.translated.trait_impls.retain(|t| t.generics.is_empty());
 
         // TODO: Currently we don't update all TraitImpls/TraitDecls with the monomorphized versions
