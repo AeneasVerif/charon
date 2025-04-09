@@ -1,30 +1,35 @@
 # Final ULLBC before serialization:
 
-enum core::option::Option = // #1
+#[lang_item("Option")]
+pub enum core::option::Option<T>
+  where
+      [@TraitClause0]: core::marker::Sized<u8>,
+ =
 |  None()
 |  Some(u8)
 
 
-trait core::marker::Sized<Self>
+#[lang_item("sized")]
+pub trait core::marker::Sized<Self>
 
 fn test_crate::init_option()
 {
     let @0: (); // return
-    let a@1: Array<@Adt1, 6 : usize>; // local
-    let @2: @Adt1; // anonymous local
-    let b@3: @Adt1; // local
+    let a@1: Array<@Adt1<u8>[core::marker::Sized<u8>], 6 : usize>; // local
+    let @2: @Adt1<u8>[core::marker::Sized<u8>]; // anonymous local
+    let b@3: @Adt1<u8>[core::marker::Sized<u8>]; // local
     let @4: usize; // anonymous local
-    let @5: &'_ (Array<@Adt1, 6 : usize>); // anonymous local
-    let @6: &'_ (@Adt1); // anonymous local
+    let @5: &'_ (Array<@Adt1<u8>[core::marker::Sized<u8>], 6 : usize>); // anonymous local
+    let @6: &'_ (@Adt1<u8>[core::marker::Sized<u8>]); // anonymous local
 
     bb0: {
         @2 := core::option::Option::Some { 0: const (4 : u8) };
-        a@1 := @ArrayRepeat<'_, @Adt1, 6 : usize>(move (@2));
+        a@1 := @ArrayRepeat<'_, @Adt1<u8>[core::marker::Sized<u8>], 6 : usize>(move (@2));
         @storage_dead(@2);
         @fake_read(a@1);
         @4 := const (0 : usize);
         @5 := &a@1;
-        @6 := @ArrayIndexShared<'_, @Adt1, 6 : usize>(move (@5), copy (@4));
+        @6 := @ArrayIndexShared<'_, @Adt1<u8>[core::marker::Sized<u8>], 6 : usize>(move (@5), copy (@4));
         b@3 := copy (*(@6));
         @fake_read(b@3);
         @storage_dead(@4);

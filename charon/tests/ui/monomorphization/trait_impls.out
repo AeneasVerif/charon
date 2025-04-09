@@ -1,6 +1,9 @@
 # Final ULLBC before serialization:
 
-fn test_crate::do_test(@1: bool, @2: bool)
+fn test_crate::do_test<T>(@1: bool, @2: bool)
+where
+    [@TraitClause0]: core::marker::Sized<bool>,
+    [@TraitClause1]: core::cmp::Eq<bool>,
 {
     let @0: (); // return
     let init@1: bool; // arg #1
@@ -13,7 +16,7 @@ fn test_crate::do_test(@1: bool, @2: bool)
     bb0: {
         @5 := &expected@2;
         @6 := &init@1;
-        @4 := core::cmp::impls::{impl core::cmp::Eq for bool}#38::parent_clause0::eq(move (@5), move (@6));
+        @4 := core::cmp::impls::{impl core::cmp::Eq for bool}#38::parent_clause0::eq<'_, '_, bool, bool>(move (@5), move (@6));
         if move (@4) -> bb1 else -> bb2;
     }
 
@@ -36,37 +39,22 @@ fn test_crate::do_test(@1: bool, @2: bool)
     }
 }
 
-fn test_crate::main()
-{
-    let @0: (); // return
-    let @1: (); // anonymous local
+#[lang_item("sized")]
+pub trait core::marker::Sized<Self>
 
-    bb0: {
-        @1 := @Fun8(const (true), const (true));
-        @storage_dead(@1);
-        @0 := ();
-        @0 := ();
-        return;
-    }
-}
-
-trait core::marker::Sized<Self>
-
-trait core::cmp::PartialEq<Self, Rhs>
+#[lang_item("eq")]
+pub trait core::cmp::PartialEq<Self, Rhs>
 {
     fn eq<'_0, '_1> = core::cmp::PartialEq::eq<'_0_0, '_0_1, Self, Rhs>
     fn ne<'_0, '_1> = core::cmp::PartialEq::ne<'_0_0, '_0_1, Self, Rhs>
 }
 
-trait core::cmp::Eq<Self>
+#[lang_item("Eq")]
+pub trait core::cmp::Eq<Self>
 {
     parent_clause0 : [@TraitClause0]: core::cmp::PartialEq<Self, Self>
     fn assert_receiver_is_total_eq<'_0> = core::cmp::Eq::assert_receiver_is_total_eq<'_0_0, Self>
 }
-
-fn core::cmp::impls::{impl core::cmp::PartialEq<bool> for bool}#19::eq<'_0, '_1>(@1: &'_0 (bool), @2: &'_1 (bool)) -> bool
-
-fn core::cmp::impls::{impl core::cmp::PartialEq<bool> for bool}#19::ne<'_0, '_1>(@1: &'_0 (bool), @2: &'_1 (bool)) -> bool
 
 impl core::cmp::impls::{impl core::cmp::PartialEq<bool> for bool}#19 : core::cmp::PartialEq<bool, bool>
 {
@@ -74,12 +62,24 @@ impl core::cmp::impls::{impl core::cmp::PartialEq<bool> for bool}#19 : core::cmp
     fn ne<'_0, '_1> = core::cmp::impls::{impl core::cmp::PartialEq<bool> for bool}#19::ne<'_0_0, '_0_1>
 }
 
-fn core::cmp::impls::{impl core::cmp::Eq for bool}#38::assert_receiver_is_total_eq<'_0>(@1: &'_0 (bool))
-
 impl core::cmp::impls::{impl core::cmp::Eq for bool}#38 : core::cmp::Eq<bool>
 {
     parent_clause0 = core::cmp::impls::{impl core::cmp::PartialEq<bool> for bool}#19
     fn assert_receiver_is_total_eq<'_0> = core::cmp::impls::{impl core::cmp::Eq for bool}#38::assert_receiver_is_total_eq<'_0_0>
+}
+
+fn test_crate::main()
+{
+    let @0: (); // return
+    let @1: (); // anonymous local
+
+    bb0: {
+        @1 := @Fun8<bool>[core::marker::Sized<bool>, core::cmp::impls::{impl core::cmp::Eq for bool}#38](const (true), const (true));
+        @storage_dead(@1);
+        @0 := ();
+        @0 := ();
+        return;
+    }
 }
 
 

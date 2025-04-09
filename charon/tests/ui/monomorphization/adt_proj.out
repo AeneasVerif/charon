@@ -1,14 +1,22 @@
 # Final ULLBC before serialization:
 
-enum core::result::Result = // #1
+#[lang_item("Result")]
+pub enum core::result::Result<T, E>
+  where
+      [@TraitClause0]: core::marker::Sized<u32>,
+      [@TraitClause1]: core::marker::Sized<u32>,
+ =
 |  Ok(u32)
 |  Err(u32)
 
 
+#[lang_item("sized")]
+pub trait core::marker::Sized<Self>
+
 fn test_crate::main()
 {
     let @0: (); // return
-    let res@1: @Adt1; // local
+    let res@1: @Adt1<u32, u32>[core::marker::Sized<u32>, core::marker::Sized<u32>]; // local
     let n@2: u32; // local
     let @3: isize; // anonymous local
 
@@ -34,8 +42,6 @@ fn test_crate::main()
         panic(core::panicking::panic_explicit);
     }
 }
-
-trait core::marker::Sized<Self>
 
 
 

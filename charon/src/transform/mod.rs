@@ -128,8 +128,6 @@ pub static ULLBC_PASSES: &[Pass] = &[
     // # Micro-pass: remove the drops of locals whose type is `Never` (`!`). This
     // is in preparation of the next transformation.
     UnstructuredBody(&remove_drop_never::Transform),
-    // Monomorphize the functions and types.
-    UnstructuredBody(&monomorphize::Transform),
 ];
 
 /// Body cleanup passes after control flow reconstruction.
@@ -148,6 +146,8 @@ pub static SHARED_FINALIZING_PASSES: &[Pass] = &[
     NonBody(&remove_unused_locals::Transform),
     // # Micro-pass: remove the useless `StatementKind::Nop`s.
     NonBody(&remove_nops::Transform),
+    // Monomorphize the functions and types.
+    NonBody(&monomorphize::Transform),
     // # Micro-pass: take all the comments found in the original body and assign them to
     // statements. This must be last after all the statement-affecting passes to avoid losing
     // comments.

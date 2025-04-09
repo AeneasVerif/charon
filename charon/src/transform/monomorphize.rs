@@ -6,7 +6,7 @@ use crate::transform::TransformCtx;
 use crate::ullbc_ast::*;
 use std::fmt::Debug;
 
-use super::ctx::UllbcPass;
+use super::ctx::TransformPass;
 
 enum OptionHint<T, H> {
     Some(T),
@@ -372,7 +372,7 @@ impl GenericArgs {
 // }
 
 pub struct Transform;
-impl UllbcPass for Transform {
+impl TransformPass for Transform {
     fn transform_ctx(&self, ctx: &mut TransformCtx) {
         // Check the option which instructs to ignore this pass
         if !ctx.options.monomorphize {
