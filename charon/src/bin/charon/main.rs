@@ -73,6 +73,7 @@ pub fn main() -> Result<()> {
             options.rustc_args.append(&mut subcmd_rustc.rustc);
             translate_without_cargo(options)?
         }
+        Some(Charon::ToolchainPath(_)) => print_toolchain_path(),
         // Legacy calling syntax.
         None => {
             let options = cli.opts;
@@ -185,6 +186,12 @@ fn ensure_rustup() {
             using `nix develop`.",
         )
     }
+}
+
+fn print_toolchain_path() -> ExitStatus {
+    let tc = toolchain::get_toolchain_channel();
+    println!("{}", tc);
+    ExitStatus::default()
 }
 
 fn handle_exit_status(exit_status: ExitStatus) -> Result<()> {
