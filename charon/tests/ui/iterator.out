@@ -3613,14 +3613,14 @@ where
 #[lang_item("next")]
 pub fn core::iter::traits::iterator::Iterator::next<'_0, Self>(@1: &'_0 mut (Self)) -> core::option::Option<Self::Item>[Self::parent_clause0]
 
-pub fn core::ops::arith::AddAssign::add_assign<'_0, Self, Rhs>(@1: &'_0 mut (Self), @2: Rhs)
-
 #[lang_item("add_assign")]
 pub trait core::ops::arith::AddAssign<Self, Rhs>
 {
     parent_clause0 : [@TraitClause0]: core::marker::Sized<Rhs>
     fn add_assign<'_0> = core::ops::arith::AddAssign::add_assign<'_0_0, Self, Rhs>
 }
+
+pub fn core::ops::arith::AddAssign::add_assign<'_0, Self, Rhs>(@1: &'_0 mut (Self), @2: Rhs)
 
 impl core::ops::arith::{impl core::ops::arith::AddAssign<&'_0 (i32)> for i32}#365<'_0> : core::ops::arith::AddAssign<i32, &'_0 (i32)>
 {

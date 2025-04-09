@@ -63,15 +63,68 @@ let ty_is_unit (ty : ty) : bool =
     -> true
   | _ -> false
 
-let ty_is_adt (ty : ty) : bool =
+let ty_as_opt_adt (ty : ty) : (type_id * generic_args) option =
   match ty with
-  | TAdt (_, _) -> true
-  | _ -> false
+  | TAdt (id, generics) -> Some (id, generics)
+  | _ -> None
+
+let ty_is_adt (ty : ty) : bool = Option.is_some (ty_as_opt_adt ty)
 
 let ty_as_adt (ty : ty) : type_id * generic_args =
+  match ty_as_opt_adt ty with
+  | Some (id, generics) -> (id, generics)
+  | None -> raise (Failure "Unreachable")
+
+let ty_as_builtin_adt_opt (ty : ty) : (builtin_ty * generic_args) option =
   match ty with
-  | TAdt (id, generics) -> (id, generics)
-  | _ -> raise (Failure "Unreachable")
+  | TAdt (TBuiltin id, generics) -> Some (id, generics)
+  | _ -> None
+
+let ty_is_builtin_adt (ty : ty) : bool =
+  Option.is_some (ty_as_builtin_adt_opt ty)
+
+let ty_as_builtin_adt (ty : ty) : builtin_ty * generic_args =
+  match ty_as_builtin_adt_opt ty with
+  | Some (id, generics) -> (id, generics)
+  | None -> raise (Failure "Unreachable")
+
+let ty_as_opt_array (ty : ty) : (ty * const_generic) option =
+  match ty_as_builtin_adt_opt ty with
+  | None -> None
+  | Some (id, generics) -> (
+      match (id, generics) with
+      | ( TArray,
+          {
+            types = [ ty ];
+            const_generics = [ n ];
+            regions = [];
+            trait_refs = [];
+          } ) -> Some (ty, n)
+      | _ -> None)
+
+let ty_is_array (ty : ty) : bool = Option.is_some (ty_as_opt_array ty)
+
+let ty_as_array (ty : ty) : ty * const_generic =
+  match ty_as_opt_array ty with
+  | Some (ty, n) -> (ty, n)
+  | None -> raise (Failure "Unreachable")
+
+let ty_as_opt_slice (ty : ty) : ty option =
+  match ty_as_builtin_adt_opt ty with
+  | None -> None
+  | Some (id, generics) -> (
+      match (id, generics) with
+      | ( TSlice,
+          { types = [ ty ]; const_generics = []; regions = []; trait_refs = [] }
+        ) -> Some ty
+      | _ -> None)
+
+let ty_is_slice (ty : ty) : bool = Option.is_some (ty_as_opt_slice ty)
+
+let ty_as_slice (ty : ty) : ty =
+  match ty_as_opt_slice ty with
+  | Some ty -> ty
+  | None -> raise (Failure "Unreachable")
 
 let ty_as_ref (ty : ty) : region * ty * ref_kind =
   match ty with
@@ -173,11 +226,18 @@ let mk_unit_ty : ty = TAdt (TTuple, empty_generic_args)
 (** The usize type *)
 let mk_usize_ty : ty = TLiteral (TInteger Usize)
 
-(** Deconstruct a type of the form [Box<T>] to retrieve the [T] inside *)
-let ty_get_box (box_ty : ty) : ty =
+let ty_as_opt_box (box_ty : ty) : ty option =
   match box_ty with
-  | TAdt (TBuiltin TBox, { types = [ boxed_ty ]; _ }) -> boxed_ty
-  | _ -> raise (Failure "Not a boxed type")
+  | TAdt (TBuiltin TBox, { types = [ boxed_ty ]; _ }) -> Some boxed_ty
+  | _ -> None
+
+let ty_is_box (box_ty : ty) : bool = Option.is_some (ty_as_opt_box box_ty)
+
+(** Deconstruct a type of the form [Box<T>] to retrieve the [T] inside *)
+let ty_as_box (box_ty : ty) : ty =
+  match ty_as_opt_box box_ty with
+  | Some ty -> ty
+  | None -> raise (Failure "Not a boxed type")
 
 (** Deconstruct a type of the form [&T] or [&mut T] to retrieve the [T] (and
     the borrow kind, etc.)

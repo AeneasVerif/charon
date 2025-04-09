@@ -7,7 +7,6 @@ use charon_lib::ullbc_ast as ast;
 use hax_frontend_exporter as hax;
 use indexmap::IndexMap;
 use itertools::Itertools;
-use rustc_hir::def_id::DefId;
 use std::mem;
 use std::sync::Arc;
 
@@ -37,15 +36,14 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
 }
 
 impl BodyTransCtx<'_, '_> {
-    #[tracing::instrument(skip(self, rust_id, item_meta))]
+    #[tracing::instrument(skip(self, item_meta))]
     pub fn translate_trait_decl(
         mut self,
         def_id: TraitDeclId,
-        rust_id: DefId,
         item_meta: ItemMeta,
         def: &hax::FullDef,
     ) -> Result<TraitDecl, Error> {
-        trace!("About to translate trait decl:\n{:?}", rust_id);
+        trace!("About to translate trait decl:\n{:?}", def.def_id);
         trace!("Trait decl id:\n{:?}", def_id);
 
         let span = item_meta.span;
@@ -80,7 +78,7 @@ impl BodyTransCtx<'_, '_> {
         let mut type_defaults = IndexMap::new();
         let mut methods = Vec::new();
         for (item_name, hax_item, hax_def) in &items {
-            let item_def_id = DefId::from(&hax_item.def_id);
+            let item_def_id = &hax_item.def_id;
             let item_span = self.def_span(item_def_id);
             match &hax_def.kind {
                 hax::FullDefKind::AssocFn { .. } => {
@@ -188,15 +186,14 @@ impl BodyTransCtx<'_, '_> {
         })
     }
 
-    #[tracing::instrument(skip(self, rust_id, item_meta))]
+    #[tracing::instrument(skip(self, item_meta))]
     pub fn translate_trait_impl(
         mut self,
         def_id: TraitImplId,
-        rust_id: DefId,
         item_meta: ItemMeta,
         def: &hax::FullDef,
     ) -> Result<TraitImpl, Error> {
-        trace!("About to translate trait impl:\n{:?}", rust_id);
+        trace!("About to translate trait impl:\n{:?}", def.def_id);
         trace!("Trait impl id:\n{:?}", def_id);
 
         let span = item_meta.span;
@@ -239,7 +236,11 @@ impl BodyTransCtx<'_, '_> {
                 .map(|c| c.fmt_with_ctx(&ctx))
                 .collect::<Vec<String>>()
                 .join("\n");
-            trace!("Trait impl: {:?}\n- parent_trait_refs:\n{}", rust_id, refs);
+            trace!(
+                "Trait impl: {:?}\n- parent_trait_refs:\n{}",
+                def.def_id,
+                refs
+            );
         }
 
         // Explore the associated items

@@ -53,7 +53,7 @@ let
     buildInputs = [
       ocamlPackages.dune_3
       ocamlPackages.ocaml
-      ocamlPackages.ocamlformat
+      ocamlPackages.ocamlformat_0_26_2
     ];
     buildPhase = ''
       if ! dune build @fmt; then

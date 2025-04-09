@@ -36,17 +36,14 @@ fn test_cargo_toml::main()
     let @0: (); // return
     let @1: bool; // anonymous local
     let @2: &'_ (core::option::Option<bool>[core::marker::Sized<bool>]); // anonymous local
-    let @3: &'_ (core::option::Option<bool>[core::marker::Sized<bool>]); // anonymous local
-    let @4: core::option::Option<bool>[core::marker::Sized<bool>]; // anonymous local
-    let @5: &'_ (core::option::Option<bool>[core::marker::Sized<bool>]); // anonymous local
+    let @3: core::option::Option<bool>[core::marker::Sized<bool>]; // anonymous local
 
-    @4 := core::option::Option::Some { 0: const (false) }
-    @5 := &@4
-    @3 := move (@5)
-    @2 := &*(@3)
+    @3 := core::option::Option::Some { 0: const (false) }
+    @2 := &@3
     @1 := core::option::{core::option::Option<T>[@TraitClause0]}::is_some<'_, bool>[core::marker::Sized<bool>](move (@2))
     drop @2
     @fake_read(@1)
+    drop @3
     drop @1
     @0 := ()
     @0 := ()

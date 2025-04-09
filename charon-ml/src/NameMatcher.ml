@@ -99,6 +99,13 @@ let opt_var_to_string (c : print_config) (v : var option) : string =
       | Some (VarName n) -> n
       | Some (VarIndex id) -> "P" ^ string_of_int id)
 
+let disambiguator_to_string (c : print_config) (d : int) : string =
+  if d = 0 then ""
+  else
+    match c.tgt with
+    | TkPattern | TkPretty -> "#" ^ string_of_int d
+    | TkName -> "_" ^ string_of_int d
+
 let rec pattern_to_string (c : print_config) (p : pattern) : string =
   let sep =
     match c.tgt with
@@ -109,7 +116,9 @@ let rec pattern_to_string (c : print_config) (p : pattern) : string =
 
 and pattern_elem_to_string (c : print_config) (e : pattern_elem) : string =
   match e with
-  | PIdent (s, g) -> s ^ generic_args_to_string c g
+  | PIdent (s, d, g) ->
+      let d = disambiguator_to_string c d in
+      s ^ d ^ generic_args_to_string c g
   | PImpl ty -> (
       let ty = expr_to_string c ty in
       match c.tgt with
@@ -438,14 +447,16 @@ let rec match_name_with_generics (ctx : 'fun_body ctx) (c : match_config)
         (Failure
            "match_name_with_generics: attempt to match empty names and patterns")
       (* We shouldn't get there: the names/patterns should be non empty *)
-  | [ PIdent (pid, pg) ], [ PeIdent (id, _) ] ->
+  | [ PIdent (pid, pd, pg) ], [ PeIdent (id, d) ] ->
       log#ldebug
         (lazy
           ("match_name_with_generics: last ident:" ^ "\n- pid: " ^ pid
          ^ "\n- id: " ^ id));
       (* We reached the end: match the generics.
          We have to generate an empty map. *)
-      pid = id && match_generic_args ctx c m pg g
+      pid = id
+      && T.Disambiguator.of_int pd = d
+      && match_generic_args ctx c m pg g
   | [ PImpl pty ], [ PeImpl (impl, _) ] -> (
       (* We can get there when matching a prefix of the name with a pattern *)
       (* We have to distinguish two cases:
@@ -459,9 +470,12 @@ let rec match_name_with_generics (ctx : 'fun_body ctx) (c : match_config)
       | ImplElemTrait impl_id ->
           match_expr_with_trait_impl_id ctx c pty impl_id
           && g = TypesUtils.empty_generic_args)
-  | PIdent (pid, pg) :: p, PeIdent (id, _) :: n ->
+  | PIdent (pid, pd, pg) :: p, PeIdent (id, d) :: n ->
       (* This is not the end: check that the generics are empty *)
-      pid = id && pg = [] && match_name_with_generics ctx c p n g
+      pid = id
+      && T.Disambiguator.of_int pd = d
+      && pg = []
+      && match_name_with_generics ctx c p n g
   | PImpl pty :: p, PeImpl (impl, _) :: n -> (
       (* We have to distinguish two cases:
          - the impl is an inherent impl (linked to a type)
@@ -492,19 +506,22 @@ and match_pattern_with_type_id (ctx : 'fun_body ctx) (c : match_config)
   | TBuiltin id -> (
       match (id, pid) with
       | ( TBox,
-          ( [ PIdent ("Box", pgenerics) ]
+          ( [ PIdent ("Box", _, pgenerics) ]
           | [
-              PIdent ("alloc", []);
-              PIdent ("boxed", []);
-              PIdent ("Box", pgenerics);
+              PIdent ("alloc", _, []);
+              PIdent ("boxed", _, []);
+              PIdent ("Box", _, pgenerics);
             ] ) ) -> match_generic_args ctx c m pgenerics generics
-      | TStr, [ PIdent ("str", []) ] -> generics = TypesUtils.empty_generic_args
+      | TStr, [ PIdent ("str", _, []) ] ->
+          generics = TypesUtils.empty_generic_args
       | _ -> false)
 
 and match_pattern_with_literal_type (pty : pattern) (ty : T.literal_type) : bool
     =
   let ty = literal_type_to_string ty in
-  pty = [ PIdent (ty, []) ]
+  match pty with
+  | [ PIdent (ty', _, []) ] when ty = ty' -> true
+  | _ -> false
 
 and match_primitive_adt (pid : primitive_adt) (id : T.type_id) : bool =
   match (pid, id) with
@@ -584,8 +601,8 @@ and match_trait_decl_ref_item (ctx : 'fun_body ctx) (c : match_config)
     &&
     (* Match the item name *)
     match pitem_name with
-    | PIdent (pitem_name, pgenerics) ->
-        pitem_name = item_name
+    | PIdent (pitem_name, pd, pgenerics) ->
+        pitem_name = item_name && pd = 0
         && match_generic_args ctx c (mk_empty_maps ()) pgenerics generics
     | _ -> false
   else raise (Failure "Unimplemented")
@@ -686,20 +703,20 @@ let match_fn_ptr (ctx : 'fun_body ctx) (c : match_config) (p : pattern)
           *)
           match p with
           | [
-           PIdent ("alloc", g0);
-           PIdent ("boxed", g1);
+           PIdent ("alloc", _, g0);
+           PIdent ("boxed", _, g1);
            PImpl (EComp box_impl);
-           PIdent ("new", g2);
+           PIdent ("new", _, g2);
           ] -> (
               g0 = [] && g1 = []
               && match_generic_args ctx c (mk_empty_maps ()) g2 func.generics
               &&
               match box_impl with
-              | [ PIdent ("Box", [ GExpr (EVar _) ]) ]
+              | [ PIdent ("Box", _, [ GExpr (EVar _) ]) ]
               | [
-                  PIdent ("alloc", []);
-                  PIdent ("boxed", []);
-                  PIdent ("Box", [ GExpr (EVar _) ]);
+                  PIdent ("alloc", _, []);
+                  PIdent ("boxed", _, []);
+                  PIdent ("Box", _, [ GExpr (EVar _) ]);
                 ] -> true
               | _ -> false)
           | _ -> false)
@@ -884,7 +901,7 @@ let literal_type_to_pattern (c : to_pat_config) (lit : T.literal_type) : expr =
     | TkPattern | TkPretty -> lit
     | TkName -> StringUtils.capitalize_first_letter lit
   in
-  EComp [ PIdent (lit, []) ]
+  EComp [ PIdent (lit, 0, []) ]
 
 let literal_to_pattern (_c : to_pat_config) (lit : Values.literal) : literal =
   match lit with
@@ -913,10 +930,11 @@ and path_elem_with_generic_args_to_pattern (ctx : 'fun_body ctx)
     (c : to_pat_config) (e : T.path_elem) (generics : generic_args option) :
     pattern_elem =
   match e with
-  | PeIdent (s, _) -> (
+  | PeIdent (s, d) -> (
+      let d = T.Disambiguator.to_int d in
       match generics with
-      | None -> PIdent (s, [])
-      | Some args -> PIdent (s, args))
+      | None -> PIdent (s, d, [])
+      | Some args -> PIdent (s, d, args))
   | PeImpl (impl, _) -> impl_elem_to_pattern ctx c impl
 
 and impl_elem_to_pattern (ctx : 'fun_body ctx) (c : to_pat_config)
@@ -955,8 +973,8 @@ and ty_to_pattern_aux (ctx : 'fun_body ctx) (c : to_pat_config)
       | TTuple -> EPrimAdt (TTuple, generics)
       | TBuiltin TArray -> EPrimAdt (TArray, generics)
       | TBuiltin TSlice -> EPrimAdt (TSlice, generics)
-      | TBuiltin TBox -> EComp [ PIdent ("Box", generics) ]
-      | TBuiltin TStr -> EComp [ PIdent ("str", generics) ])
+      | TBuiltin TBox -> EComp [ PIdent ("Box", 0, generics) ]
+      | TBuiltin TStr -> EComp [ PIdent ("str", 0, generics) ])
   | TVar v -> EVar (type_var_to_pattern m v)
   | TLiteral lit -> literal_type_to_pattern c lit
   | TRef (r, ty, rk) ->
@@ -986,6 +1004,7 @@ and ty_to_pattern_aux (ctx : 'fun_body ctx) (c : to_pat_config)
   | TRawPtr (ty, RShared) -> ERawPtr (Not, ty_to_pattern_aux ctx c m ty)
   | TDynTrait _ -> raise (Failure "Unimplemented: DynTrait")
   | TNever -> raise (Failure "Unimplemented: Never")
+  | TError _ -> EVar None
 
 and trait_ref_item_with_generics_to_pattern (ctx : 'fun_body ctx)
     (c : to_pat_config) (m : constraints) (trait_ref : T.trait_ref)
@@ -1008,7 +1027,7 @@ and trait_ref_item_with_generics_to_pattern (ctx : 'fun_body ctx)
       name_with_generic_args_to_pattern_aux ctx c d.item_meta.name (Some g)
     in
     let item_generics = generic_args_to_pattern ctx c m item_generics in
-    let name = name @ [ PIdent (item_name, item_generics) ] in
+    let name = name @ [ PIdent (item_name, 0, item_generics) ] in
     name
   else raise (Failure "TODO")
 
@@ -1101,20 +1120,20 @@ let fn_ptr_to_pattern (ctx : 'fun_body ctx) (c : to_pat_config)
             let var = Some (VarName "T") in
             let box_impl =
               [
-                PIdent ("alloc", []);
-                PIdent ("boxed", []);
-                PIdent ("Box", [ GExpr (EVar var) ]);
+                PIdent ("alloc", 0, []);
+                PIdent ("boxed", 0, []);
+                PIdent ("Box", 0, [ GExpr (EVar var) ]);
               ]
             in
             [
-              PIdent ("alloc", []);
-              PIdent ("boxed", []);
+              PIdent ("alloc", 0, []);
+              PIdent ("boxed", 0, []);
               PImpl (EComp box_impl);
-              PIdent ("new", args);
+              PIdent ("new", 0, args);
             ]
         | _ ->
             let fid = builtin_fun_id_to_string fid in
-            [ PIdent (fid, args) ])
+            [ PIdent (fid, 0, args) ])
     | FunId (FRegular fid) ->
         let d = Types.FunDeclId.Map.find fid ctx.crate.fun_decls in
         name_with_generic_args_to_pattern_aux ctx c d.item_meta.name (Some args)
@@ -1232,8 +1251,8 @@ let rec pattern_common_prefix_aux (c : conv_config) (m : conv_map option)
 and pattern_elem_convertible_aux (c : conv_config) (m : conv_map option)
     (p0 : pattern_elem) (p1 : pattern_elem) : (conv_map option, unit) result =
   match (p0, p1) with
-  | PIdent (s0, g0), PIdent (s1, g1) ->
-      if s0 = s1 then
+  | PIdent (s0, d0, g0), PIdent (s1, d1, g1) ->
+      if s0 = s1 && d0 = d1 then
         match m with
         | None ->
             (* No map: we are not inside an impl block.

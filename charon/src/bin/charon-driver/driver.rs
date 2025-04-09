@@ -1,136 +1,169 @@
+//! Run the rustc compiler with our custom options and hooks.
 use crate::translate::translate_crate_to_ullbc;
+use crate::CharonFailure;
 use charon_lib::options::CliOpts;
-use charon_lib::transform::{
-    Pass, PrintCtxPass, FINAL_CLEANUP_PASSES, INITIAL_CLEANUP_PASSES, LLBC_PASSES, ULLBC_PASSES,
-};
-use charon_lib::transform::{TransformCtx, SHARED_FINALIZING_PASSES};
-use charon_lib::{export, options};
+use charon_lib::transform::TransformCtx;
 use rustc_driver::{Callbacks, Compilation};
+use rustc_interface::Config;
 use rustc_interface::{interface::Compiler, Queries};
-use std::fmt;
+use rustc_middle::util::Providers;
+use rustc_session::config::{OutputType, OutputTypes, Polonius};
 use std::ops::Deref;
 use std::sync::atomic::{AtomicBool, Ordering};
+use std::{env, fmt};
 
-/// The callbacks for Charon
-pub struct CharonCallbacks {
-    pub options: options::CliOpts,
-    /// This is to be filled during the extraction; it contains the translated crate.
-    transform_ctx: Option<TransformCtx>,
-    pub error_count: usize,
+/// Helper that runs the compiler and catches its fatal errors.
+fn run_compiler_with_callbacks(
+    args: Vec<String>,
+    callbacks: &mut (dyn Callbacks + Send),
+) -> Result<(), CharonFailure> {
+    rustc_driver::catch_fatal_errors(|| rustc_driver::RunCompiler::new(&args, callbacks).run())
+        .map_err(|_| CharonFailure::RustcError)?
+        .map_err(|_| CharonFailure::RustcError)?;
+    Ok(())
 }
 
-pub enum CharonFailure {
-    /// The usize is the number of errors.
-    CharonError(usize),
-    RustcError,
-    Panic,
-    Serialize,
-}
-
-impl fmt::Display for CharonFailure {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match self {
-            CharonFailure::RustcError => write!(f, "Code failed to compile")?,
-            CharonFailure::CharonError(err_count) => write!(
-                f,
-                "Charon failed to translate this code ({err_count} errors)"
-            )?,
-            CharonFailure::Panic => write!(f, "Compilation panicked")?,
-            CharonFailure::Serialize => write!(f, "Could not serialize output file")?,
-        }
-        Ok(())
+/// Tweak options to get usable MIR even for foreign crates.
+fn set_mir_options(config: &mut Config) {
+    config.opts.unstable_opts.always_encode_mir = true;
+    config.opts.unstable_opts.mir_opt_level = Some(0);
+    config.opts.unstable_opts.mir_emit_retag = true;
+    let disabled_mir_passes = ["CheckAlignment"];
+    for pass in disabled_mir_passes {
+        config
+            .opts
+            .unstable_opts
+            .mir_enable_passes
+            .push((pass.to_owned(), false));
     }
 }
 
-impl CharonCallbacks {
-    pub fn new(options: options::CliOpts) -> Self {
-        Self {
-            options,
-            transform_ctx: None,
-            error_count: 0,
-        }
-    }
-
-    /// Run rustc with our custom callbacks. `args` is the arguments passed to `rustc`'s
-    /// command-line.
-    pub fn run_compiler(
-        &mut self,
-        mut args: Vec<String>,
-    ) -> Result<export::CrateData, CharonFailure> {
-        // Arguments list always start with the executable name. We put a silly value to ensure
-        // it's not used for anything.
-        args.insert(0, "__CHARON_MYSTERIOUS_FIRST_ARG__".to_string());
-        rustc_driver::catch_fatal_errors(|| {
-            let res = rustc_driver::RunCompiler::new(&args, self).run();
-            res.map_err(|_| CharonFailure::RustcError)
-        })
-        .map_err(|_| CharonFailure::RustcError)??;
-        // `ctx` is set by our callbacks when there is no fatal error.
-        let ctx = self
-            .transform_ctx
-            .as_mut()
-            .ok_or(CharonFailure::RustcError)?;
-
-        let crate_data = transform(ctx, &self.options);
-        self.error_count = ctx.errors.borrow().error_count;
-        Ok(crate_data)
-    }
+/// Don't even try to codegen. This avoids errors due to checking if the output filename is
+/// available (despite the fact that we won't emit it because we stop compilation early).
+fn set_no_codegen(config: &mut Config) {
+    config.opts.unstable_opts.no_codegen = true;
+    // Only emit metadata.
+    config.opts.output_types = OutputTypes::new(&[(OutputType::Metadata, None)]);
 }
 
-/// Custom `DefId` debug routine that doesn't print unstable values like ids and hashes.
-fn def_id_debug(def_id: rustc_hir::def_id::DefId, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-    rustc_middle::ty::tls::with_opt(|opt_tcx| {
-        if let Some(tcx) = opt_tcx {
-            let crate_name = if def_id.is_local() {
-                tcx.crate_name(rustc_hir::def_id::LOCAL_CRATE)
-            } else {
-                tcx.cstore_untracked().crate_name(def_id.krate)
+/// Always compile in release mode: in effect, we want to analyze the released
+/// code. Also, rustc inserts a lot of dynamic checks in debug mode, that we
+/// have to clean. Full list of `--release` flags:
+/// https://doc.rust-lang.org/cargo/reference/profiles.html#release
+fn set_release_mode(config: &mut Config) {
+    let cg = &mut config.opts.cg;
+    cg.opt_level = "3".into();
+    cg.overflow_checks = Some(false);
+    config.opts.debug_assertions = false;
+}
+
+// We use a static to be able to pass data to `override_queries`.
+static SKIP_BORROWCK: AtomicBool = AtomicBool::new(false);
+fn set_skip_borrowck() {
+    SKIP_BORROWCK.store(true, Ordering::SeqCst);
+}
+fn skip_borrowck_if_set(providers: &mut Providers) {
+    if SKIP_BORROWCK.load(Ordering::SeqCst) {
+        providers.mir_borrowck = |tcx, def_id| {
+            let (input_body, _promoted) = tcx.mir_promoted(def_id);
+            let input_body = &input_body.borrow();
+            // Empty result, which is what is used for tainted or custom_mir bodies.
+            let result = rustc_middle::mir::BorrowCheckResult {
+                concrete_opaque_types: Default::default(),
+                closure_requirements: None,
+                used_mut_upvars: Default::default(),
+                tainted_by_errors: input_body.tainted_by_errors,
             };
-            write!(
-                f,
-                "{}{}",
-                crate_name,
-                tcx.def_path(def_id).to_string_no_crate_verbose()
-            )?;
-        } else {
-            write!(f, "<can't access `tcx` to print `DefId` path>")?;
+            tcx.arena.alloc(result)
         }
-        Ok(())
-    })
+    }
 }
 
-impl Callbacks for CharonCallbacks {
-    fn config(&mut self, config: &mut rustc_interface::Config) {
-        // We use a static to be able to pass data to `override_queries`.
-        static SKIP_BORROWCK: AtomicBool = AtomicBool::new(false);
-        if self.options.skip_borrowck {
-            SKIP_BORROWCK.store(true, Ordering::SeqCst);
+fn setup_compiler(config: &mut Config, options: &CliOpts, do_translate: bool) {
+    if do_translate {
+        if options.skip_borrowck {
+            // We use a static to be able to pass data to `override_queries`.
+            set_skip_borrowck();
         }
 
         config.override_queries = Some(|_sess, providers| {
-            // TODO: catch the MIR in-flight to avoid stealing issues.
+            skip_borrowck_if_set(providers);
+
+            // TODO: catch the MIR in-flight to avoid stealing issues?
             // providers.mir_built = |tcx, def_id| {
             //     let mir = (rustc_interface::DEFAULT_QUERY_PROVIDERS.mir_built)(tcx, def_id);
             //     let mut mir = mir.steal();
             //     // use the mir
             //     tcx.alloc_steal_mir(mir)
             // };
-
-            if SKIP_BORROWCK.load(Ordering::SeqCst) {
-                providers.mir_borrowck = |tcx, def_id| {
-                    let (input_body, _promoted) = tcx.mir_promoted(def_id);
-                    let input_body = &input_body.borrow();
-                    // Empty result, which is what is used for tainted or custom_mir bodies.
-                    let result = rustc_middle::mir::BorrowCheckResult {
-                        concrete_opaque_types: Default::default(),
-                        closure_requirements: None,
-                        used_mut_upvars: Default::default(),
-                        tainted_by_errors: input_body.tainted_by_errors,
-                    };
-                    tcx.arena.alloc(result)
-                }
-            }
         });
+
+        set_release_mode(config);
+        set_no_codegen(config);
+        if options.use_polonius {
+            config.opts.unstable_opts.polonius = Polonius::Legacy;
+        }
+    }
+    set_mir_options(config);
+}
+
+/// Run the rustc driver with our custom hooks. Returns `None` if the crate was not compiled with
+/// charon (e.g. because it was a dependency). Otherwise returns the translated crate, ready for
+/// post-processing transformations.
+pub fn run_rustc_driver(options: &CliOpts) -> Result<Option<TransformCtx>, CharonFailure> {
+    // Retreive the command-line arguments pased to `charon_driver`. The first arg is the path to
+    // the current executable, we skip it.
+    let mut compiler_args: Vec<String> = env::args().skip(1).collect();
+
+    // When called using cargo, we tell cargo to use `charon-driver` by setting the `RUSTC_WRAPPER`
+    // env var. This uses `charon-driver` for all the crates being compiled.
+    // We may however not want to be calling charon on all crates; `CARGO_PRIMARY_PACKAGE` tells us
+    // whether the crate was specifically selected or is a dependency.
+    let is_workspace_dependency =
+        env::var("CHARON_USING_CARGO").is_ok() && !env::var("CARGO_PRIMARY_PACKAGE").is_ok();
+    // Determines if we are being invoked to build a crate for the "target" architecture, in
+    // contrast to the "host" architecture. Host crates are for build scripts and proc macros and
+    // still need to be built like normal; target crates need to be processed by Charon.
+    //
+    // Currently, we detect this by checking for "--target=", which is never set for host crates.
+    // This matches what Miri does, which hopefully makes it reliable enough. This relies on us
+    // always invoking cargo itself with `--target`, which `charon` ensures.
+    let is_target = arg_values(&compiler_args, "--target").next().is_some();
+    // Whether this is the crate we want to translate.
+    let is_selected_crate = !is_workspace_dependency && is_target;
+
+    let output = if !is_selected_crate {
+        trace!("Skipping charon; running compiler normally instead.");
+        // Run the compiler normally.
+        run_compiler_with_callbacks(compiler_args, &mut RunCompilerNormallyCallbacks { options })?;
+        None
+    } else {
+        for extra_flag in options.rustc_args.iter().cloned() {
+            compiler_args.push(extra_flag);
+        }
+
+        // Call the Rust compiler with our custom callback.
+        let mut callback = CharonCallbacks {
+            options,
+            transform_ctx: None,
+        };
+        run_compiler_with_callbacks(compiler_args, &mut callback)?;
+        // If `transform_ctx` is not set here, there was a fatal error.
+        let ctx = callback.transform_ctx.ok_or(CharonFailure::RustcError)?;
+        Some(ctx)
+    };
+    Ok(output)
+}
+
+/// The callbacks for Charon
+pub struct CharonCallbacks<'a> {
+    options: &'a CliOpts,
+    /// This is to be filled during the extraction; it contains the translated crate.
+    transform_ctx: Option<TransformCtx>,
+}
+impl<'a> Callbacks for CharonCallbacks<'a> {
+    fn config(&mut self, config: &mut Config) {
+        setup_compiler(config, self.options, true);
     }
 
     /// The MIR is modified in place: borrow-checking requires the "promoted" MIR, which causes the
@@ -163,23 +196,18 @@ impl Callbacks for CharonCallbacks {
 }
 
 /// Dummy callbacks used to run the compiler normally when we shouldn't be analyzing the crate.
-pub struct RunCompilerNormallyCallbacks;
-impl Callbacks for RunCompilerNormallyCallbacks {}
-impl RunCompilerNormallyCallbacks {
-    /// Run rustc normally. `args` is the arguments passed to `rustc`'s command-line.
-    pub fn run_compiler(&mut self, mut args: Vec<String>) -> Result<(), ()> {
-        // Arguments list always start with the executable name. We put a silly value to ensure
-        // it's not used for anything.
-        args.insert(0, "__CHARON_MYSTERIOUS_FIRST_ARG__".to_string());
-        rustc_driver::RunCompiler::new(&args, self)
-            .run()
-            .map_err(|_| ())
+pub struct RunCompilerNormallyCallbacks<'a> {
+    options: &'a CliOpts,
+}
+impl<'a> Callbacks for RunCompilerNormallyCallbacks<'a> {
+    fn config(&mut self, config: &mut Config) {
+        setup_compiler(config, self.options, false);
     }
 }
 
 /// Returns the values of the command-line options that match `find_arg`. The options are built-in
 /// to be of the form `--arg=value` or `--arg value`.
-pub fn arg_values<'a, T: Deref<Target = str>>(
+fn arg_values<'a, T: Deref<Target = str>>(
     args: &'a [T],
     needle: &'a str,
 ) -> impl Iterator<Item = &'a str> {
@@ -210,90 +238,24 @@ pub fn arg_values<'a, T: Deref<Target = str>>(
     }
 }
 
-/// Given a list of arguments, return the index of the source rust file.
-/// This works by looking for the first argument matching *.rs, while
-/// checking there is at most one such argument.
-///
-/// Note that the driver is sometimes called without a source, for Cargo to
-/// retrieve information about the crate for instance.
-pub fn get_args_source_index<T: Deref<Target = str>>(args: &[T]) -> Option<usize> {
-    let indices: Vec<usize> = args
-        .iter()
-        .enumerate()
-        .filter_map(|(i, s)| if s.ends_with(".rs") { Some(i) } else { None })
-        .collect();
-    assert!(indices.len() <= 1);
-    if indices.len() == 1 {
-        Some(indices[0])
-    } else {
-        None
-    }
-}
-
-/// Given a list of arguments, return the index of the crate name
-pub fn get_args_crate_index<T: Deref<Target = str>>(args: &[T]) -> Option<usize> {
-    args.iter()
-        .enumerate()
-        .find(|(_i, s)| Deref::deref(*s) == "--crate-name")
-        .map(|(i, _)| {
-            assert!(i + 1 < args.len()); // Sanity check
-                                         // The argument giving the crate name is the next one
-            i + 1
-        })
-}
-
-/// Calculate the list of passes we will run on the crate before outputting it.
-pub fn transformation_passes(options: &CliOpts) -> Vec<Pass> {
-    let mut passes: Vec<Pass> = vec![];
-
-    passes.push(Pass::NonBody(PrintCtxPass::new(
-        options.print_original_ullbc,
-        format!("# ULLBC after translation from MIR"),
-    )));
-
-    passes.extend(INITIAL_CLEANUP_PASSES);
-    passes.extend(ULLBC_PASSES);
-
-    if !options.ullbc {
-        // If we're reconstructing control-flow, print the ullbc here.
-        passes.push(Pass::NonBody(PrintCtxPass::new(
-            options.print_ullbc,
-            format!("# Final ULLBC before control-flow reconstruction"),
-        )));
-    }
-
-    if !options.ullbc {
-        passes.extend(LLBC_PASSES);
-    }
-    passes.extend(SHARED_FINALIZING_PASSES);
-
-    if options.ullbc {
-        // If we're not reconstructing control-flow, print the ullbc after finalizing passes.
-        passes.push(Pass::NonBody(PrintCtxPass::new(
-            options.print_ullbc,
-            format!("# Final ULLBC before serialization"),
-        )));
-    } else {
-        passes.push(Pass::NonBody(PrintCtxPass::new(
-            options.print_llbc,
-            format!("# Final LLBC before serialization"),
-        )));
-    }
-
-    // Run the final passes after pretty-printing so that we get some output even if check_generics
-    // fails.
-    passes.extend(FINAL_CLEANUP_PASSES);
-    passes
-}
-
-/// Apply the transformation passes to a translated crate.
-pub fn transform(ctx: &mut TransformCtx, options: &CliOpts) -> export::CrateData {
-    // The bulk of the translation is done, we no longer need to interact with rustc internals. We
-    // run several passes that simplify the items and cleanup the bodies.
-    for pass in transformation_passes(options) {
-        trace!("# Starting pass {}", pass.name());
-        pass.run(ctx);
-    }
-
-    export::CrateData::new(&ctx)
+/// Custom `DefId` debug routine that doesn't print unstable values like ids and hashes.
+fn def_id_debug(def_id: rustc_hir::def_id::DefId, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+    rustc_middle::ty::tls::with_opt(|opt_tcx| {
+        if let Some(tcx) = opt_tcx {
+            let crate_name = if def_id.is_local() {
+                tcx.crate_name(rustc_hir::def_id::LOCAL_CRATE)
+            } else {
+                tcx.cstore_untracked().crate_name(def_id.krate)
+            };
+            write!(
+                f,
+                "{}{}",
+                crate_name,
+                tcx.def_path(def_id).to_string_no_crate_verbose()
+            )?;
+        } else {
+            write!(f, "<can't access `tcx` to print `DefId` path>")?;
+        }
+        Ok(())
+    })
 }

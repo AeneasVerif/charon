@@ -11,7 +11,7 @@
     nixpkgs-ocaml.follows = "nixpkgs";
     rust-overlay = {
       # We pin a specific commit because we require a relatively recent version
-      # and flake dependents don't look at flake.lock.
+      # and flake dependents don't look at our flake.lock.
       url = "github:oxalica/rust-overlay/275c824ed9e90e7fd4f96d187bde3670062e721f";
       inputs.nixpkgs.follows = "nixpkgs";
     };
@@ -67,6 +67,12 @@
             exit 1
           fi
           touch $out
+        '';
+
+        # Test usage of charon via nix, to ensure the paths are set up correctly.
+        test-charon-via-nix = pkgs.runCommand "test-charon-via-nix" { } ''
+          echo "fn main() {}" > foo.rs
+          ${charon}/bin/charon rustc --no-serialize --print-llbc -- foo.rs > $out
         '';
 
         # A utility that extracts the llbc of a crate using charon. This uses
@@ -134,7 +140,7 @@
         checks = {
           default = charon-ml-tests;
           inherit charon-ml-tests charon-check-fmt charon-check-no-rustc
-            charon-ml-check-fmt check-generated-ml;
+            charon-ml-check-fmt check-generated-ml test-charon-via-nix;
         };
 
         # Export this function so that users of charon can use it in nix. This

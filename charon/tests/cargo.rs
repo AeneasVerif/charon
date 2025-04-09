@@ -4,7 +4,7 @@ use anyhow::bail;
 use assert_cmd::prelude::CommandCargoExt;
 use itertools::Itertools;
 use libtest_mimic::Trial;
-use std::{error::Error, path::PathBuf, process::Command};
+use std::{error::Error, ffi::OsStr, path::PathBuf, process::Command};
 
 use util::{compare_or_overwrite, Action};
 
@@ -38,6 +38,7 @@ fn perform_test(test_case: &Case, action: Action) -> anyhow::Result<()> {
     // Call charon
     let mut cmd = Command::cargo_bin("charon")?;
     cmd.current_dir(&test_case.dir);
+    cmd.arg("cargo");
     cmd.arg("--error-on-warnings");
     cmd.arg("--print-llbc");
     if matches!(test_case.expect, Failure) {
@@ -46,9 +47,12 @@ fn perform_test(test_case: &Case, action: Action) -> anyhow::Result<()> {
     }
     cmd.arg("--dest-file");
     cmd.arg(test_case.output_file.with_extension("llbc"));
-    for arg in &test_case.charon_args {
-        cmd.arg(arg);
-    }
+    cmd.args(&test_case.charon_args);
+
+    let cmd_str = format!(
+        "charon {}",
+        cmd.get_args().map(OsStr::to_string_lossy).join(" ")
+    );
     let output = cmd.output()?;
 
     let success = output.status.success();
@@ -59,8 +63,10 @@ fn perform_test(test_case: &Case, action: Action) -> anyhow::Result<()> {
     };
     let mut output = String::from_utf8(output.clone())?;
     match test_case.expect {
-        Success if !success => bail!("Compilation failed: {output}"),
-        Failure if success => bail!("Compilation succeeded but shouldn't have: {output}"),
+        Success if !success => bail!("Command: `{cmd_str}`\nCompilation failed: {output}"),
+        Failure if success => {
+            bail!("Command: `{cmd_str}`\nCompilation succeeded but shouldn't have: {output}")
+        }
         Failure if !success => {
             // Hack to avoid differences between CI and local tests.
             output = output

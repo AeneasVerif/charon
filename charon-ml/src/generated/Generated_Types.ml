@@ -427,6 +427,7 @@ and ty =
           arrow types can only contain generic lifetime parameters
           (no generic types), no predicates, etc.
        *)
+  | TError of string  (** A type that could not be computed or was incorrect. *)
 
 (** Builtin types identifiers.
 
@@ -675,7 +676,7 @@ and type_decl_kind =
       (** An alias to another type. This only shows up in the top-level list of items, as rustc
           inlines uses of type aliases everywhere else.
        *)
-  | TError of string
+  | TDeclError of string
       (** Used if an error happened during the extraction, and we don't panic
           on error.
        *)

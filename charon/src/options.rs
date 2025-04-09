@@ -41,11 +41,6 @@ pub struct CliOpts {
     #[clap(long = "mir_optimized")]
     #[serde(default)]
     pub mir_optimized: bool,
-    /// Provide a custom name for the compiled crate (ignore the name computed
-    /// by Cargo)
-    #[clap(long = "crate")]
-    #[serde(default)]
-    pub crate_name: Option<String>,
     /// The input file (the entry point of the crate to extract).
     /// This is needed if you want to define a custom entry point (to only
     /// extract part of a crate for instance).
@@ -321,8 +316,10 @@ impl TranslateOptions {
 
         let mir_level = if options.mir_optimized {
             MirLevel::Optimized
-        } else {
+        } else if options.mir_promoted {
             MirLevel::Promoted
+        } else {
+            MirLevel::Built
         };
 
         let item_opacities = {

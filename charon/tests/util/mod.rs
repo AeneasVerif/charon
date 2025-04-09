@@ -78,13 +78,13 @@ pub fn translate_rust_text(code: impl Display) -> anyhow::Result<TranslatedCrate
     // Call charon
     let output_path = tmp_dir.path().join("test_crate.llbc");
     Command::cargo_bin("charon")?
-        .arg("--no-cargo")
-        .arg("--rustc-flag=--edition=2021")
-        .arg("--rustc-flag=--crate-type=rlib")
-        .arg("--input")
-        .arg(input_path)
+        .arg("rustc")
         .arg("--dest-file")
         .arg(&output_path)
+        .arg("--")
+        .arg("--edition=2021")
+        .arg("--crate-type=rlib")
+        .arg(input_path)
         .assert()
         .try_success()?;
 

@@ -384,7 +384,7 @@ pub enum TypeDeclKind {
     Alias(Ty),
     /// Used if an error happened during the extraction, and we don't panic
     /// on error.
-    #[charon::rename("TError")]
+    #[charon::rename("TDeclError")]
     #[drive(skip)]
     Error(String),
 }
@@ -698,6 +698,9 @@ pub enum TyKind {
     /// arrow types can only contain generic lifetime parameters
     /// (no generic types), no predicates, etc.
     Arrow(RegionBinder<(Vec<Ty>, Ty)>),
+    /// A type that could not be computed or was incorrect.
+    #[drive(skip)]
+    Error(String),
 }
 
 /// Builtin types identifiers.

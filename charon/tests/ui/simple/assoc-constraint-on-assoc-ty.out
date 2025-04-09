@@ -1,0 +1,49 @@
+# Final LLBC before serialization:
+
+#[lang_item("sized")]
+pub trait core::marker::Sized<Self>
+
+trait test_crate::Trait<Self, Self_Assoc>
+{
+    parent_clause0 : [@TraitClause0]: core::marker::Sized<Self_Assoc>
+}
+
+fn test_crate::takes_trait<I, Clause1_Assoc>(@1: I)
+where
+    [@TraitClause0]: core::marker::Sized<I>,
+    [@TraitClause1]: test_crate::Trait<I, Clause1_Assoc>,
+{
+    let @0: (); // return
+    let it@1: I; // arg #1
+
+    @0 := ()
+    drop it@1
+    @0 := ()
+    return
+}
+
+trait test_crate::IntoIterator<Self, Self_IntoIter>
+{
+    parent_clause0 : [@TraitClause0]: core::marker::Sized<Self_IntoIter>
+    parent_clause1 : [@TraitClause1]: test_crate::Trait<Self_IntoIter, ()>
+}
+
+fn test_crate::collect<I, Clause1_IntoIter>(@1: Clause1_IntoIter)
+where
+    [@TraitClause0]: core::marker::Sized<I>,
+    [@TraitClause1]: test_crate::IntoIterator<I, Clause1_IntoIter>,
+{
+    let @0: (); // return
+    let it@1: Clause1_IntoIter; // arg #1
+    let @2: Clause1_IntoIter; // anonymous local
+
+    @2 := move (it@1)
+    @0 := test_crate::takes_trait<Clause1_IntoIter, ()>[@TraitClause1::parent_clause0, @TraitClause1::parent_clause1](move (@2))
+    drop @2
+    drop it@1
+    @0 := ()
+    return
+}
+
+
+

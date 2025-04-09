@@ -1,6 +1,8 @@
 //! This file groups everything which is linked to implementations about [crate::types]
 use crate::ast::*;
+use crate::formatter::FmtCtx;
 use crate::ids::Vector;
+use crate::pretty::FmtWithCtx;
 use derive_generic_visitor::*;
 use std::collections::HashSet;
 use std::convert::Infallible;
@@ -9,6 +11,20 @@ use std::iter::Iterator;
 use std::mem;
 use std::ops::Index;
 
+impl TraitClause {
+    /// Constructs the trait ref that refers to this clause.
+    pub fn identity_tref(&self) -> TraitRef {
+        self.identity_tref_at_depth(DeBruijnId::zero())
+    }
+
+    /// Like `identity_tref` but uses variables bound at the given depth.
+    pub fn identity_tref_at_depth(&self, depth: DeBruijnId) -> TraitRef {
+        TraitRef {
+            kind: TraitRefKind::Clause(DeBruijnVar::bound(depth, self.clause_id)),
+            trait_decl_ref: self.trait_.clone().move_under_binders(depth),
+        }
+    }
+}
 impl GenericParams {
     pub fn empty() -> Self {
         Self::default()
@@ -89,10 +105,9 @@ impl GenericParams {
             const_generics: self
                 .const_generics
                 .map_ref_indexed(|id, _| ConstGeneric::Var(DeBruijnVar::bound(depth, id))),
-            trait_refs: self.trait_clauses.map_ref_indexed(|id, clause| TraitRef {
-                kind: TraitRefKind::Clause(DeBruijnVar::bound(depth, id)),
-                trait_decl_ref: clause.trait_.clone().move_under_binders(depth),
-            }),
+            trait_refs: self
+                .trait_clauses
+                .map_ref(|clause| clause.identity_tref_at_depth(depth)),
             target,
         }
     }
@@ -377,6 +392,22 @@ impl GenericArgs {
 impl GenericsSource {
     pub fn item<I: Into<AnyTransId>>(id: I) -> Self {
         Self::Item(id.into())
+    }
+
+    /// Return a path that represents the target item.
+    pub fn item_name(&self, translated: &TranslatedCrate, fmt_ctx: &FmtCtx) -> String {
+        match self {
+            GenericsSource::Item(id) => translated.item_name(*id).unwrap().fmt_with_ctx(fmt_ctx),
+            GenericsSource::Method(trait_id, method_name) => format!(
+                "{}::{method_name}",
+                translated
+                    .item_name(*trait_id)
+                    .unwrap()
+                    .fmt_with_ctx(fmt_ctx),
+            ),
+            GenericsSource::Builtin => format!("<built-in>"),
+            GenericsSource::Other => format!("<unknown>"),
+        }
     }
 }
 
@@ -824,6 +855,11 @@ pub trait TyVisitable: Sized + AstVisitable {
             });
         }
         self
+    }
+
+    /// Move from under one binder.
+    fn move_from_under_binder(self) -> Option<Self> {
+        self.move_from_under_binders(DeBruijnId::one())
     }
 
     /// Move the value out of `depth` binders. Returns `None` if it contains a variable bound in

@@ -40,40 +40,37 @@ fn test_crate::slice_pat2()
     let @0: (); // return
     let array_ref@1: &'_ (Array<i32, 4 : usize>); // local
     let @2: &'_ (Array<i32, 4 : usize>); // anonymous local
-    let _a@3: &'_ (i32); // local
-    let _b@4: &'_ (Array<i32, 2 : usize>); // local
-    let _c@5: &'_ (i32); // local
-    let @6: &'_ (Array<i32, 4 : usize>); // anonymous local
-    let @7: Array<i32, 4 : usize>; // anonymous local
-    let @8: &'_ (Array<i32, 4 : usize>); // anonymous local
+    let @3: Array<i32, 4 : usize>; // anonymous local
+    let _a@4: &'_ (i32); // local
+    let _b@5: &'_ (Array<i32, 2 : usize>); // local
+    let _c@6: &'_ (i32); // local
+    let @7: &'_ (Array<i32, 4 : usize>); // anonymous local
+    let @8: &'_ (i32); // anonymous local
     let @9: &'_ (Array<i32, 4 : usize>); // anonymous local
-    let @10: &'_ (i32); // anonymous local
+    let @10: &'_ (Slice<i32>); // anonymous local
     let @11: &'_ (Array<i32, 4 : usize>); // anonymous local
-    let @12: &'_ (Slice<i32>); // anonymous local
-    let @13: &'_ (Array<i32, 4 : usize>); // anonymous local
-    let @14: &'_ (i32); // anonymous local
+    let @12: &'_ (i32); // anonymous local
 
-    @7 := @ArrayRepeat<'_, i32, 4 : usize>(const (0 : i32))
-    @8 := &@7
-    @6 := move (@8)
-    @2 := &*(@6)
+    @3 := @ArrayRepeat<'_, i32, 4 : usize>(const (0 : i32))
+    @2 := &@3
     array_ref@1 := &*(@2)
     @fake_read(array_ref@1)
     drop @2
     @fake_read(array_ref@1)
-    @13 := &*(array_ref@1)
-    @14 := @ArrayIndexShared<'_, i32, 4 : usize>(move (@13), const (0 : usize))
-    _a@3 := &*(@14)
     @11 := &*(array_ref@1)
-    @12 := @ArraySubSliceShared<'_, i32, 4 : usize>(move (@11), const (1 : usize), const (3 : usize))
-    _b@4 := &*(@12)
+    @12 := @ArrayIndexShared<'_, i32, 4 : usize>(move (@11), const (0 : usize))
+    _a@4 := &*(@12)
     @9 := &*(array_ref@1)
-    @10 := @ArrayIndexShared<'_, i32, 4 : usize>(move (@9), const (3 : usize))
-    _c@5 := &*(@10)
+    @10 := @ArraySubSliceShared<'_, i32, 4 : usize>(move (@9), const (1 : usize), const (3 : usize))
+    _b@5 := &*(@10)
+    @7 := &*(array_ref@1)
+    @8 := @ArrayIndexShared<'_, i32, 4 : usize>(move (@7), const (3 : usize))
+    _c@6 := &*(@8)
     @0 := ()
-    drop _c@5
-    drop _b@4
-    drop _a@3
+    drop _c@6
+    drop _b@5
+    drop _a@4
+    drop @3
     drop array_ref@1
     @0 := ()
     return
@@ -85,64 +82,61 @@ fn test_crate::slice_pat3()
     let slice@1: &'_ (Slice<i32>); // local
     let @2: &'_ (Array<i32, 4 : usize>); // anonymous local
     let @3: &'_ (Array<i32, 4 : usize>); // anonymous local
-    let _a@4: &'_ (i32); // local
-    let _b@5: &'_ (Slice<i32>); // local
-    let _c@6: &'_ (i32); // local
-    let @7: usize; // anonymous local
+    let @4: Array<i32, 4 : usize>; // anonymous local
+    let _a@5: &'_ (i32); // local
+    let _b@6: &'_ (Slice<i32>); // local
+    let _c@7: &'_ (i32); // local
     let @8: usize; // anonymous local
-    let @9: bool; // anonymous local
-    let @10: &'_ (Array<i32, 4 : usize>); // anonymous local
-    let @11: Array<i32, 4 : usize>; // anonymous local
-    let @12: &'_ (Array<i32, 4 : usize>); // anonymous local
-    let @13: &'_ (Slice<i32>); // anonymous local
-    let @14: usize; // anonymous local
-    let @15: usize; // anonymous local
-    let @16: &'_ (i32); // anonymous local
-    let @17: &'_ (Slice<i32>); // anonymous local
-    let @18: usize; // anonymous local
-    let @19: usize; // anonymous local
-    let @20: &'_ (Slice<i32>); // anonymous local
-    let @21: &'_ (Slice<i32>); // anonymous local
-    let @22: &'_ (i32); // anonymous local
+    let @9: usize; // anonymous local
+    let @10: bool; // anonymous local
+    let @11: &'_ (Slice<i32>); // anonymous local
+    let @12: usize; // anonymous local
+    let @13: usize; // anonymous local
+    let @14: &'_ (i32); // anonymous local
+    let @15: &'_ (Slice<i32>); // anonymous local
+    let @16: usize; // anonymous local
+    let @17: usize; // anonymous local
+    let @18: &'_ (Slice<i32>); // anonymous local
+    let @19: &'_ (Slice<i32>); // anonymous local
+    let @20: &'_ (i32); // anonymous local
 
-    @11 := @ArrayRepeat<'_, i32, 4 : usize>(const (0 : i32))
-    @12 := &@11
-    @10 := move (@12)
-    @3 := &*(@10)
+    @4 := @ArrayRepeat<'_, i32, 4 : usize>(const (0 : i32))
+    @3 := &@4
     @2 := &*(@3)
     slice@1 := @ArrayToSliceShared<'_, i32, 4 : usize>(move (@2))
     drop @2
     @fake_read(slice@1)
     drop @3
     @fake_read(slice@1)
-    @7 := len(*(slice@1))
-    @8 := const (2 : usize)
-    @9 := move (@7) >= move (@8)
-    if move (@9) {
+    @8 := len(*(slice@1))
+    @9 := const (2 : usize)
+    @10 := move (@8) >= move (@9)
+    if move (@10) {
     }
     else {
-        drop _c@6
-        drop _b@5
-        drop _a@4
+        drop _c@7
+        drop _b@6
+        drop _a@5
         panic(core::panicking::panic_explicit)
     }
-    @21 := &*(slice@1)
-    @22 := @SliceIndexShared<'_, i32>(move (@21), const (0 : usize))
-    _a@4 := &*(@22)
-    @17 := &*(slice@1)
-    @18 := len(*(slice@1))
-    @19 := copy (@18) - const (1 : usize)
-    @20 := @SliceSubSliceShared<'_, i32>(move (@17), const (1 : usize), copy (@19))
-    _b@5 := &*(@20)
-    @13 := &*(slice@1)
-    @14 := len(*(slice@1))
-    @15 := copy (@14) - const (1 : usize)
-    @16 := @SliceIndexShared<'_, i32>(move (@13), copy (@15))
-    _c@6 := &*(@16)
+    @19 := &*(slice@1)
+    @20 := @SliceIndexShared<'_, i32>(move (@19), const (0 : usize))
+    _a@5 := &*(@20)
+    @15 := &*(slice@1)
+    @16 := len(*(slice@1))
+    @17 := copy (@16) - const (1 : usize)
+    @18 := @SliceSubSliceShared<'_, i32>(move (@15), const (1 : usize), copy (@17))
+    _b@6 := &*(@18)
+    @11 := &*(slice@1)
+    @12 := len(*(slice@1))
+    @13 := copy (@12) - const (1 : usize)
+    @14 := @SliceIndexShared<'_, i32>(move (@11), copy (@13))
+    _c@7 := &*(@14)
     @0 := ()
-    drop _c@6
-    drop _b@5
-    drop _a@4
+    drop _c@7
+    drop _b@6
+    drop _a@5
+    drop @4
     drop slice@1
     @0 := ()
     return

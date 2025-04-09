@@ -1,35 +1,5 @@
 # Final LLBC before serialization:
 
-fn test_crate::Trait::CONST1<Self>() -> usize
-{
-    let @0: usize; // return
-
-    @0 := const (0 : usize)
-    return
-}
-
-global test_crate::Trait::CONST1<Self>: usize = test_crate::Trait::CONST1()
-
-fn test_crate::Trait::CONST2<Self>() -> usize
-{
-    let @0: usize; // return
-
-    @0 := const (0 : usize)
-    return
-}
-
-global test_crate::Trait::CONST2<Self>: usize = test_crate::Trait::CONST2()
-
-fn test_crate::Trait::CONST3<Self>() -> usize
-{
-    let @0: usize; // return
-
-    @0 := const (0 : usize)
-    return
-}
-
-global test_crate::Trait::CONST3<Self>: usize = test_crate::Trait::CONST3()
-
 trait test_crate::Trait<Self>
 {
     const CONST1 : usize
@@ -96,6 +66,16 @@ impl test_crate::{impl test_crate::Trait for ()}#1 : test_crate::Trait<()>
     fn method2 = test_crate::{impl test_crate::Trait for ()}#1::method2
 }
 
+fn test_crate::Trait::CONST1<Self>() -> usize
+{
+    let @0: usize; // return
+
+    @0 := const (0 : usize)
+    return
+}
+
+global test_crate::Trait::CONST1<Self>: usize = test_crate::Trait::CONST1()
+
 fn test_crate::{impl test_crate::Trait for u8}::CONST2() -> usize
 {
     let @0: usize; // return
@@ -105,6 +85,16 @@ fn test_crate::{impl test_crate::Trait for u8}::CONST2() -> usize
 }
 
 global test_crate::{impl test_crate::Trait for u8}::CONST2: usize = test_crate::{impl test_crate::Trait for u8}::CONST2()
+
+fn test_crate::Trait::CONST3<Self>() -> usize
+{
+    let @0: usize; // return
+
+    @0 := const (0 : usize)
+    return
+}
+
+global test_crate::Trait::CONST3<Self>: usize = test_crate::Trait::CONST3()
 
 fn test_crate::{impl test_crate::Trait for u8}::method1()
 {
@@ -171,6 +161,16 @@ fn test_crate::Trait::method2<Self>()
     @0 := ()
     return
 }
+
+fn test_crate::Trait::CONST2<Self>() -> usize
+{
+    let @0: usize; // return
+
+    @0 := const (0 : usize)
+    return
+}
+
+global test_crate::Trait::CONST2<Self>: usize = test_crate::Trait::CONST2()
 
 
 

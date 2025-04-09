@@ -492,16 +492,6 @@ where
     fn to_type = test_crate::{impl test_crate::ToType<T> for test_crate::BoolWrapper}#7::to_type<T>[@TraitClause0, @TraitClause1]
 }
 
-pub fn test_crate::WithConstTy::LEN2<Self, const LEN : usize>() -> usize
-{
-    let @0: usize; // return
-
-    @0 := const (32 : usize)
-    return
-}
-
-pub global test_crate::WithConstTy::LEN2<Self, const LEN : usize>: usize = test_crate::WithConstTy::LEN2()
-
 pub trait test_crate::WithConstTy<Self, const LEN : usize>
 {
     parent_clause0 : [@TraitClause0]: core::marker::Sized<Self::V>
@@ -523,6 +513,16 @@ pub fn test_crate::{impl test_crate::WithConstTy<32 : usize> for bool}#8::LEN1()
 }
 
 pub global test_crate::{impl test_crate::WithConstTy<32 : usize> for bool}#8::LEN1: usize = test_crate::{impl test_crate::WithConstTy<32 : usize> for bool}#8::LEN1()
+
+pub fn test_crate::WithConstTy::LEN2<Self, const LEN : usize>() -> usize
+{
+    let @0: usize; // return
+
+    @0 := const (32 : usize)
+    return
+}
+
+pub global test_crate::WithConstTy::LEN2<Self, const LEN : usize>: usize = test_crate::WithConstTy::LEN2()
 
 pub fn test_crate::{impl test_crate::WithConstTy<32 : usize> for bool}#8::f<'_0, '_1>(@1: &'_0 mut (u64), @2: &'_1 (Array<u8, 32 : usize>))
 {
@@ -1053,12 +1053,12 @@ pub fn test_crate::BoolTrait::ret_true<'_0, Self>(@1: &'_0 (Self)) -> bool
     return
 }
 
-fn test_crate::{test_crate::TestType<T>[@TraitClause0]}#6::test::TestTrait::test<'_0, Self>(@1: &'_0 (Self)) -> bool
-
 trait test_crate::{test_crate::TestType<T>[@TraitClause0]}#6::test::TestTrait<Self>
 {
     fn test<'_0> = test_crate::{test_crate::TestType<T>[@TraitClause0]}#6::test::TestTrait::test<'_0_0, Self>
 }
+
+fn test_crate::{test_crate::TestType<T>[@TraitClause0]}#6::test::TestTrait::test<'_0, Self>(@1: &'_0 (Self)) -> bool
 
 impl test_crate::{test_crate::TestType<T>[@TraitClause0]}#6::test::{impl test_crate::{test_crate::TestType<T>[@TraitClause0]}#6::test::TestTrait for test_crate::{test_crate::TestType<T>[@TraitClause0]}#6::test::TestType1} : test_crate::{test_crate::TestType<T>[@TraitClause0]}#6::test::TestTrait<test_crate::{test_crate::TestType<T>[@TraitClause0]}#6::test::TestType1>
 {

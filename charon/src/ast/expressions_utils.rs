@@ -84,7 +84,7 @@ impl ProjectionElem {
                         args.types.get(TypeVarId::new(0)).unwrap().clone()
                     }
                     Adt(..) | TypeVar(_) | Literal(_) | Never | TraitType(..) | DynTrait(_)
-                    | Arrow(..) => {
+                    | Arrow(..) | Error(..) => {
                         // Type error
                         return Err(());
                     }

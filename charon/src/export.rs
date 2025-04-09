@@ -20,11 +20,11 @@ pub struct CrateData {
 }
 
 impl CrateData {
-    pub fn new(ctx: &TransformCtx) -> Self {
+    pub fn new(ctx: TransformCtx) -> Self {
         CrateData {
             charon_version: crate::VERSION.to_owned(),
-            translated: ctx.translated.clone(),
             has_errors: ctx.has_errors(),
+            translated: ctx.translated,
         }
     }
 

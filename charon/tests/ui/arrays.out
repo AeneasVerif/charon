@@ -708,7 +708,7 @@ pub fn test_crate::const_array() -> Array<u32, 2 : usize>
 {
     let @0: Array<u32, 2 : usize>; // return
 
-    @0 := [const (0 : u32), const (0 : u32)]
+    @0 := @ArrayRepeat<'_, u32, 2 : usize>(const (0 : u32))
     return
 }
 
@@ -718,14 +718,10 @@ pub fn test_crate::const_slice()
     let @1: &'_ (Slice<u32>); // anonymous local
     let @2: &'_ (Array<u32, 2 : usize>); // anonymous local
     let @3: &'_ (Array<u32, 2 : usize>); // anonymous local
-    let @4: &'_ (Array<u32, 2 : usize>); // anonymous local
-    let @5: Array<u32, 2 : usize>; // anonymous local
-    let @6: &'_ (Array<u32, 2 : usize>); // anonymous local
+    let @4: Array<u32, 2 : usize>; // anonymous local
 
-    @5 := @ArrayRepeat<'_, u32, 2 : usize>(const (0 : u32))
-    @6 := &@5
-    @4 := move (@6)
-    @3 := &*(@4)
+    @4 := @ArrayRepeat<'_, u32, 2 : usize>(const (0 : u32))
+    @3 := &@4
     @2 := &*(@3)
     @1 := @ArrayToSliceShared<'_, u32, 2 : usize>(move (@2))
     drop @2
@@ -733,6 +729,7 @@ pub fn test_crate::const_slice()
     drop @3
     drop @1
     @0 := ()
+    drop @4
     @0 := ()
     return
 }
@@ -757,7 +754,7 @@ pub fn test_crate::take_all()
     let @15: &'_ mut (Array<u32, 2 : usize>); // anonymous local
     let @16: &'_ mut (Array<u32, 2 : usize>); // anonymous local
 
-    x@1 := [const (0 : u32), const (0 : u32)]
+    x@1 := @ArrayRepeat<'_, u32, 2 : usize>(const (0 : u32))
     @fake_read(x@1)
     // x is deep copied (copy node appears in Charon, followed by a move)
     @3 := copy (x@1)
@@ -891,11 +888,11 @@ pub fn test_crate::index_all() -> u32
     let @22: &'_ mut (Array<u32, 2 : usize>); // anonymous local
     let @23: &'_ mut (Array<u32, 2 : usize>); // anonymous local
 
-    x@1 := [const (0 : u32), const (0 : u32)]
+    x@1 := @ArrayRepeat<'_, u32, 2 : usize>(const (0 : u32))
     @fake_read(x@1)
     @3 := const (true)
     if move (@3) {
-        _y@4 := [const (0 : u32), const (0 : u32)]
+        _y@4 := @ArrayRepeat<'_, u32, 2 : usize>(const (0 : u32))
         @fake_read(_y@4)
         drop _y@4
     }
@@ -1017,7 +1014,7 @@ pub fn test_crate::update_all()
     let @11: &'_ mut (Array<u32, 2 : usize>); // anonymous local
     let @12: &'_ mut (Array<u32, 2 : usize>); // anonymous local
 
-    x@1 := [const (0 : u32), const (0 : u32)]
+    x@1 := @ArrayRepeat<'_, u32, 2 : usize>(const (0 : u32))
     @fake_read(x@1)
     @3 := copy (x@1)
     @2 := test_crate::update_array(move (@3))
@@ -1058,7 +1055,7 @@ pub fn test_crate::range_all()
     let @6: &'_ mut (Array<u32, 4 : usize>); // anonymous local
     let @7: core::ops::range::Range<usize>[core::marker::Sized<usize>]; // anonymous local
 
-    x@1 := [const (0 : u32), const (0 : u32), const (0 : u32), const (0 : u32)]
+    x@1 := @ArrayRepeat<'_, u32, 4 : usize>(const (0 : u32))
     @fake_read(x@1)
     // CONFIRM: there is no way to shrink [T;N] into [T;M] with M<N?
     @6 := &mut x@1
@@ -1489,11 +1486,11 @@ pub fn test_crate::ite()
     let @10: &'_ mut (Array<u32, 2 : usize>); // anonymous local
     let @11: &'_ mut (Array<u32, 2 : usize>); // anonymous local
 
-    x@1 := [const (0 : u32), const (0 : u32)]
+    x@1 := @ArrayRepeat<'_, u32, 2 : usize>(const (0 : u32))
     @fake_read(x@1)
     @2 := const (true)
     if move (@2) {
-        y@3 := [const (0 : u32), const (0 : u32)]
+        y@3 := @ArrayRepeat<'_, u32, 2 : usize>(const (0 : u32))
         @fake_read(y@3)
         @7 := &mut x@1
         @6 := &mut *(@7)

@@ -79,14 +79,14 @@ fn test_crate::bar<'_0>(@1: &'_0 (dyn (exists(TODO))))
     return
 }
 
-#[lang_item("to_string_method")]
-pub fn alloc::string::ToString::to_string<'_0, Self>(@1: &'_0 (Self)) -> alloc::string::String
-
 #[lang_item("ToString")]
 pub trait alloc::string::ToString<Self>
 {
     fn to_string<'_0> = alloc::string::ToString::to_string<'_0_0, Self>
 }
+
+#[lang_item("to_string_method")]
+pub fn alloc::string::ToString::to_string<'_0, Self>(@1: &'_0 (Self)) -> alloc::string::String
 
 impl alloc::string::{impl alloc::string::ToString for T}#32<T> : alloc::string::ToString<T>
 where
