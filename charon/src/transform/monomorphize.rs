@@ -457,9 +457,10 @@ impl UllbcPass for Transform {
                             let mut fun_sub = fun.clone().substitute(gargs);
                             // fun_sub.signature.generics = GenericParams::empty();
 
-                            let fun_id_sub = ctx.translated.fun_decls.reserve_slot();
-                            fun_sub.def_id = fun_id_sub;
-                            ctx.translated.fun_decls.set_slot(fun_id_sub, fun_sub);
+                            let fun_id_sub = ctx.translated.fun_decls.push_with(|id| {
+                                fun_sub.def_id = id;
+                                fun_sub
+                            });
 
                             AnyTransId::Fun(fun_id_sub)
                         }
@@ -467,9 +468,10 @@ impl UllbcPass for Transform {
                             let typ = ctx.translated.type_decls.get(*typ_id).unwrap();
                             let mut typ_sub = typ.clone().substitute(gargs);
 
-                            let typ_id_sub = ctx.translated.type_decls.reserve_slot();
-                            typ_sub.def_id = typ_id_sub;
-                            ctx.translated.type_decls.set_slot(typ_id_sub, typ_sub);
+                            let typ_id_sub = ctx.translated.type_decls.push_with(|id| {
+                                typ_sub.def_id = id;
+                                typ_sub
+                            });
 
                             AnyTransId::Type(typ_id_sub)
                         }
@@ -480,16 +482,16 @@ impl UllbcPass for Transform {
                             let init = ctx.translated.fun_decls.get(glob.init).unwrap();
                             let mut init_sub = init.clone().substitute(gargs);
 
-                            let init_id_sub = ctx.translated.fun_decls.reserve_slot();
-                            init_sub.def_id = init_id_sub;
-                            ctx.translated.fun_decls.set_slot(init_id_sub, init_sub);
+                            let init_id_sub = ctx.translated.fun_decls.push_with(|id| {
+                                init_sub.def_id = id;
+                                glob_sub.init = id;
+                                init_sub
+                            });
 
-                            let g_id_sub = ctx.translated.global_decls.reserve_slot();
-                            glob_sub.def_id = g_id_sub;
-                            glob_sub.init = init_id_sub;
-                            ctx.translated
-                                .global_decls
-                                .set_slot(g_id_sub.clone(), glob_sub);
+                            let g_id_sub = ctx.translated.global_decls.push_with(|id| {
+                                glob_sub.def_id = id;
+                                glob_sub
+                            });
 
                             data.worklist.push(AnyTransId::Fun(init_id_sub));
 
