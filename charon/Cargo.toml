@@ -1,6 +1,6 @@
 [package]
 name = "charon"
-version = "0.1.73"
+version = "0.1.74"
 authors = ["Son Ho <hosonmarc@gmail.com>", "Guillaume Boisseau <nadrieril+git@gmail.com>"]
 edition = "2021"
 license = "Apache-2.0"
