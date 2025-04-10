@@ -314,12 +314,12 @@ impl VisitAst for MissingIndexChecker<'_> {
 
 fn find_uses(data: &mut PassData, krate: &TranslatedCrate, item: &AnyTransItem) {
     let mut visitor = UsageVisitor { data, krate };
-    item.drive(&mut visitor);
+    let _ = item.drive(&mut visitor);
 }
 
 fn subst_uses<T: AstVisitable + Debug>(data: &PassData, item: &mut T) {
     let mut visitor = SubstVisitor { data };
-    item.drive_mut(&mut visitor);
+    let _ = item.drive_mut(&mut visitor);
 }
 
 // fn check_missing_indices(krate: &TranslatedCrate) {
