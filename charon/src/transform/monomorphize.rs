@@ -2,8 +2,8 @@
 use derive_generic_visitor::*;
 use std::collections::{HashMap, HashSet};
 
+use crate::ast::*;
 use crate::transform::TransformCtx;
-use crate::ullbc_ast::*;
 use std::fmt::Debug;
 
 use super::ctx::TransformPass;
@@ -198,9 +198,9 @@ impl SubstVisitor<'_> {
 }
 
 impl VisitAstMut for SubstVisitor<'_> {
-    fn exit_ullbc_statement(&mut self, stt: &mut Statement) {
+    fn exit_ullbc_statement(&mut self, stt: &mut ullbc_ast::Statement) {
         match &mut stt.content {
-            RawStatement::Assign(_, Rvalue::Discriminant(Place { ty, .. }, id)) => {
+            ullbc_ast::RawStatement::Assign(_, Rvalue::Discriminant(Place { ty, .. }, id)) => {
                 match ty.as_adt() {
                     Some((TypeId::Adt(new_enum_id), _)) => {
                         // Small trick; the discriminant doesn't carry the information on the
@@ -210,9 +210,24 @@ impl VisitAstMut for SubstVisitor<'_> {
                     }
                     _ => {}
                 }
-                ()
             }
-            _ => (),
+            _ => {}
+        }
+    }
+    fn exit_llbc_statement(&mut self, stt: &mut llbc_ast::Statement) {
+        match &mut stt.content {
+            llbc_ast::RawStatement::Assign(_, Rvalue::Discriminant(Place { ty, .. }, id)) => {
+                match ty.as_adt() {
+                    Some((TypeId::Adt(new_enum_id), _)) => {
+                        // Small trick; the discriminant doesn't carry the information on the
+                        // generics of the enum, since it's irrelevant, but we need it to do
+                        // the substitution, so we look at the type of the place we read from
+                        *id = new_enum_id;
+                    }
+                    _ => {}
+                }
+            }
+            _ => {}
         }
     }
 
