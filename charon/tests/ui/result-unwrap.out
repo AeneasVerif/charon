@@ -13,22 +13,12 @@ pub enum core::result::Result<T, E>
 |  Err(E)
 
 
-#[lang_item("format_alignment")]
-pub enum core::fmt::rt::Alignment =
-|  Left()
-|  Right()
-|  Center()
-|  Unknown()
-
-
-#[lang_item("Option")]
-pub enum core::option::Option<T>
-  where
-      [@TraitClause0]: core::marker::Sized<T>,
- =
-|  None()
-|  Some(T)
-
+pub struct core::fmt::FormattingOptions =
+{
+  flags: u32,
+  width: u16,
+  precision: u16,
+}
 
 #[lang_item("Formatter")]
 pub struct core::fmt::Formatter<'a>
@@ -36,11 +26,7 @@ pub struct core::fmt::Formatter<'a>
       'a : 'a,
  =
 {
-  flags: u32,
-  fill: char,
-  align: core::fmt::rt::Alignment,
-  width: core::option::Option<usize>[core::marker::Sized<usize>],
-  precision: core::option::Option<usize>[core::marker::Sized<usize>],
+  options: core::fmt::FormattingOptions,
   buf: &'a mut (dyn (exists(TODO))),
 }
 
@@ -81,9 +67,29 @@ where
     return
 }
 
+fn core::fmt::flags::DEBUG_LOWER_HEX_FLAG() -> u32
+{
+    let @0: u32; // return
+
+    @0 := const (1 : u32) << const (25 : i32)
+    return
+}
+
+global core::fmt::flags::DEBUG_LOWER_HEX_FLAG: u32 = core::fmt::flags::DEBUG_LOWER_HEX_FLAG()
+
 pub fn core::fmt::num::{impl core::fmt::LowerHex for u32}#60::fmt<'_0, '_1, '_2>(@1: &'_0 (u32), @2: &'_1 mut (core::fmt::Formatter<'_2>)) -> core::result::Result<(), core::fmt::Error>[core::marker::Sized<()>, core::marker::Sized<core::fmt::Error>]
 
-pub fn core::fmt::num::imp::{impl core::fmt::Display for u32}#10::fmt<'_0, '_1, '_2>(@1: &'_0 (u32), @2: &'_1 mut (core::fmt::Formatter<'_2>)) -> core::result::Result<(), core::fmt::Error>[core::marker::Sized<()>, core::marker::Sized<core::fmt::Error>]
+fn core::fmt::flags::DEBUG_UPPER_HEX_FLAG() -> u32
+{
+    let @0: u32; // return
+
+    @0 := const (1 : u32) << const (26 : i32)
+    return
+}
+
+global core::fmt::flags::DEBUG_UPPER_HEX_FLAG: u32 = core::fmt::flags::DEBUG_UPPER_HEX_FLAG()
+
+pub fn core::fmt::num::imp::{impl core::fmt::Display for u32}#6::fmt<'_0, '_1, '_2>(@1: &'_0 (u32), @2: &'_1 mut (core::fmt::Formatter<'_2>)) -> core::result::Result<(), core::fmt::Error>[core::marker::Sized<()>, core::marker::Sized<core::fmt::Error>]
 
 pub fn core::fmt::num::{impl core::fmt::UpperHex for u32}#61::fmt<'_0, '_1, '_2>(@1: &'_0 (u32), @2: &'_1 mut (core::fmt::Formatter<'_2>)) -> core::result::Result<(), core::fmt::Error>[core::marker::Sized<()>, core::marker::Sized<core::fmt::Error>]
 
@@ -96,9 +102,12 @@ pub fn core::fmt::num::{impl core::fmt::Debug for u32}#86::fmt<'_0, '_1, '_2>(@1
     let @4: u32; // anonymous local
     let @5: u32; // anonymous local
     let @6: u32; // anonymous local
+    let @7: u32; // anonymous local
+    let @8: u32; // anonymous local
 
-    @4 := copy ((*(f@2)).flags)
-    @3 := move (@4) & const (16 : u32)
+    @4 := copy (((*(f@2)).options).flags)
+    @7 := core::fmt::flags::DEBUG_LOWER_HEX_FLAG
+    @3 := move (@4) & move (@7)
     drop @4
     switch move (@3) {
         0 : u32 => {
@@ -110,13 +119,14 @@ pub fn core::fmt::num::{impl core::fmt::Debug for u32}#86::fmt<'_0, '_1, '_2>(@1
         },
     }
     drop @3
-    @6 := copy ((*(f@2)).flags)
-    @5 := move (@6) & const (32 : u32)
+    @6 := copy (((*(f@2)).options).flags)
+    @8 := core::fmt::flags::DEBUG_UPPER_HEX_FLAG
+    @5 := move (@6) & move (@8)
     drop @6
     switch move (@5) {
         0 : u32 => {
             drop @5
-            @0 := core::fmt::num::imp::{impl core::fmt::Display for u32}#10::fmt<'_, '_, '_>(move (self@1), move (f@2))
+            @0 := core::fmt::num::imp::{impl core::fmt::Display for u32}#6::fmt<'_, '_, '_>(move (self@1), move (f@2))
         },
         _ => {
             drop @5
@@ -165,9 +175,9 @@ pub trait core::fmt::Display<Self>
 
 pub fn core::fmt::Display::fmt<'_0, '_1, '_2, Self>(@1: &'_0 (Self), @2: &'_1 mut (core::fmt::Formatter<'_2>)) -> core::result::Result<(), core::fmt::Error>[core::marker::Sized<()>, core::marker::Sized<core::fmt::Error>]
 
-impl core::fmt::num::imp::{impl core::fmt::Display for u32}#10 : core::fmt::Display<u32>
+impl core::fmt::num::imp::{impl core::fmt::Display for u32}#6 : core::fmt::Display<u32>
 {
-    fn fmt<'_0, '_1, '_2> = core::fmt::num::imp::{impl core::fmt::Display for u32}#10::fmt<'_0_0, '_0_1, '_0_2>
+    fn fmt<'_0, '_1, '_2> = core::fmt::num::imp::{impl core::fmt::Display for u32}#6::fmt<'_0_0, '_0_1, '_0_2>
 }
 
 pub trait core::fmt::UpperHex<Self>

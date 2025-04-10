@@ -340,7 +340,7 @@ impl TransformPass for Check {
                 binder_stack: BindingStack::new(item.generic_params().clone()),
                 visit_stack: Default::default(),
             };
-            item.drive(&mut visitor);
+            let _ = item.drive(&mut visitor);
         }
     }
 }

@@ -1147,20 +1147,14 @@ impl VisitAstMut for UpdateItemBody<'_> {
                 .push_with(|id| TypeVar::new(id, path.to_name()));
             TyKind::TypeVar(DeBruijnVar::new_at_zero(var_id)).into_ty()
         });
-        self.under_binder(replacements, |this| {
-            this.visit_inner(binder);
-        });
-        Continue(())
+        self.under_binder(replacements, |this| this.visit_inner(binder))
     }
 
     fn visit_region_binder<T: AstVisitable>(
         &mut self,
         binder: &mut RegionBinder<T>,
     ) -> ControlFlow<Self::Break> {
-        self.under_binder(Default::default(), |this| {
-            this.visit_inner(binder);
-        });
-        Continue(())
+        self.under_binder(Default::default(), |this| this.visit_inner(binder))
     }
 
     fn enter_trait_impl(&mut self, timpl: &mut TraitImpl) {
@@ -1236,7 +1230,7 @@ impl VisitAstMut for UpdateItemBody<'_> {
             if let Some(new_ty) = self.lookup_path_on_trait_ref(&path, &tref.kind) {
                 *kind = new_ty.kind().clone();
                 // Fix the newly-substituted type.
-                self.visit(kind);
+                let _ = self.visit(kind);
             }
         }
     }
@@ -1361,7 +1355,7 @@ impl TransformPass for Transform {
 
             // Update the rest of the items: all the `GenericArgs` and the non-top-level binders
             // (trait methods and inherent impls in `Name`s).
-            item.drive_mut(&mut UpdateItemBody {
+            let _ = item.drive_mut(&mut UpdateItemBody {
                 ctx,
                 span,
                 item_modifications: &item_modifications,

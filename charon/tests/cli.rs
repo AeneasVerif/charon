@@ -1,7 +1,7 @@
 use anyhow::{ensure, Context, Result};
 use assert_cmd::prelude::CommandCargoExt;
 use itertools::Itertools;
-use std::process::Command;
+use std::{path::PathBuf, process::Command};
 
 fn charon<T>(args: &[&str], dir: &str, f: impl FnOnce(String, String) -> Result<T>) -> Result<T> {
     let cmd_str = std::iter::once("charon")
@@ -251,10 +251,7 @@ fn handle_multi_trailing_rs_args() {
     ];
     let err = charon(args, "tests/ui", |_, _| Ok(())).unwrap_err();
     let err = format!("{err:?}");
-    assert!(
-        err.contains("invalid character `'.'` in crate name"),
-        "{err}"
-    );
+    assert!(err.contains("invalid character '.' in crate name"), "{err}");
 }
 
 #[test]
@@ -288,4 +285,24 @@ fn filename_conflict() -> Result<()> {
     let input = "./ui/simple/match-on-float.rs";
     let args = &["rustc", "--no-serialize", "--", input, "--crate-name=ui"];
     charon(args, "tests", |_, _| Ok(()))
+}
+
+#[test]
+fn charon_toolchain_path() -> Result<()> {
+    let args = &["toolchain-path"];
+    charon(args, ".", |stdout, cmd| {
+        let path = PathBuf::from(stdout.trim_end());
+        ensure!(
+            path.exists(),
+            "`{cmd}`: toolchain path {} doesn't exist",
+            path.display()
+        );
+        let rustc_path = path.join("bin").join("rustc");
+        ensure!(
+            rustc_path.exists(),
+            "`{cmd}`: rustc path {} doesn't exist",
+            rustc_path.display()
+        );
+        Ok(())
+    })
 }

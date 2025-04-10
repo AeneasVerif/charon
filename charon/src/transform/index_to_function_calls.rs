@@ -292,13 +292,13 @@ impl UllbcPass for Transform {
                 use RawStatement::*;
                 match &mut st.content {
                     FakeRead(..) => {
-                        visitor.visit_inner_with_mutability(st, false);
+                        let _ = visitor.visit_inner_with_mutability(st, false);
                     }
                     Assign(..) | SetDiscriminant(..) | Drop(..) | Deinit(..) => {
-                        visitor.visit_inner_with_mutability(st, true);
+                        let _ = visitor.visit_inner_with_mutability(st, true);
                     }
                     Nop | Error(..) | Assert(..) | Call(..) | StorageDead(..) => {
-                        st.drive_body_mut(&mut visitor);
+                        let _ = st.drive_body_mut(&mut visitor);
                     }
                 }
                 visitor.statements
@@ -315,7 +315,7 @@ impl UllbcPass for Transform {
             use RawTerminator::*;
             match &mut terminator.content {
                 Switch { .. } => {
-                    visitor.visit_inner_with_mutability(terminator, false);
+                    let _ = visitor.visit_inner_with_mutability(terminator, false);
                 }
                 Abort { .. } | Return | Goto { .. } => {}
             }

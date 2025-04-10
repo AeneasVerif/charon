@@ -140,7 +140,7 @@ pub struct core::ptr::unique::Unique<T> =
   _marker: core::marker::PhantomData<T>,
 }
 
-struct alloc::raw_vec::Cap =
+pub struct core::num::niche_types::UsizeNoHighBit =
 {
   usize,
 }
@@ -151,7 +151,7 @@ struct alloc::raw_vec::RawVecInner<A>
  =
 {
   ptr: core::ptr::unique::Unique<u8>,
-  cap: alloc::raw_vec::Cap,
+  cap: core::num::niche_types::UsizeNoHighBit,
   alloc: A,
 }
 

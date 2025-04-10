@@ -38,7 +38,7 @@ where
 #[lang_item("String")]
 pub opaque type alloc::string::String
 
-pub fn alloc::string::{impl alloc::string::ToString for T}#32::to_string<'_0, T>(@1: &'_0 (T)) -> alloc::string::String
+pub fn alloc::string::{impl alloc::string::ToString for T}#34::to_string<'_0, T>(@1: &'_0 (T)) -> alloc::string::String
 where
     [@TraitClause0]: core::fmt::Display<T>,
 
@@ -49,7 +49,7 @@ fn test_crate::destruct<'_0>(@1: &'_0 (dyn (exists(TODO)))) -> alloc::string::St
     let @2: &'_ (dyn (exists(TODO))); // anonymous local
 
     @2 := &*(x@1)
-    @0 := alloc::string::{impl alloc::string::ToString for T}#32::to_string<'_, dyn (exists(TODO))>[core::fmt::Display<dyn (exists(TODO))>](move (@2))
+    @0 := alloc::string::{impl alloc::string::ToString for T}#34::to_string<'_, dyn (exists(TODO))>[core::fmt::Display<dyn (exists(TODO))>](move (@2))
     drop @2
     return
 }
@@ -88,11 +88,11 @@ pub trait alloc::string::ToString<Self>
 #[lang_item("to_string_method")]
 pub fn alloc::string::ToString::to_string<'_0, Self>(@1: &'_0 (Self)) -> alloc::string::String
 
-impl alloc::string::{impl alloc::string::ToString for T}#32<T> : alloc::string::ToString<T>
+impl alloc::string::{impl alloc::string::ToString for T}#34<T> : alloc::string::ToString<T>
 where
     [@TraitClause0]: core::fmt::Display<T>,
 {
-    fn to_string<'_0> = alloc::string::{impl alloc::string::ToString for T}#32::to_string<'_0_0, T>[@TraitClause0]
+    fn to_string<'_0> = alloc::string::{impl alloc::string::ToString for T}#34::to_string<'_0_0, T>[@TraitClause0]
 }
 
 pub fn core::fmt::Display::fmt<'_0, '_1, '_2, Self>(@1: &'_0 (Self), @2: &'_1 mut (core::fmt::Formatter<'_2>)) -> core::result::Result<(), core::fmt::Error>[core::marker::Sized<()>, core::marker::Sized<core::fmt::Error>]
