@@ -788,7 +788,7 @@ checksum = "bf151400ff0baff5465007dd2f3e717f3fe502074ca563069ce3a6629d07b289"
 [[package]]
 name = "hax-adt-into"
 version = "0.2.0"
-source = "git+https://github.com/Nadrieril/hax?branch=update-rustc#d89c6e6d00530dd919eb0c79d18b2f8aa821df09"
+source = "git+https://github.com/cryspen/hax?branch=main#89a84ec2793512301f7522d01431be6444a55cad"
 dependencies = [
  "itertools 0.11.0",
  "proc-macro2",
@@ -799,7 +799,7 @@ dependencies = [
 [[package]]
 name = "hax-frontend-exporter"
 version = "0.2.0"
-source = "git+https://github.com/Nadrieril/hax?branch=update-rustc#d89c6e6d00530dd919eb0c79d18b2f8aa821df09"
+source = "git+https://github.com/cryspen/hax?branch=main#89a84ec2793512301f7522d01431be6444a55cad"
 dependencies = [
  "extension-traits",
  "hax-adt-into",
@@ -816,7 +816,7 @@ dependencies = [
 [[package]]
 name = "hax-frontend-exporter-options"
 version = "0.2.0"
-source = "git+https://github.com/Nadrieril/hax?branch=update-rustc#d89c6e6d00530dd919eb0c79d18b2f8aa821df09"
+source = "git+https://github.com/cryspen/hax?branch=main#89a84ec2793512301f7522d01431be6444a55cad"
 dependencies = [
  "hax-adt-into",
  "schemars",
