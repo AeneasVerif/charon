@@ -7,10 +7,8 @@ pub global foreign_constant_aux::CONSTANT: u8 = foreign_constant_aux::CONSTANT()
 fn test_crate::foo() -> u8
 {
     let @0: u8; // return
-    let @1: u8; // anonymous local
 
-    @1 := foreign_constant_aux::CONSTANT
-    @0 := move (@1)
+    @0 := move (foreign_constant_aux::CONSTANT)
     return
 }
 

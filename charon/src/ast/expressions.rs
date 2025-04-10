@@ -27,7 +27,12 @@ pub struct Place {
 )]
 #[charon::variants_prefix("Place")]
 pub enum PlaceKind {
+    /// A local variable in a function body.
     Local(LocalId),
+    /// A global (const or static).
+    /// Not present in MIR; introduced in [simplify_constants.rs].
+    Global(GlobalDeclRef),
+    /// A subplace of a place.
     Projection(Box<Place>, ProjectionElem),
 }
 
@@ -531,13 +536,6 @@ pub enum Rvalue {
     /// Remark: in case of closures, the aggregated value groups the closure id
     /// together with its state.
     Aggregate(AggregateKind, Vec<Operand>),
-    /// Copy the value of the referenced global.
-    /// Not present in MIR; introduced in [simplify_constants.rs].
-    Global(GlobalDeclRef),
-    /// Reference the value of the global. This has type `&T` or `*mut T` depending on desired
-    /// mutability.
-    /// Not present in MIR; introduced in [simplify_constants.rs].
-    GlobalRef(GlobalDeclRef, RefKind),
     /// Length of a memory location. The run-time length of e.g. a vector or a slice is
     /// represented differently (but pretty-prints the same, FIXME).
     /// Should be seen as a function of signature:

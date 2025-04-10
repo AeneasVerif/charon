@@ -360,11 +360,9 @@ pub fn test_crate::thing()
     let @2: u32; // anonymous local
     let @3: (); // anonymous local
     let @4: u32; // anonymous local
-    let @5: u32; // anonymous local
 
     // This comment belongs above the assignment to `x` and not above intermediate computations.
-    @5 := test_crate::CONSTANT
-    @2 := move (@5) >> const (3 : i32)
+    @2 := move (test_crate::CONSTANT) >> const (3 : i32)
     x@1 := move (@2) + const (12 : u32)
     drop @2
     @fake_read(x@1)

@@ -42,14 +42,18 @@ fn transform_constant_expr(
             Operand::Const(val)
         }
         RawConstantExpr::Global(global_ref) => {
-            Operand::Move(new_var(Rvalue::Global(global_ref), val.ty.clone()))
+            let global_place = Place::new_global(global_ref, val.ty.clone());
+            Operand::Move(global_place)
         }
         RawConstantExpr::Ref(box bval) => {
             match bval.value {
-                RawConstantExpr::Global(global_ref) => Operand::Move(new_var(
-                    Rvalue::GlobalRef(global_ref, RefKind::Shared),
-                    val.ty,
-                )),
+                RawConstantExpr::Global(global_ref) => {
+                    let global_place = Place::new_global(global_ref, val.ty.clone());
+                    Operand::Move(new_var(
+                        Rvalue::Ref(global_place, BorrowKind::Shared),
+                        val.ty,
+                    ))
+                }
                 _ => {
                     // Recurse on the borrowed value
                     let bval_ty = bval.ty.clone();
@@ -68,7 +72,8 @@ fn transform_constant_expr(
         RawConstantExpr::MutPtr(box bval) => {
             match bval.value {
                 RawConstantExpr::Global(global_ref) => {
-                    Operand::Move(new_var(Rvalue::GlobalRef(global_ref, RefKind::Mut), val.ty))
+                    let global_place = Place::new_global(global_ref, val.ty.clone());
+                    Operand::Move(new_var(Rvalue::RawPtr(global_place, RefKind::Mut), val.ty))
                 }
                 _ => {
                     // Recurse on the borrowed value

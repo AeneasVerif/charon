@@ -225,7 +225,7 @@ fn remove_dynamic_checks(_ctx: &mut TransformCtx, statements: &mut [Statement]) 
                 && let Some((sub, ProjectionElem::Field(FieldProjKind::Tuple(2), p_id))) =
                     cond.as_projection()
                 && sub.is_local()
-                && cond.local_id() == result.local_id()
+                && sub.local_id() == result.local_id()
                 && p_id.index() == 1
                 && *expected == false =>
         {
