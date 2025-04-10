@@ -29,7 +29,7 @@ module Ast = struct
         ^ variant_id_to_pretty_string variant_id
         ^ ")"
     | StorageDead var_id ->
-        indent ^ "storage_dead " ^ var_id_to_string env var_id
+        indent ^ "storage_dead " ^ local_id_to_string env var_id
     | Deinit p -> indent ^ "deinit " ^ place_to_string env p
     | Assert a -> assertion_to_string env indent a
     | Drop p -> indent ^ "drop " ^ place_to_string env p

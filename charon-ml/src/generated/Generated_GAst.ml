@@ -27,8 +27,8 @@ type fun_id_or_trait_method_ref = Expressions.fun_id_or_trait_method_ref
 type fun_decl_id = Types.fun_decl_id [@@deriving show, ord]
 
 (** A variable *)
-type var = {
-  index : var_id;  (** Unique index identifying the variable *)
+type local = {
+  index : local_id;  (** Unique index identifying the variable *)
   name : string option;
       (** Variable name - may be `None` if the variable was introduced by Rust
         through desugaring.
@@ -40,7 +40,7 @@ type var = {
 and locals = {
   arg_count : int;
       (** The number of local variables used for the input arguments. *)
-  vars : var list;
+  locals : local list;
       (** The local variables.
         We always have, in the following order:
         - the local used for the return value (index 0)

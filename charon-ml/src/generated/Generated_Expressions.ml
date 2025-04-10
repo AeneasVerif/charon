@@ -11,14 +11,14 @@ open Identifiers
 
 open Types
 open Values
-module VarId = IdGen ()
+module LocalId = IdGen ()
 module GlobalDeclId = Types.GlobalDeclId
 module FunDeclId = Types.FunDeclId
 
 type place = { kind : place_kind; ty : ty }
 
 and place_kind =
-  | PlaceBase of var_id
+  | PlaceLocal of local_id
   | PlaceProjection of place * projection_elem
 
 (** Note that we don't have the equivalent of "downcasts".
@@ -378,7 +378,7 @@ and aggregate_kind =
           state.
        *)
 
-and var_id = (VarId.id[@visitors.opaque])
+and local_id = (LocalId.id[@visitors.opaque])
 [@@deriving
   show,
     eq,

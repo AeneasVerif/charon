@@ -27,7 +27,7 @@ impl Transform {
             content: second_abort @ RawStatement::Abort(_),
             ..
         }, ..] = seq
-            && locals[call.dest.var_id()].ty.kind().is_never()
+            && locals[call.dest.local_id()].ty.kind().is_never()
         {
             *second_abort = RawStatement::Nop;
             return Vec::new();

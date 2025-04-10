@@ -248,7 +248,7 @@ pub(crate) struct BodyTransCtx<'tcx, 'ctx> {
     /// The (regular) variables in the current function body.
     pub locals: Locals,
     /// The map from rust variable indices to translated variables indices.
-    pub vars_map: HashMap<usize, VarId>,
+    pub locals_map: HashMap<usize, LocalId>,
     /// The translated blocks. We can't use `ast::Vector<BlockId, ast::BlockData>`
     /// here because we might generate several fresh indices before actually
     /// adding the resulting blocks to the map.
@@ -900,7 +900,7 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
             parent_trait_clauses: Default::default(),
             item_trait_clauses: Default::default(),
             locals: Default::default(),
-            vars_map: Default::default(),
+            locals_map: Default::default(),
             blocks: Default::default(),
             blocks_map: Default::default(),
             blocks_stack: Default::default(),
@@ -923,9 +923,9 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
         self.t_ctx.def_span(def_id)
     }
 
-    pub(crate) fn translate_local(&self, local: &hax::Local) -> Option<VarId> {
+    pub(crate) fn translate_local(&self, local: &hax::Local) -> Option<LocalId> {
         use rustc_index::Idx;
-        self.vars_map.get(&local.index()).copied()
+        self.locals_map.get(&local.index()).copied()
     }
 
     #[allow(dead_code)]
@@ -1195,8 +1195,11 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
     }
 
     pub(crate) fn push_var(&mut self, rid: usize, ty: Ty, name: Option<String>) {
-        let var_id = self.locals.vars.push_with(|index| Var { index, name, ty });
-        self.vars_map.insert(rid, var_id);
+        let local_id = self
+            .locals
+            .locals
+            .push_with(|index| Local { index, name, ty });
+        self.locals_map.insert(rid, local_id);
     }
 
     pub(crate) fn fresh_block_id(&mut self, rid: hax::BasicBlock) -> ast::BlockId {

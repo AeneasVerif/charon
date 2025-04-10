@@ -51,7 +51,7 @@ use indexmap::IndexMap;
         TranslatedCrate, TypeDeclKind, TypeId, TypeVar, TypeVarId,
         ullbc_ast::BlockData, ullbc_ast::BlockId, ullbc_ast::ExprBody, ullbc_ast::RawStatement,
         ullbc_ast::RawTerminator, ullbc_ast::SwitchTargets, ullbc_ast::Terminator,
-        UnOp, Var, Variant, VariantId, VarId,
+        UnOp, Local, Variant, VariantId, LocalId,
         for<T: AstVisitable> Box<T>,
         for<T: AstVisitable> Option<T>,
         for<A: AstVisitable, B: AstVisitable> (A, B),
@@ -142,7 +142,7 @@ impl<K: Any, T: AstVisitable> AstVisitable for IndexMap<K, T> {
     skip(
         AbortKind, BinOp, BorrowKind, ConstantExpr, ConstGeneric, FieldId, FieldProjKind,
         FunDeclId, FunIdOrTraitMethodRef, GenericArgs, GlobalDeclRef, IntegerTy, Locals,
-        NullOp, RefKind, ScalarValue, Span, Ty, TypeDeclId, TypeId, UnOp, VariantId, VarId,
+        NullOp, RefKind, ScalarValue, Span, Ty, TypeDeclId, TypeId, UnOp, VariantId, LocalId,
     ),
     // Types that we unconditionally explore.
     drive(

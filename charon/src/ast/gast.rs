@@ -10,9 +10,9 @@ use serde::{Deserialize, Serialize};
 
 /// A variable
 #[derive(Debug, Clone, Serialize, Deserialize, Drive, DriveMut)]
-pub struct Var {
+pub struct Local {
     /// Unique index identifying the variable
-    pub index: VarId,
+    pub index: LocalId,
     /// Variable name - may be `None` if the variable was introduced by Rust
     /// through desugaring.
     #[drive(skip)]
@@ -21,6 +21,10 @@ pub struct Var {
     #[charon::rename("var_ty")]
     pub ty: Ty,
 }
+#[deprecated(note = "use `Local` intead")]
+pub type Var = Local;
+#[deprecated(note = "use `LocalId` intead")]
+pub type VarId = LocalId;
 
 /// Marker to indicate that a declaration is opaque (i.e. we don't inspect its body).
 #[derive(Debug, Copy, Clone, Serialize, Deserialize, Drive, DriveMut)]
@@ -37,7 +41,7 @@ pub struct Locals {
     /// - the local used for the return value (index 0)
     /// - the `arg_count` input arguments
     /// - the remaining locals, used for the intermediate computations
-    pub vars: Vector<VarId, Var>,
+    pub locals: Vector<LocalId, Local>,
 }
 
 /// An expression body.

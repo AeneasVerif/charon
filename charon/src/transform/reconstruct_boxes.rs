@@ -47,7 +47,7 @@ impl Transform {
                 && arg1 == align
                 && call_malloc.dest == *alloc_use
                 && box_make.is_local()
-                && let var_id = box_make.var_id()
+                && let var_id = box_make.local_id()
                 && let TyKind::Adt(TypeId::Builtin(BuiltinTy::Box), generics) =
                     locals[var_id].ty.kind()
             {

@@ -146,7 +146,7 @@ pub trait AstFormatter = Formatter<TypeDeclId>
     + Formatter<TypeDbVar>
     + Formatter<ConstGenericDbVar>
     + Formatter<ClauseDbVar>
-    + Formatter<VarId>
+    + Formatter<LocalId>
     + Formatter<(TypeDeclId, VariantId)>
     + Formatter<(TypeDeclId, Option<VariantId>, FieldId)>
     + for<'a> Formatter<&'a ImplElem>
@@ -453,11 +453,11 @@ impl<'a> Formatter<(TypeDeclId, Option<VariantId>, FieldId)> for FmtCtx<'a> {
     }
 }
 
-impl<'a> Formatter<VarId> for FmtCtx<'a> {
-    fn format_object(&self, id: VarId) -> String {
+impl<'a> Formatter<LocalId> for FmtCtx<'a> {
+    fn format_object(&self, id: LocalId) -> String {
         match &self.locals {
             None => id.to_pretty_string(),
-            Some(locals) => match locals.vars.get(id) {
+            Some(locals) => match locals.locals.get(id) {
                 None => id.to_pretty_string(),
                 Some(v) => v.to_string(),
             },

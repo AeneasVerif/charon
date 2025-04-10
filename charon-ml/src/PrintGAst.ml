@@ -36,7 +36,7 @@ let assertion_to_string (env : 'a fmt_env) (indent : string) (a : assertion) :
 (** Small helper *)
 let fun_sig_with_name_to_string (env : 'a fmt_env) (indent : string)
     (indent_incr : string) (attribute : string option) (name : string option)
-    (args : var list option) (sg : fun_sig) : string =
+    (args : local list option) (sg : fun_sig) : string =
   let ty_to_string = ty_to_string env in
 
   (* Unsafe keyword *)
@@ -64,7 +64,7 @@ let fun_sig_with_name_to_string (env : 'a fmt_env) (indent : string)
         let args = List.combine args sg.inputs in
         let args =
           List.map
-            (fun (var, rty) -> var_to_string var ^ " : " ^ ty_to_string rty)
+            (fun (var, rty) -> local_to_string var ^ " : " ^ ty_to_string rty)
             args
         in
         String.concat ", " args
@@ -108,7 +108,7 @@ let gfun_decl_to_string (env : 'a fmt_env) (indent : string)
         (Some name) None sg
   | Some body ->
       (* Locally update the environment *)
-      let locals = List.map (fun v -> (v.index, v.name)) body.locals.vars in
+      let locals = List.map (fun v -> (v.index, v.name)) body.locals.locals in
       let env = { env with locals } in
 
       (* Arguments *)
@@ -118,10 +118,10 @@ let gfun_decl_to_string (env : 'a fmt_env) (indent : string)
       let locals =
         List.map
           (fun var ->
-            indent ^ indent_incr ^ var_to_string var ^ " : "
+            indent ^ indent_incr ^ local_to_string var ^ " : "
             ^ ty_to_string env var.var_ty
             ^ ";")
-          body.locals.vars
+          body.locals.locals
       in
       let locals = String.concat "\n" locals in
 

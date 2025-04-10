@@ -19,7 +19,7 @@ type 'fun_body fmt_env = {
       (** We have a stack of generic parameters, because we can dive into
           binders (for instance because of the arrow type).
       *)
-  locals : (VarId.id * string option) list;
+  locals : (local_id * string option) list;
       (** The local variables don't need to be ordered (same as the generics) *)
 }
 

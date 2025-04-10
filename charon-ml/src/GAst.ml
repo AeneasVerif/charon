@@ -5,6 +5,12 @@ open Meta
 open Expressions
 include Generated_GAst
 
+(* FIXME(#287): Avoid derives triggering deprecation warnings *)
+[@@@alert "-deprecated"]
+
+type var = local
+[@@ocaml.deprecated "use [local] instead"] [@@deriving show, eq, ord]
+
 (* Hand-written because they don't exist in rust *)
 type type_declaration_group = TypeDeclId.id g_declaration_group
 [@@deriving show]

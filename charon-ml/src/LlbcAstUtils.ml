@@ -14,7 +14,7 @@ let fun_decl_list_from_crate (crate : crate) : fun_decl list =
     If a function does not have a body, it cannot access
     the locals field where the arguments are so it returns None
 *)
-let get_fun_args (fun_decl : fun_decl) : var list option =
+let get_fun_args (fun_decl : fun_decl) : local list option =
   match fun_decl.body with
   | Some body -> Some (GAstUtils.locals_get_input_vars body.locals)
   | None -> None

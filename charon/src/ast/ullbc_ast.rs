@@ -26,7 +26,7 @@ pub enum RawStatement {
     FakeRead(Place),
     SetDiscriminant(Place, VariantId),
     /// We translate this to [crate::llbc_ast::RawStatement::Drop] in LLBC
-    StorageDead(VarId),
+    StorageDead(LocalId),
     /// We translate this to [crate::llbc_ast::RawStatement::Drop] in LLBC
     Deinit(Place),
     Drop(Place),

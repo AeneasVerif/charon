@@ -415,11 +415,11 @@ let statement_substitute (subst : subst) (st : statement) : statement =
 (** Apply a type substitution to a function body. Return the local variables
     and the body. *)
 let fun_body_substitute_in_body (subst : subst) (body : fun_body) :
-    var list * statement =
+    local list * statement =
   let locals =
     List.map
-      (fun (v : var) -> { v with var_ty = ty_substitute subst v.var_ty })
-      body.locals.vars
+      (fun (v : local) -> { v with var_ty = ty_substitute subst v.var_ty })
+      body.locals.locals
   in
   let body = statement_substitute subst body.body in
   (locals, body)

@@ -13,28 +13,31 @@ use super::ctx::TransformPass;
 fn remove_unused_locals<Body: BodyVisitable>(body: &mut GExprBody<Body>) {
     // Compute the set of used locals.
     // We always register the return variable and the input arguments.
-    let mut used_locals: HashSet<VarId> = (0..(body.locals.arg_count + 1))
-        .map(|i| VarId::new(i))
+    let mut used_locals: HashSet<LocalId> = (0..(body.locals.arg_count + 1))
+        .map(|i| LocalId::new(i))
         .collect();
-    body.body.dyn_visit_in_body(|vid: &VarId| {
-        used_locals.insert(*vid);
+    body.body.dyn_visit_in_body(|lid: &LocalId| {
+        used_locals.insert(*lid);
     });
     trace!("used_locals: {:?}", used_locals);
 
     // Keep only the variables that are used and update their indices to be contiguous.
-    let mut vids_map: HashMap<VarId, VarId> = HashMap::new();
-    for var in mem::take(&mut body.locals.vars) {
-        if used_locals.contains(&var.index) {
-            let old_id = var.index;
-            let new_id = body.locals.vars.push_with(|index| Var { index, ..var });
-            vids_map.insert(old_id, new_id);
+    let mut ids_map: HashMap<LocalId, LocalId> = HashMap::new();
+    for local in mem::take(&mut body.locals.locals) {
+        if used_locals.contains(&local.index) {
+            let old_id = local.index;
+            let new_id = body
+                .locals
+                .locals
+                .push_with(|index| Local { index, ..local });
+            ids_map.insert(old_id, new_id);
         }
     }
-    trace!("vids_maps: {:?}", vids_map);
+    trace!("ids_maps: {:?}", ids_map);
 
-    // Update all `VarId`s.
-    body.body.dyn_visit_in_body_mut(|vid: &mut VarId| {
-        *vid = *vids_map.get(vid).unwrap();
+    // Update all `LocalId`s.
+    body.body.dyn_visit_in_body_mut(|lid: &mut LocalId| {
+        *lid = *ids_map.get(lid).unwrap();
     });
 }
 
