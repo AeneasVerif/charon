@@ -91,6 +91,7 @@ and unop_of_json (ctx : of_json_ctx) (js : json) : (unop, string) result =
     (match js with
     | `String "Not" -> Ok Not
     | `String "Neg" -> Ok Neg
+    | `String "PtrMetadata" -> Ok PtrMetadata
     | `Assoc [ ("Cast", cast) ] ->
         let* cast = cast_kind_of_json ctx cast in
         Ok (Cast cast)

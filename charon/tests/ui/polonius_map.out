@@ -133,7 +133,7 @@ where
     [@TraitClause4]: core::hash::Hash<K>,
     [@TraitClause5]: core::hash::BuildHasher<S>,
 
-pub fn std::collections::hash::map::{impl core::ops::index::Index<&'_0 (Q)> for std::collections::hash::map::HashMap<K, V, S>[@TraitClause0, @TraitClause1, @TraitClause2]}#9::index<'_0, '_1, K, Q, V, S>(@1: &'_1 (std::collections::hash::map::HashMap<K, V, S>[@TraitClause0, @TraitClause1, @TraitClause2]), @2: &'_0 (Q)) -> &'_1 (V)
+pub fn std::collections::hash::map::{impl core::ops::index::Index<&'_0 (Q)> for std::collections::hash::map::HashMap<K, V, S>[@TraitClause0, @TraitClause1, @TraitClause2]}#8::index<'_0, '_1, K, Q, V, S>(@1: &'_1 (std::collections::hash::map::HashMap<K, V, S>[@TraitClause0, @TraitClause1, @TraitClause2]), @2: &'_0 (Q)) -> &'_1 (V)
 where
     [@TraitClause0]: core::marker::Sized<K>,
     [@TraitClause1]: core::marker::Sized<V>,
@@ -182,7 +182,7 @@ pub fn test_crate::get_or_insert<'_0>(@1: &'_0 mut (std::collections::hash::map:
             @15 := const (22 : u32)
             @14 := &@15
             @13 := &*(@14)
-            @11 := std::collections::hash::map::{impl core::ops::index::Index<&'_0 (Q)> for std::collections::hash::map::HashMap<K, V, S>[@TraitClause0, @TraitClause1, @TraitClause2]}#9::index<'_, '_, u32, u32, u32, std::hash::random::RandomState>[core::marker::Sized<u32>, core::marker::Sized<u32>, core::marker::Sized<std::hash::random::RandomState>, core::cmp::impls::{impl core::cmp::Eq for u32}#43, core::hash::impls::{impl core::hash::Hash for u32}#11, core::borrow::{impl core::borrow::Borrow<T> for T}<u32>, core::cmp::impls::{impl core::cmp::Eq for u32}#43, core::hash::impls::{impl core::hash::Hash for u32}#11, std::hash::random::{impl core::hash::BuildHasher for std::hash::random::RandomState}#1](move (@12), move (@13))
+            @11 := std::collections::hash::map::{impl core::ops::index::Index<&'_0 (Q)> for std::collections::hash::map::HashMap<K, V, S>[@TraitClause0, @TraitClause1, @TraitClause2]}#8::index<'_, '_, u32, u32, u32, std::hash::random::RandomState>[core::marker::Sized<u32>, core::marker::Sized<u32>, core::marker::Sized<std::hash::random::RandomState>, core::cmp::impls::{impl core::cmp::Eq for u32}#43, core::hash::impls::{impl core::hash::Hash for u32}#11, core::borrow::{impl core::borrow::Borrow<T> for T}<u32>, core::cmp::impls::{impl core::cmp::Eq for u32}#43, core::hash::impls::{impl core::hash::Hash for u32}#11, std::hash::random::{impl core::hash::BuildHasher for std::hash::random::RandomState}#1](move (@12), move (@13))
             drop @13
             drop @12
             @10 := &*(@11)
@@ -213,7 +213,7 @@ pub trait core::ops::index::Index<Self, Idx>
 
 pub fn core::ops::index::Index::index<'_0, Self, Idx>(@1: &'_0 (Self), @2: Idx) -> &'_0 (Self::Output)
 
-impl std::collections::hash::map::{impl core::ops::index::Index<&'_0 (Q)> for std::collections::hash::map::HashMap<K, V, S>[@TraitClause0, @TraitClause1, @TraitClause2]}#9<'_0, K, Q, V, S> : core::ops::index::Index<std::collections::hash::map::HashMap<K, V, S>[@TraitClause0, @TraitClause1, @TraitClause2], &'_0 (Q)>
+impl std::collections::hash::map::{impl core::ops::index::Index<&'_0 (Q)> for std::collections::hash::map::HashMap<K, V, S>[@TraitClause0, @TraitClause1, @TraitClause2]}#8<'_0, K, Q, V, S> : core::ops::index::Index<std::collections::hash::map::HashMap<K, V, S>[@TraitClause0, @TraitClause1, @TraitClause2], &'_0 (Q)>
 where
     [@TraitClause0]: core::marker::Sized<K>,
     [@TraitClause1]: core::marker::Sized<V>,
@@ -226,7 +226,7 @@ where
     [@TraitClause8]: core::hash::BuildHasher<S>,
 {
     type Output = V
-    fn index<'_0> = std::collections::hash::map::{impl core::ops::index::Index<&'_0 (Q)> for std::collections::hash::map::HashMap<K, V, S>[@TraitClause0, @TraitClause1, @TraitClause2]}#9::index<'_0, '_0_0, K, Q, V, S>[@TraitClause0, @TraitClause1, @TraitClause2, @TraitClause3, @TraitClause4, @TraitClause5, @TraitClause6, @TraitClause7, @TraitClause8]
+    fn index<'_0> = std::collections::hash::map::{impl core::ops::index::Index<&'_0 (Q)> for std::collections::hash::map::HashMap<K, V, S>[@TraitClause0, @TraitClause1, @TraitClause2]}#8::index<'_0, '_0_0, K, Q, V, S>[@TraitClause0, @TraitClause1, @TraitClause2, @TraitClause3, @TraitClause4, @TraitClause5, @TraitClause6, @TraitClause7, @TraitClause8]
 }
 
 pub fn core::hash::BuildHasher::build_hasher<'_0, Self>(@1: &'_0 (Self)) -> Self::Hasher

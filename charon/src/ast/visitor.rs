@@ -82,11 +82,11 @@ pub trait AstVisitable: Any {
     }
     /// Visit all occurrences of that type inside `self`, in pre-order traversal.
     fn dyn_visit<T: AstVisitable>(&self, f: impl FnMut(&T)) {
-        self.drive(&mut DynVisitor::new_shared::<T>(f));
+        let _ = self.drive(&mut DynVisitor::new_shared::<T>(f));
     }
     /// Visit all occurrences of that type inside `self`, in pre-order traversal.
     fn dyn_visit_mut<T: AstVisitable>(&mut self, f: impl FnMut(&mut T)) {
-        self.drive_mut(&mut DynVisitor::new_mut::<T>(f));
+        let _ = self.drive_mut(&mut DynVisitor::new_mut::<T>(f));
     }
 }
 
@@ -173,12 +173,12 @@ impl<K: Any, T: AstVisitable> AstVisitable for IndexMap<K, T> {
 pub trait BodyVisitable: Any {
     /// Visit all occurrences of that type inside `self`, in pre-order traversal.
     fn dyn_visit_in_body<T: BodyVisitable>(&self, f: impl FnMut(&T)) {
-        self.drive_body(&mut DynVisitor::new_shared::<T>(f));
+        let _ = self.drive_body(&mut DynVisitor::new_shared::<T>(f));
     }
 
     /// Visit all occurrences of that type inside `self`, in pre-order traversal.
     fn dyn_visit_in_body_mut<T: BodyVisitable>(&mut self, f: impl FnMut(&mut T)) {
-        self.drive_body_mut(&mut DynVisitor::new_mut::<T>(f));
+        let _ = self.drive_body_mut(&mut DynVisitor::new_mut::<T>(f));
     }
 }
 

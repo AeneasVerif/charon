@@ -14,8 +14,8 @@
 let
   # The rustc commit we use to get the tests. We should update it every now and
   # then to match the version of rustc we're using.
-  tests_commit = "86d69c705a552236a622eee3fdea94bf13c5f102";
-  tests_hash = "sha256-1TMO4+rdOCYF1QWs5FDqQ1magzx8lmkOajlvuEh0Moc=";
+  tests_commit = "920d95eaf23d7eb6b415d09868e4f793024fa604";
+  tests_hash = "sha256-sAOLzfvjKMi6oeS6EkZ8h5NHF2e6sNqeuq4yni2Pts4=";
 
   rustc-test-suite = fetchFromGitHub {
     owner = "rust-lang";

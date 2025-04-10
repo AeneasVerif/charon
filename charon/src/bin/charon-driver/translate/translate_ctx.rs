@@ -331,7 +331,8 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
             }
             // We map the three namespaces onto a single one. We can always disambiguate by looking
             // at the definition.
-            DefPathItem::TypeNs(symbol)
+            DefPathItem::TypeNs(None) => None,
+            DefPathItem::TypeNs(Some(symbol))
             | DefPathItem::ValueNs(symbol)
             | DefPathItem::MacroNs(symbol) => Some(PathElem::Ident(symbol, disambiguator)),
             DefPathItem::Impl => {
@@ -602,18 +603,9 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
                     }
                 }
             }
-            hax::FileName::QuoteExpansion(_)
-            | hax::FileName::Anon(_)
-            | hax::FileName::MacroExpansion(_)
-            | hax::FileName::ProcMacroSourceCode(_)
-            | hax::FileName::CliCrateAttr(_)
-            | hax::FileName::Custom(_)
-            | hax::FileName::DocTest(..)
-            | hax::FileName::InlineAsm(_) => {
-                // We use the debug formatter to generate a filename.
-                // This is not ideal, but filenames are for debugging anyway.
-                FileName::NotReal(format!("{name:?}"))
-            }
+            // We use the debug formatter to generate a filename.
+            // This is not ideal, but filenames are for debugging anyway.
+            _ => FileName::NotReal(format!("{name:?}")),
         }
     }
 
@@ -690,20 +682,25 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
     /// Translates a rust attribute. Returns `None` if the attribute is a doc comment (rustc
     /// encodes them as attributes). For now we use `String`s for `Attributes`.
     pub(crate) fn translate_attribute(&mut self, attr: &hax::Attribute) -> Option<Attribute> {
-        match &attr.kind {
-            hax::AttrKind::Normal(normal_attr) => {
+        use hax::Attribute as Haxttribute;
+        use hax::AttributeKind as HaxttributeKind;
+        match attr {
+            Haxttribute::Parsed(HaxttributeKind::DocComment { comment, .. }) => {
+                Some(Attribute::DocComment(comment.to_string()))
+            }
+            Haxttribute::Parsed(_) => None,
+            Haxttribute::Unparsed(attr) => {
                 let raw_attr = RawAttribute {
-                    path: normal_attr.item.path.clone(),
-                    args: match &normal_attr.item.args {
+                    path: attr.path.clone(),
+                    args: match &attr.args {
                         hax::AttrArgs::Empty => None,
                         hax::AttrArgs::Delimited(args) => Some(args.tokens.clone()),
-                        hax::AttrArgs::Eq(_, hax::AttrArgsEq::Hir(lit)) => self
+                        hax::AttrArgs::Eq { expr, .. } => self
                             .tcx
                             .sess
                             .source_map()
-                            .span_to_snippet(lit.span.rust_span_data.unwrap().span())
+                            .span_to_snippet(expr.span.rust_span_data.unwrap().span())
                             .ok(),
-                        hax::AttrArgs::Eq(..) => None,
                     },
                 };
                 match Attribute::parse_from_raw(raw_attr) {
@@ -714,9 +711,6 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
                         None
                     }
                 }
-            }
-            hax::AttrKind::DocComment(_kind, comment) => {
-                Some(Attribute::DocComment(comment.to_string()))
             }
         }
     }
@@ -729,6 +723,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
                     hax::InlineAttr::Hint => Some(InlineAttr::Hint),
                     hax::InlineAttr::Never => Some(InlineAttr::Never),
                     hax::InlineAttr::Always => Some(InlineAttr::Always),
+                    hax::InlineAttr::Force { .. } => Some(InlineAttr::Always),
                 }
             }
             _ => None,

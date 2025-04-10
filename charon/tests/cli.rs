@@ -251,10 +251,7 @@ fn handle_multi_trailing_rs_args() {
     ];
     let err = charon(args, "tests/ui", |_, _| Ok(())).unwrap_err();
     let err = format!("{err:?}");
-    assert!(
-        err.contains("invalid character `'.'` in crate name"),
-        "{err}"
-    );
+    assert!(err.contains("invalid character '.' in crate name"), "{err}");
 }
 
 #[test]

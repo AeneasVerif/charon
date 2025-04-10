@@ -15,12 +15,13 @@ use super::ctx::UllbcPass;
 fn remove_dynamic_checks(_ctx: &mut TransformCtx, statements: &mut [Statement]) {
     // We return the statements we want to keep, which must be a prefix of `block.statements`.
     let statements_to_keep = match statements {
-        // Bounds checks for arrays/slices. They look like:
-        //   l := len(a)
+        // Bounds checks for slices. They look like:
+        //   l := ptr_metadata(copy a)
         //   b := copy x < copy l
         //   assert(move b == true)
         [Statement {
-            content: RawStatement::Assign(len, Rvalue::Len(..)),
+            content:
+                RawStatement::Assign(len, Rvalue::UnaryOp(UnOp::PtrMetadata, Operand::Copy(len_op))),
             ..
         }, Statement {
             content:
@@ -33,11 +34,66 @@ fn remove_dynamic_checks(_ctx: &mut TransformCtx, statements: &mut [Statement]) 
             content:
                 RawStatement::Assert(Assert {
                     cond: Operand::Move(cond),
-                    expected,
+                    expected: true,
                 }),
             ..
         }, rest @ ..]
-            if lt_op2 == len && cond == is_in_bounds && *expected == true =>
+            if lt_op2 == len && cond == is_in_bounds && len_op.ty().is_ref() =>
+        {
+            rest
+        }
+        // Sometimes that instead looks like:
+        //   a := &raw const *z
+        //   l := ptr_metadata(move a)
+        //   b := copy x < copy l
+        //   assert(move b == true)
+        [Statement {
+            content: RawStatement::Assign(reborrow, Rvalue::RawPtr(_, RefKind::Shared)),
+            ..
+        }, Statement {
+            content:
+                RawStatement::Assign(len, Rvalue::UnaryOp(UnOp::PtrMetadata, Operand::Move(len_op))),
+            ..
+        }, Statement {
+            content:
+                RawStatement::Assign(
+                    is_in_bounds,
+                    Rvalue::BinaryOp(BinOp::Lt, _, Operand::Copy(lt_op2)),
+                ),
+            ..
+        }, Statement {
+            content:
+                RawStatement::Assert(Assert {
+                    cond: Operand::Move(cond),
+                    expected: true,
+                }),
+            ..
+        }, rest @ ..]
+            if reborrow == len_op && lt_op2 == len && cond == is_in_bounds =>
+        {
+            rest
+        }
+
+        // Bounds checks for arrays. They look like:
+        //   fake_read(a)
+        //   b := copy x < const _
+        //   assert(move b == true)
+        [Statement {
+            content: RawStatement::FakeRead(_),
+            ..
+        }, Statement {
+            content:
+                RawStatement::Assign(is_in_bounds, Rvalue::BinaryOp(BinOp::Lt, _, Operand::Const(_))),
+            ..
+        }, Statement {
+            content:
+                RawStatement::Assert(Assert {
+                    cond: Operand::Move(cond),
+                    expected: true,
+                }),
+            ..
+        }, rest @ ..]
+            if cond == is_in_bounds =>
         {
             rest
         }
