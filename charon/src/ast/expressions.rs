@@ -246,7 +246,10 @@ pub enum BinOp {
     Shl,
     /// Fails if the shift is bigger than the bit-size of the type.
     Shr,
-    // No Offset binary operation: this is an operation on raw pointers
+    /// `BinOp(Offset, ptr, n)` for `ptr` a pointer to type `T` offsets `ptr` by `n * size_of::<T>()`.
+    Offset,
+    /// `BinOp(Cmp, a, b)` returns `-1u8` if `a < b`, `0u8` if `a == b`, and `1u8` if `a > b`.
+    Cmp,
 }
 
 #[derive(

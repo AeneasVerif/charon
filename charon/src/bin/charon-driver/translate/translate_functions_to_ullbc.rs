@@ -53,7 +53,7 @@ fn translate_borrow_kind(borrow_kind: hax::BorrowKind) -> BorrowKind {
 }
 
 impl<'tcx, 'ctx> TranslateCtx<'tcx> {
-    fn translate_binaryop_kind(&mut self, span: Span, binop: hax::BinOp) -> Result<BinOp, Error> {
+    fn translate_binaryop_kind(&mut self, _span: Span, binop: hax::BinOp) -> Result<BinOp, Error> {
         Ok(match binop {
             hax::BinOp::BitXor => BinOp::BitXor,
             hax::BinOp::BitAnd => BinOp::BitAnd,
@@ -74,12 +74,8 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
             hax::BinOp::MulWithOverflow => BinOp::CheckedMul,
             hax::BinOp::Shl => BinOp::Shl,
             hax::BinOp::Shr => BinOp::Shr,
-            hax::BinOp::Cmp => {
-                raise_error!(self, span, "Unsupported binary operation: Cmp")
-            }
-            hax::BinOp::Offset => {
-                raise_error!(self, span, "Unsupported binary operation: offset")
-            }
+            hax::BinOp::Cmp => BinOp::Cmp,
+            hax::BinOp::Offset => BinOp::Offset,
         })
     }
 }

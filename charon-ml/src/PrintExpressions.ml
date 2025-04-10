@@ -104,6 +104,8 @@ let binop_to_string (binop : binop) : string =
   | CheckedMul -> "checked.*"
   | Shl -> "<<"
   | Shr -> ">>"
+  | Cmp -> "cmp"
+  | Offset -> "offset"
 
 let builtin_fun_id_to_string (aid : builtin_fun_id) : string =
   match aid with

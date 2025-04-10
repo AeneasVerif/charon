@@ -158,6 +158,8 @@ and binop_of_json (ctx : of_json_ctx) (js : json) : (binop, string) result =
     | `String "CheckedMul" -> Ok CheckedMul
     | `String "Shl" -> Ok Shl
     | `String "Shr" -> Ok Shr
+    | `String "Offset" -> Ok Offset
+    | `String "Cmp" -> Ok Cmp
     | _ -> Error "")
 
 and operand_of_json (ctx : of_json_ctx) (js : json) : (operand, string) result =

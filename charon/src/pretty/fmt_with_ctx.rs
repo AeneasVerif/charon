@@ -1583,6 +1583,8 @@ impl std::fmt::Display for BinOp {
             BinOp::CheckedMul => write!(f, "checked.*"),
             BinOp::Shl => write!(f, "<<"),
             BinOp::Shr => write!(f, ">>"),
+            BinOp::Cmp => write!(f, "cmp"),
+            BinOp::Offset => write!(f, "offset"),
         }
     }
 }

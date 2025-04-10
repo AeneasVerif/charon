@@ -18,5 +18,6 @@ let binop_can_fail (binop : binop) : bool =
   | Gt
   | CheckedAdd
   | CheckedSub
-  | CheckedMul -> false
-  | Div | Rem | Add | Sub | Mul | Shl | Shr -> true
+  | CheckedMul
+  | Cmp -> false
+  | Div | Rem | Add | Sub | Mul | Shl | Shr | Offset -> true
