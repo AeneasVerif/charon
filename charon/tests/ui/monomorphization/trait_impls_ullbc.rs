@@ -1,4 +1,4 @@
-//@ charon-args=--monomorphize --translate-all-methods
+//@ charon-args=--monomorphize --ullbc --print-ullbc --no-serialize --translate-all-methods
 // Ensures monomorphization happens when trait implementations are involved.
 
 use std::mem;

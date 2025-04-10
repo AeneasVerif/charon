@@ -1,4 +1,4 @@
-//@ charon-args=--monomorphize --ullbc --print-ullbc --no-serialize
+//@ charon-args=--monomorphize
 // Ensures monomorphization handles globals with generics
 
 struct Foo<T> {

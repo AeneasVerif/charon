@@ -1,4 +1,4 @@
-# Final LLBC before serialization:
+# Final ULLBC before serialization:
 
 fn test_crate::do_test<T>(@1: bool, @2: bool)
 where
@@ -13,25 +13,30 @@ where
     let @5: &'_ (bool); // anonymous local
     let @6: &'_ (bool); // anonymous local
 
-    @5 := &expected@2
-    @6 := &init@1
-    @4 := core::cmp::impls::{impl core::cmp::Eq for bool}#38::parent_clause0::eq<'_, '_, bool, bool>(move (@5), move (@6))
-    if move (@4) {
+    bb0: {
+        @5 := &expected@2;
+        @6 := &init@1;
+        @4 := core::cmp::impls::{impl core::cmp::Eq for bool}#38::parent_clause0::eq<'_, '_, bool, bool>(move (@5), move (@6));
+        if move (@4) -> bb1 else -> bb2;
     }
-    else {
-        drop @6
-        drop @5
-        panic(core::panicking::panic)
+
+    bb1: {
+        @storage_dead(@6);
+        @storage_dead(@5);
+        @storage_dead(@4);
+        @storage_dead(@3);
+        @0 := ();
+        drop expected@2;
+        drop init@1;
+        @0 := ();
+        return;
     }
-    drop @6
-    drop @5
-    drop @4
-    drop @3
-    @0 := ()
-    drop expected@2
-    drop init@1
-    @0 := ()
-    return
+
+    bb2: {
+        @storage_dead(@6);
+        @storage_dead(@5);
+        panic(core::panicking::panic);
+    }
 }
 
 #[lang_item("sized")]
@@ -68,11 +73,13 @@ fn test_crate::main()
     let @0: (); // return
     let @1: (); // anonymous local
 
-    @1 := @Fun8<bool>[core::marker::Sized<bool>, core::cmp::impls::{impl core::cmp::Eq for bool}#38](const (true), const (true))
-    drop @1
-    @0 := ()
-    @0 := ()
-    return
+    bb0: {
+        @1 := @Fun8<bool>[core::marker::Sized<bool>, core::cmp::impls::{impl core::cmp::Eq for bool}#38](const (true), const (true));
+        @storage_dead(@1);
+        @0 := ();
+        @0 := ();
+        return;
+    }
 }
 
 

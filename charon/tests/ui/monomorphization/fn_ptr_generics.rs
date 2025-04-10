@@ -1,4 +1,4 @@
-//@ charon-args=--monomorphize --ullbc --print-ullbc --no-serialize --translate-all-methods
+//@ charon-args=--monomorphize --translate-all-methods
 // Ensures monomorphization happens for the generic arguments of function pointers -- in this
 // case, the generic args are in the index function, with Option<u8>
 
