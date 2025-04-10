@@ -55,6 +55,9 @@ let projection_elem_to_string (env : 'a fmt_env) (sub : string)
 let rec place_to_string (env : 'a fmt_env) (p : place) : string =
   match p.kind with
   | PlaceLocal var_id -> local_id_to_string env var_id
+  | PlaceGlobal global_ref ->
+      let generics = generic_args_to_string env global_ref.global_generics in
+      "global " ^ global_decl_id_to_string env global_ref.global_id ^ generics
   | PlaceProjection (subplace, pe) ->
       let subplace = place_to_string env subplace in
       projection_elem_to_string env subplace pe
@@ -188,17 +191,6 @@ let rvalue_to_string (env : 'a fmt_env) (rv : rvalue) : string =
           (ty_to_string env ty
           :: List.map (const_generic_to_string env) const_generics)
       ^ ">(" ^ place_to_string env place ^ ")"
-  | Global global_ref ->
-      let generics = generic_args_to_string env global_ref.global_generics in
-      "global " ^ global_decl_id_to_string env global_ref.global_id ^ generics
-  | GlobalRef (global_ref, RShared) ->
-      let generics = generic_args_to_string env global_ref.global_generics in
-      "&global " ^ global_decl_id_to_string env global_ref.global_id ^ generics
-  | GlobalRef (global_ref, RMut) ->
-      let generics = generic_args_to_string env global_ref.global_generics in
-      "&raw mut global "
-      ^ global_decl_id_to_string env global_ref.global_id
-      ^ generics
   | Aggregate (akind, ops) -> (
       let ops = List.map (operand_to_string env) ops in
       match akind with

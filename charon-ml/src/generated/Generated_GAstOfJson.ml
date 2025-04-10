@@ -45,6 +45,9 @@ and place_kind_of_json (ctx : of_json_ctx) (js : json) :
     | `Assoc [ ("Local", local) ] ->
         let* local = local_id_of_json ctx local in
         Ok (PlaceLocal local)
+    | `Assoc [ ("Global", global) ] ->
+        let* global = global_decl_ref_of_json ctx global in
+        Ok (PlaceGlobal global)
     | `Assoc [ ("Projection", `List [ x_0; x_1 ]) ] ->
         let* x_0 = box_of_json place_of_json ctx x_0 in
         let* x_1 = projection_elem_of_json ctx x_1 in
@@ -304,13 +307,6 @@ and rvalue_of_json (ctx : of_json_ctx) (js : json) : (rvalue, string) result =
         let* x_0 = aggregate_kind_of_json ctx x_0 in
         let* x_1 = list_of_json operand_of_json ctx x_1 in
         Ok (Aggregate (x_0, x_1))
-    | `Assoc [ ("Global", global) ] ->
-        let* global = global_decl_ref_of_json ctx global in
-        Ok (Global global)
-    | `Assoc [ ("GlobalRef", `List [ x_0; x_1 ]) ] ->
-        let* x_0 = global_decl_ref_of_json ctx x_0 in
-        let* x_1 = ref_kind_of_json ctx x_1 in
-        Ok (GlobalRef (x_0, x_1))
     | `Assoc [ ("Len", `List [ x_0; x_1; x_2 ]) ] ->
         let* x_0 = place_of_json ctx x_0 in
         let* x_1 = ty_of_json ctx x_1 in

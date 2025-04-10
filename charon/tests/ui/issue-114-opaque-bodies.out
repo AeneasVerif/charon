@@ -203,10 +203,8 @@ pub global core::num::{usize}#11::MAX: usize = core::num::{usize}#11::MAX()
 fn test_crate::max() -> usize
 {
     let @0: usize; // return
-    let @1: usize; // anonymous local
 
-    @1 := core::num::{usize}#11::MAX
-    @0 := move (@1)
+    @0 := move (core::num::{usize}#11::MAX)
     return
 }
 

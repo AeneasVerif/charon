@@ -18,8 +18,12 @@ module FunDeclId = Types.FunDeclId
 type place = { kind : place_kind; ty : ty }
 
 and place_kind =
-  | PlaceLocal of local_id
-  | PlaceProjection of place * projection_elem
+  | PlaceLocal of local_id  (** A local variable in a function body. *)
+  | PlaceGlobal of global_decl_ref
+      (** A global (const or static).
+          Not present in MIR; introduced in [simplify_constants.rs].
+       *)
+  | PlaceProjection of place * projection_elem  (** A subplace of a place. *)
 
 (** Note that we don't have the equivalent of "downcasts".
     Downcasts are actually necessary, for instance when initializing enumeration
@@ -305,15 +309,6 @@ and rvalue =
 
           Remark: in case of closures, the aggregated value groups the closure id
           together with its state.
-       *)
-  | Global of global_decl_ref
-      (** Copy the value of the referenced global.
-          Not present in MIR; introduced in [simplify_constants.rs].
-       *)
-  | GlobalRef of global_decl_ref * ref_kind
-      (** Reference the value of the global. This has type `&T` or `*mut T` depending on desired
-          mutability.
-          Not present in MIR; introduced in [simplify_constants.rs].
        *)
   | Len of place * ty * const_generic option
       (** Length of a memory location. The run-time length of e.g. a vector or a slice is

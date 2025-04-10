@@ -17,7 +17,6 @@ fn test_crate::f0()
     let @2: (); // anonymous local
     let @3: bool; // anonymous local
     let x@4: u8; // local
-    let @5: u8; // anonymous local
 
     @1 := const (0 : i32) < const (1 : i32)
     if move (@1) {
@@ -28,8 +27,7 @@ fn test_crate::f0()
         }
         drop @3
         drop @2
-        @5 := test_crate::CONST
-        x@4 := move (@5)
+        x@4 := move (test_crate::CONST)
         @fake_read(x@4)
         @0 := ()
         drop x@4
@@ -59,7 +57,6 @@ fn test_crate::f1<'_0>(@1: &'_0 (Array<u8, 1 : usize>))
     let x@12: u8; // local
     let @13: (); // anonymous local
     let @14: (); // anonymous local
-    let @15: u8; // anonymous local
 
     previous_true_hints_seen@2 := const (0 : usize)
     @fake_read(previous_true_hints_seen@2)
@@ -90,8 +87,7 @@ fn test_crate::f1<'_0>(@1: &'_0 (Array<u8, 1 : usize>))
                 @10 := move (@11) < const (1 : i32)
                 if move (@10) {
                     drop @11
-                    @15 := test_crate::CONST
-                    x@12 := move (@15)
+                    x@12 := move (test_crate::CONST)
                     @fake_read(x@12)
                     drop x@12
                     drop @10
