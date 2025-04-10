@@ -1,4 +1,4 @@
-//@ charon-args=--monomorphize --ullbc --print-ullbc --no-serialize --translate-all-methods
+//@ charon-args=--monomorphize
 // Ensures monomorphization happens when projections on discriminants of generic enums are
 // involved -- in this case the discriminant of Result<u32, u32>
 
