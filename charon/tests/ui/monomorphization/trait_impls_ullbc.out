@@ -46,26 +46,22 @@ pub trait core::marker::Sized<Self>
 pub trait core::cmp::PartialEq<Self, Rhs>
 {
     fn eq<'_0, '_1> = core::cmp::PartialEq::eq<'_0_0, '_0_1, Self, Rhs>
-    fn ne<'_0, '_1> = core::cmp::PartialEq::ne<'_0_0, '_0_1, Self, Rhs>
 }
 
 #[lang_item("Eq")]
 pub trait core::cmp::Eq<Self>
 {
     parent_clause0 : [@TraitClause0]: core::cmp::PartialEq<Self, Self>
-    fn assert_receiver_is_total_eq<'_0> = core::cmp::Eq::assert_receiver_is_total_eq<'_0_0, Self>
 }
 
 impl core::cmp::impls::{impl core::cmp::PartialEq<bool> for bool}#19 : core::cmp::PartialEq<bool, bool>
 {
     fn eq<'_0, '_1> = core::cmp::impls::{impl core::cmp::PartialEq<bool> for bool}#19::eq<'_0_0, '_0_1>
-    fn ne<'_0, '_1> = core::cmp::impls::{impl core::cmp::PartialEq<bool> for bool}#19::ne<'_0_0, '_0_1>
 }
 
 impl core::cmp::impls::{impl core::cmp::Eq for bool}#38 : core::cmp::Eq<bool>
 {
     parent_clause0 = core::cmp::impls::{impl core::cmp::PartialEq<bool> for bool}#19
-    fn assert_receiver_is_total_eq<'_0> = core::cmp::impls::{impl core::cmp::Eq for bool}#38::assert_receiver_is_total_eq<'_0_0>
 }
 
 fn test_crate::main()
@@ -74,7 +70,7 @@ fn test_crate::main()
     let @1: (); // anonymous local
 
     bb0: {
-        @1 := @Fun8<bool>[core::marker::Sized<bool>, core::cmp::impls::{impl core::cmp::Eq for bool}#38](const (true), const (true));
+        @1 := @Fun7<bool>[core::marker::Sized<bool>, core::cmp::impls::{impl core::cmp::Eq for bool}#38](const (true), const (true));
         @storage_dead(@1);
         @0 := ();
         @0 := ();
