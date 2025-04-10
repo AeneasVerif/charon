@@ -716,7 +716,7 @@ impl<C: AstFormatter> FmtWithCtx<C> for PathElem {
 impl<C: AstFormatter> FmtWithCtx<C> for Place {
     fn fmt_with_ctx(&self, ctx: &C) -> String {
         match &self.kind {
-            PlaceKind::Base(var_id) => ctx.format_object(*var_id),
+            PlaceKind::Local(var_id) => ctx.format_object(*var_id),
             PlaceKind::Projection(subplace, projection) => {
                 let sub = subplace.fmt_with_ctx(ctx);
                 match projection {

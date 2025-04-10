@@ -54,7 +54,7 @@ let projection_elem_to_string (env : 'a fmt_env) (sub : string)
 
 let rec place_to_string (env : 'a fmt_env) (p : place) : string =
   match p.kind with
-  | PlaceBase var_id -> local_id_to_string env var_id
+  | PlaceLocal var_id -> local_id_to_string env var_id
   | PlaceProjection (subplace, pe) ->
       let subplace = place_to_string env subplace in
       projection_elem_to_string env subplace pe

@@ -18,7 +18,7 @@ module FunDeclId = Types.FunDeclId
 type place = { kind : place_kind; ty : ty }
 
 and place_kind =
-  | PlaceBase of local_id
+  | PlaceLocal of local_id
   | PlaceProjection of place * projection_elem
 
 (** Note that we don't have the equivalent of "downcasts".
