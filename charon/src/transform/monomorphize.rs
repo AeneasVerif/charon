@@ -563,8 +563,4 @@ impl TransformPass for Transform {
         // Finally, ensure we didn't leave any IDs un-replaced
         // check_missing_indices(&ctx.translated);
     }
-
-    fn name(&self) -> &str {
-        "monomorphize"
-    }
 }
