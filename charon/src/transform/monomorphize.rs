@@ -51,6 +51,7 @@ impl PassData {
 }
 
 impl TranslatedCrate {
+    // FIXME(Nadrieril): implement type&tref normalization and use that instead
     fn find_trait_impl_and_gargs(self: &Self, kind: &TraitRefKind) -> (&TraitImpl, GenericArgs) {
         match kind {
             TraitRefKind::TraitImpl(impl_id, gargs) => {
@@ -201,6 +202,7 @@ impl VisitAstMut for SubstVisitor<'_> {
     fn exit_ullbc_statement(&mut self, stt: &mut ullbc_ast::Statement) {
         match &mut stt.content {
             ullbc_ast::RawStatement::Assign(_, Rvalue::Discriminant(Place { ty, .. }, id)) => {
+                // FIXME(Nadrieril): remove this id, replace with a helper fn
                 match ty.as_adt() {
                     Some((TypeId::Adt(new_enum_id), _)) => {
                         // Small trick; the discriminant doesn't carry the information on the
@@ -268,6 +270,7 @@ impl VisitAstMut for SubstVisitor<'_> {
 
     fn exit_place(&mut self, place: &mut Place) {
         match &mut place.kind {
+            // FIXME(Nadrieril): remove this id, replace with a helper fn
             PlaceKind::Projection(inner, ProjectionElem::Field(FieldProjKind::Adt(id, _), _)) => {
                 // Trick, we don't know the generics but the projected place does, so
                 // we substitute it there, then update our current id.
