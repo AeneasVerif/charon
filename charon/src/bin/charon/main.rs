@@ -41,6 +41,7 @@ use charon_lib::{
 use clap::Parser;
 use cli::{Charon, Cli};
 use std::{env, process::ExitStatus};
+use toolchain::toolchain_path;
 
 #[macro_use]
 extern crate anyhow;
@@ -72,6 +73,11 @@ pub fn main() -> Result<()> {
             let mut options = subcmd_rustc.opts;
             options.rustc_args.append(&mut subcmd_rustc.rustc);
             translate_without_cargo(options)?
+        }
+        Some(Charon::ToolchainPath(_)) => {
+            let path = toolchain_path()?;
+            println!("{}", path.display());
+            ExitStatus::default()
         }
         // Legacy calling syntax.
         None => {
