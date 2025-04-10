@@ -13,6 +13,7 @@ pub mod inline_local_panic_functions;
 pub mod insert_assign_return_unit;
 pub mod lift_associated_item_clauses;
 pub mod merge_goto_chains;
+pub mod monomorphize;
 pub mod ops_to_function_calls;
 pub mod prettify_cfg;
 pub mod reconstruct_asserts;
@@ -145,6 +146,8 @@ pub static SHARED_FINALIZING_PASSES: &[Pass] = &[
     NonBody(&remove_unused_locals::Transform),
     // # Micro-pass: remove the useless `StatementKind::Nop`s.
     NonBody(&remove_nops::Transform),
+    // Monomorphize the functions and types.
+    NonBody(&monomorphize::Transform),
     // # Micro-pass: take all the comments found in the original body and assign them to
     // statements. This must be last after all the statement-affecting passes to avoid losing
     // comments.

@@ -82,7 +82,7 @@ pub struct CliOpts {
               b0: switch x [true -> goto b1; false -> goto b2]
               b1: y := 0; goto b3
               b2: y := 1; goto b3
-              b3: return y      
+              b3: return y
               ```
 
             We want to reconstruct the control-flow as:
@@ -114,6 +114,10 @@ pub struct CliOpts {
     "))]
     #[serde(default)]
     pub no_code_duplication: bool,
+    /// Monomorphize the code, replacing generics with their concrete types.
+    #[clap(long = "monomorphize")]
+    #[serde(default)]
+    pub monomorphize: bool,
     /// Usually we skip the bodies of foreign methods and structs with private fields. When this
     /// flag is on, we don't.
     #[clap(long = "extract-opaque-bodies")]
@@ -279,6 +283,8 @@ pub struct TranslateOptions {
     /// Whether to hide the `Sized`, `Sync`, `Send` and `Unpin` marker traits anywhere they show
     /// up.
     pub hide_marker_traits: bool,
+    /// Monomorphize functions.
+    pub monomorphize: bool,
     /// Do not merge the chains of gotos.
     pub no_merge_goto_chains: bool,
     /// Print the llbc just after control-flow reconstruction.
@@ -359,6 +365,7 @@ impl TranslateOptions {
             mir_level,
             no_code_duplication: options.no_code_duplication,
             hide_marker_traits: options.hide_marker_traits,
+            monomorphize: options.monomorphize,
             no_merge_goto_chains: options.no_merge_goto_chains,
             print_built_llbc: options.print_built_llbc,
             item_opacities,

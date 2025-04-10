@@ -1470,7 +1470,6 @@ impl<C: AstFormatter> FmtWithCtx<C> for TypeDecl {
         let intro = self.item_meta.fmt_item_intro(ctx, "", keyword);
 
         let ctx = &ctx.set_generics(&self.generics);
-
         let (params, preds) = self.generics.fmt_with_ctx_with_trait_clauses(ctx, "  ");
         // Predicates
         let nl_or_space = if !self.generics.has_predicates() {

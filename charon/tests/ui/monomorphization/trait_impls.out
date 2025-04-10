@@ -1,0 +1,86 @@
+# Final ULLBC before serialization:
+
+fn test_crate::do_test<T>(@1: bool, @2: bool)
+where
+    [@TraitClause0]: core::marker::Sized<bool>,
+    [@TraitClause1]: core::cmp::Eq<bool>,
+{
+    let @0: (); // return
+    let init@1: bool; // arg #1
+    let expected@2: bool; // arg #2
+    let @3: (); // anonymous local
+    let @4: bool; // anonymous local
+    let @5: &'_ (bool); // anonymous local
+    let @6: &'_ (bool); // anonymous local
+
+    bb0: {
+        @5 := &expected@2;
+        @6 := &init@1;
+        @4 := core::cmp::impls::{impl core::cmp::Eq for bool}#38::parent_clause0::eq<'_, '_, bool, bool>(move (@5), move (@6));
+        if move (@4) -> bb1 else -> bb2;
+    }
+
+    bb1: {
+        @storage_dead(@6);
+        @storage_dead(@5);
+        @storage_dead(@4);
+        @storage_dead(@3);
+        @0 := ();
+        drop expected@2;
+        drop init@1;
+        @0 := ();
+        return;
+    }
+
+    bb2: {
+        @storage_dead(@6);
+        @storage_dead(@5);
+        panic(core::panicking::panic);
+    }
+}
+
+#[lang_item("sized")]
+pub trait core::marker::Sized<Self>
+
+#[lang_item("eq")]
+pub trait core::cmp::PartialEq<Self, Rhs>
+{
+    fn eq<'_0, '_1> = core::cmp::PartialEq::eq<'_0_0, '_0_1, Self, Rhs>
+    fn ne<'_0, '_1> = core::cmp::PartialEq::ne<'_0_0, '_0_1, Self, Rhs>
+}
+
+#[lang_item("Eq")]
+pub trait core::cmp::Eq<Self>
+{
+    parent_clause0 : [@TraitClause0]: core::cmp::PartialEq<Self, Self>
+    fn assert_receiver_is_total_eq<'_0> = core::cmp::Eq::assert_receiver_is_total_eq<'_0_0, Self>
+}
+
+impl core::cmp::impls::{impl core::cmp::PartialEq<bool> for bool}#19 : core::cmp::PartialEq<bool, bool>
+{
+    fn eq<'_0, '_1> = core::cmp::impls::{impl core::cmp::PartialEq<bool> for bool}#19::eq<'_0_0, '_0_1>
+    fn ne<'_0, '_1> = core::cmp::impls::{impl core::cmp::PartialEq<bool> for bool}#19::ne<'_0_0, '_0_1>
+}
+
+impl core::cmp::impls::{impl core::cmp::Eq for bool}#38 : core::cmp::Eq<bool>
+{
+    parent_clause0 = core::cmp::impls::{impl core::cmp::PartialEq<bool> for bool}#19
+    fn assert_receiver_is_total_eq<'_0> = core::cmp::impls::{impl core::cmp::Eq for bool}#38::assert_receiver_is_total_eq<'_0_0>
+}
+
+fn test_crate::main()
+{
+    let @0: (); // return
+    let @1: (); // anonymous local
+
+    bb0: {
+        @1 := @Fun8<bool>[core::marker::Sized<bool>, core::cmp::impls::{impl core::cmp::Eq for bool}#38](const (true), const (true));
+        @storage_dead(@1);
+        @0 := ();
+        @0 := ();
+        return;
+    }
+}
+
+
+

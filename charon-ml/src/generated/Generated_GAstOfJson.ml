@@ -1618,6 +1618,7 @@ and cli_options_of_json (ctx : of_json_ctx) (js : json) :
           ("use_polonius", use_polonius);
           ("skip_borrowck", skip_borrowck);
           ("no_code_duplication", no_code_duplication);
+          ("monomorphize", monomorphize);
           ("extract_opaque_bodies", extract_opaque_bodies);
           ("translate_all_methods", translate_all_methods);
           ("include", include_);
@@ -1649,6 +1650,7 @@ and cli_options_of_json (ctx : of_json_ctx) (js : json) :
         let* use_polonius = bool_of_json ctx use_polonius in
         let* skip_borrowck = bool_of_json ctx skip_borrowck in
         let* no_code_duplication = bool_of_json ctx no_code_duplication in
+        let* monomorphize = bool_of_json ctx monomorphize in
         let* extract_opaque_bodies = bool_of_json ctx extract_opaque_bodies in
         let* translate_all_methods = bool_of_json ctx translate_all_methods in
         let* included = list_of_json string_of_json ctx include_ in
@@ -1683,6 +1685,7 @@ and cli_options_of_json (ctx : of_json_ctx) (js : json) :
              use_polonius;
              skip_borrowck;
              no_code_duplication;
+             monomorphize;
              extract_opaque_bodies;
              translate_all_methods;
              included;
