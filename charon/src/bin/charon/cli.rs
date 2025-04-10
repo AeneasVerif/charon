@@ -19,7 +19,6 @@ pub enum Charon {
     PrettyPrint(PrettyPrintArgs),
     Rustc(RustcArgs),
     Cargo(CargoArgs),
-    ToolchainPath(ToolchainPathArgs),
 }
 
 /// Read a llbc or ullbc file and pretty print it.
@@ -50,7 +49,3 @@ pub struct CargoArgs {
     #[arg(last = true)]
     pub cargo: Vec<String>,
 }
-
-/// Usage: `charon toolchain-path`
-#[derive(clap::Args, Debug)]
-pub struct ToolchainPathArgs {}
