@@ -153,6 +153,9 @@ and binop_of_json (ctx : of_json_ctx) (js : json) : (binop, string) result =
     | `String "Add" -> Ok Add
     | `String "Sub" -> Ok Sub
     | `String "Mul" -> Ok Mul
+    | `String "WrappingAdd" -> Ok WrappingAdd
+    | `String "WrappingSub" -> Ok WrappingSub
+    | `String "WrappingMul" -> Ok WrappingMul
     | `String "CheckedAdd" -> Ok CheckedAdd
     | `String "CheckedSub" -> Ok CheckedSub
     | `String "CheckedMul" -> Ok CheckedMul

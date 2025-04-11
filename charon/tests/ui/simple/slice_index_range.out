@@ -139,7 +139,7 @@ where
     else {
         self@18 := move ((self@1).start)
         self@19 := move ((self@1).exhausted)
-        exclusive_end@6 := copy (self@4) + const (1 : usize)
+        exclusive_end@6 := copy (self@4) wrapping.+ const (1 : usize)
         storage_live(start@7)
         if copy (self@19) {
             start@7 := copy (exclusive_end@6)
@@ -160,7 +160,7 @@ where
             storage_dead(@11)
         }
         else {
-            new_len@15 := copy (exclusive_end@6) - copy (self@8)
+            new_len@15 := copy (exclusive_end@6) wrapping.- copy (self@8)
             storage_dead(@14)
             storage_live(@9)
             storage_live(@10)
@@ -256,7 +256,7 @@ where
     else {
         self@18 := move ((self@1).start)
         self@19 := move ((self@1).exhausted)
-        exclusive_end@6 := copy (self@4) + const (1 : usize)
+        exclusive_end@6 := copy (self@4) wrapping.+ const (1 : usize)
         storage_live(start@7)
         if copy (self@19) {
             start@7 := copy (exclusive_end@6)
@@ -277,7 +277,7 @@ where
             storage_dead(@11)
         }
         else {
-            new_len@15 := copy (exclusive_end@6) - copy (self@8)
+            new_len@15 := copy (exclusive_end@6) wrapping.- copy (self@8)
             storage_dead(@14)
             storage_live(@9)
             storage_live(@10)
@@ -533,7 +533,7 @@ where
     self@12 := move ((self@1).start)
     self@13 := move ((self@1).end)
     self@14 := move ((self@1).exhausted)
-    exclusive_end@3 := copy (self@13) + const (1 : usize)
+    exclusive_end@3 := copy (self@13) wrapping.+ const (1 : usize)
     storage_live(start@4)
     if copy (self@14) {
         start@4 := copy (exclusive_end@3)
@@ -555,7 +555,7 @@ where
     else {
     }
     storage_dead(@6)
-    new_len@9 := copy (exclusive_end@3) - copy (self@5)
+    new_len@9 := copy (exclusive_end@3) wrapping.- copy (self@5)
     storage_live(@10)
     storage_live(@11)
     @11 := cast<*const Slice<T>, *const T>(copy (slice@2))
@@ -628,7 +628,7 @@ where
     self@12 := move ((self@1).start)
     self@13 := move ((self@1).end)
     self@14 := move ((self@1).exhausted)
-    exclusive_end@3 := copy (self@13) + const (1 : usize)
+    exclusive_end@3 := copy (self@13) wrapping.+ const (1 : usize)
     storage_live(start@4)
     if copy (self@14) {
         start@4 := copy (exclusive_end@3)
@@ -650,7 +650,7 @@ where
     else {
     }
     storage_dead(@6)
-    new_len@9 := copy (exclusive_end@3) - copy (self@5)
+    new_len@9 := copy (exclusive_end@3) wrapping.- copy (self@5)
     storage_live(@10)
     storage_live(@11)
     @11 := cast<*mut Slice<T>, *mut T>(copy (slice@2))
@@ -767,7 +767,7 @@ where
     }
     else {
         storage_live(@14)
-        @14 := copy (self@6) - copy (rhs@7)
+        @14 := copy (self@6) wrapping.- copy (rhs@7)
         @5 := core::option::Option::Some { 0: move (@14) }
         storage_dead(@14)
         storage_dead(@13)
@@ -870,7 +870,7 @@ where
         storage_live(@7)
         self@11 := move ((self@1).start)
         self@12 := move ((self@1).exhausted)
-        exclusive_end@8 := copy (self@4) + const (1 : usize)
+        exclusive_end@8 := copy (self@4) wrapping.+ const (1 : usize)
         storage_live(start@9)
         if copy (self@12) {
             start@9 := copy (exclusive_end@8)
@@ -933,7 +933,7 @@ where
     }
     else {
         storage_live(@14)
-        @14 := copy (self@6) - copy (rhs@7)
+        @14 := copy (self@6) wrapping.- copy (rhs@7)
         @5 := core::option::Option::Some { 0: move (@14) }
         storage_dead(@14)
         storage_dead(@13)
@@ -1010,7 +1010,7 @@ where
         storage_live(@7)
         self@11 := move ((self@1).start)
         self@12 := move ((self@1).exhausted)
-        exclusive_end@8 := copy (self@4) + const (1 : usize)
+        exclusive_end@8 := copy (self@4) wrapping.+ const (1 : usize)
         storage_live(start@9)
         if copy (self@12) {
             start@9 := copy (exclusive_end@8)
@@ -1146,7 +1146,7 @@ where
     }
     else {
         storage_live(@13)
-        @13 := copy (self@4) - copy (rhs@5)
+        @13 := copy (self@4) wrapping.- copy (rhs@5)
         @3 := core::option::Option::Some { 0: move (@13) }
         storage_dead(@13)
         storage_dead(@12)
@@ -1230,7 +1230,7 @@ where
     }
     else {
         storage_live(@13)
-        @13 := copy (self@4) - copy (rhs@5)
+        @13 := copy (self@4) wrapping.- copy (rhs@5)
         @3 := core::option::Option::Some { 0: move (@13) }
         storage_dead(@13)
         storage_dead(@12)
@@ -1312,7 +1312,7 @@ where
     storage_live(@9)
     @9 := copy ((self@1).end)
     offset@10 := copy ((self@1).start)
-    new_len@8 := move (@9) - copy (offset@10)
+    new_len@8 := move (@9) wrapping.- copy (offset@10)
     storage_dead(@9)
     storage_live(@11)
     storage_live(@12)
@@ -1368,7 +1368,7 @@ where
     storage_live(@9)
     @9 := copy ((self@1).end)
     offset@10 := copy ((self@1).start)
-    new_len@8 := move (@9) - copy (offset@10)
+    new_len@8 := move (@9) wrapping.- copy (offset@10)
     storage_dead(@9)
     storage_live(@11)
     storage_live(@12)

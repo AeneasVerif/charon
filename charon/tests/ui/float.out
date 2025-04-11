@@ -21,7 +21,7 @@ fn test_crate::sum_float(@1: f64, @2: f64) -> f64
     @3 := copy (x@1)
     storage_live(@4)
     @4 := copy (y@2)
-    @0 := move (@3) + move (@4)
+    @0 := move (@3) wrapping.+ move (@4)
     storage_dead(@4)
     storage_dead(@3)
     return
@@ -43,7 +43,7 @@ fn test_crate::literal_float() -> f64
     @3 := copy (x@1)
     storage_live(@4)
     @4 := copy (y@2)
-    @0 := move (@3) + move (@4)
+    @0 := move (@3) wrapping.+ move (@4)
     storage_dead(@4)
     storage_dead(@3)
     storage_dead(y@2)
