@@ -64,7 +64,7 @@ pub fn test_crate::sum<'_0>(@1: &'_0 (Slice<u32>)) -> u32
     storage_live(@6)
     // Function call
     @6 := copy (sum@2)
-    @5 := move (@6) + const (2 : u32)
+    @5 := copy (@6) + const (2 : u32)
     storage_dead(@6)
     @4 := test_crate::function_call(move (@5))
     storage_dead(@5)
@@ -93,7 +93,7 @@ pub fn test_crate::sum<'_0>(@1: &'_0 (Slice<u32>)) -> u32
             storage_live(@23)
             @23 := @SliceIndexShared<'_, u32>(move (@22), copy (@13))
             @12 := copy (*(@23))
-            sum@2 := copy (sum@2) + move (@12)
+            sum@2 := copy (sum@2) + copy (@12)
             storage_dead(@12)
             storage_dead(@13)
             // Increment `i`
@@ -123,7 +123,7 @@ pub fn test_crate::sum<'_0>(@1: &'_0 (Slice<u32>)) -> u32
         storage_live(@18)
         // sum + 100
         @18 := copy (sum@2)
-        @15 := move (@18) + const (100 : u32)
+        @15 := copy (@18) + const (100 : u32)
         storage_dead(@18)
     }
     else {
@@ -139,7 +139,7 @@ pub fn test_crate::sum<'_0>(@1: &'_0 (Slice<u32>)) -> u32
     storage_live(@21)
     // Function call
     @21 := copy (sum@2)
-    @20 := move (@21) + const (2 : u32)
+    @20 := copy (@21) + const (2 : u32)
     storage_dead(@21)
     @19 := test_crate::function_call(move (@20))
     storage_dead(@20)
@@ -435,7 +435,7 @@ pub fn test_crate::thing()
     // This comment belongs above the assignment to `x` and not above intermediate computations.
     @5 := test_crate::CONSTANT
     @2 := move (@5) >> const (3 : i32)
-    x@1 := move (@2) + const (12 : u32)
+    x@1 := copy (@2) + const (12 : u32)
     storage_dead(@2)
     storage_live(@3)
     storage_live(@4)

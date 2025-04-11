@@ -45,6 +45,15 @@ impl Place {
             ty,
         }
     }
+
+    pub fn projections<'a>(&'a self) -> impl Iterator<Item = &'a ProjectionElem> {
+        let mut place = self;
+        std::iter::from_fn(move || {
+            let (new_place, proj) = place.as_projection()?;
+            place = new_place;
+            Some(proj)
+        })
+    }
 }
 
 impl Rvalue {
