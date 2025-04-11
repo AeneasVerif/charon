@@ -175,10 +175,12 @@ fn remove_dynamic_checks(_ctx: &mut TransformCtx, statements: &mut [Statement]) 
                     ..
                 }),
             ..
-        }, rest @ ..]
+        }, ..]
             if lt_op2 == x && cond == has_overflow && *expected == true =>
         {
-            rest
+            statements[1].content = RawStatement::Nop;
+            statements[2].content = RawStatement::Nop;
+            return;
         }
         // They can also look like:
         //   b := const c < const 32; // or another constant
