@@ -1460,6 +1460,8 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
             }
             hax::FullDefKind::Const { ty, .. }
             | hax::FullDefKind::AssocConst { ty, .. }
+            | hax::FullDefKind::AnonConst { ty, .. }
+            | hax::FullDefKind::InlineConst { ty, .. }
             | hax::FullDefKind::Static { ty, .. } => {
                 let sig = hax::TyFnSig {
                     inputs: vec![],
@@ -1593,6 +1595,8 @@ impl BodyTransCtx<'_, '_> {
             def.kind(),
             hax::FullDefKind::Const { .. }
                 | hax::FullDefKind::AssocConst { .. }
+                | hax::FullDefKind::AnonConst { .. }
+                | hax::FullDefKind::InlineConst { .. }
                 | hax::FullDefKind::Static { .. }
         );
         let is_global_initializer = is_global_initializer
@@ -1649,6 +1653,8 @@ impl BodyTransCtx<'_, '_> {
         let ty = match &def.kind {
             hax::FullDefKind::Const { ty, .. }
             | hax::FullDefKind::AssocConst { ty, .. }
+            | hax::FullDefKind::AnonConst { ty, .. }
+            | hax::FullDefKind::InlineConst { ty, .. }
             | hax::FullDefKind::Static { ty, .. } => ty,
             _ => panic!("Unexpected def for constant: {def:?}"),
         };

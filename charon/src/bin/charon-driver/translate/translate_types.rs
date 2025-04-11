@@ -572,6 +572,7 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
     }
 
     /// Add the generics and predicates of this item and its parents to the current context.
+    #[tracing::instrument(skip(self, span))]
     fn push_generics_for_def(
         &mut self,
         span: Span,
@@ -585,6 +586,8 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
             FullDefKind::AssocTy { .. }
             | FullDefKind::AssocFn { .. }
             | FullDefKind::AssocConst { .. }
+            | FullDefKind::AnonConst { .. }
+            | FullDefKind::InlineConst { .. }
             | FullDefKind::Closure { .. }
             | FullDefKind::Ctor { .. }
             | FullDefKind::Variant { .. } => {
@@ -634,6 +637,8 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
                 | FullDefKind::AssocFn { .. }
                 | FullDefKind::Const { .. }
                 | FullDefKind::AssocConst { .. }
+                | FullDefKind::AnonConst { .. }
+                | FullDefKind::InlineConst { .. }
                 | FullDefKind::Static { .. } => PredicateOrigin::WhereClauseOnFn,
                 FullDefKind::TraitImpl { .. } | FullDefKind::InherentImpl { .. } => {
                     PredicateOrigin::WhereClauseOnImpl
