@@ -315,17 +315,17 @@ where
     offset@4 := offset_of(?)<test_crate::nullary_ops::Struct<T>[@TraitClause0]>
     @7 := copy (size@1)
     @8 := copy (align@2)
-    @6 := move (@7) + move (@8)
+    @6 := copy (@7) + copy (@8)
     drop @8
     drop @7
     @10 := copy (ub@3)
     @9 := cast<bool, usize>(move (@10))
     drop @10
-    @5 := move (@6) + move (@9)
+    @5 := copy (@6) + copy (@9)
     drop @9
     drop @6
     @11 := copy (offset@4)
-    @0 := move (@5) + move (@11)
+    @0 := copy (@5) + copy (@11)
     drop @11
     drop @5
     drop offset@4

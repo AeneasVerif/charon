@@ -163,7 +163,11 @@ fn remove_dynamic_checks(_ctx: &mut TransformCtx, statements: &mut [Statement]) 
             content:
                 RawStatement::Assign(
                     has_overflow,
-                    Rvalue::BinaryOp(BinOp::Lt, Operand::Move(lt_op2), Operand::Const(..)),
+                    Rvalue::BinaryOp(
+                        BinOp::Lt,
+                        Operand::Move(lt_op2) | Operand::Copy(lt_op2),
+                        Operand::Const(..),
+                    ),
                 ),
             ..
         }, Statement {

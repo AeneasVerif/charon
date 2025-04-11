@@ -55,7 +55,7 @@ pub fn test_crate::sum<'_0>(@1: &'_0 (Slice<u32>)) -> u32
     @fake_read(i@3)
     // Function call
     @6 := copy (sum@2)
-    @5 := move (@6) + const (2 : u32)
+    @5 := copy (@6) + const (2 : u32)
     drop @6
     @4 := test_crate::function_call(move (@5))
     drop @5
@@ -75,7 +75,7 @@ pub fn test_crate::sum<'_0>(@1: &'_0 (Slice<u32>)) -> u32
             @22 := &*(s@1)
             @23 := @SliceIndexShared<'_, u32>(move (@22), copy (@13))
             @12 := copy (*(@23))
-            sum@2 := copy (sum@2) + move (@12)
+            sum@2 := copy (sum@2) + copy (@12)
             drop @12
             drop @13
             // Increment `i`
@@ -100,7 +100,7 @@ pub fn test_crate::sum<'_0>(@1: &'_0 (Slice<u32>)) -> u32
         drop @17
         // sum + 100
         @18 := copy (sum@2)
-        @15 := move (@18) + const (100 : u32)
+        @15 := copy (@18) + const (100 : u32)
         drop @18
     }
     else {
@@ -113,7 +113,7 @@ pub fn test_crate::sum<'_0>(@1: &'_0 (Slice<u32>)) -> u32
     drop @15
     // Function call
     @21 := copy (sum@2)
-    @20 := move (@21) + const (2 : u32)
+    @20 := copy (@21) + const (2 : u32)
     drop @21
     @19 := test_crate::function_call(move (@20))
     drop @20
@@ -358,20 +358,22 @@ pub fn test_crate::thing()
     let @0: (); // return
     let x@1: u32; // local
     let @2: u32; // anonymous local
-    let @3: (); // anonymous local
-    let @4: u32; // anonymous local
+    let @3: u32; // anonymous local
+    let @4: (); // anonymous local
     let @5: u32; // anonymous local
+    let @6: u32; // anonymous local
 
     // This comment belongs above the assignment to `x` and not above intermediate computations.
-    @5 := test_crate::CONSTANT
-    @2 := move (@5) >> const (3 : i32)
-    x@1 := move (@2) + const (12 : u32)
+    @3 := cast<i32, u32>(const (3 : i32))
+    @6 := test_crate::CONSTANT
+    @2 := move (@6) >> const (3 : i32)
+    x@1 := copy (@2) + const (12 : u32)
     drop @2
     @fake_read(x@1)
-    @4 := copy (x@1)
-    @3 := test_crate::function_call(move (@4))
+    @5 := copy (x@1)
+    @4 := test_crate::function_call(move (@5))
+    drop @5
     drop @4
-    drop @3
     @0 := ()
     drop x@1
     @0 := ()

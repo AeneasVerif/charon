@@ -104,7 +104,7 @@ pub fn test_crate::test3(@1: test_crate::E2) -> u32
     @fake_read(z@5)
     @6 := copy (y@3)
     @7 := copy (z@5)
-    @0 := move (@6) + move (@7)
+    @0 := copy (@6) + copy (@7)
     drop @7
     drop @6
     drop z@5

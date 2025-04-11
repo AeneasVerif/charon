@@ -31,7 +31,7 @@ fn test_cargo_dependencies::main::silly_incr::closure(@1: (), @2: u32) -> u32
     let @3: u32; // anonymous local
 
     @3 := copy (y@2)
-    @0 := move (@3) + const (1 : u32)
+    @0 := copy (@3) + const (1 : u32)
     drop @3
     return
 }

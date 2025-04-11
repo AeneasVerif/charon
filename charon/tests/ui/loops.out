@@ -25,7 +25,7 @@ pub fn test_crate::test_loop1(@1: u32) -> u32
             drop @7
             drop @6
             @8 := copy (i@2)
-            s@3 := copy (s@3) + move (@8)
+            s@3 := copy (s@3) + copy (@8)
             drop @8
             i@2 := copy (i@2) + const (1 : u32)
             drop @5
@@ -83,7 +83,7 @@ pub fn test_crate::test_loop2(@1: u32) -> u32
                 drop @9
                 drop @8
                 @11 := copy (i@2)
-                s@3 := copy (s@3) + move (@11)
+                s@3 := copy (s@3) + copy (@11)
                 drop @11
                 i@2 := copy (i@2) + const (1 : u32)
                 drop @5
@@ -156,7 +156,7 @@ pub fn test_crate::test_loop3(@1: u32) -> u32
                     drop @11
                     @16 := copy (i@2)
                     @17 := copy (j@3)
-                    @15 := move (@16) + move (@17)
+                    @15 := copy (@16) + copy (@17)
                     drop @17
                     drop @16
                     @14 := move (@15) == const (17 : u32)
@@ -167,7 +167,7 @@ pub fn test_crate::test_loop3(@1: u32) -> u32
                         drop @14
                         drop @13
                         @18 := copy (i@2)
-                        s@4 := copy (s@4) + move (@18)
+                        s@4 := copy (s@4) + copy (@18)
                         drop @18
                         j@3 := copy (j@3) + const (1 : u32)
                         drop @10
@@ -192,7 +192,7 @@ pub fn test_crate::test_loop3(@1: u32) -> u32
             drop @9
             j@3 := const (0 : u32)
             @20 := copy (i@2)
-            s@4 := copy (s@4) + move (@20)
+            s@4 := copy (s@4) + copy (@20)
             drop @20
             i@2 := copy (i@2) + const (1 : u32)
             drop @6
@@ -261,7 +261,7 @@ pub fn test_crate::test_loop4(@1: u32) -> u32
                     drop @11
                     @16 := copy (i@2)
                     @17 := copy (j@3)
-                    @15 := move (@16) + move (@17)
+                    @15 := copy (@16) + copy (@17)
                     drop @17
                     drop @16
                     @14 := move (@15) == const (17 : u32)
@@ -277,7 +277,7 @@ pub fn test_crate::test_loop4(@1: u32) -> u32
                         drop @14
                         drop @13
                         @18 := copy (i@2)
-                        s@4 := copy (s@4) + move (@18)
+                        s@4 := copy (s@4) + copy (@18)
                         drop @18
                         j@3 := copy (j@3) + const (1 : u32)
                         drop @10
@@ -296,7 +296,7 @@ pub fn test_crate::test_loop4(@1: u32) -> u32
             drop @9
             j@3 := const (0 : u32)
             @20 := copy (i@2)
-            s@4 := copy (s@4) + move (@20)
+            s@4 := copy (s@4) + copy (@20)
             drop @20
             i@2 := copy (i@2) + const (1 : u32)
             drop @6
@@ -359,7 +359,7 @@ pub fn test_crate::test_loop5(@1: u32) -> u32
                     drop @12
                     drop @11
                     @13 := copy (j@3)
-                    s@4 := copy (s@4) + move (@13)
+                    s@4 := copy (s@4) + copy (@13)
                     drop @13
                     j@3 := copy (j@3) + const (1 : u32)
                     drop @10
@@ -375,7 +375,7 @@ pub fn test_crate::test_loop5(@1: u32) -> u32
             drop @10
             drop @9
             @15 := copy (i@2)
-            s@4 := copy (s@4) + move (@15)
+            s@4 := copy (s@4) + copy (@15)
             drop @15
             i@2 := copy (i@2) + const (1 : u32)
             drop @6
@@ -433,7 +433,7 @@ pub fn test_crate::test_loop6(@1: u32) -> u32
                 drop @9
                 drop @8
                 @11 := copy (i@2)
-                s@3 := copy (s@3) + move (@11)
+                s@3 := copy (s@3) + copy (@11)
                 drop @11
                 i@2 := copy (i@2) + const (1 : u32)
                 drop @5
@@ -506,7 +506,7 @@ pub fn test_crate::test_loop7(@1: u32) -> u32
                     drop @12
                     drop @11
                     @14 := copy (i@2)
-                    s@3 := copy (s@3) + move (@14)
+                    s@3 := copy (s@3) + copy (@14)
                     drop @14
                     i@2 := copy (i@2) + const (1 : u32)
                     drop @8
@@ -1035,7 +1035,7 @@ pub fn test_crate::loop_inside_if(@1: bool, @2: u32) -> u32
                 1 => {
                     i@14 := copy ((@11 as variant @1).0)
                     @15 := copy (i@14)
-                    s@4 := copy (s@4) + move (@15)
+                    s@4 := copy (s@4) + copy (@15)
                     drop @15
                     drop i@14
                     drop @13
@@ -1086,7 +1086,7 @@ pub fn test_crate::sum(@1: u32) -> u32
             drop @7
             drop @6
             @8 := copy (i@2)
-            s@3 := copy (s@3) + move (@8)
+            s@3 := copy (s@3) + copy (@8)
             drop @8
             i@2 := copy (i@2) + const (1 : u32)
             drop @5
@@ -1136,7 +1136,7 @@ pub fn test_crate::sum_array<const N : usize>(@1: Array<u32, const N : usize>) -
             @10 := &a@1
             @11 := @ArrayIndexShared<'_, u32, const N : usize>(move (@10), copy (@8))
             @7 := copy (*(@11))
-            s@3 := copy (s@3) + move (@7)
+            s@3 := copy (s@3) + copy (@7)
             drop @7
             drop @8
             i@2 := copy (i@2) + const (1 : usize)

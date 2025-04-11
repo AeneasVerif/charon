@@ -43,10 +43,10 @@ pub fn test_crate::mul2_add1(@1: u32) -> u32
 
     @3 := copy (x@1)
     @4 := copy (x@1)
-    @2 := move (@3) + move (@4)
+    @2 := copy (@3) + copy (@4)
     drop @4
     drop @3
-    @0 := move (@2) + const (1 : u32)
+    @0 := copy (@2) + const (1 : u32)
     drop @2
     return
 }
@@ -64,7 +64,7 @@ pub fn test_crate::use_mul2_add1(@1: u32, @2: u32) -> u32
     @3 := test_crate::mul2_add1(move (@4))
     drop @4
     @5 := copy (y@2)
-    @0 := move (@3) + move (@5)
+    @0 := copy (@3) + copy (@5)
     drop @5
     drop @3
     return
@@ -168,7 +168,7 @@ where
         drop @6
         @8 := &*(*(tl@4))
         @10 := copy (i@2)
-        @9 := move (@10) - const (1 : u32)
+        @9 := copy (@10) - const (1 : u32)
         drop @10
         @7 := test_crate::list_nth<'_, T>[@TraitClause0](move (@8), move (@9))
         @0 := &*(@7)
@@ -225,7 +225,7 @@ where
         drop @10
         @13 := &two-phase-mut *(*(tl@6))
         @15 := copy (i@2)
-        @14 := move (@15) - const (1 : u32)
+        @14 := copy (@15) - const (1 : u32)
         drop @15
         @12 := test_crate::list_nth_mut<'_, T>[@TraitClause0](move (@13), move (@14))
         @8 := &mut *(@12)
@@ -322,11 +322,11 @@ pub fn test_crate::i32_id(@1: i32) -> i32
     else {
         drop @3
         @6 := copy (i@1)
-        @5 := move (@6) - const (1 : i32)
+        @5 := copy (@6) - const (1 : i32)
         drop @6
         @4 := test_crate::i32_id(move (@5))
         drop @5
-        @0 := move (@4) + const (1 : i32)
+        @0 := copy (@4) + const (1 : i32)
         drop @4
     }
     drop @2
