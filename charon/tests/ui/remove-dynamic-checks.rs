@@ -86,6 +86,10 @@ fn shr(x: u32, y: u32) -> u32 {
     x >> y
 }
 
+fn shr_add(x: u32, y: u32) -> u32 {
+    x >> (y + 1)
+}
+
 // Checking the simplification of binop operations *inside* global constants.
 // Even in release mode, rustc inserts additional checks inside constant bodies.
 pub const _: isize = 1 + 1;
@@ -120,4 +124,12 @@ fn div_unsigned_to_slice(result: &mut [u32], x: u32) {
 
 fn div_signed_to_slice(result: &mut [i32], x: i32) {
     result[0] = x / 3329;
+}
+
+fn add_to_slice(result: &mut [u32], x: u32) {
+    result[0] = x + 1;
+}
+
+fn add_to_slice2(result: &mut [u8], i: usize, x: u8) {
+    result[i + 1] = x * 7;
 }
