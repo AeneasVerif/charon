@@ -15,7 +15,7 @@ pub fn crate2::extra_random_number() -> u32
 
     // Even more random.
     @1 := crate1::random_number()
-    @0 := move (@1) + const (1 : u32)
+    @0 := copy (@1) + const (1 : u32)
     drop @1
     return
 }

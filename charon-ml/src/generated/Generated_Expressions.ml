@@ -126,9 +126,21 @@ and binop =
       (** Fails if the divisor is 0, or if the operation is `int::MIN / -1`. *)
   | Rem
       (** Fails if the divisor is 0, or if the operation is `int::MIN % -1`. *)
-  | Add  (** Fails on overflow. *)
-  | Sub  (** Fails on overflow. *)
-  | Mul  (** Fails on overflow. *)
+  | Add
+      (** Fails on overflow.
+          Not present in MIR: this is introduced by the `remove_dynamic_checks` pass.
+       *)
+  | Sub
+      (** Fails on overflow.
+          Not present in MIR: this is introduced by the `remove_dynamic_checks` pass.
+       *)
+  | Mul
+      (** Fails on overflow.
+          Not present in MIR: this is introduced by the `remove_dynamic_checks` pass.
+       *)
+  | WrappingAdd  (** Wraps on overflow. *)
+  | WrappingSub  (** Wraps on overflow. *)
+  | WrappingMul  (** Wraps on overflow. *)
   | CheckedAdd
       (** Returns `(result, did_overflow)`, where `result` is the result of the operation with
           wrapping semantics, and `did_overflow` is a boolean that indicates whether the operation
