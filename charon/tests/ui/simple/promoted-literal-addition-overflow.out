@@ -18,5 +18,9 @@ fn test_crate::overflow() -> &'static (u32)
     return
 }
 
+pub fn core::num::{u32}#8::MAX() -> u32
+
+pub global core::num::{u32}#8::MAX: u32 = core::num::{u32}#8::MAX()
+
 
 
