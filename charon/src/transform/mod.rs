@@ -20,7 +20,6 @@ pub mod prettify_cfg;
 pub mod reconstruct_asserts;
 pub mod reconstruct_boxes;
 pub mod recover_body_comments;
-pub mod remove_arithmetic_overflow_checks;
 pub mod remove_drop_never;
 pub mod remove_dynamic_checks;
 pub mod remove_nops;
@@ -90,11 +89,6 @@ pub static ULLBC_PASSES: &[Pass] = &[
     // closure itself. This is not consistent with the closure signature,
     // which ignores this first variable. This micro-pass updates this.
     UnstructuredBody(&update_closure_signatures::Transform),
-    // # Micro-pass: remove the dynamic checks we couldn't remove in [`remove_dynamic_checks`].
-    // **WARNING**: this pass uses the fact that the dynamic checks
-    // introduced by Rustc use a special "assert" construct. Because of
-    // this, it must happen *before* the [reconstruct_asserts] pass.
-    UnstructuredBody(&remove_arithmetic_overflow_checks::Transform),
     // # Micro-pass: replace some unops/binops and the array aggregates with
     // function calls (introduces: ArrayToSlice, etc.)
     UnstructuredBody(&ops_to_function_calls::Transform),

@@ -205,36 +205,60 @@ fn remove_dynamic_checks(_ctx: &mut TransformCtx, statements: &mut [Statement]) 
         }
 
         // Overflow checks for addition/subtraction/multiplication. They look like:
+        // ```text
         //   r := x checked.+ y;
         //   assert(move r.1 == false);
-        // They only happen in constants because we compile with `-C opt-level=3`. They span two
-        // blocks so we remove them in a later pass.
+        //   z := move r.0;
+        // ```
+        // We replace that with:
+        // ```text
+        // z := x + y;
+        // ```
         [Statement {
             content:
                 RawStatement::Assign(
-                    result,
-                    Rvalue::BinaryOp(BinOp::CheckedAdd | BinOp::CheckedSub | BinOp::CheckedMul, ..),
+                    binop,
+                    Rvalue::BinaryOp(
+                        op @ (BinOp::CheckedAdd | BinOp::CheckedSub | BinOp::CheckedMul),
+                        _,
+                        _,
+                    ),
                 ),
             ..
         }, Statement {
             content:
                 RawStatement::Assert(Assert {
-                    cond: Operand::Move(cond),
-                    expected,
+                    cond: Operand::Move(assert_cond),
+                    expected: false,
                     ..
                 }),
             ..
+        }, Statement {
+            content: RawStatement::Assign(final_value, Rvalue::Use(Operand::Move(assigned))),
+            ..
         }, ..]
-            if result.is_local()
-                && let Some((sub, ProjectionElem::Field(FieldProjKind::Tuple(2), p_id))) =
-                    cond.as_projection()
-                && sub.is_local()
-                && cond.local_id() == result.local_id()
-                && p_id.index() == 1
-                && *expected == false =>
+            if let Some((sub0, ProjectionElem::Field(FieldProjKind::Tuple(..), fid0))) =
+                assigned.as_projection()
+                && fid0.index() == 0
+                && let Some((sub1, ProjectionElem::Field(FieldProjKind::Tuple(..), fid1))) =
+                    assert_cond.as_projection()
+                && fid1.index() == 1
+                && binop.is_local()
+                && sub0 == binop
+                && sub1 == binop =>
         {
-            // We leave this assert intact; it will be simplified in
-            // [`remove_arithmetic_overflow_checks`].
+            // Switch to the unchecked operation.
+            *op = match op {
+                BinOp::CheckedAdd => BinOp::Add,
+                BinOp::CheckedSub => BinOp::Sub,
+                BinOp::CheckedMul => BinOp::Mul,
+                _ => unreachable!(),
+            };
+            // Assign to the correct value in the first statement.
+            std::mem::swap(binop, final_value);
+            // Remove the other two statements.
+            statements[1].content = RawStatement::Nop;
+            statements[2].content = RawStatement::Nop;
             return;
         }
 
@@ -251,11 +275,9 @@ fn remove_dynamic_checks(_ctx: &mut TransformCtx, statements: &mut [Statement]) 
 pub struct Transform;
 impl UllbcPass for Transform {
     fn transform_body(&self, ctx: &mut TransformCtx, b: &mut ExprBody) {
-        for block in b.body.iter_mut() {
-            block.transform_sequences(|seq| {
-                remove_dynamic_checks(ctx, seq);
-                Vec::new()
-            });
-        }
+        b.transform_sequences(|_, seq| {
+            remove_dynamic_checks(ctx, seq);
+            Vec::new()
+        });
     }
 }
