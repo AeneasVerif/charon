@@ -86,7 +86,6 @@ fn setup_compiler(config: &mut Config, options: &CliOpts, do_translate: bool) {
             // };
         });
 
-        config.opts.debug_assertions = false;
         set_no_codegen(config);
         if options.use_polonius {
             config.opts.unstable_opts.polonius = Polonius::Legacy;

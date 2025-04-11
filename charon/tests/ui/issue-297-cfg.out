@@ -149,37 +149,40 @@ fn test_crate::f2<'_0, '_1>(@1: &'_0 (Slice<u8>), @2: &'_1 mut (Slice<i16>)) -> 
     let @24: i16; // anonymous local
     let @25: i16; // anonymous local
     let @26: i16; // anonymous local
-    let @27: i16; // anonymous local
-    let d2@28: i16; // local
-    let @29: i16; // anonymous local
+    let @27: u32; // anonymous local
+    let @28: i16; // anonymous local
+    let d2@29: i16; // local
     let @30: i16; // anonymous local
     let @31: i16; // anonymous local
-    let @32: i16; // anonymous local
-    let @33: (); // anonymous local
-    let @34: bool; // anonymous local
-    let @35: i16; // anonymous local
-    let @36: bool; // anonymous local
-    let @37: usize; // anonymous local
+    let @32: u32; // anonymous local
+    let @33: i16; // anonymous local
+    let @34: i16; // anonymous local
+    let @35: u32; // anonymous local
+    let @36: (); // anonymous local
+    let @37: bool; // anonymous local
     let @38: i16; // anonymous local
-    let @39: usize; // anonymous local
-    let @40: bool; // anonymous local
+    let @39: bool; // anonymous local
+    let @40: usize; // anonymous local
     let @41: i16; // anonymous local
-    let @42: bool; // anonymous local
-    let @43: usize; // anonymous local
+    let @42: usize; // anonymous local
+    let @43: bool; // anonymous local
     let @44: i16; // anonymous local
-    let @45: usize; // anonymous local
-    let @46: i16; // anonymous local
+    let @45: bool; // anonymous local
+    let @46: usize; // anonymous local
     let @47: i16; // anonymous local
-    let @48: &'_ (Slice<u8>); // anonymous local
-    let @49: &'_ (u8); // anonymous local
-    let @50: &'_ (Slice<u8>); // anonymous local
-    let @51: &'_ (u8); // anonymous local
-    let @52: &'_ (Slice<u8>); // anonymous local
-    let @53: &'_ (u8); // anonymous local
-    let @54: &'_ mut (Slice<i16>); // anonymous local
-    let @55: &'_ mut (i16); // anonymous local
-    let @56: &'_ mut (Slice<i16>); // anonymous local
-    let @57: &'_ mut (i16); // anonymous local
+    let @48: usize; // anonymous local
+    let @49: i16; // anonymous local
+    let @50: i16; // anonymous local
+    let @51: &'_ (Slice<u8>); // anonymous local
+    let @52: &'_ (u8); // anonymous local
+    let @53: &'_ (Slice<u8>); // anonymous local
+    let @54: &'_ (u8); // anonymous local
+    let @55: &'_ (Slice<u8>); // anonymous local
+    let @56: &'_ (u8); // anonymous local
+    let @57: &'_ mut (Slice<i16>); // anonymous local
+    let @58: &'_ mut (i16); // anonymous local
+    let @59: &'_ mut (Slice<i16>); // anonymous local
+    let @60: &'_ mut (i16); // anonymous local
 
     storage_live(sampled@3)
     sampled@3 := const (0 : usize)
@@ -214,9 +217,9 @@ fn test_crate::f2<'_0, '_1>(@1: &'_0 (Slice<u8>), @2: &'_1 mut (Slice<i16>)) -> 
                 storage_live(@15)
                 storage_live(@16)
                 @16 := const (0 : usize)
-                @52 := &*(bytes@13)
-                @53 := @SliceIndexShared<'_, u8>(move (@52), copy (@16))
-                @15 := copy (*(@53))
+                @55 := &*(bytes@13)
+                @56 := @SliceIndexShared<'_, u8>(move (@55), copy (@16))
+                @15 := copy (*(@56))
                 b1@14 := cast<u8, i16>(move (@15))
                 storage_dead(@15)
                 storage_dead(@16)
@@ -224,9 +227,9 @@ fn test_crate::f2<'_0, '_1>(@1: &'_0 (Slice<u8>), @2: &'_1 mut (Slice<i16>)) -> 
                 storage_live(@18)
                 storage_live(@19)
                 @19 := const (1 : usize)
-                @50 := &*(bytes@13)
-                @51 := @SliceIndexShared<'_, u8>(move (@50), copy (@19))
-                @18 := copy (*(@51))
+                @53 := &*(bytes@13)
+                @54 := @SliceIndexShared<'_, u8>(move (@53), copy (@19))
+                @18 := copy (*(@54))
                 b2@17 := cast<u8, i16>(move (@18))
                 storage_dead(@18)
                 storage_dead(@19)
@@ -234,9 +237,9 @@ fn test_crate::f2<'_0, '_1>(@1: &'_0 (Slice<u8>), @2: &'_1 mut (Slice<i16>)) -> 
                 storage_live(@21)
                 storage_live(@22)
                 @22 := const (2 : usize)
-                @48 := &*(bytes@13)
-                @49 := @SliceIndexShared<'_, u8>(move (@48), copy (@22))
-                @21 := copy (*(@49))
+                @51 := &*(bytes@13)
+                @52 := @SliceIndexShared<'_, u8>(move (@51), copy (@22))
+                @21 := copy (*(@52))
                 b3@20 := cast<u8, i16>(move (@21))
                 storage_dead(@21)
                 storage_dead(@22)
@@ -247,96 +250,99 @@ fn test_crate::f2<'_0, '_1>(@1: &'_0 (Slice<u8>), @2: &'_1 mut (Slice<i16>)) -> 
                 @26 := copy (b2@17)
                 @25 := move (@26) & const (15 : i16)
                 storage_dead(@26)
+                @27 := cast<i32, u32>(const (8 : i32))
                 @24 := move (@25) << const (8 : i32)
                 storage_dead(@25)
-                storage_live(@27)
-                @27 := copy (b1@14)
-                d1@23 := move (@24) | move (@27)
-                storage_dead(@27)
+                storage_live(@28)
+                @28 := copy (b1@14)
+                d1@23 := move (@24) | move (@28)
+                storage_dead(@28)
                 storage_dead(@24)
-                storage_live(d2@28)
-                storage_live(@29)
+                storage_live(d2@29)
                 storage_live(@30)
-                @30 := copy (b3@20)
-                @29 := move (@30) << const (4 : i32)
-                storage_dead(@30)
                 storage_live(@31)
-                storage_live(@32)
-                @32 := copy (b2@17)
-                @31 := move (@32) >> const (4 : i32)
-                storage_dead(@32)
-                d2@28 := move (@29) | move (@31)
+                @31 := copy (b3@20)
+                @32 := cast<i32, u32>(const (4 : i32))
+                @30 := move (@31) << const (4 : i32)
                 storage_dead(@31)
-                storage_dead(@29)
                 storage_live(@33)
                 storage_live(@34)
-                storage_live(@35)
-                @35 := copy (d1@23)
-                @46 := test_crate::FIELD_MODULUS
-                @34 := move (@35) < move (@46)
-                if move (@34) {
-                    storage_dead(@35)
-                    storage_live(@36)
-                    storage_live(@37)
-                    @37 := copy (sampled@3)
-                    @36 := move (@37) < const (16 : usize)
-                    if move (@36) {
-                        storage_dead(@37)
-                        storage_live(@38)
-                        @38 := copy (d1@23)
-                        storage_live(@39)
-                        @39 := copy (sampled@3)
-                        @54 := &mut *(result@2)
-                        @55 := @SliceIndexMut<'_, i16>(move (@54), copy (@39))
-                        *(@55) := move (@38)
-                        storage_dead(@38)
-                        storage_dead(@39)
-                        sampled@3 := copy (sampled@3) + const (1 : usize)
-                    }
-                    else {
-                        storage_dead(@37)
-                    }
-                }
-                else {
-                    storage_dead(@35)
-                }
-                storage_dead(@36)
+                @34 := copy (b2@17)
+                @35 := cast<i32, u32>(const (4 : i32))
+                @33 := move (@34) >> const (4 : i32)
                 storage_dead(@34)
+                d2@29 := move (@30) | move (@33)
                 storage_dead(@33)
-                storage_live(@40)
-                storage_live(@41)
-                @41 := copy (d2@28)
-                @47 := test_crate::FIELD_MODULUS
-                @40 := move (@41) < move (@47)
-                if move (@40) {
-                    storage_dead(@41)
-                    storage_live(@42)
-                    storage_live(@43)
-                    @43 := copy (sampled@3)
-                    @42 := move (@43) < const (16 : usize)
-                    if move (@42) {
-                        storage_dead(@43)
-                        storage_live(@44)
-                        @44 := copy (d2@28)
-                        storage_live(@45)
-                        @45 := copy (sampled@3)
-                        @56 := &mut *(result@2)
-                        @57 := @SliceIndexMut<'_, i16>(move (@56), copy (@45))
-                        *(@57) := move (@44)
-                        storage_dead(@44)
-                        storage_dead(@45)
+                storage_dead(@30)
+                storage_live(@36)
+                storage_live(@37)
+                storage_live(@38)
+                @38 := copy (d1@23)
+                @49 := test_crate::FIELD_MODULUS
+                @37 := move (@38) < move (@49)
+                if move (@37) {
+                    storage_dead(@38)
+                    storage_live(@39)
+                    storage_live(@40)
+                    @40 := copy (sampled@3)
+                    @39 := move (@40) < const (16 : usize)
+                    if move (@39) {
+                        storage_dead(@40)
+                        storage_live(@41)
+                        @41 := copy (d1@23)
+                        storage_live(@42)
+                        @42 := copy (sampled@3)
+                        @57 := &mut *(result@2)
+                        @58 := @SliceIndexMut<'_, i16>(move (@57), copy (@42))
+                        *(@58) := move (@41)
+                        storage_dead(@41)
+                        storage_dead(@42)
                         sampled@3 := copy (sampled@3) + const (1 : usize)
                     }
                     else {
-                        storage_dead(@43)
+                        storage_dead(@40)
                     }
                 }
                 else {
-                    storage_dead(@41)
+                    storage_dead(@38)
                 }
-                storage_dead(@42)
-                storage_dead(@40)
-                storage_dead(d2@28)
+                storage_dead(@39)
+                storage_dead(@37)
+                storage_dead(@36)
+                storage_live(@43)
+                storage_live(@44)
+                @44 := copy (d2@29)
+                @50 := test_crate::FIELD_MODULUS
+                @43 := move (@44) < move (@50)
+                if move (@43) {
+                    storage_dead(@44)
+                    storage_live(@45)
+                    storage_live(@46)
+                    @46 := copy (sampled@3)
+                    @45 := move (@46) < const (16 : usize)
+                    if move (@45) {
+                        storage_dead(@46)
+                        storage_live(@47)
+                        @47 := copy (d2@29)
+                        storage_live(@48)
+                        @48 := copy (sampled@3)
+                        @59 := &mut *(result@2)
+                        @60 := @SliceIndexMut<'_, i16>(move (@59), copy (@48))
+                        *(@60) := move (@47)
+                        storage_dead(@47)
+                        storage_dead(@48)
+                        sampled@3 := copy (sampled@3) + const (1 : usize)
+                    }
+                    else {
+                        storage_dead(@46)
+                    }
+                }
+                else {
+                    storage_dead(@44)
+                }
+                storage_dead(@45)
+                storage_dead(@43)
+                storage_dead(d2@29)
                 storage_dead(d1@23)
                 storage_dead(b3@20)
                 storage_dead(b2@17)
