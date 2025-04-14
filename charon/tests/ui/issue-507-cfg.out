@@ -19,25 +19,29 @@ fn test_crate::f0()
     let x@4: u8; // local
     let @5: u8; // anonymous local
 
+    storage_live(@1)
     @1 := const (0 : i32) < const (1 : i32)
     if move (@1) {
+        storage_live(@2)
+        storage_live(@3)
         @3 := const (0 : i32) < const (1 : i32)
         if move (@3) {
         }
         else {
         }
-        drop @3
-        drop @2
+        storage_dead(@3)
+        storage_dead(@2)
+        storage_live(x@4)
         @5 := test_crate::CONST
         x@4 := move (@5)
         @fake_read(x@4)
         @0 := ()
-        drop x@4
+        storage_dead(x@4)
     }
     else {
         @0 := ()
     }
-    drop @1
+    storage_dead(@1)
     @0 := ()
     return
 }
@@ -61,63 +65,76 @@ fn test_crate::f1<'_0>(@1: &'_0 (Array<u8, 1 : usize>))
     let @14: (); // anonymous local
     let @15: u8; // anonymous local
 
+    storage_live(previous_true_hints_seen@2)
     previous_true_hints_seen@2 := const (0 : usize)
     @fake_read(previous_true_hints_seen@2)
+    storage_live(i@3)
     i@3 := const (0 : i32)
     @fake_read(i@3)
     loop {
+        storage_live(@4)
+        storage_live(@5)
         @5 := copy (i@3)
         @4 := move (@5) < const (1 : i32)
         if move (@4) {
-            drop @5
+            storage_dead(@5)
+            storage_live(@6)
+            storage_live(@7)
             @7 := const (0 : i32) < const (1 : i32)
             if move (@7) {
             }
             else {
+                storage_live(@8)
                 @8 := const (1 : i32) > const (1 : i32)
                 if move (@8) {
                 }
                 else {
                 }
             }
-            drop @8
-            drop @7
-            drop @6
+            storage_dead(@8)
+            storage_dead(@7)
+            storage_dead(@6)
+            storage_live(j@9)
             j@9 := const (0 : i32)
             @fake_read(j@9)
             loop {
+                storage_live(@10)
+                storage_live(@11)
                 @11 := copy (j@9)
                 @10 := move (@11) < const (1 : i32)
                 if move (@10) {
-                    drop @11
+                    storage_dead(@11)
+                    storage_live(x@12)
                     @15 := test_crate::CONST
                     x@12 := move (@15)
                     @fake_read(x@12)
-                    drop x@12
-                    drop @10
+                    storage_dead(x@12)
+                    storage_dead(@10)
                     continue 0
                 }
                 else {
                     break 0
                 }
             }
-            drop @11
-            drop @13
-            drop @10
-            drop j@9
-            drop @4
+            storage_dead(@11)
+            storage_live(@13)
+            storage_dead(@13)
+            storage_dead(@10)
+            storage_dead(j@9)
+            storage_dead(@4)
             continue 0
         }
         else {
             break 0
         }
     }
-    drop @5
+    storage_dead(@5)
+    storage_live(@14)
     @0 := ()
-    drop @14
-    drop @4
-    drop i@3
-    drop previous_true_hints_seen@2
+    storage_dead(@14)
+    storage_dead(@4)
+    storage_dead(i@3)
+    storage_dead(previous_true_hints_seen@2)
     @0 := ()
     return
 }

@@ -93,34 +93,45 @@ fn test_crate::main()
     let @10: &'_ (()); // anonymous local
     let @11: (); // anonymous local
 
+    storage_live(@1)
+    storage_live(@2)
     @2 := ()
+    storage_live(@3)
+    storage_live(@4)
+    storage_live(@5)
     @5 := const (1 : u32)
     @4 := &@5
     @3 := &*(@4)
     @1 := test_crate::{impl test_crate::Trait for ()}::method1(move (@2), move (@3))
-    drop @3
-    drop @2
+    storage_dead(@3)
+    storage_dead(@2)
     @fake_read(@1)
-    drop @5
-    drop @4
-    drop @1
+    storage_dead(@5)
+    storage_dead(@4)
+    storage_dead(@1)
+    storage_live(@6)
+    storage_live(@7)
+    storage_live(@8)
     // TODO: this gives incorrect predicates
     // let _ = ().method2(false);
     // Not allowed to use the more precise signature.
     // let _ = ().method2(String::new());
     @8 := ()
     @7 := &@8
+    storage_live(@9)
+    storage_live(@10)
+    storage_live(@11)
     @11 := ()
     @10 := &@11
     @9 := &*(@10)
     @6 := test_crate::{impl test_crate::MyCompare<&'a (())> for &'a (())}#1::compare<'_>(move (@7), move (@9))
-    drop @9
-    drop @7
+    storage_dead(@9)
+    storage_dead(@7)
     @fake_read(@6)
-    drop @11
-    drop @10
-    drop @8
-    drop @6
+    storage_dead(@11)
+    storage_dead(@10)
+    storage_dead(@8)
+    storage_dead(@6)
     @0 := ()
     @0 := ()
     return
@@ -156,18 +167,23 @@ fn test_crate::call_foo<'e>(@1: &'e (())) -> &'e (())
     let @5: &'_ (()); // anonymous local
     let @6: (); // anonymous local
 
+    storage_live(@2)
+    storage_live(@3)
     // Calls have erased lifetimes so we can't notice the discrepancy if there is one.
     @3 := &*(x@1)
+    storage_live(@4)
+    storage_live(@5)
+    storage_live(@6)
     @6 := ()
     @5 := &@6
     @4 := &*(@5)
     @2 := test_crate::{impl test_crate::Foo for ()}#2::foo<'_, '_>(move (@3), move (@4))
     @0 := &*(@2)
-    drop @4
-    drop @3
-    drop @6
-    drop @5
-    drop @2
+    storage_dead(@4)
+    storage_dead(@3)
+    storage_dead(@6)
+    storage_dead(@5)
+    storage_dead(@2)
     return
 }
 

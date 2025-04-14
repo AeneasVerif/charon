@@ -24,13 +24,14 @@ fn test_crate::slice_pattern_end<'_0>(@1: &'_0 (Slice<()>))
         @0 := ()
         return
     }
+    storage_live(_named@5)
     @6 := &*(x@1)
     @7 := len(*(x@1))
     @8 := copy (@7) - const (1 : usize)
     @9 := @SliceIndexShared<'_, ()>(move (@6), copy (@8))
     _named@5 := &*(@9)
     @0 := ()
-    drop _named@5
+    storage_dead(_named@5)
     @0 := ()
     return
 }

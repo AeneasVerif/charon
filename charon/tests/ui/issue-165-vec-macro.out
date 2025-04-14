@@ -49,24 +49,29 @@ fn test_crate::foo()
     let _v2@5: alloc::vec::Vec<i32, alloc::alloc::Global>[core::marker::Sized<i32>, core::marker::Sized<alloc::alloc::Global>]; // local
     let @6: Array<i32, 1 : usize>; // anonymous local
 
+    storage_live(_v@1)
+    storage_live(@2)
+    storage_live(@3)
+    storage_live(@4)
     @6 := [const (1 : i32)]
     @4 := @BoxNew<Array<i32, 1 : usize>>[core::marker::Sized<alloc::alloc::Global>](move (@6))
     @3 := move (@4)
     @2 := unsize_cast<alloc::boxed::Box<Array<i32, 1 : usize>>[core::marker::Sized<alloc::alloc::Global>], alloc::boxed::Box<Slice<i32>>[core::marker::Sized<alloc::alloc::Global>]>(move (@3))
     drop @3
     drop @4
-    drop @4
-    drop @3
+    storage_dead(@4)
+    storage_dead(@3)
     _v@1 := alloc::slice::{Slice<T>}::into_vec<i32, alloc::alloc::Global>[core::marker::Sized<i32>, core::marker::Sized<alloc::alloc::Global>](move (@2))
-    drop @2
+    storage_dead(@2)
     @fake_read(_v@1)
+    storage_live(_v2@5)
     _v2@5 := alloc::vec::from_elem<i32>[core::marker::Sized<i32>, core::clone::impls::{impl core::clone::Clone for i32}#14](const (1 : i32), const (10 : usize))
     @fake_read(_v2@5)
     @0 := ()
     drop _v2@5
-    drop _v2@5
+    storage_dead(_v2@5)
     drop _v@1
-    drop _v@1
+    storage_dead(_v@1)
     @0 := ()
     return
 }
@@ -83,21 +88,26 @@ pub fn test_crate::bar()
     let @5: test_crate::Foo; // anonymous local
     let @6: Array<test_crate::Foo, 1 : usize>; // anonymous local
 
+    storage_live(@1)
+    storage_live(@2)
+    storage_live(@3)
+    storage_live(@4)
+    storage_live(@5)
     @5 := test_crate::Foo {  }
     @6 := [move (@5)]
     @4 := @BoxNew<Array<test_crate::Foo, 1 : usize>>[core::marker::Sized<alloc::alloc::Global>](move (@6))
-    drop @5
+    storage_dead(@5)
     @3 := move (@4)
     @2 := unsize_cast<alloc::boxed::Box<Array<test_crate::Foo, 1 : usize>>[core::marker::Sized<alloc::alloc::Global>], alloc::boxed::Box<Slice<test_crate::Foo>>[core::marker::Sized<alloc::alloc::Global>]>(move (@3))
     drop @3
     drop @4
-    drop @4
-    drop @3
+    storage_dead(@4)
+    storage_dead(@3)
     @1 := alloc::slice::{Slice<T>}::into_vec<test_crate::Foo, alloc::alloc::Global>[core::marker::Sized<test_crate::Foo>, core::marker::Sized<alloc::alloc::Global>](move (@2))
-    drop @2
+    storage_dead(@2)
     @fake_read(@1)
     drop @1
-    drop @1
+    storage_dead(@1)
     @0 := ()
     @0 := ()
     return

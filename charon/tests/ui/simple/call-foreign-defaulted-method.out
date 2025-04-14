@@ -17,13 +17,16 @@ fn test_crate::main()
     let @2: &'_ (()); // anonymous local
     let @3: (); // anonymous local
 
+    storage_live(@1)
+    storage_live(@2)
+    storage_live(@3)
     @3 := ()
     @2 := &@3
     @1 := test_crate::foo::{impl test_crate::foo::Trait for ()}::defaulted<'_>(move (@2))
-    drop @2
+    storage_dead(@2)
     @fake_read(@1)
-    drop @3
-    drop @1
+    storage_dead(@3)
+    storage_dead(@1)
     @0 := ()
     @0 := ()
     return

@@ -17,41 +17,49 @@ fn test_crate::f1<'_0>(@1: &'_0 (Slice<u8>)) -> usize
     let @12: &'_ (Slice<u8>); // anonymous local
     let @13: &'_ (u8); // anonymous local
 
+    storage_live(sampled@2)
     sampled@2 := const (0 : usize)
     @fake_read(sampled@2)
+    storage_live(@3)
+    storage_live(@4)
+    storage_live(@5)
+    storage_live(@6)
     @6 := const (0 : usize)
     @10 := &*(a@1)
     @11 := @SliceIndexShared<'_, u8>(move (@10), copy (@6))
     @5 := copy (*(@11))
     @4 := move (@5) < const (42 : u8)
     if move (@4) {
-        drop @6
-        drop @5
+        storage_dead(@6)
+        storage_dead(@5)
+        storage_live(@7)
+        storage_live(@8)
+        storage_live(@9)
         @9 := const (1 : usize)
         @12 := &*(a@1)
         @13 := @SliceIndexShared<'_, u8>(move (@12), copy (@9))
         @8 := copy (*(@13))
         @7 := move (@8) < const (16 : u8)
         if move (@7) {
-            drop @9
-            drop @8
+            storage_dead(@9)
+            storage_dead(@8)
             sampled@2 := copy (sampled@2) + const (100 : usize)
         }
         else {
-            drop @9
-            drop @8
+            storage_dead(@9)
+            storage_dead(@8)
         }
     }
     else {
-        drop @6
-        drop @5
+        storage_dead(@6)
+        storage_dead(@5)
     }
-    drop @7
-    drop @4
-    drop @3
+    storage_dead(@7)
+    storage_dead(@4)
+    storage_dead(@3)
     sampled@2 := copy (sampled@2) + const (101 : usize)
     @0 := copy (sampled@2)
-    drop sampled@2
+    storage_dead(sampled@2)
     return
 }
 
@@ -174,147 +182,190 @@ fn test_crate::f2<'_0, '_1>(@1: &'_0 (Slice<u8>), @2: &'_1 mut (Slice<i16>)) -> 
     let @56: &'_ mut (Slice<i16>); // anonymous local
     let @57: &'_ mut (i16); // anonymous local
 
+    storage_live(sampled@3)
     sampled@3 := const (0 : usize)
     @fake_read(sampled@3)
+    storage_live(@4)
+    storage_live(@5)
+    storage_live(@6)
+    storage_live(@7)
     @7 := &*(a@1)
     @6 := core::slice::{Slice<T>}::chunks<'_, u8>[core::marker::Sized<u8>](move (@7), const (3 : usize))
-    drop @7
+    storage_dead(@7)
     @5 := core::iter::traits::collect::{impl core::iter::traits::collect::IntoIterator for I}::into_iter<core::slice::iter::Chunks<'_, u8>[core::marker::Sized<u8>]>[core::marker::Sized<core::slice::iter::Chunks<'_, u8>[core::marker::Sized<u8>]>, core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::Chunks<'a, T>[@TraitClause0]}#71<'_, u8>[core::marker::Sized<u8>]](move (@6))
-    drop @6
+    storage_dead(@6)
     @fake_read(@5)
+    storage_live(iter@8)
     iter@8 := move (@5)
     loop {
+        storage_live(@9)
+        storage_live(@10)
+        storage_live(@11)
+        storage_live(@12)
         @12 := &mut iter@8
         @11 := &two-phase-mut *(@12)
         @10 := core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::Chunks<'a, T>[@TraitClause0]}#71::next<'_, '_, u8>[core::marker::Sized<u8>](move (@11))
-        drop @11
+        storage_dead(@11)
         @fake_read(@10)
         match @10 {
             0 => {
                 break 0
             },
             1 => {
+                storage_live(bytes@13)
                 bytes@13 := copy ((@10 as variant @1).0)
+                storage_live(b1@14)
+                storage_live(@15)
+                storage_live(@16)
                 @16 := const (0 : usize)
                 @52 := &*(bytes@13)
                 @53 := @SliceIndexShared<'_, u8>(move (@52), copy (@16))
                 @15 := copy (*(@53))
                 b1@14 := cast<u8, i16>(move (@15))
-                drop @15
+                storage_dead(@15)
                 @fake_read(b1@14)
-                drop @16
+                storage_dead(@16)
+                storage_live(b2@17)
+                storage_live(@18)
+                storage_live(@19)
                 @19 := const (1 : usize)
                 @50 := &*(bytes@13)
                 @51 := @SliceIndexShared<'_, u8>(move (@50), copy (@19))
                 @18 := copy (*(@51))
                 b2@17 := cast<u8, i16>(move (@18))
-                drop @18
+                storage_dead(@18)
                 @fake_read(b2@17)
-                drop @19
+                storage_dead(@19)
+                storage_live(b3@20)
+                storage_live(@21)
+                storage_live(@22)
                 @22 := const (2 : usize)
                 @48 := &*(bytes@13)
                 @49 := @SliceIndexShared<'_, u8>(move (@48), copy (@22))
                 @21 := copy (*(@49))
                 b3@20 := cast<u8, i16>(move (@21))
-                drop @21
+                storage_dead(@21)
                 @fake_read(b3@20)
-                drop @22
+                storage_dead(@22)
+                storage_live(d1@23)
+                storage_live(@24)
+                storage_live(@25)
+                storage_live(@26)
                 @26 := copy (b2@17)
                 @25 := move (@26) & const (15 : i16)
-                drop @26
+                storage_dead(@26)
                 @24 := move (@25) << const (8 : i32)
-                drop @25
+                storage_dead(@25)
+                storage_live(@27)
                 @27 := copy (b1@14)
                 d1@23 := move (@24) | move (@27)
-                drop @27
-                drop @24
+                storage_dead(@27)
+                storage_dead(@24)
                 @fake_read(d1@23)
+                storage_live(d2@28)
+                storage_live(@29)
+                storage_live(@30)
                 @30 := copy (b3@20)
                 @29 := move (@30) << const (4 : i32)
-                drop @30
+                storage_dead(@30)
+                storage_live(@31)
+                storage_live(@32)
                 @32 := copy (b2@17)
                 @31 := move (@32) >> const (4 : i32)
-                drop @32
+                storage_dead(@32)
                 d2@28 := move (@29) | move (@31)
-                drop @31
-                drop @29
+                storage_dead(@31)
+                storage_dead(@29)
                 @fake_read(d2@28)
+                storage_live(@33)
+                storage_live(@34)
+                storage_live(@35)
                 @35 := copy (d1@23)
                 @46 := test_crate::FIELD_MODULUS
                 @34 := move (@35) < move (@46)
                 if move (@34) {
-                    drop @35
+                    storage_dead(@35)
+                    storage_live(@36)
+                    storage_live(@37)
                     @37 := copy (sampled@3)
                     @36 := move (@37) < const (16 : usize)
                     if move (@36) {
-                        drop @37
+                        storage_dead(@37)
+                        storage_live(@38)
                         @38 := copy (d1@23)
+                        storage_live(@39)
                         @39 := copy (sampled@3)
                         @54 := &mut *(result@2)
                         @55 := @SliceIndexMut<'_, i16>(move (@54), copy (@39))
                         *(@55) := move (@38)
-                        drop @38
-                        drop @39
+                        storage_dead(@38)
+                        storage_dead(@39)
                         sampled@3 := copy (sampled@3) + const (1 : usize)
                     }
                     else {
-                        drop @37
+                        storage_dead(@37)
                     }
                 }
                 else {
-                    drop @35
+                    storage_dead(@35)
                 }
-                drop @36
-                drop @34
-                drop @33
+                storage_dead(@36)
+                storage_dead(@34)
+                storage_dead(@33)
+                storage_live(@40)
+                storage_live(@41)
                 @41 := copy (d2@28)
                 @47 := test_crate::FIELD_MODULUS
                 @40 := move (@41) < move (@47)
                 if move (@40) {
-                    drop @41
+                    storage_dead(@41)
+                    storage_live(@42)
+                    storage_live(@43)
                     @43 := copy (sampled@3)
                     @42 := move (@43) < const (16 : usize)
                     if move (@42) {
-                        drop @43
+                        storage_dead(@43)
+                        storage_live(@44)
                         @44 := copy (d2@28)
+                        storage_live(@45)
                         @45 := copy (sampled@3)
                         @56 := &mut *(result@2)
                         @57 := @SliceIndexMut<'_, i16>(move (@56), copy (@45))
                         *(@57) := move (@44)
-                        drop @44
-                        drop @45
+                        storage_dead(@44)
+                        storage_dead(@45)
                         sampled@3 := copy (sampled@3) + const (1 : usize)
                     }
                     else {
-                        drop @43
+                        storage_dead(@43)
                     }
                 }
                 else {
-                    drop @41
+                    storage_dead(@41)
                 }
-                drop @42
-                drop @40
-                drop d2@28
-                drop d1@23
-                drop b3@20
-                drop b2@17
-                drop b1@14
-                drop bytes@13
-                drop @12
-                drop @10
-                drop @9
+                storage_dead(@42)
+                storage_dead(@40)
+                storage_dead(d2@28)
+                storage_dead(d1@23)
+                storage_dead(b3@20)
+                storage_dead(b2@17)
+                storage_dead(b1@14)
+                storage_dead(bytes@13)
+                storage_dead(@12)
+                storage_dead(@10)
+                storage_dead(@9)
                 continue 0
             },
         }
     }
-    drop @12
-    drop @10
-    drop @9
-    drop iter@8
-    drop @5
-    drop @4
+    storage_dead(@12)
+    storage_dead(@10)
+    storage_dead(@9)
+    storage_dead(iter@8)
+    storage_dead(@5)
+    storage_dead(@4)
     @0 := copy (sampled@3)
-    drop sampled@3
+    storage_dead(sampled@3)
     return
 }
 

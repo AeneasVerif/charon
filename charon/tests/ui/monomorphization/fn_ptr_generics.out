@@ -22,19 +22,23 @@ fn test_crate::init_option()
     let @5: &'_ (Array<@Adt1<u8>[core::marker::Sized<u8>], 6 : usize>); // anonymous local
     let @6: &'_ (@Adt1<u8>[core::marker::Sized<u8>]); // anonymous local
 
+    storage_live(a@1)
+    storage_live(@2)
     @2 := core::option::Option::Some { 0: const (4 : u8) }
     a@1 := @ArrayRepeat<'_, @Adt1<u8>[core::marker::Sized<u8>], 6 : usize>(move (@2))
-    drop @2
+    storage_dead(@2)
     @fake_read(a@1)
+    storage_live(b@3)
+    storage_live(@4)
     @4 := const (0 : usize)
     @5 := &a@1
     @6 := @ArrayIndexShared<'_, @Adt1<u8>[core::marker::Sized<u8>], 6 : usize>(move (@5), copy (@4))
     b@3 := copy (*(@6))
     @fake_read(b@3)
-    drop @4
+    storage_dead(@4)
     @0 := ()
-    drop b@3
-    drop a@1
+    storage_dead(b@3)
+    storage_dead(a@1)
     @0 := ()
     return
 }

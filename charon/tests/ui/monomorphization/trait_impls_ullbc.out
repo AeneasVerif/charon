@@ -14,17 +14,21 @@ where
     let @6: &'_ (bool); // anonymous local
 
     bb0: {
+        storage_live(@3);
+        storage_live(@4);
+        storage_live(@5);
         @5 := &expected@2;
+        storage_live(@6);
         @6 := &init@1;
         @4 := core::cmp::impls::{impl core::cmp::Eq for bool}#38::parent_clause0::eq<'_, '_, bool, bool>(move (@5), move (@6));
         if move (@4) -> bb1 else -> bb2;
     }
 
     bb1: {
-        @storage_dead(@6);
-        @storage_dead(@5);
-        @storage_dead(@4);
-        @storage_dead(@3);
+        storage_dead(@6);
+        storage_dead(@5);
+        storage_dead(@4);
+        storage_dead(@3);
         @0 := ();
         drop expected@2;
         drop init@1;
@@ -33,8 +37,8 @@ where
     }
 
     bb2: {
-        @storage_dead(@6);
-        @storage_dead(@5);
+        storage_dead(@6);
+        storage_dead(@5);
         panic(core::panicking::panic);
     }
 }
@@ -70,8 +74,9 @@ fn test_crate::main()
     let @1: (); // anonymous local
 
     bb0: {
+        storage_live(@1);
         @1 := @Fun7<bool>[core::marker::Sized<bool>, core::cmp::impls::{impl core::cmp::Eq for bool}#38](const (true), const (true));
-        @storage_dead(@1);
+        storage_dead(@1);
         @0 := ();
         @0 := ();
         return;

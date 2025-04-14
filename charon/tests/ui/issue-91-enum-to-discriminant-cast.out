@@ -70,8 +70,11 @@ fn test_crate::main()
     let @18: bool; // anonymous local
     let @19: bool; // anonymous local
 
+    storage_live(x@1)
     x@1 := test_crate::Foo::A {  }
     @fake_read(x@1)
+    storage_live(@2)
+    storage_live(@3)
     @3 := copy (x@1)
     match @3 {
         0 => {
@@ -85,9 +88,11 @@ fn test_crate::main()
     @6 := copy (@5) <= const (1 : u8)
     assert(move (@6) == true)
     @2 := cast<isize, isize>(move (@4))
-    drop @3
+    storage_dead(@3)
     @fake_read(@2)
-    drop @2
+    storage_dead(@2)
+    storage_live(@7)
+    storage_live(@8)
     @8 := copy (x@1)
     match @8 {
         0 => {
@@ -101,11 +106,14 @@ fn test_crate::main()
     @11 := copy (@10) <= const (1 : u8)
     assert(move (@11) == true)
     @7 := cast<isize, u8>(move (@9))
-    drop @8
+    storage_dead(@8)
     @fake_read(@7)
-    drop @7
+    storage_dead(@7)
+    storage_live(x@12)
     x@12 := test_crate::Ordering::Greater {  }
     @fake_read(x@12)
+    storage_live(@13)
+    storage_live(@14)
     @14 := move (x@12)
     match @14 {
         0 => {
@@ -124,12 +132,12 @@ fn test_crate::main()
     @19 := move (@17) | move (@18)
     assert(move (@19) == true)
     @13 := cast<isize, isize>(move (@15))
-    drop @14
+    storage_dead(@14)
     @fake_read(@13)
-    drop @13
+    storage_dead(@13)
     @0 := ()
-    drop x@12
-    drop x@1
+    storage_dead(x@12)
+    storage_dead(x@1)
     @0 := ()
     return
 }

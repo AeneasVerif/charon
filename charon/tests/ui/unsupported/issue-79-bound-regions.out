@@ -40,25 +40,33 @@ fn test_crate::main()
     let @7: core::slice::iter::Iter<'_, i32>[core::marker::Sized<i32>]; // anonymous local
     let @8: &'_ (Slice<i32>); // anonymous local
 
+    storage_live(slice@1)
+    storage_live(@2)
+    storage_live(@3)
+    storage_live(@4)
     @4 := [const (0 : i32)]
     @3 := &@4
     @2 := &*(@3)
     slice@1 := @ArrayToSliceShared<'_, i32, 1 : usize>(move (@2))
-    drop @2
+    storage_dead(@2)
     @fake_read(slice@1)
-    drop @3
+    storage_dead(@3)
+    storage_live(@5)
+    storage_live(@6)
+    storage_live(@7)
+    storage_live(@8)
     @8 := &*(slice@1)
     @7 := core::slice::{Slice<T>}::iter<'_, i32>[core::marker::Sized<i32>](move (@8))
     @6 := &two-phase-mut @7
-    drop @8
+    storage_dead(@8)
     @5 := core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::Iter<'a, T>[@TraitClause0]}#182::next<'_, '_, i32>[core::marker::Sized<i32>](move (@6))
-    drop @6
+    storage_dead(@6)
     @fake_read(@5)
-    drop @7
-    drop @5
+    storage_dead(@7)
+    storage_dead(@5)
     @0 := ()
-    drop @4
-    drop slice@1
+    storage_dead(@4)
+    storage_dead(slice@1)
     @0 := ()
     return
 }

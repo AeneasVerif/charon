@@ -27,9 +27,10 @@ pub fn test_crate::{impl test_crate::From<&'_0 (bool)> for bool}::from<'_0>(@1: 
     let v@1: &'_ (bool); // arg #1
     let @2: bool; // anonymous local
 
+    storage_live(@2)
     @2 := copy (*(v@1))
     @0 := core::result::Result::Ok { 0: move (@2) }
-    drop @2
+    storage_dead(@2)
     return
 }
 

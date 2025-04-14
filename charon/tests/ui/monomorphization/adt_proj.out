@@ -19,21 +19,23 @@ fn test_crate::main()
     let res@1: @Adt1<u32, u32>[core::marker::Sized<u32>, core::marker::Sized<u32>]; // local
     let n@2: u32; // local
 
+    storage_live(res@1)
     res@1 := core::result::Result::Ok { 0: const (0 : u32) }
     @fake_read(res@1)
+    storage_live(n@2)
     @fake_read(res@1)
     match res@1 {
         0 => {
         },
         _ => {
-            drop n@2
+            storage_dead(n@2)
             panic(core::panicking::panic_explicit)
         },
     }
     n@2 := copy ((res@1 as variant @0).0)
     @0 := ()
-    drop n@2
-    drop res@1
+    storage_dead(n@2)
+    storage_dead(res@1)
     @0 := ()
     return
 }

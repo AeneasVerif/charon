@@ -46,11 +46,13 @@ where
     let @2: (); // anonymous local
     let @3: &'_ (T); // anonymous local
 
+    storage_live(@2)
+    storage_live(@3)
     @3 := &x@1
     @2 := test_crate::{impl test_crate::HasMethod for T}::method<'_, T>[@TraitClause0, @TraitClause1::parent_clause0](move (@3))
-    drop @3
+    storage_dead(@3)
     @fake_read(@2)
-    drop @2
+    storage_dead(@2)
     @0 := ()
     drop x@1
     @0 := ()

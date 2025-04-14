@@ -5,9 +5,10 @@ fn test_crate::SLICE() -> Array<(), 4 : usize>
     let @0: Array<(), 4 : usize>; // return
     let @1: (); // anonymous local
 
+    storage_live(@1)
     @1 := ()
     @0 := @ArrayRepeat<'_, (), 4 : usize>(move (@1))
-    drop @1
+    storage_dead(@1)
     return
 }
 
@@ -26,9 +27,10 @@ fn test_crate::BAR() -> Array<(), 42 : usize>
     let @0: Array<(), 42 : usize>; // return
     let @1: (); // anonymous local
 
+    storage_live(@1)
     @1 := ()
     @0 := @ArrayRepeat<'_, (), 42 : usize>(move (@1))
-    drop @1
+    storage_dead(@1)
     return
 }
 

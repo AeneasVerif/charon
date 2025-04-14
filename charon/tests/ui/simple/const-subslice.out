@@ -11,19 +11,24 @@ fn test_crate::main()
     let @6: Slice<u8>; // anonymous local
     let @7: &'_ (Slice<u8>); // anonymous local
 
+    storage_live(y@1)
     @6 := [const (0 : u8), const (1 : u8), const (2 : u8)]
     @7 := &@6
     y@1 := move (@7)
+    storage_live(z@2)
+    storage_live(@3)
     @3 := &raw const *(y@1)
     z@2 := cast<*const Slice<u8>, *const u8>(move (@3))
-    drop @3
+    storage_dead(@3)
+    storage_live(@4)
+    storage_live(@5)
     @5 := copy (z@2)
     @4 := cast<*const u8, usize>(move (@5))
-    drop @5
-    drop @4
+    storage_dead(@5)
+    storage_dead(@4)
     @0 := ()
-    drop z@2
-    drop y@1
+    storage_dead(z@2)
+    storage_dead(y@1)
     @0 := ()
     return
 }

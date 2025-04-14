@@ -38,10 +38,11 @@ where
     let @0: (); // return
     let _closure@1: fn(()); // local
 
+    storage_live(_closure@1)
     _closure@1 := {test_crate::{test_crate::SqrtTables<F>[@TraitClause0]}::sqrt_common::closure<F, Clause1_Repr>[@TraitClause0, @TraitClause1]} {}
     @fake_read(_closure@1)
     @0 := ()
-    drop _closure@1
+    storage_dead(_closure@1)
     @0 := ()
     return
 }

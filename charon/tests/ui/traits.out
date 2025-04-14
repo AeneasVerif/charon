@@ -38,19 +38,22 @@ pub fn test_crate::test_bool_trait_bool(@1: bool) -> bool
     let @3: &'_ (bool); // anonymous local
     let @4: &'_ (bool); // anonymous local
 
+    storage_live(@2)
+    storage_live(@3)
     @3 := &x@1
     @2 := test_crate::{impl test_crate::BoolTrait for bool}::get_bool<'_>(move (@3))
     if move (@2) {
-        drop @3
+        storage_dead(@3)
+        storage_live(@4)
         @4 := &x@1
         @0 := test_crate::{impl test_crate::BoolTrait for bool}::ret_true<'_>(move (@4))
-        drop @4
+        storage_dead(@4)
     }
     else {
-        drop @3
+        storage_dead(@3)
         @0 := const (false)
     }
-    drop @2
+    storage_dead(@2)
     return
 }
 
@@ -115,19 +118,22 @@ where
     let @3: &'_ (core::option::Option<T>[@TraitClause0]); // anonymous local
     let @4: &'_ (core::option::Option<T>[@TraitClause0]); // anonymous local
 
+    storage_live(@2)
+    storage_live(@3)
     @3 := &x@1
     @2 := test_crate::{impl test_crate::BoolTrait for core::option::Option<T>[@TraitClause0]}#1::get_bool<'_, T>[@TraitClause0](move (@3))
     if move (@2) {
-        drop @3
+        storage_dead(@3)
+        storage_live(@4)
         @4 := &x@1
         @0 := test_crate::{impl test_crate::BoolTrait for core::option::Option<T>[@TraitClause0]}#1::ret_true<'_, T>[@TraitClause0](move (@4))
-        drop @4
+        storage_dead(@4)
     }
     else {
-        drop @3
+        storage_dead(@3)
         @0 := const (false)
     }
-    drop @2
+    storage_dead(@2)
     drop x@1
     return
 }
@@ -143,9 +149,10 @@ where
     let x@1: T; // arg #1
     let @2: &'_ (T); // anonymous local
 
+    storage_live(@2)
     @2 := &x@1
     @0 := @TraitClause1::get_bool<'_>(move (@2))
-    drop @2
+    storage_dead(@2)
     drop x@1
     return
 }
@@ -183,15 +190,19 @@ where
     let @4: u64; // anonymous local
     let @5: A; // anonymous local
 
+    storage_live(@2)
+    storage_live(@3)
     @3 := move ((self@1).0)
     @2 := @TraitClause1::to_u64(move (@3))
-    drop @3
+    storage_dead(@3)
+    storage_live(@4)
+    storage_live(@5)
     @5 := move ((self@1).1)
     @4 := @TraitClause1::to_u64(move (@5))
-    drop @5
+    storage_dead(@5)
     @0 := move (@2) + move (@4)
-    drop @4
-    drop @2
+    storage_dead(@4)
+    storage_dead(@2)
     drop self@1
     return
 }
@@ -213,9 +224,10 @@ where
     let x@1: (T, T); // arg #1
     let @2: (T, T); // anonymous local
 
+    storage_live(@2)
     @2 := move (x@1)
     @0 := test_crate::{impl test_crate::ToU64 for (A, A)}#3::to_u64<T>[@TraitClause0, @TraitClause1](move (@2))
-    drop @2
+    storage_dead(@2)
     drop x@1
     return
 }
@@ -229,9 +241,10 @@ where
     let x@1: (T, T); // arg #1
     let @2: (T, T); // anonymous local
 
+    storage_live(@2)
     @2 := move (x@1)
     @0 := @TraitClause1::to_u64(move (@2))
-    drop @2
+    storage_dead(@2)
     drop x@1
     return
 }
@@ -242,9 +255,10 @@ pub fn test_crate::h0(@1: u64) -> u64
     let x@1: u64; // arg #1
     let @2: u64; // anonymous local
 
+    storage_live(@2)
     @2 := copy (x@1)
     @0 := test_crate::{impl test_crate::ToU64 for u64}#2::to_u64(move (@2))
-    drop @2
+    storage_dead(@2)
     return
 }
 
@@ -265,9 +279,10 @@ where
     let self@1: test_crate::Wrapper<T>[@TraitClause0]; // arg #1
     let @2: T; // anonymous local
 
+    storage_live(@2)
     @2 := move ((self@1).x)
     @0 := @TraitClause1::to_u64(move (@2))
-    drop @2
+    storage_dead(@2)
     drop self@1
     return
 }
@@ -286,9 +301,10 @@ pub fn test_crate::h1(@1: test_crate::Wrapper<u64>[core::marker::Sized<u64>]) ->
     let x@1: test_crate::Wrapper<u64>[core::marker::Sized<u64>]; // arg #1
     let @2: test_crate::Wrapper<u64>[core::marker::Sized<u64>]; // anonymous local
 
+    storage_live(@2)
     @2 := move (x@1)
     @0 := test_crate::{impl test_crate::ToU64 for test_crate::Wrapper<T>[@TraitClause0]}#4::to_u64<u64>[core::marker::Sized<u64>, test_crate::{impl test_crate::ToU64 for u64}#2](move (@2))
-    drop @2
+    storage_dead(@2)
     return
 }
 
@@ -301,9 +317,10 @@ where
     let x@1: test_crate::Wrapper<T>[@TraitClause0]; // arg #1
     let @2: test_crate::Wrapper<T>[@TraitClause0]; // anonymous local
 
+    storage_live(@2)
     @2 := move (x@1)
     @0 := test_crate::{impl test_crate::ToU64 for test_crate::Wrapper<T>[@TraitClause0]}#4::to_u64<T>[@TraitClause0, @TraitClause1](move (@2))
-    drop @2
+    storage_dead(@2)
     drop x@1
     return
 }
@@ -320,9 +337,10 @@ pub fn test_crate::{impl test_crate::ToType<bool> for u64}#5::to_type(@1: u64) -
     let self@1: u64; // arg #1
     let @2: u64; // anonymous local
 
+    storage_live(@2)
     @2 := copy (self@1)
     @0 := move (@2) > const (0 : u64)
-    drop @2
+    storage_dead(@2)
     return
 }
 
@@ -354,9 +372,10 @@ where
     let y@1: T2; // arg #1
     let @2: T2; // anonymous local
 
+    storage_live(@2)
     @2 := move (y@1)
     @0 := @TraitClause2::of_type<T2>[@TraitClause1, @TraitClause3, @TraitClause0](move (@2))
-    drop @2
+    storage_dead(@2)
     drop y@1
     return
 }
@@ -384,9 +403,10 @@ where
     let y@1: T2; // arg #1
     let @2: T2; // anonymous local
 
+    storage_live(@2)
     @2 := move (y@1)
     @0 := @TraitClause2::of_type[@TraitClause0](move (@2))
-    drop @2
+    storage_dead(@2)
     drop y@1
     return
 }
@@ -410,9 +430,10 @@ fn test_crate::{test_crate::TestType<T>[@TraitClause0]}#6::test::{impl test_crat
     let self@1: &'_ (test_crate::{test_crate::TestType<T>[@TraitClause0]}#6::test::TestType1); // arg #1
     let @2: u64; // anonymous local
 
+    storage_live(@2)
     @2 := copy ((*(self@1)).0)
     @0 := move (@2) > const (1 : u64)
-    drop @2
+    storage_dead(@2)
     return
 }
 
@@ -431,6 +452,8 @@ where
     let @7: u64; // anonymous local
     let @8: &'_ (test_crate::{test_crate::TestType<T>[@TraitClause0]}#6::test::TestType1); // anonymous local
 
+    storage_live(x@3)
+    storage_live(@4)
     // Remark: we can't write: impl TestTrait for TestType<T>,
     // we have to use a *local* parameter (can't use the outer T).
     // In other words: the parameters used in the items inside
@@ -438,25 +461,29 @@ where
     // blocks).
     @4 := move (x@2)
     x@3 := @TraitClause1::to_u64(move (@4))
-    drop @4
+    storage_dead(@4)
     @fake_read(x@3)
+    storage_live(y@5)
     y@5 := test_crate::{test_crate::TestType<T>[@TraitClause0]}#6::test::TestType1 { 0: const (0 : u64) }
     @fake_read(y@5)
+    storage_live(@6)
+    storage_live(@7)
     @7 := copy (x@3)
     @6 := move (@7) > const (0 : u64)
     if move (@6) {
-        drop @7
+        storage_dead(@7)
+        storage_live(@8)
         @8 := &y@5
         @0 := test_crate::{test_crate::TestType<T>[@TraitClause0]}#6::test::{impl test_crate::{test_crate::TestType<T>[@TraitClause0]}#6::test::TestTrait for test_crate::{test_crate::TestType<T>[@TraitClause0]}#6::test::TestType1}::test<'_>(move (@8))
-        drop @8
+        storage_dead(@8)
     }
     else {
-        drop @7
+        storage_dead(@7)
         @0 := const (false)
     }
-    drop @6
-    drop y@5
-    drop x@3
+    storage_dead(@6)
+    storage_dead(y@5)
+    storage_dead(x@3)
     drop x@2
     return
 }
@@ -477,9 +504,10 @@ where
     let self@1: test_crate::BoolWrapper; // arg #1
     let @2: bool; // anonymous local
 
+    storage_live(@2)
     @2 := copy ((self@1).0)
     @0 := @TraitClause1::to_type(move (@2))
-    drop @2
+    storage_dead(@2)
     return
 }
 
@@ -581,9 +609,10 @@ where
     let x@1: @TraitClause1::W; // arg #1
     let @2: @TraitClause1::W; // anonymous local
 
+    storage_live(@2)
     @2 := move (x@1)
     @0 := @TraitClause1::parent_clause2::to_u64(move (@2))
-    drop @2
+    storage_dead(@2)
     drop x@1
     return
 }
@@ -645,9 +674,10 @@ where
     let x@1: &'_ (T); // arg #1
     let @2: &'_ (T); // anonymous local
 
+    storage_live(@2)
     @2 := &*(x@1)
     @0 := @TraitClause1::parent_clause0::get_name<'_>(move (@2))
-    drop @2
+    storage_dead(@2)
     return
 }
 
@@ -662,9 +692,10 @@ where
     let x@1: &'_ (T); // arg #1
     let @2: &'_ (T); // anonymous local
 
+    storage_live(@2)
     @2 := &*(x@1)
     @0 := @TraitClause1::parent_clause0::get_w<'_>(move (@2))
-    drop @2
+    storage_dead(@2)
     return
 }
 
@@ -812,9 +843,10 @@ where
     let x@1: &'_ (T); // arg #1
     let @2: &'_ (T); // anonymous local
 
+    storage_live(@2)
     @2 := &*(x@1)
     @0 := @TraitClause1::get_w<'_>(move (@2))
-    drop @2
+    storage_dead(@2)
     return
 }
 
@@ -1021,8 +1053,9 @@ pub fn test_crate::flibidi()
     let @0: (); // return
     let @1: (); // anonymous local
 
+    storage_live(@1)
     @1 := test_crate::call<'_, fn<'a>(&'a (())) -> test_crate::Wrapper<(bool, &'a (()))>[core::marker::Sized<(bool, &'a (()))>]>[core::marker::Sized<fn<'a>(&'a (())) -> test_crate::Wrapper<(bool, &'a (()))>[core::marker::Sized<(bool, &'a (()))>]>, core::ops::function::Fn<fn<'a>(&'a (())) -> test_crate::Wrapper<(bool, &'a (()))>[core::marker::Sized<(bool, &'a (()))>], (&'_ (()))>](const (test_crate::flabada<'_>))
-    drop @1
+    storage_dead(@1)
     @0 := ()
     @0 := ()
     return

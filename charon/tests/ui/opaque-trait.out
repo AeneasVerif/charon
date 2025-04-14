@@ -144,10 +144,12 @@ where
     let @1: (); // anonymous local
     let @2: usize; // anonymous local
 
+    storage_live(@1)
     @1 := @TraitClause1::method1()
-    drop @1
+    storage_dead(@1)
+    storage_live(@2)
     @2 := const (@TraitClause1::CONST1)
-    drop @2
+    storage_dead(@2)
     @0 := ()
     @0 := ()
     return

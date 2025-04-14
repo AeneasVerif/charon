@@ -84,25 +84,33 @@ fn test_crate::foo()
     let @7: &'_ (i32); // anonymous local
     let @8: i32; // anonymous local
 
+    storage_live(@1)
+    storage_live(@2)
+    storage_live(@3)
     @3 := core::option::Option::Some { 0: const (0 : i32) }
     @2 := &@3
     @1 := core::option::{core::option::Option<T>[@TraitClause0]}::is_some<'_, i32>[core::marker::Sized<i32>](move (@2))
-    drop @2
+    storage_dead(@2)
     @fake_read(@1)
-    drop @3
-    drop @1
+    storage_dead(@3)
+    storage_dead(@1)
+    storage_live(@4)
     @4 := core::convert::{impl core::convert::Into<U> for T}#3::into<u32, u64>[core::marker::Sized<u32>, core::marker::Sized<u64>, core::convert::num::{impl core::convert::From<u32> for u64}#72](const (42 : u32))
     @fake_read(@4)
-    drop @4
+    storage_dead(@4)
+    storage_live(@5)
+    storage_live(@6)
+    storage_live(@7)
+    storage_live(@8)
     @8 := const (0 : i32)
     @7 := &@8
     @6 := &*(@7)
     @5 := core::slice::raw::from_ref<'_, i32>[core::marker::Sized<i32>](move (@6))
-    drop @6
+    storage_dead(@6)
     @fake_read(@5)
-    drop @8
-    drop @7
-    drop @5
+    storage_dead(@8)
+    storage_dead(@7)
+    storage_dead(@5)
     @0 := ()
     @0 := ()
     return

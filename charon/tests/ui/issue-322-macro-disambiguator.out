@@ -12,14 +12,18 @@ fn test_crate::main()
     let @3: (); // anonymous local
     let @4: test_crate::main::AssertIsAsBytes#1; // anonymous local
 
+    storage_live(@1)
+    storage_live(@2)
     @2 := test_crate::main::AssertIsAsBytes {  }
     @fake_read(@2)
-    drop @2
-    drop @1
+    storage_dead(@2)
+    storage_dead(@1)
+    storage_live(@3)
+    storage_live(@4)
     @4 := test_crate::main::AssertIsAsBytes#1 {  }
     @fake_read(@4)
-    drop @4
-    drop @3
+    storage_dead(@4)
+    storage_dead(@3)
     @0 := ()
     @0 := ()
     return

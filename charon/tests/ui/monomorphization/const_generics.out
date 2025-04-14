@@ -28,13 +28,15 @@ fn test_crate::main()
     let @2: &'_ (@Adt1<bool>[core::marker::Sized<bool>]); // anonymous local
     let @3: &'_ (@Adt1<bool>[core::marker::Sized<bool>]); // anonymous local
 
+    storage_live(_b@1)
+    storage_live(@2)
     @3 := &test_crate::FooBool
     @2 := move (@3)
     _b@1 := copy ((*(@2)).value)
     @fake_read(_b@1)
-    drop @2
+    storage_dead(@2)
     @0 := ()
-    drop _b@1
+    storage_dead(_b@1)
     @0 := ()
     return
 }

@@ -8,11 +8,12 @@ pub fn test_crate::first(@1: Array<u32, 0 : usize>) -> u32
     let @3: &'_ (Array<u32, 0 : usize>); // anonymous local
     let @4: &'_ (u32); // anonymous local
 
+    storage_live(@2)
     @2 := const (0 : usize)
     @3 := &s@1
     @4 := @ArrayIndexShared<'_, u32, 0 : usize>(move (@3), copy (@2))
     @0 := copy (*(@4))
-    drop @2
+    storage_dead(@2)
     return
 }
 

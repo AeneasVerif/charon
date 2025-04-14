@@ -13,10 +13,11 @@ pub fn crate2::extra_random_number() -> u32
     let @0: u32; // return
     let @1: u32; // anonymous local
 
+    storage_live(@1)
     // Even more random.
     @1 := crate1::random_number()
     @0 := move (@1) + const (1 : u32)
-    drop @1
+    storage_dead(@1)
     return
 }
 

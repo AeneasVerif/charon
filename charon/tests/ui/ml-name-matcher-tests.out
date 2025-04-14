@@ -161,32 +161,43 @@ fn test_crate::foo()
     let @10: &'_ (Slice<bool>); // anonymous local
     let @11: core::ops::range::RangeFrom<usize>[core::marker::Sized<usize>]; // anonymous local
 
+    storage_live(@1)
+    storage_live(@2)
+    storage_live(@3)
     @3 := core::option::Option::Some { 0: const (0 : i32) }
     @2 := &@3
     @1 := core::option::{core::option::Option<T>[@TraitClause0]}::is_some<'_, i32>[core::marker::Sized<i32>](move (@2))
-    drop @2
+    storage_dead(@2)
     @fake_read(@1)
-    drop @3
-    drop @1
+    storage_dead(@3)
+    storage_dead(@1)
+    storage_live(slice@4)
+    storage_live(@5)
+    storage_live(@6)
+    storage_live(@7)
     @7 := [const (false)]
     @6 := &@7
     @5 := &*(@6)
     slice@4 := @ArrayToSliceShared<'_, bool, 1 : usize>(move (@5))
-    drop @5
+    storage_dead(@5)
     @fake_read(slice@4)
-    drop @6
+    storage_dead(@6)
+    storage_live(@8)
+    storage_live(@9)
+    storage_live(@10)
     @10 := &*(slice@4)
+    storage_live(@11)
     @11 := core::ops::range::RangeFrom { start: const (1 : usize) }
     @9 := core::slice::index::{impl core::ops::index::Index<I> for Slice<T>}::index<'_, bool, core::ops::range::RangeFrom<usize>[core::marker::Sized<usize>]>[core::marker::Sized<bool>, core::marker::Sized<core::ops::range::RangeFrom<usize>[core::marker::Sized<usize>]>, core::slice::index::{impl core::slice::index::SliceIndex<Slice<T>> for core::ops::range::RangeFrom<usize>[core::marker::Sized<usize>]}#7<bool>[core::marker::Sized<bool>]](move (@10), move (@11))
-    drop @11
-    drop @10
+    storage_dead(@11)
+    storage_dead(@10)
     @8 := &*(@9)
     @fake_read(@8)
-    drop @8
+    storage_dead(@8)
     @0 := ()
-    drop @9
-    drop @7
-    drop slice@4
+    storage_dead(@9)
+    storage_dead(@7)
+    storage_dead(slice@4)
     @0 := ()
     return
 }
@@ -213,6 +224,7 @@ fn test_crate::funs_with_disambiguator(@1: bool) -> u32
     let b@1: bool; // arg #1
     let @2: bool; // anonymous local
 
+    storage_live(@2)
     @2 := copy (b@1)
     if move (@2) {
         @0 := test_crate::funs_with_disambiguator::f()
@@ -220,7 +232,7 @@ fn test_crate::funs_with_disambiguator(@1: bool) -> u32
     else {
         @0 := test_crate::funs_with_disambiguator::f#1()
     }
-    drop @2
+    storage_dead(@2)
     return
 }
 
