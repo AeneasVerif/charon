@@ -722,9 +722,18 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
 
                         Ok(Rvalue::Aggregate(akind, operands_t))
                     }
-                    hax::AggregateKind::RawPtr(..) => {
+                    hax::AggregateKind::RawPtr(ty, is_mut) => {
                         // TODO: replace with a call to `ptr::from_raw_parts`.
-                        raise_error!(self, span, "Wide raw pointers are not supported");
+                        let t_ty = self.translate_ty(span, ty)?;
+                        let mutability = if *is_mut {
+                            RefKind::Mut
+                        } else {
+                            RefKind::Shared
+                        };
+
+                        let akind = AggregateKind::RawPtr(t_ty, mutability);
+
+                        Ok(Rvalue::Aggregate(akind, operands_t))
                     }
                     hax::AggregateKind::Coroutine(..)
                     | hax::AggregateKind::CoroutineClosure(..) => {
@@ -855,9 +864,10 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
                 BuiltinFunId::Index { .. }
                 | BuiltinFunId::ArrayToSliceShared
                 | BuiltinFunId::ArrayToSliceMut
-                | BuiltinFunId::ArrayRepeat => {
+                | BuiltinFunId::ArrayRepeat
+                | BuiltinFunId::PtrFromParts(_) => {
                     // Those cases are introduced later, in micro-passes, by desugaring
-                    // projections (for ArrayIndex and ArrayIndexMut for instnace) and=
+                    // projections (for ArrayIndex and ArrayIndexMut for instance) and
                     // operations (for ArrayToSlice for instance) to function calls.
                     unreachable!()
                 }

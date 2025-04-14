@@ -956,6 +956,13 @@ impl<C: AstFormatter> FmtWithCtx<C> for Rvalue {
                             ops_s.join(", ")
                         )
                     }
+                    AggregateKind::RawPtr(_, rmut) => {
+                        let mutability = match rmut {
+                            RefKind::Shared => "const",
+                            RefKind::Mut => "mut ",
+                        };
+                        format!("*{} ({})", mutability, ops_s.join(", "))
+                    }
                 }
             }
             Rvalue::Global(global_ref) => global_ref.fmt_with_ctx(ctx),
@@ -1612,6 +1619,10 @@ impl std::fmt::Display for BuiltinFunId {
                 let op = if is_range { "SubSlice" } else { "Index" };
                 let mutability = mutability.variant_name();
                 &format!("{ty}{op}{mutability}")
+            }
+            BuiltinFunId::PtrFromParts(mutability) => {
+                let mutability = mutability.variant_name();
+                &format!("PtrFromParts{mutability}")
             }
         };
         f.write_str(name)

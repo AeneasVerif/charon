@@ -190,6 +190,12 @@ and builtin_fun_id =
           - `fn SliceSubSliceMut<T>(&mut [T], usize, usize) -> &mut [T]`
           - etc
        *)
+  | PtrFromParts of ref_kind
+      (** Build a raw pointer, from a data pointer and metadata. The metadata can be unit, if
+          building a thin pointer.
+
+          Converted from [AggregateKind::RawPtr]
+       *)
 
 (** One of 8 built-in indexing operations. *)
 and builtin_index_op = {

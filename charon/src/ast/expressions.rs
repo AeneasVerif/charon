@@ -339,6 +339,11 @@ pub enum BuiltinFunId {
     /// - `fn SliceSubSliceMut<T>(&mut [T], usize, usize) -> &mut [T]`
     /// - etc
     Index(BuiltinIndexOp),
+    /// Build a raw pointer, from a data pointer and metadata. The metadata can be unit, if
+    /// building a thin pointer.
+    ///
+    /// Converted from [AggregateKind::RawPtr]
+    PtrFromParts(RefKind),
 }
 
 /// One of 8 built-in indexing operations.
@@ -610,4 +615,9 @@ pub enum AggregateKind {
     /// Aggregated values for closures group the function id together with its
     /// state.
     Closure(FunDeclId, GenericArgs),
+    /// Construct a raw pointer from a pointer value, and its metadata (can be unit, if building
+    /// a thin pointer). The type is the type of the pointee.
+    /// We lower this to a builtin function call in [crate::ops_to_function_calls].
+    #[charon::opaque]
+    RawPtr(Ty, RefKind),
 }

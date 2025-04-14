@@ -686,6 +686,9 @@ let builtin_fun_id_to_string (fid : E.builtin_fun_id) : string =
       let op = if is_range then "SubSlice" else "Index" in
       let mutability = PrintTypes.ref_kind_to_string mutability in
       ty ^ op ^ mutability
+  | PtrFromParts mut ->
+      let mut = if mut = RMut then "_mut" else "" in
+      "std::ptr::from_raw_parts" ^ mut
 
 let match_fn_ptr (ctx : 'fun_body ctx) (c : match_config) (p : pattern)
     (func : E.fn_ptr) : bool =
