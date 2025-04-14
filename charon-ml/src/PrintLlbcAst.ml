@@ -27,6 +27,11 @@ module Ast = struct
         indent ^ "set_discriminant(" ^ place_to_string env p ^ ", "
         ^ VariantId.to_string variant_id
         ^ ")"
+    | StorageLive var_id ->
+        indent ^ "storage_live " ^ local_id_to_string env var_id
+    | StorageDead var_id ->
+        indent ^ "storage_dead " ^ local_id_to_string env var_id
+    | Deinit p -> indent ^ "deinit " ^ place_to_string env p
     | Drop p -> indent ^ "drop " ^ place_to_string env p
     | Assert a -> assertion_to_string env indent a
     | Call call -> call_to_string env indent call

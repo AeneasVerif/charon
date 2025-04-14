@@ -105,6 +105,7 @@ impl<C: AstFormatter> FmtWithCtx<C> for llbc::Block {
     fn fmt_with_ctx_and_indent(&self, tab: &str, ctx: &C) -> String {
         self.statements
             .iter()
+            .filter(|st| !st.content.is_storage_live())
             .map(|st| st.fmt_with_ctx_and_indent(tab, ctx))
             .map(|st| format!("{st}\n"))
             .join("")
@@ -117,7 +118,9 @@ impl<C: AstFormatter> FmtWithCtx<C> for ullbc::BlockData {
 
         // Format the statements
         for statement in &self.statements {
-            out.push(format!("{};\n", statement.fmt_with_ctx_and_indent(tab, ctx)).to_string());
+            if !statement.content.is_storage_live() {
+                out.push(format!("{};\n", statement.fmt_with_ctx_and_indent(tab, ctx)).to_string());
+            }
         }
 
         // Format the terminator
@@ -1019,11 +1022,22 @@ impl<C: AstFormatter> FmtWithCtx<C> for ullbc::Statement {
                 place.fmt_with_ctx(ctx),
                 variant_id
             ),
-            RawStatement::StorageDead(vid) => {
-                write!(&mut out, "{tab}@storage_dead({})", vid.to_pretty_string())
+            RawStatement::StorageLive(var_id) => {
+                write!(
+                    &mut out,
+                    "{tab}storage_live({})",
+                    ctx.format_object(*var_id)
+                )
+            }
+            RawStatement::StorageDead(var_id) => {
+                write!(
+                    &mut out,
+                    "{tab}@storage_dead({})",
+                    ctx.format_object(*var_id)
+                )
             }
             RawStatement::Deinit(place) => {
-                write!(&mut out, "{tab}@deinit({})", place.fmt_with_ctx(ctx))
+                write!(&mut out, "{tab}deinit({})", place.fmt_with_ctx(ctx))
             }
             RawStatement::Drop(place) => {
                 write!(&mut out, "{tab}drop {}", place.fmt_with_ctx(ctx))
@@ -1066,11 +1080,24 @@ impl<C: AstFormatter> FmtWithCtx<C> for llbc::Statement {
                 place.fmt_with_ctx(ctx),
                 variant_id
             ),
+            RawStatement::StorageLive(var_id) => {
+                write!(
+                    &mut out,
+                    "{tab}storage_live({})",
+                    ctx.format_object(*var_id)
+                )
+            }
+            RawStatement::StorageDead(var_id) => {
+                write!(&mut out, "{tab}drop {}", ctx.format_object(*var_id))
+            }
+            RawStatement::Deinit(place) => {
+                write!(&mut out, "{tab}deinit({})", place.fmt_with_ctx(ctx))
+            }
             RawStatement::Drop(place) => {
-                write!(&mut out, "{}drop {}", tab, place.fmt_with_ctx(ctx))
+                write!(&mut out, "{tab}drop {}", place.fmt_with_ctx(ctx))
             }
             RawStatement::Assert(assert) => {
-                write!(&mut out, "{}{}", tab, assert.fmt_with_ctx(ctx),)
+                write!(&mut out, "{tab}{}", assert.fmt_with_ctx(ctx),)
             }
             RawStatement::Call(call) => {
                 let (call_s, _) = fmt_call(ctx, call);

@@ -926,12 +926,10 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
             StatementKind::Assign((place, rvalue)) => {
                 let t_place = self.translate_place(span, place)?;
                 let t_rvalue = self.translate_rvalue(span, rvalue)?;
-
                 Some(RawStatement::Assign(t_place, t_rvalue))
             }
             StatementKind::FakeRead((_read_cause, place)) => {
                 let t_place = self.translate_place(span, place)?;
-
                 Some(RawStatement::FakeRead(t_place))
             }
             StatementKind::PlaceMention(place) => {
@@ -948,8 +946,10 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
                 let variant_id = translate_variant_id(*variant_index);
                 Some(RawStatement::SetDiscriminant(t_place, variant_id))
             }
-            // We ignore StorageLive
-            StatementKind::StorageLive(_) => None,
+            StatementKind::StorageLive(local) => {
+                let var_id = self.translate_local(local).unwrap();
+                Some(RawStatement::StorageLive(var_id))
+            }
             StatementKind::StorageDead(local) => {
                 let var_id = self.translate_local(local).unwrap();
                 Some(RawStatement::StorageDead(var_id))

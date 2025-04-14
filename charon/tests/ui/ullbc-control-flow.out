@@ -228,7 +228,7 @@ pub fn test_crate::nested_loops_enum(@1: usize, @2: usize) -> usize
         @storage_dead(@11);
         @storage_dead(@9);
         @storage_dead(@8);
-        @storage_dead(@7);
+        @storage_dead(iter@7);
         @storage_dead(@5);
         @storage_dead(@4);
         @16 := copy (step_out@1);
@@ -269,11 +269,11 @@ pub fn test_crate::nested_loops_enum(@1: usize, @2: usize) -> usize
         @storage_dead(@21);
         @storage_dead(@19);
         @storage_dead(@18);
-        @storage_dead(@17);
+        @storage_dead(iter@17);
         @storage_dead(@14);
         @storage_dead(@13);
         @0 := copy (s@3);
-        @storage_dead(@3);
+        @storage_dead(s@3);
         return;
     }
 
@@ -307,7 +307,7 @@ pub fn test_crate::nested_loops_enum(@1: usize, @2: usize) -> usize
         @storage_dead(@30);
         @storage_dead(@28);
         @storage_dead(@27);
-        @storage_dead(@26);
+        @storage_dead(iter@26);
         @storage_dead(@23);
         @storage_dead(@21);
         @storage_dead(@19);

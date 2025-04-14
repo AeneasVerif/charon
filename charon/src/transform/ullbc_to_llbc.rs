@@ -1447,7 +1447,7 @@ fn opt_block_unwrap_or_nop(span: Span, opt_block: Option<tgt::Block>) -> tgt::Bl
     opt_block.unwrap_or_else(|| tgt::Statement::new(span, tgt::RawStatement::Nop).into_block())
 }
 
-fn translate_statement(locals: &Locals, st: &src::Statement) -> Option<tgt::Statement> {
+fn translate_statement(st: &src::Statement) -> Option<tgt::Statement> {
     let src_span = st.span;
     let st = match st.content.clone() {
         src::RawStatement::Assign(place, rvalue) => tgt::RawStatement::Assign(place, rvalue),
@@ -1456,12 +1456,9 @@ fn translate_statement(locals: &Locals, st: &src::Statement) -> Option<tgt::Stat
         src::RawStatement::SetDiscriminant(place, variant_id) => {
             tgt::RawStatement::SetDiscriminant(place, variant_id)
         }
-        // We translate a StorageDead as a drop
-        src::RawStatement::StorageDead(var_id) => {
-            tgt::RawStatement::Drop(locals.place_for_var(var_id))
-        }
-        // We translate a deinit as a drop
-        src::RawStatement::Deinit(place) => tgt::RawStatement::Drop(place),
+        src::RawStatement::StorageLive(var_id) => tgt::RawStatement::StorageLive(var_id),
+        src::RawStatement::StorageDead(var_id) => tgt::RawStatement::StorageDead(var_id),
+        src::RawStatement::Deinit(place) => tgt::RawStatement::Deinit(place),
         src::RawStatement::Drop(place) => tgt::RawStatement::Drop(place),
         src::RawStatement::Assert(assert) => tgt::RawStatement::Assert(assert),
         src::RawStatement::Nop => tgt::RawStatement::Nop,
@@ -1612,6 +1609,9 @@ fn is_terminal_explore(num_loops: usize, st: &tgt::Statement) -> bool {
         tgt::RawStatement::Assign(_, _)
         | tgt::RawStatement::FakeRead(_)
         | tgt::RawStatement::SetDiscriminant(_, _)
+        | tgt::RawStatement::StorageLive(_)
+        | tgt::RawStatement::StorageDead(_)
+        | tgt::RawStatement::Deinit(_)
         | tgt::RawStatement::Drop(_)
         | tgt::RawStatement::Assert(_)
         | tgt::RawStatement::Call(_)
@@ -1707,7 +1707,7 @@ fn translate_block(
     let statements = block
         .statements
         .iter()
-        .filter_map(|st| translate_statement(&info.body.locals, st))
+        .filter_map(|st| translate_statement(st))
         .collect_vec();
 
     // Prepend the statements to the terminator.

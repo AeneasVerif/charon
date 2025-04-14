@@ -14,6 +14,7 @@ impl Transform {
     /// @2 := size_of<i32>
     /// @3 := align_of<i32>
     /// @4 := alloc::alloc::exchange_malloc(move (@2), move (@3))
+    /// storage_live(@5)
     /// @5 := shallow_init_box::<i32>(move (@4))
     /// // possibly some intermediate statements
     /// *(@5) := x
@@ -35,6 +36,9 @@ impl Transform {
             content: RawStatement::Call(call_malloc),
             ..
         }, Statement {
+            content: RawStatement::StorageLive(target_var),
+            ..
+        }, Statement {
             content:
                 RawStatement::Assign(box_make, Rvalue::ShallowInitBox(Operand::Move(alloc_use), _)),
             ..
@@ -46,10 +50,11 @@ impl Transform {
                 && arg0 == size
                 && arg1 == align
                 && call_malloc.dest == *alloc_use
+                && let target_var = *target_var
                 && box_make.is_local()
-                && let var_id = box_make.local_id()
+                && box_make.local_id() == target_var
                 && let TyKind::Adt(TypeId::Builtin(BuiltinTy::Box), generics) =
-                    locals[var_id].ty.kind()
+                    locals[target_var].ty.kind()
             {
                 // Find the assignment into the box.
                 for i in 0..rest.len() {
@@ -68,12 +73,12 @@ impl Transform {
                         seq[0].content = RawStatement::Nop;
                         seq[1].content = RawStatement::Nop;
                         seq[2].content = RawStatement::Nop;
-                        seq[3].content = RawStatement::Nop;
+                        seq[4].content = RawStatement::Nop;
                         let val = match val {
                             Rvalue::Use(op) => op,
                             _ => {
                                 // We need to create a new variable to store the value.
-                                let name = locals[var_id].name.clone();
+                                let name = locals[target_var].name.clone();
                                 let ty = generics.types[0].clone();
                                 let var = locals.new_var(name, ty);
                                 let st = Statement::new(

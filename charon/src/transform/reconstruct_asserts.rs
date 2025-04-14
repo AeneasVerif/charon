@@ -20,7 +20,12 @@ impl UllbcPass for Transform {
             .body
             .iter_indexed()
             .filter_map(|(bid, block)| {
-                if block.statements.is_empty() && block.terminator.content.is_abort() {
+                if block
+                    .statements
+                    .iter()
+                    .all(|st| st.content.is_storage_live())
+                    && block.terminator.content.is_abort()
+                {
                     Some(bid)
                 } else {
                     None

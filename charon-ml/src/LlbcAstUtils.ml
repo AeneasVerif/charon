@@ -54,6 +54,9 @@ let rec chain_statements (st1 : statement) (st2 : statement) : statement =
   | Call _
   | Assign _
   | FakeRead _
+  | Deinit _
+  | StorageLive _
+  | StorageDead _
   | Drop _
   | Loop _
   | Error _ ->

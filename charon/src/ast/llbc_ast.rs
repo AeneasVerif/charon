@@ -24,6 +24,9 @@ pub enum RawStatement {
     FakeRead(Place),
     /// Not used today because we take MIR built.
     SetDiscriminant(Place, VariantId),
+    StorageLive(LocalId),
+    StorageDead(LocalId),
+    Deinit(Place),
     Drop(Place),
     Assert(Assert),
     Call(Call),
