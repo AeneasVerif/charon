@@ -202,6 +202,27 @@ let
         > charon-results
 
     cat charon-results | cut -d':' -f 2- | sort | uniq -c > charon-summary
+
+    function gather_errors() {
+        expected="$1"
+        got="$2"
+        echo '<details><summary>'"❌ expected: $expected; got: $got"'</summary>'
+        grep "expected: $expected.*got: $got" charon-results | cut -d':' -f1 | while read f; do
+            echo
+            echo "<details><summary>$f</summary>"
+            echo
+            echo '```text'
+            cat "$f.charon-output"
+            echo '```'
+            echo
+            echo '</details>'
+        done || true
+        echo
+        echo '</details>'
+    }
+    gather_errors "success" "failure in rustc" >> charon-grouped-results
+    gather_errors "success" "failure in hax" >> charon-grouped-results
+    gather_errors "success" "stack overflow" >> charon-grouped-results
   '';
 
 in
