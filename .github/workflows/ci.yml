@@ -37,35 +37,78 @@ jobs:
           fetch-depth: 0 # deep clone in order to get access to other commits
       - run: nix develop '.#ci' --command ./scripts/ci-check-version-number.sh
 
-  aeneas:
-    needs: [charon]
+  # Choose which commit to use for each project. By default we use the latest
+  # from the main branch, but this can be overridden with a command in the PR
+  # description.
+  # TODO: actually do that
+  select-dep-versions:
     runs-on: [self-hosted, linux, nix]
+    env:
+      CI_EVENT: ${{ github.event_name }}
+      PR_NUMBER: ${{ github.event.number }}
     steps:
-      - run: |
-          nix build --refresh -L 'github:aeneasverif/aeneas#checks.x86_64-linux.aeneas-tests' \
-              --override-input charon github:aeneasverif/charon/${{ github.sha }}
+      - uses: actions/checkout@v4
+      - id: select
+        run: |
+          echo "charon=${{ github.sha }}" >> "$GITHUB_OUTPUT"
+          nix develop '.#ci' --command ./scripts/ci-select-dep-versions.py >> "$GITHUB_OUTPUT"
+          cat "$GITHUB_OUTPUT"
+    outputs:
+      charon: ${{ steps.select.outputs.charon }}
+      aeneas: ${{ steps.select.outputs.aeneas }}
+      eurydice: ${{ steps.select.outputs.eurydice }}
+      libcrux: ${{ steps.select.outputs.libcrux }}
 
-  eurydice:
-    needs: [charon]
+  aeneas:
+    needs: [charon, select-dep-versions]
     runs-on: [self-hosted, linux, nix]
     steps:
       - uses: actions/checkout@v4
         with:
           repository: Inria-Prosecco/circus-green
-      - run: |
-          nix flake update charon --override-input charon github:aeneasverif/charon/${{ github.sha }}
-          nix flake update --refresh eurydice
+      - env:
+          CHARON: ${{needs.select-dep-versions.outputs.charon}}
+          AENEAS: ${{needs.select-dep-versions.outputs.aeneas}}
+        run: |
+          nix flake update --refresh \
+              charon aeneas \
+              --override-input charon github:aeneasverif/charon/$CHARON \
+              --override-input aeneas github:aeneasverif/aeneas/$AENEAS
+          ./check.sh aeneas
+
+  eurydice:
+    needs: [charon, select-dep-versions]
+    runs-on: [self-hosted, linux, nix]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          repository: Inria-Prosecco/circus-green
+      - env:
+          CHARON: ${{needs.select-dep-versions.outputs.charon}}
+          EURYDICE: ${{needs.select-dep-versions.outputs.eurydice}}
+        run: |
+          nix flake update --refresh \
+              charon eurydice \
+              --override-input charon github:aeneasverif/charon/$CHARON \
+              --override-input eurydice github:aeneasverif/eurydice/$EURYDICE
           ./check.sh eurydice
 
   kyber:
-    needs: [eurydice]
+    needs: [eurydice, select-dep-versions]
     runs-on: [self-hosted, linux, nix]
     steps:
       - uses: actions/checkout@v4
         with:
           repository: Inria-Prosecco/circus-green
-      - run: |
-          nix flake update charon --override-input charon github:aeneasverif/charon/${{ github.sha }}
-          nix flake update --refresh eurydice
+      - env:
+          CHARON: ${{needs.select-dep-versions.outputs.charon}}
+          EURYDICE: ${{needs.select-dep-versions.outputs.eurydice}}
+          LIBCRUX: ${{needs.select-dep-versions.outputs.libcrux}}
+        run: |
+          nix flake update --refresh \
+              charon eurydice libcrux \
+              --override-input charon github:aeneasverif/charon/$CHARON \
+              --override-input eurydice github:aeneasverif/eurydice/$EURYDICE \
+              --override-input libcrux github:cryspen/libcrux/$LIBCRUX
           ./check.sh ml-kem-small
           ./check.sh ml-dsa-small

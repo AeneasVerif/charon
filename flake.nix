@@ -135,6 +135,7 @@
           packages = [
             pkgs.jq
             pkgs.gitAndTools.gh
+            pkgs.python3
           ];
         };
         checks = {
