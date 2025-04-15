@@ -104,6 +104,8 @@ let binop_to_string (binop : binop) : string =
   | CheckedMul -> "checked.*"
   | Shl -> "<<"
   | Shr -> ">>"
+  | Cmp -> "cmp"
+  | Offset -> "offset"
 
 let builtin_fun_id_to_string (aid : builtin_fun_id) : string =
   match aid with
@@ -116,6 +118,9 @@ let builtin_fun_id_to_string (aid : builtin_fun_id) : string =
       let op = if is_range then "SubSlice" else "Index" in
       let mutability = ref_kind_to_string mutability in
       "@" ^ ty ^ op ^ mutability
+  | PtrFromParts mut ->
+      let mut = if mut = RMut then "Mut" else "" in
+      "@PtrFromParts" ^ mut
 
 let fun_id_to_string (env : 'a fmt_env) (fid : fun_id) : string =
   match fid with

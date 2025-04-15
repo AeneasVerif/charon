@@ -246,7 +246,10 @@ pub enum BinOp {
     Shl,
     /// Fails if the shift is bigger than the bit-size of the type.
     Shr,
-    // No Offset binary operation: this is an operation on raw pointers
+    /// `BinOp(Offset, ptr, n)` for `ptr` a pointer to type `T` offsets `ptr` by `n * size_of::<T>()`.
+    Offset,
+    /// `BinOp(Cmp, a, b)` returns `-1u8` if `a < b`, `0u8` if `a == b`, and `1u8` if `a > b`.
+    Cmp,
 }
 
 #[derive(
@@ -336,6 +339,11 @@ pub enum BuiltinFunId {
     /// - `fn SliceSubSliceMut<T>(&mut [T], usize, usize) -> &mut [T]`
     /// - etc
     Index(BuiltinIndexOp),
+    /// Build a raw pointer, from a data pointer and metadata. The metadata can be unit, if
+    /// building a thin pointer.
+    ///
+    /// Converted from [AggregateKind::RawPtr]
+    PtrFromParts(RefKind),
 }
 
 /// One of 8 built-in indexing operations.
@@ -607,4 +615,9 @@ pub enum AggregateKind {
     /// Aggregated values for closures group the function id together with its
     /// state.
     Closure(FunDeclId, GenericArgs),
+    /// Construct a raw pointer from a pointer value, and its metadata (can be unit, if building
+    /// a thin pointer). The type is the type of the pointee.
+    /// We lower this to a builtin function call in [crate::ops_to_function_calls].
+    #[charon::opaque]
+    RawPtr(Ty, RefKind),
 }

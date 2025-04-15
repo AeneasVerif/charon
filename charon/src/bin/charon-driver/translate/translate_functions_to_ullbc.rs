@@ -53,7 +53,7 @@ fn translate_borrow_kind(borrow_kind: hax::BorrowKind) -> BorrowKind {
 }
 
 impl<'tcx, 'ctx> TranslateCtx<'tcx> {
-    fn translate_binaryop_kind(&mut self, span: Span, binop: hax::BinOp) -> Result<BinOp, Error> {
+    fn translate_binaryop_kind(&mut self, _span: Span, binop: hax::BinOp) -> Result<BinOp, Error> {
         Ok(match binop {
             hax::BinOp::BitXor => BinOp::BitXor,
             hax::BinOp::BitAnd => BinOp::BitAnd,
@@ -74,12 +74,8 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
             hax::BinOp::MulWithOverflow => BinOp::CheckedMul,
             hax::BinOp::Shl => BinOp::Shl,
             hax::BinOp::Shr => BinOp::Shr,
-            hax::BinOp::Cmp => {
-                raise_error!(self, span, "Unsupported binary operation: Cmp")
-            }
-            hax::BinOp::Offset => {
-                raise_error!(self, span, "Unsupported binary operation: offset")
-            }
+            hax::BinOp::Cmp => BinOp::Cmp,
+            hax::BinOp::Offset => BinOp::Offset,
         })
     }
 }
@@ -726,9 +722,18 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
 
                         Ok(Rvalue::Aggregate(akind, operands_t))
                     }
-                    hax::AggregateKind::RawPtr(..) => {
+                    hax::AggregateKind::RawPtr(ty, is_mut) => {
                         // TODO: replace with a call to `ptr::from_raw_parts`.
-                        raise_error!(self, span, "Wide raw pointers are not supported");
+                        let t_ty = self.translate_ty(span, ty)?;
+                        let mutability = if *is_mut {
+                            RefKind::Mut
+                        } else {
+                            RefKind::Shared
+                        };
+
+                        let akind = AggregateKind::RawPtr(t_ty, mutability);
+
+                        Ok(Rvalue::Aggregate(akind, operands_t))
                     }
                     hax::AggregateKind::Coroutine(..)
                     | hax::AggregateKind::CoroutineClosure(..) => {
@@ -859,9 +864,10 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
                 BuiltinFunId::Index { .. }
                 | BuiltinFunId::ArrayToSliceShared
                 | BuiltinFunId::ArrayToSliceMut
-                | BuiltinFunId::ArrayRepeat => {
+                | BuiltinFunId::ArrayRepeat
+                | BuiltinFunId::PtrFromParts(_) => {
                     // Those cases are introduced later, in micro-passes, by desugaring
-                    // projections (for ArrayIndex and ArrayIndexMut for instnace) and=
+                    // projections (for ArrayIndex and ArrayIndexMut for instance) and
                     // operations (for ArrayToSlice for instance) to function calls.
                     unreachable!()
                 }

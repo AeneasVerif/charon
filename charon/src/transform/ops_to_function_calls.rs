@@ -52,6 +52,25 @@ fn transform_st(s: &mut Statement) {
                 dest: p.clone(),
             });
         }
+        // Transform the raw pointer aggregate to a function call
+        RawStatement::Assign(p, Rvalue::Aggregate(AggregateKind::RawPtr(ty, is_mut), ops)) => {
+            let id = BuiltinFunId::PtrFromParts(is_mut.clone());
+            let func = FunIdOrTraitMethodRef::mk_builtin(id);
+            let generics = GenericArgs::new(
+                vec![Region::Erased].into(),
+                vec![ty.clone()].into(),
+                vec![].into(),
+                vec![].into(),
+                GenericsSource::Builtin,
+            );
+
+            let func = FnOperand::Regular(FnPtr { func, generics });
+            s.content = RawStatement::Call(Call {
+                func,
+                args: ops.clone(),
+                dest: p.clone(),
+            });
+        }
         _ => {}
     }
 }

@@ -196,14 +196,15 @@ impl VisitAst for CheckGenericsVisitor<'_> {
 
     fn visit_aggregate_kind(&mut self, agg: &AggregateKind) -> ControlFlow<Self::Break> {
         match agg {
-            AggregateKind::Adt(..) => self.visit_inner(agg)?,
+            AggregateKind::Adt(..) | AggregateKind::Array(..) | AggregateKind::RawPtr(..) => {
+                self.visit_inner(agg)?
+            }
             AggregateKind::Closure(_id, args) => {
                 // TODO(#194): handle closure generics properly
                 // This does not visit the args themselves, only their contents, because we mess up
                 // closure generics for now.
                 self.visit_inner(args)?
             }
-            AggregateKind::Array(..) => self.visit_inner(agg)?,
         }
         Continue(())
     }

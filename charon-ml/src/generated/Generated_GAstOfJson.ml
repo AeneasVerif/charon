@@ -158,6 +158,8 @@ and binop_of_json (ctx : of_json_ctx) (js : json) : (binop, string) result =
     | `String "CheckedMul" -> Ok CheckedMul
     | `String "Shl" -> Ok Shl
     | `String "Shr" -> Ok Shr
+    | `String "Offset" -> Ok Offset
+    | `String "Cmp" -> Ok Cmp
     | _ -> Error "")
 
 and operand_of_json (ctx : of_json_ctx) (js : json) : (operand, string) result =
@@ -196,6 +198,9 @@ and builtin_fun_id_of_json (ctx : of_json_ctx) (js : json) :
     | `Assoc [ ("Index", index) ] ->
         let* index = builtin_index_op_of_json ctx index in
         Ok (Index index)
+    | `Assoc [ ("PtrFromParts", ptr_from_parts) ] ->
+        let* ptr_from_parts = ref_kind_of_json ctx ptr_from_parts in
+        Ok (PtrFromParts ptr_from_parts)
     | _ -> Error "")
 
 and builtin_index_op_of_json (ctx : of_json_ctx) (js : json) :

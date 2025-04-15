@@ -138,6 +138,10 @@ and binop =
   | CheckedMul  (** Like `CheckedAdd`. *)
   | Shl  (** Fails if the shift is bigger than the bit-size of the type. *)
   | Shr  (** Fails if the shift is bigger than the bit-size of the type. *)
+  | Offset
+      (** `BinOp(Offset, ptr, n)` for `ptr` a pointer to type `T` offsets `ptr` by `n * size_of::<T>()`. *)
+  | Cmp
+      (** `BinOp(Cmp, a, b)` returns `-1u8` if `a < b`, `0u8` if `a == b`, and `1u8` if `a > b`. *)
 
 and operand =
   | Copy of place
@@ -185,6 +189,12 @@ and builtin_fun_id =
           - `fn ArraySubSliceShared<T,N>(&[T;N], usize, usize) -> &[T]`
           - `fn SliceSubSliceMut<T>(&mut [T], usize, usize) -> &mut [T]`
           - etc
+       *)
+  | PtrFromParts of ref_kind
+      (** Build a raw pointer, from a data pointer and metadata. The metadata can be unit, if
+          building a thin pointer.
+
+          Converted from [AggregateKind::RawPtr]
        *)
 
 (** One of 8 built-in indexing operations. *)
