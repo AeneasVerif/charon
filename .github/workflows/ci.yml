@@ -19,7 +19,7 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  nix:
+  charon:
     #runs-on: ubuntu-latest
     runs-on: [self-hosted, linux, nix]
     steps:
@@ -38,7 +38,7 @@ jobs:
       - run: nix develop '.#ci' --command ./scripts/ci-check-version-number.sh
 
   aeneas:
-    needs: [nix]
+    needs: [charon]
     runs-on: [self-hosted, linux, nix]
     steps:
       - run: |
@@ -46,7 +46,7 @@ jobs:
               --override-input charon github:aeneasverif/charon/${{ github.sha }}
 
   eurydice:
-    needs: [nix]
+    needs: [charon]
     runs-on: [self-hosted, linux, nix]
     steps:
       - uses: actions/checkout@v4
