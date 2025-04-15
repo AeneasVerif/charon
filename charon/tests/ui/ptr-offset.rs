@@ -1,4 +1,3 @@
-//@ charon-args=--include main
 //@ charon-args=--include core::ptr::const_ptr::_::offset
 
 fn main() {

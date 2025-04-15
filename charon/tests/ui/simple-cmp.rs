@@ -1,4 +1,3 @@
-//@ charon-args=--include main
 //@ charon-args=--include core::cmp::impls::_::partial_cmp
 
 fn main() {

@@ -1,4 +1,3 @@
-//@ charon-args=--include main
 //@ charon-args=--include core::slice::index::_
 
 fn main() {
