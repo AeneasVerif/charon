@@ -414,19 +414,19 @@ let call_substitute (subst : subst) (call : call) : call =
   st_substitute_visitor#visit_call subst call
 
 (** Apply a type substitution to a statement *)
-let statement_substitute (subst : subst) (st : statement) : statement =
-  st_substitute_visitor#visit_statement subst st
+let block_substitute (subst : subst) (blk : block) : block =
+  st_substitute_visitor#visit_block subst blk
 
 (** Apply a type substitution to a function body. Return the local variables
     and the body. *)
 let fun_body_substitute_in_body (subst : subst) (body : fun_body) :
-    local list * statement =
+    local list * block =
   let locals =
     List.map
       (fun (v : local) -> { v with var_ty = ty_substitute subst v.var_ty })
       body.locals.locals
   in
-  let body = statement_substitute subst body.body in
+  let body = block_substitute subst body.body in
   (locals, body)
 
 let trait_type_constraint_substitute (subst : subst)
@@ -438,7 +438,7 @@ let trait_type_constraint_substitute (subst : subst)
   { trait_ref; type_name; ty }
 
 (** Substitute variable identifiers in a type *)
-let statement_substitute_ids (ty_subst : TypeVarId.id -> TypeVarId.id)
+let block_substitute_ids (ty_subst : TypeVarId.id -> TypeVarId.id)
     (cg_subst : ConstGenericVarId.id -> ConstGenericVarId.id) (ty : ty) : ty =
   let visitor =
     object

@@ -1014,45 +1014,6 @@ fn generate_ml(
                 "
             ),
         ),
-        // Hand-written because we encode sequences differently.
-        // TODO: encode sequences identically.
-        (
-            "charon_lib::ast::llbc_ast::RawStatement",
-            indoc!(
-                "
-                | Assign of place * rvalue
-                | SetDiscriminant of place * variant_id
-                | CopyNonOverlapping of copy_non_overlapping
-                    (** Equivalent to std::intrinsics::copy_nonoverlapping; this is not modelled as a function
-                        call as it cannot diverge
-                     *)
-                | StorageLive of local_id
-                | StorageDead of local_id
-                | Deinit of place
-                | Drop of place
-                | Assert of assertion
-                | Call of call
-                | Abort of abort_kind
-                | Return
-                | Break of int
-                    (** Break to (outer) loop. The [int] identifies the loop to break to:
-                        * 0: break to the first outer loop (the current loop)
-                        * 1: break to the second outer loop
-                        * ...
-                        *)
-                | Continue of int
-                    (** Continue to (outer) loop. The loop identifier works
-                        the same way as for {!Break} *)
-                | Nop
-                | Sequence of statement * statement
-                | Switch of switch
-                | Loop of statement
-                | Error of string
-                "
-            ),
-        ),
-        // Hand-written because we encode sequences differently.
-        ("charon_lib::ast::llbc_ast::Block", "statement"),
         // Handwritten because we use `indexed_var` as a hack to be able to reuse field names.
         // TODO: remove the need for this hack.
         ("RegionVar", "(region_id, string option) indexed_var"),
@@ -1102,29 +1063,6 @@ fn generate_ml(
                     if not (check_scalar_value_in_range sv) then
                       raise (Failure ("Scalar value not in range: " ^ show_scalar_value sv));
                     Ok sv
-                "#
-            ),
-        ),
-        // Hand-written because we encode sequences differently.
-        (
-            "charon_lib::ast::llbc_ast::Block",
-            indoc!(
-                r#"
-                | `Assoc [ ("span", span); ("statements", statements) ] -> begin
-                    let* span = span_of_json ctx span in
-                    let* statements =
-                      list_of_json statement_of_json ctx statements
-                    in
-                    match List.rev statements with
-                    | [] -> Ok { span; content = Nop; comments_before = [] }
-                    | last :: rest ->
-                        let seq =
-                          List.fold_left
-                            (fun acc st -> { span = st.span; content = Sequence (st, acc); comments_before = [] })
-                            last rest
-                        in
-                        Ok seq
-                  end
                 "#
             ),
         ),

@@ -69,14 +69,14 @@ module PatternTest = struct
   type t = { pattern : pattern; call_idx : int option; success : bool }
 
   type env = {
-    ctx : LlbcAst.statement ctx;
+    ctx : LlbcAst.block ctx;
     match_config : match_config;
     fmt_env : PrintLlbcAst.fmt_env;
     print_config : print_config;
     to_pat_config : to_pat_config;
   }
 
-  let mk_env (ctx : LlbcAst.statement ctx) : env =
+  let mk_env (ctx : LlbcAst.block ctx) : env =
     let tgt = TkPattern in
     let match_with_trait_decl_refs = true in
     {
@@ -126,19 +126,21 @@ module PatternTest = struct
           { func = FunId (FRegular decl.def_id); generics }
       | Some idx ->
           (* Find the nth function call in the function body. *)
-          let rec list_calls (statement : statement) : call list =
+          let rec list_stmt_calls (statement : statement) : call list =
             match statement.content with
             | Call call -> [ call ]
-            | Sequence (st1, st2) -> list_calls st1 @ list_calls st2
-            | Switch (If (_, st1, st2)) -> list_calls st1 @ list_calls st2
+            | Switch (If (_, st1, st2)) ->
+                list_block_calls st1 @ list_block_calls st2
             | Switch _ ->
                 failwith
                   "Only `if then else` are supported in name matcher tests, \
                    `switch` and `match` statements are not"
             | Loop _ -> failwith "Loops are unsupported in name matcher tests"
             | _ -> []
+          and list_block_calls (blk : block) : call list =
+            List.concat_map list_stmt_calls blk.statements
           in
-          let calls = list_calls (Option.get decl.body).body in
+          let calls = list_block_calls (Option.get decl.body).body in
           let fn_ptrs =
             List.map
               (fun call ->

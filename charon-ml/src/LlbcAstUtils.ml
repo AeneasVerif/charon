@@ -20,7 +20,7 @@ let get_fun_args (fun_decl : fun_decl) : local list option =
   | None -> None
 
 (** Check if a {!type:Charon.LlbcAst.statement} contains loops *)
-let statement_has_loops (st : statement) : bool =
+let block_has_loops (blk : block) : bool =
   let obj =
     object
       inherit [_] iter_statement
@@ -28,68 +28,15 @@ let statement_has_loops (st : statement) : bool =
     end
   in
   try
-    obj#visit_statement () st;
+    obj#visit_block () blk;
     false
   with Found -> true
 
 (** Check if a {!type:Charon.LlbcAst.fun_decl} contains loops *)
 let fun_decl_has_loops (fd : fun_decl) : bool =
   match fd.body with
-  | Some body -> statement_has_loops body.body
+  | Some body -> block_has_loops body.body
   | None -> false
-
-(** Create a sequence *)
-let mk_sequence (st1 : statement) (st2 : statement) : statement =
-  let span = MetaUtils.safe_combine_span st1.span st2.span in
-  let content = Sequence (st1, st2) in
-  { span; content; comments_before = [] }
-
-(** Chain two statements into a sequence, by pushing the second statement
-    at the end of the first one (diving into sequences, switches, etc.).
- *)
-let rec chain_statements (st1 : statement) (st2 : statement) : statement =
-  match st1.content with
-  | SetDiscriminant _
-  | Assert _
-  | Call _
-  | Assign _
-  | Deinit _
-  | CopyNonOverlapping _
-  | StorageLive _
-  | StorageDead _
-  | Drop _
-  | Loop _
-  | Error _ ->
-      (* Simply create a sequence *)
-      mk_sequence st1 st2
-  | Nop -> (* Ignore the nop *) st2
-  | Break _ | Continue _ | Abort _ | Return ->
-      (* Ignore the second statement, which won't be evaluated *) st1
-  | Switch switch ->
-      (* Insert inside the switch *)
-      let span = MetaUtils.safe_combine_span st1.span st2.span in
-      let content = Switch (chain_statements_in_switch switch st2) in
-      { span; content; comments_before = st1.comments_before }
-  | Sequence (st3, st4) ->
-      (* Insert at the end of the statement *)
-      mk_sequence st3 (chain_statements st4 st2)
-
-and chain_statements_in_switch (switch : switch) (st : statement) : switch =
-  match switch with
-  | If (op, st0, st1) ->
-      If (op, chain_statements st0 st, chain_statements st1 st)
-  | SwitchInt (op, int_ty, branches, otherwise) ->
-      let branches =
-        List.map (fun (svl, br) -> (svl, chain_statements br st)) branches
-      in
-      let otherwise = chain_statements otherwise st in
-      SwitchInt (op, int_ty, branches, otherwise)
-  | Match (op, branches, otherwise) ->
-      let branches =
-        List.map (fun (svl, br) -> (svl, chain_statements br st)) branches
-      in
-      let otherwise = Option.map (fun b -> chain_statements b st) otherwise in
-      Match (op, branches, otherwise)
 
 let crate_get_item_meta (m : crate) (id : any_decl_id) : Types.item_meta option
     =
@@ -157,7 +104,7 @@ class ['self] map_crate_with_span =
       in
       let span = self#visit_span decl_span_info span in
       let locals = self#visit_locals decl_span_info locals in
-      let body = self#visit_statement decl_span_info body in
+      let body = self#visit_block decl_span_info body in
       { span; locals; body }
 
     method visit_fun_decl (_ : (any_decl_id * span) option) (decl : fun_decl)
@@ -336,7 +283,7 @@ class ['self] iter_crate_with_span =
       in
       self#visit_span decl_span_info span;
       self#visit_locals decl_span_info locals;
-      self#visit_statement decl_span_info body
+      self#visit_block decl_span_info body
 
     method visit_fun_decl (_ : (any_decl_id * span) option) (decl : fun_decl)
         : unit =
