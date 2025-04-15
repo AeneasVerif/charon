@@ -102,12 +102,9 @@ pub fn core::fmt::num::{impl core::fmt::Debug for u32}#86::fmt<'_0, '_1, '_2>(@1
     let @4: u32; // anonymous local
     let @5: u32; // anonymous local
     let @6: u32; // anonymous local
-    let @7: u32; // anonymous local
-    let @8: u32; // anonymous local
 
     @4 := copy (((*(f@2)).options).flags)
-    @7 := core::fmt::flags::DEBUG_LOWER_HEX_FLAG
-    @3 := move (@4) & move (@7)
+    @3 := move (@4) & move (core::fmt::flags::DEBUG_LOWER_HEX_FLAG)
     drop @4
     switch move (@3) {
         0 : u32 => {
@@ -120,8 +117,7 @@ pub fn core::fmt::num::{impl core::fmt::Debug for u32}#86::fmt<'_0, '_1, '_2>(@1
     }
     drop @3
     @6 := copy (((*(f@2)).options).flags)
-    @8 := core::fmt::flags::DEBUG_UPPER_HEX_FLAG
-    @5 := move (@6) & move (@8)
+    @5 := move (@6) & move (core::fmt::flags::DEBUG_UPPER_HEX_FLAG)
     drop @6
     switch move (@5) {
         0 : u32 => {

@@ -44,8 +44,6 @@ fn test_crate::literal_casts()
     let @3: f64; // anonymous local
     let @4: u64; // anonymous local
     let @5: f64; // anonymous local
-    let @6: f64; // anonymous local
-    let @7: f32; // anonymous local
 
     @1 := cast<u64, u8>(const (0 : u64))
     @fake_read(@1)
@@ -56,12 +54,10 @@ fn test_crate::literal_casts()
     @3 := cast<u64, f64>(const (0 : u64))
     @fake_read(@3)
     drop @3
-    @6 := core::f64::{f64}::MIN
-    @4 := cast<f64, u64>(move (@6))
+    @4 := cast<f64, u64>(move (core::f64::{f64}::MIN))
     @fake_read(@4)
     drop @4
-    @7 := core::f32::{f32}::MAX
-    @5 := cast<f32, f64>(move (@7))
+    @5 := cast<f32, f64>(move (core::f32::{f32}::MAX))
     @fake_read(@5)
     drop @5
     @0 := ()

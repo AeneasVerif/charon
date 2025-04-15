@@ -927,10 +927,8 @@ where
     [@TraitClause2]: test_crate::Trait<T>,
 {
     let @0: core::result::Result<T, i32>[@TraitClause0, core::marker::Sized<i32>]; // return
-    let @1: core::result::Result<T, i32>[@TraitClause0, core::marker::Sized<i32>]; // anonymous local
 
-    @1 := test_crate::{test_crate::Foo<T, U>[@TraitClause0, @TraitClause1]}#16::FOO<T, U>[@TraitClause0, @TraitClause1, @TraitClause2]
-    @0 := move (@1)
+    @0 := move (test_crate::{test_crate::Foo<T, U>[@TraitClause0, @TraitClause1]}#16::FOO<T, U>[@TraitClause0, @TraitClause1, @TraitClause2])
     return
 }
 
@@ -941,10 +939,8 @@ where
     [@TraitClause2]: test_crate::Trait<U>,
 {
     let @0: core::result::Result<U, i32>[@TraitClause1, core::marker::Sized<i32>]; // return
-    let @1: core::result::Result<U, i32>[@TraitClause1, core::marker::Sized<i32>]; // anonymous local
 
-    @1 := test_crate::{test_crate::Foo<T, U>[@TraitClause0, @TraitClause1]}#16::FOO<U, T>[@TraitClause1, @TraitClause0, @TraitClause2]
-    @0 := move (@1)
+    @0 := move (test_crate::{test_crate::Foo<T, U>[@TraitClause0, @TraitClause1]}#16::FOO<U, T>[@TraitClause1, @TraitClause0, @TraitClause2])
     return
 }
 
