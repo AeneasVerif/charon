@@ -13,13 +13,19 @@ and raw_statement_of_json (ctx : of_json_ctx) (js : json) :
         let* x_0 = place_of_json ctx x_0 in
         let* x_1 = rvalue_of_json ctx x_1 in
         Ok (Assign (x_0, x_1))
-    | `Assoc [ ("FakeRead", fake_read) ] ->
-        let* fake_read = place_of_json ctx fake_read in
-        Ok (FakeRead fake_read)
     | `Assoc [ ("SetDiscriminant", `List [ x_0; x_1 ]) ] ->
         let* x_0 = place_of_json ctx x_0 in
         let* x_1 = variant_id_of_json ctx x_1 in
         Ok (SetDiscriminant (x_0, x_1))
+    | `Assoc [ ("StorageLive", storage_live) ] ->
+        let* storage_live = local_id_of_json ctx storage_live in
+        Ok (StorageLive storage_live)
+    | `Assoc [ ("StorageDead", storage_dead) ] ->
+        let* storage_dead = local_id_of_json ctx storage_dead in
+        Ok (StorageDead storage_dead)
+    | `Assoc [ ("Deinit", deinit) ] ->
+        let* deinit = place_of_json ctx deinit in
+        Ok (Deinit deinit)
     | `Assoc [ ("Drop", drop) ] ->
         let* drop = place_of_json ctx drop in
         Ok (Drop drop)

@@ -80,11 +80,13 @@ pub fn test_crate::create_tuple_struct(@1: u32, @2: u64) -> test_crate::Tuple<u3
     let @3: u32; // anonymous local
     let @4: u64; // anonymous local
 
+    storage_live(@3)
     @3 := copy (x@1)
+    storage_live(@4)
     @4 := copy (y@2)
     @0 := test_crate::Tuple { 0: move (@3), 1: move (@4) }
-    drop @4
-    drop @3
+    storage_dead(@4)
+    storage_dead(@3)
     return
 }
 
@@ -96,11 +98,13 @@ pub fn test_crate::create_pair(@1: u32, @2: u64) -> test_crate::Pair<u32, u64>[c
     let @3: u32; // anonymous local
     let @4: u64; // anonymous local
 
+    storage_live(@3)
     @3 := copy (x@1)
+    storage_live(@4)
     @4 := copy (y@2)
     @0 := test_crate::Pair { x: move (@3), y: move (@4) }
-    drop @4
-    drop @3
+    storage_dead(@4)
+    storage_dead(@3)
     return
 }
 
@@ -132,10 +136,11 @@ where
     let x@1: T; // arg #1
     let @2: T; // anonymous local
 
+    storage_live(@2)
     @2 := move (x@1)
     @0 := test_crate::IdType { 0: move (@2) }
     drop @2
-    drop @2
+    storage_dead(@2)
     drop x@1
     return
 }
@@ -146,9 +151,10 @@ pub fn test_crate::cast_u32_to_i32(@1: u32) -> i32
     let x@1: u32; // arg #1
     let @2: u32; // anonymous local
 
+    storage_live(@2)
     @2 := copy (x@1)
     @0 := cast<u32, i32>(move (@2))
-    drop @2
+    storage_dead(@2)
     return
 }
 
@@ -158,9 +164,10 @@ pub fn test_crate::cast_bool_to_i32(@1: bool) -> i32
     let x@1: bool; // arg #1
     let @2: bool; // anonymous local
 
+    storage_live(@2)
     @2 := copy (x@1)
     @0 := cast<bool, i32>(move (@2))
-    drop @2
+    storage_dead(@2)
     return
 }
 
@@ -190,42 +197,46 @@ pub fn test_crate::test2()
     let e1@12: test_crate::EmptyEnum; // local
     let enum0@13: test_crate::Enum; // local
 
+    storage_live(x@1)
     x@1 := const (23 : u32)
-    @fake_read(x@1)
+    storage_live(y@2)
     y@2 := const (44 : u32)
-    @fake_read(y@2)
+    storage_live(z@3)
+    storage_live(@4)
     @4 := copy (x@1)
+    storage_live(@5)
     @5 := copy (y@2)
     z@3 := move (@4) + move (@5)
-    drop @5
-    drop @4
-    @fake_read(z@3)
+    storage_dead(@5)
+    storage_dead(@4)
+    storage_live(p@6)
+    storage_live(@7)
     @7 := copy (x@1)
+    storage_live(@8)
     @8 := copy (z@3)
     p@6 := test_crate::Pair { x: move (@7), y: move (@8) }
-    drop @8
-    drop @7
-    @fake_read(p@6)
+    storage_dead(@8)
+    storage_dead(@7)
+    storage_live(s@9)
     s@9 := test_crate::Sum::Right { 0: const (true) }
-    @fake_read(s@9)
+    storage_live(o@10)
     o@10 := test_crate::One::One { 0: const (3 : u64) }
-    @fake_read(o@10)
+    storage_live(e0@11)
     e0@11 := test_crate::EmptyEnum::Empty {  }
-    @fake_read(e0@11)
+    storage_live(e1@12)
     e1@12 := move (e0@11)
-    @fake_read(e1@12)
+    storage_live(enum0@13)
     enum0@13 := test_crate::Enum::Variant1 {  }
-    @fake_read(enum0@13)
     @0 := ()
-    drop enum0@13
-    drop e1@12
-    drop e0@11
-    drop o@10
-    drop s@9
-    drop p@6
-    drop z@3
-    drop y@2
-    drop x@1
+    storage_dead(enum0@13)
+    storage_dead(e1@12)
+    storage_dead(e0@11)
+    storage_dead(o@10)
+    storage_dead(s@9)
+    storage_dead(p@6)
+    storage_dead(z@3)
+    storage_dead(y@2)
+    storage_dead(x@1)
     @0 := ()
     return
 }
@@ -239,20 +250,23 @@ pub fn test_crate::get_max(@1: u32, @2: u32) -> u32
     let @4: u32; // anonymous local
     let @5: u32; // anonymous local
 
+    storage_live(@3)
+    storage_live(@4)
     @4 := copy (x@1)
+    storage_live(@5)
     @5 := copy (y@2)
     @3 := move (@4) >= move (@5)
     if move (@3) {
-        drop @5
-        drop @4
+        storage_dead(@5)
+        storage_dead(@4)
         @0 := copy (x@1)
     }
     else {
-        drop @5
-        drop @4
+        storage_dead(@5)
+        storage_dead(@4)
         @0 := copy (y@2)
     }
-    drop @3
+    storage_dead(@3)
     return
 }
 
@@ -263,16 +277,18 @@ pub fn test_crate::test_list1()
     let @2: alloc::boxed::Box<test_crate::List<i32>[core::marker::Sized<i32>]>[core::marker::Sized<alloc::alloc::Global>]; // anonymous local
     let @3: test_crate::List<i32>[core::marker::Sized<i32>]; // anonymous local
 
+    storage_live(l@1)
+    storage_live(@2)
+    storage_live(@3)
     @3 := test_crate::List::Nil {  }
     @2 := @BoxNew<test_crate::List<i32>[core::marker::Sized<i32>]>[core::marker::Sized<test_crate::List<i32>[core::marker::Sized<i32>]>](move (@3))
-    drop @3
+    storage_dead(@3)
     l@1 := test_crate::List::Cons { 0: const (0 : i32), 1: move (@2) }
     drop @2
-    drop @2
-    @fake_read(l@1)
+    storage_dead(@2)
     @0 := ()
     drop l@1
-    drop l@1
+    storage_dead(l@1)
     @0 := ()
     return
 }
@@ -297,33 +313,38 @@ pub fn test_crate::test_box1()
     let @7: bool; // anonymous local
     let @8: i32; // anonymous local
 
+    storage_live(b@1)
     b@1 := @BoxNew<i32>[core::marker::Sized<i32>](const (0 : i32))
-    @fake_read(b@1)
+    storage_live(x@2)
+    storage_live(@3)
     @3 := &two-phase-mut b@1
     x@2 := alloc::boxed::{impl core::ops::deref::DerefMut for alloc::boxed::Box<T>[@TraitClause0]}#25::deref_mut<'_, i32, alloc::alloc::Global>[core::marker::Sized<alloc::alloc::Global>](move (@3))
-    drop @3
-    @fake_read(x@2)
+    storage_dead(@3)
     *(x@2) := const (1 : i32)
+    storage_live(x@4)
+    storage_live(@5)
     @5 := &b@1
     x@4 := alloc::boxed::{impl core::ops::deref::Deref for alloc::boxed::Box<T>[@TraitClause0]}#24::deref<'_, i32, alloc::alloc::Global>[core::marker::Sized<alloc::alloc::Global>](move (@5))
-    drop @5
-    @fake_read(x@4)
+    storage_dead(@5)
+    storage_live(@6)
+    storage_live(@7)
+    storage_live(@8)
     @8 := copy (*(x@4))
     @7 := move (@8) == const (1 : i32)
     if move (@7) {
     }
     else {
-        drop @8
+        storage_dead(@8)
         panic(core::panicking::panic)
     }
-    drop @8
-    drop @7
-    drop @6
+    storage_dead(@8)
+    storage_dead(@7)
+    storage_dead(@6)
     @0 := ()
-    drop x@4
-    drop x@2
+    storage_dead(x@4)
+    storage_dead(x@2)
     drop b@1
-    drop b@1
+    storage_dead(b@1)
     @0 := ()
     return
 }
@@ -343,10 +364,11 @@ pub fn test_crate::test_unreachable(@1: bool)
     let b@1: bool; // arg #1
     let @2: bool; // anonymous local
 
+    storage_live(@2)
     @2 := copy (b@1)
     assert(move (@2) == false)
     @0 := ()
-    drop @2
+    storage_dead(@2)
     @0 := ()
     return
 }
@@ -358,7 +380,6 @@ where
     let @0: bool; // return
     let l@1: &'_ (test_crate::List<T>[@TraitClause0]); // arg #1
 
-    @fake_read(l@1)
     match *(l@1) {
         0 => {
         },
@@ -382,7 +403,6 @@ where
     let @4: T; // anonymous local
     let @5: test_crate::List<T>[@TraitClause0]; // anonymous local
 
-    @fake_read(l@1)
     match l@1 {
         0 => {
         },
@@ -390,19 +410,23 @@ where
             panic(core::panicking::panic_explicit)
         },
     }
+    storage_live(hd@2)
     hd@2 := move ((l@1 as variant @0).0)
+    storage_live(tl@3)
     tl@3 := move ((l@1 as variant @0).1)
+    storage_live(@4)
     @4 := move (hd@2)
+    storage_live(@5)
     @5 := move (*(tl@3))
     @0 := (move (@4), move (@5))
     drop @5
-    drop @5
+    storage_dead(@5)
     drop @4
-    drop @4
+    storage_dead(@4)
     drop tl@3
-    drop tl@3
+    storage_dead(tl@3)
     drop hd@2
-    drop hd@2
+    storage_dead(hd@2)
     drop l@1
     return
 }
@@ -440,21 +464,25 @@ pub fn test_crate::even(@1: u32) -> bool
     let @4: u32; // anonymous local
     let @5: u32; // anonymous local
 
+    storage_live(@2)
+    storage_live(@3)
     @3 := copy (x@1)
     @2 := move (@3) == const (0 : u32)
     if move (@2) {
-        drop @3
+        storage_dead(@3)
         @0 := const (true)
     }
     else {
-        drop @3
+        storage_dead(@3)
+        storage_live(@4)
+        storage_live(@5)
         @5 := copy (x@1)
         @4 := move (@5) - const (1 : u32)
-        drop @5
+        storage_dead(@5)
         @0 := test_crate::odd(move (@4))
-        drop @4
+        storage_dead(@4)
     }
-    drop @2
+    storage_dead(@2)
     return
 }
 
@@ -467,21 +495,25 @@ pub fn test_crate::odd(@1: u32) -> bool
     let @4: u32; // anonymous local
     let @5: u32; // anonymous local
 
+    storage_live(@2)
+    storage_live(@3)
     @3 := copy (x@1)
     @2 := move (@3) == const (0 : u32)
     if move (@2) {
-        drop @3
+        storage_dead(@3)
         @0 := const (false)
     }
     else {
-        drop @3
+        storage_dead(@3)
+        storage_live(@4)
+        storage_live(@5)
         @5 := copy (x@1)
         @4 := move (@5) - const (1 : u32)
-        drop @5
+        storage_dead(@5)
         @0 := test_crate::even(move (@4))
-        drop @4
+        storage_dead(@4)
     }
-    drop @2
+    storage_dead(@2)
     return
 }
 
@@ -497,22 +529,30 @@ pub fn test_crate::test_even_odd()
     let @7: (); // anonymous local
     let @8: bool; // anonymous local
 
+    storage_live(@1)
+    storage_live(@2)
     @2 := test_crate::even(const (0 : u32))
     assert(move (@2) == true)
-    drop @2
-    drop @1
+    storage_dead(@2)
+    storage_dead(@1)
+    storage_live(@3)
+    storage_live(@4)
     @4 := test_crate::even(const (4 : u32))
     assert(move (@4) == true)
-    drop @4
-    drop @3
+    storage_dead(@4)
+    storage_dead(@3)
+    storage_live(@5)
+    storage_live(@6)
     @6 := test_crate::odd(const (1 : u32))
     assert(move (@6) == true)
-    drop @6
-    drop @5
+    storage_dead(@6)
+    storage_dead(@5)
+    storage_live(@7)
+    storage_live(@8)
     @8 := test_crate::odd(const (5 : u32))
     assert(move (@8) == true)
-    drop @8
-    drop @7
+    storage_dead(@8)
+    storage_dead(@7)
     @0 := ()
     @0 := ()
     return
@@ -532,9 +572,10 @@ pub fn test_crate::new_tuple1() -> test_crate::StructWithTuple<u32, u32>[core::m
     let @0: test_crate::StructWithTuple<u32, u32>[core::marker::Sized<u32>, core::marker::Sized<u32>]; // return
     let @1: (u32, u32); // anonymous local
 
+    storage_live(@1)
     @1 := (const (1 : u32), const (2 : u32))
     @0 := test_crate::StructWithTuple { p: move (@1) }
-    drop @1
+    storage_dead(@1)
     return
 }
 
@@ -543,9 +584,10 @@ pub fn test_crate::new_tuple2() -> test_crate::StructWithTuple<i16, i16>[core::m
     let @0: test_crate::StructWithTuple<i16, i16>[core::marker::Sized<i16>, core::marker::Sized<i16>]; // return
     let @1: (i16, i16); // anonymous local
 
+    storage_live(@1)
     @1 := (const (1 : i16), const (2 : i16))
     @0 := test_crate::StructWithTuple { p: move (@1) }
-    drop @1
+    storage_dead(@1)
     return
 }
 
@@ -554,9 +596,10 @@ pub fn test_crate::new_tuple3() -> test_crate::StructWithTuple<u64, i64>[core::m
     let @0: test_crate::StructWithTuple<u64, i64>[core::marker::Sized<u64>, core::marker::Sized<i64>]; // return
     let @1: (u64, i64); // anonymous local
 
+    storage_live(@1)
     @1 := (const (1 : u64), const (2 : i64))
     @0 := test_crate::StructWithTuple { p: move (@1) }
-    drop @1
+    storage_dead(@1)
     return
 }
 
@@ -574,11 +617,12 @@ pub fn test_crate::new_pair1() -> test_crate::StructWithPair<u32, u32>[core::mar
     let @0: test_crate::StructWithPair<u32, u32>[core::marker::Sized<u32>, core::marker::Sized<u32>]; // return
     let @1: test_crate::Pair<u32, u32>[core::marker::Sized<u32>, core::marker::Sized<u32>]; // anonymous local
 
+    storage_live(@1)
     // This actually doesn't make rustc generate a constant...
     // I guess it only happens for tuples.
     @1 := test_crate::Pair { x: const (1 : u32), y: const (2 : u32) }
     @0 := test_crate::StructWithPair { p: move (@1) }
-    drop @1
+    storage_dead(@1)
     return
 }
 
@@ -599,11 +643,11 @@ pub fn test_crate::read_then_incr<'_0>(@1: &'_0 mut (u32)) -> u32
     let x@1: &'_ mut (u32); // arg #1
     let r@2: u32; // local
 
+    storage_live(r@2)
     r@2 := copy (*(x@1))
-    @fake_read(r@2)
     *(x@1) := copy (*(x@1)) + const (1 : u32)
     @0 := copy (r@2)
-    drop r@2
+    storage_dead(r@2)
     return
 }
 

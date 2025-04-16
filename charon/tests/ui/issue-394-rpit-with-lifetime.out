@@ -59,9 +59,10 @@ fn test_crate::sparse_transitions<'a>() -> core::iter::sources::from_fn::FromFn<
     let @0: core::iter::sources::from_fn::FromFn<fn() -> core::option::Option<u8>[core::marker::Sized<u8>]>[core::marker::Sized<fn() -> core::option::Option<u8>[core::marker::Sized<u8>]>]; // return
     let @1: fn() -> core::option::Option<u8>[core::marker::Sized<u8>]; // anonymous local
 
+    storage_live(@1)
     @1 := {test_crate::sparse_transitions::closure<'_>} {}
     @0 := core::iter::sources::from_fn::from_fn<u8, fn() -> core::option::Option<u8>[core::marker::Sized<u8>]>[core::marker::Sized<u8>, core::marker::Sized<fn() -> core::option::Option<u8>[core::marker::Sized<u8>]>, core::ops::function::FnMut<fn() -> core::option::Option<u8>[core::marker::Sized<u8>], ()>](move (@1))
-    drop @1
+    storage_dead(@1)
     return
 }
 

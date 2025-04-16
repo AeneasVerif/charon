@@ -23,11 +23,9 @@ pub enum RawStatement {
     Assign(Place, Rvalue),
     /// A call. For now, we don't support dynamic calls (i.e. to a function pointer in memory).
     Call(Call),
-    FakeRead(Place),
     SetDiscriminant(Place, VariantId),
-    /// We translate this to [crate::llbc_ast::RawStatement::Drop] in LLBC
+    StorageLive(LocalId),
     StorageDead(LocalId),
-    /// We translate this to [crate::llbc_ast::RawStatement::Drop] in LLBC
     Deinit(Place),
     Drop(Place),
     /// A built-in assert, which corresponds to runtime checks that we remove, namely: bounds

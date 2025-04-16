@@ -15,60 +15,69 @@ fn test_crate::f() -> usize
     let @10: i32; // anonymous local
     let @11: (); // anonymous local
 
+    storage_live(i@1)
     i@1 := const (0 : i32)
-    @fake_read(i@1)
+    storage_live(j@2)
     j@2 := const (0 : i32)
-    @fake_read(j@2)
+    storage_live(@3)
     loop {
+        storage_live(@4)
+        storage_live(@5)
         @5 := copy (i@1)
         @4 := move (@5) < const (32 : i32)
         if move (@4) {
-            drop @5
+            storage_dead(@5)
             j@2 := copy (j@2) + const (1 : i32)
+            storage_live(@6)
+            storage_live(@7)
+            storage_live(@8)
             @8 := copy (j@2)
             @7 := move (@8) > const (16 : i32)
             if move (@7) {
-                drop @8
+                storage_dead(@8)
                 j@2 := copy (j@2) / const (2 : i32)
             }
             else {
-                drop @8
+                storage_dead(@8)
+                storage_live(@9)
+                storage_live(@10)
                 @10 := copy (j@2)
                 @9 := move (@10) > const (32 : i32)
                 if move (@9) {
-                    drop @10
+                    storage_dead(@10)
                     @0 := const (1 : usize)
-                    drop @9
-                    drop @7
-                    drop @6
-                    drop @4
-                    drop @3
-                    drop j@2
-                    drop i@1
+                    storage_dead(@9)
+                    storage_dead(@7)
+                    storage_dead(@6)
+                    storage_dead(@4)
+                    storage_dead(@3)
+                    storage_dead(j@2)
+                    storage_dead(i@1)
                     return
                 }
                 else {
-                    drop @10
-                    drop @9
+                    storage_dead(@10)
+                    storage_dead(@9)
                 }
             }
-            drop @7
-            drop @6
+            storage_dead(@7)
+            storage_dead(@6)
             i@1 := copy (i@1) + const (1 : i32)
-            drop @4
+            storage_dead(@4)
             continue 0
         }
         else {
             break 0
         }
     }
-    drop @5
-    drop @11
-    drop @4
-    drop @3
+    storage_dead(@5)
+    storage_live(@11)
+    storage_dead(@11)
+    storage_dead(@4)
+    storage_dead(@3)
     @0 := const (0 : usize)
-    drop j@2
-    drop i@1
+    storage_dead(j@2)
+    storage_dead(i@1)
     return
 }
 

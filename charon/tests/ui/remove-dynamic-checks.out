@@ -6,9 +6,10 @@ pub fn test_crate::neg_test(@1: i32) -> i32
     let x@1: i32; // arg #1
     let @2: i32; // anonymous local
 
+    storage_live(@2)
     @2 := copy (x@1)
     @0 := -(move (@2))
-    drop @2
+    storage_dead(@2)
     return
 }
 
@@ -20,11 +21,13 @@ pub fn test_crate::add_u32(@1: u32, @2: u32) -> u32
     let @3: u32; // anonymous local
     let @4: u32; // anonymous local
 
+    storage_live(@3)
     @3 := copy (x@1)
+    storage_live(@4)
     @4 := copy (y@2)
     @0 := move (@3) + move (@4)
-    drop @4
-    drop @3
+    storage_dead(@4)
+    storage_dead(@3)
     return
 }
 
@@ -47,11 +50,13 @@ pub fn test_crate::subs_u32(@1: u32, @2: u32) -> u32
     let @3: u32; // anonymous local
     let @4: u32; // anonymous local
 
+    storage_live(@3)
     @3 := copy (x@1)
+    storage_live(@4)
     @4 := copy (y@2)
     @0 := move (@3) - move (@4)
-    drop @4
-    drop @3
+    storage_dead(@4)
+    storage_dead(@3)
     return
 }
 
@@ -63,11 +68,13 @@ pub fn test_crate::div_u32(@1: u32, @2: u32) -> u32
     let @3: u32; // anonymous local
     let @4: u32; // anonymous local
 
+    storage_live(@3)
     @3 := copy (x@1)
+    storage_live(@4)
     @4 := copy (y@2)
     @0 := move (@3) / move (@4)
-    drop @4
-    drop @3
+    storage_dead(@4)
+    storage_dead(@3)
     return
 }
 
@@ -77,9 +84,10 @@ pub fn test_crate::div_u32_const(@1: u32) -> u32
     let x@1: u32; // arg #1
     let @2: u32; // anonymous local
 
+    storage_live(@2)
     @2 := copy (x@1)
     @0 := move (@2) / const (2 : u32)
-    drop @2
+    storage_dead(@2)
     return
 }
 
@@ -91,11 +99,13 @@ pub fn test_crate::rem_u32(@1: u32, @2: u32) -> u32
     let @3: u32; // anonymous local
     let @4: u32; // anonymous local
 
+    storage_live(@3)
     @3 := copy (x@1)
+    storage_live(@4)
     @4 := copy (y@2)
     @0 := move (@3) % move (@4)
-    drop @4
-    drop @3
+    storage_dead(@4)
+    storage_dead(@3)
     return
 }
 
@@ -107,11 +117,13 @@ pub fn test_crate::mul_u32(@1: u32, @2: u32) -> u32
     let @3: u32; // anonymous local
     let @4: u32; // anonymous local
 
+    storage_live(@3)
     @3 := copy (x@1)
+    storage_live(@4)
     @4 := copy (y@2)
     @0 := move (@3) * move (@4)
-    drop @4
-    drop @3
+    storage_dead(@4)
+    storage_dead(@3)
     return
 }
 
@@ -123,11 +135,13 @@ pub fn test_crate::add_i32(@1: i32, @2: i32) -> i32
     let @3: i32; // anonymous local
     let @4: i32; // anonymous local
 
+    storage_live(@3)
     @3 := copy (x@1)
+    storage_live(@4)
     @4 := copy (y@2)
     @0 := move (@3) + move (@4)
-    drop @4
-    drop @3
+    storage_dead(@4)
+    storage_dead(@3)
     return
 }
 
@@ -139,11 +153,13 @@ pub fn test_crate::subs_i32(@1: i32, @2: i32) -> i32
     let @3: i32; // anonymous local
     let @4: i32; // anonymous local
 
+    storage_live(@3)
     @3 := copy (x@1)
+    storage_live(@4)
     @4 := copy (y@2)
     @0 := move (@3) - move (@4)
-    drop @4
-    drop @3
+    storage_dead(@4)
+    storage_dead(@3)
     return
 }
 
@@ -155,11 +171,13 @@ pub fn test_crate::div_i32(@1: i32, @2: i32) -> i32
     let @3: i32; // anonymous local
     let @4: i32; // anonymous local
 
+    storage_live(@3)
     @3 := copy (x@1)
+    storage_live(@4)
     @4 := copy (y@2)
     @0 := move (@3) / move (@4)
-    drop @4
-    drop @3
+    storage_dead(@4)
+    storage_dead(@3)
     return
 }
 
@@ -169,9 +187,10 @@ pub fn test_crate::div_i32_const(@1: i32) -> i32
     let x@1: i32; // arg #1
     let @2: i32; // anonymous local
 
+    storage_live(@2)
     @2 := copy (x@1)
     @0 := move (@2) / const (2 : i32)
-    drop @2
+    storage_dead(@2)
     return
 }
 
@@ -183,11 +202,13 @@ pub fn test_crate::rem_i32(@1: i32, @2: i32) -> i32
     let @3: i32; // anonymous local
     let @4: i32; // anonymous local
 
+    storage_live(@3)
     @3 := copy (x@1)
+    storage_live(@4)
     @4 := copy (y@2)
     @0 := move (@3) % move (@4)
-    drop @4
-    drop @3
+    storage_dead(@4)
+    storage_dead(@3)
     return
 }
 
@@ -199,11 +220,13 @@ pub fn test_crate::mul_i32(@1: i32, @2: i32) -> i32
     let @3: i32; // anonymous local
     let @4: i32; // anonymous local
 
+    storage_live(@3)
     @3 := copy (x@1)
+    storage_live(@4)
     @4 := copy (y@2)
     @0 := move (@3) * move (@4)
-    drop @4
-    drop @3
+    storage_dead(@4)
+    storage_dead(@3)
     return
 }
 
@@ -232,43 +255,61 @@ pub fn test_crate::mix_arith_u32(@1: u32, @2: u32, @3: u32) -> u32
     let @20: u32; // anonymous local
     let @21: u32; // anonymous local
 
+    storage_live(@4)
+    storage_live(@5)
+    storage_live(@6)
+    storage_live(@7)
     @7 := copy (x@1)
+    storage_live(@8)
     @8 := copy (y@2)
     @6 := move (@7) + move (@8)
-    drop @8
-    drop @7
+    storage_dead(@8)
+    storage_dead(@7)
+    storage_live(@9)
+    storage_live(@10)
     @10 := copy (x@1)
+    storage_live(@11)
     @11 := copy (y@2)
     @9 := move (@10) / move (@11)
-    drop @11
-    drop @10
+    storage_dead(@11)
+    storage_dead(@10)
     @5 := move (@6) * move (@9)
-    drop @9
-    drop @6
+    storage_dead(@9)
+    storage_dead(@6)
+    storage_live(@12)
+    storage_live(@13)
     @13 := copy (x@1)
+    storage_live(@14)
+    storage_live(@15)
     @15 := copy (z@3)
+    storage_live(@16)
     @16 := copy (y@2)
     @14 := move (@15) % move (@16)
-    drop @16
-    drop @15
+    storage_dead(@16)
+    storage_dead(@15)
     @12 := move (@13) - move (@14)
-    drop @14
-    drop @13
+    storage_dead(@14)
+    storage_dead(@13)
     @4 := move (@5) + move (@12)
-    drop @12
-    drop @5
+    storage_dead(@12)
+    storage_dead(@5)
+    storage_live(@17)
+    storage_live(@18)
+    storage_live(@19)
     @19 := copy (x@1)
+    storage_live(@20)
     @20 := copy (y@2)
     @18 := move (@19) + move (@20)
-    drop @20
-    drop @19
+    storage_dead(@20)
+    storage_dead(@19)
+    storage_live(@21)
     @21 := copy (z@3)
     @17 := move (@18) + move (@21)
-    drop @21
-    drop @18
+    storage_dead(@21)
+    storage_dead(@18)
     @0 := move (@4) % move (@17)
-    drop @17
-    drop @4
+    storage_dead(@17)
+    storage_dead(@4)
     return
 }
 
@@ -297,43 +338,61 @@ pub fn test_crate::mix_arith_i32(@1: i32, @2: i32, @3: i32) -> i32
     let @20: i32; // anonymous local
     let @21: i32; // anonymous local
 
+    storage_live(@4)
+    storage_live(@5)
+    storage_live(@6)
+    storage_live(@7)
     @7 := copy (x@1)
+    storage_live(@8)
     @8 := copy (y@2)
     @6 := move (@7) + move (@8)
-    drop @8
-    drop @7
+    storage_dead(@8)
+    storage_dead(@7)
+    storage_live(@9)
+    storage_live(@10)
     @10 := copy (x@1)
+    storage_live(@11)
     @11 := copy (y@2)
     @9 := move (@10) / move (@11)
-    drop @11
-    drop @10
+    storage_dead(@11)
+    storage_dead(@10)
     @5 := move (@6) * move (@9)
-    drop @9
-    drop @6
+    storage_dead(@9)
+    storage_dead(@6)
+    storage_live(@12)
+    storage_live(@13)
     @13 := copy (x@1)
+    storage_live(@14)
+    storage_live(@15)
     @15 := copy (z@3)
+    storage_live(@16)
     @16 := copy (y@2)
     @14 := move (@15) % move (@16)
-    drop @16
-    drop @15
+    storage_dead(@16)
+    storage_dead(@15)
     @12 := move (@13) - move (@14)
-    drop @14
-    drop @13
+    storage_dead(@14)
+    storage_dead(@13)
     @4 := move (@5) + move (@12)
-    drop @12
-    drop @5
+    storage_dead(@12)
+    storage_dead(@5)
+    storage_live(@17)
+    storage_live(@18)
+    storage_live(@19)
     @19 := copy (x@1)
+    storage_live(@20)
     @20 := copy (y@2)
     @18 := move (@19) + move (@20)
-    drop @20
-    drop @19
+    storage_dead(@20)
+    storage_dead(@19)
+    storage_live(@21)
     @21 := copy (z@3)
     @17 := move (@18) + move (@21)
-    drop @21
-    drop @18
+    storage_dead(@21)
+    storage_dead(@18)
     @0 := move (@4) % move (@17)
-    drop @17
-    drop @4
+    storage_dead(@17)
+    storage_dead(@4)
     return
 }
 
@@ -345,11 +404,13 @@ fn test_crate::shl(@1: u32, @2: u32) -> u32
     let @3: u32; // anonymous local
     let @4: u32; // anonymous local
 
+    storage_live(@3)
     @3 := copy (x@1)
+    storage_live(@4)
     @4 := copy (y@2)
     @0 := move (@3) << move (@4)
-    drop @4
-    drop @3
+    storage_dead(@4)
+    storage_dead(@3)
     return
 }
 
@@ -361,11 +422,13 @@ fn test_crate::shr(@1: u32, @2: u32) -> u32
     let @3: u32; // anonymous local
     let @4: u32; // anonymous local
 
+    storage_live(@3)
     @3 := copy (x@1)
+    storage_live(@4)
     @4 := copy (y@2)
     @0 := move (@3) >> move (@4)
-    drop @4
-    drop @3
+    storage_dead(@4)
+    storage_dead(@3)
     return
 }
 
@@ -412,7 +475,9 @@ pub global test_crate::_#3: isize = test_crate::_#3()
 pub fn test_crate::_#4() -> isize
 {
     let @0: isize; // return
+    let @1: u32; // anonymous local
 
+    @1 := cast<i32, u32>(const (2 : i32))
     @0 := const (2 : isize) >> const (2 : i32)
     return
 }
@@ -422,7 +487,9 @@ pub global test_crate::_#4: isize = test_crate::_#4()
 pub fn test_crate::_#5() -> isize
 {
     let @0: isize; // return
+    let @1: u32; // anonymous local
 
+    @1 := cast<i32, u32>(const (2 : i32))
     @0 := const (2 : isize) << const (2 : i32)
     return
 }
@@ -573,13 +640,15 @@ fn test_crate::div_unsigned_to_slice<'_0>(@1: &'_0 mut (Slice<u32>), @2: u32)
     let @5: &'_ mut (Slice<u32>); // anonymous local
     let @6: &'_ mut (u32); // anonymous local
 
+    storage_live(@3)
     @3 := copy (x@2)
+    storage_live(@4)
     @4 := const (0 : usize)
     @5 := &mut *(result@1)
     @6 := @SliceIndexMut<'_, u32>(move (@5), copy (@4))
     *(@6) := move (@3) / const (3329 : u32)
-    drop @3
-    drop @4
+    storage_dead(@3)
+    storage_dead(@4)
     @0 := ()
     @0 := ()
     return
@@ -595,13 +664,15 @@ fn test_crate::div_signed_to_slice<'_0>(@1: &'_0 mut (Slice<i32>), @2: i32)
     let @5: &'_ mut (Slice<i32>); // anonymous local
     let @6: &'_ mut (i32); // anonymous local
 
+    storage_live(@3)
     @3 := copy (x@2)
+    storage_live(@4)
     @4 := const (0 : usize)
     @5 := &mut *(result@1)
     @6 := @SliceIndexMut<'_, i32>(move (@5), copy (@4))
     *(@6) := move (@3) / const (3329 : i32)
-    drop @3
-    drop @4
+    storage_dead(@3)
+    storage_dead(@4)
     @0 := ()
     @0 := ()
     return

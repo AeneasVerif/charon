@@ -52,7 +52,14 @@ pub trait FmtWithCtx<C> {
 impl<C: AstFormatter> FmtWithCtx<C> for AbortKind {
     fn fmt_with_ctx_and_indent(&self, tab: &str, ctx: &C) -> String {
         match self {
-            AbortKind::Panic(name) => format!("{tab}panic({})", name.fmt_with_ctx(ctx)),
+            AbortKind::Panic(name) => {
+                let name = if let Some(name) = name {
+                    format!("({})", name.fmt_with_ctx(ctx))
+                } else {
+                    format!("")
+                };
+                format!("{tab}panic{name}")
+            }
             AbortKind::UndefinedBehavior => format!("{tab}undefined_behavior"),
         }
     }
@@ -1010,20 +1017,28 @@ impl<C: AstFormatter> FmtWithCtx<C> for ullbc::Statement {
                 let (call_s, _) = fmt_call(ctx, call);
                 write!(&mut out, "{tab}{} := {call_s}", call.dest.fmt_with_ctx(ctx))
             }
-            RawStatement::FakeRead(place) => {
-                write!(&mut out, "{tab}@fake_read({})", place.fmt_with_ctx(ctx))
-            }
             RawStatement::SetDiscriminant(place, variant_id) => write!(
                 &mut out,
                 "{tab}@discriminant({}) := {}",
                 place.fmt_with_ctx(ctx),
                 variant_id
             ),
-            RawStatement::StorageDead(vid) => {
-                write!(&mut out, "{tab}@storage_dead({})", vid.to_pretty_string())
+            RawStatement::StorageLive(var_id) => {
+                write!(
+                    &mut out,
+                    "{tab}storage_live({})",
+                    ctx.format_object(*var_id)
+                )
+            }
+            RawStatement::StorageDead(var_id) => {
+                write!(
+                    &mut out,
+                    "{tab}storage_dead({})",
+                    ctx.format_object(*var_id)
+                )
             }
             RawStatement::Deinit(place) => {
-                write!(&mut out, "{tab}@deinit({})", place.fmt_with_ctx(ctx))
+                write!(&mut out, "{tab}deinit({})", place.fmt_with_ctx(ctx))
             }
             RawStatement::Drop(place) => {
                 write!(&mut out, "{tab}drop {}", place.fmt_with_ctx(ctx))
@@ -1056,9 +1071,6 @@ impl<C: AstFormatter> FmtWithCtx<C> for llbc::Statement {
                 place.fmt_with_ctx(ctx),
                 rvalue.fmt_with_ctx(ctx),
             ),
-            RawStatement::FakeRead(place) => {
-                write!(&mut out, "{}@fake_read({})", tab, place.fmt_with_ctx(ctx))
-            }
             RawStatement::SetDiscriminant(place, variant_id) => write!(
                 &mut out,
                 "{}@discriminant({}) := {}",
@@ -1066,11 +1078,28 @@ impl<C: AstFormatter> FmtWithCtx<C> for llbc::Statement {
                 place.fmt_with_ctx(ctx),
                 variant_id
             ),
+            RawStatement::StorageLive(var_id) => {
+                write!(
+                    &mut out,
+                    "{tab}storage_live({})",
+                    ctx.format_object(*var_id)
+                )
+            }
+            RawStatement::StorageDead(var_id) => {
+                write!(
+                    &mut out,
+                    "{tab}storage_dead({})",
+                    ctx.format_object(*var_id)
+                )
+            }
+            RawStatement::Deinit(place) => {
+                write!(&mut out, "{tab}deinit({})", place.fmt_with_ctx(ctx))
+            }
             RawStatement::Drop(place) => {
-                write!(&mut out, "{}drop {}", tab, place.fmt_with_ctx(ctx))
+                write!(&mut out, "{tab}drop {}", place.fmt_with_ctx(ctx))
             }
             RawStatement::Assert(assert) => {
-                write!(&mut out, "{}{}", tab, assert.fmt_with_ctx(ctx),)
+                write!(&mut out, "{tab}{}", assert.fmt_with_ctx(ctx),)
             }
             RawStatement::Call(call) => {
                 let (call_s, _) = fmt_call(ctx, call);

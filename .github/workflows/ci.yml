@@ -40,7 +40,6 @@ jobs:
   # Choose which commit to use for each project. By default we use the latest
   # from the main branch, but this can be overridden with a command in the PR
   # description.
-  # TODO: actually do that
   select-dep-versions:
     runs-on: [self-hosted, linux, nix]
     env:
@@ -49,9 +48,13 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - id: select
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
           echo "charon=${{ github.sha }}" >> "$GITHUB_OUTPUT"
           nix develop '.#ci' --command ./scripts/ci-select-dep-versions.py >> "$GITHUB_OUTPUT"
+          echo
+          echo "Selected the following versions for dependent projects:"
           cat "$GITHUB_OUTPUT"
     outputs:
       charon: ${{ steps.select.outputs.charon }}
@@ -106,9 +109,13 @@ jobs:
           LIBCRUX: ${{needs.select-dep-versions.outputs.libcrux}}
         run: |
           nix flake update --refresh \
-              charon eurydice libcrux \
+              charon eurydice \
               --override-input charon github:aeneasverif/charon/$CHARON \
-              --override-input eurydice github:aeneasverif/eurydice/$EURYDICE \
-              --override-input libcrux github:cryspen/libcrux/$LIBCRUX
+              --override-input eurydice github:aeneasverif/eurydice/$EURYDICE
+          # Use the last-known-good libcrux version unless overridden.
+          if [[ -n "$LIBCRUX" ]]; then
+              nix flake update --refresh libcrux \
+                  --override-input libcrux github:cryspen/libcrux/$LIBCRUX
+          fi
           ./check.sh ml-kem-small
           ./check.sh ml-dsa-small

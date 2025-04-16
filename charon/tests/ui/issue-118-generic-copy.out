@@ -45,13 +45,13 @@ fn test_crate::copy_foo(@1: test_crate::Foo)
     let y@2: test_crate::Foo; // local
     let z@3: test_crate::Foo; // local
 
+    storage_live(y@2)
     y@2 := copy (x@1)
-    @fake_read(y@2)
+    storage_live(z@3)
     z@3 := copy (x@1)
-    @fake_read(z@3)
     @0 := ()
-    drop z@3
-    drop y@2
+    storage_dead(z@3)
+    storage_dead(y@2)
     @0 := ()
     return
 }
@@ -66,13 +66,13 @@ where
     let y@2: T; // local
     let z@3: T; // local
 
+    storage_live(y@2)
     y@2 := copy (x@1)
-    @fake_read(y@2)
+    storage_live(z@3)
     z@3 := copy (x@1)
-    @fake_read(z@3)
     @0 := ()
-    drop z@3
-    drop y@2
+    storage_dead(z@3)
+    storage_dead(y@2)
     @0 := ()
     return
 }
@@ -94,13 +94,13 @@ where
     let y@2: @TraitClause1::Ty; // local
     let z@3: @TraitClause1::Ty; // local
 
+    storage_live(y@2)
     y@2 := copy (x@1)
-    @fake_read(y@2)
+    storage_live(z@3)
     z@3 := copy (x@1)
-    @fake_read(z@3)
     @0 := ()
-    drop z@3
-    drop y@2
+    storage_dead(z@3)
+    storage_dead(y@2)
     @0 := ()
     return
 }

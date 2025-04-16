@@ -50,11 +50,13 @@ pub fn test_crate::map(@1: Array<i32, 256 : usize>) -> Array<i32, 256 : usize>
     let @2: Array<i32, 256 : usize>; // anonymous local
     let @3: fn(i32) -> i32; // anonymous local
 
+    storage_live(@2)
     @2 := copy (x@1)
+    storage_live(@3)
     @3 := {test_crate::map::closure} {}
     @0 := core::array::{Array<T, const N : usize>}#23::map<i32, fn(i32) -> i32, i32, 256 : usize>[core::marker::Sized<i32>, core::marker::Sized<fn(i32) -> i32>, core::marker::Sized<i32>, core::ops::function::FnMut<fn(i32) -> i32, (i32)>](move (@2), move (@3))
-    drop @3
-    drop @2
+    storage_dead(@3)
+    storage_dead(@2)
     return
 }
 
@@ -206,44 +208,52 @@ fn test_crate::cbd(@1: Array<u8, 33 : usize>)
     let @12: &'_ mut (Array<u8, 33 : usize>); // anonymous local
     let @13: &'_ mut (u8); // anonymous local
 
+    storage_live(@2)
+    storage_live(@3)
     @3 := core::ops::range::Range { start: const (0 : u8), end: const (3 : u8) }
     @2 := core::iter::traits::collect::{impl core::iter::traits::collect::IntoIterator for I}::into_iter<core::ops::range::Range<u8>[core::marker::Sized<u8>]>[core::marker::Sized<core::ops::range::Range<u8>[core::marker::Sized<u8>]>, core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>[@TraitClause0]}#6<u8>[core::marker::Sized<u8>, core::iter::range::{impl core::iter::range::Step for u8}#35]](move (@3))
-    drop @3
-    @fake_read(@2)
+    storage_dead(@3)
+    storage_live(iter@4)
     iter@4 := move (@2)
     loop {
+        storage_live(@5)
+        storage_live(@6)
+        storage_live(@7)
+        storage_live(@8)
         @8 := &mut iter@4
         @7 := &two-phase-mut *(@8)
         @6 := core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>[@TraitClause0]}#6::next<'_, u8>[core::marker::Sized<u8>, core::iter::range::{impl core::iter::range::Step for u8}#35](move (@7))
-        drop @7
-        @fake_read(@6)
+        storage_dead(@7)
         match @6 {
             0 => {
                 break 0
             },
             1 => {
+                storage_live(i@9)
                 i@9 := copy ((@6 as variant @1).0)
+                storage_live(@10)
                 @10 := copy (i@9)
+                storage_live(@11)
                 @11 := const (0 : usize)
                 @12 := &mut prf_input@1
                 @13 := @ArrayIndexMut<'_, u8, 33 : usize>(move (@12), copy (@11))
                 *(@13) := move (@10)
-                drop @10
-                drop @11
-                drop i@9
-                drop @8
-                drop @6
-                drop @5
+                storage_dead(@10)
+                storage_dead(@11)
+                storage_dead(i@9)
+                storage_dead(@8)
+                storage_dead(@6)
+                storage_dead(@5)
                 continue 0
             },
         }
     }
     @0 := ()
-    drop @8
-    drop @6
-    drop @5
-    drop iter@4
-    drop @2
+    storage_dead(@8)
+    storage_dead(@6)
+    storage_dead(@5)
+    storage_dead(iter@4)
+    storage_dead(@2)
     @0 := ()
     return
 }
@@ -292,54 +302,74 @@ fn test_crate::select<'_0, '_1>(@1: &'_0 (Slice<u8>), @2: &'_1 (Slice<u8>))
     let @23: &'_ (usize); // anonymous local
     let @24: core::option::Option<core::fmt::Arguments<'_>>[core::marker::Sized<core::fmt::Arguments<'_>>]; // anonymous local
 
+    storage_live(@3)
+    storage_live(@4)
     @4 := const (false)
     if move (@4) {
+        storage_live(@5)
+        storage_live(@6)
+        storage_live(@7)
+        storage_live(@8)
+        storage_live(@9)
         @9 := &*(lhs@1)
         @8 := core::slice::{Slice<T>}::len<'_, u8>[core::marker::Sized<u8>](move (@9))
-        drop @9
+        storage_dead(@9)
         @7 := &@8
+        storage_live(@10)
+        storage_live(@11)
+        storage_live(@12)
         @12 := &*(rhs@2)
         @11 := core::slice::{Slice<T>}::len<'_, u8>[core::marker::Sized<u8>](move (@12))
-        drop @12
+        storage_dead(@12)
         @10 := &@11
         @6 := (move (@7), move (@10))
-        drop @10
-        drop @7
-        @fake_read(@6)
+        storage_dead(@10)
+        storage_dead(@7)
+        storage_live(left_val@13)
         left_val@13 := copy ((@6).0)
+        storage_live(right_val@14)
         right_val@14 := copy ((@6).1)
+        storage_live(@15)
+        storage_live(@16)
         @16 := copy (*(left_val@13))
+        storage_live(@17)
         @17 := copy (*(right_val@14))
         @15 := move (@16) == move (@17)
         if move (@15) {
         }
         else {
-            drop @17
-            drop @16
+            storage_dead(@17)
+            storage_dead(@16)
+            storage_live(kind@18)
             kind@18 := core::panicking::AssertKind::Eq {  }
-            @fake_read(kind@18)
+            storage_live(@19)
             @19 := move (kind@18)
+            storage_live(@20)
+            storage_live(@21)
             @21 := &*(left_val@13)
             @20 := &*(@21)
+            storage_live(@22)
+            storage_live(@23)
             @23 := &*(right_val@14)
             @22 := &*(@23)
+            storage_live(@24)
             @24 := core::option::Option::None {  }
             panic(core::panicking::assert_failed)
         }
-        drop @17
-        drop @16
-        drop @15
-        drop right_val@14
-        drop left_val@13
-        drop @11
-        drop @8
-        drop @6
-        drop @5
+        storage_dead(@17)
+        storage_dead(@16)
+        storage_dead(@15)
+        storage_dead(right_val@14)
+        storage_dead(left_val@13)
+        storage_dead(@11)
+        storage_dead(@8)
+        storage_dead(@6)
+        storage_dead(@5)
     }
     else {
     }
-    drop @4
-    drop @3
+    storage_dead(@4)
+    storage_dead(@3)
     @0 := ()
     @0 := ()
     return

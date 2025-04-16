@@ -14,23 +14,25 @@ fn test_crate::slice_pat1()
     let @9: &'_ (Array<i32, 4 : usize>); // anonymous local
     let @10: &'_ (i32); // anonymous local
 
+    storage_live(array@1)
     array@1 := @ArrayRepeat<'_, i32, 4 : usize>(const (0 : i32))
-    @fake_read(array@1)
-    @fake_read(array@1)
+    storage_live(_a@2)
     @9 := &array@1
     @10 := @ArrayIndexShared<'_, i32, 4 : usize>(move (@9), const (0 : usize))
     _a@2 := copy (*(@10))
+    storage_live(_b@3)
     @7 := &array@1
     @8 := @ArraySubSliceShared<'_, i32, 4 : usize>(move (@7), const (1 : usize), const (3 : usize))
     _b@3 := copy (*(@8))
+    storage_live(_c@4)
     @5 := &array@1
     @6 := @ArrayIndexShared<'_, i32, 4 : usize>(move (@5), const (3 : usize))
     _c@4 := copy (*(@6))
     @0 := ()
-    drop _c@4
-    drop _b@3
-    drop _a@2
-    drop array@1
+    storage_dead(_c@4)
+    storage_dead(_b@3)
+    storage_dead(_a@2)
+    storage_dead(array@1)
     @0 := ()
     return
 }
@@ -51,27 +53,31 @@ fn test_crate::slice_pat2()
     let @11: &'_ (Array<i32, 4 : usize>); // anonymous local
     let @12: &'_ (i32); // anonymous local
 
+    storage_live(array_ref@1)
+    storage_live(@2)
+    storage_live(@3)
     @3 := @ArrayRepeat<'_, i32, 4 : usize>(const (0 : i32))
     @2 := &@3
     array_ref@1 := &*(@2)
-    @fake_read(array_ref@1)
-    drop @2
-    @fake_read(array_ref@1)
+    storage_dead(@2)
+    storage_live(_a@4)
     @11 := &*(array_ref@1)
     @12 := @ArrayIndexShared<'_, i32, 4 : usize>(move (@11), const (0 : usize))
     _a@4 := &*(@12)
+    storage_live(_b@5)
     @9 := &*(array_ref@1)
     @10 := @ArraySubSliceShared<'_, i32, 4 : usize>(move (@9), const (1 : usize), const (3 : usize))
     _b@5 := &*(@10)
+    storage_live(_c@6)
     @7 := &*(array_ref@1)
     @8 := @ArrayIndexShared<'_, i32, 4 : usize>(move (@7), const (3 : usize))
     _c@6 := &*(@8)
     @0 := ()
-    drop _c@6
-    drop _b@5
-    drop _a@4
-    drop @3
-    drop array_ref@1
+    storage_dead(_c@6)
+    storage_dead(_b@5)
+    storage_dead(_a@4)
+    storage_dead(@3)
+    storage_dead(array_ref@1)
     @0 := ()
     return
 }
@@ -100,23 +106,28 @@ fn test_crate::slice_pat3()
     let @19: &'_ (Slice<i32>); // anonymous local
     let @20: &'_ (i32); // anonymous local
 
+    storage_live(slice@1)
+    storage_live(@2)
+    storage_live(@3)
+    storage_live(@4)
     @4 := @ArrayRepeat<'_, i32, 4 : usize>(const (0 : i32))
     @3 := &@4
     @2 := &*(@3)
     slice@1 := @ArrayToSliceShared<'_, i32, 4 : usize>(move (@2))
-    drop @2
-    @fake_read(slice@1)
-    drop @3
-    @fake_read(slice@1)
+    storage_dead(@2)
+    storage_dead(@3)
+    storage_live(_a@5)
+    storage_live(_b@6)
+    storage_live(_c@7)
     @8 := len(*(slice@1))
     @9 := const (2 : usize)
     @10 := move (@8) >= move (@9)
     if move (@10) {
     }
     else {
-        drop _c@7
-        drop _b@6
-        drop _a@5
+        storage_dead(_c@7)
+        storage_dead(_b@6)
+        storage_dead(_a@5)
         panic(core::panicking::panic_explicit)
     }
     @19 := &*(slice@1)
@@ -133,11 +144,11 @@ fn test_crate::slice_pat3()
     @14 := @SliceIndexShared<'_, i32>(move (@11), copy (@13))
     _c@7 := &*(@14)
     @0 := ()
-    drop _c@7
-    drop _b@6
-    drop _a@5
-    drop @4
-    drop slice@1
+    storage_dead(_c@7)
+    storage_dead(_b@6)
+    storage_dead(_a@5)
+    storage_dead(@4)
+    storage_dead(slice@1)
     @0 := ()
     return
 }

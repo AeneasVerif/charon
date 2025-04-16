@@ -106,12 +106,20 @@ and fn_operand =
 
 and call = { func : fn_operand; args : operand list; dest : place }
 
-(** Asserts are special constructs introduced by Rust to perform dynamic
-    checks, to detect out-of-bounds accesses or divisions by zero for
-    instance. We eliminate the assertions in [crate::remove_dynamic_checks],
-    then introduce other dynamic checks in [crate::reconstruct_asserts].
+(** Check the value of an operand and abort if the value is not expected. This is introduced to
+    avoid a lot of small branches.
+
+    We translate MIR asserts (introduced for out-of-bounds accesses or divisions by zero for
+    instance) to this. We then eliminate them in [crate::remove_dynamic_checks], because they're
+    implicit in the semantics of our array accesses etc. Finally we introduce new asserts in
+    [crate::reconstruct_asserts].
  *)
-and assertion = { cond : operand; expected : bool }
+and assertion = {
+  cond : operand;
+  expected : bool;
+      (** The value that the operand should evaluate to for the assert to succeed. *)
+  on_failure : abort_kind;  (** What kind of abort happens on assert failure. *)
+}
 
 and closure_kind = Fn | FnMut | FnOnce
 

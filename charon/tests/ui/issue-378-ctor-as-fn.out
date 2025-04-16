@@ -89,50 +89,59 @@ fn test_crate::main()
     let @16: &'_ (i32); // anonymous local
     let @17: i32; // anonymous local
 
+    storage_live(f@1)
     f@1 := const (core::option::Option::Some<u8>[core::marker::Sized<u8>])
-    @fake_read(f@1)
+    storage_live(@2)
+    storage_live(@3)
     @3 := copy (f@1)
     @2 := core::option::Option::Some<u8>[core::marker::Sized<u8>](const (42 : u8))
-    drop @3
-    @fake_read(@2)
-    drop @2
+    storage_dead(@3)
+    storage_dead(@2)
+    storage_live(f@4)
+    storage_live(@5)
     @5 := copy (f@1)
     f@4 := cast<fn(u8) -> core::option::Option<u8>[core::marker::Sized<u8>], fn(u8) -> core::option::Option<u8>[core::marker::Sized<u8>]>(move (@5))
-    drop @5
-    @fake_read(f@4)
+    storage_dead(@5)
+    storage_live(@6)
+    storage_live(@7)
     @7 := copy (f@4)
     @6 := (move @7)(const (42 : u8))
-    drop @7
-    @fake_read(@6)
-    drop @6
+    storage_dead(@7)
+    storage_dead(@6)
+    storage_live(f@8)
     f@8 := const (test_crate::Foo)
-    @fake_read(f@8)
+    storage_live(@9)
+    storage_live(@10)
     @10 := copy (f@8)
+    storage_live(@11)
     @11 := alloc::string::{alloc::string::String}::new()
     @9 := test_crate::Foo(const (42 : u32), move (@11))
-    drop @11
-    drop @10
-    @fake_read(@9)
+    storage_dead(@11)
+    storage_dead(@10)
     drop @9
-    drop @9
+    storage_dead(@9)
+    storage_live(f@12)
     f@12 := const (test_crate::Bar::Variant<'_, i32>[core::marker::Sized<i32>])
-    @fake_read(f@12)
+    storage_live(@13)
+    storage_live(@14)
     @14 := copy (f@12)
+    storage_live(@15)
+    storage_live(@16)
+    storage_live(@17)
     @17 := const (42 : i32)
     @16 := &@17
     @15 := &*(@16)
     @13 := test_crate::Bar::Variant<'_, i32>[core::marker::Sized<i32>](move (@15))
-    drop @15
-    drop @14
-    @fake_read(@13)
-    drop @17
-    drop @16
-    drop @13
+    storage_dead(@15)
+    storage_dead(@14)
+    storage_dead(@17)
+    storage_dead(@16)
+    storage_dead(@13)
     @0 := ()
-    drop f@12
-    drop f@8
-    drop f@4
-    drop f@1
+    storage_dead(f@12)
+    storage_dead(f@8)
+    storage_dead(f@4)
+    storage_dead(f@1)
     @0 := ()
     return
 }

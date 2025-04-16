@@ -92,31 +92,43 @@ where
     let @11: &'_ (U); // anonymous local
     let @12: U; // anonymous local
 
+    storage_live(@1)
+    storage_live(@2)
+    storage_live(@3)
+    storage_live(@4)
+    storage_live(@5)
     @5 := [const (""), const ("\n")]
     @4 := &@5
     @3 := &*(@4)
+    storage_live(@6)
+    storage_live(@7)
+    storage_live(@8)
+    storage_live(@9)
+    storage_live(@10)
+    storage_live(@11)
+    storage_live(@12)
     @12 := @TraitClause4::default()
     @11 := &@12
     @10 := &*(@11)
     @9 := core::fmt::rt::{core::fmt::rt::Argument<'_0>}#1::new_debug<'_, '_, U>[@TraitClause1, @TraitClause5](move (@10))
-    drop @10
+    storage_dead(@10)
     @8 := [move (@9)]
-    drop @9
+    storage_dead(@9)
     @7 := &@8
     @6 := &*(@7)
     @2 := core::fmt::{core::fmt::Arguments<'a>}#4::new_v1<'_, 2 : usize, 1 : usize>(move (@3), move (@6))
-    drop @6
-    drop @3
+    storage_dead(@6)
+    storage_dead(@3)
     @1 := std::io::stdio::_print<'_>(move (@2))
-    drop @2
+    storage_dead(@2)
     drop @12
-    drop @12
-    drop @11
-    drop @8
-    drop @7
-    drop @5
-    drop @4
-    drop @1
+    storage_dead(@12)
+    storage_dead(@11)
+    storage_dead(@8)
+    storage_dead(@7)
+    storage_dead(@5)
+    storage_dead(@4)
+    storage_dead(@1)
     @0 := ()
     @0 := ()
     return

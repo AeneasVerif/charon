@@ -481,12 +481,14 @@ class ['self] map_type_decl_base =
     method visit_attr_info : 'env -> attr_info -> attr_info = fun _ x -> x
   end
 
+(** (U)LLBC is a language with side-effects: a statement may abort in a way that isn't tracked by
+    control-flow. The two kinds of abort are:
+    - Panic (may unwind or not depending on compilation setting);
+    - Undefined behavior:
+ *)
 type abort_kind =
-  | Panic of name  (** A built-in panicking function. *)
-  | UndefinedBehavior
-      (** A MIR `Unreachable` terminator corresponds to undefined behavior in the rust abstract
-          machine.
-       *)
+  | Panic of name option  (** A built-in panicking function. *)
+  | UndefinedBehavior  (** Undefined behavior in the rust abstract machine. *)
 
 (** Meta information about an item (function, trait decl, trait impl, type decl, global). *)
 and item_meta = {

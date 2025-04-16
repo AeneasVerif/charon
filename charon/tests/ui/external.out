@@ -18,11 +18,13 @@ where
     let @3: &'_ mut (T); // anonymous local
     let @4: &'_ mut (T); // anonymous local
 
+    storage_live(@3)
     @3 := &two-phase-mut *(x@1)
+    storage_live(@4)
     @4 := &two-phase-mut *(y@2)
     @0 := core::mem::swap<'_, '_, T>[@TraitClause0](move (@3), move (@4))
-    drop @4
-    drop @3
+    storage_dead(@4)
+    storage_dead(@3)
     @0 := ()
     return
 }
@@ -124,11 +126,13 @@ pub fn test_crate::test_new_non_zero_u32(@1: u32) -> core::num::nonzero::NonZero
     let @2: core::option::Option<core::num::nonzero::NonZero<u32>[core::marker::Sized<u32>, core::num::nonzero::{impl core::num::nonzero::ZeroablePrimitive for u32}#21]>[core::marker::Sized<core::num::nonzero::NonZero<u32>[core::marker::Sized<u32>, core::num::nonzero::{impl core::num::nonzero::ZeroablePrimitive for u32}#21]>]; // anonymous local
     let @3: u32; // anonymous local
 
+    storage_live(@2)
+    storage_live(@3)
     @3 := copy (x@1)
     @2 := core::num::nonzero::{core::num::nonzero::NonZero<T>[@TraitClause0, @TraitClause1]}#15::new<u32>[core::marker::Sized<u32>, core::num::nonzero::{impl core::num::nonzero::ZeroablePrimitive for u32}#21](move (@3))
-    drop @3
+    storage_dead(@3)
     @0 := core::option::{core::option::Option<T>[@TraitClause0]}::unwrap<core::num::nonzero::NonZero<u32>[core::marker::Sized<u32>, core::num::nonzero::{impl core::num::nonzero::ZeroablePrimitive for u32}#21]>[core::marker::Sized<core::num::nonzero::NonZero<u32>[core::marker::Sized<u32>, core::num::nonzero::{impl core::num::nonzero::ZeroablePrimitive for u32}#21]>](move (@2))
-    drop @2
+    storage_dead(@2)
     return
 }
 
@@ -158,15 +162,17 @@ pub fn test_crate::test_vec_push()
     let @2: (); // anonymous local
     let @3: &'_ mut (alloc::vec::Vec<u32, alloc::alloc::Global>[core::marker::Sized<u32>, core::marker::Sized<alloc::alloc::Global>]); // anonymous local
 
+    storage_live(v@1)
     v@1 := alloc::vec::{alloc::vec::Vec<T, alloc::alloc::Global>[@TraitClause0, core::marker::Sized<alloc::alloc::Global>]}::new<u32>[core::marker::Sized<u32>]()
-    @fake_read(v@1)
+    storage_live(@2)
+    storage_live(@3)
     @3 := &two-phase-mut v@1
     @2 := alloc::vec::{alloc::vec::Vec<T, A>[@TraitClause0, @TraitClause1]}#1::push<'_, u32, alloc::alloc::Global>[core::marker::Sized<u32>, core::marker::Sized<alloc::alloc::Global>](move (@3), const (0 : u32))
-    drop @3
-    drop @2
+    storage_dead(@3)
+    storage_dead(@2)
     @0 := ()
     drop v@1
-    drop v@1
+    storage_dead(v@1)
     @0 := ()
     return
 }
@@ -185,9 +191,10 @@ pub fn test_crate::use_get<'_0>(@1: &'_0 (core::cell::Cell<u32>)) -> u32
     let rc@1: &'_ (core::cell::Cell<u32>); // arg #1
     let @2: &'_ (core::cell::Cell<u32>); // anonymous local
 
+    storage_live(@2)
     @2 := &*(rc@1)
     @0 := core::cell::{core::cell::Cell<T>}#10::get<'_, u32>[core::marker::Sized<u32>, core::marker::{impl core::marker::Copy for u32}#40](move (@2))
-    drop @2
+    storage_dead(@2)
     return
 }
 
@@ -200,11 +207,13 @@ pub fn test_crate::incr<'_0>(@1: &'_0 mut (core::cell::Cell<u32>))
     let @2: &'_ mut (u32); // anonymous local
     let @3: &'_ mut (core::cell::Cell<u32>); // anonymous local
 
+    storage_live(@2)
+    storage_live(@3)
     @3 := &two-phase-mut *(rc@1)
     @2 := core::cell::{core::cell::Cell<T>}#11::get_mut<'_, u32>(move (@3))
-    drop @3
+    storage_dead(@3)
     *(@2) := copy (*(@2)) + const (1 : u32)
-    drop @2
+    storage_dead(@2)
     @0 := ()
     @0 := ()
     return

@@ -6,7 +6,6 @@
 use std::mem;
 use std::panic;
 
-use super::get_mir::boxes_are_desugared;
 use super::translate_ctx::*;
 use charon_lib::ast::*;
 use charon_lib::common::*;
@@ -281,8 +280,6 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
                         match subplace.ty().kind() {
                             TyKind::Ref(_, _, _) | TyKind::RawPtr(_, _) => {}
                             TyKind::Adt(TypeId::Builtin(BuiltinTy::Box), generics) => {
-                                // This case only happens in some MIR levels
-                                assert!(!boxes_are_desugared(self.t_ctx.options.mir_level));
                                 assert!(generics.regions.is_empty());
                                 assert!(generics.types.elem_count() == 1);
                                 assert!(generics.const_generics.is_empty());
@@ -328,8 +325,6 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
                                         ProjectionElem::Field(proj_kind, field_id)
                                     }
                                     TyKind::Adt(TypeId::Builtin(BuiltinTy::Box), generics) => {
-                                        assert!(!boxes_are_desugared(self.t_ctx.options.mir_level));
-
                                         // Some more sanity checks
                                         assert!(generics.regions.is_empty());
                                         assert!(generics.types.elem_count() == 1);
@@ -931,19 +926,7 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
             StatementKind::Assign((place, rvalue)) => {
                 let t_place = self.translate_place(span, place)?;
                 let t_rvalue = self.translate_rvalue(span, rvalue)?;
-
                 Some(RawStatement::Assign(t_place, t_rvalue))
-            }
-            StatementKind::FakeRead((_read_cause, place)) => {
-                let t_place = self.translate_place(span, place)?;
-
-                Some(RawStatement::FakeRead(t_place))
-            }
-            StatementKind::PlaceMention(place) => {
-                // Simply accesses a place, for use of the borrow checker. Introduced for instance
-                // in place of `let _ = ...`. We desugar it to a fake read.
-                let t_place = self.translate_place(span, place)?;
-                Some(RawStatement::FakeRead(t_place))
             }
             StatementKind::SetDiscriminant {
                 place,
@@ -953,8 +936,10 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
                 let variant_id = translate_variant_id(*variant_index);
                 Some(RawStatement::SetDiscriminant(t_place, variant_id))
             }
-            // We ignore StorageLive
-            StatementKind::StorageLive(_) => None,
+            StatementKind::StorageLive(local) => {
+                let var_id = self.translate_local(local).unwrap();
+                Some(RawStatement::StorageLive(var_id))
+            }
             StatementKind::StorageDead(local) => {
                 let var_id = self.translate_local(local).unwrap();
                 Some(RawStatement::StorageDead(var_id))
@@ -969,6 +954,7 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
                 Some(RawStatement::Assert(Assert {
                     cond: op,
                     expected: true,
+                    on_failure: AbortKind::UndefinedBehavior,
                 }))
             }
             StatementKind::Intrinsic(hax::NonDivergingIntrinsic::CopyNonOverlapping(..)) => {
@@ -976,6 +962,9 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
             }
             // This is for the stacked borrows memory model.
             StatementKind::Retag(_, _) => None,
+            // These two are only there to make borrow-checking accept less code, and are removed
+            // in later MIRs.
+            StatementKind::FakeRead(..) | StatementKind::PlaceMention(..) => None,
             // There are user-provided type annotations with no semantic effect (since we get a
             // fully-typechecked MIR (TODO: this isn't quite true with opaque types, we should
             // really use promoted MIR)).
@@ -1071,6 +1060,7 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
                 let assert = Assert {
                     cond: self.translate_operand(span, cond)?,
                     expected: *expected,
+                    on_failure: AbortKind::Panic(None),
                 };
                 statements.push(Statement::new(span, RawStatement::Assert(assert)));
                 let target = self.translate_basic_block_id(*target);
@@ -1200,7 +1190,7 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
                         // I don't know in which other cases it can be `None`.
                         assert!(target.is_none());
                         // We ignore the arguments
-                        return Ok(RawTerminator::Abort(AbortKind::Panic(name)));
+                        return Ok(RawTerminator::Abort(AbortKind::Panic(Some(name))));
                     }
                     SubstFunIdOrPanic::Fun(fid) => {
                         let fn_operand = FnOperand::Regular(fid.func);

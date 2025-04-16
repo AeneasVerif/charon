@@ -35,6 +35,7 @@ fn remove_dynamic_checks(_ctx: &mut TransformCtx, statements: &mut [Statement]) 
                 RawStatement::Assert(Assert {
                     cond: Operand::Move(cond),
                     expected: true,
+                    ..
                 }),
             ..
         }, rest @ ..]
@@ -66,6 +67,7 @@ fn remove_dynamic_checks(_ctx: &mut TransformCtx, statements: &mut [Statement]) 
                 RawStatement::Assert(Assert {
                     cond: Operand::Move(cond),
                     expected: true,
+                    ..
                 }),
             ..
         }, rest @ ..]
@@ -75,13 +77,9 @@ fn remove_dynamic_checks(_ctx: &mut TransformCtx, statements: &mut [Statement]) 
         }
 
         // Bounds checks for arrays. They look like:
-        //   fake_read(a)
         //   b := copy x < const _
         //   assert(move b == true)
         [Statement {
-            content: RawStatement::FakeRead(_),
-            ..
-        }, Statement {
             content:
                 RawStatement::Assign(is_in_bounds, Rvalue::BinaryOp(BinOp::Lt, _, Operand::Const(_))),
             ..
@@ -90,6 +88,7 @@ fn remove_dynamic_checks(_ctx: &mut TransformCtx, statements: &mut [Statement]) 
                 RawStatement::Assert(Assert {
                     cond: Operand::Move(cond),
                     expected: true,
+                    ..
                 }),
             ..
         }, rest @ ..]
@@ -110,6 +109,7 @@ fn remove_dynamic_checks(_ctx: &mut TransformCtx, statements: &mut [Statement]) 
                 RawStatement::Assert(Assert {
                     cond: Operand::Move(cond),
                     expected,
+                    ..
                 }),
             ..
         }, rest @ ..]
@@ -141,6 +141,7 @@ fn remove_dynamic_checks(_ctx: &mut TransformCtx, statements: &mut [Statement]) 
                 RawStatement::Assert(Assert {
                     cond: Operand::Move(cond),
                     expected,
+                    ..
                 }),
             ..
         }, rest @ ..]
@@ -171,6 +172,7 @@ fn remove_dynamic_checks(_ctx: &mut TransformCtx, statements: &mut [Statement]) 
                 RawStatement::Assert(Assert {
                     cond: Operand::Move(cond),
                     expected,
+                    ..
                 }),
             ..
         }, rest @ ..]
@@ -193,6 +195,7 @@ fn remove_dynamic_checks(_ctx: &mut TransformCtx, statements: &mut [Statement]) 
                 RawStatement::Assert(Assert {
                     cond: Operand::Move(cond),
                     expected,
+                    ..
                 }),
             ..
         }, rest @ ..]
@@ -218,6 +221,7 @@ fn remove_dynamic_checks(_ctx: &mut TransformCtx, statements: &mut [Statement]) 
                 RawStatement::Assert(Assert {
                     cond: Operand::Move(cond),
                     expected,
+                    ..
                 }),
             ..
         }, ..]

@@ -77,13 +77,19 @@ impl TransformPass for Transform {
                     Body::Unstructured(b) => {
                         for block in &mut b.body {
                             for st in &mut block.statements {
-                                ctx.visit(st);
+                                // Many assignments have a `storage_live` before them; we don't
+                                // want to put the comment there.
+                                if !st.content.is_storage_live() {
+                                    ctx.visit(st);
+                                }
                             }
                             ctx.visit(&mut block.terminator);
                         }
                     }
                     Body::Structured(b) => b.body.visit_statements(|st| {
-                        ctx.visit(st);
+                        if !st.content.is_storage_live() {
+                            ctx.visit(st);
+                        }
                     }),
                 }
             }

@@ -24,9 +24,10 @@ fn test_crate::{test_crate::Bar<'a>}#1::new<'a>(@1: &'a (i32)) -> test_crate::Ba
     let r@1: &'_ (i32); // arg #1
     let @2: &'_ (i32); // anonymous local
 
+    storage_live(@2)
     @2 := copy (r@1)
     @0 := test_crate::Bar { r: move (@2) }
-    drop @2
+    storage_dead(@2)
     return
 }
 

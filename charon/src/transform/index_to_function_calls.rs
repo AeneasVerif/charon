@@ -291,13 +291,10 @@ impl UllbcPass for Transform {
 
                 use RawStatement::*;
                 match &mut st.content {
-                    FakeRead(..) => {
-                        let _ = visitor.visit_inner_with_mutability(st, false);
-                    }
                     Assign(..) | SetDiscriminant(..) | Drop(..) | Deinit(..) => {
                         let _ = visitor.visit_inner_with_mutability(st, true);
                     }
-                    Nop | Error(..) | Assert(..) | Call(..) | StorageDead(..) => {
+                    Nop | Error(..) | Assert(..) | Call(..) | StorageDead(..) | StorageLive(..) => {
                         let _ = st.drive_body_mut(&mut visitor);
                     }
                 }

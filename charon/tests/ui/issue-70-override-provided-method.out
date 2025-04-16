@@ -39,17 +39,21 @@ fn test_crate::main()
     let @4: &'_ (core::option::Option<i32>[core::marker::Sized<i32>]); // anonymous local
     let @5: core::option::Option<i32>[core::marker::Sized<i32>]; // anonymous local
 
+    storage_live(@1)
+    storage_live(@2)
+    storage_live(@3)
     @3 := core::option::Option::Some { 0: const (1 : i32) }
     @2 := &@3
+    storage_live(@4)
+    storage_live(@5)
     @5 := core::option::Option::Some { 0: const (1 : i32) }
     @4 := &@5
     @1 := core::option::{impl core::cmp::PartialEq<core::option::Option<T>[@TraitClause0]> for core::option::Option<T>[@TraitClause0]}#15::eq<'_, '_, i32>[core::marker::Sized<i32>, core::cmp::impls::{impl core::cmp::PartialEq<i32> for i32}#30](move (@2), move (@4))
-    drop @4
-    drop @2
-    @fake_read(@1)
-    drop @5
-    drop @3
-    drop @1
+    storage_dead(@4)
+    storage_dead(@2)
+    storage_dead(@5)
+    storage_dead(@3)
+    storage_dead(@1)
     @0 := ()
     @0 := ()
     return
@@ -73,11 +77,13 @@ pub fn test_crate::{impl core::cmp::PartialEq<test_crate::Foo> for test_crate::F
     let @3: u32; // anonymous local
     let @4: u32; // anonymous local
 
+    storage_live(@3)
     @3 := copy ((*(self@1)).0)
+    storage_live(@4)
     @4 := copy ((*(other@2)).0)
     @0 := move (@3) == move (@4)
-    drop @4
-    drop @3
+    storage_dead(@4)
+    storage_dead(@3)
     return
 }
 
@@ -112,15 +118,19 @@ pub fn test_crate::{impl core::cmp::PartialOrd<test_crate::Foo> for test_crate::
     let @5: &'_ (u32); // anonymous local
     let @6: &'_ (u32); // anonymous local
 
+    storage_live(@3)
+    storage_live(@4)
     @4 := &(*(self@1)).0
     @3 := &*(@4)
+    storage_live(@5)
+    storage_live(@6)
     @6 := &(*(other@2)).0
     @5 := &*(@6)
     @0 := core::cmp::impls::{impl core::cmp::PartialOrd<u32> for u32}#64::partial_cmp<'_, '_>(move (@3), move (@5))
-    drop @6
-    drop @5
-    drop @4
-    drop @3
+    storage_dead(@6)
+    storage_dead(@5)
+    storage_dead(@4)
+    storage_dead(@3)
     return
 }
 

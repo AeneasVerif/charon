@@ -37,9 +37,10 @@ where
     let it@1: Clause1_IntoIter; // arg #1
     let @2: Clause1_IntoIter; // anonymous local
 
+    storage_live(@2)
     @2 := move (it@1)
     @0 := test_crate::takes_trait<Clause1_IntoIter, ()>[@TraitClause1::parent_clause0, @TraitClause1::parent_clause1](move (@2))
-    drop @2
+    storage_dead(@2)
     drop it@1
     @0 := ()
     return

@@ -47,6 +47,8 @@ pub fn test_crate::{impl core::cmp::PartialEq<test_crate::Enum> for test_crate::
     let @15: &'_ (&'_ (u8)); // anonymous local
     let @16: &'_ (&'_ (u8)); // anonymous local
 
+    storage_live(__self_discr@3)
+    storage_live(@4)
     @4 := &*(self@1)
     match *(@4) {
         0 => {
@@ -56,8 +58,9 @@ pub fn test_crate::{impl core::cmp::PartialEq<test_crate::Enum> for test_crate::
             __self_discr@3 := const (1 : isize)
         },
     }
-    drop @4
-    @fake_read(__self_discr@3)
+    storage_dead(@4)
+    storage_live(__arg1_discr@5)
+    storage_live(@6)
     @6 := &*(other@2)
     match *(@6) {
         0 => {
@@ -67,33 +70,41 @@ pub fn test_crate::{impl core::cmp::PartialEq<test_crate::Enum> for test_crate::
             __arg1_discr@5 := const (1 : isize)
         },
     }
-    drop @6
-    @fake_read(__arg1_discr@5)
+    storage_dead(@6)
+    storage_live(@7)
+    storage_live(@8)
     @8 := copy (__self_discr@3)
+    storage_live(@9)
     @9 := copy (__arg1_discr@5)
     @7 := move (@8) == move (@9)
     if move (@7) {
-        drop @9
-        drop @8
+        storage_dead(@9)
+        storage_dead(@8)
+        storage_live(@10)
+        storage_live(@11)
         @11 := copy (self@1)
+        storage_live(@12)
         @12 := copy (other@2)
         @10 := (move (@11), move (@12))
-        drop @12
-        drop @11
-        @fake_read(@10)
+        storage_dead(@12)
+        storage_dead(@11)
         match *((@10).0) {
             0 => {
                 match *((@10).1) {
                     0 => {
+                        storage_live(__self_0@13)
                         __self_0@13 := &(*((@10).0) as variant @0).0
+                        storage_live(__arg1_0@14)
                         __arg1_0@14 := &(*((@10).1) as variant @0).0
+                        storage_live(@15)
                         @15 := &__self_0@13
+                        storage_live(@16)
                         @16 := &__arg1_0@14
                         @0 := core::cmp::impls::{impl core::cmp::PartialEq<&'_0 (B)> for &'_1 (A)}#9::eq<'_, '_, '_, '_, u8, u8>[core::cmp::impls::{impl core::cmp::PartialEq<u8> for u8}#22](move (@15), move (@16))
-                        drop @16
-                        drop @15
-                        drop __arg1_0@14
-                        drop __self_0@13
+                        storage_dead(@16)
+                        storage_dead(@15)
+                        storage_dead(__arg1_0@14)
+                        storage_dead(__self_0@13)
                     },
                     _ => {
                         @0 := const (true)
@@ -104,16 +115,16 @@ pub fn test_crate::{impl core::cmp::PartialEq<test_crate::Enum> for test_crate::
                 @0 := const (true)
             },
         }
-        drop @10
+        storage_dead(@10)
     }
     else {
-        drop @9
-        drop @8
+        storage_dead(@9)
+        storage_dead(@8)
         @0 := const (false)
     }
-    drop @7
-    drop __arg1_discr@5
-    drop __self_discr@3
+    storage_dead(@7)
+    storage_dead(__arg1_discr@5)
+    storage_dead(__self_discr@3)
     return
 }
 

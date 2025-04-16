@@ -21,12 +21,16 @@ module Ast = struct
     match st with
     | Assign (p, rv) ->
         indent ^ place_to_string env p ^ " := " ^ rvalue_to_string env rv
-    | FakeRead p -> indent ^ "fake_read " ^ place_to_string env p
     | SetDiscriminant (p, variant_id) ->
         (* TODO: improve this to lookup the variant name by using the def id *)
         indent ^ "set_discriminant(" ^ place_to_string env p ^ ", "
         ^ VariantId.to_string variant_id
         ^ ")"
+    | StorageLive var_id ->
+        indent ^ "storage_live " ^ local_id_to_string env var_id
+    | StorageDead var_id ->
+        indent ^ "storage_dead " ^ local_id_to_string env var_id
+    | Deinit p -> indent ^ "deinit " ^ place_to_string env p
     | Drop p -> indent ^ "drop " ^ place_to_string env p
     | Assert a -> assertion_to_string env indent a
     | Call call -> call_to_string env indent call

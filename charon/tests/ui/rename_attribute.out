@@ -43,19 +43,22 @@ where
     let @3: &'_ (bool); // anonymous local
     let @4: &'_ (bool); // anonymous local
 
+    storage_live(@2)
+    storage_live(@3)
     @3 := &x@1
     @2 := test_crate::{impl test_crate::BoolTrait for bool}::get_bool<'_>(move (@3))
     if move (@2) {
-        drop @3
+        storage_dead(@3)
+        storage_live(@4)
         @4 := &x@1
         @0 := test_crate::{impl test_crate::BoolTrait for bool}::ret_true<'_>(move (@4))
-        drop @4
+        storage_dead(@4)
     }
     else {
-        drop @3
+        storage_dead(@3)
         @0 := const (false)
     }
-    drop @2
+    storage_dead(@2)
     return
 }
 
@@ -77,9 +80,10 @@ fn test_crate::C() -> u32
     let @0: u32; // return
     let @1: u32; // anonymous local
 
+    storage_live(@1)
     @1 := const (100 : u32) + const (10 : u32)
     @0 := copy (@1) + const (1 : u32)
-    drop @1
+    storage_dead(@1)
     return
 }
 

@@ -100,45 +100,54 @@ where
     let @15: *const T; // anonymous local
     let @16: core::option::Option<&'_ (Slice<T>)>[core::marker::Sized<&'_ (Slice<T>)>]; // anonymous local
 
+    storage_live(@3)
     self@4 := copy ((self@1).end)
     rhs@5 := copy ((self@1).start)
+    storage_live(@12)
     @12 := copy (self@4) < copy (rhs@5)
     if move (@12) {
-        drop @12
-        drop @3
+        storage_dead(@12)
+        storage_dead(@3)
         @16 := core::option::Option::None {  }
         @0 := move (@16)
     }
     else {
+        storage_live(@13)
         @13 := copy (self@4) - copy (rhs@5)
         @3 := core::option::Option::Some { 0: move (@13) }
-        drop @13
-        drop @12
+        storage_dead(@13)
+        storage_dead(@12)
         new_len@6 := copy ((@3 as variant @1).0)
+        storage_live(@7)
+        storage_live(@8)
         @8 := ptr_metadata(copy (slice@2))
         @7 := copy (self@4) <= move (@8)
         if move (@7) {
-            drop @8
+            storage_dead(@8)
+            storage_live(@10)
+            storage_live(@11)
             @11 := &raw const *(slice@2)
+            storage_live(@14)
+            storage_live(@15)
             @15 := cast<*const Slice<T>, *const T>(copy (@11))
             @14 := copy (@15) offset copy (rhs@5)
-            drop @15
+            storage_dead(@15)
             @10 := @PtrFromPartsShared<'_, Slice<T>>(copy (@14), copy (new_len@6))
-            drop @14
-            drop @11
+            storage_dead(@14)
+            storage_dead(@11)
             @9 := &*(@10)
             @0 := core::option::Option::Some { 0: copy (@9) }
-            drop @10
-            drop @3
+            storage_dead(@10)
+            storage_dead(@3)
         }
         else {
-            drop @8
-            drop @3
+            storage_dead(@8)
+            storage_dead(@3)
             @16 := core::option::Option::None {  }
             @0 := move (@16)
         }
     }
-    drop @7
+    storage_dead(@7)
     return
 }
 
@@ -164,45 +173,54 @@ where
     let @15: *mut T; // anonymous local
     let @16: core::option::Option<&'_ mut (Slice<T>)>[core::marker::Sized<&'_ mut (Slice<T>)>]; // anonymous local
 
+    storage_live(@3)
     self@4 := copy ((self@1).end)
     rhs@5 := copy ((self@1).start)
+    storage_live(@12)
     @12 := copy (self@4) < copy (rhs@5)
     if move (@12) {
-        drop @12
-        drop @3
+        storage_dead(@12)
+        storage_dead(@3)
         @16 := core::option::Option::None {  }
         @0 := move (@16)
     }
     else {
+        storage_live(@13)
         @13 := copy (self@4) - copy (rhs@5)
         @3 := core::option::Option::Some { 0: move (@13) }
-        drop @13
-        drop @12
+        storage_dead(@13)
+        storage_dead(@12)
         new_len@6 := copy ((@3 as variant @1).0)
+        storage_live(@7)
+        storage_live(@8)
         @8 := ptr_metadata(copy (slice@2))
         @7 := copy (self@4) <= move (@8)
         if move (@7) {
-            drop @8
+            storage_dead(@8)
+            storage_live(@10)
+            storage_live(ptr@11)
             ptr@11 := &raw mut *(slice@2)
+            storage_live(@14)
+            storage_live(@15)
             @15 := cast<*mut Slice<T>, *mut T>(copy (ptr@11))
             @14 := copy (@15) offset copy (rhs@5)
-            drop @15
+            storage_dead(@15)
             @10 := @PtrFromPartsMut<'_, Slice<T>>(copy (@14), copy (new_len@6))
-            drop @14
-            drop ptr@11
+            storage_dead(@14)
+            storage_dead(ptr@11)
             @9 := &mut *(@10)
             @0 := core::option::Option::Some { 0: copy (@9) }
-            drop @10
-            drop @3
+            storage_dead(@10)
+            storage_dead(@3)
         }
         else {
-            drop @8
-            drop @3
+            storage_dead(@8)
+            storage_dead(@3)
             @16 := core::option::Option::None {  }
             @0 := move (@16)
         }
     }
-    drop @7
+    storage_dead(@7)
     return
 }
 
@@ -219,12 +237,14 @@ fn core::slice::index::{impl core::slice::index::SliceIndex<Slice<T>> for core::
     let @5: bool; // anonymous local
     let @6: !; // anonymous local
 
+    storage_live(@4)
     @4 := copy (end@2) >= copy (start@1)
     if move (@4) {
+        storage_live(@5)
         @5 := copy (end@2) <= copy (len@3)
         if move (@5) {
-            drop @5
-            drop @4
+            storage_dead(@5)
+            storage_dead(@4)
             @0 := ()
             return
         }
@@ -254,28 +274,35 @@ where
     let @11: *const T; // anonymous local
     let @12: *const T; // anonymous local
 
+    storage_live(@3)
     @3 := ub_checks<bool>
     if move (@3) {
+        storage_live(@5)
         @5 := copy ((self@1).start)
+        storage_live(@6)
         @6 := copy ((self@1).end)
+        storage_live(@7)
         @7 := ptr_metadata(copy (slice@2))
         @4 := core::slice::index::{impl core::slice::index::SliceIndex<Slice<T>> for core::ops::range::Range<usize>[core::marker::Sized<usize>]}#4::get_unchecked::precondition_check(move (@5), move (@6), move (@7))
-        drop @7
-        drop @6
-        drop @5
+        storage_dead(@7)
+        storage_dead(@6)
+        storage_dead(@5)
     }
     else {
     }
-    drop @3
+    storage_dead(@3)
+    storage_live(@9)
     @9 := copy ((self@1).end)
     offset@10 := copy ((self@1).start)
     new_len@8 := move (@9) - copy (offset@10)
-    drop @9
+    storage_dead(@9)
+    storage_live(@11)
+    storage_live(@12)
     @12 := cast<*const Slice<T>, *const T>(copy (slice@2))
     @11 := copy (@12) offset copy (offset@10)
-    drop @12
+    storage_dead(@12)
     @0 := @PtrFromPartsShared<'_, Slice<T>>(copy (@11), copy (new_len@8))
-    drop @11
+    storage_dead(@11)
     return
 }
 
@@ -289,12 +316,14 @@ fn core::slice::index::{impl core::slice::index::SliceIndex<Slice<T>> for core::
     let @5: bool; // anonymous local
     let @6: !; // anonymous local
 
+    storage_live(@4)
     @4 := copy (end@2) >= copy (start@1)
     if move (@4) {
+        storage_live(@5)
         @5 := copy (end@2) <= copy (len@3)
         if move (@5) {
-            drop @5
-            drop @4
+            storage_dead(@5)
+            storage_dead(@4)
             @0 := ()
             return
         }
@@ -324,28 +353,35 @@ where
     let @11: *mut T; // anonymous local
     let @12: *mut T; // anonymous local
 
+    storage_live(@3)
     @3 := ub_checks<bool>
     if move (@3) {
+        storage_live(@5)
         @5 := copy ((self@1).start)
+        storage_live(@6)
         @6 := copy ((self@1).end)
+        storage_live(@7)
         @7 := ptr_metadata(copy (slice@2))
         @4 := core::slice::index::{impl core::slice::index::SliceIndex<Slice<T>> for core::ops::range::Range<usize>[core::marker::Sized<usize>]}#4::get_unchecked_mut::precondition_check(move (@5), move (@6), move (@7))
-        drop @7
-        drop @6
-        drop @5
+        storage_dead(@7)
+        storage_dead(@6)
+        storage_dead(@5)
     }
     else {
     }
-    drop @3
+    storage_dead(@3)
+    storage_live(@9)
     @9 := copy ((self@1).end)
     offset@10 := copy ((self@1).start)
     new_len@8 := move (@9) - copy (offset@10)
-    drop @9
+    storage_dead(@9)
+    storage_live(@11)
+    storage_live(@12)
     @12 := cast<*mut Slice<T>, *mut T>(copy (slice@2))
     @11 := copy (@12) offset copy (offset@10)
-    drop @12
+    storage_dead(@12)
     @0 := @PtrFromPartsMut<'_, Slice<T>>(copy (@11), copy (new_len@8))
-    drop @11
+    storage_dead(@11)
     return
 }
 
@@ -368,7 +404,9 @@ fn core::slice::index::slice_end_index_len_fail(@1: usize, @2: usize) -> !
     let @3: usize; // anonymous local
     let @4: usize; // anonymous local
 
+    storage_live(@3)
     @3 := copy (index@1)
+    storage_live(@4)
     @4 := copy (len@2)
     @0 := core::slice::index::slice_end_index_len_fail::do_panic(move (@3), move (@4))
 }
@@ -392,7 +430,9 @@ fn core::slice::index::slice_index_order_fail(@1: usize, @2: usize) -> !
     let @3: usize; // anonymous local
     let @4: usize; // anonymous local
 
+    storage_live(@3)
     @3 := copy (index@1)
+    storage_live(@4)
     @4 := copy (end@2)
     @0 := core::slice::index::slice_index_order_fail::do_panic(move (@3), move (@4))
 }
@@ -419,39 +459,47 @@ where
     let @15: *const T; // anonymous local
     let @16: *const T; // anonymous local
 
+    storage_live(@5)
     self@6 := copy ((self@1).end)
     rhs@7 := copy ((self@1).start)
+    storage_live(@13)
     @13 := copy (self@6) < copy (rhs@7)
     if move (@13) {
     }
     else {
+        storage_live(@14)
         @14 := copy (self@6) - copy (rhs@7)
         @5 := core::option::Option::Some { 0: move (@14) }
-        drop @14
-        drop @13
+        storage_dead(@14)
+        storage_dead(@13)
         new_len@4 := copy ((@5 as variant @1).0)
-        drop @5
+        storage_dead(@5)
+        storage_live(@8)
         @9 := ptr_metadata(copy (slice@2))
         @8 := copy (self@6) > copy (@9)
         if move (@8) {
         }
         else {
-            drop @8
+            storage_dead(@8)
+            storage_live(@11)
+            storage_live(@12)
             @12 := &raw const *(slice@2)
+            storage_live(@15)
+            storage_live(@16)
             @16 := cast<*const Slice<T>, *const T>(copy (@12))
             @15 := copy (@16) offset copy (rhs@7)
-            drop @16
+            storage_dead(@16)
             @11 := @PtrFromPartsShared<'_, Slice<T>>(copy (@15), copy (new_len@4))
-            drop @15
-            drop @12
+            storage_dead(@15)
+            storage_dead(@12)
             @0 := &*(@11)
-            drop @11
+            storage_dead(@11)
             return
         }
         @10 := core::slice::index::slice_end_index_len_fail(move (self@6), move (@9))
     }
-    drop @13
-    drop @5
+    storage_dead(@13)
+    storage_dead(@5)
     @3 := core::slice::index::slice_index_order_fail(move (rhs@7), move (self@6))
 }
 
@@ -477,39 +525,47 @@ where
     let @15: *mut T; // anonymous local
     let @16: *mut T; // anonymous local
 
+    storage_live(@5)
     self@6 := copy ((self@1).end)
     rhs@7 := copy ((self@1).start)
+    storage_live(@13)
     @13 := copy (self@6) < copy (rhs@7)
     if move (@13) {
     }
     else {
+        storage_live(@14)
         @14 := copy (self@6) - copy (rhs@7)
         @5 := core::option::Option::Some { 0: move (@14) }
-        drop @14
-        drop @13
+        storage_dead(@14)
+        storage_dead(@13)
         new_len@4 := copy ((@5 as variant @1).0)
-        drop @5
+        storage_dead(@5)
+        storage_live(@8)
         @9 := ptr_metadata(copy (slice@2))
         @8 := copy (self@6) > copy (@9)
         if move (@8) {
         }
         else {
-            drop @8
+            storage_dead(@8)
+            storage_live(@11)
+            storage_live(ptr@12)
             ptr@12 := &raw mut *(slice@2)
+            storage_live(@15)
+            storage_live(@16)
             @16 := cast<*mut Slice<T>, *mut T>(copy (ptr@12))
             @15 := copy (@16) offset copy (rhs@7)
-            drop @16
+            storage_dead(@16)
             @11 := @PtrFromPartsMut<'_, Slice<T>>(copy (@15), copy (new_len@4))
-            drop @15
-            drop ptr@12
+            storage_dead(@15)
+            storage_dead(ptr@12)
             @0 := &mut *(@11)
-            drop @11
+            storage_dead(@11)
             return
         }
         @10 := core::slice::index::slice_end_index_len_fail(move (self@6), move (@9))
     }
-    drop @13
-    drop @5
+    storage_dead(@13)
+    storage_dead(@5)
     @3 := core::slice::index::slice_index_order_fail(move (rhs@7), move (self@6))
 }
 
@@ -542,15 +598,22 @@ fn test_crate::main()
     let @10: &'_ (Slice<i32>); // anonymous local
     let @11: &'_ (i32); // anonymous local
 
+    storage_live(array@1)
     array@1 := [const (1 : i32), const (2 : i32), const (3 : i32), const (4 : i32), const (5 : i32), const (6 : i32)]
-    @fake_read(array@1)
+    storage_live(slice@2)
+    storage_live(@3)
+    storage_live(@4)
     @4 := &array@1
+    storage_live(@5)
     @5 := core::ops::range::Range { start: const (2 : usize), end: const (5 : usize) }
     @3 := core::array::{impl core::ops::index::Index<I> for Array<T, const N : usize>}#15::index<'_, i32, core::ops::range::Range<usize>[core::marker::Sized<usize>], 6 : usize>[core::marker::Sized<i32>, core::marker::Sized<core::ops::range::Range<usize>[core::marker::Sized<usize>]>, core::slice::index::{impl core::ops::index::Index<I> for Slice<T>}<i32, core::ops::range::Range<usize>[core::marker::Sized<usize>]>[core::marker::Sized<i32>, core::marker::Sized<core::ops::range::Range<usize>[core::marker::Sized<usize>]>, core::slice::index::{impl core::slice::index::SliceIndex<Slice<T>> for core::ops::range::Range<usize>[core::marker::Sized<usize>]}#4<i32>[core::marker::Sized<i32>]]](move (@4), move (@5))
-    drop @5
-    drop @4
+    storage_dead(@5)
+    storage_dead(@4)
     slice@2 := &*(@3)
-    @fake_read(slice@2)
+    storage_live(@6)
+    storage_live(@7)
+    storage_live(@8)
+    storage_live(@9)
     @9 := const (0 : usize)
     @10 := &*(slice@2)
     @11 := @SliceIndexShared<'_, i32>(move (@10), copy (@9))
@@ -559,18 +622,18 @@ fn test_crate::main()
     if move (@7) {
     }
     else {
-        drop @8
-        drop @9
+        storage_dead(@8)
+        storage_dead(@9)
         panic(core::panicking::panic)
     }
-    drop @8
-    drop @9
-    drop @7
-    drop @6
+    storage_dead(@8)
+    storage_dead(@9)
+    storage_dead(@7)
+    storage_dead(@6)
     @0 := ()
-    drop @3
-    drop slice@2
-    drop array@1
+    storage_dead(@3)
+    storage_dead(slice@2)
+    storage_dead(array@1)
     @0 := ()
     return
 }

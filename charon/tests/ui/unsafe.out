@@ -19,15 +19,16 @@ fn test_crate::call_unsafe_fn()
     let @2: u32; // anonymous local
     let @3: *const u32; // anonymous local
 
+    storage_live(x@1)
     x@1 := core::ptr::null<u32>[core::ptr::metadata::Thin<u32>]()
-    @fake_read(x@1)
+    storage_live(@2)
+    storage_live(@3)
     @3 := copy (x@1)
     @2 := core::ptr::const_ptr::{*const T}::read<u32>[core::marker::Sized<u32>](move (@3))
-    drop @3
-    @fake_read(@2)
-    drop @2
+    storage_dead(@3)
+    storage_dead(@2)
     @0 := ()
-    drop x@1
+    storage_dead(x@1)
     @0 := ()
     return
 }
@@ -38,13 +39,13 @@ fn test_crate::deref_raw_ptr()
     let x@1: *const u32; // local
     let @2: u32; // anonymous local
 
+    storage_live(x@1)
     x@1 := core::ptr::null<u32>[core::ptr::metadata::Thin<u32>]()
-    @fake_read(x@1)
+    storage_live(@2)
     @2 := copy (*(x@1))
-    @fake_read(@2)
-    drop @2
+    storage_dead(@2)
     @0 := ()
-    drop x@1
+    storage_dead(x@1)
     @0 := ()
     return
 }
@@ -69,10 +70,11 @@ fn test_crate::access_mutable_static()
     let @1: *mut usize; // anonymous local
     let @2: *mut usize; // anonymous local
 
+    storage_live(@1)
     @2 := &raw mut test_crate::COUNTER
     @1 := move (@2)
     *(@1) := copy (*(@1)) + const (1 : usize)
-    drop @1
+    storage_dead(@1)
     @0 := ()
     @0 := ()
     return
@@ -90,13 +92,13 @@ fn test_crate::access_union_field()
     let one@1: test_crate::Foo; // local
     let _two@2: Array<u32, 2 : usize>; // local
 
+    storage_live(one@1)
     one@1 := test_crate::Foo { one: const (42 : u64) }
-    @fake_read(one@1)
+    storage_live(_two@2)
     _two@2 := copy ((one@1).two)
-    @fake_read(_two@2)
     @0 := ()
-    drop _two@2
-    drop one@1
+    storage_dead(_two@2)
+    storage_dead(one@1)
     @0 := ()
     return
 }

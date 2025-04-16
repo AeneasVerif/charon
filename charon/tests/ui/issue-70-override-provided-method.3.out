@@ -90,20 +90,23 @@ where
     let @4: &'_ (U); // anonymous local
     let @5: &'_ (core::option::Option<T>[@TraitClause0]); // anonymous local
 
+    storage_live(@3)
+    storage_live(@4)
     @4 := &y@2
+    storage_live(@5)
     @5 := &x@1
     @3 := @TraitClause3::eq<'_, '_>(move (@4), move (@5))
     if move (@3) {
-        drop @5
-        drop @4
+        storage_dead(@5)
+        storage_dead(@4)
         @0 := test_crate::{impl test_crate::GenericTrait<core::option::Option<T>[@TraitClause0]> for test_crate::Override<T>[@TraitClause0]}::other_method<T>[@TraitClause0, @TraitClause1]()
     }
     else {
-        drop @5
-        drop @4
+        storage_dead(@5)
+        storage_dead(@4)
         @0 := ()
     }
-    drop @3
+    storage_dead(@3)
     drop y@2
     @0 := ()
     return
@@ -154,20 +157,23 @@ where
     let @4: &'_ (U); // anonymous local
     let @5: &'_ (core::option::Option<T>[@TraitClause0]); // anonymous local
 
+    storage_live(@3)
+    storage_live(@4)
     @4 := &y@2
+    storage_live(@5)
     @5 := &x@1
     @3 := @TraitClause3::eq<'_, '_>(move (@4), move (@5))
     if move (@3) {
-        drop @5
-        drop @4
+        storage_dead(@5)
+        storage_dead(@4)
         @0 := test_crate::{impl test_crate::GenericTrait<core::option::Option<T>[@TraitClause0]> for test_crate::NoOverride<T>[@TraitClause0]}#1::other_method<T>[@TraitClause0, @TraitClause1]()
     }
     else {
-        drop @5
-        drop @4
+        storage_dead(@5)
+        storage_dead(@4)
         @0 := ()
     }
-    drop @3
+    storage_dead(@3)
     drop y@2
     drop x@1
     @0 := ()
@@ -199,20 +205,23 @@ where
     let @4: &'_ (U); // anonymous local
     let @5: &'_ (T); // anonymous local
 
+    storage_live(@3)
+    storage_live(@4)
     @4 := &y@2
+    storage_live(@5)
     @5 := &x@1
     @3 := @TraitClause1::eq<'_, '_>(move (@4), move (@5))
     if move (@3) {
-        drop @5
-        drop @4
+        storage_dead(@5)
+        storage_dead(@4)
         @0 := Self::other_method()
     }
     else {
-        drop @5
-        drop @4
+        storage_dead(@5)
+        storage_dead(@4)
         @0 := ()
     }
-    drop @3
+    storage_dead(@3)
     drop y@2
     drop x@1
     @0 := ()

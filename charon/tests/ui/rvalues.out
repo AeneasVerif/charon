@@ -9,21 +9,22 @@ fn test_crate::addr_of()
     let @4: *const u32; // anonymous local
     let @5: *mut u32; // anonymous local
 
+    storage_live(x@1)
     x@1 := const (0 : u32)
-    @fake_read(x@1)
+    storage_live(@2)
+    storage_live(@3)
     @3 := &x@1
     @2 := &raw const *(@3)
-    @fake_read(@2)
-    drop @3
-    drop @2
+    storage_dead(@3)
+    storage_dead(@2)
+    storage_live(@4)
     @4 := &raw const x@1
-    @fake_read(@4)
-    drop @4
+    storage_dead(@4)
+    storage_live(@5)
     @5 := &raw mut x@1
-    @fake_read(@5)
-    drop @5
+    storage_dead(@5)
     @0 := ()
-    drop x@1
+    storage_dead(x@1)
     @0 := ()
     return
 }
@@ -47,23 +48,23 @@ fn test_crate::literal_casts()
     let @6: f64; // anonymous local
     let @7: f32; // anonymous local
 
+    storage_live(@1)
     @1 := cast<u64, u8>(const (0 : u64))
-    @fake_read(@1)
-    drop @1
+    storage_dead(@1)
+    storage_live(@2)
     @2 := cast<u8, u64>(const (0 : u8))
-    @fake_read(@2)
-    drop @2
+    storage_dead(@2)
+    storage_live(@3)
     @3 := cast<u64, f64>(const (0 : u64))
-    @fake_read(@3)
-    drop @3
+    storage_dead(@3)
+    storage_live(@4)
     @6 := core::f64::{f64}::MIN
     @4 := cast<f64, u64>(move (@6))
-    @fake_read(@4)
-    drop @4
+    storage_dead(@4)
+    storage_live(@5)
     @7 := core::f32::{f32}::MAX
     @5 := cast<f32, f64>(move (@7))
-    @fake_read(@5)
-    drop @5
+    storage_dead(@5)
     @0 := ()
     @0 := ()
     return
@@ -99,49 +100,58 @@ fn test_crate::ptr_casts()
     let @16: *const u8; // anonymous local
     let @17: fn(); // anonymous local
 
+    storage_live(array_ptr@1)
+    storage_live(@2)
+    storage_live(@3)
     @3 := @ArrayRepeat<'_, u32, 64 : usize>(const (0 : u32))
     @2 := &@3
     array_ptr@1 := &raw const *(@2)
-    @fake_read(array_ptr@1)
-    drop @2
+    storage_dead(@2)
+    storage_live(@4)
+    storage_live(@5)
     @5 := copy (array_ptr@1)
     @4 := cast<*const Array<u32, 64 : usize>, *const u32>(move (@5))
-    drop @5
-    @fake_read(@4)
-    drop @4
+    storage_dead(@5)
+    storage_dead(@4)
+    storage_live(x@6)
     x@6 := const (0 : u8)
-    @fake_read(x@6)
+    storage_live(x@7)
+    storage_live(@8)
     @8 := &x@6
     x@7 := &raw const *(@8)
-    @fake_read(x@7)
-    drop @8
+    storage_dead(@8)
+    storage_live(@9)
+    storage_live(@10)
+    storage_live(@11)
+    storage_live(@12)
     @12 := copy (x@7)
     @11 := cast<*const u8, *mut u8>(move (@12))
     @10 := cast<*mut u8, *const u8>(move (@11))
-    drop @12
-    drop @11
+    storage_dead(@12)
+    storage_dead(@11)
     @9 := cast<*const u8, *const u8>(move (@10))
-    drop @10
-    @fake_read(@9)
-    drop @9
+    storage_dead(@10)
+    storage_dead(@9)
+    storage_live(@13)
+    storage_live(@14)
     @14 := copy (x@7)
     @13 := cast<*const u8, usize>(move (@14))
-    drop @14
-    @fake_read(@13)
-    drop @13
+    storage_dead(@14)
+    storage_dead(@13)
+    storage_live(@15)
     @15 := cast<usize, *const u8>(const (0 : usize))
-    @fake_read(@15)
-    drop @15
+    storage_dead(@15)
+    storage_live(@16)
+    storage_live(@17)
     @17 := cast<fn(), fn()>(const (test_crate::ptr_casts::foo))
     @16 := cast<fn(), *const u8>(move (@17))
-    drop @17
-    @fake_read(@16)
-    drop @16
+    storage_dead(@17)
+    storage_dead(@16)
     @0 := ()
-    drop x@7
-    drop x@6
-    drop @3
-    drop array_ptr@1
+    storage_dead(x@7)
+    storage_dead(x@6)
+    storage_dead(@3)
+    storage_dead(array_ptr@1)
     @0 := ()
     return
 }
@@ -186,26 +196,28 @@ fn test_crate::fn_casts()
     let @6: fn(u8); // anonymous local
     let @7: fn(u8); // anonymous local
 
+    storage_live(@1)
     @1 := cast<fn(), fn()>(const (test_crate::fn_casts::foo))
-    @fake_read(@1)
-    drop @1
+    storage_dead(@1)
+    storage_live(@2)
     @2 := cast<fn(), fn()>(const (test_crate::fn_casts::bar))
-    @fake_read(@2)
-    drop @2
+    storage_dead(@2)
+    storage_live(closure@3)
     closure@3 := {test_crate::fn_casts::closure} {}
-    @fake_read(closure@3)
+    storage_live(@4)
+    storage_live(@5)
     @5 := copy (closure@3)
     @4 := cast<fn(u8), fn(u8)>(move (@5))
-    drop @5
-    @fake_read(@4)
-    drop @4
+    storage_dead(@5)
+    storage_dead(@4)
+    storage_live(@6)
+    storage_live(@7)
     @7 := copy (closure@3)
     @6 := cast<fn(u8), fn(u8)>(move (@7))
-    drop @7
-    @fake_read(@6)
-    drop @6
+    storage_dead(@7)
+    storage_dead(@6)
     @0 := ()
-    drop closure@3
+    storage_dead(closure@3)
     @0 := ()
     return
 }
@@ -222,13 +234,14 @@ fn test_crate::boxes()
     let @1: alloc::boxed::Box<i32>[core::marker::Sized<alloc::alloc::Global>]; // anonymous local
     let @2: alloc::boxed::Box<i32>[core::marker::Sized<alloc::alloc::Global>]; // anonymous local
 
+    storage_live(@1)
+    storage_live(@2)
     @2 := @BoxNew<i32>[core::marker::Sized<alloc::alloc::Global>](const (42 : i32))
     @1 := move (@2)
     drop @2
-    drop @2
-    @fake_read(@1)
+    storage_dead(@2)
     drop @1
-    drop @1
+    storage_dead(@1)
     @0 := ()
     @0 := ()
     return
@@ -239,9 +252,10 @@ fn test_crate::STEAL() -> Array<(), 1 : usize>
     let @0: Array<(), 1 : usize>; // return
     let @1: (); // anonymous local
 
+    storage_live(@1)
     @1 := ()
     @0 := @ArrayRepeat<'_, (), 1 : usize>(move (@1))
-    drop @1
+    storage_dead(@1)
     return
 }
 
@@ -253,10 +267,11 @@ fn test_crate::transmute(@1: Array<u32, 2 : usize>) -> u64
     let x@1: Array<u32, 2 : usize>; // arg #1
     let @2: Array<u32, 2 : usize>; // anonymous local
 
+    storage_live(@2)
     // When optimized, this becomes a built-in cast. Otherwise this is just a call to `transmute`.
     @2 := copy (x@1)
     @0 := transmute<Array<u32, 2 : usize>, u64>(move (@2))
-    drop @2
+    storage_dead(@2)
     return
 }
 
@@ -265,9 +280,10 @@ fn test_crate::STEAL2() -> Array<(), 13 : usize>
     let @0: Array<(), 13 : usize>; // return
     let @1: (); // anonymous local
 
+    storage_live(@1)
     @1 := ()
     @0 := @ArrayRepeat<'_, (), 13 : usize>(move (@1))
-    drop @1
+    storage_dead(@1)
     return
 }
 
@@ -308,30 +324,41 @@ where
     let @10: bool; // anonymous local
     let @11: usize; // anonymous local
 
+    storage_live(size@1)
     size@1 := core::mem::size_of<T>[@TraitClause0]()
+    storage_live(align@2)
     align@2 := core::mem::align_of<T>[@TraitClause0]()
+    storage_live(ub@3)
     // This is `const (false)` in the MIR we get, but `true` in const evaluation.
     ub@3 := ub_checks<bool>
+    storage_live(offset@4)
     offset@4 := offset_of(?)<test_crate::nullary_ops::Struct<T>[@TraitClause0]>
+    storage_live(@5)
+    storage_live(@6)
+    storage_live(@7)
     @7 := copy (size@1)
+    storage_live(@8)
     @8 := copy (align@2)
     @6 := move (@7) + move (@8)
-    drop @8
-    drop @7
+    storage_dead(@8)
+    storage_dead(@7)
+    storage_live(@9)
+    storage_live(@10)
     @10 := copy (ub@3)
     @9 := cast<bool, usize>(move (@10))
-    drop @10
+    storage_dead(@10)
     @5 := move (@6) + move (@9)
-    drop @9
-    drop @6
+    storage_dead(@9)
+    storage_dead(@6)
+    storage_live(@11)
     @11 := copy (offset@4)
     @0 := move (@5) + move (@11)
-    drop @11
-    drop @5
-    drop offset@4
-    drop ub@3
-    drop align@2
-    drop size@1
+    storage_dead(@11)
+    storage_dead(@5)
+    storage_dead(offset@4)
+    storage_dead(ub@3)
+    storage_dead(align@2)
+    storage_dead(size@1)
     return
 }
 

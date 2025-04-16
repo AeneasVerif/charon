@@ -63,12 +63,15 @@ pub fn test_crate::test1(@1: test_crate::HashMap<()>[core::marker::Sized<()>])
     let @3: test_crate::HashMap<()>[core::marker::Sized<()>]; // anonymous local
     let @4: (); // anonymous local
 
+    storage_live(@2)
+    storage_live(@3)
     @3 := move (map@1)
+    storage_live(@4)
     @4 := ()
     @2 := test_crate::top_level_get<(), (), ()>[core::marker::Sized<()>, core::marker::Sized<()>, test_crate::{impl test_crate::Trait<()> for ()}](move (@3), move (@4))
-    drop @4
-    drop @3
-    drop @2
+    storage_dead(@4)
+    storage_dead(@3)
+    storage_dead(@2)
     @0 := ()
     @0 := ()
     return
@@ -82,12 +85,15 @@ pub fn test_crate::test2(@1: test_crate::HashMap<()>[core::marker::Sized<()>])
     let @3: test_crate::HashMap<()>[core::marker::Sized<()>]; // anonymous local
     let @4: (); // anonymous local
 
+    storage_live(@2)
+    storage_live(@3)
     @3 := move (map@1)
+    storage_live(@4)
     @4 := ()
     @2 := test_crate::{test_crate::HashMap<S>[@TraitClause0]}#1::get<(), (), ()>[core::marker::Sized<()>, core::marker::Sized<()>, test_crate::{impl test_crate::Trait<()> for ()}](move (@3), move (@4))
-    drop @4
-    drop @3
-    drop @2
+    storage_dead(@4)
+    storage_dead(@3)
+    storage_dead(@2)
     @0 := ()
     @0 := ()
     return

@@ -19,22 +19,25 @@ fn test_crate::main()
     let @5: &'_ (i32); // anonymous local
     let @6: &'_ (i32); // anonymous local
 
+    storage_live(x@1)
     x@1 := const (11 : i32)
-    @fake_read(x@1)
+    storage_live(y@2)
     y@2 := const (22 : i32)
-    @fake_read(y@2)
+    storage_live(@3)
+    storage_live(@4)
     @4 := &x@1
+    storage_live(@5)
+    storage_live(@6)
     @6 := &y@2
     @5 := &*(@6)
     @3 := core::cmp::impls::{impl core::cmp::Ord for i32}#77::cmp<'_, '_>(move (@4), move (@5))
-    drop @5
-    drop @4
-    @fake_read(@3)
-    drop @6
-    drop @3
+    storage_dead(@5)
+    storage_dead(@4)
+    storage_dead(@6)
+    storage_dead(@3)
     @0 := ()
-    drop y@2
-    drop x@1
+    storage_dead(y@2)
+    storage_dead(x@1)
     @0 := ()
     return
 }
@@ -102,13 +105,16 @@ pub fn core::cmp::impls::{impl core::cmp::PartialOrd<i32> for i32}#76::partial_c
     let @4: i32; // anonymous local
     let @5: i32; // anonymous local
 
+    storage_live(@3)
+    storage_live(@4)
     @4 := copy (*(self@1))
+    storage_live(@5)
     @5 := copy (*(other@2))
     @3 := move (@4) cmp move (@5)
-    drop @5
-    drop @4
+    storage_dead(@5)
+    storage_dead(@4)
     @0 := core::option::Option::Some { 0: move (@3) }
-    drop @3
+    storage_dead(@3)
     return
 }
 

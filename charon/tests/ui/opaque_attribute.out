@@ -43,16 +43,17 @@ where
     let x@2: &'_ (T); // local
     let @3: &'_ (T); // anonymous local
 
-    @fake_read(self@1)
     match *(self@1) {
         0 => {
         },
         1 => {
+            storage_live(x@2)
             x@2 := &(*(self@1) as variant @1).0
+            storage_live(@3)
             @3 := &*(x@2)
             @0 := @TraitClause1::get_bool<'_>(move (@3))
-            drop @3
-            drop x@2
+            storage_dead(@3)
+            storage_dead(x@2)
             return
         },
     }
@@ -94,9 +95,9 @@ fn test_crate::call_fn_in_opaque_module()
     let @0: (); // return
     let @1: u32; // anonymous local
 
+    storage_live(@1)
     @1 := test_crate::opaque::fn_in_opaque_module()
-    @fake_read(@1)
-    drop @1
+    storage_dead(@1)
     @0 := ()
     @0 := ()
     return

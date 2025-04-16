@@ -13,12 +13,10 @@ and raw_statement =
   | Assign of place * rvalue
   | Call of call
       (** A call. For now, we don't support dynamic calls (i.e. to a function pointer in memory). *)
-  | FakeRead of place
   | SetDiscriminant of place * variant_id
+  | StorageLive of local_id
   | StorageDead of local_id
-      (** We translate this to [crate::llbc_ast::RawStatement::Drop] in LLBC *)
   | Deinit of place
-      (** We translate this to [crate::llbc_ast::RawStatement::Drop] in LLBC *)
   | Drop of place
   | Assert of assertion
       (** A built-in assert, which corresponds to runtime checks that we remove, namely: bounds

@@ -86,6 +86,7 @@ pub fn test_crate::{impl test_crate::HasDefaultLen<const N : usize> for Array<bo
     let @0: usize; // return
     let @1: bool; // anonymous local
 
+    storage_live(@1)
     @1 := const (true)
     if move (@1) {
         @0 := const (const N : usize)
@@ -93,7 +94,7 @@ pub fn test_crate::{impl test_crate::HasDefaultLen<const N : usize> for Array<bo
     else {
         @0 := const (test_crate::{impl test_crate::HasDefaultLen<const N : usize> for Array<bool, const N : usize>}#4<const N : usize>::LEN)
     }
-    drop @1
+    storage_dead(@1)
     return
 }
 

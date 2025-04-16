@@ -16,10 +16,12 @@ fn test_crate::{impl test_crate::Trait for test_crate::Foo}::required<'_0>(@1: &
     let @2: (); // anonymous local
     let @3: &'_ (test_crate::Foo); // anonymous local
 
+    storage_live(@2)
+    storage_live(@3)
     @3 := &*(self@1)
     @2 := test_crate::{impl test_crate::Trait for test_crate::Foo}::provided1<'_>(move (@3))
-    drop @3
-    drop @2
+    storage_dead(@3)
+    storage_dead(@2)
     @0 := ()
     @0 := ()
     return
@@ -34,14 +36,18 @@ fn test_crate::{impl test_crate::Trait for test_crate::Foo}::provided1<'_0>(@1: 
     let @4: (); // anonymous local
     let @5: &'_ (test_crate::Foo); // anonymous local
 
+    storage_live(@2)
+    storage_live(@3)
     @3 := &*(self@1)
     @2 := test_crate::{impl test_crate::Trait for test_crate::Foo}::required<'_>(move (@3))
-    drop @3
-    drop @2
+    storage_dead(@3)
+    storage_dead(@2)
+    storage_live(@4)
+    storage_live(@5)
     @5 := &*(self@1)
     @4 := test_crate::{impl test_crate::Trait for test_crate::Foo}::provided2<'_>(move (@5))
-    drop @5
-    drop @4
+    storage_dead(@5)
+    storage_dead(@4)
     @0 := ()
     @0 := ()
     return
@@ -56,14 +62,18 @@ fn test_crate::{impl test_crate::Trait for test_crate::Foo}::provided2<'_0>(@1: 
     let @4: (); // anonymous local
     let @5: &'_ (test_crate::Foo); // anonymous local
 
+    storage_live(@2)
+    storage_live(@3)
     @3 := &*(self@1)
     @2 := test_crate::{impl test_crate::Trait for test_crate::Foo}::required<'_>(move (@3))
-    drop @3
-    drop @2
+    storage_dead(@3)
+    storage_dead(@2)
+    storage_live(@4)
+    storage_live(@5)
     @5 := &*(self@1)
     @4 := test_crate::{impl test_crate::Trait for test_crate::Foo}::provided1<'_>(move (@5))
-    drop @5
-    drop @4
+    storage_dead(@5)
+    storage_dead(@4)
     @0 := ()
     @0 := ()
     return
@@ -85,10 +95,12 @@ fn test_crate::{impl test_crate::Trait for test_crate::Bar}#1::required<'_0>(@1:
     let @2: (); // anonymous local
     let @3: &'_ (test_crate::Bar); // anonymous local
 
+    storage_live(@2)
+    storage_live(@3)
     @3 := &*(self@1)
     @2 := test_crate::{impl test_crate::Trait for test_crate::Bar}#1::provided2<'_>(move (@3))
-    drop @3
-    drop @2
+    storage_dead(@3)
+    storage_dead(@2)
     @0 := ()
     @0 := ()
     return
@@ -101,10 +113,12 @@ fn test_crate::{impl test_crate::Trait for test_crate::Bar}#1::provided1<'_0>(@1
     let @2: (); // anonymous local
     let @3: &'_ (test_crate::Bar); // anonymous local
 
+    storage_live(@2)
+    storage_live(@3)
     @3 := &*(self@1)
     @2 := test_crate::{impl test_crate::Trait for test_crate::Bar}#1::provided2<'_>(move (@3))
-    drop @3
-    drop @2
+    storage_dead(@3)
+    storage_dead(@2)
     @0 := ()
     @0 := ()
     return
@@ -119,14 +133,18 @@ fn test_crate::{impl test_crate::Trait for test_crate::Bar}#1::provided2<'_0>(@1
     let @4: (); // anonymous local
     let @5: &'_ (test_crate::Bar); // anonymous local
 
+    storage_live(@2)
+    storage_live(@3)
     @3 := &*(self@1)
     @2 := test_crate::{impl test_crate::Trait for test_crate::Bar}#1::required<'_>(move (@3))
-    drop @3
-    drop @2
+    storage_dead(@3)
+    storage_dead(@2)
+    storage_live(@4)
+    storage_live(@5)
     @5 := &*(self@1)
     @4 := test_crate::{impl test_crate::Trait for test_crate::Bar}#1::provided1<'_>(move (@5))
-    drop @5
-    drop @4
+    storage_dead(@5)
+    storage_dead(@4)
     @0 := ()
     @0 := ()
     return
@@ -150,14 +168,18 @@ fn test_crate::Trait::provided1<'_0, Self>(@1: &'_0 (Self))
     let @4: (); // anonymous local
     let @5: &'_ (Self); // anonymous local
 
+    storage_live(@2)
+    storage_live(@3)
     @3 := &*(self@1)
     @2 := Self::required<'_>(move (@3))
-    drop @3
-    drop @2
+    storage_dead(@3)
+    storage_dead(@2)
+    storage_live(@4)
+    storage_live(@5)
     @5 := &*(self@1)
     @4 := Self::provided2<'_>(move (@5))
-    drop @5
-    drop @4
+    storage_dead(@5)
+    storage_dead(@4)
     @0 := ()
     @0 := ()
     return
@@ -172,14 +194,18 @@ fn test_crate::Trait::provided2<'_0, Self>(@1: &'_0 (Self))
     let @4: (); // anonymous local
     let @5: &'_ (Self); // anonymous local
 
+    storage_live(@2)
+    storage_live(@3)
     @3 := &*(self@1)
     @2 := Self::required<'_>(move (@3))
-    drop @3
-    drop @2
+    storage_dead(@3)
+    storage_dead(@2)
+    storage_live(@4)
+    storage_live(@5)
     @5 := &*(self@1)
     @4 := Self::provided1<'_>(move (@5))
-    drop @5
-    drop @4
+    storage_dead(@5)
+    storage_dead(@4)
     @0 := ()
     @0 := ()
     return

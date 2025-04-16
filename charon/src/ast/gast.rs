@@ -320,23 +320,32 @@ pub struct Call {
     pub dest: Place,
 }
 
+/// (U)LLBC is a language with side-effects: a statement may abort in a way that isn't tracked by
+/// control-flow. The two kinds of abort are:
+/// - Panic (may unwind or not depending on compilation setting);
+/// - Undefined behavior:
 #[derive(Debug, Clone, Serialize, Deserialize, Drive, DriveMut)]
 pub enum AbortKind {
     /// A built-in panicking function.
-    Panic(Name),
-    /// A MIR `Unreachable` terminator corresponds to undefined behavior in the rust abstract
-    /// machine.
+    Panic(Option<Name>),
+    /// Undefined behavior in the rust abstract machine.
     UndefinedBehavior,
 }
 
-/// Asserts are special constructs introduced by Rust to perform dynamic
-/// checks, to detect out-of-bounds accesses or divisions by zero for
-/// instance. We eliminate the assertions in [crate::remove_dynamic_checks],
-/// then introduce other dynamic checks in [crate::reconstruct_asserts].
+/// Check the value of an operand and abort if the value is not expected. This is introduced to
+/// avoid a lot of small branches.
+///
+/// We translate MIR asserts (introduced for out-of-bounds accesses or divisions by zero for
+/// instance) to this. We then eliminate them in [crate::remove_dynamic_checks], because they're
+/// implicit in the semantics of our array accesses etc. Finally we introduce new asserts in
+/// [crate::reconstruct_asserts].
 #[derive(Debug, Clone, Serialize, Deserialize, Drive, DriveMut)]
 #[charon::rename("Assertion")]
 pub struct Assert {
     pub cond: Operand,
+    /// The value that the operand should evaluate to for the assert to succeed.
     #[drive(skip)]
     pub expected: bool,
+    /// What kind of abort happens on assert failure.
+    pub on_failure: AbortKind,
 }
