@@ -7,7 +7,6 @@ def eprint(*args):
 project_refs = {
     "aeneas": "main",
     "eurydice": "main",
-    "libcrux": "main",
 }
 
 ci_event = os.environ.get('CI_EVENT')

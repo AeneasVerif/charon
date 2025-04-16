@@ -109,9 +109,13 @@ jobs:
           LIBCRUX: ${{needs.select-dep-versions.outputs.libcrux}}
         run: |
           nix flake update --refresh \
-              charon eurydice libcrux \
+              charon eurydice \
               --override-input charon github:aeneasverif/charon/$CHARON \
-              --override-input eurydice github:aeneasverif/eurydice/$EURYDICE \
-              --override-input libcrux github:cryspen/libcrux/$LIBCRUX
+              --override-input eurydice github:aeneasverif/eurydice/$EURYDICE
+          # Use the last-known-good libcrux version unless overridden.
+          if [[ -n "$LIBCRUX" ]]; then
+              nix flake update --refresh libcrux \
+                  --override-input libcrux github:cryspen/libcrux/$LIBCRUX
+          fi
           ./check.sh ml-kem-small
           ./check.sh ml-dsa-small
