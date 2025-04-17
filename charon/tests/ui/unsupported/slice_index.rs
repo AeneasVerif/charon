@@ -1,5 +1,4 @@
 //@ known-failure
-//@ no-check-output
 //@ charon-args=--extract-opaque-bodies
 
 // hax panics when lowering a place expression.
