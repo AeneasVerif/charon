@@ -6,6 +6,5 @@ error: Could not reconstruct `Box` initialization; branching during `Box` initia
 4 | |     Some(vec)
 5 | | }
   | |_^
-  |
 
 ERROR Charon failed to translate this code (1 errors)

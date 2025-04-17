@@ -3,6 +3,5 @@ error: Unsupported constant: `ConstantExprKind::Cast {..}`
   |
 6 |         DISGUISED_INT => {}
   |         ^^^^^^^^^^^^^
-  |
 
 ERROR Charon failed to translate this code (1 errors)

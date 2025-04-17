@@ -13,7 +13,6 @@ note: the error occurred when translating `core::ptr::metadata::Thin`, which is 
    |             -----------------------
  7 |     let _ = crate::opaque::custom_null::<u8>();
    |             ----------------------------------
-   |
 error: Item `core::ptr::metadata::Thin` caused errors; ignoring.
  --> /rustc/library/core/src/ptr/metadata.rs:84:1
 

@@ -28,9 +28,8 @@ dependencies = [
 
 [[package]]
 name = "annotate-snippets"
-version = "0.11.4"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "24e35ed54e5ea7997c14ed4c70ba043478db1112e98263b3b035907aa197d991"
+version = "0.11.5"
+source = "git+https://github.com/rust-lang/annotate-snippets-rs#a78e165de1e2bc65bf261f5770bdcfa172a9654a"
 dependencies = [
  "anstyle",
  "unicode-width",
@@ -2392,9 +2391,9 @@ checksum = "f6ccf251212114b54433ec949fd6a7841275f9ada20dddd2f29e9ceea4501493"
 
 [[package]]
 name = "unicode-width"
-version = "0.1.14"
+version = "0.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7dd6e30e90baa6f72411720665d41d89b9a3d039dc45b8faea1ddd07f617f6af"
+checksum = "1fc81956842c57dac11422a97c3b8195a1ff727f06e85c84ed2e8aa277c9a0fd"
 
 [[package]]
 name = "untrusted"

@@ -42,7 +42,7 @@ impl CheckGenericsVisitor<'_> {
                 .join("\n  "),
         );
         // This is a fatal error: the output llbc is inconsistent and should not be used.
-        self.ctx.span_err(self.span, &msg, Level::Error);
+        self.ctx.span_err(self.span, &msg, Level::ERROR);
     }
 
     /// For pretty error printing. This can print values that we encounter because we track binders
