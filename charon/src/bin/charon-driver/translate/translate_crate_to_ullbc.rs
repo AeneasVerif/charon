@@ -90,7 +90,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
                 }
             }
             FullDefKind::Mod { items, .. } => {
-                for def_id in items {
+                for (_, def_id) in items {
                     self.register_module_item(def_id);
                 }
             }
@@ -229,7 +229,7 @@ pub fn translate<'tcx, 'ctx>(
         // Start translating from the selected items.
         for path in options.start_from.iter() {
             let path = path.split("::").collect_vec();
-            let resolved = super::resolve_path::def_path_def_ids(tcx, &path);
+            let resolved = super::resolve_path::def_path_def_ids(&ctx.hax_state, &path);
             match resolved {
                 Ok(resolved) => {
                     for def_id in resolved {
