@@ -425,6 +425,11 @@ and cli_options = {
       (** Whether to hide the `Sized`, `Sync`, `Send` and `Unpin` marker traits anywhere they show
         up.
      *)
+  start_from : string list;
+      (** A list of item paths to use as starting points for the translation. We will translate these
+        items and any items they refer to, according to the opacity rules. When absent, we start
+        from the path `crate` (which translates the whole crate).
+     *)
   no_cargo : bool;  (** Do not run cargo; instead, run the driver directly. *)
   rustc_args : string list;  (** Extra flags to pass to rustc. *)
   cargo_args : string list;

@@ -4,6 +4,7 @@ use charon_lib::options::{CliOpts, TranslateOptions};
 use charon_lib::transform::TransformCtx;
 use hax::FullDefKind;
 use hax_frontend_exporter::{self as hax, SInto};
+use itertools::Itertools;
 use rustc_hir::def_id::DefId;
 use rustc_middle::ty::TyCtxt;
 use std::cell::RefCell;
@@ -17,12 +18,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
         trace!("Registering {def_id:?}");
 
         match &def_id.kind {
-            Enum { .. }
-            | Struct { .. }
-            | Union { .. }
-            | TyAlias { .. }
-            | AssocTy { .. }
-            | ForeignTy => {
+            Enum { .. } | Struct { .. } | Union { .. } | TyAlias { .. } | ForeignTy => {
                 let _ = self.register_type_decl_id(&None, def_id);
             }
             Fn { .. } | AssocFn { .. } => {
@@ -57,6 +53,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
             ExternCrate { .. } | GlobalAsm { .. } | Macro { .. } | Use { .. } => {}
             // We cannot encounter these since they're not top-level items.
             AnonConst { .. }
+            | AssocTy { .. }
             | Closure { .. }
             | ConstParam { .. }
             | Ctor { .. }
@@ -225,10 +222,32 @@ pub fn translate<'tcx, 'ctx>(
         cached_names: Default::default(),
     };
 
-    // Recursively register all the items in the crate, starting from the crate root. We could
-    // instead ask rustc for the plain list of all items in the crate, but we wouldn't be able to
-    // skip items inside modules annotated with `#[charon::opaque]`.
-    ctx.register_module_item(&crate_def_id);
+    if options.start_from.is_empty() {
+        // Recursively register all the items in the crate, starting from the crate root.
+        ctx.register_module_item(&crate_def_id);
+    } else {
+        // Start translating from the selected items.
+        for path in options.start_from.iter() {
+            let path = path.split("::").collect_vec();
+            let resolved = super::resolve_path::def_path_def_ids(tcx, &path);
+            match resolved {
+                Ok(resolved) => {
+                    for def_id in resolved {
+                        let def_id: hax::DefId = def_id.sinto(&ctx.hax_state);
+                        ctx.register_module_item(&def_id);
+                    }
+                }
+                Err(path) => {
+                    let path = path.join("::");
+                    register_error!(
+                        ctx,
+                        Span::dummy(),
+                        "path {path} does not correspond to any item"
+                    );
+                }
+            }
+        }
+    }
 
     trace!(
         "Queue after we explored the crate:\n{:?}",
