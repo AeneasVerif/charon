@@ -3,6 +3,5 @@ error: Can't match on type char
   |
 3 |     match 'x' {
   |     ^^^^^^^^^
-  |
 
 ERROR Charon failed to translate this code (1 errors)

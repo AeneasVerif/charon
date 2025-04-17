@@ -6,15 +6,12 @@ note: the error occurred when translating `core::ptr::metadata::Thin`, which is 
    |
  9 |     let _ = core::ptr::null::<u8>();
    |             -----------------------
-10 |     let _ = opaque::other_error();
 ...
-15 |     pub fn other_error() {
 16 |         let _ = custom_null::<u8>();
    |                 -------------------
 17 |     }
 18 |     fn custom_null<T: core::ptr::Thin>() {}
    |                       ---------------
-   |
 error: Item `core::ptr::metadata::Thin` caused errors; ignoring.
  --> /rustc/library/core/src/ptr/metadata.rs:84:1
 

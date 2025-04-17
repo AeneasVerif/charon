@@ -3,14 +3,12 @@ error: Constant parameters of non-literal type are not supported
    |
 14 | fn foo<const X: Foo>() -> Foo {
    |        ^^^^^^^^^^^^
-   |
 
 error: Item `test_crate::foo` caused errors; ignoring.
   --> tests/ui/unsupported/advanced-const-generics.rs:14:1
    |
 14 | fn foo<const X: Foo>() -> Foo {
    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-   |
 
 disabled backtrace
 error[E9999]: Supposely unreachable place in the Rust AST. The label is "TranslateUneval".
@@ -41,7 +39,6 @@ error: Hax panicked when translating `test_crate::bar`.
 19 | | where
 20 | |     [(); N + 1]:,
    | |_________________^
-   |
 
 error: Item `test_crate::bar` caused errors; ignoring.
   --> tests/ui/unsupported/advanced-const-generics.rs:18:1
@@ -50,7 +47,6 @@ error: Item `test_crate::bar` caused errors; ignoring.
 19 | | where
 20 | |     [(); N + 1]:,
    | |_________________^
-   |
 
 error: aborting due to 1 previous error
 

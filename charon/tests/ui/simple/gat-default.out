@@ -7,21 +7,18 @@ error: Hax panicked when translating `test_crate::{impl#0}`.
   |
 9 | impl Collection for () {}
   | ^^^^^^^^^^^^^^^^^^^^^^
-  |
 
 error: Generic associated types are not supported
  --> tests/ui/simple/gat-default.rs:6:5
   |
 6 |     type Sibling<U> = Vec<U>;
   |     ^^^^^^^^^^^^^^^
-  |
 
 error: Item `test_crate::Collection` caused errors; ignoring.
  --> tests/ui/simple/gat-default.rs:5:1
   |
 5 | trait Collection {
   | ^^^^^^^^^^^^^^^^
-  |
 
 
 thread 'rustc' panicked at /rustc/920d95eaf23d7eb6b415d09868e4f793024fa604/compiler/rustc_type_ir/src/binder.rs:737:9:
@@ -31,13 +28,11 @@ error: Hax panicked when translating `test_crate::{impl#0}`.
   |
 9 | impl Collection for () {}
   | ^^^^^^^^^^^^^^^^^^^^^^
-  |
 
 error: Item `test_crate::{impl#0}` caused errors; ignoring.
  --> tests/ui/simple/gat-default.rs:9:1
   |
 9 | impl Collection for () {}
   | ^^^^^^^^^^^^^^^^^^^^^^
-  |
 
 ERROR Charon failed to translate this code (5 errors)

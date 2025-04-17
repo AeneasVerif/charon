@@ -13,11 +13,11 @@ use std::collections::{HashMap, HashSet};
 macro_rules! register_error {
     ($ctx:expr, crate($krate:expr), $span: expr, $($fmt:tt)*) => {{
         let msg = format!($($fmt)*);
-        $ctx.span_err($krate, $span, &msg, $crate::errors::Level::Warning)
+        $ctx.span_err($krate, $span, &msg, $crate::errors::Level::WARNING)
     }};
     ($ctx:expr, $span: expr, $($fmt:tt)*) => {{
         let msg = format!($($fmt)*);
-        $ctx.span_err($span, &msg, $crate::errors::Level::Warning)
+        $ctx.span_err($span, &msg, $crate::errors::Level::WARNING)
     }};
 }
 pub use register_error;
@@ -78,38 +78,30 @@ pub struct Error {
 impl Error {
     pub(crate) fn render(&self, krate: &TranslatedCrate, level: Level) -> String {
         use annotate_snippets::*;
-        let msg_indent = format!("{level:?}: ").len();
-        // If the message is multiline, indent the other lines to match the first line.
-        let mut msg = self
-            .msg
-            .replace('\n', &format!("\n{}", str::repeat(" ", msg_indent)));
-
         let span = self.span.span;
+
+        let mut group = Group::new();
         let origin;
-        let message = if let Some(file) = krate.files.get(span.file_id) {
+        if let Some(file) = krate.files.get(span.file_id) {
+            origin = format!("{}", file.name);
             if let Some(source) = &file.contents {
-                origin = format!("{}", file.name);
                 let snippet = Snippet::source(source)
                     .origin(&origin)
                     .fold(true)
-                    .annotation(level.span(span.to_byte_range(source)));
-                level.title(&msg).snippet(snippet)
+                    .annotation(AnnotationKind::Primary.span(span.to_byte_range(source)));
+                group = group.element(snippet);
             } else {
                 // Show just the file and line/col.
-                msg = format!(
-                    "{msg}\n --> {}:{}:{}",
-                    file.name,
-                    span.beg.line,
-                    span.beg.col + 1
-                );
-                level.title(&msg)
+                let origin = Origin::new(&origin)
+                    .line(span.beg.line)
+                    .char_column(span.beg.col + 1)
+                    .primary(true);
+                group = group.element(origin);
             }
-        } else {
-            level.title(&msg)
-        };
+        }
+        let message = level.header(&self.msg).group(group);
 
-        let out = Renderer::styled().render(message).to_string();
-        out
+        Renderer::styled().render(message).to_string()
     }
 }
 
@@ -232,8 +224,8 @@ impl ErrorCtx {
         msg: &str,
         level: Level,
     ) -> Error {
-        let level = if level == Level::Warning && self.error_on_warnings {
-            Level::Error
+        let level = if level == Level::WARNING && self.error_on_warnings {
+            Level::ERROR
         } else {
             level
         };
@@ -311,7 +303,7 @@ impl ErrorCtx {
         // Sort by file id to avoid output instability.
         by_file.sort_by_key(|(file_id, ..)| *file_id);
 
-        let level = Level::Note;
+        let level = Level::NOTE;
         let snippets = by_file.iter().map(|(_, origin, source, spans)| {
             Snippet::source(source)
                 .origin(&origin)
@@ -319,7 +311,7 @@ impl ErrorCtx {
                 .annotations(
                     spans
                         .iter()
-                        .map(|span| level.span(span.span.to_byte_range(source))),
+                        .map(|span| AnnotationKind::Context.span(span.span.to_byte_range(source))),
                 )
         });
 
@@ -328,7 +320,7 @@ impl ErrorCtx {
              which is (transitively) used at the following location(s):",
             krate.into_fmt().format_object(id)
         );
-        let message = level.title(&msg).snippets(snippets);
+        let message = level.header(&msg).group(Group::new().elements(snippets));
         let out = Renderer::styled().render(message).to_string();
         anstream::eprintln!("{}", out);
     }

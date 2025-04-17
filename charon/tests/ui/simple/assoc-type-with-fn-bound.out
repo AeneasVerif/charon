@@ -5,6 +5,5 @@ error: Could not compute the value of Self::Clause1::Clause0::Clause0::Output ne
   |
 9 |     fn call(&self) -> <Self::Foo as FnOnce<()>>::Output;
   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  |
 
 ERROR Charon failed to translate this code (1 errors)

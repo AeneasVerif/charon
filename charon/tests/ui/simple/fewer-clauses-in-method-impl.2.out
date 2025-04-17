@@ -5,6 +5,5 @@ error: Mismatched method generics:
    |
 14 |     <() as Trait>::method()
    |     ^^^^^^^^^^^^^^^^^^^^^^^
-   |
 
 ERROR Charon failed to translate this code (1 errors)

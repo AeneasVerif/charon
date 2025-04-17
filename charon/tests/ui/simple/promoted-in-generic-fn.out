@@ -36,7 +36,6 @@ error: Hax panicked when translating `Body { basic_blocks: BasicBlocks { basic_b
 5 | |     let _ = &size_of::<T>();
 6 | | }
   | |_^
-  |
 
 error: aborting due to 1 previous error
 
