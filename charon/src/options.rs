@@ -181,6 +181,12 @@ pub struct CliOpts {
     #[clap(long = "hide-marker-traits")]
     #[serde(default)]
     pub hide_marker_traits: bool,
+    /// A list of item paths to use as starting points for the translation. We will translate these
+    /// items and any items they refer to, according to the opacity rules. When absent, we start
+    /// from the path `crate` (which translates the whole crate).
+    #[clap(long = "start-from")]
+    #[serde(default)]
+    pub start_from: Vec<String>,
     /// Do not run cargo; instead, run the driver directly.
     // FIXME: use a subcommand instead, when we update clap to support flattening.
     #[clap(long = "no-cargo")]
