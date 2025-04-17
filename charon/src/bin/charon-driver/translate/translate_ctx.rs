@@ -379,6 +379,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
             // struct/variant.
             DefPathItem::Ctor => None,
             DefPathItem::Use => Some(PathElem::Ident("<use>".to_string(), disambiguator)),
+            DefPathItem::AnonConst => Some(PathElem::Ident("{const}".to_string(), disambiguator)),
             _ => {
                 let def_id = def.to_rust_def_id();
                 raise_error!(
