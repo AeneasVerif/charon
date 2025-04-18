@@ -76,6 +76,11 @@ impl std::ops::Index<LocalId> for Locals {
         &self.locals[local_id]
     }
 }
+impl std::ops::IndexMut<LocalId> for Locals {
+    fn index_mut(&mut self, local_id: LocalId) -> &mut Self::Output {
+        &mut self.locals[local_id]
+    }
+}
 
 impl TraitDecl {
     pub fn methods(&self) -> impl Iterator<Item = &(TraitItemName, Binder<FunDeclRef>)> {

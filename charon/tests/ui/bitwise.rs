@@ -1,6 +1,4 @@
 //! Exercise the bitwise operations
-
-// FIXME: This errors today.
 pub fn shift_u32(a: u32) -> u32 {
     let i: usize = 16;
     let mut t = a >> i;

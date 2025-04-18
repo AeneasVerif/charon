@@ -81,7 +81,7 @@ impl BlockData {
     /// - mutate the current statement in place
     /// - return the sequence of statements to introduce before the current statement
     pub fn transform<F: FnMut(&mut Statement) -> Vec<Statement>>(&mut self, mut f: F) {
-        self.transform_sequences(|slice| {
+        self.transform_sequences_bwd(|slice| {
             let new_statements = f(&mut slice[0]);
             if new_statements.is_empty() {
                 vec![]
@@ -91,23 +91,29 @@ impl BlockData {
         });
     }
 
-    /// Apply a transformer to all the statements.
-    ///
-    /// The transformer should:
-    /// - mutate the current statements in place
-    /// - return a list of `(i, statements)` where `statements` will be inserted before index `i`.
-    pub fn transform_sequences<F>(&mut self, mut f: F)
+    /// Helper, see `transform_sequences_fwd` and `transform_sequences_bwd`.
+    fn transform_sequences<F>(&mut self, mut f: F, forward: bool)
     where
         F: FnMut(&mut [Statement]) -> Vec<(usize, Vec<Statement>)>,
     {
         let mut to_insert = vec![];
         let mut final_len = self.statements.len();
-        for i in (0..self.statements.len()).rev() {
-            let new_to_insert = f(&mut self.statements[i..]);
-            to_insert.extend(new_to_insert.into_iter().map(|(j, stmts)| {
-                final_len += stmts.len();
-                (i + j, stmts)
-            }));
+        if forward {
+            for i in 0..self.statements.len() {
+                let new_to_insert = f(&mut self.statements[i..]);
+                to_insert.extend(new_to_insert.into_iter().map(|(j, stmts)| {
+                    final_len += stmts.len();
+                    (i + j, stmts)
+                }));
+            }
+        } else {
+            for i in (0..self.statements.len()).rev() {
+                let new_to_insert = f(&mut self.statements[i..]);
+                to_insert.extend(new_to_insert.into_iter().map(|(j, stmts)| {
+                    final_len += stmts.len();
+                    (i + j, stmts)
+                }));
+            }
         }
         if !to_insert.is_empty() {
             to_insert.sort_by_key(|(i, _)| *i);
@@ -126,15 +132,48 @@ impl BlockData {
             }
         }
     }
+
+    /// Apply a transformer to all the statements.
+    ///
+    /// The transformer should:
+    /// - mutate the current statements in place
+    /// - return a list of `(i, statements)` where `statements` will be inserted before index `i`.
+    pub fn transform_sequences_fwd<F>(&mut self, f: F)
+    where
+        F: FnMut(&mut [Statement]) -> Vec<(usize, Vec<Statement>)>,
+    {
+        self.transform_sequences(f, true);
+    }
+
+    /// Apply a transformer to all the statements.
+    ///
+    /// The transformer should:
+    /// - mutate the current statements in place
+    /// - return a list of `(i, statements)` where `statements` will be inserted before index `i`.
+    pub fn transform_sequences_bwd<F>(&mut self, f: F)
+    where
+        F: FnMut(&mut [Statement]) -> Vec<(usize, Vec<Statement>)>,
+    {
+        self.transform_sequences(f, false);
+    }
 }
 
 impl ExprBody {
-    pub fn transform_sequences<F>(&mut self, mut f: F)
+    pub fn transform_sequences_fwd<F>(&mut self, mut f: F)
     where
         F: FnMut(&mut Locals, &mut [Statement]) -> Vec<(usize, Vec<Statement>)>,
     {
         for block in &mut self.body {
-            block.transform_sequences(|seq| f(&mut self.locals, seq));
+            block.transform_sequences_fwd(|seq| f(&mut self.locals, seq));
+        }
+    }
+
+    pub fn transform_sequences_bwd<F>(&mut self, mut f: F)
+    where
+        F: FnMut(&mut Locals, &mut [Statement]) -> Vec<(usize, Vec<Statement>)>,
+    {
+        for block in &mut self.body {
+            block.transform_sequences_bwd(|seq| f(&mut self.locals, seq));
         }
     }
 

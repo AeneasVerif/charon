@@ -4,15 +4,45 @@
 //! compiling for release). In our case, we take this into account in the semantics of our
 //! array/slice manipulation and arithmetic functions, on the verification side.
 
-use crate::ast::*;
+use std::mem;
+
+use derive_generic_visitor::*;
+
 use crate::transform::TransformCtx;
 use crate::ullbc_ast::{ExprBody, RawStatement, Statement};
+use crate::{ast::*, register_error};
 
 use super::ctx::UllbcPass;
 
+/// Whether the value uses the given local in a place.
+fn uses_local<T: BodyVisitable>(x: &T, local: LocalId) -> bool {
+    struct FoundIt;
+    struct UsesLocalVisitor(LocalId);
+
+    impl Visitor for UsesLocalVisitor {
+        type Break = FoundIt;
+    }
+    impl VisitBody for UsesLocalVisitor {
+        fn visit_place(&mut self, x: &Place) -> ::std::ops::ControlFlow<Self::Break> {
+            if let Some(local_id) = x.as_local() {
+                if local_id == self.0 {
+                    return ControlFlow::Break(FoundIt);
+                }
+            }
+            self.visit_inner(x)
+        }
+    }
+
+    x.drive_body(&mut UsesLocalVisitor(local)).is_break()
+}
+
 /// Rustc inserts dybnamic checks during MIR lowering. They all end in an `Assert` statement (and
 /// this is the only use of this statement).
-fn remove_dynamic_checks(_ctx: &mut TransformCtx, statements: &mut [Statement]) {
+fn remove_dynamic_checks(
+    ctx: &mut TransformCtx,
+    _locals: &mut Locals,
+    statements: &mut [Statement],
+) {
     // We return the statements we want to keep, which must be a prefix of `block.statements`.
     let statements_to_keep = match statements {
         // Bounds checks for slices. They look like:
@@ -108,12 +138,12 @@ fn remove_dynamic_checks(_ctx: &mut TransformCtx, statements: &mut [Statement]) 
             content:
                 RawStatement::Assert(Assert {
                     cond: Operand::Move(cond),
-                    expected,
+                    expected: false,
                     ..
                 }),
             ..
         }, rest @ ..]
-            if cond == is_zero && *expected == false =>
+            if cond == is_zero =>
         {
             rest
         }
@@ -140,102 +170,144 @@ fn remove_dynamic_checks(_ctx: &mut TransformCtx, statements: &mut [Statement]) 
             content:
                 RawStatement::Assert(Assert {
                     cond: Operand::Move(cond),
-                    expected,
+                    expected: false,
                     ..
                 }),
             ..
         }, rest @ ..]
-            if and_op1 == is_neg_1
-                && and_op2 == is_min
-                && cond == has_overflow
-                && *expected == false =>
+            if and_op1 == is_neg_1 && and_op2 == is_min && cond == has_overflow =>
         {
             rest
         }
 
         // Overflow checks for right/left shift. They can look like:
-        //   x := ...;
-        //   b := move x < const 32; // or another constant
+        //   a := _ as u32; // or another type
+        //   b := move a < const 32; // or another constant
         //   assert(move b == true);
         [Statement {
-            content: RawStatement::Assign(x, _),
+            content: RawStatement::Assign(cast, Rvalue::UnaryOp(UnOp::Cast(_), _)),
             ..
         }, Statement {
             content:
                 RawStatement::Assign(
                     has_overflow,
-                    Rvalue::BinaryOp(BinOp::Lt, Operand::Move(lt_op2), Operand::Const(..)),
+                    Rvalue::BinaryOp(BinOp::Lt, Operand::Move(lhs), Operand::Const(..)),
                 ),
             ..
         }, Statement {
             content:
                 RawStatement::Assert(Assert {
                     cond: Operand::Move(cond),
-                    expected,
+                    expected: true,
                     ..
                 }),
             ..
         }, rest @ ..]
-            if lt_op2 == x && cond == has_overflow && *expected == true =>
+            if cond == has_overflow
+                && lhs == cast
+                && let Some(cast_local) = cast.as_local()
+                && !rest.iter().any(|st| uses_local(st, cast_local)) =>
         {
             rest
         }
-        // They can also look like:
-        //   b := const c < const 32; // or another constant
+        // or like:
+        //   b := _ < const 32; // or another constant
         //   assert(move b == true);
         [Statement {
             content:
-                RawStatement::Assign(
-                    has_overflow,
-                    Rvalue::BinaryOp(BinOp::Lt, Operand::Const(..), Operand::Const(..)),
-                ),
+                RawStatement::Assign(has_overflow, Rvalue::BinaryOp(BinOp::Lt, _, Operand::Const(..))),
             ..
         }, Statement {
             content:
                 RawStatement::Assert(Assert {
                     cond: Operand::Move(cond),
-                    expected,
+                    expected: true,
                     ..
                 }),
             ..
         }, rest @ ..]
-            if cond == has_overflow && *expected == true =>
+            if cond == has_overflow =>
         {
             rest
         }
 
         // Overflow checks for addition/subtraction/multiplication. They look like:
+        // ```text
         //   r := x checked.+ y;
         //   assert(move r.1 == false);
-        // They only happen in constants because we compile with `-C opt-level=3`. They span two
-        // blocks so we remove them in a later pass.
+        //   ...
+        //   z := move r.0;
+        // ```
+        // We replace that with:
+        // ```text
+        // z := x + y;
+        // ```
         [Statement {
             content:
                 RawStatement::Assign(
                     result,
-                    Rvalue::BinaryOp(BinOp::CheckedAdd | BinOp::CheckedSub | BinOp::CheckedMul, ..),
+                    rval_op @ Rvalue::BinaryOp(
+                        BinOp::CheckedAdd | BinOp::CheckedSub | BinOp::CheckedMul,
+                        _,
+                        _,
+                    ),
                 ),
             ..
         }, Statement {
             content:
                 RawStatement::Assert(Assert {
-                    cond: Operand::Move(cond),
-                    expected,
+                    cond: Operand::Move(assert_cond),
+                    expected: false,
                     ..
                 }),
             ..
-        }, ..]
-            if result.is_local()
-                && let Some((sub, ProjectionElem::Field(FieldProjKind::Tuple(2), p_id))) =
-                    cond.as_projection()
-                && sub.is_local()
-                && cond.local_id() == result.local_id()
-                && p_id.index() == 1
-                && *expected == false =>
+        }, rest @ ..]
+            if let Some((sub1, ProjectionElem::Field(FieldProjKind::Tuple(..), fid1))) =
+                assert_cond.as_projection()
+                && fid1.index() == 1
+                && result.is_local()
+                && sub1 == result =>
         {
-            // We leave this assert intact; it will be simplified in
-            // [`remove_arithmetic_overflow_checks`].
-            return;
+            // Switch to the unchecked operation.
+            let Rvalue::BinaryOp(binop, ..) = rval_op else {
+                unreachable!()
+            };
+            *binop = match binop {
+                BinOp::CheckedAdd => BinOp::Add,
+                BinOp::CheckedSub => BinOp::Sub,
+                BinOp::CheckedMul => BinOp::Mul,
+                _ => unreachable!(),
+            };
+
+            // If there's a use of the resulting value, fix it up. There may be none if the result
+            // was promoted and computed at compile-time.
+            let mut found_use = false;
+            for st in rest.iter_mut() {
+                if let RawStatement::Assign(_, Rvalue::Use(Operand::Move(assigned))) =
+                    &mut st.content
+                    && let Some((sub0, ProjectionElem::Field(FieldProjKind::Tuple(..), fid0))) =
+                        assigned.as_projection()
+                    && fid0.index() == 0
+                    && sub0 == result
+                {
+                    if found_use {
+                        register_error!(
+                            ctx,
+                            st.span,
+                            "Double use of a checked binary operation; \
+                            the MIR is not in the shape we expected."
+                        );
+                    }
+                    found_use = true;
+                    let RawStatement::Assign(_, rval) = &mut st.content else {
+                        unreachable!()
+                    };
+                    // Directly assign the result of the operation to the final place.
+                    mem::swap(rval_op, rval);
+                }
+            }
+            // TODO: if !found_use, keep the operation to keep the overflow check.
+            rest
         }
 
         _ => return,
@@ -251,11 +323,9 @@ fn remove_dynamic_checks(_ctx: &mut TransformCtx, statements: &mut [Statement]) 
 pub struct Transform;
 impl UllbcPass for Transform {
     fn transform_body(&self, ctx: &mut TransformCtx, b: &mut ExprBody) {
-        for block in b.body.iter_mut() {
-            block.transform_sequences(|seq| {
-                remove_dynamic_checks(ctx, seq);
-                Vec::new()
-            });
-        }
+        b.transform_sequences_fwd(|locals, seq| {
+            remove_dynamic_checks(ctx, locals, seq);
+            Vec::new()
+        });
     }
 }
