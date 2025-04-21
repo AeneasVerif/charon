@@ -13,6 +13,9 @@ fn test_crate::slice_pattern_end<'_0>(@1: &'_0 (Slice<()>))
     let @8: usize; // anonymous local
     let @9: &'_ (()); // anonymous local
 
+    storage_live(@2)
+    storage_live(@3)
+    storage_live(@4)
     @2 := len(*(x@1))
     @3 := const (1 : usize)
     @4 := move (@2) >= move (@3)
@@ -24,9 +27,14 @@ fn test_crate::slice_pattern_end<'_0>(@1: &'_0 (Slice<()>))
         return
     }
     storage_live(_named@5)
+    storage_live(@6)
     @6 := &*(x@1)
+    storage_live(@7)
     @7 := len(*(x@1))
+    storage_live(@8)
     @8 := copy (@7) - const (1 : usize)
+    storage_dead(@7)
+    storage_live(@9)
     @9 := @SliceIndexShared<'_, ()>(move (@6), copy (@8))
     _named@5 := &*(@9)
     @0 := ()

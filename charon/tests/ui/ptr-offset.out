@@ -37,6 +37,16 @@ fn core::ptr::const_ptr::{*const T}::offset::precondition_check(@1: *const (), @
     let @20: u64; // anonymous local
     let @21: u64; // anonymous local
 
+    storage_live(@5)
+    storage_live(self@7)
+    storage_live(byte_offset@13)
+    storage_live(@14)
+    storage_live(@15)
+    storage_live(@17)
+    storage_live(@18)
+    storage_live(@19)
+    storage_live(@20)
+    storage_live(@21)
     storage_live(@4)
     storage_live(overflow@16)
     storage_live(rhs@6)
@@ -112,6 +122,9 @@ where
     let @5: *const (); // anonymous local
     let @6: usize; // anonymous local
 
+    storage_live(@4)
+    storage_live(@5)
+    storage_live(@6)
     storage_live(@3)
     @3 := ub_checks<bool>
     if move (@3) {

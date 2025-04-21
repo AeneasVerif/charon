@@ -22,6 +22,9 @@ fn test_crate::constant()
     let @7: usize; // anonymous local
     let @8: usize; // anonymous local
 
+    storage_live(@6)
+    storage_live(@7)
+    storage_live(@8)
     storage_live(_val@1)
     @6 := test_crate::constant::CONST
     _val@1 := move (@6)
@@ -68,6 +71,9 @@ fn test_crate::shared_static()
     let @8: &'_ (usize); // anonymous local
     let @9: &'_ (usize); // anonymous local
 
+    storage_live(@7)
+    storage_live(@8)
+    storage_live(@9)
     storage_live(_val@1)
     storage_live(@2)
     @7 := &test_crate::shared_static::SHARED_STATIC
@@ -123,6 +129,11 @@ fn test_crate::mut_static()
     let @14: *mut usize; // anonymous local
     let @15: *mut usize; // anonymous local
 
+    storage_live(@11)
+    storage_live(@12)
+    storage_live(@13)
+    storage_live(@14)
+    storage_live(@15)
     storage_live(_val@1)
     storage_live(@2)
     @11 := &raw mut test_crate::mut_static::MUT_STATIC
@@ -192,6 +203,7 @@ fn test_crate::non_copy_static()
     let @2: &'_ (test_crate::non_copy_static::Foo); // anonymous local
     let @3: &'_ (test_crate::non_copy_static::Foo); // anonymous local
 
+    storage_live(@3)
     storage_live(@1)
     storage_live(@2)
     @3 := &test_crate::non_copy_static::FOO

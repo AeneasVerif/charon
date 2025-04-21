@@ -9,6 +9,9 @@ pub fn test_crate::foo() -> &'static (fn(u32) -> u32)
     let @4: fn(u32) -> u32; // anonymous local
     let @5: &'_ (fn(u32) -> u32); // anonymous local
 
+    storage_live(@3)
+    storage_live(@4)
+    storage_live(@5)
     storage_live(@1)
     storage_live(@2)
     @4 := const (Opaque(Unhandled type))

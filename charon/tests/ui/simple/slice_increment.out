@@ -11,12 +11,17 @@ pub fn test_crate::incr<'_0>(@1: &'_0 mut (Slice<u32>))
     let @6: &'_ (Slice<u32>); // anonymous local
     let @7: &'_ (u32); // anonymous local
 
+    storage_live(@3)
     storage_live(@2)
     @2 := const (0 : usize)
+    storage_live(@6)
     @6 := &*(s@1)
+    storage_live(@7)
     @7 := @SliceIndexShared<'_, u32>(move (@6), copy (@2))
     @3 := copy (*(@7)) + const (1 : u32)
+    storage_live(@4)
     @4 := &mut *(s@1)
+    storage_live(@5)
     @5 := @SliceIndexMut<'_, u32>(move (@4), copy (@2))
     *(@5) := move (@3)
     storage_dead(@2)

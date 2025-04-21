@@ -53,6 +53,10 @@ where
     let @4: &'_ (dyn (exists(TODO))); // anonymous local
     let @5: &'_ (E); // anonymous local
 
+    storage_live(e@2)
+    storage_live(@3)
+    storage_live(@4)
+    storage_live(@5)
     match self@1 {
         0 => {
         },
@@ -74,6 +78,7 @@ fn core::fmt::flags::DEBUG_LOWER_HEX_FLAG() -> u32
     let @0: u32; // return
     let @1: u32; // anonymous local
 
+    storage_live(@1)
     @1 := cast<i32, u32>(const (25 : i32))
     @0 := const (1 : u32) << const (25 : i32)
     return
@@ -88,6 +93,7 @@ fn core::fmt::flags::DEBUG_UPPER_HEX_FLAG() -> u32
     let @0: u32; // return
     let @1: u32; // anonymous local
 
+    storage_live(@1)
     @1 := cast<i32, u32>(const (26 : i32))
     @0 := const (1 : u32) << const (26 : i32)
     return
@@ -111,6 +117,8 @@ pub fn core::fmt::num::{impl core::fmt::Debug for u32}#86::fmt<'_0, '_1, '_2>(@1
     let @7: u32; // anonymous local
     let @8: u32; // anonymous local
 
+    storage_live(@7)
+    storage_live(@8)
     storage_live(@3)
     storage_live(@4)
     @4 := copy (((*(f@2)).options).flags)

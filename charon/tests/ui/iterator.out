@@ -3393,6 +3393,23 @@ fn test_crate::main()
     let @63: &'_ (i32); // anonymous local
     let @64: core::option::Option<core::fmt::Arguments<'_>>[core::marker::Sized<core::fmt::Arguments<'_>>]; // anonymous local
 
+    storage_live(@10)
+    storage_live(v@12)
+    storage_live(@13)
+    storage_live(@22)
+    storage_live(v@24)
+    storage_live(@25)
+    storage_live(@26)
+    storage_live(@27)
+    storage_live(@36)
+    storage_live(@46)
+    storage_live(kind@58)
+    storage_live(@59)
+    storage_live(@60)
+    storage_live(@61)
+    storage_live(@62)
+    storage_live(@63)
+    storage_live(@64)
     storage_live(a@1)
     a@1 := [const (0 : i32), const (1 : i32), const (2 : i32), const (3 : i32), const (4 : i32), const (5 : i32), const (6 : i32)]
     storage_live(i@2)

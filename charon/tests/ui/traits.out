@@ -38,6 +38,7 @@ pub fn test_crate::test_bool_trait_bool(@1: bool) -> bool
     let @3: &'_ (bool); // anonymous local
     let @4: &'_ (bool); // anonymous local
 
+    storage_live(@4)
     storage_live(@2)
     storage_live(@3)
     @3 := &x@1
@@ -117,6 +118,7 @@ where
     let @3: &'_ (core::option::Option<T>[@TraitClause0]); // anonymous local
     let @4: &'_ (core::option::Option<T>[@TraitClause0]); // anonymous local
 
+    storage_live(@4)
     storage_live(@2)
     storage_live(@3)
     @3 := &x@1
@@ -451,6 +453,7 @@ where
     let @7: u64; // anonymous local
     let @8: &'_ (test_crate::{test_crate::TestType<T>[@TraitClause0]}#6::test::TestType1); // anonymous local
 
+    storage_live(@8)
     storage_live(x@3)
     storage_live(@4)
     // Remark: we can't write: impl TestTrait for TestType<T>,
@@ -958,6 +961,7 @@ where
     let @0: core::result::Result<T, i32>[@TraitClause0, core::marker::Sized<i32>]; // return
     let @1: core::result::Result<T, i32>[@TraitClause0, core::marker::Sized<i32>]; // anonymous local
 
+    storage_live(@1)
     @1 := test_crate::{test_crate::Foo<T, U>[@TraitClause0, @TraitClause1]}#16::FOO<T, U>[@TraitClause0, @TraitClause1, @TraitClause2]
     @0 := move (@1)
     return
@@ -972,6 +976,7 @@ where
     let @0: core::result::Result<U, i32>[@TraitClause1, core::marker::Sized<i32>]; // return
     let @1: core::result::Result<U, i32>[@TraitClause1, core::marker::Sized<i32>]; // anonymous local
 
+    storage_live(@1)
     @1 := test_crate::{test_crate::Foo<T, U>[@TraitClause0, @TraitClause1]}#16::FOO<U, T>[@TraitClause1, @TraitClause0, @TraitClause2]
     @0 := move (@1)
     return

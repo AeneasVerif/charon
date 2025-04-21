@@ -49,6 +49,7 @@ fn test_crate::foo()
     let _v2@5: alloc::vec::Vec<i32, alloc::alloc::Global>[core::marker::Sized<i32>, core::marker::Sized<alloc::alloc::Global>]; // local
     let @6: Array<i32, 1 : usize>; // anonymous local
 
+    storage_live(@6)
     storage_live(_v@1)
     storage_live(@2)
     storage_live(@3)
@@ -86,6 +87,7 @@ pub fn test_crate::bar()
     let @5: test_crate::Foo; // anonymous local
     let @6: Array<test_crate::Foo, 1 : usize>; // anonymous local
 
+    storage_live(@6)
     storage_live(@1)
     storage_live(@2)
     storage_live(@3)

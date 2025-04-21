@@ -20,6 +20,7 @@ where
     let self@1: &'_ (core::option::Option<T>[@TraitClause0]); // arg #1
     let @2: isize; // anonymous local
 
+    storage_live(@2)
     match *(self@1) {
         0 => {
             @2 := const (0 : isize)

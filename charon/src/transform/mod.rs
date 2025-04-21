@@ -11,6 +11,7 @@ pub mod index_intermediate_assigns;
 pub mod index_to_function_calls;
 pub mod inline_local_panic_functions;
 pub mod insert_assign_return_unit;
+pub mod insert_storage_lives;
 pub mod lift_associated_item_clauses;
 pub mod merge_goto_chains;
 pub mod monomorphize;
@@ -144,6 +145,8 @@ pub static LLBC_PASSES: &[Pass] = &[
 pub static SHARED_FINALIZING_PASSES: &[Pass] = &[
     // # Micro-pass: remove the locals which are never used.
     NonBody(&remove_unused_locals::Transform),
+    // Insert storage lives for locals that are always allocated at the beginning of the function.
+    NonBody(&insert_storage_lives::Transform),
     // # Micro-pass: remove the useless `StatementKind::Nop`s.
     NonBody(&remove_nops::Transform),
     // Monomorphize the functions and types.

@@ -70,6 +70,7 @@ fn test_crate::access_mutable_static()
     let @1: *mut usize; // anonymous local
     let @2: *mut usize; // anonymous local
 
+    storage_live(@2)
     storage_live(@1)
     @2 := &raw mut test_crate::COUNTER
     @1 := move (@2)

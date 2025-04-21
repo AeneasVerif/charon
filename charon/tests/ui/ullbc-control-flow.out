@@ -204,6 +204,9 @@ pub fn test_crate::nested_loops_enum(@1: usize, @2: usize) -> usize
     let @34: usize; // anonymous local
 
     bb0: {
+        storage_live(@12);
+        storage_live(@22);
+        storage_live(@31);
         storage_live(s@3);
         s@3 := const (0 : usize);
         storage_live(@4);
