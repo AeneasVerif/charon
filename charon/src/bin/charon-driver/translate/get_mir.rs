@@ -23,15 +23,15 @@ impl TranslateCtx<'_> {
         let mir_level = self.options.mir_level;
         Ok(match get_mir_for_def_id_and_level(tcx, def_id, mir_level) {
             Some(body) => {
-                // Here, we have to create a MIR state, which contains the body
-                // Yes, we have to clone, this is annoying: we end up cloning the body twice
+                // Here, we have to create a MIR state, which contains the body.
+                let body = Rc::new(body);
                 let state = self
                     .hax_state
                     .clone()
                     .with_owner_id(def_id)
-                    .with_mir(Rc::new(body.clone()));
+                    .with_mir(body.clone());
                 // Translate
-                let body: hax::MirBody<()> = self.catch_sinto(&state, span, &body)?;
+                let body: hax::MirBody<()> = self.catch_sinto(&state, span, body.as_ref())?;
                 Some(body)
             }
             None => None,
