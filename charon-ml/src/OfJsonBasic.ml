@@ -1,5 +1,5 @@
 (** This module defines various basic utilities for json deserialization.
-   
+
  *)
 
 open Yojson.Basic
@@ -27,11 +27,16 @@ let int_of_json (ctx : 'ctx) (js : json) : (int, string) result =
   | `Int i -> Ok i
   | _ -> Error ("int_of_json: not an int: " ^ show js)
 
-let char_of_json (ctx : 'ctx) (js : json) : (char, string) result =
+let char_of_json (ctx : 'ctx) (js : json) : (Uchar.t, string) result =
   match js with
   | `String c ->
-      if String.length c = 1 then Ok c.[0]
-      else Error ("char_of_json: stricly more than one character in: " ^ show js)
+      if String.length c > 4 then
+        Error ("char_of_json: stricly more than four bytes in: " ^ show js)
+      else
+        let uchar = String.get_utf_8_uchar c 0 in
+        if Uchar.utf_decode_is_valid uchar then
+          Ok (Uchar.utf_decode_uchar uchar)
+        else Error ("char_of_json: invalid UTF-8 character: " ^ show js)
   | _ -> Error ("char_of_json: not a char: " ^ show js)
 
 let rec of_json_list (a_of_json : 'ctx -> json -> ('a, string) result)

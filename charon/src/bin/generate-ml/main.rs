@@ -216,7 +216,7 @@ fn type_to_ocaml_call(ctx: &GenerateCtx, ty: &Ty) -> String {
 fn type_to_ocaml_name(ctx: &GenerateCtx, ty: &Ty) -> String {
     match ty.kind() {
         TyKind::Literal(LiteralTy::Bool) => "bool".to_string(),
-        TyKind::Literal(LiteralTy::Char) => "char".to_string(),
+        TyKind::Literal(LiteralTy::Char) => "(Uchar.t [@visitors.opaque])".to_string(),
         TyKind::Literal(LiteralTy::Integer(_)) => "int".to_string(),
         TyKind::Literal(LiteralTy::Float(_)) => "float_of_json".to_string(),
         TyKind::Adt(adt_kind, generics) => {

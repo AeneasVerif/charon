@@ -1,6 +1,8 @@
 (** The primitive values. *)
 include BigInt
 
+include Uchar
+
 type integer_type =
   | Isize
   | I8
@@ -32,7 +34,7 @@ and literal =
   | VScalar of scalar_value
   | VFloat of float_value
   | VBool of bool
-  | VChar of char
+  | VChar of (Uchar.t[@visitors.opaque])
   | VByteStr of int list
   | VStr of string
 

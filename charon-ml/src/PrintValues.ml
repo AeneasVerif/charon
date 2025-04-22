@@ -43,6 +43,6 @@ let literal_to_string (lit : literal) : string =
   | VScalar sv -> scalar_value_to_string sv
   | VFloat fv -> float_value_to_string fv
   | VBool b -> Bool.to_string b
-  | VChar c -> String.make 1 c
+  | VChar c -> Uchar.to_string c
   | VStr s -> "\"" ^ s ^ "\""
   | VByteStr bs -> "[" ^ String.concat ", " (List.map string_of_int bs) ^ "]"
