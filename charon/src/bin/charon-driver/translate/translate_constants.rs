@@ -144,21 +144,13 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
                 RawConstantExpr::Ref(Box::new(val))
             }
             ConstantExprKind::Cast { .. } => {
-                raise_error!(
-                    self,
-                    span,
-                    "Unsupported constant: `ConstantExprKind::Cast {{..}}`",
-                )
+                RawConstantExpr::Opaque("`ConstantExprKind::Cast {{..}}`".into())
             }
             ConstantExprKind::RawBorrow {
                 mutability: false, ..
-            } => {
-                raise_error!(
-                    self,
-                    span,
-                    "Unsupported constant: `ConstantExprKind::RawBorrow {{mutability: false, ..}}`",
-                )
-            }
+            } => RawConstantExpr::Opaque(
+                "ConstantExprKind::RawBorrow {{mutability: false, ..}}".into(),
+            ),
             ConstantExprKind::RawBorrow {
                 mutability: true,
                 arg,
@@ -186,10 +178,7 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
                 RawConstantExpr::FnPtr(fn_id.func)
             }
             ConstantExprKind::Memory(bytes) => RawConstantExpr::RawMemory(bytes.clone()),
-            ConstantExprKind::Todo(msg) => {
-                // Case not yet handled by hax
-                raise_error!(self, span, "Unsupported constant: {:?}", msg)
-            }
+            ConstantExprKind::Todo(msg) => RawConstantExpr::Opaque("Hax: ".to_owned() + msg),
         };
 
         Ok(ConstantExpr { value, ty })
@@ -222,7 +211,8 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
             | RawConstantExpr::TraitConst { .. }
             | RawConstantExpr::Ref(_)
             | RawConstantExpr::MutPtr(_)
-            | RawConstantExpr::FnPtr { .. } => {
+            | RawConstantExpr::FnPtr { .. }
+            | RawConstantExpr::Opaque(_) => {
                 raise_error!(self, span, "Unexpected constant generic: {:?}", value)
             }
         }
