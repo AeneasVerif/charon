@@ -20,7 +20,6 @@ pub fn test_crate::bar()
     let @1: *const (); // anonymous local
     let @2: bool; // anonymous local
 
-    storage_live(@2)
     storage_live(@1)
     @1 := cast<usize, *const ()>(const (43 : usize))
     @2 := const (Opaque(`ConstantExprKind::Cast {{..}}`)) == copy (@1)
