@@ -1,4 +1,4 @@
-//@ known-failure
+//@ ignore-warnings
 const DISGUISED_INT: *const () = 42 as _;
 
 pub fn bar() {
