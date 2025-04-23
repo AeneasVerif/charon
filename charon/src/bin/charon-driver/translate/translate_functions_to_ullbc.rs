@@ -15,7 +15,7 @@ use charon_lib::pretty::FmtWithCtx;
 use charon_lib::ullbc_ast::*;
 use hax_frontend_exporter as hax;
 use itertools::Itertools;
-use rustc_middle::mir::START_BLOCK;
+use rustc_middle::mir;
 
 pub(crate) struct SubstFunId {
     pub func: FnPtr,
@@ -186,35 +186,11 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
         Ok(())
     }
 
-    /// Translate an expression's body (either a function or a global).
-    ///
-    /// The local variables should already have been translated and inserted in
-    /// the context.
-    fn translate_transparent_expression_body(
-        &mut self,
-        body: &hax::MirBody<()>,
-    ) -> Result<(), Error> {
-        trace!();
-
-        // Register the start block
-        let id = self.translate_basic_block_id(rustc_index::Idx::new(START_BLOCK.as_usize()));
-        assert!(id == START_BLOCK_ID);
-
-        // For as long as there are blocks in the stack, translate them
-        while let Some(block_id) = self.blocks_stack.pop_front() {
-            self.translate_basic_block(body, block_id)?;
-        }
-
-        Ok(())
-    }
-
     /// Translate a basic block id and register it, if it hasn't been done.
     fn translate_basic_block_id(&mut self, block_id: hax::BasicBlock) -> BlockId {
         match self.blocks_map.get(&block_id) {
-            None => {
-                // Generate a fresh id - this also registers the block
-                self.fresh_block_id(block_id)
-            }
+            // Generate a fresh id - this also registers the block
+            None => self.fresh_block_id(block_id),
             Some(id) => id,
         }
     }
@@ -1332,6 +1308,9 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
             return Ok(Err(Opaque));
         };
 
+        // Compute the span information
+        let span = self.translate_span_from_hax(&body.span);
+
         // Initialize the local variables
         trace!("Translating the body locals");
         self.locals.arg_count = sig.inputs.len();
@@ -1339,13 +1318,17 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
 
         // Translate the expression body
         trace!("Translating the expression body");
-        self.translate_transparent_expression_body(&body)?;
 
-        // Compute the span information
-        let span = self.translate_span_from_hax(&body.span);
+        // Register the start block
+        let id = self.translate_basic_block_id(rustc_index::Idx::new(mir::START_BLOCK.as_usize()));
+        assert!(id == START_BLOCK_ID);
 
-        // We need to convert the blocks map to an index vector
-        // We clone things while we could move them...
+        // For as long as there are blocks in the stack, translate them
+        while let Some(block_id) = self.blocks_stack.pop_front() {
+            self.translate_basic_block(&body, block_id)?;
+        }
+
+        // We convert the blocks map to an index vector.
         let mut blocks = Vector::new();
         for (id, block) in mem::take(&mut self.blocks) {
             let new_id = blocks.push(block);
