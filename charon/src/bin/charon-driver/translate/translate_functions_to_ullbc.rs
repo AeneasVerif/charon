@@ -1303,23 +1303,19 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
     /// declared opaque, and only translate non-local bodies if `extract_opaque_bodies` is set).
     fn translate_body(
         &mut self,
+        span: Span,
         def: &hax::FullDef,
         sig: &FunSig,
-        item_meta: &ItemMeta,
     ) -> Result<Result<Body, Opaque>, Error> {
         // Stopgap measure because there are still many panics in charon and hax.
         let mut this = panic::AssertUnwindSafe(&mut *self);
-        let res = panic::catch_unwind(move || this.translate_body_aux(def, sig, item_meta));
+        let res = panic::catch_unwind(move || this.translate_body_aux(def, span, sig));
         match res {
             Ok(Ok(body)) => Ok(body),
             // Translation error
             Ok(Err(e)) => Err(e),
             Err(_) => {
-                raise_error!(
-                    self,
-                    item_meta.span,
-                    "Thread panicked when extracting body."
-                );
+                raise_error!(self, span, "Thread panicked when extracting body.");
             }
         }
     }
@@ -1327,14 +1323,9 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
     fn translate_body_aux(
         &mut self,
         def: &hax::FullDef,
+        span: Span,
         sig: &FunSig,
-        item_meta: &ItemMeta,
     ) -> Result<Result<Body, Opaque>, Error> {
-        if item_meta.opacity.with_private_contents().is_opaque() {
-            // The bodies of foreign functions are opaque by default.
-            return Ok(Err(Opaque));
-        }
-
         if let hax::FullDefKind::Ctor {
             adt_def_id,
             ctor_of,
@@ -1344,7 +1335,6 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
             ..
         } = def.kind()
         {
-            let span = item_meta.span;
             let adt_decl_id = self.register_type_decl_id(span, adt_def_id);
             let output_ty = self.translate_ty(span, output_ty)?;
             let mut locals = Locals {
@@ -1393,7 +1383,7 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
 
         // Retrieve the body
         let rust_id = def.rust_def_id();
-        let Some(body) = self.t_ctx.get_mir(rust_id, item_meta.span)? else {
+        let Some(body) = self.t_ctx.get_mir(rust_id, span)? else {
             return Ok(Err(Opaque));
         };
 
@@ -1602,10 +1592,14 @@ impl BodyTransCtx<'_, '_> {
         let is_global_initializer = is_global_initializer
             .then(|| self.register_global_decl_id(item_meta.span, &def.def_id));
 
-        let body_id = if !is_trait_method_decl_without_default {
+        let body_id = if item_meta.opacity.with_private_contents().is_opaque()
+            || is_trait_method_decl_without_default
+        {
+            Err(Opaque)
+        } else {
             // Translate the body. This doesn't store anything if we can't/decide not to translate
             // this body.
-            match self.translate_body(def, &signature, &item_meta) {
+            match self.translate_body(item_meta.span, def, &signature) {
                 Ok(Ok(body)) => Ok(body),
                 // Opaque declaration
                 Ok(Err(Opaque)) => Err(Opaque),
@@ -1613,8 +1607,6 @@ impl BodyTransCtx<'_, '_> {
                 // FIXME: handle error cases more explicitly.
                 Err(_) => Err(Opaque),
             }
-        } else {
-            Err(Opaque)
         };
         Ok(FunDecl {
             def_id,
