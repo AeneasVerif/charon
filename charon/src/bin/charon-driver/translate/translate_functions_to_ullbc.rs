@@ -1326,61 +1326,6 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
         span: Span,
         sig: &FunSig,
     ) -> Result<Result<Body, Opaque>, Error> {
-        if let hax::FullDefKind::Ctor {
-            adt_def_id,
-            ctor_of,
-            variant_id,
-            fields,
-            output_ty,
-            ..
-        } = def.kind()
-        {
-            let adt_decl_id = self.register_type_decl_id(span, adt_def_id);
-            let output_ty = self.translate_ty(span, output_ty)?;
-            let mut locals = Locals {
-                arg_count: fields.len(),
-                locals: Vector::new(),
-            };
-            locals.new_var(None, output_ty); // return place
-            let args: Vec<_> = fields
-                .iter()
-                .map(|field| {
-                    let ty = self.translate_ty(span, &field.ty)?;
-                    let place = locals.new_var(None, ty);
-                    Ok(Operand::Move(place))
-                })
-                .try_collect()?;
-            let variant = match ctor_of {
-                hax::CtorOf::Struct => None,
-                hax::CtorOf::Variant => Some(VariantId::from(*variant_id)),
-            };
-            let st_kind = RawStatement::Assign(
-                locals.return_place(),
-                Rvalue::Aggregate(
-                    AggregateKind::Adt(
-                        TypeId::Adt(adt_decl_id),
-                        variant,
-                        None,
-                        sig.generics
-                            .identity_args(GenericsSource::item(adt_decl_id)),
-                    ),
-                    args,
-                ),
-            );
-            let statement = Statement::new(span, st_kind);
-            let block = BlockData {
-                statements: vec![statement],
-                terminator: Terminator::new(span, RawTerminator::Return),
-            };
-            let body = Body::Unstructured(GExprBody {
-                span,
-                locals,
-                comments: Default::default(),
-                body: [block].into_iter().collect(),
-            });
-            return Ok(Ok(body));
-        }
-
         // Retrieve the body
         let rust_id = def.rust_def_id();
         let Some(body) = self.t_ctx.get_mir(rust_id, span)? else {
@@ -1555,6 +1500,64 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
             output,
         })
     }
+
+    /// Generate a fake function body for ADT constructors.
+    fn build_ctor_body(
+        &mut self,
+        span: Span,
+        signature: &FunSig,
+        adt_def_id: &hax::DefId,
+        ctor_of: &hax::CtorOf,
+        variant_id: usize,
+        fields: &hax::IndexVec<hax::FieldIdx, hax::FieldDef>,
+        output_ty: &hax::Ty,
+    ) -> Result<Body, Error> {
+        let adt_decl_id = self.register_type_decl_id(span, adt_def_id);
+        let output_ty = self.translate_ty(span, output_ty)?;
+        let mut locals = Locals {
+            arg_count: fields.len(),
+            locals: Vector::new(),
+        };
+        locals.new_var(None, output_ty);
+        let args: Vec<_> = fields
+            .iter()
+            .map(|field| {
+                let ty = self.translate_ty(span, &field.ty)?;
+                let place = locals.new_var(None, ty);
+                Ok(Operand::Move(place))
+            })
+            .try_collect()?;
+        let variant = match ctor_of {
+            hax::CtorOf::Struct => None,
+            hax::CtorOf::Variant => Some(VariantId::from(variant_id)),
+        };
+        let st_kind = RawStatement::Assign(
+            locals.return_place(),
+            Rvalue::Aggregate(
+                AggregateKind::Adt(
+                    TypeId::Adt(adt_decl_id),
+                    variant,
+                    None,
+                    signature
+                        .generics
+                        .identity_args(GenericsSource::item(adt_decl_id)),
+                ),
+                args,
+            ),
+        );
+        let statement = Statement::new(span, st_kind);
+        let block = BlockData {
+            statements: vec![statement],
+            terminator: Terminator::new(span, RawTerminator::Return),
+        };
+        let body = Body::Unstructured(GExprBody {
+            span,
+            locals,
+            comments: Default::default(),
+            body: [block].into_iter().collect(),
+        });
+        Ok(body)
+    }
 }
 
 impl BodyTransCtx<'_, '_> {
@@ -1567,7 +1570,7 @@ impl BodyTransCtx<'_, '_> {
         def: &hax::FullDef,
     ) -> Result<FunDecl, Error> {
         trace!("About to translate function:\n{:?}", def.def_id);
-        let def_span = item_meta.span;
+        let span = item_meta.span;
 
         // Translate the function signature
         trace!("Translating function signature");
@@ -1575,7 +1578,7 @@ impl BodyTransCtx<'_, '_> {
 
         // Check whether this function is a method declaration for a trait definition.
         // If this is the case, it shouldn't contain a body.
-        let kind = self.get_item_kind(def_span, def)?;
+        let kind = self.get_item_kind(span, def)?;
         let is_trait_method_decl_without_default = match &kind {
             ItemKind::Regular | ItemKind::TraitImpl { .. } => false,
             ItemKind::TraitDecl { has_default, .. } => !has_default,
@@ -1589,13 +1592,32 @@ impl BodyTransCtx<'_, '_> {
                 | hax::FullDefKind::InlineConst { .. }
                 | hax::FullDefKind::Static { .. }
         );
-        let is_global_initializer = is_global_initializer
-            .then(|| self.register_global_decl_id(item_meta.span, &def.def_id));
+        let is_global_initializer =
+            is_global_initializer.then(|| self.register_global_decl_id(span, &def.def_id));
 
         let body_id = if item_meta.opacity.with_private_contents().is_opaque()
             || is_trait_method_decl_without_default
         {
             Err(Opaque)
+        } else if let hax::FullDefKind::Ctor {
+            adt_def_id,
+            ctor_of,
+            variant_id,
+            fields,
+            output_ty,
+            ..
+        } = def.kind()
+        {
+            let body = self.build_ctor_body(
+                span,
+                &signature,
+                adt_def_id,
+                ctor_of,
+                *variant_id,
+                fields,
+                output_ty,
+            )?;
+            Ok(body)
         } else {
             // Translate the body. This doesn't store anything if we can't/decide not to translate
             // this body.
