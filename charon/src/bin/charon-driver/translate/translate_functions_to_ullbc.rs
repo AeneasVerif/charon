@@ -15,7 +15,7 @@ use charon_lib::pretty::FmtWithCtx;
 use charon_lib::ullbc_ast::*;
 use hax_frontend_exporter as hax;
 use itertools::Itertools;
-use rustc_middle::mir::START_BLOCK;
+use rustc_middle::mir;
 
 pub(crate) struct SubstFunId {
     pub func: FnPtr,
@@ -186,50 +186,27 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
         Ok(())
     }
 
-    /// Translate an expression's body (either a function or a global).
-    ///
-    /// The local variables should already have been translated and inserted in
-    /// the context.
-    fn translate_transparent_expression_body(
-        &mut self,
-        body: &hax::MirBody<()>,
-    ) -> Result<(), Error> {
-        trace!();
-
-        // Register the start block
-        let id = self.translate_basic_block_id(rustc_index::Idx::new(START_BLOCK.as_usize()));
-        assert!(id == START_BLOCK_ID);
-
-        // For as long as there are blocks in the stack, translate them
-        while let Some(block_id) = self.blocks_stack.pop_front() {
-            self.translate_basic_block(body, block_id)?;
-        }
-
-        Ok(())
-    }
-
     /// Translate a basic block id and register it, if it hasn't been done.
     fn translate_basic_block_id(&mut self, block_id: hax::BasicBlock) -> BlockId {
         match self.blocks_map.get(&block_id) {
+            Some(id) => *id,
+            // Generate a fresh id - this also registers the block
             None => {
-                // Generate a fresh id - this also registers the block
-                self.fresh_block_id(block_id)
+                // Push to the stack of blocks awaiting translation
+                self.blocks_stack.push_back(block_id);
+                let id = self.blocks.reserve_slot();
+                // Insert in the map
+                self.blocks_map.insert(block_id, id);
+                id
             }
-            Some(id) => id,
         }
     }
 
     fn translate_basic_block(
         &mut self,
         body: &hax::MirBody<()>,
-        block_id: hax::BasicBlock,
-    ) -> Result<(), Error> {
-        // Retrieve the translated block id
-        let nid = self.translate_basic_block_id(block_id);
-
-        // Retrieve the block data
-        let block = body.basic_blocks.get(block_id).unwrap();
-
+        block: &hax::BasicBlockData,
+    ) -> Result<BlockData, Error> {
         // Translate the statements
         let mut statements = Vec::new();
         for statement in &block.statements {
@@ -246,15 +223,10 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
         let terminator = block.terminator.as_ref().unwrap();
         let terminator = self.translate_terminator(body, terminator, &mut statements)?;
 
-        // Insert the block in the translated blocks
-        let block = BlockData {
+        Ok(BlockData {
             statements,
             terminator,
-        };
-
-        self.push_block(nid, block);
-
-        Ok(())
+        })
     }
 
     /// Translate a place
@@ -1303,23 +1275,18 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
     /// declared opaque, and only translate non-local bodies if `extract_opaque_bodies` is set).
     fn translate_body(
         &mut self,
+        span: Span,
         def: &hax::FullDef,
-        sig: &FunSig,
-        item_meta: &ItemMeta,
     ) -> Result<Result<Body, Opaque>, Error> {
         // Stopgap measure because there are still many panics in charon and hax.
         let mut this = panic::AssertUnwindSafe(&mut *self);
-        let res = panic::catch_unwind(move || this.translate_body_aux(def, sig, item_meta));
+        let res = panic::catch_unwind(move || this.translate_body_aux(def, span));
         match res {
             Ok(Ok(body)) => Ok(body),
             // Translation error
             Ok(Err(e)) => Err(e),
             Err(_) => {
-                raise_error!(
-                    self,
-                    item_meta.span,
-                    "Thread panicked when extracting body."
-                );
+                raise_error!(self, span, "Thread panicked when extracting body.");
             }
         }
     }
@@ -1327,103 +1294,43 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
     fn translate_body_aux(
         &mut self,
         def: &hax::FullDef,
-        sig: &FunSig,
-        item_meta: &ItemMeta,
+        span: Span,
     ) -> Result<Result<Body, Opaque>, Error> {
-        if item_meta.opacity.with_private_contents().is_opaque() {
-            // The bodies of foreign functions are opaque by default.
-            return Ok(Err(Opaque));
-        }
-
-        if let hax::FullDefKind::Ctor {
-            adt_def_id,
-            ctor_of,
-            variant_id,
-            fields,
-            output_ty,
-            ..
-        } = def.kind()
-        {
-            let span = item_meta.span;
-            let adt_decl_id = self.register_type_decl_id(span, adt_def_id);
-            let output_ty = self.translate_ty(span, output_ty)?;
-            let mut locals = Locals {
-                arg_count: fields.len(),
-                locals: Vector::new(),
-            };
-            locals.new_var(None, output_ty); // return place
-            let args: Vec<_> = fields
-                .iter()
-                .map(|field| {
-                    let ty = self.translate_ty(span, &field.ty)?;
-                    let place = locals.new_var(None, ty);
-                    Ok(Operand::Move(place))
-                })
-                .try_collect()?;
-            let variant = match ctor_of {
-                hax::CtorOf::Struct => None,
-                hax::CtorOf::Variant => Some(VariantId::from(*variant_id)),
-            };
-            let st_kind = RawStatement::Assign(
-                locals.return_place(),
-                Rvalue::Aggregate(
-                    AggregateKind::Adt(
-                        TypeId::Adt(adt_decl_id),
-                        variant,
-                        None,
-                        sig.generics
-                            .identity_args(GenericsSource::item(adt_decl_id)),
-                    ),
-                    args,
-                ),
-            );
-            let statement = Statement::new(span, st_kind);
-            let block = BlockData {
-                statements: vec![statement],
-                terminator: Terminator::new(span, RawTerminator::Return),
-            };
-            let body = Body::Unstructured(GExprBody {
-                span,
-                locals,
-                comments: Default::default(),
-                body: [block].into_iter().collect(),
-            });
-            return Ok(Ok(body));
-        }
-
         // Retrieve the body
         let rust_id = def.rust_def_id();
-        let Some(body) = self.t_ctx.get_mir(rust_id, item_meta.span)? else {
+        let Some(body) = self.t_ctx.get_mir(rust_id, span)? else {
             return Ok(Err(Opaque));
         };
-
-        // Initialize the local variables
-        trace!("Translating the body locals");
-        self.locals.arg_count = sig.inputs.len();
-        self.translate_body_locals(&body)?;
-
-        // Translate the expression body
-        trace!("Translating the expression body");
-        self.translate_transparent_expression_body(&body)?;
 
         // Compute the span information
         let span = self.translate_span_from_hax(&body.span);
 
-        // We need to convert the blocks map to an index vector
-        // We clone things while we could move them...
-        let mut blocks = Vector::new();
-        for (id, block) in mem::take(&mut self.blocks) {
-            let new_id = blocks.push(block);
-            // Sanity check to make sure we don't mess with the indices
-            assert!(id == new_id);
+        // Initialize the local variables
+        trace!("Translating the body locals");
+        self.locals.arg_count = body.arg_count;
+        self.translate_body_locals(&body)?;
+
+        // Translate the expression body
+        trace!("Translating the expression body");
+
+        // Register the start block
+        let id = self.translate_basic_block_id(rustc_index::Idx::new(mir::START_BLOCK.as_usize()));
+        assert!(id == START_BLOCK_ID);
+
+        // For as long as there are blocks in the stack, translate them
+        while let Some(hax_block_id) = self.blocks_stack.pop_front() {
+            let hax_block = body.basic_blocks.get(hax_block_id).unwrap();
+            let block_id = self.translate_basic_block_id(hax_block_id);
+            let block = self.translate_basic_block(&body, hax_block)?;
+            self.blocks.set_slot(block_id, block);
         }
 
         // Create the body
         Ok(Ok(Body::Unstructured(ExprBody {
             span,
             locals: mem::take(&mut self.locals),
+            body: mem::take(&mut self.blocks),
             comments: self.translate_body_comments(def, span),
-            body: blocks,
         })))
     }
 
@@ -1565,6 +1472,64 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
             output,
         })
     }
+
+    /// Generate a fake function body for ADT constructors.
+    fn build_ctor_body(
+        &mut self,
+        span: Span,
+        signature: &FunSig,
+        adt_def_id: &hax::DefId,
+        ctor_of: &hax::CtorOf,
+        variant_id: usize,
+        fields: &hax::IndexVec<hax::FieldIdx, hax::FieldDef>,
+        output_ty: &hax::Ty,
+    ) -> Result<Body, Error> {
+        let adt_decl_id = self.register_type_decl_id(span, adt_def_id);
+        let output_ty = self.translate_ty(span, output_ty)?;
+        let mut locals = Locals {
+            arg_count: fields.len(),
+            locals: Vector::new(),
+        };
+        locals.new_var(None, output_ty);
+        let args: Vec<_> = fields
+            .iter()
+            .map(|field| {
+                let ty = self.translate_ty(span, &field.ty)?;
+                let place = locals.new_var(None, ty);
+                Ok(Operand::Move(place))
+            })
+            .try_collect()?;
+        let variant = match ctor_of {
+            hax::CtorOf::Struct => None,
+            hax::CtorOf::Variant => Some(VariantId::from(variant_id)),
+        };
+        let st_kind = RawStatement::Assign(
+            locals.return_place(),
+            Rvalue::Aggregate(
+                AggregateKind::Adt(
+                    TypeId::Adt(adt_decl_id),
+                    variant,
+                    None,
+                    signature
+                        .generics
+                        .identity_args(GenericsSource::item(adt_decl_id)),
+                ),
+                args,
+            ),
+        );
+        let statement = Statement::new(span, st_kind);
+        let block = BlockData {
+            statements: vec![statement],
+            terminator: Terminator::new(span, RawTerminator::Return),
+        };
+        let body = Body::Unstructured(GExprBody {
+            span,
+            locals,
+            comments: Default::default(),
+            body: [block].into_iter().collect(),
+        });
+        Ok(body)
+    }
 }
 
 impl BodyTransCtx<'_, '_> {
@@ -1577,7 +1542,7 @@ impl BodyTransCtx<'_, '_> {
         def: &hax::FullDef,
     ) -> Result<FunDecl, Error> {
         trace!("About to translate function:\n{:?}", def.def_id);
-        let def_span = item_meta.span;
+        let span = item_meta.span;
 
         // Translate the function signature
         trace!("Translating function signature");
@@ -1585,7 +1550,7 @@ impl BodyTransCtx<'_, '_> {
 
         // Check whether this function is a method declaration for a trait definition.
         // If this is the case, it shouldn't contain a body.
-        let kind = self.get_item_kind(def_span, def)?;
+        let kind = self.get_item_kind(span, def)?;
         let is_trait_method_decl_without_default = match &kind {
             ItemKind::Regular | ItemKind::TraitImpl { .. } => false,
             ItemKind::TraitDecl { has_default, .. } => !has_default,
@@ -1599,13 +1564,36 @@ impl BodyTransCtx<'_, '_> {
                 | hax::FullDefKind::InlineConst { .. }
                 | hax::FullDefKind::Static { .. }
         );
-        let is_global_initializer = is_global_initializer
-            .then(|| self.register_global_decl_id(item_meta.span, &def.def_id));
+        let is_global_initializer =
+            is_global_initializer.then(|| self.register_global_decl_id(span, &def.def_id));
 
-        let body_id = if !is_trait_method_decl_without_default {
+        let body_id = if item_meta.opacity.with_private_contents().is_opaque()
+            || is_trait_method_decl_without_default
+        {
+            Err(Opaque)
+        } else if let hax::FullDefKind::Ctor {
+            adt_def_id,
+            ctor_of,
+            variant_id,
+            fields,
+            output_ty,
+            ..
+        } = def.kind()
+        {
+            let body = self.build_ctor_body(
+                span,
+                &signature,
+                adt_def_id,
+                ctor_of,
+                *variant_id,
+                fields,
+                output_ty,
+            )?;
+            Ok(body)
+        } else {
             // Translate the body. This doesn't store anything if we can't/decide not to translate
             // this body.
-            match self.translate_body(def, &signature, &item_meta) {
+            match self.translate_body(item_meta.span, def) {
                 Ok(Ok(body)) => Ok(body),
                 // Opaque declaration
                 Ok(Err(Opaque)) => Err(Opaque),
@@ -1613,8 +1601,6 @@ impl BodyTransCtx<'_, '_> {
                 // FIXME: handle error cases more explicitly.
                 Err(_) => Err(Opaque),
             }
-        } else {
-            Err(Opaque)
         };
         Ok(FunDecl {
             def_id,

@@ -4,6 +4,7 @@ use std::rc::Rc;
 
 use hax_frontend_exporter as hax;
 use hax_frontend_exporter::{HasMirSetter, HasOwnerIdSetter};
+use rustc_hir as hir;
 use rustc_hir::def_id::DefId;
 use rustc_middle::mir::Body;
 use rustc_middle::ty::TyCtxt;
@@ -23,15 +24,15 @@ impl TranslateCtx<'_> {
         let mir_level = self.options.mir_level;
         Ok(match get_mir_for_def_id_and_level(tcx, def_id, mir_level) {
             Some(body) => {
-                // Here, we have to create a MIR state, which contains the body
-                // Yes, we have to clone, this is annoying: we end up cloning the body twice
+                // Here, we have to create a MIR state, which contains the body.
+                let body = Rc::new(body);
                 let state = self
                     .hax_state
                     .clone()
                     .with_owner_id(def_id)
-                    .with_mir(Rc::new(body.clone()));
+                    .with_mir(body.clone());
                 // Translate
-                let body: hax::MirBody<()> = self.catch_sinto(&state, span, &body)?;
+                let body: hax::MirBody<()> = self.catch_sinto(&state, span, body.as_ref())?;
                 Some(body)
             }
             None => None,
@@ -40,7 +41,7 @@ impl TranslateCtx<'_> {
 }
 
 /// Query the MIR for a function at a specific level. Return `None` in the case of a foreign body
-/// with no MIR available (e.g. because it is not available for inlining).
+/// with no MIR available.
 fn get_mir_for_def_id_and_level(
     tcx: TyCtxt<'_>,
     def_id: DefId,
@@ -67,20 +68,20 @@ fn get_mir_for_def_id_and_level(
         // We fall back to optimized MIR if the requested body was stolen.
     }
 
-    // There are only two MIRs we can fetch for non-local bodies: CTFE mir for globals and
-    // const fns, and optimized MIR for inlinable functions. The rest don't have MIR in the
-    // rlib.
-    let body = if tcx.is_mir_available(def_id) {
-        if let Some(local_def_id) = def_id.as_local()
-            && !matches!(
-                tcx.hir_body_const_context(local_def_id),
-                None | Some(rustc_hir::ConstContext::ConstFn)
-            )
-        {
-            tcx.mir_for_ctfe(def_id).clone()
-        } else {
-            tcx.optimized_mir(def_id).clone()
-        }
+    // There are only two MIRs we can fetch for non-local bodies: CTFE mir for globals and const
+    // fns, and optimized MIR for functions.
+    //
+    // We pass `-Zalways-encode-mir` so that we get MIR for all the dependencies we compiled
+    // ourselves. This doesn't apply to the stdlib; there we only get MIR for const items and
+    // generic or inlineable functions.
+    let is_global = def_id.as_local().is_some_and(|local_def_id| {
+        matches!(
+            tcx.hir_body_owner_kind(local_def_id),
+            hir::BodyOwnerKind::Const { .. } | hir::BodyOwnerKind::Static(_)
+        )
+    });
+    let body = if tcx.is_mir_available(def_id) && !is_global {
+        tcx.optimized_mir(def_id).clone()
     } else if tcx.is_ctfe_mir_available(def_id) {
         tcx.mir_for_ctfe(def_id).clone()
     } else {
