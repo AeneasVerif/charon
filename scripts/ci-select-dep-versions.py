@@ -4,6 +4,9 @@ import re, sys, os, json, subprocess
 def eprint(*args):
     print(*args, file=sys.stderr)
 
+DEPENDENT_PROJECTS = ["aeneas", "eurydice", "libcrux"]
+# Don't set a default value to libcrux so that by default we reuse the last-known-good
+# commit. For aeneas and eurydice by default we want to use the latest commit.
 project_refs = {
     "aeneas": "main",
     "eurydice": "main",
@@ -36,4 +39,8 @@ if ci_event in ["pull_request", "merge_group"]:
 
 # Emit lines that will be piped to `$GITHUB_OUTPUT`
 for project, ref in project_refs.items():
+    if project not in DEPENDENT_PROJECTS:
+        eprint(f"ERROR: repo `{project}` is not a dependent project. Accepted values are:",
+               ", ".join(DEPENDENT_PROJECTS))
+        sys.exit(1)
     print(f"{project}={ref}")
