@@ -9,12 +9,12 @@ pub struct Generator<I: Idx> {
 
 impl<I: Idx> Generator<I> {
     pub fn new() -> Self {
-        Self::new_with_init_value(0)
+        Self::new_with_init_value(I::from_usize(0))
     }
 
-    pub fn new_with_init_value(counter: usize) -> Self {
+    pub fn new_with_init_value(index: I) -> Self {
         Generator {
-            counter,
+            counter: index.index(),
             phantom: PhantomData,
         }
     }
