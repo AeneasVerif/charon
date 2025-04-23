@@ -485,6 +485,7 @@ pub enum RawConstantExpr {
     #[drive(skip)]
     RawMemory(Vec<u8>),
     /// A constant expression that Charon still doesn't handle, along with the reason why.
+    #[drive(skip)]
     Opaque(String),
 }
 
