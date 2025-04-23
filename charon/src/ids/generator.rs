@@ -1,5 +1,5 @@
 use index_vec::Idx;
-use std::{collections::HashMap, hash::Hash, marker::PhantomData};
+use std::marker::PhantomData;
 
 #[derive(Debug, Clone, Copy)]
 pub struct Generator<I: Idx> {
@@ -36,44 +36,6 @@ impl<I: Idx> Default for Generator<I> {
         Self {
             counter: Default::default(),
             phantom: Default::default(),
-        }
-    }
-}
-
-#[derive(Debug, Clone)]
-pub struct MapGenerator<K: Eq + Hash + Ord, I: Idx> {
-    counter: Generator<I>,
-    map: HashMap<K, I>,
-}
-
-impl<K: Eq + Hash + Ord, I: Idx> MapGenerator<K, I> {
-    pub fn new() -> Self {
-        MapGenerator {
-            counter: Generator::new(),
-            map: HashMap::new(),
-        }
-    }
-
-    pub fn insert(&mut self, k: K) -> I {
-        *self.map.entry(k).or_insert_with(|| self.counter.fresh_id())
-    }
-
-    pub fn get(&self, k: &K) -> Option<I> {
-        self.map.get(k).map(|id| *id)
-    }
-
-    // We may need to generate fresh ids without inserting a value in the map
-    pub fn fresh_id(&mut self) -> I {
-        self.counter.fresh_id()
-    }
-}
-
-// Manual impl to avoid unnecessary `Default` bounds.
-impl<K: Eq + Hash + Ord, I: Idx> Default for MapGenerator<K, I> {
-    fn default() -> Self {
-        Self {
-            counter: Default::default(),
-            map: Default::default(),
         }
     }
 }
