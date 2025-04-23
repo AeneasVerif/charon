@@ -1277,11 +1277,10 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
         &mut self,
         span: Span,
         def: &hax::FullDef,
-        sig: &FunSig,
     ) -> Result<Result<Body, Opaque>, Error> {
         // Stopgap measure because there are still many panics in charon and hax.
         let mut this = panic::AssertUnwindSafe(&mut *self);
-        let res = panic::catch_unwind(move || this.translate_body_aux(def, span, sig));
+        let res = panic::catch_unwind(move || this.translate_body_aux(def, span));
         match res {
             Ok(Ok(body)) => Ok(body),
             // Translation error
@@ -1296,7 +1295,6 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
         &mut self,
         def: &hax::FullDef,
         span: Span,
-        sig: &FunSig,
     ) -> Result<Result<Body, Opaque>, Error> {
         // Retrieve the body
         let rust_id = def.rust_def_id();
@@ -1309,7 +1307,7 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
 
         // Initialize the local variables
         trace!("Translating the body locals");
-        self.locals.arg_count = sig.inputs.len();
+        self.locals.arg_count = body.arg_count;
         self.translate_body_locals(&body)?;
 
         // Translate the expression body
@@ -1595,7 +1593,7 @@ impl BodyTransCtx<'_, '_> {
         } else {
             // Translate the body. This doesn't store anything if we can't/decide not to translate
             // this body.
-            match self.translate_body(item_meta.span, def, &signature) {
+            match self.translate_body(item_meta.span, def) {
                 Ok(Ok(body)) => Ok(body),
                 // Opaque declaration
                 Ok(Err(Opaque)) => Err(Opaque),
