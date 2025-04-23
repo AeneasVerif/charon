@@ -79,7 +79,7 @@ install OCaml and the proper dependencies.
 We suggest you to follow those [instructions](https://ocaml.org/docs/install.html),
 and install OPAM on the way (same instructions).
 
-For Charon-ML, we use **OCaml 4.13.1**: `opam switch create 4.13.1+options`
+For Charon-ML, we use **OCaml 4.14.0**: `opam switch create 4.14.0+options`
 
 The dependencies can be installed with `opam install . --deps-only`.
 

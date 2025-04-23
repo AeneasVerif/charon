@@ -69,9 +69,6 @@
         "flake-compat": "flake-compat",
         "flake-utils": "flake-utils",
         "nixpkgs": "nixpkgs",
-        "nixpkgs-ocaml": [
-          "nixpkgs"
-        ],
         "rust-overlay": "rust-overlay"
       }
     },
