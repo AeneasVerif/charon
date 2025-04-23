@@ -5,10 +5,6 @@
     flake-compat.url = "github:edolstra/flake-compat"; # For ./shell.nix
     flake-utils.url = "github:numtide/flake-utils";
     nixpkgs.url = "nixpkgs/nixos-unstable";
-    # This makes it possible for downstream flakes to use a different nixpkgs
-    # for our ocaml package, since we use `ocamlPackages` which points to a
-    # different ocaml version depending on the nixpkgs version.
-    nixpkgs-ocaml.follows = "nixpkgs";
     rust-overlay = {
       # We pin a specific commit because we require a relatively recent version
       # and flake dependents don't look at our flake.lock.
@@ -18,23 +14,20 @@
     crane.url = "github:ipetkov/crane";
   };
 
-  outputs = { self, flake-utils, nixpkgs, nixpkgs-ocaml, rust-overlay, crane, ... }:
+  outputs = { self, flake-utils, nixpkgs, rust-overlay, crane, ... }:
     flake-utils.lib.eachDefaultSystem (system:
       let
         pkgs = import nixpkgs {
           inherit system;
           overlays = [ (import rust-overlay) ];
         };
-        pkgs-ocaml = import nixpkgs-ocaml {
-          inherit system;
-        };
 
         rustToolchain = pkgs.rust-bin.fromRustupToolchainFile ./rust-toolchain;
         craneLib = (crane.mkLib pkgs).overrideToolchain rustToolchain;
-        ocamlformat = pkgs-ocaml.ocamlPackages.ocamlformat_0_26_2;
+        ocamlformat = pkgs.ocamlPackages.ocamlformat_0_26_2;
 
         charon = pkgs.callPackage ./nix/charon.nix { inherit craneLib rustToolchain; };
-        charon-ml = pkgs-ocaml.callPackage ./nix/charon-ml.nix { inherit charon; };
+        charon-ml = pkgs.callPackage ./nix/charon-ml.nix { inherit charon; };
 
         # Check rust files are correctly formatted.
         charon-check-fmt = charon.passthru.check-fmt;
@@ -105,13 +98,13 @@
             pkgs.lib.makeLibraryPath [ pkgs.stdenv.cc.cc.lib pkgs.openssl pkgs.curl pkgs.zlib ];
 
           packages = [
-            pkgs-ocaml.ocamlPackages.ocaml
+            pkgs.ocamlPackages.ocaml
             ocamlformat
-            pkgs-ocaml.ocamlPackages.menhir
-            pkgs-ocaml.ocamlPackages.odoc
+            pkgs.ocamlPackages.menhir
+            pkgs.ocamlPackages.odoc
             # ocamllsp's version must match the ocaml version used, hence we
             # can't an use externally-provided ocamllsp.
-            pkgs-ocaml.ocamlPackages.ocaml-lsp
+            pkgs.ocamlPackages.ocaml-lsp
           ];
 
           nativeBuildInputs = [
