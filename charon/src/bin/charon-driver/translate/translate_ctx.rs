@@ -3,9 +3,9 @@ use super::translate_types::translate_bound_region_kind_name;
 use charon_lib::ast::*;
 use charon_lib::common::hash_by_addr::HashByAddr;
 use charon_lib::formatter::{FmtCtx, IntoFormatter};
-use charon_lib::ids::{MapGenerator, Vector};
+use charon_lib::ids::Vector;
 use charon_lib::options::TranslateOptions;
-use charon_lib::ullbc_ast as ast;
+use charon_lib::ullbc_ast as ullbc;
 use hax_frontend_exporter::SInto;
 use hax_frontend_exporter::{self as hax, DefPathItem};
 use itertools::Itertools;
@@ -15,8 +15,7 @@ use rustc_middle::ty::TyCtxt;
 use std::borrow::Cow;
 use std::cell::RefCell;
 use std::cmp::Ord;
-use std::collections::{BTreeMap, HashSet, VecDeque};
-use std::collections::{BTreeSet, HashMap};
+use std::collections::{BTreeSet, HashMap, HashSet, VecDeque};
 use std::fmt::Debug;
 use std::path::{Component, PathBuf};
 use std::sync::Arc;
@@ -249,14 +248,12 @@ pub(crate) struct BodyTransCtx<'tcx, 'ctx> {
     pub locals: Locals,
     /// The map from rust variable indices to translated variables indices.
     pub locals_map: HashMap<usize, LocalId>,
-    /// The translated blocks. We can't use `ast::Vector<BlockId, ast::BlockData>`
-    /// here because we might generate several fresh indices before actually
-    /// adding the resulting blocks to the map.
-    pub blocks: BTreeMap<ast::BlockId, ast::BlockData>,
+    /// The translated blocks.
+    pub blocks: Vector<ullbc::BlockId, ullbc::BlockData>,
     /// The map from rust blocks to translated blocks.
     /// Note that when translating terminators like DropAndReplace, we might have
     /// to introduce new blocks which don't appear in the original MIR.
-    pub blocks_map: MapGenerator<hax::BasicBlock, ast::BlockId>,
+    pub blocks_map: HashMap<hax::BasicBlock, ullbc::BlockId>,
     /// We register the blocks to translate in a stack, so as to avoid
     /// writing the translation functions as recursive functions. We do
     /// so because we had stack overflows in the past.
@@ -929,11 +926,6 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
         self.locals_map.get(&local.index()).copied()
     }
 
-    #[allow(dead_code)]
-    pub(crate) fn get_block_id_from_rid(&self, rid: hax::BasicBlock) -> Option<ast::BlockId> {
-        self.blocks_map.get(&rid)
-    }
-
     pub(crate) fn register_id_no_enqueue(&mut self, span: Span, id: TransItemSource) -> AnyTransId {
         let src = self.make_dep_source(span);
         self.t_ctx.register_id_no_enqueue(&src, id)
@@ -1201,17 +1193,6 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
             .locals
             .push_with(|index| Local { index, name, ty });
         self.locals_map.insert(rid, local_id);
-    }
-
-    pub(crate) fn fresh_block_id(&mut self, rid: hax::BasicBlock) -> ast::BlockId {
-        // Push to the stack of blocks awaiting translation
-        self.blocks_stack.push_back(rid);
-        // Insert in the map
-        self.blocks_map.insert(rid)
-    }
-
-    pub(crate) fn push_block(&mut self, id: ast::BlockId, block: ast::BlockData) {
-        self.blocks.insert(id, block);
     }
 
     pub(crate) fn make_dep_source(&self, span: Span) -> Option<DepSource> {

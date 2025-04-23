@@ -189,23 +189,24 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
     /// Translate a basic block id and register it, if it hasn't been done.
     fn translate_basic_block_id(&mut self, block_id: hax::BasicBlock) -> BlockId {
         match self.blocks_map.get(&block_id) {
+            Some(id) => *id,
             // Generate a fresh id - this also registers the block
-            None => self.fresh_block_id(block_id),
-            Some(id) => id,
+            None => {
+                // Push to the stack of blocks awaiting translation
+                self.blocks_stack.push_back(block_id);
+                let id = self.blocks.reserve_slot();
+                // Insert in the map
+                self.blocks_map.insert(block_id, id);
+                id
+            }
         }
     }
 
     fn translate_basic_block(
         &mut self,
         body: &hax::MirBody<()>,
-        block_id: hax::BasicBlock,
-    ) -> Result<(), Error> {
-        // Retrieve the translated block id
-        let nid = self.translate_basic_block_id(block_id);
-
-        // Retrieve the block data
-        let block = body.basic_blocks.get(block_id).unwrap();
-
+        block: &hax::BasicBlockData,
+    ) -> Result<BlockData, Error> {
         // Translate the statements
         let mut statements = Vec::new();
         for statement in &block.statements {
@@ -222,15 +223,10 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
         let terminator = block.terminator.as_ref().unwrap();
         let terminator = self.translate_terminator(body, terminator, &mut statements)?;
 
-        // Insert the block in the translated blocks
-        let block = BlockData {
+        Ok(BlockData {
             statements,
             terminator,
-        };
-
-        self.push_block(nid, block);
-
-        Ok(())
+        })
     }
 
     /// Translate a place
@@ -1324,24 +1320,19 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
         assert!(id == START_BLOCK_ID);
 
         // For as long as there are blocks in the stack, translate them
-        while let Some(block_id) = self.blocks_stack.pop_front() {
-            self.translate_basic_block(&body, block_id)?;
-        }
-
-        // We convert the blocks map to an index vector.
-        let mut blocks = Vector::new();
-        for (id, block) in mem::take(&mut self.blocks) {
-            let new_id = blocks.push(block);
-            // Sanity check to make sure we don't mess with the indices
-            assert!(id == new_id);
+        while let Some(hax_block_id) = self.blocks_stack.pop_front() {
+            let hax_block = body.basic_blocks.get(hax_block_id).unwrap();
+            let block_id = self.translate_basic_block_id(hax_block_id);
+            let block = self.translate_basic_block(&body, hax_block)?;
+            self.blocks.set_slot(block_id, block);
         }
 
         // Create the body
         Ok(Ok(Body::Unstructured(ExprBody {
             span,
             locals: mem::take(&mut self.locals),
+            body: mem::take(&mut self.blocks),
             comments: self.translate_body_comments(def, span),
-            body: blocks,
         })))
     }
 
