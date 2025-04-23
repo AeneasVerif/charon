@@ -37,6 +37,12 @@ jobs:
           fetch-depth: 0 # deep clone in order to get access to other commits
       - run: nix develop '.#ci' --command ./scripts/ci-check-version-number.sh
 
+  check-hax-commit:
+    runs-on: [self-hosted, linux, nix]
+    steps:
+      - uses: actions/checkout@v4
+      - run: nix develop '.#ci' --command ./scripts/ci-check-hax-commit.sh
+
   # Choose which commit to use for each project. By default we use the latest
   # from the main branch, but this can be overridden with a command in the PR
   # description.

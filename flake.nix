@@ -126,9 +126,10 @@
         };
         devShells.ci = pkgs.mkShell {
           packages = [
-            pkgs.jq
             pkgs.gitAndTools.gh
+            pkgs.jq
             pkgs.python3
+            pkgs.toml2json
           ];
         };
         checks = {
