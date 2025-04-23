@@ -191,8 +191,8 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
             }
             ConstantExprKind::Memory(bytes) => RawConstantExpr::RawMemory(bytes.clone()),
             ConstantExprKind::Todo(msg) => {
-                register_error!(self, span, "Unsupported constant by Hax: {:?}", msg);
-                RawConstantExpr::Opaque("Hax: ".to_owned() + msg)
+                register_error!(self, span, "Unsupported constant: {:?}", msg);
+                RawConstantExpr::Opaque(msg)
             }
         };
 
