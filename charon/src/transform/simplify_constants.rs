@@ -34,7 +34,8 @@ fn transform_constant_expr(
         | RawConstantExpr::Var(_)
         | RawConstantExpr::RawMemory(..)
         | RawConstantExpr::TraitConst(..)
-        | RawConstantExpr::FnPtr(..) => {
+        | RawConstantExpr::FnPtr(..)
+        | RawConstantExpr::Opaque(_) => {
             // Nothing to do
             // TODO: for trait const: might come from a top-level impl, so we might
             // want to introduce an intermediate statement to be able to evaluate

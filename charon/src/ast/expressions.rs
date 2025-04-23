@@ -484,6 +484,9 @@ pub enum RawConstantExpr {
     /// representation isn't possible (e.g. for unions) or just isn't implemented yet.
     #[drive(skip)]
     RawMemory(Vec<u8>),
+    /// A constant expression that Charon still doesn't handle, along with the reason why.
+    #[drive(skip)]
+    Opaque(String),
 }
 
 #[derive(Debug, PartialEq, Eq, Clone, Serialize, Deserialize, Drive, DriveMut)]

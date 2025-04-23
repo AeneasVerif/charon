@@ -29,6 +29,7 @@ enum TestKind {
     PrettyLlbc,
     KnownFailure,
     KnownPanic,
+    IgnoreWarnings,
     Skip,
 }
 
@@ -49,8 +50,9 @@ static HELP_STRING: &str = unindent!(
     - `//@ output=pretty-llbc`: record the pretty-printed llbc (default);
     - `//@ known-failure`: a test that is expected to fail.
     - `//@ known-panic`: a test that is expected to panic.
+    - `//@ ignore-warnings`: a test for which warnings should be ignored (instead of erroring).
     - `//@ skip`: skip the test.
-    
+
     Other comments can be used to control the behavior of charon:
     - `//@ charon-args=<charon cli options>`
     - `//@ rustc-args=<rustc cli options>`
@@ -78,6 +80,8 @@ fn parse_magic_comments(input_path: &std::path::Path) -> anyhow::Result<MagicCom
             comments.test_kind = TestKind::KnownPanic;
         } else if line == "known-failure" {
             comments.test_kind = TestKind::KnownFailure;
+        } else if line == "ignore-warnings" {
+            comments.test_kind = TestKind::IgnoreWarnings;
         } else if line == "output=pretty-llbc" {
             comments.test_kind = TestKind::PrettyLlbc;
         } else if line == "skip" {
@@ -181,8 +185,10 @@ fn perform_test(test_case: &Case, action: Action) -> anyhow::Result<()> {
     cmd.arg("rustc");
 
     // Charon args
-    cmd.arg("--error-on-warnings");
     cmd.arg("--print-llbc");
+    if !matches!(test_case.magic_comments.test_kind, TestKind::IgnoreWarnings) {
+        cmd.arg("--error-on-warnings");
+    }
     if matches!(
         test_case.magic_comments.test_kind,
         TestKind::KnownPanic | TestKind::KnownFailure
@@ -249,6 +255,7 @@ fn perform_test(test_case: &Case, action: Action) -> anyhow::Result<()> {
             }
             stdout
         }
+        TestKind::IgnoreWarnings => stdout,
         TestKind::Skip => unreachable!(),
     };
     if test_case.magic_comments.check_output {

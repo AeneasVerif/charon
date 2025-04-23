@@ -270,6 +270,8 @@ and raw_constant_expr =
       (** Raw memory value obtained from constant evaluation. Used when a more structured
           representation isn't possible (e.g. for unions) or just isn't implemented yet.
        *)
+  | COpaque of string
+      (** A constant expression that Charon still doesn't handle, along with the reason why. *)
 
 and constant_expr = { value : raw_constant_expr; ty : ty }
 

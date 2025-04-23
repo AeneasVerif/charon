@@ -262,6 +262,9 @@ and raw_constant_expr_of_json (ctx : of_json_ctx) (js : json) :
     | `Assoc [ ("RawMemory", raw_memory) ] ->
         let* raw_memory = list_of_json int_of_json ctx raw_memory in
         Ok (CRawMemory raw_memory)
+    | `Assoc [ ("Opaque", opaque) ] ->
+        let* opaque = string_of_json ctx opaque in
+        Ok (COpaque opaque)
     | _ -> Error "")
 
 and constant_expr_of_json (ctx : of_json_ctx) (js : json) :
