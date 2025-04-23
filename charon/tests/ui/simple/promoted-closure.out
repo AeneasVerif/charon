@@ -1,4 +1,4 @@
-error: Unsupported constant by Hax: "Unhandled type"
+error: Unsupported constant: "Unhandled type"
  --> tests/ui/simple/promoted-closure.rs:4:5
   |
 4 |     &|x: u32| x

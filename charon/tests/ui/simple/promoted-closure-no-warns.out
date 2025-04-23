@@ -11,7 +11,7 @@ pub fn test_crate::foo() -> &'static (fn(u32) -> u32)
 
     storage_live(@1)
     storage_live(@2)
-    @4 := const (Opaque(Hax: Unhandled type))
+    @4 := const (Opaque(Unhandled type))
     @5 := &@4
     @3 := move (@5)
     @2 := &*(@3)
