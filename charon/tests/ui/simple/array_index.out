@@ -10,7 +10,9 @@ pub fn test_crate::first(@1: Array<u32, 0 : usize>) -> u32
 
     storage_live(@2)
     @2 := const (0 : usize)
+    storage_live(@3)
     @3 := &s@1
+    storage_live(@4)
     @4 := @ArrayIndexShared<'_, u32, 0 : usize>(move (@3), copy (@2))
     @0 := copy (*(@4))
     storage_dead(@2)

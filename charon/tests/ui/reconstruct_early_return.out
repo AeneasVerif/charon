@@ -15,6 +15,11 @@ fn test_crate::f() -> usize
     let @10: i32; // anonymous local
     let @11: (); // anonymous local
 
+    storage_live(@6)
+    storage_live(@7)
+    storage_live(@8)
+    storage_live(@9)
+    storage_live(@10)
     storage_live(i@1)
     i@1 := const (0 : i32)
     storage_live(j@2)

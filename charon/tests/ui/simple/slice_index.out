@@ -10,7 +10,9 @@ pub fn test_crate::first<'_0>(@1: &'_0 (Slice<u32>)) -> u32
 
     storage_live(@2)
     @2 := const (0 : usize)
+    storage_live(@3)
     @3 := &*(s@1)
+    storage_live(@4)
     @4 := @SliceIndexShared<'_, u32>(move (@3), copy (@2))
     @0 := copy (*(@4))
     storage_dead(@2)

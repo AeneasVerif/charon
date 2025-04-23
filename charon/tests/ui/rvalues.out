@@ -48,6 +48,8 @@ fn test_crate::literal_casts()
     let @6: f64; // anonymous local
     let @7: f32; // anonymous local
 
+    storage_live(@6)
+    storage_live(@7)
     storage_live(@1)
     @1 := cast<u64, u8>(const (0 : u64))
     storage_dead(@1)

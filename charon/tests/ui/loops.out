@@ -13,6 +13,7 @@ pub fn test_crate::test_loop1(@1: u32) -> u32
     let @8: u32; // anonymous local
     let @9: (); // anonymous local
 
+    storage_live(@8)
     storage_live(i@2)
     i@2 := const (0 : u32)
     storage_live(s@3)
@@ -69,6 +70,13 @@ pub fn test_crate::test_loop2(@1: u32) -> u32
     let @11: u32; // anonymous local
     let @12: (); // anonymous local
 
+    storage_live(@6)
+    storage_live(@7)
+    storage_live(@8)
+    storage_live(@9)
+    storage_live(@10)
+    storage_live(@11)
+    storage_live(@12)
     storage_live(i@2)
     i@2 := const (0 : u32)
     storage_live(s@3)
@@ -149,6 +157,18 @@ pub fn test_crate::test_loop3(@1: u32) -> u32
     let @20: u32; // anonymous local
     let @21: (); // anonymous local
 
+    storage_live(@9)
+    storage_live(@10)
+    storage_live(@11)
+    storage_live(@12)
+    storage_live(@13)
+    storage_live(@14)
+    storage_live(@15)
+    storage_live(@16)
+    storage_live(@17)
+    storage_live(@18)
+    storage_live(@19)
+    storage_live(@20)
     storage_live(i@2)
     i@2 := const (0 : u32)
     storage_live(j@3)
@@ -271,6 +291,21 @@ pub fn test_crate::test_loop4(@1: u32) -> u32
     let @20: u32; // anonymous local
     let @21: (); // anonymous local
 
+    storage_live(@7)
+    storage_live(@8)
+    storage_live(@9)
+    storage_live(@10)
+    storage_live(@11)
+    storage_live(@12)
+    storage_live(@13)
+    storage_live(@14)
+    storage_live(@15)
+    storage_live(@16)
+    storage_live(@17)
+    storage_live(@18)
+    storage_live(@19)
+    storage_live(@20)
+    storage_live(@21)
     storage_live(i@2)
     i@2 := const (1 : u32)
     storage_live(j@3)
@@ -387,6 +422,13 @@ pub fn test_crate::test_loop5(@1: u32) -> u32
     let @15: u32; // anonymous local
     let @16: (); // anonymous local
 
+    storage_live(@9)
+    storage_live(@10)
+    storage_live(@11)
+    storage_live(@12)
+    storage_live(@13)
+    storage_live(@14)
+    storage_live(@15)
     storage_live(i@2)
     i@2 := const (0 : u32)
     storage_live(j@3)
@@ -474,6 +516,13 @@ pub fn test_crate::test_loop6(@1: u32) -> u32
     let @11: u32; // anonymous local
     let @12: (); // anonymous local
 
+    storage_live(@6)
+    storage_live(@7)
+    storage_live(@8)
+    storage_live(@9)
+    storage_live(@10)
+    storage_live(@11)
+    storage_live(@12)
     storage_live(i@2)
     i@2 := const (0 : u32)
     storage_live(s@3)
@@ -550,6 +599,14 @@ pub fn test_crate::test_loop7(@1: u32) -> u32
     let @14: u32; // anonymous local
     let @15: (); // anonymous local
 
+    storage_live(@8)
+    storage_live(@9)
+    storage_live(@10)
+    storage_live(@11)
+    storage_live(@12)
+    storage_live(@13)
+    storage_live(@14)
+    storage_live(@15)
     storage_live(i@2)
     i@2 := const (0 : u32)
     storage_live(s@3)
@@ -954,6 +1011,16 @@ pub fn test_crate::nested_loops_enum(@1: usize, @2: usize) -> usize
     let @27: &'_ mut (core::ops::range::Range<usize>[core::marker::Sized<usize>]); // anonymous local
     let @28: &'_ mut (core::ops::range::Range<usize>[core::marker::Sized<usize>]); // anonymous local
 
+    storage_live(@10)
+    storage_live(@19)
+    storage_live(@21)
+    storage_live(@22)
+    storage_live(@23)
+    storage_live(iter@24)
+    storage_live(@25)
+    storage_live(@26)
+    storage_live(@27)
+    storage_live(@28)
     storage_live(s@3)
     s@3 := const (0 : usize)
     storage_live(@4)
@@ -1130,6 +1197,18 @@ pub fn test_crate::loop_inside_if(@1: bool, @2: u32) -> u32
     let i@14: u32; // local
     let @15: u32; // anonymous local
 
+    storage_live(s@4)
+    storage_live(@5)
+    storage_live(@6)
+    storage_live(@7)
+    storage_live(@8)
+    storage_live(iter@9)
+    storage_live(@10)
+    storage_live(@11)
+    storage_live(@12)
+    storage_live(@13)
+    storage_live(i@14)
+    storage_live(@15)
     storage_live(@3)
     @3 := copy (b@1)
     if move (@3) {
@@ -1203,6 +1282,7 @@ pub fn test_crate::sum(@1: u32) -> u32
     let @8: u32; // anonymous local
     let @9: (); // anonymous local
 
+    storage_live(@8)
     storage_live(i@2)
     i@2 := const (0 : u32)
     storage_live(s@3)
@@ -1258,6 +1338,10 @@ pub fn test_crate::sum_array<const N : usize>(@1: Array<u32, const N : usize>) -
     let @10: &'_ (Array<u32, const N : usize>); // anonymous local
     let @11: &'_ (u32); // anonymous local
 
+    storage_live(@7)
+    storage_live(@8)
+    storage_live(@10)
+    storage_live(@11)
     storage_live(i@2)
     i@2 := const (0 : usize)
     storage_live(s@3)
@@ -1273,7 +1357,9 @@ pub fn test_crate::sum_array<const N : usize>(@1: Array<u32, const N : usize>) -
             storage_live(@7)
             storage_live(@8)
             @8 := copy (i@2)
+            storage_live(@10)
             @10 := &a@1
+            storage_live(@11)
             @11 := @ArrayIndexShared<'_, u32, const N : usize>(move (@10), copy (@8))
             @7 := copy (*(@11))
             s@3 := copy (s@3) + move (@7)
@@ -1388,6 +1474,10 @@ pub fn test_crate::clear<'_0>(@1: &'_0 mut (alloc::vec::Vec<u32, alloc::alloc::G
     let @9: usize; // anonymous local
     let @10: (); // anonymous local
 
+    storage_live(@6)
+    storage_live(@7)
+    storage_live(@8)
+    storage_live(@9)
     storage_live(i@2)
     i@2 := const (0 : usize)
     loop {
@@ -1452,6 +1542,12 @@ pub fn test_crate::get_elem_mut<'_0>(@1: &'_0 mut (test_crate::List<usize>[core:
     let @7: usize; // anonymous local
     let @8: &'_ mut (test_crate::List<usize>[core::marker::Sized<usize>]); // anonymous local
 
+    storage_live(y@3)
+    storage_live(tl@4)
+    storage_live(@5)
+    storage_live(@6)
+    storage_live(@7)
+    storage_live(@8)
     loop {
         match *(ls@1) {
             0 => {
@@ -1509,6 +1605,12 @@ where
     let @8: &'_ mut (test_crate::List<T>[@TraitClause0]); // anonymous local
     let @9: (); // anonymous local
 
+    storage_live(x@4)
+    storage_live(tl@5)
+    storage_live(@6)
+    storage_live(@7)
+    storage_live(@8)
+    storage_live(@9)
     storage_live(@3)
     loop {
         match *(ls@1) {

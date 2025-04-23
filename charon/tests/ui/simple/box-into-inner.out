@@ -29,6 +29,10 @@ fn test_crate::into_inner(@1: alloc::boxed::Box<alloc::string::String>[core::mar
     let @5: *const alloc::string::String; // anonymous local
     let @6: *const alloc::string::String; // anonymous local
 
+    storage_live(@3)
+    storage_live(@4)
+    storage_live(@5)
+    storage_live(@6)
     storage_live(_x@2)
     @6 := transmute<core::ptr::non_null::NonNull<alloc::string::String>, *const alloc::string::String>(copy ((*(b@1)).__unknown_field))
     _x@2 := move (*(@6))

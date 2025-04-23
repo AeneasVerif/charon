@@ -70,6 +70,17 @@ fn test_crate::main()
     let @18: bool; // anonymous local
     let @19: bool; // anonymous local
 
+    storage_live(@4)
+    storage_live(@5)
+    storage_live(@6)
+    storage_live(@9)
+    storage_live(@10)
+    storage_live(@11)
+    storage_live(@15)
+    storage_live(@16)
+    storage_live(@17)
+    storage_live(@18)
+    storage_live(@19)
     storage_live(x@1)
     x@1 := test_crate::Foo::A {  }
     storage_live(@2)

@@ -26,7 +26,10 @@ struct IndexVisitor<'a> {
 
 impl<'a> IndexVisitor<'a> {
     fn fresh_var(&mut self, name: Option<String>, ty: Ty) -> Place {
-        self.locals.new_var(name, ty)
+        let var = self.locals.new_var(name, ty);
+        let live_kind = RawStatement::StorageLive(var.local_id());
+        self.statements.push(Statement::new(self.span, live_kind));
+        var
     }
 
     fn transform_place(&mut self, mut_access: bool, place: &mut Place) {
@@ -82,8 +85,9 @@ impl<'a> IndexVisitor<'a> {
             .into_ty()
         };
 
-        // Push the statement:
-        //`tmp0 = &{mut}p`
+        // Push the statements:
+        // `storage_live(tmp0)`
+        // `tmp0 = &{mut}p`
         let input_var = {
             let input_var = self.fresh_var(None, input_ty);
             let kind = RawStatement::Assign(
@@ -111,6 +115,8 @@ impl<'a> IndexVisitor<'a> {
             _ => unreachable!(),
         };
         if from_end {
+            // `storage_live(len_var)`
+            // `len_var = len(p)`
             let usize_ty = TyKind::Literal(LiteralTy::Integer(IntegerTy::Usize)).into_ty();
             let len_var = self.fresh_var(None, usize_ty.clone());
             let kind = RawStatement::Assign(
@@ -122,19 +128,25 @@ impl<'a> IndexVisitor<'a> {
                 ),
             );
             self.statements.push(Statement::new(self.span, kind));
-            // `index_var = len(p) - last_arg`
+
+            // `storage_live(index_var)`
+            // `index_var = len_var - last_arg`
+            // `storage_dead(len_var)`
             let index_var = self.fresh_var(None, usize_ty);
             let kind = RawStatement::Assign(
                 index_var.clone(),
-                Rvalue::BinaryOp(BinOp::Sub, Operand::Copy(len_var), last_arg),
+                Rvalue::BinaryOp(BinOp::Sub, Operand::Copy(len_var.clone()), last_arg),
             );
             self.statements.push(Statement::new(self.span, kind));
+            let dead_kind = RawStatement::StorageDead(len_var.local_id());
+            self.statements.push(Statement::new(self.span, dead_kind));
             args.push(Operand::Copy(index_var));
         } else {
             args.push(last_arg);
         }
 
         // Call the indexing function:
+        // `storage_live(tmp1)`
         // `tmp1 = {Array,Slice}{Mut,Shared}{Index,SubSlice}(move tmp0, <other args>)`
         let output_var = {
             let output_var = self.fresh_var(None, output_ty);

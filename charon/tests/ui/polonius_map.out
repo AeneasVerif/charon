@@ -164,6 +164,15 @@ pub fn test_crate::get_or_insert<'_0>(@1: &'_0 mut (std::collections::hash::map:
     let @14: &'_ (u32); // anonymous local
     let @15: u32; // anonymous local
 
+    storage_live(v@7)
+    storage_live(@8)
+    storage_live(@9)
+    storage_live(@10)
+    storage_live(@11)
+    storage_live(@12)
+    storage_live(@13)
+    storage_live(@14)
+    storage_live(@15)
     storage_live(@2)
     storage_live(@3)
     @3 := &*(map@1)

@@ -464,6 +464,8 @@ pub fn test_crate::even(@1: u32) -> bool
     let @4: u32; // anonymous local
     let @5: u32; // anonymous local
 
+    storage_live(@4)
+    storage_live(@5)
     storage_live(@2)
     storage_live(@3)
     @3 := copy (x@1)
@@ -495,6 +497,8 @@ pub fn test_crate::odd(@1: u32) -> bool
     let @4: u32; // anonymous local
     let @5: u32; // anonymous local
 
+    storage_live(@4)
+    storage_live(@5)
     storage_live(@2)
     storage_live(@3)
     @3 := copy (x@1)

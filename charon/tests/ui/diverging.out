@@ -22,6 +22,7 @@ fn test_crate::call_my_panic()
     let @0: (); // return
     let @1: !; // anonymous local
 
+    storage_live(@1)
     @1 := test_crate::my_panic(const (0 : u32))
 }
 

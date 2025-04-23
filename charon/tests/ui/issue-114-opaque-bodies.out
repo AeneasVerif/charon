@@ -215,6 +215,7 @@ fn test_crate::max() -> usize
     let @0: usize; // return
     let @1: usize; // anonymous local
 
+    storage_live(@1)
     @1 := core::num::{usize}#11::MAX
     @0 := move (@1)
     return

@@ -47,6 +47,13 @@ pub fn test_crate::{impl core::cmp::PartialEq<test_crate::Enum> for test_crate::
     let @15: &'_ (&'_ (u8)); // anonymous local
     let @16: &'_ (&'_ (u8)); // anonymous local
 
+    storage_live(@10)
+    storage_live(@11)
+    storage_live(@12)
+    storage_live(__self_0@13)
+    storage_live(__arg1_0@14)
+    storage_live(@15)
+    storage_live(@16)
     storage_live(__self_discr@3)
     storage_live(@4)
     @4 := &*(self@1)

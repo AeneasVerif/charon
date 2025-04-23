@@ -72,6 +72,11 @@ where
     let @6: (T); // anonymous local
     let @7: T; // anonymous local
 
+    storage_live(x@3)
+    storage_live(@4)
+    storage_live(@5)
+    storage_live(@6)
+    storage_live(@7)
     match x@1 {
         0 => {
             @0 := core::option::Option::None {  }
@@ -116,6 +121,10 @@ where
     let @5: fn<'_0>(&'_0_0 (T)) -> T; // anonymous local
     let @6: &'_ (T); // anonymous local
 
+    storage_live(x@3)
+    storage_live(@4)
+    storage_live(@5)
+    storage_live(@6)
     match *(x@1) {
         0 => {
         },

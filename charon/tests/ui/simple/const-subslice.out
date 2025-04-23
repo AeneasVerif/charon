@@ -11,6 +11,8 @@ fn test_crate::main()
     let @6: Slice<u8>; // anonymous local
     let @7: &'_ (Slice<u8>); // anonymous local
 
+    storage_live(@6)
+    storage_live(@7)
     storage_live(y@1)
     @6 := [const (0 : u8), const (1 : u8), const (2 : u8)]
     @7 := &@6

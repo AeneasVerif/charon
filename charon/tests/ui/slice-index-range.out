@@ -100,6 +100,17 @@ where
     let @15: *const T; // anonymous local
     let @16: core::option::Option<&'_ (Slice<T>)>[core::marker::Sized<&'_ (Slice<T>)>]; // anonymous local
 
+    storage_live(self@4)
+    storage_live(rhs@5)
+    storage_live(new_len@6)
+    storage_live(@8)
+    storage_live(@9)
+    storage_live(@10)
+    storage_live(@11)
+    storage_live(@13)
+    storage_live(@14)
+    storage_live(@15)
+    storage_live(@16)
     storage_live(@3)
     self@4 := copy ((self@1).end)
     rhs@5 := copy ((self@1).start)
@@ -173,6 +184,17 @@ where
     let @15: *mut T; // anonymous local
     let @16: core::option::Option<&'_ mut (Slice<T>)>[core::marker::Sized<&'_ mut (Slice<T>)>]; // anonymous local
 
+    storage_live(self@4)
+    storage_live(rhs@5)
+    storage_live(new_len@6)
+    storage_live(@8)
+    storage_live(@9)
+    storage_live(@10)
+    storage_live(ptr@11)
+    storage_live(@13)
+    storage_live(@14)
+    storage_live(@15)
+    storage_live(@16)
     storage_live(@3)
     self@4 := copy ((self@1).end)
     rhs@5 := copy ((self@1).start)
@@ -237,6 +259,8 @@ fn core::slice::index::{impl core::slice::index::SliceIndex<Slice<T>> for core::
     let @5: bool; // anonymous local
     let @6: !; // anonymous local
 
+    storage_live(@5)
+    storage_live(@6)
     storage_live(@4)
     @4 := copy (end@2) >= copy (start@1)
     if move (@4) {
@@ -274,6 +298,12 @@ where
     let @11: *const T; // anonymous local
     let @12: *const T; // anonymous local
 
+    storage_live(@4)
+    storage_live(@5)
+    storage_live(@6)
+    storage_live(@7)
+    storage_live(new_len@8)
+    storage_live(offset@10)
     storage_live(@3)
     @3 := ub_checks<bool>
     if move (@3) {
@@ -316,6 +346,8 @@ fn core::slice::index::{impl core::slice::index::SliceIndex<Slice<T>> for core::
     let @5: bool; // anonymous local
     let @6: !; // anonymous local
 
+    storage_live(@5)
+    storage_live(@6)
     storage_live(@4)
     @4 := copy (end@2) >= copy (start@1)
     if move (@4) {
@@ -353,6 +385,12 @@ where
     let @11: *mut T; // anonymous local
     let @12: *mut T; // anonymous local
 
+    storage_live(@4)
+    storage_live(@5)
+    storage_live(@6)
+    storage_live(@7)
+    storage_live(new_len@8)
+    storage_live(offset@10)
     storage_live(@3)
     @3 := ub_checks<bool>
     if move (@3) {
@@ -459,6 +497,18 @@ where
     let @15: *const T; // anonymous local
     let @16: *const T; // anonymous local
 
+    storage_live(@3)
+    storage_live(new_len@4)
+    storage_live(self@6)
+    storage_live(rhs@7)
+    storage_live(@8)
+    storage_live(@9)
+    storage_live(@10)
+    storage_live(@11)
+    storage_live(@12)
+    storage_live(@14)
+    storage_live(@15)
+    storage_live(@16)
     storage_live(@5)
     self@6 := copy ((self@1).end)
     rhs@7 := copy ((self@1).start)
@@ -525,6 +575,18 @@ where
     let @15: *mut T; // anonymous local
     let @16: *mut T; // anonymous local
 
+    storage_live(@3)
+    storage_live(new_len@4)
+    storage_live(self@6)
+    storage_live(rhs@7)
+    storage_live(@8)
+    storage_live(@9)
+    storage_live(@10)
+    storage_live(@11)
+    storage_live(ptr@12)
+    storage_live(@14)
+    storage_live(@15)
+    storage_live(@16)
     storage_live(@5)
     self@6 := copy ((self@1).end)
     rhs@7 := copy ((self@1).start)
@@ -615,7 +677,9 @@ fn test_crate::main()
     storage_live(@8)
     storage_live(@9)
     @9 := const (0 : usize)
+    storage_live(@10)
     @10 := &*(slice@2)
+    storage_live(@11)
     @11 := @SliceIndexShared<'_, i32>(move (@10), copy (@9))
     @8 := copy (*(@11))
     @7 := move (@8) == const (3 : i32)
