@@ -151,7 +151,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
         let item_meta = self.translate_item_meta(&def, name, opacity);
 
         // Initialize the body translation context
-        let bt_ctx = BodyTransCtx::new(rust_id, trans_id, self);
+        let bt_ctx = ItemTransCtx::new(rust_id, trans_id, self);
         match trans_id {
             Some(AnyTransId::Type(id)) => {
                 let ty = bt_ctx.translate_type(id, item_meta, &def)?;

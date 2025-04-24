@@ -1,5 +1,6 @@
 pub mod get_mir;
 pub mod resolve_path;
+pub mod translate_bodies;
 pub mod translate_constants;
 pub mod translate_crate_to_ullbc;
 pub mod translate_ctx;

@@ -3,7 +3,7 @@ use super::translate_ctx::*;
 use charon_lib::ast::*;
 use hax_frontend_exporter as hax;
 
-impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
+impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
     fn translate_constant_literal_to_raw_constant_expr(
         &mut self,
         span: Span,
@@ -180,14 +180,8 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
                 generics_impls: trait_refs,
                 method_impl: trait_info,
             } => {
-                use super::translate_functions_to_ullbc::SubstFunIdOrPanic;
-                let fn_id = self.translate_fun_decl_id_with_args(
-                    span, fn_id, substs, None, trait_refs, trait_info,
-                )?;
-                let SubstFunIdOrPanic::Fun(fn_id) = fn_id else {
-                    unreachable!()
-                };
-                RawConstantExpr::FnPtr(fn_id.func)
+                let fn_ptr = self.translate_fn_ptr(span, fn_id, substs, trait_refs, trait_info)?;
+                RawConstantExpr::FnPtr(fn_ptr)
             }
             ConstantExprKind::Memory(bytes) => RawConstantExpr::RawMemory(bytes.clone()),
             ConstantExprKind::Todo(msg) => {

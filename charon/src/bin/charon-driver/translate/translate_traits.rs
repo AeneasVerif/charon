@@ -35,7 +35,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
     }
 }
 
-impl BodyTransCtx<'_, '_> {
+impl ItemTransCtx<'_, '_> {
     #[tracing::instrument(skip(self, item_meta))]
     pub fn translate_trait_decl(
         mut self,
