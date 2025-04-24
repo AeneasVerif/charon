@@ -3,7 +3,7 @@ use super::translate_ctx::*;
 use charon_lib::ast::*;
 use hax_frontend_exporter as hax;
 
-impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
+impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
     fn translate_constant_literal_to_raw_constant_expr(
         &mut self,
         span: Span,

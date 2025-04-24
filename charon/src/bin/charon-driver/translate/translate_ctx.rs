@@ -215,15 +215,9 @@ impl BindingLevel {
     }
 }
 
-/// A translation context for type/global/function bodies.
-/// Simply augments the [TranslateCtx] with local variables.
-///
-/// Remark: for now we don't really need to use collections from the [im] crate,
-/// because we don't need the O(1) clone operation, but we may need it once we
-/// implement support for universally quantified traits, where we might need
-/// to be able to dive in/out of universal quantifiers. Also, it doesn't cost
-/// us to use those collections.
-pub(crate) struct BodyTransCtx<'tcx, 'ctx> {
+/// A translation context for items.
+/// Augments the [TranslateCtx] with type-level variables.
+pub(crate) struct ItemTransCtx<'tcx, 'ctx> {
     /// The definition we are currently extracting.
     /// TODO: this duplicates the field of [ErrorCtx]
     pub def_id: DefId,
@@ -344,7 +338,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
                         // We need to convert the type, which may contain quantified
                         // substs and bounds. In order to properly do so, we introduce
                         // a body translation context.
-                        let mut bt_ctx = BodyTransCtx::new(def_id, None, self);
+                        let mut bt_ctx = ItemTransCtx::new(def_id, None, self);
                         bt_ctx.translate_def_generics(span, &full_def)?;
                         let ty = bt_ctx.translate_ty(span, &ty)?;
                         ImplElem::Ty(Binder {
@@ -882,14 +876,14 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
     }
 }
 
-impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
+impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
     /// Create a new `ExecContext`.
     pub(crate) fn new(
         def_id: DefId,
         item_id: Option<AnyTransId>,
         t_ctx: &'ctx mut TranslateCtx<'tcx>,
     ) -> Self {
-        BodyTransCtx {
+        ItemTransCtx {
             def_id,
             item_id,
             t_ctx,
@@ -1211,7 +1205,7 @@ impl<'tcx, 'ctx, 'a> IntoFormatter for &'a TranslateCtx<'tcx> {
     }
 }
 
-impl<'tcx, 'ctx, 'a> IntoFormatter for &'a BodyTransCtx<'tcx, 'ctx> {
+impl<'tcx, 'ctx, 'a> IntoFormatter for &'a ItemTransCtx<'tcx, 'ctx> {
     type C = FmtCtx<'a>;
 
     fn into_fmt(self) -> Self::C {

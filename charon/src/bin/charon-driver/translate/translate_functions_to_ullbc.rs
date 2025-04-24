@@ -79,7 +79,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
     }
 }
 
-impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
+impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
     pub(crate) fn get_item_kind(
         &mut self,
         span: Span,
@@ -1532,7 +1532,7 @@ impl<'tcx, 'ctx> BodyTransCtx<'tcx, 'ctx> {
     }
 }
 
-impl BodyTransCtx<'_, '_> {
+impl ItemTransCtx<'_, '_> {
     /// Translate one function.
     #[tracing::instrument(skip(self, item_meta))]
     pub fn translate_function(
