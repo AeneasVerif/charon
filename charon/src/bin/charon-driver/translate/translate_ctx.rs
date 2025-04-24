@@ -1,5 +1,4 @@
 //! The translation contexts.
-use super::translate_functions_to_ullbc::BodyTransCtx;
 use super::translate_types::translate_bound_region_kind_name;
 use charon_lib::ast::*;
 use charon_lib::common::hash_by_addr::HashByAddr;
@@ -1178,16 +1177,6 @@ impl<'a> IntoFormatter for &'a ItemTransCtx<'_, '_> {
             translated: Some(&self.t_ctx.translated),
             generics: self.binding_levels.map_ref(|bl| Cow::Borrowed(&bl.params)),
             locals: None,
-        }
-    }
-}
-
-impl<'a> IntoFormatter for &'a BodyTransCtx<'_, '_, '_> {
-    type C = FmtCtx<'a>;
-    fn into_fmt(self) -> Self::C {
-        FmtCtx {
-            locals: Some(&self.locals),
-            ..self.i_ctx.into_fmt()
         }
     }
 }
