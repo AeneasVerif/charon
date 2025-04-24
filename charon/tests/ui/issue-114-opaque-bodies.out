@@ -208,7 +208,7 @@ pub fn core::num::{usize}#11::MAX() -> usize
     return
 }
 
-pub global core::num::{usize}#11::MAX: usize = core::num::{usize}#11::MAX()
+pub const core::num::{usize}#11::MAX: usize = core::num::{usize}#11::MAX()
 
 fn test_crate::max() -> usize
 {

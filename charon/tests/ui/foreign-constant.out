@@ -2,7 +2,7 @@
 
 pub fn foreign_constant_aux::CONSTANT() -> u8
 
-pub global foreign_constant_aux::CONSTANT: u8 = foreign_constant_aux::CONSTANT()
+pub const foreign_constant_aux::CONSTANT: u8 = foreign_constant_aux::CONSTANT()
 
 fn test_crate::foo() -> u8
 {

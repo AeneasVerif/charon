@@ -584,7 +584,11 @@ where
     for<'a, 'b, 'c> <<C as SetGenerics<'a>>::C as SetLocals<'b>>::C: AstFormatter,
 {
     fn fmt_with_ctx_and_indent(&self, tab: &str, ctx: &C) -> String {
-        let intro = self.item_meta.fmt_item_intro(ctx, tab, "global");
+        let keyword = match self.global_kind {
+            GlobalKind::Static => "static",
+            GlobalKind::AnonConst | GlobalKind::NamedConst => "const",
+        };
+        let intro = self.item_meta.fmt_item_intro(ctx, tab, keyword);
 
         // Update the context with the generics
         let ctx = &ctx.set_generics(&self.generics);

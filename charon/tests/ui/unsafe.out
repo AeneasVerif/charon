@@ -62,7 +62,7 @@ fn test_crate::COUNTER() -> usize
     return
 }
 
-global test_crate::COUNTER: usize = test_crate::COUNTER()
+static test_crate::COUNTER: usize = test_crate::COUNTER()
 
 fn test_crate::access_mutable_static()
 {

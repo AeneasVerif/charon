@@ -12,7 +12,7 @@ fn test_crate::DISGUISED_INT() -> *const ()
     return
 }
 
-global test_crate::DISGUISED_INT: *const () = test_crate::DISGUISED_INT()
+const test_crate::DISGUISED_INT: *const () = test_crate::DISGUISED_INT()
 
 pub fn test_crate::bar()
 {

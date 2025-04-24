@@ -469,7 +469,7 @@ impl ItemTransCtx<'_, '_> {
         self.translate_def_generics(span, def)?;
 
         // Retrieve the kind
-        let global_kind = self.get_item_kind(span, def)?;
+        let item_kind = self.get_item_kind(span, def)?;
 
         trace!("Translating global type");
         let ty = match &def.kind {
@@ -482,6 +482,17 @@ impl ItemTransCtx<'_, '_> {
         };
         let ty = self.translate_ty(span, ty)?;
 
+        let global_kind = match &def.kind {
+            hax::FullDefKind::Static { .. } => GlobalKind::Static,
+            hax::FullDefKind::Const { .. } | hax::FullDefKind::AssocConst { .. } => {
+                GlobalKind::NamedConst
+            }
+            hax::FullDefKind::AnonConst { .. } | hax::FullDefKind::InlineConst { .. } => {
+                GlobalKind::AnonConst
+            }
+            _ => panic!("Unexpected def for constant: {def:?}"),
+        };
+
         let initializer = self.register_fun_decl_id(span, &def.def_id);
 
         Ok(GlobalDecl {
@@ -489,7 +500,8 @@ impl ItemTransCtx<'_, '_> {
             item_meta,
             generics: self.into_generics(),
             ty,
-            kind: global_kind,
+            kind: item_kind,
+            global_kind,
             init: initializer,
         })
     }

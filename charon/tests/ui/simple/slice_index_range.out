@@ -77,7 +77,7 @@ pub fn core::num::{usize}#11::MAX() -> usize
     return
 }
 
-pub global core::num::{usize}#11::MAX: usize = core::num::{usize}#11::MAX()
+pub const core::num::{usize}#11::MAX: usize = core::num::{usize}#11::MAX()
 
 pub fn core::slice::index::{impl core::slice::index::SliceIndex<Slice<T>> for core::ops::range::RangeInclusive<usize>[core::marker::Sized<usize>]}#10::get<'_0, T>(@1: core::ops::range::RangeInclusive<usize>[core::marker::Sized<usize>], @2: &'_0 (Slice<T>)) -> core::option::Option<&'_0 (Slice<T>)>[core::marker::Sized<&'_0 (Slice<T>)>]
 where

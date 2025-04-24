@@ -8,11 +8,11 @@ pub fn test_crate::X0() -> u32
     return
 }
 
-pub global test_crate::X0: u32 = test_crate::X0()
+pub const test_crate::X0: u32 = test_crate::X0()
 
 pub fn core::num::{u32}#8::MAX() -> u32
 
-pub global core::num::{u32}#8::MAX: u32 = core::num::{u32}#8::MAX()
+pub const core::num::{u32}#8::MAX: u32 = core::num::{u32}#8::MAX()
 
 pub fn test_crate::X1() -> u32
 {
@@ -25,7 +25,7 @@ pub fn test_crate::X1() -> u32
     return
 }
 
-pub global test_crate::X1: u32 = test_crate::X1()
+pub const test_crate::X1: u32 = test_crate::X1()
 
 pub fn test_crate::X2() -> u32
 {
@@ -39,7 +39,7 @@ pub fn test_crate::X2() -> u32
     return
 }
 
-pub global test_crate::X2: u32 = test_crate::X2()
+pub const test_crate::X2: u32 = test_crate::X2()
 
 pub fn test_crate::incr(@1: u32) -> u32
 {
@@ -62,7 +62,7 @@ pub fn test_crate::X3() -> u32
     return
 }
 
-pub global test_crate::X3: u32 = test_crate::X3()
+pub const test_crate::X3: u32 = test_crate::X3()
 
 pub fn test_crate::mk_pair0(@1: u32, @2: u32) -> (u32, u32)
 {
@@ -121,7 +121,7 @@ pub fn test_crate::P0() -> (u32, u32)
     return
 }
 
-pub global test_crate::P0: (u32, u32) = test_crate::P0()
+pub const test_crate::P0: (u32, u32) = test_crate::P0()
 
 pub fn test_crate::P1() -> test_crate::Pair<u32, u32>[core::marker::Sized<u32>, core::marker::Sized<u32>]
 {
@@ -131,7 +131,7 @@ pub fn test_crate::P1() -> test_crate::Pair<u32, u32>[core::marker::Sized<u32>, 
     return
 }
 
-pub global test_crate::P1: test_crate::Pair<u32, u32>[core::marker::Sized<u32>, core::marker::Sized<u32>] = test_crate::P1()
+pub const test_crate::P1: test_crate::Pair<u32, u32>[core::marker::Sized<u32>, core::marker::Sized<u32>] = test_crate::P1()
 
 pub fn test_crate::P2() -> (u32, u32)
 {
@@ -141,7 +141,7 @@ pub fn test_crate::P2() -> (u32, u32)
     return
 }
 
-pub global test_crate::P2: (u32, u32) = test_crate::P2()
+pub const test_crate::P2: (u32, u32) = test_crate::P2()
 
 pub fn test_crate::P3() -> test_crate::Pair<u32, u32>[core::marker::Sized<u32>, core::marker::Sized<u32>]
 {
@@ -151,7 +151,7 @@ pub fn test_crate::P3() -> test_crate::Pair<u32, u32>[core::marker::Sized<u32>, 
     return
 }
 
-pub global test_crate::P3: test_crate::Pair<u32, u32>[core::marker::Sized<u32>, core::marker::Sized<u32>] = test_crate::P3()
+pub const test_crate::P3: test_crate::Pair<u32, u32>[core::marker::Sized<u32>, core::marker::Sized<u32>] = test_crate::P3()
 
 pub struct test_crate::Wrap<T>
   where
@@ -186,7 +186,7 @@ pub fn test_crate::Y() -> test_crate::Wrap<i32>[core::marker::Sized<i32>]
     return
 }
 
-pub global test_crate::Y: test_crate::Wrap<i32>[core::marker::Sized<i32>] = test_crate::Y()
+pub const test_crate::Y: test_crate::Wrap<i32>[core::marker::Sized<i32>] = test_crate::Y()
 
 pub fn test_crate::unwrap_y() -> i32
 {
@@ -211,7 +211,7 @@ pub fn test_crate::YVAL() -> i32
     return
 }
 
-pub global test_crate::YVAL: i32 = test_crate::YVAL()
+pub const test_crate::YVAL: i32 = test_crate::YVAL()
 
 fn test_crate::get_z1::Z1() -> i32
 {
@@ -221,7 +221,7 @@ fn test_crate::get_z1::Z1() -> i32
     return
 }
 
-global test_crate::get_z1::Z1: i32 = test_crate::get_z1::Z1()
+const test_crate::get_z1::Z1: i32 = test_crate::get_z1::Z1()
 
 pub fn test_crate::get_z1() -> i32
 {
@@ -260,7 +260,7 @@ pub fn test_crate::Q1() -> i32
     return
 }
 
-pub global test_crate::Q1: i32 = test_crate::Q1()
+pub const test_crate::Q1: i32 = test_crate::Q1()
 
 pub fn test_crate::Q2() -> i32
 {
@@ -273,7 +273,7 @@ pub fn test_crate::Q2() -> i32
     return
 }
 
-pub global test_crate::Q2: i32 = test_crate::Q2()
+pub const test_crate::Q2: i32 = test_crate::Q2()
 
 pub fn test_crate::Q3() -> i32
 {
@@ -286,7 +286,7 @@ pub fn test_crate::Q3() -> i32
     return
 }
 
-pub global test_crate::Q3: i32 = test_crate::Q3()
+pub const test_crate::Q3: i32 = test_crate::Q3()
 
 pub fn test_crate::get_z2() -> i32
 {
@@ -318,7 +318,7 @@ pub fn test_crate::S1() -> u32
     return
 }
 
-pub global test_crate::S1: u32 = test_crate::S1()
+pub static test_crate::S1: u32 = test_crate::S1()
 
 pub fn test_crate::S2() -> u32
 {
@@ -339,7 +339,7 @@ pub fn test_crate::S2() -> u32
     return
 }
 
-pub global test_crate::S2: u32 = test_crate::S2()
+pub static test_crate::S2: u32 = test_crate::S2()
 
 pub fn test_crate::S3() -> test_crate::Pair<u32, u32>[core::marker::Sized<u32>, core::marker::Sized<u32>]
 {
@@ -352,7 +352,7 @@ pub fn test_crate::S3() -> test_crate::Pair<u32, u32>[core::marker::Sized<u32>, 
     return
 }
 
-pub global test_crate::S3: test_crate::Pair<u32, u32>[core::marker::Sized<u32>, core::marker::Sized<u32>] = test_crate::S3()
+pub static test_crate::S3: test_crate::Pair<u32, u32>[core::marker::Sized<u32>, core::marker::Sized<u32>] = test_crate::S3()
 
 pub fn test_crate::S4() -> test_crate::Pair<u32, u32>[core::marker::Sized<u32>, core::marker::Sized<u32>]
 {
@@ -362,7 +362,7 @@ pub fn test_crate::S4() -> test_crate::Pair<u32, u32>[core::marker::Sized<u32>, 
     return
 }
 
-pub global test_crate::S4: test_crate::Pair<u32, u32>[core::marker::Sized<u32>, core::marker::Sized<u32>] = test_crate::S4()
+pub static test_crate::S4: test_crate::Pair<u32, u32>[core::marker::Sized<u32>, core::marker::Sized<u32>] = test_crate::S4()
 
 pub struct test_crate::V<T, const N : usize>
   where
@@ -382,7 +382,7 @@ where
     return
 }
 
-pub global test_crate::{test_crate::V<T, const N : usize>[@TraitClause0]}#1::LEN<T, const N : usize>: usize
+pub const test_crate::{test_crate::V<T, const N : usize>[@TraitClause0]}#1::LEN<T, const N : usize>: usize
   where
       [@TraitClause0]: core::marker::Sized<T>,
  = test_crate::{test_crate::V<T, const N : usize>[@TraitClause0]}#1::LEN()

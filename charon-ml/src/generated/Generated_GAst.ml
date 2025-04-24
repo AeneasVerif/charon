@@ -181,14 +181,26 @@ and fun_sig = {
         nude = true (* Don't inherit VisitorsRuntime *);
       }]
 
+type global_kind =
+  | Static  (** A static. *)
+  | NamedConst
+      (** A const with a name (either top-level or an associated const in a trait). *)
+  | AnonConst
+      (** A const without a name:
+          - An inline const expression (`const { 1 + 1 }`);
+          - A const expression in a type (`[u8; sizeof::<T>()]`);
+          - A promoted constant, automatically lifted from a body (`&0`).
+       *)
+
 (** A global variable definition (constant or static). *)
-type global_decl = {
+and global_decl = {
   def_id : global_decl_id;
   item_meta : item_meta;  (** The meta data associated with the declaration. *)
   generics : generic_params;
   ty : ty;
   kind : item_kind;
-      (** The global kind: "regular" function, trait const declaration, etc. *)
+      (** The context of the global: distinguishes top-level items from trait-associated items. *)
+  global_kind : global_kind;  (** The kind of global (static or const). *)
   body : fun_decl_id;
       (** The initializer function used to compute the initial value for this constant/static. It
         uses the same generic parameters as the global.

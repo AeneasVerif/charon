@@ -8,7 +8,7 @@ pub fn core::char::methods::{char}::MAX() -> char
     return
 }
 
-pub global core::char::methods::{char}::MAX: char = core::char::methods::{char}::MAX()
+pub const core::char::methods::{char}::MAX: char = core::char::methods::{char}::MAX()
 
 pub fn core::char::MAX() -> char
 {
@@ -21,7 +21,7 @@ pub fn core::char::MAX() -> char
     return
 }
 
-pub global core::char::MAX: char = core::char::MAX()
+pub const core::char::MAX: char = core::char::MAX()
 
 fn test_crate::main()
 {

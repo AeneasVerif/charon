@@ -440,7 +440,7 @@ pub fn test_crate::_() -> isize
     return
 }
 
-pub global test_crate::_: isize = test_crate::_()
+pub const test_crate::_: isize = test_crate::_()
 
 pub fn test_crate::_#1() -> isize
 {
@@ -450,7 +450,7 @@ pub fn test_crate::_#1() -> isize
     return
 }
 
-pub global test_crate::_#1: isize = test_crate::_#1()
+pub const test_crate::_#1: isize = test_crate::_#1()
 
 pub fn test_crate::_#2() -> isize
 {
@@ -460,7 +460,7 @@ pub fn test_crate::_#2() -> isize
     return
 }
 
-pub global test_crate::_#2: isize = test_crate::_#2()
+pub const test_crate::_#2: isize = test_crate::_#2()
 
 pub fn test_crate::_#3() -> isize
 {
@@ -470,7 +470,7 @@ pub fn test_crate::_#3() -> isize
     return
 }
 
-pub global test_crate::_#3: isize = test_crate::_#3()
+pub const test_crate::_#3: isize = test_crate::_#3()
 
 pub fn test_crate::_#4() -> isize
 {
@@ -483,7 +483,7 @@ pub fn test_crate::_#4() -> isize
     return
 }
 
-pub global test_crate::_#4: isize = test_crate::_#4()
+pub const test_crate::_#4: isize = test_crate::_#4()
 
 pub fn test_crate::_#5() -> isize
 {
@@ -496,7 +496,7 @@ pub fn test_crate::_#5() -> isize
     return
 }
 
-pub global test_crate::_#5: isize = test_crate::_#5()
+pub const test_crate::_#5: isize = test_crate::_#5()
 
 pub fn test_crate::_#6() -> isize
 {
@@ -506,7 +506,7 @@ pub fn test_crate::_#6() -> isize
     return
 }
 
-pub global test_crate::_#6: isize = test_crate::_#6()
+pub const test_crate::_#6: isize = test_crate::_#6()
 
 pub fn test_crate::_#7() -> isize
 {
@@ -516,7 +516,7 @@ pub fn test_crate::_#7() -> isize
     return
 }
 
-pub global test_crate::_#7: isize = test_crate::_#7()
+pub const test_crate::_#7: isize = test_crate::_#7()
 
 pub fn test_crate::FOO() -> u32
 {
@@ -526,7 +526,7 @@ pub fn test_crate::FOO() -> u32
     return
 }
 
-pub global test_crate::FOO: u32 = test_crate::FOO()
+pub const test_crate::FOO: u32 = test_crate::FOO()
 
 pub fn test_crate::_#8() -> u32
 {
@@ -539,7 +539,7 @@ pub fn test_crate::_#8() -> u32
     return
 }
 
-pub global test_crate::_#8: u32 = test_crate::_#8()
+pub const test_crate::_#8: u32 = test_crate::_#8()
 
 pub fn test_crate::_#9() -> u32
 {
@@ -552,7 +552,7 @@ pub fn test_crate::_#9() -> u32
     return
 }
 
-pub global test_crate::_#9: u32 = test_crate::_#9()
+pub const test_crate::_#9: u32 = test_crate::_#9()
 
 pub fn test_crate::_#10() -> u32
 {
@@ -565,7 +565,7 @@ pub fn test_crate::_#10() -> u32
     return
 }
 
-pub global test_crate::_#10: u32 = test_crate::_#10()
+pub const test_crate::_#10: u32 = test_crate::_#10()
 
 pub fn test_crate::_#11() -> u32
 {
@@ -578,7 +578,7 @@ pub fn test_crate::_#11() -> u32
     return
 }
 
-pub global test_crate::_#11: u32 = test_crate::_#11()
+pub const test_crate::_#11: u32 = test_crate::_#11()
 
 pub fn test_crate::_#12() -> u32
 {
@@ -591,7 +591,7 @@ pub fn test_crate::_#12() -> u32
     return
 }
 
-pub global test_crate::_#12: u32 = test_crate::_#12()
+pub const test_crate::_#12: u32 = test_crate::_#12()
 
 pub fn test_crate::_#13() -> u32
 {
@@ -604,7 +604,7 @@ pub fn test_crate::_#13() -> u32
     return
 }
 
-pub global test_crate::_#13: u32 = test_crate::_#13()
+pub const test_crate::_#13: u32 = test_crate::_#13()
 
 pub fn test_crate::_#14() -> u32
 {
@@ -617,7 +617,7 @@ pub fn test_crate::_#14() -> u32
     return
 }
 
-pub global test_crate::_#14: u32 = test_crate::_#14()
+pub const test_crate::_#14: u32 = test_crate::_#14()
 
 fn test_crate::div_signed_with_constant::FOO() -> i32
 {
@@ -627,7 +627,7 @@ fn test_crate::div_signed_with_constant::FOO() -> i32
     return
 }
 
-global test_crate::div_signed_with_constant::FOO: i32 = test_crate::div_signed_with_constant::FOO()
+const test_crate::div_signed_with_constant::FOO: i32 = test_crate::div_signed_with_constant::FOO()
 
 fn test_crate::div_signed_with_constant() -> i32
 {
