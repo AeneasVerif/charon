@@ -1,11 +1,11 @@
 //! The translation contexts.
+use super::translate_functions_to_ullbc::BodyTransCtx;
 use super::translate_types::translate_bound_region_kind_name;
 use charon_lib::ast::*;
 use charon_lib::common::hash_by_addr::HashByAddr;
 use charon_lib::formatter::{FmtCtx, IntoFormatter};
 use charon_lib::ids::Vector;
 use charon_lib::options::TranslateOptions;
-use charon_lib::ullbc_ast as ullbc;
 use hax_frontend_exporter::SInto;
 use hax_frontend_exporter::{self as hax, DefPathItem};
 use itertools::Itertools;
@@ -15,7 +15,7 @@ use rustc_middle::ty::TyCtxt;
 use std::borrow::Cow;
 use std::cell::RefCell;
 use std::cmp::Ord;
-use std::collections::{BTreeSet, HashMap, HashSet, VecDeque};
+use std::collections::{BTreeSet, HashMap, HashSet};
 use std::fmt::Debug;
 use std::path::{Component, PathBuf};
 use std::sync::Arc;
@@ -237,21 +237,6 @@ pub(crate) struct ItemTransCtx<'tcx, 'ctx> {
     pub parent_trait_clauses: Vector<TraitClauseId, TraitClause>,
     /// (For traits only) accumulated trait clauses on associated types.
     pub item_trait_clauses: HashMap<TraitItemName, Vector<TraitClauseId, TraitClause>>,
-
-    /// The (regular) variables in the current function body.
-    pub locals: Locals,
-    /// The map from rust variable indices to translated variables indices.
-    pub locals_map: HashMap<usize, LocalId>,
-    /// The translated blocks.
-    pub blocks: Vector<ullbc::BlockId, ullbc::BlockData>,
-    /// The map from rust blocks to translated blocks.
-    /// Note that when translating terminators like DropAndReplace, we might have
-    /// to introduce new blocks which don't appear in the original MIR.
-    pub blocks_map: HashMap<hax::BasicBlock, ullbc::BlockId>,
-    /// We register the blocks to translate in a stack, so as to avoid
-    /// writing the translation functions as recursive functions. We do
-    /// so because we had stack overflows in the past.
-    pub blocks_stack: VecDeque<hax::BasicBlock>,
 }
 
 /// Translates `T` into `U` using `hax`'s `SInto` trait, catching any hax panics.
@@ -891,11 +876,6 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
             binding_levels: Default::default(),
             parent_trait_clauses: Default::default(),
             item_trait_clauses: Default::default(),
-            locals: Default::default(),
-            locals_map: Default::default(),
-            blocks: Default::default(),
-            blocks_map: Default::default(),
-            blocks_stack: Default::default(),
         }
     }
 
@@ -913,11 +893,6 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
 
     pub(crate) fn def_span(&mut self, def_id: impl Into<DefId>) -> Span {
         self.t_ctx.def_span(def_id)
-    }
-
-    pub(crate) fn translate_local(&self, local: &hax::Local) -> Option<LocalId> {
-        use rustc_index::Idx;
-        self.locals_map.get(&local.index()).copied()
     }
 
     pub(crate) fn register_id_no_enqueue(&mut self, span: Span, id: TransItemSource) -> AnyTransId {
@@ -1181,14 +1156,6 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         })
     }
 
-    pub(crate) fn push_var(&mut self, rid: usize, ty: Ty, name: Option<String>) {
-        let local_id = self
-            .locals
-            .locals
-            .push_with(|index| Local { index, name, ty });
-        self.locals_map.insert(rid, local_id);
-    }
-
     pub(crate) fn make_dep_source(&self, span: Span) -> Option<DepSource> {
         Some(DepSource {
             src_id: self.item_id?,
@@ -1197,22 +1164,30 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
     }
 }
 
-impl<'tcx, 'ctx, 'a> IntoFormatter for &'a TranslateCtx<'tcx> {
+impl<'a> IntoFormatter for &'a TranslateCtx<'_> {
     type C = FmtCtx<'a>;
-
     fn into_fmt(self) -> Self::C {
         self.translated.into_fmt()
     }
 }
 
-impl<'tcx, 'ctx, 'a> IntoFormatter for &'a ItemTransCtx<'tcx, 'ctx> {
+impl<'a> IntoFormatter for &'a ItemTransCtx<'_, '_> {
     type C = FmtCtx<'a>;
-
     fn into_fmt(self) -> Self::C {
         FmtCtx {
             translated: Some(&self.t_ctx.translated),
             generics: self.binding_levels.map_ref(|bl| Cow::Borrowed(&bl.params)),
+            locals: None,
+        }
+    }
+}
+
+impl<'a> IntoFormatter for &'a BodyTransCtx<'_, '_, '_> {
+    type C = FmtCtx<'a>;
+    fn into_fmt(self) -> Self::C {
+        FmtCtx {
             locals: Some(&self.locals),
+            ..self.i_ctx.into_fmt()
         }
     }
 }

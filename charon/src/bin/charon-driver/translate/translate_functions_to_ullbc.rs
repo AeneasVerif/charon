@@ -3,7 +3,11 @@
 //! us to handle, and easier to maintain - rustc's representation can evolve
 //! independently.
 
+use std::collections::HashMap;
+use std::collections::VecDeque;
 use std::mem;
+use std::ops::Deref;
+use std::ops::DerefMut;
 use std::panic;
 
 use super::translate_ctx::*;
@@ -16,6 +20,52 @@ use charon_lib::ullbc_ast::*;
 use hax_frontend_exporter as hax;
 use itertools::Itertools;
 use rustc_middle::mir;
+
+/// A translation context for function bodies.
+pub(crate) struct BodyTransCtx<'tcx, 'tctx, 'ictx> {
+    /// The translation context for the item.
+    pub i_ctx: &'ictx mut ItemTransCtx<'tcx, 'tctx>,
+
+    /// The (regular) variables in the current function body.
+    pub locals: Locals,
+    /// The map from rust variable indices to translated variables indices.
+    pub locals_map: HashMap<usize, LocalId>,
+    /// The translated blocks.
+    pub blocks: Vector<BlockId, BlockData>,
+    /// The map from rust blocks to translated blocks.
+    /// Note that when translating terminators like DropAndReplace, we might have
+    /// to introduce new blocks which don't appear in the original MIR.
+    pub blocks_map: HashMap<hax::BasicBlock, BlockId>,
+    /// We register the blocks to translate in a stack, so as to avoid
+    /// writing the translation functions as recursive functions. We do
+    /// so because we had stack overflows in the past.
+    pub blocks_stack: VecDeque<hax::BasicBlock>,
+}
+
+impl<'tcx, 'tctx, 'ictx> BodyTransCtx<'tcx, 'tctx, 'ictx> {
+    pub(crate) fn new(i_ctx: &'ictx mut ItemTransCtx<'tcx, 'tctx>) -> Self {
+        BodyTransCtx {
+            i_ctx,
+            locals: Default::default(),
+            locals_map: Default::default(),
+            blocks: Default::default(),
+            blocks_map: Default::default(),
+            blocks_stack: Default::default(),
+        }
+    }
+}
+
+impl<'tcx, 'tctx, 'ictx> Deref for BodyTransCtx<'tcx, 'tctx, 'ictx> {
+    type Target = ItemTransCtx<'tcx, 'tctx>;
+    fn deref(&self) -> &Self::Target {
+        self.i_ctx
+    }
+}
+impl<'tcx, 'tctx, 'ictx> DerefMut for BodyTransCtx<'tcx, 'tctx, 'ictx> {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        self.i_ctx
+    }
+}
 
 pub(crate) struct SubstFunId {
     pub func: FnPtr,
@@ -51,7 +101,20 @@ fn translate_borrow_kind(borrow_kind: hax::BorrowKind) -> BorrowKind {
     }
 }
 
-impl<'tcx, 'ctx> TranslateCtx<'tcx> {
+impl BodyTransCtx<'_, '_, '_> {
+    pub(crate) fn translate_local(&self, local: &hax::Local) -> Option<LocalId> {
+        use rustc_index::Idx;
+        self.locals_map.get(&local.index()).copied()
+    }
+
+    pub(crate) fn push_var(&mut self, rid: usize, ty: Ty, name: Option<String>) {
+        let local_id = self
+            .locals
+            .locals
+            .push_with(|index| Local { index, name, ty });
+        self.locals_map.insert(rid, local_id);
+    }
+
     fn translate_binaryop_kind(&mut self, _span: Span, binop: hax::BinOp) -> Result<BinOp, Error> {
         Ok(match binop {
             hax::BinOp::BitXor => BinOp::BitXor,
@@ -75,94 +138,6 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
             hax::BinOp::Shr => BinOp::Shr,
             hax::BinOp::Cmp => BinOp::Cmp,
             hax::BinOp::Offset => BinOp::Offset,
-        })
-    }
-}
-
-impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
-    pub(crate) fn get_item_kind(
-        &mut self,
-        span: Span,
-        def: &hax::FullDef,
-    ) -> Result<ItemKind, Error> {
-        let assoc = match def.kind() {
-            hax::FullDefKind::AssocTy {
-                associated_item, ..
-            }
-            | hax::FullDefKind::AssocConst {
-                associated_item, ..
-            }
-            | hax::FullDefKind::AssocFn {
-                associated_item, ..
-            } => associated_item,
-            _ => return Ok(ItemKind::Regular),
-        };
-        Ok(match &assoc.container {
-            // E.g.:
-            // ```
-            // impl<T> List<T> {
-            //   fn new() -> Self { ... } <- inherent method
-            // }
-            // ```
-            hax::AssocItemContainer::InherentImplContainer { .. } => ItemKind::Regular,
-            // E.g.:
-            // ```
-            // impl Foo for Bar {
-            //   fn baz(...) { ... } // <- implementation of a trait method
-            // }
-            // ```
-            hax::AssocItemContainer::TraitImplContainer {
-                impl_id,
-                impl_generics,
-                impl_required_impl_exprs,
-                implemented_trait_ref,
-                implemented_trait_item,
-                overrides_default,
-                ..
-            } => {
-                let impl_id = self.register_trait_impl_id(span, impl_id);
-                let impl_ref = TraitImplRef {
-                    impl_id,
-                    generics: self.translate_generic_args(
-                        span,
-                        impl_generics,
-                        impl_required_impl_exprs,
-                        None,
-                        GenericsSource::item(impl_id),
-                    )?,
-                };
-                let trait_ref = self.translate_trait_ref(span, implemented_trait_ref)?;
-                if matches!(def.kind(), hax::FullDefKind::AssocFn { .. }) {
-                    // Ensure we translate the corresponding decl signature.
-                    // FIXME(self_clause): also ensure we translate associated globals
-                    // consistently; to do once we have clearer `Self` clause handling.
-                    let _ = self.register_fun_decl_id(span, implemented_trait_item);
-                }
-                ItemKind::TraitImpl {
-                    impl_ref,
-                    trait_ref,
-                    item_name: TraitItemName(assoc.name.clone()),
-                    reuses_default: !overrides_default,
-                }
-            }
-            // This method is the *declaration* of a trait item
-            // E.g.:
-            // ```
-            // trait Foo {
-            //   fn baz(...); // <- declaration of a trait method
-            // }
-            // ```
-            hax::AssocItemContainer::TraitContainer { trait_ref, .. } => {
-                // The trait id should be Some(...): trait markers (that we may eliminate)
-                // don't have associated items.
-                let trait_ref = self.translate_trait_ref(span, trait_ref)?;
-                let item_name = TraitItemName(assoc.name.clone());
-                ItemKind::TraitDecl {
-                    trait_ref,
-                    item_name,
-                    has_default: assoc.has_value,
-                }
-            }
         })
     }
 
@@ -549,7 +524,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                 }
             }
             hax::Rvalue::BinaryOp(binop, (left, right)) => Ok(Rvalue::BinaryOp(
-                self.t_ctx.translate_binaryop_kind(span, *binop)?,
+                self.translate_binaryop_kind(span, *binop)?,
                 self.translate_operand(span, left)?,
                 self.translate_operand(span, right)?,
             )),
@@ -744,26 +719,6 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         }
     }
 
-    /// Checks whether the given id corresponds to a built-in function.
-    fn recognize_builtin_fun(&mut self, def: &hax::FullDef) -> Result<Option<BuiltinFun>, Error> {
-        let name = self.t_ctx.hax_def_id_to_name(&def.def_id)?;
-        let panic_lang_items = &["panic", "panic_fmt", "begin_panic"];
-        let panic_names = &[&["core", "panicking", "assert_failed"], EXPLICIT_PANIC_NAME];
-
-        if def.diagnostic_item.as_deref() == Some("box_new") {
-            Ok(Some(BuiltinFun::BoxNew))
-        } else if def
-            .lang_item
-            .as_deref()
-            .is_some_and(|lang_it| panic_lang_items.iter().contains(&lang_it))
-            || panic_names.iter().any(|panic| name.equals_ref_name(panic))
-        {
-            Ok(Some(BuiltinFun::Panic))
-        } else {
-            Ok(None)
-        }
-    }
-
     /// Auxiliary function to translate function calls and references to functions.
     /// Translate a function id applied with some substitutions and some optional
     /// arguments.
@@ -791,106 +746,14 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
             return Ok(SubstFunIdOrPanic::Panic(name));
         }
 
-        // Retreive the late-bound variables.
-        let binder = match self.t_ctx.hax_def(def_id)?.kind() {
-            hax::FullDefKind::Fn { sig, .. } | hax::FullDefKind::AssocFn { sig, .. } => {
-                Some(sig.as_ref().rebind(()))
-            }
-            _ => None,
-        };
-
-        // Trait information
-        trace!(
-            "Trait information:\n- def_id: {:?}\n- impl source:\n{:?}",
-            def_id,
-            trait_info
-        );
-        trace!(
-            "Method traits:\n- def_id: {:?}\n- traits:\n{:?}",
-            def_id,
-            trait_refs
-        );
-
-        // Check if the function is considered primitive: primitive
-        // functions benefit from special treatment.
-        let fun_id = if let Some(builtin_fun) = builtin_fun {
-            // Primitive function.
-            //
-            // Note that there are subtleties with regards to the way types parameters
-            // are translated, because some functions are actually traits, where the
-            // types are used for the resolution. For instance, the following:
-            // `core::ops::deref::Deref::<alloc::boxed::Box<T>>::deref`
-            // is translated to:
-            // `box_deref<T>`
-            // (the type parameter is not `Box<T>` but `T`).
-            assert!(trait_info.is_none());
-
-            let aid = builtin_fun.to_ullbc_builtin_fun();
-
-            // Note that some functions are actually traits (deref, index, etc.):
-            // we assume that they are called only on a limited set of types
-            // (ex.: box, vec...).
-            // For those trait functions, we need a custom treatment to retrieve
-            // and check the type information.
-            // For instance, derefencing boxes generates MIR of the following form:
-            // ```
-            // _2 = <Box<u32> as Deref>::deref(move _3)
-            // ```
-            // We have to retrieve the type `Box<u32>` and check that it is of the
-            // form `Box<T>` (and we generate `box_deref<u32>`).
-            match aid {
-                BuiltinFunId::BoxNew => {
-                    // Nothing to do
-                }
-                BuiltinFunId::Index { .. }
-                | BuiltinFunId::ArrayToSliceShared
-                | BuiltinFunId::ArrayToSliceMut
-                | BuiltinFunId::ArrayRepeat
-                | BuiltinFunId::PtrFromParts(_) => {
-                    // Those cases are introduced later, in micro-passes, by desugaring
-                    // projections (for ArrayIndex and ArrayIndexMut for instance) and
-                    // operations (for ArrayToSlice for instance) to function calls.
-                    unreachable!()
-                }
-            };
-
-            FunIdOrTraitMethodRef::Fun(FunId::Builtin(aid))
-        } else {
-            let fun_id = self.register_fun_decl_id(span, def_id);
-            // Two cases depending on whether we call a trait method or not
-            match trait_info {
-                // Direct function call
-                None => FunIdOrTraitMethodRef::Fun(FunId::Regular(fun_id)),
-                // Trait method
-                Some(trait_info) => {
-                    let impl_expr = self.translate_trait_impl_expr(span, trait_info)?;
-                    let method_name = self.t_ctx.translate_trait_item_name(def_id)?;
-                    FunIdOrTraitMethodRef::Trait(impl_expr, method_name, fun_id)
-                }
-            }
-        };
-
-        // Translate the type parameters
-        let generics = self.translate_generic_args(
-            span,
-            substs,
-            trait_refs,
-            binder,
-            fun_id.generics_target(),
-        )?;
+        let fn_ptr = self.translate_fn_ptr(span, def_id, substs, trait_refs, trait_info)?;
 
         // Translate the arguments
         let args = args
             .map(|args| self.translate_arguments(span, args))
             .transpose()?;
 
-        let sfid = SubstFunId {
-            func: FnPtr {
-                func: fun_id,
-                generics,
-            },
-            args,
-        };
+        let sfid = SubstFunId { func: fn_ptr, args };
         Ok(SubstFunIdOrPanic::Fun(sfid))
     }
 
@@ -1333,6 +1196,94 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
             comments: self.translate_body_comments(def, span),
         })))
     }
+}
+
+impl ItemTransCtx<'_, '_> {
+    pub(crate) fn get_item_kind(
+        &mut self,
+        span: Span,
+        def: &hax::FullDef,
+    ) -> Result<ItemKind, Error> {
+        let assoc = match def.kind() {
+            hax::FullDefKind::AssocTy {
+                associated_item, ..
+            }
+            | hax::FullDefKind::AssocConst {
+                associated_item, ..
+            }
+            | hax::FullDefKind::AssocFn {
+                associated_item, ..
+            } => associated_item,
+            _ => return Ok(ItemKind::Regular),
+        };
+        Ok(match &assoc.container {
+            // E.g.:
+            // ```
+            // impl<T> List<T> {
+            //   fn new() -> Self { ... } <- inherent method
+            // }
+            // ```
+            hax::AssocItemContainer::InherentImplContainer { .. } => ItemKind::Regular,
+            // E.g.:
+            // ```
+            // impl Foo for Bar {
+            //   fn baz(...) { ... } // <- implementation of a trait method
+            // }
+            // ```
+            hax::AssocItemContainer::TraitImplContainer {
+                impl_id,
+                impl_generics,
+                impl_required_impl_exprs,
+                implemented_trait_ref,
+                implemented_trait_item,
+                overrides_default,
+                ..
+            } => {
+                let impl_id = self.register_trait_impl_id(span, impl_id);
+                let impl_ref = TraitImplRef {
+                    impl_id,
+                    generics: self.translate_generic_args(
+                        span,
+                        impl_generics,
+                        impl_required_impl_exprs,
+                        None,
+                        GenericsSource::item(impl_id),
+                    )?,
+                };
+                let trait_ref = self.translate_trait_ref(span, implemented_trait_ref)?;
+                if matches!(def.kind(), hax::FullDefKind::AssocFn { .. }) {
+                    // Ensure we translate the corresponding decl signature.
+                    // FIXME(self_clause): also ensure we translate associated globals
+                    // consistently; to do once we have clearer `Self` clause handling.
+                    let _ = self.register_fun_decl_id(span, implemented_trait_item);
+                }
+                ItemKind::TraitImpl {
+                    impl_ref,
+                    trait_ref,
+                    item_name: TraitItemName(assoc.name.clone()),
+                    reuses_default: !overrides_default,
+                }
+            }
+            // This method is the *declaration* of a trait item
+            // E.g.:
+            // ```
+            // trait Foo {
+            //   fn baz(...); // <- declaration of a trait method
+            // }
+            // ```
+            hax::AssocItemContainer::TraitContainer { trait_ref, .. } => {
+                // The trait id should be Some(...): trait markers (that we may eliminate)
+                // don't have associated items.
+                let trait_ref = self.translate_trait_ref(span, trait_ref)?;
+                let item_name = TraitItemName(assoc.name.clone());
+                ItemKind::TraitDecl {
+                    trait_ref,
+                    item_name,
+                    has_default: assoc.has_value,
+                }
+            }
+        })
+    }
 
     /// Translate a function's signature, and initialize a body translation context
     /// at the same time - the function signature gives us the list of region and
@@ -1530,9 +1481,136 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         });
         Ok(body)
     }
-}
 
-impl ItemTransCtx<'_, '_> {
+    /// Checks whether the given id corresponds to a built-in function.
+    fn recognize_builtin_fun(&mut self, def: &hax::FullDef) -> Result<Option<BuiltinFun>, Error> {
+        let name = self.t_ctx.hax_def_id_to_name(&def.def_id)?;
+        let panic_lang_items = &["panic", "panic_fmt", "begin_panic"];
+        let panic_names = &[&["core", "panicking", "assert_failed"], EXPLICIT_PANIC_NAME];
+
+        if def.diagnostic_item.as_deref() == Some("box_new") {
+            Ok(Some(BuiltinFun::BoxNew))
+        } else if def
+            .lang_item
+            .as_deref()
+            .is_some_and(|lang_it| panic_lang_items.iter().contains(&lang_it))
+            || panic_names.iter().any(|panic| name.equals_ref_name(panic))
+        {
+            Ok(Some(BuiltinFun::Panic))
+        } else {
+            Ok(None)
+        }
+    }
+
+    /// Auxiliary function to translate function calls and references to functions.
+    /// Translate a function id applied with some substitutions.
+    ///
+    /// TODO: should we always erase the regions?
+    pub(crate) fn translate_fn_ptr(
+        &mut self,
+        span: Span,
+        def_id: &hax::DefId,
+        substs: &Vec<hax::GenericArg>,
+        trait_refs: &Vec<hax::ImplExpr>,
+        trait_info: &Option<hax::ImplExpr>,
+    ) -> Result<FnPtr, Error> {
+        let fun_def = self.t_ctx.hax_def(def_id)?;
+        let builtin_fun = self.recognize_builtin_fun(&fun_def)?;
+
+        // Retreive the late-bound variables.
+        let binder = match fun_def.kind() {
+            hax::FullDefKind::Fn { sig, .. } | hax::FullDefKind::AssocFn { sig, .. } => {
+                Some(sig.as_ref().rebind(()))
+            }
+            _ => None,
+        };
+
+        // Trait information
+        trace!(
+            "Trait information:\n- def_id: {:?}\n- impl source:\n{:?}",
+            def_id,
+            trait_info
+        );
+        trace!(
+            "Method traits:\n- def_id: {:?}\n- traits:\n{:?}",
+            def_id,
+            trait_refs
+        );
+
+        // Check if the function is considered primitive: primitive
+        // functions benefit from special treatment.
+        let fun_id = if let Some(builtin_fun) = builtin_fun {
+            // Primitive function.
+            //
+            // Note that there are subtleties with regards to the way types parameters
+            // are translated, because some functions are actually traits, where the
+            // types are used for the resolution. For instance, the following:
+            // `core::ops::deref::Deref::<alloc::boxed::Box<T>>::deref`
+            // is translated to:
+            // `box_deref<T>`
+            // (the type parameter is not `Box<T>` but `T`).
+            assert!(trait_info.is_none());
+
+            let aid = builtin_fun.to_ullbc_builtin_fun();
+
+            // Note that some functions are actually traits (deref, index, etc.):
+            // we assume that they are called only on a limited set of types
+            // (ex.: box, vec...).
+            // For those trait functions, we need a custom treatment to retrieve
+            // and check the type information.
+            // For instance, derefencing boxes generates MIR of the following form:
+            // ```
+            // _2 = <Box<u32> as Deref>::deref(move _3)
+            // ```
+            // We have to retrieve the type `Box<u32>` and check that it is of the
+            // form `Box<T>` (and we generate `box_deref<u32>`).
+            match aid {
+                BuiltinFunId::BoxNew => {
+                    // Nothing to do
+                }
+                BuiltinFunId::Index { .. }
+                | BuiltinFunId::ArrayToSliceShared
+                | BuiltinFunId::ArrayToSliceMut
+                | BuiltinFunId::ArrayRepeat
+                | BuiltinFunId::PtrFromParts(_) => {
+                    // Those cases are introduced later, in micro-passes, by desugaring
+                    // projections (for ArrayIndex and ArrayIndexMut for instance) and
+                    // operations (for ArrayToSlice for instance) to function calls.
+                    unreachable!()
+                }
+            };
+
+            FunIdOrTraitMethodRef::Fun(FunId::Builtin(aid))
+        } else {
+            let fun_id = self.register_fun_decl_id(span, def_id);
+            // Two cases depending on whether we call a trait method or not
+            match trait_info {
+                // Direct function call
+                None => FunIdOrTraitMethodRef::Fun(FunId::Regular(fun_id)),
+                // Trait method
+                Some(trait_info) => {
+                    let impl_expr = self.translate_trait_impl_expr(span, trait_info)?;
+                    let method_name = self.t_ctx.translate_trait_item_name(def_id)?;
+                    FunIdOrTraitMethodRef::Trait(impl_expr, method_name, fun_id)
+                }
+            }
+        };
+
+        // Translate the type parameters
+        let generics = self.translate_generic_args(
+            span,
+            substs,
+            trait_refs,
+            binder,
+            fun_id.generics_target(),
+        )?;
+
+        Ok(FnPtr {
+            func: fun_id,
+            generics,
+        })
+    }
+
     /// Translate one function.
     #[tracing::instrument(skip(self, item_meta))]
     pub fn translate_function(
@@ -1593,7 +1671,8 @@ impl ItemTransCtx<'_, '_> {
         } else {
             // Translate the body. This doesn't store anything if we can't/decide not to translate
             // this body.
-            match self.translate_body(item_meta.span, def) {
+            let mut bt_ctx = BodyTransCtx::new(&mut self);
+            match bt_ctx.translate_body(item_meta.span, def) {
                 Ok(Ok(body)) => Ok(body),
                 // Opaque declaration
                 Ok(Err(Opaque)) => Err(Opaque),
