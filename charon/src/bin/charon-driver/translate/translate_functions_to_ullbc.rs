@@ -67,16 +67,6 @@ impl<'tcx, 'tctx, 'ictx> DerefMut for BodyTransCtx<'tcx, 'tctx, 'ictx> {
     }
 }
 
-pub(crate) struct SubstFunId {
-    pub func: FnPtr,
-    pub args: Option<Vec<Operand>>,
-}
-
-pub(crate) enum SubstFunIdOrPanic {
-    Panic(Name),
-    Fun(SubstFunId),
-}
-
 fn translate_variant_id(id: hax::VariantIdx) -> VariantId {
     VariantId::new(id)
 }
@@ -719,51 +709,6 @@ impl BodyTransCtx<'_, '_, '_> {
         }
     }
 
-    /// Auxiliary function to translate function calls and references to functions.
-    /// Translate a function id applied with some substitutions and some optional
-    /// arguments.
-    ///
-    /// We use a special function because the function might be built-in, and
-    /// some parameters/arguments might need to be filtered.
-    /// We return the fun id, its generics, and filtering information for the
-    /// arguments.
-    ///
-    /// TODO: should we always erase the regions?
-    #[allow(clippy::too_many_arguments)]
-    pub(crate) fn translate_fun_decl_id_with_args(
-        &mut self,
-        span: Span,
-        def_id: &hax::DefId,
-        substs: &Vec<hax::GenericArg>,
-        args: &Vec<hax::Spanned<hax::Operand>>,
-        trait_refs: &Vec<hax::ImplExpr>,
-        trait_info: &Option<hax::ImplExpr>,
-    ) -> Result<SubstFunIdOrPanic, Error> {
-        let fun_def = self.t_ctx.hax_def(def_id)?;
-        let name = self.t_ctx.hax_def_id_to_name(&fun_def.def_id)?;
-        let panic_lang_items = &["panic", "panic_fmt", "begin_panic"];
-        let panic_names = &[&["core", "panicking", "assert_failed"], EXPLICIT_PANIC_NAME];
-        if fun_def
-            .lang_item
-            .as_deref()
-            .is_some_and(|lang_it| panic_lang_items.iter().contains(&lang_it))
-            || panic_names.iter().any(|panic| name.equals_ref_name(panic))
-        {
-            Ok(SubstFunIdOrPanic::Panic(name))
-        } else {
-            let fn_ptr = self.translate_fn_ptr(span, def_id, substs, trait_refs, trait_info)?;
-
-            // Translate the arguments
-            let args = self.translate_arguments(span, args)?;
-
-            let sfid = SubstFunId {
-                func: fn_ptr,
-                args: Some(args),
-            };
-            Ok(SubstFunIdOrPanic::Fun(sfid))
-        }
-    }
-
     /// Translate a statement
     ///
     /// We return an option, because we ignore some statements (`Nop`, `StorageLive`...)
@@ -1018,41 +963,39 @@ impl BodyTransCtx<'_, '_, '_> {
         // call to a top-level function identified by its id, or if we
         // are using a local function pointer (i.e., the operand is a "move").
         let lval = self.translate_place(span, destination)?;
-        let next_block = target.map(|target| self.translate_basic_block_id(target));
-        let (fn_operand, args) = match fun {
+        // Translate the function operand.
+        let fn_operand = match fun {
             hax::FunOperand::Static {
                 def_id,
                 generics,
                 trait_refs,
                 trait_info,
             } => {
-                // Translate the function operand - should be a constant: we don't
-                // support closures for now
                 trace!("func: {:?}", def_id);
+                let fun_def = self.t_ctx.hax_def(def_id)?;
+                let name = self.t_ctx.hax_def_id_to_name(&fun_def.def_id)?;
+                let panic_lang_items = &["panic", "panic_fmt", "begin_panic"];
+                let panic_names = &[&["core", "panicking", "assert_failed"], EXPLICIT_PANIC_NAME];
 
-                // Translate the function id, with its parameters
-                let fid = self.translate_fun_decl_id_with_args(
-                    span, def_id, generics, args, trait_refs, trait_info,
-                )?;
-
-                match fid {
-                    SubstFunIdOrPanic::Panic(name) => {
-                        // If the call is `panic!`, then the target is `None`.
-                        // I don't know in which other cases it can be `None`.
-                        assert!(target.is_none());
-                        // We ignore the arguments
-                        return Ok(RawTerminator::Abort(AbortKind::Panic(Some(name))));
-                    }
-                    SubstFunIdOrPanic::Fun(fid) => {
-                        let fn_operand = FnOperand::Regular(fid.func);
-                        let args = fid.args.unwrap();
-                        (fn_operand, args)
-                    }
+                if fun_def
+                    .lang_item
+                    .as_deref()
+                    .is_some_and(|lang_it| panic_lang_items.iter().contains(&lang_it))
+                    || panic_names.iter().any(|panic| name.equals_ref_name(panic))
+                {
+                    // If the call is `panic!`, then the target is `None`.
+                    // I don't know in which other cases it can be `None`.
+                    assert!(target.is_none());
+                    // We ignore the arguments
+                    return Ok(RawTerminator::Abort(AbortKind::Panic(Some(name))));
+                } else {
+                    let fn_ptr =
+                        self.translate_fn_ptr(span, def_id, generics, trait_refs, trait_info)?;
+                    FnOperand::Regular(fn_ptr)
                 }
             }
             hax::FunOperand::DynamicMove(p) => {
                 // Call to a local function pointer
-                // The function
                 let p = self.translate_place(span, p)?;
 
                 // TODO: we may have a problem here because as we don't
@@ -1061,19 +1004,21 @@ impl BodyTransCtx<'_, '_, '_> {
                 // this is rather an issue for the statement which creates
                 // the function pointer, by refering to a top-level function
                 // for instance.
-                let args = self.translate_arguments(span, args)?;
-                let fn_operand = FnOperand::Move(p);
-                (fn_operand, args)
+                FnOperand::Move(p)
             }
         };
+        let args = self.translate_arguments(span, args)?;
         let call = Call {
             func: fn_operand,
             args,
             dest: lval,
         };
         statements.push(Statement::new(span, RawStatement::Call(call)));
-        Ok(match next_block {
-            Some(target) => RawTerminator::Goto { target },
+        Ok(match target {
+            Some(target) => {
+                let target = self.translate_basic_block_id(*target);
+                RawTerminator::Goto { target }
+            }
             None => RawTerminator::Abort(AbortKind::UndefinedBehavior),
         })
     }
