@@ -58,6 +58,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
             | Ctor { .. }
             | Field { .. }
             | InlineConst { .. }
+            | PromotedConst { .. }
             | LifetimeParam { .. }
             | OpaqueTy { .. }
             | SyntheticCoroutineBody { .. }

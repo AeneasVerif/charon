@@ -358,23 +358,33 @@ impl BodyTransCtx<'_, '_, '_> {
                 Ok((Operand::Move(p), ty))
             }
             hax::Operand::Constant(const_op) => match &const_op.kind {
-                hax::ConstOperandKind::Value(constant)
-                | hax::ConstOperandKind::Promoted(_, Some(constant)) => {
+                hax::ConstOperandKind::Value(constant) => {
                     let constant = self.translate_constant_expr_to_constant_expr(span, constant)?;
                     let ty = constant.ty.clone();
                     Ok((Operand::Const(constant), ty))
                 }
-                hax::ConstOperandKind::Promoted(promoted, None) => {
+                hax::ConstOperandKind::Promoted {
+                    def_id,
+                    args,
+                    impl_exprs,
+                } => {
+                    let ty = self.translate_ty(span, &const_op.ty)?;
                     // A promoted constant that could not be evaluated.
-                    // TODO: translate as a Global, then inline in a pass. will need to shift
-                    // locals and block ids.
-                    // TODO: disable hax's `inline_anon_const` so we also get that for inline
-                    // consts too.
-                    raise_error!(
-                        self,
-                        span,
-                        "Cannot translate unevaluated constant: {promoted:?}"
-                    )
+                    let global_id = self.register_global_decl_id(span, def_id);
+                    let constant = ConstantExpr {
+                        value: RawConstantExpr::Global(GlobalDeclRef {
+                            id: global_id,
+                            generics: self.translate_generic_args(
+                                span,
+                                args,
+                                impl_exprs,
+                                None,
+                                GenericsSource::item(global_id),
+                            )?,
+                        }),
+                        ty: ty.clone(),
+                    };
+                    Ok((Operand::Const(constant), ty))
                 }
             },
         }
@@ -1107,8 +1117,7 @@ impl BodyTransCtx<'_, '_, '_> {
         span: Span,
     ) -> Result<Result<Body, Opaque>, Error> {
         // Retrieve the body
-        let rust_id = def.rust_def_id();
-        let Some(body) = self.t_ctx.get_mir(rust_id, span)? else {
+        let Some(body) = self.t_ctx.get_mir(&def.def_id, span)? else {
             return Ok(Err(Opaque));
         };
 

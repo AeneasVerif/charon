@@ -351,8 +351,12 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
             // Do nothing, the constructor of a struct/variant has the same name as the
             // struct/variant.
             DefPathItem::Ctor => None,
-            DefPathItem::Use => Some(PathElem::Ident("<use>".to_string(), disambiguator)),
+            DefPathItem::Use => Some(PathElem::Ident("{use}".to_string(), disambiguator)),
             DefPathItem::AnonConst => Some(PathElem::Ident("{const}".to_string(), disambiguator)),
+            DefPathItem::PromotedConst => Some(PathElem::Ident(
+                "{promoted_const}".to_string(),
+                disambiguator,
+            )),
             _ => {
                 raise_error!(
                     self,
@@ -437,15 +441,10 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
 
     pub fn hax_def(&mut self, def_id: &hax::DefId) -> Result<Arc<hax::FullDef>, Error> {
         let span = self.def_span(def_id);
-        let rust_id = def_id.to_rust_def_id();
         // Hax takes care of caching the translation.
-        catch_sinto(
-            &self.hax_state,
-            &mut *self.errors.borrow_mut(),
-            &self.translated,
-            span,
-            &rust_id,
-        )
+        let unwind_safe_s = std::panic::AssertUnwindSafe(&self.hax_state);
+        std::panic::catch_unwind(move || def_id.full_def(*unwind_safe_s))
+            .or_else(|_| raise_error!(self, span, "Hax panicked when translating `{def_id:?}`."))
     }
 
     pub(crate) fn translate_attr_info(&mut self, def: &hax::FullDef) -> AttrInfo {
@@ -640,10 +639,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
     }
 
     pub(crate) fn def_span(&mut self, def_id: &hax::DefId) -> Span {
-        let def_id = def_id.to_rust_def_id();
-        let def_kind = hax::get_def_kind(self.tcx, def_id);
-        let span = hax::get_def_span(self.tcx, def_id, def_kind);
-        let span = span.sinto(&self.hax_state);
+        let span = def_id.def_span(&self.hax_state);
         self.translate_span_from_hax(&span)
     }
 
