@@ -24,7 +24,7 @@ fn test_crate::F() -> fn(u8) -> core::option::Option<u8>[core::marker::Sized<u8>
     return
 }
 
-global test_crate::F: fn(u8) -> core::option::Option<u8>[core::marker::Sized<u8>] = test_crate::F()
+static test_crate::F: fn(u8) -> core::option::Option<u8>[core::marker::Sized<u8>] = test_crate::F()
 
 #[lang_item("String")]
 pub opaque type alloc::string::String

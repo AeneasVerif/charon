@@ -8,7 +8,7 @@ pub fn test_cargo_build_script::FOO() -> u8
     return
 }
 
-pub global test_cargo_build_script::FOO: u8 = test_cargo_build_script::FOO()
+pub const test_cargo_build_script::FOO: u8 = test_cargo_build_script::FOO()
 
 fn test_cargo_build_script::main()
 {

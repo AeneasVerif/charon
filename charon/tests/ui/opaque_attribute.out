@@ -80,7 +80,7 @@ opaque type test_crate::Test
 
 fn test_crate::SIX_SIX_SIX() -> u32
 
-global test_crate::SIX_SIX_SIX: u32 = test_crate::SIX_SIX_SIX()
+const test_crate::SIX_SIX_SIX: u32 = test_crate::SIX_SIX_SIX()
 
 opaque type test_crate::Test2
 

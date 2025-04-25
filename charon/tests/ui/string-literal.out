@@ -8,7 +8,7 @@ fn test_crate::FOO() -> &'static (Str)
     return
 }
 
-global test_crate::FOO: &'static (Str) = test_crate::FOO()
+static test_crate::FOO: &'static (Str) = test_crate::FOO()
 
 fn test_crate::BAR() -> &'static (Slice<u8>)
 {
@@ -32,7 +32,7 @@ fn test_crate::BAR() -> &'static (Slice<u8>)
     return
 }
 
-global test_crate::BAR: &'static (Slice<u8>) = test_crate::BAR()
+static test_crate::BAR: &'static (Slice<u8>) = test_crate::BAR()
 
 #[lang_item("String")]
 pub opaque type alloc::string::String

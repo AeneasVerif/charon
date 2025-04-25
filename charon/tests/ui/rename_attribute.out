@@ -88,7 +88,7 @@ fn test_crate::C() -> u32
     return
 }
 
-global test_crate::C: u32 = test_crate::C()
+const test_crate::C: u32 = test_crate::C()
 
 type test_crate::Test2 = u32
 

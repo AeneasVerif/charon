@@ -31,11 +31,11 @@ fn test_crate::addr_of()
 
 pub fn core::f64::{f64}::MIN() -> f64
 
-pub global core::f64::{f64}::MIN: f64 = core::f64::{f64}::MIN()
+pub const core::f64::{f64}::MIN: f64 = core::f64::{f64}::MIN()
 
 pub fn core::f32::{f32}::MAX() -> f32
 
-pub global core::f32::{f32}::MAX: f32 = core::f32::{f32}::MAX()
+pub const core::f32::{f32}::MAX: f32 = core::f32::{f32}::MAX()
 
 fn test_crate::literal_casts()
 {
@@ -261,7 +261,7 @@ fn test_crate::STEAL() -> Array<(), 1 : usize>
     return
 }
 
-global test_crate::STEAL: Array<(), 1 : usize> = test_crate::STEAL()
+static test_crate::STEAL: Array<(), 1 : usize> = test_crate::STEAL()
 
 fn test_crate::transmute(@1: Array<u32, 2 : usize>) -> u64
 {
@@ -289,7 +289,7 @@ fn test_crate::STEAL2() -> Array<(), 13 : usize>
     return
 }
 
-global test_crate::STEAL2: Array<(), 13 : usize> = test_crate::STEAL2()
+static test_crate::STEAL2: Array<(), 13 : usize> = test_crate::STEAL2()
 
 #[lang_item("mem_size_of")]
 pub fn core::mem::size_of<T>() -> usize

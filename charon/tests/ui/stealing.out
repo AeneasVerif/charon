@@ -12,7 +12,7 @@ fn test_crate::SLICE() -> Array<(), 4 : usize>
     return
 }
 
-global test_crate::SLICE: Array<(), 4 : usize> = test_crate::SLICE()
+static test_crate::SLICE: Array<(), 4 : usize> = test_crate::SLICE()
 
 fn test_crate::four() -> usize
 {
@@ -34,7 +34,7 @@ fn test_crate::BAR() -> Array<(), 42 : usize>
     return
 }
 
-global test_crate::BAR: Array<(), 42 : usize> = test_crate::BAR()
+const test_crate::BAR: Array<(), 42 : usize> = test_crate::BAR()
 
 fn test_crate::FOO() -> usize
 {
@@ -44,7 +44,7 @@ fn test_crate::FOO() -> usize
     return
 }
 
-global test_crate::FOO: usize = test_crate::FOO()
+const test_crate::FOO: usize = test_crate::FOO()
 
 
 

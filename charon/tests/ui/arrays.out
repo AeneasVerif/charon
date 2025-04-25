@@ -1707,7 +1707,7 @@ pub fn test_crate::SZ() -> usize
     return
 }
 
-pub global test_crate::SZ: usize = test_crate::SZ()
+pub const test_crate::SZ: usize = test_crate::SZ()
 
 pub fn test_crate::f5<'_0>(@1: &'_0 (Array<u32, 32 : usize>)) -> u32
 {

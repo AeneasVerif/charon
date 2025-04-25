@@ -8,7 +8,7 @@ fn test_crate::constant::CONST() -> usize
     return
 }
 
-global test_crate::constant::CONST: usize = test_crate::constant::CONST()
+const test_crate::constant::CONST: usize = test_crate::constant::CONST()
 
 fn test_crate::constant()
 {
@@ -56,7 +56,7 @@ fn test_crate::shared_static::SHARED_STATIC() -> usize
     return
 }
 
-global test_crate::shared_static::SHARED_STATIC: usize = test_crate::shared_static::SHARED_STATIC()
+static test_crate::shared_static::SHARED_STATIC: usize = test_crate::shared_static::SHARED_STATIC()
 
 fn test_crate::shared_static()
 {
@@ -108,7 +108,7 @@ fn test_crate::mut_static::MUT_STATIC() -> usize
     return
 }
 
-global test_crate::mut_static::MUT_STATIC: usize = test_crate::mut_static::MUT_STATIC()
+static test_crate::mut_static::MUT_STATIC: usize = test_crate::mut_static::MUT_STATIC()
 
 fn test_crate::mut_static()
 {
@@ -184,7 +184,7 @@ fn test_crate::non_copy_static::FOO() -> test_crate::non_copy_static::Foo
     return
 }
 
-global test_crate::non_copy_static::FOO: test_crate::non_copy_static::Foo = test_crate::non_copy_static::FOO()
+static test_crate::non_copy_static::FOO: test_crate::non_copy_static::Foo = test_crate::non_copy_static::FOO()
 
 fn test_crate::non_copy_static::{test_crate::non_copy_static::Foo}::method<'_0>(@1: &'_0 (test_crate::non_copy_static::Foo))
 {

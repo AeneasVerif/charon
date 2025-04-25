@@ -540,7 +540,7 @@ pub fn test_crate::{impl test_crate::WithConstTy<32 : usize> for bool}#8::LEN1()
     return
 }
 
-pub global test_crate::{impl test_crate::WithConstTy<32 : usize> for bool}#8::LEN1: usize = test_crate::{impl test_crate::WithConstTy<32 : usize> for bool}#8::LEN1()
+pub const test_crate::{impl test_crate::WithConstTy<32 : usize> for bool}#8::LEN1: usize = test_crate::{impl test_crate::WithConstTy<32 : usize> for bool}#8::LEN1()
 
 pub fn test_crate::WithConstTy::LEN2<Self, const LEN : usize>() -> usize
 {
@@ -550,7 +550,7 @@ pub fn test_crate::WithConstTy::LEN2<Self, const LEN : usize>() -> usize
     return
 }
 
-pub global test_crate::WithConstTy::LEN2<Self, const LEN : usize>: usize = test_crate::WithConstTy::LEN2()
+pub const test_crate::WithConstTy::LEN2<Self, const LEN : usize>: usize = test_crate::WithConstTy::LEN2()
 
 pub fn test_crate::{impl test_crate::WithConstTy<32 : usize> for bool}#8::f<'_0, '_1>(@1: &'_0 mut (u64), @2: &'_1 (Array<u8, 32 : usize>))
 {
@@ -865,7 +865,7 @@ where
     return
 }
 
-pub global test_crate::{impl test_crate::Trait for Array<T, const N : usize>}#14::LEN<T, const N : usize>: usize
+pub const test_crate::{impl test_crate::Trait for Array<T, const N : usize>}#14::LEN<T, const N : usize>: usize
   where
       [@TraitClause0]: core::marker::Sized<T>,
  = test_crate::{impl test_crate::Trait for Array<T, const N : usize>}#14::LEN()
@@ -888,7 +888,7 @@ where
     return
 }
 
-pub global test_crate::{impl test_crate::Trait for test_crate::Wrapper<T>[@TraitClause0]}#15::LEN<T>: usize
+pub const test_crate::{impl test_crate::Trait for test_crate::Wrapper<T>[@TraitClause0]}#15::LEN<T>: usize
   where
       [@TraitClause0]: core::marker::Sized<T>,
       [@TraitClause1]: test_crate::Trait<T>,
@@ -945,7 +945,7 @@ where
     return
 }
 
-pub global test_crate::{test_crate::Foo<T, U>[@TraitClause0, @TraitClause1]}#16::FOO<T, U>: core::result::Result<T, i32>[@TraitClause0, core::marker::Sized<i32>]
+pub const test_crate::{test_crate::Foo<T, U>[@TraitClause0, @TraitClause1]}#16::FOO<T, U>: core::result::Result<T, i32>[@TraitClause0, core::marker::Sized<i32>]
   where
       [@TraitClause0]: core::marker::Sized<T>,
       [@TraitClause1]: core::marker::Sized<U>,

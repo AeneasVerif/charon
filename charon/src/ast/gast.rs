@@ -158,6 +158,19 @@ pub struct FunDeclRef {
     pub generics: GenericArgs,
 }
 
+#[derive(Debug, Clone, Serialize, Deserialize, Drive, DriveMut)]
+pub enum GlobalKind {
+    /// A static.
+    Static,
+    /// A const with a name (either top-level or an associated const in a trait).
+    NamedConst,
+    /// A const without a name:
+    /// - An inline const expression (`const { 1 + 1 }`);
+    /// - A const expression in a type (`[u8; sizeof::<T>()]`);
+    /// - A promoted constant, automatically lifted from a body (`&0`).
+    AnonConst,
+}
+
 /// A global variable definition (constant or static).
 #[derive(Debug, Clone, Serialize, Deserialize, Drive, DriveMut)]
 pub struct GlobalDecl {
@@ -167,8 +180,11 @@ pub struct GlobalDecl {
     pub item_meta: ItemMeta,
     pub generics: GenericParams,
     pub ty: Ty,
-    /// The global kind: "regular" function, trait const declaration, etc.
+    /// The context of the global: distinguishes top-level items from trait-associated items.
     pub kind: ItemKind,
+    /// The kind of global (static or const).
+    #[drive(skip)]
+    pub global_kind: GlobalKind,
     /// The initializer function used to compute the initial value for this constant/static. It
     /// uses the same generic parameters as the global.
     #[charon::rename("body")]

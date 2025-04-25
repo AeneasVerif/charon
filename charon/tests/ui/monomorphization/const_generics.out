@@ -19,7 +19,7 @@ fn test_crate::FooBool() -> @Adt1<bool>[core::marker::Sized<bool>]
     return
 }
 
-global test_crate::FooBool: @Adt1<bool>[core::marker::Sized<bool>] = test_crate::FooBool()
+static test_crate::FooBool: @Adt1<bool>[core::marker::Sized<bool>] = test_crate::FooBool()
 
 fn test_crate::main()
 {

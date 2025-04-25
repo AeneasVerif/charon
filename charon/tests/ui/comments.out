@@ -418,7 +418,7 @@ fn test_crate::CONSTANT() -> u32
     return
 }
 
-global test_crate::CONSTANT: u32 = test_crate::CONSTANT()
+const test_crate::CONSTANT: u32 = test_crate::CONSTANT()
 
 pub fn test_crate::thing()
 {

@@ -432,6 +432,15 @@ and fun_decl_ref_of_json (ctx : of_json_ctx) (js : json) :
         Ok ({ fun_id; fun_generics } : fun_decl_ref)
     | _ -> Error "")
 
+and global_kind_of_json (ctx : of_json_ctx) (js : json) :
+    (global_kind, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with
+    | `String "Static" -> Ok Static
+    | `String "NamedConst" -> Ok NamedConst
+    | `String "AnonConst" -> Ok AnonConst
+    | _ -> Error "")
+
 and global_decl_of_json (ctx : of_json_ctx) (js : json) :
     (global_decl, string) result =
   combine_error_msgs js __FUNCTION__
@@ -443,6 +452,7 @@ and global_decl_of_json (ctx : of_json_ctx) (js : json) :
           ("generics", generics);
           ("ty", ty);
           ("kind", kind);
+          ("global_kind", global_kind);
           ("init", init);
         ] ->
         let* def_id = global_decl_id_of_json ctx def_id in
@@ -450,8 +460,11 @@ and global_decl_of_json (ctx : of_json_ctx) (js : json) :
         let* generics = generic_params_of_json ctx generics in
         let* ty = ty_of_json ctx ty in
         let* kind = item_kind_of_json ctx kind in
+        let* global_kind = global_kind_of_json ctx global_kind in
         let* body = fun_decl_id_of_json ctx init in
-        Ok ({ def_id; item_meta; generics; ty; kind; body } : global_decl)
+        Ok
+          ({ def_id; item_meta; generics; ty; kind; global_kind; body }
+            : global_decl)
     | _ -> Error "")
 
 and global_decl_ref_of_json (ctx : of_json_ctx) (js : json) :

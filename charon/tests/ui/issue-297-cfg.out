@@ -78,7 +78,7 @@ fn test_crate::FIELD_MODULUS() -> i16
     return
 }
 
-global test_crate::FIELD_MODULUS: i16 = test_crate::FIELD_MODULUS()
+const test_crate::FIELD_MODULUS: i16 = test_crate::FIELD_MODULUS()
 
 #[lang_item("sized")]
 pub trait core::marker::Sized<Self>
