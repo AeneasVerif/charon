@@ -389,19 +389,6 @@ pub struct core::fmt::Arguments<'a>
   args: &'a (Slice<core::fmt::rt::Argument<'a>>),
 }
 
-fn core::fmt::{core::fmt::Arguments<'a>}#4::new_const::{promoted_const}<'a, const N : usize>() -> &'_ (Array<core::fmt::rt::Argument<'_>, 0 : usize>)
-{
-    let @0: &'_ (Array<core::fmt::rt::Argument<'_>, 0 : usize>); // return
-    let @1: Array<core::fmt::rt::Argument<'_>, 0 : usize>; // anonymous local
-
-    storage_live(@1)
-    @1 := []
-    @0 := &@1
-    return
-}
-
-const core::fmt::{core::fmt::Arguments<'a>}#4::new_const::{promoted_const}<'a, const N : usize>: &'_ (Array<core::fmt::rt::Argument<'_>, 0 : usize>) = core::fmt::{core::fmt::Arguments<'a>}#4::new_const::{promoted_const}()
-
 pub fn core::fmt::{core::fmt::Arguments<'a>}#4::new_const<'a, const N : usize>(@1: &'a (Array<&'static (Str), const N : usize>)) -> core::fmt::Arguments<'a>
 {
     let @0: core::fmt::Arguments<'_>; // return
@@ -409,17 +396,20 @@ pub fn core::fmt::{core::fmt::Arguments<'a>}#4::new_const<'a, const N : usize>(@
     let @2: &'_ (Slice<&'_ (Str)>); // anonymous local
     let @3: &'_ (Slice<core::fmt::rt::Argument<'_>>); // anonymous local
     let @4: &'_ (Array<core::fmt::rt::Argument<'_>, 0 : usize>); // anonymous local
-    let @5: core::option::Option<&'_ (Slice<core::fmt::rt::Placeholder>)>[core::marker::Sized<&'_ (Slice<core::fmt::rt::Placeholder>)>]; // anonymous local
+    let @5: Array<core::fmt::rt::Argument<'_>, 0 : usize>; // anonymous local
+    let @6: core::option::Option<&'_ (Slice<core::fmt::rt::Placeholder>)>[core::marker::Sized<&'_ (Slice<core::fmt::rt::Placeholder>)>]; // anonymous local
 
     storage_live(@4)
     storage_live(@5)
+    storage_live(@6)
+    @5 := []
+    @4 := &@5
     storage_live(@2)
     @2 := @ArrayToSliceShared<'_, &'_ (Str), const N : usize>(copy (pieces@1))
     storage_live(@3)
-    @4 := core::fmt::{core::fmt::Arguments<'a>}#4::new_const::{promoted_const}<'_, const N : usize>
     @3 := @ArrayToSliceShared<'_, core::fmt::rt::Argument<'_>, 0 : usize>(move (@4))
-    @5 := core::option::Option::None {  }
-    @0 := core::fmt::Arguments { pieces: move (@2), fmt: move (@5), args: move (@3) }
+    @6 := core::option::Option::None {  }
+    @0 := core::fmt::Arguments { pieces: move (@2), fmt: move (@6), args: move (@3) }
     storage_dead(@3)
     storage_dead(@2)
     return
@@ -812,19 +802,6 @@ where
     @3 := core::slice::index::slice_index_order_fail(move (rhs@7), move (self@6))
 }
 
-fn core::slice::index::slice_end_index_overflow_fail::{promoted_const}() -> &'_ (Array<&'_ (Str), 1 : usize>)
-{
-    let @0: &'_ (Array<&'_ (Str), 1 : usize>); // return
-    let @1: Array<&'_ (Str), 1 : usize>; // anonymous local
-
-    storage_live(@1)
-    @1 := [const ("attempted to index slice up to maximum usize")]
-    @0 := &@1
-    return
-}
-
-const core::slice::index::slice_end_index_overflow_fail::{promoted_const}: &'_ (Array<&'_ (Str), 1 : usize>) = core::slice::index::slice_end_index_overflow_fail::{promoted_const}()
-
 fn core::slice::index::slice_end_index_overflow_fail() -> !
 {
     let @0: !; // return
@@ -833,13 +810,16 @@ fn core::slice::index::slice_end_index_overflow_fail() -> !
     let @3: &'_ (Array<&'_ (Str), 1 : usize>); // anonymous local
     let @4: &'_ (Array<&'_ (Str), 1 : usize>); // anonymous local
     let @5: &'_ (Array<&'_ (Str), 1 : usize>); // anonymous local
+    let @6: Array<&'_ (Str), 1 : usize>; // anonymous local
 
     storage_live(@4)
     storage_live(@5)
+    storage_live(@6)
+    @6 := [const ("attempted to index slice up to maximum usize")]
+    @5 := &@6
     storage_live(@1)
     storage_live(@2)
     storage_live(@3)
-    @5 := core::slice::index::slice_end_index_overflow_fail::{promoted_const}
     @4 := move (@5)
     @3 := &*(@4)
     @2 := &*(@3)

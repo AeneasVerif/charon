@@ -39,9 +39,20 @@ impl Terminator {
             comments_before: vec![],
         }
     }
+    pub fn goto(span: Span, target: BlockId) -> Self {
+        Self::new(span, RawTerminator::Goto { target })
+    }
 }
 
 impl BlockData {
+    /// Build a block that's just a goto terminator.
+    pub fn new_goto(span: Span, target: BlockId) -> Self {
+        BlockData {
+            statements: vec![],
+            terminator: Terminator::goto(span, target),
+        }
+    }
+
     pub fn targets(&self) -> Vec<BlockId> {
         match &self.terminator.content {
             RawTerminator::Goto { target } => {

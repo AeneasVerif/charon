@@ -10,19 +10,6 @@ fn test_crate::foo::closure<'_0>(@1: &'_0 (()), @2: u32) -> u32
     return
 }
 
-fn test_crate::foo::{promoted_const}() -> &'_ (test_crate::foo::closure)
-{
-    let @0: &'_ (test_crate::foo::closure); // return
-    let @1: test_crate::foo::closure; // anonymous local
-
-    storage_live(@1)
-    @1 := {test_crate::foo::closure} {}
-    @0 := &@1
-    return
-}
-
-const test_crate::foo::{promoted_const}: &'_ (test_crate::foo::closure) = test_crate::foo::{promoted_const}()
-
 pub fn test_crate::foo() -> &'static (test_crate::foo::closure)
 {
     let @0: &'_ (test_crate::foo::closure); // return
@@ -30,12 +17,15 @@ pub fn test_crate::foo() -> &'static (test_crate::foo::closure)
     let @2: &'_ (test_crate::foo::closure); // anonymous local
     let @3: &'_ (test_crate::foo::closure); // anonymous local
     let @4: &'_ (test_crate::foo::closure); // anonymous local
+    let @5: test_crate::foo::closure; // anonymous local
 
     storage_live(@3)
     storage_live(@4)
+    storage_live(@5)
+    @5 := {test_crate::foo::closure} {}
+    @4 := &@5
     storage_live(@1)
     storage_live(@2)
-    @4 := test_crate::foo::{promoted_const}
     @3 := move (@4)
     @2 := &*(@3)
     @1 := &*(@2)

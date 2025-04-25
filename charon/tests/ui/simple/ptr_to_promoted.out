@@ -1,18 +1,5 @@
 # Final LLBC before serialization:
 
-fn test_crate::main::{promoted_const}() -> &'_ (u8)
-{
-    let @0: &'_ (u8); // return
-    let @1: u8; // anonymous local
-
-    storage_live(@1)
-    @1 := const (0 : u8)
-    @0 := &@1
-    return
-}
-
-const test_crate::main::{promoted_const}: &'_ (u8) = test_crate::main::{promoted_const}()
-
 fn test_crate::main()
 {
     let @0: (); // return
@@ -22,12 +9,15 @@ fn test_crate::main()
     let @4: *const u8; // anonymous local
     let @5: &'_ (u8); // anonymous local
     let @6: &'_ (u8); // anonymous local
+    let @7: u8; // anonymous local
 
     storage_live(@5)
     storage_live(@6)
+    storage_live(@7)
+    @7 := const (0 : u8)
+    @6 := &@7
     storage_live(x@1)
     storage_live(@2)
-    @6 := test_crate::main::{promoted_const}
     @5 := move (@6)
     @2 := &*(@5)
     x@1 := &raw const *(@2)

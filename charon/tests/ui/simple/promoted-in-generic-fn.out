@@ -8,24 +8,6 @@ pub fn core::mem::size_of<T>() -> usize
 where
     [@TraitClause0]: core::marker::Sized<T>,
 
-fn test_crate::f::{promoted_const}<T>() -> &'_ (usize)
-where
-    [@TraitClause0]: core::marker::Sized<T>,
-{
-    let @0: &'_ (usize); // return
-    let @1: usize; // anonymous local
-
-    storage_live(@1)
-    @1 := core::mem::size_of<T>[@TraitClause0]()
-    @0 := &@1
-    return
-}
-
-const test_crate::f::{promoted_const}<T>: &'_ (usize)
-  where
-      [@TraitClause0]: core::marker::Sized<T>,
- = test_crate::f::{promoted_const}()
-
 fn test_crate::f<T>()
 where
     [@TraitClause0]: core::marker::Sized<T>,
@@ -34,12 +16,15 @@ where
     let @1: &'_ (usize); // anonymous local
     let @2: &'_ (usize); // anonymous local
     let @3: &'_ (usize); // anonymous local
+    let @4: usize; // anonymous local
 
     storage_live(@2)
     storage_live(@3)
-    storage_live(@1)
+    storage_live(@4)
     // This can't be evaluated generically.
-    @3 := test_crate::f::{promoted_const}<T>[@TraitClause0]
+    @4 := core::mem::size_of<T>[@TraitClause0]()
+    @3 := &@4
+    storage_live(@1)
     @2 := move (@3)
     @1 := &*(@2)
     storage_dead(@1)

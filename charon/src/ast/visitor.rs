@@ -141,7 +141,7 @@ impl<K: Any, T: AstVisitable> AstVisitable for IndexMap<K, T> {
     // Types that are ignored when encountered.
     skip(
         AbortKind, BinOp, BorrowKind, ConstantExpr, ConstGeneric, FieldId, FieldProjKind,
-        FunDeclId, FunIdOrTraitMethodRef, GenericArgs, GlobalDeclRef, IntegerTy, Locals,
+        FunDeclId, FunIdOrTraitMethodRef, GenericArgs, GlobalDeclRef, IntegerTy,
         NullOp, RefKind, ScalarValue, Span, Ty, TypeDeclId, TypeId, UnOp, VariantId, LocalId,
     ),
     // Types that we unconditionally explore.
@@ -150,7 +150,7 @@ impl<K: Any, T: AstVisitable> AstVisitable for IndexMap<K, T> {
         llbc_ast::ExprBody, llbc_ast::RawStatement, llbc_ast::Switch,
         ullbc_ast::BlockData, ullbc_ast::ExprBody, ullbc_ast::RawStatement,
         ullbc_ast::RawTerminator, ullbc_ast::SwitchTargets,
-        Body, Opaque,
+        Body, Opaque, Locals, Local,
         for<T: BodyVisitable> Box<T>,
         for<T: BodyVisitable> Option<T>,
         for<T: BodyVisitable, E: BodyVisitable> Result<T, E>,

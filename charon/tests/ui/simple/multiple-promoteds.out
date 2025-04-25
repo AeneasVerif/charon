@@ -1,37 +1,5 @@
 # Final LLBC before serialization:
 
-fn test_crate::six::{promoted_const}#1() -> &'_ (u32)
-{
-    let @0: &'_ (u32); // return
-    let @1: u32; // anonymous local
-    let @2: (u32, bool); // anonymous local
-
-    storage_live(@1)
-    storage_live(@2)
-    @2 := const (0 : u32) checked.+ const (1 : u32)
-    @1 := move ((@2).0)
-    @0 := &@1
-    return
-}
-
-const test_crate::six::{promoted_const}#1: &'_ (u32) = test_crate::six::{promoted_const}#1()
-
-fn test_crate::six::{promoted_const}() -> &'_ (u32)
-{
-    let @0: &'_ (u32); // return
-    let @1: u32; // anonymous local
-    let @2: (u32, bool); // anonymous local
-
-    storage_live(@1)
-    storage_live(@2)
-    @2 := const (2 : u32) checked.+ const (3 : u32)
-    @1 := move ((@2).0)
-    @0 := &@1
-    return
-}
-
-const test_crate::six::{promoted_const}: &'_ (u32) = test_crate::six::{promoted_const}()
-
 pub fn core::ops::arith::{impl core::ops::arith::Add<&'_0 (u32)> for &'_1 (u32)}#27::add<'_0, '_1>(@1: &'_1 (u32), @2: &'_0 (u32)) -> u32
 
 fn test_crate::six() -> u32
@@ -44,19 +12,31 @@ fn test_crate::six() -> u32
     let @5: &'_ (u32); // anonymous local
     let @6: &'_ (u32); // anonymous local
     let @7: &'_ (u32); // anonymous local
-    let @8: &'_ (u32); // anonymous local
+    let @8: u32; // anonymous local
+    let @9: (u32, bool); // anonymous local
+    let @10: &'_ (u32); // anonymous local
+    let @11: u32; // anonymous local
+    let @12: (u32, bool); // anonymous local
 
     storage_live(@5)
     storage_live(@6)
     storage_live(@7)
     storage_live(@8)
+    storage_live(@9)
+    storage_live(@10)
+    storage_live(@11)
+    storage_live(@12)
     storage_live(x@1)
-    @7 := test_crate::six::{promoted_const}#1
+    @9 := const (0 : u32) checked.+ const (1 : u32)
+    @8 := move ((@9).0)
+    @7 := &@8
     @6 := move (@7)
     x@1 := &*(@6)
     storage_live(y@2)
-    @8 := test_crate::six::{promoted_const}
-    @5 := move (@8)
+    @12 := const (2 : u32) checked.+ const (3 : u32)
+    @11 := move ((@12).0)
+    @10 := &@11
+    @5 := move (@10)
     y@2 := &*(@5)
     storage_live(@3)
     @3 := copy (x@1)
