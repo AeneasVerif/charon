@@ -229,11 +229,20 @@ pub enum BinOp {
     /// Fails if the divisor is 0, or if the operation is `int::MIN % -1`.
     Rem,
     /// Fails on overflow.
+    /// Not present in MIR: this is introduced by the `remove_dynamic_checks` pass.
     Add,
     /// Fails on overflow.
+    /// Not present in MIR: this is introduced by the `remove_dynamic_checks` pass.
     Sub,
     /// Fails on overflow.
+    /// Not present in MIR: this is introduced by the `remove_dynamic_checks` pass.
     Mul,
+    /// Wraps on overflow.
+    WrappingAdd,
+    /// Wraps on overflow.
+    WrappingSub,
+    /// Wraps on overflow.
+    WrappingMul,
     /// Returns `(result, did_overflow)`, where `result` is the result of the operation with
     /// wrapping semantics, and `did_overflow` is a boolean that indicates whether the operation
     /// overflowed. This operation does not fail.
