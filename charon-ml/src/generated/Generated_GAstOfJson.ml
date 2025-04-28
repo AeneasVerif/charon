@@ -1430,6 +1430,26 @@ and ty_of_json (ctx : of_json_ctx) (js : json) : (ty, string) result =
         let* x_0 = type_id_of_json ctx x_0 in
         let* x_1 = generic_args_of_json ctx x_1 in
         Ok (TAdt (x_0, x_1))
+    | `Assoc
+        [
+          ( "Closure",
+            `Assoc
+              [
+                ("fun_id", fun_id);
+                ("parent_args", parent_args);
+                ("upvar_tys", upvar_tys);
+                ("signature", signature);
+              ] );
+        ] ->
+        let* fun_id = fun_decl_id_of_json ctx fun_id in
+        let* parent_args = generic_args_of_json ctx parent_args in
+        let* upvar_tys = list_of_json ty_of_json ctx upvar_tys in
+        let* signature =
+          region_binder_of_json
+            (pair_of_json (list_of_json ty_of_json) ty_of_json)
+            ctx signature
+        in
+        Ok (TClosure (fun_id, parent_args, upvar_tys, signature))
     | `Assoc [ ("TypeVar", type_var) ] ->
         let* type_var =
           de_bruijn_var_of_json type_var_id_of_json ctx type_var

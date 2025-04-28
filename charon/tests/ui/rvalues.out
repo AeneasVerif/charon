@@ -158,6 +158,17 @@ fn test_crate::ptr_casts()
     return
 }
 
+fn test_crate::fn_casts::closure<'_0>(@1: &'_0 (()), @2: u8)
+{
+    let @0: (); // return
+    let state@1: &'_0 (()); // arg #1
+    let @2: u8; // arg #2
+
+    @0 := ()
+    @0 := ()
+    return
+}
+
 fn test_crate::fn_casts::foo()
 {
     let @0: (); // return
@@ -176,27 +187,16 @@ unsafe fn test_crate::fn_casts::bar()
     return
 }
 
-fn test_crate::fn_casts::closure<'_0>(@1: &'_0 (()), @2: u8)
-{
-    let @0: (); // return
-    let state@1: &'_0 (()); // arg #1
-    let @2: u8; // arg #2
-
-    @0 := ()
-    @0 := ()
-    return
-}
-
 fn test_crate::fn_casts()
 {
     let @0: (); // return
     let @1: fn(); // anonymous local
     let @2: fn(); // anonymous local
-    let closure@3: fn(u8); // local
+    let closure@3: test_crate::fn_casts::closure; // local
     let @4: fn(u8); // anonymous local
-    let @5: fn(u8); // anonymous local
+    let @5: test_crate::fn_casts::closure; // anonymous local
     let @6: fn(u8); // anonymous local
-    let @7: fn(u8); // anonymous local
+    let @7: test_crate::fn_casts::closure; // anonymous local
 
     storage_live(@1)
     @1 := cast<fn(), fn()>(const (test_crate::fn_casts::foo))
@@ -209,13 +209,13 @@ fn test_crate::fn_casts()
     storage_live(@4)
     storage_live(@5)
     @5 := copy (closure@3)
-    @4 := cast<fn(u8), fn(u8)>(move (@5))
+    @4 := cast<test_crate::fn_casts::closure, fn(u8)>(move (@5))
     storage_dead(@5)
     storage_dead(@4)
     storage_live(@6)
     storage_live(@7)
     @7 := copy (closure@3)
-    @6 := cast<fn(u8), fn(u8)>(move (@7))
+    @6 := cast<test_crate::fn_casts::closure, fn(u8)>(move (@7))
     storage_dead(@7)
     storage_dead(@6)
     @0 := ()

@@ -110,6 +110,7 @@ impl Pattern {
             | TyKind::TraitType(..)
             | TyKind::DynTrait(..)
             | TyKind::Arrow(..)
+            | TyKind::Closure { .. }
             | TyKind::Error(..) => false,
         }
     }

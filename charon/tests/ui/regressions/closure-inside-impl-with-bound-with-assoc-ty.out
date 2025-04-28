@@ -36,7 +36,7 @@ where
     [@TraitClause1]: test_crate::PrimeField<F, Clause1_Repr>,
 {
     let @0: (); // return
-    let _closure@1: fn(()); // local
+    let _closure@1: test_crate::{test_crate::SqrtTables<F>[@TraitClause0]}::sqrt_common::closure; // local
 
     storage_live(_closure@1)
     _closure@1 := {test_crate::{test_crate::SqrtTables<F>[@TraitClause0]}::sqrt_common::closure<F, Clause1_Repr>[@TraitClause0, @TraitClause1]} {}

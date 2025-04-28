@@ -382,6 +382,19 @@ and ty =
           Note: this is incorrectly named: this can refer to any valid `TypeDecl` including extern
           types.
        *)
+  | TClosure of
+      fun_decl_id * generic_args * ty list * (ty list * ty) region_binder
+      (** A closure type, which is essentially a struct with builtin impls. Currently we don't
+          translate the struct itself, only the function item that contains the closure's code.
+
+          Fields:
+          - [fun_id]:  The FunDecl item containing the code of the closure. That function takes the closure
+          state as its first argument.
+          - [parent_args]:  Generics that apply to the parent of this closure.
+          Warning: hax may not handle nexted closure correctly yet.
+          - [upvar_tys]:  The types of the variables captured by this closure.
+          - [signature]:  The signature of the function that this closure represents.
+       *)
   | TVar of type_var_id de_bruijn_var
   | TLiteral of literal_type
   | TNever
@@ -422,10 +435,11 @@ and ty =
           TODO: we don't translate this properly yet.
        *)
   | TArrow of (ty list * ty) region_binder
-      (** Arrow type, used in particular for the local function pointers.
-          This is essentially a "constrained" function signature:
-          arrow types can only contain generic lifetime parameters
-          (no generic types), no predicates, etc.
+      (** Arrow type, used for function pointers and reused for the unique type associated with each
+          function item.
+          This is a function signature with limited generics: it only supports lifetime generics, not
+          other kinds of
+          generics.
        *)
   | TError of string  (** A type that could not be computed or was incorrect. *)
 
