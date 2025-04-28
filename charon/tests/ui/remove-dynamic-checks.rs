@@ -1,5 +1,3 @@
-//@ output=pretty-llbc
-
 /// Testing unop simplification
 /// In debug mode, rust introduces an assertion before the negation.
 pub fn neg_test(x: i32) -> i32 {
@@ -78,12 +76,30 @@ pub fn mix_arith_i32(x: i32, y: i32, z: i32) -> i32 {
     ((x + y) * (x / y) + (x - (z % y))) % (x + y + z)
 }
 
-fn shl(x: u32, y: u32) -> u32 {
+fn shl_u32(x: u32, y: u32) -> u32 {
     x << y
 }
 
-fn shr(x: u32, y: u32) -> u32 {
+fn shr_u32(x: u32, y: u32) -> u32 {
     x >> y
+}
+
+fn shr_add_u32(x: u32, y: u32) -> u32 {
+    x >> (y + 1)
+}
+
+fn shl_i32(x: i32, y: i32) -> i32 {
+    x << y
+}
+
+fn shr_i32(x: i32, y: i32) -> i32 {
+    x >> y
+}
+
+/// The test above removes an automatically-added cast of `y as u32`. This makes sure we don't
+/// remove a manually-added one.
+fn shr_i32_manual_cast(x: i32, y: i32) -> i32 {
+    x >> (y as u32)
 }
 
 // Checking the simplification of binop operations *inside* global constants.
@@ -120,4 +136,12 @@ fn div_unsigned_to_slice(result: &mut [u32], x: u32) {
 
 fn div_signed_to_slice(result: &mut [i32], x: i32) {
     result[0] = x / 3329;
+}
+
+fn add_to_slice(result: &mut [u32], x: u32) {
+    result[0] = x + 1;
+}
+
+fn add_to_slice2(result: &mut [u8], i: usize, x: u8) {
+    result[i + 1] = x * 7;
 }

@@ -107,7 +107,7 @@ pub fn test_crate::test3(@1: test_crate::E2) -> u32
     @6 := copy (y@3)
     storage_live(@7)
     @7 := copy (z@5)
-    @0 := move (@6) + move (@7)
+    @0 := copy (@6) + copy (@7)
     storage_dead(@7)
     storage_dead(@6)
     storage_dead(z@5)

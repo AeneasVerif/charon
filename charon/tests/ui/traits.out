@@ -201,7 +201,7 @@ where
     @5 := move ((self@1).1)
     @4 := @TraitClause1::to_u64(move (@5))
     storage_dead(@5)
-    @0 := move (@2) + move (@4)
+    @0 := copy (@2) + copy (@4)
     storage_dead(@4)
     storage_dead(@2)
     drop self@1

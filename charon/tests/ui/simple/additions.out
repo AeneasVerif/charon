@@ -1,0 +1,155 @@
+# Final LLBC before serialization:
+
+pub fn core::num::{u8}#6::wrapping_add(@1: u8, @2: u8) -> u8
+{
+    let @0: u8; // return
+    let self@1: u8; // arg #1
+    let rhs@2: u8; // arg #2
+
+    @0 := copy (self@1) + copy (rhs@2)
+    return
+}
+
+pub fn core::num::{u8}#6::overflowing_add(@1: u8, @2: u8) -> (u8, bool)
+{
+    let @0: (u8, bool); // return
+    let self@1: u8; // arg #1
+    let rhs@2: u8; // arg #2
+    let @3: u8; // anonymous local
+    let @4: bool; // anonymous local
+    let @5: (u8, bool); // anonymous local
+
+    storage_live(@3)
+    storage_live(@4)
+    storage_live(@5)
+    @5 := copy (self@1) checked.+ copy (rhs@2)
+    @3 := copy ((@5).0)
+    @4 := copy ((@5).1)
+    storage_dead(@5)
+    @0 := (copy (@3), copy (@4))
+    return
+}
+
+#[lang_item("sized")]
+pub trait core::marker::Sized<Self>
+
+#[lang_item("clone")]
+pub trait core::clone::Clone<Self>
+{
+    parent_clause0 : [@TraitClause0]: core::marker::Sized<Self>
+    fn clone<'_0> = core::clone::Clone::clone<'_0_0, Self>
+    fn clone_from<'_0, '_1> = core::clone::Clone::clone_from<'_0_0, '_0_1, Self>
+}
+
+#[lang_item("copy")]
+pub trait core::marker::Copy<Self>
+{
+    parent_clause0 : [@TraitClause0]: core::clone::Clone<Self>
+}
+
+pub fn core::intrinsics::saturating_add<T>(@1: T, @2: T) -> T
+where
+    [@TraitClause0]: core::marker::Sized<T>,
+    [@TraitClause1]: core::marker::Copy<T>,
+{
+    let @0: T; // return
+    let a@1: T; // arg #1
+    let b@2: T; // arg #2
+
+    undefined_behavior
+}
+
+pub fn core::clone::impls::{impl core::clone::Clone for u8}#6::clone<'_0>(@1: &'_0 (u8)) -> u8
+{
+    let @0: u8; // return
+    let self@1: &'_ (u8); // arg #1
+
+    @0 := copy (*(self@1))
+    return
+}
+
+pub fn core::clone::impls::{impl core::clone::Clone for u8}#6::clone_from<'_0, '_1>(@1: &'_0 mut (u8), @2: &'_1 (u8))
+{
+    let @0: (); // return
+    let self@1: &'_ mut (u8); // arg #1
+    let source@2: &'_ (u8); // arg #2
+    let @3: u8; // anonymous local
+
+    storage_live(@3)
+    @3 := core::clone::impls::{impl core::clone::Clone for u8}#6::clone<'_>(move (source@2))
+    drop *(self@1)
+    *(self@1) := move (@3)
+    storage_dead(@3)
+    @0 := ()
+    return
+}
+
+impl core::clone::impls::{impl core::clone::Clone for u8}#6 : core::clone::Clone<u8>
+{
+    parent_clause0 = core::marker::Sized<u8>
+    fn clone<'_0> = core::clone::impls::{impl core::clone::Clone for u8}#6::clone<'_0_0>
+    fn clone_from<'_0, '_1> = core::clone::impls::{impl core::clone::Clone for u8}#6::clone_from<'_0_0, '_0_1>
+}
+
+impl core::marker::{impl core::marker::Copy for u8}#38 : core::marker::Copy<u8>
+{
+    parent_clause0 = core::clone::impls::{impl core::clone::Clone for u8}#6
+}
+
+pub fn core::num::{u8}#6::saturating_add(@1: u8, @2: u8) -> u8
+{
+    let @0: u8; // return
+    let self@1: u8; // arg #1
+    let rhs@2: u8; // arg #2
+
+    @0 := core::intrinsics::saturating_add<u8>[core::marker::Sized<u8>, core::marker::{impl core::marker::Copy for u8}#38](move (self@1), move (rhs@2))
+    return
+}
+
+fn test_crate::main()
+{
+    let @0: (); // return
+    let @1: u8; // anonymous local
+    let @2: (u8, bool); // anonymous local
+    let @3: u8; // anonymous local
+
+    storage_live(@1)
+    @1 := core::num::{u8}#6::wrapping_add(const (255 : u8), const (1 : u8))
+    storage_dead(@1)
+    storage_live(@2)
+    @2 := core::num::{u8}#6::overflowing_add(const (255 : u8), const (1 : u8))
+    storage_dead(@2)
+    storage_live(@3)
+    // This one is meant to be implemented by codegen backends, hence has no useful MIR.
+    @3 := core::num::{u8}#6::saturating_add(const (255 : u8), const (1 : u8))
+    storage_dead(@3)
+    @0 := ()
+    // FIXME(#543): this causes a panic in hax
+    // unsafe {
+    //     let _ = 255u8.unchecked_add(1);
+    // }
+    @0 := ()
+    return
+}
+
+#[lang_item("clone_fn")]
+pub fn core::clone::Clone::clone<'_0, Self>(@1: &'_0 (Self)) -> Self
+
+pub fn core::clone::Clone::clone_from<'_0, '_1, Self>(@1: &'_0 mut (Self), @2: &'_1 (Self))
+{
+    let @0: (); // return
+    let self@1: &'_ mut (Self); // arg #1
+    let source@2: &'_ (Self); // arg #2
+    let @3: Self; // anonymous local
+
+    storage_live(@3)
+    @3 := Self::clone<'_>(move (source@2))
+    drop *(self@1)
+    *(self@1) := move (@3)
+    storage_dead(@3)
+    @0 := ()
+    return
+}
+
+
+

@@ -332,7 +332,7 @@ fn test_crate::select<'_0, '_1>(@1: &'_0 (Slice<u8>), @2: &'_1 (Slice<u8>))
     storage_live(@24)
     storage_live(@3)
     storage_live(@4)
-    @4 := const (false)
+    @4 := const (true)
     if move (@4) {
         storage_live(@5)
         storage_live(@6)

@@ -45,17 +45,6 @@ fn set_no_codegen(config: &mut Config) {
     config.opts.output_types = OutputTypes::new(&[(OutputType::Metadata, None)]);
 }
 
-/// Always compile in release mode: in effect, we want to analyze the released
-/// code. Also, rustc inserts a lot of dynamic checks in debug mode, that we
-/// have to clean. Full list of `--release` flags:
-/// https://doc.rust-lang.org/cargo/reference/profiles.html#release
-fn set_release_mode(config: &mut Config) {
-    let cg = &mut config.opts.cg;
-    cg.opt_level = "3".into();
-    cg.overflow_checks = Some(false);
-    config.opts.debug_assertions = false;
-}
-
 // We use a static to be able to pass data to `override_queries`.
 static SKIP_BORROWCK: AtomicBool = AtomicBool::new(false);
 fn set_skip_borrowck() {
@@ -97,7 +86,6 @@ fn setup_compiler(config: &mut Config, options: &CliOpts, do_translate: bool) {
             // };
         });
 
-        set_release_mode(config);
         set_no_codegen(config);
         if options.use_polonius {
             config.opts.unstable_opts.polonius = Polonius::Legacy;
