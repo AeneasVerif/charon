@@ -124,6 +124,7 @@ jobs:
           if [[ -n "$LIBCRUX" ]]; then
               nix flake update --refresh libcrux \
                   --override-input libcrux github:cryspen/libcrux/$LIBCRUX
+              nix develop --command ./update-cargo-lock.sh libcrux
           fi
           ./check.sh ml-kem-small
           ./check.sh ml-dsa-small
