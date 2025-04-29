@@ -31,7 +31,7 @@ where
     [@TraitClause1]: core::marker::Sized<T>,
 {
     let @0: (); // return
-    let _closure@1: fn(()); // local
+    let _closure@1: test_crate::{test_crate::Foo<F>[@TraitClause0]}::method::closure; // local
 
     storage_live(_closure@1)
     _closure@1 := {test_crate::{test_crate::Foo<F>[@TraitClause0]}::method::closure<F, T>[@TraitClause0, @TraitClause1]} {}

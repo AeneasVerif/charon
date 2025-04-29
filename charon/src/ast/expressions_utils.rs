@@ -96,8 +96,15 @@ impl ProjectionElem {
                     Adt(TypeId::Builtin(BuiltinTy::Box), args) => {
                         args.types.get(TypeVarId::new(0)).unwrap().clone()
                     }
-                    Adt(..) | TypeVar(_) | Literal(_) | Never | TraitType(..) | DynTrait(_)
-                    | Arrow(..) | Error(..) => {
+                    Adt(..)
+                    | TypeVar(_)
+                    | Literal(_)
+                    | Never
+                    | TraitType(..)
+                    | DynTrait(_)
+                    | Arrow(..)
+                    | Closure { .. }
+                    | Error(..) => {
                         // Type error
                         return Err(());
                     }
@@ -112,21 +119,6 @@ impl ProjectionElem {
                         let type_decl = type_decls.get(*type_decl_id).ok_or(())?;
                         let (type_id, generics) = ty.as_adt().ok_or(())?;
                         assert!(TypeId::Adt(*type_decl_id) == type_id);
-                        assert!(
-                            generics.regions.elem_count()
-                                == type_decl.generics.regions.elem_count()
-                        );
-                        assert!(
-                            generics.types.elem_count() == type_decl.generics.types.elem_count()
-                        );
-                        assert!(
-                            generics.const_generics.elem_count()
-                                == type_decl.generics.const_generics.elem_count()
-                        );
-                        assert!(
-                            generics.trait_refs.elem_count()
-                                == type_decl.generics.trait_clauses.elem_count()
-                        );
                         use TypeDeclKind::*;
                         match &type_decl.kind {
                             Struct(fields) | Union(fields) => {

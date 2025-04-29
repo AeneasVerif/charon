@@ -1,13 +1,23 @@
 # Final LLBC before serialization:
 
-pub fn test_crate::foo() -> &'static (fn(u32) -> u32)
+fn test_crate::foo::closure<'_0>(@1: &'_0 (()), @2: u32) -> u32
 {
-    let @0: &'_ (fn(u32) -> u32); // return
-    let @1: &'_ (fn(u32) -> u32); // anonymous local
-    let @2: &'_ (fn(u32) -> u32); // anonymous local
-    let @3: &'_ (fn(u32) -> u32); // anonymous local
-    let @4: fn(u32) -> u32; // anonymous local
-    let @5: &'_ (fn(u32) -> u32); // anonymous local
+    let @0: u32; // return
+    let state@1: &'_0 (()); // arg #1
+    let x@2: u32; // arg #2
+
+    @0 := copy (x@2)
+    return
+}
+
+pub fn test_crate::foo() -> &'static (test_crate::foo::closure)
+{
+    let @0: &'_ (test_crate::foo::closure); // return
+    let @1: &'_ (test_crate::foo::closure); // anonymous local
+    let @2: &'_ (test_crate::foo::closure); // anonymous local
+    let @3: &'_ (test_crate::foo::closure); // anonymous local
+    let @4: test_crate::foo::closure; // anonymous local
+    let @5: &'_ (test_crate::foo::closure); // anonymous local
 
     storage_live(@3)
     storage_live(@4)

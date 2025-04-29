@@ -653,6 +653,20 @@ pub enum TyKind {
     /// Note: this is incorrectly named: this can refer to any valid `TypeDecl` including extern
     /// types.
     Adt(TypeId, GenericArgs),
+    /// A closure type, which is essentially a struct with builtin impls. Currently we don't
+    /// translate the struct itself, only the function item that contains the closure's code.
+    Closure {
+        /// The FunDecl item containing the code of the closure. That function takes the closure
+        /// state as its first argument.
+        fun_id: FunDeclId,
+        /// Generics that apply to the parent of this closure.
+        /// Warning: hax may not handle nexted closure correctly yet.
+        parent_args: GenericArgs,
+        /// The types of the variables captured by this closure.
+        upvar_tys: Vec<Ty>,
+        /// The signature of the function that this closure represents.
+        signature: RegionBinder<(Vec<Ty>, Ty)>,
+    },
     #[charon::rename("TVar")]
     TypeVar(TypeDbVar),
     Literal(LiteralTy),
@@ -693,10 +707,11 @@ pub enum TyKind {
     ///
     /// TODO: we don't translate this properly yet.
     DynTrait(ExistentialPredicate),
-    /// Arrow type, used in particular for the local function pointers.
-    /// This is essentially a "constrained" function signature:
-    /// arrow types can only contain generic lifetime parameters
-    /// (no generic types), no predicates, etc.
+    /// Arrow type, used for function pointers and reused for the unique type associated with each
+    /// function item.
+    /// This is a function signature with limited generics: it only supports lifetime generics, not
+    /// other kinds of
+    /// generics.
     Arrow(RegionBinder<(Vec<Ty>, Ty)>),
     /// A type that could not be computed or was incorrect.
     #[drive(skip)]

@@ -1450,6 +1450,7 @@ impl<C: AstFormatter> FmtWithCtx<C> for Ty {
                     format!("{adt_ident}{generics}")
                 }
             }
+            TyKind::Closure { fun_id, .. } => ctx.format_object(*fun_id),
             TyKind::TypeVar(id) => ctx.format_object(*id),
             TyKind::Literal(kind) => kind.to_string(),
             TyKind::Never => "!".to_string(),

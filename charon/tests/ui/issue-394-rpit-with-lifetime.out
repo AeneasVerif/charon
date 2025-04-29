@@ -54,14 +54,14 @@ where
     [@TraitClause2]: core::ops::function::FnMut<F, ()>,
     @TraitClause2::parent_clause0::Output = core::option::Option<T>[@TraitClause0],
 
-fn test_crate::sparse_transitions<'a>() -> core::iter::sources::from_fn::FromFn<fn() -> core::option::Option<u8>[core::marker::Sized<u8>]>[core::marker::Sized<fn() -> core::option::Option<u8>[core::marker::Sized<u8>]>]
+fn test_crate::sparse_transitions<'a>() -> core::iter::sources::from_fn::FromFn<test_crate::sparse_transitions::closure>[core::marker::Sized<test_crate::sparse_transitions::closure>]
 {
-    let @0: core::iter::sources::from_fn::FromFn<fn() -> core::option::Option<u8>[core::marker::Sized<u8>]>[core::marker::Sized<fn() -> core::option::Option<u8>[core::marker::Sized<u8>]>]; // return
-    let @1: fn() -> core::option::Option<u8>[core::marker::Sized<u8>]; // anonymous local
+    let @0: core::iter::sources::from_fn::FromFn<test_crate::sparse_transitions::closure>[core::marker::Sized<test_crate::sparse_transitions::closure>]; // return
+    let @1: test_crate::sparse_transitions::closure; // anonymous local
 
     storage_live(@1)
     @1 := {test_crate::sparse_transitions::closure<'_>} {}
-    @0 := core::iter::sources::from_fn::from_fn<u8, fn() -> core::option::Option<u8>[core::marker::Sized<u8>]>[core::marker::Sized<u8>, core::marker::Sized<fn() -> core::option::Option<u8>[core::marker::Sized<u8>]>, core::ops::function::FnMut<fn() -> core::option::Option<u8>[core::marker::Sized<u8>], ()>](move (@1))
+    @0 := core::iter::sources::from_fn::from_fn<u8, test_crate::sparse_transitions::closure>[core::marker::Sized<u8>, core::marker::Sized<test_crate::sparse_transitions::closure>, core::ops::function::FnMut<test_crate::sparse_transitions::closure, ()>](move (@1))
     storage_dead(@1)
     return
 }

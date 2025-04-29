@@ -281,13 +281,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                 trace!("PlaceHolder");
                 raise_error!(self, span, "Unsupported type: placeholder")
             }
-            hax::TyKind::Arrow(box sig)
-            | hax::TyKind::Closure(
-                _,
-                hax::ClosureArgs {
-                    untupled_sig: sig, ..
-                },
-            ) => {
+            hax::TyKind::Arrow(box sig) => {
                 trace!("Arrow");
                 trace!("bound vars: {:?}", sig.bound_vars);
                 let sig = self.translate_region_binder(span, sig, |ctx, sig| {
@@ -300,6 +294,45 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                     Ok((inputs, output))
                 })?;
                 TyKind::Arrow(sig)
+            }
+            hax::TyKind::Closure(
+                def_id,
+                hax::ClosureArgs {
+                    untupled_sig: sig,
+                    parent_args,
+                    parent_trait_refs,
+                    upvar_tys,
+                    ..
+                },
+            ) => {
+                let signature = self.translate_region_binder(span, sig, |ctx, sig| {
+                    let inputs = sig
+                        .inputs
+                        .iter()
+                        .map(|x| ctx.translate_ty(span, x))
+                        .try_collect()?;
+                    let output = ctx.translate_ty(span, &sig.output)?;
+                    Ok((inputs, output))
+                })?;
+                let fun_id = self.register_fun_decl_id(span, def_id);
+                let upvar_tys = upvar_tys
+                    .iter()
+                    .map(|ty| self.translate_ty(span, ty))
+                    .try_collect()?;
+                let parent_args = self.translate_generic_args(
+                    span,
+                    &parent_args,
+                    &parent_trait_refs,
+                    None,
+                    // We don't know the item these generics apply to.
+                    GenericsSource::Builtin,
+                )?;
+                TyKind::Closure {
+                    fun_id,
+                    signature,
+                    parent_args,
+                    upvar_tys,
+                }
             }
             hax::TyKind::Error => {
                 trace!("Error");
