@@ -1,0 +1,28 @@
+error: Found inconsistent generics after translation:
+       Mismatched trait clauses:
+       expected: [[@TraitClause0]: core::marker::Sized<F>, [@TraitClause1]: core::marker::Sized<T>]
+            got: [@TraitClause1]
+       Visitor stack:
+         charon_lib::ast::types::GenericArgs
+         charon_lib::ast::gast::GlobalDeclRef
+         charon_lib::ast::expressions::RawConstantExpr
+         charon_lib::ast::expressions::ConstantExpr
+         charon_lib::ast::expressions::Operand
+         charon_lib::ast::expressions::Rvalue
+         charon_lib::ast::ullbc_ast::RawStatement
+         charon_lib::ast::ullbc_ast::Statement
+         alloc::vec::Vec<charon_lib::ast::ullbc_ast::Statement>
+         charon_lib::ast::ullbc_ast::BlockData
+         charon_lib::ids::vector::Vector<charon_lib::ast::ullbc_ast::BlockId, charon_lib::ast::ullbc_ast::BlockData>
+         charon_lib::ast::gast::GExprBody<charon_lib::ids::vector::Vector<charon_lib::ast::ullbc_ast::BlockId, charon_lib::ast::ullbc_ast::BlockData>>
+         charon_lib::ast::gast::Body
+         core::result::Result<charon_lib::ast::gast::Body, charon_lib::ast::gast::Opaque>
+         charon_lib::ast::gast::FunDecl
+       Binding stack (depth 1):
+         0: <F, T, [@TraitClause0]: @TraitDecl0<missing(@Type1_0)>, [@TraitClause1]: @TraitDecl0<missing(@Type1_1)>>
+ --> tests/ui/simple/promoted-inside-impl.rs:7:25
+  |
+7 |         let _promoted = &0;
+  |                         ^^
+
+ERROR Charon failed to translate this code (1 errors)
