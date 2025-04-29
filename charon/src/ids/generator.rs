@@ -19,14 +19,25 @@ impl<I: Idx> Generator<I> {
         }
     }
 
+    /// Get a fresh id from this generator.
     pub fn fresh_id(&mut self) -> I {
-        let index = I::from_usize(self.counter);
+        let index = self.next_id();
+        self.advance(1);
+        index
+    }
+
+    /// Get the next id that would be emitted by `fresh_id`.
+    pub fn next_id(&self) -> I {
+        I::from_usize(self.counter)
+    }
+
+    /// Move the generator forward by the given delta.
+    pub fn advance(&mut self, by: usize) {
         // The release version of the code doesn't check for overflows.
         // As the max usize is very large, overflows are extremely
         // unlikely. Still, it is extremely important for our code that
         // no overflows happen on the index counters.
-        self.counter = self.counter.checked_add(1).unwrap();
-        index
+        self.counter = self.counter.checked_add(by).unwrap();
     }
 }
 

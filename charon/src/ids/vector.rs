@@ -11,6 +11,7 @@ use index_vec::{Idx, IdxSliceIndex, IndexVec};
 use serde::{Deserialize, Serialize, Serializer};
 use std::{
     iter::{FromIterator, IntoIterator},
+    mem,
     ops::{ControlFlow, Deref, Index, IndexMut},
 };
 
@@ -264,15 +265,29 @@ where
         self.vector.indices()
     }
 
-    pub fn retain(&mut self, mut f: impl FnMut(&mut T) -> bool) {
-        self.vector.iter_mut().for_each(|opt| {
-            if let Some(x) = opt {
-                if !f(x) {
-                    *opt = None;
-                    self.elem_count -= 1;
+    /// Remove matching items and return and iterator over the removed items. This is lazy: items
+    /// are only removed as the iterator is consumed.
+    pub fn extract<'a, F: FnMut(&mut T) -> bool>(
+        &'a mut self,
+        mut f: F,
+    ) -> impl Iterator<Item = (I, T)> + use<'a, I, T, F> {
+        let elem_count = &mut self.elem_count;
+        self.vector
+            .iter_mut_enumerated()
+            .filter_map(move |(i, opt)| {
+                if f(opt.as_mut()?) {
+                    *elem_count -= 1;
+                    let elem = mem::replace(opt, None)?;
+                    Some((i, elem))
+                } else {
+                    None
                 }
-            }
-        });
+            })
+    }
+
+    /// Remove the elements that don't match the predicate.
+    pub fn retain(&mut self, mut f: impl FnMut(&mut T) -> bool) {
+        self.extract(|x| !f(x)).for_each(drop);
     }
 
     /// Like `Vec::split_off`.

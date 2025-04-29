@@ -253,8 +253,8 @@ impl ItemTransCtx<'_, '_> {
             use hax::ImplAssocItemValue::*;
             let name = TraitItemName(impl_item.name.clone());
             let item_def = impl_item.def(); // The impl item or the corresponding trait default.
-            let item_span = self.def_span(item_def.rust_def_id());
-            let item_def_id = item_def.rust_def_id();
+            let item_span = self.def_span(&item_def.def_id);
+            let item_def_id = &item_def.def_id;
             match item_def.kind() {
                 hax::FullDefKind::AssocFn { .. } => {
                     match &impl_item.value {

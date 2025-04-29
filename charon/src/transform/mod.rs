@@ -10,6 +10,7 @@ pub mod hide_marker_traits;
 pub mod index_intermediate_assigns;
 pub mod index_to_function_calls;
 pub mod inline_local_panic_functions;
+pub mod inline_promoted_consts;
 pub mod insert_assign_return_unit;
 pub mod insert_storage_lives;
 pub mod lift_associated_item_clauses;
@@ -65,6 +66,8 @@ pub static INITIAL_CLEANUP_PASSES: &[Pass] = &[
 
 /// Body cleanup passes on the ullbc.
 pub static ULLBC_PASSES: &[Pass] = &[
+    // Inline promoted consts into their parent bodies.
+    UnstructuredBody(&inline_promoted_consts::Transform),
     // # Micro-pass: merge single-origin gotos into their parent. This drastically reduces the
     // graph size of the CFG.
     UnstructuredBody(&merge_goto_chains::Transform),

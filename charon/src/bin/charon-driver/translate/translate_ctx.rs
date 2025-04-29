@@ -9,7 +9,6 @@ use hax_frontend_exporter::SInto;
 use hax_frontend_exporter::{self as hax, DefPathItem};
 use itertools::Itertools;
 use macros::VariantIndexArity;
-use rustc_hir::def_id::DefId;
 use rustc_middle::ty::TyCtxt;
 use std::borrow::Cow;
 use std::cell::RefCell;
@@ -28,23 +27,23 @@ pub(crate) use charon_lib::errors::{
 /// The id of an untranslated item. Note that a given `DefId` may show up as multiple different
 /// item sources, e.g. a constant will have both a `Global` version (for the constant itself) and a
 /// `FunDecl` one (for its initializer function).
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, VariantIndexArity)]
+#[derive(Clone, Debug, PartialEq, Eq, Hash, VariantIndexArity)]
 pub enum TransItemSource {
-    Global(DefId),
-    TraitDecl(DefId),
-    TraitImpl(DefId),
-    Fun(DefId),
-    Type(DefId),
+    Global(hax::DefId),
+    TraitDecl(hax::DefId),
+    TraitImpl(hax::DefId),
+    Fun(hax::DefId),
+    Type(hax::DefId),
 }
 
 impl TransItemSource {
-    pub(crate) fn to_def_id(&self) -> DefId {
+    pub(crate) fn as_def_id(&self) -> &hax::DefId {
         match self {
             TransItemSource::Global(id)
             | TransItemSource::TraitDecl(id)
             | TransItemSource::TraitImpl(id)
             | TransItemSource::Fun(id)
-            | TransItemSource::Type(id) => *id,
+            | TransItemSource::Type(id) => id,
         }
     }
 }
@@ -53,8 +52,8 @@ impl TransItemSource {
     /// Value with which we order values.
     fn sort_key(&self) -> impl Ord {
         let (variant_index, _) = self.variant_index_arity();
-        let def_id = self.to_def_id();
-        (def_id.krate, def_id.index, variant_index)
+        let def_id = self.as_def_id();
+        (def_id.index, variant_index)
     }
 }
 
@@ -99,9 +98,9 @@ pub struct TranslateCtx<'tcx> {
     /// The declaration we've already processed (successfully or not).
     pub processed: HashSet<TransItemSource>,
     /// Cache the names to compute them only once each.
-    pub cached_names: HashMap<DefId, Name>,
+    pub cached_names: HashMap<hax::DefId, Name>,
     /// Cache the `ItemMeta`s to compute them only once each.
-    pub cached_item_metas: HashMap<DefId, ItemMeta>,
+    pub cached_item_metas: HashMap<hax::DefId, ItemMeta>,
 }
 
 /// A level of binding for type-level variables. Each item has a top-level binding level
@@ -219,7 +218,7 @@ impl BindingLevel {
 pub(crate) struct ItemTransCtx<'tcx, 'ctx> {
     /// The definition we are currently extracting.
     /// TODO: this duplicates the field of [ErrorCtx]
-    pub def_id: DefId,
+    pub def_id: hax::DefId,
     /// The id of the definition we are currently extracting, if there is one.
     pub item_id: Option<AnyTransId>,
     /// The translation context containing the top-level definitions/ids.
@@ -291,9 +290,9 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
     fn path_elem_for_def(
         &mut self,
         span: Span,
-        def: &hax::DefId,
+        def_id: &hax::DefId,
     ) -> Result<Option<PathElem>, Error> {
-        let path_elem = def.path_item();
+        let path_elem = def_id.path_item();
         // Disambiguator disambiguates identically-named (but distinct) identifiers. This happens
         // notably with macros and inherent impl blocks.
         let disambiguator = Disambiguator::new(path_elem.disambiguator as usize);
@@ -311,7 +310,6 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
             | DefPathItem::ValueNs(symbol)
             | DefPathItem::MacroNs(symbol) => Some(PathElem::Ident(symbol, disambiguator)),
             DefPathItem::Impl => {
-                let def_id = def.to_rust_def_id();
                 let full_def = self.hax_def(def_id)?;
                 // Two cases, depending on whether the impl block is
                 // a "regular" impl block (`impl Foo { ... }`) or a trait
@@ -322,7 +320,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
                         // We need to convert the type, which may contain quantified
                         // substs and bounds. In order to properly do so, we introduce
                         // a body translation context.
-                        let mut bt_ctx = ItemTransCtx::new(def_id, None, self);
+                        let mut bt_ctx = ItemTransCtx::new(def_id.clone(), None, self);
                         bt_ctx.translate_def_generics(span, &full_def)?;
                         let ty = bt_ctx.translate_ty(span, &ty)?;
                         ImplElem::Ty(Binder {
@@ -353,10 +351,13 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
             // Do nothing, the constructor of a struct/variant has the same name as the
             // struct/variant.
             DefPathItem::Ctor => None,
-            DefPathItem::Use => Some(PathElem::Ident("<use>".to_string(), disambiguator)),
+            DefPathItem::Use => Some(PathElem::Ident("{use}".to_string(), disambiguator)),
             DefPathItem::AnonConst => Some(PathElem::Ident("{const}".to_string(), disambiguator)),
+            DefPathItem::PromotedConst => Some(PathElem::Ident(
+                "{promoted_const}".to_string(),
+                disambiguator,
+            )),
             _ => {
-                let def_id = def.to_rust_def_id();
                 raise_error!(
                     self,
                     span,
@@ -408,31 +409,26 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
     /// The names we will generate for `foo` and `bar` are:
     /// `[Ident("test"), Ident("bla"), Ident("Foo"), Impl(impl<T> Ty<T>, Disambiguator(0)), Ident("foo")]`
     /// `[Ident("test"), Ident("bla"), Ident("Foo"), Impl(impl<T> Ty<T>, Disambiguator(1)), Ident("bar")]`
-    pub fn hax_def_id_to_name(&mut self, def: &hax::DefId) -> Result<Name, Error> {
-        let def_id = def.to_rust_def_id();
+    pub fn hax_def_id_to_name(&mut self, def_id: &hax::DefId) -> Result<Name, Error> {
         if let Some(name) = self.cached_names.get(&def_id) {
             return Ok(name.clone());
         }
         trace!("Computing name for `{def_id:?}`");
 
-        let parent_name = if let Some(parent) = &def.parent {
+        let parent_name = if let Some(parent) = &def_id.parent {
             self.hax_def_id_to_name(parent)?
         } else {
             Name { name: Vec::new() }
         };
         let span = self.def_span(def_id);
         let mut name = parent_name;
-        if let Some(path_elem) = self.path_elem_for_def(span, &def)? {
+        if let Some(path_elem) = self.path_elem_for_def(span, &def_id)? {
             name.name.push(path_elem);
         }
 
         trace!("Computed name for `{def_id:?}`: `{name:?}`");
-        self.cached_names.insert(def_id, name.clone());
+        self.cached_names.insert(def_id.clone(), name.clone());
         Ok(name)
-    }
-
-    pub fn def_id_to_name(&mut self, def_id: DefId) -> Result<Name, Error> {
-        self.hax_def_id_to_name(&def_id.sinto(&self.hax_state))
     }
 
     /// Translates `T` into `U` using `hax`'s `SInto` trait, catching any hax panics.
@@ -443,17 +439,12 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
         catch_sinto(s, &mut *self.errors.borrow_mut(), &self.translated, span, x)
     }
 
-    pub fn hax_def(&mut self, def_id: impl Into<DefId>) -> Result<Arc<hax::FullDef>, Error> {
-        let def_id: DefId = def_id.into();
+    pub fn hax_def(&mut self, def_id: &hax::DefId) -> Result<Arc<hax::FullDef>, Error> {
         let span = self.def_span(def_id);
         // Hax takes care of caching the translation.
-        catch_sinto(
-            &self.hax_state,
-            &mut *self.errors.borrow_mut(),
-            &self.translated,
-            span,
-            &def_id,
-        )
+        let unwind_safe_s = std::panic::AssertUnwindSafe(&self.hax_state);
+        std::panic::catch_unwind(move || def_id.full_def(*unwind_safe_s))
+            .or_else(|_| raise_error!(self, span, "Hax panicked when translating `{def_id:?}`."))
     }
 
     pub(crate) fn translate_attr_info(&mut self, def: &hax::FullDef) -> AttrInfo {
@@ -496,7 +487,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
         name: Name,
         name_opacity: ItemOpacity,
     ) -> ItemMeta {
-        if let Some(item_meta) = self.cached_item_metas.get(&def.rust_def_id()) {
+        if let Some(item_meta) = self.cached_item_metas.get(&def.def_id) {
             return item_meta.clone();
         }
         let span = def.source_span.as_ref().unwrap_or(&def.span);
@@ -527,7 +518,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
             lang_item,
         };
         self.cached_item_metas
-            .insert(def.rust_def_id(), item_meta.clone());
+            .insert(def.def_id.clone(), item_meta.clone());
         item_meta
     }
 
@@ -647,11 +638,8 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
         }
     }
 
-    pub(crate) fn def_span(&mut self, def_id: impl Into<DefId>) -> Span {
-        let def_id = def_id.into();
-        let def_kind = hax::get_def_kind(self.tcx, def_id);
-        let span = hax::get_def_span(self.tcx, def_id, def_kind);
-        let span = span.sinto(&self.hax_state);
+    pub(crate) fn def_span(&mut self, def_id: &hax::DefId) -> Span {
+        let span = def_id.def_span(&self.hax_state);
         self.translate_span_from_hax(&span)
     }
 
@@ -745,13 +733,13 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
                     }
                 };
                 // Add the id to the queue of declarations to translate
-                self.id_map.insert(id, trans_id);
-                self.reverse_id_map.insert(trans_id, id);
+                self.id_map.insert(id.clone(), trans_id);
+                self.reverse_id_map.insert(trans_id, id.clone());
                 self.translated.all_ids.insert(trans_id);
                 // Store the name early so the name matcher can identify paths. We can't to it for
                 // trait impls because they register themselves when computing their name.
                 if !matches!(id, TransItemSource::TraitImpl(_)) {
-                    if let Ok(name) = self.def_id_to_name(id.to_def_id()) {
+                    if let Ok(name) = self.hax_def_id_to_name(id.as_def_id()) {
                         self.translated.item_names.insert(trans_id, name);
                     }
                 }
@@ -760,7 +748,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
         };
         self.errors
             .borrow_mut()
-            .register_dep_source(src, item_id, id.to_def_id().is_local());
+            .register_dep_source(src, item_id, id.as_def_id().is_local);
         item_id
     }
 
@@ -770,17 +758,17 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
         src: &Option<DepSource>,
         id: TransItemSource,
     ) -> AnyTransId {
-        self.items_to_translate.insert(id);
+        self.items_to_translate.insert(id.clone());
         self.register_id_no_enqueue(src, id)
     }
 
     pub(crate) fn register_type_decl_id(
         &mut self,
         src: &Option<DepSource>,
-        id: impl Into<DefId>,
+        id: &hax::DefId,
     ) -> TypeDeclId {
         *self
-            .register_and_enqueue_id(src, TransItemSource::Type(id.into()))
+            .register_and_enqueue_id(src, TransItemSource::Type(id.clone()))
             .as_type()
             .unwrap()
     }
@@ -788,10 +776,10 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
     pub(crate) fn register_fun_decl_id(
         &mut self,
         src: &Option<DepSource>,
-        id: impl Into<DefId>,
+        id: &hax::DefId,
     ) -> FunDeclId {
         *self
-            .register_and_enqueue_id(src, TransItemSource::Fun(id.into()))
+            .register_and_enqueue_id(src, TransItemSource::Fun(id.clone()))
             .as_fun()
             .unwrap()
     }
@@ -799,10 +787,10 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
     pub(crate) fn register_trait_decl_id(
         &mut self,
         src: &Option<DepSource>,
-        id: impl Into<DefId>,
+        id: &hax::DefId,
     ) -> TraitDeclId {
         *self
-            .register_and_enqueue_id(src, TransItemSource::TraitDecl(id.into()))
+            .register_and_enqueue_id(src, TransItemSource::TraitDecl(id.clone()))
             .as_trait_decl()
             .unwrap()
     }
@@ -810,9 +798,8 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
     pub(crate) fn register_trait_impl_id(
         &mut self,
         src: &Option<DepSource>,
-        id: impl Into<DefId>,
+        id: &hax::DefId,
     ) -> TraitImplId {
-        let id = id.into();
         // Register the corresponding trait early so we can filter on its name.
         if let Ok(def) = self.hax_def(id) {
             let hax::FullDefKind::TraitImpl { trait_pred, .. } = def.kind() else {
@@ -823,7 +810,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
         }
 
         *self
-            .register_and_enqueue_id(src, TransItemSource::TraitImpl(id))
+            .register_and_enqueue_id(src, TransItemSource::TraitImpl(id.clone()))
             .as_trait_impl()
             .unwrap()
     }
@@ -831,17 +818,17 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
     pub(crate) fn register_global_decl_id(
         &mut self,
         src: &Option<DepSource>,
-        id: impl Into<DefId>,
+        id: &hax::DefId,
     ) -> GlobalDeclId {
         *self
-            .register_and_enqueue_id(src, TransItemSource::Global(id.into()))
+            .register_and_enqueue_id(src, TransItemSource::Global(id.clone()))
             .as_global()
             .unwrap()
     }
 
     pub(crate) fn with_def_id<F, T>(
         &mut self,
-        def_id: DefId,
+        def_id: &hax::DefId,
         item_id: Option<AnyTransId>,
         f: F,
     ) -> T
@@ -850,7 +837,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
     {
         let mut errors = self.errors.borrow_mut();
         let current_def_id = mem::replace(&mut errors.def_id, item_id);
-        let current_def_id_is_local = mem::replace(&mut errors.def_id_is_local, def_id.is_local());
+        let current_def_id_is_local = mem::replace(&mut errors.def_id_is_local, def_id.is_local);
         drop(errors); // important: release the refcell "lock"
         let ret = f(self);
         let mut errors = self.errors.borrow_mut();
@@ -863,7 +850,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
 impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
     /// Create a new `ExecContext`.
     pub(crate) fn new(
-        def_id: DefId,
+        def_id: hax::DefId,
         item_id: Option<AnyTransId>,
         t_ctx: &'ctx mut TranslateCtx<'tcx>,
     ) -> Self {
@@ -886,11 +873,11 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         self.t_ctx.translate_span_from_hax(rspan)
     }
 
-    pub(crate) fn hax_def(&mut self, def_id: impl Into<DefId>) -> Result<Arc<hax::FullDef>, Error> {
-        self.t_ctx.hax_def(def_id.into())
+    pub(crate) fn hax_def(&mut self, def_id: &hax::DefId) -> Result<Arc<hax::FullDef>, Error> {
+        self.t_ctx.hax_def(def_id)
     }
 
-    pub(crate) fn def_span(&mut self, def_id: impl Into<DefId>) -> Span {
+    pub(crate) fn def_span(&mut self, def_id: &hax::DefId) -> Span {
         self.t_ctx.def_span(def_id)
     }
 
@@ -899,12 +886,12 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         self.t_ctx.register_id_no_enqueue(&src, id)
     }
 
-    pub(crate) fn register_type_decl_id(&mut self, span: Span, id: impl Into<DefId>) -> TypeDeclId {
+    pub(crate) fn register_type_decl_id(&mut self, span: Span, id: &hax::DefId) -> TypeDeclId {
         let src = self.make_dep_source(span);
         self.t_ctx.register_type_decl_id(&src, id)
     }
 
-    pub(crate) fn register_fun_decl_id(&mut self, span: Span, id: impl Into<DefId>) -> FunDeclId {
+    pub(crate) fn register_fun_decl_id(&mut self, span: Span, id: &hax::DefId) -> FunDeclId {
         let src = self.make_dep_source(span);
         self.t_ctx.register_fun_decl_id(&src, id)
     }
@@ -912,41 +899,29 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
     pub(crate) fn register_fun_decl_id_no_enqueue(
         &mut self,
         span: Span,
-        id: impl Into<DefId>,
+        id: &hax::DefId,
     ) -> FunDeclId {
-        self.register_id_no_enqueue(span, TransItemSource::Fun(id.into()))
+        self.register_id_no_enqueue(span, TransItemSource::Fun(id.clone()))
             .as_fun()
             .copied()
             .unwrap()
     }
 
-    pub(crate) fn register_global_decl_id(
-        &mut self,
-        span: Span,
-        id: impl Into<DefId>,
-    ) -> GlobalDeclId {
+    pub(crate) fn register_global_decl_id(&mut self, span: Span, id: &hax::DefId) -> GlobalDeclId {
         let src = self.make_dep_source(span);
         self.t_ctx.register_global_decl_id(&src, id)
     }
 
     /// Returns an [Option] because we may ignore some builtin or auto traits
     /// like [core::marker::Sized] or [core::marker::Sync].
-    pub(crate) fn register_trait_decl_id(
-        &mut self,
-        span: Span,
-        id: impl Into<DefId>,
-    ) -> TraitDeclId {
+    pub(crate) fn register_trait_decl_id(&mut self, span: Span, id: &hax::DefId) -> TraitDeclId {
         let src = self.make_dep_source(span);
         self.t_ctx.register_trait_decl_id(&src, id)
     }
 
     /// Returns an [Option] because we may ignore some builtin or auto traits
     /// like [core::marker::Sized] or [core::marker::Sync].
-    pub(crate) fn register_trait_impl_id(
-        &mut self,
-        span: Span,
-        id: impl Into<DefId>,
-    ) -> TraitImplId {
+    pub(crate) fn register_trait_impl_id(&mut self, span: Span, id: &hax::DefId) -> TraitImplId {
         let src = self.make_dep_source(span);
         self.t_ctx.register_trait_impl_id(&src, id)
     }
@@ -1158,7 +1133,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
     pub(crate) fn make_dep_source(&self, span: Span) -> Option<DepSource> {
         Some(DepSource {
             src_id: self.item_id?,
-            span: self.def_id.is_local().then_some(span),
+            span: self.def_id.is_local.then_some(span),
         })
     }
 }

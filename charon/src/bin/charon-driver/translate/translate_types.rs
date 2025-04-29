@@ -621,6 +621,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
             | FullDefKind::AssocConst { .. }
             | FullDefKind::AnonConst { .. }
             | FullDefKind::InlineConst { .. }
+            | FullDefKind::PromotedConst { .. }
             | FullDefKind::Closure { .. }
             | FullDefKind::Ctor { .. }
             | FullDefKind::Variant { .. } => {
@@ -672,6 +673,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                 | FullDefKind::AssocConst { .. }
                 | FullDefKind::AnonConst { .. }
                 | FullDefKind::InlineConst { .. }
+                | FullDefKind::PromotedConst { .. }
                 | FullDefKind::Static { .. } => PredicateOrigin::WhereClauseOnFn,
                 FullDefKind::TraitImpl { .. } | FullDefKind::InherentImpl { .. } => {
                     PredicateOrigin::WhereClauseOnImpl

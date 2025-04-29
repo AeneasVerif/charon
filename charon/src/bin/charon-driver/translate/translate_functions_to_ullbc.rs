@@ -138,6 +138,7 @@ impl ItemTransCtx<'_, '_> {
             | hax::FullDefKind::AssocConst { ty, .. }
             | hax::FullDefKind::AnonConst { ty, .. }
             | hax::FullDefKind::InlineConst { ty, .. }
+            | hax::FullDefKind::PromotedConst { ty, .. }
             | hax::FullDefKind::Static { ty, .. } => {
                 let sig = hax::TyFnSig {
                     inputs: vec![],
@@ -397,6 +398,7 @@ impl ItemTransCtx<'_, '_> {
                 | hax::FullDefKind::AssocConst { .. }
                 | hax::FullDefKind::AnonConst { .. }
                 | hax::FullDefKind::InlineConst { .. }
+                | hax::FullDefKind::PromotedConst { .. }
                 | hax::FullDefKind::Static { .. }
         );
         let is_global_initializer =
@@ -477,6 +479,7 @@ impl ItemTransCtx<'_, '_> {
             | hax::FullDefKind::AssocConst { ty, .. }
             | hax::FullDefKind::AnonConst { ty, .. }
             | hax::FullDefKind::InlineConst { ty, .. }
+            | hax::FullDefKind::PromotedConst { ty, .. }
             | hax::FullDefKind::Static { ty, .. } => ty,
             _ => panic!("Unexpected def for constant: {def:?}"),
         };
@@ -487,9 +490,9 @@ impl ItemTransCtx<'_, '_> {
             hax::FullDefKind::Const { .. } | hax::FullDefKind::AssocConst { .. } => {
                 GlobalKind::NamedConst
             }
-            hax::FullDefKind::AnonConst { .. } | hax::FullDefKind::InlineConst { .. } => {
-                GlobalKind::AnonConst
-            }
+            hax::FullDefKind::AnonConst { .. }
+            | hax::FullDefKind::InlineConst { .. }
+            | hax::FullDefKind::PromotedConst { .. } => GlobalKind::AnonConst,
             _ => panic!("Unexpected def for constant: {def:?}"),
         };
 

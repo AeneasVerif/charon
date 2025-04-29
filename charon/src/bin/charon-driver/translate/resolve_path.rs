@@ -84,11 +84,11 @@ pub fn def_path_def_ids<'a, 'tcx>(
             items = items
                 .into_iter()
                 .flat_map(|def_id| {
-                    let hax_def: Arc<hax::FullDef> = def_id.sinto(s);
+                    let hax_def: Arc<hax::FullDef> = def_id.sinto(s).full_def(s);
                     hax_def.nameable_children(s)
                 })
                 .filter(|(child_name, _)| *child_name == segment_str)
-                .map(|(_, def_id)| def_id.to_rust_def_id())
+                .filter_map(|(_, def_id)| def_id.as_rust_def_id())
                 .collect();
         }
         if items.is_empty() {

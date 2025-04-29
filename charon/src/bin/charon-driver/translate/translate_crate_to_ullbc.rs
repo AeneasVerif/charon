@@ -5,7 +5,6 @@ use charon_lib::transform::TransformCtx;
 use hax::FullDefKind;
 use hax_frontend_exporter::{self as hax, SInto};
 use itertools::Itertools;
-use rustc_hir::def_id::DefId;
 use rustc_middle::ty::TyCtxt;
 use std::cell::RefCell;
 use std::path::PathBuf;
@@ -59,6 +58,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
             | Ctor { .. }
             | Field { .. }
             | InlineConst { .. }
+            | PromotedConst { .. }
             | LifetimeParam { .. }
             | OpaqueTy { .. }
             | SyntheticCoroutineBody { .. }
@@ -105,28 +105,28 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
         Ok(())
     }
 
-    pub(crate) fn translate_item(&mut self, item_src: TransItemSource) {
+    pub(crate) fn translate_item(&mut self, item_src: &TransItemSource) {
         let trans_id = self.id_map.get(&item_src).copied();
-        let rust_id = item_src.to_def_id();
-        self.with_def_id(rust_id, trans_id, |mut ctx| {
-            let span = ctx.def_span(rust_id);
+        let def_id = item_src.as_def_id();
+        self.with_def_id(def_id, trans_id, |mut ctx| {
+            let span = ctx.def_span(def_id);
             // Catch cycles
             let res = {
                 // Stopgap measure because there are still many panics in charon and hax.
                 let mut ctx = std::panic::AssertUnwindSafe(&mut ctx);
-                std::panic::catch_unwind(move || ctx.translate_item_aux(rust_id, trans_id))
+                std::panic::catch_unwind(move || ctx.translate_item_aux(def_id, trans_id))
             };
             match res {
                 Ok(Ok(())) => return,
                 // Translation error
                 Ok(Err(_)) => {
-                    register_error!(ctx, span, "Item `{rust_id:?}` caused errors; ignoring.")
+                    register_error!(ctx, span, "Item `{def_id:?}` caused errors; ignoring.")
                 }
                 // Panic
                 Err(_) => register_error!(
                     ctx,
                     span,
-                    "Thread panicked when extracting item `{rust_id:?}`."
+                    "Thread panicked when extracting item `{def_id:?}`."
                 ),
             };
         })
@@ -134,11 +134,11 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
 
     pub(crate) fn translate_item_aux(
         &mut self,
-        rust_id: DefId,
+        def_id: &hax::DefId,
         trans_id: Option<AnyTransId>,
     ) -> Result<(), Error> {
         // Translate the meta information
-        let name = self.def_id_to_name(rust_id)?;
+        let name = self.hax_def_id_to_name(def_id)?;
         if let Some(trans_id) = trans_id {
             self.translated.item_names.insert(trans_id, name.clone());
         }
@@ -147,11 +147,11 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
             // Don't even start translating the item. In particular don't call `hax_def` on it.
             return Ok(());
         }
-        let def = self.hax_def(rust_id)?;
+        let def = self.hax_def(def_id)?;
         let item_meta = self.translate_item_meta(&def, name, opacity);
 
         // Initialize the body translation context
-        let bt_ctx = ItemTransCtx::new(rust_id, trans_id, self);
+        let bt_ctx = ItemTransCtx::new(def_id.clone(), trans_id, self);
         match trans_id {
             Some(AnyTransId::Type(id)) => {
                 let ty = bt_ctx.translate_type(id, item_meta, &def)?;
@@ -265,8 +265,8 @@ pub fn translate<'tcx, 'ctx>(
     // from Rust ids to translated ids.
     while let Some(item_src) = ctx.items_to_translate.pop_first() {
         trace!("About to translate item: {:?}", item_src);
-        if ctx.processed.insert(item_src) {
-            ctx.translate_item(item_src);
+        if ctx.processed.insert(item_src.clone()) {
+            ctx.translate_item(&item_src);
         }
     }
 
