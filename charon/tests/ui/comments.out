@@ -272,29 +272,34 @@ fn test_crate::foo()
     let @18: &'_ (u32); // anonymous local
     let @19: usize; // anonymous local
     let @20: &'_ (u32); // anonymous local
-    let @21: u32; // anonymous local
-    let left_val@22: &'_ (u32); // local
-    let right_val@23: &'_ (u32); // local
-    let @24: bool; // anonymous local
+    let left_val@21: &'_ (u32); // local
+    let right_val@22: &'_ (u32); // local
+    let @23: bool; // anonymous local
+    let @24: u32; // anonymous local
     let @25: u32; // anonymous local
-    let @26: u32; // anonymous local
-    let kind@27: core::panicking::AssertKind; // local
-    let @28: core::panicking::AssertKind; // anonymous local
+    let kind@26: core::panicking::AssertKind; // local
+    let @27: core::panicking::AssertKind; // anonymous local
+    let @28: &'_ (u32); // anonymous local
     let @29: &'_ (u32); // anonymous local
     let @30: &'_ (u32); // anonymous local
     let @31: &'_ (u32); // anonymous local
-    let @32: &'_ (u32); // anonymous local
-    let @33: core::option::Option<core::fmt::Arguments<'_>>[core::marker::Sized<core::fmt::Arguments<'_>>]; // anonymous local
-    let @34: &'_ (Array<u32, 10 : usize>); // anonymous local
-    let @35: &'_ (u32); // anonymous local
+    let @32: core::option::Option<core::fmt::Arguments<'_>>[core::marker::Sized<core::fmt::Arguments<'_>>]; // anonymous local
+    let @33: &'_ (u32); // anonymous local
+    let @34: &'_ (u32); // anonymous local
+    let @35: u32; // anonymous local
+    let @36: &'_ (Array<u32, 10 : usize>); // anonymous local
+    let @37: &'_ (u32); // anonymous local
 
-    storage_live(kind@27)
+    storage_live(kind@26)
+    storage_live(@27)
     storage_live(@28)
     storage_live(@29)
     storage_live(@30)
     storage_live(@31)
     storage_live(@32)
     storage_live(@33)
+    storage_live(@34)
+    storage_live(@35)
     storage_live(@3)
     // Call `default` and destructure the result
     @3 := test_crate::{impl core::default::Default for test_crate::Foo}::default()
@@ -348,55 +353,55 @@ fn test_crate::foo()
     storage_live(@19)
     // `assert_eq`
     @19 := const (9 : usize)
-    storage_live(@34)
-    @34 := &a@15
-    storage_live(@35)
-    @35 := @ArrayIndexShared<'_, u32, 10 : usize>(move (@34), copy (@19))
-    @18 := &*(@35)
+    @35 := const (9 : u32)
+    @34 := &@35
+    storage_live(@36)
+    @36 := &a@15
+    storage_live(@37)
+    @37 := @ArrayIndexShared<'_, u32, 10 : usize>(move (@36), copy (@19))
+    @18 := &*(@37)
     storage_live(@20)
-    storage_live(@21)
-    @21 := const (9 : u32)
-    @20 := &@21
+    @33 := move (@34)
+    @20 := &*(@33)
     @17 := (move (@18), move (@20))
     storage_dead(@20)
     storage_dead(@18)
-    storage_live(left_val@22)
-    left_val@22 := copy ((@17).0)
-    storage_live(right_val@23)
-    right_val@23 := copy ((@17).1)
+    storage_live(left_val@21)
+    left_val@21 := copy ((@17).0)
+    storage_live(right_val@22)
+    right_val@22 := copy ((@17).1)
+    storage_live(@23)
     storage_live(@24)
+    @24 := copy (*(left_val@21))
     storage_live(@25)
-    @25 := copy (*(left_val@22))
-    storage_live(@26)
-    @26 := copy (*(right_val@23))
-    @24 := move (@25) == move (@26)
-    if move (@24) {
+    @25 := copy (*(right_val@22))
+    @23 := move (@24) == move (@25)
+    if move (@23) {
     }
     else {
-        storage_dead(@26)
         storage_dead(@25)
-        storage_live(kind@27)
-        kind@27 := core::panicking::AssertKind::Eq {  }
+        storage_dead(@24)
+        storage_live(kind@26)
+        kind@26 := core::panicking::AssertKind::Eq {  }
+        storage_live(@27)
+        @27 := move (kind@26)
         storage_live(@28)
-        @28 := move (kind@27)
         storage_live(@29)
+        @29 := &*(left_val@21)
+        @28 := &*(@29)
         storage_live(@30)
-        @30 := &*(left_val@22)
-        @29 := &*(@30)
         storage_live(@31)
+        @31 := &*(right_val@22)
+        @30 := &*(@31)
         storage_live(@32)
-        @32 := &*(right_val@23)
-        @31 := &*(@32)
-        storage_live(@33)
-        @33 := core::option::Option::None {  }
+        @32 := core::option::Option::None {  }
         panic(core::panicking::assert_failed)
     }
-    storage_dead(@26)
     storage_dead(@25)
     storage_dead(@24)
-    storage_dead(right_val@23)
-    storage_dead(left_val@22)
-    storage_dead(@21)
+    storage_dead(@23)
+    storage_dead(right_val@22)
+    storage_dead(left_val@21)
     storage_dead(@19)
     storage_dead(@17)
     storage_dead(@16)
