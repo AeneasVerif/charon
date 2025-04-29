@@ -372,19 +372,6 @@ type 'a0 gexpr_body = {
   body : 'a0;
 }
 
-(** A (group of) top-level declaration(s), properly reordered. *)
-and declaration_group =
-  | TypeGroup of type_decl_id g_declaration_group
-      (** A type declaration group *)
-  | FunGroup of fun_decl_id g_declaration_group
-      (** A function declaration group *)
-  | GlobalGroup of global_decl_id g_declaration_group
-      (** A global declaration group *)
-  | TraitDeclGroup of trait_decl_id g_declaration_group
-  | TraitImplGroup of trait_impl_id g_declaration_group
-  | MixedGroup of any_decl_id g_declaration_group
-      (** Anything that doesn't fit into these categories. *)
-
 and cli_options = {
   ullbc : bool;
       (** Extract the unstructured LLBC (i.e., don't reconstruct the control-flow) *)
@@ -455,7 +442,29 @@ and cli_options = {
   print_built_llbc : bool;
   print_llbc : bool;
   no_merge_goto_chains : bool;
+  preset : preset option;
+      (** Named builtin sets of options. Currently used only for dependent projects, eveentually
+        should be replaced with semantically-meaningful presets.
+     *)
 }
+
+(** Presets to make it easier to tweak options without breaking dependent projects. Eventually we
+    should define semantically-meaningful presets instead of project-specific ones.
+ *)
+and preset = Aeneas | Eurydice | Tests
+
+(** A (group of) top-level declaration(s), properly reordered. *)
+and declaration_group =
+  | TypeGroup of type_decl_id g_declaration_group
+      (** A type declaration group *)
+  | FunGroup of fun_decl_id g_declaration_group
+      (** A function declaration group *)
+  | GlobalGroup of global_decl_id g_declaration_group
+      (** A global declaration group *)
+  | TraitDeclGroup of trait_decl_id g_declaration_group
+  | TraitImplGroup of trait_impl_id g_declaration_group
+  | MixedGroup of any_decl_id g_declaration_group
+      (** Anything that doesn't fit into these categories. *)
 
 (** A (group of) top-level declaration(s), properly reordered.
     "G" stands for "generic"

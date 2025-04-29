@@ -1601,6 +1601,128 @@ and float_value_of_json (ctx : of_json_ctx) (js : json) :
         Ok ({ float_value; float_ty } : float_value)
     | _ -> Error "")
 
+and cli_options_of_json (ctx : of_json_ctx) (js : json) :
+    (cli_options, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with
+    | `Assoc
+        [
+          ("ullbc", ullbc);
+          ("lib", lib);
+          ("bin", bin);
+          ("mir_promoted", mir_promoted);
+          ("mir_optimized", mir_optimized);
+          ("input_file", input_file);
+          ("read_llbc", read_llbc);
+          ("dest_dir", dest_dir);
+          ("dest_file", dest_file);
+          ("use_polonius", use_polonius);
+          ("skip_borrowck", skip_borrowck);
+          ("no_code_duplication", no_code_duplication);
+          ("monomorphize", monomorphize);
+          ("extract_opaque_bodies", extract_opaque_bodies);
+          ("translate_all_methods", translate_all_methods);
+          ("include", include_);
+          ("opaque", opaque);
+          ("exclude", exclude);
+          ("remove_associated_types", remove_associated_types);
+          ("hide_marker_traits", hide_marker_traits);
+          ("start_from", start_from);
+          ("no_cargo", no_cargo);
+          ("rustc_args", rustc_args);
+          ("cargo_args", cargo_args);
+          ("abort_on_error", abort_on_error);
+          ("error_on_warnings", error_on_warnings);
+          ("no_serialize", no_serialize);
+          ("print_original_ullbc", print_original_ullbc);
+          ("print_ullbc", print_ullbc);
+          ("print_built_llbc", print_built_llbc);
+          ("print_llbc", print_llbc);
+          ("no_merge_goto_chains", no_merge_goto_chains);
+          ("preset", preset);
+        ] ->
+        let* ullbc = bool_of_json ctx ullbc in
+        let* lib = bool_of_json ctx lib in
+        let* bin = option_of_json string_of_json ctx bin in
+        let* mir_promoted = bool_of_json ctx mir_promoted in
+        let* mir_optimized = bool_of_json ctx mir_optimized in
+        let* input_file = option_of_json path_buf_of_json ctx input_file in
+        let* read_llbc = option_of_json path_buf_of_json ctx read_llbc in
+        let* dest_dir = option_of_json path_buf_of_json ctx dest_dir in
+        let* dest_file = option_of_json path_buf_of_json ctx dest_file in
+        let* use_polonius = bool_of_json ctx use_polonius in
+        let* skip_borrowck = bool_of_json ctx skip_borrowck in
+        let* no_code_duplication = bool_of_json ctx no_code_duplication in
+        let* monomorphize = bool_of_json ctx monomorphize in
+        let* extract_opaque_bodies = bool_of_json ctx extract_opaque_bodies in
+        let* translate_all_methods = bool_of_json ctx translate_all_methods in
+        let* included = list_of_json string_of_json ctx include_ in
+        let* opaque = list_of_json string_of_json ctx opaque in
+        let* exclude = list_of_json string_of_json ctx exclude in
+        let* remove_associated_types =
+          list_of_json string_of_json ctx remove_associated_types
+        in
+        let* hide_marker_traits = bool_of_json ctx hide_marker_traits in
+        let* start_from = list_of_json string_of_json ctx start_from in
+        let* no_cargo = bool_of_json ctx no_cargo in
+        let* rustc_args = list_of_json string_of_json ctx rustc_args in
+        let* cargo_args = list_of_json string_of_json ctx cargo_args in
+        let* abort_on_error = bool_of_json ctx abort_on_error in
+        let* error_on_warnings = bool_of_json ctx error_on_warnings in
+        let* no_serialize = bool_of_json ctx no_serialize in
+        let* print_original_ullbc = bool_of_json ctx print_original_ullbc in
+        let* print_ullbc = bool_of_json ctx print_ullbc in
+        let* print_built_llbc = bool_of_json ctx print_built_llbc in
+        let* print_llbc = bool_of_json ctx print_llbc in
+        let* no_merge_goto_chains = bool_of_json ctx no_merge_goto_chains in
+        let* preset = option_of_json preset_of_json ctx preset in
+        Ok
+          ({
+             ullbc;
+             lib;
+             bin;
+             mir_promoted;
+             mir_optimized;
+             input_file;
+             read_llbc;
+             dest_dir;
+             dest_file;
+             use_polonius;
+             skip_borrowck;
+             no_code_duplication;
+             monomorphize;
+             extract_opaque_bodies;
+             translate_all_methods;
+             included;
+             opaque;
+             exclude;
+             remove_associated_types;
+             hide_marker_traits;
+             start_from;
+             no_cargo;
+             rustc_args;
+             cargo_args;
+             abort_on_error;
+             error_on_warnings;
+             no_serialize;
+             print_original_ullbc;
+             print_ullbc;
+             print_built_llbc;
+             print_llbc;
+             no_merge_goto_chains;
+             preset;
+           }
+            : cli_options)
+    | _ -> Error "")
+
+and preset_of_json (ctx : of_json_ctx) (js : json) : (preset, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with
+    | `String "Aeneas" -> Ok Aeneas
+    | `String "Eurydice" -> Ok Eurydice
+    | `String "Tests" -> Ok Tests
+    | _ -> Error "")
+
 and vector_of_json :
       'a0 'a1.
       (of_json_ctx -> json -> ('a0, string) result) ->
@@ -1648,117 +1770,6 @@ and declaration_group_of_json (ctx : of_json_ctx) (js : json) :
           g_declaration_group_of_json any_decl_id_of_json ctx mixed
         in
         Ok (MixedGroup mixed)
-    | _ -> Error "")
-
-and cli_options_of_json (ctx : of_json_ctx) (js : json) :
-    (cli_options, string) result =
-  combine_error_msgs js __FUNCTION__
-    (match js with
-    | `Assoc
-        [
-          ("ullbc", ullbc);
-          ("lib", lib);
-          ("bin", bin);
-          ("mir_promoted", mir_promoted);
-          ("mir_optimized", mir_optimized);
-          ("input_file", input_file);
-          ("read_llbc", read_llbc);
-          ("dest_dir", dest_dir);
-          ("dest_file", dest_file);
-          ("use_polonius", use_polonius);
-          ("skip_borrowck", skip_borrowck);
-          ("no_code_duplication", no_code_duplication);
-          ("monomorphize", monomorphize);
-          ("extract_opaque_bodies", extract_opaque_bodies);
-          ("translate_all_methods", translate_all_methods);
-          ("include", include_);
-          ("opaque", opaque);
-          ("exclude", exclude);
-          ("remove_associated_types", remove_associated_types);
-          ("hide_marker_traits", hide_marker_traits);
-          ("start_from", start_from);
-          ("no_cargo", no_cargo);
-          ("rustc_args", rustc_args);
-          ("cargo_args", cargo_args);
-          ("abort_on_error", abort_on_error);
-          ("error_on_warnings", error_on_warnings);
-          ("no_serialize", no_serialize);
-          ("print_original_ullbc", print_original_ullbc);
-          ("print_ullbc", print_ullbc);
-          ("print_built_llbc", print_built_llbc);
-          ("print_llbc", print_llbc);
-          ("no_merge_goto_chains", no_merge_goto_chains);
-        ] ->
-        let* ullbc = bool_of_json ctx ullbc in
-        let* lib = bool_of_json ctx lib in
-        let* bin = option_of_json string_of_json ctx bin in
-        let* mir_promoted = bool_of_json ctx mir_promoted in
-        let* mir_optimized = bool_of_json ctx mir_optimized in
-        let* input_file = option_of_json path_buf_of_json ctx input_file in
-        let* read_llbc = option_of_json path_buf_of_json ctx read_llbc in
-        let* dest_dir = option_of_json path_buf_of_json ctx dest_dir in
-        let* dest_file = option_of_json path_buf_of_json ctx dest_file in
-        let* use_polonius = bool_of_json ctx use_polonius in
-        let* skip_borrowck = bool_of_json ctx skip_borrowck in
-        let* no_code_duplication = bool_of_json ctx no_code_duplication in
-        let* monomorphize = bool_of_json ctx monomorphize in
-        let* extract_opaque_bodies = bool_of_json ctx extract_opaque_bodies in
-        let* translate_all_methods = bool_of_json ctx translate_all_methods in
-        let* included = list_of_json string_of_json ctx include_ in
-        let* opaque = list_of_json string_of_json ctx opaque in
-        let* exclude = list_of_json string_of_json ctx exclude in
-        let* remove_associated_types =
-          list_of_json string_of_json ctx remove_associated_types
-        in
-        let* hide_marker_traits = bool_of_json ctx hide_marker_traits in
-        let* start_from = list_of_json string_of_json ctx start_from in
-        let* no_cargo = bool_of_json ctx no_cargo in
-        let* rustc_args = list_of_json string_of_json ctx rustc_args in
-        let* cargo_args = list_of_json string_of_json ctx cargo_args in
-        let* abort_on_error = bool_of_json ctx abort_on_error in
-        let* error_on_warnings = bool_of_json ctx error_on_warnings in
-        let* no_serialize = bool_of_json ctx no_serialize in
-        let* print_original_ullbc = bool_of_json ctx print_original_ullbc in
-        let* print_ullbc = bool_of_json ctx print_ullbc in
-        let* print_built_llbc = bool_of_json ctx print_built_llbc in
-        let* print_llbc = bool_of_json ctx print_llbc in
-        let* no_merge_goto_chains = bool_of_json ctx no_merge_goto_chains in
-        Ok
-          ({
-             ullbc;
-             lib;
-             bin;
-             mir_promoted;
-             mir_optimized;
-             input_file;
-             read_llbc;
-             dest_dir;
-             dest_file;
-             use_polonius;
-             skip_borrowck;
-             no_code_duplication;
-             monomorphize;
-             extract_opaque_bodies;
-             translate_all_methods;
-             included;
-             opaque;
-             exclude;
-             remove_associated_types;
-             hide_marker_traits;
-             start_from;
-             no_cargo;
-             rustc_args;
-             cargo_args;
-             abort_on_error;
-             error_on_warnings;
-             no_serialize;
-             print_original_ullbc;
-             print_ullbc;
-             print_built_llbc;
-             print_llbc;
-             no_merge_goto_chains;
-           }
-            : cli_options)
     | _ -> Error "")
 
 and g_declaration_group_of_json :
