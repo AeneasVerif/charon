@@ -335,22 +335,25 @@ fn foo()
     let @17: &'_ (u32); // anonymous local
     let @18: usize; // anonymous local
     let @19: &'_ (u32); // anonymous local
-    let @20: u32; // anonymous local
-    let left_val@21: &'_ (u32); // local
-    let right_val@22: &'_ (u32); // local
-    let @23: bool; // anonymous local
+    let left_val@20: &'_ (u32); // local
+    let right_val@21: &'_ (u32); // local
+    let @22: bool; // anonymous local
+    let @23: u32; // anonymous local
     let @24: u32; // anonymous local
-    let @25: u32; // anonymous local
-    let kind@26: AssertKind; // local
-    let @27: AssertKind; // anonymous local
+    let kind@25: AssertKind; // local
+    let @26: AssertKind; // anonymous local
+    let @27: &'_ (u32); // anonymous local
     let @28: &'_ (u32); // anonymous local
     let @29: &'_ (u32); // anonymous local
     let @30: &'_ (u32); // anonymous local
-    let @31: &'_ (u32); // anonymous local
-    let @32: Option<Arguments<'_>>[{built_in impl Sized for Arguments<'_>}]; // anonymous local
-    let @33: &'_ (Array<u32, 10 : usize>); // anonymous local
-    let @34: &'_ (u32); // anonymous local
+    let @31: Option<Arguments<'_>>[{built_in impl Sized for Arguments<'_>}]; // anonymous local
+    let @32: &'_ (u32); // anonymous local
+    let @33: &'_ (u32); // anonymous local
+    let @34: u32; // anonymous local
+    let @35: &'_ (Array<u32, 10 : usize>); // anonymous local
+    let @36: &'_ (u32); // anonymous local
 
+    storage_live(@32)
     @0 := ()
     storage_live(@3)
     // Call `default` and destructure the result
@@ -405,54 +408,56 @@ fn foo()
     // `assert_eq`
     @18 := const (9 : usize)
     storage_live(@33)
-    @33 := &a@15
     storage_live(@34)
-    @34 := @ArrayIndexShared<'_, u32, 10 : usize>(move (@33), copy (@18))
-    @17 := &*(@34)
+    @34 := const (9 : u32)
+    @33 := &@34
+    storage_live(@35)
+    @35 := &a@15
+    storage_live(@36)
+    @36 := @ArrayIndexShared<'_, u32, 10 : usize>(move (@35), copy (@18))
+    @17 := &*(@36)
     storage_live(@19)
-    storage_live(@20)
-    @20 := const (9 : u32)
-    @19 := &@20
+    @32 := move (@33)
+    @19 := &*(@32)
     @16 := (move (@17), move (@19))
     storage_dead(@19)
     storage_dead(@17)
-    storage_live(left_val@21)
-    left_val@21 := copy ((@16).0)
-    storage_live(right_val@22)
-    right_val@22 := copy ((@16).1)
+    storage_live(left_val@20)
+    left_val@20 := copy ((@16).0)
+    storage_live(right_val@21)
+    right_val@21 := copy ((@16).1)
+    storage_live(@22)
     storage_live(@23)
+    @23 := copy (*(left_val@20))
     storage_live(@24)
-    @24 := copy (*(left_val@21))
-    storage_live(@25)
-    @25 := copy (*(right_val@22))
-    @23 := move (@24) == move (@25)
-    if move (@23) {
+    @24 := copy (*(right_val@21))
+    @22 := move (@23) == move (@24)
+    if move (@22) {
     }
     else {
-        storage_dead(@25)
         storage_dead(@24)
-        storage_live(kind@26)
-        kind@26 := AssertKind::Eq {  }
+        storage_dead(@23)
+        storage_live(kind@25)
+        kind@25 := AssertKind::Eq {  }
+        storage_live(@26)
+        @26 := move (kind@25)
         storage_live(@27)
-        @27 := move (kind@26)
         storage_live(@28)
+        @28 := &*(left_val@20)
+        @27 := &*(@28)
         storage_live(@29)
-        @29 := &*(left_val@21)
-        @28 := &*(@29)
         storage_live(@30)
+        @30 := &*(right_val@21)
+        @29 := &*(@30)
         storage_live(@31)
-        @31 := &*(right_val@22)
-        @30 := &*(@31)
-        storage_live(@32)
-        @32 := Option::None {  }
+        @31 := Option::None {  }
         panic(core::panicking::assert_failed)
     }
-    storage_dead(@25)
     storage_dead(@24)
     storage_dead(@23)
-    storage_dead(right_val@22)
-    storage_dead(left_val@21)
-    storage_dead(@20)
+    storage_dead(@22)
+    storage_dead(right_val@21)
+    storage_dead(left_val@20)
     storage_dead(@18)
     storage_dead(@16)
     @0 := ()

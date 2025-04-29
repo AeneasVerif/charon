@@ -237,21 +237,26 @@ fn gives_fn()
     let @1: &'_ ((dyn exists<_dyn> [@TraitClause0_1]: for<'a> Fn<_dyn, (&'a mut (u32))> + _dyn : '_ + for<'a> @TraitClause0_1::parent_clause1::parent_clause1::Output = bool)); // anonymous local
     let @2: &'_ (closure); // anonymous local
     let @3: &'_ (closure); // anonymous local
-    let @4: closure; // anonymous local
+    let @4: &'_ (closure); // anonymous local
+    let @5: &'_ (closure); // anonymous local
+    let @6: closure; // anonymous local
 
+    storage_live(@5)
+    storage_live(@6)
+    @6 := closure {  }
+    @5 := &@6
+    storage_live(@4)
     @0 := ()
     storage_live(@1)
     storage_live(@2)
     storage_live(@3)
-    storage_live(@4)
-    @4 := closure {  }
-    @3 := &@4
+    @4 := move (@5)
+    @3 := &*(@4)
     @2 := &*(@3)
     @1 := unsize_cast<&'_ (closure), &'_ ((dyn exists<_dyn> [@TraitClause0_1]: for<'a> Fn<_dyn, (&'a mut (u32))> + _dyn : '_ + for<'a> @TraitClause0_1::parent_clause1::parent_clause1::Output = bool)), {impl Fn<(&'_ mut (u32))> for closure}<'_>>(move (@2))
     storage_dead(@2)
     @0 := takes_fn<'_>(move (@1))
     storage_dead(@1)
-    storage_dead(@4)
     storage_dead(@3)
     return
 }

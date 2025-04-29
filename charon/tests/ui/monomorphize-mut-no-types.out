@@ -160,62 +160,67 @@ where
     let x@1: A; // arg #1
     let @2: &'_ (u32); // anonymous local
     let @3: &'_ (u32); // anonymous local
-    let @4: u32; // anonymous local
+    let @4: &'_ mut (u32); // anonymous local
     let @5: &'_ mut (u32); // anonymous local
-    let @6: &'_ mut (u32); // anonymous local
-    let @7: u32; // anonymous local
+    let @6: u32; // anonymous local
+    let @7: Option<&'_ mut (u32)>; // anonymous local
     let @8: Option<&'_ mut (u32)>; // anonymous local
-    let @9: Option<&'_ mut (u32)>; // anonymous local
-    let @10: &'_ mut (u32); // anonymous local
-    let @11: u32; // anonymous local
+    let @9: &'_ mut (u32); // anonymous local
+    let @10: u32; // anonymous local
+    let @11: Option<Option<&'_ mut (A)>>; // anonymous local
     let @12: Option<Option<&'_ mut (A)>>; // anonymous local
-    let @13: Option<Option<&'_ mut (A)>>; // anonymous local
-    let @14: Option<&'_ mut (A)>; // anonymous local
-    let @15: &'_ mut (A); // anonymous local
+    let @13: Option<&'_ mut (A)>; // anonymous local
+    let @14: &'_ mut (A); // anonymous local
+    let @15: &'_ (u32); // anonymous local
+    let @16: &'_ (u32); // anonymous local
+    let @17: u32; // anonymous local
 
+    storage_live(@16)
+    storage_live(@17)
+    @17 := const (0 : u32)
+    @16 := &@17
+    storage_live(@15)
     @0 := ()
     storage_live(@2)
     storage_live(@3)
-    storage_live(@4)
-    @4 := const (0 : u32)
-    @3 := &@4
+    @15 := move (@16)
+    @3 := &*(@15)
     @2 := identity<&'_ (u32)>[{built_in impl Sized for &'_ (u32)}](move (@3))
     storage_dead(@3)
-    storage_dead(@4)
     storage_dead(@2)
+    storage_live(@4)
     storage_live(@5)
     storage_live(@6)
-    storage_live(@7)
-    @7 := const (0 : u32)
-    @6 := &mut @7
-    @5 := test_crate::identity::<&_ mut (_)><'_, u32>[{built_in impl core::marker::Sized::<&_ mut (_)><'_> for u32}](move (@6))
-    storage_dead(@6)
-    storage_dead(@7)
+    @6 := const (0 : u32)
+    @5 := &mut @6
+    @4 := test_crate::identity::<&_ mut (_)><'_, u32>[{built_in impl core::marker::Sized::<&_ mut (_)><'_> for u32}](move (@5))
     storage_dead(@5)
+    storage_dead(@6)
+    storage_dead(@4)
+    storage_live(@7)
     storage_live(@8)
     storage_live(@9)
     storage_live(@10)
-    storage_live(@11)
-    @11 := const (0 : u32)
-    @10 := &mut @11
-    @9 := Option::Some { 0: move (@10) }
-    storage_dead(@10)
-    @8 := test_crate::identity::<Option<&_ mut (_)>><'_, u32>[{built_in impl core::marker::Sized::<Option<&_ mut (_)>><'_> for u32}](move (@9))
+    @10 := const (0 : u32)
+    @9 := &mut @10
+    @8 := Option::Some { 0: move (@9) }
     storage_dead(@9)
-    storage_dead(@11)
+    @7 := test_crate::identity::<Option<&_ mut (_)>><'_, u32>[{built_in impl core::marker::Sized::<Option<&_ mut (_)>><'_> for u32}](move (@8))
     storage_dead(@8)
+    storage_dead(@10)
+    storage_dead(@7)
+    storage_live(@11)
     storage_live(@12)
     storage_live(@13)
     storage_live(@14)
-    storage_live(@15)
-    @15 := &mut x@1
-    @14 := Option::Some { 0: move (@15) }
-    storage_dead(@15)
+    @14 := &mut x@1
     @13 := Option::Some { 0: move (@14) }
     storage_dead(@14)
-    @12 := test_crate::identity::<Option<Option<&_ mut (_)>>><'_, A>[{built_in impl core::marker::Sized::<Option<Option<&_ mut (_)>>><'_> for A}](move (@13))
+    @12 := Option::Some { 0: move (@13) }
     storage_dead(@13)
+    @11 := test_crate::identity::<Option<Option<&_ mut (_)>>><'_, A>[{built_in impl core::marker::Sized::<Option<Option<&_ mut (_)>>><'_> for A}](move (@12))
     storage_dead(@12)
+    storage_dead(@11)
     @0 := ()
     drop[{built_in impl Destruct for A}] x@1
     return
