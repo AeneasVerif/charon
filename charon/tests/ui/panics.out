@@ -24,14 +24,20 @@ fn panic2()
     let @1: Arguments<'_>; // anonymous local
     let @2: &'_ (Array<&'_ (Str), 1 : usize>); // anonymous local
     let @3: &'_ (Array<&'_ (Str), 1 : usize>); // anonymous local
-    let @4: Array<&'_ (Str), 1 : usize>; // anonymous local
+    let @4: &'_ (Array<&'_ (Str), 1 : usize>); // anonymous local
+    let @5: &'_ (Array<&'_ (Str), 1 : usize>); // anonymous local
+    let @6: Array<&'_ (Str), 1 : usize>; // anonymous local
 
+    storage_live(@4)
+    storage_live(@5)
+    storage_live(@6)
+    @6 := [const ("O no!")]
+    @5 := &@6
     storage_live(@1)
     storage_live(@2)
     storage_live(@3)
-    storage_live(@4)
-    @4 := [const ("O no!")]
-    @3 := &@4
+    @4 := move (@5)
+    @3 := &*(@4)
     @2 := &*(@3)
     @1 := new_const<'_, 1 : usize>(move (@2))
     storage_dead(@2)
@@ -55,26 +61,32 @@ fn panic3()
     let @1: Arguments<'_>; // anonymous local
     let @2: &'_ (Array<&'_ (Str), 1 : usize>); // anonymous local
     let @3: &'_ (Array<&'_ (Str), 1 : usize>); // anonymous local
-    let @4: Array<&'_ (Str), 1 : usize>; // anonymous local
+    let @4: &'_ (Array<Argument<'_>, 0 : usize>); // anonymous local
     let @5: &'_ (Array<Argument<'_>, 0 : usize>); // anonymous local
-    let @6: &'_ (Array<Argument<'_>, 0 : usize>); // anonymous local
-    let @7: Array<Argument<'_>, 0 : usize>; // anonymous local
+    let @6: Array<Argument<'_>, 0 : usize>; // anonymous local
+    let @7: &'_ (Array<&'_ (Str), 1 : usize>); // anonymous local
+    let @8: &'_ (Array<&'_ (Str), 1 : usize>); // anonymous local
+    let @9: Array<&'_ (Str), 1 : usize>; // anonymous local
 
+    storage_live(@7)
+    storage_live(@8)
+    storage_live(@9)
+    @9 := [const ("O no!")]
+    @8 := &@9
     storage_live(@1)
     storage_live(@2)
     storage_live(@3)
-    storage_live(@4)
-    @4 := [const ("O no!")]
-    @3 := &@4
+    @7 := move (@8)
+    @3 := &*(@7)
     @2 := &*(@3)
+    storage_live(@4)
     storage_live(@5)
     storage_live(@6)
-    storage_live(@7)
-    @7 := none<'_>()
-    @6 := &@7
-    @5 := &*(@6)
-    @1 := new_v1<'_, 1 : usize, 0 : usize>(move (@2), move (@5))
-    storage_dead(@5)
+    @6 := none<'_>()
+    @5 := &@6
+    @4 := &*(@5)
+    @1 := new_v1<'_, 1 : usize, 0 : usize>(move (@2), move (@4))
+    storage_dead(@4)
     storage_dead(@2)
     panic(core::panicking::panic_fmt)
 }
@@ -106,24 +118,29 @@ fn panic5()
     let @3: Arguments<'_>; // anonymous local
     let @4: &'_ (Array<&'_ (Str), 1 : usize>); // anonymous local
     let @5: &'_ (Array<&'_ (Str), 1 : usize>); // anonymous local
-    let @6: Array<&'_ (Str), 1 : usize>; // anonymous local
+    let @6: &'_ (Array<&'_ (Str), 1 : usize>); // anonymous local
+    let @7: &'_ (Array<&'_ (Str), 1 : usize>); // anonymous local
+    let @8: Array<&'_ (Str), 1 : usize>; // anonymous local
 
     storage_live(@3)
     storage_live(@4)
     storage_live(@5)
     storage_live(@6)
+    storage_live(@7)
+    storage_live(@8)
     storage_live(@1)
     storage_live(@2)
     @2 := const (false)
     if move (@2) {
     }
     else {
+        @8 := [const ("assert failed")]
+        @7 := &@8
         storage_live(@3)
         storage_live(@4)
         storage_live(@5)
-        storage_live(@6)
-        @6 := [const ("assert failed")]
-        @5 := &@6
+        @6 := move (@7)
+        @5 := &*(@6)
         @4 := &*(@5)
         @3 := new_const<'_, 1 : usize>(move (@4))
         storage_dead(@4)
@@ -151,26 +168,32 @@ fn panic7()
     let @1: Arguments<'_>; // anonymous local
     let @2: &'_ (Array<&'_ (Str), 1 : usize>); // anonymous local
     let @3: &'_ (Array<&'_ (Str), 1 : usize>); // anonymous local
-    let @4: Array<&'_ (Str), 1 : usize>; // anonymous local
+    let @4: &'_ (Array<Argument<'_>, 0 : usize>); // anonymous local
     let @5: &'_ (Array<Argument<'_>, 0 : usize>); // anonymous local
-    let @6: &'_ (Array<Argument<'_>, 0 : usize>); // anonymous local
-    let @7: Array<Argument<'_>, 0 : usize>; // anonymous local
+    let @6: Array<Argument<'_>, 0 : usize>; // anonymous local
+    let @7: &'_ (Array<&'_ (Str), 1 : usize>); // anonymous local
+    let @8: &'_ (Array<&'_ (Str), 1 : usize>); // anonymous local
+    let @9: Array<&'_ (Str), 1 : usize>; // anonymous local
 
+    storage_live(@7)
+    storage_live(@8)
+    storage_live(@9)
+    @9 := [const ("internal error: entered unreachable code: can't reach this")]
+    @8 := &@9
     storage_live(@1)
     storage_live(@2)
     storage_live(@3)
-    storage_live(@4)
-    @4 := [const ("internal error: entered unreachable code: can't reach this")]
-    @3 := &@4
+    @7 := move (@8)
+    @3 := &*(@7)
     @2 := &*(@3)
+    storage_live(@4)
     storage_live(@5)
     storage_live(@6)
-    storage_live(@7)
-    @7 := none<'_>()
-    @6 := &@7
-    @5 := &*(@6)
-    @1 := new_v1<'_, 1 : usize, 0 : usize>(move (@2), move (@5))
-    storage_dead(@5)
+    @6 := none<'_>()
+    @5 := &@6
+    @4 := &*(@5)
+    @1 := new_v1<'_, 1 : usize, 0 : usize>(move (@2), move (@4))
+    storage_dead(@4)
     storage_dead(@2)
     panic(core::panicking::panic_fmt)
 }
