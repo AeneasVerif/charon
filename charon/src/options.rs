@@ -258,6 +258,9 @@ pub struct CliOpts {
 #[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, ValueEnum, Serialize, Deserialize)]
 #[non_exhaustive]
 pub enum Preset {
+    /// The default translation used before May 2025. After that, many passes were made optional
+    /// and disabled by default.
+    OldDefaults,
     Aeneas,
     Eurydice,
     Tests,
@@ -267,6 +270,7 @@ impl CliOpts {
     pub fn apply_preset(&mut self) {
         if let Some(preset) = self.preset {
             match preset {
+                Preset::OldDefaults => {}
                 Preset::Aeneas => {
                     self.remove_associated_types.push("*".to_owned());
                     self.hide_marker_traits = true;
