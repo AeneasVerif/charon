@@ -23,7 +23,7 @@ include = [
     "crate::ast::ullbc_ast",
     "crate::ast::values",
     "crate::ids::vector::Vector",
-    "crate::options::CliOpts",
+    "crate::options",
     "crate::transform::reorder_decls::DeclarationGroup",
     "crate::transform::reorder_decls::GDeclarationGroup",
     "std::path::PathBuf",

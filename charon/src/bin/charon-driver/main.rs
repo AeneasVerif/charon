@@ -155,10 +155,11 @@ fn main() {
     // Retrieve the Charon options by deserializing them from the environment variable
     // (cargo-charon serialized the arguments and stored them in a specific environment
     // variable before calling cargo with RUSTC_WRAPPER=charon-driver).
-    let options: options::CliOpts = match env::var(options::CHARON_ARGS) {
+    let mut options: options::CliOpts = match env::var(options::CHARON_ARGS) {
         Ok(opts) => serde_json::from_str(opts.as_str()).unwrap(),
         Err(_) => Default::default(),
     };
+    options.apply_preset();
 
     // Catch any and all panics coming from charon to display a clear error.
     let res = panic::catch_unwind(move || run_charon(options))

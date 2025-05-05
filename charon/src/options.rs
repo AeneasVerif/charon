@@ -1,4 +1,5 @@
 //! The options that control charon behavior.
+use clap::ValueEnum;
 use indoc::indoc;
 use serde::{Deserialize, Serialize};
 use std::path::PathBuf;
@@ -240,14 +241,46 @@ pub struct CliOpts {
     pub print_llbc: bool,
     #[clap(
         long = "no-merge-goto-chains",
-        help = indoc!("
-            Do not merge the chains of gotos in the ULLBC control-flow graph.
-    "))]
+        help = "Do not merge the chains of gotos in the ULLBC control-flow graph."
+    )]
     #[serde(default)]
     pub no_merge_goto_chains: bool,
+
+    /// Named builtin sets of options. Currently used only for dependent projects, eveentually
+    /// should be replaced with semantically-meaningful presets.
+    #[clap(long = "preset")]
+    #[arg(value_enum)]
+    pub preset: Option<Preset>,
+}
+
+/// Presets to make it easier to tweak options without breaking dependent projects. Eventually we
+/// should define semantically-meaningful presets instead of project-specific ones.
+#[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, ValueEnum, Serialize, Deserialize)]
+#[non_exhaustive]
+pub enum Preset {
+    Aeneas,
+    Eurydice,
+    Tests,
 }
 
 impl CliOpts {
+    pub fn apply_preset(&mut self) {
+        if let Some(preset) = self.preset {
+            match preset {
+                Preset::Aeneas => {
+                    self.remove_associated_types.push("*".to_owned());
+                    self.hide_marker_traits = true;
+                }
+                Preset::Eurydice => {
+                    self.remove_associated_types.push("*".to_owned());
+                }
+                Preset::Tests => {
+                    self.rustc_args.push("--edition=2021".to_owned());
+                }
+            }
+        }
+    }
+
     /// Check that the options are meaningful
     pub fn validate(&self) {
         assert!(
