@@ -768,8 +768,28 @@ impl BodyTransCtx<'_, '_, '_> {
                     on_failure: AbortKind::UndefinedBehavior,
                 }))
             }
-            StatementKind::Intrinsic(hax::NonDivergingIntrinsic::CopyNonOverlapping(..)) => {
-                raise_error!(self, span, "Unsupported statement kind: CopyNonOverlapping");
+            StatementKind::Intrinsic(hax::NonDivergingIntrinsic::CopyNonOverlapping(args)) => {
+                let count = self.translate_operand(span, &args.count)?;
+                let src = self.translate_operand(span, &args.src)?;
+                let dst = self.translate_operand(span, &args.dst)?;
+                let local = self.locals.new_var(None, Ty::mk_unit());
+                let ty = match &src {
+                    Operand::Move(p) | Operand::Copy(p) => {
+                        let (ty, _) = p.ty.kind().as_raw_ptr().unwrap();
+                        ty.clone()
+                    }
+                    Operand::Const(ConstantExpr { value: _, ty }) => ty.clone(),
+                };
+                Some(RawStatement::Call(Call {
+                    func: FnOperand::Regular(FnPtr {
+                        func: FunIdOrTraitMethodRef::Fun(FunId::Builtin(
+                            BuiltinFunId::CopyNonOverlapping,
+                        )),
+                        generics: GenericArgs::new_for_builtin(vec![ty].into()),
+                    }),
+                    args: vec![src, dst, count],
+                    dest: local,
+                }))
             }
             // This is for the stacked borrows memory model.
             StatementKind::Retag(_, _) => None,

@@ -204,6 +204,7 @@ and builtin_fun_id_of_json (ctx : of_json_ctx) (js : json) :
     | `Assoc [ ("PtrFromParts", ptr_from_parts) ] ->
         let* ptr_from_parts = ref_kind_of_json ctx ptr_from_parts in
         Ok (PtrFromParts ptr_from_parts)
+    | `String "CopyNonOverlapping" -> Ok CopyNonOverlapping
     | _ -> Error "")
 
 and builtin_index_op_of_json (ctx : of_json_ctx) (js : json) :
