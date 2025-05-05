@@ -398,8 +398,8 @@ pub struct Variant {
     #[drive(skip)]
     pub name: String,
     pub fields: Vector<FieldId, Field>,
-    /// The discriminant used at runtime. This is used in `remove_read_discriminant` to match up
-    /// `SwitchInt` targets with the corresponding `Variant`.
+    /// The discriminant value outputted by `std::mem::discriminant` for this variant. This is
+    /// different than the discriminant stored in memory (the one controlled by `repr`).
     pub discriminant: ScalarValue,
 }
 
