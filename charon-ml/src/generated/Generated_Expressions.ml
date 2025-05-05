@@ -208,6 +208,10 @@ and builtin_fun_id =
 
           Converted from [AggregateKind::RawPtr]
        *)
+  | CopyNonOverlapping
+      (** Translated in `core::intrinsics::copy_nonoverlapping`. Takes arguments `src` and `dst`
+          of type `*const T` and `*mut T`, and `count`, the number of elements of type `T`.
+       *)
 
 (** One of 8 built-in indexing operations. *)
 and builtin_index_op = {

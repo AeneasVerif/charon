@@ -353,6 +353,9 @@ pub enum BuiltinFunId {
     ///
     /// Converted from [AggregateKind::RawPtr]
     PtrFromParts(RefKind),
+    /// Translated in `core::intrinsics::copy_nonoverlapping`. Takes arguments `src` and `dst`
+    /// of type `*const T` and `*mut T`, and `count`, the number of elements of type `T`.
+    CopyNonOverlapping,
 }
 
 /// One of 8 built-in indexing operations.

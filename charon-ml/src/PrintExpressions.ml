@@ -124,6 +124,7 @@ let builtin_fun_id_to_string (aid : builtin_fun_id) : string =
   | PtrFromParts mut ->
       let mut = if mut = RMut then "Mut" else "" in
       "@PtrFromParts" ^ mut
+  | CopyNonOverlapping -> "@CopyNonOverlapping"
 
 let fun_id_to_string (env : 'a fmt_env) (fid : fun_id) : string =
   match fid with

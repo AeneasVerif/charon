@@ -689,6 +689,7 @@ let builtin_fun_id_to_string (fid : E.builtin_fun_id) : string =
   | PtrFromParts mut ->
       let mut = if mut = RMut then "_mut" else "" in
       "std::ptr::from_raw_parts" ^ mut
+  | CopyNonOverlapping -> "core::intrinsics::copy_nonoverlapping"
 
 let match_fn_ptr (ctx : 'fun_body ctx) (c : match_config) (p : pattern)
     (func : E.fn_ptr) : bool =

@@ -1662,6 +1662,7 @@ impl std::fmt::Display for BuiltinFunId {
                 let mutability = mutability.variant_name();
                 &format!("PtrFromParts{mutability}")
             }
+            BuiltinFunId::CopyNonOverlapping => "CopyNonOverlapping",
         };
         f.write_str(name)
     }
