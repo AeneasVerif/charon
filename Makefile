@@ -1,8 +1,3 @@
-ifeq (3.81,$(MAKE_VERSION))
-  $(error You seem to be using the OSX antiquated Make version. Hint: brew \
-    install make, then invoke gmake instead of make)
-endif
-
 .PHONY: all
 all: build
 
