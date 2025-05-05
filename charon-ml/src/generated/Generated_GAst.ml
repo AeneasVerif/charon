@@ -451,7 +451,14 @@ and cli_options = {
 (** Presets to make it easier to tweak options without breaking dependent projects. Eventually we
     should define semantically-meaningful presets instead of project-specific ones.
  *)
-and preset = Aeneas | Eurydice | Tests
+and preset =
+  | OldDefaults
+      (** The default translation used before May 2025. After that, many passes were made optional
+          and disabled by default.
+       *)
+  | Aeneas
+  | Eurydice
+  | Tests
 
 (** A (group of) top-level declaration(s), properly reordered. *)
 and declaration_group =

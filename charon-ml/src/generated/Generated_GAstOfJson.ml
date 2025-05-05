@@ -1718,6 +1718,7 @@ and cli_options_of_json (ctx : of_json_ctx) (js : json) :
 and preset_of_json (ctx : of_json_ctx) (js : json) : (preset, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
+    | `String "OldDefaults" -> Ok OldDefaults
     | `String "Aeneas" -> Ok Aeneas
     | `String "Eurydice" -> Ok Eurydice
     | `String "Tests" -> Ok Tests

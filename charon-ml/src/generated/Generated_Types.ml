@@ -703,8 +703,8 @@ and variant = {
   variant_name : string;
   fields : field list;
   discriminant : scalar_value;
-      (** The discriminant used at runtime. This is used in `remove_read_discriminant` to match up
-        `SwitchInt` targets with the corresponding `Variant`.
+      (** The discriminant value outputted by `std::mem::discriminant` for this variant. This is
+        different than the discriminant stored in memory (the one controlled by `repr`).
      *)
 }
 
