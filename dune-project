@@ -46,6 +46,7 @@
    yojson
    zarith
    name_matcher_parser
+   (ocamlformat :with-test) 
  )
 )
 
