@@ -1,10 +1,16 @@
 //! The options that control charon behavior.
+use annotate_snippets::Level;
 use clap::ValueEnum;
 use indoc::indoc;
 use serde::{Deserialize, Serialize};
 use std::path::PathBuf;
 
-use crate::{ast::*, errors::ErrorCtx, name_matcher::NamePattern, raise_error, register_error};
+use crate::{
+    ast::*,
+    errors::{display_unspanned_error, ErrorCtx},
+    name_matcher::NamePattern,
+    raise_error, register_error,
+};
 
 /// The name of the environment variable we use to save the serialized Cli options
 /// when calling charon-driver from cargo-charon.
@@ -34,14 +40,18 @@ pub struct CliOpts {
     #[clap(long = "bin")]
     #[serde(default)]
     pub bin: Option<String>,
-    /// Extract the promoted MIR instead of the built MIR
+    /// Deprecated: use `--mir promoted` instead.
     #[clap(long = "mir_promoted")]
     #[serde(default)]
     pub mir_promoted: bool,
-    /// Extract the optimized MIR instead of the built MIR
+    /// Deprecated: use `--mir optimized` instead.
     #[clap(long = "mir_optimized")]
     #[serde(default)]
     pub mir_optimized: bool,
+    /// The MIR stage to extract. This is only relevant for the current crate; for dpendencies only
+    /// MIR optimized is available.
+    #[arg(long)]
+    pub mir: Option<MirLevel>,
     /// The input file (the entry point of the crate to extract).
     /// This is needed if you want to define a custom entry point (to only
     /// extract part of a crate for instance).
@@ -253,6 +263,25 @@ pub struct CliOpts {
     pub preset: Option<Preset>,
 }
 
+/// The MIR stage to use. This is only relevant for the current crate: for dependencies, only mir
+/// optimized is available (or mir elaborated for consts).
+#[derive(
+    Debug, Default, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, ValueEnum, Serialize, Deserialize,
+)]
+pub enum MirLevel {
+    /// The MIR just after MIR lowering.
+    #[default]
+    Built,
+    /// The MIR after const promotion. This is the MIR used by the borrow-checker.
+    Promoted,
+    /// The MIR after drop elaboration. This is the first MIR to include all the runtime
+    /// information.
+    Elaborated,
+    /// The MIR after optimizations. Charon disables all the optimizations it can, so this is
+    /// sensibly the same MIR as the elaborated MIR.
+    Optimized,
+}
+
 /// Presets to make it easier to tweak options without breaking dependent projects. Eventually we
 /// should define semantically-meaningful presets instead of project-specific ones.
 #[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, ValueEnum, Serialize, Deserialize)]
@@ -296,20 +325,20 @@ impl CliOpts {
             !self.mir_promoted || !self.mir_optimized,
             "Can't use --mir_promoted and --mir_optimized at the same time"
         );
-    }
-}
 
-/// TODO: maybe we should always target MIR Built, this would make things
-/// simpler. In particular, the MIR optimized is very low level and
-/// reveals too many types and data-structures that we don't want to manipulate.
-#[derive(Clone, Copy, PartialEq, Eq)]
-pub enum MirLevel {
-    /// Original MIR, directly translated from HIR.
-    Built,
-    /// Not sure what this is. Not well tested.
-    Promoted,
-    /// MIR after optimization passes. The last one before codegen.
-    Optimized,
+        if self.mir_optimized {
+            display_unspanned_error(
+                Level::WARNING,
+                "`--mir_optimized` is deprecated, use `--mir optimized` instead",
+            )
+        }
+        if self.mir_promoted {
+            display_unspanned_error(
+                Level::WARNING,
+                "`--mir_promoted` is deprecated, use `--mir promoted` instead",
+            )
+        }
+    }
 }
 
 /// The options that control translation and transformation.
@@ -358,7 +387,7 @@ impl TranslateOptions {
         } else if options.mir_promoted {
             MirLevel::Promoted
         } else {
-            MirLevel::Built
+            options.mir.unwrap_or_default()
         };
 
         let item_opacities = {

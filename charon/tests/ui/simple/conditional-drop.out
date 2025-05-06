@@ -1,0 +1,65 @@
+# Final LLBC before serialization:
+
+#[lang_item("String")]
+pub opaque type alloc::string::String
+
+fn test_crate::use_string(@1: alloc::string::String)
+{
+    let @0: (); // return
+    let @1: alloc::string::String; // arg #1
+
+    @0 := ()
+    drop @1
+    @0 := ()
+    return
+}
+
+#[lang_item("string_new")]
+pub fn alloc::string::{alloc::string::String}::new() -> alloc::string::String
+
+fn test_crate::main()
+{
+    let @0: (); // return
+    let s@1: alloc::string::String; // local
+    let @2: bool; // anonymous local
+    let @3: (); // anonymous local
+    let @4: alloc::string::String; // anonymous local
+    let @5: bool; // anonymous local
+
+    storage_live(@3)
+    storage_live(@4)
+    storage_live(@5)
+    @5 := const (false)
+    storage_live(s@1)
+    @5 := const (true)
+    s@1 := alloc::string::{alloc::string::String}::new()
+    storage_live(@2)
+    @2 := const (false)
+    if move (@2) {
+        storage_live(@3)
+        storage_live(@4)
+        @5 := const (false)
+        @4 := move (s@1)
+        @3 := test_crate::use_string(move (@4))
+        storage_dead(@4)
+        storage_dead(@3)
+        @0 := ()
+    }
+    else {
+        @0 := ()
+    }
+    storage_dead(@2)
+    // `s` is dropped implicitly here
+    if copy (@5) {
+        drop s@1
+    }
+    else {
+    }
+    @5 := const (false)
+    storage_dead(s@1)
+    @0 := ()
+    return
+}
+
+
+
