@@ -494,7 +494,12 @@ impl TransformPass for Transform {
                             AnyTransId::Type(typ_id_sub)
                         }
                         AnyTransId::Global(g_id) => {
-                            let glob = ctx.translated.global_decls.get(*g_id).unwrap();
+                            let Some(glob) = ctx.translated.global_decls.get(*g_id) else {
+                                // Something odd happened -- we ignore and move on
+                                *mono = OptionHint::Some(*id);
+                                warn!("Found a global that has no associated declaration");
+                                continue;
+                            };
                             let mut glob_sub = glob.clone().substitute(gargs);
 
                             let init = ctx.translated.fun_decls.get(glob.init).unwrap();
