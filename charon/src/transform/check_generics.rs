@@ -203,7 +203,7 @@ impl VisitAst for CheckGenericsVisitor<'_> {
                 // TODO(#194): handle closure generics properly
                 // This does not visit the args themselves, only their contents, because we mess up
                 // closure generics for now.
-                self.visit_inner(args)?
+                self.visit_inner(args.as_ref())?
             }
         }
         Continue(())
