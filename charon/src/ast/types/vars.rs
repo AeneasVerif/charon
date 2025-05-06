@@ -133,7 +133,7 @@ pub struct ConstGenericVar {
 
 /// A trait predicate in a signature, of the form `Type: Trait<Args>`. This functions like a
 /// variable binder, to which variables of the form `TraitRefKind::Clause` can refer to.
-#[derive(Debug, Clone, Hash, Serialize, Deserialize, Drive, DriveMut)]
+#[derive(Debug, Clone, Serialize, Deserialize, Drive, DriveMut)]
 pub struct TraitClause {
     /// Index identifying the clause among other clauses bound at the same level.
     pub clause_id: TraitClauseId,
@@ -146,6 +146,20 @@ pub struct TraitClause {
     /// The trait that is implemented.
     #[charon::rename("trait")]
     pub trait_: PolyTraitDeclRef,
+}
+
+impl PartialEq for TraitClause {
+    fn eq(&self, other: &Self) -> bool {
+        // Skip `span` and `origin`
+        self.clause_id == other.clause_id && self.trait_ == other.trait_
+    }
+}
+
+impl std::hash::Hash for TraitClause {
+    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
+        self.clause_id.hash(state);
+        self.trait_.hash(state);
+    }
 }
 
 pub type RegionDbVar = DeBruijnVar<RegionId>;
