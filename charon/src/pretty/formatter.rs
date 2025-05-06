@@ -342,7 +342,7 @@ impl<'a> Formatter<&ImplElem> for FmtCtx<'a> {
                             let (ty, generics) = generics.pop_first_type_arg();
                             let tr = TraitDeclRef {
                                 trait_id: *trait_id,
-                                generics,
+                                generics: Box::new(generics),
                             };
                             format!("impl {} for {}", tr.fmt_with_ctx(ctx), ty.fmt_with_ctx(ctx))
                         }

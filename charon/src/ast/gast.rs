@@ -155,7 +155,7 @@ pub struct FunDeclRef {
     pub id: FunDeclId,
     /// Generic arguments passed to the function.
     #[charon::rename("fun_generics")]
-    pub generics: GenericArgs,
+    pub generics: BoxedArgs,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, Drive, DriveMut)]
@@ -197,7 +197,7 @@ pub struct GlobalDeclRef {
     #[charon::rename("global_id")]
     pub id: GlobalDeclId,
     #[charon::rename("global_generics")]
-    pub generics: GenericArgs,
+    pub generics: BoxedArgs,
 }
 
 #[derive(

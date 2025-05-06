@@ -1298,7 +1298,9 @@ impl TransformPass for Transform {
                     kind: TraitRefKind::SelfId,
                     trait_decl_ref: RegionBinder::empty(TraitDeclRef {
                         trait_id: tr.def_id,
-                        generics: tr.generics.identity_args(GenericsSource::item(tr.def_id)),
+                        generics: Box::new(
+                            tr.generics.identity_args(GenericsSource::item(tr.def_id)),
+                        ),
                     }),
                 };
                 modifications.compute_replacements(|path| {

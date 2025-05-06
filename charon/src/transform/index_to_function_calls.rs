@@ -54,8 +54,8 @@ impl<'a> IndexVisitor<'a> {
                 ..generics.clone()
             };
             FnOperand::Regular(FnPtr {
-                func: FunIdOrTraitMethodRef::mk_builtin(builtin_fun),
-                generics,
+                func: Box::new(FunIdOrTraitMethodRef::mk_builtin(builtin_fun)),
+                generics: Box::new(generics),
             })
         };
 

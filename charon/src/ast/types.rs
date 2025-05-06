@@ -44,7 +44,7 @@ pub enum Region {
 #[charon::rename("TraitInstanceId")]
 pub enum TraitRefKind {
     /// A specific top-level implementation item.
-    TraitImpl(TraitImplId, GenericArgs),
+    TraitImpl(TraitImplId, BoxedArgs),
 
     /// One of the local clauses.
     ///
@@ -164,7 +164,7 @@ pub struct TraitDeclRef {
     #[charon::rename("trait_decl_id")]
     pub trait_id: TraitDeclId,
     #[charon::rename("decl_generics")]
-    pub generics: GenericArgs,
+    pub generics: BoxedArgs,
 }
 
 /// A quantified trait predicate, e.g. `for<'a> Type<'a>: Trait<'a, Args>`.
@@ -176,7 +176,7 @@ pub struct TraitImplRef {
     #[charon::rename("trait_impl_id")]
     pub impl_id: TraitImplId,
     #[charon::rename("impl_generics")]
-    pub generics: GenericArgs,
+    pub generics: BoxedArgs,
 }
 
 /// .0 outlives .1
@@ -228,6 +228,8 @@ pub struct GenericArgs {
     /// Each `GenericArgs` is meant for a corresponding `GenericParams`; this records which one.
     pub target: GenericsSource,
 }
+
+pub type BoxedArgs = Box<GenericArgs>;
 
 /// A value of type `T` bound by regions. We should use `binder` instead but this causes name clash
 /// issues in the derived ocaml visitors.
@@ -661,7 +663,7 @@ pub enum TyKind {
         fun_id: FunDeclId,
         /// Generics that apply to the parent of this closure.
         /// Warning: hax may not handle nexted closure correctly yet.
-        parent_args: GenericArgs,
+        parent_args: BoxedArgs,
         /// The types of the variables captured by this closure.
         upvar_tys: Vec<Ty>,
         /// The signature of the function that this closure represents.

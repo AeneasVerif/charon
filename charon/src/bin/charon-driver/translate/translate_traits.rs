@@ -123,7 +123,7 @@ impl ItemTransCtx<'_, '_> {
                                 );
                             Ok(FunDeclRef {
                                 id: fun_id,
-                                generics: fun_generics,
+                                generics: Box::new(fun_generics),
                             })
                         },
                     )?;
@@ -138,7 +138,9 @@ impl ItemTransCtx<'_, '_> {
                         let generics_target = GenericsSource::item(id);
                         let gref = GlobalDeclRef {
                             id,
-                            generics: self.the_only_binder().params.identity_args(generics_target),
+                            generics: Box::new(
+                                self.the_only_binder().params.identity_args(generics_target),
+                            ),
                         };
                         const_defaults.insert(item_name.clone(), gref);
                     };
@@ -222,7 +224,10 @@ impl ItemTransCtx<'_, '_> {
                 None,
                 GenericsSource::item(trait_id),
             )?;
-            TraitDeclRef { trait_id, generics }
+            TraitDeclRef {
+                trait_id,
+                generics: Box::new(generics),
+            }
         };
 
         // The trait refs which implement the parent clauses of the implemented trait decl.
@@ -306,7 +311,7 @@ impl ItemTransCtx<'_, '_> {
                                         );
                                     Ok(FunDeclRef {
                                         id: fun_id,
-                                        generics: fun_generics,
+                                        generics: Box::new(fun_generics),
                                     })
                                 },
                             )?;
@@ -332,7 +337,10 @@ impl ItemTransCtx<'_, '_> {
                             .clone()
                             .with_target(generics_target),
                     };
-                    let gref = GlobalDeclRef { id, generics };
+                    let gref = GlobalDeclRef {
+                        id,
+                        generics: Box::new(generics),
+                    };
                     consts.push((name, gref));
                 }
                 hax::FullDefKind::AssocTy { param_env, .. }

@@ -330,7 +330,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                 TyKind::Closure {
                     fun_id,
                     signature,
-                    parent_args,
+                    parent_args: Box::new(parent_args),
                     upvar_tys,
                 }
             }

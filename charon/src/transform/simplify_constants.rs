@@ -95,7 +95,8 @@ fn transform_constant_expr(
             // Build an `Aggregate` rvalue.
             let rval = {
                 let (adt_kind, generics) = val.ty.kind().as_adt().unwrap();
-                let aggregate_kind = AggregateKind::Adt(*adt_kind, variant, None, generics.clone());
+                let aggregate_kind =
+                    AggregateKind::Adt(*adt_kind, variant, None, Box::new(generics.clone()));
                 Rvalue::Aggregate(aggregate_kind, fields)
             };
             let var = new_var(rval, val.ty);

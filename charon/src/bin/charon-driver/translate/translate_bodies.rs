@@ -375,13 +375,13 @@ impl BodyTransCtx<'_, '_, '_> {
                     let constant = ConstantExpr {
                         value: RawConstantExpr::Global(GlobalDeclRef {
                             id: global_id,
-                            generics: self.translate_generic_args(
+                            generics: Box::new(self.translate_generic_args(
                                 span,
                                 args,
                                 impl_exprs,
                                 None,
                                 GenericsSource::item(global_id),
-                            )?,
+                            )?),
                         }),
                         ty: ty.clone(),
                     };
@@ -610,7 +610,7 @@ impl BodyTransCtx<'_, '_, '_> {
                             TypeId::Tuple,
                             None,
                             None,
-                            GenericArgs::empty(GenericsSource::Builtin),
+                            Box::new(GenericArgs::empty(GenericsSource::Builtin)),
                         ),
                         operands_t,
                     )),
@@ -652,7 +652,8 @@ impl BodyTransCtx<'_, '_, '_> {
                             AdtKind::Union => Some(translate_field_id(field_index.unwrap())),
                         };
 
-                        let akind = AggregateKind::Adt(type_id, variant_id, field_id, generics);
+                        let akind =
+                            AggregateKind::Adt(type_id, variant_id, field_id, Box::new(generics));
                         Ok(Rvalue::Aggregate(akind, operands_t))
                     }
                     hax::AggregateKind::Closure(def_id, closure_args) => {
@@ -675,7 +676,7 @@ impl BodyTransCtx<'_, '_, '_> {
                             GenericsSource::item(fun_id),
                         )?;
 
-                        let akind = AggregateKind::Closure(fun_id, generics);
+                        let akind = AggregateKind::Closure(fun_id, Box::new(generics));
 
                         Ok(Rvalue::Aggregate(akind, operands_t))
                     }

@@ -243,7 +243,7 @@ impl<C: AstFormatter> FmtWithCtx<C> for FnOperand {
 impl<C: AstFormatter> FmtWithCtx<C> for FnPtr {
     fn fmt_with_ctx(&self, ctx: &C) -> String {
         let generics = self.generics.fmt_with_ctx(ctx);
-        let f = match &self.func {
+        let f = match self.func.as_ref() {
             FunIdOrTraitMethodRef::Fun(FunId::Regular(def_id)) => {
                 format!("{}", ctx.format_object(*def_id),)
             }
