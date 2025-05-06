@@ -35,24 +35,34 @@ fn test_crate::main()
     let @0: (); // return
     let @1: bool; // anonymous local
     let @2: &'_ (core::option::Option<i32>[core::marker::Sized<i32>]); // anonymous local
-    let @3: core::option::Option<i32>[core::marker::Sized<i32>]; // anonymous local
+    let @3: &'_ (core::option::Option<i32>[core::marker::Sized<i32>]); // anonymous local
     let @4: &'_ (core::option::Option<i32>[core::marker::Sized<i32>]); // anonymous local
-    let @5: core::option::Option<i32>[core::marker::Sized<i32>]; // anonymous local
+    let @5: &'_ (core::option::Option<i32>[core::marker::Sized<i32>]); // anonymous local
+    let @6: &'_ (core::option::Option<i32>[core::marker::Sized<i32>]); // anonymous local
+    let @7: core::option::Option<i32>[core::marker::Sized<i32>]; // anonymous local
+    let @8: &'_ (core::option::Option<i32>[core::marker::Sized<i32>]); // anonymous local
+    let @9: core::option::Option<i32>[core::marker::Sized<i32>]; // anonymous local
 
-    storage_live(@1)
-    storage_live(@2)
-    storage_live(@3)
-    @3 := core::option::Option::Some { 0: const (1 : i32) }
-    @2 := &@3
     storage_live(@4)
     storage_live(@5)
-    @5 := core::option::Option::Some { 0: const (1 : i32) }
-    @4 := &@5
-    @1 := core::option::{impl core::cmp::PartialEq<core::option::Option<T>[@TraitClause0]> for core::option::Option<T>[@TraitClause0]}#15::eq<'_, '_, i32>[core::marker::Sized<i32>, core::cmp::impls::{impl core::cmp::PartialEq<i32> for i32}#30](move (@2), move (@4))
-    storage_dead(@4)
-    storage_dead(@2)
-    storage_dead(@5)
+    storage_live(@6)
+    storage_live(@7)
+    storage_live(@8)
+    storage_live(@9)
+    @7 := core::option::Option::Some { 0: const (1 : i32) }
+    @6 := &@7
+    @9 := core::option::Option::Some { 0: const (1 : i32) }
+    @8 := &@9
+    storage_live(@1)
+    storage_live(@2)
+    @5 := move (@6)
+    @2 := &*(@5)
+    storage_live(@3)
+    @4 := move (@8)
+    @3 := &*(@4)
+    @1 := core::option::{impl core::cmp::PartialEq<core::option::Option<T>[@TraitClause0]> for core::option::Option<T>[@TraitClause0]}#15::eq<'_, '_, i32>[core::marker::Sized<i32>, core::cmp::impls::{impl core::cmp::PartialEq<i32> for i32}#30](move (@2), move (@3))
     storage_dead(@3)
+    storage_dead(@2)
     storage_dead(@1)
     @0 := ()
     @0 := ()

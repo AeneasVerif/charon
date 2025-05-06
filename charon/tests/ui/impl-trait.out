@@ -31,14 +31,19 @@ pub fn test_crate::{impl test_crate::Foo for ()}::get_ty<'_0>(@1: &'_0 (())) -> 
     let @0: &'_ (u32); // return
     let self@1: &'_ (()); // arg #1
     let @2: &'_ (u32); // anonymous local
-    let @3: u32; // anonymous local
+    let @3: &'_ (u32); // anonymous local
+    let @4: &'_ (u32); // anonymous local
+    let @5: u32; // anonymous local
 
-    storage_live(@2)
     storage_live(@3)
-    @3 := const (42 : u32)
-    @2 := &@3
+    storage_live(@4)
+    storage_live(@5)
+    @5 := const (42 : u32)
+    @4 := &@5
+    storage_live(@2)
+    @3 := move (@4)
+    @2 := &*(@3)
     @0 := &*(@2)
-    storage_dead(@3)
     storage_dead(@2)
     return
 }
@@ -231,26 +236,31 @@ pub fn test_crate::use_wrap()
     let @4: (&'_ (u32)); // anonymous local
     let @5: &'_ (u32); // anonymous local
     let @6: &'_ (u32); // anonymous local
-    let @7: u32; // anonymous local
+    let @7: &'_ (u32); // anonymous local
+    let @8: &'_ (u32); // anonymous local
+    let @9: u32; // anonymous local
 
+    storage_live(@7)
+    storage_live(@8)
+    storage_live(@9)
     storage_live(f@1)
     f@1 := test_crate::wrap<u32>[core::marker::Sized<u32>]()
+    @9 := const (42 : u32)
+    @8 := &@9
     storage_live(@2)
     storage_live(@3)
     @3 := move (f@1)
     storage_live(@4)
     storage_live(@5)
     storage_live(@6)
-    storage_live(@7)
-    @7 := const (42 : u32)
-    @6 := &@7
+    @7 := move (@8)
+    @6 := &*(@7)
     @5 := &*(@6)
     @4 := (move (@5))
     @2 := core::ops::function::FnOnce<test_crate::wrap::closure, (&'_ (u32))> where Output  = test_crate::WrapClone<&'_ (u32)>[core::marker::Sized<&'_ (u32)>, core::clone::impls::{impl core::clone::Clone for &'_0 (T)}#3<'_, u32>]::call_once(move (@3), move (@4))
     storage_dead(@5)
     storage_dead(@4)
     storage_dead(@3)
-    storage_dead(@7)
     storage_dead(@6)
     storage_dead(@2)
     @0 := ()
