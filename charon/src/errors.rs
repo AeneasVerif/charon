@@ -105,6 +105,14 @@ impl Error {
     }
 }
 
+/// Display an error without a specific location.
+pub fn display_unspanned_error(level: Level, msg: &str) {
+    use annotate_snippets::*;
+    let message = level.header(msg);
+    let message = Renderer::styled().render(message).to_string();
+    anstream::eprintln!("{message}\n");
+}
+
 /// We use this to save the origin of an id. This is useful for the external
 /// dependencies, especially if some external dependencies don't extract:
 /// we use this information to tell the user what is the code which

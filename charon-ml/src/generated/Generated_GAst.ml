@@ -377,9 +377,12 @@ and cli_options = {
       (** Extract the unstructured LLBC (i.e., don't reconstruct the control-flow) *)
   lib : bool;  (** Compile the package's library *)
   bin : string option;  (** Compile the specified binary *)
-  mir_promoted : bool;  (** Extract the promoted MIR instead of the built MIR *)
-  mir_optimized : bool;
-      (** Extract the optimized MIR instead of the built MIR *)
+  mir_promoted : bool;  (** Deprecated: use `--mir promoted` instead. *)
+  mir_optimized : bool;  (** Deprecated: use `--mir optimized` instead. *)
+  mir : mir_level option;
+      (** The MIR stage to extract. This is only relevant for the current crate; for dpendencies only
+        MIR optimized is available.
+     *)
   input_file : path_buf option;
       (** The input file (the entry point of the crate to extract).
         This is needed if you want to define a custom entry point (to only
@@ -447,6 +450,22 @@ and cli_options = {
         should be replaced with semantically-meaningful presets.
      *)
 }
+
+(** The MIR stage to use. This is only relevant for the current crate: for dependencies, only mir
+    optimized is available (or mir elaborated for consts).
+ *)
+and mir_level =
+  | Built  (** The MIR just after MIR lowering. *)
+  | Promoted
+      (** The MIR after const promotion. This is the MIR used by the borrow-checker. *)
+  | Elaborated
+      (** The MIR after drop elaboration. This is the first MIR to include all the runtime
+          information.
+       *)
+  | Optimized
+      (** The MIR after optimizations. Charon disables all the optimizations it can, so this is
+          sensibly the same MIR as the elaborated MIR.
+       *)
 
 (** Presets to make it easier to tweak options without breaking dependent projects. Eventually we
     should define semantically-meaningful presets instead of project-specific ones.
