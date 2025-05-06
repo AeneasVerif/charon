@@ -306,7 +306,8 @@ impl BodyTransCtx<'_, '_, '_> {
                         from_end,
                         min_length: _,
                     } => {
-                        let offset = Operand::Const(ScalarValue::Usize(offset).to_constant());
+                        let offset =
+                            Operand::Const(Box::new(ScalarValue::Usize(offset).to_constant()));
                         subplace.project(
                             ProjectionElem::Index {
                                 offset: Box::new(offset),
@@ -316,8 +317,8 @@ impl BodyTransCtx<'_, '_, '_> {
                         )
                     }
                     &hax::ProjectionElem::Subslice { from, to, from_end } => {
-                        let from = Operand::Const(ScalarValue::Usize(from).to_constant());
-                        let to = Operand::Const(ScalarValue::Usize(to).to_constant());
+                        let from = Operand::Const(Box::new(ScalarValue::Usize(from).to_constant()));
+                        let to = Operand::Const(Box::new(ScalarValue::Usize(to).to_constant()));
                         subplace.project(
                             ProjectionElem::Subslice {
                                 from: Box::new(from),
@@ -361,7 +362,7 @@ impl BodyTransCtx<'_, '_, '_> {
                 hax::ConstOperandKind::Value(constant) => {
                     let constant = self.translate_constant_expr_to_constant_expr(span, constant)?;
                     let ty = constant.ty.clone();
-                    Ok((Operand::Const(constant), ty))
+                    Ok((Operand::Const(Box::new(constant)), ty))
                 }
                 hax::ConstOperandKind::Promoted {
                     def_id,
@@ -384,7 +385,7 @@ impl BodyTransCtx<'_, '_, '_> {
                         }),
                         ty: ty.clone(),
                     };
-                    Ok((Operand::Const(constant), ty))
+                    Ok((Operand::Const(Box::new(constant)), ty))
                 }
             },
         }

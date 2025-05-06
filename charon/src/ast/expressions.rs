@@ -280,7 +280,7 @@ pub enum Operand {
     Move(Place),
     /// Constant value (including constant and static variables)
     #[charon::rename("Constant")]
-    Const(ConstantExpr),
+    Const(Box<ConstantExpr>),
 }
 
 /// A function identifier. See [crate::ullbc_ast::Terminator]

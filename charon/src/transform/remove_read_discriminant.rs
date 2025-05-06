@@ -24,7 +24,8 @@ fn generate_discr_assignment(
     let targets = variants
         .iter_indexed_values()
         .map(|(id, variant)| {
-            let discr_value = Rvalue::Use(Operand::Const(variant.discriminant.to_constant()));
+            let discr_value =
+                Rvalue::Use(Operand::Const(Box::new(variant.discriminant.to_constant())));
             let statement = Statement::new(span, RawStatement::Assign(dest.clone(), discr_value));
             (vec![id], statement.into_block())
         })
