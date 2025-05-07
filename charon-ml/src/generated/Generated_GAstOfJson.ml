@@ -175,7 +175,7 @@ and operand_of_json (ctx : of_json_ctx) (js : json) : (operand, string) result =
         let* move = place_of_json ctx move in
         Ok (Move move)
     | `Assoc [ ("Const", const) ] ->
-        let* const = constant_expr_of_json ctx const in
+        let* const = box_of_json constant_expr_of_json ctx const in
         Ok (Constant const)
     | _ -> Error "")
 
@@ -240,8 +240,8 @@ and fn_ptr_of_json (ctx : of_json_ctx) (js : json) : (fn_ptr, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
     | `Assoc [ ("func", func); ("generics", generics) ] ->
-        let* func = fun_id_or_trait_method_ref_of_json ctx func in
-        let* generics = generic_args_of_json ctx generics in
+        let* func = box_of_json fun_id_or_trait_method_ref_of_json ctx func in
+        let* generics = box_of_json generic_args_of_json ctx generics in
         Ok ({ func; generics } : fn_ptr)
     | _ -> Error "")
 
@@ -337,7 +337,7 @@ and aggregate_kind_of_json (ctx : of_json_ctx) (js : json) :
         let* x_0 = type_id_of_json ctx x_0 in
         let* x_1 = option_of_json variant_id_of_json ctx x_1 in
         let* x_2 = option_of_json field_id_of_json ctx x_2 in
-        let* x_3 = generic_args_of_json ctx x_3 in
+        let* x_3 = box_of_json generic_args_of_json ctx x_3 in
         Ok (AggregatedAdt (x_0, x_1, x_2, x_3))
     | `Assoc [ ("Array", `List [ x_0; x_1 ]) ] ->
         let* x_0 = ty_of_json ctx x_0 in
@@ -345,7 +345,7 @@ and aggregate_kind_of_json (ctx : of_json_ctx) (js : json) :
         Ok (AggregatedArray (x_0, x_1))
     | `Assoc [ ("Closure", `List [ x_0; x_1 ]) ] ->
         let* x_0 = fun_decl_id_of_json ctx x_0 in
-        let* x_1 = generic_args_of_json ctx x_1 in
+        let* x_1 = box_of_json generic_args_of_json ctx x_1 in
         Ok (AggregatedClosure (x_0, x_1))
     | _ -> Error "")
 
@@ -431,7 +431,7 @@ and fun_decl_ref_of_json (ctx : of_json_ctx) (js : json) :
     (match js with
     | `Assoc [ ("id", id); ("generics", generics) ] ->
         let* fun_id = fun_decl_id_of_json ctx id in
-        let* fun_generics = generic_args_of_json ctx generics in
+        let* fun_generics = box_of_json generic_args_of_json ctx generics in
         Ok ({ fun_id; fun_generics } : fun_decl_ref)
     | _ -> Error "")
 
@@ -476,7 +476,7 @@ and global_decl_ref_of_json (ctx : of_json_ctx) (js : json) :
     (match js with
     | `Assoc [ ("id", id); ("generics", generics) ] ->
         let* global_id = global_decl_id_of_json ctx id in
-        let* global_generics = generic_args_of_json ctx generics in
+        let* global_generics = box_of_json generic_args_of_json ctx generics in
         Ok ({ global_id; global_generics } : global_decl_ref)
     | _ -> Error "")
 
@@ -999,7 +999,7 @@ and trait_instance_id_of_json (ctx : of_json_ctx) (js : json) :
     (match js with
     | `Assoc [ ("TraitImpl", `List [ x_0; x_1 ]) ] ->
         let* x_0 = trait_impl_id_of_json ctx x_0 in
-        let* x_1 = generic_args_of_json ctx x_1 in
+        let* x_1 = box_of_json generic_args_of_json ctx x_1 in
         Ok (TraitImpl (x_0, x_1))
     | `Assoc [ ("Clause", clause) ] ->
         let* clause =
@@ -1061,7 +1061,7 @@ and trait_decl_ref_of_json (ctx : of_json_ctx) (js : json) :
     (match js with
     | `Assoc [ ("trait_id", trait_id); ("generics", generics) ] ->
         let* trait_decl_id = trait_decl_id_of_json ctx trait_id in
-        let* decl_generics = generic_args_of_json ctx generics in
+        let* decl_generics = box_of_json generic_args_of_json ctx generics in
         Ok ({ trait_decl_id; decl_generics } : trait_decl_ref)
     | _ -> Error "")
 
@@ -1071,7 +1071,7 @@ and trait_impl_ref_of_json (ctx : of_json_ctx) (js : json) :
     (match js with
     | `Assoc [ ("impl_id", impl_id); ("generics", generics) ] ->
         let* trait_impl_id = trait_impl_id_of_json ctx impl_id in
-        let* impl_generics = generic_args_of_json ctx generics in
+        let* impl_generics = box_of_json generic_args_of_json ctx generics in
         Ok ({ trait_impl_id; impl_generics } : trait_impl_ref)
     | _ -> Error "")
 
@@ -1442,7 +1442,7 @@ and ty_of_json (ctx : of_json_ctx) (js : json) : (ty, string) result =
               ] );
         ] ->
         let* fun_id = fun_decl_id_of_json ctx fun_id in
-        let* parent_args = generic_args_of_json ctx parent_args in
+        let* parent_args = box_of_json generic_args_of_json ctx parent_args in
         let* upvar_tys = list_of_json ty_of_json ctx upvar_tys in
         let* signature =
           region_binder_of_json
