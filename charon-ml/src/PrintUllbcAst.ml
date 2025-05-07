@@ -27,7 +27,6 @@ module Ast = struct
         indent ^ "set_discriminant(" ^ place_to_string env p ^ ", "
         ^ variant_id_to_pretty_string variant_id
         ^ ")"
-    | Call call -> call_to_string env indent call
     | Assert a -> assertion_to_string env indent a
     | StorageLive var_id ->
         indent ^ "storage_live " ^ local_id_to_string env var_id
@@ -65,6 +64,8 @@ module Ast = struct
     | Switch (op, tgts) ->
         indent ^ "switch " ^ operand_to_string env op
         ^ switch_to_string indent tgts
+    | Call (call, tgt) ->
+        call_to_string env indent call ^ " -> " ^ block_id_to_string tgt
     | Abort _ -> indent ^ "panic"
     | Return -> indent ^ "return"
 

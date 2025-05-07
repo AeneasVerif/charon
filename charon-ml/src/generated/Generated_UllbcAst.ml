@@ -11,9 +11,8 @@ type block_id = (BlockId.id[@visitors.opaque])
 (** A raw statement: a statement without meta data. *)
 and raw_statement =
   | Assign of place * rvalue
-  | Call of call
-      (** A call. For now, we don't support dynamic calls (i.e. to a function pointer in memory). *)
   | SetDiscriminant of place * variant_id
+      (** A call. For now, we don't support dynamic calls (i.e. to a function pointer in memory). *)
   | StorageLive of local_id
       (** Indicates that this local should be allocated; if it is already allocated, this frees
           the local and re-allocates it. The return value and arguments do not receive a
@@ -80,6 +79,12 @@ and raw_terminator =
           Fields:
           - [discr]
           - [targets]
+       *)
+  | Call of call * block_id
+      (** 
+          Fields:
+          - [call]
+          - [target]
        *)
   | Abort of abort_kind  (** Handles panics and impossible cases. *)
   | Return

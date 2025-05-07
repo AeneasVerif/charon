@@ -27,9 +27,6 @@ and raw_statement_of_json (ctx : of_json_ctx) (js : json) :
         let* x_0 = place_of_json ctx x_0 in
         let* x_1 = rvalue_of_json ctx x_1 in
         Ok (Assign (x_0, x_1))
-    | `Assoc [ ("Call", call) ] ->
-        let* call = call_of_json ctx call in
-        Ok (Call call)
     | `Assoc [ ("SetDiscriminant", `List [ x_0; x_1 ]) ] ->
         let* x_0 = place_of_json ctx x_0 in
         let* x_1 = variant_id_of_json ctx x_1 in
@@ -100,6 +97,10 @@ and raw_terminator_of_json (ctx : of_json_ctx) (js : json) :
         let* discr = operand_of_json ctx discr in
         let* targets = switch_of_json ctx targets in
         Ok (Switch (discr, targets))
+    | `Assoc [ ("Call", `Assoc [ ("call", call); ("target", target) ]) ] ->
+        let* call = call_of_json ctx call in
+        let* target = block_id_of_json ctx target in
+        Ok (Call (call, target))
     | `Assoc [ ("Abort", abort) ] ->
         let* abort = abort_kind_of_json ctx abort in
         Ok (Abort abort)
