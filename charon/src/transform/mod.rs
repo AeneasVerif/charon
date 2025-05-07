@@ -92,9 +92,6 @@ pub static ULLBC_PASSES: &[Pass] = &[
     // closure itself. This is not consistent with the closure signature,
     // which ignores this first variable. This micro-pass updates this.
     UnstructuredBody(&update_closure_signatures::Transform),
-    // # Micro-pass: replace some unops/binops and the array aggregates with
-    // function calls (introduces: ArrayToSlice, etc.)
-    UnstructuredBody(&ops_to_function_calls::Transform),
     // # Micro-pass: make sure the block ids used in the ULLBC are consecutive
     UnstructuredBody(&update_block_indices::Transform),
     // # Micro-pass: reconstruct the asserts
@@ -131,6 +128,10 @@ pub static LLBC_PASSES: &[Pass] = &[
     // # Micro-pass: replace some unops/binops and the array aggregates with
     // function calls (introduces: ArrayToSlice, etc.)
     StructuredBody(&ops_to_function_calls::Transform),
+    // # Micro-pass: replace the arrays/slices index operations with function
+    // calls.
+    // (introduces: ArrayIndexShared, ArrayIndexMut, etc.)
+    StructuredBody(&index_to_function_calls::Transform),
     // # Micro-pass: Remove the discriminant reads (merge them with the switches)
     StructuredBody(&remove_read_discriminant::Transform),
     // Cleanup the cfg.
