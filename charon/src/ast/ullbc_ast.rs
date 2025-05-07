@@ -22,7 +22,6 @@ pub type ExprBody = GExprBody<BodyContents>;
 pub enum RawStatement {
     Assign(Place, Rvalue),
     /// A call. For now, we don't support dynamic calls (i.e. to a function pointer in memory).
-    Call(Call),
     SetDiscriminant(Place, VariantId),
     /// Indicates that this local should be allocated; if it is already allocated, this frees
     /// the local and re-allocates it. The return value and arguments do not receive a
@@ -86,6 +85,10 @@ pub enum RawTerminator {
     Switch {
         discr: Operand,
         targets: SwitchTargets,
+    },
+    Call {
+        call: Call,
+        target: BlockId,
     },
     /// Handles panics and impossible cases.
     Abort(AbortKind),

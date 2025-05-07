@@ -49,10 +49,8 @@ pub struct Transform;
 impl UllbcPass for Transform {
     fn transform_body(&self, ctx: &mut TransformCtx, b: &mut ExprBody) {
         for block in b.body.iter_mut() {
-            for st in block.statements.iter_mut() {
-                if let RawStatement::Call(call) = &mut st.content {
-                    transform_call(ctx, st.span, call)
-                };
+            if let RawTerminator::Call { call, .. } = &mut block.terminator.content {
+                transform_call(ctx, block.terminator.span, call)
             }
         }
     }
