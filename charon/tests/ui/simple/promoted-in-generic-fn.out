@@ -23,6 +23,9 @@ where
     storage_live(@4)
     // This can't be evaluated generically.
     @4 := core::mem::size_of<T>[@TraitClause0]()
+    ↳ unwind {
+        unwind
+    }
     @3 := &@4
     storage_live(@1)
     @2 := move (@3)

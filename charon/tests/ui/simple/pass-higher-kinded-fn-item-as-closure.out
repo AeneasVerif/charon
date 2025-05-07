@@ -63,6 +63,9 @@ pub fn test_crate::flibidi()
 
     storage_live(@1)
     @1 := test_crate::call<'_, fn<'a>(&'a (())) -> &'a (())>[core::marker::Sized<fn<'a>(&'a (())) -> &'a (())>, core::ops::function::Fn<fn<'a>(&'a (())) -> &'a (()), (&'_ (())), &'_ (())>](const (test_crate::flabada<'_>))
+    ↳ unwind {
+        unwind
+    }
     storage_dead(@1)
     @0 := ()
     @0 := ()

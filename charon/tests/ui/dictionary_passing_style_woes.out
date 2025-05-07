@@ -51,6 +51,11 @@ where
     storage_live(@2)
     @2 := move (t@1)
     @0 := test_crate::callee<T, Clause1_Item>[@TraitClause0, @TraitClause1](move (@2))
+    ↳ unwind {
+        drop @2
+        drop t@1
+        unwind
+    }
     storage_dead(@2)
     drop t@1
     return
@@ -86,6 +91,10 @@ where
     storage_live(@2)
     @2 := &x@1
     @0 := @TraitClause1::parent_clause0::method<'_>(move (@2))
+    ↳ unwind {
+        drop x@1
+        unwind
+    }
     storage_dead(@2)
     drop x@1
     return
@@ -103,6 +112,10 @@ where
     storage_live(@2)
     @2 := &x@1
     @0 := @TraitClause1::parent_clause0::method<'_>(move (@2))
+    ↳ unwind {
+        drop x@1
+        unwind
+    }
     storage_dead(@2)
     drop x@1
     return
@@ -139,11 +152,18 @@ where
     storage_live(@3)
     @3 := copy (x@1)
     @2 := test_crate::a<T, Clause1_Clause0_Assoc>[@TraitClause0, @TraitClause1](move (@3))
+    ↳ unwind {
+        unwind
+    }
     storage_dead(@3)
     storage_live(@4)
     storage_live(@5)
     @5 := copy (x@1)
     @4 := test_crate::b<T, Clause2_Clause0_Assoc>[@TraitClause0, @TraitClause2](move (@5))
+    ↳ unwind {
+        drop @2
+        unwind
+    }
     storage_dead(@5)
     @0 := (move (@2), move (@4))
     drop @4

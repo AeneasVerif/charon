@@ -7,6 +7,7 @@
 //! ```
 //! Which defines a new function each time. This pass recognizes these functions and replaces calls
 //! to them by a `Panic` terminator.
+
 use std::collections::HashSet;
 
 use super::{ctx::UllbcPass, TransformCtx};
@@ -54,7 +55,7 @@ impl UllbcPass for Transform {
                                 ..
                             }),
                         ..
-                    }, target: _} = &block.terminator.content
+                    }, target: _, on_unwind: _} = &block.terminator.content
                         && panic_fns.contains(fun_id)
                     {
                         block.terminator.content = panic_terminator.clone();

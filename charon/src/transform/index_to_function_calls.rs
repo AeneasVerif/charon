@@ -155,7 +155,13 @@ impl<'a> IndexVisitor<'a> {
                 args,
                 dest: output_var.clone(),
             };
-            let kind = RawStatement::Call(index_call);
+            let on_unwind =
+                Statement::new(self.span, RawStatement::Abort(AbortKind::UndefinedBehavior))
+                    .into_block();
+            let kind = RawStatement::Call {
+                call: index_call,
+                on_unwind,
+            };
             self.statements.push(Statement::new(self.span, kind));
             output_var
         };
@@ -304,14 +310,14 @@ impl LlbcPass for Transform {
             };
             use RawStatement::*;
             match &mut st.content {
-                Assign(..) | SetDiscriminant(..) | Drop(..) | Deinit(..) | Call(..) => {
+                Assign(..) | SetDiscriminant(..) | Drop(..) | Deinit(..) | Call { .. } => {
                     let _ = visitor.visit_inner_with_mutability(st, true);
                 }
                 Switch(..) => {
                     let _ = visitor.visit_inner_with_mutability(st, false);
                 }
                 Nop | Error(..) | Assert(..) | Abort(..) | StorageDead(..) | StorageLive(..)
-                | Return | Break(..) | Continue(..) | Loop(..) => {
+                | Return | Unwind | Break(..) | Continue(..) | Loop(..) => {
                     let _ = st.drive_body_mut(&mut visitor);
                 }
             }

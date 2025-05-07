@@ -732,6 +732,9 @@ fn test_crate::div_unsigned_to_slice<'_0>(@1: &'_0 mut (Slice<u32>), @2: u32)
     @5 := &mut *(result@1)
     storage_live(@6)
     @6 := @SliceIndexMut<'_, u32>(move (@5), copy (@4))
+    ↳ unwind {
+        undefined_behavior
+    }
     *(@6) := move (@3) / const (3329 : u32)
     storage_dead(@3)
     storage_dead(@4)
@@ -758,6 +761,9 @@ fn test_crate::div_signed_to_slice<'_0>(@1: &'_0 mut (Slice<i32>), @2: i32)
     @5 := &mut *(result@1)
     storage_live(@6)
     @6 := @SliceIndexMut<'_, i32>(move (@5), copy (@4))
+    ↳ unwind {
+        undefined_behavior
+    }
     *(@6) := move (@3) / const (3329 : i32)
     storage_dead(@3)
     storage_dead(@4)
@@ -784,6 +790,9 @@ fn test_crate::add_to_slice<'_0>(@1: &'_0 mut (Slice<u32>), @2: u32)
     @5 := &mut *(result@1)
     storage_live(@6)
     @6 := @SliceIndexMut<'_, u32>(move (@5), copy (@4))
+    ↳ unwind {
+        undefined_behavior
+    }
     *(@6) := copy (@3) + const (1 : u32)
     storage_dead(@3)
     storage_dead(@4)
@@ -815,6 +824,9 @@ fn test_crate::add_to_slice2<'_0>(@1: &'_0 mut (Slice<u8>), @2: usize, @3: u8)
     @7 := &mut *(result@1)
     storage_live(@8)
     @8 := @SliceIndexMut<'_, u8>(move (@7), copy (@5))
+    ↳ unwind {
+        undefined_behavior
+    }
     *(@8) := copy (@4) * const (7 : u8)
     storage_dead(@4)
     storage_dead(@5)

@@ -1931,8 +1931,6 @@ where
     fn __iterator_get_unchecked<'_0> = core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::Iter<'a, T>[@TraitClause0]}#182::__iterator_get_unchecked<'a, '_0_0, T>[@TraitClause0]
 }
 
-pub fn core::ops::arith::{impl core::ops::arith::AddAssign<&'_0 (i32)> for i32}#365::add_assign<'_0, '_1>(@1: &'_1 mut (i32), @2: &'_0 (i32))
-
 pub fn core::slice::{Slice<T>}::chunks<'_0, T>(@1: &'_0 (Slice<T>), @2: usize) -> core::slice::iter::Chunks<'_0, T>[@TraitClause0]
 where
     [@TraitClause0]: core::marker::Sized<T>,
@@ -3325,6 +3323,8 @@ where
     fn __iterator_get_unchecked<'_0> = core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::ChunksExact<'a, T>[@TraitClause0]}#90::__iterator_get_unchecked<'a, '_0_0, T>[@TraitClause0]
 }
 
+pub fn core::ops::arith::{impl core::ops::arith::AddAssign<&'_0 (i32)> for i32}#365::add_assign<'_0, '_1>(@1: &'_1 mut (i32), @2: &'_0 (i32))
+
 fn test_crate::main()
 {
     let @0: (); // return
@@ -3393,16 +3393,56 @@ fn test_crate::main()
     let @63: &'_ (i32); // anonymous local
     let @64: core::option::Option<core::fmt::Arguments<'_>>[core::marker::Sized<core::fmt::Arguments<'_>>]; // anonymous local
 
+    storage_live(@8)
+    storage_live(@9)
     storage_live(@10)
+    storage_live(@11)
     storage_live(v@12)
     storage_live(@13)
+    storage_live(@14)
+    storage_live(@15)
+    storage_live(@16)
+    storage_live(@17)
+    storage_live(@18)
+    storage_live(iter@19)
+    storage_live(@20)
+    storage_live(@21)
     storage_live(@22)
+    storage_live(@23)
     storage_live(v@24)
     storage_live(@25)
     storage_live(@26)
     storage_live(@27)
+    storage_live(@28)
+    storage_live(@29)
+    storage_live(@30)
+    storage_live(@31)
+    storage_live(@32)
+    storage_live(iter@33)
+    storage_live(@34)
+    storage_live(@35)
     storage_live(@36)
+    storage_live(@37)
+    storage_live(@38)
+    storage_live(@39)
+    storage_live(@40)
+    storage_live(@41)
+    storage_live(@42)
+    storage_live(iter@43)
+    storage_live(@44)
+    storage_live(@45)
     storage_live(@46)
+    storage_live(@47)
+    storage_live(expected@48)
+    storage_live(@49)
+    storage_live(@50)
+    storage_live(@51)
+    storage_live(@52)
+    storage_live(left_val@53)
+    storage_live(right_val@54)
+    storage_live(@55)
+    storage_live(@56)
+    storage_live(@57)
     storage_live(kind@58)
     storage_live(@59)
     storage_live(@60)
@@ -3420,8 +3460,15 @@ fn test_crate::main()
     storage_live(@6)
     @6 := copy (a@1)
     @5 := core::array::iter::{impl core::iter::traits::collect::IntoIterator for Array<T, const N : usize>}::into_iter<i32, 7 : usize>[core::marker::Sized<i32>](move (@6))
+    ↳ unwind {
+        unwind
+    }
     storage_dead(@6)
     @4 := core::iter::traits::collect::{impl core::iter::traits::collect::IntoIterator for I}::into_iter<core::array::iter::IntoIter<i32, 7 : usize>[core::marker::Sized<i32>]>[core::marker::Sized<core::array::iter::IntoIter<i32, 7 : usize>[core::marker::Sized<i32>]>, core::array::iter::{impl core::iter::traits::iterator::Iterator for core::array::iter::IntoIter<T, const N : usize>[@TraitClause0]}#2<i32, 7 : usize>[core::marker::Sized<i32>]](move (@5))
+    ↳ unwind {
+        drop @5
+        unwind
+    }
     storage_dead(@5)
     storage_live(iter@7)
     iter@7 := move (@4)
@@ -3433,10 +3480,14 @@ fn test_crate::main()
         @11 := &mut iter@7
         @10 := &two-phase-mut *(@11)
         @9 := core::array::iter::{impl core::iter::traits::iterator::Iterator for core::array::iter::IntoIter<T, const N : usize>[@TraitClause0]}#2::next<'_, i32, 7 : usize>[core::marker::Sized<i32>](move (@10))
+        ↳ unwind {
+            drop iter@7
+            drop @4
+            unwind
+        }
         storage_dead(@10)
         match @9 {
             core::option::Option::None => {
-                break 0
             },
             core::option::Option::Some => {
                 storage_live(v@12)
@@ -3452,207 +3503,237 @@ fn test_crate::main()
                 continue 0
             },
         }
-    }
-    storage_dead(@11)
-    storage_dead(@9)
-    storage_dead(@8)
-    drop iter@7
-    storage_dead(iter@7)
-    drop @4
-    storage_dead(@4)
-    storage_dead(@3)
-    storage_live(@14)
-    storage_live(@15)
-    storage_live(@16)
-    storage_live(@17)
-    storage_live(@18)
-    @18 := &a@1
-    @17 := @ArrayToSliceShared<'_, i32, 7 : usize>(move (@18))
-    storage_dead(@18)
-    @16 := core::slice::{Slice<T>}::iter<'_, i32>[core::marker::Sized<i32>](move (@17))
-    storage_dead(@17)
-    @15 := core::iter::traits::collect::{impl core::iter::traits::collect::IntoIterator for I}::into_iter<core::slice::iter::Iter<'_, i32>[core::marker::Sized<i32>]>[core::marker::Sized<core::slice::iter::Iter<'_, i32>[core::marker::Sized<i32>]>, core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::Iter<'a, T>[@TraitClause0]}#182<'_, i32>[core::marker::Sized<i32>]](move (@16))
-    storage_dead(@16)
-    storage_live(iter@19)
-    iter@19 := move (@15)
-    loop {
-        storage_live(@20)
-        storage_live(@21)
-        storage_live(@22)
-        storage_live(@23)
-        @23 := &mut iter@19
-        @22 := &two-phase-mut *(@23)
-        @21 := core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::Iter<'a, T>[@TraitClause0]}#182::next<'_, '_, i32>[core::marker::Sized<i32>](move (@22))
-        storage_dead(@22)
-        match @21 {
-            core::option::Option::None => {
-                break 0
-            },
-            core::option::Option::Some => {
-                storage_live(v@24)
-                v@24 := copy ((@21 as variant @1).0)
-                storage_live(@25)
-                storage_live(@26)
-                @26 := &two-phase-mut i@2
-                storage_live(@27)
-                @27 := copy (v@24)
-                @25 := core::ops::arith::{impl core::ops::arith::AddAssign<&'_0 (i32)> for i32}#365::add_assign<'_, '_>(move (@26), move (@27))
-                storage_dead(@27)
-                storage_dead(@26)
-                storage_dead(@25)
-                storage_dead(v@24)
-                storage_dead(@23)
-                storage_dead(@21)
-                storage_dead(@20)
-                continue 0
-            },
+        storage_dead(@11)
+        storage_dead(@9)
+        storage_dead(@8)
+        drop iter@7
+        storage_dead(iter@7)
+        drop @4
+        storage_dead(@4)
+        storage_dead(@3)
+        storage_live(@14)
+        storage_live(@15)
+        storage_live(@16)
+        storage_live(@17)
+        storage_live(@18)
+        @18 := &a@1
+        @17 := @ArrayToSliceShared<'_, i32, 7 : usize>(move (@18))
+        ↳ unwind {
+            undefined_behavior
+        }
+        storage_dead(@18)
+        @16 := core::slice::{Slice<T>}::iter<'_, i32>[core::marker::Sized<i32>](move (@17))
+        ↳ unwind {
+            unwind
+        }
+        storage_dead(@17)
+        @15 := core::iter::traits::collect::{impl core::iter::traits::collect::IntoIterator for I}::into_iter<core::slice::iter::Iter<'_, i32>[core::marker::Sized<i32>]>[core::marker::Sized<core::slice::iter::Iter<'_, i32>[core::marker::Sized<i32>]>, core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::Iter<'a, T>[@TraitClause0]}#182<'_, i32>[core::marker::Sized<i32>]](move (@16))
+        ↳ unwind {
+            unwind
+        }
+        storage_dead(@16)
+        storage_live(iter@19)
+        iter@19 := move (@15)
+        loop {
+            storage_live(@20)
+            storage_live(@21)
+            storage_live(@22)
+            storage_live(@23)
+            @23 := &mut iter@19
+            @22 := &two-phase-mut *(@23)
+            @21 := core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::Iter<'a, T>[@TraitClause0]}#182::next<'_, '_, i32>[core::marker::Sized<i32>](move (@22))
+            ↳ unwind {
+                unwind
+            }
+            storage_dead(@22)
+            match @21 {
+                core::option::Option::None => {
+                    storage_dead(@23)
+                    storage_dead(@21)
+                    storage_dead(@20)
+                    storage_dead(iter@19)
+                    storage_dead(@15)
+                    storage_dead(@14)
+                    storage_live(@28)
+                    storage_live(@29)
+                    storage_live(@30)
+                    storage_live(@31)
+                    storage_live(@32)
+                    @32 := &a@1
+                    @31 := @ArrayToSliceShared<'_, i32, 7 : usize>(move (@32))
+                    ↳ unwind {
+                        undefined_behavior
+                    }
+                    storage_dead(@32)
+                    @30 := core::slice::{Slice<T>}::chunks<'_, i32>[core::marker::Sized<i32>](move (@31), const (2 : usize))
+                    ↳ unwind {
+                    }
+                    storage_dead(@31)
+                    @29 := core::iter::traits::collect::{impl core::iter::traits::collect::IntoIterator for I}::into_iter<core::slice::iter::Chunks<'_, i32>[core::marker::Sized<i32>]>[core::marker::Sized<core::slice::iter::Chunks<'_, i32>[core::marker::Sized<i32>]>, core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::Chunks<'a, T>[@TraitClause0]}#71<'_, i32>[core::marker::Sized<i32>]](move (@30))
+                    ↳ unwind {
+                    }
+                    storage_dead(@30)
+                    storage_live(iter@33)
+                    iter@33 := move (@29)
+                    loop {
+                        storage_live(@34)
+                        storage_live(@35)
+                        storage_live(@36)
+                        storage_live(@37)
+                        @37 := &mut iter@33
+                        @36 := &two-phase-mut *(@37)
+                        @35 := core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::Chunks<'a, T>[@TraitClause0]}#71::next<'_, '_, i32>[core::marker::Sized<i32>](move (@36))
+                        ↳ unwind {
+                        }
+                        storage_dead(@36)
+                        match @35 {
+                            core::option::Option::None => {
+                            },
+                            core::option::Option::Some => {
+                                i@2 := copy (i@2) + const (1 : i32)
+                                storage_dead(@37)
+                                storage_dead(@35)
+                                storage_dead(@34)
+                                continue 0
+                            },
+                        }
+                        storage_dead(@37)
+                        storage_dead(@35)
+                        storage_dead(@34)
+                        storage_dead(iter@33)
+                        storage_dead(@29)
+                        storage_dead(@28)
+                        storage_live(@38)
+                        storage_live(@39)
+                        storage_live(@40)
+                        storage_live(@41)
+                        storage_live(@42)
+                        @42 := &a@1
+                        @41 := @ArrayToSliceShared<'_, i32, 7 : usize>(move (@42))
+                        ↳ unwind {
+                            undefined_behavior
+                        }
+                        storage_dead(@42)
+                        @40 := core::slice::{Slice<T>}::chunks_exact<'_, i32>[core::marker::Sized<i32>](move (@41), const (2 : usize))
+                        ↳ unwind {
+                        }
+                        storage_dead(@41)
+                        @39 := core::iter::traits::collect::{impl core::iter::traits::collect::IntoIterator for I}::into_iter<core::slice::iter::ChunksExact<'_, i32>[core::marker::Sized<i32>]>[core::marker::Sized<core::slice::iter::ChunksExact<'_, i32>[core::marker::Sized<i32>]>, core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::ChunksExact<'a, T>[@TraitClause0]}#90<'_, i32>[core::marker::Sized<i32>]](move (@40))
+                        ↳ unwind {
+                        }
+                        storage_dead(@40)
+                        storage_live(iter@43)
+                        iter@43 := move (@39)
+                        loop {
+                            storage_live(@44)
+                            storage_live(@45)
+                            storage_live(@46)
+                            storage_live(@47)
+                            @47 := &mut iter@43
+                            @46 := &two-phase-mut *(@47)
+                            @45 := core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::ChunksExact<'a, T>[@TraitClause0]}#90::next<'_, '_, i32>[core::marker::Sized<i32>](move (@46))
+                            ↳ unwind {
+                            }
+                            storage_dead(@46)
+                            match @45 {
+                                core::option::Option::None => {
+                                },
+                                core::option::Option::Some => {
+                                    i@2 := copy (i@2) + const (1 : i32)
+                                    storage_dead(@47)
+                                    storage_dead(@45)
+                                    storage_dead(@44)
+                                    continue 0
+                                },
+                            }
+                            storage_dead(@47)
+                            storage_dead(@45)
+                            storage_dead(@44)
+                            storage_dead(iter@43)
+                            storage_dead(@39)
+                            storage_dead(@38)
+                            storage_live(expected@48)
+                            expected@48 := const (28 : i32)
+                            storage_live(@49)
+                            storage_live(@50)
+                            storage_live(@51)
+                            @51 := &i@2
+                            storage_live(@52)
+                            @52 := &expected@48
+                            @50 := (move (@51), move (@52))
+                            storage_dead(@52)
+                            storage_dead(@51)
+                            storage_live(left_val@53)
+                            left_val@53 := copy ((@50).0)
+                            storage_live(right_val@54)
+                            right_val@54 := copy ((@50).1)
+                            storage_live(@55)
+                            storage_live(@56)
+                            @56 := copy (*(left_val@53))
+                            storage_live(@57)
+                            @57 := copy (*(right_val@54))
+                            @55 := move (@56) == move (@57)
+                            if move (@55) {
+                            }
+                            else {
+                                storage_dead(@57)
+                                storage_dead(@56)
+                                storage_live(kind@58)
+                                kind@58 := core::panicking::AssertKind::Eq {  }
+                                storage_live(@59)
+                                @59 := move (kind@58)
+                                storage_live(@60)
+                                storage_live(@61)
+                                @61 := &*(left_val@53)
+                                @60 := &*(@61)
+                                storage_live(@62)
+                                storage_live(@63)
+                                @63 := &*(right_val@54)
+                                @62 := &*(@63)
+                                storage_live(@64)
+                                @64 := core::option::Option::None {  }
+                                panic(core::panicking::assert_failed)
+                            }
+                            storage_dead(@57)
+                            storage_dead(@56)
+                            storage_dead(@55)
+                            storage_dead(right_val@54)
+                            storage_dead(left_val@53)
+                            storage_dead(@50)
+                            storage_dead(@49)
+                            @0 := ()
+                            storage_dead(expected@48)
+                            storage_dead(i@2)
+                            storage_dead(a@1)
+                            @0 := ()
+                            return
+                        }
+                    }
+                },
+                core::option::Option::Some => {
+                    storage_live(v@24)
+                    v@24 := copy ((@21 as variant @1).0)
+                    storage_live(@25)
+                    storage_live(@26)
+                    @26 := &two-phase-mut i@2
+                    storage_live(@27)
+                    @27 := copy (v@24)
+                    @25 := core::ops::arith::{impl core::ops::arith::AddAssign<&'_0 (i32)> for i32}#365::add_assign<'_, '_>(move (@26), move (@27))
+                    ↳ unwind {
+                    }
+                    storage_dead(@27)
+                    storage_dead(@26)
+                    storage_dead(@25)
+                    storage_dead(v@24)
+                    storage_dead(@23)
+                    storage_dead(@21)
+                    storage_dead(@20)
+                    continue 0
+                },
+            }
+            unwind
         }
     }
-    storage_dead(@23)
-    storage_dead(@21)
-    storage_dead(@20)
-    storage_dead(iter@19)
-    storage_dead(@15)
-    storage_dead(@14)
-    storage_live(@28)
-    storage_live(@29)
-    storage_live(@30)
-    storage_live(@31)
-    storage_live(@32)
-    @32 := &a@1
-    @31 := @ArrayToSliceShared<'_, i32, 7 : usize>(move (@32))
-    storage_dead(@32)
-    @30 := core::slice::{Slice<T>}::chunks<'_, i32>[core::marker::Sized<i32>](move (@31), const (2 : usize))
-    storage_dead(@31)
-    @29 := core::iter::traits::collect::{impl core::iter::traits::collect::IntoIterator for I}::into_iter<core::slice::iter::Chunks<'_, i32>[core::marker::Sized<i32>]>[core::marker::Sized<core::slice::iter::Chunks<'_, i32>[core::marker::Sized<i32>]>, core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::Chunks<'a, T>[@TraitClause0]}#71<'_, i32>[core::marker::Sized<i32>]](move (@30))
-    storage_dead(@30)
-    storage_live(iter@33)
-    iter@33 := move (@29)
-    loop {
-        storage_live(@34)
-        storage_live(@35)
-        storage_live(@36)
-        storage_live(@37)
-        @37 := &mut iter@33
-        @36 := &two-phase-mut *(@37)
-        @35 := core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::Chunks<'a, T>[@TraitClause0]}#71::next<'_, '_, i32>[core::marker::Sized<i32>](move (@36))
-        storage_dead(@36)
-        match @35 {
-            core::option::Option::None => {
-                break 0
-            },
-            core::option::Option::Some => {
-                i@2 := copy (i@2) + const (1 : i32)
-                storage_dead(@37)
-                storage_dead(@35)
-                storage_dead(@34)
-                continue 0
-            },
-        }
-    }
-    storage_dead(@37)
-    storage_dead(@35)
-    storage_dead(@34)
-    storage_dead(iter@33)
-    storage_dead(@29)
-    storage_dead(@28)
-    storage_live(@38)
-    storage_live(@39)
-    storage_live(@40)
-    storage_live(@41)
-    storage_live(@42)
-    @42 := &a@1
-    @41 := @ArrayToSliceShared<'_, i32, 7 : usize>(move (@42))
-    storage_dead(@42)
-    @40 := core::slice::{Slice<T>}::chunks_exact<'_, i32>[core::marker::Sized<i32>](move (@41), const (2 : usize))
-    storage_dead(@41)
-    @39 := core::iter::traits::collect::{impl core::iter::traits::collect::IntoIterator for I}::into_iter<core::slice::iter::ChunksExact<'_, i32>[core::marker::Sized<i32>]>[core::marker::Sized<core::slice::iter::ChunksExact<'_, i32>[core::marker::Sized<i32>]>, core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::ChunksExact<'a, T>[@TraitClause0]}#90<'_, i32>[core::marker::Sized<i32>]](move (@40))
-    storage_dead(@40)
-    storage_live(iter@43)
-    iter@43 := move (@39)
-    loop {
-        storage_live(@44)
-        storage_live(@45)
-        storage_live(@46)
-        storage_live(@47)
-        @47 := &mut iter@43
-        @46 := &two-phase-mut *(@47)
-        @45 := core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::ChunksExact<'a, T>[@TraitClause0]}#90::next<'_, '_, i32>[core::marker::Sized<i32>](move (@46))
-        storage_dead(@46)
-        match @45 {
-            core::option::Option::None => {
-                break 0
-            },
-            core::option::Option::Some => {
-                i@2 := copy (i@2) + const (1 : i32)
-                storage_dead(@47)
-                storage_dead(@45)
-                storage_dead(@44)
-                continue 0
-            },
-        }
-    }
-    storage_dead(@47)
-    storage_dead(@45)
-    storage_dead(@44)
-    storage_dead(iter@43)
-    storage_dead(@39)
-    storage_dead(@38)
-    storage_live(expected@48)
-    expected@48 := const (28 : i32)
-    storage_live(@49)
-    storage_live(@50)
-    storage_live(@51)
-    @51 := &i@2
-    storage_live(@52)
-    @52 := &expected@48
-    @50 := (move (@51), move (@52))
-    storage_dead(@52)
-    storage_dead(@51)
-    storage_live(left_val@53)
-    left_val@53 := copy ((@50).0)
-    storage_live(right_val@54)
-    right_val@54 := copy ((@50).1)
-    storage_live(@55)
-    storage_live(@56)
-    @56 := copy (*(left_val@53))
-    storage_live(@57)
-    @57 := copy (*(right_val@54))
-    @55 := move (@56) == move (@57)
-    if move (@55) {
-    }
-    else {
-        storage_dead(@57)
-        storage_dead(@56)
-        storage_live(kind@58)
-        kind@58 := core::panicking::AssertKind::Eq {  }
-        storage_live(@59)
-        @59 := move (kind@58)
-        storage_live(@60)
-        storage_live(@61)
-        @61 := &*(left_val@53)
-        @60 := &*(@61)
-        storage_live(@62)
-        storage_live(@63)
-        @63 := &*(right_val@54)
-        @62 := &*(@63)
-        storage_live(@64)
-        @64 := core::option::Option::None {  }
-        panic(core::panicking::assert_failed)
-    }
-    storage_dead(@57)
-    storage_dead(@56)
-    storage_dead(@55)
-    storage_dead(right_val@54)
-    storage_dead(left_val@53)
-    storage_dead(@50)
-    storage_dead(@49)
-    @0 := ()
-    storage_dead(expected@48)
-    storage_dead(i@2)
-    storage_dead(a@1)
-    @0 := ()
-    return
 }
 
 #[lang_item("into_iter")]

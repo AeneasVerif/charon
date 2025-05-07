@@ -15,6 +15,9 @@ pub fn test_crate::index_array_generic<const N : usize>(@1: Array<u32, const N :
     @4 := &s@1
     storage_live(@5)
     @5 := @ArrayIndexShared<'_, u32, const N : usize>(move (@4), copy (@3))
+    ↳ unwind {
+        undefined_behavior
+    }
     @0 := copy (*(@5))
     storage_dead(@3)
     return
@@ -33,6 +36,9 @@ pub fn test_crate::index_array_generic_call<const N : usize>(@1: Array<u32, cons
     storage_live(@4)
     @4 := copy (i@2)
     @0 := test_crate::index_array_generic<const N : usize>(move (@3), move (@4))
+    ↳ unwind {
+        unwind
+    }
     storage_dead(@4)
     storage_dead(@3)
     return
@@ -51,6 +57,9 @@ pub fn test_crate::init_array_variable_len<const LEN : usize>() -> Array<u8, con
     let @0: Array<u8, const LEN : usize>; // return
 
     @0 := @ArrayRepeat<'_, u8, const LEN : usize>(const (0 : u8))
+    ↳ unwind {
+        undefined_behavior
+    }
     return
 }
 

@@ -75,6 +75,9 @@ pub fn test_crate::choose_test()
     @7 := &mut y@2
     @6 := &two-phase-mut *(@7)
     z@3 := test_crate::choose<'_, i32>[core::marker::Sized<i32>](const (true), move (@4), move (@6))
+    ↳ unwind {
+        unwind
+    }
     storage_dead(@6)
     storage_dead(@4)
     storage_dead(@7)

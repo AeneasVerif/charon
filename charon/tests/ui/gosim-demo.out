@@ -106,7 +106,10 @@ where
     let @20: &'_ (&'_ (T)); // anonymous local
     let @21: &'_ (&'_ (T)); // anonymous local
 
+    storage_live(@5)
+    storage_live(@6)
     storage_live(@7)
+    storage_live(@8)
     storage_live(x@9)
     storage_live(@10)
     storage_live(@11)
@@ -124,6 +127,9 @@ where
     storage_live(@3)
     @3 := copy (slice@1)
     @2 := core::slice::iter::{impl core::iter::traits::collect::IntoIterator for &'a (Slice<T>)}#1::into_iter<'_, T>[@TraitClause0](move (@3))
+    ↳ unwind {
+        unwind
+    }
     storage_dead(@3)
     storage_live(iter@4)
     iter@4 := move (@2)
@@ -135,10 +141,12 @@ where
         @8 := &mut iter@4
         @7 := &two-phase-mut *(@8)
         @6 := core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::Iter<'a, T>[@TraitClause0]}#182::next<'_, '_, T>[@TraitClause0](move (@7))
+        ↳ unwind {
+            unwind
+        }
         storage_dead(@7)
         match @6 {
             core::option::Option::None => {
-                break 0
             },
             core::option::Option::Some => {
                 storage_live(x@9)
@@ -161,15 +169,24 @@ where
                 @21 := &x@9
                 @20 := &*(@21)
                 @19 := core::fmt::rt::{core::fmt::rt::Argument<'_0>}#1::new_debug<'_, '_, &'_ (T)>[core::marker::Sized<&'_ (T)>, core::fmt::{impl core::fmt::Debug for &'_0 (T)}#73<'_, T>[@TraitClause1]](move (@20))
+                ↳ unwind {
+                    unwind
+                }
                 storage_dead(@20)
                 @18 := [move (@19)]
                 storage_dead(@19)
                 @17 := &@18
                 @16 := &*(@17)
                 @12 := core::fmt::{core::fmt::Arguments<'a>}#4::new_v1<'_, 2 : usize, 1 : usize>(move (@13), move (@16))
+                ↳ unwind {
+                    unwind
+                }
                 storage_dead(@16)
                 storage_dead(@13)
                 @11 := std::io::stdio::_eprint<'_>(move (@12))
+                ↳ unwind {
+                    unwind
+                }
                 storage_dead(@12)
                 storage_dead(@21)
                 storage_dead(@18)
@@ -185,15 +202,15 @@ where
                 continue 0
             },
         }
+        @0 := ()
+        storage_dead(@8)
+        storage_dead(@6)
+        storage_dead(@5)
+        storage_dead(iter@4)
+        storage_dead(@2)
+        @0 := ()
+        return
     }
-    @0 := ()
-    storage_dead(@8)
-    storage_dead(@6)
-    storage_dead(@5)
-    storage_dead(iter@4)
-    storage_dead(@2)
-    @0 := ()
-    return
 }
 
 pub fn core::fmt::num::{impl core::fmt::Debug for i32}#80::fmt<'_0, '_1, '_2>(@1: &'_0 (i32), @2: &'_1 mut (core::fmt::Formatter<'_2>)) -> core::result::Result<(), core::fmt::Error>[core::marker::Sized<()>, core::marker::Sized<core::fmt::Error>]
@@ -221,8 +238,14 @@ fn test_crate::main()
     @4 := &@5
     @3 := &*(@4)
     @2 := @ArrayToSliceShared<'_, i32, 3 : usize>(move (@3))
+    ↳ unwind {
+        undefined_behavior
+    }
     storage_dead(@3)
     @1 := test_crate::debug_slice<'_, i32>[core::marker::Sized<i32>, core::fmt::num::{impl core::fmt::Debug for i32}#80](move (@2))
+    ↳ unwind {
+        unwind
+    }
     storage_dead(@2)
     storage_dead(@5)
     storage_dead(@4)

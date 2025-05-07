@@ -48,6 +48,9 @@ fn test_crate::main()
     @3 := &@4
     @2 := &*(@3)
     slice@1 := @ArrayToSliceShared<'_, i32, 1 : usize>(move (@2))
+    ↳ unwind {
+        undefined_behavior
+    }
     storage_dead(@2)
     storage_dead(@3)
     storage_live(@5)
@@ -56,9 +59,15 @@ fn test_crate::main()
     storage_live(@8)
     @8 := &*(slice@1)
     @7 := core::slice::{Slice<T>}::iter<'_, i32>[core::marker::Sized<i32>](move (@8))
+    ↳ unwind {
+        unwind
+    }
     @6 := &two-phase-mut @7
     storage_dead(@8)
     @5 := core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::Iter<'a, T>[@TraitClause0]}#182::next<'_, '_, i32>[core::marker::Sized<i32>](move (@6))
+    ↳ unwind {
+        unwind
+    }
     storage_dead(@6)
     storage_dead(@7)
     storage_dead(@5)

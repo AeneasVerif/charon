@@ -21,6 +21,9 @@ fn test_crate::ntt_multiply() -> test_crate::Portable
     let @0: test_crate::Portable; // return
 
     @0 := test_crate::{impl test_crate::Ops for test_crate::Portable}::ZERO()
+    ↳ unwind {
+        unwind
+    }
     return
 }
 
@@ -29,6 +32,9 @@ fn test_crate::{impl test_crate::Ops for test_crate::Portable}::ntt_multiply() -
     let @0: test_crate::Portable; // return
 
     @0 := test_crate::ntt_multiply()
+    ↳ unwind {
+        unwind
+    }
     return
 }
 

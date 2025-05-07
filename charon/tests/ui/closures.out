@@ -92,6 +92,14 @@ where
             @7 := move (x@3)
             @6 := (move (@7))
             @4 := @TraitClause2::call<'_>(move (@5), move (@6))
+            ↳ unwind {
+                drop @6
+                drop @7
+                drop x@3
+                drop f@2
+                drop x@1
+                unwind
+            }
             drop @7
             storage_dead(@7)
             storage_dead(@6)
@@ -137,6 +145,9 @@ where
             storage_live(@6)
             @6 := &*(x@3)
             @4 := (move @5)(move (@6))
+            ↳ unwind {
+                unwind
+            }
             storage_dead(@6)
             storage_dead(@5)
             @0 := core::option::Option::Some { 0: move (@4) }
@@ -159,6 +170,9 @@ pub fn test_crate::test_map_option1(@1: core::option::Option<u32>[core::marker::
     storage_live(@2)
     @2 := copy (x@1)
     @0 := test_crate::map_option<u32, fn(u32) -> u32>[core::marker::Sized<u32>, core::marker::Sized<fn(u32) -> u32>, core::ops::function::Fn<fn(u32) -> u32, (u32), u32>](move (@2), const (test_crate::incr_u32))
+    ↳ unwind {
+        unwind
+    }
     storage_dead(@2)
     return
 }
@@ -192,6 +206,9 @@ pub fn test_crate::test_closure_u32(@1: u32) -> u32
     storage_live(@5)
     @5 := copy (x@1)
     @0 := (move @4)(move (@5))
+    ↳ unwind {
+        unwind
+    }
     storage_dead(@5)
     storage_dead(@4)
     storage_dead(f@2)
@@ -239,6 +256,9 @@ pub fn test_crate::test_closure_u32s(@1: u32) -> u32
     storage_live(@6)
     @6 := copy (x@1)
     @0 := (move @4)(move (@5), move (@6))
+    ↳ unwind {
+        unwind
+    }
     storage_dead(@6)
     storage_dead(@5)
     storage_dead(@4)
@@ -277,6 +297,9 @@ pub fn test_crate::test_closure_ref_u32<'a>(@1: &'a (u32)) -> &'a (u32)
     storage_live(@6)
     @6 := &*(x@1)
     @4 := (move @5)(move (@6))
+    ↳ unwind {
+        unwind
+    }
     @0 := &*(@4)
     storage_dead(@6)
     storage_dead(@5)
@@ -320,6 +343,9 @@ where
     storage_live(@6)
     @6 := &*(x@1)
     @4 := (move @5)(move (@6))
+    ↳ unwind {
+        unwind
+    }
     @0 := &*(@4)
     storage_dead(@6)
     storage_dead(@5)
@@ -367,6 +393,9 @@ where
     storage_live(@6)
     @6 := &*(x@1)
     @4 := (move @5)(move (@6))
+    ↳ unwind {
+        unwind
+    }
     @0 := &*(@4)
     storage_dead(@6)
     storage_dead(@5)
@@ -408,6 +437,9 @@ pub fn test_crate::test_map_option2(@1: core::option::Option<u32>[core::marker::
     storage_live(@5)
     @5 := copy (f@2)
     @0 := test_crate::map_option<u32, fn(u32) -> u32>[core::marker::Sized<u32>, core::marker::Sized<fn(u32) -> u32>, core::ops::function::Fn<fn(u32) -> u32, (u32), u32>](move (@4), move (@5))
+    ↳ unwind {
+        unwind
+    }
     storage_dead(@5)
     storage_dead(@4)
     storage_dead(f@2)
@@ -435,6 +467,9 @@ pub fn test_crate::test_map_option_id1(@1: core::option::Option<u32>[core::marke
     storage_live(@2)
     @2 := copy (x@1)
     @0 := test_crate::map_option<u32, fn(u32) -> u32>[core::marker::Sized<u32>, core::marker::Sized<fn(u32) -> u32>, core::ops::function::Fn<fn(u32) -> u32, (u32), u32>](move (@2), const (test_crate::id<u32>[core::marker::Sized<u32>]))
+    ↳ unwind {
+        unwind
+    }
     storage_dead(@2)
     return
 }
@@ -454,6 +489,9 @@ pub fn test_crate::test_map_option_id2(@1: core::option::Option<u32>[core::marke
     storage_live(@4)
     @4 := copy (f@2)
     @0 := test_crate::map_option<u32, fn(u32) -> u32>[core::marker::Sized<u32>, core::marker::Sized<fn(u32) -> u32>, core::ops::function::Fn<fn(u32) -> u32, (u32), u32>](move (@3), move (@4))
+    ↳ unwind {
+        unwind
+    }
     storage_dead(@4)
     storage_dead(@3)
     storage_dead(f@2)
@@ -482,6 +520,10 @@ where
     storage_live(@2)
     @2 := &x@1
     @0 := @TraitClause1::clone<'_>(move (@2))
+    ↳ unwind {
+        drop x@1
+        unwind
+    }
     storage_dead(@2)
     drop x@1
     return
@@ -510,6 +552,9 @@ pub fn test_crate::test_id_clone(@1: u32) -> u32
     storage_live(@4)
     @4 := copy (x@1)
     @0 := (move @3)(move (@4))
+    ↳ unwind {
+        unwind
+    }
     storage_dead(@4)
     storage_dead(@3)
     storage_dead(f@2)
@@ -534,6 +579,11 @@ where
     storage_live(@4)
     @4 := move (x@1)
     @0 := (move @3)(move (@4))
+    ↳ unwind {
+        drop @4
+        drop x@1
+        unwind
+    }
     storage_dead(@4)
     storage_dead(@3)
     storage_dead(f@2)
@@ -550,6 +600,9 @@ pub fn test_crate::test_map_option_id_clone(@1: core::option::Option<u32>[core::
     storage_live(@2)
     @2 := copy (x@1)
     @0 := test_crate::map_option<u32, fn(u32) -> u32>[core::marker::Sized<u32>, core::marker::Sized<fn(u32) -> u32>, core::ops::function::Fn<fn(u32) -> u32, (u32), u32>](move (@2), const (test_crate::id_clone<u32>[core::marker::Sized<u32>, core::clone::impls::{impl core::clone::Clone for u32}#8]))
+    ↳ unwind {
+        unwind
+    }
     storage_dead(@2)
     return
 }
@@ -580,6 +633,9 @@ pub fn test_crate::test_map_option3(@1: core::option::Option<u32>[core::marker::
     storage_live(@3)
     @3 := {test_crate::test_map_option3::closure} {}
     @0 := test_crate::map_option<u32, test_crate::test_map_option3::closure>[core::marker::Sized<u32>, core::marker::Sized<test_crate::test_map_option3::closure>, core::ops::function::Fn<test_crate::test_map_option3::closure, (u32), u32>](move (@2), move (@3))
+    ↳ unwind {
+        unwind
+    }
     storage_dead(@3)
     storage_dead(@2)
     return
@@ -617,6 +673,9 @@ pub fn test_crate::test_regions<'a>(@1: &'a (u32)) -> u32
     @6 := &x@1
     @5 := &*(@6)
     @0 := (move @4)(move (@5))
+    ↳ unwind {
+        unwind
+    }
     storage_dead(@5)
     storage_dead(@4)
     storage_dead(f@2)
@@ -677,6 +736,9 @@ pub fn test_crate::test_closure_capture(@1: u32, @2: u32) -> u32
     storage_live(@8)
     @8 := (const (0 : u32))
     @0 := core::ops::function::Fn<test_crate::test_closure_capture::closure, (u32), u32>::call<'_>(move (@7), move (@8))
+    ↳ unwind {
+        unwind
+    }
     storage_dead(@8)
     storage_dead(@7)
     storage_dead(@4)
@@ -697,6 +759,10 @@ where
     storage_live(@3)
     @3 := &x@2
     @0 := @TraitClause1::clone<'_>(move (@3))
+    ↳ unwind {
+        drop x@2
+        unwind
+    }
     storage_dead(@3)
     drop x@2
     return
@@ -726,6 +792,12 @@ where
     @6 := move (x@1)
     @5 := (move (@6))
     @0 := core::ops::function::Fn<test_crate::test_closure_clone::closure, (T), T>::call<'_>(move (@3), move (@5))
+    ↳ unwind {
+        drop @5
+        drop @6
+        drop x@1
+        unwind
+    }
     drop @6
     storage_dead(@6)
     storage_dead(@5)
@@ -765,6 +837,9 @@ pub fn test_crate::test_array_map(@1: Array<i32, 256 : usize>) -> Array<i32, 256
     storage_live(@3)
     @3 := {test_crate::test_array_map::closure} {}
     @0 := core::array::{Array<T, const N : usize>}#23::map<i32, test_crate::test_array_map::closure, i32, 256 : usize>[core::marker::Sized<i32>, core::marker::Sized<test_crate::test_array_map::closure>, core::marker::Sized<i32>, core::ops::function::FnMut<test_crate::test_array_map::closure, (i32), i32>](move (@2), move (@3))
+    ↳ unwind {
+        unwind
+    }
     storage_dead(@3)
     storage_dead(@2)
     return
@@ -791,6 +866,9 @@ where
     storage_live(@2)
     @2 := &*((*(state@1)).0)
     @0 := @TraitClause1::clone<'_>(move (@2))
+    ↳ unwind {
+        unwind
+    }
     storage_dead(@2)
     return
 }
@@ -859,18 +937,27 @@ where
     storage_live(@9)
     @9 := ()
     @7 := core::ops::function::Fn<test_crate::{test_crate::Foo<'a, T>[@TraitClause0]}::test_nested_closures::closure, (), test_crate::{test_crate::Foo<'a, T>[@TraitClause0]}::test_nested_closures::closure::closure>::call<'_>(move (@8), move (@9))
+    ↳ unwind {
+        unwind
+    }
     @6 := &@7
     storage_dead(@9)
     storage_dead(@8)
     storage_live(@10)
     @10 := ()
     @5 := core::ops::function::Fn<test_crate::{test_crate::Foo<'a, T>[@TraitClause0]}::test_nested_closures::closure::closure, (), test_crate::{test_crate::Foo<'a, T>[@TraitClause0]}::test_nested_closures::closure::closure::closure>::call<'_>(move (@6), move (@10))
+    ↳ unwind {
+        unwind
+    }
     @4 := &@5
     storage_dead(@10)
     storage_dead(@6)
     storage_live(@11)
     @11 := ()
     @0 := core::ops::function::Fn<test_crate::{test_crate::Foo<'a, T>[@TraitClause0]}::test_nested_closures::closure::closure::closure, (), T>::call<'_>(move (@4), move (@11))
+    ↳ unwind {
+        unwind
+    }
     storage_dead(@11)
     storage_dead(@4)
     storage_dead(clo@2)

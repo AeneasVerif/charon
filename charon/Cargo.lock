@@ -787,7 +787,7 @@ checksum = "bf151400ff0baff5465007dd2f3e717f3fe502074ca563069ce3a6629d07b289"
 [[package]]
 name = "hax-adt-into"
 version = "0.2.0"
-source = "git+https://github.com/cryspen/hax?branch=main#0275a2b0cda11871b3761b09c2a07d467a5baf1f"
+source = "git+https://github.com/Nadrieril/hax?branch=mir-unwind#dfeed69892d9e1cb4832db126cc9ace37981e1a2"
 dependencies = [
  "itertools 0.11.0",
  "proc-macro2",
@@ -798,7 +798,7 @@ dependencies = [
 [[package]]
 name = "hax-frontend-exporter"
 version = "0.2.0"
-source = "git+https://github.com/cryspen/hax?branch=main#0275a2b0cda11871b3761b09c2a07d467a5baf1f"
+source = "git+https://github.com/Nadrieril/hax?branch=mir-unwind#dfeed69892d9e1cb4832db126cc9ace37981e1a2"
 dependencies = [
  "extension-traits",
  "hax-adt-into",
@@ -815,7 +815,7 @@ dependencies = [
 [[package]]
 name = "hax-frontend-exporter-options"
 version = "0.2.0"
-source = "git+https://github.com/cryspen/hax?branch=main#0275a2b0cda11871b3761b09c2a07d467a5baf1f"
+source = "git+https://github.com/Nadrieril/hax?branch=mir-unwind#dfeed69892d9e1cb4832db126cc9ace37981e1a2"
 dependencies = [
  "hax-adt-into",
  "schemars",

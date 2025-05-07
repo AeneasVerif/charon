@@ -167,6 +167,9 @@ fn test_crate::foo()
     @3 := core::option::Option::Some { 0: const (0 : i32) }
     @2 := &@3
     @1 := core::option::{core::option::Option<T>[@TraitClause0]}::is_some<'_, i32>[core::marker::Sized<i32>](move (@2))
+    ↳ unwind {
+        unwind
+    }
     storage_dead(@2)
     storage_dead(@3)
     storage_dead(@1)
@@ -178,6 +181,9 @@ fn test_crate::foo()
     @6 := &@7
     @5 := &*(@6)
     slice@4 := @ArrayToSliceShared<'_, bool, 1 : usize>(move (@5))
+    ↳ unwind {
+        undefined_behavior
+    }
     storage_dead(@5)
     storage_dead(@6)
     storage_live(@8)
@@ -187,6 +193,9 @@ fn test_crate::foo()
     storage_live(@11)
     @11 := core::ops::range::RangeFrom { start: const (1 : usize) }
     @9 := core::slice::index::{impl core::ops::index::Index<I> for Slice<T>}::index<'_, bool, core::ops::range::RangeFrom<usize>[core::marker::Sized<usize>]>[core::marker::Sized<bool>, core::marker::Sized<core::ops::range::RangeFrom<usize>[core::marker::Sized<usize>]>, core::slice::index::{impl core::slice::index::SliceIndex<Slice<T>> for core::ops::range::RangeFrom<usize>[core::marker::Sized<usize>]}#7<bool>[core::marker::Sized<bool>]](move (@10), move (@11))
+    ↳ unwind {
+        unwind
+    }
     storage_dead(@11)
     storage_dead(@10)
     @8 := &*(@9)
@@ -199,19 +208,19 @@ fn test_crate::foo()
     return
 }
 
-fn test_crate::funs_with_disambiguator::f() -> u32
-{
-    let @0: u32; // return
-
-    @0 := const (0 : u32)
-    return
-}
-
 fn test_crate::funs_with_disambiguator::f#1() -> u32
 {
     let @0: u32; // return
 
     @0 := const (1 : u32)
+    return
+}
+
+fn test_crate::funs_with_disambiguator::f() -> u32
+{
+    let @0: u32; // return
+
+    @0 := const (0 : u32)
     return
 }
 
@@ -224,10 +233,18 @@ fn test_crate::funs_with_disambiguator(@1: bool) -> u32
     storage_live(@2)
     @2 := copy (b@1)
     if move (@2) {
-        @0 := test_crate::funs_with_disambiguator::f()
     }
     else {
         @0 := test_crate::funs_with_disambiguator::f#1()
+        ↳ unwind {
+            unwind
+        }
+        storage_dead(@2)
+        return
+    }
+    @0 := test_crate::funs_with_disambiguator::f()
+    ↳ unwind {
+        unwind
     }
     storage_dead(@2)
     return

@@ -40,6 +40,11 @@ where
     storage_live(@2)
     @2 := move (it@1)
     @0 := test_crate::takes_trait<Clause1_IntoIter, ()>[@TraitClause1::parent_clause0, @TraitClause1::parent_clause1](move (@2))
+    ↳ unwind {
+        drop @2
+        drop it@1
+        unwind
+    }
     storage_dead(@2)
     drop it@1
     @0 := ()

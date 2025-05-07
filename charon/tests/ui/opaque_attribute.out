@@ -54,6 +54,9 @@ where
             storage_live(@3)
             @3 := &*(x@2)
             @0 := @TraitClause1::get_bool<'_>(move (@3))
+            ↳ unwind {
+                unwind
+            }
             storage_dead(@3)
             storage_dead(x@2)
             return
@@ -99,6 +102,9 @@ fn test_crate::call_fn_in_opaque_module()
 
     storage_live(@1)
     @1 := test_crate::opaque::fn_in_opaque_module()
+    ↳ unwind {
+        unwind
+    }
     storage_dead(@1)
     @0 := ()
     @0 := ()

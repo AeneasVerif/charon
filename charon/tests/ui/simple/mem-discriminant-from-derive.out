@@ -108,6 +108,9 @@ pub fn test_crate::{impl core::cmp::PartialEq<test_crate::Enum> for test_crate::
                         storage_live(@16)
                         @16 := &__arg1_0@14
                         @0 := core::cmp::impls::{impl core::cmp::PartialEq<&'_0 (B)> for &'_1 (A)}#9::eq<'_, '_, '_, '_, u8, u8>[core::cmp::impls::{impl core::cmp::PartialEq<u8> for u8}#22](move (@15), move (@16))
+                        ↳ unwind {
+                            unwind
+                        }
                         storage_dead(@16)
                         storage_dead(@15)
                         storage_dead(__arg1_0@14)

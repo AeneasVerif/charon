@@ -77,6 +77,9 @@ pub fn core::clone::impls::{impl core::clone::Clone for u8}#6::clone_from<'_0, '
 
     storage_live(@3)
     @3 := core::clone::impls::{impl core::clone::Clone for u8}#6::clone<'_>(move (source@2))
+    ↳ unwind {
+        unwind
+    }
     drop *(self@1)
     *(self@1) := move (@3)
     storage_dead(@3)
@@ -103,6 +106,9 @@ pub fn core::num::{u8}#6::saturating_add(@1: u8, @2: u8) -> u8
     let rhs@2: u8; // arg #2
 
     @0 := core::intrinsics::saturating_add<u8>[core::marker::Sized<u8>, core::marker::{impl core::marker::Copy for u8}#38](move (self@1), move (rhs@2))
+    ↳ unwind {
+        undefined_behavior
+    }
     return
 }
 
@@ -115,13 +121,22 @@ fn test_crate::main()
 
     storage_live(@1)
     @1 := core::num::{u8}#6::wrapping_add(const (255 : u8), const (1 : u8))
+    ↳ unwind {
+        unwind
+    }
     storage_dead(@1)
     storage_live(@2)
     @2 := core::num::{u8}#6::overflowing_add(const (255 : u8), const (1 : u8))
+    ↳ unwind {
+        unwind
+    }
     storage_dead(@2)
     storage_live(@3)
     // This one is meant to be implemented by codegen backends, hence has no useful MIR.
     @3 := core::num::{u8}#6::saturating_add(const (255 : u8), const (1 : u8))
+    ↳ unwind {
+        unwind
+    }
     storage_dead(@3)
     @0 := ()
     // FIXME(#543): this causes a panic in hax
@@ -144,6 +159,9 @@ pub fn core::clone::Clone::clone_from<'_0, '_1, Self>(@1: &'_0 mut (Self), @2: &
 
     storage_live(@3)
     @3 := Self::clone<'_>(move (source@2))
+    ↳ unwind {
+        unwind
+    }
     drop *(self@1)
     *(self@1) := move (@3)
     storage_dead(@3)

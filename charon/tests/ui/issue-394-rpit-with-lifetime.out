@@ -62,6 +62,9 @@ fn test_crate::sparse_transitions<'a>() -> core::iter::sources::from_fn::FromFn<
     storage_live(@1)
     @1 := {test_crate::sparse_transitions::closure<'_>} {}
     @0 := core::iter::sources::from_fn::from_fn<u8, test_crate::sparse_transitions::closure>[core::marker::Sized<u8>, core::marker::Sized<test_crate::sparse_transitions::closure>, core::ops::function::FnMut<test_crate::sparse_transitions::closure, ()>](move (@1))
+    ↳ unwind {
+        unwind
+    }
     storage_dead(@1)
     return
 }

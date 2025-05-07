@@ -82,11 +82,17 @@ fn test_crate::foo()
 
     storage_live(ref_b@1)
     ref_b@1 := core::cell::{core::cell::RefCell<T>}#22::new<bool>[core::marker::Sized<bool>](const (false))
+    ↳ unwind {
+        unwind
+    }
     storage_live(@2)
     storage_live(@3)
     // `try_borrow` has a type that includes predicates on late bound regions.
     @3 := &ref_b@1
     @2 := core::cell::{core::cell::RefCell<T>}#23::try_borrow<'_, bool>(move (@3))
+    ↳ unwind {
+        unwind
+    }
     storage_dead(@3)
     drop @2
     storage_dead(@2)

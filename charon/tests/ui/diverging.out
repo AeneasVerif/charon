@@ -24,6 +24,9 @@ fn test_crate::call_my_panic()
 
     storage_live(@1)
     @1 := test_crate::my_panic(const (0 : u32))
+    ↳ unwind {
+        unwind
+    }
 }
 
 

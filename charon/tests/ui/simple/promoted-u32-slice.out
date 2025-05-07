@@ -20,6 +20,9 @@ pub fn test_crate::foo() -> &'static (Slice<u32>)
     @2 := &*(@3)
     @1 := &*(@2)
     @0 := @ArrayToSliceShared<'_, u32, 4 : usize>(move (@1))
+    ↳ unwind {
+        undefined_behavior
+    }
     storage_dead(@1)
     storage_dead(@2)
     return

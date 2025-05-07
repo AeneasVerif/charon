@@ -95,6 +95,9 @@ fn test_crate::main()
     storage_live(@3)
     @3 := copy (f@1)
     @2 := core::option::Option::Some<u8>[core::marker::Sized<u8>](const (42 : u8))
+    ↳ unwind {
+        unwind
+    }
     storage_dead(@3)
     storage_dead(@2)
     storage_live(f@4)
@@ -106,6 +109,9 @@ fn test_crate::main()
     storage_live(@7)
     @7 := copy (f@4)
     @6 := (move @7)(const (42 : u8))
+    ↳ unwind {
+        unwind
+    }
     storage_dead(@7)
     storage_dead(@6)
     storage_live(f@8)
@@ -115,7 +121,14 @@ fn test_crate::main()
     @10 := copy (f@8)
     storage_live(@11)
     @11 := alloc::string::{alloc::string::String}::new()
+    ↳ unwind {
+        unwind
+    }
     @9 := test_crate::Foo(const (42 : u32), move (@11))
+    ↳ unwind {
+        drop @11
+        unwind
+    }
     storage_dead(@11)
     storage_dead(@10)
     drop @9
@@ -132,6 +145,9 @@ fn test_crate::main()
     @16 := &@17
     @15 := &*(@16)
     @13 := test_crate::Bar::Variant<'_, i32>[core::marker::Sized<i32>](move (@15))
+    ↳ unwind {
+        unwind
+    }
     storage_dead(@15)
     storage_dead(@14)
     storage_dead(@17)

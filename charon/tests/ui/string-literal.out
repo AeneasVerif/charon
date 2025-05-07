@@ -27,6 +27,9 @@ fn test_crate::BAR() -> &'static (Slice<u8>)
     @2 := move (@4)
     @1 := &*(@2)
     @0 := @ArrayToSliceShared<'_, u8, 5 : usize>(move (@1))
+    ↳ unwind {
+        undefined_behavior
+    }
     storage_dead(@2)
     storage_dead(@1)
     return
@@ -87,6 +90,9 @@ fn test_crate::main()
     @3 := const ("Hello")
     @2 := &*(@3)
     _s@1 := alloc::string::{impl alloc::string::ToString for T}#34::to_string<'_, Str>[core::fmt::{impl core::fmt::Display for Str}#19](move (@2))
+    ↳ unwind {
+        unwind
+    }
     storage_dead(@2)
     storage_dead(@3)
     @0 := ()

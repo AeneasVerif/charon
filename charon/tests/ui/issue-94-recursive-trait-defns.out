@@ -74,6 +74,9 @@ pub fn test_crate::T6::f<Self, T>(@1: u64)
     storage_live(@2)
     @2 := copy (x@1)
     @0 := Self::parent_clause2::g(move (@2))
+    ↳ unwind {
+        unwind
+    }
     storage_dead(@2)
     @0 := ()
     return

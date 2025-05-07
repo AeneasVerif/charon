@@ -30,6 +30,9 @@ fn test_crate::panic2()
     @3 := &@4
     @2 := &*(@3)
     @1 := core::fmt::{core::fmt::Arguments<'a>}#4::new_const<'_, 1 : usize>(move (@2))
+    ↳ unwind {
+        unwind
+    }
     storage_dead(@2)
     panic(core::panicking::panic_fmt)
 }
@@ -63,9 +66,15 @@ fn test_crate::panic3()
     storage_live(@6)
     storage_live(@7)
     @7 := core::fmt::rt::{core::fmt::rt::Argument<'_0>}#1::none<'_>()
+    ↳ unwind {
+        unwind
+    }
     @6 := &@7
     @5 := &*(@6)
     @1 := core::fmt::{core::fmt::Arguments<'a>}#4::new_v1<'_, 1 : usize, 0 : usize>(move (@2), move (@5))
+    ↳ unwind {
+        unwind
+    }
     storage_dead(@5)
     storage_dead(@2)
     panic(core::panicking::panic_fmt)
@@ -116,6 +125,9 @@ fn test_crate::panic5()
         @5 := &@6
         @4 := &*(@5)
         @3 := core::fmt::{core::fmt::Arguments<'a>}#4::new_const<'_, 1 : usize>(move (@4))
+        ↳ unwind {
+            unwind
+        }
         storage_dead(@4)
         panic(core::panicking::panic_fmt)
     }
@@ -155,9 +167,15 @@ fn test_crate::panic7()
     storage_live(@6)
     storage_live(@7)
     @7 := core::fmt::rt::{core::fmt::rt::Argument<'_0>}#1::none<'_>()
+    ↳ unwind {
+        unwind
+    }
     @6 := &@7
     @5 := &*(@6)
     @1 := core::fmt::{core::fmt::Arguments<'a>}#4::new_v1<'_, 1 : usize, 0 : usize>(move (@2), move (@5))
+    ↳ unwind {
+        unwind
+    }
     storage_dead(@5)
     storage_dead(@2)
     panic(core::panicking::panic_fmt)

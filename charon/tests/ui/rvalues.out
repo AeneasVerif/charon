@@ -106,6 +106,9 @@ fn test_crate::ptr_casts()
     storage_live(@2)
     storage_live(@3)
     @3 := @ArrayRepeat<'_, u32, 64 : usize>(const (0 : u32))
+    ↳ unwind {
+        undefined_behavior
+    }
     @2 := &@3
     array_ptr@1 := &raw const *(@2)
     storage_dead(@2)
@@ -239,6 +242,9 @@ fn test_crate::boxes()
     storage_live(@1)
     storage_live(@2)
     @2 := @BoxNew<i32>[core::marker::Sized<alloc::alloc::Global>](const (42 : i32))
+    ↳ unwind {
+        unwind
+    }
     @1 := move (@2)
     drop @2
     storage_dead(@2)
@@ -257,6 +263,9 @@ fn test_crate::STEAL() -> Array<(), 1 : usize>
     storage_live(@1)
     @1 := ()
     @0 := @ArrayRepeat<'_, (), 1 : usize>(move (@1))
+    ↳ unwind {
+        undefined_behavior
+    }
     storage_dead(@1)
     return
 }
@@ -285,6 +294,9 @@ fn test_crate::STEAL2() -> Array<(), 13 : usize>
     storage_live(@1)
     @1 := ()
     @0 := @ArrayRepeat<'_, (), 13 : usize>(move (@1))
+    ↳ unwind {
+        undefined_behavior
+    }
     storage_dead(@1)
     return
 }
@@ -328,8 +340,14 @@ where
 
     storage_live(size@1)
     size@1 := core::mem::size_of<T>[@TraitClause0]()
+    ↳ unwind {
+        unwind
+    }
     storage_live(align@2)
     align@2 := core::mem::align_of<T>[@TraitClause0]()
+    ↳ unwind {
+        unwind
+    }
     storage_live(ub@3)
     // This is `const (false)` in the MIR we get, but `true` in const evaluation.
     ub@3 := ub_checks<bool>

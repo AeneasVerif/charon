@@ -50,6 +50,10 @@ where
     @4 := &opt@1
     @3 := &*(@4)
     @2 := test_crate::discriminant_value<'_, T>[@TraitClause0](move (@3))
+    ↳ unwind {
+        drop opt@1
+        unwind
+    }
     storage_dead(@3)
     @0 := move (@2) != const (0 : isize)
     storage_dead(@2)

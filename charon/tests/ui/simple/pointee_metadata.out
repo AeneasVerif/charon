@@ -139,6 +139,9 @@ fn test_crate::empty_metadata()
     @3 := &@4
     @2 := &raw const *(@3)
     @1 := core::ptr::const_ptr::{*const T}::to_raw_parts<u32>(move (@2))
+    ↳ unwind {
+        unwind
+    }
     storage_dead(@2)
     storage_dead(@4)
     storage_dead(@3)
@@ -168,6 +171,9 @@ fn test_crate::slice_metadata()
     @2 := unsize_cast<*const Array<u32, 2 : usize>, *const Slice<u32>>(move (@3))
     storage_dead(@3)
     @1 := core::ptr::const_ptr::{*const T}::to_raw_parts<Slice<u32>>(move (@2))
+    ↳ unwind {
+        unwind
+    }
     storage_dead(@2)
     storage_dead(@5)
     storage_dead(@4)

@@ -709,6 +709,9 @@ pub fn test_crate::test_loops()
 
     storage_live(x@1)
     x@1 := test_crate::test_loop1(const (2 : u32))
+    ↳ unwind {
+        unwind
+    }
     storage_live(@2)
     storage_live(@3)
     storage_live(@4)
@@ -725,6 +728,9 @@ pub fn test_crate::test_loops()
     storage_dead(@2)
     storage_live(x@5)
     x@5 := test_crate::test_loop2(const (2 : u32))
+    ↳ unwind {
+        unwind
+    }
     storage_live(@6)
     storage_live(@7)
     storage_live(@8)
@@ -741,6 +747,9 @@ pub fn test_crate::test_loops()
     storage_dead(@6)
     storage_live(x@9)
     x@9 := test_crate::test_loop3(const (2 : u32))
+    ↳ unwind {
+        unwind
+    }
     storage_live(@10)
     storage_live(@11)
     storage_live(@12)
@@ -757,6 +766,9 @@ pub fn test_crate::test_loops()
     storage_dead(@10)
     storage_live(x@13)
     x@13 := test_crate::test_loop4(const (20 : u32))
+    ↳ unwind {
+        unwind
+    }
     storage_live(@14)
     storage_live(@15)
     storage_live(@16)
@@ -773,6 +785,9 @@ pub fn test_crate::test_loops()
     storage_dead(@14)
     storage_live(x@17)
     x@17 := test_crate::test_loop5(const (2 : u32))
+    ↳ unwind {
+        unwind
+    }
     storage_live(@18)
     storage_live(@19)
     storage_live(@20)
@@ -789,6 +804,9 @@ pub fn test_crate::test_loops()
     storage_dead(@18)
     storage_live(x@21)
     x@21 := test_crate::test_loop6(const (2 : u32))
+    ↳ unwind {
+        unwind
+    }
     storage_live(@22)
     storage_live(@23)
     storage_live(@24)
@@ -1011,8 +1029,19 @@ pub fn test_crate::nested_loops_enum(@1: usize, @2: usize) -> usize
     let @27: &'_ mut (core::ops::range::Range<usize>[core::marker::Sized<usize>]); // anonymous local
     let @28: &'_ mut (core::ops::range::Range<usize>[core::marker::Sized<usize>]); // anonymous local
 
+    storage_live(@8)
+    storage_live(@9)
     storage_live(@10)
+    storage_live(@11)
+    storage_live(@12)
+    storage_live(@13)
+    storage_live(@14)
+    storage_live(@15)
+    storage_live(iter@16)
+    storage_live(@17)
+    storage_live(@18)
     storage_live(@19)
+    storage_live(@20)
     storage_live(@21)
     storage_live(@22)
     storage_live(@23)
@@ -1028,6 +1057,9 @@ pub fn test_crate::nested_loops_enum(@1: usize, @2: usize) -> usize
     storage_live(@6)
     @6 := core::ops::range::Range { start: const (0 : i32), end: const (128 : i32) }
     @5 := core::iter::traits::collect::{impl core::iter::traits::collect::IntoIterator for I}::into_iter<core::ops::range::Range<i32>[core::marker::Sized<i32>]>[core::marker::Sized<core::ops::range::Range<i32>[core::marker::Sized<i32>]>, core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>[@TraitClause0]}#6<i32>[core::marker::Sized<i32>, core::iter::range::{impl core::iter::range::Step for i32}#40]](move (@6))
+    ↳ unwind {
+        unwind
+    }
     storage_dead(@6)
     storage_live(iter@7)
     iter@7 := move (@5)
@@ -1039,10 +1071,12 @@ pub fn test_crate::nested_loops_enum(@1: usize, @2: usize) -> usize
         @11 := &mut iter@7
         @10 := &two-phase-mut *(@11)
         @9 := core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>[@TraitClause0]}#6::next<'_, i32>[core::marker::Sized<i32>, core::iter::range::{impl core::iter::range::Step for i32}#40](move (@10))
+        ↳ unwind {
+            unwind
+        }
         storage_dead(@10)
         match @9 {
             core::option::Option::None => {
-                break 0
             },
             core::option::Option::Some => {
                 s@3 := copy (s@3) + const (1 : usize)
@@ -1052,91 +1086,101 @@ pub fn test_crate::nested_loops_enum(@1: usize, @2: usize) -> usize
                 continue 0
             },
         }
-    }
-    storage_dead(@11)
-    storage_dead(@9)
-    storage_dead(@8)
-    storage_dead(iter@7)
-    storage_dead(@5)
-    storage_dead(@4)
-    storage_live(@12)
-    storage_live(@13)
-    storage_live(@14)
-    storage_live(@15)
-    @15 := copy (step_out@1)
-    @14 := core::ops::range::Range { start: const (0 : usize), end: move (@15) }
-    storage_dead(@15)
-    @13 := core::iter::traits::collect::{impl core::iter::traits::collect::IntoIterator for I}::into_iter<core::ops::range::Range<usize>[core::marker::Sized<usize>]>[core::marker::Sized<core::ops::range::Range<usize>[core::marker::Sized<usize>]>, core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>[@TraitClause0]}#6<usize>[core::marker::Sized<usize>, core::iter::range::{impl core::iter::range::Step for usize}#43]](move (@14))
-    storage_dead(@14)
-    storage_live(iter@16)
-    iter@16 := move (@13)
-    loop {
-        storage_live(@17)
-        storage_live(@18)
-        storage_live(@19)
-        storage_live(@20)
-        @20 := &mut iter@16
-        @19 := &two-phase-mut *(@20)
-        @18 := core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>[@TraitClause0]}#6::next<'_, usize>[core::marker::Sized<usize>, core::iter::range::{impl core::iter::range::Step for usize}#43](move (@19))
-        storage_dead(@19)
-        match @18 {
-            core::option::Option::None => {
-                break 0
-            },
-            core::option::Option::Some => {
-                storage_live(@21)
-                storage_live(@22)
-                storage_live(@23)
-                @23 := copy (step_in@2)
-                @22 := core::ops::range::Range { start: const (0 : usize), end: move (@23) }
-                storage_dead(@23)
-                @21 := core::iter::traits::collect::{impl core::iter::traits::collect::IntoIterator for I}::into_iter<core::ops::range::Range<usize>[core::marker::Sized<usize>]>[core::marker::Sized<core::ops::range::Range<usize>[core::marker::Sized<usize>]>, core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>[@TraitClause0]}#6<usize>[core::marker::Sized<usize>, core::iter::range::{impl core::iter::range::Step for usize}#43]](move (@22))
-                storage_dead(@22)
-                storage_live(iter@24)
-                iter@24 := move (@21)
-                loop {
-                    storage_live(@25)
-                    storage_live(@26)
-                    storage_live(@27)
-                    storage_live(@28)
-                    @28 := &mut iter@24
-                    @27 := &two-phase-mut *(@28)
-                    @26 := core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>[@TraitClause0]}#6::next<'_, usize>[core::marker::Sized<usize>, core::iter::range::{impl core::iter::range::Step for usize}#43](move (@27))
-                    storage_dead(@27)
-                    match @26 {
-                        core::option::Option::None => {
-                            break 0
-                        },
-                        core::option::Option::Some => {
-                            s@3 := copy (s@3) + const (1 : usize)
-                            storage_dead(@28)
-                            storage_dead(@26)
-                            storage_dead(@25)
-                            continue 0
-                        },
+        storage_dead(@11)
+        storage_dead(@9)
+        storage_dead(@8)
+        storage_dead(iter@7)
+        storage_dead(@5)
+        storage_dead(@4)
+        storage_live(@12)
+        storage_live(@13)
+        storage_live(@14)
+        storage_live(@15)
+        @15 := copy (step_out@1)
+        @14 := core::ops::range::Range { start: const (0 : usize), end: move (@15) }
+        storage_dead(@15)
+        @13 := core::iter::traits::collect::{impl core::iter::traits::collect::IntoIterator for I}::into_iter<core::ops::range::Range<usize>[core::marker::Sized<usize>]>[core::marker::Sized<core::ops::range::Range<usize>[core::marker::Sized<usize>]>, core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>[@TraitClause0]}#6<usize>[core::marker::Sized<usize>, core::iter::range::{impl core::iter::range::Step for usize}#43]](move (@14))
+        ↳ unwind {
+            unwind
+        }
+        storage_dead(@14)
+        storage_live(iter@16)
+        iter@16 := move (@13)
+        loop {
+            storage_live(@17)
+            storage_live(@18)
+            storage_live(@19)
+            storage_live(@20)
+            @20 := &mut iter@16
+            @19 := &two-phase-mut *(@20)
+            @18 := core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>[@TraitClause0]}#6::next<'_, usize>[core::marker::Sized<usize>, core::iter::range::{impl core::iter::range::Step for usize}#43](move (@19))
+            ↳ unwind {
+                unwind
+            }
+            storage_dead(@19)
+            match @18 {
+                core::option::Option::None => {
+                },
+                core::option::Option::Some => {
+                    storage_live(@21)
+                    storage_live(@22)
+                    storage_live(@23)
+                    @23 := copy (step_in@2)
+                    @22 := core::ops::range::Range { start: const (0 : usize), end: move (@23) }
+                    storage_dead(@23)
+                    @21 := core::iter::traits::collect::{impl core::iter::traits::collect::IntoIterator for I}::into_iter<core::ops::range::Range<usize>[core::marker::Sized<usize>]>[core::marker::Sized<core::ops::range::Range<usize>[core::marker::Sized<usize>]>, core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>[@TraitClause0]}#6<usize>[core::marker::Sized<usize>, core::iter::range::{impl core::iter::range::Step for usize}#43]](move (@22))
+                    ↳ unwind {
+                        unwind
                     }
-                }
-                storage_dead(@28)
-                storage_dead(@26)
-                storage_dead(@25)
-                storage_dead(iter@24)
-                storage_dead(@21)
-                storage_dead(@20)
-                storage_dead(@18)
-                storage_dead(@17)
-                continue 0
-            },
+                    storage_dead(@22)
+                    storage_live(iter@24)
+                    iter@24 := move (@21)
+                    loop {
+                        storage_live(@25)
+                        storage_live(@26)
+                        storage_live(@27)
+                        storage_live(@28)
+                        @28 := &mut iter@24
+                        @27 := &two-phase-mut *(@28)
+                        @26 := core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>[@TraitClause0]}#6::next<'_, usize>[core::marker::Sized<usize>, core::iter::range::{impl core::iter::range::Step for usize}#43](move (@27))
+                        ↳ unwind {
+                            unwind
+                        }
+                        storage_dead(@27)
+                        match @26 {
+                            core::option::Option::None => {
+                            },
+                            core::option::Option::Some => {
+                                s@3 := copy (s@3) + const (1 : usize)
+                                storage_dead(@28)
+                                storage_dead(@26)
+                                storage_dead(@25)
+                                continue 0
+                            },
+                        }
+                        storage_dead(@28)
+                        storage_dead(@26)
+                        storage_dead(@25)
+                        storage_dead(iter@24)
+                        storage_dead(@21)
+                        storage_dead(@20)
+                        storage_dead(@18)
+                        storage_dead(@17)
+                        continue 1
+                    }
+                },
+            }
+            storage_dead(@20)
+            storage_dead(@18)
+            storage_dead(@17)
+            storage_dead(iter@16)
+            storage_dead(@13)
+            storage_dead(@12)
+            @0 := copy (s@3)
+            storage_dead(s@3)
+            return
         }
     }
-    storage_dead(@20)
-    storage_dead(@18)
-    storage_dead(@17)
-    storage_dead(iter@16)
-    storage_dead(@13)
-    storage_dead(@12)
-    @0 := copy (s@3)
-    storage_dead(s@3)
-    return
 }
 
 pub fn core::clone::impls::{impl core::clone::Clone for u32}#8::clone<'_0>(@1: &'_0 (u32)) -> u32
@@ -1222,6 +1266,9 @@ pub fn test_crate::loop_inside_if(@1: bool, @2: u32) -> u32
         @7 := core::ops::range::Range { start: const (0 : u32), end: move (@8) }
         storage_dead(@8)
         @6 := core::iter::traits::collect::{impl core::iter::traits::collect::IntoIterator for I}::into_iter<core::ops::range::Range<u32>[core::marker::Sized<u32>]>[core::marker::Sized<core::ops::range::Range<u32>[core::marker::Sized<u32>]>, core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>[@TraitClause0]}#6<u32>[core::marker::Sized<u32>, core::iter::range::{impl core::iter::range::Step for u32}#39]](move (@7))
+        ↳ unwind {
+            unwind
+        }
         storage_dead(@7)
         storage_live(iter@9)
         iter@9 := move (@6)
@@ -1233,10 +1280,12 @@ pub fn test_crate::loop_inside_if(@1: bool, @2: u32) -> u32
             @13 := &mut iter@9
             @12 := &two-phase-mut *(@13)
             @11 := core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>[@TraitClause0]}#6::next<'_, u32>[core::marker::Sized<u32>, core::iter::range::{impl core::iter::range::Step for u32}#39](move (@12))
+            ↳ unwind {
+                unwind
+            }
             storage_dead(@12)
             match @11 {
                 core::option::Option::None => {
-                    break 0
                 },
                 core::option::Option::Some => {
                     storage_live(i@14)
@@ -1252,15 +1301,15 @@ pub fn test_crate::loop_inside_if(@1: bool, @2: u32) -> u32
                     continue 0
                 },
             }
+            storage_dead(@13)
+            storage_dead(@11)
+            storage_dead(@10)
+            storage_dead(iter@9)
+            storage_dead(@6)
+            storage_dead(@5)
+            @0 := copy (s@4)
+            storage_dead(s@4)
         }
-        storage_dead(@13)
-        storage_dead(@11)
-        storage_dead(@10)
-        storage_dead(iter@9)
-        storage_dead(@6)
-        storage_dead(@5)
-        @0 := copy (s@4)
-        storage_dead(s@4)
     }
     else {
         @0 := const (0 : u32)
@@ -1361,6 +1410,9 @@ pub fn test_crate::sum_array<const N : usize>(@1: Array<u32, const N : usize>) -
             @10 := &a@1
             storage_live(@11)
             @11 := @ArrayIndexShared<'_, u32, const N : usize>(move (@10), copy (@8))
+            ↳ unwind {
+                undefined_behavior
+            }
             @7 := copy (*(@11))
             s@3 := copy (s@3) + copy (@7)
             storage_dead(@7)
@@ -1474,10 +1526,14 @@ pub fn test_crate::clear<'_0>(@1: &'_0 mut (alloc::vec::Vec<u32, alloc::alloc::G
     let @9: usize; // anonymous local
     let @10: (); // anonymous local
 
+    storage_live(@3)
+    storage_live(@4)
+    storage_live(@5)
     storage_live(@6)
     storage_live(@7)
     storage_live(@8)
     storage_live(@9)
+    storage_live(@10)
     storage_live(i@2)
     i@2 := const (0 : usize)
     loop {
@@ -1488,12 +1544,23 @@ pub fn test_crate::clear<'_0>(@1: &'_0 mut (alloc::vec::Vec<u32, alloc::alloc::G
         storage_live(@6)
         @6 := &*(v@1)
         @5 := alloc::vec::{alloc::vec::Vec<T, A>[@TraitClause0, @TraitClause1]}#1::len<'_, u32, alloc::alloc::Global>[core::marker::Sized<u32>, core::marker::Sized<alloc::alloc::Global>](move (@6))
+        ↳ unwind {
+            unwind
+        }
         storage_dead(@6)
         @3 := move (@4) < move (@5)
         if move (@3) {
         }
         else {
-            break 0
+            storage_dead(@5)
+            storage_dead(@4)
+            storage_live(@10)
+            @0 := ()
+            storage_dead(@10)
+            storage_dead(@3)
+            storage_dead(i@2)
+            @0 := ()
+            return
         }
         storage_dead(@5)
         storage_dead(@4)
@@ -1503,6 +1570,9 @@ pub fn test_crate::clear<'_0>(@1: &'_0 mut (alloc::vec::Vec<u32, alloc::alloc::G
         storage_live(@9)
         @9 := copy (i@2)
         @7 := alloc::vec::{impl core::ops::index::IndexMut<I> for alloc::vec::Vec<T, A>[@TraitClause0, @TraitClause2]}#14::index_mut<'_, u32, usize, alloc::alloc::Global>[core::marker::Sized<u32>, core::marker::Sized<usize>, core::marker::Sized<alloc::alloc::Global>, core::slice::index::{impl core::slice::index::SliceIndex<Slice<T>> for usize}#2<u32>[core::marker::Sized<u32>]](move (@8), move (@9))
+        ↳ unwind {
+            unwind
+        }
         storage_dead(@9)
         storage_dead(@8)
         *(@7) := const (0 : u32)
@@ -1511,15 +1581,6 @@ pub fn test_crate::clear<'_0>(@1: &'_0 mut (alloc::vec::Vec<u32, alloc::alloc::G
         storage_dead(@3)
         continue 0
     }
-    storage_dead(@5)
-    storage_dead(@4)
-    storage_live(@10)
-    @0 := ()
-    storage_dead(@10)
-    storage_dead(@3)
-    storage_dead(i@2)
-    @0 := ()
-    return
 }
 
 pub enum test_crate::List<T>

@@ -55,6 +55,9 @@ fn test_crate::main()
     @6 := &mut hasher@1
     @5 := &two-phase-mut *(@6)
     @2 := test_crate::{impl test_crate::Hash for u32}#1::hash<'_, '_, test_crate::DefaultHasher>[core::marker::Sized<test_crate::DefaultHasher>, test_crate::{impl test_crate::Hasher for test_crate::DefaultHasher}](move (@3), move (@5))
+    ↳ unwind {
+        unwind
+    }
     storage_dead(@5)
     storage_dead(@3)
     storage_dead(@6)

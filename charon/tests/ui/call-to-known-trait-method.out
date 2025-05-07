@@ -31,6 +31,9 @@ where
 
     storage_live(@1)
     @1 := @TraitClause1::default()
+    ↳ unwind {
+        unwind
+    }
     @0 := test_crate::Struct { 0: move (@1) }
     drop @1
     storage_dead(@1)
@@ -130,8 +133,14 @@ fn test_crate::main()
     _x@1 := (const (0 : u8), const (false))
     storage_live(_y@2)
     _y@2 := test_crate::{impl core::default::Default for test_crate::Struct<A>[@TraitClause0]}#1::default<bool>[core::marker::Sized<bool>, core::default::{impl core::default::Default for bool}#1]()
+    ↳ unwind {
+        unwind
+    }
     storage_live(@3)
     @3 := test_crate::{impl test_crate::Trait<B, (A, B)> for test_crate::Struct<A>[@TraitClause0]}::method<u8, bool, alloc::string::String>[core::marker::Sized<u8>, core::marker::Sized<bool>, core::clone::impls::{impl core::clone::Clone for u8}#6, core::cmp::impls::{impl core::cmp::PartialEq<bool> for bool}#19, core::marker::Sized<alloc::string::String>]()
+    ↳ unwind {
+        unwind
+    }
     storage_dead(@3)
     @0 := ()
     storage_dead(_y@2)

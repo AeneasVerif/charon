@@ -103,6 +103,9 @@ pub fn test_crate::test3(@1: test_crate::E2) -> u32
     }
     storage_live(z@5)
     z@5 := test_crate::id<u32>[core::marker::Sized<u32>](const (3 : u32))
+    ↳ unwind {
+        unwind
+    }
     storage_live(@6)
     @6 := copy (y@3)
     storage_live(@7)

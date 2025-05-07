@@ -64,6 +64,9 @@ fn test_crate::main()
     let @0: (); // return
 
     @0 := test_crate::take<test_crate::Wrapper<()>[core::marker::Sized<()>], ()>[core::marker::Sized<test_crate::Wrapper<()>[core::marker::Sized<()>]>, test_crate::{impl test_crate::HasOutput2<Clause1_Clause0_Output> for test_crate::Wrapper<T>[@TraitClause0]}#3<(), ()>[core::marker::Sized<()>, test_crate::{impl test_crate::HasOutput2<()> for ()}#1]]()
+    ↳ unwind {
+        unwind
+    }
     @0 := ()
     return
 }

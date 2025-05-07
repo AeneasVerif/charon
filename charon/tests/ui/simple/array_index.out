@@ -14,6 +14,9 @@ pub fn test_crate::first(@1: Array<u32, 0 : usize>) -> u32
     @3 := &s@1
     storage_live(@4)
     @4 := @ArrayIndexShared<'_, u32, 0 : usize>(move (@3), copy (@2))
+    ↳ unwind {
+        undefined_behavior
+    }
     @0 := copy (*(@4))
     storage_dead(@2)
     return

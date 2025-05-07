@@ -45,18 +45,30 @@ fn test_crate::use_inlines() -> u32
     storage_live(@2)
     storage_live(@3)
     @3 := issue_114_opaque_bodies_aux::inline_always()
+    ↳ unwind {
+        unwind
+    }
     storage_live(@4)
     @4 := issue_114_opaque_bodies_aux::inline_sometimes()
+    ↳ unwind {
+        unwind
+    }
     @2 := copy (@3) + copy (@4)
     storage_dead(@4)
     storage_dead(@3)
     storage_live(@5)
     @5 := issue_114_opaque_bodies_aux::inline_never()
+    ↳ unwind {
+        unwind
+    }
     @1 := copy (@2) + copy (@5)
     storage_dead(@5)
     storage_dead(@2)
     storage_live(@6)
     @6 := issue_114_opaque_bodies_aux::inline_generic<bool>[core::marker::Sized<bool>]()
+    ↳ unwind {
+        unwind
+    }
     @0 := copy (@1) + copy (@6)
     storage_dead(@6)
     storage_dead(@1)
@@ -107,6 +119,9 @@ fn test_crate::bool_to_opt(@1: bool) -> core::option::Option<()>[core::marker::S
     storage_live(@3)
     @3 := ()
     @0 := core::bool::{bool}::then_some<()>[core::marker::Sized<()>](move (@2), move (@3))
+    ↳ unwind {
+        unwind
+    }
     storage_dead(@3)
     storage_dead(@2)
     return
@@ -130,6 +145,9 @@ fn test_crate::convert(@1: i32) -> i64
     storage_live(@2)
     @2 := copy (x@1)
     @0 := core::convert::num::{impl core::convert::From<i32> for i64}#83::from(move (@2))
+    ↳ unwind {
+        unwind
+    }
     storage_dead(@2)
     return
 }
@@ -273,6 +291,9 @@ pub fn core::cmp::PartialEq::ne<'_0, '_1, Self, Rhs>(@1: &'_0 (Self), @2: &'_1 (
 
     storage_live(@3)
     @3 := Self::eq<'_, '_>(move (self@1), move (other@2))
+    ↳ unwind {
+        unwind
+    }
     @0 := ~(move (@3))
     storage_dead(@3)
     return

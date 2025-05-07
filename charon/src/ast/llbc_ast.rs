@@ -34,11 +34,16 @@ pub enum RawStatement {
     Deinit(Place),
     Drop(Place),
     Assert(Assert),
-    Call(Call),
+    Call {
+        call: Call,
+        on_unwind: Block,
+    },
     /// Panic also handles "unreachable". We keep the name of the panicking function that was
     /// called.
     Abort(AbortKind),
     Return,
+    // Continues unwinding.
+    Unwind,
     /// Break to outer loops.
     /// The `usize` gives the index of the outer loop to break to:
     /// * 0: break to first outer loop (the current loop)
