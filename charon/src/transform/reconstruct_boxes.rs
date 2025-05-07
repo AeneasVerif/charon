@@ -170,18 +170,18 @@ impl UllbcPass for Transform {
                 .get_mut(old_assign_idx)
                 .unwrap()
                 .content = RawStatement::Nop;
-
-            // Make sure we got all the `ShallowInitBox`es.
-            b.body.dyn_visit_in_body(|rvalue: &Rvalue| {
-                if rvalue.is_shallow_init_box() {
-                    register_error!(
-                        ctx,
-                        b.span,
-                        "Could not reconstruct `Box` initialization; \
-                    branching during `Box` initialization is not supported."
-                    );
-                }
-            });
         }
+
+        // Make sure we got all the `ShallowInitBox`es.
+        b.body.dyn_visit_in_body(|rvalue: &Rvalue| {
+            if rvalue.is_shallow_init_box() {
+                register_error!(
+                    ctx,
+                    b.span,
+                    "Could not reconstruct `Box` initialization; \
+                    branching during `Box` initialization is not supported."
+                );
+            }
+        });
     }
 }
