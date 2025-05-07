@@ -65,7 +65,10 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
             None,
             GenericsSource::item(trait_id),
         )?;
-        Ok(TraitDeclRef { trait_id, generics })
+        Ok(TraitDeclRef {
+            trait_id,
+            generics: Box::new(generics),
+        })
     }
 
     pub(crate) fn register_predicate(
@@ -205,7 +208,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                     GenericsSource::item(impl_id),
                 )?;
                 TraitRef {
-                    kind: TraitRefKind::TraitImpl(impl_id, generics),
+                    kind: TraitRefKind::TraitImpl(impl_id, Box::new(generics)),
                     trait_decl_ref,
                 }
             }

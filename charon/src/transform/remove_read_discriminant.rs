@@ -24,7 +24,8 @@ fn generate_discr_assignment(
     let targets = variants
         .iter_indexed_values()
         .map(|(id, variant)| {
-            let discr_value = Rvalue::Use(Operand::Const(variant.discriminant.to_constant()));
+            let discr_value =
+                Rvalue::Use(Operand::Const(Box::new(variant.discriminant.to_constant())));
             let statement = Statement::new(span, RawStatement::Assign(dest.clone(), discr_value));
             (vec![id], statement.into_block())
         })
@@ -158,8 +159,8 @@ impl Transform {
                     if let Some(discriminant_intrinsic) = discriminant_intrinsic
                         // Detect a call to the intrinsic...
                         && let FnOperand::Regular(fn_ptr) = &call.func
-                        && let FunIdOrTraitMethodRef::Fun(FunId::Regular(fun_id)) = fn_ptr.func
-                        && fun_id == discriminant_intrinsic
+                        && let FunIdOrTraitMethodRef::Fun(FunId::Regular(fun_id)) = fn_ptr.func.as_ref()
+                        && *fun_id == discriminant_intrinsic
                         // on a known enum...
                         && let ty = &fn_ptr.generics.types[0]
                         && let TyKind::Adt(TypeId::Adt(type_id), _) = *ty.kind()

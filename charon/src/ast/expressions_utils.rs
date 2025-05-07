@@ -63,7 +63,7 @@ impl Rvalue {
                 TypeId::Tuple,
                 None,
                 None,
-                GenericArgs::empty(GenericsSource::Builtin),
+                Box::new(GenericArgs::empty(GenericsSource::Builtin)),
             ),
             Vec::new(),
         )

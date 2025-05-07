@@ -52,7 +52,7 @@ impl UllbcPass for Transform {
                         if let RawStatement::Call(Call {
                             func:
                                 FnOperand::Regular(FnPtr {
-                                    func: FunIdOrTraitMethodRef::Fun(FunId::Regular(fun_id)),
+                                    func: box FunIdOrTraitMethodRef::Fun(FunId::Regular(fun_id)),
                                     ..
                                 }),
                             ..

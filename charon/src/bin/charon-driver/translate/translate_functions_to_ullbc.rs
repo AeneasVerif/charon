@@ -60,13 +60,13 @@ impl ItemTransCtx<'_, '_> {
                 let impl_id = self.register_trait_impl_id(span, impl_id);
                 let impl_ref = TraitImplRef {
                     impl_id,
-                    generics: self.translate_generic_args(
+                    generics: Box::new(self.translate_generic_args(
                         span,
                         impl_generics,
                         impl_required_impl_exprs,
                         None,
                         GenericsSource::item(impl_id),
-                    )?,
+                    )?),
                 };
                 let trait_ref = self.translate_trait_ref(span, implemented_trait_ref)?;
                 if matches!(def.kind(), hax::FullDefKind::AssocFn { .. }) {
@@ -280,9 +280,11 @@ impl ItemTransCtx<'_, '_> {
                     TypeId::Adt(adt_decl_id),
                     variant,
                     None,
-                    signature
-                        .generics
-                        .identity_args(GenericsSource::item(adt_decl_id)),
+                    Box::new(
+                        signature
+                            .generics
+                            .identity_args(GenericsSource::item(adt_decl_id)),
+                    ),
                 ),
                 args,
             ),
@@ -364,8 +366,8 @@ impl ItemTransCtx<'_, '_> {
         )?;
 
         Ok(FnPtr {
-            func: fun_id,
-            generics,
+            func: Box::new(fun_id),
+            generics: Box::new(generics),
         })
     }
 

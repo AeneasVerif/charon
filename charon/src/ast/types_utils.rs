@@ -927,13 +927,6 @@ pub trait TyVisitable: Sized + AstVisitable {
 
 impl<T: AstVisitable> TyVisitable for T {}
 
-impl PartialEq for TraitClause {
-    fn eq(&self, other: &Self) -> bool {
-        // Skip `span` and `origin`
-        self.clause_id == other.clause_id && self.trait_ == other.trait_
-    }
-}
-
 impl Eq for TraitClause {}
 
 mk_index_impls!(GenericArgs.regions[RegionId]: Region);

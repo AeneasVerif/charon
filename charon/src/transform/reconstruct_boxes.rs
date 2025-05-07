@@ -91,10 +91,10 @@ impl Transform {
                         };
                         seq[real_i].content = RawStatement::Call(Call {
                             func: FnOperand::Regular(FnPtr {
-                                func: FunIdOrTraitMethodRef::Fun(FunId::Builtin(
+                                func: Box::new(FunIdOrTraitMethodRef::Fun(FunId::Builtin(
                                     BuiltinFunId::BoxNew,
-                                )),
-                                generics,
+                                ))),
+                                generics: Box::new(generics),
                             }),
                             args: vec![val],
                             dest,

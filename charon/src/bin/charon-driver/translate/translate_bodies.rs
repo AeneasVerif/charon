@@ -306,7 +306,8 @@ impl BodyTransCtx<'_, '_, '_> {
                         from_end,
                         min_length: _,
                     } => {
-                        let offset = Operand::Const(ScalarValue::Usize(offset).to_constant());
+                        let offset =
+                            Operand::Const(Box::new(ScalarValue::Usize(offset).to_constant()));
                         subplace.project(
                             ProjectionElem::Index {
                                 offset: Box::new(offset),
@@ -316,8 +317,8 @@ impl BodyTransCtx<'_, '_, '_> {
                         )
                     }
                     &hax::ProjectionElem::Subslice { from, to, from_end } => {
-                        let from = Operand::Const(ScalarValue::Usize(from).to_constant());
-                        let to = Operand::Const(ScalarValue::Usize(to).to_constant());
+                        let from = Operand::Const(Box::new(ScalarValue::Usize(from).to_constant()));
+                        let to = Operand::Const(Box::new(ScalarValue::Usize(to).to_constant()));
                         subplace.project(
                             ProjectionElem::Subslice {
                                 from: Box::new(from),
@@ -361,7 +362,7 @@ impl BodyTransCtx<'_, '_, '_> {
                 hax::ConstOperandKind::Value(constant) => {
                     let constant = self.translate_constant_expr_to_constant_expr(span, constant)?;
                     let ty = constant.ty.clone();
-                    Ok((Operand::Const(constant), ty))
+                    Ok((Operand::Const(Box::new(constant)), ty))
                 }
                 hax::ConstOperandKind::Promoted {
                     def_id,
@@ -374,17 +375,17 @@ impl BodyTransCtx<'_, '_, '_> {
                     let constant = ConstantExpr {
                         value: RawConstantExpr::Global(GlobalDeclRef {
                             id: global_id,
-                            generics: self.translate_generic_args(
+                            generics: Box::new(self.translate_generic_args(
                                 span,
                                 args,
                                 impl_exprs,
                                 None,
                                 GenericsSource::item(global_id),
-                            )?,
+                            )?),
                         }),
                         ty: ty.clone(),
                     };
-                    Ok((Operand::Const(constant), ty))
+                    Ok((Operand::Const(Box::new(constant)), ty))
                 }
             },
         }
@@ -609,7 +610,7 @@ impl BodyTransCtx<'_, '_, '_> {
                             TypeId::Tuple,
                             None,
                             None,
-                            GenericArgs::empty(GenericsSource::Builtin),
+                            Box::new(GenericArgs::empty(GenericsSource::Builtin)),
                         ),
                         operands_t,
                     )),
@@ -651,7 +652,8 @@ impl BodyTransCtx<'_, '_, '_> {
                             AdtKind::Union => Some(translate_field_id(field_index.unwrap())),
                         };
 
-                        let akind = AggregateKind::Adt(type_id, variant_id, field_id, generics);
+                        let akind =
+                            AggregateKind::Adt(type_id, variant_id, field_id, Box::new(generics));
                         Ok(Rvalue::Aggregate(akind, operands_t))
                     }
                     hax::AggregateKind::Closure(def_id, closure_args) => {
@@ -674,7 +676,7 @@ impl BodyTransCtx<'_, '_, '_> {
                             GenericsSource::item(fun_id),
                         )?;
 
-                        let akind = AggregateKind::Closure(fun_id, generics);
+                        let akind = AggregateKind::Closure(fun_id, Box::new(generics));
 
                         Ok(Rvalue::Aggregate(akind, operands_t))
                     }
