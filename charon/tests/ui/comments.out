@@ -82,29 +82,29 @@ pub fn test_crate::sum<'_0>(@1: &'_0 (Slice<u32>)) -> u32
         storage_dead(@11)
         @8 := move (@9) < move (@10)
         if move (@8) {
-            storage_dead(@10)
-            storage_dead(@9)
-            storage_live(@12)
-            storage_live(@13)
-            // Add to running sum
-            @13 := copy (i@3)
-            storage_live(@22)
-            @22 := &*(s@1)
-            storage_live(@23)
-            @23 := @SliceIndexShared<'_, u32>(move (@22), copy (@13))
-            @12 := copy (*(@23))
-            sum@2 := copy (sum@2) + copy (@12)
-            storage_dead(@12)
-            storage_dead(@13)
-            // Increment `i`
-            i@3 := copy (i@3) + const (1 : usize)
-            // Before end of loop
-            storage_dead(@8)
-            continue 0
         }
         else {
             break 0
         }
+        storage_dead(@10)
+        storage_dead(@9)
+        storage_live(@12)
+        storage_live(@13)
+        // Add to running sum
+        @13 := copy (i@3)
+        storage_live(@22)
+        @22 := &*(s@1)
+        storage_live(@23)
+        @23 := @SliceIndexShared<'_, u32>(move (@22), copy (@13))
+        @12 := copy (*(@23))
+        sum@2 := copy (sum@2) + copy (@12)
+        storage_dead(@12)
+        storage_dead(@13)
+        // Increment `i`
+        i@3 := copy (i@3) + const (1 : usize)
+        // Before end of loop
+        storage_dead(@8)
+        continue 0
     }
     storage_dead(@10)
     storage_dead(@9)

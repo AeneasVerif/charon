@@ -1491,25 +1491,25 @@ pub fn test_crate::clear<'_0>(@1: &'_0 mut (alloc::vec::Vec<u32, alloc::alloc::G
         storage_dead(@6)
         @3 := move (@4) < move (@5)
         if move (@3) {
-            storage_dead(@5)
-            storage_dead(@4)
-            storage_live(@7)
-            storage_live(@8)
-            @8 := &mut *(v@1)
-            storage_live(@9)
-            @9 := copy (i@2)
-            @7 := alloc::vec::{impl core::ops::index::IndexMut<I> for alloc::vec::Vec<T, A>[@TraitClause0, @TraitClause2]}#14::index_mut<'_, u32, usize, alloc::alloc::Global>[core::marker::Sized<u32>, core::marker::Sized<usize>, core::marker::Sized<alloc::alloc::Global>, core::slice::index::{impl core::slice::index::SliceIndex<Slice<T>> for usize}#2<u32>[core::marker::Sized<u32>]](move (@8), move (@9))
-            storage_dead(@9)
-            storage_dead(@8)
-            *(@7) := const (0 : u32)
-            storage_dead(@7)
-            i@2 := copy (i@2) + const (1 : usize)
-            storage_dead(@3)
-            continue 0
         }
         else {
             break 0
         }
+        storage_dead(@5)
+        storage_dead(@4)
+        storage_live(@7)
+        storage_live(@8)
+        @8 := &mut *(v@1)
+        storage_live(@9)
+        @9 := copy (i@2)
+        @7 := alloc::vec::{impl core::ops::index::IndexMut<I> for alloc::vec::Vec<T, A>[@TraitClause0, @TraitClause2]}#14::index_mut<'_, u32, usize, alloc::alloc::Global>[core::marker::Sized<u32>, core::marker::Sized<usize>, core::marker::Sized<alloc::alloc::Global>, core::slice::index::{impl core::slice::index::SliceIndex<Slice<T>> for usize}#2<u32>[core::marker::Sized<u32>]](move (@8), move (@9))
+        storage_dead(@9)
+        storage_dead(@8)
+        *(@7) := const (0 : u32)
+        storage_dead(@7)
+        i@2 := copy (i@2) + const (1 : usize)
+        storage_dead(@3)
+        continue 0
     }
     storage_dead(@5)
     storage_dead(@4)
