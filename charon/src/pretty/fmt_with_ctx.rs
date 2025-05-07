@@ -1236,7 +1236,7 @@ impl<C: AstFormatter> FmtWithCtx<C> for Terminator {
                 let (call_s, _) = fmt_call(ctx, call);
                 write!(
                     &mut out,
-                    "{tab}{} := {call_s} -> {target}",
+                    "{tab}{} := {call_s} -> bb{target}",
                     call.dest.fmt_with_ctx(ctx)
                 )
             }
