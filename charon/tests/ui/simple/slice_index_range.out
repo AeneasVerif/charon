@@ -64,6 +64,9 @@ where
     let index@2: I; // arg #2
 
     @0 := @TraitClause2::index<'_>(move (index@2), move (self@1))
+    ↳ unwind {
+        unwind
+    }
     return
 }
 
@@ -177,6 +180,9 @@ where
                 @16 := copy (@17) offset copy (self@8)
                 storage_dead(@17)
                 @12 := @PtrFromPartsShared<'_, Slice<T>>(copy (@16), copy (new_len@15))
+                ↳ unwind {
+                    undefined_behavior
+                }
                 storage_dead(@16)
                 storage_dead(@13)
                 @11 := &*(@12)
@@ -294,6 +300,9 @@ where
                 @16 := copy (@17) offset copy (self@8)
                 storage_dead(@17)
                 @12 := @PtrFromPartsMut<'_, Slice<T>>(copy (@16), copy (new_len@15))
+                ↳ unwind {
+                    undefined_behavior
+                }
                 storage_dead(@16)
                 storage_dead(ptr@13)
                 @11 := &mut *(@12)
@@ -406,8 +415,14 @@ pub fn core::fmt::{core::fmt::Arguments<'a>}#4::new_const<'a, const N : usize>(@
     @4 := &@5
     storage_live(@2)
     @2 := @ArrayToSliceShared<'_, &'_ (Str), const N : usize>(copy (pieces@1))
+    ↳ unwind {
+        undefined_behavior
+    }
     storage_live(@3)
     @3 := @ArrayToSliceShared<'_, core::fmt::rt::Argument<'_>, 0 : usize>(move (@4))
+    ↳ unwind {
+        undefined_behavior
+    }
     @6 := core::option::Option::None {  }
     @0 := core::fmt::Arguments { pieces: move (@2), fmt: move (@6), args: move (@3) }
     storage_dead(@3)
@@ -442,6 +457,9 @@ pub fn core::panicking::panic_nounwind_fmt<'_0>(@1: core::fmt::Arguments<'_0>, @
     storage_dead(@5)
     storage_dead(@4)
     @0 := core::panicking::panic_nounwind_fmt::compiletime<'_>(move ((@3).0), move ((@3).1))
+    ↳ unwind {
+        unwind_terminate
+    }
 }
 
 #[lang_item("panic_nounwind")]
@@ -468,8 +486,14 @@ pub fn core::panicking::panic_nounwind(@1: &'static (Str)) -> !
     @5 := &@6
     @4 := &*(@5)
     @3 := core::fmt::{core::fmt::Arguments<'a>}#4::new_const<'_, 1 : usize>(move (@4))
+    ↳ unwind {
+        unwind_terminate
+    }
     storage_dead(@4)
     @2 := core::panicking::panic_nounwind_fmt<'_>(move (@3), const (false))
+    ↳ unwind {
+        undefined_behavior
+    }
 }
 
 fn core::slice::index::{impl core::slice::index::SliceIndex<Slice<T>> for core::ops::range::Range<usize>[core::marker::Sized<usize>]}#4::get_unchecked::precondition_check(@1: usize, @2: usize, @3: usize)
@@ -501,6 +525,9 @@ fn core::slice::index::{impl core::slice::index::SliceIndex<Slice<T>> for core::
     else {
     }
     @6 := core::panicking::panic_nounwind(const ("unsafe precondition(s) violated: slice::get_unchecked requires that the range is within the slice\n\nThis indicates a bug in the program. This Undefined Behavior check is optional, and cannot be relied on for safety."))
+    ↳ unwind {
+        undefined_behavior
+    }
 }
 
 pub unsafe fn core::slice::index::{impl core::slice::index::SliceIndex<Slice<T>> for core::ops::range::RangeInclusive<usize>[core::marker::Sized<usize>]}#10::get_unchecked<T>(@1: core::ops::range::RangeInclusive<usize>[core::marker::Sized<usize>], @2: *const Slice<T>) -> *const Slice<T>
@@ -550,6 +577,9 @@ where
         storage_live(@8)
         @8 := ptr_metadata(copy (slice@2))
         @7 := core::slice::index::{impl core::slice::index::SliceIndex<Slice<T>> for core::ops::range::Range<usize>[core::marker::Sized<usize>]}#4::get_unchecked::precondition_check(copy (self@5), copy (exclusive_end@3), move (@8))
+        ↳ unwind {
+            undefined_behavior
+        }
         storage_dead(@8)
     }
     else {
@@ -562,6 +592,9 @@ where
     @10 := copy (@11) offset copy (self@5)
     storage_dead(@11)
     @0 := @PtrFromPartsShared<'_, Slice<T>>(copy (@10), copy (new_len@9))
+    ↳ unwind {
+        undefined_behavior
+    }
     storage_dead(@10)
     storage_dead(new_len@9)
     return
@@ -596,6 +629,9 @@ fn core::slice::index::{impl core::slice::index::SliceIndex<Slice<T>> for core::
     else {
     }
     @6 := core::panicking::panic_nounwind(const ("unsafe precondition(s) violated: slice::get_unchecked_mut requires that the range is within the slice\n\nThis indicates a bug in the program. This Undefined Behavior check is optional, and cannot be relied on for safety."))
+    ↳ unwind {
+        undefined_behavior
+    }
 }
 
 pub unsafe fn core::slice::index::{impl core::slice::index::SliceIndex<Slice<T>> for core::ops::range::RangeInclusive<usize>[core::marker::Sized<usize>]}#10::get_unchecked_mut<T>(@1: core::ops::range::RangeInclusive<usize>[core::marker::Sized<usize>], @2: *mut Slice<T>) -> *mut Slice<T>
@@ -645,6 +681,9 @@ where
         storage_live(@8)
         @8 := ptr_metadata(copy (slice@2))
         @7 := core::slice::index::{impl core::slice::index::SliceIndex<Slice<T>> for core::ops::range::Range<usize>[core::marker::Sized<usize>]}#4::get_unchecked_mut::precondition_check(copy (self@5), copy (exclusive_end@3), move (@8))
+        ↳ unwind {
+            undefined_behavior
+        }
         storage_dead(@8)
     }
     else {
@@ -657,6 +696,9 @@ where
     @10 := copy (@11) offset copy (self@5)
     storage_dead(@11)
     @0 := @PtrFromPartsMut<'_, Slice<T>>(copy (@10), copy (new_len@9))
+    ↳ unwind {
+        undefined_behavior
+    }
     storage_dead(@10)
     storage_dead(new_len@9)
     return
@@ -681,6 +723,9 @@ fn core::slice::index::slice_end_index_len_fail::do_panic(@1: usize, @2: usize) 
     let len@2: usize; // arg #2
 
     @0 := core::slice::index::slice_end_index_len_fail::do_panic::runtime(move (index@1), move (len@2))
+    ↳ unwind {
+        unwind
+    }
 }
 
 fn core::slice::index::slice_end_index_len_fail(@1: usize, @2: usize) -> !
@@ -696,6 +741,9 @@ fn core::slice::index::slice_end_index_len_fail(@1: usize, @2: usize) -> !
     storage_live(@4)
     @4 := copy (len@2)
     @0 := core::slice::index::slice_end_index_len_fail::do_panic(move (@3), move (@4))
+    ↳ unwind {
+        unwind
+    }
 }
 
 fn core::slice::index::slice_index_order_fail::do_panic::runtime(@1: usize, @2: usize) -> !
@@ -707,6 +755,9 @@ fn core::slice::index::slice_index_order_fail::do_panic(@1: usize, @2: usize) ->
     let end@2: usize; // arg #2
 
     @0 := core::slice::index::slice_index_order_fail::do_panic::runtime(move (index@1), move (end@2))
+    ↳ unwind {
+        unwind
+    }
 }
 
 fn core::slice::index::slice_index_order_fail(@1: usize, @2: usize) -> !
@@ -722,6 +773,9 @@ fn core::slice::index::slice_index_order_fail(@1: usize, @2: usize) -> !
     storage_live(@4)
     @4 := copy (end@2)
     @0 := core::slice::index::slice_index_order_fail::do_panic(move (@3), move (@4))
+    ↳ unwind {
+        unwind
+    }
 }
 
 pub fn core::slice::index::{impl core::slice::index::SliceIndex<Slice<T>> for core::ops::range::Range<usize>[core::marker::Sized<usize>]}#4::index<'_0, T>(@1: core::ops::range::Range<usize>[core::marker::Sized<usize>], @2: &'_0 (Slice<T>)) -> &'_0 (Slice<T>)
@@ -789,6 +843,9 @@ where
             @15 := copy (@16) offset copy (rhs@7)
             storage_dead(@16)
             @11 := @PtrFromPartsShared<'_, Slice<T>>(copy (@15), copy (new_len@4))
+            ↳ unwind {
+                undefined_behavior
+            }
             storage_dead(@15)
             storage_dead(@12)
             @0 := &*(@11)
@@ -796,10 +853,16 @@ where
             return
         }
         @10 := core::slice::index::slice_end_index_len_fail(move (self@6), move (@9))
+        ↳ unwind {
+            unwind
+        }
     }
     storage_dead(@13)
     storage_dead(@5)
     @3 := core::slice::index::slice_index_order_fail(move (rhs@7), move (self@6))
+    ↳ unwind {
+        unwind
+    }
 }
 
 fn core::slice::index::slice_end_index_overflow_fail() -> !
@@ -824,6 +887,9 @@ fn core::slice::index::slice_end_index_overflow_fail() -> !
     @3 := &*(@4)
     @2 := &*(@3)
     @1 := core::fmt::{core::fmt::Arguments<'a>}#4::new_const<'_, 1 : usize>(move (@2))
+    ↳ unwind {
+        unwind
+    }
     storage_dead(@2)
     panic(core::panicking::panic_fmt)
 }
@@ -884,10 +950,16 @@ where
         storage_dead(@10)
         storage_dead(start@9)
         @0 := core::slice::index::{impl core::slice::index::SliceIndex<Slice<T>> for core::ops::range::Range<usize>[core::marker::Sized<usize>]}#4::index<'_, T>[@TraitClause0](move (@7), move (slice@2))
+        ↳ unwind {
+            unwind
+        }
         storage_dead(@7)
         return
     }
     @6 := core::slice::index::slice_end_index_overflow_fail()
+    ↳ unwind {
+        unwind
+    }
 }
 
 pub fn core::slice::index::{impl core::slice::index::SliceIndex<Slice<T>> for core::ops::range::Range<usize>[core::marker::Sized<usize>]}#4::index_mut<'_0, T>(@1: core::ops::range::Range<usize>[core::marker::Sized<usize>], @2: &'_0 mut (Slice<T>)) -> &'_0 mut (Slice<T>)
@@ -955,6 +1027,9 @@ where
             @15 := copy (@16) offset copy (rhs@7)
             storage_dead(@16)
             @11 := @PtrFromPartsMut<'_, Slice<T>>(copy (@15), copy (new_len@4))
+            ↳ unwind {
+                undefined_behavior
+            }
             storage_dead(@15)
             storage_dead(ptr@12)
             @0 := &mut *(@11)
@@ -962,10 +1037,16 @@ where
             return
         }
         @10 := core::slice::index::slice_end_index_len_fail(move (self@6), move (@9))
+        ↳ unwind {
+            unwind
+        }
     }
     storage_dead(@13)
     storage_dead(@5)
     @3 := core::slice::index::slice_index_order_fail(move (rhs@7), move (self@6))
+    ↳ unwind {
+        unwind
+    }
 }
 
 pub fn core::slice::index::{impl core::slice::index::SliceIndex<Slice<T>> for core::ops::range::RangeInclusive<usize>[core::marker::Sized<usize>]}#10::index_mut<'_0, T>(@1: core::ops::range::RangeInclusive<usize>[core::marker::Sized<usize>], @2: &'_0 mut (Slice<T>)) -> &'_0 mut (Slice<T>)
@@ -1024,10 +1105,16 @@ where
         storage_dead(@10)
         storage_dead(start@9)
         @0 := core::slice::index::{impl core::slice::index::SliceIndex<Slice<T>> for core::ops::range::Range<usize>[core::marker::Sized<usize>]}#4::index_mut<'_, T>[@TraitClause0](move (@7), move (slice@2))
+        ↳ unwind {
+            unwind
+        }
         storage_dead(@7)
         return
     }
     @6 := core::slice::index::slice_end_index_overflow_fail()
+    ↳ unwind {
+        unwind
+    }
 }
 
 impl core::slice::index::{impl core::slice::index::SliceIndex<Slice<T>> for core::ops::range::RangeInclusive<usize>[core::marker::Sized<usize>]}#10<T> : core::slice::index::SliceIndex<core::ops::range::RangeInclusive<usize>[core::marker::Sized<usize>], Slice<T>>
@@ -1059,7 +1146,13 @@ pub fn test_crate::slice_index_range<'_0>(@1: &'_0 (Slice<u8>)) -> &'_0 (Slice<u
     @4 := &*(slice@1)
     storage_live(@5)
     @5 := core::ops::range::{core::ops::range::RangeInclusive<Idx>[@TraitClause0]}#7::new<usize>[core::marker::Sized<usize>](const (0 : usize), const (10 : usize))
+    ↳ unwind {
+        unwind
+    }
     @3 := core::slice::index::{impl core::ops::index::Index<I> for Slice<T>}::index<'_, u8, core::ops::range::RangeInclusive<usize>[core::marker::Sized<usize>]>[core::marker::Sized<u8>, core::marker::Sized<core::ops::range::RangeInclusive<usize>[core::marker::Sized<usize>]>, core::slice::index::{impl core::slice::index::SliceIndex<Slice<T>> for core::ops::range::RangeInclusive<usize>[core::marker::Sized<usize>]}#10<u8>[core::marker::Sized<u8>]](move (@4), move (@5))
+    ↳ unwind {
+        unwind
+    }
     storage_dead(@5)
     storage_dead(@4)
     @2 := &*(@3)
@@ -1166,6 +1259,9 @@ where
             @14 := copy (@15) offset copy (rhs@5)
             storage_dead(@15)
             @10 := @PtrFromPartsShared<'_, Slice<T>>(copy (@14), copy (new_len@6))
+            ↳ unwind {
+                undefined_behavior
+            }
             storage_dead(@14)
             storage_dead(@11)
             @9 := &*(@10)
@@ -1250,6 +1346,9 @@ where
             @14 := copy (@15) offset copy (rhs@5)
             storage_dead(@15)
             @10 := @PtrFromPartsMut<'_, Slice<T>>(copy (@14), copy (new_len@6))
+            ↳ unwind {
+                undefined_behavior
+            }
             storage_dead(@14)
             storage_dead(ptr@11)
             @9 := &mut *(@10)
@@ -1302,6 +1401,9 @@ where
         storage_live(@7)
         @7 := ptr_metadata(copy (slice@2))
         @4 := core::slice::index::{impl core::slice::index::SliceIndex<Slice<T>> for core::ops::range::Range<usize>[core::marker::Sized<usize>]}#4::get_unchecked::precondition_check(move (@5), move (@6), move (@7))
+        ↳ unwind {
+            undefined_behavior
+        }
         storage_dead(@7)
         storage_dead(@6)
         storage_dead(@5)
@@ -1320,6 +1422,9 @@ where
     @11 := copy (@12) offset copy (offset@10)
     storage_dead(@12)
     @0 := @PtrFromPartsShared<'_, Slice<T>>(copy (@11), copy (new_len@8))
+    ↳ unwind {
+        undefined_behavior
+    }
     storage_dead(@11)
     return
 }
@@ -1358,6 +1463,9 @@ where
         storage_live(@7)
         @7 := ptr_metadata(copy (slice@2))
         @4 := core::slice::index::{impl core::slice::index::SliceIndex<Slice<T>> for core::ops::range::Range<usize>[core::marker::Sized<usize>]}#4::get_unchecked_mut::precondition_check(move (@5), move (@6), move (@7))
+        ↳ unwind {
+            undefined_behavior
+        }
         storage_dead(@7)
         storage_dead(@6)
         storage_dead(@5)
@@ -1376,6 +1484,9 @@ where
     @11 := copy (@12) offset copy (offset@10)
     storage_dead(@12)
     @0 := @PtrFromPartsMut<'_, Slice<T>>(copy (@11), copy (new_len@8))
+    ↳ unwind {
+        undefined_behavior
+    }
     storage_dead(@11)
     return
 }

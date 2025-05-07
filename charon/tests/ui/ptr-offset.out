@@ -7,10 +7,10 @@ pub fn core::slice::{Slice<T>}::as_ptr<'_0, T>(@1: &'_0 (Slice<T>)) -> *const T
 where
     [@TraitClause0]: core::marker::Sized<T>,
 
-pub fn core::intrinsics::cold_path()
-
 #[lang_item("panic_nounwind")]
 pub fn core::panicking::panic_nounwind(@1: &'static (Str)) -> !
+
+pub fn core::intrinsics::cold_path()
 
 fn core::ptr::const_ptr::{*const T}::offset::precondition_check(@1: *const (), @2: isize, @3: usize)
 {
@@ -67,10 +67,6 @@ fn core::ptr::const_ptr::{*const T}::offset::precondition_check(@1: *const (), @
     byte_offset@13 := cast<i64, isize>(copy (@8))
     storage_dead(@8)
     if copy (b@9) {
-        @14 := core::intrinsics::cold_path()
-        storage_dead(b@9)
-        storage_dead(rhs@6)
-        storage_dead(overflow@16)
     }
     else {
         storage_dead(b@9)
@@ -100,14 +96,28 @@ fn core::ptr::const_ptr::{*const T}::offset::precondition_check(@1: *const (), @
         @4 := ~(copy (overflow@16))
         storage_dead(overflow@16)
         if move (@4) {
-            storage_dead(@4)
-            @0 := ()
-            return
         }
         else {
+            @5 := core::panicking::panic_nounwind(const ("unsafe precondition(s) violated: ptr::offset requires the address calculation to not overflow\n\nThis indicates a bug in the program. This Undefined Behavior check is optional, and cannot be relied on for safety."))
+            ↳ unwind {
+                undefined_behavior
+            }
         }
+        storage_dead(@4)
+        @0 := ()
+        return
     }
+    @14 := core::intrinsics::cold_path()
+    ↳ unwind {
+        undefined_behavior
+    }
+    storage_dead(b@9)
+    storage_dead(rhs@6)
+    storage_dead(overflow@16)
     @5 := core::panicking::panic_nounwind(const ("unsafe precondition(s) violated: ptr::offset requires the address calculation to not overflow\n\nThis indicates a bug in the program. This Undefined Behavior check is optional, and cannot be relied on for safety."))
+    ↳ unwind {
+        undefined_behavior
+    }
 }
 
 pub unsafe fn core::ptr::const_ptr::{*const T}::offset<T>(@1: *const T, @2: isize) -> *const T
@@ -133,6 +143,9 @@ where
         storage_live(@6)
         @6 := size_of<T>
         @4 := core::ptr::const_ptr::{*const T}::offset::precondition_check(move (@5), copy (count@2), move (@6))
+        ↳ unwind {
+            undefined_behavior
+        }
         storage_dead(@6)
         storage_dead(@5)
     }
@@ -163,8 +176,14 @@ fn test_crate::main()
     storage_live(@4)
     @4 := &s@1
     @3 := @ArrayToSliceShared<'_, i32, 2 : usize>(move (@4))
+    ↳ unwind {
+        undefined_behavior
+    }
     storage_dead(@4)
     ptr@2 := core::slice::{Slice<T>}::as_ptr<'_, i32>[core::marker::Sized<i32>](move (@3))
+    ↳ unwind {
+        unwind
+    }
     storage_dead(@3)
     storage_live(@5)
     storage_live(@6)
@@ -173,6 +192,9 @@ fn test_crate::main()
     storage_live(@9)
     @9 := copy (ptr@2)
     @8 := core::ptr::const_ptr::{*const T}::offset<i32>[core::marker::Sized<i32>](move (@9), const (1 : isize))
+    ↳ unwind {
+        unwind
+    }
     storage_dead(@9)
     @7 := copy (*(@8))
     @6 := move (@7) == const (42 : i32)

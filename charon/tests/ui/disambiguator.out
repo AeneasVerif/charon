@@ -1,6 +1,6 @@
 # Final LLBC before serialization:
 
-fn test_crate::nonzero_disambiguator::my_function()
+fn test_crate::nonzero_disambiguator::my_function#1()
 {
     let @0: (); // return
 
@@ -9,7 +9,7 @@ fn test_crate::nonzero_disambiguator::my_function()
     return
 }
 
-fn test_crate::nonzero_disambiguator::my_function#1()
+fn test_crate::nonzero_disambiguator::my_function()
 {
     let @0: (); // return
 
@@ -26,10 +26,19 @@ fn test_crate::nonzero_disambiguator()
     storage_live(@1)
     @1 := const (true)
     if move (@1) {
-        @0 := test_crate::nonzero_disambiguator::my_function()
     }
     else {
         @0 := test_crate::nonzero_disambiguator::my_function#1()
+        ↳ unwind {
+            unwind
+        }
+        storage_dead(@1)
+        @0 := ()
+        return
+    }
+    @0 := test_crate::nonzero_disambiguator::my_function()
+    ↳ unwind {
+        unwind
     }
     storage_dead(@1)
     @0 := ()

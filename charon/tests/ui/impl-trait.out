@@ -71,15 +71,26 @@ fn test_crate::use_foo()
 
     storage_live(foo@1)
     foo@1 := test_crate::mk_foo()
+    ↳ unwind {
+        unwind
+    }
     storage_live(@2)
     storage_live(@3)
     storage_live(@4)
     storage_live(@5)
     @5 := &foo@1
     @4 := test_crate::{impl test_crate::Foo for ()}::get_ty<'_>(move (@5))
+    ↳ unwind {
+        drop foo@1
+        unwind
+    }
     @3 := &*(@4)
     storage_dead(@5)
     @2 := core::clone::impls::{impl core::clone::Clone for u32}#8::clone<'_>(move (@3))
+    ↳ unwind {
+        drop foo@1
+        unwind
+    }
     storage_dead(@3)
     drop @2
     storage_dead(@4)
@@ -143,15 +154,26 @@ where
 
     storage_live(foo@1)
     foo@1 := @TraitClause1::make_foo()
+    ↳ unwind {
+        unwind
+    }
     storage_live(@2)
     storage_live(@3)
     storage_live(@4)
     storage_live(@5)
     @5 := &foo@1
     @4 := @TraitClause1::parent_clause1::get_ty<'_>(move (@5))
+    ↳ unwind {
+        drop foo@1
+        unwind
+    }
     @3 := &*(@4)
     storage_dead(@5)
     @2 := @TraitClause1::parent_clause1::parent_clause1::clone<'_>(move (@3))
+    ↳ unwind {
+        drop foo@1
+        unwind
+    }
     storage_dead(@3)
     drop @2
     storage_dead(@4)
@@ -235,6 +257,9 @@ pub fn test_crate::use_wrap()
 
     storage_live(f@1)
     f@1 := test_crate::wrap<u32>[core::marker::Sized<u32>]()
+    ↳ unwind {
+        unwind
+    }
     storage_live(@2)
     storage_live(@3)
     @3 := move (f@1)
@@ -247,6 +272,11 @@ pub fn test_crate::use_wrap()
     @5 := &*(@6)
     @4 := (move (@5))
     @2 := core::ops::function::FnOnce<test_crate::wrap::closure, (&'_ (u32))> where Output  = test_crate::WrapClone<&'_ (u32)>[core::marker::Sized<&'_ (u32)>, core::clone::impls::{impl core::clone::Clone for &'_0 (T)}#3<'_, u32>]::call_once(move (@3), move (@4))
+    ↳ unwind {
+        drop @3
+        drop f@1
+        unwind
+    }
     storage_dead(@5)
     storage_dead(@4)
     storage_dead(@3)

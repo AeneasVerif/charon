@@ -152,7 +152,7 @@ impl Transform {
                 // Replace calls of `core::intrinsics::discriminant_value` on a known enum with the
                 // appropriate MIR.
                 [Statement {
-                    content: RawStatement::Call(call),
+                    content: RawStatement::Call { call, on_unwind: _ },
                     span: span1,
                     ..
                 }, ..]

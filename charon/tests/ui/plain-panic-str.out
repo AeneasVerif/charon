@@ -23,6 +23,9 @@ fn test_crate::main()
     @3 := &@4
     @2 := &*(@3)
     @1 := core::fmt::{core::fmt::Arguments<'a>}#4::new_const<'_, 1 : usize>(move (@2))
+    ↳ unwind {
+        unwind
+    }
     storage_dead(@2)
     panic(core::panicking::panic_fmt)
 }

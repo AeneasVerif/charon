@@ -43,6 +43,9 @@ fn test_crate::main()
     let @0: (); // return
 
     @0 := test_crate::{impl test_crate::Trait for ()}::method<()>[core::marker::Sized<()>, core::marker::Copy<()>]()
+    ↳ unwind {
+        unwind
+    }
     @0 := ()
     return
 }

@@ -21,10 +21,16 @@ fn test_crate::call_unsafe_fn()
 
     storage_live(x@1)
     x@1 := core::ptr::null<u32>[core::ptr::metadata::Thin<u32>]()
+    ↳ unwind {
+        unwind
+    }
     storage_live(@2)
     storage_live(@3)
     @3 := copy (x@1)
     @2 := core::ptr::const_ptr::{*const T}::read<u32>[core::marker::Sized<u32>](move (@3))
+    ↳ unwind {
+        unwind
+    }
     storage_dead(@3)
     storage_dead(@2)
     @0 := ()
@@ -41,6 +47,9 @@ fn test_crate::deref_raw_ptr()
 
     storage_live(x@1)
     x@1 := core::ptr::null<u32>[core::ptr::metadata::Thin<u32>]()
+    ↳ unwind {
+        unwind
+    }
     storage_live(@2)
     @2 := copy (*(x@1))
     storage_dead(@2)
@@ -111,6 +120,9 @@ fn test_crate::assume()
     let @0: (); // return
 
     @0 := core::intrinsics::assume(const (true))
+    ↳ unwind {
+        unwind
+    }
     @0 := ()
     return
 }
