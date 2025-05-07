@@ -2,10 +2,10 @@
 //! For instance, we desugar ArrayToSlice from an unop to a function call.
 //! This allows a more uniform treatment later on.
 //! TODO: actually transform all the unops and binops to function calls?
+use crate::llbc_ast::*;
 use crate::transform::TransformCtx;
-use crate::ullbc_ast::*;
 
-use super::ctx::UllbcPass;
+use super::ctx::LlbcPass;
 
 fn transform_st(s: &mut Statement) {
     match &s.content {
@@ -85,8 +85,8 @@ fn transform_st(s: &mut Statement) {
 }
 
 pub struct Transform;
-impl UllbcPass for Transform {
-    fn transform_body(&self, _ctx: &mut TransformCtx, b: &mut ExprBody) {
-        b.visit_statements(&mut transform_st);
+impl LlbcPass for Transform {
+    fn transform_body(&self, ctx: &mut TransformCtx, b: &mut ExprBody) {
+        b.body.visit_statements(&mut transform_st);
     }
 }
