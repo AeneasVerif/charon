@@ -18,6 +18,7 @@ use charon_lib::ids::Vector;
 use charon_lib::pretty::FmtWithCtx;
 use charon_lib::ullbc_ast::*;
 use hax_frontend_exporter as hax;
+use hax_frontend_exporter::UnwindAction;
 use itertools::Itertools;
 use rustc_middle::mir;
 
@@ -831,13 +832,9 @@ impl BodyTransCtx<'_, '_, '_> {
 
                 RawTerminator::Switch { discr, targets }
             }
-            TerminatorKind::UnwindResume => {
-                // This is used to correctly unwind. We shouldn't get there: if
-                // we panic, the state gets stuck.
-                raise_error!(self, span, "Unexpected terminator: UnwindResume");
-            }
+            TerminatorKind::UnwindResume => RawTerminator::UnwindResume,
             TerminatorKind::UnwindTerminate { .. } => {
-                raise_error!(self, span, "Unexpected terminator: UnwindTerminate")
+                RawTerminator::Abort(AbortKind::UnwindTerminate)
             }
             TerminatorKind::Return => RawTerminator::Return,
             // A MIR `Unreachable` terminator indicates undefined behavior of the rust abstract
@@ -859,10 +856,10 @@ impl BodyTransCtx<'_, '_, '_> {
                 args,
                 destination,
                 target,
-                unwind: _, // We model unwinding as an effet, we don't represent it in control flow
+                unwind,
                 fn_span: _,
                 ..
-            } => self.translate_function_call(span, fun, args, destination, target)?,
+            } => self.translate_function_call(span, fun, args, destination, target, unwind)?,
             TerminatorKind::Assert {
                 cond,
                 expected,
@@ -968,6 +965,7 @@ impl BodyTransCtx<'_, '_, '_> {
         args: &Vec<hax::Spanned<hax::Operand>>,
         destination: &hax::Place,
         target: &Option<hax::BasicBlock>,
+        unwind: &UnwindAction,
     ) -> Result<RawTerminator, Error> {
         trace!();
         // There are two cases, depending on whether this is a "regular"
@@ -1033,7 +1031,27 @@ impl BodyTransCtx<'_, '_, '_> {
                 self.blocks.push(abort.into_block())
             }
         };
-        Ok(RawTerminator::Call { call, target })
+        let on_unwind = match unwind {
+            UnwindAction::Continue => {
+                let unwind_continue = Terminator::new(span, RawTerminator::UnwindResume);
+                self.blocks.push(unwind_continue.into_block())
+            }
+            UnwindAction::Unreachable => {
+                let abort =
+                    Terminator::new(span, RawTerminator::Abort(AbortKind::UndefinedBehavior));
+                self.blocks.push(abort.into_block())
+            }
+            UnwindAction::Terminate(..) => {
+                let abort = Terminator::new(span, RawTerminator::Abort(AbortKind::UnwindTerminate));
+                self.blocks.push(abort.into_block())
+            }
+            UnwindAction::Cleanup(bb) => self.translate_basic_block_id(*bb),
+        };
+        Ok(RawTerminator::Call {
+            call,
+            target,
+            on_unwind,
+        })
     }
 
     /// Evaluate function arguments in a context, and return the list of computed

@@ -30,6 +30,9 @@ where
     storage_live(@2)
     @2 := &*(s@1)
     @0 := @ArrayToSliceShared<'_, T, 32 : usize>(move (@2))
+    ↳ unwind {
+        undefined_behavior
+    }
     storage_dead(@2)
     return
 }
@@ -47,6 +50,9 @@ where
     storage_live(@3)
     @3 := &mut *(s@1)
     @2 := @ArrayToSliceMut<'_, T, 32 : usize>(move (@3))
+    ↳ unwind {
+        undefined_behavior
+    }
     storage_dead(@3)
     @0 := &mut *(@2)
     storage_dead(@2)
@@ -71,8 +77,15 @@ where
     storage_live(@3)
     @3 := &s@1
     @2 := @ArrayToSliceShared<'_, T, 32 : usize>(move (@3))
+    ↳ unwind {
+        undefined_behavior
+    }
     storage_dead(@3)
     @0 := core::slice::{Slice<T>}::len<'_, T>[@TraitClause0](move (@2))
+    ↳ unwind {
+        drop s@1
+        unwind
+    }
     storage_dead(@2)
     drop s@1
     return
@@ -91,8 +104,14 @@ where
     storage_live(@3)
     @3 := &*(s@1)
     @2 := @ArrayToSliceShared<'_, T, 32 : usize>(move (@3))
+    ↳ unwind {
+        undefined_behavior
+    }
     storage_dead(@3)
     @0 := core::slice::{Slice<T>}::len<'_, T>[@TraitClause0](move (@2))
+    ↳ unwind {
+        unwind
+    }
     storage_dead(@2)
     return
 }
@@ -108,6 +127,9 @@ where
     storage_live(@2)
     @2 := &*(s@1)
     @0 := core::slice::{Slice<T>}::len<'_, T>[@TraitClause0](move (@2))
+    ↳ unwind {
+        unwind
+    }
     storage_dead(@2)
     return
 }
@@ -131,6 +153,9 @@ where
     @5 := &*(s@1)
     storage_live(@6)
     @6 := @ArrayIndexShared<'_, T, 32 : usize>(move (@5), copy (@4))
+    ↳ unwind {
+        undefined_behavior
+    }
     @3 := &*(@6)
     @0 := &*(@3)
     storage_dead(@4)
@@ -153,6 +178,9 @@ pub fn test_crate::index_array_u32(@1: Array<u32, 32 : usize>, @2: usize) -> u32
     @4 := &s@1
     storage_live(@5)
     @5 := @ArrayIndexShared<'_, u32, 32 : usize>(move (@4), copy (@3))
+    ↳ unwind {
+        undefined_behavior
+    }
     @0 := copy (*(@5))
     storage_dead(@3)
     return
@@ -172,6 +200,9 @@ pub fn test_crate::index_array_copy<'_0>(@1: &'_0 (Array<u32, 32 : usize>)) -> u
     @3 := &*(x@1)
     storage_live(@4)
     @4 := @ArrayIndexShared<'_, u32, 32 : usize>(move (@3), copy (@2))
+    ↳ unwind {
+        undefined_behavior
+    }
     @0 := copy (*(@4))
     storage_dead(@2)
     return
@@ -198,6 +229,9 @@ where
     @6 := &mut *(s@1)
     storage_live(@7)
     @7 := @ArrayIndexMut<'_, T, 32 : usize>(move (@6), copy (@5))
+    ↳ unwind {
+        undefined_behavior
+    }
     @4 := &mut *(@7)
     @3 := &mut *(@4)
     @0 := &mut *(@3)
@@ -226,6 +260,9 @@ where
     @5 := &*(s@1)
     storage_live(@6)
     @6 := @SliceIndexShared<'_, T>(move (@5), copy (@4))
+    ↳ unwind {
+        undefined_behavior
+    }
     @3 := &*(@6)
     @0 := &*(@3)
     storage_dead(@4)
@@ -254,6 +291,9 @@ where
     @6 := &mut *(s@1)
     storage_live(@7)
     @7 := @SliceIndexMut<'_, T>(move (@6), copy (@5))
+    ↳ unwind {
+        undefined_behavior
+    }
     @4 := &mut *(@7)
     @3 := &mut *(@4)
     @0 := &mut *(@3)
@@ -367,6 +407,9 @@ pub fn test_crate::slice_subslice_shared_<'_0>(@1: &'_0 (Slice<u32>), @2: usize,
     storage_dead(@9)
     storage_dead(@8)
     @5 := core::slice::index::{impl core::ops::index::Index<I, Clause2_Output> for Slice<T>}::index<'_, u32, core::ops::range::Range<usize>[core::marker::Sized<usize>], Slice<u32>>[core::marker::Sized<u32>, core::marker::Sized<core::ops::range::Range<usize>[core::marker::Sized<usize>]>, core::slice::index::{impl core::slice::index::SliceIndex<Slice<T>, Slice<T>> for core::ops::range::Range<usize>[core::marker::Sized<usize>]}#4<u32>[core::marker::Sized<u32>]](move (@6), move (@7))
+    ↳ unwind {
+        unwind
+    }
     storage_dead(@7)
     storage_dead(@6)
     @4 := &*(@5)
@@ -410,6 +453,9 @@ pub fn test_crate::slice_subslice_mut_<'_0>(@1: &'_0 mut (Slice<u32>), @2: usize
     storage_dead(@10)
     storage_dead(@9)
     @6 := core::slice::index::{impl core::ops::index::IndexMut<I, Clause2_Output> for Slice<T>}#1::index_mut<'_, u32, core::ops::range::Range<usize>[core::marker::Sized<usize>], Slice<u32>>[core::marker::Sized<u32>, core::marker::Sized<core::ops::range::Range<usize>[core::marker::Sized<usize>]>, core::slice::index::{impl core::slice::index::SliceIndex<Slice<T>, Slice<T>> for core::ops::range::Range<usize>[core::marker::Sized<usize>]}#4<u32>[core::marker::Sized<u32>]](move (@7), move (@8))
+    ↳ unwind {
+        unwind
+    }
     storage_dead(@8)
     storage_dead(@7)
     @5 := &mut *(@6)
@@ -430,6 +476,9 @@ pub fn test_crate::array_to_slice_shared_<'_0>(@1: &'_0 (Array<u32, 32 : usize>)
     storage_live(@2)
     @2 := &*(x@1)
     @0 := @ArrayToSliceShared<'_, u32, 32 : usize>(move (@2))
+    ↳ unwind {
+        undefined_behavior
+    }
     storage_dead(@2)
     return
 }
@@ -445,6 +494,9 @@ pub fn test_crate::array_to_slice_mut_<'_0>(@1: &'_0 mut (Array<u32, 32 : usize>
     storage_live(@3)
     @3 := &mut *(x@1)
     @2 := @ArrayToSliceMut<'_, u32, 32 : usize>(move (@3))
+    ↳ unwind {
+        undefined_behavior
+    }
     storage_dead(@3)
     @0 := &mut *(@2)
     storage_dead(@2)
@@ -498,6 +550,9 @@ pub fn test_crate::array_subslice_shared_<'_0>(@1: &'_0 (Array<u32, 32 : usize>)
     storage_dead(@9)
     storage_dead(@8)
     @5 := core::array::{impl core::ops::index::Index<I, Clause2_Output> for Array<T, const N : usize>}#15::index<'_, u32, core::ops::range::Range<usize>[core::marker::Sized<usize>], Slice<u32>, 32 : usize>[core::marker::Sized<u32>, core::marker::Sized<core::ops::range::Range<usize>[core::marker::Sized<usize>]>, core::slice::index::{impl core::ops::index::Index<I, Clause2_Output> for Slice<T>}<u32, core::ops::range::Range<usize>[core::marker::Sized<usize>], Slice<u32>>[core::marker::Sized<u32>, core::marker::Sized<core::ops::range::Range<usize>[core::marker::Sized<usize>]>, core::slice::index::{impl core::slice::index::SliceIndex<Slice<T>, Slice<T>> for core::ops::range::Range<usize>[core::marker::Sized<usize>]}#4<u32>[core::marker::Sized<u32>]]](move (@6), move (@7))
+    ↳ unwind {
+        unwind
+    }
     storage_dead(@7)
     storage_dead(@6)
     @4 := &*(@5)
@@ -558,6 +613,9 @@ pub fn test_crate::array_subslice_mut_<'_0>(@1: &'_0 mut (Array<u32, 32 : usize>
     storage_dead(@10)
     storage_dead(@9)
     @6 := core::array::{impl core::ops::index::IndexMut<I, Clause2_Clause0_Output> for Array<T, const N : usize>}#16::index_mut<'_, u32, core::ops::range::Range<usize>[core::marker::Sized<usize>], Slice<u32>, 32 : usize>[core::marker::Sized<u32>, core::marker::Sized<core::ops::range::Range<usize>[core::marker::Sized<usize>]>, core::slice::index::{impl core::ops::index::IndexMut<I, Clause2_Output> for Slice<T>}#1<u32, core::ops::range::Range<usize>[core::marker::Sized<usize>], Slice<u32>>[core::marker::Sized<u32>, core::marker::Sized<core::ops::range::Range<usize>[core::marker::Sized<usize>]>, core::slice::index::{impl core::slice::index::SliceIndex<Slice<T>, Slice<T>> for core::ops::range::Range<usize>[core::marker::Sized<usize>]}#4<u32>[core::marker::Sized<u32>]]](move (@7), move (@8))
+    ↳ unwind {
+        unwind
+    }
     storage_dead(@8)
     storage_dead(@7)
     @5 := &mut *(@6)
@@ -587,6 +645,9 @@ where
     @4 := &*(s@1)
     storage_live(@5)
     @5 := @SliceIndexShared<'_, T>(move (@4), copy (@3))
+    ↳ unwind {
+        undefined_behavior
+    }
     @2 := &*(@5)
     @0 := &*(@2)
     storage_dead(@3)
@@ -612,6 +673,9 @@ where
     @4 := &*(s@1)
     storage_live(@5)
     @5 := @ArrayIndexShared<'_, T, 32 : usize>(move (@4), copy (@3))
+    ↳ unwind {
+        undefined_behavior
+    }
     @2 := &*(@5)
     @0 := &*(@2)
     storage_dead(@3)
@@ -640,10 +704,16 @@ pub fn test_crate::index_index_array(@1: Array<Array<u32, 32 : usize>, 32 : usiz
     @6 := &s@1
     storage_live(@7)
     @7 := @ArrayIndexShared<'_, Array<u32, 32 : usize>, 32 : usize>(move (@6), copy (@4))
+    ↳ unwind {
+        undefined_behavior
+    }
     storage_live(@8)
     @8 := &*(@7)
     storage_live(@9)
     @9 := @ArrayIndexShared<'_, u32, 32 : usize>(move (@8), copy (@5))
+    ↳ unwind {
+        undefined_behavior
+    }
     @0 := copy (*(@9))
     storage_dead(@5)
     storage_dead(@4)
@@ -671,10 +741,16 @@ pub fn test_crate::update_update_array(@1: Array<Array<u32, 32 : usize>, 32 : us
     @6 := &mut s@1
     storage_live(@7)
     @7 := @ArrayIndexMut<'_, Array<u32, 32 : usize>, 32 : usize>(move (@6), copy (@4))
+    ↳ unwind {
+        undefined_behavior
+    }
     storage_live(@8)
     @8 := &mut *(@7)
     storage_live(@9)
     @9 := @ArrayIndexMut<'_, u32, 32 : usize>(move (@8), copy (@5))
+    ↳ unwind {
+        undefined_behavior
+    }
     *(@9) := const (0 : u32)
     storage_dead(@5)
     storage_dead(@4)
@@ -701,11 +777,17 @@ pub fn test_crate::incr_array_self<'_0>(@1: &'_0 mut (Array<u32, 2 : usize>))
     @6 := &*(s@1)
     storage_live(@7)
     @7 := @ArrayIndexShared<'_, u32, 2 : usize>(move (@6), copy (@2))
+    ↳ unwind {
+        undefined_behavior
+    }
     @3 := copy (*(@7)) + const (1 : u32)
     storage_live(@4)
     @4 := &mut *(s@1)
     storage_live(@5)
     @5 := @ArrayIndexMut<'_, u32, 2 : usize>(move (@4), copy (@2))
+    ↳ unwind {
+        undefined_behavior
+    }
     *(@5) := move (@3)
     storage_dead(@2)
     @0 := ()
@@ -731,11 +813,17 @@ pub fn test_crate::incr_slice_self<'_0>(@1: &'_0 mut (Slice<u32>))
     @6 := &*(s@1)
     storage_live(@7)
     @7 := @SliceIndexShared<'_, u32>(move (@6), copy (@2))
+    ↳ unwind {
+        undefined_behavior
+    }
     @3 := copy (*(@7)) + const (1 : u32)
     storage_live(@4)
     @4 := &mut *(s@1)
     storage_live(@5)
     @5 := @SliceIndexMut<'_, u32>(move (@4), copy (@2))
+    ↳ unwind {
+        undefined_behavior
+    }
     *(@5) := move (@3)
     storage_dead(@2)
     @0 := ()
@@ -802,6 +890,9 @@ pub fn test_crate::const_array() -> Array<u32, 2 : usize>
     let @0: Array<u32, 2 : usize>; // return
 
     @0 := @ArrayRepeat<'_, u32, 2 : usize>(const (0 : u32))
+    ↳ unwind {
+        undefined_behavior
+    }
     return
 }
 
@@ -818,9 +909,15 @@ pub fn test_crate::const_slice()
     storage_live(@3)
     storage_live(@4)
     @4 := @ArrayRepeat<'_, u32, 2 : usize>(const (0 : u32))
+    ↳ unwind {
+        undefined_behavior
+    }
     @3 := &@4
     @2 := &*(@3)
     @1 := @ArrayToSliceShared<'_, u32, 2 : usize>(move (@2))
+    ↳ unwind {
+        undefined_behavior
+    }
     storage_dead(@2)
     storage_dead(@3)
     storage_dead(@1)
@@ -852,17 +949,26 @@ pub fn test_crate::take_all()
 
     storage_live(x@1)
     x@1 := @ArrayRepeat<'_, u32, 2 : usize>(const (0 : u32))
+    ↳ unwind {
+        undefined_behavior
+    }
     storage_live(@2)
     storage_live(@3)
     // x is deep copied (copy node appears in Charon, followed by a move)
     @3 := copy (x@1)
     @2 := test_crate::take_array(move (@3))
+    ↳ unwind {
+        unwind
+    }
     storage_dead(@3)
     storage_dead(@2)
     storage_live(@4)
     storage_live(@5)
     @5 := copy (x@1)
     @4 := test_crate::take_array(move (@5))
+    ↳ unwind {
+        unwind
+    }
     storage_dead(@5)
     storage_dead(@4)
     storage_live(@6)
@@ -872,6 +978,9 @@ pub fn test_crate::take_all()
     @8 := &x@1
     @7 := &*(@8)
     @6 := test_crate::take_array_borrow<'_>(move (@7))
+    ↳ unwind {
+        unwind
+    }
     storage_dead(@7)
     storage_dead(@8)
     storage_dead(@6)
@@ -883,8 +992,14 @@ pub fn test_crate::take_all()
     @12 := &x@1
     @11 := &*(@12)
     @10 := @ArrayToSliceShared<'_, u32, 2 : usize>(move (@11))
+    ↳ unwind {
+        undefined_behavior
+    }
     storage_dead(@11)
     @9 := test_crate::take_slice<'_>(move (@10))
+    ↳ unwind {
+        unwind
+    }
     storage_dead(@10)
     storage_dead(@12)
     storage_dead(@9)
@@ -897,8 +1012,14 @@ pub fn test_crate::take_all()
     @16 := &mut x@1
     @15 := &mut *(@16)
     @14 := @ArrayToSliceMut<'_, u32, 2 : usize>(move (@15))
+    ↳ unwind {
+        undefined_behavior
+    }
     storage_dead(@15)
     @13 := test_crate::take_mut_slice<'_>(move (@14))
+    ↳ unwind {
+        unwind
+    }
     storage_dead(@14)
     storage_dead(@16)
     storage_dead(@13)
@@ -922,6 +1043,9 @@ pub fn test_crate::index_array(@1: Array<u32, 2 : usize>) -> u32
     @3 := &x@1
     storage_live(@4)
     @4 := @ArrayIndexShared<'_, u32, 2 : usize>(move (@3), copy (@2))
+    ↳ unwind {
+        undefined_behavior
+    }
     @0 := copy (*(@4))
     storage_dead(@2)
     return
@@ -941,6 +1065,9 @@ pub fn test_crate::index_array_borrow<'_0>(@1: &'_0 (Array<u32, 2 : usize>)) -> 
     @3 := &*(x@1)
     storage_live(@4)
     @4 := @ArrayIndexShared<'_, u32, 2 : usize>(move (@3), copy (@2))
+    ↳ unwind {
+        undefined_behavior
+    }
     @0 := copy (*(@4))
     storage_dead(@2)
     return
@@ -960,6 +1087,9 @@ pub fn test_crate::index_slice_u32_0<'_0>(@1: &'_0 (Slice<u32>)) -> u32
     @3 := &*(x@1)
     storage_live(@4)
     @4 := @SliceIndexShared<'_, u32>(move (@3), copy (@2))
+    ↳ unwind {
+        undefined_behavior
+    }
     @0 := copy (*(@4))
     storage_dead(@2)
     return
@@ -979,6 +1109,9 @@ pub fn test_crate::index_mut_slice_u32_0<'_0>(@1: &'_0 mut (Slice<u32>)) -> u32
     @3 := &*(x@1)
     storage_live(@4)
     @4 := @SliceIndexShared<'_, u32>(move (@3), copy (@2))
+    ↳ unwind {
+        undefined_behavior
+    }
     @0 := copy (*(@4))
     storage_dead(@2)
     return
@@ -1015,12 +1148,18 @@ pub fn test_crate::index_all() -> u32
     storage_live(_z@5)
     storage_live(x@1)
     x@1 := @ArrayRepeat<'_, u32, 2 : usize>(const (0 : u32))
+    ↳ unwind {
+        undefined_behavior
+    }
     storage_live(@2)
     storage_live(@3)
     @3 := const (true)
     if move (@3) {
         storage_live(_y@4)
         _y@4 := @ArrayRepeat<'_, u32, 2 : usize>(const (0 : u32))
+        ↳ unwind {
+            undefined_behavior
+        }
         storage_dead(_y@4)
     }
     else {
@@ -1037,11 +1176,17 @@ pub fn test_crate::index_all() -> u32
     storage_live(@10)
     @10 := copy (x@1)
     @9 := test_crate::index_array(move (@10))
+    ↳ unwind {
+        unwind
+    }
     storage_dead(@10)
     storage_live(@11)
     storage_live(@12)
     @12 := copy (x@1)
     @11 := test_crate::index_array(move (@12))
+    ↳ unwind {
+        unwind
+    }
     storage_dead(@12)
     @8 := copy (@9) + copy (@11)
     storage_dead(@11)
@@ -1052,6 +1197,9 @@ pub fn test_crate::index_all() -> u32
     @15 := &x@1
     @14 := &*(@15)
     @13 := test_crate::index_array_borrow<'_>(move (@14))
+    ↳ unwind {
+        unwind
+    }
     storage_dead(@14)
     @7 := copy (@8) + copy (@13)
     storage_dead(@13)
@@ -1063,8 +1211,14 @@ pub fn test_crate::index_all() -> u32
     @19 := &x@1
     @18 := &*(@19)
     @17 := @ArrayToSliceShared<'_, u32, 2 : usize>(move (@18))
+    ↳ unwind {
+        undefined_behavior
+    }
     storage_dead(@18)
     @16 := test_crate::index_slice_u32_0<'_>(move (@17))
+    ↳ unwind {
+        unwind
+    }
     storage_dead(@17)
     @6 := copy (@7) + copy (@16)
     storage_dead(@16)
@@ -1076,8 +1230,14 @@ pub fn test_crate::index_all() -> u32
     @23 := &mut x@1
     @22 := &mut *(@23)
     @21 := @ArrayToSliceMut<'_, u32, 2 : usize>(move (@22))
+    ↳ unwind {
+        undefined_behavior
+    }
     storage_dead(@22)
     @20 := test_crate::index_mut_slice_u32_0<'_>(move (@21))
+    ↳ unwind {
+        unwind
+    }
     storage_dead(@21)
     @0 := copy (@6) + copy (@20)
     storage_dead(@20)
@@ -1103,6 +1263,9 @@ pub fn test_crate::update_array(@1: Array<u32, 2 : usize>)
     @3 := &mut x@1
     storage_live(@4)
     @4 := @ArrayIndexMut<'_, u32, 2 : usize>(move (@3), copy (@2))
+    ↳ unwind {
+        undefined_behavior
+    }
     *(@4) := const (1 : u32)
     @0 := ()
     storage_dead(@2)
@@ -1124,6 +1287,9 @@ pub fn test_crate::update_array_mut_borrow<'_0>(@1: &'_0 mut (Array<u32, 2 : usi
     @3 := &mut *(x@1)
     storage_live(@4)
     @4 := @ArrayIndexMut<'_, u32, 2 : usize>(move (@3), copy (@2))
+    ↳ unwind {
+        undefined_behavior
+    }
     *(@4) := const (1 : u32)
     @0 := ()
     storage_dead(@2)
@@ -1145,6 +1311,9 @@ pub fn test_crate::update_mut_slice<'_0>(@1: &'_0 mut (Slice<u32>))
     @3 := &mut *(x@1)
     storage_live(@4)
     @4 := @SliceIndexMut<'_, u32>(move (@3), copy (@2))
+    ↳ unwind {
+        undefined_behavior
+    }
     *(@4) := const (1 : u32)
     @0 := ()
     storage_dead(@2)
@@ -1170,16 +1339,25 @@ pub fn test_crate::update_all()
 
     storage_live(x@1)
     x@1 := @ArrayRepeat<'_, u32, 2 : usize>(const (0 : u32))
+    ↳ unwind {
+        undefined_behavior
+    }
     storage_live(@2)
     storage_live(@3)
     @3 := copy (x@1)
     @2 := test_crate::update_array(move (@3))
+    ↳ unwind {
+        unwind
+    }
     storage_dead(@3)
     storage_dead(@2)
     storage_live(@4)
     storage_live(@5)
     @5 := copy (x@1)
     @4 := test_crate::update_array(move (@5))
+    ↳ unwind {
+        unwind
+    }
     storage_dead(@5)
     storage_dead(@4)
     storage_live(@6)
@@ -1188,6 +1366,9 @@ pub fn test_crate::update_all()
     @8 := &mut x@1
     @7 := &two-phase-mut *(@8)
     @6 := test_crate::update_array_mut_borrow<'_>(move (@7))
+    ↳ unwind {
+        unwind
+    }
     storage_dead(@7)
     storage_dead(@8)
     storage_dead(@6)
@@ -1198,8 +1379,14 @@ pub fn test_crate::update_all()
     @12 := &mut x@1
     @11 := &mut *(@12)
     @10 := @ArrayToSliceMut<'_, u32, 2 : usize>(move (@11))
+    ↳ unwind {
+        undefined_behavior
+    }
     storage_dead(@11)
     @9 := test_crate::update_mut_slice<'_>(move (@10))
+    ↳ unwind {
+        unwind
+    }
     storage_dead(@10)
     storage_dead(@12)
     storage_dead(@9)
@@ -1222,6 +1409,9 @@ pub fn test_crate::range_all()
 
     storage_live(x@1)
     x@1 := @ArrayRepeat<'_, u32, 4 : usize>(const (0 : u32))
+    ↳ unwind {
+        undefined_behavior
+    }
     storage_live(@2)
     storage_live(@3)
     storage_live(@4)
@@ -1232,11 +1422,17 @@ pub fn test_crate::range_all()
     storage_live(@7)
     @7 := core::ops::range::Range { start: const (1 : usize), end: const (3 : usize) }
     @5 := core::array::{impl core::ops::index::IndexMut<I, Clause2_Clause0_Output> for Array<T, const N : usize>}#16::index_mut<'_, u32, core::ops::range::Range<usize>[core::marker::Sized<usize>], Slice<u32>, 4 : usize>[core::marker::Sized<u32>, core::marker::Sized<core::ops::range::Range<usize>[core::marker::Sized<usize>]>, core::slice::index::{impl core::ops::index::IndexMut<I, Clause2_Output> for Slice<T>}#1<u32, core::ops::range::Range<usize>[core::marker::Sized<usize>], Slice<u32>>[core::marker::Sized<u32>, core::marker::Sized<core::ops::range::Range<usize>[core::marker::Sized<usize>]>, core::slice::index::{impl core::slice::index::SliceIndex<Slice<T>, Slice<T>> for core::ops::range::Range<usize>[core::marker::Sized<usize>]}#4<u32>[core::marker::Sized<u32>]]](move (@6), move (@7))
+    ↳ unwind {
+        unwind
+    }
     storage_dead(@7)
     storage_dead(@6)
     @4 := &mut *(@5)
     @3 := &two-phase-mut *(@4)
     @2 := test_crate::update_mut_slice<'_>(move (@3))
+    ↳ unwind {
+        unwind
+    }
     storage_dead(@3)
     storage_dead(@5)
     storage_dead(@4)
@@ -1264,6 +1460,9 @@ pub fn test_crate::deref_array_borrow<'_0>(@1: &'_0 (Array<u32, 2 : usize>)) -> 
     @4 := &x@2
     storage_live(@5)
     @5 := @ArrayIndexShared<'_, u32, 2 : usize>(move (@4), copy (@3))
+    ↳ unwind {
+        undefined_behavior
+    }
     @0 := copy (*(@5))
     storage_dead(x@2)
     storage_dead(@3)
@@ -1287,6 +1486,9 @@ pub fn test_crate::deref_array_mut_borrow<'_0>(@1: &'_0 mut (Array<u32, 2 : usiz
     @4 := &x@2
     storage_live(@5)
     @5 := @ArrayIndexShared<'_, u32, 2 : usize>(move (@4), copy (@3))
+    ↳ unwind {
+        undefined_behavior
+    }
     @0 := copy (*(@5))
     storage_dead(x@2)
     storage_dead(@3)
@@ -1326,6 +1528,9 @@ pub fn test_crate::non_copyable_array()
     // TODO: determine whether the translation needs to be aware of that and pass by ref instead of by copy
     @5 := move (x@1)
     @4 := test_crate::take_array_t(move (@5))
+    ↳ unwind {
+        unwind
+    }
     storage_dead(@5)
     storage_dead(@4)
     @0 := ()
@@ -1353,9 +1558,13 @@ pub fn test_crate::sum<'_0>(@1: &'_0 (Slice<u32>)) -> u32
     let @12: &'_ (Slice<u32>); // anonymous local
     let @13: &'_ (u32); // anonymous local
 
+    storage_live(@5)
+    storage_live(@6)
+    storage_live(@7)
     storage_live(@8)
     storage_live(@9)
     storage_live(@10)
+    storage_live(@11)
     storage_live(@12)
     storage_live(@13)
     storage_live(sum@2)
@@ -1371,12 +1580,24 @@ pub fn test_crate::sum<'_0>(@1: &'_0 (Slice<u32>)) -> u32
         storage_live(@8)
         @8 := &*(s@1)
         @7 := core::slice::{Slice<T>}::len<'_, u32>[core::marker::Sized<u32>](move (@8))
+        ↳ unwind {
+            unwind
+        }
         storage_dead(@8)
         @5 := move (@6) < move (@7)
         if move (@5) {
         }
         else {
-            break 0
+            storage_dead(@7)
+            storage_dead(@6)
+            storage_live(@11)
+            storage_dead(@11)
+            storage_dead(@5)
+            storage_dead(@4)
+            @0 := copy (sum@2)
+            storage_dead(i@3)
+            storage_dead(sum@2)
+            return
         }
         storage_dead(@7)
         storage_dead(@6)
@@ -1387,6 +1608,9 @@ pub fn test_crate::sum<'_0>(@1: &'_0 (Slice<u32>)) -> u32
         @12 := &*(s@1)
         storage_live(@13)
         @13 := @SliceIndexShared<'_, u32>(move (@12), copy (@10))
+        ↳ unwind {
+            undefined_behavior
+        }
         @9 := copy (*(@13))
         sum@2 := copy (sum@2) + copy (@9)
         storage_dead(@9)
@@ -1395,16 +1619,6 @@ pub fn test_crate::sum<'_0>(@1: &'_0 (Slice<u32>)) -> u32
         storage_dead(@5)
         continue 0
     }
-    storage_dead(@7)
-    storage_dead(@6)
-    storage_live(@11)
-    storage_dead(@11)
-    storage_dead(@5)
-    storage_dead(@4)
-    @0 := copy (sum@2)
-    storage_dead(i@3)
-    storage_dead(sum@2)
-    return
 }
 
 pub fn test_crate::sum2<'_0, '_1>(@1: &'_0 (Slice<u32>), @2: &'_1 (Slice<u32>)) -> u32
@@ -1436,12 +1650,16 @@ pub fn test_crate::sum2<'_0, '_1>(@1: &'_0 (Slice<u32>), @2: &'_1 (Slice<u32>)) 
     let @24: &'_ (Slice<u32>); // anonymous local
     let @25: &'_ (u32); // anonymous local
 
+    storage_live(@12)
+    storage_live(@13)
+    storage_live(@14)
     storage_live(@15)
     storage_live(@16)
     storage_live(@17)
     storage_live(@18)
     storage_live(@19)
     storage_live(@20)
+    storage_live(@21)
     storage_live(@22)
     storage_live(@23)
     storage_live(@24)
@@ -1454,11 +1672,17 @@ pub fn test_crate::sum2<'_0, '_1>(@1: &'_0 (Slice<u32>), @2: &'_1 (Slice<u32>)) 
     storage_live(@7)
     @7 := &*(s@1)
     @6 := core::slice::{Slice<T>}::len<'_, u32>[core::marker::Sized<u32>](move (@7))
+    ↳ unwind {
+        unwind
+    }
     storage_dead(@7)
     storage_live(@8)
     storage_live(@9)
     @9 := &*(s2@2)
     @8 := core::slice::{Slice<T>}::len<'_, u32>[core::marker::Sized<u32>](move (@9))
+    ↳ unwind {
+        unwind
+    }
     storage_dead(@9)
     @5 := move (@6) == move (@8)
     if move (@5) {
@@ -1483,12 +1707,24 @@ pub fn test_crate::sum2<'_0, '_1>(@1: &'_0 (Slice<u32>), @2: &'_1 (Slice<u32>)) 
         storage_live(@15)
         @15 := &*(s@1)
         @14 := core::slice::{Slice<T>}::len<'_, u32>[core::marker::Sized<u32>](move (@15))
+        ↳ unwind {
+            unwind
+        }
         storage_dead(@15)
         @12 := move (@13) < move (@14)
         if move (@12) {
         }
         else {
-            break 0
+            storage_dead(@14)
+            storage_dead(@13)
+            storage_live(@21)
+            storage_dead(@21)
+            storage_dead(@12)
+            storage_dead(@11)
+            @0 := copy (sum@3)
+            storage_dead(i@10)
+            storage_dead(sum@3)
+            return
         }
         storage_dead(@14)
         storage_dead(@13)
@@ -1500,6 +1736,9 @@ pub fn test_crate::sum2<'_0, '_1>(@1: &'_0 (Slice<u32>), @2: &'_1 (Slice<u32>)) 
         @24 := &*(s@1)
         storage_live(@25)
         @25 := @SliceIndexShared<'_, u32>(move (@24), copy (@18))
+        ↳ unwind {
+            undefined_behavior
+        }
         @17 := copy (*(@25))
         storage_live(@19)
         storage_live(@20)
@@ -1508,6 +1747,9 @@ pub fn test_crate::sum2<'_0, '_1>(@1: &'_0 (Slice<u32>), @2: &'_1 (Slice<u32>)) 
         @22 := &*(s2@2)
         storage_live(@23)
         @23 := @SliceIndexShared<'_, u32>(move (@22), copy (@20))
+        ↳ unwind {
+            undefined_behavior
+        }
         @19 := copy (*(@23))
         @16 := copy (@17) + copy (@19)
         storage_dead(@19)
@@ -1520,16 +1762,6 @@ pub fn test_crate::sum2<'_0, '_1>(@1: &'_0 (Slice<u32>), @2: &'_1 (Slice<u32>)) 
         storage_dead(@12)
         continue 0
     }
-    storage_dead(@14)
-    storage_dead(@13)
-    storage_live(@21)
-    storage_dead(@21)
-    storage_dead(@12)
-    storage_dead(@11)
-    @0 := copy (sum@3)
-    storage_dead(i@10)
-    storage_dead(sum@3)
-    return
 }
 
 pub fn test_crate::f0()
@@ -1551,6 +1783,9 @@ pub fn test_crate::f0()
     @3 := &mut @4
     @2 := &mut *(@3)
     s@1 := @ArrayToSliceMut<'_, u32, 2 : usize>(move (@2))
+    ↳ unwind {
+        undefined_behavior
+    }
     storage_dead(@2)
     storage_dead(@3)
     storage_live(@5)
@@ -1559,6 +1794,9 @@ pub fn test_crate::f0()
     @6 := &mut *(s@1)
     storage_live(@7)
     @7 := @SliceIndexMut<'_, u32>(move (@6), copy (@5))
+    ↳ unwind {
+        undefined_behavior
+    }
     *(@7) := const (1 : u32)
     storage_dead(@5)
     @0 := ()
@@ -1584,6 +1822,9 @@ pub fn test_crate::f1()
     @3 := &mut s@1
     storage_live(@4)
     @4 := @ArrayIndexMut<'_, u32, 2 : usize>(move (@3), copy (@2))
+    ↳ unwind {
+        undefined_behavior
+    }
     *(@4) := const (1 : u32)
     storage_dead(@2)
     @0 := ()
@@ -1628,6 +1869,9 @@ pub fn test_crate::f4<'_0>(@1: &'_0 (Array<u32, 32 : usize>), @2: usize, @3: usi
     storage_dead(@9)
     storage_dead(@8)
     @5 := core::array::{impl core::ops::index::Index<I, Clause2_Output> for Array<T, const N : usize>}#15::index<'_, u32, core::ops::range::Range<usize>[core::marker::Sized<usize>], Slice<u32>, 32 : usize>[core::marker::Sized<u32>, core::marker::Sized<core::ops::range::Range<usize>[core::marker::Sized<usize>]>, core::slice::index::{impl core::ops::index::Index<I, Clause2_Output> for Slice<T>}<u32, core::ops::range::Range<usize>[core::marker::Sized<usize>], Slice<u32>>[core::marker::Sized<u32>, core::marker::Sized<core::ops::range::Range<usize>[core::marker::Sized<usize>]>, core::slice::index::{impl core::slice::index::SliceIndex<Slice<T>, Slice<T>> for core::ops::range::Range<usize>[core::marker::Sized<usize>]}#4<u32>[core::marker::Sized<u32>]]](move (@6), move (@7))
+    ↳ unwind {
+        unwind
+    }
     storage_dead(@7)
     storage_dead(@6)
     @4 := &*(@5)
@@ -1665,19 +1909,31 @@ pub fn test_crate::f3() -> u32
     @13 := &a@1
     storage_live(@14)
     @14 := @ArrayIndexShared<'_, u32, 2 : usize>(move (@13), copy (@4))
+    ↳ unwind {
+        undefined_behavior
+    }
     @3 := copy (*(@14))
     @2 := test_crate::f2(move (@3))
+    ↳ unwind {
+        unwind
+    }
     storage_dead(@3)
     storage_dead(@4)
     storage_dead(@2)
     storage_live(b@5)
     b@5 := @ArrayRepeat<'_, u32, 32 : usize>(const (0 : u32))
+    ↳ unwind {
+        undefined_behavior
+    }
     storage_live(@6)
     storage_live(@7)
     storage_live(@8)
     @8 := &a@1
     @7 := &*(@8)
     @6 := @ArrayToSliceShared<'_, u32, 2 : usize>(move (@7))
+    ↳ unwind {
+        undefined_behavior
+    }
     storage_dead(@7)
     storage_live(@9)
     storage_live(@10)
@@ -1686,9 +1942,15 @@ pub fn test_crate::f3() -> u32
     @12 := &b@5
     @11 := &*(@12)
     @10 := test_crate::f4<'_>(move (@11), const (16 : usize), const (18 : usize))
+    ↳ unwind {
+        unwind
+    }
     @9 := &*(@10)
     storage_dead(@11)
     @0 := test_crate::sum2<'_, '_>(move (@6), move (@9))
+    ↳ unwind {
+        unwind
+    }
     storage_dead(@9)
     storage_dead(@6)
     storage_dead(b@5)
@@ -1723,6 +1985,9 @@ pub fn test_crate::f5<'_0>(@1: &'_0 (Array<u32, 32 : usize>)) -> u32
     @3 := &*(x@1)
     storage_live(@4)
     @4 := @ArrayIndexShared<'_, u32, 32 : usize>(move (@3), copy (@2))
+    ↳ unwind {
+        undefined_behavior
+    }
     @0 := copy (*(@4))
     storage_dead(@2)
     return
@@ -1754,11 +2019,17 @@ pub fn test_crate::ite()
     storage_live(@11)
     storage_live(x@1)
     x@1 := @ArrayRepeat<'_, u32, 2 : usize>(const (0 : u32))
+    ↳ unwind {
+        undefined_behavior
+    }
     storage_live(@2)
     @2 := const (true)
     if move (@2) {
         storage_live(y@3)
         y@3 := @ArrayRepeat<'_, u32, 2 : usize>(const (0 : u32))
+        ↳ unwind {
+            undefined_behavior
+        }
         storage_live(@4)
         storage_live(@5)
         storage_live(@6)
@@ -1766,8 +2037,14 @@ pub fn test_crate::ite()
         @7 := &mut x@1
         @6 := &mut *(@7)
         @5 := @ArrayToSliceMut<'_, u32, 2 : usize>(move (@6))
+        ↳ unwind {
+            undefined_behavior
+        }
         storage_dead(@6)
         @4 := test_crate::index_mut_slice_u32_0<'_>(move (@5))
+        ↳ unwind {
+            unwind
+        }
         storage_dead(@5)
         storage_dead(@7)
         storage_dead(@4)
@@ -1778,8 +2055,14 @@ pub fn test_crate::ite()
         @11 := &mut y@3
         @10 := &mut *(@11)
         @9 := @ArrayToSliceMut<'_, u32, 2 : usize>(move (@10))
+        ↳ unwind {
+            undefined_behavior
+        }
         storage_dead(@10)
         @8 := test_crate::index_mut_slice_u32_0<'_>(move (@9))
+        ↳ unwind {
+            unwind
+        }
         storage_dead(@9)
         storage_dead(@11)
         storage_dead(@8)
@@ -1819,6 +2102,9 @@ pub fn test_crate::zero_slice<'_0>(@1: &'_0 mut (Slice<u8>))
     storage_live(@4)
     @4 := &*(a@1)
     len@3 := core::slice::{Slice<T>}::len<'_, u8>[core::marker::Sized<u8>](move (@4))
+    ↳ unwind {
+        unwind
+    }
     storage_dead(@4)
     loop {
         storage_live(@5)
@@ -1836,6 +2122,9 @@ pub fn test_crate::zero_slice<'_0>(@1: &'_0 mut (Slice<u8>))
             @10 := &mut *(a@1)
             storage_live(@11)
             @11 := @SliceIndexMut<'_, u8>(move (@10), copy (@8))
+            ↳ unwind {
+                undefined_behavior
+            }
             *(@11) := const (0 : u8)
             storage_dead(@8)
             i@2 := copy (i@2) + const (1 : usize)
@@ -1874,6 +2163,9 @@ pub fn test_crate::iter_mut_slice<'_0>(@1: &'_0 mut (Slice<u8>))
     storage_live(@3)
     @3 := &*(a@1)
     len@2 := core::slice::{Slice<T>}::len<'_, u8>[core::marker::Sized<u8>](move (@3))
+    ↳ unwind {
+        unwind
+    }
     storage_dead(@3)
     storage_live(i@4)
     i@4 := const (0 : usize)
@@ -1924,9 +2216,13 @@ pub fn test_crate::sum_mut_slice<'_0>(@1: &'_0 mut (Slice<u32>)) -> u32
     let @12: &'_ (Slice<u32>); // anonymous local
     let @13: &'_ (u32); // anonymous local
 
+    storage_live(@5)
+    storage_live(@6)
+    storage_live(@7)
     storage_live(@8)
     storage_live(@9)
     storage_live(@10)
+    storage_live(@11)
     storage_live(@12)
     storage_live(@13)
     storage_live(i@2)
@@ -1942,12 +2238,24 @@ pub fn test_crate::sum_mut_slice<'_0>(@1: &'_0 mut (Slice<u32>)) -> u32
         storage_live(@8)
         @8 := &*(a@1)
         @7 := core::slice::{Slice<T>}::len<'_, u32>[core::marker::Sized<u32>](move (@8))
+        ↳ unwind {
+            unwind
+        }
         storage_dead(@8)
         @5 := move (@6) < move (@7)
         if move (@5) {
         }
         else {
-            break 0
+            storage_dead(@7)
+            storage_dead(@6)
+            storage_live(@11)
+            storage_dead(@11)
+            storage_dead(@5)
+            storage_dead(@4)
+            @0 := copy (s@3)
+            storage_dead(s@3)
+            storage_dead(i@2)
+            return
         }
         storage_dead(@7)
         storage_dead(@6)
@@ -1958,6 +2266,9 @@ pub fn test_crate::sum_mut_slice<'_0>(@1: &'_0 mut (Slice<u32>)) -> u32
         @12 := &*(a@1)
         storage_live(@13)
         @13 := @SliceIndexShared<'_, u32>(move (@12), copy (@10))
+        ↳ unwind {
+            undefined_behavior
+        }
         @9 := copy (*(@13))
         s@3 := copy (s@3) + copy (@9)
         storage_dead(@9)
@@ -1966,16 +2277,6 @@ pub fn test_crate::sum_mut_slice<'_0>(@1: &'_0 mut (Slice<u32>)) -> u32
         storage_dead(@5)
         continue 0
     }
-    storage_dead(@7)
-    storage_dead(@6)
-    storage_live(@11)
-    storage_dead(@11)
-    storage_dead(@5)
-    storage_dead(@4)
-    @0 := copy (s@3)
-    storage_dead(s@3)
-    storage_dead(i@2)
-    return
 }
 
 fn test_crate::slice_pattern_1(@1: Array<(), 1 : usize>)
@@ -1991,6 +2292,9 @@ fn test_crate::slice_pattern_1(@1: Array<(), 1 : usize>)
     @3 := &x@1
     storage_live(@4)
     @4 := @ArrayIndexShared<'_, (), 1 : usize>(move (@3), const (0 : usize))
+    ↳ unwind {
+        undefined_behavior
+    }
     _named@2 := copy (*(@4))
     @0 := ()
     storage_dead(_named@2)
@@ -2019,18 +2323,27 @@ where
     @9 := &mut x@1
     storage_live(@10)
     @10 := @ArrayIndexMut<'_, &'_ mut (T), 3 : usize>(move (@9), const (0 : usize))
+    ↳ unwind {
+        undefined_behavior
+    }
     _a@2 := move (*(@10))
     storage_live(_b@3)
     storage_live(@7)
     @7 := &mut x@1
     storage_live(@8)
     @8 := @ArrayIndexMut<'_, &'_ mut (T), 3 : usize>(move (@7), const (1 : usize))
+    ↳ unwind {
+        undefined_behavior
+    }
     _b@3 := move (*(@8))
     storage_live(_c@4)
     storage_live(@5)
     @5 := &mut x@1
     storage_live(@6)
     @6 := @ArrayIndexMut<'_, &'_ mut (T), 3 : usize>(move (@5), const (2 : usize))
+    ↳ unwind {
+        undefined_behavior
+    }
     _c@4 := move (*(@6))
     @0 := ()
     storage_dead(_c@4)
@@ -2053,6 +2366,9 @@ fn test_crate::slice_pattern_3<'_0>(@1: &'_0 (Array<(), 1 : usize>))
     @3 := &*(x@1)
     storage_live(@4)
     @4 := @ArrayIndexShared<'_, (), 1 : usize>(move (@3), const (0 : usize))
+    ↳ unwind {
+        undefined_behavior
+    }
     _named@2 := &*(@4)
     @0 := ()
     storage_dead(_named@2)
@@ -2089,6 +2405,9 @@ fn test_crate::slice_pattern_4<'_0>(@1: &'_0 (Slice<()>))
     @6 := &*(x@1)
     storage_live(@7)
     @7 := @SliceIndexShared<'_, ()>(move (@6), const (0 : usize))
+    ↳ unwind {
+        undefined_behavior
+    }
     _named@5 := &*(@7)
     @0 := ()
     storage_dead(_named@5)

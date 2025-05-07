@@ -36,6 +36,9 @@ fn test_crate::slice_pattern_end<'_0>(@1: &'_0 (Slice<()>))
     storage_dead(@7)
     storage_live(@9)
     @9 := @SliceIndexShared<'_, ()>(move (@6), copy (@8))
+    ↳ unwind {
+        undefined_behavior
+    }
     _named@5 := &*(@9)
     @0 := ()
     storage_dead(_named@5)

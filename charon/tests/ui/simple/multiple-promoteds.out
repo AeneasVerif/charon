@@ -43,6 +43,9 @@ fn test_crate::six() -> u32
     storage_live(@4)
     @4 := copy (y@2)
     @0 := core::ops::arith::{impl core::ops::arith::Add<&'_0 (u32)> for &'_1 (u32)}#27::add<'_, '_>(move (@3), move (@4))
+    ↳ unwind {
+        unwind
+    }
     storage_dead(@4)
     storage_dead(@3)
     storage_dead(y@2)

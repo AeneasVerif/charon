@@ -31,6 +31,9 @@ fn test_crate::main()
     @6 := &y@2
     @5 := &*(@6)
     @3 := core::cmp::impls::{impl core::cmp::Ord for i32}#77::cmp<'_, '_>(move (@4), move (@5))
+    ↳ unwind {
+        unwind
+    }
     storage_dead(@5)
     storage_dead(@4)
     storage_dead(@6)

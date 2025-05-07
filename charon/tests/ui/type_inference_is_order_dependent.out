@@ -108,18 +108,33 @@ where
     storage_live(@11)
     storage_live(@12)
     @12 := @TraitClause4::default()
+    ↳ unwind {
+        unwind
+    }
     @11 := &@12
     @10 := &*(@11)
     @9 := core::fmt::rt::{core::fmt::rt::Argument<'_0>}#1::new_debug<'_, '_, U>[@TraitClause1, @TraitClause5](move (@10))
+    ↳ unwind {
+        drop @12
+        unwind
+    }
     storage_dead(@10)
     @8 := [move (@9)]
     storage_dead(@9)
     @7 := &@8
     @6 := &*(@7)
     @2 := core::fmt::{core::fmt::Arguments<'a>}#4::new_v1<'_, 2 : usize, 1 : usize>(move (@3), move (@6))
+    ↳ unwind {
+        drop @12
+        unwind
+    }
     storage_dead(@6)
     storage_dead(@3)
     @1 := std::io::stdio::_print<'_>(move (@2))
+    ↳ unwind {
+        drop @12
+        unwind
+    }
     storage_dead(@2)
     drop @12
     storage_dead(@12)
@@ -193,6 +208,9 @@ where
     let @0: (); // return
 
     @0 := test_crate::{impl test_crate::Join<U> for T}::test<T, bool>[@TraitClause0, core::marker::Sized<bool>, @TraitClause3, test_crate::{impl test_crate::Right<U> for T}#2<T, bool>[@TraitClause0, core::marker::Sized<bool>, core::default::{impl core::default::Default for bool}#1, core::fmt::{impl core::fmt::Debug for bool}#16], core::default::{impl core::default::Default for bool}#1, core::fmt::{impl core::fmt::Debug for bool}#16]()
+    ↳ unwind {
+        unwind
+    }
     @0 := ()
     return
 }

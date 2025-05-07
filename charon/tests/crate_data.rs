@@ -689,7 +689,7 @@ fn known_trait_method_call() -> Result<(), Box<dyn Error>> {
     let [first_stmt, ..] = body.statements.as_slice() else {
         panic!()
     };
-    let RawStatement::Call(call) = &first_stmt.content else {
+    let RawStatement::Call { call, .. } = &first_stmt.content else {
         panic!()
     };
     let FnOperand::Regular(fn_ptr) = &call.func else {

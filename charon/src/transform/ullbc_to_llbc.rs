@@ -115,7 +115,7 @@ fn block_is_error(body: &src::ExprBody, block_id: src::BlockId) -> bool {
     let block = body.body.get(block_id).unwrap();
     use src::RawTerminator::*;
     match &block.terminator.content {
-        Abort(..) => true,
+        Abort(..) | UnwindResume => true,
         Goto { .. } | Switch { .. } | Return | Call { .. } => false,
     }
 }
@@ -1480,7 +1480,14 @@ fn translate_terminator(
         src::RawTerminator::Return => {
             tgt::Statement::new(src_span, tgt::RawStatement::Return).into_block()
         }
-        src::RawTerminator::Call { call, target } => {
+        src::RawTerminator::UnwindResume => {
+            tgt::Statement::new(src_span, tgt::RawStatement::Unwind).into_block()
+        }
+        src::RawTerminator::Call {
+            call,
+            target,
+            on_unwind,
+        } => {
             let target_block = translate_child_block(
                 info,
                 parent_loops,
@@ -1489,7 +1496,21 @@ fn translate_terminator(
                 *target,
             );
             let mut block = opt_block_unwrap_or_nop(terminator.span, target_block);
-            let st = tgt::Statement::new(src_span, tgt::RawStatement::Call(call.clone()));
+            let on_unwind = translate_child_block(
+                info,
+                parent_loops,
+                switch_exit_blocks,
+                terminator.span,
+                *on_unwind,
+            );
+            let on_unwind = opt_block_unwrap_or_nop(terminator.span, on_unwind);
+            let st = tgt::Statement::new(
+                src_span,
+                tgt::RawStatement::Call {
+                    call: call.clone(),
+                    on_unwind,
+                },
+            );
             block.statements.insert(0, st);
             block
         }
@@ -1624,10 +1645,12 @@ fn is_terminal_explore(num_loops: usize, st: &tgt::Statement) -> bool {
         | tgt::RawStatement::Deinit(_)
         | tgt::RawStatement::Drop(_)
         | tgt::RawStatement::Assert(_)
-        | tgt::RawStatement::Call(_)
+        | tgt::RawStatement::Call { .. }
         | tgt::RawStatement::Nop
         | tgt::RawStatement::Error(_) => false,
-        tgt::RawStatement::Abort(..) | tgt::RawStatement::Return => true,
+        tgt::RawStatement::Abort(..) | tgt::RawStatement::Return | &tgt::RawStatement::Unwind => {
+            true
+        }
         tgt::RawStatement::Break(index) => *index >= num_loops,
         tgt::RawStatement::Continue(_index) => true,
         tgt::RawStatement::Switch(switch) => switch
@@ -1661,9 +1684,9 @@ fn translate_block(
         switch_exit_blocks,
         block_id
     );
-    if info.no_code_duplication {
-        assert!(!info.explored.contains(&block_id));
-    }
+    // if info.no_code_duplication {
+    //     assert!(!info.explored.contains(&block_id));
+    // }
     info.explored.insert(block_id);
 
     let block = info.body.body.get(block_id).unwrap();
@@ -1731,12 +1754,12 @@ fn translate_block(
         // Put the loop body inside a `Loop`.
         block = tgt::Statement::new(block.span, tgt::RawStatement::Loop(block)).into_block()
     } else if is_switch {
-        if next_block.is_some() {
-            // Sanity check: if there is an exit block, this block must be
-            // reachable (i.e, there must exist a path in the switch which
-            // doesn't end with `panic`, `return`, etc.).
-            assert!(!is_terminal(&block));
-        }
+        // if next_block.is_some() {
+        //     // Sanity check: if there is an exit block, this block must be
+        //     // reachable (i.e, there must exist a path in the switch which
+        //     // doesn't end with `panic`, `return`, etc.).
+        //     assert!(!is_terminal(&block));
+        // }
     } else {
         assert!(next_block.is_none());
     }

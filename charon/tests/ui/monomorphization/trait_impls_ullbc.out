@@ -20,14 +20,20 @@ where
         @5 := &expected@2;
         storage_live(@6);
         @6 := &init@1;
-        @4 := core::cmp::impls::{impl core::cmp::Eq for bool}#38::parent_clause0::eq<'_, '_, bool, bool>(move (@5), move (@6)) -> bb1;
+        @4 := core::cmp::impls::{impl core::cmp::Eq for bool}#38::parent_clause0::eq<'_, '_, bool, bool>(move (@5), move (@6)) -> bb1 (unwind: bb2);
     }
 
     bb1: {
-        if move (@4) -> bb2 else -> bb3;
+        if move (@4) -> bb3 else -> bb4;
     }
 
     bb2: {
+        drop expected@2;
+        drop init@1;
+        unwind_continue;
+    }
+
+    bb3: {
         storage_dead(@6);
         storage_dead(@5);
         storage_dead(@4);
@@ -39,7 +45,7 @@ where
         return;
     }
 
-    bb3: {
+    bb4: {
         storage_dead(@6);
         storage_dead(@5);
         panic(core::panicking::panic);
@@ -78,7 +84,7 @@ fn test_crate::main()
 
     bb0: {
         storage_live(@1);
-        @1 := @Fun7<bool>[core::marker::Sized<bool>, core::cmp::impls::{impl core::cmp::Eq for bool}#38](const (true), const (true)) -> bb1;
+        @1 := @Fun7<bool>[core::marker::Sized<bool>, core::cmp::impls::{impl core::cmp::Eq for bool}#38](const (true), const (true)) -> bb1 (unwind: bb2);
     }
 
     bb1: {
@@ -86,6 +92,10 @@ fn test_crate::main()
         @0 := ();
         @0 := ();
         return;
+    }
+
+    bb2: {
+        unwind_continue;
     }
 }
 

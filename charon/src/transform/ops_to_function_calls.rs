@@ -8,6 +8,8 @@ use crate::transform::TransformCtx;
 use super::ctx::LlbcPass;
 
 fn transform_st(s: &mut Statement) {
+    let on_unwind =
+        || Statement::new(s.span, RawStatement::Abort(AbortKind::UndefinedBehavior)).into_block();
     match &s.content {
         // Transform the ArrayToSlice unop
         RawStatement::Assign(p, Rvalue::UnaryOp(UnOp::ArrayToSlice(ref_kind, ty, cg), op)) => {
@@ -29,11 +31,14 @@ fn transform_st(s: &mut Statement) {
                 func: Box::new(func),
                 generics: Box::new(generics),
             });
-            s.content = RawStatement::Call(Call {
-                func,
-                args: vec![op.clone()],
-                dest: p.clone(),
-            });
+            s.content = RawStatement::Call {
+                call: Call {
+                    func,
+                    args: vec![op.clone()],
+                    dest: p.clone(),
+                },
+                on_unwind: on_unwind(),
+            };
         }
         // Transform the array aggregates to function calls
         RawStatement::Assign(p, Rvalue::Repeat(op, ty, cg)) => {
@@ -52,11 +57,14 @@ fn transform_st(s: &mut Statement) {
                 func: Box::new(func),
                 generics: Box::new(generics),
             });
-            s.content = RawStatement::Call(Call {
-                func,
-                args: vec![op.clone()],
-                dest: p.clone(),
-            });
+            s.content = RawStatement::Call {
+                call: Call {
+                    func,
+                    args: vec![op.clone()],
+                    dest: p.clone(),
+                },
+                on_unwind: on_unwind(),
+            };
         }
         // Transform the raw pointer aggregate to a function call
         RawStatement::Assign(p, Rvalue::Aggregate(AggregateKind::RawPtr(ty, is_mut), ops)) => {
@@ -74,11 +82,14 @@ fn transform_st(s: &mut Statement) {
                 func: Box::new(func),
                 generics: Box::new(generics),
             });
-            s.content = RawStatement::Call(Call {
-                func,
-                args: ops.clone(),
-                dest: p.clone(),
-            });
+            s.content = RawStatement::Call {
+                call: Call {
+                    func,
+                    args: ops.clone(),
+                    dest: p.clone(),
+                },
+                on_unwind: on_unwind(),
+            };
         }
         _ => {}
     }

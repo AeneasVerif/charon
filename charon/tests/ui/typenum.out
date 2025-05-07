@@ -28,6 +28,9 @@ pub fn test_crate::main()
 
     storage_live(@1)
     @1 := test_crate::foo<test_crate::UInt<test_crate::UInt<test_crate::UInt<test_crate::UInt<test_crate::UInt<test_crate::UInt<test_crate::UInt<test_crate::UInt<test_crate::UInt<test_crate::UTerm, test_crate::B0>, test_crate::B0>, test_crate::B0>, test_crate::B0>, test_crate::B0>, test_crate::B0>, test_crate::B0>, test_crate::B0>, test_crate::B0>>()
+    ↳ unwind {
+        unwind
+    }
     storage_dead(@1)
     @0 := ()
     @0 := ()

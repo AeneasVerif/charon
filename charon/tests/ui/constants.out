@@ -59,6 +59,9 @@ pub fn test_crate::X3() -> u32
     let @0: u32; // return
 
     @0 := test_crate::incr(const (32 : u32))
+    ↳ unwind {
+        unwind
+    }
     return
 }
 
@@ -118,6 +121,9 @@ pub fn test_crate::P0() -> (u32, u32)
     let @0: (u32, u32); // return
 
     @0 := test_crate::mk_pair0(const (0 : u32), const (1 : u32))
+    ↳ unwind {
+        unwind
+    }
     return
 }
 
@@ -128,6 +134,9 @@ pub fn test_crate::P1() -> test_crate::Pair<u32, u32>[core::marker::Sized<u32>, 
     let @0: test_crate::Pair<u32, u32>[core::marker::Sized<u32>, core::marker::Sized<u32>]; // return
 
     @0 := test_crate::mk_pair1(const (0 : u32), const (1 : u32))
+    ↳ unwind {
+        unwind
+    }
     return
 }
 
@@ -183,6 +192,9 @@ pub fn test_crate::Y() -> test_crate::Wrap<i32>[core::marker::Sized<i32>]
     let @0: test_crate::Wrap<i32>[core::marker::Sized<i32>]; // return
 
     @0 := test_crate::{test_crate::Wrap<T>[@TraitClause0]}::new<i32>[core::marker::Sized<i32>](const (2 : i32))
+    ↳ unwind {
+        unwind
+    }
     return
 }
 
@@ -208,6 +220,9 @@ pub fn test_crate::YVAL() -> i32
     let @0: i32; // return
 
     @0 := test_crate::unwrap_y()
+    ↳ unwind {
+        unwind
+    }
     return
 }
 
@@ -283,6 +298,9 @@ pub fn test_crate::Q3() -> i32
     storage_live(@1)
     @1 := test_crate::Q2
     @0 := test_crate::add(move (@1), const (3 : i32))
+    ↳ unwind {
+        unwind
+    }
     return
 }
 
@@ -301,11 +319,20 @@ pub fn test_crate::get_z2() -> i32
     storage_live(@1)
     storage_live(@2)
     @2 := test_crate::get_z1()
+    ↳ unwind {
+        unwind
+    }
     @3 := test_crate::Q3
     @1 := test_crate::add(move (@2), move (@3))
+    ↳ unwind {
+        unwind
+    }
     storage_dead(@2)
     @4 := test_crate::Q1
     @0 := test_crate::add(move (@4), move (@1))
+    ↳ unwind {
+        unwind
+    }
     storage_dead(@1)
     return
 }
@@ -334,6 +361,9 @@ pub fn test_crate::S2() -> u32
     @2 := move (@3)
     @1 := copy (*(@2))
     @0 := test_crate::incr(move (@1))
+    ↳ unwind {
+        unwind
+    }
     storage_dead(@2)
     storage_dead(@1)
     return
@@ -359,6 +389,9 @@ pub fn test_crate::S4() -> test_crate::Pair<u32, u32>[core::marker::Sized<u32>, 
     let @0: test_crate::Pair<u32, u32>[core::marker::Sized<u32>, core::marker::Sized<u32>]; // return
 
     @0 := test_crate::mk_pair1(const (7 : u32), const (8 : u32))
+    ↳ unwind {
+        unwind
+    }
     return
 }
 

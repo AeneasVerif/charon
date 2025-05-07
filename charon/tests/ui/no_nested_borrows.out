@@ -282,6 +282,10 @@ pub fn test_crate::test_list1()
     storage_live(@3)
     @3 := test_crate::List::Nil {  }
     @2 := @BoxNew<test_crate::List<i32>[core::marker::Sized<i32>]>[core::marker::Sized<test_crate::List<i32>[core::marker::Sized<i32>]>](move (@3))
+    ↳ unwind {
+        drop @3
+        unwind
+    }
     storage_dead(@3)
     l@1 := test_crate::List::Cons { 0: const (0 : i32), 1: move (@2) }
     drop @2
@@ -315,16 +319,27 @@ pub fn test_crate::test_box1()
 
     storage_live(b@1)
     b@1 := @BoxNew<i32>[core::marker::Sized<i32>](const (0 : i32))
+    ↳ unwind {
+        unwind
+    }
     storage_live(x@2)
     storage_live(@3)
     @3 := &two-phase-mut b@1
     x@2 := alloc::boxed::{impl core::ops::deref::DerefMut for alloc::boxed::Box<T>[@TraitClause0]}#25::deref_mut<'_, i32, alloc::alloc::Global>[core::marker::Sized<alloc::alloc::Global>](move (@3))
+    ↳ unwind {
+        drop b@1
+        unwind
+    }
     storage_dead(@3)
     *(x@2) := const (1 : i32)
     storage_live(x@4)
     storage_live(@5)
     @5 := &b@1
     x@4 := alloc::boxed::{impl core::ops::deref::Deref for alloc::boxed::Box<T>[@TraitClause0]}#24::deref<'_, i32, alloc::alloc::Global>[core::marker::Sized<alloc::alloc::Global>](move (@5))
+    ↳ unwind {
+        drop b@1
+        unwind
+    }
     storage_dead(@5)
     storage_live(@6)
     storage_live(@7)
@@ -482,6 +497,9 @@ pub fn test_crate::even(@1: u32) -> bool
         @4 := copy (@5) - const (1 : u32)
         storage_dead(@5)
         @0 := test_crate::odd(move (@4))
+        ↳ unwind {
+            unwind
+        }
         storage_dead(@4)
     }
     storage_dead(@2)
@@ -515,6 +533,9 @@ pub fn test_crate::odd(@1: u32) -> bool
         @4 := copy (@5) - const (1 : u32)
         storage_dead(@5)
         @0 := test_crate::even(move (@4))
+        ↳ unwind {
+            unwind
+        }
         storage_dead(@4)
     }
     storage_dead(@2)
@@ -536,24 +557,36 @@ pub fn test_crate::test_even_odd()
     storage_live(@1)
     storage_live(@2)
     @2 := test_crate::even(const (0 : u32))
+    ↳ unwind {
+        unwind
+    }
     assert(move (@2) == true)
     storage_dead(@2)
     storage_dead(@1)
     storage_live(@3)
     storage_live(@4)
     @4 := test_crate::even(const (4 : u32))
+    ↳ unwind {
+        unwind
+    }
     assert(move (@4) == true)
     storage_dead(@4)
     storage_dead(@3)
     storage_live(@5)
     storage_live(@6)
     @6 := test_crate::odd(const (1 : u32))
+    ↳ unwind {
+        unwind
+    }
     assert(move (@6) == true)
     storage_dead(@6)
     storage_dead(@5)
     storage_live(@7)
     storage_live(@8)
     @8 := test_crate::odd(const (5 : u32))
+    ↳ unwind {
+        unwind
+    }
     assert(move (@8) == true)
     storage_dead(@8)
     storage_dead(@7)
