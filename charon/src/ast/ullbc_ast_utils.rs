@@ -42,6 +42,13 @@ impl Terminator {
     pub fn goto(span: Span, target: BlockId) -> Self {
         Self::new(span, RawTerminator::Goto { target })
     }
+
+    pub fn into_block(self) -> BlockData {
+        BlockData {
+            statements: vec![],
+            terminator: self,
+        }
+    }
 }
 
 impl BlockData {
@@ -59,6 +66,7 @@ impl BlockData {
                 vec![*target]
             }
             RawTerminator::Switch { targets, .. } => targets.get_targets(),
+            RawTerminator::Call { call: _, target } => vec![*target],
             RawTerminator::Abort(..) | RawTerminator::Return => {
                 vec![]
             }

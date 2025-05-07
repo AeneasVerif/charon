@@ -862,7 +862,7 @@ impl BodyTransCtx<'_, '_, '_> {
                 unwind: _, // We model unwinding as an effet, we don't represent it in control flow
                 fn_span: _,
                 ..
-            } => self.translate_function_call(statements, span, fun, args, destination, target)?,
+            } => self.translate_function_call(span, fun, args, destination, target)?,
             TerminatorKind::Assert {
                 cond,
                 expected,
@@ -963,7 +963,6 @@ impl BodyTransCtx<'_, '_, '_> {
     #[allow(clippy::too_many_arguments)]
     fn translate_function_call(
         &mut self,
-        statements: &mut Vec<Statement>,
         span: Span,
         fun: &hax::FunOperand,
         args: &Vec<hax::Spanned<hax::Operand>>,
@@ -1025,14 +1024,16 @@ impl BodyTransCtx<'_, '_, '_> {
             args,
             dest: lval,
         };
-        statements.push(Statement::new(span, RawStatement::Call(call)));
-        Ok(match target {
-            Some(target) => {
-                let target = self.translate_basic_block_id(*target);
-                RawTerminator::Goto { target }
+
+        let target = match target {
+            Some(target) => self.translate_basic_block_id(*target),
+            None => {
+                let abort =
+                    Terminator::new(span, RawTerminator::Abort(AbortKind::UndefinedBehavior));
+                self.blocks.push(abort.into_block())
             }
-            None => RawTerminator::Abort(AbortKind::UndefinedBehavior),
-        })
+        };
+        Ok(RawTerminator::Call { call, target })
     }
 
     /// Evaluate function arguments in a context, and return the list of computed

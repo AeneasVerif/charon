@@ -1018,10 +1018,6 @@ impl<C: AstFormatter> FmtWithCtx<C> for ullbc::Statement {
                 place.fmt_with_ctx(ctx),
                 rvalue.fmt_with_ctx(ctx),
             ),
-            RawStatement::Call(call) => {
-                let (call_s, _) = fmt_call(ctx, call);
-                write!(&mut out, "{tab}{} := {call_s}", call.dest.fmt_with_ctx(ctx))
-            }
             RawStatement::SetDiscriminant(place, variant_id) => write!(
                 &mut out,
                 "{tab}@discriminant({}) := {}",
@@ -1236,6 +1232,14 @@ impl<C: AstFormatter> FmtWithCtx<C> for Terminator {
                     )
                 }
             },
+            RawTerminator::Call { call, target } => {
+                let (call_s, _) = fmt_call(ctx, call);
+                write!(
+                    &mut out,
+                    "{tab}{} := {call_s} -> bb{target}",
+                    call.dest.fmt_with_ctx(ctx)
+                )
+            }
             RawTerminator::Abort(kind) => write!(&mut out, "{tab}{}", kind.fmt_with_ctx(ctx)),
             RawTerminator::Return => write!(&mut out, "{tab}return"),
         };

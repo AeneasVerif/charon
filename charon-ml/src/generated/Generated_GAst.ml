@@ -445,6 +445,7 @@ and cli_options = {
   print_built_llbc : bool;
   print_llbc : bool;
   no_merge_goto_chains : bool;
+  no_ops_to_function_calls : bool;
   preset : preset option;
       (** Named builtin sets of options. Currently used only for dependent projects, eveentually
         should be replaced with semantically-meaningful presets.
