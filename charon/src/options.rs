@@ -256,6 +256,13 @@ pub struct CliOpts {
     #[serde(default)]
     pub no_merge_goto_chains: bool,
 
+    #[clap(
+        long = "no-ops-to-function-calls",
+        help = "Do not transform ArrayToSlice, Repeat, and RawPtr aggregates to builtin function calls for ULLBC"
+    )]
+    #[serde(default)]
+    pub ops_to_function_calls: bool,
+
     /// Named builtin sets of options. Currently used only for dependent projects, eveentually
     /// should be replaced with semantically-meaningful presets.
     #[clap(long = "preset")]
@@ -357,6 +364,8 @@ pub struct TranslateOptions {
     pub hide_marker_traits: bool,
     /// Monomorphize functions.
     pub monomorphize: bool,
+    /// Transforms ArrayToSlice, Repeat, and RawPtr aggregates to builtin function calls.
+    pub ops_to_function_calls: bool,
     /// Do not merge the chains of gotos.
     pub no_merge_goto_chains: bool,
     /// Print the llbc just after control-flow reconstruction.
@@ -439,6 +448,7 @@ impl TranslateOptions {
             hide_marker_traits: options.hide_marker_traits,
             monomorphize: options.monomorphize,
             no_merge_goto_chains: options.no_merge_goto_chains,
+            ops_to_function_calls: options.ops_to_function_calls,
             print_built_llbc: options.print_built_llbc,
             item_opacities,
             remove_associated_types,
