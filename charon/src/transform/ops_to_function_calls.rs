@@ -87,7 +87,7 @@ fn transform_st(s: &mut Statement) {
 pub struct Transform;
 impl LlbcPass for Transform {
     fn transform_body(&self, ctx: &mut TransformCtx, b: &mut ExprBody) {
-        if !ctx.options.ops_to_function_calls {
+        if ctx.options.no_ops_to_function_calls {
             return;
         }
         b.body.visit_statements(&mut transform_st);
