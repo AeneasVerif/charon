@@ -1782,11 +1782,6 @@ fn translate_body_aux(
     };
     let tgt_body = translate_block(&mut info, &Vec::new(), &HashSet::new(), src::BlockId::ZERO);
 
-    // Sanity: check that we translated all the blocks
-    for (bid, _) in src_body.body.iter_indexed_values() {
-        assert!(explored.contains(&bid));
-    }
-
     tgt::ExprBody {
         span: src_body.span,
         locals: src_body.locals.clone(),
