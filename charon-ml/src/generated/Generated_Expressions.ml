@@ -39,6 +39,25 @@ and projection_elem =
           We should never have projections to fields of symbolic variants (they
           should have been expanded before through a match).
        *)
+  | ProjIndex of operand * bool
+      (** MIR imposes that the argument to an index projection be a local variable, meaning
+          that even constant indices into arrays are let-bound as separate variables.
+          We **eliminate** this variant in a micro-pass for LLBC.
+
+          Fields:
+          - [offset]
+          - [from_end]
+       *)
+  | Subslice of operand * operand * bool
+      (** Take a subslice of a slice or array. If `from_end` is `true` this is
+          `slice[from..slice.len() - to]`, otherwise this is `slice[from..to]`.
+          We **eliminate** this variant in a micro-pass for LLBC.
+
+          Fields:
+          - [from]
+          - [to]
+          - [from_end]
+       *)
 
 and field_proj_kind =
   | ProjAdt of type_decl_id * variant_id option
@@ -85,6 +104,15 @@ and unop =
       (** Retreive the metadata part of a fat pointer. For slices, this retreives their length. *)
   | Cast of cast_kind
       (** Casts are rvalues in MIR, but we treat them as unops. *)
+  | ArrayToSlice of ref_kind * ty * const_generic
+      (** Coercion from array (i.e., [T; N]) to slice.
+
+          **Remark:** We introduce this unop when translating from MIR, **then transform**
+          it to a function call in a micro pass. The type and the scalar value are not
+          *necessary* as we can retrieve them from the context, but storing them here is
+          very useful. The [RefKind] argument states whethere we operate on a mutable
+          or a shared borrow to an array.
+       *)
 
 (** Nullary operation *)
 and nullop = SizeOf | AlignOf | OffsetOf of (int * field_id) list | UbChecks
@@ -363,6 +391,16 @@ and rvalue =
           rustc introduces a check that the length of the slice is exactly equal
           to 1 and that we preserve.
        *)
+  | Repeat of operand * ty * const_generic
+      (** [Repeat(x, n)] creates an array where [x] is copied [n] times.
+
+          We translate this to a function call for LLBC.
+       *)
+  | ShallowInitBox of operand * ty
+      (** Transmutes a `*mut u8` (obtained from `malloc`) into shallow-initialized `Box<T>`. This
+          only appears as part of lowering `Box::new()` in some cases. We reconstruct the original
+          `Box::new()` call, but sometimes may fail to do so, leaking the expression.
+       *)
 
 (** An aggregated ADT.
 
@@ -400,6 +438,11 @@ and aggregate_kind =
   | AggregatedClosure of fun_decl_id * generic_args
       (** Aggregated values for closures group the function id together with its
           state.
+       *)
+  | AggregatedRawPtr of ty * ref_kind
+      (** Construct a raw pointer from a pointer value, and its metadata (can be unit, if building
+          a thin pointer). The type is the type of the pointee.
+          We lower this to a builtin function call for LLBC in [crate::ops_to_function_calls].
        *)
 
 and local_id = (LocalId.id[@visitors.opaque])

@@ -48,6 +48,7 @@ fn make_ocaml_ident(name: &str) -> String {
             | "float"
             | "end"
             | "include"
+            | "to"
     ) {
         name += "_";
     }

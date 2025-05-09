@@ -60,6 +60,20 @@ and projection_elem_of_json (ctx : of_json_ctx) (js : json) :
         let* x_0 = field_proj_kind_of_json ctx x_0 in
         let* x_1 = field_id_of_json ctx x_1 in
         Ok (Field (x_0, x_1))
+    | `Assoc
+        [ ("Index", `Assoc [ ("offset", offset); ("from_end", from_end) ]) ] ->
+        let* offset = box_of_json operand_of_json ctx offset in
+        let* from_end = bool_of_json ctx from_end in
+        Ok (ProjIndex (offset, from_end))
+    | `Assoc
+        [
+          ( "Subslice",
+            `Assoc [ ("from", from); ("to", to_); ("from_end", from_end) ] );
+        ] ->
+        let* from = box_of_json operand_of_json ctx from in
+        let* to_ = box_of_json operand_of_json ctx to_ in
+        let* from_end = bool_of_json ctx from_end in
+        Ok (Subslice (from, to_, from_end))
     | _ -> Error "")
 
 and field_proj_kind_of_json (ctx : of_json_ctx) (js : json) :
@@ -95,6 +109,11 @@ and unop_of_json (ctx : of_json_ctx) (js : json) : (unop, string) result =
     | `Assoc [ ("Cast", cast) ] ->
         let* cast = cast_kind_of_json ctx cast in
         Ok (Cast cast)
+    | `Assoc [ ("ArrayToSlice", `List [ x_0; x_1; x_2 ]) ] ->
+        let* x_0 = ref_kind_of_json ctx x_0 in
+        let* x_1 = ty_of_json ctx x_1 in
+        let* x_2 = const_generic_of_json ctx x_2 in
+        Ok (ArrayToSlice (x_0, x_1, x_2))
     | _ -> Error "")
 
 and nullop_of_json (ctx : of_json_ctx) (js : json) : (nullop, string) result =
@@ -327,6 +346,15 @@ and rvalue_of_json (ctx : of_json_ctx) (js : json) : (rvalue, string) result =
         let* x_1 = ty_of_json ctx x_1 in
         let* x_2 = option_of_json const_generic_of_json ctx x_2 in
         Ok (Len (x_0, x_1, x_2))
+    | `Assoc [ ("Repeat", `List [ x_0; x_1; x_2 ]) ] ->
+        let* x_0 = operand_of_json ctx x_0 in
+        let* x_1 = ty_of_json ctx x_1 in
+        let* x_2 = const_generic_of_json ctx x_2 in
+        Ok (Repeat (x_0, x_1, x_2))
+    | `Assoc [ ("ShallowInitBox", `List [ x_0; x_1 ]) ] ->
+        let* x_0 = operand_of_json ctx x_0 in
+        let* x_1 = ty_of_json ctx x_1 in
+        Ok (ShallowInitBox (x_0, x_1))
     | _ -> Error "")
 
 and aggregate_kind_of_json (ctx : of_json_ctx) (js : json) :
@@ -347,6 +375,10 @@ and aggregate_kind_of_json (ctx : of_json_ctx) (js : json) :
         let* x_0 = fun_decl_id_of_json ctx x_0 in
         let* x_1 = box_of_json generic_args_of_json ctx x_1 in
         Ok (AggregatedClosure (x_0, x_1))
+    | `Assoc [ ("RawPtr", `List [ x_0; x_1 ]) ] ->
+        let* x_0 = ty_of_json ctx x_0 in
+        let* x_1 = ref_kind_of_json ctx x_1 in
+        Ok (AggregatedRawPtr (x_0, x_1))
     | _ -> Error "")
 
 and local_of_json (ctx : of_json_ctx) (js : json) : (local, string) result =
