@@ -63,8 +63,8 @@ pub enum ProjectionElem {
     Field(FieldProjKind, FieldId),
     /// MIR imposes that the argument to an index projection be a local variable, meaning
     /// that even constant indices into arrays are let-bound as separate variables.
-    /// We **eliminate** this variant in a micro-pass.
-    #[charon::opaque]
+    /// We **eliminate** this variant in a micro-pass for LLBC.
+    #[charon::rename("ProjIndex")]
     Index {
         offset: Box<Operand>,
         #[drive(skip)]
@@ -72,8 +72,7 @@ pub enum ProjectionElem {
     },
     /// Take a subslice of a slice or array. If `from_end` is `true` this is
     /// `slice[from..slice.len() - to]`, otherwise this is `slice[from..to]`.
-    /// We **eliminate** this variant in a micro-pass.
-    #[charon::opaque]
+    /// We **eliminate** this variant in a micro-pass for LLBC.
     Subslice {
         from: Box<Operand>,
         to: Box<Operand>,
@@ -169,7 +168,6 @@ pub enum UnOp {
     /// *necessary* as we can retrieve them from the context, but storing them here is
     /// very useful. The [RefKind] argument states whethere we operate on a mutable
     /// or a shared borrow to an array.
-    #[charon::opaque]
     ArrayToSlice(RefKind, Ty, ConstGeneric),
 }
 
