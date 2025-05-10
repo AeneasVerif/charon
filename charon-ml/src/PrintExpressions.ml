@@ -258,6 +258,13 @@ and rvalue_to_string (env : 'a fmt_env) (rv : rvalue) : string =
               variant_name ^ " " ^ fields
           | TBuiltin _ -> raise (Failure "Unreachable"))
       | AggregatedArray (_ty, _cg) -> "[" ^ String.concat ", " ops ^ "]"
+      | AggregatedRawPtr (_, refk) ->
+          let refk =
+            match refk with
+            | RMut -> "*mut"
+            | RShared -> "*const"
+          in
+          refk ^ " (" ^ String.concat ", " ops ^ ")"
       | AggregatedClosure (fid, generics) ->
           "{"
           ^ fun_decl_id_to_string env fid

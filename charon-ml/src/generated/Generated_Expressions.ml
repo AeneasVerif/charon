@@ -434,6 +434,11 @@ and aggregate_kind =
       (** Aggregated values for closures group the function id together with its
           state.
        *)
+  | AggregatedRawPtr of ty * ref_kind
+      (** Construct a raw pointer from a pointer value, and its metadata (can be unit, if building
+          a thin pointer). The type is the type of the pointee.
+          We lower this to a builtin function call for LLBC in [crate::ops_to_function_calls].
+       *)
 
 and local_id = (LocalId.id[@visitors.opaque])
 [@@deriving

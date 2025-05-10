@@ -626,7 +626,6 @@ pub enum AggregateKind {
     Closure(FunDeclId, BoxedArgs),
     /// Construct a raw pointer from a pointer value, and its metadata (can be unit, if building
     /// a thin pointer). The type is the type of the pointee.
-    /// We lower this to a builtin function call in [crate::ops_to_function_calls].
-    #[charon::opaque]
+    /// We lower this to a builtin function call for LLBC in [crate::ops_to_function_calls].
     RawPtr(Ty, RefKind),
 }
