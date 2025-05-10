@@ -585,8 +585,7 @@ pub enum Rvalue {
     Repeat(Operand, Ty, ConstGeneric),
     /// Transmutes a `*mut u8` (obtained from `malloc`) into shallow-initialized `Box<T>`. This
     /// only appears as part of lowering `Box::new()` in some cases. We reconstruct the original
-    /// `Box::new()` call.
-    #[charon::opaque]
+    /// `Box::new()` call, but sometimes may fail to do so, leaking the expression.
     ShallowInitBox(Operand, Ty),
 }
 

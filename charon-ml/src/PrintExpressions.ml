@@ -220,6 +220,8 @@ and rvalue_to_string (env : 'a fmt_env) (rv : rvalue) : string =
       "[" ^ operand_to_string env v ^ ";"
       ^ const_generic_to_string env len
       ^ "]"
+  | ShallowInitBox (op, _) ->
+      "shallow-init-box(" ^ operand_to_string env op ^ ")"
   | Aggregate (akind, ops) -> (
       let ops = List.map (operand_to_string env) ops in
       match akind with

@@ -396,6 +396,11 @@ and rvalue =
 
           We translate this to a function call for LLBC.
        *)
+  | ShallowInitBox of operand * ty
+      (** Transmutes a `*mut u8` (obtained from `malloc`) into shallow-initialized `Box<T>`. This
+          only appears as part of lowering `Box::new()` in some cases. We reconstruct the original
+          `Box::new()` call, but sometimes may fail to do so, leaking the expression.
+       *)
 
 (** An aggregated ADT.
 
