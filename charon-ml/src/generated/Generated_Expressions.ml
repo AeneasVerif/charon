@@ -391,6 +391,11 @@ and rvalue =
           rustc introduces a check that the length of the slice is exactly equal
           to 1 and that we preserve.
        *)
+  | Repeat of operand * ty * const_generic
+      (** [Repeat(x, n)] creates an array where [x] is copied [n] times.
+
+          We translate this to a function call for LLBC.
+       *)
 
 (** An aggregated ADT.
 

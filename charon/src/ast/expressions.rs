@@ -581,8 +581,7 @@ pub enum Rvalue {
     Len(Place, Ty, Option<ConstGeneric>),
     /// [Repeat(x, n)] creates an array where [x] is copied [n] times.
     ///
-    /// We translate this to a function call.
-    #[charon::opaque]
+    /// We translate this to a function call for LLBC.
     Repeat(Operand, Ty, ConstGeneric),
     /// Transmutes a `*mut u8` (obtained from `malloc`) into shallow-initialized `Box<T>`. This
     /// only appears as part of lowering `Box::new()` in some cases. We reconstruct the original

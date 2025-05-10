@@ -346,6 +346,11 @@ and rvalue_of_json (ctx : of_json_ctx) (js : json) : (rvalue, string) result =
         let* x_1 = ty_of_json ctx x_1 in
         let* x_2 = option_of_json const_generic_of_json ctx x_2 in
         Ok (Len (x_0, x_1, x_2))
+    | `Assoc [ ("Repeat", `List [ x_0; x_1; x_2 ]) ] ->
+        let* x_0 = operand_of_json ctx x_0 in
+        let* x_1 = ty_of_json ctx x_1 in
+        let* x_2 = const_generic_of_json ctx x_2 in
+        Ok (Repeat (x_0, x_1, x_2))
     | _ -> Error "")
 
 and aggregate_kind_of_json (ctx : of_json_ctx) (js : json) :

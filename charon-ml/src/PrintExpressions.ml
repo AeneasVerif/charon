@@ -216,6 +216,10 @@ and rvalue_to_string (env : 'a fmt_env) (rv : rvalue) : string =
       "&raw mut global "
       ^ global_decl_id_to_string env global_ref.global_id
       ^ generics
+  | Repeat (v, _, len) ->
+      "[" ^ operand_to_string env v ^ ";"
+      ^ const_generic_to_string env len
+      ^ "]"
   | Aggregate (akind, ops) -> (
       let ops = List.map (operand_to_string env) ops in
       match akind with
