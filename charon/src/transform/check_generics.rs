@@ -199,12 +199,6 @@ impl VisitAst for CheckGenericsVisitor<'_> {
             AggregateKind::Adt(..) | AggregateKind::Array(..) | AggregateKind::RawPtr(..) => {
                 self.visit_inner(agg)?
             }
-            AggregateKind::Closure(_id, args) => {
-                // TODO(#194): handle closure generics properly
-                // This does not visit the args themselves, only their contents, because we mess up
-                // closure generics for now.
-                self.visit_inner(args.as_ref())?
-            }
         }
         Continue(())
     }

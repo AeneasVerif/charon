@@ -10,7 +10,96 @@ error: Item `test_crate::foo` caused errors; ignoring.
 14 | fn foo<const X: Foo>() -> Foo {
    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-disabled backtrace
+   0: std::backtrace::Backtrace::create
+   1: hax_frontend_exporter::constant_utils::uneval::<impl hax_frontend_exporter::sinto::SInto<S,hax_frontend_exporter::types::ty::Decorated<hax_frontend_exporter::constant_utils::ConstantExprKind>> for rustc_middle::ty::consts::Const>::sinto
+             at /Users/opale/.cargo/git/checkouts/hax-580ebeee043cdea1/0275a2b/frontend/exporter/src/utils/error_macros.rs:29:29
+   2: hax_frontend_exporter::types::ty::_::<impl hax_frontend_exporter::sinto::SInto<S,hax_frontend_exporter::types::ty::TyKind> for rustc_type_ir::ty_kind::TyKind<rustc_middle::ty::context::TyCtxt>>::sinto
+             at /Users/opale/.cargo/git/checkouts/hax-580ebeee043cdea1/0275a2b/frontend/exporter/src/types/ty.rs:847:35
+   3: hax_frontend_exporter::types::ty::<impl hax_frontend_exporter::sinto::SInto<S,hax_frontend_exporter::types::ty::Ty> for rustc_middle::ty::Ty>::sinto
+             at /Users/opale/.cargo/git/checkouts/hax-580ebeee043cdea1/0275a2b/frontend/exporter/src/types/ty.rs:778:28
+   4: hax_frontend_exporter::types::ty::_::<impl hax_frontend_exporter::sinto::SInto<S,hax_frontend_exporter::types::ty::GenericArg> for rustc_type_ir::generic_arg::GenericArgKind<rustc_middle::ty::context::TyCtxt>>::sinto
+             at /Users/opale/.cargo/git/checkouts/hax-580ebeee043cdea1/0275a2b/frontend/exporter/src/types/ty.rs:431:10
+   5: hax_frontend_exporter::types::ty::<impl hax_frontend_exporter::sinto::SInto<S,hax_frontend_exporter::types::ty::GenericArg> for rustc_middle::ty::generic_args::GenericArg>::sinto
+             at /Users/opale/.cargo/git/checkouts/hax-580ebeee043cdea1/0275a2b/frontend/exporter/src/types/ty.rs:438:9
+   6: hax_frontend_exporter::types::ty::_::<impl hax_frontend_exporter::sinto::SInto<S,hax_frontend_exporter::types::ty::ClauseKind> for rustc_type_ir::predicate_kind::ClauseKind<rustc_middle::ty::context::TyCtxt>>::sinto
+             at /Users/opale/.cargo/git/checkouts/hax-580ebeee043cdea1/0275a2b/frontend/exporter/src/types/ty.rs:1126:16
+   7: hax_frontend_exporter::types::ty::<impl hax_frontend_exporter::sinto::SInto<S,hax_frontend_exporter::types::ty::Binder<T2>> for rustc_type_ir::binder::Binder<rustc_middle::ty::context::TyCtxt,T1>>::sinto
+             at /Users/opale/.cargo/git/checkouts/hax-580ebeee043cdea1/0275a2b/frontend/exporter/src/types/ty.rs:1253:13
+   8: hax_frontend_exporter::types::ty::<impl hax_frontend_exporter::sinto::SInto<S,hax_frontend_exporter::types::ty::Clause> for rustc_middle::ty::predicate::Clause>::sinto
+             at /Users/opale/.cargo/git/checkouts/hax-580ebeee043cdea1/0275a2b/frontend/exporter/src/types/ty.rs:1144:20
+   9: <(L,R) as hax_frontend_exporter::sinto::SInto<S,(LL,RR)>>::sinto
+             at /Users/opale/.cargo/git/checkouts/hax-580ebeee043cdea1/0275a2b/frontend/exporter/src/sinto.rs:58:10
+  10: hax_frontend_exporter::types::ty::_::<impl hax_frontend_exporter::sinto::SInto<S,hax_frontend_exporter::types::ty::GenericPredicates> for rustc_middle::ty::generics::GenericPredicates>::sinto::{{closure}}
+             at /Users/opale/.cargo/git/checkouts/hax-580ebeee043cdea1/0275a2b/frontend/exporter/src/types/ty.rs:1234:44
+  11: core::iter::adapters::map::map_fold::{{closure}}
+             at /Users/opale/.rustup/toolchains/nightly-2025-03-29-aarch64-apple-darwin/lib/rustlib/src/rust/library/core/src/iter/adapters/map.rs:88:28
+  12: <core::slice::iter::Iter<T> as core::iter::traits::iterator::Iterator>::fold
+             at /Users/opale/.rustup/toolchains/nightly-2025-03-29-aarch64-apple-darwin/lib/rustlib/src/rust/library/core/src/slice/iter/macros.rs:255:27
+  13: <core::iter::adapters::map::Map<I,F> as core::iter::traits::iterator::Iterator>::fold
+             at /Users/opale/.rustup/toolchains/nightly-2025-03-29-aarch64-apple-darwin/lib/rustlib/src/rust/library/core/src/iter/adapters/map.rs:128:9
+  14: core::iter::traits::iterator::Iterator::for_each
+             at /Users/opale/.rustup/toolchains/nightly-2025-03-29-aarch64-apple-darwin/lib/rustlib/src/rust/library/core/src/iter/traits/iterator.rs:800:9
+  15: alloc::vec::Vec<T,A>::extend_trusted
+             at /Users/opale/.rustup/toolchains/nightly-2025-03-29-aarch64-apple-darwin/lib/rustlib/src/rust/library/alloc/src/vec/mod.rs:3579:17
+  16: <alloc::vec::Vec<T,A> as alloc::vec::spec_extend::SpecExtend<T,I>>::spec_extend
+             at /Users/opale/.rustup/toolchains/nightly-2025-03-29-aarch64-apple-darwin/lib/rustlib/src/rust/library/alloc/src/vec/spec_extend.rs:29:9
+  17: <alloc::vec::Vec<T> as alloc::vec::spec_from_iter_nested::SpecFromIterNested<T,I>>::from_iter
+             at /Users/opale/.rustup/toolchains/nightly-2025-03-29-aarch64-apple-darwin/lib/rustlib/src/rust/library/alloc/src/vec/spec_from_iter_nested.rs:62:9
+  18: <alloc::vec::Vec<T> as alloc::vec::spec_from_iter::SpecFromIter<T,I>>::from_iter
+             at /Users/opale/.rustup/toolchains/nightly-2025-03-29-aarch64-apple-darwin/lib/rustlib/src/rust/library/alloc/src/vec/spec_from_iter.rs:34:9
+  19: <alloc::vec::Vec<T> as core::iter::traits::collect::FromIterator<T>>::from_iter
+             at /Users/opale/.rustup/toolchains/nightly-2025-03-29-aarch64-apple-darwin/lib/rustlib/src/rust/library/alloc/src/vec/mod.rs:3438:9
+  20: core::iter::traits::iterator::Iterator::collect
+             at /Users/opale/.rustup/toolchains/nightly-2025-03-29-aarch64-apple-darwin/lib/rustlib/src/rust/library/core/src/iter/traits/iterator.rs:1985:9
+  21: hax_frontend_exporter::types::ty::_::<impl hax_frontend_exporter::sinto::SInto<S,hax_frontend_exporter::types::ty::GenericPredicates> for rustc_middle::ty::generics::GenericPredicates>::sinto
+             at /Users/opale/.cargo/git/checkouts/hax-580ebeee043cdea1/0275a2b/frontend/exporter/src/types/ty.rs:1234:13
+  22: hax_frontend_exporter::types::new::full_def::get_param_env
+             at /Users/opale/.cargo/git/checkouts/hax-580ebeee043cdea1/0275a2b/frontend/exporter/src/types/new/full_def.rs:922:21
+  23: hax_frontend_exporter::types::new::full_def::_::<impl hax_frontend_exporter::sinto::SInto<S,hax_frontend_exporter::types::new::full_def::FullDefKind<Body>> for rustc_hir::def::DefKind>::sinto
+             at /Users/opale/.cargo/git/checkouts/hax-580ebeee043cdea1/0275a2b/frontend/exporter/src/types/new/full_def.rs:300:17
+  24: hax_frontend_exporter::types::new::full_def::translate_full_def
+             at /Users/opale/.cargo/git/checkouts/hax-580ebeee043cdea1/0275a2b/frontend/exporter/src/types/new/full_def.rs:53:20
+  25: hax_frontend_exporter::types::new::full_def::<impl hax_frontend_exporter::types::def_id::DefId>::full_def
+             at /Users/opale/.cargo/git/checkouts/hax-580ebeee043cdea1/0275a2b/frontend/exporter/src/types/new/full_def.rs:145:28
+  26: charon_driver::translate::translate_ctx::TranslateCtx::hax_def::{{closure}}
+             at ./src/bin/charon-driver/translate/translate_ctx.rs:497:42
+  27: std::panicking::try::do_call
+             at /Users/opale/.rustup/toolchains/nightly-2025-03-29-aarch64-apple-darwin/lib/rustlib/src/rust/library/std/src/panicking.rs:589:40
+  28: ___rust_try
+  29: std::panicking::try
+             at /Users/opale/.rustup/toolchains/nightly-2025-03-29-aarch64-apple-darwin/lib/rustlib/src/rust/library/std/src/panicking.rs:552:19
+  30: std::panic::catch_unwind
+             at /Users/opale/.rustup/toolchains/nightly-2025-03-29-aarch64-apple-darwin/lib/rustlib/src/rust/library/std/src/panic.rs:359:14
+  31: charon_driver::translate::translate_ctx::TranslateCtx::hax_def
+             at ./src/bin/charon-driver/translate/translate_ctx.rs:497:9
+  32: charon_driver::translate::translate_crate_to_ullbc::<impl charon_driver::translate::translate_ctx::TranslateCtx>::translate_item_aux
+             at ./src/bin/charon-driver/translate/translate_crate_to_ullbc.rs:151:19
+  33: charon_driver::translate::translate_crate_to_ullbc::<impl charon_driver::translate::translate_ctx::TranslateCtx>::translate_item::{{closure}}::{{closure}}
+             at ./src/bin/charon-driver/translate/translate_crate_to_ullbc.rs:118:50
+  34: std::panicking::try::do_call
+             at /Users/opale/.rustup/toolchains/nightly-2025-03-29-aarch64-apple-darwin/lib/rustlib/src/rust/library/std/src/panicking.rs:589:40
+  35: ___rust_try
+  36: std::panicking::try
+             at /Users/opale/.rustup/toolchains/nightly-2025-03-29-aarch64-apple-darwin/lib/rustlib/src/rust/library/std/src/panicking.rs:552:19
+  37: std::panic::catch_unwind
+             at /Users/opale/.rustup/toolchains/nightly-2025-03-29-aarch64-apple-darwin/lib/rustlib/src/rust/library/std/src/panic.rs:359:14
+  38: charon_driver::translate::translate_crate_to_ullbc::<impl charon_driver::translate::translate_ctx::TranslateCtx>::translate_item::{{closure}}
+             at ./src/bin/charon-driver/translate/translate_crate_to_ullbc.rs:118:17
+  39: charon_driver::translate::translate_ctx::TranslateCtx::with_def_id
+             at ./src/bin/charon-driver/translate/translate_ctx.rs:921:19
+  40: charon_driver::translate::translate_crate_to_ullbc::<impl charon_driver::translate::translate_ctx::TranslateCtx>::translate_item
+             at ./src/bin/charon-driver/translate/translate_crate_to_ullbc.rs:112:9
+  41: charon_driver::translate::translate_crate_to_ullbc::translate
+             at ./src/bin/charon-driver/translate/translate_crate_to_ullbc.rs:299:13
+  42: <charon_driver::driver::CharonCallbacks as rustc_driver_impl::Callbacks>::after_expansion
+             at ./src/bin/charon-driver/driver.rs:166:13
+  43: rustc_interface::passes::create_and_enter_global_ctxt::<core::option::Option<rustc_interface::queries::Linker>, rustc_driver_impl::run_compiler::{closure#0}::{closure#2}>
+  44: rustc_interface::interface::run_compiler::<(), rustc_driver_impl::run_compiler::{closure#0}>::{closure#1}
+  45: std::sys::backtrace::__rust_begin_short_backtrace::<rustc_interface::util::run_in_thread_with_globals<rustc_interface::util::run_in_thread_pool_with_globals<rustc_interface::interface::run_compiler<(), rustc_driver_impl::run_compiler::{closure#0}>::{closure#1}, ()>::{closure#0}, ()>::{closure#0}::{closure#0}, ()>
+  46: <<std::thread::Builder>::spawn_unchecked_<rustc_interface::util::run_in_thread_with_globals<rustc_interface::util::run_in_thread_pool_with_globals<rustc_interface::interface::run_compiler<(), rustc_driver_impl::run_compiler::{closure#0}>::{closure#1}, ()>::{closure#0}, ()>::{closure#0}::{closure#0}, ()>::{closure#1} as core::ops::function::FnOnce<()>>::call_once::{shim:vtable#0}
+  47: std::sys::pal::unix::thread::Thread::new::thread_start
+  48: __pthread_cond_wait
+
 error[E9999]: Supposely unreachable place in the Rust AST. The label is "TranslateUneval".
               This error report happend because some assumption about the Rust AST was broken.
               

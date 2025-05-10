@@ -48,6 +48,7 @@ fn make_ocaml_ident(name: &str) -> String {
             | "float"
             | "end"
             | "include"
+            | "to"
     ) {
         name += "_";
     }
@@ -352,10 +353,10 @@ fn type_decl_to_json_deserializer(ctx: &GenerateCtx, decl: &TypeDecl) -> String 
 
     let branches = match &decl.kind {
         _ if let Some(def) = ctx.manual_json_impls.get(&decl.def_id) => def.clone(),
-        TypeDeclKind::Struct(fields) if fields.is_empty() => {
+        TypeDeclKind::Struct(fields, None) if fields.is_empty() => {
             build_branch(ctx, "`Null", fields, "()")
         }
-        TypeDeclKind::Struct(fields)
+        TypeDeclKind::Struct(fields, None)
             if fields.elem_count() == 1
                 && fields[0].name.as_ref().is_some_and(|name| name == "_raw") =>
         {
@@ -372,7 +373,7 @@ fn type_decl_to_json_deserializer(ctx: &GenerateCtx, decl: &TypeDecl) -> String 
                 .clone();
             format!("| x -> {short_name}.id_of_json ctx x")
         }
-        TypeDeclKind::Struct(fields)
+        TypeDeclKind::Struct(fields, None)
             if fields.elem_count() == 1
                 && (fields[0].name.is_none()
                     || decl
@@ -391,7 +392,7 @@ fn type_decl_to_json_deserializer(ctx: &GenerateCtx, decl: &TypeDecl) -> String 
             let call = type_to_ocaml_call(ctx, ty);
             format!("| x -> {call} ctx x")
         }
-        TypeDeclKind::Struct(fields) if fields.iter().all(|f| f.name.is_none()) => {
+        TypeDeclKind::Struct(fields, None) if fields.iter().all(|f| f.name.is_none()) => {
             let mut fields = fields.clone();
             for (i, f) in fields.iter_mut().enumerate() {
                 f.name = Some(format!("x{i}"));
@@ -410,7 +411,7 @@ fn type_decl_to_json_deserializer(ctx: &GenerateCtx, decl: &TypeDecl) -> String 
             let construct = format!("( {construct} )");
             build_branch(ctx, &pat, &fields, &construct)
         }
-        TypeDeclKind::Struct(fields) => {
+        TypeDeclKind::Struct(fields, None) => {
             let fields = fields
                 .iter()
                 .filter(|field| {
@@ -499,6 +500,7 @@ fn type_decl_to_json_deserializer(ctx: &GenerateCtx, decl: &TypeDecl) -> String 
                 })
                 .join("\n")
         }
+        TypeDeclKind::Struct(_, Some(_)) => todo!(),
         TypeDeclKind::Union(..) => todo!(),
         TypeDeclKind::Opaque => todo!(),
         TypeDeclKind::Error(_) => todo!(),
@@ -580,8 +582,8 @@ fn type_decl_to_ocaml_decl(ctx: &GenerateCtx, decl: &TypeDecl, co_rec: bool) -> 
             let ty = type_to_ocaml_name(ctx, ty);
             format!("{ty} {opaque}")
         }
-        TypeDeclKind::Struct(fields) if fields.is_empty() => "unit".to_string(),
-        TypeDeclKind::Struct(fields)
+        TypeDeclKind::Struct(fields, None) if fields.is_empty() => "unit".to_string(),
+        TypeDeclKind::Struct(fields, None)
             if fields.elem_count() == 1
                 && fields[0].name.as_ref().is_some_and(|name| name == "_raw") =>
         {
@@ -598,7 +600,7 @@ fn type_decl_to_ocaml_decl(ctx: &GenerateCtx, decl: &TypeDecl, co_rec: bool) -> 
                 .clone();
             format!("{short_name}.id [@visitors.opaque]")
         }
-        TypeDeclKind::Struct(fields)
+        TypeDeclKind::Struct(fields, None)
             if fields.elem_count() == 1
                 && (fields[0].name.is_none()
                     || decl
@@ -612,7 +614,7 @@ fn type_decl_to_ocaml_decl(ctx: &GenerateCtx, decl: &TypeDecl, co_rec: bool) -> 
             let ty = type_to_ocaml_name(ctx, &fields[0].ty);
             format!("{ty} {opaque}")
         }
-        TypeDeclKind::Struct(fields) if fields.iter().all(|f| f.name.is_none()) => fields
+        TypeDeclKind::Struct(fields, None) if fields.iter().all(|f| f.name.is_none()) => fields
             .iter()
             .filter(|f| !f.is_opaque())
             .map(|f| {
@@ -620,7 +622,7 @@ fn type_decl_to_ocaml_decl(ctx: &GenerateCtx, decl: &TypeDecl, co_rec: bool) -> 
                 format!("{ty} {opaque}")
             })
             .join("*"),
-        TypeDeclKind::Struct(fields) => {
+        TypeDeclKind::Struct(fields, None) => {
             let fields = fields
                 .iter()
                 .filter(|f| !f.is_opaque())
@@ -681,6 +683,7 @@ fn type_decl_to_ocaml_decl(ctx: &GenerateCtx, decl: &TypeDecl, co_rec: bool) -> 
                 })
                 .join("")
         }
+        TypeDeclKind::Struct(_, Some(_)) => todo!(),
         TypeDeclKind::Union(..) => todo!(),
         TypeDeclKind::Opaque => todo!(),
         TypeDeclKind::Error(_) => todo!(),

@@ -58,4 +58,663 @@ error: Error during trait resolution: Found unsupported GAT `Type` when resolvin
 55 |         x.foo()
    |         ^^^^^^^
 
-ERROR Charon failed to translate this code (10 errors)
+error: Found inconsistent generics after translation:
+       Mismatched regions:
+       expected: ['_0]
+            got: []
+       Visitor stack:
+         charon_lib::ast::types::GenericArgs
+         alloc::boxed::Box<charon_lib::ast::types::GenericArgs>
+         charon_lib::ast::types::TraitRefKind
+         charon_lib::ast::types::TraitRef
+         charon_lib::ids::vector::Vector<charon_lib::ast::types::vars::TraitClauseId, charon_lib::ast::types::TraitRef>
+         charon_lib::ast::types::GenericArgs
+         alloc::boxed::Box<charon_lib::ast::types::GenericArgs>
+         charon_lib::ast::expressions::FnPtr
+         charon_lib::ast::gast::FnOperand
+         charon_lib::ast::gast::Call
+         charon_lib::ast::ullbc_ast::RawTerminator
+         charon_lib::ast::ullbc_ast::Terminator
+         charon_lib::ast::ullbc_ast::BlockData
+         charon_lib::ids::vector::Vector<charon_lib::ast::ullbc_ast::BlockId, charon_lib::ast::ullbc_ast::BlockData>
+         charon_lib::ast::gast::GExprBody<charon_lib::ids::vector::Vector<charon_lib::ast::ullbc_ast::BlockId, charon_lib::ast::ullbc_ast::BlockData>>
+         charon_lib::ast::gast::Body
+         core::result::Result<charon_lib::ast::gast::Body, charon_lib::ast::gast::Opaque>
+         charon_lib::ast::gast::FunDecl
+       Binding stack (depth 1):
+         0: 
+  --> tests/ui/generic-associated-types.rs:34:1
+   |
+34 | / pub fn main() {
+35 | |     let x = 42;
+36 | |     let iter = Some(&42);
+37 | |     let mut sum = 0;
+38 | |     for_each(iter, |item| sum += *item);
+39 | |     assert_eq!(sum, 42);
+40 | | }
+   | |_^
+
+error: Found inconsistent generics after translation:
+       Mismatched regions:
+       expected: ['_0]
+            got: []
+       Visitor stack:
+         charon_lib::ast::types::GenericArgs
+         charon_lib::ast::types::TyKind
+         charon_lib::ast::types::Ty
+         charon_lib::ids::vector::Vector<charon_lib::ast::types::vars::TypeVarId, charon_lib::ast::types::Ty>
+         charon_lib::ast::types::GenericArgs
+         alloc::boxed::Box<charon_lib::ast::types::GenericArgs>
+         charon_lib::ast::types::TraitDeclRef
+         charon_lib::ast::gast::TraitImpl
+       Binding stack (depth 1):
+         0: <'_0>
+  --> tests/ui/generic-associated-types.rs:38:20
+   |
+38 |     for_each(iter, |item| sum += *item);
+   |                    ^^^^^^^^^^^^^^^^^^^
+
+error: Found inconsistent generics after translation:
+       Mismatched regions:
+       expected: ['_0]
+            got: []
+       Visitor stack:
+         charon_lib::ast::types::GenericArgs
+         alloc::boxed::Box<charon_lib::ast::types::GenericArgs>
+         charon_lib::ast::types::TraitRefKind
+         charon_lib::ast::types::TraitRef
+         charon_lib::ids::vector::Vector<charon_lib::ast::types::vars::TraitClauseId, charon_lib::ast::types::TraitRef>
+         charon_lib::ast::gast::TraitImpl
+       Binding stack (depth 1):
+         0: <'_0>
+  --> tests/ui/generic-associated-types.rs:38:20
+   |
+38 |     for_each(iter, |item| sum += *item);
+   |                    ^^^^^^^^^^^^^^^^^^^
+
+error: Found inconsistent generics after translation:
+       Mismatched regions:
+       expected: ['_0]
+            got: []
+       Visitor stack:
+         charon_lib::ast::types::GenericArgs
+         charon_lib::ast::types::TyKind
+         charon_lib::ast::types::Ty
+         charon_lib::ids::vector::Vector<charon_lib::ast::types::vars::TypeVarId, charon_lib::ast::types::Ty>
+         charon_lib::ast::types::GenericArgs
+         alloc::boxed::Box<charon_lib::ast::types::GenericArgs>
+         charon_lib::ast::types::TraitDeclRef
+         charon_lib::ast::types::RegionBinder<charon_lib::ast::types::TraitDeclRef>
+         charon_lib::ast::types::TraitRef
+         charon_lib::ids::vector::Vector<charon_lib::ast::types::vars::TraitClauseId, charon_lib::ast::types::TraitRef>
+         charon_lib::ast::gast::TraitImpl
+       Binding stack (depth 2):
+         0: 
+         1: <'_0>
+  --> tests/ui/generic-associated-types.rs:38:20
+   |
+38 |     for_each(iter, |item| sum += *item);
+   |                    ^^^^^^^^^^^^^^^^^^^
+
+error: Found inconsistent generics after translation:
+       Mismatched regions:
+       expected: ['_0]
+            got: []
+       Visitor stack:
+         charon_lib::ast::types::GenericArgs
+         charon_lib::ast::types::TyKind
+         charon_lib::ast::types::Ty
+         charon_lib::ast::types::TyKind
+         charon_lib::ast::types::Ty
+         alloc::vec::Vec<charon_lib::ast::types::Ty>
+         charon_lib::ast::types::FunSig
+         charon_lib::ast::gast::FunDecl
+       Binding stack (depth 1):
+         0: <'_0, '_1>
+  --> tests/ui/generic-associated-types.rs:38:20
+   |
+38 |     for_each(iter, |item| sum += *item);
+   |                    ^^^^^^^^^^^^^^^^^^^
+
+error: Found inconsistent generics after translation:
+       Mismatched regions:
+       expected: ['_0]
+            got: []
+       Visitor stack:
+         charon_lib::ast::types::GenericArgs
+         charon_lib::ast::types::TyKind
+         charon_lib::ast::types::Ty
+         charon_lib::ids::vector::Vector<charon_lib::ast::types::vars::TypeVarId, charon_lib::ast::types::Ty>
+         charon_lib::ast::types::GenericArgs
+         alloc::boxed::Box<charon_lib::ast::types::GenericArgs>
+         charon_lib::ast::types::TraitDeclRef
+         charon_lib::ast::gast::TraitImpl
+       Binding stack (depth 1):
+         0: <'_0>
+  --> tests/ui/generic-associated-types.rs:38:20
+   |
+38 |     for_each(iter, |item| sum += *item);
+   |                    ^^^^^^^^^^^^^^^^^^^
+
+error: Found inconsistent generics after translation:
+       Mismatched regions:
+       expected: ['_0]
+            got: []
+       Visitor stack:
+         charon_lib::ast::types::GenericArgs
+         charon_lib::ast::types::TyKind
+         charon_lib::ast::types::Ty
+         alloc::vec::Vec<charon_lib::ast::types::Ty>
+         charon_lib::ast::types::FunSig
+         charon_lib::ast::gast::FunDecl
+       Binding stack (depth 1):
+         0: <'_0>
+  --> tests/ui/generic-associated-types.rs:38:20
+   |
+38 |     for_each(iter, |item| sum += *item);
+   |                    ^^^^^^^^^^^^^^^^^^^
+
+error: Found inconsistent generics after translation:
+       Mismatched regions:
+       expected: ['_0]
+            got: []
+       Visitor stack:
+         charon_lib::ast::types::GenericArgs
+         charon_lib::ast::types::TyKind
+         charon_lib::ast::types::Ty
+         charon_lib::ast::gast::Local
+         charon_lib::ids::vector::Vector<charon_lib::ast::values::LocalId, charon_lib::ast::gast::Local>
+         charon_lib::ast::gast::Locals
+         charon_lib::ast::gast::GExprBody<charon_lib::ids::vector::Vector<charon_lib::ast::ullbc_ast::BlockId, charon_lib::ast::ullbc_ast::BlockData>>
+         charon_lib::ast::gast::Body
+         core::result::Result<charon_lib::ast::gast::Body, charon_lib::ast::gast::Opaque>
+         charon_lib::ast::gast::FunDecl
+       Binding stack (depth 1):
+         0: <'_0>
+  --> tests/ui/generic-associated-types.rs:38:20
+   |
+38 |     for_each(iter, |item| sum += *item);
+   |                    ^^^^^^^^^^^^^^^^^^^
+
+error: Found inconsistent generics after translation:
+       Mismatched regions:
+       expected: ['_0]
+            got: []
+       Visitor stack:
+         charon_lib::ast::types::GenericArgs
+         charon_lib::ast::types::TyKind
+         charon_lib::ast::types::Ty
+         charon_lib::ast::types::TyKind
+         charon_lib::ast::types::Ty
+         charon_lib::ast::gast::Local
+         charon_lib::ids::vector::Vector<charon_lib::ast::values::LocalId, charon_lib::ast::gast::Local>
+         charon_lib::ast::gast::Locals
+         charon_lib::ast::gast::GExprBody<charon_lib::ids::vector::Vector<charon_lib::ast::ullbc_ast::BlockId, charon_lib::ast::ullbc_ast::BlockData>>
+         charon_lib::ast::gast::Body
+         core::result::Result<charon_lib::ast::gast::Body, charon_lib::ast::gast::Opaque>
+         charon_lib::ast::gast::FunDecl
+       Binding stack (depth 1):
+         0: <'_0>
+  --> tests/ui/generic-associated-types.rs:38:20
+   |
+38 |     for_each(iter, |item| sum += *item);
+   |                    ^^^^^^^^^^^^^^^^^^^
+
+error: Found inconsistent generics after translation:
+       Mismatched regions:
+       expected: ['_0]
+            got: []
+       Visitor stack:
+         charon_lib::ast::types::GenericArgs
+         charon_lib::ast::types::TyKind
+         charon_lib::ast::types::Ty
+         charon_lib::ast::types::TyKind
+         charon_lib::ast::types::Ty
+         charon_lib::ast::expressions::Place
+         charon_lib::ast::ullbc_ast::RawStatement
+         charon_lib::ast::ullbc_ast::Statement
+         alloc::vec::Vec<charon_lib::ast::ullbc_ast::Statement>
+         charon_lib::ast::ullbc_ast::BlockData
+         charon_lib::ids::vector::Vector<charon_lib::ast::ullbc_ast::BlockId, charon_lib::ast::ullbc_ast::BlockData>
+         charon_lib::ast::gast::GExprBody<charon_lib::ids::vector::Vector<charon_lib::ast::ullbc_ast::BlockId, charon_lib::ast::ullbc_ast::BlockData>>
+         charon_lib::ast::gast::Body
+         core::result::Result<charon_lib::ast::gast::Body, charon_lib::ast::gast::Opaque>
+         charon_lib::ast::gast::FunDecl
+       Binding stack (depth 1):
+         0: <'_0>
+  --> tests/ui/generic-associated-types.rs:38:20
+   |
+38 |     for_each(iter, |item| sum += *item);
+   |                    ^^^^^^^^^^^^^^^^^^^
+
+error: Found inconsistent generics after translation:
+       Mismatched regions:
+       expected: ['_0]
+            got: []
+       Visitor stack:
+         charon_lib::ast::types::GenericArgs
+         charon_lib::ast::types::TyKind
+         charon_lib::ast::types::Ty
+         charon_lib::ast::expressions::Place
+         charon_lib::ast::expressions::Rvalue
+         charon_lib::ast::ullbc_ast::RawStatement
+         charon_lib::ast::ullbc_ast::Statement
+         alloc::vec::Vec<charon_lib::ast::ullbc_ast::Statement>
+         charon_lib::ast::ullbc_ast::BlockData
+         charon_lib::ids::vector::Vector<charon_lib::ast::ullbc_ast::BlockId, charon_lib::ast::ullbc_ast::BlockData>
+         charon_lib::ast::gast::GExprBody<charon_lib::ids::vector::Vector<charon_lib::ast::ullbc_ast::BlockId, charon_lib::ast::ullbc_ast::BlockData>>
+         charon_lib::ast::gast::Body
+         core::result::Result<charon_lib::ast::gast::Body, charon_lib::ast::gast::Opaque>
+         charon_lib::ast::gast::FunDecl
+       Binding stack (depth 1):
+         0: <'_0>
+  --> tests/ui/generic-associated-types.rs:38:20
+   |
+38 |     for_each(iter, |item| sum += *item);
+   |                    ^^^^^^^^^^^^^^^^^^^
+
+error: Found inconsistent generics after translation:
+       Mismatched regions:
+       expected: ['_0, '_1]
+            got: ['_]
+       Visitor stack:
+         charon_lib::ast::types::GenericArgs
+         alloc::boxed::Box<charon_lib::ast::types::GenericArgs>
+         charon_lib::ast::expressions::FnPtr
+         charon_lib::ast::gast::FnOperand
+         charon_lib::ast::gast::Call
+         charon_lib::ast::ullbc_ast::RawTerminator
+         charon_lib::ast::ullbc_ast::Terminator
+         charon_lib::ast::ullbc_ast::BlockData
+         charon_lib::ids::vector::Vector<charon_lib::ast::ullbc_ast::BlockId, charon_lib::ast::ullbc_ast::BlockData>
+         charon_lib::ast::gast::GExprBody<charon_lib::ids::vector::Vector<charon_lib::ast::ullbc_ast::BlockId, charon_lib::ast::ullbc_ast::BlockData>>
+         charon_lib::ast::gast::Body
+         core::result::Result<charon_lib::ast::gast::Body, charon_lib::ast::gast::Opaque>
+         charon_lib::ast::gast::FunDecl
+       Binding stack (depth 1):
+         0: <'_0>
+  --> tests/ui/generic-associated-types.rs:38:20
+   |
+38 |     for_each(iter, |item| sum += *item);
+   |                    ^^^^^^^^^^^^^^^^^^^
+
+error: Found inconsistent generics after translation:
+       Mismatched regions:
+       expected: ['_0]
+            got: []
+       Visitor stack:
+         charon_lib::ast::types::GenericArgs
+         charon_lib::ast::types::TyKind
+         charon_lib::ast::types::Ty
+         charon_lib::ast::types::TyKind
+         charon_lib::ast::types::Ty
+         charon_lib::ast::expressions::Place
+         charon_lib::ast::expressions::Operand
+         alloc::vec::Vec<charon_lib::ast::expressions::Operand>
+         charon_lib::ast::gast::Call
+         charon_lib::ast::ullbc_ast::RawTerminator
+         charon_lib::ast::ullbc_ast::Terminator
+         charon_lib::ast::ullbc_ast::BlockData
+         charon_lib::ids::vector::Vector<charon_lib::ast::ullbc_ast::BlockId, charon_lib::ast::ullbc_ast::BlockData>
+         charon_lib::ast::gast::GExprBody<charon_lib::ids::vector::Vector<charon_lib::ast::ullbc_ast::BlockId, charon_lib::ast::ullbc_ast::BlockData>>
+         charon_lib::ast::gast::Body
+         core::result::Result<charon_lib::ast::gast::Body, charon_lib::ast::gast::Opaque>
+         charon_lib::ast::gast::FunDecl
+       Binding stack (depth 1):
+         0: <'_0>
+  --> tests/ui/generic-associated-types.rs:38:20
+   |
+38 |     for_each(iter, |item| sum += *item);
+   |                    ^^^^^^^^^^^^^^^^^^^
+
+error: Found inconsistent generics after translation:
+       Mismatched regions:
+       expected: ['_0]
+            got: []
+       Visitor stack:
+         charon_lib::ast::types::GenericArgs
+         charon_lib::ast::types::TyKind
+         charon_lib::ast::types::Ty
+         charon_lib::ast::expressions::Place
+         charon_lib::ast::ullbc_ast::RawStatement
+         charon_lib::ast::ullbc_ast::Statement
+         alloc::vec::Vec<charon_lib::ast::ullbc_ast::Statement>
+         charon_lib::ast::ullbc_ast::BlockData
+         charon_lib::ids::vector::Vector<charon_lib::ast::ullbc_ast::BlockId, charon_lib::ast::ullbc_ast::BlockData>
+         charon_lib::ast::gast::GExprBody<charon_lib::ids::vector::Vector<charon_lib::ast::ullbc_ast::BlockId, charon_lib::ast::ullbc_ast::BlockData>>
+         charon_lib::ast::gast::Body
+         core::result::Result<charon_lib::ast::gast::Body, charon_lib::ast::gast::Opaque>
+         charon_lib::ast::gast::FunDecl
+       Binding stack (depth 1):
+         0: <'_0>
+  --> tests/ui/generic-associated-types.rs:38:20
+   |
+38 |     for_each(iter, |item| sum += *item);
+   |                    ^^^^^^^^^^^^^^^^^^^
+
+error: Found inconsistent generics after transformations:
+       Mismatched regions:
+       expected: ['_0]
+            got: []
+       Visitor stack:
+         charon_lib::ast::types::GenericArgs
+         alloc::boxed::Box<charon_lib::ast::types::GenericArgs>
+         charon_lib::ast::types::TraitRefKind
+         charon_lib::ast::types::TraitRef
+         charon_lib::ids::vector::Vector<charon_lib::ast::types::vars::TraitClauseId, charon_lib::ast::types::TraitRef>
+         charon_lib::ast::types::GenericArgs
+         alloc::boxed::Box<charon_lib::ast::types::GenericArgs>
+         charon_lib::ast::expressions::FnPtr
+         charon_lib::ast::gast::FnOperand
+         charon_lib::ast::gast::Call
+         charon_lib::ast::llbc_ast::RawStatement
+         charon_lib::ast::llbc_ast::Statement
+         alloc::vec::Vec<charon_lib::ast::llbc_ast::Statement>
+         charon_lib::ast::llbc_ast::Block
+         charon_lib::ast::gast::GExprBody<charon_lib::ast::llbc_ast::Block>
+         charon_lib::ast::gast::Body
+         core::result::Result<charon_lib::ast::gast::Body, charon_lib::ast::gast::Opaque>
+         charon_lib::ast::gast::FunDecl
+       Binding stack (depth 1):
+         0: 
+  --> tests/ui/generic-associated-types.rs:38:5
+   |
+38 |     for_each(iter, |item| sum += *item);
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error: Found inconsistent generics after transformations:
+       Mismatched regions:
+       expected: ['_0]
+            got: []
+       Visitor stack:
+         charon_lib::ast::types::GenericArgs
+         charon_lib::ast::types::TyKind
+         charon_lib::ast::types::Ty
+         charon_lib::ids::vector::Vector<charon_lib::ast::types::vars::TypeVarId, charon_lib::ast::types::Ty>
+         charon_lib::ast::types::GenericArgs
+         alloc::boxed::Box<charon_lib::ast::types::GenericArgs>
+         charon_lib::ast::types::TraitDeclRef
+         charon_lib::ast::gast::TraitImpl
+       Binding stack (depth 1):
+         0: <'_0>
+  --> tests/ui/generic-associated-types.rs:38:20
+   |
+38 |     for_each(iter, |item| sum += *item);
+   |                    ^^^^^^^^^^^^^^^^^^^
+
+error: Found inconsistent generics after transformations:
+       Mismatched regions:
+       expected: ['_0]
+            got: []
+       Visitor stack:
+         charon_lib::ast::types::GenericArgs
+         alloc::boxed::Box<charon_lib::ast::types::GenericArgs>
+         charon_lib::ast::types::TraitRefKind
+         charon_lib::ast::types::TraitRef
+         charon_lib::ids::vector::Vector<charon_lib::ast::types::vars::TraitClauseId, charon_lib::ast::types::TraitRef>
+         charon_lib::ast::gast::TraitImpl
+       Binding stack (depth 1):
+         0: <'_0>
+  --> tests/ui/generic-associated-types.rs:38:20
+   |
+38 |     for_each(iter, |item| sum += *item);
+   |                    ^^^^^^^^^^^^^^^^^^^
+
+error: Found inconsistent generics after transformations:
+       Mismatched regions:
+       expected: ['_0]
+            got: []
+       Visitor stack:
+         charon_lib::ast::types::GenericArgs
+         charon_lib::ast::types::TyKind
+         charon_lib::ast::types::Ty
+         charon_lib::ids::vector::Vector<charon_lib::ast::types::vars::TypeVarId, charon_lib::ast::types::Ty>
+         charon_lib::ast::types::GenericArgs
+         alloc::boxed::Box<charon_lib::ast::types::GenericArgs>
+         charon_lib::ast::types::TraitDeclRef
+         charon_lib::ast::types::RegionBinder<charon_lib::ast::types::TraitDeclRef>
+         charon_lib::ast::types::TraitRef
+         charon_lib::ids::vector::Vector<charon_lib::ast::types::vars::TraitClauseId, charon_lib::ast::types::TraitRef>
+         charon_lib::ast::gast::TraitImpl
+       Binding stack (depth 2):
+         0: 
+         1: <'_0>
+  --> tests/ui/generic-associated-types.rs:38:20
+   |
+38 |     for_each(iter, |item| sum += *item);
+   |                    ^^^^^^^^^^^^^^^^^^^
+
+error: Found inconsistent generics after transformations:
+       Mismatched regions:
+       expected: ['_0]
+            got: []
+       Visitor stack:
+         charon_lib::ast::types::GenericArgs
+         charon_lib::ast::types::TyKind
+         charon_lib::ast::types::Ty
+         charon_lib::ast::types::TyKind
+         charon_lib::ast::types::Ty
+         alloc::vec::Vec<charon_lib::ast::types::Ty>
+         charon_lib::ast::types::FunSig
+         charon_lib::ast::gast::FunDecl
+       Binding stack (depth 1):
+         0: <'_0, '_1>
+  --> tests/ui/generic-associated-types.rs:38:20
+   |
+38 |     for_each(iter, |item| sum += *item);
+   |                    ^^^^^^^^^^^^^^^^^^^
+
+error: Found inconsistent generics after transformations:
+       Mismatched regions:
+       expected: ['_0]
+            got: []
+       Visitor stack:
+         charon_lib::ast::types::GenericArgs
+         charon_lib::ast::types::TyKind
+         charon_lib::ast::types::Ty
+         charon_lib::ids::vector::Vector<charon_lib::ast::types::vars::TypeVarId, charon_lib::ast::types::Ty>
+         charon_lib::ast::types::GenericArgs
+         alloc::boxed::Box<charon_lib::ast::types::GenericArgs>
+         charon_lib::ast::types::TraitDeclRef
+         charon_lib::ast::gast::TraitImpl
+       Binding stack (depth 1):
+         0: <'_0>
+  --> tests/ui/generic-associated-types.rs:38:20
+   |
+38 |     for_each(iter, |item| sum += *item);
+   |                    ^^^^^^^^^^^^^^^^^^^
+
+error: Found inconsistent generics after transformations:
+       Mismatched regions:
+       expected: ['_0]
+            got: []
+       Visitor stack:
+         charon_lib::ast::types::GenericArgs
+         charon_lib::ast::types::TyKind
+         charon_lib::ast::types::Ty
+         alloc::vec::Vec<charon_lib::ast::types::Ty>
+         charon_lib::ast::types::FunSig
+         charon_lib::ast::gast::FunDecl
+       Binding stack (depth 1):
+         0: <'_0>
+  --> tests/ui/generic-associated-types.rs:38:20
+   |
+38 |     for_each(iter, |item| sum += *item);
+   |                    ^^^^^^^^^^^^^^^^^^^
+
+error: Found inconsistent generics after transformations:
+       Mismatched regions:
+       expected: ['_0]
+            got: []
+       Visitor stack:
+         charon_lib::ast::types::GenericArgs
+         charon_lib::ast::types::TyKind
+         charon_lib::ast::types::Ty
+         charon_lib::ast::gast::Local
+         charon_lib::ids::vector::Vector<charon_lib::ast::values::LocalId, charon_lib::ast::gast::Local>
+         charon_lib::ast::gast::Locals
+         charon_lib::ast::gast::GExprBody<charon_lib::ast::llbc_ast::Block>
+         charon_lib::ast::gast::Body
+         core::result::Result<charon_lib::ast::gast::Body, charon_lib::ast::gast::Opaque>
+         charon_lib::ast::gast::FunDecl
+       Binding stack (depth 1):
+         0: <'_0>
+  --> tests/ui/generic-associated-types.rs:38:20
+   |
+38 |     for_each(iter, |item| sum += *item);
+   |                    ^^^^^^^^^^^^^^^^^^^
+
+error: Found inconsistent generics after transformations:
+       Mismatched regions:
+       expected: ['_0]
+            got: []
+       Visitor stack:
+         charon_lib::ast::types::GenericArgs
+         charon_lib::ast::types::TyKind
+         charon_lib::ast::types::Ty
+         charon_lib::ast::types::TyKind
+         charon_lib::ast::types::Ty
+         charon_lib::ast::gast::Local
+         charon_lib::ids::vector::Vector<charon_lib::ast::values::LocalId, charon_lib::ast::gast::Local>
+         charon_lib::ast::gast::Locals
+         charon_lib::ast::gast::GExprBody<charon_lib::ast::llbc_ast::Block>
+         charon_lib::ast::gast::Body
+         core::result::Result<charon_lib::ast::gast::Body, charon_lib::ast::gast::Opaque>
+         charon_lib::ast::gast::FunDecl
+       Binding stack (depth 1):
+         0: <'_0>
+  --> tests/ui/generic-associated-types.rs:38:20
+   |
+38 |     for_each(iter, |item| sum += *item);
+   |                    ^^^^^^^^^^^^^^^^^^^
+
+error: Found inconsistent generics after transformations:
+       Mismatched regions:
+       expected: ['_0]
+            got: []
+       Visitor stack:
+         charon_lib::ast::types::GenericArgs
+         charon_lib::ast::types::TyKind
+         charon_lib::ast::types::Ty
+         charon_lib::ast::types::TyKind
+         charon_lib::ast::types::Ty
+         charon_lib::ast::expressions::Place
+         charon_lib::ast::llbc_ast::RawStatement
+         charon_lib::ast::llbc_ast::Statement
+         alloc::vec::Vec<charon_lib::ast::llbc_ast::Statement>
+         charon_lib::ast::llbc_ast::Block
+         charon_lib::ast::gast::GExprBody<charon_lib::ast::llbc_ast::Block>
+         charon_lib::ast::gast::Body
+         core::result::Result<charon_lib::ast::gast::Body, charon_lib::ast::gast::Opaque>
+         charon_lib::ast::gast::FunDecl
+       Binding stack (depth 1):
+         0: <'_0>
+  --> tests/ui/generic-associated-types.rs:38:20
+   |
+38 |     for_each(iter, |item| sum += *item);
+   |                    ^^^^^^^^^^^^^^^^^^^
+
+error: Found inconsistent generics after transformations:
+       Mismatched regions:
+       expected: ['_0]
+            got: []
+       Visitor stack:
+         charon_lib::ast::types::GenericArgs
+         charon_lib::ast::types::TyKind
+         charon_lib::ast::types::Ty
+         charon_lib::ast::expressions::Place
+         charon_lib::ast::expressions::Rvalue
+         charon_lib::ast::llbc_ast::RawStatement
+         charon_lib::ast::llbc_ast::Statement
+         alloc::vec::Vec<charon_lib::ast::llbc_ast::Statement>
+         charon_lib::ast::llbc_ast::Block
+         charon_lib::ast::gast::GExprBody<charon_lib::ast::llbc_ast::Block>
+         charon_lib::ast::gast::Body
+         core::result::Result<charon_lib::ast::gast::Body, charon_lib::ast::gast::Opaque>
+         charon_lib::ast::gast::FunDecl
+       Binding stack (depth 1):
+         0: <'_0>
+  --> tests/ui/generic-associated-types.rs:38:20
+   |
+38 |     for_each(iter, |item| sum += *item);
+   |                    ^^^^^^^^^^^^^^^^^^^
+
+error: Found inconsistent generics after transformations:
+       Mismatched regions:
+       expected: ['_0, '_1]
+            got: ['_]
+       Visitor stack:
+         charon_lib::ast::types::GenericArgs
+         alloc::boxed::Box<charon_lib::ast::types::GenericArgs>
+         charon_lib::ast::expressions::FnPtr
+         charon_lib::ast::gast::FnOperand
+         charon_lib::ast::gast::Call
+         charon_lib::ast::llbc_ast::RawStatement
+         charon_lib::ast::llbc_ast::Statement
+         alloc::vec::Vec<charon_lib::ast::llbc_ast::Statement>
+         charon_lib::ast::llbc_ast::Block
+         charon_lib::ast::gast::GExprBody<charon_lib::ast::llbc_ast::Block>
+         charon_lib::ast::gast::Body
+         core::result::Result<charon_lib::ast::gast::Body, charon_lib::ast::gast::Opaque>
+         charon_lib::ast::gast::FunDecl
+       Binding stack (depth 1):
+         0: <'_0>
+  --> tests/ui/generic-associated-types.rs:38:20
+   |
+38 |     for_each(iter, |item| sum += *item);
+   |                    ^^^^^^^^^^^^^^^^^^^
+
+error: Found inconsistent generics after transformations:
+       Mismatched regions:
+       expected: ['_0]
+            got: []
+       Visitor stack:
+         charon_lib::ast::types::GenericArgs
+         charon_lib::ast::types::TyKind
+         charon_lib::ast::types::Ty
+         charon_lib::ast::types::TyKind
+         charon_lib::ast::types::Ty
+         charon_lib::ast::expressions::Place
+         charon_lib::ast::expressions::Operand
+         alloc::vec::Vec<charon_lib::ast::expressions::Operand>
+         charon_lib::ast::gast::Call
+         charon_lib::ast::llbc_ast::RawStatement
+         charon_lib::ast::llbc_ast::Statement
+         alloc::vec::Vec<charon_lib::ast::llbc_ast::Statement>
+         charon_lib::ast::llbc_ast::Block
+         charon_lib::ast::gast::GExprBody<charon_lib::ast::llbc_ast::Block>
+         charon_lib::ast::gast::Body
+         core::result::Result<charon_lib::ast::gast::Body, charon_lib::ast::gast::Opaque>
+         charon_lib::ast::gast::FunDecl
+       Binding stack (depth 1):
+         0: <'_0>
+  --> tests/ui/generic-associated-types.rs:38:20
+   |
+38 |     for_each(iter, |item| sum += *item);
+   |                    ^^^^^^^^^^^^^^^^^^^
+
+error: Found inconsistent generics after transformations:
+       Mismatched regions:
+       expected: ['_0]
+            got: []
+       Visitor stack:
+         charon_lib::ast::types::GenericArgs
+         charon_lib::ast::types::TyKind
+         charon_lib::ast::types::Ty
+         charon_lib::ast::expressions::Place
+         charon_lib::ast::llbc_ast::RawStatement
+         charon_lib::ast::llbc_ast::Statement
+         alloc::vec::Vec<charon_lib::ast::llbc_ast::Statement>
+         charon_lib::ast::llbc_ast::Block
+         charon_lib::ast::gast::GExprBody<charon_lib::ast::llbc_ast::Block>
+         charon_lib::ast::gast::Body
+         core::result::Result<charon_lib::ast::gast::Body, charon_lib::ast::gast::Opaque>
+         charon_lib::ast::gast::FunDecl
+       Binding stack (depth 1):
+         0: <'_0>
+  --> tests/ui/generic-associated-types.rs:38:20
+   |
+38 |     for_each(iter, |item| sum += *item);
+   |                    ^^^^^^^^^^^^^^^^^^^
+
+ERROR Charon failed to translate this code (38 errors)

@@ -1,7 +1,100 @@
 
 thread 'rustc' panicked at /rustc/920d95eaf23d7eb6b415d09868e4f793024fa604/compiler/rustc_type_ir/src/binder.rs:737:9:
 type parameter `U/#1` (U/#1/1) out of range when instantiating, args=[()]
-note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+stack backtrace:
+   0: __rustc::rust_begin_unwind
+   1: core::panicking::panic_fmt
+   2: <rustc_type_ir::binder::ArgFolder<rustc_middle::ty::context::TyCtxt>>::type_param_out_of_range
+   3: rustc_type_ir::binder::ArgFolder<I>::ty_for_param
+             at /Users/opale/.rustup/toolchains/nightly-2025-03-29-aarch64-apple-darwin/lib/rustlib/src/rust/compiler/rustc_type_ir/src/binder.rs:715:21
+   4: <rustc_type_ir::binder::ArgFolder<I> as rustc_type_ir::fold::TypeFolder<I>>::fold_ty
+             at /Users/opale/.rustup/toolchains/nightly-2025-03-29-aarch64-apple-darwin/lib/rustlib/src/rust/compiler/rustc_type_ir/src/binder.rs:694:29
+   5: <F as rustc_type_ir::fold::FallibleTypeFolder<I>>::try_fold_ty
+             at /Users/opale/.rustup/toolchains/nightly-2025-03-29-aarch64-apple-darwin/lib/rustlib/src/rust/compiler/rustc_type_ir/src/fold.rs:218:12
+   6: rustc_middle::ty::structural_impls::<impl rustc_type_ir::fold::TypeFoldable<rustc_middle::ty::context::TyCtxt> for rustc_middle::ty::Ty>::try_fold_with
+             at /Users/opale/.rustup/toolchains/nightly-2025-03-29-aarch64-apple-darwin/lib/rustlib/src/rust/compiler/rustc_middle/src/ty/structural_impls.rs:379:9
+   7: <rustc_middle::ty::generic_args::GenericArg as rustc_type_ir::fold::TypeFoldable<rustc_middle::ty::context::TyCtxt>>::try_fold_with
+             at /Users/opale/.rustup/toolchains/nightly-2025-03-29-aarch64-apple-darwin/lib/rustlib/src/rust/compiler/rustc_middle/src/ty/generic_args.rs:321:44
+   8: rustc_middle::ty::generic_args::<impl rustc_type_ir::fold::TypeFoldable<rustc_middle::ty::context::TyCtxt> for &rustc_middle::ty::list::RawList<(),rustc_middle::ty::generic_args::GenericArg>>::try_fold_with
+             at /Users/opale/.rustup/toolchains/nightly-2025-03-29-aarch64-apple-darwin/lib/rustlib/src/rust/compiler/rustc_middle/src/ty/generic_args.rs:585:30
+   9: rustc_middle::ty::structural_impls::<impl rustc_type_ir::fold::TypeSuperFoldable<rustc_middle::ty::context::TyCtxt> for rustc_middle::ty::Ty>::try_super_fold_with
+             at /Users/opale/.rustup/toolchains/nightly-2025-03-29-aarch64-apple-darwin/lib/rustlib/src/rust/compiler/rustc_middle/src/ty/structural_impls.rs:398:48
+  10: rustc_type_ir::fold::TypeSuperFoldable::super_fold_with
+             at /Users/opale/.rustup/toolchains/nightly-2025-03-29-aarch64-apple-darwin/lib/rustlib/src/rust/compiler/rustc_type_ir/src/fold.rs:116:15
+  11: <rustc_type_ir::binder::ArgFolder<I> as rustc_type_ir::fold::TypeFolder<I>>::fold_ty
+             at /Users/opale/.rustup/toolchains/nightly-2025-03-29-aarch64-apple-darwin/lib/rustlib/src/rust/compiler/rustc_type_ir/src/binder.rs:695:18
+  12: <F as rustc_type_ir::fold::FallibleTypeFolder<I>>::try_fold_ty
+             at /Users/opale/.rustup/toolchains/nightly-2025-03-29-aarch64-apple-darwin/lib/rustlib/src/rust/compiler/rustc_type_ir/src/fold.rs:218:12
+  13: rustc_middle::ty::structural_impls::<impl rustc_type_ir::fold::TypeFoldable<rustc_middle::ty::context::TyCtxt> for rustc_middle::ty::Ty>::try_fold_with
+             at /Users/opale/.rustup/toolchains/nightly-2025-03-29-aarch64-apple-darwin/lib/rustlib/src/rust/compiler/rustc_middle/src/ty/structural_impls.rs:379:9
+  14: rustc_type_ir::fold::TypeFoldable::fold_with
+             at /Users/opale/.rustup/toolchains/nightly-2025-03-29-aarch64-apple-darwin/lib/rustlib/src/rust/compiler/rustc_type_ir/src/fold.rs:93:15
+  15: rustc_type_ir::binder::EarlyBinder<I,T>::instantiate
+             at /Users/opale/.rustup/toolchains/nightly-2025-03-29-aarch64-apple-darwin/lib/rustlib/src/rust/compiler/rustc_type_ir/src/binder.rs:618:9
+  16: hax_frontend_exporter::types::new::full_def::get_impl_contents::{{closure}}
+             at /Users/opale/.cargo/git/checkouts/hax-580ebeee043cdea1/0275a2b/frontend/exporter/src/types/new/full_def.rs:793:46
+  17: core::iter::adapters::map::map_fold::{{closure}}
+             at /Users/opale/.rustup/toolchains/nightly-2025-03-29-aarch64-apple-darwin/lib/rustlib/src/rust/library/core/src/iter/adapters/map.rs:88:28
+  18: core::iter::adapters::map::map_fold::{{closure}}
+             at /Users/opale/.rustup/toolchains/nightly-2025-03-29-aarch64-apple-darwin/lib/rustlib/src/rust/library/core/src/iter/adapters/map.rs:88:21
+  19: core::iter::adapters::map::map_fold::{{closure}}
+             at /Users/opale/.rustup/toolchains/nightly-2025-03-29-aarch64-apple-darwin/lib/rustlib/src/rust/library/core/src/iter/adapters/map.rs:88:21
+  20: <core::slice::iter::Iter<T> as core::iter::traits::iterator::Iterator>::fold
+             at /Users/opale/.rustup/toolchains/nightly-2025-03-29-aarch64-apple-darwin/lib/rustlib/src/rust/library/core/src/slice/iter/macros.rs:255:27
+  21: <core::iter::adapters::map::Map<I,F> as core::iter::traits::iterator::Iterator>::fold
+             at /Users/opale/.rustup/toolchains/nightly-2025-03-29-aarch64-apple-darwin/lib/rustlib/src/rust/library/core/src/iter/adapters/map.rs:128:9
+  22: <core::iter::adapters::map::Map<I,F> as core::iter::traits::iterator::Iterator>::fold
+             at /Users/opale/.rustup/toolchains/nightly-2025-03-29-aarch64-apple-darwin/lib/rustlib/src/rust/library/core/src/iter/adapters/map.rs:128:9
+  23: <core::iter::adapters::map::Map<I,F> as core::iter::traits::iterator::Iterator>::fold
+             at /Users/opale/.rustup/toolchains/nightly-2025-03-29-aarch64-apple-darwin/lib/rustlib/src/rust/library/core/src/iter/adapters/map.rs:128:9
+  24: core::iter::traits::iterator::Iterator::for_each
+             at /Users/opale/.rustup/toolchains/nightly-2025-03-29-aarch64-apple-darwin/lib/rustlib/src/rust/library/core/src/iter/traits/iterator.rs:800:9
+  25: alloc::vec::Vec<T,A>::extend_trusted
+             at /Users/opale/.rustup/toolchains/nightly-2025-03-29-aarch64-apple-darwin/lib/rustlib/src/rust/library/alloc/src/vec/mod.rs:3579:17
+  26: <alloc::vec::Vec<T,A> as alloc::vec::spec_extend::SpecExtend<T,I>>::spec_extend
+             at /Users/opale/.rustup/toolchains/nightly-2025-03-29-aarch64-apple-darwin/lib/rustlib/src/rust/library/alloc/src/vec/spec_extend.rs:29:9
+  27: <alloc::vec::Vec<T> as alloc::vec::spec_from_iter_nested::SpecFromIterNested<T,I>>::from_iter
+             at /Users/opale/.rustup/toolchains/nightly-2025-03-29-aarch64-apple-darwin/lib/rustlib/src/rust/library/alloc/src/vec/spec_from_iter_nested.rs:62:9
+  28: <alloc::vec::Vec<T> as alloc::vec::spec_from_iter::SpecFromIter<T,I>>::from_iter
+             at /Users/opale/.rustup/toolchains/nightly-2025-03-29-aarch64-apple-darwin/lib/rustlib/src/rust/library/alloc/src/vec/spec_from_iter.rs:34:9
+  29: <alloc::vec::Vec<T> as core::iter::traits::collect::FromIterator<T>>::from_iter
+             at /Users/opale/.rustup/toolchains/nightly-2025-03-29-aarch64-apple-darwin/lib/rustlib/src/rust/library/alloc/src/vec/mod.rs:3438:9
+  30: core::iter::traits::iterator::Iterator::collect
+             at /Users/opale/.rustup/toolchains/nightly-2025-03-29-aarch64-apple-darwin/lib/rustlib/src/rust/library/core/src/iter/traits/iterator.rs:1985:9
+  31: hax_frontend_exporter::types::new::full_def::get_impl_contents
+             at /Users/opale/.cargo/git/checkouts/hax-580ebeee043cdea1/0275a2b/frontend/exporter/src/types/new/full_def.rs:752:25
+  32: hax_frontend_exporter::types::new::full_def::_::<impl hax_frontend_exporter::sinto::SInto<S,hax_frontend_exporter::types::new::full_def::FullDefKind<Body>> for rustc_hir::def::DefKind>::sinto
+             at /Users/opale/.cargo/git/checkouts/hax-580ebeee043cdea1/0275a2b/frontend/exporter/src/types/new/full_def.rs:274:34
+  33: hax_frontend_exporter::types::new::full_def::translate_full_def
+             at /Users/opale/.cargo/git/checkouts/hax-580ebeee043cdea1/0275a2b/frontend/exporter/src/types/new/full_def.rs:53:20
+  34: hax_frontend_exporter::types::new::full_def::<impl hax_frontend_exporter::types::def_id::DefId>::full_def
+             at /Users/opale/.cargo/git/checkouts/hax-580ebeee043cdea1/0275a2b/frontend/exporter/src/types/new/full_def.rs:145:28
+  35: charon_driver::translate::translate_ctx::TranslateCtx::hax_def::{{closure}}
+             at ./src/bin/charon-driver/translate/translate_ctx.rs:497:42
+  36: std::panicking::try::do_call
+             at /Users/opale/.rustup/toolchains/nightly-2025-03-29-aarch64-apple-darwin/lib/rustlib/src/rust/library/std/src/panicking.rs:589:40
+  37: ___rust_try
+  38: std::panicking::try
+             at /Users/opale/.rustup/toolchains/nightly-2025-03-29-aarch64-apple-darwin/lib/rustlib/src/rust/library/std/src/panicking.rs:552:19
+  39: std::panic::catch_unwind
+             at /Users/opale/.rustup/toolchains/nightly-2025-03-29-aarch64-apple-darwin/lib/rustlib/src/rust/library/std/src/panic.rs:359:14
+  40: charon_driver::translate::translate_ctx::TranslateCtx::hax_def
+             at ./src/bin/charon-driver/translate/translate_ctx.rs:497:9
+  41: charon_driver::translate::translate_ctx::TranslateCtx::register_trait_impl_id
+             at ./src/bin/charon-driver/translate/translate_ctx.rs:856:26
+  42: charon_driver::translate::translate_crate_to_ullbc::<impl charon_driver::translate::translate_ctx::TranslateCtx>::register_module_item
+             at ./src/bin/charon-driver/translate/translate_crate_to_ullbc.rs:34:25
+  43: charon_driver::translate::translate_crate_to_ullbc::<impl charon_driver::translate::translate_ctx::TranslateCtx>::register_module
+             at ./src/bin/charon-driver/translate/translate_crate_to_ullbc.rs:95:21
+  44: charon_driver::translate::translate_crate_to_ullbc::<impl charon_driver::translate::translate_ctx::TranslateCtx>::register_module_item
+             at ./src/bin/charon-driver/translate/translate_crate_to_ullbc.rs:49:25
+  45: charon_driver::translate::translate_crate_to_ullbc::translate
+             at ./src/bin/charon-driver/translate/translate_crate_to_ullbc.rs:257:9
+  46: <charon_driver::driver::CharonCallbacks as rustc_driver_impl::Callbacks>::after_expansion
+             at ./src/bin/charon-driver/driver.rs:166:13
+  47: rustc_interface::passes::create_and_enter_global_ctxt::<core::option::Option<rustc_interface::queries::Linker>, rustc_driver_impl::run_compiler::{closure#0}::{closure#2}>
+  48: rustc_interface::interface::run_compiler::<(), rustc_driver_impl::run_compiler::{closure#0}>::{closure#1}
+note: Some details are omitted, run with `RUST_BACKTRACE=full` for a verbose backtrace.
 error: Hax panicked when translating `test_crate::{impl#0}`.
  --> tests/ui/simple/gat-default.rs:9:1
   |
@@ -23,6 +116,115 @@ error: Item `test_crate::Collection` caused errors; ignoring.
 
 thread 'rustc' panicked at /rustc/920d95eaf23d7eb6b415d09868e4f793024fa604/compiler/rustc_type_ir/src/binder.rs:737:9:
 type parameter `U/#1` (U/#1/1) out of range when instantiating, args=[()]
+stack backtrace:
+   0: __rustc::rust_begin_unwind
+   1: core::panicking::panic_fmt
+   2: <rustc_type_ir::binder::ArgFolder<rustc_middle::ty::context::TyCtxt>>::type_param_out_of_range
+   3: rustc_type_ir::binder::ArgFolder<I>::ty_for_param
+             at /Users/opale/.rustup/toolchains/nightly-2025-03-29-aarch64-apple-darwin/lib/rustlib/src/rust/compiler/rustc_type_ir/src/binder.rs:715:21
+   4: <rustc_type_ir::binder::ArgFolder<I> as rustc_type_ir::fold::TypeFolder<I>>::fold_ty
+             at /Users/opale/.rustup/toolchains/nightly-2025-03-29-aarch64-apple-darwin/lib/rustlib/src/rust/compiler/rustc_type_ir/src/binder.rs:694:29
+   5: <F as rustc_type_ir::fold::FallibleTypeFolder<I>>::try_fold_ty
+             at /Users/opale/.rustup/toolchains/nightly-2025-03-29-aarch64-apple-darwin/lib/rustlib/src/rust/compiler/rustc_type_ir/src/fold.rs:218:12
+   6: rustc_middle::ty::structural_impls::<impl rustc_type_ir::fold::TypeFoldable<rustc_middle::ty::context::TyCtxt> for rustc_middle::ty::Ty>::try_fold_with
+             at /Users/opale/.rustup/toolchains/nightly-2025-03-29-aarch64-apple-darwin/lib/rustlib/src/rust/compiler/rustc_middle/src/ty/structural_impls.rs:379:9
+   7: <rustc_middle::ty::generic_args::GenericArg as rustc_type_ir::fold::TypeFoldable<rustc_middle::ty::context::TyCtxt>>::try_fold_with
+             at /Users/opale/.rustup/toolchains/nightly-2025-03-29-aarch64-apple-darwin/lib/rustlib/src/rust/compiler/rustc_middle/src/ty/generic_args.rs:321:44
+   8: rustc_middle::ty::generic_args::<impl rustc_type_ir::fold::TypeFoldable<rustc_middle::ty::context::TyCtxt> for &rustc_middle::ty::list::RawList<(),rustc_middle::ty::generic_args::GenericArg>>::try_fold_with
+             at /Users/opale/.rustup/toolchains/nightly-2025-03-29-aarch64-apple-darwin/lib/rustlib/src/rust/compiler/rustc_middle/src/ty/generic_args.rs:585:30
+   9: rustc_middle::ty::structural_impls::<impl rustc_type_ir::fold::TypeSuperFoldable<rustc_middle::ty::context::TyCtxt> for rustc_middle::ty::Ty>::try_super_fold_with
+             at /Users/opale/.rustup/toolchains/nightly-2025-03-29-aarch64-apple-darwin/lib/rustlib/src/rust/compiler/rustc_middle/src/ty/structural_impls.rs:398:48
+  10: rustc_type_ir::fold::TypeSuperFoldable::super_fold_with
+             at /Users/opale/.rustup/toolchains/nightly-2025-03-29-aarch64-apple-darwin/lib/rustlib/src/rust/compiler/rustc_type_ir/src/fold.rs:116:15
+  11: <rustc_type_ir::binder::ArgFolder<I> as rustc_type_ir::fold::TypeFolder<I>>::fold_ty
+             at /Users/opale/.rustup/toolchains/nightly-2025-03-29-aarch64-apple-darwin/lib/rustlib/src/rust/compiler/rustc_type_ir/src/binder.rs:695:18
+  12: <F as rustc_type_ir::fold::FallibleTypeFolder<I>>::try_fold_ty
+             at /Users/opale/.rustup/toolchains/nightly-2025-03-29-aarch64-apple-darwin/lib/rustlib/src/rust/compiler/rustc_type_ir/src/fold.rs:218:12
+  13: rustc_middle::ty::structural_impls::<impl rustc_type_ir::fold::TypeFoldable<rustc_middle::ty::context::TyCtxt> for rustc_middle::ty::Ty>::try_fold_with
+             at /Users/opale/.rustup/toolchains/nightly-2025-03-29-aarch64-apple-darwin/lib/rustlib/src/rust/compiler/rustc_middle/src/ty/structural_impls.rs:379:9
+  14: rustc_type_ir::fold::TypeFoldable::fold_with
+             at /Users/opale/.rustup/toolchains/nightly-2025-03-29-aarch64-apple-darwin/lib/rustlib/src/rust/compiler/rustc_type_ir/src/fold.rs:93:15
+  15: rustc_type_ir::binder::EarlyBinder<I,T>::instantiate
+             at /Users/opale/.rustup/toolchains/nightly-2025-03-29-aarch64-apple-darwin/lib/rustlib/src/rust/compiler/rustc_type_ir/src/binder.rs:618:9
+  16: hax_frontend_exporter::types::new::full_def::get_impl_contents::{{closure}}
+             at /Users/opale/.cargo/git/checkouts/hax-580ebeee043cdea1/0275a2b/frontend/exporter/src/types/new/full_def.rs:793:46
+  17: core::iter::adapters::map::map_fold::{{closure}}
+             at /Users/opale/.rustup/toolchains/nightly-2025-03-29-aarch64-apple-darwin/lib/rustlib/src/rust/library/core/src/iter/adapters/map.rs:88:28
+  18: core::iter::adapters::map::map_fold::{{closure}}
+             at /Users/opale/.rustup/toolchains/nightly-2025-03-29-aarch64-apple-darwin/lib/rustlib/src/rust/library/core/src/iter/adapters/map.rs:88:21
+  19: core::iter::adapters::map::map_fold::{{closure}}
+             at /Users/opale/.rustup/toolchains/nightly-2025-03-29-aarch64-apple-darwin/lib/rustlib/src/rust/library/core/src/iter/adapters/map.rs:88:21
+  20: <core::slice::iter::Iter<T> as core::iter::traits::iterator::Iterator>::fold
+             at /Users/opale/.rustup/toolchains/nightly-2025-03-29-aarch64-apple-darwin/lib/rustlib/src/rust/library/core/src/slice/iter/macros.rs:255:27
+  21: <core::iter::adapters::map::Map<I,F> as core::iter::traits::iterator::Iterator>::fold
+             at /Users/opale/.rustup/toolchains/nightly-2025-03-29-aarch64-apple-darwin/lib/rustlib/src/rust/library/core/src/iter/adapters/map.rs:128:9
+  22: <core::iter::adapters::map::Map<I,F> as core::iter::traits::iterator::Iterator>::fold
+             at /Users/opale/.rustup/toolchains/nightly-2025-03-29-aarch64-apple-darwin/lib/rustlib/src/rust/library/core/src/iter/adapters/map.rs:128:9
+  23: <core::iter::adapters::map::Map<I,F> as core::iter::traits::iterator::Iterator>::fold
+             at /Users/opale/.rustup/toolchains/nightly-2025-03-29-aarch64-apple-darwin/lib/rustlib/src/rust/library/core/src/iter/adapters/map.rs:128:9
+  24: core::iter::traits::iterator::Iterator::for_each
+             at /Users/opale/.rustup/toolchains/nightly-2025-03-29-aarch64-apple-darwin/lib/rustlib/src/rust/library/core/src/iter/traits/iterator.rs:800:9
+  25: alloc::vec::Vec<T,A>::extend_trusted
+             at /Users/opale/.rustup/toolchains/nightly-2025-03-29-aarch64-apple-darwin/lib/rustlib/src/rust/library/alloc/src/vec/mod.rs:3579:17
+  26: <alloc::vec::Vec<T,A> as alloc::vec::spec_extend::SpecExtend<T,I>>::spec_extend
+             at /Users/opale/.rustup/toolchains/nightly-2025-03-29-aarch64-apple-darwin/lib/rustlib/src/rust/library/alloc/src/vec/spec_extend.rs:29:9
+  27: <alloc::vec::Vec<T> as alloc::vec::spec_from_iter_nested::SpecFromIterNested<T,I>>::from_iter
+             at /Users/opale/.rustup/toolchains/nightly-2025-03-29-aarch64-apple-darwin/lib/rustlib/src/rust/library/alloc/src/vec/spec_from_iter_nested.rs:62:9
+  28: <alloc::vec::Vec<T> as alloc::vec::spec_from_iter::SpecFromIter<T,I>>::from_iter
+             at /Users/opale/.rustup/toolchains/nightly-2025-03-29-aarch64-apple-darwin/lib/rustlib/src/rust/library/alloc/src/vec/spec_from_iter.rs:34:9
+  29: <alloc::vec::Vec<T> as core::iter::traits::collect::FromIterator<T>>::from_iter
+             at /Users/opale/.rustup/toolchains/nightly-2025-03-29-aarch64-apple-darwin/lib/rustlib/src/rust/library/alloc/src/vec/mod.rs:3438:9
+  30: core::iter::traits::iterator::Iterator::collect
+             at /Users/opale/.rustup/toolchains/nightly-2025-03-29-aarch64-apple-darwin/lib/rustlib/src/rust/library/core/src/iter/traits/iterator.rs:1985:9
+  31: hax_frontend_exporter::types::new::full_def::get_impl_contents
+             at /Users/opale/.cargo/git/checkouts/hax-580ebeee043cdea1/0275a2b/frontend/exporter/src/types/new/full_def.rs:752:25
+  32: hax_frontend_exporter::types::new::full_def::_::<impl hax_frontend_exporter::sinto::SInto<S,hax_frontend_exporter::types::new::full_def::FullDefKind<Body>> for rustc_hir::def::DefKind>::sinto
+             at /Users/opale/.cargo/git/checkouts/hax-580ebeee043cdea1/0275a2b/frontend/exporter/src/types/new/full_def.rs:274:34
+  33: hax_frontend_exporter::types::new::full_def::translate_full_def
+             at /Users/opale/.cargo/git/checkouts/hax-580ebeee043cdea1/0275a2b/frontend/exporter/src/types/new/full_def.rs:53:20
+  34: hax_frontend_exporter::types::new::full_def::<impl hax_frontend_exporter::types::def_id::DefId>::full_def
+             at /Users/opale/.cargo/git/checkouts/hax-580ebeee043cdea1/0275a2b/frontend/exporter/src/types/new/full_def.rs:145:28
+  35: charon_driver::translate::translate_ctx::TranslateCtx::hax_def::{{closure}}
+             at ./src/bin/charon-driver/translate/translate_ctx.rs:497:42
+  36: std::panicking::try::do_call
+             at /Users/opale/.rustup/toolchains/nightly-2025-03-29-aarch64-apple-darwin/lib/rustlib/src/rust/library/std/src/panicking.rs:589:40
+  37: ___rust_try
+  38: std::panicking::try
+             at /Users/opale/.rustup/toolchains/nightly-2025-03-29-aarch64-apple-darwin/lib/rustlib/src/rust/library/std/src/panicking.rs:552:19
+  39: std::panic::catch_unwind
+             at /Users/opale/.rustup/toolchains/nightly-2025-03-29-aarch64-apple-darwin/lib/rustlib/src/rust/library/std/src/panic.rs:359:14
+  40: charon_driver::translate::translate_ctx::TranslateCtx::hax_def
+             at ./src/bin/charon-driver/translate/translate_ctx.rs:497:9
+  41: charon_driver::translate::translate_ctx::TranslateCtx::path_elem_for_def
+             at ./src/bin/charon-driver/translate/translate_ctx.rs:327:32
+  42: charon_driver::translate::translate_ctx::TranslateCtx::hax_def_id_to_name
+             at ./src/bin/charon-driver/translate/translate_ctx.rs:439:34
+  43: charon_driver::translate::translate_ctx::TranslateCtx::hax_trans_src_to_name
+             at ./src/bin/charon-driver/translate/translate_ctx.rs:454:20
+  44: charon_driver::translate::translate_crate_to_ullbc::<impl charon_driver::translate::translate_ctx::TranslateCtx>::translate_item_aux
+             at ./src/bin/charon-driver/translate/translate_crate_to_ullbc.rs:142:20
+  45: charon_driver::translate::translate_crate_to_ullbc::<impl charon_driver::translate::translate_ctx::TranslateCtx>::translate_item::{{closure}}::{{closure}}
+             at ./src/bin/charon-driver/translate/translate_crate_to_ullbc.rs:118:50
+  46: std::panicking::try::do_call
+             at /Users/opale/.rustup/toolchains/nightly-2025-03-29-aarch64-apple-darwin/lib/rustlib/src/rust/library/std/src/panicking.rs:589:40
+  47: ___rust_try
+  48: std::panicking::try
+             at /Users/opale/.rustup/toolchains/nightly-2025-03-29-aarch64-apple-darwin/lib/rustlib/src/rust/library/std/src/panicking.rs:552:19
+  49: std::panic::catch_unwind
+             at /Users/opale/.rustup/toolchains/nightly-2025-03-29-aarch64-apple-darwin/lib/rustlib/src/rust/library/std/src/panic.rs:359:14
+  50: charon_driver::translate::translate_crate_to_ullbc::<impl charon_driver::translate::translate_ctx::TranslateCtx>::translate_item::{{closure}}
+             at ./src/bin/charon-driver/translate/translate_crate_to_ullbc.rs:118:17
+  51: charon_driver::translate::translate_ctx::TranslateCtx::with_def_id
+             at ./src/bin/charon-driver/translate/translate_ctx.rs:921:19
+  52: charon_driver::translate::translate_crate_to_ullbc::<impl charon_driver::translate::translate_ctx::TranslateCtx>::translate_item
+             at ./src/bin/charon-driver/translate/translate_crate_to_ullbc.rs:112:9
+  53: charon_driver::translate::translate_crate_to_ullbc::translate
+             at ./src/bin/charon-driver/translate/translate_crate_to_ullbc.rs:299:13
+  54: <charon_driver::driver::CharonCallbacks as rustc_driver_impl::Callbacks>::after_expansion
+             at ./src/bin/charon-driver/driver.rs:166:13
+  55: rustc_interface::passes::create_and_enter_global_ctxt::<core::option::Option<rustc_interface::queries::Linker>, rustc_driver_impl::run_compiler::{closure#0}::{closure#2}>
+  56: rustc_interface::interface::run_compiler::<(), rustc_driver_impl::run_compiler::{closure#0}>::{closure#1}
+note: Some details are omitted, run with `RUST_BACKTRACE=full` for a verbose backtrace.
 error: Hax panicked when translating `test_crate::{impl#0}`.
  --> tests/ui/simple/gat-default.rs:9:1
   |
