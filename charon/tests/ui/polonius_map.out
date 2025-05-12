@@ -186,7 +186,7 @@ pub fn test_crate::get_or_insert<'_0>(@1: &'_0 mut (std::collections::hash::map:
     storage_dead(@4)
     storage_dead(@3)
     match @2 {
-        0 => {
+        core::option::Option::None => {
             storage_live(@8)
             storage_live(@9)
             @9 := &two-phase-mut *(map@1)
@@ -213,7 +213,7 @@ pub fn test_crate::get_or_insert<'_0>(@1: &'_0 mut (std::collections::hash::map:
             storage_dead(@11)
             storage_dead(@10)
         },
-        1 => {
+        core::option::Option::Some => {
             storage_live(v@7)
             v@7 := copy ((@2 as variant @1).0)
             @0 := &*(v@7)

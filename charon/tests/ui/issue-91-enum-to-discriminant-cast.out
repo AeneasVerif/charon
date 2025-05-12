@@ -87,10 +87,10 @@ fn test_crate::main()
     storage_live(@3)
     @3 := copy (x@1)
     match @3 {
-        0 => {
+        test_crate::Foo::A => {
             @4 := const (0 : isize)
         },
-        1 => {
+        test_crate::Foo::B => {
             @4 := const (1 : isize)
         },
     }
@@ -104,10 +104,10 @@ fn test_crate::main()
     storage_live(@8)
     @8 := copy (x@1)
     match @8 {
-        0 => {
+        test_crate::Foo::A => {
             @9 := const (0 : isize)
         },
-        1 => {
+        test_crate::Foo::B => {
             @9 := const (1 : isize)
         },
     }
@@ -123,13 +123,13 @@ fn test_crate::main()
     storage_live(@14)
     @14 := move (x@12)
     match @14 {
-        0 => {
+        test_crate::Ordering::Less => {
             @15 := const (-1 : isize)
         },
-        1 => {
+        test_crate::Ordering::Equal => {
             @15 := const (0 : isize)
         },
-        2 => {
+        test_crate::Ordering::Greater => {
             @15 := const (1 : isize)
         },
     }

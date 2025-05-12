@@ -14,13 +14,13 @@ fn test_crate::main()
     storage_live(@1)
     @1 := test_crate::Ordering::Less {  }
     match @1 {
-        0 => {
+        test_crate::Ordering::Less => {
             @0 := ()
         },
-        1 => {
+        test_crate::Ordering::Equal => {
             @0 := ()
         },
-        2 => {
+        test_crate::Ordering::Greater => {
             @0 := ()
         },
     }

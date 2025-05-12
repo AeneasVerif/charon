@@ -58,9 +58,9 @@ where
     storage_live(@4)
     storage_live(@5)
     match self@1 {
-        0 => {
+        core::result::Result::Ok => {
         },
-        1 => {
+        core::result::Result::Err => {
             storage_live(e@2)
             e@2 := move ((self@1 as variant @1).0)
             storage_live(@4)

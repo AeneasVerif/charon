@@ -23,10 +23,10 @@ where
     storage_live(@2)
     @2 := &*(opt@1)
     match *(@2) {
-        0 => {
+        core::option::Option::None => {
             @0 := const (0 : isize)
         },
-        1 => {
+        core::option::Option::Some => {
             @0 := const (1 : isize)
         },
     }
@@ -66,10 +66,10 @@ where
     let opt@1: core::option::Option<T>[@TraitClause0]; // arg #1
 
     match opt@1 {
-        0 => {
+        core::option::Option::None => {
             @0 := const (0 : isize)
         },
-        1 => {
+        core::option::Option::Some => {
             @0 := const (1 : isize)
         },
     }

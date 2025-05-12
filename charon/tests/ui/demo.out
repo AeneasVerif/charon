@@ -173,9 +173,9 @@ where
     storage_live(@9)
     storage_live(@10)
     match *(l@1) {
-        0 => {
+        test_crate::CList::CCons => {
         },
-        1 => {
+        test_crate::CList::CNil => {
             panic(core::panicking::panic_explicit)
         },
     }
@@ -242,9 +242,9 @@ where
     storage_live(@3)
     storage_live(@4)
     match *(l@1) {
-        0 => {
+        test_crate::CList::CCons => {
         },
-        1 => {
+        test_crate::CList::CNil => {
             panic(core::panicking::panic_explicit)
         },
     }
@@ -321,7 +321,7 @@ where
     storage_live(@3)
     loop {
         match *(l@1) {
-            0 => {
+            test_crate::CList::CCons => {
                 storage_live(x@4)
                 x@4 := &mut (*(l@1) as variant @0).0
                 storage_live(tl@5)
@@ -421,7 +421,7 @@ where
     storage_live(@2)
     storage_live(@3)
     match *(l@1) {
-        0 => {
+        test_crate::CList::CCons => {
             storage_live(tl@4)
             tl@4 := &mut (*(l@1) as variant @0).1
             storage_live(@5)
@@ -433,7 +433,7 @@ where
             storage_dead(@5)
             storage_dead(tl@4)
         },
-        1 => {
+        test_crate::CList::CNil => {
             @3 := move (l@1)
         },
     }
