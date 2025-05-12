@@ -78,9 +78,9 @@ where
     let self@1: &'_ (core::option::Option<T>[@TraitClause0]); // arg #1
 
     match *(self@1) {
-        0 => {
+        core::option::Option::None => {
         },
-        1 => {
+        core::option::Option::Some => {
             @0 := const (true)
             return
         },

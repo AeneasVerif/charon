@@ -46,9 +46,9 @@ where
     storage_live(x@2)
     storage_live(@3)
     match *(self@1) {
-        0 => {
+        core::option::Option::None => {
         },
-        1 => {
+        core::option::Option::Some => {
             storage_live(x@2)
             x@2 := &(*(self@1) as variant @1).0
             storage_live(@3)

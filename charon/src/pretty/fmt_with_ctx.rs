@@ -1154,14 +1154,26 @@ impl<C: AstFormatter> FmtWithCtx<C> for llbc::Statement {
                 Switch::Match(discr, maps, otherwise) => {
                     let inner_tab1 = format!("{tab}{TAB_INCR}");
                     let inner_tab2 = format!("{inner_tab1}{TAB_INCR}");
+                    let discr_type: Option<TypeDeclId> = discr
+                        .ty
+                        .kind()
+                        .as_adt()
+                        .and_then(|(x, _)| x.as_adt())
+                        .copied();
                     let mut maps: Vec<String> = maps
                         .iter()
-                        .map(|(pvl, st)| {
+                        .map(|(cases, st)| {
                             // Note that there may be several pattern values
-                            let pvl: Vec<String> = pvl.iter().map(|v| v.to_string()).collect();
+                            let cases: Vec<String> = cases
+                                .iter()
+                                .map(|v| match discr_type {
+                                    Some(type_id) => ctx.format_object((type_id, *v)),
+                                    None => v.to_pretty_string(),
+                                })
+                                .collect();
                             format!(
                                 "{inner_tab1}{} => {{\n{}{inner_tab1}}},\n",
-                                pvl.join(" | "),
+                                cases.join(" | "),
                                 st.fmt_with_ctx_and_indent(&inner_tab2, ctx),
                             )
                         })

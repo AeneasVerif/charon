@@ -381,9 +381,9 @@ where
     let l@1: &'_ (test_crate::List<T>[@TraitClause0]); // arg #1
 
     match *(l@1) {
-        0 => {
+        test_crate::List::Cons => {
         },
-        1 => {
+        test_crate::List::Nil => {
             @0 := const (false)
             return
         },
@@ -404,7 +404,7 @@ where
     let @5: test_crate::List<T>[@TraitClause0]; // anonymous local
 
     match l@1 {
-        0 => {
+        test_crate::List::Cons => {
         },
         _ => {
             panic(core::panicking::panic_explicit)

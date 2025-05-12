@@ -258,10 +258,10 @@ fn test_crate::f2<'_0, '_1>(@1: &'_0 (Slice<u8>), @2: &'_1 mut (Slice<i16>)) -> 
         @10 := core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::Chunks<'a, T>[@TraitClause0]}#71::next<'_, '_, u8>[core::marker::Sized<u8>](move (@11))
         storage_dead(@11)
         match @10 {
-            0 => {
+            core::option::Option::None => {
                 break 0
             },
-            1 => {
+            core::option::Option::Some => {
                 storage_live(bytes@13)
                 bytes@13 := copy ((@10 as variant @1).0)
                 storage_live(b1@14)
