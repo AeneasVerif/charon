@@ -35,7 +35,7 @@ impl<T, H> OptionHint<T, H> {
 struct PassData {
     // Map of (poly item, generic args) -> mono item
     // None indicates the item hasn't been monomorphized yet
-    items: HashMap<(AnyTransId, GenericArgs), OptionHint<AnyTransId, (AnyTransId, GenericArgs)>>,
+    items: HashMap<(AnyTransId, GenericArgs), OptionHint<AnyTransId, (AnyTransId, BoxedArgs)>>,
     worklist: Vec<AnyTransId>,
     visited: HashSet<AnyTransId>,
 }
@@ -56,7 +56,7 @@ impl TranslatedCrate {
         match kind {
             TraitRefKind::TraitImpl(impl_id, gargs) => {
                 let trait_impl = self.trait_impls.get(*impl_id).unwrap();
-                (trait_impl, gargs.clone())
+                (trait_impl, (**gargs).clone())
             }
             TraitRefKind::ParentClause(p, _, clause) => {
                 let (trait_impl, _) = self.find_trait_impl_and_gargs(p);
@@ -78,7 +78,7 @@ impl UsageVisitor<'_> {
         &mut self,
         id: &AnyTransId,
         gargs: &GenericArgs,
-        default: OptionHint<AnyTransId, (AnyTransId, GenericArgs)>,
+        default: OptionHint<AnyTransId, (AnyTransId, BoxedArgs)>,
     ) {
         trace!("Mono: Found use: {:?} / {:?}", id, gargs);
         self.data
@@ -99,7 +99,7 @@ impl UsageVisitor<'_> {
         &mut self,
         id: &FunDeclId,
         gargs: &GenericArgs,
-        (h_id, h_args): (FunDeclId, GenericArgs),
+        (h_id, h_args): (FunDeclId, BoxedArgs),
     ) {
         self.found_use(
             &AnyTransId::Fun(*id),
@@ -127,9 +127,9 @@ impl VisitAst for UsageVisitor<'_> {
     }
 
     fn enter_fn_ptr(&mut self, fn_ptr: &FnPtr) {
-        match &fn_ptr.func {
+        match fn_ptr.func.as_ref() {
             FunIdOrTraitMethodRef::Fun(FunId::Regular(id)) => {
-                self.found_use_fn(id, &fn_ptr.generics)
+                self.found_use_fn(&id, &fn_ptr.generics)
             }
             FunIdOrTraitMethodRef::Trait(t_ref, name, id) => {
                 let (trait_impl, impl_gargs) = self.krate.find_trait_impl_and_gargs(&t_ref.kind);
@@ -146,7 +146,7 @@ impl VisitAst for UsageVisitor<'_> {
                     GenericsSource::Builtin,
                     &t_ref.trait_decl_ref.skip_binder.generics,
                 );
-                self.found_use_fn_hinted(id, &gargs_key, (fn_ref.id, fn_ref.generics))
+                self.found_use_fn_hinted(&id, &gargs_key, (fn_ref.id, fn_ref.generics))
             }
             // These can't be monomorphized, since they're builtins
             FunIdOrTraitMethodRef::Fun(FunId::Builtin(..)) => {}
@@ -251,7 +251,7 @@ impl VisitAstMut for SubstVisitor<'_> {
     }
 
     fn enter_fn_ptr(&mut self, fn_ptr: &mut FnPtr) {
-        match &mut fn_ptr.func {
+        match fn_ptr.func.as_mut() {
             FunIdOrTraitMethodRef::Fun(FunId::Regular(fun_id)) => {
                 self.subst_use_fun(fun_id, &mut fn_ptr.generics)
             }
@@ -261,7 +261,7 @@ impl VisitAstMut for SubstVisitor<'_> {
                     &t_ref.trait_decl_ref.skip_binder.generics,
                 );
                 self.subst_use_fun(fun_id, &mut gargs_key);
-                fn_ptr.generics = gargs_key;
+                fn_ptr.generics = Box::new(gargs_key);
             }
             // These can't be monomorphized, since they're builtins
             FunIdOrTraitMethodRef::Fun(FunId::Builtin(..)) => {}
@@ -467,7 +467,7 @@ impl TransformPass for Transform {
                 } else {
                     match id {
                         AnyTransId::Fun(_) => {
-                            let key_pair = (id.clone(), gargs.clone());
+                            let key_pair = (id.clone(), Box::new(gargs.clone()));
                             let (AnyTransId::Fun(fun_id), gargs) = mono.hint_or(&key_pair) else {
                                 panic!("Unexpected ID type in hint_or");
                             };
@@ -494,7 +494,12 @@ impl TransformPass for Transform {
                             AnyTransId::Type(typ_id_sub)
                         }
                         AnyTransId::Global(g_id) => {
-                            let glob = ctx.translated.global_decls.get(*g_id).unwrap();
+                            let Some(glob) = ctx.translated.global_decls.get(*g_id) else {
+                                // Something odd happened -- we ignore and move on
+                                *mono = OptionHint::Some(*id);
+                                warn!("Found a global that has no associated declaration");
+                                continue;
+                            };
                             let mut glob_sub = glob.clone().substitute(gargs);
 
                             let init = ctx.translated.fun_decls.get(glob.init).unwrap();

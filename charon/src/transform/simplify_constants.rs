@@ -26,7 +26,7 @@ use super::ctx::UllbcPass;
 /// The function is recursively called on the aggregate fields (e.g. here x and y).
 fn transform_constant_expr(
     span: &Span,
-    val: ConstantExpr,
+    val: Box<ConstantExpr>,
     new_var: &mut impl FnMut(Rvalue, Ty) -> Place,
 ) -> Operand {
     match val.value {
@@ -45,7 +45,7 @@ fn transform_constant_expr(
         RawConstantExpr::Global(global_ref) => {
             Operand::Move(new_var(Rvalue::Global(global_ref), val.ty.clone()))
         }
-        RawConstantExpr::Ref(box bval) => {
+        RawConstantExpr::Ref(bval) => {
             match bval.value {
                 RawConstantExpr::Global(global_ref) => Operand::Move(new_var(
                     Rvalue::GlobalRef(global_ref, RefKind::Shared),
@@ -66,7 +66,7 @@ fn transform_constant_expr(
                 }
             }
         }
-        RawConstantExpr::MutPtr(box bval) => {
+        RawConstantExpr::MutPtr(bval) => {
             match bval.value {
                 RawConstantExpr::Global(global_ref) => {
                     Operand::Move(new_var(Rvalue::GlobalRef(global_ref, RefKind::Mut), val.ty))
@@ -89,13 +89,14 @@ fn transform_constant_expr(
         RawConstantExpr::Adt(variant, fields) => {
             let fields = fields
                 .into_iter()
-                .map(|x| transform_constant_expr(span, x, new_var))
+                .map(|x| transform_constant_expr(span, Box::new(x), new_var))
                 .collect();
 
             // Build an `Aggregate` rvalue.
             let rval = {
                 let (adt_kind, generics) = val.ty.kind().as_adt().unwrap();
-                let aggregate_kind = AggregateKind::Adt(*adt_kind, variant, None, generics.clone());
+                let aggregate_kind =
+                    AggregateKind::Adt(*adt_kind, variant, None, Box::new(generics.clone()));
                 Rvalue::Aggregate(aggregate_kind, fields)
             };
             let var = new_var(rval, val.ty);
@@ -105,7 +106,7 @@ fn transform_constant_expr(
         RawConstantExpr::Array(fields) => {
             let fields = fields
                 .into_iter()
-                .map(|x| transform_constant_expr(span, x, new_var))
+                .map(|x| transform_constant_expr(span, Box::new(x), new_var))
                 .collect_vec();
 
             let len = ConstGeneric::Value(Literal::Scalar(ScalarValue::Usize(fields.len() as u64)));

@@ -78,10 +78,10 @@ where
     storage_live(@6)
     storage_live(@7)
     match x@1 {
-        0 => {
+        core::option::Option::None => {
             @0 := core::option::Option::None {  }
         },
-        1 => {
+        core::option::Option::Some => {
             storage_live(x@3)
             x@3 := move ((x@1 as variant @1).0)
             storage_live(@4)
@@ -126,9 +126,9 @@ where
     storage_live(@5)
     storage_live(@6)
     match *(x@1) {
-        0 => {
+        core::option::Option::None => {
         },
-        1 => {
+        core::option::Option::Some => {
             storage_live(x@3)
             x@3 := &(*(x@1) as variant @1).0
             storage_live(@4)

@@ -1,9 +1,16 @@
 //! The options that control charon behavior.
+use annotate_snippets::Level;
+use clap::ValueEnum;
 use indoc::indoc;
 use serde::{Deserialize, Serialize};
 use std::path::PathBuf;
 
-use crate::{ast::*, errors::ErrorCtx, name_matcher::NamePattern, raise_error, register_error};
+use crate::{
+    ast::*,
+    errors::{display_unspanned_error, ErrorCtx},
+    name_matcher::NamePattern,
+    raise_error, register_error,
+};
 
 /// The name of the environment variable we use to save the serialized Cli options
 /// when calling charon-driver from cargo-charon.
@@ -33,14 +40,18 @@ pub struct CliOpts {
     #[clap(long = "bin")]
     #[serde(default)]
     pub bin: Option<String>,
-    /// Extract the promoted MIR instead of the built MIR
+    /// Deprecated: use `--mir promoted` instead.
     #[clap(long = "mir_promoted")]
     #[serde(default)]
     pub mir_promoted: bool,
-    /// Extract the optimized MIR instead of the built MIR
+    /// Deprecated: use `--mir optimized` instead.
     #[clap(long = "mir_optimized")]
     #[serde(default)]
     pub mir_optimized: bool,
+    /// The MIR stage to extract. This is only relevant for the current crate; for dpendencies only
+    /// MIR optimized is available.
+    #[arg(long)]
+    pub mir: Option<MirLevel>,
     /// The input file (the entry point of the crate to extract).
     /// This is needed if you want to define a custom entry point (to only
     /// extract part of a crate for instance).
@@ -240,14 +251,76 @@ pub struct CliOpts {
     pub print_llbc: bool,
     #[clap(
         long = "no-merge-goto-chains",
-        help = indoc!("
-            Do not merge the chains of gotos in the ULLBC control-flow graph.
-    "))]
+        help = "Do not merge the chains of gotos in the ULLBC control-flow graph."
+    )]
     #[serde(default)]
     pub no_merge_goto_chains: bool,
+
+    #[clap(
+        long = "no-ops-to-function-calls",
+        help = "Do not transform ArrayToSlice, Repeat, and RawPtr aggregates to builtin function calls for ULLBC"
+    )]
+    #[serde(default)]
+    pub no_ops_to_function_calls: bool,
+
+    /// Named builtin sets of options. Currently used only for dependent projects, eveentually
+    /// should be replaced with semantically-meaningful presets.
+    #[clap(long = "preset")]
+    #[arg(value_enum)]
+    pub preset: Option<Preset>,
+}
+
+/// The MIR stage to use. This is only relevant for the current crate: for dependencies, only mir
+/// optimized is available (or mir elaborated for consts).
+#[derive(
+    Debug, Default, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, ValueEnum, Serialize, Deserialize,
+)]
+pub enum MirLevel {
+    /// The MIR just after MIR lowering.
+    #[default]
+    Built,
+    /// The MIR after const promotion. This is the MIR used by the borrow-checker.
+    Promoted,
+    /// The MIR after drop elaboration. This is the first MIR to include all the runtime
+    /// information.
+    Elaborated,
+    /// The MIR after optimizations. Charon disables all the optimizations it can, so this is
+    /// sensibly the same MIR as the elaborated MIR.
+    Optimized,
+}
+
+/// Presets to make it easier to tweak options without breaking dependent projects. Eventually we
+/// should define semantically-meaningful presets instead of project-specific ones.
+#[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, ValueEnum, Serialize, Deserialize)]
+#[non_exhaustive]
+pub enum Preset {
+    /// The default translation used before May 2025. After that, many passes were made optional
+    /// and disabled by default.
+    OldDefaults,
+    Aeneas,
+    Eurydice,
+    Tests,
 }
 
 impl CliOpts {
+    pub fn apply_preset(&mut self) {
+        if let Some(preset) = self.preset {
+            match preset {
+                Preset::OldDefaults => {}
+                Preset::Aeneas => {
+                    self.remove_associated_types.push("*".to_owned());
+                    self.hide_marker_traits = true;
+                }
+                Preset::Eurydice => {
+                    self.remove_associated_types.push("*".to_owned());
+                }
+                Preset::Tests => {
+                    self.rustc_args.push("--edition=2021".to_owned());
+                }
+            }
+        }
+    }
+
     /// Check that the options are meaningful
     pub fn validate(&self) {
         assert!(
@@ -259,20 +332,20 @@ impl CliOpts {
             !self.mir_promoted || !self.mir_optimized,
             "Can't use --mir_promoted and --mir_optimized at the same time"
         );
-    }
-}
 
-/// TODO: maybe we should always target MIR Built, this would make things
-/// simpler. In particular, the MIR optimized is very low level and
-/// reveals too many types and data-structures that we don't want to manipulate.
-#[derive(Clone, Copy, PartialEq, Eq)]
-pub enum MirLevel {
-    /// Original MIR, directly translated from HIR.
-    Built,
-    /// Not sure what this is. Not well tested.
-    Promoted,
-    /// MIR after optimization passes. The last one before codegen.
-    Optimized,
+        if self.mir_optimized {
+            display_unspanned_error(
+                Level::WARNING,
+                "`--mir_optimized` is deprecated, use `--mir optimized` instead",
+            )
+        }
+        if self.mir_promoted {
+            display_unspanned_error(
+                Level::WARNING,
+                "`--mir_promoted` is deprecated, use `--mir promoted` instead",
+            )
+        }
+    }
 }
 
 /// The options that control translation and transformation.
@@ -291,6 +364,8 @@ pub struct TranslateOptions {
     pub hide_marker_traits: bool,
     /// Monomorphize functions.
     pub monomorphize: bool,
+    /// Transforms ArrayToSlice, Repeat, and RawPtr aggregates to builtin function calls.
+    pub no_ops_to_function_calls: bool,
     /// Do not merge the chains of gotos.
     pub no_merge_goto_chains: bool,
     /// Print the llbc just after control-flow reconstruction.
@@ -321,7 +396,7 @@ impl TranslateOptions {
         } else if options.mir_promoted {
             MirLevel::Promoted
         } else {
-            MirLevel::Built
+            options.mir.unwrap_or_default()
         };
 
         let item_opacities = {
@@ -373,6 +448,7 @@ impl TranslateOptions {
             hide_marker_traits: options.hide_marker_traits,
             monomorphize: options.monomorphize,
             no_merge_goto_chains: options.no_merge_goto_chains,
+            no_ops_to_function_calls: options.no_ops_to_function_calls,
             print_built_llbc: options.print_built_llbc,
             item_opacities,
             remove_associated_types,

@@ -22,10 +22,10 @@ where
 
     storage_live(@2)
     match *(self@1) {
-        0 => {
+        core::option::Option::None => {
             @2 := const (0 : isize)
         },
-        1 => {
+        core::option::Option::Some => {
             @2 := const (1 : isize)
         },
     }

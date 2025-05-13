@@ -47,22 +47,17 @@ impl UllbcPass for Transform {
                     let Some(block) = body.body.get_mut(block_id) else {
                         continue;
                     };
-                    for i in 0..block.statements.len() {
-                        let st = &block.statements[i];
-                        if let RawStatement::Call(Call {
-                            func:
-                                FnOperand::Regular(FnPtr {
-                                    func: FunIdOrTraitMethodRef::Fun(FunId::Regular(fun_id)),
-                                    ..
-                                }),
-                            ..
-                        }) = &st.content
-                            && panic_fns.contains(fun_id)
-                        {
-                            block.statements.drain(i..);
-                            block.terminator.content = panic_terminator.clone();
-                            break;
-                        }
+                    if let RawTerminator::Call{call: Call {
+                        func:
+                            FnOperand::Regular(FnPtr {
+                                func: box FunIdOrTraitMethodRef::Fun(FunId::Regular(fun_id)),
+                                ..
+                            }),
+                        ..
+                    }, target: _} = &block.terminator.content
+                        && panic_fns.contains(fun_id)
+                    {
+                        block.terminator.content = panic_terminator.clone();
                     }
                 }
             }

@@ -116,7 +116,7 @@ fn block_is_error(body: &src::ExprBody, block_id: src::BlockId) -> bool {
     use src::RawTerminator::*;
     match &block.terminator.content {
         Abort(..) => true,
-        Goto { .. } | Switch { .. } | Return { .. } => false,
+        Goto { .. } | Switch { .. } | Return | Call { .. } => false,
     }
 }
 
@@ -1451,7 +1451,6 @@ fn translate_statement(st: &src::Statement) -> Option<tgt::Statement> {
     let src_span = st.span;
     let st = match st.content.clone() {
         src::RawStatement::Assign(place, rvalue) => tgt::RawStatement::Assign(place, rvalue),
-        src::RawStatement::Call(s) => tgt::RawStatement::Call(s),
         src::RawStatement::SetDiscriminant(place, variant_id) => {
             tgt::RawStatement::SetDiscriminant(place, variant_id)
         }
@@ -1480,6 +1479,19 @@ fn translate_terminator(
         }
         src::RawTerminator::Return => {
             tgt::Statement::new(src_span, tgt::RawStatement::Return).into_block()
+        }
+        src::RawTerminator::Call { call, target } => {
+            let target_block = translate_child_block(
+                info,
+                parent_loops,
+                switch_exit_blocks,
+                terminator.span,
+                *target,
+            );
+            let mut block = opt_block_unwrap_or_nop(terminator.span, target_block);
+            let st = tgt::Statement::new(src_span, tgt::RawStatement::Call(call.clone()));
+            block.statements.insert(0, st);
+            block
         }
         src::RawTerminator::Goto { target } => {
             let block = translate_child_block(
@@ -1769,11 +1781,6 @@ fn translate_body_aux(
         explored: &mut explored,
     };
     let tgt_body = translate_block(&mut info, &Vec::new(), &HashSet::new(), src::BlockId::ZERO);
-
-    // Sanity: check that we translated all the blocks
-    for (bid, _) in src_body.body.iter_indexed_values() {
-        assert!(explored.contains(&bid));
-    }
 
     tgt::ExprBody {
         span: src_body.span,

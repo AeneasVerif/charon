@@ -130,7 +130,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                 )?;
                 RawConstantExpr::Global(GlobalDeclRef {
                     id: global_id,
-                    generics,
+                    generics: Box::new(generics),
                 })
             }
             ConstantExprKind::Borrow(v)

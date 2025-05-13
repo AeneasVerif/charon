@@ -41,6 +41,8 @@ struct MagicComments {
     rustc_opts: Vec<String>,
     /// Whether we should store the test output in a file and check it.
     check_output: bool,
+    /// Whether we should set some sensible default options (using --preset=test).
+    default_options: bool,
     /// A list of paths to files that must be compiled as dependencies for this test.
     auxiliary_crates: Vec<PathBuf>,
 }
@@ -58,6 +60,7 @@ static HELP_STRING: &str = unindent!(
     - `//@ rustc-args=<rustc cli options>`
     - `//@ no-check-output`: don't store the output in a file; useful if the output is unstable or
          differs between debug and release mode.
+    - `//@ no-default-options`: don't set default options like --edition=2021.
     - `//@ aux-crate=<file path>`: compile this file as a crate dependency.
     "
 );
@@ -69,6 +72,7 @@ fn parse_magic_comments(input_path: &std::path::Path) -> anyhow::Result<MagicCom
         charon_opts: Vec::new(),
         rustc_opts: Vec::new(),
         check_output: true,
+        default_options: true,
         auxiliary_crates: Vec::new(),
     };
     for line in read_to_string(input_path)?.lines() {
@@ -86,6 +90,8 @@ fn parse_magic_comments(input_path: &std::path::Path) -> anyhow::Result<MagicCom
             comments.test_kind = TestKind::PrettyLlbc;
         } else if line == "skip" {
             comments.test_kind = TestKind::Skip;
+        } else if line == "no-default-options" {
+            comments.default_options = false;
         } else if line == "no-check-output" {
             comments.check_output = false;
         } else if let Some(charon_opts) = line.strip_prefix("charon-args=") {
@@ -186,6 +192,9 @@ fn perform_test(test_case: &Case, action: Action) -> anyhow::Result<()> {
 
     // Charon args
     cmd.arg("--print-llbc");
+    if test_case.magic_comments.default_options {
+        cmd.arg("--preset=tests");
+    }
     if !matches!(test_case.magic_comments.test_kind, TestKind::IgnoreWarnings) {
         cmd.arg("--error-on-warnings");
     }
@@ -206,7 +215,6 @@ fn perform_test(test_case: &Case, action: Action) -> anyhow::Result<()> {
     cmd.arg("--crate-name=test_crate");
     cmd.arg("--crate-type=rlib");
     cmd.arg("--allow=unused"); // Removes noise
-    cmd.arg("--edition=2021");
     for (crate_name, _, rlib_path) in deps {
         cmd.arg(format!("--extern={crate_name}={rlib_path}"));
     }

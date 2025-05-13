@@ -231,10 +231,10 @@ fn test_crate::cbd(@1: Array<u8, 33 : usize>)
         @6 := core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>[@TraitClause0]}#6::next<'_, u8>[core::marker::Sized<u8>, core::iter::range::{impl core::iter::range::Step for u8}#35](move (@7))
         storage_dead(@7)
         match @6 {
-            0 => {
+            core::option::Option::None => {
                 break 0
             },
-            1 => {
+            core::option::Option::Some => {
                 storage_live(i@9)
                 i@9 := copy ((@6 as variant @1).0)
                 storage_live(@10)

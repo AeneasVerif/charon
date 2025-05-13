@@ -66,6 +66,12 @@ fn get_mir_for_def_id_and_level<'tcx>(
                             return Some(body.borrow().clone());
                         }
                     }
+                    MirLevel::Elaborated => {
+                        let body = tcx.mir_drops_elaborated_and_const_checked(local_def_id);
+                        if !body.is_stolen() {
+                            return Some(body.borrow().clone());
+                        }
+                    }
                     MirLevel::Optimized => {}
                 }
                 // We fall back to optimized MIR if the requested body was stolen.

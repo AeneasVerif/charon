@@ -1,9 +1,9 @@
 //! Desugar array/slice index operations to function calls.
+use crate::llbc_ast::*;
 use crate::transform::TransformCtx;
-use crate::ullbc_ast::*;
 use derive_generic_visitor::*;
 
-use super::ctx::UllbcPass;
+use super::ctx::LlbcPass;
 
 /// We replace some place constructors with function calls. To do that, we explore all the places
 /// in a body and deconstruct a given place access into intermediate assignments.
@@ -54,8 +54,8 @@ impl<'a> IndexVisitor<'a> {
                 ..generics.clone()
             };
             FnOperand::Regular(FnPtr {
-                func: FunIdOrTraitMethodRef::mk_builtin(builtin_fun),
-                generics,
+                func: Box::new(FunIdOrTraitMethodRef::mk_builtin(builtin_fun)),
+                generics: Box::new(generics),
             })
         };
 
@@ -227,6 +227,10 @@ impl VisitBodyMut for IndexVisitor<'_> {
             | GlobalRef(..) | Repeat(..) | ShallowInitBox(..) => self.visit_inner(x),
         }
     }
+
+    fn visit_llbc_block(&mut self, _: &mut llbc_ast::Block) -> ControlFlow<Infallible> {
+        ControlFlow::Continue(())
+    }
 }
 
 pub struct Transform;
@@ -289,46 +293,29 @@ pub struct Transform;
 ///   tmp1 : &mut T = ArrayIndexMut(move y, i)
 ///   *tmp1 = x
 /// ```
-impl UllbcPass for Transform {
+impl LlbcPass for Transform {
     fn transform_body(&self, _ctx: &mut TransformCtx, b: &mut ExprBody) {
-        for block in &mut b.body {
-            // Process statements.
-            block.transform(|st: &mut Statement| {
-                let mut visitor = IndexVisitor {
-                    locals: &mut b.locals,
-                    statements: Vec::new(),
-                    place_mutability_stack: Vec::new(),
-                    span: st.span,
-                };
-
-                use RawStatement::*;
-                match &mut st.content {
-                    Assign(..) | SetDiscriminant(..) | Drop(..) | Deinit(..) => {
-                        let _ = visitor.visit_inner_with_mutability(st, true);
-                    }
-                    Nop | Error(..) | Assert(..) | Call(..) | StorageDead(..) | StorageLive(..) => {
-                        let _ = st.drive_body_mut(&mut visitor);
-                    }
-                }
-                visitor.statements
-            });
-
-            // Process the terminator.
-            let terminator = &mut block.terminator;
+        b.body.transform(|st: &mut Statement| {
             let mut visitor = IndexVisitor {
                 locals: &mut b.locals,
                 statements: Vec::new(),
                 place_mutability_stack: Vec::new(),
-                span: terminator.span,
+                span: st.span,
             };
-            use RawTerminator::*;
-            match &mut terminator.content {
-                Switch { .. } => {
-                    let _ = visitor.visit_inner_with_mutability(terminator, false);
+            use RawStatement::*;
+            match &mut st.content {
+                Assign(..) | SetDiscriminant(..) | Drop(..) | Deinit(..) | Call(..) => {
+                    let _ = visitor.visit_inner_with_mutability(st, true);
                 }
-                Abort { .. } | Return | Goto { .. } => {}
+                Switch(..) => {
+                    let _ = visitor.visit_inner_with_mutability(st, false);
+                }
+                Nop | Error(..) | Assert(..) | Abort(..) | StorageDead(..) | StorageLive(..)
+                | Return | Break(..) | Continue(..) | Loop(..) => {
+                    let _ = st.drive_body_mut(&mut visitor);
+                }
             }
-            block.statements.append(&mut visitor.statements);
-        }
+            visitor.statements
+        });
     }
 }

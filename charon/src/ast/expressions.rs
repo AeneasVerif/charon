@@ -280,7 +280,7 @@ pub enum Operand {
     Move(Place),
     /// Constant value (including constant and static variables)
     #[charon::rename("Constant")]
-    Const(ConstantExpr),
+    Const(Box<ConstantExpr>),
 }
 
 /// A function identifier. See [crate::ullbc_ast::Terminator]
@@ -387,8 +387,8 @@ pub enum FunIdOrTraitMethodRef {
 
 #[derive(Debug, PartialEq, Eq, Clone, Serialize, Deserialize, Drive, DriveMut)]
 pub struct FnPtr {
-    pub func: FunIdOrTraitMethodRef,
-    pub generics: GenericArgs,
+    pub func: Box<FunIdOrTraitMethodRef>,
+    pub generics: BoxedArgs,
 }
 
 /// A constant expression.
@@ -622,14 +622,14 @@ pub enum AggregateKind {
     /// A struct, enum or union aggregate. The `VariantId`, if present, indicates this is an enum
     /// and the aggregate uses that variant. The `FieldId`, if present, indicates this is a union
     /// and the aggregate writes into that field. Otherwise this is a struct.
-    Adt(TypeId, Option<VariantId>, Option<FieldId>, GenericArgs),
+    Adt(TypeId, Option<VariantId>, Option<FieldId>, BoxedArgs),
     /// We don't put this with the ADT cas because this is the only built-in type
     /// with aggregates, and it is a primitive type. In particular, it makes
     /// sense to treat it differently because it has a variable number of fields.
     Array(Ty, ConstGeneric),
     /// Aggregated values for closures group the function id together with its
     /// state.
-    Closure(FunDeclId, GenericArgs),
+    Closure(FunDeclId, BoxedArgs),
     /// Construct a raw pointer from a pointer value, and its metadata (can be unit, if building
     /// a thin pointer). The type is the type of the pointee.
     /// We lower this to a builtin function call in [crate::ops_to_function_calls].

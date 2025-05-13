@@ -1041,10 +1041,10 @@ pub fn test_crate::nested_loops_enum(@1: usize, @2: usize) -> usize
         @9 := core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>[@TraitClause0]}#6::next<'_, i32>[core::marker::Sized<i32>, core::iter::range::{impl core::iter::range::Step for i32}#40](move (@10))
         storage_dead(@10)
         match @9 {
-            0 => {
+            core::option::Option::None => {
                 break 0
             },
-            1 => {
+            core::option::Option::Some => {
                 s@3 := copy (s@3) + const (1 : usize)
                 storage_dead(@11)
                 storage_dead(@9)
@@ -1080,10 +1080,10 @@ pub fn test_crate::nested_loops_enum(@1: usize, @2: usize) -> usize
         @18 := core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>[@TraitClause0]}#6::next<'_, usize>[core::marker::Sized<usize>, core::iter::range::{impl core::iter::range::Step for usize}#43](move (@19))
         storage_dead(@19)
         match @18 {
-            0 => {
+            core::option::Option::None => {
                 break 0
             },
-            1 => {
+            core::option::Option::Some => {
                 storage_live(@21)
                 storage_live(@22)
                 storage_live(@23)
@@ -1104,10 +1104,10 @@ pub fn test_crate::nested_loops_enum(@1: usize, @2: usize) -> usize
                     @26 := core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>[@TraitClause0]}#6::next<'_, usize>[core::marker::Sized<usize>, core::iter::range::{impl core::iter::range::Step for usize}#43](move (@27))
                     storage_dead(@27)
                     match @26 {
-                        0 => {
+                        core::option::Option::None => {
                             break 0
                         },
-                        1 => {
+                        core::option::Option::Some => {
                             s@3 := copy (s@3) + const (1 : usize)
                             storage_dead(@28)
                             storage_dead(@26)
@@ -1235,10 +1235,10 @@ pub fn test_crate::loop_inside_if(@1: bool, @2: u32) -> u32
             @11 := core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>[@TraitClause0]}#6::next<'_, u32>[core::marker::Sized<u32>, core::iter::range::{impl core::iter::range::Step for u32}#39](move (@12))
             storage_dead(@12)
             match @11 {
-                0 => {
+                core::option::Option::None => {
                     break 0
                 },
-                1 => {
+                core::option::Option::Some => {
                     storage_live(i@14)
                     i@14 := copy ((@11 as variant @1).0)
                     storage_live(@15)
@@ -1491,25 +1491,25 @@ pub fn test_crate::clear<'_0>(@1: &'_0 mut (alloc::vec::Vec<u32, alloc::alloc::G
         storage_dead(@6)
         @3 := move (@4) < move (@5)
         if move (@3) {
-            storage_dead(@5)
-            storage_dead(@4)
-            storage_live(@7)
-            storage_live(@8)
-            @8 := &mut *(v@1)
-            storage_live(@9)
-            @9 := copy (i@2)
-            @7 := alloc::vec::{impl core::ops::index::IndexMut<I> for alloc::vec::Vec<T, A>[@TraitClause0, @TraitClause2]}#14::index_mut<'_, u32, usize, alloc::alloc::Global>[core::marker::Sized<u32>, core::marker::Sized<usize>, core::marker::Sized<alloc::alloc::Global>, core::slice::index::{impl core::slice::index::SliceIndex<Slice<T>> for usize}#2<u32>[core::marker::Sized<u32>]](move (@8), move (@9))
-            storage_dead(@9)
-            storage_dead(@8)
-            *(@7) := const (0 : u32)
-            storage_dead(@7)
-            i@2 := copy (i@2) + const (1 : usize)
-            storage_dead(@3)
-            continue 0
         }
         else {
             break 0
         }
+        storage_dead(@5)
+        storage_dead(@4)
+        storage_live(@7)
+        storage_live(@8)
+        @8 := &mut *(v@1)
+        storage_live(@9)
+        @9 := copy (i@2)
+        @7 := alloc::vec::{impl core::ops::index::IndexMut<I> for alloc::vec::Vec<T, A>[@TraitClause0, @TraitClause2]}#14::index_mut<'_, u32, usize, alloc::alloc::Global>[core::marker::Sized<u32>, core::marker::Sized<usize>, core::marker::Sized<alloc::alloc::Global>, core::slice::index::{impl core::slice::index::SliceIndex<Slice<T>> for usize}#2<u32>[core::marker::Sized<u32>]](move (@8), move (@9))
+        storage_dead(@9)
+        storage_dead(@8)
+        *(@7) := const (0 : u32)
+        storage_dead(@7)
+        i@2 := copy (i@2) + const (1 : usize)
+        storage_dead(@3)
+        continue 0
     }
     storage_dead(@5)
     storage_dead(@4)
@@ -1550,7 +1550,7 @@ pub fn test_crate::get_elem_mut<'_0>(@1: &'_0 mut (test_crate::List<usize>[core:
     storage_live(@8)
     loop {
         match *(ls@1) {
-            0 => {
+            test_crate::List::Cons => {
                 storage_live(y@3)
                 y@3 := &mut (*(ls@1) as variant @0).0
                 storage_live(tl@4)
@@ -1583,7 +1583,7 @@ pub fn test_crate::get_elem_mut<'_0>(@1: &'_0 mut (test_crate::List<usize>[core:
                 storage_dead(y@3)
                 return
             },
-            1 => {
+            test_crate::List::Nil => {
                 panic(core::panicking::panic_explicit)
             },
         }
@@ -1614,7 +1614,7 @@ where
     storage_live(@3)
     loop {
         match *(ls@1) {
-            0 => {
+            test_crate::List::Cons => {
                 storage_live(x@4)
                 x@4 := &mut (*(ls@1) as variant @0).0
                 storage_live(tl@5)

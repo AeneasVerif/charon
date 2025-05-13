@@ -243,7 +243,7 @@ impl<C: AstFormatter> FmtWithCtx<C> for FnOperand {
 impl<C: AstFormatter> FmtWithCtx<C> for FnPtr {
     fn fmt_with_ctx(&self, ctx: &C) -> String {
         let generics = self.generics.fmt_with_ctx(ctx);
-        let f = match &self.func {
+        let f = match self.func.as_ref() {
             FunIdOrTraitMethodRef::Fun(FunId::Regular(def_id)) => {
                 format!("{}", ctx.format_object(*def_id),)
             }
@@ -1018,10 +1018,6 @@ impl<C: AstFormatter> FmtWithCtx<C> for ullbc::Statement {
                 place.fmt_with_ctx(ctx),
                 rvalue.fmt_with_ctx(ctx),
             ),
-            RawStatement::Call(call) => {
-                let (call_s, _) = fmt_call(ctx, call);
-                write!(&mut out, "{tab}{} := {call_s}", call.dest.fmt_with_ctx(ctx))
-            }
             RawStatement::SetDiscriminant(place, variant_id) => write!(
                 &mut out,
                 "{tab}@discriminant({}) := {}",
@@ -1158,14 +1154,26 @@ impl<C: AstFormatter> FmtWithCtx<C> for llbc::Statement {
                 Switch::Match(discr, maps, otherwise) => {
                     let inner_tab1 = format!("{tab}{TAB_INCR}");
                     let inner_tab2 = format!("{inner_tab1}{TAB_INCR}");
+                    let discr_type: Option<TypeDeclId> = discr
+                        .ty
+                        .kind()
+                        .as_adt()
+                        .and_then(|(x, _)| x.as_adt())
+                        .copied();
                     let mut maps: Vec<String> = maps
                         .iter()
-                        .map(|(pvl, st)| {
+                        .map(|(cases, st)| {
                             // Note that there may be several pattern values
-                            let pvl: Vec<String> = pvl.iter().map(|v| v.to_string()).collect();
+                            let cases: Vec<String> = cases
+                                .iter()
+                                .map(|v| match discr_type {
+                                    Some(type_id) => ctx.format_object((type_id, *v)),
+                                    None => v.to_pretty_string(),
+                                })
+                                .collect();
                             format!(
                                 "{inner_tab1}{} => {{\n{}{inner_tab1}}},\n",
-                                pvl.join(" | "),
+                                cases.join(" | "),
                                 st.fmt_with_ctx_and_indent(&inner_tab2, ctx),
                             )
                         })
@@ -1236,6 +1244,14 @@ impl<C: AstFormatter> FmtWithCtx<C> for Terminator {
                     )
                 }
             },
+            RawTerminator::Call { call, target } => {
+                let (call_s, _) = fmt_call(ctx, call);
+                write!(
+                    &mut out,
+                    "{tab}{} := {call_s} -> bb{target}",
+                    call.dest.fmt_with_ctx(ctx)
+                )
+            }
             RawTerminator::Abort(kind) => write!(&mut out, "{tab}{}", kind.fmt_with_ctx(ctx)),
             RawTerminator::Return => write!(&mut out, "{tab}return"),
         };

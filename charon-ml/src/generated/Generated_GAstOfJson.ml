@@ -175,7 +175,7 @@ and operand_of_json (ctx : of_json_ctx) (js : json) : (operand, string) result =
         let* move = place_of_json ctx move in
         Ok (Move move)
     | `Assoc [ ("Const", const) ] ->
-        let* const = constant_expr_of_json ctx const in
+        let* const = box_of_json constant_expr_of_json ctx const in
         Ok (Constant const)
     | _ -> Error "")
 
@@ -241,8 +241,8 @@ and fn_ptr_of_json (ctx : of_json_ctx) (js : json) : (fn_ptr, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
     | `Assoc [ ("func", func); ("generics", generics) ] ->
-        let* func = fun_id_or_trait_method_ref_of_json ctx func in
-        let* generics = generic_args_of_json ctx generics in
+        let* func = box_of_json fun_id_or_trait_method_ref_of_json ctx func in
+        let* generics = box_of_json generic_args_of_json ctx generics in
         Ok ({ func; generics } : fn_ptr)
     | _ -> Error "")
 
@@ -338,7 +338,7 @@ and aggregate_kind_of_json (ctx : of_json_ctx) (js : json) :
         let* x_0 = type_id_of_json ctx x_0 in
         let* x_1 = option_of_json variant_id_of_json ctx x_1 in
         let* x_2 = option_of_json field_id_of_json ctx x_2 in
-        let* x_3 = generic_args_of_json ctx x_3 in
+        let* x_3 = box_of_json generic_args_of_json ctx x_3 in
         Ok (AggregatedAdt (x_0, x_1, x_2, x_3))
     | `Assoc [ ("Array", `List [ x_0; x_1 ]) ] ->
         let* x_0 = ty_of_json ctx x_0 in
@@ -346,7 +346,7 @@ and aggregate_kind_of_json (ctx : of_json_ctx) (js : json) :
         Ok (AggregatedArray (x_0, x_1))
     | `Assoc [ ("Closure", `List [ x_0; x_1 ]) ] ->
         let* x_0 = fun_decl_id_of_json ctx x_0 in
-        let* x_1 = generic_args_of_json ctx x_1 in
+        let* x_1 = box_of_json generic_args_of_json ctx x_1 in
         Ok (AggregatedClosure (x_0, x_1))
     | _ -> Error "")
 
@@ -432,7 +432,7 @@ and fun_decl_ref_of_json (ctx : of_json_ctx) (js : json) :
     (match js with
     | `Assoc [ ("id", id); ("generics", generics) ] ->
         let* fun_id = fun_decl_id_of_json ctx id in
-        let* fun_generics = generic_args_of_json ctx generics in
+        let* fun_generics = box_of_json generic_args_of_json ctx generics in
         Ok ({ fun_id; fun_generics } : fun_decl_ref)
     | _ -> Error "")
 
@@ -477,7 +477,7 @@ and global_decl_ref_of_json (ctx : of_json_ctx) (js : json) :
     (match js with
     | `Assoc [ ("id", id); ("generics", generics) ] ->
         let* global_id = global_decl_id_of_json ctx id in
-        let* global_generics = generic_args_of_json ctx generics in
+        let* global_generics = box_of_json generic_args_of_json ctx generics in
         Ok ({ global_id; global_generics } : global_decl_ref)
     | _ -> Error "")
 
@@ -1000,7 +1000,7 @@ and trait_instance_id_of_json (ctx : of_json_ctx) (js : json) :
     (match js with
     | `Assoc [ ("TraitImpl", `List [ x_0; x_1 ]) ] ->
         let* x_0 = trait_impl_id_of_json ctx x_0 in
-        let* x_1 = generic_args_of_json ctx x_1 in
+        let* x_1 = box_of_json generic_args_of_json ctx x_1 in
         Ok (TraitImpl (x_0, x_1))
     | `Assoc [ ("Clause", clause) ] ->
         let* clause =
@@ -1062,7 +1062,7 @@ and trait_decl_ref_of_json (ctx : of_json_ctx) (js : json) :
     (match js with
     | `Assoc [ ("trait_id", trait_id); ("generics", generics) ] ->
         let* trait_decl_id = trait_decl_id_of_json ctx trait_id in
-        let* decl_generics = generic_args_of_json ctx generics in
+        let* decl_generics = box_of_json generic_args_of_json ctx generics in
         Ok ({ trait_decl_id; decl_generics } : trait_decl_ref)
     | _ -> Error "")
 
@@ -1072,7 +1072,7 @@ and trait_impl_ref_of_json (ctx : of_json_ctx) (js : json) :
     (match js with
     | `Assoc [ ("impl_id", impl_id); ("generics", generics) ] ->
         let* trait_impl_id = trait_impl_id_of_json ctx impl_id in
-        let* impl_generics = generic_args_of_json ctx generics in
+        let* impl_generics = box_of_json generic_args_of_json ctx generics in
         Ok ({ trait_impl_id; impl_generics } : trait_impl_ref)
     | _ -> Error "")
 
@@ -1443,7 +1443,7 @@ and ty_of_json (ctx : of_json_ctx) (js : json) : (ty, string) result =
               ] );
         ] ->
         let* fun_id = fun_decl_id_of_json ctx fun_id in
-        let* parent_args = generic_args_of_json ctx parent_args in
+        let* parent_args = box_of_json generic_args_of_json ctx parent_args in
         let* upvar_tys = list_of_json ty_of_json ctx upvar_tys in
         let* signature =
           region_binder_of_json
@@ -1602,6 +1602,147 @@ and float_value_of_json (ctx : of_json_ctx) (js : json) :
         Ok ({ float_value; float_ty } : float_value)
     | _ -> Error "")
 
+and cli_options_of_json (ctx : of_json_ctx) (js : json) :
+    (cli_options, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with
+    | `Assoc
+        [
+          ("ullbc", ullbc);
+          ("lib", lib);
+          ("bin", bin);
+          ("mir_promoted", mir_promoted);
+          ("mir_optimized", mir_optimized);
+          ("mir", mir);
+          ("input_file", input_file);
+          ("read_llbc", read_llbc);
+          ("dest_dir", dest_dir);
+          ("dest_file", dest_file);
+          ("use_polonius", use_polonius);
+          ("skip_borrowck", skip_borrowck);
+          ("no_code_duplication", no_code_duplication);
+          ("monomorphize", monomorphize);
+          ("extract_opaque_bodies", extract_opaque_bodies);
+          ("translate_all_methods", translate_all_methods);
+          ("include", include_);
+          ("opaque", opaque);
+          ("exclude", exclude);
+          ("remove_associated_types", remove_associated_types);
+          ("hide_marker_traits", hide_marker_traits);
+          ("start_from", start_from);
+          ("no_cargo", no_cargo);
+          ("rustc_args", rustc_args);
+          ("cargo_args", cargo_args);
+          ("abort_on_error", abort_on_error);
+          ("error_on_warnings", error_on_warnings);
+          ("no_serialize", no_serialize);
+          ("print_original_ullbc", print_original_ullbc);
+          ("print_ullbc", print_ullbc);
+          ("print_built_llbc", print_built_llbc);
+          ("print_llbc", print_llbc);
+          ("no_merge_goto_chains", no_merge_goto_chains);
+          ("no_ops_to_function_calls", no_ops_to_function_calls);
+          ("preset", preset);
+        ] ->
+        let* ullbc = bool_of_json ctx ullbc in
+        let* lib = bool_of_json ctx lib in
+        let* bin = option_of_json string_of_json ctx bin in
+        let* mir_promoted = bool_of_json ctx mir_promoted in
+        let* mir_optimized = bool_of_json ctx mir_optimized in
+        let* mir = option_of_json mir_level_of_json ctx mir in
+        let* input_file = option_of_json path_buf_of_json ctx input_file in
+        let* read_llbc = option_of_json path_buf_of_json ctx read_llbc in
+        let* dest_dir = option_of_json path_buf_of_json ctx dest_dir in
+        let* dest_file = option_of_json path_buf_of_json ctx dest_file in
+        let* use_polonius = bool_of_json ctx use_polonius in
+        let* skip_borrowck = bool_of_json ctx skip_borrowck in
+        let* no_code_duplication = bool_of_json ctx no_code_duplication in
+        let* monomorphize = bool_of_json ctx monomorphize in
+        let* extract_opaque_bodies = bool_of_json ctx extract_opaque_bodies in
+        let* translate_all_methods = bool_of_json ctx translate_all_methods in
+        let* included = list_of_json string_of_json ctx include_ in
+        let* opaque = list_of_json string_of_json ctx opaque in
+        let* exclude = list_of_json string_of_json ctx exclude in
+        let* remove_associated_types =
+          list_of_json string_of_json ctx remove_associated_types
+        in
+        let* hide_marker_traits = bool_of_json ctx hide_marker_traits in
+        let* start_from = list_of_json string_of_json ctx start_from in
+        let* no_cargo = bool_of_json ctx no_cargo in
+        let* rustc_args = list_of_json string_of_json ctx rustc_args in
+        let* cargo_args = list_of_json string_of_json ctx cargo_args in
+        let* abort_on_error = bool_of_json ctx abort_on_error in
+        let* error_on_warnings = bool_of_json ctx error_on_warnings in
+        let* no_serialize = bool_of_json ctx no_serialize in
+        let* print_original_ullbc = bool_of_json ctx print_original_ullbc in
+        let* print_ullbc = bool_of_json ctx print_ullbc in
+        let* print_built_llbc = bool_of_json ctx print_built_llbc in
+        let* print_llbc = bool_of_json ctx print_llbc in
+        let* no_merge_goto_chains = bool_of_json ctx no_merge_goto_chains in
+        let* no_ops_to_function_calls =
+          bool_of_json ctx no_ops_to_function_calls
+        in
+        let* preset = option_of_json preset_of_json ctx preset in
+        Ok
+          ({
+             ullbc;
+             lib;
+             bin;
+             mir_promoted;
+             mir_optimized;
+             mir;
+             input_file;
+             read_llbc;
+             dest_dir;
+             dest_file;
+             use_polonius;
+             skip_borrowck;
+             no_code_duplication;
+             monomorphize;
+             extract_opaque_bodies;
+             translate_all_methods;
+             included;
+             opaque;
+             exclude;
+             remove_associated_types;
+             hide_marker_traits;
+             start_from;
+             no_cargo;
+             rustc_args;
+             cargo_args;
+             abort_on_error;
+             error_on_warnings;
+             no_serialize;
+             print_original_ullbc;
+             print_ullbc;
+             print_built_llbc;
+             print_llbc;
+             no_merge_goto_chains;
+             no_ops_to_function_calls;
+             preset;
+           }
+            : cli_options)
+    | _ -> Error "")
+
+and mir_level_of_json (ctx : of_json_ctx) (js : json) :
+    (mir_level, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with
+    | `String "Built" -> Ok Built
+    | `String "Promoted" -> Ok Promoted
+    | `String "Elaborated" -> Ok Elaborated
+    | `String "Optimized" -> Ok Optimized
+    | _ -> Error "")
+
+and preset_of_json (ctx : of_json_ctx) (js : json) : (preset, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with
+    | `String "OldDefaults" -> Ok OldDefaults
+    | `String "Aeneas" -> Ok Aeneas
+    | `String "Eurydice" -> Ok Eurydice
+    | `String "Tests" -> Ok Tests
+    | _ -> Error "")
+
 and vector_of_json :
       'a0 'a1.
       (of_json_ctx -> json -> ('a0, string) result) ->
@@ -1649,117 +1790,6 @@ and declaration_group_of_json (ctx : of_json_ctx) (js : json) :
           g_declaration_group_of_json any_decl_id_of_json ctx mixed
         in
         Ok (MixedGroup mixed)
-    | _ -> Error "")
-
-and cli_options_of_json (ctx : of_json_ctx) (js : json) :
-    (cli_options, string) result =
-  combine_error_msgs js __FUNCTION__
-    (match js with
-    | `Assoc
-        [
-          ("ullbc", ullbc);
-          ("lib", lib);
-          ("bin", bin);
-          ("mir_promoted", mir_promoted);
-          ("mir_optimized", mir_optimized);
-          ("input_file", input_file);
-          ("read_llbc", read_llbc);
-          ("dest_dir", dest_dir);
-          ("dest_file", dest_file);
-          ("use_polonius", use_polonius);
-          ("skip_borrowck", skip_borrowck);
-          ("no_code_duplication", no_code_duplication);
-          ("monomorphize", monomorphize);
-          ("extract_opaque_bodies", extract_opaque_bodies);
-          ("translate_all_methods", translate_all_methods);
-          ("include", include_);
-          ("opaque", opaque);
-          ("exclude", exclude);
-          ("remove_associated_types", remove_associated_types);
-          ("hide_marker_traits", hide_marker_traits);
-          ("start_from", start_from);
-          ("no_cargo", no_cargo);
-          ("rustc_args", rustc_args);
-          ("cargo_args", cargo_args);
-          ("abort_on_error", abort_on_error);
-          ("error_on_warnings", error_on_warnings);
-          ("no_serialize", no_serialize);
-          ("print_original_ullbc", print_original_ullbc);
-          ("print_ullbc", print_ullbc);
-          ("print_built_llbc", print_built_llbc);
-          ("print_llbc", print_llbc);
-          ("no_merge_goto_chains", no_merge_goto_chains);
-        ] ->
-        let* ullbc = bool_of_json ctx ullbc in
-        let* lib = bool_of_json ctx lib in
-        let* bin = option_of_json string_of_json ctx bin in
-        let* mir_promoted = bool_of_json ctx mir_promoted in
-        let* mir_optimized = bool_of_json ctx mir_optimized in
-        let* input_file = option_of_json path_buf_of_json ctx input_file in
-        let* read_llbc = option_of_json path_buf_of_json ctx read_llbc in
-        let* dest_dir = option_of_json path_buf_of_json ctx dest_dir in
-        let* dest_file = option_of_json path_buf_of_json ctx dest_file in
-        let* use_polonius = bool_of_json ctx use_polonius in
-        let* skip_borrowck = bool_of_json ctx skip_borrowck in
-        let* no_code_duplication = bool_of_json ctx no_code_duplication in
-        let* monomorphize = bool_of_json ctx monomorphize in
-        let* extract_opaque_bodies = bool_of_json ctx extract_opaque_bodies in
-        let* translate_all_methods = bool_of_json ctx translate_all_methods in
-        let* included = list_of_json string_of_json ctx include_ in
-        let* opaque = list_of_json string_of_json ctx opaque in
-        let* exclude = list_of_json string_of_json ctx exclude in
-        let* remove_associated_types =
-          list_of_json string_of_json ctx remove_associated_types
-        in
-        let* hide_marker_traits = bool_of_json ctx hide_marker_traits in
-        let* start_from = list_of_json string_of_json ctx start_from in
-        let* no_cargo = bool_of_json ctx no_cargo in
-        let* rustc_args = list_of_json string_of_json ctx rustc_args in
-        let* cargo_args = list_of_json string_of_json ctx cargo_args in
-        let* abort_on_error = bool_of_json ctx abort_on_error in
-        let* error_on_warnings = bool_of_json ctx error_on_warnings in
-        let* no_serialize = bool_of_json ctx no_serialize in
-        let* print_original_ullbc = bool_of_json ctx print_original_ullbc in
-        let* print_ullbc = bool_of_json ctx print_ullbc in
-        let* print_built_llbc = bool_of_json ctx print_built_llbc in
-        let* print_llbc = bool_of_json ctx print_llbc in
-        let* no_merge_goto_chains = bool_of_json ctx no_merge_goto_chains in
-        Ok
-          ({
-             ullbc;
-             lib;
-             bin;
-             mir_promoted;
-             mir_optimized;
-             input_file;
-             read_llbc;
-             dest_dir;
-             dest_file;
-             use_polonius;
-             skip_borrowck;
-             no_code_duplication;
-             monomorphize;
-             extract_opaque_bodies;
-             translate_all_methods;
-             included;
-             opaque;
-             exclude;
-             remove_associated_types;
-             hide_marker_traits;
-             start_from;
-             no_cargo;
-             rustc_args;
-             cargo_args;
-             abort_on_error;
-             error_on_warnings;
-             no_serialize;
-             print_original_ullbc;
-             print_ullbc;
-             print_built_llbc;
-             print_llbc;
-             no_merge_goto_chains;
-           }
-            : cli_options)
     | _ -> Error "")
 
 and g_declaration_group_of_json :

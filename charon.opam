@@ -25,6 +25,7 @@ depends: [
   "yojson"
   "zarith"
   "name_matcher_parser"
+  "ocamlformat" {with-test}
   "odoc" {with-doc}
 ]
 build: [

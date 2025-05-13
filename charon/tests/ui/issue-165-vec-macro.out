@@ -53,8 +53,8 @@ fn test_crate::foo()
     storage_live(_v@1)
     storage_live(@2)
     storage_live(@3)
-    storage_live(@4)
     @6 := [const (1 : i32)]
+    storage_live(@4)
     @4 := @BoxNew<Array<i32, 1 : usize>>[core::marker::Sized<alloc::alloc::Global>](move (@6))
     @3 := move (@4)
     @2 := unsize_cast<alloc::boxed::Box<Array<i32, 1 : usize>>[core::marker::Sized<alloc::alloc::Global>], alloc::boxed::Box<Slice<i32>>[core::marker::Sized<alloc::alloc::Global>]>(move (@3))
@@ -91,11 +91,11 @@ pub fn test_crate::bar()
     storage_live(@1)
     storage_live(@2)
     storage_live(@3)
+    @6 := [move (@5)]
     storage_live(@4)
+    @4 := @BoxNew<Array<test_crate::Foo, 1 : usize>>[core::marker::Sized<alloc::alloc::Global>](move (@6))
     storage_live(@5)
     @5 := test_crate::Foo {  }
-    @6 := [move (@5)]
-    @4 := @BoxNew<Array<test_crate::Foo, 1 : usize>>[core::marker::Sized<alloc::alloc::Global>](move (@6))
     storage_dead(@5)
     @3 := move (@4)
     @2 := unsize_cast<alloc::boxed::Box<Array<test_crate::Foo, 1 : usize>>[core::marker::Sized<alloc::alloc::Global>], alloc::boxed::Box<Slice<test_crate::Foo>>[core::marker::Sized<alloc::alloc::Global>]>(move (@3))
