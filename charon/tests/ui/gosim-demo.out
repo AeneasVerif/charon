@@ -1,0 +1,503 @@
+# Final LLBC before serialization:
+
+#[lang_item("sized")]
+pub trait core::marker::Sized<Self>
+
+#[lang_item("Formatter")]
+pub opaque type core::fmt::Formatter<'a>
+  where
+      'a : 'a,
+
+#[lang_item("Result")]
+pub enum core::result::Result<T, E>
+  where
+      [@TraitClause0]: core::marker::Sized<T>,
+      [@TraitClause1]: core::marker::Sized<E>,
+ =
+|  Ok(T)
+|  Err(E)
+
+
+pub struct core::fmt::Error = {}
+
+#[lang_item("Debug")]
+pub trait core::fmt::Debug<Self>
+{
+    fn fmt<'_0, '_1, '_2> = core::fmt::Debug::fmt<'_0_0, '_0_1, '_0_2, Self>
+}
+
+#[lang_item("SliceIter")]
+pub opaque type core::slice::iter::Iter<'a, T>
+  where
+      [@TraitClause0]: core::marker::Sized<T>,
+      T : 'a,
+      T : 'a,
+
+#[lang_item("Option")]
+pub enum core::option::Option<T>
+  where
+      [@TraitClause0]: core::marker::Sized<T>,
+ =
+|  None()
+|  Some(T)
+
+
+#[lang_item("format_arguments")]
+pub opaque type core::fmt::Arguments<'a>
+  where
+      'a : 'a,
+
+#[lang_item("format_argument")]
+pub opaque type core::fmt::rt::Argument<'a>
+
+pub fn core::slice::iter::{impl core::iter::traits::collect::IntoIterator for &'a (Slice<T>)}#1::into_iter<'a, T>(@1: &'a (Slice<T>)) -> core::slice::iter::Iter<'a, T>[@TraitClause0]
+where
+    [@TraitClause0]: core::marker::Sized<T>,
+
+pub fn core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::Iter<'a, T>[@TraitClause0]}#182::next<'a, '_1, T>(@1: &'_1 mut (core::slice::iter::Iter<'a, T>[@TraitClause0])) -> core::option::Option<&'a (T)>[core::marker::Sized<&'_ (T)>]
+where
+    [@TraitClause0]: core::marker::Sized<T>,
+
+pub fn core::fmt::rt::{core::fmt::rt::Argument<'_0>}#1::new_debug<'_0, '_1, T>(@1: &'_1 (T)) -> core::fmt::rt::Argument<'_1>
+where
+    [@TraitClause0]: core::marker::Sized<T>,
+    [@TraitClause1]: core::fmt::Debug<T>,
+
+pub fn core::fmt::{impl core::fmt::Debug for &'_0 (T)}#73::fmt<'_0, '_1, '_2, '_3, T>(@1: &'_1 (&'_0 (T)), @2: &'_2 mut (core::fmt::Formatter<'_3>)) -> core::result::Result<(), core::fmt::Error>[core::marker::Sized<()>, core::marker::Sized<core::fmt::Error>]
+where
+    [@TraitClause0]: core::fmt::Debug<T>,
+
+impl core::fmt::{impl core::fmt::Debug for &'_0 (T)}#73<'_0, T> : core::fmt::Debug<&'_0 (T)>
+where
+    [@TraitClause0]: core::fmt::Debug<T>,
+{
+    fn fmt<'_0, '_1, '_2> = core::fmt::{impl core::fmt::Debug for &'_0 (T)}#73::fmt<'_0, '_0_0, '_0_1, '_0_2, T>[@TraitClause0]
+}
+
+pub fn core::fmt::{core::fmt::Arguments<'a>}#4::new_v1<'a, const P : usize, const A : usize>(@1: &'a (Array<&'static (Str), const P : usize>), @2: &'a (Array<core::fmt::rt::Argument<'a>, const A : usize>)) -> core::fmt::Arguments<'a>
+
+pub fn std::io::stdio::_eprint<'_0>(@1: core::fmt::Arguments<'_0>)
+
+fn test_crate::debug_slice<'_0, T>(@1: &'_0 (Slice<T>))
+where
+    [@TraitClause0]: core::marker::Sized<T>,
+    [@TraitClause1]: core::fmt::Debug<T>,
+{
+    let @0: (); // return
+    let slice@1: &'_ (Slice<T>); // arg #1
+    let @2: core::slice::iter::Iter<'_, T>[@TraitClause0]; // anonymous local
+    let @3: &'_ (Slice<T>); // anonymous local
+    let iter@4: core::slice::iter::Iter<'_, T>[@TraitClause0]; // local
+    let @5: (); // anonymous local
+    let @6: core::option::Option<&'_ (T)>[core::marker::Sized<&'_ (T)>]; // anonymous local
+    let @7: &'_ mut (core::slice::iter::Iter<'_, T>[@TraitClause0]); // anonymous local
+    let @8: &'_ mut (core::slice::iter::Iter<'_, T>[@TraitClause0]); // anonymous local
+    let x@9: &'_ (T); // local
+    let @10: (); // anonymous local
+    let @11: (); // anonymous local
+    let @12: core::fmt::Arguments<'_>; // anonymous local
+    let @13: &'_ (Array<&'_ (Str), 2 : usize>); // anonymous local
+    let @14: &'_ (Array<&'_ (Str), 2 : usize>); // anonymous local
+    let @15: Array<&'_ (Str), 2 : usize>; // anonymous local
+    let @16: &'_ (Array<core::fmt::rt::Argument<'_>, 1 : usize>); // anonymous local
+    let @17: &'_ (Array<core::fmt::rt::Argument<'_>, 1 : usize>); // anonymous local
+    let @18: Array<core::fmt::rt::Argument<'_>, 1 : usize>; // anonymous local
+    let @19: core::fmt::rt::Argument<'_>; // anonymous local
+    let @20: &'_ (&'_ (T)); // anonymous local
+    let @21: &'_ (&'_ (T)); // anonymous local
+
+    storage_live(@7)
+    storage_live(x@9)
+    storage_live(@10)
+    storage_live(@11)
+    storage_live(@12)
+    storage_live(@13)
+    storage_live(@14)
+    storage_live(@15)
+    storage_live(@16)
+    storage_live(@17)
+    storage_live(@18)
+    storage_live(@19)
+    storage_live(@20)
+    storage_live(@21)
+    storage_live(@2)
+    storage_live(@3)
+    @3 := copy (slice@1)
+    @2 := core::slice::iter::{impl core::iter::traits::collect::IntoIterator for &'a (Slice<T>)}#1::into_iter<'_, T>[@TraitClause0](move (@3))
+    storage_dead(@3)
+    storage_live(iter@4)
+    iter@4 := move (@2)
+    loop {
+        storage_live(@5)
+        storage_live(@6)
+        storage_live(@7)
+        storage_live(@8)
+        @8 := &mut iter@4
+        @7 := &two-phase-mut *(@8)
+        @6 := core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::Iter<'a, T>[@TraitClause0]}#182::next<'_, '_, T>[@TraitClause0](move (@7))
+        storage_dead(@7)
+        match @6 {
+            core::option::Option::None => {
+                break 0
+            },
+            core::option::Option::Some => {
+                storage_live(x@9)
+                x@9 := copy ((@6 as variant @1).0)
+                storage_live(@10)
+                storage_live(@11)
+                storage_live(@12)
+                storage_live(@13)
+                storage_live(@14)
+                storage_live(@15)
+                @15 := [const ("- "), const ("\n")]
+                @14 := &@15
+                @13 := &*(@14)
+                storage_live(@16)
+                storage_live(@17)
+                storage_live(@18)
+                storage_live(@19)
+                storage_live(@20)
+                storage_live(@21)
+                @21 := &x@9
+                @20 := &*(@21)
+                @19 := core::fmt::rt::{core::fmt::rt::Argument<'_0>}#1::new_debug<'_, '_, &'_ (T)>[core::marker::Sized<&'_ (T)>, core::fmt::{impl core::fmt::Debug for &'_0 (T)}#73<'_, T>[@TraitClause1]](move (@20))
+                storage_dead(@20)
+                @18 := [move (@19)]
+                storage_dead(@19)
+                @17 := &@18
+                @16 := &*(@17)
+                @12 := core::fmt::{core::fmt::Arguments<'a>}#4::new_v1<'_, 2 : usize, 1 : usize>(move (@13), move (@16))
+                storage_dead(@16)
+                storage_dead(@13)
+                @11 := std::io::stdio::_eprint<'_>(move (@12))
+                storage_dead(@12)
+                storage_dead(@21)
+                storage_dead(@18)
+                storage_dead(@17)
+                storage_dead(@15)
+                storage_dead(@14)
+                storage_dead(@11)
+                storage_dead(@10)
+                storage_dead(x@9)
+                storage_dead(@8)
+                storage_dead(@6)
+                storage_dead(@5)
+                continue 0
+            },
+        }
+    }
+    @0 := ()
+    storage_dead(@8)
+    storage_dead(@6)
+    storage_dead(@5)
+    storage_dead(iter@4)
+    storage_dead(@2)
+    @0 := ()
+    return
+}
+
+pub fn core::fmt::num::{impl core::fmt::Debug for i32}#80::fmt<'_0, '_1, '_2>(@1: &'_0 (i32), @2: &'_1 mut (core::fmt::Formatter<'_2>)) -> core::result::Result<(), core::fmt::Error>[core::marker::Sized<()>, core::marker::Sized<core::fmt::Error>]
+
+impl core::fmt::num::{impl core::fmt::Debug for i32}#80 : core::fmt::Debug<i32>
+{
+    fn fmt<'_0, '_1, '_2> = core::fmt::num::{impl core::fmt::Debug for i32}#80::fmt<'_0_0, '_0_1, '_0_2>
+}
+
+fn test_crate::main()
+{
+    let @0: (); // return
+    let @1: (); // anonymous local
+    let @2: &'_ (Slice<i32>); // anonymous local
+    let @3: &'_ (Array<i32, 3 : usize>); // anonymous local
+    let @4: &'_ (Array<i32, 3 : usize>); // anonymous local
+    let @5: Array<i32, 3 : usize>; // anonymous local
+
+    storage_live(@1)
+    storage_live(@2)
+    storage_live(@3)
+    storage_live(@4)
+    storage_live(@5)
+    @5 := [const (0 : i32), const (1 : i32), const (2 : i32)]
+    @4 := &@5
+    @3 := &*(@4)
+    @2 := @ArrayToSliceShared<'_, i32, 3 : usize>(move (@3))
+    storage_dead(@3)
+    @1 := test_crate::debug_slice<'_, i32>[core::marker::Sized<i32>, core::fmt::num::{impl core::fmt::Debug for i32}#80](move (@2))
+    storage_dead(@2)
+    storage_dead(@5)
+    storage_dead(@4)
+    storage_dead(@1)
+    @0 := ()
+    @0 := ()
+    return
+}
+
+#[lang_item("iterator")]
+pub trait core::iter::traits::iterator::Iterator<Self>
+{
+    parent_clause0 : [@TraitClause0]: core::marker::Sized<Self::Item>
+    type Item
+    fn next<'_0> = core::iter::traits::iterator::Iterator::next<'_0_0, Self>
+}
+
+#[lang_item("IntoIterator")]
+pub trait core::iter::traits::collect::IntoIterator<Self>
+where
+    Self::parent_clause2::Item = Self::Item,
+{
+    parent_clause0 : [@TraitClause0]: core::marker::Sized<Self::Item>
+    parent_clause1 : [@TraitClause1]: core::marker::Sized<Self::IntoIter>
+    parent_clause2 : [@TraitClause2]: core::iter::traits::iterator::Iterator<Self::IntoIter>
+    type Item
+    type IntoIter
+    fn into_iter = core::iter::traits::collect::IntoIterator::into_iter<Self>
+}
+
+#[lang_item("into_iter")]
+pub fn core::iter::traits::collect::IntoIterator::into_iter<Self>(@1: Self) -> Self::IntoIter
+
+impl core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::Iter<'a, T>[@TraitClause0]}#182<'a, T> : core::iter::traits::iterator::Iterator<core::slice::iter::Iter<'a, T>[@TraitClause0]>
+where
+    [@TraitClause0]: core::marker::Sized<T>,
+{
+    parent_clause0 = core::marker::Sized<&'_ (T)>
+    type Item = &'a (T)
+    fn next<'_0> = core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::Iter<'a, T>[@TraitClause0]}#182::next<'a, '_0_0, T>[@TraitClause0]
+}
+
+impl core::slice::iter::{impl core::iter::traits::collect::IntoIterator for &'a (Slice<T>)}#1<'a, T> : core::iter::traits::collect::IntoIterator<&'a (Slice<T>)>
+where
+    [@TraitClause0]: core::marker::Sized<T>,
+{
+    parent_clause0 = core::marker::Sized<&'_ (T)>
+    parent_clause1 = core::marker::Sized<core::slice::iter::Iter<'_, T>[@TraitClause0]>
+    parent_clause2 = core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::Iter<'a, T>[@TraitClause0]}#182<'_, T>[@TraitClause0]
+    type Item = &'a (T)
+    type IntoIter = core::slice::iter::Iter<'a, T>[@TraitClause0]
+    fn into_iter = core::slice::iter::{impl core::iter::traits::collect::IntoIterator for &'a (Slice<T>)}#1::into_iter<'a, T>[@TraitClause0]
+}
+
+#[lang_item("next")]
+pub fn core::iter::traits::iterator::Iterator::next<'_0, Self>(@1: &'_0 mut (Self)) -> core::option::Option<Self::Item>[Self::parent_clause0]
+
+#[lang_item("clone")]
+pub trait core::clone::Clone<Self>
+{
+    parent_clause0 : [@TraitClause0]: core::marker::Sized<Self>
+    fn clone<'_0> = core::clone::Clone::clone<'_0_0, Self>
+}
+
+#[lang_item("tuple_trait")]
+pub trait core::marker::Tuple<Self>
+
+#[lang_item("fn_once")]
+pub trait core::ops::function::FnOnce<Self, Args>
+{
+    parent_clause0 : [@TraitClause0]: core::marker::Sized<Args>
+    parent_clause1 : [@TraitClause1]: core::marker::Tuple<Args>
+    parent_clause2 : [@TraitClause2]: core::marker::Sized<Self::Output>
+    type Output
+    fn call_once = core::ops::function::FnOnce::call_once<Self, Args>
+}
+
+#[lang_item("fn_mut")]
+pub trait core::ops::function::FnMut<Self, Args>
+{
+    parent_clause0 : [@TraitClause0]: core::ops::function::FnOnce<Self, Args>
+    parent_clause1 : [@TraitClause1]: core::marker::Sized<Args>
+    parent_clause2 : [@TraitClause2]: core::marker::Tuple<Args>
+    fn call_mut<'_0> = core::ops::function::FnMut::call_mut<'_0_0, Self, Args>
+}
+
+#[lang_item("FromIterator")]
+pub trait core::iter::traits::collect::FromIterator<Self, A>
+{
+    parent_clause0 : [@TraitClause0]: core::marker::Sized<Self>
+    parent_clause1 : [@TraitClause1]: core::marker::Sized<A>
+    fn from_iter<T, [@TraitClause0]: core::marker::Sized<T>, [@TraitClause1]: core::iter::traits::collect::IntoIterator<T>, @TraitClause1_1::Item = A> = core::iter::traits::collect::FromIterator::from_iter<Self, A, T>[@TraitClause0_0, @TraitClause0_1]
+}
+
+#[lang_item("FromResidual")]
+pub trait core::ops::try_trait::FromResidual<Self, R>
+{
+    parent_clause0 : [@TraitClause0]: core::marker::Sized<R>
+    fn from_residual = core::ops::try_trait::FromResidual::from_residual<Self, R>
+}
+
+#[lang_item("ControlFlow")]
+pub enum core::ops::control_flow::ControlFlow<B, C>
+  where
+      [@TraitClause0]: core::marker::Sized<B>,
+      [@TraitClause1]: core::marker::Sized<C>,
+ =
+|  Continue(C)
+|  Break(B)
+
+
+#[lang_item("Try")]
+pub trait core::ops::try_trait::Try<Self>
+{
+    parent_clause0 : [@TraitClause0]: core::ops::try_trait::FromResidual<Self, Self::Residual>
+    parent_clause1 : [@TraitClause1]: core::marker::Sized<Self::Output>
+    parent_clause2 : [@TraitClause2]: core::marker::Sized<Self::Residual>
+    type Output
+    type Residual
+    fn from_output = core::ops::try_trait::Try::from_output<Self>
+    fn branch = core::ops::try_trait::Try::branch<Self>
+}
+
+pub trait core::ops::try_trait::Residual<Self, O>
+where
+    Self::parent_clause2::Output = O,
+    Self::parent_clause2::Residual = Self,
+{
+    parent_clause0 : [@TraitClause0]: core::marker::Sized<O>
+    parent_clause1 : [@TraitClause1]: core::marker::Sized<Self::TryType>
+    parent_clause2 : [@TraitClause2]: core::ops::try_trait::Try<Self::TryType>
+    type TryType
+}
+
+pub trait core::iter::traits::collect::Extend<Self, A>
+{
+    parent_clause0 : [@TraitClause0]: core::marker::Sized<A>
+    fn extend<'_0, T, [@TraitClause0]: core::marker::Sized<T>, [@TraitClause1]: core::iter::traits::collect::IntoIterator<T>, @TraitClause1_1::Item = A> = core::iter::traits::collect::Extend::extend<'_0_0, Self, A, T>[@TraitClause0_0, @TraitClause0_1]
+}
+
+#[lang_item("Default")]
+pub trait core::default::Default<Self>
+{
+    parent_clause0 : [@TraitClause0]: core::marker::Sized<Self>
+    fn default = core::default::Default::default<Self>
+}
+
+#[lang_item("DoubleEndedIterator")]
+pub trait core::iter::traits::double_ended::DoubleEndedIterator<Self>
+{
+    parent_clause0 : [@TraitClause0]: core::iter::traits::iterator::Iterator<Self>
+    fn next_back<'_0> = core::iter::traits::double_ended::DoubleEndedIterator::next_back<'_0_0, Self>
+}
+
+pub trait core::iter::traits::exact_size::ExactSizeIterator<Self>
+{
+    parent_clause0 : [@TraitClause0]: core::iter::traits::iterator::Iterator<Self>
+}
+
+#[lang_item("eq")]
+pub trait core::cmp::PartialEq<Self, Rhs>
+{
+    fn eq<'_0, '_1> = core::cmp::PartialEq::eq<'_0_0, '_0_1, Self, Rhs>
+}
+
+#[lang_item("Eq")]
+pub trait core::cmp::Eq<Self>
+{
+    parent_clause0 : [@TraitClause0]: core::cmp::PartialEq<Self, Self>
+}
+
+#[lang_item("Ordering")]
+pub enum core::cmp::Ordering =
+|  Less()
+|  Equal()
+|  Greater()
+
+
+#[lang_item("partial_ord")]
+pub trait core::cmp::PartialOrd<Self, Rhs>
+{
+    parent_clause0 : [@TraitClause0]: core::cmp::PartialEq<Self, Rhs>
+    fn partial_cmp<'_0, '_1> = core::cmp::PartialOrd::partial_cmp<'_0_0, '_0_1, Self, Rhs>
+}
+
+#[lang_item("Ord")]
+pub trait core::cmp::Ord<Self>
+{
+    parent_clause0 : [@TraitClause0]: core::cmp::Eq<Self>
+    parent_clause1 : [@TraitClause1]: core::cmp::PartialOrd<Self, Self>
+    fn cmp<'_0, '_1> = core::cmp::Ord::cmp<'_0_0, '_0_1, Self>
+}
+
+#[lang_item("copy")]
+pub trait core::marker::Copy<Self>
+{
+    parent_clause0 : [@TraitClause0]: core::clone::Clone<Self>
+}
+
+pub trait core::iter::traits::accum::Sum<Self, A>
+{
+    parent_clause0 : [@TraitClause0]: core::marker::Sized<Self>
+    parent_clause1 : [@TraitClause1]: core::marker::Sized<A>
+    fn sum<I, [@TraitClause0]: core::marker::Sized<I>, [@TraitClause1]: core::iter::traits::iterator::Iterator<I>, @TraitClause1_1::Item = A> = core::iter::traits::accum::Sum::sum<Self, A, I>[@TraitClause0_0, @TraitClause0_1]
+}
+
+pub trait core::iter::traits::accum::Product<Self, A>
+{
+    parent_clause0 : [@TraitClause0]: core::marker::Sized<Self>
+    parent_clause1 : [@TraitClause1]: core::marker::Sized<A>
+    fn product<I, [@TraitClause0]: core::marker::Sized<I>, [@TraitClause1]: core::iter::traits::iterator::Iterator<I>, @TraitClause1_1::Item = A> = core::iter::traits::accum::Product::product<Self, A, I>[@TraitClause0_0, @TraitClause0_1]
+}
+
+pub trait core::iter::adapters::zip::TrustedRandomAccessNoCoerce<Self>
+{
+    parent_clause0 : [@TraitClause0]: core::marker::Sized<Self>
+    const MAY_HAVE_SIDE_EFFECT : bool
+}
+
+#[lang_item("clone_fn")]
+pub fn core::clone::Clone::clone<'_0, Self>(@1: &'_0 (Self)) -> Self
+
+#[lang_item("cmp_partialeq_eq")]
+pub fn core::cmp::PartialEq::eq<'_0, '_1, Self, Rhs>(@1: &'_0 (Self), @2: &'_1 (Rhs)) -> bool
+
+#[lang_item("ord_cmp_method")]
+pub fn core::cmp::Ord::cmp<'_0, '_1, Self>(@1: &'_0 (Self), @2: &'_1 (Self)) -> core::cmp::Ordering
+
+#[lang_item("cmp_partialord_cmp")]
+pub fn core::cmp::PartialOrd::partial_cmp<'_0, '_1, Self, Rhs>(@1: &'_0 (Self), @2: &'_1 (Rhs)) -> core::option::Option<core::cmp::Ordering>[core::marker::Sized<core::cmp::Ordering>]
+
+#[lang_item("default_fn")]
+pub fn core::default::Default::default<Self>() -> Self
+
+pub fn core::ops::function::FnMut::call_mut<'_0, Self, Args>(@1: &'_0 mut (Self), @2: Args) -> Self::parent_clause0::Output
+
+pub fn core::ops::function::FnOnce::call_once<Self, Args>(@1: Self, @2: Args) -> Self::Output
+
+#[lang_item("from_output")]
+pub fn core::ops::try_trait::Try::from_output<Self>(@1: Self::Output) -> Self
+
+#[lang_item("branch")]
+pub fn core::ops::try_trait::Try::branch<Self>(@1: Self) -> core::ops::control_flow::ControlFlow<Self::Residual, Self::Output>[Self::parent_clause0::parent_clause0, Self::parent_clause1]
+
+#[lang_item("from_residual")]
+pub fn core::ops::try_trait::FromResidual::from_residual<Self, R>(@1: R) -> Self
+
+pub fn core::iter::traits::accum::Sum::sum<Self, A, I>(@1: I) -> Self
+where
+    [@TraitClause0]: core::marker::Sized<I>,
+    [@TraitClause1]: core::iter::traits::iterator::Iterator<I>,
+    @TraitClause1::Item = A,
+
+pub fn core::iter::traits::accum::Product::product<Self, A, I>(@1: I) -> Self
+where
+    [@TraitClause0]: core::marker::Sized<I>,
+    [@TraitClause1]: core::iter::traits::iterator::Iterator<I>,
+    @TraitClause1::Item = A,
+
+#[lang_item("from_iter_fn")]
+pub fn core::iter::traits::collect::FromIterator::from_iter<Self, A, T>(@1: T) -> Self
+where
+    [@TraitClause0]: core::marker::Sized<T>,
+    [@TraitClause1]: core::iter::traits::collect::IntoIterator<T>,
+    @TraitClause1::Item = A,
+
+pub fn core::iter::traits::collect::Extend::extend<'_0, Self, A, T>(@1: &'_0 mut (Self), @2: T)
+where
+    [@TraitClause0]: core::marker::Sized<T>,
+    [@TraitClause1]: core::iter::traits::collect::IntoIterator<T>,
+    @TraitClause1::Item = A,
+
+pub fn core::iter::traits::double_ended::DoubleEndedIterator::next_back<'_0, Self>(@1: &'_0 mut (Self)) -> core::option::Option<Self::parent_clause0::Item>[Self::parent_clause0::parent_clause0]
+
+pub fn core::fmt::Debug::fmt<'_0, '_1, '_2, Self>(@1: &'_0 (Self), @2: &'_1 mut (core::fmt::Formatter<'_2>)) -> core::result::Result<(), core::fmt::Error>[core::marker::Sized<()>, core::marker::Sized<core::fmt::Error>]
+
+
+
