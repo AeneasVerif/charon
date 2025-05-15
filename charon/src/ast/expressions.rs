@@ -63,8 +63,8 @@ pub enum ProjectionElem {
     Field(FieldProjKind, FieldId),
     /// MIR imposes that the argument to an index projection be a local variable, meaning
     /// that even constant indices into arrays are let-bound as separate variables.
-    /// We **eliminate** this variant in a micro-pass.
-    #[charon::opaque]
+    /// We **eliminate** this variant in a micro-pass for LLBC.
+    #[charon::rename("ProjIndex")]
     Index {
         offset: Box<Operand>,
         #[drive(skip)]
@@ -72,8 +72,7 @@ pub enum ProjectionElem {
     },
     /// Take a subslice of a slice or array. If `from_end` is `true` this is
     /// `slice[from..slice.len() - to]`, otherwise this is `slice[from..to]`.
-    /// We **eliminate** this variant in a micro-pass.
-    #[charon::opaque]
+    /// We **eliminate** this variant in a micro-pass for LLBC.
     Subslice {
         from: Box<Operand>,
         to: Box<Operand>,
@@ -101,10 +100,6 @@ pub enum FieldProjKind {
     /// If we project from a tuple, the projection kind gives the arity of the tuple.
     #[drive(skip)]
     Tuple(usize),
-    /// Access to a field in a closure state.
-    /// We eliminate this in a micro-pass ([crate::update_closure_signatures]).
-    #[charon::opaque]
-    ClosureState,
 }
 
 #[derive(
@@ -169,7 +164,6 @@ pub enum UnOp {
     /// *necessary* as we can retrieve them from the context, but storing them here is
     /// very useful. The [RefKind] argument states whethere we operate on a mutable
     /// or a shared borrow to an array.
-    #[charon::opaque]
     ArrayToSlice(RefKind, Ty, ConstGeneric),
 }
 
@@ -583,13 +577,11 @@ pub enum Rvalue {
     Len(Place, Ty, Option<ConstGeneric>),
     /// [Repeat(x, n)] creates an array where [x] is copied [n] times.
     ///
-    /// We translate this to a function call.
-    #[charon::opaque]
+    /// We translate this to a function call for LLBC.
     Repeat(Operand, Ty, ConstGeneric),
     /// Transmutes a `*mut u8` (obtained from `malloc`) into shallow-initialized `Box<T>`. This
     /// only appears as part of lowering `Box::new()` in some cases. We reconstruct the original
-    /// `Box::new()` call.
-    #[charon::opaque]
+    /// `Box::new()` call, but sometimes may fail to do so, leaking the expression.
     ShallowInitBox(Operand, Ty),
 }
 
@@ -624,12 +616,8 @@ pub enum AggregateKind {
     /// with aggregates, and it is a primitive type. In particular, it makes
     /// sense to treat it differently because it has a variable number of fields.
     Array(Ty, ConstGeneric),
-    /// Aggregated values for closures group the function id together with its
-    /// state.
-    Closure(FunDeclId, BoxedArgs),
     /// Construct a raw pointer from a pointer value, and its metadata (can be unit, if building
     /// a thin pointer). The type is the type of the pointee.
-    /// We lower this to a builtin function call in [crate::ops_to_function_calls].
-    #[charon::opaque]
+    /// We lower this to a builtin function call for LLBC in [crate::ops_to_function_calls].
     RawPtr(Ty, RefKind),
 }

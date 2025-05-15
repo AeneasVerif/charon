@@ -147,7 +147,6 @@ pub fn test_map_option3(x: Option<u32>) -> Option<u32> {
     let f: fn(u32) -> u32 = |x| x + 1;
     map_option(x, f)
 }*/
-
 pub fn test_array_map(x: [i32; 256]) -> [i32; 256] {
     x.map(|v| v)
 }
@@ -162,4 +161,10 @@ where
         let clo = || || || (*x).clone();
         clo()()()
     }
+}
+
+fn test_fnmut_with_ref() {
+    let mut sum = 0_usize;
+    let mut closure = |x: &usize| sum += *x;
+    closure(&15);
 }
