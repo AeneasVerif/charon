@@ -8,6 +8,7 @@ use crate::{
     reorder_decls::*,
     ullbc_ast::{self as ullbc, *},
 };
+
 use itertools::Itertools;
 use std::{
     borrow::Cow,
@@ -61,6 +62,7 @@ impl<C: AstFormatter> FmtWithCtx<C> for AbortKind {
                 format!("{tab}panic{name}")
             }
             AbortKind::UndefinedBehavior => format!("{tab}undefined_behavior"),
+            AbortKind::UnwindTerminate => format!("{tab}unwind_terminate"),
         }
     }
 }
@@ -1102,14 +1104,21 @@ impl<C: AstFormatter> FmtWithCtx<C> for llbc::Statement {
             RawStatement::Assert(assert) => {
                 write!(&mut out, "{tab}{}", assert.fmt_with_ctx(ctx),)
             }
-            RawStatement::Call(call) => {
+            RawStatement::Call { call, on_unwind } => {
                 let (call_s, _) = fmt_call(ctx, call);
-                write!(&mut out, "{tab}{} := {call_s}", call.dest.fmt_with_ctx(ctx),)
+                let inner_tab = format!("{tab}{TAB_INCR}");
+                write!(
+                    &mut out,
+                    "{tab}{} := {call_s}\n{tab}↳ unwind {{\n{}{tab}}}",
+                    call.dest.fmt_with_ctx(ctx),
+                    on_unwind.fmt_with_ctx_and_indent(&inner_tab, ctx)
+                )
             }
             RawStatement::Abort(kind) => {
                 write!(&mut out, "{}", kind.fmt_with_ctx_and_indent(tab, ctx))
             }
             RawStatement::Return => write!(&mut out, "{tab}return"),
+            RawStatement::Unwind => write!(&mut out, "{tab}unwind"),
             RawStatement::Break(index) => write!(&mut out, "{tab}break {index}"),
             RawStatement::Continue(index) => write!(&mut out, "{tab}continue {index}"),
             RawStatement::Nop => write!(&mut out, "{tab}nop"),
@@ -1244,16 +1253,21 @@ impl<C: AstFormatter> FmtWithCtx<C> for Terminator {
                     )
                 }
             },
-            RawTerminator::Call { call, target } => {
+            RawTerminator::Call {
+                call,
+                target,
+                on_unwind,
+            } => {
                 let (call_s, _) = fmt_call(ctx, call);
                 write!(
                     &mut out,
-                    "{tab}{} := {call_s} -> bb{target}",
+                    "{tab}{} := {call_s} -> bb{target} (unwind: bb{on_unwind})",
                     call.dest.fmt_with_ctx(ctx)
                 )
             }
             RawTerminator::Abort(kind) => write!(&mut out, "{tab}{}", kind.fmt_with_ctx(ctx)),
             RawTerminator::Return => write!(&mut out, "{tab}return"),
+            RawTerminator::UnwindResume => write!(&mut out, "{tab}unwind_continue"),
         };
         out
     }

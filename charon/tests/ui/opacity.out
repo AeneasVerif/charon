@@ -54,6 +54,9 @@ where
     let self@1: T; // arg #1
 
     @0 := @TraitClause2::from(move (self@1))
+    ↳ unwind {
+        unwind
+    }
     return
 }
 
@@ -91,11 +94,17 @@ fn test_crate::foo()
     @3 := core::option::Option::Some { 0: const (0 : i32) }
     @2 := &@3
     @1 := core::option::{core::option::Option<T>[@TraitClause0]}::is_some<'_, i32>[core::marker::Sized<i32>](move (@2))
+    ↳ unwind {
+        unwind
+    }
     storage_dead(@2)
     storage_dead(@3)
     storage_dead(@1)
     storage_live(@4)
     @4 := core::convert::{impl core::convert::Into<U> for T}#3::into<u32, u64>[core::marker::Sized<u32>, core::marker::Sized<u64>, core::convert::num::{impl core::convert::From<u32> for u64}#72](const (42 : u32))
+    ↳ unwind {
+        unwind
+    }
     storage_dead(@4)
     storage_live(@5)
     storage_live(@6)
@@ -105,6 +114,9 @@ fn test_crate::foo()
     @7 := &@8
     @6 := &*(@7)
     @5 := core::slice::raw::from_ref<'_, i32>[core::marker::Sized<i32>](move (@6))
+    ↳ unwind {
+        unwind
+    }
     storage_dead(@6)
     storage_dead(@8)
     storage_dead(@7)

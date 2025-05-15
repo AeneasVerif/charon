@@ -55,6 +55,9 @@ pub fn test_crate::map(@1: Array<i32, 256 : usize>) -> Array<i32, 256 : usize>
     storage_live(@3)
     @3 := {test_crate::map::closure} {}
     @0 := core::array::{Array<T, const N : usize>}#23::map<i32, test_crate::map::closure, i32, 256 : usize>[core::marker::Sized<i32>, core::marker::Sized<test_crate::map::closure>, core::marker::Sized<i32>, core::ops::function::FnMut<test_crate::map::closure, (i32)>](move (@2), move (@3))
+    ↳ unwind {
+        unwind
+    }
     storage_dead(@3)
     storage_dead(@2)
     return
@@ -65,6 +68,9 @@ pub fn test_crate::array<const LEN : usize>() -> Array<u8, const LEN : usize>
     let @0: Array<u8, const LEN : usize>; // return
 
     @0 := @ArrayRepeat<'_, u8, const LEN : usize>(const (0 : u8))
+    ↳ unwind {
+        undefined_behavior
+    }
     return
 }
 
@@ -208,7 +214,10 @@ fn test_crate::cbd(@1: Array<u8, 33 : usize>)
     let @12: &'_ mut (Array<u8, 33 : usize>); // anonymous local
     let @13: &'_ mut (u8); // anonymous local
 
+    storage_live(@5)
+    storage_live(@6)
     storage_live(@7)
+    storage_live(@8)
     storage_live(i@9)
     storage_live(@10)
     storage_live(@11)
@@ -218,6 +227,9 @@ fn test_crate::cbd(@1: Array<u8, 33 : usize>)
     storage_live(@3)
     @3 := core::ops::range::Range { start: const (0 : u8), end: const (3 : u8) }
     @2 := core::iter::traits::collect::{impl core::iter::traits::collect::IntoIterator for I}::into_iter<core::ops::range::Range<u8>[core::marker::Sized<u8>]>[core::marker::Sized<core::ops::range::Range<u8>[core::marker::Sized<u8>]>, core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>[@TraitClause0]}#6<u8>[core::marker::Sized<u8>, core::iter::range::{impl core::iter::range::Step for u8}#35]](move (@3))
+    ↳ unwind {
+        unwind
+    }
     storage_dead(@3)
     storage_live(iter@4)
     iter@4 := move (@2)
@@ -229,10 +241,12 @@ fn test_crate::cbd(@1: Array<u8, 33 : usize>)
         @8 := &mut iter@4
         @7 := &two-phase-mut *(@8)
         @6 := core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>[@TraitClause0]}#6::next<'_, u8>[core::marker::Sized<u8>, core::iter::range::{impl core::iter::range::Step for u8}#35](move (@7))
+        ↳ unwind {
+            unwind
+        }
         storage_dead(@7)
         match @6 {
             core::option::Option::None => {
-                break 0
             },
             core::option::Option::Some => {
                 storage_live(i@9)
@@ -245,6 +259,9 @@ fn test_crate::cbd(@1: Array<u8, 33 : usize>)
                 @12 := &mut prf_input@1
                 storage_live(@13)
                 @13 := @ArrayIndexMut<'_, u8, 33 : usize>(move (@12), copy (@11))
+                ↳ unwind {
+                    undefined_behavior
+                }
                 *(@13) := move (@10)
                 storage_dead(@10)
                 storage_dead(@11)
@@ -255,15 +272,15 @@ fn test_crate::cbd(@1: Array<u8, 33 : usize>)
                 continue 0
             },
         }
+        @0 := ()
+        storage_dead(@8)
+        storage_dead(@6)
+        storage_dead(@5)
+        storage_dead(iter@4)
+        storage_dead(@2)
+        @0 := ()
+        return
     }
-    @0 := ()
-    storage_dead(@8)
-    storage_dead(@6)
-    storage_dead(@5)
-    storage_dead(iter@4)
-    storage_dead(@2)
-    @0 := ()
-    return
 }
 
 pub enum core::panicking::AssertKind =
@@ -341,6 +358,9 @@ fn test_crate::select<'_0, '_1>(@1: &'_0 (Slice<u8>), @2: &'_1 (Slice<u8>))
         storage_live(@9)
         @9 := &*(lhs@1)
         @8 := core::slice::{Slice<T>}::len<'_, u8>[core::marker::Sized<u8>](move (@9))
+        ↳ unwind {
+            unwind
+        }
         storage_dead(@9)
         @7 := &@8
         storage_live(@10)
@@ -348,6 +368,9 @@ fn test_crate::select<'_0, '_1>(@1: &'_0 (Slice<u8>), @2: &'_1 (Slice<u8>))
         storage_live(@12)
         @12 := &*(rhs@2)
         @11 := core::slice::{Slice<T>}::len<'_, u8>[core::marker::Sized<u8>](move (@12))
+        ↳ unwind {
+            unwind
+        }
         storage_dead(@12)
         @10 := &@11
         @6 := (move (@7), move (@10))

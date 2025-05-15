@@ -69,6 +69,9 @@ pub fn test_crate::test1(@1: test_crate::HashMap<()>[core::marker::Sized<()>])
     storage_live(@4)
     @4 := ()
     @2 := test_crate::top_level_get<(), (), ()>[core::marker::Sized<()>, core::marker::Sized<()>, test_crate::{impl test_crate::Trait<()> for ()}](move (@3), move (@4))
+    ↳ unwind {
+        unwind
+    }
     storage_dead(@4)
     storage_dead(@3)
     storage_dead(@2)
@@ -91,6 +94,9 @@ pub fn test_crate::test2(@1: test_crate::HashMap<()>[core::marker::Sized<()>])
     storage_live(@4)
     @4 := ()
     @2 := test_crate::{test_crate::HashMap<S>[@TraitClause0]}#1::get<(), (), ()>[core::marker::Sized<()>, core::marker::Sized<()>, test_crate::{impl test_crate::Trait<()> for ()}](move (@3), move (@4))
+    ↳ unwind {
+        unwind
+    }
     storage_dead(@4)
     storage_dead(@3)
     storage_dead(@2)

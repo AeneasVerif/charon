@@ -43,11 +43,17 @@ pub fn test_crate::test_bool_trait_bool(@1: bool) -> bool
     storage_live(@3)
     @3 := &x@1
     @2 := test_crate::{impl test_crate::BoolTrait for bool}::get_bool<'_>(move (@3))
+    ↳ unwind {
+        unwind
+    }
     if move (@2) {
         storage_dead(@3)
         storage_live(@4)
         @4 := &x@1
         @0 := test_crate::{impl test_crate::BoolTrait for bool}::ret_true<'_>(move (@4))
+        ↳ unwind {
+            unwind
+        }
         storage_dead(@4)
     }
     else {
@@ -123,11 +129,19 @@ where
     storage_live(@3)
     @3 := &x@1
     @2 := test_crate::{impl test_crate::BoolTrait for core::option::Option<T>[@TraitClause0]}#1::get_bool<'_, T>[@TraitClause0](move (@3))
+    ↳ unwind {
+        drop x@1
+        unwind
+    }
     if move (@2) {
         storage_dead(@3)
         storage_live(@4)
         @4 := &x@1
         @0 := test_crate::{impl test_crate::BoolTrait for core::option::Option<T>[@TraitClause0]}#1::ret_true<'_, T>[@TraitClause0](move (@4))
+        ↳ unwind {
+            drop x@1
+            unwind
+        }
         storage_dead(@4)
     }
     else {
@@ -153,6 +167,10 @@ where
     storage_live(@2)
     @2 := &x@1
     @0 := @TraitClause1::get_bool<'_>(move (@2))
+    ↳ unwind {
+        drop x@1
+        unwind
+    }
     storage_dead(@2)
     drop x@1
     return
@@ -195,11 +213,21 @@ where
     storage_live(@3)
     @3 := move ((self@1).0)
     @2 := @TraitClause1::to_u64(move (@3))
+    ↳ unwind {
+        drop @3
+        drop self@1
+        unwind
+    }
     storage_dead(@3)
     storage_live(@4)
     storage_live(@5)
     @5 := move ((self@1).1)
     @4 := @TraitClause1::to_u64(move (@5))
+    ↳ unwind {
+        drop @5
+        drop self@1
+        unwind
+    }
     storage_dead(@5)
     @0 := copy (@2) + copy (@4)
     storage_dead(@4)
@@ -228,6 +256,11 @@ where
     storage_live(@2)
     @2 := move (x@1)
     @0 := test_crate::{impl test_crate::ToU64 for (A, A)}#3::to_u64<T>[@TraitClause0, @TraitClause1](move (@2))
+    ↳ unwind {
+        drop @2
+        drop x@1
+        unwind
+    }
     storage_dead(@2)
     drop x@1
     return
@@ -245,6 +278,11 @@ where
     storage_live(@2)
     @2 := move (x@1)
     @0 := @TraitClause1::to_u64(move (@2))
+    ↳ unwind {
+        drop @2
+        drop x@1
+        unwind
+    }
     storage_dead(@2)
     drop x@1
     return
@@ -259,6 +297,9 @@ pub fn test_crate::h0(@1: u64) -> u64
     storage_live(@2)
     @2 := copy (x@1)
     @0 := test_crate::{impl test_crate::ToU64 for u64}#2::to_u64(move (@2))
+    ↳ unwind {
+        unwind
+    }
     storage_dead(@2)
     return
 }
@@ -283,6 +324,11 @@ where
     storage_live(@2)
     @2 := move ((self@1).x)
     @0 := @TraitClause1::to_u64(move (@2))
+    ↳ unwind {
+        drop @2
+        drop self@1
+        unwind
+    }
     storage_dead(@2)
     drop self@1
     return
@@ -305,6 +351,9 @@ pub fn test_crate::h1(@1: test_crate::Wrapper<u64>[core::marker::Sized<u64>]) ->
     storage_live(@2)
     @2 := move (x@1)
     @0 := test_crate::{impl test_crate::ToU64 for test_crate::Wrapper<T>[@TraitClause0]}#4::to_u64<u64>[core::marker::Sized<u64>, test_crate::{impl test_crate::ToU64 for u64}#2](move (@2))
+    ↳ unwind {
+        unwind
+    }
     storage_dead(@2)
     return
 }
@@ -321,6 +370,11 @@ where
     storage_live(@2)
     @2 := move (x@1)
     @0 := test_crate::{impl test_crate::ToU64 for test_crate::Wrapper<T>[@TraitClause0]}#4::to_u64<T>[@TraitClause0, @TraitClause1](move (@2))
+    ↳ unwind {
+        drop @2
+        drop x@1
+        unwind
+    }
     storage_dead(@2)
     drop x@1
     return
@@ -376,6 +430,11 @@ where
     storage_live(@2)
     @2 := move (y@1)
     @0 := @TraitClause2::of_type<T2>[@TraitClause1, @TraitClause3, @TraitClause0](move (@2))
+    ↳ unwind {
+        drop @2
+        drop y@1
+        unwind
+    }
     storage_dead(@2)
     drop y@1
     return
@@ -407,6 +466,11 @@ where
     storage_live(@2)
     @2 := move (y@1)
     @0 := @TraitClause2::of_type[@TraitClause0](move (@2))
+    ↳ unwind {
+        drop @2
+        drop y@1
+        unwind
+    }
     storage_dead(@2)
     drop y@1
     return
@@ -463,6 +527,11 @@ where
     // blocks).
     @4 := move (x@2)
     x@3 := @TraitClause1::to_u64(move (@4))
+    ↳ unwind {
+        drop @4
+        drop x@2
+        unwind
+    }
     storage_dead(@4)
     storage_live(y@5)
     y@5 := test_crate::{test_crate::TestType<T>[@TraitClause0]}#6::test::TestType1 { 0: const (0 : u64) }
@@ -475,6 +544,10 @@ where
         storage_live(@8)
         @8 := &y@5
         @0 := test_crate::{test_crate::TestType<T>[@TraitClause0]}#6::test::{impl test_crate::{test_crate::TestType<T>[@TraitClause0]}#6::test::TestTrait for test_crate::{test_crate::TestType<T>[@TraitClause0]}#6::test::TestType1}::test<'_>(move (@8))
+        ↳ unwind {
+            drop x@2
+            unwind
+        }
         storage_dead(@8)
     }
     else {
@@ -507,6 +580,9 @@ where
     storage_live(@2)
     @2 := copy ((self@1).0)
     @0 := @TraitClause1::to_type(move (@2))
+    ↳ unwind {
+        unwind
+    }
     storage_dead(@2)
     return
 }
@@ -612,6 +688,11 @@ where
     storage_live(@2)
     @2 := move (x@1)
     @0 := @TraitClause1::parent_clause2::to_u64(move (@2))
+    ↳ unwind {
+        drop @2
+        drop x@1
+        unwind
+    }
     storage_dead(@2)
     drop x@1
     return
@@ -677,6 +758,9 @@ where
     storage_live(@2)
     @2 := &*(x@1)
     @0 := @TraitClause1::parent_clause0::get_name<'_>(move (@2))
+    ↳ unwind {
+        unwind
+    }
     storage_dead(@2)
     return
 }
@@ -695,6 +779,9 @@ where
     storage_live(@2)
     @2 := &*(x@1)
     @0 := @TraitClause1::parent_clause0::get_w<'_>(move (@2))
+    ↳ unwind {
+        unwind
+    }
     storage_dead(@2)
     return
 }
@@ -846,6 +933,9 @@ where
     storage_live(@2)
     @2 := &*(x@1)
     @0 := @TraitClause1::get_w<'_>(move (@2))
+    ↳ unwind {
+        unwind
+    }
     storage_dead(@2)
     return
 }
@@ -1057,6 +1147,9 @@ pub fn test_crate::flibidi()
 
     storage_live(@1)
     @1 := test_crate::call<'_, fn<'a>(&'a (())) -> test_crate::Wrapper<(bool, &'a (()))>[core::marker::Sized<(bool, &'a (()))>]>[core::marker::Sized<fn<'a>(&'a (())) -> test_crate::Wrapper<(bool, &'a (()))>[core::marker::Sized<(bool, &'a (()))>]>, core::ops::function::Fn<fn<'a>(&'a (())) -> test_crate::Wrapper<(bool, &'a (()))>[core::marker::Sized<(bool, &'a (()))>], (&'_ (()))>](const (test_crate::flabada<'_>))
+    ↳ unwind {
+        unwind
+    }
     storage_dead(@1)
     @0 := ()
     @0 := ()

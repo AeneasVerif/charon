@@ -21,7 +21,7 @@ impl Transform {
             return Vec::new();
         }
         if let [Statement {
-            content: RawStatement::Call(call),
+            content: RawStatement::Call { call, on_unwind: _ },
             ..
         }, Statement {
             content: second_abort @ RawStatement::Abort(_),

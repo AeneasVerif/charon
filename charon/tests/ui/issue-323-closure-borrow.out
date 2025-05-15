@@ -23,6 +23,9 @@ fn test_crate::new::closure<'_0, '_1>(@1: &'_0 mut ((&'_1 mut (test_crate::Rng))
     storage_live(@3)
     @3 := &two-phase-mut *((*(state@1)).0)
     @2 := test_crate::{test_crate::Rng}::next_u64<'_>(move (@3))
+    ↳ unwind {
+        unwind
+    }
     storage_dead(@3)
     storage_dead(@2)
     @0 := ()

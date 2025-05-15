@@ -64,6 +64,9 @@ fn test_crate::into_inner(@1: alloc::boxed::Box<alloc::string::String>[core::mar
     @5 := transmute<core::ptr::non_null::NonNull<alloc::string::String>, *const alloc::string::String>(copy ((*(b@1)).__unknown_field))
     @3 := &mut b@1
     @4 := alloc::boxed::{impl core::ops::drop::Drop for alloc::boxed::Box<T>[@TraitClause0]}#8::drop<'_, alloc::string::String, alloc::alloc::Global>[core::marker::Sized<alloc::alloc::Global>](move (@3))
+    ↳ unwind {
+        unwind
+    }
     @0 := ()
     return
 }

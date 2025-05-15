@@ -32,6 +32,9 @@ fn test_crate::f1<'_0>(@1: &'_0 (Slice<u8>)) -> usize
     @12 := &*(a@1)
     storage_live(@13)
     @13 := @SliceIndexShared<'_, u8>(move (@12), copy (@6))
+    ↳ unwind {
+        undefined_behavior
+    }
     @5 := copy (*(@13))
     @4 := move (@5) < const (42 : u8)
     if move (@4) {
@@ -45,6 +48,9 @@ fn test_crate::f1<'_0>(@1: &'_0 (Slice<u8>)) -> usize
         @10 := &*(a@1)
         storage_live(@11)
         @11 := @SliceIndexShared<'_, u8>(move (@10), copy (@9))
+        ↳ unwind {
+            undefined_behavior
+        }
         @8 := copy (*(@11))
         @7 := move (@8) < const (16 : u8)
         if move (@7) {
@@ -189,7 +195,10 @@ fn test_crate::f2<'_0, '_1>(@1: &'_0 (Slice<u8>), @2: &'_1 mut (Slice<i16>)) -> 
     let @56: &'_ (Slice<u8>); // anonymous local
     let @57: &'_ (u8); // anonymous local
 
+    storage_live(@9)
+    storage_live(@10)
     storage_live(@11)
+    storage_live(@12)
     storage_live(bytes@13)
     storage_live(b1@14)
     storage_live(@15)
@@ -243,8 +252,14 @@ fn test_crate::f2<'_0, '_1>(@1: &'_0 (Slice<u8>), @2: &'_1 mut (Slice<i16>)) -> 
     storage_live(@7)
     @7 := &*(a@1)
     @6 := core::slice::{Slice<T>}::chunks<'_, u8>[core::marker::Sized<u8>](move (@7), const (3 : usize))
+    ↳ unwind {
+        unwind
+    }
     storage_dead(@7)
     @5 := core::iter::traits::collect::{impl core::iter::traits::collect::IntoIterator for I}::into_iter<core::slice::iter::Chunks<'_, u8>[core::marker::Sized<u8>]>[core::marker::Sized<core::slice::iter::Chunks<'_, u8>[core::marker::Sized<u8>]>, core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::Chunks<'a, T>[@TraitClause0]}#71<'_, u8>[core::marker::Sized<u8>]](move (@6))
+    ↳ unwind {
+        unwind
+    }
     storage_dead(@6)
     storage_live(iter@8)
     iter@8 := move (@5)
@@ -256,10 +271,12 @@ fn test_crate::f2<'_0, '_1>(@1: &'_0 (Slice<u8>), @2: &'_1 mut (Slice<i16>)) -> 
         @12 := &mut iter@8
         @11 := &two-phase-mut *(@12)
         @10 := core::slice::iter::{impl core::iter::traits::iterator::Iterator for core::slice::iter::Chunks<'a, T>[@TraitClause0]}#71::next<'_, '_, u8>[core::marker::Sized<u8>](move (@11))
+        ↳ unwind {
+            unwind
+        }
         storage_dead(@11)
         match @10 {
             core::option::Option::None => {
-                break 0
             },
             core::option::Option::Some => {
                 storage_live(bytes@13)
@@ -272,6 +289,9 @@ fn test_crate::f2<'_0, '_1>(@1: &'_0 (Slice<u8>), @2: &'_1 mut (Slice<i16>)) -> 
                 @56 := &*(bytes@13)
                 storage_live(@57)
                 @57 := @SliceIndexShared<'_, u8>(move (@56), copy (@16))
+                ↳ unwind {
+                    undefined_behavior
+                }
                 @15 := copy (*(@57))
                 b1@14 := cast<u8, i16>(move (@15))
                 storage_dead(@15)
@@ -284,6 +304,9 @@ fn test_crate::f2<'_0, '_1>(@1: &'_0 (Slice<u8>), @2: &'_1 mut (Slice<i16>)) -> 
                 @54 := &*(bytes@13)
                 storage_live(@55)
                 @55 := @SliceIndexShared<'_, u8>(move (@54), copy (@19))
+                ↳ unwind {
+                    undefined_behavior
+                }
                 @18 := copy (*(@55))
                 b2@17 := cast<u8, i16>(move (@18))
                 storage_dead(@18)
@@ -296,6 +319,9 @@ fn test_crate::f2<'_0, '_1>(@1: &'_0 (Slice<u8>), @2: &'_1 mut (Slice<i16>)) -> 
                 @52 := &*(bytes@13)
                 storage_live(@53)
                 @53 := @SliceIndexShared<'_, u8>(move (@52), copy (@22))
+                ↳ unwind {
+                    undefined_behavior
+                }
                 @21 := copy (*(@53))
                 b3@20 := cast<u8, i16>(move (@21))
                 storage_dead(@21)
@@ -350,6 +376,9 @@ fn test_crate::f2<'_0, '_1>(@1: &'_0 (Slice<u8>), @2: &'_1 mut (Slice<i16>)) -> 
                         @48 := &mut *(result@2)
                         storage_live(@49)
                         @49 := @SliceIndexMut<'_, i16>(move (@48), copy (@39))
+                        ↳ unwind {
+                            undefined_behavior
+                        }
                         *(@49) := move (@38)
                         storage_dead(@38)
                         storage_dead(@39)
@@ -386,6 +415,9 @@ fn test_crate::f2<'_0, '_1>(@1: &'_0 (Slice<u8>), @2: &'_1 mut (Slice<i16>)) -> 
                         @50 := &mut *(result@2)
                         storage_live(@51)
                         @51 := @SliceIndexMut<'_, i16>(move (@50), copy (@45))
+                        ↳ unwind {
+                            undefined_behavior
+                        }
                         *(@51) := move (@44)
                         storage_dead(@44)
                         storage_dead(@45)
@@ -412,16 +444,16 @@ fn test_crate::f2<'_0, '_1>(@1: &'_0 (Slice<u8>), @2: &'_1 mut (Slice<i16>)) -> 
                 continue 0
             },
         }
+        storage_dead(@12)
+        storage_dead(@10)
+        storage_dead(@9)
+        storage_dead(iter@8)
+        storage_dead(@5)
+        storage_dead(@4)
+        @0 := copy (sampled@3)
+        storage_dead(sampled@3)
+        return
     }
-    storage_dead(@12)
-    storage_dead(@10)
-    storage_dead(@9)
-    storage_dead(iter@8)
-    storage_dead(@5)
-    storage_dead(@4)
-    @0 := copy (sampled@3)
-    storage_dead(sampled@3)
-    return
 }
 
 #[lang_item("IntoIterator")]

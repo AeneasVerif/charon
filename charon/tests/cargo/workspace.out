@@ -16,6 +16,9 @@ pub fn crate2::extra_random_number() -> u32
     storage_live(@1)
     // Even more random.
     @1 := crate1::random_number()
+    ↳ unwind {
+        unwind
+    }
     @0 := copy (@1) + const (1 : u32)
     storage_dead(@1)
     return

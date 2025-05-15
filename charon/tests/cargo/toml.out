@@ -46,6 +46,9 @@ fn test_cargo_toml::main()
     @3 := core::option::Option::Some { 0: const (false) }
     @2 := &@3
     @1 := core::option::{core::option::Option<T>[@TraitClause0]}::is_some<'_, bool>[core::marker::Sized<bool>](move (@2))
+    ↳ unwind {
+        unwind
+    }
     storage_dead(@2)
     storage_dead(@3)
     storage_dead(@1)

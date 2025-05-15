@@ -13,6 +13,9 @@ fn test_crate::main()
 
     storage_live(@1)
     @1 := @BoxNew<i32>[core::marker::Sized<i32>](const (42 : i32))
+    ↳ unwind {
+        unwind
+    }
     drop @1
     storage_dead(@1)
     @0 := ()
