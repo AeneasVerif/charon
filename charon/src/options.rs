@@ -81,50 +81,6 @@ pub struct CliOpts {
     #[clap(long = "skip-borrowck")]
     #[serde(default)]
     pub skip_borrowck: bool,
-    #[clap(
-        long = "no-code-duplication",
-        help = indoc!("
-            Check that no code duplication happens during control-flow reconstruction
-            of the MIR code.
-
-            This is only used to make sure the reconstructed code is of good quality.
-            For instance, if we have the following CFG in MIR:
-              ```
-              b0: switch x [true -> goto b1; false -> goto b2]
-              b1: y := 0; goto b3
-              b2: y := 1; goto b3
-              b3: return y
-              ```
-
-            We want to reconstruct the control-flow as:
-              ```
-              if x then { y := 0; } else { y := 1 };
-              return y;
-              ```
-
-            But if we don't do this reconstruction correctly, we might duplicate
-            the code starting at b3:
-              ```
-              if x then { y := 0; return y; } else { y := 1; return y; }
-              ```
-
-            When activating this flag, we check that no such things happen.
-
-            Also note that it is sometimes not possible to prevent code duplication,
-            if the original Rust looks like this for instance:
-              ```
-              match x with
-              | E1(y,_) | E2(_,y) => { ... } // Some branches are \"fused\"
-              | E3 => { ... }
-              ```
-
-            The reason is that assignments are introduced when desugaring the pattern
-            matching, and those assignments are specific to the variant on which we pattern
-            match (the `E1` branch performs: `y := (x as E1).0`, while the `E2` branch
-            performs: `y := (x as E2).1`). Producing a better reconstruction is non-trivial.
-    "))]
-    #[serde(default)]
-    pub no_code_duplication: bool,
     /// Monomorphize the code, replacing generics with their concrete types.
     #[clap(long = "monomorphize")]
     #[serde(default)]
@@ -355,10 +311,6 @@ pub struct TranslateOptions {
     /// Usually we skip the provided methods that aren't used. When this flag is on, we translate
     /// them all.
     pub translate_all_methods: bool,
-    /// Error out if some code ends up being duplicated by the control-flow
-    /// reconstruction (note that because several patterns in a match may lead
-    /// to the same branch, it is node always possible not to duplicate code).
-    pub no_code_duplication: bool,
     /// Whether to hide the `Sized`, `Sync`, `Send` and `Unpin` marker traits anywhere they show
     /// up.
     pub hide_marker_traits: bool,
@@ -444,7 +396,6 @@ impl TranslateOptions {
 
         TranslateOptions {
             mir_level,
-            no_code_duplication: options.no_code_duplication,
             hide_marker_traits: options.hide_marker_traits,
             monomorphize: options.monomorphize,
             no_merge_goto_chains: options.no_merge_goto_chains,

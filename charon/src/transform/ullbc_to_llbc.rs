@@ -44,11 +44,6 @@ type Cfg = DiGraphMap<src::BlockId, ()>;
 
 /// Small utility
 struct BlockInfo<'a> {
-    /// `no_code_duplication`: if true, check that no block is translated twice (this
-    /// can be a sign that the reconstruction is of poor quality, but sometimes
-    /// code duplication is necessary, in the presence of "fused" match branches for
-    /// instance, like in `match ... { Foo | Bar => { ... }}`).
-    no_code_duplication: bool,
     cfg: &'a CfgInfo,
     body: &'a src::ExprBody,
     exits_info: &'a ExitInfo,
@@ -1663,9 +1658,6 @@ fn translate_block(
         switch_exit_blocks,
         block_id
     );
-    if info.no_code_duplication {
-        assert!(!info.explored.contains(&block_id));
-    }
     info.explored.insert(block_id);
 
     let block = info.body.body.get(block_id).unwrap();
@@ -1754,11 +1746,7 @@ fn translate_block(
     block
 }
 
-fn translate_body_aux(
-    ctx: &mut TransformCtx,
-    no_code_duplication: bool,
-    src_body: &src::ExprBody,
-) -> tgt::ExprBody {
+fn translate_body_aux(ctx: &mut TransformCtx, src_body: &src::ExprBody) -> tgt::ExprBody {
     // Explore the function body to create the control-flow graph without backward
     // edges, and identify the loop entries (which are destinations of backward edges).
     let cfg_info = build_cfg_info(src_body);
@@ -1776,7 +1764,6 @@ fn translate_body_aux(
     // Note that we shouldn't get `None`.
     let mut explored = HashSet::new();
     let mut info = BlockInfo {
-        no_code_duplication,
         cfg: &cfg_info,
         body: src_body,
         exits_info: &exits_info,
@@ -1792,13 +1779,13 @@ fn translate_body_aux(
     }
 }
 
-fn translate_body(ctx: &mut TransformCtx, no_code_duplication: bool, body: &mut gast::Body) {
+fn translate_body(ctx: &mut TransformCtx, body: &mut gast::Body) {
     use gast::Body::{Structured, Unstructured};
     let Unstructured(src_body) = body else {
         panic!("Called `ullbc_to_llbc` on an already restructured body")
     };
     trace!("About to translate to ullbc: {:?}", src_body.span);
-    let tgt_body = translate_body_aux(ctx, no_code_duplication, src_body);
+    let tgt_body = translate_body_aux(ctx, src_body);
     *body = Structured(tgt_body);
 }
 
@@ -1807,7 +1794,7 @@ impl TransformPass for Transform {
     fn transform_ctx(&self, ctx: &mut TransformCtx) {
         // Translate the bodies one at a time.
         ctx.for_each_body(|ctx, body| {
-            translate_body(ctx, ctx.options.no_code_duplication, body);
+            translate_body(ctx, body);
         });
 
         // Print the functions

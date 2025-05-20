@@ -1,5 +1,4 @@
 //@ charon-args=--polonius
-//@ charon-args=--no-code-duplication
 #![allow(dead_code)]
 use std::collections::HashMap;
 

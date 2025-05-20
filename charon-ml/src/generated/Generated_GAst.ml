@@ -405,7 +405,6 @@ and cli_options = {
      *)
   skip_borrowck : bool;
       (** If activated, this skips borrow-checking of the crate. *)
-  no_code_duplication : bool;
   monomorphize : bool;
       (** Monomorphize the code, replacing generics with their concrete types. *)
   extract_opaque_bodies : bool;

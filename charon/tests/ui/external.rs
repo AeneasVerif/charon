@@ -1,4 +1,3 @@
-//@ charon-args=--no-code-duplication
 //! This module uses external types and functions
 
 /// This function uses an external function
