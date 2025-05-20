@@ -964,6 +964,10 @@ fn generate_ml(
                 "
                 | Assign of place * rvalue
                 | SetDiscriminant of place * variant_id
+                | CopyNonOverlapping of copy_non_overlapping
+                    (** Equivalent to std::intrinsics::copy_nonoverlapping; this is not modelled as a function
+                        call as it cannot diverge
+                     *)
                 | StorageLive of local_id
                 | StorageDead of local_id
                 | Deinit of place
@@ -1102,29 +1106,30 @@ fn generate_ml(
     let (gast_types, llbc_types, ullbc_types) = {
         let llbc_types: HashSet<_> = ctx.children_of("charon_lib::ast::llbc_ast::Statement");
         let ullbc_types: HashSet<_> = ctx.children_of("charon_lib::ast::ullbc_ast::BodyContents");
-        let common_types: HashSet<_> = llbc_types.intersection(&ullbc_types).copied().collect();
+        let all_types: HashSet<_> = ctx.children_of("TranslatedCrate");
 
+        let shared_types: HashSet<_> = llbc_types.intersection(&ullbc_types).copied().collect();
+        let llbc_types: HashSet<_> = llbc_types.difference(&shared_types).copied().collect();
+        let ullbc_types: HashSet<_> = ullbc_types.difference(&shared_types).copied().collect();
+
+        let body_specific_types: HashSet<_> = llbc_types.union(&ullbc_types).copied().collect();
+        let gast_types: HashSet<_> = all_types
+            .difference(&body_specific_types)
+            .copied()
+            .collect();
+
+        let gast_types: HashSet<_> = gast_types
+            .difference(&manually_implemented)
+            .copied()
+            .collect();
         let llbc_types: HashSet<_> = llbc_types
-            .difference(&common_types.union(&manually_implemented).copied().collect())
+            .difference(&manually_implemented)
             .copied()
             .collect();
         let ullbc_types: HashSet<_> = ullbc_types
-            .difference(&common_types.union(&manually_implemented).copied().collect())
+            .difference(&manually_implemented)
             .copied()
             .collect();
-
-        let body_specific_types: HashSet<_> = llbc_types.union(&ullbc_types).copied().collect();
-        let gast_types: HashSet<_> = ctx
-            .children_of("TranslatedCrate")
-            .difference(
-                &body_specific_types
-                    .union(&manually_implemented)
-                    .copied()
-                    .collect(),
-            )
-            .copied()
-            .collect();
-
         (gast_types, llbc_types, ullbc_types)
     };
 
@@ -1252,6 +1257,7 @@ fn generate_ml(
                     "ItemKind",
                     "Locals",
                     "FunSig",
+                    "CopyNonOverlapping",
                 ]),
                 // These have to be kept separate to avoid field name clashes
                 (GenerationKind::TypeDecl(Some(DeriveVisitors {

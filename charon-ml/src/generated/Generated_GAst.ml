@@ -105,6 +105,7 @@ and fn_operand =
       (** Use of a function pointer stored in a local variable *)
 
 and call = { func : fn_operand; args : operand list; dest : place }
+and copy_non_overlapping = { src : operand; dst : operand; count : operand }
 
 (** Check the value of an operand and abort if the value is not expected. This is introduced to
     avoid a lot of small branches.

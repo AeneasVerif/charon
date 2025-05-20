@@ -26,6 +26,11 @@ module Ast = struct
         indent ^ "set_discriminant(" ^ place_to_string env p ^ ", "
         ^ VariantId.to_string variant_id
         ^ ")"
+    | CopyNonOverlapping { src; dst; count } ->
+        indent ^ "copy_non_overlapping(" ^ operand_to_string env src ^ ", "
+        ^ operand_to_string env dst ^ ", "
+        ^ operand_to_string env count
+        ^ ")"
     | StorageLive var_id ->
         indent ^ "storage_live " ^ local_id_to_string env var_id
     | StorageDead var_id ->

@@ -1454,6 +1454,7 @@ fn translate_statement(st: &src::Statement) -> Option<tgt::Statement> {
         src::RawStatement::SetDiscriminant(place, variant_id) => {
             tgt::RawStatement::SetDiscriminant(place, variant_id)
         }
+        src::RawStatement::CopyNonOverlapping(copy) => tgt::RawStatement::CopyNonOverlapping(copy),
         src::RawStatement::StorageLive(var_id) => tgt::RawStatement::StorageLive(var_id),
         src::RawStatement::StorageDead(var_id) => tgt::RawStatement::StorageDead(var_id),
         src::RawStatement::Deinit(place) => tgt::RawStatement::Deinit(place),
@@ -1619,6 +1620,7 @@ fn is_terminal_explore(num_loops: usize, st: &tgt::Statement) -> bool {
     match &st.content {
         tgt::RawStatement::Assign(_, _)
         | tgt::RawStatement::SetDiscriminant(_, _)
+        | tgt::RawStatement::CopyNonOverlapping(_)
         | tgt::RawStatement::StorageLive(_)
         | tgt::RawStatement::StorageDead(_)
         | tgt::RawStatement::Deinit(_)

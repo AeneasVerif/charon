@@ -8,6 +8,10 @@ open Meta
 type raw_statement =
   | Assign of place * rvalue
   | SetDiscriminant of place * variant_id
+  | CopyNonOverlapping of copy_non_overlapping
+      (** Equivalent to std::intrinsics::copy_nonoverlapping; this is not modelled as a function
+        call as it cannot diverge
+     *)
   | StorageLive of local_id
   | StorageDead of local_id
   | Deinit of place

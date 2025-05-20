@@ -770,8 +770,15 @@ impl BodyTransCtx<'_, '_, '_> {
                     on_failure: AbortKind::UndefinedBehavior,
                 }))
             }
-            StatementKind::Intrinsic(hax::NonDivergingIntrinsic::CopyNonOverlapping(..)) => {
-                raise_error!(self, span, "Unsupported statement kind: CopyNonOverlapping");
+            StatementKind::Intrinsic(hax::NonDivergingIntrinsic::CopyNonOverlapping(
+                hax::CopyNonOverlapping { src, dst, count },
+            )) => {
+                let src = self.translate_operand(span, src)?;
+                let dst = self.translate_operand(span, dst)?;
+                let count = self.translate_operand(span, count)?;
+                Some(RawStatement::CopyNonOverlapping(Box::new(
+                    CopyNonOverlapping { src, dst, count },
+                )))
             }
             // This is for the stacked borrows memory model.
             StatementKind::Retag(_, _) => None,
