@@ -31,6 +31,11 @@ and raw_statement_of_json (ctx : of_json_ctx) (js : json) :
         let* x_0 = place_of_json ctx x_0 in
         let* x_1 = variant_id_of_json ctx x_1 in
         Ok (SetDiscriminant (x_0, x_1))
+    | `Assoc [ ("CopyNonOverlapping", copy_non_overlapping) ] ->
+        let* copy_non_overlapping =
+          box_of_json copy_non_overlapping_of_json ctx copy_non_overlapping
+        in
+        Ok (CopyNonOverlapping copy_non_overlapping)
     | `Assoc [ ("StorageLive", storage_live) ] ->
         let* storage_live = local_id_of_json ctx storage_live in
         Ok (StorageLive storage_live)

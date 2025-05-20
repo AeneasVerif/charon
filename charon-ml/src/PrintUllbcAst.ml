@@ -34,6 +34,11 @@ module Ast = struct
         indent ^ "storage_dead " ^ local_id_to_string env var_id
     | Deinit p -> indent ^ "deinit " ^ place_to_string env p
     | Drop p -> indent ^ "drop " ^ place_to_string env p
+    | CopyNonOverlapping { src; dst; count } ->
+        indent ^ "copy_non_overlapping(" ^ operand_to_string env src ^ ", "
+        ^ operand_to_string env dst ^ ", "
+        ^ operand_to_string env count
+        ^ ")"
     | Nop -> "nop"
 
   let switch_to_string (indent : string) (tgt : switch) : string =

@@ -23,6 +23,9 @@ pub enum RawStatement {
     Assign(Place, Rvalue),
     /// A call. For now, we don't support dynamic calls (i.e. to a function pointer in memory).
     SetDiscriminant(Place, VariantId),
+    /// Equivalent to std::intrinsics::copy_nonoverlapping; this is not modelled as a function
+    /// call as it cannot diverge
+    CopyNonOverlapping(Box<CopyNonOverlapping>),
     /// Indicates that this local should be allocated; if it is already allocated, this frees
     /// the local and re-allocates it. The return value and arguments do not receive a
     /// `StorageLive`. We ensure in the micro-pass `insert_storage_lives` that all other locals

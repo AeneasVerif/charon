@@ -336,6 +336,13 @@ pub struct Call {
     pub dest: Place,
 }
 
+#[derive(Debug, Clone, Serialize, Deserialize, Drive, DriveMut)]
+pub struct CopyNonOverlapping {
+    pub src: Operand,
+    pub dst: Operand,
+    pub count: Operand,
+}
+
 /// (U)LLBC is a language with side-effects: a statement may abort in a way that isn't tracked by
 /// control-flow. The two kinds of abort are:
 /// - Panic (may unwind or not depending on compilation setting);

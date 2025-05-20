@@ -1024,6 +1024,14 @@ impl<C: AstFormatter> FmtWithCtx<C> for ullbc::Statement {
                 place.fmt_with_ctx(ctx),
                 variant_id
             ),
+            RawStatement::CopyNonOverlapping(box CopyNonOverlapping { src, dst, count }) => write!(
+                &mut out,
+                "{}copy_nonoverlapping({}, {}, {})",
+                tab,
+                src.fmt_with_ctx(ctx),
+                dst.fmt_with_ctx(ctx),
+                count.fmt_with_ctx(ctx),
+            ),
             RawStatement::StorageLive(var_id) => {
                 write!(
                     &mut out,
@@ -1078,6 +1086,14 @@ impl<C: AstFormatter> FmtWithCtx<C> for llbc::Statement {
                 tab,
                 place.fmt_with_ctx(ctx),
                 variant_id
+            ),
+            RawStatement::CopyNonOverlapping(box CopyNonOverlapping { src, dst, count }) => write!(
+                &mut out,
+                "{}copy_nonoverlapping({}, {}, {})",
+                tab,
+                src.fmt_with_ctx(ctx),
+                dst.fmt_with_ctx(ctx),
+                count.fmt_with_ctx(ctx),
             ),
             RawStatement::StorageLive(var_id) => {
                 write!(

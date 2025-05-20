@@ -644,6 +644,17 @@ and call_of_json (ctx : of_json_ctx) (js : json) : (call, string) result =
         Ok ({ func; args; dest } : call)
     | _ -> Error "")
 
+and copy_non_overlapping_of_json (ctx : of_json_ctx) (js : json) :
+    (copy_non_overlapping, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with
+    | `Assoc [ ("src", src); ("dst", dst); ("count", count) ] ->
+        let* src = operand_of_json ctx src in
+        let* dst = operand_of_json ctx dst in
+        let* count = operand_of_json ctx count in
+        Ok ({ src; dst; count } : copy_non_overlapping)
+    | _ -> Error "")
+
 and abort_kind_of_json (ctx : of_json_ctx) (js : json) :
     (abort_kind, string) result =
   combine_error_msgs js __FUNCTION__

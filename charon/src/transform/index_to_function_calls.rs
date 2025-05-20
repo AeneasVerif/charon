@@ -304,7 +304,12 @@ impl LlbcPass for Transform {
             };
             use RawStatement::*;
             match &mut st.content {
-                Assign(..) | SetDiscriminant(..) | Drop(..) | Deinit(..) | Call(..) => {
+                Assign(..)
+                | SetDiscriminant(..)
+                | CopyNonOverlapping(_)
+                | Drop(..)
+                | Deinit(..)
+                | Call(..) => {
                     let _ = visitor.visit_inner_with_mutability(st, true);
                 }
                 Switch(..) => {
