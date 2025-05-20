@@ -35,10 +35,17 @@ let (var_id_to_string
 let (var_to_string [@ocaml.alert deprecated "use [local_to_string] instead"]) =
   local_to_string
 
-let projection_elem_to_string (env : 'a fmt_env) (sub : string)
+let rec projection_elem_to_string (env : 'a fmt_env) (sub : string)
     (pe : projection_elem) : string =
   match pe with
   | Deref -> "*(" ^ sub ^ ")"
+  | ProjIndex (off, from_end) ->
+      let idx_pre = if from_end then "-" else "" in
+      "(" ^ sub ^ ")[" ^ idx_pre ^ operand_to_string env off ^ "]"
+  | Subslice (from, to_, from_end) ->
+      let idx_pre = if from_end then "-" else "" in
+      "(" ^ sub ^ ")[" ^ idx_pre ^ operand_to_string env from ^ ".."
+      ^ operand_to_string env to_ ^ "]"
   | Field (ProjTuple _, fid) -> "(" ^ sub ^ ")." ^ FieldId.to_string fid
   | Field (ProjAdt (adt_id, opt_variant_id), fid) -> (
       let field_name =
@@ -52,14 +59,14 @@ let projection_elem_to_string (env : 'a fmt_env) (sub : string)
           let variant_name = adt_variant_to_string env adt_id variant_id in
           "(" ^ sub ^ " as " ^ variant_name ^ ")." ^ field_name)
 
-let rec place_to_string (env : 'a fmt_env) (p : place) : string =
+and place_to_string (env : 'a fmt_env) (p : place) : string =
   match p.kind with
   | PlaceLocal var_id -> local_id_to_string env var_id
   | PlaceProjection (subplace, pe) ->
       let subplace = place_to_string env subplace in
       projection_elem_to_string env subplace pe
 
-let cast_kind_to_string (env : 'a fmt_env) (cast : cast_kind) : string =
+and cast_kind_to_string (env : 'a fmt_env) (cast : cast_kind) : string =
   match cast with
   | CastScalar (src, tgt) ->
       "cast<" ^ literal_type_to_string src ^ "," ^ literal_type_to_string tgt
@@ -69,21 +76,22 @@ let cast_kind_to_string (env : 'a fmt_env) (cast : cast_kind) : string =
   | CastUnsize (src, tgt) ->
       "unsize<" ^ ty_to_string env src ^ "," ^ ty_to_string env tgt ^ ">"
 
-let nullop_to_string (env : 'a fmt_env) (op : nullop) : string =
+and nullop_to_string (env : 'a fmt_env) (op : nullop) : string =
   match op with
   | SizeOf -> "size_of"
   | AlignOf -> "align_of"
   | OffsetOf _ -> "offset_of(?)"
   | UbChecks -> "ub_checks"
 
-let unop_to_string (env : 'a fmt_env) (unop : unop) : string =
+and unop_to_string (env : 'a fmt_env) (unop : unop) : string =
   match unop with
   | Not -> "¬"
   | Neg -> "-"
   | PtrMetadata -> "ptr_metadata"
   | Cast cast_kind -> cast_kind_to_string env cast_kind
+  | ArrayToSlice _ -> "to_slice"
 
-let binop_to_string (binop : binop) : string =
+and binop_to_string (binop : binop) : string =
   match binop with
   | BitXor -> "^"
   | BitAnd -> "&"
@@ -110,7 +118,7 @@ let binop_to_string (binop : binop) : string =
   | Cmp -> "cmp"
   | Offset -> "offset"
 
-let builtin_fun_id_to_string (aid : builtin_fun_id) : string =
+and builtin_fun_id_to_string (aid : builtin_fun_id) : string =
   match aid with
   | BoxNew -> "alloc::boxed::Box::new"
   | ArrayToSliceShared -> "@ArrayToSliceShared"
@@ -125,23 +133,23 @@ let builtin_fun_id_to_string (aid : builtin_fun_id) : string =
       let mut = if mut = RMut then "Mut" else "" in
       "@PtrFromParts" ^ mut
 
-let fun_id_to_string (env : 'a fmt_env) (fid : fun_id) : string =
+and fun_id_to_string (env : 'a fmt_env) (fid : fun_id) : string =
   match fid with
   | FRegular fid -> fun_decl_id_to_string env fid
   | FBuiltin aid -> builtin_fun_id_to_string aid
 
-let fun_id_or_trait_method_ref_to_string (env : 'a fmt_env)
+and fun_id_or_trait_method_ref_to_string (env : 'a fmt_env)
     (r : fun_id_or_trait_method_ref) : string =
   match r with
   | TraitMethod (trait_ref, method_name, _) ->
       trait_ref_to_string env trait_ref ^ "::" ^ method_name
   | FunId fid -> fun_id_to_string env fid
 
-let fn_ptr_to_string (env : 'a fmt_env) (ptr : fn_ptr) : string =
+and fn_ptr_to_string (env : 'a fmt_env) (ptr : fn_ptr) : string =
   let generics = generic_args_to_string env ptr.generics in
   fun_id_or_trait_method_ref_to_string env ptr.func ^ generics
 
-let constant_expr_to_string (env : 'a fmt_env) (cv : constant_expr) : string =
+and constant_expr_to_string (env : 'a fmt_env) (cv : constant_expr) : string =
   match cv.value with
   | CLiteral lit ->
       "(" ^ literal_to_string lit ^ " : " ^ ty_to_string env cv.ty ^ ")"
@@ -154,13 +162,13 @@ let constant_expr_to_string (env : 'a fmt_env) (cv : constant_expr) : string =
       "RawMemory([" ^ String.concat ", " (List.map string_of_int bytes) ^ "])"
   | COpaque reason -> "Opaque(" ^ reason ^ ")"
 
-let operand_to_string (env : 'a fmt_env) (op : operand) : string =
+and operand_to_string (env : 'a fmt_env) (op : operand) : string =
   match op with
   | Copy p -> "copy " ^ place_to_string env p
   | Move p -> "move " ^ place_to_string env p
   | Constant cv -> constant_expr_to_string env cv
 
-let rvalue_to_string (env : 'a fmt_env) (rv : rvalue) : string =
+and rvalue_to_string (env : 'a fmt_env) (rv : rvalue) : string =
   match rv with
   | Use op -> operand_to_string env op
   | RvRef (p, bk) -> begin
@@ -208,6 +216,12 @@ let rvalue_to_string (env : 'a fmt_env) (rv : rvalue) : string =
       "&raw mut global "
       ^ global_decl_id_to_string env global_ref.global_id
       ^ generics
+  | Repeat (v, _, len) ->
+      "[" ^ operand_to_string env v ^ ";"
+      ^ const_generic_to_string env len
+      ^ "]"
+  | ShallowInitBox (op, _) ->
+      "shallow-init-box(" ^ operand_to_string env op ^ ")"
   | Aggregate (akind, ops) -> (
       let ops = List.map (operand_to_string env) ops in
       match akind with
@@ -246,6 +260,13 @@ let rvalue_to_string (env : 'a fmt_env) (rv : rvalue) : string =
               variant_name ^ " " ^ fields
           | TBuiltin _ -> raise (Failure "Unreachable"))
       | AggregatedArray (_ty, _cg) -> "[" ^ String.concat ", " ops ^ "]"
+      | AggregatedRawPtr (_, refk) ->
+          let refk =
+            match refk with
+            | RMut -> "*mut"
+            | RShared -> "*const"
+          in
+          refk ^ " (" ^ String.concat ", " ops ^ ")"
       | AggregatedClosure (fid, generics) ->
           "{"
           ^ fun_decl_id_to_string env fid
