@@ -52,18 +52,21 @@ impl PassData {
 
 impl TranslatedCrate {
     // FIXME(Nadrieril): implement type&tref normalization and use that instead
-    fn find_trait_impl_and_gargs(self: &Self, kind: &TraitRefKind) -> (&TraitImpl, GenericArgs) {
+    fn find_trait_impl_and_gargs(
+        self: &Self,
+        kind: &TraitRefKind,
+    ) -> Option<(&TraitImpl, GenericArgs)> {
         match kind {
             TraitRefKind::TraitImpl(impl_id, gargs) => {
                 let trait_impl = self.trait_impls.get(*impl_id).unwrap();
-                (trait_impl, (**gargs).clone())
+                Some((trait_impl, (**gargs).clone()))
             }
             TraitRefKind::ParentClause(p, _, clause) => {
-                let (trait_impl, _) = self.find_trait_impl_and_gargs(p);
+                let (trait_impl, _) = self.find_trait_impl_and_gargs(p)?;
                 let t_ref = trait_impl.parent_trait_refs.get(*clause).unwrap();
                 self.find_trait_impl_and_gargs(&t_ref.kind)
             }
-            _ => panic!("Unexpected trait reference kind"),
+            _ => None,
         }
     }
 }
@@ -131,7 +134,11 @@ impl VisitAst for UsageVisitor<'_> {
                 self.found_use_fn(&id, &fn_ptr.generics)
             }
             FunIdOrTraitMethodRef::Trait(t_ref, name, id) => {
-                let (trait_impl, impl_gargs) = self.krate.find_trait_impl_and_gargs(&t_ref.kind);
+                let Some((trait_impl, impl_gargs)) =
+                    self.krate.find_trait_impl_and_gargs(&t_ref.kind)
+                else {
+                    return;
+                };
                 let (_, bound_fn) = trait_impl.methods().find(|(n, _)| n == name).unwrap();
                 let fn_ref: Binder<Binder<FunDeclRef>> = Binder::new(
                     BinderKind::Other,
@@ -172,35 +179,31 @@ impl GenericArgs {
     }
 }
 impl SubstVisitor<'_> {
-    fn subst_use_ty(&mut self, id: &mut TypeDeclId, gargs: &mut GenericArgs) {
+    fn subst_use<T, F>(&mut self, id: &mut T, gargs: &mut GenericArgs, of: F)
+    where
+        T: Into<AnyTransId> + Debug + Copy,
+        F: Fn(&AnyTransId) -> Option<&T>,
+    {
         trace!("Mono: Subst use: {:?} / {:?}", id, gargs);
-        let key = (AnyTransId::Type(*id), gargs.clone());
+        let key = ((*id).into(), gargs.clone());
         let subst = self.data.items.get(&key);
-        let Some(OptionHint::Some(AnyTransId::Type(subst_id))) = subst else {
-            panic!("Substitution missing for {:?}", key);
-        };
-        *id = *subst_id;
-        gargs.remove_non_lifetime_args();
+        if let Some(OptionHint::Some(any_id)) = subst
+            && let Some(subst_id) = of(any_id)
+        {
+            *id = *subst_id;
+            gargs.remove_non_lifetime_args();
+        } else {
+            warn!("Substitution missing for {:?} / {:?}", id, gargs);
+        }
+    }
+    fn subst_use_ty(&mut self, id: &mut TypeDeclId, gargs: &mut GenericArgs) {
+        self.subst_use(id, gargs, AnyTransId::as_type);
     }
     fn subst_use_fun(&mut self, id: &mut FunDeclId, gargs: &mut GenericArgs) {
-        trace!("Mono: Subst use: {:?} / {:?}", id, gargs);
-        let key = (AnyTransId::Fun(*id), gargs.clone());
-        let subst = self.data.items.get(&key);
-        let Some(OptionHint::Some(AnyTransId::Fun(subst_id))) = subst else {
-            panic!("Substitution missing for {:?}", key);
-        };
-        *id = *subst_id;
-        gargs.remove_non_lifetime_args();
+        self.subst_use(id, gargs, AnyTransId::as_fun);
     }
     fn subst_use_glob(&mut self, id: &mut GlobalDeclId, gargs: &mut GenericArgs) {
-        trace!("Mono: Subst use: {:?} / {:?}", id, gargs);
-        let key = (AnyTransId::Global(*id), gargs.clone());
-        let subst = self.data.items.get(&key);
-        let Some(OptionHint::Some(AnyTransId::Global(subst_id))) = subst else {
-            panic!("Substitution missing for {:?}", key);
-        };
-        *id = *subst_id;
-        gargs.remove_non_lifetime_args();
+        self.subst_use(id, gargs, AnyTransId::as_global);
     }
 }
 
