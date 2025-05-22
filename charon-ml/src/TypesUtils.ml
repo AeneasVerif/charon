@@ -37,7 +37,7 @@ let type_decl_get_fields (def : type_decl)
   | Enum variants, Some variant_id -> (VariantId.nth variants variant_id).fields
   | Struct fields, None -> fields
   | Union fields, None -> fields
-  | _ ->
+  | (Enum _ | Struct _ | Union _), _ ->
       let opt_variant_id =
         match opt_variant_id with
         | None -> "None"
@@ -49,6 +49,10 @@ let type_decl_get_fields (def : type_decl)
              an enumeration:\n\
              - def: " ^ show_type_decl def ^ "\n- opt_variant_id: "
           ^ opt_variant_id))
+  | _ ->
+      raise
+        (Invalid_argument
+           ("Can't get the list of fields of this adt:\n" ^ show_type_decl def))
 
 let type_decl_is_enum (def : type_decl) : bool =
   match def.kind with

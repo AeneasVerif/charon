@@ -502,6 +502,7 @@ let adt_field_names (env : 'a fmt_env) (def_id : TypeDeclId.id)
     (opt_variant_id : VariantId.id option) : string list option =
   match TypeDeclId.Map.find_opt def_id env.crate.type_decls with
   | None -> None
+  | Some { kind = Opaque; _ } -> None
   | Some def ->
       let fields = type_decl_get_fields def opt_variant_id in
       (* There are two cases: either all the fields have names, or none
@@ -519,6 +520,7 @@ let adt_field_to_string (env : 'a fmt_env) (def_id : TypeDeclId.id)
     string option =
   match TypeDeclId.Map.find_opt def_id env.crate.type_decls with
   | None -> None
+  | Some { kind = Opaque; _ } -> None
   | Some def ->
       let fields = type_decl_get_fields def opt_variant_id in
       let field = FieldId.nth fields field_id in
