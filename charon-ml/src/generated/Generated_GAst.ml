@@ -72,10 +72,15 @@ and locals = {
     ]}
  *)
 and item_kind =
-  | RegularItem
-      (** A function/const at the top level or in an inherent impl block. *)
+  | TopLevelItem  (** This item stands on its own. *)
+  | ClosureItem of closure_info
+      (** This is a closure in a function body.
+
+          Fields:
+          - [info]
+       *)
   | TraitDeclItem of trait_decl_ref * trait_item_name * bool
-      (** Function/const that is part of a trait declaration. It has a body if and only if the trait
+      (** This is an associated item in a trait declaration. It has a body if and only if the trait
           provided a default implementation.
 
           Fields:
@@ -84,7 +89,7 @@ and item_kind =
           - [has_default]:  Whether the trait declaration provides a default implementation.
        *)
   | TraitImplItem of trait_impl_ref * trait_decl_ref * trait_item_name * bool
-      (** Function/const that is part of a trait implementation.
+      (** This is an associated item in a trait implementation.
 
           Fields:
           - [impl_ref]:  The trait implementation the method belongs to.
