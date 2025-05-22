@@ -40,7 +40,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
                 let Ok(def) = self.hax_def(def_id) else {
                     return; // Error has already been emitted
                 };
-                let Ok(name) = self.hax_def_id_to_name(&def.def_id) else {
+                let Ok(name) = self.def_id_to_name(&def.def_id) else {
                     return; // Error has already been emitted
                 };
                 let opacity = self.opacity_for_name(&name);
