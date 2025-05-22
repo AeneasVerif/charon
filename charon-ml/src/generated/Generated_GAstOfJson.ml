@@ -424,7 +424,10 @@ and item_kind_of_json (ctx : of_json_ctx) (js : json) :
     (item_kind, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
-    | `String "Regular" -> Ok RegularItem
+    | `String "TopLevel" -> Ok TopLevelItem
+    | `Assoc [ ("Closure", `Assoc [ ("info", info) ]) ] ->
+        let* info = closure_info_of_json ctx info in
+        Ok (ClosureItem info)
     | `Assoc
         [
           ( "TraitDecl",

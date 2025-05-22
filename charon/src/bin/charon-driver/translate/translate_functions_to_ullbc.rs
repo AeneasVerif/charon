@@ -17,6 +17,24 @@ use hax_frontend_exporter as hax;
 use itertools::Itertools;
 
 impl ItemTransCtx<'_, '_> {
+    fn translate_closure_info(
+        &mut self,
+        span: Span,
+        args: &hax::ClosureArgs,
+    ) -> Result<ClosureInfo, Error> {
+        let kind = match args.kind {
+            hax::ClosureKind::Fn => ClosureKind::Fn,
+            hax::ClosureKind::FnMut => ClosureKind::FnMut,
+            hax::ClosureKind::FnOnce => ClosureKind::FnOnce,
+        };
+        let state: Vector<TypeVarId, Ty> = args
+            .upvar_tys
+            .iter()
+            .map(|ty| self.translate_ty(span, &ty))
+            .try_collect()?;
+        Ok(ClosureInfo { kind, state })
+    }
+
     pub(crate) fn get_item_kind(
         &mut self,
         span: Span,
@@ -32,7 +50,11 @@ impl ItemTransCtx<'_, '_> {
             | hax::FullDefKind::AssocFn {
                 associated_item, ..
             } => associated_item,
-            _ => return Ok(ItemKind::Regular),
+            hax::FullDefKind::Closure { args, .. } => {
+                let info = self.translate_closure_info(span, args)?;
+                return Ok(ItemKind::Closure { info });
+            }
+            _ => return Ok(ItemKind::TopLevel),
         };
         Ok(match &assoc.container {
             // E.g.:
@@ -41,7 +63,7 @@ impl ItemTransCtx<'_, '_> {
             //   fn new() -> Self { ... } <- inherent method
             // }
             // ```
-            hax::AssocItemContainer::InherentImplContainer { .. } => ItemKind::Regular,
+            hax::AssocItemContainer::InherentImplContainer { .. } => ItemKind::TopLevel,
             // E.g.:
             // ```
             // impl Foo for Bar {
@@ -182,28 +204,21 @@ impl ItemTransCtx<'_, '_> {
 
         let closure_info = match &def.kind {
             hax::FullDefKind::Closure { args, .. } => {
-                let kind = match args.kind {
-                    hax::ClosureKind::Fn => ClosureKind::Fn,
-                    hax::ClosureKind::FnMut => ClosureKind::FnMut,
-                    hax::ClosureKind::FnOnce => ClosureKind::FnOnce,
-                };
+                let closure = self.translate_closure_info(span, args)?;
 
                 assert_eq!(inputs.len(), 1);
                 let tuple_arg = inputs.pop().unwrap();
 
-                let state: Vector<TypeVarId, Ty> = args
-                    .upvar_tys
-                    .iter()
-                    .map(|ty| self.translate_ty(span, &ty))
-                    .try_collect()?;
                 // Add the state of the closure as first parameter.
                 let state_ty = {
                     // Group the state types into a tuple
-                    let state_ty =
-                        TyKind::Adt(TypeId::Tuple, GenericArgs::new_for_builtin(state.clone()))
-                            .into_ty();
+                    let state_ty = TyKind::Adt(
+                        TypeId::Tuple,
+                        GenericArgs::new_for_builtin(closure.state.clone()),
+                    )
+                    .into_ty();
                     // Depending on the kind of the closure, add a reference
-                    match &kind {
+                    match &closure.kind {
                         ClosureKind::FnOnce => state_ty,
                         ClosureKind::Fn | ClosureKind::FnMut => {
                             let rid = self
@@ -211,7 +226,7 @@ impl ItemTransCtx<'_, '_> {
                                 .regions
                                 .push_with(|index| RegionVar { index, name: None });
                             let r = Region::Var(DeBruijnVar::new_at_zero(rid));
-                            let mutability = if kind == ClosureKind::Fn {
+                            let mutability = if closure.kind == ClosureKind::Fn {
                                 RefKind::Shared
                             } else {
                                 RefKind::Mut
@@ -228,7 +243,7 @@ impl ItemTransCtx<'_, '_> {
                 };
                 inputs.extend(tuple_args.types.iter().cloned());
 
-                Some(ClosureInfo { kind, state })
+                Some(closure)
             }
             _ => None,
         };
@@ -390,8 +405,8 @@ impl ItemTransCtx<'_, '_> {
         // If this is the case, it shouldn't contain a body.
         let kind = self.get_item_kind(span, def)?;
         let is_trait_method_decl_without_default = match &kind {
-            ItemKind::Regular | ItemKind::TraitImpl { .. } => false,
             ItemKind::TraitDecl { has_default, .. } => !has_default,
+            _ => false,
         };
 
         let is_global_initializer = matches!(

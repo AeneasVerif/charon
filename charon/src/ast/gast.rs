@@ -95,9 +95,11 @@ pub enum Body {
 #[derive(Debug, Clone, Serialize, Deserialize, Drive, DriveMut, PartialEq, Eq)]
 #[charon::variants_suffix("Item")]
 pub enum ItemKind {
-    /// A function/const at the top level or in an inherent impl block.
-    Regular,
-    /// Function/const that is part of a trait declaration. It has a body if and only if the trait
+    /// This item stands on its own.
+    TopLevel,
+    /// This is a closure in a function body.
+    Closure { info: ClosureInfo },
+    /// This is an associated item in a trait declaration. It has a body if and only if the trait
     /// provided a default implementation.
     TraitDecl {
         /// The trait declaration this item belongs to.
@@ -110,7 +112,7 @@ pub enum ItemKind {
         #[drive(skip)]
         has_default: bool,
     },
-    /// Function/const that is part of a trait implementation.
+    /// This is an associated item in a trait implementation.
     TraitImpl {
         /// The trait implementation the method belongs to.
         impl_ref: TraitImplRef,
