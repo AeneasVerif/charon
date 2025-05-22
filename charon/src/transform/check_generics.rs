@@ -7,7 +7,7 @@ use std::{borrow::Cow, fmt::Display};
 use crate::{
     ast::*,
     errors::Level,
-    formatter::{FmtCtx, IntoFormatter, PushBinder},
+    formatter::{AstFormatter, FmtCtx, IntoFormatter},
     pretty::FmtWithCtx,
 };
 
@@ -61,19 +61,23 @@ impl CheckGenericsVisitor<'_> {
         a_fmt: &FmtA,
         b_fmt: &FmtB,
         kind: &str,
+        target: &GenericsSource,
         check_inner: impl Fn(&A, &B),
     ) where
         I: Idx,
-        A: for<'a> FmtWithCtx<FmtA>,
-        B: for<'a> FmtWithCtx<FmtB>,
+        FmtA: AstFormatter,
+        A: FmtWithCtx<FmtA>,
+        B: FmtWithCtx<FmtB>,
     {
         if a.elem_count() == b.elem_count() {
             a.iter().zip(b.iter()).for_each(|(x, y)| check_inner(x, y));
         } else {
             let a = a.iter().map(|x| x.fmt_with_ctx(a_fmt)).join(", ");
             let b = b.iter().map(|x| x.fmt_with_ctx(b_fmt)).join(", ");
+            let target = target.fmt_with_ctx(a_fmt);
             self.error(format!(
                 "Mismatched {kind}:\
+                \ntarget: {target}\
                 \nexpected: [{a}]\
                 \n     got: [{b}]"
             ))
@@ -109,6 +113,7 @@ impl CheckGenericsVisitor<'_> {
             params_fmt,
             args_fmt,
             "regions",
+            &args.target,
             |_, _| {},
         );
         self.zip_assert_match(
@@ -117,6 +122,7 @@ impl CheckGenericsVisitor<'_> {
             params_fmt,
             args_fmt,
             "type generics",
+            &args.target,
             |_, _| {},
         );
         self.zip_assert_match(
@@ -125,6 +131,7 @@ impl CheckGenericsVisitor<'_> {
             params_fmt,
             args_fmt,
             "const generics",
+            &args.target,
             |_, _| {},
         );
         self.zip_assert_match(
@@ -133,6 +140,7 @@ impl CheckGenericsVisitor<'_> {
             params_fmt,
             args_fmt,
             "trait clauses",
+            &args.target,
             |tclause, tref| self.assert_clause_matches(params_fmt, tclause, tref),
         );
     }
@@ -268,6 +276,7 @@ impl VisitAst for CheckGenericsVisitor<'_> {
             &tdecl_fmt,
             args_fmt,
             "trait parent clauses",
+            &GenericsSource::item(timpl.impl_trait.trait_id),
             |tclause, tref| self.assert_clause_matches(&tdecl_fmt, tclause, tref),
         );
         let types_match = timpl.types.len() == tdecl.types.len()
