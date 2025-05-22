@@ -119,7 +119,20 @@ where
 #[lang_item("drop")]
 pub trait Drop<Self>
 {
-    fn drop<'_0> = drop<'_0_0, Self>[Self]
+    fn drop<'_0> = core::ops::drop::Drop::drop<'_0_0, Self>[Self]
+}
+
+// Full name: core::option::{impl Drop for Option<T>[@TraitClause0]}::drop
+fn {impl Drop for Option<T>[@TraitClause0]}::drop<'_0, T>(@1: &'_0 mut (Option<T>[@TraitClause0]))
+where
+    [@TraitClause0]: Sized<T>,
+
+// Full name: core::option::{impl Drop for Option<T>[@TraitClause0]}
+impl<T> Drop for Option<T>[@TraitClause0]
+where
+    [@TraitClause0]: Sized<T>,
+{
+    fn drop<'_0> = {impl Drop for Option<T>[@TraitClause0]}::drop<'_0_0, T>[@TraitClause0]
 }
 
 // Full name: test_crate::test_bool_trait_option
@@ -150,7 +163,7 @@ where
         @0 := const (false)
     }
     storage_dead(@2)
-    drop[Drop<Option<T>[@TraitClause0]>] x@1
+    drop[{impl Drop for Option<T>[@TraitClause0]}<T>[@TraitClause0]] x@1
     return
 }
 
@@ -297,6 +310,19 @@ where
   x: T,
 }
 
+// Full name: test_crate::{impl Drop for Wrapper<T>[@TraitClause0]}::drop
+fn {impl Drop for Wrapper<T>[@TraitClause0]}::drop<'_0, T>(@1: &'_0 mut (Wrapper<T>[@TraitClause0]))
+where
+    [@TraitClause0]: Sized<T>,
+
+// Full name: test_crate::{impl Drop for Wrapper<T>[@TraitClause0]}
+impl<T> Drop for Wrapper<T>[@TraitClause0]
+where
+    [@TraitClause0]: Sized<T>,
+{
+    fn drop<'_0> = {impl Drop for Wrapper<T>[@TraitClause0]}::drop<'_0_0, T>[@TraitClause0]
+}
+
 // Full name: test_crate::{impl ToU64 for Wrapper<T>[@TraitClause0]}::to_u64
 pub fn {impl ToU64 for Wrapper<T>[@TraitClause0]}::to_u64<T>(@1: Wrapper<T>[@TraitClause0]) -> u64
 where
@@ -311,7 +337,7 @@ where
     @2 := move ((self@1).x)
     @0 := @TraitClause1::to_u64(move (@2))
     storage_dead(@2)
-    drop[Drop<Wrapper<T>[@TraitClause0]>] self@1
+    drop[{impl Drop for Wrapper<T>[@TraitClause0]}<T>[@TraitClause0]] self@1
     return
 }
 
@@ -352,7 +378,7 @@ where
     @2 := move (x@1)
     @0 := {impl ToU64 for Wrapper<T>[@TraitClause0]}::to_u64<T>[@TraitClause0, @TraitClause1](move (@2))
     storage_dead(@2)
-    drop[Drop<Wrapper<T>[@TraitClause0]>] x@1
+    drop[{impl Drop for Wrapper<T>[@TraitClause0]}<T>[@TraitClause0]] x@1
     return
 }
 
@@ -1237,8 +1263,7 @@ pub fn test_crate::CFn::call<'_0, Self, Args>(@1: &'_0 (Self), @2: Args) -> @Tra
 where
     [@TraitClause0]: CFn<Self, Args>,
 
-// Full name: core::ops::drop::Drop::drop
-pub fn drop<'_0, Self>(@1: &'_0 mut (Self))
+pub fn core::ops::drop::Drop::drop<'_0, Self>(@1: &'_0 mut (Self))
 where
     [@TraitClause0]: Drop<Self>,
 

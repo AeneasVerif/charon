@@ -15,6 +15,14 @@ pub trait Drop<Self>
     fn drop<'_0> = core::ops::drop::Drop::drop<'_0_0, Self>[Self]
 }
 
+// Full name: alloc::alloc::{impl Drop for Global}::drop
+fn {impl Drop for Global}::drop<'_0>(@1: &'_0 mut (Global))
+
+// Full name: alloc::alloc::{impl Drop for Global}
+impl Drop for Global {
+    fn drop<'_0> = {impl Drop for Global}::drop<'_0_0>
+}
+
 // Full name: alloc::boxed::{impl Drop for alloc::boxed::Box<T>[@TraitClause0, @TraitClause2, @TraitClause3]}::drop
 pub fn {impl Drop for alloc::boxed::Box<T>[@TraitClause0, @TraitClause2, @TraitClause3]}::drop<'_0, T, A>(@1: &'_0 mut (alloc::boxed::Box<T>[@TraitClause0, @TraitClause2, @TraitClause3]))
 where
@@ -33,13 +41,13 @@ where
 }
 
 // Full name: test_crate::use_box
-fn use_box(@1: alloc::boxed::Box<u32>[Sized<Global>, Drop<u32>, Drop<Global>])
+fn use_box(@1: alloc::boxed::Box<u32>[Sized<Global>, Drop<u32>, {impl Drop for Global}])
 {
     let @0: (); // return
-    let @1: alloc::boxed::Box<u32>[Sized<Global>, Drop<u32>, Drop<Global>]; // arg #1
+    let @1: alloc::boxed::Box<u32>[Sized<Global>, Drop<u32>, {impl Drop for Global}]; // arg #1
 
     @0 := ()
-    drop[{impl Drop for alloc::boxed::Box<T>[@TraitClause0, @TraitClause2, @TraitClause3]}<u32, Global>[Sized<Global>, Drop<u32>, Drop<Global>]] @1
+    drop[{impl Drop for alloc::boxed::Box<T>[@TraitClause0, @TraitClause2, @TraitClause3]}<u32, Global>[Sized<Global>, Drop<u32>, {impl Drop for Global}]] @1
     @0 := ()
     return
 }
@@ -48,10 +56,10 @@ fn use_box(@1: alloc::boxed::Box<u32>[Sized<Global>, Drop<u32>, Drop<Global>])
 fn main()
 {
     let @0: (); // return
-    let b@1: alloc::boxed::Box<u32>[Sized<Global>, Drop<u32>, Drop<Global>]; // local
+    let b@1: alloc::boxed::Box<u32>[Sized<Global>, Drop<u32>, {impl Drop for Global}]; // local
     let @2: bool; // anonymous local
     let @3: (); // anonymous local
-    let @4: alloc::boxed::Box<u32>[Sized<Global>, Drop<u32>, Drop<Global>]; // anonymous local
+    let @4: alloc::boxed::Box<u32>[Sized<Global>, Drop<u32>, {impl Drop for Global}]; // anonymous local
     let @5: bool; // anonymous local
 
     storage_live(@3)
@@ -79,7 +87,7 @@ fn main()
     storage_dead(@2)
     // `b` is dropped implicitly here
     if copy (@5) {
-        drop[{impl Drop for alloc::boxed::Box<T>[@TraitClause0, @TraitClause2, @TraitClause3]}<u32, Global>[Sized<Global>, Drop<u32>, Drop<Global>]] b@1
+        drop[{impl Drop for alloc::boxed::Box<T>[@TraitClause0, @TraitClause2, @TraitClause3]}<u32, Global>[Sized<Global>, Drop<u32>, {impl Drop for Global}]] b@1
     }
     else {
     }

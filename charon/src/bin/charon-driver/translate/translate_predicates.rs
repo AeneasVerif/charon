@@ -376,15 +376,35 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                 },
                 trait_decl_ref,
             },
-            ImplExprAtom::Drop(DropData::Glue { impl_exprs, .. }) => {
-                // TODO: translate this into a proper impl; may need `TransItemSource::DropGlue(TypeId)`.
-                let parent_trait_refs = self.translate_trait_impl_exprs(span, &impl_exprs)?;
+            ImplExprAtom::Drop(DropData::Glue { impl_exprs, ty }) => {
+                let kind = match ty.kind() {
+                    hax::TyKind::Adt {
+                        def_id,
+                        generic_args,
+                        trait_refs,
+                    } => {
+                        let impl_id = self.register_drop_trait_impl_id(span, def_id);
+                        let generics = self.translate_generic_args(
+                            span,
+                            &generic_args,
+                            &trait_refs,
+                            None,
+                            GenericsSource::item(impl_id),
+                        )?;
+                        TraitRefKind::TraitImpl(impl_id, Box::new(generics))
+                    }
+                    _ => {
+                        let parent_trait_refs =
+                            self.translate_trait_impl_exprs(span, &impl_exprs)?;
+                        TraitRefKind::BuiltinOrAuto {
+                            trait_decl_ref: trait_decl_ref.clone(),
+                            parent_trait_refs,
+                            types: vec![],
+                        }
+                    }
+                };
                 TraitRef {
-                    kind: TraitRefKind::BuiltinOrAuto {
-                        trait_decl_ref: trait_decl_ref.clone(),
-                        parent_trait_refs,
-                        types: vec![],
-                    },
+                    kind,
                     trait_decl_ref,
                 }
             }

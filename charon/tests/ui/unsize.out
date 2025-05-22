@@ -61,6 +61,14 @@ pub fn alloc::string::{String}::new() -> String
 // Full name: alloc::string::{impl Clone for String}::clone
 pub fn {impl Clone for String}::clone<'_0>(@1: &'_0 (String)) -> String
 
+// Full name: alloc::string::{impl Drop for String}::drop
+fn {impl Drop for String}::drop<'_0>(@1: &'_0 mut (String))
+
+// Full name: alloc::string::{impl Drop for String}
+impl Drop for String {
+    fn drop<'_0> = {impl Drop for String}::drop<'_0_0>
+}
+
 // Full name: test_crate::foo
 fn foo()
 {
@@ -161,7 +169,7 @@ fn foo()
     drop[{impl Drop for Rc<T, A>[@TraitClause0]}<dyn (exists(TODO)), Global>[Sized<Global>]] @19
     storage_dead(@19)
     @0 := ()
-    drop[Drop<String>] string@11
+    drop[{impl Drop for String}] string@11
     storage_dead(string@11)
     storage_dead(array@1)
     @0 := ()

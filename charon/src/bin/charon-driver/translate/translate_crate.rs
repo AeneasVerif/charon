@@ -24,6 +24,10 @@ pub enum TransItemSource {
     ClosureTraitImpl(hax::DefId, ClosureKind),
     /// The `call_*` method of the appropriate `Fn*` trait.
     ClosureMethod(hax::DefId, ClosureKind),
+    /// A fictitious trait impl corresponding to the drop glue code for the given ADT.
+    DropGlueImpl(hax::DefId),
+    /// The `drop` method for the impl above.
+    DropGlueMethod(hax::DefId),
 }
 
 impl TransItemSource {
@@ -35,7 +39,25 @@ impl TransItemSource {
             | TransItemSource::Fun(id)
             | TransItemSource::Type(id)
             | TransItemSource::ClosureTraitImpl(id, _)
-            | TransItemSource::ClosureMethod(id, _) => id,
+            | TransItemSource::ClosureMethod(id, _)
+            | TransItemSource::DropGlueImpl(id)
+            | TransItemSource::DropGlueMethod(id) => id,
+        }
+    }
+
+    /// Whether this item is the "main" item for this def_id or not (e.g. drop impl/methods are not
+    /// the main item).
+    pub(crate) fn is_derived_item(&self) -> bool {
+        match self {
+            TransItemSource::Global(..)
+            | TransItemSource::TraitDecl(..)
+            | TransItemSource::TraitImpl(..)
+            | TransItemSource::Fun(..)
+            | TransItemSource::Type(..) => false,
+            TransItemSource::ClosureTraitImpl(..)
+            | TransItemSource::ClosureMethod(..)
+            | TransItemSource::DropGlueImpl(..)
+            | TransItemSource::DropGlueMethod(..) => true,
         }
     }
 }
@@ -179,13 +201,17 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
                     TransItemSource::TraitDecl(_) => {
                         AnyTransId::TraitDecl(self.translated.trait_decls.reserve_slot())
                     }
-                    TransItemSource::TraitImpl(_) | TransItemSource::ClosureTraitImpl(_, _) => {
+                    TransItemSource::TraitImpl(_)
+                    | TransItemSource::ClosureTraitImpl(..)
+                    | TransItemSource::DropGlueImpl(_) => {
                         AnyTransId::TraitImpl(self.translated.trait_impls.reserve_slot())
                     }
                     TransItemSource::Global(_) => {
                         AnyTransId::Global(self.translated.global_decls.reserve_slot())
                     }
-                    TransItemSource::Fun(_) | TransItemSource::ClosureMethod(_, _) => {
+                    TransItemSource::Fun(_)
+                    | TransItemSource::ClosureMethod(..)
+                    | TransItemSource::DropGlueMethod(..) => {
                         AnyTransId::Fun(self.translated.fun_decls.reserve_slot())
                     }
                 };
@@ -305,6 +331,28 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
         *self
             .register_and_enqueue_id(src, TransItemSource::Global(id.clone()))
             .as_global()
+            .unwrap()
+    }
+
+    pub(crate) fn register_drop_trait_impl_id(
+        &mut self,
+        src: &Option<DepSource>,
+        id: &hax::DefId,
+    ) -> TraitImplId {
+        *self
+            .register_and_enqueue_id(src, TransItemSource::DropGlueImpl(id.clone()))
+            .as_trait_impl()
+            .unwrap()
+    }
+
+    pub(crate) fn register_drop_method_id(
+        &mut self,
+        src: &Option<DepSource>,
+        id: &hax::DefId,
+    ) -> FunDeclId {
+        *self
+            .register_and_enqueue_id(src, TransItemSource::DropGlueMethod(id.clone()))
+            .as_fun()
             .unwrap()
     }
 }
@@ -512,6 +560,20 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
     ) -> FunDeclId {
         let src = self.make_dep_source(span);
         self.t_ctx.register_closure_method_decl_id(&src, id, kind)
+    }
+
+    pub(crate) fn register_drop_trait_impl_id(
+        &mut self,
+        span: Span,
+        id: &hax::DefId,
+    ) -> TraitImplId {
+        let src = self.make_dep_source(span);
+        self.t_ctx.register_drop_trait_impl_id(&src, id)
+    }
+
+    pub(crate) fn register_drop_method_id(&mut self, span: Span, id: &hax::DefId) -> FunDeclId {
+        let src = self.make_dep_source(span);
+        self.t_ctx.register_drop_method_id(&src, id)
     }
 }
 

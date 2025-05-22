@@ -134,6 +134,19 @@ pub trait Drop<Self>
     fn drop<'_0> = core::ops::drop::Drop::drop<'_0_0, Self>[Self]
 }
 
+// Full name: test_crate::{impl Drop for IdType<T>[@TraitClause0]}::drop
+fn {impl Drop for IdType<T>[@TraitClause0]}::drop<'_0, T>(@1: &'_0 mut (IdType<T>[@TraitClause0]))
+where
+    [@TraitClause0]: Sized<T>,
+
+// Full name: test_crate::{impl Drop for IdType<T>[@TraitClause0]}
+impl<T> Drop for IdType<T>[@TraitClause0]
+where
+    [@TraitClause0]: Sized<T>,
+{
+    fn drop<'_0> = {impl Drop for IdType<T>[@TraitClause0]}::drop<'_0_0, T>[@TraitClause0]
+}
+
 // Full name: test_crate::use_id_type
 pub fn use_id_type<T>(@1: IdType<T>[@TraitClause0]) -> T
 where
@@ -143,7 +156,7 @@ where
     let x@1: IdType<T>[@TraitClause0]; // arg #1
 
     @0 := move ((x@1).0)
-    drop[Drop<IdType<T>[@TraitClause0]>] x@1
+    drop[{impl Drop for IdType<T>[@TraitClause0]}<T>[@TraitClause0]] x@1
     return
 }
 
@@ -308,6 +321,19 @@ where
     fn drop<'_0> = {impl Drop for alloc::boxed::Box<T>[@TraitClause0]}::drop<'_0_0, T, A>[@TraitClause0]
 }
 
+// Full name: test_crate::{impl Drop for List<T>[@TraitClause0]}::drop
+fn {impl Drop for List<T>[@TraitClause0]}::drop<'_0, T>(@1: &'_0 mut (List<T>[@TraitClause0]))
+where
+    [@TraitClause0]: Sized<T>,
+
+// Full name: test_crate::{impl Drop for List<T>[@TraitClause0]}
+impl<T> Drop for List<T>[@TraitClause0]
+where
+    [@TraitClause0]: Sized<T>,
+{
+    fn drop<'_0> = {impl Drop for List<T>[@TraitClause0]}::drop<'_0_0, T>[@TraitClause0]
+}
+
 // Full name: test_crate::test_list1
 pub fn test_list1()
 {
@@ -326,7 +352,7 @@ pub fn test_list1()
     drop[{impl Drop for alloc::boxed::Box<T>[@TraitClause0]}<List<i32>[Sized<i32>], Global>[Sized<Global>]] @2
     storage_dead(@2)
     @0 := ()
-    drop[Drop<List<i32>[Sized<i32>]>] l@1
+    drop[{impl Drop for List<T>[@TraitClause0]}<i32>[Sized<i32>]] l@1
     storage_dead(l@1)
     @0 := ()
     return
@@ -465,7 +491,7 @@ where
     storage_live(@5)
     @5 := move (*(tl@3))
     @0 := (move (@4), move (@5))
-    drop[Drop<List<T>[@TraitClause0]>] @5
+    drop[{impl Drop for List<T>[@TraitClause0]}<T>[@TraitClause0]] @5
     storage_dead(@5)
     drop[Drop<T>] @4
     storage_dead(@4)
@@ -473,7 +499,7 @@ where
     storage_dead(tl@3)
     drop[Drop<T>] hd@2
     storage_dead(hd@2)
-    drop[Drop<List<T>[@TraitClause0]>] l@1
+    drop[{impl Drop for List<T>[@TraitClause0]}<T>[@TraitClause0]] l@1
     return
 }
 

@@ -141,8 +141,7 @@ pub trait Pointee<Self>
     type Metadata
 }
 
-// Full name: core::ptr::metadata::Thin
-pub trait Thin<Self>
+pub trait core::ptr::metadata::Thin<Self>
 where
     Self::parent_clause0::Metadata = (),
 {
@@ -153,10 +152,10 @@ where
 #[lang_item("ptr_null")]
 pub fn null<T>() -> *const T
 where
-    [@TraitClause0]: Thin<T>,
+    [@TraitClause0]: core::ptr::metadata::Thin<T>,
 
-// Full name: core::ptr::metadata::Thin::{impl Thin for Self}
-impl<Self> Thin for Self
+// Full name: core::ptr::metadata::Thin
+impl<Self> core::ptr::metadata::Thin for Self
 where
     [@TraitClause0]: Pointee<Self>,
     @TraitClause0::Metadata = (),
@@ -171,7 +170,7 @@ fn main()
     let @1: *const u8; // anonymous local
 
     storage_live(@1)
-    @1 := null<u8>[{impl Thin for Self}<u8>[Pointee<u8> where Metadata  = ()]]()
+    @1 := null<u8>[core::ptr::metadata::Thin<u8>[Pointee<u8> where Metadata  = ()]]()
     storage_dead(@1)
     @0 := ()
     @0 := ()

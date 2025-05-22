@@ -57,8 +57,7 @@ where
   Some(T),
 }
 
-// Full name: test_crate::Alias
-trait Alias<Self, U>
+trait test_crate::Alias<Self, U>
 {
     parent_clause0 : [@TraitClause0]: Trait<Self, Option<U>[Self::parent_clause2], u32>
     parent_clause1 : [@TraitClause1]: Clone<Self>
@@ -81,7 +80,7 @@ pub trait Drop<Self>
 fn takes_alias<T>(@1: T)
 where
     [@TraitClause0]: Sized<T>,
-    [@TraitClause1]: Alias<T, ()>,
+    [@TraitClause1]: test_crate::Alias<T, ()>,
 {
     let @0: (); // return
     let x@1: T; // arg #1
@@ -101,8 +100,8 @@ where
     return
 }
 
-// Full name: test_crate::Alias::{impl Alias<U> for Self}
-impl<Self, U> Alias<U> for Self
+// Full name: test_crate::Alias
+impl<Self, U> test_crate::Alias<U> for Self
 where
     [@TraitClause0]: Trait<Self, Option<U>[@TraitClause2], u32>,
     [@TraitClause1]: Clone<Self>,
@@ -123,7 +122,7 @@ fn use_alias()
     storage_live(@1)
     storage_live(@2)
     @2 := Struct {  }
-    @1 := takes_alias<Struct>[Sized<Struct>, {impl Alias<U> for Self}<Struct, ()>[{impl Trait<T, u32> for Struct}<Option<()>[Sized<()>]>[Sized<Option<()>[Sized<()>]>], {impl Clone for Struct}, Sized<()>]](move (@2))
+    @1 := takes_alias<Struct>[Sized<Struct>, test_crate::Alias<Struct, ()>[{impl Trait<T, u32> for Struct}<Option<()>[Sized<()>]>[Sized<Option<()>[Sized<()>]>], {impl Clone for Struct}, Sized<()>]](move (@2))
     storage_dead(@2)
     storage_dead(@1)
     @0 := ()

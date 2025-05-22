@@ -86,7 +86,15 @@ impl Display for Str {
 #[lang_item("drop")]
 pub trait Drop<Self>
 {
-    fn drop<'_0> = drop<'_0_0, Self>[Self]
+    fn drop<'_0> = core::ops::drop::Drop::drop<'_0_0, Self>[Self]
+}
+
+// Full name: alloc::string::{impl Drop for String}::drop
+fn {impl Drop for String}::drop<'_0>(@1: &'_0 mut (String))
+
+// Full name: alloc::string::{impl Drop for String}
+impl Drop for String {
+    fn drop<'_0> = {impl Drop for String}::drop<'_0_0>
 }
 
 // Full name: test_crate::main
@@ -106,7 +114,7 @@ fn main()
     storage_dead(@2)
     storage_dead(@3)
     @0 := ()
-    drop[Drop<String>] _s@1
+    drop[{impl Drop for String}] _s@1
     storage_dead(_s@1)
     @0 := ()
     return
@@ -132,8 +140,7 @@ where
     fn to_string<'_0> = {impl ToString for T}::to_string<'_0_0, T>[@TraitClause0]
 }
 
-// Full name: core::ops::drop::Drop::drop
-pub fn drop<'_0, Self>(@1: &'_0 mut (Self))
+pub fn core::ops::drop::Drop::drop<'_0, Self>(@1: &'_0 mut (Self))
 where
     [@TraitClause0]: Drop<Self>,
 

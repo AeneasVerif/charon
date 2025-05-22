@@ -4,7 +4,7 @@
 #[lang_item("ptr_null")]
 pub fn null<T>() -> *const T
 where
-    [@TraitClause0]: Thin<T>,
+    [@TraitClause0]: core::ptr::metadata::Thin<T>,
 
 // Full name: core::marker::Sized
 #[lang_item("sized")]
@@ -161,7 +161,7 @@ fn call_unsafe_fn()
     let @3: *const u32; // anonymous local
 
     storage_live(x@1)
-    x@1 := null<u32>[{impl#1}<u32>[Pointee<u32> where Metadata  = ()]]()
+    x@1 := null<u32>[core::ptr::metadata::Thin<u32>[Pointee<u32> where Metadata  = ()]]()
     storage_live(@2)
     storage_live(@3)
     @3 := copy (x@1)
@@ -182,7 +182,7 @@ fn deref_raw_ptr()
     let @2: u32; // anonymous local
 
     storage_live(x@1)
-    x@1 := null<u32>[{impl#1}<u32>[Pointee<u32> where Metadata  = ()]]()
+    x@1 := null<u32>[core::ptr::metadata::Thin<u32>[Pointee<u32> where Metadata  = ()]]()
     storage_live(@2)
     @2 := copy (*(x@1))
     storage_dead(@2)

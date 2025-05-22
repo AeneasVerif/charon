@@ -8,7 +8,7 @@ pub trait Sized<Self>
 pub fn from_raw_parts<T, impl Thin>(@1: *const impl Thin, @2: Pointee<T>::Metadata) -> *const T
 where
     [@TraitClause0]: Sized<impl Thin>,
-    [@TraitClause1]: Thin<impl Thin>,
+    [@TraitClause1]: core::ptr::metadata::Thin<impl Thin>,
 {
     let @0: *const T; // return
     let data_pointer@1: *const impl Thin; // arg #1
@@ -31,7 +31,7 @@ fn main()
     storage_live(@2)
     storage_live(@3)
     @3 := &raw const a@1
-    @2 := from_raw_parts<Slice<u32>, Array<u32, 2 : usize>>[Sized<Array<u32, 2 : usize>>, {impl#0}<Array<u32, 2 : usize>>[Pointee<Array<u32, 2 : usize>> where Metadata  = ()]](move (@3), const (2 : usize))
+    @2 := from_raw_parts<Slice<u32>, Array<u32, 2 : usize>>[Sized<Array<u32, 2 : usize>>, core::ptr::metadata::Thin<Array<u32, 2 : usize>>[Pointee<Array<u32, 2 : usize>> where Metadata  = ()]](move (@3), const (2 : usize))
     storage_dead(@3)
     storage_dead(@2)
     @0 := ()
