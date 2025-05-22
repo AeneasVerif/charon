@@ -368,7 +368,9 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
         Ok(path_elem)
     }
 
-    /// Retrieve the name for this [`hax::DefId`].
+    /// Retrieve the name for this [`hax::DefId`]. Because a given `DefId` may give rise to several
+    /// charon items, prefer to use `translate_name` when possible.
+    ///
     /// We lookup the path associated to an id, and convert it to a name.
     /// Paths very precisely identify where an item is. There are important
     /// subcases, like the items in an `Impl` block:
@@ -409,14 +411,14 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
     /// The names we will generate for `foo` and `bar` are:
     /// `[Ident("test"), Ident("bla"), Ident("Foo"), Impl(impl<T> Ty<T>, Disambiguator(0)), Ident("foo")]`
     /// `[Ident("test"), Ident("bla"), Ident("Foo"), Impl(impl<T> Ty<T>, Disambiguator(1)), Ident("bar")]`
-    pub fn hax_def_id_to_name(&mut self, def_id: &hax::DefId) -> Result<Name, Error> {
+    pub fn def_id_to_name(&mut self, def_id: &hax::DefId) -> Result<Name, Error> {
         if let Some(name) = self.cached_names.get(&def_id) {
             return Ok(name.clone());
         }
         trace!("Computing name for `{def_id:?}`");
 
         let parent_name = if let Some(parent) = &def_id.parent {
-            self.hax_def_id_to_name(parent)?
+            self.def_id_to_name(parent)?
         } else {
             Name { name: Vec::new() }
         };
@@ -434,7 +436,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
     /// Retrieve the name for an item.
     pub fn translate_name(&mut self, src: &TransItemSource) -> Result<Name, Error> {
         let def_id = src.as_def_id();
-        self.hax_def_id_to_name(def_id)
+        self.def_id_to_name(def_id)
     }
 
     /// Translates `T` into `U` using `hax`'s `SInto` trait, catching any hax panics.
@@ -746,7 +748,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
                 // Store the name early so the name matcher can identify paths. We can't to it for
                 // trait impls because they register themselves when computing their name.
                 if !matches!(id, TransItemSource::TraitImpl(_)) {
-                    if let Ok(name) = self.hax_def_id_to_name(id.as_def_id()) {
+                    if let Ok(name) = self.def_id_to_name(id.as_def_id()) {
                         self.translated.item_names.insert(trans_id, name);
                     }
                 }
