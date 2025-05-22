@@ -73,7 +73,7 @@ let
       ; then
         result="unsupported-feature"
     else
-        ${coreutils}/bin/timeout 10s ${charon}/bin/charon --no-cargo --input "$FILE" --dest-file "$FILE.llbc" > "$FILE.charon-output" 2>&1
+        ${coreutils}/bin/timeout 10s ${charon}/bin/charon rustc --dest-file "$FILE.llbc" -- "$FILE" > "$FILE.charon-output" 2>&1
         result=$?
     fi
     echo -n $result > "$FILE.charon-status"
