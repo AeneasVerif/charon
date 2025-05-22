@@ -1,3 +1,5 @@
+SHELL:=/usr/bin/env bash -O globstar
+
 .PHONY: all
 all: build
 

@@ -1,3 +1,5 @@
+SHELL:=/usr/bin/env bash -O globstar
+
 # Build, after formatting the code
 .PHONY: build
 build: format build-dev
