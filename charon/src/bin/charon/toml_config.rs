@@ -27,8 +27,6 @@ pub struct CharonTomlConfig {
     #[serde(default)]
     pub polonius: bool,
     #[serde(default)]
-    pub no_code_duplication: bool,
-    #[serde(default)]
     pub extract_opaque_bodies: bool,
     #[serde(default)]
     pub include: Vec<String>,
@@ -55,7 +53,6 @@ impl TomlConfig {
         config.mir_promoted |= self.charon.mir_promoted;
         config.mir_optimized |= self.charon.mir_optimized;
         config.use_polonius |= self.charon.polonius;
-        config.no_code_duplication |= self.charon.no_code_duplication;
         config.extract_opaque_bodies |= self.charon.extract_opaque_bodies;
         config.include.extend(self.charon.include);
         config.opaque.extend(self.charon.opaque);

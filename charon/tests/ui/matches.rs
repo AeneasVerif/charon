@@ -5,7 +5,7 @@ pub enum E1 {
     V2,
     V3,
 }
-/// Testing matches where several branches are "fused". We attempt to detect this when the option `--no-code-duplication` is activated,
+/// Testing matches where several branches are "fused".
 /// so as not to fail because the same block of code is duplicated, but it can be tricky
 /// because depending on the MIR pass we take as input, some intermediate blocks may be
 /// in the control flow or not.
@@ -31,7 +31,6 @@ pub enum E1 {
 /// especially because it makes the control-flow reconstruction more ad-hoc. The
 /// main problem is that it would be difficult to make the distinction between
 /// a goto we need to ignore, and a "real" goto.
-/// Consequently, whenever branches are fused, don't use `--no-code-duplication`.
 pub fn test1(x: E1) -> bool {
     match x {
         E1::V1 | E1::V2 => true,

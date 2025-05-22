@@ -1,4 +1,3 @@
-//@ charon-args=--no-code-duplication
 pub struct Pair<T1, T2> {
     pub x: T1,
     pub y: T2,

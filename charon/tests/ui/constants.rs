@@ -1,4 +1,3 @@
-//@ charon-args=--no-code-duplication
 //! Tests with constants
 
 // Integers

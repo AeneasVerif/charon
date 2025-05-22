@@ -44,11 +44,6 @@ type Cfg = DiGraphMap<src::BlockId, ()>;
 
 /// Small utility
 struct BlockInfo<'a> {
-    /// `no_code_duplication`: if true, check that no block is translated twice (this
-    /// can be a sign that the reconstruction is of poor quality, but sometimes
-    /// code duplication is necessary, in the presence of "fused" match branches for
-    /// instance, like in `match ... { Foo | Bar => { ... }}`).
-    no_code_duplication: bool,
     cfg: &'a CfgInfo,
     body: &'a src::ExprBody,
     exits_info: &'a ExitInfo,
@@ -1607,44 +1602,6 @@ fn translate_terminator(
     }
 }
 
-/// Return `true` if whatever the path we take, evaluating the statement
-/// necessarily leads to:
-/// - a panic or return
-/// - a break which goes to a loop outside the expression
-/// - a continue statement
-fn is_terminal(block: &tgt::Block) -> bool {
-    is_terminal_explore_block(0, block)
-}
-
-fn is_terminal_explore(num_loops: usize, st: &tgt::Statement) -> bool {
-    match &st.content {
-        tgt::RawStatement::Assign(_, _)
-        | tgt::RawStatement::SetDiscriminant(_, _)
-        | tgt::RawStatement::CopyNonOverlapping(_)
-        | tgt::RawStatement::StorageLive(_)
-        | tgt::RawStatement::StorageDead(_)
-        | tgt::RawStatement::Deinit(_)
-        | tgt::RawStatement::Drop(_)
-        | tgt::RawStatement::Assert(_)
-        | tgt::RawStatement::Call(_)
-        | tgt::RawStatement::Nop
-        | tgt::RawStatement::Error(_) => false,
-        tgt::RawStatement::Abort(..) | tgt::RawStatement::Return => true,
-        tgt::RawStatement::Break(index) => *index >= num_loops,
-        tgt::RawStatement::Continue(_index) => true,
-        tgt::RawStatement::Switch(switch) => switch
-            .iter_targets()
-            .all(|tgt_st| is_terminal_explore_block(num_loops, tgt_st)),
-        tgt::RawStatement::Loop(loop_st) => is_terminal_explore_block(num_loops + 1, loop_st),
-    }
-}
-fn is_terminal_explore_block(num_loops: usize, block: &tgt::Block) -> bool {
-    block
-        .statements
-        .iter()
-        .any(|st| is_terminal_explore(num_loops, st))
-}
-
 /// Remark: some values are boxed (here, the returned statement) so that they
 /// are allocated on the heap. This reduces stack usage (we had problems with
 /// stack overflows in the past). A more efficient solution would be to use loops
@@ -1663,9 +1620,6 @@ fn translate_block(
         switch_exit_blocks,
         block_id
     );
-    if info.no_code_duplication {
-        assert!(!info.explored.contains(&block_id));
-    }
     info.explored.insert(block_id);
 
     let block = info.body.body.get(block_id).unwrap();
@@ -1732,14 +1686,7 @@ fn translate_block(
     if is_loop {
         // Put the loop body inside a `Loop`.
         block = tgt::Statement::new(block.span, tgt::RawStatement::Loop(block)).into_block()
-    } else if is_switch {
-        if next_block.is_some() {
-            // Sanity check: if there is an exit block, this block must be
-            // reachable (i.e, there must exist a path in the switch which
-            // doesn't end with `panic`, `return`, etc.).
-            assert!(!is_terminal(&block));
-        }
-    } else {
+    } else if !is_switch {
         assert!(next_block.is_none());
     }
 
@@ -1754,11 +1701,7 @@ fn translate_block(
     block
 }
 
-fn translate_body_aux(
-    ctx: &mut TransformCtx,
-    no_code_duplication: bool,
-    src_body: &src::ExprBody,
-) -> tgt::ExprBody {
+fn translate_body_aux(ctx: &mut TransformCtx, src_body: &src::ExprBody) -> tgt::ExprBody {
     // Explore the function body to create the control-flow graph without backward
     // edges, and identify the loop entries (which are destinations of backward edges).
     let cfg_info = build_cfg_info(src_body);
@@ -1776,7 +1719,6 @@ fn translate_body_aux(
     // Note that we shouldn't get `None`.
     let mut explored = HashSet::new();
     let mut info = BlockInfo {
-        no_code_duplication,
         cfg: &cfg_info,
         body: src_body,
         exits_info: &exits_info,
@@ -1792,13 +1734,13 @@ fn translate_body_aux(
     }
 }
 
-fn translate_body(ctx: &mut TransformCtx, no_code_duplication: bool, body: &mut gast::Body) {
+fn translate_body(ctx: &mut TransformCtx, body: &mut gast::Body) {
     use gast::Body::{Structured, Unstructured};
     let Unstructured(src_body) = body else {
         panic!("Called `ullbc_to_llbc` on an already restructured body")
     };
     trace!("About to translate to ullbc: {:?}", src_body.span);
-    let tgt_body = translate_body_aux(ctx, no_code_duplication, src_body);
+    let tgt_body = translate_body_aux(ctx, src_body);
     *body = Structured(tgt_body);
 }
 
@@ -1807,7 +1749,7 @@ impl TransformPass for Transform {
     fn transform_ctx(&self, ctx: &mut TransformCtx) {
         // Translate the bodies one at a time.
         ctx.for_each_body(|ctx, body| {
-            translate_body(ctx, ctx.options.no_code_duplication, body);
+            translate_body(ctx, body);
         });
 
         // Print the functions
