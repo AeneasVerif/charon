@@ -28,14 +28,8 @@ fn charon<T>(args: &[&str], dir: &str, f: impl FnOnce(String, String) -> Result<
 
 #[test]
 fn charon_pretty_print() -> Result<()> {
-    // charon --rustc-flag=--crate-type=rlib --no-cargo --input tests/ui/arrays.rs
     charon(
-        &[
-            "--rustc-flag=--crate-type=rlib",
-            "--no-cargo",
-            "--input",
-            "tests/ui/arrays.rs",
-        ],
+        &["rustc", "--", "--crate-type=rlib", "tests/ui/arrays.rs"],
         ".",
         |_, _| {
             // arrays.llbc is generated

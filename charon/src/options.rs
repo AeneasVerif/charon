@@ -155,7 +155,6 @@ pub struct CliOpts {
     #[serde(default)]
     pub start_from: Vec<String>,
     /// Do not run cargo; instead, run the driver directly.
-    // FIXME: use a subcommand instead, when we update clap to support flattening.
     #[clap(long = "no-cargo")]
     #[serde(default)]
     pub no_cargo: bool,
@@ -289,6 +288,30 @@ impl CliOpts {
             "Can't use --mir_promoted and --mir_optimized at the same time"
         );
 
+        if self.input_file.is_some() {
+            display_unspanned_error(
+                Level::WARNING,
+                "`--input` is deprecated, use `charon rustc [charon options] -- [rustc options] <input file>` instead",
+            )
+        }
+        if self.no_cargo {
+            display_unspanned_error(
+                Level::WARNING,
+                "`--no-cargo` is deprecated, use `charon rustc [charon options] -- [rustc options] <input file>` instead",
+            )
+        }
+        if self.read_llbc.is_some() {
+            display_unspanned_error(
+                Level::WARNING,
+                "`--read_llbc` is deprecated, use `charon pretty-print <input file>` instead",
+            )
+        }
+        if self.use_polonius {
+            display_unspanned_error(
+                Level::WARNING,
+                "`--polonius` is deprecated, use `--rustc-arg=-Zpolonius` instead",
+            )
+        }
         if self.mir_optimized {
             display_unspanned_error(
                 Level::WARNING,
@@ -299,6 +322,24 @@ impl CliOpts {
             display_unspanned_error(
                 Level::WARNING,
                 "`--mir_promoted` is deprecated, use `--mir promoted` instead",
+            )
+        }
+        if self.lib {
+            display_unspanned_error(
+                Level::WARNING,
+                "`--lib` is deprecated, use `charon cargo -- --lib` instead",
+            )
+        }
+        if self.bin.is_some() {
+            display_unspanned_error(
+                Level::WARNING,
+                "`--bin` is deprecated, use `charon cargo -- --bin <name>` instead",
+            )
+        }
+        if self.dest_dir.is_some() {
+            display_unspanned_error(
+                Level::WARNING,
+                "`--dest` is deprecated, use `--dest-file` instead",
             )
         }
     }
