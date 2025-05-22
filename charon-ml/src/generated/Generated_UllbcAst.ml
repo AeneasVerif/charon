@@ -84,14 +84,16 @@ and raw_terminator =
           - [discr]
           - [targets]
        *)
-  | Call of call * block_id
+  | Call of call * block_id * block_id
       (** 
           Fields:
           - [call]
           - [target]
+          - [on_unwind]
        *)
   | Abort of abort_kind  (** Handles panics and impossible cases. *)
   | Return
+  | UnwindResume
 
 and terminator = {
   span : span;

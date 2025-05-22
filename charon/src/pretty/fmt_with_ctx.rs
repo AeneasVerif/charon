@@ -61,6 +61,7 @@ impl<C: AstFormatter> FmtWithCtx<C> for AbortKind {
                 format!("{tab}panic{name}")
             }
             AbortKind::UndefinedBehavior => format!("{tab}undefined_behavior"),
+            AbortKind::UnwindTerminate => format!("{tab}unwind_terminate"),
         }
     }
 }
@@ -1260,16 +1261,21 @@ impl<C: AstFormatter> FmtWithCtx<C> for Terminator {
                     )
                 }
             },
-            RawTerminator::Call { call, target } => {
+            RawTerminator::Call {
+                call,
+                target,
+                on_unwind,
+            } => {
                 let (call_s, _) = fmt_call(ctx, call);
                 write!(
                     &mut out,
-                    "{tab}{} := {call_s} -> bb{target}",
+                    "{tab}{} := {call_s} -> bb{target} (unwind: bb{on_unwind})",
                     call.dest.fmt_with_ctx(ctx)
                 )
             }
             RawTerminator::Abort(kind) => write!(&mut out, "{tab}{}", kind.fmt_with_ctx(ctx)),
             RawTerminator::Return => write!(&mut out, "{tab}return"),
+            RawTerminator::UnwindResume => write!(&mut out, "{tab}unwind_continue"),
         };
         out
     }

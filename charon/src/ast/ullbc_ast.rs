@@ -92,10 +92,12 @@ pub enum RawTerminator {
     Call {
         call: Call,
         target: BlockId,
+        on_unwind: BlockId,
     },
     /// Handles panics and impossible cases.
     Abort(AbortKind),
     Return,
+    UnwindResume,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, Drive, DriveMut)]

@@ -53,6 +53,7 @@ impl UllbcPass for Transform {
             let value_to_write;
             let old_assign_idx;
             let assign_span;
+            let unwind_target;
 
             if let Some(candidate_block) = b.body.get(candidate_block_idx)
                 // If the terminator is a call
@@ -64,6 +65,7 @@ impl UllbcPass for Transform {
                             func: _, // TODO: once we have a system to recognize intrinsics, check the call is to exchange_malloc.
                             dest: malloc_dest,
                         },
+                        on_unwind,
                 } = &candidate_block.terminator.content
                 // The call has two move arguments
                 && let [Operand::Move(arg0), Operand::Move(arg1)] = malloc_args.as_slice()
@@ -110,6 +112,7 @@ impl UllbcPass for Transform {
                 box_generics = generics.clone();
                 second_block = *target_block_idx;
                 assign_span = *span;
+                unwind_target = *on_unwind;
             } else {
                 continue;
             }
@@ -159,6 +162,7 @@ impl UllbcPass for Transform {
                     dest: at_5,
                 },
                 target: second_block,
+                on_unwind: unwind_target,
             };
 
             // We now update the statements in the second block.
