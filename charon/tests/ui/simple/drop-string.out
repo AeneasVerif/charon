@@ -9,17 +9,25 @@ pub trait MetaSized<Self>
 pub trait Drop<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    fn drop<'_0> = drop<'_0_0, Self>[Self]
+    fn drop<'_0> = core::ops::drop::Drop::drop<'_0_0, Self>[Self]
 }
 
-// Full name: core::ops::drop::Drop::drop
-pub fn drop<'_0, Self>(@1: &'_0 mut (Self))
+pub fn core::ops::drop::Drop::drop<'_0, Self>(@1: &'_0 mut (Self))
 where
     [@TraitClause0]: Drop<Self>,
 
 // Full name: alloc::string::String
 #[lang_item("String")]
 pub opaque type String
+
+// Full name: alloc::string::{impl Drop for String}::drop
+fn {impl Drop for String}::drop<'_0>(@1: &'_0 mut (String))
+
+// Full name: alloc::string::{impl Drop for String}
+impl Drop for String {
+    parent_clause0 = MetaSized<String>
+    fn drop<'_0> = {impl Drop for String}::drop<'_0_0>
+}
 
 // Full name: alloc::string::{String}::new
 #[lang_item("string_new")]
@@ -32,7 +40,7 @@ fn use_string(@1: String)
     let @1: String; // arg #1
 
     @0 := ()
-    drop[Drop<String>] @1
+    drop[{impl Drop for String}] @1
     @0 := ()
     return
 }
@@ -46,7 +54,7 @@ fn main()
     storage_live(_s@1)
     _s@1 := new()
     @0 := ()
-    drop[Drop<String>] _s@1
+    drop[{impl Drop for String}] _s@1
     storage_dead(_s@1)
     @0 := ()
     return

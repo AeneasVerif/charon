@@ -94,6 +94,15 @@ where
 #[lang_item("String")]
 pub opaque type String
 
+// Full name: alloc::string::{impl Drop for String}::drop
+fn {impl Drop for String}::drop<'_0>(@1: &'_0 mut (String))
+
+// Full name: alloc::string::{impl Drop for String}
+impl Drop for String {
+    parent_clause0 = MetaSized<String>
+    fn drop<'_0> = {impl Drop for String}::drop<'_0_0>
+}
+
 #[lang_item("string_new")]
 pub fn alloc::string::{String}::new() -> String
 
@@ -206,7 +215,7 @@ fn foo()
     drop[{impl Drop for Rc<T, A>[@TraitClause0, @TraitClause1]}<dyn (exists(TODO)), Global>[MetaSized<dyn (exists(TODO))>, Sized<Global>]] @19
     storage_dead(@19)
     @0 := ()
-    drop[Drop<String>] string@11
+    drop[{impl Drop for String}] string@11
     storage_dead(string@11)
     storage_dead(array@1)
     @0 := ()

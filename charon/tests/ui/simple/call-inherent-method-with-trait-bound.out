@@ -16,11 +16,10 @@ pub trait Sized<Self>
 pub trait Drop<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    fn drop<'_0> = drop<'_0_0, Self>[Self]
+    fn drop<'_0> = core::ops::drop::Drop::drop<'_0_0, Self>[Self]
 }
 
-// Full name: core::ops::drop::Drop::drop
-pub fn drop<'_0, Self>(@1: &'_0 mut (Self))
+pub fn core::ops::drop::Drop::drop<'_0, Self>(@1: &'_0 mut (Self))
 where
     [@TraitClause0]: Drop<Self>,
 
@@ -45,6 +44,20 @@ where
   S,
 }
 
+// Full name: test_crate::{impl Drop for HashMap<S>[@TraitClause0]}::drop
+fn {impl Drop for HashMap<S>[@TraitClause0]}::drop<'_0, S>(@1: &'_0 mut (HashMap<S>[@TraitClause0]))
+where
+    [@TraitClause0]: Sized<S>,
+
+// Full name: test_crate::{impl Drop for HashMap<S>[@TraitClause0]}
+impl<S> Drop for HashMap<S>[@TraitClause0]
+where
+    [@TraitClause0]: Sized<S>,
+{
+    parent_clause0 = MetaSized<HashMap<S>[@TraitClause0]>
+    fn drop<'_0> = {impl Drop for HashMap<S>[@TraitClause0]}::drop<'_0_0, S>[@TraitClause0]
+}
+
 // Full name: test_crate::{HashMap<S>[@TraitClause0]}::get
 pub fn get<S, Q, Clause2_Type>(@1: HashMap<S>[@TraitClause0], @2: Q)
 where
@@ -58,7 +71,7 @@ where
 
     @0 := ()
     drop[Drop<Q>] _k@2
-    drop[Drop<HashMap<S>[@TraitClause0]>] _x@1
+    drop[{impl Drop for HashMap<S>[@TraitClause0]}<S>[@TraitClause0]] _x@1
     @0 := ()
     return
 }
@@ -76,7 +89,7 @@ where
 
     @0 := ()
     drop[Drop<Q>] _k@2
-    drop[Drop<HashMap<S>[@TraitClause0]>] _x@1
+    drop[{impl Drop for HashMap<S>[@TraitClause0]}<S>[@TraitClause0]] _x@1
     @0 := ()
     return
 }

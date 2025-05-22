@@ -16,11 +16,10 @@ pub trait Sized<Self>
 pub trait Drop<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    fn drop<'_0> = drop<'_0_0, Self>[Self]
+    fn drop<'_0> = core::ops::drop::Drop::drop<'_0_0, Self>[Self]
 }
 
-// Full name: core::ops::drop::Drop::drop
-pub fn drop<'_0, Self>(@1: &'_0 mut (Self))
+pub fn core::ops::drop::Drop::drop<'_0, Self>(@1: &'_0 mut (Self))
 where
     [@TraitClause0]: Drop<Self>,
 
@@ -43,6 +42,15 @@ where
 #[lang_item("String")]
 pub opaque type String
 
+// Full name: alloc::string::{impl Drop for String}::drop
+fn {impl Drop for String}::drop<'_0>(@1: &'_0 mut (String))
+
+// Full name: alloc::string::{impl Drop for String}
+impl Drop for String {
+    parent_clause0 = MetaSized<String>
+    fn drop<'_0> = {impl Drop for String}::drop<'_0_0>
+}
+
 // Full name: alloc::string::{String}::new
 #[lang_item("string_new")]
 pub fn new() -> String
@@ -60,6 +68,26 @@ static test_crate::F: fn(u8) -> Option<u8>[Sized<u8>] = test_crate::F()
 struct test_crate::Foo {
   u32,
   String,
+}
+
+// Full name: test_crate::{impl Drop for test_crate::Foo}::drop
+fn {impl Drop for test_crate::Foo}::drop<'_0>(@1: &'_0 mut (test_crate::Foo))
+{
+    let @0: (); // return
+    let @1: *mut test_crate::Foo; // arg #1
+    let @2: &'_ mut (test_crate::Foo); // anonymous local
+
+    storage_live(@2)
+    @2 := &mut *(@1)
+    drop[{impl Drop for String}] (*(@2)).1
+    @0 := ()
+    return
+}
+
+// Full name: test_crate::{impl Drop for test_crate::Foo}
+impl Drop for test_crate::Foo {
+    parent_clause0 = MetaSized<test_crate::Foo>
+    fn drop<'_0> = {impl Drop for test_crate::Foo}::drop<'_0_0>
 }
 
 fn test_crate::Foo(@1: u32, @2: String) -> test_crate::Foo
@@ -145,7 +173,7 @@ fn main()
     @9 := test_crate::Foo(const (42 : u32), move (@11))
     storage_dead(@11)
     storage_dead(@10)
-    drop[Drop<test_crate::Foo>] @9
+    drop[{impl Drop for test_crate::Foo}] @9
     storage_dead(@9)
     storage_live(f@12)
     f@12 := const (Variant<'_, i32>[Sized<i32>])

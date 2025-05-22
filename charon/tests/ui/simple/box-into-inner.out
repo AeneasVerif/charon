@@ -55,6 +55,15 @@ where
 #[lang_item("String")]
 pub opaque type String
 
+// Full name: alloc::string::{impl Drop for String}::drop
+fn {impl Drop for String}::drop<'_0>(@1: &'_0 mut (String))
+
+// Full name: alloc::string::{impl Drop for String}
+impl Drop for String {
+    parent_clause0 = MetaSized<String>
+    fn drop<'_0> = {impl Drop for String}::drop<'_0_0>
+}
+
 // Full name: test_crate::into_inner
 fn into_inner(@1: alloc::boxed::Box<String>[MetaSized<String>, Sized<Global>])
 {
@@ -96,7 +105,7 @@ fn into_inner(@1: alloc::boxed::Box<String>[MetaSized<String>, Sized<Global>])
     assert(copy (@13) == true)
     _x@2 := move (*(@6))
     @0 := ()
-    drop[Drop<String>] _x@2
+    drop[{impl Drop for String}] _x@2
     storage_dead(_x@2)
     @5 := transmute<NonNull<String>, *const String>(copy ((*(b@1)).0))
     @3 := &mut b@1

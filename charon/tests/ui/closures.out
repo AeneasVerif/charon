@@ -82,11 +82,10 @@ pub trait Destruct<Self>
 pub trait Drop<Self>
 {
     parent_clause0 : [@TraitClause0]: MetaSized<Self>
-    fn drop<'_0> = drop<'_0_0, Self>[Self]
+    fn drop<'_0> = core::ops::drop::Drop::drop<'_0_0, Self>[Self]
 }
 
-// Full name: core::ops::drop::Drop::drop
-pub fn drop<'_0, Self>(@1: &'_0 mut (Self))
+pub fn core::ops::drop::Drop::drop<'_0, Self>(@1: &'_0 mut (Self))
 where
     [@TraitClause0]: Drop<Self>,
 
@@ -121,6 +120,20 @@ where
 {
   None,
   Some(T),
+}
+
+// Full name: core::option::{impl Drop for Option<T>[@TraitClause0]}::drop
+fn {impl Drop for Option<T>[@TraitClause0]}::drop<'_0, T>(@1: &'_0 mut (Option<T>[@TraitClause0]))
+where
+    [@TraitClause0]: Sized<T>,
+
+// Full name: core::option::{impl Drop for Option<T>[@TraitClause0]}
+impl<T> Drop for Option<T>[@TraitClause0]
+where
+    [@TraitClause0]: Sized<T>,
+{
+    parent_clause0 = MetaSized<Option<T>[@TraitClause0]>
+    fn drop<'_0> = {impl Drop for Option<T>[@TraitClause0]}::drop<'_0_0, T>[@TraitClause0]
 }
 
 // Full name: test_crate::incr_u32
@@ -188,7 +201,7 @@ where
         },
     }
     drop[Drop<F>] f@2
-    drop[Drop<Option<T>[@TraitClause0]>] x@1
+    drop[{impl Drop for Option<T>[@TraitClause0]}<T>[@TraitClause0]] x@1
     return
 }
 

@@ -51,6 +51,10 @@ pub enum TransItemSourceKind {
     ClosureMethod(ClosureKind),
     /// A cast of a state-less closure as a function pointer.
     ClosureAsFnCast,
+    /// A fictitious trait impl corresponding to the drop glue code for the given ADT.
+    DropGlueImpl,
+    /// The `drop` method for the impl above.
+    DropGlueMethod,
 }
 
 impl TransItemSource {
@@ -60,6 +64,17 @@ impl TransItemSource {
 
     pub fn as_def_id(&self) -> &hax::DefId {
         &self.def_id
+    }
+
+    /// Whether this item is the "main" item for this def_id or not (e.g. drop impl/methods are not
+    /// the main item).
+    pub(crate) fn is_derived_item(&self) -> bool {
+        use TransItemSourceKind::*;
+        match self.kind {
+            Global | TraitDecl | TraitImpl | InherentImpl | Module | Fun | Type => false,
+            ClosureTraitImpl(..) | ClosureMethod(..) | ClosureAsFnCast | DropGlueImpl
+            | DropGlueMethod => true,
+        }
     }
 
     /// Value with which we order values.
@@ -141,34 +156,25 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
         let item_id = match self.id_map.get(src) {
             Some(tid) => *tid,
             None => {
+                use TransItemSourceKind::*;
                 let trans_id = match src.kind {
-                    TransItemSourceKind::Type => {
-                        AnyTransId::Type(self.translated.type_decls.reserve_slot())
-                    }
-                    TransItemSourceKind::TraitDecl => {
-                        AnyTransId::TraitDecl(self.translated.trait_decls.reserve_slot())
-                    }
-                    TransItemSourceKind::TraitImpl | TransItemSourceKind::ClosureTraitImpl(..) => {
+                    Type => AnyTransId::Type(self.translated.type_decls.reserve_slot()),
+                    TraitDecl => AnyTransId::TraitDecl(self.translated.trait_decls.reserve_slot()),
+                    TraitImpl | ClosureTraitImpl(..) | DropGlueImpl => {
                         AnyTransId::TraitImpl(self.translated.trait_impls.reserve_slot())
                     }
-                    TransItemSourceKind::Global => {
-                        AnyTransId::Global(self.translated.global_decls.reserve_slot())
-                    }
-                    TransItemSourceKind::Fun
-                    | TransItemSourceKind::ClosureMethod(..)
-                    | TransItemSourceKind::ClosureAsFnCast => {
+                    Global => AnyTransId::Global(self.translated.global_decls.reserve_slot()),
+                    Fun | ClosureMethod(..) | ClosureAsFnCast | DropGlueMethod => {
                         AnyTransId::Fun(self.translated.fun_decls.reserve_slot())
                     }
-                    TransItemSourceKind::InherentImpl | TransItemSourceKind::Module => {
-                        return None;
-                    }
+                    InherentImpl | Module => return None,
                 };
                 // Add the id to the queue of declarations to translate
                 self.id_map.insert(src.clone(), trans_id);
                 self.reverse_id_map.insert(trans_id, src.clone());
                 // Store the name early so the name matcher can identify paths. We can't to it for
                 // trait impls because they register themselves when computing their name.
-                if !matches!(src.kind, TransItemSourceKind::TraitImpl) {
+                if !matches!(src.kind, TraitImpl) {
                     if let Ok(name) = self.def_id_to_name(src.as_def_id()) {
                         self.translated.item_names.insert(trans_id, name);
                     }
@@ -300,6 +306,30 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
             .register_and_enqueue_id(src, def_id, TransItemSourceKind::Global)
             .unwrap()
             .as_global()
+            .unwrap()
+    }
+
+    pub(crate) fn register_drop_trait_impl_id(
+        &mut self,
+        src: &Option<DepSource>,
+        def_id: &hax::DefId,
+    ) -> TraitImplId {
+        *self
+            .register_and_enqueue_id(src, def_id, TransItemSourceKind::DropGlueImpl)
+            .unwrap()
+            .as_trait_impl()
+            .unwrap()
+    }
+
+    pub(crate) fn register_drop_method_id(
+        &mut self,
+        src: &Option<DepSource>,
+        def_id: &hax::DefId,
+    ) -> FunDeclId {
+        *self
+            .register_and_enqueue_id(src, def_id, TransItemSourceKind::DropGlueMethod)
+            .unwrap()
+            .as_fun()
             .unwrap()
     }
 }
@@ -505,6 +535,33 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
     ) -> FunDeclId {
         let src = self.make_dep_source(span);
         self.t_ctx.register_closure_as_fun_decl_id(&src, id)
+    }
+
+    pub(crate) fn register_drop_trait_impl_id(
+        &mut self,
+        span: Span,
+        id: &hax::DefId,
+    ) -> TraitImplId {
+        let src = self.make_dep_source(span);
+        self.t_ctx.register_drop_trait_impl_id(&src, id)
+    }
+
+    pub(crate) fn translate_drop_trait_impl_ref(
+        &mut self,
+        span: Span,
+        item: &hax::ItemRef,
+    ) -> Result<TraitImplRef, Error> {
+        let id = self.register_drop_trait_impl_id(span, &item.def_id);
+        let generics = self.translate_generic_args(span, &item.generic_args, &item.impl_exprs)?;
+        Ok(TraitImplRef {
+            id,
+            generics: Box::new(generics),
+        })
+    }
+
+    pub(crate) fn register_drop_method_id(&mut self, span: Span, id: &hax::DefId) -> FunDeclId {
+        let src = self.make_dep_source(span);
+        self.t_ctx.register_drop_method_id(&src, id)
     }
 }
 
