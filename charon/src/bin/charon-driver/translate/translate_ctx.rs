@@ -100,7 +100,7 @@ pub struct TranslateCtx<'tcx> {
     /// Cache the names to compute them only once each.
     pub cached_names: HashMap<hax::DefId, Name>,
     /// Cache the `ItemMeta`s to compute them only once each.
-    pub cached_item_metas: HashMap<hax::DefId, ItemMeta>,
+    pub cached_item_metas: HashMap<TransItemSource, ItemMeta>,
 }
 
 /// A level of binding for type-level variables. Each item has a top-level binding level
@@ -368,7 +368,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
         Ok(path_elem)
     }
 
-    /// Retrieve an item name from a [`hax::DefId`].
+    /// Retrieve the name for this [`hax::DefId`].
     /// We lookup the path associated to an id, and convert it to a name.
     /// Paths very precisely identify where an item is. There are important
     /// subcases, like the items in an `Impl` block:
@@ -431,6 +431,12 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
         Ok(name)
     }
 
+    /// Retrieve the name for an item.
+    pub fn translate_name(&mut self, src: &TransItemSource) -> Result<Name, Error> {
+        let def_id = src.as_def_id();
+        self.hax_def_id_to_name(def_id)
+    }
+
     /// Translates `T` into `U` using `hax`'s `SInto` trait, catching any hax panics.
     pub fn catch_sinto<S, T, U>(&mut self, s: &S, span: Span, x: &T) -> Result<U, Error>
     where
@@ -484,10 +490,11 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
     pub(crate) fn translate_item_meta(
         &mut self,
         def: &hax::FullDef,
+        item_src: &TransItemSource,
         name: Name,
         name_opacity: ItemOpacity,
     ) -> ItemMeta {
-        if let Some(item_meta) = self.cached_item_metas.get(&def.def_id) {
+        if let Some(item_meta) = self.cached_item_metas.get(&item_src) {
             return item_meta.clone();
         }
         let span = def.source_span.as_ref().unwrap_or(&def.span);
@@ -518,7 +525,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
             lang_item,
         };
         self.cached_item_metas
-            .insert(def.def_id.clone(), item_meta.clone());
+            .insert(item_src.clone(), item_meta.clone());
         item_meta
     }
 
