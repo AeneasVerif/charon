@@ -909,13 +909,14 @@ impl GenerateCodeFor {
 
 fn main() -> Result<()> {
     let dir = PathBuf::from("src/bin/generate-ml");
-    let charon_llbc = dir.join("charon-itself.llbc");
+    let charon_llbc = dir.join("charon-itself.ullbc");
     let reuse_llbc = std::env::var("CHARON_ML_REUSE_LLBC").is_ok(); // Useful when developping
     if !reuse_llbc {
         // Call charon on itself
         let mut cmd = Command::cargo_bin("charon")?;
         cmd.arg("--cargo-arg=--lib");
         cmd.arg("--hide-marker-traits");
+        cmd.arg("--ullbc");
         cmd.arg("--dest-file");
         cmd.arg(&charon_llbc);
         let output = cmd.output()?;
