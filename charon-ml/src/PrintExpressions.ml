@@ -222,7 +222,7 @@ and rvalue_to_string (env : 'a fmt_env) (rv : rvalue) : string =
       ^ "]"
   | ShallowInitBox (op, _) ->
       "shallow-init-box(" ^ operand_to_string env op ^ ")"
-  | Aggregate (akind, ops) -> (
+  | Aggregate (akind, ops) -> begin
       let ops = List.map (operand_to_string env) ops in
       match akind with
       | AggregatedAdt (type_id, opt_variant_id, opt_field_id, _generics) -> (
@@ -267,8 +267,4 @@ and rvalue_to_string (env : 'a fmt_env) (rv : rvalue) : string =
             | RShared -> "*const"
           in
           refk ^ " (" ^ String.concat ", " ops ^ ")"
-      | AggregatedClosure (fid, generics) ->
-          "{"
-          ^ fun_decl_id_to_string env fid
-          ^ generic_args_to_string env generics
-          ^ "}" ^ " {" ^ String.concat ", " ops ^ "}")
+    end

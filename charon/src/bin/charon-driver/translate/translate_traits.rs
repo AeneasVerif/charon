@@ -28,7 +28,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
         def_id: &hax::DefId,
     ) -> Result<TraitItemName, Error> {
         // Translate the name
-        let name = self.def_id_to_name(def_id)?;
+        let name = self.hax_def_id_to_name(def_id)?;
         let (name, id) = name.name.last().unwrap().as_ident().unwrap();
         assert!(id.is_zero());
         Ok(TraitItemName(name.to_string()))

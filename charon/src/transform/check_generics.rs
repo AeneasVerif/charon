@@ -7,7 +7,7 @@ use std::{borrow::Cow, fmt::Display};
 use crate::{
     ast::*,
     errors::Level,
-    formatter::{AstFormatter, FmtCtx, IntoFormatter},
+    formatter::{FmtCtx, IntoFormatter, PushBinder},
     pretty::FmtWithCtx,
 };
 
@@ -65,19 +65,17 @@ impl CheckGenericsVisitor<'_> {
         check_inner: impl Fn(&A, &B),
     ) where
         I: Idx,
-        FmtA: AstFormatter,
-        A: FmtWithCtx<FmtA>,
-        B: FmtWithCtx<FmtB>,
+        A: for<'a> FmtWithCtx<FmtA>,
+        B: for<'a> FmtWithCtx<FmtB>,
     {
         if a.elem_count() == b.elem_count() {
             a.iter().zip(b.iter()).for_each(|(x, y)| check_inner(x, y));
         } else {
             let a = a.iter().map(|x| x.fmt_with_ctx(a_fmt)).join(", ");
             let b = b.iter().map(|x| x.fmt_with_ctx(b_fmt)).join(", ");
-            let target = target.fmt_with_ctx(a_fmt);
             self.error(format!(
                 "Mismatched {kind}:\
-                \ntarget: {target}\
+                \ntarget: {target:?}\
                 \nexpected: [{a}]\
                 \n     got: [{b}]"
             ))
@@ -206,12 +204,6 @@ impl VisitAst for CheckGenericsVisitor<'_> {
         match agg {
             AggregateKind::Adt(..) | AggregateKind::Array(..) | AggregateKind::RawPtr(..) => {
                 self.visit_inner(agg)?
-            }
-            AggregateKind::Closure(_id, args) => {
-                // TODO(#194): handle closure generics properly
-                // This does not visit the args themselves, only their contents, because we mess up
-                // closure generics for now.
-                self.visit_inner(args.as_ref())?
             }
         }
         Continue(())

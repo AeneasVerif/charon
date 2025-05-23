@@ -1,4 +1,3 @@
-//@ known-panic
 //@ charon-args=--monomorphize
 fn apply_to(f: &impl Fn(u8, u8) -> u8) -> u8 {
     f(10, 20)

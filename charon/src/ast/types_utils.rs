@@ -548,6 +548,20 @@ impl Ty {
         TyKind::Adt(TypeId::Tuple, GenericArgs::empty(GenericsSource::Builtin)).into_ty()
     }
 
+    pub fn mk_tuple(tys: Vec<Ty>) -> Ty {
+        TyKind::Adt(
+            TypeId::Tuple,
+            GenericArgs::new(
+                Vector::new(),
+                tys.into(),
+                Vector::new(),
+                Vector::new(),
+                GenericsSource::Builtin,
+            ),
+        )
+        .into_ty()
+    }
+
     /// Return true if this is a scalar type
     pub fn is_scalar(&self) -> bool {
         match self.kind() {
