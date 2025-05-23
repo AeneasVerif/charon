@@ -111,9 +111,9 @@ and copy_non_overlapping = { src : operand; dst : operand; count : operand }
     avoid a lot of small branches.
 
     We translate MIR asserts (introduced for out-of-bounds accesses or divisions by zero for
-    instance) to this. We then eliminate them in [crate::remove_dynamic_checks], because they're
-    implicit in the semantics of our array accesses etc. Finally we introduce new asserts in
-    [crate::reconstruct_asserts].
+    instance) to this. We then eliminate them in [crate::transform::remove_dynamic_checks],
+    because they're implicit in the semantics of our array accesses etc. Finally we introduce new asserts in
+    [crate::transform::reconstruct_asserts].
  *)
 and assertion = {
   cond : operand;
@@ -125,7 +125,7 @@ and assertion = {
 and closure_kind = Fn | FnMut | FnOnce
 
 (** Additional information for closures.
-    We mostly use it in micro-passes like [crate::update_closure_signature].
+    We mostly use it in micro-passes like [crate::transform::update_closure_signatures].
  *)
 and closure_info = {
   kind : closure_kind;

@@ -263,11 +263,12 @@ and fn_ptr = { func : fun_id_or_trait_method_ref; generics : generic_args }
 
 (** A constant expression.
 
-    Only the [Literal] and [Var] cases are left in the final LLBC.
+    Only the [Literal](RawConstantExpr::Literal) and [Var](RawConstantExpr::Var) 
+    cases are left in the final LLBC.
 
     The other cases come from a straight translation from the MIR:
 
-    [Adt] case:
+    [Adt](RawConstantExpr::Adt) case:
     It is a bit annoying, but rustc treats some ADT and tuple instances as
     constants when generating MIR:
     - an enumeration with one variant and no fields is a constant.
@@ -276,13 +277,13 @@ and fn_ptr = { func : fun_id_or_trait_method_ref; generics : generic_args }
       (if all the fields are constant) rather than as an aggregated value
     We later desugar those to regular ADTs, see [regularize_constant_adts.rs].
 
-    [Global] case: access to a global variable. We later desugar it to
+    [Global](RawConstantExpr::Global) case: access to a global variable. We later desugar it to
     a separate statement.
 
-    [Ref] case: reference to a constant value. We later desugar it to a separate
+    [Ref](RawConstantExpr::Ref) case: reference to a constant value. We later desugar it to a separate
     statement.
 
-    [FnPtr] case: a function pointer (to a top-level function).
+    [FnPtr](RawConstantExpr::FnPtr) case: a function pointer (to a top-level function).
 
     Remark:
     MIR seems to forbid more complex expressions like paths. For instance,
@@ -336,7 +337,7 @@ and rvalue =
           Note that discriminant values have type isize. We also store the identifier
           of the type from which we read the discriminant.
 
-          This case is filtered in [crate::remove_read_discriminant]
+          This case is filtered in [crate::transform::remove_read_discriminant]
        *)
   | Aggregate of aggregate_kind * operand list
       (** Creates an aggregate value, like a tuple, a struct or an enum:
@@ -442,7 +443,7 @@ and aggregate_kind =
   | AggregatedRawPtr of ty * ref_kind
       (** Construct a raw pointer from a pointer value, and its metadata (can be unit, if building
           a thin pointer). The type is the type of the pointee.
-          We lower this to a builtin function call for LLBC in [crate::ops_to_function_calls].
+          We lower this to a builtin function call for LLBC in [crate::transform::ops_to_function_calls].
        *)
 
 and local_id = (LocalId.id[@visitors.opaque])

@@ -216,7 +216,7 @@ and region =
 
     Should be read as a path inside the trait clauses which apply to the current
     definition. Note that every path designated by [TraitInstanceId] refers
-    to a *trait instance*, which is why the [Clause] variant may seem redundant
+    to a *trait instance*, which is why the [[Clause]](TraitRefKind::Clause) variant may seem redundant
     with some of the other variants.
  *)
 and trait_instance_id =

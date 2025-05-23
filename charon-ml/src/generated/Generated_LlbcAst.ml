@@ -72,7 +72,7 @@ and switch =
   | Match of place * (variant_id list * block) list * block option
       (** A match over an ADT.
 
-          The match statement is introduced in [crate::remove_read_discriminant]
+          The match statement is introduced in [crate::transform::remove_read_discriminant]
           (whenever we find a discriminant read, we merge it with the subsequent
           switch into a match).
        *)
