@@ -91,8 +91,7 @@ impl ItemTransCtx<'_, '_> {
             span,
             &args.parent_args,
             &args.parent_trait_refs,
-            // TODO: this should not be here
-            Some(args.tupled_sig.rebind(())),
+            None,
             GenericsSource::item(type_id),
         )?;
         Ok(TypeDeclRef {
@@ -178,9 +177,6 @@ impl ItemTransCtx<'_, '_> {
         span: Span,
         args: &hax::ClosureArgs,
     ) -> Result<TypeDeclKind, Error> {
-        // Add the lifetime generics coming from the higher-kindedness of the signature.
-        self.innermost_binder_mut()
-            .push_params_from_binder(args.tupled_sig.rebind(()))?;
         // TODO: need to add lifetimes for upvars?
         let fields: Vector<FieldId, Field> = args
             .upvar_tys
