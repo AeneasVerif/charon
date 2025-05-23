@@ -23,10 +23,10 @@ and place_kind =
 
 (** Note that we don't have the equivalent of "downcasts".
     Downcasts are actually necessary, for instance when initializing enumeration
-    values: the value is initially `Bottom`, and we need a way of knowing the
+    values: the value is initially [Bottom], and we need a way of knowing the
     variant.
     For example:
-    `((_0 as Right).0: T2) = move _1;`
+    [((_0 as Right).0: T2) = move _1;]
     In MIR, downcasts always happen before field projections: in our internal
     language, we thus merge downcasts and field projections.
  *)
@@ -49,8 +49,8 @@ and projection_elem =
           - [from_end]
        *)
   | Subslice of operand * operand * bool
-      (** Take a subslice of a slice or array. If `from_end` is `true` this is
-          `slice[from..slice.len() - to]`, otherwise this is `slice[from..to]`.
+      (** Take a subslice of a slice or array. If [from_end] is [true] this is
+          [slice[from..slice.len() - to]], otherwise this is [slice[from..to]].
           We **eliminate** this variant in a micro-pass for LLBC.
 
           Fields:
@@ -79,14 +79,14 @@ and borrow_kind =
        *)
   | BUniqueImmutable
       (** Data must be immutable but not aliasable. In other words you can't mutate the data but you
-          can mutate *through it*, e.g. if it points to a `&mut T`. This is only used in closure
+          can mutate *through it*, e.g. if it points to a [&mut T]. This is only used in closure
           captures, e.g.
-          ```rust,ignore
+          {@rust[
           let mut z = 3;
           let x: &mut isize = &mut z;
           let y = || *x += 5;
-          ```
-          Here the captured variable can't be `&mut &mut x` since the `x` binding is not mutable, yet
+          ]}
+          Here the captured variable can't be [&mut &mut x] since the [x] binding is not mutable, yet
           we must be able to mutate what it points to.
 
           See <https://doc.rust-lang.org/beta/nightly-rustc/rustc_middle/mir/enum.MutBorrowKind.html#variant.ClosureCapture>.
@@ -122,21 +122,21 @@ and nullop = SizeOf | AlignOf | OffsetOf of (int * field_id) list | UbChecks
  *)
 and cast_kind =
   | CastScalar of literal_type * literal_type
-      (** Conversion between types in {Integer, Bool}
+      (** Conversion between types in [{Integer, Bool}]
           Remark: for now we don't support conversions with Char.
        *)
   | CastRawPtr of ty * ty
   | CastFnPtr of ty * ty
   | CastUnsize of ty * ty
       (** [Unsize coercion](https://doc.rust-lang.org/std/ops/trait.CoerceUnsized.html). This is
-          either `[T; N]` -> `[T]` or `T: Trait` -> `dyn Trait` coercions, behind a pointer
-          (reference, `Box`, or other type that implements `CoerceUnsized`).
+          either [[T; N]] -> [[T]] or [T: Trait] -> [dyn Trait] coercions, behind a pointer
+          (reference, [Box], or other type that implements [CoerceUnsized]).
 
-          The special case of `&[T; N]` -> `&[T]` coercion is caught by `UnOp::ArrayToSlice`.
+          The special case of [&[T; N]] -> [&[T]] coercion is caught by [UnOp::ArrayToSlice].
        *)
   | CastTransmute of ty * ty
       (** Reinterprets the bits of a value of one type as another type, i.e. exactly what
-          [`std::mem::transmute`] does.
+          [[std::mem::transmute]] does.
        *)
 
 (** Binary operations. *)
@@ -151,37 +151,37 @@ and binop =
   | Ge
   | Gt
   | Div
-      (** Fails if the divisor is 0, or if the operation is `int::MIN / -1`. *)
+      (** Fails if the divisor is 0, or if the operation is [int::MIN / -1]. *)
   | Rem
-      (** Fails if the divisor is 0, or if the operation is `int::MIN % -1`. *)
+      (** Fails if the divisor is 0, or if the operation is [int::MIN % -1]. *)
   | Add
       (** Fails on overflow.
-          Not present in MIR: this is introduced by the `remove_dynamic_checks` pass.
+          Not present in MIR: this is introduced by the [remove_dynamic_checks] pass.
        *)
   | Sub
       (** Fails on overflow.
-          Not present in MIR: this is introduced by the `remove_dynamic_checks` pass.
+          Not present in MIR: this is introduced by the [remove_dynamic_checks] pass.
        *)
   | Mul
       (** Fails on overflow.
-          Not present in MIR: this is introduced by the `remove_dynamic_checks` pass.
+          Not present in MIR: this is introduced by the [remove_dynamic_checks] pass.
        *)
   | WrappingAdd  (** Wraps on overflow. *)
   | WrappingSub  (** Wraps on overflow. *)
   | WrappingMul  (** Wraps on overflow. *)
   | CheckedAdd
-      (** Returns `(result, did_overflow)`, where `result` is the result of the operation with
-          wrapping semantics, and `did_overflow` is a boolean that indicates whether the operation
+      (** Returns [(result, did_overflow)], where [result] is the result of the operation with
+          wrapping semantics, and [did_overflow] is a boolean that indicates whether the operation
           overflowed. This operation does not fail.
        *)
-  | CheckedSub  (** Like `CheckedAdd`. *)
-  | CheckedMul  (** Like `CheckedAdd`. *)
+  | CheckedSub  (** Like [CheckedAdd]. *)
+  | CheckedMul  (** Like [CheckedAdd]. *)
   | Shl  (** Fails if the shift is bigger than the bit-size of the type. *)
   | Shr  (** Fails if the shift is bigger than the bit-size of the type. *)
   | Offset
-      (** `BinOp(Offset, ptr, n)` for `ptr` a pointer to type `T` offsets `ptr` by `n * size_of::<T>()`. *)
+      (** [BinOp(Offset, ptr, n)] for [ptr] a pointer to type [T] offsets [ptr] by [n * size_of::<T>()]. *)
   | Cmp
-      (** `BinOp(Cmp, a, b)` returns `-1u8` if `a < b`, `0u8` if `a == b`, and `1u8` if `a > b`. *)
+      (** [BinOp(Cmp, a, b)] returns [-1u8] if [a < b], [0u8] if [a == b], and [1u8] if [a > b]. *)
 
 and operand =
   | Copy of place
@@ -197,7 +197,7 @@ and fun_id =
        *)
   | FBuiltin of builtin_fun_id
       (** A primitive function, coming from a standard library (for instance:
-          `alloc::boxed::Box::new`).
+          [alloc::boxed::Box::new]).
           TODO: rename to "Primitive"
        *)
 
@@ -205,7 +205,7 @@ and fun_id =
     standard library.
  *)
 and builtin_fun_id =
-  | BoxNew  (** `alloc::boxed::Box::new` *)
+  | BoxNew  (** [alloc::boxed::Box::new] *)
   | ArrayToSliceShared
       (** Cast an array as a slice.
 
@@ -217,17 +217,17 @@ and builtin_fun_id =
           Converted from [UnOp::ArrayToSlice]
        *)
   | ArrayRepeat
-      (** `repeat(n, x)` returns an array where `x` has been replicated `n` times.
+      (** [repeat(n, x)] returns an array where [x] has been replicated [n] times.
 
           We introduce this when desugaring the [ArrayRepeat] rvalue.
        *)
   | Index of builtin_index_op
-      (** Converted from indexing `ProjectionElem`s. The signature depends on the parameters. It
+      (** Converted from indexing [ProjectionElem]s. The signature depends on the parameters. It
           could look like:
-          - `fn ArrayIndexShared<T,N>(&[T;N], usize) -> &T`
-          - `fn SliceIndexShared<T>(&[T], usize) -> &T`
-          - `fn ArraySubSliceShared<T,N>(&[T;N], usize, usize) -> &[T]`
-          - `fn SliceSubSliceMut<T>(&mut [T], usize, usize) -> &mut [T]`
+          - [fn ArrayIndexShared<T,N>(&[T;N], usize) -> &T]
+          - [fn SliceIndexShared<T>(&[T], usize) -> &T]
+          - [fn ArraySubSliceShared<T,N>(&[T;N], usize, usize) -> &[T]]
+          - [fn SliceSubSliceMut<T>(&mut [T], usize, usize) -> &mut [T]]
           - etc
        *)
   | PtrFromParts of ref_kind
@@ -245,7 +245,7 @@ and builtin_index_op = {
         output.
      *)
   is_range : bool;
-      (** Whether we're indexing a single element or a subrange. If `true`, the function takes
+      (** Whether we're indexing a single element or a subrange. If [true], the function takes
         two indices and the output is a slice; otherwise, the function take one index and the
         output is a reference to a single element.
      *)
@@ -286,7 +286,7 @@ and fn_ptr = { func : fun_id_or_trait_method_ref; generics : generic_args }
 
     Remark:
     MIR seems to forbid more complex expressions like paths. For instance,
-    reading the constant `a.b` is translated to `{ _1 = const a; _2 = (_1.0) }`.
+    reading the constant [a.b] is translated to [{ _1 = const a; _2 = (_1.0) }].
  *)
 and raw_constant_expr =
   | CLiteral of literal
@@ -295,11 +295,11 @@ and raw_constant_expr =
           A trait constant.
 
           Ex.:
-          ```text
+          {@rust[
           impl Foo for Bar {
             const C : usize = 32; // <-
           }
-          ```
+          ]}
 
           Remark: trait constants can not be used in types, they are necessarily
           values.
@@ -325,12 +325,12 @@ and rvalue =
   | RvRef of place * borrow_kind  (** Takes a reference to the given place. *)
   | RawPtr of place * ref_kind
       (** Takes a raw pointer with the given mutability to the given place. This is generated by
-          pointer casts like `&v as *const _` or raw borrow expressions like `&raw const v.`
+          pointer casts like [&v as *const _] or raw borrow expressions like [&raw const v.]
        *)
   | BinaryOp of binop * operand * operand
       (** Binary operations (note that we merge "checked" and "unchecked" binops) *)
   | UnaryOp of unop * operand  (** Unary operation (e.g. not, neg) *)
-  | NullaryOp of nullop * ty  (** Nullary operation (e.g. `size_of`) *)
+  | NullaryOp of nullop * ty  (** Nullary operation (e.g. [size_of]) *)
   | Discriminant of place * type_decl_id
       (** Discriminant (for enumerations).
           Note that discriminant values have type isize. We also store the identifier
@@ -340,19 +340,19 @@ and rvalue =
        *)
   | Aggregate of aggregate_kind * operand list
       (** Creates an aggregate value, like a tuple, a struct or an enum:
-          ```text
+          {@rust[
           l = List::Cons { value:x, tail:tl };
-          ```
+          ]}
           Note that in some MIR passes (like optimized MIR), aggregate values are
           decomposed, like below:
-          ```text
+          {@rust[
           (l as List::Cons).value = x;
           (l as List::Cons).tail = tl;
-          ```
+          ]}
           Because we may want to plug our translation mechanism at various
           places, we need to take both into accounts in the translation and in
           our semantics. Aggregate value initialization is easy, you might want
-          to have a look at expansion of `Bottom` values for explanations about the
+          to have a look at expansion of [Bottom] values for explanations about the
           other case.
 
           Remark: in case of closures, the aggregated value groups the closure id
@@ -363,7 +363,7 @@ and rvalue =
           Not present in MIR; introduced in [simplify_constants.rs].
        *)
   | GlobalRef of global_decl_ref * ref_kind
-      (** Reference the value of the global. This has type `&T` or `*mut T` depending on desired
+      (** Reference the value of the global. This has type [&T] or [*mut T] depending on desired
           mutability.
           Not present in MIR; introduced in [simplify_constants.rs].
        *)
@@ -371,8 +371,8 @@ and rvalue =
       (** Length of a memory location. The run-time length of e.g. a vector or a slice is
           represented differently (but pretty-prints the same, FIXME).
           Should be seen as a function of signature:
-          - `fn<T;N>(&[T;N]) -> usize`
-          - `fn<T>(&[T]) -> usize`
+          - [fn<T;N>(&[T;N]) -> usize]
+          - [fn<T>(&[T]) -> usize]
 
           We store the type argument and the const generic (the latter only for arrays).
 
@@ -380,14 +380,14 @@ and rvalue =
           we eliminate it together with the bounds checks whenever possible.
           There are however occurrences that we don't eliminate (yet).
           For instance, for the following Rust code:
-          ```text
+          {@rust[
           fn slice_pattern_4(x: &[()]) {
               match x {
                   [_named] => (),
                   _ => (),
               }
           }
-          ```
+          ]}
           rustc introduces a check that the length of the slice is exactly equal
           to 1 and that we preserve.
        *)
@@ -397,37 +397,37 @@ and rvalue =
           We translate this to a function call for LLBC.
        *)
   | ShallowInitBox of operand * ty
-      (** Transmutes a `*mut u8` (obtained from `malloc`) into shallow-initialized `Box<T>`. This
-          only appears as part of lowering `Box::new()` in some cases. We reconstruct the original
-          `Box::new()` call, but sometimes may fail to do so, leaking the expression.
+      (** Transmutes a [*mut u8] (obtained from [malloc]) into shallow-initialized [Box<T>]. This
+          only appears as part of lowering [Box::new()] in some cases. We reconstruct the original
+          [Box::new()] call, but sometimes may fail to do so, leaking the expression.
        *)
 
 (** An aggregated ADT.
 
     Note that ADTs are desaggregated at some point in MIR. For instance, if
     we have in Rust:
-    ```ignore
+    {@rust[ignore
       let ls = Cons(hd, tl);
-    ```
+    ]}
 
     In MIR we have (yes, the discriminant update happens *at the end* for some
     reason):
-    ```text
+    {@rust[
       (ls as Cons).0 = move hd;
       (ls as Cons).1 = move tl;
-      discriminant(ls) = 0; // assuming `Cons` is the variant of index 0
-    ```
+      discriminant(ls) = 0; // assuming [Cons] is the variant of index 0
+    ]}
 
     Rem.: in the Aeneas semantics, both cases are handled (in case of desaggregated
-    initialization, `ls` is initialized to `⊥`, then this `⊥` is expanded to
-    `Cons (⊥, ⊥)` upon the first assignment, at which point we can initialize
+    initialization, [ls] is initialized to [⊥], then this [⊥] is expanded to
+    [Cons (⊥, ⊥)] upon the first assignment, at which point we can initialize
     the field 0, etc.).
  *)
 and aggregate_kind =
   | AggregatedAdt of
       type_id * variant_id option * field_id option * generic_args
-      (** A struct, enum or union aggregate. The `VariantId`, if present, indicates this is an enum
-          and the aggregate uses that variant. The `FieldId`, if present, indicates this is a union
+      (** A struct, enum or union aggregate. The [VariantId], if present, indicates this is an enum
+          and the aggregate uses that variant. The [FieldId], if present, indicates this is a union
           and the aggregate writes into that field. Otherwise this is a struct.
        *)
   | AggregatedArray of ty * const_generic
