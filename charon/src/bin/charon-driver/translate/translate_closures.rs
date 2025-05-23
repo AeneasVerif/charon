@@ -83,17 +83,44 @@ impl ItemTransCtx<'_, '_> {
         &mut self,
         span: Span,
         def_id: &hax::DefId,
-        args: &hax::ClosureArgs,
+        closure: &hax::ClosureArgs,
     ) -> Result<TypeDeclRef, Error> {
         let type_id = self.register_type_decl_id(span, def_id);
-        // TODO: add lifetimes for the upvars
-        let args = self.translate_generic_args(
+        let mut args = self.translate_generic_args(
             span,
-            &args.parent_args,
-            &args.parent_trait_refs,
+            &closure.parent_args,
+            &closure.parent_trait_refs,
             None,
             GenericsSource::item(type_id),
         )?;
+        // We add lifetime args for each borrowing upvar, gotta supply them here.
+        if self.def_id == *def_id {
+            args.regions.extend(
+                self.the_only_binder()
+                    .by_ref_upvar_regions
+                    .iter()
+                    .map(|r| Region::Var(DeBruijnVar::new_at_zero(*r))),
+            );
+        } else {
+            args.regions.extend(
+                closure
+                    .upvar_tys
+                    .iter()
+                    .filter(|ty| {
+                        matches!(
+                            ty.kind(),
+                            hax::TyKind::Ref(
+                                hax::Region {
+                                    kind: hax::RegionKind::ReErased
+                                },
+                                ..
+                            )
+                        )
+                    })
+                    .map(|_| Region::Erased),
+            );
+        }
+
         Ok(TypeDeclRef {
             id: TypeId::Adt(type_id),
             generics: Box::new(args),
@@ -105,17 +132,25 @@ impl ItemTransCtx<'_, '_> {
         &mut self,
         span: Span,
         def_id: &hax::DefId,
-        args: &hax::ClosureArgs,
+        closure: &hax::ClosureArgs,
         target_kind: ClosureKind,
     ) -> Result<TraitImplRef, Error> {
         let impl_id = self.register_closure_trait_impl_id(span, def_id, target_kind);
-        let args = self.translate_generic_args(
-            span,
-            &args.parent_args,
-            &args.parent_trait_refs,
-            Some(args.tupled_sig.rebind(())),
-            GenericsSource::item(impl_id),
-        )?;
+        let adt_ref = self.translate_closure_type_ref(span, def_id, closure)?;
+        let mut args = adt_ref.generics.with_target(GenericsSource::item(impl_id));
+        // Add the lifetime generics coming from the higher-kindedness of the signature.
+        if self.def_id == *def_id {
+            args.regions.extend(
+                self.the_only_binder()
+                    .bound_region_vars
+                    .iter()
+                    .map(|r| Region::Var(DeBruijnVar::new_at_zero(*r))),
+            );
+        } else {
+            args.regions
+                .extend(closure.tupled_sig.bound_vars.iter().map(|_| Region::Erased));
+        }
+
         Ok(TraitImplRef {
             impl_id,
             generics: Box::new(args),
@@ -177,12 +212,26 @@ impl ItemTransCtx<'_, '_> {
         span: Span,
         args: &hax::ClosureArgs,
     ) -> Result<TypeDeclKind, Error> {
-        // TODO: need to add lifetimes for upvars?
+        let mut by_ref_upvar_regions = self
+            .the_only_binder()
+            .by_ref_upvar_regions
+            .clone()
+            .into_iter();
         let fields: Vector<FieldId, Field> = args
             .upvar_tys
             .iter()
             .map(|ty| {
-                let ty = self.translate_ty(span, ty)?;
+                let mut ty = self.translate_ty(span, ty)?;
+                // We supply fresh regions for the by-ref upvars.
+                if let TyKind::Ref(Region::Erased, deref_ty, kind) = ty.kind() {
+                    let region_id = by_ref_upvar_regions.next().unwrap();
+                    ty = TyKind::Ref(
+                        Region::Var(DeBruijnVar::new_at_zero(region_id)),
+                        deref_ty.clone(),
+                        *kind,
+                    )
+                    .into_ty();
+                }
                 Ok(Field {
                     span,
                     attr_info: AttrInfo {
@@ -210,6 +259,7 @@ impl ItemTransCtx<'_, '_> {
     ) -> Result<FunSig, Error> {
         self.translate_def_generics(span, def)?;
         // Add the lifetime generics coming from the higher-kindedness of the signature.
+        assert!(self.innermost_binder_mut().bound_region_vars.is_empty(),);
         self.innermost_binder_mut()
             .push_params_from_binder(args.tupled_sig.rebind(()))?;
 
@@ -531,6 +581,7 @@ impl ItemTransCtx<'_, '_> {
 
         self.translate_def_generics(span, def)?;
         // Add the lifetime generics coming from the higher-kindedness of the signature.
+        assert!(self.innermost_binder_mut().bound_region_vars.is_empty(),);
         self.innermost_binder_mut()
             .push_params_from_binder(args.tupled_sig.rebind(()))?;
 
