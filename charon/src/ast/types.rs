@@ -767,7 +767,7 @@ pub enum ClosureKind {
 }
 
 /// Additional information for closures.
-/// We mostly use it in micro-passes like [crate::update_closure_signatures](crate::transform::update_closure_signatures).
+/// We mostly use it in micro-passes like [crate::transform::update_closure_signatures].
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Drive, DriveMut)]
 pub struct ClosureInfo {
     pub kind: ClosureKind,

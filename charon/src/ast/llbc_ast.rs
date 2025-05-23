@@ -118,7 +118,7 @@ pub enum Switch {
     SwitchInt(Operand, IntegerTy, Vec<(Vec<ScalarValue>, Block)>, Block),
     /// A match over an ADT.
     ///
-    /// The match statement is introduced in [crate::remove_read_discriminant](crate::transform::remove_read_discriminant)
+    /// The match statement is introduced in [crate::transform::remove_read_discriminant]
     /// (whenever we find a discriminant read, we merge it with the subsequent
     /// switch into a match).
     Match(Place, Vec<(Vec<VariantId>, Block)>, Option<Block>),

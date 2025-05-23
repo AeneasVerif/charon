@@ -101,7 +101,7 @@ pub enum FieldProjKind {
     #[drive(skip)]
     Tuple(usize),
     /// Access to a field in a closure state.
-    /// We eliminate this in a micro-pass ([crate::update_closure_signatures](crate::transform::update_closure_signatures)).
+    /// We eliminate this in a micro-pass ([crate::transform::update_closure_signatures]).
     #[charon::opaque]
     ClosureState,
 }
@@ -529,7 +529,7 @@ pub enum Rvalue {
     /// Note that discriminant values have type isize. We also store the identifier
     /// of the type from which we read the discriminant.
     ///
-    /// This case is filtered in [crate::remove_read_discriminant](crate::transform::remove_read_discriminant)
+    /// This case is filtered in [crate::transform::remove_read_discriminant]
     Discriminant(Place, TypeDeclId),
     /// Creates an aggregate value, like a tuple, a struct or an enum:
     /// ```text
@@ -626,6 +626,6 @@ pub enum AggregateKind {
     Closure(FunDeclId, BoxedArgs),
     /// Construct a raw pointer from a pointer value, and its metadata (can be unit, if building
     /// a thin pointer). The type is the type of the pointee.
-    /// We lower this to a builtin function call for LLBC in [crate::ops_to_function_calls](crate::transform::ops_to_function_calls).
+    /// We lower this to a builtin function call for LLBC in [crate::transform::ops_to_function_calls].
     RawPtr(Ty, RefKind),
 }
