@@ -35,7 +35,7 @@ where
     [@TraitClause3]: core::ops::function::FnMut<F, (T)>,
     @TraitClause3::parent_clause0::Output = U,
 
-fn test_crate::map::{impl core::ops::function::FnMut<((i32))> for test_crate::map::closure}::call_mut<'_0>(@1: &'_0 mut (test_crate::map::closure), @2: (i32)) -> i32
+fn test_crate::map::{impl core::ops::function::FnMut<(i32)> for test_crate::map::closure}::call_mut<'_0>(@1: &'_0 mut (test_crate::map::closure), @2: (i32)) -> i32
 {
     let @0: i32; // return
     let @1: &'_ mut (test_crate::map::closure); // arg #1
@@ -48,7 +48,7 @@ fn test_crate::map::{impl core::ops::function::FnMut<((i32))> for test_crate::ma
     return
 }
 
-fn test_crate::map::{impl core::ops::function::FnOnce<((i32))> for test_crate::map::closure}::call_once(@1: test_crate::map::closure, @2: (i32)) -> i32
+fn test_crate::map::{impl core::ops::function::FnOnce<(i32)> for test_crate::map::closure}::call_once(@1: test_crate::map::closure, @2: (i32)) -> i32
 {
     let @0: i32; // return
     let state@1: test_crate::map::closure; // arg #1
@@ -57,26 +57,26 @@ fn test_crate::map::{impl core::ops::function::FnOnce<((i32))> for test_crate::m
 
     storage_live(temp_ref@3)
     temp_ref@3 := &mut state@1
-    @0 := test_crate::map::{impl core::ops::function::FnMut<((i32))> for test_crate::map::closure}::call_mut<'_>(move (temp_ref@3), move (args@2))
+    @0 := test_crate::map::{impl core::ops::function::FnMut<(i32)> for test_crate::map::closure}::call_mut<'_>(move (temp_ref@3), move (args@2))
     drop state@1
     return
 }
 
-impl test_crate::map::{impl core::ops::function::FnOnce<((i32))> for test_crate::map::closure} : core::ops::function::FnOnce<test_crate::map::closure, ((i32))>
+impl test_crate::map::{impl core::ops::function::FnOnce<(i32)> for test_crate::map::closure} : core::ops::function::FnOnce<test_crate::map::closure, (i32)>
 {
-    parent_clause0 = core::marker::Sized<((i32))>
-    parent_clause1 = core::marker::Tuple<((i32))>
+    parent_clause0 = core::marker::Sized<(i32)>
+    parent_clause1 = core::marker::Tuple<(i32)>
     parent_clause2 = core::marker::Sized<i32>
     type Output = i32
-    fn call_once = test_crate::map::{impl core::ops::function::FnOnce<((i32))> for test_crate::map::closure}::call_once
+    fn call_once = test_crate::map::{impl core::ops::function::FnOnce<(i32)> for test_crate::map::closure}::call_once
 }
 
-impl test_crate::map::{impl core::ops::function::FnMut<((i32))> for test_crate::map::closure} : core::ops::function::FnMut<test_crate::map::closure, ((i32))>
+impl test_crate::map::{impl core::ops::function::FnMut<(i32)> for test_crate::map::closure} : core::ops::function::FnMut<test_crate::map::closure, (i32)>
 {
-    parent_clause0 = test_crate::map::{impl core::ops::function::FnOnce<((i32))> for test_crate::map::closure}
-    parent_clause1 = core::marker::Sized<((i32))>
-    parent_clause2 = core::marker::Tuple<((i32))>
-    fn call_mut<'_0> = test_crate::map::{impl core::ops::function::FnMut<((i32))> for test_crate::map::closure}::call_mut<'_>
+    parent_clause0 = test_crate::map::{impl core::ops::function::FnOnce<(i32)> for test_crate::map::closure}
+    parent_clause1 = core::marker::Sized<(i32)>
+    parent_clause2 = core::marker::Tuple<(i32)>
+    fn call_mut<'_0> = test_crate::map::{impl core::ops::function::FnMut<(i32)> for test_crate::map::closure}::call_mut<'_0_0>
 }
 
 pub fn test_crate::map(@1: Array<i32, 256 : usize>) -> Array<i32, 256 : usize>
@@ -90,7 +90,7 @@ pub fn test_crate::map(@1: Array<i32, 256 : usize>) -> Array<i32, 256 : usize>
     @2 := copy (x@1)
     storage_live(@3)
     @3 := test_crate::map::closure {  }
-    @0 := core::array::{Array<T, const N : usize>}#23::map<i32, test_crate::map::closure, i32, 256 : usize>[core::marker::Sized<i32>, core::marker::Sized<test_crate::map::closure>, core::marker::Sized<i32>, test_crate::map::{impl core::ops::function::FnMut<((i32))> for test_crate::map::closure}](move (@2), move (@3))
+    @0 := core::array::{Array<T, const N : usize>}#23::map<i32, test_crate::map::closure, i32, 256 : usize>[core::marker::Sized<i32>, core::marker::Sized<test_crate::map::closure>, core::marker::Sized<i32>, test_crate::map::{impl core::ops::function::FnMut<(i32)> for test_crate::map::closure}](move (@2), move (@3))
     storage_dead(@3)
     storage_dead(@2)
     return

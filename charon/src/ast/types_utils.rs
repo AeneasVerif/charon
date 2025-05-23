@@ -343,6 +343,13 @@ impl GenericArgs {
         }
     }
 
+    pub fn new_types(types: Vector<TypeVarId, Ty>, target: GenericsSource) -> Self {
+        Self {
+            types,
+            ..Self::empty(target)
+        }
+    }
+
     /// Changes the target.
     pub fn with_target(mut self, target: GenericsSource) -> Self {
         self.target = target;
@@ -545,7 +552,7 @@ impl Ty {
 
     /// Return the unit type
     pub fn mk_unit() -> Ty {
-        TyKind::Adt(TypeId::Tuple, GenericArgs::empty(GenericsSource::Builtin)).into_ty()
+        Self::mk_tuple(vec![])
     }
 
     pub fn mk_tuple(tys: Vec<Ty>) -> Ty {

@@ -1,39 +1,44 @@
-//! In MIR, closures are special cased, and have their own type; calling a closure then uses
-//! builtins, requiring consumers to special case them.
+//! In rust, closures behave like ADTs that implement the FnOnce/FnMut/Fn traits automatically.
+//!
 //! Here we convert closures to a struct containing the closure's state (upvars), along with
-//! matching trait impls and fun decls (e.g. a Fn closure will have a trait impl for Fn, FnMut
-//! and FnOnce, along with 3 matching functions for call, call_mut and call_once).
+//! matching trait impls and fun decls (e.g. a Fn closure will have a trait impl for Fn, FnMut and
+//! FnOnce, along with 3 matching method implementations for call, call_mut and call_once).
 //!
 //! For example, given the following Rust code:
 //! ```rust
-//! pub fn test_closure_capture(x: u32, y: u32) -> u32 {
-//!   let f = &|z| x + y + z;
-//!   (f)(0)
+//! pub fn test_closure_capture<T: Clone>() {
+//!     let mut v = vec![];
+//!     let mut add = |x: &u32| v.push(*x);
+//!     add(&0);
+//!     add(&1);
 //! }
 //! ```
 //!
 //! We generate the equivalent desugared code:
 //! ```rust
-//! struct {test_closure_capture::closure#0} (
-//!     u32,
-//!     u32,
-//! )
+//! struct {test_closure_capture::closure#0}<'a, T: Clone> (&'a mut Vec<u32>);
 //!
-//! impl Fn<(u32,)> for {test_closure_capture::closure#0} {
-//!     type Output = u32;
-//!     fn call(&self, arg: (u32,)) -> u32 {
-//!         self.0 + self.1 + arg.0
+//! // The 'a comes from captured variables, the 'b comes from the closure higher-kinded signature.
+//! impl<'a, 'b, T: Clone> FnMut<(&'b u32,)> for {test_closure_capture::closure#0}<'a, T> {
+//!     fn call_mut<'c>(&'c mut self, arg: (&'b u32,)) {
+//!         self.0.push(*arg.0);
 //!     }
 //! }
 //!
-//! impl FnMut<(u32,)> for {test_closure_capture::closure#0} { ... }
-//! impl FnOnce<(u32,)> for {test_closure_capture::closure#0} { ... }
+//! impl<'a, 'b, T: Clone> FnOnce<(&'b u32,)> for {test_closure_capture::closure#0}<'a, T> {
+//!     type Output = ();
+//!     ...
+//! }
 //!
-//! pub fn test_closure_capture(x: u32, y: u32) -> u32 {
-//!     let state = {test_closure_capture::closure#0} ( x, y );
-//!     state.call((0,))
+//! pub fn test_closure_capture<T: Clone>() {
+//!     let mut v = vec![];
+//!     let mut add = {test_closure_capture::closure#0} (&mut v);
+//!     state.call_mut(&0);
+//!     state.call_mut(&1);
 //! }
 //! ```
+
+use std::mem;
 
 use crate::translate::translate_bodies::BodyTransCtx;
 
@@ -46,43 +51,134 @@ use charon_lib::ullbc_ast::*;
 use hax_frontend_exporter as hax;
 use itertools::Itertools;
 
+pub fn translate_closure_kind(kind: &hax::ClosureKind) -> ClosureKind {
+    match kind {
+        hax::ClosureKind::Fn => ClosureKind::Fn,
+        hax::ClosureKind::FnMut => ClosureKind::FnMut,
+        hax::ClosureKind::FnOnce => ClosureKind::FnOnce,
+    }
+}
+
 impl ItemTransCtx<'_, '_> {
-    pub fn translate_closure_generic_args(
+    pub fn translate_closure_info(
         &mut self,
         span: Span,
         args: &hax::ClosureArgs,
-        source: GenericsSource,
-    ) -> Result<GenericArgs, Error> {
-        self.translate_generic_args(
+    ) -> Result<ClosureInfo, Error> {
+        let kind = translate_closure_kind(&args.kind);
+        let signature = self.translate_region_binder(span, &args.untupled_sig, |ctx, sig| {
+            let inputs = sig
+                .inputs
+                .iter()
+                .map(|x| ctx.translate_ty(span, x))
+                .try_collect()?;
+            let output = ctx.translate_ty(span, &sig.output)?;
+            Ok((inputs, output))
+        })?;
+        Ok(ClosureInfo { kind, signature })
+    }
+
+    /// Translate a reference to the closure ADT.
+    pub fn translate_closure_type_ref(
+        &mut self,
+        span: Span,
+        def_id: &hax::DefId,
+        args: &hax::ClosureArgs,
+    ) -> Result<TypeDeclRef, Error> {
+        let type_id = self.register_type_decl_id(span, def_id);
+        // TODO: add lifetimes for the upvars
+        let args = self.translate_generic_args(
             span,
             &args.parent_args,
             &args.parent_trait_refs,
-            Some(hax::Binder {
-                value: (),
-                bound_vars: args.tupled_sig.bound_vars.clone(),
-            }),
-            source,
-        )
+            // TODO: this should not be here
+            Some(args.tupled_sig.rebind(())),
+            GenericsSource::item(type_id),
+        )?;
+        Ok(TypeDeclRef {
+            id: TypeId::Adt(type_id),
+            generics: Box::new(args),
+        })
+    }
+
+    /// Translate a reference to the chosen closure impl.
+    pub fn translate_closure_impl_ref(
+        &mut self,
+        span: Span,
+        def_id: &hax::DefId,
+        args: &hax::ClosureArgs,
+        target_kind: ClosureKind,
+    ) -> Result<TraitImplRef, Error> {
+        let impl_id = self.register_closure_trait_impl_id(span, def_id, target_kind);
+        let args = self.translate_generic_args(
+            span,
+            &args.parent_args,
+            &args.parent_trait_refs,
+            Some(args.tupled_sig.rebind(())),
+            GenericsSource::item(impl_id),
+        )?;
+        Ok(TraitImplRef {
+            impl_id,
+            generics: Box::new(args),
+        })
+    }
+
+    /// Translate a trait reference to the chosen closure impl.
+    #[expect(dead_code)]
+    pub fn translate_closure_trait_ref(
+        &mut self,
+        span: Span,
+        def_id: &hax::DefId,
+        args: &hax::ClosureArgs,
+        target_kind: ClosureKind,
+    ) -> Result<TraitRef, Error> {
+        let impl_ref = self.translate_closure_impl_ref(span, def_id, args, target_kind)?;
+        let kind = TraitRefKind::TraitImpl(impl_ref.impl_id, impl_ref.generics);
+        // TODO: how much can we ask hax for this?
+        let trait_decl_ref = {
+            let fn_trait = match target_kind {
+                ClosureKind::FnOnce => self.get_lang_item(rustc_hir::LangItem::FnOnce),
+                ClosureKind::FnMut => self.get_lang_item(rustc_hir::LangItem::FnMut),
+                ClosureKind::Fn => self.get_lang_item(rustc_hir::LangItem::Fn),
+            };
+            let trait_id = self.register_trait_decl_id(span, &fn_trait);
+
+            let state_ty = self.get_closure_state_ty(span, def_id, args)?;
+            // The input tuple type and output type of the signature.
+            let (inputs, _) = self.translate_closure_info(span, args)?.signature.erase();
+            let input_tuple = Ty::mk_tuple(inputs);
+
+            RegionBinder::empty(TraitDeclRef {
+                trait_id,
+                generics: Box::new(GenericArgs::new_types(
+                    [state_ty, input_tuple].into(),
+                    GenericsSource::item(trait_id),
+                )),
+            })
+        };
+        Ok(TraitRef {
+            kind,
+            trait_decl_ref,
+        })
     }
 
     pub fn get_closure_state_ty(
         &mut self,
         span: Span,
-        def: &hax::DefId,
+        def_id: &hax::DefId,
         args: &hax::ClosureArgs,
     ) -> Result<Ty, Error> {
-        let state_id = self.register_type_decl_id(span, def);
-        let gen_args =
-            self.translate_closure_generic_args(span, args, GenericsSource::item(state_id))?;
-        Ok(TyKind::Adt(TypeId::Adt(state_id), gen_args).into_ty())
+        let ty_ref = self.translate_closure_type_ref(span, def_id, args)?;
+        Ok(TyKind::Adt(ty_ref.id, *ty_ref.generics).into_ty())
     }
 
-    pub fn translate_closure_ty(
+    pub fn translate_closure_adt(
         &mut self,
         _trans_id: TypeDeclId,
         span: Span,
         args: &hax::ClosureArgs,
     ) -> Result<TypeDeclKind, Error> {
+        // TODO: need to add lifetimes for upvars?
         let fields: Vector<FieldId, Field> = args
             .upvar_tys
             .iter()
@@ -94,26 +190,25 @@ impl ItemTransCtx<'_, '_> {
                         attributes: vec![],
                         inline: None,
                         rename: None,
-                        public: true,
+                        public: false,
                     },
                     name: None,
                     ty,
                 })
             })
             .try_collect()?;
-
         Ok(TypeDeclKind::Struct(fields))
     }
 
-    fn translate_closure_signature(
+    /// Given an item that is a closure, generate the signature of the
+    /// `call_once`/`call_mut`/`call` method (depending on `target_kind`).
+    fn translate_closure_method_sig(
         &mut self,
         def: &hax::FullDef,
-        item_meta: &ItemMeta,
+        span: Span,
         args: &hax::ClosureArgs,
-        target_kind: &hax::ClosureKind,
+        target_kind: ClosureKind,
     ) -> Result<FunSig, Error> {
-        let span = item_meta.span;
-
         self.translate_def_generics(span, def)?;
 
         let signature = &args.tupled_sig;
@@ -147,20 +242,18 @@ impl ItemTransCtx<'_, '_> {
             hax::Safety::Safe => false,
         };
 
-        assert_eq!(inputs.len(), 1);
-
         let state_ty = self.get_closure_state_ty(span, def.def_id(), args)?;
 
         // Depending on the kind of the closure generated, add a reference
         let state_ty = match target_kind {
-            hax::ClosureKind::FnOnce => state_ty,
-            hax::ClosureKind::Fn | hax::ClosureKind::FnMut => {
+            ClosureKind::FnOnce => state_ty,
+            ClosureKind::Fn | ClosureKind::FnMut => {
                 let rid = self
                     .innermost_generics_mut()
                     .regions
                     .push_with(|index| RegionVar { index, name: None });
                 let r = Region::Var(DeBruijnVar::new_at_zero(rid));
-                let mutability = if args.kind == hax::ClosureKind::Fn {
+                let mutability = if target_kind == ClosureKind::Fn {
                     RefKind::Shared
                 } else {
                     RefKind::Mut
@@ -168,249 +261,247 @@ impl ItemTransCtx<'_, '_> {
                 TyKind::Ref(r, state_ty, mutability).into_ty()
             }
         };
-        inputs.splice(0..0, vec![state_ty]);
+        assert_eq!(inputs.len(), 1);
+        inputs.insert(0, state_ty);
 
         Ok(FunSig {
             generics: self.the_only_binder().params.clone(),
             is_unsafe,
-            is_closure: true,
             inputs,
             output,
         })
     }
 
-    /// Translate the function for the implementation of a closure
+    fn translate_closure_method_body(
+        mut self,
+        span: Span,
+        def: &hax::FullDef,
+        target_kind: ClosureKind,
+        args: &hax::ClosureArgs,
+        signature: &FunSig,
+    ) -> Result<Result<Body, Opaque>, Error> {
+        use ClosureKind::*;
+        let closure_kind = translate_closure_kind(&args.kind);
+        let mk_stt = |content| Statement::new(span, content);
+        let mk_block = |statements, terminator| -> BlockData {
+            BlockData {
+                statements,
+                terminator: Terminator::new(span, terminator),
+            }
+        };
+        let mk_body = |locals, blocks: Vector<BlockId, BlockData>| -> Result<Body, Opaque> {
+            let body: ExprBody = GExprBody {
+                span,
+                locals,
+                comments: vec![],
+                body: blocks,
+            };
+            Ok(Body::Unstructured(body))
+        };
+        let mut mk_call = |dst, arg1, arg2, target, on_unwind| -> Result<RawTerminator, Error> {
+            // TODO: make a trait call to avoid needing to concatenate things ourselves.
+            // TODO: can we ask hax for the trait ref?
+            let fun_id = self.register_closure_method_decl_id(span, def.def_id(), closure_kind);
+            let impl_ref =
+                self.translate_closure_impl_ref(span, def.def_id(), args, closure_kind)?;
+            Ok(RawTerminator::Call {
+                target,
+                call: Call {
+                    func: FnOperand::Regular(FnPtr {
+                        func: FunIdOrTraitMethodRef::Fun(FunId::Regular(fun_id.clone())).into(),
+                        generics: Box::new(impl_ref.generics.concat(
+                            GenericsSource::item(fun_id),
+                            &GenericArgs {
+                                regions: vec![Region::Erased].into(),
+                                ..GenericArgs::empty(GenericsSource::item(fun_id))
+                            },
+                        )),
+                    }),
+                    args: vec![Operand::Move(arg1), Operand::Move(arg2)],
+                    dest: dst,
+                },
+                on_unwind,
+            })
+        };
+
+        Ok(match (target_kind, closure_kind) {
+            (Fn, Fn) | (FnMut, FnMut) | (FnOnce, FnOnce) => {
+                // Translate the function's body normally
+                let mut bt_ctx = BodyTransCtx::new(&mut self);
+                match bt_ctx.translate_body(span, def) {
+                    Ok(Ok(mut body)) => {
+                        // The body is translated as if the locals are: ret value, state, arg-1,
+                        // ..., arg-N, rest...
+                        // However, there is only one argument with the tupled closure arguments;
+                        // we must thus shift all locals with index >=2 by 1, and add a new local
+                        // for the tupled arg, giving us: ret value, state, args, arg-1, ...,
+                        // arg-N, rest...
+                        // We then add N statements of the form `locals[N+3] := move locals[2].N`,
+                        // to destructure the arguments.
+                        let GExprBody {
+                            locals,
+                            body: blocks,
+                            ..
+                        } = body.as_unstructured_mut().unwrap();
+
+                        blocks.dyn_visit_mut(|local: &mut LocalId| {
+                            let idx = local.index();
+                            if idx >= 2 {
+                                *local = LocalId::new(idx + 1)
+                            }
+                        });
+
+                        let mut old_locals = mem::take(&mut locals.locals).into_iter();
+                        locals.arg_count = 2;
+                        locals.locals.push(old_locals.next().unwrap()); // ret
+                        locals.locals.push(old_locals.next().unwrap()); // state
+                        let tupled_arg = locals
+                            .new_var(Some("tupled_args".to_string()), signature.inputs[1].clone());
+                        locals.locals.extend(old_locals.map(|mut l| {
+                            l.index += 1;
+                            l
+                        }));
+
+                        let untupled_args = signature.inputs[1].as_tuple().unwrap();
+                        let closure_arg_count = untupled_args.elem_count();
+                        let new_stts = untupled_args.iter().cloned().enumerate().map(|(i, ty)| {
+                            let nth_field = tupled_arg.clone().project(
+                                ProjectionElem::Field(
+                                    FieldProjKind::Tuple(closure_arg_count),
+                                    FieldId::new(i),
+                                ),
+                                ty,
+                            );
+                            mk_stt(RawStatement::Assign(
+                                locals.place_for_var(LocalId::new(i + 3)),
+                                Rvalue::Use(Operand::Move(nth_field)),
+                            ))
+                        });
+                        blocks[BlockId::ZERO].statements.splice(0..0, new_stts);
+
+                        Ok(body)
+                    }
+                    Ok(Err(Opaque)) => Err(Opaque),
+                    Err(_) => Err(Opaque),
+                }
+            }
+            // Target translation:
+            //
+            // fn call_mut(state: &mut Self, args: Args) -> Output {
+            //   let reborrow = &*state;
+            //   self.call(reborrow, args)
+            // }
+            (FnMut, Fn) => {
+                let mut locals = Locals {
+                    arg_count: 2,
+                    locals: Vector::new(),
+                };
+                let mut statements = vec![];
+                let mut blocks = Vector::default();
+
+                let output = locals.new_var(None, signature.output.clone());
+                let state = locals.new_var(Some("state".to_string()), signature.inputs[0].clone());
+                let args = locals.new_var(Some("args".to_string()), signature.inputs[1].clone());
+                let deref_state = state.deref();
+                let reborrow_ty =
+                    TyKind::Ref(Region::Erased, deref_state.ty.clone(), RefKind::Shared).into_ty();
+                let reborrow = locals.new_var(None, reborrow_ty);
+
+                statements.push(mk_stt(RawStatement::Assign(
+                    reborrow.clone(),
+                    Rvalue::Ref(deref_state, BorrowKind::Shared),
+                )));
+
+                let start_block = blocks.reserve_slot();
+                let ret_block = blocks.push(mk_block(vec![], RawTerminator::Return));
+                let unwind_block = blocks.push(mk_block(vec![], RawTerminator::UnwindResume));
+                let call = mk_call(output, reborrow, args, ret_block, unwind_block)?;
+                blocks.set_slot(start_block, mk_block(statements, call));
+
+                mk_body(locals, blocks)
+            }
+            // Target translation:
+            //
+            // fn call_once(state: Self, args: Args) -> Output {
+            //   let temp_ref = &[mut] state;
+            //   let ret = self.call[_mut](temp, args);
+            //   drop state;
+            //   return ret;
+            // }
+            //
+            (FnOnce, Fn | FnMut) => {
+                // TODO: could possibly ask hax for the body, using
+                // `InstanceKind::ClosureOnceShim`.
+                let mut locals = Locals {
+                    arg_count: 2,
+                    locals: Vector::new(),
+                };
+                let mut statements = vec![];
+                let mut blocks = Vector::default();
+
+                let output = locals.new_var(None, signature.output.clone());
+                let state = locals.new_var(Some("state".to_string()), signature.inputs[0].clone());
+                let args = locals.new_var(Some("args".to_string()), signature.inputs[1].clone());
+
+                let (refkind, borrowkind) = if closure_kind == FnMut {
+                    (RefKind::Mut, BorrowKind::Mut)
+                } else {
+                    (RefKind::Shared, BorrowKind::Shared)
+                };
+
+                let borrow_ty =
+                    TyKind::Ref(Region::Erased, signature.inputs[0].clone(), refkind).into_ty();
+                let state_ref = locals.new_var(Some("temp_ref".to_string()), borrow_ty);
+                statements.push(mk_stt(RawStatement::Assign(
+                    state_ref.clone(),
+                    Rvalue::Ref(state.clone(), borrowkind),
+                )));
+
+                let start_block = blocks.reserve_slot();
+                let drop = mk_stt(RawStatement::Drop(state));
+                let ret_block = blocks.push(mk_block(vec![drop], RawTerminator::Return));
+                let unwind_block = blocks.push(mk_block(vec![], RawTerminator::UnwindResume));
+                let call = mk_call(output, state_ref, args, ret_block, unwind_block)?;
+                blocks.set_slot(start_block, mk_block(statements, call));
+
+                mk_body(locals, blocks)
+            }
+
+            (Fn, FnOnce) | (Fn, FnMut) | (FnMut, FnOnce) => {
+                panic!(
+                    "Can't make a closure body for a more restrictive kind \
+                    than the closure kind"
+                )
+            }
+        })
+    }
+
+    /// Given an item that is a closure, generate the `call_once`/`call_mut`/`call` method
+    /// (depending on `target_kind`).
     #[tracing::instrument(skip(self, item_meta))]
-    pub fn translate_closure_fun(
+    pub fn translate_closure_method(
         mut self,
         def_id: FunDeclId,
         item_meta: ItemMeta,
         def: &hax::FullDef,
-        target_kind: &hax::ClosureKind,
+        target_kind: ClosureKind,
     ) -> Result<FunDecl, Error> {
+        let span = item_meta.span;
         let hax::FullDefKind::Closure { args, .. } = &def.kind else {
             unreachable!()
         };
 
         trace!("About to translate closure:\n{:?}", def.def_id);
-        let span = item_meta.span;
 
         // Translate the function signature
-        trace!("Translating closure signature");
-        let signature = self.translate_closure_signature(def, &item_meta, args, target_kind)?;
+        let signature = self.translate_closure_method_sig(def, span, args, target_kind)?;
 
         let kind = self.get_item_kind(span, def)?;
 
-        let body_id = if item_meta.opacity.with_private_contents().is_opaque() {
+        let body = if item_meta.opacity.with_private_contents().is_opaque() {
             Err(Opaque)
         } else {
-            // Utils to make constructing the body nicer
-            let mk_stt = |content| Statement {
-                content,
-                comments_before: vec![],
-                span,
-            };
-            let mk_block = |statements, terminator| -> BlockData {
-                BlockData {
-                    statements,
-                    terminator: Terminator {
-                        content: terminator,
-                        comments_before: vec![],
-                        span,
-                    },
-                }
-            };
-            let mk_body = |locals, blocks: Vec<BlockData>| -> Result<Body, Opaque> {
-                let body: ExprBody = GExprBody {
-                    span,
-                    locals,
-                    comments: vec![],
-                    body: blocks.into(),
-                };
-                Ok(Body::Unstructured(body))
-            };
-            let mut mk_call = |dst, arg1, arg2, target| -> Result<RawTerminator, Error> {
-                // FIXME: @N1ark do we want to make the call a trait impl call, rather than
-                // a simple fun call? My intuition is that we may as well take the simple
-                // option of making it a fun call, since a pass will simplify it away anyways.
-
-                let fun_id = self.register_closure_fun_decl_id(span, &def.def_id, &args.kind);
-
-                let parent_args =
-                    self.translate_closure_generic_args(span, args, GenericsSource::Builtin)?;
-
-                Ok(RawTerminator::Call {
-                    target,
-                    call: Call {
-                        func: FnOperand::Regular(FnPtr {
-                            func: FunIdOrTraitMethodRef::Fun(FunId::Regular(fun_id.clone())).into(),
-                            generics: Box::new(parent_args.concat(
-                                GenericsSource::item(fun_id),
-                                &GenericArgs {
-                                    const_generics: Vector::new(),
-                                    regions: vec![Region::Erased].into(),
-                                    trait_refs: Vector::new(),
-                                    types: Vector::new(),
-                                    target: GenericsSource::item(fun_id),
-                                },
-                            )),
-                        }),
-                        args: vec![Operand::Move(arg1), Operand::Move(arg2)],
-                        dest: dst,
-                    },
-                    // TODO: wrong, will fix later
-                    on_unwind: BlockId::ZERO,
-                })
-            };
-
-            use hax::ClosureKind::*;
-            match (target_kind, &args.kind) {
-                (Fn, Fn) | (FnMut, FnMut) | (FnOnce, FnOnce) => {
-                    // Translate the function's body normally
-                    let mut bt_ctx = BodyTransCtx::new(&mut self);
-                    match bt_ctx.translate_body(item_meta.span, def) {
-                        Ok(Ok(body)) => {
-                            // The body is translated as if the locals are:
-                            // ret value, state, arg-1, ..., arg-N, rest...
-                            // However, there is only one argument with the tupled closure
-                            // arguments; we must thus shift all locals with index >=2 by 1,
-                            // and add a new local for the tupled arg, giving us:
-                            // ret value, state, args, arg-1, ..., arg-N, rest...
-                            // We then add N statements of the form `locals[N+3] := move locals[2].N`,
-                            // to destructure the arguments.
-                            let Body::Unstructured(GExprBody {
-                                span,
-                                mut locals,
-                                comments,
-                                mut body,
-                            }) = body
-                            else {
-                                unreachable!()
-                            };
-
-                            body.dyn_visit_mut(|local: &mut LocalId| {
-                                let idx = local.index();
-                                if idx >= 2 {
-                                    *local = LocalId::new(idx + 1)
-                                }
-                            });
-
-                            let closure_arg_count = locals.arg_count - 1;
-                            locals.arg_count = 2;
-                            let mut old_locals = Vector::new();
-                            std::mem::swap(&mut old_locals, &mut locals.locals);
-                            locals.locals.push(old_locals.remove(0.into()).unwrap()); // ret
-                            locals.locals.push(old_locals.remove(1.into()).unwrap()); // state
-                            let tupled_args = locals.new_var(
-                                Some("tupled_args".to_string()),
-                                signature.inputs[1].clone(),
-                            );
-                            locals.locals.extend(old_locals.into_iter().map(|mut l| {
-                                l.index = LocalId::new(l.index.index() + 1);
-                                l
-                            }));
-
-                            let untupled_args = signature.inputs[1].as_tuple().unwrap();
-                            let new_stts = (0..closure_arg_count).into_iter().map(|idx| {
-                                mk_stt(RawStatement::Assign(
-                                    locals.place_for_var(LocalId::new(idx + 3)),
-                                    Rvalue::Use(Operand::Move(Place {
-                                        kind: PlaceKind::Projection(
-                                            tupled_args.clone().into(),
-                                            ProjectionElem::Field(
-                                                FieldProjKind::Tuple(closure_arg_count),
-                                                FieldId::new(idx),
-                                            ),
-                                        ),
-                                        ty: untupled_args[TypeVarId::new(idx)].clone(),
-                                    })),
-                                ))
-                            });
-                            let fst_block = &mut body.get_mut(BlockId::ZERO).unwrap().statements;
-                            fst_block.splice(0..0, new_stts);
-
-                            Ok(Body::Unstructured(GExprBody {
-                                span,
-                                locals,
-                                comments,
-                                body,
-                            }))
-                        }
-                        Ok(Err(Opaque)) => Err(Opaque),
-                        Err(_) => Err(Opaque),
-                    }
-                }
-                (FnMut, Fn) => {
-                    // Target translation:
-                    //
-                    // fn call_mut(state: &mut Self, args: Args) -> Output {
-                    //   self.call(state, args)
-                    // }
-                    //
-
-                    let mut locals = Locals {
-                        arg_count: 2,
-                        locals: Vector::new(),
-                    };
-                    let output = locals.new_var(None, signature.output.clone());
-                    let state =
-                        locals.new_var(Some("state".to_string()), signature.inputs[0].clone());
-                    let args =
-                        locals.new_var(Some("args".to_string()), signature.inputs[1].clone());
-                    let call = mk_call(output, state, args, BlockId::new(1))?;
-                    let main_block = mk_block(vec![], call);
-                    let ret_block = mk_block(vec![], RawTerminator::Return);
-                    mk_body(locals, vec![main_block, ret_block])
-                }
-                (FnOnce, Fn) | (FnOnce, FnMut) => {
-                    // Target translation:
-                    //
-                    // fn call_once(state: Self, args: Args) -> Output {
-                    //   let temp_ref = &[mut] state;
-                    //   let ret = self.call[_mut](temp, args);
-                    //   drop state;
-                    //   return ret;
-                    // }
-                    //
-                    // FIXME: @N1ark do we want to make the call a trait impl call, rather than
-                    // a simple fun call? My intuition is that we may as well take the simple
-                    // option of making it a fun call, since a pass will simplify it away anyways.
-
-                    let (refkind, borrowkind) = if args.kind == FnMut {
-                        (RefKind::Mut, BorrowKind::Mut)
-                    } else {
-                        (RefKind::Shared, BorrowKind::Shared)
-                    };
-
-                    let ref_ty =
-                        TyKind::Ref(Region::Erased, signature.inputs[0].clone(), refkind).into_ty();
-
-                    let mut locals = Locals {
-                        arg_count: 2,
-                        locals: Vector::new(),
-                    };
-                    let output = locals.new_var(None, signature.output.clone());
-                    let state =
-                        locals.new_var(Some("state".to_string()), signature.inputs[0].clone());
-                    let args =
-                        locals.new_var(Some("args".to_string()), signature.inputs[1].clone());
-                    let state_ref = locals.new_var(Some("temp_ref".to_string()), ref_ty);
-                    let mk_ref = mk_stt(RawStatement::Assign(
-                        state_ref.clone(),
-                        Rvalue::Ref(state.clone(), borrowkind),
-                    ));
-                    let call = mk_call(output, state_ref, args, BlockId::new(1))?;
-                    let main_block = mk_block(vec![mk_ref], call);
-
-                    let drop = mk_stt(RawStatement::Drop(state));
-                    let ret_block = mk_block(vec![drop], RawTerminator::Return);
-                    mk_body(locals, vec![main_block, ret_block])
-                }
-
-                (Fn, FnOnce) | (Fn, FnMut) | (FnMut, FnOnce) => {
-                    panic!("Can't make a closure body for a more restrictive kind")
-                }
-            }
+            self.translate_closure_method_body(span, def, target_kind, args, &signature)?
         };
 
         Ok(FunDecl {
@@ -419,7 +510,7 @@ impl ItemTransCtx<'_, '_> {
             signature,
             kind,
             is_global_initializer: None,
-            body: body_id,
+            body,
         })
     }
 
@@ -429,75 +520,23 @@ impl ItemTransCtx<'_, '_> {
         def_id: TraitImplId,
         item_meta: ItemMeta,
         def: &hax::FullDef,
-        target_kind: &hax::ClosureKind,
+        target_kind: ClosureKind,
     ) -> Result<TraitImpl, Error> {
-        trace!("About to translate closure trait impl:\n{:?}", def.def_id);
-        trace!("Trait impl id:\n{:?}", def_id);
-
         let span = item_meta.span;
-        self.translate_def_generics(span, def)?;
-
         let hax::FullDefKind::Closure { args, .. } = &def.kind else {
             unreachable!()
         };
 
+        self.translate_def_generics(span, def)?;
+        // TODO: add lifetime for higher-kinded sig
+
+        // The builtin traits we need.
         let fn_trait = match target_kind {
-            hax::ClosureKind::FnOnce => self.get_lang_item(rustc_hir::LangItem::FnOnce),
-            hax::ClosureKind::FnMut => self.get_lang_item(rustc_hir::LangItem::FnMut),
-            hax::ClosureKind::Fn => self.get_lang_item(rustc_hir::LangItem::Fn),
+            ClosureKind::FnOnce => self.get_lang_item(rustc_hir::LangItem::FnOnce),
+            ClosureKind::FnMut => self.get_lang_item(rustc_hir::LangItem::FnMut),
+            ClosureKind::Fn => self.get_lang_item(rustc_hir::LangItem::Fn),
         };
         let fn_trait = self.register_trait_decl_id(span, &fn_trait);
-
-        let call_fn = self.register_closure_fun_decl_id(span, &def.def_id, target_kind);
-        let call_fn_name = match target_kind {
-            hax::ClosureKind::FnOnce => "call_once".to_string(),
-            hax::ClosureKind::FnMut => "call_mut".to_string(),
-            hax::ClosureKind::Fn => "call".to_string(),
-        };
-        let call_fn_name = TraitItemName(call_fn_name);
-        let mut call_fn_params = GenericParams::empty();
-        match target_kind {
-            hax::ClosureKind::FnOnce => {}
-            hax::ClosureKind::FnMut | hax::ClosureKind::Fn => {
-                call_fn_params
-                    .regions
-                    .push_with(|index| RegionVar { index, name: None });
-            }
-        };
-        let fn_ref_args_target = GenericsSource::Method(fn_trait, call_fn_name.clone());
-        let fn_ref_args = match target_kind {
-            hax::ClosureKind::FnOnce => GenericArgs::empty(fn_ref_args_target),
-            hax::ClosureKind::FnMut | hax::ClosureKind::Fn => GenericArgs {
-                regions: vec![Region::Erased].into(),
-                types: Vector::new(),
-                const_generics: Vector::new(),
-                trait_refs: Vector::new(),
-                target: fn_ref_args_target,
-            },
-        };
-        let call_fn_binder = Binder::new(
-            BinderKind::TraitMethod(fn_trait, call_fn_name.clone()), //fix
-            call_fn_params,
-            FunDeclRef {
-                id: call_fn,
-                // TODO: @N1ark this is wrong -- we need to concat the args of the impl and of the method
-                generics: Box::new(fn_ref_args),
-            },
-        );
-
-        let sig_binder = self.translate_region_binder(span, &args.tupled_sig, |ctx, fnsig| {
-            let inputs: Vec<Ty> = fnsig
-                .inputs
-                .iter()
-                .map(|ty| ctx.translate_ty(span, ty))
-                .try_collect()?;
-            let inputs = Ty::mk_tuple(inputs);
-            let output = ctx.translate_ty(span, &fnsig.output)?;
-            Ok((inputs, output))
-        })?;
-        let (inputs, output) = sig_binder.erase();
-
-        let state_ty = self.get_closure_state_ty(span, def.def_id(), args)?;
 
         let sized_trait = self.get_lang_item(rustc_hir::LangItem::Sized);
         let sized_trait = self.register_trait_decl_id(span, &sized_trait);
@@ -505,82 +544,123 @@ impl ItemTransCtx<'_, '_> {
         let tuple_trait = self.get_lang_item(rustc_hir::LangItem::Tuple);
         let tuple_trait = self.register_trait_decl_id(span, &tuple_trait);
 
-        let mk_tref = |trait_id, ty| {
-            let generics = GenericArgs {
-                regions: Vector::new(),
-                const_generics: Vector::new(),
-                trait_refs: Vector::new(),
-                types: vec![ty].into(),
-                target: GenericsSource::item(trait_id),
+        let state_ty = self.get_closure_state_ty(span, def.def_id(), args)?;
+        // The input tuple type and output type of the signature.
+        let (inputs, output) = self.translate_closure_info(span, args)?.signature.erase();
+        let input = Ty::mk_tuple(inputs);
+
+        let implemented_trait = TraitDeclRef {
+            trait_id: fn_trait,
+            generics: Box::new(GenericArgs::new_types(
+                [state_ty.clone(), input.clone()].into(),
+                GenericsSource::item(fn_trait),
+            )),
+        };
+
+        let parent_trait_refs = {
+            // Makes a built-in trait ref for `ty: trait`.
+            let builtin_tref = |trait_id, ty| {
+                let generics = Box::new(GenericArgs::new_types(
+                    vec![ty].into(),
+                    GenericsSource::item(trait_id),
+                ));
+                let trait_decl_ref = TraitDeclRef { trait_id, generics };
+                let trait_decl_ref = RegionBinder::empty(trait_decl_ref);
+                TraitRef {
+                    kind: TraitRefKind::BuiltinOrAuto {
+                        trait_decl_ref: trait_decl_ref.clone(),
+                        parent_trait_refs: Vector::new(),
+                        types: vec![],
+                    },
+                    trait_decl_ref,
+                }
             };
-            let tdeclref = TraitDeclRef {
-                trait_id,
-                generics: generics.clone().into(),
+
+            match target_kind {
+                ClosureKind::FnOnce => [
+                    builtin_tref(sized_trait, input.clone()),
+                    builtin_tref(tuple_trait, input.clone()),
+                    builtin_tref(sized_trait, output.clone()),
+                ]
+                .into(),
+                ClosureKind::FnMut | ClosureKind::Fn => {
+                    let parent_kind = match target_kind {
+                        ClosureKind::FnOnce => unreachable!(),
+                        ClosureKind::FnMut => ClosureKind::FnOnce,
+                        ClosureKind::Fn => ClosureKind::FnMut,
+                    };
+                    let kind = {
+                        let parent_impl_ref =
+                            self.translate_closure_impl_ref(span, def.def_id(), args, parent_kind)?;
+                        TraitRefKind::TraitImpl(parent_impl_ref.impl_id, parent_impl_ref.generics)
+                    };
+                    let trait_decl_ref = {
+                        let parent_fn_trait = match parent_kind {
+                            ClosureKind::FnOnce => self.get_lang_item(rustc_hir::LangItem::FnOnce),
+                            ClosureKind::FnMut => self.get_lang_item(rustc_hir::LangItem::FnMut),
+                            ClosureKind::Fn => unreachable!(),
+                        };
+                        let parent_trait_id = self.register_trait_decl_id(span, &parent_fn_trait);
+                        RegionBinder::empty(TraitDeclRef {
+                            trait_id: parent_trait_id,
+                            generics: implemented_trait
+                                .generics
+                                .clone()
+                                .with_target(GenericsSource::item(parent_trait_id))
+                                .into(),
+                        })
+                    };
+                    let parent_trait_ref = TraitRef {
+                        kind,
+                        trait_decl_ref,
+                    };
+                    [
+                        parent_trait_ref,
+                        builtin_tref(sized_trait, input.clone()),
+                        builtin_tref(tuple_trait, input.clone()),
+                    ]
+                    .into()
+                }
+            }
+        };
+        let types = match target_kind {
+            ClosureKind::FnOnce => vec![(TraitItemName("Output".into()), output.clone())],
+            ClosureKind::FnMut | ClosureKind::Fn => vec![],
+        };
+
+        // Construct the `call_*` method reference.
+        let call_fn_id = self.register_closure_method_decl_id(span, &def.def_id, target_kind);
+        let call_fn_name = TraitItemName(target_kind.method_name().to_string());
+        let call_fn_binder = {
+            let mut method_params = GenericParams::empty();
+            match target_kind {
+                ClosureKind::FnOnce => {}
+                ClosureKind::FnMut | ClosureKind::Fn => {
+                    method_params
+                        .regions
+                        .push_with(|index| RegionVar { index, name: None });
+                }
             };
-            TraitRef {
-                kind: TraitRefKind::BuiltinOrAuto {
-                    trait_decl_ref: RegionBinder::empty(tdeclref.clone()),
-                    parent_trait_refs: Vector::new(),
-                    types: vec![],
+
+            let generics = self
+                .outermost_binder()
+                .params
+                .identity_args_at_depth(GenericsSource::item(def_id), DeBruijnId::one())
+                .concat(
+                    GenericsSource::item(call_fn_id),
+                    &method_params.identity_args_at_depth(
+                        GenericsSource::Method(fn_trait, call_fn_name.clone()),
+                        DeBruijnId::zero(),
+                    ),
+                );
+            Binder::new(
+                BinderKind::TraitMethod(fn_trait, call_fn_name.clone()),
+                method_params,
+                FunDeclRef {
+                    id: call_fn_id,
+                    generics: Box::new(generics),
                 },
-                trait_decl_ref: RegionBinder::empty(tdeclref),
-            }
-        };
-
-        let fn_trait_arguments = GenericArgs {
-            regions: Vector::new(),
-            types: vec![state_ty.clone(), inputs.clone()].into(),
-            const_generics: Vector::new(),
-            trait_refs: Vector::new(),
-            target: GenericsSource::item(fn_trait),
-        };
-
-        let (parent_trait_refs, types) = match target_kind {
-            hax::ClosureKind::FnOnce => {
-                let trait_refs = vec![
-                    mk_tref(sized_trait, inputs.clone()),
-                    mk_tref(tuple_trait, inputs),
-                    mk_tref(sized_trait, output.clone()),
-                ];
-                let types = vec![(TraitItemName("Output".into()), output)];
-                (trait_refs.into(), types)
-            }
-            hax::ClosureKind::FnMut | hax::ClosureKind::Fn => {
-                let parent_kind = match target_kind {
-                    hax::ClosureKind::FnOnce => unreachable!(),
-                    hax::ClosureKind::FnMut => hax::ClosureKind::FnOnce,
-                    hax::ClosureKind::Fn => hax::ClosureKind::FnMut,
-                };
-                let parent_impl =
-                    self.register_closure_trait_impl_id(span, def.def_id(), &parent_kind);
-                let parent_decl = match parent_kind {
-                    hax::ClosureKind::FnOnce => self.get_lang_item(rustc_hir::LangItem::FnOnce),
-                    hax::ClosureKind::FnMut => self.get_lang_item(rustc_hir::LangItem::FnMut),
-                    hax::ClosureKind::Fn => unreachable!(),
-                };
-                let parent_args = self.translate_closure_generic_args(
-                    span,
-                    args,
-                    GenericsSource::item(parent_impl),
-                )?;
-                let parent_decl = self.register_trait_decl_id(span, &parent_decl);
-                let parent_trait_ref = TraitRef {
-                    kind: TraitRefKind::TraitImpl(parent_impl, Box::new(parent_args)),
-                    trait_decl_ref: RegionBinder::empty(TraitDeclRef {
-                        trait_id: parent_decl,
-                        generics: fn_trait_arguments
-                            .clone()
-                            .with_target(GenericsSource::item(parent_decl))
-                            .into(),
-                    }),
-                };
-                let trait_refs = vec![
-                    parent_trait_ref,
-                    mk_tref(sized_trait, inputs.clone()),
-                    mk_tref(tuple_trait, inputs),
-                ];
-                (trait_refs.into(), vec![])
-            }
+            )
         };
 
         let self_generics = self.into_generics();
@@ -588,10 +668,7 @@ impl ItemTransCtx<'_, '_> {
         Ok(TraitImpl {
             def_id,
             item_meta,
-            impl_trait: TraitDeclRef {
-                trait_id: fn_trait,
-                generics: fn_trait_arguments.into(),
-            },
+            impl_trait: implemented_trait,
             generics: self_generics,
             parent_trait_refs,
             type_clauses: vec![],

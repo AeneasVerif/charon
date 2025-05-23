@@ -52,7 +52,7 @@ pub fn core::mem::drop<T>(@1: T)
 where
     [@TraitClause0]: core::marker::Sized<T>,
 
-fn test_crate::main::{impl core::ops::function::FnOnce<((u8))> for test_crate::main::closure}::call_once(@1: test_crate::main::closure, @2: (u8)) -> u8
+fn test_crate::main::{impl core::ops::function::FnOnce<(u8)> for test_crate::main::closure}::call_once(@1: test_crate::main::closure, @2: (u8)) -> u8
 {
     let @0: u8; // return
     let @1: test_crate::main::closure; // arg #1
@@ -77,13 +77,13 @@ fn test_crate::main::{impl core::ops::function::FnOnce<((u8))> for test_crate::m
     return
 }
 
-impl test_crate::main::{impl core::ops::function::FnOnce<((u8))> for test_crate::main::closure} : core::ops::function::FnOnce<test_crate::main::closure, ((u8))>
+impl test_crate::main::{impl core::ops::function::FnOnce<(u8)> for test_crate::main::closure} : core::ops::function::FnOnce<test_crate::main::closure, (u8)>
 {
-    parent_clause0 = core::marker::Sized<((u8))>
-    parent_clause1 = core::marker::Tuple<((u8))>
+    parent_clause0 = core::marker::Sized<(u8)>
+    parent_clause1 = core::marker::Tuple<(u8)>
     parent_clause2 = core::marker::Sized<u8>
     type Output = u8
-    fn call_once = test_crate::main::{impl core::ops::function::FnOnce<((u8))> for test_crate::main::closure}::call_once
+    fn call_once = test_crate::main::{impl core::ops::function::FnOnce<(u8)> for test_crate::main::closure}::call_once
 }
 
 fn test_crate::main()
@@ -98,7 +98,7 @@ fn test_crate::main()
     storage_live(@2)
     storage_live(@3)
     @3 := test_crate::main::closure { 0: move (z@1) }
-    @2 := test_crate::apply_to_zero_once<test_crate::main::closure>[core::marker::Sized<test_crate::main::closure>, test_crate::main::{impl core::ops::function::FnOnce<((u8))> for test_crate::main::closure}](move (@3))
+    @2 := test_crate::apply_to_zero_once<test_crate::main::closure>[core::marker::Sized<test_crate::main::closure>, test_crate::main::{impl core::ops::function::FnOnce<(u8)> for test_crate::main::closure}](move (@3))
     storage_dead(@3)
     storage_dead(@2)
     @0 := ()

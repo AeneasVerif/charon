@@ -47,7 +47,7 @@ where
     [@TraitClause2]: core::ops::function::FnMut<F, ()>,
     @TraitClause2::parent_clause0::Output = core::option::Option<T>[@TraitClause0],
 
-fn test_crate::sparse_transitions::{impl core::ops::function::FnMut<(())> for test_crate::sparse_transitions::closure<'_>}::call_mut<'a, '_1>(@1: &'_1 mut (test_crate::sparse_transitions::closure<'_>), @2: ()) -> core::option::Option<u8>[core::marker::Sized<u8>]
+fn test_crate::sparse_transitions::{impl core::ops::function::FnMut<()> for test_crate::sparse_transitions::closure<'_>}::call_mut<'a, '_1>(@1: &'_1 mut (test_crate::sparse_transitions::closure<'_>), @2: ()) -> core::option::Option<u8>[core::marker::Sized<u8>]
 {
     let @0: core::option::Option<u8>[core::marker::Sized<u8>]; // return
     let @1: &'_ mut (test_crate::sparse_transitions::closure<'_>); // arg #1
@@ -57,7 +57,7 @@ fn test_crate::sparse_transitions::{impl core::ops::function::FnMut<(())> for te
     return
 }
 
-fn test_crate::sparse_transitions::{impl core::ops::function::FnOnce<(())> for test_crate::sparse_transitions::closure<'_>}::call_once<'a>(@1: test_crate::sparse_transitions::closure<'_>, @2: ()) -> core::option::Option<u8>[core::marker::Sized<u8>]
+fn test_crate::sparse_transitions::{impl core::ops::function::FnOnce<()> for test_crate::sparse_transitions::closure<'_>}::call_once<'a>(@1: test_crate::sparse_transitions::closure<'_>, @2: ()) -> core::option::Option<u8>[core::marker::Sized<u8>]
 {
     let @0: core::option::Option<u8>[core::marker::Sized<u8>]; // return
     let state@1: test_crate::sparse_transitions::closure<'_>; // arg #1
@@ -66,26 +66,26 @@ fn test_crate::sparse_transitions::{impl core::ops::function::FnOnce<(())> for t
 
     storage_live(temp_ref@3)
     temp_ref@3 := &mut state@1
-    @0 := test_crate::sparse_transitions::{impl core::ops::function::FnMut<(())> for test_crate::sparse_transitions::closure<'_>}::call_mut<'_, '_>(move (temp_ref@3), move (args@2))
+    @0 := test_crate::sparse_transitions::{impl core::ops::function::FnMut<()> for test_crate::sparse_transitions::closure<'_>}::call_mut<'_, '_>(move (temp_ref@3), move (args@2))
     drop state@1
     return
 }
 
-impl test_crate::sparse_transitions::{impl core::ops::function::FnOnce<(())> for test_crate::sparse_transitions::closure<'_>}<'a> : core::ops::function::FnOnce<test_crate::sparse_transitions::closure<'_>, (())>
+impl test_crate::sparse_transitions::{impl core::ops::function::FnOnce<()> for test_crate::sparse_transitions::closure<'_>}<'a> : core::ops::function::FnOnce<test_crate::sparse_transitions::closure<'_>, ()>
 {
-    parent_clause0 = core::marker::Sized<(())>
-    parent_clause1 = core::marker::Tuple<(())>
+    parent_clause0 = core::marker::Sized<()>
+    parent_clause1 = core::marker::Tuple<()>
     parent_clause2 = core::marker::Sized<core::option::Option<u8>[core::marker::Sized<u8>]>
     type Output = core::option::Option<u8>[core::marker::Sized<u8>]
-    fn call_once = test_crate::sparse_transitions::{impl core::ops::function::FnOnce<(())> for test_crate::sparse_transitions::closure<'_>}::call_once
+    fn call_once = test_crate::sparse_transitions::{impl core::ops::function::FnOnce<()> for test_crate::sparse_transitions::closure<'_>}::call_once<'a>
 }
 
-impl test_crate::sparse_transitions::{impl core::ops::function::FnMut<(())> for test_crate::sparse_transitions::closure<'_>}<'a> : core::ops::function::FnMut<test_crate::sparse_transitions::closure<'_>, (())>
+impl test_crate::sparse_transitions::{impl core::ops::function::FnMut<()> for test_crate::sparse_transitions::closure<'_>}<'a> : core::ops::function::FnMut<test_crate::sparse_transitions::closure<'_>, ()>
 {
-    parent_clause0 = test_crate::sparse_transitions::{impl core::ops::function::FnOnce<(())> for test_crate::sparse_transitions::closure<'_>}<'_>
-    parent_clause1 = core::marker::Sized<(())>
-    parent_clause2 = core::marker::Tuple<(())>
-    fn call_mut<'_0> = test_crate::sparse_transitions::{impl core::ops::function::FnMut<(())> for test_crate::sparse_transitions::closure<'_>}::call_mut<'_>
+    parent_clause0 = test_crate::sparse_transitions::{impl core::ops::function::FnOnce<()> for test_crate::sparse_transitions::closure<'_>}<'_>
+    parent_clause1 = core::marker::Sized<()>
+    parent_clause2 = core::marker::Tuple<()>
+    fn call_mut<'_0> = test_crate::sparse_transitions::{impl core::ops::function::FnMut<()> for test_crate::sparse_transitions::closure<'_>}::call_mut<'a, '_0_0>
 }
 
 fn test_crate::sparse_transitions<'a>() -> core::iter::sources::from_fn::FromFn<test_crate::sparse_transitions::closure<'a>>[core::marker::Sized<test_crate::sparse_transitions::closure<'_>>]
@@ -95,7 +95,7 @@ fn test_crate::sparse_transitions<'a>() -> core::iter::sources::from_fn::FromFn<
 
     storage_live(@1)
     @1 := test_crate::sparse_transitions::closure {  }
-    @0 := core::iter::sources::from_fn::from_fn<u8, test_crate::sparse_transitions::closure<'_>>[core::marker::Sized<u8>, core::marker::Sized<test_crate::sparse_transitions::closure<'_>>, test_crate::sparse_transitions::{impl core::ops::function::FnMut<(())> for test_crate::sparse_transitions::closure<'_>}<'_>](move (@1))
+    @0 := core::iter::sources::from_fn::from_fn<u8, test_crate::sparse_transitions::closure<'_>>[core::marker::Sized<u8>, core::marker::Sized<test_crate::sparse_transitions::closure<'_>>, test_crate::sparse_transitions::{impl core::ops::function::FnMut<()> for test_crate::sparse_transitions::closure<'_>}<'_>](move (@1))
     storage_dead(@1)
     return
 }

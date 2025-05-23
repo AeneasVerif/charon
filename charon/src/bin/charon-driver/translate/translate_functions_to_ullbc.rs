@@ -32,6 +32,10 @@ impl ItemTransCtx<'_, '_> {
             | hax::FullDefKind::AssocFn {
                 associated_item, ..
             } => associated_item,
+            hax::FullDefKind::Closure { args, .. } => {
+                let info = self.translate_closure_info(span, args)?;
+                return Ok(ItemKind::Closure { info });
+            }
             _ => return Ok(ItemKind::TopLevel),
         };
         Ok(match &assoc.container {
@@ -182,7 +186,6 @@ impl ItemTransCtx<'_, '_> {
         Ok(FunSig {
             generics: self.the_only_binder().params.clone(),
             is_unsafe,
-            is_closure: false,
             inputs,
             output,
         })
@@ -351,7 +354,7 @@ impl ItemTransCtx<'_, '_> {
         let is_global_initializer =
             is_global_initializer.then(|| self.register_global_decl_id(span, &def.def_id));
 
-        let body_id = if item_meta.opacity.with_private_contents().is_opaque()
+        let body = if item_meta.opacity.with_private_contents().is_opaque()
             || is_trait_method_decl_without_default
         {
             Err(Opaque)
@@ -393,7 +396,7 @@ impl ItemTransCtx<'_, '_> {
             signature,
             kind,
             is_global_initializer,
-            body: body_id,
+            body,
         })
     }
 

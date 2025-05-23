@@ -7,7 +7,7 @@ use std::{borrow::Cow, fmt::Display};
 use crate::{
     ast::*,
     errors::Level,
-    formatter::{FmtCtx, IntoFormatter, PushBinder},
+    formatter::{AstFormatter, FmtCtx, IntoFormatter},
     pretty::FmtWithCtx,
 };
 
@@ -65,17 +65,19 @@ impl CheckGenericsVisitor<'_> {
         check_inner: impl Fn(&A, &B),
     ) where
         I: Idx,
-        A: for<'a> FmtWithCtx<FmtA>,
-        B: for<'a> FmtWithCtx<FmtB>,
+        FmtA: AstFormatter,
+        A: FmtWithCtx<FmtA>,
+        B: FmtWithCtx<FmtB>,
     {
         if a.elem_count() == b.elem_count() {
             a.iter().zip(b.iter()).for_each(|(x, y)| check_inner(x, y));
         } else {
             let a = a.iter().map(|x| x.fmt_with_ctx(a_fmt)).join(", ");
             let b = b.iter().map(|x| x.fmt_with_ctx(b_fmt)).join(", ");
+            let target = target.fmt_with_ctx(a_fmt);
             self.error(format!(
                 "Mismatched {kind}:\
-                \ntarget: {target:?}\
+                \ntarget: {target}\
                 \nexpected: [{a}]\
                 \n     got: [{b}]"
             ))
