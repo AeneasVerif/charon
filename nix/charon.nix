@@ -63,7 +63,7 @@ craneLib.buildPackage (
       # While running tests we also outputted llbc files. We export them for charon-ml tests.
       mkdir -p $out/tests-llbc
       cp tests/**/*.llbc $out/tests-llbc
-      cp src/bin/generate-ml/charon-itself.llbc $out/tests-llbc
+      cp src/bin/generate-ml/charon-itself.ullbc $out/tests-llbc
 
       # Export the generated files to later check if they match the committed files.
       mkdir -p $out/generated-ml
