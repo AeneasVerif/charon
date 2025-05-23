@@ -128,7 +128,7 @@ pub struct TranslateCtx<'tcx> {
 ///
 /// At each level, we store two things: a `GenericParams` that contains the parameters bound at
 /// this level, and various maps from the rustc-internal indices to our indices.
-#[derive(Debug)]
+#[derive(Debug, Default)]
 pub(crate) struct BindingLevel {
     /// The parameters and predicates bound at this level.
     pub params: GenericParams,
@@ -145,6 +145,8 @@ pub(crate) struct BindingLevel {
     pub early_region_vars: std::collections::BTreeMap<hax::EarlyParamRegion, RegionId>,
     /// The map from rust late/bound regions to translated region indices.
     pub bound_region_vars: Vec<RegionId>,
+    /// The regions added for by-ref upvars, in order of upvars.
+    pub by_ref_upvar_regions: Vec<RegionId>,
     /// The map from rust type variable indices to translated type variable indices.
     pub type_vars_map: HashMap<u32, TypeVarId>,
     /// The map from rust const generic variables to translate const generic variable indices.
@@ -156,13 +158,8 @@ pub(crate) struct BindingLevel {
 impl BindingLevel {
     pub(crate) fn new(is_item_binder: bool) -> Self {
         Self {
-            params: Default::default(),
             is_item_binder,
-            early_region_vars: Default::default(),
-            bound_region_vars: Default::default(),
-            type_vars_map: Default::default(),
-            const_generic_vars_map: Default::default(),
-            type_trans_cache: Default::default(),
+            ..Default::default()
         }
     }
 
@@ -172,7 +169,7 @@ impl BindingLevel {
         // Check that there are no late-bound regions
         assert!(
             self.bound_region_vars.is_empty(),
-            "Early regions must be tralsnated before late ones"
+            "Early regions must be translated before late ones"
         );
         let rid = self
             .params
@@ -193,6 +190,18 @@ impl BindingLevel {
         rid
     }
 
+    /// Add a region for a by_ref upvar in a closure.
+    pub fn push_upvar_region(&mut self) -> RegionId {
+        // We musn't push to `bound_region_vars` because that will contain the higher-kinded
+        // signature lifetimes if any and they must be lookup-able.
+        let region_id = self
+            .params
+            .regions
+            .push_with(|index| RegionVar { index, name: None });
+        self.by_ref_upvar_regions.push(region_id);
+        region_id
+    }
+
     pub(crate) fn push_type_var(&mut self, rid: u32, name: String) -> TypeVarId {
         let var_id = self.params.types.push_with(|index| TypeVar { index, name });
         self.type_vars_map.insert(rid, var_id);
@@ -209,6 +218,10 @@ impl BindingLevel {
 
     /// Translate a binder of regions by appending the stored reguions to the given vector.
     pub(crate) fn push_params_from_binder(&mut self, binder: hax::Binder<()>) -> Result<(), Error> {
+        assert!(
+            self.bound_region_vars.is_empty(),
+            "Trying to use two binders at the same binding level"
+        );
         use hax::BoundVariableKind::*;
         for p in binder.bound_vars {
             match p {
@@ -1011,7 +1024,13 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
     /// Get the only binding level. Panics if there are other binding levels.
     pub(crate) fn the_only_binder(&self) -> &BindingLevel {
         assert_eq!(self.binding_levels.len(), 1);
-        &self.outermost_binder()
+        self.innermost_binder()
+    }
+
+    /// Get the only binding level. Panics if there are other binding levels.
+    pub(crate) fn the_only_binder_mut(&mut self) -> &mut BindingLevel {
+        assert_eq!(self.binding_levels.len(), 1);
+        self.innermost_binder_mut()
     }
 
     pub(crate) fn outermost_binder(&self) -> &BindingLevel {

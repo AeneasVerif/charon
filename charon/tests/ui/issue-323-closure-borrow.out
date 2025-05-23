@@ -12,16 +12,16 @@ fn test_crate::{test_crate::Rng}::next_u64<'_0>(@1: &'_0 mut (test_crate::Rng))
     return
 }
 
-struct test_crate::new::closure =
+struct test_crate::new::closure<'_0> =
 {
-  &'_ mut (test_crate::Rng),
+  &'_0 mut (test_crate::Rng),
 }
 
 fn test_crate::new<'_0>(@1: &'_0 mut (test_crate::Rng))
 {
     let @0: (); // return
     let rng@1: &'_ mut (test_crate::Rng); // arg #1
-    let @2: test_crate::new::closure; // anonymous local
+    let @2: test_crate::new::closure<'_>; // anonymous local
     let @3: &'_ mut (test_crate::Rng); // anonymous local
 
     storage_live(@2)

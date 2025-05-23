@@ -691,6 +691,25 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
             }
         }
 
+        if let hax::FullDefKind::Closure { args, .. } = def.kind()
+            && include_late_bound
+        {
+            // Add the lifetime generics coming from the by-ref upvars.
+            args.upvar_tys.iter().for_each(|ty| {
+                if matches!(
+                    ty.kind(),
+                    hax::TyKind::Ref(
+                        hax::Region {
+                            kind: hax::RegionKind::ReErased
+                        },
+                        ..
+                    )
+                ) {
+                    self.the_only_binder_mut().push_upvar_region();
+                }
+            });
+        }
+
         // The parameters (and in particular the lifetimes) are split between
         // early bound and late bound parameters. See those blog posts for explanations:
         // https://smallcultfollowing.com/babysteps/blog/2013/10/29/intermingled-parameter-lists/
