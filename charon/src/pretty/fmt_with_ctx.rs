@@ -1541,7 +1541,7 @@ impl<C: AstFormatter> FmtWithCtx<C> for TypeDecl {
         };
 
         let contents = match &self.kind {
-            TypeDeclKind::Struct(fields, _) => {
+            TypeDeclKind::Struct(fields) => {
                 if !fields.is_empty() {
                     let fields = fields
                         .iter()

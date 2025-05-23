@@ -374,11 +374,7 @@ generate_index_type!(FieldId, "Field");
 
 #[derive(Debug, Clone, EnumIsA, EnumAsGetters, Serialize, Deserialize, Drive, DriveMut)]
 pub enum TypeDeclKind {
-    Struct(
-        Vector<FieldId, Field>,
-        /// Additional information if this struct is a closure's state.
-        Option<ClosureInfo>,
-    ),
+    Struct(Vector<FieldId, Field>),
     Enum(Vector<VariantId, Variant>),
     Union(Vector<FieldId, Field>),
     /// An opaque type.

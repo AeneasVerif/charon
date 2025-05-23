@@ -102,25 +102,7 @@ impl ItemTransCtx<'_, '_> {
             })
             .try_collect()?;
 
-        let signature = self.translate_region_binder(span, &args.untupled_sig, |ctx, sig| {
-            let inputs = sig
-                .inputs
-                .iter()
-                .map(|x| ctx.translate_ty(span, x))
-                .try_collect()?;
-            let output = ctx.translate_ty(span, &sig.output)?;
-            Ok((inputs, output))
-        })?;
-        let kind = match args.kind {
-            hax::ClosureKind::Fn => ClosureKind::Fn,
-            hax::ClosureKind::FnMut => ClosureKind::FnMut,
-            hax::ClosureKind::FnOnce => ClosureKind::FnOnce,
-        };
-
-        Ok(TypeDeclKind::Struct(
-            fields,
-            Some(ClosureInfo { kind, signature }),
-        ))
+        Ok(TypeDeclKind::Struct(fields))
     }
 
     fn translate_closure_signature(

@@ -172,15 +172,6 @@ pub struct test_crate::WrapClone<T>
   T,
 }
 
-#[lang_item("noop_method_clone")]
-pub fn core::clone::impls::{impl core::clone::Clone for &'_0 (T)}#3::clone<'_0, '_1, T>(@1: &'_1 (&'_0 (T))) -> &'_0 (T)
-
-impl core::clone::impls::{impl core::clone::Clone for &'_0 (T)}#3<'_0, T> : core::clone::Clone<&'_0 (T)>
-{
-    parent_clause0 = core::marker::Sized<&'_ (T)>
-    fn clone<'_0> = core::clone::impls::{impl core::clone::Clone for &'_0 (T)}#3::clone<'_0, '_0_0, T>
-}
-
 struct test_crate::wrap::closure<'_0, U>
   where
       [@TraitClause0]: core::marker::Sized<U>,
@@ -194,6 +185,15 @@ where
 
     @0 := test_crate::wrap::closure {  }
     return
+}
+
+#[lang_item("noop_method_clone")]
+pub fn core::clone::impls::{impl core::clone::Clone for &'_0 (T)}#3::clone<'_0, '_1, T>(@1: &'_1 (&'_0 (T))) -> &'_0 (T)
+
+impl core::clone::impls::{impl core::clone::Clone for &'_0 (T)}#3<'_0, T> : core::clone::Clone<&'_0 (T)>
+{
+    parent_clause0 = core::marker::Sized<&'_ (T)>
+    fn clone<'_0> = core::clone::impls::{impl core::clone::Clone for &'_0 (T)}#3::clone<'_0, '_0_0, T>
 }
 
 #[lang_item("tuple_trait")]

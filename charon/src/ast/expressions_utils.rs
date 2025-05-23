@@ -114,7 +114,7 @@ impl ProjectionElem {
                         assert!(TypeId::Adt(*type_decl_id) == type_id);
                         use TypeDeclKind::*;
                         match &type_decl.kind {
-                            Struct(fields, _) | Union(fields) => {
+                            Struct(fields) | Union(fields) => {
                                 if variant_id.is_some() {
                                     return Err(());
                                 };

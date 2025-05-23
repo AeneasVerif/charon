@@ -19,6 +19,15 @@ pub trait core::clone::Clone<Self>
     fn clone<'_0> = core::clone::Clone::clone<'_0_0, Self>
 }
 
+struct test_crate::{test_crate::Foo<'a, T>[@TraitClause0]}::test_nested_closures::closure<'a, T>
+  where
+      [@TraitClause0]: core::marker::Sized<T>,
+      [@TraitClause1]: core::clone::Clone<T>,
+ =
+{
+  &'_ (T),
+}
+
 struct test_crate::{test_crate::Foo<'a, T>[@TraitClause0]}::test_nested_closures::closure::closure::closure<'a, '_1, T>
   where
       [@TraitClause0]: core::marker::Sized<T>,
@@ -29,15 +38,6 @@ struct test_crate::{test_crate::Foo<'a, T>[@TraitClause0]}::test_nested_closures
 }
 
 struct test_crate::{test_crate::Foo<'a, T>[@TraitClause0]}::test_nested_closures::closure::closure<'a, '_1, T>
-  where
-      [@TraitClause0]: core::marker::Sized<T>,
-      [@TraitClause1]: core::clone::Clone<T>,
- =
-{
-  &'_ (T),
-}
-
-struct test_crate::{test_crate::Foo<'a, T>[@TraitClause0]}::test_nested_closures::closure<'a, T>
   where
       [@TraitClause0]: core::marker::Sized<T>,
       [@TraitClause1]: core::clone::Clone<T>,
