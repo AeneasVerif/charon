@@ -40,11 +40,12 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
                 let Ok(def) = self.hax_def(def_id) else {
                     return; // Error has already been emitted
                 };
-                let Ok(name) = self.hax_def_id_to_name(&def.def_id) else {
+                let Ok(name) = self.def_id_to_name(&def.def_id) else {
                     return; // Error has already been emitted
                 };
                 let opacity = self.opacity_for_name(&name);
-                let item_meta = self.translate_item_meta(&def, name, opacity);
+                let trans_src = TransItemSource::TraitImpl(def.def_id.clone());
+                let item_meta = self.translate_item_meta(&def, &trans_src, name, opacity);
                 let _ = self.register_module(item_meta, &def);
             }
 
@@ -114,7 +115,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
             let res = {
                 // Stopgap measure because there are still many panics in charon and hax.
                 let mut ctx = std::panic::AssertUnwindSafe(&mut ctx);
-                std::panic::catch_unwind(move || ctx.translate_item_aux(def_id, trans_id))
+                std::panic::catch_unwind(move || ctx.translate_item_aux(item_src, trans_id))
             };
             match res {
                 Ok(Ok(())) => return,
@@ -134,11 +135,11 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
 
     pub(crate) fn translate_item_aux(
         &mut self,
-        def_id: &hax::DefId,
+        item_src: &TransItemSource,
         trans_id: Option<AnyTransId>,
     ) -> Result<(), Error> {
         // Translate the meta information
-        let name = self.hax_def_id_to_name(def_id)?;
+        let name = self.translate_name(item_src)?;
         if let Some(trans_id) = trans_id {
             self.translated.item_names.insert(trans_id, name.clone());
         }
@@ -147,33 +148,62 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
             // Don't even start translating the item. In particular don't call `hax_def` on it.
             return Ok(());
         }
-        let def = self.hax_def(def_id)?;
-        let item_meta = self.translate_item_meta(&def, name, opacity);
+        let def = self.hax_def(item_src.as_def_id())?;
+        let item_meta = self.translate_item_meta(&def, item_src, name, opacity);
 
         // Initialize the body translation context
-        let bt_ctx = ItemTransCtx::new(def_id.clone(), trans_id, self);
-        match trans_id {
-            Some(AnyTransId::Type(id)) => {
+        let bt_ctx = ItemTransCtx::new(def.def_id.clone(), trans_id, self);
+        match item_src {
+            TransItemSource::Type(_) => {
+                let Some(AnyTransId::Type(id)) = trans_id else {
+                    unreachable!()
+                };
                 let ty = bt_ctx.translate_type(id, item_meta, &def)?;
                 self.translated.type_decls.set_slot(id, ty);
             }
-            Some(AnyTransId::Fun(id)) => {
+            TransItemSource::Fun(_) => {
+                let Some(AnyTransId::Fun(id)) = trans_id else {
+                    unreachable!()
+                };
                 let fun_decl = bt_ctx.translate_function(id, item_meta, &def)?;
                 self.translated.fun_decls.set_slot(id, fun_decl);
             }
-            Some(AnyTransId::Global(id)) => {
+            TransItemSource::Global(_) => {
+                let Some(AnyTransId::Global(id)) = trans_id else {
+                    unreachable!()
+                };
                 let global_decl = bt_ctx.translate_global(id, item_meta, &def)?;
                 self.translated.global_decls.set_slot(id, global_decl);
             }
-            Some(AnyTransId::TraitDecl(id)) => {
+            TransItemSource::TraitDecl(_) => {
+                let Some(AnyTransId::TraitDecl(id)) = trans_id else {
+                    unreachable!()
+                };
                 let trait_decl = bt_ctx.translate_trait_decl(id, item_meta, &def)?;
                 self.translated.trait_decls.set_slot(id, trait_decl);
             }
-            Some(AnyTransId::TraitImpl(id)) => {
+            TransItemSource::TraitImpl(_) => {
+                let Some(AnyTransId::TraitImpl(id)) = trans_id else {
+                    unreachable!()
+                };
                 let trait_impl = bt_ctx.translate_trait_impl(id, item_meta, &def)?;
                 self.translated.trait_impls.set_slot(id, trait_impl);
             }
-            None => unimplemented!(),
+            TransItemSource::ClosureTraitImpl(_, kind) => {
+                let Some(AnyTransId::TraitImpl(id)) = trans_id else {
+                    unreachable!()
+                };
+                let closure_trait_impl =
+                    bt_ctx.translate_closure_trait_impl(id, item_meta, &def, *kind)?;
+                self.translated.trait_impls.set_slot(id, closure_trait_impl);
+            }
+            TransItemSource::ClosureMethod(_, kind) => {
+                let Some(AnyTransId::Fun(id)) = trans_id else {
+                    unreachable!()
+                };
+                let fun_decl = bt_ctx.translate_closure_method(id, item_meta, &def, *kind)?;
+                self.translated.fun_decls.set_slot(id, fun_decl);
+            }
         }
         Ok(())
     }

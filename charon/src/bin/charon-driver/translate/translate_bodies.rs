@@ -278,7 +278,16 @@ impl BodyTransCtx<'_, '_, '_> {
                             }
                             ClosureState(index) => {
                                 let field_id = translate_field_id(*index);
-                                ProjectionElem::Field(FieldProjKind::ClosureState, field_id)
+                                let TyKind::Adt(TypeId::Adt(adt_id), _) = subplace.ty.kind() else {
+                                    unreachable!(
+                                        "Subplace of ClosureState must be a closure, got {:?}",
+                                        subplace.ty
+                                    )
+                                };
+                                ProjectionElem::Field(
+                                    FieldProjKind::Adt(adt_id.clone(), None),
+                                    field_id,
+                                )
                             }
                         };
                         subplace.project(proj_elem, ty)
@@ -663,21 +672,9 @@ impl BodyTransCtx<'_, '_, '_> {
                             closure_args.tupled_sig
                         );
 
-                        let fun_id = self.register_fun_decl_id(span, def_id);
-
-                        // Retrieve the late-bound variables.
-                        let binder = closure_args.tupled_sig.as_ref().rebind(());
-                        // Translate the substitution
-                        let generics = self.translate_generic_args(
-                            span,
-                            &closure_args.parent_args,
-                            &closure_args.parent_trait_refs,
-                            Some(binder),
-                            GenericsSource::item(fun_id),
-                        )?;
-
-                        let akind = AggregateKind::Closure(fun_id, Box::new(generics));
-
+                        let type_ref =
+                            self.translate_closure_type_ref(span, def_id, closure_args)?;
+                        let akind = AggregateKind::Adt(type_ref.id, None, None, type_ref.generics);
                         Ok(Rvalue::Aggregate(akind, operands_t))
                     }
                     hax::AggregateKind::RawPtr(ty, is_mut) => {
@@ -991,7 +988,8 @@ impl BodyTransCtx<'_, '_, '_> {
             } => {
                 trace!("func: {:?}", def_id);
                 let fun_def = self.t_ctx.hax_def(def_id)?;
-                let name = self.t_ctx.hax_def_id_to_name(&fun_def.def_id)?;
+                let fun_src = TransItemSource::Fun(def_id.clone());
+                let name = self.t_ctx.translate_name(&fun_src)?;
                 let panic_lang_items = &["panic", "panic_fmt", "begin_panic"];
                 let panic_names = &[&["core", "panicking", "assert_failed"], EXPLICIT_PANIC_NAME];
 

@@ -302,28 +302,59 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
             ImplExprAtom::Builtin {
                 impl_exprs, types, ..
             } => {
-                let parent_trait_refs = self.translate_trait_impl_exprs(span, &impl_exprs)?;
-                let types = types
-                    .iter()
-                    .map(|(def_id, ty)| {
-                        let item_def = self.hax_def(def_id)?;
-                        let ty = self.translate_ty(span, ty)?;
-                        let hax::FullDefKind::AssocTy {
-                            associated_item, ..
-                        } = item_def.kind()
-                        else {
-                            unreachable!()
-                        };
-                        let name = TraitItemName(associated_item.name.clone());
-                        Ok((name, ty))
-                    })
-                    .try_collect()?;
-                TraitRef {
-                    kind: TraitRefKind::BuiltinOrAuto {
+                let trait_def_id = &impl_source.r#trait.hax_skip_binder_ref().def_id;
+                let trait_def = self.hax_def(trait_def_id)?;
+                let closure_kind = trait_def.lang_item.as_deref().and_then(|lang| match lang {
+                    "fn_once" => Some(ClosureKind::FnOnce),
+                    "fn_mut" => Some(ClosureKind::FnMut),
+                    "r#fn" => Some(ClosureKind::Fn),
+                    _ => None,
+                });
+
+                let kind = if let Some(closure_kind) = closure_kind
+                    && let Some(hax::GenericArg::Type(closure_ty)) = impl_source
+                        .r#trait
+                        .hax_skip_binder_ref()
+                        .generic_args
+                        .first()
+                    && let hax::TyKind::Closure(closure_id, closure_args) = closure_ty.kind()
+                {
+                    let binder =
+                        self.translate_region_binder(span, &impl_source.r#trait, |ctx, _tref| {
+                            ctx.translate_closure_impl_ref(
+                                span,
+                                closure_id,
+                                closure_args,
+                                closure_kind,
+                            )
+                        })?;
+                    let TraitImplRef { impl_id, generics } = binder.erase();
+                    TraitRefKind::TraitImpl(impl_id, generics)
+                } else {
+                    let parent_trait_refs = self.translate_trait_impl_exprs(span, &impl_exprs)?;
+                    let types = types
+                        .iter()
+                        .map(|(def_id, ty)| {
+                            let item_def = self.hax_def(def_id)?;
+                            let ty = self.translate_ty(span, ty)?;
+                            let hax::FullDefKind::AssocTy {
+                                associated_item, ..
+                            } = item_def.kind()
+                            else {
+                                unreachable!()
+                            };
+                            let name = TraitItemName(associated_item.name.clone());
+                            Ok((name, ty))
+                        })
+                        .try_collect()?;
+                    TraitRefKind::BuiltinOrAuto {
                         trait_decl_ref: trait_decl_ref.clone(),
                         parent_trait_refs,
                         types,
-                    },
+                    }
+                };
+                TraitRef {
+                    kind,
                     trait_decl_ref,
                 }
             }

@@ -8,6 +8,7 @@ use charon_lib::ids::Vector;
 use core::convert::*;
 use hax::Visibility;
 use hax_frontend_exporter as hax;
+use itertools::Itertools;
 
 /// Small helper: we ignore some region names (when they are equal to "'_")
 fn check_region_name(s: String) -> Option<String> {
@@ -295,44 +296,9 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                 })?;
                 TyKind::Arrow(sig)
             }
-            hax::TyKind::Closure(
-                def_id,
-                hax::ClosureArgs {
-                    untupled_sig: sig,
-                    parent_args,
-                    parent_trait_refs,
-                    upvar_tys,
-                    ..
-                },
-            ) => {
-                let signature = self.translate_region_binder(span, sig, |ctx, sig| {
-                    let inputs = sig
-                        .inputs
-                        .iter()
-                        .map(|x| ctx.translate_ty(span, x))
-                        .try_collect()?;
-                    let output = ctx.translate_ty(span, &sig.output)?;
-                    Ok((inputs, output))
-                })?;
-                let fun_id = self.register_fun_decl_id(span, def_id);
-                let upvar_tys = upvar_tys
-                    .iter()
-                    .map(|ty| self.translate_ty(span, ty))
-                    .try_collect()?;
-                let parent_args = self.translate_generic_args(
-                    span,
-                    &parent_args,
-                    &parent_trait_refs,
-                    None,
-                    // We don't know the item these generics apply to.
-                    GenericsSource::Builtin,
-                )?;
-                TyKind::Closure {
-                    fun_id,
-                    signature,
-                    parent_args: Box::new(parent_args),
-                    upvar_tys,
-                }
+            hax::TyKind::Closure(def_id, args) => {
+                let type_ref = self.translate_closure_type_ref(span, def_id, args)?;
+                TyKind::Adt(type_ref.id, *type_ref.generics)
             }
             hax::TyKind::Error => {
                 trace!("Error");
@@ -725,6 +691,25 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
             }
         }
 
+        if let hax::FullDefKind::Closure { args, .. } = def.kind()
+            && include_late_bound
+        {
+            // Add the lifetime generics coming from the by-ref upvars.
+            args.upvar_tys.iter().for_each(|ty| {
+                if matches!(
+                    ty.kind(),
+                    hax::TyKind::Ref(
+                        hax::Region {
+                            kind: hax::RegionKind::ReErased
+                        },
+                        ..
+                    )
+                ) {
+                    self.the_only_binder_mut().push_upvar_region();
+                }
+            });
+        }
+
         // The parameters (and in particular the lifetimes) are split between
         // early bound and late bound parameters. See those blog posts for explanations:
         // https://smallcultfollowing.com/babysteps/blog/2013/10/29/intermingled-parameter-lists/
@@ -734,7 +719,6 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         // [TyCtxt.generics_of] gives us the early-bound parameters. We add the late-bound
         // parameters here.
         let signature = match &def.kind {
-            hax::FullDefKind::Closure { args, .. } => Some(&args.tupled_sig),
             hax::FullDefKind::Fn { sig, .. } => Some(sig),
             hax::FullDefKind::AssocFn { sig, .. } => Some(sig),
             _ => None,
@@ -828,6 +812,9 @@ impl ItemTransCtx<'_, '_> {
             | hax::FullDefKind::Enum { def, .. }
             | hax::FullDefKind::Union { def, .. } => {
                 self.translate_adt_def(trans_id, span, &item_meta, def)
+            }
+            hax::FullDefKind::Closure { args, .. } => {
+                self.translate_closure_adt(trans_id, span, &args)
             }
             _ => panic!("Unexpected item when translating types: {def:?}"),
         };
