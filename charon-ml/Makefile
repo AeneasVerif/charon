@@ -31,9 +31,9 @@ format:
 # `make test` in the root directory.
 .PHONY: copy-tests
 copy-tests:
+	rm -rf tests/serialized
 	mkdir -p tests/serialized
-	rm -f tests/serialized/*
-	cp ../charon/tests/**/*.llbc tests/serialized
+	cd ../charon/tests/ui && cp --parents **/*.llbc ../../../charon-ml/tests/serialized
 
 # Adapted from https://gitlab.inria.fr/fpottier/visitors/blob/master/Makefile.preprocess
 PPX := `ocamlfind query ppx_deriving`/ppx_deriving `ocamlfind query ppx_deriving`/show/ppx_deriving_show.cma `ocamlfind query ppx_deriving`/ord/ppx_deriving_ord.cma `ocamlfind query visitors`/ppx/ppx_deriving_visitors.cma

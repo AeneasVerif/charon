@@ -74,8 +74,7 @@ let
       OCAMLPARAM = "_,warn-error=+A"; # Turn all warnings into errors.
       preCheck =
         if doCheck then ''
-          mkdir -p charon-ml/tests/serialized
-          cp ${charon}/tests-llbc/* charon-ml/tests/serialized
+          cp -r ${charon}/tests-llbc charon-ml/tests/serialized
         '' else
           "";
       propagatedBuildInputs = with ocamlPackages; [
