@@ -59,18 +59,18 @@ and any_decl_id =
   | IdTraitDecl of trait_decl_id
   | IdTraitImpl of trait_impl_id
 
-(** The index of a binder, counting from the innermost. See [`DeBruijnVar`] for details. *)
+(** The index of a binder, counting from the innermost. See [[DeBruijnVar]] for details. *)
 and de_bruijn_id = int
 
 (** Type-level variable.
 
-    Variables are bound in groups. Each item has a top-level binding group in its `generic_params`
-    field, and then inner binders are possible using the `RegionBinder<T>` and `Binder<T>` types.
-    Each variable is linked to exactly one binder. The `Id` then identifies the specific variable
+    Variables are bound in groups. Each item has a top-level binding group in its [generic_params]
+    field, and then inner binders are possible using the [RegionBinder<T>] and [Binder<T>] types.
+    Each variable is linked to exactly one binder. The [Id] then identifies the specific variable
     among all those bound in that group.
 
     For instance, we have the following:
-    ```text
+    {@rust[
     fn f<'a, 'b>(x: for<'c> fn(&'b u8, &'c u16, for<'d> fn(&'b u32, &'c u64, &'d u128)) -> u64) {}
          ^^^^^^         ^^       ^       ^          ^^       ^        ^        ^
            |       inner binder  |       |     inner binder  |        |        |
@@ -78,13 +78,13 @@ and de_bruijn_id = int
                            Bound(1, b)   |              Bound(2, b)   |     Bound(0, d)
                                          |                            |
                                      Bound(0, c)                 Bound(1, c)
-    ```
+    ]}
 
     To make consumption easier for projects that don't do heavy substitution, a micro-pass at the
-    end changes the variables bound at the top-level (i.e. in the `GenericParams` of items) to be
-    `Free`. This is an optional pass, we may add a flag to deactivate it. The example above
+    end changes the variables bound at the top-level (i.e. in the [GenericParams] of items) to be
+    [Free]. This is an optional pass, we may add a flag to deactivate it. The example above
     becomes:
-    ```text
+    {@rust[
     fn f<'a, 'b>(x: for<'c> fn(&'b u8, &'c u16, for<'d> fn(&'b u32, &'c u64, &'d u128)) -> u64) {}
          ^^^^^^         ^^       ^       ^          ^^       ^        ^        ^
            |       inner binder  |       |     inner binder  |        |        |
@@ -92,7 +92,7 @@ and de_bruijn_id = int
                               Free(b)    |                Free(b)     |     Bound(0, d)
                                          |                            |
                                      Bound(0, c)                 Bound(1, c)
-    ```
+    ]}
 
     At the moment only region variables can be bound in a non-top-level binder.
  *)
@@ -207,7 +207,7 @@ and region_var = (region_id, string option) indexed_var
 
 and region =
   | RVar of region_id de_bruijn_var
-      (** Region variable. See `DeBruijnVar` for details. *)
+      (** Region variable. See [DeBruijnVar] for details. *)
   | RStatic  (** Static region *)
   | RErased  (** Erased region *)
 
@@ -216,7 +216,7 @@ and region =
 
     Should be read as a path inside the trait clauses which apply to the current
     definition. Note that every path designated by [TraitInstanceId] refers
-    to a *trait instance*, which is why the [Clause] variant may seem redundant
+    to a *trait instance*, which is why the [[TraitRefKind::Clause]] variant may seem redundant
     with some of the other variants.
  *)
 and trait_instance_id =
@@ -226,11 +226,11 @@ and trait_instance_id =
       (** One of the local clauses.
 
           Example:
-          ```text
+          {@rust[
           fn f<T>(...) where T : Foo
                              ^^^^^^^
                              Clause(0)
-          ```
+          ]}
        *)
   | ParentClause of trait_instance_id * trait_decl_id * trait_clause_id
       (** A parent clause
@@ -239,11 +239,11 @@ and trait_instance_id =
           implemented by the instance id from which we take the parent clause
           (see example below). It is not necessary and included for convenience.
 
-          Remark: Ideally we should store a full `TraitRef` instead, but hax does not give us enough
+          Remark: Ideally we should store a full [TraitRef] instead, but hax does not give us enough
           information to get the right generic args.
 
           Example:
-          ```text
+          {@rust[
           trait Foo1 {}
           trait Foo2 { fn f(); }
 
@@ -261,29 +261,29 @@ and trait_instance_id =
                               ^^^
                        clause 0 implements Bar
           }
-          ```
+          ]}
        *)
   | Self
-      (** The implicit `Self: Trait` clause. Present inside trait declarations, including trait
-          method declarations. Not present in trait implementations as we can use `TraitImpl` intead.
+      (** The implicit [Self: Trait] clause. Present inside trait declarations, including trait
+          method declarations. Not present in trait implementations as we can use [TraitImpl] intead.
        *)
   | BuiltinOrAuto of
       trait_decl_ref region_binder
       * trait_ref list
       * (trait_item_name * ty) list
       (** A trait implementation that is computed by the compiler, such as for built-in traits
-          `Sized` or `FnMut`. This morally points to an invisible `impl` block; as such it contains
+          [Sized] or [FnMut]. This morally points to an invisible [impl] block; as such it contains
           the information we may need from one.
 
           Fields:
           - [trait_decl_ref]
-          - [parent_trait_refs]:  The `ImplExpr`s required to satisfy the implied predicates on the trait declaration.
-          E.g. since `FnMut: FnOnce`, a built-in `T: FnMut` impl would have an `ImplExpr` for `T:
-          FnOnce`.
+          - [parent_trait_refs]:  The [ImplExpr]s required to satisfy the implied predicates on the trait declaration.
+          E.g. since [FnMut: FnOnce], a built-in [T: FnMut] impl would have an [ImplExpr] for [T:
+          FnOnce].
           - [types]:  The values of the associated types for this trait.
        *)
   | Dyn of trait_decl_ref region_binder
-      (** The automatically-generated implementation for `dyn Trait`. *)
+      (** The automatically-generated implementation for [dyn Trait]. *)
   | UnknownTrait of string  (** For error reporting. *)
 
 (** A reference to a trait *)
@@ -293,14 +293,14 @@ and trait_ref = {
       (** Not necessary, but useful *)
 }
 
-(** A predicate of the form `Type: Trait<Args>`.
+(** A predicate of the form [Type: Trait<Args>].
 
     About the generics, if we write:
-    ```text
+    {@rust[
     impl Foo<bool> for String { ... }
-    ```
+    ]}
 
-    The substitution is: `[String, bool]`.
+    The substitution is: [[String, bool]].
  *)
 and trait_decl_ref = {
   trait_decl_id : trait_decl_id;
@@ -313,11 +313,11 @@ and trait_impl_ref = {
   impl_generics : generic_args;
 }
 
-(** Each `GenericArgs` is meant for a corresponding `GenericParams`; this describes which one. *)
+(** Each [GenericArgs] is meant for a corresponding [GenericParams]; this describes which one. *)
 and generics_source =
   | GSItem of any_decl_id  (** A top-level item. *)
   | GSMethod of trait_decl_id * trait_item_name  (** A trait method. *)
-  | GSBuiltin  (** A builtin item like `Box`. *)
+  | GSBuiltin  (** A builtin item like [Box]. *)
 
 (** A set of generic arguments. *)
 and generic_args = {
@@ -327,9 +327,9 @@ and generic_args = {
   trait_refs : trait_ref list;
 }
 
-(** A value of type `T` bound by regions. We should use `binder` instead but this causes name clash
+(** A value of type [T] bound by regions. We should use [binder] instead but this causes name clash
     issues in the derived ocaml visitors.
-    TODO: merge with `binder`
+    TODO: merge with [binder]
  *)
 and 'a0 region_binder = {
   binder_regions : region_var list;
@@ -339,7 +339,7 @@ and 'a0 region_binder = {
      *)
 }
 
-(** A predicate of the form `exists<T> where T: Trait`.
+(** A predicate of the form [exists<T> where T: Trait].
 
     TODO: store something useful here
  *)
@@ -374,12 +374,12 @@ and ty =
       (** An ADT.
           Note that here ADTs are very general. They can be:
           - user-defined ADTs
-          - tuples (including `unit`, which is a 0-tuple)
+          - tuples (including [unit], which is a 0-tuple)
           - built-in types (includes some primitive types, e.g., arrays or slices)
-          The information on the nature of the ADT is stored in (`TypeId`)[TypeId].
+          The information on the nature of the ADT is stored in ([TypeId])[TypeId].
           The last list is used encode const generics, e.g., the size of an array
 
-          Note: this is incorrectly named: this can refer to any valid `TypeDecl` including extern
+          Note: this is incorrectly named: this can refer to any valid [TypeDecl] including extern
           types.
        *)
   | TClosure of
@@ -401,13 +401,13 @@ and ty =
       (** The never type, for computations which don't return. It is sometimes
           necessary for intermediate variables. For instance, if we do (coming
           from the rust documentation):
-          ```text
+          {@rust[
           let num: u32 = match get_a_number() {
               Some(num) => num,
               None => break,
           };
-          ```
-          the second branch will have type `Never`. Also note that `Never`
+          ]}
+          the second branch will have type [Never]. Also note that [Never]
           can be coerced to any type.
 
           Note that we eliminate the variables which have this type in a micro-pass.
@@ -420,17 +420,17 @@ and ty =
       (** A trait associated type
 
           Ex.:
-          ```text
+          {@rust[
           trait Foo {
             type Bar; // type associated to the trait Foo
           }
-          ```
+          ]}
        *)
   | TDynTrait of existential_predicate
-      (** `dyn Trait`
+      (** [dyn Trait]
 
-          This carries an existentially quantified list of predicates, e.g. `exists<T> where T:
-          Into<u64>`. The predicate must quantify over a single type and no any regions or constants.
+          This carries an existentially quantified list of predicates, e.g. [exists<T> where T:
+          Into<u64>]. The predicate must quantify over a single type and no any regions or constants.
 
           TODO: we don't translate this properly yet.
        *)
@@ -450,7 +450,7 @@ and ty =
     will require to update the code abstracting the signatures (to properly
     take into account the lifetime constraints).
 
-    TODO: update to not hardcode the types (except `Box` maybe) and be more
+    TODO: update to not hardcode the types (except [Box] maybe) and be more
     modular.
     TODO: move to builtins.rs?
  *)
@@ -512,7 +512,7 @@ and item_meta = {
       (** The source code that corresponds to this item. *)
   attr_info : attr_info;  (** Attributes and visibility. *)
   is_local : bool;
-      (** `true` if the type decl is a local type decl, `false` if it comes from an external crate. *)
+      (** [true] if the type decl is a local type decl, [false] if it comes from an external crate. *)
   lang_item : string option;
       (** If the item is built-in, record its internal builtin identifier. *)
 }
@@ -524,15 +524,15 @@ and path_elem =
   | PeIdent of string * disambiguator
   | PeImpl of impl_elem * disambiguator
 
-(** There are two kinds of `impl` blocks:
+(** There are two kinds of [impl] blocks:
     - impl blocks linked to a type ("inherent" impl blocks following Rust terminology):
-      ```text
+      {@rust[
       impl<T> List<T> { ...}
-      ```
+      ]}
     - trait impl blocks:
-      ```text
+      {@rust[
       impl<T> PartialEq for List<T> { ...}
-      ```
+      ]}
     We distinguish the two.
  *)
 and impl_elem = ImplElemTy of ty binder | ImplElemTrait of trait_impl_id
@@ -542,20 +542,20 @@ and impl_elem = ImplElemTy of ty binder | ImplElemTrait of trait_impl_id
     A name really is a list of strings. However, we sometimes need to
     introduce unique indices to disambiguate. This mostly happens because
     of "impl" blocks:
-      ```text
+      {@rust[
       impl<T> List<T> {
         ...
       }
-      ```
+      ]}
 
     A type in Rust can have several "impl" blocks, and  those blocks can
     contain items with similar names. For this reason, we need to disambiguate
     them with unique indices. Rustc calls those "disambiguators". In rustc, this
     gives names like this:
-    - `betree_main::betree::NodeIdCounter{impl#0}::new`
+    - [betree_main::betree::NodeIdCounter{impl#0}::new]
     - note that impl blocks can be nested, and macros sometimes generate
       weird names (which require disambiguation):
-      `betree_main::betree_utils::_#1::{impl#0}::deserialize::{impl#0}`
+      [betree_main::betree_utils::_#1::{impl#0}::deserialize::{impl#0}]
 
     Finally, the paths used by rustc are a lot more precise and explicit than
     those we expose in LLBC: for instance, every identifier belongs to a specific
@@ -568,7 +568,7 @@ and impl_elem = ImplElemTy of ty binder | ImplElemTrait of trait_impl_id
     in the other situations (i.e., the disambiguator is always equal to 0).
 
     Moreover, the items are uniquely disambiguated by their (integer) ids
-    (`TypeDeclId`, etc.), and when extracting the code we have to deal with
+    ([TypeDeclId], etc.), and when extracting the code we have to deal with
     name clashes anyway. Still, we might want to be more precise in the future.
 
     Also note that the first path element in the name is always the crate name.
@@ -586,8 +586,8 @@ and const_generic_var = {
   ty : literal_type;  (** Type of the const generic *)
 }
 
-(** A trait predicate in a signature, of the form `Type: Trait<Args>`. This functions like a
-    variable binder, to which variables of the form `TraitRefKind::Clause` can refer to.
+(** A trait predicate in a signature, of the form [Type: Trait<Args>]. This functions like a
+    variable binder, to which variables of the form [TraitRefKind::Clause] can refer to.
  *)
 and trait_clause = {
   clause_id : trait_clause_id;
@@ -602,10 +602,10 @@ and ('a0, 'a1) outlives_pred = 'a0 * 'a1
 (** A constraint over a trait associated type.
 
     Example:
-    ```text
+    {@rust[
     T : Foo<S = String>
             ^^^^^^^^^^
-    ```
+    ]}
  *)
 and trait_type_constraint = {
   trait_ref : trait_ref;
@@ -615,15 +615,15 @@ and trait_type_constraint = {
 
 and binder_kind =
   | BKTraitMethod of trait_decl_id * trait_item_name
-      (** The parameters of a trait method. Used in the `methods` lists in trait decls and trait
+      (** The parameters of a trait method. Used in the [methods] lists in trait decls and trait
           impls.
        *)
   | BKInherentImplBlock
-      (** The parameters bound in a non-trait `impl` block. Used in the `Name`s of inherent methods. *)
+      (** The parameters bound in a non-trait [impl] block. Used in the [Name]s of inherent methods. *)
   | BKOther  (** Some other use of a binder outside the main Charon ast. *)
 
-(** A value of type `T` bound by generic parameters. Used in any context where we're adding generic
-    parameters that aren't on the top-level item, e.g. `for<'a>` clauses (uses `RegionBinder` for
+(** A value of type [T] bound by generic parameters. Used in any context where we're adding generic
+    parameters that aren't on the top-level item, e.g. [for<'a>] clauses (uses [RegionBinder] for
     now), trait methods, GATs (TODO).
  *)
 and 'a0 binder = {
@@ -703,8 +703,8 @@ and variant = {
   variant_name : string;
   fields : field list;
   discriminant : scalar_value;
-      (** The discriminant value outputted by `std::mem::discriminant` for this variant. This is
-        different than the discriminant stored in memory (the one controlled by `repr`).
+      (** The discriminant value outputted by [std::mem::discriminant] for this variant. This is
+        different than the discriminant stored in memory (the one controlled by [repr]).
      *)
 }
 

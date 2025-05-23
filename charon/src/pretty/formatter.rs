@@ -12,7 +12,7 @@ use crate::pretty::{fmt_with_ctx, FmtWithCtx};
 use crate::ullbc_ast;
 use crate::ullbc_ast as ast;
 
-/// [`Formatter`](Formatter) is a trait for converting objects to string.
+/// [`Formatter`] is a trait for converting objects to string.
 ///
 /// We need it because pretty-printing data structures often requires some
 /// context. For instance, because values use value ids to point to other values,

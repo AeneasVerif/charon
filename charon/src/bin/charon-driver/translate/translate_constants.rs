@@ -63,7 +63,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
     /// Remark: [hax::ConstantExpr] contains span information, but it is often
     /// the default span (i.e., it is useless), hence the additional span argument.
     /// TODO: the user_ty might be None because hax doesn't extract it (because
-    /// we are translating a [ConstantExpr] instead of a [Constant]. We need to
+    /// we are translating a [ConstantExpr] instead of a Constant. We need to
     /// update hax.
     pub(crate) fn translate_constant_expr_to_constant_expr(
         &mut self,

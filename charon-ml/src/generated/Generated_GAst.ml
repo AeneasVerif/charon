@@ -30,7 +30,7 @@ type fun_decl_id = Types.fun_decl_id [@@deriving show, ord]
 type local = {
   index : local_id;  (** Unique index identifying the variable *)
   name : string option;
-      (** Variable name - may be `None` if the variable was introduced by Rust
+      (** Variable name - may be [None] if the variable was introduced by Rust
         through desugaring.
      *)
   var_ty : ty;  (** The variable type *)
@@ -44,7 +44,7 @@ and locals = {
       (** The local variables.
         We always have, in the following order:
         - the local used for the return value (index 0)
-        - the `arg_count` input arguments
+        - the [arg_count] input arguments
         - the remaining locals, used for the intermediate computations
      *)
 }
@@ -53,7 +53,7 @@ and locals = {
     neither.
 
     Example:
-    ```text
+    {@rust[
     trait Foo {
         fn bar(x : u32) -> u32; // trait item decl without default
 
@@ -69,7 +69,7 @@ and locals = {
     impl Type {
         fn test(...) { ... } // regular
     }
-    ```
+    ]}
  *)
 and item_kind =
   | RegularItem
@@ -111,9 +111,9 @@ and copy_non_overlapping = { src : operand; dst : operand; count : operand }
     avoid a lot of small branches.
 
     We translate MIR asserts (introduced for out-of-bounds accesses or divisions by zero for
-    instance) to this. We then eliminate them in [crate::remove_dynamic_checks], because they're
-    implicit in the semantics of our array accesses etc. Finally we introduce new asserts in
-    [crate::reconstruct_asserts].
+    instance) to this. We then eliminate them in [crate::transform::remove_dynamic_checks],
+    because they're implicit in the semantics of our array accesses etc. Finally we introduce new asserts in
+    [crate::transform::reconstruct_asserts].
  *)
 and assertion = {
   cond : operand;
@@ -125,7 +125,7 @@ and assertion = {
 and closure_kind = Fn | FnMut | FnOnce
 
 (** Additional information for closures.
-    We mostly use it in micro-passes like [crate::update_closure_signature].
+    We mostly use it in micro-passes like [crate::transform::update_closure_signatures].
  *)
 and closure_info = {
   kind : closure_kind;
@@ -134,13 +134,13 @@ and closure_info = {
         More precisely, for every place captured by the
         closure, the state has one field (typically a ref).
 
-        For instance, below the closure has a state with two fields of type `&u32`:
-        ```text
+        For instance, below the closure has a state with two fields of type [&u32]:
+        {@rust[
         pub fn test_closure_capture(x: u32, y: u32) -> u32 {
           let f = &|z| x + y + z;
           (f)(0)
         }
-        ```
+        ]}
      *)
 }
 
@@ -148,7 +148,7 @@ and closure_info = {
 and fun_sig = {
   is_unsafe : bool;  (** Is the function unsafe or not *)
   is_closure : bool;
-      (** `true` if the signature is for a closure.
+      (** [true] if the signature is for a closure.
 
         Importantly: if the signature is for a closure, then:
         - the type and const generic params actually come from the parent function
@@ -188,9 +188,9 @@ type global_kind =
       (** A const with a name (either top-level or an associated const in a trait). *)
   | AnonConst
       (** A const without a name:
-          - An inline const expression (`const { 1 + 1 }`);
-          - A const expression in a type (`[u8; sizeof::<T>()]`);
-          - A promoted constant, automatically lifted from a body (`&0`).
+          - An inline const expression ([const { 1 + 1 }]);
+          - A const expression in a type ([[u8; sizeof::<T>()]]);
+          - A promoted constant, automatically lifted from a body ([&0]).
        *)
 
 (** A global variable definition (constant or static). *)
@@ -231,7 +231,7 @@ and global_decl = {
 (** A trait **declaration**.
 
     For instance:
-    ```text
+    {@rust[
     trait Foo {
       type Bar;
 
@@ -239,7 +239,7 @@ and global_decl = {
 
       fn test() -> bool { true } // provided method (see below)
     }
-    ```
+    ]}
 
     In case of a trait declaration, we don't include the provided methods (the methods
     with a default implementation): they will be translated on a per-need basis. This is
@@ -256,8 +256,8 @@ and global_decl = {
     - implementations of required methods shoudln't call default methods
     - trait implementations shouldn't redefine required methods
     The use case we have in mind is [std::iter::Iterator]: it declares one required
-    method (`next`) that should be implemented for every iterator, and defines many
-    helpers like `all`, `map`, etc. that shouldn't be re-implemented.
+    method ([next]) that should be implemented for every iterator, and defines many
+    helpers like [all], [map], etc. that shouldn't be re-implemented.
     Of course, this forbids other useful use cases such as visitors implemented
     by means of traits.
  *)
@@ -270,12 +270,12 @@ type trait_decl = {
 
         Supertraits are actually regular where clauses, but we decided to have
         a custom treatment.
-        ```text
+        {@rust[
         trait Foo : Bar {
                     ^^^
                 supertrait, that we treat as a parent predicate
         }
-        ```
+        ]}
         TODO: actually, as of today, we consider that all trait clauses of
         trait declarations are parent clauses.
      *)
@@ -285,10 +285,10 @@ type trait_decl = {
       (** The associated types declared in the trait. *)
   methods : (trait_item_name * fun_decl_ref binder) list;
       (** The methods declared by the trait. The signature of the methods can be found in each
-        corresponding `FunDecl`. These `FunDecl` may have a body if the trait provided a default
-        implementation for that method; otherwise it has an `Opaque` body.
+        corresponding [FunDecl]. These [FunDecl] may have a body if the trait provided a default
+        implementation for that method; otherwise it has an [Opaque] body.
 
-        The binder contains the type parameters specific to the method. The `FunDeclRef` then
+        The binder contains the type parameters specific to the method. The [FunDeclRef] then
         provides a full list of arguments to the pointed-to function.
      *)
 }
@@ -316,13 +316,13 @@ type trait_decl = {
 (** A trait **implementation**.
 
     For instance:
-    ```text
+    {@rust[
     impl Foo for List {
       type Bar = ...
 
       fn baz(...) { ... }
     }
-    ```
+    ]}
  *)
 type trait_impl = {
   def_id : trait_impl_id;
@@ -378,8 +378,8 @@ and cli_options = {
       (** Extract the unstructured LLBC (i.e., don't reconstruct the control-flow) *)
   lib : bool;  (** Compile the package's library *)
   bin : string option;  (** Compile the specified binary *)
-  mir_promoted : bool;  (** Deprecated: use `--mir promoted` instead. *)
-  mir_optimized : bool;  (** Deprecated: use `--mir optimized` instead. *)
+  mir_promoted : bool;  (** Deprecated: use [--mir promoted] instead. *)
+  mir_optimized : bool;  (** Deprecated: use [--mir optimized] instead. *)
   mir : mir_level option;
       (** The MIR stage to extract. This is only relevant for the current crate; for dpendencies only
         MIR optimized is available.
@@ -392,12 +392,12 @@ and cli_options = {
   read_llbc : path_buf option;
       (** Read an llbc file and pretty-print it. This is a terrible API, we should use subcommands. *)
   dest_dir : path_buf option;
-      (** The destination directory. Files will be generated as `<dest_dir>/<crate_name>.{u}llbc`,
-        unless `dest_file` is set. `dest_dir` defaults to the current directory.
+      (** The destination directory. Files will be generated as [<dest_dir>/<crate_name>.{u}llbc],
+        unless [dest_file] is set. [dest_dir] defaults to the current directory.
      *)
   dest_file : path_buf option;
-      (** The destination file. By default `<dest_dir>/<crate_name>.llbc`. If this is set we ignore
-        `dest_dir`.
+      (** The destination file. By default [<dest_dir>/<crate_name>.llbc]. If this is set we ignore
+        [dest_dir].
      *)
   use_polonius : bool;
       (** If activated, use Polonius' non-lexical lifetimes (NLL) analysis.
@@ -424,18 +424,18 @@ and cli_options = {
   remove_associated_types : string list;
       (** List of traits for which we transform associated types to type parameters. *)
   hide_marker_traits : bool;
-      (** Whether to hide the `Sized`, `Sync`, `Send` and `Unpin` marker traits anywhere they show
+      (** Whether to hide the [Sized], [Sync], [Send] and [Unpin] marker traits anywhere they show
         up.
      *)
   start_from : string list;
       (** A list of item paths to use as starting points for the translation. We will translate these
         items and any items they refer to, according to the opacity rules. When absent, we start
-        from the path `crate` (which translates the whole crate).
+        from the path [crate] (which translates the whole crate).
      *)
   no_cargo : bool;  (** Do not run cargo; instead, run the driver directly. *)
   rustc_args : string list;  (** Extra flags to pass to rustc. *)
   cargo_args : string list;
-      (** Extra flags to pass to cargo. Incompatible with `--no-cargo`. *)
+      (** Extra flags to pass to cargo. Incompatible with [--no-cargo]. *)
   abort_on_error : bool;
       (** Panic on the first error. This is useful for debugging. *)
   error_on_warnings : bool;  (** Print the errors as warnings *)

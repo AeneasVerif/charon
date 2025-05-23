@@ -20,12 +20,12 @@ and raw_statement =
   | StorageLive of local_id
       (** Indicates that this local should be allocated; if it is already allocated, this frees
           the local and re-allocates it. The return value and arguments do not receive a
-          `StorageLive`. We ensure in the micro-pass `insert_storage_lives` that all other locals
-          have a `StorageLive` associated with them.
+          [StorageLive]. We ensure in the micro-pass [insert_storage_lives] that all other locals
+          have a [StorageLive] associated with them.
        *)
   | StorageDead of local_id
       (** Indicates that this local should be deallocated; if it is already deallocated, this is
-          a no-op. A local may not have a `StorageDead` in the function's body, in which case it
+          a no-op. A local may not have a [StorageDead] in the function's body, in which case it
           is implicitly deallocated at the end of the function.
        *)
   | Deinit of place
@@ -43,7 +43,7 @@ and statement = {
 }
 
 and switch =
-  | If of block_id * block_id  (** Gives the `if` block and the `else` block *)
+  | If of block_id * block_id  (** Gives the [if] block and the [else] block *)
   | SwitchInt of integer_type * (scalar_value * block_id) list * block_id
       (** Gives the integer type, a map linking values to switch branches, and the
           otherwise block. Note that matches over enumerations are performed by

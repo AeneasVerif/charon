@@ -9,6 +9,11 @@ build: format build-dev
 build-dev:
 	cd .. && dune build && dune build @doc
 
+# Generate documentation
+.PHONY: doc
+doc: 
+	cd .. && dune build @doc
+
 # The tests.
 # You can use the environment variable "CHARON_LOG" to activate the log.
 # For instance: `CHARON_LOG=1 make tests`.

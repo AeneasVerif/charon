@@ -94,7 +94,7 @@ Alternatively, you can use Nix and do `nix develop` and all dependencies should 
 You can access the (work-in-progress) Rust documentation
 [online](https://aeneasverif.github.io/charon/charon_lib/index.html).
 
-You can also run `make` to generate the documentation locally.
+You can also run `make doc` to generate the documentation locally.
 It will generate a documentation accessible from
 [`doc-rust.html`](./doc-rust.html) (for the Rust project) and
 [`doc-ml.html`](./doc-ml.html) (for the ML library).

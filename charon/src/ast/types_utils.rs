@@ -721,7 +721,7 @@ impl RefKind {
     }
 }
 
-/// Visitor for the [Ty::substitute] function.
+/// Visitor for the [TyVisitable::substitute] function.
 /// This substitutes variables bound at the level where we start to substitute (level 0).
 #[derive(Visitor)]
 pub(crate) struct SubstVisitor<'a> {

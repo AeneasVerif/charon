@@ -95,7 +95,7 @@ pub struct Block {
 )]
 pub enum Switch {
     /// Gives the `if` block and the `else` block. The `Operand` is the condition of the `if`, e.g. `if (y == 0)` could become
-    /// ```rust,ignore
+    /// ```text
     /// v@3 := copy y; // Represented as `Assign(v@3, Use(Copy(y))`
     /// v@2 := move v@3 == 0; // Represented as `Assign(v@2, BinOp(BinOp::Eq, Move(y), Const(0)))`
     /// if (move v@2) { // Represented as `If(Move(v@2), <then branch>, <else branch>)`
@@ -118,7 +118,7 @@ pub enum Switch {
     SwitchInt(Operand, IntegerTy, Vec<(Vec<ScalarValue>, Block)>, Block),
     /// A match over an ADT.
     ///
-    /// The match statement is introduced in [crate::remove_read_discriminant]
+    /// The match statement is introduced in [crate::transform::remove_read_discriminant]
     /// (whenever we find a discriminant read, we merge it with the subsequent
     /// switch into a match).
     Match(Place, Vec<(Vec<VariantId>, Block)>, Option<Block>),

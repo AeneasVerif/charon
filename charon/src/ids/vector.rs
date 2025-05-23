@@ -1,7 +1,7 @@
 //! A vector with custom index types.
 //!
 //! This data-structure is mostly meant to be used with the index types defined
-//! with [ids::generate_index_type]: by using custom index types, we
+//! with [`crate::generate_index_type!`]: by using custom index types, we
 //! leverage the type checker to prevent us from mixing them.
 //!
 //! Note that this data structure is implemented by using persistent vectors.

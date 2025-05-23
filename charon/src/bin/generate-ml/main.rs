@@ -517,14 +517,68 @@ fn extract_doc_comments(attr_info: &AttrInfo) -> String {
 
 /// Make a doc comment that contains the given string, indenting it if necessary.
 fn build_doc_comment(comment: String, indent_level: usize) -> String {
+    #[derive(Default)]
+    struct Exchanger {
+        is_in_open_escaped_block: bool,
+        is_in_open_inline_escape: bool,
+    }
+    impl Exchanger {
+        pub fn exchange_escape_delimiters(&mut self, line: &str) -> String {
+            if line.contains("```") {
+                // Handle multi-line escaped blocks.
+                let (leading, mut rest) = line.split_once("```").unwrap();
+
+                // Strip all (hard-coded) possible ways to open the block.
+                rest = if rest.starts_with("text") {
+                    rest.strip_prefix("text").unwrap()
+                } else if rest.starts_with("rust,ignore") {
+                    rest.strip_prefix("rust,ignore").unwrap()
+                } else {
+                    rest
+                };
+                let mut result = leading.to_owned();
+                if self.is_in_open_escaped_block {
+                    result.push_str("]}");
+                    self.is_in_open_escaped_block = false;
+                } else {
+                    result.push_str("{@rust[");
+                    self.is_in_open_escaped_block = true;
+                }
+                result.push_str(rest);
+                result
+            } else if line.contains('`') {
+                // Handle inline escaped strings. These can occur in multiple lines, so we track them globally.
+                let mut parts = line.split('`');
+                // Skip after first part (we only need to add escapes after that).
+                let mut result = parts.next().unwrap().to_owned();
+                for part in parts {
+                    if self.is_in_open_inline_escape {
+                        result.push_str("]");
+                        result.push_str(part);
+                        self.is_in_open_inline_escape = false;
+                    } else {
+                        result.push_str("[");
+                        result.push_str(part);
+                        self.is_in_open_inline_escape = true;
+                    }
+                }
+                result
+            } else {
+                line.to_owned()
+            }
+        }
+    }
+
     if comment == "" {
         return comment;
     }
     let is_multiline = comment.contains("\n");
     if !is_multiline {
-        format!("(**{comment} *)")
+        let fixed_comment = Exchanger::default().exchange_escape_delimiters(&comment);
+        format!("(**{fixed_comment} *)")
     } else {
         let indent = "  ".repeat(indent_level);
+        let mut exchanger = Exchanger::default();
         let comment = comment
             .lines()
             .enumerate()
@@ -532,12 +586,14 @@ fn build_doc_comment(comment: String, indent_level: usize) -> String {
                 // Remove one leading space if there is one (there usually is because we write `///
                 // comment` and not `///comment`).
                 let line = line.strip_prefix(" ").unwrap_or(line);
+                let fixed_line = exchanger.exchange_escape_delimiters(line);
+
                 // The first line follows the `(**` marker, it does not need to be indented.
                 // Neither do empty lines.
-                if i == 0 || line.is_empty() {
-                    line.to_string()
+                if i == 0 || fixed_line.is_empty() {
+                    fixed_line
                 } else {
-                    format!("{indent}    {line}")
+                    format!("{indent}    {fixed_line}")
                 }
             })
             .join("\n");

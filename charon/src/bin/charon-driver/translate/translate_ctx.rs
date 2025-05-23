@@ -124,8 +124,8 @@ pub(crate) struct BindingLevel {
     pub is_item_binder: bool,
     /// Rust makes the distinction between early and late-bound region parameters. We do not make
     /// this distinction, and merge early and late bound regions. For details, see:
-    /// https://smallcultfollowing.com/babysteps/blog/2013/10/29/intermingled-parameter-lists/
-    /// https://smallcultfollowing.com/babysteps/blog/2013/11/04/intermingled-parameter-lists/
+    /// <https://smallcultfollowing.com/babysteps/blog/2013/10/29/intermingled-parameter-lists/>
+    /// <https://smallcultfollowing.com/babysteps/blog/2013/11/04/intermingled-parameter-lists/>
     ///
     /// The map from rust early regions to translated region indices.
     pub early_region_vars: std::collections::BTreeMap<hax::EarlyParamRegion, RegionId>,
@@ -368,7 +368,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
         Ok(path_elem)
     }
 
-    /// Retrieve an item name from a [DefId].
+    /// Retrieve an item name from a [`hax::DefId`].
     /// We lookup the path associated to an id, and convert it to a name.
     /// Paths very precisely identify where an item is. There are important
     /// subcases, like the items in an `Impl` block:
