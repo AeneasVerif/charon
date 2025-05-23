@@ -16,19 +16,11 @@ pub struct test_crate::SqrtTables<F>
   F,
 }
 
-fn test_crate::{test_crate::SqrtTables<F>[@TraitClause0]}::sqrt_common::closure<'_0, F, Clause1_Repr>(@1: &'_0 (()), @2: ())
-where
-    [@TraitClause0]: core::marker::Sized<F>,
-    [@TraitClause1]: test_crate::PrimeField<F, Clause1_Repr>,
-{
-    let @0: (); // return
-    let state@1: &'_0 (()); // arg #1
-    let _x@2: (); // arg #2
-
-    @0 := ()
-    @0 := ()
-    return
-}
+struct test_crate::{test_crate::SqrtTables<F>[@TraitClause0]}::sqrt_common::closure<F, Clause1_Repr>
+  where
+      [@TraitClause0]: core::marker::Sized<F>,
+      [@TraitClause1]: test_crate::PrimeField<F, Clause1_Repr>,
+ = {}
 
 pub fn test_crate::{test_crate::SqrtTables<F>[@TraitClause0]}::sqrt_common<F, Clause1_Repr>()
 where
@@ -36,10 +28,10 @@ where
     [@TraitClause1]: test_crate::PrimeField<F, Clause1_Repr>,
 {
     let @0: (); // return
-    let _closure@1: test_crate::{test_crate::SqrtTables<F>[@TraitClause0]}::sqrt_common::closure; // local
+    let _closure@1: test_crate::{test_crate::SqrtTables<F>[@TraitClause0]}::sqrt_common::closure<F>[@TraitClause0, @TraitClause1]; // local
 
     storage_live(_closure@1)
-    _closure@1 := {test_crate::{test_crate::SqrtTables<F>[@TraitClause0]}::sqrt_common::closure<F, Clause1_Repr>[@TraitClause0, @TraitClause1]} {}
+    _closure@1 := test_crate::{test_crate::SqrtTables<F>[@TraitClause0]}::sqrt_common::closure {  }
     @0 := ()
     storage_dead(_closure@1)
     @0 := ()

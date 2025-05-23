@@ -17,24 +17,6 @@ use hax_frontend_exporter as hax;
 use itertools::Itertools;
 
 impl ItemTransCtx<'_, '_> {
-    fn translate_closure_info(
-        &mut self,
-        span: Span,
-        args: &hax::ClosureArgs,
-    ) -> Result<ClosureInfo, Error> {
-        let kind = match args.kind {
-            hax::ClosureKind::Fn => ClosureKind::Fn,
-            hax::ClosureKind::FnMut => ClosureKind::FnMut,
-            hax::ClosureKind::FnOnce => ClosureKind::FnOnce,
-        };
-        let state: Vector<TypeVarId, Ty> = args
-            .upvar_tys
-            .iter()
-            .map(|ty| self.translate_ty(span, &ty))
-            .try_collect()?;
-        Ok(ClosureInfo { kind, state })
-    }
-
     pub(crate) fn get_item_kind(
         &mut self,
         span: Span,
@@ -50,10 +32,6 @@ impl ItemTransCtx<'_, '_> {
             | hax::FullDefKind::AssocFn {
                 associated_item, ..
             } => associated_item,
-            hax::FullDefKind::Closure { args, .. } => {
-                let info = self.translate_closure_info(span, args)?;
-                return Ok(ItemKind::Closure { info });
-            }
             _ => return Ok(ItemKind::TopLevel),
         };
         Ok(match &assoc.container {
@@ -138,7 +116,6 @@ impl ItemTransCtx<'_, '_> {
         self.translate_def_generics(span, def)?;
 
         let signature = match &def.kind {
-            hax::FullDefKind::Closure { args, .. } => &args.tupled_sig,
             hax::FullDefKind::Fn { sig, .. } => sig,
             hax::FullDefKind::AssocFn { sig, .. } => sig,
             hax::FullDefKind::Ctor {
@@ -179,7 +156,7 @@ impl ItemTransCtx<'_, '_> {
 
         // Translate the signature
         trace!("signature of {:?}:\n{:?}", def.def_id, signature.value);
-        let mut inputs: Vec<Ty> = signature
+        let inputs: Vec<Ty> = signature
             .value
             .inputs
             .iter()
@@ -202,57 +179,10 @@ impl ItemTransCtx<'_, '_> {
             hax::Safety::Safe => false,
         };
 
-        let closure_info = match &def.kind {
-            hax::FullDefKind::Closure { args, .. } => {
-                let closure = self.translate_closure_info(span, args)?;
-
-                assert_eq!(inputs.len(), 1);
-                let tuple_arg = inputs.pop().unwrap();
-
-                // Add the state of the closure as first parameter.
-                let state_ty = {
-                    // Group the state types into a tuple
-                    let state_ty = TyKind::Adt(
-                        TypeId::Tuple,
-                        GenericArgs::new_for_builtin(closure.state.clone()),
-                    )
-                    .into_ty();
-                    // Depending on the kind of the closure, add a reference
-                    match &closure.kind {
-                        ClosureKind::FnOnce => state_ty,
-                        ClosureKind::Fn | ClosureKind::FnMut => {
-                            let rid = self
-                                .innermost_generics_mut()
-                                .regions
-                                .push_with(|index| RegionVar { index, name: None });
-                            let r = Region::Var(DeBruijnVar::new_at_zero(rid));
-                            let mutability = if closure.kind == ClosureKind::Fn {
-                                RefKind::Shared
-                            } else {
-                                RefKind::Mut
-                            };
-                            TyKind::Ref(r, state_ty, mutability).into_ty()
-                        }
-                    }
-                };
-                inputs.push(state_ty);
-
-                // Unpack the tupled arguments to match the body locals.
-                let TyKind::Adt(TypeId::Tuple, tuple_args) = tuple_arg.kind() else {
-                    raise_error!(self, span, "Closure argument is not a tuple")
-                };
-                inputs.extend(tuple_args.types.iter().cloned());
-
-                Some(closure)
-            }
-            _ => None,
-        };
-
         Ok(FunSig {
             generics: self.the_only_binder().params.clone(),
             is_unsafe,
-            is_closure: matches!(&def.kind, hax::FullDefKind::Closure { .. }),
-            closure_info,
+            is_closure: false,
             inputs,
             output,
         })

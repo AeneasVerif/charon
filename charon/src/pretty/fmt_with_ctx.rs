@@ -448,17 +448,6 @@ impl GenericParams {
     }
 }
 
-impl<C: AstFormatter> FmtWithCtx<C> for GenericsSource {
-    fn fmt_with_ctx(&self, ctx: &C) -> String {
-        match self {
-            GenericsSource::Item(id) => ctx.format_object(*id),
-            GenericsSource::Method(id, name) => format!("{}::{name}", ctx.format_object(*id)),
-            GenericsSource::Builtin => "<builtin>".to_string(),
-            GenericsSource::Other => "<unknown>".to_string(),
-        }
-    }
-}
-
 impl<T, C> FmtWithCtx<C> for GExprBody<T>
 where
     C: for<'a> SetLocals<'a>,
@@ -759,9 +748,6 @@ impl<C: AstFormatter> FmtWithCtx<C> for Place {
                         FieldProjKind::Tuple(_) => {
                             format!("({sub}).{field_id}")
                         }
-                        FieldProjKind::ClosureState => {
-                            format!("({sub}).@closure_state_field_{field_id}")
-                        }
                     },
                     ProjectionElem::Index {
                         offset,
@@ -971,14 +957,6 @@ impl<C: AstFormatter> FmtWithCtx<C> for Rvalue {
                     }
                     AggregateKind::Array(..) => {
                         format!("[{}]", ops_s.join(", "))
-                    }
-                    AggregateKind::Closure(fn_id, generics) => {
-                        format!(
-                            "{{{}{}}} {{{}}}",
-                            ctx.format_object(*fn_id),
-                            generics.fmt_with_ctx(ctx),
-                            ops_s.join(", ")
-                        )
                     }
                     AggregateKind::RawPtr(_, rmut) => {
                         let mutability = match rmut {
@@ -1499,7 +1477,6 @@ impl<C: AstFormatter> FmtWithCtx<C> for Ty {
                     format!("{adt_ident}{generics}")
                 }
             }
-            TyKind::Closure { fun_id, .. } => ctx.format_object(*fun_id),
             TyKind::TypeVar(id) => ctx.format_object(*id),
             TyKind::Literal(kind) => kind.to_string(),
             TyKind::Never => "!".to_string(),
@@ -1570,7 +1547,7 @@ impl<C: AstFormatter> FmtWithCtx<C> for TypeDecl {
         };
 
         let contents = match &self.kind {
-            TypeDeclKind::Struct(fields) => {
+            TypeDeclKind::Struct(fields, _) => {
                 if !fields.is_empty() {
                     let fields = fields
                         .iter()

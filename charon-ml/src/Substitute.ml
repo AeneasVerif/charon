@@ -360,7 +360,7 @@ let type_decl_get_instantiated_variants_fields_types (def : type_decl)
     match def.kind with
     | Enum variants ->
         List.mapi (fun i v -> (Some (VariantId.of_int i), v.fields)) variants
-    | Struct fields | Union fields -> [ (None, fields) ]
+    | Struct (fields, _) | Union fields -> [ (None, fields) ]
     | Alias _ | Opaque | TDeclError _ ->
         raise
           (Failure

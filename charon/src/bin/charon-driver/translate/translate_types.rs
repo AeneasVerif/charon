@@ -8,6 +8,7 @@ use charon_lib::ids::Vector;
 use core::convert::*;
 use hax::Visibility;
 use hax_frontend_exporter as hax;
+use itertools::Itertools;
 
 /// Small helper: we ignore some region names (when they are equal to "'_")
 fn check_region_name(s: String) -> Option<String> {
@@ -295,44 +296,11 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                 })?;
                 TyKind::Arrow(sig)
             }
-            hax::TyKind::Closure(
-                def_id,
-                hax::ClosureArgs {
-                    untupled_sig: sig,
-                    parent_args,
-                    parent_trait_refs,
-                    upvar_tys,
-                    ..
-                },
-            ) => {
-                let signature = self.translate_region_binder(span, sig, |ctx, sig| {
-                    let inputs = sig
-                        .inputs
-                        .iter()
-                        .map(|x| ctx.translate_ty(span, x))
-                        .try_collect()?;
-                    let output = ctx.translate_ty(span, &sig.output)?;
-                    Ok((inputs, output))
-                })?;
-                let fun_id = self.register_fun_decl_id(span, def_id);
-                let upvar_tys = upvar_tys
-                    .iter()
-                    .map(|ty| self.translate_ty(span, ty))
-                    .try_collect()?;
-                let parent_args = self.translate_generic_args(
-                    span,
-                    &parent_args,
-                    &parent_trait_refs,
-                    None,
-                    // We don't know the item these generics apply to.
-                    GenericsSource::Builtin,
-                )?;
-                TyKind::Closure {
-                    fun_id,
-                    signature,
-                    parent_args: Box::new(parent_args),
-                    upvar_tys,
-                }
+            hax::TyKind::Closure(def_id, args) => {
+                let adt_id = self.register_type_decl_id(span, def_id);
+                let generic_args =
+                    self.translate_closure_generic_args(span, args, GenericsSource::Builtin)?;
+                TyKind::Adt(TypeId::Adt(adt_id), generic_args)
             }
             hax::TyKind::Error => {
                 trace!("Error");
@@ -556,7 +524,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
 
         // Register the type
         let type_def_kind: TypeDeclKind = match adt.adt_kind {
-            AdtKind::Struct => TypeDeclKind::Struct(variants[0].fields.clone()),
+            AdtKind::Struct => TypeDeclKind::Struct(variants[0].fields.clone(), None),
             AdtKind::Enum => TypeDeclKind::Enum(variants),
             AdtKind::Union => TypeDeclKind::Union(variants[0].fields.clone()),
         };
@@ -828,6 +796,9 @@ impl ItemTransCtx<'_, '_> {
             | hax::FullDefKind::Enum { def, .. }
             | hax::FullDefKind::Union { def, .. } => {
                 self.translate_adt_def(trans_id, span, &item_meta, def)
+            }
+            hax::FullDefKind::Closure { args, .. } => {
+                self.translate_closure_ty(trans_id, span, &args)
             }
             _ => panic!("Unexpected item when translating types: {def:?}"),
         };

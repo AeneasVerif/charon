@@ -223,7 +223,6 @@ and ty_to_string (env : 'a fmt_env) (ty : ty) : string =
       in
       let params = params_to_string env is_tuple generics in
       type_id_to_string env id ^ params
-  | TClosure (id, _, _, _) -> fun_decl_id_to_string env id
   | TVar tv -> type_db_var_to_string env tv
   | TNever -> "!"
   | TLiteral lit_ty -> literal_type_to_string lit_ty
@@ -457,7 +456,7 @@ let type_decl_to_string (env : 'a fmt_env) (def : type_decl) : string =
     if params <> [] then "<" ^ String.concat ", " params ^ ">" else ""
   in
   match def.kind with
-  | Struct fields ->
+  | Struct (fields, _) ->
       if fields <> [] then
         let fields =
           String.concat ""

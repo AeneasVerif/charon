@@ -127,28 +127,6 @@ and assertion = {
   on_failure : abort_kind;  (** What kind of abort happens on assert failure. *)
 }
 
-and closure_kind = Fn | FnMut | FnOnce
-
-(** Additional information for closures.
-    We mostly use it in micro-passes like [crate::transform::update_closure_signatures].
- *)
-and closure_info = {
-  kind : closure_kind;
-  state : ty list;
-      (** Contains the types of the fields in the closure state.
-        More precisely, for every place captured by the
-        closure, the state has one field (typically a ref).
-
-        For instance, below the closure has a state with two fields of type [&u32]:
-        {@rust[
-        pub fn test_closure_capture(x: u32, y: u32) -> u32 {
-          let f = &|z| x + y + z;
-          (f)(0)
-        }
-        ]}
-     *)
-}
-
 (** A function signature. *)
 and fun_sig = {
   is_unsafe : bool;  (** Is the function unsafe or not *)
@@ -160,8 +138,6 @@ and fun_sig = {
           (the function in which the closure is defined)
         - the region variables are local to the closure
      *)
-  closure_info : closure_info option;
-      (** Additional information if this is the signature of a closure. *)
   generics : generic_params;
   inputs : ty list;
   output : ty;

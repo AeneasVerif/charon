@@ -11,19 +11,11 @@ pub struct test_crate::Foo<F>
   F,
 }
 
-fn test_crate::{test_crate::Foo<F>[@TraitClause0]}::method::closure<'_0, F, T>(@1: &'_0 (()), @2: ())
-where
-    [@TraitClause0]: core::marker::Sized<F>,
-    [@TraitClause1]: core::marker::Sized<T>,
-{
-    let @0: (); // return
-    let state@1: &'_0 (()); // arg #1
-    let _x@2: (); // arg #2
-
-    @0 := ()
-    @0 := ()
-    return
-}
+struct test_crate::{test_crate::Foo<F>[@TraitClause0]}::method::closure<F, T>
+  where
+      [@TraitClause0]: core::marker::Sized<F>,
+      [@TraitClause1]: core::marker::Sized<T>,
+ = {}
 
 pub fn test_crate::{test_crate::Foo<F>[@TraitClause0]}::method<F, T>()
 where
@@ -31,10 +23,10 @@ where
     [@TraitClause1]: core::marker::Sized<T>,
 {
     let @0: (); // return
-    let _closure@1: test_crate::{test_crate::Foo<F>[@TraitClause0]}::method::closure; // local
+    let _closure@1: test_crate::{test_crate::Foo<F>[@TraitClause0]}::method::closure<F, T>[@TraitClause0, @TraitClause1]; // local
 
     storage_live(_closure@1)
-    _closure@1 := {test_crate::{test_crate::Foo<F>[@TraitClause0]}::method::closure<F, T>[@TraitClause0, @TraitClause1]} {}
+    _closure@1 := test_crate::{test_crate::Foo<F>[@TraitClause0]}::method::closure {  }
     @0 := ()
     storage_dead(_closure@1)
     @0 := ()

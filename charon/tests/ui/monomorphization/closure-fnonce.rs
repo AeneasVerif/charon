@@ -1,4 +1,3 @@
-//@ known-panic
 //@ charon-args=--monomorphize
 
 fn apply_to_zero_once(f: impl FnOnce(u8) -> u8) -> u8 {

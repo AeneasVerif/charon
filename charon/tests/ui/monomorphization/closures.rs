@@ -1,4 +1,3 @@
-//@ known-panic
 //@ charon-args=--monomorphize
 // Ensures closures are monomorphized and replaced with static function calls
 

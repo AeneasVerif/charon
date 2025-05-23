@@ -5,8 +5,8 @@ use charon_lib::common::hash_by_addr::HashByAddr;
 use charon_lib::formatter::{FmtCtx, IntoFormatter};
 use charon_lib::ids::Vector;
 use charon_lib::options::TranslateOptions;
-use hax_frontend_exporter::SInto;
 use hax_frontend_exporter::{self as hax, DefPathItem};
+use hax_frontend_exporter::{DefId, SInto};
 use itertools::Itertools;
 use macros::VariantIndexArity;
 use rustc_middle::ty::TyCtxt;
@@ -34,6 +34,8 @@ pub enum TransItemSource {
     TraitImpl(hax::DefId),
     Fun(hax::DefId),
     Type(hax::DefId),
+    ClosureTraitImpl(hax::DefId, hax::ClosureKind),
+    ClosureFun(hax::DefId, hax::ClosureKind),
 }
 
 impl TransItemSource {
@@ -43,7 +45,9 @@ impl TransItemSource {
             | TransItemSource::TraitDecl(id)
             | TransItemSource::TraitImpl(id)
             | TransItemSource::Fun(id)
-            | TransItemSource::Type(id) => id,
+            | TransItemSource::Type(id)
+            | TransItemSource::ClosureTraitImpl(id, _)
+            | TransItemSource::ClosureFun(id, _) => id,
         }
     }
 }
@@ -51,9 +55,19 @@ impl TransItemSource {
 impl TransItemSource {
     /// Value with which we order values.
     fn sort_key(&self) -> impl Ord {
+        let kind_to_id = |k: &hax::ClosureKind| match k {
+            hax::ClosureKind::Fn => 1,
+            hax::ClosureKind::FnMut => 2,
+            hax::ClosureKind::FnOnce => 3,
+        };
         let (variant_index, _) = self.variant_index_arity();
         let def_id = self.as_def_id();
-        (def_id.index, variant_index)
+        match self {
+            Self::ClosureTraitImpl(_, k) | Self::ClosureFun(_, k) => {
+                (def_id.index, variant_index, kind_to_id(k))
+            }
+            _ => (def_id.index, variant_index, 0u8),
+        }
     }
 }
 
@@ -411,14 +425,14 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
     /// The names we will generate for `foo` and `bar` are:
     /// `[Ident("test"), Ident("bla"), Ident("Foo"), Impl(impl<T> Ty<T>, Disambiguator(0)), Ident("foo")]`
     /// `[Ident("test"), Ident("bla"), Ident("Foo"), Impl(impl<T> Ty<T>, Disambiguator(1)), Ident("bar")]`
-    pub fn def_id_to_name(&mut self, def_id: &hax::DefId) -> Result<Name, Error> {
+    pub fn hax_def_id_to_name(&mut self, def_id: &hax::DefId) -> Result<Name, Error> {
         if let Some(name) = self.cached_names.get(&def_id) {
             return Ok(name.clone());
         }
         trace!("Computing name for `{def_id:?}`");
 
         let parent_name = if let Some(parent) = &def_id.parent {
-            self.def_id_to_name(parent)?
+            self.hax_def_id_to_name(parent)?
         } else {
             Name { name: Vec::new() }
         };
@@ -433,10 +447,41 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
         Ok(name)
     }
 
-    /// Retrieve the name for an item.
-    pub fn translate_name(&mut self, src: &TransItemSource) -> Result<Name, Error> {
+    /// Retrieve the name for a [TransItemSource] -- notably here we modify the name for
+    /// closure trait impls and closure fun decls to give them different names, since e.g.
+    /// a Fn closure will otherwise generate 6 items with the same name: an ADT, 3 impls and
+    /// 3 funs
+    pub fn hax_trans_src_to_name(&mut self, src: &TransItemSource) -> Result<Name, Error> {
         let def_id = src.as_def_id();
-        self.def_id_to_name(def_id)
+        let name = self.hax_def_id_to_name(def_id);
+        if name.is_err() {
+            return name;
+        }
+        let mut name = name.unwrap();
+
+        match src {
+            TransItemSource::ClosureTraitImpl(id, kind) | TransItemSource::ClosureFun(id, kind) => {
+                let _ = name.name.pop();
+                let impl_id = self.register_closure_trait_impl_id(&None, id, kind);
+                name.name.push(PathElem::Impl(
+                    ImplElem::Trait(impl_id),
+                    Disambiguator::ZERO,
+                ));
+
+                if matches!(src, TransItemSource::ClosureFun(_, _)) {
+                    let fn_name = match kind {
+                        hax::ClosureKind::FnOnce => "call_once",
+                        hax::ClosureKind::FnMut => "call_mut",
+                        hax::ClosureKind::Fn => "call",
+                    };
+                    name.name
+                        .push(PathElem::Ident(fn_name.to_string(), Disambiguator::ZERO));
+                }
+            }
+            _ => {}
+        }
+
+        Ok(name)
     }
 
     /// Translates `T` into `U` using `hax`'s `SInto` trait, catching any hax panics.
@@ -731,13 +776,13 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
                     TransItemSource::TraitDecl(_) => {
                         AnyTransId::TraitDecl(self.translated.trait_decls.reserve_slot())
                     }
-                    TransItemSource::TraitImpl(_) => {
+                    TransItemSource::TraitImpl(_) | TransItemSource::ClosureTraitImpl(_, _) => {
                         AnyTransId::TraitImpl(self.translated.trait_impls.reserve_slot())
                     }
                     TransItemSource::Global(_) => {
                         AnyTransId::Global(self.translated.global_decls.reserve_slot())
                     }
-                    TransItemSource::Fun(_) => {
+                    TransItemSource::Fun(_) | TransItemSource::ClosureFun(_, _) => {
                         AnyTransId::Fun(self.translated.fun_decls.reserve_slot())
                     }
                 };
@@ -748,7 +793,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
                 // Store the name early so the name matcher can identify paths. We can't to it for
                 // trait impls because they register themselves when computing their name.
                 if !matches!(id, TransItemSource::TraitImpl(_)) {
-                    if let Ok(name) = self.def_id_to_name(id.as_def_id()) {
+                    if let Ok(name) = self.hax_def_id_to_name(id.as_def_id()) {
                         self.translated.item_names.insert(trans_id, name);
                     }
                 }
@@ -821,6 +866,33 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
         *self
             .register_and_enqueue_id(src, TransItemSource::TraitImpl(id.clone()))
             .as_trait_impl()
+            .unwrap()
+    }
+
+    pub(crate) fn register_closure_trait_impl_id(
+        &mut self,
+        src: &Option<DepSource>,
+        id: &hax::DefId,
+        kind: &hax::ClosureKind,
+    ) -> TraitImplId {
+        *self
+            .register_and_enqueue_id(
+                src,
+                TransItemSource::ClosureTraitImpl(id.clone(), kind.clone()),
+            )
+            .as_trait_impl()
+            .unwrap()
+    }
+
+    pub(crate) fn register_closure_fun_decl_id(
+        &mut self,
+        src: &Option<DepSource>,
+        id: &hax::DefId,
+        kind: &hax::ClosureKind,
+    ) -> FunDeclId {
+        *self
+            .register_and_enqueue_id(src, TransItemSource::ClosureFun(id.clone(), kind.clone()))
+            .as_fun()
             .unwrap()
     }
 
@@ -921,18 +993,34 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         self.t_ctx.register_global_decl_id(&src, id)
     }
 
-    /// Returns an [Option] because we may ignore some builtin or auto traits
-    /// like [core::marker::Sized] or [core::marker::Sync].
     pub(crate) fn register_trait_decl_id(&mut self, span: Span, id: &hax::DefId) -> TraitDeclId {
         let src = self.make_dep_source(span);
         self.t_ctx.register_trait_decl_id(&src, id)
     }
 
-    /// Returns an [Option] because we may ignore some builtin or auto traits
-    /// like [core::marker::Sized] or [core::marker::Sync].
     pub(crate) fn register_trait_impl_id(&mut self, span: Span, id: &hax::DefId) -> TraitImplId {
         let src = self.make_dep_source(span);
         self.t_ctx.register_trait_impl_id(&src, id)
+    }
+
+    pub(crate) fn register_closure_trait_impl_id(
+        &mut self,
+        span: Span,
+        id: &hax::DefId,
+        kind: &hax::ClosureKind,
+    ) -> TraitImplId {
+        let src = self.make_dep_source(span);
+        self.t_ctx.register_closure_trait_impl_id(&src, id, kind)
+    }
+
+    pub(crate) fn register_closure_fun_decl_id(
+        &mut self,
+        span: Span,
+        id: &hax::DefId,
+        kind: &hax::ClosureKind,
+    ) -> FunDeclId {
+        let src = self.make_dep_source(span);
+        self.t_ctx.register_closure_fun_decl_id(&src, id, kind)
     }
 
     /// Get the only binding level. Panics if there are other binding levels.
@@ -1144,6 +1232,15 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
             src_id: self.item_id?,
             span: self.def_id.is_local.then_some(span),
         })
+    }
+
+    pub(crate) fn get_lang_item(&self, item: rustc_hir::LangItem) -> DefId {
+        self.t_ctx
+            .tcx
+            .lang_items()
+            .get(item)
+            .unwrap()
+            .sinto(&self.t_ctx.hax_state)
     }
 }
 

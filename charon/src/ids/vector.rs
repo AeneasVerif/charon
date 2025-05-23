@@ -217,6 +217,10 @@ where
         self.vector.iter().filter_map(|opt| opt.as_ref())
     }
 
+    pub fn into_iter(self) -> impl Iterator<Item = T> + DoubleEndedIterator {
+        self.vector.into_iter().filter_map(|opt| opt)
+    }
+
     pub fn iter_mut(&mut self) -> impl Iterator<Item = &mut T> + DoubleEndedIterator {
         self.vector.iter_mut().filter_map(|opt| opt.as_mut())
     }
