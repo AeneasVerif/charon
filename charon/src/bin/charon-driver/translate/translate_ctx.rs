@@ -368,7 +368,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
         Ok(path_elem)
     }
 
-    /// Retrieve an item name from a [`DefId`](hax::DefId).
+    /// Retrieve an item name from a [`hax::DefId`].
     /// We lookup the path associated to an id, and convert it to a name.
     /// Paths very precisely identify where an item is. There are important
     /// subcases, like the items in an `Impl` block:

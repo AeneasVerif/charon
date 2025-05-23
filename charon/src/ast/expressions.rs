@@ -388,12 +388,12 @@ pub struct FnPtr {
 
 /// A constant expression.
 ///
-/// Only the [Literal](RawConstantExpr::Literal) and [Var](RawConstantExpr::Var)
+/// Only the [`RawConstantExpr::Literal`] and [`RawConstantExpr::Var`]
 /// cases are left in the final LLBC.
 ///
 /// The other cases come from a straight translation from the MIR:
 ///
-/// [Adt](RawConstantExpr::Adt) case:
+/// [`RawConstantExpr::Adt`] case:
 /// It is a bit annoying, but rustc treats some ADT and tuple instances as
 /// constants when generating MIR:
 /// - an enumeration with one variant and no fields is a constant.
@@ -402,13 +402,13 @@ pub struct FnPtr {
 ///   (if all the fields are constant) rather than as an aggregated value
 /// We later desugar those to regular ADTs, see [regularize_constant_adts.rs].
 ///
-/// [Global](RawConstantExpr::Global) case: access to a global variable. We later desugar it to
+/// [`RawConstantExpr::Global`] case: access to a global variable. We later desugar it to
 /// a separate statement.
 ///
-/// [Ref](RawConstantExpr::Ref) case: reference to a constant value. We later desugar it to a separate
+/// [`RawConstantExpr::Ref`] case: reference to a constant value. We later desugar it to a separate
 /// statement.
 ///
-/// [FnPtr](RawConstantExpr::FnPtr) case: a function pointer (to a top-level function).
+/// [`RawConstantExpr::FnPtr`] case: a function pointer (to a top-level function).
 ///
 /// Remark:
 /// MIR seems to forbid more complex expressions like paths. For instance,

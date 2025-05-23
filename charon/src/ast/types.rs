@@ -38,7 +38,7 @@ pub enum Region {
 ///
 /// Should be read as a path inside the trait clauses which apply to the current
 /// definition. Note that every path designated by `TraitInstanceId` refers
-/// to a *trait instance*, which is why the [`Clause`](TraitRefKind::Clause) variant may seem redundant
+/// to a *trait instance*, which is why the [`TraitRefKind::Clause`] variant may seem redundant
 /// with some of the other variants.
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Hash, Drive, DriveMut)]
 #[charon::rename("TraitInstanceId")]

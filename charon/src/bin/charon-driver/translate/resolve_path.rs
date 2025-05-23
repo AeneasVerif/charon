@@ -50,7 +50,7 @@ fn find_primitive_impls<'tcx>(
 /// `memchr::memchr` could return the functions from both memchr 1.0 and memchr 2.0.
 ///
 /// Also returns multiple results when there are multiple paths under the same name e.g. `std::vec`
-/// would have both a [`DefKind::Mod`](hax::DefKind::Mod) and [`DefKind::Macro`](hax::DefKind::Macro).
+/// would have both a [`hax::DefKind::Mod`] and [`hax::DefKind::Macro`].
 ///
 /// This function is expensive and should be used sparingly.
 ///
