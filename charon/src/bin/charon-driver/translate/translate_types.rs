@@ -524,7 +524,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
 
         // Register the type
         let type_def_kind: TypeDeclKind = match adt.adt_kind {
-            AdtKind::Struct => TypeDeclKind::Struct(variants[0].fields.clone(), None),
+            AdtKind::Struct => TypeDeclKind::Struct(variants[0].fields.clone()),
             AdtKind::Enum => TypeDeclKind::Enum(variants),
             AdtKind::Union => TypeDeclKind::Union(variants[0].fields.clone()),
         };

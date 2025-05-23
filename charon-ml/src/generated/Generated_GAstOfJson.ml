@@ -1333,10 +1333,11 @@ and type_decl_kind_of_json (ctx : of_json_ctx) (js : json) :
     (type_decl_kind, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
-    | `Assoc [ ("Struct", `List [ x_0; x_1 ]) ] ->
-        let* x_0 = vector_of_json field_id_of_json field_of_json ctx x_0 in
-        let* x_1 = option_of_json closure_info_of_json ctx x_1 in
-        Ok (Struct (x_0, x_1))
+    | `Assoc [ ("Struct", struct_) ] ->
+        let* struct_ =
+          vector_of_json field_id_of_json field_of_json ctx struct_
+        in
+        Ok (Struct struct_)
     | `Assoc [ ("Enum", enum) ] ->
         let* enum =
           vector_of_json variant_id_of_json variant_of_json ctx enum
@@ -1517,29 +1518,6 @@ and builtin_ty_of_json (ctx : of_json_ctx) (js : json) :
     | `String "Array" -> Ok TArray
     | `String "Slice" -> Ok TSlice
     | `String "Str" -> Ok TStr
-    | _ -> Error "")
-
-and closure_kind_of_json (ctx : of_json_ctx) (js : json) :
-    (closure_kind, string) result =
-  combine_error_msgs js __FUNCTION__
-    (match js with
-    | `String "Fn" -> Ok Fn
-    | `String "FnMut" -> Ok FnMut
-    | `String "FnOnce" -> Ok FnOnce
-    | _ -> Error "")
-
-and closure_info_of_json (ctx : of_json_ctx) (js : json) :
-    (closure_info, string) result =
-  combine_error_msgs js __FUNCTION__
-    (match js with
-    | `Assoc [ ("kind", kind); ("signature", signature) ] ->
-        let* kind = closure_kind_of_json ctx kind in
-        let* signature =
-          region_binder_of_json
-            (pair_of_json (list_of_json ty_of_json) ty_of_json)
-            ctx signature
-        in
-        Ok ({ kind; signature } : closure_info)
     | _ -> Error "")
 
 and fun_sig_of_json (ctx : of_json_ctx) (js : json) : (fun_sig, string) result =

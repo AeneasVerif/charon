@@ -669,7 +669,7 @@ and variant_id = (VariantId.id[@visitors.opaque])
 and field_id = (FieldId.id[@visitors.opaque])
 
 and type_decl_kind =
-  | Struct of field list * closure_info option
+  | Struct of field list
   | Enum of variant list
   | Union of field list
   | Opaque
@@ -702,15 +702,6 @@ and field = {
   attr_info : attr_info;
   field_name : string option;
   field_ty : ty;
-}
-
-and closure_kind = Fn | FnMut | FnOnce
-
-(** Additional information for closures. *)
-and closure_info = {
-  kind : closure_kind;
-  signature : (ty list * ty) region_binder;
-      (** The signature of the function that this closure represents. *)
 }
 [@@deriving
   show,
