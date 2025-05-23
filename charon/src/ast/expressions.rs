@@ -388,7 +388,7 @@ pub struct FnPtr {
 
 /// A constant expression.
 ///
-/// Only the [Literal](RawConstantExpr::Literal) and [Var](RawConstantExpr::Var) 
+/// Only the [Literal](RawConstantExpr::Literal) and [Var](RawConstantExpr::Var)
 /// cases are left in the final LLBC.
 ///
 /// The other cases come from a straight translation from the MIR:
