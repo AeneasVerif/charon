@@ -191,7 +191,7 @@ pub enum NullOp {
 )]
 #[charon::variants_prefix("Cast")]
 pub enum CastKind {
-    /// Conversion between types in {Integer, Bool}
+    /// Conversion between types in `{Integer, Bool}`
     /// Remark: for now we don't support conversions with Char.
     Scalar(LiteralTy, LiteralTy),
     RawPtr(Ty, Ty),
