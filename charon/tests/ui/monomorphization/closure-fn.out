@@ -1,15 +1,15 @@
 # Final LLBC before serialization:
 
-struct test_crate::main::closure =
+struct test_crate::main::closure<'_0, '_1> =
 {
-  &'_ (u8),
-  &'_ (u8),
+  &'_0 (u8),
+  &'_1 (u8),
 }
 
-fn test_crate::main::{impl core::ops::function::Fn<(u8, u8)> for test_crate::main::closure}::call<'_0>(@1: &'_0 (test_crate::main::closure), @2: (u8, u8)) -> u8
+fn test_crate::main::{impl core::ops::function::Fn<(u8, u8)> for test_crate::main::closure<'_0, '_1>}::call<'_0, '_1, '_2>(@1: &'_2 (test_crate::main::closure<'_0, '_1>), @2: (u8, u8)) -> u8
 {
     let @0: u8; // return
-    let @1: &'_ (test_crate::main::closure); // arg #1
+    let @1: &'_ (test_crate::main::closure<'_0, '_1>); // arg #1
     let tupled_args@2: (u8, u8); // arg #2
     let x@3: u8; // local
     let y@4: u8; // local
@@ -46,52 +46,52 @@ fn test_crate::main::{impl core::ops::function::Fn<(u8, u8)> for test_crate::mai
     return
 }
 
-fn test_crate::apply_to::<'_, test_crate::main::closure>(@1: &'_ (test_crate::main::closure)) -> u8
+fn test_crate::apply_to::<'_, test_crate::main::closure<'_, '_>>(@1: &'_ (test_crate::main::closure<'_, '_>)) -> u8
 {
     let @0: u8; // return
-    let f@1: &'_ (test_crate::main::closure); // arg #1
-    let @2: &'_ (test_crate::main::closure); // anonymous local
+    let f@1: &'_ (test_crate::main::closure<'_, '_>); // arg #1
+    let @2: &'_ (test_crate::main::closure<'_, '_>); // anonymous local
     let @3: (u8, u8); // anonymous local
 
     storage_live(@2)
     @2 := &*(f@1)
     storage_live(@3)
     @3 := (const (10 : u8), const (20 : u8))
-    @0 := test_crate::main::{impl core::ops::function::Fn<(u8, u8)> for test_crate::main::closure}::call<'_>(move (@2), move (@3))
+    @0 := test_crate::main::{impl core::ops::function::Fn<(u8, u8)> for test_crate::main::closure<'_0, '_1>}<'_, '_>::call<'_>(move (@2), move (@3))
     storage_dead(@3)
     storage_dead(@2)
     return
 }
 
-fn test_crate::apply_to_mut::<'_, test_crate::main::closure>(@1: &'_ mut (test_crate::main::closure)) -> u8
+fn test_crate::apply_to_mut::<'_, test_crate::main::closure<'_, '_>>(@1: &'_ mut (test_crate::main::closure<'_, '_>)) -> u8
 {
     let @0: u8; // return
-    let f@1: &'_ mut (test_crate::main::closure); // arg #1
-    let @2: &'_ mut (test_crate::main::closure); // anonymous local
+    let f@1: &'_ mut (test_crate::main::closure<'_, '_>); // arg #1
+    let @2: &'_ mut (test_crate::main::closure<'_, '_>); // anonymous local
     let @3: (u8, u8); // anonymous local
 
     storage_live(@2)
     @2 := &mut *(f@1)
     storage_live(@3)
     @3 := (const (10 : u8), const (20 : u8))
-    @0 := test_crate::main::{impl core::ops::function::FnMut<(u8, u8)> for test_crate::main::closure}::call_mut<'_>(move (@2), move (@3))
+    @0 := test_crate::main::{impl core::ops::function::FnMut<(u8, u8)> for test_crate::main::closure<'_0, '_1>}<'_, '_>::call_mut<'_>(move (@2), move (@3))
     storage_dead(@3)
     storage_dead(@2)
     return
 }
 
-fn test_crate::apply_to_once::<test_crate::main::closure>(@1: test_crate::main::closure) -> u8
+fn test_crate::apply_to_once::<test_crate::main::closure<'_, '_>>(@1: test_crate::main::closure<'_, '_>) -> u8
 {
     let @0: u8; // return
-    let f@1: test_crate::main::closure; // arg #1
-    let @2: test_crate::main::closure; // anonymous local
+    let f@1: test_crate::main::closure<'_, '_>; // arg #1
+    let @2: test_crate::main::closure<'_, '_>; // anonymous local
     let @3: (u8, u8); // anonymous local
 
     storage_live(@2)
     @2 := move (f@1)
     storage_live(@3)
     @3 := (const (10 : u8), const (20 : u8))
-    @0 := test_crate::main::{impl core::ops::function::FnOnce<(u8, u8)> for test_crate::main::closure}::call_once(move (@2), move (@3))
+    @0 := test_crate::main::{impl core::ops::function::FnOnce<(u8, u8)> for test_crate::main::closure<'_0, '_1>}<'_, '_>::call_once(move (@2), move (@3))
     storage_dead(@3)
     storage_dead(@2)
     drop f@1
@@ -103,20 +103,20 @@ fn test_crate::main()
     let @0: (); // return
     let v@1: u8; // local
     let z@2: u8; // local
-    let f@3: test_crate::main::closure; // local
+    let f@3: test_crate::main::closure<'_, '_>; // local
     let @4: &'_ (u8); // anonymous local
     let @5: &'_ (u8); // anonymous local
     let @6: u8; // anonymous local
-    let @7: &'_ (test_crate::main::closure); // anonymous local
+    let @7: &'_ (test_crate::main::closure<'_, '_>); // anonymous local
     let @8: (u8, u8); // anonymous local
     let @9: u8; // anonymous local
-    let @10: &'_ (test_crate::main::closure); // anonymous local
-    let @11: &'_ (test_crate::main::closure); // anonymous local
+    let @10: &'_ (test_crate::main::closure<'_, '_>); // anonymous local
+    let @11: &'_ (test_crate::main::closure<'_, '_>); // anonymous local
     let @12: u8; // anonymous local
-    let @13: &'_ mut (test_crate::main::closure); // anonymous local
-    let @14: &'_ mut (test_crate::main::closure); // anonymous local
+    let @13: &'_ mut (test_crate::main::closure<'_, '_>); // anonymous local
+    let @14: &'_ mut (test_crate::main::closure<'_, '_>); // anonymous local
     let @15: u8; // anonymous local
-    let @16: test_crate::main::closure; // anonymous local
+    let @16: test_crate::main::closure<'_, '_>; // anonymous local
 
     storage_live(v@1)
     v@1 := const (5 : u8)
@@ -135,7 +135,7 @@ fn test_crate::main()
     @7 := &f@3
     storage_live(@8)
     @8 := (const (10 : u8), const (20 : u8))
-    @6 := test_crate::main::{impl core::ops::function::Fn<(u8, u8)> for test_crate::main::closure}::call<'_>(move (@7), move (@8))
+    @6 := test_crate::main::{impl core::ops::function::Fn<(u8, u8)> for test_crate::main::closure<'_0, '_1>}::call<'_, '_, '_>(move (@7), move (@8))
     storage_dead(@8)
     storage_dead(@7)
     storage_dead(@6)
@@ -144,7 +144,7 @@ fn test_crate::main()
     storage_live(@11)
     @11 := &f@3
     @10 := &*(@11)
-    @9 := test_crate::apply_to::<'_, test_crate::main::closure><'_>(move (@10))
+    @9 := test_crate::apply_to::<'_, test_crate::main::closure<'_, '_>><'_>(move (@10))
     storage_dead(@10)
     storage_dead(@11)
     storage_dead(@9)
@@ -153,14 +153,14 @@ fn test_crate::main()
     storage_live(@14)
     @14 := &mut f@3
     @13 := &two-phase-mut *(@14)
-    @12 := test_crate::apply_to_mut::<'_, test_crate::main::closure><'_>(move (@13))
+    @12 := test_crate::apply_to_mut::<'_, test_crate::main::closure<'_, '_>><'_>(move (@13))
     storage_dead(@13)
     storage_dead(@14)
     storage_dead(@12)
     storage_live(@15)
     storage_live(@16)
     @16 := copy (f@3)
-    @15 := test_crate::apply_to_once::<test_crate::main::closure>(move (@16))
+    @15 := test_crate::apply_to_once::<test_crate::main::closure<'_, '_>>(move (@16))
     storage_dead(@16)
     storage_dead(@15)
     @0 := ()
@@ -205,43 +205,29 @@ pub trait core::ops::function::Fn<Self, Args>
     fn call<'_0> = core::ops::function::Fn::call<'_0_0, Self, Args>
 }
 
-fn test_crate::main::{impl core::ops::function::FnOnce<(u8, u8)> for test_crate::main::closure}::call_once(@1: test_crate::main::closure, @2: (u8, u8)) -> u8
-{
-    let @0: u8; // return
-    let state@1: test_crate::main::closure; // arg #1
-    let args@2: (u8, u8); // arg #2
-    let temp_ref@3: &'_ (test_crate::main::closure); // local
-
-    storage_live(temp_ref@3)
-    temp_ref@3 := &state@1
-    @0 := test_crate::main::{impl core::ops::function::Fn<(u8, u8)> for test_crate::main::closure}::call<'_>(move (temp_ref@3), move (args@2))
-    drop state@1
-    return
-}
-
-impl test_crate::main::{impl core::ops::function::FnOnce<(u8, u8)> for test_crate::main::closure} : core::ops::function::FnOnce<test_crate::main::closure, (u8, u8)>
+impl test_crate::main::{impl core::ops::function::FnOnce<(u8, u8)> for test_crate::main::closure<'_0, '_1>}<'_0, '_1> : core::ops::function::FnOnce<test_crate::main::closure<'_0, '_1>, (u8, u8)>
 {
     parent_clause0 = core::marker::Sized<(u8, u8)>
     parent_clause1 = core::marker::Tuple<(u8, u8)>
     parent_clause2 = core::marker::Sized<u8>
     type Output = u8
-    fn call_once = test_crate::main::{impl core::ops::function::FnOnce<(u8, u8)> for test_crate::main::closure}::call_once
+    fn call_once = test_crate::main::{impl core::ops::function::FnOnce<(u8, u8)> for test_crate::main::closure<'_0, '_1>}::call_once<'_0, '_1>
 }
 
-impl test_crate::main::{impl core::ops::function::FnMut<(u8, u8)> for test_crate::main::closure} : core::ops::function::FnMut<test_crate::main::closure, (u8, u8)>
+impl test_crate::main::{impl core::ops::function::FnMut<(u8, u8)> for test_crate::main::closure<'_0, '_1>}<'_0, '_1> : core::ops::function::FnMut<test_crate::main::closure<'_0, '_1>, (u8, u8)>
 {
-    parent_clause0 = test_crate::main::{impl core::ops::function::FnOnce<(u8, u8)> for test_crate::main::closure}
+    parent_clause0 = test_crate::main::{impl core::ops::function::FnOnce<(u8, u8)> for test_crate::main::closure<'_0, '_1>}<'_0, '_1>
     parent_clause1 = core::marker::Sized<(u8, u8)>
     parent_clause2 = core::marker::Tuple<(u8, u8)>
-    fn call_mut<'_0> = test_crate::main::{impl core::ops::function::FnMut<(u8, u8)> for test_crate::main::closure}::call_mut<'_0_0>
+    fn call_mut<'_0> = test_crate::main::{impl core::ops::function::FnMut<(u8, u8)> for test_crate::main::closure<'_0, '_1>}::call_mut<'_0, '_1, '_0_0>
 }
 
-impl test_crate::main::{impl core::ops::function::Fn<(u8, u8)> for test_crate::main::closure} : core::ops::function::Fn<test_crate::main::closure, (u8, u8)>
+impl test_crate::main::{impl core::ops::function::Fn<(u8, u8)> for test_crate::main::closure<'_0, '_1>}<'_0, '_1> : core::ops::function::Fn<test_crate::main::closure<'_0, '_1>, (u8, u8)>
 {
-    parent_clause0 = test_crate::main::{impl core::ops::function::FnMut<(u8, u8)> for test_crate::main::closure}
+    parent_clause0 = test_crate::main::{impl core::ops::function::FnMut<(u8, u8)> for test_crate::main::closure<'_0, '_1>}<'_0, '_1>
     parent_clause1 = core::marker::Sized<(u8, u8)>
     parent_clause2 = core::marker::Tuple<(u8, u8)>
-    fn call<'_0> = test_crate::main::{impl core::ops::function::Fn<(u8, u8)> for test_crate::main::closure}::call<'_0_0>
+    fn call<'_0> = test_crate::main::{impl core::ops::function::Fn<(u8, u8)> for test_crate::main::closure<'_0, '_1>}::call<'_0, '_1, '_0_0>
 }
 
 
