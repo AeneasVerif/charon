@@ -217,10 +217,6 @@ where
         self.vector.iter().filter_map(|opt| opt.as_ref())
     }
 
-    pub fn into_iter(self) -> impl Iterator<Item = T> + DoubleEndedIterator {
-        self.vector.into_iter().filter_map(|opt| opt)
-    }
-
     pub fn iter_mut(&mut self) -> impl Iterator<Item = &mut T> + DoubleEndedIterator {
         self.vector.iter_mut().filter_map(|opt| opt.as_mut())
     }
@@ -395,6 +391,16 @@ where
     I: Idx,
 {
     fn from(v: Vec<T>) -> Self {
+        v.into_iter().collect()
+    }
+}
+
+// FIXME: this impl is a footgun
+impl<I, T, const N: usize> From<[T; N]> for Vector<I, T>
+where
+    I: Idx,
+{
+    fn from(v: [T; N]) -> Self {
         v.into_iter().collect()
     }
 }

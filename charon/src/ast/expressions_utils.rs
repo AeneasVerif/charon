@@ -46,6 +46,32 @@ impl Place {
         }
     }
 
+    pub fn project_auto_ty(
+        self,
+        type_decls: &Vector<TypeDeclId, TypeDecl>,
+        proj: ProjectionElem,
+    ) -> Result<Self, ()> {
+        Ok(Place {
+            ty: proj.project_type(type_decls, &self.ty)?,
+            kind: PlaceKind::Projection(Box::new(self), proj),
+        })
+    }
+
+    /// Dereferences the place. Panics if the type cannot be dereferenced.
+    pub fn deref(self) -> Place {
+        use TyKind::*;
+        let proj_ty = match self.ty.kind() {
+            Ref(_, ty, _) | RawPtr(ty, _) => ty.clone(),
+            Adt(TypeId::Builtin(BuiltinTy::Box), args) => args.types[0].clone(),
+            Adt(..) | TypeVar(_) | Literal(_) | Never | TraitType(..) | DynTrait(_) | Arrow(..)
+            | Error(..) => panic!("internal type error"),
+        };
+        Place {
+            ty: proj_ty,
+            kind: PlaceKind::Projection(Box::new(self), ProjectionElem::Deref),
+        }
+    }
+
     pub fn projections<'a>(&'a self) -> impl Iterator<Item = &'a ProjectionElem> {
         let mut place = self;
         std::iter::from_fn(move || {

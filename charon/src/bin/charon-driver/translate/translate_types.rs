@@ -297,10 +297,8 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                 TyKind::Arrow(sig)
             }
             hax::TyKind::Closure(def_id, args) => {
-                let adt_id = self.register_type_decl_id(span, def_id);
-                let generic_args =
-                    self.translate_closure_generic_args(span, args, GenericsSource::Builtin)?;
-                TyKind::Adt(TypeId::Adt(adt_id), generic_args)
+                let type_ref = self.translate_closure_type_ref(span, def_id, args)?;
+                TyKind::Adt(type_ref.id, *type_ref.generics)
             }
             hax::TyKind::Error => {
                 trace!("Error");
@@ -798,7 +796,7 @@ impl ItemTransCtx<'_, '_> {
                 self.translate_adt_def(trans_id, span, &item_meta, def)
             }
             hax::FullDefKind::Closure { args, .. } => {
-                self.translate_closure_ty(trans_id, span, &args)
+                self.translate_closure_adt(trans_id, span, &args)
             }
             _ => panic!("Unexpected item when translating types: {def:?}"),
         };

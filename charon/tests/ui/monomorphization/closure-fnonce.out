@@ -18,7 +18,7 @@ fn test_crate::apply_to_zero_once::<test_crate::main::closure>(@1: test_crate::m
     @2 := move (f@1)
     storage_live(@3)
     @3 := (const (0 : u8))
-    @0 := test_crate::main::{impl core::ops::function::FnOnce<((u8))> for test_crate::main::closure}::call_once(move (@2), move (@3))
+    @0 := test_crate::main::{impl core::ops::function::FnOnce<(u8)> for test_crate::main::closure}::call_once(move (@2), move (@3))
     storage_dead(@3)
     storage_dead(@2)
     drop f@1
@@ -65,7 +65,7 @@ pub trait core::ops::function::FnOnce<Self, Args>
 #[lang_item("mem_drop")]
 pub fn core::mem::drop::<test_crate::NotCopy>(@1: test_crate::NotCopy)
 
-fn test_crate::main::{impl core::ops::function::FnOnce<((u8))> for test_crate::main::closure}::call_once(@1: test_crate::main::closure, @2: (u8)) -> u8
+fn test_crate::main::{impl core::ops::function::FnOnce<(u8)> for test_crate::main::closure}::call_once(@1: test_crate::main::closure, @2: (u8)) -> u8
 {
     let @0: u8; // return
     let @1: test_crate::main::closure; // arg #1
@@ -90,13 +90,13 @@ fn test_crate::main::{impl core::ops::function::FnOnce<((u8))> for test_crate::m
     return
 }
 
-impl test_crate::main::{impl core::ops::function::FnOnce<((u8))> for test_crate::main::closure} : core::ops::function::FnOnce<test_crate::main::closure, ((u8))>
+impl test_crate::main::{impl core::ops::function::FnOnce<(u8)> for test_crate::main::closure} : core::ops::function::FnOnce<test_crate::main::closure, (u8)>
 {
-    parent_clause0 = core::marker::Sized<((u8))>
-    parent_clause1 = core::marker::Tuple<((u8))>
+    parent_clause0 = core::marker::Sized<(u8)>
+    parent_clause1 = core::marker::Tuple<(u8)>
     parent_clause2 = core::marker::Sized<u8>
     type Output = u8
-    fn call_once = test_crate::main::{impl core::ops::function::FnOnce<((u8))> for test_crate::main::closure}::call_once
+    fn call_once = test_crate::main::{impl core::ops::function::FnOnce<(u8)> for test_crate::main::closure}::call_once
 }
 
 

@@ -127,17 +127,18 @@ and assertion = {
   on_failure : abort_kind;  (** What kind of abort happens on assert failure. *)
 }
 
+and closure_kind = Fn | FnMut | FnOnce
+
+(** Additional information for closures. *)
+and closure_info = {
+  kind : closure_kind;
+  signature : (ty list * ty) region_binder;
+      (** The signature of the function that this closure represents. *)
+}
+
 (** A function signature. *)
 and fun_sig = {
   is_unsafe : bool;  (** Is the function unsafe or not *)
-  is_closure : bool;
-      (** [true] if the signature is for a closure.
-
-        Importantly: if the signature is for a closure, then:
-        - the type and const generic params actually come from the parent function
-          (the function in which the closure is defined)
-        - the region variables are local to the closure
-     *)
   generics : generic_params;
   inputs : ty list;
   output : ty;

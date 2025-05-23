@@ -1525,23 +1525,44 @@ and builtin_ty_of_json (ctx : of_json_ctx) (js : json) :
     | `String "Str" -> Ok TStr
     | _ -> Error "")
 
+and closure_kind_of_json (ctx : of_json_ctx) (js : json) :
+    (closure_kind, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with
+    | `String "Fn" -> Ok Fn
+    | `String "FnMut" -> Ok FnMut
+    | `String "FnOnce" -> Ok FnOnce
+    | _ -> Error "")
+
+and closure_info_of_json (ctx : of_json_ctx) (js : json) :
+    (closure_info, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with
+    | `Assoc [ ("kind", kind); ("signature", signature) ] ->
+        let* kind = closure_kind_of_json ctx kind in
+        let* signature =
+          region_binder_of_json
+            (pair_of_json (list_of_json ty_of_json) ty_of_json)
+            ctx signature
+        in
+        Ok ({ kind; signature } : closure_info)
+    | _ -> Error "")
+
 and fun_sig_of_json (ctx : of_json_ctx) (js : json) : (fun_sig, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
     | `Assoc
         [
           ("is_unsafe", is_unsafe);
-          ("is_closure", is_closure);
           ("generics", generics);
           ("inputs", inputs);
           ("output", output);
         ] ->
         let* is_unsafe = bool_of_json ctx is_unsafe in
-        let* is_closure = bool_of_json ctx is_closure in
         let* generics = generic_params_of_json ctx generics in
         let* inputs = list_of_json ty_of_json ctx inputs in
         let* output = ty_of_json ctx output in
-        Ok ({ is_unsafe; is_closure; generics; inputs; output } : fun_sig)
+        Ok ({ is_unsafe; generics; inputs; output } : fun_sig)
     | _ -> Error "")
 
 and local_id_of_json (ctx : of_json_ctx) (js : json) : (local_id, string) result
