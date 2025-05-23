@@ -1,5 +1,5 @@
 //! This micro-pass introduces intermediate assignments in preparation of
-//! [`index_to_function_calls`], so as to avoid borrow-checking errors.
+//! [`index_to_function_calls`](crate::transform::index_to_function_calls), so as to avoid borrow-checking errors.
 //!
 //! The problem comes from "and assignments" like in the snippet of code below:
 //! ```text

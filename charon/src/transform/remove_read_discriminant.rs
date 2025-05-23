@@ -1,7 +1,7 @@
 //! The MIR code often contains variables with type `Never`, and we want to get
 //! rid of those. We proceed in two steps. First, we remove the instructions
 //! `drop(v)` where `v` has type `Never` (it can happen - this module does the
-//! filtering). Then, we filter the unused variables ([crate::remove_unused_locals]).
+//! filtering). Then, we filter the unused variables ([crate::remove_unused_locals](crate::transform::remove_unused_locals)).
 
 use crate::errors::register_error;
 use crate::formatter::IntoFormatter;

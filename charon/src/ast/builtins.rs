@@ -2,7 +2,7 @@
 //!
 //! **IMPORTANT**:
 //! When checking whether names are equal to one of the reference names below,
-//! we ignore the disambiguators (see [crate::names] and [crate::names_utils]).
+//! we ignore the disambiguators (see [crate::names] and [crate::names_utils](crate::ast::names_utils)).
 // TODO: rename to "primitive"
 
 use crate::names::*;

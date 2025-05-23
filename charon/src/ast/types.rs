@@ -37,8 +37,8 @@ pub enum Region {
 /// This is derived from the trait resolution.
 ///
 /// Should be read as a path inside the trait clauses which apply to the current
-/// definition. Note that every path designated by [TraitInstanceId] refers
-/// to a *trait instance*, which is why the [Clause] variant may seem redundant
+/// definition. Note that every path designated by `TraitInstanceId` refers
+/// to a *trait instance*, which is why the [`Clause`](TraitRefKind::Clause) variant may seem redundant
 /// with some of the other variants.
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Hash, Drive, DriveMut)]
 #[charon::rename("TraitInstanceId")]
@@ -767,7 +767,7 @@ pub enum ClosureKind {
 }
 
 /// Additional information for closures.
-/// We mostly use it in micro-passes like [crate::update_closure_signature].
+/// We mostly use it in micro-passes like [crate::update_closure_signatures](crate::transform::update_closure_signatures).
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Drive, DriveMut)]
 pub struct ClosureInfo {
     pub kind: ClosureKind,

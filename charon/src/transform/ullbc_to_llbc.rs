@@ -491,7 +491,7 @@ fn compute_loop_exit_candidates(
     }
 }
 
-/// See [`compute_loop_switch_exits`](compute_loop_switch_exits) for
+/// See [`compute_loop_switch_exits`] for
 /// explanations about what "exits" are.
 ///
 /// The following function computes the loop exits. It acts as follows.
@@ -499,7 +499,7 @@ fn compute_loop_exit_candidates(
 /// We keep track of a stack of the loops in which we entered.
 /// It is very easy to check when we enter a loop: loop entries are destinations
 /// of backward edges, which can be spotted with a simple graph exploration (see
-/// [`build_cfg_partial_info`](build_cfg_partial_info).
+/// [`build_cfg_partial_info_edges`].
 /// The criteria to consider whether we exit a loop is the following:
 /// - we exit a loop if we go to a block from which we can't reach the loop
 ///   entry at all
@@ -821,7 +821,7 @@ struct BlocksInfo {
     ///
     /// TODO: there must be a known algorithm which computes this, right?...
     /// This is exactly this problems:
-    /// https://stackoverflow.com/questions/78221666/algorithm-for-total-flow-through-weighted-directed-acyclic-graph
+    /// <https://stackoverflow.com/questions/78221666/algorithm-for-total-flow-through-weighted-directed-acyclic-graph>
     /// TODO: the way I compute this is not efficient.
     ///
     /// Remark: in order to rank the nodes, we also use the negation of the
@@ -951,8 +951,8 @@ fn compute_switch_exits_explore(
 
 /// Auxiliary helper
 ///
-/// Check if it is possible to reach the exit of an outer switch from [bid]
-/// without going through the [exit_candidate]. We use the graph without
+/// Check if it is possible to reach the exit of an outer switch from `start_bid`
+/// without going through the `exit_candidate`. We use the graph without
 /// backward edges.
 fn can_reach_outer_exit(
     cfg: &CfgInfo,
@@ -991,7 +991,7 @@ fn can_reach_outer_exit(
     false
 }
 
-/// See [`compute_loop_switch_exits`](compute_loop_switch_exits) for
+/// See [`compute_loop_switch_exits`] for
 /// explanations about what "exits" are.
 ///
 /// In order to compute the switch exits, we simply recursively compute a

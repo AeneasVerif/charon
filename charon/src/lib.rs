@@ -2,12 +2,12 @@
 //! by compiling it to an easy-to-use AST called LLBC (Low-Level Borrow Calculus).
 //! This AST is serialized into JSON files.
 //!
-//! A good entry point to explore the project is [`driver`](driver),
-//! and in particular [`driver::CharonCallbacks`](driver::CharonCallbacks),
+//! A good entry point to explore the project is [`driver`](../charon_driver/index.html),
+//! and in particular [`driver::CharonCallbacks`](../charon_driver/driver/struct.CharonCallbacks.html),
 //! which implements the callback which we provide to Rustc.
 //!
-//! The ASTs are in [`ullbc_ast`](ullbc_ast) (Unstructured LLBC - basically
-//! a cleaned-up version of MIR) and [`llbc_ast`](llbc_ast) (same as ULLBC, but
+//! The ASTs are in [`ullbc_ast`] (Unstructured LLBC - basically
+//! a cleaned-up version of MIR) and [`llbc_ast`] (same as ULLBC, but
 //! we reconstructed the control-flow to have `if ... then ... else ...`,
 //! loops, etc. instead of `GOTO`s).
 
