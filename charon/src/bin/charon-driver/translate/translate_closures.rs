@@ -178,6 +178,9 @@ impl ItemTransCtx<'_, '_> {
         span: Span,
         args: &hax::ClosureArgs,
     ) -> Result<TypeDeclKind, Error> {
+        // Add the lifetime generics coming from the higher-kindedness of the signature.
+        self.innermost_binder_mut()
+            .push_params_from_binder(args.tupled_sig.rebind(()))?;
         // TODO: need to add lifetimes for upvars?
         let fields: Vector<FieldId, Field> = args
             .upvar_tys
@@ -210,6 +213,9 @@ impl ItemTransCtx<'_, '_> {
         target_kind: ClosureKind,
     ) -> Result<FunSig, Error> {
         self.translate_def_generics(span, def)?;
+        // Add the lifetime generics coming from the higher-kindedness of the signature.
+        self.innermost_binder_mut()
+            .push_params_from_binder(args.tupled_sig.rebind(()))?;
 
         let signature = &args.tupled_sig;
 
@@ -528,7 +534,9 @@ impl ItemTransCtx<'_, '_> {
         };
 
         self.translate_def_generics(span, def)?;
-        // TODO: add lifetime for higher-kinded sig
+        // Add the lifetime generics coming from the higher-kindedness of the signature.
+        self.innermost_binder_mut()
+            .push_params_from_binder(args.tupled_sig.rebind(()))?;
 
         // The builtin traits we need.
         let fn_trait = match target_kind {

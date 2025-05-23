@@ -700,7 +700,6 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         // [TyCtxt.generics_of] gives us the early-bound parameters. We add the late-bound
         // parameters here.
         let signature = match &def.kind {
-            hax::FullDefKind::Closure { args, .. } => Some(&args.tupled_sig),
             hax::FullDefKind::Fn { sig, .. } => Some(sig),
             hax::FullDefKind::AssocFn { sig, .. } => Some(sig),
             _ => None,
