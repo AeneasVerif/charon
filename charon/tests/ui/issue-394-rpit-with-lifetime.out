@@ -7,15 +7,6 @@ pub opaque type core::iter::sources::from_fn::FromFn<F>
   where
       [@TraitClause0]: core::marker::Sized<F>,
 
-#[lang_item("Option")]
-pub enum core::option::Option<T>
-  where
-      [@TraitClause0]: core::marker::Sized<T>,
- =
-|  None()
-|  Some(T)
-
-
 struct test_crate::sparse_transitions::closure<'a> = {}
 
 #[lang_item("tuple_trait")]
@@ -39,6 +30,15 @@ pub trait core::ops::function::FnMut<Self, Args>
     parent_clause2 : [@TraitClause2]: core::marker::Tuple<Args>
     fn call_mut<'_0> = core::ops::function::FnMut::call_mut<'_0_0, Self, Args>
 }
+
+#[lang_item("Option")]
+pub enum core::option::Option<T>
+  where
+      [@TraitClause0]: core::marker::Sized<T>,
+ =
+|  None()
+|  Some(T)
+
 
 pub fn core::iter::sources::from_fn::from_fn<T, F>(@1: F) -> core::iter::sources::from_fn::FromFn<F>[@TraitClause1]
 where

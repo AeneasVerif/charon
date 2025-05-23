@@ -595,7 +595,7 @@ fn rename_attribute() -> anyhow::Result<()> {
     );
 
     assert_eq!(
-        crate_data.type_decls[2].kind.as_struct().unwrap().0[0]
+        crate_data.type_decls[2].kind.as_struct().unwrap()[0]
             .attr_info
             .rename
             .as_deref(),

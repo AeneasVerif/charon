@@ -459,7 +459,7 @@ let type_decl_to_string (env : 'a fmt_env) (def : type_decl) : string =
     if params <> [] then "<" ^ String.concat ", " params ^ ">" else ""
   in
   match def.kind with
-  | Struct (fields, _) ->
+  | Struct fields ->
       if fields <> [] then
         let fields =
           String.concat ""
