@@ -535,6 +535,15 @@ pub enum TypeId {
     Builtin(BuiltinTy),
 }
 
+/// Reference to a type declaration or builtin type.
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Hash, Drive, DriveMut)]
+pub struct TypeDeclRef {
+    #[charon::rename("type_decl_id")]
+    pub id: TypeId,
+    #[charon::rename("type_decl_generics")]
+    pub generics: BoxedArgs,
+}
+
 /// Types of primitive values. Either an integer, bool, char
 #[derive(
     Debug,
@@ -745,11 +754,22 @@ pub enum BuiltinTy {
     Str,
 }
 
-#[derive(Debug, Copy, Clone, PartialEq, Eq, Serialize, Deserialize, Drive, DriveMut)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash, Serialize, Deserialize, Drive, DriveMut)]
 pub enum ClosureKind {
     Fn,
     FnMut,
     FnOnce,
+}
+
+impl ClosureKind {
+    // pub fn trait_name(self) -> &'static str {}
+    pub fn method_name(self) -> &'static str {
+        match self {
+            ClosureKind::FnOnce => "call_once",
+            ClosureKind::FnMut => "call_mut",
+            ClosureKind::Fn => "call",
+        }
+    }
 }
 
 /// Additional information for closures.
@@ -766,14 +786,6 @@ pub struct FunSig {
     /// Is the function unsafe or not
     #[drive(skip)]
     pub is_unsafe: bool,
-    /// `true` if the signature is for a closure.
-    ///
-    /// Importantly: if the signature is for a closure, then:
-    /// - the type and const generic params actually come from the parent function
-    ///   (the function in which the closure is defined)
-    /// - the region variables are local to the closure
-    #[drive(skip)]
-    pub is_closure: bool,
     pub generics: GenericParams,
     pub inputs: Vec<Ty>,
     pub output: Ty,

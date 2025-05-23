@@ -40,7 +40,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
                 let Ok(def) = self.hax_def(def_id) else {
                     return; // Error has already been emitted
                 };
-                let Ok(name) = self.hax_def_id_to_name(&def.def_id) else {
+                let Ok(name) = self.def_id_to_name(&def.def_id) else {
                     return; // Error has already been emitted
                 };
                 let opacity = self.opacity_for_name(&name);
@@ -139,7 +139,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
         trans_id: Option<AnyTransId>,
     ) -> Result<(), Error> {
         // Translate the meta information
-        let name = self.hax_trans_src_to_name(item_src)?;
+        let name = self.translate_name(item_src)?;
         if let Some(trans_id) = trans_id {
             self.translated.item_names.insert(trans_id, name.clone());
         }
@@ -194,14 +194,14 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
                     unreachable!()
                 };
                 let closure_trait_impl =
-                    bt_ctx.translate_closure_trait_impl(id, item_meta, &def, kind)?;
+                    bt_ctx.translate_closure_trait_impl(id, item_meta, &def, *kind)?;
                 self.translated.trait_impls.set_slot(id, closure_trait_impl);
             }
-            TransItemSource::ClosureFun(_, kind) => {
+            TransItemSource::ClosureMethod(_, kind) => {
                 let Some(AnyTransId::Fun(id)) = trans_id else {
                     unreachable!()
                 };
-                let fun_decl = bt_ctx.translate_closure_fun(id, item_meta, &def, kind)?;
+                let fun_decl = bt_ctx.translate_closure_method(id, item_meta, &def, *kind)?;
                 self.translated.fun_decls.set_slot(id, fun_decl);
             }
         }

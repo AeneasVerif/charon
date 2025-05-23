@@ -300,71 +300,36 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                 trait_decl_ref,
             },
             ImplExprAtom::Builtin {
-                impl_exprs,
-                types,
-                r#trait: builtin_trait,
+                impl_exprs, types, ..
             } => {
-                use hax_frontend_exporter::DefPathItem;
-                let closure_kind = builtin_trait
-                    .hax_skip_binder_ref()
-                    .def_id
-                    .path
-                    .last()
-                    .and_then(|f| match &f.data {
-                        DefPathItem::TypeNs(name) => name.as_ref(),
-                        _ => None,
-                    })
-                    .and_then(|s| match s.as_str() {
-                        "FnOnce" => Some(hax::ClosureKind::FnOnce),
-                        "FnMut" => Some(hax::ClosureKind::FnMut),
-                        "Fn" => Some(hax::ClosureKind::Fn),
-                        _ => None,
-                    });
+                let trait_def_id = &impl_source.r#trait.hax_skip_binder_ref().def_id;
+                let trait_def = self.hax_def(trait_def_id)?;
+                let closure_kind = trait_def.lang_item.as_deref().and_then(|lang| match lang {
+                    "fn_once" => Some(ClosureKind::FnOnce),
+                    "fn_mut" => Some(ClosureKind::FnMut),
+                    "r#fn" => Some(ClosureKind::Fn),
+                    _ => None,
+                });
 
-                let is_closure = closure_kind.as_ref().is_some_and(|_| {
-                    if let Some(hax::GenericArg::Type(closure_ty)) = impl_source
+                let kind = if let Some(closure_kind) = closure_kind
+                    && let Some(hax::GenericArg::Type(closure_ty)) = impl_source
                         .r#trait
                         .hax_skip_binder_ref()
                         .generic_args
                         .first()
-                    {
-                        matches!(closure_ty.kind(), hax::TyKind::Closure(..))
-                    } else {
-                        false
-                    }
-                });
-
-                if is_closure {
+                    && let hax::TyKind::Closure(closure_id, closure_args) = closure_ty.kind()
+                {
                     let binder =
-                        self.translate_region_binder(span, &impl_source.r#trait, |ctx, tref| {
-                            let Some(hax::GenericArg::Type(closure_ty)) = tref.generic_args.first()
-                            else {
-                                unreachable!();
-                            };
-                            let hax::TyKind::Closure(closure_id, closure_args) = closure_ty.kind()
-                            else {
-                                unreachable!();
-                            };
-
-                            let impl_id = ctx.register_closure_trait_impl_id(
+                        self.translate_region_binder(span, &impl_source.r#trait, |ctx, _tref| {
+                            ctx.translate_closure_impl_ref(
                                 span,
-                                &closure_id,
-                                &closure_kind.unwrap(),
-                            );
-
-                            let parent_args = ctx.translate_closure_generic_args(
-                                span,
+                                closure_id,
                                 closure_args,
-                                GenericsSource::item(impl_id),
-                            )?;
-
-                            Ok((impl_id, parent_args))
+                                closure_kind,
+                            )
                         })?;
-                    let (impl_id, parent_args) = binder.erase();
-                    TraitRef {
-                        kind: TraitRefKind::TraitImpl(impl_id, parent_args.into()),
-                        trait_decl_ref,
-                    }
+                    let TraitImplRef { impl_id, generics } = binder.erase();
+                    TraitRefKind::TraitImpl(impl_id, generics)
                 } else {
                     let parent_trait_refs = self.translate_trait_impl_exprs(span, &impl_exprs)?;
                     let types = types
@@ -382,14 +347,15 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                             Ok((name, ty))
                         })
                         .try_collect()?;
-                    TraitRef {
-                        kind: TraitRefKind::BuiltinOrAuto {
-                            trait_decl_ref: trait_decl_ref.clone(),
-                            parent_trait_refs,
-                            types,
-                        },
-                        trait_decl_ref,
+                    TraitRefKind::BuiltinOrAuto {
+                        trait_decl_ref: trait_decl_ref.clone(),
+                        parent_trait_refs,
+                        types,
                     }
+                };
+                TraitRef {
+                    kind,
+                    trait_decl_ref,
                 }
             }
             ImplExprAtom::Error(msg) => {
