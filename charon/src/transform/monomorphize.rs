@@ -112,7 +112,6 @@ impl VisitAst for UsageVisitor<'_> {
     fn enter_aggregate_kind(&mut self, kind: &AggregateKind) {
         match kind {
             AggregateKind::Adt(TypeId::Adt(id), _, _, gargs) => self.found_use_ty(id, gargs),
-            AggregateKind::Closure(fun_id, gargs) => self.found_use_fn(fun_id, gargs),
             _ => {}
         }
     }
@@ -220,7 +219,6 @@ impl VisitAstMut for SubstVisitor<'_> {
     fn enter_aggregate_kind(&mut self, kind: &mut AggregateKind) {
         match kind {
             AggregateKind::Adt(TypeId::Adt(id), _, _, gargs) => self.subst_use_ty(id, gargs),
-            AggregateKind::Closure(fun_id, gargs) => self.subst_use_fun(fun_id, gargs),
             _ => {}
         }
     }

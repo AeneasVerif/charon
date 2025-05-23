@@ -279,7 +279,16 @@ impl BodyTransCtx<'_, '_, '_> {
                             }
                             ClosureState(index) => {
                                 let field_id = translate_field_id(*index);
-                                ProjectionElem::Field(FieldProjKind::ClosureState, field_id)
+                                let Some((TypeId::Adt(adt_id), _)) = subplace.ty.as_adt() else {
+                                    unreachable!(
+                                        "Subplace of ClosureState must be a closure, got {:?}",
+                                        subplace.ty
+                                    )
+                                };
+                                ProjectionElem::Field(
+                                    FieldProjKind::Adt(adt_id.clone(), None),
+                                    field_id,
+                                )
                             }
                         };
                         subplace.project(proj_elem, ty)
@@ -318,6 +327,20 @@ impl BodyTransCtx<'_, '_, '_> {
                         )
                     }
                     &hax::ProjectionElem::Subslice { from, to, from_end } => {
+                        // Rust doesn't update the projection's type to have the correct length;
+                        // if `x` has type `[u32; 4]` and one does `x[1..3]`, the type of the
+                        // projection will be `[u32; 4]`, and not `[u32; 2]` -- we fix this here,
+                        // by using a slice instead.
+                        // This means consumers of Charon must provide the length of the slice
+                        // in the pointer's metadata when this projection is applied.
+                        let Some(elem_ty) = ty.as_array_or_slice() else {
+                            unreachable!("Unexpected type in Subslice projection")
+                        };
+                        let ty = TyKind::Adt(
+                            TypeId::Builtin(BuiltinTy::Slice),
+                            GenericArgs::new_for_builtin(vec![elem_ty.clone()].into()),
+                        )
+                        .into_ty();
                         let from = Operand::Const(Box::new(ScalarValue::Usize(from).to_constant()));
                         let to = Operand::Const(Box::new(ScalarValue::Usize(to).to_constant()));
                         subplace.project(
@@ -664,21 +687,17 @@ impl BodyTransCtx<'_, '_, '_> {
                             closure_args.tupled_sig
                         );
 
-                        let fun_id = self.register_fun_decl_id(span, def_id);
+                        let type_id = self.register_type_decl_id(span, def_id);
+                        let type_id = TypeId::Adt(type_id);
 
-                        // Retrieve the late-bound variables.
-                        let binder = closure_args.tupled_sig.as_ref().rebind(());
                         // Translate the substitution
-                        let generics = self.translate_generic_args(
+                        let generics = self.translate_closure_generic_args(
                             span,
-                            &closure_args.parent_args,
-                            &closure_args.parent_trait_refs,
-                            Some(binder),
-                            GenericsSource::item(fun_id),
+                            closure_args,
+                            type_id.generics_target(),
                         )?;
 
-                        let akind = AggregateKind::Closure(fun_id, Box::new(generics));
-
+                        let akind = AggregateKind::Adt(type_id, None, None, Box::new(generics));
                         Ok(Rvalue::Aggregate(akind, operands_t))
                     }
                     hax::AggregateKind::RawPtr(ty, is_mut) => {
@@ -990,7 +1009,7 @@ impl BodyTransCtx<'_, '_, '_> {
                 trace!("func: {:?}", def_id);
                 let fun_def = self.t_ctx.hax_def(def_id)?;
                 let fun_src = TransItemSource::Fun(def_id.clone());
-                let name = self.t_ctx.translate_name(&fun_src)?;
+                let name = self.t_ctx.hax_trans_src_to_name(&fun_src)?;
                 let panic_lang_items = &["panic", "panic_fmt", "begin_panic"];
                 let panic_names = &[&["core", "panicking", "assert_failed"], EXPLICIT_PANIC_NAME];
 

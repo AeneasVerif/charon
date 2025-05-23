@@ -100,10 +100,6 @@ pub enum FieldProjKind {
     /// If we project from a tuple, the projection kind gives the arity of the tuple.
     #[drive(skip)]
     Tuple(usize),
-    /// Access to a field in a closure state.
-    /// We eliminate this in a micro-pass ([crate::transform::update_closure_signatures]).
-    #[charon::opaque]
-    ClosureState,
 }
 
 #[derive(
@@ -621,9 +617,6 @@ pub enum AggregateKind {
     /// with aggregates, and it is a primitive type. In particular, it makes
     /// sense to treat it differently because it has a variable number of fields.
     Array(Ty, ConstGeneric),
-    /// Aggregated values for closures group the function id together with its
-    /// state.
-    Closure(FunDeclId, BoxedArgs),
     /// Construct a raw pointer from a pointer value, and its metadata (can be unit, if building
     /// a thin pointer). The type is the type of the pointee.
     /// We lower this to a builtin function call for LLBC in [crate::transform::ops_to_function_calls].

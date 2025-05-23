@@ -96,15 +96,8 @@ impl ProjectionElem {
                     Adt(TypeId::Builtin(BuiltinTy::Box), args) => {
                         args.types.get(TypeVarId::new(0)).unwrap().clone()
                     }
-                    Adt(..)
-                    | TypeVar(_)
-                    | Literal(_)
-                    | Never
-                    | TraitType(..)
-                    | DynTrait(_)
-                    | Arrow(..)
-                    | Closure { .. }
-                    | Error(..) => {
+                    Adt(..) | TypeVar(_) | Literal(_) | Never | TraitType(..) | DynTrait(_)
+                    | Arrow(..) | Error(..) => {
                         // Type error
                         return Err(());
                     }
@@ -121,7 +114,7 @@ impl ProjectionElem {
                         assert!(TypeId::Adt(*type_decl_id) == type_id);
                         use TypeDeclKind::*;
                         match &type_decl.kind {
-                            Struct(fields) | Union(fields) => {
+                            Struct(fields, _) | Union(fields) => {
                                 if variant_id.is_some() {
                                     return Err(());
                                 };
@@ -152,7 +145,6 @@ impl ProjectionElem {
                         .get(TypeVarId::from(usize::from(*field_id)))
                         .ok_or(())?
                         .clone(),
-                    ClosureState => return Err(()),
                 }
             }
             Index { .. } | Subslice { .. } => ty.as_array_or_slice().ok_or(())?.clone(),

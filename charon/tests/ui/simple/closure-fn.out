@@ -104,39 +104,99 @@ where
     return
 }
 
-fn test_crate::main::closure<'_0, '_1, '_2>(@1: &'_0 ((&'_1 (u8), &'_2 (u8))), @2: u8, @3: u8) -> u8
+struct test_crate::main::closure =
+{
+  &'_ (u8),
+  &'_ (u8),
+}
+
+fn test_crate::main::{impl core::ops::function::Fn<((u8, u8))> for test_crate::main::closure}::call<'_0>(@1: &'_0 (test_crate::main::closure), @2: (u8, u8)) -> u8
 {
     let @0: u8; // return
-    let state@1: &'_0 ((&'_1 (u8), &'_2 (u8))); // arg #1
-    let x@2: u8; // arg #2
-    let y@3: u8; // arg #3
-    let @4: u8; // anonymous local
+    let @1: &'_ (test_crate::main::closure); // arg #1
+    let tupled_args@2: (u8, u8); // arg #2
+    let x@3: u8; // local
+    let y@4: u8; // local
     let @5: u8; // anonymous local
     let @6: u8; // anonymous local
     let @7: u8; // anonymous local
     let @8: u8; // anonymous local
     let @9: u8; // anonymous local
+    let @10: u8; // anonymous local
 
-    storage_live(@4)
+    storage_live(x@3)
+    storage_live(y@4)
+    x@3 := move ((tupled_args@2).0)
+    y@4 := move ((tupled_args@2).1)
     storage_live(@5)
     storage_live(@6)
-    @6 := copy (*((*(state@1)).0))
     storage_live(@7)
-    @7 := copy (x@2)
-    @5 := copy (@6) + copy (@7)
-    storage_dead(@7)
-    storage_dead(@6)
+    @7 := copy (*((*(@1)).0))
     storage_live(@8)
-    @8 := copy (y@3)
-    @4 := copy (@5) + copy (@8)
+    @8 := copy (x@3)
+    @6 := copy (@7) + copy (@8)
     storage_dead(@8)
-    storage_dead(@5)
+    storage_dead(@7)
     storage_live(@9)
-    @9 := copy (*((*(state@1)).1))
-    @0 := copy (@4) + copy (@9)
+    @9 := copy (y@4)
+    @5 := copy (@6) + copy (@9)
     storage_dead(@9)
-    storage_dead(@4)
+    storage_dead(@6)
+    storage_live(@10)
+    @10 := copy (*((*(@1)).1))
+    @0 := copy (@5) + copy (@10)
+    storage_dead(@10)
+    storage_dead(@5)
     return
+}
+
+fn test_crate::main::{impl core::ops::function::FnOnce<((u8, u8))> for test_crate::main::closure}::call_once(@1: test_crate::main::closure, @2: (u8, u8)) -> u8
+{
+    let @0: u8; // return
+    let state@1: test_crate::main::closure; // arg #1
+    let args@2: (u8, u8); // arg #2
+    let temp_ref@3: &'_ (test_crate::main::closure); // local
+
+    storage_live(temp_ref@3)
+    temp_ref@3 := &state@1
+    @0 := test_crate::main::{impl core::ops::function::Fn<((u8, u8))> for test_crate::main::closure}::call<'_>(move (temp_ref@3), move (args@2))
+    drop state@1
+    return
+}
+
+impl test_crate::main::{impl core::ops::function::FnOnce<((u8, u8))> for test_crate::main::closure} : core::ops::function::FnOnce<test_crate::main::closure, ((u8, u8))>
+{
+    parent_clause0 = core::marker::Sized<((u8, u8))>
+    parent_clause1 = core::marker::Tuple<((u8, u8))>
+    parent_clause2 = core::marker::Sized<u8>
+    type Output = u8
+    fn call_once = test_crate::main::{impl core::ops::function::FnOnce<((u8, u8))> for test_crate::main::closure}::call_once
+}
+
+fn test_crate::main::{impl core::ops::function::FnMut<((u8, u8))> for test_crate::main::closure}::call_mut<'_0>(@1: &'_0 (test_crate::main::closure), @2: (u8, u8)) -> u8
+{
+    let @0: u8; // return
+    let state@1: &'_0 (test_crate::main::closure); // arg #1
+    let args@2: (u8, u8); // arg #2
+
+    @0 := test_crate::main::{impl core::ops::function::Fn<((u8, u8))> for test_crate::main::closure}::call<'_>(move (state@1), move (args@2))
+    return
+}
+
+impl test_crate::main::{impl core::ops::function::FnMut<((u8, u8))> for test_crate::main::closure} : core::ops::function::FnMut<test_crate::main::closure, ((u8, u8))>
+{
+    parent_clause0 = test_crate::main::{impl core::ops::function::FnOnce<((u8, u8))> for test_crate::main::closure}
+    parent_clause1 = core::marker::Sized<((u8, u8))>
+    parent_clause2 = core::marker::Tuple<((u8, u8))>
+    fn call_mut<'_0> = test_crate::main::{impl core::ops::function::FnMut<((u8, u8))> for test_crate::main::closure}::call_mut<'_>
+}
+
+impl test_crate::main::{impl core::ops::function::Fn<((u8, u8))> for test_crate::main::closure} : core::ops::function::Fn<test_crate::main::closure, ((u8, u8))>
+{
+    parent_clause0 = test_crate::main::{impl core::ops::function::FnMut<((u8, u8))> for test_crate::main::closure}
+    parent_clause1 = core::marker::Sized<((u8, u8))>
+    parent_clause2 = core::marker::Tuple<((u8, u8))>
+    fn call<'_0> = test_crate::main::{impl core::ops::function::Fn<((u8, u8))> for test_crate::main::closure}::call<'_>
 }
 
 fn test_crate::main()
@@ -168,7 +228,7 @@ fn test_crate::main()
     @4 := &v@1
     storage_live(@5)
     @5 := &z@2
-    f@3 := {test_crate::main::closure} {move (@4), move (@5)}
+    f@3 := test_crate::main::closure { 0: move (@4), 1: move (@5) }
     storage_dead(@5)
     storage_dead(@4)
     storage_live(@6)
@@ -176,7 +236,7 @@ fn test_crate::main()
     @7 := &f@3
     storage_live(@8)
     @8 := (const (10 : u8), const (20 : u8))
-    @6 := core::ops::function::Fn<test_crate::main::closure, (u8, u8)>::call<'_>(move (@7), move (@8))
+    @6 := test_crate::main::{impl core::ops::function::Fn<((u8, u8))> for test_crate::main::closure}::call<'_>(move (@7), move (@8))
     storage_dead(@8)
     storage_dead(@7)
     storage_dead(@6)
@@ -185,7 +245,7 @@ fn test_crate::main()
     storage_live(@11)
     @11 := &f@3
     @10 := &*(@11)
-    @9 := test_crate::apply_to<'_, test_crate::main::closure>[core::marker::Sized<test_crate::main::closure>, core::ops::function::Fn<test_crate::main::closure, (u8, u8)>](move (@10))
+    @9 := test_crate::apply_to<'_, test_crate::main::closure>[core::marker::Sized<test_crate::main::closure>, test_crate::main::{impl core::ops::function::Fn<((u8, u8))> for test_crate::main::closure}](move (@10))
     storage_dead(@10)
     storage_dead(@11)
     storage_dead(@9)
@@ -194,14 +254,14 @@ fn test_crate::main()
     storage_live(@14)
     @14 := &mut f@3
     @13 := &two-phase-mut *(@14)
-    @12 := test_crate::apply_to_mut<'_, test_crate::main::closure>[core::marker::Sized<test_crate::main::closure>, core::ops::function::FnMut<test_crate::main::closure, (u8, u8)>](move (@13))
+    @12 := test_crate::apply_to_mut<'_, test_crate::main::closure>[core::marker::Sized<test_crate::main::closure>, test_crate::main::{impl core::ops::function::FnMut<((u8, u8))> for test_crate::main::closure}](move (@13))
     storage_dead(@13)
     storage_dead(@14)
     storage_dead(@12)
     storage_live(@15)
     storage_live(@16)
     @16 := copy (f@3)
-    @15 := test_crate::apply_to_once<test_crate::main::closure>[core::marker::Sized<test_crate::main::closure>, core::ops::function::FnOnce<test_crate::main::closure, (u8, u8)> where Output  = u8](move (@16))
+    @15 := test_crate::apply_to_once<test_crate::main::closure>[core::marker::Sized<test_crate::main::closure>, test_crate::main::{impl core::ops::function::FnOnce<((u8, u8))> for test_crate::main::closure}](move (@16))
     storage_dead(@16)
     storage_dead(@15)
     @0 := ()

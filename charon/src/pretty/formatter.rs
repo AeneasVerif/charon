@@ -438,7 +438,7 @@ impl<'a> Formatter<(TypeDeclId, Option<VariantId>, FieldId)> for FmtCtx<'a> {
                                 None => field_id.to_string(),
                             }
                         }
-                        (TypeDeclKind::Struct(fields) | TypeDeclKind::Union(fields), None) => {
+                        (TypeDeclKind::Struct(fields, _) | TypeDeclKind::Union(fields), None) => {
                             let field = fields.get(field_id).unwrap();
                             match &field.name {
                                 Some(name) => name.clone(),

@@ -35,7 +35,7 @@ let type_decl_get_fields (def : type_decl)
     (opt_variant_id : VariantId.id option) : field list =
   match (def.kind, opt_variant_id) with
   | Enum variants, Some variant_id -> (VariantId.nth variants variant_id).fields
-  | Struct fields, None -> fields
+  | Struct (fields, _), None -> fields
   | Union fields, None -> fields
   | (Enum _ | Struct _ | Union _), _ ->
       let opt_variant_id =
