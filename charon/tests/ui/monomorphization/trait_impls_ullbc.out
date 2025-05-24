@@ -84,7 +84,7 @@ fn test_crate::main()
 
     bb0: {
         storage_live(@1);
-        @1 := test_crate::do_test<bool>[core::marker::Sized<bool>, core::cmp::impls::{impl core::cmp::Eq for bool}#38](const (true), const (true)) -> bb1;
+        @1 := test_crate::do_test<bool>[core::marker::Sized<bool>, core::cmp::impls::{impl core::cmp::Eq for bool}#38](const (true), const (true)) -> bb1 (unwind: bb2);
     }
 
     bb1: {
