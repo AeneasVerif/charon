@@ -535,6 +535,11 @@ impl TransformPass for Transform {
                 }
                 *mono = OptionHint::Some(new_mono);
                 data.worklist.push(new_mono);
+
+                let item = ctx.translated.get_item(new_mono).unwrap();
+                ctx.translated
+                    .item_names
+                    .insert(new_mono, item.item_meta().name.clone());
             }
 
             // 3. Substitute all generics with the monomorphized versions
@@ -561,6 +566,9 @@ impl TransformPass for Transform {
         ctx.translated
             .global_decls
             .retain(|g| data.visited.contains(&AnyTransId::Global(g.def_id)));
+        ctx.translated
+            .item_names
+            .retain(|i, _| data.visited.contains(i));
         // ctx.translated.trait_impls.retain(|t| t.generics.is_empty());
 
         // TODO: Currently we don't update all TraitImpls/TraitDecls with the monomorphized versions
