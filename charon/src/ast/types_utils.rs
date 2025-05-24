@@ -815,6 +815,24 @@ impl VisitAstMut for SubstVisitor<'_> {
         }
     }
 
+    fn exit_constant_expr(&mut self, ce: &mut ConstantExpr) {
+        match &mut ce.value {
+            RawConstantExpr::Var(var) => {
+                if let Some(new_ce) = self.process_var(var) {
+                    ce.value = match new_ce {
+                        ConstGeneric::Global(id) => RawConstantExpr::Global(GlobalDeclRef {
+                            id,
+                            generics: Box::new(GenericArgs::empty(GenericsSource::item(id))),
+                        }),
+                        ConstGeneric::Var(var) => RawConstantExpr::Var(var),
+                        ConstGeneric::Value(lit) => RawConstantExpr::Literal(lit),
+                    };
+                }
+            }
+            _ => (),
+        }
+    }
+
     fn exit_trait_ref_kind(&mut self, kind: &mut TraitRefKind) {
         match kind {
             TraitRefKind::SelfId => {
