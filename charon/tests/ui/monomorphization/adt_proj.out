@@ -16,7 +16,7 @@ pub trait core::marker::Sized<Self>
 fn test_crate::main()
 {
     let @0: (); // return
-    let res@1: @Adt1<u32, u32>[core::marker::Sized<u32>, core::marker::Sized<u32>]; // local
+    let res@1: core::result::Result<u32, u32>[core::marker::Sized<u32>, core::marker::Sized<u32>]; // local
     let n@2: u32; // local
 
     storage_live(res@1)
