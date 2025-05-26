@@ -23,6 +23,13 @@ where
   S,
 }
 
+// Full name: core::ops::drop::Drop
+#[lang_item("drop")]
+pub trait Drop<Self>
+{
+    fn drop<'_0> = drop<'_0_0, Self>[Self]
+}
+
 // Full name: test_crate::{HashMap<S>[@TraitClause0]}::get
 pub fn get<S, Q, Clause2_Type>(@1: HashMap<S>[@TraitClause0], @2: Q)
 where
@@ -35,8 +42,8 @@ where
     let _k@2: Q; // arg #2
 
     @0 := ()
-    drop _k@2
-    drop _x@1
+    drop[Drop<Q>] _k@2
+    drop[Drop<HashMap<S>[@TraitClause0]>] _x@1
     @0 := ()
     return
 }
@@ -53,8 +60,8 @@ where
     let _k@2: Q; // arg #2
 
     @0 := ()
-    drop _k@2
-    drop _x@1
+    drop[Drop<Q>] _k@2
+    drop[Drop<HashMap<S>[@TraitClause0]>] _x@1
     @0 := ()
     return
 }
@@ -104,6 +111,11 @@ pub fn test2(@1: HashMap<()>[Sized<()>])
     @0 := ()
     return
 }
+
+// Full name: core::ops::drop::Drop::drop
+pub fn drop<'_0, Self>(@1: &'_0 mut (Self))
+where
+    [@TraitClause0]: Drop<Self>,
 
 
 

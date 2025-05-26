@@ -70,6 +70,13 @@ pub fn core::clone::Clone::clone<'_0, Self>(@1: &'_0 (Self)) -> Self
 where
     [@TraitClause0]: Clone<Self>,
 
+// Full name: core::ops::drop::Drop
+#[lang_item("drop")]
+pub trait Drop<Self>
+{
+    fn drop<'_0> = drop<'_0_0, Self>[Self]
+}
+
 // Full name: test_crate::takes_alias
 fn takes_alias<T>(@1: T)
 where
@@ -86,10 +93,10 @@ where
     @3 := &x@1
     @2 := @TraitClause1::parent_clause1::clone<'_>(move (@3))
     storage_dead(@3)
-    drop @2
+    drop[Drop<T>] @2
     storage_dead(@2)
     @0 := ()
-    drop x@1
+    drop[Drop<T>] x@1
     @0 := ()
     return
 }
@@ -123,6 +130,11 @@ fn use_alias()
     @0 := ()
     return
 }
+
+// Full name: core::ops::drop::Drop::drop
+pub fn drop<'_0, Self>(@1: &'_0 mut (Self))
+where
+    [@TraitClause0]: Drop<Self>,
 
 
 

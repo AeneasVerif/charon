@@ -64,6 +64,13 @@ pub fn len<'_0, T>(@1: &'_0 (Slice<T>)) -> usize
 where
     [@TraitClause0]: Sized<T>,
 
+// Full name: core::ops::drop::Drop
+#[lang_item("drop")]
+pub trait Drop<Self>
+{
+    fn drop<'_0> = drop<'_0_0, Self>[Self]
+}
+
 // Full name: test_crate::array_len
 pub fn array_len<T>(@1: Array<T, 32 : usize>) -> usize
 where
@@ -81,7 +88,7 @@ where
     storage_dead(@3)
     @0 := len<'_, T>[@TraitClause0](move (@2))
     storage_dead(@2)
-    drop s@1
+    drop[Drop<Array<T, 32 : usize>>] s@1
     return
 }
 
@@ -2208,6 +2215,11 @@ where
     parent_clause0 = {impl Index<I, Clause2_Output> for Array<T, const N : usize>}<T, I, Clause2_Clause0_Output, const N : usize>[@TraitClause0, @TraitClause1, @TraitClause2::parent_clause0]
     fn index_mut<'_0> = {impl IndexMut<I, Clause2_Clause0_Output> for Array<T, const N : usize>}::index_mut<'_0_0, T, I, Clause2_Clause0_Output, const N : usize>[@TraitClause0, @TraitClause1, @TraitClause2]
 }
+
+// Full name: core::ops::drop::Drop::drop
+pub fn drop<'_0, Self>(@1: &'_0 mut (Self))
+where
+    [@TraitClause0]: Drop<Self>,
 
 pub fn core::slice::index::SliceIndex::get<'_0, Self, T, Clause0_Output>(@1: Self, @2: &'_0 (T)) -> Option<&'_0 (Clause0_Output)>[Sized<&'_0 (Clause0_Output)>]
 where

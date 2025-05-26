@@ -84,6 +84,13 @@ where
 // Full name: core::cell::{RefCell<T>}::try_borrow
 pub fn try_borrow<'_0, T>(@1: &'_0 (RefCell<T>)) -> Result<Ref<'_0, T>, BorrowError>[Sized<Ref<'_0, T>>, Sized<BorrowError>]
 
+// Full name: core::ops::drop::Drop
+#[lang_item("drop")]
+pub trait Drop<Self>
+{
+    fn drop<'_0> = drop<'_0_0, Self>[Self]
+}
+
 // Full name: test_crate::foo
 fn foo()
 {
@@ -100,7 +107,7 @@ fn foo()
     @3 := &ref_b@1
     @2 := try_borrow<'_, bool>(move (@3))
     storage_dead(@3)
-    drop @2
+    drop[Drop<Result<Ref<'_, bool>, BorrowError>[Sized<Ref<'_, bool>>, Sized<BorrowError>]>] @2
     storage_dead(@2)
     @0 := ()
     storage_dead(ref_b@1)
@@ -134,6 +141,11 @@ where
 pub fn clone<'_0, Self>(@1: &'_0 (Self)) -> Self
 where
     [@TraitClause0]: Clone<Self>,
+
+// Full name: core::ops::drop::Drop::drop
+pub fn drop<'_0, Self>(@1: &'_0 mut (Self))
+where
+    [@TraitClause0]: Drop<Self>,
 
 
 

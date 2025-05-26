@@ -224,6 +224,13 @@ impl Default for Bar {
     fn default = {impl Default for Bar}::default
 }
 
+// Full name: core::ops::drop::Drop
+#[lang_item("drop")]
+pub trait Drop<Self>
+{
+    fn drop<'_0> = drop<'_0_0, Self>[Self]
+}
+
 // Full name: test_crate::eat
 fn eat<T>(@1: T)
 where
@@ -233,7 +240,7 @@ where
     let @1: T; // arg #1
 
     @0 := ()
-    drop @1
+    drop[Drop<T>] @1
     @0 := ()
     return
 }
@@ -500,6 +507,11 @@ impl Default for u32 {
     parent_clause0 = Sized<u32>
     fn default = {impl Default for u32}::default
 }
+
+// Full name: core::ops::drop::Drop::drop
+pub fn drop<'_0, Self>(@1: &'_0 mut (Self))
+where
+    [@TraitClause0]: Drop<Self>,
 
 
 

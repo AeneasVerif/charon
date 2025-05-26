@@ -171,6 +171,28 @@ where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Sized<A>,
 
+// Full name: core::ops::drop::Drop
+#[lang_item("drop")]
+pub trait Drop<Self>
+{
+    fn drop<'_0> = core::ops::drop::Drop::drop<'_0_0, Self>[Self]
+}
+
+// Full name: alloc::vec::{impl Drop for Vec<T, A>[@TraitClause0, @TraitClause1]}::drop
+pub fn {impl Drop for Vec<T, A>[@TraitClause0, @TraitClause1]}::drop<'_0, T, A>(@1: &'_0 mut (Vec<T, A>[@TraitClause0, @TraitClause1]))
+where
+    [@TraitClause0]: Sized<T>,
+    [@TraitClause1]: Sized<A>,
+
+// Full name: alloc::vec::{impl Drop for Vec<T, A>[@TraitClause0, @TraitClause1]}
+impl<T, A> Drop for Vec<T, A>[@TraitClause0, @TraitClause1]
+where
+    [@TraitClause0]: Sized<T>,
+    [@TraitClause1]: Sized<A>,
+{
+    fn drop<'_0> = {impl Drop for Vec<T, A>[@TraitClause0, @TraitClause1]}::drop<'_0_0, T, A>[@TraitClause0, @TraitClause1]
+}
+
 // Full name: test_crate::test_vec_push
 pub fn test_vec_push()
 {
@@ -188,7 +210,7 @@ pub fn test_vec_push()
     storage_dead(@3)
     storage_dead(@2)
     @0 := ()
-    drop v@1
+    drop[{impl Drop for Vec<T, A>[@TraitClause0, @TraitClause1]}<u32, Global>[Sized<u32>, Sized<Global>]] v@1
     storage_dead(v@1)
     @0 := ()
     return
@@ -245,6 +267,10 @@ pub fn incr<'_0>(@1: &'_0 mut (Cell<u32>))
 pub fn core::clone::Clone::clone<'_0, Self>(@1: &'_0 (Self)) -> Self
 where
     [@TraitClause0]: Clone<Self>,
+
+pub fn core::ops::drop::Drop::drop<'_0, Self>(@1: &'_0 mut (Self))
+where
+    [@TraitClause0]: Drop<Self>,
 
 
 

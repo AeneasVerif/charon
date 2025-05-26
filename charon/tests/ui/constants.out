@@ -165,6 +165,13 @@ where
   value: T,
 }
 
+// Full name: core::ops::drop::Drop
+#[lang_item("drop")]
+pub trait Drop<Self>
+{
+    fn drop<'_0> = drop<'_0_0, Self>[Self]
+}
+
 // Full name: test_crate::{Wrap<T>[@TraitClause0]}::new
 pub fn new<T>(@1: T) -> Wrap<T>[@TraitClause0]
 where
@@ -177,9 +184,9 @@ where
     storage_live(@2)
     @2 := move (value@1)
     @0 := Wrap { value: move (@2) }
-    drop @2
+    drop[Drop<T>] @2
     storage_dead(@2)
-    drop value@1
+    drop[Drop<T>] value@1
     return
 }
 
@@ -409,6 +416,11 @@ where
     @0 := move (@1)
     return
 }
+
+// Full name: core::ops::drop::Drop::drop
+pub fn drop<'_0, Self>(@1: &'_0 mut (Self))
+where
+    [@TraitClause0]: Drop<Self>,
 
 
 

@@ -10,6 +10,13 @@ trait Trait<Self, Self_Assoc>
     parent_clause0 : [@TraitClause0]: Sized<Self_Assoc>
 }
 
+// Full name: core::ops::drop::Drop
+#[lang_item("drop")]
+pub trait Drop<Self>
+{
+    fn drop<'_0> = drop<'_0_0, Self>[Self]
+}
+
 // Full name: test_crate::takes_trait
 fn takes_trait<I, Clause1_Assoc>(@1: I)
 where
@@ -20,7 +27,7 @@ where
     let it@1: I; // arg #1
 
     @0 := ()
-    drop it@1
+    drop[Drop<I>] it@1
     @0 := ()
     return
 }
@@ -46,10 +53,15 @@ where
     @2 := move (it@1)
     @0 := takes_trait<Clause1_IntoIter, ()>[@TraitClause1::parent_clause0, @TraitClause1::parent_clause1](move (@2))
     storage_dead(@2)
-    drop it@1
+    drop[Drop<Clause1_IntoIter>] it@1
     @0 := ()
     return
 }
+
+// Full name: core::ops::drop::Drop::drop
+pub fn drop<'_0, Self>(@1: &'_0 mut (Self))
+where
+    [@TraitClause0]: Drop<Self>,
 
 
 

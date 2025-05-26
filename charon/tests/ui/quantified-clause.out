@@ -29,6 +29,13 @@ pub trait FnMut<Self, Args>
     fn call_mut<'_0> = call_mut<'_0_0, Self, Args>[Self]
 }
 
+// Full name: core::ops::drop::Drop
+#[lang_item("drop")]
+pub trait Drop<Self>
+{
+    fn drop<'_0> = drop<'_0_0, Self>[Self]
+}
+
 // Full name: test_crate::foo
 fn foo<F>(@1: F)
 where
@@ -40,7 +47,7 @@ where
     let _f@1: F; // arg #1
 
     @0 := ()
-    drop _f@1
+    drop[Drop<F>] _f@1
     @0 := ()
     return
 }
@@ -145,6 +152,11 @@ where
 pub fn clone<'_0, Self>(@1: &'_0 (Self)) -> Self
 where
     [@TraitClause0]: Clone<Self>,
+
+// Full name: core::ops::drop::Drop::drop
+pub fn drop<'_0, Self>(@1: &'_0 mut (Self))
+where
+    [@TraitClause0]: Drop<Self>,
 
 // Full name: core::ops::function::FnMut::call_mut
 pub fn call_mut<'_0, Self, Args>(@1: &'_0 mut (Self), @2: Args) -> @TraitClause0::parent_clause0::Output

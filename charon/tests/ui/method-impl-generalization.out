@@ -38,6 +38,13 @@ fn {impl Trait for ()}::method1(@1: (), @2: &'static (u32)) -> bool
     return
 }
 
+// Full name: core::ops::drop::Drop
+#[lang_item("drop")]
+pub trait Drop<Self>
+{
+    fn drop<'_0> = drop<'_0_0, Self>[Self]
+}
+
 // Full name: test_crate::{impl Trait for ()}::method2
 fn {impl Trait for ()}::method2<T>(@1: (), @2: T)
 where
@@ -48,7 +55,7 @@ where
     let _other@2: T; // arg #2
 
     @0 := ()
-    drop _other@2
+    drop[Drop<T>] _other@2
     @0 := ()
     return
 }
@@ -220,6 +227,11 @@ where
 pub fn clone<'_0, Self>(@1: &'_0 (Self)) -> Self
 where
     [@TraitClause0]: Clone<Self>,
+
+// Full name: core::ops::drop::Drop::drop
+pub fn drop<'_0, Self>(@1: &'_0 mut (Self))
+where
+    [@TraitClause0]: Drop<Self>,
 
 
 

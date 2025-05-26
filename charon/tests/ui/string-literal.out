@@ -82,6 +82,13 @@ impl Display for Str {
     fn fmt<'_0, '_1, '_2> = {impl Display for Str}::fmt<'_0_0, '_0_1, '_0_2>
 }
 
+// Full name: core::ops::drop::Drop
+#[lang_item("drop")]
+pub trait Drop<Self>
+{
+    fn drop<'_0> = drop<'_0_0, Self>[Self]
+}
+
 // Full name: test_crate::main
 fn main()
 {
@@ -99,7 +106,7 @@ fn main()
     storage_dead(@2)
     storage_dead(@3)
     @0 := ()
-    drop _s@1
+    drop[Drop<String>] _s@1
     storage_dead(_s@1)
     @0 := ()
     return
@@ -124,6 +131,11 @@ where
 {
     fn to_string<'_0> = {impl ToString for T}::to_string<'_0_0, T>[@TraitClause0]
 }
+
+// Full name: core::ops::drop::Drop::drop
+pub fn drop<'_0, Self>(@1: &'_0 mut (Self))
+where
+    [@TraitClause0]: Drop<Self>,
 
 pub fn core::fmt::Display::fmt<'_0, '_1, '_2, Self>(@1: &'_0 (Self), @2: &'_1 mut (Formatter<'_2>)) -> Result<(), Error>[Sized<()>, Sized<Error>]
 where

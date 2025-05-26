@@ -29,8 +29,8 @@ fn test_crate::do_test::<bool>(@1: bool, @2: bool)
     storage_dead(@4)
     storage_dead(@3)
     @0 := ()
-    drop expected@2
-    drop init@1
+    drop[Drop<bool>] expected@2
+    drop[Drop<bool>] init@1
     @0 := ()
     return
 }
@@ -65,6 +65,13 @@ pub trait PartialEq<Self, Rhs>
 pub trait Eq<Self>
 {
     parent_clause0 : [@TraitClause0]: PartialEq<Self, Self>
+}
+
+// Full name: core::ops::drop::Drop
+#[lang_item("drop")]
+pub trait Drop<Self>
+{
+    fn drop<'_0> = drop<'_0_0, Self>[Self]
 }
 
 // Full name: core::cmp::impls::{impl PartialEq<bool> for bool}

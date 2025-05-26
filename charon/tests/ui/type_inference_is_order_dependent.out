@@ -85,6 +85,13 @@ pub fn new_v1<'a, const P : usize, const A : usize>(@1: &'a (Array<&'static (Str
 // Full name: std::io::stdio::_print
 pub fn _print<'_0>(@1: Arguments<'_0>)
 
+// Full name: core::ops::drop::Drop
+#[lang_item("drop")]
+pub trait Drop<Self>
+{
+    fn drop<'_0> = drop<'_0_0, Self>[Self]
+}
+
 // Full name: test_crate::{impl Join<U> for T}::test
 fn {impl Join<U> for T}::test<T, U>()
 where
@@ -138,7 +145,7 @@ where
     storage_dead(@3)
     @1 := _print<'_>(move (@2))
     storage_dead(@2)
-    drop @12
+    drop[Drop<U>] @12
     storage_dead(@12)
     storage_dead(@11)
     storage_dead(@8)
@@ -223,6 +230,11 @@ where
 fn test_crate::Join::test<Self, U>()
 where
     [@TraitClause0]: Join<Self, U>,
+
+// Full name: core::ops::drop::Drop::drop
+pub fn drop<'_0, Self>(@1: &'_0 mut (Self))
+where
+    [@TraitClause0]: Drop<Self>,
 
 pub fn core::fmt::Debug::fmt<'_0, '_1, '_2, Self>(@1: &'_0 (Self), @2: &'_1 mut (Formatter<'_2>)) -> Result<(), Error>[Sized<()>, Sized<Error>]
 where

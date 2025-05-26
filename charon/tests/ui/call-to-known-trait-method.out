@@ -25,6 +25,13 @@ pub fn core::default::Default::default<Self>() -> Self
 where
     [@TraitClause0]: Default<Self>,
 
+// Full name: core::ops::drop::Drop
+#[lang_item("drop")]
+pub trait Drop<Self>
+{
+    fn drop<'_0> = drop<'_0_0, Self>[Self]
+}
+
 // Full name: test_crate::{impl Default for Struct<A>[@TraitClause0]}::default
 pub fn {impl Default for Struct<A>[@TraitClause0]}::default<A>() -> Struct<A>[@TraitClause0]
 where
@@ -37,7 +44,7 @@ where
     storage_live(@1)
     @1 := @TraitClause1::default()
     @0 := Struct { 0: move (@1) }
-    drop @1
+    drop[Drop<A>] @1
     storage_dead(@1)
     return
 }
@@ -170,6 +177,11 @@ where
 pub fn core::cmp::PartialEq::eq<'_0, '_1, Self, Rhs>(@1: &'_0 (Self), @2: &'_1 (Rhs)) -> bool
 where
     [@TraitClause0]: PartialEq<Self, Rhs>,
+
+// Full name: core::ops::drop::Drop::drop
+pub fn drop<'_0, Self>(@1: &'_0 mut (Self))
+where
+    [@TraitClause0]: Drop<Self>,
 
 
 

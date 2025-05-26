@@ -115,6 +115,13 @@ where
     fn ret_true<'_0> = test_crate::{impl BoolTrait for Option<T>[@TraitClause0]}::ret_true<'_0_0, T>[@TraitClause0]
 }
 
+// Full name: core::ops::drop::Drop
+#[lang_item("drop")]
+pub trait Drop<Self>
+{
+    fn drop<'_0> = drop<'_0_0, Self>[Self]
+}
+
 // Full name: test_crate::test_bool_trait_option
 pub fn test_bool_trait_option<T>(@1: Option<T>[@TraitClause0]) -> bool
 where
@@ -143,7 +150,7 @@ where
         @0 := const (false)
     }
     storage_dead(@2)
-    drop x@1
+    drop[Drop<Option<T>[@TraitClause0]>] x@1
     return
 }
 
@@ -165,7 +172,7 @@ where
     @2 := &x@1
     @0 := @TraitClause1::get_bool<'_>(move (@2))
     storage_dead(@2)
-    drop x@1
+    drop[Drop<T>] x@1
     return
 }
 
@@ -220,7 +227,7 @@ where
     @0 := copy (@2) + copy (@4)
     storage_dead(@4)
     storage_dead(@2)
-    drop self@1
+    drop[Drop<(A, A)>] self@1
     return
 }
 
@@ -246,7 +253,7 @@ where
     @2 := move (x@1)
     @0 := {impl ToU64 for (A, A)}::to_u64<T>[@TraitClause0, @TraitClause1](move (@2))
     storage_dead(@2)
-    drop x@1
+    drop[Drop<(T, T)>] x@1
     return
 }
 
@@ -264,7 +271,7 @@ where
     @2 := move (x@1)
     @0 := @TraitClause1::to_u64(move (@2))
     storage_dead(@2)
-    drop x@1
+    drop[Drop<(T, T)>] x@1
     return
 }
 
@@ -304,7 +311,7 @@ where
     @2 := move ((self@1).x)
     @0 := @TraitClause1::to_u64(move (@2))
     storage_dead(@2)
-    drop self@1
+    drop[Drop<Wrapper<T>[@TraitClause0]>] self@1
     return
 }
 
@@ -345,7 +352,7 @@ where
     @2 := move (x@1)
     @0 := {impl ToU64 for Wrapper<T>[@TraitClause0]}::to_u64<T>[@TraitClause0, @TraitClause1](move (@2))
     storage_dead(@2)
-    drop x@1
+    drop[Drop<Wrapper<T>[@TraitClause0]>] x@1
     return
 }
 
@@ -405,7 +412,7 @@ where
     @2 := move (y@1)
     @0 := @TraitClause2::of_type<T2>[@TraitClause1, @TraitClause3, @TraitClause0](move (@2))
     storage_dead(@2)
-    drop y@1
+    drop[Drop<T2>] y@1
     return
 }
 
@@ -439,7 +446,7 @@ where
     @2 := move (y@1)
     @0 := @TraitClause2::of_type[@TraitClause0](move (@2))
     storage_dead(@2)
-    drop y@1
+    drop[Drop<T2>] y@1
     return
 }
 
@@ -516,7 +523,7 @@ where
     storage_dead(@6)
     storage_dead(y@5)
     storage_dead(x@3)
-    drop x@2
+    drop[Drop<T>] x@2
     return
 }
 
@@ -642,7 +649,7 @@ where
     let @1: @TraitClause1::W; // arg #1
 
     @0 := ()
-    drop @1
+    drop[Drop<@TraitClause1::W>] @1
     @0 := ()
     return
 }
@@ -661,7 +668,7 @@ where
     @2 := move (x@1)
     @0 := @TraitClause1::parent_clause2::to_u64(move (@2))
     storage_dead(@2)
-    drop x@1
+    drop[Drop<@TraitClause1::W>] x@1
     return
 }
 
@@ -1141,7 +1148,7 @@ where
     let @1: F; // arg #1
 
     @0 := ()
-    drop @1
+    drop[Drop<F>] @1
     @0 := ()
     return
 }
@@ -1229,6 +1236,11 @@ where
 pub fn test_crate::CFn::call<'_0, Self, Args>(@1: &'_0 (Self), @2: Args) -> @TraitClause0::parent_clause0::parent_clause0::Output
 where
     [@TraitClause0]: CFn<Self, Args>,
+
+// Full name: core::ops::drop::Drop::drop
+pub fn drop<'_0, Self>(@1: &'_0 mut (Self))
+where
+    [@TraitClause0]: Drop<Self>,
 
 pub fn core::ops::function::Fn::call<'_0, Self, Args>(@1: &'_0 (Self), @2: Args) -> @TraitClause0::parent_clause0::parent_clause0::Output
 where

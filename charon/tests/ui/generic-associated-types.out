@@ -34,6 +34,42 @@ error: Error during trait resolution: Found unsupported GAT `Item` when resolvin
 29 |     while let Some(item) = iter.next() {
    |                            ^^^^^^^^^^^
 
+error: Found unsupported GAT `Item` when resolving trait `core::marker::Sized<@TraitClause2::Item>`
+  --> tests/ui/generic-associated-types.rs:31:5
+   |
+31 |     }
+   |     ^
+
+error: Error during trait resolution: Found unsupported GAT `Item` when resolving trait `core::marker::Sized<@TraitClause2::Item>`
+  --> tests/ui/generic-associated-types.rs:31:5
+   |
+31 |     }
+   |     ^
+
+error: Found unsupported GAT `Item` when resolving trait `core::marker::Sized<@TraitClause2::Item>`
+  --> tests/ui/generic-associated-types.rs:31:5
+   |
+31 |     }
+   |     ^
+
+error: Error during trait resolution: Found unsupported GAT `Item` when resolving trait `core::marker::Sized<@TraitClause2::Item>`
+  --> tests/ui/generic-associated-types.rs:31:5
+   |
+31 |     }
+   |     ^
+
+error: Found unsupported GAT `Item` when resolving trait `core::marker::Sized<@TraitClause2::Item>`
+  --> tests/ui/generic-associated-types.rs:31:5
+   |
+31 |     }
+   |     ^
+
+error: Error during trait resolution: Found unsupported GAT `Item` when resolving trait `core::marker::Sized<@TraitClause2::Item>`
+  --> tests/ui/generic-associated-types.rs:31:5
+   |
+31 |     }
+   |     ^
+
 error: Generic associated types are not supported
   --> tests/ui/generic-associated-types.rs:48:9
    |
@@ -58,4 +94,4 @@ error: Error during trait resolution: Found unsupported GAT `Type` when resolvin
 55 |         x.foo()
    |         ^^^^^^^
 
-ERROR Charon failed to translate this code (10 errors)
+ERROR Charon failed to translate this code (16 errors)

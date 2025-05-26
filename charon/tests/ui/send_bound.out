@@ -8,6 +8,13 @@ pub trait Sized<Self>
 #[lang_item("Send")]
 pub trait Send<Self>
 
+// Full name: core::ops::drop::Drop
+#[lang_item("drop")]
+pub trait Drop<Self>
+{
+    fn drop<'_0> = drop<'_0_0, Self>[Self]
+}
+
 // Full name: test_crate::foo
 fn foo<M>(@1: M)
 where
@@ -18,7 +25,7 @@ where
     let _msg@1: M; // arg #1
 
     @0 := ()
-    drop _msg@1
+    drop[Drop<M>] _msg@1
     @0 := ()
     return
 }
@@ -40,6 +47,11 @@ fn main()
     @0 := ()
     return
 }
+
+// Full name: core::ops::drop::Drop::drop
+pub fn drop<'_0, Self>(@1: &'_0 mut (Self))
+where
+    [@TraitClause0]: Drop<Self>,
 
 
 

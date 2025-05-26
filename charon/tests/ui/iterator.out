@@ -1312,6 +1312,26 @@ where
     fn __iterator_get_unchecked<'_0> = {impl Iterator for IntoIter<T, const N : usize>[@TraitClause0]}::__iterator_get_unchecked<'_0_0, T, const N : usize>[@TraitClause0]
 }
 
+// Full name: core::ops::drop::Drop
+#[lang_item("drop")]
+pub trait Drop<Self>
+{
+    fn drop<'_0> = core::ops::drop::Drop::drop<'_0_0, Self>[Self]
+}
+
+// Full name: core::array::iter::{impl Drop for IntoIter<T, const N : usize>[@TraitClause0]}::drop
+pub fn {impl Drop for IntoIter<T, const N : usize>[@TraitClause0]}::drop<'_0, T, const N : usize>(@1: &'_0 mut (IntoIter<T, const N : usize>[@TraitClause0]))
+where
+    [@TraitClause0]: Sized<T>,
+
+// Full name: core::array::iter::{impl Drop for IntoIter<T, const N : usize>[@TraitClause0]}
+impl<T, const N : usize> Drop for IntoIter<T, const N : usize>[@TraitClause0]
+where
+    [@TraitClause0]: Sized<T>,
+{
+    fn drop<'_0> = {impl Drop for IntoIter<T, const N : usize>[@TraitClause0]}::drop<'_0_0, T, const N : usize>[@TraitClause0]
+}
+
 // Full name: core::slice::{Slice<T>}::iter
 #[lang_item("slice_iter")]
 pub fn iter<'_0, T>(@1: &'_0 (Slice<T>)) -> Iter<'_0, T>[@TraitClause0]
@@ -3569,9 +3589,9 @@ fn main()
     storage_dead(@11)
     storage_dead(@9)
     storage_dead(@8)
-    drop iter@7
+    drop[{impl Drop for IntoIter<T, const N : usize>[@TraitClause0]}<i32, 7 : usize>[Sized<i32>]] iter@7
     storage_dead(iter@7)
-    drop @4
+    drop[{impl Drop for IntoIter<T, const N : usize>[@TraitClause0]}<i32, 7 : usize>[Sized<i32>]] @4
     storage_dead(@4)
     storage_dead(@3)
     storage_live(@14)
@@ -3822,6 +3842,10 @@ impl<'_0> AddAssign<&'_0 (i32)> for i32 {
     parent_clause0 = Sized<&'_ (i32)>
     fn add_assign<'_0> = {impl AddAssign<&'_0 (i32)> for i32}::add_assign<'_0, '_0_0>
 }
+
+pub fn core::ops::drop::Drop::drop<'_0, Self>(@1: &'_0 mut (Self))
+where
+    [@TraitClause0]: Drop<Self>,
 
 // Full name: core::ops::function::FnMut::call_mut
 pub fn call_mut<'_0, Self, Args>(@1: &'_0 mut (Self), @2: Args) -> @TraitClause0::parent_clause0::Output

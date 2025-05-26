@@ -88,6 +88,13 @@ pub fn eq<'_0, '_1, Self, Rhs>(@1: &'_0 (Self), @2: &'_1 (Rhs)) -> bool
 where
     [@TraitClause0]: PartialEq<Self, Rhs>,
 
+// Full name: core::ops::drop::Drop
+#[lang_item("drop")]
+pub trait Drop<Self>
+{
+    fn drop<'_0> = drop<'_0_0, Self>[Self]
+}
+
 // Full name: test_crate::{impl GenericTrait<Option<T>[@TraitClause0]> for Override<T>[@TraitClause0]}::provided
 fn {impl GenericTrait<Option<T>[@TraitClause0]> for Override<T>[@TraitClause0]}::provided<T, U>(@1: Option<T>[@TraitClause0], @2: U)
 where
@@ -120,7 +127,7 @@ where
         @0 := ()
     }
     storage_dead(@3)
-    drop y@2
+    drop[Drop<U>] y@2
     @0 := ()
     return
 }
@@ -189,8 +196,8 @@ where
         @0 := ()
     }
     storage_dead(@3)
-    drop y@2
-    drop x@1
+    drop[Drop<U>] y@2
+    drop[Drop<Option<T>[@TraitClause0]>] x@1
     @0 := ()
     return
 }
@@ -241,8 +248,8 @@ where
         @0 := ()
     }
     storage_dead(@3)
-    drop y@2
-    drop x@1
+    drop[Drop<U>] y@2
+    drop[Drop<T>] x@1
     @0 := ()
     return
 }
@@ -251,6 +258,11 @@ where
 pub fn core::clone::Clone::clone<'_0, Self>(@1: &'_0 (Self)) -> Self
 where
     [@TraitClause0]: Clone<Self>,
+
+// Full name: core::ops::drop::Drop::drop
+pub fn drop<'_0, Self>(@1: &'_0 mut (Self))
+where
+    [@TraitClause0]: Drop<Self>,
 
 
 

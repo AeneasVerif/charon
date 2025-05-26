@@ -85,6 +85,13 @@ pub fn core::ops::function::FnMut::call_mut<'_0, Self, Args>(@1: &'_0 mut (Self)
 where
     [@TraitClause0]: FnMut<Self, Args>,
 
+// Full name: core::ops::drop::Drop
+#[lang_item("drop")]
+pub trait Drop<Self>
+{
+    fn drop<'_0> = drop<'_0_0, Self>[Self]
+}
+
 // Full name: test_crate::foo::{impl FnOnce<()> for closure<'_0>}::call_once
 fn {impl FnOnce<()> for closure<'_0>}::call_once<'_0>(@1: closure<'_0>, @2: ())
 {
@@ -96,7 +103,7 @@ fn {impl FnOnce<()> for closure<'_0>}::call_once<'_0>(@1: closure<'_0>, @2: ())
     storage_live(@3)
     @3 := &mut @1
     @0 := {impl FnMut<()> for closure<'_0>}::call_mut<'_0, '_>(move (@3), move (@2))
-    drop @1
+    drop[Drop<closure<'_0>>] @1
     @0 := ()
     return
 }
@@ -117,6 +124,11 @@ impl<'_0> FnMut<()> for closure<'_0> {
     parent_clause2 = Tuple<()>
     fn call_mut<'_0> = {impl FnMut<()> for closure<'_0>}::call_mut<'_0, '_0_0>
 }
+
+// Full name: core::ops::drop::Drop::drop
+pub fn drop<'_0, Self>(@1: &'_0 mut (Self))
+where
+    [@TraitClause0]: Drop<Self>,
 
 pub fn core::ops::function::FnOnce::call_once<Self, Args>(@1: Self, @2: Args) -> @TraitClause0::Output
 where

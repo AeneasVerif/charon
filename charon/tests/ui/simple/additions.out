@@ -74,6 +74,13 @@ pub fn {impl Clone for u8}::clone<'_0>(@1: &'_0 (u8)) -> u8
     return
 }
 
+// Full name: core::ops::drop::Drop
+#[lang_item("drop")]
+pub trait Drop<Self>
+{
+    fn drop<'_0> = drop<'_0_0, Self>[Self]
+}
+
 pub fn core::clone::impls::{impl Clone for u8}::clone_from<'_0, '_1>(@1: &'_0 mut (u8), @2: &'_1 (u8))
 {
     let @0: (); // return
@@ -83,7 +90,7 @@ pub fn core::clone::impls::{impl Clone for u8}::clone_from<'_0, '_1>(@1: &'_0 mu
 
     storage_live(@3)
     @3 := {impl Clone for u8}::clone<'_>(move (source@2))
-    drop *(self@1)
+    drop[Drop<u8>] *(self@1)
     *(self@1) := move (@3)
     storage_dead(@3)
     @0 := ()
@@ -156,12 +163,17 @@ where
 
     storage_live(@3)
     @3 := @TraitClause0::clone<'_>(move (source@2))
-    drop *(self@1)
+    drop[Drop<Self>] *(self@1)
     *(self@1) := move (@3)
     storage_dead(@3)
     @0 := ()
     return
 }
+
+// Full name: core::ops::drop::Drop::drop
+pub fn drop<'_0, Self>(@1: &'_0 mut (Self))
+where
+    [@TraitClause0]: Drop<Self>,
 
 
 
