@@ -335,12 +335,12 @@ impl ItemTransCtx<'_, '_> {
             };
             Ok(Body::Unstructured(body))
         };
-        let mut mk_call = |dst, arg1, arg2, target, on_unwind| -> Result<RawTerminator, Error> {
+        let mut mk_call = |target_kind, dst, arg1, arg2, target, on_unwind| -> Result<RawTerminator, Error> {
             // TODO: make a trait call to avoid needing to concatenate things ourselves.
             // TODO: can we ask hax for the trait ref?
-            let fun_id = self.register_closure_method_decl_id(span, def.def_id(), closure_kind);
+            let fun_id = self.register_closure_method_decl_id(span, def.def_id(), target_kind);
             let impl_ref =
-                self.translate_closure_impl_ref(span, def.def_id(), args, closure_kind)?;
+                self.translate_closure_impl_ref(span, def.def_id(), args, target_kind)?;
             Ok(RawTerminator::Call {
                 target,
                 call: Call {
@@ -452,7 +452,7 @@ impl ItemTransCtx<'_, '_> {
                 let start_block = blocks.reserve_slot();
                 let ret_block = blocks.push(mk_block(vec![], RawTerminator::Return));
                 let unwind_block = blocks.push(mk_block(vec![], RawTerminator::UnwindResume));
-                let call = mk_call(output, reborrow, args, ret_block, unwind_block)?;
+                let call = mk_call(closure_kind, output, reborrow, args, ret_block, unwind_block)?;
                 blocks.set_slot(start_block, mk_block(statements, call));
 
                 mk_body(locals, blocks)
@@ -480,25 +480,20 @@ impl ItemTransCtx<'_, '_> {
                 let state = locals.new_var(Some("state".to_string()), signature.inputs[0].clone());
                 let args = locals.new_var(Some("args".to_string()), signature.inputs[1].clone());
 
-                let (refkind, borrowkind) = if closure_kind == FnMut {
-                    (RefKind::Mut, BorrowKind::Mut)
-                } else {
-                    (RefKind::Shared, BorrowKind::Shared)
-                };
-
                 let borrow_ty =
-                    TyKind::Ref(Region::Erased, signature.inputs[0].clone(), refkind).into_ty();
+                    TyKind::Ref(Region::Erased, signature.inputs[0].clone(), RefKind::Mut)
+                        .into_ty();
                 let state_ref = locals.new_var(Some("temp_ref".to_string()), borrow_ty);
                 statements.push(mk_stt(RawStatement::Assign(
                     state_ref.clone(),
-                    Rvalue::Ref(state.clone(), borrowkind),
+                    Rvalue::Ref(state.clone(), BorrowKind::Mut),
                 )));
 
                 let start_block = blocks.reserve_slot();
                 let drop = mk_stt(RawStatement::Drop(state));
                 let ret_block = blocks.push(mk_block(vec![drop], RawTerminator::Return));
                 let unwind_block = blocks.push(mk_block(vec![], RawTerminator::UnwindResume));
-                let call = mk_call(output, state_ref, args, ret_block, unwind_block)?;
+                let call = mk_call(FnMut, output, state_ref, args, ret_block, unwind_block)?;
                 blocks.set_slot(start_block, mk_block(statements, call));
 
                 mk_body(locals, blocks)

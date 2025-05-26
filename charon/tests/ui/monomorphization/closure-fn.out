@@ -214,6 +214,19 @@ impl test_crate::main::{impl core::ops::function::FnOnce<(u8, u8)> for test_crat
     fn call_once = test_crate::main::{impl core::ops::function::FnOnce<(u8, u8)> for test_crate::main::closure<'_0, '_1>}::call_once<'_0, '_1>
 }
 
+fn test_crate::main::{impl core::ops::function::FnMut<(u8, u8)> for test_crate::main::closure<'_0, '_1>}::call_mut<'_0, '_1, '_2>(@1: &'_2 mut (test_crate::main::closure<'_0, '_1>), @2: (u8, u8)) -> u8
+{
+    let @0: u8; // return
+    let state@1: &'_2 mut (test_crate::main::closure<'_0, '_1>); // arg #1
+    let args@2: (u8, u8); // arg #2
+    let @3: &'_ (test_crate::main::closure<'_0, '_1>); // anonymous local
+
+    storage_live(@3)
+    @3 := &*(state@1)
+    @0 := test_crate::main::{impl core::ops::function::Fn<(u8, u8)> for test_crate::main::closure<'_0, '_1>}::call<'_0, '_1, '_>(move (@3), move (args@2))
+    return
+}
+
 impl test_crate::main::{impl core::ops::function::FnMut<(u8, u8)> for test_crate::main::closure<'_0, '_1>}<'_0, '_1> : core::ops::function::FnMut<test_crate::main::closure<'_0, '_1>, (u8, u8)>
 {
     parent_clause0 = test_crate::main::{impl core::ops::function::FnOnce<(u8, u8)> for test_crate::main::closure<'_0, '_1>}<'_0, '_1>
