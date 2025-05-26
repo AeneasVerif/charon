@@ -71,14 +71,14 @@ where
     [@TraitClause1]: test_crate::Ops<T, const K : usize>,
 {
     let @0: T; // return
-    let state@1: test_crate::test::closure<T, const K : usize>[@TraitClause0, @TraitClause1]; // arg #1
-    let args@2: (usize); // arg #2
-    let temp_ref@3: &'_ mut (test_crate::test::closure<T, const K : usize>[@TraitClause0, @TraitClause1]); // local
+    let @1: test_crate::test::closure<T, const K : usize>[@TraitClause0, @TraitClause1]; // arg #1
+    let @2: (usize); // arg #2
+    let @3: &'_ mut (test_crate::test::closure<T, const K : usize>[@TraitClause0, @TraitClause1]); // anonymous local
 
-    storage_live(temp_ref@3)
-    temp_ref@3 := &mut state@1
-    @0 := test_crate::test::{impl core::ops::function::FnMut<(usize)> for test_crate::test::closure<T, const K : usize>[@TraitClause0, @TraitClause1]}::call_mut<'_, T, const K : usize>[@TraitClause0, @TraitClause1](move (temp_ref@3), move (args@2))
-    drop state@1
+    storage_live(@3)
+    @3 := &mut @1
+    @0 := test_crate::test::{impl core::ops::function::FnMut<(usize)> for test_crate::test::closure<T, const K : usize>[@TraitClause0, @TraitClause1]}::call_mut<'_, T, const K : usize>[@TraitClause0, @TraitClause1](move (@3), move (@2))
+    drop @1
     return
 }
 

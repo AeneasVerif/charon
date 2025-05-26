@@ -51,14 +51,14 @@ fn test_crate::map::{impl core::ops::function::FnMut<(i32)> for test_crate::map:
 fn test_crate::map::{impl core::ops::function::FnOnce<(i32)> for test_crate::map::closure}::call_once(@1: test_crate::map::closure, @2: (i32)) -> i32
 {
     let @0: i32; // return
-    let state@1: test_crate::map::closure; // arg #1
-    let args@2: (i32); // arg #2
-    let temp_ref@3: &'_ mut (test_crate::map::closure); // local
+    let @1: test_crate::map::closure; // arg #1
+    let @2: (i32); // arg #2
+    let @3: &'_ mut (test_crate::map::closure); // anonymous local
 
-    storage_live(temp_ref@3)
-    temp_ref@3 := &mut state@1
-    @0 := test_crate::map::{impl core::ops::function::FnMut<(i32)> for test_crate::map::closure}::call_mut<'_>(move (temp_ref@3), move (args@2))
-    drop state@1
+    storage_live(@3)
+    @3 := &mut @1
+    @0 := test_crate::map::{impl core::ops::function::FnMut<(i32)> for test_crate::map::closure}::call_mut<'_>(move (@3), move (@2))
+    drop @1
     return
 }
 
@@ -439,6 +439,8 @@ fn test_crate::select<'_0, '_1>(@1: &'_0 (Slice<u8>), @2: &'_1 (Slice<u8>))
     return
 }
 
+pub fn core::ops::function::FnMut::call_mut<'_0, Self, Args>(@1: &'_0 mut (Self), @2: Args) -> Self::parent_clause0::Output
+
 #[lang_item("IntoIterator")]
 pub trait core::iter::traits::collect::IntoIterator<Self>
 where
@@ -470,8 +472,6 @@ where
 
 #[lang_item("next")]
 pub fn core::iter::traits::iterator::Iterator::next<'_0, Self>(@1: &'_0 mut (Self)) -> core::option::Option<Self::Item>[Self::parent_clause0]
-
-pub fn core::ops::function::FnMut::call_mut<'_0, Self, Args>(@1: &'_0 mut (Self), @2: Args) -> Self::parent_clause0::Output
 
 pub fn core::ops::function::FnOnce::call_once<Self, Args>(@1: Self, @2: Args) -> Self::Output
 

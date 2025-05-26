@@ -530,14 +530,14 @@ fn test_crate::test_map_option3::{impl core::ops::function::FnMut<(u32), u32> fo
 fn test_crate::test_map_option3::{impl core::ops::function::FnOnce<(u32), u32> for test_crate::test_map_option3::closure}::call_once(@1: test_crate::test_map_option3::closure, @2: (u32)) -> u32
 {
     let @0: u32; // return
-    let state@1: test_crate::test_map_option3::closure; // arg #1
-    let args@2: (u32); // arg #2
-    let temp_ref@3: &'_ mut (test_crate::test_map_option3::closure); // local
+    let @1: test_crate::test_map_option3::closure; // arg #1
+    let @2: (u32); // arg #2
+    let @3: &'_ mut (test_crate::test_map_option3::closure); // anonymous local
 
-    storage_live(temp_ref@3)
-    temp_ref@3 := &mut state@1
-    @0 := test_crate::test_map_option3::{impl core::ops::function::FnMut<(u32), u32> for test_crate::test_map_option3::closure}::call_mut<'_>(move (temp_ref@3), move (args@2))
-    drop state@1
+    storage_live(@3)
+    @3 := &mut @1
+    @0 := test_crate::test_map_option3::{impl core::ops::function::FnMut<(u32), u32> for test_crate::test_map_option3::closure}::call_mut<'_>(move (@3), move (@2))
+    drop @1
     return
 }
 
@@ -768,14 +768,14 @@ fn test_crate::test_array_map::{impl core::ops::function::FnMut<(i32), i32> for 
 fn test_crate::test_array_map::{impl core::ops::function::FnOnce<(i32), i32> for test_crate::test_array_map::closure}::call_once(@1: test_crate::test_array_map::closure, @2: (i32)) -> i32
 {
     let @0: i32; // return
-    let state@1: test_crate::test_array_map::closure; // arg #1
-    let args@2: (i32); // arg #2
-    let temp_ref@3: &'_ mut (test_crate::test_array_map::closure); // local
+    let @1: test_crate::test_array_map::closure; // arg #1
+    let @2: (i32); // arg #2
+    let @3: &'_ mut (test_crate::test_array_map::closure); // anonymous local
 
-    storage_live(temp_ref@3)
-    temp_ref@3 := &mut state@1
-    @0 := test_crate::test_array_map::{impl core::ops::function::FnMut<(i32), i32> for test_crate::test_array_map::closure}::call_mut<'_>(move (temp_ref@3), move (args@2))
-    drop state@1
+    storage_live(@3)
+    @3 := &mut @1
+    @0 := test_crate::test_array_map::{impl core::ops::function::FnMut<(i32), i32> for test_crate::test_array_map::closure}::call_mut<'_>(move (@3), move (@2))
+    drop @1
     return
 }
 
@@ -881,6 +881,8 @@ fn test_crate::test_fnmut_with_ref()
     return
 }
 
+pub fn core::ops::function::FnMut::call_mut<'_0, Self, Args, Self_Clause0_Output>(@1: &'_0 mut (Self), @2: Args) -> Self_Clause0_Output
+
 fn test_crate::test_closure_capture::{impl core::ops::function::FnMut<(u32), u32> for test_crate::test_closure_capture::closure<'_0, '_1>}::call_mut<'_0, '_1, '_2>(@1: &'_2 mut (test_crate::test_closure_capture::closure<'_0, '_1>), @2: (u32)) -> u32
 {
     let @0: u32; // return
@@ -897,14 +899,14 @@ fn test_crate::test_closure_capture::{impl core::ops::function::FnMut<(u32), u32
 fn test_crate::test_closure_capture::{impl core::ops::function::FnOnce<(u32), u32> for test_crate::test_closure_capture::closure<'_0, '_1>}::call_once<'_0, '_1>(@1: test_crate::test_closure_capture::closure<'_0, '_1>, @2: (u32)) -> u32
 {
     let @0: u32; // return
-    let state@1: test_crate::test_closure_capture::closure<'_0, '_1>; // arg #1
-    let args@2: (u32); // arg #2
-    let temp_ref@3: &'_ mut (test_crate::test_closure_capture::closure<'_0, '_1>); // local
+    let @1: test_crate::test_closure_capture::closure<'_0, '_1>; // arg #1
+    let @2: (u32); // arg #2
+    let @3: &'_ mut (test_crate::test_closure_capture::closure<'_0, '_1>); // anonymous local
 
-    storage_live(temp_ref@3)
-    temp_ref@3 := &mut state@1
-    @0 := test_crate::test_closure_capture::{impl core::ops::function::FnMut<(u32), u32> for test_crate::test_closure_capture::closure<'_0, '_1>}::call_mut<'_0, '_1, '_>(move (temp_ref@3), move (args@2))
-    drop state@1
+    storage_live(@3)
+    @3 := &mut @1
+    @0 := test_crate::test_closure_capture::{impl core::ops::function::FnMut<(u32), u32> for test_crate::test_closure_capture::closure<'_0, '_1>}::call_mut<'_0, '_1, '_>(move (@3), move (@2))
+    drop @1
     return
 }
 
@@ -954,14 +956,14 @@ where
     [@TraitClause1]: core::clone::Clone<T>,
 {
     let @0: T; // return
-    let state@1: test_crate::test_closure_clone::closure<T>[@TraitClause0, @TraitClause1]; // arg #1
-    let args@2: (T); // arg #2
-    let temp_ref@3: &'_ mut (test_crate::test_closure_clone::closure<T>[@TraitClause0, @TraitClause1]); // local
+    let @1: test_crate::test_closure_clone::closure<T>[@TraitClause0, @TraitClause1]; // arg #1
+    let @2: (T); // arg #2
+    let @3: &'_ mut (test_crate::test_closure_clone::closure<T>[@TraitClause0, @TraitClause1]); // anonymous local
 
-    storage_live(temp_ref@3)
-    temp_ref@3 := &mut state@1
-    @0 := test_crate::test_closure_clone::{impl core::ops::function::FnMut<(T), T> for test_crate::test_closure_clone::closure<T>[@TraitClause0, @TraitClause1]}::call_mut<'_, T>[@TraitClause0, @TraitClause1](move (temp_ref@3), move (args@2))
-    drop state@1
+    storage_live(@3)
+    @3 := &mut @1
+    @0 := test_crate::test_closure_clone::{impl core::ops::function::FnMut<(T), T> for test_crate::test_closure_clone::closure<T>[@TraitClause0, @TraitClause1]}::call_mut<'_, T>[@TraitClause0, @TraitClause1](move (@3), move (@2))
+    drop @1
     return
 }
 
@@ -998,19 +1000,17 @@ where
     fn call<'_0> = test_crate::test_closure_clone::{impl core::ops::function::Fn<(T), T> for test_crate::test_closure_clone::closure<T>[@TraitClause0, @TraitClause1]}::call<'_0_0, T>[@TraitClause0, @TraitClause1]
 }
 
-pub fn core::ops::function::FnMut::call_mut<'_0, Self, Args, Self_Clause0_Output>(@1: &'_0 mut (Self), @2: Args) -> Self_Clause0_Output
-
 fn test_crate::test_fnmut_with_ref::{impl core::ops::function::FnOnce<(&'_ (usize)), ()> for test_crate::test_fnmut_with_ref::closure<'_0>}::call_once<'_0, '_1>(@1: test_crate::test_fnmut_with_ref::closure<'_0>, @2: (&'_1 (usize)))
 {
     let @0: (); // return
-    let state@1: test_crate::test_fnmut_with_ref::closure<'_0>; // arg #1
-    let args@2: (&'_1 (usize)); // arg #2
-    let temp_ref@3: &'_ mut (test_crate::test_fnmut_with_ref::closure<'_0>); // local
+    let @1: test_crate::test_fnmut_with_ref::closure<'_0>; // arg #1
+    let @2: (&'_ (usize)); // arg #2
+    let @3: &'_ mut (test_crate::test_fnmut_with_ref::closure<'_0>); // anonymous local
 
-    storage_live(temp_ref@3)
-    temp_ref@3 := &mut state@1
-    @0 := test_crate::test_fnmut_with_ref::{impl core::ops::function::FnMut<(&'_ (usize)), ()> for test_crate::test_fnmut_with_ref::closure<'_0>}::call_mut<'_0, '_1, '_>(move (temp_ref@3), move (args@2))
-    drop state@1
+    storage_live(@3)
+    @3 := &mut @1
+    @0 := test_crate::test_fnmut_with_ref::{impl core::ops::function::FnMut<(&'_ (usize)), ()> for test_crate::test_fnmut_with_ref::closure<'_0>}::call_mut<'_0, '_1, '_>(move (@3), move (@2))
+    drop @1
     @0 := ()
     return
 }

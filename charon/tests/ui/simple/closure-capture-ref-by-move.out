@@ -80,14 +80,14 @@ pub fn core::ops::function::FnMut::call_mut<'_0, Self, Args>(@1: &'_0 mut (Self)
 fn test_crate::foo::{impl core::ops::function::FnOnce<()> for test_crate::foo::closure<'_0>}::call_once<'_0>(@1: test_crate::foo::closure<'_0>, @2: ())
 {
     let @0: (); // return
-    let state@1: test_crate::foo::closure<'_0>; // arg #1
-    let args@2: (); // arg #2
-    let temp_ref@3: &'_ mut (test_crate::foo::closure<'_0>); // local
+    let @1: test_crate::foo::closure<'_0>; // arg #1
+    let @2: (); // arg #2
+    let @3: &'_ mut (test_crate::foo::closure<'_0>); // anonymous local
 
-    storage_live(temp_ref@3)
-    temp_ref@3 := &mut state@1
-    @0 := test_crate::foo::{impl core::ops::function::FnMut<()> for test_crate::foo::closure<'_0>}::call_mut<'_0, '_>(move (temp_ref@3), move (args@2))
-    drop state@1
+    storage_live(@3)
+    @3 := &mut @1
+    @0 := test_crate::foo::{impl core::ops::function::FnMut<()> for test_crate::foo::closure<'_0>}::call_mut<'_0, '_>(move (@3), move (@2))
+    drop @1
     @0 := ()
     return
 }

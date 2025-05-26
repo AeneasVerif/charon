@@ -96,10 +96,10 @@ impl ItemTransCtx<'_, '_> {
         // We add lifetime args for each borrowing upvar, gotta supply them here.
         if self.def_id == *def_id {
             args.regions.extend(
-                self.the_only_binder()
+                self.outermost_binder()
                     .by_ref_upvar_regions
                     .iter()
-                    .map(|r| Region::Var(DeBruijnVar::new_at_zero(*r))),
+                    .map(|r| Region::Var(DeBruijnVar::bound(self.binding_levels.depth(), *r))),
             );
         } else {
             args.regions.extend(
@@ -141,10 +141,10 @@ impl ItemTransCtx<'_, '_> {
         // Add the lifetime generics coming from the higher-kindedness of the signature.
         if self.def_id == *def_id {
             args.regions.extend(
-                self.the_only_binder()
+                self.outermost_binder()
                     .bound_region_vars
                     .iter()
-                    .map(|r| Region::Var(DeBruijnVar::new_at_zero(*r))),
+                    .map(|r| Region::Var(DeBruijnVar::bound(self.binding_levels.depth(), *r))),
             );
         } else {
             args.regions
@@ -467,36 +467,20 @@ impl ItemTransCtx<'_, '_> {
             // }
             //
             (FnOnce, Fn | FnMut) => {
-                // TODO: could possibly ask hax for the body, using
-                // `InstanceKind::ClosureOnceShim`.
-                let mut locals = Locals {
-                    arg_count: 2,
-                    locals: Vector::new(),
+                // Hax (via rustc) gives us the MIR to do this.
+                let hax::FullDefKind::Closure {
+                    once_shim: Some(body),
+                    ..
+                } = &def.kind
+                else {
+                    panic!("missing shim for closure")
                 };
-                let mut statements = vec![];
-                let mut blocks = Vector::default();
-
-                let output = locals.new_var(None, signature.output.clone());
-                let state = locals.new_var(Some("state".to_string()), signature.inputs[0].clone());
-                let args = locals.new_var(Some("args".to_string()), signature.inputs[1].clone());
-
-                let borrow_ty =
-                    TyKind::Ref(Region::Erased, signature.inputs[0].clone(), RefKind::Mut)
-                        .into_ty();
-                let state_ref = locals.new_var(Some("temp_ref".to_string()), borrow_ty);
-                statements.push(mk_stt(RawStatement::Assign(
-                    state_ref.clone(),
-                    Rvalue::Ref(state.clone(), BorrowKind::Mut),
-                )));
-
-                let start_block = blocks.reserve_slot();
-                let drop = mk_stt(RawStatement::Drop(state));
-                let ret_block = blocks.push(mk_block(vec![drop], RawTerminator::Return));
-                let unwind_block = blocks.push(mk_block(vec![], RawTerminator::UnwindResume));
-                let call = mk_call(FnMut, output, state_ref, args, ret_block, unwind_block)?;
-                blocks.set_slot(start_block, mk_block(statements, call));
-
-                mk_body(locals, blocks)
+                let mut bt_ctx = BodyTransCtx::new(&mut self);
+                match bt_ctx.translate_body(span, body, &def.source_text) {
+                    Ok(Ok(body)) => Ok(body),
+                    Ok(Err(Opaque)) => Err(Opaque),
+                    Err(_) => Err(Opaque),
+                }
             }
 
             (Fn, FnOnce) | (Fn, FnMut) | (FnMut, FnOnce) => {
