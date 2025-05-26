@@ -326,40 +326,6 @@ impl ItemTransCtx<'_, '_> {
                 terminator: Terminator::new(span, terminator),
             }
         };
-        let mk_body = |locals, blocks: Vector<BlockId, BlockData>| -> Result<Body, Opaque> {
-            let body: ExprBody = GExprBody {
-                span,
-                locals,
-                comments: vec![],
-                body: blocks,
-            };
-            Ok(Body::Unstructured(body))
-        };
-        let mut mk_call = |target_kind, dst, arg1, arg2, target, on_unwind| -> Result<RawTerminator, Error> {
-            // TODO: make a trait call to avoid needing to concatenate things ourselves.
-            // TODO: can we ask hax for the trait ref?
-            let fun_id = self.register_closure_method_decl_id(span, def.def_id(), target_kind);
-            let impl_ref =
-                self.translate_closure_impl_ref(span, def.def_id(), args, target_kind)?;
-            Ok(RawTerminator::Call {
-                target,
-                call: Call {
-                    func: FnOperand::Regular(FnPtr {
-                        func: FunIdOrTraitMethodRef::Fun(FunId::Regular(fun_id.clone())).into(),
-                        generics: Box::new(impl_ref.generics.concat(
-                            GenericsSource::item(fun_id),
-                            &GenericArgs {
-                                regions: vec![Region::Erased].into(),
-                                ..GenericArgs::empty(GenericsSource::item(fun_id))
-                            },
-                        )),
-                    }),
-                    args: vec![Operand::Move(arg1), Operand::Move(arg2)],
-                    dest: dst,
-                },
-                on_unwind,
-            })
-        };
 
         Ok(match (target_kind, closure_kind) {
             (Fn, Fn) | (FnMut, FnMut) | (FnOnce, FnOnce) => {
@@ -429,6 +395,22 @@ impl ItemTransCtx<'_, '_> {
             //   self.call(reborrow, args)
             // }
             (FnMut, Fn) => {
+                let fun_id = self.register_closure_method_decl_id(span, def.def_id(), closure_kind);
+                let impl_ref =
+                    self.translate_closure_impl_ref(span, def.def_id(), args, closure_kind)?;
+                // TODO: make a trait call to avoid needing to concatenate things ourselves.
+                // TODO: can we ask hax for the trait ref?
+                let fn_op = FnOperand::Regular(FnPtr {
+                    func: FunIdOrTraitMethodRef::Fun(FunId::Regular(fun_id.clone())).into(),
+                    generics: Box::new(impl_ref.generics.concat(
+                        GenericsSource::item(fun_id),
+                        &GenericArgs {
+                            regions: vec![Region::Erased].into(),
+                            ..GenericArgs::empty(GenericsSource::item(fun_id))
+                        },
+                    )),
+                });
+
                 let mut locals = Locals {
                     arg_count: 2,
                     locals: Vector::new(),
@@ -452,10 +434,24 @@ impl ItemTransCtx<'_, '_> {
                 let start_block = blocks.reserve_slot();
                 let ret_block = blocks.push(mk_block(vec![], RawTerminator::Return));
                 let unwind_block = blocks.push(mk_block(vec![], RawTerminator::UnwindResume));
-                let call = mk_call(closure_kind, output, reborrow, args, ret_block, unwind_block)?;
+                let call = RawTerminator::Call {
+                    target: ret_block,
+                    call: Call {
+                        func: fn_op,
+                        args: vec![Operand::Move(reborrow), Operand::Move(args)],
+                        dest: output,
+                    },
+                    on_unwind: unwind_block,
+                };
                 blocks.set_slot(start_block, mk_block(statements, call));
 
-                mk_body(locals, blocks)
+                let body: ExprBody = GExprBody {
+                    span,
+                    locals,
+                    comments: vec![],
+                    body: blocks,
+                };
+                Ok(Body::Unstructured(body))
             }
             // Target translation:
             //
