@@ -365,7 +365,7 @@ impl ItemTransCtx<'_, '_> {
             (Fn, Fn) | (FnMut, FnMut) | (FnOnce, FnOnce) => {
                 // Translate the function's body normally
                 let mut bt_ctx = BodyTransCtx::new(&mut self);
-                match bt_ctx.translate_body(span, def) {
+                match bt_ctx.translate_def_body(span, def) {
                     Ok(Ok(mut body)) => {
                         // The body is translated as if the locals are: ret value, state, arg-1,
                         // ..., arg-N, rest...

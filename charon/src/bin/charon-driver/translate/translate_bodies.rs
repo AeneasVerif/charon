@@ -1078,10 +1078,10 @@ impl BodyTransCtx<'_, '_, '_> {
     /// Gather all the lines that start with `//` inside the given span.
     fn translate_body_comments(
         &mut self,
-        def: &hax::FullDef,
+        source_text: &Option<String>,
         charon_span: Span,
     ) -> Vec<(usize, Vec<String>)> {
-        if let Some(body_text) = &def.source_text {
+        if let Some(body_text) = source_text {
             let mut comments = body_text
                 .lines()
                 // Iter through the lines of this body in reverse order.
@@ -1117,16 +1117,29 @@ impl BodyTransCtx<'_, '_, '_> {
         }
     }
 
-    /// Translate a function body if we can (it has MIR) and we want to (we don't translate bodies
-    /// declared opaque, and only translate non-local bodies if `extract_opaque_bodies` is set).
-    pub fn translate_body(
+    /// Translate the MIR body of this definition if it has one.
+    pub fn translate_def_body(
         &mut self,
         span: Span,
         def: &hax::FullDef,
     ) -> Result<Result<Body, Opaque>, Error> {
+        // Retrieve the body
+        let Some(body) = self.t_ctx.get_mir(&def.def_id, span)? else {
+            return Ok(Err(Opaque));
+        };
+        self.translate_body(span, &body, &def.source_text)
+    }
+
+    /// Translate a function body.
+    pub fn translate_body(
+        &mut self,
+        span: Span,
+        body: &hax::MirBody<()>,
+        source_text: &Option<String>,
+    ) -> Result<Result<Body, Opaque>, Error> {
         // Stopgap measure because there are still many panics in charon and hax.
         let mut this = panic::AssertUnwindSafe(&mut *self);
-        let res = panic::catch_unwind(move || this.translate_body_aux(def, span));
+        let res = panic::catch_unwind(move || this.translate_body_aux(body, source_text));
         match res {
             Ok(Ok(body)) => Ok(body),
             // Translation error
@@ -1139,14 +1152,9 @@ impl BodyTransCtx<'_, '_, '_> {
 
     fn translate_body_aux(
         &mut self,
-        def: &hax::FullDef,
-        span: Span,
+        body: &hax::MirBody<()>,
+        source_text: &Option<String>,
     ) -> Result<Result<Body, Opaque>, Error> {
-        // Retrieve the body
-        let Some(body) = self.t_ctx.get_mir(&def.def_id, span)? else {
-            return Ok(Err(Opaque));
-        };
-
         // Compute the span information
         let span = self.translate_span_from_hax(&body.span);
 
@@ -1175,7 +1183,7 @@ impl BodyTransCtx<'_, '_, '_> {
             span,
             locals: mem::take(&mut self.locals),
             body: mem::take(&mut self.blocks),
-            comments: self.translate_body_comments(def, span),
+            comments: self.translate_body_comments(source_text, span),
         })))
     }
 }

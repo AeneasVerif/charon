@@ -381,7 +381,7 @@ impl ItemTransCtx<'_, '_> {
             // Translate the body. This doesn't store anything if we can't/decide not to translate
             // this body.
             let mut bt_ctx = BodyTransCtx::new(&mut self);
-            match bt_ctx.translate_body(item_meta.span, def) {
+            match bt_ctx.translate_def_body(item_meta.span, def) {
                 Ok(Ok(body)) => Ok(body),
                 // Opaque declaration
                 Ok(Err(Opaque)) => Err(Opaque),
