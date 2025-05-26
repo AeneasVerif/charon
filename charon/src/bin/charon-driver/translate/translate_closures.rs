@@ -390,6 +390,31 @@ impl ItemTransCtx<'_, '_> {
             }
             // Target translation:
             //
+            // fn call_once(state: Self, args: Args) -> Output {
+            //   let temp_ref = &[mut] state;
+            //   let ret = self.call[_mut](temp, args);
+            //   drop state;
+            //   return ret;
+            // }
+            //
+            (FnOnce, Fn | FnMut) => {
+                // Hax (via rustc) gives us the MIR to do this.
+                let hax::FullDefKind::Closure {
+                    once_shim: Some(body),
+                    ..
+                } = &def.kind
+                else {
+                    panic!("missing shim for closure")
+                };
+                let mut bt_ctx = BodyTransCtx::new(&mut self);
+                match bt_ctx.translate_body(span, body, &def.source_text) {
+                    Ok(Ok(body)) => Ok(body),
+                    Ok(Err(Opaque)) => Err(Opaque),
+                    Err(_) => Err(Opaque),
+                }
+            }
+            // Target translation:
+            //
             // fn call_mut(state: &mut Self, args: Args) -> Output {
             //   let reborrow = &*state;
             //   self.call(reborrow, args)
@@ -453,32 +478,6 @@ impl ItemTransCtx<'_, '_> {
                 };
                 Ok(Body::Unstructured(body))
             }
-            // Target translation:
-            //
-            // fn call_once(state: Self, args: Args) -> Output {
-            //   let temp_ref = &[mut] state;
-            //   let ret = self.call[_mut](temp, args);
-            //   drop state;
-            //   return ret;
-            // }
-            //
-            (FnOnce, Fn | FnMut) => {
-                // Hax (via rustc) gives us the MIR to do this.
-                let hax::FullDefKind::Closure {
-                    once_shim: Some(body),
-                    ..
-                } = &def.kind
-                else {
-                    panic!("missing shim for closure")
-                };
-                let mut bt_ctx = BodyTransCtx::new(&mut self);
-                match bt_ctx.translate_body(span, body, &def.source_text) {
-                    Ok(Ok(body)) => Ok(body),
-                    Ok(Err(Opaque)) => Err(Opaque),
-                    Err(_) => Err(Opaque),
-                }
-            }
-
             (Fn, FnOnce) | (Fn, FnMut) | (FnMut, FnOnce) => {
                 panic!(
                     "Can't make a closure body for a more restrictive kind \
