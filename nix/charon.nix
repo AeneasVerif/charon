@@ -61,8 +61,8 @@ craneLib.buildPackage (
       CHARON_TOOLCHAIN_IS_IN_PATH=1 IN_CI=1 cargo run --release --locked --bin generate-ml
 
       # While running tests we also outputted llbc files. We export them for charon-ml tests.
-      mkdir -p $out/tests-llbc
-      cp tests/**/*.llbc $out/tests-llbc
+      mkdir -p $out
+      cp -r tests/ui $out/tests-llbc
       cp src/bin/generate-ml/charon-itself.ullbc $out/tests-llbc
 
       # Export the generated files to later check if they match the committed files.
