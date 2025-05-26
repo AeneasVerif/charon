@@ -503,6 +503,8 @@ class ['self] map_type_decl_base =
 type abort_kind =
   | Panic of name option  (** A built-in panicking function. *)
   | UndefinedBehavior  (** Undefined behavior in the rust abstract machine. *)
+  | UnwindTerminate
+      (** Unwind had to stop for Abi reasons or because cleanup code panicked again. *)
 
 (** Meta information about an item (function, trait decl, trait impl, type decl, global). *)
 and item_meta = {

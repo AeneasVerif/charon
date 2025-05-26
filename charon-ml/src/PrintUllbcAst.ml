@@ -69,10 +69,13 @@ module Ast = struct
     | Switch (op, tgts) ->
         indent ^ "switch " ^ operand_to_string env op
         ^ switch_to_string indent tgts
-    | Call (call, tgt) ->
-        call_to_string env indent call ^ " -> " ^ block_id_to_string tgt
+    | Call (call, tgt, unwind) ->
+        call_to_string env indent call
+        ^ " -> " ^ block_id_to_string tgt ^ "(unwind:"
+        ^ block_id_to_string unwind ^ ")"
     | Abort _ -> indent ^ "panic"
     | Return -> indent ^ "return"
+    | UnwindResume -> indent ^ "unwind_continue"
 
   let block_to_string (env : fmt_env) (indent : string) (indent_incr : string)
       (id : BlockId.id) (block : block) : string =

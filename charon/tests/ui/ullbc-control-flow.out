@@ -213,33 +213,37 @@ pub fn test_crate::nested_loops_enum(@1: usize, @2: usize) -> usize
         storage_live(@5);
         storage_live(@6);
         @6 := core::ops::range::Range { start: const (0 : i32), end: const (128 : i32) };
-        @5 := core::iter::traits::collect::{impl core::iter::traits::collect::IntoIterator for I}::into_iter<core::ops::range::Range<i32>[core::marker::Sized<i32>]>[core::marker::Sized<core::ops::range::Range<i32>[core::marker::Sized<i32>]>, core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>[@TraitClause0]}#6<i32>[core::marker::Sized<i32>, core::iter::range::{impl core::iter::range::Step for i32}#40]](move (@6)) -> bb1;
+        @5 := core::iter::traits::collect::{impl core::iter::traits::collect::IntoIterator for I}::into_iter<core::ops::range::Range<i32>[core::marker::Sized<i32>]>[core::marker::Sized<core::ops::range::Range<i32>[core::marker::Sized<i32>]>, core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>[@TraitClause0]}#6<i32>[core::marker::Sized<i32>, core::iter::range::{impl core::iter::range::Step for i32}#40]](move (@6)) -> bb1 (unwind: bb2);
     }
 
     bb1: {
         storage_dead(@6);
         storage_live(iter@7);
         iter@7 := move (@5);
-        goto bb2;
+        goto bb3;
     }
 
     bb2: {
+        unwind_continue;
+    }
+
+    bb3: {
         storage_live(@8);
         storage_live(@9);
         storage_live(@10);
         storage_live(@11);
         @11 := &mut iter@7;
         @10 := &two-phase-mut *(@11);
-        @9 := core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>[@TraitClause0]}#6::next<'_, i32>[core::marker::Sized<i32>, core::iter::range::{impl core::iter::range::Step for i32}#40](move (@10)) -> bb3;
-    }
-
-    bb3: {
-        storage_dead(@10);
-        @12 := @discriminant(@9);
-        switch move (@12) -> 0 : isize: bb4, 1 : isize: bb5, otherwise: bb6;
+        @9 := core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>[@TraitClause0]}#6::next<'_, i32>[core::marker::Sized<i32>, core::iter::range::{impl core::iter::range::Step for i32}#40](move (@10)) -> bb4 (unwind: bb2);
     }
 
     bb4: {
+        storage_dead(@10);
+        @12 := @discriminant(@9);
+        switch move (@12) -> 0 : isize: bb5, 1 : isize: bb6, otherwise: bb7;
+    }
+
+    bb5: {
         storage_dead(@11);
         storage_dead(@9);
         storage_dead(@8);
@@ -253,45 +257,45 @@ pub fn test_crate::nested_loops_enum(@1: usize, @2: usize) -> usize
         @16 := copy (step_out@1);
         @15 := core::ops::range::Range { start: const (0 : usize), end: move (@16) };
         storage_dead(@16);
-        @14 := core::iter::traits::collect::{impl core::iter::traits::collect::IntoIterator for I}::into_iter<core::ops::range::Range<usize>[core::marker::Sized<usize>]>[core::marker::Sized<core::ops::range::Range<usize>[core::marker::Sized<usize>]>, core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>[@TraitClause0]}#6<usize>[core::marker::Sized<usize>, core::iter::range::{impl core::iter::range::Step for usize}#43]](move (@15)) -> bb7;
+        @14 := core::iter::traits::collect::{impl core::iter::traits::collect::IntoIterator for I}::into_iter<core::ops::range::Range<usize>[core::marker::Sized<usize>]>[core::marker::Sized<core::ops::range::Range<usize>[core::marker::Sized<usize>]>, core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>[@TraitClause0]}#6<usize>[core::marker::Sized<usize>, core::iter::range::{impl core::iter::range::Step for usize}#43]](move (@15)) -> bb8 (unwind: bb2);
     }
 
-    bb5: {
+    bb6: {
         s@3 := copy (s@3) + const (1 : usize);
         storage_dead(@11);
         storage_dead(@9);
         storage_dead(@8);
-        goto bb2;
-    }
-
-    bb6: {
-        undefined_behavior;
+        goto bb3;
     }
 
     bb7: {
-        storage_dead(@15);
-        storage_live(iter@17);
-        iter@17 := move (@14);
-        goto bb8;
+        undefined_behavior;
     }
 
     bb8: {
+        storage_dead(@15);
+        storage_live(iter@17);
+        iter@17 := move (@14);
+        goto bb9;
+    }
+
+    bb9: {
         storage_live(@18);
         storage_live(@19);
         storage_live(@20);
         storage_live(@21);
         @21 := &mut iter@17;
         @20 := &two-phase-mut *(@21);
-        @19 := core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>[@TraitClause0]}#6::next<'_, usize>[core::marker::Sized<usize>, core::iter::range::{impl core::iter::range::Step for usize}#43](move (@20)) -> bb9;
-    }
-
-    bb9: {
-        storage_dead(@20);
-        @22 := @discriminant(@19);
-        switch move (@22) -> 0 : isize: bb10, 1 : isize: bb11, otherwise: bb12;
+        @19 := core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>[@TraitClause0]}#6::next<'_, usize>[core::marker::Sized<usize>, core::iter::range::{impl core::iter::range::Step for usize}#43](move (@20)) -> bb10 (unwind: bb2);
     }
 
     bb10: {
+        storage_dead(@20);
+        @22 := @discriminant(@19);
+        switch move (@22) -> 0 : isize: bb11, 1 : isize: bb12, otherwise: bb13;
+    }
+
+    bb11: {
         // Test comment
         storage_dead(@21);
         storage_dead(@19);
@@ -304,44 +308,44 @@ pub fn test_crate::nested_loops_enum(@1: usize, @2: usize) -> usize
         return;
     }
 
-    bb11: {
+    bb12: {
         storage_live(@23);
         storage_live(@24);
         storage_live(@25);
         @25 := copy (step_in@2);
         @24 := core::ops::range::Range { start: const (0 : usize), end: move (@25) };
         storage_dead(@25);
-        @23 := core::iter::traits::collect::{impl core::iter::traits::collect::IntoIterator for I}::into_iter<core::ops::range::Range<usize>[core::marker::Sized<usize>]>[core::marker::Sized<core::ops::range::Range<usize>[core::marker::Sized<usize>]>, core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>[@TraitClause0]}#6<usize>[core::marker::Sized<usize>, core::iter::range::{impl core::iter::range::Step for usize}#43]](move (@24)) -> bb13;
-    }
-
-    bb12: {
-        undefined_behavior;
+        @23 := core::iter::traits::collect::{impl core::iter::traits::collect::IntoIterator for I}::into_iter<core::ops::range::Range<usize>[core::marker::Sized<usize>]>[core::marker::Sized<core::ops::range::Range<usize>[core::marker::Sized<usize>]>, core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>[@TraitClause0]}#6<usize>[core::marker::Sized<usize>, core::iter::range::{impl core::iter::range::Step for usize}#43]](move (@24)) -> bb14 (unwind: bb2);
     }
 
     bb13: {
-        storage_dead(@24);
-        storage_live(iter@26);
-        iter@26 := move (@23);
-        goto bb14;
+        undefined_behavior;
     }
 
     bb14: {
+        storage_dead(@24);
+        storage_live(iter@26);
+        iter@26 := move (@23);
+        goto bb15;
+    }
+
+    bb15: {
         storage_live(@27);
         storage_live(@28);
         storage_live(@29);
         storage_live(@30);
         @30 := &mut iter@26;
         @29 := &two-phase-mut *(@30);
-        @28 := core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>[@TraitClause0]}#6::next<'_, usize>[core::marker::Sized<usize>, core::iter::range::{impl core::iter::range::Step for usize}#43](move (@29)) -> bb15;
-    }
-
-    bb15: {
-        storage_dead(@29);
-        @31 := @discriminant(@28);
-        switch move (@31) -> 0 : isize: bb16, 1 : isize: bb17, otherwise: bb18;
+        @28 := core::iter::range::{impl core::iter::traits::iterator::Iterator for core::ops::range::Range<A>[@TraitClause0]}#6::next<'_, usize>[core::marker::Sized<usize>, core::iter::range::{impl core::iter::range::Step for usize}#43](move (@29)) -> bb16 (unwind: bb2);
     }
 
     bb16: {
+        storage_dead(@29);
+        @31 := @discriminant(@28);
+        switch move (@31) -> 0 : isize: bb17, 1 : isize: bb18, otherwise: bb19;
+    }
+
+    bb17: {
         storage_dead(@30);
         storage_dead(@28);
         storage_dead(@27);
@@ -350,34 +354,34 @@ pub fn test_crate::nested_loops_enum(@1: usize, @2: usize) -> usize
         storage_dead(@21);
         storage_dead(@19);
         storage_dead(@18);
-        goto bb8;
+        goto bb9;
     }
 
-    bb17: {
+    bb18: {
         s@3 := copy (s@3) + const (1 : usize);
         storage_live(@32);
         storage_live(@33);
         storage_live(@34);
         @34 := copy (s@3);
         @33 := move (@34) >= const (1 : usize);
-        if move (@33) -> bb19 else -> bb20;
-    }
-
-    bb18: {
-        undefined_behavior;
+        if move (@33) -> bb20 else -> bb21;
     }
 
     bb19: {
+        undefined_behavior;
+    }
+
+    bb20: {
         storage_dead(@34);
         storage_dead(@33);
         storage_dead(@32);
         storage_dead(@30);
         storage_dead(@28);
         storage_dead(@27);
-        goto bb14;
+        goto bb15;
     }
 
-    bb20: {
+    bb21: {
         storage_dead(@34);
         panic(core::panicking::panic);
     }

@@ -353,6 +353,8 @@ pub enum AbortKind {
     Panic(Option<Name>),
     /// Undefined behavior in the rust abstract machine.
     UndefinedBehavior,
+    /// Unwind had to stop for Abi reasons or because cleanup code panicked again.
+    UnwindTerminate,
 }
 
 /// Check the value of an operand and abort if the value is not expected. This is introduced to

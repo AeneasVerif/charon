@@ -663,6 +663,7 @@ and abort_kind_of_json (ctx : of_json_ctx) (js : json) :
         let* panic = option_of_json name_of_json ctx panic in
         Ok (Panic panic)
     | `String "UndefinedBehavior" -> Ok UndefinedBehavior
+    | `String "UnwindTerminate" -> Ok UnwindTerminate
     | _ -> Error "")
 
 and assertion_of_json (ctx : of_json_ctx) (js : json) :

@@ -41,6 +41,7 @@ module Ast = struct
     | Call call -> call_to_string env indent call
     | Abort (Panic _) -> indent ^ "panic"
     | Abort UndefinedBehavior -> indent ^ "undefined_behavior"
+    | Abort UnwindTerminate -> indent ^ "unwind_terminate"
     | Return -> indent ^ "return"
     | Break i -> indent ^ "break " ^ string_of_int i
     | Continue i -> indent ^ "continue " ^ string_of_int i

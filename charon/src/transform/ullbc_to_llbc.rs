@@ -111,7 +111,7 @@ fn block_is_error(body: &src::ExprBody, block_id: src::BlockId) -> bool {
     use src::RawTerminator::*;
     match &block.terminator.content {
         Abort(..) => true,
-        Goto { .. } | Switch { .. } | Return | Call { .. } => false,
+        Goto { .. } | Switch { .. } | Return | Call { .. } | UnwindResume => false,
     }
 }
 
@@ -138,7 +138,14 @@ fn build_cfg_partial_info_edges(
     }
 
     // Retrieve the block targets
-    let targets = body.body.get(block_id).unwrap().targets();
+    let mut targets = body.body.get(block_id).unwrap().targets();
+    // Hack: we don't translate unwind paths in llbc so we ignore them here.
+    if let src::RawTerminator::Call { target, .. } =
+        body.body.get(block_id).unwrap().terminator.content
+    {
+        targets = vec![target];
+    }
+
     let mut has_backward_edge = false;
 
     // Add edges for all the targets and explore them, if they are not predecessors
@@ -1476,7 +1483,16 @@ fn translate_terminator(
         src::RawTerminator::Return => {
             tgt::Statement::new(src_span, tgt::RawStatement::Return).into_block()
         }
-        src::RawTerminator::Call { call, target } => {
+        src::RawTerminator::UnwindResume => {
+            tgt::Statement::new(src_span, tgt::RawStatement::Abort(AbortKind::Panic(None)))
+                .into_block()
+        }
+        src::RawTerminator::Call {
+            call,
+            target,
+            on_unwind: _,
+        } => {
+            // TODO: Have unwinds in the LLBC
             let target_block = translate_child_block(
                 info,
                 parent_loops,
