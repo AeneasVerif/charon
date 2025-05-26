@@ -4,7 +4,7 @@
 //! of cases to handle and eases the function translation in Aeneas.
 //!
 //! This pass removes all those occurrences so that only the
-//! [ConstantExpression::Literal]. It does so by introducing intermediate statements.
+//! `ConstantExpression::Literal`. It does so by introducing intermediate statements.
 //!
 //! A small remark about the intermediate statements we introduce for the globals:
 //! we do so because, when evaluating the code in "concrete" mode, it allows to

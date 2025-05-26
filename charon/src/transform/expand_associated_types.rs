@@ -66,8 +66,8 @@
 //!
 //! Limitations:
 //! - we're missing assoc type info in `dyn Trait`, so we can't fixup the generics there.
-//! - we don't track bound lifetimes in quantified clauses properly (https://github.com/AeneasVerif/charon/issues/534).
-//! - type aliases don't have the correct clauses in scope (https://github.com/AeneasVerif/charon/issues/531).
+//! - we don't track bound lifetimes in quantified clauses properly (<https://github.com/AeneasVerif/charon/issues/534>).
+//! - type aliases don't have the correct clauses in scope (<https://github.com/AeneasVerif/charon/issues/531>).
 //! - we don't take into account unicity of trait implementations. This means we won't detect type
 //! equalities due to the same trait predicate appearing twice, or a trait predicate coinciding
 //! with an existing trait impl. See the `dictionary_passing_style_woes.rs` test file.
@@ -254,7 +254,7 @@ mod trait_ref_path {
             }
         }
 
-        /// See [`TraitRefPath::on_local_tref`].
+        /// See [`TraitRefPath::on_tref`].
         pub fn on_tref(&self, tref: &TraitRefPath) -> AssocTypePath {
             Self {
                 tref: self.tref.on_tref(&tref),

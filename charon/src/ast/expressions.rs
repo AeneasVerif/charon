@@ -101,7 +101,7 @@ pub enum FieldProjKind {
     #[drive(skip)]
     Tuple(usize),
     /// Access to a field in a closure state.
-    /// We eliminate this in a micro-pass ([crate::update_closure_signatures]).
+    /// We eliminate this in a micro-pass ([crate::transform::update_closure_signatures]).
     #[charon::opaque]
     ClosureState,
 }
@@ -191,7 +191,7 @@ pub enum NullOp {
 )]
 #[charon::variants_prefix("Cast")]
 pub enum CastKind {
-    /// Conversion between types in {Integer, Bool}
+    /// Conversion between types in `{Integer, Bool}`
     /// Remark: for now we don't support conversions with Char.
     Scalar(LiteralTy, LiteralTy),
     RawPtr(Ty, Ty),
@@ -336,7 +336,7 @@ pub enum BuiltinFunId {
     ArrayToSliceMut,
     /// `repeat(n, x)` returns an array where `x` has been replicated `n` times.
     ///
-    /// We introduce this when desugaring the [ArrayRepeat] rvalue.
+    /// We introduce this when desugaring the `ArrayRepeat` rvalue.
     ArrayRepeat,
     /// Converted from indexing `ProjectionElem`s. The signature depends on the parameters. It
     /// could look like:
@@ -388,11 +388,12 @@ pub struct FnPtr {
 
 /// A constant expression.
 ///
-/// Only the [Literal] and [Var] cases are left in the final LLBC.
+/// Only the [`RawConstantExpr::Literal`] and [`RawConstantExpr::Var`]
+/// cases are left in the final LLBC.
 ///
 /// The other cases come from a straight translation from the MIR:
 ///
-/// [Adt] case:
+/// [`RawConstantExpr::Adt`] case:
 /// It is a bit annoying, but rustc treats some ADT and tuple instances as
 /// constants when generating MIR:
 /// - an enumeration with one variant and no fields is a constant.
@@ -401,13 +402,13 @@ pub struct FnPtr {
 ///   (if all the fields are constant) rather than as an aggregated value
 /// We later desugar those to regular ADTs, see [regularize_constant_adts.rs].
 ///
-/// [Global] case: access to a global variable. We later desugar it to
+/// [`RawConstantExpr::Global`] case: access to a global variable. We later desugar it to
 /// a separate statement.
 ///
-/// [Ref] case: reference to a constant value. We later desugar it to a separate
+/// [`RawConstantExpr::Ref`] case: reference to a constant value. We later desugar it to a separate
 /// statement.
 ///
-/// [FnPtr] case: a function pointer (to a top-level function).
+/// [`RawConstantExpr::FnPtr`] case: a function pointer (to a top-level function).
 ///
 /// Remark:
 /// MIR seems to forbid more complex expressions like paths. For instance,
@@ -528,7 +529,7 @@ pub enum Rvalue {
     /// Note that discriminant values have type isize. We also store the identifier
     /// of the type from which we read the discriminant.
     ///
-    /// This case is filtered in [crate::remove_read_discriminant]
+    /// This case is filtered in [crate::transform::remove_read_discriminant]
     Discriminant(Place, TypeDeclId),
     /// Creates an aggregate value, like a tuple, a struct or an enum:
     /// ```text
@@ -564,7 +565,7 @@ pub enum Rvalue {
     ///
     /// We store the type argument and the const generic (the latter only for arrays).
     ///
-    /// [Len] is automatically introduced by rustc, notably for the bound checks:
+    /// `Len` is automatically introduced by rustc, notably for the bound checks:
     /// we eliminate it together with the bounds checks whenever possible.
     /// There are however occurrences that we don't eliminate (yet).
     /// For instance, for the following Rust code:
@@ -579,7 +580,7 @@ pub enum Rvalue {
     /// rustc introduces a check that the length of the slice is exactly equal
     /// to 1 and that we preserve.
     Len(Place, Ty, Option<ConstGeneric>),
-    /// [Repeat(x, n)] creates an array where [x] is copied [n] times.
+    /// `Repeat(x, n)` creates an array where `x` is copied `n` times.
     ///
     /// We translate this to a function call for LLBC.
     Repeat(Operand, Ty, ConstGeneric),
@@ -625,6 +626,6 @@ pub enum AggregateKind {
     Closure(FunDeclId, BoxedArgs),
     /// Construct a raw pointer from a pointer value, and its metadata (can be unit, if building
     /// a thin pointer). The type is the type of the pointee.
-    /// We lower this to a builtin function call for LLBC in [crate::ops_to_function_calls].
+    /// We lower this to a builtin function call for LLBC in [crate::transform::ops_to_function_calls].
     RawPtr(Ty, RefKind),
 }
