@@ -158,41 +158,32 @@ impl ItemTransCtx<'_, '_> {
     }
 
     /// Translate a trait reference to the chosen closure impl.
-    #[expect(dead_code)]
     pub fn translate_closure_trait_ref(
         &mut self,
         span: Span,
         def_id: &hax::DefId,
         args: &hax::ClosureArgs,
         target_kind: ClosureKind,
-    ) -> Result<TraitRef, Error> {
-        let impl_ref = self.translate_closure_impl_ref(span, def_id, args, target_kind)?;
-        let kind = TraitRefKind::TraitImpl(impl_ref.impl_id, impl_ref.generics);
+    ) -> Result<TraitDeclRef, Error> {
         // TODO: how much can we ask hax for this?
-        let trait_decl_ref = {
-            let fn_trait = match target_kind {
-                ClosureKind::FnOnce => self.get_lang_item(rustc_hir::LangItem::FnOnce),
-                ClosureKind::FnMut => self.get_lang_item(rustc_hir::LangItem::FnMut),
-                ClosureKind::Fn => self.get_lang_item(rustc_hir::LangItem::Fn),
-            };
-            let trait_id = self.register_trait_decl_id(span, &fn_trait);
-
-            let state_ty = self.get_closure_state_ty(span, def_id, args)?;
-            // The input tuple type and output type of the signature.
-            let (inputs, _) = self.translate_closure_info(span, args)?.signature.erase();
-            let input_tuple = Ty::mk_tuple(inputs);
-
-            RegionBinder::empty(TraitDeclRef {
-                trait_id,
-                generics: Box::new(GenericArgs::new_types(
-                    [state_ty, input_tuple].into(),
-                    GenericsSource::item(trait_id),
-                )),
-            })
+        let fn_trait = match target_kind {
+            ClosureKind::FnOnce => self.get_lang_item(rustc_hir::LangItem::FnOnce),
+            ClosureKind::FnMut => self.get_lang_item(rustc_hir::LangItem::FnMut),
+            ClosureKind::Fn => self.get_lang_item(rustc_hir::LangItem::Fn),
         };
-        Ok(TraitRef {
-            kind,
-            trait_decl_ref,
+        let trait_id = self.register_trait_decl_id(span, &fn_trait);
+
+        let state_ty = self.get_closure_state_ty(span, def_id, args)?;
+        // The input tuple type and output type of the signature.
+        let (inputs, _) = self.translate_closure_info(span, args)?.signature.erase();
+        let input_tuple = Ty::mk_tuple(inputs);
+
+        Ok(TraitDeclRef {
+            trait_id,
+            generics: Box::new(GenericArgs::new_types(
+                [state_ty, input_tuple].into(),
+                GenericsSource::item(trait_id),
+            )),
         })
     }
 
@@ -257,12 +248,6 @@ impl ItemTransCtx<'_, '_> {
         args: &hax::ClosureArgs,
         target_kind: ClosureKind,
     ) -> Result<FunSig, Error> {
-        self.translate_def_generics(span, def)?;
-        // Add the lifetime generics coming from the higher-kindedness of the signature.
-        assert!(self.innermost_binder_mut().bound_region_vars.is_empty(),);
-        self.innermost_binder_mut()
-            .push_params_from_binder(args.tupled_sig.rebind(()))?;
-
         let signature = &args.tupled_sig;
 
         // Translate the signature
@@ -545,10 +530,24 @@ impl ItemTransCtx<'_, '_> {
 
         trace!("About to translate closure:\n{:?}", def.def_id);
 
+        self.translate_def_generics(span, def)?;
+        // Add the lifetime generics coming from the higher-kindedness of the signature.
+        assert!(self.innermost_binder_mut().bound_region_vars.is_empty(),);
+        self.innermost_binder_mut()
+            .push_params_from_binder(args.tupled_sig.rebind(()))?;
+
+        let impl_ref = self.translate_closure_impl_ref(span, def.def_id(), args, target_kind)?;
+        let implemented_trait =
+            self.translate_closure_trait_ref(span, def.def_id(), args, target_kind)?;
+        let kind = ItemKind::TraitImpl {
+            impl_ref,
+            trait_ref: implemented_trait,
+            item_name: TraitItemName(target_kind.method_name().to_owned()),
+            reuses_default: false,
+        };
+
         // Translate the function signature
         let signature = self.translate_closure_method_sig(def, span, args, target_kind)?;
-
-        let kind = self.get_item_kind(span, def)?;
 
         let body = if item_meta.opacity.with_private_contents().is_opaque() {
             Err(Opaque)
@@ -586,31 +585,19 @@ impl ItemTransCtx<'_, '_> {
             .push_params_from_binder(args.tupled_sig.rebind(()))?;
 
         // The builtin traits we need.
-        let fn_trait = match target_kind {
-            ClosureKind::FnOnce => self.get_lang_item(rustc_hir::LangItem::FnOnce),
-            ClosureKind::FnMut => self.get_lang_item(rustc_hir::LangItem::FnMut),
-            ClosureKind::Fn => self.get_lang_item(rustc_hir::LangItem::Fn),
-        };
-        let fn_trait = self.register_trait_decl_id(span, &fn_trait);
-
         let sized_trait = self.get_lang_item(rustc_hir::LangItem::Sized);
         let sized_trait = self.register_trait_decl_id(span, &sized_trait);
 
         let tuple_trait = self.get_lang_item(rustc_hir::LangItem::Tuple);
         let tuple_trait = self.register_trait_decl_id(span, &tuple_trait);
 
-        let state_ty = self.get_closure_state_ty(span, def.def_id(), args)?;
+        let implemented_trait =
+            self.translate_closure_trait_ref(span, def.def_id(), args, target_kind)?;
+        let fn_trait = implemented_trait.trait_id;
+
         // The input tuple type and output type of the signature.
         let (inputs, output) = self.translate_closure_info(span, args)?.signature.erase();
         let input = Ty::mk_tuple(inputs);
-
-        let implemented_trait = TraitDeclRef {
-            trait_id: fn_trait,
-            generics: Box::new(GenericArgs::new_types(
-                [state_ty.clone(), input.clone()].into(),
-                GenericsSource::item(fn_trait),
-            )),
-        };
 
         let parent_trait_refs = {
             // Makes a built-in trait ref for `ty: trait`.
@@ -644,30 +631,16 @@ impl ItemTransCtx<'_, '_> {
                         ClosureKind::FnMut => ClosureKind::FnOnce,
                         ClosureKind::Fn => ClosureKind::FnMut,
                     };
-                    let kind = {
-                        let parent_impl_ref =
-                            self.translate_closure_impl_ref(span, def.def_id(), args, parent_kind)?;
-                        TraitRefKind::TraitImpl(parent_impl_ref.impl_id, parent_impl_ref.generics)
-                    };
-                    let trait_decl_ref = {
-                        let parent_fn_trait = match parent_kind {
-                            ClosureKind::FnOnce => self.get_lang_item(rustc_hir::LangItem::FnOnce),
-                            ClosureKind::FnMut => self.get_lang_item(rustc_hir::LangItem::FnMut),
-                            ClosureKind::Fn => unreachable!(),
-                        };
-                        let parent_trait_id = self.register_trait_decl_id(span, &parent_fn_trait);
-                        RegionBinder::empty(TraitDeclRef {
-                            trait_id: parent_trait_id,
-                            generics: implemented_trait
-                                .generics
-                                .clone()
-                                .with_target(GenericsSource::item(parent_trait_id))
-                                .into(),
-                        })
-                    };
+                    let parent_impl_ref =
+                        self.translate_closure_impl_ref(span, def.def_id(), args, parent_kind)?;
+                    let parent_predicate =
+                        self.translate_closure_trait_ref(span, def.def_id(), args, parent_kind)?;
                     let parent_trait_ref = TraitRef {
-                        kind,
-                        trait_decl_ref,
+                        kind: TraitRefKind::TraitImpl(
+                            parent_impl_ref.impl_id,
+                            parent_impl_ref.generics,
+                        ),
+                        trait_decl_ref: RegionBinder::empty(parent_predicate),
                     };
                     [
                         parent_trait_ref,
