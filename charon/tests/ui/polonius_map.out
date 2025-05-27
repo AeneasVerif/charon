@@ -236,7 +236,7 @@ pub fn get_or_insert<'_0>(@1: &'_0 mut (HashMap<u32, u32, RandomState>[Sized<u32
         },
         Option::Some => {
             storage_live(v@7)
-            v@7 := copy ((@2 as variant @1).0)
+            v@7 := copy ((@2 as variant Option::Some).0)
             @0 := &*(v@7)
             storage_dead(v@7)
         },

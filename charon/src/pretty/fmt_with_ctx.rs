@@ -974,7 +974,8 @@ impl<C: AstFormatter> FmtWithCtx<C> for Place {
                         FieldProjKind::Adt(adt_id, opt_variant_id) => {
                             write!(f, "({sub}")?;
                             if let Some(variant_id) = opt_variant_id {
-                                write!(f, " as variant @{variant_id}")?
+                                write!(f, " as variant ")?;
+                                ctx.format_enum_variant(f, *adt_id, *variant_id)?;
                             }
                             write!(f, ").")?;
                             ctx.format_field_name(f, *adt_id, *opt_variant_id, *field_id)?;

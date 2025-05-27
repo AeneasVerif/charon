@@ -3552,7 +3552,7 @@ fn main()
             },
             Option::Some => {
                 storage_live(v@12)
-                v@12 := copy ((@9 as variant @1).0)
+                v@12 := copy ((@9 as variant Option::Some).0)
                 storage_live(@13)
                 @13 := copy (v@12)
                 i@2 := copy (i@2) + copy (@13)
@@ -3602,7 +3602,7 @@ fn main()
             },
             Option::Some => {
                 storage_live(v@24)
-                v@24 := copy ((@21 as variant @1).0)
+                v@24 := copy ((@21 as variant Option::Some).0)
                 storage_live(@25)
                 storage_live(@26)
                 @26 := &two-phase-mut i@2

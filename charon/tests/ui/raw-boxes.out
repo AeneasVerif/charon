@@ -674,7 +674,7 @@ fn is_size_align_valid(@1: usize, @2: usize) -> bool
             return
         },
     }
-    align@3 := copy ((@4 as variant @1).0)
+    align@3 := copy ((@4 as variant Option::Some).0)
     storage_dead(@4)
     storage_live(@6)
     storage_live(@7)
@@ -1791,16 +1791,16 @@ fn alloc_impl<'_0>(@1: &'_0 (Global), @2: Layout, @3: bool) -> Result<NonNull<Sl
                     self@12 := Option::Some { 0: move (@25) }
                     storage_dead(@25)
                     storage_live(v@31)
-                    v@31 := move ((self@12 as variant @1).0)
+                    v@31 := move ((self@12 as variant Option::Some).0)
                     self@11 := Result::Ok { 0: copy (v@31) }
                     storage_dead(v@31)
                     storage_dead(self@12)
                     storage_live(v@32)
-                    v@32 := move ((self@11 as variant @0).0)
+                    v@32 := move ((self@11 as variant Result::Ok).0)
                     @10 := ControlFlow::Continue { 0: copy (v@32) }
                     storage_dead(v@32)
                     storage_dead(self@11)
-                    ptr@14 := copy ((@10 as variant @0).0)
+                    ptr@14 := copy ((@10 as variant ControlFlow::Continue).0)
                     storage_dead(@10)
                     storage_live(@15)
                     storage_live(ptr@33)
@@ -1981,7 +1981,7 @@ unsafe fn exchange_malloc(@1: usize, @2: usize) -> *mut u8
             @6 := handle_alloc_error(move (layout@3))
         },
     }
-    ptr@5 := copy ((@4 as variant @0).0)
+    ptr@5 := copy ((@4 as variant Result::Ok).0)
     storage_live(@10)
     @10 := transmute<NonNull<Slice<u8>>, *mut Slice<u8>>(copy (ptr@5))
     @0 := cast<*mut Slice<u8>, *mut u8>(copy (@10))

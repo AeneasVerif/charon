@@ -107,9 +107,9 @@ pub fn {impl PartialEq<Enum> for Enum}#1::eq<'_0, '_1>(@1: &'_0 (Enum), @2: &'_1
                 match *((@10).1) {
                     Enum::Some => {
                         storage_live(__self_0@13)
-                        __self_0@13 := &(*((@10).0) as variant @0).0
+                        __self_0@13 := &(*((@10).0) as variant Enum::Some).0
                         storage_live(__arg1_0@14)
-                        __arg1_0@14 := &(*((@10).1) as variant @0).0
+                        __arg1_0@14 := &(*((@10).1) as variant Enum::Some).0
                         storage_live(@15)
                         @15 := &__self_0@13
                         storage_live(@16)

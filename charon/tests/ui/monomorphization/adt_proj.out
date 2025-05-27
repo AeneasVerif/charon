@@ -24,7 +24,7 @@ fn main()
             panic(core::panicking::panic_explicit)
         },
     }
-    n@2 := copy ((res@1 as variant @0).0)
+    n@2 := copy ((res@1 as variant core::result::Result::<u32, u32>::Ok).0)
     @0 := ()
     storage_dead(n@2)
     storage_dead(res@1)

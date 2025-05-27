@@ -159,7 +159,7 @@ where
             },
             Option::Some => {
                 storage_live(x@9)
-                x@9 := copy ((@6 as variant @1).0)
+                x@9 := copy ((@6 as variant Option::Some).0)
                 storage_live(@10)
                 storage_live(@11)
                 storage_live(@12)

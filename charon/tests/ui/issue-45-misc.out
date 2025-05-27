@@ -297,7 +297,7 @@ fn cbd(@1: Array<u8, 33 : usize>)
             },
             Option::Some => {
                 storage_live(i@9)
-                i@9 := copy ((@6 as variant @1).0)
+                i@9 := copy ((@6 as variant Option::Some).0)
                 storage_live(@10)
                 @10 := copy (i@9)
                 storage_live(@11)

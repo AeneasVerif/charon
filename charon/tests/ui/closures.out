@@ -93,7 +93,7 @@ where
         },
         Option::Some => {
             storage_live(x@3)
-            x@3 := move ((x@1 as variant @1).0)
+            x@3 := move ((x@1 as variant Option::Some).0)
             storage_live(@4)
             storage_live(@5)
             @5 := &f@2
@@ -141,7 +141,7 @@ where
         },
         Option::Some => {
             storage_live(x@3)
-            x@3 := &(*(x@1) as variant @1).0
+            x@3 := &(*(x@1) as variant Option::Some).0
             storage_live(@4)
             storage_live(@5)
             @5 := copy (f@2)
