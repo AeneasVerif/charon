@@ -348,7 +348,8 @@ pub enum PredicateOrigin {
 /// Simplified type layout information.
 ///
 /// Does not include information about field offsets, paddings, niches, or variants yet.
-/// TODO: This should probably contain more information from [`rustc_abi::LayoutData`] in the future.
+/// TODO: This should probably contain more information from
+/// [`rustc_abi::LayoutData`](https://doc.rust-lang.org/beta/nightly-rustc/rustc_abi/struct.LayoutData.html) in the future.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Drive, DriveMut)]
 pub struct SimpleLayout {
     /// The size of the type in bytes.

@@ -649,7 +649,8 @@ and generic_params = {
 (** Simplified type layout information.
 
     Does not include information about field offsets, paddings, niches, or variants yet.
-    TODO: This should probably contain more information from [[rustc_abi::LayoutData]] in the future.
+    TODO: This should probably contain more information from
+    [[rustc_abi::LayoutData]](https://doc.rust-lang.org/beta/nightly-rustc/rustc_abi/struct.LayoutData.html) in the future.
  *)
 and simple_layout = {
   size : int;  (** The size of the type in bytes. *)
