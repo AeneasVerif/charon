@@ -646,6 +646,19 @@ and generic_params = {
       (** Constraints over trait associated types *)
 }
 
+(** Simplified type layout information.
+
+    Does not include information about field offsets, paddings, niches, or variants yet.
+    TODO: This should probably contain more information from [[rustc_abi::LayoutData]] in the future.
+ *)
+and simple_layout = {
+  size : int;  (** The size of the type in bytes. *)
+  align : int;
+      (** Since rustc_abi::Align doesn't implement De-/Serialize,
+        we translate it to a u64 representing the number of bytes of the alignment.
+     *)
+}
+
 (** A type declaration.
 
     Types can be opaque or transparent.
@@ -665,6 +678,8 @@ and type_decl = {
   item_meta : item_meta;  (** Meta information associated with the item. *)
   generics : generic_params;
   kind : type_decl_kind;  (** The type kind: enum, struct, or opaque. *)
+  layout : simple_layout option;
+      (** The layout of the type if statically decidable (e.g. for monomorphized, sized types) *)
 }
 
 and variant_id = (VariantId.id[@visitors.opaque])

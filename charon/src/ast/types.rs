@@ -345,6 +345,19 @@ pub enum PredicateOrigin {
     TraitItem(TraitItemName),
 }
 
+/// Simplified type layout information.
+///
+/// Does not include information about field offsets, paddings, niches, or variants yet.
+/// TODO: This should probably contain more information from [`rustc_abi::LayoutData`] in the future.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Drive, DriveMut)]
+pub struct SimpleLayout {
+    /// The size of the type in bytes.
+    pub size: u64,
+    /// Since rustc_abi::Align doesn't implement De-/Serialize,
+    /// we translate it to a u64 representing the number of bytes of the alignment.
+    pub align: u64,
+}
+
 /// A type declaration.
 ///
 /// Types can be opaque or transparent.
@@ -367,6 +380,8 @@ pub struct TypeDecl {
     pub generics: GenericParams,
     /// The type kind: enum, struct, or opaque.
     pub kind: TypeDeclKind,
+    /// The layout of the type if statically decidable (e.g. for monomorphized, sized types)
+    pub layout: Option<SimpleLayout>,
 }
 
 generate_index_type!(VariantId, "Variant");

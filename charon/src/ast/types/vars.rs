@@ -322,6 +322,14 @@ impl<T> BindingStack<T> {
     pub fn pop(&mut self) -> Option<T> {
         self.stack.pop()
     }
+    pub fn peek(&self) -> Option<&T> {
+        let len = self.stack.len();
+        if len > 0 {
+            Some(&self.stack[len - 1])
+        } else {
+            None
+        }
+    }
     /// Helper that computes the real index into `self.stack`.
     fn real_index(&self, id: DeBruijnId) -> Option<usize> {
         self.stack.len().checked_sub(id.index + 1)
