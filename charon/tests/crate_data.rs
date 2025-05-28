@@ -711,3 +711,28 @@ fn known_trait_method_call() -> Result<(), Box<dyn Error>> {
     };
     Ok(())
 }
+
+#[test]
+fn type_layout() -> anyhow::Result<()> {
+    let crate_data = translate(
+        r#"
+        struct StaticLayout {
+            x: u32,
+            y: u32,
+            z: u32
+        }
+
+        struct DynamicLayout<T> {
+            a: usize,
+            b: T
+        }
+        "#,
+    )?;
+
+    assert_eq!(
+        crate_data.type_decls[0].layout,
+        Some(SimpleLayout { size: 12, align: 4 })
+    );
+    assert_eq!(crate_data.type_decls[1].layout, None);
+    Ok(())
+}
