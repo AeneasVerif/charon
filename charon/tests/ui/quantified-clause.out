@@ -351,20 +351,6 @@ pub fn from_residual<Self, R>(@1: R) -> Self
 where
     [@TraitClause0]: FromResidual<Self, R>,
 
-pub fn core::iter::traits::accum::Sum::sum<Self, A, I>(@1: I) -> Self
-where
-    [@TraitClause0]: Sum<Self, A>,
-    [@TraitClause1]: Sized<I>,
-    [@TraitClause2]: Iterator<I>,
-    @TraitClause2::Item = A,
-
-pub fn core::iter::traits::accum::Product::product<Self, A, I>(@1: I) -> Self
-where
-    [@TraitClause0]: Product<Self, A>,
-    [@TraitClause1]: Sized<I>,
-    [@TraitClause2]: Iterator<I>,
-    @TraitClause2::Item = A,
-
 // Full name: core::iter::traits::collect::FromIterator::from_iter
 #[lang_item("from_iter_fn")]
 pub fn from_iter<Self, A, T>(@1: T) -> Self
@@ -386,6 +372,20 @@ where
 pub fn next_back<'_0, Self>(@1: &'_0 mut (Self)) -> Option<@TraitClause0::parent_clause0::Item>[@TraitClause0::parent_clause0::parent_clause0]
 where
     [@TraitClause0]: DoubleEndedIterator<Self>,
+
+pub fn core::iter::traits::accum::Sum::sum<Self, A, I>(@1: I) -> Self
+where
+    [@TraitClause0]: Sum<Self, A>,
+    [@TraitClause1]: Sized<I>,
+    [@TraitClause2]: Iterator<I>,
+    @TraitClause2::Item = A,
+
+pub fn core::iter::traits::accum::Product::product<Self, A, I>(@1: I) -> Self
+where
+    [@TraitClause0]: Product<Self, A>,
+    [@TraitClause1]: Sized<I>,
+    [@TraitClause2]: Iterator<I>,
+    @TraitClause2::Item = A,
 
 
 

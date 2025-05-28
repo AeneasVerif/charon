@@ -88,7 +88,7 @@ where
     fn fmt<'_0, '_1, '_2> = {impl Debug for &'_0 (T)}::fmt<'_0, '_0_0, '_0_1, '_0_2, T>[@TraitClause0]
 }
 
-// Full name: core::fmt::{Arguments<'a>}::new_v1
+// Full name: core::fmt::rt::{Arguments<'a>}::new_v1
 pub fn new_v1<'a, const P : usize, const A : usize>(@1: &'a (Array<&'static (Str), const P : usize>), @2: &'a (Array<Argument<'a>, const A : usize>)) -> Arguments<'a>
 
 // Full name: std::io::stdio::_eprint
@@ -546,20 +546,6 @@ pub fn from_residual<Self, R>(@1: R) -> Self
 where
     [@TraitClause0]: FromResidual<Self, R>,
 
-pub fn core::iter::traits::accum::Sum::sum<Self, A, I>(@1: I) -> Self
-where
-    [@TraitClause0]: Sum<Self, A>,
-    [@TraitClause1]: Sized<I>,
-    [@TraitClause2]: Iterator<I>,
-    @TraitClause2::Item = A,
-
-pub fn core::iter::traits::accum::Product::product<Self, A, I>(@1: I) -> Self
-where
-    [@TraitClause0]: Product<Self, A>,
-    [@TraitClause1]: Sized<I>,
-    [@TraitClause2]: Iterator<I>,
-    @TraitClause2::Item = A,
-
 // Full name: core::iter::traits::collect::FromIterator::from_iter
 #[lang_item("from_iter_fn")]
 pub fn from_iter<Self, A, T>(@1: T) -> Self
@@ -585,6 +571,20 @@ where
 pub fn core::fmt::Debug::fmt<'_0, '_1, '_2, Self>(@1: &'_0 (Self), @2: &'_1 mut (Formatter<'_2>)) -> Result<(), Error>[Sized<()>, Sized<Error>]
 where
     [@TraitClause0]: Debug<Self>,
+
+pub fn core::iter::traits::accum::Sum::sum<Self, A, I>(@1: I) -> Self
+where
+    [@TraitClause0]: Sum<Self, A>,
+    [@TraitClause1]: Sized<I>,
+    [@TraitClause2]: Iterator<I>,
+    @TraitClause2::Item = A,
+
+pub fn core::iter::traits::accum::Product::product<Self, A, I>(@1: I) -> Self
+where
+    [@TraitClause0]: Product<Self, A>,
+    [@TraitClause1]: Sized<I>,
+    [@TraitClause2]: Iterator<I>,
+    @TraitClause2::Item = A,
 
 
 

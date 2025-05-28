@@ -436,7 +436,7 @@ pub trait Iterator<Self>
     fn partition<B, F, [@TraitClause0]: Sized<B>, [@TraitClause1]: Sized<F>, [@TraitClause2]: Sized<Self>, [@TraitClause3]: Default<B>, [@TraitClause4]: Extend<B, Self::Item>, [@TraitClause5]: for<'_0> FnMut<F, (&'_0_0 (Self::Item))>, for<'_0> @TraitClause1_5::parent_clause0::Output = bool> = partition<Self, B, F>[Self, @TraitClause0_0, @TraitClause0_1, @TraitClause0_2, @TraitClause0_3, @TraitClause0_4, @TraitClause0_5]
     fn partition_in_place<'a, T, P, [@TraitClause0]: Sized<T>, [@TraitClause1]: Sized<P>, [@TraitClause2]: Sized<Self>, [@TraitClause3]: DoubleEndedIterator<Self>, [@TraitClause4]: for<'_0> FnMut<P, (&'_0_0 (T))>, T : 'a, Self::Item = &'a mut (T), for<'_0> @TraitClause1_4::parent_clause0::Output = bool> = partition_in_place<'a, Self, T, P>[Self, @TraitClause0_0, @TraitClause0_1, @TraitClause0_2, @TraitClause0_3, @TraitClause0_4]
     fn is_partitioned<P, [@TraitClause0]: Sized<P>, [@TraitClause1]: Sized<Self>, [@TraitClause2]: FnMut<P, (Self::Item)>, @TraitClause1_2::parent_clause0::Output = bool> = is_partitioned<Self, P>[Self, @TraitClause0_0, @TraitClause0_1, @TraitClause0_2]
-    fn try_fold<'_0, B, F, R, [@TraitClause0]: Sized<B>, [@TraitClause1]: Sized<F>, [@TraitClause2]: Sized<R>, [@TraitClause3]: Sized<Self>, [@TraitClause4]: FnMut<F, (B, Self::Item)>, [@TraitClause5]: Try<R>, @TraitClause1_4::parent_clause0::Output = R, @TraitClause1_5::Output = B> = try_fold<'_0_0, Self, B, F, R>[Self, @TraitClause0_0, @TraitClause0_1, @TraitClause0_2, @TraitClause0_3, @TraitClause0_4, @TraitClause0_5]
+    fn try_fold<'_0, B, F, R, [@TraitClause0]: Sized<B>, [@TraitClause1]: Sized<F>, [@TraitClause2]: Sized<R>, [@TraitClause3]: Sized<Self>, [@TraitClause4]: FnMut<F, (B, Self::Item)>, [@TraitClause5]: Try<R>, @TraitClause1_4::parent_clause0::Output = R, @TraitClause1_5::Output = B> = core::iter::traits::iterator::Iterator::try_fold<'_0_0, Self, B, F, R>[Self, @TraitClause0_0, @TraitClause0_1, @TraitClause0_2, @TraitClause0_3, @TraitClause0_4, @TraitClause0_5]
     fn try_for_each<'_0, F, R, [@TraitClause0]: Sized<F>, [@TraitClause1]: Sized<R>, [@TraitClause2]: Sized<Self>, [@TraitClause3]: FnMut<F, (Self::Item)>, [@TraitClause4]: Try<R>, @TraitClause1_3::parent_clause0::Output = R, @TraitClause1_4::Output = ()> = try_for_each<'_0_0, Self, F, R>[Self, @TraitClause0_0, @TraitClause0_1, @TraitClause0_2, @TraitClause0_3, @TraitClause0_4]
     fn fold<B, F, [@TraitClause0]: Sized<B>, [@TraitClause1]: Sized<F>, [@TraitClause2]: Sized<Self>, [@TraitClause3]: FnMut<F, (B, Self::Item)>, @TraitClause1_3::parent_clause0::Output = B> = core::iter::traits::iterator::Iterator::fold<Self, B, F>[Self, @TraitClause0_0, @TraitClause0_1, @TraitClause0_2, @TraitClause0_3]
     fn reduce<F, [@TraitClause0]: Sized<F>, [@TraitClause1]: Sized<Self>, [@TraitClause2]: FnMut<F, (Self::Item, Self::Item)>, @TraitClause1_2::parent_clause0::Output = Self::Item> = reduce<Self, F>[Self, @TraitClause0_0, @TraitClause0_1, @TraitClause0_2]
@@ -870,7 +870,8 @@ where
     [@TraitClause3]: FnMut<P, (T)>,
     @TraitClause3::parent_clause0::Output = bool,
 
-pub fn core::array::iter::{impl Iterator for IntoIter<T, const N : usize>[@TraitClause0]}::try_fold<'_0, T, B, F, R, const N : usize>(@1: &'_0 mut (IntoIter<T, const N : usize>[@TraitClause0]), @2: B, @3: F) -> R
+// Full name: core::array::iter::{impl Iterator for IntoIter<T, const N : usize>[@TraitClause0]}::try_fold
+pub fn {impl Iterator for IntoIter<T, const N : usize>[@TraitClause0]}::try_fold<'_0, T, B, F, R, const N : usize>(@1: &'_0 mut (IntoIter<T, const N : usize>[@TraitClause0]), @2: B, @3: F) -> R
 where
     [@TraitClause0]: Sized<T>,
     [@TraitClause1]: Sized<B>,
@@ -1268,7 +1269,7 @@ where
     fn partition<B, F, [@TraitClause0]: Sized<B>, [@TraitClause1]: Sized<F>, [@TraitClause2]: Sized<IntoIter<T, const N : usize>[@TraitClause0]>, [@TraitClause3]: Default<B>, [@TraitClause4]: Extend<B, T>, [@TraitClause5]: for<'_0> FnMut<F, (&'_0_0 (T))>, for<'_0> @TraitClause1_5::parent_clause0::Output = bool> = core::array::iter::{impl Iterator for IntoIter<T, const N : usize>[@TraitClause0]}::partition<T, B, F, const N : usize>[@TraitClause0, @TraitClause0_0, @TraitClause0_1, @TraitClause0_2, @TraitClause0_3, @TraitClause0_4, @TraitClause0_5]
     fn partition_in_place<'a, T, P, [@TraitClause0]: Sized<T>, [@TraitClause1]: Sized<P>, [@TraitClause2]: Sized<IntoIter<T, const N : usize>[@TraitClause0]>, [@TraitClause3]: DoubleEndedIterator<IntoIter<T, const N : usize>[@TraitClause0]>, [@TraitClause4]: for<'_0> FnMut<P, (&'_0_0 (T))>, T : 'a, {impl Iterator for IntoIter<T, const N : usize>[@TraitClause0]}<T, const N : usize>[@TraitClause0]::Item = &'a mut (T), for<'_0> @TraitClause1_4::parent_clause0::Output = bool> = core::array::iter::{impl Iterator for IntoIter<T, const N : usize>[@TraitClause0]}::partition_in_place<'a, T, T, P, const N : usize>[@TraitClause0, @TraitClause0_0, @TraitClause0_1, @TraitClause0_2, @TraitClause0_3, @TraitClause0_4]
     fn is_partitioned<P, [@TraitClause0]: Sized<P>, [@TraitClause1]: Sized<IntoIter<T, const N : usize>[@TraitClause0]>, [@TraitClause2]: FnMut<P, (T)>, @TraitClause1_2::parent_clause0::Output = bool> = core::array::iter::{impl Iterator for IntoIter<T, const N : usize>[@TraitClause0]}::is_partitioned<T, P, const N : usize>[@TraitClause0, @TraitClause0_0, @TraitClause0_1, @TraitClause0_2]
-    fn try_fold<'_0, B, F, R, [@TraitClause0]: Sized<B>, [@TraitClause1]: Sized<F>, [@TraitClause2]: Sized<R>, [@TraitClause3]: Sized<IntoIter<T, const N : usize>[@TraitClause0]>, [@TraitClause4]: FnMut<F, (B, T)>, [@TraitClause5]: Try<R>, @TraitClause1_4::parent_clause0::Output = R, @TraitClause1_5::Output = B> = core::array::iter::{impl Iterator for IntoIter<T, const N : usize>[@TraitClause0]}::try_fold<'_0_0, T, B, F, R, const N : usize>[@TraitClause0, @TraitClause0_0, @TraitClause0_1, @TraitClause0_2, @TraitClause0_3, @TraitClause0_4, @TraitClause0_5]
+    fn try_fold<'_0, B, F, R, [@TraitClause0]: Sized<B>, [@TraitClause1]: Sized<F>, [@TraitClause2]: Sized<R>, [@TraitClause3]: Sized<IntoIter<T, const N : usize>[@TraitClause0]>, [@TraitClause4]: FnMut<F, (B, T)>, [@TraitClause5]: Try<R>, @TraitClause1_4::parent_clause0::Output = R, @TraitClause1_5::Output = B> = {impl Iterator for IntoIter<T, const N : usize>[@TraitClause0]}::try_fold<'_0_0, T, B, F, R, const N : usize>[@TraitClause0, @TraitClause0_0, @TraitClause0_1, @TraitClause0_2, @TraitClause0_3, @TraitClause0_4, @TraitClause0_5]
     fn try_for_each<'_0, F, R, [@TraitClause0]: Sized<F>, [@TraitClause1]: Sized<R>, [@TraitClause2]: Sized<IntoIter<T, const N : usize>[@TraitClause0]>, [@TraitClause3]: FnMut<F, (T)>, [@TraitClause4]: Try<R>, @TraitClause1_3::parent_clause0::Output = R, @TraitClause1_4::Output = ()> = core::array::iter::{impl Iterator for IntoIter<T, const N : usize>[@TraitClause0]}::try_for_each<'_0_0, T, F, R, const N : usize>[@TraitClause0, @TraitClause0_0, @TraitClause0_1, @TraitClause0_2, @TraitClause0_3, @TraitClause0_4]
     fn fold<Acc, Fold, [@TraitClause0]: Sized<Acc>, [@TraitClause1]: Sized<Fold>, [@TraitClause2]: FnMut<Fold, (Acc, T)>, @TraitClause1_2::parent_clause0::Output = Acc> = {impl Iterator for IntoIter<T, const N : usize>[@TraitClause0]}::fold<T, Acc, Fold, const N : usize>[@TraitClause0, @TraitClause0_0, @TraitClause0_1, @TraitClause0_2]
     fn reduce<F, [@TraitClause0]: Sized<F>, [@TraitClause1]: Sized<IntoIter<T, const N : usize>[@TraitClause0]>, [@TraitClause2]: FnMut<F, (T, T)>, @TraitClause1_2::parent_clause0::Output = T> = core::array::iter::{impl Iterator for IntoIter<T, const N : usize>[@TraitClause0]}::reduce<T, F, const N : usize>[@TraitClause0, @TraitClause0_0, @TraitClause0_1, @TraitClause0_2]
@@ -3832,6 +3833,24 @@ pub fn call_once<Self, Args>(@1: Self, @2: Args) -> @TraitClause0::Output
 where
     [@TraitClause0]: FnOnce<Self, Args>,
 
+// Full name: core::ops::try_trait::Try::from_output
+#[lang_item("from_output")]
+pub fn from_output<Self>(@1: @TraitClause0::Output) -> Self
+where
+    [@TraitClause0]: Try<Self>,
+
+// Full name: core::ops::try_trait::Try::branch
+#[lang_item("branch")]
+pub fn branch<Self>(@1: Self) -> ControlFlow<@TraitClause0::Residual, @TraitClause0::Output>[@TraitClause0::parent_clause0::parent_clause0, @TraitClause0::parent_clause1]
+where
+    [@TraitClause0]: Try<Self>,
+
+// Full name: core::ops::try_trait::FromResidual::from_residual
+#[lang_item("from_residual")]
+pub fn from_residual<Self, R>(@1: R) -> Self
+where
+    [@TraitClause0]: FromResidual<Self, R>,
+
 pub fn core::iter::traits::iterator::Iterator::size_hint<'_0, Self>(@1: &'_0 (Self)) -> (usize, Option<usize>[Sized<usize>])
 where
     [@TraitClause0]: Iterator<Self>,
@@ -3844,6 +3863,18 @@ where
     [@TraitClause3]: Sized<Self>,
     [@TraitClause4]: FnMut<F, (B, @TraitClause0::Item)>,
     @TraitClause4::parent_clause0::Output = B,
+
+pub fn core::iter::traits::iterator::Iterator::try_fold<'_0, Self, B, F, R>(@1: &'_0 mut (Self), @2: B, @3: F) -> R
+where
+    [@TraitClause0]: Iterator<Self>,
+    [@TraitClause1]: Sized<B>,
+    [@TraitClause2]: Sized<F>,
+    [@TraitClause3]: Sized<R>,
+    [@TraitClause4]: Sized<Self>,
+    [@TraitClause5]: FnMut<F, (B, @TraitClause0::Item)>,
+    [@TraitClause6]: Try<R>,
+    @TraitClause5::parent_clause0::Output = R,
+    @TraitClause6::Output = B,
 
 pub fn core::iter::traits::iterator::Iterator::count<Self>(@1: Self) -> usize
 where
@@ -4135,19 +4166,6 @@ where
     [@TraitClause2]: Sized<Self>,
     [@TraitClause3]: FnMut<P, (@TraitClause0::Item)>,
     @TraitClause3::parent_clause0::Output = bool,
-
-// Full name: core::iter::traits::iterator::Iterator::try_fold
-pub fn try_fold<'_0, Self, B, F, R>(@1: &'_0 mut (Self), @2: B, @3: F) -> R
-where
-    [@TraitClause0]: Iterator<Self>,
-    [@TraitClause1]: Sized<B>,
-    [@TraitClause2]: Sized<F>,
-    [@TraitClause3]: Sized<R>,
-    [@TraitClause4]: Sized<Self>,
-    [@TraitClause5]: FnMut<F, (B, @TraitClause0::Item)>,
-    [@TraitClause6]: Try<R>,
-    @TraitClause5::parent_clause0::Output = R,
-    @TraitClause6::Output = B,
 
 // Full name: core::iter::traits::iterator::Iterator::try_for_each
 pub fn try_for_each<'_0, Self, F, R>(@1: &'_0 mut (Self), @2: F) -> R
@@ -4586,43 +4604,11 @@ pub fn default<Self>() -> Self
 where
     [@TraitClause0]: Default<Self>,
 
-// Full name: core::ops::try_trait::Try::from_output
-#[lang_item("from_output")]
-pub fn from_output<Self>(@1: @TraitClause0::Output) -> Self
-where
-    [@TraitClause0]: Try<Self>,
-
-// Full name: core::ops::try_trait::Try::branch
-#[lang_item("branch")]
-pub fn branch<Self>(@1: Self) -> ControlFlow<@TraitClause0::Residual, @TraitClause0::Output>[@TraitClause0::parent_clause0::parent_clause0, @TraitClause0::parent_clause1]
-where
-    [@TraitClause0]: Try<Self>,
-
-// Full name: core::ops::try_trait::FromResidual::from_residual
-#[lang_item("from_residual")]
-pub fn from_residual<Self, R>(@1: R) -> Self
-where
-    [@TraitClause0]: FromResidual<Self, R>,
-
 // Full name: core::iter::adapters::zip::TrustedRandomAccessNoCoerce::size
 pub fn size<'_0, Self>(@1: &'_0 (Self)) -> usize
 where
     [@TraitClause0]: TrustedRandomAccessNoCoerce<Self>,
     [@TraitClause1]: Iterator<Self>,
-
-pub fn core::iter::traits::accum::Sum::sum<Self, A, I>(@1: I) -> Self
-where
-    [@TraitClause0]: Sum<Self, A>,
-    [@TraitClause1]: Sized<I>,
-    [@TraitClause2]: Iterator<I>,
-    @TraitClause2::Item = A,
-
-pub fn core::iter::traits::accum::Product::product<Self, A, I>(@1: I) -> Self
-where
-    [@TraitClause0]: Product<Self, A>,
-    [@TraitClause1]: Sized<I>,
-    [@TraitClause2]: Iterator<I>,
-    @TraitClause2::Item = A,
 
 // Full name: core::iter::traits::collect::FromIterator::from_iter
 #[lang_item("from_iter_fn")]
@@ -4713,6 +4699,20 @@ where
 pub fn is_empty<'_0, Self>(@1: &'_0 (Self)) -> bool
 where
     [@TraitClause0]: ExactSizeIterator<Self>,
+
+pub fn core::iter::traits::accum::Sum::sum<Self, A, I>(@1: I) -> Self
+where
+    [@TraitClause0]: Sum<Self, A>,
+    [@TraitClause1]: Sized<I>,
+    [@TraitClause2]: Iterator<I>,
+    @TraitClause2::Item = A,
+
+pub fn core::iter::traits::accum::Product::product<Self, A, I>(@1: I) -> Self
+where
+    [@TraitClause0]: Product<Self, A>,
+    [@TraitClause1]: Sized<I>,
+    [@TraitClause2]: Iterator<I>,
+    @TraitClause2::Item = A,
 
 
 

@@ -170,8 +170,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
             }
             // We map the three namespaces onto a single one. We can always disambiguate by looking
             // at the definition.
-            DefPathItem::TypeNs(None) => None,
-            DefPathItem::TypeNs(Some(symbol))
+            DefPathItem::TypeNs(symbol)
             | DefPathItem::ValueNs(symbol)
             | DefPathItem::MacroNs(symbol) => Some(PathElem::Ident(symbol, disambiguator)),
             DefPathItem::Impl => {
@@ -342,7 +341,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
             } => associated_item,
             _ => panic!("Unexpected def for associated item: {def:?}"),
         };
-        Ok(TraitItemName(assoc.name.clone()))
+        Ok(TraitItemName(assoc.name.clone().unwrap_or_default()))
     }
 
     pub(crate) fn opacity_for_name(&self, name: &Name) -> ItemOpacity {
