@@ -6,6 +6,7 @@ use charon_lib::builtins;
 use charon_lib::common::hash_by_addr::HashByAddr;
 use charon_lib::ids::Vector;
 use core::convert::*;
+use hax::HasParamEnv;
 use hax::Visibility;
 use hax_frontend_exporter as hax;
 use itertools::Itertools;
@@ -823,11 +824,39 @@ impl ItemTransCtx<'_, '_> {
             Ok(kind) => kind,
             Err(err) => TypeDeclKind::Error(err.msg),
         };
+
+        let peak_generics = self.binding_levels.peek().unwrap();
+
+        // For now, only try to get layouts for types that are not polymorphic over
+        // another type or a constant since these might not have a statically known layout.
+        let layout = if peak_generics.params.types.is_empty()
+            && peak_generics.params.const_generics.is_empty()
+        {
+            let tcx = self.t_ctx.tcx;
+            let rdefid = self.def_id.as_rust_def_id().unwrap();
+            let ty_env =
+                hax::State::new_from_state_and_id(&self.t_ctx.hax_state, rdefid).typing_env();
+            let ty = tcx.type_of(rdefid).skip_binder();
+            let pseudo_input = ty_env.as_query_input(ty);
+            if let Ok(ty_layout) = tcx.layout_of(pseudo_input) {
+                let layout = ty_layout.layout;
+                Some(SimpleLayout {
+                    size: layout.size().bytes(),
+                    align: layout.align().abi.bytes(),
+                })
+            } else {
+                None
+            }
+        } else {
+            None
+        };
+
         let type_def = TypeDecl {
             def_id: trans_id,
             item_meta,
             generics: self.into_generics(),
             kind,
+            layout,
         };
 
         Ok(type_def)

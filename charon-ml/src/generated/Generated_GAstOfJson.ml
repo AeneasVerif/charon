@@ -1302,6 +1302,16 @@ and existential_predicate_of_json (ctx : of_json_ctx) (js : json) :
     | `Null -> Ok ()
     | _ -> Error "")
 
+and simple_layout_of_json (ctx : of_json_ctx) (js : json) :
+    (simple_layout, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with
+    | `Assoc [ ("size", size); ("align", align) ] ->
+        let* size = int_of_json ctx size in
+        let* align = int_of_json ctx align in
+        Ok ({ size; align } : simple_layout)
+    | _ -> Error "")
+
 and type_decl_of_json (ctx : of_json_ctx) (js : json) :
     (type_decl, string) result =
   combine_error_msgs js __FUNCTION__
@@ -1312,12 +1322,14 @@ and type_decl_of_json (ctx : of_json_ctx) (js : json) :
           ("item_meta", item_meta);
           ("generics", generics);
           ("kind", kind);
+          ("layout", layout);
         ] ->
         let* def_id = type_decl_id_of_json ctx def_id in
         let* item_meta = item_meta_of_json ctx item_meta in
         let* generics = generic_params_of_json ctx generics in
         let* kind = type_decl_kind_of_json ctx kind in
-        Ok ({ def_id; item_meta; generics; kind } : type_decl)
+        let* layout = option_of_json simple_layout_of_json ctx layout in
+        Ok ({ def_id; item_meta; generics; kind; layout } : type_decl)
     | _ -> Error "")
 
 and variant_id_of_json (ctx : of_json_ctx) (js : json) :
