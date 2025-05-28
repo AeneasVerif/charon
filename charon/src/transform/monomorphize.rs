@@ -199,37 +199,14 @@ impl SubstVisitor<'_> {
 }
 
 impl VisitAstMut for SubstVisitor<'_> {
-    fn exit_ullbc_statement(&mut self, stt: &mut ullbc_ast::Statement) {
-        match &mut stt.content {
-            ullbc_ast::RawStatement::Assign(_, Rvalue::Discriminant(Place { ty, .. }, id)) => {
-                // FIXME(Nadrieril): remove this id, replace with a helper fn
-                match ty.as_adt() {
-                    Some((TypeId::Adt(new_enum_id), _)) => {
-                        // Small trick; the discriminant doesn't carry the information on the
-                        // generics of the enum, since it's irrelevant, but we need it to do
-                        // the substitution, so we look at the type of the place we read from
-                        *id = new_enum_id;
-                    }
-                    _ => {}
-                }
-            }
-            _ => {}
-        }
-    }
-    fn exit_llbc_statement(&mut self, stt: &mut llbc_ast::Statement) {
-        match &mut stt.content {
-            llbc_ast::RawStatement::Assign(_, Rvalue::Discriminant(Place { ty, .. }, id)) => {
-                match ty.as_adt() {
-                    Some((TypeId::Adt(new_enum_id), _)) => {
-                        // Small trick; the discriminant doesn't carry the information on the
-                        // generics of the enum, since it's irrelevant, but we need it to do
-                        // the substitution, so we look at the type of the place we read from
-                        *id = new_enum_id;
-                    }
-                    _ => {}
-                }
-            }
-            _ => {}
+    fn exit_rvalue(&mut self, rval: &mut Rvalue) {
+        if let Rvalue::Discriminant(place, id) = rval
+            && let Some((TypeId::Adt(new_enum_id), _)) = place.ty.as_adt()
+        {
+            // Small trick; the discriminant doesn't carry the information on the
+            // generics of the enum, since it's irrelevant, but we need it to do
+            // the substitution, so we look at the type of the place we read from
+            *id = new_enum_id;
         }
     }
 
