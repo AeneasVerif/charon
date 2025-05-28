@@ -1,32 +1,26 @@
 # Final LLBC before serialization:
 
-struct test_crate::Foo::<bool><T>
-  where
-      [@TraitClause0]: core::marker::Sized<bool>,
- =
+struct test_crate::Foo::<bool> =
 {
   value: bool,
 }
 
-#[lang_item("sized")]
-pub trait core::marker::Sized<Self>
-
-fn test_crate::FooBool() -> test_crate::Foo::<bool><bool>[core::marker::Sized<bool>]
+fn test_crate::FooBool() -> test_crate::Foo::<bool>
 {
-    let @0: test_crate::Foo::<bool><bool>[core::marker::Sized<bool>]; // return
+    let @0: test_crate::Foo::<bool>; // return
 
     @0 := test_crate::Foo::<bool> { value: const (false) }
     return
 }
 
-static test_crate::FooBool: test_crate::Foo::<bool><bool>[core::marker::Sized<bool>] = test_crate::FooBool()
+static test_crate::FooBool: test_crate::Foo::<bool> = test_crate::FooBool()
 
 fn test_crate::main()
 {
     let @0: (); // return
     let _b@1: bool; // local
-    let @2: &'_ (test_crate::Foo::<bool><bool>[core::marker::Sized<bool>]); // anonymous local
-    let @3: &'_ (test_crate::Foo::<bool><bool>[core::marker::Sized<bool>]); // anonymous local
+    let @2: &'_ (test_crate::Foo::<bool>); // anonymous local
+    let @3: &'_ (test_crate::Foo::<bool>); // anonymous local
 
     storage_live(@3)
     storage_live(_b@1)
@@ -41,17 +35,17 @@ fn test_crate::main()
     return
 }
 
-struct test_crate::Foo::<i32><T>
-  where
-      [@TraitClause0]: core::marker::Sized<i32>,
- =
+#[lang_item("sized")]
+pub trait core::marker::Sized<Self>
+
+struct test_crate::Foo::<i32> =
 {
   value: i32,
 }
 
-fn test_crate::FooInt() -> test_crate::Foo::<i32><i32>[core::marker::Sized<i32>]
+fn test_crate::FooInt() -> test_crate::Foo::<i32>
 {
-    let @0: test_crate::Foo::<i32><i32>[core::marker::Sized<i32>]; // return
+    let @0: test_crate::Foo::<i32>; // return
 
     @0 := test_crate::Foo::<i32> { value: const (0 : i32) }
     return

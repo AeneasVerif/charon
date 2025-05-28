@@ -174,7 +174,7 @@ impl SubstVisitor<'_> {
             panic!("Substitution missing for {:?}", key);
         };
         *id = *subst_id;
-        // *gargs = GenericArgs::empty(GenericsSource::Builtin);
+        *gargs = GenericArgs::empty(gargs.target.clone());
     }
     fn subst_use_fun(&mut self, id: &mut FunDeclId, gargs: &mut GenericArgs) {
         trace!("Mono: Subst use: {:?} / {:?}", id, gargs);
@@ -184,7 +184,7 @@ impl SubstVisitor<'_> {
             panic!("Substitution missing for {:?}", key);
         };
         *id = *subst_id;
-        // *gargs = GenericArgs::empty(GenericsSource::Builtin);
+        *gargs = GenericArgs::empty(gargs.target.clone());
     }
     fn subst_use_glob(&mut self, id: &mut GlobalDeclId, gargs: &mut GenericArgs) {
         trace!("Mono: Subst use: {:?} / {:?}", id, gargs);
@@ -194,7 +194,7 @@ impl SubstVisitor<'_> {
             panic!("Substitution missing for {:?}", key);
         };
         *id = *subst_id;
-        // *gargs = GenericArgs::empty(GenericsSource::Builtin);
+        *gargs = GenericArgs::empty(gargs.target.clone());
     }
 }
 
@@ -473,12 +473,12 @@ impl TransformPass for Transform {
                             };
                             let fun = ctx.translated.fun_decls.get(*fun_id).unwrap();
                             let mut fun_sub = fun.clone().substitute(gargs);
+                            fun_sub.signature.generics = GenericParams::empty();
                             fun_sub
                                 .item_meta
                                 .name
                                 .name
                                 .push(PathElem::Monomorphized(gargs.clone()));
-                            // fun_sub.signature.generics = GenericParams::empty();
 
                             let fun_id_sub = ctx.translated.fun_decls.push_with(|id| {
                                 fun_sub.def_id = id;
@@ -490,6 +490,7 @@ impl TransformPass for Transform {
                         AnyTransId::Type(typ_id) => {
                             let typ = ctx.translated.type_decls.get(*typ_id).unwrap();
                             let mut typ_sub = typ.clone().substitute(gargs);
+                            typ_sub.generics = GenericParams::empty();
                             typ_sub
                                 .item_meta
                                 .name
@@ -511,6 +512,7 @@ impl TransformPass for Transform {
                                 continue;
                             };
                             let mut glob_sub = glob.clone().substitute(gargs);
+                            glob_sub.generics = GenericParams::empty();
                             glob_sub
                                 .item_meta
                                 .name
@@ -519,6 +521,7 @@ impl TransformPass for Transform {
 
                             let init = ctx.translated.fun_decls.get(glob.init).unwrap();
                             let mut init_sub = init.clone().substitute(gargs);
+                            init_sub.signature.generics = GenericParams::empty();
                             init_sub
                                 .item_meta
                                 .name

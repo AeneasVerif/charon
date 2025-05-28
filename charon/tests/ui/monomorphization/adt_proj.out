@@ -1,22 +1,15 @@
 # Final LLBC before serialization:
 
 #[lang_item("Result")]
-pub enum core::result::Result::<u32, u32><T, E>
-  where
-      [@TraitClause0]: core::marker::Sized<u32>,
-      [@TraitClause1]: core::marker::Sized<u32>,
- =
+pub enum core::result::Result::<u32, u32> =
 |  Ok(u32)
 |  Err(u32)
 
 
-#[lang_item("sized")]
-pub trait core::marker::Sized<Self>
-
 fn test_crate::main()
 {
     let @0: (); // return
-    let res@1: core::result::Result::<u32, u32><u32, u32>[core::marker::Sized<u32>, core::marker::Sized<u32>]; // local
+    let res@1: core::result::Result::<u32, u32>; // local
     let n@2: u32; // local
 
     storage_live(res@1)
@@ -37,6 +30,9 @@ fn test_crate::main()
     @0 := ()
     return
 }
+
+#[lang_item("sized")]
+pub trait core::marker::Sized<Self>
 
 
 
