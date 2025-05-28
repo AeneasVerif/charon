@@ -1,9 +1,6 @@
 # Final LLBC before serialization:
 
-fn test_crate::do_test<T>(@1: bool, @2: bool)
-where
-    [@TraitClause0]: core::marker::Sized<bool>,
-    [@TraitClause1]: core::cmp::Eq<bool>,
+fn test_crate::do_test::<bool>(@1: bool, @2: bool)
 {
     let @0: (); // return
     let init@1: bool; // arg #1
@@ -19,7 +16,7 @@ where
     @5 := &expected@2
     storage_live(@6)
     @6 := &init@1
-    @4 := core::cmp::impls::{impl core::cmp::Eq for bool}#38::parent_clause0::eq<'_, '_, bool, bool>(move (@5), move (@6))
+    @4 := core::cmp::impls::{impl core::cmp::Eq for bool}#38::parent_clause0::eq(move (@5), move (@6))
     if move (@4) {
     }
     else {
@@ -34,6 +31,19 @@ where
     @0 := ()
     drop expected@2
     drop init@1
+    @0 := ()
+    return
+}
+
+fn test_crate::main()
+{
+    let @0: (); // return
+    let @1: (); // anonymous local
+
+    storage_live(@1)
+    @1 := test_crate::do_test::<bool>(const (true), const (true))
+    storage_dead(@1)
+    @0 := ()
     @0 := ()
     return
 }
@@ -61,19 +71,6 @@ impl core::cmp::impls::{impl core::cmp::PartialEq<bool> for bool}#19 : core::cmp
 impl core::cmp::impls::{impl core::cmp::Eq for bool}#38 : core::cmp::Eq<bool>
 {
     parent_clause0 = core::cmp::impls::{impl core::cmp::PartialEq<bool> for bool}#19
-}
-
-fn test_crate::main()
-{
-    let @0: (); // return
-    let @1: (); // anonymous local
-
-    storage_live(@1)
-    @1 := test_crate::do_test<bool>[core::marker::Sized<bool>, core::cmp::impls::{impl core::cmp::Eq for bool}#38](const (true), const (true))
-    storage_dead(@1)
-    @0 := ()
-    @0 := ()
-    return
 }
 
 

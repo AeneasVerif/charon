@@ -14,6 +14,8 @@ generate_index_type!(Disambiguator);
 pub enum PathElem {
     Ident(#[drive(skip)] String, Disambiguator),
     Impl(ImplElem, Disambiguator),
+    /// This item was obtained by monomorphizing its parent with the given args.
+    Monomorphized(Box<GenericArgs>),
 }
 
 /// There are two kinds of `impl` blocks:

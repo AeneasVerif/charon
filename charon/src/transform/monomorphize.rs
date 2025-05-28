@@ -174,7 +174,7 @@ impl SubstVisitor<'_> {
             panic!("Substitution missing for {:?}", key);
         };
         *id = *subst_id;
-        // *gargs = GenericArgs::empty(GenericsSource::Builtin);
+        *gargs = GenericArgs::empty(gargs.target.clone());
     }
     fn subst_use_fun(&mut self, id: &mut FunDeclId, gargs: &mut GenericArgs) {
         trace!("Mono: Subst use: {:?} / {:?}", id, gargs);
@@ -184,7 +184,7 @@ impl SubstVisitor<'_> {
             panic!("Substitution missing for {:?}", key);
         };
         *id = *subst_id;
-        // *gargs = GenericArgs::empty(GenericsSource::Builtin);
+        *gargs = GenericArgs::empty(gargs.target.clone());
     }
     fn subst_use_glob(&mut self, id: &mut GlobalDeclId, gargs: &mut GenericArgs) {
         trace!("Mono: Subst use: {:?} / {:?}", id, gargs);
@@ -194,42 +194,19 @@ impl SubstVisitor<'_> {
             panic!("Substitution missing for {:?}", key);
         };
         *id = *subst_id;
-        // *gargs = GenericArgs::empty(GenericsSource::Builtin);
+        *gargs = GenericArgs::empty(gargs.target.clone());
     }
 }
 
 impl VisitAstMut for SubstVisitor<'_> {
-    fn exit_ullbc_statement(&mut self, stt: &mut ullbc_ast::Statement) {
-        match &mut stt.content {
-            ullbc_ast::RawStatement::Assign(_, Rvalue::Discriminant(Place { ty, .. }, id)) => {
-                // FIXME(Nadrieril): remove this id, replace with a helper fn
-                match ty.as_adt() {
-                    Some((TypeId::Adt(new_enum_id), _)) => {
-                        // Small trick; the discriminant doesn't carry the information on the
-                        // generics of the enum, since it's irrelevant, but we need it to do
-                        // the substitution, so we look at the type of the place we read from
-                        *id = new_enum_id;
-                    }
-                    _ => {}
-                }
-            }
-            _ => {}
-        }
-    }
-    fn exit_llbc_statement(&mut self, stt: &mut llbc_ast::Statement) {
-        match &mut stt.content {
-            llbc_ast::RawStatement::Assign(_, Rvalue::Discriminant(Place { ty, .. }, id)) => {
-                match ty.as_adt() {
-                    Some((TypeId::Adt(new_enum_id), _)) => {
-                        // Small trick; the discriminant doesn't carry the information on the
-                        // generics of the enum, since it's irrelevant, but we need it to do
-                        // the substitution, so we look at the type of the place we read from
-                        *id = new_enum_id;
-                    }
-                    _ => {}
-                }
-            }
-            _ => {}
+    fn exit_rvalue(&mut self, rval: &mut Rvalue) {
+        if let Rvalue::Discriminant(place, id) = rval
+            && let Some((TypeId::Adt(new_enum_id), _)) = place.ty.as_adt()
+        {
+            // Small trick; the discriminant doesn't carry the information on the
+            // generics of the enum, since it's irrelevant, but we need it to do
+            // the substitution, so we look at the type of the place we read from
+            *id = new_enum_id;
         }
     }
 
@@ -473,7 +450,12 @@ impl TransformPass for Transform {
                             };
                             let fun = ctx.translated.fun_decls.get(*fun_id).unwrap();
                             let mut fun_sub = fun.clone().substitute(gargs);
-                            // fun_sub.signature.generics = GenericParams::empty();
+                            fun_sub.signature.generics = GenericParams::empty();
+                            fun_sub
+                                .item_meta
+                                .name
+                                .name
+                                .push(PathElem::Monomorphized(gargs.clone()));
 
                             let fun_id_sub = ctx.translated.fun_decls.push_with(|id| {
                                 fun_sub.def_id = id;
@@ -485,6 +467,12 @@ impl TransformPass for Transform {
                         AnyTransId::Type(typ_id) => {
                             let typ = ctx.translated.type_decls.get(*typ_id).unwrap();
                             let mut typ_sub = typ.clone().substitute(gargs);
+                            typ_sub.generics = GenericParams::empty();
+                            typ_sub
+                                .item_meta
+                                .name
+                                .name
+                                .push(PathElem::Monomorphized(gargs.clone().into()));
 
                             let typ_id_sub = ctx.translated.type_decls.push_with(|id| {
                                 typ_sub.def_id = id;
@@ -501,9 +489,21 @@ impl TransformPass for Transform {
                                 continue;
                             };
                             let mut glob_sub = glob.clone().substitute(gargs);
+                            glob_sub.generics = GenericParams::empty();
+                            glob_sub
+                                .item_meta
+                                .name
+                                .name
+                                .push(PathElem::Monomorphized(gargs.clone().into()));
 
                             let init = ctx.translated.fun_decls.get(glob.init).unwrap();
                             let mut init_sub = init.clone().substitute(gargs);
+                            init_sub.signature.generics = GenericParams::empty();
+                            init_sub
+                                .item_meta
+                                .name
+                                .name
+                                .push(PathElem::Monomorphized(gargs.clone().into()));
 
                             let init_id_sub = ctx.translated.fun_decls.push_with(|id| {
                                 init_sub.def_id = id;
