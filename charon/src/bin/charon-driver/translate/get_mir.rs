@@ -19,7 +19,7 @@ impl TranslateCtx<'_> {
         &mut self,
         def_id: &hax::DefId,
         span: Span,
-    ) -> Result<Option<hax::MirBody<()>>, Error> {
+    ) -> Result<Option<hax::MirBody<hax::mir_kinds::Unknown>>, Error> {
         // Stopgap measure because there are still many panics in charon and hax.
         let mut this = panic::AssertUnwindSafe(&mut *self);
         let res = panic::catch_unwind(move || this.get_mir_inner(def_id, span));
@@ -37,7 +37,7 @@ impl TranslateCtx<'_> {
         &mut self,
         def_id: &hax::DefId,
         span: Span,
-    ) -> Result<Option<hax::MirBody<()>>, Error> {
+    ) -> Result<Option<hax::MirBody<hax::mir_kinds::Unknown>>, Error> {
         let tcx = self.tcx;
         let mir_level = self.options.mir_level;
         Ok(match get_mir_for_def_id_and_level(tcx, def_id, mir_level) {
@@ -51,7 +51,8 @@ impl TranslateCtx<'_> {
                     .with_owner_id(def_id)
                     .with_mir(body.clone());
                 // Translate
-                let body: hax::MirBody<()> = self.catch_sinto(&state, span, body.as_ref())?;
+                let body: hax::MirBody<hax::mir_kinds::Unknown> =
+                    self.catch_sinto(&state, span, body.as_ref())?;
                 Some(body)
             }
             None => None,

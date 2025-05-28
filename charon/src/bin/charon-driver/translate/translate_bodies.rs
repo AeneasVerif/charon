@@ -133,7 +133,10 @@ impl BodyTransCtx<'_, '_, '_> {
     }
 
     /// Translate a function's local variables by adding them in the environment.
-    fn translate_body_locals(&mut self, body: &hax::MirBody<()>) -> Result<(), Error> {
+    fn translate_body_locals(
+        &mut self,
+        body: &hax::MirBody<hax::mir_kinds::Unknown>,
+    ) -> Result<(), Error> {
         // Translate the parameters
         for (index, var) in body.local_decls.raw.iter().enumerate() {
             trace!("Translating local of index {} and type {:?}", index, var.ty);
@@ -170,7 +173,7 @@ impl BodyTransCtx<'_, '_, '_> {
 
     fn translate_basic_block(
         &mut self,
-        body: &hax::MirBody<()>,
+        body: &hax::MirBody<hax::mir_kinds::Unknown>,
         block: &hax::BasicBlockData,
     ) -> Result<BlockData, Error> {
         // Translate the statements
@@ -724,7 +727,7 @@ impl BodyTransCtx<'_, '_, '_> {
     /// We return an option, because we ignore some statements (`Nop`, `StorageLive`...)
     fn translate_statement(
         &mut self,
-        body: &hax::MirBody<()>,
+        body: &hax::MirBody<hax::mir_kinds::Unknown>,
         statement: &hax::Statement,
     ) -> Result<Option<Statement>, Error> {
         trace!("About to translate statement (MIR) {:?}", statement);
@@ -804,7 +807,7 @@ impl BodyTransCtx<'_, '_, '_> {
     /// Translate a terminator
     fn translate_terminator(
         &mut self,
-        body: &hax::MirBody<()>,
+        body: &hax::MirBody<hax::mir_kinds::Unknown>,
         terminator: &hax::Terminator,
         statements: &mut Vec<Statement>,
     ) -> Result<Terminator, Error> {
@@ -848,7 +851,7 @@ impl BodyTransCtx<'_, '_, '_> {
                 place,
                 target,
                 unwind: _, // We consider that panic is an error, and don't model unwinding
-                replace: _,
+                ..
             } => {
                 let place = self.translate_place(span, place)?;
                 statements.push(Statement::new(span, RawStatement::Drop(place)));
@@ -1134,7 +1137,7 @@ impl BodyTransCtx<'_, '_, '_> {
     pub fn translate_body(
         &mut self,
         span: Span,
-        body: &hax::MirBody<()>,
+        body: &hax::MirBody<hax::mir_kinds::Unknown>,
         source_text: &Option<String>,
     ) -> Result<Result<Body, Opaque>, Error> {
         // Stopgap measure because there are still many panics in charon and hax.
@@ -1152,7 +1155,7 @@ impl BodyTransCtx<'_, '_, '_> {
 
     fn translate_body_aux(
         &mut self,
-        body: &hax::MirBody<()>,
+        body: &hax::MirBody<hax::mir_kinds::Unknown>,
         source_text: &Option<String>,
     ) -> Result<Result<Body, Opaque>, Error> {
         // Compute the span information
