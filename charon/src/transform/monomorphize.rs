@@ -473,6 +473,11 @@ impl TransformPass for Transform {
                             };
                             let fun = ctx.translated.fun_decls.get(*fun_id).unwrap();
                             let mut fun_sub = fun.clone().substitute(gargs);
+                            fun_sub
+                                .item_meta
+                                .name
+                                .name
+                                .push(PathElem::Monomorphized(gargs.clone()));
                             // fun_sub.signature.generics = GenericParams::empty();
 
                             let fun_id_sub = ctx.translated.fun_decls.push_with(|id| {
@@ -485,6 +490,11 @@ impl TransformPass for Transform {
                         AnyTransId::Type(typ_id) => {
                             let typ = ctx.translated.type_decls.get(*typ_id).unwrap();
                             let mut typ_sub = typ.clone().substitute(gargs);
+                            typ_sub
+                                .item_meta
+                                .name
+                                .name
+                                .push(PathElem::Monomorphized(gargs.clone().into()));
 
                             let typ_id_sub = ctx.translated.type_decls.push_with(|id| {
                                 typ_sub.def_id = id;
@@ -501,9 +511,19 @@ impl TransformPass for Transform {
                                 continue;
                             };
                             let mut glob_sub = glob.clone().substitute(gargs);
+                            glob_sub
+                                .item_meta
+                                .name
+                                .name
+                                .push(PathElem::Monomorphized(gargs.clone().into()));
 
                             let init = ctx.translated.fun_decls.get(glob.init).unwrap();
                             let mut init_sub = init.clone().substitute(gargs);
+                            init_sub
+                                .item_meta
+                                .name
+                                .name
+                                .push(PathElem::Monomorphized(gargs.clone().into()));
 
                             let init_id_sub = ctx.translated.fun_decls.push_with(|id| {
                                 init_sub.def_id = id;

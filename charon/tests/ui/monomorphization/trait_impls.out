@@ -1,6 +1,6 @@
 # Final LLBC before serialization:
 
-fn test_crate::do_test<T>(@1: bool, @2: bool)
+fn test_crate::do_test::<bool><T>(@1: bool, @2: bool)
 where
     [@TraitClause0]: core::marker::Sized<bool>,
     [@TraitClause1]: core::cmp::Eq<bool>,
@@ -69,7 +69,7 @@ fn test_crate::main()
     let @1: (); // anonymous local
 
     storage_live(@1)
-    @1 := test_crate::do_test<bool>[core::marker::Sized<bool>, core::cmp::impls::{impl core::cmp::Eq for bool}#38](const (true), const (true))
+    @1 := test_crate::do_test::<bool><bool>[core::marker::Sized<bool>, core::cmp::impls::{impl core::cmp::Eq for bool}#38](const (true), const (true))
     storage_dead(@1)
     @0 := ()
     @0 := ()

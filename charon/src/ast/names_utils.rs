@@ -8,7 +8,7 @@ impl PathElem {
     fn equals_ident(&self, id: &str) -> bool {
         match self {
             PathElem::Ident(s, d) => s == id && d.is_zero(),
-            PathElem::Impl(..) => false,
+            _ => false,
         }
     }
 }
