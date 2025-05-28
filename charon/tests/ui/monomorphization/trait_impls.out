@@ -69,7 +69,7 @@ fn test_crate::main()
     let @1: (); // anonymous local
 
     storage_live(@1)
-    @1 := @Fun7<bool>[core::marker::Sized<bool>, core::cmp::impls::{impl core::cmp::Eq for bool}#38](const (true), const (true))
+    @1 := test_crate::do_test<bool>[core::marker::Sized<bool>, core::cmp::impls::{impl core::cmp::Eq for bool}#38](const (true), const (true))
     storage_dead(@1)
     @0 := ()
     @0 := ()

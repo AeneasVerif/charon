@@ -42,7 +42,7 @@ use indexmap::IndexMap;
     // Types that we unconditionally explore.
     drive(
         AbortKind, Assert, BinOp, Body, BorrowKind, BuiltinFunId, BuiltinIndexOp, BuiltinTy, Call,
-        CastKind, ClosureInfo, ClosureKind, ConstantExpr, ConstGenericVar, ConstGenericVarId,
+        CastKind, ClosureInfo, ClosureKind, ConstGenericVar, ConstGenericVarId,
         Disambiguator, ExistentialPredicate, Field, FieldId, FieldProjKind, FloatTy, FloatValue,
         FnOperand, FunId, FunIdOrTraitMethodRef, FunSig, ImplElem, IntegerTy, Literal, LiteralTy,
         llbc_ast::Block, llbc_ast::ExprBody, llbc_ast::RawStatement, llbc_ast::Switch,
@@ -70,7 +70,7 @@ use indexmap::IndexMap;
         for<T: AstVisitable> RegionBinder<T>,
         for<T: AstVisitable> Binder<T>,
         llbc_statement: llbc_ast::Statement, ullbc_statement: ullbc_ast::Statement,
-        AggregateKind, FnPtr, ItemKind, ItemMeta, Span,
+        AggregateKind, FnPtr, ItemKind, ItemMeta, Span, ConstantExpr,
         FunDeclId, GlobalDeclId, TypeDeclId, TraitDeclId, TraitImplId,
         FunDecl, GlobalDecl, TypeDecl, TraitDecl, TraitImpl,
     )

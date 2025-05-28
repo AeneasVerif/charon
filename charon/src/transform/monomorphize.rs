@@ -535,6 +535,11 @@ impl TransformPass for Transform {
                 }
                 *mono = OptionHint::Some(new_mono);
                 data.worklist.push(new_mono);
+
+                let item = ctx.translated.get_item(new_mono).unwrap();
+                ctx.translated
+                    .item_names
+                    .insert(new_mono, item.item_meta().name.clone());
             }
 
             // 3. Substitute all generics with the monomorphized versions
