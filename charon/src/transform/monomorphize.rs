@@ -165,6 +165,13 @@ impl VisitAst for UsageVisitor<'_> {
 struct SubstVisitor<'a> {
     data: &'a PassData,
 }
+impl GenericArgs {
+    fn remove_non_lifetime_args(&mut self) {
+        self.types = Default::default();
+        self.const_generics = Default::default();
+        self.trait_refs = Default::default();
+    }
+}
 impl SubstVisitor<'_> {
     fn subst_use_ty(&mut self, id: &mut TypeDeclId, gargs: &mut GenericArgs) {
         trace!("Mono: Subst use: {:?} / {:?}", id, gargs);
@@ -174,7 +181,7 @@ impl SubstVisitor<'_> {
             panic!("Substitution missing for {:?}", key);
         };
         *id = *subst_id;
-        *gargs = GenericArgs::empty(gargs.target.clone());
+        gargs.remove_non_lifetime_args();
     }
     fn subst_use_fun(&mut self, id: &mut FunDeclId, gargs: &mut GenericArgs) {
         trace!("Mono: Subst use: {:?} / {:?}", id, gargs);
@@ -184,7 +191,7 @@ impl SubstVisitor<'_> {
             panic!("Substitution missing for {:?}", key);
         };
         *id = *subst_id;
-        *gargs = GenericArgs::empty(gargs.target.clone());
+        gargs.remove_non_lifetime_args();
     }
     fn subst_use_glob(&mut self, id: &mut GlobalDeclId, gargs: &mut GenericArgs) {
         trace!("Mono: Subst use: {:?} / {:?}", id, gargs);
@@ -194,7 +201,7 @@ impl SubstVisitor<'_> {
             panic!("Substitution missing for {:?}", key);
         };
         *id = *subst_id;
-        *gargs = GenericArgs::empty(gargs.target.clone());
+        gargs.remove_non_lifetime_args();
     }
 }
 
