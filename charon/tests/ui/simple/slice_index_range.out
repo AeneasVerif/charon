@@ -95,7 +95,7 @@ where
   args: &'a (Slice<Argument<'a>>),
 }
 
-// Full name: core::fmt::{Arguments<'a>}::new_const
+// Full name: core::fmt::rt::{Arguments<'a>}::new_const
 pub fn new_const<'a, const N : usize>(@1: &'a (Array<&'static (Str), const N : usize>)) -> Arguments<'a>
 {
     let @0: Arguments<'_>; // return
@@ -973,6 +973,7 @@ where
         @0 := move (@21)
     }
     else {
+        storage_live(self@18)
         self@18 := move ((self@1).start)
         self@19 := move ((self@1).exhausted)
         exclusive_end@6 := copy (self@4) wrapping.+ const (1 : usize)
@@ -985,6 +986,7 @@ where
         }
         self@8 := copy (start@7)
         storage_dead(start@7)
+        storage_dead(self@18)
         storage_live(@11)
         storage_live(@14)
         @14 := copy (exclusive_end@6) < copy (self@8)
@@ -1091,6 +1093,7 @@ where
         @0 := move (@21)
     }
     else {
+        storage_live(self@18)
         self@18 := move ((self@1).start)
         self@19 := move ((self@1).exhausted)
         exclusive_end@6 := copy (self@4) wrapping.+ const (1 : usize)
@@ -1103,6 +1106,7 @@ where
         }
         self@8 := copy (start@7)
         storage_dead(start@7)
+        storage_dead(self@18)
         storage_live(@11)
         storage_live(@14)
         @14 := copy (exclusive_end@6) < copy (self@8)
@@ -1175,9 +1179,9 @@ where
     storage_live(self@5)
     storage_live(@7)
     storage_live(@8)
-    storage_live(self@12)
     storage_live(self@13)
     storage_live(self@14)
+    storage_live(self@12)
     self@12 := move ((self@1).start)
     self@13 := move ((self@1).end)
     self@14 := move ((self@1).exhausted)
@@ -1191,6 +1195,7 @@ where
     }
     self@5 := copy (start@4)
     storage_dead(start@4)
+    storage_dead(self@12)
     storage_live(new_len@9)
     storage_live(@6)
     @6 := ub_checks<bool>
@@ -1240,9 +1245,9 @@ where
     storage_live(self@5)
     storage_live(@7)
     storage_live(@8)
-    storage_live(self@12)
     storage_live(self@13)
     storage_live(self@14)
+    storage_live(self@12)
     self@12 := move ((self@1).start)
     self@13 := move ((self@1).end)
     self@14 := move ((self@1).exhausted)
@@ -1256,6 +1261,7 @@ where
     }
     self@5 := copy (start@4)
     storage_dead(start@4)
+    storage_dead(self@12)
     storage_live(new_len@9)
     storage_live(@6)
     @6 := ub_checks<bool>
@@ -1321,8 +1327,10 @@ where
     else {
         storage_dead(@3)
         storage_live(@7)
+        storage_live(self@11)
         self@11 := move ((self@1).start)
         self@12 := move ((self@1).exhausted)
+        storage_live(exclusive_end@8)
         exclusive_end@8 := copy (self@4) wrapping.+ const (1 : usize)
         storage_live(start@9)
         if copy (self@12) {
@@ -1336,6 +1344,8 @@ where
         @7 := Range { start: move (@10), end: copy (exclusive_end@8) }
         storage_dead(@10)
         storage_dead(start@9)
+        storage_dead(exclusive_end@8)
+        storage_dead(self@11)
         @0 := {impl SliceIndex<Slice<T>> for Range<usize>[Sized<usize>]}::index<'_, T>[@TraitClause0](move (@7), move (slice@2))
         storage_dead(@7)
         return
@@ -1384,8 +1394,10 @@ where
     else {
         storage_dead(@3)
         storage_live(@7)
+        storage_live(self@11)
         self@11 := move ((self@1).start)
         self@12 := move ((self@1).exhausted)
+        storage_live(exclusive_end@8)
         exclusive_end@8 := copy (self@4) wrapping.+ const (1 : usize)
         storage_live(start@9)
         if copy (self@12) {
@@ -1399,6 +1411,8 @@ where
         @7 := Range { start: move (@10), end: copy (exclusive_end@8) }
         storage_dead(@10)
         storage_dead(start@9)
+        storage_dead(exclusive_end@8)
+        storage_dead(self@11)
         @0 := {impl SliceIndex<Slice<T>> for Range<usize>[Sized<usize>]}::index_mut<'_, T>[@TraitClause0](move (@7), move (slice@2))
         storage_dead(@7)
         return

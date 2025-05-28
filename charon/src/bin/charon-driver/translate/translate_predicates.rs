@@ -205,7 +205,6 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                     trait_decl_ref,
                 }
             }
-            // The self clause and the other clauses are handled in a similar manner
             ImplExprAtom::SelfImpl {
                 r#trait: trait_ref,
                 path,
@@ -373,6 +372,9 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                     register_error!(self, span, "Error during trait resolution: {}", msg);
                 }
                 trait_ref
+            }
+            ImplExprAtom::Drop(..) => {
+                raise_error!(self, span, "Unsupported predicate: drop glue")
             }
         };
         Ok(trait_ref)

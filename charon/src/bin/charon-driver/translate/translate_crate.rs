@@ -524,6 +524,7 @@ pub fn translate<'tcx, 'ctx>(
         tcx,
         hax::options::Options {
             inline_anon_consts: true,
+            resolve_drop_bounds: false,
         },
     );
 
