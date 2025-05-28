@@ -29,6 +29,7 @@ fn repr_name(crate_data: &TranslatedCrate, n: &Name) -> String {
                 },
                 ImplElem::Ty(..) => "<inherent impl>".to_string(),
             },
+            PathElem::Monomorphized(..) => "<mono>".to_string(),
         })
         .join("::")
 }

@@ -350,6 +350,9 @@ and path_elem_to_string (env : 'a fmt_env) (e : path_elem) : string =
         if d = Disambiguator.zero then "" else "#" ^ Disambiguator.to_string d
       in
       "{" ^ impl_elem_to_string env impl ^ "}" ^ d
+  | PeMonomorphized args ->
+      let params, _ = generic_args_to_strings env args in
+      "<" ^ String.concat ", " params ^ ">"
 
 and name_to_string (env : 'a fmt_env) (n : name) : string =
   let name = List.map (path_elem_to_string env) n in

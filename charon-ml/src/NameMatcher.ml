@@ -447,6 +447,7 @@ let rec match_name_with_generics (ctx : 'fun_body ctx) (c : match_config)
         (Failure
            "match_name_with_generics: attempt to match empty names and patterns")
       (* We shouldn't get there: the names/patterns should be non empty *)
+  | [], [ PeMonomorphized _ ] -> true (* We ignored monomorphizeds *)
   | [ PIdent (pid, pd, pg) ], [ PeIdent (id, d) ] ->
       log#ldebug
         (lazy
@@ -922,10 +923,10 @@ let rec name_with_generic_args_to_pattern_aux (ctx : 'fun_body ctx)
     =
   match n with
   | [] -> raise (Failure "Empty names are not valid")
-  | [ e ] -> [ path_elem_with_generic_args_to_pattern ctx c e generics ]
+  | [ e ] -> path_elem_with_generic_args_to_pattern ctx c e generics
   | e :: n ->
       path_elem_with_generic_args_to_pattern ctx c e None
-      :: name_with_generic_args_to_pattern_aux ctx c n generics
+      @ name_with_generic_args_to_pattern_aux ctx c n generics
 
 and name_to_pattern_aux (ctx : 'fun_body ctx) (c : to_pat_config) (n : T.name) :
     pattern =
@@ -933,14 +934,16 @@ and name_to_pattern_aux (ctx : 'fun_body ctx) (c : to_pat_config) (n : T.name) :
 
 and path_elem_with_generic_args_to_pattern (ctx : 'fun_body ctx)
     (c : to_pat_config) (e : T.path_elem) (generics : generic_args option) :
-    pattern_elem =
+    pattern_elem list =
   match e with
-  | PeIdent (s, d) -> (
+  | PeIdent (s, d) -> begin
       let d = T.Disambiguator.to_int d in
       match generics with
-      | None -> PIdent (s, d, [])
-      | Some args -> PIdent (s, d, args))
-  | PeImpl (impl, _) -> impl_elem_to_pattern ctx c impl
+      | None -> [ PIdent (s, d, []) ]
+      | Some args -> [ PIdent (s, d, args) ]
+    end
+  | PeImpl (impl, _) -> [ impl_elem_to_pattern ctx c impl ]
+  | PeMonomorphized _ -> []
 
 and impl_elem_to_pattern (ctx : 'fun_body ctx) (c : to_pat_config)
     (impl : T.impl_elem) : pattern_elem =

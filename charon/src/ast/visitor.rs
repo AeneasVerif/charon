@@ -42,12 +42,12 @@ use indexmap::IndexMap;
     // Types that we unconditionally explore.
     drive(
         AbortKind, Assert, BinOp, Body, BorrowKind, BuiltinFunId, BuiltinIndexOp, BuiltinTy, Call,
-        CastKind, ClosureInfo, ClosureKind, ConstantExpr, ConstGenericVar, ConstGenericVarId,
+        CastKind, ClosureInfo, ClosureKind, ConstGenericVar, ConstGenericVarId,
         Disambiguator, ExistentialPredicate, Field, FieldId, FieldProjKind, FloatTy, FloatValue,
         FnOperand, FunId, FunIdOrTraitMethodRef, FunSig, ImplElem, IntegerTy, Literal, LiteralTy,
         llbc_ast::Block, llbc_ast::ExprBody, llbc_ast::RawStatement, llbc_ast::Switch,
         Locals, Name, NullOp, Opaque, Operand, PathElem, PlaceKind, ProjectionElem, RawConstantExpr,
-        RefKind, RegionId, RegionVar, Rvalue, ScalarValue, TraitClauseId, TraitItemName,
+        RefKind, RegionId, RegionVar, ScalarValue, TraitClauseId, TraitItemName,
         TranslatedCrate, TypeDeclKind, TypeId, TypeVar, TypeVarId,
         ullbc_ast::BlockData, ullbc_ast::BlockId, ullbc_ast::ExprBody, ullbc_ast::RawStatement,
         ullbc_ast::RawTerminator, ullbc_ast::SwitchTargets, ullbc_ast::Terminator,
@@ -65,12 +65,12 @@ use indexmap::IndexMap;
     override(
         DeBruijnId, Ty, TyKind, Region, ConstGeneric, TraitRef, TraitRefKind,
         FunDeclRef, GlobalDeclRef, TraitDeclRef, TraitImplRef,
-        GenericArgs, GenericParams, TraitClause, TraitTypeConstraint, Place,
+        GenericArgs, GenericParams, TraitClause, TraitTypeConstraint, Place, Rvalue,
         for<T: AstVisitable + Idx> DeBruijnVar<T>,
         for<T: AstVisitable> RegionBinder<T>,
         for<T: AstVisitable> Binder<T>,
         llbc_statement: llbc_ast::Statement, ullbc_statement: ullbc_ast::Statement,
-        AggregateKind, FnPtr, ItemKind, ItemMeta, Span,
+        AggregateKind, FnPtr, ItemKind, ItemMeta, Span, ConstantExpr,
         FunDeclId, GlobalDeclId, TypeDeclId, TraitDeclId, TraitImplId,
         FunDecl, GlobalDecl, TypeDecl, TraitDecl, TraitImpl,
     )

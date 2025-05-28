@@ -898,6 +898,11 @@ and path_elem_of_json (ctx : of_json_ctx) (js : json) :
         let* x_0 = impl_elem_of_json ctx x_0 in
         let* x_1 = disambiguator_of_json ctx x_1 in
         Ok (PeImpl (x_0, x_1))
+    | `Assoc [ ("Monomorphized", monomorphized) ] ->
+        let* monomorphized =
+          box_of_json generic_args_of_json ctx monomorphized
+        in
+        Ok (PeMonomorphized monomorphized)
     | _ -> Error "")
 
 and impl_elem_of_json (ctx : of_json_ctx) (js : json) :

@@ -311,32 +311,8 @@ impl<Id: Copy, C: AstFormatter + Formatter<Id>> FmtWithCtx<C> for GDeclarationGr
 }
 
 impl GenericArgs {
-    pub(crate) fn fmt_with_ctx_no_brackets<C>(&self, ctx: &C) -> String
-    where
-        C: AstFormatter,
-    {
-        assert!(self.trait_refs.is_empty());
-        let mut params = Vec::new();
-        let GenericArgs {
-            regions,
-            types,
-            const_generics,
-            trait_refs: _,
-            target: _,
-        } = self;
-        for x in regions {
-            params.push(x.fmt_with_ctx(ctx));
-        }
-        for x in types {
-            params.push(x.fmt_with_ctx(ctx));
-        }
-        for x in const_generics {
-            params.push(x.fmt_with_ctx(ctx));
-        }
-        params.join(", ")
-    }
-
-    pub fn fmt_with_ctx_split_trait_refs<C>(&self, ctx: &C) -> String
+    /// Returns a list of formatted params and a list of formatted clauses.
+    pub(crate) fn fmt_each<C>(&self, ctx: &C) -> (Vec<String>, Vec<String>)
     where
         C: AstFormatter,
     {
@@ -357,16 +333,33 @@ impl GenericArgs {
         for x in const_generics {
             params.push(x.fmt_with_ctx(ctx));
         }
-        let params = if params.is_empty() {
-            "".to_string()
-        } else {
-            format!("<{}>", params.join(", "))
-        };
 
         let mut clauses = Vec::new();
         for x in trait_refs {
             clauses.push(x.fmt_with_ctx(ctx));
         }
+        (params, clauses)
+    }
+
+    pub(crate) fn fmt_with_ctx_no_brackets<C>(&self, ctx: &C) -> String
+    where
+        C: AstFormatter,
+    {
+        let (params, clauses) = self.fmt_each(ctx);
+        assert!(clauses.is_empty());
+        params.join(", ")
+    }
+
+    pub fn fmt_with_ctx_split_trait_refs<C>(&self, ctx: &C) -> String
+    where
+        C: AstFormatter,
+    {
+        let (params, clauses) = self.fmt_each(ctx);
+        let params = if params.is_empty() {
+            "".to_string()
+        } else {
+            format!("<{}>", params.join(", "))
+        };
         let clauses = if clauses.is_empty() {
             "".to_string()
         } else {
@@ -731,6 +724,10 @@ impl<C: AstFormatter> FmtWithCtx<C> for PathElem {
                     format!("#{}", d)
                 };
                 format!("{impl_elem}{d}")
+            }
+            PathElem::Monomorphized(args) => {
+                let (params, _) = args.fmt_each(ctx);
+                format!("<{}>", params.join(", "))
             }
         }
     }
