@@ -447,6 +447,7 @@ let rec match_name_with_generics (ctx : 'fun_body ctx) (c : match_config)
         (Failure
            "match_name_with_generics: attempt to match empty names and patterns")
       (* We shouldn't get there: the names/patterns should be non empty *)
+  | [], [ PeMonomorphized _ ] -> true (* We ignored monomorphizeds *)
   | [ PIdent (pid, pd, pg) ], [ PeIdent (id, d) ] ->
       log#ldebug
         (lazy
