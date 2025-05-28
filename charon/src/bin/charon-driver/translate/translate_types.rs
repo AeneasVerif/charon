@@ -804,7 +804,7 @@ impl ItemTransCtx<'_, '_> {
             Err(err) => TypeDeclKind::Error(err.msg),
         };
 
-        let peak_generics = self.binding_levels.peek().unwrap();
+        let peak_generics = self.the_only_binder();
 
         // For now, only try to get layouts for types that are not polymorphic over
         // another type or a constant since these might not have a statically known layout.

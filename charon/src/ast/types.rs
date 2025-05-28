@@ -353,9 +353,10 @@ pub enum PredicateOrigin {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Drive, DriveMut)]
 pub struct SimpleLayout {
     /// The size of the type in bytes.
+    #[drive(skip)]
     pub size: u64,
-    /// Since rustc_abi::Align doesn't implement De-/Serialize,
-    /// we translate it to a u64 representing the number of bytes of the alignment.
+    /// The alignment, in bytes.
+    #[drive(skip)]
     pub align: u64,
 }
 

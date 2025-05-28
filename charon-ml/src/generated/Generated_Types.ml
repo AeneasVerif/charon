@@ -654,10 +654,7 @@ and generic_params = {
  *)
 and simple_layout = {
   size : int;  (** The size of the type in bytes. *)
-  align : int;
-      (** Since rustc_abi::Align doesn't implement De-/Serialize,
-        we translate it to a u64 representing the number of bytes of the alignment.
-     *)
+  align : int;  (** The alignment, in bytes. *)
 }
 
 (** A type declaration.
