@@ -1302,14 +1302,37 @@ and existential_predicate_of_json (ctx : of_json_ctx) (js : json) :
     | `Null -> Ok ()
     | _ -> Error "")
 
-and simple_layout_of_json (ctx : of_json_ctx) (js : json) :
-    (simple_layout, string) result =
+and variant_layout_of_json (ctx : of_json_ctx) (js : json) :
+    (variant_layout, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
-    | `Assoc [ ("size", size); ("align", align) ] ->
-        let* size = int_of_json ctx size in
-        let* align = int_of_json ctx align in
-        Ok ({ size; align } : simple_layout)
+    | `Assoc [ ("field_offsets", field_offsets) ] ->
+        let* field_offsets =
+          vector_of_json field_id_of_json int_of_json ctx field_offsets
+        in
+        Ok ({ field_offsets } : variant_layout)
+    | _ -> Error "")
+
+and layout_of_json (ctx : of_json_ctx) (js : json) : (layout, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with
+    | `Assoc
+        [
+          ("size", size);
+          ("align", align);
+          ("discriminant_offset", discriminant_offset);
+          ("variant_layouts", variant_layouts);
+        ] ->
+        let* size = option_of_json int_of_json ctx size in
+        let* align = option_of_json int_of_json ctx align in
+        let* discriminant_offset =
+          option_of_json int_of_json ctx discriminant_offset
+        in
+        let* variant_layouts =
+          vector_of_json variant_id_of_json variant_layout_of_json ctx
+            variant_layouts
+        in
+        Ok ({ size; align; discriminant_offset; variant_layouts } : layout)
     | _ -> Error "")
 
 and type_decl_of_json (ctx : of_json_ctx) (js : json) :
@@ -1328,7 +1351,7 @@ and type_decl_of_json (ctx : of_json_ctx) (js : json) :
         let* item_meta = item_meta_of_json ctx item_meta in
         let* generics = generic_params_of_json ctx generics in
         let* kind = type_decl_kind_of_json ctx kind in
-        let* layout = option_of_json simple_layout_of_json ctx layout in
+        let* layout = layout_of_json ctx layout in
         Ok ({ def_id; item_meta; generics; kind; layout } : type_decl)
     | _ -> Error "")
 

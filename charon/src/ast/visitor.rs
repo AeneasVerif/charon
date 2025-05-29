@@ -39,6 +39,7 @@ use indexmap::IndexMap;
     // Defines the `Visit[Mut]` traits and the `drive[_mut]` method that drives them.
     visitor(drive(&VisitAst)),
     visitor(drive_mut(&mut VisitAstMut)),
+    skip(u64),
     // Types that we unconditionally explore.
     drive(
         AbortKind, Assert, BinOp, Body, BorrowKind, BuiltinFunId, BuiltinIndexOp, BuiltinTy, Call,
@@ -72,7 +73,7 @@ use indexmap::IndexMap;
         llbc_statement: llbc_ast::Statement, ullbc_statement: ullbc_ast::Statement,
         AggregateKind, FnPtr, ItemKind, ItemMeta, Span, ConstantExpr,
         FunDeclId, GlobalDeclId, TypeDeclId, TraitDeclId, TraitImplId,
-        FunDecl, GlobalDecl, TypeDecl, TraitDecl, TraitImpl, SimpleLayout
+        FunDecl, GlobalDecl, TypeDecl, TraitDecl, TraitImpl, Layout, VariantLayout
     )
 )]
 pub trait AstVisitable: Any {
@@ -142,7 +143,7 @@ impl<K: Any, T: AstVisitable> AstVisitable for IndexMap<K, T> {
     skip(
         AbortKind, BinOp, BorrowKind, ConstantExpr, ConstGeneric, FieldId, FieldProjKind,
         FunDeclId, FunIdOrTraitMethodRef, GenericArgs, GlobalDeclRef, IntegerTy,
-        NullOp, RefKind, ScalarValue, Span, Ty, TypeDeclId, TypeId, UnOp, VariantId, LocalId,
+        NullOp, RefKind, ScalarValue, Span, Ty, TypeDeclId, TypeId, UnOp, VariantId, LocalId, u64
     ),
     // Types that we unconditionally explore.
     drive(

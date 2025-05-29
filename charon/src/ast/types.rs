@@ -345,19 +345,37 @@ pub enum PredicateOrigin {
     TraitItem(TraitItemName),
 }
 
+// rustc counts bytes in layouts as u64
+type ByteCount = u64;
+
+/// Simplified layout of a single variant.
+///
+/// Maps fields, that are not shared between all variants to their offset within the layout.
+#[derive(Debug, Default, Clone, PartialEq, Eq, Serialize, Deserialize, Drive, DriveMut)]
+pub struct VariantLayout {
+    pub field_offsets: Vector<FieldId, ByteCount>,
+}
+
 /// Simplified type layout information.
 ///
-/// Does not include information about field offsets, paddings, niches, or variants yet.
-/// TODO: This should probably contain more information from
-/// [`rustc_abi::LayoutData`](https://doc.rust-lang.org/beta/nightly-rustc/rustc_abi/struct.LayoutData.html) in the future.
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Drive, DriveMut)]
-pub struct SimpleLayout {
+/// Does not include information about niches.
+/// If the type does not have fully known layout (e.g. it is ?Sized)
+/// some of the layout parts are not available.
+#[derive(Debug, Default, Clone, PartialEq, Eq, Serialize, Deserialize, Drive, DriveMut)]
+pub struct Layout {
     /// The size of the type in bytes.
     #[drive(skip)]
-    pub size: u64,
+    pub size: Option<ByteCount>,
     /// The alignment, in bytes.
     #[drive(skip)]
-    pub align: u64,
+    pub align: Option<ByteCount>,
+    /// The offsets the discriminant as it is shared between all variants.
+    #[drive(skip)]
+    pub discriminant_offset: Option<ByteCount>,
+    /// Map from [VariantId] to the corresponding field layouts.
+    /// Structs are modeled as being the only variant, uninhabited types
+    /// as being without any variants, etc.
+    pub variant_layouts: Vector<VariantId, VariantLayout>,
 }
 
 /// A type declaration.
@@ -382,8 +400,8 @@ pub struct TypeDecl {
     pub generics: GenericParams,
     /// The type kind: enum, struct, or opaque.
     pub kind: TypeDeclKind,
-    /// The layout of the type if statically decidable (e.g. for monomorphized, sized types)
-    pub layout: Option<SimpleLayout>,
+    /// The layout of the type.
+    pub layout: Layout,
 }
 
 generate_index_type!(VariantId, "Variant");
