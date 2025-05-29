@@ -76,6 +76,17 @@ let g_declaration_group_to_list (g : 'a g_declaration_group) : 'a list =
   | RecGroup ids -> ids
   | NonRecGroup id -> [ id ]
 
+let g_declaration_group_map (f : 'a -> 'a) (g : 'a g_declaration_group) :
+    'a g_declaration_group =
+  match g with
+  | RecGroup ids -> RecGroup (List.map f ids)
+  | NonRecGroup id -> NonRecGroup (f id)
+
+let g_declaration_group_iter (f : 'a -> unit) (g : 'a g_declaration_group) :
+    unit =
+  let ids = g_declaration_group_to_list g in
+  List.iter f ids
+
 (** List all the ids in this declaration group. *)
 let declaration_group_to_list (g : declaration_group) : any_decl_id list =
   match g with
@@ -178,3 +189,98 @@ let any_decl_id_to_kind_name (id : any_decl_id) : string =
   | IdGlobal _ -> "global decl"
   | IdTraitDecl _ -> "trait decl"
   | IdTraitImpl _ -> "trait impl"
+
+let g_declaration_group_filter_map (f : 'a -> 'a option)
+    (g : 'a g_declaration_group) : 'a g_declaration_group option =
+  match g with
+  | NonRecGroup id -> begin
+      match f id with
+      | Some id -> Some (NonRecGroup id)
+      | None -> None
+    end
+  | RecGroup ids ->
+      let ids = List.filter_map f ids in
+      if ids = [] then None else Some (RecGroup ids)
+
+class ['self] filter_decl_id =
+  object (self : 'self (* inherit [_] VisitorsRuntime.iter *))
+    method visit_type_decl_id _ (id : TypeDeclId.id) = Some id
+    method visit_fun_decl_id _ (id : FunDeclId.id) = Some id
+    method visit_global_decl_id _ (id : GlobalDeclId.id) = Some id
+    method visit_trait_decl_id _ (id : TraitDeclId.id) = Some id
+    method visit_trait_impl_id _ (id : TraitImplId.id) = Some id
+
+    method visit_any_decl_id (env : 'a) (id : any_decl_id) : any_decl_id option
+        =
+      match id with
+      | IdType id ->
+          Option.map (fun id -> IdType id) (self#visit_type_decl_id env id)
+      | IdFun id ->
+          Option.map (fun id -> IdFun id) (self#visit_fun_decl_id env id)
+      | IdGlobal id ->
+          Option.map (fun id -> IdGlobal id) (self#visit_global_decl_id env id)
+      | IdTraitDecl id ->
+          Option.map
+            (fun id -> IdTraitDecl id)
+            (self#visit_trait_decl_id env id)
+      | IdTraitImpl id ->
+          Option.map
+            (fun id -> IdTraitImpl id)
+            (self#visit_trait_impl_id env id)
+
+    method visit_type_declaration_group env (g : type_declaration_group)
+        : type_declaration_group option =
+      g_declaration_group_filter_map (self#visit_type_decl_id env) g
+
+    method visit_fun_declaration_group env (g : fun_declaration_group)
+        : fun_declaration_group option =
+      g_declaration_group_filter_map (self#visit_fun_decl_id env) g
+
+    method visit_global_declaration_group env (g : global_declaration_group)
+        : global_declaration_group option =
+      g_declaration_group_filter_map (self#visit_global_decl_id env) g
+
+    method visit_trait_declaration_group env (g : trait_declaration_group)
+        : trait_declaration_group option =
+      g_declaration_group_filter_map (self#visit_trait_decl_id env) g
+
+    method visit_trait_impl_group env (g : trait_impl_group)
+        : trait_impl_group option =
+      g_declaration_group_filter_map (self#visit_trait_impl_id env) g
+
+    method visit_mixed_declaration_group env (g : mixed_declaration_group)
+        : mixed_declaration_group option =
+      g_declaration_group_filter_map (self#visit_any_decl_id env) g
+
+    method visit_declaration_group env (g : declaration_group)
+        : declaration_group option =
+      match g with
+      | TypeGroup g ->
+          Option.map
+            (fun g -> TypeGroup g)
+            (self#visit_type_declaration_group env g)
+      | FunGroup g ->
+          Option.map
+            (fun g -> FunGroup g)
+            (self#visit_fun_declaration_group env g)
+      | GlobalGroup g ->
+          Option.map
+            (fun g -> GlobalGroup g)
+            (self#visit_global_declaration_group env g)
+      | TraitDeclGroup g ->
+          Option.map
+            (fun g -> TraitDeclGroup g)
+            (self#visit_trait_declaration_group env g)
+      | TraitImplGroup g ->
+          Option.map
+            (fun g -> TraitImplGroup g)
+            (self#visit_trait_impl_group env g)
+      | MixedGroup g ->
+          Option.map
+            (fun g -> MixedGroup g)
+            (self#visit_mixed_declaration_group env g)
+
+    method visit_declaration_groups env (gl : declaration_group list)
+        : declaration_group list =
+      List.filter_map (self#visit_declaration_group env) gl
+  end
