@@ -716,23 +716,121 @@ fn known_trait_method_call() -> Result<(), Box<dyn Error>> {
 fn type_layout() -> anyhow::Result<()> {
     let crate_data = translate(
         r#"
-        struct StaticLayout {
+        use std::num::NonZero;
+
+        struct SimpleStruct {
             x: u32,
             y: u32,
             z: u32
         }
 
-        struct DynamicLayout<T> {
+        struct GenericStruct<T> {
             a: usize,
             b: T
         }
+
+        struct UnsizedStruct {
+            x: usize,
+            y: [usize]
+        }
+
+        enum SimpleEnum {
+            Var1,
+            Other,
+        }
+
+        enum SimpleAdt {
+            EmptyVar,
+            StructVar { x: usize, y: usize },
+            TupleVar(u32, u32),
+        }
+
+        enum NicheAdt {
+            None,
+            Some(NonZero<u32>)
+        }
+
+        struct IsAZST;
         "#,
     )?;
 
+    let default_layout = Layout::default();
+    let default_variant_layout = VariantLayout::default();
+
+    // SimpleStruct
     assert_eq!(
         crate_data.type_decls[0].layout,
-        Some(SimpleLayout { size: 12, align: 4 })
+        Layout {
+            size: Some(12),
+            align: Some(4),
+            discriminant_offset: None,
+            variant_layouts: Vector::new()
+        }
     );
-    assert_eq!(crate_data.type_decls[1].layout, None);
+    // GenericStruct
+    assert_eq!(&crate_data.type_decls[1].layout, &default_layout);
+    // UnsizedStruct
+    assert_eq!(
+        &crate_data.type_decls[2].layout,
+        &Layout {
+            align: Some(8),
+            ..default_layout.clone()
+        }
+    );
+    // SimpleEnum
+    let mut variant_layouts = Vector::with_capacity(2);
+    variant_layouts.push(default_variant_layout.clone());
+    variant_layouts.push(default_variant_layout.clone());
+    assert_eq!(
+        &crate_data.type_decls[3].layout,
+        &Layout {
+            size: Some(1),
+            align: Some(1),
+            discriminant_offset: Some(0),
+            variant_layouts
+        }
+    );
+    // SimpleAdt
+    let mut variant_layouts = Vector::with_capacity(2);
+    variant_layouts.push(default_variant_layout.clone());
+    let mut var2_offsets = Vector::with_capacity(2);
+    var2_offsets.push(8);
+    var2_offsets.push(16);
+    variant_layouts.push(VariantLayout {
+        field_offsets: var2_offsets,
+    });
+    let mut var3_offsets = Vector::with_capacity(2);
+    var3_offsets.push(4);
+    var3_offsets.push(8);
+    variant_layouts.push(VariantLayout {
+        field_offsets: var3_offsets,
+    });
+    assert_eq!(
+        &crate_data.type_decls[4].layout,
+        &Layout {
+            size: Some(24),
+            align: Some(8),
+            discriminant_offset: Some(0),
+            variant_layouts
+        }
+    );
+    // NicheAdt
+    assert_eq!(
+        &crate_data.type_decls[5].layout,
+        &Layout {
+            size: Some(4),
+            align: Some(4),
+            ..default_layout.clone()
+        }
+    );
+    // IsAZST
+    assert_eq!(
+        &crate_data.type_decls[6].layout,
+        &Layout {
+            size: Some(0),
+            align: Some(1),
+            ..default_layout
+        }
+    );
     Ok(())
 }

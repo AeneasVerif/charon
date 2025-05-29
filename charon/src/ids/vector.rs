@@ -51,6 +51,13 @@ where
         }
     }
 
+    pub fn with_capacity(capacity: usize) -> Self {
+        Vector {
+            vector: IndexVec::with_capacity(capacity),
+            elem_count: 0,
+        }
+    }
+
     pub fn get(&self, i: I) -> Option<&T> {
         self.vector.get(i).map(Option::as_ref).flatten()
     }
@@ -299,6 +306,16 @@ where
         self.elem_count = self.iter().count();
         ret.elem_count = ret.iter().count();
         ret
+    }
+
+    /// Inserts the element at the given index.
+    ///
+    /// # Panics
+    ///
+    /// Panics if `index` > `self.elem_count`.
+    pub fn insert(&mut self, index: I, element: T) {
+        self.vector.insert(index, Some(element));
+        self.elem_count += 1;
     }
 }
 

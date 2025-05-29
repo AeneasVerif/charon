@@ -8,6 +8,7 @@ use hax::HasParamEnv;
 use hax::Visibility;
 use hax_frontend_exporter as hax;
 use itertools::Itertools;
+use rustc_abi as r_abi;
 
 impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
     // Translate a region
@@ -759,7 +760,98 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
     }
 }
 
+fn translate_variant(
+    variant_layout: &r_abi::LayoutData<r_abi::FieldIdx, r_abi::VariantIdx>,
+) -> VariantLayout {
+    match &variant_layout.fields {
+        r_abi::FieldsShape::Primitive
+        | r_abi::FieldsShape::Union(_)
+        | r_abi::FieldsShape::Array { .. } => VariantLayout::default(),
+        r_abi::FieldsShape::Arbitrary { offsets, .. } => {
+            let mut v = Vector::with_capacity(offsets.len());
+            for (i, o) in offsets.iter_enumerated() {
+                // The fields should have a total increasing index, but to be
+                // absolutely sure, we insert them at the correct index.
+                v.insert(FieldId::from_usize(i.index()), o.bytes());
+            }
+            VariantLayout { field_offsets: v }
+        }
+    }
+}
+
 impl ItemTransCtx<'_, '_> {
+    /// Translate a type layout.
+    ///
+    /// Translates the layout as queried from rustc into
+    /// the more restricted [`Layout`].
+    #[tracing::instrument(skip(self))]
+    pub fn translate_layout(&self) -> Layout {
+        let tcx = self.t_ctx.tcx;
+        let rdefid = self.def_id.as_rust_def_id().unwrap();
+        let ty_env = hax::State::new_from_state_and_id(&self.t_ctx.hax_state, rdefid).typing_env();
+        let ty = tcx.type_of(rdefid).skip_binder();
+        let pseudo_input = ty_env.as_query_input(ty);
+
+        match tcx.layout_of(pseudo_input) {
+            Ok(ty_layout) => {
+                let layout = ty_layout.layout;
+                let size = if layout.is_sized() {
+                    Some(layout.size().bytes())
+                } else {
+                    None
+                };
+                let mut variant_layouts = Vector::new();
+                let discriminant_offset = match layout.variants() {
+                    // If the discriminant is in the niche, it isn't part of
+                    // the actual layout.
+                    r_abi::Variants::Multiple {
+                        tag_field,
+                        tag_encoding: r_abi::TagEncoding::Direct,
+                        variants,
+                        ..
+                    } => {
+                        for variant in variants.iter() {
+                            let index = if let r_abi::Variants::Single { index } = variant.variants
+                            {
+                                index
+                            } else {
+                                // The variants have their VariantIndex as the index in `Single`.
+                                unreachable!()
+                            };
+                            variant_layouts.insert(
+                                VariantId::from_usize(index.as_usize()),
+                                translate_variant(variant),
+                            );
+                        }
+
+                        if let r_abi::FieldsShape::Arbitrary { offsets, .. } = layout.fields() {
+                            offsets
+                                .get(r_abi::FieldIdx::from_usize(*tag_field))
+                                .map(|s| r_abi::Size::bytes(*s))
+                        } else {
+                            // The tag_field is the index into the fields vector,
+                            // thus, the fields shape must be arbitrary.
+                            unreachable!()
+                        }
+                    }
+                    _ => None,
+                };
+
+                Layout {
+                    size,
+                    align: Some(layout.align().abi.bytes()),
+                    discriminant_offset,
+                    variant_layouts,
+                }
+            }
+            Err(_) => {
+                // If there is no sensible layout, we translate it to the empty layout.
+                // There doesn't seem to be any way to handle the errors in a better way.
+                Layout::default()
+            }
+        }
+    }
+
     /// Translate a type definition.
     ///
     /// Note that we translate the types one by one: we don't need to take into
@@ -803,32 +895,7 @@ impl ItemTransCtx<'_, '_> {
             Ok(kind) => kind,
             Err(err) => TypeDeclKind::Error(err.msg),
         };
-
-        let peak_generics = self.the_only_binder();
-
-        // For now, only try to get layouts for types that are not polymorphic over
-        // another type or a constant since these might not have a statically known layout.
-        let layout = if peak_generics.params.types.is_empty()
-            && peak_generics.params.const_generics.is_empty()
-        {
-            let tcx = self.t_ctx.tcx;
-            let rdefid = self.def_id.as_rust_def_id().unwrap();
-            let ty_env =
-                hax::State::new_from_state_and_id(&self.t_ctx.hax_state, rdefid).typing_env();
-            let ty = tcx.type_of(rdefid).skip_binder();
-            let pseudo_input = ty_env.as_query_input(ty);
-            if let Ok(ty_layout) = tcx.layout_of(pseudo_input) {
-                let layout = ty_layout.layout;
-                Some(SimpleLayout {
-                    size: layout.size().bytes(),
-                    align: layout.align().abi.bytes(),
-                })
-            } else {
-                None
-            }
-        } else {
-            None
-        };
+        let layout = self.translate_layout();
 
         let type_def = TypeDecl {
             def_id: trans_id,
