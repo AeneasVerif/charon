@@ -1453,10 +1453,12 @@ module NameMatcherMap = struct
       (name : Types.name) (g : Types.generic_args) (m : 'a t) : 'a option =
     let (Node (node_v, children)) = m in
     (* Check if we reached the destination *)
-    if name = [] then if g = TypesUtils.empty_generic_args then node_v else None
-    else
-      (* Explore the children *)
-      find_with_generics_in_children_opt ctx c name g children
+    match name with
+    | [] | [ PeMonomorphized _ ] ->
+        if g = TypesUtils.empty_generic_args then node_v else None
+    | _ ->
+        (* Explore the children *)
+        find_with_generics_in_children_opt ctx c name g children
 
   and find_with_generics_in_children_opt (ctx : 'fun_body ctx)
       (c : match_config) (name : Types.name) (g : Types.generic_args)
