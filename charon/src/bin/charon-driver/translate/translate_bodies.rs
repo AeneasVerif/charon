@@ -133,7 +133,10 @@ impl BodyTransCtx<'_, '_, '_> {
     }
 
     /// Translate a function's local variables by adding them in the environment.
-    fn translate_body_locals(&mut self, body: &hax::MirBody<()>) -> Result<(), Error> {
+    fn translate_body_locals(
+        &mut self,
+        body: &hax::MirBody<hax::mir_kinds::Unknown>,
+    ) -> Result<(), Error> {
         // Translate the parameters
         for (index, var) in body.local_decls.raw.iter().enumerate() {
             trace!("Translating local of index {} and type {:?}", index, var.ty);
@@ -170,7 +173,7 @@ impl BodyTransCtx<'_, '_, '_> {
 
     fn translate_basic_block(
         &mut self,
-        body: &hax::MirBody<()>,
+        body: &hax::MirBody<hax::mir_kinds::Unknown>,
         block: &hax::BasicBlockData,
     ) -> Result<BlockData, Error> {
         // Translate the statements
@@ -279,7 +282,16 @@ impl BodyTransCtx<'_, '_, '_> {
                             }
                             ClosureState(index) => {
                                 let field_id = translate_field_id(*index);
-                                ProjectionElem::Field(FieldProjKind::ClosureState, field_id)
+                                let TyKind::Adt(TypeId::Adt(adt_id), _) = subplace.ty.kind() else {
+                                    unreachable!(
+                                        "Subplace of ClosureState must be a closure, got {:?}",
+                                        subplace.ty
+                                    )
+                                };
+                                ProjectionElem::Field(
+                                    FieldProjKind::Adt(adt_id.clone(), None),
+                                    field_id,
+                                )
                             }
                         };
                         subplace.project(proj_elem, ty)
@@ -664,21 +676,9 @@ impl BodyTransCtx<'_, '_, '_> {
                             closure_args.tupled_sig
                         );
 
-                        let fun_id = self.register_fun_decl_id(span, def_id);
-
-                        // Retrieve the late-bound variables.
-                        let binder = closure_args.tupled_sig.as_ref().rebind(());
-                        // Translate the substitution
-                        let generics = self.translate_generic_args(
-                            span,
-                            &closure_args.parent_args,
-                            &closure_args.parent_trait_refs,
-                            Some(binder),
-                            GenericsSource::item(fun_id),
-                        )?;
-
-                        let akind = AggregateKind::Closure(fun_id, Box::new(generics));
-
+                        let type_ref =
+                            self.translate_closure_type_ref(span, def_id, closure_args)?;
+                        let akind = AggregateKind::Adt(type_ref.id, None, None, type_ref.generics);
                         Ok(Rvalue::Aggregate(akind, operands_t))
                     }
                     hax::AggregateKind::RawPtr(ty, is_mut) => {
@@ -727,7 +727,7 @@ impl BodyTransCtx<'_, '_, '_> {
     /// We return an option, because we ignore some statements (`Nop`, `StorageLive`...)
     fn translate_statement(
         &mut self,
-        body: &hax::MirBody<()>,
+        body: &hax::MirBody<hax::mir_kinds::Unknown>,
         statement: &hax::Statement,
     ) -> Result<Option<Statement>, Error> {
         trace!("About to translate statement (MIR) {:?}", statement);
@@ -807,7 +807,7 @@ impl BodyTransCtx<'_, '_, '_> {
     /// Translate a terminator
     fn translate_terminator(
         &mut self,
-        body: &hax::MirBody<()>,
+        body: &hax::MirBody<hax::mir_kinds::Unknown>,
         terminator: &hax::Terminator,
         statements: &mut Vec<Statement>,
     ) -> Result<Terminator, Error> {
@@ -851,7 +851,7 @@ impl BodyTransCtx<'_, '_, '_> {
                 place,
                 target,
                 unwind: _, // We consider that panic is an error, and don't model unwinding
-                replace: _,
+                ..
             } => {
                 let place = self.translate_place(span, place)?;
                 statements.push(Statement::new(span, RawStatement::Drop(place)));
@@ -989,7 +989,8 @@ impl BodyTransCtx<'_, '_, '_> {
             } => {
                 trace!("func: {:?}", def_id);
                 let fun_def = self.t_ctx.hax_def(def_id)?;
-                let name = self.t_ctx.hax_def_id_to_name(&fun_def.def_id)?;
+                let fun_src = TransItemSource::Fun(def_id.clone());
+                let name = self.t_ctx.translate_name(&fun_src)?;
                 let panic_lang_items = &["panic", "panic_fmt", "begin_panic"];
                 let panic_names = &[&["core", "panicking", "assert_failed"], EXPLICIT_PANIC_NAME];
 
@@ -1080,10 +1081,10 @@ impl BodyTransCtx<'_, '_, '_> {
     /// Gather all the lines that start with `//` inside the given span.
     fn translate_body_comments(
         &mut self,
-        def: &hax::FullDef,
+        source_text: &Option<String>,
         charon_span: Span,
     ) -> Vec<(usize, Vec<String>)> {
-        if let Some(body_text) = &def.source_text {
+        if let Some(body_text) = source_text {
             let mut comments = body_text
                 .lines()
                 // Iter through the lines of this body in reverse order.
@@ -1119,16 +1120,29 @@ impl BodyTransCtx<'_, '_, '_> {
         }
     }
 
-    /// Translate a function body if we can (it has MIR) and we want to (we don't translate bodies
-    /// declared opaque, and only translate non-local bodies if `extract_opaque_bodies` is set).
-    pub fn translate_body(
+    /// Translate the MIR body of this definition if it has one.
+    pub fn translate_def_body(
         &mut self,
         span: Span,
         def: &hax::FullDef,
     ) -> Result<Result<Body, Opaque>, Error> {
+        // Retrieve the body
+        let Some(body) = self.t_ctx.get_mir(&def.def_id, span)? else {
+            return Ok(Err(Opaque));
+        };
+        self.translate_body(span, &body, &def.source_text)
+    }
+
+    /// Translate a function body.
+    pub fn translate_body(
+        &mut self,
+        span: Span,
+        body: &hax::MirBody<hax::mir_kinds::Unknown>,
+        source_text: &Option<String>,
+    ) -> Result<Result<Body, Opaque>, Error> {
         // Stopgap measure because there are still many panics in charon and hax.
         let mut this = panic::AssertUnwindSafe(&mut *self);
-        let res = panic::catch_unwind(move || this.translate_body_aux(def, span));
+        let res = panic::catch_unwind(move || this.translate_body_aux(body, source_text));
         match res {
             Ok(Ok(body)) => Ok(body),
             // Translation error
@@ -1141,14 +1155,9 @@ impl BodyTransCtx<'_, '_, '_> {
 
     fn translate_body_aux(
         &mut self,
-        def: &hax::FullDef,
-        span: Span,
+        body: &hax::MirBody<hax::mir_kinds::Unknown>,
+        source_text: &Option<String>,
     ) -> Result<Result<Body, Opaque>, Error> {
-        // Retrieve the body
-        let Some(body) = self.t_ctx.get_mir(&def.def_id, span)? else {
-            return Ok(Err(Opaque));
-        };
-
         // Compute the span information
         let span = self.translate_span_from_hax(&body.span);
 
@@ -1177,7 +1186,7 @@ impl BodyTransCtx<'_, '_, '_> {
             span,
             locals: mem::take(&mut self.locals),
             body: mem::take(&mut self.blocks),
-            comments: self.translate_body_comments(def, span),
+            comments: self.translate_body_comments(source_text, span),
         })))
     }
 }

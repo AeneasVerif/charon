@@ -395,6 +395,16 @@ where
     }
 }
 
+// FIXME: this impl is a footgun
+impl<I, T, const N: usize> From<[T; N]> for Vector<I, T>
+where
+    I: Idx,
+{
+    fn from(v: [T; N]) -> Self {
+        v.into_iter().collect()
+    }
+}
+
 impl<I: Idx, T: Serialize> Serialize for Vector<I, T> {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where

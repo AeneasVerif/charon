@@ -120,8 +120,8 @@ pub enum TraitRefKind {
     #[charon::rename("Self")]
     SelfId,
 
-    /// A trait implementation that is computed by the compiler, such as for built-in traits
-    /// `Sized` or `FnMut`. This morally points to an invisible `impl` block; as such it contains
+    /// A trait implementation that is computed by the compiler, such as for built-in trait
+    /// `Sized`. This morally points to an invisible `impl` block; as such it contains
     /// the information we may need from one.
     BuiltinOrAuto {
         trait_decl_ref: PolyTraitDeclRef,
@@ -535,6 +535,15 @@ pub enum TypeId {
     Builtin(BuiltinTy),
 }
 
+/// Reference to a type declaration or builtin type.
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Hash, Drive, DriveMut)]
+pub struct TypeDeclRef {
+    #[charon::rename("type_decl_id")]
+    pub id: TypeId,
+    #[charon::rename("type_decl_generics")]
+    pub generics: BoxedArgs,
+}
+
 /// Types of primitive values. Either an integer, bool, char
 #[derive(
     Debug,
@@ -655,20 +664,6 @@ pub enum TyKind {
     /// Note: this is incorrectly named: this can refer to any valid `TypeDecl` including extern
     /// types.
     Adt(TypeId, GenericArgs),
-    /// A closure type, which is essentially a struct with builtin impls. Currently we don't
-    /// translate the struct itself, only the function item that contains the closure's code.
-    Closure {
-        /// The FunDecl item containing the code of the closure. That function takes the closure
-        /// state as its first argument.
-        fun_id: FunDeclId,
-        /// Generics that apply to the parent of this closure.
-        /// Warning: hax may not handle nexted closure correctly yet.
-        parent_args: BoxedArgs,
-        /// The types of the variables captured by this closure.
-        upvar_tys: Vec<Ty>,
-        /// The signature of the function that this closure represents.
-        signature: RegionBinder<(Vec<Ty>, Ty)>,
-    },
     #[charon::rename("TVar")]
     TypeVar(TypeDbVar),
     Literal(LiteralTy),
@@ -759,30 +754,30 @@ pub enum BuiltinTy {
     Str,
 }
 
-#[derive(Debug, Copy, Clone, PartialEq, Eq, Serialize, Deserialize, Drive, DriveMut)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash, Serialize, Deserialize, Drive, DriveMut)]
 pub enum ClosureKind {
     Fn,
     FnMut,
     FnOnce,
 }
 
+impl ClosureKind {
+    // pub fn trait_name(self) -> &'static str {}
+    pub fn method_name(self) -> &'static str {
+        match self {
+            ClosureKind::FnOnce => "call_once",
+            ClosureKind::FnMut => "call_mut",
+            ClosureKind::Fn => "call",
+        }
+    }
+}
+
 /// Additional information for closures.
-/// We mostly use it in micro-passes like [crate::transform::update_closure_signatures].
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Drive, DriveMut)]
 pub struct ClosureInfo {
     pub kind: ClosureKind,
-    /// Contains the types of the fields in the closure state.
-    /// More precisely, for every place captured by the
-    /// closure, the state has one field (typically a ref).
-    ///
-    /// For instance, below the closure has a state with two fields of type `&u32`:
-    /// ```text
-    /// pub fn test_closure_capture(x: u32, y: u32) -> u32 {
-    ///   let f = &|z| x + y + z;
-    ///   (f)(0)
-    /// }
-    /// ```
-    pub state: Vector<TypeVarId, Ty>,
+    /// The signature of the function that this closure represents.
+    pub signature: RegionBinder<(Vec<Ty>, Ty)>,
 }
 
 /// A function signature.
@@ -791,16 +786,6 @@ pub struct FunSig {
     /// Is the function unsafe or not
     #[drive(skip)]
     pub is_unsafe: bool,
-    /// `true` if the signature is for a closure.
-    ///
-    /// Importantly: if the signature is for a closure, then:
-    /// - the type and const generic params actually come from the parent function
-    ///   (the function in which the closure is defined)
-    /// - the region variables are local to the closure
-    #[drive(skip)]
-    pub is_closure: bool,
-    /// Additional information if this is the signature of a closure.
-    pub closure_info: Option<ClosureInfo>,
     pub generics: GenericParams,
     pub inputs: Vec<Ty>,
     pub output: Ty,

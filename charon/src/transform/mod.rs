@@ -34,7 +34,6 @@ pub mod skip_trait_refs_when_known;
 pub mod ullbc_to_llbc;
 pub mod unbind_item_vars;
 pub mod update_block_indices;
-pub mod update_closure_signatures;
 
 pub use ctx::TransformCtx;
 use ctx::{LlbcPass, TransformPass, UllbcPass};
@@ -88,10 +87,6 @@ pub static ULLBC_PASSES: &[Pass] = &[
     // # Micro-pass: desugar the constants to other values/operands as much
     // as possible.
     UnstructuredBody(&simplify_constants::Transform),
-    // # Micro-pass: the first local variable of closures is the
-    // closure itself. This is not consistent with the closure signature,
-    // which ignores this first variable. This micro-pass updates this.
-    UnstructuredBody(&update_closure_signatures::Transform),
     // # Micro-pass: make sure the block ids used in the ULLBC are consecutive
     UnstructuredBody(&update_block_indices::Transform),
     // # Micro-pass: reconstruct the asserts

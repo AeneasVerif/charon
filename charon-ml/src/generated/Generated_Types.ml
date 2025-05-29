@@ -271,8 +271,8 @@ and trait_instance_id =
       trait_decl_ref region_binder
       * trait_ref list
       * (trait_item_name * ty) list
-      (** A trait implementation that is computed by the compiler, such as for built-in traits
-          [Sized] or [FnMut]. This morally points to an invisible [impl] block; as such it contains
+      (** A trait implementation that is computed by the compiler, such as for built-in trait
+          [Sized]. This morally points to an invisible [impl] block; as such it contains
           the information we may need from one.
 
           Fields:
@@ -381,19 +381,6 @@ and ty =
 
           Note: this is incorrectly named: this can refer to any valid [TypeDecl] including extern
           types.
-       *)
-  | TClosure of
-      fun_decl_id * generic_args * ty list * (ty list * ty) region_binder
-      (** A closure type, which is essentially a struct with builtin impls. Currently we don't
-          translate the struct itself, only the function item that contains the closure's code.
-
-          Fields:
-          - [fun_id]:  The FunDecl item containing the code of the closure. That function takes the closure
-          state as its first argument.
-          - [parent_args]:  Generics that apply to the parent of this closure.
-          Warning: hax may not handle nexted closure correctly yet.
-          - [upvar_tys]:  The types of the variables captured by this closure.
-          - [signature]:  The signature of the function that this closure represents.
        *)
   | TVar of type_var_id de_bruijn_var
   | TLiteral of literal_type

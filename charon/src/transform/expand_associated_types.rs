@@ -1208,7 +1208,7 @@ impl VisitAstMut for UpdateItemBody<'_> {
 
     fn enter_item_kind(&mut self, kind: &mut ItemKind) {
         match kind {
-            ItemKind::Regular => {}
+            ItemKind::TopLevel | ItemKind::Closure { .. } => {}
             // Inside method declarations, we have access to the implicit `Self` clause.
             ItemKind::TraitDecl { trait_ref, .. } => {
                 self.process_trait_decl_ref(trait_ref, TraitRefKind::SelfId)

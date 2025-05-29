@@ -172,6 +172,21 @@ pub struct test_crate::WrapClone<T>
   T,
 }
 
+struct test_crate::wrap::closure<U>
+  where
+      [@TraitClause0]: core::marker::Sized<U>,
+ = {}
+
+pub fn test_crate::wrap<U>() -> test_crate::wrap::closure<U>[@TraitClause0]
+where
+    [@TraitClause0]: core::marker::Sized<U>,
+{
+    let @0: test_crate::wrap::closure<U>[@TraitClause0]; // return
+
+    @0 := test_crate::wrap::closure {  }
+    return
+}
+
 #[lang_item("noop_method_clone")]
 pub fn core::clone::impls::{impl core::clone::Clone for &'_0 (T)}#3::clone<'_0, '_1, T>(@1: &'_1 (&'_0 (T))) -> &'_0 (T)
 
@@ -179,32 +194,6 @@ impl core::clone::impls::{impl core::clone::Clone for &'_0 (T)}#3<'_0, T> : core
 {
     parent_clause0 = core::marker::Sized<&'_ (T)>
     fn clone<'_0> = core::clone::impls::{impl core::clone::Clone for &'_0 (T)}#3::clone<'_0, '_0_0, T>
-}
-
-fn test_crate::wrap::closure<'_0, U>(@1: (), @2: &'_0 (U)) -> test_crate::WrapClone<&'_0 (U)>[core::marker::Sized<&'_0 (U)>, core::clone::impls::{impl core::clone::Clone for &'_0 (T)}#3<'_, U>]
-where
-    [@TraitClause0]: core::marker::Sized<U>,
-{
-    let @0: test_crate::WrapClone<&'_ (U)>[core::marker::Sized<&'_ (U)>, core::clone::impls::{impl core::clone::Clone for &'_0 (T)}#3<'_, U>]; // return
-    let state@1: (); // arg #1
-    let x@2: &'_ (U); // arg #2
-    let @3: &'_ (U); // anonymous local
-
-    storage_live(@3)
-    @3 := &*(x@2)
-    @0 := test_crate::WrapClone { 0: move (@3) }
-    storage_dead(@3)
-    return
-}
-
-pub fn test_crate::wrap<U>() -> test_crate::wrap::closure
-where
-    [@TraitClause0]: core::marker::Sized<U>,
-{
-    let @0: test_crate::wrap::closure; // return
-
-    @0 := {test_crate::wrap::closure<'_, U>[@TraitClause0]} {}
-    return
 }
 
 #[lang_item("tuple_trait")]
@@ -225,9 +214,9 @@ pub fn core::ops::function::FnOnce::call_once<Self, Args>(@1: Self, @2: Args) ->
 pub fn test_crate::use_wrap()
 {
     let @0: (); // return
-    let f@1: test_crate::wrap::closure; // local
+    let f@1: test_crate::wrap::closure<u32>[core::marker::Sized<u32>]; // local
     let @2: test_crate::WrapClone<&'_ (u32)>[core::marker::Sized<&'_ (u32)>, core::clone::impls::{impl core::clone::Clone for &'_0 (T)}#3<'_, u32>]; // anonymous local
-    let @3: test_crate::wrap::closure; // anonymous local
+    let @3: test_crate::wrap::closure<u32>[core::marker::Sized<u32>]; // anonymous local
     let @4: (&'_ (u32)); // anonymous local
     let @5: &'_ (u32); // anonymous local
     let @6: &'_ (u32); // anonymous local
@@ -246,7 +235,7 @@ pub fn test_crate::use_wrap()
     @6 := &@7
     @5 := &*(@6)
     @4 := (move (@5))
-    @2 := core::ops::function::FnOnce<test_crate::wrap::closure, (&'_ (u32))> where Output  = test_crate::WrapClone<&'_ (u32)>[core::marker::Sized<&'_ (u32)>, core::clone::impls::{impl core::clone::Clone for &'_0 (T)}#3<'_, u32>]::call_once(move (@3), move (@4))
+    @2 := core::ops::function::FnOnce<test_crate::wrap::closure<u32>[core::marker::Sized<u32>], (&'_ (u32))> where Output  = test_crate::WrapClone<&'_ (u32)>[core::marker::Sized<&'_ (u32)>, core::clone::impls::{impl core::clone::Clone for &'_0 (T)}#3<'_, u32>]::call_once(move (@3), move (@4))
     storage_dead(@5)
     storage_dead(@4)
     storage_dead(@3)

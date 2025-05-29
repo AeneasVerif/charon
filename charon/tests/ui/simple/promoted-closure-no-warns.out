@@ -1,14 +1,6 @@
 # Final LLBC before serialization:
 
-fn test_crate::foo::closure<'_0>(@1: &'_0 (()), @2: u32) -> u32
-{
-    let @0: u32; // return
-    let state@1: &'_0 (()); // arg #1
-    let x@2: u32; // arg #2
-
-    @0 := copy (x@2)
-    return
-}
+struct test_crate::foo::closure = {}
 
 pub fn test_crate::foo() -> &'static (test_crate::foo::closure)
 {
@@ -22,7 +14,7 @@ pub fn test_crate::foo() -> &'static (test_crate::foo::closure)
     storage_live(@3)
     storage_live(@4)
     storage_live(@5)
-    @5 := {test_crate::foo::closure} {}
+    @5 := test_crate::foo::closure {  }
     @4 := &@5
     storage_live(@1)
     storage_live(@2)

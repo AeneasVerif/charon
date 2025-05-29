@@ -433,7 +433,7 @@ fn rename_attribute() -> anyhow::Result<()> {
         #![feature(register_tool)]
         #![register_tool(charon)]
         #![register_tool(aeneas)]
-        
+
         #[charon::rename("BoolTest")]
         pub trait BoolTrait {
             // Required method

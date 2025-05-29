@@ -222,11 +222,11 @@ impl Deps {
 
     fn set_impl_or_trait_id(&mut self, kind: &ItemKind) {
         match kind {
-            ItemKind::Regular => {}
             ItemKind::TraitDecl { trait_ref, .. } => {
                 self.parent_trait_decl = Some(trait_ref.trait_id)
             }
             ItemKind::TraitImpl { impl_ref, .. } => self.parent_trait_impl = Some(impl_ref.impl_id),
+            _ => {}
         }
     }
     fn set_current_id(&mut self, ctx: &TransformCtx, id: AnyTransId) {

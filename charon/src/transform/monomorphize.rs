@@ -112,7 +112,6 @@ impl VisitAst for UsageVisitor<'_> {
     fn enter_aggregate_kind(&mut self, kind: &AggregateKind) {
         match kind {
             AggregateKind::Adt(TypeId::Adt(id), _, _, gargs) => self.found_use_ty(id, gargs),
-            AggregateKind::Closure(fun_id, gargs) => self.found_use_fn(fun_id, gargs),
             _ => {}
         }
     }
@@ -165,6 +164,13 @@ impl VisitAst for UsageVisitor<'_> {
 struct SubstVisitor<'a> {
     data: &'a PassData,
 }
+impl GenericArgs {
+    fn remove_non_lifetime_args(&mut self) {
+        self.types = Default::default();
+        self.const_generics = Default::default();
+        self.trait_refs = Default::default();
+    }
+}
 impl SubstVisitor<'_> {
     fn subst_use_ty(&mut self, id: &mut TypeDeclId, gargs: &mut GenericArgs) {
         trace!("Mono: Subst use: {:?} / {:?}", id, gargs);
@@ -174,7 +180,7 @@ impl SubstVisitor<'_> {
             panic!("Substitution missing for {:?}", key);
         };
         *id = *subst_id;
-        *gargs = GenericArgs::empty(gargs.target.clone());
+        gargs.remove_non_lifetime_args();
     }
     fn subst_use_fun(&mut self, id: &mut FunDeclId, gargs: &mut GenericArgs) {
         trace!("Mono: Subst use: {:?} / {:?}", id, gargs);
@@ -184,7 +190,7 @@ impl SubstVisitor<'_> {
             panic!("Substitution missing for {:?}", key);
         };
         *id = *subst_id;
-        *gargs = GenericArgs::empty(gargs.target.clone());
+        gargs.remove_non_lifetime_args();
     }
     fn subst_use_glob(&mut self, id: &mut GlobalDeclId, gargs: &mut GenericArgs) {
         trace!("Mono: Subst use: {:?} / {:?}", id, gargs);
@@ -194,7 +200,7 @@ impl SubstVisitor<'_> {
             panic!("Substitution missing for {:?}", key);
         };
         *id = *subst_id;
-        *gargs = GenericArgs::empty(gargs.target.clone());
+        gargs.remove_non_lifetime_args();
     }
 }
 
@@ -213,7 +219,6 @@ impl VisitAstMut for SubstVisitor<'_> {
     fn enter_aggregate_kind(&mut self, kind: &mut AggregateKind) {
         match kind {
             AggregateKind::Adt(TypeId::Adt(id), _, _, gargs) => self.subst_use_ty(id, gargs),
-            AggregateKind::Closure(fun_id, gargs) => self.subst_use_fun(fun_id, gargs),
             _ => {}
         }
     }

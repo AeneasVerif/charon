@@ -371,10 +371,6 @@ and aggregate_kind_of_json (ctx : of_json_ctx) (js : json) :
         let* x_0 = ty_of_json ctx x_0 in
         let* x_1 = const_generic_of_json ctx x_1 in
         Ok (AggregatedArray (x_0, x_1))
-    | `Assoc [ ("Closure", `List [ x_0; x_1 ]) ] ->
-        let* x_0 = fun_decl_id_of_json ctx x_0 in
-        let* x_1 = box_of_json generic_args_of_json ctx x_1 in
-        Ok (AggregatedClosure (x_0, x_1))
     | `Assoc [ ("RawPtr", `List [ x_0; x_1 ]) ] ->
         let* x_0 = ty_of_json ctx x_0 in
         let* x_1 = ref_kind_of_json ctx x_1 in
@@ -424,7 +420,10 @@ and item_kind_of_json (ctx : of_json_ctx) (js : json) :
     (item_kind, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
-    | `String "Regular" -> Ok RegularItem
+    | `String "TopLevel" -> Ok TopLevelItem
+    | `Assoc [ ("Closure", `Assoc [ ("info", info) ]) ] ->
+        let* info = closure_info_of_json ctx info in
+        Ok (ClosureItem info)
     | `Assoc
         [
           ( "TraitDecl",
@@ -1479,26 +1478,6 @@ and ty_of_json (ctx : of_json_ctx) (js : json) : (ty, string) result =
         let* x_0 = type_id_of_json ctx x_0 in
         let* x_1 = generic_args_of_json ctx x_1 in
         Ok (TAdt (x_0, x_1))
-    | `Assoc
-        [
-          ( "Closure",
-            `Assoc
-              [
-                ("fun_id", fun_id);
-                ("parent_args", parent_args);
-                ("upvar_tys", upvar_tys);
-                ("signature", signature);
-              ] );
-        ] ->
-        let* fun_id = fun_decl_id_of_json ctx fun_id in
-        let* parent_args = box_of_json generic_args_of_json ctx parent_args in
-        let* upvar_tys = list_of_json ty_of_json ctx upvar_tys in
-        let* signature =
-          region_binder_of_json
-            (pair_of_json (list_of_json ty_of_json) ty_of_json)
-            ctx signature
-        in
-        Ok (TClosure (fun_id, parent_args, upvar_tys, signature))
     | `Assoc [ ("TypeVar", type_var) ] ->
         let* type_var =
           de_bruijn_var_of_json type_var_id_of_json ctx type_var
@@ -1559,10 +1538,14 @@ and closure_info_of_json (ctx : of_json_ctx) (js : json) :
     (closure_info, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
-    | `Assoc [ ("kind", kind); ("state", state) ] ->
+    | `Assoc [ ("kind", kind); ("signature", signature) ] ->
         let* kind = closure_kind_of_json ctx kind in
-        let* state = vector_of_json type_var_id_of_json ty_of_json ctx state in
-        Ok ({ kind; state } : closure_info)
+        let* signature =
+          region_binder_of_json
+            (pair_of_json (list_of_json ty_of_json) ty_of_json)
+            ctx signature
+        in
+        Ok ({ kind; signature } : closure_info)
     | _ -> Error "")
 
 and fun_sig_of_json (ctx : of_json_ctx) (js : json) : (fun_sig, string) result =
@@ -1571,23 +1554,15 @@ and fun_sig_of_json (ctx : of_json_ctx) (js : json) : (fun_sig, string) result =
     | `Assoc
         [
           ("is_unsafe", is_unsafe);
-          ("is_closure", is_closure);
-          ("closure_info", closure_info);
           ("generics", generics);
           ("inputs", inputs);
           ("output", output);
         ] ->
         let* is_unsafe = bool_of_json ctx is_unsafe in
-        let* is_closure = bool_of_json ctx is_closure in
-        let* closure_info =
-          option_of_json closure_info_of_json ctx closure_info
-        in
         let* generics = generic_params_of_json ctx generics in
         let* inputs = list_of_json ty_of_json ctx inputs in
         let* output = ty_of_json ctx output in
-        Ok
-          ({ is_unsafe; is_closure; closure_info; generics; inputs; output }
-            : fun_sig)
+        Ok ({ is_unsafe; generics; inputs; output } : fun_sig)
     | _ -> Error "")
 
 and local_id_of_json (ctx : of_json_ctx) (js : json) : (local_id, string) result

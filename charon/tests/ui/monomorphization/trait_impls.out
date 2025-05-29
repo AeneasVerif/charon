@@ -16,7 +16,7 @@ fn test_crate::do_test::<bool>(@1: bool, @2: bool)
     @5 := &expected@2
     storage_live(@6)
     @6 := &init@1
-    @4 := core::cmp::impls::{impl core::cmp::Eq for bool}#38::parent_clause0::eq(move (@5), move (@6))
+    @4 := core::cmp::impls::{impl core::cmp::Eq for bool}#38::parent_clause0::eq<'_, '_>(move (@5), move (@6))
     if move (@4) {
     }
     else {

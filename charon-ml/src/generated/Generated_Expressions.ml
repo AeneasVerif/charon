@@ -436,10 +436,6 @@ and aggregate_kind =
           with aggregates, and it is a primitive type. In particular, it makes
           sense to treat it differently because it has a variable number of fields.
        *)
-  | AggregatedClosure of fun_decl_id * generic_args
-      (** Aggregated values for closures group the function id together with its
-          state.
-       *)
   | AggregatedRawPtr of ty * ref_kind
       (** Construct a raw pointer from a pointer value, and its metadata (can be unit, if building
           a thin pointer). The type is the type of the pointee.

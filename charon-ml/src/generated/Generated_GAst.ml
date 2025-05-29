@@ -72,10 +72,15 @@ and locals = {
     ]}
  *)
 and item_kind =
-  | RegularItem
-      (** A function/const at the top level or in an inherent impl block. *)
+  | TopLevelItem  (** This item stands on its own. *)
+  | ClosureItem of closure_info
+      (** This is a closure in a function body.
+
+          Fields:
+          - [info]
+       *)
   | TraitDeclItem of trait_decl_ref * trait_item_name * bool
-      (** Function/const that is part of a trait declaration. It has a body if and only if the trait
+      (** This is an associated item in a trait declaration. It has a body if and only if the trait
           provided a default implementation.
 
           Fields:
@@ -84,7 +89,7 @@ and item_kind =
           - [has_default]:  Whether the trait declaration provides a default implementation.
        *)
   | TraitImplItem of trait_impl_ref * trait_decl_ref * trait_item_name * bool
-      (** Function/const that is part of a trait implementation.
+      (** This is an associated item in a trait implementation.
 
           Fields:
           - [impl_ref]:  The trait implementation the method belongs to.
@@ -124,39 +129,16 @@ and assertion = {
 
 and closure_kind = Fn | FnMut | FnOnce
 
-(** Additional information for closures.
-    We mostly use it in micro-passes like [crate::transform::update_closure_signatures].
- *)
+(** Additional information for closures. *)
 and closure_info = {
   kind : closure_kind;
-  state : ty list;
-      (** Contains the types of the fields in the closure state.
-        More precisely, for every place captured by the
-        closure, the state has one field (typically a ref).
-
-        For instance, below the closure has a state with two fields of type [&u32]:
-        {@rust[
-        pub fn test_closure_capture(x: u32, y: u32) -> u32 {
-          let f = &|z| x + y + z;
-          (f)(0)
-        }
-        ]}
-     *)
+  signature : (ty list * ty) region_binder;
+      (** The signature of the function that this closure represents. *)
 }
 
 (** A function signature. *)
 and fun_sig = {
   is_unsafe : bool;  (** Is the function unsafe or not *)
-  is_closure : bool;
-      (** [true] if the signature is for a closure.
-
-        Importantly: if the signature is for a closure, then:
-        - the type and const generic params actually come from the parent function
-          (the function in which the closure is defined)
-        - the region variables are local to the closure
-     *)
-  closure_info : closure_info option;
-      (** Additional information if this is the signature of a closure. *)
   generics : generic_params;
   inputs : ty list;
   output : ty;
