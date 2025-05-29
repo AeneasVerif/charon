@@ -717,6 +717,7 @@ fn type_layout() -> anyhow::Result<()> {
     let crate_data = translate(
         r#"
         use std::num::NonZero;
+        use std::fmt::Debug;
 
         struct SimpleStruct {
             x: u32,
@@ -751,6 +752,11 @@ fn type_layout() -> anyhow::Result<()> {
         }
 
         struct IsAZST;
+
+        struct UnsizedStruct2 {
+            x: usize,
+            y: dyn Debug
+        }
         "#,
     )?;
 
@@ -770,13 +776,7 @@ fn type_layout() -> anyhow::Result<()> {
     // GenericStruct
     assert_eq!(&crate_data.type_decls[1].layout, &default_layout);
     // UnsizedStruct
-    assert_eq!(
-        &crate_data.type_decls[2].layout,
-        &Layout {
-            align: Some(8),
-            ..default_layout.clone()
-        }
-    );
+    assert_eq!(&crate_data.type_decls[2].layout, &default_layout);
     // SimpleEnum
     let mut variant_layouts = Vector::with_capacity(2);
     variant_layouts.push(default_variant_layout.clone());
@@ -829,8 +829,10 @@ fn type_layout() -> anyhow::Result<()> {
         &Layout {
             size: Some(0),
             align: Some(1),
-            ..default_layout
+            ..default_layout.clone()
         }
     );
+    // UnsizedStruct2
+    assert_eq!(&crate_data.type_decls[7].layout, &default_layout);
     Ok(())
 }

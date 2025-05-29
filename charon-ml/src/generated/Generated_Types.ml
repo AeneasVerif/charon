@@ -662,7 +662,10 @@ and layout = {
   size : int option;  (** The size of the type in bytes. *)
   align : int option;  (** The alignment, in bytes. *)
   discriminant_offset : int option;
-      (** The offsets the discriminant as it is shared between all variants. *)
+      (** The discriminant's offset, if any. Only relevant for
+        types with multiple variants and if the discriminant is
+        not in a niche.
+     *)
   variant_layouts : variant_layout list;
       (** Map from [VariantId] to the corresponding field layouts.
         Structs are modeled as being the only variant, uninhabited types

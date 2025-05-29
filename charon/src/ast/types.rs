@@ -369,7 +369,9 @@ pub struct Layout {
     /// The alignment, in bytes.
     #[drive(skip)]
     pub align: Option<ByteCount>,
-    /// The offsets the discriminant as it is shared between all variants.
+    /// The discriminant's offset, if any. Only relevant for
+    /// types with multiple variants and if the discriminant is
+    /// not in a niche.
     #[drive(skip)]
     pub discriminant_offset: Option<ByteCount>,
     /// Map from [VariantId] to the corresponding field layouts.
