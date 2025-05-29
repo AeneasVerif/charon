@@ -795,10 +795,13 @@ impl ItemTransCtx<'_, '_> {
         match tcx.layout_of(pseudo_input) {
             Ok(ty_layout) => {
                 let layout = ty_layout.layout;
-                let size = if layout.is_sized() {
-                    Some(layout.size().bytes())
+                let (size, align) = if layout.is_sized() {
+                    (
+                        Some(layout.size().bytes()),
+                        Some(layout.align().abi.bytes()),
+                    )
                 } else {
-                    None
+                    (None, None)
                 };
                 let mut variant_layouts = Vector::new();
                 let discriminant_offset = match layout.variants() {
@@ -839,7 +842,7 @@ impl ItemTransCtx<'_, '_> {
 
                 Layout {
                     size,
-                    align: Some(layout.align().abi.bytes()),
+                    align,
                     discriminant_offset,
                     variant_layouts,
                 }
