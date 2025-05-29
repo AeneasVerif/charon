@@ -59,6 +59,8 @@ expr:
   // Primitive ADT: Array
   | LEFT_SQUARE; ty=expr; SEMICOL; cg=expr; RIGHT_SQUARE {
       EPrimAdt (TArray, [GExpr ty; GExpr cg]) }
+  | LEFT_SQUARE; ty=expr; SEMICOL; cg=INT; RIGHT_SQUARE {
+      EPrimAdt (TArray, [GExpr ty; GValue (LInt cg)]) }
   // References
   | AMPERSAND; r=region; MUT; ty=expr {
       ERef (r, ty, RMut) }
