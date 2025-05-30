@@ -89,7 +89,6 @@ pub struct test_crate::Pair<T1, T2>
   where
       [@TraitClause0]: core::marker::Sized<T1>,
       [@TraitClause1]: core::marker::Sized<T2>,
- =
 {
   x: T1,
   y: T2,
@@ -156,7 +155,6 @@ pub const test_crate::P3: test_crate::Pair<u32, u32>[core::marker::Sized<u32>, c
 pub struct test_crate::Wrap<T>
   where
       [@TraitClause0]: core::marker::Sized<T>,
- =
 {
   value: T,
 }
@@ -367,7 +365,6 @@ pub static test_crate::S4: test_crate::Pair<u32, u32>[core::marker::Sized<u32>, 
 pub struct test_crate::V<T, const N : usize>
   where
       [@TraitClause0]: core::marker::Sized<T>,
- =
 {
   x: Array<T, const N : usize>,
 }

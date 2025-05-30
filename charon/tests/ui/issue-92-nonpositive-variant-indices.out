@@ -1,10 +1,10 @@
 # Final LLBC before serialization:
 
-enum test_crate::Ordering =
-|  Less()
-|  Equal()
-|  Greater()
-
+enum test_crate::Ordering {
+  Less,
+  Equal,
+  Greater,
+}
 
 fn test_crate::main()
 {

@@ -1,6 +1,6 @@
 # Final LLBC before serialization:
 
-struct test_crate::foo::closure = {}
+struct test_crate::foo::closure {}
 
 pub fn test_crate::foo() -> &'static (test_crate::foo::closure)
 {

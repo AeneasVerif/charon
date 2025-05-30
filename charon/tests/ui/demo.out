@@ -142,15 +142,15 @@ pub fn test_crate::use_incr()
 }
 
 #[lang_item("global_alloc_ty")]
-pub struct alloc::alloc::Global = {}
+pub struct alloc::alloc::Global {}
 
 pub enum test_crate::CList<T>
   where
       [@TraitClause0]: core::marker::Sized<T>,
- =
-|  CCons(T, alloc::boxed::Box<test_crate::CList<T>[@TraitClause0]>[core::marker::Sized<alloc::alloc::Global>])
-|  CNil()
-
+{
+  CCons(T, alloc::boxed::Box<test_crate::CList<T>[@TraitClause0]>[core::marker::Sized<alloc::alloc::Global>]),
+  CNil,
+}
 
 pub fn test_crate::list_nth<'a, T>(@1: &'a (test_crate::CList<T>[@TraitClause0]), @2: u32) -> &'a (T)
 where
@@ -463,8 +463,7 @@ pub fn test_crate::{impl test_crate::Counter for usize}::incr<'_0>(@1: &'_0 mut 
     return
 }
 
-impl test_crate::{impl test_crate::Counter for usize} : test_crate::Counter<usize>
-{
+impl test_crate::{impl test_crate::Counter for usize} : test_crate::Counter<usize> {
     fn incr<'_0> = test_crate::{impl test_crate::Counter for usize}::incr<'_0_0>
 }
 

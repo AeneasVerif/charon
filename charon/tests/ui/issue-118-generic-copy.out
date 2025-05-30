@@ -1,6 +1,6 @@
 # Final LLBC before serialization:
 
-struct test_crate::Foo = {}
+struct test_crate::Foo {}
 
 #[lang_item("sized")]
 pub trait core::marker::Sized<Self>
@@ -21,8 +21,7 @@ pub fn test_crate::{impl core::clone::Clone for test_crate::Foo}::clone<'_0>(@1:
     return
 }
 
-impl test_crate::{impl core::clone::Clone for test_crate::Foo} : core::clone::Clone<test_crate::Foo>
-{
+impl test_crate::{impl core::clone::Clone for test_crate::Foo} : core::clone::Clone<test_crate::Foo> {
     parent_clause0 = core::marker::Sized<test_crate::Foo>
     fn clone<'_0> = test_crate::{impl core::clone::Clone for test_crate::Foo}::clone<'_0_0>
 }
@@ -33,8 +32,7 @@ pub trait core::marker::Copy<Self>
     parent_clause0 : [@TraitClause0]: core::clone::Clone<Self>
 }
 
-impl test_crate::{impl core::marker::Copy for test_crate::Foo}#1 : core::marker::Copy<test_crate::Foo>
-{
+impl test_crate::{impl core::marker::Copy for test_crate::Foo}#1 : core::marker::Copy<test_crate::Foo> {
     parent_clause0 = test_crate::{impl core::clone::Clone for test_crate::Foo}
 }
 

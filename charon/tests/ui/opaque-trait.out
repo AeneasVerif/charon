@@ -57,8 +57,7 @@ fn test_crate::{impl test_crate::Trait for ()}#1::method2()
     return
 }
 
-impl test_crate::{impl test_crate::Trait for ()}#1 : test_crate::Trait<()>
-{
+impl test_crate::{impl test_crate::Trait for ()}#1 : test_crate::Trait<()> {
     const CONST1 = test_crate::{impl test_crate::Trait for ()}#1::CONST1
     const CONST2 = test_crate::{impl test_crate::Trait for ()}#1::CONST2
     const CONST3 = test_crate::{impl test_crate::Trait for ()}#1::CONST3
@@ -114,8 +113,7 @@ fn test_crate::{impl test_crate::Trait for u8}::method2()
     return
 }
 
-impl test_crate::{impl test_crate::Trait for u8} : test_crate::Trait<u8>
-{
+impl test_crate::{impl test_crate::Trait for u8} : test_crate::Trait<u8> {
     const CONST1 = test_crate::Trait::CONST1<u8>
     const CONST2 = test_crate::{impl test_crate::Trait for u8}::CONST2
     const CONST3 = test_crate::Trait::CONST3<u8>

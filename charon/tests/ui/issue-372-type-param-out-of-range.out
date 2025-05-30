@@ -7,7 +7,6 @@ pub struct test_crate::S<'a, K>
   where
       [@TraitClause0]: core::marker::Sized<K>,
       K : 'a,
- =
 {
   x: &'a (K),
 }
@@ -62,7 +61,7 @@ where
     return
 }
 
-pub struct test_crate::T = {}
+pub struct test_crate::T {}
 
 pub fn test_crate::{test_crate::T}#1::f<F>()
 where

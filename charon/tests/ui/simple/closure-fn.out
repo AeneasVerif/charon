@@ -104,8 +104,7 @@ where
     return
 }
 
-struct test_crate::main::closure<'_0, '_1> =
-{
+struct test_crate::main::closure<'_0, '_1> {
   &'_0 (u8),
   &'_1 (u8),
 }
@@ -177,8 +176,7 @@ fn test_crate::main::{impl core::ops::function::FnOnce<(u8, u8)> for test_crate:
     return
 }
 
-impl test_crate::main::{impl core::ops::function::FnOnce<(u8, u8)> for test_crate::main::closure<'_0, '_1>}<'_0, '_1> : core::ops::function::FnOnce<test_crate::main::closure<'_0, '_1>, (u8, u8)>
-{
+impl test_crate::main::{impl core::ops::function::FnOnce<(u8, u8)> for test_crate::main::closure<'_0, '_1>}<'_0, '_1> : core::ops::function::FnOnce<test_crate::main::closure<'_0, '_1>, (u8, u8)> {
     parent_clause0 = core::marker::Sized<(u8, u8)>
     parent_clause1 = core::marker::Tuple<(u8, u8)>
     parent_clause2 = core::marker::Sized<u8>
@@ -186,16 +184,14 @@ impl test_crate::main::{impl core::ops::function::FnOnce<(u8, u8)> for test_crat
     fn call_once = test_crate::main::{impl core::ops::function::FnOnce<(u8, u8)> for test_crate::main::closure<'_0, '_1>}::call_once<'_0, '_1>
 }
 
-impl test_crate::main::{impl core::ops::function::FnMut<(u8, u8)> for test_crate::main::closure<'_0, '_1>}<'_0, '_1> : core::ops::function::FnMut<test_crate::main::closure<'_0, '_1>, (u8, u8)>
-{
+impl test_crate::main::{impl core::ops::function::FnMut<(u8, u8)> for test_crate::main::closure<'_0, '_1>}<'_0, '_1> : core::ops::function::FnMut<test_crate::main::closure<'_0, '_1>, (u8, u8)> {
     parent_clause0 = test_crate::main::{impl core::ops::function::FnOnce<(u8, u8)> for test_crate::main::closure<'_0, '_1>}<'_0, '_1>
     parent_clause1 = core::marker::Sized<(u8, u8)>
     parent_clause2 = core::marker::Tuple<(u8, u8)>
     fn call_mut<'_0> = test_crate::main::{impl core::ops::function::FnMut<(u8, u8)> for test_crate::main::closure<'_0, '_1>}::call_mut<'_0, '_1, '_0_0>
 }
 
-impl test_crate::main::{impl core::ops::function::Fn<(u8, u8)> for test_crate::main::closure<'_0, '_1>}<'_0, '_1> : core::ops::function::Fn<test_crate::main::closure<'_0, '_1>, (u8, u8)>
-{
+impl test_crate::main::{impl core::ops::function::Fn<(u8, u8)> for test_crate::main::closure<'_0, '_1>}<'_0, '_1> : core::ops::function::Fn<test_crate::main::closure<'_0, '_1>, (u8, u8)> {
     parent_clause0 = test_crate::main::{impl core::ops::function::FnMut<(u8, u8)> for test_crate::main::closure<'_0, '_1>}<'_0, '_1>
     parent_clause1 = core::marker::Sized<(u8, u8)>
     parent_clause2 = core::marker::Tuple<(u8, u8)>

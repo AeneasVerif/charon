@@ -21,6 +21,7 @@ where
     [@TraitClause0]: test_crate::HasAssoc<T>,
     [@TraitClause1]: core::marker::Sized<T>,
     @TraitClause0::Assoc = (),
+{}
 
 impl test_crate::{impl test_crate::Trait for T}#1<T> : test_crate::Trait<T>
 where

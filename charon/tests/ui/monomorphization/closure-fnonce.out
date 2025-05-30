@@ -1,9 +1,8 @@
 # Final LLBC before serialization:
 
-struct test_crate::NotCopy = {}
+struct test_crate::NotCopy {}
 
-struct test_crate::main::closure =
-{
+struct test_crate::main::closure {
   test_crate::NotCopy,
 }
 
@@ -90,8 +89,7 @@ fn test_crate::main::{impl core::ops::function::FnOnce<(u8)> for test_crate::mai
     return
 }
 
-impl test_crate::main::{impl core::ops::function::FnOnce<(u8)> for test_crate::main::closure} : core::ops::function::FnOnce<test_crate::main::closure, (u8)>
-{
+impl test_crate::main::{impl core::ops::function::FnOnce<(u8)> for test_crate::main::closure} : core::ops::function::FnOnce<test_crate::main::closure, (u8)> {
     parent_clause0 = core::marker::Sized<(u8)>
     parent_clause1 = core::marker::Tuple<(u8)>
     parent_clause2 = core::marker::Sized<u8>

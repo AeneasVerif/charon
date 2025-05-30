@@ -36,12 +36,12 @@ pub enum core::result::Result<T, E>
   where
       [@TraitClause0]: core::marker::Sized<T>,
       [@TraitClause1]: core::marker::Sized<E>,
- =
-|  Ok(T)
-|  Err(E)
+{
+  Ok(T),
+  Err(E),
+}
 
-
-pub struct core::fmt::Error = {}
+pub struct core::fmt::Error {}
 
 #[lang_item("Debug")]
 pub trait core::fmt::Debug<Self>
@@ -169,16 +169,14 @@ where
 
 pub fn core::default::{impl core::default::Default for bool}#1::default() -> bool
 
-impl core::default::{impl core::default::Default for bool}#1 : core::default::Default<bool>
-{
+impl core::default::{impl core::default::Default for bool}#1 : core::default::Default<bool> {
     parent_clause0 = core::marker::Sized<bool>
     fn default = core::default::{impl core::default::Default for bool}#1::default
 }
 
 pub fn core::fmt::{impl core::fmt::Debug for bool}#16::fmt<'_0, '_1, '_2>(@1: &'_0 (bool), @2: &'_1 mut (core::fmt::Formatter<'_2>)) -> core::result::Result<(), core::fmt::Error>[core::marker::Sized<()>, core::marker::Sized<core::fmt::Error>]
 
-impl core::fmt::{impl core::fmt::Debug for bool}#16 : core::fmt::Debug<bool>
-{
+impl core::fmt::{impl core::fmt::Debug for bool}#16 : core::fmt::Debug<bool> {
     fn fmt<'_0, '_1, '_2> = core::fmt::{impl core::fmt::Debug for bool}#16::fmt<'_0_0, '_0_1, '_0_2>
 }
 

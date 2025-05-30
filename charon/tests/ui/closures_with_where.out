@@ -12,7 +12,7 @@ struct test_crate::test::closure<T, const K : usize>
   where
       [@TraitClause0]: core::marker::Sized<T>,
       [@TraitClause1]: test_crate::Ops<T, const K : usize>,
- = {}
+{}
 
 #[lang_item("tuple_trait")]
 pub trait core::marker::Tuple<Self>

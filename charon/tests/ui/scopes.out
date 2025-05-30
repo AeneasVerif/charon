@@ -7,8 +7,7 @@ trait test_crate::Trait<'a, Self>
 
 fn test_crate::{impl test_crate::Trait<'a> for &'a (())}::method<'a, 'b>(@1: &'b (&'a (()))) -> &'b (())
 
-impl test_crate::{impl test_crate::Trait<'a> for &'a (())}<'a> : test_crate::Trait<'a, &'a (())>
-{
+impl test_crate::{impl test_crate::Trait<'a> for &'a (())}<'a> : test_crate::Trait<'a, &'a (())> {
     fn method<'b> = test_crate::{impl test_crate::Trait<'a> for &'a (())}::method<'a, 'b>
 }
 

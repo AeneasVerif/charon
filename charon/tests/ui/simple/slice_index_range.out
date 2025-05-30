@@ -7,7 +7,6 @@ pub trait core::marker::Sized<Self>
 pub struct core::ops::range::RangeInclusive<Idx>
   where
       [@TraitClause0]: core::marker::Sized<Idx>,
- =
 {
   start: Idx,
   end: Idx,
@@ -33,10 +32,10 @@ pub trait core::slice::index::private_slice_index::Sealed<Self>
 pub enum core::option::Option<T>
   where
       [@TraitClause0]: core::marker::Sized<T>,
- =
-|  None()
-|  Some(T)
-
+{
+  None,
+  Some(T),
+}
 
 #[lang_item("SliceIndex")]
 pub trait core::slice::index::SliceIndex<Self, T>
@@ -67,7 +66,7 @@ where
     return
 }
 
-impl core::slice::index::private_slice_index::{impl core::slice::index::private_slice_index::Sealed for core::ops::range::RangeInclusive<usize>[core::marker::Sized<usize>]}#5 : core::slice::index::private_slice_index::Sealed<core::ops::range::RangeInclusive<usize>[core::marker::Sized<usize>]>
+impl core::slice::index::private_slice_index::{impl core::slice::index::private_slice_index::Sealed for core::ops::range::RangeInclusive<usize>[core::marker::Sized<usize>]}#5 : core::slice::index::private_slice_index::Sealed<core::ops::range::RangeInclusive<usize>[core::marker::Sized<usize>]> {}
 
 pub fn core::num::{usize}#11::MAX() -> usize
 {
@@ -314,15 +313,14 @@ where
 }
 
 #[lang_item("format_count")]
-pub enum core::fmt::rt::Count =
-|  Is(u16)
-|  Param(usize)
-|  Implied()
-
+pub enum core::fmt::rt::Count {
+  Is(u16),
+  Param(usize),
+  Implied,
+}
 
 #[lang_item("format_placeholder")]
-pub struct core::fmt::rt::Placeholder =
-{
+pub struct core::fmt::rt::Placeholder {
   position: usize,
   flags: u32,
   precision: core::fmt::rt::Count,
@@ -330,13 +328,11 @@ pub struct core::fmt::rt::Placeholder =
 }
 
 #[lang_item("NonNull")]
-pub struct core::ptr::non_null::NonNull<T> =
-{
+pub struct core::ptr::non_null::NonNull<T> {
   pointer: *const T,
 }
 
-pub struct core::fmt::FormattingOptions =
-{
+pub struct core::fmt::FormattingOptions {
   flags: u32,
   width: u16,
   precision: u16,
@@ -346,7 +342,6 @@ pub struct core::fmt::FormattingOptions =
 pub struct core::fmt::Formatter<'a>
   where
       'a : 'a,
- =
 {
   options: core::fmt::FormattingOptions,
   buf: &'a mut (dyn (exists(TODO))),
@@ -357,24 +352,23 @@ pub enum core::result::Result<T, E>
   where
       [@TraitClause0]: core::marker::Sized<T>,
       [@TraitClause1]: core::marker::Sized<E>,
- =
-|  Ok(T)
-|  Err(E)
+{
+  Ok(T),
+  Err(E),
+}
 
-
-pub struct core::fmt::Error = {}
+pub struct core::fmt::Error {}
 
 #[lang_item("phantom_data")]
-pub struct core::marker::PhantomData<T> = {}
+pub struct core::marker::PhantomData<T> {}
 
-enum core::fmt::rt::ArgumentType<'a> =
-|  Placeholder(value: core::ptr::non_null::NonNull<()>, formatter: fn<'_0, '_1>(core::ptr::non_null::NonNull<()>, &'_0_0 mut (core::fmt::Formatter<'_0_1>)) -> core::result::Result<(), core::fmt::Error>[core::marker::Sized<()>, core::marker::Sized<core::fmt::Error>], _lifetime: core::marker::PhantomData<&'a (())>)
-|  Count(u16)
-
+enum core::fmt::rt::ArgumentType<'a> {
+  Placeholder(value: core::ptr::non_null::NonNull<()>, formatter: fn<'_0, '_1>(core::ptr::non_null::NonNull<()>, &'_0_0 mut (core::fmt::Formatter<'_0_1>)) -> core::result::Result<(), core::fmt::Error>[core::marker::Sized<()>, core::marker::Sized<core::fmt::Error>], _lifetime: core::marker::PhantomData<&'a (())>),
+  Count(u16),
+}
 
 #[lang_item("format_argument")]
-pub struct core::fmt::rt::Argument<'a> =
-{
+pub struct core::fmt::rt::Argument<'a> {
   ty: core::fmt::rt::ArgumentType<'a>,
 }
 
@@ -382,7 +376,6 @@ pub struct core::fmt::rt::Argument<'a> =
 pub struct core::fmt::Arguments<'a>
   where
       'a : 'a,
- =
 {
   pieces: &'a (Slice<&'static (Str)>),
   fmt: core::option::Option<&'a (Slice<core::fmt::rt::Placeholder>)>[core::marker::Sized<&'_ (Slice<core::fmt::rt::Placeholder>)>],
@@ -666,7 +659,6 @@ where
 pub struct core::ops::range::Range<Idx>
   where
       [@TraitClause0]: core::marker::Sized<Idx>,
- =
 {
   start: Idx,
   end: Idx,
@@ -1098,7 +1090,7 @@ pub unsafe fn core::slice::index::SliceIndex::get_unchecked_mut<Self, T>(@1: Sel
 
 pub fn core::slice::index::SliceIndex::index_mut<'_0, Self, T>(@1: Self, @2: &'_0 mut (T)) -> &'_0 mut (Self::Output)
 
-impl core::slice::index::private_slice_index::{impl core::slice::index::private_slice_index::Sealed for core::ops::range::Range<usize>[core::marker::Sized<usize>]}#1 : core::slice::index::private_slice_index::Sealed<core::ops::range::Range<usize>[core::marker::Sized<usize>]>
+impl core::slice::index::private_slice_index::{impl core::slice::index::private_slice_index::Sealed for core::ops::range::Range<usize>[core::marker::Sized<usize>]}#1 : core::slice::index::private_slice_index::Sealed<core::ops::range::Range<usize>[core::marker::Sized<usize>]> {}
 
 pub fn core::slice::index::{impl core::slice::index::SliceIndex<Slice<T>> for core::ops::range::Range<usize>[core::marker::Sized<usize>]}#4::get<'_0, T>(@1: core::ops::range::Range<usize>[core::marker::Sized<usize>], @2: &'_0 (Slice<T>)) -> core::option::Option<&'_0 (Slice<T>)>[core::marker::Sized<&'_0 (Slice<T>)>]
 where

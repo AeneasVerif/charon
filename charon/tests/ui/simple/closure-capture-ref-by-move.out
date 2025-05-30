@@ -1,7 +1,6 @@
 # Final LLBC before serialization:
 
-struct test_crate::foo::closure<'_0> =
-{
+struct test_crate::foo::closure<'_0> {
   &'_0 mut (i32),
 }
 
@@ -92,8 +91,7 @@ fn test_crate::foo::{impl core::ops::function::FnOnce<()> for test_crate::foo::c
     return
 }
 
-impl test_crate::foo::{impl core::ops::function::FnOnce<()> for test_crate::foo::closure<'_0>}<'_0> : core::ops::function::FnOnce<test_crate::foo::closure<'_0>, ()>
-{
+impl test_crate::foo::{impl core::ops::function::FnOnce<()> for test_crate::foo::closure<'_0>}<'_0> : core::ops::function::FnOnce<test_crate::foo::closure<'_0>, ()> {
     parent_clause0 = core::marker::Sized<()>
     parent_clause1 = core::marker::Tuple<()>
     parent_clause2 = core::marker::Sized<()>
@@ -101,8 +99,7 @@ impl test_crate::foo::{impl core::ops::function::FnOnce<()> for test_crate::foo:
     fn call_once = test_crate::foo::{impl core::ops::function::FnOnce<()> for test_crate::foo::closure<'_0>}::call_once<'_0>
 }
 
-impl test_crate::foo::{impl core::ops::function::FnMut<()> for test_crate::foo::closure<'_0>}<'_0> : core::ops::function::FnMut<test_crate::foo::closure<'_0>, ()>
-{
+impl test_crate::foo::{impl core::ops::function::FnMut<()> for test_crate::foo::closure<'_0>}<'_0> : core::ops::function::FnMut<test_crate::foo::closure<'_0>, ()> {
     parent_clause0 = test_crate::foo::{impl core::ops::function::FnOnce<()> for test_crate::foo::closure<'_0>}<'_0>
     parent_clause1 = core::marker::Sized<()>
     parent_clause2 = core::marker::Tuple<()>

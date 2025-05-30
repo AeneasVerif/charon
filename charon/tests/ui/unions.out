@@ -1,7 +1,6 @@
 # Final LLBC before serialization:
 
-union test_crate::Foo =
-{
+union test_crate::Foo {
   one: u64,
   two: Array<u32, 2 : usize>,
 }

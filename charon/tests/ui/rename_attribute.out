@@ -24,8 +24,7 @@ pub fn test_crate::{impl test_crate::BoolTrait for bool}::ret_true<'_0>(@1: &'_0
     return
 }
 
-impl test_crate::{impl test_crate::BoolTrait for bool} : test_crate::BoolTrait<bool>
-{
+impl test_crate::{impl test_crate::BoolTrait for bool} : test_crate::BoolTrait<bool> {
     fn get_bool<'_0> = test_crate::{impl test_crate::BoolTrait for bool}::get_bool<'_0_0>
     fn ret_true<'_0> = test_crate::{impl test_crate::BoolTrait for bool}::ret_true<'_0_0>
 }
@@ -65,14 +64,13 @@ where
 
 type test_crate::Test = i32
 
-enum test_crate::SimpleEnum =
-|  FirstVariant()
-|  SecondVariant()
-|  ThirdVariant()
+enum test_crate::SimpleEnum {
+  FirstVariant,
+  SecondVariant,
+  ThirdVariant,
+}
 
-
-struct test_crate::Foo =
-{
+struct test_crate::Foo {
   field1: u32,
 }
 

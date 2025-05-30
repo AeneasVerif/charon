@@ -6,7 +6,7 @@ trait test_crate::Ops<Self>
     fn ntt_multiply = test_crate::Ops::ntt_multiply<Self>
 }
 
-struct test_crate::Portable = {}
+struct test_crate::Portable {}
 
 fn test_crate::{impl test_crate::Ops for test_crate::Portable}::ZERO() -> test_crate::Portable
 {
@@ -32,8 +32,7 @@ fn test_crate::{impl test_crate::Ops for test_crate::Portable}::ntt_multiply() -
     return
 }
 
-impl test_crate::{impl test_crate::Ops for test_crate::Portable} : test_crate::Ops<test_crate::Portable>
-{
+impl test_crate::{impl test_crate::Ops for test_crate::Portable} : test_crate::Ops<test_crate::Portable> {
     fn ZERO = test_crate::{impl test_crate::Ops for test_crate::Portable}::ZERO
     fn ntt_multiply = test_crate::{impl test_crate::Ops for test_crate::Portable}::ntt_multiply
 }

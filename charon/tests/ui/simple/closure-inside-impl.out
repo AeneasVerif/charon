@@ -6,7 +6,6 @@ pub trait core::marker::Sized<Self>
 pub struct test_crate::Foo<F>
   where
       [@TraitClause0]: core::marker::Sized<F>,
- =
 {
   F,
 }
@@ -15,7 +14,7 @@ struct test_crate::{test_crate::Foo<F>[@TraitClause0]}::method::closure<F, T>
   where
       [@TraitClause0]: core::marker::Sized<F>,
       [@TraitClause1]: core::marker::Sized<T>,
- = {}
+{}
 
 pub fn test_crate::{test_crate::Foo<F>[@TraitClause0]}::method<F, T>()
 where

@@ -174,7 +174,7 @@ fn test_crate::mut_static()
     return
 }
 
-struct test_crate::non_copy_static::Foo = {}
+struct test_crate::non_copy_static::Foo {}
 
 fn test_crate::non_copy_static::FOO() -> test_crate::non_copy_static::Foo
 {

@@ -8,10 +8,10 @@ pub enum core::result::Result<T, E>
   where
       [@TraitClause0]: core::marker::Sized<T>,
       [@TraitClause1]: core::marker::Sized<E>,
- =
-|  Ok(T)
-|  Err(E)
-
+{
+  Ok(T),
+  Err(E),
+}
 
 pub trait test_crate::MyTryFrom<Self, T>
 {
@@ -34,8 +34,7 @@ pub fn test_crate::{impl test_crate::MyTryFrom<&'_0 (bool)> for bool}::from<'_0>
     return
 }
 
-impl test_crate::{impl test_crate::MyTryFrom<&'_0 (bool)> for bool}<'_0> : test_crate::MyTryFrom<bool, &'_0 (bool)>
-{
+impl test_crate::{impl test_crate::MyTryFrom<&'_0 (bool)> for bool}<'_0> : test_crate::MyTryFrom<bool, &'_0 (bool)> {
     parent_clause0 = core::marker::Sized<&'_ (bool)>
     parent_clause1 = core::marker::Sized<()>
     type Error = ()

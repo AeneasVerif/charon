@@ -50,10 +50,10 @@ pub trait core::ops::function::Fn<Self, Args, Self_Clause0_Clause0_Output>
 pub enum core::option::Option<T>
   where
       [@TraitClause0]: core::marker::Sized<T>,
- =
-|  None()
-|  Some(T)
-
+{
+  None,
+  Some(T),
+}
 
 pub fn core::ops::function::Fn::call<'_0, Self, Args, Self_Clause0_Clause0_Output>(@1: &'_0 (Self), @2: Args) -> Self_Clause0_Clause0_Output
 
@@ -163,7 +163,7 @@ pub fn test_crate::test_map_option1(@1: core::option::Option<u32>[core::marker::
     return
 }
 
-struct test_crate::test_closure_u32::closure = {}
+struct test_crate::test_closure_u32::closure {}
 
 pub fn test_crate::test_closure_u32(@1: u32) -> u32
 {
@@ -190,7 +190,7 @@ pub fn test_crate::test_closure_u32(@1: u32) -> u32
     return
 }
 
-struct test_crate::test_closure_u32s::closure = {}
+struct test_crate::test_closure_u32s::closure {}
 
 pub fn test_crate::test_closure_u32s(@1: u32) -> u32
 {
@@ -221,7 +221,7 @@ pub fn test_crate::test_closure_u32s(@1: u32) -> u32
     return
 }
 
-struct test_crate::test_closure_ref_u32::closure = {}
+struct test_crate::test_closure_ref_u32::closure {}
 
 pub fn test_crate::test_closure_ref_u32<'a>(@1: &'a (u32)) -> &'a (u32)
 {
@@ -255,7 +255,7 @@ pub fn test_crate::test_closure_ref_u32<'a>(@1: &'a (u32)) -> &'a (u32)
 struct test_crate::test_closure_ref_param::closure<T>
   where
       [@TraitClause0]: core::marker::Sized<T>,
- = {}
+{}
 
 pub fn test_crate::test_closure_ref_param<'_0, T>(@1: &'_0 (T)) -> &'_0 (T)
 where
@@ -294,7 +294,7 @@ struct test_crate::test_closure_ref_early_bound::closure<'a, T>
   where
       [@TraitClause0]: core::marker::Sized<T>,
       [@TraitClause1]: test_crate::Trait<'a, T>,
- = {}
+{}
 
 pub fn test_crate::test_closure_ref_early_bound<'a, T>(@1: &'a (T)) -> &'a (T)
 where
@@ -328,7 +328,7 @@ where
     return
 }
 
-struct test_crate::test_map_option2::closure = {}
+struct test_crate::test_map_option2::closure {}
 
 pub fn test_crate::test_map_option2(@1: core::option::Option<u32>[core::marker::Sized<u32>]) -> core::option::Option<u32>[core::marker::Sized<u32>]
 {
@@ -430,8 +430,7 @@ where
 
 pub fn core::clone::impls::{impl core::clone::Clone for u32}#8::clone<'_0>(@1: &'_0 (u32)) -> u32
 
-impl core::clone::impls::{impl core::clone::Clone for u32}#8 : core::clone::Clone<u32>
-{
+impl core::clone::impls::{impl core::clone::Clone for u32}#8 : core::clone::Clone<u32> {
     parent_clause0 = core::marker::Sized<u32>
     fn clone<'_0> = core::clone::impls::{impl core::clone::Clone for u32}#8::clone<'_0_0>
 }
@@ -495,7 +494,7 @@ pub fn test_crate::test_map_option_id_clone(@1: core::option::Option<u32>[core::
     return
 }
 
-struct test_crate::test_map_option3::closure = {}
+struct test_crate::test_map_option3::closure {}
 
 fn test_crate::test_map_option3::{impl core::ops::function::Fn<(u32), u32> for test_crate::test_map_option3::closure}::call<'_0>(@1: &'_0 (test_crate::test_map_option3::closure), @2: (u32)) -> u32
 {
@@ -541,24 +540,21 @@ fn test_crate::test_map_option3::{impl core::ops::function::FnOnce<(u32), u32> f
     return
 }
 
-impl test_crate::test_map_option3::{impl core::ops::function::FnOnce<(u32), u32> for test_crate::test_map_option3::closure} : core::ops::function::FnOnce<test_crate::test_map_option3::closure, (u32), u32>
-{
+impl test_crate::test_map_option3::{impl core::ops::function::FnOnce<(u32), u32> for test_crate::test_map_option3::closure} : core::ops::function::FnOnce<test_crate::test_map_option3::closure, (u32), u32> {
     parent_clause0 = core::marker::Sized<(u32)>
     parent_clause1 = core::marker::Tuple<(u32)>
     parent_clause2 = core::marker::Sized<u32>
     fn call_once = test_crate::test_map_option3::{impl core::ops::function::FnOnce<(u32), u32> for test_crate::test_map_option3::closure}::call_once
 }
 
-impl test_crate::test_map_option3::{impl core::ops::function::FnMut<(u32), u32> for test_crate::test_map_option3::closure} : core::ops::function::FnMut<test_crate::test_map_option3::closure, (u32), u32>
-{
+impl test_crate::test_map_option3::{impl core::ops::function::FnMut<(u32), u32> for test_crate::test_map_option3::closure} : core::ops::function::FnMut<test_crate::test_map_option3::closure, (u32), u32> {
     parent_clause0 = test_crate::test_map_option3::{impl core::ops::function::FnOnce<(u32), u32> for test_crate::test_map_option3::closure}
     parent_clause1 = core::marker::Sized<(u32)>
     parent_clause2 = core::marker::Tuple<(u32)>
     fn call_mut<'_0> = test_crate::test_map_option3::{impl core::ops::function::FnMut<(u32), u32> for test_crate::test_map_option3::closure}::call_mut<'_0_0>
 }
 
-impl test_crate::test_map_option3::{impl core::ops::function::Fn<(u32), u32> for test_crate::test_map_option3::closure} : core::ops::function::Fn<test_crate::test_map_option3::closure, (u32), u32>
-{
+impl test_crate::test_map_option3::{impl core::ops::function::Fn<(u32), u32> for test_crate::test_map_option3::closure} : core::ops::function::Fn<test_crate::test_map_option3::closure, (u32), u32> {
     parent_clause0 = test_crate::test_map_option3::{impl core::ops::function::FnMut<(u32), u32> for test_crate::test_map_option3::closure}
     parent_clause1 = core::marker::Sized<(u32)>
     parent_clause2 = core::marker::Tuple<(u32)>
@@ -582,7 +578,7 @@ pub fn test_crate::test_map_option3(@1: core::option::Option<u32>[core::marker::
     return
 }
 
-struct test_crate::test_regions::closure = {}
+struct test_crate::test_regions::closure {}
 
 pub fn test_crate::test_regions<'a>(@1: &'a (u32)) -> u32
 {
@@ -613,8 +609,7 @@ pub fn test_crate::test_regions<'a>(@1: &'a (u32)) -> u32
     return
 }
 
-struct test_crate::test_closure_capture::closure<'_0, '_1> =
-{
+struct test_crate::test_closure_capture::closure<'_0, '_1> {
   &'_0 (u32),
   &'_1 (u32),
 }
@@ -686,7 +681,7 @@ struct test_crate::test_closure_clone::closure<T>
   where
       [@TraitClause0]: core::marker::Sized<T>,
       [@TraitClause1]: core::clone::Clone<T>,
- = {}
+{}
 
 fn test_crate::test_closure_clone::{impl core::ops::function::Fn<(T), T> for test_crate::test_closure_clone::closure<T>[@TraitClause0, @TraitClause1]}::call<'_0, T>(@1: &'_0 (test_crate::test_closure_clone::closure<T>[@TraitClause0, @TraitClause1]), @2: (T)) -> T
 where
@@ -743,7 +738,7 @@ where
     return
 }
 
-struct test_crate::test_array_map::closure = {}
+struct test_crate::test_array_map::closure {}
 
 pub fn core::array::{Array<T, const N : usize>}#23::map<T, F, U, const N : usize>(@1: Array<T, const N : usize>, @2: F) -> Array<U, const N : usize>
 where
@@ -779,16 +774,14 @@ fn test_crate::test_array_map::{impl core::ops::function::FnOnce<(i32), i32> for
     return
 }
 
-impl test_crate::test_array_map::{impl core::ops::function::FnOnce<(i32), i32> for test_crate::test_array_map::closure} : core::ops::function::FnOnce<test_crate::test_array_map::closure, (i32), i32>
-{
+impl test_crate::test_array_map::{impl core::ops::function::FnOnce<(i32), i32> for test_crate::test_array_map::closure} : core::ops::function::FnOnce<test_crate::test_array_map::closure, (i32), i32> {
     parent_clause0 = core::marker::Sized<(i32)>
     parent_clause1 = core::marker::Tuple<(i32)>
     parent_clause2 = core::marker::Sized<i32>
     fn call_once = test_crate::test_array_map::{impl core::ops::function::FnOnce<(i32), i32> for test_crate::test_array_map::closure}::call_once
 }
 
-impl test_crate::test_array_map::{impl core::ops::function::FnMut<(i32), i32> for test_crate::test_array_map::closure} : core::ops::function::FnMut<test_crate::test_array_map::closure, (i32), i32>
-{
+impl test_crate::test_array_map::{impl core::ops::function::FnMut<(i32), i32> for test_crate::test_array_map::closure} : core::ops::function::FnMut<test_crate::test_array_map::closure, (i32), i32> {
     parent_clause0 = test_crate::test_array_map::{impl core::ops::function::FnOnce<(i32), i32> for test_crate::test_array_map::closure}
     parent_clause1 = core::marker::Sized<(i32)>
     parent_clause2 = core::marker::Tuple<(i32)>
@@ -812,8 +805,7 @@ pub fn test_crate::test_array_map(@1: Array<i32, 256 : usize>) -> Array<i32, 256
     return
 }
 
-struct test_crate::test_fnmut_with_ref::closure<'_0> =
-{
+struct test_crate::test_fnmut_with_ref::closure<'_0> {
   &'_0 mut (usize),
 }
 
@@ -910,24 +902,21 @@ fn test_crate::test_closure_capture::{impl core::ops::function::FnOnce<(u32), u3
     return
 }
 
-impl test_crate::test_closure_capture::{impl core::ops::function::FnOnce<(u32), u32> for test_crate::test_closure_capture::closure<'_0, '_1>}<'_0, '_1> : core::ops::function::FnOnce<test_crate::test_closure_capture::closure<'_0, '_1>, (u32), u32>
-{
+impl test_crate::test_closure_capture::{impl core::ops::function::FnOnce<(u32), u32> for test_crate::test_closure_capture::closure<'_0, '_1>}<'_0, '_1> : core::ops::function::FnOnce<test_crate::test_closure_capture::closure<'_0, '_1>, (u32), u32> {
     parent_clause0 = core::marker::Sized<(u32)>
     parent_clause1 = core::marker::Tuple<(u32)>
     parent_clause2 = core::marker::Sized<u32>
     fn call_once = test_crate::test_closure_capture::{impl core::ops::function::FnOnce<(u32), u32> for test_crate::test_closure_capture::closure<'_0, '_1>}::call_once<'_0, '_1>
 }
 
-impl test_crate::test_closure_capture::{impl core::ops::function::FnMut<(u32), u32> for test_crate::test_closure_capture::closure<'_0, '_1>}<'_0, '_1> : core::ops::function::FnMut<test_crate::test_closure_capture::closure<'_0, '_1>, (u32), u32>
-{
+impl test_crate::test_closure_capture::{impl core::ops::function::FnMut<(u32), u32> for test_crate::test_closure_capture::closure<'_0, '_1>}<'_0, '_1> : core::ops::function::FnMut<test_crate::test_closure_capture::closure<'_0, '_1>, (u32), u32> {
     parent_clause0 = test_crate::test_closure_capture::{impl core::ops::function::FnOnce<(u32), u32> for test_crate::test_closure_capture::closure<'_0, '_1>}<'_0, '_1>
     parent_clause1 = core::marker::Sized<(u32)>
     parent_clause2 = core::marker::Tuple<(u32)>
     fn call_mut<'_0> = test_crate::test_closure_capture::{impl core::ops::function::FnMut<(u32), u32> for test_crate::test_closure_capture::closure<'_0, '_1>}::call_mut<'_0, '_1, '_0_0>
 }
 
-impl test_crate::test_closure_capture::{impl core::ops::function::Fn<(u32), u32> for test_crate::test_closure_capture::closure<'_0, '_1>}<'_0, '_1> : core::ops::function::Fn<test_crate::test_closure_capture::closure<'_0, '_1>, (u32), u32>
-{
+impl test_crate::test_closure_capture::{impl core::ops::function::Fn<(u32), u32> for test_crate::test_closure_capture::closure<'_0, '_1>}<'_0, '_1> : core::ops::function::Fn<test_crate::test_closure_capture::closure<'_0, '_1>, (u32), u32> {
     parent_clause0 = test_crate::test_closure_capture::{impl core::ops::function::FnMut<(u32), u32> for test_crate::test_closure_capture::closure<'_0, '_1>}<'_0, '_1>
     parent_clause1 = core::marker::Sized<(u32)>
     parent_clause2 = core::marker::Tuple<(u32)>
@@ -1015,16 +1004,14 @@ fn test_crate::test_fnmut_with_ref::{impl core::ops::function::FnOnce<(&'_ (usiz
     return
 }
 
-impl test_crate::test_fnmut_with_ref::{impl core::ops::function::FnOnce<(&'_ (usize)), ()> for test_crate::test_fnmut_with_ref::closure<'_0>}<'_0, '_1> : core::ops::function::FnOnce<test_crate::test_fnmut_with_ref::closure<'_0>, (&'_ (usize)), ()>
-{
+impl test_crate::test_fnmut_with_ref::{impl core::ops::function::FnOnce<(&'_ (usize)), ()> for test_crate::test_fnmut_with_ref::closure<'_0>}<'_0, '_1> : core::ops::function::FnOnce<test_crate::test_fnmut_with_ref::closure<'_0>, (&'_ (usize)), ()> {
     parent_clause0 = core::marker::Sized<(&'_ (usize))>
     parent_clause1 = core::marker::Tuple<(&'_ (usize))>
     parent_clause2 = core::marker::Sized<()>
     fn call_once = test_crate::test_fnmut_with_ref::{impl core::ops::function::FnOnce<(&'_ (usize)), ()> for test_crate::test_fnmut_with_ref::closure<'_0>}::call_once<'_0, '_1>
 }
 
-impl test_crate::test_fnmut_with_ref::{impl core::ops::function::FnMut<(&'_ (usize)), ()> for test_crate::test_fnmut_with_ref::closure<'_0>}<'_0, '_1> : core::ops::function::FnMut<test_crate::test_fnmut_with_ref::closure<'_0>, (&'_ (usize)), ()>
-{
+impl test_crate::test_fnmut_with_ref::{impl core::ops::function::FnMut<(&'_ (usize)), ()> for test_crate::test_fnmut_with_ref::closure<'_0>}<'_0, '_1> : core::ops::function::FnMut<test_crate::test_fnmut_with_ref::closure<'_0>, (&'_ (usize)), ()> {
     parent_clause0 = test_crate::test_fnmut_with_ref::{impl core::ops::function::FnOnce<(&'_ (usize)), ()> for test_crate::test_fnmut_with_ref::closure<'_0>}<'_0, '_1>
     parent_clause1 = core::marker::Sized<(&'_ (usize))>
     parent_clause2 = core::marker::Tuple<(&'_ (usize))>

@@ -13,14 +13,13 @@ pub struct alloc::vec::Vec<T, A>
   where
       [@TraitClause0]: core::marker::Sized<T>,
       [@TraitClause1]: core::marker::Sized<A>,
- =
 {
   buf: alloc::raw_vec::RawVec<T, A>[@TraitClause0, @TraitClause1],
   len: usize,
 }
 
 #[lang_item("global_alloc_ty")]
-pub struct alloc::alloc::Global = {}
+pub struct alloc::alloc::Global {}
 
 opaque type alloc::raw_vec::RawVecInner<A>
   where
@@ -30,7 +29,7 @@ opaque type alloc::raw_vec::RawVecInner<A>
 pub opaque type core::alloc::layout::Layout
 
 #[lang_item("phantom_data")]
-pub struct core::marker::PhantomData<T> = {}
+pub struct core::marker::PhantomData<T> {}
 
 pub trait core::mem::SizedTypeProperties<Self>
 {

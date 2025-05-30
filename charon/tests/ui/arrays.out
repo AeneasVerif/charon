@@ -1,9 +1,9 @@
 # Final LLBC before serialization:
 
-pub enum test_crate::AB =
-|  A()
-|  B()
-
+pub enum test_crate::AB {
+  A,
+  B,
+}
 
 pub fn test_crate::incr<'_0>(@1: &'_0 mut (u32))
 {
@@ -267,7 +267,6 @@ where
 pub struct core::ops::range::Range<Idx>
   where
       [@TraitClause0]: core::marker::Sized<Idx>,
- =
 {
   start: Idx,
   end: Idx,
@@ -279,10 +278,10 @@ pub trait core::slice::index::private_slice_index::Sealed<Self>
 pub enum core::option::Option<T>
   where
       [@TraitClause0]: core::marker::Sized<T>,
- =
-|  None()
-|  Some(T)
-
+{
+  None,
+  Some(T),
+}
 
 #[lang_item("SliceIndex")]
 pub trait core::slice::index::SliceIndex<Self, T, Self_Output>
@@ -302,7 +301,7 @@ where
     [@TraitClause1]: core::marker::Sized<I>,
     [@TraitClause2]: core::slice::index::SliceIndex<I, Slice<T>, Clause2_Output>,
 
-impl core::slice::index::private_slice_index::{impl core::slice::index::private_slice_index::Sealed for core::ops::range::Range<usize>[core::marker::Sized<usize>]}#1 : core::slice::index::private_slice_index::Sealed<core::ops::range::Range<usize>[core::marker::Sized<usize>]>
+impl core::slice::index::private_slice_index::{impl core::slice::index::private_slice_index::Sealed for core::ops::range::Range<usize>[core::marker::Sized<usize>]}#1 : core::slice::index::private_slice_index::Sealed<core::ops::range::Range<usize>[core::marker::Sized<usize>]> {}
 
 pub fn core::slice::index::{impl core::slice::index::SliceIndex<Slice<T>, Slice<T>> for core::ops::range::Range<usize>[core::marker::Sized<usize>]}#4::get<'_0, T>(@1: core::ops::range::Range<usize>[core::marker::Sized<usize>], @2: &'_0 (Slice<T>)) -> core::option::Option<&'_0 (Slice<T>)>[core::marker::Sized<&'_0 (Slice<T>)>]
 where

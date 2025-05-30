@@ -1,10 +1,10 @@
 # Final LLBC before serialization:
 
 #[lang_item("Option")]
-pub enum core::option::Option::<u8> =
-|  None()
-|  Some(u8)
-
+pub enum core::option::Option::<u8> {
+  None,
+  Some(u8),
+}
 
 fn test_crate::init_option()
 {

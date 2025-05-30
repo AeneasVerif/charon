@@ -93,10 +93,10 @@ pub opaque type core::slice::iter::Chunks<'a, T>
 pub enum core::option::Option<T>
   where
       [@TraitClause0]: core::marker::Sized<T>,
- =
-|  None()
-|  Some(T)
-
+{
+  None,
+  Some(T),
+}
 
 pub fn core::slice::{Slice<T>}::chunks<'_0, T>(@1: &'_0 (Slice<T>), @2: usize) -> core::slice::iter::Chunks<'_0, T>[@TraitClause0]
 where
@@ -505,10 +505,10 @@ pub enum core::ops::control_flow::ControlFlow<B, C>
   where
       [@TraitClause0]: core::marker::Sized<B>,
       [@TraitClause1]: core::marker::Sized<C>,
- =
-|  Continue(C)
-|  Break(B)
-
+{
+  Continue(C),
+  Break(B),
+}
 
 #[lang_item("Try")]
 pub trait core::ops::try_trait::Try<Self>
@@ -571,11 +571,11 @@ pub trait core::cmp::Eq<Self>
 }
 
 #[lang_item("Ordering")]
-pub enum core::cmp::Ordering =
-|  Less()
-|  Equal()
-|  Greater()
-
+pub enum core::cmp::Ordering {
+  Less,
+  Equal,
+  Greater,
+}
 
 #[lang_item("partial_ord")]
 pub trait core::cmp::PartialOrd<Self, Rhs>

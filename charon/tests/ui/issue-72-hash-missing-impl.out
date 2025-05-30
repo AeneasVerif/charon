@@ -2,9 +2,9 @@
 
 pub trait test_crate::Hasher<Self>
 
-pub struct test_crate::DefaultHasher = {}
+pub struct test_crate::DefaultHasher {}
 
-impl test_crate::{impl test_crate::Hasher for test_crate::DefaultHasher} : test_crate::Hasher<test_crate::DefaultHasher>
+impl test_crate::{impl test_crate::Hasher for test_crate::DefaultHasher} : test_crate::Hasher<test_crate::DefaultHasher> {}
 
 #[lang_item("sized")]
 pub trait core::marker::Sized<Self>
@@ -28,8 +28,7 @@ where
     return
 }
 
-impl test_crate::{impl test_crate::Hash for u32}#1 : test_crate::Hash<u32>
-{
+impl test_crate::{impl test_crate::Hash for u32}#1 : test_crate::Hash<u32> {
     fn hash<'_0, '_1, H, [@TraitClause0]: core::marker::Sized<H>, [@TraitClause1]: test_crate::Hasher<H>> = test_crate::{impl test_crate::Hash for u32}#1::hash<'_0_0, '_0_1, H>[@TraitClause0_0, @TraitClause0_1]
 }
 

@@ -13,12 +13,12 @@ pub enum core::result::Result<T, E>
   where
       [@TraitClause0]: core::marker::Sized<T>,
       [@TraitClause1]: core::marker::Sized<E>,
- =
-|  Ok(T)
-|  Err(E)
+{
+  Ok(T),
+  Err(E),
+}
 
-
-pub struct core::fmt::Error = {}
+pub struct core::fmt::Error {}
 
 #[lang_item("Display")]
 pub trait core::fmt::Display<Self>
@@ -27,7 +27,7 @@ pub trait core::fmt::Display<Self>
 }
 
 #[lang_item("global_alloc_ty")]
-pub struct alloc::alloc::Global = {}
+pub struct alloc::alloc::Global {}
 
 fn test_crate::construct<T>(@1: T) -> alloc::boxed::Box<dyn (exists(TODO))>[core::marker::Sized<alloc::alloc::Global>]
 where

@@ -19,16 +19,16 @@ trait test_crate::Trait<Self, T>
 }
 
 #[lang_item("global_alloc_ty")]
-pub struct alloc::alloc::Global = {}
+pub struct alloc::alloc::Global {}
 
 #[lang_item("Option")]
 pub enum core::option::Option<T>
   where
       [@TraitClause0]: core::marker::Sized<T>,
- =
-|  None()
-|  Some(T)
-
+{
+  None,
+  Some(T),
+}
 
 fn test_crate::{impl test_crate::Trait<core::option::Option<T>[@TraitClause0]> for alloc::boxed::Box<T>[core::marker::Sized<alloc::alloc::Global>]}::method<T, U>()
 where

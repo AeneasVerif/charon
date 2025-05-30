@@ -1408,10 +1408,15 @@ impl<C: AstFormatter> FmtWithCtx<C> for TraitImpl {
                     format!("{TAB_INCR}fn {name}{params} = {fn_ref}\n",)
                 }))
                 .collect::<Vec<String>>();
-            if items.is_empty() {
-                "".to_string()
+            let newline = if clauses.is_empty() {
+                " ".to_string()
             } else {
-                format!("\n{{\n{}}}", items.join(""))
+                "\n".to_string()
+            };
+            if items.is_empty() {
+                format!("{newline}{{}}")
+            } else {
+                format!("{newline}{{\n{}}}", items.join(""))
             }
         };
 
@@ -1563,7 +1568,7 @@ impl<C: AstFormatter> FmtWithCtx<C> for TypeDecl {
         let nl_or_space = if !self.generics.has_predicates() {
             " ".to_string()
         } else {
-            "\n ".to_string()
+            "\n".to_string()
         };
 
         let contents = match &self.kind {
@@ -1571,26 +1576,26 @@ impl<C: AstFormatter> FmtWithCtx<C> for TypeDecl {
                 if !fields.is_empty() {
                     let fields = fields
                         .iter()
-                        .map(|f| format!("\n  {},", f.fmt_with_ctx(ctx)))
-                        .format("");
-                    format!("{nl_or_space}=\n{{{fields}\n}}")
+                        .map(|f| format!("  {},", f.fmt_with_ctx(ctx)))
+                        .format("\n");
+                    format!("{nl_or_space}{{\n{fields}\n}}")
                 } else {
-                    format!("{nl_or_space}= {{}}")
+                    format!("{nl_or_space}{{}}")
                 }
             }
             TypeDeclKind::Union(fields) => {
                 let fields = fields
                     .iter()
-                    .map(|f| format!("\n  {},", f.fmt_with_ctx(ctx)))
-                    .format("");
-                format!("{nl_or_space}=\n{{{fields}\n}}")
+                    .map(|f| format!("  {},", f.fmt_with_ctx(ctx)))
+                    .format("\n");
+                format!("{nl_or_space}{{\n{fields}\n}}")
             }
             TypeDeclKind::Enum(variants) => {
                 let variants = variants
                     .iter()
-                    .map(|v| format!("|  {}", v.fmt_with_ctx(ctx)))
+                    .map(|v| format!("  {},", v.fmt_with_ctx(ctx)))
                     .format("\n");
-                format!("{nl_or_space}=\n{variants}\n")
+                format!("{nl_or_space}{{\n{variants}\n}}")
             }
             TypeDeclKind::Alias(ty) => format!(" = {}", ty.fmt_with_ctx(ctx)),
             TypeDeclKind::Opaque => format!(""),
@@ -1630,9 +1635,12 @@ impl<C: AstFormatter> FmtWithCtx<C> for UnOp {
 
 impl<C: AstFormatter> FmtWithCtx<C> for Variant {
     fn fmt_with_ctx(&self, ctx: &C) -> String {
-        let fields: Vec<String> = self.fields.iter().map(|f| f.fmt_with_ctx(ctx)).collect();
-        let fields = fields.join(", ");
-        format!("{}({})", self.name, fields)
+        if self.fields.is_empty() {
+            self.name.clone()
+        } else {
+            let fields = self.fields.iter().map(|f| f.fmt_with_ctx(ctx)).format(", ");
+            format!("{}({})", self.name, fields)
+        }
     }
 }
 

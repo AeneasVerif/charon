@@ -20,8 +20,7 @@ pub trait test_crate::Foo<Self>
 
 pub fn core::clone::impls::{impl core::clone::Clone for u32}#8::clone<'_0>(@1: &'_0 (u32)) -> u32
 
-impl core::clone::impls::{impl core::clone::Clone for u32}#8 : core::clone::Clone<u32>
-{
+impl core::clone::impls::{impl core::clone::Clone for u32}#8 : core::clone::Clone<u32> {
     parent_clause0 = core::marker::Sized<u32>
     fn clone<'_0> = core::clone::impls::{impl core::clone::Clone for u32}#8::clone<'_0_0>
 }
@@ -43,8 +42,7 @@ pub fn test_crate::{impl test_crate::Foo for ()}::get_ty<'_0>(@1: &'_0 (())) -> 
     return
 }
 
-impl test_crate::{impl test_crate::Foo for ()} : test_crate::Foo<()>
-{
+impl test_crate::{impl test_crate::Foo for ()} : test_crate::Foo<()> {
     parent_clause0 = core::marker::Sized<u32>
     parent_clause1 = core::clone::impls::{impl core::clone::Clone for u32}#8
     type Type = u32
@@ -108,8 +106,7 @@ pub fn test_crate::{impl test_crate::RPITIT for ()}#1::make_foo()
     return
 }
 
-impl test_crate::{impl test_crate::RPITIT for ()}#1 : test_crate::RPITIT<()>
-{
+impl test_crate::{impl test_crate::RPITIT for ()}#1 : test_crate::RPITIT<()> {
     parent_clause0 = core::marker::Sized<()>
     parent_clause1 = test_crate::{impl test_crate::Foo for ()}
     type  = ()
@@ -167,7 +164,6 @@ pub struct test_crate::WrapClone<T>
   where
       [@TraitClause0]: core::marker::Sized<T>,
       [@TraitClause1]: core::clone::Clone<T>,
- =
 {
   T,
 }
@@ -175,7 +171,7 @@ pub struct test_crate::WrapClone<T>
 struct test_crate::wrap::closure<U>
   where
       [@TraitClause0]: core::marker::Sized<U>,
- = {}
+{}
 
 pub fn test_crate::wrap<U>() -> test_crate::wrap::closure<U>[@TraitClause0]
 where
@@ -190,8 +186,7 @@ where
 #[lang_item("noop_method_clone")]
 pub fn core::clone::impls::{impl core::clone::Clone for &'_0 (T)}#3::clone<'_0, '_1, T>(@1: &'_1 (&'_0 (T))) -> &'_0 (T)
 
-impl core::clone::impls::{impl core::clone::Clone for &'_0 (T)}#3<'_0, T> : core::clone::Clone<&'_0 (T)>
-{
+impl core::clone::impls::{impl core::clone::Clone for &'_0 (T)}#3<'_0, T> : core::clone::Clone<&'_0 (T)> {
     parent_clause0 = core::marker::Sized<&'_ (T)>
     fn clone<'_0> = core::clone::impls::{impl core::clone::Clone for &'_0 (T)}#3::clone<'_0, '_0_0, T>
 }

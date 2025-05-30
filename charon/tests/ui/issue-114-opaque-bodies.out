@@ -67,10 +67,10 @@ fn test_crate::use_inlines() -> u32
 pub enum core::option::Option<T>
   where
       [@TraitClause0]: core::marker::Sized<T>,
- =
-|  None()
-|  Some(T)
-
+{
+  None,
+  Some(T),
+}
 
 pub fn core::bool::{bool}::then_some<T>(@1: bool, @2: T) -> core::option::Option<T>[@TraitClause0]
 where
@@ -135,30 +135,26 @@ fn test_crate::convert(@1: i32) -> i64
 }
 
 #[lang_item("NonNull")]
-pub struct core::ptr::non_null::NonNull<T> =
-{
+pub struct core::ptr::non_null::NonNull<T> {
   pointer: *const T,
 }
 
 #[lang_item("phantom_data")]
-pub struct core::marker::PhantomData<T> = {}
+pub struct core::marker::PhantomData<T> {}
 
 #[lang_item("ptr_unique")]
-pub struct core::ptr::unique::Unique<T> =
-{
+pub struct core::ptr::unique::Unique<T> {
   pointer: core::ptr::non_null::NonNull<T>,
   _marker: core::marker::PhantomData<T>,
 }
 
-pub struct core::num::niche_types::UsizeNoHighBit =
-{
+pub struct core::num::niche_types::UsizeNoHighBit {
   usize,
 }
 
 struct alloc::raw_vec::RawVecInner<A>
   where
       [@TraitClause0]: core::marker::Sized<A>,
- =
 {
   ptr: core::ptr::unique::Unique<u8>,
   cap: core::num::niche_types::UsizeNoHighBit,
@@ -169,7 +165,6 @@ struct alloc::raw_vec::RawVec<T, A>
   where
       [@TraitClause0]: core::marker::Sized<T>,
       [@TraitClause1]: core::marker::Sized<A>,
- =
 {
   inner: alloc::raw_vec::RawVecInner<A>[@TraitClause1],
   _marker: core::marker::PhantomData<T>,
@@ -180,14 +175,13 @@ pub struct alloc::vec::Vec<T, A>
   where
       [@TraitClause0]: core::marker::Sized<T>,
       [@TraitClause1]: core::marker::Sized<A>,
- =
 {
   buf: alloc::raw_vec::RawVec<T, A>[@TraitClause0, @TraitClause1],
   len: usize,
 }
 
 #[lang_item("global_alloc_ty")]
-pub struct alloc::alloc::Global = {}
+pub struct alloc::alloc::Global {}
 
 fn test_crate::vec(@1: alloc::vec::Vec<u32, alloc::alloc::Global>[core::marker::Sized<u32>, core::marker::Sized<alloc::alloc::Global>])
 {
@@ -253,8 +247,7 @@ pub trait core::convert::From<Self, T>
 #[lang_item("from_fn")]
 pub fn core::convert::From::from<Self, T>(@1: T) -> Self
 
-impl core::convert::num::{impl core::convert::From<i32> for i64}#83 : core::convert::From<i64, i32>
-{
+impl core::convert::num::{impl core::convert::From<i32> for i64}#83 : core::convert::From<i64, i32> {
     parent_clause0 = core::marker::Sized<i64>
     parent_clause1 = core::marker::Sized<i32>
     fn from = core::convert::num::{impl core::convert::From<i32> for i64}#83::from

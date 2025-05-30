@@ -31,10 +31,10 @@ pub enum alloc::borrow::Cow<'a, B>
       [@TraitClause0]: alloc::borrow::ToOwned<B>,
       B : 'a,
       B : 'a,
- =
-|  Borrowed(&'a (B))
-|  Owned(@TraitClause0::Owned)
-
+{
+  Borrowed(&'a (B)),
+  Owned(@TraitClause0::Owned),
+}
 
 #[lang_item("Vec")]
 pub opaque type alloc::vec::Vec<T, A>
@@ -43,7 +43,7 @@ pub opaque type alloc::vec::Vec<T, A>
       [@TraitClause1]: core::marker::Sized<A>,
 
 #[lang_item("global_alloc_ty")]
-pub struct alloc::alloc::Global = {}
+pub struct alloc::alloc::Global {}
 
 pub fn alloc::slice::{impl core::borrow::Borrow<Slice<T>> for alloc::vec::Vec<T, A>[@TraitClause0, @TraitClause1]}#5::borrow<'_0, T, A>(@1: &'_0 (alloc::vec::Vec<T, A>[@TraitClause0, @TraitClause1])) -> &'_0 (Slice<T>)
 where
@@ -79,7 +79,6 @@ struct test_crate::Generic2<'a, T>
       [@TraitClause0]: core::marker::Sized<T>,
       [@TraitClause1]: core::clone::Clone<T>,
       T : 'a,
- =
 {
   alloc::borrow::Cow<'a, Slice<T>>[alloc::slice::{impl alloc::borrow::ToOwned for Slice<T>}#9<T>[@TraitClause0, @TraitClause1]],
 }

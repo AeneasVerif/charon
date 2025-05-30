@@ -7,10 +7,10 @@ pub trait core::marker::Sized<Self>
 pub enum core::option::Option<T>
   where
       [@TraitClause0]: core::marker::Sized<T>,
- =
-|  None()
-|  Some(T)
-
+{
+  None,
+  Some(T),
+}
 
 fn test_crate::discriminant_value<'_0, T>(@1: &'_0 (core::option::Option<T>[@TraitClause0])) -> isize
 where

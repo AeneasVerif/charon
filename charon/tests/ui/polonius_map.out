@@ -16,10 +16,10 @@ pub opaque type std::hash::random::RandomState
 pub enum core::option::Option<T>
   where
       [@TraitClause0]: core::marker::Sized<T>,
- =
-|  None()
-|  Some(T)
-
+{
+  None,
+  Some(T),
+}
 
 #[lang_item("eq")]
 pub trait core::cmp::PartialEq<Self, Rhs>
@@ -73,13 +73,11 @@ where
 
 pub fn core::cmp::impls::{impl core::cmp::PartialEq<u32> for u32}#24::eq<'_0, '_1>(@1: &'_0 (u32), @2: &'_1 (u32)) -> bool
 
-impl core::cmp::impls::{impl core::cmp::PartialEq<u32> for u32}#24 : core::cmp::PartialEq<u32, u32>
-{
+impl core::cmp::impls::{impl core::cmp::PartialEq<u32> for u32}#24 : core::cmp::PartialEq<u32, u32> {
     fn eq<'_0, '_1> = core::cmp::impls::{impl core::cmp::PartialEq<u32> for u32}#24::eq<'_0_0, '_0_1>
 }
 
-impl core::cmp::impls::{impl core::cmp::Eq for u32}#43 : core::cmp::Eq<u32>
-{
+impl core::cmp::impls::{impl core::cmp::Eq for u32}#43 : core::cmp::Eq<u32> {
     parent_clause0 = core::cmp::impls::{impl core::cmp::PartialEq<u32> for u32}#24
 }
 
@@ -88,8 +86,7 @@ where
     [@TraitClause0]: core::marker::Sized<H>,
     [@TraitClause1]: core::hash::Hasher<H>,
 
-impl core::hash::impls::{impl core::hash::Hash for u32}#11 : core::hash::Hash<u32>
-{
+impl core::hash::impls::{impl core::hash::Hash for u32}#11 : core::hash::Hash<u32> {
     fn hash<'_0, '_1, H, [@TraitClause0]: core::marker::Sized<H>, [@TraitClause1]: core::hash::Hasher<H>> = core::hash::impls::{impl core::hash::Hash for u32}#11::hash<'_0_0, '_0_1, H>[@TraitClause0_0, @TraitClause0_1]
 }
 
@@ -99,16 +96,14 @@ pub fn std::hash::random::{impl core::hash::Hasher for std::hash::random::Defaul
 
 pub fn std::hash::random::{impl core::hash::Hasher for std::hash::random::DefaultHasher}#4::write<'_0, '_1>(@1: &'_0 mut (std::hash::random::DefaultHasher), @2: &'_1 (Slice<u8>))
 
-impl std::hash::random::{impl core::hash::Hasher for std::hash::random::DefaultHasher}#4 : core::hash::Hasher<std::hash::random::DefaultHasher>
-{
+impl std::hash::random::{impl core::hash::Hasher for std::hash::random::DefaultHasher}#4 : core::hash::Hasher<std::hash::random::DefaultHasher> {
     fn finish<'_0> = std::hash::random::{impl core::hash::Hasher for std::hash::random::DefaultHasher}#4::finish<'_0_0>
     fn write<'_0, '_1> = std::hash::random::{impl core::hash::Hasher for std::hash::random::DefaultHasher}#4::write<'_0_0, '_0_1>
 }
 
 pub fn std::hash::random::{impl core::hash::BuildHasher for std::hash::random::RandomState}#1::build_hasher<'_0>(@1: &'_0 (std::hash::random::RandomState)) -> std::hash::random::DefaultHasher
 
-impl std::hash::random::{impl core::hash::BuildHasher for std::hash::random::RandomState}#1 : core::hash::BuildHasher<std::hash::random::RandomState>
-{
+impl std::hash::random::{impl core::hash::BuildHasher for std::hash::random::RandomState}#1 : core::hash::BuildHasher<std::hash::random::RandomState> {
     parent_clause0 = core::marker::Sized<std::hash::random::DefaultHasher>
     parent_clause1 = std::hash::random::{impl core::hash::Hasher for std::hash::random::DefaultHasher}#4
     type Hasher = std::hash::random::DefaultHasher
@@ -118,8 +113,7 @@ impl std::hash::random::{impl core::hash::BuildHasher for std::hash::random::Ran
 #[lang_item("noop_method_borrow")]
 pub fn core::borrow::{impl core::borrow::Borrow<T> for T}::borrow<'_0, T>(@1: &'_0 (T)) -> &'_0 (T)
 
-impl core::borrow::{impl core::borrow::Borrow<T> for T}<T> : core::borrow::Borrow<T, T>
-{
+impl core::borrow::{impl core::borrow::Borrow<T> for T}<T> : core::borrow::Borrow<T, T> {
     fn borrow<'_0> = core::borrow::{impl core::borrow::Borrow<T> for T}::borrow<'_0_0, T>
 }
 

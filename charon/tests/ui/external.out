@@ -62,36 +62,31 @@ pub opaque type core::num::nonzero::NonZero<T>
 
 pub fn core::clone::impls::{impl core::clone::Clone for u32}#8::clone<'_0>(@1: &'_0 (u32)) -> u32
 
-impl core::clone::impls::{impl core::clone::Clone for u32}#8 : core::clone::Clone<u32>
-{
+impl core::clone::impls::{impl core::clone::Clone for u32}#8 : core::clone::Clone<u32> {
     parent_clause0 = core::marker::Sized<u32>
     fn clone<'_0> = core::clone::impls::{impl core::clone::Clone for u32}#8::clone<'_0_0>
 }
 
-impl core::marker::{impl core::marker::Copy for u32}#40 : core::marker::Copy<u32>
-{
+impl core::marker::{impl core::marker::Copy for u32}#40 : core::marker::Copy<u32> {
     parent_clause0 = core::clone::impls::{impl core::clone::Clone for u32}#8
 }
 
-impl core::num::nonzero::{impl core::num::nonzero::private::Sealed for u32}#20 : core::num::nonzero::private::Sealed<u32>
+impl core::num::nonzero::{impl core::num::nonzero::private::Sealed for u32}#20 : core::num::nonzero::private::Sealed<u32> {}
 
 pub opaque type core::num::niche_types::NonZeroU32Inner
 
 pub fn core::num::niche_types::{impl core::clone::Clone for core::num::niche_types::NonZeroU32Inner}#92::clone<'_0>(@1: &'_0 (core::num::niche_types::NonZeroU32Inner)) -> core::num::niche_types::NonZeroU32Inner
 
-impl core::num::niche_types::{impl core::clone::Clone for core::num::niche_types::NonZeroU32Inner}#92 : core::clone::Clone<core::num::niche_types::NonZeroU32Inner>
-{
+impl core::num::niche_types::{impl core::clone::Clone for core::num::niche_types::NonZeroU32Inner}#92 : core::clone::Clone<core::num::niche_types::NonZeroU32Inner> {
     parent_clause0 = core::marker::Sized<core::num::niche_types::NonZeroU32Inner>
     fn clone<'_0> = core::num::niche_types::{impl core::clone::Clone for core::num::niche_types::NonZeroU32Inner}#92::clone<'_0_0>
 }
 
-impl core::num::niche_types::{impl core::marker::Copy for core::num::niche_types::NonZeroU32Inner}#93 : core::marker::Copy<core::num::niche_types::NonZeroU32Inner>
-{
+impl core::num::niche_types::{impl core::marker::Copy for core::num::niche_types::NonZeroU32Inner}#93 : core::marker::Copy<core::num::niche_types::NonZeroU32Inner> {
     parent_clause0 = core::num::niche_types::{impl core::clone::Clone for core::num::niche_types::NonZeroU32Inner}#92
 }
 
-impl core::num::nonzero::{impl core::num::nonzero::ZeroablePrimitive for u32}#21 : core::num::nonzero::ZeroablePrimitive<u32>
-{
+impl core::num::nonzero::{impl core::num::nonzero::ZeroablePrimitive for u32}#21 : core::num::nonzero::ZeroablePrimitive<u32> {
     parent_clause0 = core::marker::Sized<u32>
     parent_clause1 = core::marker::{impl core::marker::Copy for u32}#40
     parent_clause2 = core::num::nonzero::{impl core::num::nonzero::private::Sealed for u32}#20
@@ -104,10 +99,10 @@ impl core::num::nonzero::{impl core::num::nonzero::ZeroablePrimitive for u32}#21
 pub enum core::option::Option<T>
   where
       [@TraitClause0]: core::marker::Sized<T>,
- =
-|  None()
-|  Some(T)
-
+{
+  None,
+  Some(T),
+}
 
 pub fn core::num::nonzero::{core::num::nonzero::NonZero<T>[@TraitClause0, @TraitClause1]}#15::new<T>(@1: T) -> core::option::Option<core::num::nonzero::NonZero<T>[@TraitClause0, @TraitClause1]>[core::marker::Sized<core::num::nonzero::NonZero<T>[@TraitClause0, @TraitClause1]>]
 where
@@ -143,7 +138,7 @@ pub opaque type alloc::vec::Vec<T, A>
       [@TraitClause1]: core::marker::Sized<A>,
 
 #[lang_item("global_alloc_ty")]
-pub struct alloc::alloc::Global = {}
+pub struct alloc::alloc::Global {}
 
 #[lang_item("vec_new")]
 pub fn alloc::vec::{alloc::vec::Vec<T, alloc::alloc::Global>[@TraitClause0, core::marker::Sized<alloc::alloc::Global>]}::new<T>() -> alloc::vec::Vec<T, alloc::alloc::Global>[@TraitClause0, core::marker::Sized<alloc::alloc::Global>]

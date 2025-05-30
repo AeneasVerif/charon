@@ -4,7 +4,7 @@
 pub trait core::marker::Sized<Self>
 
 #[lang_item("global_alloc_ty")]
-pub struct alloc::alloc::Global = {}
+pub struct alloc::alloc::Global {}
 
 #[lang_item("Rc")]
 pub opaque type alloc::rc::Rc<T, A>
@@ -139,8 +139,7 @@ pub trait core::clone::Clone<Self>
 #[lang_item("clone_fn")]
 pub fn core::clone::Clone::clone<'_0, Self>(@1: &'_0 (Self)) -> Self
 
-impl alloc::string::{impl core::clone::Clone for alloc::string::String}#6 : core::clone::Clone<alloc::string::String>
-{
+impl alloc::string::{impl core::clone::Clone for alloc::string::String}#6 : core::clone::Clone<alloc::string::String> {
     parent_clause0 = core::marker::Sized<alloc::string::String>
     fn clone<'_0> = alloc::string::{impl core::clone::Clone for alloc::string::String}#6::clone<'_0_0>
 }

@@ -7,10 +7,10 @@ pub trait core::marker::Sized<Self>
 pub enum core::option::Option<T>
   where
       [@TraitClause0]: core::marker::Sized<T>,
- =
-|  None()
-|  Some(T)
-
+{
+  None,
+  Some(T),
+}
 
 fn core::option::Option::Some<T>(@1: T) -> core::option::Option<T>[@TraitClause0]
 where
@@ -29,8 +29,7 @@ static test_crate::F: fn(u8) -> core::option::Option<u8>[core::marker::Sized<u8>
 #[lang_item("String")]
 pub opaque type alloc::string::String
 
-struct test_crate::Foo =
-{
+struct test_crate::Foo {
   u32,
   alloc::string::String,
 }
@@ -39,9 +38,9 @@ enum test_crate::Bar<'a, T>
   where
       [@TraitClause0]: core::marker::Sized<T>,
       T : 'a,
- =
-|  Variant(&'a (T))
-
+{
+  Variant(&'a (T)),
+}
 
 fn test_crate::Foo(@1: u32, @2: alloc::string::String) -> test_crate::Foo
 {

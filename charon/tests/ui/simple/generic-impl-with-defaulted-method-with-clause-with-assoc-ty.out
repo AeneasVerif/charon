@@ -17,10 +17,10 @@ trait test_crate::HasMethod<Self>
 pub enum core::option::Option<T>
   where
       [@TraitClause0]: core::marker::Sized<T>,
- =
-|  None()
-|  Some(T)
-
+{
+  None,
+  Some(T),
+}
 
 fn test_crate::{impl test_crate::HasMethod for core::option::Option<T>[@TraitClause0]}::method<T, Clause1_Type>()
 where

@@ -1,14 +1,13 @@
 # Final LLBC before serialization:
 
-struct test_crate::Foo =
-{
+struct test_crate::Foo {
   *const (),
 }
 
 #[lang_item("Send")]
 pub trait core::marker::Send<Self>
 
-impl test_crate::{impl core::marker::Send for test_crate::Foo} : core::marker::Send<test_crate::Foo>
+impl test_crate::{impl core::marker::Send for test_crate::Foo} : core::marker::Send<test_crate::Foo> {}
 
 
 

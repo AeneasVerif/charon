@@ -13,12 +13,12 @@ pub enum core::result::Result<T, E>
   where
       [@TraitClause0]: core::marker::Sized<T>,
       [@TraitClause1]: core::marker::Sized<E>,
- =
-|  Ok(T)
-|  Err(E)
+{
+  Ok(T),
+  Err(E),
+}
 
-
-pub struct core::fmt::Error = {}
+pub struct core::fmt::Error {}
 
 #[lang_item("Debug")]
 pub trait core::fmt::Debug<Self>
@@ -61,17 +61,17 @@ pub trait core::cmp::Eq<Self>
 pub enum core::option::Option<T>
   where
       [@TraitClause0]: core::marker::Sized<T>,
- =
-|  None()
-|  Some(T)
-
+{
+  None,
+  Some(T),
+}
 
 #[lang_item("Ordering")]
-pub enum core::cmp::Ordering =
-|  Less()
-|  Equal()
-|  Greater()
-
+pub enum core::cmp::Ordering {
+  Less,
+  Equal,
+  Greater,
+}
 
 #[lang_item("partial_ord")]
 pub trait core::cmp::PartialOrd<Self, Rhs>

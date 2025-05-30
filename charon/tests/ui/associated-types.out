@@ -31,22 +31,20 @@ where
 pub enum core::option::Option<T>
   where
       [@TraitClause0]: core::marker::Sized<T>,
- =
-|  None()
-|  Some(T)
-
+{
+  None,
+  Some(T),
+}
 
 #[lang_item("noop_method_clone")]
 pub fn core::clone::impls::{impl core::clone::Clone for &'_0 (T)}#3::clone<'_0, '_1, T>(@1: &'_1 (&'_0 (T))) -> &'_0 (T)
 
-impl core::clone::impls::{impl core::clone::Clone for &'_0 (T)}#3<'_0, T> : core::clone::Clone<&'_0 (T)>
-{
+impl core::clone::impls::{impl core::clone::Clone for &'_0 (T)}#3<'_0, T> : core::clone::Clone<&'_0 (T)> {
     parent_clause0 = core::marker::Sized<&'_ (T)>
     fn clone<'_0> = core::clone::impls::{impl core::clone::Clone for &'_0 (T)}#3::clone<'_0, '_0_0, T>
 }
 
-impl core::marker::{impl core::marker::Copy for &'_0 (T)}#4<'_0, T> : core::marker::Copy<&'_0 (T)>
-{
+impl core::marker::{impl core::marker::Copy for &'_0 (T)}#4<'_0, T> : core::marker::Copy<&'_0 (T)> {
     parent_clause0 = core::clone::impls::{impl core::clone::Clone for &'_0 (T)}#3<'_, T>
 }
 
@@ -222,8 +220,7 @@ trait test_crate::loopy::Bar<Self, Self_BarTy>
     parent_clause0 : [@TraitClause0]: core::marker::Sized<Self_BarTy>
 }
 
-impl test_crate::loopy::{impl test_crate::loopy::Bar<bool> for ()} : test_crate::loopy::Bar<(), bool>
-{
+impl test_crate::loopy::{impl test_crate::loopy::Bar<bool> for ()} : test_crate::loopy::Bar<(), bool> {
     parent_clause0 = core::marker::Sized<bool>
 }
 
@@ -236,8 +233,7 @@ trait test_crate::loopy::Foo<Self>
     type Self_Clause2_BarTy
 }
 
-impl test_crate::loopy::{impl test_crate::loopy::Foo for ()}#1 : test_crate::loopy::Foo<()>
-{
+impl test_crate::loopy::{impl test_crate::loopy::Foo for ()}#1 : test_crate::loopy::Foo<()> {
     parent_clause0 = core::marker::Sized<()>
     parent_clause1 = test_crate::loopy::{impl test_crate::loopy::Foo for ()}#1
     parent_clause2 = test_crate::loopy::{impl test_crate::loopy::Bar<bool> for ()}
@@ -255,8 +251,7 @@ trait test_crate::loopy::Baz<Self, T>
     type Self_Clause2_BarTy
 }
 
-impl test_crate::loopy::{impl test_crate::loopy::Baz<()> for ()}#2 : test_crate::loopy::Baz<(), ()>
-{
+impl test_crate::loopy::{impl test_crate::loopy::Baz<()> for ()}#2 : test_crate::loopy::Baz<(), ()> {
     parent_clause0 = core::marker::Sized<()>
     parent_clause1 = test_crate::loopy::{impl test_crate::loopy::Baz<()> for ()}#2
     parent_clause2 = test_crate::loopy::{impl test_crate::loopy::Bar<bool> for ()}
@@ -292,8 +287,7 @@ trait test_crate::loopy_with_generics::Foo<'b, Self, T>
     type Self_Clause3_BarTy
 }
 
-impl test_crate::loopy_with_generics::{impl test_crate::loopy_with_generics::Foo<'static, u16> for ()}#1 : test_crate::loopy_with_generics::Foo<'static, (), u16>
-{
+impl test_crate::loopy_with_generics::{impl test_crate::loopy_with_generics::Foo<'static, u16> for ()}#1 : test_crate::loopy_with_generics::Foo<'static, (), u16> {
     parent_clause0 = core::marker::Sized<u16>
     parent_clause1 = core::marker::Sized<()>
     parent_clause2 = test_crate::loopy_with_generics::{impl test_crate::loopy_with_generics::Foo<'static, u16> for ()}#1
@@ -321,10 +315,10 @@ enum test_crate::cow::Cow<'a, B, Clause0_Owned>
       [@TraitClause0]: alloc::borrow::ToOwned<B, Clause0_Owned>,
       B : 'a,
       B : 'a,
- =
-|  Borrowed(&'a (B))
-|  Owned(Clause0_Owned)
-
+{
+  Borrowed(&'a (B)),
+  Owned(Clause0_Owned),
+}
 
 trait test_crate::params::Foo<'a, Self, T, Self_X, Self_Item>
 where

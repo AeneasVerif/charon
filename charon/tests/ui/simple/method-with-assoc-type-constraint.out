@@ -29,8 +29,7 @@ where
     return
 }
 
-impl test_crate::{impl test_crate::FromIterator<()> for ()} : test_crate::FromIterator<(), ()>
-{
+impl test_crate::{impl test_crate::FromIterator<()> for ()} : test_crate::FromIterator<(), ()> {
     parent_clause0 = core::marker::Sized<()>
     parent_clause1 = core::marker::Sized<()>
     fn from_iter<I, [@TraitClause0]: core::marker::Sized<I>, [@TraitClause1]: test_crate::IntoIterator<I, ()>> = test_crate::{impl test_crate::FromIterator<()> for ()}::from_iter<I>[@TraitClause0_0, @TraitClause0_1]

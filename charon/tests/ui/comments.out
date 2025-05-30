@@ -151,8 +151,7 @@ pub fn test_crate::sum<'_0>(@1: &'_0 (Slice<u32>)) -> u32
     return
 }
 
-struct test_crate::Foo =
-{
+struct test_crate::Foo {
   x: u32,
   y: u32,
 }
@@ -182,14 +181,12 @@ pub fn test_crate::{impl core::default::Default for test_crate::Foo}::default() 
     return
 }
 
-impl test_crate::{impl core::default::Default for test_crate::Foo} : core::default::Default<test_crate::Foo>
-{
+impl test_crate::{impl core::default::Default for test_crate::Foo} : core::default::Default<test_crate::Foo> {
     parent_clause0 = core::marker::Sized<test_crate::Foo>
     fn default = test_crate::{impl core::default::Default for test_crate::Foo}::default
 }
 
-struct test_crate::Bar =
-{
+struct test_crate::Bar {
   x: u32,
   super_long_field_name: u32,
 }
@@ -210,8 +207,7 @@ pub fn test_crate::{impl core::default::Default for test_crate::Bar}#1::default(
     return
 }
 
-impl test_crate::{impl core::default::Default for test_crate::Bar}#1 : core::default::Default<test_crate::Bar>
-{
+impl test_crate::{impl core::default::Default for test_crate::Bar}#1 : core::default::Default<test_crate::Bar> {
     parent_clause0 = core::marker::Sized<test_crate::Bar>
     fn default = test_crate::{impl core::default::Default for test_crate::Bar}#1::default
 }
@@ -229,20 +225,20 @@ where
     return
 }
 
-pub enum core::panicking::AssertKind =
-|  Eq()
-|  Ne()
-|  Match()
-
+pub enum core::panicking::AssertKind {
+  Eq,
+  Ne,
+  Match,
+}
 
 #[lang_item("Option")]
 pub enum core::option::Option<T>
   where
       [@TraitClause0]: core::marker::Sized<T>,
- =
-|  None()
-|  Some(T)
-
+{
+  None,
+  Some(T),
+}
 
 #[lang_item("format_arguments")]
 pub opaque type core::fmt::Arguments<'a>
@@ -477,8 +473,7 @@ fn test_crate::fool()
 #[lang_item("default_fn")]
 pub fn core::default::Default::default<Self>() -> Self
 
-impl core::default::{impl core::default::Default for u32}#7 : core::default::Default<u32>
-{
+impl core::default::{impl core::default::Default for u32}#7 : core::default::Default<u32> {
     parent_clause0 = core::marker::Sized<u32>
     fn default = core::default::{impl core::default::Default for u32}#7::default
 }

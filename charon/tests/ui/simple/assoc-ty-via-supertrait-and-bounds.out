@@ -8,8 +8,7 @@ pub trait test_crate::HasOutput<Self, Self_Output>
     parent_clause0 : [@TraitClause0]: core::marker::Sized<Self_Output>
 }
 
-impl test_crate::{impl test_crate::HasOutput<()> for ()} : test_crate::HasOutput<(), ()>
-{
+impl test_crate::{impl test_crate::HasOutput<()> for ()} : test_crate::HasOutput<(), ()> {
     parent_clause0 = core::marker::Sized<()>
 }
 
@@ -18,15 +17,13 @@ pub trait test_crate::HasOutput2<Self, Self_Clause0_Output>
     parent_clause0 : [@TraitClause0]: test_crate::HasOutput<Self, Self_Clause0_Output>
 }
 
-impl test_crate::{impl test_crate::HasOutput2<()> for ()}#1 : test_crate::HasOutput2<(), ()>
-{
+impl test_crate::{impl test_crate::HasOutput2<()> for ()}#1 : test_crate::HasOutput2<(), ()> {
     parent_clause0 = test_crate::{impl test_crate::HasOutput<()> for ()}
 }
 
 struct test_crate::Wrapper<T>
   where
       [@TraitClause0]: core::marker::Sized<T>,
- =
 {
   T,
 }

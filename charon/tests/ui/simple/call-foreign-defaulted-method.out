@@ -46,8 +46,7 @@ pub fn test_crate::foo::Trait::defaulted<'_0, Self>(@1: &'_0 (Self))
     return
 }
 
-impl test_crate::foo::{impl test_crate::foo::Trait for ()} : test_crate::foo::Trait<()>
-{
+impl test_crate::foo::{impl test_crate::foo::Trait for ()} : test_crate::foo::Trait<()> {
     fn defaulted<'_0> = test_crate::foo::{impl test_crate::foo::Trait for ()}::defaulted<'_0_0>
 }
 

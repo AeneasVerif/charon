@@ -52,7 +52,7 @@ fn test_crate::deref_raw_ptr()
 
 trait test_crate::Trait<Self>
 
-impl test_crate::{impl test_crate::Trait for ()} : test_crate::Trait<()>
+impl test_crate::{impl test_crate::Trait for ()} : test_crate::Trait<()> {}
 
 fn test_crate::COUNTER() -> usize
 {
@@ -81,8 +81,7 @@ fn test_crate::access_mutable_static()
     return
 }
 
-union test_crate::Foo =
-{
+union test_crate::Foo {
   one: u64,
   two: Array<u32, 2 : usize>,
 }

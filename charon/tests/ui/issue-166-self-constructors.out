@@ -1,9 +1,9 @@
 # Final LLBC before serialization:
 
-enum test_crate::Foo =
-|  A()
-|  B(usize)
-
+enum test_crate::Foo {
+  A,
+  B(usize),
+}
 
 pub fn test_crate::{test_crate::Foo}::b() -> test_crate::Foo
 {
@@ -13,8 +13,7 @@ pub fn test_crate::{test_crate::Foo}::b() -> test_crate::Foo
     return
 }
 
-struct test_crate::Bar<'a> =
-{
+struct test_crate::Bar<'a> {
   r: &'a (i32),
 }
 

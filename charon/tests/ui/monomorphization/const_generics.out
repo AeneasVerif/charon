@@ -1,7 +1,6 @@
 # Final LLBC before serialization:
 
-struct test_crate::Foo::<bool> =
-{
+struct test_crate::Foo::<bool> {
   value: bool,
 }
 
@@ -38,8 +37,7 @@ fn test_crate::main()
 #[lang_item("sized")]
 pub trait core::marker::Sized<Self>
 
-struct test_crate::Foo::<i32> =
-{
+struct test_crate::Foo::<i32> {
   value: i32,
 }
 

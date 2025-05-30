@@ -19,8 +19,7 @@ where
     panic(core::panicking::panic)
 }
 
-impl test_crate::{impl test_crate::Trait for T}<T> : test_crate::Trait<T>
-{
+impl test_crate::{impl test_crate::Trait for T}<T> : test_crate::Trait<T> {
     fn default_method<T, [@TraitClause1]: test_crate::HasAssoc<T>> = test_crate::{impl test_crate::Trait for T}::default_method<T, T>[@TraitClause0_1]
 }
 

@@ -1,10 +1,10 @@
 # Final LLBC before serialization:
 
 #[lang_item("Result")]
-pub enum core::result::Result::<u32, u32> =
-|  Ok(u32)
-|  Err(u32)
-
+pub enum core::result::Result::<u32, u32> {
+  Ok(u32),
+  Err(u32),
+}
 
 fn test_crate::main()
 {

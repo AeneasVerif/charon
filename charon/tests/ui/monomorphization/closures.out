@@ -1,19 +1,16 @@
 # Final LLBC before serialization:
 
-struct test_crate::Thing = {}
+struct test_crate::Thing {}
 
-struct test_crate::main::closure<'_0> =
-{
+struct test_crate::main::closure<'_0> {
   &'_0 (u8),
 }
 
-struct test_crate::main::closure#1<'_0> =
-{
+struct test_crate::main::closure#1<'_0> {
   &'_0 mut (u8),
 }
 
-struct test_crate::main::closure#2 =
-{
+struct test_crate::main::closure#2 {
   test_crate::Thing,
 }
 
@@ -158,8 +155,7 @@ pub trait core::ops::function::Fn<Self, Args>
     fn call<'_0> = core::ops::function::Fn::call<'_0_0, Self, Args>
 }
 
-impl test_crate::main::{impl core::ops::function::FnOnce<(u8)> for test_crate::main::closure<'_0>}<'_0> : core::ops::function::FnOnce<test_crate::main::closure<'_0>, (u8)>
-{
+impl test_crate::main::{impl core::ops::function::FnOnce<(u8)> for test_crate::main::closure<'_0>}<'_0> : core::ops::function::FnOnce<test_crate::main::closure<'_0>, (u8)> {
     parent_clause0 = core::marker::Sized<(u8)>
     parent_clause1 = core::marker::Tuple<(u8)>
     parent_clause2 = core::marker::Sized<u8>
@@ -167,24 +163,21 @@ impl test_crate::main::{impl core::ops::function::FnOnce<(u8)> for test_crate::m
     fn call_once = test_crate::main::{impl core::ops::function::FnOnce<(u8)> for test_crate::main::closure<'_0>}::call_once<'_0>
 }
 
-impl test_crate::main::{impl core::ops::function::FnMut<(u8)> for test_crate::main::closure<'_0>}<'_0> : core::ops::function::FnMut<test_crate::main::closure<'_0>, (u8)>
-{
+impl test_crate::main::{impl core::ops::function::FnMut<(u8)> for test_crate::main::closure<'_0>}<'_0> : core::ops::function::FnMut<test_crate::main::closure<'_0>, (u8)> {
     parent_clause0 = test_crate::main::{impl core::ops::function::FnOnce<(u8)> for test_crate::main::closure<'_0>}<'_0>
     parent_clause1 = core::marker::Sized<(u8)>
     parent_clause2 = core::marker::Tuple<(u8)>
     fn call_mut<'_0> = test_crate::main::{impl core::ops::function::FnMut<(u8)> for test_crate::main::closure<'_0>}::call_mut<'_0, '_0_0>
 }
 
-impl test_crate::main::{impl core::ops::function::Fn<(u8)> for test_crate::main::closure<'_0>}<'_0> : core::ops::function::Fn<test_crate::main::closure<'_0>, (u8)>
-{
+impl test_crate::main::{impl core::ops::function::Fn<(u8)> for test_crate::main::closure<'_0>}<'_0> : core::ops::function::Fn<test_crate::main::closure<'_0>, (u8)> {
     parent_clause0 = test_crate::main::{impl core::ops::function::FnMut<(u8)> for test_crate::main::closure<'_0>}<'_0>
     parent_clause1 = core::marker::Sized<(u8)>
     parent_clause2 = core::marker::Tuple<(u8)>
     fn call<'_0> = test_crate::main::{impl core::ops::function::Fn<(u8)> for test_crate::main::closure<'_0>}::call<'_0, '_0_0>
 }
 
-impl test_crate::main::{impl core::ops::function::FnOnce<(u8)> for test_crate::main::closure#1<'_0>}<'_0> : core::ops::function::FnOnce<test_crate::main::closure#1<'_0>, (u8)>
-{
+impl test_crate::main::{impl core::ops::function::FnOnce<(u8)> for test_crate::main::closure#1<'_0>}<'_0> : core::ops::function::FnOnce<test_crate::main::closure#1<'_0>, (u8)> {
     parent_clause0 = core::marker::Sized<(u8)>
     parent_clause1 = core::marker::Tuple<(u8)>
     parent_clause2 = core::marker::Sized<u8>
@@ -192,8 +185,7 @@ impl test_crate::main::{impl core::ops::function::FnOnce<(u8)> for test_crate::m
     fn call_once = test_crate::main::{impl core::ops::function::FnOnce<(u8)> for test_crate::main::closure#1<'_0>}::call_once<'_0>
 }
 
-impl test_crate::main::{impl core::ops::function::FnMut<(u8)> for test_crate::main::closure#1<'_0>}<'_0> : core::ops::function::FnMut<test_crate::main::closure#1<'_0>, (u8)>
-{
+impl test_crate::main::{impl core::ops::function::FnMut<(u8)> for test_crate::main::closure#1<'_0>}<'_0> : core::ops::function::FnMut<test_crate::main::closure#1<'_0>, (u8)> {
     parent_clause0 = test_crate::main::{impl core::ops::function::FnOnce<(u8)> for test_crate::main::closure#1<'_0>}<'_0>
     parent_clause1 = core::marker::Sized<(u8)>
     parent_clause2 = core::marker::Tuple<(u8)>
@@ -228,8 +220,7 @@ fn test_crate::main::{impl core::ops::function::FnOnce<(u8)> for test_crate::mai
     return
 }
 
-impl test_crate::main::{impl core::ops::function::FnOnce<(u8)> for test_crate::main::closure#2} : core::ops::function::FnOnce<test_crate::main::closure#2, (u8)>
-{
+impl test_crate::main::{impl core::ops::function::FnOnce<(u8)> for test_crate::main::closure#2} : core::ops::function::FnOnce<test_crate::main::closure#2, (u8)> {
     parent_clause0 = core::marker::Sized<(u8)>
     parent_clause1 = core::marker::Tuple<(u8)>
     parent_clause2 = core::marker::Sized<u8>

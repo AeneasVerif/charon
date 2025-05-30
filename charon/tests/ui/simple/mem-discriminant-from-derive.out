@@ -1,14 +1,14 @@
 # Final LLBC before serialization:
 
-enum test_crate::Enum =
-|  Some(u8)
-|  None()
-
+enum test_crate::Enum {
+  Some(u8),
+  None,
+}
 
 #[lang_item("structural_peq")]
 pub trait core::marker::StructuralPartialEq<Self>
 
-impl test_crate::{impl core::marker::StructuralPartialEq for test_crate::Enum} : core::marker::StructuralPartialEq<test_crate::Enum>
+impl test_crate::{impl core::marker::StructuralPartialEq for test_crate::Enum} : core::marker::StructuralPartialEq<test_crate::Enum> {}
 
 #[lang_item("eq")]
 pub trait core::cmp::PartialEq<Self, Rhs>
@@ -22,8 +22,7 @@ where
 
 pub fn core::cmp::impls::{impl core::cmp::PartialEq<u8> for u8}#22::eq<'_0, '_1>(@1: &'_0 (u8), @2: &'_1 (u8)) -> bool
 
-impl core::cmp::impls::{impl core::cmp::PartialEq<u8> for u8}#22 : core::cmp::PartialEq<u8, u8>
-{
+impl core::cmp::impls::{impl core::cmp::PartialEq<u8> for u8}#22 : core::cmp::PartialEq<u8, u8> {
     fn eq<'_0, '_1> = core::cmp::impls::{impl core::cmp::PartialEq<u8> for u8}#22::eq<'_0_0, '_0_1>
 }
 
@@ -135,8 +134,7 @@ pub fn test_crate::{impl core::cmp::PartialEq<test_crate::Enum> for test_crate::
     return
 }
 
-impl test_crate::{impl core::cmp::PartialEq<test_crate::Enum> for test_crate::Enum}#1 : core::cmp::PartialEq<test_crate::Enum, test_crate::Enum>
-{
+impl test_crate::{impl core::cmp::PartialEq<test_crate::Enum> for test_crate::Enum}#1 : core::cmp::PartialEq<test_crate::Enum, test_crate::Enum> {
     fn eq<'_0, '_1> = test_crate::{impl core::cmp::PartialEq<test_crate::Enum> for test_crate::Enum}#1::eq<'_0_0, '_0_1>
 }
 
@@ -169,12 +167,12 @@ pub enum core::result::Result<T, E>
   where
       [@TraitClause0]: core::marker::Sized<T>,
       [@TraitClause1]: core::marker::Sized<E>,
- =
-|  Ok(T)
-|  Err(E)
+{
+  Ok(T),
+  Err(E),
+}
 
-
-pub struct core::fmt::Error = {}
+pub struct core::fmt::Error {}
 
 #[lang_item("Debug")]
 pub trait core::fmt::Debug<Self>

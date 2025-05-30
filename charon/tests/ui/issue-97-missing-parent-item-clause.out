@@ -8,7 +8,6 @@ pub trait core::marker::Sized<Self>
 pub struct test_crate::AVLTree<T>
   where
       [@TraitClause0]: core::marker::Sized<T>,
- =
 {
   x: T,
 }
@@ -24,7 +23,7 @@ where
     panic(core::panicking::panic)
 }
 
-impl test_crate::{impl test_crate::Ord for u32}#1 : test_crate::Ord<u32>
+impl test_crate::{impl test_crate::Ord for u32}#1 : test_crate::Ord<u32> {}
 
 pub fn test_crate::test(@1: test_crate::AVLTree<u32>[core::marker::Sized<u32>])
 {

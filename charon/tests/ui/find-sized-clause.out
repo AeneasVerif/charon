@@ -9,14 +9,15 @@ pub trait core::marker::Sized<Self>
 pub enum core::option::Option<T>
   where
       [@TraitClause0]: core::marker::Sized<T>,
- =
-|  None()
-|  Some(T)
-
+{
+  None,
+  Some(T),
+}
 
 impl test_crate::{impl test_crate::Trait for core::option::Option<T>[@TraitClause0]}<T> : test_crate::Trait<core::option::Option<T>[@TraitClause0]>
 where
     [@TraitClause0]: core::marker::Sized<T>,
+{}
 
 
 

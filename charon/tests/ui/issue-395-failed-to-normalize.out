@@ -13,10 +13,10 @@ pub trait test_crate::Trait<Self>
 pub enum core::option::Option<T>
   where
       [@TraitClause0]: core::marker::Sized<T>,
- =
-|  None()
-|  Some(T)
-
+{
+  None,
+  Some(T),
+}
 
 pub type test_crate::Alias<T>
   where
@@ -41,7 +41,6 @@ pub struct test_crate::S<I, F>
       [@TraitClause1]: core::marker::Sized<F>,
       [@TraitClause2]: core::iter::traits::iterator::Iterator<I>,
       [@TraitClause3]: test_crate::C<F, @TraitClause2::Item>,
- =
 {
   I,
   F,
@@ -117,10 +116,10 @@ pub enum core::ops::control_flow::ControlFlow<B, C>
   where
       [@TraitClause0]: core::marker::Sized<B>,
       [@TraitClause1]: core::marker::Sized<C>,
- =
-|  Continue(C)
-|  Break(B)
-
+{
+  Continue(C),
+  Break(B),
+}
 
 #[lang_item("Try")]
 pub trait core::ops::try_trait::Try<Self>
@@ -183,11 +182,11 @@ pub trait core::cmp::Eq<Self>
 }
 
 #[lang_item("Ordering")]
-pub enum core::cmp::Ordering =
-|  Less()
-|  Equal()
-|  Greater()
-
+pub enum core::cmp::Ordering {
+  Less,
+  Equal,
+  Greater,
+}
 
 #[lang_item("partial_ord")]
 pub trait core::cmp::PartialOrd<Self, Rhs>

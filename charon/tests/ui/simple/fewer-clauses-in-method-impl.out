@@ -33,8 +33,7 @@ where
     return
 }
 
-impl test_crate::{impl test_crate::Trait for ()} : test_crate::Trait<()>
-{
+impl test_crate::{impl test_crate::Trait for ()} : test_crate::Trait<()> {
     fn method<T, [@TraitClause0]: core::marker::Sized<T>, [@TraitClause1]: core::clone::Clone<T>> = test_crate::{impl test_crate::Trait for ()}::method<T>[@TraitClause0_0, @TraitClause0_1]
 }
 

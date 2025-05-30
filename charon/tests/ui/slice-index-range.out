@@ -7,7 +7,6 @@ pub trait core::marker::Sized<Self>
 pub struct core::ops::range::Range<Idx>
   where
       [@TraitClause0]: core::marker::Sized<Idx>,
- =
 {
   start: Idx,
   end: Idx,
@@ -32,10 +31,10 @@ pub trait core::slice::index::private_slice_index::Sealed<Self>
 pub enum core::option::Option<T>
   where
       [@TraitClause0]: core::marker::Sized<T>,
- =
-|  None()
-|  Some(T)
-
+{
+  None,
+  Some(T),
+}
 
 #[lang_item("SliceIndex")]
 pub trait core::slice::index::SliceIndex<Self, T>
@@ -76,7 +75,7 @@ where
     fn index<'_0> = core::slice::index::{impl core::ops::index::Index<I> for Slice<T>}::index<'_0_0, T, I>[@TraitClause0, @TraitClause1, @TraitClause2]
 }
 
-impl core::slice::index::private_slice_index::{impl core::slice::index::private_slice_index::Sealed for core::ops::range::Range<usize>[core::marker::Sized<usize>]}#1 : core::slice::index::private_slice_index::Sealed<core::ops::range::Range<usize>[core::marker::Sized<usize>]>
+impl core::slice::index::private_slice_index::{impl core::slice::index::private_slice_index::Sealed for core::ops::range::Range<usize>[core::marker::Sized<usize>]}#1 : core::slice::index::private_slice_index::Sealed<core::ops::range::Range<usize>[core::marker::Sized<usize>]> {}
 
 pub fn core::slice::index::{impl core::slice::index::SliceIndex<Slice<T>> for core::ops::range::Range<usize>[core::marker::Sized<usize>]}#4::get<'_0, T>(@1: core::ops::range::Range<usize>[core::marker::Sized<usize>], @2: &'_0 (Slice<T>)) -> core::option::Option<&'_0 (Slice<T>)>[core::marker::Sized<&'_0 (Slice<T>)>]
 where

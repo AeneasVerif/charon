@@ -7,10 +7,10 @@ pub trait core::marker::Sized<Self>
 pub enum core::option::Option<T>
   where
       [@TraitClause0]: core::marker::Sized<T>,
- =
-|  None()
-|  Some(T)
-
+{
+  None,
+  Some(T),
+}
 
 fn test_crate::wrap<'a>(@1: &'a (u32)) -> core::option::Option<&'a (u32)>[core::marker::Sized<&'a (u32)>]
 {
@@ -55,17 +55,17 @@ pub enum core::result::Result<T, E>
   where
       [@TraitClause0]: core::marker::Sized<T>,
       [@TraitClause1]: core::marker::Sized<E>,
- =
-|  Ok(T)
-|  Err(E)
-
+{
+  Ok(T),
+  Err(E),
+}
 
 #[lang_item("RefCellRef")]
 pub opaque type core::cell::Ref<'b, T>
   where
       T : 'b,
 
-pub struct core::cell::BorrowError = {}
+pub struct core::cell::BorrowError {}
 
 pub fn core::cell::{core::cell::RefCell<T>}#22::new<T>(@1: T) -> core::cell::RefCell<T>
 where

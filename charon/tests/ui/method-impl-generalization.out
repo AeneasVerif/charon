@@ -47,8 +47,7 @@ where
     return
 }
 
-impl test_crate::{impl test_crate::Trait for ()} : test_crate::Trait<()>
-{
+impl test_crate::{impl test_crate::Trait for ()} : test_crate::Trait<()> {
     parent_clause0 = core::marker::Sized<()>
     fn method1 = test_crate::{impl test_crate::Trait for ()}::method1
     fn method2<T, [@TraitClause0]: core::marker::Sized<T>> = test_crate::{impl test_crate::Trait for ()}::method2<T>[@TraitClause0_0]
@@ -71,8 +70,7 @@ fn test_crate::{impl test_crate::MyCompare<&'a (())> for &'a (())}#1::compare<'a
     return
 }
 
-impl test_crate::{impl test_crate::MyCompare<&'a (())> for &'a (())}#1<'a> : test_crate::MyCompare<&'a (()), &'a (())>
-{
+impl test_crate::{impl test_crate::MyCompare<&'a (())> for &'a (())}#1<'a> : test_crate::MyCompare<&'a (()), &'a (())> {
     parent_clause0 = core::marker::Sized<&'_ (())>
     parent_clause1 = core::marker::Sized<&'_ (())>
     fn compare = test_crate::{impl test_crate::MyCompare<&'a (())> for &'a (())}#1::compare<'a>
@@ -150,8 +148,7 @@ fn test_crate::{impl test_crate::Foo for ()}#2::foo<'a, 'b>(@1: &'b (()), @2: &'
     return
 }
 
-impl test_crate::{impl test_crate::Foo for ()}#2 : test_crate::Foo<()>
-{
+impl test_crate::{impl test_crate::Foo for ()}#2 : test_crate::Foo<()> {
     fn foo<'a, 'b> = test_crate::{impl test_crate::Foo for ()}#2::foo<'a, 'b>
 }
 

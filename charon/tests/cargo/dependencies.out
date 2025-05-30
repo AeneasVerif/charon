@@ -1,10 +1,10 @@
 # Final LLBC before serialization:
 
-pub enum core::panicking::AssertKind =
-|  Eq()
-|  Ne()
-|  Match()
-
+pub enum core::panicking::AssertKind {
+  Eq,
+  Ne,
+  Match,
+}
 
 #[lang_item("sized")]
 pub trait core::marker::Sized<Self>
@@ -13,17 +13,17 @@ pub trait core::marker::Sized<Self>
 pub enum core::option::Option<T>
   where
       [@TraitClause0]: core::marker::Sized<T>,
- =
-|  None()
-|  Some(T)
-
+{
+  None,
+  Some(T),
+}
 
 #[lang_item("format_arguments")]
 pub opaque type core::fmt::Arguments<'a>
   where
       'a : 'a,
 
-struct test_cargo_dependencies::main::silly_incr::closure = {}
+struct test_cargo_dependencies::main::silly_incr::closure {}
 
 #[lang_item("tuple_trait")]
 pub trait core::marker::Tuple<Self>
@@ -62,8 +62,7 @@ fn test_cargo_dependencies::main::silly_incr::{impl core::ops::function::FnOnce<
     return
 }
 
-impl test_cargo_dependencies::main::silly_incr::{impl core::ops::function::FnOnce<(u32)> for test_cargo_dependencies::main::silly_incr::closure} : core::ops::function::FnOnce<test_cargo_dependencies::main::silly_incr::closure, (u32)>
-{
+impl test_cargo_dependencies::main::silly_incr::{impl core::ops::function::FnOnce<(u32)> for test_cargo_dependencies::main::silly_incr::closure} : core::ops::function::FnOnce<test_cargo_dependencies::main::silly_incr::closure, (u32)> {
     parent_clause0 = core::marker::Sized<(u32)>
     parent_clause1 = core::marker::Tuple<(u32)>
     parent_clause2 = core::marker::Sized<u32>

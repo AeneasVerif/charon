@@ -8,10 +8,10 @@ pub enum core::result::Result<T, E>
   where
       [@TraitClause0]: core::marker::Sized<T>,
       [@TraitClause1]: core::marker::Sized<E>,
- =
-|  Ok(T)
-|  Err(E)
-
+{
+  Ok(T),
+  Err(E),
+}
 
 pub opaque type core::array::TryFromSliceError
 
@@ -63,14 +63,12 @@ where
 
 pub fn core::clone::impls::{impl core::clone::Clone for u8}#6::clone<'_0>(@1: &'_0 (u8)) -> u8
 
-impl core::clone::impls::{impl core::clone::Clone for u8}#6 : core::clone::Clone<u8>
-{
+impl core::clone::impls::{impl core::clone::Clone for u8}#6 : core::clone::Clone<u8> {
     parent_clause0 = core::marker::Sized<u8>
     fn clone<'_0> = core::clone::impls::{impl core::clone::Clone for u8}#6::clone<'_0_0>
 }
 
-impl core::marker::{impl core::marker::Copy for u8}#38 : core::marker::Copy<u8>
-{
+impl core::marker::{impl core::marker::Copy for u8}#38 : core::marker::Copy<u8> {
     parent_clause0 = core::clone::impls::{impl core::clone::Clone for u8}#6
 }
 
@@ -79,7 +77,7 @@ pub opaque type core::fmt::Formatter<'a>
   where
       'a : 'a,
 
-pub struct core::fmt::Error = {}
+pub struct core::fmt::Error {}
 
 #[lang_item("Debug")]
 pub trait core::fmt::Debug<Self>
@@ -95,8 +93,7 @@ where
 
 pub fn core::array::{impl core::fmt::Debug for core::array::TryFromSliceError}#26::fmt<'_0, '_1, '_2>(@1: &'_0 (core::array::TryFromSliceError), @2: &'_1 mut (core::fmt::Formatter<'_2>)) -> core::result::Result<(), core::fmt::Error>[core::marker::Sized<()>, core::marker::Sized<core::fmt::Error>]
 
-impl core::array::{impl core::fmt::Debug for core::array::TryFromSliceError}#26 : core::fmt::Debug<core::array::TryFromSliceError>
-{
+impl core::array::{impl core::fmt::Debug for core::array::TryFromSliceError}#26 : core::fmt::Debug<core::array::TryFromSliceError> {
     fn fmt<'_0, '_1, '_2> = core::array::{impl core::fmt::Debug for core::array::TryFromSliceError}#26::fmt<'_0_0, '_0_1, '_0_2>
 }
 

@@ -7,7 +7,6 @@ struct test_crate::Foo<'a, T>
   where
       [@TraitClause0]: core::marker::Sized<T>,
       T : 'a,
- =
 {
   &'a (T),
 }
@@ -23,7 +22,6 @@ struct test_crate::{test_crate::Foo<'a, T>[@TraitClause0]}::test_nested_closures
   where
       [@TraitClause0]: core::marker::Sized<T>,
       [@TraitClause1]: core::clone::Clone<T>,
- =
 {
   &'_1 (T),
 }
@@ -32,7 +30,6 @@ struct test_crate::{test_crate::Foo<'a, T>[@TraitClause0]}::test_nested_closures
   where
       [@TraitClause0]: core::marker::Sized<T>,
       [@TraitClause1]: core::clone::Clone<T>,
- =
 {
   &'_1 (T),
 }
@@ -41,7 +38,6 @@ struct test_crate::{test_crate::Foo<'a, T>[@TraitClause0]}::test_nested_closures
   where
       [@TraitClause0]: core::marker::Sized<T>,
       [@TraitClause1]: core::clone::Clone<T>,
- =
 {
   &'_1 (T),
 }

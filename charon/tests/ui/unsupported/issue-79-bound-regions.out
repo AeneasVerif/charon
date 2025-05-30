@@ -7,10 +7,10 @@ pub trait core::marker::Sized<Self>
 pub enum core::option::Option<T>
   where
       [@TraitClause0]: core::marker::Sized<T>,
- =
-|  None()
-|  Some(T)
-
+{
+  None,
+  Some(T),
+}
 
 #[lang_item("SliceIter")]
 pub opaque type core::slice::iter::Iter<'a, T>
@@ -151,10 +151,10 @@ pub enum core::ops::control_flow::ControlFlow<B, C>
   where
       [@TraitClause0]: core::marker::Sized<B>,
       [@TraitClause1]: core::marker::Sized<C>,
- =
-|  Continue(C)
-|  Break(B)
-
+{
+  Continue(C),
+  Break(B),
+}
 
 #[lang_item("Try")]
 pub trait core::ops::try_trait::Try<Self>
@@ -217,11 +217,11 @@ pub trait core::cmp::Eq<Self>
 }
 
 #[lang_item("Ordering")]
-pub enum core::cmp::Ordering =
-|  Less()
-|  Equal()
-|  Greater()
-
+pub enum core::cmp::Ordering {
+  Less,
+  Equal,
+  Greater,
+}
 
 #[lang_item("partial_ord")]
 pub trait core::cmp::PartialOrd<Self, Rhs>

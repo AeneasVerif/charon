@@ -19,10 +19,10 @@ pub trait test_crate::Try<Self>
 pub enum core::option::Option<T>
   where
       [@TraitClause0]: core::marker::Sized<T>,
- =
-|  None()
-|  Some(T)
-
+{
+  None,
+  Some(T),
+}
 
 impl test_crate::{impl test_crate::FromResidual<()> for core::option::Option<T>[@TraitClause0]}#1<T> : test_crate::FromResidual<core::option::Option<T>[@TraitClause0], ()>
 where

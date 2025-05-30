@@ -6,7 +6,6 @@ pub trait core::marker::Sized<Self>
 struct test_crate::Struct<A>
   where
       [@TraitClause0]: core::marker::Sized<A>,
- =
 {
   A,
 }
@@ -95,8 +94,7 @@ where
 
 pub fn core::default::{impl core::default::Default for bool}#1::default() -> bool
 
-impl core::default::{impl core::default::Default for bool}#1 : core::default::Default<bool>
-{
+impl core::default::{impl core::default::Default for bool}#1 : core::default::Default<bool> {
     parent_clause0 = core::marker::Sized<bool>
     fn default = core::default::{impl core::default::Default for bool}#1::default
 }
@@ -106,16 +104,14 @@ pub opaque type alloc::string::String
 
 pub fn core::clone::impls::{impl core::clone::Clone for u8}#6::clone<'_0>(@1: &'_0 (u8)) -> u8
 
-impl core::clone::impls::{impl core::clone::Clone for u8}#6 : core::clone::Clone<u8>
-{
+impl core::clone::impls::{impl core::clone::Clone for u8}#6 : core::clone::Clone<u8> {
     parent_clause0 = core::marker::Sized<u8>
     fn clone<'_0> = core::clone::impls::{impl core::clone::Clone for u8}#6::clone<'_0_0>
 }
 
 pub fn core::cmp::impls::{impl core::cmp::PartialEq<bool> for bool}#19::eq<'_0, '_1>(@1: &'_0 (bool), @2: &'_1 (bool)) -> bool
 
-impl core::cmp::impls::{impl core::cmp::PartialEq<bool> for bool}#19 : core::cmp::PartialEq<bool, bool>
-{
+impl core::cmp::impls::{impl core::cmp::PartialEq<bool> for bool}#19 : core::cmp::PartialEq<bool, bool> {
     fn eq<'_0, '_1> = core::cmp::impls::{impl core::cmp::PartialEq<bool> for bool}#19::eq<'_0_0, '_0_1>
 }
 

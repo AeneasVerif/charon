@@ -158,7 +158,7 @@ fn test_crate::ptr_casts()
     return
 }
 
-struct test_crate::fn_casts::closure = {}
+struct test_crate::fn_casts::closure {}
 
 fn test_crate::fn_casts::foo()
 {
@@ -219,7 +219,7 @@ fn test_crate::fn_casts()
 pub trait core::marker::Sized<Self>
 
 #[lang_item("global_alloc_ty")]
-pub struct alloc::alloc::Global = {}
+pub struct alloc::alloc::Global {}
 
 fn test_crate::boxes()
 {
@@ -294,7 +294,6 @@ where
 struct test_crate::nullary_ops::Struct<T>
   where
       [@TraitClause0]: core::marker::Sized<T>,
- =
 {
   a: u8,
   b: T,

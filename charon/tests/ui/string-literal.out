@@ -50,12 +50,12 @@ pub enum core::result::Result<T, E>
   where
       [@TraitClause0]: core::marker::Sized<T>,
       [@TraitClause1]: core::marker::Sized<E>,
- =
-|  Ok(T)
-|  Err(E)
+{
+  Ok(T),
+  Err(E),
+}
 
-
-pub struct core::fmt::Error = {}
+pub struct core::fmt::Error {}
 
 #[lang_item("Display")]
 pub trait core::fmt::Display<Self>
@@ -69,8 +69,7 @@ where
 
 pub fn core::fmt::{impl core::fmt::Display for Str}#19::fmt<'_0, '_1, '_2>(@1: &'_0 (Str), @2: &'_1 mut (core::fmt::Formatter<'_2>)) -> core::result::Result<(), core::fmt::Error>[core::marker::Sized<()>, core::marker::Sized<core::fmt::Error>]
 
-impl core::fmt::{impl core::fmt::Display for Str}#19 : core::fmt::Display<Str>
-{
+impl core::fmt::{impl core::fmt::Display for Str}#19 : core::fmt::Display<Str> {
     fn fmt<'_0, '_1, '_2> = core::fmt::{impl core::fmt::Display for Str}#19::fmt<'_0_0, '_0_1, '_0_2>
 }
 

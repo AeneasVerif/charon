@@ -4,7 +4,7 @@
 pub trait core::marker::Sized<Self>
 
 #[lang_item("global_alloc_ty")]
-pub struct alloc::alloc::Global = {}
+pub struct alloc::alloc::Global {}
 
 fn test_crate::main()
 {

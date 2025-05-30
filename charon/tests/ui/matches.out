@@ -1,10 +1,10 @@
 # Final LLBC before serialization:
 
-pub enum test_crate::E1 =
-|  V1()
-|  V2()
-|  V3()
-
+pub enum test_crate::E1 {
+  V1,
+  V2,
+  V3,
+}
 
 pub fn test_crate::test1(@1: test_crate::E1) -> bool
 {
@@ -38,11 +38,11 @@ where
     return
 }
 
-pub enum test_crate::E2 =
-|  V1(u32)
-|  V2(u32)
-|  V3()
-
+pub enum test_crate::E2 {
+  V1(u32),
+  V2(u32),
+  V3,
+}
 
 pub fn test_crate::test2(@1: test_crate::E2) -> u32
 {

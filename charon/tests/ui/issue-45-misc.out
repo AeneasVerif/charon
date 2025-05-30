@@ -1,6 +1,6 @@
 # Final LLBC before serialization:
 
-struct test_crate::map::closure = {}
+struct test_crate::map::closure {}
 
 #[lang_item("sized")]
 pub trait core::marker::Sized<Self>
@@ -62,8 +62,7 @@ fn test_crate::map::{impl core::ops::function::FnOnce<(i32)> for test_crate::map
     return
 }
 
-impl test_crate::map::{impl core::ops::function::FnOnce<(i32)> for test_crate::map::closure} : core::ops::function::FnOnce<test_crate::map::closure, (i32)>
-{
+impl test_crate::map::{impl core::ops::function::FnOnce<(i32)> for test_crate::map::closure} : core::ops::function::FnOnce<test_crate::map::closure, (i32)> {
     parent_clause0 = core::marker::Sized<(i32)>
     parent_clause1 = core::marker::Tuple<(i32)>
     parent_clause2 = core::marker::Sized<i32>
@@ -71,8 +70,7 @@ impl test_crate::map::{impl core::ops::function::FnOnce<(i32)> for test_crate::m
     fn call_once = test_crate::map::{impl core::ops::function::FnOnce<(i32)> for test_crate::map::closure}::call_once
 }
 
-impl test_crate::map::{impl core::ops::function::FnMut<(i32)> for test_crate::map::closure} : core::ops::function::FnMut<test_crate::map::closure, (i32)>
-{
+impl test_crate::map::{impl core::ops::function::FnMut<(i32)> for test_crate::map::closure} : core::ops::function::FnMut<test_crate::map::closure, (i32)> {
     parent_clause0 = test_crate::map::{impl core::ops::function::FnOnce<(i32)> for test_crate::map::closure}
     parent_clause1 = core::marker::Sized<(i32)>
     parent_clause2 = core::marker::Tuple<(i32)>
@@ -108,7 +106,6 @@ pub fn test_crate::array<const LEN : usize>() -> Array<u8, const LEN : usize>
 pub struct core::ops::range::Range<Idx>
   where
       [@TraitClause0]: core::marker::Sized<Idx>,
- =
 {
   start: Idx,
   end: Idx,
@@ -118,10 +115,10 @@ pub struct core::ops::range::Range<Idx>
 pub enum core::option::Option<T>
   where
       [@TraitClause0]: core::marker::Sized<T>,
- =
-|  None()
-|  Some(T)
-
+{
+  None,
+  Some(T),
+}
 
 #[lang_item("iterator")]
 pub trait core::iter::traits::iterator::Iterator<Self>
@@ -150,11 +147,11 @@ pub trait core::cmp::PartialEq<Self, Rhs>
 }
 
 #[lang_item("Ordering")]
-pub enum core::cmp::Ordering =
-|  Less()
-|  Equal()
-|  Greater()
-
+pub enum core::cmp::Ordering {
+  Less,
+  Equal,
+  Greater,
+}
 
 #[lang_item("partial_ord")]
 pub trait core::cmp::PartialOrd<Self, Rhs>
@@ -190,23 +187,20 @@ where
 
 pub fn core::clone::impls::{impl core::clone::Clone for u8}#6::clone<'_0>(@1: &'_0 (u8)) -> u8
 
-impl core::clone::impls::{impl core::clone::Clone for u8}#6 : core::clone::Clone<u8>
-{
+impl core::clone::impls::{impl core::clone::Clone for u8}#6 : core::clone::Clone<u8> {
     parent_clause0 = core::marker::Sized<u8>
     fn clone<'_0> = core::clone::impls::{impl core::clone::Clone for u8}#6::clone<'_0_0>
 }
 
 pub fn core::cmp::impls::{impl core::cmp::PartialEq<u8> for u8}#22::eq<'_0, '_1>(@1: &'_0 (u8), @2: &'_1 (u8)) -> bool
 
-impl core::cmp::impls::{impl core::cmp::PartialEq<u8> for u8}#22 : core::cmp::PartialEq<u8, u8>
-{
+impl core::cmp::impls::{impl core::cmp::PartialEq<u8> for u8}#22 : core::cmp::PartialEq<u8, u8> {
     fn eq<'_0, '_1> = core::cmp::impls::{impl core::cmp::PartialEq<u8> for u8}#22::eq<'_0_0, '_0_1>
 }
 
 pub fn core::cmp::impls::{impl core::cmp::PartialOrd<u8> for u8}#60::partial_cmp<'_0, '_1>(@1: &'_0 (u8), @2: &'_1 (u8)) -> core::option::Option<core::cmp::Ordering>[core::marker::Sized<core::cmp::Ordering>]
 
-impl core::cmp::impls::{impl core::cmp::PartialOrd<u8> for u8}#60 : core::cmp::PartialOrd<u8, u8>
-{
+impl core::cmp::impls::{impl core::cmp::PartialOrd<u8> for u8}#60 : core::cmp::PartialOrd<u8, u8> {
     parent_clause0 = core::cmp::impls::{impl core::cmp::PartialEq<u8> for u8}#22
     fn partial_cmp<'_0, '_1> = core::cmp::impls::{impl core::cmp::PartialOrd<u8> for u8}#60::partial_cmp<'_0_0, '_0_1>
 }
@@ -217,8 +211,7 @@ pub fn core::iter::range::{impl core::iter::range::Step for u8}#35::forward_chec
 
 pub fn core::iter::range::{impl core::iter::range::Step for u8}#35::backward_checked(@1: u8, @2: usize) -> core::option::Option<u8>[core::marker::Sized<u8>]
 
-impl core::iter::range::{impl core::iter::range::Step for u8}#35 : core::iter::range::Step<u8>
-{
+impl core::iter::range::{impl core::iter::range::Step for u8}#35 : core::iter::range::Step<u8> {
     parent_clause0 = core::marker::Sized<u8>
     parent_clause1 = core::clone::impls::{impl core::clone::Clone for u8}#6
     parent_clause2 = core::cmp::impls::{impl core::cmp::PartialOrd<u8> for u8}#60
@@ -302,11 +295,11 @@ fn test_crate::cbd(@1: Array<u8, 33 : usize>)
     return
 }
 
-pub enum core::panicking::AssertKind =
-|  Eq()
-|  Ne()
-|  Match()
-
+pub enum core::panicking::AssertKind {
+  Eq,
+  Ne,
+  Match,
+}
 
 #[lang_item("format_arguments")]
 pub opaque type core::fmt::Arguments<'a>
@@ -533,10 +526,10 @@ pub enum core::ops::control_flow::ControlFlow<B, C>
   where
       [@TraitClause0]: core::marker::Sized<B>,
       [@TraitClause1]: core::marker::Sized<C>,
- =
-|  Continue(C)
-|  Break(B)
-
+{
+  Continue(C),
+  Break(B),
+}
 
 #[lang_item("Try")]
 pub trait core::ops::try_trait::Try<Self>

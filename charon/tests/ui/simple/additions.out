@@ -84,15 +84,13 @@ pub fn core::clone::impls::{impl core::clone::Clone for u8}#6::clone_from<'_0, '
     return
 }
 
-impl core::clone::impls::{impl core::clone::Clone for u8}#6 : core::clone::Clone<u8>
-{
+impl core::clone::impls::{impl core::clone::Clone for u8}#6 : core::clone::Clone<u8> {
     parent_clause0 = core::marker::Sized<u8>
     fn clone<'_0> = core::clone::impls::{impl core::clone::Clone for u8}#6::clone<'_0_0>
     fn clone_from<'_0, '_1> = core::clone::impls::{impl core::clone::Clone for u8}#6::clone_from<'_0_0, '_0_1>
 }
 
-impl core::marker::{impl core::marker::Copy for u8}#38 : core::marker::Copy<u8>
-{
+impl core::marker::{impl core::marker::Copy for u8}#38 : core::marker::Copy<u8> {
     parent_clause0 = core::clone::impls::{impl core::clone::Clone for u8}#6
 }
 

@@ -86,13 +86,11 @@ pub trait core::cmp::Eq<Self>
     parent_clause0 : [@TraitClause0]: core::cmp::PartialEq<Self, Self>
 }
 
-impl core::cmp::impls::{impl core::cmp::PartialEq<bool> for bool}#19 : core::cmp::PartialEq<bool, bool>
-{
+impl core::cmp::impls::{impl core::cmp::PartialEq<bool> for bool}#19 : core::cmp::PartialEq<bool, bool> {
     fn eq<'_0, '_1> = core::cmp::impls::{impl core::cmp::PartialEq<bool> for bool}#19::eq<'_0_0, '_0_1>
 }
 
-impl core::cmp::impls::{impl core::cmp::Eq for bool}#38 : core::cmp::Eq<bool>
-{
+impl core::cmp::impls::{impl core::cmp::Eq for bool}#38 : core::cmp::Eq<bool> {
     parent_clause0 = core::cmp::impls::{impl core::cmp::PartialEq<bool> for bool}#19
 }
 

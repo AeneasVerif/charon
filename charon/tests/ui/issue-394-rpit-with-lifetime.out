@@ -7,7 +7,7 @@ pub opaque type core::iter::sources::from_fn::FromFn<F>
   where
       [@TraitClause0]: core::marker::Sized<F>,
 
-struct test_crate::sparse_transitions::closure<'a> = {}
+struct test_crate::sparse_transitions::closure<'a> {}
 
 #[lang_item("tuple_trait")]
 pub trait core::marker::Tuple<Self>
@@ -35,10 +35,10 @@ pub trait core::ops::function::FnMut<Self, Args>
 pub enum core::option::Option<T>
   where
       [@TraitClause0]: core::marker::Sized<T>,
- =
-|  None()
-|  Some(T)
-
+{
+  None,
+  Some(T),
+}
 
 pub fn core::iter::sources::from_fn::from_fn<T, F>(@1: F) -> core::iter::sources::from_fn::FromFn<F>[@TraitClause1]
 where
@@ -71,8 +71,7 @@ fn test_crate::sparse_transitions::{impl core::ops::function::FnOnce<()> for tes
     return
 }
 
-impl test_crate::sparse_transitions::{impl core::ops::function::FnOnce<()> for test_crate::sparse_transitions::closure<'_>}<'a> : core::ops::function::FnOnce<test_crate::sparse_transitions::closure<'_>, ()>
-{
+impl test_crate::sparse_transitions::{impl core::ops::function::FnOnce<()> for test_crate::sparse_transitions::closure<'_>}<'a> : core::ops::function::FnOnce<test_crate::sparse_transitions::closure<'_>, ()> {
     parent_clause0 = core::marker::Sized<()>
     parent_clause1 = core::marker::Tuple<()>
     parent_clause2 = core::marker::Sized<core::option::Option<u8>[core::marker::Sized<u8>]>
@@ -80,8 +79,7 @@ impl test_crate::sparse_transitions::{impl core::ops::function::FnOnce<()> for t
     fn call_once = test_crate::sparse_transitions::{impl core::ops::function::FnOnce<()> for test_crate::sparse_transitions::closure<'_>}::call_once<'a>
 }
 
-impl test_crate::sparse_transitions::{impl core::ops::function::FnMut<()> for test_crate::sparse_transitions::closure<'_>}<'a> : core::ops::function::FnMut<test_crate::sparse_transitions::closure<'_>, ()>
-{
+impl test_crate::sparse_transitions::{impl core::ops::function::FnMut<()> for test_crate::sparse_transitions::closure<'_>}<'a> : core::ops::function::FnMut<test_crate::sparse_transitions::closure<'_>, ()> {
     parent_clause0 = test_crate::sparse_transitions::{impl core::ops::function::FnOnce<()> for test_crate::sparse_transitions::closure<'_>}<'_>
     parent_clause1 = core::marker::Sized<()>
     parent_clause2 = core::marker::Tuple<()>

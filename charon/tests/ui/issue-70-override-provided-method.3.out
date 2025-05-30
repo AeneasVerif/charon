@@ -27,7 +27,6 @@ trait test_crate::GenericTrait<Self, T>
 struct test_crate::Override<T>
   where
       [@TraitClause0]: core::marker::Sized<T>,
- =
 {
   T,
 }
@@ -36,10 +35,10 @@ struct test_crate::Override<T>
 pub enum core::option::Option<T>
   where
       [@TraitClause0]: core::marker::Sized<T>,
- =
-|  None()
-|  Some(T)
-
+{
+  None,
+  Some(T),
+}
 
 #[lang_item("copy")]
 pub trait core::marker::Copy<Self>
@@ -126,7 +125,6 @@ where
 struct test_crate::NoOverride<T>
   where
       [@TraitClause0]: core::marker::Sized<T>,
- =
 {
   T,
 }

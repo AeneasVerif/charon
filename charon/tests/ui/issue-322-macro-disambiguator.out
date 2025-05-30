@@ -1,8 +1,8 @@
 # Final LLBC before serialization:
 
-struct test_crate::main::AssertIsAsBytes = {}
+struct test_crate::main::AssertIsAsBytes {}
 
-struct test_crate::main::AssertIsAsBytes#1 = {}
+struct test_crate::main::AssertIsAsBytes#1 {}
 
 fn test_crate::main()
 {

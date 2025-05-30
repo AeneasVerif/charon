@@ -7,55 +7,53 @@ pub struct test_crate::Pair<T1, T2>
   where
       [@TraitClause0]: core::marker::Sized<T1>,
       [@TraitClause1]: core::marker::Sized<T2>,
- =
 {
   x: T1,
   y: T2,
 }
 
 #[lang_item("global_alloc_ty")]
-pub struct alloc::alloc::Global = {}
+pub struct alloc::alloc::Global {}
 
 pub enum test_crate::List<T>
   where
       [@TraitClause0]: core::marker::Sized<T>,
- =
-|  Cons(T, alloc::boxed::Box<test_crate::List<T>[@TraitClause0]>[core::marker::Sized<alloc::alloc::Global>])
-|  Nil()
-
+{
+  Cons(T, alloc::boxed::Box<test_crate::List<T>[@TraitClause0]>[core::marker::Sized<alloc::alloc::Global>]),
+  Nil,
+}
 
 pub enum test_crate::One<T1>
   where
       [@TraitClause0]: core::marker::Sized<T1>,
- =
-|  One(T1)
+{
+  One(T1),
+}
 
+pub enum test_crate::EmptyEnum {
+  Empty,
+}
 
-pub enum test_crate::EmptyEnum =
-|  Empty()
+pub enum test_crate::Enum {
+  Variant1,
+  Variant2,
+}
 
-
-pub enum test_crate::Enum =
-|  Variant1()
-|  Variant2()
-
-
-pub struct test_crate::EmptyStruct = {}
+pub struct test_crate::EmptyStruct {}
 
 pub enum test_crate::Sum<T1, T2>
   where
       [@TraitClause0]: core::marker::Sized<T1>,
       [@TraitClause1]: core::marker::Sized<T2>,
- =
-|  Left(T1)
-|  Right(T2)
-
+{
+  Left(T1),
+  Right(T2),
+}
 
 pub struct test_crate::Tuple<T1, T2>
   where
       [@TraitClause0]: core::marker::Sized<T1>,
       [@TraitClause1]: core::marker::Sized<T2>,
- =
 {
   T1,
   T2,
@@ -111,7 +109,6 @@ pub fn test_crate::create_pair(@1: u32, @2: u64) -> test_crate::Pair<u32, u64>[c
 pub struct test_crate::IdType<T>
   where
       [@TraitClause0]: core::marker::Sized<T>,
- =
 {
   T,
 }
@@ -442,18 +439,18 @@ pub fn test_crate::test_char() -> char
 pub enum test_crate::Tree<T>
   where
       [@TraitClause0]: core::marker::Sized<T>,
- =
-|  Leaf(T)
-|  Node(T, test_crate::NodeElem<T>[@TraitClause0], alloc::boxed::Box<test_crate::Tree<T>[@TraitClause0]>[core::marker::Sized<alloc::alloc::Global>])
-
+{
+  Leaf(T),
+  Node(T, test_crate::NodeElem<T>[@TraitClause0], alloc::boxed::Box<test_crate::Tree<T>[@TraitClause0]>[core::marker::Sized<alloc::alloc::Global>]),
+}
 
 pub enum test_crate::NodeElem<T>
   where
       [@TraitClause0]: core::marker::Sized<T>,
- =
-|  Cons(alloc::boxed::Box<test_crate::Tree<T>[@TraitClause0]>[core::marker::Sized<alloc::alloc::Global>], alloc::boxed::Box<test_crate::NodeElem<T>[@TraitClause0]>[core::marker::Sized<alloc::alloc::Global>])
-|  Nil()
-
+{
+  Cons(alloc::boxed::Box<test_crate::Tree<T>[@TraitClause0]>[core::marker::Sized<alloc::alloc::Global>], alloc::boxed::Box<test_crate::NodeElem<T>[@TraitClause0]>[core::marker::Sized<alloc::alloc::Global>]),
+  Nil,
+}
 
 pub fn test_crate::even(@1: u32) -> bool
 {
@@ -566,7 +563,6 @@ pub struct test_crate::StructWithTuple<T1, T2>
   where
       [@TraitClause0]: core::marker::Sized<T1>,
       [@TraitClause1]: core::marker::Sized<T2>,
- =
 {
   p: (T1, T2),
 }
@@ -611,7 +607,6 @@ pub struct test_crate::StructWithPair<T1, T2>
   where
       [@TraitClause0]: core::marker::Sized<T1>,
       [@TraitClause1]: core::marker::Sized<T2>,
- =
 {
   p: test_crate::Pair<T1, T2>[@TraitClause0, @TraitClause1],
 }

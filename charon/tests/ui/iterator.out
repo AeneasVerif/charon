@@ -12,10 +12,10 @@ pub opaque type core::array::iter::IntoIter<T, const N : usize>
 pub enum core::option::Option<T>
   where
       [@TraitClause0]: core::marker::Sized<T>,
- =
-|  None()
-|  Some(T)
-
+{
+  None,
+  Some(T),
+}
 
 #[lang_item("SliceIter")]
 pub opaque type core::slice::iter::Iter<'a, T>
@@ -36,11 +36,11 @@ pub opaque type core::slice::iter::ChunksExact<'a, T>
       T : 'a,
       T : 'a,
 
-pub enum core::panicking::AssertKind =
-|  Eq()
-|  Ne()
-|  Match()
-
+pub enum core::panicking::AssertKind {
+  Eq,
+  Ne,
+  Match,
+}
 
 #[lang_item("format_arguments")]
 pub opaque type core::fmt::Arguments<'a>
@@ -56,10 +56,10 @@ pub enum core::result::Result<T, E>
   where
       [@TraitClause0]: core::marker::Sized<T>,
       [@TraitClause1]: core::marker::Sized<E>,
- =
-|  Ok(T)
-|  Err(E)
-
+{
+  Ok(T),
+  Err(E),
+}
 
 #[lang_item("clone")]
 pub trait core::clone::Clone<Self>
@@ -97,19 +97,17 @@ pub fn core::clone::impls::{impl core::clone::Clone for usize}#5::clone<'_0>(@1:
 
 pub fn core::clone::impls::{impl core::clone::Clone for usize}#5::clone_from<'_0, '_1>(@1: &'_0 mut (usize), @2: &'_1 (usize))
 
-impl core::clone::impls::{impl core::clone::Clone for usize}#5 : core::clone::Clone<usize>
-{
+impl core::clone::impls::{impl core::clone::Clone for usize}#5 : core::clone::Clone<usize> {
     parent_clause0 = core::marker::Sized<usize>
     fn clone<'_0> = core::clone::impls::{impl core::clone::Clone for usize}#5::clone<'_0_0>
     fn clone_from<'_0, '_1> = core::clone::impls::{impl core::clone::Clone for usize}#5::clone_from<'_0_0, '_0_1>
 }
 
-impl core::marker::{impl core::marker::Copy for usize}#37 : core::marker::Copy<usize>
-{
+impl core::marker::{impl core::marker::Copy for usize}#37 : core::marker::Copy<usize> {
     parent_clause0 = core::clone::impls::{impl core::clone::Clone for usize}#5
 }
 
-impl core::num::nonzero::{impl core::num::nonzero::private::Sealed for usize}#26 : core::num::nonzero::private::Sealed<usize>
+impl core::num::nonzero::{impl core::num::nonzero::private::Sealed for usize}#26 : core::num::nonzero::private::Sealed<usize> {}
 
 pub opaque type core::num::niche_types::NonZeroUsizeInner
 
@@ -117,20 +115,17 @@ pub fn core::num::niche_types::{impl core::clone::Clone for core::num::niche_typ
 
 pub fn core::num::niche_types::{impl core::clone::Clone for core::num::niche_types::NonZeroUsizeInner}#140::clone_from<'_0, '_1>(@1: &'_0 mut (core::num::niche_types::NonZeroUsizeInner), @2: &'_1 (core::num::niche_types::NonZeroUsizeInner))
 
-impl core::num::niche_types::{impl core::clone::Clone for core::num::niche_types::NonZeroUsizeInner}#140 : core::clone::Clone<core::num::niche_types::NonZeroUsizeInner>
-{
+impl core::num::niche_types::{impl core::clone::Clone for core::num::niche_types::NonZeroUsizeInner}#140 : core::clone::Clone<core::num::niche_types::NonZeroUsizeInner> {
     parent_clause0 = core::marker::Sized<core::num::niche_types::NonZeroUsizeInner>
     fn clone<'_0> = core::num::niche_types::{impl core::clone::Clone for core::num::niche_types::NonZeroUsizeInner}#140::clone<'_0_0>
     fn clone_from<'_0, '_1> = core::num::niche_types::{impl core::clone::Clone for core::num::niche_types::NonZeroUsizeInner}#140::clone_from<'_0_0, '_0_1>
 }
 
-impl core::num::niche_types::{impl core::marker::Copy for core::num::niche_types::NonZeroUsizeInner}#141 : core::marker::Copy<core::num::niche_types::NonZeroUsizeInner>
-{
+impl core::num::niche_types::{impl core::marker::Copy for core::num::niche_types::NonZeroUsizeInner}#141 : core::marker::Copy<core::num::niche_types::NonZeroUsizeInner> {
     parent_clause0 = core::num::niche_types::{impl core::clone::Clone for core::num::niche_types::NonZeroUsizeInner}#140
 }
 
-impl core::num::nonzero::{impl core::num::nonzero::ZeroablePrimitive for usize}#27 : core::num::nonzero::ZeroablePrimitive<usize>
-{
+impl core::num::nonzero::{impl core::num::nonzero::ZeroablePrimitive for usize}#27 : core::num::nonzero::ZeroablePrimitive<usize> {
     parent_clause0 = core::marker::Sized<usize>
     parent_clause1 = core::marker::{impl core::marker::Copy for usize}#37
     parent_clause2 = core::num::nonzero::{impl core::num::nonzero::private::Sealed for usize}#26
@@ -245,10 +240,10 @@ pub enum core::ops::control_flow::ControlFlow<B, C>
   where
       [@TraitClause0]: core::marker::Sized<B>,
       [@TraitClause1]: core::marker::Sized<C>,
- =
-|  Continue(C)
-|  Break(B)
-
+{
+  Continue(C),
+  Break(B),
+}
 
 #[lang_item("Try")]
 pub trait core::ops::try_trait::Try<Self>
@@ -295,11 +290,11 @@ pub trait core::cmp::Eq<Self>
 }
 
 #[lang_item("Ordering")]
-pub enum core::cmp::Ordering =
-|  Less()
-|  Equal()
-|  Greater()
-
+pub enum core::cmp::Ordering {
+  Less,
+  Equal,
+  Greater,
+}
 
 #[lang_item("partial_ord")]
 pub trait core::cmp::PartialOrd<Self, Rhs>
@@ -3695,8 +3690,7 @@ pub trait core::ops::arith::AddAssign<Self, Rhs>
 
 pub fn core::ops::arith::AddAssign::add_assign<'_0, Self, Rhs>(@1: &'_0 mut (Self), @2: Rhs)
 
-impl core::ops::arith::{impl core::ops::arith::AddAssign<&'_0 (i32)> for i32}#365<'_0> : core::ops::arith::AddAssign<i32, &'_0 (i32)>
-{
+impl core::ops::arith::{impl core::ops::arith::AddAssign<&'_0 (i32)> for i32}#365<'_0> : core::ops::arith::AddAssign<i32, &'_0 (i32)> {
     parent_clause0 = core::marker::Sized<&'_ (i32)>
     fn add_assign<'_0> = core::ops::arith::{impl core::ops::arith::AddAssign<&'_0 (i32)> for i32}#365::add_assign<'_0, '_0_0>
 }

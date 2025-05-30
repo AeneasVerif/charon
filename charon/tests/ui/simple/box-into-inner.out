@@ -7,7 +7,7 @@ pub opaque type alloc::string::String
 pub trait core::marker::Sized<Self>
 
 #[lang_item("global_alloc_ty")]
-pub struct alloc::alloc::Global = {}
+pub struct alloc::alloc::Global {}
 
 #[lang_item("NonNull")]
 pub opaque type core::ptr::non_null::NonNull<T>
