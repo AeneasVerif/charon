@@ -7,7 +7,7 @@
 //! to be explicit about mutual recursion. This should come useful for translation to any other
 //! language with these properties.
 use crate::common::*;
-use crate::formatter::{AstFormatter, IntoFormatter};
+use crate::formatter::{Formatter, IntoFormatter};
 use crate::graphs::*;
 use crate::transform::TransformCtx;
 use crate::ullbc_ast::*;

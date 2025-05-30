@@ -40,11 +40,6 @@ pub trait Formatter<T> {
     fn format_object(&self, x: T) -> String;
 }
 
-/// Provided some id, print the declaration (not simply its name).
-pub trait DeclFormatter<Id> {
-    fn format_decl(&self, x: Id) -> String;
-}
-
 impl<C, T> Formatter<T> for &C
 where
     C: Formatter<T>,
@@ -68,75 +63,8 @@ impl<C: AstFormatter> IntoFormatter for C {
     }
 }
 
-/// We use this trait with the formatter to update the context,
-/// for instance when we enter a declaration that we need to print.
-pub trait SetGenerics<'a> {
-    type C: 'a + AstFormatter;
-
-    fn set_generics(&'a self, generics: &'a GenericParams) -> Self::C;
-}
-
-impl<'a, 'b> SetGenerics<'a> for FmtCtx<'b> {
-    type C = FmtCtx<'a>;
-
-    fn set_generics(&'a self, generics: &'a GenericParams) -> Self::C {
-        FmtCtx {
-            translated: self.translated.as_deref(),
-            generics: BindingStack::new(Cow::Borrowed(generics)),
-            locals: self.locals.as_deref(),
-        }
-    }
-}
-
-/// We use this trait with the formatter to update the context,
-/// for instance when we enter a declaration that we need to print.
-pub trait SetLocals<'a> {
-    type C: 'a + AstFormatter;
-
-    fn set_locals(&'a self, locals: &'a Locals) -> Self::C;
-}
-
-impl<'a, 'b> SetLocals<'a> for FmtCtx<'b> {
-    type C = FmtCtx<'a>;
-
-    fn set_locals(&'a self, locals: &'a Locals) -> Self::C {
-        FmtCtx {
-            translated: self.translated.as_deref(),
-            generics: self.generics.clone(),
-            locals: Some(locals),
-        }
-    }
-}
-
-/// We use this trait to update the context by pushing a group of bound regions.
-pub trait PushBinder<'a> {
-    type C: 'a + AstFormatter;
-
-    fn push_binder(&'a self, new_params: Cow<'a, GenericParams>) -> Self::C;
-
-    fn push_bound_regions(&'a self, regions: &'a Vector<RegionId, RegionVar>) -> Self::C {
-        self.push_binder(Cow::Owned(GenericParams {
-            regions: regions.clone(),
-            ..Default::default()
-        }))
-    }
-}
-
-impl<'a, 'b> PushBinder<'a> for FmtCtx<'b> {
-    type C = FmtCtx<'a>;
-
-    fn push_binder(&'a self, new_params: Cow<'a, GenericParams>) -> Self::C {
-        let mut generics = self.generics.clone();
-        generics.push(new_params);
-        FmtCtx {
-            translated: self.translated.as_deref(),
-            generics,
-            locals: self.locals.as_deref(),
-        }
-    }
-}
-
-pub trait AstFormatter = Formatter<TypeDeclId>
+pub trait AstFormatter:
+    Formatter<TypeDeclId>
     + Formatter<FunDeclId>
     + Formatter<GlobalDeclId>
     + Formatter<TraitDeclId>
@@ -153,9 +81,55 @@ pub trait AstFormatter = Formatter<TypeDeclId>
     + for<'a> Formatter<&'a RegionVar>
     + for<'a> Formatter<&'a Vector<ullbc_ast::BlockId, ullbc_ast::BlockData>>
     + for<'a> Formatter<&'a llbc_ast::Block>
-    + for<'a> SetGenerics<'a>
-    + for<'a> SetLocals<'a>
-    + for<'a> PushBinder<'a>;
+{
+    type Reborrow<'a>: AstFormatter + 'a
+    where
+        Self: 'a;
+
+    fn set_generics<'a>(&'a self, generics: &'a GenericParams) -> Self::Reborrow<'a>;
+    fn set_locals<'a>(&'a self, locals: &'a Locals) -> Self::Reborrow<'a>;
+    fn push_binder<'a>(&'a self, new_params: Cow<'a, GenericParams>) -> Self::Reborrow<'a>;
+
+    fn push_bound_regions<'a>(
+        &'a self,
+        regions: &'a Vector<RegionId, RegionVar>,
+    ) -> Self::Reborrow<'a> {
+        self.push_binder(Cow::Owned(GenericParams {
+            regions: regions.clone(),
+            ..Default::default()
+        }))
+    }
+}
+impl<'c> AstFormatter for FmtCtx<'c> {
+    type Reborrow<'a>
+        = FmtCtx<'a>
+    where
+        Self: 'a;
+
+    fn set_generics<'a>(&'a self, generics: &'a GenericParams) -> Self::Reborrow<'a> {
+        FmtCtx {
+            translated: self.translated.as_deref(),
+            generics: BindingStack::new(Cow::Borrowed(generics)),
+            locals: self.locals.as_deref(),
+        }
+    }
+    fn set_locals<'a>(&'a self, locals: &'a Locals) -> Self::Reborrow<'a> {
+        FmtCtx {
+            translated: self.translated.as_deref(),
+            generics: self.generics.clone(),
+            locals: Some(locals),
+        }
+    }
+    fn push_binder<'a>(&'a self, new_params: Cow<'a, GenericParams>) -> Self::Reborrow<'a> {
+        let mut generics = self.generics.clone();
+        generics.push(new_params);
+        FmtCtx {
+            translated: self.translated.as_deref(),
+            generics,
+            locals: self.locals.as_deref(),
+        }
+    }
+}
 
 /// For formatting.
 ///
@@ -200,7 +174,9 @@ impl<'a> FmtCtx<'a> {
             .ok_or_else(|| translated.item_name(id))
     }
 
-    fn format_any_decl(&self, id: AnyTransId) -> String {
+    /// Print the whole definition.
+    fn format_decl(&self, id: impl Into<AnyTransId>) -> String {
+        let id = id.into();
         match self.get_item(id) {
             Ok(d) => d.fmt_with_ctx(self),
             Err(opt_name) => {
@@ -528,35 +504,5 @@ impl<'a> Formatter<&gast::TraitDecl> for FmtCtx<'a> {
 impl<'a> Formatter<&gast::TraitImpl> for FmtCtx<'a> {
     fn format_object(&self, def: &gast::TraitImpl) -> String {
         def.fmt_with_ctx(self)
-    }
-}
-
-impl<'a> DeclFormatter<TypeDeclId> for FmtCtx<'a> {
-    fn format_decl(&self, id: TypeDeclId) -> String {
-        self.format_any_decl(id.into())
-    }
-}
-
-impl<'a> DeclFormatter<GlobalDeclId> for FmtCtx<'a> {
-    fn format_decl(&self, id: GlobalDeclId) -> String {
-        self.format_any_decl(id.into())
-    }
-}
-
-impl<'a> DeclFormatter<FunDeclId> for FmtCtx<'a> {
-    fn format_decl(&self, id: FunDeclId) -> String {
-        self.format_any_decl(id.into())
-    }
-}
-
-impl<'a> DeclFormatter<TraitDeclId> for FmtCtx<'a> {
-    fn format_decl(&self, id: TraitDeclId) -> String {
-        self.format_any_decl(id.into())
-    }
-}
-
-impl<'a> DeclFormatter<TraitImplId> for FmtCtx<'a> {
-    fn format_decl(&self, id: TraitImplId) -> String {
-        self.format_any_decl(id.into())
     }
 }

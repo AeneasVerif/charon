@@ -94,7 +94,7 @@ impl<T> Binder<T> {
     fn fmt_split<'a, C>(&'a self, ctx: &'a C) -> (String, String)
     where
         C: AstFormatter,
-        T: FmtWithCtx<<C as PushBinder<'a>>::C>,
+        T: FmtWithCtx<C::Reborrow<'a>>,
     {
         let ctx = &ctx.push_binder(Cow::Borrowed(&self.params));
         (
@@ -452,18 +452,13 @@ impl<C: AstFormatter> FmtWithCtx<C> for GenericsSource {
     }
 }
 
-impl<T, C> FmtWithCtx<C> for GExprBody<T>
-where
-    C: for<'a> SetLocals<'a>,
-    for<'a> <C as SetLocals<'a>>::C: AstFormatter,
-    for<'a, 'b> <C as SetLocals<'a>>::C: AstFormatter + Formatter<&'b T>,
-{
-    fn fmt_with_ctx(&self, ctx: &C) -> String {
-        // By default use a tab.
-        self.fmt_with_ctx_and_indent(TAB_INCR, ctx)
-    }
-
-    fn fmt_with_ctx_and_indent(&self, tab: &str, ctx: &C) -> String {
+impl<T> GExprBody<T> {
+    fn fmt_with_ctx_and_indent_and_callback<C: AstFormatter>(
+        &self,
+        tab: &str,
+        ctx: &C,
+        fmt_body: impl for<'a> FnOnce(&C::Reborrow<'a>, &'a T) -> String,
+    ) -> String {
         // Update the context
         let ctx = &ctx.set_locals(&self.locals);
 
@@ -502,7 +497,7 @@ where
 
         // Format the body blocks - TODO: we don't take the indentation
         // into account, here
-        let body = ctx.format_object(&self.body);
+        let body = fmt_body(ctx, &self.body);
 
         // Put everything together
         let mut out = locals;
@@ -511,15 +506,36 @@ where
     }
 }
 
+impl<C> FmtWithCtx<C> for GExprBody<llbc_ast::Block>
+where
+    C: AstFormatter,
+{
+    fn fmt_with_ctx(&self, ctx: &C) -> String {
+        // By default use a tab.
+        self.fmt_with_ctx_and_indent(TAB_INCR, ctx)
+    }
+
+    fn fmt_with_ctx_and_indent(&self, tab: &str, ctx: &C) -> String {
+        self.fmt_with_ctx_and_indent_and_callback(tab, ctx, |ctx, body| ctx.format_object(body))
+    }
+}
+impl<C> FmtWithCtx<C> for GExprBody<ullbc_ast::BodyContents>
+where
+    C: AstFormatter,
+{
+    fn fmt_with_ctx(&self, ctx: &C) -> String {
+        // By default use a tab.
+        self.fmt_with_ctx_and_indent(TAB_INCR, ctx)
+    }
+
+    fn fmt_with_ctx_and_indent(&self, tab: &str, ctx: &C) -> String {
+        self.fmt_with_ctx_and_indent_and_callback(tab, ctx, |ctx, body| ctx.format_object(body))
+    }
+}
+
 impl<C> FmtWithCtx<C> for FunDecl
 where
     C: AstFormatter,
-    // For the signature
-    C: for<'a> SetGenerics<'a>,
-    for<'a> <C as SetGenerics<'a>>::C: AstFormatter,
-    // For the body
-    for<'a, 'b> <C as SetGenerics<'a>>::C: SetLocals<'b>,
-    for<'a, 'b> <<C as SetGenerics<'a>>::C as SetLocals<'b>>::C: AstFormatter,
 {
     fn fmt_with_ctx_and_indent(&self, tab: &str, ctx: &C) -> String {
         let keyword = if self.signature.is_unsafe {
@@ -583,10 +599,6 @@ impl<C: AstFormatter> FmtWithCtx<C> for FunDeclRef {
 impl<C> FmtWithCtx<C> for GlobalDecl
 where
     C: AstFormatter,
-    C: for<'a> SetLocals<'a>,
-    for<'a> <C as SetGenerics<'a>>::C: AstFormatter,
-    for<'a, 'b> <<C as SetGenerics<'a>>::C as SetLocals<'b>>::C: AstFormatter,
-    for<'a, 'b, 'c> <<C as SetGenerics<'a>>::C as SetLocals<'b>>::C: AstFormatter,
 {
     fn fmt_with_ctx_and_indent(&self, tab: &str, ctx: &C) -> String {
         let keyword = match self.global_kind {
@@ -863,7 +875,7 @@ impl<T> RegionBinder<T> {
     fn fmt_split<'a, C>(&'a self, ctx: &'a C) -> (String, String)
     where
         C: AstFormatter,
-        T: FmtWithCtx<<C as PushBinder<'a>>::C>,
+        T: FmtWithCtx<C::Reborrow<'a>>,
     {
         let ctx = &ctx.push_bound_regions(&self.regions);
         (
@@ -876,7 +888,7 @@ impl<T> RegionBinder<T> {
     fn fmt_as_for<'a, C>(&'a self, ctx: &'a C) -> String
     where
         C: AstFormatter,
-        T: FmtWithCtx<<C as PushBinder<'a>>::C>,
+        T: FmtWithCtx<C::Reborrow<'a>>,
     {
         let (regions, value) = self.fmt_split(ctx);
         let regions = if regions.is_empty() {
