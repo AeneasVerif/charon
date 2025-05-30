@@ -760,7 +760,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
     }
 }
 
-fn translate_variant(
+fn translate_variant_layout(
     variant_layout: &r_abi::LayoutData<r_abi::FieldIdx, r_abi::VariantIdx>,
 ) -> VariantLayout {
     match &variant_layout.fields {
@@ -772,7 +772,7 @@ fn translate_variant(
             for (i, o) in offsets.iter_enumerated() {
                 // The fields should have a total increasing index, but to be
                 // absolutely sure, we insert them at the correct index.
-                v.insert(FieldId::from_usize(i.index()), o.bytes());
+                v.insert(FieldId::from_usize(i.index()), Some(o.bytes()));
             }
             VariantLayout { field_offsets: v }
         }
@@ -785,10 +785,11 @@ impl ItemTransCtx<'_, '_> {
     /// Translates the layout as queried from rustc into
     /// the more restricted [`Layout`].
     #[tracing::instrument(skip(self))]
-    pub fn translate_layout(&self) -> Layout {
+    pub fn translate_layout(&self) -> Option<Layout> {
         let tcx = self.t_ctx.tcx;
         let rdefid = self.def_id.as_rust_def_id().unwrap();
         let ty_env = hax::State::new_from_state_and_id(&self.t_ctx.hax_state, rdefid).typing_env();
+        // This `skip_binder` is ok because it's an `EarlyBinder`.
         let ty = tcx.type_of(rdefid).skip_binder();
         let pseudo_input = ty_env.as_query_input(ty);
 
@@ -805,11 +806,8 @@ impl ItemTransCtx<'_, '_> {
                 };
                 let mut variant_layouts = Vector::new();
                 let discriminant_offset = match layout.variants() {
-                    // If the discriminant is in the niche, it isn't part of
-                    // the actual layout.
                     r_abi::Variants::Multiple {
                         tag_field,
-                        tag_encoding: r_abi::TagEncoding::Direct,
                         variants,
                         ..
                     } => {
@@ -823,7 +821,7 @@ impl ItemTransCtx<'_, '_> {
                             };
                             variant_layouts.insert(
                                 VariantId::from_usize(index.as_usize()),
-                                translate_variant(variant),
+                                translate_variant_layout(variant),
                             );
                         }
 
@@ -837,20 +835,39 @@ impl ItemTransCtx<'_, '_> {
                             unreachable!()
                         }
                     }
+                    // If there is exactly one variant, i.e. if the type is a struct,
+                    // there is no discriminant, but still fields with offsets.
+                    r_abi::Variants::Single { index } if *index == r_abi::VariantIdx::ZERO => {
+                        // If the type has no fields (FieldsShape::{Primite,Union,Array}), we can skip this.
+                        if let r_abi::FieldsShape::Arbitrary { offsets, .. } = layout.fields() {
+                            let mut fields_of_single_variant = Vector::with_capacity(offsets.len());
+                            for (i, o) in offsets.iter_enumerated() {
+                                fields_of_single_variant
+                                    .insert(FieldId::from_usize(i.as_usize()), Some(o.bytes()));
+                            }
+                            // It's the only one and will automatically be at index 0
+                            variant_layouts.push(VariantLayout {
+                                field_offsets: fields_of_single_variant,
+                            });
+                        }
+                        None
+                    }
+                    // An empty type has fields and certainly no discriminant.
                     _ => None,
                 };
 
-                Layout {
+                Some(Layout {
                     size,
                     align,
                     discriminant_offset,
+                    uninhabited: layout.is_uninhabited(),
                     variant_layouts,
-                }
+                })
             }
             Err(_) => {
                 // If there is no sensible layout, we translate it to the empty layout.
                 // There doesn't seem to be any way to handle the errors in a better way.
-                Layout::default()
+                None
             }
         }
     }

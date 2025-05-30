@@ -716,6 +716,7 @@ fn known_trait_method_call() -> Result<(), Box<dyn Error>> {
 fn type_layout() -> anyhow::Result<()> {
     let crate_data = translate(
         r#"
+        #![feature(never_type)]
         use std::num::NonZero;
         use std::fmt::Debug;
 
@@ -757,6 +758,45 @@ fn type_layout() -> anyhow::Result<()> {
             x: usize,
             y: dyn Debug
         }
+
+        struct GenericWithKnownLayout<T> {
+            x: usize,
+            y: Box<T>,
+        }
+
+        // Rust reorders the fields to save space.
+        struct Reordered {
+            x: u8,
+            y: u32,
+            z: u8,
+        }
+
+        // `repr(C)` prevents reordering the fields.
+        #[repr(C)]
+        struct NotReordered {
+            x: u8,
+            y: u32,
+            z: u8,
+        }
+
+        #[repr(packed)]
+        struct Packed {
+            x: u8,
+            y: u32,
+            z: u8,
+        }
+
+        enum UninhabitedVariant {
+            A(!, u32),
+            B(u32),
+        }
+
+        struct Uninhabited(!);
+
+        enum DiscriminantInNicheOfField<'a,T> {
+            None,
+            Some((usize, &'a T))
+        }
         "#,
     )?;
 
@@ -764,75 +804,278 @@ fn type_layout() -> anyhow::Result<()> {
     let default_variant_layout = VariantLayout::default();
 
     // SimpleStruct
+    let mut variant_layouts = Vector::with_capacity(1);
+    let mut single_variant_offsets = Vector::with_capacity(1);
+    single_variant_offsets.push(Some(0));
+    single_variant_offsets.push(Some(4));
+    single_variant_offsets.push(Some(8));
+    variant_layouts.push(VariantLayout {
+        field_offsets: single_variant_offsets,
+    });
     assert_eq!(
         crate_data.type_decls[0].layout,
-        Layout {
+        Some(Layout {
             size: Some(12),
             align: Some(4),
+            uninhabited: false,
             discriminant_offset: None,
-            variant_layouts: Vector::new()
-        }
+            variant_layouts
+        })
     );
+
     // GenericStruct
-    assert_eq!(&crate_data.type_decls[1].layout, &default_layout);
+    assert_eq!(crate_data.type_decls[1].layout, None);
+
     // UnsizedStruct
-    assert_eq!(&crate_data.type_decls[2].layout, &default_layout);
+    let mut variant_layouts = Vector::with_capacity(1);
+    let mut single_variant_offsets = Vector::with_capacity(1);
+    single_variant_offsets.push(Some(0));
+    single_variant_offsets.push(Some(8));
+    variant_layouts.push(VariantLayout {
+        field_offsets: single_variant_offsets,
+    });
+    // We could in principle know the alignment, but rustc does not make it easy
+    // to distinguish "dyn sized and dyn aligned" from "dyn sized and static aligned".
+    assert_eq!(
+        &crate_data.type_decls[2].layout,
+        &Some(Layout {
+            variant_layouts,
+            ..default_layout.clone()
+        })
+    );
+
     // SimpleEnum
     let mut variant_layouts = Vector::with_capacity(2);
     variant_layouts.push(default_variant_layout.clone());
     variant_layouts.push(default_variant_layout.clone());
     assert_eq!(
         &crate_data.type_decls[3].layout,
-        &Layout {
+        &Some(Layout {
             size: Some(1),
             align: Some(1),
+            uninhabited: false,
             discriminant_offset: Some(0),
             variant_layouts
-        }
+        })
     );
+
     // SimpleAdt
     let mut variant_layouts = Vector::with_capacity(2);
     variant_layouts.push(default_variant_layout.clone());
     let mut var2_offsets = Vector::with_capacity(2);
-    var2_offsets.push(8);
-    var2_offsets.push(16);
+    var2_offsets.push(Some(8));
+    var2_offsets.push(Some(16));
     variant_layouts.push(VariantLayout {
         field_offsets: var2_offsets,
     });
     let mut var3_offsets = Vector::with_capacity(2);
-    var3_offsets.push(4);
-    var3_offsets.push(8);
+    var3_offsets.push(Some(4));
+    var3_offsets.push(Some(8));
     variant_layouts.push(VariantLayout {
         field_offsets: var3_offsets,
     });
     assert_eq!(
         &crate_data.type_decls[4].layout,
-        &Layout {
+        &Some(Layout {
             size: Some(24),
             align: Some(8),
+            uninhabited: false,
             discriminant_offset: Some(0),
             variant_layouts
-        }
+        })
     );
+
     // NicheAdt
+    let mut variant_layouts = Vector::with_capacity(2);
+    variant_layouts.push(default_variant_layout.clone());
+    let mut var_offsets = Vector::with_capacity(1);
+    var_offsets.push(Some(0));
+    variant_layouts.push(VariantLayout {
+        field_offsets: var_offsets,
+    });
     assert_eq!(
         &crate_data.type_decls[5].layout,
-        &Layout {
+        &Some(Layout {
             size: Some(4),
             align: Some(4),
-            ..default_layout.clone()
-        }
+            discriminant_offset: Some(0),
+            uninhabited: false,
+            variant_layouts
+        })
     );
+
     // IsAZST
+    let mut variant_layouts = Vector::with_capacity(1);
+    variant_layouts.push(default_variant_layout.clone());
     assert_eq!(
-        &crate_data.type_decls[6].layout,
-        &Layout {
+        crate_data.type_decls[6].layout,
+        Some(Layout {
             size: Some(0),
             align: Some(1),
-            ..default_layout.clone()
-        }
+            discriminant_offset: None,
+            uninhabited: false,
+            variant_layouts,
+        })
     );
+
     // UnsizedStruct2
-    assert_eq!(&crate_data.type_decls[7].layout, &default_layout);
+    let mut variant_layouts = Vector::with_capacity(1);
+    let mut var_offsets = Vector::with_capacity(2);
+    var_offsets.push(Some(0));
+    var_offsets.push(Some(8));
+    variant_layouts.push(VariantLayout {
+        field_offsets: var_offsets,
+    });
+    assert_eq!(
+        &crate_data.type_decls[7].layout,
+        &Some(Layout {
+            variant_layouts,
+            ..default_layout
+        })
+    );
+
+    // GenericWithKnownLayout
+    let mut variant_layouts = Vector::with_capacity(1);
+    let mut single_variant_offsets = Vector::with_capacity(2);
+    // For some reason, rustc currently reorders these fields.
+    single_variant_offsets.push(Some(8));
+    single_variant_offsets.push(Some(0));
+    variant_layouts.push(VariantLayout {
+        field_offsets: single_variant_offsets,
+    });
+    assert_eq!(
+        crate_data.type_decls[8].layout,
+        Some(Layout {
+            size: Some(16),
+            align: Some(8),
+            uninhabited: false,
+            discriminant_offset: None,
+            variant_layouts
+        })
+    );
+
+    // Reordered
+    let mut variant_layouts = Vector::with_capacity(1);
+    let mut single_variant_offsets = Vector::with_capacity(3);
+    single_variant_offsets.push(Some(4));
+    single_variant_offsets.push(Some(0));
+    single_variant_offsets.push(Some(5));
+    variant_layouts.push(VariantLayout {
+        field_offsets: single_variant_offsets,
+    });
+    assert_eq!(
+        crate_data.type_decls[9].layout,
+        Some(Layout {
+            size: Some(8),
+            align: Some(4),
+            uninhabited: false,
+            discriminant_offset: None,
+            variant_layouts
+        })
+    );
+
+    // NotReordered
+    let mut variant_layouts = Vector::with_capacity(1);
+    let mut single_variant_offsets = Vector::with_capacity(3);
+    single_variant_offsets.push(Some(0));
+    single_variant_offsets.push(Some(4));
+    single_variant_offsets.push(Some(8));
+    variant_layouts.push(VariantLayout {
+        field_offsets: single_variant_offsets,
+    });
+    assert_eq!(
+        crate_data.type_decls[10].layout,
+        Some(Layout {
+            size: Some(12),
+            align: Some(4),
+            uninhabited: false,
+            discriminant_offset: None,
+            variant_layouts
+        })
+    );
+
+    // Packed
+    let mut variant_layouts = Vector::with_capacity(1);
+    let mut single_variant_offsets = Vector::with_capacity(3);
+    single_variant_offsets.push(Some(0));
+    single_variant_offsets.push(Some(1));
+    single_variant_offsets.push(Some(5));
+    variant_layouts.push(VariantLayout {
+        field_offsets: single_variant_offsets,
+    });
+    assert_eq!(
+        crate_data.type_decls[11].layout,
+        Some(Layout {
+            size: Some(6),
+            align: Some(1),
+            uninhabited: false,
+            discriminant_offset: None,
+            variant_layouts
+        })
+    );
+
+    // UninhabitedVariant
+    let mut variant_layouts = Vector::with_capacity(2);
+    let mut var1_offsets = Vector::with_capacity(2);
+    // The field of type `!` is located at the same offset as the other field.
+    var1_offsets.push(Some(4));
+    var1_offsets.push(Some(4));
+    variant_layouts.push(VariantLayout {
+        field_offsets: var1_offsets,
+    });
+    let mut var2_offsets = Vector::with_capacity(1);
+    var2_offsets.push(Some(4));
+    variant_layouts.push(VariantLayout {
+        field_offsets: var2_offsets,
+    });
+    assert_eq!(
+        crate_data.type_decls[12].layout,
+        Some(Layout {
+            size: Some(8),
+            align: Some(4),
+            uninhabited: false,
+            discriminant_offset: Some(0),
+            variant_layouts
+        })
+    );
+
+    // Uninhabited
+    let mut variant_layouts = Vector::with_capacity(1);
+    let mut var_offsets = Vector::with_capacity(1);
+    var_offsets.push(Some(0));
+    variant_layouts.push(VariantLayout {
+        field_offsets: var_offsets,
+    });
+    assert_eq!(
+        crate_data.type_decls[13].layout,
+        Some(Layout {
+            size: Some(0),
+            align: Some(1),
+            uninhabited: true,
+            discriminant_offset: None,
+            variant_layouts
+        })
+    );
+
+    // DiscriminantInNicheOfField
+    // This type has its discriminant in the pointer field of the tuple inside the `Some` variant.
+    let mut variant_layouts = Vector::with_capacity(2);
+    variant_layouts.push(VariantLayout::default());
+    let mut var2_offsets = Vector::with_capacity(2);
+    var2_offsets.push(Some(0));
+    variant_layouts.push(VariantLayout {
+        field_offsets: var2_offsets,
+    });
+    assert_eq!(
+        crate_data.type_decls[14].layout,
+        Some(Layout {
+            size: Some(16),
+            align: Some(8),
+            uninhabited: false,
+            discriminant_offset: Some(8),
+            variant_layouts
+        })
+    );
+
     Ok(())
 }

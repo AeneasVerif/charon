@@ -648,9 +648,14 @@ and generic_params = {
 
 (** Simplified layout of a single variant.
 
-    Maps fields, that are not shared between all variants to their offset within the layout.
+    Maps fields to their offset within the layout.
  *)
-and variant_layout = { field_offsets : int list }
+and variant_layout = {
+  field_offsets : int option list;
+      (** The offset of each field. [None] if it is not knowable at this point, either
+        because of generics or dynamically-sized types.
+     *)
+}
 
 (** Simplified type layout information.
 
@@ -662,9 +667,12 @@ and layout = {
   size : int option;  (** The size of the type in bytes. *)
   align : int option;  (** The alignment, in bytes. *)
   discriminant_offset : int option;
-      (** The discriminant's offset, if any. Only relevant for
-        types with multiple variants and if the discriminant is
-        not in a niche.
+      (** The discriminant's offset, if any. Only relevant for types with multiple
+        variants.
+     *)
+  uninhabited : bool;
+      (** Whether the type is uninhabited.
+        This is required to differentiate ZSTs and uninhabited types.
      *)
   variant_layouts : variant_layout list;
       (** Map from [VariantId] to the corresponding field layouts.
@@ -692,7 +700,10 @@ and type_decl = {
   item_meta : item_meta;  (** Meta information associated with the item. *)
   generics : generic_params;
   kind : type_decl_kind;  (** The type kind: enum, struct, or opaque. *)
-  layout : layout;  (** The layout of the type. *)
+  layout : layout option;
+      (** The layout of the type. Information may be partial because of generics or dynamically-
+        sized types. If rustc cannot compute a layout, it is [None].
+     *)
 }
 
 and variant_id = (VariantId.id[@visitors.opaque])
