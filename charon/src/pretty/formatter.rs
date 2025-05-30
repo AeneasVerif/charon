@@ -334,97 +334,44 @@ impl<'a> Formatter<&ImplElem> for FmtCtx<'a> {
 /// For enum values: `List::Cons`
 impl<'a> Formatter<(TypeDeclId, VariantId)> for FmtCtx<'a> {
     fn format_object(&self, id: (TypeDeclId, VariantId)) -> String {
-        let (def_id, variant_id) = id;
-        match &self.translated {
-            None => format!(
-                "{}::{}",
-                def_id.to_pretty_string(),
-                variant_id.to_pretty_string()
-            ),
-            Some(translated) => {
-                // The definition may not be available yet, especially if we print-debug
-                // while translating the crate
-                match translated.type_decls.get(def_id) {
-                    None => format!(
-                        "{}::{}",
-                        def_id.to_pretty_string(),
-                        variant_id.to_pretty_string()
-                    ),
-                    Some(def) if def.kind.is_enum() => {
-                        let variants = def.kind.as_enum().unwrap();
-                        let mut name = def.item_meta.name.fmt_with_ctx(self);
-                        let variant_name = &variants.get(variant_id).unwrap().name;
-                        name.push_str("::");
-                        name.push_str(variant_name);
-                        name
-                    }
-                    _ => format!("__unknown_variant"),
+        let (type_id, variant_id) = id;
+        let name = self.format_object(type_id);
+        let variant = match &self.translated {
+            None => &variant_id.to_pretty_string(),
+            Some(translated) => match translated.type_decls.get(type_id) {
+                Some(def) if let Some(variants) = def.kind.as_enum() => {
+                    &variants.get(variant_id).unwrap().name
                 }
-            }
-        }
+                _ => &variant_id.to_pretty_string(),
+            },
+        };
+        format!("{name}::{variant}",)
     }
 }
 
 /// For struct/enum values: retrieve a field name
 impl<'a> Formatter<(TypeDeclId, Option<VariantId>, FieldId)> for FmtCtx<'a> {
     fn format_object(&self, id: (TypeDeclId, Option<VariantId>, FieldId)) -> String {
-        let (def_id, opt_variant_id, field_id) = id;
-        match &self.translated {
-            None => match opt_variant_id {
-                None => format!(
-                    "{}::{}",
-                    def_id.to_pretty_string(),
-                    field_id.to_pretty_string()
-                ),
-                Some(variant_id) => format!(
-                    "{}::{}::{}",
-                    def_id.to_pretty_string(),
-                    variant_id.to_pretty_string(),
-                    field_id.to_pretty_string()
-                ),
+        let (type_id, opt_variant_id, field_id) = id;
+        match self
+            .translated
+            .as_ref()
+            .and_then(|tr| tr.type_decls.get(type_id))
+        {
+            None => field_id.to_string(),
+            Some(def) => match (&def.kind, opt_variant_id) {
+                (TypeDeclKind::Enum(variants), Some(variant_id)) => variants[variant_id].fields
+                    [field_id]
+                    .name
+                    .clone()
+                    .unwrap_or_else(|| field_id.to_string()),
+                (TypeDeclKind::Struct(fields) | TypeDeclKind::Union(fields), None) => fields
+                    [field_id]
+                    .name
+                    .clone()
+                    .unwrap_or_else(|| field_id.to_string()),
+                _ => field_id.to_string(),
             },
-            Some(translated) =>
-            // The definition may not be available yet, especially if we
-            // print-debug while translating the crate
-            {
-                match translated.type_decls.get(def_id) {
-                    None => match opt_variant_id {
-                        None => format!(
-                            "{}::{}",
-                            def_id.to_pretty_string(),
-                            field_id.to_pretty_string()
-                        ),
-                        Some(variant_id) => format!(
-                            "{}::{}::{}",
-                            def_id.to_pretty_string(),
-                            variant_id.to_pretty_string(),
-                            field_id.to_pretty_string()
-                        ),
-                    },
-                    Some(gen_def) => match (&gen_def.kind, opt_variant_id) {
-                        (TypeDeclKind::Enum(variants), Some(variant_id)) => {
-                            let field = variants
-                                .get(variant_id)
-                                .unwrap()
-                                .fields
-                                .get(field_id)
-                                .unwrap();
-                            match &field.name {
-                                Some(name) => name.clone(),
-                                None => field_id.to_string(),
-                            }
-                        }
-                        (TypeDeclKind::Struct(fields) | TypeDeclKind::Union(fields), None) => {
-                            let field = fields.get(field_id).unwrap();
-                            match &field.name {
-                                Some(name) => name.clone(),
-                                None => field_id.to_string(),
-                            }
-                        }
-                        _ => format!("__unknown_field"),
-                    },
-                }
-            }
         }
     }
 }

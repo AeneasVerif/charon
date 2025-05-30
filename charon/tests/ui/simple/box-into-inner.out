@@ -48,7 +48,7 @@ fn test_crate::into_inner(@1: alloc::boxed::Box<alloc::string::String>[core::mar
     storage_live(@12)
     storage_live(@13)
     storage_live(_x@2)
-    @6 := transmute<core::ptr::non_null::NonNull<alloc::string::String>, *const alloc::string::String>(copy ((*(b@1)).__unknown_field))
+    @6 := transmute<core::ptr::non_null::NonNull<alloc::string::String>, *const alloc::string::String>(copy ((*(b@1)).0))
     @7 := cast<*const alloc::string::String, *const ()>(copy (@6))
     @8 := transmute<*const (), usize>(copy (@7))
     @9 := size_of<alloc::string::String>
@@ -61,7 +61,7 @@ fn test_crate::into_inner(@1: alloc::boxed::Box<alloc::string::String>[core::mar
     @0 := ()
     drop _x@2
     storage_dead(_x@2)
-    @5 := transmute<core::ptr::non_null::NonNull<alloc::string::String>, *const alloc::string::String>(copy ((*(b@1)).__unknown_field))
+    @5 := transmute<core::ptr::non_null::NonNull<alloc::string::String>, *const alloc::string::String>(copy ((*(b@1)).0))
     @3 := &mut b@1
     @4 := alloc::boxed::{impl core::ops::drop::Drop for alloc::boxed::Box<T>[@TraitClause0]}#8::drop<'_, alloc::string::String, alloc::alloc::Global>[core::marker::Sized<alloc::alloc::Global>](move (@3))
     @0 := ()

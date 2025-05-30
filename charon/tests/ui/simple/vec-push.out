@@ -79,7 +79,7 @@ where
     storage_live(self@6)
     self@6 := &(*(self@1)).buf
     storage_live(self@12)
-    self@12 := &((*(self@1)).buf).__unknown_field
+    self@12 := &((*(self@1)).buf).0
     storage_live(elem_size@13)
     elem_size@13 := size_of<T>
     switch move (elem_size@13) {
@@ -89,7 +89,7 @@ where
         },
         _ => {
             storage_live(self@14)
-            self@14 := copy ((((*(self@1)).buf).__unknown_field).__unknown_field)
+            self@14 := copy ((((*(self@1)).buf).0).1)
             @5 := transmute<core::num::niche_types::UsizeNoHighBit, usize>(copy (self@14))
             storage_dead(self@14)
         },
@@ -111,7 +111,7 @@ where
     storage_dead(@4)
     storage_live(self@10)
     storage_live(@15)
-    @15 := copy (((((*(self@1)).buf).__unknown_field).__unknown_field).__unknown_field)
+    @15 := copy (((((*(self@1)).buf).0).0).0)
     self@10 := transmute<core::ptr::non_null::NonNull<u8>, *mut T>(copy (@15))
     storage_dead(@15)
     end@9 := copy (self@10) offset copy (len@3)

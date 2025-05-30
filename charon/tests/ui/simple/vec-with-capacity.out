@@ -70,7 +70,7 @@ where
     @5 := core::mem::SizedTypeProperties::LAYOUT<T>
     @3 := alloc::raw_vec::{alloc::raw_vec::RawVecInner<A>[@TraitClause0]}#4::with_capacity_in<alloc::alloc::Global>[core::marker::Sized<alloc::alloc::Global>](move (capacity@1), move (@4), move (@5))
     @6 := core::marker::PhantomData {  }
-    @2 := alloc::raw_vec::RawVec { __unknown_field: move (@3), __unknown_field: move (@6) }
+    @2 := alloc::raw_vec::RawVec { 0: move (@3), 1: move (@6) }
     storage_dead(@3)
     @0 := alloc::vec::Vec { buf: move (@2), len: const (0 : usize) }
     storage_dead(@2)
