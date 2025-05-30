@@ -350,10 +350,12 @@ type ByteCount = u64;
 
 /// Simplified layout of a single variant.
 ///
-/// Maps fields, that are not shared between all variants to their offset within the layout.
+/// Maps fields to their offset within the layout.
 #[derive(Debug, Default, Clone, PartialEq, Eq, Serialize, Deserialize, Drive, DriveMut)]
 pub struct VariantLayout {
-    pub field_offsets: Vector<FieldId, ByteCount>,
+    /// The offset of each field. `None` if it is not knowable at this point, either
+    /// because of generics or dynamically-sized types.
+    pub field_offsets: Vector<FieldId, Option<ByteCount>>,
 }
 
 /// Simplified type layout information.
@@ -369,11 +371,14 @@ pub struct Layout {
     /// The alignment, in bytes.
     #[drive(skip)]
     pub align: Option<ByteCount>,
-    /// The discriminant's offset, if any. Only relevant for
-    /// types with multiple variants and if the discriminant is
-    /// not in a niche.
+    /// The discriminant's offset, if any. Only relevant for types with multiple
+    /// variants.
     #[drive(skip)]
     pub discriminant_offset: Option<ByteCount>,
+    /// Whether the type is uninhabited.
+    /// This is required to differentiate ZSTs and uninhabited types.
+    #[drive(skip)]
+    pub uninhabited: bool,
     /// Map from [VariantId] to the corresponding field layouts.
     /// Structs are modeled as being the only variant, uninhabited types
     /// as being without any variants, etc.
@@ -402,8 +407,9 @@ pub struct TypeDecl {
     pub generics: GenericParams,
     /// The type kind: enum, struct, or opaque.
     pub kind: TypeDeclKind,
-    /// The layout of the type.
-    pub layout: Layout,
+    /// The layout of the type. Information may be partial because of generics or dynamically-
+    /// sized types. If rustc cannot compute a layout, it is `None`.
+    pub layout: Option<Layout>,
 }
 
 generate_index_type!(VariantId, "Variant");
