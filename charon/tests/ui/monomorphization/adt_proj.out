@@ -6,7 +6,8 @@ pub enum core::result::Result::<u32, u32> {
   Err(u32),
 }
 
-fn test_crate::main()
+// Full name: test_crate::main
+fn main()
 {
     let @0: (); // return
     let res@1: core::result::Result::<u32, u32>; // local
@@ -31,8 +32,9 @@ fn test_crate::main()
     return
 }
 
+// Full name: core::marker::Sized
 #[lang_item("sized")]
-pub trait core::marker::Sized<Self>
+pub trait Sized<Self>
 
 
 

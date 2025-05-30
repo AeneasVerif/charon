@@ -1,34 +1,39 @@
 # Final LLBC before serialization:
 
+// Full name: core::marker::Sized
 #[lang_item("sized")]
-pub trait core::marker::Sized<Self>
+pub trait Sized<Self>
 
+// Full name: core::clone::Clone
 #[lang_item("clone")]
-pub trait core::clone::Clone<Self>
+pub trait Clone<Self>
 {
-    parent_clause0 : [@TraitClause0]: core::marker::Sized<Self>
-    fn clone<'_0> = core::clone::Clone::clone<'_0_0, Self>
+    parent_clause0 : [@TraitClause0]: Sized<Self>
+    fn clone<'_0> = clone<'_0_0, Self>
 }
 
+// Full name: core::borrow::Borrow
 #[lang_item("Borrow")]
-pub trait core::borrow::Borrow<Self, Borrowed>
+pub trait Borrow<Self, Borrowed>
 {
     fn borrow<'_0> = core::borrow::Borrow::borrow<'_0_0, Self, Borrowed>
 }
 
+// Full name: alloc::borrow::ToOwned
 #[lang_item("ToOwned")]
-pub trait alloc::borrow::ToOwned<Self>
+pub trait ToOwned<Self>
 {
-    parent_clause0 : [@TraitClause0]: core::marker::Sized<Self::Owned>
-    parent_clause1 : [@TraitClause1]: core::borrow::Borrow<Self::Owned, Self>
+    parent_clause0 : [@TraitClause0]: Sized<Self::Owned>
+    parent_clause1 : [@TraitClause1]: Borrow<Self::Owned, Self>
     type Owned
     fn to_owned<'_0> = alloc::borrow::ToOwned::to_owned<'_0_0, Self>
 }
 
+// Full name: alloc::borrow::Cow
 #[lang_item("Cow")]
-pub enum alloc::borrow::Cow<'a, B>
+pub enum Cow<'a, B>
   where
-      [@TraitClause0]: alloc::borrow::ToOwned<B>,
+      [@TraitClause0]: ToOwned<B>,
       B : 'a,
       B : 'a,
 {
@@ -36,55 +41,63 @@ pub enum alloc::borrow::Cow<'a, B>
   Owned(@TraitClause0::Owned),
 }
 
+// Full name: alloc::vec::Vec
 #[lang_item("Vec")]
-pub opaque type alloc::vec::Vec<T, A>
+pub opaque type Vec<T, A>
   where
-      [@TraitClause0]: core::marker::Sized<T>,
-      [@TraitClause1]: core::marker::Sized<A>,
+      [@TraitClause0]: Sized<T>,
+      [@TraitClause1]: Sized<A>,
 
+// Full name: alloc::alloc::Global
 #[lang_item("global_alloc_ty")]
-pub struct alloc::alloc::Global {}
+pub struct Global {}
 
-pub fn alloc::slice::{impl core::borrow::Borrow<Slice<T>> for alloc::vec::Vec<T, A>[@TraitClause0, @TraitClause1]}#5::borrow<'_0, T, A>(@1: &'_0 (alloc::vec::Vec<T, A>[@TraitClause0, @TraitClause1])) -> &'_0 (Slice<T>)
+// Full name: alloc::slice::{impl Borrow<Slice<T>> for Vec<T, A>[@TraitClause0, @TraitClause1]}#5::borrow
+pub fn {impl Borrow<Slice<T>> for Vec<T, A>[@TraitClause0, @TraitClause1]}#5::borrow<'_0, T, A>(@1: &'_0 (Vec<T, A>[@TraitClause0, @TraitClause1])) -> &'_0 (Slice<T>)
 where
-    [@TraitClause0]: core::marker::Sized<T>,
-    [@TraitClause1]: core::marker::Sized<A>,
+    [@TraitClause0]: Sized<T>,
+    [@TraitClause1]: Sized<A>,
 
-impl alloc::slice::{impl core::borrow::Borrow<Slice<T>> for alloc::vec::Vec<T, A>[@TraitClause0, @TraitClause1]}#5<T, A> : core::borrow::Borrow<alloc::vec::Vec<T, A>[@TraitClause0, @TraitClause1], Slice<T>>
+// Full name: alloc::slice::{impl Borrow<Slice<T>> for Vec<T, A>[@TraitClause0, @TraitClause1]}#5
+impl<T, A> Borrow<Slice<T>> for Vec<T, A>[@TraitClause0, @TraitClause1]
 where
-    [@TraitClause0]: core::marker::Sized<T>,
-    [@TraitClause1]: core::marker::Sized<A>,
+    [@TraitClause0]: Sized<T>,
+    [@TraitClause1]: Sized<A>,
 {
-    fn borrow<'_0> = alloc::slice::{impl core::borrow::Borrow<Slice<T>> for alloc::vec::Vec<T, A>[@TraitClause0, @TraitClause1]}#5::borrow<'_0_0, T, A>[@TraitClause0, @TraitClause1]
+    fn borrow<'_0> = {impl Borrow<Slice<T>> for Vec<T, A>[@TraitClause0, @TraitClause1]}#5::borrow<'_0_0, T, A>[@TraitClause0, @TraitClause1]
 }
 
-pub fn alloc::slice::{impl alloc::borrow::ToOwned for Slice<T>}#9::to_owned<'_0, T>(@1: &'_0 (Slice<T>)) -> alloc::vec::Vec<T, alloc::alloc::Global>[@TraitClause0, core::marker::Sized<alloc::alloc::Global>]
+// Full name: alloc::slice::{impl ToOwned for Slice<T>}#9::to_owned
+pub fn {impl ToOwned for Slice<T>}#9::to_owned<'_0, T>(@1: &'_0 (Slice<T>)) -> Vec<T, Global>[@TraitClause0, Sized<Global>]
 where
-    [@TraitClause0]: core::marker::Sized<T>,
-    [@TraitClause1]: core::clone::Clone<T>,
+    [@TraitClause0]: Sized<T>,
+    [@TraitClause1]: Clone<T>,
 
-impl alloc::slice::{impl alloc::borrow::ToOwned for Slice<T>}#9<T> : alloc::borrow::ToOwned<Slice<T>>
+// Full name: alloc::slice::{impl ToOwned for Slice<T>}#9
+impl<T> ToOwned for Slice<T>
 where
-    [@TraitClause0]: core::marker::Sized<T>,
-    [@TraitClause1]: core::clone::Clone<T>,
+    [@TraitClause0]: Sized<T>,
+    [@TraitClause1]: Clone<T>,
 {
-    parent_clause0 = core::marker::Sized<alloc::vec::Vec<T, alloc::alloc::Global>[@TraitClause0, core::marker::Sized<alloc::alloc::Global>]>
-    parent_clause1 = alloc::slice::{impl core::borrow::Borrow<Slice<T>> for alloc::vec::Vec<T, A>[@TraitClause0, @TraitClause1]}#5<T, alloc::alloc::Global>[@TraitClause0, core::marker::Sized<alloc::alloc::Global>]
-    type Owned = alloc::vec::Vec<T, alloc::alloc::Global>[@TraitClause0, core::marker::Sized<alloc::alloc::Global>]
-    fn to_owned<'_0> = alloc::slice::{impl alloc::borrow::ToOwned for Slice<T>}#9::to_owned<'_0_0, T>[@TraitClause0, @TraitClause1]
+    parent_clause0 = Sized<Vec<T, Global>[@TraitClause0, Sized<Global>]>
+    parent_clause1 = {impl Borrow<Slice<T>> for Vec<T, A>[@TraitClause0, @TraitClause1]}#5<T, Global>[@TraitClause0, Sized<Global>]
+    type Owned = Vec<T, Global>[@TraitClause0, Sized<Global>]
+    fn to_owned<'_0> = {impl ToOwned for Slice<T>}#9::to_owned<'_0_0, T>[@TraitClause0, @TraitClause1]
 }
 
-struct test_crate::Generic2<'a, T>
+// Full name: test_crate::Generic2
+struct Generic2<'a, T>
   where
-      [@TraitClause0]: core::marker::Sized<T>,
-      [@TraitClause1]: core::clone::Clone<T>,
+      [@TraitClause0]: Sized<T>,
+      [@TraitClause1]: Clone<T>,
       T : 'a,
 {
-  alloc::borrow::Cow<'a, Slice<T>>[alloc::slice::{impl alloc::borrow::ToOwned for Slice<T>}#9<T>[@TraitClause0, @TraitClause1]],
+  Cow<'a, Slice<T>>[{impl ToOwned for Slice<T>}#9<T>[@TraitClause0, @TraitClause1]],
 }
 
+// Full name: core::clone::Clone::clone
 #[lang_item("clone_fn")]
-pub fn core::clone::Clone::clone<'_0, Self>(@1: &'_0 (Self)) -> Self
+pub fn clone<'_0, Self>(@1: &'_0 (Self)) -> Self
 
 #[lang_item("to_owned_method")]
 pub fn alloc::borrow::ToOwned::to_owned<'_0, Self>(@1: &'_0 (Self)) -> Self::Owned

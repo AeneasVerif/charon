@@ -1,12 +1,14 @@
 # Final LLBC before serialization:
 
+// Full name: alloc::string::String
 #[lang_item("String")]
-pub opaque type alloc::string::String
+pub opaque type String
 
-fn test_crate::use_string(@1: alloc::string::String)
+// Full name: test_crate::use_string
+fn use_string(@1: String)
 {
     let @0: (); // return
-    let @1: alloc::string::String; // arg #1
+    let @1: String; // arg #1
 
     @0 := ()
     drop @1
@@ -14,16 +16,18 @@ fn test_crate::use_string(@1: alloc::string::String)
     return
 }
 
+// Full name: alloc::string::{String}::new
 #[lang_item("string_new")]
-pub fn alloc::string::{alloc::string::String}::new() -> alloc::string::String
+pub fn new() -> String
 
-fn test_crate::main()
+// Full name: test_crate::main
+fn main()
 {
     let @0: (); // return
-    let s@1: alloc::string::String; // local
+    let s@1: String; // local
     let @2: bool; // anonymous local
     let @3: (); // anonymous local
-    let @4: alloc::string::String; // anonymous local
+    let @4: String; // anonymous local
     let @5: bool; // anonymous local
 
     storage_live(@3)
@@ -32,7 +36,7 @@ fn test_crate::main()
     @5 := const (false)
     storage_live(s@1)
     @5 := const (true)
-    s@1 := alloc::string::{alloc::string::String}::new()
+    s@1 := new()
     storage_live(@2)
     @2 := const (false)
     if move (@2) {
@@ -40,7 +44,7 @@ fn test_crate::main()
         storage_live(@4)
         @5 := const (false)
         @4 := move (s@1)
-        @3 := test_crate::use_string(move (@4))
+        @3 := use_string(move (@4))
         storage_dead(@4)
         storage_dead(@3)
         @0 := ()

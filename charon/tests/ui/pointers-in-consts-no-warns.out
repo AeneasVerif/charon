@@ -14,7 +14,8 @@ fn test_crate::DISGUISED_INT() -> *const ()
 
 const test_crate::DISGUISED_INT: *const () = test_crate::DISGUISED_INT()
 
-pub fn test_crate::bar()
+// Full name: test_crate::bar
+pub fn bar()
 {
     let @0: (); // return
     let @1: *const (); // anonymous local

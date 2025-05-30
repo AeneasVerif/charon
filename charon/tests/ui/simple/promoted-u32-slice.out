@@ -1,6 +1,7 @@
 # Final LLBC before serialization:
 
-pub fn test_crate::foo() -> &'static (Slice<u32>)
+// Full name: test_crate::foo
+pub fn foo() -> &'static (Slice<u32>)
 {
     let @0: &'_ (Slice<u32>); // return
     let @1: &'_ (Array<u32, 4 : usize>); // anonymous local

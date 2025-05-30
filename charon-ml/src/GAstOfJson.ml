@@ -91,6 +91,7 @@ and gtranslated_crate_of_json
           ("options", options);
           ("all_ids", _);
           ("item_names", _);
+          ("short_names", _);
           ("files", files);
           ("type_decls", types);
           ("fun_decls", functions);

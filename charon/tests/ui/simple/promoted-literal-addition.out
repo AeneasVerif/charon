@@ -1,6 +1,7 @@
 # Final LLBC before serialization:
 
-fn test_crate::two() -> &'static (u32)
+// Full name: test_crate::two
+fn two() -> &'static (u32)
 {
     let @0: &'_ (u32); // return
     let @1: &'_ (u32); // anonymous local

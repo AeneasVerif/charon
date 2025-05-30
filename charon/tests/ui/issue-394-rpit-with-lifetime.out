@@ -1,99 +1,112 @@
 # Final LLBC before serialization:
 
+// Full name: core::marker::Sized
 #[lang_item("sized")]
-pub trait core::marker::Sized<Self>
+pub trait Sized<Self>
 
-pub opaque type core::iter::sources::from_fn::FromFn<F>
+// Full name: core::iter::sources::from_fn::FromFn
+pub opaque type FromFn<F>
   where
-      [@TraitClause0]: core::marker::Sized<F>,
+      [@TraitClause0]: Sized<F>,
 
-struct test_crate::sparse_transitions::closure<'a> {}
+// Full name: test_crate::sparse_transitions::closure
+struct closure<'a> {}
 
+// Full name: core::marker::Tuple
 #[lang_item("tuple_trait")]
-pub trait core::marker::Tuple<Self>
+pub trait Tuple<Self>
 
+// Full name: core::ops::function::FnOnce
 #[lang_item("fn_once")]
-pub trait core::ops::function::FnOnce<Self, Args>
+pub trait FnOnce<Self, Args>
 {
-    parent_clause0 : [@TraitClause0]: core::marker::Sized<Args>
-    parent_clause1 : [@TraitClause1]: core::marker::Tuple<Args>
-    parent_clause2 : [@TraitClause2]: core::marker::Sized<Self::Output>
+    parent_clause0 : [@TraitClause0]: Sized<Args>
+    parent_clause1 : [@TraitClause1]: Tuple<Args>
+    parent_clause2 : [@TraitClause2]: Sized<Self::Output>
     type Output
     fn call_once = core::ops::function::FnOnce::call_once<Self, Args>
 }
 
+// Full name: core::ops::function::FnMut
 #[lang_item("fn_mut")]
-pub trait core::ops::function::FnMut<Self, Args>
+pub trait FnMut<Self, Args>
 {
-    parent_clause0 : [@TraitClause0]: core::ops::function::FnOnce<Self, Args>
-    parent_clause1 : [@TraitClause1]: core::marker::Sized<Args>
-    parent_clause2 : [@TraitClause2]: core::marker::Tuple<Args>
+    parent_clause0 : [@TraitClause0]: FnOnce<Self, Args>
+    parent_clause1 : [@TraitClause1]: Sized<Args>
+    parent_clause2 : [@TraitClause2]: Tuple<Args>
     fn call_mut<'_0> = core::ops::function::FnMut::call_mut<'_0_0, Self, Args>
 }
 
+// Full name: core::option::Option
 #[lang_item("Option")]
-pub enum core::option::Option<T>
+pub enum Option<T>
   where
-      [@TraitClause0]: core::marker::Sized<T>,
+      [@TraitClause0]: Sized<T>,
 {
   None,
   Some(T),
 }
 
-pub fn core::iter::sources::from_fn::from_fn<T, F>(@1: F) -> core::iter::sources::from_fn::FromFn<F>[@TraitClause1]
+// Full name: core::iter::sources::from_fn::from_fn
+pub fn from_fn<T, F>(@1: F) -> FromFn<F>[@TraitClause1]
 where
-    [@TraitClause0]: core::marker::Sized<T>,
-    [@TraitClause1]: core::marker::Sized<F>,
-    [@TraitClause2]: core::ops::function::FnMut<F, ()>,
-    @TraitClause2::parent_clause0::Output = core::option::Option<T>[@TraitClause0],
+    [@TraitClause0]: Sized<T>,
+    [@TraitClause1]: Sized<F>,
+    [@TraitClause2]: FnMut<F, ()>,
+    @TraitClause2::parent_clause0::Output = Option<T>[@TraitClause0],
 
-fn test_crate::sparse_transitions::{impl core::ops::function::FnMut<()> for test_crate::sparse_transitions::closure<'_>}::call_mut<'a, '_1>(@1: &'_1 mut (test_crate::sparse_transitions::closure<'_>), @2: ()) -> core::option::Option<u8>[core::marker::Sized<u8>]
+// Full name: test_crate::sparse_transitions::{impl FnMut<()> for closure<'_>}::call_mut
+fn {impl FnMut<()> for closure<'_>}::call_mut<'a, '_1>(@1: &'_1 mut (closure<'_>), @2: ()) -> Option<u8>[Sized<u8>]
 {
-    let @0: core::option::Option<u8>[core::marker::Sized<u8>]; // return
-    let @1: &'_ mut (test_crate::sparse_transitions::closure<'_>); // arg #1
+    let @0: Option<u8>[Sized<u8>]; // return
+    let @1: &'_ mut (closure<'_>); // arg #1
     let tupled_args@2: (); // arg #2
 
-    @0 := core::option::Option::None {  }
+    @0 := Option::None {  }
     return
 }
 
-fn test_crate::sparse_transitions::{impl core::ops::function::FnOnce<()> for test_crate::sparse_transitions::closure<'_>}::call_once<'a>(@1: test_crate::sparse_transitions::closure<'_>, @2: ()) -> core::option::Option<u8>[core::marker::Sized<u8>]
+// Full name: test_crate::sparse_transitions::{impl FnOnce<()> for closure<'_>}::call_once
+fn {impl FnOnce<()> for closure<'_>}::call_once<'a>(@1: closure<'_>, @2: ()) -> Option<u8>[Sized<u8>]
 {
-    let @0: core::option::Option<u8>[core::marker::Sized<u8>]; // return
-    let @1: test_crate::sparse_transitions::closure<'_>; // arg #1
+    let @0: Option<u8>[Sized<u8>]; // return
+    let @1: closure<'_>; // arg #1
     let @2: (); // arg #2
-    let @3: &'_ mut (test_crate::sparse_transitions::closure<'_>); // anonymous local
+    let @3: &'_ mut (closure<'_>); // anonymous local
 
     storage_live(@3)
     @3 := &mut @1
-    @0 := test_crate::sparse_transitions::{impl core::ops::function::FnMut<()> for test_crate::sparse_transitions::closure<'_>}::call_mut<'_, '_>(move (@3), move (@2))
+    @0 := {impl FnMut<()> for closure<'_>}::call_mut<'_, '_>(move (@3), move (@2))
     drop @1
     return
 }
 
-impl test_crate::sparse_transitions::{impl core::ops::function::FnOnce<()> for test_crate::sparse_transitions::closure<'_>}<'a> : core::ops::function::FnOnce<test_crate::sparse_transitions::closure<'_>, ()> {
-    parent_clause0 = core::marker::Sized<()>
-    parent_clause1 = core::marker::Tuple<()>
-    parent_clause2 = core::marker::Sized<core::option::Option<u8>[core::marker::Sized<u8>]>
-    type Output = core::option::Option<u8>[core::marker::Sized<u8>]
-    fn call_once = test_crate::sparse_transitions::{impl core::ops::function::FnOnce<()> for test_crate::sparse_transitions::closure<'_>}::call_once<'a>
+// Full name: test_crate::sparse_transitions::{impl FnOnce<()> for closure<'_>}
+impl<'a> FnOnce<()> for closure<'_> {
+    parent_clause0 = Sized<()>
+    parent_clause1 = Tuple<()>
+    parent_clause2 = Sized<Option<u8>[Sized<u8>]>
+    type Output = Option<u8>[Sized<u8>]
+    fn call_once = {impl FnOnce<()> for closure<'_>}::call_once<'a>
 }
 
-impl test_crate::sparse_transitions::{impl core::ops::function::FnMut<()> for test_crate::sparse_transitions::closure<'_>}<'a> : core::ops::function::FnMut<test_crate::sparse_transitions::closure<'_>, ()> {
-    parent_clause0 = test_crate::sparse_transitions::{impl core::ops::function::FnOnce<()> for test_crate::sparse_transitions::closure<'_>}<'_>
-    parent_clause1 = core::marker::Sized<()>
-    parent_clause2 = core::marker::Tuple<()>
-    fn call_mut<'_0> = test_crate::sparse_transitions::{impl core::ops::function::FnMut<()> for test_crate::sparse_transitions::closure<'_>}::call_mut<'a, '_0_0>
+// Full name: test_crate::sparse_transitions::{impl FnMut<()> for closure<'_>}
+impl<'a> FnMut<()> for closure<'_> {
+    parent_clause0 = {impl FnOnce<()> for closure<'_>}<'_>
+    parent_clause1 = Sized<()>
+    parent_clause2 = Tuple<()>
+    fn call_mut<'_0> = {impl FnMut<()> for closure<'_>}::call_mut<'a, '_0_0>
 }
 
-fn test_crate::sparse_transitions<'a>() -> core::iter::sources::from_fn::FromFn<test_crate::sparse_transitions::closure<'a>>[core::marker::Sized<test_crate::sparse_transitions::closure<'_>>]
+// Full name: test_crate::sparse_transitions
+fn sparse_transitions<'a>() -> FromFn<closure<'a>>[Sized<closure<'_>>]
 {
-    let @0: core::iter::sources::from_fn::FromFn<test_crate::sparse_transitions::closure<'_>>[core::marker::Sized<test_crate::sparse_transitions::closure<'_>>]; // return
-    let @1: test_crate::sparse_transitions::closure<'_>; // anonymous local
+    let @0: FromFn<closure<'_>>[Sized<closure<'_>>]; // return
+    let @1: closure<'_>; // anonymous local
 
     storage_live(@1)
-    @1 := test_crate::sparse_transitions::closure {  }
-    @0 := core::iter::sources::from_fn::from_fn<u8, test_crate::sparse_transitions::closure<'_>>[core::marker::Sized<u8>, core::marker::Sized<test_crate::sparse_transitions::closure<'_>>, test_crate::sparse_transitions::{impl core::ops::function::FnMut<()> for test_crate::sparse_transitions::closure<'_>}<'_>](move (@1))
+    @1 := closure {  }
+    @0 := from_fn<u8, closure<'_>>[Sized<u8>, Sized<closure<'_>>, {impl FnMut<()> for closure<'_>}<'_>](move (@1))
     storage_dead(@1)
     return
 }

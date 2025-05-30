@@ -14,7 +14,8 @@ fn test_crate::SLICE() -> Array<(), 4 : usize>
 
 static test_crate::SLICE: Array<(), 4 : usize> = test_crate::SLICE()
 
-fn test_crate::four() -> usize
+// Full name: test_crate::four
+fn four() -> usize
 {
     let @0: usize; // return
 

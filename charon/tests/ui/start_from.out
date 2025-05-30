@@ -18,43 +18,52 @@ fn test_crate::module2::do_translate()
     return
 }
 
+// Full name: core::marker::Sized
 #[lang_item("sized")]
-pub trait core::marker::Sized<Self>
+pub trait Sized<Self>
 
+// Full name: core::iter::sources::once::Once
 #[lang_item("IterOnce")]
-pub opaque type core::iter::sources::once::Once<T>
+pub opaque type Once<T>
   where
-      [@TraitClause0]: core::marker::Sized<T>,
+      [@TraitClause0]: Sized<T>,
 
-pub fn core::iter::sources::once::once<T>(@1: T) -> core::iter::sources::once::Once<T>[@TraitClause0]
+// Full name: core::iter::sources::once::once
+pub fn once<T>(@1: T) -> Once<T>[@TraitClause0]
 where
-    [@TraitClause0]: core::marker::Sized<T>,
+    [@TraitClause0]: Sized<T>,
 
+// Full name: core::clone::Clone
 #[lang_item("clone")]
-pub trait core::clone::Clone<Self>
+pub trait Clone<Self>
 {
-    parent_clause0 : [@TraitClause0]: core::marker::Sized<Self>
-    fn clone<'_0> = core::clone::Clone::clone<'_0_0, Self>
-    fn clone_from<'_0, '_1> = core::clone::Clone::clone_from<'_0_0, '_0_1, Self>
+    parent_clause0 : [@TraitClause0]: Sized<Self>
+    fn clone<'_0> = clone<'_0_0, Self>
+    fn clone_from<'_0, '_1> = clone_from<'_0_0, '_0_1, Self>
 }
 
-pub fn core::clone::Clone::clone_from<'_0, '_1, Self>(@1: &'_0 mut (Self), @2: &'_1 (Self))
+// Full name: core::clone::Clone::clone_from
+pub fn clone_from<'_0, '_1, Self>(@1: &'_0 mut (Self), @2: &'_1 (Self))
 
+// Full name: core::slice::iter::Iter
 #[lang_item("SliceIter")]
-pub opaque type core::slice::iter::Iter<'a, T>
+pub opaque type Iter<'a, T>
   where
-      [@TraitClause0]: core::marker::Sized<T>,
+      [@TraitClause0]: Sized<T>,
       T : 'a,
       T : 'a,
 
-pub fn core::slice::iter::{core::slice::iter::Iter<'a, T>[@TraitClause0]}#6::as_slice<'a, '_1, T>(@1: &'_1 (core::slice::iter::Iter<'a, T>[@TraitClause0])) -> &'a (Slice<T>)
+// Full name: core::slice::iter::{Iter<'a, T>[@TraitClause0]}#6::as_slice
+pub fn as_slice<'a, '_1, T>(@1: &'_1 (Iter<'a, T>[@TraitClause0])) -> &'a (Slice<T>)
 where
-    [@TraitClause0]: core::marker::Sized<T>,
+    [@TraitClause0]: Sized<T>,
 
-pub fn core::num::{u32}#8::wrapping_add(@1: u32, @2: u32) -> u32
+// Full name: core::num::{u32}#8::wrapping_add
+pub fn wrapping_add(@1: u32, @2: u32) -> u32
 
+// Full name: core::clone::Clone::clone
 #[lang_item("clone_fn")]
-pub fn core::clone::Clone::clone<'_0, Self>(@1: &'_0 (Self)) -> Self
+pub fn clone<'_0, Self>(@1: &'_0 (Self)) -> Self
 
 
 

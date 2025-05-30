@@ -1,20 +1,23 @@
 # Final LLBC before serialization:
 
+// Full name: core::cmp::Ordering
 #[lang_item("Ordering")]
-pub enum core::cmp::Ordering {
+pub enum Ordering {
   Less,
   Equal,
   Greater,
 }
 
-pub fn core::cmp::impls::{impl core::cmp::Ord for i32}#77::cmp<'_0, '_1>(@1: &'_0 (i32), @2: &'_1 (i32)) -> core::cmp::Ordering
+// Full name: core::cmp::impls::{impl Ord for i32}#77::cmp
+pub fn {impl Ord for i32}#77::cmp<'_0, '_1>(@1: &'_0 (i32), @2: &'_1 (i32)) -> Ordering
 
-fn test_crate::main()
+// Full name: test_crate::main
+fn main()
 {
     let @0: (); // return
     let x@1: i32; // local
     let y@2: i32; // local
-    let @3: core::cmp::Ordering; // anonymous local
+    let @3: Ordering; // anonymous local
     let @4: &'_ (i32); // anonymous local
     let @5: &'_ (i32); // anonymous local
     let @6: &'_ (i32); // anonymous local
@@ -30,7 +33,7 @@ fn test_crate::main()
     storage_live(@6)
     @6 := &y@2
     @5 := &*(@6)
-    @3 := core::cmp::impls::{impl core::cmp::Ord for i32}#77::cmp<'_, '_>(move (@4), move (@5))
+    @3 := {impl Ord for i32}#77::cmp<'_, '_>(move (@4), move (@5))
     storage_dead(@5)
     storage_dead(@4)
     storage_dead(@6)
@@ -42,64 +45,74 @@ fn test_crate::main()
     return
 }
 
+// Full name: core::cmp::PartialEq
 #[lang_item("eq")]
-pub trait core::cmp::PartialEq<Self, Rhs>
+pub trait PartialEq<Self, Rhs>
 {
     fn eq<'_0, '_1> = core::cmp::PartialEq::eq<'_0_0, '_0_1, Self, Rhs>
 }
 
+// Full name: core::cmp::Eq
 #[lang_item("Eq")]
-pub trait core::cmp::Eq<Self>
+pub trait Eq<Self>
 {
-    parent_clause0 : [@TraitClause0]: core::cmp::PartialEq<Self, Self>
+    parent_clause0 : [@TraitClause0]: PartialEq<Self, Self>
 }
 
+// Full name: core::marker::Sized
 #[lang_item("sized")]
-pub trait core::marker::Sized<Self>
+pub trait Sized<Self>
 
+// Full name: core::option::Option
 #[lang_item("Option")]
-pub enum core::option::Option<T>
+pub enum Option<T>
   where
-      [@TraitClause0]: core::marker::Sized<T>,
+      [@TraitClause0]: Sized<T>,
 {
   None,
   Some(T),
 }
 
+// Full name: core::cmp::PartialOrd
 #[lang_item("partial_ord")]
-pub trait core::cmp::PartialOrd<Self, Rhs>
+pub trait PartialOrd<Self, Rhs>
 {
-    parent_clause0 : [@TraitClause0]: core::cmp::PartialEq<Self, Rhs>
+    parent_clause0 : [@TraitClause0]: PartialEq<Self, Rhs>
     fn partial_cmp<'_0, '_1> = core::cmp::PartialOrd::partial_cmp<'_0_0, '_0_1, Self, Rhs>
 }
 
+// Full name: core::cmp::Ord
 #[lang_item("Ord")]
-pub trait core::cmp::Ord<Self>
+pub trait Ord<Self>
 {
-    parent_clause0 : [@TraitClause0]: core::cmp::Eq<Self>
-    parent_clause1 : [@TraitClause1]: core::cmp::PartialOrd<Self, Self>
+    parent_clause0 : [@TraitClause0]: Eq<Self>
+    parent_clause1 : [@TraitClause1]: PartialOrd<Self, Self>
     fn cmp<'_0, '_1> = core::cmp::Ord::cmp<'_0_0, '_0_1, Self>
 }
 
 #[lang_item("ord_cmp_method")]
-pub fn core::cmp::Ord::cmp<'_0, '_1, Self>(@1: &'_0 (Self), @2: &'_1 (Self)) -> core::cmp::Ordering
+pub fn core::cmp::Ord::cmp<'_0, '_1, Self>(@1: &'_0 (Self), @2: &'_1 (Self)) -> Ordering
 
-pub fn core::cmp::impls::{impl core::cmp::PartialEq<i32> for i32}#30::eq<'_0, '_1>(@1: &'_0 (i32), @2: &'_1 (i32)) -> bool
+// Full name: core::cmp::impls::{impl PartialEq<i32> for i32}#30::eq
+pub fn {impl PartialEq<i32> for i32}#30::eq<'_0, '_1>(@1: &'_0 (i32), @2: &'_1 (i32)) -> bool
 
-impl core::cmp::impls::{impl core::cmp::PartialEq<i32> for i32}#30 : core::cmp::PartialEq<i32, i32> {
-    fn eq<'_0, '_1> = core::cmp::impls::{impl core::cmp::PartialEq<i32> for i32}#30::eq<'_0_0, '_0_1>
+// Full name: core::cmp::impls::{impl PartialEq<i32> for i32}#30
+impl PartialEq<i32> for i32 {
+    fn eq<'_0, '_1> = {impl PartialEq<i32> for i32}#30::eq<'_0_0, '_0_1>
 }
 
-impl core::cmp::impls::{impl core::cmp::Eq for i32}#49 : core::cmp::Eq<i32> {
-    parent_clause0 = core::cmp::impls::{impl core::cmp::PartialEq<i32> for i32}#30
+// Full name: core::cmp::impls::{impl Eq for i32}#49
+impl Eq for i32 {
+    parent_clause0 = {impl PartialEq<i32> for i32}#30
 }
 
-pub fn core::cmp::impls::{impl core::cmp::PartialOrd<i32> for i32}#76::partial_cmp<'_0, '_1>(@1: &'_0 (i32), @2: &'_1 (i32)) -> core::option::Option<core::cmp::Ordering>[core::marker::Sized<core::cmp::Ordering>]
+// Full name: core::cmp::impls::{impl PartialOrd<i32> for i32}#76::partial_cmp
+pub fn {impl PartialOrd<i32> for i32}#76::partial_cmp<'_0, '_1>(@1: &'_0 (i32), @2: &'_1 (i32)) -> Option<Ordering>[Sized<Ordering>]
 {
-    let @0: core::option::Option<core::cmp::Ordering>[core::marker::Sized<core::cmp::Ordering>]; // return
+    let @0: Option<Ordering>[Sized<Ordering>]; // return
     let self@1: &'_ (i32); // arg #1
     let other@2: &'_ (i32); // arg #2
-    let @3: core::cmp::Ordering; // anonymous local
+    let @3: Ordering; // anonymous local
     let @4: i32; // anonymous local
     let @5: i32; // anonymous local
 
@@ -111,27 +124,29 @@ pub fn core::cmp::impls::{impl core::cmp::PartialOrd<i32> for i32}#76::partial_c
     @3 := move (@4) cmp move (@5)
     storage_dead(@5)
     storage_dead(@4)
-    @0 := core::option::Option::Some { 0: move (@3) }
+    @0 := Option::Some { 0: move (@3) }
     storage_dead(@3)
     return
 }
 
-impl core::cmp::impls::{impl core::cmp::PartialOrd<i32> for i32}#76 : core::cmp::PartialOrd<i32, i32> {
-    parent_clause0 = core::cmp::impls::{impl core::cmp::PartialEq<i32> for i32}#30
-    fn partial_cmp<'_0, '_1> = core::cmp::impls::{impl core::cmp::PartialOrd<i32> for i32}#76::partial_cmp<'_0_0, '_0_1>
+// Full name: core::cmp::impls::{impl PartialOrd<i32> for i32}#76
+impl PartialOrd<i32> for i32 {
+    parent_clause0 = {impl PartialEq<i32> for i32}#30
+    fn partial_cmp<'_0, '_1> = {impl PartialOrd<i32> for i32}#76::partial_cmp<'_0_0, '_0_1>
 }
 
-impl core::cmp::impls::{impl core::cmp::Ord for i32}#77 : core::cmp::Ord<i32> {
-    parent_clause0 = core::cmp::impls::{impl core::cmp::Eq for i32}#49
-    parent_clause1 = core::cmp::impls::{impl core::cmp::PartialOrd<i32> for i32}#76
-    fn cmp<'_0, '_1> = core::cmp::impls::{impl core::cmp::Ord for i32}#77::cmp<'_0_0, '_0_1>
+// Full name: core::cmp::impls::{impl Ord for i32}#77
+impl Ord for i32 {
+    parent_clause0 = {impl Eq for i32}#49
+    parent_clause1 = {impl PartialOrd<i32> for i32}#76
+    fn cmp<'_0, '_1> = {impl Ord for i32}#77::cmp<'_0_0, '_0_1>
 }
 
 #[lang_item("cmp_partialeq_eq")]
 pub fn core::cmp::PartialEq::eq<'_0, '_1, Self, Rhs>(@1: &'_0 (Self), @2: &'_1 (Rhs)) -> bool
 
 #[lang_item("cmp_partialord_cmp")]
-pub fn core::cmp::PartialOrd::partial_cmp<'_0, '_1, Self, Rhs>(@1: &'_0 (Self), @2: &'_1 (Rhs)) -> core::option::Option<core::cmp::Ordering>[core::marker::Sized<core::cmp::Ordering>]
+pub fn core::cmp::PartialOrd::partial_cmp<'_0, '_1, Self, Rhs>(@1: &'_0 (Self), @2: &'_1 (Rhs)) -> Option<Ordering>[Sized<Ordering>]
 
 
 

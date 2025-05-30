@@ -1,32 +1,36 @@
 # Final LLBC before serialization:
 
-struct test_crate::Rng {}
+// Full name: test_crate::Rng
+struct Rng {}
 
-fn test_crate::{test_crate::Rng}::next_u64<'_0>(@1: &'_0 mut (test_crate::Rng))
+// Full name: test_crate::{Rng}::next_u64
+fn next_u64<'_0>(@1: &'_0 mut (Rng))
 {
     let @0: (); // return
-    let self@1: &'_ mut (test_crate::Rng); // arg #1
+    let self@1: &'_ mut (Rng); // arg #1
 
     @0 := ()
     @0 := ()
     return
 }
 
-struct test_crate::new::closure<'_0> {
-  &'_0 mut (test_crate::Rng),
+// Full name: test_crate::new::closure
+struct closure<'_0> {
+  &'_0 mut (Rng),
 }
 
-fn test_crate::new<'_0>(@1: &'_0 mut (test_crate::Rng))
+// Full name: test_crate::new
+fn new<'_0>(@1: &'_0 mut (Rng))
 {
     let @0: (); // return
-    let rng@1: &'_ mut (test_crate::Rng); // arg #1
-    let @2: test_crate::new::closure<'_>; // anonymous local
-    let @3: &'_ mut (test_crate::Rng); // anonymous local
+    let rng@1: &'_ mut (Rng); // arg #1
+    let @2: closure<'_>; // anonymous local
+    let @3: &'_ mut (Rng); // anonymous local
 
     storage_live(@2)
     storage_live(@3)
     @3 := &uniq *(rng@1)
-    @2 := test_crate::new::closure { 0: move (@3) }
+    @2 := closure { 0: move (@3) }
     storage_dead(@3)
     storage_dead(@2)
     @0 := ()

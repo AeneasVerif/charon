@@ -1,54 +1,63 @@
 # Final LLBC before serialization:
 
-pub enum core::panicking::AssertKind {
+// Full name: core::panicking::AssertKind
+pub enum AssertKind {
   Eq,
   Ne,
   Match,
 }
 
+// Full name: core::marker::Sized
 #[lang_item("sized")]
-pub trait core::marker::Sized<Self>
+pub trait Sized<Self>
 
+// Full name: core::option::Option
 #[lang_item("Option")]
-pub enum core::option::Option<T>
+pub enum Option<T>
   where
-      [@TraitClause0]: core::marker::Sized<T>,
+      [@TraitClause0]: Sized<T>,
 {
   None,
   Some(T),
 }
 
+// Full name: core::fmt::Arguments
 #[lang_item("format_arguments")]
-pub opaque type core::fmt::Arguments<'a>
+pub opaque type Arguments<'a>
   where
       'a : 'a,
 
-struct test_cargo_dependencies::main::silly_incr::closure {}
+// Full name: test_cargo_dependencies::main::silly_incr::closure
+struct closure {}
 
+// Full name: core::marker::Tuple
 #[lang_item("tuple_trait")]
-pub trait core::marker::Tuple<Self>
+pub trait Tuple<Self>
 
+// Full name: core::ops::function::FnOnce
 #[lang_item("fn_once")]
-pub trait core::ops::function::FnOnce<Self, Args>
+pub trait FnOnce<Self, Args>
 {
-    parent_clause0 : [@TraitClause0]: core::marker::Sized<Args>
-    parent_clause1 : [@TraitClause1]: core::marker::Tuple<Args>
-    parent_clause2 : [@TraitClause2]: core::marker::Sized<Self::Output>
+    parent_clause0 : [@TraitClause0]: Sized<Args>
+    parent_clause1 : [@TraitClause1]: Tuple<Args>
+    parent_clause2 : [@TraitClause2]: Sized<Self::Output>
     type Output
     fn call_once = core::ops::function::FnOnce::call_once<Self, Args>
 }
 
-pub fn take_mut::take<'_0, T, F>(@1: &'_0 mut (T), @2: F)
+// Full name: take_mut::take
+pub fn take<'_0, T, F>(@1: &'_0 mut (T), @2: F)
 where
-    [@TraitClause0]: core::marker::Sized<T>,
-    [@TraitClause1]: core::marker::Sized<F>,
-    [@TraitClause2]: core::ops::function::FnOnce<F, (T)>,
+    [@TraitClause0]: Sized<T>,
+    [@TraitClause1]: Sized<F>,
+    [@TraitClause2]: FnOnce<F, (T)>,
     @TraitClause2::Output = T,
 
-fn test_cargo_dependencies::main::silly_incr::{impl core::ops::function::FnOnce<(u32)> for test_cargo_dependencies::main::silly_incr::closure}::call_once(@1: test_cargo_dependencies::main::silly_incr::closure, @2: (u32)) -> u32
+// Full name: test_cargo_dependencies::main::silly_incr::{impl FnOnce<(u32)> for closure}::call_once
+fn {impl FnOnce<(u32)> for closure}::call_once(@1: closure, @2: (u32)) -> u32
 {
     let @0: u32; // return
-    let @1: test_cargo_dependencies::main::silly_incr::closure; // arg #1
+    let @1: closure; // arg #1
     let tupled_args@2: (u32); // arg #2
     let y@3: u32; // local
     let @4: u32; // anonymous local
@@ -62,28 +71,30 @@ fn test_cargo_dependencies::main::silly_incr::{impl core::ops::function::FnOnce<
     return
 }
 
-impl test_cargo_dependencies::main::silly_incr::{impl core::ops::function::FnOnce<(u32)> for test_cargo_dependencies::main::silly_incr::closure} : core::ops::function::FnOnce<test_cargo_dependencies::main::silly_incr::closure, (u32)> {
-    parent_clause0 = core::marker::Sized<(u32)>
-    parent_clause1 = core::marker::Tuple<(u32)>
-    parent_clause2 = core::marker::Sized<u32>
+// Full name: test_cargo_dependencies::main::silly_incr::{impl FnOnce<(u32)> for closure}
+impl FnOnce<(u32)> for closure {
+    parent_clause0 = Sized<(u32)>
+    parent_clause1 = Tuple<(u32)>
+    parent_clause2 = Sized<u32>
     type Output = u32
-    fn call_once = test_cargo_dependencies::main::silly_incr::{impl core::ops::function::FnOnce<(u32)> for test_cargo_dependencies::main::silly_incr::closure}::call_once
+    fn call_once = {impl FnOnce<(u32)> for closure}::call_once
 }
 
-fn test_cargo_dependencies::main::silly_incr<'_0>(@1: &'_0 mut (u32))
+// Full name: test_cargo_dependencies::main::silly_incr
+fn silly_incr<'_0>(@1: &'_0 mut (u32))
 {
     let @0: (); // return
     let x@1: &'_ mut (u32); // arg #1
     let @2: (); // anonymous local
     let @3: &'_ mut (u32); // anonymous local
-    let @4: test_cargo_dependencies::main::silly_incr::closure; // anonymous local
+    let @4: closure; // anonymous local
 
     storage_live(@2)
     storage_live(@3)
     @3 := &two-phase-mut *(x@1)
     storage_live(@4)
-    @4 := test_cargo_dependencies::main::silly_incr::closure {  }
-    @2 := take_mut::take<'_, u32, test_cargo_dependencies::main::silly_incr::closure>[core::marker::Sized<u32>, core::marker::Sized<test_cargo_dependencies::main::silly_incr::closure>, test_cargo_dependencies::main::silly_incr::{impl core::ops::function::FnOnce<(u32)> for test_cargo_dependencies::main::silly_incr::closure}](move (@3), move (@4))
+    @4 := closure {  }
+    @2 := take<'_, u32, closure>[Sized<u32>, Sized<closure>, {impl FnOnce<(u32)> for closure}](move (@3), move (@4))
     storage_dead(@4)
     storage_dead(@3)
     storage_dead(@2)
@@ -92,7 +103,8 @@ fn test_cargo_dependencies::main::silly_incr<'_0>(@1: &'_0 mut (u32))
     return
 }
 
-fn test_cargo_dependencies::main()
+// Full name: test_cargo_dependencies::main
+fn main()
 {
     let @0: (); // return
     let x@1: u32; // local
@@ -109,13 +121,13 @@ fn test_cargo_dependencies::main()
     let @12: bool; // anonymous local
     let @13: u32; // anonymous local
     let @14: u32; // anonymous local
-    let kind@15: core::panicking::AssertKind; // local
-    let @16: core::panicking::AssertKind; // anonymous local
+    let kind@15: AssertKind; // local
+    let @16: AssertKind; // anonymous local
     let @17: &'_ (u32); // anonymous local
     let @18: &'_ (u32); // anonymous local
     let @19: &'_ (u32); // anonymous local
     let @20: &'_ (u32); // anonymous local
-    let @21: core::option::Option<core::fmt::Arguments<'_>>[core::marker::Sized<core::fmt::Arguments<'_>>]; // anonymous local
+    let @21: Option<Arguments<'_>>[Sized<Arguments<'_>>]; // anonymous local
 
     storage_live(kind@15)
     storage_live(@16)
@@ -131,7 +143,7 @@ fn test_cargo_dependencies::main()
     storage_live(@4)
     @4 := &mut x@1
     @3 := &two-phase-mut *(@4)
-    @2 := test_cargo_dependencies::main::silly_incr<'_>(move (@3))
+    @2 := silly_incr<'_>(move (@3))
     storage_dead(@3)
     storage_dead(@4)
     storage_dead(@2)
@@ -162,7 +174,7 @@ fn test_cargo_dependencies::main()
         storage_dead(@14)
         storage_dead(@13)
         storage_live(kind@15)
-        kind@15 := core::panicking::AssertKind::Eq {  }
+        kind@15 := AssertKind::Eq {  }
         storage_live(@16)
         @16 := move (kind@15)
         storage_live(@17)
@@ -174,7 +186,7 @@ fn test_cargo_dependencies::main()
         @20 := &*(right_val@11)
         @19 := &*(@20)
         storage_live(@21)
-        @21 := core::option::Option::None {  }
+        @21 := Option::None {  }
         panic(core::panicking::assert_failed)
     }
     storage_dead(@14)

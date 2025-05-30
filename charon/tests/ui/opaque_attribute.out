@@ -1,11 +1,13 @@
 # Final LLBC before serialization:
 
-pub trait test_crate::BoolTrait<Self>
+// Full name: test_crate::BoolTrait
+pub trait BoolTrait<Self>
 {
     fn get_bool<'_0> = test_crate::BoolTrait::get_bool<'_0_0, Self>
 }
 
-pub fn test_crate::{impl test_crate::BoolTrait for bool}::get_bool<'_0>(@1: &'_0 (bool)) -> bool
+// Full name: test_crate::{impl BoolTrait for bool}::get_bool
+pub fn {impl BoolTrait for bool}::get_bool<'_0>(@1: &'_0 (bool)) -> bool
 {
     let @0: bool; // return
     let self@1: &'_ (bool); // arg #1
@@ -14,17 +16,20 @@ pub fn test_crate::{impl test_crate::BoolTrait for bool}::get_bool<'_0>(@1: &'_0
     return
 }
 
-impl test_crate::{impl test_crate::BoolTrait for bool} : test_crate::BoolTrait<bool> {
-    fn get_bool<'_0> = test_crate::{impl test_crate::BoolTrait for bool}::get_bool<'_0_0>
+// Full name: test_crate::{impl BoolTrait for bool}
+impl BoolTrait for bool {
+    fn get_bool<'_0> = {impl BoolTrait for bool}::get_bool<'_0_0>
 }
 
+// Full name: core::marker::Sized
 #[lang_item("sized")]
-pub trait core::marker::Sized<Self>
+pub trait Sized<Self>
 
+// Full name: core::option::Option
 #[lang_item("Option")]
-pub enum core::option::Option<T>
+pub enum Option<T>
   where
-      [@TraitClause0]: core::marker::Sized<T>,
+      [@TraitClause0]: Sized<T>,
 {
   None,
   Some(T),
@@ -32,22 +37,23 @@ pub enum core::option::Option<T>
 
 pub fn test_crate::BoolTrait::get_bool<'_0, Self>(@1: &'_0 (Self)) -> bool
 
-pub fn test_crate::{impl test_crate::BoolTrait for core::option::Option<T>[@TraitClause0]}#1::get_bool<'_0, T>(@1: &'_0 (core::option::Option<T>[@TraitClause0])) -> bool
+// Full name: test_crate::{impl BoolTrait for Option<T>[@TraitClause0]}#1::get_bool
+pub fn {impl BoolTrait for Option<T>[@TraitClause0]}#1::get_bool<'_0, T>(@1: &'_0 (Option<T>[@TraitClause0])) -> bool
 where
-    [@TraitClause0]: core::marker::Sized<T>,
-    [@TraitClause1]: test_crate::BoolTrait<T>,
+    [@TraitClause0]: Sized<T>,
+    [@TraitClause1]: BoolTrait<T>,
 {
     let @0: bool; // return
-    let self@1: &'_ (core::option::Option<T>[@TraitClause0]); // arg #1
+    let self@1: &'_ (Option<T>[@TraitClause0]); // arg #1
     let x@2: &'_ (T); // local
     let @3: &'_ (T); // anonymous local
 
     storage_live(x@2)
     storage_live(@3)
     match *(self@1) {
-        core::option::Option::None => {
+        Option::None => {
         },
-        core::option::Option::Some => {
+        Option::Some => {
             storage_live(x@2)
             x@2 := &(*(self@1) as variant @1).0
             storage_live(@3)
@@ -62,28 +68,33 @@ where
     return
 }
 
-impl test_crate::{impl test_crate::BoolTrait for core::option::Option<T>[@TraitClause0]}#1<T> : test_crate::BoolTrait<core::option::Option<T>[@TraitClause0]>
+// Full name: test_crate::{impl BoolTrait for Option<T>[@TraitClause0]}#1
+impl<T> BoolTrait for Option<T>[@TraitClause0]
 where
-    [@TraitClause0]: core::marker::Sized<T>,
-    [@TraitClause1]: test_crate::BoolTrait<T>,
+    [@TraitClause0]: Sized<T>,
+    [@TraitClause1]: BoolTrait<T>,
 {
-    fn get_bool<'_0> = test_crate::{impl test_crate::BoolTrait for core::option::Option<T>[@TraitClause0]}#1::get_bool<'_0_0, T>[@TraitClause0, @TraitClause1]
+    fn get_bool<'_0> = {impl BoolTrait for Option<T>[@TraitClause0]}#1::get_bool<'_0_0, T>[@TraitClause0, @TraitClause1]
 }
 
-pub fn test_crate::test_bool_trait_option<T>(@1: core::option::Option<T>[@TraitClause0]) -> bool
+// Full name: test_crate::test_bool_trait_option
+pub fn test_bool_trait_option<T>(@1: Option<T>[@TraitClause0]) -> bool
 where
-    [@TraitClause0]: core::marker::Sized<T>,
-    [@TraitClause1]: test_crate::BoolTrait<T>,
+    [@TraitClause0]: Sized<T>,
+    [@TraitClause1]: BoolTrait<T>,
 
-opaque type test_crate::Test
+// Full name: test_crate::Test
+opaque type Test
 
 fn test_crate::SIX_SIX_SIX() -> u32
 
 const test_crate::SIX_SIX_SIX: u32 = test_crate::SIX_SIX_SIX()
 
-opaque type test_crate::Test2
+// Full name: test_crate::Test2
+opaque type Test2
 
-pub fn test_crate::opaque::fn_in_opaque_module() -> u32
+// Full name: test_crate::opaque::fn_in_opaque_module
+pub fn fn_in_opaque_module() -> u32
 {
     let @0: u32; // return
 
@@ -91,13 +102,14 @@ pub fn test_crate::opaque::fn_in_opaque_module() -> u32
     return
 }
 
-fn test_crate::call_fn_in_opaque_module()
+// Full name: test_crate::call_fn_in_opaque_module
+fn call_fn_in_opaque_module()
 {
     let @0: (); // return
     let @1: u32; // anonymous local
 
     storage_live(@1)
-    @1 := test_crate::opaque::fn_in_opaque_module()
+    @1 := fn_in_opaque_module()
     storage_dead(@1)
     @0 := ()
     @0 := ()

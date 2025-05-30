@@ -86,6 +86,7 @@ pub trait AstFormatter:
     where
         Self: 'a;
 
+    fn get_crate(&self) -> Option<&TranslatedCrate>;
     fn set_generics<'a>(&'a self, generics: &'a GenericParams) -> Self::Reborrow<'a>;
     fn set_locals<'a>(&'a self, locals: &'a Locals) -> Self::Reborrow<'a>;
     fn push_binder<'a>(&'a self, new_params: Cow<'a, GenericParams>) -> Self::Reborrow<'a>;
@@ -106,6 +107,9 @@ impl<'c> AstFormatter for FmtCtx<'c> {
     where
         Self: 'a;
 
+    fn get_crate(&self) -> Option<&TranslatedCrate> {
+        self.translated
+    }
     fn set_generics<'a>(&'a self, generics: &'a GenericParams) -> Self::Reborrow<'a> {
         FmtCtx {
             translated: self.translated.as_deref(),
@@ -171,7 +175,7 @@ impl<'a> FmtCtx<'a> {
         };
         translated
             .get_item(id)
-            .ok_or_else(|| translated.item_name(id))
+            .ok_or_else(|| translated.item_short_name(id))
     }
 
     /// Print the whole definition.
@@ -224,7 +228,7 @@ impl<'a> Formatter<AnyTransId> for FmtCtx<'a> {
     fn format_object(&self, id: AnyTransId) -> String {
         match self
             .translated
-            .and_then(|translated| translated.item_name(id))
+            .and_then(|translated| translated.item_short_name(id))
         {
             None => id.to_string(),
             Some(name) => name.fmt_with_ctx(self),

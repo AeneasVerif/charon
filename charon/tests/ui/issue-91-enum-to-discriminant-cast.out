@@ -1,67 +1,76 @@
 # Final LLBC before serialization:
 
-enum test_crate::Foo {
+// Full name: test_crate::Foo
+enum Foo {
   A,
   B,
 }
 
+// Full name: core::marker::Sized
 #[lang_item("sized")]
-pub trait core::marker::Sized<Self>
+pub trait Sized<Self>
 
+// Full name: core::clone::Clone
 #[lang_item("clone")]
-pub trait core::clone::Clone<Self>
+pub trait Clone<Self>
 {
-    parent_clause0 : [@TraitClause0]: core::marker::Sized<Self>
+    parent_clause0 : [@TraitClause0]: Sized<Self>
     fn clone<'_0> = core::clone::Clone::clone<'_0_0, Self>
 }
 
+// Full name: core::marker::Copy
 #[lang_item("copy")]
-pub trait core::marker::Copy<Self>
+pub trait Copy<Self>
 {
-    parent_clause0 : [@TraitClause0]: core::clone::Clone<Self>
+    parent_clause0 : [@TraitClause0]: Clone<Self>
 }
 
-pub fn test_crate::{impl core::clone::Clone for test_crate::Foo}#1::clone<'_0>(@1: &'_0 (test_crate::Foo)) -> test_crate::Foo
+// Full name: test_crate::{impl Clone for Foo}#1::clone
+pub fn {impl Clone for Foo}#1::clone<'_0>(@1: &'_0 (Foo)) -> Foo
 {
-    let @0: test_crate::Foo; // return
-    let self@1: &'_ (test_crate::Foo); // arg #1
+    let @0: Foo; // return
+    let self@1: &'_ (Foo); // arg #1
 
     @0 := copy (*(self@1))
     return
 }
 
-impl test_crate::{impl core::clone::Clone for test_crate::Foo}#1 : core::clone::Clone<test_crate::Foo> {
-    parent_clause0 = core::marker::Sized<test_crate::Foo>
-    fn clone<'_0> = test_crate::{impl core::clone::Clone for test_crate::Foo}#1::clone<'_0_0>
+// Full name: test_crate::{impl Clone for Foo}#1
+impl Clone for Foo {
+    parent_clause0 = Sized<Foo>
+    fn clone<'_0> = {impl Clone for Foo}#1::clone<'_0_0>
 }
 
-impl test_crate::{impl core::marker::Copy for test_crate::Foo} : core::marker::Copy<test_crate::Foo> {
-    parent_clause0 = test_crate::{impl core::clone::Clone for test_crate::Foo}#1
+// Full name: test_crate::{impl Copy for Foo}
+impl Copy for Foo {
+    parent_clause0 = {impl Clone for Foo}#1
 }
 
-enum test_crate::Ordering {
+// Full name: test_crate::Ordering
+enum Ordering {
   Less,
   Equal,
   Greater,
 }
 
-fn test_crate::main()
+// Full name: test_crate::main
+fn main()
 {
     let @0: (); // return
-    let x@1: test_crate::Foo; // local
+    let x@1: Foo; // local
     let @2: isize; // anonymous local
-    let @3: test_crate::Foo; // anonymous local
+    let @3: Foo; // anonymous local
     let @4: isize; // anonymous local
     let @5: u8; // anonymous local
     let @6: bool; // anonymous local
     let @7: u8; // anonymous local
-    let @8: test_crate::Foo; // anonymous local
+    let @8: Foo; // anonymous local
     let @9: isize; // anonymous local
     let @10: u8; // anonymous local
     let @11: bool; // anonymous local
-    let x@12: test_crate::Ordering; // local
+    let x@12: Ordering; // local
     let @13: isize; // anonymous local
-    let @14: test_crate::Ordering; // anonymous local
+    let @14: Ordering; // anonymous local
     let @15: isize; // anonymous local
     let @16: u8; // anonymous local
     let @17: bool; // anonymous local
@@ -80,15 +89,15 @@ fn test_crate::main()
     storage_live(@18)
     storage_live(@19)
     storage_live(x@1)
-    x@1 := test_crate::Foo::A {  }
+    x@1 := Foo::A {  }
     storage_live(@2)
     storage_live(@3)
     @3 := copy (x@1)
     match @3 {
-        test_crate::Foo::A => {
+        Foo::A => {
             @4 := const (0 : isize)
         },
-        test_crate::Foo::B => {
+        Foo::B => {
             @4 := const (1 : isize)
         },
     }
@@ -102,10 +111,10 @@ fn test_crate::main()
     storage_live(@8)
     @8 := copy (x@1)
     match @8 {
-        test_crate::Foo::A => {
+        Foo::A => {
             @9 := const (0 : isize)
         },
-        test_crate::Foo::B => {
+        Foo::B => {
             @9 := const (1 : isize)
         },
     }
@@ -116,18 +125,18 @@ fn test_crate::main()
     storage_dead(@8)
     storage_dead(@7)
     storage_live(x@12)
-    x@12 := test_crate::Ordering::Greater {  }
+    x@12 := Ordering::Greater {  }
     storage_live(@13)
     storage_live(@14)
     @14 := move (x@12)
     match @14 {
-        test_crate::Ordering::Less => {
+        Ordering::Less => {
             @15 := const (-1 : isize)
         },
-        test_crate::Ordering::Equal => {
+        Ordering::Equal => {
             @15 := const (0 : isize)
         },
-        test_crate::Ordering::Greater => {
+        Ordering::Greater => {
             @15 := const (1 : isize)
         },
     }

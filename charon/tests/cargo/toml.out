@@ -1,31 +1,34 @@
 # Final LLBC before serialization:
 
+// Full name: core::marker::Sized
 #[lang_item("sized")]
-pub trait core::marker::Sized<Self>
+pub trait Sized<Self>
 
+// Full name: core::option::Option
 #[lang_item("Option")]
-pub enum core::option::Option<T>
+pub enum Option<T>
   where
-      [@TraitClause0]: core::marker::Sized<T>,
+      [@TraitClause0]: Sized<T>,
 {
   None,
   Some(T),
 }
 
-pub fn core::option::{core::option::Option<T>[@TraitClause0]}::is_some<'_0, T>(@1: &'_0 (core::option::Option<T>[@TraitClause0])) -> bool
+// Full name: core::option::{Option<T>[@TraitClause0]}::is_some
+pub fn is_some<'_0, T>(@1: &'_0 (Option<T>[@TraitClause0])) -> bool
 where
-    [@TraitClause0]: core::marker::Sized<T>,
+    [@TraitClause0]: Sized<T>,
 {
     let @0: bool; // return
-    let self@1: &'_ (core::option::Option<T>[@TraitClause0]); // arg #1
+    let self@1: &'_ (Option<T>[@TraitClause0]); // arg #1
     let @2: isize; // anonymous local
 
     storage_live(@2)
     match *(self@1) {
-        core::option::Option::None => {
+        Option::None => {
             @2 := const (0 : isize)
         },
-        core::option::Option::Some => {
+        Option::Some => {
             @2 := const (1 : isize)
         },
     }
@@ -33,19 +36,20 @@ where
     return
 }
 
-fn test_cargo_toml::main()
+// Full name: test_cargo_toml::main
+fn main()
 {
     let @0: (); // return
     let @1: bool; // anonymous local
-    let @2: &'_ (core::option::Option<bool>[core::marker::Sized<bool>]); // anonymous local
-    let @3: core::option::Option<bool>[core::marker::Sized<bool>]; // anonymous local
+    let @2: &'_ (Option<bool>[Sized<bool>]); // anonymous local
+    let @3: Option<bool>[Sized<bool>]; // anonymous local
 
     storage_live(@1)
     storage_live(@2)
     storage_live(@3)
-    @3 := core::option::Option::Some { 0: const (false) }
+    @3 := Option::Some { 0: const (false) }
     @2 := &@3
-    @1 := core::option::{core::option::Option<T>[@TraitClause0]}::is_some<'_, bool>[core::marker::Sized<bool>](move (@2))
+    @1 := is_some<'_, bool>[Sized<bool>](move (@2))
     storage_dead(@2)
     storage_dead(@3)
     storage_dead(@1)

@@ -1,42 +1,48 @@
 # Final LLBC before serialization:
 
+// Full name: core::marker::Sized
 #[lang_item("sized")]
-pub trait core::marker::Sized<Self>
+pub trait Sized<Self>
 
-pub trait test_crate::FromResidual<Self, R>
+// Full name: test_crate::FromResidual
+pub trait FromResidual<Self, R>
 {
-    parent_clause0 : [@TraitClause0]: core::marker::Sized<R>
+    parent_clause0 : [@TraitClause0]: Sized<R>
 }
 
-pub trait test_crate::Try<Self>
+// Full name: test_crate::Try
+pub trait Try<Self>
 {
-    parent_clause0 : [@TraitClause0]: test_crate::FromResidual<Self, ()>
-    parent_clause1 : [@TraitClause1]: core::marker::Sized<Self::Residual>
+    parent_clause0 : [@TraitClause0]: FromResidual<Self, ()>
+    parent_clause1 : [@TraitClause1]: Sized<Self::Residual>
     type Residual
 }
 
+// Full name: core::option::Option
 #[lang_item("Option")]
-pub enum core::option::Option<T>
+pub enum Option<T>
   where
-      [@TraitClause0]: core::marker::Sized<T>,
+      [@TraitClause0]: Sized<T>,
 {
   None,
   Some(T),
 }
 
-impl test_crate::{impl test_crate::FromResidual<()> for core::option::Option<T>[@TraitClause0]}#1<T> : test_crate::FromResidual<core::option::Option<T>[@TraitClause0], ()>
+// Full name: test_crate::{impl FromResidual<()> for Option<T>[@TraitClause0]}#1
+impl<T> FromResidual<()> for Option<T>[@TraitClause0]
 where
-    [@TraitClause0]: core::marker::Sized<T>,
+    [@TraitClause0]: Sized<T>,
 {
-    parent_clause0 = core::marker::Sized<()>
+    parent_clause0 = Sized<()>
 }
 
-impl test_crate::{impl test_crate::Try for core::option::Option<T>[@TraitClause0]}<T> : test_crate::Try<core::option::Option<T>[@TraitClause0]>
+// Full name: test_crate::{impl Try for Option<T>[@TraitClause0]}
+impl<T> Try for Option<T>[@TraitClause0]
 where
-    [@TraitClause0]: core::marker::Sized<T>,
+    [@TraitClause0]: Sized<T>,
 {
-    parent_clause0 = test_crate::{impl test_crate::FromResidual<()> for core::option::Option<T>[@TraitClause0]}#1<T>[@TraitClause0]
-    parent_clause1 = core::marker::Sized<()>
+    parent_clause0 = {impl FromResidual<()> for Option<T>[@TraitClause0]}#1<T>[@TraitClause0]
+    parent_clause1 = Sized<()>
     type Residual = ()
 }
 

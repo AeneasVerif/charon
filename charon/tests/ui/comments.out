@@ -1,6 +1,7 @@
 # Final LLBC before serialization:
 
-fn test_crate::function_call(@1: u32)
+// Full name: test_crate::function_call
+fn function_call(@1: u32)
 {
     let @0: (); // return
     let @1: u32; // arg #1
@@ -10,15 +11,18 @@ fn test_crate::function_call(@1: u32)
     return
 }
 
+// Full name: core::marker::Sized
 #[lang_item("sized")]
-pub trait core::marker::Sized<Self>
+pub trait Sized<Self>
 
+// Full name: core::slice::{Slice<T>}::len
 #[lang_item("slice_len_fn")]
-pub fn core::slice::{Slice<T>}::len<'_0, T>(@1: &'_0 (Slice<T>)) -> usize
+pub fn len<'_0, T>(@1: &'_0 (Slice<T>)) -> usize
 where
-    [@TraitClause0]: core::marker::Sized<T>,
+    [@TraitClause0]: Sized<T>,
 
-pub fn test_crate::sum<'_0>(@1: &'_0 (Slice<u32>)) -> u32
+// Full name: test_crate::sum
+pub fn sum<'_0>(@1: &'_0 (Slice<u32>)) -> u32
 {
     let @0: u32; // return
     let s@1: &'_ (Slice<u32>); // arg #1
@@ -66,7 +70,7 @@ pub fn test_crate::sum<'_0>(@1: &'_0 (Slice<u32>)) -> u32
     @6 := copy (sum@2)
     @5 := copy (@6) + const (2 : u32)
     storage_dead(@6)
-    @4 := test_crate::function_call(move (@5))
+    @4 := function_call(move (@5))
     storage_dead(@5)
     storage_dead(@4)
     storage_live(@7)
@@ -78,7 +82,7 @@ pub fn test_crate::sum<'_0>(@1: &'_0 (Slice<u32>)) -> u32
         storage_live(@10)
         storage_live(@11)
         @11 := &*(s@1)
-        @10 := core::slice::{Slice<T>}::len<'_, u32>[core::marker::Sized<u32>](move (@11))
+        @10 := len<'_, u32>[Sized<u32>](move (@11))
         storage_dead(@11)
         @8 := move (@9) < move (@10)
         if move (@8) {
@@ -141,7 +145,7 @@ pub fn test_crate::sum<'_0>(@1: &'_0 (Slice<u32>)) -> u32
     @21 := copy (sum@2)
     @20 := copy (@21) + const (2 : u32)
     storage_dead(@21)
-    @19 := test_crate::function_call(move (@20))
+    @19 := function_call(move (@20))
     storage_dead(@20)
     storage_dead(@19)
     // Return final value
@@ -151,70 +155,79 @@ pub fn test_crate::sum<'_0>(@1: &'_0 (Slice<u32>)) -> u32
     return
 }
 
-struct test_crate::Foo {
+// Full name: test_crate::Foo
+struct Foo {
   x: u32,
   y: u32,
 }
 
+// Full name: core::default::Default
 #[lang_item("Default")]
-pub trait core::default::Default<Self>
+pub trait Default<Self>
 {
-    parent_clause0 : [@TraitClause0]: core::marker::Sized<Self>
+    parent_clause0 : [@TraitClause0]: Sized<Self>
     fn default = core::default::Default::default<Self>
 }
 
-pub fn core::default::{impl core::default::Default for u32}#7::default() -> u32
+// Full name: core::default::{impl Default for u32}#7::default
+pub fn {impl Default for u32}#7::default() -> u32
 
-pub fn test_crate::{impl core::default::Default for test_crate::Foo}::default() -> test_crate::Foo
+// Full name: test_crate::{impl Default for Foo}::default
+pub fn {impl Default for Foo}::default() -> Foo
 {
-    let @0: test_crate::Foo; // return
+    let @0: Foo; // return
     let @1: u32; // anonymous local
     let @2: u32; // anonymous local
 
     storage_live(@1)
-    @1 := core::default::{impl core::default::Default for u32}#7::default()
+    @1 := {impl Default for u32}#7::default()
     storage_live(@2)
-    @2 := core::default::{impl core::default::Default for u32}#7::default()
-    @0 := test_crate::Foo { x: move (@1), y: move (@2) }
+    @2 := {impl Default for u32}#7::default()
+    @0 := Foo { x: move (@1), y: move (@2) }
     storage_dead(@2)
     storage_dead(@1)
     return
 }
 
-impl test_crate::{impl core::default::Default for test_crate::Foo} : core::default::Default<test_crate::Foo> {
-    parent_clause0 = core::marker::Sized<test_crate::Foo>
-    fn default = test_crate::{impl core::default::Default for test_crate::Foo}::default
+// Full name: test_crate::{impl Default for Foo}
+impl Default for Foo {
+    parent_clause0 = Sized<Foo>
+    fn default = {impl Default for Foo}::default
 }
 
-struct test_crate::Bar {
+// Full name: test_crate::Bar
+struct Bar {
   x: u32,
   super_long_field_name: u32,
 }
 
-pub fn test_crate::{impl core::default::Default for test_crate::Bar}#1::default() -> test_crate::Bar
+// Full name: test_crate::{impl Default for Bar}#1::default
+pub fn {impl Default for Bar}#1::default() -> Bar
 {
-    let @0: test_crate::Bar; // return
+    let @0: Bar; // return
     let @1: u32; // anonymous local
     let @2: u32; // anonymous local
 
     storage_live(@1)
-    @1 := core::default::{impl core::default::Default for u32}#7::default()
+    @1 := {impl Default for u32}#7::default()
     storage_live(@2)
-    @2 := core::default::{impl core::default::Default for u32}#7::default()
-    @0 := test_crate::Bar { x: move (@1), super_long_field_name: move (@2) }
+    @2 := {impl Default for u32}#7::default()
+    @0 := Bar { x: move (@1), super_long_field_name: move (@2) }
     storage_dead(@2)
     storage_dead(@1)
     return
 }
 
-impl test_crate::{impl core::default::Default for test_crate::Bar}#1 : core::default::Default<test_crate::Bar> {
-    parent_clause0 = core::marker::Sized<test_crate::Bar>
-    fn default = test_crate::{impl core::default::Default for test_crate::Bar}#1::default
+// Full name: test_crate::{impl Default for Bar}#1
+impl Default for Bar {
+    parent_clause0 = Sized<Bar>
+    fn default = {impl Default for Bar}#1::default
 }
 
-fn test_crate::eat<T>(@1: T)
+// Full name: test_crate::eat
+fn eat<T>(@1: T)
 where
-    [@TraitClause0]: core::marker::Sized<T>,
+    [@TraitClause0]: Sized<T>,
 {
     let @0: (); // return
     let @1: T; // arg #1
@@ -225,41 +238,45 @@ where
     return
 }
 
-pub enum core::panicking::AssertKind {
+// Full name: core::panicking::AssertKind
+pub enum AssertKind {
   Eq,
   Ne,
   Match,
 }
 
+// Full name: core::option::Option
 #[lang_item("Option")]
-pub enum core::option::Option<T>
+pub enum Option<T>
   where
-      [@TraitClause0]: core::marker::Sized<T>,
+      [@TraitClause0]: Sized<T>,
 {
   None,
   Some(T),
 }
 
+// Full name: core::fmt::Arguments
 #[lang_item("format_arguments")]
-pub opaque type core::fmt::Arguments<'a>
+pub opaque type Arguments<'a>
   where
       'a : 'a,
 
-fn test_crate::foo()
+// Full name: test_crate::foo
+fn foo()
 {
     let @0: (); // return
     let x@1: u32; // local
     let y@2: u32; // local
-    let @3: test_crate::Foo; // anonymous local
+    let @3: Foo; // anonymous local
     let @4: (); // anonymous local
-    let @5: test_crate::Foo; // anonymous local
+    let @5: Foo; // anonymous local
     let @6: u32; // anonymous local
     let @7: u32; // anonymous local
     let x@8: u32; // local
     let super_long_field_name@9: u32; // local
-    let @10: test_crate::Bar; // anonymous local
+    let @10: Bar; // anonymous local
     let @11: (); // anonymous local
-    let @12: test_crate::Bar; // anonymous local
+    let @12: Bar; // anonymous local
     let @13: u32; // anonymous local
     let @14: u32; // anonymous local
     let a@15: Array<u32, 10 : usize>; // local
@@ -274,13 +291,13 @@ fn test_crate::foo()
     let @24: bool; // anonymous local
     let @25: u32; // anonymous local
     let @26: u32; // anonymous local
-    let kind@27: core::panicking::AssertKind; // local
-    let @28: core::panicking::AssertKind; // anonymous local
+    let kind@27: AssertKind; // local
+    let @28: AssertKind; // anonymous local
     let @29: &'_ (u32); // anonymous local
     let @30: &'_ (u32); // anonymous local
     let @31: &'_ (u32); // anonymous local
     let @32: &'_ (u32); // anonymous local
-    let @33: core::option::Option<core::fmt::Arguments<'_>>[core::marker::Sized<core::fmt::Arguments<'_>>]; // anonymous local
+    let @33: Option<Arguments<'_>>[Sized<Arguments<'_>>]; // anonymous local
     let @34: &'_ (Array<u32, 10 : usize>); // anonymous local
     let @35: &'_ (u32); // anonymous local
 
@@ -293,7 +310,7 @@ fn test_crate::foo()
     storage_live(@33)
     storage_live(@3)
     // Call `default` and destructure the result
-    @3 := test_crate::{impl core::default::Default for test_crate::Foo}::default()
+    @3 := {impl Default for Foo}::default()
     storage_live(x@1)
     x@1 := copy ((@3).x)
     storage_live(y@2)
@@ -306,16 +323,16 @@ fn test_crate::foo()
     @6 := copy (x@1)
     storage_live(@7)
     @7 := copy (y@2)
-    @5 := test_crate::Foo { x: move (@6), y: move (@7) }
+    @5 := Foo { x: move (@6), y: move (@7) }
     storage_dead(@7)
     storage_dead(@6)
-    @4 := test_crate::eat<test_crate::Foo>[core::marker::Sized<test_crate::Foo>](move (@5))
+    @4 := eat<Foo>[Sized<Foo>](move (@5))
     storage_dead(@5)
     storage_dead(@4)
     storage_live(@10)
     // Call `default` and destructure the result
     // This is the long field
-    @10 := test_crate::{impl core::default::Default for test_crate::Bar}#1::default()
+    @10 := {impl Default for Bar}#1::default()
     storage_live(x@8)
     x@8 := copy ((@10).x)
     storage_live(super_long_field_name@9)
@@ -329,10 +346,10 @@ fn test_crate::foo()
     storage_live(@14)
     // This is the long field
     @14 := copy (super_long_field_name@9)
-    @12 := test_crate::Bar { x: move (@13), super_long_field_name: move (@14) }
+    @12 := Bar { x: move (@13), super_long_field_name: move (@14) }
     storage_dead(@14)
     storage_dead(@13)
-    @11 := test_crate::eat<test_crate::Bar>[core::marker::Sized<test_crate::Bar>](move (@12))
+    @11 := eat<Bar>[Sized<Bar>](move (@12))
     storage_dead(@12)
     storage_dead(@11)
     storage_live(a@15)
@@ -372,7 +389,7 @@ fn test_crate::foo()
         storage_dead(@26)
         storage_dead(@25)
         storage_live(kind@27)
-        kind@27 := core::panicking::AssertKind::Eq {  }
+        kind@27 := AssertKind::Eq {  }
         storage_live(@28)
         @28 := move (kind@27)
         storage_live(@29)
@@ -384,7 +401,7 @@ fn test_crate::foo()
         @32 := &*(right_val@23)
         @31 := &*(@32)
         storage_live(@33)
-        @33 := core::option::Option::None {  }
+        @33 := Option::None {  }
         panic(core::panicking::assert_failed)
     }
     storage_dead(@26)
@@ -416,7 +433,8 @@ fn test_crate::CONSTANT() -> u32
 
 const test_crate::CONSTANT: u32 = test_crate::CONSTANT()
 
-pub fn test_crate::thing()
+// Full name: test_crate::thing
+pub fn thing()
 {
     let @0: (); // return
     let x@1: u32; // local
@@ -436,7 +454,7 @@ pub fn test_crate::thing()
     storage_live(@3)
     storage_live(@4)
     @4 := copy (x@1)
-    @3 := test_crate::function_call(move (@4))
+    @3 := function_call(move (@4))
     storage_dead(@4)
     storage_dead(@3)
     @0 := ()
@@ -445,7 +463,8 @@ pub fn test_crate::thing()
     return
 }
 
-pub fn test_crate::fake_read(@1: u32)
+// Full name: test_crate::fake_read
+pub fn fake_read(@1: u32)
 {
     let @0: (); // return
     let x@1: u32; // arg #1
@@ -456,7 +475,8 @@ pub fn test_crate::fake_read(@1: u32)
     return
 }
 
-fn test_crate::fool()
+// Full name: test_crate::fool
+fn fool()
 {
     let @0: (); // return
     let @1: &'_ (Str); // anonymous local
@@ -473,9 +493,10 @@ fn test_crate::fool()
 #[lang_item("default_fn")]
 pub fn core::default::Default::default<Self>() -> Self
 
-impl core::default::{impl core::default::Default for u32}#7 : core::default::Default<u32> {
-    parent_clause0 = core::marker::Sized<u32>
-    fn default = core::default::{impl core::default::Default for u32}#7::default
+// Full name: core::default::{impl Default for u32}#7
+impl Default for u32 {
+    parent_clause0 = Sized<u32>
+    fn default = {impl Default for u32}#7::default
 }
 
 

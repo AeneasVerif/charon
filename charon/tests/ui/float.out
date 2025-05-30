@@ -1,6 +1,7 @@
 # Final LLBC before serialization:
 
-fn test_crate::test_float(@1: f64) -> f64
+// Full name: test_crate::test_float
+fn test_float(@1: f64) -> f64
 {
     let @0: f64; // return
     let x@1: f64; // arg #1
@@ -9,7 +10,8 @@ fn test_crate::test_float(@1: f64) -> f64
     return
 }
 
-fn test_crate::sum_float(@1: f64, @2: f64) -> f64
+// Full name: test_crate::sum_float
+fn sum_float(@1: f64, @2: f64) -> f64
 {
     let @0: f64; // return
     let x@1: f64; // arg #1
@@ -27,7 +29,8 @@ fn test_crate::sum_float(@1: f64, @2: f64) -> f64
     return
 }
 
-fn test_crate::literal_float() -> f64
+// Full name: test_crate::literal_float
+fn literal_float() -> f64
 {
     let @0: f64; // return
     let x@1: f64; // local

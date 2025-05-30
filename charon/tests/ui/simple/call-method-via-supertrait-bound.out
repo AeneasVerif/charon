@@ -1,24 +1,29 @@
 # Final LLBC before serialization:
 
-trait test_crate::OtherTrait<Self>
+// Full name: test_crate::OtherTrait
+trait OtherTrait<Self>
 
-trait test_crate::ImpliesOtherTrait<Self>
+// Full name: test_crate::ImpliesOtherTrait
+trait ImpliesOtherTrait<Self>
 {
-    parent_clause0 : [@TraitClause0]: test_crate::OtherTrait<Self>
+    parent_clause0 : [@TraitClause0]: OtherTrait<Self>
 }
 
-trait test_crate::HasMethod<Self>
+// Full name: test_crate::HasMethod
+trait HasMethod<Self>
 {
     fn method<'_0> = test_crate::HasMethod::method<'_0_0, Self>
 }
 
+// Full name: core::marker::Sized
 #[lang_item("sized")]
-pub trait core::marker::Sized<Self>
+pub trait Sized<Self>
 
-fn test_crate::{impl test_crate::HasMethod for T}::method<'_0, T>(@1: &'_0 (T))
+// Full name: test_crate::{impl HasMethod for T}::method
+fn {impl HasMethod for T}::method<'_0, T>(@1: &'_0 (T))
 where
-    [@TraitClause0]: core::marker::Sized<T>,
-    [@TraitClause1]: test_crate::OtherTrait<T>,
+    [@TraitClause0]: Sized<T>,
+    [@TraitClause1]: OtherTrait<T>,
 {
     let @0: (); // return
     let self@1: &'_ (T); // arg #1
@@ -28,18 +33,20 @@ where
     return
 }
 
-impl test_crate::{impl test_crate::HasMethod for T}<T> : test_crate::HasMethod<T>
+// Full name: test_crate::{impl HasMethod for T}
+impl<T> HasMethod for T
 where
-    [@TraitClause0]: core::marker::Sized<T>,
-    [@TraitClause1]: test_crate::OtherTrait<T>,
+    [@TraitClause0]: Sized<T>,
+    [@TraitClause1]: OtherTrait<T>,
 {
-    fn method<'_0> = test_crate::{impl test_crate::HasMethod for T}::method<'_0_0, T>[@TraitClause0, @TraitClause1]
+    fn method<'_0> = {impl HasMethod for T}::method<'_0_0, T>[@TraitClause0, @TraitClause1]
 }
 
-fn test_crate::call_method<T>(@1: T)
+// Full name: test_crate::call_method
+fn call_method<T>(@1: T)
 where
-    [@TraitClause0]: core::marker::Sized<T>,
-    [@TraitClause1]: test_crate::ImpliesOtherTrait<T>,
+    [@TraitClause0]: Sized<T>,
+    [@TraitClause1]: ImpliesOtherTrait<T>,
 {
     let @0: (); // return
     let x@1: T; // arg #1
@@ -49,7 +56,7 @@ where
     storage_live(@2)
     storage_live(@3)
     @3 := &x@1
-    @2 := test_crate::{impl test_crate::HasMethod for T}::method<'_, T>[@TraitClause0, @TraitClause1::parent_clause0](move (@3))
+    @2 := {impl HasMethod for T}::method<'_, T>[@TraitClause0, @TraitClause1::parent_clause0](move (@3))
     storage_dead(@3)
     storage_dead(@2)
     @0 := ()

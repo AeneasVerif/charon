@@ -6,7 +6,8 @@ pub enum core::option::Option::<u8> {
   Some(u8),
 }
 
-fn test_crate::init_option()
+// Full name: test_crate::init_option
+fn init_option()
 {
     let @0: (); // return
     let a@1: Array<core::option::Option::<u8>, 6 : usize>; // local
@@ -37,8 +38,9 @@ fn test_crate::init_option()
     return
 }
 
+// Full name: core::marker::Sized
 #[lang_item("sized")]
-pub trait core::marker::Sized<Self>
+pub trait Sized<Self>
 
 
 

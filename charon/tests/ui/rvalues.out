@@ -1,6 +1,7 @@
 # Final LLBC before serialization:
 
-fn test_crate::addr_of()
+// Full name: test_crate::addr_of
+fn addr_of()
 {
     let @0: (); // return
     let x@1: u32; // local
@@ -37,7 +38,8 @@ pub fn core::f32::{f32}::MAX() -> f32
 
 pub const core::f32::{f32}::MAX: f32 = core::f32::{f32}::MAX()
 
-fn test_crate::literal_casts()
+// Full name: test_crate::literal_casts
+fn literal_casts()
 {
     let @0: (); // return
     let @1: u8; // anonymous local
@@ -81,7 +83,8 @@ fn test_crate::ptr_casts::foo()
     return
 }
 
-fn test_crate::ptr_casts()
+// Full name: test_crate::ptr_casts
+fn ptr_casts()
 {
     let @0: (); // return
     let array_ptr@1: *const Array<u32, 64 : usize>; // local
@@ -158,7 +161,8 @@ fn test_crate::ptr_casts()
     return
 }
 
-struct test_crate::fn_casts::closure {}
+// Full name: test_crate::fn_casts::closure
+struct closure {}
 
 fn test_crate::fn_casts::foo()
 {
@@ -169,7 +173,8 @@ fn test_crate::fn_casts::foo()
     return
 }
 
-unsafe fn test_crate::fn_casts::bar()
+// Full name: test_crate::fn_casts::bar
+unsafe fn bar()
 {
     let @0: (); // return
 
@@ -178,35 +183,36 @@ unsafe fn test_crate::fn_casts::bar()
     return
 }
 
-fn test_crate::fn_casts()
+// Full name: test_crate::fn_casts
+fn fn_casts()
 {
     let @0: (); // return
     let @1: fn(); // anonymous local
     let @2: fn(); // anonymous local
-    let closure@3: test_crate::fn_casts::closure; // local
+    let closure@3: closure; // local
     let @4: fn(u8); // anonymous local
-    let @5: test_crate::fn_casts::closure; // anonymous local
+    let @5: closure; // anonymous local
     let @6: fn(u8); // anonymous local
-    let @7: test_crate::fn_casts::closure; // anonymous local
+    let @7: closure; // anonymous local
 
     storage_live(@1)
     @1 := cast<fn(), fn()>(const (test_crate::fn_casts::foo))
     storage_dead(@1)
     storage_live(@2)
-    @2 := cast<fn(), fn()>(const (test_crate::fn_casts::bar))
+    @2 := cast<fn(), fn()>(const (bar))
     storage_dead(@2)
     storage_live(closure@3)
-    closure@3 := test_crate::fn_casts::closure {  }
+    closure@3 := closure {  }
     storage_live(@4)
     storage_live(@5)
     @5 := copy (closure@3)
-    @4 := cast<test_crate::fn_casts::closure, fn(u8)>(move (@5))
+    @4 := cast<closure, fn(u8)>(move (@5))
     storage_dead(@5)
     storage_dead(@4)
     storage_live(@6)
     storage_live(@7)
     @7 := copy (closure@3)
-    @6 := cast<test_crate::fn_casts::closure, fn(u8)>(move (@7))
+    @6 := cast<closure, fn(u8)>(move (@7))
     storage_dead(@7)
     storage_dead(@6)
     @0 := ()
@@ -215,21 +221,24 @@ fn test_crate::fn_casts()
     return
 }
 
+// Full name: core::marker::Sized
 #[lang_item("sized")]
-pub trait core::marker::Sized<Self>
+pub trait Sized<Self>
 
+// Full name: alloc::alloc::Global
 #[lang_item("global_alloc_ty")]
-pub struct alloc::alloc::Global {}
+pub struct Global {}
 
-fn test_crate::boxes()
+// Full name: test_crate::boxes
+fn boxes()
 {
     let @0: (); // return
-    let @1: alloc::boxed::Box<i32>[core::marker::Sized<alloc::alloc::Global>]; // anonymous local
-    let @2: alloc::boxed::Box<i32>[core::marker::Sized<alloc::alloc::Global>]; // anonymous local
+    let @1: alloc::boxed::Box<i32>[Sized<Global>]; // anonymous local
+    let @2: alloc::boxed::Box<i32>[Sized<Global>]; // anonymous local
 
     storage_live(@1)
     storage_live(@2)
-    @2 := @BoxNew<i32>[core::marker::Sized<alloc::alloc::Global>](const (42 : i32))
+    @2 := @BoxNew<i32>[Sized<Global>](const (42 : i32))
     @1 := move (@2)
     drop @2
     storage_dead(@2)
@@ -254,7 +263,8 @@ fn test_crate::STEAL() -> Array<(), 1 : usize>
 
 static test_crate::STEAL: Array<(), 1 : usize> = test_crate::STEAL()
 
-fn test_crate::transmute(@1: Array<u32, 2 : usize>) -> u64
+// Full name: test_crate::transmute
+fn transmute(@1: Array<u32, 2 : usize>) -> u64
 {
     let @0: u64; // return
     let x@1: Array<u32, 2 : usize>; // arg #1
@@ -282,26 +292,30 @@ fn test_crate::STEAL2() -> Array<(), 13 : usize>
 
 static test_crate::STEAL2: Array<(), 13 : usize> = test_crate::STEAL2()
 
+// Full name: core::mem::size_of
 #[lang_item("mem_size_of")]
-pub fn core::mem::size_of<T>() -> usize
+pub fn size_of<T>() -> usize
 where
-    [@TraitClause0]: core::marker::Sized<T>,
+    [@TraitClause0]: Sized<T>,
 
-pub fn core::mem::align_of<T>() -> usize
+// Full name: core::mem::align_of
+pub fn align_of<T>() -> usize
 where
-    [@TraitClause0]: core::marker::Sized<T>,
+    [@TraitClause0]: Sized<T>,
 
-struct test_crate::nullary_ops::Struct<T>
+// Full name: test_crate::nullary_ops::Struct
+struct Struct<T>
   where
-      [@TraitClause0]: core::marker::Sized<T>,
+      [@TraitClause0]: Sized<T>,
 {
   a: u8,
   b: T,
 }
 
-fn test_crate::nullary_ops<T>() -> usize
+// Full name: test_crate::nullary_ops
+fn nullary_ops<T>() -> usize
 where
-    [@TraitClause0]: core::marker::Sized<T>,
+    [@TraitClause0]: Sized<T>,
 {
     let @0: usize; // return
     let size@1: usize; // local
@@ -317,14 +331,14 @@ where
     let @11: usize; // anonymous local
 
     storage_live(size@1)
-    size@1 := core::mem::size_of<T>[@TraitClause0]()
+    size@1 := size_of<T>[@TraitClause0]()
     storage_live(align@2)
-    align@2 := core::mem::align_of<T>[@TraitClause0]()
+    align@2 := align_of<T>[@TraitClause0]()
     storage_live(ub@3)
     // This is `const (false)` in the MIR we get, but `true` in const evaluation.
     ub@3 := ub_checks<bool>
     storage_live(offset@4)
-    offset@4 := offset_of(?)<test_crate::nullary_ops::Struct<T>[@TraitClause0]>
+    offset@4 := offset_of(?)<Struct<T>[@TraitClause0]>
     storage_live(@5)
     storage_live(@6)
     storage_live(@7)
@@ -354,8 +368,9 @@ where
     return
 }
 
+// Full name: alloc::alloc::exchange_malloc
 #[lang_item("exchange_malloc")]
-unsafe fn alloc::alloc::exchange_malloc(@1: usize, @2: usize) -> *mut u8
+unsafe fn exchange_malloc(@1: usize, @2: usize) -> *mut u8
 
 
 

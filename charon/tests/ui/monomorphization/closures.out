@@ -1,6 +1,7 @@
 # Final LLBC before serialization:
 
-struct test_crate::Thing {}
+// Full name: test_crate::Thing
+struct Thing {}
 
 struct test_crate::main::closure<'_0> {
   &'_0 (u8),
@@ -11,7 +12,7 @@ struct test_crate::main::closure#1<'_0> {
 }
 
 struct test_crate::main::closure#2 {
-  test_crate::Thing,
+  Thing,
 }
 
 fn test_crate::apply_to_zero::<test_crate::main::closure<'_>>(@1: test_crate::main::closure<'_>) -> u8
@@ -25,7 +26,7 @@ fn test_crate::apply_to_zero::<test_crate::main::closure<'_>>(@1: test_crate::ma
     @2 := &f@1
     storage_live(@3)
     @3 := (const (0 : u8))
-    @0 := test_crate::main::{impl core::ops::function::Fn<(u8)> for test_crate::main::closure<'_0>}<'_>::call<'_>(move (@2), move (@3))
+    @0 := {impl Fn<(u8)> for test_crate::main::closure<'_0>}<'_>::call<'_>(move (@2), move (@3))
     storage_dead(@3)
     storage_dead(@2)
     drop f@1
@@ -43,7 +44,7 @@ fn test_crate::apply_to_zero_mut::<test_crate::main::closure#1<'_>>(@1: test_cra
     @2 := &mut f@1
     storage_live(@3)
     @3 := (const (0 : u8))
-    @0 := test_crate::main::{impl core::ops::function::FnMut<(u8)> for test_crate::main::closure#1<'_0>}<'_>::call_mut<'_>(move (@2), move (@3))
+    @0 := {impl FnMut<(u8)> for test_crate::main::closure#1<'_0>}<'_>::call_mut<'_>(move (@2), move (@3))
     storage_dead(@3)
     storage_dead(@2)
     drop f@1
@@ -61,14 +62,15 @@ fn test_crate::apply_to_zero_once::<test_crate::main::closure#2>(@1: test_crate:
     @2 := move (f@1)
     storage_live(@3)
     @3 := (const (0 : u8))
-    @0 := test_crate::main::{impl core::ops::function::FnOnce<(u8)> for test_crate::main::closure#2}::call_once(move (@2), move (@3))
+    @0 := {impl FnOnce<(u8)> for test_crate::main::closure#2}::call_once(move (@2), move (@3))
     storage_dead(@3)
     storage_dead(@2)
     drop f@1
     return
 }
 
-fn test_crate::main()
+// Full name: test_crate::main
+fn main()
 {
     let @0: (); // return
     let z@1: u8; // local
@@ -79,7 +81,7 @@ fn test_crate::main()
     let @6: u8; // anonymous local
     let @7: test_crate::main::closure#1<'_>; // anonymous local
     let @8: &'_ mut (u8); // anonymous local
-    let z@9: test_crate::Thing; // local
+    let z@9: Thing; // local
     let @10: u8; // anonymous local
     let @11: test_crate::main::closure#2; // anonymous local
 
@@ -106,7 +108,7 @@ fn test_crate::main()
     storage_dead(@7)
     storage_dead(@6)
     storage_live(z@9)
-    z@9 := test_crate::Thing {  }
+    z@9 := Thing {  }
     storage_live(@10)
     storage_live(@11)
     @11 := test_crate::main::closure#2 { 0: move (z@9) }
@@ -121,88 +123,99 @@ fn test_crate::main()
     return
 }
 
+// Full name: core::marker::Sized
 #[lang_item("sized")]
-pub trait core::marker::Sized<Self>
+pub trait Sized<Self>
 
+// Full name: core::marker::Tuple
 #[lang_item("tuple_trait")]
-pub trait core::marker::Tuple<Self>
+pub trait Tuple<Self>
 
+// Full name: core::ops::function::FnOnce
 #[lang_item("fn_once")]
-pub trait core::ops::function::FnOnce<Self, Args>
+pub trait FnOnce<Self, Args>
 {
-    parent_clause0 : [@TraitClause0]: core::marker::Sized<Args>
-    parent_clause1 : [@TraitClause1]: core::marker::Tuple<Args>
-    parent_clause2 : [@TraitClause2]: core::marker::Sized<Self::Output>
+    parent_clause0 : [@TraitClause0]: Sized<Args>
+    parent_clause1 : [@TraitClause1]: Tuple<Args>
+    parent_clause2 : [@TraitClause2]: Sized<Self::Output>
     type Output
     fn call_once = core::ops::function::FnOnce::call_once<Self, Args>
 }
 
+// Full name: core::ops::function::FnMut
 #[lang_item("fn_mut")]
-pub trait core::ops::function::FnMut<Self, Args>
+pub trait FnMut<Self, Args>
 {
-    parent_clause0 : [@TraitClause0]: core::ops::function::FnOnce<Self, Args>
-    parent_clause1 : [@TraitClause1]: core::marker::Sized<Args>
-    parent_clause2 : [@TraitClause2]: core::marker::Tuple<Args>
+    parent_clause0 : [@TraitClause0]: FnOnce<Self, Args>
+    parent_clause1 : [@TraitClause1]: Sized<Args>
+    parent_clause2 : [@TraitClause2]: Tuple<Args>
     fn call_mut<'_0> = core::ops::function::FnMut::call_mut<'_0_0, Self, Args>
 }
 
+// Full name: core::ops::function::Fn
 #[lang_item("r#fn")]
-pub trait core::ops::function::Fn<Self, Args>
+pub trait Fn<Self, Args>
 {
-    parent_clause0 : [@TraitClause0]: core::ops::function::FnMut<Self, Args>
-    parent_clause1 : [@TraitClause1]: core::marker::Sized<Args>
-    parent_clause2 : [@TraitClause2]: core::marker::Tuple<Args>
+    parent_clause0 : [@TraitClause0]: FnMut<Self, Args>
+    parent_clause1 : [@TraitClause1]: Sized<Args>
+    parent_clause2 : [@TraitClause2]: Tuple<Args>
     fn call<'_0> = core::ops::function::Fn::call<'_0_0, Self, Args>
 }
 
-impl test_crate::main::{impl core::ops::function::FnOnce<(u8)> for test_crate::main::closure<'_0>}<'_0> : core::ops::function::FnOnce<test_crate::main::closure<'_0>, (u8)> {
-    parent_clause0 = core::marker::Sized<(u8)>
-    parent_clause1 = core::marker::Tuple<(u8)>
-    parent_clause2 = core::marker::Sized<u8>
+// Full name: test_crate::main::{impl FnOnce<(u8)> for test_crate::main::closure<'_0>}
+impl<'_0> FnOnce<(u8)> for test_crate::main::closure<'_0> {
+    parent_clause0 = Sized<(u8)>
+    parent_clause1 = Tuple<(u8)>
+    parent_clause2 = Sized<u8>
     type Output = u8
-    fn call_once = test_crate::main::{impl core::ops::function::FnOnce<(u8)> for test_crate::main::closure<'_0>}::call_once<'_0>
+    fn call_once = {impl FnOnce<(u8)> for test_crate::main::closure<'_0>}::call_once<'_0>
 }
 
-impl test_crate::main::{impl core::ops::function::FnMut<(u8)> for test_crate::main::closure<'_0>}<'_0> : core::ops::function::FnMut<test_crate::main::closure<'_0>, (u8)> {
-    parent_clause0 = test_crate::main::{impl core::ops::function::FnOnce<(u8)> for test_crate::main::closure<'_0>}<'_0>
-    parent_clause1 = core::marker::Sized<(u8)>
-    parent_clause2 = core::marker::Tuple<(u8)>
-    fn call_mut<'_0> = test_crate::main::{impl core::ops::function::FnMut<(u8)> for test_crate::main::closure<'_0>}::call_mut<'_0, '_0_0>
+// Full name: test_crate::main::{impl FnMut<(u8)> for test_crate::main::closure<'_0>}
+impl<'_0> FnMut<(u8)> for test_crate::main::closure<'_0> {
+    parent_clause0 = {impl FnOnce<(u8)> for test_crate::main::closure<'_0>}<'_0>
+    parent_clause1 = Sized<(u8)>
+    parent_clause2 = Tuple<(u8)>
+    fn call_mut<'_0> = {impl FnMut<(u8)> for test_crate::main::closure<'_0>}::call_mut<'_0, '_0_0>
 }
 
-impl test_crate::main::{impl core::ops::function::Fn<(u8)> for test_crate::main::closure<'_0>}<'_0> : core::ops::function::Fn<test_crate::main::closure<'_0>, (u8)> {
-    parent_clause0 = test_crate::main::{impl core::ops::function::FnMut<(u8)> for test_crate::main::closure<'_0>}<'_0>
-    parent_clause1 = core::marker::Sized<(u8)>
-    parent_clause2 = core::marker::Tuple<(u8)>
-    fn call<'_0> = test_crate::main::{impl core::ops::function::Fn<(u8)> for test_crate::main::closure<'_0>}::call<'_0, '_0_0>
+// Full name: test_crate::main::{impl Fn<(u8)> for test_crate::main::closure<'_0>}
+impl<'_0> Fn<(u8)> for test_crate::main::closure<'_0> {
+    parent_clause0 = {impl FnMut<(u8)> for test_crate::main::closure<'_0>}<'_0>
+    parent_clause1 = Sized<(u8)>
+    parent_clause2 = Tuple<(u8)>
+    fn call<'_0> = {impl Fn<(u8)> for test_crate::main::closure<'_0>}::call<'_0, '_0_0>
 }
 
-impl test_crate::main::{impl core::ops::function::FnOnce<(u8)> for test_crate::main::closure#1<'_0>}<'_0> : core::ops::function::FnOnce<test_crate::main::closure#1<'_0>, (u8)> {
-    parent_clause0 = core::marker::Sized<(u8)>
-    parent_clause1 = core::marker::Tuple<(u8)>
-    parent_clause2 = core::marker::Sized<u8>
+// Full name: test_crate::main::{impl FnOnce<(u8)> for test_crate::main::closure#1<'_0>}
+impl<'_0> FnOnce<(u8)> for test_crate::main::closure#1<'_0> {
+    parent_clause0 = Sized<(u8)>
+    parent_clause1 = Tuple<(u8)>
+    parent_clause2 = Sized<u8>
     type Output = u8
-    fn call_once = test_crate::main::{impl core::ops::function::FnOnce<(u8)> for test_crate::main::closure#1<'_0>}::call_once<'_0>
+    fn call_once = {impl FnOnce<(u8)> for test_crate::main::closure#1<'_0>}::call_once<'_0>
 }
 
-impl test_crate::main::{impl core::ops::function::FnMut<(u8)> for test_crate::main::closure#1<'_0>}<'_0> : core::ops::function::FnMut<test_crate::main::closure#1<'_0>, (u8)> {
-    parent_clause0 = test_crate::main::{impl core::ops::function::FnOnce<(u8)> for test_crate::main::closure#1<'_0>}<'_0>
-    parent_clause1 = core::marker::Sized<(u8)>
-    parent_clause2 = core::marker::Tuple<(u8)>
-    fn call_mut<'_0> = test_crate::main::{impl core::ops::function::FnMut<(u8)> for test_crate::main::closure#1<'_0>}::call_mut<'_0, '_0_0>
+// Full name: test_crate::main::{impl FnMut<(u8)> for test_crate::main::closure#1<'_0>}
+impl<'_0> FnMut<(u8)> for test_crate::main::closure#1<'_0> {
+    parent_clause0 = {impl FnOnce<(u8)> for test_crate::main::closure#1<'_0>}<'_0>
+    parent_clause1 = Sized<(u8)>
+    parent_clause2 = Tuple<(u8)>
+    fn call_mut<'_0> = {impl FnMut<(u8)> for test_crate::main::closure#1<'_0>}::call_mut<'_0, '_0_0>
 }
 
 #[lang_item("mem_drop")]
-pub fn core::mem::drop::<test_crate::Thing>(@1: test_crate::Thing)
+pub fn core::mem::drop::<Thing>(@1: Thing)
 
-fn test_crate::main::{impl core::ops::function::FnOnce<(u8)> for test_crate::main::closure#2}::call_once(@1: test_crate::main::closure#2, @2: (u8)) -> u8
+// Full name: test_crate::main::{impl FnOnce<(u8)> for test_crate::main::closure#2}::call_once
+fn {impl FnOnce<(u8)> for test_crate::main::closure#2}::call_once(@1: test_crate::main::closure#2, @2: (u8)) -> u8
 {
     let @0: u8; // return
     let @1: test_crate::main::closure#2; // arg #1
     let tupled_args@2: (u8); // arg #2
     let x@3: u8; // local
     let @4: (); // anonymous local
-    let @5: test_crate::Thing; // anonymous local
+    let @5: Thing; // anonymous local
     let @6: u8; // anonymous local
 
     storage_live(x@3)
@@ -210,7 +223,7 @@ fn test_crate::main::{impl core::ops::function::FnOnce<(u8)> for test_crate::mai
     storage_live(@4)
     storage_live(@5)
     @5 := move ((@1).0)
-    @4 := core::mem::drop::<test_crate::Thing>(move (@5))
+    @4 := core::mem::drop::<Thing>(move (@5))
     storage_dead(@5)
     storage_dead(@4)
     storage_live(@6)
@@ -220,12 +233,13 @@ fn test_crate::main::{impl core::ops::function::FnOnce<(u8)> for test_crate::mai
     return
 }
 
-impl test_crate::main::{impl core::ops::function::FnOnce<(u8)> for test_crate::main::closure#2} : core::ops::function::FnOnce<test_crate::main::closure#2, (u8)> {
-    parent_clause0 = core::marker::Sized<(u8)>
-    parent_clause1 = core::marker::Tuple<(u8)>
-    parent_clause2 = core::marker::Sized<u8>
+// Full name: test_crate::main::{impl FnOnce<(u8)> for test_crate::main::closure#2}
+impl FnOnce<(u8)> for test_crate::main::closure#2 {
+    parent_clause0 = Sized<(u8)>
+    parent_clause1 = Tuple<(u8)>
+    parent_clause2 = Sized<u8>
     type Output = u8
-    fn call_once = test_crate::main::{impl core::ops::function::FnOnce<(u8)> for test_crate::main::closure#2}::call_once
+    fn call_once = {impl FnOnce<(u8)> for test_crate::main::closure#2}::call_once
 }
 
 

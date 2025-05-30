@@ -1,22 +1,26 @@
 # Final LLBC before serialization:
 
-trait test_crate::Trait<Self>
+// Full name: test_crate::Trait
+trait Trait<Self>
 
+// Full name: core::marker::Sized
 #[lang_item("sized")]
-pub trait core::marker::Sized<Self>
+pub trait Sized<Self>
 
+// Full name: core::option::Option
 #[lang_item("Option")]
-pub enum core::option::Option<T>
+pub enum Option<T>
   where
-      [@TraitClause0]: core::marker::Sized<T>,
+      [@TraitClause0]: Sized<T>,
 {
   None,
   Some(T),
 }
 
-impl test_crate::{impl test_crate::Trait for core::option::Option<T>[@TraitClause0]}<T> : test_crate::Trait<core::option::Option<T>[@TraitClause0]>
+// Full name: test_crate::{impl Trait for Option<T>[@TraitClause0]}
+impl<T> Trait for Option<T>[@TraitClause0]
 where
-    [@TraitClause0]: core::marker::Sized<T>,
+    [@TraitClause0]: Sized<T>,
 {}
 
 

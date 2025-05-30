@@ -1,6 +1,7 @@
 # Final LLBC before serialization:
 
-fn test_crate::slice_pattern_end<'_0>(@1: &'_0 (Slice<()>))
+// Full name: test_crate::slice_pattern_end
+fn slice_pattern_end<'_0>(@1: &'_0 (Slice<()>))
 {
     let @0: (); // return
     let x@1: &'_ (Slice<()>); // arg #1

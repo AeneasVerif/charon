@@ -1,31 +1,37 @@
 # Final LLBC before serialization:
 
+// Full name: core::marker::Sized
 #[lang_item("sized")]
-pub trait core::marker::Sized<Self>
+pub trait Sized<Self>
 
+// Full name: core::clone::Clone
 #[lang_item("clone")]
-pub trait core::clone::Clone<Self>
+pub trait Clone<Self>
 {
-    parent_clause0 : [@TraitClause0]: core::marker::Sized<Self>
+    parent_clause0 : [@TraitClause0]: Sized<Self>
     fn clone<'_0> = core::clone::Clone::clone<'_0_0, Self>
 }
 
-pub trait test_crate::Foo<Self>
+// Full name: test_crate::Foo
+pub trait Foo<Self>
 {
-    parent_clause0 : [@TraitClause0]: core::marker::Sized<Self::Type>
-    parent_clause1 : [@TraitClause1]: core::clone::Clone<Self::Type>
+    parent_clause0 : [@TraitClause0]: Sized<Self::Type>
+    parent_clause1 : [@TraitClause1]: Clone<Self::Type>
     type Type
     fn get_ty<'_0> = test_crate::Foo::get_ty<'_0_0, Self>
 }
 
-pub fn core::clone::impls::{impl core::clone::Clone for u32}#8::clone<'_0>(@1: &'_0 (u32)) -> u32
+// Full name: core::clone::impls::{impl Clone for u32}#8::clone
+pub fn {impl Clone for u32}#8::clone<'_0>(@1: &'_0 (u32)) -> u32
 
-impl core::clone::impls::{impl core::clone::Clone for u32}#8 : core::clone::Clone<u32> {
-    parent_clause0 = core::marker::Sized<u32>
-    fn clone<'_0> = core::clone::impls::{impl core::clone::Clone for u32}#8::clone<'_0_0>
+// Full name: core::clone::impls::{impl Clone for u32}#8
+impl Clone for u32 {
+    parent_clause0 = Sized<u32>
+    fn clone<'_0> = {impl Clone for u32}#8::clone<'_0_0>
 }
 
-pub fn test_crate::{impl test_crate::Foo for ()}::get_ty<'_0>(@1: &'_0 (())) -> &'_0 (u32)
+// Full name: test_crate::{impl Foo for ()}::get_ty
+pub fn {impl Foo for ()}::get_ty<'_0>(@1: &'_0 (())) -> &'_0 (u32)
 {
     let @0: &'_ (u32); // return
     let self@1: &'_ (()); // arg #1
@@ -42,14 +48,16 @@ pub fn test_crate::{impl test_crate::Foo for ()}::get_ty<'_0>(@1: &'_0 (())) -> 
     return
 }
 
-impl test_crate::{impl test_crate::Foo for ()} : test_crate::Foo<()> {
-    parent_clause0 = core::marker::Sized<u32>
-    parent_clause1 = core::clone::impls::{impl core::clone::Clone for u32}#8
+// Full name: test_crate::{impl Foo for ()}
+impl Foo for () {
+    parent_clause0 = Sized<u32>
+    parent_clause1 = {impl Clone for u32}#8
     type Type = u32
-    fn get_ty<'_0> = test_crate::{impl test_crate::Foo for ()}::get_ty<'_0_0>
+    fn get_ty<'_0> = {impl Foo for ()}::get_ty<'_0_0>
 }
 
-fn test_crate::mk_foo()
+// Full name: test_crate::mk_foo
+fn mk_foo()
 {
     let @0: (); // return
 
@@ -58,7 +66,8 @@ fn test_crate::mk_foo()
     return
 }
 
-fn test_crate::use_foo()
+// Full name: test_crate::use_foo
+fn use_foo()
 {
     let @0: (); // return
     let foo@1: (); // local
@@ -68,16 +77,16 @@ fn test_crate::use_foo()
     let @5: &'_ (()); // anonymous local
 
     storage_live(foo@1)
-    foo@1 := test_crate::mk_foo()
+    foo@1 := mk_foo()
     storage_live(@2)
     storage_live(@3)
     storage_live(@4)
     storage_live(@5)
     @5 := &foo@1
-    @4 := test_crate::{impl test_crate::Foo for ()}::get_ty<'_>(move (@5))
+    @4 := {impl Foo for ()}::get_ty<'_>(move (@5))
     @3 := &*(@4)
     storage_dead(@5)
-    @2 := core::clone::impls::{impl core::clone::Clone for u32}#8::clone<'_>(move (@3))
+    @2 := {impl Clone for u32}#8::clone<'_>(move (@3))
     storage_dead(@3)
     drop @2
     storage_dead(@4)
@@ -89,15 +98,17 @@ fn test_crate::use_foo()
     return
 }
 
-pub trait test_crate::RPITIT<Self>
+// Full name: test_crate::RPITIT
+pub trait RPITIT<Self>
 {
-    parent_clause0 : [@TraitClause0]: core::marker::Sized<Self::>
-    parent_clause1 : [@TraitClause1]: test_crate::Foo<Self::>
+    parent_clause0 : [@TraitClause0]: Sized<Self::>
+    parent_clause1 : [@TraitClause1]: Foo<Self::>
     type 
     fn make_foo = test_crate::RPITIT::make_foo<Self>
 }
 
-pub fn test_crate::{impl test_crate::RPITIT for ()}#1::make_foo()
+// Full name: test_crate::{impl RPITIT for ()}#1::make_foo
+pub fn {impl RPITIT for ()}#1::make_foo()
 {
     let @0: (); // return
 
@@ -106,11 +117,12 @@ pub fn test_crate::{impl test_crate::RPITIT for ()}#1::make_foo()
     return
 }
 
-impl test_crate::{impl test_crate::RPITIT for ()}#1 : test_crate::RPITIT<()> {
-    parent_clause0 = core::marker::Sized<()>
-    parent_clause1 = test_crate::{impl test_crate::Foo for ()}
+// Full name: test_crate::{impl RPITIT for ()}#1
+impl RPITIT for () {
+    parent_clause0 = Sized<()>
+    parent_clause1 = {impl Foo for ()}
     type  = ()
-    fn make_foo = test_crate::{impl test_crate::RPITIT for ()}#1::make_foo
+    fn make_foo = {impl RPITIT for ()}#1::make_foo
 }
 
 pub fn test_crate::RPITIT::make_foo<Self>() -> Self::
@@ -126,10 +138,11 @@ pub fn test_crate::Foo::get_ty<'_0, Self>(@1: &'_0 (Self)) -> &'_0 (Self::Type)
 #[lang_item("clone_fn")]
 pub fn core::clone::Clone::clone<'_0, Self>(@1: &'_0 (Self)) -> Self
 
-fn test_crate::use_tait<T>()
+// Full name: test_crate::use_tait
+fn use_tait<T>()
 where
-    [@TraitClause0]: core::marker::Sized<T>,
-    [@TraitClause1]: test_crate::RPITIT<T>,
+    [@TraitClause0]: Sized<T>,
+    [@TraitClause1]: RPITIT<T>,
 {
     let @0: (); // return
     let foo@1: @TraitClause1::; // local
@@ -160,65 +173,74 @@ where
     return
 }
 
-pub struct test_crate::WrapClone<T>
+// Full name: test_crate::WrapClone
+pub struct WrapClone<T>
   where
-      [@TraitClause0]: core::marker::Sized<T>,
-      [@TraitClause1]: core::clone::Clone<T>,
+      [@TraitClause0]: Sized<T>,
+      [@TraitClause1]: Clone<T>,
 {
   T,
 }
 
-struct test_crate::wrap::closure<U>
+// Full name: test_crate::wrap::closure
+struct closure<U>
   where
-      [@TraitClause0]: core::marker::Sized<U>,
+      [@TraitClause0]: Sized<U>,
 {}
 
-pub fn test_crate::wrap<U>() -> test_crate::wrap::closure<U>[@TraitClause0]
+// Full name: test_crate::wrap
+pub fn wrap<U>() -> closure<U>[@TraitClause0]
 where
-    [@TraitClause0]: core::marker::Sized<U>,
+    [@TraitClause0]: Sized<U>,
 {
-    let @0: test_crate::wrap::closure<U>[@TraitClause0]; // return
+    let @0: closure<U>[@TraitClause0]; // return
 
-    @0 := test_crate::wrap::closure {  }
+    @0 := closure {  }
     return
 }
 
+// Full name: core::clone::impls::{impl Clone for &'_0 (T)}#3::clone
 #[lang_item("noop_method_clone")]
-pub fn core::clone::impls::{impl core::clone::Clone for &'_0 (T)}#3::clone<'_0, '_1, T>(@1: &'_1 (&'_0 (T))) -> &'_0 (T)
+pub fn {impl Clone for &'_0 (T)}#3::clone<'_0, '_1, T>(@1: &'_1 (&'_0 (T))) -> &'_0 (T)
 
-impl core::clone::impls::{impl core::clone::Clone for &'_0 (T)}#3<'_0, T> : core::clone::Clone<&'_0 (T)> {
-    parent_clause0 = core::marker::Sized<&'_ (T)>
-    fn clone<'_0> = core::clone::impls::{impl core::clone::Clone for &'_0 (T)}#3::clone<'_0, '_0_0, T>
+// Full name: core::clone::impls::{impl Clone for &'_0 (T)}#3
+impl<'_0, T> Clone for &'_0 (T) {
+    parent_clause0 = Sized<&'_ (T)>
+    fn clone<'_0> = {impl Clone for &'_0 (T)}#3::clone<'_0, '_0_0, T>
 }
 
+// Full name: core::marker::Tuple
 #[lang_item("tuple_trait")]
-pub trait core::marker::Tuple<Self>
+pub trait Tuple<Self>
 
+// Full name: core::ops::function::FnOnce
 #[lang_item("fn_once")]
-pub trait core::ops::function::FnOnce<Self, Args>
+pub trait FnOnce<Self, Args>
 {
-    parent_clause0 : [@TraitClause0]: core::marker::Sized<Args>
-    parent_clause1 : [@TraitClause1]: core::marker::Tuple<Args>
-    parent_clause2 : [@TraitClause2]: core::marker::Sized<Self::Output>
+    parent_clause0 : [@TraitClause0]: Sized<Args>
+    parent_clause1 : [@TraitClause1]: Tuple<Args>
+    parent_clause2 : [@TraitClause2]: Sized<Self::Output>
     type Output
-    fn call_once = core::ops::function::FnOnce::call_once<Self, Args>
+    fn call_once = call_once<Self, Args>
 }
 
-pub fn core::ops::function::FnOnce::call_once<Self, Args>(@1: Self, @2: Args) -> Self::Output
+// Full name: core::ops::function::FnOnce::call_once
+pub fn call_once<Self, Args>(@1: Self, @2: Args) -> Self::Output
 
-pub fn test_crate::use_wrap()
+// Full name: test_crate::use_wrap
+pub fn use_wrap()
 {
     let @0: (); // return
-    let f@1: test_crate::wrap::closure<u32>[core::marker::Sized<u32>]; // local
-    let @2: test_crate::WrapClone<&'_ (u32)>[core::marker::Sized<&'_ (u32)>, core::clone::impls::{impl core::clone::Clone for &'_0 (T)}#3<'_, u32>]; // anonymous local
-    let @3: test_crate::wrap::closure<u32>[core::marker::Sized<u32>]; // anonymous local
+    let f@1: closure<u32>[Sized<u32>]; // local
+    let @2: WrapClone<&'_ (u32)>[Sized<&'_ (u32)>, {impl Clone for &'_0 (T)}#3<'_, u32>]; // anonymous local
+    let @3: closure<u32>[Sized<u32>]; // anonymous local
     let @4: (&'_ (u32)); // anonymous local
     let @5: &'_ (u32); // anonymous local
     let @6: &'_ (u32); // anonymous local
     let @7: u32; // anonymous local
 
     storage_live(f@1)
-    f@1 := test_crate::wrap<u32>[core::marker::Sized<u32>]()
+    f@1 := wrap<u32>[Sized<u32>]()
     storage_live(@2)
     storage_live(@3)
     @3 := move (f@1)
@@ -230,7 +252,7 @@ pub fn test_crate::use_wrap()
     @6 := &@7
     @5 := &*(@6)
     @4 := (move (@5))
-    @2 := core::ops::function::FnOnce<test_crate::wrap::closure<u32>[core::marker::Sized<u32>], (&'_ (u32))> where Output  = test_crate::WrapClone<&'_ (u32)>[core::marker::Sized<&'_ (u32)>, core::clone::impls::{impl core::clone::Clone for &'_0 (T)}#3<'_, u32>]::call_once(move (@3), move (@4))
+    @2 := FnOnce<closure<u32>[Sized<u32>], (&'_ (u32))> where Output  = WrapClone<&'_ (u32)>[Sized<&'_ (u32)>, {impl Clone for &'_0 (T)}#3<'_, u32>]::call_once(move (@3), move (@4))
     storage_dead(@5)
     storage_dead(@4)
     storage_dead(@3)

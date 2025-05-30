@@ -18,7 +18,8 @@ fn test_crate::nonzero_disambiguator::my_function#1()
     return
 }
 
-fn test_crate::nonzero_disambiguator()
+// Full name: test_crate::nonzero_disambiguator
+fn nonzero_disambiguator()
 {
     let @0: (); // return
     let @1: bool; // anonymous local

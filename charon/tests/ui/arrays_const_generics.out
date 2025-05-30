@@ -1,6 +1,7 @@
 # Final LLBC before serialization:
 
-pub fn test_crate::index_array_generic<const N : usize>(@1: Array<u32, const N : usize>, @2: usize) -> u32
+// Full name: test_crate::index_array_generic
+pub fn index_array_generic<const N : usize>(@1: Array<u32, const N : usize>, @2: usize) -> u32
 {
     let @0: u32; // return
     let s@1: Array<u32, const N : usize>; // arg #1
@@ -20,7 +21,8 @@ pub fn test_crate::index_array_generic<const N : usize>(@1: Array<u32, const N :
     return
 }
 
-pub fn test_crate::index_array_generic_call<const N : usize>(@1: Array<u32, const N : usize>, @2: usize) -> u32
+// Full name: test_crate::index_array_generic_call
+pub fn index_array_generic_call<const N : usize>(@1: Array<u32, const N : usize>, @2: usize) -> u32
 {
     let @0: u32; // return
     let s@1: Array<u32, const N : usize>; // arg #1
@@ -32,13 +34,14 @@ pub fn test_crate::index_array_generic_call<const N : usize>(@1: Array<u32, cons
     @3 := copy (s@1)
     storage_live(@4)
     @4 := copy (i@2)
-    @0 := test_crate::index_array_generic<const N : usize>(move (@3), move (@4))
+    @0 := index_array_generic<const N : usize>(move (@3), move (@4))
     storage_dead(@4)
     storage_dead(@3)
     return
 }
 
-pub fn test_crate::const_gen_ret<const N : usize>() -> usize
+// Full name: test_crate::const_gen_ret
+pub fn const_gen_ret<const N : usize>() -> usize
 {
     let @0: usize; // return
 
@@ -46,7 +49,8 @@ pub fn test_crate::const_gen_ret<const N : usize>() -> usize
     return
 }
 
-pub fn test_crate::init_array_variable_len<const LEN : usize>() -> Array<u8, const LEN : usize>
+// Full name: test_crate::init_array_variable_len
+pub fn init_array_variable_len<const LEN : usize>() -> Array<u8, const LEN : usize>
 {
     let @0: Array<u8, const LEN : usize>; // return
 

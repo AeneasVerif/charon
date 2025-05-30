@@ -1,77 +1,86 @@
 # Final LLBC before serialization:
 
+// Full name: core::marker::Sized
 #[lang_item("sized")]
-pub trait core::marker::Sized<Self>
+pub trait Sized<Self>
 
-struct test_crate::Struct<A>
+// Full name: test_crate::Struct
+struct Struct<A>
   where
-      [@TraitClause0]: core::marker::Sized<A>,
+      [@TraitClause0]: Sized<A>,
 {
   A,
 }
 
+// Full name: core::default::Default
 #[lang_item("Default")]
-pub trait core::default::Default<Self>
+pub trait Default<Self>
 {
-    parent_clause0 : [@TraitClause0]: core::marker::Sized<Self>
+    parent_clause0 : [@TraitClause0]: Sized<Self>
     fn default = core::default::Default::default<Self>
 }
 
 #[lang_item("default_fn")]
 pub fn core::default::Default::default<Self>() -> Self
 
-pub fn test_crate::{impl core::default::Default for test_crate::Struct<A>[@TraitClause0]}#1::default<A>() -> test_crate::Struct<A>[@TraitClause0]
+// Full name: test_crate::{impl Default for Struct<A>[@TraitClause0]}#1::default
+pub fn {impl Default for Struct<A>[@TraitClause0]}#1::default<A>() -> Struct<A>[@TraitClause0]
 where
-    [@TraitClause0]: core::marker::Sized<A>,
-    [@TraitClause1]: core::default::Default<A>,
+    [@TraitClause0]: Sized<A>,
+    [@TraitClause1]: Default<A>,
 {
-    let @0: test_crate::Struct<A>[@TraitClause0]; // return
+    let @0: Struct<A>[@TraitClause0]; // return
     let @1: A; // anonymous local
 
     storage_live(@1)
     @1 := @TraitClause1::default()
-    @0 := test_crate::Struct { 0: move (@1) }
+    @0 := Struct { 0: move (@1) }
     drop @1
     storage_dead(@1)
     return
 }
 
-impl test_crate::{impl core::default::Default for test_crate::Struct<A>[@TraitClause0]}#1<A> : core::default::Default<test_crate::Struct<A>[@TraitClause0]>
+// Full name: test_crate::{impl Default for Struct<A>[@TraitClause0]}#1
+impl<A> Default for Struct<A>[@TraitClause0]
 where
-    [@TraitClause0]: core::marker::Sized<A>,
-    [@TraitClause1]: core::default::Default<A>,
+    [@TraitClause0]: Sized<A>,
+    [@TraitClause1]: Default<A>,
 {
-    parent_clause0 = core::marker::Sized<test_crate::Struct<A>[@TraitClause0]>
-    fn default = test_crate::{impl core::default::Default for test_crate::Struct<A>[@TraitClause0]}#1::default<A>[@TraitClause0, @TraitClause1]
+    parent_clause0 = Sized<Struct<A>[@TraitClause0]>
+    fn default = {impl Default for Struct<A>[@TraitClause0]}#1::default<A>[@TraitClause0, @TraitClause1]
 }
 
-trait test_crate::Trait<Self, B, Self_Item>
+// Full name: test_crate::Trait
+trait Trait<Self, B, Self_Item>
 {
-    parent_clause0 : [@TraitClause0]: core::marker::Sized<B>
-    parent_clause1 : [@TraitClause1]: core::marker::Sized<Self_Item>
-    fn method<C, [@TraitClause0]: core::marker::Sized<C>> = test_crate::Trait::method<Self, B, C, Self_Item>[@TraitClause0_0]
+    parent_clause0 : [@TraitClause0]: Sized<B>
+    parent_clause1 : [@TraitClause1]: Sized<Self_Item>
+    fn method<C, [@TraitClause0]: Sized<C>> = test_crate::Trait::method<Self, B, C, Self_Item>[@TraitClause0_0]
 }
 
+// Full name: core::clone::Clone
 #[lang_item("clone")]
-pub trait core::clone::Clone<Self>
+pub trait Clone<Self>
 {
-    parent_clause0 : [@TraitClause0]: core::marker::Sized<Self>
+    parent_clause0 : [@TraitClause0]: Sized<Self>
     fn clone<'_0> = core::clone::Clone::clone<'_0_0, Self>
 }
 
+// Full name: core::cmp::PartialEq
 #[lang_item("eq")]
-pub trait core::cmp::PartialEq<Self, Rhs>
+pub trait PartialEq<Self, Rhs>
 {
     fn eq<'_0, '_1> = core::cmp::PartialEq::eq<'_0_0, '_0_1, Self, Rhs>
 }
 
-fn test_crate::{impl test_crate::Trait<B, (A, B)> for test_crate::Struct<A>[@TraitClause0]}::method<A, B, C>()
+// Full name: test_crate::{impl Trait<B, (A, B)> for Struct<A>[@TraitClause0]}::method
+fn {impl Trait<B, (A, B)> for Struct<A>[@TraitClause0]}::method<A, B, C>()
 where
-    [@TraitClause0]: core::marker::Sized<A>,
-    [@TraitClause1]: core::marker::Sized<B>,
-    [@TraitClause2]: core::clone::Clone<A>,
-    [@TraitClause3]: core::cmp::PartialEq<B, bool>,
-    [@TraitClause4]: core::marker::Sized<C>,
+    [@TraitClause0]: Sized<A>,
+    [@TraitClause1]: Sized<B>,
+    [@TraitClause2]: Clone<A>,
+    [@TraitClause3]: PartialEq<B, bool>,
+    [@TraitClause4]: Sized<C>,
 {
     let @0: (); // return
 
@@ -80,54 +89,63 @@ where
     return
 }
 
-impl test_crate::{impl test_crate::Trait<B, (A, B)> for test_crate::Struct<A>[@TraitClause0]}<A, B> : test_crate::Trait<test_crate::Struct<A>[@TraitClause0], B, (A, B)>
+// Full name: test_crate::{impl Trait<B, (A, B)> for Struct<A>[@TraitClause0]}
+impl<A, B> Trait<B, (A, B)> for Struct<A>[@TraitClause0]
 where
-    [@TraitClause0]: core::marker::Sized<A>,
-    [@TraitClause1]: core::marker::Sized<B>,
-    [@TraitClause2]: core::clone::Clone<A>,
-    [@TraitClause3]: core::cmp::PartialEq<B, bool>,
+    [@TraitClause0]: Sized<A>,
+    [@TraitClause1]: Sized<B>,
+    [@TraitClause2]: Clone<A>,
+    [@TraitClause3]: PartialEq<B, bool>,
 {
     parent_clause0 = @TraitClause1
-    parent_clause1 = core::marker::Sized<(A, B)>
-    fn method<C, [@TraitClause0]: core::marker::Sized<C>> = test_crate::{impl test_crate::Trait<B, (A, B)> for test_crate::Struct<A>[@TraitClause0]}::method<A, B, C>[@TraitClause0, @TraitClause1, @TraitClause2, @TraitClause3, @TraitClause0_0]
+    parent_clause1 = Sized<(A, B)>
+    fn method<C, [@TraitClause0]: Sized<C>> = {impl Trait<B, (A, B)> for Struct<A>[@TraitClause0]}::method<A, B, C>[@TraitClause0, @TraitClause1, @TraitClause2, @TraitClause3, @TraitClause0_0]
 }
 
-pub fn core::default::{impl core::default::Default for bool}#1::default() -> bool
+// Full name: core::default::{impl Default for bool}#1::default
+pub fn {impl Default for bool}#1::default() -> bool
 
-impl core::default::{impl core::default::Default for bool}#1 : core::default::Default<bool> {
-    parent_clause0 = core::marker::Sized<bool>
-    fn default = core::default::{impl core::default::Default for bool}#1::default
+// Full name: core::default::{impl Default for bool}#1
+impl Default for bool {
+    parent_clause0 = Sized<bool>
+    fn default = {impl Default for bool}#1::default
 }
 
+// Full name: alloc::string::String
 #[lang_item("String")]
-pub opaque type alloc::string::String
+pub opaque type String
 
-pub fn core::clone::impls::{impl core::clone::Clone for u8}#6::clone<'_0>(@1: &'_0 (u8)) -> u8
+// Full name: core::clone::impls::{impl Clone for u8}#6::clone
+pub fn {impl Clone for u8}#6::clone<'_0>(@1: &'_0 (u8)) -> u8
 
-impl core::clone::impls::{impl core::clone::Clone for u8}#6 : core::clone::Clone<u8> {
-    parent_clause0 = core::marker::Sized<u8>
-    fn clone<'_0> = core::clone::impls::{impl core::clone::Clone for u8}#6::clone<'_0_0>
+// Full name: core::clone::impls::{impl Clone for u8}#6
+impl Clone for u8 {
+    parent_clause0 = Sized<u8>
+    fn clone<'_0> = {impl Clone for u8}#6::clone<'_0_0>
 }
 
-pub fn core::cmp::impls::{impl core::cmp::PartialEq<bool> for bool}#19::eq<'_0, '_1>(@1: &'_0 (bool), @2: &'_1 (bool)) -> bool
+// Full name: core::cmp::impls::{impl PartialEq<bool> for bool}#19::eq
+pub fn {impl PartialEq<bool> for bool}#19::eq<'_0, '_1>(@1: &'_0 (bool), @2: &'_1 (bool)) -> bool
 
-impl core::cmp::impls::{impl core::cmp::PartialEq<bool> for bool}#19 : core::cmp::PartialEq<bool, bool> {
-    fn eq<'_0, '_1> = core::cmp::impls::{impl core::cmp::PartialEq<bool> for bool}#19::eq<'_0_0, '_0_1>
+// Full name: core::cmp::impls::{impl PartialEq<bool> for bool}#19
+impl PartialEq<bool> for bool {
+    fn eq<'_0, '_1> = {impl PartialEq<bool> for bool}#19::eq<'_0_0, '_0_1>
 }
 
-fn test_crate::main()
+// Full name: test_crate::main
+fn main()
 {
     let @0: (); // return
     let _x@1: (u8, bool); // local
-    let _y@2: test_crate::Struct<bool>[core::marker::Sized<bool>]; // local
+    let _y@2: Struct<bool>[Sized<bool>]; // local
     let @3: (); // anonymous local
 
     storage_live(_x@1)
     _x@1 := (const (0 : u8), const (false))
     storage_live(_y@2)
-    _y@2 := test_crate::{impl core::default::Default for test_crate::Struct<A>[@TraitClause0]}#1::default<bool>[core::marker::Sized<bool>, core::default::{impl core::default::Default for bool}#1]()
+    _y@2 := {impl Default for Struct<A>[@TraitClause0]}#1::default<bool>[Sized<bool>, {impl Default for bool}#1]()
     storage_live(@3)
-    @3 := test_crate::{impl test_crate::Trait<B, (A, B)> for test_crate::Struct<A>[@TraitClause0]}::method<u8, bool, alloc::string::String>[core::marker::Sized<u8>, core::marker::Sized<bool>, core::clone::impls::{impl core::clone::Clone for u8}#6, core::cmp::impls::{impl core::cmp::PartialEq<bool> for bool}#19, core::marker::Sized<alloc::string::String>]()
+    @3 := {impl Trait<B, (A, B)> for Struct<A>[@TraitClause0]}::method<u8, bool, String>[Sized<u8>, Sized<bool>, {impl Clone for u8}#6, {impl PartialEq<bool> for bool}#19, Sized<String>]()
     storage_dead(@3)
     @0 := ()
     storage_dead(_y@2)
@@ -138,7 +156,7 @@ fn test_crate::main()
 
 fn test_crate::Trait::method<Self, B, C, Self_Item>()
 where
-    [@TraitClause0]: core::marker::Sized<C>,
+    [@TraitClause0]: Sized<C>,
 
 #[lang_item("clone_fn")]
 pub fn core::clone::Clone::clone<'_0, Self>(@1: &'_0 (Self)) -> Self

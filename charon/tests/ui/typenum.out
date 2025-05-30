@@ -1,17 +1,22 @@
 # Final LLBC before serialization:
 
-pub struct test_crate::UInt<U, B> {
+// Full name: test_crate::UInt
+pub struct UInt<U, B> {
   U,
   B,
 }
 
-pub struct test_crate::UTerm {}
+// Full name: test_crate::UTerm
+pub struct UTerm {}
 
-pub struct test_crate::B0 {}
+// Full name: test_crate::B0
+pub struct B0 {}
 
-pub type test_crate::LongType = test_crate::UInt<test_crate::UInt<test_crate::UInt<test_crate::UInt<test_crate::UInt<test_crate::UInt<test_crate::UInt<test_crate::UInt<test_crate::UInt<test_crate::UTerm, test_crate::B0>, test_crate::B0>, test_crate::B0>, test_crate::B0>, test_crate::B0>, test_crate::B0>, test_crate::B0>, test_crate::B0>, test_crate::B0>
+// Full name: test_crate::LongType
+pub type LongType = UInt<UInt<UInt<UInt<UInt<UInt<UInt<UInt<UInt<UTerm, B0>, B0>, B0>, B0>, B0>, B0>, B0>, B0>, B0>
 
-pub fn test_crate::foo<T>()
+// Full name: test_crate::foo
+pub fn foo<T>()
 {
     let @0: (); // return
 
@@ -20,13 +25,14 @@ pub fn test_crate::foo<T>()
     return
 }
 
-pub fn test_crate::main()
+// Full name: test_crate::main
+pub fn main()
 {
     let @0: (); // return
     let @1: (); // anonymous local
 
     storage_live(@1)
-    @1 := test_crate::foo<test_crate::UInt<test_crate::UInt<test_crate::UInt<test_crate::UInt<test_crate::UInt<test_crate::UInt<test_crate::UInt<test_crate::UInt<test_crate::UInt<test_crate::UTerm, test_crate::B0>, test_crate::B0>, test_crate::B0>, test_crate::B0>, test_crate::B0>, test_crate::B0>, test_crate::B0>, test_crate::B0>, test_crate::B0>>()
+    @1 := foo<UInt<UInt<UInt<UInt<UInt<UInt<UInt<UInt<UInt<UTerm, B0>, B0>, B0>, B0>, B0>, B0>, B0>, B0>, B0>>()
     storage_dead(@1)
     @0 := ()
     @0 := ()

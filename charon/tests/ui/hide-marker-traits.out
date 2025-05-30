@@ -1,19 +1,22 @@
 # Final LLBC before serialization:
 
-trait test_crate::Idx<Self>
+// Full name: test_crate::Idx
+trait Idx<Self>
 
-pub struct test_crate::IndexVec<I>
+// Full name: test_crate::IndexVec
+pub struct IndexVec<I>
   where
-      [@TraitClause1]: test_crate::Idx<I>,
+      [@TraitClause1]: Idx<I>,
 {
   i: I,
 }
 
-pub struct test_crate::Vector<I>
+// Full name: test_crate::Vector
+pub struct Vector<I>
   where
-      [@TraitClause1]: test_crate::Idx<I>,
+      [@TraitClause1]: Idx<I>,
 {
-  vector: test_crate::IndexVec<I>[@TraitClause1],
+  vector: IndexVec<I>[@TraitClause1],
 }
 
 

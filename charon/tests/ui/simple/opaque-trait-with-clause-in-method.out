@@ -1,14 +1,17 @@
 # Final LLBC before serialization:
 
+// Full name: core::marker::Sized
 #[lang_item("sized")]
-pub trait core::marker::Sized<Self>
+pub trait Sized<Self>
 
-pub trait test_crate::opaque::Iterator<Self>
+// Full name: test_crate::opaque::Iterator
+pub trait Iterator<Self>
 
-fn test_crate::foo<T>()
+// Full name: test_crate::foo
+fn foo<T>()
 where
-    [@TraitClause0]: core::marker::Sized<T>,
-    [@TraitClause1]: test_crate::opaque::Iterator<T>,
+    [@TraitClause0]: Sized<T>,
+    [@TraitClause1]: Iterator<T>,
 {
     let @0: (); // return
 
@@ -17,7 +20,8 @@ where
     return
 }
 
-pub trait test_crate::opaque::Product<Self>
+// Full name: test_crate::opaque::Product
+pub trait Product<Self>
 
 
 

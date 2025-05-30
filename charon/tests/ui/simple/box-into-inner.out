@@ -1,33 +1,40 @@
 # Final LLBC before serialization:
 
+// Full name: alloc::string::String
 #[lang_item("String")]
-pub opaque type alloc::string::String
+pub opaque type String
 
+// Full name: core::marker::Sized
 #[lang_item("sized")]
-pub trait core::marker::Sized<Self>
+pub trait Sized<Self>
 
+// Full name: alloc::alloc::Global
 #[lang_item("global_alloc_ty")]
-pub struct alloc::alloc::Global {}
+pub struct Global {}
 
+// Full name: core::ptr::non_null::NonNull
 #[lang_item("NonNull")]
-pub opaque type core::ptr::non_null::NonNull<T>
+pub opaque type NonNull<T>
 
+// Full name: core::ptr::unique::Unique
 #[lang_item("ptr_unique")]
-pub opaque type core::ptr::unique::Unique<T>
+pub opaque type Unique<T>
 
-pub fn alloc::boxed::{impl core::ops::drop::Drop for alloc::boxed::Box<T>[@TraitClause0]}#8::drop<'_0, T, A>(@1: &'_0 mut (alloc::boxed::Box<T>[@TraitClause0]))
+// Full name: alloc::boxed::{impl Drop for alloc::boxed::Box<T>[@TraitClause0]}#8::drop
+pub fn {impl Drop for alloc::boxed::Box<T>[@TraitClause0]}#8::drop<'_0, T, A>(@1: &'_0 mut (alloc::boxed::Box<T>[@TraitClause0]))
 where
-    [@TraitClause0]: core::marker::Sized<A>,
+    [@TraitClause0]: Sized<A>,
 
-fn test_crate::into_inner(@1: alloc::boxed::Box<alloc::string::String>[core::marker::Sized<alloc::alloc::Global>])
+// Full name: test_crate::into_inner
+fn into_inner(@1: alloc::boxed::Box<String>[Sized<Global>])
 {
     let @0: (); // return
-    let b@1: alloc::boxed::Box<alloc::string::String>[core::marker::Sized<alloc::alloc::Global>]; // arg #1
-    let _x@2: alloc::string::String; // local
-    let @3: &'_ mut (alloc::boxed::Box<alloc::string::String>[core::marker::Sized<alloc::alloc::Global>]); // anonymous local
+    let b@1: alloc::boxed::Box<String>[Sized<Global>]; // arg #1
+    let _x@2: String; // local
+    let @3: &'_ mut (alloc::boxed::Box<String>[Sized<Global>]); // anonymous local
     let @4: (); // anonymous local
-    let @5: *const alloc::string::String; // anonymous local
-    let @6: *const alloc::string::String; // anonymous local
+    let @5: *const String; // anonymous local
+    let @6: *const String; // anonymous local
     let @7: *const (); // anonymous local
     let @8: usize; // anonymous local
     let @9: usize; // anonymous local
@@ -48,10 +55,10 @@ fn test_crate::into_inner(@1: alloc::boxed::Box<alloc::string::String>[core::mar
     storage_live(@12)
     storage_live(@13)
     storage_live(_x@2)
-    @6 := transmute<core::ptr::non_null::NonNull<alloc::string::String>, *const alloc::string::String>(copy ((*(b@1)).0))
-    @7 := cast<*const alloc::string::String, *const ()>(copy (@6))
+    @6 := transmute<NonNull<String>, *const String>(copy ((*(b@1)).0))
+    @7 := cast<*const String, *const ()>(copy (@6))
     @8 := transmute<*const (), usize>(copy (@7))
-    @9 := size_of<alloc::string::String>
+    @9 := size_of<String>
     @10 := copy (@9) != const (0 : usize)
     @11 := copy (@8) == const (0 : usize)
     @12 := copy (@11) & copy (@10)
@@ -61,26 +68,28 @@ fn test_crate::into_inner(@1: alloc::boxed::Box<alloc::string::String>[core::mar
     @0 := ()
     drop _x@2
     storage_dead(_x@2)
-    @5 := transmute<core::ptr::non_null::NonNull<alloc::string::String>, *const alloc::string::String>(copy ((*(b@1)).0))
+    @5 := transmute<NonNull<String>, *const String>(copy ((*(b@1)).0))
     @3 := &mut b@1
-    @4 := alloc::boxed::{impl core::ops::drop::Drop for alloc::boxed::Box<T>[@TraitClause0]}#8::drop<'_, alloc::string::String, alloc::alloc::Global>[core::marker::Sized<alloc::alloc::Global>](move (@3))
+    @4 := {impl Drop for alloc::boxed::Box<T>[@TraitClause0]}#8::drop<'_, String, Global>[Sized<Global>](move (@3))
     @0 := ()
     return
 }
 
+// Full name: core::ops::drop::Drop
 #[lang_item("drop")]
-pub trait core::ops::drop::Drop<Self>
+pub trait Drop<Self>
 {
     fn drop<'_0> = core::ops::drop::Drop::drop<'_0_0, Self>
 }
 
 pub fn core::ops::drop::Drop::drop<'_0, Self>(@1: &'_0 mut (Self))
 
-impl alloc::boxed::{impl core::ops::drop::Drop for alloc::boxed::Box<T>[@TraitClause0]}#8<T, A> : core::ops::drop::Drop<alloc::boxed::Box<T>[@TraitClause0]>
+// Full name: alloc::boxed::{impl Drop for alloc::boxed::Box<T>[@TraitClause0]}#8
+impl<T, A> Drop for alloc::boxed::Box<T>[@TraitClause0]
 where
-    [@TraitClause0]: core::marker::Sized<A>,
+    [@TraitClause0]: Sized<A>,
 {
-    fn drop<'_0> = alloc::boxed::{impl core::ops::drop::Drop for alloc::boxed::Box<T>[@TraitClause0]}#8::drop<'_0_0, T, A>[@TraitClause0]
+    fn drop<'_0> = {impl Drop for alloc::boxed::Box<T>[@TraitClause0]}#8::drop<'_0_0, T, A>[@TraitClause0]
 }
 
 

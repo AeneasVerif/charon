@@ -1,31 +1,35 @@
 # Final LLBC before serialization:
 
-enum test_crate::Foo {
+// Full name: test_crate::Foo
+enum Foo {
   A,
   B(usize),
 }
 
-pub fn test_crate::{test_crate::Foo}::b() -> test_crate::Foo
+// Full name: test_crate::{Foo}::b
+pub fn b() -> Foo
 {
-    let @0: test_crate::Foo; // return
+    let @0: Foo; // return
 
-    @0 := test_crate::Foo::B { 0: const (0 : usize) }
+    @0 := Foo::B { 0: const (0 : usize) }
     return
 }
 
-struct test_crate::Bar<'a> {
+// Full name: test_crate::Bar
+struct Bar<'a> {
   r: &'a (i32),
 }
 
-fn test_crate::{test_crate::Bar<'a>}#1::new<'a>(@1: &'a (i32)) -> test_crate::Bar<'a>
+// Full name: test_crate::{Bar<'a>}#1::new
+fn new<'a>(@1: &'a (i32)) -> Bar<'a>
 {
-    let @0: test_crate::Bar<'_>; // return
+    let @0: Bar<'_>; // return
     let r@1: &'_ (i32); // arg #1
     let @2: &'_ (i32); // anonymous local
 
     storage_live(@2)
     @2 := copy (r@1)
-    @0 := test_crate::Bar { r: move (@2) }
+    @0 := Bar { r: move (@2) }
     storage_dead(@2)
     return
 }

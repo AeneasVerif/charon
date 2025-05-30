@@ -543,7 +543,9 @@ where
         } else {
             "fn"
         };
-        let intro = self.item_meta.fmt_item_intro(ctx, tab, keyword);
+        let intro = self
+            .item_meta
+            .fmt_item_intro(ctx, tab, keyword, self.def_id);
 
         // Update the context
         let ctx = &ctx.set_generics(&self.signature.generics);
@@ -605,7 +607,9 @@ where
             GlobalKind::Static => "static",
             GlobalKind::AnonConst | GlobalKind::NamedConst => "const",
         };
-        let intro = self.item_meta.fmt_item_intro(ctx, tab, keyword);
+        let intro = self
+            .item_meta
+            .fmt_item_intro(ctx, tab, keyword, self.def_id);
 
         // Update the context with the generics
         let ctx = &ctx.set_generics(&self.generics);
@@ -645,18 +649,31 @@ impl<C: AstFormatter> FmtWithCtx<C> for ImplElem {
 
 impl ItemMeta {
     /// Format the start of an item definition, up to the name.
-    pub fn fmt_item_intro<C>(&self, ctx: &C, tab: &str, keyword: &str) -> String
+    pub fn fmt_item_intro<C>(
+        &self,
+        ctx: &C,
+        tab: &str,
+        keyword: &str,
+        id: impl Into<AnyTransId>,
+    ) -> String
     where
         C: AstFormatter,
     {
-        let name = self.name.fmt_with_ctx(ctx);
+        let full_name = self.name.fmt_with_ctx(ctx);
+        let (name, comment) =
+            if let Some(short_name) = ctx.get_crate().and_then(|c| c.short_names.get(&id.into())) {
+                let short_name = short_name.fmt_with_ctx(ctx);
+                (short_name, format!("// Full name: {full_name}\n"))
+            } else {
+                (full_name, String::new())
+            };
         let vis = if self.attr_info.public { "pub " } else { "" };
         let lang_item = self
             .lang_item
             .as_ref()
             .map(|id| format!("{tab}#[lang_item(\"{id}\")]\n"))
             .unwrap_or_default();
-        format!("{lang_item}{tab}{vis}{keyword} {name}")
+        format!("{comment}{lang_item}{tab}{vis}{keyword} {name}")
     }
 }
 
@@ -1300,7 +1317,7 @@ impl<C: AstFormatter> FmtWithCtx<C> for TraitClause {
 
 impl<C: AstFormatter> FmtWithCtx<C> for TraitDecl {
     fn fmt_with_ctx(&self, ctx: &C) -> String {
-        let intro = self.item_meta.fmt_item_intro(ctx, "", "trait");
+        let intro = self.item_meta.fmt_item_intro(ctx, "", "trait", self.def_id);
 
         // Update the context
         let ctx = &ctx.set_generics(&self.generics);
@@ -1365,7 +1382,7 @@ impl<C: AstFormatter> FmtWithCtx<C> for TraitDeclRef {
 
 impl<C: AstFormatter> FmtWithCtx<C> for TraitImpl {
     fn fmt_with_ctx(&self, ctx: &C) -> String {
-        let intro = self.item_meta.fmt_item_intro(ctx, "", "impl");
+        let full_name = self.item_meta.name.fmt_with_ctx(ctx);
 
         // Update the context
         let ctx = &ctx.set_generics(&self.generics);
@@ -1420,8 +1437,14 @@ impl<C: AstFormatter> FmtWithCtx<C> for TraitImpl {
             }
         };
 
-        let impl_trait = self.impl_trait.fmt_with_ctx(ctx);
-        format!("{intro}{generics} : {impl_trait}{clauses}{items}")
+        let mut impl_trait = self.impl_trait.clone();
+        let self_ty = impl_trait.generics.types.remove(TypeVarId::ZERO).unwrap();
+        let self_ty = self_ty.fmt_with_ctx(ctx);
+        let impl_trait = impl_trait.fmt_with_ctx(ctx);
+        format!(
+            "// Full name: {full_name}\n\
+            impl{generics} {impl_trait} for {self_ty}{clauses}{items}"
+        )
     }
 }
 
@@ -1560,7 +1583,7 @@ impl<C: AstFormatter> FmtWithCtx<C> for TypeDecl {
             TypeDeclKind::Alias(..) => "type",
             TypeDeclKind::Opaque | TypeDeclKind::Error(..) => "opaque type",
         };
-        let intro = self.item_meta.fmt_item_intro(ctx, "", keyword);
+        let intro = self.item_meta.fmt_item_intro(ctx, "", keyword, self.def_id);
 
         let ctx = &ctx.set_generics(&self.generics);
         let (params, preds) = self.generics.fmt_with_ctx_with_trait_clauses(ctx, "  ");

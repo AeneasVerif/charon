@@ -1,11 +1,13 @@
 # Final LLBC before serialization:
 
-pub enum test_crate::AB {
+// Full name: test_crate::AB
+pub enum AB {
   A,
   B,
 }
 
-pub fn test_crate::incr<'_0>(@1: &'_0 mut (u32))
+// Full name: test_crate::incr
+pub fn incr<'_0>(@1: &'_0 mut (u32))
 {
     let @0: (); // return
     let x@1: &'_ mut (u32); // arg #1
@@ -16,12 +18,14 @@ pub fn test_crate::incr<'_0>(@1: &'_0 mut (u32))
     return
 }
 
+// Full name: core::marker::Sized
 #[lang_item("sized")]
-pub trait core::marker::Sized<Self>
+pub trait Sized<Self>
 
-pub fn test_crate::array_to_shared_slice_<'_0, T>(@1: &'_0 (Array<T, 32 : usize>)) -> &'_0 (Slice<T>)
+// Full name: test_crate::array_to_shared_slice_
+pub fn array_to_shared_slice_<'_0, T>(@1: &'_0 (Array<T, 32 : usize>)) -> &'_0 (Slice<T>)
 where
-    [@TraitClause0]: core::marker::Sized<T>,
+    [@TraitClause0]: Sized<T>,
 {
     let @0: &'_ (Slice<T>); // return
     let s@1: &'_ (Array<T, 32 : usize>); // arg #1
@@ -34,9 +38,10 @@ where
     return
 }
 
-pub fn test_crate::array_to_mut_slice_<'_0, T>(@1: &'_0 mut (Array<T, 32 : usize>)) -> &'_0 mut (Slice<T>)
+// Full name: test_crate::array_to_mut_slice_
+pub fn array_to_mut_slice_<'_0, T>(@1: &'_0 mut (Array<T, 32 : usize>)) -> &'_0 mut (Slice<T>)
 where
-    [@TraitClause0]: core::marker::Sized<T>,
+    [@TraitClause0]: Sized<T>,
 {
     let @0: &'_ mut (Slice<T>); // return
     let s@1: &'_ mut (Array<T, 32 : usize>); // arg #1
@@ -53,14 +58,16 @@ where
     return
 }
 
+// Full name: core::slice::{Slice<T>}::len
 #[lang_item("slice_len_fn")]
-pub fn core::slice::{Slice<T>}::len<'_0, T>(@1: &'_0 (Slice<T>)) -> usize
+pub fn len<'_0, T>(@1: &'_0 (Slice<T>)) -> usize
 where
-    [@TraitClause0]: core::marker::Sized<T>,
+    [@TraitClause0]: Sized<T>,
 
-pub fn test_crate::array_len<T>(@1: Array<T, 32 : usize>) -> usize
+// Full name: test_crate::array_len
+pub fn array_len<T>(@1: Array<T, 32 : usize>) -> usize
 where
-    [@TraitClause0]: core::marker::Sized<T>,
+    [@TraitClause0]: Sized<T>,
 {
     let @0: usize; // return
     let s@1: Array<T, 32 : usize>; // arg #1
@@ -72,15 +79,16 @@ where
     @3 := &s@1
     @2 := @ArrayToSliceShared<'_, T, 32 : usize>(move (@3))
     storage_dead(@3)
-    @0 := core::slice::{Slice<T>}::len<'_, T>[@TraitClause0](move (@2))
+    @0 := len<'_, T>[@TraitClause0](move (@2))
     storage_dead(@2)
     drop s@1
     return
 }
 
-pub fn test_crate::shared_array_len<'_0, T>(@1: &'_0 (Array<T, 32 : usize>)) -> usize
+// Full name: test_crate::shared_array_len
+pub fn shared_array_len<'_0, T>(@1: &'_0 (Array<T, 32 : usize>)) -> usize
 where
-    [@TraitClause0]: core::marker::Sized<T>,
+    [@TraitClause0]: Sized<T>,
 {
     let @0: usize; // return
     let s@1: &'_ (Array<T, 32 : usize>); // arg #1
@@ -92,14 +100,15 @@ where
     @3 := &*(s@1)
     @2 := @ArrayToSliceShared<'_, T, 32 : usize>(move (@3))
     storage_dead(@3)
-    @0 := core::slice::{Slice<T>}::len<'_, T>[@TraitClause0](move (@2))
+    @0 := len<'_, T>[@TraitClause0](move (@2))
     storage_dead(@2)
     return
 }
 
-pub fn test_crate::shared_slice_len<'_0, T>(@1: &'_0 (Slice<T>)) -> usize
+// Full name: test_crate::shared_slice_len
+pub fn shared_slice_len<'_0, T>(@1: &'_0 (Slice<T>)) -> usize
 where
-    [@TraitClause0]: core::marker::Sized<T>,
+    [@TraitClause0]: Sized<T>,
 {
     let @0: usize; // return
     let s@1: &'_ (Slice<T>); // arg #1
@@ -107,14 +116,15 @@ where
 
     storage_live(@2)
     @2 := &*(s@1)
-    @0 := core::slice::{Slice<T>}::len<'_, T>[@TraitClause0](move (@2))
+    @0 := len<'_, T>[@TraitClause0](move (@2))
     storage_dead(@2)
     return
 }
 
-pub fn test_crate::index_array_shared<'_0, T>(@1: &'_0 (Array<T, 32 : usize>), @2: usize) -> &'_0 (T)
+// Full name: test_crate::index_array_shared
+pub fn index_array_shared<'_0, T>(@1: &'_0 (Array<T, 32 : usize>), @2: usize) -> &'_0 (T)
 where
-    [@TraitClause0]: core::marker::Sized<T>,
+    [@TraitClause0]: Sized<T>,
 {
     let @0: &'_ (T); // return
     let s@1: &'_ (Array<T, 32 : usize>); // arg #1
@@ -138,7 +148,8 @@ where
     return
 }
 
-pub fn test_crate::index_array_u32(@1: Array<u32, 32 : usize>, @2: usize) -> u32
+// Full name: test_crate::index_array_u32
+pub fn index_array_u32(@1: Array<u32, 32 : usize>, @2: usize) -> u32
 {
     let @0: u32; // return
     let s@1: Array<u32, 32 : usize>; // arg #1
@@ -158,7 +169,8 @@ pub fn test_crate::index_array_u32(@1: Array<u32, 32 : usize>, @2: usize) -> u32
     return
 }
 
-pub fn test_crate::index_array_copy<'_0>(@1: &'_0 (Array<u32, 32 : usize>)) -> u32
+// Full name: test_crate::index_array_copy
+pub fn index_array_copy<'_0>(@1: &'_0 (Array<u32, 32 : usize>)) -> u32
 {
     let @0: u32; // return
     let x@1: &'_ (Array<u32, 32 : usize>); // arg #1
@@ -177,9 +189,10 @@ pub fn test_crate::index_array_copy<'_0>(@1: &'_0 (Array<u32, 32 : usize>)) -> u
     return
 }
 
-pub fn test_crate::index_mut_array<'_0, T>(@1: &'_0 mut (Array<T, 32 : usize>), @2: usize) -> &'_0 mut (T)
+// Full name: test_crate::index_mut_array
+pub fn index_mut_array<'_0, T>(@1: &'_0 mut (Array<T, 32 : usize>), @2: usize) -> &'_0 mut (T)
 where
-    [@TraitClause0]: core::marker::Sized<T>,
+    [@TraitClause0]: Sized<T>,
 {
     let @0: &'_ mut (T); // return
     let s@1: &'_ mut (Array<T, 32 : usize>); // arg #1
@@ -207,9 +220,10 @@ where
     return
 }
 
-pub fn test_crate::index_slice<'_0, T>(@1: &'_0 (Slice<T>), @2: usize) -> &'_0 (T)
+// Full name: test_crate::index_slice
+pub fn index_slice<'_0, T>(@1: &'_0 (Slice<T>), @2: usize) -> &'_0 (T)
 where
-    [@TraitClause0]: core::marker::Sized<T>,
+    [@TraitClause0]: Sized<T>,
 {
     let @0: &'_ (T); // return
     let s@1: &'_ (Slice<T>); // arg #1
@@ -233,9 +247,10 @@ where
     return
 }
 
-pub fn test_crate::index_mut_slice<'_0, T>(@1: &'_0 mut (Slice<T>), @2: usize) -> &'_0 mut (T)
+// Full name: test_crate::index_mut_slice
+pub fn index_mut_slice<'_0, T>(@1: &'_0 mut (Slice<T>), @2: usize) -> &'_0 mut (T)
 where
-    [@TraitClause0]: core::marker::Sized<T>,
+    [@TraitClause0]: Sized<T>,
 {
     let @0: &'_ mut (T); // return
     let s@1: &'_ mut (Slice<T>); // arg #1
@@ -263,30 +278,34 @@ where
     return
 }
 
+// Full name: core::ops::range::Range
 #[lang_item("Range")]
-pub struct core::ops::range::Range<Idx>
+pub struct Range<Idx>
   where
-      [@TraitClause0]: core::marker::Sized<Idx>,
+      [@TraitClause0]: Sized<Idx>,
 {
   start: Idx,
   end: Idx,
 }
 
-pub trait core::slice::index::private_slice_index::Sealed<Self>
+// Full name: core::slice::index::private_slice_index::Sealed
+pub trait Sealed<Self>
 
+// Full name: core::option::Option
 #[lang_item("Option")]
-pub enum core::option::Option<T>
+pub enum Option<T>
   where
-      [@TraitClause0]: core::marker::Sized<T>,
+      [@TraitClause0]: Sized<T>,
 {
   None,
   Some(T),
 }
 
+// Full name: core::slice::index::SliceIndex
 #[lang_item("SliceIndex")]
-pub trait core::slice::index::SliceIndex<Self, T, Self_Output>
+pub trait SliceIndex<Self, T, Self_Output>
 {
-    parent_clause0 : [@TraitClause0]: core::slice::index::private_slice_index::Sealed<Self>
+    parent_clause0 : [@TraitClause0]: Sealed<Self>
     fn get<'_0> = core::slice::index::SliceIndex::get<'_0_0, Self, T, Self_Output>
     fn get_mut<'_0> = core::slice::index::SliceIndex::get_mut<'_0_0, Self, T, Self_Output>
     fn get_unchecked = core::slice::index::SliceIndex::get_unchecked<Self, T, Self_Output>
@@ -295,52 +314,62 @@ pub trait core::slice::index::SliceIndex<Self, T, Self_Output>
     fn index_mut<'_0> = core::slice::index::SliceIndex::index_mut<'_0_0, Self, T, Self_Output>
 }
 
-pub fn core::slice::index::{impl core::ops::index::Index<I, Clause2_Output> for Slice<T>}::index<'_0, T, I, Clause2_Output>(@1: &'_0 (Slice<T>), @2: I) -> &'_0 (Clause2_Output)
+// Full name: core::slice::index::{impl Index<I, Clause2_Output> for Slice<T>}::index
+pub fn {impl Index<I, Clause2_Output> for Slice<T>}::index<'_0, T, I, Clause2_Output>(@1: &'_0 (Slice<T>), @2: I) -> &'_0 (Clause2_Output)
 where
-    [@TraitClause0]: core::marker::Sized<T>,
-    [@TraitClause1]: core::marker::Sized<I>,
-    [@TraitClause2]: core::slice::index::SliceIndex<I, Slice<T>, Clause2_Output>,
+    [@TraitClause0]: Sized<T>,
+    [@TraitClause1]: Sized<I>,
+    [@TraitClause2]: SliceIndex<I, Slice<T>, Clause2_Output>,
 
-impl core::slice::index::private_slice_index::{impl core::slice::index::private_slice_index::Sealed for core::ops::range::Range<usize>[core::marker::Sized<usize>]}#1 : core::slice::index::private_slice_index::Sealed<core::ops::range::Range<usize>[core::marker::Sized<usize>]> {}
+// Full name: core::slice::index::private_slice_index::{impl Sealed for Range<usize>[Sized<usize>]}#1
+impl Sealed for Range<usize>[Sized<usize>] {}
 
-pub fn core::slice::index::{impl core::slice::index::SliceIndex<Slice<T>, Slice<T>> for core::ops::range::Range<usize>[core::marker::Sized<usize>]}#4::get<'_0, T>(@1: core::ops::range::Range<usize>[core::marker::Sized<usize>], @2: &'_0 (Slice<T>)) -> core::option::Option<&'_0 (Slice<T>)>[core::marker::Sized<&'_0 (Slice<T>)>]
+// Full name: core::slice::index::{impl SliceIndex<Slice<T>, Slice<T>> for Range<usize>[Sized<usize>]}#4::get
+pub fn {impl SliceIndex<Slice<T>, Slice<T>> for Range<usize>[Sized<usize>]}#4::get<'_0, T>(@1: Range<usize>[Sized<usize>], @2: &'_0 (Slice<T>)) -> Option<&'_0 (Slice<T>)>[Sized<&'_0 (Slice<T>)>]
 where
-    [@TraitClause0]: core::marker::Sized<T>,
+    [@TraitClause0]: Sized<T>,
 
-pub fn core::slice::index::{impl core::slice::index::SliceIndex<Slice<T>, Slice<T>> for core::ops::range::Range<usize>[core::marker::Sized<usize>]}#4::get_mut<'_0, T>(@1: core::ops::range::Range<usize>[core::marker::Sized<usize>], @2: &'_0 mut (Slice<T>)) -> core::option::Option<&'_0 mut (Slice<T>)>[core::marker::Sized<&'_0 mut (Slice<T>)>]
+// Full name: core::slice::index::{impl SliceIndex<Slice<T>, Slice<T>> for Range<usize>[Sized<usize>]}#4::get_mut
+pub fn {impl SliceIndex<Slice<T>, Slice<T>> for Range<usize>[Sized<usize>]}#4::get_mut<'_0, T>(@1: Range<usize>[Sized<usize>], @2: &'_0 mut (Slice<T>)) -> Option<&'_0 mut (Slice<T>)>[Sized<&'_0 mut (Slice<T>)>]
 where
-    [@TraitClause0]: core::marker::Sized<T>,
+    [@TraitClause0]: Sized<T>,
 
-pub unsafe fn core::slice::index::{impl core::slice::index::SliceIndex<Slice<T>, Slice<T>> for core::ops::range::Range<usize>[core::marker::Sized<usize>]}#4::get_unchecked<T>(@1: core::ops::range::Range<usize>[core::marker::Sized<usize>], @2: *const Slice<T>) -> *const Slice<T>
+// Full name: core::slice::index::{impl SliceIndex<Slice<T>, Slice<T>> for Range<usize>[Sized<usize>]}#4::get_unchecked
+pub unsafe fn {impl SliceIndex<Slice<T>, Slice<T>> for Range<usize>[Sized<usize>]}#4::get_unchecked<T>(@1: Range<usize>[Sized<usize>], @2: *const Slice<T>) -> *const Slice<T>
 where
-    [@TraitClause0]: core::marker::Sized<T>,
+    [@TraitClause0]: Sized<T>,
 
-pub unsafe fn core::slice::index::{impl core::slice::index::SliceIndex<Slice<T>, Slice<T>> for core::ops::range::Range<usize>[core::marker::Sized<usize>]}#4::get_unchecked_mut<T>(@1: core::ops::range::Range<usize>[core::marker::Sized<usize>], @2: *mut Slice<T>) -> *mut Slice<T>
+// Full name: core::slice::index::{impl SliceIndex<Slice<T>, Slice<T>> for Range<usize>[Sized<usize>]}#4::get_unchecked_mut
+pub unsafe fn {impl SliceIndex<Slice<T>, Slice<T>> for Range<usize>[Sized<usize>]}#4::get_unchecked_mut<T>(@1: Range<usize>[Sized<usize>], @2: *mut Slice<T>) -> *mut Slice<T>
 where
-    [@TraitClause0]: core::marker::Sized<T>,
+    [@TraitClause0]: Sized<T>,
 
-pub fn core::slice::index::{impl core::slice::index::SliceIndex<Slice<T>, Slice<T>> for core::ops::range::Range<usize>[core::marker::Sized<usize>]}#4::index<'_0, T>(@1: core::ops::range::Range<usize>[core::marker::Sized<usize>], @2: &'_0 (Slice<T>)) -> &'_0 (Slice<T>)
+// Full name: core::slice::index::{impl SliceIndex<Slice<T>, Slice<T>> for Range<usize>[Sized<usize>]}#4::index
+pub fn {impl SliceIndex<Slice<T>, Slice<T>> for Range<usize>[Sized<usize>]}#4::index<'_0, T>(@1: Range<usize>[Sized<usize>], @2: &'_0 (Slice<T>)) -> &'_0 (Slice<T>)
 where
-    [@TraitClause0]: core::marker::Sized<T>,
+    [@TraitClause0]: Sized<T>,
 
-pub fn core::slice::index::{impl core::slice::index::SliceIndex<Slice<T>, Slice<T>> for core::ops::range::Range<usize>[core::marker::Sized<usize>]}#4::index_mut<'_0, T>(@1: core::ops::range::Range<usize>[core::marker::Sized<usize>], @2: &'_0 mut (Slice<T>)) -> &'_0 mut (Slice<T>)
+// Full name: core::slice::index::{impl SliceIndex<Slice<T>, Slice<T>> for Range<usize>[Sized<usize>]}#4::index_mut
+pub fn {impl SliceIndex<Slice<T>, Slice<T>> for Range<usize>[Sized<usize>]}#4::index_mut<'_0, T>(@1: Range<usize>[Sized<usize>], @2: &'_0 mut (Slice<T>)) -> &'_0 mut (Slice<T>)
 where
-    [@TraitClause0]: core::marker::Sized<T>,
+    [@TraitClause0]: Sized<T>,
 
-impl core::slice::index::{impl core::slice::index::SliceIndex<Slice<T>, Slice<T>> for core::ops::range::Range<usize>[core::marker::Sized<usize>]}#4<T> : core::slice::index::SliceIndex<core::ops::range::Range<usize>[core::marker::Sized<usize>], Slice<T>, Slice<T>>
+// Full name: core::slice::index::{impl SliceIndex<Slice<T>, Slice<T>> for Range<usize>[Sized<usize>]}#4
+impl<T> SliceIndex<Slice<T>, Slice<T>> for Range<usize>[Sized<usize>]
 where
-    [@TraitClause0]: core::marker::Sized<T>,
+    [@TraitClause0]: Sized<T>,
 {
-    parent_clause0 = core::slice::index::private_slice_index::{impl core::slice::index::private_slice_index::Sealed for core::ops::range::Range<usize>[core::marker::Sized<usize>]}#1
-    fn get<'_0> = core::slice::index::{impl core::slice::index::SliceIndex<Slice<T>, Slice<T>> for core::ops::range::Range<usize>[core::marker::Sized<usize>]}#4::get<'_0_0, T>[@TraitClause0]
-    fn get_mut<'_0> = core::slice::index::{impl core::slice::index::SliceIndex<Slice<T>, Slice<T>> for core::ops::range::Range<usize>[core::marker::Sized<usize>]}#4::get_mut<'_0_0, T>[@TraitClause0]
-    fn get_unchecked = core::slice::index::{impl core::slice::index::SliceIndex<Slice<T>, Slice<T>> for core::ops::range::Range<usize>[core::marker::Sized<usize>]}#4::get_unchecked<T>[@TraitClause0]
-    fn get_unchecked_mut = core::slice::index::{impl core::slice::index::SliceIndex<Slice<T>, Slice<T>> for core::ops::range::Range<usize>[core::marker::Sized<usize>]}#4::get_unchecked_mut<T>[@TraitClause0]
-    fn index<'_0> = core::slice::index::{impl core::slice::index::SliceIndex<Slice<T>, Slice<T>> for core::ops::range::Range<usize>[core::marker::Sized<usize>]}#4::index<'_0_0, T>[@TraitClause0]
-    fn index_mut<'_0> = core::slice::index::{impl core::slice::index::SliceIndex<Slice<T>, Slice<T>> for core::ops::range::Range<usize>[core::marker::Sized<usize>]}#4::index_mut<'_0_0, T>[@TraitClause0]
+    parent_clause0 = {impl Sealed for Range<usize>[Sized<usize>]}#1
+    fn get<'_0> = {impl SliceIndex<Slice<T>, Slice<T>> for Range<usize>[Sized<usize>]}#4::get<'_0_0, T>[@TraitClause0]
+    fn get_mut<'_0> = {impl SliceIndex<Slice<T>, Slice<T>> for Range<usize>[Sized<usize>]}#4::get_mut<'_0_0, T>[@TraitClause0]
+    fn get_unchecked = {impl SliceIndex<Slice<T>, Slice<T>> for Range<usize>[Sized<usize>]}#4::get_unchecked<T>[@TraitClause0]
+    fn get_unchecked_mut = {impl SliceIndex<Slice<T>, Slice<T>> for Range<usize>[Sized<usize>]}#4::get_unchecked_mut<T>[@TraitClause0]
+    fn index<'_0> = {impl SliceIndex<Slice<T>, Slice<T>> for Range<usize>[Sized<usize>]}#4::index<'_0_0, T>[@TraitClause0]
+    fn index_mut<'_0> = {impl SliceIndex<Slice<T>, Slice<T>> for Range<usize>[Sized<usize>]}#4::index_mut<'_0_0, T>[@TraitClause0]
 }
 
-pub fn test_crate::slice_subslice_shared_<'_0>(@1: &'_0 (Slice<u32>), @2: usize, @3: usize) -> &'_0 (Slice<u32>)
+// Full name: test_crate::slice_subslice_shared_
+pub fn slice_subslice_shared_<'_0>(@1: &'_0 (Slice<u32>), @2: usize, @3: usize) -> &'_0 (Slice<u32>)
 {
     let @0: &'_ (Slice<u32>); // return
     let x@1: &'_ (Slice<u32>); // arg #1
@@ -349,7 +378,7 @@ pub fn test_crate::slice_subslice_shared_<'_0>(@1: &'_0 (Slice<u32>), @2: usize,
     let @4: &'_ (Slice<u32>); // anonymous local
     let @5: &'_ (Slice<u32>); // anonymous local
     let @6: &'_ (Slice<u32>); // anonymous local
-    let @7: core::ops::range::Range<usize>[core::marker::Sized<usize>]; // anonymous local
+    let @7: Range<usize>[Sized<usize>]; // anonymous local
     let @8: usize; // anonymous local
     let @9: usize; // anonymous local
 
@@ -362,10 +391,10 @@ pub fn test_crate::slice_subslice_shared_<'_0>(@1: &'_0 (Slice<u32>), @2: usize,
     @8 := copy (y@2)
     storage_live(@9)
     @9 := copy (z@3)
-    @7 := core::ops::range::Range { start: move (@8), end: move (@9) }
+    @7 := Range { start: move (@8), end: move (@9) }
     storage_dead(@9)
     storage_dead(@8)
-    @5 := core::slice::index::{impl core::ops::index::Index<I, Clause2_Output> for Slice<T>}::index<'_, u32, core::ops::range::Range<usize>[core::marker::Sized<usize>], Slice<u32>>[core::marker::Sized<u32>, core::marker::Sized<core::ops::range::Range<usize>[core::marker::Sized<usize>]>, core::slice::index::{impl core::slice::index::SliceIndex<Slice<T>, Slice<T>> for core::ops::range::Range<usize>[core::marker::Sized<usize>]}#4<u32>[core::marker::Sized<u32>]](move (@6), move (@7))
+    @5 := {impl Index<I, Clause2_Output> for Slice<T>}::index<'_, u32, Range<usize>[Sized<usize>], Slice<u32>>[Sized<u32>, Sized<Range<usize>[Sized<usize>]>, {impl SliceIndex<Slice<T>, Slice<T>> for Range<usize>[Sized<usize>]}#4<u32>[Sized<u32>]](move (@6), move (@7))
     storage_dead(@7)
     storage_dead(@6)
     @4 := &*(@5)
@@ -375,13 +404,15 @@ pub fn test_crate::slice_subslice_shared_<'_0>(@1: &'_0 (Slice<u32>), @2: usize,
     return
 }
 
-pub fn core::slice::index::{impl core::ops::index::IndexMut<I, Clause2_Output> for Slice<T>}#1::index_mut<'_0, T, I, Clause2_Output>(@1: &'_0 mut (Slice<T>), @2: I) -> &'_0 mut (Clause2_Output)
+// Full name: core::slice::index::{impl IndexMut<I, Clause2_Output> for Slice<T>}#1::index_mut
+pub fn {impl IndexMut<I, Clause2_Output> for Slice<T>}#1::index_mut<'_0, T, I, Clause2_Output>(@1: &'_0 mut (Slice<T>), @2: I) -> &'_0 mut (Clause2_Output)
 where
-    [@TraitClause0]: core::marker::Sized<T>,
-    [@TraitClause1]: core::marker::Sized<I>,
-    [@TraitClause2]: core::slice::index::SliceIndex<I, Slice<T>, Clause2_Output>,
+    [@TraitClause0]: Sized<T>,
+    [@TraitClause1]: Sized<I>,
+    [@TraitClause2]: SliceIndex<I, Slice<T>, Clause2_Output>,
 
-pub fn test_crate::slice_subslice_mut_<'_0>(@1: &'_0 mut (Slice<u32>), @2: usize, @3: usize) -> &'_0 mut (Slice<u32>)
+// Full name: test_crate::slice_subslice_mut_
+pub fn slice_subslice_mut_<'_0>(@1: &'_0 mut (Slice<u32>), @2: usize, @3: usize) -> &'_0 mut (Slice<u32>)
 {
     let @0: &'_ mut (Slice<u32>); // return
     let x@1: &'_ mut (Slice<u32>); // arg #1
@@ -391,7 +422,7 @@ pub fn test_crate::slice_subslice_mut_<'_0>(@1: &'_0 mut (Slice<u32>), @2: usize
     let @5: &'_ mut (Slice<u32>); // anonymous local
     let @6: &'_ mut (Slice<u32>); // anonymous local
     let @7: &'_ mut (Slice<u32>); // anonymous local
-    let @8: core::ops::range::Range<usize>[core::marker::Sized<usize>]; // anonymous local
+    let @8: Range<usize>[Sized<usize>]; // anonymous local
     let @9: usize; // anonymous local
     let @10: usize; // anonymous local
 
@@ -405,10 +436,10 @@ pub fn test_crate::slice_subslice_mut_<'_0>(@1: &'_0 mut (Slice<u32>), @2: usize
     @9 := copy (y@2)
     storage_live(@10)
     @10 := copy (z@3)
-    @8 := core::ops::range::Range { start: move (@9), end: move (@10) }
+    @8 := Range { start: move (@9), end: move (@10) }
     storage_dead(@10)
     storage_dead(@9)
-    @6 := core::slice::index::{impl core::ops::index::IndexMut<I, Clause2_Output> for Slice<T>}#1::index_mut<'_, u32, core::ops::range::Range<usize>[core::marker::Sized<usize>], Slice<u32>>[core::marker::Sized<u32>, core::marker::Sized<core::ops::range::Range<usize>[core::marker::Sized<usize>]>, core::slice::index::{impl core::slice::index::SliceIndex<Slice<T>, Slice<T>> for core::ops::range::Range<usize>[core::marker::Sized<usize>]}#4<u32>[core::marker::Sized<u32>]](move (@7), move (@8))
+    @6 := {impl IndexMut<I, Clause2_Output> for Slice<T>}#1::index_mut<'_, u32, Range<usize>[Sized<usize>], Slice<u32>>[Sized<u32>, Sized<Range<usize>[Sized<usize>]>, {impl SliceIndex<Slice<T>, Slice<T>> for Range<usize>[Sized<usize>]}#4<u32>[Sized<u32>]](move (@7), move (@8))
     storage_dead(@8)
     storage_dead(@7)
     @5 := &mut *(@6)
@@ -420,7 +451,8 @@ pub fn test_crate::slice_subslice_mut_<'_0>(@1: &'_0 mut (Slice<u32>), @2: usize
     return
 }
 
-pub fn test_crate::array_to_slice_shared_<'_0>(@1: &'_0 (Array<u32, 32 : usize>)) -> &'_0 (Slice<u32>)
+// Full name: test_crate::array_to_slice_shared_
+pub fn array_to_slice_shared_<'_0>(@1: &'_0 (Array<u32, 32 : usize>)) -> &'_0 (Slice<u32>)
 {
     let @0: &'_ (Slice<u32>); // return
     let x@1: &'_ (Array<u32, 32 : usize>); // arg #1
@@ -433,7 +465,8 @@ pub fn test_crate::array_to_slice_shared_<'_0>(@1: &'_0 (Array<u32, 32 : usize>)
     return
 }
 
-pub fn test_crate::array_to_slice_mut_<'_0>(@1: &'_0 mut (Array<u32, 32 : usize>)) -> &'_0 mut (Slice<u32>)
+// Full name: test_crate::array_to_slice_mut_
+pub fn array_to_slice_mut_<'_0>(@1: &'_0 mut (Array<u32, 32 : usize>)) -> &'_0 mut (Slice<u32>)
 {
     let @0: &'_ mut (Slice<u32>); // return
     let x@1: &'_ mut (Array<u32, 32 : usize>); // arg #1
@@ -450,28 +483,32 @@ pub fn test_crate::array_to_slice_mut_<'_0>(@1: &'_0 mut (Array<u32, 32 : usize>
     return
 }
 
+// Full name: core::ops::index::Index
 #[lang_item("index")]
-pub trait core::ops::index::Index<Self, Idx, Self_Output>
+pub trait Index<Self, Idx, Self_Output>
 {
     fn index<'_0> = core::ops::index::Index::index<'_0_0, Self, Idx, Self_Output>
 }
 
-pub fn core::array::{impl core::ops::index::Index<I, Clause2_Output> for Array<T, const N : usize>}#15::index<'_0, T, I, Clause2_Output, const N : usize>(@1: &'_0 (Array<T, const N : usize>), @2: I) -> &'_0 (Clause2_Output)
+// Full name: core::array::{impl Index<I, Clause2_Output> for Array<T, const N : usize>}#15::index
+pub fn {impl Index<I, Clause2_Output> for Array<T, const N : usize>}#15::index<'_0, T, I, Clause2_Output, const N : usize>(@1: &'_0 (Array<T, const N : usize>), @2: I) -> &'_0 (Clause2_Output)
 where
-    [@TraitClause0]: core::marker::Sized<T>,
-    [@TraitClause1]: core::marker::Sized<I>,
-    [@TraitClause2]: core::ops::index::Index<Slice<T>, I, Clause2_Output>,
+    [@TraitClause0]: Sized<T>,
+    [@TraitClause1]: Sized<I>,
+    [@TraitClause2]: Index<Slice<T>, I, Clause2_Output>,
 
-impl core::slice::index::{impl core::ops::index::Index<I, Clause2_Output> for Slice<T>}<T, I, Clause2_Output> : core::ops::index::Index<Slice<T>, I, Clause2_Output>
+// Full name: core::slice::index::{impl Index<I, Clause2_Output> for Slice<T>}
+impl<T, I, Clause2_Output> Index<I, Clause2_Output> for Slice<T>
 where
-    [@TraitClause0]: core::marker::Sized<T>,
-    [@TraitClause1]: core::marker::Sized<I>,
-    [@TraitClause2]: core::slice::index::SliceIndex<I, Slice<T>, Clause2_Output>,
+    [@TraitClause0]: Sized<T>,
+    [@TraitClause1]: Sized<I>,
+    [@TraitClause2]: SliceIndex<I, Slice<T>, Clause2_Output>,
 {
-    fn index<'_0> = core::slice::index::{impl core::ops::index::Index<I, Clause2_Output> for Slice<T>}::index<'_0_0, T, I, Clause2_Output>[@TraitClause0, @TraitClause1, @TraitClause2]
+    fn index<'_0> = {impl Index<I, Clause2_Output> for Slice<T>}::index<'_0_0, T, I, Clause2_Output>[@TraitClause0, @TraitClause1, @TraitClause2]
 }
 
-pub fn test_crate::array_subslice_shared_<'_0>(@1: &'_0 (Array<u32, 32 : usize>), @2: usize, @3: usize) -> &'_0 (Slice<u32>)
+// Full name: test_crate::array_subslice_shared_
+pub fn array_subslice_shared_<'_0>(@1: &'_0 (Array<u32, 32 : usize>), @2: usize, @3: usize) -> &'_0 (Slice<u32>)
 {
     let @0: &'_ (Slice<u32>); // return
     let x@1: &'_ (Array<u32, 32 : usize>); // arg #1
@@ -480,7 +517,7 @@ pub fn test_crate::array_subslice_shared_<'_0>(@1: &'_0 (Array<u32, 32 : usize>)
     let @4: &'_ (Slice<u32>); // anonymous local
     let @5: &'_ (Slice<u32>); // anonymous local
     let @6: &'_ (Array<u32, 32 : usize>); // anonymous local
-    let @7: core::ops::range::Range<usize>[core::marker::Sized<usize>]; // anonymous local
+    let @7: Range<usize>[Sized<usize>]; // anonymous local
     let @8: usize; // anonymous local
     let @9: usize; // anonymous local
 
@@ -493,10 +530,10 @@ pub fn test_crate::array_subslice_shared_<'_0>(@1: &'_0 (Array<u32, 32 : usize>)
     @8 := copy (y@2)
     storage_live(@9)
     @9 := copy (z@3)
-    @7 := core::ops::range::Range { start: move (@8), end: move (@9) }
+    @7 := Range { start: move (@8), end: move (@9) }
     storage_dead(@9)
     storage_dead(@8)
-    @5 := core::array::{impl core::ops::index::Index<I, Clause2_Output> for Array<T, const N : usize>}#15::index<'_, u32, core::ops::range::Range<usize>[core::marker::Sized<usize>], Slice<u32>, 32 : usize>[core::marker::Sized<u32>, core::marker::Sized<core::ops::range::Range<usize>[core::marker::Sized<usize>]>, core::slice::index::{impl core::ops::index::Index<I, Clause2_Output> for Slice<T>}<u32, core::ops::range::Range<usize>[core::marker::Sized<usize>], Slice<u32>>[core::marker::Sized<u32>, core::marker::Sized<core::ops::range::Range<usize>[core::marker::Sized<usize>]>, core::slice::index::{impl core::slice::index::SliceIndex<Slice<T>, Slice<T>> for core::ops::range::Range<usize>[core::marker::Sized<usize>]}#4<u32>[core::marker::Sized<u32>]]](move (@6), move (@7))
+    @5 := {impl Index<I, Clause2_Output> for Array<T, const N : usize>}#15::index<'_, u32, Range<usize>[Sized<usize>], Slice<u32>, 32 : usize>[Sized<u32>, Sized<Range<usize>[Sized<usize>]>, {impl Index<I, Clause2_Output> for Slice<T>}<u32, Range<usize>[Sized<usize>], Slice<u32>>[Sized<u32>, Sized<Range<usize>[Sized<usize>]>, {impl SliceIndex<Slice<T>, Slice<T>> for Range<usize>[Sized<usize>]}#4<u32>[Sized<u32>]]](move (@6), move (@7))
     storage_dead(@7)
     storage_dead(@6)
     @4 := &*(@5)
@@ -506,30 +543,34 @@ pub fn test_crate::array_subslice_shared_<'_0>(@1: &'_0 (Array<u32, 32 : usize>)
     return
 }
 
+// Full name: core::ops::index::IndexMut
 #[lang_item("index_mut")]
-pub trait core::ops::index::IndexMut<Self, Idx, Self_Clause0_Output>
+pub trait IndexMut<Self, Idx, Self_Clause0_Output>
 {
-    parent_clause0 : [@TraitClause0]: core::ops::index::Index<Self, Idx, Self_Clause0_Output>
+    parent_clause0 : [@TraitClause0]: Index<Self, Idx, Self_Clause0_Output>
     fn index_mut<'_0> = core::ops::index::IndexMut::index_mut<'_0_0, Self, Idx, Self_Clause0_Output>
 }
 
-pub fn core::array::{impl core::ops::index::IndexMut<I, Clause2_Clause0_Output> for Array<T, const N : usize>}#16::index_mut<'_0, T, I, Clause2_Clause0_Output, const N : usize>(@1: &'_0 mut (Array<T, const N : usize>), @2: I) -> &'_0 mut (Clause2_Clause0_Output)
+// Full name: core::array::{impl IndexMut<I, Clause2_Clause0_Output> for Array<T, const N : usize>}#16::index_mut
+pub fn {impl IndexMut<I, Clause2_Clause0_Output> for Array<T, const N : usize>}#16::index_mut<'_0, T, I, Clause2_Clause0_Output, const N : usize>(@1: &'_0 mut (Array<T, const N : usize>), @2: I) -> &'_0 mut (Clause2_Clause0_Output)
 where
-    [@TraitClause0]: core::marker::Sized<T>,
-    [@TraitClause1]: core::marker::Sized<I>,
-    [@TraitClause2]: core::ops::index::IndexMut<Slice<T>, I, Clause2_Clause0_Output>,
+    [@TraitClause0]: Sized<T>,
+    [@TraitClause1]: Sized<I>,
+    [@TraitClause2]: IndexMut<Slice<T>, I, Clause2_Clause0_Output>,
 
-impl core::slice::index::{impl core::ops::index::IndexMut<I, Clause2_Output> for Slice<T>}#1<T, I, Clause2_Output> : core::ops::index::IndexMut<Slice<T>, I, Clause2_Output>
+// Full name: core::slice::index::{impl IndexMut<I, Clause2_Output> for Slice<T>}#1
+impl<T, I, Clause2_Output> IndexMut<I, Clause2_Output> for Slice<T>
 where
-    [@TraitClause0]: core::marker::Sized<T>,
-    [@TraitClause1]: core::marker::Sized<I>,
-    [@TraitClause2]: core::slice::index::SliceIndex<I, Slice<T>, Clause2_Output>,
+    [@TraitClause0]: Sized<T>,
+    [@TraitClause1]: Sized<I>,
+    [@TraitClause2]: SliceIndex<I, Slice<T>, Clause2_Output>,
 {
-    parent_clause0 = core::slice::index::{impl core::ops::index::Index<I, Clause2_Output> for Slice<T>}<T, I, Clause2_Output>[@TraitClause0, @TraitClause1, @TraitClause2]
-    fn index_mut<'_0> = core::slice::index::{impl core::ops::index::IndexMut<I, Clause2_Output> for Slice<T>}#1::index_mut<'_0_0, T, I, Clause2_Output>[@TraitClause0, @TraitClause1, @TraitClause2]
+    parent_clause0 = {impl Index<I, Clause2_Output> for Slice<T>}<T, I, Clause2_Output>[@TraitClause0, @TraitClause1, @TraitClause2]
+    fn index_mut<'_0> = {impl IndexMut<I, Clause2_Output> for Slice<T>}#1::index_mut<'_0_0, T, I, Clause2_Output>[@TraitClause0, @TraitClause1, @TraitClause2]
 }
 
-pub fn test_crate::array_subslice_mut_<'_0>(@1: &'_0 mut (Array<u32, 32 : usize>), @2: usize, @3: usize) -> &'_0 mut (Slice<u32>)
+// Full name: test_crate::array_subslice_mut_
+pub fn array_subslice_mut_<'_0>(@1: &'_0 mut (Array<u32, 32 : usize>), @2: usize, @3: usize) -> &'_0 mut (Slice<u32>)
 {
     let @0: &'_ mut (Slice<u32>); // return
     let x@1: &'_ mut (Array<u32, 32 : usize>); // arg #1
@@ -539,7 +580,7 @@ pub fn test_crate::array_subslice_mut_<'_0>(@1: &'_0 mut (Array<u32, 32 : usize>
     let @5: &'_ mut (Slice<u32>); // anonymous local
     let @6: &'_ mut (Slice<u32>); // anonymous local
     let @7: &'_ mut (Array<u32, 32 : usize>); // anonymous local
-    let @8: core::ops::range::Range<usize>[core::marker::Sized<usize>]; // anonymous local
+    let @8: Range<usize>[Sized<usize>]; // anonymous local
     let @9: usize; // anonymous local
     let @10: usize; // anonymous local
 
@@ -553,10 +594,10 @@ pub fn test_crate::array_subslice_mut_<'_0>(@1: &'_0 mut (Array<u32, 32 : usize>
     @9 := copy (y@2)
     storage_live(@10)
     @10 := copy (z@3)
-    @8 := core::ops::range::Range { start: move (@9), end: move (@10) }
+    @8 := Range { start: move (@9), end: move (@10) }
     storage_dead(@10)
     storage_dead(@9)
-    @6 := core::array::{impl core::ops::index::IndexMut<I, Clause2_Clause0_Output> for Array<T, const N : usize>}#16::index_mut<'_, u32, core::ops::range::Range<usize>[core::marker::Sized<usize>], Slice<u32>, 32 : usize>[core::marker::Sized<u32>, core::marker::Sized<core::ops::range::Range<usize>[core::marker::Sized<usize>]>, core::slice::index::{impl core::ops::index::IndexMut<I, Clause2_Output> for Slice<T>}#1<u32, core::ops::range::Range<usize>[core::marker::Sized<usize>], Slice<u32>>[core::marker::Sized<u32>, core::marker::Sized<core::ops::range::Range<usize>[core::marker::Sized<usize>]>, core::slice::index::{impl core::slice::index::SliceIndex<Slice<T>, Slice<T>> for core::ops::range::Range<usize>[core::marker::Sized<usize>]}#4<u32>[core::marker::Sized<u32>]]](move (@7), move (@8))
+    @6 := {impl IndexMut<I, Clause2_Clause0_Output> for Array<T, const N : usize>}#16::index_mut<'_, u32, Range<usize>[Sized<usize>], Slice<u32>, 32 : usize>[Sized<u32>, Sized<Range<usize>[Sized<usize>]>, {impl IndexMut<I, Clause2_Output> for Slice<T>}#1<u32, Range<usize>[Sized<usize>], Slice<u32>>[Sized<u32>, Sized<Range<usize>[Sized<usize>]>, {impl SliceIndex<Slice<T>, Slice<T>> for Range<usize>[Sized<usize>]}#4<u32>[Sized<u32>]]](move (@7), move (@8))
     storage_dead(@8)
     storage_dead(@7)
     @5 := &mut *(@6)
@@ -568,9 +609,10 @@ pub fn test_crate::array_subslice_mut_<'_0>(@1: &'_0 mut (Array<u32, 32 : usize>
     return
 }
 
-pub fn test_crate::index_slice_0<'_0, T>(@1: &'_0 (Slice<T>)) -> &'_0 (T)
+// Full name: test_crate::index_slice_0
+pub fn index_slice_0<'_0, T>(@1: &'_0 (Slice<T>)) -> &'_0 (T)
 where
-    [@TraitClause0]: core::marker::Sized<T>,
+    [@TraitClause0]: Sized<T>,
 {
     let @0: &'_ (T); // return
     let s@1: &'_ (Slice<T>); // arg #1
@@ -593,9 +635,10 @@ where
     return
 }
 
-pub fn test_crate::index_array_0<'_0, T>(@1: &'_0 (Array<T, 32 : usize>)) -> &'_0 (T)
+// Full name: test_crate::index_array_0
+pub fn index_array_0<'_0, T>(@1: &'_0 (Array<T, 32 : usize>)) -> &'_0 (T)
 where
-    [@TraitClause0]: core::marker::Sized<T>,
+    [@TraitClause0]: Sized<T>,
 {
     let @0: &'_ (T); // return
     let s@1: &'_ (Array<T, 32 : usize>); // arg #1
@@ -618,7 +661,8 @@ where
     return
 }
 
-pub fn test_crate::index_index_array(@1: Array<Array<u32, 32 : usize>, 32 : usize>, @2: usize, @3: usize) -> u32
+// Full name: test_crate::index_index_array
+pub fn index_index_array(@1: Array<Array<u32, 32 : usize>, 32 : usize>, @2: usize, @3: usize) -> u32
 {
     let @0: u32; // return
     let s@1: Array<Array<u32, 32 : usize>, 32 : usize>; // arg #1
@@ -649,7 +693,8 @@ pub fn test_crate::index_index_array(@1: Array<Array<u32, 32 : usize>, 32 : usiz
     return
 }
 
-pub fn test_crate::update_update_array(@1: Array<Array<u32, 32 : usize>, 32 : usize>, @2: usize, @3: usize)
+// Full name: test_crate::update_update_array
+pub fn update_update_array(@1: Array<Array<u32, 32 : usize>, 32 : usize>, @2: usize, @3: usize)
 {
     let @0: (); // return
     let s@1: Array<Array<u32, 32 : usize>, 32 : usize>; // arg #1
@@ -682,7 +727,8 @@ pub fn test_crate::update_update_array(@1: Array<Array<u32, 32 : usize>, 32 : us
     return
 }
 
-pub fn test_crate::incr_array_self<'_0>(@1: &'_0 mut (Array<u32, 2 : usize>))
+// Full name: test_crate::incr_array_self
+pub fn incr_array_self<'_0>(@1: &'_0 mut (Array<u32, 2 : usize>))
 {
     let @0: (); // return
     let s@1: &'_ mut (Array<u32, 2 : usize>); // arg #1
@@ -712,7 +758,8 @@ pub fn test_crate::incr_array_self<'_0>(@1: &'_0 mut (Array<u32, 2 : usize>))
     return
 }
 
-pub fn test_crate::incr_slice_self<'_0>(@1: &'_0 mut (Slice<u32>))
+// Full name: test_crate::incr_slice_self
+pub fn incr_slice_self<'_0>(@1: &'_0 mut (Slice<u32>))
 {
     let @0: (); // return
     let s@1: &'_ mut (Slice<u32>); // arg #1
@@ -742,7 +789,8 @@ pub fn test_crate::incr_slice_self<'_0>(@1: &'_0 mut (Slice<u32>))
     return
 }
 
-pub fn test_crate::array_local_deep_copy<'_0>(@1: &'_0 (Array<u32, 32 : usize>))
+// Full name: test_crate::array_local_deep_copy
+pub fn array_local_deep_copy<'_0>(@1: &'_0 (Array<u32, 32 : usize>))
 {
     let @0: (); // return
     let x@1: &'_ (Array<u32, 32 : usize>); // arg #1
@@ -756,7 +804,8 @@ pub fn test_crate::array_local_deep_copy<'_0>(@1: &'_0 (Array<u32, 32 : usize>))
     return
 }
 
-pub fn test_crate::take_array(@1: Array<u32, 2 : usize>)
+// Full name: test_crate::take_array
+pub fn take_array(@1: Array<u32, 2 : usize>)
 {
     let @0: (); // return
     let @1: Array<u32, 2 : usize>; // arg #1
@@ -766,7 +815,8 @@ pub fn test_crate::take_array(@1: Array<u32, 2 : usize>)
     return
 }
 
-pub fn test_crate::take_array_borrow<'_0>(@1: &'_0 (Array<u32, 2 : usize>))
+// Full name: test_crate::take_array_borrow
+pub fn take_array_borrow<'_0>(@1: &'_0 (Array<u32, 2 : usize>))
 {
     let @0: (); // return
     let @1: &'_ (Array<u32, 2 : usize>); // arg #1
@@ -776,7 +826,8 @@ pub fn test_crate::take_array_borrow<'_0>(@1: &'_0 (Array<u32, 2 : usize>))
     return
 }
 
-pub fn test_crate::take_slice<'_0>(@1: &'_0 (Slice<u32>))
+// Full name: test_crate::take_slice
+pub fn take_slice<'_0>(@1: &'_0 (Slice<u32>))
 {
     let @0: (); // return
     let @1: &'_ (Slice<u32>); // arg #1
@@ -786,7 +837,8 @@ pub fn test_crate::take_slice<'_0>(@1: &'_0 (Slice<u32>))
     return
 }
 
-pub fn test_crate::take_mut_slice<'_0>(@1: &'_0 mut (Slice<u32>))
+// Full name: test_crate::take_mut_slice
+pub fn take_mut_slice<'_0>(@1: &'_0 mut (Slice<u32>))
 {
     let @0: (); // return
     let @1: &'_ mut (Slice<u32>); // arg #1
@@ -796,7 +848,8 @@ pub fn test_crate::take_mut_slice<'_0>(@1: &'_0 mut (Slice<u32>))
     return
 }
 
-pub fn test_crate::const_array() -> Array<u32, 2 : usize>
+// Full name: test_crate::const_array
+pub fn const_array() -> Array<u32, 2 : usize>
 {
     let @0: Array<u32, 2 : usize>; // return
 
@@ -804,7 +857,8 @@ pub fn test_crate::const_array() -> Array<u32, 2 : usize>
     return
 }
 
-pub fn test_crate::const_slice()
+// Full name: test_crate::const_slice
+pub fn const_slice()
 {
     let @0: (); // return
     let @1: &'_ (Slice<u32>); // anonymous local
@@ -829,7 +883,8 @@ pub fn test_crate::const_slice()
     return
 }
 
-pub fn test_crate::take_all()
+// Full name: test_crate::take_all
+pub fn take_all()
 {
     let @0: (); // return
     let x@1: Array<u32, 2 : usize>; // local
@@ -855,13 +910,13 @@ pub fn test_crate::take_all()
     storage_live(@3)
     // x is deep copied (copy node appears in Charon, followed by a move)
     @3 := copy (x@1)
-    @2 := test_crate::take_array(move (@3))
+    @2 := take_array(move (@3))
     storage_dead(@3)
     storage_dead(@2)
     storage_live(@4)
     storage_live(@5)
     @5 := copy (x@1)
-    @4 := test_crate::take_array(move (@5))
+    @4 := take_array(move (@5))
     storage_dead(@5)
     storage_dead(@4)
     storage_live(@6)
@@ -870,7 +925,7 @@ pub fn test_crate::take_all()
     // x passed by address, there is a reborrow here
     @8 := &x@1
     @7 := &*(@8)
-    @6 := test_crate::take_array_borrow<'_>(move (@7))
+    @6 := take_array_borrow<'_>(move (@7))
     storage_dead(@7)
     storage_dead(@8)
     storage_dead(@6)
@@ -883,7 +938,7 @@ pub fn test_crate::take_all()
     @11 := &*(@12)
     @10 := @ArrayToSliceShared<'_, u32, 2 : usize>(move (@11))
     storage_dead(@11)
-    @9 := test_crate::take_slice<'_>(move (@10))
+    @9 := take_slice<'_>(move (@10))
     storage_dead(@10)
     storage_dead(@12)
     storage_dead(@9)
@@ -897,7 +952,7 @@ pub fn test_crate::take_all()
     @15 := &mut *(@16)
     @14 := @ArrayToSliceMut<'_, u32, 2 : usize>(move (@15))
     storage_dead(@15)
-    @13 := test_crate::take_mut_slice<'_>(move (@14))
+    @13 := take_mut_slice<'_>(move (@14))
     storage_dead(@14)
     storage_dead(@16)
     storage_dead(@13)
@@ -907,7 +962,8 @@ pub fn test_crate::take_all()
     return
 }
 
-pub fn test_crate::index_array(@1: Array<u32, 2 : usize>) -> u32
+// Full name: test_crate::index_array
+pub fn index_array(@1: Array<u32, 2 : usize>) -> u32
 {
     let @0: u32; // return
     let x@1: Array<u32, 2 : usize>; // arg #1
@@ -926,7 +982,8 @@ pub fn test_crate::index_array(@1: Array<u32, 2 : usize>) -> u32
     return
 }
 
-pub fn test_crate::index_array_borrow<'_0>(@1: &'_0 (Array<u32, 2 : usize>)) -> u32
+// Full name: test_crate::index_array_borrow
+pub fn index_array_borrow<'_0>(@1: &'_0 (Array<u32, 2 : usize>)) -> u32
 {
     let @0: u32; // return
     let x@1: &'_ (Array<u32, 2 : usize>); // arg #1
@@ -945,7 +1002,8 @@ pub fn test_crate::index_array_borrow<'_0>(@1: &'_0 (Array<u32, 2 : usize>)) -> 
     return
 }
 
-pub fn test_crate::index_slice_u32_0<'_0>(@1: &'_0 (Slice<u32>)) -> u32
+// Full name: test_crate::index_slice_u32_0
+pub fn index_slice_u32_0<'_0>(@1: &'_0 (Slice<u32>)) -> u32
 {
     let @0: u32; // return
     let x@1: &'_ (Slice<u32>); // arg #1
@@ -964,7 +1022,8 @@ pub fn test_crate::index_slice_u32_0<'_0>(@1: &'_0 (Slice<u32>)) -> u32
     return
 }
 
-pub fn test_crate::index_mut_slice_u32_0<'_0>(@1: &'_0 mut (Slice<u32>)) -> u32
+// Full name: test_crate::index_mut_slice_u32_0
+pub fn index_mut_slice_u32_0<'_0>(@1: &'_0 mut (Slice<u32>)) -> u32
 {
     let @0: u32; // return
     let x@1: &'_ mut (Slice<u32>); // arg #1
@@ -983,7 +1042,8 @@ pub fn test_crate::index_mut_slice_u32_0<'_0>(@1: &'_0 mut (Slice<u32>)) -> u32
     return
 }
 
-pub fn test_crate::index_all() -> u32
+// Full name: test_crate::index_all
+pub fn index_all() -> u32
 {
     let @0: u32; // return
     let x@1: Array<u32, 2 : usize>; // local
@@ -1035,12 +1095,12 @@ pub fn test_crate::index_all() -> u32
     storage_live(@9)
     storage_live(@10)
     @10 := copy (x@1)
-    @9 := test_crate::index_array(move (@10))
+    @9 := index_array(move (@10))
     storage_dead(@10)
     storage_live(@11)
     storage_live(@12)
     @12 := copy (x@1)
-    @11 := test_crate::index_array(move (@12))
+    @11 := index_array(move (@12))
     storage_dead(@12)
     @8 := copy (@9) + copy (@11)
     storage_dead(@11)
@@ -1050,7 +1110,7 @@ pub fn test_crate::index_all() -> u32
     storage_live(@15)
     @15 := &x@1
     @14 := &*(@15)
-    @13 := test_crate::index_array_borrow<'_>(move (@14))
+    @13 := index_array_borrow<'_>(move (@14))
     storage_dead(@14)
     @7 := copy (@8) + copy (@13)
     storage_dead(@13)
@@ -1063,7 +1123,7 @@ pub fn test_crate::index_all() -> u32
     @18 := &*(@19)
     @17 := @ArrayToSliceShared<'_, u32, 2 : usize>(move (@18))
     storage_dead(@18)
-    @16 := test_crate::index_slice_u32_0<'_>(move (@17))
+    @16 := index_slice_u32_0<'_>(move (@17))
     storage_dead(@17)
     @6 := copy (@7) + copy (@16)
     storage_dead(@16)
@@ -1076,7 +1136,7 @@ pub fn test_crate::index_all() -> u32
     @22 := &mut *(@23)
     @21 := @ArrayToSliceMut<'_, u32, 2 : usize>(move (@22))
     storage_dead(@22)
-    @20 := test_crate::index_mut_slice_u32_0<'_>(move (@21))
+    @20 := index_mut_slice_u32_0<'_>(move (@21))
     storage_dead(@21)
     @0 := copy (@6) + copy (@20)
     storage_dead(@20)
@@ -1088,7 +1148,8 @@ pub fn test_crate::index_all() -> u32
     return
 }
 
-pub fn test_crate::update_array(@1: Array<u32, 2 : usize>)
+// Full name: test_crate::update_array
+pub fn update_array(@1: Array<u32, 2 : usize>)
 {
     let @0: (); // return
     let x@1: Array<u32, 2 : usize>; // arg #1
@@ -1109,7 +1170,8 @@ pub fn test_crate::update_array(@1: Array<u32, 2 : usize>)
     return
 }
 
-pub fn test_crate::update_array_mut_borrow<'_0>(@1: &'_0 mut (Array<u32, 2 : usize>))
+// Full name: test_crate::update_array_mut_borrow
+pub fn update_array_mut_borrow<'_0>(@1: &'_0 mut (Array<u32, 2 : usize>))
 {
     let @0: (); // return
     let x@1: &'_ mut (Array<u32, 2 : usize>); // arg #1
@@ -1130,7 +1192,8 @@ pub fn test_crate::update_array_mut_borrow<'_0>(@1: &'_0 mut (Array<u32, 2 : usi
     return
 }
 
-pub fn test_crate::update_mut_slice<'_0>(@1: &'_0 mut (Slice<u32>))
+// Full name: test_crate::update_mut_slice
+pub fn update_mut_slice<'_0>(@1: &'_0 mut (Slice<u32>))
 {
     let @0: (); // return
     let x@1: &'_ mut (Slice<u32>); // arg #1
@@ -1151,7 +1214,8 @@ pub fn test_crate::update_mut_slice<'_0>(@1: &'_0 mut (Slice<u32>))
     return
 }
 
-pub fn test_crate::update_all()
+// Full name: test_crate::update_all
+pub fn update_all()
 {
     let @0: (); // return
     let x@1: Array<u32, 2 : usize>; // local
@@ -1172,13 +1236,13 @@ pub fn test_crate::update_all()
     storage_live(@2)
     storage_live(@3)
     @3 := copy (x@1)
-    @2 := test_crate::update_array(move (@3))
+    @2 := update_array(move (@3))
     storage_dead(@3)
     storage_dead(@2)
     storage_live(@4)
     storage_live(@5)
     @5 := copy (x@1)
-    @4 := test_crate::update_array(move (@5))
+    @4 := update_array(move (@5))
     storage_dead(@5)
     storage_dead(@4)
     storage_live(@6)
@@ -1186,7 +1250,7 @@ pub fn test_crate::update_all()
     storage_live(@8)
     @8 := &mut x@1
     @7 := &two-phase-mut *(@8)
-    @6 := test_crate::update_array_mut_borrow<'_>(move (@7))
+    @6 := update_array_mut_borrow<'_>(move (@7))
     storage_dead(@7)
     storage_dead(@8)
     storage_dead(@6)
@@ -1198,7 +1262,7 @@ pub fn test_crate::update_all()
     @11 := &mut *(@12)
     @10 := @ArrayToSliceMut<'_, u32, 2 : usize>(move (@11))
     storage_dead(@11)
-    @9 := test_crate::update_mut_slice<'_>(move (@10))
+    @9 := update_mut_slice<'_>(move (@10))
     storage_dead(@10)
     storage_dead(@12)
     storage_dead(@9)
@@ -1208,7 +1272,8 @@ pub fn test_crate::update_all()
     return
 }
 
-pub fn test_crate::range_all()
+// Full name: test_crate::range_all
+pub fn range_all()
 {
     let @0: (); // return
     let x@1: Array<u32, 4 : usize>; // local
@@ -1217,7 +1282,7 @@ pub fn test_crate::range_all()
     let @4: &'_ mut (Slice<u32>); // anonymous local
     let @5: &'_ mut (Slice<u32>); // anonymous local
     let @6: &'_ mut (Array<u32, 4 : usize>); // anonymous local
-    let @7: core::ops::range::Range<usize>[core::marker::Sized<usize>]; // anonymous local
+    let @7: Range<usize>[Sized<usize>]; // anonymous local
 
     storage_live(x@1)
     x@1 := @ArrayRepeat<'_, u32, 4 : usize>(const (0 : u32))
@@ -1229,13 +1294,13 @@ pub fn test_crate::range_all()
     // CONFIRM: there is no way to shrink [T;N] into [T;M] with M<N?
     @6 := &mut x@1
     storage_live(@7)
-    @7 := core::ops::range::Range { start: const (1 : usize), end: const (3 : usize) }
-    @5 := core::array::{impl core::ops::index::IndexMut<I, Clause2_Clause0_Output> for Array<T, const N : usize>}#16::index_mut<'_, u32, core::ops::range::Range<usize>[core::marker::Sized<usize>], Slice<u32>, 4 : usize>[core::marker::Sized<u32>, core::marker::Sized<core::ops::range::Range<usize>[core::marker::Sized<usize>]>, core::slice::index::{impl core::ops::index::IndexMut<I, Clause2_Output> for Slice<T>}#1<u32, core::ops::range::Range<usize>[core::marker::Sized<usize>], Slice<u32>>[core::marker::Sized<u32>, core::marker::Sized<core::ops::range::Range<usize>[core::marker::Sized<usize>]>, core::slice::index::{impl core::slice::index::SliceIndex<Slice<T>, Slice<T>> for core::ops::range::Range<usize>[core::marker::Sized<usize>]}#4<u32>[core::marker::Sized<u32>]]](move (@6), move (@7))
+    @7 := Range { start: const (1 : usize), end: const (3 : usize) }
+    @5 := {impl IndexMut<I, Clause2_Clause0_Output> for Array<T, const N : usize>}#16::index_mut<'_, u32, Range<usize>[Sized<usize>], Slice<u32>, 4 : usize>[Sized<u32>, Sized<Range<usize>[Sized<usize>]>, {impl IndexMut<I, Clause2_Output> for Slice<T>}#1<u32, Range<usize>[Sized<usize>], Slice<u32>>[Sized<u32>, Sized<Range<usize>[Sized<usize>]>, {impl SliceIndex<Slice<T>, Slice<T>> for Range<usize>[Sized<usize>]}#4<u32>[Sized<u32>]]](move (@6), move (@7))
     storage_dead(@7)
     storage_dead(@6)
     @4 := &mut *(@5)
     @3 := &two-phase-mut *(@4)
-    @2 := test_crate::update_mut_slice<'_>(move (@3))
+    @2 := update_mut_slice<'_>(move (@3))
     storage_dead(@3)
     storage_dead(@5)
     storage_dead(@4)
@@ -1246,7 +1311,8 @@ pub fn test_crate::range_all()
     return
 }
 
-pub fn test_crate::deref_array_borrow<'_0>(@1: &'_0 (Array<u32, 2 : usize>)) -> u32
+// Full name: test_crate::deref_array_borrow
+pub fn deref_array_borrow<'_0>(@1: &'_0 (Array<u32, 2 : usize>)) -> u32
 {
     let @0: u32; // return
     let x@1: &'_ (Array<u32, 2 : usize>); // arg #1
@@ -1269,7 +1335,8 @@ pub fn test_crate::deref_array_borrow<'_0>(@1: &'_0 (Array<u32, 2 : usize>)) -> 
     return
 }
 
-pub fn test_crate::deref_array_mut_borrow<'_0>(@1: &'_0 mut (Array<u32, 2 : usize>)) -> u32
+// Full name: test_crate::deref_array_mut_borrow
+pub fn deref_array_mut_borrow<'_0>(@1: &'_0 mut (Array<u32, 2 : usize>)) -> u32
 {
     let @0: u32; // return
     let x@1: &'_ mut (Array<u32, 2 : usize>); // arg #1
@@ -1292,30 +1359,32 @@ pub fn test_crate::deref_array_mut_borrow<'_0>(@1: &'_0 mut (Array<u32, 2 : usiz
     return
 }
 
-pub fn test_crate::take_array_t(@1: Array<test_crate::AB, 2 : usize>)
+// Full name: test_crate::take_array_t
+pub fn take_array_t(@1: Array<AB, 2 : usize>)
 {
     let @0: (); // return
-    let @1: Array<test_crate::AB, 2 : usize>; // arg #1
+    let @1: Array<AB, 2 : usize>; // arg #1
 
     @0 := ()
     @0 := ()
     return
 }
 
-pub fn test_crate::non_copyable_array()
+// Full name: test_crate::non_copyable_array
+pub fn non_copyable_array()
 {
     let @0: (); // return
-    let x@1: Array<test_crate::AB, 2 : usize>; // local
-    let @2: test_crate::AB; // anonymous local
-    let @3: test_crate::AB; // anonymous local
+    let x@1: Array<AB, 2 : usize>; // local
+    let @2: AB; // anonymous local
+    let @3: AB; // anonymous local
     let @4: (); // anonymous local
-    let @5: Array<test_crate::AB, 2 : usize>; // anonymous local
+    let @5: Array<AB, 2 : usize>; // anonymous local
 
     storage_live(x@1)
     storage_live(@2)
-    @2 := test_crate::AB::A {  }
+    @2 := AB::A {  }
     storage_live(@3)
-    @3 := test_crate::AB::B {  }
+    @3 := AB::B {  }
     x@1 := [move (@2), move (@3)]
     storage_dead(@3)
     storage_dead(@2)
@@ -1324,7 +1393,7 @@ pub fn test_crate::non_copyable_array()
     // x is moved (not deep copied!)
     // TODO: determine whether the translation needs to be aware of that and pass by ref instead of by copy
     @5 := move (x@1)
-    @4 := test_crate::take_array_t(move (@5))
+    @4 := take_array_t(move (@5))
     storage_dead(@5)
     storage_dead(@4)
     @0 := ()
@@ -1335,7 +1404,8 @@ pub fn test_crate::non_copyable_array()
     return
 }
 
-pub fn test_crate::sum<'_0>(@1: &'_0 (Slice<u32>)) -> u32
+// Full name: test_crate::sum
+pub fn sum<'_0>(@1: &'_0 (Slice<u32>)) -> u32
 {
     let @0: u32; // return
     let s@1: &'_ (Slice<u32>); // arg #1
@@ -1369,7 +1439,7 @@ pub fn test_crate::sum<'_0>(@1: &'_0 (Slice<u32>)) -> u32
         storage_live(@7)
         storage_live(@8)
         @8 := &*(s@1)
-        @7 := core::slice::{Slice<T>}::len<'_, u32>[core::marker::Sized<u32>](move (@8))
+        @7 := len<'_, u32>[Sized<u32>](move (@8))
         storage_dead(@8)
         @5 := move (@6) < move (@7)
         if move (@5) {
@@ -1406,7 +1476,8 @@ pub fn test_crate::sum<'_0>(@1: &'_0 (Slice<u32>)) -> u32
     return
 }
 
-pub fn test_crate::sum2<'_0, '_1>(@1: &'_0 (Slice<u32>), @2: &'_1 (Slice<u32>)) -> u32
+// Full name: test_crate::sum2
+pub fn sum2<'_0, '_1>(@1: &'_0 (Slice<u32>), @2: &'_1 (Slice<u32>)) -> u32
 {
     let @0: u32; // return
     let s@1: &'_ (Slice<u32>); // arg #1
@@ -1452,12 +1523,12 @@ pub fn test_crate::sum2<'_0, '_1>(@1: &'_0 (Slice<u32>), @2: &'_1 (Slice<u32>)) 
     storage_live(@6)
     storage_live(@7)
     @7 := &*(s@1)
-    @6 := core::slice::{Slice<T>}::len<'_, u32>[core::marker::Sized<u32>](move (@7))
+    @6 := len<'_, u32>[Sized<u32>](move (@7))
     storage_dead(@7)
     storage_live(@8)
     storage_live(@9)
     @9 := &*(s2@2)
-    @8 := core::slice::{Slice<T>}::len<'_, u32>[core::marker::Sized<u32>](move (@9))
+    @8 := len<'_, u32>[Sized<u32>](move (@9))
     storage_dead(@9)
     @5 := move (@6) == move (@8)
     if move (@5) {
@@ -1481,7 +1552,7 @@ pub fn test_crate::sum2<'_0, '_1>(@1: &'_0 (Slice<u32>), @2: &'_1 (Slice<u32>)) 
         storage_live(@14)
         storage_live(@15)
         @15 := &*(s@1)
-        @14 := core::slice::{Slice<T>}::len<'_, u32>[core::marker::Sized<u32>](move (@15))
+        @14 := len<'_, u32>[Sized<u32>](move (@15))
         storage_dead(@15)
         @12 := move (@13) < move (@14)
         if move (@12) {
@@ -1531,7 +1602,8 @@ pub fn test_crate::sum2<'_0, '_1>(@1: &'_0 (Slice<u32>), @2: &'_1 (Slice<u32>)) 
     return
 }
 
-pub fn test_crate::f0()
+// Full name: test_crate::f0
+pub fn f0()
 {
     let @0: (); // return
     let s@1: &'_ mut (Slice<u32>); // local
@@ -1567,7 +1639,8 @@ pub fn test_crate::f0()
     return
 }
 
-pub fn test_crate::f1()
+// Full name: test_crate::f1
+pub fn f1()
 {
     let @0: (); // return
     let s@1: Array<u32, 2 : usize>; // local
@@ -1591,7 +1664,8 @@ pub fn test_crate::f1()
     return
 }
 
-pub fn test_crate::f2(@1: u32)
+// Full name: test_crate::f2
+pub fn f2(@1: u32)
 {
     let @0: (); // return
     let @1: u32; // arg #1
@@ -1601,7 +1675,8 @@ pub fn test_crate::f2(@1: u32)
     return
 }
 
-pub fn test_crate::f4<'_0>(@1: &'_0 (Array<u32, 32 : usize>), @2: usize, @3: usize) -> &'_0 (Slice<u32>)
+// Full name: test_crate::f4
+pub fn f4<'_0>(@1: &'_0 (Array<u32, 32 : usize>), @2: usize, @3: usize) -> &'_0 (Slice<u32>)
 {
     let @0: &'_ (Slice<u32>); // return
     let x@1: &'_ (Array<u32, 32 : usize>); // arg #1
@@ -1610,7 +1685,7 @@ pub fn test_crate::f4<'_0>(@1: &'_0 (Array<u32, 32 : usize>), @2: usize, @3: usi
     let @4: &'_ (Slice<u32>); // anonymous local
     let @5: &'_ (Slice<u32>); // anonymous local
     let @6: &'_ (Array<u32, 32 : usize>); // anonymous local
-    let @7: core::ops::range::Range<usize>[core::marker::Sized<usize>]; // anonymous local
+    let @7: Range<usize>[Sized<usize>]; // anonymous local
     let @8: usize; // anonymous local
     let @9: usize; // anonymous local
 
@@ -1623,10 +1698,10 @@ pub fn test_crate::f4<'_0>(@1: &'_0 (Array<u32, 32 : usize>), @2: usize, @3: usi
     @8 := copy (y@2)
     storage_live(@9)
     @9 := copy (z@3)
-    @7 := core::ops::range::Range { start: move (@8), end: move (@9) }
+    @7 := Range { start: move (@8), end: move (@9) }
     storage_dead(@9)
     storage_dead(@8)
-    @5 := core::array::{impl core::ops::index::Index<I, Clause2_Output> for Array<T, const N : usize>}#15::index<'_, u32, core::ops::range::Range<usize>[core::marker::Sized<usize>], Slice<u32>, 32 : usize>[core::marker::Sized<u32>, core::marker::Sized<core::ops::range::Range<usize>[core::marker::Sized<usize>]>, core::slice::index::{impl core::ops::index::Index<I, Clause2_Output> for Slice<T>}<u32, core::ops::range::Range<usize>[core::marker::Sized<usize>], Slice<u32>>[core::marker::Sized<u32>, core::marker::Sized<core::ops::range::Range<usize>[core::marker::Sized<usize>]>, core::slice::index::{impl core::slice::index::SliceIndex<Slice<T>, Slice<T>> for core::ops::range::Range<usize>[core::marker::Sized<usize>]}#4<u32>[core::marker::Sized<u32>]]](move (@6), move (@7))
+    @5 := {impl Index<I, Clause2_Output> for Array<T, const N : usize>}#15::index<'_, u32, Range<usize>[Sized<usize>], Slice<u32>, 32 : usize>[Sized<u32>, Sized<Range<usize>[Sized<usize>]>, {impl Index<I, Clause2_Output> for Slice<T>}<u32, Range<usize>[Sized<usize>], Slice<u32>>[Sized<u32>, Sized<Range<usize>[Sized<usize>]>, {impl SliceIndex<Slice<T>, Slice<T>> for Range<usize>[Sized<usize>]}#4<u32>[Sized<u32>]]](move (@6), move (@7))
     storage_dead(@7)
     storage_dead(@6)
     @4 := &*(@5)
@@ -1636,7 +1711,8 @@ pub fn test_crate::f4<'_0>(@1: &'_0 (Array<u32, 32 : usize>), @2: usize, @3: usi
     return
 }
 
-pub fn test_crate::f3() -> u32
+// Full name: test_crate::f3
+pub fn f3() -> u32
 {
     let @0: u32; // return
     let a@1: Array<u32, 2 : usize>; // local
@@ -1665,7 +1741,7 @@ pub fn test_crate::f3() -> u32
     storage_live(@14)
     @14 := @ArrayIndexShared<'_, u32, 2 : usize>(move (@13), copy (@4))
     @3 := copy (*(@14))
-    @2 := test_crate::f2(move (@3))
+    @2 := f2(move (@3))
     storage_dead(@3)
     storage_dead(@4)
     storage_dead(@2)
@@ -1684,10 +1760,10 @@ pub fn test_crate::f3() -> u32
     storage_live(@12)
     @12 := &b@5
     @11 := &*(@12)
-    @10 := test_crate::f4<'_>(move (@11), const (16 : usize), const (18 : usize))
+    @10 := f4<'_>(move (@11), const (16 : usize), const (18 : usize))
     @9 := &*(@10)
     storage_dead(@11)
-    @0 := test_crate::sum2<'_, '_>(move (@6), move (@9))
+    @0 := sum2<'_, '_>(move (@6), move (@9))
     storage_dead(@9)
     storage_dead(@6)
     storage_dead(b@5)
@@ -1708,7 +1784,8 @@ pub fn test_crate::SZ() -> usize
 
 pub const test_crate::SZ: usize = test_crate::SZ()
 
-pub fn test_crate::f5<'_0>(@1: &'_0 (Array<u32, 32 : usize>)) -> u32
+// Full name: test_crate::f5
+pub fn f5<'_0>(@1: &'_0 (Array<u32, 32 : usize>)) -> u32
 {
     let @0: u32; // return
     let x@1: &'_ (Array<u32, 32 : usize>); // arg #1
@@ -1727,7 +1804,8 @@ pub fn test_crate::f5<'_0>(@1: &'_0 (Array<u32, 32 : usize>)) -> u32
     return
 }
 
-pub fn test_crate::ite()
+// Full name: test_crate::ite
+pub fn ite()
 {
     let @0: (); // return
     let x@1: Array<u32, 2 : usize>; // local
@@ -1766,7 +1844,7 @@ pub fn test_crate::ite()
         @6 := &mut *(@7)
         @5 := @ArrayToSliceMut<'_, u32, 2 : usize>(move (@6))
         storage_dead(@6)
-        @4 := test_crate::index_mut_slice_u32_0<'_>(move (@5))
+        @4 := index_mut_slice_u32_0<'_>(move (@5))
         storage_dead(@5)
         storage_dead(@7)
         storage_dead(@4)
@@ -1778,7 +1856,7 @@ pub fn test_crate::ite()
         @10 := &mut *(@11)
         @9 := @ArrayToSliceMut<'_, u32, 2 : usize>(move (@10))
         storage_dead(@10)
-        @8 := test_crate::index_mut_slice_u32_0<'_>(move (@9))
+        @8 := index_mut_slice_u32_0<'_>(move (@9))
         storage_dead(@9)
         storage_dead(@11)
         storage_dead(@8)
@@ -1794,7 +1872,8 @@ pub fn test_crate::ite()
     return
 }
 
-pub fn test_crate::zero_slice<'_0>(@1: &'_0 mut (Slice<u8>))
+// Full name: test_crate::zero_slice
+pub fn zero_slice<'_0>(@1: &'_0 mut (Slice<u8>))
 {
     let @0: (); // return
     let a@1: &'_ mut (Slice<u8>); // arg #1
@@ -1817,7 +1896,7 @@ pub fn test_crate::zero_slice<'_0>(@1: &'_0 mut (Slice<u8>))
     storage_live(len@3)
     storage_live(@4)
     @4 := &*(a@1)
-    len@3 := core::slice::{Slice<T>}::len<'_, u8>[core::marker::Sized<u8>](move (@4))
+    len@3 := len<'_, u8>[Sized<u8>](move (@4))
     storage_dead(@4)
     loop {
         storage_live(@5)
@@ -1857,7 +1936,8 @@ pub fn test_crate::zero_slice<'_0>(@1: &'_0 mut (Slice<u8>))
     return
 }
 
-pub fn test_crate::iter_mut_slice<'_0>(@1: &'_0 mut (Slice<u8>))
+// Full name: test_crate::iter_mut_slice
+pub fn iter_mut_slice<'_0>(@1: &'_0 mut (Slice<u8>))
 {
     let @0: (); // return
     let a@1: &'_ mut (Slice<u8>); // arg #1
@@ -1872,7 +1952,7 @@ pub fn test_crate::iter_mut_slice<'_0>(@1: &'_0 mut (Slice<u8>))
     storage_live(len@2)
     storage_live(@3)
     @3 := &*(a@1)
-    len@2 := core::slice::{Slice<T>}::len<'_, u8>[core::marker::Sized<u8>](move (@3))
+    len@2 := len<'_, u8>[Sized<u8>](move (@3))
     storage_dead(@3)
     storage_live(i@4)
     i@4 := const (0 : usize)
@@ -1906,7 +1986,8 @@ pub fn test_crate::iter_mut_slice<'_0>(@1: &'_0 mut (Slice<u8>))
     return
 }
 
-pub fn test_crate::sum_mut_slice<'_0>(@1: &'_0 mut (Slice<u32>)) -> u32
+// Full name: test_crate::sum_mut_slice
+pub fn sum_mut_slice<'_0>(@1: &'_0 mut (Slice<u32>)) -> u32
 {
     let @0: u32; // return
     let a@1: &'_ mut (Slice<u32>); // arg #1
@@ -1940,7 +2021,7 @@ pub fn test_crate::sum_mut_slice<'_0>(@1: &'_0 mut (Slice<u32>)) -> u32
         storage_live(@7)
         storage_live(@8)
         @8 := &*(a@1)
-        @7 := core::slice::{Slice<T>}::len<'_, u32>[core::marker::Sized<u32>](move (@8))
+        @7 := len<'_, u32>[Sized<u32>](move (@8))
         storage_dead(@8)
         @5 := move (@6) < move (@7)
         if move (@5) {
@@ -1977,7 +2058,8 @@ pub fn test_crate::sum_mut_slice<'_0>(@1: &'_0 mut (Slice<u32>)) -> u32
     return
 }
 
-fn test_crate::slice_pattern_1(@1: Array<(), 1 : usize>)
+// Full name: test_crate::slice_pattern_1
+fn slice_pattern_1(@1: Array<(), 1 : usize>)
 {
     let @0: (); // return
     let x@1: Array<(), 1 : usize>; // arg #1
@@ -1997,9 +2079,10 @@ fn test_crate::slice_pattern_1(@1: Array<(), 1 : usize>)
     return
 }
 
-fn test_crate::slice_pattern_2<'_0, T>(@1: Array<&'_0 mut (T), 3 : usize>)
+// Full name: test_crate::slice_pattern_2
+fn slice_pattern_2<'_0, T>(@1: Array<&'_0 mut (T), 3 : usize>)
 where
-    [@TraitClause0]: core::marker::Sized<T>,
+    [@TraitClause0]: Sized<T>,
 {
     let @0: (); // return
     let x@1: Array<&'_ mut (T), 3 : usize>; // arg #1
@@ -2039,7 +2122,8 @@ where
     return
 }
 
-fn test_crate::slice_pattern_3<'_0>(@1: &'_0 (Array<(), 1 : usize>))
+// Full name: test_crate::slice_pattern_3
+fn slice_pattern_3<'_0>(@1: &'_0 (Array<(), 1 : usize>))
 {
     let @0: (); // return
     let x@1: &'_ (Array<(), 1 : usize>); // arg #1
@@ -2059,7 +2143,8 @@ fn test_crate::slice_pattern_3<'_0>(@1: &'_0 (Array<(), 1 : usize>))
     return
 }
 
-fn test_crate::slice_pattern_4<'_0>(@1: &'_0 (Slice<()>))
+// Full name: test_crate::slice_pattern_4
+fn slice_pattern_4<'_0>(@1: &'_0 (Slice<()>))
 {
     let @0: (); // return
     let x@1: &'_ (Slice<()>); // arg #1
@@ -2099,28 +2184,30 @@ pub fn core::ops::index::Index::index<'_0, Self, Idx, Self_Output>(@1: &'_0 (Sel
 
 pub fn core::ops::index::IndexMut::index_mut<'_0, Self, Idx, Self_Clause0_Output>(@1: &'_0 mut (Self), @2: Idx) -> &'_0 mut (Self_Clause0_Output)
 
-impl core::array::{impl core::ops::index::Index<I, Clause2_Output> for Array<T, const N : usize>}#15<T, I, Clause2_Output, const N : usize> : core::ops::index::Index<Array<T, const N : usize>, I, Clause2_Output>
+// Full name: core::array::{impl Index<I, Clause2_Output> for Array<T, const N : usize>}#15
+impl<T, I, Clause2_Output, const N : usize> Index<I, Clause2_Output> for Array<T, const N : usize>
 where
-    [@TraitClause0]: core::marker::Sized<T>,
-    [@TraitClause1]: core::marker::Sized<I>,
-    [@TraitClause2]: core::ops::index::Index<Slice<T>, I, Clause2_Output>,
+    [@TraitClause0]: Sized<T>,
+    [@TraitClause1]: Sized<I>,
+    [@TraitClause2]: Index<Slice<T>, I, Clause2_Output>,
 {
-    fn index<'_0> = core::array::{impl core::ops::index::Index<I, Clause2_Output> for Array<T, const N : usize>}#15::index<'_0_0, T, I, Clause2_Output, const N : usize>[@TraitClause0, @TraitClause1, @TraitClause2]
+    fn index<'_0> = {impl Index<I, Clause2_Output> for Array<T, const N : usize>}#15::index<'_0_0, T, I, Clause2_Output, const N : usize>[@TraitClause0, @TraitClause1, @TraitClause2]
 }
 
-impl core::array::{impl core::ops::index::IndexMut<I, Clause2_Clause0_Output> for Array<T, const N : usize>}#16<T, I, Clause2_Clause0_Output, const N : usize> : core::ops::index::IndexMut<Array<T, const N : usize>, I, Clause2_Clause0_Output>
+// Full name: core::array::{impl IndexMut<I, Clause2_Clause0_Output> for Array<T, const N : usize>}#16
+impl<T, I, Clause2_Clause0_Output, const N : usize> IndexMut<I, Clause2_Clause0_Output> for Array<T, const N : usize>
 where
-    [@TraitClause0]: core::marker::Sized<T>,
-    [@TraitClause1]: core::marker::Sized<I>,
-    [@TraitClause2]: core::ops::index::IndexMut<Slice<T>, I, Clause2_Clause0_Output>,
+    [@TraitClause0]: Sized<T>,
+    [@TraitClause1]: Sized<I>,
+    [@TraitClause2]: IndexMut<Slice<T>, I, Clause2_Clause0_Output>,
 {
-    parent_clause0 = core::array::{impl core::ops::index::Index<I, Clause2_Output> for Array<T, const N : usize>}#15<T, I, Clause2_Clause0_Output, const N : usize>[@TraitClause0, @TraitClause1, @TraitClause2::parent_clause0]
-    fn index_mut<'_0> = core::array::{impl core::ops::index::IndexMut<I, Clause2_Clause0_Output> for Array<T, const N : usize>}#16::index_mut<'_0_0, T, I, Clause2_Clause0_Output, const N : usize>[@TraitClause0, @TraitClause1, @TraitClause2]
+    parent_clause0 = {impl Index<I, Clause2_Output> for Array<T, const N : usize>}#15<T, I, Clause2_Clause0_Output, const N : usize>[@TraitClause0, @TraitClause1, @TraitClause2::parent_clause0]
+    fn index_mut<'_0> = {impl IndexMut<I, Clause2_Clause0_Output> for Array<T, const N : usize>}#16::index_mut<'_0_0, T, I, Clause2_Clause0_Output, const N : usize>[@TraitClause0, @TraitClause1, @TraitClause2]
 }
 
-pub fn core::slice::index::SliceIndex::get<'_0, Self, T, Self_Output>(@1: Self, @2: &'_0 (T)) -> core::option::Option<&'_0 (Self_Output)>[core::marker::Sized<&'_0 (Self_Output)>]
+pub fn core::slice::index::SliceIndex::get<'_0, Self, T, Self_Output>(@1: Self, @2: &'_0 (T)) -> Option<&'_0 (Self_Output)>[Sized<&'_0 (Self_Output)>]
 
-pub fn core::slice::index::SliceIndex::get_mut<'_0, Self, T, Self_Output>(@1: Self, @2: &'_0 mut (T)) -> core::option::Option<&'_0 mut (Self_Output)>[core::marker::Sized<&'_0 mut (Self_Output)>]
+pub fn core::slice::index::SliceIndex::get_mut<'_0, Self, T, Self_Output>(@1: Self, @2: &'_0 mut (T)) -> Option<&'_0 mut (Self_Output)>[Sized<&'_0 mut (Self_Output)>]
 
 pub unsafe fn core::slice::index::SliceIndex::get_unchecked<Self, T, Self_Output>(@1: Self, @2: *const T) -> *const Self_Output
 

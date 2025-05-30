@@ -1,6 +1,7 @@
 # Final LLBC before serialization:
 
-pub fn test_crate::incr<'_0>(@1: &'_0 mut (Slice<u32>))
+// Full name: test_crate::incr
+pub fn incr<'_0>(@1: &'_0 mut (Slice<u32>))
 {
     let @0: (); // return
     let s@1: &'_ mut (Slice<u32>); // arg #1

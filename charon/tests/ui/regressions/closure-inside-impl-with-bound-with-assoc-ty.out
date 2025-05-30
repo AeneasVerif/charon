@@ -1,36 +1,41 @@
 # Final LLBC before serialization:
 
+// Full name: core::marker::Sized
 #[lang_item("sized")]
-pub trait core::marker::Sized<Self>
+pub trait Sized<Self>
 
-pub trait test_crate::PrimeField<Self, Self_Repr>
+// Full name: test_crate::PrimeField
+pub trait PrimeField<Self, Self_Repr>
 {
-    parent_clause0 : [@TraitClause0]: core::marker::Sized<Self_Repr>
+    parent_clause0 : [@TraitClause0]: Sized<Self_Repr>
 }
 
-pub struct test_crate::SqrtTables<F>
+// Full name: test_crate::SqrtTables
+pub struct SqrtTables<F>
   where
-      [@TraitClause0]: core::marker::Sized<F>,
+      [@TraitClause0]: Sized<F>,
 {
   F,
 }
 
-struct test_crate::{test_crate::SqrtTables<F>[@TraitClause0]}::sqrt_common::closure<F, Clause1_Repr>
+// Full name: test_crate::{SqrtTables<F>[@TraitClause0]}::sqrt_common::closure
+struct closure<F, Clause1_Repr>
   where
-      [@TraitClause0]: core::marker::Sized<F>,
-      [@TraitClause1]: test_crate::PrimeField<F, Clause1_Repr>,
+      [@TraitClause0]: Sized<F>,
+      [@TraitClause1]: PrimeField<F, Clause1_Repr>,
 {}
 
-pub fn test_crate::{test_crate::SqrtTables<F>[@TraitClause0]}::sqrt_common<F, Clause1_Repr>()
+// Full name: test_crate::{SqrtTables<F>[@TraitClause0]}::sqrt_common
+pub fn sqrt_common<F, Clause1_Repr>()
 where
-    [@TraitClause0]: core::marker::Sized<F>,
-    [@TraitClause1]: test_crate::PrimeField<F, Clause1_Repr>,
+    [@TraitClause0]: Sized<F>,
+    [@TraitClause1]: PrimeField<F, Clause1_Repr>,
 {
     let @0: (); // return
-    let _closure@1: test_crate::{test_crate::SqrtTables<F>[@TraitClause0]}::sqrt_common::closure<F, Clause1_Repr>[@TraitClause0, @TraitClause1]; // local
+    let _closure@1: closure<F, Clause1_Repr>[@TraitClause0, @TraitClause1]; // local
 
     storage_live(_closure@1)
-    _closure@1 := test_crate::{test_crate::SqrtTables<F>[@TraitClause0]}::sqrt_common::closure {  }
+    _closure@1 := closure {  }
     @0 := ()
     storage_dead(_closure@1)
     @0 := ()

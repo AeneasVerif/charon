@@ -1,6 +1,7 @@
 # Final LLBC before serialization:
 
-pub fn test_crate::incr_u32(@1: u32) -> u32
+// Full name: test_crate::incr_u32
+pub fn incr_u32(@1: u32) -> u32
 {
     let @0: u32; // return
     let x@1: u32; // arg #1
@@ -13,43 +14,49 @@ pub fn test_crate::incr_u32(@1: u32) -> u32
     return
 }
 
+// Full name: core::marker::Sized
 #[lang_item("sized")]
-pub trait core::marker::Sized<Self>
+pub trait Sized<Self>
 
+// Full name: core::marker::Tuple
 #[lang_item("tuple_trait")]
-pub trait core::marker::Tuple<Self>
+pub trait Tuple<Self>
 
+// Full name: core::ops::function::FnOnce
 #[lang_item("fn_once")]
-pub trait core::ops::function::FnOnce<Self, Args, Self_Output>
+pub trait FnOnce<Self, Args, Self_Output>
 {
-    parent_clause0 : [@TraitClause0]: core::marker::Sized<Args>
-    parent_clause1 : [@TraitClause1]: core::marker::Tuple<Args>
-    parent_clause2 : [@TraitClause2]: core::marker::Sized<Self_Output>
+    parent_clause0 : [@TraitClause0]: Sized<Args>
+    parent_clause1 : [@TraitClause1]: Tuple<Args>
+    parent_clause2 : [@TraitClause2]: Sized<Self_Output>
     fn call_once = core::ops::function::FnOnce::call_once<Self, Args, Self_Output>
 }
 
+// Full name: core::ops::function::FnMut
 #[lang_item("fn_mut")]
-pub trait core::ops::function::FnMut<Self, Args, Self_Clause0_Output>
+pub trait FnMut<Self, Args, Self_Clause0_Output>
 {
-    parent_clause0 : [@TraitClause0]: core::ops::function::FnOnce<Self, Args, Self_Clause0_Output>
-    parent_clause1 : [@TraitClause1]: core::marker::Sized<Args>
-    parent_clause2 : [@TraitClause2]: core::marker::Tuple<Args>
+    parent_clause0 : [@TraitClause0]: FnOnce<Self, Args, Self_Clause0_Output>
+    parent_clause1 : [@TraitClause1]: Sized<Args>
+    parent_clause2 : [@TraitClause2]: Tuple<Args>
     fn call_mut<'_0> = core::ops::function::FnMut::call_mut<'_0_0, Self, Args, Self_Clause0_Output>
 }
 
+// Full name: core::ops::function::Fn
 #[lang_item("r#fn")]
-pub trait core::ops::function::Fn<Self, Args, Self_Clause0_Clause0_Output>
+pub trait Fn<Self, Args, Self_Clause0_Clause0_Output>
 {
-    parent_clause0 : [@TraitClause0]: core::ops::function::FnMut<Self, Args, Self_Clause0_Clause0_Output>
-    parent_clause1 : [@TraitClause1]: core::marker::Sized<Args>
-    parent_clause2 : [@TraitClause2]: core::marker::Tuple<Args>
+    parent_clause0 : [@TraitClause0]: FnMut<Self, Args, Self_Clause0_Clause0_Output>
+    parent_clause1 : [@TraitClause1]: Sized<Args>
+    parent_clause2 : [@TraitClause2]: Tuple<Args>
     fn call<'_0> = core::ops::function::Fn::call<'_0_0, Self, Args, Self_Clause0_Clause0_Output>
 }
 
+// Full name: core::option::Option
 #[lang_item("Option")]
-pub enum core::option::Option<T>
+pub enum Option<T>
   where
-      [@TraitClause0]: core::marker::Sized<T>,
+      [@TraitClause0]: Sized<T>,
 {
   None,
   Some(T),
@@ -57,14 +64,15 @@ pub enum core::option::Option<T>
 
 pub fn core::ops::function::Fn::call<'_0, Self, Args, Self_Clause0_Clause0_Output>(@1: &'_0 (Self), @2: Args) -> Self_Clause0_Clause0_Output
 
-pub fn test_crate::map_option<T, F>(@1: core::option::Option<T>[@TraitClause0], @2: F) -> core::option::Option<T>[@TraitClause0]
+// Full name: test_crate::map_option
+pub fn map_option<T, F>(@1: Option<T>[@TraitClause0], @2: F) -> Option<T>[@TraitClause0]
 where
-    [@TraitClause0]: core::marker::Sized<T>,
-    [@TraitClause1]: core::marker::Sized<F>,
-    [@TraitClause2]: core::ops::function::Fn<F, (T), T>,
+    [@TraitClause0]: Sized<T>,
+    [@TraitClause1]: Sized<F>,
+    [@TraitClause2]: Fn<F, (T), T>,
 {
-    let @0: core::option::Option<T>[@TraitClause0]; // return
-    let x@1: core::option::Option<T>[@TraitClause0]; // arg #1
+    let @0: Option<T>[@TraitClause0]; // return
+    let x@1: Option<T>[@TraitClause0]; // arg #1
     let f@2: F; // arg #2
     let x@3: T; // local
     let @4: T; // anonymous local
@@ -78,10 +86,10 @@ where
     storage_live(@6)
     storage_live(@7)
     match x@1 {
-        core::option::Option::None => {
-            @0 := core::option::Option::None {  }
+        Option::None => {
+            @0 := Option::None {  }
         },
-        core::option::Option::Some => {
+        Option::Some => {
             storage_live(x@3)
             x@3 := move ((x@1 as variant @1).0)
             storage_live(@4)
@@ -96,7 +104,7 @@ where
             storage_dead(@7)
             storage_dead(@6)
             storage_dead(@5)
-            @0 := core::option::Option::Some { 0: move (@4) }
+            @0 := Option::Some { 0: move (@4) }
             drop @4
             storage_dead(@4)
             drop x@3
@@ -108,13 +116,14 @@ where
     return
 }
 
-pub fn test_crate::map_option_pointer_ref<'a, T, F>(@1: &'a (core::option::Option<T>[@TraitClause0]), @2: fn<'_0>(&'_0_0 (T)) -> T) -> core::option::Option<T>[@TraitClause0]
+// Full name: test_crate::map_option_pointer_ref
+pub fn map_option_pointer_ref<'a, T, F>(@1: &'a (Option<T>[@TraitClause0]), @2: fn<'_0>(&'_0_0 (T)) -> T) -> Option<T>[@TraitClause0]
 where
-    [@TraitClause0]: core::marker::Sized<T>,
-    [@TraitClause1]: core::marker::Sized<F>,
+    [@TraitClause0]: Sized<T>,
+    [@TraitClause1]: Sized<F>,
 {
-    let @0: core::option::Option<T>[@TraitClause0]; // return
-    let x@1: &'_ (core::option::Option<T>[@TraitClause0]); // arg #1
+    let @0: Option<T>[@TraitClause0]; // return
+    let x@1: &'_ (Option<T>[@TraitClause0]); // arg #1
     let f@2: fn<'_0>(&'_0_0 (T)) -> T; // arg #2
     let x@3: &'_ (T); // local
     let @4: T; // anonymous local
@@ -126,9 +135,9 @@ where
     storage_live(@5)
     storage_live(@6)
     match *(x@1) {
-        core::option::Option::None => {
+        Option::None => {
         },
-        core::option::Option::Some => {
+        Option::Some => {
             storage_live(x@3)
             x@3 := &(*(x@1) as variant @1).0
             storage_live(@4)
@@ -139,33 +148,35 @@ where
             @4 := (move @5)(move (@6))
             storage_dead(@6)
             storage_dead(@5)
-            @0 := core::option::Option::Some { 0: move (@4) }
+            @0 := Option::Some { 0: move (@4) }
             drop @4
             storage_dead(@4)
             storage_dead(x@3)
             return
         },
     }
-    @0 := core::option::Option::None {  }
+    @0 := Option::None {  }
     return
 }
 
-pub fn test_crate::test_map_option1(@1: core::option::Option<u32>[core::marker::Sized<u32>]) -> core::option::Option<u32>[core::marker::Sized<u32>]
+// Full name: test_crate::test_map_option1
+pub fn test_map_option1(@1: Option<u32>[Sized<u32>]) -> Option<u32>[Sized<u32>]
 {
-    let @0: core::option::Option<u32>[core::marker::Sized<u32>]; // return
-    let x@1: core::option::Option<u32>[core::marker::Sized<u32>]; // arg #1
-    let @2: core::option::Option<u32>[core::marker::Sized<u32>]; // anonymous local
+    let @0: Option<u32>[Sized<u32>]; // return
+    let x@1: Option<u32>[Sized<u32>]; // arg #1
+    let @2: Option<u32>[Sized<u32>]; // anonymous local
 
     storage_live(@2)
     @2 := copy (x@1)
-    @0 := test_crate::map_option<u32, fn(u32) -> u32>[core::marker::Sized<u32>, core::marker::Sized<fn(u32) -> u32>, core::ops::function::Fn<fn(u32) -> u32, (u32), u32>](move (@2), const (test_crate::incr_u32))
+    @0 := map_option<u32, fn(u32) -> u32>[Sized<u32>, Sized<fn(u32) -> u32>, Fn<fn(u32) -> u32, (u32), u32>](move (@2), const (incr_u32))
     storage_dead(@2)
     return
 }
 
 struct test_crate::test_closure_u32::closure {}
 
-pub fn test_crate::test_closure_u32(@1: u32) -> u32
+// Full name: test_crate::test_closure_u32
+pub fn test_closure_u32(@1: u32) -> u32
 {
     let @0: u32; // return
     let x@1: u32; // arg #1
@@ -192,7 +203,8 @@ pub fn test_crate::test_closure_u32(@1: u32) -> u32
 
 struct test_crate::test_closure_u32s::closure {}
 
-pub fn test_crate::test_closure_u32s(@1: u32) -> u32
+// Full name: test_crate::test_closure_u32s
+pub fn test_closure_u32s(@1: u32) -> u32
 {
     let @0: u32; // return
     let x@1: u32; // arg #1
@@ -223,7 +235,8 @@ pub fn test_crate::test_closure_u32s(@1: u32) -> u32
 
 struct test_crate::test_closure_ref_u32::closure {}
 
-pub fn test_crate::test_closure_ref_u32<'a>(@1: &'a (u32)) -> &'a (u32)
+// Full name: test_crate::test_closure_ref_u32
+pub fn test_closure_ref_u32<'a>(@1: &'a (u32)) -> &'a (u32)
 {
     let @0: &'_ (u32); // return
     let x@1: &'_ (u32); // arg #1
@@ -254,12 +267,13 @@ pub fn test_crate::test_closure_ref_u32<'a>(@1: &'a (u32)) -> &'a (u32)
 
 struct test_crate::test_closure_ref_param::closure<T>
   where
-      [@TraitClause0]: core::marker::Sized<T>,
+      [@TraitClause0]: Sized<T>,
 {}
 
-pub fn test_crate::test_closure_ref_param<'_0, T>(@1: &'_0 (T)) -> &'_0 (T)
+// Full name: test_crate::test_closure_ref_param
+pub fn test_closure_ref_param<'_0, T>(@1: &'_0 (T)) -> &'_0 (T)
 where
-    [@TraitClause0]: core::marker::Sized<T>,
+    [@TraitClause0]: Sized<T>,
 {
     let @0: &'_ (T); // return
     let x@1: &'_ (T); // arg #1
@@ -288,18 +302,20 @@ where
     return
 }
 
-trait test_crate::Trait<'a, Self>
+// Full name: test_crate::Trait
+trait Trait<'a, Self>
 
 struct test_crate::test_closure_ref_early_bound::closure<'a, T>
   where
-      [@TraitClause0]: core::marker::Sized<T>,
-      [@TraitClause1]: test_crate::Trait<'a, T>,
+      [@TraitClause0]: Sized<T>,
+      [@TraitClause1]: Trait<'a, T>,
 {}
 
-pub fn test_crate::test_closure_ref_early_bound<'a, T>(@1: &'a (T)) -> &'a (T)
+// Full name: test_crate::test_closure_ref_early_bound
+pub fn test_closure_ref_early_bound<'a, T>(@1: &'a (T)) -> &'a (T)
 where
-    [@TraitClause0]: core::marker::Sized<T>,
-    [@TraitClause1]: test_crate::Trait<'a, T>,
+    [@TraitClause0]: Sized<T>,
+    [@TraitClause1]: Trait<'a, T>,
 {
     let @0: &'_ (T); // return
     let x@1: &'_ (T); // arg #1
@@ -330,13 +346,14 @@ where
 
 struct test_crate::test_map_option2::closure {}
 
-pub fn test_crate::test_map_option2(@1: core::option::Option<u32>[core::marker::Sized<u32>]) -> core::option::Option<u32>[core::marker::Sized<u32>]
+// Full name: test_crate::test_map_option2
+pub fn test_map_option2(@1: Option<u32>[Sized<u32>]) -> Option<u32>[Sized<u32>]
 {
-    let @0: core::option::Option<u32>[core::marker::Sized<u32>]; // return
-    let x@1: core::option::Option<u32>[core::marker::Sized<u32>]; // arg #1
+    let @0: Option<u32>[Sized<u32>]; // return
+    let x@1: Option<u32>[Sized<u32>]; // arg #1
     let f@2: fn(u32) -> u32; // local
     let @3: test_crate::test_map_option2::closure; // anonymous local
-    let @4: core::option::Option<u32>[core::marker::Sized<u32>]; // anonymous local
+    let @4: Option<u32>[Sized<u32>]; // anonymous local
     let @5: fn(u32) -> u32; // anonymous local
 
     storage_live(f@2)
@@ -348,16 +365,17 @@ pub fn test_crate::test_map_option2(@1: core::option::Option<u32>[core::marker::
     @4 := copy (x@1)
     storage_live(@5)
     @5 := copy (f@2)
-    @0 := test_crate::map_option<u32, fn(u32) -> u32>[core::marker::Sized<u32>, core::marker::Sized<fn(u32) -> u32>, core::ops::function::Fn<fn(u32) -> u32, (u32), u32>](move (@4), move (@5))
+    @0 := map_option<u32, fn(u32) -> u32>[Sized<u32>, Sized<fn(u32) -> u32>, Fn<fn(u32) -> u32, (u32), u32>](move (@4), move (@5))
     storage_dead(@5)
     storage_dead(@4)
     storage_dead(f@2)
     return
 }
 
-pub fn test_crate::id<T>(@1: T) -> T
+// Full name: test_crate::id
+pub fn id<T>(@1: T) -> T
 where
-    [@TraitClause0]: core::marker::Sized<T>,
+    [@TraitClause0]: Sized<T>,
 {
     let @0: T; // return
     let x@1: T; // arg #1
@@ -367,54 +385,58 @@ where
     return
 }
 
-pub fn test_crate::test_map_option_id1(@1: core::option::Option<u32>[core::marker::Sized<u32>]) -> core::option::Option<u32>[core::marker::Sized<u32>]
+// Full name: test_crate::test_map_option_id1
+pub fn test_map_option_id1(@1: Option<u32>[Sized<u32>]) -> Option<u32>[Sized<u32>]
 {
-    let @0: core::option::Option<u32>[core::marker::Sized<u32>]; // return
-    let x@1: core::option::Option<u32>[core::marker::Sized<u32>]; // arg #1
-    let @2: core::option::Option<u32>[core::marker::Sized<u32>]; // anonymous local
+    let @0: Option<u32>[Sized<u32>]; // return
+    let x@1: Option<u32>[Sized<u32>]; // arg #1
+    let @2: Option<u32>[Sized<u32>]; // anonymous local
 
     storage_live(@2)
     @2 := copy (x@1)
-    @0 := test_crate::map_option<u32, fn(u32) -> u32>[core::marker::Sized<u32>, core::marker::Sized<fn(u32) -> u32>, core::ops::function::Fn<fn(u32) -> u32, (u32), u32>](move (@2), const (test_crate::id<u32>[core::marker::Sized<u32>]))
+    @0 := map_option<u32, fn(u32) -> u32>[Sized<u32>, Sized<fn(u32) -> u32>, Fn<fn(u32) -> u32, (u32), u32>](move (@2), const (id<u32>[Sized<u32>]))
     storage_dead(@2)
     return
 }
 
-pub fn test_crate::test_map_option_id2(@1: core::option::Option<u32>[core::marker::Sized<u32>]) -> core::option::Option<u32>[core::marker::Sized<u32>]
+// Full name: test_crate::test_map_option_id2
+pub fn test_map_option_id2(@1: Option<u32>[Sized<u32>]) -> Option<u32>[Sized<u32>]
 {
-    let @0: core::option::Option<u32>[core::marker::Sized<u32>]; // return
-    let x@1: core::option::Option<u32>[core::marker::Sized<u32>]; // arg #1
+    let @0: Option<u32>[Sized<u32>]; // return
+    let x@1: Option<u32>[Sized<u32>]; // arg #1
     let f@2: fn(u32) -> u32; // local
-    let @3: core::option::Option<u32>[core::marker::Sized<u32>]; // anonymous local
+    let @3: Option<u32>[Sized<u32>]; // anonymous local
     let @4: fn(u32) -> u32; // anonymous local
 
     storage_live(f@2)
-    f@2 := const (test_crate::id<u32>[core::marker::Sized<u32>])
+    f@2 := const (id<u32>[Sized<u32>])
     storage_live(@3)
     @3 := copy (x@1)
     storage_live(@4)
     @4 := copy (f@2)
-    @0 := test_crate::map_option<u32, fn(u32) -> u32>[core::marker::Sized<u32>, core::marker::Sized<fn(u32) -> u32>, core::ops::function::Fn<fn(u32) -> u32, (u32), u32>](move (@3), move (@4))
+    @0 := map_option<u32, fn(u32) -> u32>[Sized<u32>, Sized<fn(u32) -> u32>, Fn<fn(u32) -> u32, (u32), u32>](move (@3), move (@4))
     storage_dead(@4)
     storage_dead(@3)
     storage_dead(f@2)
     return
 }
 
+// Full name: core::clone::Clone
 #[lang_item("clone")]
-pub trait core::clone::Clone<Self>
+pub trait Clone<Self>
 {
-    parent_clause0 : [@TraitClause0]: core::marker::Sized<Self>
+    parent_clause0 : [@TraitClause0]: Sized<Self>
     fn clone<'_0> = core::clone::Clone::clone<'_0_0, Self>
 }
 
 #[lang_item("clone_fn")]
 pub fn core::clone::Clone::clone<'_0, Self>(@1: &'_0 (Self)) -> Self
 
-pub fn test_crate::id_clone<T>(@1: T) -> T
+// Full name: test_crate::id_clone
+pub fn id_clone<T>(@1: T) -> T
 where
-    [@TraitClause0]: core::marker::Sized<T>,
-    [@TraitClause1]: core::clone::Clone<T>,
+    [@TraitClause0]: Sized<T>,
+    [@TraitClause1]: Clone<T>,
 {
     let @0: T; // return
     let x@1: T; // arg #1
@@ -428,14 +450,17 @@ where
     return
 }
 
-pub fn core::clone::impls::{impl core::clone::Clone for u32}#8::clone<'_0>(@1: &'_0 (u32)) -> u32
+// Full name: core::clone::impls::{impl Clone for u32}#8::clone
+pub fn {impl Clone for u32}#8::clone<'_0>(@1: &'_0 (u32)) -> u32
 
-impl core::clone::impls::{impl core::clone::Clone for u32}#8 : core::clone::Clone<u32> {
-    parent_clause0 = core::marker::Sized<u32>
-    fn clone<'_0> = core::clone::impls::{impl core::clone::Clone for u32}#8::clone<'_0_0>
+// Full name: core::clone::impls::{impl Clone for u32}#8
+impl Clone for u32 {
+    parent_clause0 = Sized<u32>
+    fn clone<'_0> = {impl Clone for u32}#8::clone<'_0_0>
 }
 
-pub fn test_crate::test_id_clone(@1: u32) -> u32
+// Full name: test_crate::test_id_clone
+pub fn test_id_clone(@1: u32) -> u32
 {
     let @0: u32; // return
     let x@1: u32; // arg #1
@@ -444,7 +469,7 @@ pub fn test_crate::test_id_clone(@1: u32) -> u32
     let @4: u32; // anonymous local
 
     storage_live(f@2)
-    f@2 := cast<fn(u32) -> u32, fn(u32) -> u32>(const (test_crate::id_clone<u32>[core::marker::Sized<u32>, core::clone::impls::{impl core::clone::Clone for u32}#8]))
+    f@2 := cast<fn(u32) -> u32, fn(u32) -> u32>(const (id_clone<u32>[Sized<u32>, {impl Clone for u32}#8]))
     storage_live(@3)
     @3 := copy (f@2)
     storage_live(@4)
@@ -456,10 +481,11 @@ pub fn test_crate::test_id_clone(@1: u32) -> u32
     return
 }
 
-pub fn test_crate::test_id_clone_param<T>(@1: T) -> T
+// Full name: test_crate::test_id_clone_param
+pub fn test_id_clone_param<T>(@1: T) -> T
 where
-    [@TraitClause0]: core::marker::Sized<T>,
-    [@TraitClause1]: core::clone::Clone<T>,
+    [@TraitClause0]: Sized<T>,
+    [@TraitClause1]: Clone<T>,
 {
     let @0: T; // return
     let x@1: T; // arg #1
@@ -468,7 +494,7 @@ where
     let @4: T; // anonymous local
 
     storage_live(f@2)
-    f@2 := cast<fn(T) -> T, fn(T) -> T>(const (test_crate::id_clone<T>[@TraitClause0, @TraitClause1]))
+    f@2 := cast<fn(T) -> T, fn(T) -> T>(const (id_clone<T>[@TraitClause0, @TraitClause1]))
     storage_live(@3)
     @3 := copy (f@2)
     storage_live(@4)
@@ -481,22 +507,24 @@ where
     return
 }
 
-pub fn test_crate::test_map_option_id_clone(@1: core::option::Option<u32>[core::marker::Sized<u32>]) -> core::option::Option<u32>[core::marker::Sized<u32>]
+// Full name: test_crate::test_map_option_id_clone
+pub fn test_map_option_id_clone(@1: Option<u32>[Sized<u32>]) -> Option<u32>[Sized<u32>]
 {
-    let @0: core::option::Option<u32>[core::marker::Sized<u32>]; // return
-    let x@1: core::option::Option<u32>[core::marker::Sized<u32>]; // arg #1
-    let @2: core::option::Option<u32>[core::marker::Sized<u32>]; // anonymous local
+    let @0: Option<u32>[Sized<u32>]; // return
+    let x@1: Option<u32>[Sized<u32>]; // arg #1
+    let @2: Option<u32>[Sized<u32>]; // anonymous local
 
     storage_live(@2)
     @2 := copy (x@1)
-    @0 := test_crate::map_option<u32, fn(u32) -> u32>[core::marker::Sized<u32>, core::marker::Sized<fn(u32) -> u32>, core::ops::function::Fn<fn(u32) -> u32, (u32), u32>](move (@2), const (test_crate::id_clone<u32>[core::marker::Sized<u32>, core::clone::impls::{impl core::clone::Clone for u32}#8]))
+    @0 := map_option<u32, fn(u32) -> u32>[Sized<u32>, Sized<fn(u32) -> u32>, Fn<fn(u32) -> u32, (u32), u32>](move (@2), const (id_clone<u32>[Sized<u32>, {impl Clone for u32}#8]))
     storage_dead(@2)
     return
 }
 
 struct test_crate::test_map_option3::closure {}
 
-fn test_crate::test_map_option3::{impl core::ops::function::Fn<(u32), u32> for test_crate::test_map_option3::closure}::call<'_0>(@1: &'_0 (test_crate::test_map_option3::closure), @2: (u32)) -> u32
+// Full name: test_crate::test_map_option3::{impl Fn<(u32), u32> for test_crate::test_map_option3::closure}::call
+fn {impl Fn<(u32), u32> for test_crate::test_map_option3::closure}::call<'_0>(@1: &'_0 (test_crate::test_map_option3::closure), @2: (u32)) -> u32
 {
     let @0: u32; // return
     let @1: &'_ (test_crate::test_map_option3::closure); // arg #1
@@ -513,7 +541,8 @@ fn test_crate::test_map_option3::{impl core::ops::function::Fn<(u32), u32> for t
     return
 }
 
-fn test_crate::test_map_option3::{impl core::ops::function::FnMut<(u32), u32> for test_crate::test_map_option3::closure}::call_mut<'_0>(@1: &'_0 mut (test_crate::test_map_option3::closure), @2: (u32)) -> u32
+// Full name: test_crate::test_map_option3::{impl FnMut<(u32), u32> for test_crate::test_map_option3::closure}::call_mut
+fn {impl FnMut<(u32), u32> for test_crate::test_map_option3::closure}::call_mut<'_0>(@1: &'_0 mut (test_crate::test_map_option3::closure), @2: (u32)) -> u32
 {
     let @0: u32; // return
     let state@1: &'_0 mut (test_crate::test_map_option3::closure); // arg #1
@@ -522,11 +551,12 @@ fn test_crate::test_map_option3::{impl core::ops::function::FnMut<(u32), u32> fo
 
     storage_live(@3)
     @3 := &*(state@1)
-    @0 := test_crate::test_map_option3::{impl core::ops::function::Fn<(u32), u32> for test_crate::test_map_option3::closure}::call<'_>(move (@3), move (args@2))
+    @0 := {impl Fn<(u32), u32> for test_crate::test_map_option3::closure}::call<'_>(move (@3), move (args@2))
     return
 }
 
-fn test_crate::test_map_option3::{impl core::ops::function::FnOnce<(u32), u32> for test_crate::test_map_option3::closure}::call_once(@1: test_crate::test_map_option3::closure, @2: (u32)) -> u32
+// Full name: test_crate::test_map_option3::{impl FnOnce<(u32), u32> for test_crate::test_map_option3::closure}::call_once
+fn {impl FnOnce<(u32), u32> for test_crate::test_map_option3::closure}::call_once(@1: test_crate::test_map_option3::closure, @2: (u32)) -> u32
 {
     let @0: u32; // return
     let @1: test_crate::test_map_option3::closure; // arg #1
@@ -535,44 +565,48 @@ fn test_crate::test_map_option3::{impl core::ops::function::FnOnce<(u32), u32> f
 
     storage_live(@3)
     @3 := &mut @1
-    @0 := test_crate::test_map_option3::{impl core::ops::function::FnMut<(u32), u32> for test_crate::test_map_option3::closure}::call_mut<'_>(move (@3), move (@2))
+    @0 := {impl FnMut<(u32), u32> for test_crate::test_map_option3::closure}::call_mut<'_>(move (@3), move (@2))
     drop @1
     return
 }
 
-impl test_crate::test_map_option3::{impl core::ops::function::FnOnce<(u32), u32> for test_crate::test_map_option3::closure} : core::ops::function::FnOnce<test_crate::test_map_option3::closure, (u32), u32> {
-    parent_clause0 = core::marker::Sized<(u32)>
-    parent_clause1 = core::marker::Tuple<(u32)>
-    parent_clause2 = core::marker::Sized<u32>
-    fn call_once = test_crate::test_map_option3::{impl core::ops::function::FnOnce<(u32), u32> for test_crate::test_map_option3::closure}::call_once
+// Full name: test_crate::test_map_option3::{impl FnOnce<(u32), u32> for test_crate::test_map_option3::closure}
+impl FnOnce<(u32), u32> for test_crate::test_map_option3::closure {
+    parent_clause0 = Sized<(u32)>
+    parent_clause1 = Tuple<(u32)>
+    parent_clause2 = Sized<u32>
+    fn call_once = {impl FnOnce<(u32), u32> for test_crate::test_map_option3::closure}::call_once
 }
 
-impl test_crate::test_map_option3::{impl core::ops::function::FnMut<(u32), u32> for test_crate::test_map_option3::closure} : core::ops::function::FnMut<test_crate::test_map_option3::closure, (u32), u32> {
-    parent_clause0 = test_crate::test_map_option3::{impl core::ops::function::FnOnce<(u32), u32> for test_crate::test_map_option3::closure}
-    parent_clause1 = core::marker::Sized<(u32)>
-    parent_clause2 = core::marker::Tuple<(u32)>
-    fn call_mut<'_0> = test_crate::test_map_option3::{impl core::ops::function::FnMut<(u32), u32> for test_crate::test_map_option3::closure}::call_mut<'_0_0>
+// Full name: test_crate::test_map_option3::{impl FnMut<(u32), u32> for test_crate::test_map_option3::closure}
+impl FnMut<(u32), u32> for test_crate::test_map_option3::closure {
+    parent_clause0 = {impl FnOnce<(u32), u32> for test_crate::test_map_option3::closure}
+    parent_clause1 = Sized<(u32)>
+    parent_clause2 = Tuple<(u32)>
+    fn call_mut<'_0> = {impl FnMut<(u32), u32> for test_crate::test_map_option3::closure}::call_mut<'_0_0>
 }
 
-impl test_crate::test_map_option3::{impl core::ops::function::Fn<(u32), u32> for test_crate::test_map_option3::closure} : core::ops::function::Fn<test_crate::test_map_option3::closure, (u32), u32> {
-    parent_clause0 = test_crate::test_map_option3::{impl core::ops::function::FnMut<(u32), u32> for test_crate::test_map_option3::closure}
-    parent_clause1 = core::marker::Sized<(u32)>
-    parent_clause2 = core::marker::Tuple<(u32)>
-    fn call<'_0> = test_crate::test_map_option3::{impl core::ops::function::Fn<(u32), u32> for test_crate::test_map_option3::closure}::call<'_0_0>
+// Full name: test_crate::test_map_option3::{impl Fn<(u32), u32> for test_crate::test_map_option3::closure}
+impl Fn<(u32), u32> for test_crate::test_map_option3::closure {
+    parent_clause0 = {impl FnMut<(u32), u32> for test_crate::test_map_option3::closure}
+    parent_clause1 = Sized<(u32)>
+    parent_clause2 = Tuple<(u32)>
+    fn call<'_0> = {impl Fn<(u32), u32> for test_crate::test_map_option3::closure}::call<'_0_0>
 }
 
-pub fn test_crate::test_map_option3(@1: core::option::Option<u32>[core::marker::Sized<u32>]) -> core::option::Option<u32>[core::marker::Sized<u32>]
+// Full name: test_crate::test_map_option3
+pub fn test_map_option3(@1: Option<u32>[Sized<u32>]) -> Option<u32>[Sized<u32>]
 {
-    let @0: core::option::Option<u32>[core::marker::Sized<u32>]; // return
-    let x@1: core::option::Option<u32>[core::marker::Sized<u32>]; // arg #1
-    let @2: core::option::Option<u32>[core::marker::Sized<u32>]; // anonymous local
+    let @0: Option<u32>[Sized<u32>]; // return
+    let x@1: Option<u32>[Sized<u32>]; // arg #1
+    let @2: Option<u32>[Sized<u32>]; // anonymous local
     let @3: test_crate::test_map_option3::closure; // anonymous local
 
     storage_live(@2)
     @2 := copy (x@1)
     storage_live(@3)
     @3 := test_crate::test_map_option3::closure {  }
-    @0 := test_crate::map_option<u32, test_crate::test_map_option3::closure>[core::marker::Sized<u32>, core::marker::Sized<test_crate::test_map_option3::closure>, test_crate::test_map_option3::{impl core::ops::function::Fn<(u32), u32> for test_crate::test_map_option3::closure}](move (@2), move (@3))
+    @0 := map_option<u32, test_crate::test_map_option3::closure>[Sized<u32>, Sized<test_crate::test_map_option3::closure>, {impl Fn<(u32), u32> for test_crate::test_map_option3::closure}](move (@2), move (@3))
     storage_dead(@3)
     storage_dead(@2)
     return
@@ -580,7 +614,8 @@ pub fn test_crate::test_map_option3(@1: core::option::Option<u32>[core::marker::
 
 struct test_crate::test_regions::closure {}
 
-pub fn test_crate::test_regions<'a>(@1: &'a (u32)) -> u32
+// Full name: test_crate::test_regions
+pub fn test_regions<'a>(@1: &'a (u32)) -> u32
 {
     let @0: u32; // return
     let x@1: &'_ (u32); // arg #1
@@ -614,7 +649,8 @@ struct test_crate::test_closure_capture::closure<'_0, '_1> {
   &'_1 (u32),
 }
 
-fn test_crate::test_closure_capture::{impl core::ops::function::Fn<(u32), u32> for test_crate::test_closure_capture::closure<'_0, '_1>}::call<'_0, '_1, '_2>(@1: &'_2 (test_crate::test_closure_capture::closure<'_0, '_1>), @2: (u32)) -> u32
+// Full name: test_crate::test_closure_capture::{impl Fn<(u32), u32> for test_crate::test_closure_capture::closure<'_0, '_1>}::call
+fn {impl Fn<(u32), u32> for test_crate::test_closure_capture::closure<'_0, '_1>}::call<'_0, '_1, '_2>(@1: &'_2 (test_crate::test_closure_capture::closure<'_0, '_1>), @2: (u32)) -> u32
 {
     let @0: u32; // return
     let @1: &'_ (test_crate::test_closure_capture::closure<'_0, '_1>); // arg #1
@@ -643,7 +679,8 @@ fn test_crate::test_closure_capture::{impl core::ops::function::Fn<(u32), u32> f
     return
 }
 
-pub fn test_crate::test_closure_capture(@1: u32, @2: u32) -> u32
+// Full name: test_crate::test_closure_capture
+pub fn test_closure_capture(@1: u32, @2: u32) -> u32
 {
     let @0: u32; // return
     let x@1: u32; // arg #1
@@ -669,7 +706,7 @@ pub fn test_crate::test_closure_capture(@1: u32, @2: u32) -> u32
     @7 := &*(f@3)
     storage_live(@8)
     @8 := (const (0 : u32))
-    @0 := test_crate::test_closure_capture::{impl core::ops::function::Fn<(u32), u32> for test_crate::test_closure_capture::closure<'_0, '_1>}::call<'_, '_, '_>(move (@7), move (@8))
+    @0 := {impl Fn<(u32), u32> for test_crate::test_closure_capture::closure<'_0, '_1>}::call<'_, '_, '_>(move (@7), move (@8))
     storage_dead(@8)
     storage_dead(@7)
     storage_dead(@4)
@@ -679,14 +716,15 @@ pub fn test_crate::test_closure_capture(@1: u32, @2: u32) -> u32
 
 struct test_crate::test_closure_clone::closure<T>
   where
-      [@TraitClause0]: core::marker::Sized<T>,
-      [@TraitClause1]: core::clone::Clone<T>,
+      [@TraitClause0]: Sized<T>,
+      [@TraitClause1]: Clone<T>,
 {}
 
-fn test_crate::test_closure_clone::{impl core::ops::function::Fn<(T), T> for test_crate::test_closure_clone::closure<T>[@TraitClause0, @TraitClause1]}::call<'_0, T>(@1: &'_0 (test_crate::test_closure_clone::closure<T>[@TraitClause0, @TraitClause1]), @2: (T)) -> T
+// Full name: test_crate::test_closure_clone::{impl Fn<(T), T> for test_crate::test_closure_clone::closure<T>[@TraitClause0, @TraitClause1]}::call
+fn {impl Fn<(T), T> for test_crate::test_closure_clone::closure<T>[@TraitClause0, @TraitClause1]}::call<'_0, T>(@1: &'_0 (test_crate::test_closure_clone::closure<T>[@TraitClause0, @TraitClause1]), @2: (T)) -> T
 where
-    [@TraitClause0]: core::marker::Sized<T>,
-    [@TraitClause1]: core::clone::Clone<T>,
+    [@TraitClause0]: Sized<T>,
+    [@TraitClause1]: Clone<T>,
 {
     let @0: T; // return
     let @1: &'_ (test_crate::test_closure_clone::closure<T>[@TraitClause0, @TraitClause1]); // arg #1
@@ -704,10 +742,11 @@ where
     return
 }
 
-pub fn test_crate::test_closure_clone<T>(@1: T) -> T
+// Full name: test_crate::test_closure_clone
+pub fn test_closure_clone<T>(@1: T) -> T
 where
-    [@TraitClause0]: core::marker::Sized<T>,
-    [@TraitClause1]: core::clone::Clone<T>,
+    [@TraitClause0]: Sized<T>,
+    [@TraitClause1]: Clone<T>,
 {
     let @0: T; // return
     let x@1: T; // arg #1
@@ -727,7 +766,7 @@ where
     storage_live(@6)
     @6 := move (x@1)
     @5 := (move (@6))
-    @0 := test_crate::test_closure_clone::{impl core::ops::function::Fn<(T), T> for test_crate::test_closure_clone::closure<T>[@TraitClause0, @TraitClause1]}::call<'_, T>[@TraitClause0, @TraitClause1](move (@3), move (@5))
+    @0 := {impl Fn<(T), T> for test_crate::test_closure_clone::closure<T>[@TraitClause0, @TraitClause1]}::call<'_, T>[@TraitClause0, @TraitClause1](move (@3), move (@5))
     drop @6
     storage_dead(@6)
     storage_dead(@5)
@@ -740,14 +779,16 @@ where
 
 struct test_crate::test_array_map::closure {}
 
-pub fn core::array::{Array<T, const N : usize>}#23::map<T, F, U, const N : usize>(@1: Array<T, const N : usize>, @2: F) -> Array<U, const N : usize>
+// Full name: core::array::{Array<T, const N : usize>}#23::map
+pub fn map<T, F, U, const N : usize>(@1: Array<T, const N : usize>, @2: F) -> Array<U, const N : usize>
 where
-    [@TraitClause0]: core::marker::Sized<T>,
-    [@TraitClause1]: core::marker::Sized<F>,
-    [@TraitClause2]: core::marker::Sized<U>,
-    [@TraitClause3]: core::ops::function::FnMut<F, (T), U>,
+    [@TraitClause0]: Sized<T>,
+    [@TraitClause1]: Sized<F>,
+    [@TraitClause2]: Sized<U>,
+    [@TraitClause3]: FnMut<F, (T), U>,
 
-fn test_crate::test_array_map::{impl core::ops::function::FnMut<(i32), i32> for test_crate::test_array_map::closure}::call_mut<'_0>(@1: &'_0 mut (test_crate::test_array_map::closure), @2: (i32)) -> i32
+// Full name: test_crate::test_array_map::{impl FnMut<(i32), i32> for test_crate::test_array_map::closure}::call_mut
+fn {impl FnMut<(i32), i32> for test_crate::test_array_map::closure}::call_mut<'_0>(@1: &'_0 mut (test_crate::test_array_map::closure), @2: (i32)) -> i32
 {
     let @0: i32; // return
     let @1: &'_ mut (test_crate::test_array_map::closure); // arg #1
@@ -760,7 +801,8 @@ fn test_crate::test_array_map::{impl core::ops::function::FnMut<(i32), i32> for 
     return
 }
 
-fn test_crate::test_array_map::{impl core::ops::function::FnOnce<(i32), i32> for test_crate::test_array_map::closure}::call_once(@1: test_crate::test_array_map::closure, @2: (i32)) -> i32
+// Full name: test_crate::test_array_map::{impl FnOnce<(i32), i32> for test_crate::test_array_map::closure}::call_once
+fn {impl FnOnce<(i32), i32> for test_crate::test_array_map::closure}::call_once(@1: test_crate::test_array_map::closure, @2: (i32)) -> i32
 {
     let @0: i32; // return
     let @1: test_crate::test_array_map::closure; // arg #1
@@ -769,26 +811,29 @@ fn test_crate::test_array_map::{impl core::ops::function::FnOnce<(i32), i32> for
 
     storage_live(@3)
     @3 := &mut @1
-    @0 := test_crate::test_array_map::{impl core::ops::function::FnMut<(i32), i32> for test_crate::test_array_map::closure}::call_mut<'_>(move (@3), move (@2))
+    @0 := {impl FnMut<(i32), i32> for test_crate::test_array_map::closure}::call_mut<'_>(move (@3), move (@2))
     drop @1
     return
 }
 
-impl test_crate::test_array_map::{impl core::ops::function::FnOnce<(i32), i32> for test_crate::test_array_map::closure} : core::ops::function::FnOnce<test_crate::test_array_map::closure, (i32), i32> {
-    parent_clause0 = core::marker::Sized<(i32)>
-    parent_clause1 = core::marker::Tuple<(i32)>
-    parent_clause2 = core::marker::Sized<i32>
-    fn call_once = test_crate::test_array_map::{impl core::ops::function::FnOnce<(i32), i32> for test_crate::test_array_map::closure}::call_once
+// Full name: test_crate::test_array_map::{impl FnOnce<(i32), i32> for test_crate::test_array_map::closure}
+impl FnOnce<(i32), i32> for test_crate::test_array_map::closure {
+    parent_clause0 = Sized<(i32)>
+    parent_clause1 = Tuple<(i32)>
+    parent_clause2 = Sized<i32>
+    fn call_once = {impl FnOnce<(i32), i32> for test_crate::test_array_map::closure}::call_once
 }
 
-impl test_crate::test_array_map::{impl core::ops::function::FnMut<(i32), i32> for test_crate::test_array_map::closure} : core::ops::function::FnMut<test_crate::test_array_map::closure, (i32), i32> {
-    parent_clause0 = test_crate::test_array_map::{impl core::ops::function::FnOnce<(i32), i32> for test_crate::test_array_map::closure}
-    parent_clause1 = core::marker::Sized<(i32)>
-    parent_clause2 = core::marker::Tuple<(i32)>
-    fn call_mut<'_0> = test_crate::test_array_map::{impl core::ops::function::FnMut<(i32), i32> for test_crate::test_array_map::closure}::call_mut<'_0_0>
+// Full name: test_crate::test_array_map::{impl FnMut<(i32), i32> for test_crate::test_array_map::closure}
+impl FnMut<(i32), i32> for test_crate::test_array_map::closure {
+    parent_clause0 = {impl FnOnce<(i32), i32> for test_crate::test_array_map::closure}
+    parent_clause1 = Sized<(i32)>
+    parent_clause2 = Tuple<(i32)>
+    fn call_mut<'_0> = {impl FnMut<(i32), i32> for test_crate::test_array_map::closure}::call_mut<'_0_0>
 }
 
-pub fn test_crate::test_array_map(@1: Array<i32, 256 : usize>) -> Array<i32, 256 : usize>
+// Full name: test_crate::test_array_map
+pub fn test_array_map(@1: Array<i32, 256 : usize>) -> Array<i32, 256 : usize>
 {
     let @0: Array<i32, 256 : usize>; // return
     let x@1: Array<i32, 256 : usize>; // arg #1
@@ -799,7 +844,7 @@ pub fn test_crate::test_array_map(@1: Array<i32, 256 : usize>) -> Array<i32, 256
     @2 := copy (x@1)
     storage_live(@3)
     @3 := test_crate::test_array_map::closure {  }
-    @0 := core::array::{Array<T, const N : usize>}#23::map<i32, test_crate::test_array_map::closure, i32, 256 : usize>[core::marker::Sized<i32>, core::marker::Sized<test_crate::test_array_map::closure>, core::marker::Sized<i32>, test_crate::test_array_map::{impl core::ops::function::FnMut<(i32), i32> for test_crate::test_array_map::closure}](move (@2), move (@3))
+    @0 := map<i32, test_crate::test_array_map::closure, i32, 256 : usize>[Sized<i32>, Sized<test_crate::test_array_map::closure>, Sized<i32>, {impl FnMut<(i32), i32> for test_crate::test_array_map::closure}](move (@2), move (@3))
     storage_dead(@3)
     storage_dead(@2)
     return
@@ -809,7 +854,8 @@ struct test_crate::test_fnmut_with_ref::closure<'_0> {
   &'_0 mut (usize),
 }
 
-fn test_crate::test_fnmut_with_ref::{impl core::ops::function::FnMut<(&'_ (usize)), ()> for test_crate::test_fnmut_with_ref::closure<'_0>}::call_mut<'_0, '_1, '_2>(@1: &'_2 mut (test_crate::test_fnmut_with_ref::closure<'_0>), @2: (&'_1 (usize)))
+// Full name: test_crate::test_fnmut_with_ref::{impl FnMut<(&'_ (usize)), ()> for test_crate::test_fnmut_with_ref::closure<'_0>}::call_mut
+fn {impl FnMut<(&'_ (usize)), ()> for test_crate::test_fnmut_with_ref::closure<'_0>}::call_mut<'_0, '_1, '_2>(@1: &'_2 mut (test_crate::test_fnmut_with_ref::closure<'_0>), @2: (&'_1 (usize)))
 {
     let @0: (); // return
     let @1: &'_ mut (test_crate::test_fnmut_with_ref::closure<'_0>); // arg #1
@@ -828,7 +874,8 @@ fn test_crate::test_fnmut_with_ref::{impl core::ops::function::FnMut<(&'_ (usize
     return
 }
 
-fn test_crate::test_fnmut_with_ref()
+// Full name: test_crate::test_fnmut_with_ref
+fn test_fnmut_with_ref()
 {
     let @0: (); // return
     let sum@1: usize; // local
@@ -859,7 +906,7 @@ fn test_crate::test_fnmut_with_ref()
     @8 := &@9
     @7 := &*(@8)
     @6 := (move (@7))
-    @4 := test_crate::test_fnmut_with_ref::{impl core::ops::function::FnMut<(&'_ (usize)), ()> for test_crate::test_fnmut_with_ref::closure<'_0>}::call_mut<'_, '_, '_>(move (@5), move (@6))
+    @4 := {impl FnMut<(&'_ (usize)), ()> for test_crate::test_fnmut_with_ref::closure<'_0>}::call_mut<'_, '_, '_>(move (@5), move (@6))
     storage_dead(@7)
     storage_dead(@6)
     storage_dead(@5)
@@ -875,7 +922,8 @@ fn test_crate::test_fnmut_with_ref()
 
 pub fn core::ops::function::FnMut::call_mut<'_0, Self, Args, Self_Clause0_Output>(@1: &'_0 mut (Self), @2: Args) -> Self_Clause0_Output
 
-fn test_crate::test_closure_capture::{impl core::ops::function::FnMut<(u32), u32> for test_crate::test_closure_capture::closure<'_0, '_1>}::call_mut<'_0, '_1, '_2>(@1: &'_2 mut (test_crate::test_closure_capture::closure<'_0, '_1>), @2: (u32)) -> u32
+// Full name: test_crate::test_closure_capture::{impl FnMut<(u32), u32> for test_crate::test_closure_capture::closure<'_0, '_1>}::call_mut
+fn {impl FnMut<(u32), u32> for test_crate::test_closure_capture::closure<'_0, '_1>}::call_mut<'_0, '_1, '_2>(@1: &'_2 mut (test_crate::test_closure_capture::closure<'_0, '_1>), @2: (u32)) -> u32
 {
     let @0: u32; // return
     let state@1: &'_2 mut (test_crate::test_closure_capture::closure<'_0, '_1>); // arg #1
@@ -884,11 +932,12 @@ fn test_crate::test_closure_capture::{impl core::ops::function::FnMut<(u32), u32
 
     storage_live(@3)
     @3 := &*(state@1)
-    @0 := test_crate::test_closure_capture::{impl core::ops::function::Fn<(u32), u32> for test_crate::test_closure_capture::closure<'_0, '_1>}::call<'_0, '_1, '_>(move (@3), move (args@2))
+    @0 := {impl Fn<(u32), u32> for test_crate::test_closure_capture::closure<'_0, '_1>}::call<'_0, '_1, '_>(move (@3), move (args@2))
     return
 }
 
-fn test_crate::test_closure_capture::{impl core::ops::function::FnOnce<(u32), u32> for test_crate::test_closure_capture::closure<'_0, '_1>}::call_once<'_0, '_1>(@1: test_crate::test_closure_capture::closure<'_0, '_1>, @2: (u32)) -> u32
+// Full name: test_crate::test_closure_capture::{impl FnOnce<(u32), u32> for test_crate::test_closure_capture::closure<'_0, '_1>}::call_once
+fn {impl FnOnce<(u32), u32> for test_crate::test_closure_capture::closure<'_0, '_1>}::call_once<'_0, '_1>(@1: test_crate::test_closure_capture::closure<'_0, '_1>, @2: (u32)) -> u32
 {
     let @0: u32; // return
     let @1: test_crate::test_closure_capture::closure<'_0, '_1>; // arg #1
@@ -897,36 +946,40 @@ fn test_crate::test_closure_capture::{impl core::ops::function::FnOnce<(u32), u3
 
     storage_live(@3)
     @3 := &mut @1
-    @0 := test_crate::test_closure_capture::{impl core::ops::function::FnMut<(u32), u32> for test_crate::test_closure_capture::closure<'_0, '_1>}::call_mut<'_0, '_1, '_>(move (@3), move (@2))
+    @0 := {impl FnMut<(u32), u32> for test_crate::test_closure_capture::closure<'_0, '_1>}::call_mut<'_0, '_1, '_>(move (@3), move (@2))
     drop @1
     return
 }
 
-impl test_crate::test_closure_capture::{impl core::ops::function::FnOnce<(u32), u32> for test_crate::test_closure_capture::closure<'_0, '_1>}<'_0, '_1> : core::ops::function::FnOnce<test_crate::test_closure_capture::closure<'_0, '_1>, (u32), u32> {
-    parent_clause0 = core::marker::Sized<(u32)>
-    parent_clause1 = core::marker::Tuple<(u32)>
-    parent_clause2 = core::marker::Sized<u32>
-    fn call_once = test_crate::test_closure_capture::{impl core::ops::function::FnOnce<(u32), u32> for test_crate::test_closure_capture::closure<'_0, '_1>}::call_once<'_0, '_1>
+// Full name: test_crate::test_closure_capture::{impl FnOnce<(u32), u32> for test_crate::test_closure_capture::closure<'_0, '_1>}
+impl<'_0, '_1> FnOnce<(u32), u32> for test_crate::test_closure_capture::closure<'_0, '_1> {
+    parent_clause0 = Sized<(u32)>
+    parent_clause1 = Tuple<(u32)>
+    parent_clause2 = Sized<u32>
+    fn call_once = {impl FnOnce<(u32), u32> for test_crate::test_closure_capture::closure<'_0, '_1>}::call_once<'_0, '_1>
 }
 
-impl test_crate::test_closure_capture::{impl core::ops::function::FnMut<(u32), u32> for test_crate::test_closure_capture::closure<'_0, '_1>}<'_0, '_1> : core::ops::function::FnMut<test_crate::test_closure_capture::closure<'_0, '_1>, (u32), u32> {
-    parent_clause0 = test_crate::test_closure_capture::{impl core::ops::function::FnOnce<(u32), u32> for test_crate::test_closure_capture::closure<'_0, '_1>}<'_0, '_1>
-    parent_clause1 = core::marker::Sized<(u32)>
-    parent_clause2 = core::marker::Tuple<(u32)>
-    fn call_mut<'_0> = test_crate::test_closure_capture::{impl core::ops::function::FnMut<(u32), u32> for test_crate::test_closure_capture::closure<'_0, '_1>}::call_mut<'_0, '_1, '_0_0>
+// Full name: test_crate::test_closure_capture::{impl FnMut<(u32), u32> for test_crate::test_closure_capture::closure<'_0, '_1>}
+impl<'_0, '_1> FnMut<(u32), u32> for test_crate::test_closure_capture::closure<'_0, '_1> {
+    parent_clause0 = {impl FnOnce<(u32), u32> for test_crate::test_closure_capture::closure<'_0, '_1>}<'_0, '_1>
+    parent_clause1 = Sized<(u32)>
+    parent_clause2 = Tuple<(u32)>
+    fn call_mut<'_0> = {impl FnMut<(u32), u32> for test_crate::test_closure_capture::closure<'_0, '_1>}::call_mut<'_0, '_1, '_0_0>
 }
 
-impl test_crate::test_closure_capture::{impl core::ops::function::Fn<(u32), u32> for test_crate::test_closure_capture::closure<'_0, '_1>}<'_0, '_1> : core::ops::function::Fn<test_crate::test_closure_capture::closure<'_0, '_1>, (u32), u32> {
-    parent_clause0 = test_crate::test_closure_capture::{impl core::ops::function::FnMut<(u32), u32> for test_crate::test_closure_capture::closure<'_0, '_1>}<'_0, '_1>
-    parent_clause1 = core::marker::Sized<(u32)>
-    parent_clause2 = core::marker::Tuple<(u32)>
-    fn call<'_0> = test_crate::test_closure_capture::{impl core::ops::function::Fn<(u32), u32> for test_crate::test_closure_capture::closure<'_0, '_1>}::call<'_0, '_1, '_0_0>
+// Full name: test_crate::test_closure_capture::{impl Fn<(u32), u32> for test_crate::test_closure_capture::closure<'_0, '_1>}
+impl<'_0, '_1> Fn<(u32), u32> for test_crate::test_closure_capture::closure<'_0, '_1> {
+    parent_clause0 = {impl FnMut<(u32), u32> for test_crate::test_closure_capture::closure<'_0, '_1>}<'_0, '_1>
+    parent_clause1 = Sized<(u32)>
+    parent_clause2 = Tuple<(u32)>
+    fn call<'_0> = {impl Fn<(u32), u32> for test_crate::test_closure_capture::closure<'_0, '_1>}::call<'_0, '_1, '_0_0>
 }
 
-fn test_crate::test_closure_clone::{impl core::ops::function::FnMut<(T), T> for test_crate::test_closure_clone::closure<T>[@TraitClause0, @TraitClause1]}::call_mut<'_0, T>(@1: &'_0 mut (test_crate::test_closure_clone::closure<T>[@TraitClause0, @TraitClause1]), @2: (T)) -> T
+// Full name: test_crate::test_closure_clone::{impl FnMut<(T), T> for test_crate::test_closure_clone::closure<T>[@TraitClause0, @TraitClause1]}::call_mut
+fn {impl FnMut<(T), T> for test_crate::test_closure_clone::closure<T>[@TraitClause0, @TraitClause1]}::call_mut<'_0, T>(@1: &'_0 mut (test_crate::test_closure_clone::closure<T>[@TraitClause0, @TraitClause1]), @2: (T)) -> T
 where
-    [@TraitClause0]: core::marker::Sized<T>,
-    [@TraitClause1]: core::clone::Clone<T>,
+    [@TraitClause0]: Sized<T>,
+    [@TraitClause1]: Clone<T>,
 {
     let @0: T; // return
     let state@1: &'_0 mut (test_crate::test_closure_clone::closure<T>[@TraitClause0, @TraitClause1]); // arg #1
@@ -935,14 +988,15 @@ where
 
     storage_live(@3)
     @3 := &*(state@1)
-    @0 := test_crate::test_closure_clone::{impl core::ops::function::Fn<(T), T> for test_crate::test_closure_clone::closure<T>[@TraitClause0, @TraitClause1]}::call<'_, T>[@TraitClause0, @TraitClause1](move (@3), move (args@2))
+    @0 := {impl Fn<(T), T> for test_crate::test_closure_clone::closure<T>[@TraitClause0, @TraitClause1]}::call<'_, T>[@TraitClause0, @TraitClause1](move (@3), move (args@2))
     return
 }
 
-fn test_crate::test_closure_clone::{impl core::ops::function::FnOnce<(T), T> for test_crate::test_closure_clone::closure<T>[@TraitClause0, @TraitClause1]}::call_once<T>(@1: test_crate::test_closure_clone::closure<T>[@TraitClause0, @TraitClause1], @2: (T)) -> T
+// Full name: test_crate::test_closure_clone::{impl FnOnce<(T), T> for test_crate::test_closure_clone::closure<T>[@TraitClause0, @TraitClause1]}::call_once
+fn {impl FnOnce<(T), T> for test_crate::test_closure_clone::closure<T>[@TraitClause0, @TraitClause1]}::call_once<T>(@1: test_crate::test_closure_clone::closure<T>[@TraitClause0, @TraitClause1], @2: (T)) -> T
 where
-    [@TraitClause0]: core::marker::Sized<T>,
-    [@TraitClause1]: core::clone::Clone<T>,
+    [@TraitClause0]: Sized<T>,
+    [@TraitClause1]: Clone<T>,
 {
     let @0: T; // return
     let @1: test_crate::test_closure_clone::closure<T>[@TraitClause0, @TraitClause1]; // arg #1
@@ -951,45 +1005,49 @@ where
 
     storage_live(@3)
     @3 := &mut @1
-    @0 := test_crate::test_closure_clone::{impl core::ops::function::FnMut<(T), T> for test_crate::test_closure_clone::closure<T>[@TraitClause0, @TraitClause1]}::call_mut<'_, T>[@TraitClause0, @TraitClause1](move (@3), move (@2))
+    @0 := {impl FnMut<(T), T> for test_crate::test_closure_clone::closure<T>[@TraitClause0, @TraitClause1]}::call_mut<'_, T>[@TraitClause0, @TraitClause1](move (@3), move (@2))
     drop @1
     return
 }
 
-impl test_crate::test_closure_clone::{impl core::ops::function::FnOnce<(T), T> for test_crate::test_closure_clone::closure<T>[@TraitClause0, @TraitClause1]}<T> : core::ops::function::FnOnce<test_crate::test_closure_clone::closure<T>[@TraitClause0, @TraitClause1], (T), T>
+// Full name: test_crate::test_closure_clone::{impl FnOnce<(T), T> for test_crate::test_closure_clone::closure<T>[@TraitClause0, @TraitClause1]}
+impl<T> FnOnce<(T), T> for test_crate::test_closure_clone::closure<T>[@TraitClause0, @TraitClause1]
 where
-    [@TraitClause0]: core::marker::Sized<T>,
-    [@TraitClause1]: core::clone::Clone<T>,
+    [@TraitClause0]: Sized<T>,
+    [@TraitClause1]: Clone<T>,
 {
-    parent_clause0 = core::marker::Sized<(T)>
-    parent_clause1 = core::marker::Tuple<(T)>
-    parent_clause2 = core::marker::Sized<T>
-    fn call_once = test_crate::test_closure_clone::{impl core::ops::function::FnOnce<(T), T> for test_crate::test_closure_clone::closure<T>[@TraitClause0, @TraitClause1]}::call_once<T>[@TraitClause0, @TraitClause1]
+    parent_clause0 = Sized<(T)>
+    parent_clause1 = Tuple<(T)>
+    parent_clause2 = Sized<T>
+    fn call_once = {impl FnOnce<(T), T> for test_crate::test_closure_clone::closure<T>[@TraitClause0, @TraitClause1]}::call_once<T>[@TraitClause0, @TraitClause1]
 }
 
-impl test_crate::test_closure_clone::{impl core::ops::function::FnMut<(T), T> for test_crate::test_closure_clone::closure<T>[@TraitClause0, @TraitClause1]}<T> : core::ops::function::FnMut<test_crate::test_closure_clone::closure<T>[@TraitClause0, @TraitClause1], (T), T>
+// Full name: test_crate::test_closure_clone::{impl FnMut<(T), T> for test_crate::test_closure_clone::closure<T>[@TraitClause0, @TraitClause1]}
+impl<T> FnMut<(T), T> for test_crate::test_closure_clone::closure<T>[@TraitClause0, @TraitClause1]
 where
-    [@TraitClause0]: core::marker::Sized<T>,
-    [@TraitClause1]: core::clone::Clone<T>,
+    [@TraitClause0]: Sized<T>,
+    [@TraitClause1]: Clone<T>,
 {
-    parent_clause0 = test_crate::test_closure_clone::{impl core::ops::function::FnOnce<(T), T> for test_crate::test_closure_clone::closure<T>[@TraitClause0, @TraitClause1]}<T>[@TraitClause0, @TraitClause1]
-    parent_clause1 = core::marker::Sized<(T)>
-    parent_clause2 = core::marker::Tuple<(T)>
-    fn call_mut<'_0> = test_crate::test_closure_clone::{impl core::ops::function::FnMut<(T), T> for test_crate::test_closure_clone::closure<T>[@TraitClause0, @TraitClause1]}::call_mut<'_0_0, T>[@TraitClause0, @TraitClause1]
+    parent_clause0 = {impl FnOnce<(T), T> for test_crate::test_closure_clone::closure<T>[@TraitClause0, @TraitClause1]}<T>[@TraitClause0, @TraitClause1]
+    parent_clause1 = Sized<(T)>
+    parent_clause2 = Tuple<(T)>
+    fn call_mut<'_0> = {impl FnMut<(T), T> for test_crate::test_closure_clone::closure<T>[@TraitClause0, @TraitClause1]}::call_mut<'_0_0, T>[@TraitClause0, @TraitClause1]
 }
 
-impl test_crate::test_closure_clone::{impl core::ops::function::Fn<(T), T> for test_crate::test_closure_clone::closure<T>[@TraitClause0, @TraitClause1]}<T> : core::ops::function::Fn<test_crate::test_closure_clone::closure<T>[@TraitClause0, @TraitClause1], (T), T>
+// Full name: test_crate::test_closure_clone::{impl Fn<(T), T> for test_crate::test_closure_clone::closure<T>[@TraitClause0, @TraitClause1]}
+impl<T> Fn<(T), T> for test_crate::test_closure_clone::closure<T>[@TraitClause0, @TraitClause1]
 where
-    [@TraitClause0]: core::marker::Sized<T>,
-    [@TraitClause1]: core::clone::Clone<T>,
+    [@TraitClause0]: Sized<T>,
+    [@TraitClause1]: Clone<T>,
 {
-    parent_clause0 = test_crate::test_closure_clone::{impl core::ops::function::FnMut<(T), T> for test_crate::test_closure_clone::closure<T>[@TraitClause0, @TraitClause1]}<T>[@TraitClause0, @TraitClause1]
-    parent_clause1 = core::marker::Sized<(T)>
-    parent_clause2 = core::marker::Tuple<(T)>
-    fn call<'_0> = test_crate::test_closure_clone::{impl core::ops::function::Fn<(T), T> for test_crate::test_closure_clone::closure<T>[@TraitClause0, @TraitClause1]}::call<'_0_0, T>[@TraitClause0, @TraitClause1]
+    parent_clause0 = {impl FnMut<(T), T> for test_crate::test_closure_clone::closure<T>[@TraitClause0, @TraitClause1]}<T>[@TraitClause0, @TraitClause1]
+    parent_clause1 = Sized<(T)>
+    parent_clause2 = Tuple<(T)>
+    fn call<'_0> = {impl Fn<(T), T> for test_crate::test_closure_clone::closure<T>[@TraitClause0, @TraitClause1]}::call<'_0_0, T>[@TraitClause0, @TraitClause1]
 }
 
-fn test_crate::test_fnmut_with_ref::{impl core::ops::function::FnOnce<(&'_ (usize)), ()> for test_crate::test_fnmut_with_ref::closure<'_0>}::call_once<'_0, '_1>(@1: test_crate::test_fnmut_with_ref::closure<'_0>, @2: (&'_1 (usize)))
+// Full name: test_crate::test_fnmut_with_ref::{impl FnOnce<(&'_ (usize)), ()> for test_crate::test_fnmut_with_ref::closure<'_0>}::call_once
+fn {impl FnOnce<(&'_ (usize)), ()> for test_crate::test_fnmut_with_ref::closure<'_0>}::call_once<'_0, '_1>(@1: test_crate::test_fnmut_with_ref::closure<'_0>, @2: (&'_1 (usize)))
 {
     let @0: (); // return
     let @1: test_crate::test_fnmut_with_ref::closure<'_0>; // arg #1
@@ -998,24 +1056,26 @@ fn test_crate::test_fnmut_with_ref::{impl core::ops::function::FnOnce<(&'_ (usiz
 
     storage_live(@3)
     @3 := &mut @1
-    @0 := test_crate::test_fnmut_with_ref::{impl core::ops::function::FnMut<(&'_ (usize)), ()> for test_crate::test_fnmut_with_ref::closure<'_0>}::call_mut<'_0, '_1, '_>(move (@3), move (@2))
+    @0 := {impl FnMut<(&'_ (usize)), ()> for test_crate::test_fnmut_with_ref::closure<'_0>}::call_mut<'_0, '_1, '_>(move (@3), move (@2))
     drop @1
     @0 := ()
     return
 }
 
-impl test_crate::test_fnmut_with_ref::{impl core::ops::function::FnOnce<(&'_ (usize)), ()> for test_crate::test_fnmut_with_ref::closure<'_0>}<'_0, '_1> : core::ops::function::FnOnce<test_crate::test_fnmut_with_ref::closure<'_0>, (&'_ (usize)), ()> {
-    parent_clause0 = core::marker::Sized<(&'_ (usize))>
-    parent_clause1 = core::marker::Tuple<(&'_ (usize))>
-    parent_clause2 = core::marker::Sized<()>
-    fn call_once = test_crate::test_fnmut_with_ref::{impl core::ops::function::FnOnce<(&'_ (usize)), ()> for test_crate::test_fnmut_with_ref::closure<'_0>}::call_once<'_0, '_1>
+// Full name: test_crate::test_fnmut_with_ref::{impl FnOnce<(&'_ (usize)), ()> for test_crate::test_fnmut_with_ref::closure<'_0>}
+impl<'_0, '_1> FnOnce<(&'_ (usize)), ()> for test_crate::test_fnmut_with_ref::closure<'_0> {
+    parent_clause0 = Sized<(&'_ (usize))>
+    parent_clause1 = Tuple<(&'_ (usize))>
+    parent_clause2 = Sized<()>
+    fn call_once = {impl FnOnce<(&'_ (usize)), ()> for test_crate::test_fnmut_with_ref::closure<'_0>}::call_once<'_0, '_1>
 }
 
-impl test_crate::test_fnmut_with_ref::{impl core::ops::function::FnMut<(&'_ (usize)), ()> for test_crate::test_fnmut_with_ref::closure<'_0>}<'_0, '_1> : core::ops::function::FnMut<test_crate::test_fnmut_with_ref::closure<'_0>, (&'_ (usize)), ()> {
-    parent_clause0 = test_crate::test_fnmut_with_ref::{impl core::ops::function::FnOnce<(&'_ (usize)), ()> for test_crate::test_fnmut_with_ref::closure<'_0>}<'_0, '_1>
-    parent_clause1 = core::marker::Sized<(&'_ (usize))>
-    parent_clause2 = core::marker::Tuple<(&'_ (usize))>
-    fn call_mut<'_0> = test_crate::test_fnmut_with_ref::{impl core::ops::function::FnMut<(&'_ (usize)), ()> for test_crate::test_fnmut_with_ref::closure<'_0>}::call_mut<'_0, '_1, '_0_0>
+// Full name: test_crate::test_fnmut_with_ref::{impl FnMut<(&'_ (usize)), ()> for test_crate::test_fnmut_with_ref::closure<'_0>}
+impl<'_0, '_1> FnMut<(&'_ (usize)), ()> for test_crate::test_fnmut_with_ref::closure<'_0> {
+    parent_clause0 = {impl FnOnce<(&'_ (usize)), ()> for test_crate::test_fnmut_with_ref::closure<'_0>}<'_0, '_1>
+    parent_clause1 = Sized<(&'_ (usize))>
+    parent_clause2 = Tuple<(&'_ (usize))>
+    fn call_mut<'_0> = {impl FnMut<(&'_ (usize)), ()> for test_crate::test_fnmut_with_ref::closure<'_0>}::call_mut<'_0, '_1, '_0_0>
 }
 
 pub fn core::ops::function::FnOnce::call_once<Self, Args, Self_Output>(@1: Self, @2: Args) -> Self_Output

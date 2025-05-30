@@ -1,42 +1,47 @@
 # Final LLBC before serialization:
 
-pub trait test_crate::BoolTrait<Self>
+// Full name: test_crate::BoolTrait
+pub trait BoolTrait<Self>
 {
-    fn foo<'_0> = test_crate::BoolTrait::foo<'_0_0, Self>
+    fn foo<'_0> = foo<'_0_0, Self>
 }
 
+// Full name: core::marker::Sized
 #[lang_item("sized")]
-pub trait core::marker::Sized<Self>
+pub trait Sized<Self>
 
+// Full name: core::option::Option
 #[lang_item("Option")]
-pub enum core::option::Option<T>
+pub enum Option<T>
   where
-      [@TraitClause0]: core::marker::Sized<T>,
+      [@TraitClause0]: Sized<T>,
 {
   None,
   Some(T),
 }
 
-pub fn test_crate::{impl test_crate::BoolTrait for core::option::Option<T>[@TraitClause0]}::foo<'_0, T>(@1: &'_0 (core::option::Option<T>[@TraitClause0]))
+pub fn test_crate::{impl BoolTrait for Option<T>[@TraitClause0]}::foo<'_0, T>(@1: &'_0 (Option<T>[@TraitClause0]))
 where
-    [@TraitClause0]: core::marker::Sized<T>,
+    [@TraitClause0]: Sized<T>,
 {
     let @0: (); // return
-    let self@1: &'_ (core::option::Option<T>[@TraitClause0]); // arg #1
+    let self@1: &'_ (Option<T>[@TraitClause0]); // arg #1
 
     @0 := ()
     @0 := ()
     return
 }
 
-impl test_crate::{impl test_crate::BoolTrait for core::option::Option<T>[@TraitClause0]}<T> : test_crate::BoolTrait<core::option::Option<T>[@TraitClause0]>
+// Full name: test_crate::{impl BoolTrait for Option<T>[@TraitClause0]}
+impl<T> BoolTrait for Option<T>[@TraitClause0]
 where
-    [@TraitClause0]: core::marker::Sized<T>,
+    [@TraitClause0]: Sized<T>,
 {
-    fn foo<'_0> = test_crate::{impl test_crate::BoolTrait for core::option::Option<T>[@TraitClause0]}::foo<'_0_0, T>[@TraitClause0]
+    fn foo<'_0> = test_crate::{impl BoolTrait for Option<T>[@TraitClause0]}::foo<'_0_0, T>[@TraitClause0]
 }
 
-pub fn test_crate::BoolTrait::foo<'_0, Self>(@1: &'_0 (Self))
+// Full name: test_crate::BoolTrait::foo
+pub fn foo<'_0, Self>(@1: &'_0 (Self))
 {
     let @0: (); // return
     let self@1: &'_ (Self); // arg #1
