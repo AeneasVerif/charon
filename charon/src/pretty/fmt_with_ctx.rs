@@ -3,7 +3,6 @@ use crate::{
     common::{repeat_except_first, TAB_INCR},
     formatter::*,
     gast,
-    ids::Vector,
     llbc_ast::{self as llbc, *},
     reorder_decls::*,
     ullbc_ast::{self as ullbc, *},
@@ -239,6 +238,15 @@ impl Display for BuiltinFunId {
     }
 }
 
+impl<C: AstFormatter> FmtWithCtx<C> for Call {
+    fn fmt_with_ctx(&self, ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let dest = self.dest.with_ctx(ctx);
+        let func = self.func.with_ctx(ctx);
+        let args = self.args.iter().map(|x| x.with_ctx(ctx)).format(", ");
+        write!(f, "{dest} := {func}({args})")
+    }
+}
+
 impl<C: AstFormatter> FmtWithCtx<C> for CastKind {
     fn fmt_with_ctx(&self, ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
@@ -286,16 +294,14 @@ impl<C: AstFormatter> FmtWithCtx<C> for ConstGeneric {
 
 impl<C: AstFormatter> FmtWithCtx<C> for ConstGenericDbVar {
     fn fmt_with_ctx(&self, ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        ctx.format_bound_var(f, *self, "@ConstGeneric", |v| {
-            Some(v.to_string_with_ctx(ctx))
-        })
+        ctx.format_bound_var(f, *self, "@ConstGeneric", |v| Some(v.to_string()))
     }
 }
 
+impl_display_via_ctx!(ConstGenericVar);
 impl<C: AstFormatter> FmtWithCtx<C> for ConstGenericVar {
-    fn fmt_with_ctx(&self, ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let ty = self.ty.with_ctx(ctx);
-        write!(f, "const {} : {}", self.name, ty)
+    fn fmt_with_ctx(&self, _ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "const {} : {}", self.name, self.ty)
     }
 }
 
@@ -555,8 +561,8 @@ impl GenericParams {
         C: AstFormatter,
     {
         let regions = self.regions.iter().map(|x| x.with_ctx(ctx));
-        let types = self.types.iter().map(|x| x.with_ctx(ctx));
-        let const_generics = self.const_generics.iter().map(|x| x.with_ctx(ctx));
+        let types = self.types.iter();
+        let const_generics = self.const_generics.iter();
         regions.map(Either::Left).chain(
             types
                 .map(Either::Left)
@@ -696,7 +702,15 @@ impl<C: AstFormatter> FmtWithCtx<C> for GExprBody<llbc_ast::Block> {
 impl<C: AstFormatter> FmtWithCtx<C> for GExprBody<ullbc_ast::BodyContents> {
     fn fmt_with_ctx(&self, ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         self.fmt_with_ctx_and_callback(ctx, f, |f, ctx, body| {
-            fmt_body_blocks_with_ctx(f, body, ctx)
+            let tab = ctx.indent();
+            let ctx = &ctx.increase_indent();
+            for (bid, block) in body.iter_indexed_values() {
+                writeln!(f)?;
+                writeln!(f, "{tab}bb{}: {{", bid.index())?;
+                writeln!(f, "{}", block.with_ctx(ctx))?;
+                writeln!(f, "{tab}}}")?;
+            }
+            Ok(())
         })
     }
 }
@@ -846,9 +860,8 @@ impl Display for Literal {
     }
 }
 
-impl_display_via_ctx!(LiteralTy);
-impl<C: AstFormatter> FmtWithCtx<C> for LiteralTy {
-    fn fmt_with_ctx(&self, _ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+impl Display for LiteralTy {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             LiteralTy::Integer(ty) => write!(f, "{ty}"),
             LiteralTy::Float(ty) => write!(f, "{ty}"),
@@ -1108,6 +1121,7 @@ impl<C: AstFormatter> FmtWithCtx<C> for RegionDbVar {
     }
 }
 
+impl_display_via_ctx!(RegionVar);
 impl<C: AstFormatter> FmtWithCtx<C> for RegionVar {
     fn fmt_with_ctx(&self, _ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match &self.name {
@@ -1327,8 +1341,7 @@ impl<C: AstFormatter> FmtWithCtx<C> for llbc::Statement {
                 write!(f, "{}", assert.with_ctx(ctx),)
             }
             RawStatement::Call(call) => {
-                write!(f, "{} := ", call.dest.with_ctx(ctx))?;
-                fmt_call(f, ctx, call)
+                write!(f, "{}", call.with_ctx(ctx))
             }
             RawStatement::Abort(kind) => {
                 write!(f, "{}", kind.with_ctx(ctx))
@@ -1418,12 +1431,13 @@ impl<C: AstFormatter> FmtWithCtx<C> for Terminator {
         for line in &self.comments_before {
             writeln!(f, "{tab}// {line}")?;
         }
+        write!(f, "{tab}")?;
         match &self.content {
-            RawTerminator::Goto { target } => write!(f, "{tab}goto bb{target}"),
+            RawTerminator::Goto { target } => write!(f, "goto bb{target}"),
             RawTerminator::Switch { discr, targets } => match targets {
                 SwitchTargets::If(true_block, false_block) => write!(
                     f,
-                    "{tab}if {} -> bb{} else -> bb{}",
+                    "if {} -> bb{} else -> bb{}",
                     discr.with_ctx(ctx),
                     true_block,
                     false_block
@@ -1434,7 +1448,7 @@ impl<C: AstFormatter> FmtWithCtx<C> for Terminator {
                         .map(|(v, bid)| format!("{}: bb{}", v.to_string(), bid))
                         .chain([format!("otherwise: bb{otherwise}")])
                         .format(", ");
-                    write!(f, "{tab}switch {} -> {}", discr.with_ctx(ctx), maps)
+                    write!(f, "switch {} -> {}", discr.with_ctx(ctx), maps)
                 }
             },
             RawTerminator::Call {
@@ -1442,13 +1456,12 @@ impl<C: AstFormatter> FmtWithCtx<C> for Terminator {
                 target,
                 on_unwind,
             } => {
-                write!(f, "{tab}{} := ", call.dest.with_ctx(ctx))?;
-                fmt_call(f, ctx, call)?;
-                write!(f, " -> bb{target} (unwind: bb{on_unwind})",)
+                let call = call.with_ctx(ctx);
+                write!(f, "{call} -> bb{target} (unwind: bb{on_unwind})",)
             }
-            RawTerminator::Abort(kind) => write!(f, "{tab}{}", kind.with_ctx(ctx)),
-            RawTerminator::Return => write!(f, "{tab}return"),
-            RawTerminator::UnwindResume => write!(f, "{tab}unwind_continue"),
+            RawTerminator::Abort(kind) => write!(f, "{}", kind.with_ctx(ctx)),
+            RawTerminator::Return => write!(f, "return"),
+            RawTerminator::UnwindResume => write!(f, "unwind_continue"),
         }
     }
 }
@@ -1793,14 +1806,9 @@ impl<C: AstFormatter> FmtWithCtx<C> for TypeId {
     }
 }
 
+impl_display_via_ctx!(TypeVar);
 impl<C: AstFormatter> FmtWithCtx<C> for TypeVar {
     fn fmt_with_ctx(&self, _ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}", self.name)
-    }
-}
-
-impl Display for TypeVar {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{}", self.name)
     }
 }
@@ -1827,33 +1835,4 @@ impl<C: AstFormatter> FmtWithCtx<C> for Variant {
         }
         Ok(())
     }
-}
-
-/// Format a function call.
-pub fn fmt_call<C>(f: &mut fmt::Formatter<'_>, ctx: &C, call: &Call) -> fmt::Result
-where
-    C: AstFormatter,
-{
-    let func = call.func.with_ctx(ctx);
-    let args = call.args.iter().map(|x| x.with_ctx(ctx)).format(", ");
-    write!(f, "{func}({args})")
-}
-
-pub(crate) fn fmt_body_blocks_with_ctx<C>(
-    f: &mut fmt::Formatter<'_>,
-    body: &Vector<BlockId, BlockData>,
-    ctx: &C,
-) -> fmt::Result
-where
-    C: AstFormatter,
-{
-    let tab = ctx.indent();
-    let ctx = &ctx.increase_indent();
-    for (bid, block) in body.iter_indexed_values() {
-        writeln!(f)?;
-        writeln!(f, "{tab}bb{}: {{", bid.index())?;
-        writeln!(f, "{}", block.with_ctx(ctx))?;
-        writeln!(f, "{tab}}}")?;
-    }
-    Ok(())
 }
