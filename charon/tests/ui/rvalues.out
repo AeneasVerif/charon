@@ -305,8 +305,8 @@ where
 
 // Full name: test_crate::nullary_ops::Struct
 struct Struct<T>
-  where
-      [@TraitClause0]: Sized<T>,
+where
+    [@TraitClause0]: Sized<T>,
 {
   a: u8,
   b: T,

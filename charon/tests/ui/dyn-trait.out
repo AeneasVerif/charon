@@ -7,15 +7,15 @@ pub trait Sized<Self>
 // Full name: core::fmt::Formatter
 #[lang_item("Formatter")]
 pub opaque type Formatter<'a>
-  where
-      'a : 'a,
+where
+    'a : 'a,
 
 // Full name: core::result::Result
 #[lang_item("Result")]
 pub enum Result<T, E>
-  where
-      [@TraitClause0]: Sized<T>,
-      [@TraitClause1]: Sized<E>,
+where
+    [@TraitClause0]: Sized<T>,
+    [@TraitClause1]: Sized<E>,
 {
   Ok(T),
   Err(E),

@@ -3,8 +3,8 @@
 // Full name: core::fmt::Arguments
 #[lang_item("format_arguments")]
 pub opaque type Arguments<'a>
-  where
-      'a : 'a,
+where
+    'a : 'a,
 
 // Full name: core::fmt::{Arguments<'a>}#4::new_const
 pub fn new_const<'a, const N : usize>(@1: &'a (Array<&'static (Str), const N : usize>)) -> Arguments<'a>

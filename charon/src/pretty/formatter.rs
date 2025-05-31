@@ -4,6 +4,7 @@ use std::fmt::Display;
 use index_vec::Idx;
 
 use crate::ast::*;
+use crate::common::TAB_INCR;
 use crate::gast;
 use crate::ids::Vector;
 use crate::llbc_ast;
@@ -91,7 +92,6 @@ pub trait AstFormatter:
     fn push_binder<'a>(&'a self, new_params: Cow<'a, GenericParams>) -> Self::Reborrow<'a>;
 
     fn increase_indent<'a>(&'a self) -> Self::Reborrow<'a>;
-    fn half_indent<'a>(&'a self) -> Self::Reborrow<'a>;
     fn indent(&self) -> String;
 
     fn push_bound_regions<'a>(
@@ -133,18 +133,12 @@ impl<'c> AstFormatter for FmtCtx<'c> {
 
     fn increase_indent<'a>(&'a self) -> Self::Reborrow<'a> {
         FmtCtx {
-            indent_level: self.indent_level + 2,
-            ..self.reborrow()
-        }
-    }
-    fn half_indent<'a>(&'a self) -> Self::Reborrow<'a> {
-        FmtCtx {
             indent_level: self.indent_level + 1,
             ..self.reborrow()
         }
     }
     fn indent(&self) -> String {
-        "  ".repeat(self.indent_level)
+        TAB_INCR.repeat(self.indent_level)
     }
 }
 

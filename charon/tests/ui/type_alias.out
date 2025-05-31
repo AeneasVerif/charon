@@ -32,10 +32,10 @@ pub trait ToOwned<Self>
 // Full name: alloc::borrow::Cow
 #[lang_item("Cow")]
 pub enum Cow<'a, B>
-  where
-      [@TraitClause0]: ToOwned<B>,
-      B : 'a,
-      B : 'a,
+where
+    [@TraitClause0]: ToOwned<B>,
+    B : 'a,
+    B : 'a,
 {
   Borrowed(&'a (B)),
   Owned(@TraitClause0::Owned),
@@ -44,9 +44,9 @@ pub enum Cow<'a, B>
 // Full name: alloc::vec::Vec
 #[lang_item("Vec")]
 pub opaque type Vec<T, A>
-  where
-      [@TraitClause0]: Sized<T>,
-      [@TraitClause1]: Sized<A>,
+where
+    [@TraitClause0]: Sized<T>,
+    [@TraitClause1]: Sized<A>,
 
 // Full name: alloc::alloc::Global
 #[lang_item("global_alloc_ty")]
@@ -87,10 +87,10 @@ where
 
 // Full name: test_crate::Generic2
 struct Generic2<'a, T>
-  where
-      [@TraitClause0]: Sized<T>,
-      [@TraitClause1]: Clone<T>,
-      T : 'a,
+where
+    [@TraitClause0]: Sized<T>,
+    [@TraitClause1]: Clone<T>,
+    T : 'a,
 {
   Cow<'a, Slice<T>>[{impl ToOwned for Slice<T>}#9<T>[@TraitClause0, @TraitClause1]],
 }

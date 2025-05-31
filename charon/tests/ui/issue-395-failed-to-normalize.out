@@ -14,8 +14,8 @@ pub trait Trait<Self>
 // Full name: core::option::Option
 #[lang_item("Option")]
 pub enum Option<T>
-  where
-      [@TraitClause0]: Sized<T>,
+where
+    [@TraitClause0]: Sized<T>,
 {
   None,
   Some(T),
@@ -23,8 +23,8 @@ pub enum Option<T>
 
 // Full name: test_crate::Alias
 pub type Alias<T>
-  where
-      [@TraitClause0]: Sized<T>, = Option<UNKNOWN(Could not find a clause for `Binder { value: <T as Trait>, bound_vars: [] }` in the current context: `Unimplemented`)::AssocType>[UNKNOWN(Could not find a clause for `Binder { value: <<T as Trait>::AssocType as std::marker::Sized>, bound_vars: [] }` in the current context: `Ambiguity`)]
+where
+    [@TraitClause0]: Sized<T>, = Option<UNKNOWN(Could not find a clause for `Binder { value: <T as Trait>, bound_vars: [] }` in the current context: `Unimplemented`)::AssocType>[UNKNOWN(Could not find a clause for `Binder { value: <<T as Trait>::AssocType as std::marker::Sized>, bound_vars: [] }` in the current context: `Ambiguity`)]
 
 // Full name: test_crate::C
 pub trait C<Self, T>
@@ -43,11 +43,11 @@ pub trait Iterator<Self>
 
 // Full name: test_crate::S
 pub struct S<I, F>
-  where
-      [@TraitClause0]: Sized<I>,
-      [@TraitClause1]: Sized<F>,
-      [@TraitClause2]: Iterator<I>,
-      [@TraitClause3]: C<F, @TraitClause2::Item>,
+where
+    [@TraitClause0]: Sized<I>,
+    [@TraitClause1]: Sized<F>,
+    [@TraitClause2]: Iterator<I>,
+    [@TraitClause3]: C<F, @TraitClause2::Item>,
 {
   I,
   F,
@@ -55,9 +55,9 @@ pub struct S<I, F>
 
 // Full name: test_crate::S2
 pub type S2<I, F>
-  where
-      [@TraitClause0]: Sized<I>,
-      [@TraitClause1]: Sized<F>, = S<I, F>[@TraitClause0, @TraitClause1, UNKNOWN(Could not find a clause for `Binder { value: <I as std::iter::Iterator>, bound_vars: [] }` in the current context: `Unimplemented`), UNKNOWN(Could not find a clause for `Binder { value: <F as C<<I as std::iter::Iterator>::Item>>, bound_vars: [] }` in the current context: `Unimplemented`)]
+where
+    [@TraitClause0]: Sized<I>,
+    [@TraitClause1]: Sized<F>, = S<I, F>[@TraitClause0, @TraitClause1, UNKNOWN(Could not find a clause for `Binder { value: <I as std::iter::Iterator>, bound_vars: [] }` in the current context: `Unimplemented`), UNKNOWN(Could not find a clause for `Binder { value: <F as C<<I as std::iter::Iterator>::Item>>, bound_vars: [] }` in the current context: `Unimplemented`)]
 
 // Full name: core::iter::traits::iterator::Iterator::next
 #[lang_item("next")]
@@ -130,9 +130,9 @@ pub trait FromResidual<Self, R>
 // Full name: core::ops::control_flow::ControlFlow
 #[lang_item("ControlFlow")]
 pub enum ControlFlow<B, C>
-  where
-      [@TraitClause0]: Sized<B>,
-      [@TraitClause1]: Sized<C>,
+where
+    [@TraitClause0]: Sized<B>,
+    [@TraitClause1]: Sized<C>,
 {
   Continue(C),
   Break(B),

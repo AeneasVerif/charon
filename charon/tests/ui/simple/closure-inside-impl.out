@@ -6,17 +6,17 @@ pub trait Sized<Self>
 
 // Full name: test_crate::Foo
 pub struct Foo<F>
-  where
-      [@TraitClause0]: Sized<F>,
+where
+    [@TraitClause0]: Sized<F>,
 {
   F,
 }
 
 // Full name: test_crate::{Foo<F>[@TraitClause0]}::method::closure
 struct closure<F, T>
-  where
-      [@TraitClause0]: Sized<F>,
-      [@TraitClause1]: Sized<T>,
+where
+    [@TraitClause0]: Sized<F>,
+    [@TraitClause1]: Sized<T>,
 {}
 
 // Full name: test_crate::{Foo<F>[@TraitClause0]}::method

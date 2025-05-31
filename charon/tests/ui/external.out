@@ -62,9 +62,9 @@ pub trait ZeroablePrimitive<Self>
 // Full name: core::num::nonzero::NonZero
 #[lang_item("NonZero")]
 pub opaque type NonZero<T>
-  where
-      [@TraitClause0]: Sized<T>,
-      [@TraitClause1]: ZeroablePrimitive<T>,
+where
+    [@TraitClause0]: Sized<T>,
+    [@TraitClause1]: ZeroablePrimitive<T>,
 
 // Full name: core::clone::impls::{impl Clone for u32}#8::clone
 pub fn {impl Clone for u32}#8::clone<'_0>(@1: &'_0 (u32)) -> u32
@@ -113,8 +113,8 @@ impl ZeroablePrimitive for u32 {
 // Full name: core::option::Option
 #[lang_item("Option")]
 pub enum Option<T>
-  where
-      [@TraitClause0]: Sized<T>,
+where
+    [@TraitClause0]: Sized<T>,
 {
   None,
   Some(T),
@@ -152,9 +152,9 @@ pub fn test_new_non_zero_u32(@1: u32) -> NonZero<u32>[Sized<u32>, {impl Zeroable
 // Full name: alloc::vec::Vec
 #[lang_item("Vec")]
 pub opaque type Vec<T, A>
-  where
-      [@TraitClause0]: Sized<T>,
-      [@TraitClause1]: Sized<A>,
+where
+    [@TraitClause0]: Sized<T>,
+    [@TraitClause1]: Sized<A>,
 
 // Full name: alloc::alloc::Global
 #[lang_item("global_alloc_ty")]

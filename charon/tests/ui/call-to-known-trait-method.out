@@ -6,8 +6,8 @@ pub trait Sized<Self>
 
 // Full name: test_crate::Struct
 struct Struct<A>
-  where
-      [@TraitClause0]: Sized<A>,
+where
+    [@TraitClause0]: Sized<A>,
 {
   A,
 }

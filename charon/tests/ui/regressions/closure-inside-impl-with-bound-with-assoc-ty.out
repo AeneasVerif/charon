@@ -12,17 +12,17 @@ pub trait PrimeField<Self, Self_Repr>
 
 // Full name: test_crate::SqrtTables
 pub struct SqrtTables<F>
-  where
-      [@TraitClause0]: Sized<F>,
+where
+    [@TraitClause0]: Sized<F>,
 {
   F,
 }
 
 // Full name: test_crate::{SqrtTables<F>[@TraitClause0]}::sqrt_common::closure
 struct closure<F, Clause1_Repr>
-  where
-      [@TraitClause0]: Sized<F>,
-      [@TraitClause1]: PrimeField<F, Clause1_Repr>,
+where
+    [@TraitClause0]: Sized<F>,
+    [@TraitClause1]: PrimeField<F, Clause1_Repr>,
 {}
 
 // Full name: test_crate::{SqrtTables<F>[@TraitClause0]}::sqrt_common

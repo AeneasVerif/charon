@@ -281,8 +281,8 @@ where
 // Full name: core::ops::range::Range
 #[lang_item("Range")]
 pub struct Range<Idx>
-  where
-      [@TraitClause0]: Sized<Idx>,
+where
+    [@TraitClause0]: Sized<Idx>,
 {
   start: Idx,
   end: Idx,
@@ -294,8 +294,8 @@ pub trait Sealed<Self>
 // Full name: core::option::Option
 #[lang_item("Option")]
 pub enum Option<T>
-  where
-      [@TraitClause0]: Sized<T>,
+where
+    [@TraitClause0]: Sized<T>,
 {
   None,
   Some(T),

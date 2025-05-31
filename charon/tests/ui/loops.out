@@ -829,8 +829,8 @@ pub trait Sized<Self>
 // Full name: core::ops::range::Range
 #[lang_item("Range")]
 pub struct Range<Idx>
-  where
-      [@TraitClause0]: Sized<Idx>,
+where
+    [@TraitClause0]: Sized<Idx>,
 {
   start: Idx,
   end: Idx,
@@ -839,8 +839,8 @@ pub struct Range<Idx>
 // Full name: core::option::Option
 #[lang_item("Option")]
 pub enum Option<T>
-  where
-      [@TraitClause0]: Sized<T>,
+where
+    [@TraitClause0]: Sized<T>,
 {
   None,
   Some(T),
@@ -1427,9 +1427,9 @@ pub fn sum_array<const N : usize>(@1: Array<u32, const N : usize>) -> u32
 // Full name: alloc::vec::Vec
 #[lang_item("Vec")]
 pub opaque type Vec<T, A>
-  where
-      [@TraitClause0]: Sized<T>,
-      [@TraitClause1]: Sized<A>,
+where
+    [@TraitClause0]: Sized<T>,
+    [@TraitClause1]: Sized<A>,
 
 // Full name: alloc::alloc::Global
 #[lang_item("global_alloc_ty")]
@@ -1578,8 +1578,8 @@ pub fn clear<'_0>(@1: &'_0 mut (Vec<u32, Global>[Sized<u32>, Sized<Global>]))
 
 // Full name: test_crate::List
 pub enum List<T>
-  where
-      [@TraitClause0]: Sized<T>,
+where
+    [@TraitClause0]: Sized<T>,
 {
   Cons(T, alloc::boxed::Box<List<T>[@TraitClause0]>[Sized<Global>]),
   Nil,
@@ -1882,9 +1882,9 @@ pub trait FromResidual<Self, R>
 // Full name: core::ops::control_flow::ControlFlow
 #[lang_item("ControlFlow")]
 pub enum ControlFlow<B, C>
-  where
-      [@TraitClause0]: Sized<B>,
-      [@TraitClause1]: Sized<C>,
+where
+    [@TraitClause0]: Sized<B>,
+    [@TraitClause1]: Sized<C>,
 {
   Continue(C),
   Break(B),

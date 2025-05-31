@@ -62,8 +62,8 @@ where
 // Full name: core::option::Option
 #[lang_item("Option")]
 pub enum Option<T>
-  where
-      [@TraitClause0]: Sized<T>,
+where
+    [@TraitClause0]: Sized<T>,
 {
   None,
   Some(T),
@@ -85,9 +85,9 @@ pub trait Trait<Self>
 // Full name: core::result::Result
 #[lang_item("Result")]
 pub enum Result<T, E>
-  where
-      [@TraitClause0]: Sized<T>,
-      [@TraitClause1]: Sized<E>,
+where
+    [@TraitClause0]: Sized<T>,
+    [@TraitClause1]: Sized<E>,
 {
   Ok(T),
   Err(E),
@@ -178,9 +178,9 @@ pub trait FromResidual<Self, R>
 // Full name: core::ops::control_flow::ControlFlow
 #[lang_item("ControlFlow")]
 pub enum ControlFlow<B, C>
-  where
-      [@TraitClause0]: Sized<B>,
-      [@TraitClause1]: Sized<C>,
+where
+    [@TraitClause0]: Sized<B>,
+    [@TraitClause1]: Sized<C>,
 {
   Continue(C),
   Break(B),

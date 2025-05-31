@@ -6,9 +6,9 @@ pub trait Sized<Self>
 
 // Full name: test_crate::Pair
 pub struct Pair<T1, T2>
-  where
-      [@TraitClause0]: Sized<T1>,
-      [@TraitClause1]: Sized<T2>,
+where
+    [@TraitClause0]: Sized<T1>,
+    [@TraitClause1]: Sized<T2>,
 {
   x: T1,
   y: T2,
@@ -20,8 +20,8 @@ pub struct Global {}
 
 // Full name: test_crate::List
 pub enum List<T>
-  where
-      [@TraitClause0]: Sized<T>,
+where
+    [@TraitClause0]: Sized<T>,
 {
   Cons(T, alloc::boxed::Box<List<T>[@TraitClause0]>[Sized<Global>]),
   Nil,
@@ -29,8 +29,8 @@ pub enum List<T>
 
 // Full name: test_crate::One
 pub enum One<T1>
-  where
-      [@TraitClause0]: Sized<T1>,
+where
+    [@TraitClause0]: Sized<T1>,
 {
   One(T1),
 }
@@ -51,9 +51,9 @@ pub struct EmptyStruct {}
 
 // Full name: test_crate::Sum
 pub enum Sum<T1, T2>
-  where
-      [@TraitClause0]: Sized<T1>,
-      [@TraitClause1]: Sized<T2>,
+where
+    [@TraitClause0]: Sized<T1>,
+    [@TraitClause1]: Sized<T2>,
 {
   Left(T1),
   Right(T2),
@@ -61,9 +61,9 @@ pub enum Sum<T1, T2>
 
 // Full name: test_crate::Tuple
 pub struct Tuple<T1, T2>
-  where
-      [@TraitClause0]: Sized<T1>,
-      [@TraitClause1]: Sized<T2>,
+where
+    [@TraitClause0]: Sized<T1>,
+    [@TraitClause1]: Sized<T2>,
 {
   T1,
   T2,
@@ -121,8 +121,8 @@ pub fn create_pair(@1: u32, @2: u64) -> Pair<u32, u64>[Sized<u32>, Sized<u64>]
 
 // Full name: test_crate::IdType
 pub struct IdType<T>
-  where
-      [@TraitClause0]: Sized<T>,
+where
+    [@TraitClause0]: Sized<T>,
 {
   T,
 }
@@ -468,8 +468,8 @@ pub fn test_char() -> char
 
 // Full name: test_crate::Tree
 pub enum Tree<T>
-  where
-      [@TraitClause0]: Sized<T>,
+where
+    [@TraitClause0]: Sized<T>,
 {
   Leaf(T),
   Node(T, NodeElem<T>[@TraitClause0], alloc::boxed::Box<Tree<T>[@TraitClause0]>[Sized<Global>]),
@@ -477,8 +477,8 @@ pub enum Tree<T>
 
 // Full name: test_crate::NodeElem
 pub enum NodeElem<T>
-  where
-      [@TraitClause0]: Sized<T>,
+where
+    [@TraitClause0]: Sized<T>,
 {
   Cons(alloc::boxed::Box<Tree<T>[@TraitClause0]>[Sized<Global>], alloc::boxed::Box<NodeElem<T>[@TraitClause0]>[Sized<Global>]),
   Nil,
@@ -596,9 +596,9 @@ pub fn test_even_odd()
 
 // Full name: test_crate::StructWithTuple
 pub struct StructWithTuple<T1, T2>
-  where
-      [@TraitClause0]: Sized<T1>,
-      [@TraitClause1]: Sized<T2>,
+where
+    [@TraitClause0]: Sized<T1>,
+    [@TraitClause1]: Sized<T2>,
 {
   p: (T1, T2),
 }
@@ -644,9 +644,9 @@ pub fn new_tuple3() -> StructWithTuple<u64, i64>[Sized<u64>, Sized<i64>]
 
 // Full name: test_crate::StructWithPair
 pub struct StructWithPair<T1, T2>
-  where
-      [@TraitClause0]: Sized<T1>,
-      [@TraitClause1]: Sized<T2>,
+where
+    [@TraitClause0]: Sized<T1>,
+    [@TraitClause1]: Sized<T2>,
 {
   p: Pair<T1, T2>[@TraitClause0, @TraitClause1],
 }

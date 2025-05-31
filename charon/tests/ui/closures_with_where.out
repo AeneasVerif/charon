@@ -12,9 +12,9 @@ pub trait Sized<Self>
 
 // Full name: test_crate::test::closure
 struct closure<T, const K : usize>
-  where
-      [@TraitClause0]: Sized<T>,
-      [@TraitClause1]: Ops<T, const K : usize>,
+where
+    [@TraitClause0]: Sized<T>,
+    [@TraitClause1]: Ops<T, const K : usize>,
 {}
 
 // Full name: core::marker::Tuple

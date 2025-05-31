@@ -572,9 +572,7 @@ where
         let ctx = &ctx.set_generics(&self.generics);
 
         // Translate the parameters and the trait clauses
-        let (params, preds) = self
-            .generics
-            .fmt_with_ctx_with_trait_clauses(&ctx.half_indent());
+        let (params, preds) = self.generics.fmt_with_ctx_with_trait_clauses(ctx);
         // Type
         let ty = self.ty.with_ctx(ctx);
         // Predicates
@@ -1494,9 +1492,7 @@ impl<C: AstFormatter> FmtWithCtx<C> for TypeDecl {
         let intro = self.item_meta.fmt_item_intro(ctx, keyword, self.def_id);
 
         let ctx = &ctx.set_generics(&self.generics);
-        let (params, preds) = self
-            .generics
-            .fmt_with_ctx_with_trait_clauses(&ctx.half_indent());
+        let (params, preds) = self.generics.fmt_with_ctx_with_trait_clauses(ctx);
         // Predicates
         let nl_or_space = if !self.generics.has_predicates() {
             " ".to_string()

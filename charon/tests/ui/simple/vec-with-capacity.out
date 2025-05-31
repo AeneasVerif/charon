@@ -6,16 +6,16 @@ pub trait Sized<Self>
 
 // Full name: alloc::raw_vec::RawVec
 opaque type RawVec<T, A>
-  where
-      [@TraitClause0]: Sized<T>,
-      [@TraitClause1]: Sized<A>,
+where
+    [@TraitClause0]: Sized<T>,
+    [@TraitClause1]: Sized<A>,
 
 // Full name: alloc::vec::Vec
 #[lang_item("Vec")]
 pub struct Vec<T, A>
-  where
-      [@TraitClause0]: Sized<T>,
-      [@TraitClause1]: Sized<A>,
+where
+    [@TraitClause0]: Sized<T>,
+    [@TraitClause1]: Sized<A>,
 {
   buf: RawVec<T, A>[@TraitClause0, @TraitClause1],
   len: usize,
@@ -27,8 +27,8 @@ pub struct Global {}
 
 // Full name: alloc::raw_vec::RawVecInner
 opaque type RawVecInner<A>
-  where
-      [@TraitClause0]: Sized<A>,
+where
+    [@TraitClause0]: Sized<A>,
 
 // Full name: core::alloc::layout::Layout
 #[lang_item("alloc_layout")]

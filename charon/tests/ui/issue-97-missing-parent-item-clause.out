@@ -9,8 +9,8 @@ pub trait Sized<Self>
 
 // Full name: test_crate::AVLTree
 pub struct AVLTree<T>
-  where
-      [@TraitClause0]: Sized<T>,
+where
+    [@TraitClause0]: Sized<T>,
 {
   x: T,
 }

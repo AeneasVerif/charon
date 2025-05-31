@@ -17,8 +17,8 @@ impl Trait<()> for () {
 
 // Full name: test_crate::HashMap
 pub struct HashMap<S>
-  where
-      [@TraitClause0]: Sized<S>,
+where
+    [@TraitClause0]: Sized<S>,
 {
   S,
 }

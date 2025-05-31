@@ -175,17 +175,17 @@ where
 
 // Full name: test_crate::WrapClone
 pub struct WrapClone<T>
-  where
-      [@TraitClause0]: Sized<T>,
-      [@TraitClause1]: Clone<T>,
+where
+    [@TraitClause0]: Sized<T>,
+    [@TraitClause1]: Clone<T>,
 {
   T,
 }
 
 // Full name: test_crate::wrap::closure
 struct closure<U>
-  where
-      [@TraitClause0]: Sized<U>,
+where
+    [@TraitClause0]: Sized<U>,
 {}
 
 // Full name: test_crate::wrap
