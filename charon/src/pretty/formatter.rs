@@ -4,7 +4,6 @@ use std::fmt::Display;
 use index_vec::Idx;
 
 use crate::ast::*;
-use crate::common::TAB_INCR;
 use crate::gast;
 use crate::ids::Vector;
 use crate::llbc_ast;
@@ -91,6 +90,10 @@ pub trait AstFormatter:
     fn set_locals<'a>(&'a self, locals: &'a Locals) -> Self::Reborrow<'a>;
     fn push_binder<'a>(&'a self, new_params: Cow<'a, GenericParams>) -> Self::Reborrow<'a>;
 
+    fn increase_indent<'a>(&'a self) -> Self::Reborrow<'a>;
+    fn half_indent<'a>(&'a self) -> Self::Reborrow<'a>;
+    fn indent(&self) -> String;
+
     fn push_bound_regions<'a>(
         &'a self,
         regions: &'a Vector<RegionId, RegionVar>,
@@ -112,26 +115,36 @@ impl<'c> AstFormatter for FmtCtx<'c> {
     }
     fn set_generics<'a>(&'a self, generics: &'a GenericParams) -> Self::Reborrow<'a> {
         FmtCtx {
-            translated: self.translated.as_deref(),
             generics: BindingStack::new(Cow::Borrowed(generics)),
-            locals: self.locals.as_deref(),
+            ..self.reborrow()
         }
     }
     fn set_locals<'a>(&'a self, locals: &'a Locals) -> Self::Reborrow<'a> {
         FmtCtx {
-            translated: self.translated.as_deref(),
-            generics: self.generics.clone(),
             locals: Some(locals),
+            ..self.reborrow()
         }
     }
     fn push_binder<'a>(&'a self, new_params: Cow<'a, GenericParams>) -> Self::Reborrow<'a> {
-        let mut generics = self.generics.clone();
-        generics.push(new_params);
+        let mut ret = self.reborrow();
+        ret.generics.push(new_params);
+        ret
+    }
+
+    fn increase_indent<'a>(&'a self) -> Self::Reborrow<'a> {
         FmtCtx {
-            translated: self.translated.as_deref(),
-            generics,
-            locals: self.locals.as_deref(),
+            indent_level: self.indent_level + 2,
+            ..self.reborrow()
         }
+    }
+    fn half_indent<'a>(&'a self) -> Self::Reborrow<'a> {
+        FmtCtx {
+            indent_level: self.indent_level + 1,
+            ..self.reborrow()
+        }
+    }
+    fn indent(&self) -> String {
+        "  ".repeat(self.indent_level)
     }
 }
 
@@ -152,6 +165,7 @@ pub struct FmtCtx<'a> {
     /// work, we keep the innermost parameters at the start of the vector.
     pub generics: BindingStack<Cow<'a, GenericParams>>,
     pub locals: Option<&'a Locals>,
+    pub indent_level: usize,
 }
 
 impl<'a> FmtCtx<'a> {
@@ -189,6 +203,15 @@ impl<'a> FmtCtx<'a> {
                     .unwrap_or_default();
                 format!("Missing decl: {id:?}{opt_name}")
             }
+        }
+    }
+
+    fn reborrow<'b>(&'b self) -> FmtCtx<'b> {
+        FmtCtx {
+            translated: self.translated.as_deref(),
+            generics: self.generics.clone(),
+            locals: self.locals.as_deref(),
+            indent_level: self.indent_level,
         }
     }
 }
@@ -399,7 +422,7 @@ impl<'a> Formatter<&llbc_ast::Block> for FmtCtx<'a> {
 
 impl<'a> Formatter<&Vector<ullbc_ast::BlockId, ullbc_ast::BlockData>> for FmtCtx<'a> {
     fn format_object(&self, x: &Vector<ullbc_ast::BlockId, ullbc_ast::BlockData>) -> String {
-        fmt_with_ctx::fmt_body_blocks_with_ctx(x, TAB_INCR, self)
+        fmt_with_ctx::fmt_body_blocks_with_ctx(x, self)
     }
 }
 

@@ -17,7 +17,6 @@ use std::{
 pub struct WithCtx<'a, C, T: ?Sized> {
     val: &'a T,
     ctx: &'a C,
-    indent: &'a str,
 }
 
 impl<'a, C, T: ?Sized> std::fmt::Display for WithCtx<'a, C, T>
@@ -25,24 +24,15 @@ where
     T: FmtWithCtx<C>,
 {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        let s = if self.indent == "" {
-            self.val.fmt_with_ctx(self.ctx)
-        } else {
-            self.val.fmt_with_ctx_and_indent(self.indent, self.ctx)
-        };
+        let s = self.val.fmt_with_ctx(self.ctx);
         f.write_str(&s)
     }
 }
 
 /// Format the AST type as a string.
 pub trait FmtWithCtx<C> {
-    fn fmt_with_ctx(&self, ctx: &C) -> String {
-        // By default use no tab.
-        self.fmt_with_ctx_and_indent("", ctx)
-    }
-
-    fn fmt_with_ctx_and_indent(&self, _tab: &str, _ctx: &C) -> String {
-        panic!("This type does not know how to be formatted with indent")
+    fn fmt_with_ctx(&self, _ctx: &C) -> String {
+        panic!("This type does not know how to be formatted")
     }
 
     /// Returns a struct that implements `Display`. This allows the following:
@@ -50,15 +40,7 @@ pub trait FmtWithCtx<C> {
     ///     println!("{}", self.with_ctx(ctx));
     /// ```
     fn with_ctx<'a>(&'a self, ctx: &'a C) -> WithCtx<'a, C, Self> {
-        self.with_ctx_and_indent(ctx, "")
-    }
-
-    fn with_ctx_and_indent<'a>(&'a self, ctx: &'a C, indent: &'a str) -> WithCtx<'a, C, Self> {
-        WithCtx {
-            val: self,
-            ctx,
-            indent,
-        }
+        WithCtx { val: self, ctx }
     }
 
     fn to_string_with_ctx(&self, ctx: &C) -> String {
@@ -67,7 +49,7 @@ pub trait FmtWithCtx<C> {
 }
 
 impl<C: AstFormatter> FmtWithCtx<C> for AbortKind {
-    fn fmt_with_ctx_and_indent(&self, tab: &str, ctx: &C) -> String {
+    fn fmt_with_ctx(&self, ctx: &C) -> String {
         match self {
             AbortKind::Panic(name) => {
                 let name = if let Some(name) = name {
@@ -75,10 +57,10 @@ impl<C: AstFormatter> FmtWithCtx<C> for AbortKind {
                 } else {
                     format!("")
                 };
-                format!("{tab}panic{name}")
+                format!("panic{name}")
             }
-            AbortKind::UndefinedBehavior => format!("{tab}undefined_behavior"),
-            AbortKind::UnwindTerminate => format!("{tab}unwind_terminate"),
+            AbortKind::UndefinedBehavior => format!("undefined_behavior"),
+            AbortKind::UnwindTerminate => format!("unwind_terminate"),
         }
     }
 }
@@ -119,33 +101,24 @@ impl<T> Binder<T> {
 
 impl<C: AstFormatter> FmtWithCtx<C> for llbc::Block {
     fn fmt_with_ctx(&self, ctx: &C) -> String {
-        // By default use a tab.
-        self.fmt_with_ctx_and_indent(TAB_INCR, ctx)
-    }
-
-    fn fmt_with_ctx_and_indent(&self, tab: &str, ctx: &C) -> String {
         self.statements
             .iter()
-            .map(|st| st.fmt_with_ctx_and_indent(tab, ctx))
-            .map(|st| format!("{st}\n"))
+            .map(|st| format!("{}\n", st.with_ctx(ctx)))
             .join("")
     }
 }
 
 impl<C: AstFormatter> FmtWithCtx<C> for ullbc::BlockData {
-    fn fmt_with_ctx_and_indent(&self, tab: &str, ctx: &C) -> String {
+    fn fmt_with_ctx(&self, ctx: &C) -> String {
         let mut out: Vec<String> = Vec::new();
 
         // Format the statements
         for statement in &self.statements {
-            out.push(format!("{};\n", statement.fmt_with_ctx_and_indent(tab, ctx)).to_string());
+            out.push(format!("{};\n", statement.fmt_with_ctx(ctx)).to_string());
         }
 
         // Format the terminator
-        out.push(format!(
-            "{};",
-            self.terminator.fmt_with_ctx_and_indent(tab, ctx)
-        ));
+        out.push(format!("{};", self.terminator.fmt_with_ctx(ctx)));
 
         // Join the strings
         out.join("")
@@ -157,13 +130,6 @@ impl<C: AstFormatter> FmtWithCtx<C> for gast::Body {
         match self {
             Body::Unstructured(b) => b.to_string_with_ctx(ctx),
             Body::Structured(b) => b.to_string_with_ctx(ctx),
-        }
-    }
-
-    fn fmt_with_ctx_and_indent(&self, tab: &str, ctx: &C) -> String {
-        match self {
-            Body::Unstructured(b) => b.fmt_with_ctx_and_indent(tab, ctx),
-            Body::Structured(b) => b.fmt_with_ctx_and_indent(tab, ctx),
         }
     }
 }
@@ -276,7 +242,7 @@ impl<C: AstFormatter> FmtWithCtx<C> for FunSig {
         };
 
         // Generic parameters
-        let (params, clauses) = self.generics.fmt_with_ctx_with_trait_clauses(ctx, "");
+        let (params, clauses) = self.generics.fmt_with_ctx_with_trait_clauses(ctx);
 
         // Arguments
         let mut args: Vec<String> = Vec::new();
@@ -411,10 +377,11 @@ impl GenericParams {
             .chain(type_constraints)
     }
 
-    pub fn fmt_with_ctx_with_trait_clauses<C>(&self, ctx: &C, tab: &str) -> (String, String)
+    pub fn fmt_with_ctx_with_trait_clauses<C>(&self, ctx: &C) -> (String, String)
     where
         C: AstFormatter,
     {
+        let tab = ctx.indent();
         let params = self.format_params(ctx).join(", ");
         let params = if params.is_empty() {
             String::new()
@@ -461,14 +428,18 @@ impl<C: AstFormatter> FmtWithCtx<C> for GenericsSource {
 }
 
 impl<T> GExprBody<T> {
-    fn fmt_with_ctx_and_indent_and_callback<C: AstFormatter>(
+    fn fmt_with_ctx_and_callback<C: AstFormatter>(
         &self,
-        tab: &str,
         ctx: &C,
-        fmt_body: impl for<'a> FnOnce(&C::Reborrow<'a>, &'a T) -> String,
+        fmt_body: impl for<'a, 'b> FnOnce(
+            &<C::Reborrow<'b> as AstFormatter>::Reborrow<'a>,
+            &'a T,
+        ) -> String,
     ) -> String {
         // Update the context
         let ctx = &ctx.set_locals(&self.locals);
+        let ctx = &ctx.increase_indent();
+        let tab = ctx.indent();
 
         // Format the local variables
         let mut locals: Vec<String> = Vec::new();
@@ -515,12 +486,7 @@ where
     C: AstFormatter,
 {
     fn fmt_with_ctx(&self, ctx: &C) -> String {
-        // By default use a tab.
-        self.fmt_with_ctx_and_indent(TAB_INCR, ctx)
-    }
-
-    fn fmt_with_ctx_and_indent(&self, tab: &str, ctx: &C) -> String {
-        self.fmt_with_ctx_and_indent_and_callback(tab, ctx, |ctx, body| ctx.format_object(body))
+        self.fmt_with_ctx_and_callback(ctx, |ctx, body| ctx.format_object(body))
     }
 }
 impl<C> FmtWithCtx<C> for GExprBody<ullbc_ast::BodyContents>
@@ -528,12 +494,7 @@ where
     C: AstFormatter,
 {
     fn fmt_with_ctx(&self, ctx: &C) -> String {
-        // By default use a tab.
-        self.fmt_with_ctx_and_indent(TAB_INCR, ctx)
-    }
-
-    fn fmt_with_ctx_and_indent(&self, tab: &str, ctx: &C) -> String {
-        self.fmt_with_ctx_and_indent_and_callback(tab, ctx, |ctx, body| ctx.format_object(body))
+        self.fmt_with_ctx_and_callback(ctx, |ctx, body| ctx.format_object(body))
     }
 }
 
@@ -541,24 +502,19 @@ impl<C> FmtWithCtx<C> for FunDecl
 where
     C: AstFormatter,
 {
-    fn fmt_with_ctx_and_indent(&self, tab: &str, ctx: &C) -> String {
+    fn fmt_with_ctx(&self, ctx: &C) -> String {
         let keyword = if self.signature.is_unsafe {
             "unsafe fn"
         } else {
             "fn"
         };
-        let intro = self
-            .item_meta
-            .fmt_item_intro(ctx, tab, keyword, self.def_id);
+        let intro = self.item_meta.fmt_item_intro(ctx, keyword, self.def_id);
 
         // Update the context
         let ctx = &ctx.set_generics(&self.signature.generics);
 
         // Generic parameters
-        let (params, preds) = self
-            .signature
-            .generics
-            .fmt_with_ctx_with_trait_clauses(ctx, tab);
+        let (params, preds) = self.signature.generics.fmt_with_ctx_with_trait_clauses(ctx);
 
         // Arguments
         let mut args: Vec<String> = Vec::new();
@@ -579,6 +535,7 @@ where
         };
 
         // Body
+        let tab = ctx.indent();
         let body = match &self.body {
             Ok(body) => {
                 let body = body.with_ctx(ctx);
@@ -604,20 +561,20 @@ impl<C> FmtWithCtx<C> for GlobalDecl
 where
     C: AstFormatter,
 {
-    fn fmt_with_ctx_and_indent(&self, tab: &str, ctx: &C) -> String {
+    fn fmt_with_ctx(&self, ctx: &C) -> String {
         let keyword = match self.global_kind {
             GlobalKind::Static => "static",
             GlobalKind::AnonConst | GlobalKind::NamedConst => "const",
         };
-        let intro = self
-            .item_meta
-            .fmt_item_intro(ctx, tab, keyword, self.def_id);
+        let intro = self.item_meta.fmt_item_intro(ctx, keyword, self.def_id);
 
         // Update the context with the generics
         let ctx = &ctx.set_generics(&self.generics);
 
         // Translate the parameters and the trait clauses
-        let (params, preds) = self.generics.fmt_with_ctx_with_trait_clauses(ctx, "  ");
+        let (params, preds) = self
+            .generics
+            .fmt_with_ctx_with_trait_clauses(&ctx.half_indent());
         // Type
         let ty = self.ty.with_ctx(ctx);
         // Predicates
@@ -651,16 +608,11 @@ impl<C: AstFormatter> FmtWithCtx<C> for ImplElem {
 
 impl ItemMeta {
     /// Format the start of an item definition, up to the name.
-    pub fn fmt_item_intro<C>(
-        &self,
-        ctx: &C,
-        tab: &str,
-        keyword: &str,
-        id: impl Into<AnyTransId>,
-    ) -> String
+    pub fn fmt_item_intro<C>(&self, ctx: &C, keyword: &str, id: impl Into<AnyTransId>) -> String
     where
         C: AstFormatter,
     {
+        let tab = ctx.indent();
         let full_name = self.name.with_ctx(ctx);
         let (name, comment) =
             if let Some(short_name) = ctx.get_crate().and_then(|c| c.short_names.get(&id.into())) {
@@ -1013,11 +965,7 @@ impl<C: AstFormatter> FmtWithCtx<C> for Rvalue {
 
 impl<C: AstFormatter> FmtWithCtx<C> for ullbc::Statement {
     fn fmt_with_ctx(&self, ctx: &C) -> String {
-        // By default use a tab.
-        self.fmt_with_ctx_and_indent(TAB_INCR, ctx)
-    }
-
-    fn fmt_with_ctx_and_indent(&self, tab: &str, ctx: &C) -> String {
+        let tab = ctx.indent();
         use ullbc::RawStatement;
         let mut out = String::new();
         for line in &self.comments_before {
@@ -1074,11 +1022,7 @@ impl<C: AstFormatter> FmtWithCtx<C> for ullbc::Statement {
 
 impl<C: AstFormatter> FmtWithCtx<C> for llbc::Statement {
     fn fmt_with_ctx(&self, ctx: &C) -> String {
-        // By default use a tab.
-        self.fmt_with_ctx_and_indent(TAB_INCR, ctx)
-    }
-
-    fn fmt_with_ctx_and_indent(&self, tab: &str, ctx: &C) -> String {
+        let tab = ctx.indent();
         use llbc::RawStatement;
         let mut out = String::new();
         for line in &self.comments_before {
@@ -1135,7 +1079,7 @@ impl<C: AstFormatter> FmtWithCtx<C> for llbc::Statement {
                 write!(&mut out, "{tab}{} := {call_s}", call.dest.with_ctx(ctx),)
             }
             RawStatement::Abort(kind) => {
-                write!(&mut out, "{}", kind.fmt_with_ctx_and_indent(tab, ctx))
+                write!(&mut out, "{tab}{}", kind.fmt_with_ctx(ctx))
             }
             RawStatement::Return => write!(&mut out, "{tab}return"),
             RawStatement::Break(index) => write!(&mut out, "{tab}break {index}"),
@@ -1143,18 +1087,19 @@ impl<C: AstFormatter> FmtWithCtx<C> for llbc::Statement {
             RawStatement::Nop => write!(&mut out, "{tab}nop"),
             RawStatement::Switch(switch) => match switch {
                 Switch::If(discr, true_st, false_st) => {
-                    let inner_tab = format!("{tab}{TAB_INCR}");
+                    let ctx = &ctx.increase_indent();
                     write!(
                         &mut out,
                         "{tab}if {} {{\n{}{tab}}}\n{tab}else {{\n{}{tab}}}",
                         discr.with_ctx(ctx),
-                        true_st.fmt_with_ctx_and_indent(&inner_tab, ctx),
-                        false_st.fmt_with_ctx_and_indent(&inner_tab, ctx),
+                        true_st.fmt_with_ctx(ctx),
+                        false_st.fmt_with_ctx(ctx),
                     )
                 }
                 Switch::SwitchInt(discr, _ty, maps, otherwise) => {
-                    let inner_tab1 = format!("{tab}{TAB_INCR}");
-                    let inner_tab2 = format!("{inner_tab1}{TAB_INCR}");
+                    let ctx1 = &ctx.increase_indent();
+                    let inner_tab1 = ctx1.indent();
+                    let ctx2 = &ctx1.increase_indent();
                     let mut maps: Vec<String> = maps
                         .iter()
                         .map(|(pvl, st)| {
@@ -1163,13 +1108,13 @@ impl<C: AstFormatter> FmtWithCtx<C> for llbc::Statement {
                             format!(
                                 "{inner_tab1}{} => {{\n{}{inner_tab1}}},\n",
                                 pvl.join(" | "),
-                                st.fmt_with_ctx_and_indent(&inner_tab2, ctx),
+                                st.fmt_with_ctx(ctx2),
                             )
                         })
                         .collect();
                     maps.push(format!(
                         "{inner_tab1}_ => {{\n{}{inner_tab1}}},\n",
-                        otherwise.fmt_with_ctx_and_indent(&inner_tab2, ctx),
+                        otherwise.fmt_with_ctx(ctx2),
                     ));
 
                     write!(
@@ -1180,8 +1125,9 @@ impl<C: AstFormatter> FmtWithCtx<C> for llbc::Statement {
                     )
                 }
                 Switch::Match(discr, maps, otherwise) => {
-                    let inner_tab1 = format!("{tab}{TAB_INCR}");
-                    let inner_tab2 = format!("{inner_tab1}{TAB_INCR}");
+                    let ctx1 = &ctx.increase_indent();
+                    let inner_tab1 = ctx1.indent();
+                    let ctx2 = &ctx1.increase_indent();
                     let discr_type: Option<TypeDeclId> = discr
                         .ty
                         .kind()
@@ -1202,14 +1148,14 @@ impl<C: AstFormatter> FmtWithCtx<C> for llbc::Statement {
                             format!(
                                 "{inner_tab1}{} => {{\n{}{inner_tab1}}},\n",
                                 cases.join(" | "),
-                                st.fmt_with_ctx_and_indent(&inner_tab2, ctx),
+                                st.fmt_with_ctx(ctx2),
                             )
                         })
                         .collect();
                     if let Some(otherwise) = otherwise {
                         maps.push(format!(
                             "{inner_tab1}_ => {{\n{}{inner_tab1}}},\n",
-                            otherwise.fmt_with_ctx_and_indent(&inner_tab2, ctx),
+                            otherwise.fmt_with_ctx(ctx2),
                         ));
                     };
 
@@ -1222,12 +1168,8 @@ impl<C: AstFormatter> FmtWithCtx<C> for llbc::Statement {
                 }
             },
             RawStatement::Loop(body) => {
-                let inner_tab = format!("{tab}{TAB_INCR}");
-                write!(
-                    &mut out,
-                    "{tab}loop {{\n{}{tab}}}",
-                    body.fmt_with_ctx_and_indent(&inner_tab, ctx),
-                )
+                let ctx = &ctx.increase_indent();
+                write!(&mut out, "{tab}loop {{\n{}{tab}}}", body.fmt_with_ctx(ctx),)
             }
             RawStatement::Error(s) => write!(&mut out, "{tab}@ERROR({})", s),
         };
@@ -1237,11 +1179,7 @@ impl<C: AstFormatter> FmtWithCtx<C> for llbc::Statement {
 
 impl<C: AstFormatter> FmtWithCtx<C> for Terminator {
     fn fmt_with_ctx(&self, ctx: &C) -> String {
-        // By default use a tab.
-        self.fmt_with_ctx_and_indent(TAB_INCR, ctx)
-    }
-
-    fn fmt_with_ctx_and_indent(&self, tab: &str, ctx: &C) -> String {
+        let tab = ctx.indent();
         let mut out = String::new();
         for line in &self.comments_before {
             let _ = writeln!(&mut out, "{tab}// {line}");
@@ -1297,12 +1235,12 @@ impl<C: AstFormatter> FmtWithCtx<C> for TraitClause {
 
 impl<C: AstFormatter> FmtWithCtx<C> for TraitDecl {
     fn fmt_with_ctx(&self, ctx: &C) -> String {
-        let intro = self.item_meta.fmt_item_intro(ctx, "", "trait", self.def_id);
+        let intro = self.item_meta.fmt_item_intro(ctx, "trait", self.def_id);
 
         // Update the context
         let ctx = &ctx.set_generics(&self.generics);
 
-        let (generics, clauses) = self.generics.fmt_with_ctx_with_trait_clauses(ctx, "");
+        let (generics, clauses) = self.generics.fmt_with_ctx_with_trait_clauses(ctx);
 
         let items = {
             let items = self
@@ -1367,7 +1305,7 @@ impl<C: AstFormatter> FmtWithCtx<C> for TraitImpl {
         // Update the context
         let ctx = &ctx.set_generics(&self.generics);
 
-        let (generics, clauses) = self.generics.fmt_with_ctx_with_trait_clauses(ctx, "");
+        let (generics, clauses) = self.generics.fmt_with_ctx_with_trait_clauses(ctx);
 
         let items = {
             let items =
@@ -1553,10 +1491,12 @@ impl<C: AstFormatter> FmtWithCtx<C> for TypeDecl {
             TypeDeclKind::Alias(..) => "type",
             TypeDeclKind::Opaque | TypeDeclKind::Error(..) => "opaque type",
         };
-        let intro = self.item_meta.fmt_item_intro(ctx, "", keyword, self.def_id);
+        let intro = self.item_meta.fmt_item_intro(ctx, keyword, self.def_id);
 
         let ctx = &ctx.set_generics(&self.generics);
-        let (params, preds) = self.generics.fmt_with_ctx_with_trait_clauses(ctx, "  ");
+        let (params, preds) = self
+            .generics
+            .fmt_with_ctx_with_trait_clauses(&ctx.half_indent());
         // Predicates
         let nl_or_space = if !self.generics.has_predicates() {
             " ".to_string()
@@ -1908,22 +1848,19 @@ where
     format!("{f}({args})")
 }
 
-pub(crate) fn fmt_body_blocks_with_ctx<C>(
-    body: &Vector<BlockId, BlockData>,
-    tab: &str,
-    ctx: &C,
-) -> String
+pub(crate) fn fmt_body_blocks_with_ctx<C>(body: &Vector<BlockId, BlockData>, ctx: &C) -> String
 where
     C: AstFormatter,
 {
-    let block_tab = format!("{tab}{TAB_INCR}");
+    let tab = ctx.indent();
+    let ctx = &ctx.increase_indent();
     let mut blocks: Vec<String> = Vec::new();
     for (bid, block) in body.iter_indexed_values() {
         blocks.push(
             format!(
                 "{tab}bb{}: {{\n{}\n{tab}}}\n",
                 bid.index(),
-                block.fmt_with_ctx_and_indent(&block_tab, ctx),
+                block.with_ctx(ctx),
             )
             .to_string(),
         );
