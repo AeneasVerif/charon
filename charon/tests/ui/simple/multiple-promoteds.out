@@ -1,8 +1,10 @@
 # Final LLBC before serialization:
 
-pub fn core::ops::arith::{impl core::ops::arith::Add<&'_0 (u32)> for &'_1 (u32)}#27::add<'_0, '_1>(@1: &'_1 (u32), @2: &'_0 (u32)) -> u32
+// Full name: core::ops::arith::{impl Add<&'_0 (u32)> for &'_1 (u32)}#27::add
+pub fn {impl Add<&'_0 (u32)> for &'_1 (u32)}#27::add<'_0, '_1>(@1: &'_1 (u32), @2: &'_0 (u32)) -> u32
 
-fn test_crate::six() -> u32
+// Full name: test_crate::six
+fn six() -> u32
 {
     let @0: u32; // return
     let x@1: &'_ (u32); // local
@@ -42,7 +44,7 @@ fn test_crate::six() -> u32
     @3 := copy (x@1)
     storage_live(@4)
     @4 := copy (y@2)
-    @0 := core::ops::arith::{impl core::ops::arith::Add<&'_0 (u32)> for &'_1 (u32)}#27::add<'_, '_>(move (@3), move (@4))
+    @0 := {impl Add<&'_0 (u32)> for &'_1 (u32)}#27::add<'_, '_>(move (@3), move (@4))
     storage_dead(@4)
     storage_dead(@3)
     storage_dead(y@2)
@@ -50,14 +52,16 @@ fn test_crate::six() -> u32
     return
 }
 
+// Full name: core::marker::Sized
 #[lang_item("sized")]
-pub trait core::marker::Sized<Self>
+pub trait Sized<Self>
 
+// Full name: core::ops::arith::Add
 #[lang_item("add")]
-pub trait core::ops::arith::Add<Self, Rhs>
+pub trait Add<Self, Rhs>
 {
-    parent_clause0 : [@TraitClause0]: core::marker::Sized<Rhs>
-    parent_clause1 : [@TraitClause1]: core::marker::Sized<Self::Output>
+    parent_clause0 : [@TraitClause0]: Sized<Rhs>
+    parent_clause1 : [@TraitClause1]: Sized<Self::Output>
     type Output
     fn add = core::ops::arith::Add::add<Self, Rhs>
 }
@@ -65,22 +69,23 @@ pub trait core::ops::arith::Add<Self, Rhs>
 #[lang_item("add")]
 pub fn core::ops::arith::Add::add<Self, Rhs>(@1: Self, @2: Rhs) -> Self::Output
 
-impl core::ops::arith::{impl core::ops::arith::Add<&'_0 (u32)> for &'_1 (u32)}#27<'_0, '_1> : core::ops::arith::Add<&'_1 (u32), &'_0 (u32)>
-{
-    parent_clause0 = core::marker::Sized<&'_ (u32)>
-    parent_clause1 = core::marker::Sized<u32>
+// Full name: core::ops::arith::{impl Add<&'_0 (u32)> for &'_1 (u32)}#27
+impl<'_0, '_1> Add<&'_0 (u32)> for &'_1 (u32) {
+    parent_clause0 = Sized<&'_ (u32)>
+    parent_clause1 = Sized<u32>
     type Output = u32
-    fn add = core::ops::arith::{impl core::ops::arith::Add<&'_0 (u32)> for &'_1 (u32)}#27::add<'_0, '_1>
+    fn add = {impl Add<&'_0 (u32)> for &'_1 (u32)}#27::add<'_0, '_1>
 }
 
-pub fn core::ops::arith::{impl core::ops::arith::Add<u32> for u32}#3::add(@1: u32, @2: u32) -> u32
+// Full name: core::ops::arith::{impl Add<u32> for u32}#3::add
+pub fn {impl Add<u32> for u32}#3::add(@1: u32, @2: u32) -> u32
 
-impl core::ops::arith::{impl core::ops::arith::Add<u32> for u32}#3 : core::ops::arith::Add<u32, u32>
-{
-    parent_clause0 = core::marker::Sized<u32>
-    parent_clause1 = core::marker::Sized<u32>
+// Full name: core::ops::arith::{impl Add<u32> for u32}#3
+impl Add<u32> for u32 {
+    parent_clause0 = Sized<u32>
+    parent_clause1 = Sized<u32>
     type Output = u32
-    fn add = core::ops::arith::{impl core::ops::arith::Add<u32> for u32}#3::add
+    fn add = {impl Add<u32> for u32}#3::add
 }
 
 

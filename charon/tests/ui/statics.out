@@ -10,7 +10,8 @@ fn test_crate::constant::CONST() -> usize
 
 const test_crate::constant::CONST: usize = test_crate::constant::CONST()
 
-fn test_crate::constant()
+// Full name: test_crate::constant
+fn constant()
 {
     let @0: (); // return
     let _val@1: usize; // local
@@ -58,7 +59,8 @@ fn test_crate::shared_static::SHARED_STATIC() -> usize
 
 static test_crate::shared_static::SHARED_STATIC: usize = test_crate::shared_static::SHARED_STATIC()
 
-fn test_crate::shared_static()
+// Full name: test_crate::shared_static
+fn shared_static()
 {
     let @0: (); // return
     let _val@1: usize; // local
@@ -110,7 +112,8 @@ fn test_crate::mut_static::MUT_STATIC() -> usize
 
 static test_crate::mut_static::MUT_STATIC: usize = test_crate::mut_static::MUT_STATIC()
 
-fn test_crate::mut_static()
+// Full name: test_crate::mut_static
+fn mut_static()
 {
     let @0: (); // return
     let _val@1: usize; // local
@@ -174,34 +177,37 @@ fn test_crate::mut_static()
     return
 }
 
-struct test_crate::non_copy_static::Foo = {}
+// Full name: test_crate::non_copy_static::Foo
+struct Foo {}
 
-fn test_crate::non_copy_static::FOO() -> test_crate::non_copy_static::Foo
+fn test_crate::non_copy_static::FOO() -> Foo
 {
-    let @0: test_crate::non_copy_static::Foo; // return
+    let @0: Foo; // return
 
-    @0 := test_crate::non_copy_static::Foo {  }
+    @0 := Foo {  }
     return
 }
 
-static test_crate::non_copy_static::FOO: test_crate::non_copy_static::Foo = test_crate::non_copy_static::FOO()
+static test_crate::non_copy_static::FOO: Foo = test_crate::non_copy_static::FOO()
 
-fn test_crate::non_copy_static::{test_crate::non_copy_static::Foo}::method<'_0>(@1: &'_0 (test_crate::non_copy_static::Foo))
+// Full name: test_crate::non_copy_static::{Foo}::method
+fn method<'_0>(@1: &'_0 (Foo))
 {
     let @0: (); // return
-    let self@1: &'_ (test_crate::non_copy_static::Foo); // arg #1
+    let self@1: &'_ (Foo); // arg #1
 
     @0 := ()
     @0 := ()
     return
 }
 
-fn test_crate::non_copy_static()
+// Full name: test_crate::non_copy_static
+fn non_copy_static()
 {
     let @0: (); // return
-    let @1: &'_ (test_crate::non_copy_static::Foo); // anonymous local
-    let @2: &'_ (test_crate::non_copy_static::Foo); // anonymous local
-    let @3: &'_ (test_crate::non_copy_static::Foo); // anonymous local
+    let @1: &'_ (Foo); // anonymous local
+    let @2: &'_ (Foo); // anonymous local
+    let @3: &'_ (Foo); // anonymous local
 
     storage_live(@3)
     storage_live(@1)
@@ -209,7 +215,7 @@ fn test_crate::non_copy_static()
     @3 := &test_crate::non_copy_static::FOO
     @2 := move (@3)
     @1 := &*(@2)
-    @0 := test_crate::non_copy_static::{test_crate::non_copy_static::Foo}::method<'_>(move (@1))
+    @0 := method<'_>(move (@1))
     storage_dead(@1)
     storage_dead(@2)
     @0 := ()

@@ -1,17 +1,20 @@
 # Final LLBC before serialization:
 
+// Full name: core::marker::Sized
 #[lang_item("sized")]
-pub trait core::marker::Sized<Self>
+pub trait Sized<Self>
 
-trait test_crate::Trait<'a, Self, Self_Type>
+// Full name: test_crate::Trait
+trait Trait<'a, Self, Self_Type>
 {
-    parent_clause0 : [@TraitClause0]: core::marker::Sized<Self_Type>
+    parent_clause0 : [@TraitClause0]: Sized<Self_Type>
 }
 
-fn test_crate::foo<T>()
+// Full name: test_crate::foo
+fn foo<T>()
 where
-    [@TraitClause0]: core::marker::Sized<T>,
-    [@TraitClause1]: for<'a> test_crate::Trait<'a, T, &'_ (())>,
+    [@TraitClause0]: Sized<T>,
+    [@TraitClause1]: for<'a> Trait<'a, T, &'_ (())>,
 {
     let @0: (); // return
 

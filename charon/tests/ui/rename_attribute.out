@@ -1,12 +1,14 @@
 # Final LLBC before serialization:
 
-pub trait test_crate::BoolTrait<Self>
+// Full name: test_crate::BoolTrait
+pub trait BoolTrait<Self>
 {
     fn get_bool<'_0> = test_crate::BoolTrait::get_bool<'_0_0, Self>
-    fn ret_true<'_0> = test_crate::BoolTrait::ret_true<'_0_0, Self>
+    fn ret_true<'_0> = ret_true<'_0_0, Self>
 }
 
-pub fn test_crate::{impl test_crate::BoolTrait for bool}::get_bool<'_0>(@1: &'_0 (bool)) -> bool
+// Full name: test_crate::{impl BoolTrait for bool}::get_bool
+pub fn {impl BoolTrait for bool}::get_bool<'_0>(@1: &'_0 (bool)) -> bool
 {
     let @0: bool; // return
     let self@1: &'_ (bool); // arg #1
@@ -15,7 +17,7 @@ pub fn test_crate::{impl test_crate::BoolTrait for bool}::get_bool<'_0>(@1: &'_0
     return
 }
 
-pub fn test_crate::{impl test_crate::BoolTrait for bool}::ret_true<'_0>(@1: &'_0 (bool)) -> bool
+pub fn test_crate::{impl BoolTrait for bool}::ret_true<'_0>(@1: &'_0 (bool)) -> bool
 {
     let @0: bool; // return
     let self@1: &'_ (bool); // arg #1
@@ -24,18 +26,20 @@ pub fn test_crate::{impl test_crate::BoolTrait for bool}::ret_true<'_0>(@1: &'_0
     return
 }
 
-impl test_crate::{impl test_crate::BoolTrait for bool} : test_crate::BoolTrait<bool>
-{
-    fn get_bool<'_0> = test_crate::{impl test_crate::BoolTrait for bool}::get_bool<'_0_0>
-    fn ret_true<'_0> = test_crate::{impl test_crate::BoolTrait for bool}::ret_true<'_0_0>
+// Full name: test_crate::{impl BoolTrait for bool}
+impl BoolTrait for bool {
+    fn get_bool<'_0> = {impl BoolTrait for bool}::get_bool<'_0_0>
+    fn ret_true<'_0> = test_crate::{impl BoolTrait for bool}::ret_true<'_0_0>
 }
 
+// Full name: core::marker::Sized
 #[lang_item("sized")]
-pub trait core::marker::Sized<Self>
+pub trait Sized<Self>
 
-pub fn test_crate::test_bool_trait<T>(@1: bool) -> bool
+// Full name: test_crate::test_bool_trait
+pub fn test_bool_trait<T>(@1: bool) -> bool
 where
-    [@TraitClause0]: core::marker::Sized<T>,
+    [@TraitClause0]: Sized<T>,
 {
     let @0: bool; // return
     let x@1: bool; // arg #1
@@ -47,12 +51,12 @@ where
     storage_live(@2)
     storage_live(@3)
     @3 := &x@1
-    @2 := test_crate::{impl test_crate::BoolTrait for bool}::get_bool<'_>(move (@3))
+    @2 := {impl BoolTrait for bool}::get_bool<'_>(move (@3))
     if move (@2) {
         storage_dead(@3)
         storage_live(@4)
         @4 := &x@1
-        @0 := test_crate::{impl test_crate::BoolTrait for bool}::ret_true<'_>(move (@4))
+        @0 := test_crate::{impl BoolTrait for bool}::ret_true<'_>(move (@4))
         storage_dead(@4)
     }
     else {
@@ -63,16 +67,18 @@ where
     return
 }
 
-type test_crate::Test = i32
+// Full name: test_crate::Test
+type Test = i32
 
-enum test_crate::SimpleEnum =
-|  FirstVariant()
-|  SecondVariant()
-|  ThirdVariant()
+// Full name: test_crate::SimpleEnum
+enum SimpleEnum {
+  FirstVariant,
+  SecondVariant,
+  ThirdVariant,
+}
 
-
-struct test_crate::Foo =
-{
+// Full name: test_crate::Foo
+struct Foo {
   field1: u32,
 }
 
@@ -90,11 +96,13 @@ fn test_crate::C() -> u32
 
 const test_crate::C: u32 = test_crate::C()
 
-type test_crate::Test2 = u32
+// Full name: test_crate::Test2
+type Test2 = u32
 
 pub fn test_crate::BoolTrait::get_bool<'_0, Self>(@1: &'_0 (Self)) -> bool
 
-pub fn test_crate::BoolTrait::ret_true<'_0, Self>(@1: &'_0 (Self)) -> bool
+// Full name: test_crate::BoolTrait::ret_true
+pub fn ret_true<'_0, Self>(@1: &'_0 (Self)) -> bool
 {
     let @0: bool; // return
     let self@1: &'_ (Self); // arg #1

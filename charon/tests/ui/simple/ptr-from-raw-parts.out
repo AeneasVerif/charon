@@ -1,22 +1,25 @@
 # Final LLBC before serialization:
 
+// Full name: core::marker::Sized
 #[lang_item("sized")]
-pub trait core::marker::Sized<Self>
+pub trait Sized<Self>
 
-pub fn core::ptr::metadata::from_raw_parts<T, impl Thin>(@1: *const impl Thin, @2: core::ptr::metadata::Pointee<T>::Metadata) -> *const T
+// Full name: core::ptr::metadata::from_raw_parts
+pub fn from_raw_parts<T, impl Thin>(@1: *const impl Thin, @2: Pointee<T>::Metadata) -> *const T
 where
-    [@TraitClause0]: core::marker::Sized<impl Thin>,
-    [@TraitClause1]: core::ptr::metadata::Thin<impl Thin>,
+    [@TraitClause0]: Sized<impl Thin>,
+    [@TraitClause1]: Thin<impl Thin>,
 {
     let @0: *const T; // return
     let data_pointer@1: *const impl Thin; // arg #1
-    let metadata@2: core::ptr::metadata::Pointee<T>::Metadata; // arg #2
+    let metadata@2: Pointee<T>::Metadata; // arg #2
 
     @0 := @PtrFromPartsShared<'_, T>(copy (data_pointer@1), copy (metadata@2))
     return
 }
 
-fn test_crate::main()
+// Full name: test_crate::main
+fn main()
 {
     let @0: (); // return
     let a@1: Array<u32, 2 : usize>; // local
@@ -28,7 +31,7 @@ fn test_crate::main()
     storage_live(@2)
     storage_live(@3)
     @3 := &raw const a@1
-    @2 := core::ptr::metadata::from_raw_parts<Slice<u32>, Array<u32, 2 : usize>>[core::marker::Sized<Array<u32, 2 : usize>>, core::ptr::metadata::Thin<Array<u32, 2 : usize>>](move (@3), const (2 : usize))
+    @2 := from_raw_parts<Slice<u32>, Array<u32, 2 : usize>>[Sized<Array<u32, 2 : usize>>, Thin<Array<u32, 2 : usize>>](move (@3), const (2 : usize))
     storage_dead(@3)
     storage_dead(@2)
     @0 := ()

@@ -40,11 +40,6 @@ pub trait Formatter<T> {
     fn format_object(&self, x: T) -> String;
 }
 
-/// Provided some id, print the declaration (not simply its name).
-pub trait DeclFormatter<Id> {
-    fn format_decl(&self, x: Id) -> String;
-}
-
 impl<C, T> Formatter<T> for &C
 where
     C: Formatter<T>,
@@ -68,75 +63,8 @@ impl<C: AstFormatter> IntoFormatter for C {
     }
 }
 
-/// We use this trait with the formatter to update the context,
-/// for instance when we enter a declaration that we need to print.
-pub trait SetGenerics<'a> {
-    type C: 'a + AstFormatter;
-
-    fn set_generics(&'a self, generics: &'a GenericParams) -> Self::C;
-}
-
-impl<'a, 'b> SetGenerics<'a> for FmtCtx<'b> {
-    type C = FmtCtx<'a>;
-
-    fn set_generics(&'a self, generics: &'a GenericParams) -> Self::C {
-        FmtCtx {
-            translated: self.translated.as_deref(),
-            generics: BindingStack::new(Cow::Borrowed(generics)),
-            locals: self.locals.as_deref(),
-        }
-    }
-}
-
-/// We use this trait with the formatter to update the context,
-/// for instance when we enter a declaration that we need to print.
-pub trait SetLocals<'a> {
-    type C: 'a + AstFormatter;
-
-    fn set_locals(&'a self, locals: &'a Locals) -> Self::C;
-}
-
-impl<'a, 'b> SetLocals<'a> for FmtCtx<'b> {
-    type C = FmtCtx<'a>;
-
-    fn set_locals(&'a self, locals: &'a Locals) -> Self::C {
-        FmtCtx {
-            translated: self.translated.as_deref(),
-            generics: self.generics.clone(),
-            locals: Some(locals),
-        }
-    }
-}
-
-/// We use this trait to update the context by pushing a group of bound regions.
-pub trait PushBinder<'a> {
-    type C: 'a + AstFormatter;
-
-    fn push_binder(&'a self, new_params: Cow<'a, GenericParams>) -> Self::C;
-
-    fn push_bound_regions(&'a self, regions: &'a Vector<RegionId, RegionVar>) -> Self::C {
-        self.push_binder(Cow::Owned(GenericParams {
-            regions: regions.clone(),
-            ..Default::default()
-        }))
-    }
-}
-
-impl<'a, 'b> PushBinder<'a> for FmtCtx<'b> {
-    type C = FmtCtx<'a>;
-
-    fn push_binder(&'a self, new_params: Cow<'a, GenericParams>) -> Self::C {
-        let mut generics = self.generics.clone();
-        generics.push(new_params);
-        FmtCtx {
-            translated: self.translated.as_deref(),
-            generics,
-            locals: self.locals.as_deref(),
-        }
-    }
-}
-
-pub trait AstFormatter = Formatter<TypeDeclId>
+pub trait AstFormatter:
+    Formatter<TypeDeclId>
     + Formatter<FunDeclId>
     + Formatter<GlobalDeclId>
     + Formatter<TraitDeclId>
@@ -153,9 +81,59 @@ pub trait AstFormatter = Formatter<TypeDeclId>
     + for<'a> Formatter<&'a RegionVar>
     + for<'a> Formatter<&'a Vector<ullbc_ast::BlockId, ullbc_ast::BlockData>>
     + for<'a> Formatter<&'a llbc_ast::Block>
-    + for<'a> SetGenerics<'a>
-    + for<'a> SetLocals<'a>
-    + for<'a> PushBinder<'a>;
+{
+    type Reborrow<'a>: AstFormatter + 'a
+    where
+        Self: 'a;
+
+    fn get_crate(&self) -> Option<&TranslatedCrate>;
+    fn set_generics<'a>(&'a self, generics: &'a GenericParams) -> Self::Reborrow<'a>;
+    fn set_locals<'a>(&'a self, locals: &'a Locals) -> Self::Reborrow<'a>;
+    fn push_binder<'a>(&'a self, new_params: Cow<'a, GenericParams>) -> Self::Reborrow<'a>;
+
+    fn push_bound_regions<'a>(
+        &'a self,
+        regions: &'a Vector<RegionId, RegionVar>,
+    ) -> Self::Reborrow<'a> {
+        self.push_binder(Cow::Owned(GenericParams {
+            regions: regions.clone(),
+            ..Default::default()
+        }))
+    }
+}
+impl<'c> AstFormatter for FmtCtx<'c> {
+    type Reborrow<'a>
+        = FmtCtx<'a>
+    where
+        Self: 'a;
+
+    fn get_crate(&self) -> Option<&TranslatedCrate> {
+        self.translated
+    }
+    fn set_generics<'a>(&'a self, generics: &'a GenericParams) -> Self::Reborrow<'a> {
+        FmtCtx {
+            translated: self.translated.as_deref(),
+            generics: BindingStack::new(Cow::Borrowed(generics)),
+            locals: self.locals.as_deref(),
+        }
+    }
+    fn set_locals<'a>(&'a self, locals: &'a Locals) -> Self::Reborrow<'a> {
+        FmtCtx {
+            translated: self.translated.as_deref(),
+            generics: self.generics.clone(),
+            locals: Some(locals),
+        }
+    }
+    fn push_binder<'a>(&'a self, new_params: Cow<'a, GenericParams>) -> Self::Reborrow<'a> {
+        let mut generics = self.generics.clone();
+        generics.push(new_params);
+        FmtCtx {
+            translated: self.translated.as_deref(),
+            generics,
+            locals: self.locals.as_deref(),
+        }
+    }
+}
 
 /// For formatting.
 ///
@@ -197,10 +175,12 @@ impl<'a> FmtCtx<'a> {
         };
         translated
             .get_item(id)
-            .ok_or_else(|| translated.item_name(id))
+            .ok_or_else(|| translated.item_short_name(id))
     }
 
-    fn format_any_decl(&self, id: AnyTransId) -> String {
+    /// Print the whole definition.
+    fn format_decl(&self, id: impl Into<AnyTransId>) -> String {
+        let id = id.into();
         match self.get_item(id) {
             Ok(d) => d.fmt_with_ctx(self),
             Err(opt_name) => {
@@ -248,7 +228,7 @@ impl<'a> Formatter<AnyTransId> for FmtCtx<'a> {
     fn format_object(&self, id: AnyTransId) -> String {
         match self
             .translated
-            .and_then(|translated| translated.item_name(id))
+            .and_then(|translated| translated.item_short_name(id))
         {
             None => id.to_string(),
             Some(name) => name.fmt_with_ctx(self),
@@ -358,97 +338,44 @@ impl<'a> Formatter<&ImplElem> for FmtCtx<'a> {
 /// For enum values: `List::Cons`
 impl<'a> Formatter<(TypeDeclId, VariantId)> for FmtCtx<'a> {
     fn format_object(&self, id: (TypeDeclId, VariantId)) -> String {
-        let (def_id, variant_id) = id;
-        match &self.translated {
-            None => format!(
-                "{}::{}",
-                def_id.to_pretty_string(),
-                variant_id.to_pretty_string()
-            ),
-            Some(translated) => {
-                // The definition may not be available yet, especially if we print-debug
-                // while translating the crate
-                match translated.type_decls.get(def_id) {
-                    None => format!(
-                        "{}::{}",
-                        def_id.to_pretty_string(),
-                        variant_id.to_pretty_string()
-                    ),
-                    Some(def) if def.kind.is_enum() => {
-                        let variants = def.kind.as_enum().unwrap();
-                        let mut name = def.item_meta.name.fmt_with_ctx(self);
-                        let variant_name = &variants.get(variant_id).unwrap().name;
-                        name.push_str("::");
-                        name.push_str(variant_name);
-                        name
-                    }
-                    _ => format!("__unknown_variant"),
+        let (type_id, variant_id) = id;
+        let name = self.format_object(type_id);
+        let variant = match &self.translated {
+            None => &variant_id.to_pretty_string(),
+            Some(translated) => match translated.type_decls.get(type_id) {
+                Some(def) if let Some(variants) = def.kind.as_enum() => {
+                    &variants.get(variant_id).unwrap().name
                 }
-            }
-        }
+                _ => &variant_id.to_pretty_string(),
+            },
+        };
+        format!("{name}::{variant}",)
     }
 }
 
 /// For struct/enum values: retrieve a field name
 impl<'a> Formatter<(TypeDeclId, Option<VariantId>, FieldId)> for FmtCtx<'a> {
     fn format_object(&self, id: (TypeDeclId, Option<VariantId>, FieldId)) -> String {
-        let (def_id, opt_variant_id, field_id) = id;
-        match &self.translated {
-            None => match opt_variant_id {
-                None => format!(
-                    "{}::{}",
-                    def_id.to_pretty_string(),
-                    field_id.to_pretty_string()
-                ),
-                Some(variant_id) => format!(
-                    "{}::{}::{}",
-                    def_id.to_pretty_string(),
-                    variant_id.to_pretty_string(),
-                    field_id.to_pretty_string()
-                ),
+        let (type_id, opt_variant_id, field_id) = id;
+        match self
+            .translated
+            .as_ref()
+            .and_then(|tr| tr.type_decls.get(type_id))
+        {
+            None => field_id.to_string(),
+            Some(def) => match (&def.kind, opt_variant_id) {
+                (TypeDeclKind::Enum(variants), Some(variant_id)) => variants[variant_id].fields
+                    [field_id]
+                    .name
+                    .clone()
+                    .unwrap_or_else(|| field_id.to_string()),
+                (TypeDeclKind::Struct(fields) | TypeDeclKind::Union(fields), None) => fields
+                    [field_id]
+                    .name
+                    .clone()
+                    .unwrap_or_else(|| field_id.to_string()),
+                _ => field_id.to_string(),
             },
-            Some(translated) =>
-            // The definition may not be available yet, especially if we
-            // print-debug while translating the crate
-            {
-                match translated.type_decls.get(def_id) {
-                    None => match opt_variant_id {
-                        None => format!(
-                            "{}::{}",
-                            def_id.to_pretty_string(),
-                            field_id.to_pretty_string()
-                        ),
-                        Some(variant_id) => format!(
-                            "{}::{}::{}",
-                            def_id.to_pretty_string(),
-                            variant_id.to_pretty_string(),
-                            field_id.to_pretty_string()
-                        ),
-                    },
-                    Some(gen_def) => match (&gen_def.kind, opt_variant_id) {
-                        (TypeDeclKind::Enum(variants), Some(variant_id)) => {
-                            let field = variants
-                                .get(variant_id)
-                                .unwrap()
-                                .fields
-                                .get(field_id)
-                                .unwrap();
-                            match &field.name {
-                                Some(name) => name.clone(),
-                                None => field_id.to_string(),
-                            }
-                        }
-                        (TypeDeclKind::Struct(fields) | TypeDeclKind::Union(fields), None) => {
-                            let field = fields.get(field_id).unwrap();
-                            match &field.name {
-                                Some(name) => name.clone(),
-                                None => field_id.to_string(),
-                            }
-                        }
-                        _ => format!("__unknown_field"),
-                    },
-                }
-            }
         }
     }
 }
@@ -528,35 +455,5 @@ impl<'a> Formatter<&gast::TraitDecl> for FmtCtx<'a> {
 impl<'a> Formatter<&gast::TraitImpl> for FmtCtx<'a> {
     fn format_object(&self, def: &gast::TraitImpl) -> String {
         def.fmt_with_ctx(self)
-    }
-}
-
-impl<'a> DeclFormatter<TypeDeclId> for FmtCtx<'a> {
-    fn format_decl(&self, id: TypeDeclId) -> String {
-        self.format_any_decl(id.into())
-    }
-}
-
-impl<'a> DeclFormatter<GlobalDeclId> for FmtCtx<'a> {
-    fn format_decl(&self, id: GlobalDeclId) -> String {
-        self.format_any_decl(id.into())
-    }
-}
-
-impl<'a> DeclFormatter<FunDeclId> for FmtCtx<'a> {
-    fn format_decl(&self, id: FunDeclId) -> String {
-        self.format_any_decl(id.into())
-    }
-}
-
-impl<'a> DeclFormatter<TraitDeclId> for FmtCtx<'a> {
-    fn format_decl(&self, id: TraitDeclId) -> String {
-        self.format_any_decl(id.into())
-    }
-}
-
-impl<'a> DeclFormatter<TraitImplId> for FmtCtx<'a> {
-    fn format_decl(&self, id: TraitImplId) -> String {
-        self.format_any_decl(id.into())
     }
 }

@@ -1,25 +1,28 @@
 # Final LLBC before serialization:
 
-trait test_crate::Trait<Self>
+// Full name: test_crate::Trait
+trait Trait<Self>
 {
     fn required<'_0> = test_crate::Trait::required<'_0_0, Self>
     fn provided1<'_0> = test_crate::Trait::provided1<'_0_0, Self>
-    fn provided2<'_0> = test_crate::Trait::provided2<'_0_0, Self>
+    fn provided2<'_0> = provided2<'_0_0, Self>
 }
 
-struct test_crate::Foo = {}
+// Full name: test_crate::Foo
+struct Foo {}
 
-fn test_crate::{impl test_crate::Trait for test_crate::Foo}::required<'_0>(@1: &'_0 (test_crate::Foo))
+// Full name: test_crate::{impl Trait for Foo}::required
+fn {impl Trait for Foo}::required<'_0>(@1: &'_0 (Foo))
 {
     let @0: (); // return
-    let self@1: &'_ (test_crate::Foo); // arg #1
+    let self@1: &'_ (Foo); // arg #1
     let @2: (); // anonymous local
-    let @3: &'_ (test_crate::Foo); // anonymous local
+    let @3: &'_ (Foo); // anonymous local
 
     storage_live(@2)
     storage_live(@3)
     @3 := &*(self@1)
-    @2 := test_crate::{impl test_crate::Trait for test_crate::Foo}::provided1<'_>(move (@3))
+    @2 := test_crate::{impl Trait for Foo}::provided1<'_>(move (@3))
     storage_dead(@3)
     storage_dead(@2)
     @0 := ()
@@ -27,25 +30,25 @@ fn test_crate::{impl test_crate::Trait for test_crate::Foo}::required<'_0>(@1: &
     return
 }
 
-fn test_crate::{impl test_crate::Trait for test_crate::Foo}::provided1<'_0>(@1: &'_0 (test_crate::Foo))
+fn test_crate::{impl Trait for Foo}::provided1<'_0>(@1: &'_0 (Foo))
 {
     let @0: (); // return
-    let self@1: &'_ (test_crate::Foo); // arg #1
+    let self@1: &'_ (Foo); // arg #1
     let @2: (); // anonymous local
-    let @3: &'_ (test_crate::Foo); // anonymous local
+    let @3: &'_ (Foo); // anonymous local
     let @4: (); // anonymous local
-    let @5: &'_ (test_crate::Foo); // anonymous local
+    let @5: &'_ (Foo); // anonymous local
 
     storage_live(@2)
     storage_live(@3)
     @3 := &*(self@1)
-    @2 := test_crate::{impl test_crate::Trait for test_crate::Foo}::required<'_>(move (@3))
+    @2 := {impl Trait for Foo}::required<'_>(move (@3))
     storage_dead(@3)
     storage_dead(@2)
     storage_live(@4)
     storage_live(@5)
     @5 := &*(self@1)
-    @4 := test_crate::{impl test_crate::Trait for test_crate::Foo}::provided2<'_>(move (@5))
+    @4 := test_crate::{impl Trait for Foo}::provided2<'_>(move (@5))
     storage_dead(@5)
     storage_dead(@4)
     @0 := ()
@@ -53,25 +56,25 @@ fn test_crate::{impl test_crate::Trait for test_crate::Foo}::provided1<'_0>(@1: 
     return
 }
 
-fn test_crate::{impl test_crate::Trait for test_crate::Foo}::provided2<'_0>(@1: &'_0 (test_crate::Foo))
+fn test_crate::{impl Trait for Foo}::provided2<'_0>(@1: &'_0 (Foo))
 {
     let @0: (); // return
-    let self@1: &'_ (test_crate::Foo); // arg #1
+    let self@1: &'_ (Foo); // arg #1
     let @2: (); // anonymous local
-    let @3: &'_ (test_crate::Foo); // anonymous local
+    let @3: &'_ (Foo); // anonymous local
     let @4: (); // anonymous local
-    let @5: &'_ (test_crate::Foo); // anonymous local
+    let @5: &'_ (Foo); // anonymous local
 
     storage_live(@2)
     storage_live(@3)
     @3 := &*(self@1)
-    @2 := test_crate::{impl test_crate::Trait for test_crate::Foo}::required<'_>(move (@3))
+    @2 := {impl Trait for Foo}::required<'_>(move (@3))
     storage_dead(@3)
     storage_dead(@2)
     storage_live(@4)
     storage_live(@5)
     @5 := &*(self@1)
-    @4 := test_crate::{impl test_crate::Trait for test_crate::Foo}::provided1<'_>(move (@5))
+    @4 := test_crate::{impl Trait for Foo}::provided1<'_>(move (@5))
     storage_dead(@5)
     storage_dead(@4)
     @0 := ()
@@ -79,26 +82,28 @@ fn test_crate::{impl test_crate::Trait for test_crate::Foo}::provided2<'_0>(@1: 
     return
 }
 
-impl test_crate::{impl test_crate::Trait for test_crate::Foo} : test_crate::Trait<test_crate::Foo>
-{
-    fn required<'_0> = test_crate::{impl test_crate::Trait for test_crate::Foo}::required<'_0_0>
-    fn provided1<'_0> = test_crate::{impl test_crate::Trait for test_crate::Foo}::provided1<'_0_0>
-    fn provided2<'_0> = test_crate::{impl test_crate::Trait for test_crate::Foo}::provided2<'_0_0>
+// Full name: test_crate::{impl Trait for Foo}
+impl Trait for Foo {
+    fn required<'_0> = {impl Trait for Foo}::required<'_0_0>
+    fn provided1<'_0> = test_crate::{impl Trait for Foo}::provided1<'_0_0>
+    fn provided2<'_0> = test_crate::{impl Trait for Foo}::provided2<'_0_0>
 }
 
-struct test_crate::Bar = {}
+// Full name: test_crate::Bar
+struct Bar {}
 
-fn test_crate::{impl test_crate::Trait for test_crate::Bar}#1::required<'_0>(@1: &'_0 (test_crate::Bar))
+// Full name: test_crate::{impl Trait for Bar}#1::required
+fn {impl Trait for Bar}#1::required<'_0>(@1: &'_0 (Bar))
 {
     let @0: (); // return
-    let self@1: &'_ (test_crate::Bar); // arg #1
+    let self@1: &'_ (Bar); // arg #1
     let @2: (); // anonymous local
-    let @3: &'_ (test_crate::Bar); // anonymous local
+    let @3: &'_ (Bar); // anonymous local
 
     storage_live(@2)
     storage_live(@3)
     @3 := &*(self@1)
-    @2 := test_crate::{impl test_crate::Trait for test_crate::Bar}#1::provided2<'_>(move (@3))
+    @2 := test_crate::{impl Trait for Bar}#1::provided2<'_>(move (@3))
     storage_dead(@3)
     storage_dead(@2)
     @0 := ()
@@ -106,17 +111,18 @@ fn test_crate::{impl test_crate::Trait for test_crate::Bar}#1::required<'_0>(@1:
     return
 }
 
-fn test_crate::{impl test_crate::Trait for test_crate::Bar}#1::provided1<'_0>(@1: &'_0 (test_crate::Bar))
+// Full name: test_crate::{impl Trait for Bar}#1::provided1
+fn {impl Trait for Bar}#1::provided1<'_0>(@1: &'_0 (Bar))
 {
     let @0: (); // return
-    let self@1: &'_ (test_crate::Bar); // arg #1
+    let self@1: &'_ (Bar); // arg #1
     let @2: (); // anonymous local
-    let @3: &'_ (test_crate::Bar); // anonymous local
+    let @3: &'_ (Bar); // anonymous local
 
     storage_live(@2)
     storage_live(@3)
     @3 := &*(self@1)
-    @2 := test_crate::{impl test_crate::Trait for test_crate::Bar}#1::provided2<'_>(move (@3))
+    @2 := test_crate::{impl Trait for Bar}#1::provided2<'_>(move (@3))
     storage_dead(@3)
     storage_dead(@2)
     @0 := ()
@@ -124,25 +130,25 @@ fn test_crate::{impl test_crate::Trait for test_crate::Bar}#1::provided1<'_0>(@1
     return
 }
 
-fn test_crate::{impl test_crate::Trait for test_crate::Bar}#1::provided2<'_0>(@1: &'_0 (test_crate::Bar))
+fn test_crate::{impl Trait for Bar}#1::provided2<'_0>(@1: &'_0 (Bar))
 {
     let @0: (); // return
-    let self@1: &'_ (test_crate::Bar); // arg #1
+    let self@1: &'_ (Bar); // arg #1
     let @2: (); // anonymous local
-    let @3: &'_ (test_crate::Bar); // anonymous local
+    let @3: &'_ (Bar); // anonymous local
     let @4: (); // anonymous local
-    let @5: &'_ (test_crate::Bar); // anonymous local
+    let @5: &'_ (Bar); // anonymous local
 
     storage_live(@2)
     storage_live(@3)
     @3 := &*(self@1)
-    @2 := test_crate::{impl test_crate::Trait for test_crate::Bar}#1::required<'_>(move (@3))
+    @2 := {impl Trait for Bar}#1::required<'_>(move (@3))
     storage_dead(@3)
     storage_dead(@2)
     storage_live(@4)
     storage_live(@5)
     @5 := &*(self@1)
-    @4 := test_crate::{impl test_crate::Trait for test_crate::Bar}#1::provided1<'_>(move (@5))
+    @4 := {impl Trait for Bar}#1::provided1<'_>(move (@5))
     storage_dead(@5)
     storage_dead(@4)
     @0 := ()
@@ -150,11 +156,11 @@ fn test_crate::{impl test_crate::Trait for test_crate::Bar}#1::provided2<'_0>(@1
     return
 }
 
-impl test_crate::{impl test_crate::Trait for test_crate::Bar}#1 : test_crate::Trait<test_crate::Bar>
-{
-    fn required<'_0> = test_crate::{impl test_crate::Trait for test_crate::Bar}#1::required<'_0_0>
-    fn provided1<'_0> = test_crate::{impl test_crate::Trait for test_crate::Bar}#1::provided1<'_0_0>
-    fn provided2<'_0> = test_crate::{impl test_crate::Trait for test_crate::Bar}#1::provided2<'_0_0>
+// Full name: test_crate::{impl Trait for Bar}#1
+impl Trait for Bar {
+    fn required<'_0> = {impl Trait for Bar}#1::required<'_0_0>
+    fn provided1<'_0> = {impl Trait for Bar}#1::provided1<'_0_0>
+    fn provided2<'_0> = test_crate::{impl Trait for Bar}#1::provided2<'_0_0>
 }
 
 fn test_crate::Trait::required<'_0, Self>(@1: &'_0 (Self))
@@ -185,7 +191,8 @@ fn test_crate::Trait::provided1<'_0, Self>(@1: &'_0 (Self))
     return
 }
 
-fn test_crate::Trait::provided2<'_0, Self>(@1: &'_0 (Self))
+// Full name: test_crate::Trait::provided2
+fn provided2<'_0, Self>(@1: &'_0 (Self))
 {
     let @0: (); // return
     let self@1: &'_ (Self); // arg #1

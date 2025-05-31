@@ -1,23 +1,27 @@
 # Final LLBC before serialization:
 
-fn test_crate::panic1()
+// Full name: test_crate::panic1
+fn panic1()
 {
     let @0: (); // return
 
     panic(core::panicking::panic_explicit)
 }
 
+// Full name: core::fmt::Arguments
 #[lang_item("format_arguments")]
-pub opaque type core::fmt::Arguments<'a>
+pub opaque type Arguments<'a>
   where
       'a : 'a,
 
-pub fn core::fmt::{core::fmt::Arguments<'a>}#4::new_const<'a, const N : usize>(@1: &'a (Array<&'static (Str), const N : usize>)) -> core::fmt::Arguments<'a>
+// Full name: core::fmt::{Arguments<'a>}#4::new_const
+pub fn new_const<'a, const N : usize>(@1: &'a (Array<&'static (Str), const N : usize>)) -> Arguments<'a>
 
-fn test_crate::panic2()
+// Full name: test_crate::panic2
+fn panic2()
 {
     let @0: (); // return
-    let @1: core::fmt::Arguments<'_>; // anonymous local
+    let @1: Arguments<'_>; // anonymous local
     let @2: &'_ (Array<&'_ (Str), 1 : usize>); // anonymous local
     let @3: &'_ (Array<&'_ (Str), 1 : usize>); // anonymous local
     let @4: Array<&'_ (Str), 1 : usize>; // anonymous local
@@ -29,28 +33,32 @@ fn test_crate::panic2()
     @4 := [const ("O no!")]
     @3 := &@4
     @2 := &*(@3)
-    @1 := core::fmt::{core::fmt::Arguments<'a>}#4::new_const<'_, 1 : usize>(move (@2))
+    @1 := new_const<'_, 1 : usize>(move (@2))
     storage_dead(@2)
     panic(core::panicking::panic_fmt)
 }
 
+// Full name: core::fmt::rt::Argument
 #[lang_item("format_argument")]
-pub opaque type core::fmt::rt::Argument<'a>
+pub opaque type Argument<'a>
 
-pub fn core::fmt::rt::{core::fmt::rt::Argument<'_0>}#1::none<'_0>() -> Array<core::fmt::rt::Argument<'_0>, 0 : usize>
+// Full name: core::fmt::rt::{Argument<'_0>}#1::none
+pub fn none<'_0>() -> Array<Argument<'_0>, 0 : usize>
 
-pub fn core::fmt::{core::fmt::Arguments<'a>}#4::new_v1<'a, const P : usize, const A : usize>(@1: &'a (Array<&'static (Str), const P : usize>), @2: &'a (Array<core::fmt::rt::Argument<'a>, const A : usize>)) -> core::fmt::Arguments<'a>
+// Full name: core::fmt::{Arguments<'a>}#4::new_v1
+pub fn new_v1<'a, const P : usize, const A : usize>(@1: &'a (Array<&'static (Str), const P : usize>), @2: &'a (Array<Argument<'a>, const A : usize>)) -> Arguments<'a>
 
-fn test_crate::panic3()
+// Full name: test_crate::panic3
+fn panic3()
 {
     let @0: (); // return
-    let @1: core::fmt::Arguments<'_>; // anonymous local
+    let @1: Arguments<'_>; // anonymous local
     let @2: &'_ (Array<&'_ (Str), 1 : usize>); // anonymous local
     let @3: &'_ (Array<&'_ (Str), 1 : usize>); // anonymous local
     let @4: Array<&'_ (Str), 1 : usize>; // anonymous local
-    let @5: &'_ (Array<core::fmt::rt::Argument<'_>, 0 : usize>); // anonymous local
-    let @6: &'_ (Array<core::fmt::rt::Argument<'_>, 0 : usize>); // anonymous local
-    let @7: Array<core::fmt::rt::Argument<'_>, 0 : usize>; // anonymous local
+    let @5: &'_ (Array<Argument<'_>, 0 : usize>); // anonymous local
+    let @6: &'_ (Array<Argument<'_>, 0 : usize>); // anonymous local
+    let @7: Array<Argument<'_>, 0 : usize>; // anonymous local
 
     storage_live(@1)
     storage_live(@2)
@@ -62,16 +70,17 @@ fn test_crate::panic3()
     storage_live(@5)
     storage_live(@6)
     storage_live(@7)
-    @7 := core::fmt::rt::{core::fmt::rt::Argument<'_0>}#1::none<'_>()
+    @7 := none<'_>()
     @6 := &@7
     @5 := &*(@6)
-    @1 := core::fmt::{core::fmt::Arguments<'a>}#4::new_v1<'_, 1 : usize, 0 : usize>(move (@2), move (@5))
+    @1 := new_v1<'_, 1 : usize, 0 : usize>(move (@2), move (@5))
     storage_dead(@5)
     storage_dead(@2)
     panic(core::panicking::panic_fmt)
 }
 
-fn test_crate::panic4()
+// Full name: test_crate::panic4
+fn panic4()
 {
     let @0: (); // return
     let @1: (); // anonymous local
@@ -88,12 +97,13 @@ fn test_crate::panic4()
     return
 }
 
-fn test_crate::panic5()
+// Full name: test_crate::panic5
+fn panic5()
 {
     let @0: (); // return
     let @1: (); // anonymous local
     let @2: bool; // anonymous local
-    let @3: core::fmt::Arguments<'_>; // anonymous local
+    let @3: Arguments<'_>; // anonymous local
     let @4: &'_ (Array<&'_ (Str), 1 : usize>); // anonymous local
     let @5: &'_ (Array<&'_ (Str), 1 : usize>); // anonymous local
     let @6: Array<&'_ (Str), 1 : usize>; // anonymous local
@@ -115,7 +125,7 @@ fn test_crate::panic5()
         @6 := [const ("assert failed")]
         @5 := &@6
         @4 := &*(@5)
-        @3 := core::fmt::{core::fmt::Arguments<'a>}#4::new_const<'_, 1 : usize>(move (@4))
+        @3 := new_const<'_, 1 : usize>(move (@4))
         storage_dead(@4)
         panic(core::panicking::panic_fmt)
     }
@@ -126,23 +136,25 @@ fn test_crate::panic5()
     return
 }
 
-fn test_crate::panic6()
+// Full name: test_crate::panic6
+fn panic6()
 {
     let @0: (); // return
 
     panic(core::panicking::panic)
 }
 
-fn test_crate::panic7()
+// Full name: test_crate::panic7
+fn panic7()
 {
     let @0: (); // return
-    let @1: core::fmt::Arguments<'_>; // anonymous local
+    let @1: Arguments<'_>; // anonymous local
     let @2: &'_ (Array<&'_ (Str), 1 : usize>); // anonymous local
     let @3: &'_ (Array<&'_ (Str), 1 : usize>); // anonymous local
     let @4: Array<&'_ (Str), 1 : usize>; // anonymous local
-    let @5: &'_ (Array<core::fmt::rt::Argument<'_>, 0 : usize>); // anonymous local
-    let @6: &'_ (Array<core::fmt::rt::Argument<'_>, 0 : usize>); // anonymous local
-    let @7: Array<core::fmt::rt::Argument<'_>, 0 : usize>; // anonymous local
+    let @5: &'_ (Array<Argument<'_>, 0 : usize>); // anonymous local
+    let @6: &'_ (Array<Argument<'_>, 0 : usize>); // anonymous local
+    let @7: Array<Argument<'_>, 0 : usize>; // anonymous local
 
     storage_live(@1)
     storage_live(@2)
@@ -154,23 +166,25 @@ fn test_crate::panic7()
     storage_live(@5)
     storage_live(@6)
     storage_live(@7)
-    @7 := core::fmt::rt::{core::fmt::rt::Argument<'_0>}#1::none<'_>()
+    @7 := none<'_>()
     @6 := &@7
     @5 := &*(@6)
-    @1 := core::fmt::{core::fmt::Arguments<'a>}#4::new_v1<'_, 1 : usize, 0 : usize>(move (@2), move (@5))
+    @1 := new_v1<'_, 1 : usize, 0 : usize>(move (@2), move (@5))
     storage_dead(@5)
     storage_dead(@2)
     panic(core::panicking::panic_fmt)
 }
 
-fn test_crate::panic8()
+// Full name: test_crate::panic8
+fn panic8()
 {
     let @0: (); // return
 
     panic(core::panicking::panic)
 }
 
-fn test_crate::panic9()
+// Full name: test_crate::panic9
+fn panic9()
 {
     let @0: (); // return
 

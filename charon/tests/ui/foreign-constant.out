@@ -4,7 +4,8 @@ pub fn foreign_constant_aux::CONSTANT() -> u8
 
 pub const foreign_constant_aux::CONSTANT: u8 = foreign_constant_aux::CONSTANT()
 
-fn test_crate::foo() -> u8
+// Full name: test_crate::foo
+fn foo() -> u8
 {
     let @0: u8; // return
     let @1: u8; // anonymous local

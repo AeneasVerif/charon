@@ -118,6 +118,9 @@ pub struct TranslatedCrate {
     /// if the corresponding item wasn't translated.
     #[serde(with = "HashMapToArray::<AnyTransId, Name>")]
     pub item_names: HashMap<AnyTransId, Name>,
+    /// Short names, for items whose last PathElem is unique.
+    #[serde(with = "HashMapToArray::<AnyTransId, Name>")]
+    pub short_names: HashMap<AnyTransId, Name>,
 
     /// The translated files.
     #[drive(skip)]
@@ -138,8 +141,13 @@ pub struct TranslatedCrate {
 }
 
 impl TranslatedCrate {
-    pub fn item_name(&self, trans_id: impl Into<AnyTransId>) -> Option<&Name> {
-        self.item_names.get(&trans_id.into())
+    pub fn item_name(&self, id: impl Into<AnyTransId>) -> Option<&Name> {
+        self.item_names.get(&id.into())
+    }
+
+    pub fn item_short_name(&self, id: impl Into<AnyTransId>) -> Option<&Name> {
+        let id = id.into();
+        self.short_names.get(&id).or_else(|| self.item_name(id))
     }
 
     pub fn get_item(&self, trans_id: impl Into<AnyTransId>) -> Option<AnyTransItem<'_>> {

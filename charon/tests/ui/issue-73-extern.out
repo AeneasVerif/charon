@@ -1,17 +1,20 @@
 # Final LLBC before serialization:
 
-unsafe fn test_crate::foo(@1: i32)
+// Full name: test_crate::foo
+unsafe fn foo(@1: i32)
 
 fn test_crate::CONST() -> u8
 
 static test_crate::CONST: u8 = test_crate::CONST()
 
-opaque type test_crate::Type
+// Full name: test_crate::Type
+opaque type Type
 
-fn test_crate::use_type<'_0>(@1: &'_0 (test_crate::Type))
+// Full name: test_crate::use_type
+fn use_type<'_0>(@1: &'_0 (Type))
 {
     let @0: (); // return
-    let _x@1: &'_ (test_crate::Type); // arg #1
+    let _x@1: &'_ (Type); // arg #1
 
     @0 := ()
     @0 := ()

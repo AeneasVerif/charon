@@ -1,16 +1,17 @@
 # Final LLBC before serialization:
 
+// Full name: core::marker::Sized
 #[lang_item("sized")]
-pub trait core::marker::Sized<Self>
+pub trait Sized<Self>
 
 #[lang_item("mem_swap")]
 pub fn core::mem::swap<'_0, '_1, T>(@1: &'_0 mut (T), @2: &'_1 mut (T))
 where
-    [@TraitClause0]: core::marker::Sized<T>,
+    [@TraitClause0]: Sized<T>,
 
 pub fn test_crate::swap<'a, T>(@1: &'a mut (T), @2: &'a mut (T))
 where
-    [@TraitClause0]: core::marker::Sized<T>,
+    [@TraitClause0]: Sized<T>,
 {
     let @0: (); // return
     let x@1: &'_ mut (T); // arg #1
@@ -29,145 +30,161 @@ where
     return
 }
 
+// Full name: core::clone::Clone
 #[lang_item("clone")]
-pub trait core::clone::Clone<Self>
+pub trait Clone<Self>
 {
-    parent_clause0 : [@TraitClause0]: core::marker::Sized<Self>
+    parent_clause0 : [@TraitClause0]: Sized<Self>
     fn clone<'_0> = core::clone::Clone::clone<'_0_0, Self>
 }
 
+// Full name: core::marker::Copy
 #[lang_item("copy")]
-pub trait core::marker::Copy<Self>
+pub trait Copy<Self>
 {
-    parent_clause0 : [@TraitClause0]: core::clone::Clone<Self>
+    parent_clause0 : [@TraitClause0]: Clone<Self>
 }
 
-pub trait core::num::nonzero::private::Sealed<Self>
+// Full name: core::num::nonzero::private::Sealed
+pub trait Sealed<Self>
 
-pub trait core::num::nonzero::ZeroablePrimitive<Self>
+// Full name: core::num::nonzero::ZeroablePrimitive
+pub trait ZeroablePrimitive<Self>
 {
-    parent_clause0 : [@TraitClause0]: core::marker::Sized<Self>
-    parent_clause1 : [@TraitClause1]: core::marker::Copy<Self>
-    parent_clause2 : [@TraitClause2]: core::num::nonzero::private::Sealed<Self>
-    parent_clause3 : [@TraitClause3]: core::marker::Sized<Self::NonZeroInner>
-    parent_clause4 : [@TraitClause4]: core::marker::Copy<Self::NonZeroInner>
+    parent_clause0 : [@TraitClause0]: Sized<Self>
+    parent_clause1 : [@TraitClause1]: Copy<Self>
+    parent_clause2 : [@TraitClause2]: Sealed<Self>
+    parent_clause3 : [@TraitClause3]: Sized<Self::NonZeroInner>
+    parent_clause4 : [@TraitClause4]: Copy<Self::NonZeroInner>
     type NonZeroInner
 }
 
+// Full name: core::num::nonzero::NonZero
 #[lang_item("NonZero")]
-pub opaque type core::num::nonzero::NonZero<T>
+pub opaque type NonZero<T>
   where
-      [@TraitClause0]: core::marker::Sized<T>,
-      [@TraitClause1]: core::num::nonzero::ZeroablePrimitive<T>,
+      [@TraitClause0]: Sized<T>,
+      [@TraitClause1]: ZeroablePrimitive<T>,
 
-pub fn core::clone::impls::{impl core::clone::Clone for u32}#8::clone<'_0>(@1: &'_0 (u32)) -> u32
+// Full name: core::clone::impls::{impl Clone for u32}#8::clone
+pub fn {impl Clone for u32}#8::clone<'_0>(@1: &'_0 (u32)) -> u32
 
-impl core::clone::impls::{impl core::clone::Clone for u32}#8 : core::clone::Clone<u32>
-{
-    parent_clause0 = core::marker::Sized<u32>
-    fn clone<'_0> = core::clone::impls::{impl core::clone::Clone for u32}#8::clone<'_0_0>
+// Full name: core::clone::impls::{impl Clone for u32}#8
+impl Clone for u32 {
+    parent_clause0 = Sized<u32>
+    fn clone<'_0> = {impl Clone for u32}#8::clone<'_0_0>
 }
 
-impl core::marker::{impl core::marker::Copy for u32}#40 : core::marker::Copy<u32>
-{
-    parent_clause0 = core::clone::impls::{impl core::clone::Clone for u32}#8
+// Full name: core::marker::{impl Copy for u32}#40
+impl Copy for u32 {
+    parent_clause0 = {impl Clone for u32}#8
 }
 
-impl core::num::nonzero::{impl core::num::nonzero::private::Sealed for u32}#20 : core::num::nonzero::private::Sealed<u32>
+// Full name: core::num::nonzero::{impl Sealed for u32}#20
+impl Sealed for u32 {}
 
-pub opaque type core::num::niche_types::NonZeroU32Inner
+// Full name: core::num::niche_types::NonZeroU32Inner
+pub opaque type NonZeroU32Inner
 
-pub fn core::num::niche_types::{impl core::clone::Clone for core::num::niche_types::NonZeroU32Inner}#92::clone<'_0>(@1: &'_0 (core::num::niche_types::NonZeroU32Inner)) -> core::num::niche_types::NonZeroU32Inner
+// Full name: core::num::niche_types::{impl Clone for NonZeroU32Inner}#92::clone
+pub fn {impl Clone for NonZeroU32Inner}#92::clone<'_0>(@1: &'_0 (NonZeroU32Inner)) -> NonZeroU32Inner
 
-impl core::num::niche_types::{impl core::clone::Clone for core::num::niche_types::NonZeroU32Inner}#92 : core::clone::Clone<core::num::niche_types::NonZeroU32Inner>
-{
-    parent_clause0 = core::marker::Sized<core::num::niche_types::NonZeroU32Inner>
-    fn clone<'_0> = core::num::niche_types::{impl core::clone::Clone for core::num::niche_types::NonZeroU32Inner}#92::clone<'_0_0>
+// Full name: core::num::niche_types::{impl Clone for NonZeroU32Inner}#92
+impl Clone for NonZeroU32Inner {
+    parent_clause0 = Sized<NonZeroU32Inner>
+    fn clone<'_0> = {impl Clone for NonZeroU32Inner}#92::clone<'_0_0>
 }
 
-impl core::num::niche_types::{impl core::marker::Copy for core::num::niche_types::NonZeroU32Inner}#93 : core::marker::Copy<core::num::niche_types::NonZeroU32Inner>
-{
-    parent_clause0 = core::num::niche_types::{impl core::clone::Clone for core::num::niche_types::NonZeroU32Inner}#92
+// Full name: core::num::niche_types::{impl Copy for NonZeroU32Inner}#93
+impl Copy for NonZeroU32Inner {
+    parent_clause0 = {impl Clone for NonZeroU32Inner}#92
 }
 
-impl core::num::nonzero::{impl core::num::nonzero::ZeroablePrimitive for u32}#21 : core::num::nonzero::ZeroablePrimitive<u32>
-{
-    parent_clause0 = core::marker::Sized<u32>
-    parent_clause1 = core::marker::{impl core::marker::Copy for u32}#40
-    parent_clause2 = core::num::nonzero::{impl core::num::nonzero::private::Sealed for u32}#20
-    parent_clause3 = core::marker::Sized<core::num::niche_types::NonZeroU32Inner>
-    parent_clause4 = core::num::niche_types::{impl core::marker::Copy for core::num::niche_types::NonZeroU32Inner}#93
-    type NonZeroInner = core::num::niche_types::NonZeroU32Inner
+// Full name: core::num::nonzero::{impl ZeroablePrimitive for u32}#21
+impl ZeroablePrimitive for u32 {
+    parent_clause0 = Sized<u32>
+    parent_clause1 = {impl Copy for u32}#40
+    parent_clause2 = {impl Sealed for u32}#20
+    parent_clause3 = Sized<NonZeroU32Inner>
+    parent_clause4 = {impl Copy for NonZeroU32Inner}#93
+    type NonZeroInner = NonZeroU32Inner
 }
 
+// Full name: core::option::Option
 #[lang_item("Option")]
-pub enum core::option::Option<T>
+pub enum Option<T>
   where
-      [@TraitClause0]: core::marker::Sized<T>,
- =
-|  None()
-|  Some(T)
-
-
-pub fn core::num::nonzero::{core::num::nonzero::NonZero<T>[@TraitClause0, @TraitClause1]}#15::new<T>(@1: T) -> core::option::Option<core::num::nonzero::NonZero<T>[@TraitClause0, @TraitClause1]>[core::marker::Sized<core::num::nonzero::NonZero<T>[@TraitClause0, @TraitClause1]>]
-where
-    [@TraitClause0]: core::marker::Sized<T>,
-    [@TraitClause1]: core::num::nonzero::ZeroablePrimitive<T>,
-
-#[lang_item("option_unwrap")]
-pub fn core::option::{core::option::Option<T>[@TraitClause0]}::unwrap<T>(@1: core::option::Option<T>[@TraitClause0]) -> T
-where
-    [@TraitClause0]: core::marker::Sized<T>,
-
-pub fn test_crate::test_new_non_zero_u32(@1: u32) -> core::num::nonzero::NonZero<u32>[core::marker::Sized<u32>, core::num::nonzero::{impl core::num::nonzero::ZeroablePrimitive for u32}#21]
+      [@TraitClause0]: Sized<T>,
 {
-    let @0: core::num::nonzero::NonZero<u32>[core::marker::Sized<u32>, core::num::nonzero::{impl core::num::nonzero::ZeroablePrimitive for u32}#21]; // return
+  None,
+  Some(T),
+}
+
+pub fn core::num::nonzero::{NonZero<T>[@TraitClause0, @TraitClause1]}#15::new<T>(@1: T) -> Option<NonZero<T>[@TraitClause0, @TraitClause1]>[Sized<NonZero<T>[@TraitClause0, @TraitClause1]>]
+where
+    [@TraitClause0]: Sized<T>,
+    [@TraitClause1]: ZeroablePrimitive<T>,
+
+// Full name: core::option::{Option<T>[@TraitClause0]}::unwrap
+#[lang_item("option_unwrap")]
+pub fn unwrap<T>(@1: Option<T>[@TraitClause0]) -> T
+where
+    [@TraitClause0]: Sized<T>,
+
+// Full name: test_crate::test_new_non_zero_u32
+pub fn test_new_non_zero_u32(@1: u32) -> NonZero<u32>[Sized<u32>, {impl ZeroablePrimitive for u32}#21]
+{
+    let @0: NonZero<u32>[Sized<u32>, {impl ZeroablePrimitive for u32}#21]; // return
     let x@1: u32; // arg #1
-    let @2: core::option::Option<core::num::nonzero::NonZero<u32>[core::marker::Sized<u32>, core::num::nonzero::{impl core::num::nonzero::ZeroablePrimitive for u32}#21]>[core::marker::Sized<core::num::nonzero::NonZero<u32>[core::marker::Sized<u32>, core::num::nonzero::{impl core::num::nonzero::ZeroablePrimitive for u32}#21]>]; // anonymous local
+    let @2: Option<NonZero<u32>[Sized<u32>, {impl ZeroablePrimitive for u32}#21]>[Sized<NonZero<u32>[Sized<u32>, {impl ZeroablePrimitive for u32}#21]>]; // anonymous local
     let @3: u32; // anonymous local
 
     storage_live(@2)
     storage_live(@3)
     @3 := copy (x@1)
-    @2 := core::num::nonzero::{core::num::nonzero::NonZero<T>[@TraitClause0, @TraitClause1]}#15::new<u32>[core::marker::Sized<u32>, core::num::nonzero::{impl core::num::nonzero::ZeroablePrimitive for u32}#21](move (@3))
+    @2 := core::num::nonzero::{NonZero<T>[@TraitClause0, @TraitClause1]}#15::new<u32>[Sized<u32>, {impl ZeroablePrimitive for u32}#21](move (@3))
     storage_dead(@3)
-    @0 := core::option::{core::option::Option<T>[@TraitClause0]}::unwrap<core::num::nonzero::NonZero<u32>[core::marker::Sized<u32>, core::num::nonzero::{impl core::num::nonzero::ZeroablePrimitive for u32}#21]>[core::marker::Sized<core::num::nonzero::NonZero<u32>[core::marker::Sized<u32>, core::num::nonzero::{impl core::num::nonzero::ZeroablePrimitive for u32}#21]>](move (@2))
+    @0 := unwrap<NonZero<u32>[Sized<u32>, {impl ZeroablePrimitive for u32}#21]>[Sized<NonZero<u32>[Sized<u32>, {impl ZeroablePrimitive for u32}#21]>](move (@2))
     storage_dead(@2)
     return
 }
 
+// Full name: alloc::vec::Vec
 #[lang_item("Vec")]
-pub opaque type alloc::vec::Vec<T, A>
+pub opaque type Vec<T, A>
   where
-      [@TraitClause0]: core::marker::Sized<T>,
-      [@TraitClause1]: core::marker::Sized<A>,
+      [@TraitClause0]: Sized<T>,
+      [@TraitClause1]: Sized<A>,
 
+// Full name: alloc::alloc::Global
 #[lang_item("global_alloc_ty")]
-pub struct alloc::alloc::Global = {}
+pub struct Global {}
 
 #[lang_item("vec_new")]
-pub fn alloc::vec::{alloc::vec::Vec<T, alloc::alloc::Global>[@TraitClause0, core::marker::Sized<alloc::alloc::Global>]}::new<T>() -> alloc::vec::Vec<T, alloc::alloc::Global>[@TraitClause0, core::marker::Sized<alloc::alloc::Global>]
+pub fn alloc::vec::{Vec<T, Global>[@TraitClause0, Sized<Global>]}::new<T>() -> Vec<T, Global>[@TraitClause0, Sized<Global>]
 where
-    [@TraitClause0]: core::marker::Sized<T>,
+    [@TraitClause0]: Sized<T>,
 
-pub fn alloc::vec::{alloc::vec::Vec<T, A>[@TraitClause0, @TraitClause1]}#1::push<'_0, T, A>(@1: &'_0 mut (alloc::vec::Vec<T, A>[@TraitClause0, @TraitClause1]), @2: T)
+// Full name: alloc::vec::{Vec<T, A>[@TraitClause0, @TraitClause1]}#1::push
+pub fn push<'_0, T, A>(@1: &'_0 mut (Vec<T, A>[@TraitClause0, @TraitClause1]), @2: T)
 where
-    [@TraitClause0]: core::marker::Sized<T>,
-    [@TraitClause1]: core::marker::Sized<A>,
+    [@TraitClause0]: Sized<T>,
+    [@TraitClause1]: Sized<A>,
 
-pub fn test_crate::test_vec_push()
+// Full name: test_crate::test_vec_push
+pub fn test_vec_push()
 {
     let @0: (); // return
-    let v@1: alloc::vec::Vec<u32, alloc::alloc::Global>[core::marker::Sized<u32>, core::marker::Sized<alloc::alloc::Global>]; // local
+    let v@1: Vec<u32, Global>[Sized<u32>, Sized<Global>]; // local
     let @2: (); // anonymous local
-    let @3: &'_ mut (alloc::vec::Vec<u32, alloc::alloc::Global>[core::marker::Sized<u32>, core::marker::Sized<alloc::alloc::Global>]); // anonymous local
+    let @3: &'_ mut (Vec<u32, Global>[Sized<u32>, Sized<Global>]); // anonymous local
 
     storage_live(v@1)
-    v@1 := alloc::vec::{alloc::vec::Vec<T, alloc::alloc::Global>[@TraitClause0, core::marker::Sized<alloc::alloc::Global>]}::new<u32>[core::marker::Sized<u32>]()
+    v@1 := alloc::vec::{Vec<T, Global>[@TraitClause0, Sized<Global>]}::new<u32>[Sized<u32>]()
     storage_live(@2)
     storage_live(@3)
     @3 := &two-phase-mut v@1
-    @2 := alloc::vec::{alloc::vec::Vec<T, A>[@TraitClause0, @TraitClause1]}#1::push<'_, u32, alloc::alloc::Global>[core::marker::Sized<u32>, core::marker::Sized<alloc::alloc::Global>](move (@3), const (0 : u32))
+    @2 := push<'_, u32, Global>[Sized<u32>, Sized<Global>](move (@3), const (0 : u32))
     storage_dead(@3)
     storage_dead(@2)
     @0 := ()
@@ -177,40 +194,45 @@ pub fn test_crate::test_vec_push()
     return
 }
 
+// Full name: core::cell::Cell
 #[lang_item("Cell")]
-pub opaque type core::cell::Cell<T>
+pub opaque type Cell<T>
 
-pub fn core::cell::{core::cell::Cell<T>}#10::get<'_0, T>(@1: &'_0 (core::cell::Cell<T>)) -> T
+// Full name: core::cell::{Cell<T>}#10::get
+pub fn get<'_0, T>(@1: &'_0 (Cell<T>)) -> T
 where
-    [@TraitClause0]: core::marker::Sized<T>,
-    [@TraitClause1]: core::marker::Copy<T>,
+    [@TraitClause0]: Sized<T>,
+    [@TraitClause1]: Copy<T>,
 
-pub fn test_crate::use_get<'_0>(@1: &'_0 (core::cell::Cell<u32>)) -> u32
+// Full name: test_crate::use_get
+pub fn use_get<'_0>(@1: &'_0 (Cell<u32>)) -> u32
 {
     let @0: u32; // return
-    let rc@1: &'_ (core::cell::Cell<u32>); // arg #1
-    let @2: &'_ (core::cell::Cell<u32>); // anonymous local
+    let rc@1: &'_ (Cell<u32>); // arg #1
+    let @2: &'_ (Cell<u32>); // anonymous local
 
     storage_live(@2)
     @2 := &*(rc@1)
-    @0 := core::cell::{core::cell::Cell<T>}#10::get<'_, u32>[core::marker::Sized<u32>, core::marker::{impl core::marker::Copy for u32}#40](move (@2))
+    @0 := get<'_, u32>[Sized<u32>, {impl Copy for u32}#40](move (@2))
     storage_dead(@2)
     return
 }
 
-pub fn core::cell::{core::cell::Cell<T>}#11::get_mut<'_0, T>(@1: &'_0 mut (core::cell::Cell<T>)) -> &'_0 mut (T)
+// Full name: core::cell::{Cell<T>}#11::get_mut
+pub fn get_mut<'_0, T>(@1: &'_0 mut (Cell<T>)) -> &'_0 mut (T)
 
-pub fn test_crate::incr<'_0>(@1: &'_0 mut (core::cell::Cell<u32>))
+// Full name: test_crate::incr
+pub fn incr<'_0>(@1: &'_0 mut (Cell<u32>))
 {
     let @0: (); // return
-    let rc@1: &'_ mut (core::cell::Cell<u32>); // arg #1
+    let rc@1: &'_ mut (Cell<u32>); // arg #1
     let @2: &'_ mut (u32); // anonymous local
-    let @3: &'_ mut (core::cell::Cell<u32>); // anonymous local
+    let @3: &'_ mut (Cell<u32>); // anonymous local
 
     storage_live(@2)
     storage_live(@3)
     @3 := &two-phase-mut *(rc@1)
-    @2 := core::cell::{core::cell::Cell<T>}#11::get_mut<'_, u32>(move (@3))
+    @2 := get_mut<'_, u32>(move (@3))
     storage_dead(@3)
     *(@2) := copy (*(@2)) + const (1 : u32)
     storage_dead(@2)

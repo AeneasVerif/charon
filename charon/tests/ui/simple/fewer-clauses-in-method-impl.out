@@ -1,30 +1,35 @@
 # Final LLBC before serialization:
 
+// Full name: core::marker::Sized
 #[lang_item("sized")]
-pub trait core::marker::Sized<Self>
+pub trait Sized<Self>
 
+// Full name: core::clone::Clone
 #[lang_item("clone")]
-pub trait core::clone::Clone<Self>
+pub trait Clone<Self>
 {
-    parent_clause0 : [@TraitClause0]: core::marker::Sized<Self>
-    fn clone<'_0> = core::clone::Clone::clone<'_0_0, Self>
+    parent_clause0 : [@TraitClause0]: Sized<Self>
+    fn clone<'_0> = clone<'_0_0, Self>
 }
 
+// Full name: core::marker::Copy
 #[lang_item("copy")]
-pub trait core::marker::Copy<Self>
+pub trait Copy<Self>
 {
-    parent_clause0 : [@TraitClause0]: core::clone::Clone<Self>
+    parent_clause0 : [@TraitClause0]: Clone<Self>
 }
 
-trait test_crate::Trait<Self>
+// Full name: test_crate::Trait
+trait Trait<Self>
 {
-    fn method<T, [@TraitClause0]: core::marker::Sized<T>, [@TraitClause1]: core::marker::Copy<T>> = test_crate::Trait::method<Self, T>[@TraitClause0_0, @TraitClause0_1]
+    fn method<T, [@TraitClause0]: Sized<T>, [@TraitClause1]: Copy<T>> = test_crate::Trait::method<Self, T>[@TraitClause0_0, @TraitClause0_1]
 }
 
-fn test_crate::{impl test_crate::Trait for ()}::method<T>()
+// Full name: test_crate::{impl Trait for ()}::method
+fn {impl Trait for ()}::method<T>()
 where
-    [@TraitClause0]: core::marker::Sized<T>,
-    [@TraitClause1]: core::clone::Clone<T>,
+    [@TraitClause0]: Sized<T>,
+    [@TraitClause1]: Clone<T>,
 {
     let @0: (); // return
 
@@ -33,27 +38,29 @@ where
     return
 }
 
-impl test_crate::{impl test_crate::Trait for ()} : test_crate::Trait<()>
-{
-    fn method<T, [@TraitClause0]: core::marker::Sized<T>, [@TraitClause1]: core::clone::Clone<T>> = test_crate::{impl test_crate::Trait for ()}::method<T>[@TraitClause0_0, @TraitClause0_1]
+// Full name: test_crate::{impl Trait for ()}
+impl Trait for () {
+    fn method<T, [@TraitClause0]: Sized<T>, [@TraitClause1]: Clone<T>> = {impl Trait for ()}::method<T>[@TraitClause0_0, @TraitClause0_1]
 }
 
-fn test_crate::main()
+// Full name: test_crate::main
+fn main()
 {
     let @0: (); // return
 
-    @0 := test_crate::{impl test_crate::Trait for ()}::method<()>[core::marker::Sized<()>, core::marker::Copy<()>]()
+    @0 := {impl Trait for ()}::method<()>[Sized<()>, Copy<()>]()
     @0 := ()
     return
 }
 
 fn test_crate::Trait::method<Self, T>()
 where
-    [@TraitClause0]: core::marker::Sized<T>,
-    [@TraitClause1]: core::marker::Copy<T>,
+    [@TraitClause0]: Sized<T>,
+    [@TraitClause1]: Copy<T>,
 
+// Full name: core::clone::Clone::clone
 #[lang_item("clone_fn")]
-pub fn core::clone::Clone::clone<'_0, Self>(@1: &'_0 (Self)) -> Self
+pub fn clone<'_0, Self>(@1: &'_0 (Self)) -> Self
 
 
 

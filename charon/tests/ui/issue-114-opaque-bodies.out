@@ -1,6 +1,7 @@
 # Final LLBC before serialization:
 
-pub fn issue_114_opaque_bodies_aux::inline_always() -> u32
+// Full name: issue_114_opaque_bodies_aux::inline_always
+pub fn inline_always() -> u32
 {
     let @0: u32; // return
 
@@ -8,7 +9,8 @@ pub fn issue_114_opaque_bodies_aux::inline_always() -> u32
     return
 }
 
-pub fn issue_114_opaque_bodies_aux::inline_sometimes() -> u32
+// Full name: issue_114_opaque_bodies_aux::inline_sometimes
+pub fn inline_sometimes() -> u32
 {
     let @0: u32; // return
 
@@ -16,14 +18,17 @@ pub fn issue_114_opaque_bodies_aux::inline_sometimes() -> u32
     return
 }
 
-pub fn issue_114_opaque_bodies_aux::inline_never() -> u32
+// Full name: issue_114_opaque_bodies_aux::inline_never
+pub fn inline_never() -> u32
 
+// Full name: core::marker::Sized
 #[lang_item("sized")]
-pub trait core::marker::Sized<Self>
+pub trait Sized<Self>
 
-pub fn issue_114_opaque_bodies_aux::inline_generic<T>() -> u32
+// Full name: issue_114_opaque_bodies_aux::inline_generic
+pub fn inline_generic<T>() -> u32
 where
-    [@TraitClause0]: core::marker::Sized<T>,
+    [@TraitClause0]: Sized<T>,
 {
     let @0: u32; // return
 
@@ -31,7 +36,8 @@ where
     return
 }
 
-fn test_crate::use_inlines() -> u32
+// Full name: test_crate::use_inlines
+fn use_inlines() -> u32
 {
     let @0: u32; // return
     let @1: u32; // anonymous local
@@ -44,39 +50,41 @@ fn test_crate::use_inlines() -> u32
     storage_live(@1)
     storage_live(@2)
     storage_live(@3)
-    @3 := issue_114_opaque_bodies_aux::inline_always()
+    @3 := inline_always()
     storage_live(@4)
-    @4 := issue_114_opaque_bodies_aux::inline_sometimes()
+    @4 := inline_sometimes()
     @2 := copy (@3) + copy (@4)
     storage_dead(@4)
     storage_dead(@3)
     storage_live(@5)
-    @5 := issue_114_opaque_bodies_aux::inline_never()
+    @5 := inline_never()
     @1 := copy (@2) + copy (@5)
     storage_dead(@5)
     storage_dead(@2)
     storage_live(@6)
-    @6 := issue_114_opaque_bodies_aux::inline_generic<bool>[core::marker::Sized<bool>]()
+    @6 := inline_generic<bool>[Sized<bool>]()
     @0 := copy (@1) + copy (@6)
     storage_dead(@6)
     storage_dead(@1)
     return
 }
 
+// Full name: core::option::Option
 #[lang_item("Option")]
-pub enum core::option::Option<T>
+pub enum Option<T>
   where
-      [@TraitClause0]: core::marker::Sized<T>,
- =
-|  None()
-|  Some(T)
-
-
-pub fn core::bool::{bool}::then_some<T>(@1: bool, @2: T) -> core::option::Option<T>[@TraitClause0]
-where
-    [@TraitClause0]: core::marker::Sized<T>,
+      [@TraitClause0]: Sized<T>,
 {
-    let @0: core::option::Option<T>[@TraitClause0]; // return
+  None,
+  Some(T),
+}
+
+// Full name: core::bool::{bool}::then_some
+pub fn then_some<T>(@1: bool, @2: T) -> Option<T>[@TraitClause0]
+where
+    [@TraitClause0]: Sized<T>,
+{
+    let @0: Option<T>[@TraitClause0]; // return
     let self@1: bool; // arg #1
     let t@2: T; // arg #2
     let @3: T; // anonymous local
@@ -84,20 +92,21 @@ where
     if copy (self@1) {
     }
     else {
-        @0 := core::option::Option::None {  }
+        @0 := Option::None {  }
         drop t@2
         return
     }
     storage_live(@3)
     @3 := move (t@2)
-    @0 := core::option::Option::Some { 0: move (@3) }
+    @0 := Option::Some { 0: move (@3) }
     storage_dead(@3)
     return
 }
 
-fn test_crate::bool_to_opt(@1: bool) -> core::option::Option<()>[core::marker::Sized<()>]
+// Full name: test_crate::bool_to_opt
+fn bool_to_opt(@1: bool) -> Option<()>[Sized<()>]
 {
-    let @0: core::option::Option<()>[core::marker::Sized<()>]; // return
+    let @0: Option<()>[Sized<()>]; // return
     let b@1: bool; // arg #1
     let @2: bool; // anonymous local
     let @3: (); // anonymous local
@@ -106,13 +115,14 @@ fn test_crate::bool_to_opt(@1: bool) -> core::option::Option<()>[core::marker::S
     @2 := copy (b@1)
     storage_live(@3)
     @3 := ()
-    @0 := core::bool::{bool}::then_some<()>[core::marker::Sized<()>](move (@2), move (@3))
+    @0 := then_some<()>[Sized<()>](move (@2), move (@3))
     storage_dead(@3)
     storage_dead(@2)
     return
 }
 
-pub fn core::convert::num::{impl core::convert::From<i32> for i64}#83::from(@1: i32) -> i64
+// Full name: core::convert::num::{impl From<i32> for i64}#83::from
+pub fn {impl From<i32> for i64}#83::from(@1: i32) -> i64
 {
     let @0: i64; // return
     let small@1: i32; // arg #1
@@ -121,7 +131,8 @@ pub fn core::convert::num::{impl core::convert::From<i32> for i64}#83::from(@1: 
     return
 }
 
-fn test_crate::convert(@1: i32) -> i64
+// Full name: test_crate::convert
+fn convert(@1: i32) -> i64
 {
     let @0: i64; // return
     let x@1: i32; // arg #1
@@ -129,70 +140,73 @@ fn test_crate::convert(@1: i32) -> i64
 
     storage_live(@2)
     @2 := copy (x@1)
-    @0 := core::convert::num::{impl core::convert::From<i32> for i64}#83::from(move (@2))
+    @0 := {impl From<i32> for i64}#83::from(move (@2))
     storage_dead(@2)
     return
 }
 
+// Full name: core::ptr::non_null::NonNull
 #[lang_item("NonNull")]
-pub struct core::ptr::non_null::NonNull<T> =
-{
+pub struct NonNull<T> {
   pointer: *const T,
 }
 
+// Full name: core::marker::PhantomData
 #[lang_item("phantom_data")]
-pub struct core::marker::PhantomData<T> = {}
+pub struct PhantomData<T> {}
 
+// Full name: core::ptr::unique::Unique
 #[lang_item("ptr_unique")]
-pub struct core::ptr::unique::Unique<T> =
-{
-  pointer: core::ptr::non_null::NonNull<T>,
-  _marker: core::marker::PhantomData<T>,
+pub struct Unique<T> {
+  pointer: NonNull<T>,
+  _marker: PhantomData<T>,
 }
 
-pub struct core::num::niche_types::UsizeNoHighBit =
-{
+// Full name: core::num::niche_types::UsizeNoHighBit
+pub struct UsizeNoHighBit {
   usize,
 }
 
-struct alloc::raw_vec::RawVecInner<A>
+// Full name: alloc::raw_vec::RawVecInner
+struct RawVecInner<A>
   where
-      [@TraitClause0]: core::marker::Sized<A>,
- =
+      [@TraitClause0]: Sized<A>,
 {
-  ptr: core::ptr::unique::Unique<u8>,
-  cap: core::num::niche_types::UsizeNoHighBit,
+  ptr: Unique<u8>,
+  cap: UsizeNoHighBit,
   alloc: A,
 }
 
-struct alloc::raw_vec::RawVec<T, A>
+// Full name: alloc::raw_vec::RawVec
+struct RawVec<T, A>
   where
-      [@TraitClause0]: core::marker::Sized<T>,
-      [@TraitClause1]: core::marker::Sized<A>,
- =
+      [@TraitClause0]: Sized<T>,
+      [@TraitClause1]: Sized<A>,
 {
-  inner: alloc::raw_vec::RawVecInner<A>[@TraitClause1],
-  _marker: core::marker::PhantomData<T>,
+  inner: RawVecInner<A>[@TraitClause1],
+  _marker: PhantomData<T>,
 }
 
+// Full name: alloc::vec::Vec
 #[lang_item("Vec")]
-pub struct alloc::vec::Vec<T, A>
+pub struct Vec<T, A>
   where
-      [@TraitClause0]: core::marker::Sized<T>,
-      [@TraitClause1]: core::marker::Sized<A>,
- =
+      [@TraitClause0]: Sized<T>,
+      [@TraitClause1]: Sized<A>,
 {
-  buf: alloc::raw_vec::RawVec<T, A>[@TraitClause0, @TraitClause1],
+  buf: RawVec<T, A>[@TraitClause0, @TraitClause1],
   len: usize,
 }
 
+// Full name: alloc::alloc::Global
 #[lang_item("global_alloc_ty")]
-pub struct alloc::alloc::Global = {}
+pub struct Global {}
 
-fn test_crate::vec(@1: alloc::vec::Vec<u32, alloc::alloc::Global>[core::marker::Sized<u32>, core::marker::Sized<alloc::alloc::Global>])
+// Full name: test_crate::vec
+fn vec(@1: Vec<u32, Global>[Sized<u32>, Sized<Global>])
 {
     let @0: (); // return
-    let _x@1: alloc::vec::Vec<u32, alloc::alloc::Global>[core::marker::Sized<u32>, core::marker::Sized<alloc::alloc::Global>]; // arg #1
+    let _x@1: Vec<u32, Global>[Sized<u32>, Sized<Global>]; // arg #1
 
     @0 := ()
     drop _x@1
@@ -210,7 +224,8 @@ pub fn core::num::{usize}#11::MAX() -> usize
 
 pub const core::num::{usize}#11::MAX: usize = core::num::{usize}#11::MAX()
 
-fn test_crate::max() -> usize
+// Full name: test_crate::max
+fn max() -> usize
 {
     let @0: usize; // return
     let @1: usize; // anonymous local
@@ -221,17 +236,19 @@ fn test_crate::max() -> usize
     return
 }
 
+// Full name: core::cmp::PartialEq
 #[lang_item("eq")]
-pub trait core::cmp::PartialEq<Self, Rhs>
+pub trait PartialEq<Self, Rhs>
 {
-    fn eq<'_0, '_1> = core::cmp::PartialEq::eq<'_0_0, '_0_1, Self, Rhs>
-    fn ne<'_0, '_1> = core::cmp::PartialEq::ne<'_0_0, '_0_1, Self, Rhs>
+    fn eq<'_0, '_1> = eq<'_0_0, '_0_1, Self, Rhs>
+    fn ne<'_0, '_1> = ne<'_0_0, '_0_1, Self, Rhs>
 }
 
-fn test_crate::partial_eq<T>(@1: T)
+// Full name: test_crate::partial_eq
+fn partial_eq<T>(@1: T)
 where
-    [@TraitClause0]: core::marker::Sized<T>,
-    [@TraitClause1]: core::cmp::PartialEq<T, T>,
+    [@TraitClause0]: Sized<T>,
+    [@TraitClause1]: PartialEq<T, T>,
 {
     let @0: (); // return
     let _x@1: T; // arg #1
@@ -242,29 +259,32 @@ where
     return
 }
 
+// Full name: core::convert::From
 #[lang_item("From")]
-pub trait core::convert::From<Self, T>
+pub trait From<Self, T>
 {
-    parent_clause0 : [@TraitClause0]: core::marker::Sized<Self>
-    parent_clause1 : [@TraitClause1]: core::marker::Sized<T>
+    parent_clause0 : [@TraitClause0]: Sized<Self>
+    parent_clause1 : [@TraitClause1]: Sized<T>
     fn from = core::convert::From::from<Self, T>
 }
 
 #[lang_item("from_fn")]
 pub fn core::convert::From::from<Self, T>(@1: T) -> Self
 
-impl core::convert::num::{impl core::convert::From<i32> for i64}#83 : core::convert::From<i64, i32>
-{
-    parent_clause0 = core::marker::Sized<i64>
-    parent_clause1 = core::marker::Sized<i32>
-    fn from = core::convert::num::{impl core::convert::From<i32> for i64}#83::from
+// Full name: core::convert::num::{impl From<i32> for i64}#83
+impl From<i32> for i64 {
+    parent_clause0 = Sized<i64>
+    parent_clause1 = Sized<i32>
+    fn from = {impl From<i32> for i64}#83::from
 }
 
+// Full name: core::cmp::PartialEq::eq
 #[lang_item("cmp_partialeq_eq")]
-pub fn core::cmp::PartialEq::eq<'_0, '_1, Self, Rhs>(@1: &'_0 (Self), @2: &'_1 (Rhs)) -> bool
+pub fn eq<'_0, '_1, Self, Rhs>(@1: &'_0 (Self), @2: &'_1 (Rhs)) -> bool
 
+// Full name: core::cmp::PartialEq::ne
 #[lang_item("cmp_partialeq_ne")]
-pub fn core::cmp::PartialEq::ne<'_0, '_1, Self, Rhs>(@1: &'_0 (Self), @2: &'_1 (Rhs)) -> bool
+pub fn ne<'_0, '_1, Self, Rhs>(@1: &'_0 (Self), @2: &'_1 (Rhs)) -> bool
 {
     let @0: bool; // return
     let self@1: &'_ (Self); // arg #1

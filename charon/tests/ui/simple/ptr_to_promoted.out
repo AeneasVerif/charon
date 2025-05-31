@@ -1,6 +1,7 @@
 # Final LLBC before serialization:
 
-fn test_crate::main()
+// Full name: test_crate::main
+fn main()
 {
     let @0: (); // return
     let x@1: *const u8; // local

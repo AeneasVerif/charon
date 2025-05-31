@@ -1,34 +1,39 @@
 # Final LLBC before serialization:
 
+// Full name: core::marker::Sized
 #[lang_item("sized")]
-pub trait core::marker::Sized<Self>
+pub trait Sized<Self>
 
-trait test_crate::Iterator<Self, Self_Item>
+// Full name: test_crate::Iterator
+trait Iterator<Self, Self_Item>
 {
-    parent_clause0 : [@TraitClause0]: core::marker::Sized<Self_Item>
+    parent_clause0 : [@TraitClause0]: Sized<Self_Item>
 }
 
-trait test_crate::IntoIterator<Self, Self_Item, Self_IntoIter>
+// Full name: test_crate::IntoIterator
+trait IntoIterator<Self, Self_Item, Self_IntoIter>
 {
-    parent_clause0 : [@TraitClause0]: core::marker::Sized<Self_Item>
-    parent_clause1 : [@TraitClause1]: core::marker::Sized<Self_IntoIter>
-    parent_clause2 : [@TraitClause2]: test_crate::Iterator<Self_IntoIter, Self_Item>
+    parent_clause0 : [@TraitClause0]: Sized<Self_Item>
+    parent_clause1 : [@TraitClause1]: Sized<Self_IntoIter>
+    parent_clause2 : [@TraitClause2]: Iterator<Self_IntoIter, Self_Item>
 }
 
-impl test_crate::{impl test_crate::IntoIterator<Clause1_Item, I> for I}<I, Clause1_Item> : test_crate::IntoIterator<I, Clause1_Item, I>
+// Full name: test_crate::{impl IntoIterator<Clause1_Item, I> for I}
+impl<I, Clause1_Item> IntoIterator<Clause1_Item, I> for I
 where
-    [@TraitClause0]: core::marker::Sized<I>,
-    [@TraitClause1]: test_crate::Iterator<I, Clause1_Item>,
+    [@TraitClause0]: Sized<I>,
+    [@TraitClause1]: Iterator<I, Clause1_Item>,
 {
     parent_clause0 = @TraitClause1::parent_clause0
     parent_clause1 = @TraitClause0
     parent_clause2 = @TraitClause1
 }
 
-fn test_crate::callee<T, Clause1_Item>(@1: Clause1_Item) -> Clause1_Item
+// Full name: test_crate::callee
+fn callee<T, Clause1_Item>(@1: Clause1_Item) -> Clause1_Item
 where
-    [@TraitClause0]: core::marker::Sized<T>,
-    [@TraitClause1]: test_crate::Iterator<T, Clause1_Item>,
+    [@TraitClause0]: Sized<T>,
+    [@TraitClause1]: Iterator<T, Clause1_Item>,
 {
     let @0: Clause1_Item; // return
     let t@1: Clause1_Item; // arg #1
@@ -38,11 +43,12 @@ where
     return
 }
 
-fn test_crate::caller<T, Clause1_Item, Clause2_Item, Clause2_IntoIter>(@1: Clause1_Item) -> Clause2_Item
+// Full name: test_crate::caller
+fn caller<T, Clause1_Item, Clause2_Item, Clause2_IntoIter>(@1: Clause1_Item) -> Clause2_Item
 where
-    [@TraitClause0]: core::marker::Sized<T>,
-    [@TraitClause1]: test_crate::Iterator<T, Clause1_Item>,
-    [@TraitClause2]: test_crate::IntoIterator<T, Clause2_Item, Clause2_IntoIter>,
+    [@TraitClause0]: Sized<T>,
+    [@TraitClause1]: Iterator<T, Clause1_Item>,
+    [@TraitClause2]: IntoIterator<T, Clause2_Item, Clause2_IntoIter>,
 {
     let @0: Clause2_Item; // return
     let t@1: Clause1_Item; // arg #1
@@ -50,34 +56,39 @@ where
 
     storage_live(@2)
     @2 := move (t@1)
-    @0 := test_crate::callee<T, Clause1_Item>[@TraitClause0, @TraitClause1](move (@2))
+    @0 := callee<T, Clause1_Item>[@TraitClause0, @TraitClause1](move (@2))
     storage_dead(@2)
     drop t@1
     return
 }
 
-trait test_crate::X<Self, Self_Assoc>
+// Full name: test_crate::X
+trait X<Self, Self_Assoc>
 {
-    parent_clause0 : [@TraitClause0]: core::marker::Sized<Self_Assoc>
-    fn method<'_0> = test_crate::X::method<'_0_0, Self, Self_Assoc>
+    parent_clause0 : [@TraitClause0]: Sized<Self_Assoc>
+    fn method<'_0> = method<'_0_0, Self, Self_Assoc>
 }
 
-trait test_crate::A<Self, Self_Clause0_Assoc>
+// Full name: test_crate::A
+trait A<Self, Self_Clause0_Assoc>
 {
-    parent_clause0 : [@TraitClause0]: test_crate::X<Self, Self_Clause0_Assoc>
+    parent_clause0 : [@TraitClause0]: X<Self, Self_Clause0_Assoc>
 }
 
-trait test_crate::B<Self, Self_Clause0_Assoc>
+// Full name: test_crate::B
+trait B<Self, Self_Clause0_Assoc>
 {
-    parent_clause0 : [@TraitClause0]: test_crate::X<Self, Self_Clause0_Assoc>
+    parent_clause0 : [@TraitClause0]: X<Self, Self_Clause0_Assoc>
 }
 
-fn test_crate::X::method<'_0, Self, Self_Assoc>(@1: &'_0 (Self)) -> Self_Assoc
+// Full name: test_crate::X::method
+fn method<'_0, Self, Self_Assoc>(@1: &'_0 (Self)) -> Self_Assoc
 
-fn test_crate::a<T, Clause1_Clause0_Assoc>(@1: T) -> Clause1_Clause0_Assoc
+// Full name: test_crate::a
+fn a<T, Clause1_Clause0_Assoc>(@1: T) -> Clause1_Clause0_Assoc
 where
-    [@TraitClause0]: core::marker::Sized<T>,
-    [@TraitClause1]: test_crate::A<T, Clause1_Clause0_Assoc>,
+    [@TraitClause0]: Sized<T>,
+    [@TraitClause1]: A<T, Clause1_Clause0_Assoc>,
 {
     let @0: Clause1_Clause0_Assoc; // return
     let x@1: T; // arg #1
@@ -91,10 +102,11 @@ where
     return
 }
 
-fn test_crate::b<T, Clause1_Clause0_Assoc>(@1: T) -> Clause1_Clause0_Assoc
+// Full name: test_crate::b
+fn b<T, Clause1_Clause0_Assoc>(@1: T) -> Clause1_Clause0_Assoc
 where
-    [@TraitClause0]: core::marker::Sized<T>,
-    [@TraitClause1]: test_crate::B<T, Clause1_Clause0_Assoc>,
+    [@TraitClause0]: Sized<T>,
+    [@TraitClause1]: B<T, Clause1_Clause0_Assoc>,
 {
     let @0: Clause1_Clause0_Assoc; // return
     let x@1: T; // arg #1
@@ -108,25 +120,28 @@ where
     return
 }
 
+// Full name: core::clone::Clone
 #[lang_item("clone")]
-pub trait core::clone::Clone<Self>
+pub trait Clone<Self>
 {
-    parent_clause0 : [@TraitClause0]: core::marker::Sized<Self>
-    fn clone<'_0> = core::clone::Clone::clone<'_0_0, Self>
+    parent_clause0 : [@TraitClause0]: Sized<Self>
+    fn clone<'_0> = clone<'_0_0, Self>
 }
 
+// Full name: core::marker::Copy
 #[lang_item("copy")]
-pub trait core::marker::Copy<Self>
+pub trait Copy<Self>
 {
-    parent_clause0 : [@TraitClause0]: core::clone::Clone<Self>
+    parent_clause0 : [@TraitClause0]: Clone<Self>
 }
 
-fn test_crate::x<T, Clause1_Clause0_Assoc, Clause2_Clause0_Assoc>(@1: T) -> (Clause1_Clause0_Assoc, Clause1_Clause0_Assoc)
+// Full name: test_crate::x
+fn x<T, Clause1_Clause0_Assoc, Clause2_Clause0_Assoc>(@1: T) -> (Clause1_Clause0_Assoc, Clause1_Clause0_Assoc)
 where
-    [@TraitClause0]: core::marker::Sized<T>,
-    [@TraitClause1]: test_crate::A<T, Clause1_Clause0_Assoc>,
-    [@TraitClause2]: test_crate::B<T, Clause2_Clause0_Assoc>,
-    [@TraitClause3]: core::marker::Copy<T>,
+    [@TraitClause0]: Sized<T>,
+    [@TraitClause1]: A<T, Clause1_Clause0_Assoc>,
+    [@TraitClause2]: B<T, Clause2_Clause0_Assoc>,
+    [@TraitClause3]: Copy<T>,
 {
     let @0: (Clause1_Clause0_Assoc, Clause1_Clause0_Assoc); // return
     let x@1: T; // arg #1
@@ -138,12 +153,12 @@ where
     storage_live(@2)
     storage_live(@3)
     @3 := copy (x@1)
-    @2 := test_crate::a<T, Clause1_Clause0_Assoc>[@TraitClause0, @TraitClause1](move (@3))
+    @2 := a<T, Clause1_Clause0_Assoc>[@TraitClause0, @TraitClause1](move (@3))
     storage_dead(@3)
     storage_live(@4)
     storage_live(@5)
     @5 := copy (x@1)
-    @4 := test_crate::b<T, Clause2_Clause0_Assoc>[@TraitClause0, @TraitClause2](move (@5))
+    @4 := b<T, Clause2_Clause0_Assoc>[@TraitClause0, @TraitClause2](move (@5))
     storage_dead(@5)
     @0 := (move (@2), move (@4))
     drop @4
@@ -153,8 +168,9 @@ where
     return
 }
 
+// Full name: core::clone::Clone::clone
 #[lang_item("clone_fn")]
-pub fn core::clone::Clone::clone<'_0, Self>(@1: &'_0 (Self)) -> Self
+pub fn clone<'_0, Self>(@1: &'_0 (Self)) -> Self
 
 
 

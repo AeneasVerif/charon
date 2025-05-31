@@ -1,10 +1,11 @@
 # Final LLBC before serialization:
 
-struct test_crate::main::AssertIsAsBytes = {}
+struct test_crate::main::AssertIsAsBytes {}
 
-struct test_crate::main::AssertIsAsBytes#1 = {}
+struct test_crate::main::AssertIsAsBytes#1 {}
 
-fn test_crate::main()
+// Full name: test_crate::main
+fn main()
 {
     let @0: (); // return
     let @1: (); // anonymous local

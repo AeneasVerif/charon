@@ -10,7 +10,8 @@ fn test_crate::CONST() -> u8
 
 const test_crate::CONST: u8 = test_crate::CONST()
 
-fn test_crate::f0()
+// Full name: test_crate::f0
+fn f0()
 {
     let @0: (); // return
     let @1: bool; // anonymous local
@@ -49,7 +50,8 @@ fn test_crate::f0()
     return
 }
 
-fn test_crate::f1<'_0>(@1: &'_0 (Array<u8, 1 : usize>))
+// Full name: test_crate::f1
+fn f1<'_0>(@1: &'_0 (Array<u8, 1 : usize>))
 {
     let @0: (); // return
     let serialized@1: &'_ (Array<u8, 1 : usize>); // arg #1

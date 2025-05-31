@@ -54,7 +54,7 @@ fn charon_cargo_p_crate2() -> Result<()> {
         &["cargo", "--print-llbc", "--", "-p", "crate2", "--quiet"],
         "tests/cargo/workspace",
         |stdout, cmd| {
-            let search = "pub fn crate2::";
+            let search = "pub fn extra_random_number";
             ensure!(
                 stdout.contains(search),
                 "Output of `{cmd}` is:\n{stdout:?}\nIt doesn't contain {search:?}."
@@ -67,8 +67,8 @@ fn charon_cargo_p_crate2() -> Result<()> {
 #[test]
 fn charon_cargo_features() -> Result<()> {
     let dir = "tests/cargo/dependencies";
-    let main = "fn test_cargo_dependencies::main";
-    let take_mut = "pub fn take_mut::take";
+    let main = "fn main";
+    let take_mut = "pub fn take";
 
     charon(
         &["cargo", "--print-llbc", "--", "-F", "test_feature"],
@@ -182,7 +182,7 @@ fn charon_rustc() -> Result<()> {
     let args = &["rustc", "--print-llbc", "--", "--crate-type=lib", path];
 
     // Call rustc without specifying --crate-name, so default to lib as the name.
-    let fn_ = "pub fn lib::random_number";
+    let fn_ = "pub fn random_number";
 
     charon(args, ".", |stdout, cmd| {
         ensure!(

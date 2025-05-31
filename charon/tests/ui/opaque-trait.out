@@ -1,6 +1,7 @@
 # Final LLBC before serialization:
 
-trait test_crate::Trait<Self>
+// Full name: test_crate::Trait
+trait Trait<Self>
 {
     const CONST1 : usize
     const CONST2 : usize
@@ -9,7 +10,8 @@ trait test_crate::Trait<Self>
     fn method2 = test_crate::Trait::method2<Self>
 }
 
-fn test_crate::{impl test_crate::Trait for ()}#1::CONST1() -> usize
+// Full name: test_crate::{impl Trait for ()}#1::CONST1
+fn {impl Trait for ()}#1::CONST1() -> usize
 {
     let @0: usize; // return
 
@@ -17,9 +19,11 @@ fn test_crate::{impl test_crate::Trait for ()}#1::CONST1() -> usize
     return
 }
 
-const test_crate::{impl test_crate::Trait for ()}#1::CONST1: usize = test_crate::{impl test_crate::Trait for ()}#1::CONST1()
+// Full name: test_crate::{impl Trait for ()}#1::CONST1
+const {impl Trait for ()}#1::CONST1: usize = {impl Trait for ()}#1::CONST1()
 
-fn test_crate::{impl test_crate::Trait for ()}#1::CONST2() -> usize
+// Full name: test_crate::{impl Trait for ()}#1::CONST2
+fn {impl Trait for ()}#1::CONST2() -> usize
 {
     let @0: usize; // return
 
@@ -27,9 +31,11 @@ fn test_crate::{impl test_crate::Trait for ()}#1::CONST2() -> usize
     return
 }
 
-const test_crate::{impl test_crate::Trait for ()}#1::CONST2: usize = test_crate::{impl test_crate::Trait for ()}#1::CONST2()
+// Full name: test_crate::{impl Trait for ()}#1::CONST2
+const {impl Trait for ()}#1::CONST2: usize = {impl Trait for ()}#1::CONST2()
 
-fn test_crate::{impl test_crate::Trait for ()}#1::CONST3() -> usize
+// Full name: test_crate::{impl Trait for ()}#1::CONST3
+fn {impl Trait for ()}#1::CONST3() -> usize
 {
     let @0: usize; // return
 
@@ -37,9 +43,10 @@ fn test_crate::{impl test_crate::Trait for ()}#1::CONST3() -> usize
     return
 }
 
-const test_crate::{impl test_crate::Trait for ()}#1::CONST3: usize = test_crate::{impl test_crate::Trait for ()}#1::CONST3()
+// Full name: test_crate::{impl Trait for ()}#1::CONST3
+const {impl Trait for ()}#1::CONST3: usize = {impl Trait for ()}#1::CONST3()
 
-fn test_crate::{impl test_crate::Trait for ()}#1::method1()
+fn test_crate::{impl Trait for ()}#1::method1()
 {
     let @0: (); // return
 
@@ -48,7 +55,7 @@ fn test_crate::{impl test_crate::Trait for ()}#1::method1()
     return
 }
 
-fn test_crate::{impl test_crate::Trait for ()}#1::method2()
+fn test_crate::{impl Trait for ()}#1::method2()
 {
     let @0: (); // return
 
@@ -57,13 +64,13 @@ fn test_crate::{impl test_crate::Trait for ()}#1::method2()
     return
 }
 
-impl test_crate::{impl test_crate::Trait for ()}#1 : test_crate::Trait<()>
-{
-    const CONST1 = test_crate::{impl test_crate::Trait for ()}#1::CONST1
-    const CONST2 = test_crate::{impl test_crate::Trait for ()}#1::CONST2
-    const CONST3 = test_crate::{impl test_crate::Trait for ()}#1::CONST3
-    fn method1 = test_crate::{impl test_crate::Trait for ()}#1::method1
-    fn method2 = test_crate::{impl test_crate::Trait for ()}#1::method2
+// Full name: test_crate::{impl Trait for ()}#1
+impl Trait for () {
+    const CONST1 = {impl Trait for ()}#1::CONST1
+    const CONST2 = {impl Trait for ()}#1::CONST2
+    const CONST3 = {impl Trait for ()}#1::CONST3
+    fn method1 = test_crate::{impl Trait for ()}#1::method1
+    fn method2 = test_crate::{impl Trait for ()}#1::method2
 }
 
 fn test_crate::Trait::CONST1<Self>() -> usize
@@ -76,7 +83,8 @@ fn test_crate::Trait::CONST1<Self>() -> usize
 
 const test_crate::Trait::CONST1<Self>: usize = test_crate::Trait::CONST1()
 
-fn test_crate::{impl test_crate::Trait for u8}::CONST2() -> usize
+// Full name: test_crate::{impl Trait for u8}::CONST2
+fn {impl Trait for u8}::CONST2() -> usize
 {
     let @0: usize; // return
 
@@ -84,7 +92,8 @@ fn test_crate::{impl test_crate::Trait for u8}::CONST2() -> usize
     return
 }
 
-const test_crate::{impl test_crate::Trait for u8}::CONST2: usize = test_crate::{impl test_crate::Trait for u8}::CONST2()
+// Full name: test_crate::{impl Trait for u8}::CONST2
+const {impl Trait for u8}::CONST2: usize = {impl Trait for u8}::CONST2()
 
 fn test_crate::Trait::CONST3<Self>() -> usize
 {
@@ -96,7 +105,7 @@ fn test_crate::Trait::CONST3<Self>() -> usize
 
 const test_crate::Trait::CONST3<Self>: usize = test_crate::Trait::CONST3()
 
-fn test_crate::{impl test_crate::Trait for u8}::method1()
+fn test_crate::{impl Trait for u8}::method1()
 {
     let @0: (); // return
 
@@ -105,7 +114,8 @@ fn test_crate::{impl test_crate::Trait for u8}::method1()
     return
 }
 
-fn test_crate::{impl test_crate::Trait for u8}::method2()
+// Full name: test_crate::{impl Trait for u8}::method2
+fn {impl Trait for u8}::method2()
 {
     let @0: (); // return
 
@@ -114,17 +124,18 @@ fn test_crate::{impl test_crate::Trait for u8}::method2()
     return
 }
 
-impl test_crate::{impl test_crate::Trait for u8} : test_crate::Trait<u8>
-{
+// Full name: test_crate::{impl Trait for u8}
+impl Trait for u8 {
     const CONST1 = test_crate::Trait::CONST1<u8>
-    const CONST2 = test_crate::{impl test_crate::Trait for u8}::CONST2
+    const CONST2 = {impl Trait for u8}::CONST2
     const CONST3 = test_crate::Trait::CONST3<u8>
-    fn method1 = test_crate::{impl test_crate::Trait for u8}::method1
-    fn method2 = test_crate::{impl test_crate::Trait for u8}::method2
+    fn method1 = test_crate::{impl Trait for u8}::method1
+    fn method2 = {impl Trait for u8}::method2
 }
 
+// Full name: core::marker::Sized
 #[lang_item("sized")]
-pub trait core::marker::Sized<Self>
+pub trait Sized<Self>
 
 fn test_crate::Trait::method1<Self>()
 {
@@ -135,10 +146,11 @@ fn test_crate::Trait::method1<Self>()
     return
 }
 
-fn test_crate::use_method<T>()
+// Full name: test_crate::use_method
+fn use_method<T>()
 where
-    [@TraitClause0]: core::marker::Sized<T>,
-    [@TraitClause1]: test_crate::Trait<T>,
+    [@TraitClause0]: Sized<T>,
+    [@TraitClause1]: Trait<T>,
 {
     let @0: (); // return
     let @1: (); // anonymous local

@@ -1,32 +1,35 @@
 # Final LLBC before serialization:
 
+// Full name: core::marker::Sized
 #[lang_item("sized")]
-pub trait core::marker::Sized<Self>
+pub trait Sized<Self>
 
-pub struct test_crate::Foo<F>
+// Full name: test_crate::Foo
+pub struct Foo<F>
   where
-      [@TraitClause0]: core::marker::Sized<F>,
- =
+      [@TraitClause0]: Sized<F>,
 {
   F,
 }
 
-struct test_crate::{test_crate::Foo<F>[@TraitClause0]}::method::closure<F, T>
+// Full name: test_crate::{Foo<F>[@TraitClause0]}::method::closure
+struct closure<F, T>
   where
-      [@TraitClause0]: core::marker::Sized<F>,
-      [@TraitClause1]: core::marker::Sized<T>,
- = {}
+      [@TraitClause0]: Sized<F>,
+      [@TraitClause1]: Sized<T>,
+{}
 
-pub fn test_crate::{test_crate::Foo<F>[@TraitClause0]}::method<F, T>()
+// Full name: test_crate::{Foo<F>[@TraitClause0]}::method
+pub fn method<F, T>()
 where
-    [@TraitClause0]: core::marker::Sized<F>,
-    [@TraitClause1]: core::marker::Sized<T>,
+    [@TraitClause0]: Sized<F>,
+    [@TraitClause1]: Sized<T>,
 {
     let @0: (); // return
-    let _closure@1: test_crate::{test_crate::Foo<F>[@TraitClause0]}::method::closure<F, T>[@TraitClause0, @TraitClause1]; // local
+    let _closure@1: closure<F, T>[@TraitClause0, @TraitClause1]; // local
 
     storage_live(_closure@1)
-    _closure@1 := test_crate::{test_crate::Foo<F>[@TraitClause0]}::method::closure {  }
+    _closure@1 := closure {  }
     @0 := ()
     storage_dead(_closure@1)
     @0 := ()

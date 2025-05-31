@@ -1,6 +1,7 @@
 # Final LLBC before serialization:
 
-fn test_crate::f() -> usize
+// Full name: test_crate::f
+fn f() -> usize
 {
     let @0: usize; // return
     let i@1: i32; // local

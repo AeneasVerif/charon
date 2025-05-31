@@ -1,14 +1,16 @@
 # Final LLBC before serialization:
 
-struct test_crate::Foo =
-{
+// Full name: test_crate::Foo
+struct Foo {
   *const (),
 }
 
+// Full name: core::marker::Send
 #[lang_item("Send")]
-pub trait core::marker::Send<Self>
+pub trait Send<Self>
 
-impl test_crate::{impl core::marker::Send for test_crate::Foo} : core::marker::Send<test_crate::Foo>
+// Full name: test_crate::{impl Send for Foo}
+impl Send for Foo {}
 
 
 

@@ -1,20 +1,21 @@
 # Final LLBC before serialization:
 
-union test_crate::Foo =
-{
+// Full name: test_crate::Foo
+union Foo {
   one: u64,
   two: Array<u32, 2 : usize>,
 }
 
-fn test_crate::use_union()
+// Full name: test_crate::use_union
+fn use_union()
 {
     let @0: (); // return
-    let one@1: test_crate::Foo; // local
+    let one@1: Foo; // local
     let @2: (); // anonymous local
     let _two@3: Array<u32, 2 : usize>; // local
 
     storage_live(one@1)
-    one@1 := test_crate::Foo { one: const (42 : u64) }
+    one@1 := Foo { one: const (42 : u64) }
     storage_live(@2)
     (one@1).one := const (43 : u64)
     storage_dead(@2)

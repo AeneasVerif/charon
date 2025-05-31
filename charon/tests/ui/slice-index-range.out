@@ -1,46 +1,52 @@
 # Final LLBC before serialization:
 
+// Full name: core::marker::Sized
 #[lang_item("sized")]
-pub trait core::marker::Sized<Self>
+pub trait Sized<Self>
 
+// Full name: core::ops::range::Range
 #[lang_item("Range")]
-pub struct core::ops::range::Range<Idx>
+pub struct Range<Idx>
   where
-      [@TraitClause0]: core::marker::Sized<Idx>,
- =
+      [@TraitClause0]: Sized<Idx>,
 {
   start: Idx,
   end: Idx,
 }
 
+// Full name: core::ops::index::Index
 #[lang_item("index")]
-pub trait core::ops::index::Index<Self, Idx>
+pub trait Index<Self, Idx>
 {
     type Output
     fn index<'_0> = core::ops::index::Index::index<'_0_0, Self, Idx>
 }
 
-pub fn core::array::{impl core::ops::index::Index<I> for Array<T, const N : usize>}#15::index<'_0, T, I, const N : usize>(@1: &'_0 (Array<T, const N : usize>), @2: I) -> &'_0 (@TraitClause2::Output)
+// Full name: core::array::{impl Index<I> for Array<T, const N : usize>}#15::index
+pub fn {impl Index<I> for Array<T, const N : usize>}#15::index<'_0, T, I, const N : usize>(@1: &'_0 (Array<T, const N : usize>), @2: I) -> &'_0 (@TraitClause2::Output)
 where
-    [@TraitClause0]: core::marker::Sized<T>,
-    [@TraitClause1]: core::marker::Sized<I>,
-    [@TraitClause2]: core::ops::index::Index<Slice<T>, I>,
+    [@TraitClause0]: Sized<T>,
+    [@TraitClause1]: Sized<I>,
+    [@TraitClause2]: Index<Slice<T>, I>,
 
-pub trait core::slice::index::private_slice_index::Sealed<Self>
+// Full name: core::slice::index::private_slice_index::Sealed
+pub trait Sealed<Self>
 
+// Full name: core::option::Option
 #[lang_item("Option")]
-pub enum core::option::Option<T>
+pub enum Option<T>
   where
-      [@TraitClause0]: core::marker::Sized<T>,
- =
-|  None()
-|  Some(T)
-
-
-#[lang_item("SliceIndex")]
-pub trait core::slice::index::SliceIndex<Self, T>
+      [@TraitClause0]: Sized<T>,
 {
-    parent_clause0 : [@TraitClause0]: core::slice::index::private_slice_index::Sealed<Self>
+  None,
+  Some(T),
+}
+
+// Full name: core::slice::index::SliceIndex
+#[lang_item("SliceIndex")]
+pub trait SliceIndex<Self, T>
+{
+    parent_clause0 : [@TraitClause0]: Sealed<Self>
     type Output
     fn get<'_0> = core::slice::index::SliceIndex::get<'_0_0, Self, T>
     fn get_mut<'_0> = core::slice::index::SliceIndex::get_mut<'_0_0, Self, T>
@@ -52,11 +58,12 @@ pub trait core::slice::index::SliceIndex<Self, T>
 
 pub fn core::slice::index::SliceIndex::index<'_0, Self, T>(@1: Self, @2: &'_0 (T)) -> &'_0 (Self::Output)
 
-pub fn core::slice::index::{impl core::ops::index::Index<I> for Slice<T>}::index<'_0, T, I>(@1: &'_0 (Slice<T>), @2: I) -> &'_0 (@TraitClause2::Output)
+// Full name: core::slice::index::{impl Index<I> for Slice<T>}::index
+pub fn {impl Index<I> for Slice<T>}::index<'_0, T, I>(@1: &'_0 (Slice<T>), @2: I) -> &'_0 (@TraitClause2::Output)
 where
-    [@TraitClause0]: core::marker::Sized<T>,
-    [@TraitClause1]: core::marker::Sized<I>,
-    [@TraitClause2]: core::slice::index::SliceIndex<I, Slice<T>>,
+    [@TraitClause0]: Sized<T>,
+    [@TraitClause1]: Sized<I>,
+    [@TraitClause2]: SliceIndex<I, Slice<T>>,
 {
     let @0: &'_ (@TraitClause2::Output); // return
     let self@1: &'_ (Slice<T>); // arg #1
@@ -66,26 +73,29 @@ where
     return
 }
 
-impl core::slice::index::{impl core::ops::index::Index<I> for Slice<T>}<T, I> : core::ops::index::Index<Slice<T>, I>
+// Full name: core::slice::index::{impl Index<I> for Slice<T>}
+impl<T, I> Index<I> for Slice<T>
 where
-    [@TraitClause0]: core::marker::Sized<T>,
-    [@TraitClause1]: core::marker::Sized<I>,
-    [@TraitClause2]: core::slice::index::SliceIndex<I, Slice<T>>,
+    [@TraitClause0]: Sized<T>,
+    [@TraitClause1]: Sized<I>,
+    [@TraitClause2]: SliceIndex<I, Slice<T>>,
 {
     type Output = @TraitClause2::Output
-    fn index<'_0> = core::slice::index::{impl core::ops::index::Index<I> for Slice<T>}::index<'_0_0, T, I>[@TraitClause0, @TraitClause1, @TraitClause2]
+    fn index<'_0> = {impl Index<I> for Slice<T>}::index<'_0_0, T, I>[@TraitClause0, @TraitClause1, @TraitClause2]
 }
 
-impl core::slice::index::private_slice_index::{impl core::slice::index::private_slice_index::Sealed for core::ops::range::Range<usize>[core::marker::Sized<usize>]}#1 : core::slice::index::private_slice_index::Sealed<core::ops::range::Range<usize>[core::marker::Sized<usize>]>
+// Full name: core::slice::index::private_slice_index::{impl Sealed for Range<usize>[Sized<usize>]}#1
+impl Sealed for Range<usize>[Sized<usize>] {}
 
-pub fn core::slice::index::{impl core::slice::index::SliceIndex<Slice<T>> for core::ops::range::Range<usize>[core::marker::Sized<usize>]}#4::get<'_0, T>(@1: core::ops::range::Range<usize>[core::marker::Sized<usize>], @2: &'_0 (Slice<T>)) -> core::option::Option<&'_0 (Slice<T>)>[core::marker::Sized<&'_0 (Slice<T>)>]
+// Full name: core::slice::index::{impl SliceIndex<Slice<T>> for Range<usize>[Sized<usize>]}#4::get
+pub fn {impl SliceIndex<Slice<T>> for Range<usize>[Sized<usize>]}#4::get<'_0, T>(@1: Range<usize>[Sized<usize>], @2: &'_0 (Slice<T>)) -> Option<&'_0 (Slice<T>)>[Sized<&'_0 (Slice<T>)>]
 where
-    [@TraitClause0]: core::marker::Sized<T>,
+    [@TraitClause0]: Sized<T>,
 {
-    let @0: core::option::Option<&'_ (Slice<T>)>[core::marker::Sized<&'_ (Slice<T>)>]; // return
-    let self@1: core::ops::range::Range<usize>[core::marker::Sized<usize>]; // arg #1
+    let @0: Option<&'_ (Slice<T>)>[Sized<&'_ (Slice<T>)>]; // return
+    let self@1: Range<usize>[Sized<usize>]; // arg #1
     let slice@2: &'_ (Slice<T>); // arg #2
-    let @3: core::option::Option<usize>[core::marker::Sized<usize>]; // anonymous local
+    let @3: Option<usize>[Sized<usize>]; // anonymous local
     let self@4: usize; // local
     let rhs@5: usize; // local
     let new_len@6: usize; // local
@@ -98,7 +108,7 @@ where
     let @13: usize; // anonymous local
     let @14: *const T; // anonymous local
     let @15: *const T; // anonymous local
-    let @16: core::option::Option<&'_ (Slice<T>)>[core::marker::Sized<&'_ (Slice<T>)>]; // anonymous local
+    let @16: Option<&'_ (Slice<T>)>[Sized<&'_ (Slice<T>)>]; // anonymous local
 
     storage_live(self@4)
     storage_live(rhs@5)
@@ -119,13 +129,13 @@ where
     if move (@12) {
         storage_dead(@12)
         storage_dead(@3)
-        @16 := core::option::Option::None {  }
+        @16 := Option::None {  }
         @0 := move (@16)
     }
     else {
         storage_live(@13)
         @13 := copy (self@4) wrapping.- copy (rhs@5)
-        @3 := core::option::Option::Some { 0: move (@13) }
+        @3 := Option::Some { 0: move (@13) }
         storage_dead(@13)
         storage_dead(@12)
         new_len@6 := copy ((@3 as variant @1).0)
@@ -147,14 +157,14 @@ where
             storage_dead(@14)
             storage_dead(@11)
             @9 := &*(@10)
-            @0 := core::option::Option::Some { 0: copy (@9) }
+            @0 := Option::Some { 0: copy (@9) }
             storage_dead(@10)
             storage_dead(@3)
         }
         else {
             storage_dead(@8)
             storage_dead(@3)
-            @16 := core::option::Option::None {  }
+            @16 := Option::None {  }
             @0 := move (@16)
         }
     }
@@ -162,14 +172,15 @@ where
     return
 }
 
-pub fn core::slice::index::{impl core::slice::index::SliceIndex<Slice<T>> for core::ops::range::Range<usize>[core::marker::Sized<usize>]}#4::get_mut<'_0, T>(@1: core::ops::range::Range<usize>[core::marker::Sized<usize>], @2: &'_0 mut (Slice<T>)) -> core::option::Option<&'_0 mut (Slice<T>)>[core::marker::Sized<&'_0 mut (Slice<T>)>]
+// Full name: core::slice::index::{impl SliceIndex<Slice<T>> for Range<usize>[Sized<usize>]}#4::get_mut
+pub fn {impl SliceIndex<Slice<T>> for Range<usize>[Sized<usize>]}#4::get_mut<'_0, T>(@1: Range<usize>[Sized<usize>], @2: &'_0 mut (Slice<T>)) -> Option<&'_0 mut (Slice<T>)>[Sized<&'_0 mut (Slice<T>)>]
 where
-    [@TraitClause0]: core::marker::Sized<T>,
+    [@TraitClause0]: Sized<T>,
 {
-    let @0: core::option::Option<&'_ mut (Slice<T>)>[core::marker::Sized<&'_ mut (Slice<T>)>]; // return
-    let self@1: core::ops::range::Range<usize>[core::marker::Sized<usize>]; // arg #1
+    let @0: Option<&'_ mut (Slice<T>)>[Sized<&'_ mut (Slice<T>)>]; // return
+    let self@1: Range<usize>[Sized<usize>]; // arg #1
     let slice@2: &'_ mut (Slice<T>); // arg #2
-    let @3: core::option::Option<usize>[core::marker::Sized<usize>]; // anonymous local
+    let @3: Option<usize>[Sized<usize>]; // anonymous local
     let self@4: usize; // local
     let rhs@5: usize; // local
     let new_len@6: usize; // local
@@ -182,7 +193,7 @@ where
     let @13: usize; // anonymous local
     let @14: *mut T; // anonymous local
     let @15: *mut T; // anonymous local
-    let @16: core::option::Option<&'_ mut (Slice<T>)>[core::marker::Sized<&'_ mut (Slice<T>)>]; // anonymous local
+    let @16: Option<&'_ mut (Slice<T>)>[Sized<&'_ mut (Slice<T>)>]; // anonymous local
 
     storage_live(self@4)
     storage_live(rhs@5)
@@ -203,13 +214,13 @@ where
     if move (@12) {
         storage_dead(@12)
         storage_dead(@3)
-        @16 := core::option::Option::None {  }
+        @16 := Option::None {  }
         @0 := move (@16)
     }
     else {
         storage_live(@13)
         @13 := copy (self@4) wrapping.- copy (rhs@5)
-        @3 := core::option::Option::Some { 0: move (@13) }
+        @3 := Option::Some { 0: move (@13) }
         storage_dead(@13)
         storage_dead(@12)
         new_len@6 := copy ((@3 as variant @1).0)
@@ -231,14 +242,14 @@ where
             storage_dead(@14)
             storage_dead(ptr@11)
             @9 := &mut *(@10)
-            @0 := core::option::Option::Some { 0: copy (@9) }
+            @0 := Option::Some { 0: copy (@9) }
             storage_dead(@10)
             storage_dead(@3)
         }
         else {
             storage_dead(@8)
             storage_dead(@3)
-            @16 := core::option::Option::None {  }
+            @16 := Option::None {  }
             @0 := move (@16)
         }
     }
@@ -246,10 +257,12 @@ where
     return
 }
 
+// Full name: core::panicking::panic_nounwind
 #[lang_item("panic_nounwind")]
-pub fn core::panicking::panic_nounwind(@1: &'static (Str)) -> !
+pub fn panic_nounwind(@1: &'static (Str)) -> !
 
-fn core::slice::index::{impl core::slice::index::SliceIndex<Slice<T>> for core::ops::range::Range<usize>[core::marker::Sized<usize>]}#4::get_unchecked::precondition_check(@1: usize, @2: usize, @3: usize)
+// Full name: core::slice::index::{impl SliceIndex<Slice<T>> for Range<usize>[Sized<usize>]}#4::get_unchecked::precondition_check
+fn {impl SliceIndex<Slice<T>> for Range<usize>[Sized<usize>]}#4::get_unchecked::precondition_check(@1: usize, @2: usize, @3: usize)
 {
     let @0: (); // return
     let start@1: usize; // arg #1
@@ -277,15 +290,16 @@ fn core::slice::index::{impl core::slice::index::SliceIndex<Slice<T>> for core::
     }
     else {
     }
-    @6 := core::panicking::panic_nounwind(const ("unsafe precondition(s) violated: slice::get_unchecked requires that the range is within the slice\n\nThis indicates a bug in the program. This Undefined Behavior check is optional, and cannot be relied on for safety."))
+    @6 := panic_nounwind(const ("unsafe precondition(s) violated: slice::get_unchecked requires that the range is within the slice\n\nThis indicates a bug in the program. This Undefined Behavior check is optional, and cannot be relied on for safety."))
 }
 
-pub unsafe fn core::slice::index::{impl core::slice::index::SliceIndex<Slice<T>> for core::ops::range::Range<usize>[core::marker::Sized<usize>]}#4::get_unchecked<T>(@1: core::ops::range::Range<usize>[core::marker::Sized<usize>], @2: *const Slice<T>) -> *const Slice<T>
+// Full name: core::slice::index::{impl SliceIndex<Slice<T>> for Range<usize>[Sized<usize>]}#4::get_unchecked
+pub unsafe fn {impl SliceIndex<Slice<T>> for Range<usize>[Sized<usize>]}#4::get_unchecked<T>(@1: Range<usize>[Sized<usize>], @2: *const Slice<T>) -> *const Slice<T>
 where
-    [@TraitClause0]: core::marker::Sized<T>,
+    [@TraitClause0]: Sized<T>,
 {
     let @0: *const Slice<T>; // return
-    let self@1: core::ops::range::Range<usize>[core::marker::Sized<usize>]; // arg #1
+    let self@1: Range<usize>[Sized<usize>]; // arg #1
     let slice@2: *const Slice<T>; // arg #2
     let @3: bool; // anonymous local
     let @4: (); // anonymous local
@@ -313,7 +327,7 @@ where
         @6 := copy ((self@1).end)
         storage_live(@7)
         @7 := ptr_metadata(copy (slice@2))
-        @4 := core::slice::index::{impl core::slice::index::SliceIndex<Slice<T>> for core::ops::range::Range<usize>[core::marker::Sized<usize>]}#4::get_unchecked::precondition_check(move (@5), move (@6), move (@7))
+        @4 := {impl SliceIndex<Slice<T>> for Range<usize>[Sized<usize>]}#4::get_unchecked::precondition_check(move (@5), move (@6), move (@7))
         storage_dead(@7)
         storage_dead(@6)
         storage_dead(@5)
@@ -336,7 +350,8 @@ where
     return
 }
 
-fn core::slice::index::{impl core::slice::index::SliceIndex<Slice<T>> for core::ops::range::Range<usize>[core::marker::Sized<usize>]}#4::get_unchecked_mut::precondition_check(@1: usize, @2: usize, @3: usize)
+// Full name: core::slice::index::{impl SliceIndex<Slice<T>> for Range<usize>[Sized<usize>]}#4::get_unchecked_mut::precondition_check
+fn {impl SliceIndex<Slice<T>> for Range<usize>[Sized<usize>]}#4::get_unchecked_mut::precondition_check(@1: usize, @2: usize, @3: usize)
 {
     let @0: (); // return
     let start@1: usize; // arg #1
@@ -364,15 +379,16 @@ fn core::slice::index::{impl core::slice::index::SliceIndex<Slice<T>> for core::
     }
     else {
     }
-    @6 := core::panicking::panic_nounwind(const ("unsafe precondition(s) violated: slice::get_unchecked_mut requires that the range is within the slice\n\nThis indicates a bug in the program. This Undefined Behavior check is optional, and cannot be relied on for safety."))
+    @6 := panic_nounwind(const ("unsafe precondition(s) violated: slice::get_unchecked_mut requires that the range is within the slice\n\nThis indicates a bug in the program. This Undefined Behavior check is optional, and cannot be relied on for safety."))
 }
 
-pub unsafe fn core::slice::index::{impl core::slice::index::SliceIndex<Slice<T>> for core::ops::range::Range<usize>[core::marker::Sized<usize>]}#4::get_unchecked_mut<T>(@1: core::ops::range::Range<usize>[core::marker::Sized<usize>], @2: *mut Slice<T>) -> *mut Slice<T>
+// Full name: core::slice::index::{impl SliceIndex<Slice<T>> for Range<usize>[Sized<usize>]}#4::get_unchecked_mut
+pub unsafe fn {impl SliceIndex<Slice<T>> for Range<usize>[Sized<usize>]}#4::get_unchecked_mut<T>(@1: Range<usize>[Sized<usize>], @2: *mut Slice<T>) -> *mut Slice<T>
 where
-    [@TraitClause0]: core::marker::Sized<T>,
+    [@TraitClause0]: Sized<T>,
 {
     let @0: *mut Slice<T>; // return
-    let self@1: core::ops::range::Range<usize>[core::marker::Sized<usize>]; // arg #1
+    let self@1: Range<usize>[Sized<usize>]; // arg #1
     let slice@2: *mut Slice<T>; // arg #2
     let @3: bool; // anonymous local
     let @4: (); // anonymous local
@@ -400,7 +416,7 @@ where
         @6 := copy ((self@1).end)
         storage_live(@7)
         @7 := ptr_metadata(copy (slice@2))
-        @4 := core::slice::index::{impl core::slice::index::SliceIndex<Slice<T>> for core::ops::range::Range<usize>[core::marker::Sized<usize>]}#4::get_unchecked_mut::precondition_check(move (@5), move (@6), move (@7))
+        @4 := {impl SliceIndex<Slice<T>> for Range<usize>[Sized<usize>]}#4::get_unchecked_mut::precondition_check(move (@5), move (@6), move (@7))
         storage_dead(@7)
         storage_dead(@6)
         storage_dead(@5)
@@ -434,7 +450,8 @@ fn core::slice::index::slice_end_index_len_fail::do_panic(@1: usize, @2: usize) 
     @0 := core::slice::index::slice_end_index_len_fail::do_panic::runtime(move (index@1), move (len@2))
 }
 
-fn core::slice::index::slice_end_index_len_fail(@1: usize, @2: usize) -> !
+// Full name: core::slice::index::slice_end_index_len_fail
+fn slice_end_index_len_fail(@1: usize, @2: usize) -> !
 {
     let @0: !; // return
     let index@1: usize; // arg #1
@@ -460,7 +477,8 @@ fn core::slice::index::slice_index_order_fail::do_panic(@1: usize, @2: usize) ->
     @0 := core::slice::index::slice_index_order_fail::do_panic::runtime(move (index@1), move (end@2))
 }
 
-fn core::slice::index::slice_index_order_fail(@1: usize, @2: usize) -> !
+// Full name: core::slice::index::slice_index_order_fail
+fn slice_index_order_fail(@1: usize, @2: usize) -> !
 {
     let @0: !; // return
     let index@1: usize; // arg #1
@@ -475,16 +493,17 @@ fn core::slice::index::slice_index_order_fail(@1: usize, @2: usize) -> !
     @0 := core::slice::index::slice_index_order_fail::do_panic(move (@3), move (@4))
 }
 
-pub fn core::slice::index::{impl core::slice::index::SliceIndex<Slice<T>> for core::ops::range::Range<usize>[core::marker::Sized<usize>]}#4::index<'_0, T>(@1: core::ops::range::Range<usize>[core::marker::Sized<usize>], @2: &'_0 (Slice<T>)) -> &'_0 (Slice<T>)
+// Full name: core::slice::index::{impl SliceIndex<Slice<T>> for Range<usize>[Sized<usize>]}#4::index
+pub fn {impl SliceIndex<Slice<T>> for Range<usize>[Sized<usize>]}#4::index<'_0, T>(@1: Range<usize>[Sized<usize>], @2: &'_0 (Slice<T>)) -> &'_0 (Slice<T>)
 where
-    [@TraitClause0]: core::marker::Sized<T>,
+    [@TraitClause0]: Sized<T>,
 {
     let @0: &'_ (Slice<T>); // return
-    let self@1: core::ops::range::Range<usize>[core::marker::Sized<usize>]; // arg #1
+    let self@1: Range<usize>[Sized<usize>]; // arg #1
     let slice@2: &'_ (Slice<T>); // arg #2
     let @3: !; // anonymous local
     let new_len@4: usize; // local
-    let @5: core::option::Option<usize>[core::marker::Sized<usize>]; // anonymous local
+    let @5: Option<usize>[Sized<usize>]; // anonymous local
     let self@6: usize; // local
     let rhs@7: usize; // local
     let @8: bool; // anonymous local
@@ -519,7 +538,7 @@ where
     else {
         storage_live(@14)
         @14 := copy (self@6) wrapping.- copy (rhs@7)
-        @5 := core::option::Option::Some { 0: move (@14) }
+        @5 := Option::Some { 0: move (@14) }
         storage_dead(@14)
         storage_dead(@13)
         new_len@4 := copy ((@5 as variant @1).0)
@@ -546,23 +565,24 @@ where
             storage_dead(@11)
             return
         }
-        @10 := core::slice::index::slice_end_index_len_fail(move (self@6), move (@9))
+        @10 := slice_end_index_len_fail(move (self@6), move (@9))
     }
     storage_dead(@13)
     storage_dead(@5)
-    @3 := core::slice::index::slice_index_order_fail(move (rhs@7), move (self@6))
+    @3 := slice_index_order_fail(move (rhs@7), move (self@6))
 }
 
-pub fn core::slice::index::{impl core::slice::index::SliceIndex<Slice<T>> for core::ops::range::Range<usize>[core::marker::Sized<usize>]}#4::index_mut<'_0, T>(@1: core::ops::range::Range<usize>[core::marker::Sized<usize>], @2: &'_0 mut (Slice<T>)) -> &'_0 mut (Slice<T>)
+// Full name: core::slice::index::{impl SliceIndex<Slice<T>> for Range<usize>[Sized<usize>]}#4::index_mut
+pub fn {impl SliceIndex<Slice<T>> for Range<usize>[Sized<usize>]}#4::index_mut<'_0, T>(@1: Range<usize>[Sized<usize>], @2: &'_0 mut (Slice<T>)) -> &'_0 mut (Slice<T>)
 where
-    [@TraitClause0]: core::marker::Sized<T>,
+    [@TraitClause0]: Sized<T>,
 {
     let @0: &'_ mut (Slice<T>); // return
-    let self@1: core::ops::range::Range<usize>[core::marker::Sized<usize>]; // arg #1
+    let self@1: Range<usize>[Sized<usize>]; // arg #1
     let slice@2: &'_ mut (Slice<T>); // arg #2
     let @3: !; // anonymous local
     let new_len@4: usize; // local
-    let @5: core::option::Option<usize>[core::marker::Sized<usize>]; // anonymous local
+    let @5: Option<usize>[Sized<usize>]; // anonymous local
     let self@6: usize; // local
     let rhs@7: usize; // local
     let @8: bool; // anonymous local
@@ -597,7 +617,7 @@ where
     else {
         storage_live(@14)
         @14 := copy (self@6) wrapping.- copy (rhs@7)
-        @5 := core::option::Option::Some { 0: move (@14) }
+        @5 := Option::Some { 0: move (@14) }
         storage_dead(@14)
         storage_dead(@13)
         new_len@4 := copy ((@5 as variant @1).0)
@@ -624,35 +644,37 @@ where
             storage_dead(@11)
             return
         }
-        @10 := core::slice::index::slice_end_index_len_fail(move (self@6), move (@9))
+        @10 := slice_end_index_len_fail(move (self@6), move (@9))
     }
     storage_dead(@13)
     storage_dead(@5)
-    @3 := core::slice::index::slice_index_order_fail(move (rhs@7), move (self@6))
+    @3 := slice_index_order_fail(move (rhs@7), move (self@6))
 }
 
-impl core::slice::index::{impl core::slice::index::SliceIndex<Slice<T>> for core::ops::range::Range<usize>[core::marker::Sized<usize>]}#4<T> : core::slice::index::SliceIndex<core::ops::range::Range<usize>[core::marker::Sized<usize>], Slice<T>>
+// Full name: core::slice::index::{impl SliceIndex<Slice<T>> for Range<usize>[Sized<usize>]}#4
+impl<T> SliceIndex<Slice<T>> for Range<usize>[Sized<usize>]
 where
-    [@TraitClause0]: core::marker::Sized<T>,
+    [@TraitClause0]: Sized<T>,
 {
-    parent_clause0 = core::slice::index::private_slice_index::{impl core::slice::index::private_slice_index::Sealed for core::ops::range::Range<usize>[core::marker::Sized<usize>]}#1
+    parent_clause0 = {impl Sealed for Range<usize>[Sized<usize>]}#1
     type Output = Slice<T>
-    fn get<'_0> = core::slice::index::{impl core::slice::index::SliceIndex<Slice<T>> for core::ops::range::Range<usize>[core::marker::Sized<usize>]}#4::get<'_0_0, T>[@TraitClause0]
-    fn get_mut<'_0> = core::slice::index::{impl core::slice::index::SliceIndex<Slice<T>> for core::ops::range::Range<usize>[core::marker::Sized<usize>]}#4::get_mut<'_0_0, T>[@TraitClause0]
-    fn get_unchecked = core::slice::index::{impl core::slice::index::SliceIndex<Slice<T>> for core::ops::range::Range<usize>[core::marker::Sized<usize>]}#4::get_unchecked<T>[@TraitClause0]
-    fn get_unchecked_mut = core::slice::index::{impl core::slice::index::SliceIndex<Slice<T>> for core::ops::range::Range<usize>[core::marker::Sized<usize>]}#4::get_unchecked_mut<T>[@TraitClause0]
-    fn index<'_0> = core::slice::index::{impl core::slice::index::SliceIndex<Slice<T>> for core::ops::range::Range<usize>[core::marker::Sized<usize>]}#4::index<'_0_0, T>[@TraitClause0]
-    fn index_mut<'_0> = core::slice::index::{impl core::slice::index::SliceIndex<Slice<T>> for core::ops::range::Range<usize>[core::marker::Sized<usize>]}#4::index_mut<'_0_0, T>[@TraitClause0]
+    fn get<'_0> = {impl SliceIndex<Slice<T>> for Range<usize>[Sized<usize>]}#4::get<'_0_0, T>[@TraitClause0]
+    fn get_mut<'_0> = {impl SliceIndex<Slice<T>> for Range<usize>[Sized<usize>]}#4::get_mut<'_0_0, T>[@TraitClause0]
+    fn get_unchecked = {impl SliceIndex<Slice<T>> for Range<usize>[Sized<usize>]}#4::get_unchecked<T>[@TraitClause0]
+    fn get_unchecked_mut = {impl SliceIndex<Slice<T>> for Range<usize>[Sized<usize>]}#4::get_unchecked_mut<T>[@TraitClause0]
+    fn index<'_0> = {impl SliceIndex<Slice<T>> for Range<usize>[Sized<usize>]}#4::index<'_0_0, T>[@TraitClause0]
+    fn index_mut<'_0> = {impl SliceIndex<Slice<T>> for Range<usize>[Sized<usize>]}#4::index_mut<'_0_0, T>[@TraitClause0]
 }
 
-fn test_crate::main()
+// Full name: test_crate::main
+fn main()
 {
     let @0: (); // return
     let array@1: Array<i32, 6 : usize>; // local
     let slice@2: &'_ (Slice<i32>); // local
     let @3: &'_ (Slice<i32>); // anonymous local
     let @4: &'_ (Array<i32, 6 : usize>); // anonymous local
-    let @5: core::ops::range::Range<usize>[core::marker::Sized<usize>]; // anonymous local
+    let @5: Range<usize>[Sized<usize>]; // anonymous local
     let @6: (); // anonymous local
     let @7: bool; // anonymous local
     let @8: i32; // anonymous local
@@ -667,8 +689,8 @@ fn test_crate::main()
     storage_live(@4)
     @4 := &array@1
     storage_live(@5)
-    @5 := core::ops::range::Range { start: const (2 : usize), end: const (5 : usize) }
-    @3 := core::array::{impl core::ops::index::Index<I> for Array<T, const N : usize>}#15::index<'_, i32, core::ops::range::Range<usize>[core::marker::Sized<usize>], 6 : usize>[core::marker::Sized<i32>, core::marker::Sized<core::ops::range::Range<usize>[core::marker::Sized<usize>]>, core::slice::index::{impl core::ops::index::Index<I> for Slice<T>}<i32, core::ops::range::Range<usize>[core::marker::Sized<usize>]>[core::marker::Sized<i32>, core::marker::Sized<core::ops::range::Range<usize>[core::marker::Sized<usize>]>, core::slice::index::{impl core::slice::index::SliceIndex<Slice<T>> for core::ops::range::Range<usize>[core::marker::Sized<usize>]}#4<i32>[core::marker::Sized<i32>]]](move (@4), move (@5))
+    @5 := Range { start: const (2 : usize), end: const (5 : usize) }
+    @3 := {impl Index<I> for Array<T, const N : usize>}#15::index<'_, i32, Range<usize>[Sized<usize>], 6 : usize>[Sized<i32>, Sized<Range<usize>[Sized<usize>]>, {impl Index<I> for Slice<T>}<i32, Range<usize>[Sized<usize>]>[Sized<i32>, Sized<Range<usize>[Sized<usize>]>, {impl SliceIndex<Slice<T>> for Range<usize>[Sized<usize>]}#4<i32>[Sized<i32>]]](move (@4), move (@5))
     storage_dead(@5)
     storage_dead(@4)
     slice@2 := &*(@3)
@@ -704,19 +726,20 @@ fn test_crate::main()
 
 pub fn core::ops::index::Index::index<'_0, Self, Idx>(@1: &'_0 (Self), @2: Idx) -> &'_0 (Self::Output)
 
-impl core::array::{impl core::ops::index::Index<I> for Array<T, const N : usize>}#15<T, I, const N : usize> : core::ops::index::Index<Array<T, const N : usize>, I>
+// Full name: core::array::{impl Index<I> for Array<T, const N : usize>}#15
+impl<T, I, const N : usize> Index<I> for Array<T, const N : usize>
 where
-    [@TraitClause0]: core::marker::Sized<T>,
-    [@TraitClause1]: core::marker::Sized<I>,
-    [@TraitClause2]: core::ops::index::Index<Slice<T>, I>,
+    [@TraitClause0]: Sized<T>,
+    [@TraitClause1]: Sized<I>,
+    [@TraitClause2]: Index<Slice<T>, I>,
 {
     type Output = @TraitClause2::Output
-    fn index<'_0> = core::array::{impl core::ops::index::Index<I> for Array<T, const N : usize>}#15::index<'_0_0, T, I, const N : usize>[@TraitClause0, @TraitClause1, @TraitClause2]
+    fn index<'_0> = {impl Index<I> for Array<T, const N : usize>}#15::index<'_0_0, T, I, const N : usize>[@TraitClause0, @TraitClause1, @TraitClause2]
 }
 
-pub fn core::slice::index::SliceIndex::get<'_0, Self, T>(@1: Self, @2: &'_0 (T)) -> core::option::Option<&'_0 (Self::Output)>[core::marker::Sized<&'_0 (Self::Output)>]
+pub fn core::slice::index::SliceIndex::get<'_0, Self, T>(@1: Self, @2: &'_0 (T)) -> Option<&'_0 (Self::Output)>[Sized<&'_0 (Self::Output)>]
 
-pub fn core::slice::index::SliceIndex::get_mut<'_0, Self, T>(@1: Self, @2: &'_0 mut (T)) -> core::option::Option<&'_0 mut (Self::Output)>[core::marker::Sized<&'_0 mut (Self::Output)>]
+pub fn core::slice::index::SliceIndex::get_mut<'_0, Self, T>(@1: Self, @2: &'_0 mut (T)) -> Option<&'_0 mut (Self::Output)>[Sized<&'_0 mut (Self::Output)>]
 
 pub unsafe fn core::slice::index::SliceIndex::get_unchecked<Self, T>(@1: Self, @2: *const T) -> *const Self::Output
 

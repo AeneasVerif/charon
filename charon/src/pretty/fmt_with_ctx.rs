@@ -94,7 +94,7 @@ impl<T> Binder<T> {
     fn fmt_split<'a, C>(&'a self, ctx: &'a C) -> (String, String)
     where
         C: AstFormatter,
-        T: FmtWithCtx<<C as PushBinder<'a>>::C>,
+        T: FmtWithCtx<C::Reborrow<'a>>,
     {
         let ctx = &ctx.push_binder(Cow::Borrowed(&self.params));
         (
@@ -452,18 +452,13 @@ impl<C: AstFormatter> FmtWithCtx<C> for GenericsSource {
     }
 }
 
-impl<T, C> FmtWithCtx<C> for GExprBody<T>
-where
-    C: for<'a> SetLocals<'a>,
-    for<'a> <C as SetLocals<'a>>::C: AstFormatter,
-    for<'a, 'b> <C as SetLocals<'a>>::C: AstFormatter + Formatter<&'b T>,
-{
-    fn fmt_with_ctx(&self, ctx: &C) -> String {
-        // By default use a tab.
-        self.fmt_with_ctx_and_indent(TAB_INCR, ctx)
-    }
-
-    fn fmt_with_ctx_and_indent(&self, tab: &str, ctx: &C) -> String {
+impl<T> GExprBody<T> {
+    fn fmt_with_ctx_and_indent_and_callback<C: AstFormatter>(
+        &self,
+        tab: &str,
+        ctx: &C,
+        fmt_body: impl for<'a> FnOnce(&C::Reborrow<'a>, &'a T) -> String,
+    ) -> String {
         // Update the context
         let ctx = &ctx.set_locals(&self.locals);
 
@@ -502,7 +497,7 @@ where
 
         // Format the body blocks - TODO: we don't take the indentation
         // into account, here
-        let body = ctx.format_object(&self.body);
+        let body = fmt_body(ctx, &self.body);
 
         // Put everything together
         let mut out = locals;
@@ -511,15 +506,36 @@ where
     }
 }
 
+impl<C> FmtWithCtx<C> for GExprBody<llbc_ast::Block>
+where
+    C: AstFormatter,
+{
+    fn fmt_with_ctx(&self, ctx: &C) -> String {
+        // By default use a tab.
+        self.fmt_with_ctx_and_indent(TAB_INCR, ctx)
+    }
+
+    fn fmt_with_ctx_and_indent(&self, tab: &str, ctx: &C) -> String {
+        self.fmt_with_ctx_and_indent_and_callback(tab, ctx, |ctx, body| ctx.format_object(body))
+    }
+}
+impl<C> FmtWithCtx<C> for GExprBody<ullbc_ast::BodyContents>
+where
+    C: AstFormatter,
+{
+    fn fmt_with_ctx(&self, ctx: &C) -> String {
+        // By default use a tab.
+        self.fmt_with_ctx_and_indent(TAB_INCR, ctx)
+    }
+
+    fn fmt_with_ctx_and_indent(&self, tab: &str, ctx: &C) -> String {
+        self.fmt_with_ctx_and_indent_and_callback(tab, ctx, |ctx, body| ctx.format_object(body))
+    }
+}
+
 impl<C> FmtWithCtx<C> for FunDecl
 where
     C: AstFormatter,
-    // For the signature
-    C: for<'a> SetGenerics<'a>,
-    for<'a> <C as SetGenerics<'a>>::C: AstFormatter,
-    // For the body
-    for<'a, 'b> <C as SetGenerics<'a>>::C: SetLocals<'b>,
-    for<'a, 'b> <<C as SetGenerics<'a>>::C as SetLocals<'b>>::C: AstFormatter,
 {
     fn fmt_with_ctx_and_indent(&self, tab: &str, ctx: &C) -> String {
         let keyword = if self.signature.is_unsafe {
@@ -527,7 +543,9 @@ where
         } else {
             "fn"
         };
-        let intro = self.item_meta.fmt_item_intro(ctx, tab, keyword);
+        let intro = self
+            .item_meta
+            .fmt_item_intro(ctx, tab, keyword, self.def_id);
 
         // Update the context
         let ctx = &ctx.set_generics(&self.signature.generics);
@@ -583,17 +601,15 @@ impl<C: AstFormatter> FmtWithCtx<C> for FunDeclRef {
 impl<C> FmtWithCtx<C> for GlobalDecl
 where
     C: AstFormatter,
-    C: for<'a> SetLocals<'a>,
-    for<'a> <C as SetGenerics<'a>>::C: AstFormatter,
-    for<'a, 'b> <<C as SetGenerics<'a>>::C as SetLocals<'b>>::C: AstFormatter,
-    for<'a, 'b, 'c> <<C as SetGenerics<'a>>::C as SetLocals<'b>>::C: AstFormatter,
 {
     fn fmt_with_ctx_and_indent(&self, tab: &str, ctx: &C) -> String {
         let keyword = match self.global_kind {
             GlobalKind::Static => "static",
             GlobalKind::AnonConst | GlobalKind::NamedConst => "const",
         };
-        let intro = self.item_meta.fmt_item_intro(ctx, tab, keyword);
+        let intro = self
+            .item_meta
+            .fmt_item_intro(ctx, tab, keyword, self.def_id);
 
         // Update the context with the generics
         let ctx = &ctx.set_generics(&self.generics);
@@ -633,18 +649,31 @@ impl<C: AstFormatter> FmtWithCtx<C> for ImplElem {
 
 impl ItemMeta {
     /// Format the start of an item definition, up to the name.
-    pub fn fmt_item_intro<C>(&self, ctx: &C, tab: &str, keyword: &str) -> String
+    pub fn fmt_item_intro<C>(
+        &self,
+        ctx: &C,
+        tab: &str,
+        keyword: &str,
+        id: impl Into<AnyTransId>,
+    ) -> String
     where
         C: AstFormatter,
     {
-        let name = self.name.fmt_with_ctx(ctx);
+        let full_name = self.name.fmt_with_ctx(ctx);
+        let (name, comment) =
+            if let Some(short_name) = ctx.get_crate().and_then(|c| c.short_names.get(&id.into())) {
+                let short_name = short_name.fmt_with_ctx(ctx);
+                (short_name, format!("// Full name: {full_name}\n"))
+            } else {
+                (full_name, String::new())
+            };
         let vis = if self.attr_info.public { "pub " } else { "" };
         let lang_item = self
             .lang_item
             .as_ref()
             .map(|id| format!("{tab}#[lang_item(\"{id}\")]\n"))
             .unwrap_or_default();
-        format!("{lang_item}{tab}{vis}{keyword} {name}")
+        format!("{comment}{lang_item}{tab}{vis}{keyword} {name}")
     }
 }
 
@@ -863,7 +892,7 @@ impl<T> RegionBinder<T> {
     fn fmt_split<'a, C>(&'a self, ctx: &'a C) -> (String, String)
     where
         C: AstFormatter,
-        T: FmtWithCtx<<C as PushBinder<'a>>::C>,
+        T: FmtWithCtx<C::Reborrow<'a>>,
     {
         let ctx = &ctx.push_bound_regions(&self.regions);
         (
@@ -876,7 +905,7 @@ impl<T> RegionBinder<T> {
     fn fmt_as_for<'a, C>(&'a self, ctx: &'a C) -> String
     where
         C: AstFormatter,
-        T: FmtWithCtx<<C as PushBinder<'a>>::C>,
+        T: FmtWithCtx<C::Reborrow<'a>>,
     {
         let (regions, value) = self.fmt_split(ctx);
         let regions = if regions.is_empty() {
@@ -1288,7 +1317,7 @@ impl<C: AstFormatter> FmtWithCtx<C> for TraitClause {
 
 impl<C: AstFormatter> FmtWithCtx<C> for TraitDecl {
     fn fmt_with_ctx(&self, ctx: &C) -> String {
-        let intro = self.item_meta.fmt_item_intro(ctx, "", "trait");
+        let intro = self.item_meta.fmt_item_intro(ctx, "", "trait", self.def_id);
 
         // Update the context
         let ctx = &ctx.set_generics(&self.generics);
@@ -1353,7 +1382,7 @@ impl<C: AstFormatter> FmtWithCtx<C> for TraitDeclRef {
 
 impl<C: AstFormatter> FmtWithCtx<C> for TraitImpl {
     fn fmt_with_ctx(&self, ctx: &C) -> String {
-        let intro = self.item_meta.fmt_item_intro(ctx, "", "impl");
+        let full_name = self.item_meta.name.fmt_with_ctx(ctx);
 
         // Update the context
         let ctx = &ctx.set_generics(&self.generics);
@@ -1396,15 +1425,26 @@ impl<C: AstFormatter> FmtWithCtx<C> for TraitImpl {
                     format!("{TAB_INCR}fn {name}{params} = {fn_ref}\n",)
                 }))
                 .collect::<Vec<String>>();
-            if items.is_empty() {
-                "".to_string()
+            let newline = if clauses.is_empty() {
+                " ".to_string()
             } else {
-                format!("\n{{\n{}}}", items.join(""))
+                "\n".to_string()
+            };
+            if items.is_empty() {
+                format!("{newline}{{}}")
+            } else {
+                format!("{newline}{{\n{}}}", items.join(""))
             }
         };
 
-        let impl_trait = self.impl_trait.fmt_with_ctx(ctx);
-        format!("{intro}{generics} : {impl_trait}{clauses}{items}")
+        let mut impl_trait = self.impl_trait.clone();
+        let self_ty = impl_trait.generics.types.remove(TypeVarId::ZERO).unwrap();
+        let self_ty = self_ty.fmt_with_ctx(ctx);
+        let impl_trait = impl_trait.fmt_with_ctx(ctx);
+        format!(
+            "// Full name: {full_name}\n\
+            impl{generics} {impl_trait} for {self_ty}{clauses}{items}"
+        )
     }
 }
 
@@ -1543,7 +1583,7 @@ impl<C: AstFormatter> FmtWithCtx<C> for TypeDecl {
             TypeDeclKind::Alias(..) => "type",
             TypeDeclKind::Opaque | TypeDeclKind::Error(..) => "opaque type",
         };
-        let intro = self.item_meta.fmt_item_intro(ctx, "", keyword);
+        let intro = self.item_meta.fmt_item_intro(ctx, "", keyword, self.def_id);
 
         let ctx = &ctx.set_generics(&self.generics);
         let (params, preds) = self.generics.fmt_with_ctx_with_trait_clauses(ctx, "  ");
@@ -1551,7 +1591,7 @@ impl<C: AstFormatter> FmtWithCtx<C> for TypeDecl {
         let nl_or_space = if !self.generics.has_predicates() {
             " ".to_string()
         } else {
-            "\n ".to_string()
+            "\n".to_string()
         };
 
         let contents = match &self.kind {
@@ -1559,26 +1599,26 @@ impl<C: AstFormatter> FmtWithCtx<C> for TypeDecl {
                 if !fields.is_empty() {
                     let fields = fields
                         .iter()
-                        .map(|f| format!("\n  {},", f.fmt_with_ctx(ctx)))
-                        .format("");
-                    format!("{nl_or_space}=\n{{{fields}\n}}")
+                        .map(|f| format!("  {},", f.fmt_with_ctx(ctx)))
+                        .format("\n");
+                    format!("{nl_or_space}{{\n{fields}\n}}")
                 } else {
-                    format!("{nl_or_space}= {{}}")
+                    format!("{nl_or_space}{{}}")
                 }
             }
             TypeDeclKind::Union(fields) => {
                 let fields = fields
                     .iter()
-                    .map(|f| format!("\n  {},", f.fmt_with_ctx(ctx)))
-                    .format("");
-                format!("{nl_or_space}=\n{{{fields}\n}}")
+                    .map(|f| format!("  {},", f.fmt_with_ctx(ctx)))
+                    .format("\n");
+                format!("{nl_or_space}{{\n{fields}\n}}")
             }
             TypeDeclKind::Enum(variants) => {
                 let variants = variants
                     .iter()
-                    .map(|v| format!("|  {}", v.fmt_with_ctx(ctx)))
+                    .map(|v| format!("  {},", v.fmt_with_ctx(ctx)))
                     .format("\n");
-                format!("{nl_or_space}=\n{variants}\n")
+                format!("{nl_or_space}{{\n{variants}\n}}")
             }
             TypeDeclKind::Alias(ty) => format!(" = {}", ty.fmt_with_ctx(ctx)),
             TypeDeclKind::Opaque => format!(""),
@@ -1618,9 +1658,12 @@ impl<C: AstFormatter> FmtWithCtx<C> for UnOp {
 
 impl<C: AstFormatter> FmtWithCtx<C> for Variant {
     fn fmt_with_ctx(&self, ctx: &C) -> String {
-        let fields: Vec<String> = self.fields.iter().map(|f| f.fmt_with_ctx(ctx)).collect();
-        let fields = fields.join(", ");
-        format!("{}({})", self.name, fields)
+        if self.fields.is_empty() {
+            self.name.clone()
+        } else {
+            let fields = self.fields.iter().map(|f| f.fmt_with_ctx(ctx)).format(", ");
+            format!("{}({})", self.name, fields)
+        }
     }
 }
 

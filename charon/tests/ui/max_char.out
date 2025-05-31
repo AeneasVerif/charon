@@ -23,7 +23,8 @@ pub fn core::char::MAX() -> char
 
 pub const core::char::MAX: char = core::char::MAX()
 
-fn test_crate::main()
+// Full name: test_crate::main
+fn main()
 {
     let @0: (); // return
     let _max_char@1: char; // local

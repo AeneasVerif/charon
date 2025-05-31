@@ -1,6 +1,7 @@
 # Final LLBC before serialization:
 
-fn test_crate::main()
+// Full name: test_crate::main
+fn main()
 {
     let @0: (); // return
     let @1: f64; // anonymous local

@@ -1,71 +1,83 @@
 # Final LLBC before serialization:
 
+// Full name: core::marker::Sized
 #[lang_item("sized")]
-pub trait core::marker::Sized<Self>
+pub trait Sized<Self>
 
-pub trait test_crate::Trait1<Self>
+// Full name: test_crate::Trait1
+pub trait Trait1<Self>
 {
-    parent_clause0 : [@TraitClause0]: core::marker::Sized<Self>
-    parent_clause1 : [@TraitClause1]: core::marker::Sized<Self::T>
-    parent_clause2 : [@TraitClause2]: test_crate::Trait2<Self::T>
+    parent_clause0 : [@TraitClause0]: Sized<Self>
+    parent_clause1 : [@TraitClause1]: Sized<Self::T>
+    parent_clause2 : [@TraitClause2]: Trait2<Self::T>
     type T
 }
 
-pub trait test_crate::Trait2<Self>
+// Full name: test_crate::Trait2
+pub trait Trait2<Self>
 {
-    parent_clause0 : [@TraitClause0]: test_crate::Trait1<Self>
+    parent_clause0 : [@TraitClause0]: Trait1<Self>
 }
 
-pub trait test_crate::T1<Self, T>
+// Full name: test_crate::T1
+pub trait T1<Self, T>
 {
-    parent_clause0 : [@TraitClause0]: core::marker::Sized<Self>
-    parent_clause1 : [@TraitClause1]: core::marker::Sized<T>
-    parent_clause2 : [@TraitClause2]: test_crate::T2<T, Self>
+    parent_clause0 : [@TraitClause0]: Sized<Self>
+    parent_clause1 : [@TraitClause1]: Sized<T>
+    parent_clause2 : [@TraitClause2]: T2<T, Self>
 }
 
-pub trait test_crate::T2<Self, T>
+// Full name: test_crate::T2
+pub trait T2<Self, T>
 {
-    parent_clause0 : [@TraitClause0]: core::marker::Sized<Self>
-    parent_clause1 : [@TraitClause1]: core::marker::Sized<T>
-    parent_clause2 : [@TraitClause2]: test_crate::T1<T, Self>
+    parent_clause0 : [@TraitClause0]: Sized<Self>
+    parent_clause1 : [@TraitClause1]: Sized<T>
+    parent_clause2 : [@TraitClause2]: T1<T, Self>
 }
 
-pub trait test_crate::T3<Self>
+// Full name: test_crate::T3
+pub trait T3<Self>
 {
-    parent_clause0 : [@TraitClause0]: core::marker::Sized<Self::T>
-    parent_clause1 : [@TraitClause1]: test_crate::T5<Self::T>
+    parent_clause0 : [@TraitClause0]: Sized<Self::T>
+    parent_clause1 : [@TraitClause1]: T5<Self::T>
     type T
 }
 
-pub trait test_crate::T5<Self>
+// Full name: test_crate::T5
+pub trait T5<Self>
 {
-    parent_clause0 : [@TraitClause0]: core::marker::Sized<Self::T>
-    parent_clause1 : [@TraitClause1]: test_crate::T4<Self::T>
+    parent_clause0 : [@TraitClause0]: Sized<Self::T>
+    parent_clause1 : [@TraitClause1]: T4<Self::T>
     type T
 }
 
-pub trait test_crate::T4<Self>
+// Full name: test_crate::T4
+pub trait T4<Self>
 {
-    parent_clause0 : [@TraitClause0]: test_crate::T3<Self>
+    parent_clause0 : [@TraitClause0]: T3<Self>
 }
 
-pub trait test_crate::T6<Self, T>
+// Full name: test_crate::T6
+pub trait T6<Self, T>
 {
-    parent_clause0 : [@TraitClause0]: core::marker::Sized<Self>
-    parent_clause1 : [@TraitClause1]: core::marker::Sized<T>
-    parent_clause2 : [@TraitClause2]: test_crate::T7<T>
-    fn f = test_crate::T6::f<Self, T>
+    parent_clause0 : [@TraitClause0]: Sized<Self>
+    parent_clause1 : [@TraitClause1]: Sized<T>
+    parent_clause2 : [@TraitClause2]: T7<T>
+    fn f = f<Self, T>
 }
 
-pub trait test_crate::T7<Self>
+// Full name: test_crate::T7
+pub trait T7<Self>
 {
-    parent_clause0 : [@TraitClause0]: test_crate::T6<Self, Self>
-    fn g = test_crate::T7::g<Self>
+    parent_clause0 : [@TraitClause0]: T6<Self, Self>
+    fn g = g<Self>
 }
 
-pub fn test_crate::T7::g<Self>(@1: u64)
+// Full name: test_crate::T7::g
+pub fn g<Self>(@1: u64)
 
-pub fn test_crate::T6::f<Self, T>(@1: u64)
+// Full name: test_crate::T6::f
+pub fn f<Self, T>(@1: u64)
 {
     let @0: (); // return
     let x@1: u64; // arg #1

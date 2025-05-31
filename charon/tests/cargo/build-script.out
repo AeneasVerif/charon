@@ -10,7 +10,8 @@ pub fn test_cargo_build_script::FOO() -> u8
 
 pub const test_cargo_build_script::FOO: u8 = test_cargo_build_script::FOO()
 
-fn test_cargo_build_script::main()
+// Full name: test_cargo_build_script::main
+fn main()
 {
     let @0: (); // return
 

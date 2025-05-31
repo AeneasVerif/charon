@@ -1,14 +1,17 @@
 # Final LLBC before serialization:
 
+// Full name: core::marker::Sized
 #[lang_item("sized")]
-pub trait core::marker::Sized<Self>
+pub trait Sized<Self>
 
-fn core::intrinsics::copy_nonoverlapping::precondition_check(@1: *const (), @2: *mut (), @3: usize, @4: usize, @5: usize)
+// Full name: core::intrinsics::copy_nonoverlapping::precondition_check
+fn precondition_check(@1: *const (), @2: *mut (), @3: usize, @4: usize, @5: usize)
 
+// Full name: core::intrinsics::copy_nonoverlapping
 #[lang_item("ptr_copy_nonoverlapping")]
-pub unsafe fn core::intrinsics::copy_nonoverlapping<T>(@1: *const T, @2: *mut T, @3: usize)
+pub unsafe fn copy_nonoverlapping<T>(@1: *const T, @2: *mut T, @3: usize)
 where
-    [@TraitClause0]: core::marker::Sized<T>,
+    [@TraitClause0]: Sized<T>,
 {
     let @0: (); // return
     let src@1: *const T; // arg #1
@@ -37,7 +40,7 @@ where
         @8 := size_of<T>
         storage_live(@9)
         @9 := align_of<T>
-        @5 := core::intrinsics::copy_nonoverlapping::precondition_check(move (@6), move (@7), move (@8), move (@9), copy (count@3))
+        @5 := precondition_check(move (@6), move (@7), move (@8), move (@9), copy (count@3))
         storage_dead(@9)
         storage_dead(@8)
         storage_dead(@7)
@@ -51,9 +54,10 @@ where
     return
 }
 
-fn test_crate::write<'_0, '_1, T>(@1: &'_0 mut (T), @2: &'_1 (T))
+// Full name: test_crate::write
+fn write<'_0, '_1, T>(@1: &'_0 mut (T), @2: &'_1 (T))
 where
-    [@TraitClause0]: core::marker::Sized<T>,
+    [@TraitClause0]: Sized<T>,
 {
     let @0: (); // return
     let x@1: &'_ mut (T); // arg #1
@@ -67,7 +71,7 @@ where
     @4 := &raw const *(y@2)
     storage_live(@5)
     @5 := &raw mut *(x@1)
-    @3 := core::intrinsics::copy_nonoverlapping<T>[@TraitClause0](move (@4), move (@5), const (1 : usize))
+    @3 := copy_nonoverlapping<T>[@TraitClause0](move (@4), move (@5), const (1 : usize))
     storage_dead(@5)
     storage_dead(@4)
     storage_dead(@3)

@@ -1,6 +1,7 @@
 # Final LLBC before serialization:
 
-pub fn test_crate::first(@1: Array<u32, 0 : usize>) -> u32
+// Full name: test_crate::first
+pub fn first(@1: Array<u32, 0 : usize>) -> u32
 {
     let @0: u32; // return
     let s@1: Array<u32, 0 : usize>; // arg #1

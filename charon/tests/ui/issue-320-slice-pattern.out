@@ -1,6 +1,7 @@
 # Final LLBC before serialization:
 
-fn test_crate::slice_pat1()
+// Full name: test_crate::slice_pat1
+fn slice_pat1()
 {
     let @0: (); // return
     let array@1: Array<i32, 4 : usize>; // local
@@ -43,7 +44,8 @@ fn test_crate::slice_pat1()
     return
 }
 
-fn test_crate::slice_pat2()
+// Full name: test_crate::slice_pat2
+fn slice_pat2()
 {
     let @0: (); // return
     let array_ref@1: &'_ (Array<i32, 4 : usize>); // local
@@ -94,7 +96,8 @@ fn test_crate::slice_pat2()
     return
 }
 
-fn test_crate::slice_pat3()
+// Full name: test_crate::slice_pat3
+fn slice_pat3()
 {
     let @0: (); // return
     let slice@1: &'_ (Slice<i32>); // local

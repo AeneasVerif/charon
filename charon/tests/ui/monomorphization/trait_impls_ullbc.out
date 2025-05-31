@@ -17,7 +17,7 @@ fn test_crate::do_test::<bool>(@1: bool, @2: bool)
         @5 := &expected@2;
         storage_live(@6);
         @6 := &init@1;
-        @4 := core::cmp::impls::{impl core::cmp::Eq for bool}#38::parent_clause0::eq<'_, '_>(move (@5), move (@6)) -> bb1 (unwind: bb2);
+        @4 := {impl Eq for bool}#38::parent_clause0::eq<'_, '_>(move (@5), move (@6)) -> bb1 (unwind: bb2);
     }
 
     bb1: {
@@ -49,7 +49,8 @@ fn test_crate::do_test::<bool>(@1: bool, @2: bool)
     }
 }
 
-fn test_crate::main()
+// Full name: test_crate::main
+fn main()
 {
     let @0: (); // return
     let @1: (); // anonymous local
@@ -71,29 +72,32 @@ fn test_crate::main()
     }
 }
 
+// Full name: core::marker::Sized
 #[lang_item("sized")]
-pub trait core::marker::Sized<Self>
+pub trait Sized<Self>
 
+// Full name: core::cmp::PartialEq
 #[lang_item("eq")]
-pub trait core::cmp::PartialEq<Self, Rhs>
+pub trait PartialEq<Self, Rhs>
 {
     fn eq<'_0, '_1> = core::cmp::PartialEq::eq<'_0_0, '_0_1, Self, Rhs>
 }
 
+// Full name: core::cmp::Eq
 #[lang_item("Eq")]
-pub trait core::cmp::Eq<Self>
+pub trait Eq<Self>
 {
-    parent_clause0 : [@TraitClause0]: core::cmp::PartialEq<Self, Self>
+    parent_clause0 : [@TraitClause0]: PartialEq<Self, Self>
 }
 
-impl core::cmp::impls::{impl core::cmp::PartialEq<bool> for bool}#19 : core::cmp::PartialEq<bool, bool>
-{
-    fn eq<'_0, '_1> = core::cmp::impls::{impl core::cmp::PartialEq<bool> for bool}#19::eq<'_0_0, '_0_1>
+// Full name: core::cmp::impls::{impl PartialEq<bool> for bool}#19
+impl PartialEq<bool> for bool {
+    fn eq<'_0, '_1> = {impl PartialEq<bool> for bool}#19::eq<'_0_0, '_0_1>
 }
 
-impl core::cmp::impls::{impl core::cmp::Eq for bool}#38 : core::cmp::Eq<bool>
-{
-    parent_clause0 = core::cmp::impls::{impl core::cmp::PartialEq<bool> for bool}#19
+// Full name: core::cmp::impls::{impl Eq for bool}#38
+impl Eq for bool {
+    parent_clause0 = {impl PartialEq<bool> for bool}#19
 }
 
 

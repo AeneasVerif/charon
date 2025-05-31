@@ -1,89 +1,99 @@
 # Final LLBC before serialization:
 
+// Full name: core::marker::Sized
 #[lang_item("sized")]
-pub trait core::marker::Sized<Self>
+pub trait Sized<Self>
 
-opaque type alloc::raw_vec::RawVec<T, A>
+// Full name: alloc::raw_vec::RawVec
+opaque type RawVec<T, A>
   where
-      [@TraitClause0]: core::marker::Sized<T>,
-      [@TraitClause1]: core::marker::Sized<A>,
+      [@TraitClause0]: Sized<T>,
+      [@TraitClause1]: Sized<A>,
 
+// Full name: alloc::vec::Vec
 #[lang_item("Vec")]
-pub struct alloc::vec::Vec<T, A>
+pub struct Vec<T, A>
   where
-      [@TraitClause0]: core::marker::Sized<T>,
-      [@TraitClause1]: core::marker::Sized<A>,
- =
+      [@TraitClause0]: Sized<T>,
+      [@TraitClause1]: Sized<A>,
 {
-  buf: alloc::raw_vec::RawVec<T, A>[@TraitClause0, @TraitClause1],
+  buf: RawVec<T, A>[@TraitClause0, @TraitClause1],
   len: usize,
 }
 
+// Full name: alloc::alloc::Global
 #[lang_item("global_alloc_ty")]
-pub struct alloc::alloc::Global = {}
+pub struct Global {}
 
-opaque type alloc::raw_vec::RawVecInner<A>
+// Full name: alloc::raw_vec::RawVecInner
+opaque type RawVecInner<A>
   where
-      [@TraitClause0]: core::marker::Sized<A>,
+      [@TraitClause0]: Sized<A>,
 
+// Full name: core::alloc::layout::Layout
 #[lang_item("alloc_layout")]
-pub opaque type core::alloc::layout::Layout
+pub opaque type Layout
 
+// Full name: core::marker::PhantomData
 #[lang_item("phantom_data")]
-pub struct core::marker::PhantomData<T> = {}
+pub struct PhantomData<T> {}
 
-pub trait core::mem::SizedTypeProperties<Self>
+// Full name: core::mem::SizedTypeProperties
+pub trait SizedTypeProperties<Self>
 {
-    parent_clause0 : [@TraitClause0]: core::marker::Sized<Self>
+    parent_clause0 : [@TraitClause0]: Sized<Self>
     const IS_ZST : bool
-    const LAYOUT : core::alloc::layout::Layout
+    const LAYOUT : Layout
     const MAX_SLICE_LEN : usize
 }
 
-pub fn core::mem::SizedTypeProperties::LAYOUT<Self>() -> core::alloc::layout::Layout
+pub fn core::mem::SizedTypeProperties::LAYOUT<Self>() -> Layout
 
-pub const core::mem::SizedTypeProperties::LAYOUT<Self>: core::alloc::layout::Layout = core::mem::SizedTypeProperties::LAYOUT()
+pub const core::mem::SizedTypeProperties::LAYOUT<Self>: Layout = core::mem::SizedTypeProperties::LAYOUT()
 
-fn alloc::raw_vec::{alloc::raw_vec::RawVecInner<A>[@TraitClause0]}#4::with_capacity_in<A>(@1: usize, @2: A, @3: core::alloc::layout::Layout) -> alloc::raw_vec::RawVecInner<A>[@TraitClause0]
+// Full name: alloc::raw_vec::{RawVecInner<A>[@TraitClause0]}#4::with_capacity_in
+fn with_capacity_in<A>(@1: usize, @2: A, @3: Layout) -> RawVecInner<A>[@TraitClause0]
 where
-    [@TraitClause0]: core::marker::Sized<A>,
+    [@TraitClause0]: Sized<A>,
 
+// Full name: alloc::vec::{Vec<T, Global>[@TraitClause0, Sized<Global>]}::with_capacity
 #[lang_item("vec_with_capacity")]
-pub fn alloc::vec::{alloc::vec::Vec<T, alloc::alloc::Global>[@TraitClause0, core::marker::Sized<alloc::alloc::Global>]}::with_capacity<T>(@1: usize) -> alloc::vec::Vec<T, alloc::alloc::Global>[@TraitClause0, core::marker::Sized<alloc::alloc::Global>]
+pub fn with_capacity<T>(@1: usize) -> Vec<T, Global>[@TraitClause0, Sized<Global>]
 where
-    [@TraitClause0]: core::marker::Sized<T>,
+    [@TraitClause0]: Sized<T>,
 {
-    let @0: alloc::vec::Vec<T, alloc::alloc::Global>[@TraitClause0, core::marker::Sized<alloc::alloc::Global>]; // return
+    let @0: Vec<T, Global>[@TraitClause0, Sized<Global>]; // return
     let capacity@1: usize; // arg #1
-    let @2: alloc::raw_vec::RawVec<T, alloc::alloc::Global>[@TraitClause0, core::marker::Sized<alloc::alloc::Global>]; // anonymous local
-    let @3: alloc::raw_vec::RawVecInner<alloc::alloc::Global>[core::marker::Sized<alloc::alloc::Global>]; // anonymous local
-    let @4: alloc::alloc::Global; // anonymous local
-    let @5: core::alloc::layout::Layout; // anonymous local
-    let @6: core::marker::PhantomData<T>; // anonymous local
+    let @2: RawVec<T, Global>[@TraitClause0, Sized<Global>]; // anonymous local
+    let @3: RawVecInner<Global>[Sized<Global>]; // anonymous local
+    let @4: Global; // anonymous local
+    let @5: Layout; // anonymous local
+    let @6: PhantomData<T>; // anonymous local
 
     storage_live(@4)
     storage_live(@5)
     storage_live(@6)
     storage_live(@2)
     storage_live(@3)
-    @4 := alloc::alloc::Global {  }
+    @4 := Global {  }
     @5 := core::mem::SizedTypeProperties::LAYOUT<T>
-    @3 := alloc::raw_vec::{alloc::raw_vec::RawVecInner<A>[@TraitClause0]}#4::with_capacity_in<alloc::alloc::Global>[core::marker::Sized<alloc::alloc::Global>](move (capacity@1), move (@4), move (@5))
-    @6 := core::marker::PhantomData {  }
-    @2 := alloc::raw_vec::RawVec { __unknown_field: move (@3), __unknown_field: move (@6) }
+    @3 := with_capacity_in<Global>[Sized<Global>](move (capacity@1), move (@4), move (@5))
+    @6 := PhantomData {  }
+    @2 := RawVec { 0: move (@3), 1: move (@6) }
     storage_dead(@3)
-    @0 := alloc::vec::Vec { buf: move (@2), len: const (0 : usize) }
+    @0 := Vec { buf: move (@2), len: const (0 : usize) }
     storage_dead(@2)
     return
 }
 
-fn test_crate::vec()
+// Full name: test_crate::vec
+fn vec()
 {
     let @0: (); // return
-    let @1: alloc::vec::Vec<u32, alloc::alloc::Global>[core::marker::Sized<u32>, core::marker::Sized<alloc::alloc::Global>]; // anonymous local
+    let @1: Vec<u32, Global>[Sized<u32>, Sized<Global>]; // anonymous local
 
     storage_live(@1)
-    @1 := alloc::vec::{alloc::vec::Vec<T, alloc::alloc::Global>[@TraitClause0, core::marker::Sized<alloc::alloc::Global>]}::with_capacity<u32>[core::marker::Sized<u32>](const (42 : usize))
+    @1 := with_capacity<u32>[Sized<u32>](const (42 : usize))
     drop @1
     storage_dead(@1)
     @0 := ()

@@ -1,92 +1,104 @@
 # Final LLBC before serialization:
 
+// Full name: core::marker::Sized
 #[lang_item("sized")]
-pub trait core::marker::Sized<Self>
+pub trait Sized<Self>
 
+// Full name: core::option::Option
 #[lang_item("Option")]
-pub enum core::option::Option<T>
+pub enum Option<T>
   where
-      [@TraitClause0]: core::marker::Sized<T>,
- =
-|  None()
-|  Some(T)
-
-
-fn test_crate::wrap<'a>(@1: &'a (u32)) -> core::option::Option<&'a (u32)>[core::marker::Sized<&'a (u32)>]
+      [@TraitClause0]: Sized<T>,
 {
-    let @0: core::option::Option<&'_ (u32)>[core::marker::Sized<&'_ (u32)>]; // return
+  None,
+  Some(T),
+}
+
+// Full name: test_crate::wrap
+fn wrap<'a>(@1: &'a (u32)) -> Option<&'a (u32)>[Sized<&'a (u32)>]
+{
+    let @0: Option<&'_ (u32)>[Sized<&'_ (u32)>]; // return
     let x@1: &'_ (u32); // arg #1
     let @2: &'_ (u32); // anonymous local
 
     storage_live(@2)
     @2 := &*(x@1)
-    @0 := core::option::Option::Some { 0: move (@2) }
+    @0 := Option::Some { 0: move (@2) }
     storage_dead(@2)
     return
 }
 
+// Full name: core::clone::Clone
 #[lang_item("clone")]
-pub trait core::clone::Clone<Self>
+pub trait Clone<Self>
 {
-    parent_clause0 : [@TraitClause0]: core::marker::Sized<Self>
-    fn clone<'_0> = core::clone::Clone::clone<'_0_0, Self>
+    parent_clause0 : [@TraitClause0]: Sized<Self>
+    fn clone<'_0> = clone<'_0_0, Self>
 }
 
-fn test_crate::wrap2<'a>(@1: &'a (u32)) -> core::option::Option<&'a (u32)>[core::marker::Sized<&'_ (u32)>]
+// Full name: test_crate::wrap2
+fn wrap2<'a>(@1: &'a (u32)) -> Option<&'a (u32)>[Sized<&'_ (u32)>]
 where
-    [@TraitClause0]: core::clone::Clone<&'a (())>,
+    [@TraitClause0]: Clone<&'a (())>,
 {
-    let @0: core::option::Option<&'_ (u32)>[core::marker::Sized<&'_ (u32)>]; // return
+    let @0: Option<&'_ (u32)>[Sized<&'_ (u32)>]; // return
     let x@1: &'_ (u32); // arg #1
     let @2: &'_ (u32); // anonymous local
 
     storage_live(@2)
     @2 := &*(x@1)
-    @0 := core::option::Option::Some { 0: move (@2) }
+    @0 := Option::Some { 0: move (@2) }
     storage_dead(@2)
     return
 }
 
+// Full name: core::cell::RefCell
 #[lang_item("RefCell")]
-pub opaque type core::cell::RefCell<T>
+pub opaque type RefCell<T>
 
+// Full name: core::result::Result
 #[lang_item("Result")]
-pub enum core::result::Result<T, E>
+pub enum Result<T, E>
   where
-      [@TraitClause0]: core::marker::Sized<T>,
-      [@TraitClause1]: core::marker::Sized<E>,
- =
-|  Ok(T)
-|  Err(E)
+      [@TraitClause0]: Sized<T>,
+      [@TraitClause1]: Sized<E>,
+{
+  Ok(T),
+  Err(E),
+}
 
-
+// Full name: core::cell::Ref
 #[lang_item("RefCellRef")]
-pub opaque type core::cell::Ref<'b, T>
+pub opaque type Ref<'b, T>
   where
       T : 'b,
 
-pub struct core::cell::BorrowError = {}
+// Full name: core::cell::BorrowError
+pub struct BorrowError {}
 
-pub fn core::cell::{core::cell::RefCell<T>}#22::new<T>(@1: T) -> core::cell::RefCell<T>
+// Full name: core::cell::{RefCell<T>}#22::new
+pub fn new<T>(@1: T) -> RefCell<T>
 where
-    [@TraitClause0]: core::marker::Sized<T>,
+    [@TraitClause0]: Sized<T>,
 
-pub fn core::cell::{core::cell::RefCell<T>}#23::try_borrow<'_0, T>(@1: &'_0 (core::cell::RefCell<T>)) -> core::result::Result<core::cell::Ref<'_0, T>, core::cell::BorrowError>[core::marker::Sized<core::cell::Ref<'_0, T>>, core::marker::Sized<core::cell::BorrowError>]
+// Full name: core::cell::{RefCell<T>}#23::try_borrow
+pub fn try_borrow<'_0, T>(@1: &'_0 (RefCell<T>)) -> Result<Ref<'_0, T>, BorrowError>[Sized<Ref<'_0, T>>, Sized<BorrowError>]
 
-fn test_crate::foo()
+// Full name: test_crate::foo
+fn foo()
 {
     let @0: (); // return
-    let ref_b@1: core::cell::RefCell<bool>; // local
-    let @2: core::result::Result<core::cell::Ref<'_, bool>, core::cell::BorrowError>[core::marker::Sized<core::cell::Ref<'_, bool>>, core::marker::Sized<core::cell::BorrowError>]; // anonymous local
-    let @3: &'_ (core::cell::RefCell<bool>); // anonymous local
+    let ref_b@1: RefCell<bool>; // local
+    let @2: Result<Ref<'_, bool>, BorrowError>[Sized<Ref<'_, bool>>, Sized<BorrowError>]; // anonymous local
+    let @3: &'_ (RefCell<bool>); // anonymous local
 
     storage_live(ref_b@1)
-    ref_b@1 := core::cell::{core::cell::RefCell<T>}#22::new<bool>[core::marker::Sized<bool>](const (false))
+    ref_b@1 := new<bool>[Sized<bool>](const (false))
     storage_live(@2)
     storage_live(@3)
     // `try_borrow` has a type that includes predicates on late bound regions.
     @3 := &ref_b@1
-    @2 := core::cell::{core::cell::RefCell<T>}#23::try_borrow<'_, bool>(move (@3))
+    @2 := try_borrow<'_, bool>(move (@3))
     storage_dead(@3)
     drop @2
     storage_dead(@2)
@@ -96,27 +108,30 @@ fn test_crate::foo()
     return
 }
 
-trait test_crate::Foo<Self>
+// Full name: test_crate::Foo
+trait Foo<Self>
 {
-    parent_clause0 : [@TraitClause0]: core::marker::Sized<Self::S>
+    parent_clause0 : [@TraitClause0]: Sized<Self::S>
     type S
 }
 
-fn test_crate::f<T, U>() -> core::option::Option<@TraitClause3::S>[@TraitClause3::parent_clause0]
+// Full name: test_crate::f
+fn f<T, U>() -> Option<@TraitClause3::S>[@TraitClause3::parent_clause0]
 where
-    [@TraitClause0]: core::marker::Sized<T>,
-    [@TraitClause1]: core::marker::Sized<U>,
-    [@TraitClause2]: test_crate::Foo<T>,
-    [@TraitClause3]: test_crate::Foo<U>,
+    [@TraitClause0]: Sized<T>,
+    [@TraitClause1]: Sized<U>,
+    [@TraitClause2]: Foo<T>,
+    [@TraitClause3]: Foo<U>,
     @TraitClause2::S = @TraitClause3::S,
 {
-    let @0: core::option::Option<@TraitClause3::S>[@TraitClause3::parent_clause0]; // return
+    let @0: Option<@TraitClause3::S>[@TraitClause3::parent_clause0]; // return
 
     panic(core::panicking::panic)
 }
 
+// Full name: core::clone::Clone::clone
 #[lang_item("clone_fn")]
-pub fn core::clone::Clone::clone<'_0, Self>(@1: &'_0 (Self)) -> Self
+pub fn clone<'_0, Self>(@1: &'_0 (Self)) -> Self
 
 
 

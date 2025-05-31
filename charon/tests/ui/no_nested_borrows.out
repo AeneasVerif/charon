@@ -1,70 +1,79 @@
 # Final LLBC before serialization:
 
+// Full name: core::marker::Sized
 #[lang_item("sized")]
-pub trait core::marker::Sized<Self>
+pub trait Sized<Self>
 
-pub struct test_crate::Pair<T1, T2>
+// Full name: test_crate::Pair
+pub struct Pair<T1, T2>
   where
-      [@TraitClause0]: core::marker::Sized<T1>,
-      [@TraitClause1]: core::marker::Sized<T2>,
- =
+      [@TraitClause0]: Sized<T1>,
+      [@TraitClause1]: Sized<T2>,
 {
   x: T1,
   y: T2,
 }
 
+// Full name: alloc::alloc::Global
 #[lang_item("global_alloc_ty")]
-pub struct alloc::alloc::Global = {}
+pub struct Global {}
 
-pub enum test_crate::List<T>
+// Full name: test_crate::List
+pub enum List<T>
   where
-      [@TraitClause0]: core::marker::Sized<T>,
- =
-|  Cons(T, alloc::boxed::Box<test_crate::List<T>[@TraitClause0]>[core::marker::Sized<alloc::alloc::Global>])
-|  Nil()
+      [@TraitClause0]: Sized<T>,
+{
+  Cons(T, alloc::boxed::Box<List<T>[@TraitClause0]>[Sized<Global>]),
+  Nil,
+}
 
-
-pub enum test_crate::One<T1>
+// Full name: test_crate::One
+pub enum One<T1>
   where
-      [@TraitClause0]: core::marker::Sized<T1>,
- =
-|  One(T1)
+      [@TraitClause0]: Sized<T1>,
+{
+  One(T1),
+}
 
+// Full name: test_crate::EmptyEnum
+pub enum EmptyEnum {
+  Empty,
+}
 
-pub enum test_crate::EmptyEnum =
-|  Empty()
+// Full name: test_crate::Enum
+pub enum Enum {
+  Variant1,
+  Variant2,
+}
 
+// Full name: test_crate::EmptyStruct
+pub struct EmptyStruct {}
 
-pub enum test_crate::Enum =
-|  Variant1()
-|  Variant2()
-
-
-pub struct test_crate::EmptyStruct = {}
-
-pub enum test_crate::Sum<T1, T2>
+// Full name: test_crate::Sum
+pub enum Sum<T1, T2>
   where
-      [@TraitClause0]: core::marker::Sized<T1>,
-      [@TraitClause1]: core::marker::Sized<T2>,
- =
-|  Left(T1)
-|  Right(T2)
+      [@TraitClause0]: Sized<T1>,
+      [@TraitClause1]: Sized<T2>,
+{
+  Left(T1),
+  Right(T2),
+}
 
-
-pub struct test_crate::Tuple<T1, T2>
+// Full name: test_crate::Tuple
+pub struct Tuple<T1, T2>
   where
-      [@TraitClause0]: core::marker::Sized<T1>,
-      [@TraitClause1]: core::marker::Sized<T2>,
- =
+      [@TraitClause0]: Sized<T1>,
+      [@TraitClause1]: Sized<T2>,
 {
   T1,
   T2,
 }
 
-pub fn test_crate::use_tuple_struct<'_0>(@1: &'_0 mut (test_crate::Tuple<u32, u32>[core::marker::Sized<u32>, core::marker::Sized<u32>]))
+// Full name: test_crate::use_tuple_struct
+pub fn use_tuple_struct<'_0>(@1: &'_0 mut (Tuple<u32, u32>[Sized<u32>, Sized<u32>]))
 {
     let @0: (); // return
-    let x@1: &'_ mut (test_crate::Tuple<u32, u32>[core::marker::Sized<u32>, core::marker::Sized<u32>]); // arg #1
+    let x@1: &'_ mut (Tuple<u32, u32>[Sized<u32>, Sized<u32>]); // arg #1
 
     (*(x@1)).0 := const (1 : u32)
     @0 := ()
@@ -72,9 +81,10 @@ pub fn test_crate::use_tuple_struct<'_0>(@1: &'_0 mut (test_crate::Tuple<u32, u3
     return
 }
 
-pub fn test_crate::create_tuple_struct(@1: u32, @2: u64) -> test_crate::Tuple<u32, u64>[core::marker::Sized<u32>, core::marker::Sized<u64>]
+// Full name: test_crate::create_tuple_struct
+pub fn create_tuple_struct(@1: u32, @2: u64) -> Tuple<u32, u64>[Sized<u32>, Sized<u64>]
 {
-    let @0: test_crate::Tuple<u32, u64>[core::marker::Sized<u32>, core::marker::Sized<u64>]; // return
+    let @0: Tuple<u32, u64>[Sized<u32>, Sized<u64>]; // return
     let x@1: u32; // arg #1
     let y@2: u64; // arg #2
     let @3: u32; // anonymous local
@@ -84,15 +94,16 @@ pub fn test_crate::create_tuple_struct(@1: u32, @2: u64) -> test_crate::Tuple<u3
     @3 := copy (x@1)
     storage_live(@4)
     @4 := copy (y@2)
-    @0 := test_crate::Tuple { 0: move (@3), 1: move (@4) }
+    @0 := Tuple { 0: move (@3), 1: move (@4) }
     storage_dead(@4)
     storage_dead(@3)
     return
 }
 
-pub fn test_crate::create_pair(@1: u32, @2: u64) -> test_crate::Pair<u32, u64>[core::marker::Sized<u32>, core::marker::Sized<u64>]
+// Full name: test_crate::create_pair
+pub fn create_pair(@1: u32, @2: u64) -> Pair<u32, u64>[Sized<u32>, Sized<u64>]
 {
-    let @0: test_crate::Pair<u32, u64>[core::marker::Sized<u32>, core::marker::Sized<u64>]; // return
+    let @0: Pair<u32, u64>[Sized<u32>, Sized<u64>]; // return
     let x@1: u32; // arg #1
     let y@2: u64; // arg #2
     let @3: u32; // anonymous local
@@ -102,50 +113,53 @@ pub fn test_crate::create_pair(@1: u32, @2: u64) -> test_crate::Pair<u32, u64>[c
     @3 := copy (x@1)
     storage_live(@4)
     @4 := copy (y@2)
-    @0 := test_crate::Pair { x: move (@3), y: move (@4) }
+    @0 := Pair { x: move (@3), y: move (@4) }
     storage_dead(@4)
     storage_dead(@3)
     return
 }
 
-pub struct test_crate::IdType<T>
+// Full name: test_crate::IdType
+pub struct IdType<T>
   where
-      [@TraitClause0]: core::marker::Sized<T>,
- =
+      [@TraitClause0]: Sized<T>,
 {
   T,
 }
 
-pub fn test_crate::use_id_type<T>(@1: test_crate::IdType<T>[@TraitClause0]) -> T
+// Full name: test_crate::use_id_type
+pub fn use_id_type<T>(@1: IdType<T>[@TraitClause0]) -> T
 where
-    [@TraitClause0]: core::marker::Sized<T>,
+    [@TraitClause0]: Sized<T>,
 {
     let @0: T; // return
-    let x@1: test_crate::IdType<T>[@TraitClause0]; // arg #1
+    let x@1: IdType<T>[@TraitClause0]; // arg #1
 
     @0 := move ((x@1).0)
     drop x@1
     return
 }
 
-pub fn test_crate::create_id_type<T>(@1: T) -> test_crate::IdType<T>[@TraitClause0]
+// Full name: test_crate::create_id_type
+pub fn create_id_type<T>(@1: T) -> IdType<T>[@TraitClause0]
 where
-    [@TraitClause0]: core::marker::Sized<T>,
+    [@TraitClause0]: Sized<T>,
 {
-    let @0: test_crate::IdType<T>[@TraitClause0]; // return
+    let @0: IdType<T>[@TraitClause0]; // return
     let x@1: T; // arg #1
     let @2: T; // anonymous local
 
     storage_live(@2)
     @2 := move (x@1)
-    @0 := test_crate::IdType { 0: move (@2) }
+    @0 := IdType { 0: move (@2) }
     drop @2
     storage_dead(@2)
     drop x@1
     return
 }
 
-pub fn test_crate::cast_u32_to_i32(@1: u32) -> i32
+// Full name: test_crate::cast_u32_to_i32
+pub fn cast_u32_to_i32(@1: u32) -> i32
 {
     let @0: i32; // return
     let x@1: u32; // arg #1
@@ -158,7 +172,8 @@ pub fn test_crate::cast_u32_to_i32(@1: u32) -> i32
     return
 }
 
-pub fn test_crate::cast_bool_to_i32(@1: bool) -> i32
+// Full name: test_crate::cast_bool_to_i32
+pub fn cast_bool_to_i32(@1: bool) -> i32
 {
     let @0: i32; // return
     let x@1: bool; // arg #1
@@ -171,7 +186,8 @@ pub fn test_crate::cast_bool_to_i32(@1: bool) -> i32
     return
 }
 
-pub fn test_crate::cast_bool_to_bool(@1: bool) -> bool
+// Full name: test_crate::cast_bool_to_bool
+pub fn cast_bool_to_bool(@1: bool) -> bool
 {
     let @0: bool; // return
     let x@1: bool; // arg #1
@@ -180,7 +196,8 @@ pub fn test_crate::cast_bool_to_bool(@1: bool) -> bool
     return
 }
 
-pub fn test_crate::test2()
+// Full name: test_crate::test2
+pub fn test2()
 {
     let @0: (); // return
     let x@1: u32; // local
@@ -188,14 +205,14 @@ pub fn test_crate::test2()
     let z@3: u32; // local
     let @4: u32; // anonymous local
     let @5: u32; // anonymous local
-    let p@6: test_crate::Pair<u32, u32>[core::marker::Sized<u32>, core::marker::Sized<u32>]; // local
+    let p@6: Pair<u32, u32>[Sized<u32>, Sized<u32>]; // local
     let @7: u32; // anonymous local
     let @8: u32; // anonymous local
-    let s@9: test_crate::Sum<u32, bool>[core::marker::Sized<u32>, core::marker::Sized<bool>]; // local
-    let o@10: test_crate::One<u64>[core::marker::Sized<u64>]; // local
-    let e0@11: test_crate::EmptyEnum; // local
-    let e1@12: test_crate::EmptyEnum; // local
-    let enum0@13: test_crate::Enum; // local
+    let s@9: Sum<u32, bool>[Sized<u32>, Sized<bool>]; // local
+    let o@10: One<u64>[Sized<u64>]; // local
+    let e0@11: EmptyEnum; // local
+    let e1@12: EmptyEnum; // local
+    let enum0@13: Enum; // local
 
     storage_live(x@1)
     x@1 := const (23 : u32)
@@ -214,19 +231,19 @@ pub fn test_crate::test2()
     @7 := copy (x@1)
     storage_live(@8)
     @8 := copy (z@3)
-    p@6 := test_crate::Pair { x: move (@7), y: move (@8) }
+    p@6 := Pair { x: move (@7), y: move (@8) }
     storage_dead(@8)
     storage_dead(@7)
     storage_live(s@9)
-    s@9 := test_crate::Sum::Right { 0: const (true) }
+    s@9 := Sum::Right { 0: const (true) }
     storage_live(o@10)
-    o@10 := test_crate::One::One { 0: const (3 : u64) }
+    o@10 := One::One { 0: const (3 : u64) }
     storage_live(e0@11)
-    e0@11 := test_crate::EmptyEnum::Empty {  }
+    e0@11 := EmptyEnum::Empty {  }
     storage_live(e1@12)
     e1@12 := move (e0@11)
     storage_live(enum0@13)
-    enum0@13 := test_crate::Enum::Variant1 {  }
+    enum0@13 := Enum::Variant1 {  }
     @0 := ()
     storage_dead(enum0@13)
     storage_dead(e1@12)
@@ -241,7 +258,8 @@ pub fn test_crate::test2()
     return
 }
 
-pub fn test_crate::get_max(@1: u32, @2: u32) -> u32
+// Full name: test_crate::get_max
+pub fn get_max(@1: u32, @2: u32) -> u32
 {
     let @0: u32; // return
     let x@1: u32; // arg #1
@@ -270,20 +288,21 @@ pub fn test_crate::get_max(@1: u32, @2: u32) -> u32
     return
 }
 
-pub fn test_crate::test_list1()
+// Full name: test_crate::test_list1
+pub fn test_list1()
 {
     let @0: (); // return
-    let l@1: test_crate::List<i32>[core::marker::Sized<i32>]; // local
-    let @2: alloc::boxed::Box<test_crate::List<i32>[core::marker::Sized<i32>]>[core::marker::Sized<alloc::alloc::Global>]; // anonymous local
-    let @3: test_crate::List<i32>[core::marker::Sized<i32>]; // anonymous local
+    let l@1: List<i32>[Sized<i32>]; // local
+    let @2: alloc::boxed::Box<List<i32>[Sized<i32>]>[Sized<Global>]; // anonymous local
+    let @3: List<i32>[Sized<i32>]; // anonymous local
 
     storage_live(l@1)
     storage_live(@2)
     storage_live(@3)
-    @3 := test_crate::List::Nil {  }
-    @2 := @BoxNew<test_crate::List<i32>[core::marker::Sized<i32>]>[core::marker::Sized<test_crate::List<i32>[core::marker::Sized<i32>]>](move (@3))
+    @3 := List::Nil {  }
+    @2 := @BoxNew<List<i32>[Sized<i32>]>[Sized<List<i32>[Sized<i32>]>](move (@3))
     storage_dead(@3)
-    l@1 := test_crate::List::Cons { 0: const (0 : i32), 1: move (@2) }
+    l@1 := List::Cons { 0: const (0 : i32), 1: move (@2) }
     drop @2
     storage_dead(@2)
     @0 := ()
@@ -293,38 +312,41 @@ pub fn test_crate::test_list1()
     return
 }
 
-pub fn alloc::boxed::{impl core::ops::deref::DerefMut for alloc::boxed::Box<T>[@TraitClause0]}#25::deref_mut<'_0, T, A>(@1: &'_0 mut (alloc::boxed::Box<T>[@TraitClause0])) -> &'_0 mut (T)
+// Full name: alloc::boxed::{impl DerefMut for alloc::boxed::Box<T>[@TraitClause0]}#25::deref_mut
+pub fn {impl DerefMut for alloc::boxed::Box<T>[@TraitClause0]}#25::deref_mut<'_0, T, A>(@1: &'_0 mut (alloc::boxed::Box<T>[@TraitClause0])) -> &'_0 mut (T)
 where
-    [@TraitClause0]: core::marker::Sized<A>,
+    [@TraitClause0]: Sized<A>,
 
-pub fn alloc::boxed::{impl core::ops::deref::Deref for alloc::boxed::Box<T>[@TraitClause0]}#24::deref<'_0, T, A>(@1: &'_0 (alloc::boxed::Box<T>[@TraitClause0])) -> &'_0 (T)
+// Full name: alloc::boxed::{impl Deref for alloc::boxed::Box<T>[@TraitClause0]}#24::deref
+pub fn {impl Deref for alloc::boxed::Box<T>[@TraitClause0]}#24::deref<'_0, T, A>(@1: &'_0 (alloc::boxed::Box<T>[@TraitClause0])) -> &'_0 (T)
 where
-    [@TraitClause0]: core::marker::Sized<A>,
+    [@TraitClause0]: Sized<A>,
 
-pub fn test_crate::test_box1()
+// Full name: test_crate::test_box1
+pub fn test_box1()
 {
     let @0: (); // return
-    let b@1: alloc::boxed::Box<i32>[core::marker::Sized<alloc::alloc::Global>]; // local
+    let b@1: alloc::boxed::Box<i32>[Sized<Global>]; // local
     let x@2: &'_ mut (i32); // local
-    let @3: &'_ mut (alloc::boxed::Box<i32>[core::marker::Sized<alloc::alloc::Global>]); // anonymous local
+    let @3: &'_ mut (alloc::boxed::Box<i32>[Sized<Global>]); // anonymous local
     let x@4: &'_ (i32); // local
-    let @5: &'_ (alloc::boxed::Box<i32>[core::marker::Sized<alloc::alloc::Global>]); // anonymous local
+    let @5: &'_ (alloc::boxed::Box<i32>[Sized<Global>]); // anonymous local
     let @6: (); // anonymous local
     let @7: bool; // anonymous local
     let @8: i32; // anonymous local
 
     storage_live(b@1)
-    b@1 := @BoxNew<i32>[core::marker::Sized<i32>](const (0 : i32))
+    b@1 := @BoxNew<i32>[Sized<i32>](const (0 : i32))
     storage_live(x@2)
     storage_live(@3)
     @3 := &two-phase-mut b@1
-    x@2 := alloc::boxed::{impl core::ops::deref::DerefMut for alloc::boxed::Box<T>[@TraitClause0]}#25::deref_mut<'_, i32, alloc::alloc::Global>[core::marker::Sized<alloc::alloc::Global>](move (@3))
+    x@2 := {impl DerefMut for alloc::boxed::Box<T>[@TraitClause0]}#25::deref_mut<'_, i32, Global>[Sized<Global>](move (@3))
     storage_dead(@3)
     *(x@2) := const (1 : i32)
     storage_live(x@4)
     storage_live(@5)
     @5 := &b@1
-    x@4 := alloc::boxed::{impl core::ops::deref::Deref for alloc::boxed::Box<T>[@TraitClause0]}#24::deref<'_, i32, alloc::alloc::Global>[core::marker::Sized<alloc::alloc::Global>](move (@5))
+    x@4 := {impl Deref for alloc::boxed::Box<T>[@TraitClause0]}#24::deref<'_, i32, Global>[Sized<Global>](move (@5))
     storage_dead(@5)
     storage_live(@6)
     storage_live(@7)
@@ -349,7 +371,8 @@ pub fn test_crate::test_box1()
     return
 }
 
-pub fn test_crate::copy_int(@1: i32) -> i32
+// Full name: test_crate::copy_int
+pub fn copy_int(@1: i32) -> i32
 {
     let @0: i32; // return
     let x@1: i32; // arg #1
@@ -358,7 +381,8 @@ pub fn test_crate::copy_int(@1: i32) -> i32
     return
 }
 
-pub fn test_crate::test_unreachable(@1: bool)
+// Full name: test_crate::test_unreachable
+pub fn test_unreachable(@1: bool)
 {
     let @0: (); // return
     let b@1: bool; // arg #1
@@ -373,17 +397,18 @@ pub fn test_crate::test_unreachable(@1: bool)
     return
 }
 
-pub fn test_crate::is_cons<'_0, T>(@1: &'_0 (test_crate::List<T>[@TraitClause0])) -> bool
+// Full name: test_crate::is_cons
+pub fn is_cons<'_0, T>(@1: &'_0 (List<T>[@TraitClause0])) -> bool
 where
-    [@TraitClause0]: core::marker::Sized<T>,
+    [@TraitClause0]: Sized<T>,
 {
     let @0: bool; // return
-    let l@1: &'_ (test_crate::List<T>[@TraitClause0]); // arg #1
+    let l@1: &'_ (List<T>[@TraitClause0]); // arg #1
 
     match *(l@1) {
-        test_crate::List::Cons => {
+        List::Cons => {
         },
-        test_crate::List::Nil => {
+        List::Nil => {
             @0 := const (false)
             return
         },
@@ -392,19 +417,20 @@ where
     return
 }
 
-pub fn test_crate::split_list<T>(@1: test_crate::List<T>[@TraitClause0]) -> (T, test_crate::List<T>[@TraitClause0])
+// Full name: test_crate::split_list
+pub fn split_list<T>(@1: List<T>[@TraitClause0]) -> (T, List<T>[@TraitClause0])
 where
-    [@TraitClause0]: core::marker::Sized<T>,
+    [@TraitClause0]: Sized<T>,
 {
-    let @0: (T, test_crate::List<T>[@TraitClause0]); // return
-    let l@1: test_crate::List<T>[@TraitClause0]; // arg #1
+    let @0: (T, List<T>[@TraitClause0]); // return
+    let l@1: List<T>[@TraitClause0]; // arg #1
     let hd@2: T; // local
-    let tl@3: alloc::boxed::Box<test_crate::List<T>[@TraitClause0]>[core::marker::Sized<alloc::alloc::Global>]; // local
+    let tl@3: alloc::boxed::Box<List<T>[@TraitClause0]>[Sized<Global>]; // local
     let @4: T; // anonymous local
-    let @5: test_crate::List<T>[@TraitClause0]; // anonymous local
+    let @5: List<T>[@TraitClause0]; // anonymous local
 
     match l@1 {
-        test_crate::List::Cons => {
+        List::Cons => {
         },
         _ => {
             panic(core::panicking::panic_explicit)
@@ -431,7 +457,8 @@ where
     return
 }
 
-pub fn test_crate::test_char() -> char
+// Full name: test_crate::test_char
+pub fn test_char() -> char
 {
     let @0: char; // return
 
@@ -439,23 +466,26 @@ pub fn test_crate::test_char() -> char
     return
 }
 
-pub enum test_crate::Tree<T>
+// Full name: test_crate::Tree
+pub enum Tree<T>
   where
-      [@TraitClause0]: core::marker::Sized<T>,
- =
-|  Leaf(T)
-|  Node(T, test_crate::NodeElem<T>[@TraitClause0], alloc::boxed::Box<test_crate::Tree<T>[@TraitClause0]>[core::marker::Sized<alloc::alloc::Global>])
+      [@TraitClause0]: Sized<T>,
+{
+  Leaf(T),
+  Node(T, NodeElem<T>[@TraitClause0], alloc::boxed::Box<Tree<T>[@TraitClause0]>[Sized<Global>]),
+}
 
-
-pub enum test_crate::NodeElem<T>
+// Full name: test_crate::NodeElem
+pub enum NodeElem<T>
   where
-      [@TraitClause0]: core::marker::Sized<T>,
- =
-|  Cons(alloc::boxed::Box<test_crate::Tree<T>[@TraitClause0]>[core::marker::Sized<alloc::alloc::Global>], alloc::boxed::Box<test_crate::NodeElem<T>[@TraitClause0]>[core::marker::Sized<alloc::alloc::Global>])
-|  Nil()
+      [@TraitClause0]: Sized<T>,
+{
+  Cons(alloc::boxed::Box<Tree<T>[@TraitClause0]>[Sized<Global>], alloc::boxed::Box<NodeElem<T>[@TraitClause0]>[Sized<Global>]),
+  Nil,
+}
 
-
-pub fn test_crate::even(@1: u32) -> bool
+// Full name: test_crate::even
+pub fn even(@1: u32) -> bool
 {
     let @0: bool; // return
     let x@1: u32; // arg #1
@@ -481,14 +511,15 @@ pub fn test_crate::even(@1: u32) -> bool
         @5 := copy (x@1)
         @4 := copy (@5) - const (1 : u32)
         storage_dead(@5)
-        @0 := test_crate::odd(move (@4))
+        @0 := odd(move (@4))
         storage_dead(@4)
     }
     storage_dead(@2)
     return
 }
 
-pub fn test_crate::odd(@1: u32) -> bool
+// Full name: test_crate::odd
+pub fn odd(@1: u32) -> bool
 {
     let @0: bool; // return
     let x@1: u32; // arg #1
@@ -514,14 +545,15 @@ pub fn test_crate::odd(@1: u32) -> bool
         @5 := copy (x@1)
         @4 := copy (@5) - const (1 : u32)
         storage_dead(@5)
-        @0 := test_crate::even(move (@4))
+        @0 := even(move (@4))
         storage_dead(@4)
     }
     storage_dead(@2)
     return
 }
 
-pub fn test_crate::test_even_odd()
+// Full name: test_crate::test_even_odd
+pub fn test_even_odd()
 {
     let @0: (); // return
     let @1: (); // anonymous local
@@ -535,25 +567,25 @@ pub fn test_crate::test_even_odd()
 
     storage_live(@1)
     storage_live(@2)
-    @2 := test_crate::even(const (0 : u32))
+    @2 := even(const (0 : u32))
     assert(move (@2) == true)
     storage_dead(@2)
     storage_dead(@1)
     storage_live(@3)
     storage_live(@4)
-    @4 := test_crate::even(const (4 : u32))
+    @4 := even(const (4 : u32))
     assert(move (@4) == true)
     storage_dead(@4)
     storage_dead(@3)
     storage_live(@5)
     storage_live(@6)
-    @6 := test_crate::odd(const (1 : u32))
+    @6 := odd(const (1 : u32))
     assert(move (@6) == true)
     storage_dead(@6)
     storage_dead(@5)
     storage_live(@7)
     storage_live(@8)
-    @8 := test_crate::odd(const (5 : u32))
+    @8 := odd(const (5 : u32))
     assert(move (@8) == true)
     storage_dead(@8)
     storage_dead(@7)
@@ -562,75 +594,80 @@ pub fn test_crate::test_even_odd()
     return
 }
 
-pub struct test_crate::StructWithTuple<T1, T2>
+// Full name: test_crate::StructWithTuple
+pub struct StructWithTuple<T1, T2>
   where
-      [@TraitClause0]: core::marker::Sized<T1>,
-      [@TraitClause1]: core::marker::Sized<T2>,
- =
+      [@TraitClause0]: Sized<T1>,
+      [@TraitClause1]: Sized<T2>,
 {
   p: (T1, T2),
 }
 
-pub fn test_crate::new_tuple1() -> test_crate::StructWithTuple<u32, u32>[core::marker::Sized<u32>, core::marker::Sized<u32>]
+// Full name: test_crate::new_tuple1
+pub fn new_tuple1() -> StructWithTuple<u32, u32>[Sized<u32>, Sized<u32>]
 {
-    let @0: test_crate::StructWithTuple<u32, u32>[core::marker::Sized<u32>, core::marker::Sized<u32>]; // return
+    let @0: StructWithTuple<u32, u32>[Sized<u32>, Sized<u32>]; // return
     let @1: (u32, u32); // anonymous local
 
     storage_live(@1)
     @1 := (const (1 : u32), const (2 : u32))
-    @0 := test_crate::StructWithTuple { p: move (@1) }
+    @0 := StructWithTuple { p: move (@1) }
     storage_dead(@1)
     return
 }
 
-pub fn test_crate::new_tuple2() -> test_crate::StructWithTuple<i16, i16>[core::marker::Sized<i16>, core::marker::Sized<i16>]
+// Full name: test_crate::new_tuple2
+pub fn new_tuple2() -> StructWithTuple<i16, i16>[Sized<i16>, Sized<i16>]
 {
-    let @0: test_crate::StructWithTuple<i16, i16>[core::marker::Sized<i16>, core::marker::Sized<i16>]; // return
+    let @0: StructWithTuple<i16, i16>[Sized<i16>, Sized<i16>]; // return
     let @1: (i16, i16); // anonymous local
 
     storage_live(@1)
     @1 := (const (1 : i16), const (2 : i16))
-    @0 := test_crate::StructWithTuple { p: move (@1) }
+    @0 := StructWithTuple { p: move (@1) }
     storage_dead(@1)
     return
 }
 
-pub fn test_crate::new_tuple3() -> test_crate::StructWithTuple<u64, i64>[core::marker::Sized<u64>, core::marker::Sized<i64>]
+// Full name: test_crate::new_tuple3
+pub fn new_tuple3() -> StructWithTuple<u64, i64>[Sized<u64>, Sized<i64>]
 {
-    let @0: test_crate::StructWithTuple<u64, i64>[core::marker::Sized<u64>, core::marker::Sized<i64>]; // return
+    let @0: StructWithTuple<u64, i64>[Sized<u64>, Sized<i64>]; // return
     let @1: (u64, i64); // anonymous local
 
     storage_live(@1)
     @1 := (const (1 : u64), const (2 : i64))
-    @0 := test_crate::StructWithTuple { p: move (@1) }
+    @0 := StructWithTuple { p: move (@1) }
     storage_dead(@1)
     return
 }
 
-pub struct test_crate::StructWithPair<T1, T2>
+// Full name: test_crate::StructWithPair
+pub struct StructWithPair<T1, T2>
   where
-      [@TraitClause0]: core::marker::Sized<T1>,
-      [@TraitClause1]: core::marker::Sized<T2>,
- =
+      [@TraitClause0]: Sized<T1>,
+      [@TraitClause1]: Sized<T2>,
 {
-  p: test_crate::Pair<T1, T2>[@TraitClause0, @TraitClause1],
+  p: Pair<T1, T2>[@TraitClause0, @TraitClause1],
 }
 
-pub fn test_crate::new_pair1() -> test_crate::StructWithPair<u32, u32>[core::marker::Sized<u32>, core::marker::Sized<u32>]
+// Full name: test_crate::new_pair1
+pub fn new_pair1() -> StructWithPair<u32, u32>[Sized<u32>, Sized<u32>]
 {
-    let @0: test_crate::StructWithPair<u32, u32>[core::marker::Sized<u32>, core::marker::Sized<u32>]; // return
-    let @1: test_crate::Pair<u32, u32>[core::marker::Sized<u32>, core::marker::Sized<u32>]; // anonymous local
+    let @0: StructWithPair<u32, u32>[Sized<u32>, Sized<u32>]; // return
+    let @1: Pair<u32, u32>[Sized<u32>, Sized<u32>]; // anonymous local
 
     storage_live(@1)
     // This actually doesn't make rustc generate a constant...
     // I guess it only happens for tuples.
-    @1 := test_crate::Pair { x: const (1 : u32), y: const (2 : u32) }
-    @0 := test_crate::StructWithPair { p: move (@1) }
+    @1 := Pair { x: const (1 : u32), y: const (2 : u32) }
+    @0 := StructWithPair { p: move (@1) }
     storage_dead(@1)
     return
 }
 
-pub fn test_crate::incr<'_0>(@1: &'_0 mut (u32))
+// Full name: test_crate::incr
+pub fn incr<'_0>(@1: &'_0 mut (u32))
 {
     let @0: (); // return
     let x@1: &'_ mut (u32); // arg #1
@@ -641,7 +678,8 @@ pub fn test_crate::incr<'_0>(@1: &'_0 mut (u32))
     return
 }
 
-pub fn test_crate::read_then_incr<'_0>(@1: &'_0 mut (u32)) -> u32
+// Full name: test_crate::read_then_incr
+pub fn read_then_incr<'_0>(@1: &'_0 mut (u32)) -> u32
 {
     let @0: u32; // return
     let x@1: &'_ mut (u32); // arg #1
@@ -655,37 +693,41 @@ pub fn test_crate::read_then_incr<'_0>(@1: &'_0 mut (u32)) -> u32
     return
 }
 
+// Full name: core::ops::deref::Deref
 #[lang_item("deref")]
-pub trait core::ops::deref::Deref<Self>
+pub trait Deref<Self>
 {
     type Target
     fn deref<'_0> = core::ops::deref::Deref::deref<'_0_0, Self>
 }
 
+// Full name: core::ops::deref::DerefMut
 #[lang_item("deref_mut")]
-pub trait core::ops::deref::DerefMut<Self>
+pub trait DerefMut<Self>
 {
-    parent_clause0 : [@TraitClause0]: core::ops::deref::Deref<Self>
+    parent_clause0 : [@TraitClause0]: Deref<Self>
     fn deref_mut<'_0> = core::ops::deref::DerefMut::deref_mut<'_0_0, Self>
 }
 
 #[lang_item("deref_mut_method")]
 pub fn core::ops::deref::DerefMut::deref_mut<'_0, Self>(@1: &'_0 mut (Self)) -> &'_0 mut (Self::parent_clause0::Target)
 
-impl alloc::boxed::{impl core::ops::deref::Deref for alloc::boxed::Box<T>[@TraitClause0]}#24<T, A> : core::ops::deref::Deref<alloc::boxed::Box<T>[@TraitClause0]>
+// Full name: alloc::boxed::{impl Deref for alloc::boxed::Box<T>[@TraitClause0]}#24
+impl<T, A> Deref for alloc::boxed::Box<T>[@TraitClause0]
 where
-    [@TraitClause0]: core::marker::Sized<A>,
+    [@TraitClause0]: Sized<A>,
 {
     type Target = T
-    fn deref<'_0> = alloc::boxed::{impl core::ops::deref::Deref for alloc::boxed::Box<T>[@TraitClause0]}#24::deref<'_0_0, T, A>[@TraitClause0]
+    fn deref<'_0> = {impl Deref for alloc::boxed::Box<T>[@TraitClause0]}#24::deref<'_0_0, T, A>[@TraitClause0]
 }
 
-impl alloc::boxed::{impl core::ops::deref::DerefMut for alloc::boxed::Box<T>[@TraitClause0]}#25<T, A> : core::ops::deref::DerefMut<alloc::boxed::Box<T>[@TraitClause0]>
+// Full name: alloc::boxed::{impl DerefMut for alloc::boxed::Box<T>[@TraitClause0]}#25
+impl<T, A> DerefMut for alloc::boxed::Box<T>[@TraitClause0]
 where
-    [@TraitClause0]: core::marker::Sized<A>,
+    [@TraitClause0]: Sized<A>,
 {
-    parent_clause0 = alloc::boxed::{impl core::ops::deref::Deref for alloc::boxed::Box<T>[@TraitClause0]}#24<T, A>[@TraitClause0]
-    fn deref_mut<'_0> = alloc::boxed::{impl core::ops::deref::DerefMut for alloc::boxed::Box<T>[@TraitClause0]}#25::deref_mut<'_0_0, T, A>[@TraitClause0]
+    parent_clause0 = {impl Deref for alloc::boxed::Box<T>[@TraitClause0]}#24<T, A>[@TraitClause0]
+    fn deref_mut<'_0> = {impl DerefMut for alloc::boxed::Box<T>[@TraitClause0]}#25::deref_mut<'_0_0, T, A>[@TraitClause0]
 }
 
 #[lang_item("deref_method")]

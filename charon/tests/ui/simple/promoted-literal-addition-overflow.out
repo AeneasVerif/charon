@@ -4,7 +4,8 @@ pub fn core::num::{u32}#8::MAX() -> u32
 
 pub const core::num::{u32}#8::MAX: u32 = core::num::{u32}#8::MAX()
 
-fn test_crate::overflow() -> &'static (u32)
+// Full name: test_crate::overflow
+fn overflow() -> &'static (u32)
 {
     let @0: &'_ (u32); // return
     let @1: &'_ (u32); // anonymous local

@@ -1,49 +1,55 @@
 # Final LLBC before serialization:
 
-struct test_crate::Foo = {}
+// Full name: test_crate::Foo
+struct Foo {}
 
+// Full name: core::marker::Sized
 #[lang_item("sized")]
-pub trait core::marker::Sized<Self>
+pub trait Sized<Self>
 
+// Full name: core::clone::Clone
 #[lang_item("clone")]
-pub trait core::clone::Clone<Self>
+pub trait Clone<Self>
 {
-    parent_clause0 : [@TraitClause0]: core::marker::Sized<Self>
+    parent_clause0 : [@TraitClause0]: Sized<Self>
     fn clone<'_0> = core::clone::Clone::clone<'_0_0, Self>
 }
 
-pub fn test_crate::{impl core::clone::Clone for test_crate::Foo}::clone<'_0>(@1: &'_0 (test_crate::Foo)) -> test_crate::Foo
+// Full name: test_crate::{impl Clone for Foo}::clone
+pub fn {impl Clone for Foo}::clone<'_0>(@1: &'_0 (Foo)) -> Foo
 {
-    let @0: test_crate::Foo; // return
-    let self@1: &'_ (test_crate::Foo); // arg #1
+    let @0: Foo; // return
+    let self@1: &'_ (Foo); // arg #1
 
     @0 := copy (*(self@1))
     return
 }
 
-impl test_crate::{impl core::clone::Clone for test_crate::Foo} : core::clone::Clone<test_crate::Foo>
-{
-    parent_clause0 = core::marker::Sized<test_crate::Foo>
-    fn clone<'_0> = test_crate::{impl core::clone::Clone for test_crate::Foo}::clone<'_0_0>
+// Full name: test_crate::{impl Clone for Foo}
+impl Clone for Foo {
+    parent_clause0 = Sized<Foo>
+    fn clone<'_0> = {impl Clone for Foo}::clone<'_0_0>
 }
 
+// Full name: core::marker::Copy
 #[lang_item("copy")]
-pub trait core::marker::Copy<Self>
+pub trait Copy<Self>
 {
-    parent_clause0 : [@TraitClause0]: core::clone::Clone<Self>
+    parent_clause0 : [@TraitClause0]: Clone<Self>
 }
 
-impl test_crate::{impl core::marker::Copy for test_crate::Foo}#1 : core::marker::Copy<test_crate::Foo>
-{
-    parent_clause0 = test_crate::{impl core::clone::Clone for test_crate::Foo}
+// Full name: test_crate::{impl Copy for Foo}#1
+impl Copy for Foo {
+    parent_clause0 = {impl Clone for Foo}
 }
 
-fn test_crate::copy_foo(@1: test_crate::Foo)
+// Full name: test_crate::copy_foo
+fn copy_foo(@1: Foo)
 {
     let @0: (); // return
-    let x@1: test_crate::Foo; // arg #1
-    let y@2: test_crate::Foo; // local
-    let z@3: test_crate::Foo; // local
+    let x@1: Foo; // arg #1
+    let y@2: Foo; // local
+    let z@3: Foo; // local
 
     storage_live(y@2)
     y@2 := copy (x@1)
@@ -56,10 +62,11 @@ fn test_crate::copy_foo(@1: test_crate::Foo)
     return
 }
 
-fn test_crate::copy_generic<T>(@1: T)
+// Full name: test_crate::copy_generic
+fn copy_generic<T>(@1: T)
 where
-    [@TraitClause0]: core::marker::Sized<T>,
-    [@TraitClause1]: core::marker::Copy<T>,
+    [@TraitClause0]: Sized<T>,
+    [@TraitClause1]: Copy<T>,
 {
     let @0: (); // return
     let x@1: T; // arg #1
@@ -77,17 +84,19 @@ where
     return
 }
 
-trait test_crate::Trait<Self>
+// Full name: test_crate::Trait
+trait Trait<Self>
 {
-    parent_clause0 : [@TraitClause0]: core::marker::Sized<Self::Ty>
-    parent_clause1 : [@TraitClause1]: core::marker::Copy<Self::Ty>
+    parent_clause0 : [@TraitClause0]: Sized<Self::Ty>
+    parent_clause1 : [@TraitClause1]: Copy<Self::Ty>
     type Ty
 }
 
-fn test_crate::copy_assoc_ty<T>(@1: @TraitClause1::Ty)
+// Full name: test_crate::copy_assoc_ty
+fn copy_assoc_ty<T>(@1: @TraitClause1::Ty)
 where
-    [@TraitClause0]: core::marker::Sized<T>,
-    [@TraitClause1]: test_crate::Trait<T>,
+    [@TraitClause0]: Sized<T>,
+    [@TraitClause1]: Trait<T>,
 {
     let @0: (); // return
     let x@1: @TraitClause1::Ty; // arg #1

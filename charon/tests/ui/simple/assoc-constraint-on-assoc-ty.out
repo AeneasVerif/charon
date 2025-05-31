@@ -1,17 +1,20 @@
 # Final LLBC before serialization:
 
+// Full name: core::marker::Sized
 #[lang_item("sized")]
-pub trait core::marker::Sized<Self>
+pub trait Sized<Self>
 
-trait test_crate::Trait<Self, Self_Assoc>
+// Full name: test_crate::Trait
+trait Trait<Self, Self_Assoc>
 {
-    parent_clause0 : [@TraitClause0]: core::marker::Sized<Self_Assoc>
+    parent_clause0 : [@TraitClause0]: Sized<Self_Assoc>
 }
 
-fn test_crate::takes_trait<I, Clause1_Assoc>(@1: I)
+// Full name: test_crate::takes_trait
+fn takes_trait<I, Clause1_Assoc>(@1: I)
 where
-    [@TraitClause0]: core::marker::Sized<I>,
-    [@TraitClause1]: test_crate::Trait<I, Clause1_Assoc>,
+    [@TraitClause0]: Sized<I>,
+    [@TraitClause1]: Trait<I, Clause1_Assoc>,
 {
     let @0: (); // return
     let it@1: I; // arg #1
@@ -22,16 +25,18 @@ where
     return
 }
 
-trait test_crate::IntoIterator<Self, Self_IntoIter>
+// Full name: test_crate::IntoIterator
+trait IntoIterator<Self, Self_IntoIter>
 {
-    parent_clause0 : [@TraitClause0]: core::marker::Sized<Self_IntoIter>
-    parent_clause1 : [@TraitClause1]: test_crate::Trait<Self_IntoIter, ()>
+    parent_clause0 : [@TraitClause0]: Sized<Self_IntoIter>
+    parent_clause1 : [@TraitClause1]: Trait<Self_IntoIter, ()>
 }
 
-fn test_crate::collect<I, Clause1_IntoIter>(@1: Clause1_IntoIter)
+// Full name: test_crate::collect
+fn collect<I, Clause1_IntoIter>(@1: Clause1_IntoIter)
 where
-    [@TraitClause0]: core::marker::Sized<I>,
-    [@TraitClause1]: test_crate::IntoIterator<I, Clause1_IntoIter>,
+    [@TraitClause0]: Sized<I>,
+    [@TraitClause1]: IntoIterator<I, Clause1_IntoIter>,
 {
     let @0: (); // return
     let it@1: Clause1_IntoIter; // arg #1
@@ -39,7 +44,7 @@ where
 
     storage_live(@2)
     @2 := move (it@1)
-    @0 := test_crate::takes_trait<Clause1_IntoIter, ()>[@TraitClause1::parent_clause0, @TraitClause1::parent_clause1](move (@2))
+    @0 := takes_trait<Clause1_IntoIter, ()>[@TraitClause1::parent_clause0, @TraitClause1::parent_clause1](move (@2))
     storage_dead(@2)
     drop it@1
     @0 := ()

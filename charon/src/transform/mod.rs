@@ -1,4 +1,5 @@
 pub mod check_generics;
+pub mod compute_short_names;
 pub mod ctx;
 pub mod duplicate_defaulted_methods;
 pub mod duplicate_return;
@@ -41,6 +42,8 @@ use Pass::*;
 
 /// Item and type cleanup passes.
 pub static INITIAL_CLEANUP_PASSES: &[Pass] = &[
+    // Compute short names
+    NonBody(&compute_short_names::Transform),
     // Remove the trait/impl methods that were not translated (because not used).
     NonBody(&remove_unused_methods::Transform),
     // Move clauses on associated types to be parent clauses

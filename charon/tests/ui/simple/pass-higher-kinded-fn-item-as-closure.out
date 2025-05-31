@@ -1,6 +1,7 @@
 # Final LLBC before serialization:
 
-pub fn test_crate::flabada<'a>(@1: &'a (())) -> &'a (())
+// Full name: test_crate::flabada
+pub fn flabada<'a>(@1: &'a (())) -> &'a (())
 {
     let @0: &'_ (()); // return
     let x@1: &'_ (()); // arg #1
@@ -9,43 +10,48 @@ pub fn test_crate::flabada<'a>(@1: &'a (())) -> &'a (())
     return
 }
 
+// Full name: core::marker::Sized
 #[lang_item("sized")]
-pub trait core::marker::Sized<Self>
+pub trait Sized<Self>
 
+// Full name: core::marker::Tuple
 #[lang_item("tuple_trait")]
-pub trait core::marker::Tuple<Self>
+pub trait Tuple<Self>
 
+// Full name: core::ops::function::FnOnce
 #[lang_item("fn_once")]
-pub trait core::ops::function::FnOnce<Self, Args, Self_Output>
+pub trait FnOnce<Self, Args, Self_Output>
 {
-    parent_clause0 : [@TraitClause0]: core::marker::Sized<Args>
-    parent_clause1 : [@TraitClause1]: core::marker::Tuple<Args>
-    parent_clause2 : [@TraitClause2]: core::marker::Sized<Self_Output>
-    fn call_once = core::ops::function::FnOnce::call_once<Self, Args, Self_Output>
+    parent_clause0 : [@TraitClause0]: Sized<Args>
+    parent_clause1 : [@TraitClause1]: Tuple<Args>
+    parent_clause2 : [@TraitClause2]: Sized<Self_Output>
+    fn call_once = call_once<Self, Args, Self_Output>
 }
 
+// Full name: core::ops::function::FnMut
 #[lang_item("fn_mut")]
-pub trait core::ops::function::FnMut<Self, Args, Self_Clause0_Output>
+pub trait FnMut<Self, Args, Self_Clause0_Output>
 {
-    parent_clause0 : [@TraitClause0]: core::ops::function::FnOnce<Self, Args, Self_Clause0_Output>
-    parent_clause1 : [@TraitClause1]: core::marker::Sized<Args>
-    parent_clause2 : [@TraitClause2]: core::marker::Tuple<Args>
-    fn call_mut<'_0> = core::ops::function::FnMut::call_mut<'_0_0, Self, Args, Self_Clause0_Output>
+    parent_clause0 : [@TraitClause0]: FnOnce<Self, Args, Self_Clause0_Output>
+    parent_clause1 : [@TraitClause1]: Sized<Args>
+    parent_clause2 : [@TraitClause2]: Tuple<Args>
+    fn call_mut<'_0> = call_mut<'_0_0, Self, Args, Self_Clause0_Output>
 }
 
+// Full name: core::ops::function::Fn
 #[lang_item("r#fn")]
-pub trait core::ops::function::Fn<Self, Args, Self_Clause0_Clause0_Output>
+pub trait Fn<Self, Args, Self_Clause0_Clause0_Output>
 {
-    parent_clause0 : [@TraitClause0]: core::ops::function::FnMut<Self, Args, Self_Clause0_Clause0_Output>
-    parent_clause1 : [@TraitClause1]: core::marker::Sized<Args>
-    parent_clause2 : [@TraitClause2]: core::marker::Tuple<Args>
+    parent_clause0 : [@TraitClause0]: FnMut<Self, Args, Self_Clause0_Clause0_Output>
+    parent_clause1 : [@TraitClause1]: Sized<Args>
+    parent_clause2 : [@TraitClause2]: Tuple<Args>
     fn call<'_0> = core::ops::function::Fn::call<'_0_0, Self, Args, Self_Clause0_Clause0_Output>
 }
 
 pub fn test_crate::call<'b, F>(@1: F)
 where
-    [@TraitClause0]: core::marker::Sized<F>,
-    [@TraitClause1]: core::ops::function::Fn<F, (&'b (())), &'b (())>,
+    [@TraitClause0]: Sized<F>,
+    [@TraitClause1]: Fn<F, (&'b (())), &'b (())>,
 {
     let @0: (); // return
     let @1: F; // arg #1
@@ -56,13 +62,14 @@ where
     return
 }
 
-pub fn test_crate::flibidi()
+// Full name: test_crate::flibidi
+pub fn flibidi()
 {
     let @0: (); // return
     let @1: (); // anonymous local
 
     storage_live(@1)
-    @1 := test_crate::call<'_, fn<'a>(&'a (())) -> &'a (())>[core::marker::Sized<fn<'a>(&'a (())) -> &'a (())>, core::ops::function::Fn<fn<'a>(&'a (())) -> &'a (()), (&'_ (())), &'_ (())>](const (test_crate::flabada<'_>))
+    @1 := test_crate::call<'_, fn<'a>(&'a (())) -> &'a (())>[Sized<fn<'a>(&'a (())) -> &'a (())>, Fn<fn<'a>(&'a (())) -> &'a (()), (&'_ (())), &'_ (())>](const (flabada<'_>))
     storage_dead(@1)
     @0 := ()
     @0 := ()
@@ -71,9 +78,11 @@ pub fn test_crate::flibidi()
 
 pub fn core::ops::function::Fn::call<'_0, Self, Args, Self_Clause0_Clause0_Output>(@1: &'_0 (Self), @2: Args) -> Self_Clause0_Clause0_Output
 
-pub fn core::ops::function::FnMut::call_mut<'_0, Self, Args, Self_Clause0_Output>(@1: &'_0 mut (Self), @2: Args) -> Self_Clause0_Output
+// Full name: core::ops::function::FnMut::call_mut
+pub fn call_mut<'_0, Self, Args, Self_Clause0_Output>(@1: &'_0 mut (Self), @2: Args) -> Self_Clause0_Output
 
-pub fn core::ops::function::FnOnce::call_once<Self, Args, Self_Output>(@1: Self, @2: Args) -> Self_Output
+// Full name: core::ops::function::FnOnce::call_once
+pub fn call_once<Self, Args, Self_Output>(@1: Self, @2: Args) -> Self_Output
 
 
 

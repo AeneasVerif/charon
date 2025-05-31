@@ -1,16 +1,19 @@
 # Final LLBC before serialization:
 
+// Full name: core::marker::Sized
 #[lang_item("sized")]
-pub trait core::marker::Sized<Self>
+pub trait Sized<Self>
 
+// Full name: core::mem::size_of
 #[lang_item("mem_size_of")]
-pub fn core::mem::size_of<T>() -> usize
+pub fn size_of<T>() -> usize
 where
-    [@TraitClause0]: core::marker::Sized<T>,
+    [@TraitClause0]: Sized<T>,
 
-fn test_crate::f<T>()
+// Full name: test_crate::f
+fn f<T>()
 where
-    [@TraitClause0]: core::marker::Sized<T>,
+    [@TraitClause0]: Sized<T>,
 {
     let @0: (); // return
     let @1: &'_ (usize); // anonymous local
@@ -22,7 +25,7 @@ where
     storage_live(@3)
     storage_live(@4)
     // This can't be evaluated generically.
-    @4 := core::mem::size_of<T>[@TraitClause0]()
+    @4 := size_of<T>[@TraitClause0]()
     @3 := &@4
     storage_live(@1)
     @2 := move (@3)

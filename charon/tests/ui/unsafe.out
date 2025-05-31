@@ -1,18 +1,22 @@
 # Final LLBC before serialization:
 
+// Full name: core::ptr::null
 #[lang_item("ptr_null")]
-pub fn core::ptr::null<T>() -> *const T
+pub fn null<T>() -> *const T
 where
-    [@TraitClause0]: core::ptr::metadata::Thin<T>,
+    [@TraitClause0]: Thin<T>,
 
+// Full name: core::marker::Sized
 #[lang_item("sized")]
-pub trait core::marker::Sized<Self>
+pub trait Sized<Self>
 
-pub unsafe fn core::ptr::const_ptr::{*const T}::read<T>(@1: *const T) -> T
+// Full name: core::ptr::const_ptr::{*const T}::read
+pub unsafe fn read<T>(@1: *const T) -> T
 where
-    [@TraitClause0]: core::marker::Sized<T>,
+    [@TraitClause0]: Sized<T>,
 
-fn test_crate::call_unsafe_fn()
+// Full name: test_crate::call_unsafe_fn
+fn call_unsafe_fn()
 {
     let @0: (); // return
     let x@1: *const u32; // local
@@ -20,11 +24,11 @@ fn test_crate::call_unsafe_fn()
     let @3: *const u32; // anonymous local
 
     storage_live(x@1)
-    x@1 := core::ptr::null<u32>[core::ptr::metadata::Thin<u32>]()
+    x@1 := null<u32>[Thin<u32>]()
     storage_live(@2)
     storage_live(@3)
     @3 := copy (x@1)
-    @2 := core::ptr::const_ptr::{*const T}::read<u32>[core::marker::Sized<u32>](move (@3))
+    @2 := read<u32>[Sized<u32>](move (@3))
     storage_dead(@3)
     storage_dead(@2)
     @0 := ()
@@ -33,14 +37,15 @@ fn test_crate::call_unsafe_fn()
     return
 }
 
-fn test_crate::deref_raw_ptr()
+// Full name: test_crate::deref_raw_ptr
+fn deref_raw_ptr()
 {
     let @0: (); // return
     let x@1: *const u32; // local
     let @2: u32; // anonymous local
 
     storage_live(x@1)
-    x@1 := core::ptr::null<u32>[core::ptr::metadata::Thin<u32>]()
+    x@1 := null<u32>[Thin<u32>]()
     storage_live(@2)
     @2 := copy (*(x@1))
     storage_dead(@2)
@@ -50,9 +55,11 @@ fn test_crate::deref_raw_ptr()
     return
 }
 
-trait test_crate::Trait<Self>
+// Full name: test_crate::Trait
+trait Trait<Self>
 
-impl test_crate::{impl test_crate::Trait for ()} : test_crate::Trait<()>
+// Full name: test_crate::{impl Trait for ()}
+impl Trait for () {}
 
 fn test_crate::COUNTER() -> usize
 {
@@ -64,7 +71,8 @@ fn test_crate::COUNTER() -> usize
 
 static test_crate::COUNTER: usize = test_crate::COUNTER()
 
-fn test_crate::access_mutable_static()
+// Full name: test_crate::access_mutable_static
+fn access_mutable_static()
 {
     let @0: (); // return
     let @1: *mut usize; // anonymous local
@@ -81,20 +89,21 @@ fn test_crate::access_mutable_static()
     return
 }
 
-union test_crate::Foo =
-{
+// Full name: test_crate::Foo
+union Foo {
   one: u64,
   two: Array<u32, 2 : usize>,
 }
 
-fn test_crate::access_union_field()
+// Full name: test_crate::access_union_field
+fn access_union_field()
 {
     let @0: (); // return
-    let one@1: test_crate::Foo; // local
+    let one@1: Foo; // local
     let _two@2: Array<u32, 2 : usize>; // local
 
     storage_live(one@1)
-    one@1 := test_crate::Foo { one: const (42 : u64) }
+    one@1 := Foo { one: const (42 : u64) }
     storage_live(_two@2)
     _two@2 := copy ((one@1).two)
     @0 := ()

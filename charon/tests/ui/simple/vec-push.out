@@ -1,69 +1,78 @@
 # Final LLBC before serialization:
 
+// Full name: core::marker::Sized
 #[lang_item("sized")]
-pub trait core::marker::Sized<Self>
+pub trait Sized<Self>
 
-opaque type alloc::raw_vec::RawVec<T, A>
+// Full name: alloc::raw_vec::RawVec
+opaque type RawVec<T, A>
   where
-      [@TraitClause0]: core::marker::Sized<T>,
-      [@TraitClause1]: core::marker::Sized<A>,
+      [@TraitClause0]: Sized<T>,
+      [@TraitClause1]: Sized<A>,
 
+// Full name: alloc::vec::Vec
 #[lang_item("Vec")]
-pub struct alloc::vec::Vec<T, A>
+pub struct Vec<T, A>
   where
-      [@TraitClause0]: core::marker::Sized<T>,
-      [@TraitClause1]: core::marker::Sized<A>,
- =
+      [@TraitClause0]: Sized<T>,
+      [@TraitClause1]: Sized<A>,
 {
-  buf: alloc::raw_vec::RawVec<T, A>[@TraitClause0, @TraitClause1],
+  buf: RawVec<T, A>[@TraitClause0, @TraitClause1],
   len: usize,
 }
 
+// Full name: alloc::alloc::Global
 #[lang_item("global_alloc_ty")]
-pub struct alloc::alloc::Global = {}
+pub struct Global {}
 
-opaque type alloc::raw_vec::RawVecInner<A>
+// Full name: alloc::raw_vec::RawVecInner
+opaque type RawVecInner<A>
   where
-      [@TraitClause0]: core::marker::Sized<A>,
+      [@TraitClause0]: Sized<A>,
 
-pub opaque type core::num::niche_types::UsizeNoHighBit
+// Full name: core::num::niche_types::UsizeNoHighBit
+pub opaque type UsizeNoHighBit
 
+// Full name: core::ptr::non_null::NonNull
 #[lang_item("NonNull")]
-pub opaque type core::ptr::non_null::NonNull<T>
+pub opaque type NonNull<T>
 
 pub fn core::num::{usize}#11::MAX() -> usize
 
 pub const core::num::{usize}#11::MAX: usize = core::num::{usize}#11::MAX()
 
-fn alloc::raw_vec::{alloc::raw_vec::RawVec<T, A>[@TraitClause0, @TraitClause1]}#2::grow_one<'_0, T, A>(@1: &'_0 mut (alloc::raw_vec::RawVec<T, A>[@TraitClause0, @TraitClause1]))
+// Full name: alloc::raw_vec::{RawVec<T, A>[@TraitClause0, @TraitClause1]}#2::grow_one
+fn grow_one<'_0, T, A>(@1: &'_0 mut (RawVec<T, A>[@TraitClause0, @TraitClause1]))
 where
-    [@TraitClause0]: core::marker::Sized<T>,
-    [@TraitClause1]: core::marker::Sized<A>,
+    [@TraitClause0]: Sized<T>,
+    [@TraitClause1]: Sized<A>,
 
+// Full name: core::ptr::unique::Unique
 #[lang_item("ptr_unique")]
-pub opaque type core::ptr::unique::Unique<T>
+pub opaque type Unique<T>
 
-pub fn alloc::vec::{alloc::vec::Vec<T, A>[@TraitClause0, @TraitClause1]}#1::push<'_0, T, A>(@1: &'_0 mut (alloc::vec::Vec<T, A>[@TraitClause0, @TraitClause1]), @2: T)
+// Full name: alloc::vec::{Vec<T, A>[@TraitClause0, @TraitClause1]}#1::push
+pub fn push<'_0, T, A>(@1: &'_0 mut (Vec<T, A>[@TraitClause0, @TraitClause1]), @2: T)
 where
-    [@TraitClause0]: core::marker::Sized<T>,
-    [@TraitClause1]: core::marker::Sized<A>,
+    [@TraitClause0]: Sized<T>,
+    [@TraitClause1]: Sized<A>,
 {
     let @0: (); // return
-    let self@1: &'_ mut (alloc::vec::Vec<T, A>[@TraitClause0, @TraitClause1]); // arg #1
+    let self@1: &'_ mut (Vec<T, A>[@TraitClause0, @TraitClause1]); // arg #1
     let value@2: T; // arg #2
     let len@3: usize; // local
     let @4: bool; // anonymous local
     let @5: usize; // anonymous local
-    let self@6: &'_ (alloc::raw_vec::RawVec<T, A>[@TraitClause0, @TraitClause1]); // local
+    let self@6: &'_ (RawVec<T, A>[@TraitClause0, @TraitClause1]); // local
     let @7: (); // anonymous local
-    let @8: &'_ mut (alloc::raw_vec::RawVec<T, A>[@TraitClause0, @TraitClause1]); // anonymous local
+    let @8: &'_ mut (RawVec<T, A>[@TraitClause0, @TraitClause1]); // anonymous local
     let end@9: *mut T; // local
     let self@10: *mut T; // local
     let src@11: T; // local
-    let self@12: &'_ (alloc::raw_vec::RawVecInner<A>[@TraitClause1]); // local
+    let self@12: &'_ (RawVecInner<A>[@TraitClause1]); // local
     let elem_size@13: usize; // local
-    let self@14: core::num::niche_types::UsizeNoHighBit; // local
-    let @15: core::ptr::non_null::NonNull<u8>; // anonymous local
+    let self@14: UsizeNoHighBit; // local
+    let @15: NonNull<u8>; // anonymous local
     let @16: usize; // anonymous local
 
     storage_live(len@3)
@@ -79,7 +88,7 @@ where
     storage_live(self@6)
     self@6 := &(*(self@1)).buf
     storage_live(self@12)
-    self@12 := &((*(self@1)).buf).__unknown_field
+    self@12 := &((*(self@1)).buf).0
     storage_live(elem_size@13)
     elem_size@13 := size_of<T>
     switch move (elem_size@13) {
@@ -89,8 +98,8 @@ where
         },
         _ => {
             storage_live(self@14)
-            self@14 := copy ((((*(self@1)).buf).__unknown_field).__unknown_field)
-            @5 := transmute<core::num::niche_types::UsizeNoHighBit, usize>(copy (self@14))
+            self@14 := copy ((((*(self@1)).buf).0).1)
+            @5 := transmute<UsizeNoHighBit, usize>(copy (self@14))
             storage_dead(self@14)
         },
     }
@@ -102,7 +111,7 @@ where
         storage_dead(@5)
         storage_live(@8)
         @8 := &two-phase-mut (*(self@1)).buf
-        @7 := alloc::raw_vec::{alloc::raw_vec::RawVec<T, A>[@TraitClause0, @TraitClause1]}#2::grow_one<'_, T, A>[@TraitClause0, @TraitClause1](move (@8))
+        @7 := grow_one<'_, T, A>[@TraitClause0, @TraitClause1](move (@8))
         storage_dead(@8)
     }
     else {
@@ -111,8 +120,8 @@ where
     storage_dead(@4)
     storage_live(self@10)
     storage_live(@15)
-    @15 := copy (((((*(self@1)).buf).__unknown_field).__unknown_field).__unknown_field)
-    self@10 := transmute<core::ptr::non_null::NonNull<u8>, *mut T>(copy (@15))
+    @15 := copy (((((*(self@1)).buf).0).0).0)
+    self@10 := transmute<NonNull<u8>, *mut T>(copy (@15))
     storage_dead(@15)
     end@9 := copy (self@10) offset copy (len@3)
     storage_dead(self@10)
@@ -123,15 +132,16 @@ where
     return
 }
 
-fn test_crate::vec<'_0>(@1: &'_0 mut (alloc::vec::Vec<u32, alloc::alloc::Global>[core::marker::Sized<u32>, core::marker::Sized<alloc::alloc::Global>]))
+// Full name: test_crate::vec
+fn vec<'_0>(@1: &'_0 mut (Vec<u32, Global>[Sized<u32>, Sized<Global>]))
 {
     let @0: (); // return
-    let x@1: &'_ mut (alloc::vec::Vec<u32, alloc::alloc::Global>[core::marker::Sized<u32>, core::marker::Sized<alloc::alloc::Global>]); // arg #1
-    let @2: &'_ mut (alloc::vec::Vec<u32, alloc::alloc::Global>[core::marker::Sized<u32>, core::marker::Sized<alloc::alloc::Global>]); // anonymous local
+    let x@1: &'_ mut (Vec<u32, Global>[Sized<u32>, Sized<Global>]); // arg #1
+    let @2: &'_ mut (Vec<u32, Global>[Sized<u32>, Sized<Global>]); // anonymous local
 
     storage_live(@2)
     @2 := &two-phase-mut *(x@1)
-    @0 := alloc::vec::{alloc::vec::Vec<T, A>[@TraitClause0, @TraitClause1]}#1::push<'_, u32, alloc::alloc::Global>[core::marker::Sized<u32>, core::marker::Sized<alloc::alloc::Global>](move (@2), const (42 : u32))
+    @0 := push<'_, u32, Global>[Sized<u32>, Sized<Global>](move (@2), const (42 : u32))
     storage_dead(@2)
     @0 := ()
     return
