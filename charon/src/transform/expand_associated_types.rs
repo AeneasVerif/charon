@@ -1068,7 +1068,7 @@ impl UpdateItemBody<'_> {
                     self.type_replacements
                         .iter()
                         .flat_map(|x| x.iter())
-                        .map(|(path, ty)| format!("  - {path} = {}", ty.fmt_with_ctx(fmt_ctx)))
+                        .map(|(path, ty)| format!("  - {path} = {}", ty.with_ctx(fmt_ctx)))
                         .join("\n"),
                 );
                 TyKind::Error(format!("Can't compute {path}")).into_ty()

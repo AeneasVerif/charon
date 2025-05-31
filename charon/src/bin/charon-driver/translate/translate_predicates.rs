@@ -258,7 +258,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                                     span,
                                     "Found unsupported GAT `{}` when resolving trait `{}`",
                                     item.name,
-                                    trait_decl_ref.fmt_with_ctx(&self.into_fmt())
+                                    trait_decl_ref.with_ctx(&self.into_fmt())
                                 )
                             }
                             trait_id = TraitRefKind::ItemClause(

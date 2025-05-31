@@ -404,13 +404,16 @@ impl GenericsSource {
     /// Return a path that represents the target item.
     pub fn item_name(&self, translated: &TranslatedCrate, fmt_ctx: &FmtCtx) -> String {
         match self {
-            GenericsSource::Item(id) => translated.item_name(*id).unwrap().fmt_with_ctx(fmt_ctx),
+            GenericsSource::Item(id) => translated
+                .item_name(*id)
+                .unwrap()
+                .to_string_with_ctx(fmt_ctx),
             GenericsSource::Method(trait_id, method_name) => format!(
                 "{}::{method_name}",
                 translated
                     .item_name(*trait_id)
                     .unwrap()
-                    .fmt_with_ctx(fmt_ctx),
+                    .to_string_with_ctx(fmt_ctx),
             ),
             GenericsSource::Builtin => format!("<built-in>"),
             GenericsSource::Other => format!("<unknown>"),

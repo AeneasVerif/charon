@@ -65,7 +65,7 @@ impl Transform {
                                     "reading the discriminant of an opaque enum. \
                                     Add `--include {}` to the `charon` arguments \
                                     to translate this enum.",
-                                    name.fmt_with_ctx(&ctx.into_fmt())
+                                    name.with_ctx(&ctx.into_fmt())
                                 );
                             }
                             // Don't double-error

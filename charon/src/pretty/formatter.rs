@@ -182,11 +182,10 @@ impl<'a> FmtCtx<'a> {
     fn format_decl(&self, id: impl Into<AnyTransId>) -> String {
         let id = id.into();
         match self.get_item(id) {
-            Ok(d) => d.fmt_with_ctx(self),
+            Ok(d) => d.to_string_with_ctx(self),
             Err(opt_name) => {
                 let opt_name = opt_name
-                    .map(|n| n.fmt_with_ctx(self))
-                    .map(|n| format!(" ({n})"))
+                    .map(|n| format!(" ({})", n.with_ctx(self)))
                     .unwrap_or_default();
                 format!("Missing decl: {id:?}{opt_name}")
             }
@@ -231,7 +230,7 @@ impl<'a> Formatter<AnyTransId> for FmtCtx<'a> {
             .and_then(|translated| translated.item_short_name(id))
         {
             None => id.to_string(),
-            Some(name) => name.fmt_with_ctx(self),
+            Some(name) => name.to_string_with_ctx(self),
         }
     }
 }
@@ -289,7 +288,7 @@ impl<'a> Formatter<TypeDbVar> for FmtCtx<'a> {
 
 impl<'a> Formatter<ConstGenericDbVar> for FmtCtx<'a> {
     fn format_object(&self, var: ConstGenericDbVar) -> String {
-        self.format_bound_var(var, "@ConstGeneric", |v| Some(v.fmt_with_ctx(self)))
+        self.format_bound_var(var, "@ConstGeneric", |v| Some(v.to_string_with_ctx(self)))
     }
 }
 
@@ -305,7 +304,7 @@ impl<'a> Formatter<&ImplElem> for FmtCtx<'a> {
             ImplElem::Ty(bound_ty) => {
                 // Just printing the generics (not the predicates)
                 let ctx = self.set_generics(&bound_ty.params);
-                bound_ty.skip_binder.fmt_with_ctx(&ctx)
+                bound_ty.skip_binder.to_string_with_ctx(&ctx)
             }
             ImplElem::Trait(impl_id) => {
                 match &self.translated {
@@ -324,7 +323,7 @@ impl<'a> Formatter<&ImplElem> for FmtCtx<'a> {
                                 trait_id: *trait_id,
                                 generics: Box::new(generics),
                             };
-                            format!("impl {} for {}", tr.fmt_with_ctx(ctx), ty.fmt_with_ctx(ctx))
+                            format!("impl {} for {}", tr.with_ctx(ctx), ty.with_ctx(ctx))
                         }
                     },
                 }
@@ -394,7 +393,7 @@ impl<'a> Formatter<LocalId> for FmtCtx<'a> {
 
 impl<'a> Formatter<&llbc_ast::Block> for FmtCtx<'a> {
     fn format_object(&self, x: &llbc_ast::Block) -> String {
-        x.fmt_with_ctx(self)
+        x.to_string_with_ctx(self)
     }
 }
 
@@ -406,54 +405,54 @@ impl<'a> Formatter<&Vector<ullbc_ast::BlockId, ullbc_ast::BlockData>> for FmtCtx
 
 impl<'a> Formatter<&Ty> for FmtCtx<'a> {
     fn format_object(&self, x: &Ty) -> String {
-        x.fmt_with_ctx(self)
+        x.to_string_with_ctx(self)
     }
 }
 
 impl<'a> Formatter<&TypeDecl> for FmtCtx<'a> {
     fn format_object(&self, def: &TypeDecl) -> String {
-        def.fmt_with_ctx(self)
+        def.to_string_with_ctx(self)
     }
 }
 
 impl<'a> Formatter<&ullbc_ast::ExprBody> for FmtCtx<'a> {
     fn format_object(&self, body: &ullbc_ast::ExprBody) -> String {
-        body.fmt_with_ctx(self)
+        body.to_string_with_ctx(self)
     }
 }
 
 impl<'a> Formatter<&llbc_ast::ExprBody> for FmtCtx<'a> {
     fn format_object(&self, body: &llbc_ast::ExprBody) -> String {
-        body.fmt_with_ctx(self)
+        body.to_string_with_ctx(self)
     }
 }
 
 impl<'a> Formatter<&gast::FunDecl> for FmtCtx<'a> {
     fn format_object(&self, def: &llbc_ast::FunDecl) -> String {
-        def.fmt_with_ctx(self)
+        def.to_string_with_ctx(self)
     }
 }
 
 impl<'a> Formatter<&gast::GlobalDecl> for FmtCtx<'a> {
     fn format_object(&self, def: &llbc_ast::GlobalDecl) -> String {
-        def.fmt_with_ctx(self)
+        def.to_string_with_ctx(self)
     }
 }
 
 impl<'a> Formatter<&FunSig> for FmtCtx<'a> {
     fn format_object(&self, x: &FunSig) -> String {
-        x.fmt_with_ctx(self)
+        x.to_string_with_ctx(self)
     }
 }
 
 impl<'a> Formatter<&gast::TraitDecl> for FmtCtx<'a> {
     fn format_object(&self, def: &gast::TraitDecl) -> String {
-        def.fmt_with_ctx(self)
+        def.to_string_with_ctx(self)
     }
 }
 
 impl<'a> Formatter<&gast::TraitImpl> for FmtCtx<'a> {
     fn format_object(&self, def: &gast::TraitImpl) -> String {
-        def.fmt_with_ctx(self)
+        def.to_string_with_ctx(self)
     }
 }

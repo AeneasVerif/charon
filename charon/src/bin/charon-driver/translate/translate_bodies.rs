@@ -582,7 +582,7 @@ impl BodyTransCtx<'_, '_, '_> {
                         self,
                         span,
                         "Unexpected scrutinee type for ReadDiscriminant: {}",
-                        place.ty().fmt_with_ctx(&self.into_fmt())
+                        place.ty().with_ctx(&self.into_fmt())
                     )
                 }
             }

@@ -72,9 +72,9 @@ impl CheckGenericsVisitor<'_> {
         if a.elem_count() == b.elem_count() {
             a.iter().zip(b.iter()).for_each(|(x, y)| check_inner(x, y));
         } else {
-            let a = a.iter().map(|x| x.fmt_with_ctx(a_fmt)).join(", ");
-            let b = b.iter().map(|x| x.fmt_with_ctx(b_fmt)).join(", ");
-            let target = target.fmt_with_ctx(a_fmt);
+            let a = a.iter().map(|x| x.with_ctx(a_fmt)).join(", ");
+            let b = b.iter().map(|x| x.with_ctx(b_fmt)).join(", ");
+            let target = target.with_ctx(a_fmt);
             self.error(format!(
                 "Mismatched {kind}:\
                 \ntarget: {target}\
@@ -94,9 +94,9 @@ impl CheckGenericsVisitor<'_> {
         let ref_trait_id = tref.trait_decl_ref.skip_binder.trait_id;
         if clause_trait_id != ref_trait_id {
             let args_fmt = &self.val_fmt_ctx();
-            let tclause = tclause.fmt_with_ctx(params_fmt);
-            let tref_pred = tref.trait_decl_ref.fmt_with_ctx(args_fmt);
-            let tref = tref.fmt_with_ctx(args_fmt);
+            let tclause = tclause.with_ctx(params_fmt);
+            let tref_pred = tref.trait_decl_ref.with_ctx(args_fmt);
+            let tref = tref.with_ctx(args_fmt);
             self.error(format!(
                 "Mismatched trait clause:\
                 \nexpected: {tclause}\
