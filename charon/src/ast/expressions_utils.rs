@@ -64,7 +64,7 @@ impl Place {
             Ref(_, ty, _) | RawPtr(ty, _) => ty.clone(),
             Adt(TypeId::Builtin(BuiltinTy::Box), args) => args.types[0].clone(),
             Adt(..) | TypeVar(_) | Literal(_) | Never | TraitType(..) | DynTrait(_) | Arrow(..)
-            | Error(..) => panic!("internal type error"),
+            | FnDef(..) | Error(..) => panic!("internal type error"),
         };
         Place {
             ty: proj_ty,
@@ -123,7 +123,7 @@ impl ProjectionElem {
                         args.types.get(TypeVarId::new(0)).unwrap().clone()
                     }
                     Adt(..) | TypeVar(_) | Literal(_) | Never | TraitType(..) | DynTrait(_)
-                    | Arrow(..) | Error(..) => {
+                    | Arrow(..) | FnDef(..) | Error(..) => {
                         // Type error
                         return Err(());
                     }
