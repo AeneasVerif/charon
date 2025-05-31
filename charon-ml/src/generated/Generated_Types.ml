@@ -422,11 +422,14 @@ and ty =
           TODO: we don't translate this properly yet.
        *)
   | TArrow of (ty list * ty) region_binder
-      (** Arrow type, used for function pointers and reused for the unique type associated with each
-          function item.
+      (** Arrow type, used for function pointers.
           This is a function signature with limited generics: it only supports lifetime generics, not
-          other kinds of
-          generics.
+          other kinds of generics.
+       *)
+  | TFnDef of fun_decl_id * (ty list * ty) region_binder
+      (** The unique type associated with each function item.
+          This is a function signature with limited generics: it only supports lifetime generics, not
+          other kinds of generics.
        *)
   | TError of string  (** A type that could not be computed or was incorrect. *)
 

@@ -1549,6 +1549,14 @@ and ty_of_json (ctx : of_json_ctx) (js : json) : (ty, string) result =
             ctx arrow
         in
         Ok (TArrow arrow)
+    | `Assoc [ ("FnDef", `List [ x_0; x_1 ]) ] ->
+        let* x_0 = fun_decl_id_of_json ctx x_0 in
+        let* x_1 =
+          region_binder_of_json
+            (pair_of_json (list_of_json ty_of_json) ty_of_json)
+            ctx x_1
+        in
+        Ok (TFnDef (x_0, x_1))
     | `Assoc [ ("Error", error) ] ->
         let* error = string_of_json ctx error in
         Ok (TError error)

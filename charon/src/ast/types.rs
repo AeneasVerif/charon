@@ -747,12 +747,14 @@ pub enum TyKind {
     ///
     /// TODO: we don't translate this properly yet.
     DynTrait(ExistentialPredicate),
-    /// Arrow type, used for function pointers and reused for the unique type associated with each
-    /// function item.
+    /// Arrow type, used for function pointers.
     /// This is a function signature with limited generics: it only supports lifetime generics, not
-    /// other kinds of
-    /// generics.
+    /// other kinds of generics.
     Arrow(RegionBinder<(Vec<Ty>, Ty)>),
+    /// The unique type associated with each function item.
+    /// This is a function signature with limited generics: it only supports lifetime generics, not
+    /// other kinds of generics.
+    FnDef(FunDeclId, GenericArgs),
     /// A type that could not be computed or was incorrect.
     #[drive(skip)]
     Error(String),
