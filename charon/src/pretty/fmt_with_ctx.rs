@@ -114,11 +114,11 @@ impl<C: AstFormatter> FmtWithCtx<C> for ullbc::BlockData {
 
         // Format the statements
         for statement in &self.statements {
-            out.push(format!("{};\n", statement.fmt_with_ctx(ctx)).to_string());
+            out.push(format!("{};\n", statement.with_ctx(ctx)));
         }
 
         // Format the terminator
-        out.push(format!("{};", self.terminator.fmt_with_ctx(ctx)));
+        out.push(format!("{};", self.terminator.with_ctx(ctx)));
 
         // Join the strings
         out.join("")
@@ -270,11 +270,7 @@ impl<Id: Copy, C: AstFormatter + Formatter<Id>> FmtWithCtx<C> for GDeclarationGr
         match self {
             NonRec(id) => format!("Non rec: {}", ctx.format_object(*id)),
             Rec(ids) => {
-                let ids = ids
-                    .iter()
-                    .map(|id| ctx.format_object(*id))
-                    .collect::<Vec<String>>()
-                    .join(", ");
+                let ids = ids.iter().map(|id| ctx.format_object(*id)).format(", ");
                 format!("Rec: {}", ids)
             }
         }
@@ -1077,7 +1073,7 @@ impl<C: AstFormatter> FmtWithCtx<C> for llbc::Statement {
                 write!(&mut out, "{tab}{} := {call_s}", call.dest.with_ctx(ctx),)
             }
             RawStatement::Abort(kind) => {
-                write!(&mut out, "{tab}{}", kind.fmt_with_ctx(ctx))
+                write!(&mut out, "{tab}{}", kind.with_ctx(ctx))
             }
             RawStatement::Return => write!(&mut out, "{tab}return"),
             RawStatement::Break(index) => write!(&mut out, "{tab}break {index}"),
@@ -1090,36 +1086,35 @@ impl<C: AstFormatter> FmtWithCtx<C> for llbc::Statement {
                         &mut out,
                         "{tab}if {} {{\n{}{tab}}}\n{tab}else {{\n{}{tab}}}",
                         discr.with_ctx(ctx),
-                        true_st.fmt_with_ctx(ctx),
-                        false_st.fmt_with_ctx(ctx),
+                        true_st.with_ctx(ctx),
+                        false_st.with_ctx(ctx),
                     )
                 }
                 Switch::SwitchInt(discr, _ty, maps, otherwise) => {
                     let ctx1 = &ctx.increase_indent();
                     let inner_tab1 = ctx1.indent();
                     let ctx2 = &ctx1.increase_indent();
-                    let mut maps: Vec<String> = maps
+                    let maps = maps
                         .iter()
                         .map(|(pvl, st)| {
                             // Note that there may be several pattern values
-                            let pvl: Vec<String> = pvl.iter().map(|v| v.to_string()).collect();
+                            let pvl = pvl.iter().map(|v| v.to_string()).format(" | ");
                             format!(
                                 "{inner_tab1}{} => {{\n{}{inner_tab1}}},\n",
-                                pvl.join(" | "),
-                                st.fmt_with_ctx(ctx2),
+                                pvl,
+                                st.with_ctx(ctx2),
                             )
                         })
-                        .collect();
-                    maps.push(format!(
-                        "{inner_tab1}_ => {{\n{}{inner_tab1}}},\n",
-                        otherwise.fmt_with_ctx(ctx2),
-                    ));
-
+                        .chain([format!(
+                            "{inner_tab1}_ => {{\n{}{inner_tab1}}},\n",
+                            otherwise.with_ctx(ctx2),
+                        )])
+                        .format("");
                     write!(
                         &mut out,
                         "{tab}switch {} {{\n{}{tab}}}",
                         discr.with_ctx(ctx),
-                        maps.iter().format(""),
+                        maps,
                     )
                 }
                 Switch::Match(discr, maps, otherwise) => {
@@ -1132,42 +1127,42 @@ impl<C: AstFormatter> FmtWithCtx<C> for llbc::Statement {
                         .as_adt()
                         .and_then(|(x, _)| x.as_adt())
                         .copied();
-                    let mut maps: Vec<String> = maps
+                    let maps = maps
                         .iter()
                         .map(|(cases, st)| {
                             // Note that there may be several pattern values
-                            let cases: Vec<String> = cases
+                            let cases = cases
                                 .iter()
                                 .map(|v| match discr_type {
                                     Some(type_id) => ctx.format_object((type_id, *v)),
                                     None => v.to_pretty_string(),
                                 })
-                                .collect();
+                                .format(" | ");
                             format!(
                                 "{inner_tab1}{} => {{\n{}{inner_tab1}}},\n",
-                                cases.join(" | "),
-                                st.fmt_with_ctx(ctx2),
+                                cases,
+                                st.with_ctx(ctx2),
                             )
                         })
-                        .collect();
-                    if let Some(otherwise) = otherwise {
-                        maps.push(format!(
-                            "{inner_tab1}_ => {{\n{}{inner_tab1}}},\n",
-                            otherwise.fmt_with_ctx(ctx2),
-                        ));
-                    };
+                        .chain(otherwise.as_ref().map(|otherwise| {
+                            format!(
+                                "{inner_tab1}_ => {{\n{}{inner_tab1}}},\n",
+                                otherwise.with_ctx(ctx2),
+                            )
+                        }))
+                        .format("");
 
                     write!(
                         &mut out,
                         "{tab}match {} {{\n{}{tab}}}",
                         discr.with_ctx(ctx),
-                        maps.iter().format(""),
+                        maps,
                     )
                 }
             },
             RawStatement::Loop(body) => {
                 let ctx = &ctx.increase_indent();
-                write!(&mut out, "{tab}loop {{\n{}{tab}}}", body.fmt_with_ctx(ctx),)
+                write!(&mut out, "{tab}loop {{\n{}{tab}}}", body.with_ctx(ctx),)
             }
             RawStatement::Error(s) => write!(&mut out, "{tab}@ERROR({})", s),
         };
@@ -1193,13 +1188,11 @@ impl<C: AstFormatter> FmtWithCtx<C> for Terminator {
                     false_block
                 ),
                 SwitchTargets::SwitchInt(_ty, maps, otherwise) => {
-                    let mut maps: Vec<String> = maps
+                    let maps = maps
                         .iter()
                         .map(|(v, bid)| format!("{}: bb{}", v.to_string(), bid))
-                        .collect();
-                    maps.push(format!("otherwise: bb{otherwise}"));
-                    let maps = maps.join(", ");
-
+                        .chain([format!("otherwise: bb{otherwise}")])
+                        .format(", ");
                     write!(&mut out, "{tab}switch {} -> {}", discr.with_ctx(ctx), maps)
                 }
             },
@@ -1261,7 +1254,7 @@ impl<C: AstFormatter> FmtWithCtx<C> for TraitDecl {
                                 c.with_ctx(ctx)
                             )
                         })
-                        .collect()
+                        .join("")
                 }))
                 .chain(self.consts.iter().map(|(name, ty)| {
                     let ty = ty.with_ctx(ctx);
@@ -1322,7 +1315,7 @@ impl<C: AstFormatter> FmtWithCtx<C> for TraitImpl {
                                 let i = TraitClauseId::new(i);
                                 format!("{TAB_INCR}item_clause_{name}_{i} = {}\n", c.with_ctx(ctx))
                             })
-                            .collect()
+                            .join("")
                     }))
                     .chain(self.consts.iter().map(|(name, global)| {
                         format!("{TAB_INCR}const {name} = {}\n", global.with_ctx(ctx))
