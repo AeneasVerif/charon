@@ -8,7 +8,7 @@ use crate::common::TAB_INCR;
 use crate::gast;
 use crate::ids::Vector;
 use crate::llbc_ast;
-use crate::pretty::{fmt_with_ctx, FmtWithCtx};
+use crate::pretty::FmtWithCtx;
 use crate::ullbc_ast;
 use crate::ullbc_ast as ast;
 
@@ -79,7 +79,6 @@ pub trait AstFormatter:
     + Formatter<(TypeDeclId, Option<VariantId>, FieldId)>
     + for<'a> Formatter<&'a ImplElem>
     + for<'a> Formatter<&'a RegionVar>
-    + for<'a> Formatter<&'a Vector<ullbc_ast::BlockId, ullbc_ast::BlockData>>
     + for<'a> Formatter<&'a llbc_ast::Block>
 {
     type Reborrow<'a>: AstFormatter + 'a
@@ -411,12 +410,6 @@ impl<'a> Formatter<LocalId> for FmtCtx<'a> {
 impl<'a> Formatter<&llbc_ast::Block> for FmtCtx<'a> {
     fn format_object(&self, x: &llbc_ast::Block) -> String {
         x.to_string_with_ctx(self)
-    }
-}
-
-impl<'a> Formatter<&Vector<ullbc_ast::BlockId, ullbc_ast::BlockData>> for FmtCtx<'a> {
-    fn format_object(&self, x: &Vector<ullbc_ast::BlockId, ullbc_ast::BlockData>) -> String {
-        fmt_with_ctx::fmt_body_blocks_with_ctx(x, self)
     }
 }
 
