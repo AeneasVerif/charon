@@ -1,6 +1,6 @@
 //! Utilities for pretty-printing (u)llbc.
 use crate::{
-    common::TAB_INCR,
+    common::{repeat_except_first, TAB_INCR},
     formatter::*,
     gast,
     ids::Vector,
@@ -57,6 +57,18 @@ impl<C: AstFormatter> FmtWithCtx<C> for AbortKind {
             }
             AbortKind::UndefinedBehavior => write!(f, "undefined_behavior"),
             AbortKind::UnwindTerminate => write!(f, "unwind_terminate"),
+        }
+    }
+}
+
+impl<C: AstFormatter> FmtWithCtx<C> for AnyTransId {
+    fn fmt_with_ctx(&self, ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match ctx
+            .get_crate()
+            .and_then(|translated| translated.item_short_name(*self))
+        {
+            None => write!(f, "{self}"),
+            Some(name) => name.fmt_with_ctx(ctx, f),
         }
     }
 }
@@ -150,6 +162,12 @@ impl<C: AstFormatter> FmtWithCtx<C> for CastKind {
     }
 }
 
+impl<C: AstFormatter> FmtWithCtx<C> for ClauseDbVar {
+    fn fmt_with_ctx(&self, ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        ctx.format_bound_var(f, *self, "@TraitClause", |_| None)
+    }
+}
+
 impl<C: AstFormatter> FmtWithCtx<C> for ConstantExpr {
     fn fmt_with_ctx(&self, ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{}", self.value.with_ctx(ctx))
@@ -159,10 +177,18 @@ impl<C: AstFormatter> FmtWithCtx<C> for ConstantExpr {
 impl<C: AstFormatter> FmtWithCtx<C> for ConstGeneric {
     fn fmt_with_ctx(&self, ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            ConstGeneric::Var(id) => write!(f, "{}", ctx.format_object(*id)),
+            ConstGeneric::Var(id) => write!(f, "{}", id.with_ctx(ctx)),
             ConstGeneric::Value(v) => write!(f, "{v}"),
-            ConstGeneric::Global(id) => write!(f, "{}", ctx.format_object(*id)),
+            ConstGeneric::Global(id) => write!(f, "{}", id.with_ctx(ctx)),
         }
+    }
+}
+
+impl<C: AstFormatter> FmtWithCtx<C> for ConstGenericDbVar {
+    fn fmt_with_ctx(&self, ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        ctx.format_bound_var(f, *self, "@ConstGeneric", |v| {
+            Some(v.to_string_with_ctx(ctx))
+        })
     }
 }
 
@@ -215,7 +241,7 @@ impl<C: AstFormatter> FmtWithCtx<C> for FnPtr {
     fn fmt_with_ctx(&self, ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self.func.as_ref() {
             FunIdOrTraitMethodRef::Fun(FunId::Regular(def_id)) => {
-                write!(f, "{}", ctx.format_object(*def_id))?
+                write!(f, "{}", def_id.with_ctx(ctx))?
             }
             FunIdOrTraitMethodRef::Fun(FunId::Builtin(builtin)) => write!(f, "@{}", builtin)?,
             FunIdOrTraitMethodRef::Trait(trait_ref, method_id, _) => {
@@ -257,13 +283,16 @@ impl<C: AstFormatter> FmtWithCtx<C> for FunSig {
     }
 }
 
-impl<Id: Copy, C: AstFormatter + Formatter<Id>> FmtWithCtx<C> for GDeclarationGroup<Id> {
+impl<Id: Copy, C: AstFormatter> FmtWithCtx<C> for GDeclarationGroup<Id>
+where
+    Id: FmtWithCtx<C>,
+{
     fn fmt_with_ctx(&self, ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         use GDeclarationGroup::*;
         match self {
-            NonRec(id) => write!(f, "Non rec: {}", ctx.format_object(*id)),
+            NonRec(id) => write!(f, "Non rec: {}", id.with_ctx(ctx)),
             Rec(ids) => {
-                let ids = ids.iter().map(|id| ctx.format_object(*id)).format(", ");
+                let ids = ids.iter().map(|id| id.with_ctx(ctx)).format(", ");
                 write!(f, "Rec: {}", ids)
             }
         }
@@ -397,8 +426,8 @@ impl GenericParams {
 impl<C: AstFormatter> FmtWithCtx<C> for GenericsSource {
     fn fmt_with_ctx(&self, ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            GenericsSource::Item(id) => write!(f, "{}", ctx.format_object(*id)),
-            GenericsSource::Method(id, name) => write!(f, "{}::{name}", ctx.format_object(*id)),
+            GenericsSource::Item(id) => write!(f, "{}", id.with_ctx(ctx)),
+            GenericsSource::Method(id, name) => write!(f, "{}::{name}", id.with_ctx(ctx)),
             GenericsSource::Builtin => write!(f, "<builtin>"),
             GenericsSource::Other => write!(f, "<unknown>"),
         }
@@ -452,7 +481,7 @@ impl<T> GExprBody<T> {
 impl<C: AstFormatter> FmtWithCtx<C> for GExprBody<llbc_ast::Block> {
     fn fmt_with_ctx(&self, ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         self.fmt_with_ctx_and_callback(ctx, f, |ctx, body| {
-            "\n".to_owned() + &ctx.format_object(body)
+            "\n".to_owned() + &body.to_string_with_ctx(ctx)
         })
     }
 }
@@ -510,9 +539,15 @@ impl<C: AstFormatter> FmtWithCtx<C> for FunDecl {
     }
 }
 
+impl<C: AstFormatter> FmtWithCtx<C> for FunDeclId {
+    fn fmt_with_ctx(&self, ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        AnyTransId::from(*self).fmt_with_ctx(ctx, f)
+    }
+}
+
 impl<C: AstFormatter> FmtWithCtx<C> for FunDeclRef {
     fn fmt_with_ctx(&self, ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let id = ctx.format_object(self.id);
+        let id = self.id.with_ctx(ctx);
         let generics = self.generics.with_ctx(ctx);
         write!(f, "{id}{generics}")
     }
@@ -548,16 +583,22 @@ where
         write!(f, " ")?;
 
         // Decl name
-        let initializer = ctx.format_object(self.init);
+        let initializer = self.init.with_ctx(ctx);
         write!(f, "= {initializer}()")?;
 
         Ok(())
     }
 }
 
+impl<C: AstFormatter> FmtWithCtx<C> for GlobalDeclId {
+    fn fmt_with_ctx(&self, ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        AnyTransId::from(*self).fmt_with_ctx(ctx, f)
+    }
+}
+
 impl<C: AstFormatter> FmtWithCtx<C> for GlobalDeclRef {
     fn fmt_with_ctx(&self, ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let id = ctx.format_object(self.id);
+        let id = self.id.with_ctx(ctx);
         let generics = self.generics.with_ctx(ctx);
         write!(f, "{id}{generics}")
     }
@@ -565,7 +606,33 @@ impl<C: AstFormatter> FmtWithCtx<C> for GlobalDeclRef {
 
 impl<C: AstFormatter> FmtWithCtx<C> for ImplElem {
     fn fmt_with_ctx(&self, ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}", ctx.format_object(self))
+        write!(f, "{{")?;
+        match self {
+            ImplElem::Ty(bound_ty) => {
+                // Just printing the generics (not the predicates)
+                let ctx = ctx.set_generics(&bound_ty.params);
+                bound_ty.skip_binder.fmt_with_ctx(&ctx, f)?
+            }
+            ImplElem::Trait(impl_id) => {
+                match ctx.get_crate().and_then(|tr| tr.trait_impls.get(*impl_id)) {
+                    None => write!(f, "impl#{impl_id}")?,
+                    Some(timpl) => {
+                        // We need to put the first type parameter aside: it is the type for which
+                        // we implement the trait.
+                        let ctx = &ctx.set_generics(&timpl.generics);
+                        let mut impl_trait = timpl.impl_trait.clone();
+                        let self_ty = impl_trait.generics.types.remove(TypeVarId::ZERO).unwrap();
+                        write!(
+                            f,
+                            "impl {} for {}",
+                            impl_trait.with_ctx(ctx),
+                            self_ty.with_ctx(ctx)
+                        )?;
+                    }
+                }
+            }
+        }
+        write!(f, "}}")
     }
 }
 
@@ -602,6 +669,12 @@ impl<C: AstFormatter> FmtWithCtx<C> for LiteralTy {
             LiteralTy::Char => write!(f, "char"),
             LiteralTy::Bool => write!(f, "bool"),
         }
+    }
+}
+
+impl<C: AstFormatter> FmtWithCtx<C> for LocalId {
+    fn fmt_with_ctx(&self, ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        ctx.format_local_id(f, *self)
     }
 }
 
@@ -672,7 +745,7 @@ impl<C: AstFormatter> FmtWithCtx<C> for PathElem {
 impl<C: AstFormatter> FmtWithCtx<C> for Place {
     fn fmt_with_ctx(&self, ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match &self.kind {
-            PlaceKind::Local(var_id) => write!(f, "{}", ctx.format_object(*var_id)),
+            PlaceKind::Local(var_id) => write!(f, "{}", var_id.with_ctx(ctx)),
             PlaceKind::Projection(subplace, projection) => {
                 let sub = subplace.with_ctx(ctx);
                 match projection {
@@ -681,13 +754,13 @@ impl<C: AstFormatter> FmtWithCtx<C> for Place {
                     }
                     ProjectionElem::Field(proj_kind, field_id) => match proj_kind {
                         FieldProjKind::Adt(adt_id, opt_variant_id) => {
-                            let field_name =
-                                ctx.format_object((*adt_id, *opt_variant_id, *field_id));
-                            let downcast = match opt_variant_id {
-                                None => "".to_string(),
-                                Some(variant_id) => format!(" as variant @{variant_id}"),
-                            };
-                            write!(f, "({sub}{downcast}).{field_name}")
+                            write!(f, "({sub}")?;
+                            if let Some(variant_id) = opt_variant_id {
+                                write!(f, " as variant @{variant_id}")?
+                            }
+                            write!(f, ").")?;
+                            ctx.format_field_name(f, *adt_id, *opt_variant_id, *field_id)?;
+                            Ok(())
                         }
                         FieldProjKind::Tuple(_) => {
                             write!(f, "({sub}).{field_id}")
@@ -758,7 +831,7 @@ impl<C: AstFormatter> FmtWithCtx<C> for RawConstantExpr {
             RawConstantExpr::MutPtr(cv) => {
                 write!(f, "&raw mut {}", cv.with_ctx(ctx))
             }
-            RawConstantExpr::Var(id) => write!(f, "{}", ctx.format_object(*id)),
+            RawConstantExpr::Var(id) => write!(f, "{}", id.with_ctx(ctx)),
             RawConstantExpr::FnPtr(fp) => {
                 write!(f, "{}", fp.with_ctx(ctx))
             }
@@ -772,7 +845,7 @@ impl<C: AstFormatter> FmtWithCtx<C> for Region {
     fn fmt_with_ctx(&self, ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Region::Static => write!(f, "'static"),
-            Region::Var(var) => write!(f, "{}", ctx.format_object(*var)),
+            Region::Var(var) => write!(f, "{}", var.with_ctx(ctx)),
             Region::Erased => write!(f, "'_"),
         }
     }
@@ -787,7 +860,11 @@ impl<T> RegionBinder<T> {
     {
         let ctx = &ctx.push_bound_regions(&self.regions);
         (
-            self.regions.iter().map(|r| ctx.format_object(r)).join(", "),
+            self.regions
+                .iter()
+                .map(|r| r.with_ctx(ctx))
+                .format(", ")
+                .to_string(),
             self.skip_binder.to_string_with_ctx(ctx),
         )
     }
@@ -808,9 +885,20 @@ impl<T> RegionBinder<T> {
     }
 }
 
-impl<C: AstFormatter> FmtWithCtx<C> for RegionVar {
+impl<C: AstFormatter> FmtWithCtx<C> for RegionDbVar {
     fn fmt_with_ctx(&self, ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}", ctx.format_object(self))
+        ctx.format_bound_var(f, *self, "'_", |v| {
+            v.name.as_ref().map(|name| name.to_string())
+        })
+    }
+}
+
+impl<C: AstFormatter> FmtWithCtx<C> for RegionVar {
+    fn fmt_with_ctx(&self, _ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match &self.name {
+            Some(name) => write!(f, "{name}"),
+            None => write!(f, "'_{}", self.index),
+        }
     }
 }
 
@@ -856,27 +944,28 @@ impl<C: AstFormatter> FmtWithCtx<C> for Rvalue {
                             TypeId::Tuple => write!(f, "({})", ops_s),
                             TypeId::Builtin(_) => unreachable!(),
                             TypeId::Adt(def_id) => {
-                                let fields = ops
-                                    .iter()
-                                    .enumerate()
-                                    .map(|(i, op)| {
-                                        let field_id = match *field_id {
-                                            None => FieldId::new(i),
-                                            Some(field_id) => {
-                                                assert_eq!(i, 0); // there should be only one operand
-                                                field_id
-                                            }
-                                        };
-                                        let field_name =
-                                            ctx.format_object((*def_id, *variant_id, field_id));
-                                        format!("{}: {}", field_name, op.with_ctx(ctx))
-                                    })
-                                    .format(", ");
-                                let variant = match variant_id {
-                                    None => ctx.format_object(*def_id),
-                                    Some(variant_id) => ctx.format_object((*def_id, *variant_id)),
-                                };
-                                write!(f, "{} {{ {} }}", variant, fields)
+                                match variant_id {
+                                    None => def_id.fmt_with_ctx(ctx, f)?,
+                                    Some(variant_id) => {
+                                        ctx.format_enum_variant(f, *def_id, *variant_id)?
+                                    }
+                                }
+                                write!(f, " {{ ")?;
+                                for (comma, (i, op)) in
+                                    repeat_except_first(", ").zip(ops.iter().enumerate())
+                                {
+                                    write!(f, "{}", comma.unwrap_or_default())?;
+                                    let field_id = match *field_id {
+                                        None => FieldId::new(i),
+                                        Some(field_id) => {
+                                            assert_eq!(i, 0); // there should be only one operand
+                                            field_id
+                                        }
+                                    };
+                                    ctx.format_field_name(f, *def_id, *variant_id, field_id)?;
+                                    write!(f, ": {}", op.with_ctx(ctx))?;
+                                }
+                                write!(f, " }}")
                             }
                         }
                     }
@@ -944,10 +1033,10 @@ impl<C: AstFormatter> FmtWithCtx<C> for ullbc::Statement {
                 count.with_ctx(ctx),
             ),
             RawStatement::StorageLive(var_id) => {
-                write!(f, "{tab}storage_live({})", ctx.format_object(*var_id))
+                write!(f, "{tab}storage_live({})", var_id.with_ctx(ctx))
             }
             RawStatement::StorageDead(var_id) => {
-                write!(f, "{tab}storage_dead({})", ctx.format_object(*var_id))
+                write!(f, "{tab}storage_dead({})", var_id.with_ctx(ctx))
             }
             RawStatement::Deinit(place) => {
                 write!(f, "{tab}deinit({})", place.with_ctx(ctx))
@@ -988,10 +1077,10 @@ impl<C: AstFormatter> FmtWithCtx<C> for llbc::Statement {
                 count.with_ctx(ctx),
             ),
             RawStatement::StorageLive(var_id) => {
-                write!(f, "storage_live({})", ctx.format_object(*var_id))
+                write!(f, "storage_live({})", var_id.with_ctx(ctx))
             }
             RawStatement::StorageDead(var_id) => {
-                write!(f, "storage_dead({})", ctx.format_object(*var_id))
+                write!(f, "storage_dead({})", var_id.with_ctx(ctx))
             }
             RawStatement::Deinit(place) => {
                 write!(f, "deinit({})", place.with_ctx(ctx))
@@ -1058,20 +1147,16 @@ impl<C: AstFormatter> FmtWithCtx<C> for llbc::Statement {
                         .and_then(|(x, _)| x.as_adt())
                         .copied();
                     for (cases, st) in maps {
+                        write!(f, "{inner_tab1}",)?;
                         // Note that there may be several pattern values
-                        let cases = cases
-                            .iter()
-                            .map(|v| match discr_type {
-                                Some(type_id) => ctx.format_object((type_id, *v)),
-                                None => v.to_pretty_string(),
-                            })
-                            .format(" | ");
-                        writeln!(
-                            f,
-                            "{inner_tab1}{} => {{\n{}{inner_tab1}}},",
-                            cases,
-                            st.with_ctx(ctx2),
-                        )?;
+                        for (bar, v) in repeat_except_first(" | ").zip(cases.iter()) {
+                            write!(f, "{}", bar.unwrap_or_default())?;
+                            match discr_type {
+                                Some(type_id) => ctx.format_enum_variant(f, type_id, *v)?,
+                                None => write!(f, "{}", v.to_pretty_string())?,
+                            }
+                        }
+                        writeln!(f, " => {{\n{}{inner_tab1}}},", st.with_ctx(ctx2),)?;
                     }
                     if let Some(otherwise) = otherwise {
                         writeln!(
@@ -1194,9 +1279,15 @@ impl<C: AstFormatter> FmtWithCtx<C> for TraitDecl {
     }
 }
 
+impl<C: AstFormatter> FmtWithCtx<C> for TraitDeclId {
+    fn fmt_with_ctx(&self, ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        AnyTransId::from(*self).fmt_with_ctx(ctx, f)
+    }
+}
+
 impl<C: AstFormatter> FmtWithCtx<C> for TraitDeclRef {
     fn fmt_with_ctx(&self, ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let trait_id = ctx.format_object(self.trait_id);
+        let trait_id = self.trait_id.with_ctx(ctx);
         let generics = self.generics.with_ctx(ctx);
         write!(f, "{trait_id}{generics}")
     }
@@ -1257,6 +1348,12 @@ impl<C: AstFormatter> FmtWithCtx<C> for TraitImpl {
     }
 }
 
+impl<C: AstFormatter> FmtWithCtx<C> for TraitImplId {
+    fn fmt_with_ctx(&self, ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        AnyTransId::from(*self).fmt_with_ctx(ctx, f)
+    }
+}
+
 impl<C: AstFormatter> FmtWithCtx<C> for TraitRefKind {
     fn fmt_with_ctx(&self, ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
@@ -1267,18 +1364,17 @@ impl<C: AstFormatter> FmtWithCtx<C> for TraitRefKind {
             }
             TraitRefKind::ItemClause(id, _decl_id, type_name, clause_id) => {
                 let id = id.with_ctx(ctx);
-                // Using on purpose [to_pretty_string] instead of [format_object]:
-                // the clause is local to the associated type, so it should not
-                // be referenced in the current context.
+                // Using on purpose `to_pretty_string` instead of `with_ctx`: the clause is local
+                // to the associated type, so it should not be referenced in the current context.
                 let clause = clause_id.to_pretty_string();
                 write!(f, "({id}::{type_name}::[{clause}])")
             }
             TraitRefKind::TraitImpl(id, args) => {
-                let impl_ = ctx.format_object(*id);
+                let impl_ = id.with_ctx(ctx);
                 let args = args.with_ctx(ctx);
                 write!(f, "{impl_}{args}")
             }
-            TraitRefKind::Clause(id) => write!(f, "{}", ctx.format_object(*id)),
+            TraitRefKind::Clause(id) => write!(f, "{}", id.with_ctx(ctx)),
             TraitRefKind::BuiltinOrAuto {
                 trait_decl_ref: tr,
                 types,
@@ -1331,7 +1427,7 @@ impl<C: AstFormatter> FmtWithCtx<C> for Ty {
                     write!(f, "{adt_ident}{generics}")
                 }
             }
-            TyKind::TypeVar(id) => write!(f, "{}", ctx.format_object(*id)),
+            TyKind::TypeVar(id) => write!(f, "{}", id.with_ctx(ctx)),
             TyKind::Literal(kind) => write!(f, "{kind}"),
             TyKind::Never => write!(f, "!"),
             TyKind::Ref(r, ty, kind) => {
@@ -1357,17 +1453,17 @@ impl<C: AstFormatter> FmtWithCtx<C> for Ty {
                 // Update the bound regions
                 let ctx = &ctx.push_bound_regions(&io.regions);
 
-                let regions = if io.regions.is_empty() {
-                    "".to_string()
-                } else {
-                    format!(
+                write!(f, "fn")?;
+                if !io.regions.is_empty() {
+                    write!(
+                        f,
                         "<{}>",
-                        io.regions.iter().map(|r| ctx.format_object(r)).join(", ")
-                    )
-                };
+                        io.regions.iter().map(|r| r.with_ctx(ctx)).format(", ")
+                    )?;
+                }
                 let (inputs, output) = &io.skip_binder;
                 let inputs = inputs.iter().map(|x| x.with_ctx(ctx)).format(", ");
-                write!(f, "fn{regions}({inputs})")?;
+                write!(f, "({inputs})")?;
                 if !output.is_unit() {
                     let output = output.with_ctx(ctx);
                     write!(f, " -> {output}")?;
@@ -1376,6 +1472,12 @@ impl<C: AstFormatter> FmtWithCtx<C> for Ty {
             }
             TyKind::Error(msg) => write!(f, "type_error(\"{msg}\")"),
         }
+    }
+}
+
+impl<C: AstFormatter> FmtWithCtx<C> for TypeDbVar {
+    fn fmt_with_ctx(&self, ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        ctx.format_bound_var(f, *self, "@Type", |v| Some(v.to_string()))
     }
 }
 
@@ -1434,11 +1536,17 @@ impl<C: AstFormatter> FmtWithCtx<C> for TypeDecl {
     }
 }
 
+impl<C: AstFormatter> FmtWithCtx<C> for TypeDeclId {
+    fn fmt_with_ctx(&self, ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        AnyTransId::from(*self).fmt_with_ctx(ctx, f)
+    }
+}
+
 impl<C: AstFormatter> FmtWithCtx<C> for TypeId {
     fn fmt_with_ctx(&self, ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             TypeId::Tuple => Ok(()),
-            TypeId::Adt(def_id) => write!(f, "{}", ctx.format_object(*def_id)),
+            TypeId::Adt(def_id) => write!(f, "{}", def_id.with_ctx(ctx)),
             TypeId::Builtin(aty) => write!(f, "{}", aty.get_name().with_ctx(ctx)),
         }
     }

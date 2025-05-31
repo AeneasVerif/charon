@@ -7,12 +7,14 @@
 //! to be explicit about mutual recursion. This should come useful for translation to any other
 //! language with these properties.
 use crate::common::*;
-use crate::formatter::{Formatter, IntoFormatter};
+use crate::formatter::{FmtCtx, IntoFormatter};
 use crate::graphs::*;
+use crate::pretty::FmtWithCtx;
 use crate::transform::TransformCtx;
 use crate::ullbc_ast::*;
 use derive_generic_visitor::*;
 use indexmap::{IndexMap, IndexSet};
+use itertools::Itertools;
 use macros::{EnumAsGetters, EnumIsA, VariantIndexArity, VariantName};
 use petgraph::algo::tarjan_scc;
 use petgraph::graphmap::DiGraphMap;
@@ -324,36 +326,22 @@ impl VisitAst for Deps {
     }
 }
 
-impl AnyTransId {
-    fn fmt_with_ctx(&self, ctx: &TransformCtx) -> String {
-        use AnyTransId::*;
-        let ctx = ctx.into_fmt();
-        match self {
-            Type(id) => ctx.format_object(*id),
-            Fun(id) => ctx.format_object(*id),
-            Global(id) => ctx.format_object(*id),
-            TraitDecl(id) => ctx.format_object(*id),
-            TraitImpl(id) => ctx.format_object(*id),
-        }
-    }
-}
-
 impl Deps {
-    fn fmt_with_ctx(&self, ctx: &TransformCtx) -> String {
+    fn fmt_with_ctx(&self, ctx: &FmtCtx<'_>) -> String {
         self.dgraph
             .nodes()
             .map(|node| {
                 let edges = self
                     .dgraph
                     .edges(node)
-                    .map(|e| format!("\n  {}", e.1.fmt_with_ctx(ctx)))
+                    .map(|e| format!("\n  {}", e.1.with_ctx(ctx)))
                     .collect::<Vec<String>>()
                     .join(",");
 
-                format!("{} -> [{}\n]", node.fmt_with_ctx(ctx), edges)
+                format!("{} -> [{}\n]", node.with_ctx(ctx), edges)
             })
-            .collect::<Vec<String>>()
-            .join(",\n")
+            .format(",\n")
+            .to_string()
     }
 }
 
@@ -492,7 +480,7 @@ fn compute_reordered_decls(ctx: &TransformCtx) -> DeclarationsGroups {
 
     // Step 1: explore the declarations to build the graph
     let graph = compute_declarations_graph(ctx);
-    trace!("Graph:\n{}\n", graph.fmt_with_ctx(ctx));
+    trace!("Graph:\n{}\n", graph.fmt_with_ctx(&ctx.into_fmt()));
 
     // Step 2: Apply Tarjan's SCC (Strongly Connected Components) algorithm
     let sccs = tarjan_scc(&graph.dgraph);

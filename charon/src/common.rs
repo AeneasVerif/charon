@@ -27,6 +27,11 @@ pub fn pretty_display_list<T>(
     }
 }
 
+/// Yield `None` then infinitely many `Some(x)`.
+pub fn repeat_except_first<T: Clone>(x: T) -> impl Iterator<Item = Option<T>> {
+    [None].into_iter().chain(std::iter::repeat(Some(x)))
+}
+
 pub mod type_map {
     use std::{
         any::{Any, TypeId},

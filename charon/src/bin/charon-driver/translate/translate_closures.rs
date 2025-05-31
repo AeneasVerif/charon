@@ -45,8 +45,9 @@ use crate::translate::translate_bodies::BodyTransCtx;
 use super::translate_ctx::*;
 use charon_lib::ast::*;
 use charon_lib::common::*;
-use charon_lib::formatter::{Formatter, IntoFormatter};
+use charon_lib::formatter::IntoFormatter;
 use charon_lib::ids::Vector;
+use charon_lib::pretty::FmtWithCtx;
 use charon_lib::ullbc_ast::*;
 use hax_frontend_exporter as hax;
 use itertools::Itertools;
@@ -264,15 +265,12 @@ impl ItemTransCtx<'_, '_> {
             .try_collect()?;
         let output = self.translate_ty(span, &signature.value.output)?;
 
-        let fmt_ctx = self.into_fmt();
+        let fmt_ctx = &self.into_fmt();
         trace!(
             "# Input variables types:\n{}",
-            pretty_display_list(|x| fmt_ctx.format_object(x), &inputs)
+            pretty_display_list(|x| x.to_string_with_ctx(fmt_ctx), &inputs)
         );
-        trace!(
-            "# Output variable type:\n{}",
-            fmt_ctx.format_object(&output)
-        );
+        trace!("# Output variable type:\n{}", output.with_ctx(fmt_ctx));
 
         let is_unsafe = match signature.value.safety {
             hax::Safety::Unsafe => true,
