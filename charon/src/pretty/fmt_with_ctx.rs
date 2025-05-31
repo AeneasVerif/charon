@@ -20,11 +20,11 @@ pub struct WithCtx<'a, C, T: ?Sized> {
     ctx: &'a C,
 }
 
-impl<'a, C, T: ?Sized> std::fmt::Display for WithCtx<'a, C, T>
+impl<'a, C, T: ?Sized> Display for WithCtx<'a, C, T>
 where
     T: FmtWithCtx<C>,
 {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         self.val.fmt_with_ctx(self.ctx, f)
     }
 }
@@ -45,6 +45,27 @@ pub trait FmtWithCtx<C> {
         self.with_ctx(ctx).to_string()
     }
 }
+
+macro_rules! impl_display_via_ctx {
+    ($ty:ty) => {
+        impl Display for $ty {
+            fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+                self.fmt_with_ctx(&FmtCtx::new(), f)
+            }
+        }
+    };
+}
+macro_rules! impl_debug_via_display {
+    ($ty:ty) => {
+        impl Debug for $ty {
+            fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+                <_ as Display>::fmt(self, f)
+            }
+        }
+    };
+}
+
+//------- Impls, sorted by name --------
 
 impl<C: AstFormatter> FmtWithCtx<C> for AbortKind {
     fn fmt_with_ctx(&self, ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
@@ -71,6 +92,19 @@ impl<C: AstFormatter> FmtWithCtx<C> for AnyTransId {
             None => write!(f, "{self}"),
             Some(name) => name.fmt_with_ctx(ctx, f),
         }
+    }
+}
+
+impl Display for AnyTransId {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> std::result::Result<(), fmt::Error> {
+        let s = match self {
+            AnyTransId::Type(x) => x.to_pretty_string(),
+            AnyTransId::Fun(x) => x.to_pretty_string(),
+            AnyTransId::Global(x) => x.to_pretty_string(),
+            AnyTransId::TraitDecl(x) => x.to_pretty_string(),
+            AnyTransId::TraitImpl(x) => x.to_pretty_string(),
+        };
+        f.write_str(&s)
     }
 }
 
@@ -113,6 +147,37 @@ impl<T> Binder<T> {
     }
 }
 
+impl Display for BinOp {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> std::result::Result<(), fmt::Error> {
+        match self {
+            BinOp::BitXor => write!(f, "^"),
+            BinOp::BitAnd => write!(f, "&"),
+            BinOp::BitOr => write!(f, "|"),
+            BinOp::Eq => write!(f, "=="),
+            BinOp::Lt => write!(f, "<"),
+            BinOp::Le => write!(f, "<="),
+            BinOp::Ne => write!(f, "!="),
+            BinOp::Ge => write!(f, ">="),
+            BinOp::Gt => write!(f, ">"),
+            BinOp::Div => write!(f, "/"),
+            BinOp::Rem => write!(f, "%"),
+            BinOp::Add => write!(f, "+"),
+            BinOp::Sub => write!(f, "-"),
+            BinOp::Mul => write!(f, "*"),
+            BinOp::WrappingAdd => write!(f, "wrapping.+"),
+            BinOp::WrappingSub => write!(f, "wrapping.-"),
+            BinOp::WrappingMul => write!(f, "wrapping.*"),
+            BinOp::CheckedAdd => write!(f, "checked.+"),
+            BinOp::CheckedSub => write!(f, "checked.-"),
+            BinOp::CheckedMul => write!(f, "checked.*"),
+            BinOp::Shl => write!(f, "<<"),
+            BinOp::Shr => write!(f, ">>"),
+            BinOp::Cmp => write!(f, "cmp"),
+            BinOp::Offset => write!(f, "offset"),
+        }
+    }
+}
+
 impl<C: AstFormatter> FmtWithCtx<C> for llbc::Block {
     fn fmt_with_ctx(&self, ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         for st in &self.statements {
@@ -138,6 +203,39 @@ impl<C: AstFormatter> FmtWithCtx<C> for gast::Body {
             Body::Unstructured(b) => write!(f, "{}", b.with_ctx(ctx)),
             Body::Structured(b) => write!(f, "{}", b.with_ctx(ctx)),
         }
+    }
+}
+
+impl Display for BorrowKind {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> std::result::Result<(), fmt::Error> {
+        // Reuse the derived `Debug` impl to get the variant name.
+        write!(f, "{self:?}")
+    }
+}
+
+impl Display for BuiltinFunId {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> std::result::Result<(), fmt::Error> {
+        let name = match *self {
+            BuiltinFunId::BoxNew => "BoxNew",
+            BuiltinFunId::ArrayToSliceShared => "ArrayToSliceShared",
+            BuiltinFunId::ArrayToSliceMut => "ArrayToSliceMut",
+            BuiltinFunId::ArrayRepeat => "ArrayRepeat",
+            BuiltinFunId::Index(BuiltinIndexOp {
+                is_array,
+                mutability,
+                is_range,
+            }) => {
+                let ty = if is_array { "Array" } else { "Slice" };
+                let op = if is_range { "SubSlice" } else { "Index" };
+                let mutability = mutability.variant_name();
+                &format!("{ty}{op}{mutability}")
+            }
+            BuiltinFunId::PtrFromParts(mutability) => {
+                let mutability = mutability.variant_name();
+                &format!("PtrFromParts{mutability}")
+            }
+        };
+        f.write_str(name)
     }
 }
 
@@ -169,6 +267,7 @@ impl<C: AstFormatter> FmtWithCtx<C> for ClauseDbVar {
     }
 }
 
+impl_display_via_ctx!(ConstantExpr);
 impl<C: AstFormatter> FmtWithCtx<C> for ConstantExpr {
     fn fmt_with_ctx(&self, ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{}", self.value.with_ctx(ctx))
@@ -200,6 +299,21 @@ impl<C: AstFormatter> FmtWithCtx<C> for ConstGenericVar {
     }
 }
 
+impl Display for DeBruijnId {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> std::result::Result<(), fmt::Error> {
+        write!(f, "{}", self.index)
+    }
+}
+
+impl<Id: Display> Display for DeBruijnVar<Id> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Self::Bound(dbid, varid) => write!(f, "{dbid}_{varid}"),
+            Self::Free(varid) => write!(f, "{varid}"),
+        }
+    }
+}
+
 impl<C: AstFormatter> FmtWithCtx<C> for DeclarationGroup {
     fn fmt_with_ctx(&self, ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         use DeclarationGroup::*;
@@ -220,12 +334,47 @@ impl<C: AstFormatter> FmtWithCtx<C> for ExistentialPredicate {
     }
 }
 
+impl_display_via_ctx!(Field);
 impl<C: AstFormatter> FmtWithCtx<C> for Field {
     fn fmt_with_ctx(&self, ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         if let Some(name) = &self.name {
             write!(f, "{}: ", name)?
         }
         write!(f, "{}", self.ty.with_ctx(ctx))
+    }
+}
+
+impl Display for FileName {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> std::result::Result<(), fmt::Error> {
+        match self {
+            FileName::Virtual(path_buf) | FileName::Local(path_buf) => {
+                write!(f, "{}", path_buf.display())
+            }
+            FileName::NotReal(name) => write!(f, "{}", name),
+        }
+    }
+}
+
+impl Display for FloatTy {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> std::result::Result<(), fmt::Error> {
+        match self {
+            FloatTy::F16 => write!(f, "f16"),
+            FloatTy::F32 => write!(f, "f32"),
+            FloatTy::F64 => write!(f, "f64"),
+            FloatTy::F128 => write!(f, "f128"),
+        }
+    }
+}
+
+impl Display for FloatValue {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> std::result::Result<(), fmt::Error> {
+        let v = &self.value;
+        match self.ty {
+            FloatTy::F16 => write!(f, "{v} : f16"),
+            FloatTy::F32 => write!(f, "{v} : f32"),
+            FloatTy::F64 => write!(f, "{v} : f64"),
+            FloatTy::F128 => write!(f, "{v} : f128"),
+        }
     }
 }
 
@@ -250,6 +399,68 @@ impl<C: AstFormatter> FmtWithCtx<C> for FnPtr {
             }
         };
         write!(f, "{}", self.generics.with_ctx(ctx))
+    }
+}
+
+impl<C: AstFormatter> FmtWithCtx<C> for FunDecl {
+    fn fmt_with_ctx(&self, ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let keyword = if self.signature.is_unsafe {
+            "unsafe fn"
+        } else {
+            "fn"
+        };
+        self.item_meta
+            .fmt_item_intro(f, ctx, keyword, self.def_id)?;
+
+        // Update the context
+        let ctx = &ctx.set_generics(&self.signature.generics);
+
+        // Generic parameters
+        let (params, preds) = self.signature.generics.fmt_with_ctx_with_trait_clauses(ctx);
+        write!(f, "{params}")?;
+
+        // Arguments
+        let mut args: Vec<String> = Vec::new();
+        for (i, ty) in self.signature.inputs.iter().enumerate() {
+            // The input variables start at index 1
+            // TODO: use the locals to get the variable names
+            let id = LocalId::new(i + 1);
+            args.push(format!("{}: {}", id.to_pretty_string(), ty.with_ctx(ctx)));
+        }
+        let args = args.join(", ");
+        write!(f, "({args})")?;
+
+        // Return type
+        if !self.signature.output.is_unit() {
+            write!(f, " -> {}", self.signature.output.with_ctx(ctx))?;
+        };
+        write!(f, "{preds}")?;
+
+        // Body
+        match &self.body {
+            Ok(body) => {
+                let tab = ctx.indent();
+                let body = body.with_ctx(ctx);
+                write!(f, "\n{tab}{{\n{body}{tab}}}")?;
+            }
+            Err(Opaque) => {}
+        }
+
+        Ok(())
+    }
+}
+
+impl<C: AstFormatter> FmtWithCtx<C> for FunDeclId {
+    fn fmt_with_ctx(&self, ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        AnyTransId::from(*self).fmt_with_ctx(ctx, f)
+    }
+}
+
+impl<C: AstFormatter> FmtWithCtx<C> for FunDeclRef {
+    fn fmt_with_ctx(&self, ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let id = self.id.with_ctx(ctx);
+        let generics = self.generics.with_ctx(ctx);
+        write!(f, "{id}{generics}")
     }
 }
 
@@ -324,6 +535,8 @@ impl GenericArgs {
     }
 }
 
+impl_display_via_ctx!(GenericArgs);
+impl_debug_via_display!(GenericArgs);
 impl<C: AstFormatter> FmtWithCtx<C> for GenericArgs {
     fn fmt_with_ctx(&self, ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         if self.has_explicits() {
@@ -411,6 +624,13 @@ impl GenericParams {
     }
 }
 
+impl_debug_via_display!(GenericParams);
+impl Display for GenericParams {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> std::result::Result<(), fmt::Error> {
+        write!(f, "{}", self.fmt_with_ctx_single_line(&FmtCtx::new()))
+    }
+}
+
 impl<C: AstFormatter> FmtWithCtx<C> for GenericsSource {
     fn fmt_with_ctx(&self, ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
@@ -478,68 +698,6 @@ impl<C: AstFormatter> FmtWithCtx<C> for GExprBody<ullbc_ast::BodyContents> {
         self.fmt_with_ctx_and_callback(ctx, f, |f, ctx, body| {
             fmt_body_blocks_with_ctx(f, body, ctx)
         })
-    }
-}
-
-impl<C: AstFormatter> FmtWithCtx<C> for FunDecl {
-    fn fmt_with_ctx(&self, ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let keyword = if self.signature.is_unsafe {
-            "unsafe fn"
-        } else {
-            "fn"
-        };
-        self.item_meta
-            .fmt_item_intro(f, ctx, keyword, self.def_id)?;
-
-        // Update the context
-        let ctx = &ctx.set_generics(&self.signature.generics);
-
-        // Generic parameters
-        let (params, preds) = self.signature.generics.fmt_with_ctx_with_trait_clauses(ctx);
-        write!(f, "{params}")?;
-
-        // Arguments
-        let mut args: Vec<String> = Vec::new();
-        for (i, ty) in self.signature.inputs.iter().enumerate() {
-            // The input variables start at index 1
-            // TODO: use the locals to get the variable names
-            let id = LocalId::new(i + 1);
-            args.push(format!("{}: {}", id.to_pretty_string(), ty.with_ctx(ctx)));
-        }
-        let args = args.join(", ");
-        write!(f, "({args})")?;
-
-        // Return type
-        if !self.signature.output.is_unit() {
-            write!(f, " -> {}", self.signature.output.with_ctx(ctx))?;
-        };
-        write!(f, "{preds}")?;
-
-        // Body
-        match &self.body {
-            Ok(body) => {
-                let tab = ctx.indent();
-                let body = body.with_ctx(ctx);
-                write!(f, "\n{tab}{{\n{body}{tab}}}")?;
-            }
-            Err(Opaque) => {}
-        }
-
-        Ok(())
-    }
-}
-
-impl<C: AstFormatter> FmtWithCtx<C> for FunDeclId {
-    fn fmt_with_ctx(&self, ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        AnyTransId::from(*self).fmt_with_ctx(ctx, f)
-    }
-}
-
-impl<C: AstFormatter> FmtWithCtx<C> for FunDeclRef {
-    fn fmt_with_ctx(&self, ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let id = self.id.with_ctx(ctx);
-        let generics = self.generics.with_ctx(ctx);
-        write!(f, "{id}{generics}")
     }
 }
 
@@ -626,6 +784,25 @@ impl<C: AstFormatter> FmtWithCtx<C> for ImplElem {
     }
 }
 
+impl Display for IntegerTy {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> std::result::Result<(), fmt::Error> {
+        match self {
+            IntegerTy::Isize => write!(f, "isize"),
+            IntegerTy::I8 => write!(f, "i8"),
+            IntegerTy::I16 => write!(f, "i16"),
+            IntegerTy::I32 => write!(f, "i32"),
+            IntegerTy::I64 => write!(f, "i64"),
+            IntegerTy::I128 => write!(f, "i128"),
+            IntegerTy::Usize => write!(f, "usize"),
+            IntegerTy::U8 => write!(f, "u8"),
+            IntegerTy::U16 => write!(f, "u16"),
+            IntegerTy::U32 => write!(f, "u32"),
+            IntegerTy::U64 => write!(f, "u64"),
+            IntegerTy::U128 => write!(f, "u128"),
+        }
+    }
+}
+
 impl ItemMeta {
     /// Format the start of an item definition, up to the name.
     pub fn fmt_item_intro<C: AstFormatter>(
@@ -656,6 +833,20 @@ impl ItemMeta {
     }
 }
 
+impl Display for Literal {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> std::result::Result<(), fmt::Error> {
+        match self {
+            Literal::Scalar(v) => write!(f, "{v}"),
+            Literal::Float(v) => write!(f, "{v}"),
+            Literal::Bool(v) => write!(f, "{v}"),
+            Literal::Char(v) => write!(f, "{v}"),
+            Literal::Str(v) => write!(f, "\"{}\"", v.replace("\\", "\\\\").replace("\n", "\\n")),
+            Literal::ByteStr(v) => write!(f, "{v:?}"),
+        }
+    }
+}
+
+impl_display_via_ctx!(LiteralTy);
 impl<C: AstFormatter> FmtWithCtx<C> for LiteralTy {
     fn fmt_with_ctx(&self, _ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
@@ -664,6 +855,24 @@ impl<C: AstFormatter> FmtWithCtx<C> for LiteralTy {
             LiteralTy::Char => write!(f, "char"),
             LiteralTy::Bool => write!(f, "bool"),
         }
+    }
+}
+
+impl Display for Loc {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> std::result::Result<(), fmt::Error> {
+        write!(f, "{}:{}", self.line, self.col)
+    }
+}
+
+impl Display for Local {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        // We display both the variable name and its id because some
+        // variables may have the same name (in different scopes)
+        if let Some(name) = &self.name {
+            write!(f, "{name}")?
+        }
+        write!(f, "{}", self.index.to_pretty_string())?;
+        Ok(())
     }
 }
 
@@ -692,6 +901,7 @@ impl<C: AstFormatter> FmtWithCtx<C> for NullOp {
     }
 }
 
+impl_display_via_ctx!(Operand);
 impl<C: AstFormatter> FmtWithCtx<C> for Operand {
     fn fmt_with_ctx(&self, ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
@@ -736,6 +946,7 @@ impl<C: AstFormatter> FmtWithCtx<C> for PathElem {
     }
 }
 
+impl_display_via_ctx!(Place);
 impl<C: AstFormatter> FmtWithCtx<C> for Place {
     fn fmt_with_ctx(&self, ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match &self.kind {
@@ -791,6 +1002,16 @@ impl<C: AstFormatter> FmtWithCtx<C> for Place {
 impl<C: AstFormatter> FmtWithCtx<C> for PolyTraitDeclRef {
     fn fmt_with_ctx(&self, ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{}", self.fmt_as_for(ctx))
+    }
+}
+
+impl Display for RawAttribute {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> std::result::Result<(), fmt::Error> {
+        write!(f, "{}", self.path)?;
+        if let Some(args) = &self.args {
+            write!(f, "({args})")?;
+        }
+        Ok(())
     }
 }
 
@@ -896,6 +1117,7 @@ impl<C: AstFormatter> FmtWithCtx<C> for RegionVar {
     }
 }
 
+impl_display_via_ctx!(Rvalue);
 impl<C: AstFormatter> FmtWithCtx<C> for Rvalue {
     fn fmt_with_ctx(&self, ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
@@ -994,6 +1216,25 @@ impl<C: AstFormatter> FmtWithCtx<C> for Rvalue {
                     op.with_ctx(ctx)
                 )
             }
+        }
+    }
+}
+
+impl Display for ScalarValue {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> std::result::Result<(), fmt::Error> {
+        match self {
+            ScalarValue::Isize(v) => write!(f, "{v} : isize"),
+            ScalarValue::I8(v) => write!(f, "{v} : i8"),
+            ScalarValue::I16(v) => write!(f, "{v} : i16"),
+            ScalarValue::I32(v) => write!(f, "{v} : i32"),
+            ScalarValue::I64(v) => write!(f, "{v} : i64"),
+            ScalarValue::I128(v) => write!(f, "{v} : i128"),
+            ScalarValue::Usize(v) => write!(f, "{v} : usize"),
+            ScalarValue::U8(v) => write!(f, "{v} : u8"),
+            ScalarValue::U16(v) => write!(f, "{v} : u16"),
+            ScalarValue::U32(v) => write!(f, "{v} : u32"),
+            ScalarValue::U64(v) => write!(f, "{v} : u64"),
+            ScalarValue::U128(v) => write!(f, "{v} : u128"),
         }
     }
 }
@@ -1348,6 +1589,12 @@ impl<C: AstFormatter> FmtWithCtx<C> for TraitImplId {
     }
 }
 
+impl Display for TraitItemName {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> std::result::Result<(), fmt::Error> {
+        write!(f, "{}", self.0)
+    }
+}
+
 impl<C: AstFormatter> FmtWithCtx<C> for TraitRefKind {
     fn fmt_with_ctx(&self, ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
@@ -1552,6 +1799,12 @@ impl<C: AstFormatter> FmtWithCtx<C> for TypeVar {
     }
 }
 
+impl Display for TypeVar {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}", self.name)
+    }
+}
+
 impl<C: AstFormatter> FmtWithCtx<C> for UnOp {
     fn fmt_with_ctx(&self, ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
@@ -1564,6 +1817,7 @@ impl<C: AstFormatter> FmtWithCtx<C> for UnOp {
     }
 }
 
+impl_display_via_ctx!(Variant);
 impl<C: AstFormatter> FmtWithCtx<C> for Variant {
     fn fmt_with_ctx(&self, ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{}", self.name)?;
@@ -1574,267 +1828,6 @@ impl<C: AstFormatter> FmtWithCtx<C> for Variant {
         Ok(())
     }
 }
-
-impl std::fmt::Display for AnyTransId {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::result::Result<(), std::fmt::Error> {
-        let s = match self {
-            AnyTransId::Type(x) => x.to_pretty_string(),
-            AnyTransId::Fun(x) => x.to_pretty_string(),
-            AnyTransId::Global(x) => x.to_pretty_string(),
-            AnyTransId::TraitDecl(x) => x.to_pretty_string(),
-            AnyTransId::TraitImpl(x) => x.to_pretty_string(),
-        };
-        f.write_str(&s)
-    }
-}
-
-impl std::fmt::Display for BinOp {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::result::Result<(), std::fmt::Error> {
-        match self {
-            BinOp::BitXor => write!(f, "^"),
-            BinOp::BitAnd => write!(f, "&"),
-            BinOp::BitOr => write!(f, "|"),
-            BinOp::Eq => write!(f, "=="),
-            BinOp::Lt => write!(f, "<"),
-            BinOp::Le => write!(f, "<="),
-            BinOp::Ne => write!(f, "!="),
-            BinOp::Ge => write!(f, ">="),
-            BinOp::Gt => write!(f, ">"),
-            BinOp::Div => write!(f, "/"),
-            BinOp::Rem => write!(f, "%"),
-            BinOp::Add => write!(f, "+"),
-            BinOp::Sub => write!(f, "-"),
-            BinOp::Mul => write!(f, "*"),
-            BinOp::WrappingAdd => write!(f, "wrapping.+"),
-            BinOp::WrappingSub => write!(f, "wrapping.-"),
-            BinOp::WrappingMul => write!(f, "wrapping.*"),
-            BinOp::CheckedAdd => write!(f, "checked.+"),
-            BinOp::CheckedSub => write!(f, "checked.-"),
-            BinOp::CheckedMul => write!(f, "checked.*"),
-            BinOp::Shl => write!(f, "<<"),
-            BinOp::Shr => write!(f, ">>"),
-            BinOp::Cmp => write!(f, "cmp"),
-            BinOp::Offset => write!(f, "offset"),
-        }
-    }
-}
-
-impl std::fmt::Display for BorrowKind {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::result::Result<(), std::fmt::Error> {
-        // Reuse the derived `Debug` impl to get the variant name.
-        write!(f, "{self:?}")
-    }
-}
-
-impl std::fmt::Display for BuiltinFunId {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::result::Result<(), std::fmt::Error> {
-        let name = match *self {
-            BuiltinFunId::BoxNew => "BoxNew",
-            BuiltinFunId::ArrayToSliceShared => "ArrayToSliceShared",
-            BuiltinFunId::ArrayToSliceMut => "ArrayToSliceMut",
-            BuiltinFunId::ArrayRepeat => "ArrayRepeat",
-            BuiltinFunId::Index(BuiltinIndexOp {
-                is_array,
-                mutability,
-                is_range,
-            }) => {
-                let ty = if is_array { "Array" } else { "Slice" };
-                let op = if is_range { "SubSlice" } else { "Index" };
-                let mutability = mutability.variant_name();
-                &format!("{ty}{op}{mutability}")
-            }
-            BuiltinFunId::PtrFromParts(mutability) => {
-                let mutability = mutability.variant_name();
-                &format!("PtrFromParts{mutability}")
-            }
-        };
-        f.write_str(name)
-    }
-}
-
-impl std::fmt::Display for DeBruijnId {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::result::Result<(), std::fmt::Error> {
-        write!(f, "{}", self.index)
-    }
-}
-
-impl<Id> Display for DeBruijnVar<Id>
-where
-    Id: Display,
-{
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match self {
-            Self::Bound(dbid, varid) => write!(f, "{dbid}_{varid}"),
-            Self::Free(varid) => write!(f, "{varid}"),
-        }
-    }
-}
-
-impl std::fmt::Display for ConstantExpr {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::result::Result<(), std::fmt::Error> {
-        write!(f, "{}", self.with_ctx(&FmtCtx::new()))
-    }
-}
-
-impl std::fmt::Display for FileName {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::result::Result<(), std::fmt::Error> {
-        match self {
-            FileName::Virtual(path_buf) | FileName::Local(path_buf) => {
-                write!(f, "{}", path_buf.display())
-            }
-            FileName::NotReal(name) => write!(f, "{}", name),
-        }
-    }
-}
-
-impl std::fmt::Display for FloatTy {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::result::Result<(), std::fmt::Error> {
-        match self {
-            FloatTy::F16 => write!(f, "f16"),
-            FloatTy::F32 => write!(f, "f32"),
-            FloatTy::F64 => write!(f, "f64"),
-            FloatTy::F128 => write!(f, "f128"),
-        }
-    }
-}
-
-impl std::fmt::Display for IntegerTy {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::result::Result<(), std::fmt::Error> {
-        match self {
-            IntegerTy::Isize => write!(f, "isize"),
-            IntegerTy::I8 => write!(f, "i8"),
-            IntegerTy::I16 => write!(f, "i16"),
-            IntegerTy::I32 => write!(f, "i32"),
-            IntegerTy::I64 => write!(f, "i64"),
-            IntegerTy::I128 => write!(f, "i128"),
-            IntegerTy::Usize => write!(f, "usize"),
-            IntegerTy::U8 => write!(f, "u8"),
-            IntegerTy::U16 => write!(f, "u16"),
-            IntegerTy::U32 => write!(f, "u32"),
-            IntegerTy::U64 => write!(f, "u64"),
-            IntegerTy::U128 => write!(f, "u128"),
-        }
-    }
-}
-
-impl std::fmt::Display for GenericParams {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::result::Result<(), std::fmt::Error> {
-        write!(f, "{}", self.fmt_with_ctx_single_line(&FmtCtx::new()))
-    }
-}
-
-impl std::fmt::Display for Literal {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::result::Result<(), std::fmt::Error> {
-        match self {
-            Literal::Scalar(v) => write!(f, "{v}"),
-            Literal::Float(v) => write!(f, "{v}"),
-            Literal::Bool(v) => write!(f, "{v}"),
-            Literal::Char(v) => write!(f, "{v}"),
-            Literal::Str(v) => write!(f, "\"{}\"", v.replace("\\", "\\\\").replace("\n", "\\n")),
-            Literal::ByteStr(v) => write!(f, "{v:?}"),
-        }
-    }
-}
-
-impl std::fmt::Display for Loc {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::result::Result<(), std::fmt::Error> {
-        write!(f, "{}:{}", self.line, self.col)
-    }
-}
-
-impl std::fmt::Display for RawAttribute {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::result::Result<(), std::fmt::Error> {
-        write!(f, "{}", self.path)?;
-        if let Some(args) = &self.args {
-            write!(f, "({args})")?;
-        }
-        Ok(())
-    }
-}
-
-impl std::fmt::Display for ScalarValue {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::result::Result<(), std::fmt::Error> {
-        match self {
-            ScalarValue::Isize(v) => write!(f, "{v} : isize"),
-            ScalarValue::I8(v) => write!(f, "{v} : i8"),
-            ScalarValue::I16(v) => write!(f, "{v} : i16"),
-            ScalarValue::I32(v) => write!(f, "{v} : i32"),
-            ScalarValue::I64(v) => write!(f, "{v} : i64"),
-            ScalarValue::I128(v) => write!(f, "{v} : i128"),
-            ScalarValue::Usize(v) => write!(f, "{v} : usize"),
-            ScalarValue::U8(v) => write!(f, "{v} : u8"),
-            ScalarValue::U16(v) => write!(f, "{v} : u16"),
-            ScalarValue::U32(v) => write!(f, "{v} : u32"),
-            ScalarValue::U64(v) => write!(f, "{v} : u64"),
-            ScalarValue::U128(v) => write!(f, "{v} : u128"),
-        }
-    }
-}
-
-impl std::fmt::Display for FloatValue {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::result::Result<(), std::fmt::Error> {
-        let v = &self.value;
-        match self.ty {
-            FloatTy::F16 => write!(f, "{v} : f16"),
-            FloatTy::F32 => write!(f, "{v} : f32"),
-            FloatTy::F64 => write!(f, "{v} : f64"),
-            FloatTy::F128 => write!(f, "{v} : f128"),
-        }
-    }
-}
-
-impl std::fmt::Display for TraitItemName {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::result::Result<(), std::fmt::Error> {
-        write!(f, "{}", self.0)
-    }
-}
-
-impl std::fmt::Display for TypeVar {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}", self.name)
-    }
-}
-
-impl std::fmt::Display for Local {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        // We display both the variable name and its id because some
-        // variables may have the same name (in different scopes)
-        if let Some(name) = &self.name {
-            write!(f, "{name}")?
-        }
-        write!(f, "{}", self.index.to_pretty_string())?;
-        Ok(())
-    }
-}
-
-macro_rules! impl_display_via_ctx {
-    ($ty:ty) => {
-        impl Display for $ty {
-            fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-                self.fmt_with_ctx(&FmtCtx::new(), f)
-            }
-        }
-    };
-}
-macro_rules! impl_debug_via_display {
-    ($ty:ty) => {
-        impl Debug for $ty {
-            fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-                <_ as Display>::fmt(self, f)
-            }
-        }
-    };
-}
-
-impl_display_via_ctx!(Field);
-impl_display_via_ctx!(GenericArgs);
-impl_display_via_ctx!(LiteralTy);
-impl_display_via_ctx!(Operand);
-impl_display_via_ctx!(Place);
-impl_display_via_ctx!(Rvalue);
-impl_display_via_ctx!(Variant);
-impl_debug_via_display!(GenericArgs);
-impl_debug_via_display!(GenericParams);
 
 /// Format a function call.
 pub fn fmt_call<C>(f: &mut fmt::Formatter<'_>, ctx: &C, call: &Call) -> fmt::Result
