@@ -25,6 +25,7 @@ impl TraitClause {
         }
     }
 }
+
 impl GenericParams {
     pub fn empty() -> Self {
         Self::default()
@@ -33,7 +34,12 @@ impl GenericParams {
     pub fn is_empty(&self) -> bool {
         self.len() == 0
     }
-
+    /// Whether this has any explicit arguments (types, regions or const generics).
+    pub fn has_explicits(&self) -> bool {
+        !self.regions.is_empty() || !self.types.is_empty() || !self.const_generics.is_empty()
+    }
+    /// Whether this has any implicit arguments (trait clauses, outlives relations, associated type
+    /// equality constraints).
     pub fn has_predicates(&self) -> bool {
         !self.trait_clauses.is_empty()
             || !self.types_outlive.is_empty()
@@ -308,6 +314,14 @@ impl GenericArgs {
 
     pub fn is_empty(&self) -> bool {
         self.len() == 0
+    }
+    /// Whether this has any explicit arguments (types, regions or const generics).
+    pub fn has_explicits(&self) -> bool {
+        !self.regions.is_empty() || !self.types.is_empty() || !self.const_generics.is_empty()
+    }
+    /// Whether this has any implicit arguments (trait refs).
+    pub fn has_implicits(&self) -> bool {
+        !self.trait_refs.is_empty()
     }
 
     pub fn empty(target: GenericsSource) -> Self {

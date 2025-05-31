@@ -8,6 +8,7 @@ use crate::{
     reorder_decls::*,
     ullbc_ast::{self as ullbc, *},
 };
+use either::Either;
 use itertools::Itertools;
 use std::{
     borrow::Cow,
@@ -300,74 +301,58 @@ where
 }
 
 impl GenericArgs {
-    /// Returns a list of formatted params and a list of formatted clauses.
-    pub(crate) fn fmt_each<C>(&self, ctx: &C) -> (Vec<String>, Vec<String>)
-    where
-        C: AstFormatter,
-    {
-        let mut params = Vec::new();
-        let GenericArgs {
-            regions,
-            types,
-            const_generics,
-            trait_refs,
-            target: _,
-        } = self;
-        for x in regions {
-            params.push(x.to_string_with_ctx(ctx));
-        }
-        for x in types {
-            params.push(x.to_string_with_ctx(ctx));
-        }
-        for x in const_generics {
-            params.push(x.to_string_with_ctx(ctx));
-        }
-
-        let mut clauses = Vec::new();
-        for x in trait_refs {
-            clauses.push(x.to_string_with_ctx(ctx));
-        }
-        (params, clauses)
+    pub(crate) fn fmt_explicits<'a, C: AstFormatter>(
+        &'a self,
+        ctx: &'a C,
+    ) -> impl Iterator<Item = impl Display + 'a> {
+        let regions = self.regions.iter().map(|x| x.with_ctx(ctx));
+        let types = self.types.iter().map(|x| x.with_ctx(ctx));
+        let const_generics = self.const_generics.iter().map(|x| x.with_ctx(ctx));
+        regions.map(Either::Left).chain(
+            types
+                .map(Either::Left)
+                .chain(const_generics.map(Either::Right))
+                .map(Either::Right),
+        )
     }
 
-    pub(crate) fn fmt_with_ctx_no_brackets<C>(&self, ctx: &C) -> String
-    where
-        C: AstFormatter,
-    {
-        let (params, clauses) = self.fmt_each(ctx);
-        assert!(clauses.is_empty());
-        params.join(", ")
+    pub(crate) fn fmt_implicits<'a, C: AstFormatter>(
+        &'a self,
+        ctx: &'a C,
+    ) -> impl Iterator<Item = impl Display + 'a> {
+        self.trait_refs.iter().map(|x| x.with_ctx(ctx))
     }
 }
 
 impl<C: AstFormatter> FmtWithCtx<C> for GenericArgs {
     fn fmt_with_ctx(&self, ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let (params, clauses) = self.fmt_each(ctx);
-        if !params.is_empty() {
-            write!(f, "<{}>", params.join(", "))?;
+        if self.has_explicits() {
+            write!(f, "<{}>", self.fmt_explicits(ctx).format(", "))?;
         }
-        if !clauses.is_empty() {
-            write!(f, "[{}]", clauses.join(", "))?;
+        if self.has_implicits() {
+            write!(f, "[{}]", self.fmt_implicits(ctx).format(", "))?;
         }
         Ok(())
     }
 }
 
 impl GenericParams {
-    fn format_params<'a, C>(&'a self, ctx: &'a C) -> impl Iterator<Item = String> + use<'a, C>
+    fn formatted_params<'a, C>(&'a self, ctx: &'a C) -> impl Iterator<Item = impl Display + 'a>
     where
         C: AstFormatter,
     {
-        let regions = self.regions.iter().map(|x| x.to_string_with_ctx(ctx));
-        let types = self.types.iter().map(|x| x.to_string_with_ctx(ctx));
-        let const_generics = self
-            .const_generics
-            .iter()
-            .map(|x| x.to_string_with_ctx(ctx));
-        regions.chain(types).chain(const_generics)
+        let regions = self.regions.iter().map(|x| x.with_ctx(ctx));
+        let types = self.types.iter().map(|x| x.with_ctx(ctx));
+        let const_generics = self.const_generics.iter().map(|x| x.with_ctx(ctx));
+        regions.map(Either::Left).chain(
+            types
+                .map(Either::Left)
+                .chain(const_generics.map(Either::Right))
+                .map(Either::Right),
+        )
     }
 
-    fn format_clauses<'a, C>(&'a self, ctx: &'a C) -> impl Iterator<Item = String> + use<'a, C>
+    fn formatted_clauses<'a, C>(&'a self, ctx: &'a C) -> impl Iterator<Item = impl Display + 'a>
     where
         C: AstFormatter,
     {
@@ -378,10 +363,12 @@ impl GenericParams {
             .trait_type_constraints
             .iter()
             .map(|x| x.fmt_as_for(ctx));
-        trait_clauses
-            .chain(types_outlive)
-            .chain(regions_outlive)
-            .chain(type_constraints)
+        trait_clauses.map(Either::Left).chain(
+            types_outlive
+                .chain(regions_outlive)
+                .chain(type_constraints)
+                .map(Either::Right),
+        )
     }
 
     pub fn fmt_with_ctx_with_trait_clauses<C>(&self, ctx: &C) -> (String, String)
@@ -389,20 +376,20 @@ impl GenericParams {
         C: AstFormatter,
     {
         let tab = ctx.indent();
-        let params = self.format_params(ctx).join(", ");
-        let params = if params.is_empty() {
-            String::new()
-        } else {
+        let params = if self.has_explicits() {
+            let params = self.formatted_params(ctx).format(", ");
             format!("<{}>", params)
-        };
-        let clauses = self
-            .format_clauses(ctx)
-            .map(|x| format!("\n{tab}{TAB_INCR}{x},"))
-            .join("");
-        let clauses = if clauses.is_empty() {
-            String::new()
         } else {
+            String::new()
+        };
+        let clauses = if self.has_predicates() {
+            let clauses = self
+                .formatted_clauses(ctx)
+                .map(|x| format!("\n{tab}{TAB_INCR}{x},"))
+                .format("");
             format!("\n{tab}where{clauses}")
+        } else {
+            String::new()
         };
         (params, clauses)
     }
@@ -411,13 +398,14 @@ impl GenericParams {
     where
         C: AstFormatter,
     {
-        let params = self
-            .format_params(ctx)
-            .chain(self.format_clauses(ctx))
-            .join(", ");
-        if params.is_empty() {
+        if self.is_empty() {
             String::new()
         } else {
+            let params = self
+                .formatted_params(ctx)
+                .map(Either::Left)
+                .chain(self.formatted_clauses(ctx).map(Either::Right))
+                .format(", ");
             format!("<{}>", params)
         }
     }
@@ -440,9 +428,10 @@ impl<T> GExprBody<T> {
         ctx: &C,
         f: &mut fmt::Formatter<'_>,
         fmt_body: impl for<'a, 'b> FnOnce(
+            &mut fmt::Formatter<'_>,
             &<C::Reborrow<'b> as AstFormatter>::Reborrow<'a>,
             &'a T,
-        ) -> String,
+        ) -> fmt::Result,
     ) -> fmt::Result {
         // Update the context
         let ctx = &ctx.set_locals(&self.locals);
@@ -469,10 +458,7 @@ impl<T> GExprBody<T> {
             writeln!(f)?;
         }
 
-        // Format the body blocks - TODO: we don't take the indentation
-        // into account, here
-        let body = fmt_body(ctx, &self.body);
-        write!(f, "{body}")?;
+        fmt_body(f, ctx, &self.body)?;
 
         Ok(())
     }
@@ -480,14 +466,18 @@ impl<T> GExprBody<T> {
 
 impl<C: AstFormatter> FmtWithCtx<C> for GExprBody<llbc_ast::Block> {
     fn fmt_with_ctx(&self, ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        self.fmt_with_ctx_and_callback(ctx, f, |ctx, body| {
-            "\n".to_owned() + &body.to_string_with_ctx(ctx)
+        self.fmt_with_ctx_and_callback(ctx, f, |f, ctx, body| {
+            writeln!(f)?;
+            body.fmt_with_ctx(ctx, f)?;
+            Ok(())
         })
     }
 }
 impl<C: AstFormatter> FmtWithCtx<C> for GExprBody<ullbc_ast::BodyContents> {
     fn fmt_with_ctx(&self, ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        self.fmt_with_ctx_and_callback(ctx, f, |ctx, body| fmt_body_blocks_with_ctx(body, ctx))
+        self.fmt_with_ctx_and_callback(ctx, f, |f, ctx, body| {
+            fmt_body_blocks_with_ctx(f, body, ctx)
+        })
     }
 }
 
@@ -498,8 +488,8 @@ impl<C: AstFormatter> FmtWithCtx<C> for FunDecl {
         } else {
             "fn"
         };
-        let intro = self.item_meta.fmt_item_intro(ctx, keyword, self.def_id);
-        write!(f, "{intro}")?;
+        self.item_meta
+            .fmt_item_intro(f, ctx, keyword, self.def_id)?;
 
         // Update the context
         let ctx = &ctx.set_generics(&self.signature.generics);
@@ -562,8 +552,8 @@ where
             GlobalKind::Static => "static",
             GlobalKind::AnonConst | GlobalKind::NamedConst => "const",
         };
-        let intro = self.item_meta.fmt_item_intro(ctx, keyword, self.def_id);
-        write!(f, "{intro}")?;
+        self.item_meta
+            .fmt_item_intro(f, ctx, keyword, self.def_id)?;
 
         // Update the context with the generics
         let ctx = &ctx.set_generics(&self.generics);
@@ -638,26 +628,31 @@ impl<C: AstFormatter> FmtWithCtx<C> for ImplElem {
 
 impl ItemMeta {
     /// Format the start of an item definition, up to the name.
-    pub fn fmt_item_intro<C>(&self, ctx: &C, keyword: &str, id: impl Into<AnyTransId>) -> String
-    where
-        C: AstFormatter,
-    {
+    pub fn fmt_item_intro<C: AstFormatter>(
+        &self,
+        f: &mut fmt::Formatter<'_>,
+        ctx: &C,
+        keyword: &str,
+        id: impl Into<AnyTransId>,
+    ) -> fmt::Result {
         let tab = ctx.indent();
         let full_name = self.name.with_ctx(ctx);
-        let (name, comment) =
-            if let Some(short_name) = ctx.get_crate().and_then(|c| c.short_names.get(&id.into())) {
-                let short_name = short_name.with_ctx(ctx);
-                (short_name, format!("// Full name: {full_name}\n"))
-            } else {
-                (full_name, String::new())
-            };
-        let vis = if self.attr_info.public { "pub " } else { "" };
-        let lang_item = self
-            .lang_item
-            .as_ref()
-            .map(|id| format!("{tab}#[lang_item(\"{id}\")]\n"))
-            .unwrap_or_default();
-        format!("{comment}{lang_item}{tab}{vis}{keyword} {name}")
+        let name = if let Some(tr) = ctx.get_crate()
+            && let Some(short_name) = tr.short_names.get(&id.into())
+        {
+            writeln!(f, "// Full name: {full_name}")?;
+            short_name.with_ctx(ctx)
+        } else {
+            full_name
+        };
+        if let Some(id) = &self.lang_item {
+            writeln!(f, "{tab}#[lang_item(\"{id}\")]")?;
+        }
+        write!(f, "{tab}")?;
+        if self.attr_info.public {
+            write!(f, "pub ")?;
+        }
+        write!(f, "{keyword} {name}")
     }
 }
 
@@ -735,8 +730,7 @@ impl<C: AstFormatter> FmtWithCtx<C> for PathElem {
                 Ok(())
             }
             PathElem::Monomorphized(args) => {
-                let (params, _) = args.fmt_each(ctx);
-                write!(f, "<{}>", params.join(", "))
+                write!(f, "<{}>", args.fmt_explicits(ctx).format(", "))
             }
         }
     }
@@ -1093,7 +1087,7 @@ impl<C: AstFormatter> FmtWithCtx<C> for llbc::Statement {
             }
             RawStatement::Call(call) => {
                 write!(f, "{} := ", call.dest.with_ctx(ctx))?;
-                fmt_call(ctx, call, f)
+                fmt_call(f, ctx, call)
             }
             RawStatement::Abort(kind) => {
                 write!(f, "{}", kind.with_ctx(ctx))
@@ -1208,7 +1202,7 @@ impl<C: AstFormatter> FmtWithCtx<C> for Terminator {
                 on_unwind,
             } => {
                 write!(f, "{tab}{} := ", call.dest.with_ctx(ctx))?;
-                fmt_call(ctx, call, f)?;
+                fmt_call(f, ctx, call)?;
                 write!(f, " -> bb{target} (unwind: bb{on_unwind})",)
             }
             RawTerminator::Abort(kind) => write!(f, "{tab}{}", kind.with_ctx(ctx)),
@@ -1231,8 +1225,8 @@ impl<C: AstFormatter> FmtWithCtx<C> for TraitDecl {
         // Update the context
         let ctx = &ctx.set_generics(&self.generics);
 
-        let intro = self.item_meta.fmt_item_intro(ctx, "trait", self.def_id);
-        write!(f, "{intro}")?;
+        self.item_meta
+            .fmt_item_intro(f, ctx, "trait", self.def_id)?;
 
         let (generics, clauses) = self.generics.fmt_with_ctx_with_trait_clauses(ctx);
         write!(f, "{generics}{clauses}")?;
@@ -1420,7 +1414,7 @@ impl<C: AstFormatter> FmtWithCtx<C> for Ty {
                 let adt_ident = id.with_ctx(ctx);
                 if id.is_tuple() {
                     assert!(generics.trait_refs.is_empty());
-                    let generics = generics.fmt_with_ctx_no_brackets(ctx);
+                    let generics = generics.fmt_explicits(ctx).format(", ");
                     write!(f, "({generics})")
                 } else {
                     let generics = generics.with_ctx(ctx);
@@ -1490,8 +1484,8 @@ impl<C: AstFormatter> FmtWithCtx<C> for TypeDecl {
             TypeDeclKind::Alias(..) => "type",
             TypeDeclKind::Opaque | TypeDeclKind::Error(..) => "opaque type",
         };
-        let intro = self.item_meta.fmt_item_intro(ctx, keyword, self.def_id);
-        write!(f, "{intro}")?;
+        self.item_meta
+            .fmt_item_intro(f, ctx, keyword, self.def_id)?;
 
         let ctx = &ctx.set_generics(&self.generics);
         let (params, preds) = self.generics.fmt_with_ctx_with_trait_clauses(ctx);
@@ -1843,7 +1837,7 @@ impl_debug_via_display!(GenericArgs);
 impl_debug_via_display!(GenericParams);
 
 /// Format a function call.
-pub fn fmt_call<C>(ctx: &C, call: &Call, f: &mut fmt::Formatter<'_>) -> fmt::Result
+pub fn fmt_call<C>(f: &mut fmt::Formatter<'_>, ctx: &C, call: &Call) -> fmt::Result
 where
     C: AstFormatter,
 {
@@ -1852,19 +1846,21 @@ where
     write!(f, "{func}({args})")
 }
 
-pub(crate) fn fmt_body_blocks_with_ctx<C>(body: &Vector<BlockId, BlockData>, ctx: &C) -> String
+pub(crate) fn fmt_body_blocks_with_ctx<C>(
+    f: &mut fmt::Formatter<'_>,
+    body: &Vector<BlockId, BlockData>,
+    ctx: &C,
+) -> fmt::Result
 where
     C: AstFormatter,
 {
     let tab = ctx.indent();
     let ctx = &ctx.increase_indent();
-    let mut blocks: Vec<String> = Vec::new();
     for (bid, block) in body.iter_indexed_values() {
-        blocks.push(format!(
-            "\n{tab}bb{}: {{\n{}\n{tab}}}\n",
-            bid.index(),
-            block.with_ctx(ctx),
-        ));
+        writeln!(f)?;
+        writeln!(f, "{tab}bb{}: {{", bid.index())?;
+        writeln!(f, "{}", block.with_ctx(ctx))?;
+        writeln!(f, "{tab}}}")?;
     }
-    blocks.join("")
+    Ok(())
 }
