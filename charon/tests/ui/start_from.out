@@ -25,8 +25,8 @@ pub trait Sized<Self>
 // Full name: core::iter::sources::once::Once
 #[lang_item("IterOnce")]
 pub opaque type Once<T>
-  where
-      [@TraitClause0]: Sized<T>,
+where
+    [@TraitClause0]: Sized<T>,
 
 // Full name: core::iter::sources::once::once
 pub fn once<T>(@1: T) -> Once<T>[@TraitClause0]
@@ -48,10 +48,10 @@ pub fn clone_from<'_0, '_1, Self>(@1: &'_0 mut (Self), @2: &'_1 (Self))
 // Full name: core::slice::iter::Iter
 #[lang_item("SliceIter")]
 pub opaque type Iter<'a, T>
-  where
-      [@TraitClause0]: Sized<T>,
-      T : 'a,
-      T : 'a,
+where
+    [@TraitClause0]: Sized<T>,
+    T : 'a,
+    T : 'a,
 
 // Full name: core::slice::iter::{Iter<'a, T>[@TraitClause0]}#6::as_slice
 pub fn as_slice<'a, '_1, T>(@1: &'_1 (Iter<'a, T>[@TraitClause0])) -> &'a (Slice<T>)

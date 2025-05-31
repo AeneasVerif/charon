@@ -6,9 +6,9 @@ pub trait Sized<Self>
 
 // Full name: test_crate::S
 pub struct S<'a, K>
-  where
-      [@TraitClause0]: Sized<K>,
-      K : 'a,
+where
+    [@TraitClause0]: Sized<K>,
+    K : 'a,
 {
   x: &'a (K),
 }

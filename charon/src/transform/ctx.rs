@@ -59,7 +59,7 @@ pub trait UllbcPass: Sync {
     ) {
         let fmt_ctx = &ctx.into_fmt();
         let body_str = if let Ok(body) = body {
-            body.fmt_with_ctx(fmt_ctx)
+            body.to_string_with_ctx(fmt_ctx)
         } else {
             "<opaque>".to_owned()
         };
@@ -112,7 +112,7 @@ pub trait LlbcPass: Sync {
     ) {
         let fmt_ctx = &ctx.into_fmt();
         let body_str = if let Ok(body) = body {
-            body.fmt_with_ctx(fmt_ctx)
+            body.to_string_with_ctx(fmt_ctx)
         } else {
             "<opaque>".to_owned()
         };

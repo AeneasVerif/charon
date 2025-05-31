@@ -7,8 +7,8 @@ pub trait Sized<Self>
 // Full name: core::ops::range::RangeInclusive
 #[lang_item("RangeInclusive")]
 pub struct RangeInclusive<Idx>
-  where
-      [@TraitClause0]: Sized<Idx>,
+where
+    [@TraitClause0]: Sized<Idx>,
 {
   start: Idx,
   end: Idx,
@@ -35,8 +35,8 @@ pub trait Sealed<Self>
 // Full name: core::option::Option
 #[lang_item("Option")]
 pub enum Option<T>
-  where
-      [@TraitClause0]: Sized<T>,
+where
+    [@TraitClause0]: Sized<T>,
 {
   None,
   Some(T),
@@ -355,8 +355,8 @@ pub struct FormattingOptions {
 // Full name: core::fmt::Formatter
 #[lang_item("Formatter")]
 pub struct Formatter<'a>
-  where
-      'a : 'a,
+where
+    'a : 'a,
 {
   options: FormattingOptions,
   buf: &'a mut (dyn (exists(TODO))),
@@ -365,9 +365,9 @@ pub struct Formatter<'a>
 // Full name: core::result::Result
 #[lang_item("Result")]
 pub enum Result<T, E>
-  where
-      [@TraitClause0]: Sized<T>,
-      [@TraitClause1]: Sized<E>,
+where
+    [@TraitClause0]: Sized<T>,
+    [@TraitClause1]: Sized<E>,
 {
   Ok(T),
   Err(E),
@@ -395,8 +395,8 @@ pub struct Argument<'a> {
 // Full name: core::fmt::Arguments
 #[lang_item("format_arguments")]
 pub struct Arguments<'a>
-  where
-      'a : 'a,
+where
+    'a : 'a,
 {
   pieces: &'a (Slice<&'static (Str)>),
   fmt: Option<&'a (Slice<Placeholder>)>[Sized<&'_ (Slice<Placeholder>)>],
@@ -687,8 +687,8 @@ where
 // Full name: core::ops::range::Range
 #[lang_item("Range")]
 pub struct Range<Idx>
-  where
-      [@TraitClause0]: Sized<Idx>,
+where
+    [@TraitClause0]: Sized<Idx>,
 {
   start: Idx,
   end: Idx,

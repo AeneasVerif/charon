@@ -72,8 +72,8 @@ fn use_inlines() -> u32
 // Full name: core::option::Option
 #[lang_item("Option")]
 pub enum Option<T>
-  where
-      [@TraitClause0]: Sized<T>,
+where
+    [@TraitClause0]: Sized<T>,
 {
   None,
   Some(T),
@@ -169,8 +169,8 @@ pub struct UsizeNoHighBit {
 
 // Full name: alloc::raw_vec::RawVecInner
 struct RawVecInner<A>
-  where
-      [@TraitClause0]: Sized<A>,
+where
+    [@TraitClause0]: Sized<A>,
 {
   ptr: Unique<u8>,
   cap: UsizeNoHighBit,
@@ -179,9 +179,9 @@ struct RawVecInner<A>
 
 // Full name: alloc::raw_vec::RawVec
 struct RawVec<T, A>
-  where
-      [@TraitClause0]: Sized<T>,
-      [@TraitClause1]: Sized<A>,
+where
+    [@TraitClause0]: Sized<T>,
+    [@TraitClause1]: Sized<A>,
 {
   inner: RawVecInner<A>[@TraitClause1],
   _marker: PhantomData<T>,
@@ -190,9 +190,9 @@ struct RawVec<T, A>
 // Full name: alloc::vec::Vec
 #[lang_item("Vec")]
 pub struct Vec<T, A>
-  where
-      [@TraitClause0]: Sized<T>,
-      [@TraitClause1]: Sized<A>,
+where
+    [@TraitClause0]: Sized<T>,
+    [@TraitClause1]: Sized<A>,
 {
   buf: RawVec<T, A>[@TraitClause0, @TraitClause1],
   len: usize,

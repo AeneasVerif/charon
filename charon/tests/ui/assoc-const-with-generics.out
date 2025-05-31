@@ -6,8 +6,8 @@ pub trait Sized<Self>
 
 // Full name: test_crate::V
 struct V<T, const N : usize>
-  where
-      [@TraitClause0]: Sized<T>,
+where
+    [@TraitClause0]: Sized<T>,
 {
   x: Array<T, const N : usize>,
 }
@@ -23,8 +23,8 @@ where
 }
 
 const test_crate::{V<T, const N : usize>[@TraitClause0]}::LEN<T, const N : usize>: usize
-  where
-      [@TraitClause0]: Sized<T>,
+where
+    [@TraitClause0]: Sized<T>,
  = test_crate::{V<T, const N : usize>[@TraitClause0]}::LEN()
 
 // Full name: test_crate::HasLen

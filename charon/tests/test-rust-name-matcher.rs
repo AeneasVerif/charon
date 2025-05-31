@@ -50,12 +50,12 @@ fn test_name_matcher() -> anyhow::Result<()> {
                 if passes {
                     panic!(
                         "Pattern `{pat}` passes on `{}` but shouldn't",
-                        name.fmt_with_ctx(fmt_ctx)
+                        name.with_ctx(fmt_ctx)
                     );
                 } else {
                     panic!(
                         "Pattern `{pat}` doesn't pass on `{}` but should",
-                        name.fmt_with_ctx(fmt_ctx)
+                        name.with_ctx(fmt_ctx)
                     );
                 }
             }

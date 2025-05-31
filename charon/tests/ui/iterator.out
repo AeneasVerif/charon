@@ -7,14 +7,14 @@ pub trait Sized<Self>
 // Full name: core::array::iter::IntoIter
 #[lang_item("ArrayIntoIter")]
 pub opaque type IntoIter<T, const N : usize>
-  where
-      [@TraitClause0]: Sized<T>,
+where
+    [@TraitClause0]: Sized<T>,
 
 // Full name: core::option::Option
 #[lang_item("Option")]
 pub enum Option<T>
-  where
-      [@TraitClause0]: Sized<T>,
+where
+    [@TraitClause0]: Sized<T>,
 {
   None,
   Some(T),
@@ -23,24 +23,24 @@ pub enum Option<T>
 // Full name: core::slice::iter::Iter
 #[lang_item("SliceIter")]
 pub opaque type Iter<'a, T>
-  where
-      [@TraitClause0]: Sized<T>,
-      T : 'a,
-      T : 'a,
+where
+    [@TraitClause0]: Sized<T>,
+    T : 'a,
+    T : 'a,
 
 // Full name: core::slice::iter::Chunks
 pub opaque type Chunks<'a, T>
-  where
-      [@TraitClause0]: Sized<T>,
-      T : 'a,
-      T : 'a,
+where
+    [@TraitClause0]: Sized<T>,
+    T : 'a,
+    T : 'a,
 
 // Full name: core::slice::iter::ChunksExact
 pub opaque type ChunksExact<'a, T>
-  where
-      [@TraitClause0]: Sized<T>,
-      T : 'a,
-      T : 'a,
+where
+    [@TraitClause0]: Sized<T>,
+    T : 'a,
+    T : 'a,
 
 // Full name: core::panicking::AssertKind
 pub enum AssertKind {
@@ -52,8 +52,8 @@ pub enum AssertKind {
 // Full name: core::fmt::Arguments
 #[lang_item("format_arguments")]
 pub opaque type Arguments<'a>
-  where
-      'a : 'a,
+where
+    'a : 'a,
 
 // Full name: core::array::iter::{impl IntoIterator for Array<T, const N : usize>}::into_iter
 pub fn {impl IntoIterator for Array<T, const N : usize>}::into_iter<T, const N : usize>(@1: Array<T, const N : usize>) -> IntoIter<T, const N : usize>[@TraitClause0]
@@ -63,9 +63,9 @@ where
 // Full name: core::result::Result
 #[lang_item("Result")]
 pub enum Result<T, E>
-  where
-      [@TraitClause0]: Sized<T>,
-      [@TraitClause1]: Sized<E>,
+where
+    [@TraitClause0]: Sized<T>,
+    [@TraitClause1]: Sized<E>,
 {
   Ok(T),
   Err(E),
@@ -104,9 +104,9 @@ pub trait ZeroablePrimitive<Self>
 // Full name: core::num::nonzero::NonZero
 #[lang_item("NonZero")]
 pub opaque type NonZero<T>
-  where
-      [@TraitClause0]: Sized<T>,
-      [@TraitClause1]: ZeroablePrimitive<T>,
+where
+    [@TraitClause0]: Sized<T>,
+    [@TraitClause1]: ZeroablePrimitive<T>,
 
 // Full name: core::clone::impls::{impl Clone for usize}#5::clone
 pub fn {impl Clone for usize}#5::clone<'_0>(@1: &'_0 (usize)) -> usize
@@ -160,20 +160,20 @@ impl ZeroablePrimitive for usize {
 
 // Full name: core::iter::adapters::step_by::StepBy
 pub opaque type StepBy<I>
-  where
-      [@TraitClause0]: Sized<I>,
+where
+    [@TraitClause0]: Sized<I>,
 
 // Full name: core::iter::adapters::chain::Chain
 pub opaque type Chain<A, B>
-  where
-      [@TraitClause0]: Sized<A>,
-      [@TraitClause1]: Sized<B>,
+where
+    [@TraitClause0]: Sized<A>,
+    [@TraitClause1]: Sized<B>,
 
 // Full name: core::iter::adapters::zip::Zip
 pub opaque type Zip<A, B>
-  where
-      [@TraitClause0]: Sized<A>,
-      [@TraitClause1]: Sized<B>,
+where
+    [@TraitClause0]: Sized<A>,
+    [@TraitClause1]: Sized<B>,
 
 // Full name: core::marker::Tuple
 #[lang_item("tuple_trait")]
@@ -202,73 +202,73 @@ pub trait FnMut<Self, Args>
 
 // Full name: core::iter::adapters::map::Map
 pub opaque type Map<I, F>
-  where
-      [@TraitClause0]: Sized<I>,
-      [@TraitClause1]: Sized<F>,
+where
+    [@TraitClause0]: Sized<I>,
+    [@TraitClause1]: Sized<F>,
 
 // Full name: core::iter::adapters::filter::Filter
 pub opaque type Filter<I, P>
-  where
-      [@TraitClause0]: Sized<I>,
-      [@TraitClause1]: Sized<P>,
+where
+    [@TraitClause0]: Sized<I>,
+    [@TraitClause1]: Sized<P>,
 
 // Full name: core::iter::adapters::filter_map::FilterMap
 pub opaque type FilterMap<I, F>
-  where
-      [@TraitClause0]: Sized<I>,
-      [@TraitClause1]: Sized<F>,
+where
+    [@TraitClause0]: Sized<I>,
+    [@TraitClause1]: Sized<F>,
 
 // Full name: core::iter::adapters::enumerate::Enumerate
 #[lang_item("Enumerate")]
 pub opaque type Enumerate<I>
-  where
-      [@TraitClause0]: Sized<I>,
+where
+    [@TraitClause0]: Sized<I>,
 
 // Full name: core::iter::adapters::skip_while::SkipWhile
 pub opaque type SkipWhile<I, P>
-  where
-      [@TraitClause0]: Sized<I>,
-      [@TraitClause1]: Sized<P>,
+where
+    [@TraitClause0]: Sized<I>,
+    [@TraitClause1]: Sized<P>,
 
 // Full name: core::iter::adapters::take_while::TakeWhile
 pub opaque type TakeWhile<I, P>
-  where
-      [@TraitClause0]: Sized<I>,
-      [@TraitClause1]: Sized<P>,
+where
+    [@TraitClause0]: Sized<I>,
+    [@TraitClause1]: Sized<P>,
 
 // Full name: core::iter::adapters::map_while::MapWhile
 pub opaque type MapWhile<I, P>
-  where
-      [@TraitClause0]: Sized<I>,
-      [@TraitClause1]: Sized<P>,
+where
+    [@TraitClause0]: Sized<I>,
+    [@TraitClause1]: Sized<P>,
 
 // Full name: core::iter::adapters::skip::Skip
 pub opaque type Skip<I>
-  where
-      [@TraitClause0]: Sized<I>,
+where
+    [@TraitClause0]: Sized<I>,
 
 // Full name: core::iter::adapters::take::Take
 pub opaque type Take<I>
-  where
-      [@TraitClause0]: Sized<I>,
+where
+    [@TraitClause0]: Sized<I>,
 
 // Full name: core::iter::adapters::scan::Scan
 pub opaque type Scan<I, St, F>
-  where
-      [@TraitClause0]: Sized<I>,
-      [@TraitClause1]: Sized<St>,
-      [@TraitClause2]: Sized<F>,
+where
+    [@TraitClause0]: Sized<I>,
+    [@TraitClause1]: Sized<St>,
+    [@TraitClause2]: Sized<F>,
 
 // Full name: core::iter::adapters::fuse::Fuse
 pub opaque type Fuse<I>
-  where
-      [@TraitClause0]: Sized<I>,
+where
+    [@TraitClause0]: Sized<I>,
 
 // Full name: core::iter::adapters::inspect::Inspect
 pub opaque type Inspect<I, F>
-  where
-      [@TraitClause0]: Sized<I>,
-      [@TraitClause1]: Sized<F>,
+where
+    [@TraitClause0]: Sized<I>,
+    [@TraitClause1]: Sized<F>,
 
 // Full name: core::ops::try_trait::FromResidual
 #[lang_item("FromResidual")]
@@ -281,9 +281,9 @@ pub trait FromResidual<Self, R>
 // Full name: core::ops::control_flow::ControlFlow
 #[lang_item("ControlFlow")]
 pub enum ControlFlow<B, C>
-  where
-      [@TraitClause0]: Sized<B>,
-      [@TraitClause1]: Sized<C>,
+where
+    [@TraitClause0]: Sized<B>,
+    [@TraitClause1]: Sized<C>,
 {
   Continue(C),
   Break(B),
@@ -376,23 +376,23 @@ pub trait Ord<Self>
 
 // Full name: core::iter::adapters::rev::Rev
 pub opaque type Rev<T>
-  where
-      [@TraitClause0]: Sized<T>,
+where
+    [@TraitClause0]: Sized<T>,
 
 // Full name: core::iter::adapters::copied::Copied
 pub opaque type Copied<I>
-  where
-      [@TraitClause0]: Sized<I>,
+where
+    [@TraitClause0]: Sized<I>,
 
 // Full name: core::iter::adapters::cloned::Cloned
 pub opaque type Cloned<I>
-  where
-      [@TraitClause0]: Sized<I>,
+where
+    [@TraitClause0]: Sized<I>,
 
 // Full name: core::iter::adapters::cycle::Cycle
 pub opaque type Cycle<I>
-  where
-      [@TraitClause0]: Sized<I>,
+where
+    [@TraitClause0]: Sized<I>,
 
 // Full name: core::iter::traits::iterator::Iterator
 #[lang_item("iterator")]
@@ -495,46 +495,46 @@ where
 
 // Full name: core::iter::adapters::intersperse::Intersperse
 pub opaque type Intersperse<I>
-  where
-      [@TraitClause0]: Sized<I>,
-      [@TraitClause1]: Iterator<I>,
-      [@TraitClause2]: Clone<@TraitClause1::Item>,
+where
+    [@TraitClause0]: Sized<I>,
+    [@TraitClause1]: Iterator<I>,
+    [@TraitClause2]: Clone<@TraitClause1::Item>,
 
 // Full name: core::iter::adapters::intersperse::IntersperseWith
 pub opaque type IntersperseWith<I, G>
-  where
-      [@TraitClause0]: Sized<I>,
-      [@TraitClause1]: Sized<G>,
-      [@TraitClause2]: Iterator<I>,
+where
+    [@TraitClause0]: Sized<I>,
+    [@TraitClause1]: Sized<G>,
+    [@TraitClause2]: Iterator<I>,
 
 // Full name: core::iter::adapters::peekable::Peekable
 #[lang_item("IterPeekable")]
 pub opaque type Peekable<I>
-  where
-      [@TraitClause0]: Sized<I>,
-      [@TraitClause1]: Iterator<I>,
+where
+    [@TraitClause0]: Sized<I>,
+    [@TraitClause1]: Iterator<I>,
 
 // Full name: core::iter::adapters::flatten::FlatMap
 pub opaque type FlatMap<I, U, F>
-  where
-      [@TraitClause0]: Sized<I>,
-      [@TraitClause1]: Sized<U>,
-      [@TraitClause2]: Sized<F>,
-      [@TraitClause3]: IntoIterator<U>,
+where
+    [@TraitClause0]: Sized<I>,
+    [@TraitClause1]: Sized<U>,
+    [@TraitClause2]: Sized<F>,
+    [@TraitClause3]: IntoIterator<U>,
 
 // Full name: core::iter::adapters::flatten::Flatten
 pub opaque type Flatten<I>
-  where
-      [@TraitClause0]: Sized<I>,
-      [@TraitClause1]: Iterator<I>,
-      [@TraitClause2]: IntoIterator<@TraitClause1::Item>,
+where
+    [@TraitClause0]: Sized<I>,
+    [@TraitClause1]: Iterator<I>,
+    [@TraitClause2]: IntoIterator<@TraitClause1::Item>,
 
 // Full name: core::iter::adapters::map_windows::MapWindows
 pub opaque type MapWindows<I, F, const N : usize>
-  where
-      [@TraitClause0]: Sized<I>,
-      [@TraitClause1]: Sized<F>,
-      [@TraitClause2]: Iterator<I>,
+where
+    [@TraitClause0]: Sized<I>,
+    [@TraitClause1]: Sized<F>,
+    [@TraitClause2]: Iterator<I>,
 
 // Full name: core::iter::traits::collect::FromIterator
 #[lang_item("FromIterator")]
@@ -578,9 +578,9 @@ pub trait ExactSizeIterator<Self>
 
 // Full name: core::iter::adapters::array_chunks::ArrayChunks
 pub opaque type ArrayChunks<I, const N : usize>
-  where
-      [@TraitClause0]: Sized<I>,
-      [@TraitClause1]: Iterator<I>,
+where
+    [@TraitClause0]: Sized<I>,
+    [@TraitClause1]: Iterator<I>,
 
 // Full name: core::iter::traits::accum::Sum
 pub trait Sum<Self, A>

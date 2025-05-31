@@ -90,9 +90,9 @@ pub trait Sized<Self>
 
 // Full name: test_crate::Pair
 pub struct Pair<T1, T2>
-  where
-      [@TraitClause0]: Sized<T1>,
-      [@TraitClause1]: Sized<T2>,
+where
+    [@TraitClause0]: Sized<T1>,
+    [@TraitClause1]: Sized<T2>,
 {
   x: T1,
   y: T2,
@@ -159,8 +159,8 @@ pub const test_crate::P3: Pair<u32, u32>[Sized<u32>, Sized<u32>] = test_crate::P
 
 // Full name: test_crate::Wrap
 pub struct Wrap<T>
-  where
-      [@TraitClause0]: Sized<T>,
+where
+    [@TraitClause0]: Sized<T>,
 {
   value: T,
 }
@@ -375,8 +375,8 @@ pub static test_crate::S4: Pair<u32, u32>[Sized<u32>, Sized<u32>] = test_crate::
 
 // Full name: test_crate::V
 pub struct V<T, const N : usize>
-  where
-      [@TraitClause0]: Sized<T>,
+where
+    [@TraitClause0]: Sized<T>,
 {
   x: Array<T, const N : usize>,
 }
@@ -392,8 +392,8 @@ where
 }
 
 pub const test_crate::{V<T, const N : usize>[@TraitClause0]}#1::LEN<T, const N : usize>: usize
-  where
-      [@TraitClause0]: Sized<T>,
+where
+    [@TraitClause0]: Sized<T>,
  = test_crate::{V<T, const N : usize>[@TraitClause0]}#1::LEN()
 
 // Full name: test_crate::use_v

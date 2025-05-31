@@ -28,8 +28,8 @@ impl HasOutput2<()> for () {
 
 // Full name: test_crate::Wrapper
 struct Wrapper<T>
-  where
-      [@TraitClause0]: Sized<T>,
+where
+    [@TraitClause0]: Sized<T>,
 {
   T,
 }

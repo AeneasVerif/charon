@@ -7,8 +7,8 @@ pub trait Sized<Self>
 // Full name: core::option::Option
 #[lang_item("Option")]
 pub enum Option<T>
-  where
-      [@TraitClause0]: Sized<T>,
+where
+    [@TraitClause0]: Sized<T>,
 {
   None,
   Some(T),
@@ -40,9 +40,9 @@ struct test_crate::Foo {
 
 // Full name: test_crate::Bar
 enum Bar<'a, T>
-  where
-      [@TraitClause0]: Sized<T>,
-      T : 'a,
+where
+    [@TraitClause0]: Sized<T>,
+    T : 'a,
 {
   Variant(&'a (T)),
 }

@@ -238,9 +238,8 @@ impl ItemTransCtx<'_, '_> {
             let ctx = self.into_fmt();
             let refs = parent_trait_refs
                 .iter()
-                .map(|c| c.fmt_with_ctx(&ctx))
-                .collect::<Vec<String>>()
-                .join("\n");
+                .map(|c| c.with_ctx(&ctx))
+                .format("\n");
             trace!(
                 "Trait impl: {:?}\n- parent_trait_refs:\n{}",
                 def.def_id,

@@ -33,8 +33,8 @@ where
 // Full name: core::option::Option
 #[lang_item("Option")]
 pub enum Option<T>
-  where
-      [@TraitClause0]: Sized<T>,
+where
+    [@TraitClause0]: Sized<T>,
 {
   None,
   Some(T),
@@ -338,10 +338,10 @@ pub trait ToOwned<Self, Self_Owned>
 
 // Full name: test_crate::cow::Cow
 enum Cow<'a, B, Clause0_Owned>
-  where
-      [@TraitClause0]: ToOwned<B, Clause0_Owned>,
-      B : 'a,
-      B : 'a,
+where
+    [@TraitClause0]: ToOwned<B, Clause0_Owned>,
+    B : 'a,
+    B : 'a,
 {
   Borrowed(&'a (B)),
   Owned(Clause0_Owned),

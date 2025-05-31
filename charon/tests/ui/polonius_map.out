@@ -7,10 +7,10 @@ pub trait Sized<Self>
 // Full name: std::collections::hash::map::HashMap
 #[lang_item("HashMap")]
 pub opaque type HashMap<K, V, S>
-  where
-      [@TraitClause0]: Sized<K>,
-      [@TraitClause1]: Sized<V>,
-      [@TraitClause2]: Sized<S>,
+where
+    [@TraitClause0]: Sized<K>,
+    [@TraitClause1]: Sized<V>,
+    [@TraitClause2]: Sized<S>,
 
 // Full name: std::hash::random::RandomState
 pub opaque type RandomState
@@ -18,8 +18,8 @@ pub opaque type RandomState
 // Full name: core::option::Option
 #[lang_item("Option")]
 pub enum Option<T>
-  where
-      [@TraitClause0]: Sized<T>,
+where
+    [@TraitClause0]: Sized<T>,
 {
   None,
   Some(T),

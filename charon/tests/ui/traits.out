@@ -68,8 +68,8 @@ pub trait Sized<Self>
 // Full name: core::option::Option
 #[lang_item("Option")]
 pub enum Option<T>
-  where
-      [@TraitClause0]: Sized<T>,
+where
+    [@TraitClause0]: Sized<T>,
 {
   None,
   Some(T),
@@ -280,8 +280,8 @@ pub fn h0(@1: u64) -> u64
 
 // Full name: test_crate::Wrapper
 pub struct Wrapper<T>
-  where
-      [@TraitClause0]: Sized<T>,
+where
+    [@TraitClause0]: Sized<T>,
 {
   x: T,
 }
@@ -439,8 +439,8 @@ where
 
 // Full name: test_crate::TestType
 pub struct TestType<T>
-  where
-      [@TraitClause0]: Sized<T>,
+where
+    [@TraitClause0]: Sized<T>,
 {
   T,
 }
@@ -929,8 +929,8 @@ where
 
 // Full name: test_crate::{impl Trait for Array<T, const N : usize>}#14::LEN
 pub const {impl Trait for Array<T, const N : usize>}#14::LEN<T, const N : usize>: usize
-  where
-      [@TraitClause0]: Sized<T>,
+where
+    [@TraitClause0]: Sized<T>,
  = {impl Trait for Array<T, const N : usize>}#14::LEN()
 
 // Full name: test_crate::{impl Trait for Array<T, const N : usize>}#14
@@ -955,9 +955,9 @@ where
 
 // Full name: test_crate::{impl Trait for Wrapper<T>[@TraitClause0]}#15::LEN
 pub const {impl Trait for Wrapper<T>[@TraitClause0]}#15::LEN<T>: usize
-  where
-      [@TraitClause0]: Sized<T>,
-      [@TraitClause1]: Trait<T>,
+where
+    [@TraitClause0]: Sized<T>,
+    [@TraitClause1]: Trait<T>,
  = {impl Trait for Wrapper<T>[@TraitClause0]}#15::LEN()
 
 // Full name: test_crate::{impl Trait for Wrapper<T>[@TraitClause0]}#15
@@ -983,9 +983,9 @@ where
 
 // Full name: test_crate::Foo
 pub struct Foo<T, U>
-  where
-      [@TraitClause0]: Sized<T>,
-      [@TraitClause1]: Sized<U>,
+where
+    [@TraitClause0]: Sized<T>,
+    [@TraitClause1]: Sized<U>,
 {
   x: T,
   y: U,
@@ -994,9 +994,9 @@ pub struct Foo<T, U>
 // Full name: core::result::Result
 #[lang_item("Result")]
 pub enum Result<T, E>
-  where
-      [@TraitClause0]: Sized<T>,
-      [@TraitClause1]: Sized<E>,
+where
+    [@TraitClause0]: Sized<T>,
+    [@TraitClause1]: Sized<E>,
 {
   Ok(T),
   Err(E),
@@ -1015,10 +1015,10 @@ where
 }
 
 pub const test_crate::{Foo<T, U>[@TraitClause0, @TraitClause1]}#16::FOO<T, U>: Result<T, i32>[@TraitClause0, Sized<i32>]
-  where
-      [@TraitClause0]: Sized<T>,
-      [@TraitClause1]: Sized<U>,
-      [@TraitClause2]: Trait<T>,
+where
+    [@TraitClause0]: Sized<T>,
+    [@TraitClause1]: Sized<U>,
+    [@TraitClause2]: Trait<T>,
  = test_crate::{Foo<T, U>[@TraitClause0, @TraitClause1]}#16::FOO()
 
 // Full name: test_crate::use_foo1

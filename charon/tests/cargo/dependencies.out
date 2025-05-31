@@ -14,8 +14,8 @@ pub trait Sized<Self>
 // Full name: core::option::Option
 #[lang_item("Option")]
 pub enum Option<T>
-  where
-      [@TraitClause0]: Sized<T>,
+where
+    [@TraitClause0]: Sized<T>,
 {
   None,
   Some(T),
@@ -24,8 +24,8 @@ pub enum Option<T>
 // Full name: core::fmt::Arguments
 #[lang_item("format_arguments")]
 pub opaque type Arguments<'a>
-  where
-      'a : 'a,
+where
+    'a : 'a,
 
 // Full name: test_cargo_dependencies::main::silly_incr::closure
 struct closure {}

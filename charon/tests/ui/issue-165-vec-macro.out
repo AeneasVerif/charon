@@ -7,9 +7,9 @@ pub trait Sized<Self>
 // Full name: alloc::vec::Vec
 #[lang_item("Vec")]
 pub opaque type Vec<T, A>
-  where
-      [@TraitClause0]: Sized<T>,
-      [@TraitClause1]: Sized<A>,
+where
+    [@TraitClause0]: Sized<T>,
+    [@TraitClause1]: Sized<A>,
 
 // Full name: alloc::alloc::Global
 #[lang_item("global_alloc_ty")]

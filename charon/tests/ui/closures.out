@@ -55,8 +55,8 @@ pub trait Fn<Self, Args, Self_Clause0_Clause0_Output>
 // Full name: core::option::Option
 #[lang_item("Option")]
 pub enum Option<T>
-  where
-      [@TraitClause0]: Sized<T>,
+where
+    [@TraitClause0]: Sized<T>,
 {
   None,
   Some(T),
@@ -266,8 +266,8 @@ pub fn test_closure_ref_u32<'a>(@1: &'a (u32)) -> &'a (u32)
 }
 
 struct test_crate::test_closure_ref_param::closure<T>
-  where
-      [@TraitClause0]: Sized<T>,
+where
+    [@TraitClause0]: Sized<T>,
 {}
 
 // Full name: test_crate::test_closure_ref_param
@@ -306,9 +306,9 @@ where
 trait Trait<'a, Self>
 
 struct test_crate::test_closure_ref_early_bound::closure<'a, T>
-  where
-      [@TraitClause0]: Sized<T>,
-      [@TraitClause1]: Trait<'a, T>,
+where
+    [@TraitClause0]: Sized<T>,
+    [@TraitClause1]: Trait<'a, T>,
 {}
 
 // Full name: test_crate::test_closure_ref_early_bound
@@ -715,9 +715,9 @@ pub fn test_closure_capture(@1: u32, @2: u32) -> u32
 }
 
 struct test_crate::test_closure_clone::closure<T>
-  where
-      [@TraitClause0]: Sized<T>,
-      [@TraitClause1]: Clone<T>,
+where
+    [@TraitClause0]: Sized<T>,
+    [@TraitClause1]: Clone<T>,
 {}
 
 // Full name: test_crate::test_closure_clone::{impl Fn<(T), T> for test_crate::test_closure_clone::closure<T>[@TraitClause0, @TraitClause1]}::call

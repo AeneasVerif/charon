@@ -1,6 +1,7 @@
 use crate::ast::*;
-use crate::formatter::{FmtCtx, Formatter, IntoFormatter};
+use crate::formatter::{FmtCtx, IntoFormatter};
 use crate::ids::Vector;
+use crate::pretty::FmtWithCtx;
 use crate::reorder_decls::DeclarationsGroups;
 use derive_generic_visitor::{ControlFlow, Drive, DriveMut};
 use index_vec::Idx;
@@ -281,24 +282,24 @@ impl<'ctx> AnyTransItemMut<'ctx> {
 
 impl fmt::Display for TranslatedCrate {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        let fmt: FmtCtx = self.into_fmt();
+        let fmt: &FmtCtx = &self.into_fmt();
         match &self.ordered_decls {
             None => {
                 // We do simple: types, globals, traits, functions
                 for d in &self.type_decls {
-                    writeln!(f, "{}\n", fmt.format_object(d))?
+                    writeln!(f, "{}\n", d.with_ctx(fmt))?
                 }
                 for d in &self.global_decls {
-                    writeln!(f, "{}\n", fmt.format_object(d))?
+                    writeln!(f, "{}\n", d.with_ctx(fmt))?
                 }
                 for d in &self.trait_decls {
-                    writeln!(f, "{}\n", fmt.format_object(d))?
+                    writeln!(f, "{}\n", d.with_ctx(fmt))?
                 }
                 for d in &self.trait_impls {
-                    writeln!(f, "{}\n", fmt.format_object(d))?
+                    writeln!(f, "{}\n", d.with_ctx(fmt))?
                 }
                 for d in &self.fun_decls {
-                    writeln!(f, "{}\n", fmt.format_object(d))?
+                    writeln!(f, "{}\n", d.with_ctx(fmt))?
                 }
             }
             Some(ordered_decls) => {

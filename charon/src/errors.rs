@@ -1,6 +1,7 @@
 //! Utilities to generate error reports about the external dependencies.
 use crate::ast::*;
-use crate::formatter::{Formatter, IntoFormatter};
+use crate::formatter::IntoFormatter;
+use crate::pretty::FmtWithCtx;
 pub use annotate_snippets::Level;
 use itertools::Itertools;
 use macros::VariantIndexArity;
@@ -326,7 +327,7 @@ impl ErrorCtx {
         let msg = format!(
             "the error occurred when translating `{}`, \
              which is (transitively) used at the following location(s):",
-            krate.into_fmt().format_object(id)
+            id.with_ctx(&krate.into_fmt())
         );
         let message = level.header(&msg).group(Group::new().elements(snippets));
         let out = Renderer::styled().render(message).to_string();

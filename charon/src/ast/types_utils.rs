@@ -25,6 +25,7 @@ impl TraitClause {
         }
     }
 }
+
 impl GenericParams {
     pub fn empty() -> Self {
         Self::default()
@@ -33,7 +34,12 @@ impl GenericParams {
     pub fn is_empty(&self) -> bool {
         self.len() == 0
     }
-
+    /// Whether this has any explicit arguments (types, regions or const generics).
+    pub fn has_explicits(&self) -> bool {
+        !self.regions.is_empty() || !self.types.is_empty() || !self.const_generics.is_empty()
+    }
+    /// Whether this has any implicit arguments (trait clauses, outlives relations, associated type
+    /// equality constraints).
     pub fn has_predicates(&self) -> bool {
         !self.trait_clauses.is_empty()
             || !self.types_outlive.is_empty()
@@ -309,6 +315,14 @@ impl GenericArgs {
     pub fn is_empty(&self) -> bool {
         self.len() == 0
     }
+    /// Whether this has any explicit arguments (types, regions or const generics).
+    pub fn has_explicits(&self) -> bool {
+        !self.regions.is_empty() || !self.types.is_empty() || !self.const_generics.is_empty()
+    }
+    /// Whether this has any implicit arguments (trait refs).
+    pub fn has_implicits(&self) -> bool {
+        !self.trait_refs.is_empty()
+    }
 
     pub fn empty(target: GenericsSource) -> Self {
         GenericArgs {
@@ -404,13 +418,16 @@ impl GenericsSource {
     /// Return a path that represents the target item.
     pub fn item_name(&self, translated: &TranslatedCrate, fmt_ctx: &FmtCtx) -> String {
         match self {
-            GenericsSource::Item(id) => translated.item_name(*id).unwrap().fmt_with_ctx(fmt_ctx),
+            GenericsSource::Item(id) => translated
+                .item_name(*id)
+                .unwrap()
+                .to_string_with_ctx(fmt_ctx),
             GenericsSource::Method(trait_id, method_name) => format!(
                 "{}::{method_name}",
                 translated
                     .item_name(*trait_id)
                     .unwrap()
-                    .fmt_with_ctx(fmt_ctx),
+                    .to_string_with_ctx(fmt_ctx),
             ),
             GenericsSource::Builtin => format!("<built-in>"),
             GenericsSource::Other => format!("<unknown>"),

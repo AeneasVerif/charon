@@ -152,8 +152,8 @@ pub struct Global {}
 
 // Full name: test_crate::CList
 pub enum CList<T>
-  where
-      [@TraitClause0]: Sized<T>,
+where
+    [@TraitClause0]: Sized<T>,
 {
   CCons(T, alloc::boxed::Box<CList<T>[@TraitClause0]>[Sized<Global>]),
   CNil,
