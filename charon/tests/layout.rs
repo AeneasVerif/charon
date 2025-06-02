@@ -93,6 +93,11 @@ fn type_layout() -> anyhow::Result<()> {
             None,
             Some((usize, &'a T))
         }
+
+        union PackIntsUnion {
+            x: (u32, u32),
+            y: u64,
+        }
         "#,
     )?;
     let layouts: IndexMap<String, Option<Layout>> = crate_data

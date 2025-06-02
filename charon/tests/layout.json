@@ -213,5 +213,12 @@
         ]
       }
     ]
+  },
+  "test_crate::PackIntsUnion": {
+    "size": 8,
+    "align": 8,
+    "discriminant_offset": null,
+    "uninhabited": false,
+    "variant_layouts": []
   }
 }
