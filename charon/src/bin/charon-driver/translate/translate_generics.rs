@@ -49,27 +49,12 @@ pub(crate) struct BindingLevel {
 }
 
 /// Small helper: we ignore some region names (when they are equal to "'_")
-fn check_region_name(s: String) -> Option<String> {
+fn translate_region_name(s: String) -> Option<String> {
     if s == "'_" {
         None
     } else {
         Some(s)
     }
-}
-
-fn translate_region_name(region: &hax::EarlyParamRegion) -> Option<String> {
-    let s = region.name.clone();
-    check_region_name(s)
-}
-
-fn translate_bound_region_kind_name(kind: &hax::BoundRegionKind) -> Option<String> {
-    use hax::BoundRegionKind::*;
-    let s = match kind {
-        Anon => None,
-        Named(_, symbol) => Some(symbol.clone()),
-        ClosureEnv => Some("@env".to_owned()),
-    };
-    s.and_then(check_region_name)
 }
 
 impl BindingLevel {
@@ -82,7 +67,7 @@ impl BindingLevel {
 
     /// Important: we must push all the early-bound regions before pushing any other region.
     pub(crate) fn push_early_region(&mut self, region: hax::EarlyParamRegion) -> RegionId {
-        let name = translate_region_name(&region);
+        let name = translate_region_name(region.name.clone());
         // Check that there are no late-bound regions
         assert!(
             self.bound_region_vars.is_empty(),
@@ -98,7 +83,12 @@ impl BindingLevel {
 
     /// Important: we must push all the early-bound regions before pushing any other region.
     pub(crate) fn push_bound_region(&mut self, region: hax::BoundRegionKind) -> RegionId {
-        let name = translate_bound_region_kind_name(&region);
+        use hax::BoundRegionKind::*;
+        let name = match region {
+            Anon => None,
+            Named(_, symbol) => translate_region_name(symbol.clone()),
+            ClosureEnv => Some("@env".to_owned()),
+        };
         let rid = self
             .params
             .regions
