@@ -1,4 +1,4 @@
-use crate::translate::translate_traits::PredicateLocation;
+use crate::translate::translate_predicates::PredicateLocation;
 
 use super::translate_ctx::*;
 use charon_lib::ast::*;
@@ -400,7 +400,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
     /// Note that the type may be external, in which case we translate the body
     /// only if it is public (i.e., it is a public enumeration, or it is a
     /// struct with only public fields).
-    fn translate_adt_def(
+    pub(crate) fn translate_adt_def(
         &mut self,
         trans_id: TypeDeclId,
         def_span: Span,
@@ -776,60 +776,5 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         }
 
         Ok(())
-    }
-}
-
-impl ItemTransCtx<'_, '_> {
-    /// Translate a type definition.
-    ///
-    /// Note that we translate the types one by one: we don't need to take into
-    /// account the fact that some types are mutually recursive at this point
-    /// (we will need to take that into account when generating the code in a file).
-    #[tracing::instrument(skip(self, item_meta))]
-    pub fn translate_type(
-        mut self,
-        trans_id: TypeDeclId,
-        item_meta: ItemMeta,
-        def: &hax::FullDef,
-    ) -> Result<TypeDecl, Error> {
-        let span = item_meta.span;
-
-        // Translate generics and predicates
-        self.translate_def_generics(span, def)?;
-
-        // Translate type body
-        let kind = match &def.kind {
-            _ if item_meta.opacity.is_opaque() => Ok(TypeDeclKind::Opaque),
-            hax::FullDefKind::OpaqueTy | hax::FullDefKind::ForeignTy => Ok(TypeDeclKind::Opaque),
-            hax::FullDefKind::TyAlias { ty, .. } => {
-                // Don't error on missing trait refs.
-                self.error_on_impl_expr_error = false;
-                // We only translate crate-local type aliases so the `unwrap` is ok.
-                let ty = ty.as_ref().unwrap();
-                self.translate_ty(span, ty).map(TypeDeclKind::Alias)
-            }
-            hax::FullDefKind::Struct { def, .. }
-            | hax::FullDefKind::Enum { def, .. }
-            | hax::FullDefKind::Union { def, .. } => {
-                self.translate_adt_def(trans_id, span, &item_meta, def)
-            }
-            hax::FullDefKind::Closure { args, .. } => {
-                self.translate_closure_adt(trans_id, span, &args)
-            }
-            _ => panic!("Unexpected item when translating types: {def:?}"),
-        };
-
-        let kind = match kind {
-            Ok(kind) => kind,
-            Err(err) => TypeDeclKind::Error(err.msg),
-        };
-        let type_def = TypeDecl {
-            def_id: trans_id,
-            item_meta,
-            generics: self.into_generics(),
-            kind,
-        };
-
-        Ok(type_def)
     }
 }

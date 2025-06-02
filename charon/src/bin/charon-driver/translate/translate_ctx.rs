@@ -485,6 +485,18 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
         Ok(name)
     }
 
+    /// Remark: this **doesn't** register the def id (on purpose)
+    pub(crate) fn translate_trait_item_name(
+        &mut self,
+        def_id: &hax::DefId,
+    ) -> Result<TraitItemName, Error> {
+        // Translate the name
+        let name = self.def_id_to_name(def_id)?;
+        let (name, id) = name.name.last().unwrap().as_ident().unwrap();
+        assert!(id.is_zero());
+        Ok(TraitItemName(name.to_string()))
+    }
+
     /// Translates `T` into `U` using `hax`'s `SInto` trait, catching any hax panics.
     pub fn catch_sinto<S, T, U>(&mut self, s: &S, span: Span, x: &T) -> Result<U, Error>
     where
