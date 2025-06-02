@@ -711,3 +711,15 @@ fn known_trait_method_call() -> Result<(), Box<dyn Error>> {
     };
     Ok(())
 }
+
+#[test]
+fn type_layout() -> anyhow::Result<()> {
+    let file = std::fs::File::open("./tests/layout.json")?;
+    let test_map: HashMap<String, Option<Layout>> = serde_json::from_reader(file)?;
+    for (raw, layout) in test_map.into_iter() {
+        let crate_data = translate(raw)?;
+        assert_eq!(crate_data.type_decls[0].layout, layout);
+    }
+
+    Ok(())
+}

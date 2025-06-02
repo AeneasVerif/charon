@@ -646,6 +646,41 @@ and generic_params = {
       (** Constraints over trait associated types *)
 }
 
+(** Simplified layout of a single variant.
+
+    Maps fields to their offset within the layout.
+ *)
+and variant_layout = {
+  field_offsets : int list;
+      (** The offset of each field. [None] if it is not knowable at this point, either
+        because of generics or dynamically-sized types.
+     *)
+}
+
+(** Simplified type layout information.
+
+    Does not include information about niches.
+    If the type does not have fully known layout (e.g. it is ?Sized)
+    some of the layout parts are not available.
+ *)
+and layout = {
+  size : int option;  (** The size of the type in bytes. *)
+  align : int option;  (** The alignment, in bytes. *)
+  discriminant_offset : int option;
+      (** The discriminant's offset, if any. Only relevant for types with multiple
+        variants.
+     *)
+  uninhabited : bool;
+      (** Whether the type is uninhabited, i.e. has any valid value at all.
+        Note that uninhabited types can have arbitrary layouts: [(u32, !)] has space for the [u32]
+        and [enum E2 { A, B(!), C(i32, !) }] may have space for a discriminant.
+     *)
+  variant_layouts : variant_layout list;
+      (** Map from [VariantId] to the corresponding field layouts.
+        Structs are modeled as having exactly one variant.
+     *)
+}
+
 (** A type declaration.
 
     Types can be opaque or transparent.
@@ -665,6 +700,10 @@ and type_decl = {
   item_meta : item_meta;  (** Meta information associated with the item. *)
   generics : generic_params;
   kind : type_decl_kind;  (** The type kind: enum, struct, or opaque. *)
+  layout : layout option;
+      (** The layout of the type. Information may be partial because of generics or dynamically-
+        sized types. If rustc cannot compute a layout, it is [None].
+     *)
 }
 
 and variant_id = (VariantId.id[@visitors.opaque])

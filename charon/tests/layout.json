@@ -1,0 +1,217 @@
+{
+  "\n        struct GenericStruct<T> {\n            a: usize,\n            b: T\n        }\n        ": null,
+  "\n        enum SimpleEnum {\n            Var1,\n            Other,\n        }\n        ": {
+    "size": 1,
+    "align": 1,
+    "discriminant_offset": 0,
+    "uninhabited": false,
+    "variant_layouts": [
+      {
+        "field_offsets": []
+      },
+      {
+        "field_offsets": []
+      }
+    ]
+  },
+  "\n        // Rust reorders the fields to save space.\n        struct Reordered {\n            x: u8,\n            y: u32,\n            z: u8,\n        }\n        ": {
+    "size": 8,
+    "align": 4,
+    "discriminant_offset": null,
+    "uninhabited": false,
+    "variant_layouts": [
+      {
+        "field_offsets": [
+          4,
+          0,
+          5
+        ]
+      }
+    ]
+  },
+  "\n        // `repr(C)` prevents reordering the fields.\n        #[repr(C)]\n        struct NotReordered {\n            x: u8,\n            y: u32,\n            z: u8,\n        }\n        ": {
+    "size": 12,
+    "align": 4,
+    "discriminant_offset": null,
+    "uninhabited": false,
+    "variant_layouts": [
+      {
+        "field_offsets": [
+          0,
+          4,
+          8
+        ]
+      }
+    ]
+  },
+  "\n        #![feature(never_type)]\n        struct Uninhabited(!);\n        ": {
+    "size": 0,
+    "align": 1,
+    "discriminant_offset": null,
+    "uninhabited": true,
+    "variant_layouts": [
+      {
+        "field_offsets": [
+          0
+        ]
+      }
+    ]
+  },
+  "\n        use std::num::NonZero;\n        enum NicheAdt {\n            None,\n            Some(NonZero<u32>)\n        }\n        ": {
+    "size": 4,
+    "align": 4,
+    "discriminant_offset": 0,
+    "uninhabited": false,
+    "variant_layouts": [
+      {
+        "field_offsets": []
+      },
+      {
+        "field_offsets": [
+          0
+        ]
+      }
+    ]
+  },
+  "\n        struct IsAZST;\n        ": {
+    "size": 0,
+    "align": 1,
+    "discriminant_offset": null,
+    "uninhabited": false,
+    "variant_layouts": [
+      {
+        "field_offsets": []
+      }
+    ]
+  },
+  "\n        use std::fmt::Debug;\n        struct UnsizedStruct2 {\n            x: usize,\n            y: dyn Debug\n        }\n        ": {
+    "size": null,
+    "align": null,
+    "discriminant_offset": null,
+    "uninhabited": false,
+    "variant_layouts": [
+      {
+        "field_offsets": [
+          0,
+          8
+        ]
+      }
+    ]
+  },
+  "\n        struct SimpleStruct {\n            x: u32,\n            y: u32,\n            z: u32\n        }\n        ": {
+    "size": 12,
+    "align": 4,
+    "discriminant_offset": null,
+    "uninhabited": false,
+    "variant_layouts": [
+      {
+        "field_offsets": [
+          0,
+          4,
+          8
+        ]
+      }
+    ]
+  },
+  "\n        enum DiscriminantInNicheOfField<'a,T> {\n            None,\n            Some((usize, &'a T))\n        }\n        ": {
+    "size": 16,
+    "align": 8,
+    "discriminant_offset": 8,
+    "uninhabited": false,
+    "variant_layouts": [
+      {
+        "field_offsets": []
+      },
+      {
+        "field_offsets": [
+          0
+        ]
+      }
+    ]
+  },
+  "\n        #![feature(never_type)]\n        enum UninhabitedVariant {\n            A(!, u32),\n            B(u32),\n        }\n        ": {
+    "size": 8,
+    "align": 4,
+    "discriminant_offset": 0,
+    "uninhabited": false,
+    "variant_layouts": [
+      {
+        "field_offsets": [
+          4,
+          4
+        ]
+      },
+      {
+        "field_offsets": [
+          4
+        ]
+      }
+    ]
+  },
+  "\n        struct GenericWithKnownLayout<T> {\n            x: usize,\n            y: Box<T>,\n        }\n        ": {
+    "size": 16,
+    "align": 8,
+    "discriminant_offset": null,
+    "uninhabited": false,
+    "variant_layouts": [
+      {
+        "field_offsets": [
+          8,
+          0
+        ]
+      }
+    ]
+  },
+  "\n        struct UnsizedStruct {\n            x: usize,\n            y: [usize]\n        }": {
+    "size": null,
+    "align": null,
+    "discriminant_offset": null,
+    "uninhabited": false,
+    "variant_layouts": [
+      {
+        "field_offsets": [
+          0,
+          8
+        ]
+      }
+    ]
+  },
+  "\n        #[repr(packed)]\n        struct Packed {\n            x: u8,\n            y: u32,\n            z: u8,\n        }\n        ": {
+    "size": 6,
+    "align": 1,
+    "discriminant_offset": null,
+    "uninhabited": false,
+    "variant_layouts": [
+      {
+        "field_offsets": [
+          0,
+          1,
+          5
+        ]
+      }
+    ]
+  },
+  "\n        enum SimpleAdt {\n            EmptyVar,\n            StructVar { x: usize, y: usize },\n            TupleVar(u32, u32),\n        }\n        ": {
+    "size": 24,
+    "align": 8,
+    "discriminant_offset": 0,
+    "uninhabited": false,
+    "variant_layouts": [
+      {
+        "field_offsets": []
+      },
+      {
+        "field_offsets": [
+          8,
+          16
+        ]
+      },
+      {
+        "field_offsets": [
+          4,
+          8
+        ]
+      }
+    ]
+  }
+}

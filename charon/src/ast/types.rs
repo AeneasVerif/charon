@@ -345,6 +345,46 @@ pub enum PredicateOrigin {
     TraitItem(TraitItemName),
 }
 
+// rustc counts bytes in layouts as u64
+type ByteCount = u64;
+
+/// Simplified layout of a single variant.
+///
+/// Maps fields to their offset within the layout.
+#[derive(Debug, Default, Clone, PartialEq, Eq, Serialize, Deserialize, Drive, DriveMut)]
+pub struct VariantLayout {
+    /// The offset of each field. `None` if it is not knowable at this point, either
+    /// because of generics or dynamically-sized types.
+    pub field_offsets: Vector<FieldId, ByteCount>,
+}
+
+/// Simplified type layout information.
+///
+/// Does not include information about niches.
+/// If the type does not have fully known layout (e.g. it is ?Sized)
+/// some of the layout parts are not available.
+#[derive(Debug, Default, Clone, PartialEq, Eq, Serialize, Deserialize, Drive, DriveMut)]
+pub struct Layout {
+    /// The size of the type in bytes.
+    #[drive(skip)]
+    pub size: Option<ByteCount>,
+    /// The alignment, in bytes.
+    #[drive(skip)]
+    pub align: Option<ByteCount>,
+    /// The discriminant's offset, if any. Only relevant for types with multiple
+    /// variants.
+    #[drive(skip)]
+    pub discriminant_offset: Option<ByteCount>,
+    /// Whether the type is uninhabited, i.e. has any valid value at all.
+    /// Note that uninhabited types can have arbitrary layouts: `(u32, !)` has space for the `u32`
+    /// and `enum E2 { A, B(!), C(i32, !) }` may have space for a discriminant.
+    #[drive(skip)]
+    pub uninhabited: bool,
+    /// Map from [VariantId] to the corresponding field layouts.
+    /// Structs are modeled as having exactly one variant.
+    pub variant_layouts: Vector<VariantId, VariantLayout>,
+}
+
 /// A type declaration.
 ///
 /// Types can be opaque or transparent.
@@ -367,6 +407,9 @@ pub struct TypeDecl {
     pub generics: GenericParams,
     /// The type kind: enum, struct, or opaque.
     pub kind: TypeDeclKind,
+    /// The layout of the type. Information may be partial because of generics or dynamically-
+    /// sized types. If rustc cannot compute a layout, it is `None`.
+    pub layout: Option<Layout>,
 }
 
 generate_index_type!(VariantId, "Variant");

@@ -51,6 +51,13 @@ where
         }
     }
 
+    pub fn with_capacity(capacity: usize) -> Self {
+        Vector {
+            vector: IndexVec::with_capacity(capacity),
+            elem_count: 0,
+        }
+    }
+
     pub fn get(&self, i: I) -> Option<&T> {
         self.vector.get(i).map(Option::as_ref).flatten()
     }
