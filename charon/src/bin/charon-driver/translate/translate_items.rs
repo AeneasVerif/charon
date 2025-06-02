@@ -4,9 +4,11 @@ use super::translate_ctx::*;
 use charon_lib::ast::*;
 use charon_lib::formatter::IntoFormatter;
 use charon_lib::pretty::FmtWithCtx;
+use hax::HasParamEnv;
 use hax_frontend_exporter as hax;
 use indexmap::IndexMap;
 use itertools::Itertools;
+use rustc_abi as r_abi;
 use std::mem;
 use std::sync::Arc;
 
@@ -114,6 +116,23 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
     }
 }
 
+fn translate_variant_layout(
+    variant_layout: &r_abi::LayoutData<r_abi::FieldIdx, r_abi::VariantIdx>,
+) -> VariantLayout {
+    match &variant_layout.fields {
+        r_abi::FieldsShape::Primitive
+        | r_abi::FieldsShape::Union(_)
+        | r_abi::FieldsShape::Array { .. } => VariantLayout::default(),
+        r_abi::FieldsShape::Arbitrary { offsets, .. } => {
+            let mut v = Vector::with_capacity(offsets.len());
+            for o in offsets.iter() {
+                v.push(o.bytes());
+            }
+            VariantLayout { field_offsets: v }
+        }
+    }
+}
+
 impl ItemTransCtx<'_, '_> {
     pub(crate) fn get_item_kind(
         &mut self,
@@ -205,6 +224,88 @@ impl ItemTransCtx<'_, '_> {
         })
     }
 
+    /// Translate a type layout.
+    ///
+    /// Translates the layout as queried from rustc into
+    /// the more restricted [`Layout`].
+    #[tracing::instrument(skip(self))]
+    pub fn translate_layout(&self) -> Option<Layout> {
+        let tcx = self.t_ctx.tcx;
+        let rdefid = self.def_id.as_rust_def_id().unwrap();
+        let ty_env = hax::State::new_from_state_and_id(&self.t_ctx.hax_state, rdefid).typing_env();
+        // This `skip_binder` is ok because it's an `EarlyBinder`.
+        let ty = tcx.type_of(rdefid).skip_binder();
+        let pseudo_input = ty_env.as_query_input(ty);
+
+        match tcx.layout_of(pseudo_input) {
+            Ok(ty_layout) => {
+                let layout = ty_layout.layout;
+                let (size, align) = if layout.is_sized() {
+                    (
+                        Some(layout.size().bytes()),
+                        Some(layout.align().abi.bytes()),
+                    )
+                } else {
+                    (None, None)
+                };
+                let mut variant_layouts = Vector::new();
+                let discriminant_offset = match layout.variants() {
+                    r_abi::Variants::Multiple {
+                        tag_field,
+                        variants,
+                        ..
+                    } => {
+                        for variant in variants.iter() {
+                            variant_layouts.push(translate_variant_layout(variant));
+                        }
+
+                        if let r_abi::FieldsShape::Arbitrary { offsets, .. } = layout.fields() {
+                            offsets
+                                .get(r_abi::FieldIdx::from_usize(*tag_field))
+                                .map(|s| r_abi::Size::bytes(*s))
+                        } else {
+                            // The tag_field is the index into the fields vector,
+                            // thus, the fields shape must be arbitrary.
+                            unreachable!()
+                        }
+                    }
+                    // If there is exactly one variant, i.e. if the type is a struct,
+                    // there is no discriminant, but still fields with offsets.
+                    r_abi::Variants::Single { index } => {
+                        assert!(*index == r_abi::VariantIdx::ZERO);
+                        // If the type has no fields (FieldsShape::{Primite,Union,Array}), we can skip this.
+                        if let r_abi::FieldsShape::Arbitrary { offsets, .. } = layout.fields() {
+                            let mut fields_of_single_variant = Vector::with_capacity(offsets.len());
+                            for o in offsets.iter() {
+                                fields_of_single_variant.push(o.bytes());
+                            }
+                            // It's the only one and will automatically be at index 0
+                            variant_layouts.push(VariantLayout {
+                                field_offsets: fields_of_single_variant,
+                            });
+                        }
+                        None
+                    }
+                    // An empty type has fields and certainly no discriminant.
+                    r_abi::Variants::Empty => None,
+                };
+
+                Some(Layout {
+                    size,
+                    align,
+                    discriminant_offset,
+                    uninhabited: layout.is_uninhabited(),
+                    variant_layouts,
+                })
+            }
+            Err(_) => {
+                // If there is no sensible layout, we translate it to the empty layout.
+                // There doesn't seem to be any way to handle the errors in a better way.
+                None
+            }
+        }
+    }
+
     /// Translate a type definition.
     ///
     /// Note that we translate the types one by one: we don't need to take into
@@ -248,11 +349,13 @@ impl ItemTransCtx<'_, '_> {
             Ok(kind) => kind,
             Err(err) => TypeDeclKind::Error(err.msg),
         };
+        let layout = self.translate_layout();
         let type_def = TypeDecl {
             def_id: trans_id,
             item_meta,
             generics: self.into_generics(),
             kind,
+            layout,
         };
 
         Ok(type_def)
