@@ -1,10 +1,20 @@
 use super::translate_ctx::*;
-use super::translate_traits::PredicateLocation;
 use charon_lib::ast::*;
 use charon_lib::formatter::IntoFormatter;
 use charon_lib::ids::Vector;
 use charon_lib::pretty::FmtWithCtx;
 use hax_frontend_exporter as hax;
+
+/// The context in which we are translating a clause, used to generate the appropriate ids and
+/// trait references.
+pub(crate) enum PredicateLocation {
+    /// We're translating the parent clauses of this trait.
+    Parent,
+    /// We're translating the item clauses of this trait.
+    Item(TraitItemName),
+    /// We're translating anything else.
+    Base,
+}
 
 impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
     /// This function should be called **after** we translated the generics (type parameters,

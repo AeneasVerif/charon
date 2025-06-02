@@ -1,5 +1,3 @@
-use crate::translate::translate_traits::PredicateLocation;
-
 use super::translate_ctx::*;
 use charon_lib::ast::*;
 use charon_lib::builtins;
@@ -9,30 +7,6 @@ use core::convert::*;
 use hax::Visibility;
 use hax_frontend_exporter as hax;
 use itertools::Itertools;
-
-/// Small helper: we ignore some region names (when they are equal to "'_")
-fn check_region_name(s: String) -> Option<String> {
-    if s == "'_" {
-        None
-    } else {
-        Some(s)
-    }
-}
-
-pub fn translate_bound_region_kind_name(kind: &hax::BoundRegionKind) -> Option<String> {
-    use hax::BoundRegionKind::*;
-    let s = match kind {
-        Anon => None,
-        Named(_, symbol) => Some(symbol.clone()),
-        ClosureEnv => Some("@env".to_owned()),
-    };
-    s.and_then(check_region_name)
-}
-
-pub fn translate_region_name(region: &hax::EarlyParamRegion) -> Option<String> {
-    let s = region.name.clone();
-    check_region_name(s)
-}
 
 impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
     // Translate a region
@@ -79,7 +53,12 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
     pub(crate) fn translate_ty(&mut self, span: Span, ty: &hax::Ty) -> Result<Ty, Error> {
         trace!("{:?}", ty);
         let cache_key = HashByAddr(ty.inner().clone());
-        if let Some(ty) = self.lookup_cached_type(&cache_key) {
+        if let Some(ty) = self
+            .innermost_binder()
+            .type_trans_cache
+            .get(&cache_key)
+            .cloned()
+        {
             return Ok(ty.clone());
         }
 
@@ -400,7 +379,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
     /// Note that the type may be external, in which case we translate the body
     /// only if it is public (i.e., it is a public enumeration, or it is a
     /// struct with only public fields).
-    fn translate_adt_def(
+    pub(crate) fn translate_adt_def(
         &mut self,
         trans_id: TypeDeclId,
         def_span: Span,
@@ -538,298 +517,5 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         let ty = self.translate_ty(def_span, &discr.ty)?;
         let int_ty = *ty.kind().as_literal().unwrap().as_integer().unwrap();
         Ok(ScalarValue::from_bits(int_ty, discr.val))
-    }
-
-    /// Translate the generics and predicates of this item and its parents.
-    pub(crate) fn translate_def_generics(
-        &mut self,
-        span: Span,
-        def: &hax::FullDef,
-    ) -> Result<(), Error> {
-        assert!(self.binding_levels.len() == 0);
-        self.binding_levels.push(BindingLevel::new(true));
-        self.push_generics_for_def(span, def, false)?;
-        self.innermost_binder_mut().params.check_consistency();
-        Ok(())
-    }
-
-    /// Translate the generics and predicates of this item without its parents.
-    pub(crate) fn translate_def_generics_without_parents(
-        &mut self,
-        span: Span,
-        def: &hax::FullDef,
-    ) -> Result<(), Error> {
-        self.binding_levels.push(BindingLevel::new(true));
-        self.push_generics_for_def_without_parents(span, def, true, true)?;
-        self.innermost_binder().params.check_consistency();
-        Ok(())
-    }
-
-    pub(crate) fn into_generics(mut self) -> GenericParams {
-        assert!(self.binding_levels.len() == 1);
-        self.binding_levels.pop().unwrap().params
-    }
-
-    /// Add the generics and predicates of this item and its parents to the current context.
-    #[tracing::instrument(skip(self, span))]
-    fn push_generics_for_def(
-        &mut self,
-        span: Span,
-        def: &hax::FullDef,
-        is_parent: bool,
-    ) -> Result<(), Error> {
-        use hax::FullDefKind;
-        // Add generics from the parent item, recursively (recursivity is important for closures,
-        // as they could be nested).
-        match &def.kind {
-            FullDefKind::AssocTy { .. }
-            | FullDefKind::AssocFn { .. }
-            | FullDefKind::AssocConst { .. }
-            | FullDefKind::AnonConst { .. }
-            | FullDefKind::InlineConst { .. }
-            | FullDefKind::PromotedConst { .. }
-            | FullDefKind::Closure { .. }
-            | FullDefKind::Ctor { .. }
-            | FullDefKind::Variant { .. } => {
-                let parent_def_id = def.parent.as_ref().unwrap();
-                let parent_def = self.t_ctx.hax_def(parent_def_id)?;
-                self.push_generics_for_def(span, &parent_def, true)?;
-            }
-            _ => {}
-        }
-        self.push_generics_for_def_without_parents(span, def, !is_parent, !is_parent)?;
-        Ok(())
-    }
-
-    /// Add the generics and predicates of this item. This does not include the parent generics;
-    /// use `push_generics_for_def` to get the full list.
-    fn push_generics_for_def_without_parents(
-        &mut self,
-        span: Span,
-        def: &hax::FullDef,
-        include_late_bound: bool,
-        include_assoc_ty_clauses: bool,
-    ) -> Result<(), Error> {
-        use hax::FullDefKind;
-        if let Some(param_env) = def.param_env() {
-            // Add the generic params.
-            self.push_generic_params(&param_env.generics)?;
-            // Add the self trait clause.
-            match &def.kind {
-                FullDefKind::TraitImpl {
-                    trait_pred: self_predicate,
-                    ..
-                }
-                | FullDefKind::Trait { self_predicate, .. } => {
-                    self.register_trait_decl_id(span, &self_predicate.trait_ref.def_id);
-                    let _ = self.translate_trait_predicate(span, self_predicate)?;
-                }
-                _ => {}
-            }
-            // Add the predicates.
-            let origin = match &def.kind {
-                FullDefKind::Struct { .. }
-                | FullDefKind::Union { .. }
-                | FullDefKind::Enum { .. }
-                | FullDefKind::TyAlias { .. }
-                | FullDefKind::AssocTy { .. } => PredicateOrigin::WhereClauseOnType,
-                FullDefKind::Fn { .. }
-                | FullDefKind::AssocFn { .. }
-                | FullDefKind::Const { .. }
-                | FullDefKind::AssocConst { .. }
-                | FullDefKind::AnonConst { .. }
-                | FullDefKind::InlineConst { .. }
-                | FullDefKind::PromotedConst { .. }
-                | FullDefKind::Static { .. } => PredicateOrigin::WhereClauseOnFn,
-                FullDefKind::TraitImpl { .. } | FullDefKind::InherentImpl { .. } => {
-                    PredicateOrigin::WhereClauseOnImpl
-                }
-                FullDefKind::Trait { .. } => {
-                    let _ = self.register_trait_decl_id(span, &def.def_id);
-                    PredicateOrigin::WhereClauseOnTrait
-                }
-                _ => panic!("Unexpected def: {def:?}"),
-            };
-            self.register_predicates(
-                &param_env.predicates,
-                origin.clone(),
-                &PredicateLocation::Base,
-            )?;
-            // Also register implied predicates.
-            if let FullDefKind::Trait {
-                implied_predicates, ..
-            }
-            | FullDefKind::AssocTy {
-                implied_predicates, ..
-            } = &def.kind
-            {
-                self.register_predicates(implied_predicates, origin, &PredicateLocation::Parent)?;
-            }
-
-            if let hax::FullDefKind::Trait { items, .. } = &def.kind
-                && include_assoc_ty_clauses
-            {
-                // Also add the predicates on associated types.
-                // FIXME(gat): don't skip GATs.
-                // FIXME: don't mix up implied and required predicates.
-                for (item, item_def) in items {
-                    if let hax::FullDefKind::AssocTy {
-                        param_env,
-                        implied_predicates,
-                        ..
-                    } = &item_def.kind
-                        && param_env.generics.params.is_empty()
-                    {
-                        let name = TraitItemName(item.name.clone());
-                        self.register_predicates(
-                            &implied_predicates,
-                            PredicateOrigin::TraitItem(name.clone()),
-                            &PredicateLocation::Item(name),
-                        )?;
-                    }
-                }
-            }
-        }
-
-        if let hax::FullDefKind::Closure { args, .. } = def.kind()
-            && include_late_bound
-        {
-            // Add the lifetime generics coming from the by-ref upvars.
-            args.upvar_tys.iter().for_each(|ty| {
-                if matches!(
-                    ty.kind(),
-                    hax::TyKind::Ref(
-                        hax::Region {
-                            kind: hax::RegionKind::ReErased
-                        },
-                        ..
-                    )
-                ) {
-                    self.the_only_binder_mut().push_upvar_region();
-                }
-            });
-        }
-
-        // The parameters (and in particular the lifetimes) are split between
-        // early bound and late bound parameters. See those blog posts for explanations:
-        // https://smallcultfollowing.com/babysteps/blog/2013/10/29/intermingled-parameter-lists/
-        // https://smallcultfollowing.com/babysteps/blog/2013/11/04/intermingled-parameter-lists/
-        // Note that only lifetimes can be late bound.
-        //
-        // [TyCtxt.generics_of] gives us the early-bound parameters. We add the late-bound
-        // parameters here.
-        let signature = match &def.kind {
-            hax::FullDefKind::Fn { sig, .. } => Some(sig),
-            hax::FullDefKind::AssocFn { sig, .. } => Some(sig),
-            _ => None,
-        };
-        if let Some(signature) = signature
-            && include_late_bound
-        {
-            let innermost_binder = self.innermost_binder_mut();
-            assert!(innermost_binder.bound_region_vars.is_empty());
-            innermost_binder.push_params_from_binder(signature.rebind(()))?;
-        }
-
-        Ok(())
-    }
-
-    pub(crate) fn push_generic_params(&mut self, generics: &hax::TyGenerics) -> Result<(), Error> {
-        for param in &generics.params {
-            self.push_generic_param(param)?;
-        }
-        Ok(())
-    }
-
-    pub(crate) fn push_generic_param(&mut self, param: &hax::GenericParamDef) -> Result<(), Error> {
-        match &param.kind {
-            hax::GenericParamDefKind::Lifetime => {
-                let region = hax::EarlyParamRegion {
-                    index: param.index,
-                    name: param.name.clone(),
-                };
-                let _ = self.innermost_binder_mut().push_early_region(region);
-            }
-            hax::GenericParamDefKind::Type { .. } => {
-                let _ = self
-                    .innermost_binder_mut()
-                    .push_type_var(param.index, param.name.clone());
-            }
-            hax::GenericParamDefKind::Const { ty, .. } => {
-                let span = self.def_span(&param.def_id);
-                // The type should be primitive, meaning it shouldn't contain variables,
-                // non-primitive adts, etc. As a result, we can use an empty context.
-                let ty = self.translate_ty(span, ty)?;
-                match ty.kind().as_literal() {
-                    Some(ty) => self.innermost_binder_mut().push_const_generic_var(
-                        param.index,
-                        *ty,
-                        param.name.clone(),
-                    ),
-                    None => raise_error!(
-                        self,
-                        span,
-                        "Constant parameters of non-literal type are not supported"
-                    ),
-                }
-            }
-        }
-
-        Ok(())
-    }
-}
-
-impl ItemTransCtx<'_, '_> {
-    /// Translate a type definition.
-    ///
-    /// Note that we translate the types one by one: we don't need to take into
-    /// account the fact that some types are mutually recursive at this point
-    /// (we will need to take that into account when generating the code in a file).
-    #[tracing::instrument(skip(self, item_meta))]
-    pub fn translate_type(
-        mut self,
-        trans_id: TypeDeclId,
-        item_meta: ItemMeta,
-        def: &hax::FullDef,
-    ) -> Result<TypeDecl, Error> {
-        let span = item_meta.span;
-
-        // Translate generics and predicates
-        self.translate_def_generics(span, def)?;
-
-        // Translate type body
-        let kind = match &def.kind {
-            _ if item_meta.opacity.is_opaque() => Ok(TypeDeclKind::Opaque),
-            hax::FullDefKind::OpaqueTy | hax::FullDefKind::ForeignTy => Ok(TypeDeclKind::Opaque),
-            hax::FullDefKind::TyAlias { ty, .. } => {
-                // Don't error on missing trait refs.
-                self.error_on_impl_expr_error = false;
-                // We only translate crate-local type aliases so the `unwrap` is ok.
-                let ty = ty.as_ref().unwrap();
-                self.translate_ty(span, ty).map(TypeDeclKind::Alias)
-            }
-            hax::FullDefKind::Struct { def, .. }
-            | hax::FullDefKind::Enum { def, .. }
-            | hax::FullDefKind::Union { def, .. } => {
-                self.translate_adt_def(trans_id, span, &item_meta, def)
-            }
-            hax::FullDefKind::Closure { args, .. } => {
-                self.translate_closure_adt(trans_id, span, &args)
-            }
-            _ => panic!("Unexpected item when translating types: {def:?}"),
-        };
-
-        let kind = match kind {
-            Ok(kind) => kind,
-            Err(err) => TypeDeclKind::Error(err.msg),
-        };
-        let type_def = TypeDecl {
-            def_id: trans_id,
-            item_meta,
-            generics: self.into_generics(),
-            kind,
-        };
-
-        Ok(type_def)
     }
 }
