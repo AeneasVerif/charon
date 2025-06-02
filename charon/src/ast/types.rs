@@ -353,8 +353,9 @@ type ByteCount = u64;
 /// Maps fields to their offset within the layout.
 #[derive(Debug, Default, Clone, PartialEq, Eq, Serialize, Deserialize, Drive, DriveMut)]
 pub struct VariantLayout {
-    /// The offset of each field. `None` if it is not knowable at this point, either
-    /// because of generics or dynamically-sized types.
+    /// The offset of each field. `None` if it is not knowable at this point, either because of
+    /// generics or dynamically-sized types.
+    #[drive(skip)]
     pub field_offsets: Vector<FieldId, ByteCount>,
 }
 
@@ -371,8 +372,7 @@ pub struct Layout {
     /// The alignment, in bytes.
     #[drive(skip)]
     pub align: Option<ByteCount>,
-    /// The discriminant's offset, if any. Only relevant for types with multiple
-    /// variants.
+    /// The discriminant's offset, if any. Only relevant for types with multiple variants.
     #[drive(skip)]
     pub discriminant_offset: Option<ByteCount>,
     /// Whether the type is uninhabited, i.e. has any valid value at all.
@@ -380,8 +380,8 @@ pub struct Layout {
     /// and `enum E2 { A, B(!), C(i32, !) }` may have space for a discriminant.
     #[drive(skip)]
     pub uninhabited: bool,
-    /// Map from [VariantId] to the corresponding field layouts.
-    /// Structs are modeled as having exactly one variant.
+    /// Map from `VariantId` to the corresponding field layouts. Structs are modeled as having
+    /// exactly one variant, unions as having no variant.
     pub variant_layouts: Vector<VariantId, VariantLayout>,
 }
 
