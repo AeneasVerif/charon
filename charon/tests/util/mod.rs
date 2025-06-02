@@ -6,13 +6,14 @@
 // module.
 #![allow(dead_code)]
 use assert_cmd::prelude::{CommandCargoExt, OutputAssertExt};
+use itertools::Itertools;
 use snapbox;
 use snapbox::filter::Filter;
 use std::fmt::Display;
 use std::path::Path;
 use std::{fs::File, io::BufReader, process::Command};
 
-use charon_lib::ast::TranslatedCrate;
+use charon_lib::ast::*;
 use charon_lib::{export::CrateData, logger};
 
 #[derive(Clone, Copy)]
@@ -96,4 +97,38 @@ pub fn translate_rust_text(code: impl Display) -> anyhow::Result<TranslatedCrate
     };
 
     Ok(crate_data.translated)
+}
+
+/// `Name` is a complex datastructure; to inspect it we serialize it a little bit.
+pub fn repr_name(crate_data: &TranslatedCrate, n: &Name) -> String {
+    n.name
+        .iter()
+        .map(|path_elem| match path_elem {
+            PathElem::Ident(i, _) => i.clone(),
+            PathElem::Impl(elem, _) => match elem {
+                ImplElem::Trait(impl_id) => match crate_data.trait_impls.get(*impl_id) {
+                    None => format!("<trait impl#{impl_id}>"),
+                    Some(timpl) => {
+                        let trait_name = trait_name(crate_data, timpl.impl_trait.trait_id);
+                        format!("<impl {trait_name} for ??>")
+                    }
+                },
+                ImplElem::Ty(..) => "<inherent impl>".to_string(),
+            },
+            PathElem::Monomorphized(..) => "<mono>".to_string(),
+        })
+        .join("::")
+}
+
+pub fn repr_span(span: Span) -> String {
+    let raw_span = span.span;
+    format!("{}-{}", raw_span.beg, raw_span.end)
+}
+
+pub fn trait_name(crate_data: &TranslatedCrate, trait_id: TraitDeclId) -> &str {
+    let tr = &crate_data.trait_decls[trait_id];
+    let PathElem::Ident(trait_name, _) = tr.item_meta.name.name.last().unwrap() else {
+        panic!()
+    };
+    trait_name
 }

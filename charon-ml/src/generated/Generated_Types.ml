@@ -652,8 +652,8 @@ and generic_params = {
  *)
 and variant_layout = {
   field_offsets : int list;
-      (** The offset of each field. [None] if it is not knowable at this point, either
-        because of generics or dynamically-sized types.
+      (** The offset of each field. [None] if it is not knowable at this point, either because of
+        generics or dynamically-sized types.
      *)
 }
 
@@ -667,17 +667,15 @@ and layout = {
   size : int option;  (** The size of the type in bytes. *)
   align : int option;  (** The alignment, in bytes. *)
   discriminant_offset : int option;
-      (** The discriminant's offset, if any. Only relevant for types with multiple
-        variants.
-     *)
+      (** The discriminant's offset, if any. Only relevant for types with multiple variants. *)
   uninhabited : bool;
       (** Whether the type is uninhabited, i.e. has any valid value at all.
         Note that uninhabited types can have arbitrary layouts: [(u32, !)] has space for the [u32]
         and [enum E2 { A, B(!), C(i32, !) }] may have space for a discriminant.
      *)
   variant_layouts : variant_layout list;
-      (** Map from [VariantId] to the corresponding field layouts.
-        Structs are modeled as having exactly one variant.
+      (** Map from [VariantId] to the corresponding field layouts. Structs are modeled as having
+        exactly one variant, unions as having no variant.
      *)
 }
 
