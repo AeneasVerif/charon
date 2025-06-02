@@ -769,10 +769,8 @@ fn translate_variant_layout(
         | r_abi::FieldsShape::Array { .. } => VariantLayout::default(),
         r_abi::FieldsShape::Arbitrary { offsets, .. } => {
             let mut v = Vector::with_capacity(offsets.len());
-            for (i, o) in offsets.iter_enumerated() {
-                // The fields should have a total increasing index, but to be
-                // absolutely sure, we insert them at the correct index.
-                v.insert(FieldId::from_usize(i.index()), Some(o.bytes()));
+            for o in offsets.iter() {
+                v.push(o.bytes());
             }
             VariantLayout { field_offsets: v }
         }
@@ -812,17 +810,7 @@ impl ItemTransCtx<'_, '_> {
                         ..
                     } => {
                         for variant in variants.iter() {
-                            let index = if let r_abi::Variants::Single { index } = variant.variants
-                            {
-                                index
-                            } else {
-                                // The variants have their VariantIndex as the index in `Single`.
-                                unreachable!()
-                            };
-                            variant_layouts.insert(
-                                VariantId::from_usize(index.as_usize()),
-                                translate_variant_layout(variant),
-                            );
+                            variant_layouts.push(translate_variant_layout(variant));
                         }
 
                         if let r_abi::FieldsShape::Arbitrary { offsets, .. } = layout.fields() {
@@ -837,13 +825,14 @@ impl ItemTransCtx<'_, '_> {
                     }
                     // If there is exactly one variant, i.e. if the type is a struct,
                     // there is no discriminant, but still fields with offsets.
-                    r_abi::Variants::Single { index } if *index == r_abi::VariantIdx::ZERO => {
+                    r_abi::Variants::Single { index } => {
+                        assert!(*index == r_abi::VariantIdx::ZERO);
                         // If the type has no fields (FieldsShape::{Primite,Union,Array}), we can skip this.
                         if let r_abi::FieldsShape::Arbitrary { offsets, .. } = layout.fields() {
                             let mut fields_of_single_variant = Vector::with_capacity(offsets.len());
-                            for (i, o) in offsets.iter_enumerated() {
+                            for o in offsets.iter() {
                                 fields_of_single_variant
-                                    .insert(FieldId::from_usize(i.as_usize()), Some(o.bytes()));
+                                    .push(o.bytes());
                             }
                             // It's the only one and will automatically be at index 0
                             variant_layouts.push(VariantLayout {
@@ -853,7 +842,7 @@ impl ItemTransCtx<'_, '_> {
                         None
                     }
                     // An empty type has fields and certainly no discriminant.
-                    _ => None,
+                    r_abi::Variants::Empty => None,
                 };
 
                 Some(Layout {

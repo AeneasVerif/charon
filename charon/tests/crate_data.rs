@@ -806,9 +806,9 @@ fn type_layout() -> anyhow::Result<()> {
     // SimpleStruct
     let mut variant_layouts = Vector::with_capacity(1);
     let mut single_variant_offsets = Vector::with_capacity(1);
-    single_variant_offsets.push(Some(0));
-    single_variant_offsets.push(Some(4));
-    single_variant_offsets.push(Some(8));
+    single_variant_offsets.push(0);
+    single_variant_offsets.push(4);
+    single_variant_offsets.push(8);
     variant_layouts.push(VariantLayout {
         field_offsets: single_variant_offsets,
     });
@@ -829,8 +829,8 @@ fn type_layout() -> anyhow::Result<()> {
     // UnsizedStruct
     let mut variant_layouts = Vector::with_capacity(1);
     let mut single_variant_offsets = Vector::with_capacity(1);
-    single_variant_offsets.push(Some(0));
-    single_variant_offsets.push(Some(8));
+    single_variant_offsets.push(0);
+    single_variant_offsets.push(8);
     variant_layouts.push(VariantLayout {
         field_offsets: single_variant_offsets,
     });
@@ -863,14 +863,14 @@ fn type_layout() -> anyhow::Result<()> {
     let mut variant_layouts = Vector::with_capacity(2);
     variant_layouts.push(default_variant_layout.clone());
     let mut var2_offsets = Vector::with_capacity(2);
-    var2_offsets.push(Some(8));
-    var2_offsets.push(Some(16));
+    var2_offsets.push(8);
+    var2_offsets.push(16);
     variant_layouts.push(VariantLayout {
         field_offsets: var2_offsets,
     });
     let mut var3_offsets = Vector::with_capacity(2);
-    var3_offsets.push(Some(4));
-    var3_offsets.push(Some(8));
+    var3_offsets.push(4);
+    var3_offsets.push(8);
     variant_layouts.push(VariantLayout {
         field_offsets: var3_offsets,
     });
@@ -889,7 +889,7 @@ fn type_layout() -> anyhow::Result<()> {
     let mut variant_layouts = Vector::with_capacity(2);
     variant_layouts.push(default_variant_layout.clone());
     let mut var_offsets = Vector::with_capacity(1);
-    var_offsets.push(Some(0));
+    var_offsets.push(0);
     variant_layouts.push(VariantLayout {
         field_offsets: var_offsets,
     });
@@ -921,8 +921,8 @@ fn type_layout() -> anyhow::Result<()> {
     // UnsizedStruct2
     let mut variant_layouts = Vector::with_capacity(1);
     let mut var_offsets = Vector::with_capacity(2);
-    var_offsets.push(Some(0));
-    var_offsets.push(Some(8));
+    var_offsets.push(0);
+    var_offsets.push(8);
     variant_layouts.push(VariantLayout {
         field_offsets: var_offsets,
     });
@@ -938,8 +938,8 @@ fn type_layout() -> anyhow::Result<()> {
     let mut variant_layouts = Vector::with_capacity(1);
     let mut single_variant_offsets = Vector::with_capacity(2);
     // For some reason, rustc currently reorders these fields.
-    single_variant_offsets.push(Some(8));
-    single_variant_offsets.push(Some(0));
+    single_variant_offsets.push(8);
+    single_variant_offsets.push(0);
     variant_layouts.push(VariantLayout {
         field_offsets: single_variant_offsets,
     });
@@ -957,9 +957,9 @@ fn type_layout() -> anyhow::Result<()> {
     // Reordered
     let mut variant_layouts = Vector::with_capacity(1);
     let mut single_variant_offsets = Vector::with_capacity(3);
-    single_variant_offsets.push(Some(4));
-    single_variant_offsets.push(Some(0));
-    single_variant_offsets.push(Some(5));
+    single_variant_offsets.push(4);
+    single_variant_offsets.push(0);
+    single_variant_offsets.push(5);
     variant_layouts.push(VariantLayout {
         field_offsets: single_variant_offsets,
     });
@@ -977,9 +977,9 @@ fn type_layout() -> anyhow::Result<()> {
     // NotReordered
     let mut variant_layouts = Vector::with_capacity(1);
     let mut single_variant_offsets = Vector::with_capacity(3);
-    single_variant_offsets.push(Some(0));
-    single_variant_offsets.push(Some(4));
-    single_variant_offsets.push(Some(8));
+    single_variant_offsets.push(0);
+    single_variant_offsets.push(4);
+    single_variant_offsets.push(8);
     variant_layouts.push(VariantLayout {
         field_offsets: single_variant_offsets,
     });
@@ -997,9 +997,9 @@ fn type_layout() -> anyhow::Result<()> {
     // Packed
     let mut variant_layouts = Vector::with_capacity(1);
     let mut single_variant_offsets = Vector::with_capacity(3);
-    single_variant_offsets.push(Some(0));
-    single_variant_offsets.push(Some(1));
-    single_variant_offsets.push(Some(5));
+    single_variant_offsets.push(0);
+    single_variant_offsets.push(1);
+    single_variant_offsets.push(5);
     variant_layouts.push(VariantLayout {
         field_offsets: single_variant_offsets,
     });
@@ -1018,13 +1018,13 @@ fn type_layout() -> anyhow::Result<()> {
     let mut variant_layouts = Vector::with_capacity(2);
     let mut var1_offsets = Vector::with_capacity(2);
     // The field of type `!` is located at the same offset as the other field.
-    var1_offsets.push(Some(4));
-    var1_offsets.push(Some(4));
+    var1_offsets.push(4);
+    var1_offsets.push(4);
     variant_layouts.push(VariantLayout {
         field_offsets: var1_offsets,
     });
     let mut var2_offsets = Vector::with_capacity(1);
-    var2_offsets.push(Some(4));
+    var2_offsets.push(4);
     variant_layouts.push(VariantLayout {
         field_offsets: var2_offsets,
     });
@@ -1042,7 +1042,7 @@ fn type_layout() -> anyhow::Result<()> {
     // Uninhabited
     let mut variant_layouts = Vector::with_capacity(1);
     let mut var_offsets = Vector::with_capacity(1);
-    var_offsets.push(Some(0));
+    var_offsets.push(0);
     variant_layouts.push(VariantLayout {
         field_offsets: var_offsets,
     });
@@ -1062,7 +1062,7 @@ fn type_layout() -> anyhow::Result<()> {
     let mut variant_layouts = Vector::with_capacity(2);
     variant_layouts.push(VariantLayout::default());
     let mut var2_offsets = Vector::with_capacity(2);
-    var2_offsets.push(Some(0));
+    var2_offsets.push(0);
     variant_layouts.push(VariantLayout {
         field_offsets: var2_offsets,
     });

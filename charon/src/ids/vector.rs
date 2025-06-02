@@ -307,16 +307,6 @@ where
         ret.elem_count = ret.iter().count();
         ret
     }
-
-    /// Inserts the element at the given index.
-    ///
-    /// # Panics
-    ///
-    /// Panics if `index` > `self.elem_count`.
-    pub fn insert(&mut self, index: I, element: T) {
-        self.vector.insert(index, Some(element));
-        self.elem_count += 1;
-    }
 }
 
 impl<I: Idx, T> Default for Vector<I, T> {

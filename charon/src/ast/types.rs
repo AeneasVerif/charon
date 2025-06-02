@@ -355,7 +355,7 @@ type ByteCount = u64;
 pub struct VariantLayout {
     /// The offset of each field. `None` if it is not knowable at this point, either
     /// because of generics or dynamically-sized types.
-    pub field_offsets: Vector<FieldId, Option<ByteCount>>,
+    pub field_offsets: Vector<FieldId, ByteCount>,
 }
 
 /// Simplified type layout information.
@@ -375,13 +375,13 @@ pub struct Layout {
     /// variants.
     #[drive(skip)]
     pub discriminant_offset: Option<ByteCount>,
-    /// Whether the type is uninhabited.
-    /// This is required to differentiate ZSTs and uninhabited types.
+    /// Whether the type is uninhabited, i.e. has any valid value at all.
+    /// Note that uninhabited types can have arbitrary layouts: `(u32, !)` has space for the `u32`
+    /// and `enum E2 { A, B(!), C(i32, !) }` may have space for a discriminant.
     #[drive(skip)]
     pub uninhabited: bool,
     /// Map from [VariantId] to the corresponding field layouts.
-    /// Structs are modeled as being the only variant, uninhabited types
-    /// as being without any variants, etc.
+    /// Structs are modeled as having exactly one variant.
     pub variant_layouts: Vector<VariantId, VariantLayout>,
 }
 
