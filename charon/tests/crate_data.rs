@@ -1,6 +1,5 @@
 #![feature(box_patterns)]
 
-use charon_lib::ast::{AnyTransItem, TranslatedCrate};
 use itertools::Itertools;
 use std::collections::HashMap;
 use std::error::Error;
@@ -8,43 +7,10 @@ use std::error::Error;
 use charon_lib::llbc_ast::*;
 
 mod util;
+use util::*;
 
 fn translate(code: impl std::fmt::Display) -> anyhow::Result<TranslatedCrate> {
     util::translate_rust_text(code)
-}
-
-/// `Name` is a complex datastructure; to inspect it we serialize it a little bit.
-fn repr_name(crate_data: &TranslatedCrate, n: &Name) -> String {
-    n.name
-        .iter()
-        .map(|path_elem| match path_elem {
-            PathElem::Ident(i, _) => i.clone(),
-            PathElem::Impl(elem, _) => match elem {
-                ImplElem::Trait(impl_id) => match crate_data.trait_impls.get(*impl_id) {
-                    None => format!("<trait impl#{impl_id}>"),
-                    Some(timpl) => {
-                        let trait_name = trait_name(crate_data, timpl.impl_trait.trait_id);
-                        format!("<impl {trait_name} for ??>")
-                    }
-                },
-                ImplElem::Ty(..) => "<inherent impl>".to_string(),
-            },
-            PathElem::Monomorphized(..) => "<mono>".to_string(),
-        })
-        .join("::")
-}
-
-fn repr_span(span: Span) -> String {
-    let raw_span = span.span;
-    format!("{}-{}", raw_span.beg, raw_span.end)
-}
-
-fn trait_name(crate_data: &TranslatedCrate, trait_id: TraitDeclId) -> &str {
-    let tr = &crate_data.trait_decls[trait_id];
-    let PathElem::Ident(trait_name, _) = tr.item_meta.name.name.last().unwrap() else {
-        panic!()
-    };
-    trait_name
 }
 
 /// A general item, with information shared by all items.
@@ -709,17 +675,5 @@ fn known_trait_method_call() -> Result<(), Box<dyn Error>> {
     let ItemKind::TraitImpl { .. } = &function.kind else {
         panic!()
     };
-    Ok(())
-}
-
-#[test]
-fn type_layout() -> anyhow::Result<()> {
-    let file = std::fs::File::open("./tests/layout.json")?;
-    let test_map: HashMap<String, Option<Layout>> = serde_json::from_reader(file)?;
-    for (raw, layout) in test_map.into_iter() {
-        let crate_data = translate(raw)?;
-        assert_eq!(crate_data.type_decls[0].layout, layout);
-    }
-
     Ok(())
 }
