@@ -1308,9 +1308,7 @@ and variant_layout_of_json (ctx : of_json_ctx) (js : json) :
     (match js with
     | `Assoc [ ("field_offsets", field_offsets) ] ->
         let* field_offsets =
-          vector_of_json field_id_of_json
-            (option_of_json int_of_json)
-            ctx field_offsets
+          vector_of_json field_id_of_json int_of_json ctx field_offsets
         in
         Ok ({ field_offsets } : variant_layout)
     | _ -> Error "")

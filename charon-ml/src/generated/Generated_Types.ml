@@ -651,7 +651,7 @@ and generic_params = {
     Maps fields to their offset within the layout.
  *)
 and variant_layout = {
-  field_offsets : int option list;
+  field_offsets : int list;
       (** The offset of each field. [None] if it is not knowable at this point, either
         because of generics or dynamically-sized types.
      *)
@@ -671,13 +671,13 @@ and layout = {
         variants.
      *)
   uninhabited : bool;
-      (** Whether the type is uninhabited.
-        This is required to differentiate ZSTs and uninhabited types.
+      (** Whether the type is uninhabited, i.e. has any valid value at all.
+        Note that uninhabited types can have arbitrary layouts: [(u32, !)] has space for the [u32]
+        and [enum E2 { A, B(!), C(i32, !) }] may have space for a discriminant.
      *)
   variant_layouts : variant_layout list;
       (** Map from [VariantId] to the corresponding field layouts.
-        Structs are modeled as being the only variant, uninhabited types
-        as being without any variants, etc.
+        Structs are modeled as having exactly one variant.
      *)
 }
 
