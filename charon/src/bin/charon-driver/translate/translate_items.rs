@@ -1,5 +1,5 @@
-use crate::translate::translate_bodies::BodyTransCtx;
-
+use super::translate_bodies::BodyTransCtx;
+use super::translate_crate::TransItemSource;
 use super::translate_ctx::*;
 use charon_lib::ast::*;
 use charon_lib::formatter::IntoFormatter;

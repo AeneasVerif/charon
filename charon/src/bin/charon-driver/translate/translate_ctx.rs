@@ -1,4 +1,5 @@
 //! The translation contexts.
+use super::translate_crate::TransItemSource;
 use super::translate_generics::BindingLevel;
 use charon_lib::ast::*;
 use charon_lib::formatter::{FmtCtx, IntoFormatter};
@@ -7,7 +8,6 @@ use charon_lib::options::TranslateOptions;
 use hax_frontend_exporter::{self as hax, DefPathItem};
 use hax_frontend_exporter::{DefId, SInto};
 use itertools::Itertools;
-use macros::VariantIndexArity;
 use rustc_middle::ty::TyCtxt;
 use std::borrow::Cow;
 use std::cell::RefCell;
@@ -22,65 +22,6 @@ use std::{fmt, mem};
 pub(crate) use charon_lib::errors::{
     error_assert, raise_error, register_error, DepSource, ErrorCtx, Level,
 };
-
-/// The id of an untranslated item. Note that a given `DefId` may show up as multiple different
-/// item sources, e.g. a constant will have both a `Global` version (for the constant itself) and a
-/// `FunDecl` one (for its initializer function).
-#[derive(Clone, Debug, PartialEq, Eq, Hash, VariantIndexArity)]
-pub enum TransItemSource {
-    Global(hax::DefId),
-    TraitDecl(hax::DefId),
-    TraitImpl(hax::DefId),
-    Fun(hax::DefId),
-    Type(hax::DefId),
-    /// An impl of the appropriate `Fn*` trait for the given closure type.
-    ClosureTraitImpl(hax::DefId, ClosureKind),
-    /// The `call_*` method of the appropriate `Fn*` trait.
-    ClosureMethod(hax::DefId, ClosureKind),
-}
-
-impl TransItemSource {
-    pub(crate) fn as_def_id(&self) -> &hax::DefId {
-        match self {
-            TransItemSource::Global(id)
-            | TransItemSource::TraitDecl(id)
-            | TransItemSource::TraitImpl(id)
-            | TransItemSource::Fun(id)
-            | TransItemSource::Type(id)
-            | TransItemSource::ClosureTraitImpl(id, _)
-            | TransItemSource::ClosureMethod(id, _) => id,
-        }
-    }
-}
-
-impl TransItemSource {
-    /// Value with which we order values.
-    fn sort_key(&self) -> impl Ord {
-        let (variant_index, _) = self.variant_index_arity();
-        let def_id = self.as_def_id();
-        let closure_kind = match self {
-            Self::ClosureTraitImpl(_, k) | Self::ClosureMethod(_, k) => match k {
-                ClosureKind::Fn => 1,
-                ClosureKind::FnMut => 2,
-                ClosureKind::FnOnce => 3,
-            },
-            _ => 0,
-        };
-        (def_id.index, variant_index, closure_kind)
-    }
-}
-
-/// Manual impls because `DefId` is not orderable.
-impl PartialOrd for TransItemSource {
-    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
-        Some(self.cmp(other))
-    }
-}
-impl Ord for TransItemSource {
-    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
-        self.sort_key().cmp(&other.sort_key())
-    }
-}
 
 /// Translation context used while translating the crate data into our representation.
 pub struct TranslateCtx<'tcx> {
@@ -650,149 +591,6 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
         self.options.opacity_for_name(&self.translated, name)
     }
 
-    pub(crate) fn register_id_no_enqueue(
-        &mut self,
-        src: &Option<DepSource>,
-        id: TransItemSource,
-    ) -> AnyTransId {
-        let item_id = match self.id_map.get(&id) {
-            Some(tid) => *tid,
-            None => {
-                let trans_id = match id {
-                    TransItemSource::Type(_) => {
-                        AnyTransId::Type(self.translated.type_decls.reserve_slot())
-                    }
-                    TransItemSource::TraitDecl(_) => {
-                        AnyTransId::TraitDecl(self.translated.trait_decls.reserve_slot())
-                    }
-                    TransItemSource::TraitImpl(_) | TransItemSource::ClosureTraitImpl(_, _) => {
-                        AnyTransId::TraitImpl(self.translated.trait_impls.reserve_slot())
-                    }
-                    TransItemSource::Global(_) => {
-                        AnyTransId::Global(self.translated.global_decls.reserve_slot())
-                    }
-                    TransItemSource::Fun(_) | TransItemSource::ClosureMethod(_, _) => {
-                        AnyTransId::Fun(self.translated.fun_decls.reserve_slot())
-                    }
-                };
-                // Add the id to the queue of declarations to translate
-                self.id_map.insert(id.clone(), trans_id);
-                self.reverse_id_map.insert(trans_id, id.clone());
-                self.translated.all_ids.insert(trans_id);
-                // Store the name early so the name matcher can identify paths. We can't to it for
-                // trait impls because they register themselves when computing their name.
-                if !matches!(id, TransItemSource::TraitImpl(_)) {
-                    if let Ok(name) = self.def_id_to_name(id.as_def_id()) {
-                        self.translated.item_names.insert(trans_id, name);
-                    }
-                }
-                trans_id
-            }
-        };
-        self.errors
-            .borrow_mut()
-            .register_dep_source(src, item_id, id.as_def_id().is_local);
-        item_id
-    }
-
-    /// Register this id and enqueue it for translation.
-    pub(crate) fn register_and_enqueue_id(
-        &mut self,
-        src: &Option<DepSource>,
-        id: TransItemSource,
-    ) -> AnyTransId {
-        self.items_to_translate.insert(id.clone());
-        self.register_id_no_enqueue(src, id)
-    }
-
-    pub(crate) fn register_type_decl_id(
-        &mut self,
-        src: &Option<DepSource>,
-        id: &hax::DefId,
-    ) -> TypeDeclId {
-        *self
-            .register_and_enqueue_id(src, TransItemSource::Type(id.clone()))
-            .as_type()
-            .unwrap()
-    }
-
-    pub(crate) fn register_fun_decl_id(
-        &mut self,
-        src: &Option<DepSource>,
-        id: &hax::DefId,
-    ) -> FunDeclId {
-        *self
-            .register_and_enqueue_id(src, TransItemSource::Fun(id.clone()))
-            .as_fun()
-            .unwrap()
-    }
-
-    pub(crate) fn register_trait_decl_id(
-        &mut self,
-        src: &Option<DepSource>,
-        id: &hax::DefId,
-    ) -> TraitDeclId {
-        *self
-            .register_and_enqueue_id(src, TransItemSource::TraitDecl(id.clone()))
-            .as_trait_decl()
-            .unwrap()
-    }
-
-    pub(crate) fn register_trait_impl_id(
-        &mut self,
-        src: &Option<DepSource>,
-        id: &hax::DefId,
-    ) -> TraitImplId {
-        // Register the corresponding trait early so we can filter on its name.
-        if let Ok(def) = self.hax_def(id) {
-            let hax::FullDefKind::TraitImpl { trait_pred, .. } = def.kind() else {
-                unreachable!()
-            };
-            let trait_rust_id = &trait_pred.trait_ref.def_id;
-            let _ = self.register_trait_decl_id(src, trait_rust_id);
-        }
-
-        *self
-            .register_and_enqueue_id(src, TransItemSource::TraitImpl(id.clone()))
-            .as_trait_impl()
-            .unwrap()
-    }
-
-    pub(crate) fn register_closure_trait_impl_id(
-        &mut self,
-        src: &Option<DepSource>,
-        id: &hax::DefId,
-        kind: ClosureKind,
-    ) -> TraitImplId {
-        *self
-            .register_and_enqueue_id(src, TransItemSource::ClosureTraitImpl(id.clone(), kind))
-            .as_trait_impl()
-            .unwrap()
-    }
-
-    pub(crate) fn register_closure_method_decl_id(
-        &mut self,
-        src: &Option<DepSource>,
-        id: &hax::DefId,
-        kind: ClosureKind,
-    ) -> FunDeclId {
-        *self
-            .register_and_enqueue_id(src, TransItemSource::ClosureMethod(id.clone(), kind))
-            .as_fun()
-            .unwrap()
-    }
-
-    pub(crate) fn register_global_decl_id(
-        &mut self,
-        src: &Option<DepSource>,
-        id: &hax::DefId,
-    ) -> GlobalDeclId {
-        *self
-            .register_and_enqueue_id(src, TransItemSource::Global(id.clone()))
-            .as_global()
-            .unwrap()
-    }
-
     pub(crate) fn with_def_id<F, T>(
         &mut self,
         def_id: &hax::DefId,
@@ -846,74 +644,6 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
 
     pub(crate) fn def_span(&mut self, def_id: &hax::DefId) -> Span {
         self.t_ctx.def_span(def_id)
-    }
-
-    pub(crate) fn register_id_no_enqueue(&mut self, span: Span, id: TransItemSource) -> AnyTransId {
-        let src = self.make_dep_source(span);
-        self.t_ctx.register_id_no_enqueue(&src, id)
-    }
-
-    pub(crate) fn register_type_decl_id(&mut self, span: Span, id: &hax::DefId) -> TypeDeclId {
-        let src = self.make_dep_source(span);
-        self.t_ctx.register_type_decl_id(&src, id)
-    }
-
-    pub(crate) fn register_fun_decl_id(&mut self, span: Span, id: &hax::DefId) -> FunDeclId {
-        let src = self.make_dep_source(span);
-        self.t_ctx.register_fun_decl_id(&src, id)
-    }
-
-    pub(crate) fn register_fun_decl_id_no_enqueue(
-        &mut self,
-        span: Span,
-        id: &hax::DefId,
-    ) -> FunDeclId {
-        self.register_id_no_enqueue(span, TransItemSource::Fun(id.clone()))
-            .as_fun()
-            .copied()
-            .unwrap()
-    }
-
-    pub(crate) fn register_global_decl_id(&mut self, span: Span, id: &hax::DefId) -> GlobalDeclId {
-        let src = self.make_dep_source(span);
-        self.t_ctx.register_global_decl_id(&src, id)
-    }
-
-    pub(crate) fn register_trait_decl_id(&mut self, span: Span, id: &hax::DefId) -> TraitDeclId {
-        let src = self.make_dep_source(span);
-        self.t_ctx.register_trait_decl_id(&src, id)
-    }
-
-    pub(crate) fn register_trait_impl_id(&mut self, span: Span, id: &hax::DefId) -> TraitImplId {
-        let src = self.make_dep_source(span);
-        self.t_ctx.register_trait_impl_id(&src, id)
-    }
-
-    pub(crate) fn register_closure_trait_impl_id(
-        &mut self,
-        span: Span,
-        id: &hax::DefId,
-        kind: ClosureKind,
-    ) -> TraitImplId {
-        let src = self.make_dep_source(span);
-        self.t_ctx.register_closure_trait_impl_id(&src, id, kind)
-    }
-
-    pub(crate) fn register_closure_method_decl_id(
-        &mut self,
-        span: Span,
-        id: &hax::DefId,
-        kind: ClosureKind,
-    ) -> FunDeclId {
-        let src = self.make_dep_source(span);
-        self.t_ctx.register_closure_method_decl_id(&src, id, kind)
-    }
-
-    pub(crate) fn make_dep_source(&self, span: Span) -> Option<DepSource> {
-        Some(DepSource {
-            src_id: self.item_id?,
-            span: self.def_id.is_local.then_some(span),
-        })
     }
 
     pub(crate) fn get_lang_item(&self, item: rustc_hir::LangItem) -> DefId {
