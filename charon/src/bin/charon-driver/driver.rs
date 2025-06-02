@@ -1,5 +1,5 @@
 //! Run the rustc compiler with our custom options and hooks.
-use crate::translate::translate_crate_to_ullbc;
+use crate::translate::translate_crate;
 use crate::CharonFailure;
 use charon_lib::options::CliOpts;
 use charon_lib::transform::TransformCtx;
@@ -163,7 +163,7 @@ impl<'a> Callbacks for CharonCallbacks<'a> {
             .swap(&(def_id_debug as fn(_, &mut fmt::Formatter<'_>) -> _));
 
         let transform_ctx =
-            translate_crate_to_ullbc::translate(&self.options, tcx, compiler.sess.sysroot.clone());
+            translate_crate::translate(&self.options, tcx, compiler.sess.sysroot.clone());
         self.transform_ctx = Some(transform_ctx);
         Compilation::Continue
     }
