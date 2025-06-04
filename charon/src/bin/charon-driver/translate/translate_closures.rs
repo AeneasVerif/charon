@@ -64,6 +64,7 @@ impl ItemTransCtx<'_, '_> {
         args: &hax::ClosureArgs,
     ) -> Result<ClosureInfo, Error> {
         let kind = translate_closure_kind(&args.kind);
+        let fun_id = self.register_closure_method_decl_id(span, id, kind);
         let signature = self.translate_region_binder(span, &args.fn_sig, |ctx, sig| {
             let inputs = sig
                 .inputs
@@ -73,7 +74,11 @@ impl ItemTransCtx<'_, '_> {
             let output = ctx.translate_ty(span, &sig.output)?;
             Ok((inputs, output))
         })?;
-        Ok(ClosureInfo { kind, signature })
+        Ok(ClosureInfo {
+            kind,
+            fun_id,
+            signature,
+        })
     }
 
     /// Translate a reference to the closure ADT. The resulting type needs lifetime arguments for

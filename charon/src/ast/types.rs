@@ -869,6 +869,10 @@ impl ClosureKind {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Drive, DriveMut)]
 pub struct ClosureInfo {
     pub kind: ClosureKind,
+    /// The function id of the closure's original kind. For instance, a `Fn` closure will have a
+    /// function for its `FnOnce`, `FnMut` and `Fn` traits, but here we would only specify the
+    /// id of the `Fn` function.
+    pub fun_id: FunDeclId,
     /// The signature of the function that this closure represents.
     pub signature: RegionBinder<(Vec<Ty>, Ty)>,
 }

@@ -38,5 +38,95 @@ fn new<'_0>(@1: &'_0 mut (Rng))
     return
 }
 
+// Full name: test_crate::new::{impl FnMut<()> for closure<'_0>}::call_mut
+fn {impl FnMut<()> for closure<'_0>}::call_mut<'_0, '_1>(@1: &'_1 mut (closure<'_0>), @2: ())
+{
+    let @0: (); // return
+    let @1: &'_ mut (closure<'_0>); // arg #1
+    let tupled_args@2: (); // arg #2
+    let @3: (); // anonymous local
+    let @4: &'_ mut (Rng); // anonymous local
+
+    storage_live(@3)
+    storage_live(@4)
+    @4 := &two-phase-mut *((*(@1)).0)
+    @3 := next_u64<'_>(move (@4))
+    storage_dead(@4)
+    storage_dead(@3)
+    @0 := ()
+    @0 := ()
+    return
+}
+
+// Full name: core::marker::Sized
+#[lang_item("sized")]
+pub trait Sized<Self>
+
+// Full name: core::marker::Tuple
+#[lang_item("tuple_trait")]
+pub trait Tuple<Self>
+
+// Full name: core::ops::function::FnOnce
+#[lang_item("fn_once")]
+pub trait FnOnce<Self, Args>
+{
+    parent_clause0 : [@TraitClause0]: Sized<Args>
+    parent_clause1 : [@TraitClause1]: Tuple<Args>
+    parent_clause2 : [@TraitClause2]: Sized<Self::Output>
+    type Output
+    fn call_once = core::ops::function::FnOnce::call_once<Self, Args>[Self]
+}
+
+// Full name: core::ops::function::FnMut
+#[lang_item("fn_mut")]
+pub trait FnMut<Self, Args>
+{
+    parent_clause0 : [@TraitClause0]: FnOnce<Self, Args>
+    parent_clause1 : [@TraitClause1]: Sized<Args>
+    parent_clause2 : [@TraitClause2]: Tuple<Args>
+    fn call_mut<'_0> = core::ops::function::FnMut::call_mut<'_0_0, Self, Args>[Self]
+}
+
+// Full name: test_crate::new::{impl FnOnce<()> for closure<'_0>}::call_once
+fn {impl FnOnce<()> for closure<'_0>}::call_once<'_0>(@1: closure<'_0>, @2: ())
+{
+    let @0: (); // return
+    let @1: closure<'_0>; // arg #1
+    let @2: (); // arg #2
+    let @3: &'_ mut (closure<'_0>); // anonymous local
+
+    storage_live(@3)
+    @3 := &mut @1
+    @0 := {impl FnMut<()> for closure<'_0>}::call_mut<'_0, '_>(move (@3), move (@2))
+    drop @1
+    @0 := ()
+    return
+}
+
+// Full name: test_crate::new::{impl FnOnce<()> for closure<'_0>}
+impl<'_0> FnOnce<()> for closure<'_0> {
+    parent_clause0 = Sized<()>
+    parent_clause1 = Tuple<()>
+    parent_clause2 = Sized<()>
+    type Output = ()
+    fn call_once = {impl FnOnce<()> for closure<'_0>}::call_once<'_0>
+}
+
+// Full name: test_crate::new::{impl FnMut<()> for closure<'_0>}
+impl<'_0> FnMut<()> for closure<'_0> {
+    parent_clause0 = {impl FnOnce<()> for closure<'_0>}<'_0>
+    parent_clause1 = Sized<()>
+    parent_clause2 = Tuple<()>
+    fn call_mut<'_0> = {impl FnMut<()> for closure<'_0>}::call_mut<'_0, '_0_0>
+}
+
+pub fn core::ops::function::FnMut::call_mut<'_0, Self, Args>(@1: &'_0 mut (Self), @2: Args) -> @TraitClause0::parent_clause0::Output
+where
+    [@TraitClause0]: FnMut<Self, Args>,
+
+pub fn core::ops::function::FnOnce::call_once<Self, Args>(@1: Self, @2: Args) -> @TraitClause0::Output
+where
+    [@TraitClause0]: FnOnce<Self, Args>,
+
 
 
