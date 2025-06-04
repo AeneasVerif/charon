@@ -136,7 +136,7 @@ impl ItemTransCtx<'_, '_> {
                 associated_item, ..
             } => associated_item,
             hax::FullDefKind::Closure { args, .. } => {
-                let info = self.translate_closure_info(span, args)?;
+                let info = self.translate_closure_info(span, def.def_id(), args)?;
                 return Ok(ItemKind::Closure { info });
             }
             _ => return Ok(ItemKind::TopLevel),
