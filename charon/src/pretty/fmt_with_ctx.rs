@@ -1730,9 +1730,12 @@ impl<C: AstFormatter> FmtWithCtx<C> for Ty {
             TyKind::Arrow(io) => {
                 write!(f, "{}", io.with_ctx(ctx))
             }
-            TyKind::FnDef(id, args) => {
-                write!(f, "{}", id.with_ctx(ctx))?;
-                write!(f, "{}", args.with_ctx(ctx))
+            TyKind::FnDef(binder) => {
+                let (regions, value) = binder.fmt_split(ctx);
+                if !regions.is_empty() {
+                    write!(f, "for<{regions}> ",)?
+                };
+                write!(f, "{value}",)
             }
             TyKind::Error(msg) => write!(f, "type_error(\"{msg}\")"),
         }

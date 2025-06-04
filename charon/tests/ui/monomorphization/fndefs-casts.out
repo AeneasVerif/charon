@@ -1,0 +1,142 @@
+# Final LLBC before serialization:
+
+// Full name: core::marker::Sized
+#[lang_item("sized")]
+pub trait Sized<Self>
+
+fn test_crate::foo::<'_, u8>(@1: &'_ (u8))
+{
+    let @0: (); // return
+    let x@1: &'_ (u8); // arg #1
+
+    @0 := ()
+    @0 := ()
+    return
+}
+
+fn test_crate::foo::<'_, char>(@1: &'_ (char))
+{
+    let @0: (); // return
+    let x@1: &'_ (char); // arg #1
+
+    @0 := ()
+    @0 := ()
+    return
+}
+
+// Full name: test_crate::bar
+fn bar()
+{
+    let @0: (); // return
+    let fooint1@1: fn<'_0>(&'_0_0 (u8)); // local
+    let fooint2@2: fn<'_0>(&'_0_0 (u8)); // local
+    let foochar@3: fn<'_0>(&'_0_0 (char)); // local
+    let a@4: u8; // local
+    let @5: (); // anonymous local
+    let @6: fn<'_0>(&'_0_0 (u8)); // anonymous local
+    let @7: &'_ (u8); // anonymous local
+    let @8: &'_ (u8); // anonymous local
+    let b@9: u8; // local
+    let @10: (); // anonymous local
+    let @11: fn<'_0>(&'_0_0 (u8)); // anonymous local
+    let @12: &'_ (u8); // anonymous local
+    let @13: &'_ (u8); // anonymous local
+    let @14: (); // anonymous local
+    let @15: fn<'_0>(&'_0_0 (u8)); // anonymous local
+    let @16: &'_ (u8); // anonymous local
+    let @17: &'_ (u8); // anonymous local
+    let @18: (); // anonymous local
+    let @19: fn<'_0>(&'_0_0 (u8)); // anonymous local
+    let @20: &'_ (u8); // anonymous local
+    let @21: &'_ (u8); // anonymous local
+    let @22: (); // anonymous local
+    let @23: fn<'_0>(&'_0_0 (char)); // anonymous local
+    let @24: &'_ (char); // anonymous local
+    let @25: &'_ (char); // anonymous local
+    let @26: char; // anonymous local
+
+    storage_live(fooint1@1)
+    fooint1@1 := cast<for<'a> foo<'a, u8>[Sized<u8>], fn<'_0>(&'_0_0 (u8))>(const (test_crate::foo::<'_, u8><'_>))
+    storage_live(fooint2@2)
+    fooint2@2 := cast<for<'a> foo<'a, u8>[Sized<u8>], fn<'_0>(&'_0_0 (u8))>(const (test_crate::foo::<'_, u8><'_>))
+    storage_live(foochar@3)
+    foochar@3 := cast<for<'a> foo<'a, char>[Sized<char>], fn<'_0>(&'_0_0 (char))>(const (test_crate::foo::<'_, char><'_>))
+    storage_live(a@4)
+    a@4 := const (11 : u8)
+    storage_live(@5)
+    storage_live(@6)
+    @6 := copy (fooint1@1)
+    storage_live(@7)
+    storage_live(@8)
+    @8 := &a@4
+    @7 := &*(@8)
+    @5 := (move @6)(move (@7))
+    storage_dead(@7)
+    storage_dead(@6)
+    storage_dead(@8)
+    storage_dead(@5)
+    storage_live(b@9)
+    b@9 := const (12 : u8)
+    storage_live(@10)
+    storage_live(@11)
+    @11 := copy (fooint1@1)
+    storage_live(@12)
+    storage_live(@13)
+    @13 := &a@4
+    @12 := &*(@13)
+    @10 := (move @11)(move (@12))
+    storage_dead(@12)
+    storage_dead(@11)
+    storage_dead(@13)
+    storage_dead(@10)
+    storage_live(@14)
+    storage_live(@15)
+    @15 := copy (fooint1@1)
+    storage_live(@16)
+    storage_live(@17)
+    @17 := &b@9
+    @16 := &*(@17)
+    @14 := (move @15)(move (@16))
+    storage_dead(@16)
+    storage_dead(@15)
+    storage_dead(@17)
+    storage_dead(@14)
+    storage_live(@18)
+    storage_live(@19)
+    @19 := copy (fooint2@2)
+    storage_live(@20)
+    storage_live(@21)
+    @21 := &b@9
+    @20 := &*(@21)
+    @18 := (move @19)(move (@20))
+    storage_dead(@20)
+    storage_dead(@19)
+    storage_dead(@21)
+    storage_dead(@18)
+    storage_live(@22)
+    storage_live(@23)
+    @23 := copy (foochar@3)
+    storage_live(@24)
+    storage_live(@25)
+    storage_live(@26)
+    @26 := const (x)
+    @25 := &@26
+    @24 := &*(@25)
+    @22 := (move @23)(move (@24))
+    storage_dead(@24)
+    storage_dead(@23)
+    storage_dead(@26)
+    storage_dead(@25)
+    storage_dead(@22)
+    @0 := ()
+    storage_dead(b@9)
+    storage_dead(a@4)
+    storage_dead(foochar@3)
+    storage_dead(fooint2@2)
+    storage_dead(fooint1@1)
+    @0 := ()
+    return
+}
+
+
+

@@ -285,14 +285,32 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
             } => {
                 trace!("FnDef");
                 let f_id = self.register_fun_decl_id(span, def_id);
-                let generics = self.translate_generic_args(
+                let bound_substs = fn_sig.rebind((substs, trait_refs));
+                let fnref = self.translate_region_binder(
                     span,
-                    substs,
-                    trait_refs,
-                    Some(fn_sig.rebind(())),
-                    GenericsSource::item(f_id),
+                    &bound_substs,
+                    |ctx, (substs, trait_refs)| {
+                        let generics = ctx.translate_generic_args(
+                            span,
+                            substs,
+                            trait_refs,
+                            None,
+                            GenericsSource::item(f_id),
+                        )?;
+                        let generics = generics.concat(
+                            GenericsSource::item(f_id),
+                            &ctx.innermost_binder().params.identity_args_at_depth(
+                                GenericsSource::item(f_id),
+                                DeBruijnId::zero(),
+                            ),
+                        );
+                        Ok(FunDeclRef {
+                            id: f_id,
+                            generics: Box::new(generics),
+                        })
+                    },
                 )?;
-                TyKind::FnDef(f_id, generics)
+                TyKind::FnDef(fnref)
             }
             hax::TyKind::Closure(def_id, args) => {
                 let type_ref = self.translate_closure_type_ref(span, def_id, args)?;

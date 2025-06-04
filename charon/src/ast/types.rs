@@ -754,7 +754,7 @@ pub enum TyKind {
     /// The unique type associated with each function item.
     /// This is a function signature with limited generics: it only supports lifetime generics, not
     /// other kinds of generics.
-    FnDef(FunDeclId, GenericArgs),
+    FnDef(RegionBinder<FunDeclRef>),
     /// A type that could not be computed or was incorrect.
     #[drive(skip)]
     Error(String),
