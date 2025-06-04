@@ -240,8 +240,8 @@ fn max() -> usize
 #[lang_item("eq")]
 pub trait PartialEq<Self, Rhs>
 {
-    fn eq<'_0, '_1> = eq<'_0_0, '_0_1, Self, Rhs>
-    fn ne<'_0, '_1> = ne<'_0_0, '_0_1, Self, Rhs>
+    fn eq<'_0, '_1> = eq<'_0_0, '_0_1, Self, Rhs>[Self]
+    fn ne<'_0, '_1> = ne<'_0_0, '_0_1, Self, Rhs>[Self]
 }
 
 // Full name: test_crate::partial_eq
@@ -265,11 +265,13 @@ pub trait From<Self, T>
 {
     parent_clause0 : [@TraitClause0]: Sized<Self>
     parent_clause1 : [@TraitClause1]: Sized<T>
-    fn from = core::convert::From::from<Self, T>
+    fn from = core::convert::From::from<Self, T>[Self]
 }
 
 #[lang_item("from_fn")]
 pub fn core::convert::From::from<Self, T>(@1: T) -> Self
+where
+    [@TraitClause0]: From<Self, T>,
 
 // Full name: core::convert::num::{impl From<i32> for i64}#83
 impl From<i32> for i64 {
@@ -281,10 +283,14 @@ impl From<i32> for i64 {
 // Full name: core::cmp::PartialEq::eq
 #[lang_item("cmp_partialeq_eq")]
 pub fn eq<'_0, '_1, Self, Rhs>(@1: &'_0 (Self), @2: &'_1 (Rhs)) -> bool
+where
+    [@TraitClause0]: PartialEq<Self, Rhs>,
 
 // Full name: core::cmp::PartialEq::ne
 #[lang_item("cmp_partialeq_ne")]
 pub fn ne<'_0, '_1, Self, Rhs>(@1: &'_0 (Self), @2: &'_1 (Rhs)) -> bool
+where
+    [@TraitClause0]: PartialEq<Self, Rhs>,
 {
     let @0: bool; // return
     let self@1: &'_ (Self); // arg #1
@@ -292,7 +298,7 @@ pub fn ne<'_0, '_1, Self, Rhs>(@1: &'_0 (Self), @2: &'_1 (Rhs)) -> bool
     let @3: bool; // anonymous local
 
     storage_live(@3)
-    @3 := Self::eq<'_, '_>(move (self@1), move (other@2))
+    @3 := @TraitClause0::eq<'_, '_>(move (self@1), move (other@2))
     @0 := ~(move (@3))
     storage_dead(@3)
     return

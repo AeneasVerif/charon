@@ -9,7 +9,7 @@ pub trait Sized<Self>
 pub trait Clone<Self>
 {
     parent_clause0 : [@TraitClause0]: Sized<Self>
-    fn clone<'_0> = clone<'_0_0, Self>
+    fn clone<'_0> = clone<'_0_0, Self>[Self]
 }
 
 // Full name: core::marker::Copy
@@ -23,8 +23,8 @@ pub trait Copy<Self>
 trait Trait<Self>
 {
     parent_clause0 : [@TraitClause0]: Sized<Self>
-    fn method1 = test_crate::Trait::method1<Self>
-    fn method2<T, [@TraitClause0]: Sized<T>, [@TraitClause1]: Copy<T>> = test_crate::Trait::method2<Self, T>[@TraitClause0_0, @TraitClause0_1]
+    fn method1 = test_crate::Trait::method1<Self>[Self]
+    fn method2<T, [@TraitClause0]: Sized<T>, [@TraitClause1]: Copy<T>> = test_crate::Trait::method2<Self, T>[Self, @TraitClause0_0, @TraitClause0_1]
 }
 
 // Full name: test_crate::{impl Trait for ()}::method1
@@ -65,7 +65,7 @@ trait MyCompare<Self, Other>
 {
     parent_clause0 : [@TraitClause0]: Sized<Self>
     parent_clause1 : [@TraitClause1]: Sized<Other>
-    fn compare = test_crate::MyCompare::compare<Self, Other>
+    fn compare = test_crate::MyCompare::compare<Self, Other>[Self]
 }
 
 // Full name: test_crate::{impl MyCompare<&'a (())> for &'a (())}#1::compare
@@ -147,7 +147,7 @@ fn main()
 // Full name: test_crate::Foo
 trait Foo<Self>
 {
-    fn foo<'a, 'b> = test_crate::Foo::foo<'a, 'b, Self>
+    fn foo<'a, 'b> = test_crate::Foo::foo<'a, 'b, Self>[Self]
 }
 
 // Full name: test_crate::{impl Foo for ()}#2::foo
@@ -198,19 +198,28 @@ fn call_foo<'e>(@1: &'e (())) -> &'e (())
 }
 
 fn test_crate::Trait::method1<Self>(@1: Self, @2: &'static (u32)) -> bool
+where
+    [@TraitClause0]: Trait<Self>,
 
 fn test_crate::Trait::method2<Self, T>(@1: Self, @2: T)
 where
-    [@TraitClause0]: Sized<T>,
-    [@TraitClause1]: Copy<T>,
+    [@TraitClause0]: Trait<Self>,
+    [@TraitClause1]: Sized<T>,
+    [@TraitClause2]: Copy<T>,
 
 fn test_crate::MyCompare::compare<Self, Other>(@1: Self, @2: Other) -> bool
+where
+    [@TraitClause0]: MyCompare<Self, Other>,
 
 fn test_crate::Foo::foo<'a, 'b, Self>(@1: &'a (()), @2: &'b (())) -> &'a (())
+where
+    [@TraitClause0]: Foo<Self>,
 
 // Full name: core::clone::Clone::clone
 #[lang_item("clone_fn")]
 pub fn clone<'_0, Self>(@1: &'_0 (Self)) -> Self
+where
+    [@TraitClause0]: Clone<Self>,
 
 
 

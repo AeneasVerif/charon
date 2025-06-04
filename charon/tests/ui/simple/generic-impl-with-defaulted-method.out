@@ -3,7 +3,7 @@
 // Full name: test_crate::BoolTrait
 pub trait BoolTrait<Self>
 {
-    fn foo<'_0> = foo<'_0_0, Self>
+    fn foo<'_0> = foo<'_0_0, Self>[Self]
 }
 
 // Full name: core::marker::Sized
@@ -42,6 +42,8 @@ where
 
 // Full name: test_crate::BoolTrait::foo
 pub fn foo<'_0, Self>(@1: &'_0 (Self))
+where
+    [@TraitClause0]: BoolTrait<Self>,
 {
     let @0: (); // return
     let self@1: &'_ (Self); // arg #1

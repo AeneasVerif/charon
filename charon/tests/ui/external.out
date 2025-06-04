@@ -35,7 +35,7 @@ where
 pub trait Clone<Self>
 {
     parent_clause0 : [@TraitClause0]: Sized<Self>
-    fn clone<'_0> = core::clone::Clone::clone<'_0_0, Self>
+    fn clone<'_0> = core::clone::Clone::clone<'_0_0, Self>[Self]
 }
 
 // Full name: core::marker::Copy
@@ -243,6 +243,8 @@ pub fn incr<'_0>(@1: &'_0 mut (Cell<u32>))
 
 #[lang_item("clone_fn")]
 pub fn core::clone::Clone::clone<'_0, Self>(@1: &'_0 (Self)) -> Self
+where
+    [@TraitClause0]: Clone<Self>,
 
 
 

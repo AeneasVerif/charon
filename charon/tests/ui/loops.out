@@ -852,7 +852,7 @@ pub trait Iterator<Self>
 {
     parent_clause0 : [@TraitClause0]: Sized<Self::Item>
     type Item
-    fn next<'_0> = core::iter::traits::iterator::Iterator::next<'_0_0, Self>
+    fn next<'_0> = core::iter::traits::iterator::Iterator::next<'_0_0, Self>[Self]
 }
 
 // Full name: core::iter::traits::collect::{impl IntoIterator for I}::into_iter
@@ -866,14 +866,14 @@ where
 pub trait Clone<Self>
 {
     parent_clause0 : [@TraitClause0]: Sized<Self>
-    fn clone<'_0> = core::clone::Clone::clone<'_0_0, Self>
+    fn clone<'_0> = core::clone::Clone::clone<'_0_0, Self>[Self]
 }
 
 // Full name: core::cmp::PartialEq
 #[lang_item("eq")]
 pub trait PartialEq<Self, Rhs>
 {
-    fn eq<'_0, '_1> = core::cmp::PartialEq::eq<'_0_0, '_0_1, Self, Rhs>
+    fn eq<'_0, '_1> = core::cmp::PartialEq::eq<'_0_0, '_0_1, Self, Rhs>[Self]
 }
 
 // Full name: core::cmp::Ordering
@@ -889,7 +889,7 @@ pub enum Ordering {
 pub trait PartialOrd<Self, Rhs>
 {
     parent_clause0 : [@TraitClause0]: PartialEq<Self, Rhs>
-    fn partial_cmp<'_0, '_1> = core::cmp::PartialOrd::partial_cmp<'_0_0, '_0_1, Self, Rhs>
+    fn partial_cmp<'_0, '_1> = core::cmp::PartialOrd::partial_cmp<'_0_0, '_0_1, Self, Rhs>[Self]
 }
 
 // Full name: core::iter::range::Step
@@ -898,9 +898,9 @@ pub trait Step<Self>
     parent_clause0 : [@TraitClause0]: Sized<Self>
     parent_clause1 : [@TraitClause1]: Clone<Self>
     parent_clause2 : [@TraitClause2]: PartialOrd<Self, Self>
-    fn steps_between<'_0, '_1> = core::iter::range::Step::steps_between<'_0_0, '_0_1, Self>
-    fn forward_checked = core::iter::range::Step::forward_checked<Self>
-    fn backward_checked = core::iter::range::Step::backward_checked<Self>
+    fn steps_between<'_0, '_1> = core::iter::range::Step::steps_between<'_0_0, '_0_1, Self>[Self]
+    fn forward_checked = core::iter::range::Step::forward_checked<Self>[Self]
+    fn backward_checked = core::iter::range::Step::backward_checked<Self>[Self]
 }
 
 // Full name: core::iter::range::{impl Iterator for Range<A>[@TraitClause0]}#6::next
@@ -1449,12 +1449,12 @@ pub trait SliceIndex<Self, T>
 {
     parent_clause0 : [@TraitClause0]: Sealed<Self>
     type Output
-    fn get<'_0> = core::slice::index::SliceIndex::get<'_0_0, Self, T>
-    fn get_mut<'_0> = core::slice::index::SliceIndex::get_mut<'_0_0, Self, T>
-    fn get_unchecked = core::slice::index::SliceIndex::get_unchecked<Self, T>
-    fn get_unchecked_mut = core::slice::index::SliceIndex::get_unchecked_mut<Self, T>
-    fn index<'_0> = core::slice::index::SliceIndex::index<'_0_0, Self, T>
-    fn index_mut<'_0> = core::slice::index::SliceIndex::index_mut<'_0_0, Self, T>
+    fn get<'_0> = core::slice::index::SliceIndex::get<'_0_0, Self, T>[Self]
+    fn get_mut<'_0> = core::slice::index::SliceIndex::get_mut<'_0_0, Self, T>[Self]
+    fn get_unchecked = core::slice::index::SliceIndex::get_unchecked<Self, T>[Self]
+    fn get_unchecked_mut = core::slice::index::SliceIndex::get_unchecked_mut<Self, T>[Self]
+    fn index<'_0> = core::slice::index::SliceIndex::index<'_0_0, Self, T>[Self]
+    fn index_mut<'_0> = core::slice::index::SliceIndex::index_mut<'_0_0, Self, T>[Self]
 }
 
 // Full name: alloc::vec::{impl IndexMut<I> for Vec<T, A>[@TraitClause0, @TraitClause2]}#14::index_mut
@@ -1723,11 +1723,13 @@ where
     parent_clause2 : [@TraitClause2]: Iterator<Self::IntoIter>
     type Item
     type IntoIter
-    fn into_iter = core::iter::traits::collect::IntoIterator::into_iter<Self>
+    fn into_iter = core::iter::traits::collect::IntoIterator::into_iter<Self>[Self]
 }
 
 #[lang_item("into_iter")]
-pub fn core::iter::traits::collect::IntoIterator::into_iter<Self>(@1: Self) -> Self::IntoIter
+pub fn core::iter::traits::collect::IntoIterator::into_iter<Self>(@1: Self) -> @TraitClause0::IntoIter
+where
+    [@TraitClause0]: IntoIterator<Self>,
 
 // Full name: core::iter::traits::collect::{impl IntoIterator for I}
 impl<I> IntoIterator for I
@@ -1744,14 +1746,16 @@ where
 }
 
 #[lang_item("next")]
-pub fn core::iter::traits::iterator::Iterator::next<'_0, Self>(@1: &'_0 mut (Self)) -> Option<Self::Item>[Self::parent_clause0]
+pub fn core::iter::traits::iterator::Iterator::next<'_0, Self>(@1: &'_0 mut (Self)) -> Option<@TraitClause0::Item>[@TraitClause0::parent_clause0]
+where
+    [@TraitClause0]: Iterator<Self>,
 
 // Full name: core::ops::index::Index
 #[lang_item("index")]
 pub trait Index<Self, Idx>
 {
     type Output
-    fn index<'_0> = core::ops::index::Index::index<'_0_0, Self, Idx>
+    fn index<'_0> = core::ops::index::Index::index<'_0_0, Self, Idx>[Self]
 }
 
 // Full name: core::ops::index::IndexMut
@@ -1759,10 +1763,12 @@ pub trait Index<Self, Idx>
 pub trait IndexMut<Self, Idx>
 {
     parent_clause0 : [@TraitClause0]: Index<Self, Idx>
-    fn index_mut<'_0> = core::ops::index::IndexMut::index_mut<'_0_0, Self, Idx>
+    fn index_mut<'_0> = core::ops::index::IndexMut::index_mut<'_0_0, Self, Idx>[Self]
 }
 
-pub fn core::ops::index::IndexMut::index_mut<'_0, Self, Idx>(@1: &'_0 mut (Self), @2: Idx) -> &'_0 mut (Self::parent_clause0::Output)
+pub fn core::ops::index::IndexMut::index_mut<'_0, Self, Idx>(@1: &'_0 mut (Self), @2: Idx) -> &'_0 mut (@TraitClause0::parent_clause0::Output)
+where
+    [@TraitClause0]: IndexMut<Self, Idx>,
 
 // Full name: alloc::vec::{impl Index<I> for Vec<T, A>[@TraitClause0, @TraitClause2]}#13::index
 pub fn {impl Index<I> for Vec<T, A>[@TraitClause0, @TraitClause2]}#13::index<'_0, T, I, A>(@1: &'_0 (Vec<T, A>[@TraitClause0, @TraitClause2]), @2: I) -> &'_0 (@TraitClause3::Output)
@@ -1797,19 +1803,31 @@ where
 }
 
 pub fn core::iter::range::Step::steps_between<'_0, '_1, Self>(@1: &'_0 (Self), @2: &'_1 (Self)) -> (usize, Option<usize>[Sized<usize>])
+where
+    [@TraitClause0]: Step<Self>,
 
-pub fn core::iter::range::Step::forward_checked<Self>(@1: Self, @2: usize) -> Option<Self>[Self::parent_clause0]
+pub fn core::iter::range::Step::forward_checked<Self>(@1: Self, @2: usize) -> Option<Self>[@TraitClause0::parent_clause0]
+where
+    [@TraitClause0]: Step<Self>,
 
-pub fn core::iter::range::Step::backward_checked<Self>(@1: Self, @2: usize) -> Option<Self>[Self::parent_clause0]
+pub fn core::iter::range::Step::backward_checked<Self>(@1: Self, @2: usize) -> Option<Self>[@TraitClause0::parent_clause0]
+where
+    [@TraitClause0]: Step<Self>,
 
 #[lang_item("clone_fn")]
 pub fn core::clone::Clone::clone<'_0, Self>(@1: &'_0 (Self)) -> Self
+where
+    [@TraitClause0]: Clone<Self>,
 
 #[lang_item("cmp_partialord_cmp")]
 pub fn core::cmp::PartialOrd::partial_cmp<'_0, '_1, Self, Rhs>(@1: &'_0 (Self), @2: &'_1 (Rhs)) -> Option<Ordering>[Sized<Ordering>]
+where
+    [@TraitClause0]: PartialOrd<Self, Rhs>,
 
 #[lang_item("cmp_partialeq_eq")]
 pub fn core::cmp::PartialEq::eq<'_0, '_1, Self, Rhs>(@1: &'_0 (Self), @2: &'_1 (Rhs)) -> bool
+where
+    [@TraitClause0]: PartialEq<Self, Rhs>,
 
 // Full name: core::cmp::Eq
 #[lang_item("Eq")]
@@ -1824,7 +1842,7 @@ pub trait Ord<Self>
 {
     parent_clause0 : [@TraitClause0]: Eq<Self>
     parent_clause1 : [@TraitClause1]: PartialOrd<Self, Self>
-    fn cmp<'_0, '_1> = core::cmp::Ord::cmp<'_0_0, '_0_1, Self>
+    fn cmp<'_0, '_1> = core::cmp::Ord::cmp<'_0_0, '_0_1, Self>[Self]
 }
 
 // Full name: core::iter::adapters::zip::TrustedRandomAccessNoCoerce
@@ -1836,6 +1854,8 @@ pub trait TrustedRandomAccessNoCoerce<Self>
 
 #[lang_item("ord_cmp_method")]
 pub fn core::cmp::Ord::cmp<'_0, '_1, Self>(@1: &'_0 (Self), @2: &'_1 (Self)) -> Ordering
+where
+    [@TraitClause0]: Ord<Self>,
 
 // Full name: core::marker::Tuple
 #[lang_item("tuple_trait")]
@@ -1849,7 +1869,7 @@ pub trait FnOnce<Self, Args>
     parent_clause1 : [@TraitClause1]: Tuple<Args>
     parent_clause2 : [@TraitClause2]: Sized<Self::Output>
     type Output
-    fn call_once = call_once<Self, Args>
+    fn call_once = call_once<Self, Args>[Self]
 }
 
 // Full name: core::ops::function::FnMut
@@ -1859,7 +1879,7 @@ pub trait FnMut<Self, Args>
     parent_clause0 : [@TraitClause0]: FnOnce<Self, Args>
     parent_clause1 : [@TraitClause1]: Sized<Args>
     parent_clause2 : [@TraitClause2]: Tuple<Args>
-    fn call_mut<'_0> = call_mut<'_0_0, Self, Args>
+    fn call_mut<'_0> = call_mut<'_0_0, Self, Args>[Self]
 }
 
 // Full name: core::iter::traits::collect::FromIterator
@@ -1868,7 +1888,7 @@ pub trait FromIterator<Self, A>
 {
     parent_clause0 : [@TraitClause0]: Sized<Self>
     parent_clause1 : [@TraitClause1]: Sized<A>
-    fn from_iter<T, [@TraitClause0]: Sized<T>, [@TraitClause1]: IntoIterator<T>, @TraitClause1_1::Item = A> = from_iter<Self, A, T>[@TraitClause0_0, @TraitClause0_1]
+    fn from_iter<T, [@TraitClause0]: Sized<T>, [@TraitClause1]: IntoIterator<T>, @TraitClause1_1::Item = A> = from_iter<Self, A, T>[Self, @TraitClause0_0, @TraitClause0_1]
 }
 
 // Full name: core::ops::try_trait::FromResidual
@@ -1876,7 +1896,7 @@ pub trait FromIterator<Self, A>
 pub trait FromResidual<Self, R>
 {
     parent_clause0 : [@TraitClause0]: Sized<R>
-    fn from_residual = from_residual<Self, R>
+    fn from_residual = from_residual<Self, R>[Self]
 }
 
 // Full name: core::ops::control_flow::ControlFlow
@@ -1899,8 +1919,8 @@ pub trait Try<Self>
     parent_clause2 : [@TraitClause2]: Sized<Self::Residual>
     type Output
     type Residual
-    fn from_output = from_output<Self>
-    fn branch = branch<Self>
+    fn from_output = from_output<Self>[Self]
+    fn branch = branch<Self>[Self]
 }
 
 // Full name: core::ops::try_trait::Residual
@@ -1919,7 +1939,7 @@ where
 pub trait Extend<Self, A>
 {
     parent_clause0 : [@TraitClause0]: Sized<A>
-    fn extend<'_0, T, [@TraitClause0]: Sized<T>, [@TraitClause1]: IntoIterator<T>, @TraitClause1_1::Item = A> = extend<'_0_0, Self, A, T>[@TraitClause0_0, @TraitClause0_1]
+    fn extend<'_0, T, [@TraitClause0]: Sized<T>, [@TraitClause1]: IntoIterator<T>, @TraitClause1_1::Item = A> = extend<'_0_0, Self, A, T>[Self, @TraitClause0_0, @TraitClause0_1]
 }
 
 // Full name: core::default::Default
@@ -1927,7 +1947,7 @@ pub trait Extend<Self, A>
 pub trait Default<Self>
 {
     parent_clause0 : [@TraitClause0]: Sized<Self>
-    fn default = default<Self>
+    fn default = default<Self>[Self]
 }
 
 // Full name: core::iter::traits::double_ended::DoubleEndedIterator
@@ -1935,7 +1955,7 @@ pub trait Default<Self>
 pub trait DoubleEndedIterator<Self>
 {
     parent_clause0 : [@TraitClause0]: Iterator<Self>
-    fn next_back<'_0> = next_back<'_0_0, Self>
+    fn next_back<'_0> = next_back<'_0_0, Self>[Self]
 }
 
 // Full name: core::iter::traits::exact_size::ExactSizeIterator
@@ -1956,7 +1976,7 @@ pub trait Sum<Self, A>
 {
     parent_clause0 : [@TraitClause0]: Sized<Self>
     parent_clause1 : [@TraitClause1]: Sized<A>
-    fn sum<I, [@TraitClause0]: Sized<I>, [@TraitClause1]: Iterator<I>, @TraitClause1_1::Item = A> = core::iter::traits::accum::Sum::sum<Self, A, I>[@TraitClause0_0, @TraitClause0_1]
+    fn sum<I, [@TraitClause0]: Sized<I>, [@TraitClause1]: Iterator<I>, @TraitClause1_1::Item = A> = core::iter::traits::accum::Sum::sum<Self, A, I>[Self, @TraitClause0_0, @TraitClause0_1]
 }
 
 // Full name: core::iter::traits::accum::Product
@@ -1964,74 +1984,106 @@ pub trait Product<Self, A>
 {
     parent_clause0 : [@TraitClause0]: Sized<Self>
     parent_clause1 : [@TraitClause1]: Sized<A>
-    fn product<I, [@TraitClause0]: Sized<I>, [@TraitClause1]: Iterator<I>, @TraitClause1_1::Item = A> = core::iter::traits::accum::Product::product<Self, A, I>[@TraitClause0_0, @TraitClause0_1]
+    fn product<I, [@TraitClause0]: Sized<I>, [@TraitClause1]: Iterator<I>, @TraitClause1_1::Item = A> = core::iter::traits::accum::Product::product<Self, A, I>[Self, @TraitClause0_0, @TraitClause0_1]
 }
 
 // Full name: core::default::Default::default
 #[lang_item("default_fn")]
 pub fn default<Self>() -> Self
+where
+    [@TraitClause0]: Default<Self>,
 
 // Full name: core::ops::function::FnMut::call_mut
-pub fn call_mut<'_0, Self, Args>(@1: &'_0 mut (Self), @2: Args) -> Self::parent_clause0::Output
+pub fn call_mut<'_0, Self, Args>(@1: &'_0 mut (Self), @2: Args) -> @TraitClause0::parent_clause0::Output
+where
+    [@TraitClause0]: FnMut<Self, Args>,
 
 // Full name: core::ops::function::FnOnce::call_once
-pub fn call_once<Self, Args>(@1: Self, @2: Args) -> Self::Output
+pub fn call_once<Self, Args>(@1: Self, @2: Args) -> @TraitClause0::Output
+where
+    [@TraitClause0]: FnOnce<Self, Args>,
 
 // Full name: core::ops::try_trait::Try::from_output
 #[lang_item("from_output")]
-pub fn from_output<Self>(@1: Self::Output) -> Self
+pub fn from_output<Self>(@1: @TraitClause0::Output) -> Self
+where
+    [@TraitClause0]: Try<Self>,
 
 // Full name: core::ops::try_trait::Try::branch
 #[lang_item("branch")]
-pub fn branch<Self>(@1: Self) -> ControlFlow<Self::Residual, Self::Output>[Self::parent_clause0::parent_clause0, Self::parent_clause1]
+pub fn branch<Self>(@1: Self) -> ControlFlow<@TraitClause0::Residual, @TraitClause0::Output>[@TraitClause0::parent_clause0::parent_clause0, @TraitClause0::parent_clause1]
+where
+    [@TraitClause0]: Try<Self>,
 
 // Full name: core::ops::try_trait::FromResidual::from_residual
 #[lang_item("from_residual")]
 pub fn from_residual<Self, R>(@1: R) -> Self
+where
+    [@TraitClause0]: FromResidual<Self, R>,
 
 pub fn core::iter::traits::accum::Sum::sum<Self, A, I>(@1: I) -> Self
 where
-    [@TraitClause0]: Sized<I>,
-    [@TraitClause1]: Iterator<I>,
-    @TraitClause1::Item = A,
+    [@TraitClause0]: Sum<Self, A>,
+    [@TraitClause1]: Sized<I>,
+    [@TraitClause2]: Iterator<I>,
+    @TraitClause2::Item = A,
 
 pub fn core::iter::traits::accum::Product::product<Self, A, I>(@1: I) -> Self
 where
-    [@TraitClause0]: Sized<I>,
-    [@TraitClause1]: Iterator<I>,
-    @TraitClause1::Item = A,
+    [@TraitClause0]: Product<Self, A>,
+    [@TraitClause1]: Sized<I>,
+    [@TraitClause2]: Iterator<I>,
+    @TraitClause2::Item = A,
 
 // Full name: core::iter::traits::collect::FromIterator::from_iter
 #[lang_item("from_iter_fn")]
 pub fn from_iter<Self, A, T>(@1: T) -> Self
 where
-    [@TraitClause0]: Sized<T>,
-    [@TraitClause1]: IntoIterator<T>,
-    @TraitClause1::Item = A,
+    [@TraitClause0]: FromIterator<Self, A>,
+    [@TraitClause1]: Sized<T>,
+    [@TraitClause2]: IntoIterator<T>,
+    @TraitClause2::Item = A,
 
 // Full name: core::iter::traits::collect::Extend::extend
 pub fn extend<'_0, Self, A, T>(@1: &'_0 mut (Self), @2: T)
 where
-    [@TraitClause0]: Sized<T>,
-    [@TraitClause1]: IntoIterator<T>,
-    @TraitClause1::Item = A,
+    [@TraitClause0]: Extend<Self, A>,
+    [@TraitClause1]: Sized<T>,
+    [@TraitClause2]: IntoIterator<T>,
+    @TraitClause2::Item = A,
 
 // Full name: core::iter::traits::double_ended::DoubleEndedIterator::next_back
-pub fn next_back<'_0, Self>(@1: &'_0 mut (Self)) -> Option<Self::parent_clause0::Item>[Self::parent_clause0::parent_clause0]
+pub fn next_back<'_0, Self>(@1: &'_0 mut (Self)) -> Option<@TraitClause0::parent_clause0::Item>[@TraitClause0::parent_clause0::parent_clause0]
+where
+    [@TraitClause0]: DoubleEndedIterator<Self>,
 
-pub fn core::slice::index::SliceIndex::get<'_0, Self, T>(@1: Self, @2: &'_0 (T)) -> Option<&'_0 (Self::Output)>[Sized<&'_0 (Self::Output)>]
+pub fn core::slice::index::SliceIndex::get<'_0, Self, T>(@1: Self, @2: &'_0 (T)) -> Option<&'_0 (@TraitClause0::Output)>[Sized<&'_0 (@TraitClause0::Output)>]
+where
+    [@TraitClause0]: SliceIndex<Self, T>,
 
-pub fn core::slice::index::SliceIndex::get_mut<'_0, Self, T>(@1: Self, @2: &'_0 mut (T)) -> Option<&'_0 mut (Self::Output)>[Sized<&'_0 mut (Self::Output)>]
+pub fn core::slice::index::SliceIndex::get_mut<'_0, Self, T>(@1: Self, @2: &'_0 mut (T)) -> Option<&'_0 mut (@TraitClause0::Output)>[Sized<&'_0 mut (@TraitClause0::Output)>]
+where
+    [@TraitClause0]: SliceIndex<Self, T>,
 
-pub unsafe fn core::slice::index::SliceIndex::get_unchecked<Self, T>(@1: Self, @2: *const T) -> *const Self::Output
+pub unsafe fn core::slice::index::SliceIndex::get_unchecked<Self, T>(@1: Self, @2: *const T) -> *const @TraitClause0::Output
+where
+    [@TraitClause0]: SliceIndex<Self, T>,
 
-pub unsafe fn core::slice::index::SliceIndex::get_unchecked_mut<Self, T>(@1: Self, @2: *mut T) -> *mut Self::Output
+pub unsafe fn core::slice::index::SliceIndex::get_unchecked_mut<Self, T>(@1: Self, @2: *mut T) -> *mut @TraitClause0::Output
+where
+    [@TraitClause0]: SliceIndex<Self, T>,
 
-pub fn core::slice::index::SliceIndex::index<'_0, Self, T>(@1: Self, @2: &'_0 (T)) -> &'_0 (Self::Output)
+pub fn core::slice::index::SliceIndex::index<'_0, Self, T>(@1: Self, @2: &'_0 (T)) -> &'_0 (@TraitClause0::Output)
+where
+    [@TraitClause0]: SliceIndex<Self, T>,
 
-pub fn core::slice::index::SliceIndex::index_mut<'_0, Self, T>(@1: Self, @2: &'_0 mut (T)) -> &'_0 mut (Self::Output)
+pub fn core::slice::index::SliceIndex::index_mut<'_0, Self, T>(@1: Self, @2: &'_0 mut (T)) -> &'_0 mut (@TraitClause0::Output)
+where
+    [@TraitClause0]: SliceIndex<Self, T>,
 
-pub fn core::ops::index::Index::index<'_0, Self, Idx>(@1: &'_0 (Self), @2: Idx) -> &'_0 (Self::Output)
+pub fn core::ops::index::Index::index<'_0, Self, Idx>(@1: &'_0 (Self), @2: Idx) -> &'_0 (@TraitClause0::Output)
+where
+    [@TraitClause0]: Index<Self, Idx>,
 
 
 

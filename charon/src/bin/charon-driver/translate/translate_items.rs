@@ -416,7 +416,12 @@ impl ItemTransCtx<'_, '_> {
             raise_error!(self, span, "Trait aliases are not supported");
         }
 
-        let hax::FullDefKind::Trait { items, .. } = &def.kind else {
+        let hax::FullDefKind::Trait {
+            items,
+            self_predicate,
+            ..
+        } = &def.kind
+        else {
             raise_error!(self, span, "Unexpected definition: {def:?}");
         };
         let items: Vec<(TraitItemName, &hax::AssocItem, Arc<hax::FullDef>)> = items
@@ -432,6 +437,12 @@ impl ItemTransCtx<'_, '_> {
         // contain the local trait clauses. The parent clauses are stored in
         // `self.parent_trait_clauses`.
         self.translate_def_generics(span, def)?;
+        let self_trait_ref = TraitRef {
+            kind: TraitRefKind::SelfId,
+            trait_decl_ref: RegionBinder::empty(
+                self.translate_trait_predicate(span, self_predicate)?,
+            ),
+        };
 
         // Translate the associated items
         // We do something subtle here: TODO: explain
@@ -469,22 +480,24 @@ impl ItemTransCtx<'_, '_> {
                                 bt_ctx.register_fun_decl_id_no_enqueue(item_span, item_def_id)
                             };
 
-                            // TODO: there's probably a cleaner way to write this
                             assert_eq!(bt_ctx.binding_levels.len(), 2);
-                            let fun_generics = bt_ctx
-                                .outermost_binder()
-                                .params
-                                .identity_args_at_depth(
+                            let mut fun_generics =
+                                bt_ctx.outermost_binder().params.identity_args_at_depth(
                                     GenericsSource::item(def_id),
                                     DeBruijnId::one(),
-                                )
-                                .concat(
-                                    GenericsSource::item(fun_id),
-                                    &bt_ctx.innermost_binder().params.identity_args_at_depth(
-                                        GenericsSource::Method(def_id.into(), item_name.clone()),
-                                        DeBruijnId::zero(),
-                                    ),
                                 );
+                            // Add the necessary explicit `Self` clause at the start.
+                            fun_generics.trait_refs.insert_and_shift_ids(
+                                0.into(),
+                                self_trait_ref.clone().move_under_binder(),
+                            );
+                            fun_generics = fun_generics.concat(
+                                GenericsSource::item(fun_id),
+                                &bt_ctx.innermost_binder().params.identity_args_at_depth(
+                                    GenericsSource::Method(def_id.into(), item_name.clone()),
+                                    DeBruijnId::zero(),
+                                ),
+                            );
                             Ok(FunDeclRef {
                                 id: fun_id,
                                 generics: Box::new(fun_generics),
@@ -500,11 +513,12 @@ impl ItemTransCtx<'_, '_> {
                         // declares them.
                         let id = self.register_global_decl_id(item_span, item_def_id);
                         let generics_target = GenericsSource::item(id);
+                        let mut generics =
+                            self.the_only_binder().params.identity_args(generics_target);
+                        generics.trait_refs.push(self_trait_ref.clone());
                         let gref = GlobalDeclRef {
                             id,
-                            generics: Box::new(
-                                self.the_only_binder().params.identity_args(generics_target),
-                            ),
+                            generics: Box::new(generics),
                         };
                         const_defaults.insert(item_name.clone(), gref);
                     };
@@ -592,6 +606,18 @@ impl ItemTransCtx<'_, '_> {
                 trait_id,
                 generics: Box::new(generics),
             }
+        };
+        // A `TraitRef` that points to this impl with the correct generics.
+        let self_predicate = TraitRef {
+            kind: TraitRefKind::TraitImpl(
+                def_id,
+                Box::new(
+                    self.the_only_binder()
+                        .params
+                        .identity_args(GenericsSource::item(def_id)),
+                ),
+            ),
+            trait_decl_ref: RegionBinder::empty(implemented_trait.clone()),
         };
 
         // The trait refs which implement the parent clauses of the implemented trait decl.
@@ -695,10 +721,14 @@ impl ItemTransCtx<'_, '_> {
                         Provided { .. } => {
                             self.the_only_binder().params.identity_args(generics_target)
                         }
-                        _ => implemented_trait
-                            .generics
-                            .clone()
-                            .with_target(generics_target),
+                        _ => {
+                            let mut generics = implemented_trait
+                                .generics
+                                .clone()
+                                .with_target(generics_target);
+                            generics.trait_refs.push(self_predicate.clone());
+                            generics
+                        }
                     };
                     let gref = GlobalDeclRef {
                         id,

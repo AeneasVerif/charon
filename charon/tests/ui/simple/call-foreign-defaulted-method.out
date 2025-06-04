@@ -35,11 +35,13 @@ fn main()
 // Full name: test_crate::foo::Trait
 pub trait Trait<Self>
 {
-    fn defaulted<'_0> = defaulted<'_0_0, Self>
+    fn defaulted<'_0> = defaulted<'_0_0, Self>[Self]
 }
 
 // Full name: test_crate::foo::Trait::defaulted
 pub fn defaulted<'_0, Self>(@1: &'_0 (Self))
+where
+    [@TraitClause0]: Trait<Self>,
 {
     let @0: (); // return
     let self@1: &'_ (Self); // arg #1

@@ -66,7 +66,7 @@ pub struct Error {}
 #[lang_item("Display")]
 pub trait Display<Self>
 {
-    fn fmt<'_0, '_1, '_2> = core::fmt::Display::fmt<'_0_0, '_0_1, '_0_2, Self>
+    fn fmt<'_0, '_1, '_2> = core::fmt::Display::fmt<'_0_0, '_0_1, '_0_2, Self>[Self]
 }
 
 // Full name: alloc::string::{impl ToString for T}#34::to_string
@@ -109,11 +109,13 @@ fn main()
 #[lang_item("ToString")]
 pub trait ToString<Self>
 {
-    fn to_string<'_0> = alloc::string::ToString::to_string<'_0_0, Self>
+    fn to_string<'_0> = alloc::string::ToString::to_string<'_0_0, Self>[Self]
 }
 
 #[lang_item("to_string_method")]
 pub fn alloc::string::ToString::to_string<'_0, Self>(@1: &'_0 (Self)) -> String
+where
+    [@TraitClause0]: ToString<Self>,
 
 // Full name: alloc::string::{impl ToString for T}#34
 impl<T> ToString for T
@@ -124,6 +126,8 @@ where
 }
 
 pub fn core::fmt::Display::fmt<'_0, '_1, '_2, Self>(@1: &'_0 (Self), @2: &'_1 mut (Formatter<'_2>)) -> Result<(), Error>[Sized<()>, Sized<Error>]
+where
+    [@TraitClause0]: Display<Self>,
 
 
 

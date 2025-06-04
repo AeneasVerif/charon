@@ -3,7 +3,7 @@
 // Full name: test_crate::Ops
 trait Ops<Self, const K : usize>
 {
-    fn of_usize = of_usize<Self, const K : usize>
+    fn of_usize = of_usize<Self, const K : usize>[Self]
 }
 
 // Full name: core::marker::Sized
@@ -29,7 +29,7 @@ pub trait FnOnce<Self, Args>
     parent_clause1 : [@TraitClause1]: Tuple<Args>
     parent_clause2 : [@TraitClause2]: Sized<Self::Output>
     type Output
-    fn call_once = core::ops::function::FnOnce::call_once<Self, Args>
+    fn call_once = core::ops::function::FnOnce::call_once<Self, Args>[Self]
 }
 
 // Full name: core::ops::function::FnMut
@@ -39,7 +39,7 @@ pub trait FnMut<Self, Args>
     parent_clause0 : [@TraitClause0]: FnOnce<Self, Args>
     parent_clause1 : [@TraitClause1]: Sized<Args>
     parent_clause2 : [@TraitClause2]: Tuple<Args>
-    fn call_mut<'_0> = core::ops::function::FnMut::call_mut<'_0_0, Self, Args>
+    fn call_mut<'_0> = core::ops::function::FnMut::call_mut<'_0_0, Self, Args>[Self]
 }
 
 // Full name: core::array::from_fn
@@ -52,6 +52,8 @@ where
 
 // Full name: test_crate::Ops::of_usize
 fn of_usize<Self, const K : usize>(@1: usize) -> Self
+where
+    [@TraitClause0]: Ops<Self, const K : usize>,
 
 // Full name: test_crate::test::{impl FnMut<(usize)> for closure<T, const K : usize>[@TraitClause0, @TraitClause1]}::call_mut
 fn {impl FnMut<(usize)> for closure<T, const K : usize>[@TraitClause0, @TraitClause1]}::call_mut<'_0, T, const K : usize>(@1: &'_0 mut (closure<T, const K : usize>[@TraitClause0, @TraitClause1]), @2: (usize)) -> T
@@ -133,9 +135,13 @@ where
     return
 }
 
-pub fn core::ops::function::FnMut::call_mut<'_0, Self, Args>(@1: &'_0 mut (Self), @2: Args) -> Self::parent_clause0::Output
+pub fn core::ops::function::FnMut::call_mut<'_0, Self, Args>(@1: &'_0 mut (Self), @2: Args) -> @TraitClause0::parent_clause0::Output
+where
+    [@TraitClause0]: FnMut<Self, Args>,
 
-pub fn core::ops::function::FnOnce::call_once<Self, Args>(@1: Self, @2: Args) -> Self::Output
+pub fn core::ops::function::FnOnce::call_once<Self, Args>(@1: Self, @2: Args) -> @TraitClause0::Output
+where
+    [@TraitClause0]: FnOnce<Self, Args>,
 
 
 

@@ -409,6 +409,12 @@ and cli_options = {
       (** Whether to hide the [Sized], [Sync], [Send] and [Unpin] marker traits anywhere they show
         up.
      *)
+  remove_unused_self_clauses : bool;
+      (** Trait method declarations take a [Self: Trait] clause as parameter, so that they can be
+        reused by multiple trait impls. This however causes trait definitions to be mutually
+        recursive with their method declarations. This flag removes [Self] clauses that aren't used
+        to break this mutual recursion.
+     *)
   start_from : string list;
       (** A list of item paths to use as starting points for the translation. We will translate these
         items and any items they refer to, according to the opacity rules. When absent, we start

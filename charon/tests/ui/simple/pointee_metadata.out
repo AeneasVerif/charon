@@ -28,7 +28,7 @@ pub struct Error {}
 #[lang_item("Debug")]
 pub trait Debug<Self>
 {
-    fn fmt<'_0, '_1, '_2> = fmt<'_0_0, '_0_1, '_0_2, Self>
+    fn fmt<'_0, '_1, '_2> = fmt<'_0_0, '_0_1, '_0_2, Self>[Self]
 }
 
 // Full name: core::clone::Clone
@@ -36,7 +36,7 @@ pub trait Debug<Self>
 pub trait Clone<Self>
 {
     parent_clause0 : [@TraitClause0]: Sized<Self>
-    fn clone<'_0> = clone<'_0_0, Self>
+    fn clone<'_0> = clone<'_0_0, Self>[Self]
 }
 
 // Full name: core::marker::Copy
@@ -58,7 +58,7 @@ pub trait Sync<Self>
 #[lang_item("eq")]
 pub trait PartialEq<Self, Rhs>
 {
-    fn eq<'_0, '_1> = eq<'_0_0, '_0_1, Self, Rhs>
+    fn eq<'_0, '_1> = eq<'_0_0, '_0_1, Self, Rhs>[Self]
 }
 
 // Full name: core::cmp::Eq
@@ -91,7 +91,7 @@ pub enum Ordering {
 pub trait PartialOrd<Self, Rhs>
 {
     parent_clause0 : [@TraitClause0]: PartialEq<Self, Rhs>
-    fn partial_cmp<'_0, '_1> = partial_cmp<'_0_0, '_0_1, Self, Rhs>
+    fn partial_cmp<'_0, '_1> = partial_cmp<'_0_0, '_0_1, Self, Rhs>[Self]
 }
 
 // Full name: core::cmp::Ord
@@ -100,21 +100,21 @@ pub trait Ord<Self>
 {
     parent_clause0 : [@TraitClause0]: Eq<Self>
     parent_clause1 : [@TraitClause1]: PartialOrd<Self, Self>
-    fn cmp<'_0, '_1> = cmp<'_0_0, '_0_1, Self>
+    fn cmp<'_0, '_1> = cmp<'_0_0, '_0_1, Self>[Self]
 }
 
 // Full name: core::hash::Hasher
 pub trait Hasher<Self>
 {
-    fn finish<'_0> = finish<'_0_0, Self>
-    fn write<'_0, '_1> = write<'_0_0, '_0_1, Self>
+    fn finish<'_0> = finish<'_0_0, Self>[Self]
+    fn write<'_0, '_1> = write<'_0_0, '_0_1, Self>[Self]
 }
 
 // Full name: core::hash::Hash
 #[lang_item("Hash")]
 pub trait Hash<Self>
 {
-    fn hash<'_0, '_1, H, [@TraitClause0]: Sized<H>, [@TraitClause1]: Hasher<H>> = hash<'_0_0, '_0_1, Self, H>[@TraitClause0_0, @TraitClause0_1]
+    fn hash<'_0, '_1, H, [@TraitClause0]: Sized<H>, [@TraitClause1]: Hasher<H>> = hash<'_0_0, '_0_1, Self, H>[Self, @TraitClause0_0, @TraitClause0_1]
 }
 
 // Full name: core::marker::Unpin
@@ -203,33 +203,48 @@ fn slice_metadata()
 // Full name: core::cmp::Ord::cmp
 #[lang_item("ord_cmp_method")]
 pub fn cmp<'_0, '_1, Self>(@1: &'_0 (Self), @2: &'_1 (Self)) -> Ordering
+where
+    [@TraitClause0]: Ord<Self>,
 
 // Full name: core::cmp::PartialEq::eq
 #[lang_item("cmp_partialeq_eq")]
 pub fn eq<'_0, '_1, Self, Rhs>(@1: &'_0 (Self), @2: &'_1 (Rhs)) -> bool
+where
+    [@TraitClause0]: PartialEq<Self, Rhs>,
 
 // Full name: core::cmp::PartialOrd::partial_cmp
 #[lang_item("cmp_partialord_cmp")]
 pub fn partial_cmp<'_0, '_1, Self, Rhs>(@1: &'_0 (Self), @2: &'_1 (Rhs)) -> Option<Ordering>[Sized<Ordering>]
+where
+    [@TraitClause0]: PartialOrd<Self, Rhs>,
 
 // Full name: core::clone::Clone::clone
 #[lang_item("clone_fn")]
 pub fn clone<'_0, Self>(@1: &'_0 (Self)) -> Self
+where
+    [@TraitClause0]: Clone<Self>,
 
 // Full name: core::fmt::Debug::fmt
 pub fn fmt<'_0, '_1, '_2, Self>(@1: &'_0 (Self), @2: &'_1 mut (Formatter<'_2>)) -> Result<(), Error>[Sized<()>, Sized<Error>]
+where
+    [@TraitClause0]: Debug<Self>,
 
 // Full name: core::hash::Hash::hash
 pub fn hash<'_0, '_1, Self, H>(@1: &'_0 (Self), @2: &'_1 mut (H))
 where
-    [@TraitClause0]: Sized<H>,
-    [@TraitClause1]: Hasher<H>,
+    [@TraitClause0]: Hash<Self>,
+    [@TraitClause1]: Sized<H>,
+    [@TraitClause2]: Hasher<H>,
 
 // Full name: core::hash::Hasher::finish
 pub fn finish<'_0, Self>(@1: &'_0 (Self)) -> u64
+where
+    [@TraitClause0]: Hasher<Self>,
 
 // Full name: core::hash::Hasher::write
 pub fn write<'_0, '_1, Self>(@1: &'_0 mut (Self), @2: &'_1 (Slice<u8>))
+where
+    [@TraitClause0]: Hasher<Self>,
 
 
 

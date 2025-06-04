@@ -148,6 +148,13 @@ pub struct CliOpts {
     #[clap(long = "hide-marker-traits")]
     #[serde(default)]
     pub hide_marker_traits: bool,
+    /// Trait method declarations take a `Self: Trait` clause as parameter, so that they can be
+    /// reused by multiple trait impls. This however causes trait definitions to be mutually
+    /// recursive with their method declarations. This flag removes `Self` clauses that aren't used
+    /// to break this mutual recursion.
+    #[clap(long)]
+    #[serde(default)]
+    pub remove_unused_self_clauses: bool,
     /// A list of item paths to use as starting points for the translation. We will translate these
     /// items and any items they refer to, according to the opacity rules. When absent, we start
     /// from the path `crate` (which translates the whole crate).
@@ -265,6 +272,7 @@ impl CliOpts {
                 Preset::Aeneas => {
                     self.remove_associated_types.push("*".to_owned());
                     self.hide_marker_traits = true;
+                    self.remove_unused_self_clauses = true;
                 }
                 Preset::Eurydice => {
                     self.remove_associated_types.push("*".to_owned());
@@ -355,6 +363,8 @@ pub struct TranslateOptions {
     /// Whether to hide the `Sized`, `Sync`, `Send` and `Unpin` marker traits anywhere they show
     /// up.
     pub hide_marker_traits: bool,
+    /// Remove unused `Self: Trait` clauses on method declarations.
+    pub remove_unused_self_clauses: bool,
     /// Monomorphize functions.
     pub monomorphize: bool,
     /// Transforms ArrayToSlice, Repeat, and RawPtr aggregates to builtin function calls.
@@ -438,6 +448,7 @@ impl TranslateOptions {
         TranslateOptions {
             mir_level,
             hide_marker_traits: options.hide_marker_traits,
+            remove_unused_self_clauses: options.remove_unused_self_clauses,
             monomorphize: options.monomorphize,
             no_merge_goto_chains: options.no_merge_goto_chains,
             no_ops_to_function_calls: options.no_ops_to_function_calls,

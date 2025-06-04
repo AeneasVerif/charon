@@ -29,7 +29,7 @@ pub trait FnOnce<Self, Args, Self_Output>
     parent_clause0 : [@TraitClause0]: Sized<Args>
     parent_clause1 : [@TraitClause1]: Tuple<Args>
     parent_clause2 : [@TraitClause2]: Sized<Self_Output>
-    fn call_once = core::ops::function::FnOnce::call_once<Self, Args, Self_Output>
+    fn call_once = core::ops::function::FnOnce::call_once<Self, Args, Self_Output, Self_Output>[Self]
 }
 
 // Full name: core::ops::function::FnMut
@@ -39,7 +39,7 @@ pub trait FnMut<Self, Args, Self_Clause0_Output>
     parent_clause0 : [@TraitClause0]: FnOnce<Self, Args, Self_Clause0_Output>
     parent_clause1 : [@TraitClause1]: Sized<Args>
     parent_clause2 : [@TraitClause2]: Tuple<Args>
-    fn call_mut<'_0> = core::ops::function::FnMut::call_mut<'_0_0, Self, Args, Self_Clause0_Output>
+    fn call_mut<'_0> = core::ops::function::FnMut::call_mut<'_0_0, Self, Args, Self_Clause0_Output, Self_Clause0_Output>[Self]
 }
 
 // Full name: core::ops::function::Fn
@@ -49,7 +49,7 @@ pub trait Fn<Self, Args, Self_Clause0_Clause0_Output>
     parent_clause0 : [@TraitClause0]: FnMut<Self, Args, Self_Clause0_Clause0_Output>
     parent_clause1 : [@TraitClause1]: Sized<Args>
     parent_clause2 : [@TraitClause2]: Tuple<Args>
-    fn call<'_0> = core::ops::function::Fn::call<'_0_0, Self, Args, Self_Clause0_Clause0_Output>
+    fn call<'_0> = core::ops::function::Fn::call<'_0_0, Self, Args, Self_Clause0_Clause0_Output, Self_Clause0_Clause0_Output>[Self]
 }
 
 // Full name: core::option::Option
@@ -62,7 +62,9 @@ where
   Some(T),
 }
 
-pub fn core::ops::function::Fn::call<'_0, Self, Args, Self_Clause0_Clause0_Output>(@1: &'_0 (Self), @2: Args) -> Self_Clause0_Clause0_Output
+pub fn core::ops::function::Fn::call<'_0, Self, Args, Clause0_Clause0_Clause0_Output, Self_Clause0_Clause0_Output>(@1: &'_0 (Self), @2: Args) -> Clause0_Clause0_Clause0_Output
+where
+    [@TraitClause0]: Fn<Self, Args, Clause0_Clause0_Clause0_Output>,
 
 // Full name: test_crate::map_option
 pub fn map_option<T, F>(@1: Option<T>[@TraitClause0], @2: F) -> Option<T>[@TraitClause0]
@@ -426,11 +428,13 @@ pub fn test_map_option_id2(@1: Option<u32>[Sized<u32>]) -> Option<u32>[Sized<u32
 pub trait Clone<Self>
 {
     parent_clause0 : [@TraitClause0]: Sized<Self>
-    fn clone<'_0> = core::clone::Clone::clone<'_0_0, Self>
+    fn clone<'_0> = core::clone::Clone::clone<'_0_0, Self>[Self]
 }
 
 #[lang_item("clone_fn")]
 pub fn core::clone::Clone::clone<'_0, Self>(@1: &'_0 (Self)) -> Self
+where
+    [@TraitClause0]: Clone<Self>,
 
 // Full name: test_crate::id_clone
 pub fn id_clone<T>(@1: T) -> T
@@ -920,7 +924,9 @@ fn test_fnmut_with_ref()
     return
 }
 
-pub fn core::ops::function::FnMut::call_mut<'_0, Self, Args, Self_Clause0_Output>(@1: &'_0 mut (Self), @2: Args) -> Self_Clause0_Output
+pub fn core::ops::function::FnMut::call_mut<'_0, Self, Args, Clause0_Clause0_Output, Self_Clause0_Output>(@1: &'_0 mut (Self), @2: Args) -> Clause0_Clause0_Output
+where
+    [@TraitClause0]: FnMut<Self, Args, Clause0_Clause0_Output>,
 
 // Full name: test_crate::test_closure_capture::{impl FnMut<(u32), u32> for test_crate::test_closure_capture::closure<'_0, '_1>}::call_mut
 fn {impl FnMut<(u32), u32> for test_crate::test_closure_capture::closure<'_0, '_1>}::call_mut<'_0, '_1, '_2>(@1: &'_2 mut (test_crate::test_closure_capture::closure<'_0, '_1>), @2: (u32)) -> u32
@@ -1078,7 +1084,9 @@ impl<'_0, '_1> FnMut<(&'_ (usize)), ()> for test_crate::test_fnmut_with_ref::clo
     fn call_mut<'_0> = {impl FnMut<(&'_ (usize)), ()> for test_crate::test_fnmut_with_ref::closure<'_0>}::call_mut<'_0, '_1, '_0_0>
 }
 
-pub fn core::ops::function::FnOnce::call_once<Self, Args, Self_Output>(@1: Self, @2: Args) -> Self_Output
+pub fn core::ops::function::FnOnce::call_once<Self, Args, Clause0_Output, Self_Output>(@1: Self, @2: Args) -> Clause0_Output
+where
+    [@TraitClause0]: FnOnce<Self, Args, Clause0_Output>,
 
 
 

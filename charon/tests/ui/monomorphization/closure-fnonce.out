@@ -64,7 +64,7 @@ pub trait FnOnce<Self, Args>
     parent_clause1 : [@TraitClause1]: Tuple<Args>
     parent_clause2 : [@TraitClause2]: Sized<Self::Output>
     type Output
-    fn call_once = core::ops::function::FnOnce::call_once<Self, Args>
+    fn call_once = core::ops::function::FnOnce::call_once<Self, Args>[Self]
 }
 
 #[lang_item("mem_drop")]

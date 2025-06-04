@@ -76,8 +76,8 @@ where
 pub trait Clone<Self>
 {
     parent_clause0 : [@TraitClause0]: Sized<Self>
-    fn clone<'_0> = core::clone::Clone::clone<'_0_0, Self>
-    fn clone_from<'_0, '_1> = clone_from<'_0_0, '_0_1, Self>
+    fn clone<'_0> = core::clone::Clone::clone<'_0_0, Self>[Self]
+    fn clone_from<'_0, '_1> = clone_from<'_0_0, '_0_1, Self>[Self]
 }
 
 // Full name: core::marker::Copy
@@ -187,7 +187,7 @@ pub trait FnOnce<Self, Args>
     parent_clause1 : [@TraitClause1]: Tuple<Args>
     parent_clause2 : [@TraitClause2]: Sized<Self::Output>
     type Output
-    fn call_once = call_once<Self, Args>
+    fn call_once = call_once<Self, Args>[Self]
 }
 
 // Full name: core::ops::function::FnMut
@@ -197,7 +197,7 @@ pub trait FnMut<Self, Args>
     parent_clause0 : [@TraitClause0]: FnOnce<Self, Args>
     parent_clause1 : [@TraitClause1]: Sized<Args>
     parent_clause2 : [@TraitClause2]: Tuple<Args>
-    fn call_mut<'_0> = call_mut<'_0_0, Self, Args>
+    fn call_mut<'_0> = call_mut<'_0_0, Self, Args>[Self]
 }
 
 // Full name: core::iter::adapters::map::Map
@@ -275,7 +275,7 @@ where
 pub trait FromResidual<Self, R>
 {
     parent_clause0 : [@TraitClause0]: Sized<R>
-    fn from_residual = from_residual<Self, R>
+    fn from_residual = from_residual<Self, R>[Self]
 }
 
 // Full name: core::ops::control_flow::ControlFlow
@@ -298,8 +298,8 @@ pub trait Try<Self>
     parent_clause2 : [@TraitClause2]: Sized<Self::Residual>
     type Output
     type Residual
-    fn from_output = from_output<Self>
-    fn branch = branch<Self>
+    fn from_output = from_output<Self>[Self]
+    fn branch = branch<Self>[Self]
 }
 
 // Full name: core::ops::try_trait::Residual
@@ -319,15 +319,15 @@ where
 pub trait Default<Self>
 {
     parent_clause0 : [@TraitClause0]: Sized<Self>
-    fn default = default<Self>
+    fn default = default<Self>[Self]
 }
 
 // Full name: core::cmp::PartialEq
 #[lang_item("eq")]
 pub trait PartialEq<Self, Rhs>
 {
-    fn eq<'_0, '_1> = core::cmp::PartialEq::eq<'_0_0, '_0_1, Self, Rhs>
-    fn ne<'_0, '_1> = core::cmp::PartialEq::ne<'_0_0, '_0_1, Self, Rhs>
+    fn eq<'_0, '_1> = core::cmp::PartialEq::eq<'_0_0, '_0_1, Self, Rhs>[Self]
+    fn ne<'_0, '_1> = core::cmp::PartialEq::ne<'_0_0, '_0_1, Self, Rhs>[Self]
 }
 
 // Full name: core::cmp::Eq
@@ -335,7 +335,7 @@ pub trait PartialEq<Self, Rhs>
 pub trait Eq<Self>
 {
     parent_clause0 : [@TraitClause0]: PartialEq<Self, Self>
-    fn assert_receiver_is_total_eq<'_0> = assert_receiver_is_total_eq<'_0_0, Self>
+    fn assert_receiver_is_total_eq<'_0> = assert_receiver_is_total_eq<'_0_0, Self>[Self]
 }
 
 // Full name: core::cmp::Ordering
@@ -351,15 +351,15 @@ pub enum Ordering {
 pub trait PartialOrd<Self, Rhs>
 {
     parent_clause0 : [@TraitClause0]: PartialEq<Self, Rhs>
-    fn partial_cmp<'_0, '_1> = core::cmp::PartialOrd::partial_cmp<'_0_0, '_0_1, Self, Rhs>
-    fn lt<'_0, '_1> = core::cmp::PartialOrd::lt<'_0_0, '_0_1, Self, Rhs>
-    fn le<'_0, '_1> = core::cmp::PartialOrd::le<'_0_0, '_0_1, Self, Rhs>
-    fn gt<'_0, '_1> = core::cmp::PartialOrd::gt<'_0_0, '_0_1, Self, Rhs>
-    fn ge<'_0, '_1> = core::cmp::PartialOrd::ge<'_0_0, '_0_1, Self, Rhs>
-    fn __chaining_lt<'_0, '_1> = __chaining_lt<'_0_0, '_0_1, Self, Rhs>
-    fn __chaining_le<'_0, '_1> = __chaining_le<'_0_0, '_0_1, Self, Rhs>
-    fn __chaining_gt<'_0, '_1> = __chaining_gt<'_0_0, '_0_1, Self, Rhs>
-    fn __chaining_ge<'_0, '_1> = __chaining_ge<'_0_0, '_0_1, Self, Rhs>
+    fn partial_cmp<'_0, '_1> = core::cmp::PartialOrd::partial_cmp<'_0_0, '_0_1, Self, Rhs>[Self]
+    fn lt<'_0, '_1> = core::cmp::PartialOrd::lt<'_0_0, '_0_1, Self, Rhs>[Self]
+    fn le<'_0, '_1> = core::cmp::PartialOrd::le<'_0_0, '_0_1, Self, Rhs>[Self]
+    fn gt<'_0, '_1> = core::cmp::PartialOrd::gt<'_0_0, '_0_1, Self, Rhs>[Self]
+    fn ge<'_0, '_1> = core::cmp::PartialOrd::ge<'_0_0, '_0_1, Self, Rhs>[Self]
+    fn __chaining_lt<'_0, '_1> = __chaining_lt<'_0_0, '_0_1, Self, Rhs>[Self]
+    fn __chaining_le<'_0, '_1> = __chaining_le<'_0_0, '_0_1, Self, Rhs>[Self]
+    fn __chaining_gt<'_0, '_1> = __chaining_gt<'_0_0, '_0_1, Self, Rhs>[Self]
+    fn __chaining_ge<'_0, '_1> = __chaining_ge<'_0_0, '_0_1, Self, Rhs>[Self]
 }
 
 // Full name: core::cmp::Ord
@@ -368,10 +368,10 @@ pub trait Ord<Self>
 {
     parent_clause0 : [@TraitClause0]: Eq<Self>
     parent_clause1 : [@TraitClause1]: PartialOrd<Self, Self>
-    fn cmp<'_0, '_1> = core::cmp::Ord::cmp<'_0_0, '_0_1, Self>
-    fn max<[@TraitClause0]: Sized<Self>> = core::cmp::Ord::max<Self>[@TraitClause0_0]
-    fn min<[@TraitClause0]: Sized<Self>> = core::cmp::Ord::min<Self>[@TraitClause0_0]
-    fn clamp<[@TraitClause0]: Sized<Self>> = clamp<Self>[@TraitClause0_0]
+    fn cmp<'_0, '_1> = core::cmp::Ord::cmp<'_0_0, '_0_1, Self>[Self]
+    fn max<[@TraitClause0]: Sized<Self>> = core::cmp::Ord::max<Self>[Self, @TraitClause0_0]
+    fn min<[@TraitClause0]: Sized<Self>> = core::cmp::Ord::min<Self>[Self, @TraitClause0_0]
+    fn clamp<[@TraitClause0]: Sized<Self>> = clamp<Self>[Self, @TraitClause0_0]
 }
 
 // Full name: core::iter::adapters::rev::Rev
@@ -400,83 +400,83 @@ pub trait Iterator<Self>
 {
     parent_clause0 : [@TraitClause0]: Sized<Self::Item>
     type Item
-    fn next<'_0> = core::iter::traits::iterator::Iterator::next<'_0_0, Self>
-    fn next_chunk<'_0, const N : usize, [@TraitClause0]: Sized<Self>> = next_chunk<'_0_0, Self, const N : usize>[@TraitClause0_0]
-    fn size_hint<'_0> = core::iter::traits::iterator::Iterator::size_hint<'_0_0, Self>
-    fn count<[@TraitClause0]: Sized<Self>> = core::iter::traits::iterator::Iterator::count<Self>[@TraitClause0_0]
-    fn last<[@TraitClause0]: Sized<Self>> = core::iter::traits::iterator::Iterator::last<Self>[@TraitClause0_0]
-    fn advance_by<'_0> = core::iter::traits::iterator::Iterator::advance_by<'_0_0, Self>
-    fn nth<'_0> = core::iter::traits::iterator::Iterator::nth<'_0_0, Self>
-    fn step_by<[@TraitClause0]: Sized<Self>> = step_by<Self>[@TraitClause0_0]
-    fn chain<U, [@TraitClause0]: Sized<U>, [@TraitClause1]: Sized<Self>, [@TraitClause2]: IntoIterator<U>, @TraitClause1_2::Item = Self::Item> = chain<Self, U>[@TraitClause0_0, @TraitClause0_1, @TraitClause0_2]
-    fn zip<U, [@TraitClause0]: Sized<U>, [@TraitClause1]: Sized<Self>, [@TraitClause2]: IntoIterator<U>> = zip<Self, U>[@TraitClause0_0, @TraitClause0_1, @TraitClause0_2]
-    fn intersperse<[@TraitClause0]: Sized<Self>, [@TraitClause1]: Clone<Self::Item>> = intersperse<Self>[@TraitClause0_0, @TraitClause0_1]
-    fn intersperse_with<G, [@TraitClause0]: Sized<G>, [@TraitClause1]: Sized<Self>, [@TraitClause2]: FnMut<G, ()>, @TraitClause1_2::parent_clause0::Output = Self::Item> = intersperse_with<Self, G>[@TraitClause0_0, @TraitClause0_1, @TraitClause0_2]
-    fn map<B, F, [@TraitClause0]: Sized<B>, [@TraitClause1]: Sized<F>, [@TraitClause2]: Sized<Self>, [@TraitClause3]: FnMut<F, (Self::Item)>, @TraitClause1_3::parent_clause0::Output = B> = map<Self, B, F>[@TraitClause0_0, @TraitClause0_1, @TraitClause0_2, @TraitClause0_3]
-    fn for_each<F, [@TraitClause0]: Sized<F>, [@TraitClause1]: Sized<Self>, [@TraitClause2]: FnMut<F, (Self::Item)>, @TraitClause1_2::parent_clause0::Output = ()> = core::iter::traits::iterator::Iterator::for_each<Self, F>[@TraitClause0_0, @TraitClause0_1, @TraitClause0_2]
-    fn filter<P, [@TraitClause0]: Sized<P>, [@TraitClause1]: Sized<Self>, [@TraitClause2]: for<'_0> FnMut<P, (&'_0_0 (Self::Item))>, for<'_0> @TraitClause1_2::parent_clause0::Output = bool> = filter<Self, P>[@TraitClause0_0, @TraitClause0_1, @TraitClause0_2]
-    fn filter_map<B, F, [@TraitClause0]: Sized<B>, [@TraitClause1]: Sized<F>, [@TraitClause2]: Sized<Self>, [@TraitClause3]: FnMut<F, (Self::Item)>, @TraitClause1_3::parent_clause0::Output = Option<B>[@TraitClause1_0]> = filter_map<Self, B, F>[@TraitClause0_0, @TraitClause0_1, @TraitClause0_2, @TraitClause0_3]
-    fn enumerate<[@TraitClause0]: Sized<Self>> = enumerate<Self>[@TraitClause0_0]
-    fn peekable<[@TraitClause0]: Sized<Self>> = peekable<Self>[@TraitClause0_0]
-    fn skip_while<P, [@TraitClause0]: Sized<P>, [@TraitClause1]: Sized<Self>, [@TraitClause2]: for<'_0> FnMut<P, (&'_0_0 (Self::Item))>, for<'_0> @TraitClause1_2::parent_clause0::Output = bool> = skip_while<Self, P>[@TraitClause0_0, @TraitClause0_1, @TraitClause0_2]
-    fn take_while<P, [@TraitClause0]: Sized<P>, [@TraitClause1]: Sized<Self>, [@TraitClause2]: for<'_0> FnMut<P, (&'_0_0 (Self::Item))>, for<'_0> @TraitClause1_2::parent_clause0::Output = bool> = take_while<Self, P>[@TraitClause0_0, @TraitClause0_1, @TraitClause0_2]
-    fn map_while<B, P, [@TraitClause0]: Sized<B>, [@TraitClause1]: Sized<P>, [@TraitClause2]: Sized<Self>, [@TraitClause3]: FnMut<P, (Self::Item)>, @TraitClause1_3::parent_clause0::Output = Option<B>[@TraitClause1_0]> = map_while<Self, B, P>[@TraitClause0_0, @TraitClause0_1, @TraitClause0_2, @TraitClause0_3]
-    fn skip<[@TraitClause0]: Sized<Self>> = skip<Self>[@TraitClause0_0]
-    fn take<[@TraitClause0]: Sized<Self>> = take<Self>[@TraitClause0_0]
-    fn scan<St, B, F, [@TraitClause0]: Sized<St>, [@TraitClause1]: Sized<B>, [@TraitClause2]: Sized<F>, [@TraitClause3]: Sized<Self>, [@TraitClause4]: for<'_0> FnMut<F, (&'_0_0 mut (St), Self::Item)>, for<'_0> @TraitClause1_4::parent_clause0::Output = Option<B>[@TraitClause1_1]> = scan<Self, St, B, F>[@TraitClause0_0, @TraitClause0_1, @TraitClause0_2, @TraitClause0_3, @TraitClause0_4]
-    fn flat_map<U, F, [@TraitClause0]: Sized<U>, [@TraitClause1]: Sized<F>, [@TraitClause2]: Sized<Self>, [@TraitClause3]: IntoIterator<U>, [@TraitClause4]: FnMut<F, (Self::Item)>, @TraitClause1_4::parent_clause0::Output = U> = flat_map<Self, U, F>[@TraitClause0_0, @TraitClause0_1, @TraitClause0_2, @TraitClause0_3, @TraitClause0_4]
-    fn flatten<[@TraitClause0]: Sized<Self>, [@TraitClause1]: IntoIterator<Self::Item>> = flatten<Self>[@TraitClause0_0, @TraitClause0_1]
-    fn map_windows<F, R, const N : usize, [@TraitClause0]: Sized<F>, [@TraitClause1]: Sized<R>, [@TraitClause2]: Sized<Self>, [@TraitClause3]: for<'_0> FnMut<F, (&'_0_0 (Array<Self::Item, const N : usize>))>, for<'_0> @TraitClause1_3::parent_clause0::Output = R> = map_windows<Self, F, R, const N : usize>[@TraitClause0_0, @TraitClause0_1, @TraitClause0_2, @TraitClause0_3]
-    fn fuse<[@TraitClause0]: Sized<Self>> = fuse<Self>[@TraitClause0_0]
-    fn inspect<F, [@TraitClause0]: Sized<F>, [@TraitClause1]: Sized<Self>, [@TraitClause2]: for<'_0> FnMut<F, (&'_0_0 (Self::Item))>, for<'_0> @TraitClause1_2::parent_clause0::Output = ()> = inspect<Self, F>[@TraitClause0_0, @TraitClause0_1, @TraitClause0_2]
-    fn by_ref<'_0, [@TraitClause0]: Sized<Self>> = by_ref<'_0_0, Self>[@TraitClause0_0]
-    fn collect<B, [@TraitClause0]: Sized<B>, [@TraitClause1]: FromIterator<B, Self::Item>, [@TraitClause2]: Sized<Self>> = collect<Self, B>[@TraitClause0_0, @TraitClause0_1, @TraitClause0_2]
-    fn try_collect<'_0, B, [@TraitClause0]: Sized<B>, [@TraitClause1]: Sized<Self>, [@TraitClause2]: Try<Self::Item>, [@TraitClause3]: Residual<@TraitClause1_2::Residual, B>, [@TraitClause4]: FromIterator<B, @TraitClause1_2::Output>> = try_collect<'_0_0, Self, B>[@TraitClause0_0, @TraitClause0_1, @TraitClause0_2, @TraitClause0_3, @TraitClause0_4]
-    fn collect_into<'_0, E, [@TraitClause0]: Sized<E>, [@TraitClause1]: Extend<E, Self::Item>, [@TraitClause2]: Sized<Self>> = collect_into<'_0_0, Self, E>[@TraitClause0_0, @TraitClause0_1, @TraitClause0_2]
-    fn partition<B, F, [@TraitClause0]: Sized<B>, [@TraitClause1]: Sized<F>, [@TraitClause2]: Sized<Self>, [@TraitClause3]: Default<B>, [@TraitClause4]: Extend<B, Self::Item>, [@TraitClause5]: for<'_0> FnMut<F, (&'_0_0 (Self::Item))>, for<'_0> @TraitClause1_5::parent_clause0::Output = bool> = partition<Self, B, F>[@TraitClause0_0, @TraitClause0_1, @TraitClause0_2, @TraitClause0_3, @TraitClause0_4, @TraitClause0_5]
-    fn partition_in_place<'a, T, P, [@TraitClause0]: Sized<T>, [@TraitClause1]: Sized<P>, [@TraitClause2]: Sized<Self>, [@TraitClause3]: DoubleEndedIterator<Self>, [@TraitClause4]: for<'_0> FnMut<P, (&'_0_0 (T))>, T : 'a, Self::Item = &'a mut (T), for<'_0> @TraitClause1_4::parent_clause0::Output = bool> = partition_in_place<'a, Self, T, P>[@TraitClause0_0, @TraitClause0_1, @TraitClause0_2, @TraitClause0_3, @TraitClause0_4]
-    fn is_partitioned<P, [@TraitClause0]: Sized<P>, [@TraitClause1]: Sized<Self>, [@TraitClause2]: FnMut<P, (Self::Item)>, @TraitClause1_2::parent_clause0::Output = bool> = is_partitioned<Self, P>[@TraitClause0_0, @TraitClause0_1, @TraitClause0_2]
-    fn try_fold<'_0, B, F, R, [@TraitClause0]: Sized<B>, [@TraitClause1]: Sized<F>, [@TraitClause2]: Sized<R>, [@TraitClause3]: Sized<Self>, [@TraitClause4]: FnMut<F, (B, Self::Item)>, [@TraitClause5]: Try<R>, @TraitClause1_4::parent_clause0::Output = R, @TraitClause1_5::Output = B> = try_fold<'_0_0, Self, B, F, R>[@TraitClause0_0, @TraitClause0_1, @TraitClause0_2, @TraitClause0_3, @TraitClause0_4, @TraitClause0_5]
-    fn try_for_each<'_0, F, R, [@TraitClause0]: Sized<F>, [@TraitClause1]: Sized<R>, [@TraitClause2]: Sized<Self>, [@TraitClause3]: FnMut<F, (Self::Item)>, [@TraitClause4]: Try<R>, @TraitClause1_3::parent_clause0::Output = R, @TraitClause1_4::Output = ()> = try_for_each<'_0_0, Self, F, R>[@TraitClause0_0, @TraitClause0_1, @TraitClause0_2, @TraitClause0_3, @TraitClause0_4]
-    fn fold<B, F, [@TraitClause0]: Sized<B>, [@TraitClause1]: Sized<F>, [@TraitClause2]: Sized<Self>, [@TraitClause3]: FnMut<F, (B, Self::Item)>, @TraitClause1_3::parent_clause0::Output = B> = core::iter::traits::iterator::Iterator::fold<Self, B, F>[@TraitClause0_0, @TraitClause0_1, @TraitClause0_2, @TraitClause0_3]
-    fn reduce<F, [@TraitClause0]: Sized<F>, [@TraitClause1]: Sized<Self>, [@TraitClause2]: FnMut<F, (Self::Item, Self::Item)>, @TraitClause1_2::parent_clause0::Output = Self::Item> = reduce<Self, F>[@TraitClause0_0, @TraitClause0_1, @TraitClause0_2]
-    fn try_reduce<'_0, R, impl FnMut(Self::Item, Self::Item) -> R, [@TraitClause0]: Sized<R>, [@TraitClause1]: Sized<impl FnMut(Self::Item, Self::Item) -> R>, [@TraitClause2]: Sized<Self>, [@TraitClause3]: Try<R>, [@TraitClause4]: Residual<@TraitClause1_3::Residual, Option<Self::Item>[Self::parent_clause0]>, [@TraitClause5]: FnMut<impl FnMut(Self::Item, Self::Item) -> R, (Self::Item, Self::Item)>, @TraitClause1_3::Output = Self::Item, @TraitClause1_5::parent_clause0::Output = R> = try_reduce<'_0_0, Self, R, impl FnMut(Self::Item, Self::Item) -> R>[@TraitClause0_0, @TraitClause0_1, @TraitClause0_2, @TraitClause0_3, @TraitClause0_4, @TraitClause0_5]
-    fn all<'_0, F, [@TraitClause0]: Sized<F>, [@TraitClause1]: Sized<Self>, [@TraitClause2]: FnMut<F, (Self::Item)>, @TraitClause1_2::parent_clause0::Output = bool> = core::iter::traits::iterator::Iterator::all<'_0_0, Self, F>[@TraitClause0_0, @TraitClause0_1, @TraitClause0_2]
-    fn any<'_0, F, [@TraitClause0]: Sized<F>, [@TraitClause1]: Sized<Self>, [@TraitClause2]: FnMut<F, (Self::Item)>, @TraitClause1_2::parent_clause0::Output = bool> = core::iter::traits::iterator::Iterator::any<'_0_0, Self, F>[@TraitClause0_0, @TraitClause0_1, @TraitClause0_2]
-    fn find<'_0, P, [@TraitClause0]: Sized<P>, [@TraitClause1]: Sized<Self>, [@TraitClause2]: for<'_0> FnMut<P, (&'_0_0 (Self::Item))>, for<'_0> @TraitClause1_2::parent_clause0::Output = bool> = core::iter::traits::iterator::Iterator::find<'_0_0, Self, P>[@TraitClause0_0, @TraitClause0_1, @TraitClause0_2]
-    fn find_map<'_0, B, F, [@TraitClause0]: Sized<B>, [@TraitClause1]: Sized<F>, [@TraitClause2]: Sized<Self>, [@TraitClause3]: FnMut<F, (Self::Item)>, @TraitClause1_3::parent_clause0::Output = Option<B>[@TraitClause1_0]> = core::iter::traits::iterator::Iterator::find_map<'_0_0, Self, B, F>[@TraitClause0_0, @TraitClause0_1, @TraitClause0_2, @TraitClause0_3]
-    fn try_find<'_0, R, impl FnMut(&Self::Item) -> R, [@TraitClause0]: Sized<R>, [@TraitClause1]: Sized<impl FnMut(&Self::Item) -> R>, [@TraitClause2]: Sized<Self>, [@TraitClause3]: Try<R>, [@TraitClause4]: Residual<@TraitClause1_3::Residual, Option<Self::Item>[Self::parent_clause0]>, [@TraitClause5]: for<'_0> FnMut<impl FnMut(&Self::Item) -> R, (&'_0_0 (Self::Item))>, @TraitClause1_3::Output = bool, for<'_0> @TraitClause1_5::parent_clause0::Output = R> = try_find<'_0_0, Self, R, impl FnMut(&Self::Item) -> R>[@TraitClause0_0, @TraitClause0_1, @TraitClause0_2, @TraitClause0_3, @TraitClause0_4, @TraitClause0_5]
-    fn position<'_0, P, [@TraitClause0]: Sized<P>, [@TraitClause1]: Sized<Self>, [@TraitClause2]: FnMut<P, (Self::Item)>, @TraitClause1_2::parent_clause0::Output = bool> = core::iter::traits::iterator::Iterator::position<'_0_0, Self, P>[@TraitClause0_0, @TraitClause0_1, @TraitClause0_2]
-    fn rposition<'_0, P, [@TraitClause0]: Sized<P>, [@TraitClause1]: FnMut<P, (Self::Item)>, [@TraitClause2]: Sized<Self>, [@TraitClause3]: ExactSizeIterator<Self>, [@TraitClause4]: DoubleEndedIterator<Self>, @TraitClause1_1::parent_clause0::Output = bool> = core::iter::traits::iterator::Iterator::rposition<'_0_0, Self, P>[@TraitClause0_0, @TraitClause0_1, @TraitClause0_2, @TraitClause0_3, @TraitClause0_4]
-    fn max<[@TraitClause0]: Sized<Self>, [@TraitClause1]: Ord<Self::Item>> = core::iter::traits::iterator::Iterator::max<Self>[@TraitClause0_0, @TraitClause0_1]
-    fn min<[@TraitClause0]: Sized<Self>, [@TraitClause1]: Ord<Self::Item>> = core::iter::traits::iterator::Iterator::min<Self>[@TraitClause0_0, @TraitClause0_1]
-    fn max_by_key<B, F, [@TraitClause0]: Sized<B>, [@TraitClause1]: Sized<F>, [@TraitClause2]: Ord<B>, [@TraitClause3]: Sized<Self>, [@TraitClause4]: for<'_0> FnMut<F, (&'_0_0 (Self::Item))>, for<'_0> @TraitClause1_4::parent_clause0::Output = B> = max_by_key<Self, B, F>[@TraitClause0_0, @TraitClause0_1, @TraitClause0_2, @TraitClause0_3, @TraitClause0_4]
-    fn max_by<F, [@TraitClause0]: Sized<F>, [@TraitClause1]: Sized<Self>, [@TraitClause2]: for<'_0, '_1> FnMut<F, (&'_0_0 (Self::Item), &'_0_1 (Self::Item))>, for<'_0, '_1> @TraitClause1_2::parent_clause0::Output = Ordering> = max_by<Self, F>[@TraitClause0_0, @TraitClause0_1, @TraitClause0_2]
-    fn min_by_key<B, F, [@TraitClause0]: Sized<B>, [@TraitClause1]: Sized<F>, [@TraitClause2]: Ord<B>, [@TraitClause3]: Sized<Self>, [@TraitClause4]: for<'_0> FnMut<F, (&'_0_0 (Self::Item))>, for<'_0> @TraitClause1_4::parent_clause0::Output = B> = min_by_key<Self, B, F>[@TraitClause0_0, @TraitClause0_1, @TraitClause0_2, @TraitClause0_3, @TraitClause0_4]
-    fn min_by<F, [@TraitClause0]: Sized<F>, [@TraitClause1]: Sized<Self>, [@TraitClause2]: for<'_0, '_1> FnMut<F, (&'_0_0 (Self::Item), &'_0_1 (Self::Item))>, for<'_0, '_1> @TraitClause1_2::parent_clause0::Output = Ordering> = min_by<Self, F>[@TraitClause0_0, @TraitClause0_1, @TraitClause0_2]
-    fn rev<[@TraitClause0]: Sized<Self>, [@TraitClause1]: DoubleEndedIterator<Self>> = rev<Self>[@TraitClause0_0, @TraitClause0_1]
-    fn unzip<A, B, FromA, FromB, [@TraitClause0]: Sized<A>, [@TraitClause1]: Sized<B>, [@TraitClause2]: Sized<FromA>, [@TraitClause3]: Sized<FromB>, [@TraitClause4]: Default<FromA>, [@TraitClause5]: Extend<FromA, A>, [@TraitClause6]: Default<FromB>, [@TraitClause7]: Extend<FromB, B>, [@TraitClause8]: Sized<Self>, [@TraitClause9]: Iterator<Self>, Self::Item = (A, B)> = unzip<Self, A, B, FromA, FromB>[@TraitClause0_0, @TraitClause0_1, @TraitClause0_2, @TraitClause0_3, @TraitClause0_4, @TraitClause0_5, @TraitClause0_6, @TraitClause0_7, @TraitClause0_8, @TraitClause0_9]
-    fn copied<'a, T, [@TraitClause0]: Sized<T>, [@TraitClause1]: Sized<Self>, [@TraitClause2]: Iterator<Self>, [@TraitClause3]: Copy<T>, T : 'a, Self::Item = &'a (T)> = copied<'a, Self, T>[@TraitClause0_0, @TraitClause0_1, @TraitClause0_2, @TraitClause0_3]
-    fn cloned<'a, T, [@TraitClause0]: Sized<T>, [@TraitClause1]: Sized<Self>, [@TraitClause2]: Iterator<Self>, [@TraitClause3]: Clone<T>, T : 'a, Self::Item = &'a (T)> = cloned<'a, Self, T>[@TraitClause0_0, @TraitClause0_1, @TraitClause0_2, @TraitClause0_3]
-    fn cycle<[@TraitClause0]: Sized<Self>, [@TraitClause1]: Clone<Self>> = cycle<Self>[@TraitClause0_0, @TraitClause0_1]
-    fn array_chunks<const N : usize, [@TraitClause0]: Sized<Self>> = array_chunks<Self, const N : usize>[@TraitClause0_0]
-    fn sum<S, [@TraitClause0]: Sized<S>, [@TraitClause1]: Sized<Self>, [@TraitClause2]: Sum<S, Self::Item>> = core::iter::traits::iterator::Iterator::sum<Self, S>[@TraitClause0_0, @TraitClause0_1, @TraitClause0_2]
-    fn product<P, [@TraitClause0]: Sized<P>, [@TraitClause1]: Sized<Self>, [@TraitClause2]: Product<P, Self::Item>> = core::iter::traits::iterator::Iterator::product<Self, P>[@TraitClause0_0, @TraitClause0_1, @TraitClause0_2]
-    fn cmp<I, [@TraitClause0]: Sized<I>, [@TraitClause1]: IntoIterator<I>, [@TraitClause2]: Ord<Self::Item>, [@TraitClause3]: Sized<Self>, @TraitClause1_1::Item = Self::Item> = core::iter::traits::iterator::Iterator::cmp<Self, I>[@TraitClause0_0, @TraitClause0_1, @TraitClause0_2, @TraitClause0_3]
-    fn cmp_by<I, F, [@TraitClause0]: Sized<I>, [@TraitClause1]: Sized<F>, [@TraitClause2]: Sized<Self>, [@TraitClause3]: IntoIterator<I>, [@TraitClause4]: FnMut<F, (Self::Item, @TraitClause1_3::Item)>, @TraitClause1_4::parent_clause0::Output = Ordering> = cmp_by<Self, I, F>[@TraitClause0_0, @TraitClause0_1, @TraitClause0_2, @TraitClause0_3, @TraitClause0_4]
-    fn partial_cmp<I, [@TraitClause0]: Sized<I>, [@TraitClause1]: IntoIterator<I>, [@TraitClause2]: PartialOrd<Self::Item, @TraitClause1_1::Item>, [@TraitClause3]: Sized<Self>> = core::iter::traits::iterator::Iterator::partial_cmp<Self, I>[@TraitClause0_0, @TraitClause0_1, @TraitClause0_2, @TraitClause0_3]
-    fn partial_cmp_by<I, F, [@TraitClause0]: Sized<I>, [@TraitClause1]: Sized<F>, [@TraitClause2]: Sized<Self>, [@TraitClause3]: IntoIterator<I>, [@TraitClause4]: FnMut<F, (Self::Item, @TraitClause1_3::Item)>, @TraitClause1_4::parent_clause0::Output = Option<Ordering>[Sized<Ordering>]> = partial_cmp_by<Self, I, F>[@TraitClause0_0, @TraitClause0_1, @TraitClause0_2, @TraitClause0_3, @TraitClause0_4]
-    fn eq<I, [@TraitClause0]: Sized<I>, [@TraitClause1]: IntoIterator<I>, [@TraitClause2]: PartialEq<Self::Item, @TraitClause1_1::Item>, [@TraitClause3]: Sized<Self>> = core::iter::traits::iterator::Iterator::eq<Self, I>[@TraitClause0_0, @TraitClause0_1, @TraitClause0_2, @TraitClause0_3]
-    fn eq_by<I, F, [@TraitClause0]: Sized<I>, [@TraitClause1]: Sized<F>, [@TraitClause2]: Sized<Self>, [@TraitClause3]: IntoIterator<I>, [@TraitClause4]: FnMut<F, (Self::Item, @TraitClause1_3::Item)>, @TraitClause1_4::parent_clause0::Output = bool> = eq_by<Self, I, F>[@TraitClause0_0, @TraitClause0_1, @TraitClause0_2, @TraitClause0_3, @TraitClause0_4]
-    fn ne<I, [@TraitClause0]: Sized<I>, [@TraitClause1]: IntoIterator<I>, [@TraitClause2]: PartialEq<Self::Item, @TraitClause1_1::Item>, [@TraitClause3]: Sized<Self>> = core::iter::traits::iterator::Iterator::ne<Self, I>[@TraitClause0_0, @TraitClause0_1, @TraitClause0_2, @TraitClause0_3]
-    fn lt<I, [@TraitClause0]: Sized<I>, [@TraitClause1]: IntoIterator<I>, [@TraitClause2]: PartialOrd<Self::Item, @TraitClause1_1::Item>, [@TraitClause3]: Sized<Self>> = core::iter::traits::iterator::Iterator::lt<Self, I>[@TraitClause0_0, @TraitClause0_1, @TraitClause0_2, @TraitClause0_3]
-    fn le<I, [@TraitClause0]: Sized<I>, [@TraitClause1]: IntoIterator<I>, [@TraitClause2]: PartialOrd<Self::Item, @TraitClause1_1::Item>, [@TraitClause3]: Sized<Self>> = core::iter::traits::iterator::Iterator::le<Self, I>[@TraitClause0_0, @TraitClause0_1, @TraitClause0_2, @TraitClause0_3]
-    fn gt<I, [@TraitClause0]: Sized<I>, [@TraitClause1]: IntoIterator<I>, [@TraitClause2]: PartialOrd<Self::Item, @TraitClause1_1::Item>, [@TraitClause3]: Sized<Self>> = core::iter::traits::iterator::Iterator::gt<Self, I>[@TraitClause0_0, @TraitClause0_1, @TraitClause0_2, @TraitClause0_3]
-    fn ge<I, [@TraitClause0]: Sized<I>, [@TraitClause1]: IntoIterator<I>, [@TraitClause2]: PartialOrd<Self::Item, @TraitClause1_1::Item>, [@TraitClause3]: Sized<Self>> = core::iter::traits::iterator::Iterator::ge<Self, I>[@TraitClause0_0, @TraitClause0_1, @TraitClause0_2, @TraitClause0_3]
-    fn is_sorted<[@TraitClause0]: Sized<Self>, [@TraitClause1]: PartialOrd<Self::Item, Self::Item>> = is_sorted<Self>[@TraitClause0_0, @TraitClause0_1]
-    fn is_sorted_by<F, [@TraitClause0]: Sized<F>, [@TraitClause1]: Sized<Self>, [@TraitClause2]: for<'_0, '_1> FnMut<F, (&'_0_0 (Self::Item), &'_0_1 (Self::Item))>, for<'_0, '_1> @TraitClause1_2::parent_clause0::Output = bool> = core::iter::traits::iterator::Iterator::is_sorted_by<Self, F>[@TraitClause0_0, @TraitClause0_1, @TraitClause0_2]
-    fn is_sorted_by_key<F, K, [@TraitClause0]: Sized<F>, [@TraitClause1]: Sized<K>, [@TraitClause2]: Sized<Self>, [@TraitClause3]: FnMut<F, (Self::Item)>, [@TraitClause4]: PartialOrd<K, K>, @TraitClause1_3::parent_clause0::Output = K> = is_sorted_by_key<Self, F, K>[@TraitClause0_0, @TraitClause0_1, @TraitClause0_2, @TraitClause0_3, @TraitClause0_4]
-    fn __iterator_get_unchecked<'_0, [@TraitClause0]: TrustedRandomAccessNoCoerce<Self>> = core::iter::traits::iterator::Iterator::__iterator_get_unchecked<'_0_0, Self>[@TraitClause0_0]
+    fn next<'_0> = core::iter::traits::iterator::Iterator::next<'_0_0, Self>[Self]
+    fn next_chunk<'_0, const N : usize, [@TraitClause0]: Sized<Self>> = next_chunk<'_0_0, Self, const N : usize>[Self, @TraitClause0_0]
+    fn size_hint<'_0> = core::iter::traits::iterator::Iterator::size_hint<'_0_0, Self>[Self]
+    fn count<[@TraitClause0]: Sized<Self>> = core::iter::traits::iterator::Iterator::count<Self>[Self, @TraitClause0_0]
+    fn last<[@TraitClause0]: Sized<Self>> = core::iter::traits::iterator::Iterator::last<Self>[Self, @TraitClause0_0]
+    fn advance_by<'_0> = core::iter::traits::iterator::Iterator::advance_by<'_0_0, Self>[Self]
+    fn nth<'_0> = core::iter::traits::iterator::Iterator::nth<'_0_0, Self>[Self]
+    fn step_by<[@TraitClause0]: Sized<Self>> = step_by<Self>[Self, @TraitClause0_0]
+    fn chain<U, [@TraitClause0]: Sized<U>, [@TraitClause1]: Sized<Self>, [@TraitClause2]: IntoIterator<U>, @TraitClause1_2::Item = Self::Item> = chain<Self, U>[Self, @TraitClause0_0, @TraitClause0_1, @TraitClause0_2]
+    fn zip<U, [@TraitClause0]: Sized<U>, [@TraitClause1]: Sized<Self>, [@TraitClause2]: IntoIterator<U>> = zip<Self, U>[Self, @TraitClause0_0, @TraitClause0_1, @TraitClause0_2]
+    fn intersperse<[@TraitClause0]: Sized<Self>, [@TraitClause1]: Clone<Self::Item>> = intersperse<Self>[Self, @TraitClause0_0, @TraitClause0_1]
+    fn intersperse_with<G, [@TraitClause0]: Sized<G>, [@TraitClause1]: Sized<Self>, [@TraitClause2]: FnMut<G, ()>, @TraitClause1_2::parent_clause0::Output = Self::Item> = intersperse_with<Self, G>[Self, @TraitClause0_0, @TraitClause0_1, @TraitClause0_2]
+    fn map<B, F, [@TraitClause0]: Sized<B>, [@TraitClause1]: Sized<F>, [@TraitClause2]: Sized<Self>, [@TraitClause3]: FnMut<F, (Self::Item)>, @TraitClause1_3::parent_clause0::Output = B> = map<Self, B, F>[Self, @TraitClause0_0, @TraitClause0_1, @TraitClause0_2, @TraitClause0_3]
+    fn for_each<F, [@TraitClause0]: Sized<F>, [@TraitClause1]: Sized<Self>, [@TraitClause2]: FnMut<F, (Self::Item)>, @TraitClause1_2::parent_clause0::Output = ()> = core::iter::traits::iterator::Iterator::for_each<Self, F>[Self, @TraitClause0_0, @TraitClause0_1, @TraitClause0_2]
+    fn filter<P, [@TraitClause0]: Sized<P>, [@TraitClause1]: Sized<Self>, [@TraitClause2]: for<'_0> FnMut<P, (&'_0_0 (Self::Item))>, for<'_0> @TraitClause1_2::parent_clause0::Output = bool> = filter<Self, P>[Self, @TraitClause0_0, @TraitClause0_1, @TraitClause0_2]
+    fn filter_map<B, F, [@TraitClause0]: Sized<B>, [@TraitClause1]: Sized<F>, [@TraitClause2]: Sized<Self>, [@TraitClause3]: FnMut<F, (Self::Item)>, @TraitClause1_3::parent_clause0::Output = Option<B>[@TraitClause1_0]> = filter_map<Self, B, F>[Self, @TraitClause0_0, @TraitClause0_1, @TraitClause0_2, @TraitClause0_3]
+    fn enumerate<[@TraitClause0]: Sized<Self>> = enumerate<Self>[Self, @TraitClause0_0]
+    fn peekable<[@TraitClause0]: Sized<Self>> = peekable<Self>[Self, @TraitClause0_0]
+    fn skip_while<P, [@TraitClause0]: Sized<P>, [@TraitClause1]: Sized<Self>, [@TraitClause2]: for<'_0> FnMut<P, (&'_0_0 (Self::Item))>, for<'_0> @TraitClause1_2::parent_clause0::Output = bool> = skip_while<Self, P>[Self, @TraitClause0_0, @TraitClause0_1, @TraitClause0_2]
+    fn take_while<P, [@TraitClause0]: Sized<P>, [@TraitClause1]: Sized<Self>, [@TraitClause2]: for<'_0> FnMut<P, (&'_0_0 (Self::Item))>, for<'_0> @TraitClause1_2::parent_clause0::Output = bool> = take_while<Self, P>[Self, @TraitClause0_0, @TraitClause0_1, @TraitClause0_2]
+    fn map_while<B, P, [@TraitClause0]: Sized<B>, [@TraitClause1]: Sized<P>, [@TraitClause2]: Sized<Self>, [@TraitClause3]: FnMut<P, (Self::Item)>, @TraitClause1_3::parent_clause0::Output = Option<B>[@TraitClause1_0]> = map_while<Self, B, P>[Self, @TraitClause0_0, @TraitClause0_1, @TraitClause0_2, @TraitClause0_3]
+    fn skip<[@TraitClause0]: Sized<Self>> = skip<Self>[Self, @TraitClause0_0]
+    fn take<[@TraitClause0]: Sized<Self>> = take<Self>[Self, @TraitClause0_0]
+    fn scan<St, B, F, [@TraitClause0]: Sized<St>, [@TraitClause1]: Sized<B>, [@TraitClause2]: Sized<F>, [@TraitClause3]: Sized<Self>, [@TraitClause4]: for<'_0> FnMut<F, (&'_0_0 mut (St), Self::Item)>, for<'_0> @TraitClause1_4::parent_clause0::Output = Option<B>[@TraitClause1_1]> = scan<Self, St, B, F>[Self, @TraitClause0_0, @TraitClause0_1, @TraitClause0_2, @TraitClause0_3, @TraitClause0_4]
+    fn flat_map<U, F, [@TraitClause0]: Sized<U>, [@TraitClause1]: Sized<F>, [@TraitClause2]: Sized<Self>, [@TraitClause3]: IntoIterator<U>, [@TraitClause4]: FnMut<F, (Self::Item)>, @TraitClause1_4::parent_clause0::Output = U> = flat_map<Self, U, F>[Self, @TraitClause0_0, @TraitClause0_1, @TraitClause0_2, @TraitClause0_3, @TraitClause0_4]
+    fn flatten<[@TraitClause0]: Sized<Self>, [@TraitClause1]: IntoIterator<Self::Item>> = flatten<Self>[Self, @TraitClause0_0, @TraitClause0_1]
+    fn map_windows<F, R, const N : usize, [@TraitClause0]: Sized<F>, [@TraitClause1]: Sized<R>, [@TraitClause2]: Sized<Self>, [@TraitClause3]: for<'_0> FnMut<F, (&'_0_0 (Array<Self::Item, const N : usize>))>, for<'_0> @TraitClause1_3::parent_clause0::Output = R> = map_windows<Self, F, R, const N : usize>[Self, @TraitClause0_0, @TraitClause0_1, @TraitClause0_2, @TraitClause0_3]
+    fn fuse<[@TraitClause0]: Sized<Self>> = fuse<Self>[Self, @TraitClause0_0]
+    fn inspect<F, [@TraitClause0]: Sized<F>, [@TraitClause1]: Sized<Self>, [@TraitClause2]: for<'_0> FnMut<F, (&'_0_0 (Self::Item))>, for<'_0> @TraitClause1_2::parent_clause0::Output = ()> = inspect<Self, F>[Self, @TraitClause0_0, @TraitClause0_1, @TraitClause0_2]
+    fn by_ref<'_0, [@TraitClause0]: Sized<Self>> = by_ref<'_0_0, Self>[Self, @TraitClause0_0]
+    fn collect<B, [@TraitClause0]: Sized<B>, [@TraitClause1]: FromIterator<B, Self::Item>, [@TraitClause2]: Sized<Self>> = collect<Self, B>[Self, @TraitClause0_0, @TraitClause0_1, @TraitClause0_2]
+    fn try_collect<'_0, B, [@TraitClause0]: Sized<B>, [@TraitClause1]: Sized<Self>, [@TraitClause2]: Try<Self::Item>, [@TraitClause3]: Residual<@TraitClause1_2::Residual, B>, [@TraitClause4]: FromIterator<B, @TraitClause1_2::Output>> = try_collect<'_0_0, Self, B>[Self, @TraitClause0_0, @TraitClause0_1, @TraitClause0_2, @TraitClause0_3, @TraitClause0_4]
+    fn collect_into<'_0, E, [@TraitClause0]: Sized<E>, [@TraitClause1]: Extend<E, Self::Item>, [@TraitClause2]: Sized<Self>> = collect_into<'_0_0, Self, E>[Self, @TraitClause0_0, @TraitClause0_1, @TraitClause0_2]
+    fn partition<B, F, [@TraitClause0]: Sized<B>, [@TraitClause1]: Sized<F>, [@TraitClause2]: Sized<Self>, [@TraitClause3]: Default<B>, [@TraitClause4]: Extend<B, Self::Item>, [@TraitClause5]: for<'_0> FnMut<F, (&'_0_0 (Self::Item))>, for<'_0> @TraitClause1_5::parent_clause0::Output = bool> = partition<Self, B, F>[Self, @TraitClause0_0, @TraitClause0_1, @TraitClause0_2, @TraitClause0_3, @TraitClause0_4, @TraitClause0_5]
+    fn partition_in_place<'a, T, P, [@TraitClause0]: Sized<T>, [@TraitClause1]: Sized<P>, [@TraitClause2]: Sized<Self>, [@TraitClause3]: DoubleEndedIterator<Self>, [@TraitClause4]: for<'_0> FnMut<P, (&'_0_0 (T))>, T : 'a, Self::Item = &'a mut (T), for<'_0> @TraitClause1_4::parent_clause0::Output = bool> = partition_in_place<'a, Self, T, P>[Self, @TraitClause0_0, @TraitClause0_1, @TraitClause0_2, @TraitClause0_3, @TraitClause0_4]
+    fn is_partitioned<P, [@TraitClause0]: Sized<P>, [@TraitClause1]: Sized<Self>, [@TraitClause2]: FnMut<P, (Self::Item)>, @TraitClause1_2::parent_clause0::Output = bool> = is_partitioned<Self, P>[Self, @TraitClause0_0, @TraitClause0_1, @TraitClause0_2]
+    fn try_fold<'_0, B, F, R, [@TraitClause0]: Sized<B>, [@TraitClause1]: Sized<F>, [@TraitClause2]: Sized<R>, [@TraitClause3]: Sized<Self>, [@TraitClause4]: FnMut<F, (B, Self::Item)>, [@TraitClause5]: Try<R>, @TraitClause1_4::parent_clause0::Output = R, @TraitClause1_5::Output = B> = try_fold<'_0_0, Self, B, F, R>[Self, @TraitClause0_0, @TraitClause0_1, @TraitClause0_2, @TraitClause0_3, @TraitClause0_4, @TraitClause0_5]
+    fn try_for_each<'_0, F, R, [@TraitClause0]: Sized<F>, [@TraitClause1]: Sized<R>, [@TraitClause2]: Sized<Self>, [@TraitClause3]: FnMut<F, (Self::Item)>, [@TraitClause4]: Try<R>, @TraitClause1_3::parent_clause0::Output = R, @TraitClause1_4::Output = ()> = try_for_each<'_0_0, Self, F, R>[Self, @TraitClause0_0, @TraitClause0_1, @TraitClause0_2, @TraitClause0_3, @TraitClause0_4]
+    fn fold<B, F, [@TraitClause0]: Sized<B>, [@TraitClause1]: Sized<F>, [@TraitClause2]: Sized<Self>, [@TraitClause3]: FnMut<F, (B, Self::Item)>, @TraitClause1_3::parent_clause0::Output = B> = core::iter::traits::iterator::Iterator::fold<Self, B, F>[Self, @TraitClause0_0, @TraitClause0_1, @TraitClause0_2, @TraitClause0_3]
+    fn reduce<F, [@TraitClause0]: Sized<F>, [@TraitClause1]: Sized<Self>, [@TraitClause2]: FnMut<F, (Self::Item, Self::Item)>, @TraitClause1_2::parent_clause0::Output = Self::Item> = reduce<Self, F>[Self, @TraitClause0_0, @TraitClause0_1, @TraitClause0_2]
+    fn try_reduce<'_0, R, impl FnMut(Self::Item, Self::Item) -> R, [@TraitClause0]: Sized<R>, [@TraitClause1]: Sized<impl FnMut(Self::Item, Self::Item) -> R>, [@TraitClause2]: Sized<Self>, [@TraitClause3]: Try<R>, [@TraitClause4]: Residual<@TraitClause1_3::Residual, Option<Self::Item>[Self::parent_clause0]>, [@TraitClause5]: FnMut<impl FnMut(Self::Item, Self::Item) -> R, (Self::Item, Self::Item)>, @TraitClause1_3::Output = Self::Item, @TraitClause1_5::parent_clause0::Output = R> = try_reduce<'_0_0, Self, R, impl FnMut(Self::Item, Self::Item) -> R>[Self, @TraitClause0_0, @TraitClause0_1, @TraitClause0_2, @TraitClause0_3, @TraitClause0_4, @TraitClause0_5]
+    fn all<'_0, F, [@TraitClause0]: Sized<F>, [@TraitClause1]: Sized<Self>, [@TraitClause2]: FnMut<F, (Self::Item)>, @TraitClause1_2::parent_clause0::Output = bool> = core::iter::traits::iterator::Iterator::all<'_0_0, Self, F>[Self, @TraitClause0_0, @TraitClause0_1, @TraitClause0_2]
+    fn any<'_0, F, [@TraitClause0]: Sized<F>, [@TraitClause1]: Sized<Self>, [@TraitClause2]: FnMut<F, (Self::Item)>, @TraitClause1_2::parent_clause0::Output = bool> = core::iter::traits::iterator::Iterator::any<'_0_0, Self, F>[Self, @TraitClause0_0, @TraitClause0_1, @TraitClause0_2]
+    fn find<'_0, P, [@TraitClause0]: Sized<P>, [@TraitClause1]: Sized<Self>, [@TraitClause2]: for<'_0> FnMut<P, (&'_0_0 (Self::Item))>, for<'_0> @TraitClause1_2::parent_clause0::Output = bool> = core::iter::traits::iterator::Iterator::find<'_0_0, Self, P>[Self, @TraitClause0_0, @TraitClause0_1, @TraitClause0_2]
+    fn find_map<'_0, B, F, [@TraitClause0]: Sized<B>, [@TraitClause1]: Sized<F>, [@TraitClause2]: Sized<Self>, [@TraitClause3]: FnMut<F, (Self::Item)>, @TraitClause1_3::parent_clause0::Output = Option<B>[@TraitClause1_0]> = core::iter::traits::iterator::Iterator::find_map<'_0_0, Self, B, F>[Self, @TraitClause0_0, @TraitClause0_1, @TraitClause0_2, @TraitClause0_3]
+    fn try_find<'_0, R, impl FnMut(&Self::Item) -> R, [@TraitClause0]: Sized<R>, [@TraitClause1]: Sized<impl FnMut(&Self::Item) -> R>, [@TraitClause2]: Sized<Self>, [@TraitClause3]: Try<R>, [@TraitClause4]: Residual<@TraitClause1_3::Residual, Option<Self::Item>[Self::parent_clause0]>, [@TraitClause5]: for<'_0> FnMut<impl FnMut(&Self::Item) -> R, (&'_0_0 (Self::Item))>, @TraitClause1_3::Output = bool, for<'_0> @TraitClause1_5::parent_clause0::Output = R> = try_find<'_0_0, Self, R, impl FnMut(&Self::Item) -> R>[Self, @TraitClause0_0, @TraitClause0_1, @TraitClause0_2, @TraitClause0_3, @TraitClause0_4, @TraitClause0_5]
+    fn position<'_0, P, [@TraitClause0]: Sized<P>, [@TraitClause1]: Sized<Self>, [@TraitClause2]: FnMut<P, (Self::Item)>, @TraitClause1_2::parent_clause0::Output = bool> = core::iter::traits::iterator::Iterator::position<'_0_0, Self, P>[Self, @TraitClause0_0, @TraitClause0_1, @TraitClause0_2]
+    fn rposition<'_0, P, [@TraitClause0]: Sized<P>, [@TraitClause1]: FnMut<P, (Self::Item)>, [@TraitClause2]: Sized<Self>, [@TraitClause3]: ExactSizeIterator<Self>, [@TraitClause4]: DoubleEndedIterator<Self>, @TraitClause1_1::parent_clause0::Output = bool> = core::iter::traits::iterator::Iterator::rposition<'_0_0, Self, P>[Self, @TraitClause0_0, @TraitClause0_1, @TraitClause0_2, @TraitClause0_3, @TraitClause0_4]
+    fn max<[@TraitClause0]: Sized<Self>, [@TraitClause1]: Ord<Self::Item>> = core::iter::traits::iterator::Iterator::max<Self>[Self, @TraitClause0_0, @TraitClause0_1]
+    fn min<[@TraitClause0]: Sized<Self>, [@TraitClause1]: Ord<Self::Item>> = core::iter::traits::iterator::Iterator::min<Self>[Self, @TraitClause0_0, @TraitClause0_1]
+    fn max_by_key<B, F, [@TraitClause0]: Sized<B>, [@TraitClause1]: Sized<F>, [@TraitClause2]: Ord<B>, [@TraitClause3]: Sized<Self>, [@TraitClause4]: for<'_0> FnMut<F, (&'_0_0 (Self::Item))>, for<'_0> @TraitClause1_4::parent_clause0::Output = B> = max_by_key<Self, B, F>[Self, @TraitClause0_0, @TraitClause0_1, @TraitClause0_2, @TraitClause0_3, @TraitClause0_4]
+    fn max_by<F, [@TraitClause0]: Sized<F>, [@TraitClause1]: Sized<Self>, [@TraitClause2]: for<'_0, '_1> FnMut<F, (&'_0_0 (Self::Item), &'_0_1 (Self::Item))>, for<'_0, '_1> @TraitClause1_2::parent_clause0::Output = Ordering> = max_by<Self, F>[Self, @TraitClause0_0, @TraitClause0_1, @TraitClause0_2]
+    fn min_by_key<B, F, [@TraitClause0]: Sized<B>, [@TraitClause1]: Sized<F>, [@TraitClause2]: Ord<B>, [@TraitClause3]: Sized<Self>, [@TraitClause4]: for<'_0> FnMut<F, (&'_0_0 (Self::Item))>, for<'_0> @TraitClause1_4::parent_clause0::Output = B> = min_by_key<Self, B, F>[Self, @TraitClause0_0, @TraitClause0_1, @TraitClause0_2, @TraitClause0_3, @TraitClause0_4]
+    fn min_by<F, [@TraitClause0]: Sized<F>, [@TraitClause1]: Sized<Self>, [@TraitClause2]: for<'_0, '_1> FnMut<F, (&'_0_0 (Self::Item), &'_0_1 (Self::Item))>, for<'_0, '_1> @TraitClause1_2::parent_clause0::Output = Ordering> = min_by<Self, F>[Self, @TraitClause0_0, @TraitClause0_1, @TraitClause0_2]
+    fn rev<[@TraitClause0]: Sized<Self>, [@TraitClause1]: DoubleEndedIterator<Self>> = rev<Self>[Self, @TraitClause0_0, @TraitClause0_1]
+    fn unzip<A, B, FromA, FromB, [@TraitClause0]: Sized<A>, [@TraitClause1]: Sized<B>, [@TraitClause2]: Sized<FromA>, [@TraitClause3]: Sized<FromB>, [@TraitClause4]: Default<FromA>, [@TraitClause5]: Extend<FromA, A>, [@TraitClause6]: Default<FromB>, [@TraitClause7]: Extend<FromB, B>, [@TraitClause8]: Sized<Self>, [@TraitClause9]: Iterator<Self>, Self::Item = (A, B)> = unzip<Self, A, B, FromA, FromB>[Self, @TraitClause0_0, @TraitClause0_1, @TraitClause0_2, @TraitClause0_3, @TraitClause0_4, @TraitClause0_5, @TraitClause0_6, @TraitClause0_7, @TraitClause0_8, @TraitClause0_9]
+    fn copied<'a, T, [@TraitClause0]: Sized<T>, [@TraitClause1]: Sized<Self>, [@TraitClause2]: Iterator<Self>, [@TraitClause3]: Copy<T>, T : 'a, Self::Item = &'a (T)> = copied<'a, Self, T>[Self, @TraitClause0_0, @TraitClause0_1, @TraitClause0_2, @TraitClause0_3]
+    fn cloned<'a, T, [@TraitClause0]: Sized<T>, [@TraitClause1]: Sized<Self>, [@TraitClause2]: Iterator<Self>, [@TraitClause3]: Clone<T>, T : 'a, Self::Item = &'a (T)> = cloned<'a, Self, T>[Self, @TraitClause0_0, @TraitClause0_1, @TraitClause0_2, @TraitClause0_3]
+    fn cycle<[@TraitClause0]: Sized<Self>, [@TraitClause1]: Clone<Self>> = cycle<Self>[Self, @TraitClause0_0, @TraitClause0_1]
+    fn array_chunks<const N : usize, [@TraitClause0]: Sized<Self>> = array_chunks<Self, const N : usize>[Self, @TraitClause0_0]
+    fn sum<S, [@TraitClause0]: Sized<S>, [@TraitClause1]: Sized<Self>, [@TraitClause2]: Sum<S, Self::Item>> = core::iter::traits::iterator::Iterator::sum<Self, S>[Self, @TraitClause0_0, @TraitClause0_1, @TraitClause0_2]
+    fn product<P, [@TraitClause0]: Sized<P>, [@TraitClause1]: Sized<Self>, [@TraitClause2]: Product<P, Self::Item>> = core::iter::traits::iterator::Iterator::product<Self, P>[Self, @TraitClause0_0, @TraitClause0_1, @TraitClause0_2]
+    fn cmp<I, [@TraitClause0]: Sized<I>, [@TraitClause1]: IntoIterator<I>, [@TraitClause2]: Ord<Self::Item>, [@TraitClause3]: Sized<Self>, @TraitClause1_1::Item = Self::Item> = core::iter::traits::iterator::Iterator::cmp<Self, I>[Self, @TraitClause0_0, @TraitClause0_1, @TraitClause0_2, @TraitClause0_3]
+    fn cmp_by<I, F, [@TraitClause0]: Sized<I>, [@TraitClause1]: Sized<F>, [@TraitClause2]: Sized<Self>, [@TraitClause3]: IntoIterator<I>, [@TraitClause4]: FnMut<F, (Self::Item, @TraitClause1_3::Item)>, @TraitClause1_4::parent_clause0::Output = Ordering> = cmp_by<Self, I, F>[Self, @TraitClause0_0, @TraitClause0_1, @TraitClause0_2, @TraitClause0_3, @TraitClause0_4]
+    fn partial_cmp<I, [@TraitClause0]: Sized<I>, [@TraitClause1]: IntoIterator<I>, [@TraitClause2]: PartialOrd<Self::Item, @TraitClause1_1::Item>, [@TraitClause3]: Sized<Self>> = core::iter::traits::iterator::Iterator::partial_cmp<Self, I>[Self, @TraitClause0_0, @TraitClause0_1, @TraitClause0_2, @TraitClause0_3]
+    fn partial_cmp_by<I, F, [@TraitClause0]: Sized<I>, [@TraitClause1]: Sized<F>, [@TraitClause2]: Sized<Self>, [@TraitClause3]: IntoIterator<I>, [@TraitClause4]: FnMut<F, (Self::Item, @TraitClause1_3::Item)>, @TraitClause1_4::parent_clause0::Output = Option<Ordering>[Sized<Ordering>]> = partial_cmp_by<Self, I, F>[Self, @TraitClause0_0, @TraitClause0_1, @TraitClause0_2, @TraitClause0_3, @TraitClause0_4]
+    fn eq<I, [@TraitClause0]: Sized<I>, [@TraitClause1]: IntoIterator<I>, [@TraitClause2]: PartialEq<Self::Item, @TraitClause1_1::Item>, [@TraitClause3]: Sized<Self>> = core::iter::traits::iterator::Iterator::eq<Self, I>[Self, @TraitClause0_0, @TraitClause0_1, @TraitClause0_2, @TraitClause0_3]
+    fn eq_by<I, F, [@TraitClause0]: Sized<I>, [@TraitClause1]: Sized<F>, [@TraitClause2]: Sized<Self>, [@TraitClause3]: IntoIterator<I>, [@TraitClause4]: FnMut<F, (Self::Item, @TraitClause1_3::Item)>, @TraitClause1_4::parent_clause0::Output = bool> = eq_by<Self, I, F>[Self, @TraitClause0_0, @TraitClause0_1, @TraitClause0_2, @TraitClause0_3, @TraitClause0_4]
+    fn ne<I, [@TraitClause0]: Sized<I>, [@TraitClause1]: IntoIterator<I>, [@TraitClause2]: PartialEq<Self::Item, @TraitClause1_1::Item>, [@TraitClause3]: Sized<Self>> = core::iter::traits::iterator::Iterator::ne<Self, I>[Self, @TraitClause0_0, @TraitClause0_1, @TraitClause0_2, @TraitClause0_3]
+    fn lt<I, [@TraitClause0]: Sized<I>, [@TraitClause1]: IntoIterator<I>, [@TraitClause2]: PartialOrd<Self::Item, @TraitClause1_1::Item>, [@TraitClause3]: Sized<Self>> = core::iter::traits::iterator::Iterator::lt<Self, I>[Self, @TraitClause0_0, @TraitClause0_1, @TraitClause0_2, @TraitClause0_3]
+    fn le<I, [@TraitClause0]: Sized<I>, [@TraitClause1]: IntoIterator<I>, [@TraitClause2]: PartialOrd<Self::Item, @TraitClause1_1::Item>, [@TraitClause3]: Sized<Self>> = core::iter::traits::iterator::Iterator::le<Self, I>[Self, @TraitClause0_0, @TraitClause0_1, @TraitClause0_2, @TraitClause0_3]
+    fn gt<I, [@TraitClause0]: Sized<I>, [@TraitClause1]: IntoIterator<I>, [@TraitClause2]: PartialOrd<Self::Item, @TraitClause1_1::Item>, [@TraitClause3]: Sized<Self>> = core::iter::traits::iterator::Iterator::gt<Self, I>[Self, @TraitClause0_0, @TraitClause0_1, @TraitClause0_2, @TraitClause0_3]
+    fn ge<I, [@TraitClause0]: Sized<I>, [@TraitClause1]: IntoIterator<I>, [@TraitClause2]: PartialOrd<Self::Item, @TraitClause1_1::Item>, [@TraitClause3]: Sized<Self>> = core::iter::traits::iterator::Iterator::ge<Self, I>[Self, @TraitClause0_0, @TraitClause0_1, @TraitClause0_2, @TraitClause0_3]
+    fn is_sorted<[@TraitClause0]: Sized<Self>, [@TraitClause1]: PartialOrd<Self::Item, Self::Item>> = is_sorted<Self>[Self, @TraitClause0_0, @TraitClause0_1]
+    fn is_sorted_by<F, [@TraitClause0]: Sized<F>, [@TraitClause1]: Sized<Self>, [@TraitClause2]: for<'_0, '_1> FnMut<F, (&'_0_0 (Self::Item), &'_0_1 (Self::Item))>, for<'_0, '_1> @TraitClause1_2::parent_clause0::Output = bool> = core::iter::traits::iterator::Iterator::is_sorted_by<Self, F>[Self, @TraitClause0_0, @TraitClause0_1, @TraitClause0_2]
+    fn is_sorted_by_key<F, K, [@TraitClause0]: Sized<F>, [@TraitClause1]: Sized<K>, [@TraitClause2]: Sized<Self>, [@TraitClause3]: FnMut<F, (Self::Item)>, [@TraitClause4]: PartialOrd<K, K>, @TraitClause1_3::parent_clause0::Output = K> = is_sorted_by_key<Self, F, K>[Self, @TraitClause0_0, @TraitClause0_1, @TraitClause0_2, @TraitClause0_3, @TraitClause0_4]
+    fn __iterator_get_unchecked<'_0, [@TraitClause0]: TrustedRandomAccessNoCoerce<Self>> = core::iter::traits::iterator::Iterator::__iterator_get_unchecked<'_0_0, Self>[Self, @TraitClause0_0]
 }
 
 // Full name: core::iter::traits::collect::IntoIterator
@@ -490,7 +490,7 @@ where
     parent_clause2 : [@TraitClause2]: Iterator<Self::IntoIter>
     type Item
     type IntoIter
-    fn into_iter = core::iter::traits::collect::IntoIterator::into_iter<Self>
+    fn into_iter = core::iter::traits::collect::IntoIterator::into_iter<Self>[Self]
 }
 
 // Full name: core::iter::adapters::intersperse::Intersperse
@@ -542,17 +542,17 @@ pub trait FromIterator<Self, A>
 {
     parent_clause0 : [@TraitClause0]: Sized<Self>
     parent_clause1 : [@TraitClause1]: Sized<A>
-    fn from_iter<T, [@TraitClause0]: Sized<T>, [@TraitClause1]: IntoIterator<T>, @TraitClause1_1::Item = A> = from_iter<Self, A, T>[@TraitClause0_0, @TraitClause0_1]
+    fn from_iter<T, [@TraitClause0]: Sized<T>, [@TraitClause1]: IntoIterator<T>, @TraitClause1_1::Item = A> = from_iter<Self, A, T>[Self, @TraitClause0_0, @TraitClause0_1]
 }
 
 // Full name: core::iter::traits::collect::Extend
 pub trait Extend<Self, A>
 {
     parent_clause0 : [@TraitClause0]: Sized<A>
-    fn extend<'_0, T, [@TraitClause0]: Sized<T>, [@TraitClause1]: IntoIterator<T>, @TraitClause1_1::Item = A> = extend<'_0_0, Self, A, T>[@TraitClause0_0, @TraitClause0_1]
-    fn extend_one<'_0> = extend_one<'_0_0, Self, A>
-    fn extend_reserve<'_0> = extend_reserve<'_0_0, Self, A>
-    fn extend_one_unchecked<'_0, [@TraitClause0]: Sized<Self>> = extend_one_unchecked<'_0_0, Self, A>[@TraitClause0_0]
+    fn extend<'_0, T, [@TraitClause0]: Sized<T>, [@TraitClause1]: IntoIterator<T>, @TraitClause1_1::Item = A> = extend<'_0_0, Self, A, T>[Self, @TraitClause0_0, @TraitClause0_1]
+    fn extend_one<'_0> = extend_one<'_0_0, Self, A>[Self]
+    fn extend_reserve<'_0> = extend_reserve<'_0_0, Self, A>[Self]
+    fn extend_one_unchecked<'_0, [@TraitClause0]: Sized<Self>> = extend_one_unchecked<'_0_0, Self, A>[Self, @TraitClause0_0]
 }
 
 // Full name: core::iter::traits::double_ended::DoubleEndedIterator
@@ -560,20 +560,20 @@ pub trait Extend<Self, A>
 pub trait DoubleEndedIterator<Self>
 {
     parent_clause0 : [@TraitClause0]: Iterator<Self>
-    fn next_back<'_0> = next_back<'_0_0, Self>
-    fn advance_back_by<'_0> = advance_back_by<'_0_0, Self>
-    fn nth_back<'_0> = nth_back<'_0_0, Self>
-    fn try_rfold<'_0, B, F, R, [@TraitClause0]: Sized<B>, [@TraitClause1]: Sized<F>, [@TraitClause2]: Sized<R>, [@TraitClause3]: Sized<Self>, [@TraitClause4]: FnMut<F, (B, Self::parent_clause0::Item)>, [@TraitClause5]: Try<R>, @TraitClause1_4::parent_clause0::Output = R, @TraitClause1_5::Output = B> = try_rfold<'_0_0, Self, B, F, R>[@TraitClause0_0, @TraitClause0_1, @TraitClause0_2, @TraitClause0_3, @TraitClause0_4, @TraitClause0_5]
-    fn rfold<B, F, [@TraitClause0]: Sized<B>, [@TraitClause1]: Sized<F>, [@TraitClause2]: Sized<Self>, [@TraitClause3]: FnMut<F, (B, Self::parent_clause0::Item)>, @TraitClause1_3::parent_clause0::Output = B> = rfold<Self, B, F>[@TraitClause0_0, @TraitClause0_1, @TraitClause0_2, @TraitClause0_3]
-    fn rfind<'_0, P, [@TraitClause0]: Sized<P>, [@TraitClause1]: Sized<Self>, [@TraitClause2]: for<'_0> FnMut<P, (&'_0_0 (Self::parent_clause0::Item))>, for<'_0> @TraitClause1_2::parent_clause0::Output = bool> = rfind<'_0_0, Self, P>[@TraitClause0_0, @TraitClause0_1, @TraitClause0_2]
+    fn next_back<'_0> = next_back<'_0_0, Self>[Self]
+    fn advance_back_by<'_0> = advance_back_by<'_0_0, Self>[Self]
+    fn nth_back<'_0> = nth_back<'_0_0, Self>[Self]
+    fn try_rfold<'_0, B, F, R, [@TraitClause0]: Sized<B>, [@TraitClause1]: Sized<F>, [@TraitClause2]: Sized<R>, [@TraitClause3]: Sized<Self>, [@TraitClause4]: FnMut<F, (B, Self::parent_clause0::Item)>, [@TraitClause5]: Try<R>, @TraitClause1_4::parent_clause0::Output = R, @TraitClause1_5::Output = B> = try_rfold<'_0_0, Self, B, F, R>[Self, @TraitClause0_0, @TraitClause0_1, @TraitClause0_2, @TraitClause0_3, @TraitClause0_4, @TraitClause0_5]
+    fn rfold<B, F, [@TraitClause0]: Sized<B>, [@TraitClause1]: Sized<F>, [@TraitClause2]: Sized<Self>, [@TraitClause3]: FnMut<F, (B, Self::parent_clause0::Item)>, @TraitClause1_3::parent_clause0::Output = B> = rfold<Self, B, F>[Self, @TraitClause0_0, @TraitClause0_1, @TraitClause0_2, @TraitClause0_3]
+    fn rfind<'_0, P, [@TraitClause0]: Sized<P>, [@TraitClause1]: Sized<Self>, [@TraitClause2]: for<'_0> FnMut<P, (&'_0_0 (Self::parent_clause0::Item))>, for<'_0> @TraitClause1_2::parent_clause0::Output = bool> = rfind<'_0_0, Self, P>[Self, @TraitClause0_0, @TraitClause0_1, @TraitClause0_2]
 }
 
 // Full name: core::iter::traits::exact_size::ExactSizeIterator
 pub trait ExactSizeIterator<Self>
 {
     parent_clause0 : [@TraitClause0]: Iterator<Self>
-    fn len<'_0> = len<'_0_0, Self>
-    fn is_empty<'_0> = is_empty<'_0_0, Self>
+    fn len<'_0> = len<'_0_0, Self>[Self]
+    fn is_empty<'_0> = is_empty<'_0_0, Self>[Self]
 }
 
 // Full name: core::iter::adapters::array_chunks::ArrayChunks
@@ -587,7 +587,7 @@ pub trait Sum<Self, A>
 {
     parent_clause0 : [@TraitClause0]: Sized<Self>
     parent_clause1 : [@TraitClause1]: Sized<A>
-    fn sum<I, [@TraitClause0]: Sized<I>, [@TraitClause1]: Iterator<I>, @TraitClause1_1::Item = A> = core::iter::traits::accum::Sum::sum<Self, A, I>[@TraitClause0_0, @TraitClause0_1]
+    fn sum<I, [@TraitClause0]: Sized<I>, [@TraitClause1]: Iterator<I>, @TraitClause1_1::Item = A> = core::iter::traits::accum::Sum::sum<Self, A, I>[Self, @TraitClause0_0, @TraitClause0_1]
 }
 
 // Full name: core::iter::traits::accum::Product
@@ -595,7 +595,7 @@ pub trait Product<Self, A>
 {
     parent_clause0 : [@TraitClause0]: Sized<Self>
     parent_clause1 : [@TraitClause1]: Sized<A>
-    fn product<I, [@TraitClause0]: Sized<I>, [@TraitClause1]: Iterator<I>, @TraitClause1_1::Item = A> = core::iter::traits::accum::Product::product<Self, A, I>[@TraitClause0_0, @TraitClause0_1]
+    fn product<I, [@TraitClause0]: Sized<I>, [@TraitClause1]: Iterator<I>, @TraitClause1_1::Item = A> = core::iter::traits::accum::Product::product<Self, A, I>[Self, @TraitClause0_0, @TraitClause0_1]
 }
 
 // Full name: core::iter::adapters::zip::TrustedRandomAccessNoCoerce
@@ -603,7 +603,7 @@ pub trait TrustedRandomAccessNoCoerce<Self>
 {
     parent_clause0 : [@TraitClause0]: Sized<Self>
     const MAY_HAVE_SIDE_EFFECT : bool
-    fn size<'_0, [@TraitClause0]: Iterator<Self>> = size<'_0_0, Self>[@TraitClause0_0]
+    fn size<'_0, [@TraitClause0]: Iterator<Self>> = size<'_0_0, Self>[Self, @TraitClause0_0]
 }
 
 // Full name: core::iter::traits::collect::{impl IntoIterator for I}::into_iter
@@ -3768,7 +3768,9 @@ fn main()
 }
 
 #[lang_item("into_iter")]
-pub fn core::iter::traits::collect::IntoIterator::into_iter<Self>(@1: Self) -> Self::IntoIter
+pub fn core::iter::traits::collect::IntoIterator::into_iter<Self>(@1: Self) -> @TraitClause0::IntoIter
+where
+    [@TraitClause0]: IntoIterator<Self>,
 
 // Full name: core::array::iter::{impl IntoIterator for Array<T, const N : usize>}
 impl<T, const N : usize> IntoIterator for Array<T, const N : usize>
@@ -3798,17 +3800,21 @@ where
 }
 
 #[lang_item("next")]
-pub fn core::iter::traits::iterator::Iterator::next<'_0, Self>(@1: &'_0 mut (Self)) -> Option<Self::Item>[Self::parent_clause0]
+pub fn core::iter::traits::iterator::Iterator::next<'_0, Self>(@1: &'_0 mut (Self)) -> Option<@TraitClause0::Item>[@TraitClause0::parent_clause0]
+where
+    [@TraitClause0]: Iterator<Self>,
 
 // Full name: core::ops::arith::AddAssign
 #[lang_item("add_assign")]
 pub trait AddAssign<Self, Rhs>
 {
     parent_clause0 : [@TraitClause0]: Sized<Rhs>
-    fn add_assign<'_0> = core::ops::arith::AddAssign::add_assign<'_0_0, Self, Rhs>
+    fn add_assign<'_0> = core::ops::arith::AddAssign::add_assign<'_0_0, Self, Rhs>[Self]
 }
 
 pub fn core::ops::arith::AddAssign::add_assign<'_0, Self, Rhs>(@1: &'_0 mut (Self), @2: Rhs)
+where
+    [@TraitClause0]: AddAssign<Self, Rhs>,
 
 // Full name: core::ops::arith::{impl AddAssign<&'_0 (i32)> for i32}#365
 impl<'_0> AddAssign<&'_0 (i32)> for i32 {
@@ -3817,749 +3823,896 @@ impl<'_0> AddAssign<&'_0 (i32)> for i32 {
 }
 
 // Full name: core::ops::function::FnMut::call_mut
-pub fn call_mut<'_0, Self, Args>(@1: &'_0 mut (Self), @2: Args) -> Self::parent_clause0::Output
+pub fn call_mut<'_0, Self, Args>(@1: &'_0 mut (Self), @2: Args) -> @TraitClause0::parent_clause0::Output
+where
+    [@TraitClause0]: FnMut<Self, Args>,
 
 // Full name: core::ops::function::FnOnce::call_once
-pub fn call_once<Self, Args>(@1: Self, @2: Args) -> Self::Output
+pub fn call_once<Self, Args>(@1: Self, @2: Args) -> @TraitClause0::Output
+where
+    [@TraitClause0]: FnOnce<Self, Args>,
 
 pub fn core::iter::traits::iterator::Iterator::size_hint<'_0, Self>(@1: &'_0 (Self)) -> (usize, Option<usize>[Sized<usize>])
+where
+    [@TraitClause0]: Iterator<Self>,
 
 pub fn core::iter::traits::iterator::Iterator::fold<Self, B, F>(@1: Self, @2: B, @3: F) -> B
 where
-    [@TraitClause0]: Sized<B>,
-    [@TraitClause1]: Sized<F>,
-    [@TraitClause2]: Sized<Self>,
-    [@TraitClause3]: FnMut<F, (B, Self::Item)>,
-    @TraitClause3::parent_clause0::Output = B,
-
-pub fn core::iter::traits::iterator::Iterator::count<Self>(@1: Self) -> usize
-where
-    [@TraitClause0]: Sized<Self>,
-
-pub fn core::iter::traits::iterator::Iterator::last<Self>(@1: Self) -> Option<Self::Item>[Self::parent_clause0]
-where
-    [@TraitClause0]: Sized<Self>,
-
-pub fn core::iter::traits::iterator::Iterator::advance_by<'_0, Self>(@1: &'_0 mut (Self), @2: usize) -> Result<(), NonZero<usize>[Sized<usize>, {impl ZeroablePrimitive for usize}#27]>[Sized<()>, Sized<NonZero<usize>[Sized<usize>, {impl ZeroablePrimitive for usize}#27]>]
-
-#[lang_item("clone_fn")]
-pub fn core::clone::Clone::clone<'_0, Self>(@1: &'_0 (Self)) -> Self
-
-// Full name: core::clone::Clone::clone_from
-pub fn clone_from<'_0, '_1, Self>(@1: &'_0 mut (Self), @2: &'_1 (Self))
-
-pub unsafe fn core::iter::traits::iterator::Iterator::__iterator_get_unchecked<'_0, Self>(@1: &'_0 mut (Self), @2: usize) -> Self::Item
-where
-    [@TraitClause0]: TrustedRandomAccessNoCoerce<Self>,
-
-// Full name: core::iter::traits::iterator::Iterator::next_chunk
-pub fn next_chunk<'_0, Self, const N : usize>(@1: &'_0 mut (Self)) -> Result<Array<Self::Item, const N : usize>, IntoIter<Self::Item, const N : usize>[Self::parent_clause0]>[Sized<Array<Self::Item, const N : usize>>, Sized<IntoIter<Self::Item, const N : usize>[Self::parent_clause0]>]
-where
-    [@TraitClause0]: Sized<Self>,
-
-pub fn core::iter::traits::iterator::Iterator::nth<'_0, Self>(@1: &'_0 mut (Self), @2: usize) -> Option<Self::Item>[Self::parent_clause0]
-
-// Full name: core::iter::traits::iterator::Iterator::step_by
-pub fn step_by<Self>(@1: Self, @2: usize) -> StepBy<Self>[@TraitClause0]
-where
-    [@TraitClause0]: Sized<Self>,
-
-// Full name: core::iter::traits::iterator::Iterator::chain
-pub fn chain<Self, U>(@1: Self, @2: U) -> Chain<Self, @TraitClause2::IntoIter>[@TraitClause1, @TraitClause2::parent_clause1]
-where
-    [@TraitClause0]: Sized<U>,
-    [@TraitClause1]: Sized<Self>,
-    [@TraitClause2]: IntoIterator<U>,
-    @TraitClause2::Item = Self::Item,
-
-// Full name: core::iter::traits::iterator::Iterator::zip
-pub fn zip<Self, U>(@1: Self, @2: U) -> Zip<Self, @TraitClause2::IntoIter>[@TraitClause1, @TraitClause2::parent_clause1]
-where
-    [@TraitClause0]: Sized<U>,
-    [@TraitClause1]: Sized<Self>,
-    [@TraitClause2]: IntoIterator<U>,
-
-// Full name: core::iter::traits::iterator::Iterator::intersperse
-pub fn intersperse<Self>(@1: Self, @2: Self::Item) -> Intersperse<Self>[@TraitClause0, Self, @TraitClause1]
-where
-    [@TraitClause0]: Sized<Self>,
-    [@TraitClause1]: Clone<Self::Item>,
-
-// Full name: core::iter::traits::iterator::Iterator::intersperse_with
-pub fn intersperse_with<Self, G>(@1: Self, @2: G) -> IntersperseWith<Self, G>[@TraitClause1, @TraitClause0, Self]
-where
-    [@TraitClause0]: Sized<G>,
-    [@TraitClause1]: Sized<Self>,
-    [@TraitClause2]: FnMut<G, ()>,
-    @TraitClause2::parent_clause0::Output = Self::Item,
-
-// Full name: core::iter::traits::iterator::Iterator::map
-#[lang_item("IteratorMap")]
-pub fn map<Self, B, F>(@1: Self, @2: F) -> Map<Self, F>[@TraitClause2, @TraitClause1]
-where
-    [@TraitClause0]: Sized<B>,
-    [@TraitClause1]: Sized<F>,
-    [@TraitClause2]: Sized<Self>,
-    [@TraitClause3]: FnMut<F, (Self::Item)>,
-    @TraitClause3::parent_clause0::Output = B,
-
-pub fn core::iter::traits::iterator::Iterator::for_each<Self, F>(@1: Self, @2: F)
-where
-    [@TraitClause0]: Sized<F>,
-    [@TraitClause1]: Sized<Self>,
-    [@TraitClause2]: FnMut<F, (Self::Item)>,
-    @TraitClause2::parent_clause0::Output = (),
-
-// Full name: core::iter::traits::iterator::Iterator::filter
-#[lang_item("iter_filter")]
-pub fn filter<Self, P>(@1: Self, @2: P) -> Filter<Self, P>[@TraitClause1, @TraitClause0]
-where
-    [@TraitClause0]: Sized<P>,
-    [@TraitClause1]: Sized<Self>,
-    [@TraitClause2]: for<'_0> FnMut<P, (&'_0_0 (Self::Item))>,
-    for<'_0> @TraitClause2::parent_clause0::Output = bool,
-
-// Full name: core::iter::traits::iterator::Iterator::filter_map
-pub fn filter_map<Self, B, F>(@1: Self, @2: F) -> FilterMap<Self, F>[@TraitClause2, @TraitClause1]
-where
-    [@TraitClause0]: Sized<B>,
-    [@TraitClause1]: Sized<F>,
-    [@TraitClause2]: Sized<Self>,
-    [@TraitClause3]: FnMut<F, (Self::Item)>,
-    @TraitClause3::parent_clause0::Output = Option<B>[@TraitClause0],
-
-// Full name: core::iter::traits::iterator::Iterator::enumerate
-#[lang_item("enumerate_method")]
-pub fn enumerate<Self>(@1: Self) -> Enumerate<Self>[@TraitClause0]
-where
-    [@TraitClause0]: Sized<Self>,
-
-// Full name: core::iter::traits::iterator::Iterator::peekable
-pub fn peekable<Self>(@1: Self) -> Peekable<Self>[@TraitClause0, Self]
-where
-    [@TraitClause0]: Sized<Self>,
-
-// Full name: core::iter::traits::iterator::Iterator::skip_while
-pub fn skip_while<Self, P>(@1: Self, @2: P) -> SkipWhile<Self, P>[@TraitClause1, @TraitClause0]
-where
-    [@TraitClause0]: Sized<P>,
-    [@TraitClause1]: Sized<Self>,
-    [@TraitClause2]: for<'_0> FnMut<P, (&'_0_0 (Self::Item))>,
-    for<'_0> @TraitClause2::parent_clause0::Output = bool,
-
-// Full name: core::iter::traits::iterator::Iterator::take_while
-pub fn take_while<Self, P>(@1: Self, @2: P) -> TakeWhile<Self, P>[@TraitClause1, @TraitClause0]
-where
-    [@TraitClause0]: Sized<P>,
-    [@TraitClause1]: Sized<Self>,
-    [@TraitClause2]: for<'_0> FnMut<P, (&'_0_0 (Self::Item))>,
-    for<'_0> @TraitClause2::parent_clause0::Output = bool,
-
-// Full name: core::iter::traits::iterator::Iterator::map_while
-pub fn map_while<Self, B, P>(@1: Self, @2: P) -> MapWhile<Self, P>[@TraitClause2, @TraitClause1]
-where
-    [@TraitClause0]: Sized<B>,
-    [@TraitClause1]: Sized<P>,
-    [@TraitClause2]: Sized<Self>,
-    [@TraitClause3]: FnMut<P, (Self::Item)>,
-    @TraitClause3::parent_clause0::Output = Option<B>[@TraitClause0],
-
-// Full name: core::iter::traits::iterator::Iterator::skip
-pub fn skip<Self>(@1: Self, @2: usize) -> Skip<Self>[@TraitClause0]
-where
-    [@TraitClause0]: Sized<Self>,
-
-// Full name: core::iter::traits::iterator::Iterator::take
-pub fn take<Self>(@1: Self, @2: usize) -> Take<Self>[@TraitClause0]
-where
-    [@TraitClause0]: Sized<Self>,
-
-// Full name: core::iter::traits::iterator::Iterator::scan
-pub fn scan<Self, St, B, F>(@1: Self, @2: St, @3: F) -> Scan<Self, St, F>[@TraitClause3, @TraitClause0, @TraitClause2]
-where
-    [@TraitClause0]: Sized<St>,
+    [@TraitClause0]: Iterator<Self>,
     [@TraitClause1]: Sized<B>,
     [@TraitClause2]: Sized<F>,
     [@TraitClause3]: Sized<Self>,
-    [@TraitClause4]: for<'_0> FnMut<F, (&'_0_0 mut (St), Self::Item)>,
-    for<'_0> @TraitClause4::parent_clause0::Output = Option<B>[@TraitClause1],
+    [@TraitClause4]: FnMut<F, (B, @TraitClause0::Item)>,
+    @TraitClause4::parent_clause0::Output = B,
 
-// Full name: core::iter::traits::iterator::Iterator::flat_map
-pub fn flat_map<Self, U, F>(@1: Self, @2: F) -> FlatMap<Self, U, F>[@TraitClause2, @TraitClause0, @TraitClause1, @TraitClause3]
+pub fn core::iter::traits::iterator::Iterator::count<Self>(@1: Self) -> usize
 where
-    [@TraitClause0]: Sized<U>,
-    [@TraitClause1]: Sized<F>,
+    [@TraitClause0]: Iterator<Self>,
+    [@TraitClause1]: Sized<Self>,
+
+pub fn core::iter::traits::iterator::Iterator::last<Self>(@1: Self) -> Option<@TraitClause0::Item>[@TraitClause0::parent_clause0]
+where
+    [@TraitClause0]: Iterator<Self>,
+    [@TraitClause1]: Sized<Self>,
+
+pub fn core::iter::traits::iterator::Iterator::advance_by<'_0, Self>(@1: &'_0 mut (Self), @2: usize) -> Result<(), NonZero<usize>[Sized<usize>, {impl ZeroablePrimitive for usize}#27]>[Sized<()>, Sized<NonZero<usize>[Sized<usize>, {impl ZeroablePrimitive for usize}#27]>]
+where
+    [@TraitClause0]: Iterator<Self>,
+
+#[lang_item("clone_fn")]
+pub fn core::clone::Clone::clone<'_0, Self>(@1: &'_0 (Self)) -> Self
+where
+    [@TraitClause0]: Clone<Self>,
+
+// Full name: core::clone::Clone::clone_from
+pub fn clone_from<'_0, '_1, Self>(@1: &'_0 mut (Self), @2: &'_1 (Self))
+where
+    [@TraitClause0]: Clone<Self>,
+
+pub unsafe fn core::iter::traits::iterator::Iterator::__iterator_get_unchecked<'_0, Self>(@1: &'_0 mut (Self), @2: usize) -> @TraitClause0::Item
+where
+    [@TraitClause0]: Iterator<Self>,
+    [@TraitClause1]: TrustedRandomAccessNoCoerce<Self>,
+
+// Full name: core::iter::traits::iterator::Iterator::next_chunk
+pub fn next_chunk<'_0, Self, const N : usize>(@1: &'_0 mut (Self)) -> Result<Array<@TraitClause0::Item, const N : usize>, IntoIter<@TraitClause0::Item, const N : usize>[@TraitClause0::parent_clause0]>[Sized<Array<@TraitClause0::Item, const N : usize>>, Sized<IntoIter<@TraitClause0::Item, const N : usize>[@TraitClause0::parent_clause0]>]
+where
+    [@TraitClause0]: Iterator<Self>,
+    [@TraitClause1]: Sized<Self>,
+
+pub fn core::iter::traits::iterator::Iterator::nth<'_0, Self>(@1: &'_0 mut (Self), @2: usize) -> Option<@TraitClause0::Item>[@TraitClause0::parent_clause0]
+where
+    [@TraitClause0]: Iterator<Self>,
+
+// Full name: core::iter::traits::iterator::Iterator::step_by
+pub fn step_by<Self>(@1: Self, @2: usize) -> StepBy<Self>[@TraitClause1]
+where
+    [@TraitClause0]: Iterator<Self>,
+    [@TraitClause1]: Sized<Self>,
+
+// Full name: core::iter::traits::iterator::Iterator::chain
+pub fn chain<Self, U>(@1: Self, @2: U) -> Chain<Self, @TraitClause3::IntoIter>[@TraitClause2, @TraitClause3::parent_clause1]
+where
+    [@TraitClause0]: Iterator<Self>,
+    [@TraitClause1]: Sized<U>,
     [@TraitClause2]: Sized<Self>,
     [@TraitClause3]: IntoIterator<U>,
-    [@TraitClause4]: FnMut<F, (Self::Item)>,
-    @TraitClause4::parent_clause0::Output = U,
+    @TraitClause3::Item = @TraitClause0::Item,
+
+// Full name: core::iter::traits::iterator::Iterator::zip
+pub fn zip<Self, U>(@1: Self, @2: U) -> Zip<Self, @TraitClause3::IntoIter>[@TraitClause2, @TraitClause3::parent_clause1]
+where
+    [@TraitClause0]: Iterator<Self>,
+    [@TraitClause1]: Sized<U>,
+    [@TraitClause2]: Sized<Self>,
+    [@TraitClause3]: IntoIterator<U>,
+
+// Full name: core::iter::traits::iterator::Iterator::intersperse
+pub fn intersperse<Self>(@1: Self, @2: @TraitClause0::Item) -> Intersperse<Self>[@TraitClause1, @TraitClause0, @TraitClause2]
+where
+    [@TraitClause0]: Iterator<Self>,
+    [@TraitClause1]: Sized<Self>,
+    [@TraitClause2]: Clone<@TraitClause0::Item>,
+
+// Full name: core::iter::traits::iterator::Iterator::intersperse_with
+pub fn intersperse_with<Self, G>(@1: Self, @2: G) -> IntersperseWith<Self, G>[@TraitClause2, @TraitClause1, @TraitClause0]
+where
+    [@TraitClause0]: Iterator<Self>,
+    [@TraitClause1]: Sized<G>,
+    [@TraitClause2]: Sized<Self>,
+    [@TraitClause3]: FnMut<G, ()>,
+    @TraitClause3::parent_clause0::Output = @TraitClause0::Item,
+
+// Full name: core::iter::traits::iterator::Iterator::map
+#[lang_item("IteratorMap")]
+pub fn map<Self, B, F>(@1: Self, @2: F) -> Map<Self, F>[@TraitClause3, @TraitClause2]
+where
+    [@TraitClause0]: Iterator<Self>,
+    [@TraitClause1]: Sized<B>,
+    [@TraitClause2]: Sized<F>,
+    [@TraitClause3]: Sized<Self>,
+    [@TraitClause4]: FnMut<F, (@TraitClause0::Item)>,
+    @TraitClause4::parent_clause0::Output = B,
+
+pub fn core::iter::traits::iterator::Iterator::for_each<Self, F>(@1: Self, @2: F)
+where
+    [@TraitClause0]: Iterator<Self>,
+    [@TraitClause1]: Sized<F>,
+    [@TraitClause2]: Sized<Self>,
+    [@TraitClause3]: FnMut<F, (@TraitClause0::Item)>,
+    @TraitClause3::parent_clause0::Output = (),
+
+// Full name: core::iter::traits::iterator::Iterator::filter
+#[lang_item("iter_filter")]
+pub fn filter<Self, P>(@1: Self, @2: P) -> Filter<Self, P>[@TraitClause2, @TraitClause1]
+where
+    [@TraitClause0]: Iterator<Self>,
+    [@TraitClause1]: Sized<P>,
+    [@TraitClause2]: Sized<Self>,
+    [@TraitClause3]: for<'_0> FnMut<P, (&'_0_0 (@TraitClause0::Item))>,
+    for<'_0> @TraitClause3::parent_clause0::Output = bool,
+
+// Full name: core::iter::traits::iterator::Iterator::filter_map
+pub fn filter_map<Self, B, F>(@1: Self, @2: F) -> FilterMap<Self, F>[@TraitClause3, @TraitClause2]
+where
+    [@TraitClause0]: Iterator<Self>,
+    [@TraitClause1]: Sized<B>,
+    [@TraitClause2]: Sized<F>,
+    [@TraitClause3]: Sized<Self>,
+    [@TraitClause4]: FnMut<F, (@TraitClause0::Item)>,
+    @TraitClause4::parent_clause0::Output = Option<B>[@TraitClause1],
+
+// Full name: core::iter::traits::iterator::Iterator::enumerate
+#[lang_item("enumerate_method")]
+pub fn enumerate<Self>(@1: Self) -> Enumerate<Self>[@TraitClause1]
+where
+    [@TraitClause0]: Iterator<Self>,
+    [@TraitClause1]: Sized<Self>,
+
+// Full name: core::iter::traits::iterator::Iterator::peekable
+pub fn peekable<Self>(@1: Self) -> Peekable<Self>[@TraitClause1, @TraitClause0]
+where
+    [@TraitClause0]: Iterator<Self>,
+    [@TraitClause1]: Sized<Self>,
+
+// Full name: core::iter::traits::iterator::Iterator::skip_while
+pub fn skip_while<Self, P>(@1: Self, @2: P) -> SkipWhile<Self, P>[@TraitClause2, @TraitClause1]
+where
+    [@TraitClause0]: Iterator<Self>,
+    [@TraitClause1]: Sized<P>,
+    [@TraitClause2]: Sized<Self>,
+    [@TraitClause3]: for<'_0> FnMut<P, (&'_0_0 (@TraitClause0::Item))>,
+    for<'_0> @TraitClause3::parent_clause0::Output = bool,
+
+// Full name: core::iter::traits::iterator::Iterator::take_while
+pub fn take_while<Self, P>(@1: Self, @2: P) -> TakeWhile<Self, P>[@TraitClause2, @TraitClause1]
+where
+    [@TraitClause0]: Iterator<Self>,
+    [@TraitClause1]: Sized<P>,
+    [@TraitClause2]: Sized<Self>,
+    [@TraitClause3]: for<'_0> FnMut<P, (&'_0_0 (@TraitClause0::Item))>,
+    for<'_0> @TraitClause3::parent_clause0::Output = bool,
+
+// Full name: core::iter::traits::iterator::Iterator::map_while
+pub fn map_while<Self, B, P>(@1: Self, @2: P) -> MapWhile<Self, P>[@TraitClause3, @TraitClause2]
+where
+    [@TraitClause0]: Iterator<Self>,
+    [@TraitClause1]: Sized<B>,
+    [@TraitClause2]: Sized<P>,
+    [@TraitClause3]: Sized<Self>,
+    [@TraitClause4]: FnMut<P, (@TraitClause0::Item)>,
+    @TraitClause4::parent_clause0::Output = Option<B>[@TraitClause1],
+
+// Full name: core::iter::traits::iterator::Iterator::skip
+pub fn skip<Self>(@1: Self, @2: usize) -> Skip<Self>[@TraitClause1]
+where
+    [@TraitClause0]: Iterator<Self>,
+    [@TraitClause1]: Sized<Self>,
+
+// Full name: core::iter::traits::iterator::Iterator::take
+pub fn take<Self>(@1: Self, @2: usize) -> Take<Self>[@TraitClause1]
+where
+    [@TraitClause0]: Iterator<Self>,
+    [@TraitClause1]: Sized<Self>,
+
+// Full name: core::iter::traits::iterator::Iterator::scan
+pub fn scan<Self, St, B, F>(@1: Self, @2: St, @3: F) -> Scan<Self, St, F>[@TraitClause4, @TraitClause1, @TraitClause3]
+where
+    [@TraitClause0]: Iterator<Self>,
+    [@TraitClause1]: Sized<St>,
+    [@TraitClause2]: Sized<B>,
+    [@TraitClause3]: Sized<F>,
+    [@TraitClause4]: Sized<Self>,
+    [@TraitClause5]: for<'_0> FnMut<F, (&'_0_0 mut (St), @TraitClause0::Item)>,
+    for<'_0> @TraitClause5::parent_clause0::Output = Option<B>[@TraitClause2],
+
+// Full name: core::iter::traits::iterator::Iterator::flat_map
+pub fn flat_map<Self, U, F>(@1: Self, @2: F) -> FlatMap<Self, U, F>[@TraitClause3, @TraitClause1, @TraitClause2, @TraitClause4]
+where
+    [@TraitClause0]: Iterator<Self>,
+    [@TraitClause1]: Sized<U>,
+    [@TraitClause2]: Sized<F>,
+    [@TraitClause3]: Sized<Self>,
+    [@TraitClause4]: IntoIterator<U>,
+    [@TraitClause5]: FnMut<F, (@TraitClause0::Item)>,
+    @TraitClause5::parent_clause0::Output = U,
 
 // Full name: core::iter::traits::iterator::Iterator::flatten
-pub fn flatten<Self>(@1: Self) -> Flatten<Self>[@TraitClause0, Self, @TraitClause1]
+pub fn flatten<Self>(@1: Self) -> Flatten<Self>[@TraitClause1, @TraitClause0, @TraitClause2]
 where
-    [@TraitClause0]: Sized<Self>,
-    [@TraitClause1]: IntoIterator<Self::Item>,
+    [@TraitClause0]: Iterator<Self>,
+    [@TraitClause1]: Sized<Self>,
+    [@TraitClause2]: IntoIterator<@TraitClause0::Item>,
 
 // Full name: core::iter::traits::iterator::Iterator::map_windows
-pub fn map_windows<Self, F, R, const N : usize>(@1: Self, @2: F) -> MapWindows<Self, F, const N : usize>[@TraitClause2, @TraitClause0, Self]
+pub fn map_windows<Self, F, R, const N : usize>(@1: Self, @2: F) -> MapWindows<Self, F, const N : usize>[@TraitClause3, @TraitClause1, @TraitClause0]
 where
-    [@TraitClause0]: Sized<F>,
-    [@TraitClause1]: Sized<R>,
-    [@TraitClause2]: Sized<Self>,
-    [@TraitClause3]: for<'_0> FnMut<F, (&'_0_0 (Array<Self::Item, const N : usize>))>,
-    for<'_0> @TraitClause3::parent_clause0::Output = R,
+    [@TraitClause0]: Iterator<Self>,
+    [@TraitClause1]: Sized<F>,
+    [@TraitClause2]: Sized<R>,
+    [@TraitClause3]: Sized<Self>,
+    [@TraitClause4]: for<'_0> FnMut<F, (&'_0_0 (Array<@TraitClause0::Item, const N : usize>))>,
+    for<'_0> @TraitClause4::parent_clause0::Output = R,
 
 // Full name: core::iter::traits::iterator::Iterator::fuse
-pub fn fuse<Self>(@1: Self) -> Fuse<Self>[@TraitClause0]
+pub fn fuse<Self>(@1: Self) -> Fuse<Self>[@TraitClause1]
 where
-    [@TraitClause0]: Sized<Self>,
+    [@TraitClause0]: Iterator<Self>,
+    [@TraitClause1]: Sized<Self>,
 
 // Full name: core::iter::traits::iterator::Iterator::inspect
-pub fn inspect<Self, F>(@1: Self, @2: F) -> Inspect<Self, F>[@TraitClause1, @TraitClause0]
+pub fn inspect<Self, F>(@1: Self, @2: F) -> Inspect<Self, F>[@TraitClause2, @TraitClause1]
 where
-    [@TraitClause0]: Sized<F>,
-    [@TraitClause1]: Sized<Self>,
-    [@TraitClause2]: for<'_0> FnMut<F, (&'_0_0 (Self::Item))>,
-    for<'_0> @TraitClause2::parent_clause0::Output = (),
+    [@TraitClause0]: Iterator<Self>,
+    [@TraitClause1]: Sized<F>,
+    [@TraitClause2]: Sized<Self>,
+    [@TraitClause3]: for<'_0> FnMut<F, (&'_0_0 (@TraitClause0::Item))>,
+    for<'_0> @TraitClause3::parent_clause0::Output = (),
 
 // Full name: core::iter::traits::iterator::Iterator::by_ref
 pub fn by_ref<'_0, Self>(@1: &'_0 mut (Self)) -> &'_0 mut (Self)
 where
-    [@TraitClause0]: Sized<Self>,
+    [@TraitClause0]: Iterator<Self>,
+    [@TraitClause1]: Sized<Self>,
 
 // Full name: core::iter::traits::iterator::Iterator::collect
 #[lang_item("iterator_collect_fn")]
 pub fn collect<Self, B>(@1: Self) -> B
 where
-    [@TraitClause0]: Sized<B>,
-    [@TraitClause1]: FromIterator<B, Self::Item>,
-    [@TraitClause2]: Sized<Self>,
+    [@TraitClause0]: Iterator<Self>,
+    [@TraitClause1]: Sized<B>,
+    [@TraitClause2]: FromIterator<B, @TraitClause0::Item>,
+    [@TraitClause3]: Sized<Self>,
 
 // Full name: core::iter::traits::iterator::Iterator::try_collect
-pub fn try_collect<'_0, Self, B>(@1: &'_0 mut (Self)) -> @TraitClause3::TryType
+pub fn try_collect<'_0, Self, B>(@1: &'_0 mut (Self)) -> @TraitClause4::TryType
 where
-    [@TraitClause0]: Sized<B>,
-    [@TraitClause1]: Sized<Self>,
-    [@TraitClause2]: Try<Self::Item>,
-    [@TraitClause3]: Residual<@TraitClause2::Residual, B>,
-    [@TraitClause4]: FromIterator<B, @TraitClause2::Output>,
+    [@TraitClause0]: Iterator<Self>,
+    [@TraitClause1]: Sized<B>,
+    [@TraitClause2]: Sized<Self>,
+    [@TraitClause3]: Try<@TraitClause0::Item>,
+    [@TraitClause4]: Residual<@TraitClause3::Residual, B>,
+    [@TraitClause5]: FromIterator<B, @TraitClause3::Output>,
 
 // Full name: core::iter::traits::iterator::Iterator::collect_into
 pub fn collect_into<'_0, Self, E>(@1: Self, @2: &'_0 mut (E)) -> &'_0 mut (E)
 where
-    [@TraitClause0]: Sized<E>,
-    [@TraitClause1]: Extend<E, Self::Item>,
-    [@TraitClause2]: Sized<Self>,
+    [@TraitClause0]: Iterator<Self>,
+    [@TraitClause1]: Sized<E>,
+    [@TraitClause2]: Extend<E, @TraitClause0::Item>,
+    [@TraitClause3]: Sized<Self>,
 
 // Full name: core::iter::traits::iterator::Iterator::partition
 pub fn partition<Self, B, F>(@1: Self, @2: F) -> (B, B)
 where
-    [@TraitClause0]: Sized<B>,
-    [@TraitClause1]: Sized<F>,
-    [@TraitClause2]: Sized<Self>,
-    [@TraitClause3]: Default<B>,
-    [@TraitClause4]: Extend<B, Self::Item>,
-    [@TraitClause5]: for<'_0> FnMut<F, (&'_0_0 (Self::Item))>,
-    for<'_0> @TraitClause5::parent_clause0::Output = bool,
+    [@TraitClause0]: Iterator<Self>,
+    [@TraitClause1]: Sized<B>,
+    [@TraitClause2]: Sized<F>,
+    [@TraitClause3]: Sized<Self>,
+    [@TraitClause4]: Default<B>,
+    [@TraitClause5]: Extend<B, @TraitClause0::Item>,
+    [@TraitClause6]: for<'_0> FnMut<F, (&'_0_0 (@TraitClause0::Item))>,
+    for<'_0> @TraitClause6::parent_clause0::Output = bool,
 
 // Full name: core::iter::traits::iterator::Iterator::partition_in_place
 pub fn partition_in_place<'a, Self, T, P>(@1: Self, @2: P) -> usize
 where
-    [@TraitClause0]: Sized<T>,
-    [@TraitClause1]: Sized<P>,
-    [@TraitClause2]: Sized<Self>,
-    [@TraitClause3]: DoubleEndedIterator<Self>,
-    [@TraitClause4]: for<'_0> FnMut<P, (&'_0_0 (T))>,
+    [@TraitClause0]: Iterator<Self>,
+    [@TraitClause1]: Sized<T>,
+    [@TraitClause2]: Sized<P>,
+    [@TraitClause3]: Sized<Self>,
+    [@TraitClause4]: DoubleEndedIterator<Self>,
+    [@TraitClause5]: for<'_0> FnMut<P, (&'_0_0 (T))>,
     T : 'a,
-    Self::Item = &'a mut (T),
-    for<'_0> @TraitClause4::parent_clause0::Output = bool,
+    @TraitClause0::Item = &'a mut (T),
+    for<'_0> @TraitClause5::parent_clause0::Output = bool,
 
 // Full name: core::iter::traits::iterator::Iterator::is_partitioned
 pub fn is_partitioned<Self, P>(@1: Self, @2: P) -> bool
 where
-    [@TraitClause0]: Sized<P>,
-    [@TraitClause1]: Sized<Self>,
-    [@TraitClause2]: FnMut<P, (Self::Item)>,
-    @TraitClause2::parent_clause0::Output = bool,
+    [@TraitClause0]: Iterator<Self>,
+    [@TraitClause1]: Sized<P>,
+    [@TraitClause2]: Sized<Self>,
+    [@TraitClause3]: FnMut<P, (@TraitClause0::Item)>,
+    @TraitClause3::parent_clause0::Output = bool,
 
 // Full name: core::iter::traits::iterator::Iterator::try_fold
 pub fn try_fold<'_0, Self, B, F, R>(@1: &'_0 mut (Self), @2: B, @3: F) -> R
 where
-    [@TraitClause0]: Sized<B>,
-    [@TraitClause1]: Sized<F>,
-    [@TraitClause2]: Sized<R>,
-    [@TraitClause3]: Sized<Self>,
-    [@TraitClause4]: FnMut<F, (B, Self::Item)>,
-    [@TraitClause5]: Try<R>,
-    @TraitClause4::parent_clause0::Output = R,
-    @TraitClause5::Output = B,
+    [@TraitClause0]: Iterator<Self>,
+    [@TraitClause1]: Sized<B>,
+    [@TraitClause2]: Sized<F>,
+    [@TraitClause3]: Sized<R>,
+    [@TraitClause4]: Sized<Self>,
+    [@TraitClause5]: FnMut<F, (B, @TraitClause0::Item)>,
+    [@TraitClause6]: Try<R>,
+    @TraitClause5::parent_clause0::Output = R,
+    @TraitClause6::Output = B,
 
 // Full name: core::iter::traits::iterator::Iterator::try_for_each
 pub fn try_for_each<'_0, Self, F, R>(@1: &'_0 mut (Self), @2: F) -> R
 where
-    [@TraitClause0]: Sized<F>,
-    [@TraitClause1]: Sized<R>,
-    [@TraitClause2]: Sized<Self>,
-    [@TraitClause3]: FnMut<F, (Self::Item)>,
-    [@TraitClause4]: Try<R>,
-    @TraitClause3::parent_clause0::Output = R,
-    @TraitClause4::Output = (),
+    [@TraitClause0]: Iterator<Self>,
+    [@TraitClause1]: Sized<F>,
+    [@TraitClause2]: Sized<R>,
+    [@TraitClause3]: Sized<Self>,
+    [@TraitClause4]: FnMut<F, (@TraitClause0::Item)>,
+    [@TraitClause5]: Try<R>,
+    @TraitClause4::parent_clause0::Output = R,
+    @TraitClause5::Output = (),
 
 // Full name: core::iter::traits::iterator::Iterator::reduce
-pub fn reduce<Self, F>(@1: Self, @2: F) -> Option<Self::Item>[Self::parent_clause0]
+pub fn reduce<Self, F>(@1: Self, @2: F) -> Option<@TraitClause0::Item>[@TraitClause0::parent_clause0]
 where
-    [@TraitClause0]: Sized<F>,
-    [@TraitClause1]: Sized<Self>,
-    [@TraitClause2]: FnMut<F, (Self::Item, Self::Item)>,
-    @TraitClause2::parent_clause0::Output = Self::Item,
+    [@TraitClause0]: Iterator<Self>,
+    [@TraitClause1]: Sized<F>,
+    [@TraitClause2]: Sized<Self>,
+    [@TraitClause3]: FnMut<F, (@TraitClause0::Item, @TraitClause0::Item)>,
+    @TraitClause3::parent_clause0::Output = @TraitClause0::Item,
 
 // Full name: core::iter::traits::iterator::Iterator::try_reduce
-pub fn try_reduce<'_0, Self, R, impl FnMut(Self::Item, Self::Item) -> R>(@1: &'_0 mut (Self), @2: impl FnMut(Self::Item, Self::Item) -> R) -> @TraitClause4::TryType
+pub fn try_reduce<'_0, Self, R, impl FnMut(Self::Item, Self::Item) -> R>(@1: &'_0 mut (Self), @2: impl FnMut(Self::Item, Self::Item) -> R) -> @TraitClause5::TryType
 where
-    [@TraitClause0]: Sized<R>,
-    [@TraitClause1]: Sized<impl FnMut(Self::Item, Self::Item) -> R>,
-    [@TraitClause2]: Sized<Self>,
-    [@TraitClause3]: Try<R>,
-    [@TraitClause4]: Residual<@TraitClause3::Residual, Option<Self::Item>[Self::parent_clause0]>,
-    [@TraitClause5]: FnMut<impl FnMut(Self::Item, Self::Item) -> R, (Self::Item, Self::Item)>,
-    @TraitClause3::Output = Self::Item,
-    @TraitClause5::parent_clause0::Output = R,
+    [@TraitClause0]: Iterator<Self>,
+    [@TraitClause1]: Sized<R>,
+    [@TraitClause2]: Sized<impl FnMut(Self::Item, Self::Item) -> R>,
+    [@TraitClause3]: Sized<Self>,
+    [@TraitClause4]: Try<R>,
+    [@TraitClause5]: Residual<@TraitClause4::Residual, Option<@TraitClause0::Item>[@TraitClause0::parent_clause0]>,
+    [@TraitClause6]: FnMut<impl FnMut(Self::Item, Self::Item) -> R, (@TraitClause0::Item, @TraitClause0::Item)>,
+    @TraitClause4::Output = @TraitClause0::Item,
+    @TraitClause6::parent_clause0::Output = R,
 
 pub fn core::iter::traits::iterator::Iterator::all<'_0, Self, F>(@1: &'_0 mut (Self), @2: F) -> bool
 where
-    [@TraitClause0]: Sized<F>,
-    [@TraitClause1]: Sized<Self>,
-    [@TraitClause2]: FnMut<F, (Self::Item)>,
-    @TraitClause2::parent_clause0::Output = bool,
+    [@TraitClause0]: Iterator<Self>,
+    [@TraitClause1]: Sized<F>,
+    [@TraitClause2]: Sized<Self>,
+    [@TraitClause3]: FnMut<F, (@TraitClause0::Item)>,
+    @TraitClause3::parent_clause0::Output = bool,
 
 pub fn core::iter::traits::iterator::Iterator::any<'_0, Self, F>(@1: &'_0 mut (Self), @2: F) -> bool
 where
-    [@TraitClause0]: Sized<F>,
-    [@TraitClause1]: Sized<Self>,
-    [@TraitClause2]: FnMut<F, (Self::Item)>,
-    @TraitClause2::parent_clause0::Output = bool,
-
-pub fn core::iter::traits::iterator::Iterator::find<'_0, Self, P>(@1: &'_0 mut (Self), @2: P) -> Option<Self::Item>[Self::parent_clause0]
-where
-    [@TraitClause0]: Sized<P>,
-    [@TraitClause1]: Sized<Self>,
-    [@TraitClause2]: for<'_0> FnMut<P, (&'_0_0 (Self::Item))>,
-    for<'_0> @TraitClause2::parent_clause0::Output = bool,
-
-pub fn core::iter::traits::iterator::Iterator::find_map<'_0, Self, B, F>(@1: &'_0 mut (Self), @2: F) -> Option<B>[@TraitClause0]
-where
-    [@TraitClause0]: Sized<B>,
+    [@TraitClause0]: Iterator<Self>,
     [@TraitClause1]: Sized<F>,
     [@TraitClause2]: Sized<Self>,
-    [@TraitClause3]: FnMut<F, (Self::Item)>,
-    @TraitClause3::parent_clause0::Output = Option<B>[@TraitClause0],
+    [@TraitClause3]: FnMut<F, (@TraitClause0::Item)>,
+    @TraitClause3::parent_clause0::Output = bool,
+
+pub fn core::iter::traits::iterator::Iterator::find<'_0, Self, P>(@1: &'_0 mut (Self), @2: P) -> Option<@TraitClause0::Item>[@TraitClause0::parent_clause0]
+where
+    [@TraitClause0]: Iterator<Self>,
+    [@TraitClause1]: Sized<P>,
+    [@TraitClause2]: Sized<Self>,
+    [@TraitClause3]: for<'_0> FnMut<P, (&'_0_0 (@TraitClause0::Item))>,
+    for<'_0> @TraitClause3::parent_clause0::Output = bool,
+
+pub fn core::iter::traits::iterator::Iterator::find_map<'_0, Self, B, F>(@1: &'_0 mut (Self), @2: F) -> Option<B>[@TraitClause1]
+where
+    [@TraitClause0]: Iterator<Self>,
+    [@TraitClause1]: Sized<B>,
+    [@TraitClause2]: Sized<F>,
+    [@TraitClause3]: Sized<Self>,
+    [@TraitClause4]: FnMut<F, (@TraitClause0::Item)>,
+    @TraitClause4::parent_clause0::Output = Option<B>[@TraitClause1],
 
 // Full name: core::iter::traits::iterator::Iterator::try_find
-pub fn try_find<'_0, Self, R, impl FnMut(&Self::Item) -> R>(@1: &'_0 mut (Self), @2: impl FnMut(&Self::Item) -> R) -> @TraitClause4::TryType
+pub fn try_find<'_0, Self, R, impl FnMut(&Self::Item) -> R>(@1: &'_0 mut (Self), @2: impl FnMut(&Self::Item) -> R) -> @TraitClause5::TryType
 where
-    [@TraitClause0]: Sized<R>,
-    [@TraitClause1]: Sized<impl FnMut(&Self::Item) -> R>,
-    [@TraitClause2]: Sized<Self>,
-    [@TraitClause3]: Try<R>,
-    [@TraitClause4]: Residual<@TraitClause3::Residual, Option<Self::Item>[Self::parent_clause0]>,
-    [@TraitClause5]: for<'_0> FnMut<impl FnMut(&Self::Item) -> R, (&'_0_0 (Self::Item))>,
-    @TraitClause3::Output = bool,
-    for<'_0> @TraitClause5::parent_clause0::Output = R,
+    [@TraitClause0]: Iterator<Self>,
+    [@TraitClause1]: Sized<R>,
+    [@TraitClause2]: Sized<impl FnMut(&Self::Item) -> R>,
+    [@TraitClause3]: Sized<Self>,
+    [@TraitClause4]: Try<R>,
+    [@TraitClause5]: Residual<@TraitClause4::Residual, Option<@TraitClause0::Item>[@TraitClause0::parent_clause0]>,
+    [@TraitClause6]: for<'_0> FnMut<impl FnMut(&Self::Item) -> R, (&'_0_0 (@TraitClause0::Item))>,
+    @TraitClause4::Output = bool,
+    for<'_0> @TraitClause6::parent_clause0::Output = R,
 
 pub fn core::iter::traits::iterator::Iterator::position<'_0, Self, P>(@1: &'_0 mut (Self), @2: P) -> Option<usize>[Sized<usize>]
 where
-    [@TraitClause0]: Sized<P>,
-    [@TraitClause1]: Sized<Self>,
-    [@TraitClause2]: FnMut<P, (Self::Item)>,
-    @TraitClause2::parent_clause0::Output = bool,
+    [@TraitClause0]: Iterator<Self>,
+    [@TraitClause1]: Sized<P>,
+    [@TraitClause2]: Sized<Self>,
+    [@TraitClause3]: FnMut<P, (@TraitClause0::Item)>,
+    @TraitClause3::parent_clause0::Output = bool,
 
 pub fn core::iter::traits::iterator::Iterator::rposition<'_0, Self, P>(@1: &'_0 mut (Self), @2: P) -> Option<usize>[Sized<usize>]
 where
-    [@TraitClause0]: Sized<P>,
-    [@TraitClause1]: FnMut<P, (Self::Item)>,
-    [@TraitClause2]: Sized<Self>,
-    [@TraitClause3]: ExactSizeIterator<Self>,
-    [@TraitClause4]: DoubleEndedIterator<Self>,
-    @TraitClause1::parent_clause0::Output = bool,
+    [@TraitClause0]: Iterator<Self>,
+    [@TraitClause1]: Sized<P>,
+    [@TraitClause2]: FnMut<P, (@TraitClause0::Item)>,
+    [@TraitClause3]: Sized<Self>,
+    [@TraitClause4]: ExactSizeIterator<Self>,
+    [@TraitClause5]: DoubleEndedIterator<Self>,
+    @TraitClause2::parent_clause0::Output = bool,
 
-pub fn core::iter::traits::iterator::Iterator::max<Self>(@1: Self) -> Option<Self::Item>[Self::parent_clause0]
+pub fn core::iter::traits::iterator::Iterator::max<Self>(@1: Self) -> Option<@TraitClause0::Item>[@TraitClause0::parent_clause0]
 where
-    [@TraitClause0]: Sized<Self>,
-    [@TraitClause1]: Ord<Self::Item>,
+    [@TraitClause0]: Iterator<Self>,
+    [@TraitClause1]: Sized<Self>,
+    [@TraitClause2]: Ord<@TraitClause0::Item>,
 
-pub fn core::iter::traits::iterator::Iterator::min<Self>(@1: Self) -> Option<Self::Item>[Self::parent_clause0]
+pub fn core::iter::traits::iterator::Iterator::min<Self>(@1: Self) -> Option<@TraitClause0::Item>[@TraitClause0::parent_clause0]
 where
-    [@TraitClause0]: Sized<Self>,
-    [@TraitClause1]: Ord<Self::Item>,
+    [@TraitClause0]: Iterator<Self>,
+    [@TraitClause1]: Sized<Self>,
+    [@TraitClause2]: Ord<@TraitClause0::Item>,
 
 // Full name: core::iter::traits::iterator::Iterator::max_by_key
-pub fn max_by_key<Self, B, F>(@1: Self, @2: F) -> Option<Self::Item>[Self::parent_clause0]
+pub fn max_by_key<Self, B, F>(@1: Self, @2: F) -> Option<@TraitClause0::Item>[@TraitClause0::parent_clause0]
 where
-    [@TraitClause0]: Sized<B>,
-    [@TraitClause1]: Sized<F>,
-    [@TraitClause2]: Ord<B>,
-    [@TraitClause3]: Sized<Self>,
-    [@TraitClause4]: for<'_0> FnMut<F, (&'_0_0 (Self::Item))>,
-    for<'_0> @TraitClause4::parent_clause0::Output = B,
+    [@TraitClause0]: Iterator<Self>,
+    [@TraitClause1]: Sized<B>,
+    [@TraitClause2]: Sized<F>,
+    [@TraitClause3]: Ord<B>,
+    [@TraitClause4]: Sized<Self>,
+    [@TraitClause5]: for<'_0> FnMut<F, (&'_0_0 (@TraitClause0::Item))>,
+    for<'_0> @TraitClause5::parent_clause0::Output = B,
 
 // Full name: core::iter::traits::iterator::Iterator::max_by
-pub fn max_by<Self, F>(@1: Self, @2: F) -> Option<Self::Item>[Self::parent_clause0]
+pub fn max_by<Self, F>(@1: Self, @2: F) -> Option<@TraitClause0::Item>[@TraitClause0::parent_clause0]
 where
-    [@TraitClause0]: Sized<F>,
-    [@TraitClause1]: Sized<Self>,
-    [@TraitClause2]: for<'_0, '_1> FnMut<F, (&'_0_0 (Self::Item), &'_0_1 (Self::Item))>,
-    for<'_0, '_1> @TraitClause2::parent_clause0::Output = Ordering,
+    [@TraitClause0]: Iterator<Self>,
+    [@TraitClause1]: Sized<F>,
+    [@TraitClause2]: Sized<Self>,
+    [@TraitClause3]: for<'_0, '_1> FnMut<F, (&'_0_0 (@TraitClause0::Item), &'_0_1 (@TraitClause0::Item))>,
+    for<'_0, '_1> @TraitClause3::parent_clause0::Output = Ordering,
 
 // Full name: core::iter::traits::iterator::Iterator::min_by_key
-pub fn min_by_key<Self, B, F>(@1: Self, @2: F) -> Option<Self::Item>[Self::parent_clause0]
+pub fn min_by_key<Self, B, F>(@1: Self, @2: F) -> Option<@TraitClause0::Item>[@TraitClause0::parent_clause0]
 where
-    [@TraitClause0]: Sized<B>,
-    [@TraitClause1]: Sized<F>,
-    [@TraitClause2]: Ord<B>,
-    [@TraitClause3]: Sized<Self>,
-    [@TraitClause4]: for<'_0> FnMut<F, (&'_0_0 (Self::Item))>,
-    for<'_0> @TraitClause4::parent_clause0::Output = B,
+    [@TraitClause0]: Iterator<Self>,
+    [@TraitClause1]: Sized<B>,
+    [@TraitClause2]: Sized<F>,
+    [@TraitClause3]: Ord<B>,
+    [@TraitClause4]: Sized<Self>,
+    [@TraitClause5]: for<'_0> FnMut<F, (&'_0_0 (@TraitClause0::Item))>,
+    for<'_0> @TraitClause5::parent_clause0::Output = B,
 
 // Full name: core::iter::traits::iterator::Iterator::min_by
-pub fn min_by<Self, F>(@1: Self, @2: F) -> Option<Self::Item>[Self::parent_clause0]
+pub fn min_by<Self, F>(@1: Self, @2: F) -> Option<@TraitClause0::Item>[@TraitClause0::parent_clause0]
 where
-    [@TraitClause0]: Sized<F>,
-    [@TraitClause1]: Sized<Self>,
-    [@TraitClause2]: for<'_0, '_1> FnMut<F, (&'_0_0 (Self::Item), &'_0_1 (Self::Item))>,
-    for<'_0, '_1> @TraitClause2::parent_clause0::Output = Ordering,
+    [@TraitClause0]: Iterator<Self>,
+    [@TraitClause1]: Sized<F>,
+    [@TraitClause2]: Sized<Self>,
+    [@TraitClause3]: for<'_0, '_1> FnMut<F, (&'_0_0 (@TraitClause0::Item), &'_0_1 (@TraitClause0::Item))>,
+    for<'_0, '_1> @TraitClause3::parent_clause0::Output = Ordering,
 
 // Full name: core::iter::traits::iterator::Iterator::rev
-pub fn rev<Self>(@1: Self) -> Rev<Self>[@TraitClause0]
+pub fn rev<Self>(@1: Self) -> Rev<Self>[@TraitClause1]
 where
-    [@TraitClause0]: Sized<Self>,
-    [@TraitClause1]: DoubleEndedIterator<Self>,
+    [@TraitClause0]: Iterator<Self>,
+    [@TraitClause1]: Sized<Self>,
+    [@TraitClause2]: DoubleEndedIterator<Self>,
 
 // Full name: core::iter::traits::iterator::Iterator::unzip
 pub fn unzip<Self, A, B, FromA, FromB>(@1: Self) -> (FromA, FromB)
 where
-    [@TraitClause0]: Sized<A>,
-    [@TraitClause1]: Sized<B>,
-    [@TraitClause2]: Sized<FromA>,
-    [@TraitClause3]: Sized<FromB>,
-    [@TraitClause4]: Default<FromA>,
-    [@TraitClause5]: Extend<FromA, A>,
-    [@TraitClause6]: Default<FromB>,
-    [@TraitClause7]: Extend<FromB, B>,
-    [@TraitClause8]: Sized<Self>,
-    [@TraitClause9]: Iterator<Self>,
-    Self::Item = (A, B),
+    [@TraitClause0]: Iterator<Self>,
+    [@TraitClause1]: Sized<A>,
+    [@TraitClause2]: Sized<B>,
+    [@TraitClause3]: Sized<FromA>,
+    [@TraitClause4]: Sized<FromB>,
+    [@TraitClause5]: Default<FromA>,
+    [@TraitClause6]: Extend<FromA, A>,
+    [@TraitClause7]: Default<FromB>,
+    [@TraitClause8]: Extend<FromB, B>,
+    [@TraitClause9]: Sized<Self>,
+    [@TraitClause10]: Iterator<Self>,
+    @TraitClause0::Item = (A, B),
 
 // Full name: core::iter::traits::iterator::Iterator::copied
 #[lang_item("iter_copied")]
-pub fn copied<'a, Self, T>(@1: Self) -> Copied<Self>[@TraitClause1]
+pub fn copied<'a, Self, T>(@1: Self) -> Copied<Self>[@TraitClause2]
 where
-    [@TraitClause0]: Sized<T>,
-    [@TraitClause1]: Sized<Self>,
-    [@TraitClause2]: Iterator<Self>,
-    [@TraitClause3]: Copy<T>,
+    [@TraitClause0]: Iterator<Self>,
+    [@TraitClause1]: Sized<T>,
+    [@TraitClause2]: Sized<Self>,
+    [@TraitClause3]: Iterator<Self>,
+    [@TraitClause4]: Copy<T>,
     T : 'a,
-    Self::Item = &'a (T),
+    @TraitClause0::Item = &'a (T),
 
 // Full name: core::iter::traits::iterator::Iterator::cloned
 #[lang_item("iter_cloned")]
-pub fn cloned<'a, Self, T>(@1: Self) -> Cloned<Self>[@TraitClause1]
+pub fn cloned<'a, Self, T>(@1: Self) -> Cloned<Self>[@TraitClause2]
 where
-    [@TraitClause0]: Sized<T>,
-    [@TraitClause1]: Sized<Self>,
-    [@TraitClause2]: Iterator<Self>,
-    [@TraitClause3]: Clone<T>,
+    [@TraitClause0]: Iterator<Self>,
+    [@TraitClause1]: Sized<T>,
+    [@TraitClause2]: Sized<Self>,
+    [@TraitClause3]: Iterator<Self>,
+    [@TraitClause4]: Clone<T>,
     T : 'a,
-    Self::Item = &'a (T),
+    @TraitClause0::Item = &'a (T),
 
 // Full name: core::iter::traits::iterator::Iterator::cycle
-pub fn cycle<Self>(@1: Self) -> Cycle<Self>[@TraitClause0]
+pub fn cycle<Self>(@1: Self) -> Cycle<Self>[@TraitClause1]
 where
-    [@TraitClause0]: Sized<Self>,
-    [@TraitClause1]: Clone<Self>,
+    [@TraitClause0]: Iterator<Self>,
+    [@TraitClause1]: Sized<Self>,
+    [@TraitClause2]: Clone<Self>,
 
 // Full name: core::iter::traits::iterator::Iterator::array_chunks
-pub fn array_chunks<Self, const N : usize>(@1: Self) -> ArrayChunks<Self, const N : usize>[@TraitClause0, Self]
+pub fn array_chunks<Self, const N : usize>(@1: Self) -> ArrayChunks<Self, const N : usize>[@TraitClause1, @TraitClause0]
 where
-    [@TraitClause0]: Sized<Self>,
+    [@TraitClause0]: Iterator<Self>,
+    [@TraitClause1]: Sized<Self>,
 
 pub fn core::iter::traits::iterator::Iterator::sum<Self, S>(@1: Self) -> S
 where
-    [@TraitClause0]: Sized<S>,
-    [@TraitClause1]: Sized<Self>,
-    [@TraitClause2]: Sum<S, Self::Item>,
+    [@TraitClause0]: Iterator<Self>,
+    [@TraitClause1]: Sized<S>,
+    [@TraitClause2]: Sized<Self>,
+    [@TraitClause3]: Sum<S, @TraitClause0::Item>,
 
 pub fn core::iter::traits::iterator::Iterator::product<Self, P>(@1: Self) -> P
 where
-    [@TraitClause0]: Sized<P>,
-    [@TraitClause1]: Sized<Self>,
-    [@TraitClause2]: Product<P, Self::Item>,
+    [@TraitClause0]: Iterator<Self>,
+    [@TraitClause1]: Sized<P>,
+    [@TraitClause2]: Sized<Self>,
+    [@TraitClause3]: Product<P, @TraitClause0::Item>,
 
 pub fn core::iter::traits::iterator::Iterator::cmp<Self, I>(@1: Self, @2: I) -> Ordering
 where
-    [@TraitClause0]: Sized<I>,
-    [@TraitClause1]: IntoIterator<I>,
-    [@TraitClause2]: Ord<Self::Item>,
-    [@TraitClause3]: Sized<Self>,
-    @TraitClause1::Item = Self::Item,
+    [@TraitClause0]: Iterator<Self>,
+    [@TraitClause1]: Sized<I>,
+    [@TraitClause2]: IntoIterator<I>,
+    [@TraitClause3]: Ord<@TraitClause0::Item>,
+    [@TraitClause4]: Sized<Self>,
+    @TraitClause2::Item = @TraitClause0::Item,
 
 // Full name: core::iter::traits::iterator::Iterator::cmp_by
 pub fn cmp_by<Self, I, F>(@1: Self, @2: I, @3: F) -> Ordering
 where
-    [@TraitClause0]: Sized<I>,
-    [@TraitClause1]: Sized<F>,
-    [@TraitClause2]: Sized<Self>,
-    [@TraitClause3]: IntoIterator<I>,
-    [@TraitClause4]: FnMut<F, (Self::Item, @TraitClause3::Item)>,
-    @TraitClause4::parent_clause0::Output = Ordering,
+    [@TraitClause0]: Iterator<Self>,
+    [@TraitClause1]: Sized<I>,
+    [@TraitClause2]: Sized<F>,
+    [@TraitClause3]: Sized<Self>,
+    [@TraitClause4]: IntoIterator<I>,
+    [@TraitClause5]: FnMut<F, (@TraitClause0::Item, @TraitClause4::Item)>,
+    @TraitClause5::parent_clause0::Output = Ordering,
 
 pub fn core::iter::traits::iterator::Iterator::partial_cmp<Self, I>(@1: Self, @2: I) -> Option<Ordering>[Sized<Ordering>]
 where
-    [@TraitClause0]: Sized<I>,
-    [@TraitClause1]: IntoIterator<I>,
-    [@TraitClause2]: PartialOrd<Self::Item, @TraitClause1::Item>,
-    [@TraitClause3]: Sized<Self>,
+    [@TraitClause0]: Iterator<Self>,
+    [@TraitClause1]: Sized<I>,
+    [@TraitClause2]: IntoIterator<I>,
+    [@TraitClause3]: PartialOrd<@TraitClause0::Item, @TraitClause2::Item>,
+    [@TraitClause4]: Sized<Self>,
 
 // Full name: core::iter::traits::iterator::Iterator::partial_cmp_by
 pub fn partial_cmp_by<Self, I, F>(@1: Self, @2: I, @3: F) -> Option<Ordering>[Sized<Ordering>]
 where
-    [@TraitClause0]: Sized<I>,
-    [@TraitClause1]: Sized<F>,
-    [@TraitClause2]: Sized<Self>,
-    [@TraitClause3]: IntoIterator<I>,
-    [@TraitClause4]: FnMut<F, (Self::Item, @TraitClause3::Item)>,
-    @TraitClause4::parent_clause0::Output = Option<Ordering>[Sized<Ordering>],
+    [@TraitClause0]: Iterator<Self>,
+    [@TraitClause1]: Sized<I>,
+    [@TraitClause2]: Sized<F>,
+    [@TraitClause3]: Sized<Self>,
+    [@TraitClause4]: IntoIterator<I>,
+    [@TraitClause5]: FnMut<F, (@TraitClause0::Item, @TraitClause4::Item)>,
+    @TraitClause5::parent_clause0::Output = Option<Ordering>[Sized<Ordering>],
 
 pub fn core::iter::traits::iterator::Iterator::eq<Self, I>(@1: Self, @2: I) -> bool
 where
-    [@TraitClause0]: Sized<I>,
-    [@TraitClause1]: IntoIterator<I>,
-    [@TraitClause2]: PartialEq<Self::Item, @TraitClause1::Item>,
-    [@TraitClause3]: Sized<Self>,
+    [@TraitClause0]: Iterator<Self>,
+    [@TraitClause1]: Sized<I>,
+    [@TraitClause2]: IntoIterator<I>,
+    [@TraitClause3]: PartialEq<@TraitClause0::Item, @TraitClause2::Item>,
+    [@TraitClause4]: Sized<Self>,
 
 // Full name: core::iter::traits::iterator::Iterator::eq_by
 pub fn eq_by<Self, I, F>(@1: Self, @2: I, @3: F) -> bool
 where
-    [@TraitClause0]: Sized<I>,
-    [@TraitClause1]: Sized<F>,
-    [@TraitClause2]: Sized<Self>,
-    [@TraitClause3]: IntoIterator<I>,
-    [@TraitClause4]: FnMut<F, (Self::Item, @TraitClause3::Item)>,
-    @TraitClause4::parent_clause0::Output = bool,
+    [@TraitClause0]: Iterator<Self>,
+    [@TraitClause1]: Sized<I>,
+    [@TraitClause2]: Sized<F>,
+    [@TraitClause3]: Sized<Self>,
+    [@TraitClause4]: IntoIterator<I>,
+    [@TraitClause5]: FnMut<F, (@TraitClause0::Item, @TraitClause4::Item)>,
+    @TraitClause5::parent_clause0::Output = bool,
 
 pub fn core::iter::traits::iterator::Iterator::ne<Self, I>(@1: Self, @2: I) -> bool
 where
-    [@TraitClause0]: Sized<I>,
-    [@TraitClause1]: IntoIterator<I>,
-    [@TraitClause2]: PartialEq<Self::Item, @TraitClause1::Item>,
-    [@TraitClause3]: Sized<Self>,
+    [@TraitClause0]: Iterator<Self>,
+    [@TraitClause1]: Sized<I>,
+    [@TraitClause2]: IntoIterator<I>,
+    [@TraitClause3]: PartialEq<@TraitClause0::Item, @TraitClause2::Item>,
+    [@TraitClause4]: Sized<Self>,
 
 pub fn core::iter::traits::iterator::Iterator::lt<Self, I>(@1: Self, @2: I) -> bool
 where
-    [@TraitClause0]: Sized<I>,
-    [@TraitClause1]: IntoIterator<I>,
-    [@TraitClause2]: PartialOrd<Self::Item, @TraitClause1::Item>,
-    [@TraitClause3]: Sized<Self>,
+    [@TraitClause0]: Iterator<Self>,
+    [@TraitClause1]: Sized<I>,
+    [@TraitClause2]: IntoIterator<I>,
+    [@TraitClause3]: PartialOrd<@TraitClause0::Item, @TraitClause2::Item>,
+    [@TraitClause4]: Sized<Self>,
 
 pub fn core::iter::traits::iterator::Iterator::le<Self, I>(@1: Self, @2: I) -> bool
 where
-    [@TraitClause0]: Sized<I>,
-    [@TraitClause1]: IntoIterator<I>,
-    [@TraitClause2]: PartialOrd<Self::Item, @TraitClause1::Item>,
-    [@TraitClause3]: Sized<Self>,
+    [@TraitClause0]: Iterator<Self>,
+    [@TraitClause1]: Sized<I>,
+    [@TraitClause2]: IntoIterator<I>,
+    [@TraitClause3]: PartialOrd<@TraitClause0::Item, @TraitClause2::Item>,
+    [@TraitClause4]: Sized<Self>,
 
 pub fn core::iter::traits::iterator::Iterator::gt<Self, I>(@1: Self, @2: I) -> bool
 where
-    [@TraitClause0]: Sized<I>,
-    [@TraitClause1]: IntoIterator<I>,
-    [@TraitClause2]: PartialOrd<Self::Item, @TraitClause1::Item>,
-    [@TraitClause3]: Sized<Self>,
+    [@TraitClause0]: Iterator<Self>,
+    [@TraitClause1]: Sized<I>,
+    [@TraitClause2]: IntoIterator<I>,
+    [@TraitClause3]: PartialOrd<@TraitClause0::Item, @TraitClause2::Item>,
+    [@TraitClause4]: Sized<Self>,
 
 pub fn core::iter::traits::iterator::Iterator::ge<Self, I>(@1: Self, @2: I) -> bool
 where
-    [@TraitClause0]: Sized<I>,
-    [@TraitClause1]: IntoIterator<I>,
-    [@TraitClause2]: PartialOrd<Self::Item, @TraitClause1::Item>,
-    [@TraitClause3]: Sized<Self>,
+    [@TraitClause0]: Iterator<Self>,
+    [@TraitClause1]: Sized<I>,
+    [@TraitClause2]: IntoIterator<I>,
+    [@TraitClause3]: PartialOrd<@TraitClause0::Item, @TraitClause2::Item>,
+    [@TraitClause4]: Sized<Self>,
 
 // Full name: core::iter::traits::iterator::Iterator::is_sorted
 pub fn is_sorted<Self>(@1: Self) -> bool
 where
-    [@TraitClause0]: Sized<Self>,
-    [@TraitClause1]: PartialOrd<Self::Item, Self::Item>,
+    [@TraitClause0]: Iterator<Self>,
+    [@TraitClause1]: Sized<Self>,
+    [@TraitClause2]: PartialOrd<@TraitClause0::Item, @TraitClause0::Item>,
 
 pub fn core::iter::traits::iterator::Iterator::is_sorted_by<Self, F>(@1: Self, @2: F) -> bool
 where
-    [@TraitClause0]: Sized<F>,
-    [@TraitClause1]: Sized<Self>,
-    [@TraitClause2]: for<'_0, '_1> FnMut<F, (&'_0_0 (Self::Item), &'_0_1 (Self::Item))>,
-    for<'_0, '_1> @TraitClause2::parent_clause0::Output = bool,
+    [@TraitClause0]: Iterator<Self>,
+    [@TraitClause1]: Sized<F>,
+    [@TraitClause2]: Sized<Self>,
+    [@TraitClause3]: for<'_0, '_1> FnMut<F, (&'_0_0 (@TraitClause0::Item), &'_0_1 (@TraitClause0::Item))>,
+    for<'_0, '_1> @TraitClause3::parent_clause0::Output = bool,
 
 // Full name: core::iter::traits::iterator::Iterator::is_sorted_by_key
 pub fn is_sorted_by_key<Self, F, K>(@1: Self, @2: F) -> bool
 where
-    [@TraitClause0]: Sized<F>,
-    [@TraitClause1]: Sized<K>,
-    [@TraitClause2]: Sized<Self>,
-    [@TraitClause3]: FnMut<F, (Self::Item)>,
-    [@TraitClause4]: PartialOrd<K, K>,
-    @TraitClause3::parent_clause0::Output = K,
+    [@TraitClause0]: Iterator<Self>,
+    [@TraitClause1]: Sized<F>,
+    [@TraitClause2]: Sized<K>,
+    [@TraitClause3]: Sized<Self>,
+    [@TraitClause4]: FnMut<F, (@TraitClause0::Item)>,
+    [@TraitClause5]: PartialOrd<K, K>,
+    @TraitClause4::parent_clause0::Output = K,
 
 #[lang_item("cmp_partialeq_eq")]
 pub fn core::cmp::PartialEq::eq<'_0, '_1, Self, Rhs>(@1: &'_0 (Self), @2: &'_1 (Rhs)) -> bool
+where
+    [@TraitClause0]: PartialEq<Self, Rhs>,
 
 #[lang_item("cmp_partialeq_ne")]
 pub fn core::cmp::PartialEq::ne<'_0, '_1, Self, Rhs>(@1: &'_0 (Self), @2: &'_1 (Rhs)) -> bool
+where
+    [@TraitClause0]: PartialEq<Self, Rhs>,
 
 #[lang_item("ord_cmp_method")]
 pub fn core::cmp::Ord::cmp<'_0, '_1, Self>(@1: &'_0 (Self), @2: &'_1 (Self)) -> Ordering
+where
+    [@TraitClause0]: Ord<Self>,
 
 #[lang_item("cmp_ord_max")]
 pub fn core::cmp::Ord::max<Self>(@1: Self, @2: Self) -> Self
 where
-    [@TraitClause0]: Sized<Self>,
+    [@TraitClause0]: Ord<Self>,
+    [@TraitClause1]: Sized<Self>,
 
 #[lang_item("cmp_ord_min")]
 pub fn core::cmp::Ord::min<Self>(@1: Self, @2: Self) -> Self
 where
-    [@TraitClause0]: Sized<Self>,
+    [@TraitClause0]: Ord<Self>,
+    [@TraitClause1]: Sized<Self>,
 
 // Full name: core::cmp::Ord::clamp
 pub fn clamp<Self>(@1: Self, @2: Self, @3: Self) -> Self
 where
-    [@TraitClause0]: Sized<Self>,
+    [@TraitClause0]: Ord<Self>,
+    [@TraitClause1]: Sized<Self>,
 
 // Full name: core::cmp::Eq::assert_receiver_is_total_eq
 pub fn assert_receiver_is_total_eq<'_0, Self>(@1: &'_0 (Self))
+where
+    [@TraitClause0]: Eq<Self>,
 
 #[lang_item("cmp_partialord_cmp")]
 pub fn core::cmp::PartialOrd::partial_cmp<'_0, '_1, Self, Rhs>(@1: &'_0 (Self), @2: &'_1 (Rhs)) -> Option<Ordering>[Sized<Ordering>]
+where
+    [@TraitClause0]: PartialOrd<Self, Rhs>,
 
 #[lang_item("cmp_partialord_lt")]
 pub fn core::cmp::PartialOrd::lt<'_0, '_1, Self, Rhs>(@1: &'_0 (Self), @2: &'_1 (Rhs)) -> bool
+where
+    [@TraitClause0]: PartialOrd<Self, Rhs>,
 
 #[lang_item("cmp_partialord_le")]
 pub fn core::cmp::PartialOrd::le<'_0, '_1, Self, Rhs>(@1: &'_0 (Self), @2: &'_1 (Rhs)) -> bool
+where
+    [@TraitClause0]: PartialOrd<Self, Rhs>,
 
 #[lang_item("cmp_partialord_gt")]
 pub fn core::cmp::PartialOrd::gt<'_0, '_1, Self, Rhs>(@1: &'_0 (Self), @2: &'_1 (Rhs)) -> bool
+where
+    [@TraitClause0]: PartialOrd<Self, Rhs>,
 
 #[lang_item("cmp_partialord_ge")]
 pub fn core::cmp::PartialOrd::ge<'_0, '_1, Self, Rhs>(@1: &'_0 (Self), @2: &'_1 (Rhs)) -> bool
+where
+    [@TraitClause0]: PartialOrd<Self, Rhs>,
 
 // Full name: core::cmp::PartialOrd::__chaining_lt
 pub fn __chaining_lt<'_0, '_1, Self, Rhs>(@1: &'_0 (Self), @2: &'_1 (Rhs)) -> ControlFlow<bool, ()>[Sized<bool>, Sized<()>]
+where
+    [@TraitClause0]: PartialOrd<Self, Rhs>,
 
 // Full name: core::cmp::PartialOrd::__chaining_le
 pub fn __chaining_le<'_0, '_1, Self, Rhs>(@1: &'_0 (Self), @2: &'_1 (Rhs)) -> ControlFlow<bool, ()>[Sized<bool>, Sized<()>]
+where
+    [@TraitClause0]: PartialOrd<Self, Rhs>,
 
 // Full name: core::cmp::PartialOrd::__chaining_gt
 pub fn __chaining_gt<'_0, '_1, Self, Rhs>(@1: &'_0 (Self), @2: &'_1 (Rhs)) -> ControlFlow<bool, ()>[Sized<bool>, Sized<()>]
+where
+    [@TraitClause0]: PartialOrd<Self, Rhs>,
 
 // Full name: core::cmp::PartialOrd::__chaining_ge
 pub fn __chaining_ge<'_0, '_1, Self, Rhs>(@1: &'_0 (Self), @2: &'_1 (Rhs)) -> ControlFlow<bool, ()>[Sized<bool>, Sized<()>]
+where
+    [@TraitClause0]: PartialOrd<Self, Rhs>,
 
 // Full name: core::default::Default::default
 #[lang_item("default_fn")]
 pub fn default<Self>() -> Self
+where
+    [@TraitClause0]: Default<Self>,
 
 // Full name: core::ops::try_trait::Try::from_output
 #[lang_item("from_output")]
-pub fn from_output<Self>(@1: Self::Output) -> Self
+pub fn from_output<Self>(@1: @TraitClause0::Output) -> Self
+where
+    [@TraitClause0]: Try<Self>,
 
 // Full name: core::ops::try_trait::Try::branch
 #[lang_item("branch")]
-pub fn branch<Self>(@1: Self) -> ControlFlow<Self::Residual, Self::Output>[Self::parent_clause0::parent_clause0, Self::parent_clause1]
+pub fn branch<Self>(@1: Self) -> ControlFlow<@TraitClause0::Residual, @TraitClause0::Output>[@TraitClause0::parent_clause0::parent_clause0, @TraitClause0::parent_clause1]
+where
+    [@TraitClause0]: Try<Self>,
 
 // Full name: core::ops::try_trait::FromResidual::from_residual
 #[lang_item("from_residual")]
 pub fn from_residual<Self, R>(@1: R) -> Self
+where
+    [@TraitClause0]: FromResidual<Self, R>,
 
 // Full name: core::iter::adapters::zip::TrustedRandomAccessNoCoerce::size
 pub fn size<'_0, Self>(@1: &'_0 (Self)) -> usize
 where
-    [@TraitClause0]: Iterator<Self>,
+    [@TraitClause0]: TrustedRandomAccessNoCoerce<Self>,
+    [@TraitClause1]: Iterator<Self>,
 
 pub fn core::iter::traits::accum::Sum::sum<Self, A, I>(@1: I) -> Self
 where
-    [@TraitClause0]: Sized<I>,
-    [@TraitClause1]: Iterator<I>,
-    @TraitClause1::Item = A,
+    [@TraitClause0]: Sum<Self, A>,
+    [@TraitClause1]: Sized<I>,
+    [@TraitClause2]: Iterator<I>,
+    @TraitClause2::Item = A,
 
 pub fn core::iter::traits::accum::Product::product<Self, A, I>(@1: I) -> Self
 where
-    [@TraitClause0]: Sized<I>,
-    [@TraitClause1]: Iterator<I>,
-    @TraitClause1::Item = A,
+    [@TraitClause0]: Product<Self, A>,
+    [@TraitClause1]: Sized<I>,
+    [@TraitClause2]: Iterator<I>,
+    @TraitClause2::Item = A,
 
 // Full name: core::iter::traits::collect::FromIterator::from_iter
 #[lang_item("from_iter_fn")]
 pub fn from_iter<Self, A, T>(@1: T) -> Self
 where
-    [@TraitClause0]: Sized<T>,
-    [@TraitClause1]: IntoIterator<T>,
-    @TraitClause1::Item = A,
+    [@TraitClause0]: FromIterator<Self, A>,
+    [@TraitClause1]: Sized<T>,
+    [@TraitClause2]: IntoIterator<T>,
+    @TraitClause2::Item = A,
 
 // Full name: core::iter::traits::collect::Extend::extend
 pub fn extend<'_0, Self, A, T>(@1: &'_0 mut (Self), @2: T)
 where
-    [@TraitClause0]: Sized<T>,
-    [@TraitClause1]: IntoIterator<T>,
-    @TraitClause1::Item = A,
+    [@TraitClause0]: Extend<Self, A>,
+    [@TraitClause1]: Sized<T>,
+    [@TraitClause2]: IntoIterator<T>,
+    @TraitClause2::Item = A,
 
 // Full name: core::iter::traits::collect::Extend::extend_one
 pub fn extend_one<'_0, Self, A>(@1: &'_0 mut (Self), @2: A)
+where
+    [@TraitClause0]: Extend<Self, A>,
 
 // Full name: core::iter::traits::collect::Extend::extend_reserve
 pub fn extend_reserve<'_0, Self, A>(@1: &'_0 mut (Self), @2: usize)
+where
+    [@TraitClause0]: Extend<Self, A>,
 
 // Full name: core::iter::traits::collect::Extend::extend_one_unchecked
 pub unsafe fn extend_one_unchecked<'_0, Self, A>(@1: &'_0 mut (Self), @2: A)
 where
-    [@TraitClause0]: Sized<Self>,
+    [@TraitClause0]: Extend<Self, A>,
+    [@TraitClause1]: Sized<Self>,
 
 // Full name: core::iter::traits::double_ended::DoubleEndedIterator::next_back
-pub fn next_back<'_0, Self>(@1: &'_0 mut (Self)) -> Option<Self::parent_clause0::Item>[Self::parent_clause0::parent_clause0]
+pub fn next_back<'_0, Self>(@1: &'_0 mut (Self)) -> Option<@TraitClause0::parent_clause0::Item>[@TraitClause0::parent_clause0::parent_clause0]
+where
+    [@TraitClause0]: DoubleEndedIterator<Self>,
 
 // Full name: core::iter::traits::double_ended::DoubleEndedIterator::advance_back_by
 pub fn advance_back_by<'_0, Self>(@1: &'_0 mut (Self), @2: usize) -> Result<(), NonZero<usize>[Sized<usize>, {impl ZeroablePrimitive for usize}#27]>[Sized<()>, Sized<NonZero<usize>[Sized<usize>, {impl ZeroablePrimitive for usize}#27]>]
+where
+    [@TraitClause0]: DoubleEndedIterator<Self>,
 
 // Full name: core::iter::traits::double_ended::DoubleEndedIterator::nth_back
-pub fn nth_back<'_0, Self>(@1: &'_0 mut (Self), @2: usize) -> Option<Self::parent_clause0::Item>[Self::parent_clause0::parent_clause0]
+pub fn nth_back<'_0, Self>(@1: &'_0 mut (Self), @2: usize) -> Option<@TraitClause0::parent_clause0::Item>[@TraitClause0::parent_clause0::parent_clause0]
+where
+    [@TraitClause0]: DoubleEndedIterator<Self>,
 
 // Full name: core::iter::traits::double_ended::DoubleEndedIterator::try_rfold
 pub fn try_rfold<'_0, Self, B, F, R>(@1: &'_0 mut (Self), @2: B, @3: F) -> R
 where
-    [@TraitClause0]: Sized<B>,
-    [@TraitClause1]: Sized<F>,
-    [@TraitClause2]: Sized<R>,
-    [@TraitClause3]: Sized<Self>,
-    [@TraitClause4]: FnMut<F, (B, Self::parent_clause0::Item)>,
-    [@TraitClause5]: Try<R>,
-    @TraitClause4::parent_clause0::Output = R,
-    @TraitClause5::Output = B,
+    [@TraitClause0]: DoubleEndedIterator<Self>,
+    [@TraitClause1]: Sized<B>,
+    [@TraitClause2]: Sized<F>,
+    [@TraitClause3]: Sized<R>,
+    [@TraitClause4]: Sized<Self>,
+    [@TraitClause5]: FnMut<F, (B, @TraitClause0::parent_clause0::Item)>,
+    [@TraitClause6]: Try<R>,
+    @TraitClause5::parent_clause0::Output = R,
+    @TraitClause6::Output = B,
 
 // Full name: core::iter::traits::double_ended::DoubleEndedIterator::rfold
 pub fn rfold<Self, B, F>(@1: Self, @2: B, @3: F) -> B
 where
-    [@TraitClause0]: Sized<B>,
-    [@TraitClause1]: Sized<F>,
-    [@TraitClause2]: Sized<Self>,
-    [@TraitClause3]: FnMut<F, (B, Self::parent_clause0::Item)>,
-    @TraitClause3::parent_clause0::Output = B,
+    [@TraitClause0]: DoubleEndedIterator<Self>,
+    [@TraitClause1]: Sized<B>,
+    [@TraitClause2]: Sized<F>,
+    [@TraitClause3]: Sized<Self>,
+    [@TraitClause4]: FnMut<F, (B, @TraitClause0::parent_clause0::Item)>,
+    @TraitClause4::parent_clause0::Output = B,
 
 // Full name: core::iter::traits::double_ended::DoubleEndedIterator::rfind
-pub fn rfind<'_0, Self, P>(@1: &'_0 mut (Self), @2: P) -> Option<Self::parent_clause0::Item>[Self::parent_clause0::parent_clause0]
+pub fn rfind<'_0, Self, P>(@1: &'_0 mut (Self), @2: P) -> Option<@TraitClause0::parent_clause0::Item>[@TraitClause0::parent_clause0::parent_clause0]
 where
-    [@TraitClause0]: Sized<P>,
-    [@TraitClause1]: Sized<Self>,
-    [@TraitClause2]: for<'_0> FnMut<P, (&'_0_0 (Self::parent_clause0::Item))>,
-    for<'_0> @TraitClause2::parent_clause0::Output = bool,
+    [@TraitClause0]: DoubleEndedIterator<Self>,
+    [@TraitClause1]: Sized<P>,
+    [@TraitClause2]: Sized<Self>,
+    [@TraitClause3]: for<'_0> FnMut<P, (&'_0_0 (@TraitClause0::parent_clause0::Item))>,
+    for<'_0> @TraitClause3::parent_clause0::Output = bool,
 
 // Full name: core::iter::traits::exact_size::ExactSizeIterator::len
 pub fn len<'_0, Self>(@1: &'_0 (Self)) -> usize
+where
+    [@TraitClause0]: ExactSizeIterator<Self>,
 
 // Full name: core::iter::traits::exact_size::ExactSizeIterator::is_empty
 pub fn is_empty<'_0, Self>(@1: &'_0 (Self)) -> bool
+where
+    [@TraitClause0]: ExactSizeIterator<Self>,
 
 
 

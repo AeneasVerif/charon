@@ -63,21 +63,25 @@ pub trait T6<Self, T>
     parent_clause0 : [@TraitClause0]: Sized<Self>
     parent_clause1 : [@TraitClause1]: Sized<T>
     parent_clause2 : [@TraitClause2]: T7<T>
-    fn f = f<Self, T>
+    fn f = f<Self, T>[Self]
 }
 
 // Full name: test_crate::T7
 pub trait T7<Self>
 {
     parent_clause0 : [@TraitClause0]: T6<Self, Self>
-    fn g = g<Self>
+    fn g = g<Self>[Self]
 }
 
 // Full name: test_crate::T7::g
 pub fn g<Self>(@1: u64)
+where
+    [@TraitClause0]: T7<Self>,
 
 // Full name: test_crate::T6::f
 pub fn f<Self, T>(@1: u64)
+where
+    [@TraitClause0]: T6<Self, T>,
 {
     let @0: (); // return
     let x@1: u64; // arg #1
@@ -85,7 +89,7 @@ pub fn f<Self, T>(@1: u64)
 
     storage_live(@2)
     @2 := copy (x@1)
-    @0 := Self::parent_clause2::g(move (@2))
+    @0 := @TraitClause0::parent_clause2::g(move (@2))
     storage_dead(@2)
     @0 := ()
     return

@@ -166,7 +166,7 @@ struct Foo {
 pub trait Default<Self>
 {
     parent_clause0 : [@TraitClause0]: Sized<Self>
-    fn default = core::default::Default::default<Self>
+    fn default = core::default::Default::default<Self>[Self]
 }
 
 // Full name: core::default::{impl Default for u32}#7::default
@@ -492,6 +492,8 @@ fn fool()
 
 #[lang_item("default_fn")]
 pub fn core::default::Default::default<Self>() -> Self
+where
+    [@TraitClause0]: Default<Self>,
 
 // Full name: core::default::{impl Default for u32}#7
 impl Default for u32 {

@@ -18,7 +18,7 @@ where
 #[lang_item("eq")]
 pub trait PartialEq<Self, Rhs>
 {
-    fn eq<'_0, '_1> = core::cmp::PartialEq::eq<'_0_0, '_0_1, Self, Rhs>
+    fn eq<'_0, '_1> = core::cmp::PartialEq::eq<'_0_0, '_0_1, Self, Rhs>[Self]
 }
 
 // Full name: core::option::{impl PartialEq<Option<T>[@TraitClause0]> for Option<T>[@TraitClause0]}#15::eq
@@ -114,7 +114,7 @@ pub enum Ordering {
 pub trait PartialOrd<Self, Rhs>
 {
     parent_clause0 : [@TraitClause0]: PartialEq<Self, Rhs>
-    fn partial_cmp<'_0, '_1> = core::cmp::PartialOrd::partial_cmp<'_0_0, '_0_1, Self, Rhs>
+    fn partial_cmp<'_0, '_1> = core::cmp::PartialOrd::partial_cmp<'_0_0, '_0_1, Self, Rhs>[Self]
 }
 
 // Full name: core::cmp::impls::{impl PartialOrd<u32> for u32}#64::partial_cmp
@@ -155,6 +155,8 @@ impl PartialOrd<Foo> for Foo {
 
 #[lang_item("cmp_partialeq_eq")]
 pub fn core::cmp::PartialEq::eq<'_0, '_1, Self, Rhs>(@1: &'_0 (Self), @2: &'_1 (Rhs)) -> bool
+where
+    [@TraitClause0]: PartialEq<Self, Rhs>,
 
 // Full name: core::option::{impl PartialEq<Option<T>[@TraitClause0]> for Option<T>[@TraitClause0]}#15
 impl<T> PartialEq<Option<T>[@TraitClause0]> for Option<T>[@TraitClause0]
@@ -167,6 +169,8 @@ where
 
 #[lang_item("cmp_partialord_cmp")]
 pub fn core::cmp::PartialOrd::partial_cmp<'_0, '_1, Self, Rhs>(@1: &'_0 (Self), @2: &'_1 (Rhs)) -> Option<Ordering>[Sized<Ordering>]
+where
+    [@TraitClause0]: PartialOrd<Self, Rhs>,
 
 // Full name: core::cmp::impls::{impl PartialEq<u32> for u32}#24::eq
 pub fn {impl PartialEq<u32> for u32}#24::eq<'_0, '_1>(@1: &'_0 (u32), @2: &'_1 (u32)) -> bool

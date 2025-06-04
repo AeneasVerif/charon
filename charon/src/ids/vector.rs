@@ -98,12 +98,20 @@ where
         self.elem_count += 1;
     }
 
-    /// Remove the value from this slot.
+    /// Remove the value from this slot, leaving other ids unchanged.
     pub fn remove(&mut self, id: I) -> Option<T> {
         if self.vector[id].is_some() {
             self.elem_count -= 1;
         }
         self.vector[id].take()
+    }
+
+    /// Remove the value from this slot, shifting other ids as needed.
+    pub fn remove_and_shift_ids(&mut self, id: I) -> Option<T> {
+        if self.vector[id].is_some() {
+            self.elem_count -= 1;
+        }
+        self.vector.remove(id)
     }
 
     pub fn push(&mut self, x: T) -> I {
@@ -138,6 +146,12 @@ where
     {
         self.vector.extend_from_slice(&other.vector);
         self.elem_count += other.elem_count;
+    }
+
+    /// Insert a value at that index, shifting all the values with equal or larger indices.
+    pub fn insert_and_shift_ids(&mut self, id: I, x: T) {
+        self.elem_count += 1;
+        self.vector.insert(id, Some(x))
     }
 
     /// Get a mutable reference into the ith element. If the vector is too short, extend it until

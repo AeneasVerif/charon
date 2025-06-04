@@ -53,16 +53,31 @@ pub trait SizedTypeProperties<Self>
 }
 
 pub fn core::mem::SizedTypeProperties::IS_ZST<Self>() -> bool
+where
+    [@TraitClause0]: SizedTypeProperties<Self>,
 
-pub const core::mem::SizedTypeProperties::IS_ZST<Self>: bool = core::mem::SizedTypeProperties::IS_ZST()
+pub const core::mem::SizedTypeProperties::IS_ZST<Self>: bool
+where
+    [@TraitClause0]: SizedTypeProperties<Self>,
+ = core::mem::SizedTypeProperties::IS_ZST()
 
 pub fn core::mem::SizedTypeProperties::LAYOUT<Self>() -> Layout
+where
+    [@TraitClause0]: SizedTypeProperties<Self>,
 
-pub const core::mem::SizedTypeProperties::LAYOUT<Self>: Layout = core::mem::SizedTypeProperties::LAYOUT()
+pub const core::mem::SizedTypeProperties::LAYOUT<Self>: Layout
+where
+    [@TraitClause0]: SizedTypeProperties<Self>,
+ = core::mem::SizedTypeProperties::LAYOUT()
 
 pub fn core::mem::SizedTypeProperties::MAX_SLICE_LEN<Self>() -> usize
+where
+    [@TraitClause0]: SizedTypeProperties<Self>,
 
-pub const core::mem::SizedTypeProperties::MAX_SLICE_LEN<Self>: usize = core::mem::SizedTypeProperties::MAX_SLICE_LEN()
+pub const core::mem::SizedTypeProperties::MAX_SLICE_LEN<Self>: usize
+where
+    [@TraitClause0]: SizedTypeProperties<Self>,
+ = core::mem::SizedTypeProperties::MAX_SLICE_LEN()
 
 // Full name: core::mem::{impl SizedTypeProperties for T}#6
 impl<T> SizedTypeProperties for T
@@ -70,9 +85,9 @@ where
     [@TraitClause0]: Sized<T>,
 {
     parent_clause0 = @TraitClause0
-    const IS_ZST = core::mem::SizedTypeProperties::IS_ZST<T>
-    const LAYOUT = core::mem::SizedTypeProperties::LAYOUT<T>
-    const MAX_SLICE_LEN = core::mem::SizedTypeProperties::MAX_SLICE_LEN<T>
+    const IS_ZST = core::mem::SizedTypeProperties::IS_ZST<T>[{impl SizedTypeProperties for T}#6<T>[@TraitClause0]]
+    const LAYOUT = core::mem::SizedTypeProperties::LAYOUT<T>[{impl SizedTypeProperties for T}#6<T>[@TraitClause0]]
+    const MAX_SLICE_LEN = core::mem::SizedTypeProperties::MAX_SLICE_LEN<T>[{impl SizedTypeProperties for T}#6<T>[@TraitClause0]]
 }
 
 // Full name: alloc::vec::{Vec<T, Global>[@TraitClause0, Sized<Global>]}::with_capacity

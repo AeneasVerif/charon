@@ -16,7 +16,7 @@ pub trait Sized<Self>
 // Full name: test_crate::Hash
 pub trait Hash<Self>
 {
-    fn hash<'_0, '_1, H, [@TraitClause0]: Sized<H>, [@TraitClause1]: Hasher<H>> = test_crate::Hash::hash<'_0_0, '_0_1, Self, H>[@TraitClause0_0, @TraitClause0_1]
+    fn hash<'_0, '_1, H, [@TraitClause0]: Sized<H>, [@TraitClause1]: Hasher<H>> = test_crate::Hash::hash<'_0_0, '_0_1, Self, H>[Self, @TraitClause0_0, @TraitClause0_1]
 }
 
 // Full name: test_crate::{impl Hash for u32}#1::hash
@@ -75,8 +75,9 @@ fn main()
 
 pub fn test_crate::Hash::hash<'_0, '_1, Self, H>(@1: &'_0 (Self), @2: &'_1 mut (H))
 where
-    [@TraitClause0]: Sized<H>,
-    [@TraitClause1]: Hasher<H>,
+    [@TraitClause0]: Hash<Self>,
+    [@TraitClause1]: Sized<H>,
+    [@TraitClause2]: Hasher<H>,
 
 
 

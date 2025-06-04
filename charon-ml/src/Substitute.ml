@@ -11,6 +11,11 @@ open LlbcAst
 (* TODO: use Core.Fn.compose *)
 let compose f g x = f (g x)
 
+let ( let* ) o f =
+  match o with
+  | Some x -> f x
+  | None -> None
+
 (* A substitution that takes a full variable as input *)
 type subst = {
   r_subst : RegionId.id de_bruijn_var -> region;
@@ -465,6 +470,86 @@ let apply_args_to_item_binder (tr_self : trait_instance_id)
   let subst = { subst with tr_sb_self = tr_self } in
   substitutor (subst_free_vars subst) binder.item_binder_value
 
+(** Merge two levels of binders into a single one that binds the concatenated
+      params. Useful for consumers that don't want to have to handle method
+      binders. *)
+let fuse_binders (substitutor : subst -> 'a -> 'a)
+    (binder : 'a binder item_binder) : 'a item_binder =
+  let outer_params = binder.item_binder_params in
+  let inner_params = binder.item_binder_value.binder_params in
+  let bound_val = binder.item_binder_value.binder_value in
+
+  (* Variables bound in the inner binder are `Bound`. We make them all `Free`
+     variables, shifting indices to avoid overlap with the variables bound in
+     the outer binder. *)
+  let shift_region_varid varid =
+    RegionId.of_int
+      (RegionId.to_int varid + List.length outer_params.regions_outlive)
+  in
+  let shift_ty_varid varid =
+    TypeVarId.of_int (TypeVarId.to_int varid + List.length outer_params.types)
+  in
+  let shift_cg_varid varid =
+    ConstGenericVarId.of_int
+      (ConstGenericVarId.to_int varid + List.length outer_params.const_generics)
+  in
+  let shift_clause_varid varid =
+    TraitClauseId.of_int
+      (TraitClauseId.to_int varid + List.length outer_params.trait_clauses)
+  in
+
+  (* Replace bound variables with free variables that don't overlap with
+     existing ones. *)
+  let subst =
+    subst_remove_binder_zero
+      {
+        r_sb_subst = compose empty_free_sb_subst.r_sb_subst shift_region_varid;
+        ty_sb_subst = compose empty_free_sb_subst.ty_sb_subst shift_ty_varid;
+        cg_sb_subst = compose empty_free_sb_subst.cg_sb_subst shift_cg_varid;
+        tr_sb_subst = compose empty_free_sb_subst.tr_sb_subst shift_clause_varid;
+        tr_sb_self = empty_subst.tr_self;
+      }
+  in
+  let bound_val = substitutor subst bound_val in
+  (* Shift the inner params too, as predicates etc may refer to bound types. *)
+  let inner_params =
+    st_substitute_visitor#visit_generic_params subst inner_params
+  in
+
+  (* Finally, merge the two levels. *)
+  let shift_region_var (var : region_var) =
+    { var with index = shift_region_varid var.index }
+  in
+  let shift_ty_var (var : type_var) =
+    { var with index = shift_ty_varid var.index }
+  in
+  let shift_cg_var (var : const_generic_var) =
+    { var with index = shift_cg_varid var.index }
+  in
+  let shift_clause_var (var : trait_clause) =
+    { var with clause_id = shift_clause_varid var.clause_id }
+  in
+  let params =
+    {
+      regions =
+        outer_params.regions @ List.map shift_region_var inner_params.regions;
+      types = outer_params.types @ List.map shift_ty_var inner_params.types;
+      const_generics =
+        outer_params.const_generics
+        @ List.map shift_cg_var inner_params.const_generics;
+      trait_clauses =
+        outer_params.trait_clauses
+        @ List.map shift_clause_var inner_params.trait_clauses;
+      regions_outlive =
+        outer_params.regions_outlive @ inner_params.regions_outlive;
+      types_outlive = outer_params.types_outlive @ inner_params.types_outlive;
+      trait_type_constraints =
+        outer_params.trait_type_constraints
+        @ inner_params.trait_type_constraints;
+    }
+  in
+  { item_binder_params = params; item_binder_value = bound_val }
+
 (** Helper *)
 let instantiate_method (trait_self : trait_instance_id)
     (item_generics : generic_args) (method_generics : generic_args)
@@ -499,6 +584,49 @@ let lookup_and_subst_trait_impl_method (timpl : trait_impl)
   Option.map
     (instantiate_method Self impl_generics method_generics)
     (lookup_trait_impl_method timpl name)
+
+(* Lookup the signature of a method. This returns a signature bound in two
+   levels of binders: one for the trait generics and one for the method
+   generics. Returns [None] if the trait or method declarations could not be
+   found.
+*)
+let lookup_method_sig (crate : 'a gcrate) (trait_id : trait_decl_id)
+    (name : trait_item_name) : fun_sig binder item_binder option =
+  let* tdecl = TraitDeclId.Map.find_opt trait_id crate.trait_decls in
+  let* {
+         item_binder_params : generic_params = trait_params;
+         item_binder_value : fun_decl_ref binder = bound_method;
+       } =
+    lookup_trait_decl_method tdecl name
+  in
+  let method_decl_id = bound_method.binder_value.fun_id in
+  let* method_decl =
+    LlbcAst.FunDeclId.Map.find_opt method_decl_id crate.fun_decls
+  in
+  (* Substitute the signature to be valid under the binder. *)
+  let signature =
+    st_substitute_visitor#visit_fun_sig
+      (make_subst_from_generics method_decl.signature.generics
+         bound_method.binder_value.fun_generics)
+      method_decl.signature
+  in
+  (* Rebind everything *)
+  let bound_sig =
+    { binder_params = bound_method.binder_params; binder_value = signature }
+  in
+  Some { item_binder_params = trait_params; item_binder_value = bound_sig }
+
+(* Like [lookup_method_sig], but with no binder shenanigans: the returns
+   fun_sig takes as parameters the concatenation of trait generics and method
+   generics. *)
+let lookup_flat_method_sig (crate : 'a gcrate) (trait_id : trait_decl_id)
+    (name : trait_item_name) : fun_sig option =
+  let* bound_sig = lookup_method_sig crate trait_id name in
+  let bound_sig = fuse_binders st_substitute_visitor#visit_fun_sig bound_sig in
+  let s =
+    { bound_sig.item_binder_value with generics = bound_sig.item_binder_params }
+  in
+  Some s
 
 (* Construct a set of generic arguments in the scope of `params` that matches
    `params` and feeds each required parameter with itself. E.g. given
