@@ -24,6 +24,27 @@ fn test_crate::foo::<'_, char>(@1: &'_ (char))
     return
 }
 
+fn test_crate::takes_closure::<for<'a> foo<'a, u32>[Sized<u32>]>(@1: for<'a> foo<'a, u32>[Sized<u32>])
+{
+    let @0: (); // return
+    let @1: for<'a> foo<'a, u32>[Sized<u32>]; // arg #1
+
+    @0 := ()
+    drop @1
+    @0 := ()
+    return
+}
+
+fn test_crate::foo::<'_, u32>(@1: &'_ (u32))
+{
+    let @0: (); // return
+    let x@1: &'_ (u32); // arg #1
+
+    @0 := ()
+    @0 := ()
+    return
+}
+
 // Full name: test_crate::bar
 fn bar()
 {
@@ -54,6 +75,7 @@ fn bar()
     let @24: &'_ (char); // anonymous local
     let @25: &'_ (char); // anonymous local
     let @26: char; // anonymous local
+    let @27: (); // anonymous local
 
     storage_live(fooint1@1)
     fooint1@1 := cast<for<'a> foo<'a, u8>[Sized<u8>], fn<'_0>(&'_0_0 (u8))>(const (test_crate::foo::<'_, u8><'_>))
@@ -128,6 +150,9 @@ fn bar()
     storage_dead(@26)
     storage_dead(@25)
     storage_dead(@22)
+    storage_live(@27)
+    @27 := test_crate::takes_closure::<for<'a> foo<'a, u32>[Sized<u32>]>(const (test_crate::foo::<'_, u32><'_>))
+    storage_dead(@27)
     @0 := ()
     storage_dead(b@9)
     storage_dead(a@4)
@@ -136,6 +161,41 @@ fn bar()
     storage_dead(fooint1@1)
     @0 := ()
     return
+}
+
+// Full name: core::marker::Tuple
+#[lang_item("tuple_trait")]
+pub trait Tuple<Self>
+
+// Full name: core::ops::function::FnOnce
+#[lang_item("fn_once")]
+pub trait FnOnce<Self, Args>
+{
+    parent_clause0 : [@TraitClause0]: Sized<Args>
+    parent_clause1 : [@TraitClause1]: Tuple<Args>
+    parent_clause2 : [@TraitClause2]: Sized<Self::Output>
+    type Output
+    fn call_once = call_once<Self, Args>[Self]
+}
+
+// Full name: core::ops::function::FnMut
+#[lang_item("fn_mut")]
+pub trait FnMut<Self, Args>
+{
+    parent_clause0 : [@TraitClause0]: FnOnce<Self, Args>
+    parent_clause1 : [@TraitClause1]: Sized<Args>
+    parent_clause2 : [@TraitClause2]: Tuple<Args>
+    fn call_mut<'_0> = call_mut<'_0_0, Self, Args>[Self]
+}
+
+// Full name: core::ops::function::Fn
+#[lang_item("r#fn")]
+pub trait Fn<Self, Args>
+{
+    parent_clause0 : [@TraitClause0]: FnMut<Self, Args>
+    parent_clause1 : [@TraitClause1]: Sized<Args>
+    parent_clause2 : [@TraitClause2]: Tuple<Args>
+    fn call<'_0> = call<'_0_0, Self, Args>[Self]
 }
 
 
