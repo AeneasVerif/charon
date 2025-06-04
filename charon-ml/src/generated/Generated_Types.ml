@@ -426,7 +426,7 @@ and ty =
           This is a function signature with limited generics: it only supports lifetime generics, not
           other kinds of generics.
        *)
-  | TFnDef of fun_decl_id * (ty list * ty) region_binder
+  | TFnDef of fun_decl_id * generic_args
       (** The unique type associated with each function item.
           This is a function signature with limited generics: it only supports lifetime generics, not
           other kinds of generics.
