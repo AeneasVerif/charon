@@ -64,9 +64,11 @@ impl ItemTransCtx<'_, '_> {
     pub fn translate_closure_info(
         &mut self,
         span: Span,
+        id: &hax::DefId,
         args: &hax::ClosureArgs,
     ) -> Result<ClosureInfo, Error> {
         let kind = translate_closure_kind(&args.kind);
+        let fun_id = self.register_closure_method_decl_id(span, id, kind);
         let signature = self.translate_region_binder(span, &args.untupled_sig, |ctx, sig| {
             let inputs = sig
                 .inputs
@@ -76,7 +78,11 @@ impl ItemTransCtx<'_, '_> {
             let output = ctx.translate_ty(span, &sig.output)?;
             Ok((inputs, output))
         })?;
-        Ok(ClosureInfo { kind, signature })
+        Ok(ClosureInfo {
+            kind,
+            fun_id,
+            signature,
+        })
     }
 
     /// Translate a reference to the closure ADT.
@@ -176,7 +182,10 @@ impl ItemTransCtx<'_, '_> {
 
         let state_ty = self.get_closure_state_ty(span, def_id, args)?;
         // The input tuple type and output type of the signature.
-        let (inputs, _) = self.translate_closure_info(span, args)?.signature.erase();
+        let (inputs, _) = self
+            .translate_closure_info(span, def_id, args)?
+            .signature
+            .erase();
         let input_tuple = Ty::mk_tuple(inputs);
 
         Ok(TraitDeclRef {
@@ -568,7 +577,10 @@ impl ItemTransCtx<'_, '_> {
         let fn_trait = implemented_trait.trait_id;
 
         // The input tuple type and output type of the signature.
-        let (inputs, output) = self.translate_closure_info(span, args)?.signature.erase();
+        let (inputs, output) = self
+            .translate_closure_info(span, def.def_id(), args)?
+            .signature
+            .erase();
         let input = Ty::mk_tuple(inputs);
 
         let parent_trait_refs = {
