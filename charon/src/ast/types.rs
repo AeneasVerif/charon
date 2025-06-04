@@ -439,6 +439,8 @@ pub struct TypeDecl {
     /// Meta information associated with the item.
     pub item_meta: ItemMeta,
     pub generics: GenericParams,
+    /// The context of the type: distinguishes top-level items from closure-related items.
+    pub src: ItemKind,
     /// The type kind: enum, struct, or opaque.
     pub kind: TypeDeclKind,
     /// The layout of the type. Information may be partial because of generics or dynamically-

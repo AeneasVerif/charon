@@ -216,6 +216,9 @@ impl ItemTransCtx<'_, '_> {
         // Translate generics and predicates
         self.translate_def_generics(span, def)?;
 
+        // Get the kind of the type decl -- is it a closure?
+        let src = self.get_item_kind(span, def)?;
+
         // Translate type body
         let kind = match &def.kind {
             _ if item_meta.opacity.is_opaque() => Ok(TypeDeclKind::Opaque),
@@ -249,6 +252,7 @@ impl ItemTransCtx<'_, '_> {
             item_meta,
             generics: self.into_generics(),
             kind,
+            src,
             layout,
             ptr_metadata,
         };
