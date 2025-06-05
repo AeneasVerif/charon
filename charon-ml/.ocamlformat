@@ -1,5 +1,4 @@
 profile = default
-version = 0.26.2
 margin = 80
 
 break-cases = fit-or-vertical
