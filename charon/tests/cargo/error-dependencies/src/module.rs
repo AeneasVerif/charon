@@ -3,6 +3,6 @@ pub fn fun1() {
 }
 
 pub fn fun3() {
-    let _ = core::ptr::null::<u8>();
-    let _ = crate::opaque::custom_null::<u8>();
+    let _ = "".contains("");
+    let _ = crate::opaque::takes_pattern::<&str>();
 }
