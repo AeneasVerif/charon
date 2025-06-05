@@ -425,7 +425,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                 FullDefKind::TraitImpl { .. } | FullDefKind::InherentImpl { .. } => {
                     PredicateOrigin::WhereClauseOnImpl
                 }
-                FullDefKind::Trait { .. } => {
+                FullDefKind::Trait { .. } | FullDefKind::TraitAlias { .. } => {
                     let _ = self.register_trait_decl_id(span, &def.def_id);
                     PredicateOrigin::WhereClauseOnTrait
                 }
@@ -438,6 +438,9 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
             )?;
             // Also register implied predicates.
             if let FullDefKind::Trait {
+                implied_predicates, ..
+            }
+            | FullDefKind::TraitAlias {
                 implied_predicates, ..
             }
             | FullDefKind::AssocTy {

@@ -87,14 +87,12 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
                 let _ = self.register_global_decl_id(&None, def_id);
             }
 
-            Trait { .. } => {
+            Trait { .. } | TraitAlias { .. } => {
                 let _ = self.register_trait_decl_id(&None, def_id);
             }
             Impl { of_trait: true } => {
                 let _ = self.register_trait_impl_id(&None, def_id);
             }
-            // TODO: trait aliases (https://github.com/AeneasVerif/charon/issues/366)
-            TraitAlias { .. } => {}
 
             Impl { of_trait: false } | Mod { .. } | ForeignMod { .. } => {
                 let Ok(def) = self.hax_def(def_id) else {
@@ -261,11 +259,12 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
     ) -> TraitImplId {
         // Register the corresponding trait early so we can filter on its name.
         if let Ok(def) = self.hax_def(id) {
-            let hax::FullDefKind::TraitImpl { trait_pred, .. } = def.kind() else {
-                unreachable!()
+            let trait_id = match def.kind() {
+                hax::FullDefKind::TraitImpl { trait_pred, .. } => &trait_pred.trait_ref.def_id,
+                hax::FullDefKind::TraitAlias { .. } => id,
+                _ => unreachable!(),
             };
-            let trait_rust_id = &trait_pred.trait_ref.def_id;
-            let _ = self.register_trait_decl_id(src, trait_rust_id);
+            let _ = self.register_trait_decl_id(src, trait_id);
         }
 
         *self
