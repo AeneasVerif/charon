@@ -318,6 +318,13 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
                         .push(PathElem::Ident(fn_name, Disambiguator::ZERO));
                 }
             }
+            TransItemSource::TraitImpl(id) if matches!(id.kind, hax::DefKind::TraitAlias) => {
+                let impl_id = self.register_trait_impl_id(&None, id);
+                name.name.push(PathElem::Impl(
+                    ImplElem::Trait(impl_id),
+                    Disambiguator::ZERO,
+                ));
+            }
             _ => {}
         }
         Ok(name)

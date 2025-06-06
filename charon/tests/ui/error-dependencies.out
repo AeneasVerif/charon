@@ -1,18 +1,18 @@
-error: Trait aliases are not supported
- --> /rustc/library/core/src/ptr/metadata.rs:84:1
+error: Generic associated types are not supported
+ --> /rustc/library/core/src/str/pattern.rs:102:5
 
-note: the error occurred when translating `core::ptr::metadata::Thin`, which is (transitively) used at the following location(s):
+note: the error occurred when translating `core::str::pattern::Pattern`, which is (transitively) used at the following location(s):
   --> tests/ui/error-dependencies.rs:9:13
    |
- 9 |     let _ = core::ptr::null::<u8>();
-   |             -----------------------
+ 9 |     let _ = "".contains("");
+   |             ---------------
 ...
-16 |         let _ = custom_null::<u8>();
-   |                 -------------------
+16 |         let _ = takes_pattern::<&str>();
+   |                 -----------------------
 17 |     }
-18 |     fn custom_null<T: core::ptr::Thin>() {}
-   |                       ---------------
-error: Item `core::ptr::metadata::Thin` caused errors; ignoring.
- --> /rustc/library/core/src/ptr/metadata.rs:84:1
+18 |     fn takes_pattern<T: std::str::pattern::Pattern>() {}
+   |                         --------------------------
+error: Item `core::str::pattern::Pattern` caused errors; ignoring.
+ --> /rustc/library/core/src/str/pattern.rs:100:1
 
 ERROR Charon failed to translate this code (2 errors)
