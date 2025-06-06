@@ -679,6 +679,18 @@ and layout = {
      *)
 }
 
+(** A placeholder for the vtable of a trait object.
+    To be implemented in the future when [dyn Trait] is fully supported.
+ *)
+and v_table = unit
+
+(** The kind of meta information associated with a Dynamic Sized Type (DST).
+    For [str] and slices like [[u8]], this is the length of the slice.
+    For trait objects, this is the vtable of the trait.
+    For user defined DSTs, this is inductively inherited from their last field.
+ *)
+and dst_meta_kind = Length | VTable of v_table
+
 (** A type declaration.
 
     Types can be opaque or transparent.
@@ -701,6 +713,11 @@ and type_decl = {
   layout : layout option;
       (** The layout of the type. Information may be partial because of generics or dynamically-
         sized types. If rustc cannot compute a layout, it is [None].
+     *)
+  dst_meta_kind : dst_meta_kind option;
+      (** The meta data to be associated with the reference of the type
+        it is [None] if the type is not a DST.
+        For more on the kinds, see [DstMetaKind].
      *)
 }
 

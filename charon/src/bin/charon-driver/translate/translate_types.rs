@@ -375,6 +375,34 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         Ok(type_id)
     }
 
+    /// Translate a Dynamically Sized Type metadata kind.
+    ///
+    /// Returns `None` if the type is generic, or if it is not a DST.
+    pub fn translate_dst_meta_kind(&self) -> Option<DstMetaKind> {
+        // if it is generic, simply returns `None`
+        let gen_params = &self.binding_levels.outermost().params;
+        if !(gen_params.types.is_empty() && gen_params.const_generics.is_empty()) {
+            return None;
+        }
+
+        // otherwise, call the `struct_tail_for_codegen` method from Rustc internal
+        // prepare the call to the method
+        use rustc_middle::ty;
+        let tcx = self.t_ctx.tcx;
+        let rdefid = self.def_id.as_rust_def_id().unwrap();
+        let ty_env = hax::State::new_from_state_and_id(&self.t_ctx.hax_state, rdefid).typing_env();
+        // This `skip_binder` is ok because it's an `EarlyBinder`.
+        let ty = tcx.type_of(rdefid).skip_binder();
+
+        // call the key method
+        match tcx.struct_tail_for_codegen(ty, ty_env).kind() {
+            ty::Foreign(..) => None,
+            ty::Str | ty::Slice(..) => Some(DstMetaKind::Length),
+            ty::Dynamic(..) => Some(DstMetaKind::VTable(VTable)),
+            _ => None,
+        }
+    }
+
     /// Translate a type layout.
     ///
     /// Translates the layout as queried from rustc into

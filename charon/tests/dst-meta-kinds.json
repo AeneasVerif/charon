@@ -1,0 +1,11 @@
+{
+  "test_crate::Alias": "Length",
+  "test_crate::StrDst": "Length",
+  "test_crate::SliceDst": "Length",
+  "test_crate::Point": null,
+  "test_crate::MoreSliceDst": "Length",
+  "test_crate::Embedded": "Length",
+  "test_crate::DynTrait": {
+    "VTable": null
+  }
+}

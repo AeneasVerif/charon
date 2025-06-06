@@ -385,6 +385,21 @@ pub struct Layout {
     pub variant_layouts: Vector<VariantId, VariantLayout>,
 }
 
+/// A placeholder for the vtable of a trait object.
+/// To be implemented in the future when `dyn Trait` is fully supported.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Drive, DriveMut)]
+pub struct VTable;
+
+/// The kind of meta information associated with a Dynamic Sized Type (DST).
+/// For `str` and slices like `[u8]`, this is the length of the slice.
+/// For trait objects, this is the vtable of the trait.
+/// For user defined DSTs, this is inductively inherited from their last field.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Drive, DriveMut)]
+pub enum DstMetaKind {
+    Length,
+    VTable(VTable),
+}
+
 /// A type declaration.
 ///
 /// Types can be opaque or transparent.
@@ -410,6 +425,10 @@ pub struct TypeDecl {
     /// The layout of the type. Information may be partial because of generics or dynamically-
     /// sized types. If rustc cannot compute a layout, it is `None`.
     pub layout: Option<Layout>,
+    /// The meta data to be associated with the reference of the type
+    /// it is `None` if the type is not a DST.
+    /// For more on the kinds, see `DstMetaKind`.
+    pub dst_meta_kind: Option<DstMetaKind>,
 }
 
 generate_index_type!(VariantId, "Variant");
