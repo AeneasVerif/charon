@@ -1,0 +1,16 @@
+{
+  "test_crate::Alias": "Length",
+  "test_crate::StrDst": "Length",
+  "test_crate::SliceDst": "Length",
+  "test_crate::Point": "None",
+  "test_crate::MoreSliceDst": "Length",
+  "test_crate::Embedded": "Length",
+  "test_crate::DynTrait": {
+    "VTable": null
+  },
+  "test_crate::GenericInLastField": null,
+  "test_crate::GenericNotLastField": "None",
+  "test_crate::GenericBehindIndirection": "None",
+  "test_crate::ThinGeneric": null,
+  "alloc::alloc::Global": "None"
+}

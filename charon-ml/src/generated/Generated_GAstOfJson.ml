@@ -1350,6 +1350,23 @@ and layout_of_json (ctx : of_json_ctx) (js : json) : (layout, string) result =
             : layout)
     | _ -> Error "")
 
+and v_table_of_json (ctx : of_json_ctx) (js : json) : (v_table, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with
+    | `Null -> Ok ()
+    | _ -> Error "")
+
+and ptr_metadata_of_json (ctx : of_json_ctx) (js : json) :
+    (ptr_metadata, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with
+    | `String "None" -> Ok NoMetadata
+    | `String "Length" -> Ok Length
+    | `Assoc [ ("VTable", v_table) ] ->
+        let* v_table = v_table_of_json ctx v_table in
+        Ok (VTable v_table)
+    | _ -> Error "")
+
 and type_decl_of_json (ctx : of_json_ctx) (js : json) :
     (type_decl, string) result =
   combine_error_msgs js __FUNCTION__
@@ -1361,13 +1378,19 @@ and type_decl_of_json (ctx : of_json_ctx) (js : json) :
           ("generics", generics);
           ("kind", kind);
           ("layout", layout);
+          ("ptr_metadata", ptr_metadata);
         ] ->
         let* def_id = type_decl_id_of_json ctx def_id in
         let* item_meta = item_meta_of_json ctx item_meta in
         let* generics = generic_params_of_json ctx generics in
         let* kind = type_decl_kind_of_json ctx kind in
         let* layout = option_of_json layout_of_json ctx layout in
-        Ok ({ def_id; item_meta; generics; kind; layout } : type_decl)
+        let* ptr_metadata =
+          option_of_json ptr_metadata_of_json ctx ptr_metadata
+        in
+        Ok
+          ({ def_id; item_meta; generics; kind; layout; ptr_metadata }
+            : type_decl)
     | _ -> Error "")
 
 and variant_id_of_json (ctx : of_json_ctx) (js : json) :

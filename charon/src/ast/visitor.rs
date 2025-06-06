@@ -51,7 +51,7 @@ use indexmap::IndexMap;
         TranslatedCrate, TypeDeclKind, TypeId, TypeVar, TypeVarId,
         ullbc_ast::BlockData, ullbc_ast::BlockId, ullbc_ast::ExprBody, ullbc_ast::RawStatement,
         ullbc_ast::RawTerminator, ullbc_ast::SwitchTargets, ullbc_ast::Terminator,
-        UnOp, Local, Variant, VariantId, LocalId, CopyNonOverlapping, Layout, VariantLayout,
+        UnOp, Local, Variant, VariantId, LocalId, CopyNonOverlapping, Layout, VariantLayout, PtrMetadata, VTable,
         for<T: AstVisitable> Box<T>,
         for<T: AstVisitable> Option<T>,
         for<A: AstVisitable, B: AstVisitable> (A, B),

@@ -375,6 +375,38 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         Ok(type_id)
     }
 
+    /// Translate a Dynamically Sized Type metadata kind.
+    ///
+    /// Returns `None` if the type is generic, or if it is not a DST.
+    pub fn translate_ptr_metadata(&self) -> Option<PtrMetadata> {
+        // prepare the call to the method
+        use rustc_middle::ty;
+        let tcx = self.t_ctx.tcx;
+        let rdefid = self.def_id.as_rust_def_id().unwrap();
+        let ty_env = hax::State::new_from_state_and_id(&self.t_ctx.hax_state, rdefid).typing_env();
+        // This `skip_binder` is ok because it's an `EarlyBinder`.
+        let ty = tcx.type_of(rdefid).skip_binder();
+
+        // call the key method
+        match tcx
+            .struct_tail_raw(
+                ty,
+                |ty| tcx.try_normalize_erasing_regions(ty_env, ty).unwrap_or(ty),
+                || {},
+            )
+            .kind()
+        {
+            ty::Foreign(..) => Some(PtrMetadata::None),
+            ty::Str | ty::Slice(..) => Some(PtrMetadata::Length),
+            ty::Dynamic(..) => Some(PtrMetadata::VTable(VTable)),
+            // This is NOT accurate -- if there is no generic clause that states `?Sized`
+            // Then it will be safe to return `Some(PtrMetadata::None)`.
+            // TODO: inquire the generic clause to get the accurate info.
+            ty::Placeholder(..) | ty::Infer(..) | ty::Param(..) | ty::Bound(..) => None,
+            _ => Some(PtrMetadata::None),
+        }
+    }
+
     /// Translate a type layout.
     ///
     /// Translates the layout as queried from rustc into

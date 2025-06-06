@@ -690,6 +690,26 @@ and layout = {
      *)
 }
 
+(** A placeholder for the vtable of a trait object.
+    To be implemented in the future when [dyn Trait] is fully supported.
+ *)
+and v_table = unit
+
+(** The metadata stored in a pointer. That's the information stored in pointers alongside
+    their address. It's empty for [Sized] types, and interesting for unsized
+    aka dynamically-sized types.
+ *)
+and ptr_metadata =
+  | NoMetadata  (** Types that need no metadata, namely [T: Sized] types. *)
+  | Length
+      (** Metadata for [[T]], [str], and user-defined types
+          that directly or indirectly contain one of these two.
+       *)
+  | VTable of v_table
+      (** Metadata for [dyn Trait] and user-defined types
+          that directly or indirectly contain a [dyn Trait].
+       *)
+
 (** A type declaration.
 
     Types can be opaque or transparent.
@@ -712,6 +732,14 @@ and type_decl = {
   layout : layout option;
       (** The layout of the type. Information may be partial because of generics or dynamically-
         sized types. If rustc cannot compute a layout, it is [None].
+     *)
+  ptr_metadata : ptr_metadata option;
+      (** The metadata associated with a pointer to the type.
+        This is [None] if we could not compute it because of generics.
+        The information is *accurate* if it is [Some]
+            while if it is [None], it may still be theoretically computable
+            but due to some limitation to be fixed, we are unable to obtain the info.
+        See [translate_types::{impl ItemTransCtx}::translate_ptr_metadata] for more details.
      *)
 }
 
