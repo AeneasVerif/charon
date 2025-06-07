@@ -869,10 +869,12 @@ impl ClosureKind {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Drive, DriveMut)]
 pub struct ClosureInfo {
     pub kind: ClosureKind,
-    /// The function id of the closure's original kind. For instance, a `Fn` closure will have a
-    /// function for its `FnOnce`, `FnMut` and `Fn` traits, but here we would only specify the
-    /// id of the `Fn` function.
-    pub fun_id: FunDeclId,
+    /// The `FnOnce` implementation of this closure -- always exists.
+    pub fn_once_impl: RegionBinder<TraitImplRef>,
+    /// The `FnMut` implementation of this closure, if any.
+    pub fn_mut_impl: Option<RegionBinder<TraitImplRef>>,
+    /// The `Fn` implementation of this closure, if any.
+    pub fn_impl: Option<RegionBinder<TraitImplRef>>,
     /// The signature of the function that this closure represents.
     pub signature: RegionBinder<(Vec<Ty>, Ty)>,
 }
