@@ -409,14 +409,36 @@ and closure_info_of_json (ctx : of_json_ctx) (js : json) :
     (closure_info, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
-    | `Assoc [ ("kind", kind); ("signature", signature) ] ->
+    | `Assoc
+        [
+          ("kind", kind);
+          ("fn_once_impl", fn_once_impl);
+          ("fn_mut_impl", fn_mut_impl);
+          ("fn_impl", fn_impl);
+          ("signature", signature);
+        ] ->
         let* kind = closure_kind_of_json ctx kind in
+        let* fn_once_impl =
+          region_binder_of_json trait_impl_ref_of_json ctx fn_once_impl
+        in
+        let* fn_mut_impl =
+          option_of_json
+            (region_binder_of_json trait_impl_ref_of_json)
+            ctx fn_mut_impl
+        in
+        let* fn_impl =
+          option_of_json
+            (region_binder_of_json trait_impl_ref_of_json)
+            ctx fn_impl
+        in
         let* signature =
           region_binder_of_json
             (pair_of_json (list_of_json ty_of_json) ty_of_json)
             ctx signature
         in
-        Ok ({ kind; signature } : closure_info)
+        Ok
+          ({ kind; fn_once_impl; fn_mut_impl; fn_impl; signature }
+            : closure_info)
     | _ -> Error "")
 
 and closure_kind_of_json (ctx : of_json_ctx) (js : json) :
@@ -1752,6 +1774,7 @@ and type_decl_of_json (ctx : of_json_ctx) (js : json) :
           ("def_id", def_id);
           ("item_meta", item_meta);
           ("generics", generics);
+          ("src", src);
           ("kind", kind);
           ("layout", layout);
           ("ptr_metadata", ptr_metadata);
@@ -1759,13 +1782,14 @@ and type_decl_of_json (ctx : of_json_ctx) (js : json) :
         let* def_id = type_decl_id_of_json ctx def_id in
         let* item_meta = item_meta_of_json ctx item_meta in
         let* generics = generic_params_of_json ctx generics in
+        let* src = item_kind_of_json ctx src in
         let* kind = type_decl_kind_of_json ctx kind in
         let* layout = option_of_json layout_of_json ctx layout in
         let* ptr_metadata =
           option_of_json ptr_metadata_of_json ctx ptr_metadata
         in
         Ok
-          ({ def_id; item_meta; generics; kind; layout; ptr_metadata }
+          ({ def_id; item_meta; generics; src; kind; layout; ptr_metadata }
             : type_decl)
     | _ -> Error "")
 

@@ -29,22 +29,6 @@ fn main()
     return
 }
 
-// Full name: test_crate::main::{impl Fn<()> for closure}::call
-fn {impl Fn<()> for closure}::call<'_0>(@1: &'_0 (closure), @2: ())
-{
-    let @0: (); // return
-    let @1: &'_ (closure); // arg #1
-    let tupled_args@2: (); // arg #2
-    let @3: i32; // anonymous local
-
-    storage_live(@3)
-    @3 := const (1 : i32) / const (0 : i32)
-    storage_dead(@3)
-    @0 := ()
-    @0 := ()
-    return
-}
-
 // Full name: core::marker::Sized
 #[lang_item("sized")]
 pub trait Sized<Self>
@@ -64,24 +48,20 @@ pub trait FnOnce<Self, Args>
     fn call_once = core::ops::function::FnOnce::call_once<Self, Args>[Self]
 }
 
-// Full name: core::ops::function::FnMut
-#[lang_item("fn_mut")]
-pub trait FnMut<Self, Args>
+// Full name: test_crate::main::{impl Fn<()> for closure}::call
+fn {impl Fn<()> for closure}::call<'_0>(@1: &'_0 (closure), @2: ())
 {
-    parent_clause0 : [@TraitClause0]: FnOnce<Self, Args>
-    parent_clause1 : [@TraitClause1]: Sized<Args>
-    parent_clause2 : [@TraitClause2]: Tuple<Args>
-    fn call_mut<'_0> = core::ops::function::FnMut::call_mut<'_0_0, Self, Args>[Self]
-}
+    let @0: (); // return
+    let @1: &'_ (closure); // arg #1
+    let tupled_args@2: (); // arg #2
+    let @3: i32; // anonymous local
 
-// Full name: core::ops::function::Fn
-#[lang_item("r#fn")]
-pub trait Fn<Self, Args>
-{
-    parent_clause0 : [@TraitClause0]: FnMut<Self, Args>
-    parent_clause1 : [@TraitClause1]: Sized<Args>
-    parent_clause2 : [@TraitClause2]: Tuple<Args>
-    fn call<'_0> = core::ops::function::Fn::call<'_0_0, Self, Args>[Self]
+    storage_live(@3)
+    @3 := const (1 : i32) / const (0 : i32)
+    storage_dead(@3)
+    @0 := ()
+    @0 := ()
+    return
 }
 
 // Full name: test_crate::main::{impl FnMut<()> for closure}::call_mut
@@ -124,12 +104,32 @@ impl FnOnce<()> for closure {
     fn call_once = {impl FnOnce<()> for closure}::call_once
 }
 
+// Full name: core::ops::function::FnMut
+#[lang_item("fn_mut")]
+pub trait FnMut<Self, Args>
+{
+    parent_clause0 : [@TraitClause0]: FnOnce<Self, Args>
+    parent_clause1 : [@TraitClause1]: Sized<Args>
+    parent_clause2 : [@TraitClause2]: Tuple<Args>
+    fn call_mut<'_0> = core::ops::function::FnMut::call_mut<'_0_0, Self, Args>[Self]
+}
+
 // Full name: test_crate::main::{impl FnMut<()> for closure}
 impl FnMut<()> for closure {
     parent_clause0 = {impl FnOnce<()> for closure}
     parent_clause1 = Sized<()>
     parent_clause2 = Tuple<()>
     fn call_mut<'_0> = {impl FnMut<()> for closure}::call_mut<'_0_0>
+}
+
+// Full name: core::ops::function::Fn
+#[lang_item("r#fn")]
+pub trait Fn<Self, Args>
+{
+    parent_clause0 : [@TraitClause0]: FnMut<Self, Args>
+    parent_clause1 : [@TraitClause1]: Sized<Args>
+    parent_clause2 : [@TraitClause2]: Tuple<Args>
+    fn call<'_0> = core::ops::function::Fn::call<'_0_0, Self, Args>[Self]
 }
 
 // Full name: test_crate::main::{impl Fn<()> for closure}
