@@ -3,7 +3,9 @@
 
 fn foo<'a, T>(x: &'a T) {}
 
-fn takes_closure(_: impl for<'a> Fn(&'a u32)) {}
+fn takes_closure(c: impl for<'a> Fn(&'a u32)) {
+    c(&13)
+}
 
 fn bar() {
     let fooint1: fn(&u8) = foo;
