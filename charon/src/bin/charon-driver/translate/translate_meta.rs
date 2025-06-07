@@ -324,6 +324,10 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
                 let impl_id = self.register_trait_impl_id(&None, id);
                 name.name.push(PathElem::Impl(ImplElem::Trait(impl_id)));
             }
+            TransItemSource::ClosureAsFnCast(_) => {
+                name.name
+                    .push(PathElem::Ident("as_fn".into(), Disambiguator::ZERO));
+            }
             _ => {}
         }
         Ok(name)
