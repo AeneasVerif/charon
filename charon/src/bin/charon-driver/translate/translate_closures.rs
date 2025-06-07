@@ -714,4 +714,114 @@ impl ItemTransCtx<'_, '_> {
             methods: vec![(call_fn_name, call_fn_binder)],
         })
     }
+
+    /// Given an item that is a closure, generate the `call_once`/`call_mut`/`call` method
+    /// (depending on `target_kind`).
+    #[tracing::instrument(skip(self, item_meta))]
+    pub fn translate_closure_as_fn(
+        mut self,
+        def_id: FunDeclId,
+        item_meta: ItemMeta,
+        def: &hax::FullDef,
+    ) -> Result<FunDecl, Error> {
+        let span = item_meta.span;
+        let hax::FullDefKind::Closure { args, .. } = &def.kind else {
+            unreachable!()
+        };
+
+        trace!("About to translate closure as fn:\n{:?}", def.def_id);
+
+        assert!(
+            args.upvar_tys.is_empty(),
+            "Only stateless closures can be translated as functions"
+        );
+
+        self.translate_def_generics(span, def)?;
+        // Add the lifetime generics coming from the higher-kindedness of the signature.
+        assert!(self.innermost_binder_mut().bound_region_vars.is_empty(),);
+        self.innermost_binder_mut()
+            .push_params_from_binder(args.tupled_sig.rebind(()))?;
+
+        // Translate the function signature
+        let mut signature =
+            self.translate_closure_method_sig(def, span, args, ClosureKind::FnOnce)?;
+        let state_ty = signature.inputs.remove(0);
+
+        let body = if item_meta.opacity.with_private_contents().is_opaque() {
+            Err(Opaque)
+        } else {
+            // Target translation:
+            //
+            // fn call_fn(args: Args) -> Output {
+            //   let closure: Closure = {};
+            //   closure.call(args)
+            // }
+            let mk_stt = |content| Statement::new(span, content);
+            let mk_block = |statements, terminator| -> BlockData {
+                BlockData {
+                    statements,
+                    terminator: Terminator::new(span, terminator),
+                }
+            };
+            let fun_id =
+                self.register_closure_method_decl_id(span, def.def_id(), ClosureKind::FnOnce);
+            let impl_ref =
+                self.translate_closure_impl_ref(span, def.def_id(), args, ClosureKind::FnOnce)?;
+            let fn_op = FnOperand::Regular(FnPtr {
+                func: FunIdOrTraitMethodRef::Fun(FunId::Regular(fun_id.clone())).into(),
+                generics: Box::new(impl_ref.generics.with_target(GenericsSource::item(fun_id))),
+            });
+
+            let mut locals = Locals {
+                arg_count: 1,
+                locals: Vector::new(),
+            };
+            let mut statements = vec![];
+            let mut blocks = Vector::default();
+
+            let output = locals.new_var(None, signature.output.clone());
+            let args = locals.new_var(Some("args".to_string()), signature.inputs[0].clone());
+            let state = locals.new_var(Some("state".to_string()), state_ty.clone());
+
+            let (state_adt, state_args) = state_ty.as_adt().unwrap();
+            statements.push(mk_stt(RawStatement::Assign(
+                state.clone(),
+                Rvalue::Aggregate(
+                    AggregateKind::Adt(state_adt, None, None, Box::new(state_args.clone())),
+                    vec![],
+                ),
+            )));
+
+            let start_block = blocks.reserve_slot();
+            let ret_block = blocks.push(mk_block(vec![], RawTerminator::Return));
+            let unwind_block = blocks.push(mk_block(vec![], RawTerminator::UnwindResume));
+            let call = RawTerminator::Call {
+                target: ret_block,
+                call: Call {
+                    func: fn_op,
+                    args: vec![Operand::Move(state), Operand::Move(args)],
+                    dest: output,
+                },
+                on_unwind: unwind_block,
+            };
+            blocks.set_slot(start_block, mk_block(statements, call));
+
+            let body: ExprBody = GExprBody {
+                span,
+                locals,
+                comments: vec![],
+                body: blocks,
+            };
+            Ok(Body::Unstructured(body))
+        };
+
+        Ok(FunDecl {
+            def_id,
+            item_meta,
+            signature,
+            kind: ItemKind::TopLevel,
+            is_global_initializer: None,
+            body,
+        })
+    }
 }
