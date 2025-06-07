@@ -1,5 +1,42 @@
 # Final LLBC before serialization:
 
+// Full name: core::marker::Sized
+#[lang_item("sized")]
+pub trait Sized<Self>
+
+// Full name: core::marker::Tuple
+#[lang_item("tuple_trait")]
+pub trait Tuple<Self>
+
+// Full name: core::ops::function::FnOnce
+#[lang_item("fn_once")]
+pub trait FnOnce<Self, Args>
+{
+    parent_clause0 : [@TraitClause0]: Sized<Args>
+    parent_clause1 : [@TraitClause1]: Tuple<Args>
+    parent_clause2 : [@TraitClause2]: Sized<Self::Output>
+    type Output
+    fn call_once = core::ops::function::FnOnce::call_once<Self, Args>[Self]
+}
+
+// Full name: core::ops::function::FnMut
+#[lang_item("fn_mut")]
+pub trait FnMut<Self, Args>
+{
+    parent_clause0 : [@TraitClause0]: FnOnce<Self, Args>
+    parent_clause1 : [@TraitClause1]: Sized<Args>
+    parent_clause2 : [@TraitClause2]: Tuple<Args>
+    fn call_mut<'_0> = core::ops::function::FnMut::call_mut<'_0_0, Self, Args>[Self]
+}
+
+pub fn core::ops::function::FnMut::call_mut<'_0, Self, Args>(@1: &'_0 mut (Self), @2: Args) -> @TraitClause0::parent_clause0::Output
+where
+    [@TraitClause0]: FnMut<Self, Args>,
+
+pub fn core::ops::function::FnOnce::call_once<Self, Args>(@1: Self, @2: Args) -> @TraitClause0::Output
+where
+    [@TraitClause0]: FnOnce<Self, Args>,
+
 // Full name: test_crate::Rng
 struct Rng {}
 
@@ -36,25 +73,6 @@ fn new<'_0>(@1: &'_0 mut (Rng))
     @0 := ()
     @0 := ()
     return
-}
-
-// Full name: core::marker::Sized
-#[lang_item("sized")]
-pub trait Sized<Self>
-
-// Full name: core::marker::Tuple
-#[lang_item("tuple_trait")]
-pub trait Tuple<Self>
-
-// Full name: core::ops::function::FnOnce
-#[lang_item("fn_once")]
-pub trait FnOnce<Self, Args>
-{
-    parent_clause0 : [@TraitClause0]: Sized<Args>
-    parent_clause1 : [@TraitClause1]: Tuple<Args>
-    parent_clause2 : [@TraitClause2]: Sized<Self::Output>
-    type Output
-    fn call_once = core::ops::function::FnOnce::call_once<Self, Args>[Self]
 }
 
 // Full name: test_crate::new::{impl FnMut<()> for closure<'_0>}::call_mut
@@ -102,16 +120,6 @@ impl<'_0> FnOnce<()> for closure<'_0> {
     fn call_once = {impl FnOnce<()> for closure<'_0>}::call_once<'_0>
 }
 
-// Full name: core::ops::function::FnMut
-#[lang_item("fn_mut")]
-pub trait FnMut<Self, Args>
-{
-    parent_clause0 : [@TraitClause0]: FnOnce<Self, Args>
-    parent_clause1 : [@TraitClause1]: Sized<Args>
-    parent_clause2 : [@TraitClause2]: Tuple<Args>
-    fn call_mut<'_0> = core::ops::function::FnMut::call_mut<'_0_0, Self, Args>[Self]
-}
-
 // Full name: test_crate::new::{impl FnMut<()> for closure<'_0>}
 impl<'_0> FnMut<()> for closure<'_0> {
     parent_clause0 = {impl FnOnce<()> for closure<'_0>}<'_0>
@@ -119,14 +127,6 @@ impl<'_0> FnMut<()> for closure<'_0> {
     parent_clause2 = Tuple<()>
     fn call_mut<'_0> = {impl FnMut<()> for closure<'_0>}::call_mut<'_0, '_0_0>
 }
-
-pub fn core::ops::function::FnMut::call_mut<'_0, Self, Args>(@1: &'_0 mut (Self), @2: Args) -> @TraitClause0::parent_clause0::Output
-where
-    [@TraitClause0]: FnMut<Self, Args>,
-
-pub fn core::ops::function::FnOnce::call_once<Self, Args>(@1: Self, @2: Args) -> @TraitClause0::Output
-where
-    [@TraitClause0]: FnOnce<Self, Args>,
 
 
 

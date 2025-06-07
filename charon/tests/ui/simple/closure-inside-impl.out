@@ -4,6 +4,53 @@
 #[lang_item("sized")]
 pub trait Sized<Self>
 
+// Full name: core::marker::Tuple
+#[lang_item("tuple_trait")]
+pub trait Tuple<Self>
+
+// Full name: core::ops::function::FnOnce
+#[lang_item("fn_once")]
+pub trait FnOnce<Self, Args>
+{
+    parent_clause0 : [@TraitClause0]: Sized<Args>
+    parent_clause1 : [@TraitClause1]: Tuple<Args>
+    parent_clause2 : [@TraitClause2]: Sized<Self::Output>
+    type Output
+    fn call_once = core::ops::function::FnOnce::call_once<Self, Args>[Self]
+}
+
+// Full name: core::ops::function::FnMut
+#[lang_item("fn_mut")]
+pub trait FnMut<Self, Args>
+{
+    parent_clause0 : [@TraitClause0]: FnOnce<Self, Args>
+    parent_clause1 : [@TraitClause1]: Sized<Args>
+    parent_clause2 : [@TraitClause2]: Tuple<Args>
+    fn call_mut<'_0> = core::ops::function::FnMut::call_mut<'_0_0, Self, Args>[Self]
+}
+
+// Full name: core::ops::function::Fn
+#[lang_item("r#fn")]
+pub trait Fn<Self, Args>
+{
+    parent_clause0 : [@TraitClause0]: FnMut<Self, Args>
+    parent_clause1 : [@TraitClause1]: Sized<Args>
+    parent_clause2 : [@TraitClause2]: Tuple<Args>
+    fn call<'_0> = core::ops::function::Fn::call<'_0_0, Self, Args>[Self]
+}
+
+pub fn core::ops::function::Fn::call<'_0, Self, Args>(@1: &'_0 (Self), @2: Args) -> @TraitClause0::parent_clause0::parent_clause0::Output
+where
+    [@TraitClause0]: Fn<Self, Args>,
+
+pub fn core::ops::function::FnMut::call_mut<'_0, Self, Args>(@1: &'_0 mut (Self), @2: Args) -> @TraitClause0::parent_clause0::Output
+where
+    [@TraitClause0]: FnMut<Self, Args>,
+
+pub fn core::ops::function::FnOnce::call_once<Self, Args>(@1: Self, @2: Args) -> @TraitClause0::Output
+where
+    [@TraitClause0]: FnOnce<Self, Args>,
+
 // Full name: test_crate::Foo
 pub struct Foo<F>
 where
@@ -34,21 +81,6 @@ where
     storage_dead(_closure@1)
     @0 := ()
     return
-}
-
-// Full name: core::marker::Tuple
-#[lang_item("tuple_trait")]
-pub trait Tuple<Self>
-
-// Full name: core::ops::function::FnOnce
-#[lang_item("fn_once")]
-pub trait FnOnce<Self, Args>
-{
-    parent_clause0 : [@TraitClause0]: Sized<Args>
-    parent_clause1 : [@TraitClause1]: Tuple<Args>
-    parent_clause2 : [@TraitClause2]: Sized<Self::Output>
-    type Output
-    fn call_once = core::ops::function::FnOnce::call_once<Self, Args>[Self]
 }
 
 // Full name: test_crate::{Foo<F>[@TraitClause0]}::method::{impl Fn<(())> for closure<F, T>[@TraitClause0, @TraitClause1]}::call
@@ -119,16 +151,6 @@ where
     fn call_once = {impl FnOnce<(())> for closure<F, T>[@TraitClause0, @TraitClause1]}::call_once<F, T>[@TraitClause0, @TraitClause1]
 }
 
-// Full name: core::ops::function::FnMut
-#[lang_item("fn_mut")]
-pub trait FnMut<Self, Args>
-{
-    parent_clause0 : [@TraitClause0]: FnOnce<Self, Args>
-    parent_clause1 : [@TraitClause1]: Sized<Args>
-    parent_clause2 : [@TraitClause2]: Tuple<Args>
-    fn call_mut<'_0> = core::ops::function::FnMut::call_mut<'_0_0, Self, Args>[Self]
-}
-
 // Full name: test_crate::{Foo<F>[@TraitClause0]}::method::{impl FnMut<(())> for closure<F, T>[@TraitClause0, @TraitClause1]}
 impl<F, T> FnMut<(())> for closure<F, T>[@TraitClause0, @TraitClause1]
 where
@@ -139,16 +161,6 @@ where
     parent_clause1 = Sized<(())>
     parent_clause2 = Tuple<(())>
     fn call_mut<'_0> = {impl FnMut<(())> for closure<F, T>[@TraitClause0, @TraitClause1]}::call_mut<'_0_0, F, T>[@TraitClause0, @TraitClause1]
-}
-
-// Full name: core::ops::function::Fn
-#[lang_item("r#fn")]
-pub trait Fn<Self, Args>
-{
-    parent_clause0 : [@TraitClause0]: FnMut<Self, Args>
-    parent_clause1 : [@TraitClause1]: Sized<Args>
-    parent_clause2 : [@TraitClause2]: Tuple<Args>
-    fn call<'_0> = core::ops::function::Fn::call<'_0_0, Self, Args>[Self]
 }
 
 // Full name: test_crate::{Foo<F>[@TraitClause0]}::method::{impl Fn<(())> for closure<F, T>[@TraitClause0, @TraitClause1]}
@@ -162,18 +174,6 @@ where
     parent_clause2 = Tuple<(())>
     fn call<'_0> = {impl Fn<(())> for closure<F, T>[@TraitClause0, @TraitClause1]}::call<'_0_0, F, T>[@TraitClause0, @TraitClause1]
 }
-
-pub fn core::ops::function::FnMut::call_mut<'_0, Self, Args>(@1: &'_0 mut (Self), @2: Args) -> @TraitClause0::parent_clause0::Output
-where
-    [@TraitClause0]: FnMut<Self, Args>,
-
-pub fn core::ops::function::Fn::call<'_0, Self, Args>(@1: &'_0 (Self), @2: Args) -> @TraitClause0::parent_clause0::parent_clause0::Output
-where
-    [@TraitClause0]: Fn<Self, Args>,
-
-pub fn core::ops::function::FnOnce::call_once<Self, Args>(@1: Self, @2: Args) -> @TraitClause0::Output
-where
-    [@TraitClause0]: FnOnce<Self, Args>,
 
 
 
