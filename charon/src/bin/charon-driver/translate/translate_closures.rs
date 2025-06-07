@@ -67,8 +67,19 @@ impl ItemTransCtx<'_, '_> {
         id: &hax::DefId,
         args: &hax::ClosureArgs,
     ) -> Result<ClosureInfo, Error> {
+        use ClosureKind::*;
         let kind = translate_closure_kind(&args.kind);
-        let fun_id = self.register_closure_method_decl_id(span, id, kind);
+        let fn_once_impl = self.translate_closure_impl_ref(span, id, args, FnOnce)?;
+        let fn_mut_impl = if matches!(kind, FnMut | Fn) {
+            Some(self.translate_closure_impl_ref(span, id, args, FnMut)?)
+        } else {
+            None
+        };
+        let fn_impl = if matches!(kind, Fn) {
+            Some(self.translate_closure_impl_ref(span, id, args, Fn)?)
+        } else {
+            None
+        };
         let signature = self.translate_region_binder(span, &args.untupled_sig, |ctx, sig| {
             let inputs = sig
                 .inputs
@@ -80,7 +91,9 @@ impl ItemTransCtx<'_, '_> {
         })?;
         Ok(ClosureInfo {
             kind,
-            fun_id,
+            fn_once_impl,
+            fn_mut_impl,
+            fn_impl,
             signature,
         })
     }
