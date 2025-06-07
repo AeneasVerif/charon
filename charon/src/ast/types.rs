@@ -405,6 +405,8 @@ pub struct TypeDecl {
     /// Meta information associated with the item.
     pub item_meta: ItemMeta,
     pub generics: GenericParams,
+    /// The context of the type: distinguishes top-level items from closure-related items.
+    pub src: ItemKind,
     /// The type kind: enum, struct, or opaque.
     pub kind: TypeDeclKind,
     /// The layout of the type. Information may be partial because of generics or dynamically-
@@ -747,12 +749,16 @@ pub enum TyKind {
     ///
     /// TODO: we don't translate this properly yet.
     DynTrait(ExistentialPredicate),
-    /// Arrow type, used for function pointers and reused for the unique type associated with each
-    /// function item.
+    /// Function pointer type. This is a literal pointer to a region of memory that
+    /// contains a callable function.
     /// This is a function signature with limited generics: it only supports lifetime generics, not
-    /// other kinds of
-    /// generics.
+    /// other kinds of generics.
     Arrow(RegionBinder<(Vec<Ty>, Ty)>),
+    /// The unique type associated with each function item. Each function item is given
+    /// a unique generic type that takes as input the function's early-bound generics. This type
+    /// is not generally nameable in Rust; it's a ZST (there's a unique value), and a value of that type
+    /// can be cast to a function pointer or passed to functions that expect `FnOnce`/`FnMut`/`Fn` parameters.
+    FnDef(RegionBinder<FunDeclRef>),
     /// A type that could not be computed or was incorrect.
     #[drive(skip)]
     Error(String),
@@ -819,6 +825,12 @@ impl ClosureKind {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Drive, DriveMut)]
 pub struct ClosureInfo {
     pub kind: ClosureKind,
+    /// The `FnOnce` implementation of this closure -- always exists.
+    pub fn_once_impl: TraitImplRef,
+    /// The `FnMut` implementation of this closure, if any.
+    pub fn_mut_impl: Option<TraitImplRef>,
+    /// The `Fn` implementation of this closure, if any.
+    pub fn_impl: Option<TraitImplRef>,
     /// The signature of the function that this closure represents.
     pub signature: RegionBinder<(Vec<Ty>, Ty)>,
 }

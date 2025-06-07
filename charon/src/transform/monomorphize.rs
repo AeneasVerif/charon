@@ -124,6 +124,10 @@ impl VisitAst for UsageVisitor<'_> {
             TyKind::Adt(TypeId::Adt(id), gargs) => {
                 self.found_use_ty(id, gargs);
             }
+            TyKind::FnDef(binder) => {
+                let FunDeclRef { id, generics } = &binder.clone().erase();
+                self.found_use_fn(id, generics);
+            }
             _ => {}
         }
     }
@@ -230,6 +234,15 @@ impl VisitAstMut for SubstVisitor<'_> {
         match kind {
             TyKind::Adt(TypeId::Adt(id), gargs) => {
                 self.subst_use_ty(id, gargs);
+            }
+
+            TyKind::FnDef(binder) => {
+                let FunDeclRef {
+                    mut id,
+                    mut generics,
+                } = binder.clone().erase();
+                self.subst_use_fun(&mut id, &mut generics);
+                *binder = RegionBinder::empty(FunDeclRef { id, generics });
             }
             _ => {}
         }

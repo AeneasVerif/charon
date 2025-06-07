@@ -58,4 +58,82 @@ error: Error during trait resolution: Found unsupported GAT `Type` when resolvin
 55 |         x.foo()
    |         ^^^^^^^
 
-ERROR Charon failed to translate this code (10 errors)
+error: Found inconsistent generics after translation:
+       Mismatched regions:
+       target: {impl FnOnce<(&'_ (i32))> for closure<'_0>}
+       expected: ['_0, '_1]
+            got: ['_0]
+       Visitor stack:
+         charon_lib::ast::types::GenericArgs
+         alloc::boxed::Box<charon_lib::ast::types::GenericArgs>
+         charon_lib::ast::types::TraitImplRef
+         charon_lib::ast::types::ClosureInfo
+         charon_lib::ast::gast::ItemKind
+         charon_lib::ast::types::TypeDecl
+       Binding stack (depth 1):
+         0: <'_0>
+  --> tests/ui/generic-associated-types.rs:38:20
+   |
+38 |     for_each(iter, |item| sum += *item);
+   |                    ^^^^^^^^^^^^^^^^^^^
+
+error: Found inconsistent generics after translation:
+       Mismatched regions:
+       target: {impl FnMut<(&'_ (i32))> for closure<'_0>}
+       expected: ['_0, '_1]
+            got: ['_0]
+       Visitor stack:
+         charon_lib::ast::types::GenericArgs
+         alloc::boxed::Box<charon_lib::ast::types::GenericArgs>
+         charon_lib::ast::types::TraitImplRef
+         core::option::Option<charon_lib::ast::types::TraitImplRef>
+         charon_lib::ast::types::ClosureInfo
+         charon_lib::ast::gast::ItemKind
+         charon_lib::ast::types::TypeDecl
+       Binding stack (depth 1):
+         0: <'_0>
+  --> tests/ui/generic-associated-types.rs:38:20
+   |
+38 |     for_each(iter, |item| sum += *item);
+   |                    ^^^^^^^^^^^^^^^^^^^
+
+error: Found inconsistent generics after transformations:
+       Mismatched regions:
+       target: {impl FnOnce<(&'_ (i32))> for closure<'_0>}
+       expected: ['_0, '_1]
+            got: ['_0]
+       Visitor stack:
+         charon_lib::ast::types::GenericArgs
+         alloc::boxed::Box<charon_lib::ast::types::GenericArgs>
+         charon_lib::ast::types::TraitImplRef
+         charon_lib::ast::types::ClosureInfo
+         charon_lib::ast::gast::ItemKind
+         charon_lib::ast::types::TypeDecl
+       Binding stack (depth 1):
+         0: <'_0>
+  --> tests/ui/generic-associated-types.rs:38:20
+   |
+38 |     for_each(iter, |item| sum += *item);
+   |                    ^^^^^^^^^^^^^^^^^^^
+
+error: Found inconsistent generics after transformations:
+       Mismatched regions:
+       target: {impl FnMut<(&'_ (i32))> for closure<'_0>}
+       expected: ['_0, '_1]
+            got: ['_0]
+       Visitor stack:
+         charon_lib::ast::types::GenericArgs
+         alloc::boxed::Box<charon_lib::ast::types::GenericArgs>
+         charon_lib::ast::types::TraitImplRef
+         core::option::Option<charon_lib::ast::types::TraitImplRef>
+         charon_lib::ast::types::ClosureInfo
+         charon_lib::ast::gast::ItemKind
+         charon_lib::ast::types::TypeDecl
+       Binding stack (depth 1):
+         0: <'_0>
+  --> tests/ui/generic-associated-types.rs:38:20
+   |
+38 |     for_each(iter, |item| sum += *item);
+   |                    ^^^^^^^^^^^^^^^^^^^
+
+ERROR Charon failed to translate this code (14 errors)
