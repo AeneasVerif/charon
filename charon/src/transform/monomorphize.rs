@@ -112,6 +112,11 @@ impl UsageVisitor<'_> {
     }
 }
 impl VisitAst for UsageVisitor<'_> {
+    // we need to skip ItemMeta, as we don't want to collect the types in PathElem::Impl
+    fn visit_item_meta(&mut self, _: &ItemMeta) -> ControlFlow<Infallible> {
+        Continue(())
+    }
+
     fn enter_aggregate_kind(&mut self, kind: &AggregateKind) {
         match kind {
             AggregateKind::Adt(TypeId::Adt(id), _, _, gargs) => self.found_use_ty(id, gargs),

@@ -1,0 +1,68 @@
+# Final LLBC before serialization:
+
+// Full name: core::marker::Sized
+#[lang_item("sized")]
+pub trait Sized<Self>
+
+// Full name: core::option::Option
+#[lang_item("Option")]
+pub enum Option<T>
+where
+    [@TraitClause0]: Sized<T>,
+{
+  None,
+  Some(T),
+}
+
+// Full name: core::ptr::non_null::NonNull
+#[lang_item("NonNull")]
+pub opaque type NonNull<T>
+
+// Full name: test_crate::Node
+struct Node<T>
+where
+    [@TraitClause0]: Sized<T>,
+{
+  next: Option<NonNull<Node<T>[@TraitClause0]>>[Sized<NonNull<Node<T>[@TraitClause0]>>],
+  element: T,
+}
+
+// Full name: test_crate::LinkedList
+pub struct LinkedList<T>
+where
+    [@TraitClause0]: Sized<T>,
+{
+  head: Option<NonNull<Node<T>[@TraitClause0]>>[Sized<NonNull<Node<T>[@TraitClause0]>>],
+}
+
+// Full name: test_crate::{LinkedList<T>[@TraitClause0]}::new
+fn new<T>() -> LinkedList<T>[@TraitClause0]
+where
+    [@TraitClause0]: Sized<T>,
+{
+    let @0: LinkedList<T>[@TraitClause0]; // return
+    let @1: Option<NonNull<Node<T>[@TraitClause0]>>[Sized<NonNull<Node<T>[@TraitClause0]>>]; // anonymous local
+
+    storage_live(@1)
+    @1 := Option::None {  }
+    @0 := LinkedList { head: move (@1) }
+    storage_dead(@1)
+    return
+}
+
+// Full name: test_crate::main
+fn main()
+{
+    let @0: (); // return
+    let list@1: LinkedList<u8>[Sized<u8>]; // local
+
+    storage_live(list@1)
+    list@1 := new<u8>[Sized<u8>]()
+    @0 := ()
+    storage_dead(list@1)
+    @0 := ()
+    return
+}
+
+
+
