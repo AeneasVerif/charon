@@ -378,7 +378,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
     /// Translate a Dynamically Sized Type metadata kind.
     ///
     /// Returns `None` if the type is generic, or if it is not a DST.
-    pub fn translate_dst_meta_kind(&self) -> Option<DstMetaKind> {
+    pub fn translate_ptr_metadata(&self) -> Option<PtrMetadata> {
         // if it is generic, simply returns `None`
         let gen_params = &self.binding_levels.outermost().params;
         if !(gen_params.types.is_empty() && gen_params.const_generics.is_empty()) {
@@ -396,10 +396,10 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
 
         // call the key method
         match tcx.struct_tail_for_codegen(ty, ty_env).kind() {
-            ty::Foreign(..) => None,
-            ty::Str | ty::Slice(..) => Some(DstMetaKind::Length),
-            ty::Dynamic(..) => Some(DstMetaKind::VTable(VTable)),
-            _ => None,
+            ty::Foreign(..) => Some(PtrMetadata::NoMetadata),
+            ty::Str | ty::Slice(..) => Some(PtrMetadata::Length),
+            ty::Dynamic(..) => Some(PtrMetadata::VTable(VTable)),
+            _ => Some(PtrMetadata::NoMetadata),
         }
     }
 

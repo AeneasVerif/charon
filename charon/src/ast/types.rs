@@ -390,13 +390,18 @@ pub struct Layout {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Drive, DriveMut)]
 pub struct VTable;
 
-/// The kind of meta information associated with a Dynamic Sized Type (DST).
-/// For `str` and slices like `[u8]`, this is the length of the slice.
-/// For trait objects, this is the vtable of the trait.
-/// For user defined DSTs, this is inductively inherited from their last field.
+/// The metadata stored in a pointer. That's the information stored in pointers alongside
+/// their address. It's empty for `Sized` types, and interesting for unsized
+/// aka dynamically-sized types.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Drive, DriveMut)]
-pub enum DstMetaKind {
+pub enum PtrMetadata {
+    /// Types that need no metadata, namely `T: Sized` types.
+    NoMetadata,
+    /// Metadata for `[T]`, `str`, and user-defined types
+    /// that directly or indirectly contain one of these two.
     Length,
+    /// Metadata for `dyn Trait` and user-defined types
+    /// that directly or indirectly contain a `dyn Trait`.
     VTable(VTable),
 }
 
@@ -425,10 +430,9 @@ pub struct TypeDecl {
     /// The layout of the type. Information may be partial because of generics or dynamically-
     /// sized types. If rustc cannot compute a layout, it is `None`.
     pub layout: Option<Layout>,
-    /// The meta data to be associated with the reference of the type
-    /// it is `None` if the type is not a DST.
-    /// For more on the kinds, see `DstMetaKind`.
-    pub dst_meta_kind: Option<DstMetaKind>,
+    /// The metadata associated with a pointer to the type.
+    /// This is `None` if we could not compute it because of generics.
+    pub ptr_metadata: Option<PtrMetadata>,
 }
 
 generate_index_type!(VariantId, "Variant");

@@ -684,12 +684,20 @@ and layout = {
  *)
 and v_table = unit
 
-(** The kind of meta information associated with a Dynamic Sized Type (DST).
-    For [str] and slices like [[u8]], this is the length of the slice.
-    For trait objects, this is the vtable of the trait.
-    For user defined DSTs, this is inductively inherited from their last field.
+(** The metadata stored in a pointer. That's the information stored in pointers alongside
+    their address. It's empty for [Sized] types, and interesting for unsized
+    aka dynamically-sized types.
  *)
-and dst_meta_kind = Length | VTable of v_table
+and ptr_metadata =
+  | NoMetadata  (** Types that need no metadata, namely [T: Sized] types. *)
+  | Length
+      (** Metadata for [[T]], [str], and user-defined types
+          that directly or indirectly contain one of these two.
+       *)
+  | VTable of v_table
+      (** Metadata for [dyn Trait] and user-defined types
+          that directly or indirectly contain a [dyn Trait].
+       *)
 
 (** A type declaration.
 
@@ -714,10 +722,9 @@ and type_decl = {
       (** The layout of the type. Information may be partial because of generics or dynamically-
         sized types. If rustc cannot compute a layout, it is [None].
      *)
-  dst_meta_kind : dst_meta_kind option;
-      (** The meta data to be associated with the reference of the type
-        it is [None] if the type is not a DST.
-        For more on the kinds, see [DstMetaKind].
+  ptr_metadata : ptr_metadata option;
+      (** The metadata associated with a pointer to the type.
+        This is [None] if we could not compute it because of generics.
      *)
 }
 
