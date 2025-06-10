@@ -396,7 +396,8 @@ pub struct VTable;
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Drive, DriveMut)]
 pub enum PtrMetadata {
     /// Types that need no metadata, namely `T: Sized` types.
-    NoMetadata,
+    #[charon::rename("NoMetadata")]
+    None,
     /// Metadata for `[T]`, `str`, and user-defined types
     /// that directly or indirectly contain one of these two.
     Length,

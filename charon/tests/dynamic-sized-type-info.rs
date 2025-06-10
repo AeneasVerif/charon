@@ -10,6 +10,7 @@ use util::*;
 fn ptr_metadata() -> anyhow::Result<()> {
     let crate_data = translate_rust_text(
         r#"
+    #![feature(ptr_metadata)]
     type Alias = str;
     struct StrDst {
       meta : i32,
@@ -36,6 +37,26 @@ fn ptr_metadata() -> anyhow::Result<()> {
     struct DynTrait {
       meta : u32,
       dynt : dyn Showable
+    }
+    
+    use std::ptr::Thin;
+    struct GenericInLastField<T> {
+        x: u32,
+        y: T,
+    }
+    struct GenericNotLastField<T> {
+        x: u32,
+        y: T,
+        z: u32,
+    }
+    struct GenericBehindIndirection<T> {
+        x: u32,
+        y: Box<T>,
+    }
+    // Charon doesn't recognize that we know the metadata in this case. That's ok.
+    struct ThinGeneric<T: Thin> {
+        x: u32,
+        y: T,
     }
     "#,
     )?;

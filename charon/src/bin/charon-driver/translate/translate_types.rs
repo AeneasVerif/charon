@@ -396,10 +396,10 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
 
         // call the key method
         match tcx.struct_tail_for_codegen(ty, ty_env).kind() {
-            ty::Foreign(..) => Some(PtrMetadata::NoMetadata),
+            ty::Foreign(..) => Some(PtrMetadata::None),
             ty::Str | ty::Slice(..) => Some(PtrMetadata::Length),
             ty::Dynamic(..) => Some(PtrMetadata::VTable(VTable)),
-            _ => Some(PtrMetadata::NoMetadata),
+            _ => Some(PtrMetadata::None),
         }
     }
 

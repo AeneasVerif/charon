@@ -1349,7 +1349,7 @@ and ptr_metadata_of_json (ctx : of_json_ctx) (js : json) :
     (ptr_metadata, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
-    | `String "NoMetadata" -> Ok NoMetadata
+    | `String "None" -> Ok NoMetadata
     | `String "Length" -> Ok Length
     | `Assoc [ ("VTable", v_table) ] ->
         let* v_table = v_table_of_json ctx v_table in
