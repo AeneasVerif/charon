@@ -379,13 +379,15 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
     ///
     /// Returns `None` if the type is generic, or if it is not a DST.
     pub fn translate_ptr_metadata(&self) -> Option<PtrMetadata> {
-        // if it is generic, simply returns `None`
-        let gen_params = &self.binding_levels.outermost().params;
-        if !(gen_params.types.is_empty() && gen_params.const_generics.is_empty()) {
-            return None;
-        }
+        // // if it is generic, simply returns `None`
+        // let gen_params = &self.binding_levels.outermost().params;
+        // if !(gen_params.types.is_empty() && gen_params.const_generics.is_empty()) {
+        //     return None;
+        let gen_params: &GenericParams = &self.binding_levels.outermost().params;
+        self.self_clause_id
 
         // otherwise, call the `struct_tail_for_codegen` method from Rustc internal
+
         // prepare the call to the method
         use rustc_middle::ty;
         let tcx = self.t_ctx.tcx;
@@ -395,10 +397,19 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         let ty = tcx.type_of(rdefid).skip_binder();
 
         // call the key method
-        match tcx.struct_tail_for_codegen(ty, ty_env).kind() {
+        match tcx
+            .struct_tail_raw(
+                ty,
+                |ty| tcx.try_normalize_erasing_regions(ty_env, ty).unwrap_or(ty),
+                || {},
+            )
+            .kind()
+        {
             ty::Foreign(..) => Some(PtrMetadata::None),
             ty::Str | ty::Slice(..) => Some(PtrMetadata::Length),
             ty::Dynamic(..) => Some(PtrMetadata::VTable(VTable)),
+            ty::Placeholder(..) | ty::Infer(..) | 
+            ty::Param(..) | ty::Bound(..) => None,
             _ => Some(PtrMetadata::None),
         }
     }

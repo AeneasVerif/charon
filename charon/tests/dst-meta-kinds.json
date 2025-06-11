@@ -9,8 +9,8 @@
     "VTable": null
   },
   "test_crate::GenericInLastField": null,
-  "test_crate::GenericNotLastField": null,
-  "test_crate::GenericBehindIndirection": null,
+  "test_crate::GenericNotLastField": "None",
+  "test_crate::GenericBehindIndirection": "None",
   "test_crate::ThinGeneric": null,
   "alloc::alloc::Global": "None"
 }
