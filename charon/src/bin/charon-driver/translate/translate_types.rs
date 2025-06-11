@@ -353,7 +353,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
     /// Checks whether the given id corresponds to a built-in type.
     fn recognize_builtin_type(&mut self, def_id: &hax::DefId) -> Result<Option<BuiltinTy>, Error> {
         let def = self.t_ctx.hax_def(def_id)?;
-        let ty = if def.lang_item.as_deref() == Some("owned_box") {
+        let ty = if def.lang_item.as_deref() == Some("owned_box") && !self.t_ctx.options.raw_boxes {
             Some(BuiltinTy::Box)
         } else {
             None

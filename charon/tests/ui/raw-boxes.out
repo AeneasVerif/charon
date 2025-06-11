@@ -1,0 +1,2206 @@
+# Final LLBC before serialization:
+
+// Full name: core::marker::Sized
+#[lang_item("sized")]
+pub trait Sized<Self>
+
+// Full name: core::ptr::non_null::NonNull
+#[lang_item("NonNull")]
+pub struct NonNull<T> {
+  pointer: *const T,
+}
+
+// Full name: core::marker::PhantomData
+#[lang_item("phantom_data")]
+pub struct PhantomData<T> {}
+
+// Full name: core::ptr::unique::Unique
+#[lang_item("ptr_unique")]
+pub struct Unique<T> {
+  pointer: NonNull<T>,
+  _marker: PhantomData<T>,
+}
+
+// Full name: alloc::boxed::Box
+#[lang_item("owned_box")]
+pub struct Box<T, A>
+where
+    [@TraitClause0]: Sized<A>,
+{
+  Unique<T>,
+  A,
+}
+
+// Full name: alloc::alloc::Global
+#[lang_item("global_alloc_ty")]
+pub struct Global {}
+
+// Full name: core::ptr::alignment::AlignmentEnum
+enum AlignmentEnum {
+  _Align1Shl0,
+  _Align1Shl1,
+  _Align1Shl2,
+  _Align1Shl3,
+  _Align1Shl4,
+  _Align1Shl5,
+  _Align1Shl6,
+  _Align1Shl7,
+  _Align1Shl8,
+  _Align1Shl9,
+  _Align1Shl10,
+  _Align1Shl11,
+  _Align1Shl12,
+  _Align1Shl13,
+  _Align1Shl14,
+  _Align1Shl15,
+  _Align1Shl16,
+  _Align1Shl17,
+  _Align1Shl18,
+  _Align1Shl19,
+  _Align1Shl20,
+  _Align1Shl21,
+  _Align1Shl22,
+  _Align1Shl23,
+  _Align1Shl24,
+  _Align1Shl25,
+  _Align1Shl26,
+  _Align1Shl27,
+  _Align1Shl28,
+  _Align1Shl29,
+  _Align1Shl30,
+  _Align1Shl31,
+  _Align1Shl32,
+  _Align1Shl33,
+  _Align1Shl34,
+  _Align1Shl35,
+  _Align1Shl36,
+  _Align1Shl37,
+  _Align1Shl38,
+  _Align1Shl39,
+  _Align1Shl40,
+  _Align1Shl41,
+  _Align1Shl42,
+  _Align1Shl43,
+  _Align1Shl44,
+  _Align1Shl45,
+  _Align1Shl46,
+  _Align1Shl47,
+  _Align1Shl48,
+  _Align1Shl49,
+  _Align1Shl50,
+  _Align1Shl51,
+  _Align1Shl52,
+  _Align1Shl53,
+  _Align1Shl54,
+  _Align1Shl55,
+  _Align1Shl56,
+  _Align1Shl57,
+  _Align1Shl58,
+  _Align1Shl59,
+  _Align1Shl60,
+  _Align1Shl61,
+  _Align1Shl62,
+  _Align1Shl63,
+}
+
+// Full name: core::ptr::alignment::Alignment
+pub struct Alignment {
+  AlignmentEnum,
+}
+
+// Full name: core::alloc::layout::Layout
+#[lang_item("alloc_layout")]
+pub struct Layout {
+  size: usize,
+  align: Alignment,
+}
+
+// Full name: core::result::Result
+#[lang_item("Result")]
+pub enum Result<T, E>
+where
+    [@TraitClause0]: Sized<T>,
+    [@TraitClause1]: Sized<E>,
+{
+  Ok(T),
+  Err(E),
+}
+
+// Full name: core::alloc::AllocError
+pub struct AllocError {}
+
+// Full name: core::option::Option
+#[lang_item("Option")]
+pub enum Option<T>
+where
+    [@TraitClause0]: Sized<T>,
+{
+  None,
+  Some(T),
+}
+
+// Full name: core::clone::Clone
+#[lang_item("clone")]
+pub trait Clone<Self>
+{
+    parent_clause0 : [@TraitClause0]: Sized<Self>
+    fn clone<'_0> = core::clone::Clone::clone<'_0_0, Self>[Self]
+    fn clone_from<'_0, '_1> = clone_from<'_0_0, '_0_1, Self>[Self]
+}
+
+// Full name: core::marker::Copy
+#[lang_item("copy")]
+pub trait Copy<Self>
+{
+    parent_clause0 : [@TraitClause0]: Clone<Self>
+}
+
+// Full name: core::intrinsics::ctpop
+pub fn ctpop<T>(@1: T) -> u32
+where
+    [@TraitClause0]: Sized<T>,
+    [@TraitClause1]: Copy<T>,
+{
+    let @0: u32; // return
+    let x@1: T; // arg #1
+
+    undefined_behavior
+}
+
+// Full name: core::clone::impls::{impl Clone for usize}#5::clone
+pub fn {impl Clone for usize}#5::clone<'_0>(@1: &'_0 (usize)) -> usize
+{
+    let @0: usize; // return
+    let self@1: &'_ (usize); // arg #1
+
+    @0 := copy (*(self@1))
+    return
+}
+
+pub fn core::clone::impls::{impl Clone for usize}#5::clone_from<'_0, '_1>(@1: &'_0 mut (usize), @2: &'_1 (usize))
+{
+    let @0: (); // return
+    let self@1: &'_ mut (usize); // arg #1
+    let source@2: &'_ (usize); // arg #2
+    let @3: usize; // anonymous local
+
+    storage_live(@3)
+    @3 := {impl Clone for usize}#5::clone<'_>(move (source@2))
+    drop *(self@1)
+    *(self@1) := move (@3)
+    storage_dead(@3)
+    @0 := ()
+    return
+}
+
+// Full name: core::clone::impls::{impl Clone for usize}#5
+impl Clone for usize {
+    parent_clause0 = Sized<usize>
+    fn clone<'_0> = {impl Clone for usize}#5::clone<'_0_0>
+    fn clone_from<'_0, '_1> = core::clone::impls::{impl Clone for usize}#5::clone_from<'_0_0, '_0_1>
+}
+
+// Full name: core::marker::{impl Copy for usize}#37
+impl Copy for usize {
+    parent_clause0 = {impl Clone for usize}#5
+}
+
+// Full name: core::fmt::rt::Count
+#[lang_item("format_count")]
+pub enum Count {
+  Is(u16),
+  Param(usize),
+  Implied,
+}
+
+// Full name: core::fmt::rt::Placeholder
+#[lang_item("format_placeholder")]
+pub struct Placeholder {
+  position: usize,
+  flags: u32,
+  precision: Count,
+  width: Count,
+}
+
+// Full name: core::fmt::FormattingOptions
+pub struct FormattingOptions {
+  flags: u32,
+  width: u16,
+  precision: u16,
+}
+
+// Full name: core::fmt::Formatter
+#[lang_item("Formatter")]
+pub struct Formatter<'a>
+where
+    'a : 'a,
+{
+  options: FormattingOptions,
+  buf: &'a mut (dyn (exists(TODO))),
+}
+
+// Full name: core::fmt::Error
+pub struct Error {}
+
+// Full name: core::fmt::rt::ArgumentType
+enum ArgumentType<'a> {
+  Placeholder(value: NonNull<()>, formatter: fn<'_0, '_1>(NonNull<()>, &'_0_0 mut (Formatter<'_0_1>)) -> Result<(), Error>[Sized<()>, Sized<Error>], _lifetime: PhantomData<&'a (())>),
+  Count(u16),
+}
+
+// Full name: core::fmt::rt::Argument
+#[lang_item("format_argument")]
+pub struct Argument<'a> {
+  ty: ArgumentType<'a>,
+}
+
+// Full name: core::fmt::Arguments
+#[lang_item("format_arguments")]
+pub struct Arguments<'a>
+where
+    'a : 'a,
+{
+  pieces: &'a (Slice<&'static (Str)>),
+  fmt: Option<&'a (Slice<Placeholder>)>[Sized<&'_ (Slice<Placeholder>)>],
+  args: &'a (Slice<Argument<'a>>),
+}
+
+// Full name: core::fmt::{Arguments<'a>}#4::new_const
+pub fn new_const<'a, const N : usize>(@1: &'a (Array<&'static (Str), const N : usize>)) -> Arguments<'a>
+{
+    let @0: Arguments<'_>; // return
+    let pieces@1: &'_ (Array<&'_ (Str), const N : usize>); // arg #1
+    let @2: &'_ (Slice<&'_ (Str)>); // anonymous local
+    let @3: &'_ (Slice<Argument<'_>>); // anonymous local
+    let @4: &'_ (Array<Argument<'_>, 0 : usize>); // anonymous local
+    let @5: Array<Argument<'_>, 0 : usize>; // anonymous local
+    let @6: Option<&'_ (Slice<Placeholder>)>[Sized<&'_ (Slice<Placeholder>)>]; // anonymous local
+
+    storage_live(@4)
+    storage_live(@5)
+    storage_live(@6)
+    @5 := []
+    @4 := &@5
+    storage_live(@2)
+    @2 := @ArrayToSliceShared<'_, &'_ (Str), const N : usize>(copy (pieces@1))
+    storage_live(@3)
+    @3 := @ArrayToSliceShared<'_, Argument<'_>, 0 : usize>(move (@4))
+    @6 := Option::None {  }
+    @0 := Arguments { pieces: move (@2), fmt: move (@6), args: move (@3) }
+    storage_dead(@3)
+    storage_dead(@2)
+    return
+}
+
+// Full name: core::panicking::panic_nounwind_fmt::compiletime
+fn compiletime<'_0>(@1: Arguments<'_0>, @2: bool) -> !
+{
+    let @0: !; // return
+    let fmt@1: Arguments<'_>; // arg #1
+    let force_no_backtrace@2: bool; // arg #2
+
+    panic(core::panicking::panic_fmt)
+}
+
+// Full name: core::panicking::panic_nounwind_fmt
+pub fn panic_nounwind_fmt<'_0>(@1: Arguments<'_0>, @2: bool) -> !
+{
+    let @0: !; // return
+    let fmt@1: Arguments<'_>; // arg #1
+    let force_no_backtrace@2: bool; // arg #2
+    let @3: (Arguments<'_>, bool); // anonymous local
+    let @4: Arguments<'_>; // anonymous local
+    let @5: bool; // anonymous local
+
+    storage_live(@3)
+    storage_live(@4)
+    @4 := copy (fmt@1)
+    storage_live(@5)
+    @5 := copy (force_no_backtrace@2)
+    @3 := (move (@4), move (@5))
+    storage_dead(@5)
+    storage_dead(@4)
+    @0 := compiletime<'_>(move ((@3).0), move ((@3).1))
+}
+
+// Full name: core::panicking::panic_nounwind
+#[lang_item("panic_nounwind")]
+pub fn panic_nounwind(@1: &'static (Str)) -> !
+{
+    let @0: !; // return
+    let expr@1: &'_ (Str); // arg #1
+    let @2: !; // anonymous local
+    let @3: Arguments<'_>; // anonymous local
+    let @4: &'_ (Array<&'_ (Str), 1 : usize>); // anonymous local
+    let @5: &'_ (Array<&'_ (Str), 1 : usize>); // anonymous local
+    let @6: Array<&'_ (Str), 1 : usize>; // anonymous local
+    let @7: &'_ (Str); // anonymous local
+
+    storage_live(@2)
+    storage_live(@3)
+    storage_live(@4)
+    storage_live(@5)
+    storage_live(@6)
+    storage_live(@7)
+    @7 := copy (expr@1)
+    @6 := [move (@7)]
+    storage_dead(@7)
+    @5 := &@6
+    @4 := &*(@5)
+    @3 := new_const<'_, 1 : usize>(move (@4))
+    storage_dead(@4)
+    @2 := panic_nounwind_fmt<'_>(move (@3), const (false))
+}
+
+fn core::ptr::alignment::{Alignment}::new_unchecked::precondition_check(@1: usize)
+{
+    let @0: (); // return
+    let align@1: usize; // arg #1
+    let @2: !; // anonymous local
+    let @3: u32; // anonymous local
+
+    storage_live(@2)
+    storage_live(@3)
+    @3 := ctpop<usize>[Sized<usize>, {impl Copy for usize}#37](move (align@1))
+    switch move (@3) {
+        1 : u32 => {
+        },
+        _ => {
+            storage_dead(@3)
+            @2 := panic_nounwind(const ("unsafe precondition(s) violated: Alignment::new_unchecked requires a power of two\n\nThis indicates a bug in the program. This Undefined Behavior check is optional, and cannot be relied on for safety."))
+        },
+    }
+    storage_dead(@3)
+    @0 := ()
+    return
+}
+
+pub fn core::ptr::alignment::{Alignment}::new(@1: usize) -> Option<Alignment>[Sized<Alignment>]
+{
+    let @0: Option<Alignment>[Sized<Alignment>]; // return
+    let align@1: usize; // arg #1
+    let @2: Alignment; // anonymous local
+    let @3: u32; // anonymous local
+    let @4: bool; // anonymous local
+    let @5: (); // anonymous local
+    let @6: Option<Alignment>[Sized<Alignment>]; // anonymous local
+
+    storage_live(@5)
+    storage_live(@6)
+    storage_live(@3)
+    @3 := ctpop<usize>[Sized<usize>, {impl Copy for usize}#37](copy (align@1))
+    switch move (@3) {
+        1 : u32 => {
+        },
+        _ => {
+            storage_dead(@3)
+            @6 := Option::None {  }
+            @0 := move (@6)
+            return
+        },
+    }
+    storage_dead(@3)
+    storage_live(@2)
+    storage_live(@4)
+    @4 := ub_checks<bool>
+    if move (@4) {
+        @5 := core::ptr::alignment::{Alignment}::new_unchecked::precondition_check(copy (align@1))
+    }
+    else {
+    }
+    storage_dead(@4)
+    @2 := transmute<usize, Alignment>(copy (align@1))
+    @0 := Option::Some { 0: move (@2) }
+    storage_dead(@2)
+    return
+}
+
+// Full name: core::alloc::layout::{Layout}::max_size_for_align
+fn max_size_for_align(@1: Alignment) -> usize
+{
+    let @0: usize; // return
+    let align@1: Alignment; // arg #1
+    let @2: usize; // anonymous local
+    let @3: AlignmentEnum; // anonymous local
+    let @4: u64; // anonymous local
+    let @5: bool; // anonymous local
+    let @6: bool; // anonymous local
+    let @7: bool; // anonymous local
+
+    storage_live(@2)
+    storage_live(@4)
+    storage_live(@5)
+    storage_live(@6)
+    storage_live(@7)
+    storage_live(@3)
+    @3 := copy ((align@1).0)
+    match @3 {
+        AlignmentEnum::_Align1Shl0 => {
+            @4 := const (1 : u64)
+        },
+        AlignmentEnum::_Align1Shl1 => {
+            @4 := const (2 : u64)
+        },
+        AlignmentEnum::_Align1Shl2 => {
+            @4 := const (4 : u64)
+        },
+        AlignmentEnum::_Align1Shl3 => {
+            @4 := const (8 : u64)
+        },
+        AlignmentEnum::_Align1Shl4 => {
+            @4 := const (16 : u64)
+        },
+        AlignmentEnum::_Align1Shl5 => {
+            @4 := const (32 : u64)
+        },
+        AlignmentEnum::_Align1Shl6 => {
+            @4 := const (64 : u64)
+        },
+        AlignmentEnum::_Align1Shl7 => {
+            @4 := const (128 : u64)
+        },
+        AlignmentEnum::_Align1Shl8 => {
+            @4 := const (256 : u64)
+        },
+        AlignmentEnum::_Align1Shl9 => {
+            @4 := const (512 : u64)
+        },
+        AlignmentEnum::_Align1Shl10 => {
+            @4 := const (1024 : u64)
+        },
+        AlignmentEnum::_Align1Shl11 => {
+            @4 := const (2048 : u64)
+        },
+        AlignmentEnum::_Align1Shl12 => {
+            @4 := const (4096 : u64)
+        },
+        AlignmentEnum::_Align1Shl13 => {
+            @4 := const (8192 : u64)
+        },
+        AlignmentEnum::_Align1Shl14 => {
+            @4 := const (16384 : u64)
+        },
+        AlignmentEnum::_Align1Shl15 => {
+            @4 := const (32768 : u64)
+        },
+        AlignmentEnum::_Align1Shl16 => {
+            @4 := const (65536 : u64)
+        },
+        AlignmentEnum::_Align1Shl17 => {
+            @4 := const (131072 : u64)
+        },
+        AlignmentEnum::_Align1Shl18 => {
+            @4 := const (262144 : u64)
+        },
+        AlignmentEnum::_Align1Shl19 => {
+            @4 := const (524288 : u64)
+        },
+        AlignmentEnum::_Align1Shl20 => {
+            @4 := const (1048576 : u64)
+        },
+        AlignmentEnum::_Align1Shl21 => {
+            @4 := const (2097152 : u64)
+        },
+        AlignmentEnum::_Align1Shl22 => {
+            @4 := const (4194304 : u64)
+        },
+        AlignmentEnum::_Align1Shl23 => {
+            @4 := const (8388608 : u64)
+        },
+        AlignmentEnum::_Align1Shl24 => {
+            @4 := const (16777216 : u64)
+        },
+        AlignmentEnum::_Align1Shl25 => {
+            @4 := const (33554432 : u64)
+        },
+        AlignmentEnum::_Align1Shl26 => {
+            @4 := const (67108864 : u64)
+        },
+        AlignmentEnum::_Align1Shl27 => {
+            @4 := const (134217728 : u64)
+        },
+        AlignmentEnum::_Align1Shl28 => {
+            @4 := const (268435456 : u64)
+        },
+        AlignmentEnum::_Align1Shl29 => {
+            @4 := const (536870912 : u64)
+        },
+        AlignmentEnum::_Align1Shl30 => {
+            @4 := const (1073741824 : u64)
+        },
+        AlignmentEnum::_Align1Shl31 => {
+            @4 := const (2147483648 : u64)
+        },
+        AlignmentEnum::_Align1Shl32 => {
+            @4 := const (4294967296 : u64)
+        },
+        AlignmentEnum::_Align1Shl33 => {
+            @4 := const (8589934592 : u64)
+        },
+        AlignmentEnum::_Align1Shl34 => {
+            @4 := const (17179869184 : u64)
+        },
+        AlignmentEnum::_Align1Shl35 => {
+            @4 := const (34359738368 : u64)
+        },
+        AlignmentEnum::_Align1Shl36 => {
+            @4 := const (68719476736 : u64)
+        },
+        AlignmentEnum::_Align1Shl37 => {
+            @4 := const (137438953472 : u64)
+        },
+        AlignmentEnum::_Align1Shl38 => {
+            @4 := const (274877906944 : u64)
+        },
+        AlignmentEnum::_Align1Shl39 => {
+            @4 := const (549755813888 : u64)
+        },
+        AlignmentEnum::_Align1Shl40 => {
+            @4 := const (1099511627776 : u64)
+        },
+        AlignmentEnum::_Align1Shl41 => {
+            @4 := const (2199023255552 : u64)
+        },
+        AlignmentEnum::_Align1Shl42 => {
+            @4 := const (4398046511104 : u64)
+        },
+        AlignmentEnum::_Align1Shl43 => {
+            @4 := const (8796093022208 : u64)
+        },
+        AlignmentEnum::_Align1Shl44 => {
+            @4 := const (17592186044416 : u64)
+        },
+        AlignmentEnum::_Align1Shl45 => {
+            @4 := const (35184372088832 : u64)
+        },
+        AlignmentEnum::_Align1Shl46 => {
+            @4 := const (70368744177664 : u64)
+        },
+        AlignmentEnum::_Align1Shl47 => {
+            @4 := const (140737488355328 : u64)
+        },
+        AlignmentEnum::_Align1Shl48 => {
+            @4 := const (281474976710656 : u64)
+        },
+        AlignmentEnum::_Align1Shl49 => {
+            @4 := const (562949953421312 : u64)
+        },
+        AlignmentEnum::_Align1Shl50 => {
+            @4 := const (1125899906842624 : u64)
+        },
+        AlignmentEnum::_Align1Shl51 => {
+            @4 := const (2251799813685248 : u64)
+        },
+        AlignmentEnum::_Align1Shl52 => {
+            @4 := const (4503599627370496 : u64)
+        },
+        AlignmentEnum::_Align1Shl53 => {
+            @4 := const (9007199254740992 : u64)
+        },
+        AlignmentEnum::_Align1Shl54 => {
+            @4 := const (18014398509481984 : u64)
+        },
+        AlignmentEnum::_Align1Shl55 => {
+            @4 := const (36028797018963968 : u64)
+        },
+        AlignmentEnum::_Align1Shl56 => {
+            @4 := const (72057594037927936 : u64)
+        },
+        AlignmentEnum::_Align1Shl57 => {
+            @4 := const (144115188075855872 : u64)
+        },
+        AlignmentEnum::_Align1Shl58 => {
+            @4 := const (288230376151711744 : u64)
+        },
+        AlignmentEnum::_Align1Shl59 => {
+            @4 := const (576460752303423488 : u64)
+        },
+        AlignmentEnum::_Align1Shl60 => {
+            @4 := const (1152921504606846976 : u64)
+        },
+        AlignmentEnum::_Align1Shl61 => {
+            @4 := const (2305843009213693952 : u64)
+        },
+        AlignmentEnum::_Align1Shl62 => {
+            @4 := const (4611686018427387904 : u64)
+        },
+        AlignmentEnum::_Align1Shl63 => {
+            @4 := const (9223372036854775808 : u64)
+        },
+    }
+    @5 := copy (@4) >= const (1 : u64)
+    @6 := copy (@4) <= const (9223372036854775808 : u64)
+    @7 := move (@5) & move (@6)
+    assert(move (@7) == true)
+    @2 := cast<u64, usize>(copy (@4))
+    storage_dead(@3)
+    storage_dead(@7)
+    storage_dead(@6)
+    storage_dead(@5)
+    storage_dead(@4)
+    @0 := const (9223372036854775808 : usize) wrapping.- move (@2)
+    storage_dead(@2)
+    return
+}
+
+// Full name: core::alloc::layout::{Layout}::is_size_align_valid
+fn is_size_align_valid(@1: usize, @2: usize) -> bool
+{
+    let @0: bool; // return
+    let size@1: usize; // arg #1
+    let align@2: usize; // arg #2
+    let align@3: Alignment; // local
+    let @4: Option<Alignment>[Sized<Alignment>]; // anonymous local
+    let @5: usize; // anonymous local
+    let @6: (); // anonymous local
+    let @7: bool; // anonymous local
+    let @8: usize; // anonymous local
+    let @9: usize; // anonymous local
+    let @10: Alignment; // anonymous local
+
+    storage_live(align@3)
+    storage_live(@4)
+    storage_live(@5)
+    @5 := copy (align@2)
+    @4 := core::ptr::alignment::{Alignment}::new(move (@5))
+    storage_dead(@5)
+    match @4 {
+        Option::Some => {
+        },
+        _ => {
+            storage_dead(@4)
+            storage_dead(align@3)
+            @0 := const (false)
+            return
+        },
+    }
+    align@3 := copy ((@4 as variant @1).0)
+    storage_dead(@4)
+    storage_live(@6)
+    storage_live(@7)
+    storage_live(@8)
+    @8 := copy (size@1)
+    storage_live(@9)
+    storage_live(@10)
+    @10 := copy (align@3)
+    @9 := max_size_for_align(move (@10))
+    storage_dead(@10)
+    @7 := move (@8) > move (@9)
+    if move (@7) {
+    }
+    else {
+        storage_dead(@9)
+        storage_dead(@8)
+        storage_dead(@7)
+        storage_dead(@6)
+        @0 := const (true)
+        storage_dead(align@3)
+        return
+    }
+    storage_dead(@9)
+    storage_dead(@8)
+    @0 := const (false)
+    storage_dead(@7)
+    storage_dead(@6)
+    storage_dead(align@3)
+    return
+}
+
+fn core::alloc::layout::{Layout}::from_size_align_unchecked::precondition_check(@1: usize, @2: usize)
+{
+    let @0: (); // return
+    let size@1: usize; // arg #1
+    let align@2: usize; // arg #2
+    let @3: bool; // anonymous local
+    let @4: !; // anonymous local
+
+    storage_live(@4)
+    storage_live(@3)
+    @3 := is_size_align_valid(move (size@1), move (align@2))
+    if move (@3) {
+    }
+    else {
+        @4 := panic_nounwind(const ("unsafe precondition(s) violated: Layout::from_size_align_unchecked requires that align is a power of 2 and the rounded-up allocation size does not exceed isize::MAX\n\nThis indicates a bug in the program. This Undefined Behavior check is optional, and cannot be relied on for safety."))
+    }
+    storage_dead(@3)
+    @0 := ()
+    return
+}
+
+// Full name: core::ops::control_flow::ControlFlow
+#[lang_item("ControlFlow")]
+pub enum ControlFlow<B, C>
+where
+    [@TraitClause0]: Sized<B>,
+    [@TraitClause1]: Sized<C>,
+{
+  Continue(C),
+  Break(B),
+}
+
+// Full name: core::convert::Infallible
+pub enum Infallible {
+}
+
+// Full name: core::num::nonzero::private::Sealed
+pub trait Sealed<Self>
+
+// Full name: core::num::nonzero::ZeroablePrimitive
+pub trait ZeroablePrimitive<Self>
+{
+    parent_clause0 : [@TraitClause0]: Sized<Self>
+    parent_clause1 : [@TraitClause1]: Copy<Self>
+    parent_clause2 : [@TraitClause2]: Sealed<Self>
+    parent_clause3 : [@TraitClause3]: Sized<Self::NonZeroInner>
+    parent_clause4 : [@TraitClause4]: Copy<Self::NonZeroInner>
+    type NonZeroInner
+}
+
+// Full name: core::num::nonzero::NonZero
+#[lang_item("NonZero")]
+pub struct NonZero<T>
+where
+    [@TraitClause0]: Sized<T>,
+    [@TraitClause1]: ZeroablePrimitive<T>,
+{
+  @TraitClause1::NonZeroInner,
+}
+
+// Full name: core::num::nonzero::{impl Sealed for usize}#26
+impl Sealed for usize {}
+
+// Full name: core::num::niche_types::NonZeroUsizeInner
+pub struct NonZeroUsizeInner {
+  usize,
+}
+
+// Full name: core::num::niche_types::{impl Clone for NonZeroUsizeInner}#140::clone
+pub fn {impl Clone for NonZeroUsizeInner}#140::clone<'_0>(@1: &'_0 (NonZeroUsizeInner)) -> NonZeroUsizeInner
+{
+    let @0: NonZeroUsizeInner; // return
+    let self@1: &'_ (NonZeroUsizeInner); // arg #1
+
+    @0 := copy (*(self@1))
+    return
+}
+
+pub fn core::num::niche_types::{impl Clone for NonZeroUsizeInner}#140::clone_from<'_0, '_1>(@1: &'_0 mut (NonZeroUsizeInner), @2: &'_1 (NonZeroUsizeInner))
+{
+    let @0: (); // return
+    let self@1: &'_ mut (NonZeroUsizeInner); // arg #1
+    let source@2: &'_ (NonZeroUsizeInner); // arg #2
+    let @3: NonZeroUsizeInner; // anonymous local
+
+    storage_live(@3)
+    @3 := {impl Clone for NonZeroUsizeInner}#140::clone<'_>(move (source@2))
+    drop *(self@1)
+    *(self@1) := move (@3)
+    storage_dead(@3)
+    @0 := ()
+    return
+}
+
+// Full name: core::num::niche_types::{impl Clone for NonZeroUsizeInner}#140
+impl Clone for NonZeroUsizeInner {
+    parent_clause0 = Sized<NonZeroUsizeInner>
+    fn clone<'_0> = {impl Clone for NonZeroUsizeInner}#140::clone<'_0_0>
+    fn clone_from<'_0, '_1> = core::num::niche_types::{impl Clone for NonZeroUsizeInner}#140::clone_from<'_0_0, '_0_1>
+}
+
+// Full name: core::num::niche_types::{impl Copy for NonZeroUsizeInner}#141
+impl Copy for NonZeroUsizeInner {
+    parent_clause0 = {impl Clone for NonZeroUsizeInner}#140
+}
+
+// Full name: core::num::nonzero::{impl ZeroablePrimitive for usize}#27
+impl ZeroablePrimitive for usize {
+    parent_clause0 = Sized<usize>
+    parent_clause1 = {impl Copy for usize}#37
+    parent_clause2 = {impl Sealed for usize}#26
+    parent_clause3 = Sized<NonZeroUsizeInner>
+    parent_clause4 = {impl Copy for NonZeroUsizeInner}#141
+    type NonZeroInner = NonZeroUsizeInner
+}
+
+fn alloc::alloc::__rust_no_alloc_shim_is_unstable() -> u8
+
+static alloc::alloc::__rust_no_alloc_shim_is_unstable: u8 = alloc::alloc::__rust_no_alloc_shim_is_unstable()
+
+fn core::ptr::read_volatile::precondition_check(@1: *const (), @2: usize, @3: bool)
+{
+    let @0: (); // return
+    let addr@1: *const (); // arg #1
+    let align@2: usize; // arg #2
+    let is_zst@3: bool; // arg #3
+    let @4: bool; // anonymous local
+    let @5: !; // anonymous local
+    let @6: bool; // anonymous local
+    let @7: Arguments<'_>; // anonymous local
+    let @8: usize; // anonymous local
+    let @9: usize; // anonymous local
+    let @10: usize; // anonymous local
+    let @11: u32; // anonymous local
+    let @12: &'_ (Slice<&'_ (Str)>); // anonymous local
+    let @13: &'_ (Slice<Argument<'_>>); // anonymous local
+    let @14: &'_ (Array<&'_ (Str), 1 : usize>); // anonymous local
+    let @15: Array<&'_ (Str), 1 : usize>; // anonymous local
+    let @16: &'_ (Array<Argument<'_>, 0 : usize>); // anonymous local
+    let @17: Option<&'_ (Slice<Placeholder>)>[Sized<&'_ (Slice<Placeholder>)>]; // anonymous local
+
+    storage_live(@5)
+    storage_live(@6)
+    storage_live(@7)
+    storage_live(@12)
+    storage_live(@13)
+    storage_live(@14)
+    storage_live(@15)
+    storage_live(@16)
+    storage_live(@17)
+    storage_live(@4)
+    storage_live(@9)
+    storage_live(@11)
+    @11 := ctpop<usize>[Sized<usize>, {impl Copy for usize}#37](copy (align@2))
+    switch move (@11) {
+        1 : u32 => {
+        },
+        _ => {
+            @15 := [const ("is_aligned_to: align is not a power-of-two")]
+            @14 := &@15
+            storage_dead(@11)
+            storage_live(@7)
+            storage_live(@12)
+            @12 := @ArrayToSliceShared<'_, &'_ (Str), 1 : usize>(move (@14))
+            storage_live(@13)
+            @16 := core::fmt::{Arguments<'a>}#4::new_const::{promoted_const}<'_, 1 : usize>
+            @13 := @ArrayToSliceShared<'_, Argument<'_>, 0 : usize>(move (@16))
+            @17 := Option::None {  }
+            @7 := Arguments { pieces: move (@12), fmt: move (@17), args: move (@13) }
+            storage_dead(@13)
+            storage_dead(@12)
+            panic(core::panicking::panic_fmt)
+        },
+    }
+    storage_dead(@11)
+    storage_live(@8)
+    @9 := transmute<*const (), usize>(copy (addr@1))
+    storage_live(@10)
+    @10 := copy (align@2) wrapping.- const (1 : usize)
+    @8 := copy (@9) & move (@10)
+    storage_dead(@10)
+    switch move (@8) {
+        0 : usize => {
+            storage_dead(@8)
+            if copy (is_zst@3) {
+                storage_dead(@9)
+                storage_dead(@4)
+                @0 := ()
+                return
+            }
+            else {
+                storage_live(@6)
+                @6 := copy (@9) == const (0 : usize)
+                @4 := ~(move (@6))
+                storage_dead(@6)
+                storage_dead(@9)
+                if move (@4) {
+                    storage_dead(@4)
+                    @0 := ()
+                    return
+                }
+                else {
+                }
+            }
+        },
+        _ => {
+            storage_dead(@8)
+            storage_dead(@9)
+        },
+    }
+    @5 := panic_nounwind(const ("unsafe precondition(s) violated: ptr::read_volatile requires that the pointer argument is aligned and non-null\n\nThis indicates a bug in the program. This Undefined Behavior check is optional, and cannot be relied on for safety."))
+}
+
+// Full name: core::mem::SizedTypeProperties
+pub trait SizedTypeProperties<Self>
+{
+    parent_clause0 : [@TraitClause0]: Sized<Self>
+    const IS_ZST : bool
+    const LAYOUT : Layout
+    const MAX_SLICE_LEN : usize
+}
+
+// Full name: core::mem::size_of
+#[lang_item("mem_size_of")]
+pub fn size_of<T>() -> usize
+where
+    [@TraitClause0]: Sized<T>,
+{
+    let @0: usize; // return
+
+    @0 := size_of<T>
+    return
+}
+
+pub fn core::mem::SizedTypeProperties::IS_ZST<Self>() -> bool
+where
+    [@TraitClause0]: SizedTypeProperties<Self>,
+{
+    let @0: bool; // return
+    let @1: usize; // anonymous local
+
+    storage_live(@1)
+    @1 := size_of<Self>[@TraitClause0::parent_clause0]()
+    @0 := move (@1) == const (0 : usize)
+    storage_dead(@1)
+    return
+}
+
+pub const core::mem::SizedTypeProperties::IS_ZST<Self>: bool
+where
+    [@TraitClause0]: SizedTypeProperties<Self>,
+ = core::mem::SizedTypeProperties::IS_ZST()
+
+pub fn core::alloc::layout::{Layout}::new<T>() -> Layout
+where
+    [@TraitClause0]: Sized<T>,
+{
+    let @0: Layout; // return
+    let size@1: usize; // local
+    let align@2: usize; // local
+    let @3: bool; // anonymous local
+    let @4: (); // anonymous local
+    let @5: Alignment; // anonymous local
+
+    storage_live(size@1)
+    storage_live(align@2)
+    storage_live(@4)
+    size@1 := size_of<T>
+    align@2 := align_of<T>
+    storage_live(@3)
+    @3 := ub_checks<bool>
+    if move (@3) {
+        @4 := core::alloc::layout::{Layout}::from_size_align_unchecked::precondition_check(copy (size@1), copy (align@2))
+    }
+    else {
+    }
+    storage_dead(@3)
+    storage_live(@5)
+    @5 := transmute<usize, Alignment>(copy (align@2))
+    @0 := Layout { size: copy (size@1), align: move (@5) }
+    storage_dead(@5)
+    return
+}
+
+pub fn core::mem::SizedTypeProperties::LAYOUT<Self>() -> Layout
+where
+    [@TraitClause0]: SizedTypeProperties<Self>,
+{
+    let @0: Layout; // return
+
+    @0 := core::alloc::layout::{Layout}::new<Self>[@TraitClause0::parent_clause0]()
+    return
+}
+
+pub const core::mem::SizedTypeProperties::LAYOUT<Self>: Layout
+where
+    [@TraitClause0]: SizedTypeProperties<Self>,
+ = core::mem::SizedTypeProperties::LAYOUT()
+
+pub fn core::num::{usize}#11::MAX() -> usize
+{
+    let @0: usize; // return
+
+    @0 := ~(const (0 : usize))
+    return
+}
+
+pub const core::num::{usize}#11::MAX: usize = core::num::{usize}#11::MAX()
+
+pub fn core::num::{isize}#5::MAX() -> isize
+{
+    let @0: isize; // return
+    let @1: usize; // anonymous local
+    let @2: usize; // anonymous local
+
+    storage_live(@2)
+    storage_live(@1)
+    @2 := core::num::{usize}#11::MAX
+    @1 := move (@2) >> const (1 : i32)
+    @0 := cast<usize, isize>(move (@1))
+    storage_dead(@1)
+    return
+}
+
+pub const core::num::{isize}#5::MAX: isize = core::num::{isize}#5::MAX()
+
+pub fn core::mem::SizedTypeProperties::MAX_SLICE_LEN<Self>() -> usize
+where
+    [@TraitClause0]: SizedTypeProperties<Self>,
+{
+    let @0: usize; // return
+    let @1: usize; // anonymous local
+    let n@2: usize; // local
+    let @3: usize; // anonymous local
+    let @4: usize; // anonymous local
+    let @5: usize; // anonymous local
+    let @6: isize; // anonymous local
+
+    storage_live(n@2)
+    storage_live(@3)
+    storage_live(@4)
+    storage_live(@5)
+    storage_live(@6)
+    storage_live(@1)
+    @1 := size_of<Self>[@TraitClause0::parent_clause0]()
+    switch copy (@1) {
+        0 : usize => {
+            @5 := core::num::{usize}#11::MAX
+            @0 := move (@5)
+        },
+        _ => {
+            storage_live(n@2)
+            n@2 := copy (@1)
+            storage_live(@3)
+            @6 := core::num::{isize}#5::MAX
+            @3 := cast<isize, usize>(move (@6))
+            storage_live(@4)
+            @4 := copy (n@2)
+            @0 := move (@3) / move (@4)
+            storage_dead(@4)
+            storage_dead(@3)
+            storage_dead(n@2)
+        },
+    }
+    storage_dead(@1)
+    return
+}
+
+pub const core::mem::SizedTypeProperties::MAX_SLICE_LEN<Self>: usize
+where
+    [@TraitClause0]: SizedTypeProperties<Self>,
+ = core::mem::SizedTypeProperties::MAX_SLICE_LEN()
+
+// Full name: core::mem::{impl SizedTypeProperties for T}#6
+impl<T> SizedTypeProperties for T
+where
+    [@TraitClause0]: Sized<T>,
+{
+    parent_clause0 = @TraitClause0
+    const IS_ZST = core::mem::SizedTypeProperties::IS_ZST<T>[{impl SizedTypeProperties for T}#6<T>[@TraitClause0]]
+    const LAYOUT = core::mem::SizedTypeProperties::LAYOUT<T>[{impl SizedTypeProperties for T}#6<T>[@TraitClause0]]
+    const MAX_SLICE_LEN = core::mem::SizedTypeProperties::MAX_SLICE_LEN<T>[{impl SizedTypeProperties for T}#6<T>[@TraitClause0]]
+}
+
+// Full name: core::intrinsics::volatile_load
+pub unsafe fn volatile_load<T>(@1: *const T) -> T
+where
+    [@TraitClause0]: Sized<T>,
+{
+    let @0: T; // return
+    let src@1: *const T; // arg #1
+
+    undefined_behavior
+}
+
+// Full name: alloc::alloc::__rust_alloc_zeroed
+unsafe fn __rust_alloc_zeroed(@1: usize, @2: usize) -> *mut u8
+
+// Full name: alloc::alloc::alloc_zeroed
+pub unsafe fn alloc_zeroed(@1: Layout) -> *mut u8
+{
+    let @0: *mut u8; // return
+    let layout@1: Layout; // arg #1
+    let @2: u8; // anonymous local
+    let @3: usize; // anonymous local
+    let self@4: &'_ (Layout); // local
+    let @5: usize; // anonymous local
+    let self@6: &'_ (Layout); // local
+    let @7: bool; // anonymous local
+    let @8: (); // anonymous local
+    let @9: *const (); // anonymous local
+    let @10: Alignment; // anonymous local
+    let @11: AlignmentEnum; // anonymous local
+    let @12: u64; // anonymous local
+    let @13: bool; // anonymous local
+    let @14: bool; // anonymous local
+    let @15: bool; // anonymous local
+    let @16: *const u8; // anonymous local
+    let @17: *const u8; // anonymous local
+
+    storage_live(@8)
+    storage_live(@9)
+    storage_live(@16)
+    storage_live(@17)
+    storage_live(@2)
+    storage_live(@7)
+    @7 := ub_checks<bool>
+    if move (@7) {
+        storage_live(@9)
+        @16 := &alloc::alloc::__rust_no_alloc_shim_is_unstable
+        @9 := cast<*const u8, *const ()>(move (@16))
+        @8 := core::ptr::read_volatile::precondition_check(move (@9), const (1 : usize), const ({impl SizedTypeProperties for T}#6<u8>[Sized<u8>]::IS_ZST))
+        storage_dead(@9)
+    }
+    else {
+    }
+    storage_dead(@7)
+    @17 := &alloc::alloc::__rust_no_alloc_shim_is_unstable
+    @2 := volatile_load<u8>[Sized<u8>](move (@17))
+    storage_dead(@2)
+    storage_live(@3)
+    storage_live(self@4)
+    self@4 := &layout@1
+    @3 := copy ((layout@1).size)
+    storage_dead(self@4)
+    storage_live(@5)
+    storage_live(self@6)
+    self@6 := &layout@1
+    storage_live(@10)
+    @10 := copy ((layout@1).align)
+    storage_live(@12)
+    storage_live(@13)
+    storage_live(@14)
+    storage_live(@15)
+    storage_live(@11)
+    @11 := copy ((@10).0)
+    match @11 {
+        AlignmentEnum::_Align1Shl0 => {
+            @12 := const (1 : u64)
+        },
+        AlignmentEnum::_Align1Shl1 => {
+            @12 := const (2 : u64)
+        },
+        AlignmentEnum::_Align1Shl2 => {
+            @12 := const (4 : u64)
+        },
+        AlignmentEnum::_Align1Shl3 => {
+            @12 := const (8 : u64)
+        },
+        AlignmentEnum::_Align1Shl4 => {
+            @12 := const (16 : u64)
+        },
+        AlignmentEnum::_Align1Shl5 => {
+            @12 := const (32 : u64)
+        },
+        AlignmentEnum::_Align1Shl6 => {
+            @12 := const (64 : u64)
+        },
+        AlignmentEnum::_Align1Shl7 => {
+            @12 := const (128 : u64)
+        },
+        AlignmentEnum::_Align1Shl8 => {
+            @12 := const (256 : u64)
+        },
+        AlignmentEnum::_Align1Shl9 => {
+            @12 := const (512 : u64)
+        },
+        AlignmentEnum::_Align1Shl10 => {
+            @12 := const (1024 : u64)
+        },
+        AlignmentEnum::_Align1Shl11 => {
+            @12 := const (2048 : u64)
+        },
+        AlignmentEnum::_Align1Shl12 => {
+            @12 := const (4096 : u64)
+        },
+        AlignmentEnum::_Align1Shl13 => {
+            @12 := const (8192 : u64)
+        },
+        AlignmentEnum::_Align1Shl14 => {
+            @12 := const (16384 : u64)
+        },
+        AlignmentEnum::_Align1Shl15 => {
+            @12 := const (32768 : u64)
+        },
+        AlignmentEnum::_Align1Shl16 => {
+            @12 := const (65536 : u64)
+        },
+        AlignmentEnum::_Align1Shl17 => {
+            @12 := const (131072 : u64)
+        },
+        AlignmentEnum::_Align1Shl18 => {
+            @12 := const (262144 : u64)
+        },
+        AlignmentEnum::_Align1Shl19 => {
+            @12 := const (524288 : u64)
+        },
+        AlignmentEnum::_Align1Shl20 => {
+            @12 := const (1048576 : u64)
+        },
+        AlignmentEnum::_Align1Shl21 => {
+            @12 := const (2097152 : u64)
+        },
+        AlignmentEnum::_Align1Shl22 => {
+            @12 := const (4194304 : u64)
+        },
+        AlignmentEnum::_Align1Shl23 => {
+            @12 := const (8388608 : u64)
+        },
+        AlignmentEnum::_Align1Shl24 => {
+            @12 := const (16777216 : u64)
+        },
+        AlignmentEnum::_Align1Shl25 => {
+            @12 := const (33554432 : u64)
+        },
+        AlignmentEnum::_Align1Shl26 => {
+            @12 := const (67108864 : u64)
+        },
+        AlignmentEnum::_Align1Shl27 => {
+            @12 := const (134217728 : u64)
+        },
+        AlignmentEnum::_Align1Shl28 => {
+            @12 := const (268435456 : u64)
+        },
+        AlignmentEnum::_Align1Shl29 => {
+            @12 := const (536870912 : u64)
+        },
+        AlignmentEnum::_Align1Shl30 => {
+            @12 := const (1073741824 : u64)
+        },
+        AlignmentEnum::_Align1Shl31 => {
+            @12 := const (2147483648 : u64)
+        },
+        AlignmentEnum::_Align1Shl32 => {
+            @12 := const (4294967296 : u64)
+        },
+        AlignmentEnum::_Align1Shl33 => {
+            @12 := const (8589934592 : u64)
+        },
+        AlignmentEnum::_Align1Shl34 => {
+            @12 := const (17179869184 : u64)
+        },
+        AlignmentEnum::_Align1Shl35 => {
+            @12 := const (34359738368 : u64)
+        },
+        AlignmentEnum::_Align1Shl36 => {
+            @12 := const (68719476736 : u64)
+        },
+        AlignmentEnum::_Align1Shl37 => {
+            @12 := const (137438953472 : u64)
+        },
+        AlignmentEnum::_Align1Shl38 => {
+            @12 := const (274877906944 : u64)
+        },
+        AlignmentEnum::_Align1Shl39 => {
+            @12 := const (549755813888 : u64)
+        },
+        AlignmentEnum::_Align1Shl40 => {
+            @12 := const (1099511627776 : u64)
+        },
+        AlignmentEnum::_Align1Shl41 => {
+            @12 := const (2199023255552 : u64)
+        },
+        AlignmentEnum::_Align1Shl42 => {
+            @12 := const (4398046511104 : u64)
+        },
+        AlignmentEnum::_Align1Shl43 => {
+            @12 := const (8796093022208 : u64)
+        },
+        AlignmentEnum::_Align1Shl44 => {
+            @12 := const (17592186044416 : u64)
+        },
+        AlignmentEnum::_Align1Shl45 => {
+            @12 := const (35184372088832 : u64)
+        },
+        AlignmentEnum::_Align1Shl46 => {
+            @12 := const (70368744177664 : u64)
+        },
+        AlignmentEnum::_Align1Shl47 => {
+            @12 := const (140737488355328 : u64)
+        },
+        AlignmentEnum::_Align1Shl48 => {
+            @12 := const (281474976710656 : u64)
+        },
+        AlignmentEnum::_Align1Shl49 => {
+            @12 := const (562949953421312 : u64)
+        },
+        AlignmentEnum::_Align1Shl50 => {
+            @12 := const (1125899906842624 : u64)
+        },
+        AlignmentEnum::_Align1Shl51 => {
+            @12 := const (2251799813685248 : u64)
+        },
+        AlignmentEnum::_Align1Shl52 => {
+            @12 := const (4503599627370496 : u64)
+        },
+        AlignmentEnum::_Align1Shl53 => {
+            @12 := const (9007199254740992 : u64)
+        },
+        AlignmentEnum::_Align1Shl54 => {
+            @12 := const (18014398509481984 : u64)
+        },
+        AlignmentEnum::_Align1Shl55 => {
+            @12 := const (36028797018963968 : u64)
+        },
+        AlignmentEnum::_Align1Shl56 => {
+            @12 := const (72057594037927936 : u64)
+        },
+        AlignmentEnum::_Align1Shl57 => {
+            @12 := const (144115188075855872 : u64)
+        },
+        AlignmentEnum::_Align1Shl58 => {
+            @12 := const (288230376151711744 : u64)
+        },
+        AlignmentEnum::_Align1Shl59 => {
+            @12 := const (576460752303423488 : u64)
+        },
+        AlignmentEnum::_Align1Shl60 => {
+            @12 := const (1152921504606846976 : u64)
+        },
+        AlignmentEnum::_Align1Shl61 => {
+            @12 := const (2305843009213693952 : u64)
+        },
+        AlignmentEnum::_Align1Shl62 => {
+            @12 := const (4611686018427387904 : u64)
+        },
+        AlignmentEnum::_Align1Shl63 => {
+            @12 := const (9223372036854775808 : u64)
+        },
+    }
+    @13 := copy (@12) >= const (1 : u64)
+    @14 := copy (@12) <= const (9223372036854775808 : u64)
+    @15 := move (@13) & move (@14)
+    assert(move (@15) == true)
+    @5 := cast<u64, usize>(copy (@12))
+    storage_dead(@11)
+    storage_dead(@15)
+    storage_dead(@14)
+    storage_dead(@13)
+    storage_dead(@12)
+    storage_dead(@10)
+    storage_dead(self@6)
+    @0 := __rust_alloc_zeroed(move (@3), move (@5))
+    storage_dead(@5)
+    storage_dead(@3)
+    return
+}
+
+// Full name: alloc::alloc::__rust_alloc
+unsafe fn __rust_alloc(@1: usize, @2: usize) -> *mut u8
+
+// Full name: alloc::alloc::alloc
+pub unsafe fn alloc(@1: Layout) -> *mut u8
+{
+    let @0: *mut u8; // return
+    let layout@1: Layout; // arg #1
+    let @2: u8; // anonymous local
+    let @3: usize; // anonymous local
+    let self@4: &'_ (Layout); // local
+    let @5: usize; // anonymous local
+    let self@6: &'_ (Layout); // local
+    let @7: bool; // anonymous local
+    let @8: (); // anonymous local
+    let @9: *const (); // anonymous local
+    let @10: Alignment; // anonymous local
+    let @11: AlignmentEnum; // anonymous local
+    let @12: u64; // anonymous local
+    let @13: bool; // anonymous local
+    let @14: bool; // anonymous local
+    let @15: bool; // anonymous local
+    let @16: *const u8; // anonymous local
+    let @17: *const u8; // anonymous local
+
+    storage_live(@8)
+    storage_live(@9)
+    storage_live(@16)
+    storage_live(@17)
+    storage_live(@2)
+    storage_live(@7)
+    @7 := ub_checks<bool>
+    if move (@7) {
+        storage_live(@9)
+        @16 := &alloc::alloc::__rust_no_alloc_shim_is_unstable
+        @9 := cast<*const u8, *const ()>(move (@16))
+        @8 := core::ptr::read_volatile::precondition_check(move (@9), const (1 : usize), const ({impl SizedTypeProperties for T}#6<u8>[Sized<u8>]::IS_ZST))
+        storage_dead(@9)
+    }
+    else {
+    }
+    storage_dead(@7)
+    @17 := &alloc::alloc::__rust_no_alloc_shim_is_unstable
+    @2 := volatile_load<u8>[Sized<u8>](move (@17))
+    storage_dead(@2)
+    storage_live(@3)
+    storage_live(self@4)
+    self@4 := &layout@1
+    @3 := copy ((layout@1).size)
+    storage_dead(self@4)
+    storage_live(@5)
+    storage_live(self@6)
+    self@6 := &layout@1
+    storage_live(@10)
+    @10 := copy ((layout@1).align)
+    storage_live(@12)
+    storage_live(@13)
+    storage_live(@14)
+    storage_live(@15)
+    storage_live(@11)
+    @11 := copy ((@10).0)
+    match @11 {
+        AlignmentEnum::_Align1Shl0 => {
+            @12 := const (1 : u64)
+        },
+        AlignmentEnum::_Align1Shl1 => {
+            @12 := const (2 : u64)
+        },
+        AlignmentEnum::_Align1Shl2 => {
+            @12 := const (4 : u64)
+        },
+        AlignmentEnum::_Align1Shl3 => {
+            @12 := const (8 : u64)
+        },
+        AlignmentEnum::_Align1Shl4 => {
+            @12 := const (16 : u64)
+        },
+        AlignmentEnum::_Align1Shl5 => {
+            @12 := const (32 : u64)
+        },
+        AlignmentEnum::_Align1Shl6 => {
+            @12 := const (64 : u64)
+        },
+        AlignmentEnum::_Align1Shl7 => {
+            @12 := const (128 : u64)
+        },
+        AlignmentEnum::_Align1Shl8 => {
+            @12 := const (256 : u64)
+        },
+        AlignmentEnum::_Align1Shl9 => {
+            @12 := const (512 : u64)
+        },
+        AlignmentEnum::_Align1Shl10 => {
+            @12 := const (1024 : u64)
+        },
+        AlignmentEnum::_Align1Shl11 => {
+            @12 := const (2048 : u64)
+        },
+        AlignmentEnum::_Align1Shl12 => {
+            @12 := const (4096 : u64)
+        },
+        AlignmentEnum::_Align1Shl13 => {
+            @12 := const (8192 : u64)
+        },
+        AlignmentEnum::_Align1Shl14 => {
+            @12 := const (16384 : u64)
+        },
+        AlignmentEnum::_Align1Shl15 => {
+            @12 := const (32768 : u64)
+        },
+        AlignmentEnum::_Align1Shl16 => {
+            @12 := const (65536 : u64)
+        },
+        AlignmentEnum::_Align1Shl17 => {
+            @12 := const (131072 : u64)
+        },
+        AlignmentEnum::_Align1Shl18 => {
+            @12 := const (262144 : u64)
+        },
+        AlignmentEnum::_Align1Shl19 => {
+            @12 := const (524288 : u64)
+        },
+        AlignmentEnum::_Align1Shl20 => {
+            @12 := const (1048576 : u64)
+        },
+        AlignmentEnum::_Align1Shl21 => {
+            @12 := const (2097152 : u64)
+        },
+        AlignmentEnum::_Align1Shl22 => {
+            @12 := const (4194304 : u64)
+        },
+        AlignmentEnum::_Align1Shl23 => {
+            @12 := const (8388608 : u64)
+        },
+        AlignmentEnum::_Align1Shl24 => {
+            @12 := const (16777216 : u64)
+        },
+        AlignmentEnum::_Align1Shl25 => {
+            @12 := const (33554432 : u64)
+        },
+        AlignmentEnum::_Align1Shl26 => {
+            @12 := const (67108864 : u64)
+        },
+        AlignmentEnum::_Align1Shl27 => {
+            @12 := const (134217728 : u64)
+        },
+        AlignmentEnum::_Align1Shl28 => {
+            @12 := const (268435456 : u64)
+        },
+        AlignmentEnum::_Align1Shl29 => {
+            @12 := const (536870912 : u64)
+        },
+        AlignmentEnum::_Align1Shl30 => {
+            @12 := const (1073741824 : u64)
+        },
+        AlignmentEnum::_Align1Shl31 => {
+            @12 := const (2147483648 : u64)
+        },
+        AlignmentEnum::_Align1Shl32 => {
+            @12 := const (4294967296 : u64)
+        },
+        AlignmentEnum::_Align1Shl33 => {
+            @12 := const (8589934592 : u64)
+        },
+        AlignmentEnum::_Align1Shl34 => {
+            @12 := const (17179869184 : u64)
+        },
+        AlignmentEnum::_Align1Shl35 => {
+            @12 := const (34359738368 : u64)
+        },
+        AlignmentEnum::_Align1Shl36 => {
+            @12 := const (68719476736 : u64)
+        },
+        AlignmentEnum::_Align1Shl37 => {
+            @12 := const (137438953472 : u64)
+        },
+        AlignmentEnum::_Align1Shl38 => {
+            @12 := const (274877906944 : u64)
+        },
+        AlignmentEnum::_Align1Shl39 => {
+            @12 := const (549755813888 : u64)
+        },
+        AlignmentEnum::_Align1Shl40 => {
+            @12 := const (1099511627776 : u64)
+        },
+        AlignmentEnum::_Align1Shl41 => {
+            @12 := const (2199023255552 : u64)
+        },
+        AlignmentEnum::_Align1Shl42 => {
+            @12 := const (4398046511104 : u64)
+        },
+        AlignmentEnum::_Align1Shl43 => {
+            @12 := const (8796093022208 : u64)
+        },
+        AlignmentEnum::_Align1Shl44 => {
+            @12 := const (17592186044416 : u64)
+        },
+        AlignmentEnum::_Align1Shl45 => {
+            @12 := const (35184372088832 : u64)
+        },
+        AlignmentEnum::_Align1Shl46 => {
+            @12 := const (70368744177664 : u64)
+        },
+        AlignmentEnum::_Align1Shl47 => {
+            @12 := const (140737488355328 : u64)
+        },
+        AlignmentEnum::_Align1Shl48 => {
+            @12 := const (281474976710656 : u64)
+        },
+        AlignmentEnum::_Align1Shl49 => {
+            @12 := const (562949953421312 : u64)
+        },
+        AlignmentEnum::_Align1Shl50 => {
+            @12 := const (1125899906842624 : u64)
+        },
+        AlignmentEnum::_Align1Shl51 => {
+            @12 := const (2251799813685248 : u64)
+        },
+        AlignmentEnum::_Align1Shl52 => {
+            @12 := const (4503599627370496 : u64)
+        },
+        AlignmentEnum::_Align1Shl53 => {
+            @12 := const (9007199254740992 : u64)
+        },
+        AlignmentEnum::_Align1Shl54 => {
+            @12 := const (18014398509481984 : u64)
+        },
+        AlignmentEnum::_Align1Shl55 => {
+            @12 := const (36028797018963968 : u64)
+        },
+        AlignmentEnum::_Align1Shl56 => {
+            @12 := const (72057594037927936 : u64)
+        },
+        AlignmentEnum::_Align1Shl57 => {
+            @12 := const (144115188075855872 : u64)
+        },
+        AlignmentEnum::_Align1Shl58 => {
+            @12 := const (288230376151711744 : u64)
+        },
+        AlignmentEnum::_Align1Shl59 => {
+            @12 := const (576460752303423488 : u64)
+        },
+        AlignmentEnum::_Align1Shl60 => {
+            @12 := const (1152921504606846976 : u64)
+        },
+        AlignmentEnum::_Align1Shl61 => {
+            @12 := const (2305843009213693952 : u64)
+        },
+        AlignmentEnum::_Align1Shl62 => {
+            @12 := const (4611686018427387904 : u64)
+        },
+        AlignmentEnum::_Align1Shl63 => {
+            @12 := const (9223372036854775808 : u64)
+        },
+    }
+    @13 := copy (@12) >= const (1 : u64)
+    @14 := copy (@12) <= const (9223372036854775808 : u64)
+    @15 := move (@13) & move (@14)
+    assert(move (@15) == true)
+    @5 := cast<u64, usize>(copy (@12))
+    storage_dead(@11)
+    storage_dead(@15)
+    storage_dead(@14)
+    storage_dead(@13)
+    storage_dead(@12)
+    storage_dead(@10)
+    storage_dead(self@6)
+    @0 := __rust_alloc(move (@3), move (@5))
+    storage_dead(@5)
+    storage_dead(@3)
+    return
+}
+
+fn core::ptr::non_null::{NonNull<T>}#3::new_unchecked::precondition_check(@1: *mut ())
+{
+    let @0: (); // return
+    let ptr@1: *mut (); // arg #1
+    let @2: !; // anonymous local
+    let @3: usize; // anonymous local
+
+    storage_live(@2)
+    storage_live(@3)
+    @3 := transmute<*mut (), usize>(copy (ptr@1))
+    switch move (@3) {
+        0 : usize => {
+        },
+        _ => {
+            storage_dead(@3)
+            @0 := ()
+            return
+        },
+    }
+    storage_dead(@3)
+    @2 := panic_nounwind(const ("unsafe precondition(s) violated: NonNull::new_unchecked requires that the pointer is non-null\n\nThis indicates a bug in the program. This Undefined Behavior check is optional, and cannot be relied on for safety."))
+}
+
+// Full name: alloc::alloc::{Global}::alloc_impl
+fn alloc_impl<'_0>(@1: &'_0 (Global), @2: Layout, @3: bool) -> Result<NonNull<Slice<u8>>, AllocError>[Sized<NonNull<Slice<u8>>>, Sized<AllocError>]
+{
+    let @0: Result<NonNull<Slice<u8>>, AllocError>[Sized<NonNull<Slice<u8>>>, Sized<AllocError>]; // return
+    let self@1: &'_ (Global); // arg #1
+    let layout@2: Layout; // arg #2
+    let zeroed@3: bool; // arg #3
+    let size@4: usize; // local
+    let self@5: &'_ (Layout); // local
+    let @6: NonNull<Slice<u8>>; // anonymous local
+    let data@7: NonNull<u8>; // local
+    let self@8: &'_ (Layout); // local
+    let raw_ptr@9: *mut u8; // local
+    let @10: ControlFlow<Result<Infallible, AllocError>[Sized<Infallible>, Sized<AllocError>], NonNull<u8>>[Sized<Result<Infallible, AllocError>[Sized<Infallible>, Sized<AllocError>]>, Sized<NonNull<u8>>]; // anonymous local
+    let self@11: Result<NonNull<u8>, AllocError>[Sized<NonNull<u8>>, Sized<AllocError>]; // local
+    let self@12: Option<NonNull<u8>>[Sized<NonNull<u8>>]; // local
+    let ptr@13: *mut u8; // local
+    let ptr@14: NonNull<u8>; // local
+    let @15: NonNull<Slice<u8>>; // anonymous local
+    let @16: NonZero<usize>[Sized<usize>, {impl ZeroablePrimitive for usize}#27]; // anonymous local
+    let @17: Alignment; // anonymous local
+    let @18: *const u8; // anonymous local
+    let ptr@19: *mut Slice<u8>; // local
+    let data@20: *mut u8; // local
+    let @21: bool; // anonymous local
+    let @22: (); // anonymous local
+    let @23: *mut (); // anonymous local
+    let @24: *const Slice<u8>; // anonymous local
+    let @25: NonNull<u8>; // anonymous local
+    let @26: *const u8; // anonymous local
+    let @27: usize; // anonymous local
+    let @28: bool; // anonymous local
+    let @29: (); // anonymous local
+    let @30: *mut (); // anonymous local
+    let v@31: NonNull<u8>; // local
+    let v@32: NonNull<u8>; // local
+    let ptr@33: *mut Slice<u8>; // local
+    let data@34: *mut u8; // local
+    let @35: bool; // anonymous local
+    let @36: (); // anonymous local
+    let @37: *mut (); // anonymous local
+    let @38: *const Slice<u8>; // anonymous local
+    let @39: Option<NonNull<u8>>[Sized<NonNull<u8>>]; // anonymous local
+    let @40: AllocError; // anonymous local
+    let @41: Result<NonNull<u8>, AllocError>[Sized<NonNull<u8>>, Sized<AllocError>]; // anonymous local
+    let @42: AllocError; // anonymous local
+    let @43: Result<NonNull<Slice<u8>>, AllocError>[Sized<NonNull<Slice<u8>>>, Sized<AllocError>]; // anonymous local
+
+    storage_live(size@4)
+    storage_live(raw_ptr@9)
+    storage_live(@10)
+    storage_live(self@11)
+    storage_live(self@12)
+    storage_live(ptr@13)
+    storage_live(ptr@14)
+    storage_live(@15)
+    storage_live(@16)
+    storage_live(@22)
+    storage_live(@23)
+    storage_live(@25)
+    storage_live(@26)
+    storage_live(@27)
+    storage_live(@28)
+    storage_live(@29)
+    storage_live(@30)
+    storage_live(v@31)
+    storage_live(v@32)
+    storage_live(ptr@33)
+    storage_live(data@34)
+    storage_live(@35)
+    storage_live(@36)
+    storage_live(@37)
+    storage_live(@38)
+    storage_live(@39)
+    storage_live(@40)
+    storage_live(@41)
+    storage_live(@42)
+    storage_live(@43)
+    storage_live(self@5)
+    self@5 := &layout@2
+    size@4 := copy ((layout@2).size)
+    storage_dead(self@5)
+    switch copy (size@4) {
+        0 : usize => {
+        },
+        _ => {
+            storage_live(raw_ptr@9)
+            if copy (zeroed@3) {
+                raw_ptr@9 := alloc_zeroed(copy (layout@2))
+            }
+            else {
+                raw_ptr@9 := alloc(copy (layout@2))
+            }
+            storage_live(@10)
+            storage_live(self@11)
+            storage_live(self@12)
+            ptr@13 := copy (raw_ptr@9)
+            @26 := cast<*mut u8, *const u8>(copy (ptr@13))
+            storage_live(@27)
+            @27 := transmute<*mut u8, usize>(copy (ptr@13))
+            switch move (@27) {
+                0 : usize => {
+                },
+                _ => {
+                    storage_dead(@27)
+                    storage_live(@25)
+                    storage_live(@28)
+                    @28 := ub_checks<bool>
+                    if move (@28) {
+                        storage_live(@30)
+                        @30 := cast<*mut u8, *mut ()>(copy (ptr@13))
+                        @29 := core::ptr::non_null::{NonNull<T>}#3::new_unchecked::precondition_check(move (@30))
+                        storage_dead(@30)
+                    }
+                    else {
+                    }
+                    storage_dead(@28)
+                    @25 := NonNull { pointer: copy (@26) }
+                    self@12 := Option::Some { 0: move (@25) }
+                    storage_dead(@25)
+                    storage_live(v@31)
+                    v@31 := move ((self@12 as variant @1).0)
+                    self@11 := Result::Ok { 0: copy (v@31) }
+                    storage_dead(v@31)
+                    storage_dead(self@12)
+                    storage_live(v@32)
+                    v@32 := move ((self@11 as variant @0).0)
+                    @10 := ControlFlow::Continue { 0: copy (v@32) }
+                    storage_dead(v@32)
+                    storage_dead(self@11)
+                    ptr@14 := copy ((@10 as variant @0).0)
+                    storage_dead(@10)
+                    storage_live(@15)
+                    storage_live(ptr@33)
+                    storage_live(data@34)
+                    data@34 := transmute<NonNull<u8>, *mut u8>(copy (ptr@14))
+                    ptr@33 := @PtrFromPartsMut<'_, Slice<u8>>(copy (data@34), copy (size@4))
+                    storage_dead(data@34)
+                    storage_live(@38)
+                    storage_live(@35)
+                    @35 := ub_checks<bool>
+                    if move (@35) {
+                        storage_live(@37)
+                        @37 := transmute<NonNull<u8>, *mut ()>(copy (ptr@14))
+                        @36 := core::ptr::non_null::{NonNull<T>}#3::new_unchecked::precondition_check(move (@37))
+                        storage_dead(@37)
+                    }
+                    else {
+                    }
+                    storage_dead(@35)
+                    @38 := cast<*mut Slice<u8>, *const Slice<u8>>(copy (ptr@33))
+                    @15 := NonNull { pointer: copy (@38) }
+                    storage_dead(@38)
+                    storage_dead(ptr@33)
+                    @0 := Result::Ok { 0: move (@15) }
+                    storage_dead(@15)
+                    storage_dead(raw_ptr@9)
+                    return
+                },
+            }
+            storage_dead(@27)
+            @39 := Option::None {  }
+            self@12 := move (@39)
+            storage_live(v@31)
+            @40 := AllocError {  }
+            @41 := Result::Err { 0: move (@40) }
+            self@11 := move (@41)
+            storage_dead(v@31)
+            storage_dead(self@12)
+            storage_live(v@32)
+            storage_dead(v@32)
+            storage_dead(self@11)
+            @42 := AllocError {  }
+            @43 := Result::Err { 0: move (@42) }
+            @0 := move (@43)
+            storage_dead(@10)
+            storage_dead(raw_ptr@9)
+            return
+        },
+    }
+    storage_live(@6)
+    storage_live(data@7)
+    storage_live(self@8)
+    self@8 := &layout@2
+    storage_live(@17)
+    @17 := copy ((layout@2).align)
+    @16 := transmute<Alignment, NonZero<usize>[Sized<usize>, {impl ZeroablePrimitive for usize}#27]>(copy (@17))
+    storage_dead(@17)
+    storage_live(@18)
+    @18 := transmute<NonZero<usize>[Sized<usize>, {impl ZeroablePrimitive for usize}#27], *const u8>(copy (@16))
+    data@7 := NonNull { pointer: copy (@18) }
+    storage_dead(@18)
+    storage_dead(self@8)
+    storage_live(ptr@19)
+    storage_live(data@20)
+    data@20 := transmute<NonZero<usize>[Sized<usize>, {impl ZeroablePrimitive for usize}#27], *mut u8>(copy (@16))
+    ptr@19 := @PtrFromPartsMut<'_, Slice<u8>>(copy (data@20), const (0 : usize))
+    storage_dead(data@20)
+    storage_live(@24)
+    storage_live(@21)
+    @21 := ub_checks<bool>
+    if move (@21) {
+        storage_live(@23)
+        @23 := transmute<NonZero<usize>[Sized<usize>, {impl ZeroablePrimitive for usize}#27], *mut ()>(copy (@16))
+        @22 := core::ptr::non_null::{NonNull<T>}#3::new_unchecked::precondition_check(move (@23))
+        storage_dead(@23)
+    }
+    else {
+    }
+    storage_dead(@21)
+    @24 := cast<*mut Slice<u8>, *const Slice<u8>>(copy (ptr@19))
+    @6 := NonNull { pointer: copy (@24) }
+    storage_dead(@24)
+    storage_dead(ptr@19)
+    storage_dead(data@7)
+    @0 := Result::Ok { 0: move (@6) }
+    storage_dead(@6)
+    return
+}
+
+// Full name: alloc::alloc::handle_alloc_error::ct_error
+fn ct_error(@1: Layout) -> !
+{
+    let @0: !; // return
+    let @1: Layout; // arg #1
+    let @2: Arguments<'_>; // anonymous local
+    let @3: &'_ (Array<&'_ (Str), 1 : usize>); // anonymous local
+    let @4: &'_ (Array<&'_ (Str), 1 : usize>); // anonymous local
+    let @5: &'_ (Array<&'_ (Str), 1 : usize>); // anonymous local
+    let @6: &'_ (Array<&'_ (Str), 1 : usize>); // anonymous local
+    let @7: Array<&'_ (Str), 1 : usize>; // anonymous local
+
+    storage_live(@5)
+    storage_live(@6)
+    storage_live(@7)
+    @7 := [const ("allocation failed")]
+    @6 := &@7
+    storage_live(@2)
+    storage_live(@3)
+    storage_live(@4)
+    @5 := move (@6)
+    @4 := &*(@5)
+    @3 := &*(@4)
+    @2 := new_const<'_, 1 : usize>(move (@3))
+    storage_dead(@3)
+    panic(core::panicking::panic_fmt)
+}
+
+// Full name: alloc::alloc::handle_alloc_error
+pub fn handle_alloc_error(@1: Layout) -> !
+{
+    let @0: !; // return
+    let layout@1: Layout; // arg #1
+    let @2: (Layout); // anonymous local
+    let @3: Layout; // anonymous local
+
+    storage_live(@2)
+    storage_live(@3)
+    @3 := copy (layout@1)
+    @2 := (move (@3))
+    storage_dead(@3)
+    @0 := ct_error(move ((@2).0))
+}
+
+// Full name: alloc::alloc::exchange_malloc
+#[lang_item("exchange_malloc")]
+unsafe fn exchange_malloc(@1: usize, @2: usize) -> *mut u8
+{
+    let @0: *mut u8; // return
+    let size@1: usize; // arg #1
+    let align@2: usize; // arg #2
+    let layout@3: Layout; // local
+    let @4: Result<NonNull<Slice<u8>>, AllocError>[Sized<NonNull<Slice<u8>>>, Sized<AllocError>]; // anonymous local
+    let ptr@5: NonNull<Slice<u8>>; // local
+    let @6: !; // anonymous local
+    let @7: bool; // anonymous local
+    let @8: (); // anonymous local
+    let @9: Alignment; // anonymous local
+    let @10: *mut Slice<u8>; // anonymous local
+    let @11: &'_ (Global); // anonymous local
+    let @12: Global; // anonymous local
+
+    storage_live(layout@3)
+    storage_live(ptr@5)
+    storage_live(@6)
+    storage_live(@8)
+    storage_live(@11)
+    storage_live(@12)
+    storage_live(@7)
+    @7 := ub_checks<bool>
+    if move (@7) {
+        @8 := core::alloc::layout::{Layout}::from_size_align_unchecked::precondition_check(copy (size@1), copy (align@2))
+    }
+    else {
+    }
+    @12 := Global {  }
+    @11 := &@12
+    storage_dead(@7)
+    storage_live(@9)
+    @9 := transmute<usize, Alignment>(copy (align@2))
+    layout@3 := Layout { size: copy (size@1), align: move (@9) }
+    storage_dead(@9)
+    storage_live(@4)
+    @4 := alloc_impl<'_>(move (@11), copy (layout@3), const (false))
+    match @4 {
+        Result::Ok => {
+        },
+        Result::Err => {
+            @6 := handle_alloc_error(move (layout@3))
+        },
+    }
+    ptr@5 := copy ((@4 as variant @0).0)
+    storage_live(@10)
+    @10 := transmute<NonNull<Slice<u8>>, *mut Slice<u8>>(copy (ptr@5))
+    @0 := cast<*mut Slice<u8>, *mut u8>(copy (@10))
+    storage_dead(@10)
+    storage_dead(@4)
+    return
+}
+
+#[lang_item("box_new")]
+pub fn alloc::boxed::{Box<T, Global>[Sized<Global>]}::new<T>(@1: T) -> Box<T, Global>[Sized<Global>]
+where
+    [@TraitClause0]: Sized<T>,
+{
+    let @0: Box<T, Global>[Sized<Global>]; // return
+    let x@1: T; // arg #1
+    let @2: usize; // anonymous local
+    let @3: usize; // anonymous local
+    let @4: *mut u8; // anonymous local
+    let @5: *const T; // anonymous local
+
+    storage_live(@2)
+    storage_live(@3)
+    storage_live(@4)
+    storage_live(@5)
+    @2 := size_of<T>
+    @3 := align_of<T>
+    @4 := exchange_malloc(move (@2), move (@3))
+    @0 := shallow_init_box::<T>(move (@4))
+    @5 := transmute<NonNull<T>, *const T>(copy (((@0).0).pointer))
+    *(@5) := move (x@1)
+    return
+}
+
+// Full name: alloc::boxed::{Box<T, A>[@TraitClause0]}#7::into_raw
+pub fn into_raw<T, A>(@1: Box<T, A>[@TraitClause0]) -> *mut T
+where
+    [@TraitClause0]: Sized<A>,
+{
+    let @0: *mut T; // return
+    let b@1: Box<T, A>[@TraitClause0]; // arg #1
+    let @2: (*mut T, A); // anonymous local
+    let @3: *mut T; // anonymous local
+    let @4: A; // anonymous local
+    let @5: *const T; // anonymous local
+    let @6: NonNull<T>; // anonymous local
+
+    storage_live(@2)
+    storage_live(@3)
+    storage_live(@4)
+    storage_live(@6)
+    storage_live(@5)
+    @6 := copy (((b@1).0).pointer)
+    @5 := transmute<NonNull<T>, *const T>(copy (@6))
+    @3 := &raw mut *(@5)
+    @4 := copy ((b@1).1)
+    @2 := (copy (@3), copy (@4))
+    storage_dead(@5)
+    storage_dead(@6)
+    storage_dead(@4)
+    storage_dead(@3)
+    @0 := copy ((@2).0)
+    drop @2
+    storage_dead(@2)
+    return
+}
+
+// Full name: alloc::boxed::{Box<T, A>[@TraitClause0]}#7::leak
+pub fn leak<'a, T, A>(@1: Box<T, A>[@TraitClause0]) -> &'a mut (T)
+where
+    [@TraitClause0]: Sized<A>,
+    A : 'a,
+{
+    let @0: &'_ mut (T); // return
+    let b@1: Box<T, A>[@TraitClause0]; // arg #1
+    let @2: *mut T; // anonymous local
+    let @3: (*mut T, A); // anonymous local
+    let @4: *mut T; // anonymous local
+    let @5: *const T; // anonymous local
+    let b@6: A; // local
+    let b@7: NonNull<T>; // local
+    let b@8: PhantomData<T>; // local
+
+    storage_live(b@6)
+    storage_live(b@7)
+    storage_live(@2)
+    storage_live(b@8)
+    b@7 := move (((b@1).0).pointer)
+    b@8 := move (((b@1).0)._marker)
+    b@6 := move ((b@1).1)
+    storage_live(@3)
+    storage_live(@4)
+    storage_live(@5)
+    @5 := transmute<NonNull<T>, *const T>(copy (b@7))
+    @4 := &raw mut *(@5)
+    @3 := (copy (@4), copy (b@6))
+    storage_dead(@5)
+    storage_dead(@4)
+    @2 := copy ((@3).0)
+    drop @3
+    storage_dead(@3)
+    storage_dead(b@8)
+    @0 := &mut *(@2)
+    storage_dead(@2)
+    return
+}
+
+// Full name: alloc::boxed::{Box<T, Global>[Sized<Global>]}#6::from_raw
+pub unsafe fn from_raw<T>(@1: *mut T) -> Box<T, Global>[Sized<Global>]
+{
+    let @0: Box<T, Global>[Sized<Global>]; // return
+    let raw@1: *mut T; // arg #1
+    let @2: Unique<T>; // anonymous local
+    let @3: NonNull<T>; // anonymous local
+    let @4: bool; // anonymous local
+    let @5: (); // anonymous local
+    let @6: *mut (); // anonymous local
+    let @7: *const T; // anonymous local
+    let @8: PhantomData<T>; // anonymous local
+    let @9: Global; // anonymous local
+
+    storage_live(@5)
+    storage_live(@6)
+    storage_live(@8)
+    storage_live(@9)
+    storage_live(@2)
+    storage_live(@3)
+    storage_live(@7)
+    storage_live(@4)
+    @4 := ub_checks<bool>
+    if move (@4) {
+        storage_live(@6)
+        @6 := cast<*mut T, *mut ()>(copy (raw@1))
+        @5 := core::ptr::non_null::{NonNull<T>}#3::new_unchecked::precondition_check(move (@6))
+        storage_dead(@6)
+    }
+    else {
+    }
+    storage_dead(@4)
+    @7 := cast<*mut T, *const T>(copy (raw@1))
+    @3 := NonNull { pointer: copy (@7) }
+    storage_dead(@7)
+    @8 := PhantomData {  }
+    @2 := Unique { pointer: move (@3), _marker: move (@8) }
+    storage_dead(@3)
+    @9 := Global {  }
+    @0 := Box { 0: move (@2), 1: move (@9) }
+    storage_dead(@2)
+    return
+}
+
+// Full name: test_crate::foo
+unsafe fn foo()
+{
+    let @0: (); // return
+    let b@1: Box<i32, Global>[Sized<Global>]; // local
+    let p@2: *mut i32; // local
+    let @3: Box<i32, Global>[Sized<Global>]; // anonymous local
+    let @4: &'_ mut (i32); // anonymous local
+    let @5: Box<i32, Global>[Sized<Global>]; // anonymous local
+    let b@6: Box<i32, Global>[Sized<Global>]; // local
+    let @7: *mut i32; // anonymous local
+    let i@8: i32; // local
+    let @9: *const i32; // anonymous local
+
+    storage_live(@9)
+    storage_live(b@1)
+    b@1 := alloc::boxed::{Box<T, Global>[Sized<Global>]}::new<i32>[Sized<i32>](const (42 : i32))
+    storage_live(p@2)
+    storage_live(@3)
+    @3 := move (b@1)
+    p@2 := into_raw<i32, Global>[Sized<Global>](move (@3))
+    storage_dead(@3)
+    storage_live(@4)
+    storage_live(@5)
+    @5 := alloc::boxed::{Box<T, Global>[Sized<Global>]}::new<i32>[Sized<i32>](const (42 : i32))
+    @4 := leak<'_, i32, Global>[Sized<Global>](move (@5))
+    storage_dead(@5)
+    storage_dead(@4)
+    storage_live(b@6)
+    storage_live(@7)
+    @7 := copy (p@2)
+    b@6 := from_raw<i32>(move (@7))
+    storage_dead(@7)
+    storage_live(i@8)
+    @9 := transmute<NonNull<i32>, *const i32>(copy (((b@6).0).pointer))
+    i@8 := copy (*(@9))
+    @0 := ()
+    storage_dead(i@8)
+    drop b@6
+    storage_dead(b@6)
+    storage_dead(p@2)
+    storage_dead(b@1)
+    @0 := ()
+    return
+}
+
+#[lang_item("clone_fn")]
+pub fn core::clone::Clone::clone<'_0, Self>(@1: &'_0 (Self)) -> Self
+where
+    [@TraitClause0]: Clone<Self>,
+
+// Full name: core::clone::Clone::clone_from
+pub fn clone_from<'_0, '_1, Self>(@1: &'_0 mut (Self), @2: &'_1 (Self))
+where
+    [@TraitClause0]: Clone<Self>,
+{
+    let @0: (); // return
+    let self@1: &'_ mut (Self); // arg #1
+    let source@2: &'_ (Self); // arg #2
+    let @3: Self; // anonymous local
+
+    storage_live(@3)
+    @3 := @TraitClause0::clone<'_>(move (source@2))
+    drop *(self@1)
+    *(self@1) := move (@3)
+    storage_dead(@3)
+    @0 := ()
+    return
+}
+
+
+

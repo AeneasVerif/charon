@@ -151,24 +151,10 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                 );
                 RawConstantExpr::Opaque("`ConstantExprKind::Cast {{..}}`".into())
             }
-            ConstantExprKind::RawBorrow {
-                mutability: false, ..
-            } => {
-                register_error!(
-                    self,
-                    span,
-                    "Unsupported constant: `ConstantExprKind::RawBorrow {{mutability: false, ..}}`",
-                );
-                RawConstantExpr::Opaque(
-                    "ConstantExprKind::RawBorrow {{mutability: false, ..}}".into(),
-                )
-            }
-            ConstantExprKind::RawBorrow {
-                mutability: true,
-                arg,
-            } => {
+            ConstantExprKind::RawBorrow { mutability, arg } => {
                 let arg = self.translate_constant_expr_to_constant_expr(span, arg)?;
-                RawConstantExpr::MutPtr(Box::new(arg))
+                let rk = RefKind::mutable(*mutability);
+                RawConstantExpr::Ptr(rk, Box::new(arg))
             }
             ConstantExprKind::ConstRef { id } => {
                 let var = self.lookup_const_generic_var(span, id)?;
@@ -219,7 +205,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
             | RawConstantExpr::RawMemory { .. }
             | RawConstantExpr::TraitConst { .. }
             | RawConstantExpr::Ref(_)
-            | RawConstantExpr::MutPtr(_)
+            | RawConstantExpr::Ptr(..)
             | RawConstantExpr::FnPtr { .. }
             | RawConstantExpr::Opaque(_) => {
                 raise_error!(self, span, "Unexpected constant generic: {:?}", value)
