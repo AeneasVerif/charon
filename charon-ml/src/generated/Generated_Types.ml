@@ -422,11 +422,16 @@ and ty =
           TODO: we don't translate this properly yet.
        *)
   | TArrow of (ty list * ty) region_binder
-      (** Arrow type, used for function pointers and reused for the unique type associated with each
-          function item.
+      (** Function pointer type. This is a literal pointer to a region of memory that
+          contains a callable function.
           This is a function signature with limited generics: it only supports lifetime generics, not
-          other kinds of
-          generics.
+          other kinds of generics.
+       *)
+  | TFnDef of fun_decl_ref region_binder
+      (** The unique type associated with each function item. Each function item is given
+          a unique generic type that takes as input the function's early-bound generics. This type
+          is not generally nameable in Rust; it's a ZST (there's a unique value), and a value of that type
+          can be cast to a function pointer or passed to functions that expect [FnOnce]/[FnMut]/[Fn] parameters.
        *)
   | TError of string  (** A type that could not be computed or was incorrect. *)
 
@@ -482,12 +487,62 @@ class ['self] map_type_decl_base =
     method visit_attr_info : 'env -> attr_info -> attr_info = fun _ x -> x
   end
 
+(** Item kind: whether this function/const is part of a trait declaration, trait implementation, or
+    neither.
+
+    Example:
+    {@rust[
+    trait Foo {
+        fn bar(x : u32) -> u32; // trait item decl without default
+
+        fn baz(x : bool) -> bool { x } // trait item decl with default
+    }
+
+    impl Foo for ... {
+        fn bar(x : u32) -> u32 { x } // trait item implementation
+    }
+
+    fn test(...) { ... } // regular
+
+    impl Type {
+        fn test(...) { ... } // regular
+    }
+    ]}
+ *)
+type item_kind =
+  | TopLevelItem  (** This item stands on its own. *)
+  | ClosureItem of closure_info
+      (** This is a closure in a function body.
+
+          Fields:
+          - [info]
+       *)
+  | TraitDeclItem of trait_decl_ref * trait_item_name * bool
+      (** This is an associated item in a trait declaration. It has a body if and only if the trait
+          provided a default implementation.
+
+          Fields:
+          - [trait_ref]:  The trait declaration this item belongs to.
+          - [item_name]:  The name of the item.
+          - [has_default]:  Whether the trait declaration provides a default implementation.
+       *)
+  | TraitImplItem of trait_impl_ref * trait_decl_ref * trait_item_name * bool
+      (** This is an associated item in a trait implementation.
+
+          Fields:
+          - [impl_ref]:  The trait implementation the method belongs to.
+          - [trait_ref]:  The trait declaration that the impl block implements.
+          - [item_name]:  The name of the item
+          - [reuses_default]:  True if the trait decl had a default implementation for this function/const and this
+          item is a copy of the default item.
+       *)
+
 (** (U)LLBC is a language with side-effects: a statement may abort in a way that isn't tracked by
     control-flow. The two kinds of abort are:
     - Panic (may unwind or not depending on compilation setting);
     - Undefined behavior:
  *)
-type abort_kind =
+and abort_kind =
   | Panic of name option  (** A built-in panicking function. *)
   | UndefinedBehavior  (** Undefined behavior in the rust abstract machine. *)
   | UnwindTerminate
@@ -697,6 +752,8 @@ and type_decl = {
   def_id : type_decl_id;
   item_meta : item_meta;  (** Meta information associated with the item. *)
   generics : generic_params;
+  src : item_kind;
+      (** The context of the type: distinguishes top-level items from closure-related items. *)
   kind : type_decl_kind;  (** The type kind: enum, struct, or opaque. *)
   layout : layout option;
       (** The layout of the type. Information may be partial because of generics or dynamically-
@@ -741,6 +798,20 @@ and field = {
   attr_info : attr_info;
   field_name : string option;
   field_ty : ty;
+}
+
+and closure_kind = Fn | FnMut | FnOnce
+
+(** Additional information for closures. *)
+and closure_info = {
+  kind : closure_kind;
+  fun_id : fun_decl_id;
+      (** The function id of the closure's original kind. For instance, a [Fn] closure will have a
+        function for its [FnOnce], [FnMut] and [Fn] traits, but here we would only specify the
+        id of the [Fn] function.
+     *)
+  signature : (ty list * ty) region_binder;
+      (** The signature of the function that this closure represents. *)
 }
 [@@deriving
   show,

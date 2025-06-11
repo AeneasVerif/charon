@@ -318,6 +318,10 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
                         .push(PathElem::Ident(fn_name, Disambiguator::ZERO));
                 }
             }
+            TransItemSource::ClosureAsFnCast(_) => {
+                name.name
+                    .push(PathElem::Ident("as_fn".into(), Disambiguator::ZERO));
+            }
             _ => {}
         }
         Ok(name)

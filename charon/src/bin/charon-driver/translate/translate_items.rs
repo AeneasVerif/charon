@@ -109,6 +109,13 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
                 let fun_decl = bt_ctx.translate_closure_method(id, item_meta, &def, *kind)?;
                 self.translated.fun_decls.set_slot(id, fun_decl);
             }
+            TransItemSource::ClosureAsFnCast(_) => {
+                let Some(AnyTransId::Fun(id)) = trans_id else {
+                    unreachable!()
+                };
+                let fun_decl = bt_ctx.translate_closure_as_fn(id, item_meta, &def)?;
+                self.translated.fun_decls.set_slot(id, fun_decl);
+            }
         }
         Ok(())
     }
@@ -131,7 +138,7 @@ impl ItemTransCtx<'_, '_> {
                 associated_item, ..
             } => associated_item,
             hax::FullDefKind::Closure { args, .. } => {
-                let info = self.translate_closure_info(span, args)?;
+                let info = self.translate_closure_info(span, def.def_id(), args)?;
                 return Ok(ItemKind::Closure { info });
             }
             _ => return Ok(ItemKind::TopLevel),
@@ -222,6 +229,9 @@ impl ItemTransCtx<'_, '_> {
         // Translate generics and predicates
         self.translate_def_generics(span, def)?;
 
+        // Get the kind of the type decl -- is it a closure?
+        let src = self.get_item_kind(span, def)?;
+
         // Translate type body
         let kind = match &def.kind {
             _ if item_meta.opacity.is_opaque() => Ok(TypeDeclKind::Opaque),
@@ -254,6 +264,7 @@ impl ItemTransCtx<'_, '_> {
             item_meta,
             generics: self.into_generics(),
             kind,
+            src,
             layout,
         };
 

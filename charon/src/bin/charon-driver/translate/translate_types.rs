@@ -276,6 +276,37 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                 })?;
                 TyKind::Arrow(sig)
             }
+
+            hax::TyKind::FnDef {
+                def_id,
+                generic_args: substs,
+                trait_refs,
+                fn_sig,
+            } => {
+                trace!("FnDef");
+                let f_id = self.register_fun_decl_id(span, def_id);
+                let generics = self.translate_generic_args(
+                    span,
+                    substs,
+                    trait_refs,
+                    None,
+                    GenericsSource::item(f_id),
+                )?;
+
+                let fnref = self.translate_region_binder(span, fn_sig, |ctx, _| {
+                    let generics = generics.move_under_binder().concat(
+                        GenericsSource::item(f_id),
+                        &ctx.innermost_binder()
+                            .params
+                            .identity_args(GenericsSource::item(f_id)),
+                    );
+                    Ok(FunDeclRef {
+                        id: f_id,
+                        generics: Box::new(generics),
+                    })
+                })?;
+                TyKind::FnDef(fnref)
+            }
             hax::TyKind::Closure(def_id, args) => {
                 let type_ref = self.translate_closure_type_ref(span, def_id, args)?;
                 TyKind::Adt(type_ref.id, *type_ref.generics)

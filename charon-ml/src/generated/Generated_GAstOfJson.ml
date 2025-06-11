@@ -1348,15 +1348,17 @@ and type_decl_of_json (ctx : of_json_ctx) (js : json) :
           ("def_id", def_id);
           ("item_meta", item_meta);
           ("generics", generics);
+          ("src", src);
           ("kind", kind);
           ("layout", layout);
         ] ->
         let* def_id = type_decl_id_of_json ctx def_id in
         let* item_meta = item_meta_of_json ctx item_meta in
         let* generics = generic_params_of_json ctx generics in
+        let* src = item_kind_of_json ctx src in
         let* kind = type_decl_kind_of_json ctx kind in
         let* layout = option_of_json layout_of_json ctx layout in
-        Ok ({ def_id; item_meta; generics; kind; layout } : type_decl)
+        Ok ({ def_id; item_meta; generics; src; kind; layout } : type_decl)
     | _ -> Error "")
 
 and variant_id_of_json (ctx : of_json_ctx) (js : json) :
@@ -1549,6 +1551,9 @@ and ty_of_json (ctx : of_json_ctx) (js : json) : (ty, string) result =
             ctx arrow
         in
         Ok (TArrow arrow)
+    | `Assoc [ ("FnDef", fn_def) ] ->
+        let* fn_def = region_binder_of_json fun_decl_ref_of_json ctx fn_def in
+        Ok (TFnDef fn_def)
     | `Assoc [ ("Error", error) ] ->
         let* error = string_of_json ctx error in
         Ok (TError error)
@@ -1577,14 +1582,15 @@ and closure_info_of_json (ctx : of_json_ctx) (js : json) :
     (closure_info, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
-    | `Assoc [ ("kind", kind); ("signature", signature) ] ->
+    | `Assoc [ ("kind", kind); ("fun_id", fun_id); ("signature", signature) ] ->
         let* kind = closure_kind_of_json ctx kind in
+        let* fun_id = fun_decl_id_of_json ctx fun_id in
         let* signature =
           region_binder_of_json
             (pair_of_json (list_of_json ty_of_json) ty_of_json)
             ctx signature
         in
-        Ok ({ kind; signature } : closure_info)
+        Ok ({ kind; fun_id; signature } : closure_info)
     | _ -> Error "")
 
 and fun_sig_of_json (ctx : of_json_ctx) (js : json) : (fun_sig, string) result =
