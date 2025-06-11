@@ -2,7 +2,7 @@
   "test_crate::SimpleStruct": {
     "size": 12,
     "align": 4,
-    "discriminant_offset": null,
+    "discriminant_layout": null,
     "uninhabited": false,
     "variant_layouts": [
       {
@@ -18,7 +18,7 @@
   "test_crate::UnsizedStruct": {
     "size": null,
     "align": null,
-    "discriminant_offset": null,
+    "discriminant_layout": null,
     "uninhabited": false,
     "variant_layouts": [
       {
@@ -32,7 +32,10 @@
   "test_crate::SimpleEnum": {
     "size": 1,
     "align": 1,
-    "discriminant_offset": 0,
+    "discriminant_layout": {
+      "offset": 0,
+      "size": 1
+    },
     "uninhabited": false,
     "variant_layouts": [
       {
@@ -46,7 +49,10 @@
   "test_crate::SimpleAdt": {
     "size": 24,
     "align": 8,
-    "discriminant_offset": 0,
+    "discriminant_layout": {
+      "offset": 0,
+      "size": 4
+    },
     "uninhabited": false,
     "variant_layouts": [
       {
@@ -69,7 +75,10 @@
   "test_crate::NicheAdt": {
     "size": 4,
     "align": 4,
-    "discriminant_offset": 0,
+    "discriminant_layout": {
+      "offset": 0,
+      "size": 4
+    },
     "uninhabited": false,
     "variant_layouts": [
       {
@@ -85,7 +94,7 @@
   "test_crate::IsAZST": {
     "size": 0,
     "align": 1,
-    "discriminant_offset": null,
+    "discriminant_layout": null,
     "uninhabited": false,
     "variant_layouts": [
       {
@@ -96,7 +105,7 @@
   "test_crate::UnsizedStruct2": {
     "size": null,
     "align": null,
-    "discriminant_offset": null,
+    "discriminant_layout": null,
     "uninhabited": false,
     "variant_layouts": [
       {
@@ -110,7 +119,7 @@
   "test_crate::GenericWithKnownLayout": {
     "size": 16,
     "align": 8,
-    "discriminant_offset": null,
+    "discriminant_layout": null,
     "uninhabited": false,
     "variant_layouts": [
       {
@@ -124,7 +133,7 @@
   "test_crate::Reordered": {
     "size": 8,
     "align": 4,
-    "discriminant_offset": null,
+    "discriminant_layout": null,
     "uninhabited": false,
     "variant_layouts": [
       {
@@ -139,7 +148,7 @@
   "test_crate::NotReordered": {
     "size": 12,
     "align": 4,
-    "discriminant_offset": null,
+    "discriminant_layout": null,
     "uninhabited": false,
     "variant_layouts": [
       {
@@ -154,7 +163,7 @@
   "test_crate::Packed": {
     "size": 6,
     "align": 1,
-    "discriminant_offset": null,
+    "discriminant_layout": null,
     "uninhabited": false,
     "variant_layouts": [
       {
@@ -169,7 +178,10 @@
   "test_crate::UninhabitedVariant": {
     "size": 8,
     "align": 4,
-    "discriminant_offset": 0,
+    "discriminant_layout": {
+      "offset": 0,
+      "size": 4
+    },
     "uninhabited": false,
     "variant_layouts": [
       {
@@ -188,7 +200,7 @@
   "test_crate::Uninhabited": {
     "size": 0,
     "align": 1,
-    "discriminant_offset": null,
+    "discriminant_layout": null,
     "uninhabited": true,
     "variant_layouts": [
       {
@@ -201,7 +213,10 @@
   "test_crate::DiscriminantInNicheOfField": {
     "size": 16,
     "align": 8,
-    "discriminant_offset": 8,
+    "discriminant_layout": {
+      "offset": 8,
+      "size": 8
+    },
     "uninhabited": false,
     "variant_layouts": [
       {
@@ -217,7 +232,7 @@
   "test_crate::PackIntsUnion": {
     "size": 8,
     "align": 8,
-    "discriminant_offset": null,
+    "discriminant_layout": null,
     "uninhabited": false,
     "variant_layouts": []
   }

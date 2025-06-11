@@ -437,15 +437,19 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         }
 
         // Get the offset of the discriminant when there is one.
-        let discriminant_offset = match layout.variants() {
-            r_abi::Variants::Multiple { tag_field, .. } => {
+        let discriminant_layout = match layout.variants() {
+            r_abi::Variants::Multiple { tag, tag_field, .. } => {
                 // The tag_field is the index into the `offsets` vector.
                 let r_abi::FieldsShape::Arbitrary { offsets, .. } = layout.fields() else {
                     unreachable!()
                 };
+
                 offsets
                     .get(r_abi::FieldIdx::from_usize(*tag_field))
-                    .map(|s| r_abi::Size::bytes(*s))
+                    .map(|s| DiscriminantLayout {
+                        offset: r_abi::Size::bytes(*s),
+                        size: tag.size(&tcx).bytes(),
+                    })
             }
             r_abi::Variants::Single { .. } | r_abi::Variants::Empty => None,
         };
@@ -453,7 +457,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         Some(Layout {
             size,
             align,
-            discriminant_offset,
+            discriminant_layout,
             uninhabited: layout.is_uninhabited(),
             variant_layouts,
         })
