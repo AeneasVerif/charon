@@ -34,7 +34,7 @@
     "align": 1,
     "discriminant_layout": {
       "offset": 0,
-      "size": 1
+      "repr": "U8"
     },
     "uninhabited": false,
     "variant_layouts": [
@@ -51,7 +51,7 @@
     "align": 8,
     "discriminant_layout": {
       "offset": 0,
-      "size": 4
+      "repr": "U32"
     },
     "uninhabited": false,
     "variant_layouts": [
@@ -77,7 +77,7 @@
     "align": 4,
     "discriminant_layout": {
       "offset": 0,
-      "size": 4
+      "repr": "U32"
     },
     "uninhabited": false,
     "variant_layouts": [
@@ -180,7 +180,7 @@
     "align": 4,
     "discriminant_layout": {
       "offset": 0,
-      "size": 4
+      "repr": "U32"
     },
     "uninhabited": false,
     "variant_layouts": [
@@ -215,7 +215,7 @@
     "align": 8,
     "discriminant_layout": {
       "offset": 8,
-      "size": 8
+      "repr": null
     },
     "uninhabited": false,
     "variant_layouts": [

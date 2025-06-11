@@ -358,13 +358,17 @@ pub struct VariantLayout {
     pub field_offsets: Vector<FieldId, ByteCount>,
 }
 
-/// Layout of the discriminant with its size and offset.
+/// Layout of the discriminant with its offset and representation type.
 ///
-/// Does not include information about the value range or encoding.
+/// Does not include information about the value range.
 #[derive(Debug, Default, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct DiscriminantLayout {
+    /// The offset of the discriminant in bytes.
     pub offset: ByteCount,
-    pub size: ByteCount,
+    /// The representation type of the discriminant.
+    /// If the discriminant is in a niche of a non-scalar type,
+    /// this is `None`.
+    pub repr: Option<IntegerTy>,
 }
 
 /// Simplified type layout information.

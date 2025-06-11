@@ -654,11 +654,18 @@ and variant_layout = {
   field_offsets : int list;  (** The offset of each field. *)
 }
 
-(** Layout of the discriminant with its size and offset.
+(** Layout of the discriminant with its offset and representation type.
 
-    Does not include information about the value range or encoding.
+    Does not include information about the value range.
  *)
-and discriminant_layout = { offset : int; size : int }
+and discriminant_layout = {
+  offset : int;  (** The offset of the discriminant in bytes. *)
+  repr : integer_type option;
+      (** The representation type of the discriminant.
+        If the discriminant is in a niche of a non-scalar type,
+        this is [None].
+     *)
+}
 
 (** Simplified type layout information.
 

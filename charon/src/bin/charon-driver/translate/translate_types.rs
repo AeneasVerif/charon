@@ -400,6 +400,26 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
             }
         }
 
+        fn translate_primitive_int(int_ty: r_abi::Integer, signed: bool) -> IntegerTy {
+            if signed {
+                match int_ty {
+                    r_abi::Integer::I8 => IntegerTy::I8,
+                    r_abi::Integer::I16 => IntegerTy::I16,
+                    r_abi::Integer::I32 => IntegerTy::I32,
+                    r_abi::Integer::I64 => IntegerTy::I64,
+                    r_abi::Integer::I128 => IntegerTy::I128,
+                }
+            } else {
+                match int_ty {
+                    r_abi::Integer::I8 => IntegerTy::U8,
+                    r_abi::Integer::I16 => IntegerTy::U16,
+                    r_abi::Integer::I32 => IntegerTy::U32,
+                    r_abi::Integer::I64 => IntegerTy::U64,
+                    r_abi::Integer::I128 => IntegerTy::U128,
+                }
+            }
+        }
+
         let tcx = self.t_ctx.tcx;
         let rdefid = self.def_id.as_rust_def_id().unwrap();
         let ty_env = hax::State::new_from_state_and_id(&self.t_ctx.hax_state, rdefid).typing_env();
@@ -444,11 +464,20 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                     unreachable!()
                 };
 
+                // Only translates the representation if it is a scalar, even
+                // if it is in a niche.
+                let repr = match tag.primitive() {
+                    r_abi::Primitive::Int(int_ty, signed) => {
+                        Some(translate_primitive_int(int_ty, signed))
+                    }
+                    _ => None,
+                };
+
                 offsets
                     .get(r_abi::FieldIdx::from_usize(*tag_field))
                     .map(|s| DiscriminantLayout {
                         offset: r_abi::Size::bytes(*s),
-                        size: tag.size(&tcx).bytes(),
+                        repr,
                     })
             }
             r_abi::Variants::Single { .. } | r_abi::Variants::Empty => None,
