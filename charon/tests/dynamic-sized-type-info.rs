@@ -61,12 +61,12 @@ fn ptr_metadata() -> anyhow::Result<()> {
     }
     "#,
     )?;
-    let meta_kinds: IndexMap<String, Option<PtrMetadata>> = crate_data
+    let meta_kinds: IndexMap<String, Option<&PtrMetadata>> = crate_data
         .type_decls
         .iter()
-        .filter_map(|td| {
+        .map(|td| {
             let name = repr_name(&crate_data, &td.item_meta.name);
-            Some((name, td.ptr_metadata.clone()))
+            (name, td.ptr_metadata.as_ref())
         })
         .collect();
     let str = serde_json::to_string_pretty(&meta_kinds)?;
@@ -76,6 +76,6 @@ fn ptr_metadata() -> anyhow::Result<()> {
     } else {
         Action::Overwrite
     };
-    compare_or_overwrite(action, str, &PathBuf::from("./tests/dst-meta-kinds.json"))?;
+    compare_or_overwrite(action, str, &PathBuf::from("./tests/ptr-metadata.json"))?;
     Ok(())
 }

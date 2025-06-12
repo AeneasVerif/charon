@@ -12,5 +12,10 @@
   "test_crate::GenericNotLastField": "None",
   "test_crate::GenericBehindIndirection": "None",
   "test_crate::ThinGeneric": null,
-  "alloc::alloc::Global": "None"
+  "alloc::alloc::Global": "None",
+  "core::cmp::Ordering": "None",
+  "core::option::Option": "None",
+  "core::fmt::Formatter": "None",
+  "core::result::Result": "None",
+  "core::fmt::Error": "None"
 }
