@@ -6,12 +6,11 @@ module List = struct
   include List
 
   (** Split a list at a given index.
-  
-      [split_at ls i] splits [ls] into two lists where the first list has
-      length [i].
-      
-      Raise [Failure] if the list is too short.
-  *)
+
+      [split_at ls i] splits [ls] into two lists where the first list has length
+      [i].
+
+      Raise [Failure] if the list is too short. *)
   let rec split_at (ls : 'a list) (i : int) =
     if i < 0 then raise (Invalid_argument "split_at take positive integers")
     else if i = 0 then ([], ls)
@@ -26,19 +25,17 @@ module List = struct
 
   (** Take a slice of a list.
 
-      The slice includes the  elements from [i] to [j] ([j]th element excluded).
+      The slice includes the elements from [i] to [j] ([j]th element excluded).
 
-      Raise [Failure] if the list is too short..
-  *)
+      Raise [Failure] if the list is too short.. *)
   let subslice (ls : 'a list) (i : int) (j : int) =
     let _, ls = split_at ls i in
     let ls, _ = split_at ls (j - i) in
     ls
 
   (** Pop the last element of a list
-     
-      Raise [Failure] if the list is empty.
-   *)
+
+      Raise [Failure] if the list is empty. *)
   let rec pop_last (ls : 'a list) : 'a list * 'a =
     match ls with
     | [] -> raise (Failure "The list is empty")
@@ -58,13 +55,12 @@ module List = struct
 
   (** Iter and link the iterations.
 
-      Iterate over a list, but call a function between every two elements
-      (but not before the first element, and not after the last).
+      Iterate over a list, but call a function between every two elements (but
+      not before the first element, and not after the last).
 
-      A simple use case is the following: you have a list `[x0, ..., xn]`
-      and want to print the elements in the list separated by a comma, like
-      this: `x0, ..., xn`.
-   *)
+      A simple use case is the following: you have a list `[x0, ..., xn]` and
+      want to print the elements in the list separated by a comma, like this:
+      `x0, ..., xn`. *)
   let iter_link (link : unit -> unit) (f : 'a -> unit) (ls : 'a list) : unit =
     let rec iter ls =
       match ls with
@@ -79,8 +75,7 @@ module List = struct
 
   (** Fold and link the iterations.
 
-      Similar to {!iter_link} but for fold left operations.
-   *)
+      Similar to {!iter_link} but for fold left operations. *)
   let fold_left_link (link : unit -> unit) (f : 'a -> 'b -> 'a) (init : 'a)
       (ls : 'b list) : 'a =
     let rec fold (acc : 'a) (ls : 'b list) : 'a =
@@ -169,13 +164,12 @@ module type Map = sig
   val values : 'a t -> 'a list
 
   (** "Simple" pretty printing function.
-  
+
       Is useful when we need to customize a bit [show_t], but without using
       something as burdensome as [pp_t].
-  
-      [to_string (Some indent) m] prints [m] by breaking line after every binding
-      and inserting [indent].
-   *)
+
+      [to_string (Some indent) m] prints [m] by breaking line after every
+      binding and inserting [indent]. *)
   val to_string : string option -> ('a -> string) -> 'a t -> string
 
   val pp : (Format.formatter -> 'a -> unit) -> Format.formatter -> 'a t -> unit
@@ -188,8 +182,7 @@ module type Map = sig
       - a stateful "add" function
       - a stateful "mem" function
       - a stateful "find" function
-      - a stateful "find_opt" function
-   *)
+      - a stateful "find_opt" function *)
   val mk_stateful_map :
     unit ->
     'a t ref
@@ -273,13 +266,12 @@ module type Set = sig
   val unionl : t list -> t
 
   (** "Simple" pretty printing function.
-  
+
       Is useful when we need to customize a bit [show_t], but without using
       something as burdensome as [pp_t].
-  
-      [to_string (Some indent) s] prints [s] by breaking line after every element
-      and inserting [indent].
-   *)
+
+      [to_string (Some indent) s] prints [s] by breaking line after every
+      element and inserting [indent]. *)
   val to_string : string option -> t -> string
 
   val pp : Format.formatter -> t -> unit
@@ -293,8 +285,7 @@ module type Set = sig
       Returns:
       - a reference to an empty set
       - a stateful "add" function
-      - a stateful "mem" function
-   *)
+      - a stateful "mem" function *)
   val mk_stateful_set : unit -> t ref * (elt -> unit) * (elt -> bool)
 end
 
@@ -366,11 +357,10 @@ end
 
 (** A map where the bindings are injective (i.e., if two keys are distinct,
     their bindings are distinct).
-    
+
     This is useful for instance when generating mappings from our internal
-    identifiers to names (i.e., strings) when generating code, in order to
-    make sure that we don't have potentially dangerous collisions.
- *)
+    identifiers to names (i.e., strings) when generating code, in order to make
+    sure that we don't have potentially dangerous collisions. *)
 module type InjMap = sig
   type key
   type elem
@@ -428,8 +418,7 @@ module type InjMap = sig
       - a stateful "add" function
       - a stateful "mem" function
       - a stateful "find" function
-      - a stateful "find_opt" function
-   *)
+      - a stateful "find_opt" function *)
   val mk_stateful_map :
     unit ->
     t ref

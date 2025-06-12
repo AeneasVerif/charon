@@ -23,8 +23,8 @@ let combine_span (m0 : span) (m1 : span) : span option =
     Some { span; generated_from_span = None }
   else None
 
-(** Safely combine two spans, even if they do not come from the same file -
-    if this happens, we simply use the first span. *)
+(** Safely combine two spans, even if they do not come from the same file - if
+    this happens, we simply use the first span. *)
 let safe_combine_span (m0 : span) (m1 : span) : span =
   match combine_span m0 m1 with
   | None -> m0

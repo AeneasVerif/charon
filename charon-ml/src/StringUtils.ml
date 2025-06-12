@@ -1,10 +1,9 @@
 (** Utilities to work on strings, character per character.
 
-    They operate on ASCII strings, and are used by the project to convert
-    Rust names: Rust names are not fancy, so it shouldn't be a problem.
-    
-    TODO: isn't there a library with good support for strings, somewhere?
- *)
+    They operate on ASCII strings, and are used by the project to convert Rust
+    names: Rust names are not fancy, so it shouldn't be a problem.
+
+    TODO: isn't there a library with good support for strings, somewhere? *)
 
 let code_0 = 48
 let code_9 = 57
@@ -32,8 +31,8 @@ let lowercase_ascii = Char.lowercase_ascii
 let uppercase_ascii = Char.uppercase_ascii
 
 (** Using buffers as per:
-    {{: https://stackoverflow.com/questions/29957418/how-to-convert-char-list-to-string-in-ocaml} stackoverflow}
- *)
+    {{:https://stackoverflow.com/questions/29957418/how-to-convert-char-list-to-string-in-ocaml}
+     stackoverflow} *)
 let string_of_chars (chars : char list) : string =
   let buf = Buffer.create (List.length chars) in
   List.iter (Buffer.add_char buf) chars;
@@ -91,8 +90,7 @@ let to_snake_case (s : string) : string =
 
 (** Applies a map operation.
 
-    This is very inefficient, but shouldn't be used much.
- *)
+    This is very inefficient, but shouldn't be used much. *)
 let map (f : char -> string) (s : string) : string =
   let sl = List.map f (string_to_chars s) in
   let sl = List.map string_to_chars sl in

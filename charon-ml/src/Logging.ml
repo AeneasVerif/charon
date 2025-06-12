@@ -6,13 +6,14 @@ let _ = L.make_logger "MainLogger" Debug [ Cli Debug ]
 (** The main logger *)
 let main_log = L.get_logger "MainLogger"
 
-(** Below, we create subgloggers for various submodules, so that we can precisely
-    toggle logging on/off, depending on which information we need *)
+(** Below, we create subgloggers for various submodules, so that we can
+    precisely toggle logging on/off, depending on which information we need *)
 
 (** Logger for LlbcOfJson *)
 let llbc_of_json_logger = L.get_logger "MainLogger.LlbcOfJson"
 
-(** Terminal colors - TODO: comes from easy_logging (did not manage to reuse the module directly) *)
+(** Terminal colors - TODO: comes from easy_logging (did not manage to reuse the
+    module directly) *)
 type color =
   | Default
   | Black
@@ -32,10 +33,12 @@ type color =
   | LCyan
   | LGray
 
-(** Terminal styles - TODO: comes from easy_logging (did not manage to reuse the module directly) *)
+(** Terminal styles - TODO: comes from easy_logging (did not manage to reuse the
+    module directly) *)
 type format = Bold | Underline | Invert | Fg of color | Bg of color
 
-(** TODO: comes from easy_logging (did not manage to reuse the module directly) *)
+(** TODO: comes from easy_logging (did not manage to reuse the module directly)
+*)
 let to_fg_code c =
   match c with
   | Default -> 39
@@ -56,7 +59,8 @@ let to_fg_code c =
   | LCyan -> 96
   | LGray -> 37
 
-(** TODO: comes from easy_logging (did not manage to reuse the module directly) *)
+(** TODO: comes from easy_logging (did not manage to reuse the module directly)
+*)
 let to_bg_code c =
   match c with
   | Default -> 49
@@ -77,7 +81,8 @@ let to_bg_code c =
   | LCyan -> 106
   | LGray -> 47
 
-(** TODO: comes from easy_logging (did not manage to reuse the module directly) *)
+(** TODO: comes from easy_logging (did not manage to reuse the module directly)
+*)
 let style_to_codes s =
   match s with
   | Bold -> (1, 21)
@@ -98,10 +103,9 @@ let level_to_color (lvl : L.level) =
   | Debug -> LBlue
   | NoLevel -> Default
 
-(** [format styles str] formats [str] to the given [styles] -
-    TODO: comes from {{: http://ocamlverse.net/content/documentation_guidelines.html}[easy_logging]}
-    (did not manage to reuse the module directly)
-*)
+(** [format styles str] formats [str] to the given [styles] - TODO: comes from
+    {{:http://ocamlverse.net/content/documentation_guidelines.html}[easy_logging]}
+    (did not manage to reuse the module directly) *)
 let rec format styles str =
   match styles with
   | (_ as s) :: styles' ->
@@ -109,7 +113,8 @@ let rec format styles str =
       Printf.sprintf "\027[%dm%s\027[%dm" set (format styles' str) reset
   | [] -> str
 
-(** TODO: comes from {{: http://ocamlverse.net/content/documentation_guidelines.html}[easy_logging]}
+(** TODO: comes from
+    {{:http://ocamlverse.net/content/documentation_guidelines.html}[easy_logging]}
     (did not manage to reuse the module directly) *)
 let format_tags (tags : string list) =
   match tags with

@@ -10,10 +10,9 @@ open LlbcAst
 let fun_decl_list_from_crate (crate : crate) : fun_decl list =
   snd (List.split (FunDeclId.Map.bindings crate.fun_decls))
 
-(** Returns a list option of all arguments of a functions
-    If a function does not have a body, it cannot access
-    the locals field where the arguments are so it returns None
-*)
+(** Returns a list option of all arguments of a functions If a function does not
+    have a body, it cannot access the locals field where the arguments are so it
+    returns None *)
 let get_fun_args (fun_decl : fun_decl) : local list option =
   match fun_decl.body with
   | Some body -> Some (GAstUtils.locals_get_input_vars body.locals)
@@ -44,9 +43,8 @@ let mk_sequence (st1 : statement) (st2 : statement) : statement =
   let content = Sequence (st1, st2) in
   { span; content; comments_before = [] }
 
-(** Chain two statements into a sequence, by pushing the second statement
-    at the end of the first one (diving into sequences, switches, etc.).
- *)
+(** Chain two statements into a sequence, by pushing the second statement at the
+    end of the first one (diving into sequences, switches, etc.). *)
 let rec chain_statements (st1 : statement) (st2 : statement) : statement =
   match st1.content with
   | SetDiscriminant _
@@ -116,9 +114,8 @@ let crate_get_item_meta (m : crate) (id : any_decl_id) : Types.item_meta option
         (TraitImplId.Map.find_opt id m.trait_impls)
 
 (** This visitor keeps track of the last (most precise) span it found, together
-    with the id of the declaration it is currently exploring (the environment
-    it carries is a pair (any_decl_id, span)).
- *)
+    with the id of the declaration it is currently exploring (the environment it
+    carries is a pair (any_decl_id, span)). *)
 class ['self] map_crate_with_span =
   object (self)
     inherit [_] map_statement as super
@@ -160,8 +157,8 @@ class ['self] map_crate_with_span =
       let body = self#visit_statement decl_span_info body in
       { span; locals; body }
 
-    method visit_fun_decl (_ : (any_decl_id * span) option) (decl : fun_decl)
-        : fun_decl =
+    method visit_fun_decl (_ : (any_decl_id * span) option) (decl : fun_decl) :
+        fun_decl =
       let { def_id; item_meta; signature; kind; is_global_initializer; body } =
         decl
       in
@@ -197,8 +194,8 @@ class ['self] map_crate_with_span =
       super#visit_trait_impl decl_span_info decl
 
     method visit_declaration_group
-        (decl_span_info : (any_decl_id * span) option) (g : declaration_group)
-        : declaration_group =
+        (decl_span_info : (any_decl_id * span) option) (g : declaration_group) :
+        declaration_group =
       match g with
       | TypeGroup g ->
           TypeGroup (self#visit_type_declaration_group decl_span_info g)
@@ -295,9 +292,8 @@ class ['self] map_crate_with_span =
   end
 
 (** This visitor keeps track of the last (most precise) span it found, together
-    with the id of the declaration it is currently exploring (the environment
-    it carries is a pair (any_decl_id, span)).
- *)
+    with the id of the declaration it is currently exploring (the environment it
+    carries is a pair (any_decl_id, span)). *)
 class ['self] iter_crate_with_span =
   object (self)
     inherit [_] iter_statement as super
@@ -338,8 +334,8 @@ class ['self] iter_crate_with_span =
       self#visit_locals decl_span_info locals;
       self#visit_statement decl_span_info body
 
-    method visit_fun_decl (_ : (any_decl_id * span) option) (decl : fun_decl)
-        : unit =
+    method visit_fun_decl (_ : (any_decl_id * span) option) (decl : fun_decl) :
+        unit =
       let { def_id; item_meta; signature; kind; is_global_initializer; body } =
         decl
       in
@@ -372,8 +368,8 @@ class ['self] iter_crate_with_span =
       super#visit_trait_impl decl_span_info decl
 
     method visit_declaration_group
-        (decl_span_info : (any_decl_id * span) option) (g : declaration_group)
-        : unit =
+        (decl_span_info : (any_decl_id * span) option) (g : declaration_group) :
+        unit =
       match g with
       | TypeGroup g -> self#visit_type_declaration_group decl_span_info g
       | FunGroup g -> self#visit_fun_declaration_group decl_span_info g

@@ -402,8 +402,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
             // This is NOT accurate -- if there is no generic clause that states `?Sized`
             // Then it will be safe to return `Some(PtrMetadata::None)`.
             // TODO: inquire the generic clause to get the accurate info.
-            ty::Placeholder(..) | ty::Infer(..) | 
-            ty::Param(..) | ty::Bound(..) => None,
+            ty::Placeholder(..) | ty::Infer(..) | ty::Param(..) | ty::Bound(..) => None,
             _ => Some(PtrMetadata::None),
         }
     }

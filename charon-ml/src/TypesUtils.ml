@@ -27,10 +27,10 @@ let type_decl_is_opaque (d : type_decl) : bool =
   | Opaque -> true
   | _ -> false
 
-(** Retrieve the list of fields for the given variant of a {!Charon.Types.type_decl}.
+(** Retrieve the list of fields for the given variant of a
+    {!Charon.Types.type_decl}.
 
-    Raises [Invalid_argument] if the arguments are incorrect.
- *)
+    Raises [Invalid_argument] if the arguments are incorrect. *)
 let type_decl_get_fields (def : type_decl)
     (opt_variant_id : VariantId.id option) : field list =
   match (def.kind, opt_variant_id) with
@@ -243,9 +243,8 @@ let ty_as_box (box_ty : ty) : ty =
   | Some ty -> ty
   | None -> raise (Failure "Not a boxed type")
 
-(** Deconstruct a type of the form [&T] or [&mut T] to retrieve the [T] (and
-    the borrow kind, etc.)
- *)
+(** Deconstruct a type of the form [&T] or [&mut T] to retrieve the [T] (and the
+    borrow kind, etc.) *)
 let ty_get_ref (ty : ty) : region * ty * ref_kind =
   match ty with
   | TRef (r, ty, ref_kind) -> (r, ty, ref_kind)
@@ -262,9 +261,8 @@ let mk_box_ty (ty : ty) : ty =
 
 (** Check if a region is in a set of regions.
 
-    This function should be used on non-erased and non-bound regions.
-    For sanity, we raise exceptions if this is not the case.
- *)
+    This function should be used on non-erased and non-bound regions. For
+    sanity, we raise exceptions if this is not the case. *)
 let region_in_set (r : region) (rset : RegionId.Set.t) : bool =
   match r with
   | RStatic -> false
@@ -276,9 +274,8 @@ let region_in_set (r : region) (rset : RegionId.Set.t) : bool =
 
 (** Return the set of regions in an type - TODO: add static?
 
-    This function should be used on non-erased and non-bound regions.
-    For sanity, we raise exceptions if this is not the case.
- *)
+    This function should be used on non-erased and non-bound regions. For
+    sanity, we raise exceptions if this is not the case. *)
 let ty_regions (ty : ty) : RegionId.Set.t =
   let s = ref RegionId.Set.empty in
   let add_region (r : region) =
