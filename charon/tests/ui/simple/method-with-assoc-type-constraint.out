@@ -18,6 +18,12 @@ pub trait FromIterator<Self, A>
     fn from_iter<T, [@TraitClause0]: Sized<T>, [@TraitClause1]: IntoIterator<T, A>> = test_crate::FromIterator::from_iter<Self, A, T>[Self, @TraitClause0_0, @TraitClause0_1]
 }
 
+pub fn test_crate::FromIterator::from_iter<Self, A, T>(@1: T) -> Self
+where
+    [@TraitClause0]: FromIterator<Self, A>,
+    [@TraitClause1]: Sized<T>,
+    [@TraitClause2]: IntoIterator<T, A>,
+
 // Full name: test_crate::{impl FromIterator<()> for ()}::from_iter
 pub fn {impl FromIterator<()> for ()}::from_iter<I>(@1: I)
 where
@@ -39,12 +45,6 @@ impl FromIterator<()> for () {
     parent_clause1 = Sized<()>
     fn from_iter<I, [@TraitClause0]: Sized<I>, [@TraitClause1]: IntoIterator<I, ()>> = {impl FromIterator<()> for ()}::from_iter<I>[@TraitClause0_0, @TraitClause0_1]
 }
-
-pub fn test_crate::FromIterator::from_iter<Self, A, T>(@1: T) -> Self
-where
-    [@TraitClause0]: FromIterator<Self, A>,
-    [@TraitClause1]: Sized<T>,
-    [@TraitClause2]: IntoIterator<T, A>,
 
 
 

@@ -1,5 +1,33 @@
 # Final LLBC before serialization:
 
+// Full name: core::cmp::PartialEq
+#[lang_item("eq")]
+pub trait PartialEq<Self, Rhs>
+{
+    fn eq<'_0, '_1> = core::cmp::PartialEq::eq<'_0_0, '_0_1, Self, Rhs>[Self]
+}
+
+// Full name: core::cmp::Eq
+#[lang_item("Eq")]
+pub trait Eq<Self>
+{
+    parent_clause0 : [@TraitClause0]: PartialEq<Self, Self>
+}
+
+// Full name: core::cmp::impls::{impl PartialEq<bool> for bool}#19
+impl PartialEq<bool> for bool {
+    fn eq<'_0, '_1> = {impl PartialEq<bool> for bool}#19::eq<'_0_0, '_0_1>
+}
+
+// Full name: core::cmp::impls::{impl Eq for bool}#38
+impl Eq for bool {
+    parent_clause0 = {impl PartialEq<bool> for bool}#19
+}
+
+// Full name: core::marker::Sized
+#[lang_item("sized")]
+pub trait Sized<Self>
+
 fn test_crate::do_test::<bool>(@1: bool, @2: bool)
 {
     let @0: (); // return
@@ -47,34 +75,6 @@ fn main()
     @0 := ()
     @0 := ()
     return
-}
-
-// Full name: core::marker::Sized
-#[lang_item("sized")]
-pub trait Sized<Self>
-
-// Full name: core::cmp::PartialEq
-#[lang_item("eq")]
-pub trait PartialEq<Self, Rhs>
-{
-    fn eq<'_0, '_1> = core::cmp::PartialEq::eq<'_0_0, '_0_1, Self, Rhs>[Self]
-}
-
-// Full name: core::cmp::Eq
-#[lang_item("Eq")]
-pub trait Eq<Self>
-{
-    parent_clause0 : [@TraitClause0]: PartialEq<Self, Self>
-}
-
-// Full name: core::cmp::impls::{impl PartialEq<bool> for bool}#19
-impl PartialEq<bool> for bool {
-    fn eq<'_0, '_1> = {impl PartialEq<bool> for bool}#19::eq<'_0_0, '_0_1>
-}
-
-// Full name: core::cmp::impls::{impl Eq for bool}#38
-impl Eq for bool {
-    parent_clause0 = {impl PartialEq<bool> for bool}#19
 }
 
 

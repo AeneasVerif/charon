@@ -7,6 +7,14 @@ trait Ops<Self>
     fn ntt_multiply = test_crate::Ops::ntt_multiply<Self>[Self]
 }
 
+fn test_crate::Ops::ZERO<Self>() -> Self
+where
+    [@TraitClause0]: Ops<Self>,
+
+fn test_crate::Ops::ntt_multiply<Self>() -> Self
+where
+    [@TraitClause0]: Ops<Self>,
+
 // Full name: test_crate::Portable
 struct Portable {}
 
@@ -41,14 +49,6 @@ impl Ops for Portable {
     fn ZERO = {impl Ops for Portable}::ZERO
     fn ntt_multiply = {impl Ops for Portable}::ntt_multiply
 }
-
-fn test_crate::Ops::ZERO<Self>() -> Self
-where
-    [@TraitClause0]: Ops<Self>,
-
-fn test_crate::Ops::ntt_multiply<Self>() -> Self
-where
-    [@TraitClause0]: Ops<Self>,
 
 
 

@@ -1,47 +1,16 @@
 # Final LLBC before serialization:
 
-// Full name: core::marker::Sized
-#[lang_item("sized")]
-pub trait Sized<Self>
-
-// Full name: alloc::raw_vec::RawVec
-opaque type RawVec<T, A>
-where
-    [@TraitClause0]: Sized<T>,
-    [@TraitClause1]: Sized<A>,
-
-// Full name: alloc::vec::Vec
-#[lang_item("Vec")]
-pub struct Vec<T, A>
-where
-    [@TraitClause0]: Sized<T>,
-    [@TraitClause1]: Sized<A>,
-{
-  buf: RawVec<T, A>[@TraitClause0, @TraitClause1],
-  len: usize,
-}
-
-// Full name: alloc::alloc::Global
-#[lang_item("global_alloc_ty")]
-pub struct Global {}
-
-// Full name: alloc::raw_vec::RawVecInner
-opaque type RawVecInner<A>
-where
-    [@TraitClause0]: Sized<A>,
-
-// Full name: core::marker::PhantomData
-#[lang_item("phantom_data")]
-pub struct PhantomData<T> {}
-
 // Full name: core::alloc::layout::Layout
 #[lang_item("alloc_layout")]
 pub opaque type Layout
 
-// Full name: alloc::raw_vec::{RawVecInner<A>[@TraitClause0]}#4::with_capacity_in
-fn with_capacity_in<A>(@1: usize, @2: A, @3: Layout) -> RawVecInner<A>[@TraitClause0]
-where
-    [@TraitClause0]: Sized<A>,
+// Full name: core::marker::Sized
+#[lang_item("sized")]
+pub trait Sized<Self>
+
+// Full name: core::marker::PhantomData
+#[lang_item("phantom_data")]
+pub struct PhantomData<T> {}
 
 // Full name: core::mem::SizedTypeProperties
 pub trait SizedTypeProperties<Self>
@@ -88,6 +57,37 @@ where
     const IS_ZST = core::mem::SizedTypeProperties::IS_ZST<T>[{impl SizedTypeProperties for T}#6<T>[@TraitClause0]]
     const LAYOUT = core::mem::SizedTypeProperties::LAYOUT<T>[{impl SizedTypeProperties for T}#6<T>[@TraitClause0]]
     const MAX_SLICE_LEN = core::mem::SizedTypeProperties::MAX_SLICE_LEN<T>[{impl SizedTypeProperties for T}#6<T>[@TraitClause0]]
+}
+
+// Full name: alloc::alloc::Global
+#[lang_item("global_alloc_ty")]
+pub struct Global {}
+
+// Full name: alloc::raw_vec::RawVec
+opaque type RawVec<T, A>
+where
+    [@TraitClause0]: Sized<T>,
+    [@TraitClause1]: Sized<A>,
+
+// Full name: alloc::raw_vec::RawVecInner
+opaque type RawVecInner<A>
+where
+    [@TraitClause0]: Sized<A>,
+
+// Full name: alloc::raw_vec::{RawVecInner<A>[@TraitClause0]}#4::with_capacity_in
+fn with_capacity_in<A>(@1: usize, @2: A, @3: Layout) -> RawVecInner<A>[@TraitClause0]
+where
+    [@TraitClause0]: Sized<A>,
+
+// Full name: alloc::vec::Vec
+#[lang_item("Vec")]
+pub struct Vec<T, A>
+where
+    [@TraitClause0]: Sized<T>,
+    [@TraitClause1]: Sized<A>,
+{
+  buf: RawVec<T, A>[@TraitClause0, @TraitClause1],
+  len: usize,
 }
 
 // Full name: alloc::vec::{Vec<T, Global>[@TraitClause0, Sized<Global>]}::with_capacity

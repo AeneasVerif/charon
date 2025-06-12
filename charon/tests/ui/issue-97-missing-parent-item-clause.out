@@ -1,11 +1,11 @@
 # Final LLBC before serialization:
 
-// Full name: test_crate::Ord
-pub trait Ord<Self>
-
 // Full name: core::marker::Sized
 #[lang_item("sized")]
 pub trait Sized<Self>
+
+// Full name: test_crate::Ord
+pub trait Ord<Self>
 
 // Full name: test_crate::AVLTree
 pub struct AVLTree<T>

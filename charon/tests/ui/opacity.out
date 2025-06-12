@@ -4,6 +4,76 @@
 #[lang_item("sized")]
 pub trait Sized<Self>
 
+// Full name: core::convert::Into
+#[lang_item("Into")]
+pub trait Into<Self, T>
+{
+    parent_clause0 : [@TraitClause0]: Sized<Self>
+    parent_clause1 : [@TraitClause1]: Sized<T>
+    fn into = core::convert::Into::into<Self, T>[Self]
+}
+
+pub fn core::convert::Into::into<Self, T>(@1: Self) -> T
+where
+    [@TraitClause0]: Into<Self, T>,
+
+// Full name: core::convert::From
+#[lang_item("From")]
+pub trait From<Self, T>
+{
+    parent_clause0 : [@TraitClause0]: Sized<Self>
+    parent_clause1 : [@TraitClause1]: Sized<T>
+    fn from = core::convert::From::from<Self, T>[Self]
+}
+
+#[lang_item("from_fn")]
+pub fn core::convert::From::from<Self, T>(@1: T) -> Self
+where
+    [@TraitClause0]: From<Self, T>,
+
+// Full name: core::convert::{impl Into<U> for T}#3::into
+pub fn {impl Into<U> for T}#3::into<T, U>(@1: T) -> U
+where
+    [@TraitClause0]: Sized<T>,
+    [@TraitClause1]: Sized<U>,
+    [@TraitClause2]: From<U, T>,
+{
+    let @0: U; // return
+    let self@1: T; // arg #1
+
+    @0 := @TraitClause2::from(move (self@1))
+    return
+}
+
+// Full name: core::convert::{impl Into<U> for T}#3
+impl<T, U> Into<U> for T
+where
+    [@TraitClause0]: Sized<T>,
+    [@TraitClause1]: Sized<U>,
+    [@TraitClause2]: From<U, T>,
+{
+    parent_clause0 = @TraitClause0
+    parent_clause1 = @TraitClause1
+    fn into = {impl Into<U> for T}#3::into<T, U>[@TraitClause0, @TraitClause1, @TraitClause2]
+}
+
+// Full name: core::convert::num::{impl From<u32> for u64}#72::from
+pub fn {impl From<u32> for u64}#72::from(@1: u32) -> u64
+{
+    let @0: u64; // return
+    let small@1: u32; // arg #1
+
+    @0 := cast<u32, u64>(copy (small@1))
+    return
+}
+
+// Full name: core::convert::num::{impl From<u32> for u64}#72
+impl From<u32> for u64 {
+    parent_clause0 = Sized<u64>
+    parent_clause1 = Sized<u32>
+    fn from = {impl From<u32> for u64}#72::from
+}
+
 // Full name: core::option::Option
 #[lang_item("Option")]
 pub enum Option<T>
@@ -34,51 +104,6 @@ where
     }
     @0 := copy (@2) == const (1 : isize)
     return
-}
-
-// Full name: core::convert::From
-#[lang_item("From")]
-pub trait From<Self, T>
-{
-    parent_clause0 : [@TraitClause0]: Sized<Self>
-    parent_clause1 : [@TraitClause1]: Sized<T>
-    fn from = core::convert::From::from<Self, T>[Self]
-}
-
-#[lang_item("from_fn")]
-pub fn core::convert::From::from<Self, T>(@1: T) -> Self
-where
-    [@TraitClause0]: From<Self, T>,
-
-// Full name: core::convert::{impl Into<U> for T}#3::into
-pub fn {impl Into<U> for T}#3::into<T, U>(@1: T) -> U
-where
-    [@TraitClause0]: Sized<T>,
-    [@TraitClause1]: Sized<U>,
-    [@TraitClause2]: From<U, T>,
-{
-    let @0: U; // return
-    let self@1: T; // arg #1
-
-    @0 := @TraitClause2::from(move (self@1))
-    return
-}
-
-// Full name: core::convert::num::{impl From<u32> for u64}#72::from
-pub fn {impl From<u32> for u64}#72::from(@1: u32) -> u64
-{
-    let @0: u64; // return
-    let small@1: u32; // arg #1
-
-    @0 := cast<u32, u64>(copy (small@1))
-    return
-}
-
-// Full name: core::convert::num::{impl From<u32> for u64}#72
-impl From<u32> for u64 {
-    parent_clause0 = Sized<u64>
-    parent_clause1 = Sized<u32>
-    fn from = {impl From<u32> for u64}#72::from
 }
 
 // Full name: test_crate::foo
@@ -134,31 +159,6 @@ struct Struct {}
 
 // Full name: test_crate::extern_fn
 unsafe fn extern_fn(@1: i32)
-
-// Full name: core::convert::Into
-#[lang_item("Into")]
-pub trait Into<Self, T>
-{
-    parent_clause0 : [@TraitClause0]: Sized<Self>
-    parent_clause1 : [@TraitClause1]: Sized<T>
-    fn into = core::convert::Into::into<Self, T>[Self]
-}
-
-pub fn core::convert::Into::into<Self, T>(@1: Self) -> T
-where
-    [@TraitClause0]: Into<Self, T>,
-
-// Full name: core::convert::{impl Into<U> for T}#3
-impl<T, U> Into<U> for T
-where
-    [@TraitClause0]: Sized<T>,
-    [@TraitClause1]: Sized<U>,
-    [@TraitClause2]: From<U, T>,
-{
-    parent_clause0 = @TraitClause0
-    parent_clause1 = @TraitClause1
-    fn into = {impl Into<U> for T}#3::into<T, U>[@TraitClause0, @TraitClause1, @TraitClause2]
-}
 
 
 

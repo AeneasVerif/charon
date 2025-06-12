@@ -1,11 +1,5 @@
 # Final LLBC before serialization:
 
-// Full name: test_crate::BoolTrait
-pub trait BoolTrait<Self>
-{
-    fn foo<'_0> = foo<'_0_0, Self>[Self]
-}
-
 // Full name: core::marker::Sized
 #[lang_item("sized")]
 pub trait Sized<Self>
@@ -18,6 +12,25 @@ where
 {
   None,
   Some(T),
+}
+
+// Full name: test_crate::BoolTrait
+pub trait BoolTrait<Self>
+{
+    fn foo<'_0> = foo<'_0_0, Self>[Self]
+}
+
+// Full name: test_crate::BoolTrait::foo
+pub fn foo<'_0, Self>(@1: &'_0 (Self))
+where
+    [@TraitClause0]: BoolTrait<Self>,
+{
+    let @0: (); // return
+    let self@1: &'_ (Self); // arg #1
+
+    @0 := ()
+    @0 := ()
+    return
 }
 
 pub fn test_crate::{impl BoolTrait for Option<T>[@TraitClause0]}::foo<'_0, T>(@1: &'_0 (Option<T>[@TraitClause0]))
@@ -38,19 +51,6 @@ where
     [@TraitClause0]: Sized<T>,
 {
     fn foo<'_0> = test_crate::{impl BoolTrait for Option<T>[@TraitClause0]}::foo<'_0_0, T>[@TraitClause0]
-}
-
-// Full name: test_crate::BoolTrait::foo
-pub fn foo<'_0, Self>(@1: &'_0 (Self))
-where
-    [@TraitClause0]: BoolTrait<Self>,
-{
-    let @0: (); // return
-    let self@1: &'_ (Self); // arg #1
-
-    @0 := ()
-    @0 := ()
-    return
 }
 
 

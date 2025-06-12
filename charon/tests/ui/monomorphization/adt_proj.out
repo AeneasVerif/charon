@@ -1,5 +1,9 @@
 # Final LLBC before serialization:
 
+// Full name: core::marker::Sized
+#[lang_item("sized")]
+pub trait Sized<Self>
+
 #[lang_item("Result")]
 pub enum core::result::Result::<u32, u32> {
   Ok(u32),
@@ -31,10 +35,6 @@ fn main()
     @0 := ()
     return
 }
-
-// Full name: core::marker::Sized
-#[lang_item("sized")]
-pub trait Sized<Self>
 
 
 

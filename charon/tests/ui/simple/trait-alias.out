@@ -4,6 +4,29 @@
 #[lang_item("sized")]
 pub trait Sized<Self>
 
+// Full name: core::clone::Clone
+#[lang_item("clone")]
+pub trait Clone<Self>
+{
+    parent_clause0 : [@TraitClause0]: Sized<Self>
+    fn clone<'_0> = core::clone::Clone::clone<'_0_0, Self>[Self]
+}
+
+#[lang_item("clone_fn")]
+pub fn core::clone::Clone::clone<'_0, Self>(@1: &'_0 (Self)) -> Self
+where
+    [@TraitClause0]: Clone<Self>,
+
+// Full name: core::option::Option
+#[lang_item("Option")]
+pub enum Option<T>
+where
+    [@TraitClause0]: Sized<T>,
+{
+  None,
+  Some(T),
+}
+
 // Full name: test_crate::Trait
 trait Trait<Self, T, Self_Item>
 {
@@ -13,14 +36,6 @@ trait Trait<Self, T, Self_Item>
 
 // Full name: test_crate::Struct
 struct Struct {}
-
-// Full name: core::clone::Clone
-#[lang_item("clone")]
-pub trait Clone<Self>
-{
-    parent_clause0 : [@TraitClause0]: Sized<Self>
-    fn clone<'_0> = core::clone::Clone::clone<'_0_0, Self>[Self]
-}
 
 // Full name: test_crate::{impl Clone for Struct}#1::clone
 pub fn {impl Clone for Struct}#1::clone<'_0>(@1: &'_0 (Struct)) -> Struct
@@ -47,16 +62,6 @@ where
     parent_clause1 = Sized<u32>
 }
 
-// Full name: core::option::Option
-#[lang_item("Option")]
-pub enum Option<T>
-where
-    [@TraitClause0]: Sized<T>,
-{
-  None,
-  Some(T),
-}
-
 // Full name: test_crate::Alias
 trait Alias<Self, U>
 {
@@ -65,10 +70,17 @@ trait Alias<Self, U>
     parent_clause2 : [@TraitClause2]: Sized<U>
 }
 
-#[lang_item("clone_fn")]
-pub fn core::clone::Clone::clone<'_0, Self>(@1: &'_0 (Self)) -> Self
+// Full name: test_crate::Alias::{impl Alias<U> for Self}
+impl<Self, U> Alias<U> for Self
 where
-    [@TraitClause0]: Clone<Self>,
+    [@TraitClause0]: Trait<Self, Option<U>[@TraitClause2], u32>,
+    [@TraitClause1]: Clone<Self>,
+    [@TraitClause2]: Sized<U>,
+{
+    parent_clause0 = @TraitClause0
+    parent_clause1 = @TraitClause1
+    parent_clause2 = @TraitClause2
+}
 
 // Full name: test_crate::takes_alias
 fn takes_alias<T>(@1: T)
@@ -92,18 +104,6 @@ where
     drop x@1
     @0 := ()
     return
-}
-
-// Full name: test_crate::Alias::{impl Alias<U> for Self}
-impl<Self, U> Alias<U> for Self
-where
-    [@TraitClause0]: Trait<Self, Option<U>[@TraitClause2], u32>,
-    [@TraitClause1]: Clone<Self>,
-    [@TraitClause2]: Sized<U>,
-{
-    parent_clause0 = @TraitClause0
-    parent_clause1 = @TraitClause1
-    parent_clause2 = @TraitClause2
 }
 
 // Full name: test_crate::use_alias

@@ -1,16 +1,11 @@
 # Final LLBC before serialization:
 
+// Full name: core::intrinsics::cold_path
+pub fn cold_path()
+
 // Full name: core::marker::Sized
 #[lang_item("sized")]
 pub trait Sized<Self>
-
-// Full name: core::slice::{Slice<T>}::as_ptr
-pub fn as_ptr<'_0, T>(@1: &'_0 (Slice<T>)) -> *const T
-where
-    [@TraitClause0]: Sized<T>,
-
-// Full name: core::intrinsics::cold_path
-pub fn cold_path()
 
 // Full name: core::panicking::panic_nounwind
 #[lang_item("panic_nounwind")]
@@ -148,6 +143,11 @@ where
     @0 := copy (self@1) offset copy (count@2)
     return
 }
+
+// Full name: core::slice::{Slice<T>}::as_ptr
+pub fn as_ptr<'_0, T>(@1: &'_0 (Slice<T>)) -> *const T
+where
+    [@TraitClause0]: Sized<T>,
 
 // Full name: test_crate::main
 fn main()

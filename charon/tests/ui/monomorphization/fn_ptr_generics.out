@@ -1,5 +1,9 @@
 # Final LLBC before serialization:
 
+// Full name: core::marker::Sized
+#[lang_item("sized")]
+pub trait Sized<Self>
+
 #[lang_item("Option")]
 pub enum core::option::Option::<u8> {
   None,
@@ -37,10 +41,6 @@ fn init_option()
     @0 := ()
     return
 }
-
-// Full name: core::marker::Sized
-#[lang_item("sized")]
-pub trait Sized<Self>
 
 
 
