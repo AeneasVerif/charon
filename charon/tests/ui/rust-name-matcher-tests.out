@@ -1,29 +1,8 @@
 # Final LLBC before serialization:
 
-// Full name: test_crate::foo::bar
-fn bar()
-{
-    let @0: (); // return
-
-    @0 := ()
-    @0 := ()
-    return
-}
-
 // Full name: core::marker::Sized
 #[lang_item("sized")]
 pub trait Sized<Self>
-
-// Full name: test_crate::Trait
-trait Trait<Self, T>
-{
-    parent_clause0 : [@TraitClause0]: Sized<T>
-    fn method<U, [@TraitClause0]: Sized<U>> = test_crate::Trait::method<Self, T, U>[Self, @TraitClause0_0]
-}
-
-// Full name: alloc::alloc::Global
-#[lang_item("global_alloc_ty")]
-pub struct Global {}
 
 // Full name: core::option::Option
 #[lang_item("Option")]
@@ -34,6 +13,32 @@ where
   None,
   Some(T),
 }
+
+// Full name: alloc::alloc::Global
+#[lang_item("global_alloc_ty")]
+pub struct Global {}
+
+// Full name: test_crate::foo::bar
+fn bar()
+{
+    let @0: (); // return
+
+    @0 := ()
+    @0 := ()
+    return
+}
+
+// Full name: test_crate::Trait
+trait Trait<Self, T>
+{
+    parent_clause0 : [@TraitClause0]: Sized<T>
+    fn method<U, [@TraitClause0]: Sized<U>> = test_crate::Trait::method<Self, T, U>[Self, @TraitClause0_0]
+}
+
+fn test_crate::Trait::method<Self, T, U>()
+where
+    [@TraitClause0]: Trait<Self, T>,
+    [@TraitClause1]: Sized<U>,
 
 // Full name: test_crate::{impl Trait<Option<T>[@TraitClause0]> for alloc::boxed::Box<T>[Sized<Global>]}::method
 fn {impl Trait<Option<T>[@TraitClause0]> for alloc::boxed::Box<T>[Sized<Global>]}::method<T, U>()
@@ -100,11 +105,6 @@ where
     parent_clause0 = @TraitClause0
     fn method<U, [@TraitClause0]: Sized<U>> = {impl Trait<T> for &'_0 (Slice<T>)}#2::method<'_0, T, U>[@TraitClause0, @TraitClause0_0]
 }
-
-fn test_crate::Trait::method<Self, T, U>()
-where
-    [@TraitClause0]: Trait<Self, T>,
-    [@TraitClause1]: Sized<U>,
 
 
 

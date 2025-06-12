@@ -344,8 +344,39 @@ impl Deps {
 }
 
 fn compute_declarations_graph<'tcx>(ctx: &'tcx TransformCtx) -> Deps {
+    // The order we explore the items in will dictate the final order. We do the following: std
+    // items, then items from foreign crates (sorted by crate name), then local items. Within a
+    // crate, we sort by file then by source order.
+    let mut sorted_items = ctx.translated.all_items().collect_vec();
+    // Pre-sort files to avoid costly string comparisons. Maps file ids to an index that reflects
+    // ordering on the crates (with `core` and `std` sorted first) and file names.
+    let sorted_file_ids: Vector<FileId, usize> = ctx
+        .translated
+        .files
+        .all_indices()
+        .sorted_by_key(|&file_id| {
+            let file = &ctx.translated.files[file_id];
+            let is_std = file.crate_name == "std" || file.crate_name == "core";
+            (!is_std, &file.crate_name, &file.name)
+        })
+        .enumerate()
+        .sorted_by_key(|(_i, file_id)| *file_id)
+        .map(|(i, _file_id)| i)
+        .collect();
+    assert_eq!(
+        ctx.translated.files.slot_count(),
+        sorted_file_ids.slot_count()
+    );
+    sorted_items.sort_by_key(|item| {
+        let item_meta = item.item_meta();
+        let span = item_meta.span.span;
+        let file_name_order = sorted_file_ids[span.file_id];
+        (item_meta.is_local, file_name_order, span.beg)
+    });
+
     let mut graph = Deps::new();
-    for (id, item) in ctx.translated.all_items_with_ids() {
+    for item in sorted_items {
+        let id = item.id();
         graph.set_current_id(ctx, id);
         match item {
             AnyTransItem::Type(..) | AnyTransItem::TraitImpl(..) | AnyTransItem::Global(..) => {

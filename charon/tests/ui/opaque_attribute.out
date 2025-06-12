@@ -1,10 +1,28 @@
 # Final LLBC before serialization:
 
+// Full name: core::marker::Sized
+#[lang_item("sized")]
+pub trait Sized<Self>
+
+// Full name: core::option::Option
+#[lang_item("Option")]
+pub enum Option<T>
+where
+    [@TraitClause0]: Sized<T>,
+{
+  None,
+  Some(T),
+}
+
 // Full name: test_crate::BoolTrait
 pub trait BoolTrait<Self>
 {
     fn get_bool<'_0> = test_crate::BoolTrait::get_bool<'_0_0, Self>[Self]
 }
+
+pub fn test_crate::BoolTrait::get_bool<'_0, Self>(@1: &'_0 (Self)) -> bool
+where
+    [@TraitClause0]: BoolTrait<Self>,
 
 // Full name: test_crate::{impl BoolTrait for bool}::get_bool
 pub fn {impl BoolTrait for bool}::get_bool<'_0>(@1: &'_0 (bool)) -> bool
@@ -20,24 +38,6 @@ pub fn {impl BoolTrait for bool}::get_bool<'_0>(@1: &'_0 (bool)) -> bool
 impl BoolTrait for bool {
     fn get_bool<'_0> = {impl BoolTrait for bool}::get_bool<'_0_0>
 }
-
-// Full name: core::marker::Sized
-#[lang_item("sized")]
-pub trait Sized<Self>
-
-// Full name: core::option::Option
-#[lang_item("Option")]
-pub enum Option<T>
-where
-    [@TraitClause0]: Sized<T>,
-{
-  None,
-  Some(T),
-}
-
-pub fn test_crate::BoolTrait::get_bool<'_0, Self>(@1: &'_0 (Self)) -> bool
-where
-    [@TraitClause0]: BoolTrait<Self>,
 
 // Full name: test_crate::{impl BoolTrait for Option<T>[@TraitClause0]}#1::get_bool
 pub fn {impl BoolTrait for Option<T>[@TraitClause0]}#1::get_bool<'_0, T>(@1: &'_0 (Option<T>[@TraitClause0])) -> bool

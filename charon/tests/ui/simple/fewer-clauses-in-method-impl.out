@@ -12,6 +12,12 @@ pub trait Clone<Self>
     fn clone<'_0> = clone<'_0_0, Self>[Self]
 }
 
+// Full name: core::clone::Clone::clone
+#[lang_item("clone_fn")]
+pub fn clone<'_0, Self>(@1: &'_0 (Self)) -> Self
+where
+    [@TraitClause0]: Clone<Self>,
+
 // Full name: core::marker::Copy
 #[lang_item("copy")]
 pub trait Copy<Self>
@@ -24,6 +30,12 @@ trait Trait<Self>
 {
     fn method<T, [@TraitClause0]: Sized<T>, [@TraitClause1]: Copy<T>> = test_crate::Trait::method<Self, T>[Self, @TraitClause0_0, @TraitClause0_1]
 }
+
+fn test_crate::Trait::method<Self, T>()
+where
+    [@TraitClause0]: Trait<Self>,
+    [@TraitClause1]: Sized<T>,
+    [@TraitClause2]: Copy<T>,
 
 // Full name: test_crate::{impl Trait for ()}::method
 fn {impl Trait for ()}::method<T>()
@@ -52,18 +64,6 @@ fn main()
     @0 := ()
     return
 }
-
-fn test_crate::Trait::method<Self, T>()
-where
-    [@TraitClause0]: Trait<Self>,
-    [@TraitClause1]: Sized<T>,
-    [@TraitClause2]: Copy<T>,
-
-// Full name: core::clone::Clone::clone
-#[lang_item("clone_fn")]
-pub fn clone<'_0, Self>(@1: &'_0 (Self)) -> Self
-where
-    [@TraitClause0]: Clone<Self>,
 
 
 

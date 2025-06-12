@@ -1,5 +1,173 @@
 # Final LLBC before serialization:
 
+// Full name: core::marker::Sized
+#[lang_item("sized")]
+pub trait Sized<Self>
+
+// Full name: core::option::Option
+#[lang_item("Option")]
+pub enum Option<T>
+where
+    [@TraitClause0]: Sized<T>,
+{
+  None,
+  Some(T),
+}
+
+// Full name: core::bool::{bool}::then_some
+pub fn then_some<T>(@1: bool, @2: T) -> Option<T>[@TraitClause0]
+where
+    [@TraitClause0]: Sized<T>,
+{
+    let @0: Option<T>[@TraitClause0]; // return
+    let self@1: bool; // arg #1
+    let t@2: T; // arg #2
+    let @3: T; // anonymous local
+
+    if copy (self@1) {
+    }
+    else {
+        @0 := Option::None {  }
+        drop t@2
+        return
+    }
+    storage_live(@3)
+    @3 := move (t@2)
+    @0 := Option::Some { 0: move (@3) }
+    storage_dead(@3)
+    return
+}
+
+// Full name: core::cmp::PartialEq
+#[lang_item("eq")]
+pub trait PartialEq<Self, Rhs>
+{
+    fn eq<'_0, '_1> = eq<'_0_0, '_0_1, Self, Rhs>[Self]
+    fn ne<'_0, '_1> = ne<'_0_0, '_0_1, Self, Rhs>[Self]
+}
+
+// Full name: core::cmp::PartialEq::eq
+#[lang_item("cmp_partialeq_eq")]
+pub fn eq<'_0, '_1, Self, Rhs>(@1: &'_0 (Self), @2: &'_1 (Rhs)) -> bool
+where
+    [@TraitClause0]: PartialEq<Self, Rhs>,
+
+// Full name: core::cmp::PartialEq::ne
+#[lang_item("cmp_partialeq_ne")]
+pub fn ne<'_0, '_1, Self, Rhs>(@1: &'_0 (Self), @2: &'_1 (Rhs)) -> bool
+where
+    [@TraitClause0]: PartialEq<Self, Rhs>,
+{
+    let @0: bool; // return
+    let self@1: &'_ (Self); // arg #1
+    let other@2: &'_ (Rhs); // arg #2
+    let @3: bool; // anonymous local
+
+    storage_live(@3)
+    @3 := @TraitClause0::eq<'_, '_>(move (self@1), move (other@2))
+    @0 := ~(move (@3))
+    storage_dead(@3)
+    return
+}
+
+// Full name: core::convert::From
+#[lang_item("From")]
+pub trait From<Self, T>
+{
+    parent_clause0 : [@TraitClause0]: Sized<Self>
+    parent_clause1 : [@TraitClause1]: Sized<T>
+    fn from = core::convert::From::from<Self, T>[Self]
+}
+
+#[lang_item("from_fn")]
+pub fn core::convert::From::from<Self, T>(@1: T) -> Self
+where
+    [@TraitClause0]: From<Self, T>,
+
+// Full name: core::convert::num::{impl From<i32> for i64}#83::from
+pub fn {impl From<i32> for i64}#83::from(@1: i32) -> i64
+{
+    let @0: i64; // return
+    let small@1: i32; // arg #1
+
+    @0 := cast<i32, i64>(copy (small@1))
+    return
+}
+
+// Full name: core::convert::num::{impl From<i32> for i64}#83
+impl From<i32> for i64 {
+    parent_clause0 = Sized<i64>
+    parent_clause1 = Sized<i32>
+    fn from = {impl From<i32> for i64}#83::from
+}
+
+// Full name: core::marker::PhantomData
+#[lang_item("phantom_data")]
+pub struct PhantomData<T> {}
+
+// Full name: core::num::niche_types::UsizeNoHighBit
+pub struct UsizeNoHighBit {
+  usize,
+}
+
+pub fn core::num::{usize}#11::MAX() -> usize
+{
+    let @0: usize; // return
+
+    @0 := ~(const (0 : usize))
+    return
+}
+
+pub const core::num::{usize}#11::MAX: usize = core::num::{usize}#11::MAX()
+
+// Full name: core::ptr::non_null::NonNull
+#[lang_item("NonNull")]
+pub struct NonNull<T> {
+  pointer: *const T,
+}
+
+// Full name: core::ptr::unique::Unique
+#[lang_item("ptr_unique")]
+pub struct Unique<T> {
+  pointer: NonNull<T>,
+  _marker: PhantomData<T>,
+}
+
+// Full name: alloc::alloc::Global
+#[lang_item("global_alloc_ty")]
+pub struct Global {}
+
+// Full name: alloc::raw_vec::RawVecInner
+struct RawVecInner<A>
+where
+    [@TraitClause0]: Sized<A>,
+{
+  ptr: Unique<u8>,
+  cap: UsizeNoHighBit,
+  alloc: A,
+}
+
+// Full name: alloc::raw_vec::RawVec
+struct RawVec<T, A>
+where
+    [@TraitClause0]: Sized<T>,
+    [@TraitClause1]: Sized<A>,
+{
+  inner: RawVecInner<A>[@TraitClause1],
+  _marker: PhantomData<T>,
+}
+
+// Full name: alloc::vec::Vec
+#[lang_item("Vec")]
+pub struct Vec<T, A>
+where
+    [@TraitClause0]: Sized<T>,
+    [@TraitClause1]: Sized<A>,
+{
+  buf: RawVec<T, A>[@TraitClause0, @TraitClause1],
+  len: usize,
+}
+
 // Full name: issue_114_opaque_bodies_aux::inline_always
 pub fn inline_always() -> u32
 {
@@ -20,10 +188,6 @@ pub fn inline_sometimes() -> u32
 
 // Full name: issue_114_opaque_bodies_aux::inline_never
 pub fn inline_never() -> u32
-
-// Full name: core::marker::Sized
-#[lang_item("sized")]
-pub trait Sized<Self>
 
 // Full name: issue_114_opaque_bodies_aux::inline_generic
 pub fn inline_generic<T>() -> u32
@@ -78,40 +242,6 @@ fn use_inlines() -> u32
     return
 }
 
-// Full name: core::option::Option
-#[lang_item("Option")]
-pub enum Option<T>
-where
-    [@TraitClause0]: Sized<T>,
-{
-  None,
-  Some(T),
-}
-
-// Full name: core::bool::{bool}::then_some
-pub fn then_some<T>(@1: bool, @2: T) -> Option<T>[@TraitClause0]
-where
-    [@TraitClause0]: Sized<T>,
-{
-    let @0: Option<T>[@TraitClause0]; // return
-    let self@1: bool; // arg #1
-    let t@2: T; // arg #2
-    let @3: T; // anonymous local
-
-    if copy (self@1) {
-    }
-    else {
-        @0 := Option::None {  }
-        drop t@2
-        return
-    }
-    storage_live(@3)
-    @3 := move (t@2)
-    @0 := Option::Some { 0: move (@3) }
-    storage_dead(@3)
-    return
-}
-
 // Full name: test_crate::bool_to_opt
 fn bool_to_opt(@1: bool) -> Option<()>[Sized<()>]
 {
@@ -130,16 +260,6 @@ fn bool_to_opt(@1: bool) -> Option<()>[Sized<()>]
     return
 }
 
-// Full name: core::convert::num::{impl From<i32> for i64}#83::from
-pub fn {impl From<i32> for i64}#83::from(@1: i32) -> i64
-{
-    let @0: i64; // return
-    let small@1: i32; // arg #1
-
-    @0 := cast<i32, i64>(copy (small@1))
-    return
-}
-
 // Full name: test_crate::convert
 fn convert(@1: i32) -> i64
 {
@@ -154,63 +274,6 @@ fn convert(@1: i32) -> i64
     return
 }
 
-// Full name: core::ptr::non_null::NonNull
-#[lang_item("NonNull")]
-pub struct NonNull<T> {
-  pointer: *const T,
-}
-
-// Full name: core::marker::PhantomData
-#[lang_item("phantom_data")]
-pub struct PhantomData<T> {}
-
-// Full name: core::ptr::unique::Unique
-#[lang_item("ptr_unique")]
-pub struct Unique<T> {
-  pointer: NonNull<T>,
-  _marker: PhantomData<T>,
-}
-
-// Full name: core::num::niche_types::UsizeNoHighBit
-pub struct UsizeNoHighBit {
-  usize,
-}
-
-// Full name: alloc::raw_vec::RawVecInner
-struct RawVecInner<A>
-where
-    [@TraitClause0]: Sized<A>,
-{
-  ptr: Unique<u8>,
-  cap: UsizeNoHighBit,
-  alloc: A,
-}
-
-// Full name: alloc::raw_vec::RawVec
-struct RawVec<T, A>
-where
-    [@TraitClause0]: Sized<T>,
-    [@TraitClause1]: Sized<A>,
-{
-  inner: RawVecInner<A>[@TraitClause1],
-  _marker: PhantomData<T>,
-}
-
-// Full name: alloc::vec::Vec
-#[lang_item("Vec")]
-pub struct Vec<T, A>
-where
-    [@TraitClause0]: Sized<T>,
-    [@TraitClause1]: Sized<A>,
-{
-  buf: RawVec<T, A>[@TraitClause0, @TraitClause1],
-  len: usize,
-}
-
-// Full name: alloc::alloc::Global
-#[lang_item("global_alloc_ty")]
-pub struct Global {}
-
 // Full name: test_crate::vec
 fn vec(@1: Vec<u32, Global>[Sized<u32>, Sized<Global>])
 {
@@ -223,16 +286,6 @@ fn vec(@1: Vec<u32, Global>[Sized<u32>, Sized<Global>])
     return
 }
 
-pub fn core::num::{usize}#11::MAX() -> usize
-{
-    let @0: usize; // return
-
-    @0 := ~(const (0 : usize))
-    return
-}
-
-pub const core::num::{usize}#11::MAX: usize = core::num::{usize}#11::MAX()
-
 // Full name: test_crate::max
 fn max() -> usize
 {
@@ -243,14 +296,6 @@ fn max() -> usize
     @1 := core::num::{usize}#11::MAX
     @0 := move (@1)
     return
-}
-
-// Full name: core::cmp::PartialEq
-#[lang_item("eq")]
-pub trait PartialEq<Self, Rhs>
-{
-    fn eq<'_0, '_1> = eq<'_0_0, '_0_1, Self, Rhs>[Self]
-    fn ne<'_0, '_1> = ne<'_0_0, '_0_1, Self, Rhs>[Self]
 }
 
 // Full name: test_crate::partial_eq
@@ -265,51 +310,6 @@ where
     @0 := ()
     drop _x@1
     @0 := ()
-    return
-}
-
-// Full name: core::convert::From
-#[lang_item("From")]
-pub trait From<Self, T>
-{
-    parent_clause0 : [@TraitClause0]: Sized<Self>
-    parent_clause1 : [@TraitClause1]: Sized<T>
-    fn from = core::convert::From::from<Self, T>[Self]
-}
-
-#[lang_item("from_fn")]
-pub fn core::convert::From::from<Self, T>(@1: T) -> Self
-where
-    [@TraitClause0]: From<Self, T>,
-
-// Full name: core::convert::num::{impl From<i32> for i64}#83
-impl From<i32> for i64 {
-    parent_clause0 = Sized<i64>
-    parent_clause1 = Sized<i32>
-    fn from = {impl From<i32> for i64}#83::from
-}
-
-// Full name: core::cmp::PartialEq::eq
-#[lang_item("cmp_partialeq_eq")]
-pub fn eq<'_0, '_1, Self, Rhs>(@1: &'_0 (Self), @2: &'_1 (Rhs)) -> bool
-where
-    [@TraitClause0]: PartialEq<Self, Rhs>,
-
-// Full name: core::cmp::PartialEq::ne
-#[lang_item("cmp_partialeq_ne")]
-pub fn ne<'_0, '_1, Self, Rhs>(@1: &'_0 (Self), @2: &'_1 (Rhs)) -> bool
-where
-    [@TraitClause0]: PartialEq<Self, Rhs>,
-{
-    let @0: bool; // return
-    let self@1: &'_ (Self); // arg #1
-    let other@2: &'_ (Rhs); // arg #2
-    let @3: bool; // anonymous local
-
-    storage_live(@3)
-    @3 := @TraitClause0::eq<'_, '_>(move (self@1), move (other@2))
-    @0 := ~(move (@3))
-    storage_dead(@3)
     return
 }
 

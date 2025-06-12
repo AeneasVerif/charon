@@ -1,14 +1,18 @@
 # Final LLBC before serialization:
 
+// Full name: core::marker::Sized
+#[lang_item("sized")]
+pub trait Sized<Self>
+
 // Full name: test_crate::Trait
 pub trait Trait<Self>
 {
     fn method<'_0> = test_crate::Trait::method<'_0_0, Self>[Self]
 }
 
-// Full name: core::marker::Sized
-#[lang_item("sized")]
-pub trait Sized<Self>
+pub fn test_crate::Trait::method<'_0, Self>(@1: &'_0 (Self))
+where
+    [@TraitClause0]: Trait<Self>,
 
 // Full name: test_crate::{impl Trait for T}::method
 pub fn {impl Trait for T}::method<'_0, T>(@1: &'_0 (T))
@@ -30,10 +34,6 @@ where
 {
     fn method<'_0> = {impl Trait for T}::method<'_0_0, T>[@TraitClause0]
 }
-
-pub fn test_crate::Trait::method<'_0, Self>(@1: &'_0 (Self))
-where
-    [@TraitClause0]: Trait<Self>,
 
 
 

@@ -4,6 +4,19 @@
 #[lang_item("sized")]
 pub trait Sized<Self>
 
+// Full name: core::clone::Clone
+#[lang_item("clone")]
+pub trait Clone<Self>
+{
+    parent_clause0 : [@TraitClause0]: Sized<Self>
+    fn clone<'_0> = core::clone::Clone::clone<'_0_0, Self>[Self]
+}
+
+#[lang_item("clone_fn")]
+pub fn core::clone::Clone::clone<'_0, Self>(@1: &'_0 (Self)) -> Self
+where
+    [@TraitClause0]: Clone<Self>,
+
 // Full name: alloc::alloc::Global
 #[lang_item("global_alloc_ty")]
 pub struct Global {}
@@ -14,19 +27,25 @@ pub opaque type Rc<T, A>
 where
     [@TraitClause0]: Sized<A>,
 
-// Full name: alloc::string::String
-#[lang_item("String")]
-pub opaque type String
-
 pub fn alloc::rc::{Rc<T, Global>[Sized<Global>]}#8::new<T>(@1: T) -> Rc<T, Global>[Sized<Global>]
 where
     [@TraitClause0]: Sized<T>,
+
+// Full name: alloc::string::String
+#[lang_item("String")]
+pub opaque type String
 
 #[lang_item("string_new")]
 pub fn alloc::string::{String}::new() -> String
 
 // Full name: alloc::string::{impl Clone for String}#6::clone
 pub fn {impl Clone for String}#6::clone<'_0>(@1: &'_0 (String)) -> String
+
+// Full name: alloc::string::{impl Clone for String}#6
+impl Clone for String {
+    parent_clause0 = Sized<String>
+    fn clone<'_0> = {impl Clone for String}#6::clone<'_0_0>
+}
 
 // Full name: test_crate::foo
 fn foo()
@@ -133,25 +152,6 @@ fn foo()
     storage_dead(array@1)
     @0 := ()
     return
-}
-
-// Full name: core::clone::Clone
-#[lang_item("clone")]
-pub trait Clone<Self>
-{
-    parent_clause0 : [@TraitClause0]: Sized<Self>
-    fn clone<'_0> = core::clone::Clone::clone<'_0_0, Self>[Self]
-}
-
-#[lang_item("clone_fn")]
-pub fn core::clone::Clone::clone<'_0, Self>(@1: &'_0 (Self)) -> Self
-where
-    [@TraitClause0]: Clone<Self>,
-
-// Full name: alloc::string::{impl Clone for String}#6
-impl Clone for String {
-    parent_clause0 = Sized<String>
-    fn clone<'_0> = {impl Clone for String}#6::clone<'_0_0>
 }
 
 

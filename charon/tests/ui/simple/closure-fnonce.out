@@ -8,6 +8,12 @@ pub trait Sized<Self>
 #[lang_item("tuple_trait")]
 pub trait Tuple<Self>
 
+// Full name: core::mem::drop
+#[lang_item("mem_drop")]
+pub fn drop<T>(@1: T)
+where
+    [@TraitClause0]: Sized<T>,
+
 // Full name: core::ops::function::FnOnce
 #[lang_item("fn_once")]
 pub trait FnOnce<Self, Args>
@@ -53,12 +59,6 @@ struct NotCopy {}
 struct closure {
   NotCopy,
 }
-
-// Full name: core::mem::drop
-#[lang_item("mem_drop")]
-pub fn drop<T>(@1: T)
-where
-    [@TraitClause0]: Sized<T>,
 
 // Full name: test_crate::main::{impl FnOnce<(u8)> for closure}::call_once
 fn {impl FnOnce<(u8)> for closure}::call_once(@1: closure, @2: (u8)) -> u8

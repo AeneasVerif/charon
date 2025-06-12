@@ -4,6 +4,27 @@
 #[lang_item("sized")]
 pub trait Sized<Self>
 
+// Full name: core::clone::Clone
+#[lang_item("clone")]
+pub trait Clone<Self>
+{
+    parent_clause0 : [@TraitClause0]: Sized<Self>
+    fn clone<'_0> = clone<'_0_0, Self>[Self]
+}
+
+// Full name: core::clone::Clone::clone
+#[lang_item("clone_fn")]
+pub fn clone<'_0, Self>(@1: &'_0 (Self)) -> Self
+where
+    [@TraitClause0]: Clone<Self>,
+
+// Full name: core::marker::Copy
+#[lang_item("copy")]
+pub trait Copy<Self>
+{
+    parent_clause0 : [@TraitClause0]: Clone<Self>
+}
+
 // Full name: test_crate::Iterator
 trait Iterator<Self, Self_Item>
 {
@@ -69,6 +90,11 @@ trait X<Self, Self_Assoc>
     fn method<'_0> = method<'_0_0, Self, Self_Assoc>[Self]
 }
 
+// Full name: test_crate::X::method
+fn method<'_0, Self, Clause0_Assoc>(@1: &'_0 (Self)) -> Clause0_Assoc
+where
+    [@TraitClause0]: X<Self, Clause0_Assoc>,
+
 // Full name: test_crate::A
 trait A<Self, Self_Clause0_Assoc>
 {
@@ -80,11 +106,6 @@ trait B<Self, Self_Clause0_Assoc>
 {
     parent_clause0 : [@TraitClause0]: X<Self, Self_Clause0_Assoc>
 }
-
-// Full name: test_crate::X::method
-fn method<'_0, Self, Clause0_Assoc>(@1: &'_0 (Self)) -> Clause0_Assoc
-where
-    [@TraitClause0]: X<Self, Clause0_Assoc>,
 
 // Full name: test_crate::a
 fn a<T, Clause1_Clause0_Assoc>(@1: T) -> Clause1_Clause0_Assoc
@@ -122,21 +143,6 @@ where
     return
 }
 
-// Full name: core::clone::Clone
-#[lang_item("clone")]
-pub trait Clone<Self>
-{
-    parent_clause0 : [@TraitClause0]: Sized<Self>
-    fn clone<'_0> = clone<'_0_0, Self>[Self]
-}
-
-// Full name: core::marker::Copy
-#[lang_item("copy")]
-pub trait Copy<Self>
-{
-    parent_clause0 : [@TraitClause0]: Clone<Self>
-}
-
 // Full name: test_crate::x
 fn x<T, Clause1_Clause0_Assoc, Clause2_Clause0_Assoc>(@1: T) -> (Clause1_Clause0_Assoc, Clause1_Clause0_Assoc)
 where
@@ -169,12 +175,6 @@ where
     storage_dead(@2)
     return
 }
-
-// Full name: core::clone::Clone::clone
-#[lang_item("clone_fn")]
-pub fn clone<'_0, Self>(@1: &'_0 (Self)) -> Self
-where
-    [@TraitClause0]: Clone<Self>,
 
 
 

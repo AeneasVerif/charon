@@ -24,6 +24,11 @@ pub trait From<Self, T>
     fn from<[@TraitClause0]: Sized<Self>> = test_crate::From::from<Self, T>[Self, @TraitClause0_0]
 }
 
+pub fn test_crate::From::from<Self, T>(@1: T) -> Result<Self, @TraitClause0::Error>[@TraitClause1, @TraitClause0::parent_clause1]
+where
+    [@TraitClause0]: From<Self, T>,
+    [@TraitClause1]: Sized<Self>,
+
 // Full name: test_crate::{impl From<&'_0 (bool)> for bool}::from
 pub fn {impl From<&'_0 (bool)> for bool}::from<'_0>(@1: &'_0 (bool)) -> Result<bool, ()>[Sized<bool>, Sized<()>]
 {
@@ -45,11 +50,6 @@ impl<'_0> From<&'_0 (bool)> for bool {
     type Error = ()
     fn from = {impl From<&'_0 (bool)> for bool}::from<'_0>
 }
-
-pub fn test_crate::From::from<Self, T>(@1: T) -> Result<Self, @TraitClause0::Error>[@TraitClause1, @TraitClause0::parent_clause1]
-where
-    [@TraitClause0]: From<Self, T>,
-    [@TraitClause1]: Sized<Self>,
 
 
 

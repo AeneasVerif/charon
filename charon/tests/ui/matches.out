@@ -1,5 +1,9 @@
 # Final LLBC before serialization:
 
+// Full name: core::marker::Sized
+#[lang_item("sized")]
+pub trait Sized<Self>
+
 // Full name: test_crate::E1
 pub enum E1 {
   V1,
@@ -24,10 +28,6 @@ pub fn test1(@1: E1) -> bool
     @0 := const (true)
     return
 }
-
-// Full name: core::marker::Sized
-#[lang_item("sized")]
-pub trait Sized<Self>
 
 // Full name: test_crate::id
 pub fn id<T>(@1: T) -> T

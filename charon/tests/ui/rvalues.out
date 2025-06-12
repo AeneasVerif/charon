@@ -1,5 +1,36 @@
 # Final LLBC before serialization:
 
+// Full name: core::marker::Sized
+#[lang_item("sized")]
+pub trait Sized<Self>
+
+// Full name: core::mem::size_of
+#[lang_item("mem_size_of")]
+pub fn size_of<T>() -> usize
+where
+    [@TraitClause0]: Sized<T>,
+
+// Full name: core::mem::align_of
+pub fn align_of<T>() -> usize
+where
+    [@TraitClause0]: Sized<T>,
+
+pub fn core::f32::{f32}::MAX() -> f32
+
+pub const core::f32::{f32}::MAX: f32 = core::f32::{f32}::MAX()
+
+pub fn core::f64::{f64}::MIN() -> f64
+
+pub const core::f64::{f64}::MIN: f64 = core::f64::{f64}::MIN()
+
+// Full name: alloc::alloc::Global
+#[lang_item("global_alloc_ty")]
+pub struct Global {}
+
+// Full name: alloc::alloc::exchange_malloc
+#[lang_item("exchange_malloc")]
+unsafe fn exchange_malloc(@1: usize, @2: usize) -> *mut u8
+
 // Full name: test_crate::addr_of
 fn addr_of()
 {
@@ -29,14 +60,6 @@ fn addr_of()
     @0 := ()
     return
 }
-
-pub fn core::f64::{f64}::MIN() -> f64
-
-pub const core::f64::{f64}::MIN: f64 = core::f64::{f64}::MIN()
-
-pub fn core::f32::{f32}::MAX() -> f32
-
-pub const core::f32::{f32}::MAX: f32 = core::f32::{f32}::MAX()
 
 // Full name: test_crate::literal_casts
 fn literal_casts()
@@ -221,14 +244,6 @@ fn fn_casts()
     return
 }
 
-// Full name: core::marker::Sized
-#[lang_item("sized")]
-pub trait Sized<Self>
-
-// Full name: alloc::alloc::Global
-#[lang_item("global_alloc_ty")]
-pub struct Global {}
-
 // Full name: test_crate::boxes
 fn boxes()
 {
@@ -291,17 +306,6 @@ fn test_crate::STEAL2() -> Array<(), 13 : usize>
 }
 
 static test_crate::STEAL2: Array<(), 13 : usize> = test_crate::STEAL2()
-
-// Full name: core::mem::size_of
-#[lang_item("mem_size_of")]
-pub fn size_of<T>() -> usize
-where
-    [@TraitClause0]: Sized<T>,
-
-// Full name: core::mem::align_of
-pub fn align_of<T>() -> usize
-where
-    [@TraitClause0]: Sized<T>,
 
 // Full name: test_crate::nullary_ops::Struct
 struct Struct<T>
@@ -376,10 +380,6 @@ where
     storage_dead(size@1)
     return
 }
-
-// Full name: alloc::alloc::exchange_malloc
-#[lang_item("exchange_malloc")]
-unsafe fn exchange_malloc(@1: usize, @2: usize) -> *mut u8
 
 
 

@@ -4,14 +4,6 @@
 #[lang_item("sized")]
 pub trait Sized<Self>
 
-// Full name: core::iter::sources::from_fn::FromFn
-pub opaque type FromFn<F>
-where
-    [@TraitClause0]: Sized<F>,
-
-// Full name: test_crate::sparse_transitions::closure
-struct closure<'a> {}
-
 // Full name: core::marker::Tuple
 #[lang_item("tuple_trait")]
 pub trait Tuple<Self>
@@ -47,6 +39,11 @@ where
   Some(T),
 }
 
+// Full name: core::iter::sources::from_fn::FromFn
+pub opaque type FromFn<F>
+where
+    [@TraitClause0]: Sized<F>,
+
 // Full name: core::iter::sources::from_fn::from_fn
 pub fn from_fn<T, F>(@1: F) -> FromFn<F>[@TraitClause1]
 where
@@ -54,6 +51,17 @@ where
     [@TraitClause1]: Sized<F>,
     [@TraitClause2]: FnMut<F, ()>,
     @TraitClause2::parent_clause0::Output = Option<T>[@TraitClause0],
+
+pub fn core::ops::function::FnMut::call_mut<'_0, Self, Args>(@1: &'_0 mut (Self), @2: Args) -> @TraitClause0::parent_clause0::Output
+where
+    [@TraitClause0]: FnMut<Self, Args>,
+
+pub fn core::ops::function::FnOnce::call_once<Self, Args>(@1: Self, @2: Args) -> @TraitClause0::Output
+where
+    [@TraitClause0]: FnOnce<Self, Args>,
+
+// Full name: test_crate::sparse_transitions::closure
+struct closure<'a> {}
 
 // Full name: test_crate::sparse_transitions::{impl FnMut<()> for closure<'_>}::call_mut
 fn {impl FnMut<()> for closure<'_>}::call_mut<'a, '_1>(@1: &'_1 mut (closure<'_>), @2: ()) -> Option<u8>[Sized<u8>]
@@ -110,14 +118,6 @@ fn sparse_transitions<'a>() -> FromFn<closure<'a>>[Sized<closure<'_>>]
     storage_dead(@1)
     return
 }
-
-pub fn core::ops::function::FnMut::call_mut<'_0, Self, Args>(@1: &'_0 mut (Self), @2: Args) -> @TraitClause0::parent_clause0::Output
-where
-    [@TraitClause0]: FnMut<Self, Args>,
-
-pub fn core::ops::function::FnOnce::call_once<Self, Args>(@1: Self, @2: Args) -> @TraitClause0::Output
-where
-    [@TraitClause0]: FnOnce<Self, Args>,
 
 
 
