@@ -168,7 +168,7 @@ let const_generic_as_literal (cg : const_generic) : Values.literal =
 let trait_instance_id_as_trait_impl (id : trait_instance_id) :
     trait_impl_id * generic_args =
   match id with
-  | TraitImpl (impl_id, args) -> (impl_id, args)
+  | TraitImpl impl_ref -> (impl_ref.trait_impl_id, impl_ref.impl_generics)
   | _ -> raise (Failure "Unreachable")
 
 (* Make a debruijn variable of index 0 *)

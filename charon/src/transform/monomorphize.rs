@@ -57,13 +57,13 @@ impl TranslatedCrate {
         kind: &TraitRefKind,
     ) -> Option<(&TraitImpl, GenericArgs)> {
         match kind {
-            TraitRefKind::TraitImpl(impl_id, gargs) => {
-                let trait_impl = self.trait_impls.get(*impl_id).unwrap();
-                Some((trait_impl, (**gargs).clone()))
+            TraitRefKind::TraitImpl(impl_ref) => {
+                let trait_impl = self.trait_impls.get(impl_ref.id)?;
+                Some((trait_impl, impl_ref.generics.as_ref().clone()))
             }
             TraitRefKind::ParentClause(p, _, clause) => {
                 let (trait_impl, _) = self.find_trait_impl_and_gargs(p)?;
-                let t_ref = trait_impl.parent_trait_refs.get(*clause).unwrap();
+                let t_ref = trait_impl.parent_trait_refs.get(*clause)?;
                 self.find_trait_impl_and_gargs(&t_ref.kind)
             }
             _ => None,

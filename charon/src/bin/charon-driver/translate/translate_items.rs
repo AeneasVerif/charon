@@ -698,14 +698,14 @@ impl ItemTransCtx<'_, '_> {
         let trait_id = implemented_trait.trait_id;
         // A `TraitRef` that points to this impl with the correct generics.
         let self_predicate = TraitRef {
-            kind: TraitRefKind::TraitImpl(
-                def_id,
-                Box::new(
+            kind: TraitRefKind::TraitImpl(TraitImplRef {
+                id: def_id,
+                generics: Box::new(
                     self.the_only_binder()
                         .params
                         .identity_args(GenericsSource::item(def_id)),
                 ),
-            ),
+            }),
             trait_decl_ref: RegionBinder::empty(implemented_trait.clone()),
         };
 

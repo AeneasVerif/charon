@@ -21,7 +21,7 @@ impl TransformPass for Transform {
 
             // A `TraitRef` that points to this impl with the correct generics.
             let self_impl_ref = TraitImplRef {
-                impl_id: timpl.def_id,
+                id: timpl.def_id,
                 generics: Box::new(
                     timpl
                         .generics
@@ -29,10 +29,7 @@ impl TransformPass for Transform {
                 ),
             };
             let self_predicate = TraitRef {
-                kind: TraitRefKind::TraitImpl(
-                    self_impl_ref.impl_id,
-                    self_impl_ref.generics.clone(),
-                ),
+                kind: TraitRefKind::TraitImpl(self_impl_ref.clone()),
                 trait_decl_ref: RegionBinder::empty(timpl.impl_trait.clone()),
             };
             // Map of methods we already have in the impl.

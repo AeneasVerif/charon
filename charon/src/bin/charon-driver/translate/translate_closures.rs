@@ -147,7 +147,7 @@ impl ItemTransCtx<'_, '_> {
         }
 
         Ok(TraitImplRef {
-            impl_id,
+            id: impl_id,
             generics: Box::new(args),
         })
     }
@@ -602,10 +602,7 @@ impl ItemTransCtx<'_, '_> {
                     let parent_predicate =
                         self.translate_closure_trait_ref(span, def.def_id(), args, parent_kind)?;
                     let parent_trait_ref = TraitRef {
-                        kind: TraitRefKind::TraitImpl(
-                            parent_impl_ref.impl_id,
-                            parent_impl_ref.generics,
-                        ),
+                        kind: TraitRefKind::TraitImpl(parent_impl_ref),
                         trait_decl_ref: RegionBinder::empty(parent_predicate),
                     };
                     [

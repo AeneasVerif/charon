@@ -503,7 +503,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         let generics =
             self.translate_generic_args(span, substs, trait_refs, GenericsSource::item(id))?;
         Ok(TraitImplRef {
-            impl_id: id,
+            id,
             generics: Box::new(generics),
         })
     }

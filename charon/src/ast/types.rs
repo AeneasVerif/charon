@@ -44,7 +44,7 @@ pub enum Region {
 #[charon::rename("TraitInstanceId")]
 pub enum TraitRefKind {
     /// A specific top-level implementation item.
-    TraitImpl(TraitImplId, BoxedArgs),
+    TraitImpl(TraitImplRef),
 
     /// One of the local clauses.
     ///
@@ -174,7 +174,7 @@ pub type PolyTraitDeclRef = RegionBinder<TraitDeclRef>;
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Hash, Drive, DriveMut)]
 pub struct TraitImplRef {
     #[charon::rename("trait_impl_id")]
-    pub impl_id: TraitImplId,
+    pub id: TraitImplId,
     #[charon::rename("impl_generics")]
     pub generics: BoxedArgs,
 }

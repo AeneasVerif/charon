@@ -1604,6 +1604,14 @@ impl<C: AstFormatter> FmtWithCtx<C> for TraitImplId {
     }
 }
 
+impl<C: AstFormatter> FmtWithCtx<C> for TraitImplRef {
+    fn fmt_with_ctx(&self, ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let id = self.id.with_ctx(ctx);
+        let generics = self.generics.with_ctx(ctx);
+        write!(f, "{id}{generics}")
+    }
+}
+
 impl Display for TraitItemName {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> std::result::Result<(), fmt::Error> {
         write!(f, "{}", self.0)
@@ -1625,10 +1633,8 @@ impl<C: AstFormatter> FmtWithCtx<C> for TraitRefKind {
                 let clause = clause_id.to_pretty_string();
                 write!(f, "({id}::{type_name}::[{clause}])")
             }
-            TraitRefKind::TraitImpl(id, args) => {
-                let impl_ = id.with_ctx(ctx);
-                let args = args.with_ctx(ctx);
-                write!(f, "{impl_}{args}")
+            TraitRefKind::TraitImpl(impl_ref) => {
+                write!(f, "{}", impl_ref.with_ctx(ctx))
             }
             TraitRefKind::Clause(id) => write!(f, "{}", id.with_ctx(ctx)),
             TraitRefKind::BuiltinOrAuto {

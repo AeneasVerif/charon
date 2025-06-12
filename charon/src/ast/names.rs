@@ -15,7 +15,7 @@ pub enum PathElem {
     Ident(#[drive(skip)] String, Disambiguator),
     Impl(ImplElem, Disambiguator),
     /// This item was obtained by monomorphizing its parent with the given args.
-    Monomorphized(Box<GenericArgs>),
+    Monomorphized(BoxedArgs),
 }
 
 /// There are two kinds of `impl` blocks:

@@ -219,6 +219,12 @@ and trait_impl_id_to_string env id =
   | None -> trait_impl_id_to_pretty_string id
   | Some def -> name_to_string env def.item_meta.name
 
+and trait_impl_ref_to_string (env : 'a fmt_env) (iref : trait_impl_ref) : string
+    =
+  let impl = trait_impl_id_to_string env iref.trait_impl_id in
+  let generics = generic_args_to_string env iref.impl_generics in
+  impl ^ generics
+
 and const_generic_to_string (env : 'a fmt_env) (cg : const_generic) : string =
   match cg with
   | CgGlobal id -> global_decl_id_to_string env id
@@ -290,10 +296,7 @@ and trait_instance_id_to_string (env : 'a fmt_env) (id : trait_instance_id) :
     string =
   match id with
   | Self -> "Self"
-  | TraitImpl (id, generics) ->
-      let impl = trait_impl_id_to_string env id in
-      let generics = generic_args_to_string env generics in
-      impl ^ generics
+  | TraitImpl impl_ref -> trait_impl_ref_to_string env impl_ref
   | BuiltinOrAuto (trait, _, _) ->
       region_binder_to_string trait_decl_ref_to_string env trait
   | Clause id -> trait_db_var_to_string env id

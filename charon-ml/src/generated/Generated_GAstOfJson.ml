@@ -1606,8 +1606,8 @@ and trait_impl_ref_of_json (ctx : of_json_ctx) (js : json) :
     (trait_impl_ref, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
-    | `Assoc [ ("impl_id", impl_id); ("generics", generics) ] ->
-        let* trait_impl_id = trait_impl_id_of_json ctx impl_id in
+    | `Assoc [ ("id", id); ("generics", generics) ] ->
+        let* trait_impl_id = trait_impl_id_of_json ctx id in
         let* impl_generics = box_of_json generic_args_of_json ctx generics in
         Ok ({ trait_impl_id; impl_generics } : trait_impl_ref)
     | _ -> Error "")
@@ -1635,10 +1635,9 @@ and trait_instance_id_of_json (ctx : of_json_ctx) (js : json) :
     (trait_instance_id, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
-    | `Assoc [ ("TraitImpl", `List [ x_0; x_1 ]) ] ->
-        let* x_0 = trait_impl_id_of_json ctx x_0 in
-        let* x_1 = box_of_json generic_args_of_json ctx x_1 in
-        Ok (TraitImpl (x_0, x_1))
+    | `Assoc [ ("TraitImpl", trait_impl) ] ->
+        let* trait_impl = trait_impl_ref_of_json ctx trait_impl in
+        Ok (TraitImpl trait_impl)
     | `Assoc [ ("Clause", clause) ] ->
         let* clause =
           de_bruijn_var_of_json trait_clause_id_of_json ctx clause

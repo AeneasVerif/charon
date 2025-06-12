@@ -227,7 +227,7 @@ impl Deps {
             ItemKind::TraitDecl { trait_ref, .. } => {
                 self.parent_trait_decl = Some(trait_ref.trait_id)
             }
-            ItemKind::TraitImpl { impl_ref, .. } => self.parent_trait_impl = Some(impl_ref.impl_id),
+            ItemKind::TraitImpl { impl_ref, .. } => self.parent_trait_impl = Some(impl_ref.id),
             _ => {}
         }
     }

@@ -221,11 +221,11 @@ mod trait_ref_path {
                     path.parent_path.push(*id);
                     Some(path)
                 }
-                TraitRefKind::ItemClause(_, _, _, _) => unreachable!(),
-                TraitRefKind::TraitImpl(_, _)
+                TraitRefKind::ItemClause(..) => unreachable!(),
+                TraitRefKind::TraitImpl(..)
                 | TraitRefKind::BuiltinOrAuto { .. }
-                | TraitRefKind::Dyn(_)
-                | TraitRefKind::Unknown(_) => None,
+                | TraitRefKind::Dyn(..)
+                | TraitRefKind::Unknown(..) => None,
             }
         }
     }
@@ -848,9 +848,9 @@ impl<'a> ComputeItemModifications<'a> {
             | TraitRefKind::ItemClause(..)
             | TraitRefKind::SelfId
             | TraitRefKind::Unknown(_) => {}
-            TraitRefKind::TraitImpl(clause_impl_id, generics) => {
-                if let Some(set_for_clause) = self.compute_assoc_tys_for_impl(*clause_impl_id) {
-                    out.extend(set_for_clause.iter_self_paths_subst(generics));
+            TraitRefKind::TraitImpl(impl_ref) => {
+                if let Some(set_for_clause) = self.compute_assoc_tys_for_impl(impl_ref.id) {
+                    out.extend(set_for_clause.iter_self_paths_subst(&impl_ref.generics));
                 }
             }
             TraitRefKind::BuiltinOrAuto {
@@ -944,17 +944,17 @@ impl UpdateItemBody<'_> {
     fn lookup_path_on_trait_ref(&self, path: &AssocTypePath, tref: &TraitRefKind) -> Option<Ty> {
         assert!(path.tref.base.is_self_clause());
         match tref {
-            TraitRefKind::TraitImpl(impl_id, generics) => {
+            TraitRefKind::TraitImpl(impl_ref) => {
                 // The type constraints of trait impls already contain all relevant type
                 // equalities.
                 let (_, ty) = self
                     .item_modifications
-                    .get(&GenericsSource::item(*impl_id))?
+                    .get(&GenericsSource::item(impl_ref.id))?
                     .type_constraints
                     .find(path)?;
                 Some(
-                    ItemBinder::new(*impl_id, ty.clone())
-                        .substitute(ItemBinder::new(CurrentItem, generics))
+                    ItemBinder::new(impl_ref.id, ty.clone())
+                        .substitute(ItemBinder::new(CurrentItem, &impl_ref.generics))
                         .under_current_binder(),
                 )
             }
@@ -1178,10 +1178,7 @@ impl VisitAstMut for UpdateItemBody<'_> {
                 impl_ref,
                 trait_ref,
                 ..
-            } => self.process_trait_decl_ref(
-                trait_ref,
-                TraitRefKind::TraitImpl(impl_ref.impl_id, impl_ref.generics.clone()),
-            ),
+            } => self.process_trait_decl_ref(trait_ref, TraitRefKind::TraitImpl(impl_ref.clone())),
         }
     }
 

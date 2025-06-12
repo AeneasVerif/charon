@@ -295,7 +295,7 @@ and trait_ref = {
     *trait instance*, which is why the [[TraitRefKind::Clause]] variant may seem
     redundant with some of the other variants. *)
 and trait_instance_id =
-  | TraitImpl of trait_impl_id * generic_args
+  | TraitImpl of trait_impl_ref
       (** A specific top-level implementation item. *)
   | Clause of trait_clause_id de_bruijn_var
       (** One of the local clauses.
