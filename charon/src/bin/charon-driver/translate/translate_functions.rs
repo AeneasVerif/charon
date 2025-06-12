@@ -127,21 +127,15 @@ impl ItemTransCtx<'_, '_> {
             hax::CtorOf::Struct => None,
             hax::CtorOf::Variant => Some(VariantId::from(variant_id)),
         };
+        let tref = TypeDeclRef::new(
+            TypeId::Adt(adt_decl_id),
+            signature
+                .generics
+                .identity_args(GenericsSource::item(adt_decl_id)),
+        );
         let st_kind = RawStatement::Assign(
             locals.return_place(),
-            Rvalue::Aggregate(
-                AggregateKind::Adt(
-                    TypeId::Adt(adt_decl_id),
-                    variant,
-                    None,
-                    Box::new(
-                        signature
-                            .generics
-                            .identity_args(GenericsSource::item(adt_decl_id)),
-                    ),
-                ),
-                args,
-            ),
+            Rvalue::Aggregate(AggregateKind::Adt(tref, variant, None), args),
         );
         let statement = Statement::new(span, st_kind);
         let block = BlockData {

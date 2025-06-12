@@ -1171,15 +1171,15 @@ impl<C: AstFormatter> FmtWithCtx<C> for Rvalue {
             Rvalue::Aggregate(kind, ops) => {
                 let ops_s = ops.iter().map(|op| op.with_ctx(ctx)).format(", ");
                 match kind {
-                    AggregateKind::Adt(def_id, variant_id, field_id, _) => {
-                        match def_id {
+                    AggregateKind::Adt(ty_ref, variant_id, field_id) => {
+                        match ty_ref.id {
                             TypeId::Tuple => write!(f, "({})", ops_s),
                             TypeId::Builtin(_) => unreachable!(),
-                            TypeId::Adt(def_id) => {
+                            TypeId::Adt(ty_id) => {
                                 match variant_id {
-                                    None => def_id.fmt_with_ctx(ctx, f)?,
+                                    None => ty_id.fmt_with_ctx(ctx, f)?,
                                     Some(variant_id) => {
-                                        ctx.format_enum_variant(f, *def_id, *variant_id)?
+                                        ctx.format_enum_variant(f, ty_id, *variant_id)?
                                     }
                                 }
                                 write!(f, " {{ ")?;
@@ -1194,7 +1194,7 @@ impl<C: AstFormatter> FmtWithCtx<C> for Rvalue {
                                             field_id
                                         }
                                     };
-                                    ctx.format_field_name(f, *def_id, *variant_id, field_id)?;
+                                    ctx.format_field_name(f, ty_id, *variant_id, field_id)?;
                                     write!(f, ": {}", op.with_ctx(ctx))?;
                                 }
                                 write!(f, " }}")
@@ -1394,7 +1394,7 @@ impl<C: AstFormatter> FmtWithCtx<C> for llbc::Statement {
                         .ty
                         .kind()
                         .as_adt()
-                        .and_then(|(x, _)| x.as_adt())
+                        .and_then(|tref| tref.id.as_adt())
                         .copied();
                     for (cases, st) in maps {
                         write!(f, "{inner_tab1}",)?;
@@ -1672,15 +1672,13 @@ impl<C: AstFormatter> FmtWithCtx<C> for TraitTypeConstraint {
 impl<C: AstFormatter> FmtWithCtx<C> for Ty {
     fn fmt_with_ctx(&self, ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self.kind() {
-            TyKind::Adt(id, generics) => {
-                let adt_ident = id.with_ctx(ctx);
-                if id.is_tuple() {
-                    assert!(generics.trait_refs.is_empty());
-                    let generics = generics.fmt_explicits(ctx).format(", ");
+            TyKind::Adt(tref) => {
+                if tref.id.is_tuple() {
+                    assert!(tref.generics.trait_refs.is_empty());
+                    let generics = tref.generics.fmt_explicits(ctx).format(", ");
                     write!(f, "({generics})")
                 } else {
-                    let generics = generics.with_ctx(ctx);
-                    write!(f, "{adt_ident}{generics}")
+                    write!(f, "{}", tref.with_ctx(ctx))
                 }
             }
             TyKind::TypeVar(id) => write!(f, "{}", id.with_ctx(ctx)),
@@ -1795,6 +1793,14 @@ impl<C: AstFormatter> FmtWithCtx<C> for TypeDecl {
 impl<C: AstFormatter> FmtWithCtx<C> for TypeDeclId {
     fn fmt_with_ctx(&self, ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         AnyTransId::from(*self).fmt_with_ctx(ctx, f)
+    }
+}
+
+impl<C: AstFormatter> FmtWithCtx<C> for TypeDeclRef {
+    fn fmt_with_ctx(&self, ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let id = self.id.with_ctx(ctx);
+        let generics = self.generics.with_ctx(ctx);
+        write!(f, "{id}{generics}")
     }
 }
 

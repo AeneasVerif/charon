@@ -621,7 +621,7 @@ pub enum TypeId {
 }
 
 /// Reference to a type declaration or builtin type.
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Hash, Drive, DriveMut)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize, Drive, DriveMut)]
 pub struct TypeDeclRef {
     #[charon::rename("type_decl_id")]
     pub id: TypeId,
@@ -748,7 +748,7 @@ pub enum TyKind {
     ///
     /// Note: this is incorrectly named: this can refer to any valid `TypeDecl` including extern
     /// types.
-    Adt(TypeId, GenericArgs),
+    Adt(TypeDeclRef),
     #[charon::rename("TVar")]
     TypeVar(TypeDbVar),
     Literal(LiteralTy),

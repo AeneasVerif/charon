@@ -225,8 +225,8 @@ and rvalue_to_string (env : 'a fmt_env) (rv : rvalue) : string =
   | Aggregate (akind, ops) -> begin
       let ops = List.map (operand_to_string env) ops in
       match akind with
-      | AggregatedAdt (type_id, opt_variant_id, opt_field_id, _generics) -> (
-          match type_id with
+      | AggregatedAdt (tref, opt_variant_id, opt_field_id) -> (
+          match tref.type_decl_id with
           | TTuple -> "(" ^ String.concat ", " ops ^ ")"
           | TAdtId def_id ->
               let adt_name = type_decl_id_to_string env def_id in

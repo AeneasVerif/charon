@@ -359,7 +359,7 @@ and trait_instance_id =
   | UnknownTrait of string  (** For error reporting. *)
 
 and ty =
-  | TAdt of type_id * generic_args
+  | TAdt of type_decl_ref
       (** An ADT. Note that here ADTs are very general. They can be:
           - user-defined ADTs
           - tuples (including [unit], which is a 0-tuple)
@@ -413,6 +413,12 @@ and ty =
           limited generics: it only supports lifetime generics, not other kinds
           of generics. *)
   | TError of string  (** A type that could not be computed or was incorrect. *)
+
+(** Reference to a type declaration or builtin type. *)
+and type_decl_ref = {
+  type_decl_id : type_id;
+  type_decl_generics : generic_args;
+}
 
 (** Type identifier.
 

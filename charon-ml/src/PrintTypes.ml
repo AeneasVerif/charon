@@ -181,6 +181,18 @@ and type_decl_id_to_string env def_id =
   | None -> type_decl_id_to_pretty_string def_id
   | Some def -> name_to_string env def.item_meta.name
 
+and type_decl_ref_to_string (env : 'a fmt_env) (tref : type_decl_ref) : string =
+  match tref.type_decl_id with
+  | TTuple ->
+      let params, trait_refs =
+        generic_args_to_strings env tref.type_decl_generics
+      in
+      "(" ^ String.concat ", " params ^ ")"
+  | id ->
+      let id = type_id_to_string env id in
+      let generics = generic_args_to_string env tref.type_decl_generics in
+      id ^ generics
+
 and fun_decl_id_to_string (env : 'a fmt_env) (id : FunDeclId.id) : string =
   match FunDeclId.Map.find_opt id env.crate.fun_decls with
   | None -> fun_decl_id_to_pretty_string id
@@ -215,14 +227,7 @@ and const_generic_to_string (env : 'a fmt_env) (cg : const_generic) : string =
 
 and ty_to_string (env : 'a fmt_env) (ty : ty) : string =
   match ty with
-  | TAdt (id, generics) ->
-      let is_tuple =
-        match id with
-        | TTuple -> true
-        | _ -> false
-      in
-      let params = params_to_string env is_tuple generics in
-      type_id_to_string env id ^ params
+  | TAdt tref -> type_decl_ref_to_string env tref
   | TVar tv -> type_db_var_to_string env tv
   | TNever -> "!"
   | TLiteral lit_ty -> literal_type_to_string lit_ty
@@ -248,19 +253,6 @@ and ty_to_string (env : 'a fmt_env) (ty : ty) : string =
       inputs ^ ty_to_string env output
   | TDynTrait _ -> "dyn (TODO)"
   | TError msg -> "type_error (\"" ^ msg ^ "\")"
-
-and params_to_string (env : 'a fmt_env) (is_tuple : bool)
-    (generics : generic_args) : string =
-  if is_tuple then
-    (* Remark: there shouldn't be any trait ref, but we still print them
-       because if there are we *want* to see them (for debugging purposes) *)
-    let params, trait_refs = generic_args_to_strings env generics in
-    let params = "(" ^ String.concat ", " params ^ ")" in
-    let trait_refs =
-      if trait_refs = [] then "" else "[" ^ String.concat ", " trait_refs ^ "]"
-    in
-    params ^ trait_refs
-  else generic_args_to_string env generics
 
 (** Return two lists:
     - one for the regions, types, const generics

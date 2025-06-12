@@ -43,12 +43,11 @@ and aggregate_kind_of_json (ctx : of_json_ctx) (js : json) :
     (aggregate_kind, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
-    | `Assoc [ ("Adt", `List [ x_0; x_1; x_2; x_3 ]) ] ->
-        let* x_0 = type_id_of_json ctx x_0 in
+    | `Assoc [ ("Adt", `List [ x_0; x_1; x_2 ]) ] ->
+        let* x_0 = type_decl_ref_of_json ctx x_0 in
         let* x_1 = option_of_json variant_id_of_json ctx x_1 in
         let* x_2 = option_of_json field_id_of_json ctx x_2 in
-        let* x_3 = box_of_json generic_args_of_json ctx x_3 in
-        Ok (AggregatedAdt (x_0, x_1, x_2, x_3))
+        Ok (AggregatedAdt (x_0, x_1, x_2))
     | `Assoc [ ("Array", `List [ x_0; x_1 ]) ] ->
         let* x_0 = ty_of_json ctx x_0 in
         let* x_1 = const_generic_of_json ctx x_1 in
@@ -1704,10 +1703,9 @@ and trait_type_constraint_id_of_json (ctx : of_json_ctx) (js : json) :
 and ty_of_json (ctx : of_json_ctx) (js : json) : (ty, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
-    | `Assoc [ ("Adt", `List [ x_0; x_1 ]) ] ->
-        let* x_0 = type_id_of_json ctx x_0 in
-        let* x_1 = generic_args_of_json ctx x_1 in
-        Ok (TAdt (x_0, x_1))
+    | `Assoc [ ("Adt", adt) ] ->
+        let* adt = type_decl_ref_of_json ctx adt in
+        Ok (TAdt adt)
     | `Assoc [ ("TypeVar", type_var) ] ->
         let* type_var =
           de_bruijn_var_of_json type_var_id_of_json ctx type_var
@@ -1802,6 +1800,18 @@ and type_decl_kind_of_json (ctx : of_json_ctx) (js : json) :
     | `Assoc [ ("Error", error) ] ->
         let* error = string_of_json ctx error in
         Ok (TDeclError error)
+    | _ -> Error "")
+
+and type_decl_ref_of_json (ctx : of_json_ctx) (js : json) :
+    (type_decl_ref, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with
+    | `Assoc [ ("id", id); ("generics", generics) ] ->
+        let* type_decl_id = type_id_of_json ctx id in
+        let* type_decl_generics =
+          box_of_json generic_args_of_json ctx generics
+        in
+        Ok ({ type_decl_id; type_decl_generics } : type_decl_ref)
     | _ -> Error "")
 
 and type_id_of_json (ctx : of_json_ctx) (js : json) : (type_id, string) result =

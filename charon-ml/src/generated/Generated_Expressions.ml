@@ -36,8 +36,7 @@ module FunDeclId = Types.FunDeclId
     expanded to [Cons (⊥, ⊥)] upon the first assignment, at which point we can
     initialize the field 0, etc.). *)
 type aggregate_kind =
-  | AggregatedAdt of
-      type_id * variant_id option * field_id option * generic_args
+  | AggregatedAdt of type_decl_ref * variant_id option * field_id option
       (** A struct, enum or union aggregate. The [VariantId], if present,
           indicates this is an enum and the aggregate uses that variant. The
           [FieldId], if present, indicates this is a union and the aggregate

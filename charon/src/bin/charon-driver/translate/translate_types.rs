@@ -144,38 +144,37 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                 }
 
                 // Return the instantiated ADT
-                TyKind::Adt(tref.id, *tref.generics)
+                TyKind::Adt(tref)
             }
             hax::TyKind::Str => {
-                trace!("Str");
-
-                let id = TypeId::Builtin(BuiltinTy::Str);
-                TyKind::Adt(id, GenericArgs::empty(GenericsSource::Builtin))
+                let tref = TypeDeclRef::new(
+                    TypeId::Builtin(BuiltinTy::Str),
+                    GenericArgs::empty(GenericsSource::Builtin),
+                );
+                TyKind::Adt(tref)
             }
             hax::TyKind::Array(ty, const_param) => {
-                trace!("Array");
-
                 let c = self.translate_constant_expr_to_const_generic(span, const_param)?;
-                let tys = vec![self.translate_ty(span, ty)?].into();
-                let cgs = vec![c].into();
-                let id = TypeId::Builtin(BuiltinTy::Array);
-                TyKind::Adt(
-                    id,
+                let ty = self.translate_ty(span, ty)?;
+                let tref = TypeDeclRef::new(
+                    TypeId::Builtin(BuiltinTy::Array),
                     GenericArgs::new(
                         Vector::new(),
-                        tys,
-                        cgs,
+                        [ty].into(),
+                        [c].into(),
                         Vector::new(),
                         GenericsSource::Builtin,
                     ),
-                )
+                );
+                TyKind::Adt(tref)
             }
             hax::TyKind::Slice(ty) => {
-                trace!("Slice");
-
-                let tys = vec![self.translate_ty(span, ty)?].into();
-                let id = TypeId::Builtin(BuiltinTy::Slice);
-                TyKind::Adt(id, GenericArgs::new_for_builtin(tys))
+                let ty = self.translate_ty(span, ty)?;
+                let tref = TypeDeclRef::new(
+                    TypeId::Builtin(BuiltinTy::Slice),
+                    GenericArgs::new_for_builtin([ty].into()),
+                );
+                TyKind::Adt(tref)
             }
             hax::TyKind::Ref(region, ty, mutability) => {
                 trace!("Ref");
@@ -200,15 +199,13 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                 TyKind::RawPtr(ty, kind)
             }
             hax::TyKind::Tuple(substs) => {
-                trace!("Tuple");
-
                 let mut params = Vector::new();
                 for param in substs.iter() {
                     let param_ty = self.translate_ty(span, param)?;
                     params.push(param_ty);
                 }
-
-                TyKind::Adt(TypeId::Tuple, GenericArgs::new_for_builtin(params))
+                let tref = TypeDeclRef::new(TypeId::Tuple, GenericArgs::new_for_builtin(params));
+                TyKind::Adt(tref)
             }
 
             hax::TyKind::Param(param) => {
@@ -227,9 +224,8 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
             }
 
             hax::TyKind::Foreign(def_id) => {
-                trace!("Foreign");
-                let adt_id = self.translate_type_id(span, def_id)?;
-                TyKind::Adt(adt_id, GenericArgs::empty(adt_id.generics_target()))
+                let tref = self.translate_type_decl_ref(span, def_id, &[], &[])?;
+                TyKind::Adt(tref)
             }
             hax::TyKind::Infer(_) => {
                 trace!("Infer");
@@ -272,7 +268,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
             }
             hax::TyKind::Closure(def_id, args) => {
                 let tref = self.translate_closure_type_ref(span, def_id, args)?;
-                TyKind::Adt(tref.id, *tref.generics)
+                TyKind::Adt(tref)
             }
             hax::TyKind::Error => {
                 trace!("Error");

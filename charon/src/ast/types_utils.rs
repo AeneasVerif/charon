@@ -562,35 +562,32 @@ impl<T> ItemBinder<CurrentItem, T> {
 }
 
 impl Ty {
-    /// Return true if it is actually unit (i.e.: 0-tuple)
-    pub fn is_unit(&self) -> bool {
-        match self.kind() {
-            TyKind::Adt(TypeId::Tuple, args) => {
-                assert!(args.regions.is_empty());
-                assert!(args.const_generics.is_empty());
-                args.types.is_empty()
-            }
-            _ => false,
-        }
-    }
-
     /// Return the unit type
     pub fn mk_unit() -> Ty {
         Self::mk_tuple(vec![])
     }
 
     pub fn mk_tuple(tys: Vec<Ty>) -> Ty {
-        TyKind::Adt(
-            TypeId::Tuple,
-            GenericArgs::new(
-                Vector::new(),
-                tys.into(),
-                Vector::new(),
-                Vector::new(),
-                GenericsSource::Builtin,
-            ),
-        )
+        TyKind::Adt(TypeDeclRef {
+            id: TypeId::Tuple,
+            generics: Box::new(GenericArgs::new_for_builtin(tys.into())),
+        })
         .into_ty()
+    }
+
+    pub fn mk_slice(ty: Ty) -> Ty {
+        TyKind::Adt(TypeDeclRef {
+            id: TypeId::Builtin(BuiltinTy::Slice),
+            generics: Box::new(GenericArgs::new_for_builtin(vec![ty].into())),
+        })
+        .into_ty()
+    }
+    /// Return true if it is actually unit (i.e.: 0-tuple)
+    pub fn is_unit(&self) -> bool {
+        match self.as_tuple() {
+            Some(tys) => tys.is_empty(),
+            None => false,
+        }
     }
 
     /// Return true if this is a scalar type
@@ -618,23 +615,15 @@ impl Ty {
     /// Return true if the type is Box
     pub fn is_box(&self) -> bool {
         match self.kind() {
-            TyKind::Adt(TypeId::Builtin(BuiltinTy::Box), generics) => {
-                assert!(generics.regions.is_empty());
-                assert!(generics.types.elem_count() == 1);
-                assert!(generics.const_generics.is_empty());
-                true
-            }
+            TyKind::Adt(ty_ref) if let TypeId::Builtin(BuiltinTy::Box) = ty_ref.id => true,
             _ => false,
         }
     }
 
     pub fn as_box(&self) -> Option<&Ty> {
         match self.kind() {
-            TyKind::Adt(TypeId::Builtin(BuiltinTy::Box), generics) => {
-                assert!(generics.regions.is_empty());
-                assert!(generics.types.elem_count() == 1);
-                assert!(generics.const_generics.is_empty());
-                Some(&generics.types[0])
+            TyKind::Adt(ty_ref) if let TypeId::Builtin(BuiltinTy::Box) = ty_ref.id => {
+                Some(&ty_ref.generics.types[0])
             }
             _ => None,
         }
@@ -642,10 +631,10 @@ impl Ty {
 
     pub fn as_array_or_slice(&self) -> Option<&Ty> {
         match self.kind() {
-            TyKind::Adt(TypeId::Builtin(BuiltinTy::Array | BuiltinTy::Slice), generics) => {
-                assert!(generics.regions.is_empty());
-                assert!(generics.types.elem_count() == 1);
-                Some(&generics.types[0])
+            TyKind::Adt(ty_ref)
+                if let TypeId::Builtin(BuiltinTy::Array | BuiltinTy::Slice) = ty_ref.id =>
+            {
+                Some(&ty_ref.generics.types[0])
             }
             _ => None,
         }
@@ -653,20 +642,13 @@ impl Ty {
 
     pub fn as_tuple(&self) -> Option<&Vector<TypeVarId, Ty>> {
         match self.kind() {
-            TyKind::Adt(TypeId::Tuple, generics) => {
-                assert!(generics.regions.is_empty());
-                assert!(generics.const_generics.is_empty());
-                Some(&generics.types)
-            }
+            TyKind::Adt(ty_ref) if let TypeId::Tuple = ty_ref.id => Some(&ty_ref.generics.types),
             _ => None,
         }
     }
 
-    pub fn as_adt(&self) -> Option<(TypeId, &GenericArgs)> {
-        match self.kind() {
-            TyKind::Adt(id, generics) => Some((*id, generics)),
-            _ => None,
-        }
+    pub fn as_adt(&self) -> Option<&TypeDeclRef> {
+        self.kind().as_adt()
     }
 }
 
@@ -698,6 +680,15 @@ impl TypeId {
         match *self {
             TypeId::Adt(decl_id) => GenericsSource::item(decl_id),
             TypeId::Tuple | TypeId::Builtin(..) => GenericsSource::Builtin,
+        }
+    }
+}
+
+impl TypeDeclRef {
+    pub fn new(id: TypeId, generics: GenericArgs) -> Self {
+        Self {
+            id,
+            generics: Box::new(generics),
         }
     }
 }

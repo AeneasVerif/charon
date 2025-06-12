@@ -163,7 +163,8 @@ impl Transform {
                         && *fun_id == discriminant_intrinsic
                         // on a known enum...
                         && let ty = &fn_ptr.generics.types[0]
-                        && let TyKind::Adt(TypeId::Adt(type_id), _) = *ty.kind()
+                        && let TyKind::Adt(ty_ref) = ty.kind()
+                        && let TypeId::Adt(type_id) = ty_ref.id
                         && let Some(TypeDeclKind::Enum(variants)) =
                             ctx.translated.type_decls.get(type_id).map(|x| &x.kind)
                         // passing it a reference.

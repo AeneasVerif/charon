@@ -89,8 +89,13 @@ impl UsageVisitor<'_> {
             .entry((*id, gargs.clone()))
             .or_insert(default);
     }
-    fn found_use_ty(&mut self, id: &TypeDeclId, gargs: &GenericArgs) {
-        self.found_use(&AnyTransId::Type(*id), gargs, OptionHint::None);
+    fn found_use_ty(&mut self, tref: &TypeDeclRef) {
+        match tref.id {
+            TypeId::Adt(id) => {
+                self.found_use(&AnyTransId::Type(id), &tref.generics, OptionHint::None)
+            }
+            _ => {}
+        }
     }
     fn found_use_fn(&mut self, id: &FunDeclId, gargs: &GenericArgs) {
         self.found_use(&AnyTransId::Fun(*id), gargs, OptionHint::None);
@@ -119,15 +124,15 @@ impl VisitAst for UsageVisitor<'_> {
 
     fn enter_aggregate_kind(&mut self, kind: &AggregateKind) {
         match kind {
-            AggregateKind::Adt(TypeId::Adt(id), _, _, gargs) => self.found_use_ty(id, gargs),
+            AggregateKind::Adt(tref, _, _) => self.found_use_ty(tref),
             _ => {}
         }
     }
 
     fn enter_ty_kind(&mut self, kind: &TyKind) {
         match kind {
-            TyKind::Adt(TypeId::Adt(id), gargs) => {
-                self.found_use_ty(id, gargs);
+            TyKind::Adt(tref) => {
+                self.found_use_ty(tref);
             }
             _ => {}
         }
@@ -196,8 +201,13 @@ impl SubstVisitor<'_> {
             warn!("Substitution missing for {:?} / {:?}", id, gargs);
         }
     }
-    fn subst_use_ty(&mut self, id: &mut TypeDeclId, gargs: &mut GenericArgs) {
-        self.subst_use(id, gargs, AnyTransId::as_type);
+    fn subst_use_ty(&mut self, tref: &mut TypeDeclRef) {
+        match &mut tref.id {
+            TypeId::Adt(id) => {
+                self.subst_use(id, &mut tref.generics, AnyTransId::as_type);
+            }
+            _ => {}
+        }
     }
     fn subst_use_fun(&mut self, id: &mut FunDeclId, gargs: &mut GenericArgs) {
         self.subst_use(id, gargs, AnyTransId::as_fun);
@@ -210,7 +220,8 @@ impl SubstVisitor<'_> {
 impl VisitAstMut for SubstVisitor<'_> {
     fn exit_rvalue(&mut self, rval: &mut Rvalue) {
         if let Rvalue::Discriminant(place, id) = rval
-            && let Some((TypeId::Adt(new_enum_id), _)) = place.ty.as_adt()
+            && let Some(tref) = place.ty.as_adt()
+            && let TypeId::Adt(new_enum_id) = tref.id
         {
             // Small trick; the discriminant doesn't carry the information on the
             // generics of the enum, since it's irrelevant, but we need it to do
@@ -221,16 +232,14 @@ impl VisitAstMut for SubstVisitor<'_> {
 
     fn enter_aggregate_kind(&mut self, kind: &mut AggregateKind) {
         match kind {
-            AggregateKind::Adt(TypeId::Adt(id), _, _, gargs) => self.subst_use_ty(id, gargs),
+            AggregateKind::Adt(tref, _, _) => self.subst_use_ty(tref),
             _ => {}
         }
     }
 
     fn enter_ty_kind(&mut self, kind: &mut TyKind) {
         match kind {
-            TyKind::Adt(TypeId::Adt(id), gargs) => {
-                self.subst_use_ty(id, gargs);
-            }
+            TyKind::Adt(tref) => self.subst_use_ty(tref),
             _ => {}
         }
     }
@@ -259,8 +268,8 @@ impl VisitAstMut for SubstVisitor<'_> {
             PlaceKind::Projection(inner, ProjectionElem::Field(FieldProjKind::Adt(id, _), _)) => {
                 // Trick, we don't know the generics but the projected place does, so
                 // we substitute it there, then update our current id.
-                let (inner_id, _) = inner.ty.as_adt().unwrap();
-                *id = *inner_id.as_adt().unwrap()
+                let tref = inner.ty.as_adt().unwrap();
+                *id = *tref.id.as_adt().unwrap()
             }
             _ => {}
         }

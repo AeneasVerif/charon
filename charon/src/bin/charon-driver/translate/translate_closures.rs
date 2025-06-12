@@ -188,8 +188,8 @@ impl ItemTransCtx<'_, '_> {
         def_id: &hax::DefId,
         args: &hax::ClosureArgs,
     ) -> Result<Ty, Error> {
-        let ty_ref = self.translate_closure_type_ref(span, def_id, args)?;
-        Ok(TyKind::Adt(ty_ref.id, *ty_ref.generics).into_ty())
+        let tref = self.translate_closure_type_ref(span, def_id, args)?;
+        Ok(TyKind::Adt(tref).into_ty())
     }
 
     pub fn translate_closure_adt(

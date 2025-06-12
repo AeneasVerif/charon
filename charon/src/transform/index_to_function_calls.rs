@@ -37,9 +37,8 @@ impl<'a> IndexVisitor<'a> {
         let Some((subplace, pe @ (Index { .. } | Subslice { .. }))) = place.as_projection() else {
             return;
         };
-        let TyKind::Adt(TypeId::Builtin(builtin_ty), generics) = subplace.ty().kind() else {
-            unreachable!()
-        };
+        let tref = subplace.ty.as_adt().unwrap();
+        let builtin_ty = tref.id.as_builtin().unwrap();
 
         // The built-in function to call.
         let indexing_function = {
@@ -49,13 +48,11 @@ impl<'a> IndexVisitor<'a> {
                 is_range: matches!(pe, Subslice { .. }),
             });
             // Same generics as the array/slice type, except for the extra lifetime.
-            let generics = GenericArgs {
-                regions: vec![Region::Erased].into(),
-                ..generics.clone()
-            };
+            let mut generics = tref.generics.clone();
+            generics.regions = [Region::Erased].into();
             FnOperand::Regular(FnPtr {
                 func: Box::new(FunIdOrTraitMethodRef::mk_builtin(builtin_fun)),
-                generics: Box::new(generics),
+                generics,
             })
         };
 
@@ -66,14 +63,14 @@ impl<'a> IndexVisitor<'a> {
         )
         .into_ty();
 
-        let elem_ty = generics.types[0].clone();
+        let elem_ty = tref.generics.types[0].clone();
         let output_inner_ty = if matches!(pe, Index { .. }) {
             elem_ty
         } else {
-            TyKind::Adt(
-                TypeId::Builtin(BuiltinTy::Slice),
-                GenericArgs::new_for_builtin(vec![elem_ty].into()),
-            )
+            TyKind::Adt(TypeDeclRef {
+                id: TypeId::Builtin(BuiltinTy::Slice),
+                generics: Box::new(GenericArgs::new_for_builtin(vec![elem_ty].into())),
+            })
             .into_ty()
         };
         let output_ty = {
@@ -124,7 +121,7 @@ impl<'a> IndexVisitor<'a> {
                 Rvalue::Len(
                     subplace.clone(),
                     subplace.ty().clone(),
-                    generics.const_generics.get(0.into()).cloned(),
+                    tref.generics.const_generics.get(0.into()).cloned(),
                 ),
             );
             self.statements.push(Statement::new(self.span, kind));

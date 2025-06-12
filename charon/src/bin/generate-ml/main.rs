@@ -177,14 +177,14 @@ fn type_to_ocaml_call(ctx: &GenerateCtx, ty: &Ty) -> String {
         TyKind::Literal(LiteralTy::Char) => "char_of_json".to_string(),
         TyKind::Literal(LiteralTy::Integer(_)) => "int_of_json".to_string(),
         TyKind::Literal(LiteralTy::Float(_)) => "float_of_json".to_string(),
-        TyKind::Adt(adt_kind, generics) => {
+        TyKind::Adt(tref) => {
             let mut expr = Vec::new();
-            for ty in &generics.types {
+            for ty in &tref.generics.types {
                 expr.push(type_to_ocaml_call(ctx, ty))
             }
-            match adt_kind {
+            match tref.id {
                 TypeId::Adt(id) => {
-                    let mut first = if let Some(tdecl) = ctx.crate_data.type_decls.get(*id) {
+                    let mut first = if let Some(tdecl) = ctx.crate_data.type_decls.get(id) {
                         type_name_to_ocaml_ident(&tdecl.item_meta)
                     } else {
                         format!("missing_type_{id}")
@@ -197,7 +197,7 @@ fn type_to_ocaml_call(ctx: &GenerateCtx, ty: &Ty) -> String {
                 }
                 TypeId::Builtin(BuiltinTy::Box) => expr.insert(0, "box_of_json".to_owned()),
                 TypeId::Tuple => {
-                    let name = match generics.types.elem_count() {
+                    let name = match tref.generics.types.elem_count() {
                         2 => "pair_of_json".to_string(),
                         3 => "triple_of_json".to_string(),
                         len => format!("tuple_{len}_of_json"),
@@ -221,8 +221,9 @@ fn type_to_ocaml_name(ctx: &GenerateCtx, ty: &Ty) -> String {
         TyKind::Literal(LiteralTy::Char) => "(Uchar.t [@visitors.opaque])".to_string(),
         TyKind::Literal(LiteralTy::Integer(_)) => "int".to_string(),
         TyKind::Literal(LiteralTy::Float(_)) => "float_of_json".to_string(),
-        TyKind::Adt(adt_kind, generics) => {
-            let mut args = generics
+        TyKind::Adt(tref) => {
+            let mut args = tref
+                .generics
                 .types
                 .iter()
                 .map(|ty| type_to_ocaml_name(ctx, ty))
@@ -234,11 +235,11 @@ fn type_to_ocaml_name(ctx: &GenerateCtx, ty: &Ty) -> String {
                     }
                 })
                 .collect_vec();
-            match adt_kind {
+            match tref.id {
                 TypeId::Adt(id) => {
-                    let mut base_ty = if let Some(tdecl) = ctx.crate_data.type_decls.get(*id) {
+                    let mut base_ty = if let Some(tdecl) = ctx.crate_data.type_decls.get(id) {
                         type_name_to_ocaml_ident(&tdecl.item_meta)
-                    } else if let Some(name) = ctx.crate_data.item_name(*id) {
+                    } else if let Some(name) = ctx.crate_data.item_name(id) {
                         eprintln!(
                             "Warning: type {} missing from llbc",
                             repr_name(ctx.crate_data, name)

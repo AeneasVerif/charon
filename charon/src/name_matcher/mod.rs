@@ -91,18 +91,23 @@ impl Pattern {
             return true;
         }
         match ty.kind() {
-            TyKind::Adt(TypeId::Adt(type_id), args) => {
-                let Some(type_name) = ctx.item_name(*type_id) else {
-                    return false;
-                };
-                self.matches_with_generics(ctx, type_name, Some(args))
+            TyKind::Adt(tref) => {
+                let args = &tref.generics;
+                match tref.id {
+                    TypeId::Adt(type_id) => {
+                        let Some(type_name) = ctx.item_name(type_id) else {
+                            return false;
+                        };
+                        self.matches_with_generics(ctx, type_name, Some(args))
+                    }
+                    TypeId::Builtin(builtin_ty) => {
+                        let name = builtin_ty.get_name();
+                        self.matches_with_generics(ctx, &name, Some(args))
+                    }
+                    TypeId::Tuple => false,
+                }
             }
-            TyKind::Adt(TypeId::Builtin(builtin_ty), args) => {
-                let name = builtin_ty.get_name();
-                self.matches_with_generics(ctx, &name, Some(args))
-            }
-            TyKind::Adt(TypeId::Tuple, _)
-            | TyKind::TypeVar(..)
+            TyKind::TypeVar(..)
             | TyKind::Literal(..)
             | TyKind::Never
             | TyKind::Ref(..)

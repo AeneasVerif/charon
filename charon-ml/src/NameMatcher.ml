@@ -525,12 +525,13 @@ and match_primitive_adt (pid : primitive_adt) (id : T.type_id) : bool =
 and match_expr_with_ty (ctx : 'fun_body ctx) (c : match_config) (m : maps)
     (pty : expr) (ty : T.ty) : bool =
   match (pty, ty) with
-  | EComp pid, TAdt (id, generics) ->
-      match_pattern_with_type_id ctx c m pid id generics
+  | EComp pid, TAdt tref ->
+      match_pattern_with_type_id ctx c m pid tref.type_decl_id
+        tref.type_decl_generics
   | EComp pid, TLiteral lit -> match_pattern_with_literal_type pid lit
-  | EPrimAdt (pid, pgenerics), TAdt (id, generics) ->
-      match_primitive_adt pid id
-      && match_generic_args ctx c m pgenerics generics
+  | EPrimAdt (pid, pgenerics), TAdt tref ->
+      match_primitive_adt pid tref.type_decl_id
+      && match_generic_args ctx c m pgenerics tref.type_decl_generics
   | ERef (pr, pty, prk), TRef (r, ty, rk) ->
       match_region c m pr r
       && match_expr_with_ty ctx c m pty ty
@@ -962,9 +963,9 @@ and trait_decl_ref_to_pattern (ctx : 'fun_body ctx) (c : to_pat_config)
 and ty_to_pattern_aux (ctx : 'fun_body ctx) (c : to_pat_config)
     (m : constraints) (ty : T.ty) : expr =
   match ty with
-  | TAdt (id, generics) -> (
-      let generics = generic_args_to_pattern ctx c m generics in
-      match id with
+  | TAdt tref -> (
+      let generics = generic_args_to_pattern ctx c m tref.type_decl_generics in
+      match tref.type_decl_id with
       | TAdtId id ->
           (* Lookup the declaration *)
           let d = T.TypeDeclId.Map.find id ctx.crate.type_decls in

@@ -64,7 +64,7 @@ use indexmap::IndexMap;
     // type but can be overridden.
     override(
         DeBruijnId, Ty, TyKind, Region, ConstGeneric, TraitRef, TraitRefKind,
-        FunDeclRef, MaybeBuiltinFunDeclRef, TraitMethodRef, GlobalDeclRef, TraitDeclRef, TraitImplRef,
+        TypeDeclRef, FunDeclRef, MaybeBuiltinFunDeclRef, TraitMethodRef, GlobalDeclRef, TraitDeclRef, TraitImplRef,
         GenericArgs, GenericParams, TraitClause, TraitClauseId, TraitTypeConstraint, Place, Rvalue,
         for<T: AstVisitable + Idx> DeBruijnVar<T>,
         for<T: AstVisitable> RegionBinder<T>,
@@ -141,7 +141,7 @@ impl<K: Any, T: AstVisitable> AstVisitable for IndexMap<K, T> {
     // Types that are ignored when encountered.
     skip(
         AbortKind, BinOp, BorrowKind, ConstantExpr, ConstGeneric, FieldId, FieldProjKind,
-        FunDeclId, FunIdOrTraitMethodRef, GenericArgs, GlobalDeclRef, IntegerTy,
+        TypeDeclRef, FunDeclId, FunIdOrTraitMethodRef, GenericArgs, GlobalDeclRef, IntegerTy,
         NullOp, RefKind, ScalarValue, Span, Ty, TypeDeclId, TypeId, UnOp, VariantId, LocalId,
     ),
     // Types that we unconditionally explore.
