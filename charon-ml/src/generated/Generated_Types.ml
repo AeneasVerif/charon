@@ -651,23 +651,34 @@ and generic_params = {
     Maps fields to their offset within the layout.
  *)
 and variant_layout = {
-  field_offsets : int list;
-      (** The offset of each field. [None] if it is not knowable at this point, either because of
-        generics or dynamically-sized types.
-     *)
+  field_offsets : int list;  (** The offset of each field. *)
 }
+
+(** Layout of the discriminant with its offset and representation type.
+
+    Does not include information about the value range.
+ *)
+and discriminant_layout =
+  | Direct of int * integer_type
+      (** 
+          Fields:
+          - [offset]:  The offset of the discriminant in bytes.
+          - [repr]:  The representation type of the discriminant.
+       *)
+  | Niche
 
 (** Simplified type layout information.
 
     Does not include information about niches.
-    If the type does not have fully known layout (e.g. it is ?Sized)
+    If the type does not have a fully known layout (e.g. it is ?Sized)
     some of the layout parts are not available.
  *)
 and layout = {
   size : int option;  (** The size of the type in bytes. *)
   align : int option;  (** The alignment, in bytes. *)
-  discriminant_offset : int option;
-      (** The discriminant's offset, if any. Only relevant for types with multiple variants. *)
+  discriminant_layout : discriminant_layout option;
+      (** The discriminant's layout, if any. Only relevant for types with multiple variants.
+     *)
   uninhabited : bool;
       (** Whether the type is uninhabited, i.e. has any valid value at all.
         Note that uninhabited types can have arbitrary layouts: [(u32, !)] has space for the [u32]

@@ -400,6 +400,26 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
             }
         }
 
+        fn translate_primitive_int(int_ty: r_abi::Integer, signed: bool) -> IntegerTy {
+            if signed {
+                match int_ty {
+                    r_abi::Integer::I8 => IntegerTy::I8,
+                    r_abi::Integer::I16 => IntegerTy::I16,
+                    r_abi::Integer::I32 => IntegerTy::I32,
+                    r_abi::Integer::I64 => IntegerTy::I64,
+                    r_abi::Integer::I128 => IntegerTy::I128,
+                }
+            } else {
+                match int_ty {
+                    r_abi::Integer::I8 => IntegerTy::U8,
+                    r_abi::Integer::I16 => IntegerTy::U16,
+                    r_abi::Integer::I32 => IntegerTy::U32,
+                    r_abi::Integer::I64 => IntegerTy::U64,
+                    r_abi::Integer::I128 => IntegerTy::U128,
+                }
+            }
+        }
+
         let tcx = self.t_ctx.tcx;
         let rdefid = self.def_id.as_rust_def_id().unwrap();
         let ty_env = hax::State::new_from_state_and_id(&self.t_ctx.hax_state, rdefid).typing_env();
@@ -437,15 +457,36 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         }
 
         // Get the offset of the discriminant when there is one.
-        let discriminant_offset = match layout.variants() {
-            r_abi::Variants::Multiple { tag_field, .. } => {
-                // The tag_field is the index into the `offsets` vector.
-                let r_abi::FieldsShape::Arbitrary { offsets, .. } = layout.fields() else {
-                    unreachable!()
-                };
-                offsets
-                    .get(r_abi::FieldIdx::from_usize(*tag_field))
-                    .map(|s| r_abi::Size::bytes(*s))
+        let discriminant_layout = match layout.variants() {
+            r_abi::Variants::Multiple {
+                tag,
+                tag_encoding,
+                tag_field,
+                ..
+            } => {
+                match tag_encoding {
+                    r_abi::TagEncoding::Direct => {
+                        // The tag_field is the index into the `offsets` vector.
+                        let r_abi::FieldsShape::Arbitrary { offsets, .. } = layout.fields() else {
+                            unreachable!()
+                        };
+
+                        // Only translates the representation if it is an integer.
+                        let repr = match tag.primitive() {
+                            r_abi::Primitive::Int(int_ty, signed) => {
+                                translate_primitive_int(int_ty, signed)
+                            }
+                            _ => unreachable!(),
+                        };
+                        offsets
+                            .get(r_abi::FieldIdx::from_usize(*tag_field))
+                            .map(|s| DiscriminantLayout::Direct {
+                                offset: r_abi::Size::bytes(*s),
+                                repr,
+                            })
+                    }
+                    r_abi::TagEncoding::Niche { .. } => Some(DiscriminantLayout::Niche),
+                }
             }
             r_abi::Variants::Single { .. } | r_abi::Variants::Empty => None,
         };
@@ -453,7 +494,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         Some(Layout {
             size,
             align,
-            discriminant_offset,
+            discriminant_layout,
             uninhabited: layout.is_uninhabited(),
             variant_layouts,
         })

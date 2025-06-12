@@ -2,7 +2,7 @@
   "test_crate::SimpleStruct": {
     "size": 12,
     "align": 4,
-    "discriminant_offset": null,
+    "discriminant_layout": null,
     "uninhabited": false,
     "variant_layouts": [
       {
@@ -18,7 +18,7 @@
   "test_crate::UnsizedStruct": {
     "size": null,
     "align": null,
-    "discriminant_offset": null,
+    "discriminant_layout": null,
     "uninhabited": false,
     "variant_layouts": [
       {
@@ -32,7 +32,12 @@
   "test_crate::SimpleEnum": {
     "size": 1,
     "align": 1,
-    "discriminant_offset": 0,
+    "discriminant_layout": {
+      "Direct": {
+        "offset": 0,
+        "repr": "U8"
+      }
+    },
     "uninhabited": false,
     "variant_layouts": [
       {
@@ -46,7 +51,12 @@
   "test_crate::SimpleAdt": {
     "size": 24,
     "align": 8,
-    "discriminant_offset": 0,
+    "discriminant_layout": {
+      "Direct": {
+        "offset": 0,
+        "repr": "U32"
+      }
+    },
     "uninhabited": false,
     "variant_layouts": [
       {
@@ -69,7 +79,7 @@
   "test_crate::NicheAdt": {
     "size": 4,
     "align": 4,
-    "discriminant_offset": 0,
+    "discriminant_layout": "Niche",
     "uninhabited": false,
     "variant_layouts": [
       {
@@ -85,7 +95,7 @@
   "test_crate::IsAZST": {
     "size": 0,
     "align": 1,
-    "discriminant_offset": null,
+    "discriminant_layout": null,
     "uninhabited": false,
     "variant_layouts": [
       {
@@ -96,7 +106,7 @@
   "test_crate::UnsizedStruct2": {
     "size": null,
     "align": null,
-    "discriminant_offset": null,
+    "discriminant_layout": null,
     "uninhabited": false,
     "variant_layouts": [
       {
@@ -110,7 +120,7 @@
   "test_crate::GenericWithKnownLayout": {
     "size": 16,
     "align": 8,
-    "discriminant_offset": null,
+    "discriminant_layout": null,
     "uninhabited": false,
     "variant_layouts": [
       {
@@ -124,7 +134,7 @@
   "test_crate::Reordered": {
     "size": 8,
     "align": 4,
-    "discriminant_offset": null,
+    "discriminant_layout": null,
     "uninhabited": false,
     "variant_layouts": [
       {
@@ -139,7 +149,7 @@
   "test_crate::NotReordered": {
     "size": 12,
     "align": 4,
-    "discriminant_offset": null,
+    "discriminant_layout": null,
     "uninhabited": false,
     "variant_layouts": [
       {
@@ -154,7 +164,7 @@
   "test_crate::Packed": {
     "size": 6,
     "align": 1,
-    "discriminant_offset": null,
+    "discriminant_layout": null,
     "uninhabited": false,
     "variant_layouts": [
       {
@@ -169,7 +179,12 @@
   "test_crate::UninhabitedVariant": {
     "size": 8,
     "align": 4,
-    "discriminant_offset": 0,
+    "discriminant_layout": {
+      "Direct": {
+        "offset": 0,
+        "repr": "U32"
+      }
+    },
     "uninhabited": false,
     "variant_layouts": [
       {
@@ -188,7 +203,7 @@
   "test_crate::Uninhabited": {
     "size": 0,
     "align": 1,
-    "discriminant_offset": null,
+    "discriminant_layout": null,
     "uninhabited": true,
     "variant_layouts": [
       {
@@ -201,7 +216,7 @@
   "test_crate::DiscriminantInNicheOfField": {
     "size": 16,
     "align": 8,
-    "discriminant_offset": 8,
+    "discriminant_layout": "Niche",
     "uninhabited": false,
     "variant_layouts": [
       {
@@ -217,8 +232,53 @@
   "test_crate::PackIntsUnion": {
     "size": 8,
     "align": 8,
-    "discriminant_offset": null,
+    "discriminant_layout": null,
     "uninhabited": false,
     "variant_layouts": []
+  },
+  "test_crate::NonZeroNiche": {
+    "size": 4,
+    "align": 4,
+    "discriminant_layout": "Niche",
+    "uninhabited": false,
+    "variant_layouts": [
+      {
+        "field_offsets": [
+          0
+        ]
+      },
+      {
+        "field_offsets": []
+      },
+      {
+        "field_offsets": []
+      }
+    ]
+  },
+  "test_crate::ArbitraryDiscriminants": {
+    "size": 32,
+    "align": 8,
+    "discriminant_layout": {
+      "Direct": {
+        "offset": 0,
+        "repr": "I32"
+      }
+    },
+    "uninhabited": false,
+    "variant_layouts": [
+      {
+        "field_offsets": [
+          8
+        ]
+      },
+      {
+        "field_offsets": [
+          4
+        ]
+      },
+      {
+        "field_offsets": []
+      }
+    ]
   }
 }
