@@ -399,6 +399,27 @@ pub struct Layout {
     pub variant_layouts: Vector<VariantId, VariantLayout>,
 }
 
+/// A placeholder for the vtable of a trait object.
+/// To be implemented in the future when `dyn Trait` is fully supported.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Drive, DriveMut)]
+pub struct VTable;
+
+/// The metadata stored in a pointer. That's the information stored in pointers alongside
+/// their address. It's empty for `Sized` types, and interesting for unsized
+/// aka dynamically-sized types.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Drive, DriveMut)]
+pub enum PtrMetadata {
+    /// Types that need no metadata, namely `T: Sized` types.
+    #[charon::rename("NoMetadata")]
+    None,
+    /// Metadata for `[T]`, `str`, and user-defined types
+    /// that directly or indirectly contain one of these two.
+    Length,
+    /// Metadata for `dyn Trait` and user-defined types
+    /// that directly or indirectly contain a `dyn Trait`.
+    VTable(VTable),
+}
+
 /// A type declaration.
 ///
 /// Types can be opaque or transparent.
@@ -424,6 +445,13 @@ pub struct TypeDecl {
     /// The layout of the type. Information may be partial because of generics or dynamically-
     /// sized types. If rustc cannot compute a layout, it is `None`.
     pub layout: Option<Layout>,
+    /// The metadata associated with a pointer to the type.
+    /// This is `None` if we could not compute it because of generics.
+    /// The information is *accurate* if it is `Some`
+    ///     while if it is `None`, it may still be theoretically computable
+    ///     but due to some limitation to be fixed, we are unable to obtain the info.
+    /// See `translate_types::{impl ItemTransCtx}::translate_ptr_metadata` for more details.
+    pub ptr_metadata: Option<PtrMetadata>,
 }
 
 generate_index_type!(VariantId, "Variant");
