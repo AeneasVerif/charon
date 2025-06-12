@@ -102,7 +102,7 @@ and switch =
     ord,
     visitors
       {
-        name = "iter_statement";
+        name = "iter_statement_base";
         monomorphic = [ "env" ];
         variety = "iter";
         ancestors = [ "iter_trait_impl" ];
@@ -110,7 +110,7 @@ and switch =
       },
     visitors
       {
-        name = "map_statement";
+        name = "map_statement_base";
         monomorphic = [ "env" ];
         variety = "map";
         ancestors = [ "map_trait_impl" ];

@@ -1291,7 +1291,7 @@ fn generate_ml(
             target: output_dir.join("Generated_LlbcAst.ml"),
             markers: markers_from_children(&ctx, &[
                 (GenerationKind::TypeDecl(Some(DeriveVisitors {
-                    name: "statement",
+                    name: "statement_base",
                     ancestors: &["trait_impl"],
                     reduce: false,
                     extra_types: &[],
