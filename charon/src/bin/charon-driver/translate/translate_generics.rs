@@ -357,9 +357,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
             | Variant { .. } => {
                 let parent_def_id = def.parent.as_ref().unwrap();
                 let parent_def = self.t_ctx.hax_def(parent_def_id)?;
-                // Add an explicit `Self` clause to trait item declarations.
-                let explicit_self_clause = matches!(parent_def.kind(), Trait { .. });
-                self.push_generics_for_def(span, &parent_def, true, explicit_self_clause)?;
+                self.push_generics_for_def(span, &parent_def, true, true)?;
             }
             _ => {}
         }
@@ -427,7 +425,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                 FullDefKind::TraitImpl { .. } | FullDefKind::InherentImpl { .. } => {
                     PredicateOrigin::WhereClauseOnImpl
                 }
-                FullDefKind::Trait { .. } => {
+                FullDefKind::Trait { .. } | FullDefKind::TraitAlias { .. } => {
                     let _ = self.register_trait_decl_id(span, &def.def_id);
                     PredicateOrigin::WhereClauseOnTrait
                 }
@@ -440,6 +438,9 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
             )?;
             // Also register implied predicates.
             if let FullDefKind::Trait {
+                implied_predicates, ..
+            }
+            | FullDefKind::TraitAlias {
                 implied_predicates, ..
             }
             | FullDefKind::AssocTy {
