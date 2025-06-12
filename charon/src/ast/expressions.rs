@@ -283,6 +283,7 @@ pub enum Operand {
     Clone,
     PartialEq,
     Eq,
+    Hash,
     EnumIsA,
     EnumAsGetters,
     VariantName,
@@ -311,6 +312,7 @@ pub enum FunId {
     Copy,
     PartialEq,
     Eq,
+    Hash,
     EnumIsA,
     EnumAsGetters,
     VariantName,
@@ -350,7 +352,7 @@ pub enum BuiltinFunId {
 }
 
 /// One of 8 built-in indexing operations.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, Drive, DriveMut)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize, Drive, DriveMut)]
 pub struct BuiltinIndexOp {
     /// Whether this is a slice or array.
     #[drive(skip)]
@@ -363,6 +365,26 @@ pub struct BuiltinIndexOp {
     /// output is a reference to a single element.
     #[drive(skip)]
     pub is_range: bool,
+}
+
+/// Reference to a function declaration or builtin function.
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Hash, Drive, DriveMut)]
+pub struct MaybeBuiltinFunDeclRef {
+    #[charon::rename("fun_decl_id")]
+    pub id: FunId,
+    #[charon::rename("fun_decl_generics")]
+    pub generics: BoxedArgs,
+}
+
+/// Reference to a trait method.
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Hash, Drive, DriveMut)]
+pub struct TraitMethodRef {
+    pub trait_ref: TraitRef,
+    pub name: TraitItemName,
+    pub generics: BoxedArgs,
+    /// Reference to the method declaration; can be derived from the trait_ref, provided here for
+    /// convenience. The generic args are for the method, not for this function.
+    pub method_decl_id: FunDeclId,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, EnumAsGetters, Serialize, Deserialize, Drive, DriveMut)]

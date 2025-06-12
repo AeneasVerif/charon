@@ -66,19 +66,8 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         span: Span,
         trait_ref: &hax::TraitRef,
     ) -> Result<TraitDeclRef, Error> {
-        let trait_id = self.register_trait_decl_id(span, &trait_ref.def_id);
         // For now a trait has no required bounds, so we pass an empty list.
-        let generics = self.translate_generic_args(
-            span,
-            &trait_ref.generic_args,
-            &[],
-            None,
-            GenericsSource::item(trait_id),
-        )?;
-        Ok(TraitDeclRef {
-            trait_id,
-            generics: Box::new(generics),
-        })
+        self.translate_trait_decl_ref(span, &trait_ref.def_id, &trait_ref.generic_args, &[])
     }
 
     pub(crate) fn register_predicate(
@@ -209,16 +198,10 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                 generics,
                 impl_exprs,
             } => {
-                let impl_id = self.register_trait_impl_id(span, impl_def_id);
-                let generics = self.translate_generic_args(
-                    span,
-                    generics,
-                    impl_exprs,
-                    None,
-                    GenericsSource::item(impl_id),
-                )?;
+                let impl_ref =
+                    self.translate_trait_impl_ref(span, impl_def_id, generics, impl_exprs)?;
                 TraitRef {
-                    kind: TraitRefKind::TraitImpl(impl_id, Box::new(generics)),
+                    kind: TraitRefKind::TraitImpl(impl_ref.impl_id, impl_ref.generics),
                     trait_decl_ref,
                 }
             }

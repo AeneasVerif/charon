@@ -86,24 +86,22 @@ impl ItemTransCtx<'_, '_> {
         def_id: &hax::DefId,
         closure: &hax::ClosureArgs,
     ) -> Result<TypeDeclRef, Error> {
-        let type_id = self.register_type_decl_id(span, def_id);
-        let mut args = self.translate_generic_args(
+        let mut tref = self.translate_type_decl_ref(
             span,
+            def_id,
             &closure.parent_args,
             &closure.parent_trait_refs,
-            None,
-            GenericsSource::item(type_id),
         )?;
         // We add lifetime args for each borrowing upvar, gotta supply them here.
         if self.def_id == *def_id {
-            args.regions.extend(
+            tref.generics.regions.extend(
                 self.outermost_binder()
                     .by_ref_upvar_regions
                     .iter()
                     .map(|r| Region::Var(DeBruijnVar::bound(self.binding_levels.depth(), *r))),
             );
         } else {
-            args.regions.extend(
+            tref.generics.regions.extend(
                 closure
                     .upvar_tys
                     .iter()
@@ -121,11 +119,7 @@ impl ItemTransCtx<'_, '_> {
                     .map(|_| Region::Erased),
             );
         }
-
-        Ok(TypeDeclRef {
-            id: TypeId::Adt(type_id),
-            generics: Box::new(args),
-        })
+        Ok(tref)
     }
 
     /// Translate a reference to the chosen closure impl.

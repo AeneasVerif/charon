@@ -157,6 +157,21 @@ impl ItemTransCtx<'_, '_> {
         Ok(body)
     }
 
+    /// Checks whether the given id corresponds to a built-in type.
+    pub(crate) fn recognize_builtin_fun(
+        &mut self,
+        def_id: &hax::DefId,
+    ) -> Result<Option<BuiltinFunId>, Error> {
+        let def = self.t_ctx.hax_def(def_id)?;
+        let fun_id =
+            if def.diagnostic_item.as_deref() == Some("box_new") && !self.t_ctx.options.raw_boxes {
+                Some(BuiltinFunId::BoxNew)
+            } else {
+                None
+            };
+        Ok(fun_id)
+    }
+
     /// Auxiliary function to translate function calls and references to functions.
     /// Translate a function id applied with some substitutions.
     ///
@@ -170,6 +185,12 @@ impl ItemTransCtx<'_, '_> {
         trait_info: &Option<hax::ImplExpr>,
     ) -> Result<FnPtr, Error> {
         let fun_def = self.hax_def(def_id)?;
+        let late_bound = match fun_def.kind() {
+            hax::FullDefKind::Fn { sig, .. } | hax::FullDefKind::AssocFn { sig, .. } => {
+                Some(sig.as_ref().rebind(()))
+            }
+            _ => None,
+        };
 
         // Trait information
         trace!(
@@ -183,47 +204,31 @@ impl ItemTransCtx<'_, '_> {
             trait_refs
         );
 
-        // Check if the function is considered primitive: primitive
-        // functions benefit from special treatment.
-        let fun_id = if fun_def.diagnostic_item.as_deref() == Some("box_new")
-            && !self.t_ctx.options.raw_boxes
-        {
-            // Built-in function.
-            assert!(trait_info.is_none());
-            FunIdOrTraitMethodRef::Fun(FunId::Builtin(BuiltinFunId::BoxNew))
-        } else {
-            let fun_id = self.register_fun_decl_id(span, def_id);
-            // Two cases depending on whether we call a trait method or not
-            match trait_info {
-                // Direct function call
-                None => FunIdOrTraitMethodRef::Fun(FunId::Regular(fun_id)),
-                // Trait method
-                Some(trait_info) => {
-                    let impl_expr = self.translate_trait_impl_expr(span, trait_info)?;
-                    let method_name = self.t_ctx.translate_trait_item_name(def_id)?;
-                    FunIdOrTraitMethodRef::Trait(impl_expr, method_name, fun_id)
-                }
+        match trait_info {
+            // Direct function call
+            None => {
+                let fun_ref =
+                    self.translate_fun_decl_ref(span, def_id, substs, trait_refs, late_bound)?;
+                Ok(FnPtr {
+                    func: Box::new(FunIdOrTraitMethodRef::Fun(fun_ref.id)),
+                    generics: fun_ref.generics,
+                })
             }
-        };
-
-        // Translate the type parameters
-        let binder = match fun_def.kind() {
-            hax::FullDefKind::Fn { sig, .. } | hax::FullDefKind::AssocFn { sig, .. } => {
-                Some(sig.as_ref().rebind(()))
+            // Trait method
+            Some(trait_ref) => {
+                let method_ref = self.translate_method_ref(
+                    span, trait_ref, def_id, substs, trait_refs, late_bound,
+                )?;
+                let fun_id = FunIdOrTraitMethodRef::Trait(
+                    method_ref.trait_ref,
+                    method_ref.name,
+                    method_ref.method_decl_id,
+                );
+                Ok(FnPtr {
+                    func: Box::new(fun_id),
+                    generics: method_ref.generics,
+                })
             }
-            _ => None,
-        };
-        let generics = self.translate_generic_args(
-            span,
-            substs,
-            trait_refs,
-            binder,
-            fun_id.generics_target(),
-        )?;
-
-        Ok(FnPtr {
-            func: Box::new(fun_id),
-            generics: Box::new(generics),
-        })
+        }
     }
 }

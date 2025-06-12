@@ -397,18 +397,10 @@ impl BodyTransCtx<'_, '_, '_> {
                 } => {
                     let ty = self.translate_ty(span, &const_op.ty)?;
                     // A promoted constant that could not be evaluated.
-                    let global_id = self.register_global_decl_id(span, def_id);
+                    let global_ref =
+                        self.translate_global_decl_ref(span, def_id, args, impl_exprs)?;
                     let constant = ConstantExpr {
-                        value: RawConstantExpr::Global(GlobalDeclRef {
-                            id: global_id,
-                            generics: Box::new(self.translate_generic_args(
-                                span,
-                                args,
-                                impl_exprs,
-                                None,
-                                GenericsSource::item(global_id),
-                            )?),
-                        }),
+                        value: RawConstantExpr::Global(global_ref),
                         ty: ty.clone(),
                     };
                     Ok((Operand::Const(Box::new(constant)), ty))
@@ -646,29 +638,14 @@ impl BodyTransCtx<'_, '_, '_> {
                         kind,
                         substs,
                         trait_refs,
-                        user_annotation,
+                        _user_annotation,
                         field_index,
                     ) => {
+                        use hax::AdtKind;
                         trace!("{:?}", rvalue);
 
-                        // We ignore type annotations since rustc has already inferred all the
-                        // types we need.
-                        let _ = user_annotation;
-
-                        let type_id = self.translate_type_id(span, adt_id)?;
-                        // Sanity check
-                        assert!(matches!(&type_id, TypeId::Adt(_)));
-
-                        // Translate the substitution
-                        let generics = self.translate_generic_args(
-                            span,
-                            substs,
-                            trait_refs,
-                            None,
-                            type_id.generics_target(),
-                        )?;
-
-                        use hax::AdtKind;
+                        let tref =
+                            self.translate_type_decl_ref(span, adt_id, substs, trait_refs)?;
                         let variant_id = match kind {
                             AdtKind::Struct | AdtKind::Union => None,
                             AdtKind::Enum => Some(translate_variant_id(*variant_idx)),
@@ -679,7 +656,7 @@ impl BodyTransCtx<'_, '_, '_> {
                         };
 
                         let akind =
-                            AggregateKind::Adt(type_id, variant_id, field_id, Box::new(generics));
+                            AggregateKind::Adt(tref.id, variant_id, field_id, tref.generics);
                         Ok(Rvalue::Aggregate(akind, operands_t))
                     }
                     hax::AggregateKind::Closure(def_id, closure_args) => {
@@ -689,9 +666,8 @@ impl BodyTransCtx<'_, '_, '_> {
                             closure_args.tupled_sig
                         );
 
-                        let type_ref =
-                            self.translate_closure_type_ref(span, def_id, closure_args)?;
-                        let akind = AggregateKind::Adt(type_ref.id, None, None, type_ref.generics);
+                        let tref = self.translate_closure_type_ref(span, def_id, closure_args)?;
+                        let akind = AggregateKind::Adt(tref.id, None, None, tref.generics);
                         Ok(Rvalue::Aggregate(akind, operands_t))
                     }
                     hax::AggregateKind::RawPtr(ty, is_mut) => {

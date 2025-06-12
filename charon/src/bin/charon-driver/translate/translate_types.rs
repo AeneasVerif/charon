@@ -117,40 +117,34 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
             },
 
             hax::TyKind::Adt {
-                generic_args: substs,
-                trait_refs,
                 def_id,
+                generic_args,
+                trait_refs,
             } => {
                 trace!("Adt: {:?}", def_id);
-
-                // Retrieve the type identifier
-                let type_id = self.translate_type_id(span, def_id)?;
-
-                // Translate the type parameters instantiation
-                let mut generics = self.translate_generic_args(
-                    span,
-                    substs,
-                    trait_refs,
-                    None,
-                    type_id.generics_target(),
-                )?;
+                let mut tref =
+                    self.translate_type_decl_ref(span, def_id, generic_args, trait_refs)?;
 
                 // Filter the type arguments.
                 // TODO: do this in a micro-pass
-                if let TypeId::Builtin(builtin_ty) = type_id {
+                if let TypeId::Builtin(builtin_ty) = tref.id {
                     let used_args = builtins::type_to_used_params(builtin_ty);
-                    error_assert!(self, span, generics.types.elem_count() == used_args.len());
-                    let types = std::mem::take(&mut generics.types)
+                    error_assert!(
+                        self,
+                        span,
+                        tref.generics.types.elem_count() == used_args.len()
+                    );
+                    let types = std::mem::take(&mut tref.generics.types)
                         .into_iter()
                         .zip(used_args)
                         .filter(|(_, used)| *used)
                         .map(|(ty, _)| ty)
                         .collect();
-                    generics.types = types;
+                    tref.generics.types = types;
                 }
 
                 // Return the instantiated ADT
-                TyKind::Adt(type_id, generics)
+                TyKind::Adt(tref.id, *tref.generics)
             }
             hax::TyKind::Str => {
                 trace!("Str");
@@ -277,8 +271,8 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                 TyKind::Arrow(sig)
             }
             hax::TyKind::Closure(def_id, args) => {
-                let type_ref = self.translate_closure_type_ref(span, def_id, args)?;
-                TyKind::Adt(type_ref.id, *type_ref.generics)
+                let tref = self.translate_closure_type_ref(span, def_id, args)?;
+                TyKind::Adt(tref.id, *tref.generics)
             }
             hax::TyKind::Error => {
                 trace!("Error");
@@ -296,6 +290,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         Ok(ty)
     }
 
+    /// Translate generic args. Don't call directly; use `translate_xxx_ref` as much as possible.
     pub fn translate_generic_args(
         &mut self,
         span: Span,
@@ -351,7 +346,10 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
     }
 
     /// Checks whether the given id corresponds to a built-in type.
-    fn recognize_builtin_type(&mut self, def_id: &hax::DefId) -> Result<Option<BuiltinTy>, Error> {
+    pub(crate) fn recognize_builtin_type(
+        &mut self,
+        def_id: &hax::DefId,
+    ) -> Result<Option<BuiltinTy>, Error> {
         let def = self.hax_def(def_id)?;
         let ty = if def.lang_item.as_deref() == Some("owned_box") && !self.t_ctx.options.raw_boxes {
             Some(BuiltinTy::Box)
@@ -359,20 +357,6 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
             None
         };
         Ok(ty)
-    }
-
-    /// Translate a type def id
-    pub(crate) fn translate_type_id(
-        &mut self,
-        span: Span,
-        def_id: &hax::DefId,
-    ) -> Result<TypeId, Error> {
-        trace!("{:?}", def_id);
-        let type_id = match self.recognize_builtin_type(def_id)? {
-            Some(id) => TypeId::Builtin(id),
-            None => TypeId::Adt(self.register_type_decl_id(span, def_id)),
-        };
-        Ok(type_id)
     }
 
     /// Translate a Dynamically Sized Type metadata kind.
