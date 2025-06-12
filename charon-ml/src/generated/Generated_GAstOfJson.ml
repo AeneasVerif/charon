@@ -1312,6 +1312,17 @@ and variant_layout_of_json (ctx : of_json_ctx) (js : json) :
         Ok ({ field_offsets } : variant_layout)
     | _ -> Error "")
 
+and discriminant_layout_of_json (ctx : of_json_ctx) (js : json) :
+    (discriminant_layout, string) result =
+  combine_error_msgs js __FUNCTION__
+    (match js with
+    | `Assoc [ ("Direct", `Assoc [ ("offset", offset); ("repr", repr) ]) ] ->
+        let* offset = int_of_json ctx offset in
+        let* repr = integer_type_of_json ctx repr in
+        Ok (Direct (offset, repr))
+    | `String "Niche" -> Ok Niche
+    | _ -> Error "")
+
 and layout_of_json (ctx : of_json_ctx) (js : json) : (layout, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
@@ -1319,14 +1330,14 @@ and layout_of_json (ctx : of_json_ctx) (js : json) : (layout, string) result =
         [
           ("size", size);
           ("align", align);
-          ("discriminant_offset", discriminant_offset);
+          ("discriminant_layout", discriminant_layout);
           ("uninhabited", uninhabited);
           ("variant_layouts", variant_layouts);
         ] ->
         let* size = option_of_json int_of_json ctx size in
         let* align = option_of_json int_of_json ctx align in
-        let* discriminant_offset =
-          option_of_json int_of_json ctx discriminant_offset
+        let* discriminant_layout =
+          option_of_json discriminant_layout_of_json ctx discriminant_layout
         in
         let* uninhabited = bool_of_json ctx uninhabited in
         let* variant_layouts =
@@ -1334,7 +1345,7 @@ and layout_of_json (ctx : of_json_ctx) (js : json) : (layout, string) result =
             variant_layouts
         in
         Ok
-          ({ size; align; discriminant_offset; uninhabited; variant_layouts }
+          ({ size; align; discriminant_layout; uninhabited; variant_layouts }
             : layout)
     | _ -> Error "")
 

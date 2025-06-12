@@ -98,6 +98,19 @@ fn type_layout() -> anyhow::Result<()> {
             x: (u32, u32),
             y: u64,
         }
+
+        enum NonZeroNiche {
+            A(char),
+            B,
+            C,
+        }
+
+        #[repr(i32)]
+        enum ArbitraryDiscriminants {
+            A(String) = 12,
+            B(u32) = 43,
+            C = 123456,
+        }
         "#,
     )?;
     let layouts: IndexMap<String, Option<Layout>> = crate_data

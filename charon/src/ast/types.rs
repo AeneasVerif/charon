@@ -353,16 +353,29 @@ type ByteCount = u64;
 /// Maps fields to their offset within the layout.
 #[derive(Debug, Default, Clone, PartialEq, Eq, Serialize, Deserialize, Drive, DriveMut)]
 pub struct VariantLayout {
-    /// The offset of each field. `None` if it is not knowable at this point, either because of
-    /// generics or dynamically-sized types.
+    /// The offset of each field.
     #[drive(skip)]
     pub field_offsets: Vector<FieldId, ByteCount>,
+}
+
+/// Layout of the discriminant with its offset and representation type.
+///
+/// Does not include information about the value range.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub enum DiscriminantLayout {
+    Direct {
+        /// The offset of the discriminant in bytes.
+        offset: ByteCount,
+        /// The representation type of the discriminant.
+        repr: IntegerTy,
+    },
+    Niche, // TODO: Add more useful information about niches here in the future.
 }
 
 /// Simplified type layout information.
 ///
 /// Does not include information about niches.
-/// If the type does not have fully known layout (e.g. it is ?Sized)
+/// If the type does not have a fully known layout (e.g. it is ?Sized)
 /// some of the layout parts are not available.
 #[derive(Debug, Default, Clone, PartialEq, Eq, Serialize, Deserialize, Drive, DriveMut)]
 pub struct Layout {
@@ -372,9 +385,10 @@ pub struct Layout {
     /// The alignment, in bytes.
     #[drive(skip)]
     pub align: Option<ByteCount>,
-    /// The discriminant's offset, if any. Only relevant for types with multiple variants.
+    /// The discriminant's layout, if any. Only relevant for types with multiple variants.
+    ///
     #[drive(skip)]
-    pub discriminant_offset: Option<ByteCount>,
+    pub discriminant_layout: Option<DiscriminantLayout>,
     /// Whether the type is uninhabited, i.e. has any valid value at all.
     /// Note that uninhabited types can have arbitrary layouts: `(u32, !)` has space for the `u32`
     /// and `enum E2 { A, B(!), C(i32, !) }` may have space for a discriminant.
