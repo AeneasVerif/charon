@@ -50,7 +50,6 @@ impl TransformPass for Transform {
                 };
                 let opacity = ctx.opacity_for_name(&new_fun_name);
                 let new_fun_id = ctx.translated.fun_decls.reserve_slot();
-                ctx.translated.all_ids.insert(new_fun_id.into());
                 ctx.translated
                     .item_names
                     .insert(new_fun_id.into(), new_fun_name.clone());

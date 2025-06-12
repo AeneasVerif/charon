@@ -192,7 +192,6 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
                 // Add the id to the queue of declarations to translate
                 self.id_map.insert(id.clone(), trans_id);
                 self.reverse_id_map.insert(trans_id, id.clone());
-                self.translated.all_ids.insert(trans_id);
                 // Store the name early so the name matcher can identify paths. We can't to it for
                 // trait impls because they register themselves when computing their name.
                 if !matches!(id, TransItemSource::TraitImpl(_)) {
