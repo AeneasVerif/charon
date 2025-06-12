@@ -369,7 +369,7 @@ pub enum DiscriminantLayout {
         /// The representation type of the discriminant.
         repr: IntegerTy,
     },
-    Niche // TODO: Add more useful information about niches here in the future.
+    Niche, // TODO: Add more useful information about niches here in the future.
 }
 
 /// Simplified type layout information.
