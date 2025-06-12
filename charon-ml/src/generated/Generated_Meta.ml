@@ -8,22 +8,17 @@
     code-generation code is in `charon/src/bin/generate-ml`.
  *)
 
-type path_buf = string [@@deriving show, ord, eq]
+type path_buf = string
+[@@deriving show, ord, eq]
 
-type file_id = file
 
-and loc = {
-  line : int;  (** The (1-based) line number. *)
-  col : int;  (** The (0-based) column offset. *)
-}
+ type  file_id = file
 
-(** Span information *)
-and raw_span = { file : file_id; beg_loc : loc; end_loc : loc }
+ and  loc = { line : int  (** The (1-based) line number. *);col : int  (** The (0-based) column offset. *) }
 
-(** Meta information about a piece of code (block, statement, etc.) *)
-and span = {
-  span : raw_span;
-      (** The source code span.
+(** Span information *) and  raw_span = { file :  file_id  ;beg_loc :  loc  ;end_loc :  loc   }
+
+(** Meta information about a piece of code (block, statement, etc.) *) and  span = { span :  raw_span  (** The source code span.
 
         If this meta information is for a statement/terminator coming from a macro
         expansion/inlining/etc., this span is (in case of macros) for the macro
@@ -42,56 +37,44 @@ and span = {
             macro!(); // <-- [span] refers to this location
         }
         ]}
-     *)
-  generated_from_span : raw_span option;
-      (** Where the code actually comes from, in case of macro expansion/inlining/etc. *)
-}
+     *);generated_from_span : ( raw_span) option  (** Where the code actually comes from, in case of macro expansion/inlining/etc. *) }
 
-(** [#[inline]] built-in attribute. *)
-and inline_attr =
-  | Hint  (** [#[inline]] *)
-  | Never  (** [#[inline(never)]] *)
-  | Always  (** [#[inline(always)]] *)
+(** [#[inline]] built-in attribute. *) and  inline_attr = 
 
-(** Attributes ([#[...]]). *)
-and attribute =
-  | AttrOpaque
-      (** Do not translate the body of this item.
+ | Hint (** [#[inline]] *)
+
+ | Never (** [#[inline(never)]] *)
+
+ | Always (** [#[inline(always)]] *)
+
+(** Attributes ([#[...]]). *) and  attribute = 
+
+ | AttrOpaque (** Do not translate the body of this item.
           Written [#[charon::opaque]]
        *)
-  | AttrRename of string
-      (** Provide a new name that consumers of the llbc can use.
+
+ | AttrRename of  string  (** Provide a new name that consumers of the llbc can use.
           Written [#[charon::rename("new_name")]]
        *)
-  | AttrVariantsPrefix of string
-      (** For enums only: rename the variants by pre-pending their names with the given prefix.
+
+ | AttrVariantsPrefix of  string  (** For enums only: rename the variants by pre-pending their names with the given prefix.
           Written [#[charon::variants_prefix("prefix_")]].
        *)
-  | AttrVariantsSuffix of string
-      (** Same as [VariantsPrefix], but appends to the name instead of pre-pending. *)
-  | AttrDocComment of string  (** A doc-comment such as [/// ...]. *)
-  | AttrUnknown of raw_attribute  (** A non-charon-specific attribute. *)
 
-(** A general attribute. *)
-and raw_attribute = {
-  path : string;
-  args : string option;
-      (** The arguments passed to the attribute, if any. We don't distinguish different delimiters or
+ | AttrVariantsSuffix of  string  (** Same as [VariantsPrefix], but appends to the name instead of pre-pending. *)
+
+ | AttrDocComment of  string  (** A doc-comment such as [/// ...]. *)
+
+ | AttrUnknown of  raw_attribute  (** A non-charon-specific attribute. *)
+
+(** A general attribute. *) and  raw_attribute = { path :  string  ;args : ( string) option  (** The arguments passed to the attribute, if any. We don't distinguish different delimiters or
         the [path = lit] case.
-     *)
-}
+     *) }
 
-(** Information about the attributes and visibility of an item, field or variant.. *)
-and attr_info = {
-  attributes : attribute list;  (** Attributes ([#[...]]). *)
-  inline : inline_attr option;  (** Inline hints (on functions only). *)
-  rename : string option;
-      (** The name computed from [charon::rename] and [charon::variants_prefix] attributes, if any.
+(** Information about the attributes and visibility of an item, field or variant.. *) and  attr_info = { attributes : ( attribute) list  (** Attributes ([#[...]]). *);inline : ( inline_attr) option  (** Inline hints (on functions only). *);rename : ( string) option  (** The name computed from [charon::rename] and [charon::variants_prefix] attributes, if any.
         This provides a custom name that can be used by consumers of llbc. E.g. Aeneas uses this to
         rename definitions in the extracted code.
-     *)
-  public : bool;
-      (** Whether this item is declared public. Impl blocks and closures don't have visibility
+     *);public : bool  (** Whether this item is declared public. Impl blocks and closures don't have visibility
         modifiers; we arbitrarily set this to [false] for them.
 
         Note that this is different from being part of the crate's public API: to be part of the
@@ -109,20 +92,15 @@ and attr_info = {
         Without the [pub use ...], neither [X] nor [something] would be part of the crate's public
         API (this is called "pub-in-priv" items). With or without the [pub use], we set [public =
         true]; computing item reachability is harder.
-     *)
-}
+     *) }
 
-(** A filename. *)
-and file_name =
-  | Virtual of path_buf  (** A remapped path (namely paths into stdlib) *)
-  | Local of path_buf
-      (** A local path (a file coming from the current crate for instance) *)
+(** A filename. *) and  file_name = 
 
-and file = {
-  name : file_name;  (** The path to the file. *)
-  contents : string option;
-      (** The contents of the source file, as seen by rustc at the time of translation.
+ | Virtual of  path_buf  (** A remapped path (namely paths into stdlib) *)
+
+ | Local of  path_buf  (** A local path (a file coming from the current crate for instance) *)
+
+ and  file = { name :  file_name  (** The path to the file. *);contents : ( string) option  (** The contents of the source file, as seen by rustc at the time of translation.
         Some files don't have contents.
-     *)
-}
+     *) }
 [@@deriving show, ord, eq]
