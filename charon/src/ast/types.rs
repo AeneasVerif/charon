@@ -361,14 +361,15 @@ pub struct VariantLayout {
 /// Layout of the discriminant with its offset and representation type.
 ///
 /// Does not include information about the value range.
-#[derive(Debug, Default, Clone, PartialEq, Eq, Serialize, Deserialize)]
-pub struct DiscriminantLayout {
-    /// The offset of the discriminant in bytes.
-    pub offset: ByteCount,
-    /// The representation type of the discriminant.
-    /// If the discriminant is in a niche of a non-scalar type,
-    /// this is `None`.
-    pub repr: Option<IntegerTy>,
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub enum DiscriminantLayout {
+    Direct {
+        /// The offset of the discriminant in bytes.
+        offset: ByteCount,
+        /// The representation type of the discriminant.
+        repr: IntegerTy,
+    },
+    Niche // TODO: Add more useful information about niches here in the future.
 }
 
 /// Simplified type layout information.
@@ -385,6 +386,7 @@ pub struct Layout {
     #[drive(skip)]
     pub align: Option<ByteCount>,
     /// The discriminant's layout, if any. Only relevant for types with multiple variants.
+    ///
     #[drive(skip)]
     pub discriminant_layout: Option<DiscriminantLayout>,
     /// Whether the type is uninhabited, i.e. has any valid value at all.

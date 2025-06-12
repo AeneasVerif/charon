@@ -458,27 +458,35 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
 
         // Get the offset of the discriminant when there is one.
         let discriminant_layout = match layout.variants() {
-            r_abi::Variants::Multiple { tag, tag_field, .. } => {
-                // The tag_field is the index into the `offsets` vector.
-                let r_abi::FieldsShape::Arbitrary { offsets, .. } = layout.fields() else {
-                    unreachable!()
-                };
+            r_abi::Variants::Multiple {
+                tag,
+                tag_encoding,
+                tag_field,
+                ..
+            } => {
+                match tag_encoding {
+                    r_abi::TagEncoding::Direct => {
+                        // The tag_field is the index into the `offsets` vector.
+                        let r_abi::FieldsShape::Arbitrary { offsets, .. } = layout.fields() else {
+                            unreachable!()
+                        };
 
-                // Only translates the representation if it is a scalar, even
-                // if it is in a niche.
-                let repr = match tag.primitive() {
-                    r_abi::Primitive::Int(int_ty, signed) => {
-                        Some(translate_primitive_int(int_ty, signed))
+                        // Only translates the representation if it is an integer.
+                        let repr = match tag.primitive() {
+                            r_abi::Primitive::Int(int_ty, signed) => {
+                                translate_primitive_int(int_ty, signed)
+                            }
+                            _ => unreachable!(),
+                        };
+                        offsets
+                            .get(r_abi::FieldIdx::from_usize(*tag_field))
+                            .map(|s| DiscriminantLayout::Direct {
+                                offset: r_abi::Size::bytes(*s),
+                                repr,
+                            })
                     }
-                    _ => None,
-                };
-
-                offsets
-                    .get(r_abi::FieldIdx::from_usize(*tag_field))
-                    .map(|s| DiscriminantLayout {
-                        offset: r_abi::Size::bytes(*s),
-                        repr,
-                    })
+                    r_abi::TagEncoding::Niche { .. } => Some(DiscriminantLayout::Niche),
+                }
             }
             r_abi::Variants::Single { .. } | r_abi::Variants::Empty => None,
         };

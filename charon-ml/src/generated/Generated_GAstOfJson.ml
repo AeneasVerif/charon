@@ -1317,10 +1317,11 @@ and discriminant_layout_of_json (ctx : of_json_ctx) (js : json) :
     (discriminant_layout, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
-    | `Assoc [ ("offset", offset); ("repr", repr) ] ->
+    | `Assoc [ ("Direct", `Assoc [ ("offset", offset); ("repr", repr) ]) ] ->
         let* offset = int_of_json ctx offset in
-        let* repr = option_of_json integer_type_of_json ctx repr in
-        Ok ({ offset; repr } : discriminant_layout)
+        let* repr = integer_type_of_json ctx repr in
+        Ok (Direct (offset, repr))
+    | `String "Niche" -> Ok Niche
     | _ -> Error "")
 
 and layout_of_json (ctx : of_json_ctx) (js : json) : (layout, string) result =

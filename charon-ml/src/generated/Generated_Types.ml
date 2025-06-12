@@ -658,14 +658,14 @@ and variant_layout = {
 
     Does not include information about the value range.
  *)
-and discriminant_layout = {
-  offset : int;  (** The offset of the discriminant in bytes. *)
-  repr : integer_type option;
-      (** The representation type of the discriminant.
-        If the discriminant is in a niche of a non-scalar type,
-        this is [None].
-     *)
-}
+and discriminant_layout =
+  | Direct of int * integer_type
+      (** 
+          Fields:
+          - [offset]:  The offset of the discriminant in bytes.
+          - [repr]:  The representation type of the discriminant.
+       *)
+  | Niche
 
 (** Simplified type layout information.
 
@@ -677,7 +677,8 @@ and layout = {
   size : int option;  (** The size of the type in bytes. *)
   align : int option;  (** The alignment, in bytes. *)
   discriminant_layout : discriminant_layout option;
-      (** The discriminant's layout, if any. Only relevant for types with multiple variants. *)
+      (** The discriminant's layout, if any. Only relevant for types with multiple variants.
+     *)
   uninhabited : bool;
       (** Whether the type is uninhabited, i.e. has any valid value at all.
         Note that uninhabited types can have arbitrary layouts: [(u32, !)] has space for the [u32]
