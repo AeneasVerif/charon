@@ -296,7 +296,6 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         span: Span,
         substs: &[hax::GenericArg],
         trait_refs: &[hax::ImplExpr],
-        late_bound: Option<hax::Binder<()>>,
         target: GenericsSource,
     ) -> Result<GenericArgs, Error> {
         use hax::GenericArg::*;
@@ -318,22 +317,6 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                 }
             }
         }
-        // Add the late-bounds lifetimes if any.
-        if let Some(binder) = late_bound {
-            for v in &binder.bound_vars {
-                match v {
-                    hax::BoundVariableKind::Region(_) => {
-                        regions.push(Region::Erased);
-                    }
-                    hax::BoundVariableKind::Ty(_) => {
-                        raise_error!(self, span, "Unexpected locally bound type variable")
-                    }
-                    hax::BoundVariableKind::Const => {
-                        raise_error!(self, span, "Unexpected locally bound const generic")
-                    }
-                }
-            }
-        }
         let trait_refs = self.translate_trait_impl_exprs(span, trait_refs)?;
 
         Ok(GenericArgs {
@@ -342,6 +325,28 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
             const_generics,
             trait_refs,
             target,
+        })
+    }
+
+    /// Translate generic args for an item with late bound variables.
+    pub fn translate_generic_args_with_late_bound(
+        &mut self,
+        span: Span,
+        substs: &[hax::GenericArg],
+        trait_refs: &[hax::ImplExpr],
+        late_bound: Option<hax::Binder<()>>,
+        target: GenericsSource,
+    ) -> Result<RegionBinder<GenericArgs>, Error> {
+        let late_bound = late_bound.unwrap_or(hax::Binder {
+            value: (),
+            bound_vars: vec![],
+        });
+        let generics = self.translate_generic_args(span, substs, trait_refs, target.clone())?;
+        self.translate_region_binder(span, &late_bound, |ctx, _| {
+            Ok(generics.move_under_binder().concat(
+                target.clone(),
+                &ctx.innermost_binder().params.identity_args(target),
+            ))
         })
     }
 

@@ -277,6 +277,13 @@ impl<T> RegionBinder<T> {
         }
     }
 
+    pub fn map<U>(self, f: impl FnOnce(T) -> U) -> RegionBinder<U> {
+        RegionBinder {
+            regions: self.regions,
+            skip_binder: f(self.skip_binder),
+        }
+    }
+
     pub fn map_ref<U>(&self, f: impl FnOnce(&T) -> U) -> RegionBinder<U> {
         RegionBinder {
             regions: self.regions.clone(),

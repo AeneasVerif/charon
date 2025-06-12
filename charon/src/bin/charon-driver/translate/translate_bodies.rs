@@ -995,8 +995,9 @@ impl BodyTransCtx<'_, '_, '_> {
                     // We ignore the arguments
                     return Ok(RawTerminator::Abort(AbortKind::Panic(Some(name))));
                 } else {
-                    let fn_ptr =
-                        self.translate_fn_ptr(span, def_id, generics, trait_refs, trait_info)?;
+                    let fn_ptr = self
+                        .translate_fn_ptr(span, def_id, generics, trait_refs, trait_info)?
+                        .erase();
                     FnOperand::Regular(fn_ptr)
                 }
             }

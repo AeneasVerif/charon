@@ -156,7 +156,9 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                 generics_impls: trait_refs,
                 method_impl: trait_info,
             } => {
-                let fn_ptr = self.translate_fn_ptr(span, fn_id, substs, trait_refs, trait_info)?;
+                let fn_ptr = self
+                    .translate_fn_ptr(span, fn_id, substs, trait_refs, trait_info)?
+                    .erase();
                 RawConstantExpr::FnPtr(fn_ptr)
             }
             ConstantExprKind::Memory(bytes) => RawConstantExpr::RawMemory(bytes.clone()),

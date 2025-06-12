@@ -183,15 +183,7 @@ impl ItemTransCtx<'_, '_> {
         substs: &Vec<hax::GenericArg>,
         trait_refs: &Vec<hax::ImplExpr>,
         trait_info: &Option<hax::ImplExpr>,
-    ) -> Result<FnPtr, Error> {
-        let fun_def = self.hax_def(def_id)?;
-        let late_bound = match fun_def.kind() {
-            hax::FullDefKind::Fn { sig, .. } | hax::FullDefKind::AssocFn { sig, .. } => {
-                Some(sig.as_ref().rebind(()))
-            }
-            _ => None,
-        };
-
+    ) -> Result<RegionBinder<FnPtr>, Error> {
         // Trait information
         trace!(
             "Trait information:\n- def_id: {:?}\n- impl source:\n{:?}",
@@ -204,31 +196,32 @@ impl ItemTransCtx<'_, '_> {
             trait_refs
         );
 
-        match trait_info {
+        Ok(match trait_info {
             // Direct function call
             None => {
-                let fun_ref =
-                    self.translate_fun_decl_ref(span, def_id, substs, trait_refs, late_bound)?;
-                Ok(FnPtr {
+                let bound_fun_ref =
+                    self.translate_fun_decl_ref(span, def_id, substs, trait_refs)?;
+                bound_fun_ref.map(|fun_ref| FnPtr {
                     func: Box::new(FunIdOrTraitMethodRef::Fun(fun_ref.id)),
                     generics: fun_ref.generics,
                 })
             }
             // Trait method
             Some(trait_ref) => {
-                let method_ref = self.translate_method_ref(
-                    span, trait_ref, def_id, substs, trait_refs, late_bound,
-                )?;
-                let fun_id = FunIdOrTraitMethodRef::Trait(
-                    method_ref.trait_ref,
-                    method_ref.name,
-                    method_ref.method_decl_id,
-                );
-                Ok(FnPtr {
-                    func: Box::new(fun_id),
-                    generics: method_ref.generics,
+                let bound_method_ref =
+                    self.translate_method_ref(span, trait_ref, def_id, substs, trait_refs)?;
+                bound_method_ref.map(|method_ref| {
+                    let fun_id = FunIdOrTraitMethodRef::Trait(
+                        method_ref.trait_ref,
+                        method_ref.name,
+                        method_ref.method_decl_id,
+                    );
+                    FnPtr {
+                        func: Box::new(fun_id),
+                        generics: method_ref.generics,
+                    }
                 })
             }
-        }
+        })
     }
 }
