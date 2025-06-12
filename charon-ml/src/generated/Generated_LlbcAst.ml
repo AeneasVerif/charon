@@ -7,32 +7,52 @@ open Meta
 (** A raw statement: a statement without meta data. *)
 type raw_statement =
   | Assign of place * rvalue
+      (** Assigns an [Rvalue] to a [Place]. e.g. [let y = x;] could become
+          [y := move x] which is represented as [Assign(y, Rvalue::Use(Operand::Move(x)))].
+       *)
   | SetDiscriminant of place * variant_id
+      (** Not used today because we take MIR built. *)
   | CopyNonOverlapping of copy_non_overlapping
       (** Equivalent to std::intrinsics::copy_nonoverlapping; this is not modelled as a function
-        call as it cannot diverge
-     *)
+          call as it cannot diverge
+       *)
   | StorageLive of local_id
+      (** Indicates that this local should be allocated; if it is already allocated, this frees
+          the local and re-allocates it. The return value and arguments do not receive a
+          [StorageLive]. We ensure in the micro-pass [insert_storage_lives] that all other locals
+          have a [StorageLive] associated with them.
+       *)
   | StorageDead of local_id
+      (** Indicates that this local should be deallocated; if it is already deallocated, this is
+          a no-op. A local may not have a [StorageDead] in the function's body, in which case it
+          is implicitly deallocated at the end of the function.
+       *)
   | Deinit of place
   | Drop of place
   | Assert of assertion
   | Call of call
   | Abort of abort_kind
+      (** Panic also handles "unreachable". We keep the name of the panicking function that was
+          called.
+       *)
   | Return
   | Break of int
-      (** Break to (outer) loop. The [int] identifies the loop to break to:
-        * 0: break to the first outer loop (the current loop)
-        * 1: break to the second outer loop
-        * ...
-        *)
+      (** Break to outer loops.
+          The [usize] gives the index of the outer loop to break to:
+          * 0: break to first outer loop (the current loop)
+          * 1: break to second outer loop
+          * ...
+       *)
   | Continue of int
-      (** Continue to (outer) loop. The loop identifier works
-        the same way as for {!Break} *)
-  | Nop
-  | Sequence of statement * statement
+      (** Continue to outer loops.
+          The [usize] gives the index of the outer loop to continue to:
+          * 0: continue to first outer loop (the current loop)
+          * 1: continue to second outer loop
+          * ...
+       *)
+  | Nop  (** No-op. *)
   | Switch of switch
-  | Loop of statement
+  | Loop of block
   | Error of string
 
 and statement = {
@@ -41,7 +61,7 @@ and statement = {
   comments_before : string list;  (** Comments that precede this statement. *)
 }
 
-and block = statement
+and block = { span : span; statements : statement list }
 
 and switch =
   | If of operand * block * block
@@ -82,7 +102,7 @@ and switch =
     ord,
     visitors
       {
-        name = "iter_statement";
+        name = "iter_statement_base";
         monomorphic = [ "env" ];
         variety = "iter";
         ancestors = [ "iter_trait_impl" ];
@@ -90,7 +110,7 @@ and switch =
       },
     visitors
       {
-        name = "map_statement";
+        name = "map_statement_base";
         monomorphic = [ "env" ];
         variety = "map";
         ancestors = [ "map_trait_impl" ];

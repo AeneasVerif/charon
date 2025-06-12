@@ -83,24 +83,10 @@ and statement_of_json (ctx : of_json_ctx) (js : json) :
 and block_of_json (ctx : of_json_ctx) (js : json) : (block, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
-    | `Assoc [ ("span", span); ("statements", statements) ] -> begin
+    | `Assoc [ ("span", span); ("statements", statements) ] ->
         let* span = span_of_json ctx span in
         let* statements = list_of_json statement_of_json ctx statements in
-        match List.rev statements with
-        | [] -> Ok { span; content = Nop; comments_before = [] }
-        | last :: rest ->
-            let seq =
-              List.fold_left
-                (fun acc st ->
-                  {
-                    span = st.span;
-                    content = Sequence (st, acc);
-                    comments_before = [];
-                  })
-                last rest
-            in
-            Ok seq
-      end
+        Ok ({ span; statements } : block)
     | _ -> Error "")
 
 and switch_of_json (ctx : of_json_ctx) (js : json) : (switch, string) result =

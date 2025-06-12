@@ -6,7 +6,7 @@ open PrintTypes
 open PrintValues
 open PrintExpressions
 
-type fmt_env = statement PrintUtils.fmt_env
+type fmt_env = block PrintUtils.fmt_env
 
 (** Pretty-printing for LLBC AST (generic functions) *)
 module Ast = struct
@@ -46,17 +46,13 @@ module Ast = struct
     | Break i -> indent ^ "break " ^ string_of_int i
     | Continue i -> indent ^ "continue " ^ string_of_int i
     | Nop -> indent ^ "nop"
-    | Sequence (st1, st2) ->
-        statement_to_string env indent indent_incr st1
-        ^ ";\n"
-        ^ statement_to_string env indent indent_incr st2
     | Switch switch -> (
         match switch with
         | If (op, true_st, false_st) ->
             let op = operand_to_string env op in
             let inner_indent = indent ^ indent_incr in
             let inner_to_string =
-              statement_to_string env inner_indent indent_incr
+              block_to_string env inner_indent indent_incr
             in
             let true_st = inner_to_string true_st in
             let false_st = inner_to_string false_st in
@@ -66,9 +62,7 @@ module Ast = struct
             let op = operand_to_string env op in
             let indent1 = indent ^ indent_incr in
             let indent2 = indent1 ^ indent_incr in
-            let inner_to_string2 =
-              statement_to_string env indent2 indent_incr
-            in
+            let inner_to_string2 = block_to_string env indent2 indent_incr in
             let branches =
               List.map
                 (fun (svl, be) ->
@@ -90,9 +84,7 @@ module Ast = struct
             let p = place_to_string env p in
             let indent1 = indent ^ indent_incr in
             let indent2 = indent1 ^ indent_incr in
-            let inner_to_string2 =
-              statement_to_string env indent2 indent_incr
-            in
+            let inner_to_string2 = block_to_string env indent2 indent_incr in
             let branches =
               List.map
                 (fun (svl, be) ->
@@ -114,11 +106,16 @@ module Ast = struct
             in
             let branches = branches ^ otherwise in
             indent ^ "match (" ^ p ^ ") {\n" ^ branches ^ "\n" ^ indent ^ "}")
-    | Loop loop_st ->
+    | Loop loop_blk ->
         indent ^ "loop {\n"
-        ^ statement_to_string env (indent ^ indent_incr) indent_incr loop_st
+        ^ block_to_string env (indent ^ indent_incr) indent_incr loop_blk
         ^ "\n" ^ indent ^ "}"
     | Error s -> indent ^ "ERROR(' " ^ s ^ "')"
+
+  and block_to_string (env : fmt_env) (indent : string) (indent_incr : string)
+      (b : block) : string =
+    String.concat ";\n"
+      (List.map (statement_to_string env indent indent_incr) b.statements)
 
   let fun_sig_to_string (env : fmt_env) (indent : string) (indent_incr : string)
       (sg : fun_sig) : string =
@@ -126,7 +123,7 @@ module Ast = struct
 
   let fun_decl_to_string (env : fmt_env) (indent : string)
       (indent_incr : string) (def : fun_decl) : string =
-    gfun_decl_to_string env indent indent_incr statement_to_string def
+    gfun_decl_to_string env indent indent_incr block_to_string def
 
   let global_decl_to_string (env : fmt_env) (indent : string)
       (_indent_incr : string) (def : global_decl) : string =
