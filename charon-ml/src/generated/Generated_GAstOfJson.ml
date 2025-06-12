@@ -602,10 +602,13 @@ and field_proj_kind_of_json (ctx : of_json_ctx) (js : json) :
 and file_of_json (ctx : of_json_ctx) (js : json) : (file, string) result =
   combine_error_msgs js __FUNCTION__
     (match js with
-    | `Assoc [ ("name", name); ("contents", contents) ] ->
+    | `Assoc
+        [ ("name", name); ("crate_name", crate_name); ("contents", contents) ]
+      ->
         let* name = file_name_of_json ctx name in
+        let* crate_name = string_of_json ctx crate_name in
         let* contents = option_of_json string_of_json ctx contents in
-        Ok ({ name; contents } : file)
+        Ok ({ name; crate_name; contents } : file)
     | _ -> Error "")
 
 and file_id_of_json (ctx : of_json_ctx) (js : json) : (file_id, string) result =
