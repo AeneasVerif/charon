@@ -4,6 +4,10 @@
 #[lang_item("sized")]
 pub trait Sized<Self>
 
+struct test_crate::Foo::<bool> {
+  value: bool,
+}
+
 struct test_crate::Foo::<i32> {
   value: i32,
 }
@@ -14,10 +18,6 @@ fn test_crate::FooInt() -> test_crate::Foo::<i32>
 
     @0 := test_crate::Foo::<i32> { value: const (0 : i32) }
     return
-}
-
-struct test_crate::Foo::<bool> {
-  value: bool,
 }
 
 fn test_crate::FooBool() -> test_crate::Foo::<bool>

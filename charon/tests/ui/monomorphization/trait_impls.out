@@ -19,6 +19,8 @@ impl PartialEq<bool> for bool {
     fn eq<'_0, '_1> = {impl PartialEq<bool> for bool}#19::eq<'_0_0, '_0_1>
 }
 
+pub fn core::cmp::impls::{impl PartialEq<bool> for bool}#19::eq::<'_, '_>(@1: &'_ (bool), @2: &'_ (bool)) -> bool
+
 // Full name: core::cmp::impls::{impl Eq for bool}#38
 impl Eq for bool {
     parent_clause0 = {impl PartialEq<bool> for bool}#19
