@@ -433,6 +433,10 @@ pub struct TypeDecl {
     pub layout: Option<Layout>,
     /// The metadata associated with a pointer to the type.
     /// This is `None` if we could not compute it because of generics.
+    /// The information is *accurate* if it is `Some`
+    ///     while if it is `None`, it may still be theoretically computable
+    ///     but due to some limitation to be fixed, we are unable to obtain the info.
+    /// See `translate_types::{impl ItemTransCtx}::translate_ptr_metadata` for more details.
     pub ptr_metadata: Option<PtrMetadata>,
 }
 

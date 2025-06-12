@@ -379,15 +379,6 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
     ///
     /// Returns `None` if the type is generic, or if it is not a DST.
     pub fn translate_ptr_metadata(&self) -> Option<PtrMetadata> {
-        // // if it is generic, simply returns `None`
-        // let gen_params = &self.binding_levels.outermost().params;
-        // if !(gen_params.types.is_empty() && gen_params.const_generics.is_empty()) {
-        //     return None;
-        let gen_params: &GenericParams = &self.binding_levels.outermost().params;
-        self.self_clause_id
-
-        // otherwise, call the `struct_tail_for_codegen` method from Rustc internal
-
         // prepare the call to the method
         use rustc_middle::ty;
         let tcx = self.t_ctx.tcx;
@@ -408,6 +399,9 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
             ty::Foreign(..) => Some(PtrMetadata::None),
             ty::Str | ty::Slice(..) => Some(PtrMetadata::Length),
             ty::Dynamic(..) => Some(PtrMetadata::VTable(VTable)),
+            // This is NOT accurate -- if there is no generic clause that states `?Sized`
+            // Then it will be safe to return `Some(PtrMetadata::None)`.
+            // TODO: inquire the generic clause to get the accurate info.
             ty::Placeholder(..) | ty::Infer(..) | 
             ty::Param(..) | ty::Bound(..) => None,
             _ => Some(PtrMetadata::None),
