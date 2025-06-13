@@ -1,8 +1,8 @@
 # Final LLBC before serialization:
 
-pub fn core::num::{u32}#8::MAX() -> u32
+pub fn core::num::{u32}::MAX() -> u32
 
-pub const core::num::{u32}#8::MAX: u32 = core::num::{u32}#8::MAX()
+pub const core::num::{u32}::MAX: u32 = core::num::{u32}::MAX()
 
 // Full name: test_crate::overflow
 fn overflow() -> &'static (u32)
@@ -21,7 +21,7 @@ fn overflow() -> &'static (u32)
     storage_live(@5)
     storage_live(@6)
     storage_live(@1)
-    @6 := core::num::{u32}#8::MAX
+    @6 := core::num::{u32}::MAX
     @5 := move (@6) checked.+ const (1 : u32)
     @4 := move ((@5).0)
     @3 := &@4

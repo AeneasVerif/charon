@@ -243,7 +243,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                 trace!("PlaceHolder");
                 raise_error!(self, span, "Unsupported type: placeholder")
             }
-            hax::TyKind::Arrow(box sig) => {
+            hax::TyKind::Arrow(sig) | hax::TyKind::FnDef { fn_sig: sig, .. } => {
                 trace!("Arrow");
                 trace!("bound vars: {:?}", sig.bound_vars);
                 let sig = self.translate_region_binder(span, sig, |ctx, sig| {

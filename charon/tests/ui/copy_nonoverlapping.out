@@ -4,10 +4,10 @@
 #[lang_item("sized")]
 pub trait Sized<Self>
 
-// Full name: core::intrinsics::copy_nonoverlapping::precondition_check
+// Full name: core::ptr::copy_nonoverlapping::precondition_check
 fn precondition_check(@1: *const (), @2: *mut (), @3: usize, @4: usize, @5: usize)
 
-// Full name: core::intrinsics::copy_nonoverlapping
+// Full name: core::ptr::copy_nonoverlapping
 #[lang_item("ptr_copy_nonoverlapping")]
 pub unsafe fn copy_nonoverlapping<T>(@1: *const T, @2: *mut T, @3: usize)
 where
@@ -17,38 +17,37 @@ where
     let src@1: *const T; // arg #1
     let dst@2: *mut T; // arg #2
     let count@3: usize; // arg #3
-    let @4: bool; // anonymous local
-    let @5: (); // anonymous local
-    let @6: *const (); // anonymous local
-    let @7: *mut (); // anonymous local
+    let @4: (); // anonymous local
+    let @5: *const (); // anonymous local
+    let @6: *mut (); // anonymous local
+    let @7: usize; // anonymous local
     let @8: usize; // anonymous local
-    let @9: usize; // anonymous local
+    let @9: bool; // anonymous local
 
+    storage_live(@4)
     storage_live(@5)
     storage_live(@6)
     storage_live(@7)
     storage_live(@8)
     storage_live(@9)
-    storage_live(@4)
-    @4 := ub_checks<bool>
-    if move (@4) {
+    @9 := ub_checks<bool>
+    if copy (@9) {
+        storage_live(@5)
+        @5 := cast<*const T, *const ()>(copy (src@1))
         storage_live(@6)
-        @6 := cast<*const T, *const ()>(copy (src@1))
+        @6 := cast<*mut T, *mut ()>(copy (dst@2))
         storage_live(@7)
-        @7 := cast<*mut T, *mut ()>(copy (dst@2))
+        @7 := size_of<T>
         storage_live(@8)
-        @8 := size_of<T>
-        storage_live(@9)
-        @9 := align_of<T>
-        @5 := precondition_check(move (@6), move (@7), move (@8), move (@9), copy (count@3))
-        storage_dead(@9)
+        @8 := align_of<T>
+        @4 := precondition_check(move (@5), move (@6), move (@7), move (@8), copy (count@3))
         storage_dead(@8)
         storage_dead(@7)
         storage_dead(@6)
+        storage_dead(@5)
     }
     else {
     }
-    storage_dead(@4)
     copy_nonoverlapping(copy (src@1), copy (dst@2), copy (count@3))
     @0 := ()
     return

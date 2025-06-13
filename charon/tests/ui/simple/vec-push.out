@@ -37,11 +37,7 @@ pub opaque type UsizeNoHighBit
 #[lang_item("NonNull")]
 pub opaque type NonNull<T>
 
-pub fn core::num::{usize}#11::MAX() -> usize
-
-pub const core::num::{usize}#11::MAX: usize = core::num::{usize}#11::MAX()
-
-// Full name: alloc::raw_vec::{RawVec<T, A>[@TraitClause0, @TraitClause1]}#2::grow_one
+// Full name: alloc::raw_vec::{RawVec<T, A>[@TraitClause0, @TraitClause1]}::grow_one
 fn grow_one<'_0, T, A>(@1: &'_0 mut (RawVec<T, A>[@TraitClause0, @TraitClause1]))
 where
     [@TraitClause0]: Sized<T>,
@@ -51,7 +47,7 @@ where
 #[lang_item("ptr_unique")]
 pub opaque type Unique<T>
 
-// Full name: alloc::vec::{Vec<T, A>[@TraitClause0, @TraitClause1]}#1::push
+// Full name: alloc::vec::{Vec<T, A>[@TraitClause0, @TraitClause1]}::push
 pub fn push<'_0, T, A>(@1: &'_0 mut (Vec<T, A>[@TraitClause0, @TraitClause1]), @2: T)
 where
     [@TraitClause0]: Sized<T>,
@@ -73,15 +69,12 @@ where
     let elem_size@13: usize; // local
     let self@14: UsizeNoHighBit; // local
     let @15: NonNull<u8>; // anonymous local
-    let @16: usize; // anonymous local
 
     storage_live(len@3)
     storage_live(@7)
     storage_live(@8)
     storage_live(end@9)
-    storage_live(src@11)
     storage_live(self@14)
-    storage_live(@16)
     len@3 := copy ((*(self@1)).len)
     storage_live(@4)
     storage_live(@5)
@@ -93,8 +86,7 @@ where
     elem_size@13 := size_of<T>
     switch move (elem_size@13) {
         0 : usize => {
-            @16 := core::num::{usize}#11::MAX
-            @5 := move (@16)
+            @5 := const (18446744073709551615 : usize)
         },
         _ => {
             storage_live(self@14)
@@ -125,8 +117,10 @@ where
     storage_dead(@15)
     end@9 := copy (self@10) offset copy (len@3)
     storage_dead(self@10)
+    storage_live(src@11)
     src@11 := move (value@2)
     *(end@9) := copy (src@11)
+    storage_dead(src@11)
     (*(self@1)).len := copy (len@3) wrapping.+ const (1 : usize)
     @0 := ()
     return
