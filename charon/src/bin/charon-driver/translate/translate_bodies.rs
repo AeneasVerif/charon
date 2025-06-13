@@ -209,13 +209,13 @@ impl BodyTransCtx<'_, '_, '_> {
                 Ok(self.locals.place_for_var(var_id))
             }
             hax::PlaceKind::Projection {
-                place: subplace,
+                place: hax_subplace,
                 kind,
             } => {
                 let ty = self.translate_ty(span, &place.ty)?;
                 // Compute the type of the value *before* projection - we use this
                 // to disambiguate
-                let subplace = self.translate_place(span, subplace)?;
+                let subplace = self.translate_place(span, hax_subplace)?;
                 let place = match kind {
                     hax::ProjectionElem::Deref => {
                         // We use the type to disambiguate
@@ -224,6 +224,18 @@ impl BodyTransCtx<'_, '_, '_> {
                             TyKind::Adt(TypeId::Builtin(BuiltinTy::Box), generics) => {
                                 assert!(generics.regions.is_empty());
                                 assert!(generics.types.elem_count() == 1);
+                                assert!(generics.const_generics.is_empty());
+                            }
+                            TyKind::Adt(TypeId::Adt(_), generics) => {
+                                let hax_id = match hax_subplace.ty.kind() {
+                                    hax::TyKind::Adt { def_id, .. } => def_id,
+                                    _ => unreachable!(),
+                                };
+                                assert!(
+                                    self.get_lang_item(rustc_hir::LangItem::OwnedBox) == *hax_id
+                                );
+                                assert!(generics.regions.is_empty());
+                                assert!(generics.types.elem_count() == 2); // Box<T, A>
                                 assert!(generics.const_generics.is_empty());
                             }
                             _ => {

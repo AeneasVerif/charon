@@ -475,11 +475,11 @@ pub enum RawConstantExpr {
     /// We eliminate this case in a micro-pass.
     #[charon::opaque]
     Ref(Box<ConstantExpr>),
-    /// A mutable pointer to a mutable static.
+    /// A pointer to a mutable static.
     ///
     /// We eliminate this case in a micro-pass.
     #[charon::opaque]
-    MutPtr(Box<ConstantExpr>),
+    Ptr(RefKind, Box<ConstantExpr>),
     /// A const generic var
     Var(ConstGenericDbVar),
     /// Function pointer

@@ -66,10 +66,10 @@ fn transform_constant_expr(
                 }
             }
         }
-        RawConstantExpr::MutPtr(bval) => {
+        RawConstantExpr::Ptr(rk, bval) => {
             match bval.value {
                 RawConstantExpr::Global(global_ref) => {
-                    Operand::Move(new_var(Rvalue::GlobalRef(global_ref, RefKind::Mut), val.ty))
+                    Operand::Move(new_var(Rvalue::GlobalRef(global_ref, rk), val.ty))
                 }
                 _ => {
                     // Recurse on the borrowed value
@@ -80,7 +80,7 @@ fn transform_constant_expr(
                     let bvar = new_var(Rvalue::Use(bval), bval_ty);
 
                     // Borrow the value
-                    let ref_var = new_var(Rvalue::RawPtr(bvar, RefKind::Mut), val.ty);
+                    let ref_var = new_var(Rvalue::RawPtr(bvar, rk), val.ty);
 
                     Operand::Move(ref_var)
                 }

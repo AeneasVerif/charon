@@ -1056,9 +1056,10 @@ impl<C: AstFormatter> FmtWithCtx<C> for RawConstantExpr {
             RawConstantExpr::Ref(cv) => {
                 write!(f, "&{}", cv.with_ctx(ctx))
             }
-            RawConstantExpr::MutPtr(cv) => {
-                write!(f, "&raw mut {}", cv.with_ctx(ctx))
-            }
+            RawConstantExpr::Ptr(rk, cv) => match rk {
+                RefKind::Mut => write!(f, "&raw mut {}", cv.with_ctx(ctx)),
+                RefKind::Shared => write!(f, "&raw const {}", cv.with_ctx(ctx)),
+            },
             RawConstantExpr::Var(id) => write!(f, "{}", id.with_ctx(ctx)),
             RawConstantExpr::FnPtr(fp) => {
                 write!(f, "{}", fp.with_ctx(ctx))

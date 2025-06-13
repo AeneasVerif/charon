@@ -23,6 +23,10 @@ pub struct Transform;
 /// We reconstruct this into a call to `Box::new(x)`.
 impl UllbcPass for Transform {
     fn transform_body(&self, ctx: &mut TransformCtx, b: &mut ExprBody) {
+        if ctx.options.raw_boxes {
+            return;
+        }
+
         // We need to find a block that has exchange_malloc as the following terminator:
         // ```text
         // @4 := alloc::alloc::exchange_malloc(move (@2), move (@3))

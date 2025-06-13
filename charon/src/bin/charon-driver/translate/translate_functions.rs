@@ -185,7 +185,9 @@ impl ItemTransCtx<'_, '_> {
 
         // Check if the function is considered primitive: primitive
         // functions benefit from special treatment.
-        let fun_id = if fun_def.diagnostic_item.as_deref() == Some("box_new") {
+        let fun_id = if fun_def.diagnostic_item.as_deref() == Some("box_new")
+            && !self.t_ctx.options.raw_boxes
+        {
             // Built-in function.
             assert!(trait_info.is_none());
             FunIdOrTraitMethodRef::Fun(FunId::Builtin(BuiltinFunId::BoxNew))
