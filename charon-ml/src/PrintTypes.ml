@@ -337,11 +337,7 @@ and path_elem_to_string (env : 'a fmt_env) (e : path_elem) : string =
         if d = Disambiguator.zero then "" else "#" ^ Disambiguator.to_string d
       in
       s ^ d
-  | PeImpl (impl, d) ->
-      let d =
-        if d = Disambiguator.zero then "" else "#" ^ Disambiguator.to_string d
-      in
-      "{" ^ impl_elem_to_string env impl ^ "}" ^ d
+  | PeImpl impl -> "{" ^ impl_elem_to_string env impl ^ "}"
   | PeMonomorphized args ->
       let params, _ = generic_args_to_strings env args in
       "<" ^ String.concat ", " params ^ ">"
