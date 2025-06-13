@@ -93,7 +93,7 @@ fn test_crate::apply_to_once::<test_crate::main::closure::<'_, '_>>(@1: test_cra
     @0 := {impl FnOnce<(u8, u8)> for closure<'_0, '_1>}<'_, '_>::call_once(move (@2), move (@3))
     storage_dead(@3)
     storage_dead(@2)
-    drop f@1
+    drop[Drop<test_crate::main::closure::<'_, '_>>] f@1
     return
 }
 
@@ -208,6 +208,13 @@ pub trait Fn<Self, Args>
     parent_clause1 : [@TraitClause1]: Sized<Args>
     parent_clause2 : [@TraitClause2]: Tuple<Args>
     fn call<'_0> = core::ops::function::Fn::call<'_0_0, Self, Args>[Self]
+}
+
+// Full name: core::ops::drop::Drop
+#[lang_item("drop")]
+pub trait Drop<Self>
+{
+    fn drop<'_0> = drop<'_0_0, Self>[Self]
 }
 
 // Full name: test_crate::main::{impl FnOnce<(u8, u8)> for closure<'_0, '_1>}

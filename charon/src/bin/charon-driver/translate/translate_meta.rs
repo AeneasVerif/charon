@@ -170,8 +170,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
             }
             // We map the three namespaces onto a single one. We can always disambiguate by looking
             // at the definition.
-            DefPathItem::TypeNs(None) => None,
-            DefPathItem::TypeNs(Some(symbol))
+            DefPathItem::TypeNs(symbol)
             | DefPathItem::ValueNs(symbol)
             | DefPathItem::MacroNs(symbol) => Some(PathElem::Ident(symbol, disambiguator)),
             DefPathItem::Impl => {
@@ -202,7 +201,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
                     _ => unreachable!(),
                 };
 
-                Some(PathElem::Impl(impl_elem, disambiguator))
+                Some(PathElem::Impl(impl_elem))
             }
             // TODO: do nothing for now
             DefPathItem::OpaqueTy => None,
@@ -303,27 +302,37 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
         let def_id = src.as_def_id();
         let mut name = self.def_id_to_name(def_id)?;
         match src {
-            TransItemSource::ClosureTraitImpl(id, kind)
-            | TransItemSource::ClosureMethod(id, kind) => {
-                let _ = name.name.pop(); // Pop the `{closure}` path item
-                let impl_id = self.register_closure_trait_impl_id(&None, id, *kind);
-                name.name.push(PathElem::Impl(
-                    ImplElem::Trait(impl_id),
-                    Disambiguator::ZERO,
-                ));
+            TransItemSource::ClosureTraitImpl(..)
+            | TransItemSource::ClosureMethod(..)
+            | TransItemSource::DropGlueImpl(..)
+            | TransItemSource::DropGlueMethod(..) => {
+                let _ = name.name.pop(); // Pop the `{closure}` or `<type_name>` path item
+                let impl_id = match src {
+                    TransItemSource::ClosureTraitImpl(id, kind)
+                    | TransItemSource::ClosureMethod(id, kind) => {
+                        self.register_closure_trait_impl_id(&None, id, *kind)
+                    }
+                    TransItemSource::DropGlueImpl(id) | TransItemSource::DropGlueMethod(id) => {
+                        self.register_drop_trait_impl_id(&None, id)
+                    }
+                    _ => unreachable!(),
+                };
 
-                if matches!(src, TransItemSource::ClosureMethod(..)) {
-                    let fn_name = kind.method_name().to_string();
-                    name.name
-                        .push(PathElem::Ident(fn_name, Disambiguator::ZERO));
+                name.name.push(PathElem::Impl(ImplElem::Trait(impl_id)));
+
+                match src {
+                    TransItemSource::ClosureMethod(_, kind) => {
+                        let fn_name = kind.method_name().to_string();
+                        name.name
+                            .push(PathElem::Ident(fn_name, Disambiguator::ZERO));
+                    }
+                    TransItemSource::DropGlueMethod(..) => {
+                        let fn_name = "drop".to_string();
+                        name.name
+                            .push(PathElem::Ident(fn_name, Disambiguator::ZERO));
+                    }
+                    _ => {}
                 }
-            }
-            TransItemSource::TraitImpl(id) if matches!(id.kind, hax::DefKind::TraitAlias) => {
-                let impl_id = self.register_trait_impl_id(&None, id);
-                name.name.push(PathElem::Impl(
-                    ImplElem::Trait(impl_id),
-                    Disambiguator::ZERO,
-                ));
             }
             _ => {}
         }
@@ -348,7 +357,7 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
             } => associated_item,
             _ => panic!("Unexpected def for associated item: {def:?}"),
         };
-        Ok(TraitItemName(assoc.name.clone()))
+        Ok(TraitItemName(assoc.name.clone().unwrap_or_default()))
     }
 
     pub(crate) fn opacity_for_name(&self, name: &Name) -> ItemOpacity {
@@ -467,12 +476,17 @@ impl<'tcx, 'ctx> TranslateCtx<'tcx> {
         }
         let span = def.source_span.as_ref().unwrap_or(&def.span);
         let span = self.translate_span_from_hax(span);
-        let attr_info = self.translate_attr_info(def);
         let is_local = def.def_id.is_local;
-        let lang_item = def
-            .lang_item
-            .clone()
-            .or_else(|| def.diagnostic_item.clone());
+        let (attr_info, lang_item) = if item_src.is_derived_item() {
+            (AttrInfo::default(), None)
+        } else {
+            let attr_info = self.translate_attr_info(def);
+            let lang_item = def
+                .lang_item
+                .clone()
+                .or_else(|| def.diagnostic_item.clone());
+            (attr_info, lang_item)
+        };
 
         let opacity = if self.is_extern_item(def)
             || attr_info.attributes.iter().any(|attr| attr.is_opaque())

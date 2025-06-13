@@ -66,8 +66,12 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         span: Span,
         trait_ref: &hax::TraitRef,
     ) -> Result<TraitDeclRef, Error> {
-        // For now a trait has no required bounds, so we pass an empty list.
-        self.translate_trait_decl_ref(span, &trait_ref.def_id, &trait_ref.generic_args, &[])
+        self.translate_trait_decl_ref(
+            span,
+            &trait_ref.def_id,
+            &trait_ref.generic_args,
+            &trait_ref.impl_exprs,
+        )
     }
 
     pub(crate) fn register_predicate(
@@ -190,6 +194,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         trait_decl_ref: PolyTraitDeclRef,
     ) -> Result<TraitRef, Error> {
         trace!("impl_expr: {:#?}", impl_source);
+        use hax::DropData;
         use hax::ImplExprAtom;
 
         let trait_ref = match &impl_source.r#impl {
@@ -205,7 +210,6 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                     trait_decl_ref,
                 }
             }
-            // The self clause and the other clauses are handled in a similar manner
             ImplExprAtom::SelfImpl {
                 r#trait: trait_ref,
                 path,
@@ -357,6 +361,46 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                         trait_decl_ref: trait_decl_ref.clone(),
                         parent_trait_refs,
                         types,
+                    }
+                };
+                TraitRef {
+                    kind,
+                    trait_decl_ref,
+                }
+            }
+            ImplExprAtom::Drop(DropData::Implicit | DropData::Noop) => TraitRef {
+                kind: TraitRefKind::BuiltinOrAuto {
+                    trait_decl_ref: trait_decl_ref.clone(),
+                    parent_trait_refs: Default::default(),
+                    types: vec![],
+                },
+                trait_decl_ref,
+            },
+            ImplExprAtom::Drop(DropData::Glue { impl_exprs, ty }) => {
+                let kind = match ty.kind() {
+                    hax::TyKind::Adt {
+                        def_id,
+                        generic_args,
+                        trait_refs,
+                    } => {
+                        let impl_id = self.register_drop_trait_impl_id(span, def_id);
+                        let generics = self.translate_generic_args(
+                            span,
+                            &generic_args,
+                            &trait_refs,
+                            None,
+                            GenericsSource::item(impl_id),
+                        )?;
+                        TraitRefKind::TraitImpl(impl_id, Box::new(generics))
+                    }
+                    _ => {
+                        let parent_trait_refs =
+                            self.translate_trait_impl_exprs(span, &impl_exprs)?;
+                        TraitRefKind::BuiltinOrAuto {
+                            trait_decl_ref: trait_decl_ref.clone(),
+                            parent_trait_refs,
+                            types: vec![],
+                        }
                     }
                 };
                 TraitRef {

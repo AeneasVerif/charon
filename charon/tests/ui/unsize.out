@@ -18,15 +18,56 @@ where
 #[lang_item("String")]
 pub opaque type String
 
-pub fn alloc::rc::{Rc<T, Global>[Sized<Global>]}#8::new<T>(@1: T) -> Rc<T, Global>[Sized<Global>]
+// Full name: core::ops::drop::Drop
+#[lang_item("drop")]
+pub trait Drop<Self>
+{
+    fn drop<'_0> = core::ops::drop::Drop::drop<'_0_0, Self>[Self]
+}
+
+// Full name: alloc::boxed::{impl Drop for alloc::boxed::Box<T>[@TraitClause0]}::drop
+pub fn {impl Drop for alloc::boxed::Box<T>[@TraitClause0]}::drop<'_0, T, A>(@1: &'_0 mut (alloc::boxed::Box<T>[@TraitClause0]))
+where
+    [@TraitClause0]: Sized<A>,
+
+// Full name: alloc::boxed::{impl Drop for alloc::boxed::Box<T>[@TraitClause0]}
+impl<T, A> Drop for alloc::boxed::Box<T>[@TraitClause0]
+where
+    [@TraitClause0]: Sized<A>,
+{
+    fn drop<'_0> = {impl Drop for alloc::boxed::Box<T>[@TraitClause0]}::drop<'_0_0, T, A>[@TraitClause0]
+}
+
+pub fn alloc::rc::{Rc<T, Global>[Sized<Global>]}::new<T>(@1: T) -> Rc<T, Global>[Sized<Global>]
 where
     [@TraitClause0]: Sized<T>,
+
+// Full name: alloc::rc::{impl Drop for Rc<T, A>[@TraitClause0]}::drop
+pub fn {impl Drop for Rc<T, A>[@TraitClause0]}::drop<'_0, T, A>(@1: &'_0 mut (Rc<T, A>[@TraitClause0]))
+where
+    [@TraitClause0]: Sized<A>,
+
+// Full name: alloc::rc::{impl Drop for Rc<T, A>[@TraitClause0]}
+impl<T, A> Drop for Rc<T, A>[@TraitClause0]
+where
+    [@TraitClause0]: Sized<A>,
+{
+    fn drop<'_0> = {impl Drop for Rc<T, A>[@TraitClause0]}::drop<'_0_0, T, A>[@TraitClause0]
+}
 
 #[lang_item("string_new")]
 pub fn alloc::string::{String}::new() -> String
 
-// Full name: alloc::string::{impl Clone for String}#6::clone
-pub fn {impl Clone for String}#6::clone<'_0>(@1: &'_0 (String)) -> String
+// Full name: alloc::string::{impl Clone for String}::clone
+pub fn {impl Clone for String}::clone<'_0>(@1: &'_0 (String)) -> String
+
+// Full name: alloc::string::{impl Drop for String}::drop
+fn {impl Drop for String}::drop<'_0>(@1: &'_0 mut (String))
+
+// Full name: alloc::string::{impl Drop for String}
+impl Drop for String {
+    fn drop<'_0> = {impl Drop for String}::drop<'_0_0>
+}
 
 // Full name: test_crate::foo
 fn foo()
@@ -72,21 +113,21 @@ fn foo()
     @7 := copy (array@1)
     @6 := @BoxNew<Array<i32, 2 : usize>>[Sized<Array<i32, 2 : usize>>](move (@7))
     @5 := unsize_cast<alloc::boxed::Box<Array<i32, 2 : usize>>[Sized<Global>], alloc::boxed::Box<Slice<i32>>[Sized<Global>]>(move (@6))
-    drop @6
+    drop[{impl Drop for alloc::boxed::Box<T>[@TraitClause0]}<Array<i32, 2 : usize>, Global>[Sized<Global>]] @6
     storage_dead(@7)
     storage_dead(@6)
-    drop @5
+    drop[{impl Drop for alloc::boxed::Box<T>[@TraitClause0]}<Slice<i32>, Global>[Sized<Global>]] @5
     storage_dead(@5)
     storage_live(@8)
     storage_live(@9)
     storage_live(@10)
     @10 := copy (array@1)
-    @9 := alloc::rc::{Rc<T, Global>[Sized<Global>]}#8::new<Array<i32, 2 : usize>>[Sized<Array<i32, 2 : usize>>](move (@10))
+    @9 := alloc::rc::{Rc<T, Global>[Sized<Global>]}::new<Array<i32, 2 : usize>>[Sized<Array<i32, 2 : usize>>](move (@10))
     @8 := unsize_cast<Rc<Array<i32, 2 : usize>, Global>[Sized<Global>], Rc<Slice<i32>, Global>[Sized<Global>]>(move (@9))
-    drop @9
+    drop[{impl Drop for Rc<T, A>[@TraitClause0]}<Array<i32, 2 : usize>, Global>[Sized<Global>]] @9
     storage_dead(@10)
     storage_dead(@9)
-    drop @8
+    drop[{impl Drop for Rc<T, A>[@TraitClause0]}<Slice<i32>, Global>[Sized<Global>]] @8
     storage_dead(@8)
     storage_live(string@11)
     string@11 := alloc::string::{String}::new()
@@ -104,31 +145,31 @@ fn foo()
     storage_live(@17)
     storage_live(@18)
     @18 := &string@11
-    @17 := {impl Clone for String}#6::clone<'_>(move (@18))
+    @17 := {impl Clone for String}::clone<'_>(move (@18))
     storage_dead(@18)
     @16 := @BoxNew<String>[Sized<String>](move (@17))
     @15 := unsize_cast<alloc::boxed::Box<String>[Sized<Global>], alloc::boxed::Box<dyn (exists(TODO))>[Sized<Global>]>(move (@16))
-    drop @16
+    drop[{impl Drop for alloc::boxed::Box<T>[@TraitClause0]}<String, Global>[Sized<Global>]] @16
     storage_dead(@17)
     storage_dead(@16)
-    drop @15
+    drop[{impl Drop for alloc::boxed::Box<T>[@TraitClause0]}<dyn (exists(TODO)), Global>[Sized<Global>]] @15
     storage_dead(@15)
     storage_live(@19)
     storage_live(@20)
     storage_live(@21)
     storage_live(@22)
     @22 := &string@11
-    @21 := {impl Clone for String}#6::clone<'_>(move (@22))
+    @21 := {impl Clone for String}::clone<'_>(move (@22))
     storage_dead(@22)
-    @20 := alloc::rc::{Rc<T, Global>[Sized<Global>]}#8::new<String>[Sized<String>](move (@21))
+    @20 := alloc::rc::{Rc<T, Global>[Sized<Global>]}::new<String>[Sized<String>](move (@21))
     @19 := unsize_cast<Rc<String, Global>[Sized<Global>], Rc<dyn (exists(TODO)), Global>[Sized<Global>]>(move (@20))
-    drop @20
+    drop[{impl Drop for Rc<T, A>[@TraitClause0]}<String, Global>[Sized<Global>]] @20
     storage_dead(@21)
     storage_dead(@20)
-    drop @19
+    drop[{impl Drop for Rc<T, A>[@TraitClause0]}<dyn (exists(TODO)), Global>[Sized<Global>]] @19
     storage_dead(@19)
     @0 := ()
-    drop string@11
+    drop[{impl Drop for String}] string@11
     storage_dead(string@11)
     storage_dead(array@1)
     @0 := ()
@@ -148,11 +189,15 @@ pub fn core::clone::Clone::clone<'_0, Self>(@1: &'_0 (Self)) -> Self
 where
     [@TraitClause0]: Clone<Self>,
 
-// Full name: alloc::string::{impl Clone for String}#6
+// Full name: alloc::string::{impl Clone for String}
 impl Clone for String {
     parent_clause0 = Sized<String>
-    fn clone<'_0> = {impl Clone for String}#6::clone<'_0_0>
+    fn clone<'_0> = {impl Clone for String}::clone<'_0_0>
 }
+
+pub fn core::ops::drop::Drop::drop<'_0, Self>(@1: &'_0 mut (Self))
+where
+    [@TraitClause0]: Drop<Self>,
 
 
 

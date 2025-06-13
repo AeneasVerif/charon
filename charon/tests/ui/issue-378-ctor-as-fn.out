@@ -61,6 +61,40 @@ fn test_crate::Foo(@1: u32, @2: String) -> test_crate::Foo
 #[lang_item("string_new")]
 pub fn new() -> String
 
+// Full name: core::ops::drop::Drop
+#[lang_item("drop")]
+pub trait Drop<Self>
+{
+    fn drop<'_0> = core::ops::drop::Drop::drop<'_0_0, Self>[Self]
+}
+
+// Full name: alloc::string::{impl Drop for String}::drop
+fn {impl Drop for String}::drop<'_0>(@1: &'_0 mut (String))
+
+// Full name: alloc::string::{impl Drop for String}
+impl Drop for String {
+    fn drop<'_0> = {impl Drop for String}::drop<'_0_0>
+}
+
+// Full name: test_crate::{impl Drop for test_crate::Foo}::drop
+fn {impl Drop for test_crate::Foo}::drop<'_0>(@1: &'_0 mut (test_crate::Foo))
+{
+    let @0: (); // return
+    let @1: *mut test_crate::Foo; // arg #1
+    let @2: &'_ mut (test_crate::Foo); // anonymous local
+
+    storage_live(@2)
+    @2 := &mut *(@1)
+    drop[{impl Drop for String}] (*(@2)).1
+    @0 := ()
+    return
+}
+
+// Full name: test_crate::{impl Drop for test_crate::Foo}
+impl Drop for test_crate::Foo {
+    fn drop<'_0> = {impl Drop for test_crate::Foo}::drop<'_0_0>
+}
+
 // Full name: test_crate::Bar::Variant
 fn Variant<'a, T>(@1: &'a (T)) -> Bar<'a, T>[@TraitClause0]
 where
@@ -125,7 +159,7 @@ fn main()
     @9 := test_crate::Foo(const (42 : u32), move (@11))
     storage_dead(@11)
     storage_dead(@10)
-    drop @9
+    drop[{impl Drop for test_crate::Foo}] @9
     storage_dead(@9)
     storage_live(f@12)
     f@12 := const (Variant<'_, i32>[Sized<i32>])
@@ -152,6 +186,10 @@ fn main()
     @0 := ()
     return
 }
+
+pub fn core::ops::drop::Drop::drop<'_0, Self>(@1: &'_0 mut (Self))
+where
+    [@TraitClause0]: Drop<Self>,
 
 
 

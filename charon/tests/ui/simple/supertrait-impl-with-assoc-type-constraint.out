@@ -28,7 +28,7 @@ where
     @TraitClause0::Assoc = (),
 {}
 
-// Full name: test_crate::{impl Trait for T}#1
+// Full name: test_crate::{impl Trait for T}
 impl<T> Trait for T
 where
     [@TraitClause0]: HasAssoc<T>,

@@ -42,6 +42,13 @@ where
     fn method<'_0> = {impl HasMethod for T}::method<'_0_0, T>[@TraitClause0, @TraitClause1]
 }
 
+// Full name: core::ops::drop::Drop
+#[lang_item("drop")]
+pub trait Drop<Self>
+{
+    fn drop<'_0> = drop<'_0_0, Self>[Self]
+}
+
 // Full name: test_crate::call_method
 fn call_method<T>(@1: T)
 where
@@ -60,7 +67,7 @@ where
     storage_dead(@3)
     storage_dead(@2)
     @0 := ()
-    drop x@1
+    drop[Drop<T>] x@1
     @0 := ()
     return
 }
@@ -68,6 +75,11 @@ where
 fn test_crate::HasMethod::method<'_0, Self>(@1: &'_0 (Self))
 where
     [@TraitClause0]: HasMethod<Self>,
+
+// Full name: core::ops::drop::Drop::drop
+pub fn drop<'_0, Self>(@1: &'_0 mut (Self))
+where
+    [@TraitClause0]: Drop<Self>,
 
 
 

@@ -20,8 +20,23 @@ pub opaque type NonNull<T>
 #[lang_item("ptr_unique")]
 pub opaque type Unique<T>
 
-// Full name: alloc::boxed::{impl Drop for alloc::boxed::Box<T>[@TraitClause0]}#8::drop
-pub fn {impl Drop for alloc::boxed::Box<T>[@TraitClause0]}#8::drop<'_0, T, A>(@1: &'_0 mut (alloc::boxed::Box<T>[@TraitClause0]))
+// Full name: core::ops::drop::Drop
+#[lang_item("drop")]
+pub trait Drop<Self>
+{
+    fn drop<'_0> = core::ops::drop::Drop::drop<'_0_0, Self>[Self]
+}
+
+// Full name: alloc::string::{impl Drop for String}::drop
+fn {impl Drop for String}::drop<'_0>(@1: &'_0 mut (String))
+
+// Full name: alloc::string::{impl Drop for String}
+impl Drop for String {
+    fn drop<'_0> = {impl Drop for String}::drop<'_0_0>
+}
+
+// Full name: alloc::boxed::{impl Drop for alloc::boxed::Box<T>[@TraitClause0]}::drop
+pub fn {impl Drop for alloc::boxed::Box<T>[@TraitClause0]}::drop<'_0, T, A>(@1: &'_0 mut (alloc::boxed::Box<T>[@TraitClause0]))
 where
     [@TraitClause0]: Sized<A>,
 
@@ -66,32 +81,25 @@ fn into_inner(@1: alloc::boxed::Box<String>[Sized<Global>])
     assert(copy (@13) == true)
     _x@2 := move (*(@6))
     @0 := ()
-    drop _x@2
+    drop[{impl Drop for String}] _x@2
     storage_dead(_x@2)
     @5 := transmute<NonNull<String>, *const String>(copy ((*(b@1)).0))
     @3 := &mut b@1
-    @4 := {impl Drop for alloc::boxed::Box<T>[@TraitClause0]}#8::drop<'_, String, Global>[Sized<Global>](move (@3))
+    @4 := {impl Drop for alloc::boxed::Box<T>[@TraitClause0]}::drop<'_, String, Global>[Sized<Global>](move (@3))
     @0 := ()
     return
-}
-
-// Full name: core::ops::drop::Drop
-#[lang_item("drop")]
-pub trait Drop<Self>
-{
-    fn drop<'_0> = core::ops::drop::Drop::drop<'_0_0, Self>[Self]
 }
 
 pub fn core::ops::drop::Drop::drop<'_0, Self>(@1: &'_0 mut (Self))
 where
     [@TraitClause0]: Drop<Self>,
 
-// Full name: alloc::boxed::{impl Drop for alloc::boxed::Box<T>[@TraitClause0]}#8
+// Full name: alloc::boxed::{impl Drop for alloc::boxed::Box<T>[@TraitClause0]}
 impl<T, A> Drop for alloc::boxed::Box<T>[@TraitClause0]
 where
     [@TraitClause0]: Sized<A>,
 {
-    fn drop<'_0> = {impl Drop for alloc::boxed::Box<T>[@TraitClause0]}#8::drop<'_0_0, T, A>[@TraitClause0]
+    fn drop<'_0> = {impl Drop for alloc::boxed::Box<T>[@TraitClause0]}::drop<'_0_0, T, A>[@TraitClause0]
 }
 
 

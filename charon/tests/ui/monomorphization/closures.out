@@ -29,7 +29,7 @@ fn test_crate::apply_to_zero::<test_crate::main::closure::<'_>>(@1: test_crate::
     @0 := {impl Fn<(u8)> for test_crate::main::closure<'_0>}<'_>::call(move (@2), move (@3))
     storage_dead(@3)
     storage_dead(@2)
-    drop f@1
+    drop[Drop<test_crate::main::closure::<'_>>] f@1
     return
 }
 
@@ -47,7 +47,7 @@ fn test_crate::apply_to_zero_mut::<test_crate::main::closure#1::<'_>>(@1: test_c
     @0 := {impl FnMut<(u8)> for test_crate::main::closure#1<'_0>}<'_>::call_mut(move (@2), move (@3))
     storage_dead(@3)
     storage_dead(@2)
-    drop f@1
+    drop[Drop<test_crate::main::closure#1::<'_>>] f@1
     return
 }
 
@@ -65,7 +65,7 @@ fn test_crate::apply_to_zero_once::<test_crate::main::closure#2>(@1: test_crate:
     @0 := {impl FnOnce<(u8)> for test_crate::main::closure#2}::call_once(move (@2), move (@3))
     storage_dead(@3)
     storage_dead(@2)
-    drop f@1
+    drop[Drop<test_crate::main::closure#2>] f@1
     return
 }
 
@@ -160,6 +160,13 @@ pub trait Fn<Self, Args>
     parent_clause1 : [@TraitClause1]: Sized<Args>
     parent_clause2 : [@TraitClause2]: Tuple<Args>
     fn call<'_0> = core::ops::function::Fn::call<'_0_0, Self, Args>[Self]
+}
+
+// Full name: core::ops::drop::Drop
+#[lang_item("drop")]
+pub trait Drop<Self>
+{
+    fn drop<'_0> = core::ops::drop::Drop::drop<'_0_0, Self>[Self]
 }
 
 // Full name: test_crate::main::{impl FnOnce<(u8)> for test_crate::main::closure<'_0>}

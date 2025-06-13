@@ -654,10 +654,10 @@ impl<T> GExprBody<T> {
         &self,
         ctx: &C,
         f: &mut fmt::Formatter<'_>,
-        fmt_body: impl for<'a, 'b> FnOnce(
+        fmt_body: impl FnOnce(
             &mut fmt::Formatter<'_>,
-            &<C::Reborrow<'b> as AstFormatter>::Reborrow<'a>,
-            &'a T,
+            &<<C as AstFormatter>::Reborrow<'_> as AstFormatter>::Reborrow<'_>,
+            &T,
         ) -> fmt::Result,
     ) -> fmt::Result {
         // Update the context
@@ -693,16 +693,27 @@ impl<T> GExprBody<T> {
 
 impl<C: AstFormatter> FmtWithCtx<C> for GExprBody<llbc_ast::Block> {
     fn fmt_with_ctx(&self, ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        self.fmt_with_ctx_and_callback(ctx, f, |f, ctx, body| {
+        // Inference fails when this is a closure.
+        fn fmt_body<C: AstFormatter>(
+            f: &mut fmt::Formatter<'_>,
+            ctx: &<<C as AstFormatter>::Reborrow<'_> as AstFormatter>::Reborrow<'_>,
+            body: &Block,
+        ) -> Result<(), fmt::Error> {
             writeln!(f)?;
             body.fmt_with_ctx(ctx, f)?;
             Ok(())
-        })
+        }
+        self.fmt_with_ctx_and_callback(ctx, f, fmt_body::<C>)
     }
 }
 impl<C: AstFormatter> FmtWithCtx<C> for GExprBody<ullbc_ast::BodyContents> {
     fn fmt_with_ctx(&self, ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        self.fmt_with_ctx_and_callback(ctx, f, |f, ctx, body| {
+        // Inference fails when this is a closure.
+        fn fmt_body<C: AstFormatter>(
+            f: &mut fmt::Formatter<'_>,
+            ctx: &<<C as AstFormatter>::Reborrow<'_> as AstFormatter>::Reborrow<'_>,
+            body: &Vector<BlockId, BlockData>,
+        ) -> Result<(), fmt::Error> {
             let tab = ctx.indent();
             let ctx = &ctx.increase_indent();
             for (bid, block) in body.iter_indexed_values() {
@@ -712,7 +723,8 @@ impl<C: AstFormatter> FmtWithCtx<C> for GExprBody<ullbc_ast::BodyContents> {
                 writeln!(f, "{tab}}}")?;
             }
             Ok(())
-        })
+        }
+        self.fmt_with_ctx_and_callback(ctx, f, fmt_body::<C>)
     }
 }
 
@@ -946,12 +958,8 @@ impl<C: AstFormatter> FmtWithCtx<C> for PathElem {
                 }
                 Ok(())
             }
-            PathElem::Impl(impl_elem, d) => {
-                write!(f, "{}", impl_elem.with_ctx(ctx))?;
-                if !d.is_zero() {
-                    write!(f, "#{}", d)?;
-                }
-                Ok(())
+            PathElem::Impl(impl_elem) => {
+                write!(f, "{}", impl_elem.with_ctx(ctx))
             }
             PathElem::Monomorphized(args) => {
                 write!(f, "<{}>", args.fmt_explicits(ctx).format(", "))
@@ -1293,8 +1301,13 @@ impl<C: AstFormatter> FmtWithCtx<C> for ullbc::Statement {
             RawStatement::Deinit(place) => {
                 write!(f, "{tab}deinit({})", place.with_ctx(ctx))
             }
-            RawStatement::Drop(place) => {
-                write!(f, "{tab}drop {}", place.with_ctx(ctx))
+            RawStatement::Drop(place, tref) => {
+                write!(
+                    f,
+                    "{tab}drop[{}] {}",
+                    tref.with_ctx(ctx),
+                    place.with_ctx(ctx),
+                )
             }
             RawStatement::Assert(assert) => write!(f, "{tab}{}", assert.with_ctx(ctx)),
             RawStatement::Nop => write!(f, "{tab}nop"),
@@ -1337,8 +1350,8 @@ impl<C: AstFormatter> FmtWithCtx<C> for llbc::Statement {
             RawStatement::Deinit(place) => {
                 write!(f, "deinit({})", place.with_ctx(ctx))
             }
-            RawStatement::Drop(place) => {
-                write!(f, "drop {}", place.with_ctx(ctx))
+            RawStatement::Drop(place, tref) => {
+                write!(f, "drop[{}] {}", tref.with_ctx(ctx), place.with_ctx(ctx),)
             }
             RawStatement::Assert(assert) => {
                 write!(f, "{}", assert.with_ctx(ctx),)

@@ -38,7 +38,7 @@ pub trait Copy<Self>
     parent_clause0 : [@TraitClause0]: Clone<Self>
 }
 
-// Full name: test_crate::{impl Copy for Foo}#1
+// Full name: test_crate::{impl Copy for Foo}
 impl Copy for Foo {
     parent_clause0 = {impl Clone for Foo}
 }

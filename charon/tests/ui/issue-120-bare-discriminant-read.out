@@ -37,6 +37,26 @@ where
     return
 }
 
+// Full name: core::ops::drop::Drop
+#[lang_item("drop")]
+pub trait Drop<Self>
+{
+    fn drop<'_0> = core::ops::drop::Drop::drop<'_0_0, Self>[Self]
+}
+
+// Full name: core::option::{impl Drop for Option<T>[@TraitClause0]}::drop
+fn {impl Drop for Option<T>[@TraitClause0]}::drop<'_0, T>(@1: &'_0 mut (Option<T>[@TraitClause0]))
+where
+    [@TraitClause0]: Sized<T>,
+
+// Full name: core::option::{impl Drop for Option<T>[@TraitClause0]}
+impl<T> Drop for Option<T>[@TraitClause0]
+where
+    [@TraitClause0]: Sized<T>,
+{
+    fn drop<'_0> = {impl Drop for Option<T>[@TraitClause0]}::drop<'_0_0, T>[@TraitClause0]
+}
+
 // Full name: test_crate::is_some
 fn is_some<T>(@1: Option<T>[@TraitClause0]) -> bool
 where
@@ -58,7 +78,7 @@ where
     @0 := move (@2) != const (0 : isize)
     storage_dead(@2)
     storage_dead(@4)
-    drop opt@1
+    drop[{impl Drop for Option<T>[@TraitClause0]}<T>[@TraitClause0]] opt@1
     return
 }
 
@@ -78,9 +98,13 @@ where
             @0 := const (1 : isize)
         },
     }
-    drop opt@1
+    drop[{impl Drop for Option<T>[@TraitClause0]}<T>[@TraitClause0]] opt@1
     return
 }
+
+pub fn core::ops::drop::Drop::drop<'_0, Self>(@1: &'_0 mut (Self))
+where
+    [@TraitClause0]: Drop<Self>,
 
 
 

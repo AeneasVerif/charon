@@ -169,8 +169,8 @@ pub trait Default<Self>
     fn default = core::default::Default::default<Self>[Self]
 }
 
-// Full name: core::default::{impl Default for u32}#7::default
-pub fn {impl Default for u32}#7::default() -> u32
+// Full name: core::default::{impl Default for u32}::default
+pub fn {impl Default for u32}::default() -> u32
 
 // Full name: test_crate::{impl Default for Foo}::default
 pub fn {impl Default for Foo}::default() -> Foo
@@ -180,9 +180,9 @@ pub fn {impl Default for Foo}::default() -> Foo
     let @2: u32; // anonymous local
 
     storage_live(@1)
-    @1 := {impl Default for u32}#7::default()
+    @1 := {impl Default for u32}::default()
     storage_live(@2)
-    @2 := {impl Default for u32}#7::default()
+    @2 := {impl Default for u32}::default()
     @0 := Foo { x: move (@1), y: move (@2) }
     storage_dead(@2)
     storage_dead(@1)
@@ -201,27 +201,34 @@ struct Bar {
   super_long_field_name: u32,
 }
 
-// Full name: test_crate::{impl Default for Bar}#1::default
-pub fn {impl Default for Bar}#1::default() -> Bar
+// Full name: test_crate::{impl Default for Bar}::default
+pub fn {impl Default for Bar}::default() -> Bar
 {
     let @0: Bar; // return
     let @1: u32; // anonymous local
     let @2: u32; // anonymous local
 
     storage_live(@1)
-    @1 := {impl Default for u32}#7::default()
+    @1 := {impl Default for u32}::default()
     storage_live(@2)
-    @2 := {impl Default for u32}#7::default()
+    @2 := {impl Default for u32}::default()
     @0 := Bar { x: move (@1), super_long_field_name: move (@2) }
     storage_dead(@2)
     storage_dead(@1)
     return
 }
 
-// Full name: test_crate::{impl Default for Bar}#1
+// Full name: test_crate::{impl Default for Bar}
 impl Default for Bar {
     parent_clause0 = Sized<Bar>
-    fn default = {impl Default for Bar}#1::default
+    fn default = {impl Default for Bar}::default
+}
+
+// Full name: core::ops::drop::Drop
+#[lang_item("drop")]
+pub trait Drop<Self>
+{
+    fn drop<'_0> = drop<'_0_0, Self>[Self]
 }
 
 // Full name: test_crate::eat
@@ -233,7 +240,7 @@ where
     let @1: T; // arg #1
 
     @0 := ()
-    drop @1
+    drop[Drop<T>] @1
     @0 := ()
     return
 }
@@ -332,7 +339,7 @@ fn foo()
     storage_live(@10)
     // Call `default` and destructure the result
     // This is the long field
-    @10 := {impl Default for Bar}#1::default()
+    @10 := {impl Default for Bar}::default()
     storage_live(x@8)
     x@8 := copy ((@10).x)
     storage_live(super_long_field_name@9)
@@ -495,11 +502,16 @@ pub fn core::default::Default::default<Self>() -> Self
 where
     [@TraitClause0]: Default<Self>,
 
-// Full name: core::default::{impl Default for u32}#7
+// Full name: core::default::{impl Default for u32}
 impl Default for u32 {
     parent_clause0 = Sized<u32>
-    fn default = {impl Default for u32}#7::default
+    fn default = {impl Default for u32}::default
 }
+
+// Full name: core::ops::drop::Drop::drop
+pub fn drop<'_0, Self>(@1: &'_0 mut (Self))
+where
+    [@TraitClause0]: Drop<Self>,
 
 
 

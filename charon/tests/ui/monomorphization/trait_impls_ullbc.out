@@ -17,7 +17,7 @@ fn test_crate::do_test::<bool>(@1: bool, @2: bool)
         @5 := &expected@2;
         storage_live(@6);
         @6 := &init@1;
-        @4 := {impl Eq for bool}#38::parent_clause0::eq(move (@5), move (@6)) -> bb1 (unwind: bb2);
+        @4 := {impl Eq for bool}::parent_clause0::eq(move (@5), move (@6)) -> bb1 (unwind: bb2);
     }
 
     bb1: {
@@ -25,8 +25,8 @@ fn test_crate::do_test::<bool>(@1: bool, @2: bool)
     }
 
     bb2: {
-        drop expected@2;
-        drop init@1;
+        drop[Drop<bool>] expected@2;
+        drop[Drop<bool>] init@1;
         unwind_continue;
     }
 
@@ -36,8 +36,8 @@ fn test_crate::do_test::<bool>(@1: bool, @2: bool)
         storage_dead(@4);
         storage_dead(@3);
         @0 := ();
-        drop expected@2;
-        drop init@1;
+        drop[Drop<bool>] expected@2;
+        drop[Drop<bool>] init@1;
         @0 := ();
         return;
     }
@@ -90,14 +90,21 @@ pub trait Eq<Self>
     parent_clause0 : [@TraitClause0]: PartialEq<Self, Self>
 }
 
-// Full name: core::cmp::impls::{impl PartialEq<bool> for bool}#19
-impl PartialEq<bool> for bool {
-    fn eq<'_0, '_1> = {impl PartialEq<bool> for bool}#19::eq<'_0_0, '_0_1>
+// Full name: core::ops::drop::Drop
+#[lang_item("drop")]
+pub trait Drop<Self>
+{
+    fn drop<'_0> = drop<'_0_0, Self>[Self]
 }
 
-// Full name: core::cmp::impls::{impl Eq for bool}#38
+// Full name: core::cmp::impls::{impl PartialEq<bool> for bool}
+impl PartialEq<bool> for bool {
+    fn eq<'_0, '_1> = {impl PartialEq<bool> for bool}::eq<'_0_0, '_0_1>
+}
+
+// Full name: core::cmp::impls::{impl Eq for bool}
 impl Eq for bool {
-    parent_clause0 = {impl PartialEq<bool> for bool}#19
+    parent_clause0 = {impl PartialEq<bool> for bool}
 }
 
 

@@ -127,6 +127,26 @@ where
   T,
 }
 
+// Full name: core::ops::drop::Drop
+#[lang_item("drop")]
+pub trait Drop<Self>
+{
+    fn drop<'_0> = core::ops::drop::Drop::drop<'_0_0, Self>[Self]
+}
+
+// Full name: test_crate::{impl Drop for IdType<T>[@TraitClause0]}::drop
+fn {impl Drop for IdType<T>[@TraitClause0]}::drop<'_0, T>(@1: &'_0 mut (IdType<T>[@TraitClause0]))
+where
+    [@TraitClause0]: Sized<T>,
+
+// Full name: test_crate::{impl Drop for IdType<T>[@TraitClause0]}
+impl<T> Drop for IdType<T>[@TraitClause0]
+where
+    [@TraitClause0]: Sized<T>,
+{
+    fn drop<'_0> = {impl Drop for IdType<T>[@TraitClause0]}::drop<'_0_0, T>[@TraitClause0]
+}
+
 // Full name: test_crate::use_id_type
 pub fn use_id_type<T>(@1: IdType<T>[@TraitClause0]) -> T
 where
@@ -136,7 +156,7 @@ where
     let x@1: IdType<T>[@TraitClause0]; // arg #1
 
     @0 := move ((x@1).0)
-    drop x@1
+    drop[{impl Drop for IdType<T>[@TraitClause0]}<T>[@TraitClause0]] x@1
     return
 }
 
@@ -152,9 +172,9 @@ where
     storage_live(@2)
     @2 := move (x@1)
     @0 := IdType { 0: move (@2) }
-    drop @2
+    drop[Drop<T>] @2
     storage_dead(@2)
-    drop x@1
+    drop[Drop<T>] x@1
     return
 }
 
@@ -288,6 +308,32 @@ pub fn get_max(@1: u32, @2: u32) -> u32
     return
 }
 
+// Full name: alloc::boxed::{impl Drop for alloc::boxed::Box<T>[@TraitClause0]}::drop
+pub fn {impl Drop for alloc::boxed::Box<T>[@TraitClause0]}::drop<'_0, T, A>(@1: &'_0 mut (alloc::boxed::Box<T>[@TraitClause0]))
+where
+    [@TraitClause0]: Sized<A>,
+
+// Full name: alloc::boxed::{impl Drop for alloc::boxed::Box<T>[@TraitClause0]}
+impl<T, A> Drop for alloc::boxed::Box<T>[@TraitClause0]
+where
+    [@TraitClause0]: Sized<A>,
+{
+    fn drop<'_0> = {impl Drop for alloc::boxed::Box<T>[@TraitClause0]}::drop<'_0_0, T, A>[@TraitClause0]
+}
+
+// Full name: test_crate::{impl Drop for List<T>[@TraitClause0]}::drop
+fn {impl Drop for List<T>[@TraitClause0]}::drop<'_0, T>(@1: &'_0 mut (List<T>[@TraitClause0]))
+where
+    [@TraitClause0]: Sized<T>,
+
+// Full name: test_crate::{impl Drop for List<T>[@TraitClause0]}
+impl<T> Drop for List<T>[@TraitClause0]
+where
+    [@TraitClause0]: Sized<T>,
+{
+    fn drop<'_0> = {impl Drop for List<T>[@TraitClause0]}::drop<'_0_0, T>[@TraitClause0]
+}
+
 // Full name: test_crate::test_list1
 pub fn test_list1()
 {
@@ -303,22 +349,22 @@ pub fn test_list1()
     @2 := @BoxNew<List<i32>[Sized<i32>]>[Sized<List<i32>[Sized<i32>]>](move (@3))
     storage_dead(@3)
     l@1 := List::Cons { 0: const (0 : i32), 1: move (@2) }
-    drop @2
+    drop[{impl Drop for alloc::boxed::Box<T>[@TraitClause0]}<List<i32>[Sized<i32>], Global>[Sized<Global>]] @2
     storage_dead(@2)
     @0 := ()
-    drop l@1
+    drop[{impl Drop for List<T>[@TraitClause0]}<i32>[Sized<i32>]] l@1
     storage_dead(l@1)
     @0 := ()
     return
 }
 
-// Full name: alloc::boxed::{impl DerefMut for alloc::boxed::Box<T>[@TraitClause0]}#25::deref_mut
-pub fn {impl DerefMut for alloc::boxed::Box<T>[@TraitClause0]}#25::deref_mut<'_0, T, A>(@1: &'_0 mut (alloc::boxed::Box<T>[@TraitClause0])) -> &'_0 mut (T)
+// Full name: alloc::boxed::{impl DerefMut for alloc::boxed::Box<T>[@TraitClause0]}::deref_mut
+pub fn {impl DerefMut for alloc::boxed::Box<T>[@TraitClause0]}::deref_mut<'_0, T, A>(@1: &'_0 mut (alloc::boxed::Box<T>[@TraitClause0])) -> &'_0 mut (T)
 where
     [@TraitClause0]: Sized<A>,
 
-// Full name: alloc::boxed::{impl Deref for alloc::boxed::Box<T>[@TraitClause0]}#24::deref
-pub fn {impl Deref for alloc::boxed::Box<T>[@TraitClause0]}#24::deref<'_0, T, A>(@1: &'_0 (alloc::boxed::Box<T>[@TraitClause0])) -> &'_0 (T)
+// Full name: alloc::boxed::{impl Deref for alloc::boxed::Box<T>[@TraitClause0]}::deref
+pub fn {impl Deref for alloc::boxed::Box<T>[@TraitClause0]}::deref<'_0, T, A>(@1: &'_0 (alloc::boxed::Box<T>[@TraitClause0])) -> &'_0 (T)
 where
     [@TraitClause0]: Sized<A>,
 
@@ -340,13 +386,13 @@ pub fn test_box1()
     storage_live(x@2)
     storage_live(@3)
     @3 := &two-phase-mut b@1
-    x@2 := {impl DerefMut for alloc::boxed::Box<T>[@TraitClause0]}#25::deref_mut<'_, i32, Global>[Sized<Global>](move (@3))
+    x@2 := {impl DerefMut for alloc::boxed::Box<T>[@TraitClause0]}::deref_mut<'_, i32, Global>[Sized<Global>](move (@3))
     storage_dead(@3)
     *(x@2) := const (1 : i32)
     storage_live(x@4)
     storage_live(@5)
     @5 := &b@1
-    x@4 := {impl Deref for alloc::boxed::Box<T>[@TraitClause0]}#24::deref<'_, i32, Global>[Sized<Global>](move (@5))
+    x@4 := {impl Deref for alloc::boxed::Box<T>[@TraitClause0]}::deref<'_, i32, Global>[Sized<Global>](move (@5))
     storage_dead(@5)
     storage_live(@6)
     storage_live(@7)
@@ -365,7 +411,7 @@ pub fn test_box1()
     @0 := ()
     storage_dead(x@4)
     storage_dead(x@2)
-    drop b@1
+    drop[{impl Drop for alloc::boxed::Box<T>[@TraitClause0]}<i32, Global>[Sized<Global>]] b@1
     storage_dead(b@1)
     @0 := ()
     return
@@ -445,15 +491,15 @@ where
     storage_live(@5)
     @5 := move (*(tl@3))
     @0 := (move (@4), move (@5))
-    drop @5
+    drop[{impl Drop for List<T>[@TraitClause0]}<T>[@TraitClause0]] @5
     storage_dead(@5)
-    drop @4
+    drop[Drop<T>] @4
     storage_dead(@4)
-    drop tl@3
+    drop[{impl Drop for alloc::boxed::Box<T>[@TraitClause0]}<List<T>[@TraitClause0], Global>[Sized<Global>]] tl@3
     storage_dead(tl@3)
-    drop hd@2
+    drop[Drop<T>] hd@2
     storage_dead(hd@2)
-    drop l@1
+    drop[{impl Drop for List<T>[@TraitClause0]}<T>[@TraitClause0]] l@1
     return
 }
 
@@ -714,28 +760,32 @@ pub fn core::ops::deref::DerefMut::deref_mut<'_0, Self>(@1: &'_0 mut (Self)) -> 
 where
     [@TraitClause0]: DerefMut<Self>,
 
-// Full name: alloc::boxed::{impl Deref for alloc::boxed::Box<T>[@TraitClause0]}#24
+// Full name: alloc::boxed::{impl Deref for alloc::boxed::Box<T>[@TraitClause0]}
 impl<T, A> Deref for alloc::boxed::Box<T>[@TraitClause0]
 where
     [@TraitClause0]: Sized<A>,
 {
     type Target = T
-    fn deref<'_0> = {impl Deref for alloc::boxed::Box<T>[@TraitClause0]}#24::deref<'_0_0, T, A>[@TraitClause0]
+    fn deref<'_0> = {impl Deref for alloc::boxed::Box<T>[@TraitClause0]}::deref<'_0_0, T, A>[@TraitClause0]
 }
 
-// Full name: alloc::boxed::{impl DerefMut for alloc::boxed::Box<T>[@TraitClause0]}#25
+// Full name: alloc::boxed::{impl DerefMut for alloc::boxed::Box<T>[@TraitClause0]}
 impl<T, A> DerefMut for alloc::boxed::Box<T>[@TraitClause0]
 where
     [@TraitClause0]: Sized<A>,
 {
-    parent_clause0 = {impl Deref for alloc::boxed::Box<T>[@TraitClause0]}#24<T, A>[@TraitClause0]
-    fn deref_mut<'_0> = {impl DerefMut for alloc::boxed::Box<T>[@TraitClause0]}#25::deref_mut<'_0_0, T, A>[@TraitClause0]
+    parent_clause0 = {impl Deref for alloc::boxed::Box<T>[@TraitClause0]}<T, A>[@TraitClause0]
+    fn deref_mut<'_0> = {impl DerefMut for alloc::boxed::Box<T>[@TraitClause0]}::deref_mut<'_0_0, T, A>[@TraitClause0]
 }
 
 #[lang_item("deref_method")]
 pub fn core::ops::deref::Deref::deref<'_0, Self>(@1: &'_0 (Self)) -> &'_0 (@TraitClause0::Target)
 where
     [@TraitClause0]: Deref<Self>,
+
+pub fn core::ops::drop::Drop::drop<'_0, Self>(@1: &'_0 mut (Self))
+where
+    [@TraitClause0]: Drop<Self>,
 
 
 

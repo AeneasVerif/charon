@@ -13,7 +13,7 @@ generate_index_type!(Disambiguator);
 #[charon::variants_prefix("Pe")]
 pub enum PathElem {
     Ident(#[drive(skip)] String, Disambiguator),
-    Impl(ImplElem, Disambiguator),
+    Impl(ImplElem),
     /// This item was obtained by monomorphizing its parent with the given args.
     Monomorphized(BoxedArgs),
 }

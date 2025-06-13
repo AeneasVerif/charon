@@ -29,6 +29,13 @@ pub fn test1(@1: E1) -> bool
 #[lang_item("sized")]
 pub trait Sized<Self>
 
+// Full name: core::ops::drop::Drop
+#[lang_item("drop")]
+pub trait Drop<Self>
+{
+    fn drop<'_0> = drop<'_0_0, Self>[Self]
+}
+
 // Full name: test_crate::id
 pub fn id<T>(@1: T) -> T
 where
@@ -38,7 +45,7 @@ where
     let x@1: T; // arg #1
 
     @0 := move (x@1)
-    drop x@1
+    drop[Drop<T>] x@1
     return
 }
 
@@ -121,6 +128,11 @@ pub fn test3(@1: E2) -> u32
     storage_dead(y@3)
     return
 }
+
+// Full name: core::ops::drop::Drop::drop
+pub fn drop<'_0, Self>(@1: &'_0 mut (Self))
+where
+    [@TraitClause0]: Drop<Self>,
 
 
 
