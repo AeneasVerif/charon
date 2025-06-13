@@ -65,7 +65,7 @@ impl FunIdOrTraitMethodRef {
         match self {
             FunIdOrTraitMethodRef::Fun(fun_id) => fun_id.generics_target(),
             FunIdOrTraitMethodRef::Trait(trait_ref, name, _) => {
-                GenericsSource::Method(trait_ref.trait_decl_ref.skip_binder.trait_id, name.clone())
+                GenericsSource::Method(trait_ref.trait_decl_ref.skip_binder.id, name.clone())
             }
         }
     }

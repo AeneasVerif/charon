@@ -162,7 +162,7 @@ pub struct TraitRef {
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Hash, Drive, DriveMut)]
 pub struct TraitDeclRef {
     #[charon::rename("trait_decl_id")]
-    pub trait_id: TraitDeclId,
+    pub id: TraitDeclId,
     #[charon::rename("decl_generics")]
     pub generics: BoxedArgs,
 }

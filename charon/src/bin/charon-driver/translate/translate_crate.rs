@@ -469,7 +469,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
         let id = self.register_trait_decl_id(span, def_id);
         let generics = self.translate_generic_args(span, substs, trait_refs)?;
         Ok(TraitDeclRef {
-            trait_id: id,
+            id,
             generics: Box::new(generics),
         })
     }

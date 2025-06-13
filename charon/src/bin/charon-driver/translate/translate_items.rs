@@ -605,7 +605,7 @@ impl ItemTransCtx<'_, '_> {
             // Do the inverse operation: the trait considers the clauses as implied.
             let parent_trait_refs = mem::take(&mut generics.trait_refs);
             let implemented_trait = TraitDeclRef {
-                trait_id,
+                id: trait_id,
                 generics: Box::new(generics),
             };
             let mut timpl = TraitImpl {
@@ -688,7 +688,7 @@ impl ItemTransCtx<'_, '_> {
 
         // Retrieve the information about the implemented trait.
         let implemented_trait = self.translate_trait_ref(span, &trait_pred.trait_ref)?;
-        let trait_id = implemented_trait.trait_id;
+        let trait_id = implemented_trait.id;
         // A `TraitRef` that points to this impl with the correct generics.
         let self_predicate = TraitRef {
             kind: TraitRefKind::TraitImpl(TraitImplRef {

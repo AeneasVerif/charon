@@ -109,7 +109,7 @@ pub fn repr_name(crate_data: &TranslatedCrate, n: &Name) -> String {
                 ImplElem::Trait(impl_id) => match crate_data.trait_impls.get(*impl_id) {
                     None => format!("<trait impl#{impl_id}>"),
                     Some(timpl) => {
-                        let trait_name = trait_name(crate_data, timpl.impl_trait.trait_id);
+                        let trait_name = trait_name(crate_data, timpl.impl_trait.id);
                         format!("<impl {trait_name} for ??>")
                     }
                 },

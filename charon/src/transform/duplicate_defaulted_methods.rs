@@ -12,7 +12,7 @@ impl TransformPass for Transform {
             let Some(timpl) = ctx.translated.trait_impls.get_mut(impl_id) else {
                 continue;
             };
-            let Some(tdecl) = ctx.translated.trait_decls.get(timpl.impl_trait.trait_id) else {
+            let Some(tdecl) = ctx.translated.trait_decls.get(timpl.impl_trait.id) else {
                 continue;
             };
             if tdecl.methods.len() == timpl.methods.len() {

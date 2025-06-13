@@ -776,7 +776,7 @@ impl<'a> ComputeItemModifications<'a> {
         clause: &TraitClause,
         clause_to_path: fn(TraitClauseId) -> TraitRefPath,
     ) -> impl Iterator<Item = AssocTypePath> + use<'b> {
-        let trait_id = clause.trait_.skip_binder.trait_id;
+        let trait_id = clause.trait_.skip_binder.id;
         let clause_path = clause_to_path(clause.clause_id);
         self.compute_extra_params_for_trait(trait_id)
             .map(move |path| path.on_tref(&clause_path))
@@ -788,8 +788,8 @@ impl<'a> ComputeItemModifications<'a> {
         &'b mut self,
         pred: &'b TraitDeclRef,
     ) -> impl Iterator<Item = (AssocTypePath, Ty)> + use<'b> {
-        let _ = self.compute_extra_params_for_trait(pred.trait_id);
-        self.trait_modifications[pred.trait_id]
+        let _ = self.compute_extra_params_for_trait(pred.id);
+        self.trait_modifications[pred.id]
             .as_processed()
             .into_iter()
             .flat_map(|mods| mods.type_constraints.iter_self_paths_subst(&pred.generics))
@@ -1053,7 +1053,7 @@ impl UpdateItemBody<'_> {
     /// `TraitImpl`.
     fn process_trait_decl_ref(&mut self, tref: &mut TraitDeclRef, self_path: TraitRefKind) {
         trace!("{tref:?}");
-        let target = GenericsSource::item(tref.trait_id);
+        let target = GenericsSource::item(tref.id);
         self.update_generics(&mut tref.generics, target, Some(self_path));
     }
 
@@ -1086,10 +1086,7 @@ impl VisitAstMut for UpdateItemBody<'_> {
         // Clauses may provide more type constraints.
         for clause in &generics.trait_clauses {
             if let Some(pred) = clause.trait_.skip_binder.clone().move_from_under_binder() {
-                if let Some(tmods) = self
-                    .item_modifications
-                    .get(&GenericsSource::item(pred.trait_id))
-                {
+                if let Some(tmods) = self.item_modifications.get(&GenericsSource::item(pred.id)) {
                     for (path, ty) in tmods.type_constraints.iter_self_paths_subst(&pred.generics) {
                         let path = path.on_local_clause(clause.clause_id);
                         type_constraints.insert_path(&path, ty);
@@ -1099,7 +1096,7 @@ impl VisitAstMut for UpdateItemBody<'_> {
         }
         let mut modifications = ItemModifications::from_constraint_set(type_constraints, true);
         for clause in &generics.trait_clauses {
-            let trait_id = clause.trait_.skip_binder.trait_id;
+            let trait_id = clause.trait_.skip_binder.id;
             if let Some(tmods) = self.item_modifications.get(&GenericsSource::item(trait_id)) {
                 for path in tmods.required_extra_params() {
                     let path = path.on_local_clause(clause.clause_id);
@@ -1196,7 +1193,7 @@ impl VisitAstMut for UpdateItemBody<'_> {
             }
             FunIdOrTraitMethodRef::Fun(FunId::Builtin(_)) => {}
             FunIdOrTraitMethodRef::Trait(trait_ref, method_name, _) => {
-                let trait_id = trait_ref.trait_decl_ref.skip_binder.trait_id;
+                let trait_id = trait_ref.trait_decl_ref.skip_binder.id;
                 self.update_generics(
                     &mut x.generics,
                     GenericsSource::Method(trait_id, method_name.clone()),
@@ -1284,7 +1281,7 @@ impl TransformPass for Transform {
                 let self_tref = TraitRef {
                     kind: TraitRefKind::SelfId,
                     trait_decl_ref: RegionBinder::empty(TraitDeclRef {
-                        trait_id: tr.def_id,
+                        id: tr.def_id,
                         generics: Box::new(tr.generics.identity_args()),
                     }),
                 };
@@ -1317,7 +1314,7 @@ impl TransformPass for Transform {
 
             // Adjust impl associated types.
             if let AnyTransItemMut::TraitImpl(timpl) = &mut item {
-                let trait_id = timpl.impl_trait.trait_id;
+                let trait_id = timpl.impl_trait.id;
                 if let Some(decl_modifs) = item_modifications.get(&GenericsSource::item(trait_id)) {
                     if decl_modifs.add_type_params {
                         timpl.types.clear();

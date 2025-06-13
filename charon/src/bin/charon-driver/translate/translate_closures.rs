@@ -174,7 +174,7 @@ impl ItemTransCtx<'_, '_> {
         let input_tuple = Ty::mk_tuple(inputs);
 
         Ok(TraitDeclRef {
-            trait_id,
+            id: trait_id,
             generics: Box::new(GenericArgs::new_types([state_ty, input_tuple].into())),
         })
     }
@@ -553,7 +553,7 @@ impl ItemTransCtx<'_, '_> {
 
         let implemented_trait =
             self.translate_closure_trait_ref(span, def.def_id(), args, target_kind)?;
-        let fn_trait = implemented_trait.trait_id;
+        let fn_trait = implemented_trait.id;
 
         // The input tuple type and output type of the signature.
         let (inputs, output) = self.translate_closure_info(span, args)?.signature.erase();
@@ -563,7 +563,10 @@ impl ItemTransCtx<'_, '_> {
             // Makes a built-in trait ref for `ty: trait`.
             let builtin_tref = |trait_id, ty| {
                 let generics = Box::new(GenericArgs::new_types([ty].into()));
-                let trait_decl_ref = TraitDeclRef { trait_id, generics };
+                let trait_decl_ref = TraitDeclRef {
+                    id: trait_id,
+                    generics,
+                };
                 let trait_decl_ref = RegionBinder::empty(trait_decl_ref);
                 TraitRef {
                     kind: TraitRefKind::BuiltinOrAuto {

@@ -91,8 +91,8 @@ impl CheckGenericsVisitor<'_> {
         tclause: &TraitClause,
         tref: &TraitRef,
     ) {
-        let clause_trait_id = tclause.trait_.skip_binder.trait_id;
-        let ref_trait_id = tref.trait_decl_ref.skip_binder.trait_id;
+        let clause_trait_id = tclause.trait_.skip_binder.id;
+        let ref_trait_id = tref.trait_decl_ref.skip_binder.id;
         if clause_trait_id != ref_trait_id {
             let args_fmt = &self.val_fmt_ctx();
             let tclause = tclause.with_ctx(params_fmt);
@@ -261,7 +261,7 @@ impl VisitAst for CheckGenericsVisitor<'_> {
             // TODO: check builtin generics.
             FunIdOrTraitMethodRef::Fun(FunId::Builtin(_)) => {}
             FunIdOrTraitMethodRef::Trait(trait_ref, method_name, _) => {
-                let trait_id = trait_ref.trait_decl_ref.skip_binder.trait_id;
+                let trait_id = trait_ref.trait_decl_ref.skip_binder.id;
                 self.assert_matches_method(trait_id, method_name, &x.generics);
             }
         }
@@ -270,18 +270,13 @@ impl VisitAst for CheckGenericsVisitor<'_> {
         self.assert_matches_item(x.id, &x.generics);
     }
     fn enter_trait_decl_ref(&mut self, x: &TraitDeclRef) {
-        self.assert_matches_item(x.trait_id, &x.generics);
+        self.assert_matches_item(x.id, &x.generics);
     }
     fn enter_trait_impl_ref(&mut self, x: &TraitImplRef) {
         self.assert_matches_item(x.id, &x.generics);
     }
     fn enter_trait_impl(&mut self, timpl: &TraitImpl) {
-        let Some(tdecl) = self
-            .ctx
-            .translated
-            .trait_decls
-            .get(timpl.impl_trait.trait_id)
-        else {
+        let Some(tdecl) = self.ctx.translated.trait_decls.get(timpl.impl_trait.id) else {
             return;
         };
         // See `lift_associated_item_clauses`
@@ -297,7 +292,7 @@ impl VisitAst for CheckGenericsVisitor<'_> {
             &tdecl_fmt,
             args_fmt,
             "trait parent clauses",
-            &GenericsSource::item(timpl.impl_trait.trait_id),
+            &GenericsSource::item(timpl.impl_trait.id),
             |tclause, tref| self.assert_clause_matches(&tdecl_fmt, tclause, tref),
         );
         let types_match = timpl.types.len() == tdecl.types.len()

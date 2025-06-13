@@ -1538,7 +1538,7 @@ impl<C: AstFormatter> FmtWithCtx<C> for TraitDeclId {
 
 impl<C: AstFormatter> FmtWithCtx<C> for TraitDeclRef {
     fn fmt_with_ctx(&self, ctx: &C, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let trait_id = self.trait_id.with_ctx(ctx);
+        let trait_id = self.id.with_ctx(ctx);
         let generics = self.generics.with_ctx(ctx);
         write!(f, "{trait_id}{generics}")
     }

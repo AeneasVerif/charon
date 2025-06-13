@@ -190,7 +190,7 @@ impl PatElem {
                 let Some(timpl) = ctx.trait_impls.get(*impl_id) else {
                     return false;
                 };
-                let Some(trait_name) = ctx.item_name(timpl.impl_trait.trait_id) else {
+                let Some(trait_name) = ctx.item_name(timpl.impl_trait.id) else {
                     return false;
                 };
                 pat.matches_with_generics(ctx, trait_name, Some(&timpl.impl_trait.generics))
