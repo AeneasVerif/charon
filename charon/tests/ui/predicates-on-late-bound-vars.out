@@ -76,12 +76,12 @@ where
 // Full name: core::cell::BorrowError
 pub struct BorrowError {}
 
-// Full name: core::cell::{RefCell<T>}#22::new
+// Full name: core::cell::{RefCell<T>}::new
 pub fn new<T>(@1: T) -> RefCell<T>
 where
     [@TraitClause0]: Sized<T>,
 
-// Full name: core::cell::{RefCell<T>}#23::try_borrow
+// Full name: core::cell::{RefCell<T>}::try_borrow
 pub fn try_borrow<'_0, T>(@1: &'_0 (RefCell<T>)) -> Result<Ref<'_0, T>, BorrowError>[Sized<Ref<'_0, T>>, Sized<BorrowError>]
 
 // Full name: test_crate::foo
