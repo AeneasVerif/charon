@@ -201,7 +201,7 @@ pub struct TraitTypeConstraint {
 }
 
 /// Each `GenericArgs` is meant for a corresponding `GenericParams`; this describes which one.
-#[derive(Debug, Clone, Eq, PartialEq, Hash, Serialize, Deserialize, Drive, DriveMut)]
+#[derive(Debug, Clone, Eq, PartialEq, Hash, Serialize, EnumIsA, Deserialize, Drive, DriveMut)]
 #[charon::variants_prefix("GS")]
 pub enum GenericsSource {
     /// A top-level item.

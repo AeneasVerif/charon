@@ -105,7 +105,13 @@ impl CheckGenericsVisitor<'_> {
         }
     }
 
-    fn assert_matches(&self, params_fmt: &FmtCtx<'_>, params: &GenericParams, args: &GenericArgs) {
+    fn assert_matches(
+        &self,
+        params_fmt: &FmtCtx<'_>,
+        params: &GenericParams,
+        args: &GenericArgs,
+        target: &GenericsSource,
+    ) {
         let args_fmt = &self.val_fmt_ctx();
         self.zip_assert_match(
             &params.regions,
@@ -113,7 +119,7 @@ impl CheckGenericsVisitor<'_> {
             params_fmt,
             args_fmt,
             "regions",
-            &args.target,
+            target,
             |_, _| {},
         );
         self.zip_assert_match(
@@ -122,7 +128,7 @@ impl CheckGenericsVisitor<'_> {
             params_fmt,
             args_fmt,
             "type generics",
-            &args.target,
+            target,
             |_, _| {},
         );
         self.zip_assert_match(
@@ -131,7 +137,7 @@ impl CheckGenericsVisitor<'_> {
             params_fmt,
             args_fmt,
             "const generics",
-            &args.target,
+            target,
             |_, _| {},
         );
         self.zip_assert_match(
@@ -140,9 +146,40 @@ impl CheckGenericsVisitor<'_> {
             params_fmt,
             args_fmt,
             "trait clauses",
-            &args.target,
+            target,
             |tclause, tref| self.assert_clause_matches(params_fmt, tclause, tref),
         );
+    }
+
+    fn assert_matches_item(&self, id: impl Into<AnyTransId>, args: &GenericArgs) {
+        let id = id.into();
+        let Some(item) = self.ctx.translated.get_item(id) else {
+            return;
+        };
+        let params = item.generic_params();
+        let fmt1 = self.ctx.into_fmt();
+        let fmt = fmt1.push_binder(Cow::Borrowed(params));
+        self.assert_matches(&fmt, params, args, &GenericsSource::item(id));
+    }
+
+    fn assert_matches_method(
+        &self,
+        trait_id: TraitDeclId,
+        method_name: &TraitItemName,
+        args: &GenericArgs,
+    ) {
+        let target = &GenericsSource::Method(trait_id, method_name.clone());
+        let Some(trait_decl) = self.ctx.translated.trait_decls.get(trait_id) else {
+            return;
+        };
+        let Some((_, bound_fn)) = trait_decl.methods().find(|(n, _)| n == method_name) else {
+            return;
+        };
+        let params = &bound_fn.params;
+        let fmt1 = self.ctx.into_fmt();
+        let fmt2 = fmt1.push_binder(Cow::Borrowed(&trait_decl.generics));
+        let fmt = fmt2.push_binder(Cow::Borrowed(params));
+        self.assert_matches(&fmt, params, args, target);
     }
 }
 
@@ -173,6 +210,7 @@ impl VisitAst for CheckGenericsVisitor<'_> {
         Continue(())
     }
 
+    // Check that generics are correctly bound.
     fn enter_region(&mut self, x: &Region) {
         if let Region::Var(var) = x {
             if self.binder_stack.get_var(*var).is_none() {
@@ -202,52 +240,40 @@ impl VisitAst for CheckGenericsVisitor<'_> {
         }
     }
 
-    fn visit_aggregate_kind(&mut self, agg: &AggregateKind) -> ControlFlow<Self::Break> {
-        match agg {
-            AggregateKind::Adt(..) | AggregateKind::Array(..) | AggregateKind::RawPtr(..) => {
-                self.visit_inner(agg)?
+    // Check that generics match the parameters of the target item.
+    fn enter_type_decl_ref(&mut self, x: &TypeDeclRef) {
+        match x.id {
+            TypeId::Adt(id) => self.assert_matches_item(id, &x.generics),
+            // TODO: check builtin generics.
+            TypeId::Tuple => {}
+            TypeId::Builtin(_) => {}
+        }
+    }
+    fn enter_fun_decl_ref(&mut self, x: &FunDeclRef) {
+        self.assert_matches_item(x.id, &x.generics);
+    }
+    fn enter_fn_ptr(&mut self, x: &FnPtr) {
+        match x.func.as_ref() {
+            FunIdOrTraitMethodRef::Fun(FunId::Regular(id)) => {
+                self.assert_matches_item(*id, &x.generics)
+            }
+            // TODO: check builtin generics.
+            FunIdOrTraitMethodRef::Fun(FunId::Builtin(_)) => {}
+            FunIdOrTraitMethodRef::Trait(trait_ref, method_name, _) => {
+                let trait_id = trait_ref.trait_decl_ref.skip_binder.trait_id;
+                self.assert_matches_method(trait_id, method_name, &x.generics);
             }
         }
-        Continue(())
     }
-
-    fn enter_generic_args(&mut self, args: &GenericArgs) {
-        let fmt1;
-        let fmt2;
-        let (params, params_fmt) = match &args.target {
-            GenericsSource::Item(item_id) => {
-                let Some(item) = self.ctx.translated.get_item(*item_id) else {
-                    return;
-                };
-                let params = item.generic_params();
-                fmt1 = self.ctx.into_fmt();
-                let fmt = fmt1.push_binder(Cow::Borrowed(params));
-                (params, fmt)
-            }
-            GenericsSource::Method(trait_id, method_name) => {
-                let Some(trait_decl) = self.ctx.translated.trait_decls.get(*trait_id) else {
-                    return;
-                };
-                let Some((_, bound_fn)) = trait_decl.methods().find(|(n, _)| n == method_name)
-                else {
-                    return;
-                };
-                let params = &bound_fn.params;
-                fmt1 = self.ctx.into_fmt();
-                fmt2 = fmt1.push_binder(Cow::Borrowed(&trait_decl.generics));
-                let fmt = fmt2.push_binder(Cow::Borrowed(params));
-                (params, fmt)
-            }
-            GenericsSource::Builtin => return,
-            GenericsSource::Other => {
-                self.error("`GenericsSource::Other` should not exist in the charon AST");
-                return;
-            }
-        };
-        self.assert_matches(&params_fmt, params, args);
+    fn enter_global_decl_ref(&mut self, x: &GlobalDeclRef) {
+        self.assert_matches_item(x.id, &x.generics);
     }
-
-    // Special case that is not represented as a `GenericArgs`.
+    fn enter_trait_decl_ref(&mut self, x: &TraitDeclRef) {
+        self.assert_matches_item(x.trait_id, &x.generics);
+    }
+    fn enter_trait_impl_ref(&mut self, x: &TraitImplRef) {
+        self.assert_matches_item(x.id, &x.generics);
+    }
     fn enter_trait_impl(&mut self, timpl: &TraitImpl) {
         let Some(tdecl) = self
             .ctx
@@ -313,17 +339,15 @@ impl VisitAst for CheckGenericsVisitor<'_> {
         }
     }
 
+    // Track span for more precise error messages.
     fn visit_ullbc_statement(&mut self, st: &ullbc_ast::Statement) -> ControlFlow<Self::Break> {
-        // Track span for more precise error messages.
         let old_span = self.span;
         self.span = st.span;
         self.visit_inner(st)?;
         self.span = old_span;
         Continue(())
     }
-
     fn visit_llbc_statement(&mut self, st: &llbc_ast::Statement) -> ControlFlow<Self::Break> {
-        // Track span for more precise error messages.
         let old_span = self.span;
         self.span = st.span;
         self.visit_inner(st)?;
