@@ -473,7 +473,7 @@ impl ItemTransCtx<'_, '_> {
             let item_span = self.def_span(item_def_id);
             match &hax_def.kind {
                 hax::FullDefKind::AssocFn { .. } => {
-                    let fun_def = self.t_ctx.hax_def(item_def_id)?;
+                    let fun_def = self.hax_def(item_def_id)?;
                     let binder_kind = BinderKind::TraitMethod(def_id, item_name.clone());
                     let fn_ref = self.translate_binder_for_def(
                         item_span,
@@ -760,7 +760,7 @@ impl ItemTransCtx<'_, '_> {
                 hax::FullDefKind::AssocFn { .. } => {
                     match &impl_item.value {
                         Provided { is_override, .. } => {
-                            let fun_def = self.t_ctx.hax_def(item_def_id)?;
+                            let fun_def = self.hax_def(item_def_id)?;
                             let binder_kind = BinderKind::TraitMethod(trait_id, name.clone());
                             let fn_ref = self.translate_binder_for_def(
                                 item_span,

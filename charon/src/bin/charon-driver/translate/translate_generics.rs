@@ -356,7 +356,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
             | Ctor { .. }
             | Variant { .. } => {
                 let parent_def_id = def.parent.as_ref().unwrap();
-                let parent_def = self.t_ctx.hax_def(parent_def_id)?;
+                let parent_def = self.hax_def(parent_def_id)?;
                 self.push_generics_for_def(span, &parent_def, true, true)?;
             }
             _ => {}

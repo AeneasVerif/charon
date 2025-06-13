@@ -352,7 +352,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
 
     /// Checks whether the given id corresponds to a built-in type.
     fn recognize_builtin_type(&mut self, def_id: &hax::DefId) -> Result<Option<BuiltinTy>, Error> {
-        let def = self.t_ctx.hax_def(def_id)?;
+        let def = self.hax_def(def_id)?;
         let ty = if def.lang_item.as_deref() == Some("owned_box") && !self.t_ctx.options.raw_boxes {
             Some(BuiltinTy::Box)
         } else {
@@ -590,7 +590,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
                 let field_span = self.t_ctx.translate_span_from_hax(&field_def.span);
                 // Translate the field type
                 let ty = self.translate_ty(field_span, &field_def.ty)?;
-                let field_full_def = self.t_ctx.hax_def(&field_def.did)?;
+                let field_full_def = self.hax_def(&field_def.did)?;
                 let field_attrs = self.t_ctx.translate_attr_info(&field_full_def);
 
                 // Retrieve the field name.
@@ -621,7 +621,7 @@ impl<'tcx, 'ctx> ItemTransCtx<'tcx, 'ctx> {
             let discriminant = self.translate_discriminant(def_span, &var_def.discr_val)?;
             let variant_span = self.t_ctx.translate_span_from_hax(&var_def.span);
             let variant_name = var_def.name.clone();
-            let variant_full_def = self.t_ctx.hax_def(&var_def.def_id)?;
+            let variant_full_def = self.hax_def(&var_def.def_id)?;
             let variant_attrs = self.t_ctx.translate_attr_info(&variant_full_def);
 
             let mut variant = Variant {
