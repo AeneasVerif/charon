@@ -2,36 +2,35 @@
 
     Identifying Rust definitions is non trivial because of:
     - the impl blocks, which are identified by their types
-    - trait instances, which don't have a name (and which we identify
-      with trait references)
+    - trait instances, which don't have a name (and which we identify with trait
+      references)
 
     For this reason, we define:
     - a small pattern matching language for Rust names
     - a parser for this language
     - matchers which check if a name matches a pattern
-    - helpers to derive patterns from names (useful when one identifies
-      some external functions that need custom treatment, as it avoids
-      writing patterns by hand)
+    - helpers to derive patterns from names (useful when one identifies some
+      external functions that need custom treatment, as it avoids writing
+      patterns by hand)
 
     Here are some examples of patterns:
     - ["core::mem::replace"]: the function [core::mem::replace]
     - ["alloc::vec::{alloc::vec::Vec<@>}::push"]: the function [push] in any
-      impl block of type [alloc::vec::Vec<T>], where T is a type variable.
-      Note that ["@"] means that this matches any (type) variable. In case
-      we need stronger constraints, we can name those variables: "@T". All the
-      occurrences of  ["@T"] must match the same variable (ex.: ["Foo<@T, @T>"]
+      impl block of type [alloc::vec::Vec<T>], where T is a type variable. Note
+      that ["@"] means that this matches any (type) variable. In case we need
+      stronger constraints, we can name those variables: "@T". All the
+      occurrences of ["@T"] must match the same variable (ex.: ["Foo<@T, @T>"]
       would match [Foo<U, U>] but not [Foo<T, U>]).
-    - the ["@"] syntax is used both for types and const generics. For regions/lifetimes,
-      we use ["'"]: ["&'a mut @T"]
-    - for the types we put inside blocks, we have syntax for arrays, slices,
-      and references:
-      - ["[@T; @N]"]: slice
-      - ["&'R mut @T"]: mutable reference
+    - the ["@"] syntax is used both for types and const generics. For
+      regions/lifetimes, we use ["'"]: ["&'a mut @T"]
+    - for the types we put inside blocks, we have syntax for arrays, slices, and
+      references:
+    - ["[@T; @N]"]: slice
+    - ["&'R mut @T"]: mutable reference
 
     Remark: [Box] is treated as a primitive type, which means that one only
     needs to type ["Box"] (instead of ["alloc::boxed::Box"] - though the latter
-    also works).
- *)
+    also works). *)
 
 (* The "raw" name matcher patterns *)
 
@@ -239,30 +238,26 @@ type match_config = {
   map_vars_to_vars : bool;
       (** If true, only allow matching variables to variables.
 
-          This is important when matching names: if the pattern
-          is [alloc::boxed::{Box<@T>}::new], we only want to match
-          names where [@T] is a variable. For instance, we wouldn't
-          want to match [alloc::boxed::{Box<u32>}::new] (if it existed...).
-          However, we might want to match instantiations (i.e., for which
-          [@T] is matched to [usize]) when matching function calls inside
-          bodies.
-       *)
+          This is important when matching names: if the pattern is
+          [alloc::boxed::{Box<@T>}::new], we only want to match names where [@T]
+          is a variable. For instance, we wouldn't want to match
+          [alloc::boxed::{Box<u32>}::new] (if it existed...). However, we might
+          want to match instantiations (i.e., for which [@T] is matched to
+          [usize]) when matching function calls inside bodies. *)
   match_with_trait_decl_refs : bool;
       (** If true, when matching trait refs, use the implemented trait decl
           refs, otherwise match the name of the implementations.
 
           For instance, if it is set to true, you can identify a call to
           [std::ops::Index<usize>::index] for [Vec<T>] with the name:
-          ["std::ops::Index<Vec<@T>, usize>::index"].
-          Otherwise, you will have to refer to the [index] function in
-          the proper [impl] block for [Vec].
-       *)
+          ["std::ops::Index<Vec<@T>, usize>::index"]. Otherwise, you will have
+          to refer to the [index] function in the proper [impl] block for [Vec].
+      *)
 }
 
 (** Mapped expressions.
 
-    The {!MRegion} variant is used when matching generics.
- *)
+    The {!MRegion} variant is used when matching generics. *)
 type mexpr = MTy of T.ty | MCg of T.const_generic | MRegion of T.region
 [@@deriving show]
 
@@ -272,8 +267,7 @@ type region_map = {
       (** The stack of maps for bound regions.
 
           Note that the stack itself is not inside a reference: this allows us
-          not to pop it when we go outside a bound regions group.
-       *)
+          not to pop it when we go outside a bound regions group. *)
 }
 
 (* Small helper to store the mappings from variables to expressions *)
@@ -306,8 +300,8 @@ let maps_push_bound_regions_group_if_nonempty (m : maps) (regions : 'a list) :
   | [] -> m
   | _ -> maps_push_bound_regions_group m
 
-(** Update a map and check that there are no incompatible
-    constraints at the same time. *)
+(** Update a map and check that there are no incompatible constraints at the
+    same time. *)
 let update_map (find_opt : 'a -> 'm -> 'b option) (add : 'a -> 'b -> 'm -> 'm)
     (m : 'm ref) (id : 'a) (v : 'b) : bool =
   match find_opt id !m with
@@ -381,12 +375,11 @@ let opt_update_cmap (c : match_config) (m : maps) (id : var option)
   | None -> true
   | Some id -> update_cmap c m id v
 
-(** Pay attention when updating the names because we use this function
-    for several purposes:
+(** Pay attention when updating the names because we use this function for
+    several purposes:
     - to match patterns with literal types
     - to convert patterns to strings which can be parsed as patterns
-    - to convert patterns to string for printing/name generation
- *)
+    - to convert patterns to string for printing/name generation *)
 let literal_type_to_string (ty : T.literal_type) : string =
   match ty with
   | TBool -> "bool"
@@ -885,8 +878,8 @@ let constraints_map_push_regions_map (m : constraints)
   let rmap = constraints_map_compute_regions_map regions in
   { empty_vars_map with rmap } :: m
 
-(** Push a regions map to the constraints map, if the group of regions
-    is non-empty - TODO: do something more precise *)
+(** Push a regions map to the constraints map, if the group of regions is
+    non-empty - TODO: do something more precise *)
 let constraints_map_push_regions_map_if_nonempty (m : constraints)
     (regions : T.region_var list) : constraints =
   match regions with
@@ -1089,9 +1082,8 @@ let name_to_pattern (ctx : 'fun_body ctx) (c : to_pat_config) (n : T.name) :
   (* Return *)
   pat
 
-(** We use the [params] to compute proper names for the variables.
-    Note that it is safe to provide empty generic parameters.
- *)
+(** We use the [params] to compute proper names for the variables. Note that it
+    is safe to provide empty generic parameters. *)
 let name_with_generics_to_pattern (ctx : 'fun_body ctx) (c : to_pat_config)
     (params : T.generic_params) (n : T.name) (args : T.generic_args) : pattern =
   (* Convert the name to a pattern *)
@@ -1112,9 +1104,8 @@ let name_with_generics_to_pattern (ctx : 'fun_body ctx) (c : to_pat_config)
   (* Return *)
   pat
 
-(** We use the [params] to compute proper names for the variables.
-    Note that it is safe to provide empty generic parameters.
- *)
+(** We use the [params] to compute proper names for the variables. Note that it
+    is safe to provide empty generic parameters. *)
 let fn_ptr_to_pattern (ctx : 'fun_body ctx) (c : to_pat_config)
     (params : T.generic_params) (func : E.fn_ptr) : pattern =
   (* Convert the function pointer to a pattern *)
@@ -1175,8 +1166,8 @@ let fn_ptr_to_pattern (ctx : 'fun_body ctx) (c : to_pat_config)
 
 type conv_config = {
   equiv : bool;
-      (** If [true], check if the patterns are equivalent, otherwise check
-          if the first is convertible to the second one *)
+      (** If [true], check if the patterns are equivalent, otherwise check if
+          the first is convertible to the second one *)
 }
 
 type inj_map = { m0 : var VarMap.t; m1 : var VarMap.t }
@@ -1239,8 +1230,7 @@ let opt_var_convertible (c : conv_config) (m : conv_map) (v0 : var option)
 
     The conv map is optional:
     - if [Some] it means we are analyzing an Impl pattern elem
-    - if [None] it means we are not inside an Impl pattern elem
- *)
+    - if [None] it means we are not inside an Impl pattern elem *)
 let rec pattern_common_prefix_aux (c : conv_config) (m : conv_map option)
     (p0 : pattern) (p1 : pattern) :
     pattern * conv_map option * pattern * pattern =
@@ -1254,8 +1244,7 @@ let rec pattern_common_prefix_aux (c : conv_config) (m : conv_map option)
           (e0 :: pre, m, p0, p1))
 
 (** We use the result type because otherwise we have options of options, which
-    is confusing.
- *)
+    is confusing. *)
 and pattern_elem_convertible_aux (c : conv_config) (m : conv_map option)
     (p0 : pattern_elem) (p1 : pattern_elem) : (conv_map option, unit) result =
   match (p0, p1) with
@@ -1332,8 +1321,7 @@ and generic_arg_convertible_aux (c : conv_config) (m : conv_map)
 
     The conv map is optional:
     - if [Some] it means we are analyzing an Impl pattern elem
-    - if [None] it means we are not inside an Impl pattern elem
- *)
+    - if [None] it means we are not inside an Impl pattern elem *)
 let pattern_common_prefix (c : conv_config) (p0 : pattern) (p1 : pattern) :
     pattern * pattern * pattern =
   let pre, _, p0, p1 = pattern_common_prefix_aux c None p0 p1 in
@@ -1363,10 +1351,8 @@ module NameMatcherMap = struct
             to minimize the number of comparisons - we could do this in later
             updates.
 
-            A node holds a value.
-            All the children patterns must be non-empty, and their common
-            prefixes must be pairwise empty.
-         *)
+            A node holds a value. All the children patterns must be non-empty,
+            and their common prefixes must be pairwise empty. *)
 
   let empty : 'a t = Node (None, [])
 

@@ -24,7 +24,7 @@
 
         rustToolchain = pkgs.rust-bin.fromRustupToolchainFile ./rust-toolchain;
         craneLib = (crane.mkLib pkgs).overrideToolchain rustToolchain;
-        ocamlformat = pkgs.ocamlPackages.ocamlformat_0_26_2;
+        ocamlformat = pkgs.ocamlPackages.ocamlformat_0_27_0;
 
         charon = pkgs.callPackage ./nix/charon.nix { inherit craneLib rustToolchain; };
         charon-ml = pkgs.callPackage ./nix/charon-ml.nix { inherit charon; };

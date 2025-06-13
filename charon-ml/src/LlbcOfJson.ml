@@ -1,7 +1,6 @@
 (** Functions to load LLBC ASTs from json.
 
-    See the comments for {!Charon.GAstOfJson}
- *)
+    See the comments for {!Charon.GAstOfJson} *)
 
 open OfJsonBasic
 open Types

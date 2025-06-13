@@ -1,10 +1,9 @@
 (** Functions to load (U)LLBC ASTs from json.
 
-    Initially, we used [ppx_derive_yojson] to automate this.
-    However, [ppx_derive_yojson] expects formatting to be slightly
-    different from what [serde_rs] generates (because it uses [Yojson.Safe.t]
-    and not [Yojson.Basic.t]).
- *)
+    Initially, we used [ppx_derive_yojson] to automate this. However,
+    [ppx_derive_yojson] expects formatting to be slightly different from what
+    [serde_rs] generates (because it uses [Yojson.Safe.t] and not
+    [Yojson.Basic.t]). *)
 
 open Yojson.Basic
 open OfJsonBasic
@@ -57,11 +56,10 @@ and gfun_decl_of_json
 (** Deserialize a map from file id to file name.
 
     In the serialized LLBC, the files in the loc spans are refered to by their
-    ids, in order to save space. In a functional language like OCaml this is
-    not necessary: we thus replace the file ids by the file name themselves in
-    the AST.
-    The "id to file" map is thus only used in the deserialization process.
-  *)
+    ids, in order to save space. In a functional language like OCaml this is not
+    necessary: we thus replace the file ids by the file name themselves in the
+    AST. The "id to file" map is thus only used in the deserialization process.
+*)
 and id_to_file_of_json (js : json) : (of_json_ctx, string) result =
   combine_error_msgs js __FUNCTION__
     ((* The map is stored as a list of pairs (key, value): we deserialize

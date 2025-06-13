@@ -1,13 +1,12 @@
 module C = Collections
 
 (** Signature for a module describing an identifier.
-    
-    We often need identifiers (for definitions, variables, etc.) and in
-    order to make sure we don't mix them, we use a generative functor
-    (see {!IdGen}).
 
-    Because {!Id.id} is an opaque type, even though it is [int] in practice
-    it is not possible to mix ids coming from two different instances of the
+    We often need identifiers (for definitions, variables, etc.) and in order to
+    make sure we don't mix them, we use a generative functor (see {!IdGen}).
+
+    Because {!Id.id} is an opaque type, even though it is [int] in practice it
+    is not possible to mix ids coming from two different instances of the
     {!IdGen} functor.
 
     For instance, if we do:
@@ -20,17 +19,16 @@ module C = Collections
     the types [TypeDeclId.id], [VariantId.id] and [FieldId.id] will be
     considered as different by the OCaml typechecker.
 
-    This is especially useful when one manipulates functions which take
-    several ids of different kinds as inputs: if identifiers were (transparently)
-    integers, we could mix them, while here the compiler prevents us from doing us,
-    avoiding mistakes which are easy to do and hard to debug.
+    This is especially useful when one manipulates functions which take several
+    ids of different kinds as inputs: if identifiers were (transparently)
+    integers, we could mix them, while here the compiler prevents us from doing
+    us, avoiding mistakes which are easy to do and hard to debug.
 
     It is sometimes necessary to generate ids from integers (and convert ids to
     integers), and we provide functions for doing so: they should of course be
-    manipulated with care. In this regard, the point of {!Id} is not so much to have
-    opaque types but rather to provide a way of manipulating ids in a disciplined
-    manner, to prevent bugs by leveraging the typechecker.
-*)
+    manipulated with care. In this regard, the point of {!Id} is not so much to
+    have opaque types but rather to provide a way of manipulating ids in a
+    disciplined manner, to prevent bugs by leveraging the typechecker. *)
 module type Id = sig
   type id
 
@@ -56,8 +54,7 @@ module type Id = sig
       breakpoints in the program).
 
       We also return a function to insert marked identifiers, by converting them
-      from integers.
-   *)
+      from integers. *)
   val fresh_marked_stateful_generator :
     unit -> generator ref * Set.t ref * (int -> unit) * (unit -> id)
 
@@ -65,7 +62,8 @@ module type Id = sig
   val mk_stateful_generator_starting_at_id : id -> generator ref * (unit -> id)
   val incr : id -> id
 
-  (** This function returns the current value of the counter, without incrementing it *)
+  (** This function returns the current value of the counter, without
+      incrementing it *)
   val get_counter_value : generator -> id
 
   (* TODO: this should be stateful! - but we may want to be able to duplicate
@@ -88,14 +86,13 @@ module type Id = sig
   val of_int : int -> id
 
   (** This function should be used in the rare cases where we have a list whose
-      elements should be indexable through ids (for example, the fields of
-      a structure can be indexed by the field id).
+      elements should be indexable through ids (for example, the fields of a
+      structure can be indexed by the field id).
 
       Note that in Rust we have a special vector type for such lists, and it
       works well because Rust has typeclasses. We hesitated to have a special
       type in OCaml too but it proved too cumbersome to use so we finally
-      resorted to having lists.
-   *)
+      resorted to having lists. *)
   val nth : 'a list -> id -> 'a
 
   (** See the comments for {!nth} *)
@@ -105,8 +102,7 @@ module type Id = sig
 
       See the comments for {!nth}.
 
-      Raises [Invalid_argument] if the identifier is out of range.
-   *)
+      Raises [Invalid_argument] if the identifier is out of range. *)
   val update_nth : 'a list -> id -> 'a -> 'a list
 
   (** See the comments for {!nth} *)
@@ -115,9 +111,8 @@ module type Id = sig
   (** Same as {!mapi}, but where the indices start with 1.
 
       This function should be used with even more care than {!mapi}.
-       
-      TODO: generalize to [map_from_i]
-   *)
+
+      TODO: generalize to [map_from_i] *)
   val mapi_from1 : (id -> 'a -> 'b) -> 'a list -> 'b list
 
   (** See the comments for {!nth} *)
@@ -126,8 +121,7 @@ end
 
 (** Generative functor for identifiers.
 
-    See {!Id}.
-*)
+    See {!Id}. *)
 module IdGen () : Id = struct
   (* TODO: use Z.t *)
   type id = int [@@deriving show]

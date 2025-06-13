@@ -25,10 +25,9 @@ type region_group_id = RegionGroupId.id [@@deriving show, ord]
 (** A group of regions.
 
     Results from a lifetime analysis: we group the regions with the same
-    lifetime together, and compute the hierarchy between the regions.
-    This is necessary to introduce the proper abstraction with the
-    proper constraints, when evaluating a function call in symbolic mode.
-*)
+    lifetime together, and compute the hierarchy between the regions. This is
+    necessary to introduce the proper abstraction with the proper constraints,
+    when evaluating a function call in symbolic mode. *)
 type ('rid, 'id) g_region_group = {
   id : 'id;
   regions : 'rid list;

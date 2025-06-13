@@ -5,8 +5,7 @@
     `GAstOfJson.template.ml` contains the manual definitions and some `(*
     __REPLACEn__ *)` comments. These comments are replaced by auto-generated
     definitions by running `make generate-ml` in the crate root. The
-    code-generation code is in `charon/src/bin/generate-ml`.
- *)
+    code-generation code is in `charon/src/bin/generate-ml`. *)
 
 open Yojson.Basic
 open OfJsonBasic
@@ -399,11 +398,11 @@ and locals_of_json (ctx : of_json_ctx) (js : json) : (locals, string) result =
     | _ -> Error "")
 
 and gexpr_body_of_json :
-      'a0.
-      (of_json_ctx -> json -> ('a0, string) result) ->
-      of_json_ctx ->
-      json ->
-      ('a0 gexpr_body, string) result =
+    'a0.
+    (of_json_ctx -> json -> ('a0, string) result) ->
+    of_json_ctx ->
+    json ->
+    ('a0 gexpr_body, string) result =
  fun arg0_of_json ctx js ->
   combine_error_msgs js __FUNCTION__
     (match js with
@@ -931,11 +930,11 @@ and de_bruijn_id_of_json (ctx : of_json_ctx) (js : json) :
     | _ -> Error "")
 
 and de_bruijn_var_of_json :
-      'a0.
-      (of_json_ctx -> json -> ('a0, string) result) ->
-      of_json_ctx ->
-      json ->
-      ('a0 de_bruijn_var, string) result =
+    'a0.
+    (of_json_ctx -> json -> ('a0, string) result) ->
+    of_json_ctx ->
+    json ->
+    ('a0 de_bruijn_var, string) result =
  fun arg0_of_json ctx js ->
   combine_error_msgs js __FUNCTION__
     (match js with
@@ -1124,12 +1123,12 @@ and trait_impl_ref_of_json (ctx : of_json_ctx) (js : json) :
     | _ -> Error "")
 
 and outlives_pred_of_json :
-      'a0 'a1.
-      (of_json_ctx -> json -> ('a0, string) result) ->
-      (of_json_ctx -> json -> ('a1, string) result) ->
-      of_json_ctx ->
-      json ->
-      (('a0, 'a1) outlives_pred, string) result =
+    'a0 'a1.
+    (of_json_ctx -> json -> ('a0, string) result) ->
+    (of_json_ctx -> json -> ('a1, string) result) ->
+    of_json_ctx ->
+    json ->
+    (('a0, 'a1) outlives_pred, string) result =
  fun arg0_of_json arg1_of_json ctx js ->
   combine_error_msgs js __FUNCTION__
     (match js with
@@ -1193,11 +1192,11 @@ and generic_args_of_json (ctx : of_json_ctx) (js : json) :
     | _ -> Error "")
 
 and region_binder_of_json :
-      'a0.
-      (of_json_ctx -> json -> ('a0, string) result) ->
-      of_json_ctx ->
-      json ->
-      ('a0 region_binder, string) result =
+    'a0.
+    (of_json_ctx -> json -> ('a0, string) result) ->
+    of_json_ctx ->
+    json ->
+    ('a0 region_binder, string) result =
  fun arg0_of_json ctx js ->
   combine_error_msgs js __FUNCTION__
     (match js with
@@ -1222,11 +1221,11 @@ and binder_kind_of_json (ctx : of_json_ctx) (js : json) :
     | _ -> Error "")
 
 and binder_of_json :
-      'a0.
-      (of_json_ctx -> json -> ('a0, string) result) ->
-      of_json_ctx ->
-      json ->
-      ('a0 binder, string) result =
+    'a0.
+    (of_json_ctx -> json -> ('a0, string) result) ->
+    of_json_ctx ->
+    json ->
+    ('a0 binder, string) result =
  fun arg0_of_json ctx js ->
   combine_error_msgs js __FUNCTION__
     (match js with
@@ -1845,12 +1844,12 @@ and preset_of_json (ctx : of_json_ctx) (js : json) : (preset, string) result =
     | _ -> Error "")
 
 and vector_of_json :
-      'a0 'a1.
-      (of_json_ctx -> json -> ('a0, string) result) ->
-      (of_json_ctx -> json -> ('a1, string) result) ->
-      of_json_ctx ->
-      json ->
-      (('a0, 'a1) vector, string) result =
+    'a0 'a1.
+    (of_json_ctx -> json -> ('a0, string) result) ->
+    (of_json_ctx -> json -> ('a1, string) result) ->
+    of_json_ctx ->
+    json ->
+    (('a0, 'a1) vector, string) result =
  fun arg0_of_json arg1_of_json ctx js ->
   combine_error_msgs js __FUNCTION__
     (match js with
@@ -1894,11 +1893,11 @@ and declaration_group_of_json (ctx : of_json_ctx) (js : json) :
     | _ -> Error "")
 
 and g_declaration_group_of_json :
-      'a0.
-      (of_json_ctx -> json -> ('a0, string) result) ->
-      of_json_ctx ->
-      json ->
-      ('a0 g_declaration_group, string) result =
+    'a0.
+    (of_json_ctx -> json -> ('a0, string) result) ->
+    of_json_ctx ->
+    json ->
+    ('a0 g_declaration_group, string) result =
  fun arg0_of_json ctx js ->
   combine_error_msgs js __FUNCTION__
     (match js with

@@ -264,8 +264,7 @@ and params_to_string (env : 'a fmt_env) (is_tuple : bool)
 
 (** Return two lists:
     - one for the regions, types, const generics
-    - one for the trait refs
- *)
+    - one for the trait refs *)
 and generic_args_to_strings (env : 'a fmt_env) (generics : generic_args) :
     string list * string list =
   let { regions; types; const_generics; trait_refs } = generics in
